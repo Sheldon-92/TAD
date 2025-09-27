@@ -2,6 +2,44 @@
 
 When this command is used, provide comprehensive help for using TAD Framework.
 
+## ⚠️ MANDATORY OUTPUT FORMAT
+
+**This command MUST provide structured help with clear sections:**
+
+### 📚 Help Output Template
+```
+TAD Framework Help Guide
+Version: 2.0 | Generated: [timestamp]
+
+🚀 QUICK START CHECKLIST
+- [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
+- [ ] Initialize: /tad-init
+- [ ] Verify: /tad-status
+- [ ] Choose scenario: /tad-scenario [name]
+- [ ] Activate agents: Follow terminal commands
+
+📋 COMMAND REFERENCE
+Each command produces standardized output:
+/tad-init     → Initialization checklist + file operations
+/tad-status   → Status report + readiness verification
+/tad-scenario → Scenario plan + agent assignments
+/tad-help     → This structured help guide
+
+🎭 AGENT ACTIVATION PROTOCOL
+Must follow exact format:
+Terminal 1: "You are Agent A. Read .tad/agents/agent-a-architect.md"
+Terminal 2: "You are Agent B. Read .tad/agents/agent-b-executor.md"
+
+⚠️ CRITICAL SUCCESS FACTORS
+1. Agents MUST read their definition files first
+2. Use mandatory startup checklists before proceeding
+3. Follow handoff templates for all exchanges
+4. Verify function existence before implementation
+5. Test end-to-end data flow
+```
+
+---
+
 ## Command Response
 
 ```markdown

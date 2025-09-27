@@ -3,7 +3,7 @@
 # TAD Framework Quick Installer
 # Usage: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 
-echo "🚀 Installing TAD Framework v1.0..."
+echo "🚀 Installing TAD Framework v2.0 (MVP Improved)..."
 
 # Check if in a git repository
 if [ -d ".git" ]; then
@@ -64,11 +64,17 @@ if ! grep -q ".tad/working/" .gitignore 2>/dev/null; then
 EOF
 fi
 
-# Create initial directories
+# Create initial directories including v2.0 additions
 mkdir -p .tad/context
 mkdir -p .tad/working
+mkdir -p .tad/working/gates
+mkdir -p .tad/evidence/project-logs
+mkdir -p .tad/evidence/patterns
+mkdir -p .tad/evidence/metrics
 touch .tad/context/.gitkeep
 touch .tad/working/.gitkeep
+touch .tad/working/gates/.gitkeep
+touch .tad/evidence/project-logs/.gitkeep
 
 echo "✅ TAD Framework installed successfully!"
 echo ""

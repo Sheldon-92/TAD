@@ -2,6 +2,27 @@
 
 When this command is triggered, execute the following:
 
+## ⚠️ MANDATORY OUTPUT FORMAT
+
+**This command MUST produce standardized output in the following format:**
+
+### 📋 Initialization Checklist
+Use this checklist format to track progress:
+- [ ] TAD directory structure verification
+- [ ] Core agent files installation
+- [ ] Template files setup
+- [ ] Project context initialization
+- [ ] Success confirmation and next steps
+
+### 📝 Required Output Sections
+1. **Status Report**: Current state and actions taken
+2. **File Operations**: List all files created/modified with paths
+3. **Verification**: Confirm all components installed correctly
+4. **Next Steps**: Clear instructions for agent activation
+5. **Error Handling**: Any issues encountered and resolutions
+
+---
+
 ## Initialize TAD Framework
 
 1. **Check if TAD already exists**

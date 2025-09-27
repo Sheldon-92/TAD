@@ -1,10 +1,19 @@
 # TAD Method - Triangle Agent Development
 
+**Version 2.0 MVP - Configuration-Driven Quality Framework**
+
+> ⚠️ **Important**: This is a "manual execution + checklist verification" system, not automated blocking. Quality gates require explicit human/agent verification but provide significant guidance for consistent execution.
+
 ## 🚀 Quick Installation
 
-### One-line installer (Recommended)
+### Fresh Installation (Recommended)
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
+```
+
+### Upgrade from v1.0 to v2.0
+```bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade.sh | bash
 ```
 
 ### Manual installation
@@ -177,10 +186,11 @@ You know TAD is working when:
 
 ## Next Steps
 
-1. **Install TAD**: Follow the setup guide in SETUP.md
-2. **Configure Agents**: Customize agent definitions for your project
-3. **Start Small**: Try TAD on a simple feature first
-4. **Iterate**: Adjust the process based on what works
+1. **Install TAD**: Use the one-line installer above or follow manual installation steps
+2. **Verify Installation**: Run `/tad-status` to verify v2.0 is ready with quality gates and templates
+3. **Configure Agents**: Customize agent definitions for your project
+4. **Start Small**: Try TAD on a simple feature first
+5. **Iterate**: Adjust the process based on what works
 
 ## Remember
 

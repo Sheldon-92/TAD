@@ -11,7 +11,7 @@ This is your TAD (Triangle Agent Development) setup - a simplified, value-focuse
 │   └── agent-b-executor.md
 ├── sub-agents/      # Specialized agents (callable)
 ├── context/         # Project information
-│   ├── project.md   # Project overview
+│   ├── PROJECT.md   # Project overview
 │   └── decisions.md # Architectural decisions
 ├── working/         # Active work
 │   ├── sprint.md    # Current sprint
@@ -101,7 +101,7 @@ Agent A ------- Agent B
 
 ## First Steps
 
-1. **Update project.md** with your project information
+1. **Update PROJECT.md** with your project information
 2. **Activate both agents** in separate terminals
 3. **State your need** clearly
 4. **Let the triangle collaboration begin!**

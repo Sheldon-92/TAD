@@ -2,6 +2,49 @@
 
 When user types `/tad-scenario [scenario_name]`, execute the corresponding workflow:
 
+## ⚠️ MANDATORY OUTPUT FORMAT
+
+**This command MUST produce scenario-specific structured output:**
+
+### 📋 Scenario Execution Template
+```
+TAD Scenario: [scenario_name]
+Started: [timestamp]
+
+🎯 SCENARIO OVERVIEW
+- Type: [scenario_name]
+- Complexity: [Low/Medium/High]
+- Estimated Duration: [time estimate]
+- Key Deliverables: [list]
+
+📊 AGENT ROLE ASSIGNMENTS
+Agent A (Architect) - Alex:
+- [ ] [Specific task 1] using [sub-agent]
+- [ ] [Specific task 2] using [sub-agent]
+- [ ] [Handoff checkpoint]
+
+Agent B (Executor) - Blake:
+- [ ] [Specific task 1] using [sub-agent]
+- [ ] [Specific task 2] using [sub-agent]
+- [ ] [Delivery checkpoint]
+
+🔄 HANDOFF POINTS
+1. [Agent A] → [Agent B]: [What gets handed off]
+2. [Agent B] → [Agent A]: [What gets reported back]
+3. [Final] → [Human]: [Final deliverable]
+
+📁 WORKING FILES CREATED
+- .tad/working/scenario-[name]-[timestamp].md
+- .tad/working/handoff-log.md
+- [Other scenario-specific files]
+
+⚡ ACTIVATION COMMANDS
+Terminal 1: You are Agent A. Read .tad/agents/agent-a-architect.md
+Terminal 2: You are Agent B. Read .tad/agents/agent-b-executor.md
+```
+
+---
+
 ## Available Scenarios
 
 1. **new_project** - Starting from scratch

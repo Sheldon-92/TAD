@@ -2,6 +2,43 @@
 
 When this command is triggered, check and report TAD configuration status:
 
+## ⚠️ MANDATORY OUTPUT FORMAT
+
+**This command MUST produce standardized status output:**
+
+### 📊 Status Report Template
+```
+TAD Framework Status Report
+Generated: [timestamp]
+
+🔍 INSTALLATION CHECK
+[✅/❌] Core directory structure
+[✅/❌] Agent definition files
+[✅/❌] Configuration files
+[✅/❌] Template files
+[✅/❌] Project context files
+
+📋 CONFIGURATION VERIFICATION
+- Version: [version number]
+- Scenarios: [count]/6 configured
+- Sub-agents: [count]/16 available
+- Templates: [count] handoff templates
+
+⚡ READINESS STATUS
+[✅/❌] Ready for Agent A activation
+[✅/❌] Ready for Agent B activation
+[✅/❌] Ready for triangle collaboration
+
+🚨 ISSUES (if any)
+- [List specific issues]
+- [Remediation suggestions]
+
+📋 NEXT ACTIONS
+[Specific next steps based on status]
+```
+
+---
+
 ## Check TAD Installation Status
 
 ```markdown
