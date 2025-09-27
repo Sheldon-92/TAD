@@ -1,0 +1,42 @@
+{
+  "name": "tad-framework",
+  "version": "1.0.0",
+  "description": "Triangle Agent Development - Simplified human-AI collaboration framework for Claude Code",
+  "main": "index.js",
+  "scripts": {
+    "install": "node scripts/install.js",
+    "test": "echo \"No tests yet\"",
+    "version": "git add -A",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "tad",
+    "claude",
+    "claude-code",
+    "ai",
+    "development",
+    "framework",
+    "collaboration",
+    "agent"
+  ],
+  "author": "Sheldon Zhao",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sheldon-92/TAD.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sheldon-92/TAD/issues"
+  },
+  "homepage": "https://github.com/Sheldon-92/TAD#readme",
+  "files": [
+    ".tad/",
+    ".claude/",
+    "*.md",
+    "install.sh",
+    "scripts/"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
