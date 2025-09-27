@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# TAD Framework Quick Installer
-# Usage: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
+# TAD Framework Quick Installer v2 - Fixed Version
+# Usage: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install-v2.sh | bash
 
-echo "🚀 Installing TAD Framework v1.0..."
+echo "🚀 Installing TAD Framework v1.0 (Fixed)..."
 
 # Check if in a git repository
 if [ -d ".git" ]; then
@@ -21,7 +21,7 @@ if [ -d ".tad" ]; then
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
     fi
-    rm -rf .tad .claude
+    rm -rf .tad
 fi
 
 # Download TAD from GitHub
