@@ -1,0 +1,38 @@
+{
+  "name": "TAD Framework",
+  "version": "1.0",
+  "description": "Triangle Agent Development - Simple human-AI collaboration",
+  "method": "TAD",
+
+  "agents": {
+    "agent_a": {
+      "name": "Alex",
+      "role": "Strategic Architect",
+      "activation": "Read .tad/agents/agent-a-architect.md",
+      "terminal": 1
+    },
+    "agent_b": {
+      "name": "Blake",
+      "role": "Execution Master",
+      "activation": "Read .tad/agents/agent-b-executor.md",
+      "terminal": 2
+    }
+  },
+
+  "commands": {
+    "tad-init": "Initialize TAD in current project",
+    "tad-status": "Check TAD configuration status",
+    "tad-scenario": "Execute a TAD scenario"
+  },
+
+  "autoload": [
+    ".tad/config.yaml",
+    "WORKFLOW_PLAYBOOK.md",
+    "CLAUDE_CODE_SUBAGENTS.md"
+  ],
+
+  "prompts": {
+    "project_start": "TAD framework detected. Use 'tad-init' to initialize or read .tad/README.md for manual setup.",
+    "agent_activation": "To activate TAD agents, use the commands in .tad/config.yaml activation section."
+  }
+}

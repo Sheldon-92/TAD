@@ -1,0 +1,9 @@
+.DS_Store
+.tad/working/
+.tad/context/PROJECT.md
+.tad/context/REQUIREMENTS.md
+.tad/context/ARCHITECTURE.md
+.tad/context/DECISIONS.md
+node_modules/
+*.log
+*.tmp
