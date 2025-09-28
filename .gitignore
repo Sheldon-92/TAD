@@ -1,9 +1,30 @@
+# OS Files
 .DS_Store
+
+# TAD Working Files
 .tad/working/
 .tad/context/PROJECT.md
 .tad/context/REQUIREMENTS.md
 .tad/context/ARCHITECTURE.md
 .tad/context/DECISIONS.md
+
+# BMAD Files (Not part of TAD)
+.bmad-core/
+.bmad/
+.claude/commands/BMad/
+
+# Old version files
+.tad/agents/agent-a-architect-v3.md
+.tad/agents/agent-b-executor-v3.md
+.tad/config-v3.yaml
+.tad/manifest.yaml
+
+# Local settings
+.claude/settings.local.json
+
+# Dependencies
 node_modules/
+
+# Logs and temp files
 *.log
 *.tmp

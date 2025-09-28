@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.0 MVP - Configuration-Driven Quality Framework**
+**Version 1.1 - Enhanced with BMAD Enforcement Mechanisms**
 
-> ⚠️ **Important**: This is a "manual execution + checklist verification" system, not automated blocking. Quality gates require explicit human/agent verification but provide significant guidance for consistent execution.
+> 🚀 **TAD v1.1 combines simplicity with enforcement**: Only 3 roles instead of 10+, but with proven quality mechanisms from BMAD including mandatory elicitation, violation detection, and 4-gate quality system.
 
 ## 🚀 Quick Installation
 
@@ -11,9 +11,9 @@
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
-### Upgrade from v1.0 to v2.0
+### Upgrade from v1.0 to v1.1
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.1.sh | bash
 ```
 
 ### Manual installation
@@ -34,6 +34,29 @@ tad init
 ## Welcome
 
 This is TAD (Triangle Agent Development), a new software development methodology based on human-AI collaboration.
+
+## 🎯 What's New in v1.1
+
+### Enhanced with BMAD Mechanisms
+- **Mandatory Interaction**: 3-5 rounds of requirement elicitation (enforced)
+- **Violation Detection**: Automatic quality enforcement with VIOLATION INDICATOR
+- **4-Step Activation**: Consistent agent startup protocol
+- **Command System**: * prefix for all internal commands
+- **Document Ownership**: Clear responsibility tracking
+
+### TAD Original Features
+- **4-Gate Quality System**: Systematic quality control at key points
+- **Evidence Collection**: Pattern-based continuous improvement
+- **Parallel Execution**: 40%+ time savings with parallel-coordinator
+- **16 Real Sub-agents**: Direct access to Claude Code platform agents
+- **Slash Commands**: Quick access via /alex, /blake, /tad, etc.
+
+### Key Improvements
+- Fixed document management issues with version control
+- Prevented role violations (Alex won't code, Blake needs handoff)
+- Enhanced sub-agent usage with mandatory rules
+- Deep requirement understanding through enforced elicitation
+- Quality assurance through gates and evidence
 
 ## What is TAD?
 
