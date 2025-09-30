@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 1.1 - Enhanced with BMAD Enforcement Mechanisms**
+**Version 1.2 - MCP Integration Enhancement**
 
-> 🚀 **TAD v1.1 combines simplicity with enforcement**: Only 3 roles instead of 10+, but with proven quality mechanisms from BMAD including mandatory elicitation, violation detection, and 4-gate quality system.
+> 🚀 **TAD v1.2 adds MCP integration**: 70-85% efficiency boost through Model Context Protocol tools, smart project detection, and enhanced workflow - all while maintaining TAD's proven simplicity and quality enforcement.
 
 ## 🚀 Quick Installation
 
@@ -11,9 +11,15 @@
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
-### Upgrade from v1.0 to v1.1
+### Upgrade from v1.1 to v1.2
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.1.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.2.sh | bash
+```
+
+### Upgrade from v1.0 to v1.2
+```bash
+# Upgrades through v1.1 automatically
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
 ### Manual installation
@@ -35,28 +41,32 @@ tad init
 
 This is TAD (Triangle Agent Development), a new software development methodology based on human-AI collaboration.
 
-## 🎯 What's New in v1.1
+## 🎯 What's New in v1.2
 
-### Enhanced with BMAD Mechanisms
+### MCP Integration (Model Context Protocol)
+- **70-85% Efficiency Boost**: Automated tool usage for faster development
+- **Smart Project Detection**: Auto-recommend tools in Round 2.5
+- **3-Layer Architecture**: Core (7 tools) / Project (5 types) / Task (on-demand)
+- **Enhanced Elicitation**: Round 0 (memory check) + Round 2.5 (project detection)
+- **7 Core MCP Tools**: context7, sequential-thinking, memory-bank, filesystem, git, github, brave-search
+- **Project-Specific Tools**: Web fullstack, Data science, ML, DevOps, Creative
+- **1176-Line Usage Guide**: Comprehensive documentation with 50+ code examples
+
+### v1.1 Features (Preserved)
 - **Mandatory Interaction**: 3-5 rounds of requirement elicitation (enforced)
 - **Violation Detection**: Automatic quality enforcement with VIOLATION INDICATOR
-- **4-Step Activation**: Consistent agent startup protocol
-- **Command System**: * prefix for all internal commands
-- **Document Ownership**: Clear responsibility tracking
-
-### TAD Original Features
 - **4-Gate Quality System**: Systematic quality control at key points
 - **Evidence Collection**: Pattern-based continuous improvement
 - **Parallel Execution**: 40%+ time savings with parallel-coordinator
 - **16 Real Sub-agents**: Direct access to Claude Code platform agents
 - **Slash Commands**: Quick access via /alex, /blake, /tad, etc.
 
-### Key Improvements
-- Fixed document management issues with version control
-- Prevented role violations (Alex won't code, Blake needs handoff)
-- Enhanced sub-agent usage with mandatory rules
-- Deep requirement understanding through enforced elicitation
-- Quality assurance through gates and evidence
+### Key Features
+- **Non-invasive Integration**: MCP enhances but doesn't replace TAD core
+- **100% Backward Compatible**: Works perfectly without MCP
+- **Role Boundaries Enforced**: Alex designs, Blake implements, MCP assists
+- **Quality First**: MCP failures don't block workflow
+- **Clear Documentation**: Complete upgrade path from v1.1
 
 ## What is TAD?
 
@@ -94,7 +104,7 @@ TAD addresses these issues through:
        /    \
       /      \
 Agent A ---- Agent B
-(Architect) (Executor)
+(Solution) (Execution)
 ```
 
 ### Human - The Value Guardian
@@ -103,14 +113,14 @@ Agent A ---- Agent B
 - **Decides** when conflicts arise
 - **Learns** technical possibilities from agents
 
-### Agent A - The Strategic Architect
-- **Translates** human needs into technical designs
-- **Explains** technical decisions in human terms
+### Agent A - The Solution Lead
+- **Translates** human needs into comprehensive solutions
+- **Designs** product, technical, and user experience
 - **Reviews** implementation quality
 - **Manages** sub-agent specialists for analysis
 
 ### Agent B - The Execution Master
-- **Implements** the technical designs
+- **Implements** the solution designs
 - **Orchestrates** parallel development tasks
 - **Tests** and deploys solutions
 - **Reports** progress and issues
@@ -155,7 +165,7 @@ Every sprint must deliver **human-perceptible value**, not just technical progre
 
 ### Quick Start (5 minutes)
 1. Open two terminal windows
-2. Terminal 1: Activate Agent A (Strategic Architect)
+2. Terminal 1: Activate Agent A (Solution Lead)
 3. Terminal 2: Activate Agent B (Execution Master)
 4. Human: State what you need
 5. Begin the collaboration

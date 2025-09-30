@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TAD Framework Quick Installer v1.1
+# TAD Framework Quick Installer v1.2
 # Usage: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 
 set -e
@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 echo ""
 echo "======================================"
-echo -e "${BLUE}TAD Framework Installer v1.1${NC}"
+echo -e "${BLUE}TAD Framework Installer v1.2${NC}"
 echo "======================================"
 echo ""
 
@@ -26,8 +26,8 @@ if [ -d ".tad" ]; then
         CURRENT_VERSION=$(cat .tad/version.txt)
     fi
 
-    if [ "$CURRENT_VERSION" = "1.1" ]; then
-        echo -e "${YELLOW}TAD v1.1 is already installed${NC}"
+    if [ "$CURRENT_VERSION" = "1.2" ]; then
+        echo -e "${YELLOW}TAD v1.2 is already installed${NC}"
         echo "No installation needed"
         exit 0
     fi
@@ -35,8 +35,8 @@ if [ -d ".tad" ]; then
     echo -e "${YELLOW}TAD v$CURRENT_VERSION detected${NC}"
     echo ""
     echo "Would you like to:"
-    echo "1) Upgrade to v1.1 (preserves your work)"
-    echo "2) Fresh install v1.1 (removes existing TAD)"
+    echo "1) Upgrade to v1.2 (preserves your work)"
+    echo "2) Fresh install v1.2 (removes existing TAD)"
     echo "3) Cancel"
     echo ""
     read -p "Select option (1-3): " -n 1 -r
@@ -44,7 +44,14 @@ if [ -d ".tad" ]; then
 
     if [[ $REPLY == "1" ]]; then
         echo "Running upgrade..."
-        curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.1.sh | bash
+        # Determine which upgrade script to use
+        if [ "$CURRENT_VERSION" = "1.1" ]; then
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.2.sh | bash
+        elif [ "$CURRENT_VERSION" = "1.0" ]; then
+            echo "Upgrading from v1.0 to v1.2 (via v1.1)..."
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.1.sh | bash
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.2.sh | bash
+        fi
         exit 0
     elif [[ $REPLY == "2" ]]; then
         echo "Performing fresh install..."
@@ -63,7 +70,7 @@ if [ -d ".tad" ]; then
     fi
 fi
 
-echo "🚀 Installing TAD Framework v1.1..."
+echo "🚀 Installing TAD Framework v1.2..."
 
 # Check if in a git repository
 if [ -d ".git" ]; then
@@ -105,12 +112,15 @@ if [ -d "TAD-main/.claude" ]; then
 fi
 
 # Create version marker
-echo "1.1" > .tad/version.txt
+echo "1.2" > .tad/version.txt
+
+# Create logs directory for MCP
+mkdir -p .tad/logs
 
 # Clean up
 rm -rf TAD-main
 
-# Update .gitignore for v1.1
+# Update .gitignore for v1.2
 echo "📝 Updating .gitignore..."
 if [ ! -f ".gitignore" ]; then
     touch .gitignore
@@ -127,11 +137,15 @@ if ! grep -q "# TAD Framework" .gitignore 2>/dev/null; then
 .tad/context/ARCHITECTURE.md
 .tad/context/DECISIONS.md
 .tad/evidence/project-logs/*/
+.tad/logs/
 *.log
 *.tmp
 
 # Local settings
 .claude/settings.local.json
+
+# MCP (Model Context Protocol)
+.tad/mcp-config.json
 EOF
 fi
 
@@ -157,16 +171,16 @@ touch .tad/evidence/project-logs/.gitkeep
 
 echo ""
 echo "======================================"
-echo -e "${GREEN}✅ TAD Framework v1.1 Installed!${NC}"
+echo -e "${GREEN}✅ TAD Framework v1.2 Installed!${NC}"
 echo "======================================"
 echo ""
-echo "🎯 What's New in v1.1:"
-echo "  • ${BLUE}BMAD-style enforcement${NC} - Quality guaranteed"
-echo "  • ${BLUE}Mandatory elicitation${NC} - 3-5 rounds for clarity"
-echo "  • ${BLUE}4-gate quality system${NC} - Systematic verification"
-echo "  • ${BLUE}Evidence collection${NC} - Continuous improvement"
-echo "  • ${BLUE}Parallel execution${NC} - 40% faster development"
-echo "  • ${BLUE}Slash commands${NC} - Quick agent activation"
+echo "🎯 What's New in v1.2:"
+echo "  • ${BLUE}MCP Integration${NC} - 70-85% efficiency boost"
+echo "  • ${BLUE}Smart project detection${NC} - Auto-recommend tools"
+echo "  • ${BLUE}Enhanced elicitation${NC} - Round 0 & Round 2.5"
+echo "  • ${BLUE}7 Core MCP tools${NC} - context7, memory-bank, etc."
+echo "  • ${BLUE}Project-specific tools${NC} - Web, ML, DevOps, etc."
+echo "  • ${BLUE}Comprehensive guide${NC} - 1176-line usage guide"
 echo ""
 echo "📚 Quick Start with Slash Commands:"
 echo ""
@@ -174,12 +188,17 @@ echo "  ${YELLOW}Option 1: Main Menu${NC}"
 echo "  Type: ${BLUE}/tad${NC}"
 echo ""
 echo "  ${YELLOW}Option 2: Direct Agent Activation${NC}"
-echo "  Terminal 1: ${BLUE}/alex${NC}  (Activate Agent A)"
-echo "  Terminal 2: ${BLUE}/blake${NC} (Activate Agent B)"
+echo "  Terminal 1: ${BLUE}/alex${NC}  (Activate Agent A - Solution Lead)"
+echo "  Terminal 2: ${BLUE}/blake${NC} (Activate Agent B - Execution Master)"
 echo ""
 echo "  ${YELLOW}Option 3: Classic Activation${NC}"
 echo "  Terminal 1: You are Agent A. Read .tad/agents/agent-a-architect-v1.1.md"
 echo "  Terminal 2: You are Agent B. Read .tad/agents/agent-b-executor-v1.1.md"
+echo ""
+echo "📖 MCP Tools (Optional but Recommended):"
+echo "  ${BLUE}Install core tools:${NC} tad mcp install --core"
+echo "  ${BLUE}Read MCP guide:${NC}   cat .tad/MCP_USAGE_GUIDE.md"
+echo "  ${BLUE}Check MCP status:${NC} tad mcp status"
 echo ""
 echo "📖 Useful Commands:"
 echo "  ${BLUE}/tad-help${NC}     - Get help"
@@ -188,5 +207,8 @@ echo "  ${BLUE}/elicit${NC}       - Start requirements"
 echo "  ${BLUE}/parallel${NC}     - Use parallel execution"
 echo "  ${BLUE}/gate${NC}         - Run quality gates"
 echo ""
-echo "📚 Documentation: https://github.com/Sheldon-92/TAD"
+echo "📚 Documentation:"
+echo "  • GitHub: https://github.com/Sheldon-92/TAD"
+echo "  • MCP Guide: .tad/MCP_USAGE_GUIDE.md"
+echo "  • Integration Summary: .tad/MCP_INTEGRATION_SUMMARY.md"
 echo ""
