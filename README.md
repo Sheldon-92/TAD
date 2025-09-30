@@ -37,6 +37,19 @@ npm install -g tad-framework
 tad init
 ```
 
+## ⚙️ Configuration
+
+**Current Version (v1.2):**
+- Main config: `.tad/config-v3.yaml`
+- The framework automatically uses the correct version
+
+**Legacy Configs (Reference only):**
+- `.tad/config-v1.1.yaml` - v1.1 configuration
+- `.tad/config-v2.yaml` - Experimental features
+- `.tad/config.yaml` - v1.0 legacy
+
+**Note:** You don't need to manually edit configs. TAD agents know which version to use.
+
 ## Welcome
 
 This is TAD (Triangle Agent Development), a new software development methodology based on human-AI collaboration.
@@ -220,10 +233,24 @@ You know TAD is working when:
 ## Next Steps
 
 1. **Install TAD**: Use the one-line installer above or follow manual installation steps
-2. **Verify Installation**: Run `/tad-status` to verify v2.0 is ready with quality gates and templates
-3. **Configure Agents**: Customize agent definitions for your project
-4. **Start Small**: Try TAD on a simple feature first
-5. **Iterate**: Adjust the process based on what works
+2. **Verify Installation**: Run `./tad doctor` to check your TAD installation health
+3. **Check Version**: Run `./tad version` to confirm v1.2 is installed
+4. **Start Development**: Use `/alex` and `/blake` slash commands to activate agents
+5. **Start Small**: Try TAD on a simple feature first
+6. **Iterate**: Adjust the process based on what works
+
+## CLI Commands
+
+TAD v1.2 includes a simple CLI for framework management:
+
+```bash
+./tad version   # Show TAD version
+./tad doctor    # Run health check
+./tad upgrade   # Upgrade to latest version
+./tad help      # Show help message
+```
+
+**Note**: The `tad` CLI is for framework management only. Agent activation, requirement elicitation, design, and implementation are handled through slash commands (`/alex`, `/blake`) or direct agent activation.
 
 ## Remember
 

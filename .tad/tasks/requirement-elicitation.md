@@ -234,29 +234,46 @@ Select 0-2:
 **User Selection Handling:**
 ```
 IF user selects 0:
-  [EXECUTE] tad mcp install --preset [project_type]
-  [WAIT] Installation complete (~20-30s)
-  [RELOAD] MCP configuration
-  [LOG] "Project MCPs installed: [list]"
+  Alex: "Installing recommended MCP tools..."
+
+  [USE Bash tool - Alex executes directly]
+  FOR each recommended MCP:
+    Example for Web Fullstack:
+      bash: npx -y @supabase/mcp-server --install
+      bash: npx -y @playwright/test --install
+      bash: npx -y vercel --global
+
+  [REPORT to user]
+  ✓ supabase MCP installed
+  ✓ playwright MCP installed
+  ✓ vercel MCP installed
+
+  Installation complete! (~20-30s)
+
   [CONTINUE] to Round 3
 
 ELSE IF user selects 1:
   [SHOW] Individual MCP descriptions with checkboxes
-  [LET USER] select specific MCPs
-  [INSTALL] Selected MCPs
+  [LET USER] select specific MCPs (e.g., 1,3,4)
+
+  Alex: "Installing selected tools..."
+  [USE Bash tool for each selected MCP]
+
   [CONTINUE] to Round 3
 
 ELSE IF user selects 2:
   [LOG] "MCP installation skipped by user"
-  [REMIND] "You can install later with: tad mcp install --preset [type]"
+  [REMIND] "Blake can still use built-in capabilities. You can enable MCP tools anytime later."
   [CONTINUE] to Round 3
 ```
 
 **IMPORTANT NOTES:**
+- Alex uses Bash tool to install MCPs **automatically** (no human CLI needed)
 - This step is OPTIONAL and non-blocking
 - If no project type detected, skip directly to Round 3
-- If MCP installation fails, log error and continue
+- If MCP installation fails, log error and continue with built-in capabilities
 - The original workflow remains fully functional without this step
+- **User never needs to run CLI commands** - Alex handles everything
 
 ---
 

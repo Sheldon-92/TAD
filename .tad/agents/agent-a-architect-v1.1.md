@@ -228,7 +228,18 @@ mcp_integration:
       - "Round 0: RECOMMEND call memory-bank for project history"
       - "Round 1-2: AUTO-TRIGGER context7 when framework mentioned"
       - "Round 2: IF technical uncertainty, SUGGEST brave-search"
-      - "Round 2.5: AUTO-DETECT project type and recommend MCPs"
+      - "Round 2.5: AUTO-DETECT project type, recommend MCPs, and INSTALL if user approves"
+
+    mcp_installation:
+      description: "Alex can install MCP tools directly using Bash tool"
+      when: "Round 2.5 when user selects installation option"
+      how: |
+        [USE Bash tool]
+        Example for web_fullstack:
+          npx -y @supabase/mcp-server --install
+          npx -y @playwright/test --install
+          npx -y vercel --global
+      note: "No human CLI needed - Alex handles everything automatically"
 
     design_phase:
       - "USE context7 for latest best practices"
@@ -237,7 +248,7 @@ mcp_integration:
 
     handoff_creation:
       - "INCLUDE MCP tools used in handoff document"
-      - "RECOMMEND Blake which project MCPs to use"
+      - "INFORM Blake which project MCPs are available"
 
   activation_enhancement:
     step_4_5:

@@ -117,6 +117,18 @@ echo "1.2" > .tad/version.txt
 # Create logs directory for MCP
 mkdir -p .tad/logs
 
+# Create symbolic link for config (v3 is the active version)
+cd .tad
+ln -sf config-v3.yaml config.yaml
+cd ..
+
+# Install tad CLI script
+if [ -f "TAD-main/tad" ]; then
+    cp TAD-main/tad ./
+    chmod +x tad
+    echo -e "${GREEN}✅ Installed tad CLI${NC}"
+fi
+
 # Clean up
 rm -rf TAD-main
 

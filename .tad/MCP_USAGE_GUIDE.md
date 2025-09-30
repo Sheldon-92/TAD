@@ -6,6 +6,42 @@
 
 ---
 
+## 🚨 重要更新: MCP 自动安装机制
+
+**TAD v1.2 采用 Agent 驱动的 MCP 安装方式:**
+
+- ✅ **Alex 自动安装**: 在 Round 2.5 检测到项目类型后,Alex 使用 Bash tool 自动安装 MCP
+- ✅ **无需人工 CLI**: 用户**不需要**运行 `tad mcp install` 命令
+- ✅ **无缝体验**: 整个过程约 20-30 秒,Alex 自动完成所有安装配置
+- ✅ **用户仅需选择**: 看到推荐后,选择 0(全部安装) / 1(自选) / 2(跳过)
+
+**示例流程:**
+```
+User: "我想用 Next.js 和 Supabase 做一个全栈应用"
+Alex: (Round 2.5 自动检测)
+      "🎯 检测到项目类型: Web Fullstack (置信度 85%)
+
+      推荐安装的 MCP 工具:
+      1. supabase - 数据库操作
+      2. playwright - 测试自动化
+      3. vercel - 部署管理
+
+      选择 0-2:"
+User: "0"
+Alex: (自动执行)
+      [使用 Bash tool]
+      bash: npx -y @supabase/mcp-server --install
+      bash: npx -y @playwright/test --install
+      bash: npx -y vercel --global
+
+      "✓ 安装完成! (耗时 28 秒)
+      现在开始 Round 3..."
+```
+
+**本指南中所有 `tad mcp install` 命令已过时,仅作为参考保留。**
+
+---
+
 ## 📖 目录
 
 1. [MCP 快速入门](#1-mcp-快速入门)
@@ -72,17 +108,9 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 1.3 快速开始 3 步
+### 1.3 快速开始 2 步
 
-**Step 1: 安装核心层 MCP (必需)**
-
-```bash
-tad mcp install --core
-```
-
-这将安装 7 个核心 MCP 工具,耗时约 1-2 分钟。
-
-**Step 2: 激活 Alex 或 Blake**
+**Step 1: 激活 Alex 或 Blake**
 
 ```bash
 # Terminal 1: 激活 Alex (需求分析+设计)
@@ -92,9 +120,17 @@ tad mcp install --core
 /blake
 ```
 
-**Step 3: 开始工作**
+**Step 2: 开始工作**
 
-Alex 会在 **Round 2.5** 自动检测项目类型并推荐 Project-Layer MCPs。
+- **Alex** 会在 **Round 2.5** 自动检测项目类型并推荐 Project-Layer MCPs
+- **Alex** 会使用 Bash tool 自动安装选定的 MCPs（无需人工 CLI 操作）
+- 整个过程约 20-30 秒完成
+
+**重要说明:**
+- ✅ MCP 工具由 **Agent 自动安装**（Alex 使用 Bash tool）
+- ✅ **不需要人工运行** `tad mcp install` 命令
+- ✅ Alex 会在需要时自动安装和配置 MCP 工具
+- ✅ 用户只需选择是否安装推荐的工具（0/1/2 选项）
 
 ---
 
