@@ -100,6 +100,39 @@ Select 0-9:
 
 **WAIT FOR USER RESPONSE** - Do not proceed until user selects option or provides feedback
 
+**⚠️ MANDATORY: Call Product-Expert Sub-agent (CRITICAL):**
+```
+BEFORE proceeding to Round 2, Alex MUST call product-expert sub-agent.
+
+[USE Task tool]
+Task(
+  subagent_type: "product-expert",
+  description: "Analyze user requirement for product perspective",
+  prompt: "Analyze the following user requirement:
+
+[User's requirement from Round 1]
+
+Provide:
+1. User value analysis - what value does this deliver?
+2. Key use cases - how will users actually use this?
+3. Edge cases to consider - what could go wrong?
+4. Critical questions to ask - what's missing from requirements?
+5. Similar features in market - what do competitors do?
+
+Be specific and actionable in your analysis."
+)
+
+[WAIT for product-expert response]
+
+Alex then INCORPORATES product-expert's analysis into Round 2:
+- Use identified use cases in questions
+- Probe edge cases
+- Ask critical questions identified
+- Reference similar features when relevant
+
+NEVER skip this step - it's mandatory for TAD v1.2 quality assurance.
+```
+
 **[NEW] Context7 Auto-Trigger (ENHANCEMENT):**
 ```
 IF user mentions ANY framework/library in Round 1:

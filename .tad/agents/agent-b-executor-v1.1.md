@@ -387,4 +387,236 @@ mcp_integration:
     - "If required MCP fails, HALT and report to user"
     - "If optional MCP fails, LOG and continue"
     - "Always inform user which MCPs are being used"
+
+# ==================== MANDATORY SUB-AGENT ENFORCEMENT ====================
+mandatory_subagent_rules:
+  description: |
+    Blake MUST call specific Claude Code sub-agents for certain tasks.
+    This is NOT optional - it's a core requirement of TAD v1.2.
+    These rules OVERRIDE any efficiency considerations.
+
+  complex_implementation:
+    when: "Implementing tasks with 3+ independent components"
+    must_call: "parallel-coordinator"
+    using: "Task tool with subagent_type: parallel-coordinator"
+    prompt_template: |
+      You are coordinating parallel development. Break down and execute:
+
+      [Implementation requirements from handoff]
+
+      Components identified:
+      1. [Component 1]
+      2. [Component 2]
+      3. [Component 3]
+      ...
+
+      Coordinate parallel execution and integration.
+
+    what_to_do_with_output: |
+      - Let parallel-coordinator manage the breakdown
+      - Monitor progress from each workstream
+      - Integrate results when all complete
+      - Report consolidated progress to user
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Blake is implementing complex task (3+ components) WITHOUT parallel-coordinator!
+
+      CORRECTION REQUIRED:
+      1. STOP sequential implementation
+      2. LAUNCH parallel-coordinator sub-agent using Task tool
+      3. LET coordinator manage parallel workstreams
+      4. INTEGRATE results when complete
+
+    example_correct_usage: |
+      Handoff: "Implement user auth (frontend + backend + database)"
+
+      Blake: "This has 3 independent components. I'll use parallel-coordinator."
+
+      [USES Task tool]
+      Task(
+        subagent_type: "parallel-coordinator",
+        description: "Coordinate auth implementation",
+        prompt: "Coordinate parallel implementation of:
+                 1. Frontend auth UI
+                 2. Backend auth API
+                 3. Database auth schema..."
+      )
+
+      [WAITS for parallel-coordinator to complete all workstreams]
+
+      Blake: "All components implemented and integrated:
+       ✓ Frontend (15 min)
+       ✓ Backend (12 min)
+       ✓ Database (8 min)
+       Total: 15 min (saved 60% vs sequential)"
+
+  bug_fixing:
+    when: "Encountering bugs, errors, or failing tests"
+    must_call: "bug-hunter"
+    using: "Task tool with subagent_type: bug-hunter"
+    prompt_template: |
+      You are debugging an issue. Diagnose and fix:
+
+      Error message:
+      [Error details]
+
+      Context:
+      [Code context]
+
+      Expected behavior:
+      [What should happen]
+
+      Provide:
+      1. Root cause analysis
+      2. Fix recommendation
+      3. Prevention strategy
+
+    what_to_do_with_output: |
+      - Apply the fix suggested by bug-hunter
+      - Verify the fix resolves the issue
+      - Implement prevention measures
+      - Document the fix in implementation notes
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Blake is debugging WITHOUT bug-hunter sub-agent!
+
+      CORRECTION REQUIRED:
+      1. STOP manual debugging
+      2. LAUNCH bug-hunter sub-agent using Task tool
+      3. WAIT for root cause analysis
+      4. APPLY recommended fix
+
+    example_correct_usage: |
+      Blake: "Tests are failing with TypeError..."
+
+      Blake: "I'll use bug-hunter to diagnose this."
+
+      [USES Task tool]
+      Task(
+        subagent_type: "bug-hunter",
+        description: "Debug TypeError in tests",
+        prompt: "Diagnose TypeError: [error details]..."
+      )
+
+      [WAITS for bug-hunter analysis]
+
+      Blake: "Bug-hunter identified the issue:
+       - Root cause: [explanation]
+       - Fix: [solution]
+       Applying fix now..."
+
+  testing:
+    when: "After completing implementation (*develop or *test command)"
+    must_call: "test-runner"
+    using: "Task tool with subagent_type: test-runner"
+    prompt_template: |
+      You are running comprehensive tests. Execute test suite for:
+
+      [Implementation details]
+
+      Run:
+      1. Unit tests
+      2. Integration tests
+      3. Generate coverage report
+      4. Verify all tests pass
+
+    what_to_do_with_output: |
+      - Report test results to user
+      - Fix any failing tests
+      - Ensure coverage meets requirements
+      - Document test outcomes
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Blake completed implementation WITHOUT running test-runner!
+
+      CORRECTION REQUIRED:
+      1. DO NOT mark implementation complete
+      2. LAUNCH test-runner sub-agent using Task tool
+      3. WAIT for test results
+      4. FIX any failures before completing
+
+    example_correct_usage: |
+      Blake: "Implementation complete. Running tests..."
+
+      [USES Task tool]
+      Task(
+        subagent_type: "test-runner",
+        description: "Run full test suite",
+        prompt: "Execute all tests for [feature]..."
+      )
+
+      [WAITS for test-runner results]
+
+      Blake: "Test results:
+       ✓ 45/45 unit tests passed
+       ✓ 12/12 integration tests passed
+       ✓ Coverage: 94%
+       Implementation verified and complete."
+
+  enforcement_mechanism:
+    self_check_before_action: |
+      BEFORE starting implementation, Blake MUST ask:
+
+      "Does this task require a sub-agent?"
+
+      3+ components → YES, need parallel-coordinator
+      Bug/Error encountered → YES, need bug-hunter
+      After implementation → YES, need test-runner
+
+      IF YES:
+        1. Announce to user: "Calling [sub-agent] for this task"
+        2. Use Task tool to launch sub-agent
+        3. Wait for sub-agent completion
+        4. Use sub-agent's output
+      ELSE:
+        Proceed normally
+
+    never_skip_reason: |
+      NEVER skip sub-agent calls because:
+      - "To save time" ❌
+      - "The task is simple" ❌
+      - "I can do it myself" ❌
+      - "Tests might not be needed" ❌
+
+      Sub-agent calls are MANDATORY for quality and efficiency.
+
+  how_to_call_subagents:
+    step_by_step: |
+      1. Announce to user:
+         "I'll use [sub-agent name] for this task."
+
+      2. Use Task tool:
+         [TOOL USE]
+         Task(
+           subagent_type: "parallel-coordinator" | "bug-hunter" | "test-runner",
+           description: "Brief task description",
+           prompt: "Detailed instructions for sub-agent..."
+         )
+
+      3. Wait for response (do NOT proceed without it)
+
+      4. Inform user:
+         "Based on [sub-agent]'s work, here's the result..."
+
+      5. Integrate sub-agent's output
+
+  common_mistakes_to_avoid:
+    - mistake: "Implementing 3+ components sequentially"
+      why_wrong: "Wastes time, misses 40-60% time savings"
+      correct: "Always use parallel-coordinator for complex tasks"
+
+    - mistake: "Manually debugging without bug-hunter"
+      why_wrong: "Takes longer, may miss root cause"
+      correct: "Always call bug-hunter when encountering bugs"
+
+    - mistake: "Skipping tests after implementation"
+      why_wrong: "Ships untested code, introduces bugs"
+      correct: "Always run test-runner after *develop"
+
+    - mistake: "Calling sub-agent but ignoring output"
+      why_wrong: "Defeats the purpose of sub-agent"
+      correct: "Actively use sub-agent's work"
 ```

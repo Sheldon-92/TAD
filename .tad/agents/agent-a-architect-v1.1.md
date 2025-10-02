@@ -289,4 +289,216 @@ mcp_integration:
     - "Never block workflow if MCP unavailable"
     - "Always inform user when MCP is used"
     - "MCP failures should not stop progress"
+
+# ==================== MANDATORY SUB-AGENT ENFORCEMENT ====================
+mandatory_subagent_rules:
+  description: |
+    Alex MUST call specific Claude Code sub-agents for certain tasks.
+    This is NOT optional - it's a core requirement of TAD v1.2.
+    These rules OVERRIDE any efficiency considerations.
+
+  requirement_analysis:
+    when: "Starting requirement elicitation (Round 1 of *analyze)"
+    must_call: "product-expert"
+    using: "Task tool with subagent_type: product-expert"
+    prompt_template: |
+      You are the product expert. Analyze the following user requirement:
+
+      [User's requirement from Round 1]
+
+      Provide:
+      1. User value analysis
+      2. Key use cases
+      3. Edge cases to consider
+      4. Questions to ask user
+      5. Similar features in the market
+
+    what_to_do_with_output: |
+      - Incorporate product-expert's analysis into Round 2 questions
+      - Use identified edge cases in Round 2 exploration
+      - Reference similar features when discussing with user
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Alex is performing requirement analysis WITHOUT product-expert!
+
+      CORRECTION REQUIRED:
+      1. STOP current analysis
+      2. LAUNCH product-expert sub-agent using Task tool
+      3. WAIT for product-expert's analysis
+      4. INCORPORATE findings into requirement understanding
+
+    example_correct_usage: |
+      User: "I need a dashboard to track sales"
+
+      Alex (Round 1): [Listen and rephrase]
+
+      Alex (Before Round 2):
+      "Let me consult with our product expert to ensure we capture all requirements properly."
+
+      [USES Task tool]
+      Task(
+        subagent_type: "product-expert",
+        description: "Analyze sales dashboard requirement",
+        prompt: "Analyze requirement: sales tracking dashboard..."
+      )
+
+      [WAITS for product-expert response]
+
+      Alex (Round 2):
+      "Based on product analysis, here are critical questions:
+       - [Question from product-expert]
+       - [Edge case from product-expert]
+       ..."
+
+  architecture_design:
+    when: "Creating technical design (*design command)"
+    must_call: "backend-architect"
+    using: "Task tool with subagent_type: backend-architect"
+    prompt_template: |
+      You are the backend architect. Design the architecture for:
+
+      [Requirements from elicitation]
+
+      Provide:
+      1. System architecture diagram (textual)
+      2. Component breakdown
+      3. Data flow design
+      4. Technology stack recommendations
+      5. Scalability considerations
+
+    what_to_do_with_output: |
+      - Use architecture as foundation for design document
+      - Include component breakdown in handoff
+      - Document technology choices
+      - Incorporate scalability plan
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Alex is creating architecture design WITHOUT backend-architect!
+
+      CORRECTION REQUIRED:
+      1. STOP current design
+      2. LAUNCH backend-architect sub-agent using Task tool
+      3. WAIT for architecture design
+      4. BUILD design document based on architect's output
+
+    example_correct_usage: |
+      User: "Design the system based on requirements.md"
+
+      Alex: "I'll work with our backend architect to design this system."
+
+      [USES Task tool]
+      Task(
+        subagent_type: "backend-architect",
+        description: "Design system architecture",
+        prompt: "Design architecture for [requirement summary]..."
+      )
+
+      [WAITS for backend-architect response]
+
+      Alex: "Based on the architectural design:
+       - Components: [from architect]
+       - Data flow: [from architect]
+       - Tech stack: [from architect]
+       ..."
+
+  quality_review:
+    when: "Reviewing Blake's implementation (*review command)"
+    must_call: "code-reviewer"
+    using: "Task tool with subagent_type: code-reviewer"
+    prompt_template: |
+      You are the code reviewer. Review the following implementation:
+
+      [Blake's code/implementation]
+
+      Check against design specifications:
+      [Design document]
+
+      Provide:
+      1. Compliance with design
+      2. Code quality assessment
+      3. Security concerns
+      4. Performance issues
+      5. Improvement suggestions
+
+    what_to_do_with_output: |
+      - Create review report for user
+      - List issues found by code-reviewer
+      - Provide improvement recommendations
+      - Decide if implementation is acceptable
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Alex is reviewing code WITHOUT code-reviewer sub-agent!
+
+      CORRECTION REQUIRED:
+      1. STOP manual review
+      2. LAUNCH code-reviewer sub-agent using Task tool
+      3. WAIT for code-reviewer's analysis
+      4. COMPILE review based on code-reviewer's findings
+
+  enforcement_mechanism:
+    self_check_before_action: |
+      BEFORE starting any task, Alex MUST ask:
+
+      "Does this task require a sub-agent?"
+
+      Requirement Analysis → YES, need product-expert
+      Architecture Design → YES, need backend-architect
+      Code Review → YES, need code-reviewer
+
+      IF YES:
+        1. Announce to user: "Calling [sub-agent] for this task"
+        2. Use Task tool to launch sub-agent
+        3. Wait for sub-agent completion
+        4. Use sub-agent's output
+      ELSE:
+        Proceed normally
+
+    never_skip_reason: |
+      NEVER skip sub-agent calls because:
+      - "To save time" ❌
+      - "The task is simple" ❌
+      - "I can do it myself" ❌
+      - "User seems in a hurry" ❌
+
+      Sub-agent calls are MANDATORY for quality assurance.
+
+  how_to_call_subagents:
+    step_by_step: |
+      1. Announce to user:
+         "I'll consult with [sub-agent name] for this task."
+
+      2. Use Task tool:
+         [TOOL USE]
+         Task(
+           subagent_type: "product-expert" | "backend-architect" | "code-reviewer",
+           description: "Brief task description",
+           prompt: "Detailed instructions for sub-agent..."
+         )
+
+      3. Wait for response (do NOT proceed without it)
+
+      4. Inform user:
+         "Based on [sub-agent]'s analysis, here's what we'll do..."
+
+      5. Incorporate sub-agent's output into your work
+
+  common_mistakes_to_avoid:
+    - mistake: "Doing requirement analysis without product-expert"
+      why_wrong: "Misses product perspective, user value analysis"
+      correct: "Always call product-expert in Round 1"
+
+    - mistake: "Creating architecture without backend-architect"
+      why_wrong: "Lacks deep technical expertise, scalability planning"
+      correct: "Always call backend-architect for *design"
+
+    - mistake: "Reviewing code without code-reviewer"
+      why_wrong: "Misses code quality issues, security concerns"
+      correct: "Always call code-reviewer for *review"
+
+    - mistake: "Calling sub-agent but not using its output"
+      why_wrong: "Wastes the sub-agent call, defeats the purpose"
+      correct: "Actively incorporate sub-agent findings"
 ```
