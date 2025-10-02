@@ -137,15 +137,54 @@ else
     echo "  ℹ config-v3.yaml not in use, skipping"
 fi
 
-# Step 5: Update version
+# Step 5: Clean up config files
 echo ""
-echo "[5/6] Updating version..."
+echo "[5/7] Cleaning up configuration files..."
+
+# Create archive directory
+mkdir -p .tad/archive/configs
+
+# Archive old config files
+if [ -f ".tad/config-v1.1.yaml" ]; then
+    mv .tad/config-v1.1.yaml .tad/archive/configs/
+    echo "  ✓ config-v1.1.yaml → .tad/archive/configs/"
+fi
+
+if [ -f ".tad/config-v2.yaml" ]; then
+    mv .tad/config-v2.yaml .tad/archive/configs/
+    echo "  ✓ config-v2.yaml → .tad/archive/configs/"
+fi
+
+# Handle config.yaml and config-v3.yaml
+if [ -f ".tad/config-v3.yaml" ]; then
+    if [ -L ".tad/config.yaml" ]; then
+        # It's a symlink, remove it
+        rm .tad/config.yaml
+    elif [ -f ".tad/config.yaml" ]; then
+        # It's a regular file, archive it
+        mv .tad/config.yaml .tad/archive/configs/config-old.yaml
+    fi
+
+    # Rename v3 to config.yaml
+    mv .tad/config-v3.yaml .tad/config.yaml
+    echo "  ✓ Main config: .tad/config.yaml (from v3)"
+fi
+
+# Update agent file references
+sed -i.bak 's/config-v1\.1\.yaml/config.yaml/g' .tad/agents/agent-a-architect-v1.1.md 2>/dev/null && rm .tad/agents/agent-a-architect-v1.1.md.bak 2>/dev/null || true
+sed -i.bak 's/config-v1\.1\.yaml/config.yaml/g' .tad/agents/agent-b-executor-v1.1.md 2>/dev/null && rm .tad/agents/agent-b-executor-v1.1.md.bak 2>/dev/null || true
+
+echo -e "${GREEN}✓ Configuration files cleaned up${NC}"
+
+# Step 6: Update version
+echo ""
+echo "[6/7] Updating version..."
 echo "1.2" > .tad/version.txt
 echo -e "${GREEN}✓ Version updated to 1.2${NC}"
 
-# Step 6: Create logs directory (if not exists)
+# Step 7: Create logs directory (if not exists)
 echo ""
-echo "[6/6] Setting up MCP directories..."
+echo "[7/7] Setting up MCP directories..."
 mkdir -p .tad/logs
 echo -e "${GREEN}✓ Logs directory ready${NC}"
 

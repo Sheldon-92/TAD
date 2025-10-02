@@ -1,0 +1,231 @@
+# TAD Configuration v1.0 - Triangle Agent Development
+method: TAD
+version: 1.0
+description: Triangle Agent Development - Simple, effective human-AI collaboration
+
+# ==================== Core Triangle Model ====================
+triangle:
+  human:
+    role: Value Guardian
+    responsibilities:
+      - Define value and requirements
+      - Verify delivered value
+      - Make key decisions
+
+  agent_a:
+    name: Alex
+    role: Strategic Architect
+    terminal: 1
+    modes:
+      - Requirements analysis
+      - Solution design
+      - Quality review
+
+  agent_b:
+    name: Blake
+    role: Execution Master
+    terminal: 2
+    modes:
+      - Code implementation
+      - Test verification
+      - Deployment operations
+
+# ==================== Claude Code Sub-agents ====================
+# These are real Claude Code built-in agents, not fictional roles
+subagents:
+  # Strategic sub-agents (mainly for Agent A)
+  strategic:
+    - product-expert        # Requirements analysis, user stories
+    - backend-architect     # System design, architecture (Opus)
+    - api-designer         # API design, specifications
+    - code-reviewer        # Code quality review (Opus)
+    - ux-expert-reviewer   # UX assessment, optimization
+    - performance-optimizer # Performance analysis (Opus)
+    - data-analyst         # Data analysis, insights
+
+  # Execution sub-agents (mainly for Agent B)
+  execution:
+    - parallel-coordinator  # Parallel task orchestration
+    - fullstack-dev-expert # Full-stack development
+    - frontend-specialist  # Frontend development
+    - refactor-specialist  # Code refactoring
+    - bug-hunter          # Bug diagnosis
+    - test-runner         # Test execution
+    - devops-engineer     # CI/CD, deployment
+    - database-expert     # Database design
+    - docs-writer         # Documentation
+
+# ==================== Workflow Scenarios ====================
+scenarios:
+  # Scenario 1: New Project
+  new_project:
+    trigger: "Starting from scratch"
+    agent_a_workflow:
+      - Analyze requirements (product-expert)
+      - Define product (product-expert, ux-expert-reviewer)
+      - Design architecture (backend-architect)
+      - Plan sprint
+    agent_b_workflow:
+      - Initialize project (devops-engineer)
+      - Implement MVP (parallel-coordinator)
+      - Setup testing (test-runner)
+    outputs:
+      - .tad/context/REQUIREMENTS.md
+      - .tad/context/PRD.md
+      - .tad/context/ARCHITECTURE.md
+      - Working MVP code
+
+  # Scenario 2: Add Feature
+  add_feature:
+    trigger: "Adding new functionality"
+    agent_a_workflow:
+      - Analyze feature (product-expert)
+      - Design solution (api-designer, backend-architect)
+      - Plan implementation
+    agent_b_workflow:
+      - Assess impact (code-reviewer)
+      - Develop feature (fullstack-dev-expert)
+      - Test integration (test-runner)
+    outputs:
+      - .tad/working/feature-design.md
+      - Feature code
+      - Test results
+
+  # Scenario 3: Bug Fix
+  bug_fix:
+    trigger: "Problem needs fixing"
+    agent_a_workflow:
+      - Analyze problem
+      - Design fix approach
+    agent_b_workflow:
+      - Locate bug (bug-hunter)
+      - Implement fix
+      - Verify fix (test-runner)
+    outputs:
+      - Bug analysis report
+      - Fixed code
+      - Verification results
+
+  # Scenario 4: Performance Optimization
+  performance:
+    trigger: "System running slow"
+    agent_a_workflow:
+      - Diagnose performance (performance-optimizer)
+      - Design optimization plan
+    agent_b_workflow:
+      - Implement optimizations (refactor-specialist)
+      - Measure improvements (performance-optimizer)
+    outputs:
+      - Performance analysis
+      - Optimized code
+      - Performance metrics
+
+  # Scenario 5: Refactoring
+  refactoring:
+    trigger: "Technical debt cleanup"
+    agent_a_workflow:
+      - Assess code quality (code-reviewer)
+      - Plan refactoring
+    agent_b_workflow:
+      - Execute refactoring (refactor-specialist)
+      - Maintain functionality (test-runner)
+    outputs:
+      - Refactoring plan
+      - Cleaned code
+      - Test coverage
+
+  # Scenario 6: Deployment
+  deployment:
+    trigger: "Ready to release"
+    agent_a_workflow:
+      - Prepare release checklist
+      - Review readiness
+    agent_b_workflow:
+      - Execute deployment (devops-engineer)
+      - Verify production (test-runner)
+    outputs:
+      - Release notes
+      - Deployed system
+      - Verification report
+
+# ==================== Document Management ====================
+documents:
+  structure:
+    context/:  # Long-term project information
+      - PROJECT.md         # Single source of truth
+      - REQUIREMENTS.md    # Core requirements
+      - ARCHITECTURE.md    # Architecture decisions
+      - DECISIONS.md       # Important decisions
+
+    working/:  # Active work documents
+      - current-sprint.md  # Current sprint only
+      - execution-report.md # Latest report
+      # Feature/bug/performance docs created as needed
+
+  principles:
+    - Keep it simple
+    - Update in real-time
+    - Delete when obsolete
+    - Focus on value
+
+# ==================== Verification Layers ====================
+verification:
+  # Layer 1: Technical (Agents)
+  technical:
+    - Code runs correctly
+    - Tests pass
+    - No critical bugs
+    - Performance acceptable
+
+  # Layer 2: Value (Human)
+  value:
+    - Solves real problem
+    - User perceives value
+    - Meets business goals
+    - Experience satisfactory
+
+# ==================== Process Scaling ====================
+scaling:
+  small:
+    duration: "<2 hours"
+    documentation: minimal
+    process: verbal
+    verification: quick
+
+  medium:
+    duration: "2-8 hours"
+    documentation: sprint.md
+    process: light-doc
+    verification: checkpoint
+
+  large:
+    duration: ">1 day"
+    documentation: comprehensive
+    process: full-doc
+    verification: formal-gates
+
+# ==================== Activation Instructions ====================
+activation:
+  agent_a:
+    command: "Read .tad/agents/agent-a-architect.md"
+    greeting: "Hello! I'm Alex, your Strategic Architect."
+
+  agent_b:
+    command: "Read .tad/agents/agent-b-executor.md"
+    greeting: "Hi! I'm Blake, your Execution Master."
+
+  quickstart:
+    - Open two terminals
+    - Terminal 1: Activate Agent A
+    - Terminal 2: Activate Agent B
+    - State your need
+    - Begin collaboration
+
+# ==================== Key Improvements from v1.0 ====================
+improvements:
+  - Real Claude Code sub-agents (not BMAD fictional roles)
+  - 6 clear scenarios for common tasks
+  - Simplified document structure
+  - Clear workflow for each scenario
+  - Dual verification maintained
+  - Flexible scaling based on task size

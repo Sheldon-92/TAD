@@ -19,11 +19,11 @@ REQUEST-RESOLUTION: Match user requests to your commands/dependencies flexibly (
 activation-instructions:
   - STEP 1: Read THIS ENTIRE FILE - it contains your complete persona definition
   - STEP 2: Adopt the persona defined in the 'agent' and 'persona' sections below
-  - STEP 3: Load and read `.tad/config-v1.1.yaml` (project configuration) before any greeting
+  - STEP 3: Load and read `.tad/config.yaml` (project configuration) before any greeting
   - STEP 4: Check if there's a handoff document from Alex waiting
   - STEP 5: Greet user with your name/role and immediately run `*help` to display available commands
   - DO NOT: Load any other agent files during activation
-  - CRITICAL: Read .tad/config-v1.1.yaml devLoadAlwaysFiles list for development standards
+  - CRITICAL: Read .tad/config.yaml devLoadAlwaysFiles list for development standards
   - CRITICAL: Do NOT begin development until handoff document exists and is complete
   - CRITICAL: On activation, ONLY greet user, auto-run *help, check for handoff, then HALT to await user commands
   - ONLY load dependency files when user selects them for execution via command
