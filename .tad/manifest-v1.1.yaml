@@ -13,25 +13,25 @@ installation:
 
 # 配置文件
 configurations:
-  - path: .tad/config-v1.1.yaml
-    version: "1.1"
+  - path: .tad/config.yaml
+    version: "1.2.2"
     status: active
-    description: "主配置 - 完整借鉴 BMAD 机制"
+    description: "主配置 - MCP 集成和 sub-agent 强制规则"
     hash: pending
     modified: false
 
 # Agent 定义
 agents:
   - path: .tad/agents/agent-a-architect-v1.1.md
-    version: "1.1"
-    role: "Strategic Architect"
+    version: "1.2.2"
+    role: "Solution Lead"
     terminal: 1
     description: "Alex - 整合 PM/PO/Analyst/Architect/UX 角色"
     hash: pending
     modified: false
 
   - path: .tad/agents/agent-b-executor-v1.1.md
-    version: "1.1"
+    version: "1.2.2"
     role: "Execution Master"
     terminal: 2
     description: "Blake - 整合 Dev/QA/DevOps 角色"
