@@ -117,10 +117,8 @@ echo "1.2" > .tad/version.txt
 # Create logs directory for MCP
 mkdir -p .tad/logs
 
-# Create symbolic link for config (v3 is the active version)
-cd .tad
-ln -sf config-v3.yaml config.yaml
-cd ..
+# Config.yaml is now a real file (not a symlink) after v1.2.2 cleanup
+# No need to create symlink - config.yaml is copied directly from TAD-main/.tad/
 
 # Install tad CLI script
 if [ -f "TAD-main/tad" ]; then
