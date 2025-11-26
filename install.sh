@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TAD Framework Quick Installer v1.2
+# TAD Framework Quick Installer v1.3
 # Usage: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 
 set -e
@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 echo ""
 echo "======================================"
-echo -e "${BLUE}TAD Framework Installer v1.2${NC}"
+echo -e "${BLUE}TAD Framework Installer v1.3${NC}"
 echo "======================================"
 echo ""
 
@@ -26,8 +26,8 @@ if [ -d ".tad" ]; then
         CURRENT_VERSION=$(cat .tad/version.txt)
     fi
 
-    if [ "$CURRENT_VERSION" = "1.2" ]; then
-        echo -e "${YELLOW}TAD v1.2 is already installed${NC}"
+    if [ "$CURRENT_VERSION" = "1.3" ] || [ "$CURRENT_VERSION" = "1.3.0" ]; then
+        echo -e "${YELLOW}TAD v1.3 is already installed${NC}"
         echo "No installation needed"
         exit 0
     fi
@@ -35,8 +35,8 @@ if [ -d ".tad" ]; then
     echo -e "${YELLOW}TAD v$CURRENT_VERSION detected${NC}"
     echo ""
     echo "Would you like to:"
-    echo "1) Upgrade to v1.2 (preserves your work)"
-    echo "2) Fresh install v1.2 (removes existing TAD)"
+    echo "1) Upgrade to v1.3 (preserves your work)"
+    echo "2) Fresh install v1.3 (removes existing TAD)"
     echo "3) Cancel"
     echo ""
     read -p "Select option (1-3): " -n 1 -r
@@ -45,12 +45,17 @@ if [ -d ".tad" ]; then
     if [[ $REPLY == "1" ]]; then
         echo "Running upgrade..."
         # Determine which upgrade script to use
-        if [ "$CURRENT_VERSION" = "1.1" ]; then
+        if [[ "$CURRENT_VERSION" =~ ^1\.2 ]]; then
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.3.sh | bash
+        elif [ "$CURRENT_VERSION" = "1.1" ]; then
+            echo "Upgrading from v1.1 to v1.3 (via v1.2)..."
             curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.2.sh | bash
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.3.sh | bash
         elif [ "$CURRENT_VERSION" = "1.0" ]; then
-            echo "Upgrading from v1.0 to v1.2 (via v1.1)..."
+            echo "Upgrading from v1.0 to v1.3 (via v1.1 and v1.2)..."
             curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.1.sh | bash
             curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.2.sh | bash
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.3.sh | bash
         fi
         exit 0
     elif [[ $REPLY == "2" ]]; then
@@ -70,7 +75,7 @@ if [ -d ".tad" ]; then
     fi
 fi
 
-echo "🚀 Installing TAD Framework v1.2..."
+echo "🚀 Installing TAD Framework v1.3..."
 
 # Check if in a git repository
 if [ -d ".git" ]; then
@@ -181,16 +186,16 @@ touch .tad/evidence/project-logs/.gitkeep
 
 echo ""
 echo "======================================"
-echo -e "${GREEN}✅ TAD Framework v1.2 Installed!${NC}"
+echo -e "${GREEN}✅ TAD Framework v1.3 Installed!${NC}"
 echo "======================================"
 echo ""
-echo "🎯 What's New in v1.2:"
-echo "  • ${BLUE}MCP Integration${NC} - 70-85% efficiency boost"
-echo "  • ${BLUE}Smart project detection${NC} - Auto-recommend tools"
-echo "  • ${BLUE}Enhanced elicitation${NC} - Round 0 & Round 2.5"
-echo "  • ${BLUE}7 Core MCP tools${NC} - context7, memory-bank, etc."
-echo "  • ${BLUE}Project-specific tools${NC} - Web, ML, DevOps, etc."
-echo "  • ${BLUE}Comprehensive guide${NC} - 1176-line usage guide"
+echo "🎯 What's New in v1.3:"
+echo "  • ${BLUE}Evidence-Based Quality${NC} - 95%+ problem detection"
+echo "  • ${BLUE}5 Mandatory Questions${NC} - MQ1-5 prevent common failures"
+echo "  • ${BLUE}Human Checkpoints${NC} - 30-60 min → save 3-6 hours"
+echo "  • ${BLUE}Learning Mechanisms${NC} - Build technical intuition"
+echo "  • ${BLUE}Failure Loop${NC} - System gets smarter each project"
+echo "  • ${BLUE}Progressive Validation${NC} - Phase-by-phase verification"
 echo ""
 echo "📚 Quick Start with Slash Commands:"
 echo ""

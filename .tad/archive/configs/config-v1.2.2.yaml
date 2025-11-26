@@ -1,8 +1,8 @@
-# TAD Configuration v1.3 - Evidence-Based Development
+# TAD Configuration v3.0 - 融合BMAD强制机制的增强版
 method: TAD
-version: 1.3.0
-description: Triangle Agent Development - 证据式开发系统
-last_updated: 2025-11-25
+version: 3.0
+description: Triangle Agent Development - 强化版配置系统
+last_updated: 2025-01-28
 
 # ==================== 文档管理系统 ====================
 document_management:
@@ -741,7 +741,7 @@ yolo_mode:
 # 基于: MenuSnap项目实证分析 + 三份核心文档
 # 目标: 证据式质量保证 + Human可视化赋能 + 持续学习
 
-tad_version: 1.3.0
+tad_version: 3.1.0
 enhancement_date: 2025-11-25
 philosophy: "Evidence-Based Triangle Development with Continuous Learning"
 
