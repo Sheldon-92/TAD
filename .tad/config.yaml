@@ -736,7 +736,7 @@ yolo_mode:
     - "不能跳过关键质量门控"
     - "必须记录原因"
 
-# ==================== TAD v3.1 增强配置 ====================
+# ==================== TAD v1.3 增强配置 ====================
 # 创建日期: 2025-11-25
 # 基于: MenuSnap项目实证分析 + 三份核心文档
 # 目标: 证据式质量保证 + Human可视化赋能 + 持续学习
@@ -1006,7 +1006,7 @@ progressive_validation:
       continue_criteria: "Human确认方向正确才能继续下个Phase"
 
 # ==================== Human角色增强 ====================
-human_role_v31:
+human_role_v13:
   role_name: "Value Guardian + Checkpoint Validator"
 
   role_evolution:
@@ -1225,7 +1225,7 @@ learning_mechanisms:
              → 设计时就避免了问题 ✅
 
 # ==================== Sub-Agent强制使用 ====================
-subagent_enforcement_v31:
+subagent_enforcement_v13:
   enabled: true
   description: "从建议变成强制，带证据验证"
 
@@ -1294,7 +1294,7 @@ subagent_enforcement_v31:
       - "'证据链接'都是N/A"
 
 # ==================== 时间估算改进 ====================
-time_estimation_v31:
+time_estimation_v13:
   principle: "估算实现时间 × 2 = 实际预算时间"
   reason: "考虑审查、迭代、意外问题、文档"
 
@@ -1404,7 +1404,7 @@ rollout_plan:
     items:
       - "mandatory_questions"
       - "evidence_based_verification"
-      - "human_role_v31"
+      - "human_role_v13"
     risk: "低"
     time: "1-2天"
 
@@ -1413,7 +1413,7 @@ rollout_plan:
     items:
       - "progressive_validation"
       - "learning_mechanisms"
-      - "subagent_enforcement_v31"
+      - "subagent_enforcement_v13"
     risk: "中"
     time: "1-2周"
 
@@ -1421,13 +1421,13 @@ rollout_plan:
     description: "需要工具支持的增强"
     items:
       - "failure_learning_loop"
-      - "time_estimation_v31"
+      - "time_estimation_v13"
     risk: "低（可选）"
     time: "1个月"
 
 # ==================== 版本控制 ====================
 version_history:
-  v3.1.0:
+  v1.3.0:
     date: "2025-11-25"
     changes:
       - "新增证据式验证系统（5种证据类型）"
@@ -1437,20 +1437,20 @@ version_history:
       - "新增学习机制系统（5种机制）"
       - "新增失败学习闭环"
     based_on: "MenuSnap项目实证分析 + 三份核心文档"
-    compatibility: "100%向后兼容v3.0"
+    compatibility: "100%向后兼容v1.2"
 
-  v3.0:
+  v1.2:
     date: "2024-XX-XX"
     description: "基础TAD方法论"
 
 # ==================== 兼容性说明 ====================
 backward_compatibility:
-  v30_projects:
+  v12_projects:
     compatibility: "100%兼容"
-    explanation: "v3.1是增量更新，不破坏v3.0的任何功能"
-    migration: "可以选择性启用v3.1特性"
+    explanation: "v1.3是增量更新，不破坏v1.2的任何功能"
+    migration: "可以选择性启用v1.3特性"
 
   rollback_support:
     enabled: true
-    method: "恢复备份的.tad/config.yaml.v3.0"
-    data_preservation: "v3.1创建的证据文档保留，不影响回滚"
+    method: "恢复备份的.tad/config.yaml.v1.2"
+    data_preservation: "v1.3创建的证据文档保留，不影响回滚"
