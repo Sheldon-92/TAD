@@ -1,8 +1,8 @@
-# TAD Configuration v1.3 - Evidence-Based Development
+# TAD Configuration v1.4 - Proactive Technical Research
 method: TAD
-version: 1.3.0
-description: Triangle Agent Development - 证据式开发系统
-last_updated: 2025-11-25
+version: 1.4.0
+description: Triangle Agent Development - 主动技术调研 + 知识库系统
+last_updated: 2026-01-06
 
 # ==================== 文档管理系统 ====================
 document_management:
@@ -244,6 +244,76 @@ requirement_elicitation:
         - "✅ 确认，开始设计"
         - "🔄 需要调整"
         - "❌ 重新分析"
+
+  # ==================== Research Phase (v1.4 新增) ====================
+  # 设计原则：融入现有 Round，按需搜索 + 最终技术回顾
+  research_phase:
+    enabled: true
+    version: "1.4"
+    description: "主动技术调研，确保技术选型基于最新信息"
+
+    # 过程中按需搜索（融入 Round 1-3）
+    inline_research:
+      trigger: "Round 中出现技术决策点"
+      action: "立即触发 MQ6 搜索"
+      examples:
+        - "用户提到想用某个框架 → 搜索该框架最新版本和最佳实践"
+        - "讨论到状态管理 → 搜索当前主流方案对比"
+        - "涉及 UI 组件库 → 搜索最新推荐"
+
+    # 最终技术回顾（Round 3 之后，设计之前）
+    final_tech_review:
+      timing: "Round 3 确认后，正式设计前"
+      name: "技术栈最终确认"
+      mandatory: true
+
+      checklist:
+        - item: "核心框架版本确认"
+          action: "搜索确认使用的是最新稳定版"
+          evidence: "版本号 + 发布日期"
+
+        - item: "关键依赖库确认"
+          action: "搜索每个关键库的最新版本和替代方案"
+          evidence: "库名 | 版本 | 替代方案 | 选择理由"
+
+        - item: "架构模式确认"
+          action: "搜索当前推荐的架构模式"
+          evidence: "模式名 | 适用场景 | 参考项目"
+
+        - item: "潜在问题预警"
+          action: "搜索该技术栈的常见坑点"
+          evidence: "问题 | 解决方案 | 来源"
+
+      output_format: |
+        ## 技术栈最终确认报告
+
+        ### 1. 核心框架
+        | 框架 | 版本 | 最新版本 | 是否需要升级 |
+        |-----|------|---------|-------------|
+
+        ### 2. 关键依赖
+        | 库名 | 选择版本 | 替代方案 | 选择理由 |
+        |-----|---------|---------|---------|
+
+        ### 3. 架构模式
+        | 模式 | 适用场景 | 参考项目/文章 |
+        |-----|---------|--------------|
+
+        ### 4. 已知坑点
+        | 问题 | 解决方案 | 来源 |
+        |-----|---------|-----|
+
+        ### 5. 调研总结
+        - 总共搜索了 X 个技术点
+        - 发现 Y 个需要注意的问题
+        - 建议：...
+
+      human_checkpoint:
+        question: "技术栈确认报告看起来完整吗？"
+        options:
+          - "✅ 确认，开始设计"
+          - "🔄 需要补充调研"
+          - "❓ 有疑问想讨论"
 
   # 浅层响应检测
   shallow_response_detection:
@@ -931,6 +1001,58 @@ mandatory_questions:
         - 同步时机明确吗？
         - 或确认只有单一状态？
 
+    MQ6_technical_research:
+      id: "MQ6"
+      pattern_source: "v1.4 Enhancement: Proactive Technical Research"
+      trigger_condition: "任何技术决策（框架选择、库使用、架构模式、实现方案）"
+
+      question: "这个技术决策，你搜索过最新方案了吗？"
+      sub_questions:
+        - "搜索了哪些关键词？"
+        - "找到了哪些候选方案？"
+        - "为什么选择当前方案而非其他？"
+        - "有没有更新的替代方案？"
+
+      required_evidence: "technical_research_result"
+      evidence_format: |
+        ## 技术调研记录
+        | 搜索关键词 | 发现的方案 | 优点 | 缺点 | 是否采用 |
+        |-----------|-----------|------|------|---------|
+        | xxx | 方案A | ... | ... | ✅/❌ |
+      blocking: true
+
+      human_validation_question: |
+        - 搜索范围够广吗？
+        - 候选方案对比合理吗？
+        - 选择理由清晰吗？
+
+      # MQ6 深度自动判断机制
+      depth_auto_detection:
+        principle: "宁可多搜，不要漏搜"
+
+        quick_scan:
+          trigger: "简单配置、常见用法、成熟技术"
+          action: "快速确认最佳实践"
+          time: "1-2分钟"
+          example: "React useState 用法"
+
+        standard_search:
+          trigger: "技术选型、库对比、架构模式"
+          action: "搜索2-3个方案对比"
+          time: "5-10分钟"
+          example: "状态管理选型 Redux vs Zustand vs Jotai"
+
+        deep_research:
+          trigger: "核心架构、创新方案、用户明确要求"
+          action: "深度调研，查找GitHub项目、最新文章"
+          time: "15-30分钟"
+          example: "AI驱动的菜单推荐系统架构"
+
+        auto_escalation:
+          - "搜索结果不确定 → 升级到下一档"
+          - "发现新技术趋势 → 主动深入"
+          - "Human表示关注 → 自动深度调研"
+
   # 执行机制
   enforcement:
     when: "Gate 2 (Design Completeness)"
@@ -1427,6 +1549,18 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v1.4.0:
+    date: "2026-01-06"
+    changes:
+      - "新增 MQ6 强制技术搜索（所有技术决策触发搜索）"
+      - "新增 Research Phase（过程中按需搜索 + 最终技术回顾）"
+      - "新增 Skills 知识库系统（.claude/skills/ 自动发现）"
+      - "新增 Learn 记忆系统（框架级建议记录 + 推送到 TAD 仓库）"
+      - "新增 /tad-learn 命令"
+      - "内置 ui-design.md 和 skill-creator.md Skills"
+    based_on: "用户痛点分析：技术选型被动、知识不更新、Agent 不成长"
+    compatibility: "100%向后兼容v1.3"
+
   v1.3.0:
     date: "2025-11-25"
     changes:
@@ -1454,3 +1588,145 @@ backward_compatibility:
     enabled: true
     method: "恢复备份的.tad/config.yaml.v1.2"
     data_preservation: "v1.3创建的证据文档保留，不影响回滚"
+
+# ==================== Skills 知识库系统 (v1.4 新增) ====================
+skills_system:
+  enabled: true
+  version: "1.4"
+  description: "Claude Code Skills 知识库，提供专业领域知识增强"
+
+  # 三层体系说明
+  hierarchy:
+    tad_agents:
+      description: "主角色/人格（Alex 和 Blake）"
+      analogy: "团队中的固定成员"
+      location: ".tad/agents/"
+
+    subagents:
+      description: "Claude Code 内置的16个专业代理"
+      analogy: "临时请来的专家顾问"
+      invocation: "通过 Task 工具调用"
+
+    skills:
+      description: "知识库/参考资料"
+      analogy: "专家带来的教科书和参考手册"
+      location: ".claude/skills/"
+      auto_discovery: true
+
+  # Skills 目录结构
+  directory_structure:
+    path: ".claude/skills/"
+    auto_create: true
+    categories:
+      - "ui-design/"      # UI/UX 设计知识
+      - "architecture/"   # 架构模式知识
+      - "best-practices/" # 最佳实践
+      - "domain/"         # 领域知识
+
+  # TAD 内置 Skills
+  builtin_skills:
+    ui_design:
+      file: ".claude/skills/ui-design.md"
+      description: "UI/UX 设计知识库，包含设计原则、配色方案、组件模式"
+      source: "基于 ui-ux-pro-max-skill 整理"
+      when_to_use: "涉及 UI 设计、界面美化、用户体验时"
+
+    skill_creator:
+      file: ".claude/skills/skill-creator.md"
+      description: "元技能：如何创建新的 Skill"
+      when_to_use: "需要封装新知识为 Skill 时"
+
+  # Skills 使用规则
+  usage_rules:
+    auto_load: true
+    description: "Claude Code 自动发现并加载 .claude/skills/ 下的所有 .md 文件"
+
+    agent_access:
+      alex: "可以使用所有 Skills 进行设计决策"
+      blake: "可以使用所有 Skills 进行实现参考"
+
+    priority: "Skills 提供知识参考，但最终决策仍需 Human 确认"
+
+# ==================== Learn 记忆系统 (v1.4 新增) ====================
+learn_system:
+  enabled: true
+  version: "1.4"
+  description: "框架级建议记录系统，用于 TAD 持续改进"
+
+  # 核心原则
+  principles:
+    - "只记录框架级建议，不记录项目级内容"
+    - "项目级内容由 Alex 通过 handover/文档自行处理"
+    - "记录后需 Human 确认才推送到 TAD 仓库"
+    - "推送后的内容等 TAD 升级时再处理"
+
+  # /tad-learn 命令
+  command:
+    name: "/tad-learn"
+    invocation: "Alex 或 Blake 发现框架级改进建议时"
+
+    record_content:
+      - "开发流程改进建议"
+      - "Agent 配合问题/优化"
+      - "方法论发现"
+      - "有用的工具/项目/库"
+      - "新的检查点建议"
+
+    not_record:
+      - "项目特定的配置/决策"
+      - "项目的业务逻辑"
+      - "项目的代码实现"
+
+  # 工作流程
+  workflow:
+    step1_discover:
+      trigger: "Alex/Blake 发现有价值的框架级建议"
+      action: "执行 /tad-learn"
+
+    step2_record:
+      action: "记录建议内容"
+      format: |
+        ## Learning Entry
+        Date: {timestamp}
+        Agent: {alex|blake}
+        Category: {category}
+
+        ### 发现
+        {description}
+
+        ### 建议
+        {suggestion}
+
+        ### 来源
+        {source_url_or_context}
+      location: ".tad/learnings/pending/"
+
+    step3_confirm:
+      action: "Human 审核记录"
+      options:
+        - "✅ 确认并推送到 TAD 仓库"
+        - "📝 修改后推送"
+        - "❌ 不推送（仅保留本地）"
+
+    step4_push:
+      condition: "Human 确认推送"
+      action: "推送到 TAD GitHub 仓库"
+      destination: "TAD仓库/.tad/learnings/suggestions/"
+      filename: "{YYYY-MM-DD}-{short-description}.md"
+
+  # 后续处理说明
+  future_processing:
+    timing: "TAD 版本升级时"
+    action: "人工审阅 suggestions 目录，决定如何处理"
+    options:
+      - "更新 Alex/Blake 的描述文件"
+      - "创建新的 Skill"
+      - "更新 config.yaml 配置"
+      - "添加新的 MQ 问题"
+      - "其他改进方式"
+
+  # 存储结构
+  storage:
+    local_pending: ".tad/learnings/pending/"
+    local_pushed: ".tad/learnings/pushed/"
+    remote: "TAD仓库/.tad/learnings/suggestions/"
