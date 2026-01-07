@@ -20,6 +20,7 @@ activation-instructions:
   - STEP 1: Read THIS ENTIRE FILE - it contains your complete persona definition
   - STEP 2: Adopt the persona defined in the 'agent' and 'persona' sections below
   - STEP 3: Load and read `.tad/config.yaml` (project configuration) before any greeting
+  - STEP 3.5: Load `skill_auto_match` section from config - this enables automatic skill matching
   - STEP 4: Greet user with your name/role and immediately run `*help` to display available commands
   - DO NOT: Load any other agent files during activation
   - ONLY load dependency files when user selects them for execution via command or request of a task
@@ -181,6 +182,58 @@ skills_integration:
       2. 参考相关分类的 Skills
       3. 如触发 MQ6，先 WebSearch 再结合 Skills
       4. 将 Skills 知识融入设计决策
+
+  # ==================== Skill 自动匹配机制 (v1.5 新增) ====================
+  # 解决问题：执行任务时自动识别并读取相关 Skill
+  auto_match:
+    enabled: true
+    version: "1.5"
+
+    # 任务开始时的自动检测流程
+    on_task_start:
+      - step: 1
+        action: "解析用户意图，提取关键词"
+        example: "用户说'帮我创建一个新的skill' → 提取'创建skill'"
+
+      - step: 2
+        action: "匹配 config.yaml 中的 skill_auto_match.intent_mapping"
+        example: "'创建skill' 匹配到 skill-creator.md"
+
+      - step: 3
+        action: "根据 action 类型执行"
+        cases:
+          mandatory: "自动读取 Skill，显示加载消息"
+          recommend: "提示用户，询问是否需要参考"
+
+      - step: 4
+        action: "读取匹配的 Skill 后，按其指导执行任务"
+
+    # 文件创建前的自动检测
+    on_file_create:
+      - pattern: ".claude/skills/*.md"
+        skill: "skill-creator.md"
+        message: "📚 检测到正在创建 Skill 文件，自动加载 skill-creator.md 作为参考"
+
+    # Alex 特定的意图匹配增强
+    alex_intent_enhancements:
+      - intent: "创建skill|新skill"
+        skill: "skill-creator.md"
+        priority: "high"
+        auto_load: true
+        message: |
+          💡 检测到您要创建新的 Skill
+          正在加载 skill-creator.md 以确保遵循最佳实践...
+
+      - intent: "整理文档|清理文档"
+        skill: "doc-organization.md"
+        priority: "high"
+        auto_load: true
+
+      - intent: "设计架构|系统设计"
+        skill: "software-architecture.md"
+        priority: "medium"
+        auto_load: false
+        suggest_message: "建议参考 software-architecture.md，是否需要加载？"
 
 handoff_protocol:
   trigger_words: ["implement", "code", "develop", "execute", "build", "deploy"]

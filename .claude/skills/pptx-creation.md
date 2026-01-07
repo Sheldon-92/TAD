@@ -252,6 +252,28 @@ prs.save("final_presentation.pptx")
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description              | Location                              |
+|-------------------|--------------------------|---------------------------------------|
+| `slide_templates` | 模板与占位符             | `.tad/evidence/ppt/templates/`        |
+| `exported_pdf`    | 导出 PDF 供审阅          | `.tad/evidence/ppt/export.pdf`        |
+
+### Acceptance Criteria
+
+```
+[ ] 模板结构一致；样式符合主题
+[ ] 导出版式/字体/图片清晰无错位
+```
+
+### Artifacts
+
+| Artifact        | Path                              |
+|-----------------|-----------------------------------|
+| Slide Templates | `.tad/evidence/ppt/templates/`    |
+| Exported PDF    | `.tad/evidence/ppt/export.pdf`    |
 ## 演示文稿结构
 
 ```markdown

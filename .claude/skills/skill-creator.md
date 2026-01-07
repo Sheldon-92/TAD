@@ -2,7 +2,7 @@
 
 ---
 title: "Skill Creator"
-version: "3.0"
+version: "3.1"
 last_updated: "2026-01-07"
 tags: [skills, documentation, templates, knowledge]
 domains: [all]
@@ -14,6 +14,34 @@ sources:
   - "obra/superpowers"
 enforcement: recommended
 tad_gates: [Gate2_Design, Gate4_Review]
+
+# v1.5 Skill 自动匹配触发条件
+triggers:
+  # 意图匹配 - 用户说这些话时自动推荐此 Skill
+  when_user_says:
+    - "创建skill"
+    - "新skill"
+    - "添加skill"
+    - "create skill"
+    - "new skill"
+    - "write skill"
+    - "编写skill"
+
+  # 文件模式匹配 - 创建这些文件时自动推荐
+  when_creating_file:
+    - ".claude/skills/*.md"
+
+  # 命令触发 - 执行这些命令时自动加载
+  when_command:
+    - "*create-skill"
+    - "*new-skill"
+
+  # 匹配行为
+  action: "recommend"  # recommend | mandatory
+  auto_load: true
+  message: |
+    💡 检测到您要创建新的 Skill
+    正在加载 skill-creator.md 以确保遵循最佳实践...
 ---
 
 > TAD v1.4 内置 Skill - 如何创建新的 Skill
@@ -230,9 +258,115 @@ fetchData().then(result => ...);
    └── 使用此 Skill 时的验证点
 
 7. 放入 .claude/skills/ 目录
+
+8. 集成到 TAD 体系 ⚠️ 关键步骤
+   └── 见 4.3 节详细说明
 ```
 
-### 4.2 示例：创建 "API 设计" Skill
+### 4.2 TAD 集成步骤（必须完成）
+
+创建 Skill 文件只是第一步。**如果不完成集成，Agent 不会知道何时使用这个 Skill。**
+
+#### Step 1: 更新 config.yaml 的 skills_inventory
+
+```yaml
+# .tad/config.yaml
+
+skills_inventory:
+  total_count: 44  # 增加计数
+
+  # 添加到对应的 batch
+  batch_6_workflow: [doc-organization.md, your-new-skill.md]
+
+  # 添加到对应的分类
+  by_category:
+    process: [..., your-new-skill]  # 或其他合适的分类
+```
+
+#### Step 2: 更新 Agent 定义的 recommended_skills
+
+根据 Skill 的用途，添加到 Alex 或 Blake（或两者）的定义中：
+
+**如果是 Alex 使用的 Skill（设计、分析、handoff 相关）：**
+```yaml
+# .tad/agents/agent-a-architect-v1.1.md (或当前使用的版本)
+
+skills_integration:
+  recommended_skills:
+    analyze_phase:
+      - your-new-skill.md  # 如果在分析阶段使用
+    design_phase:
+      - your-new-skill.md  # 如果在设计阶段使用
+    handoff_phase:
+      - your-new-skill.md  # 如果在 handoff 阶段使用
+```
+
+**如果是 Blake 使用的 Skill（开发、测试、部署相关）：**
+```yaml
+# .tad/agents/agent-b-executor-v1.1.md (或当前使用的版本)
+
+skills_integration:
+  recommended_skills:
+    develop_phase:
+      - your-new-skill.md  # 如果在开发阶段使用
+    test_phase:
+      - your-new-skill.md  # 如果在测试阶段使用
+    deploy_phase:
+      - your-new-skill.md  # 如果在部署阶段使用
+```
+
+#### Step 3: 定义触发条件（在 Skill 文件的 frontmatter 中）
+
+```yaml
+---
+title: "Your New Skill"
+# ... 其他 frontmatter ...
+triggers:
+  - "*handoff 命令执行后"
+  - "任务完成时"
+  - "*your-command 手动触发"
+tad_gates: [Gate2_Design, Gate4_Review]  # 关联的质量门
+---
+```
+
+#### Step 4: 验证集成
+
+```bash
+# 检查 skill 文件存在
+ls .claude/skills/your-new-skill.md
+
+# 检查 config.yaml 是否更新
+grep "your-new-skill" .tad/config.yaml
+
+# 检查 agent 定义是否更新
+grep "your-new-skill" .tad/agents/agent-*.md
+```
+
+### 4.3 集成检查清单
+
+```
+[ ] Skill 文件已放入 .claude/skills/
+[ ] config.yaml 的 skills_inventory 已更新
+    [ ] total_count 已增加
+    [ ] 添加到对应的 batch
+    [ ] 添加到 by_category
+[ ] Agent 定义已更新
+    [ ] Alex 的 recommended_skills（如适用）
+    [ ] Blake 的 recommended_skills（如适用）
+[ ] Skill frontmatter 包含 triggers 和 tad_gates
+[ ] 验证命令已执行，确认集成成功
+```
+
+### 4.4 需要修改的文件汇总
+
+| 文件 | 修改内容 |
+|------|---------|
+| `.claude/skills/your-skill.md` | 新建 Skill 文件 |
+| `.tad/config.yaml` | 更新 skills_inventory |
+| `.tad/agents/agent-a-*.md` | 更新 Alex 的 recommended_skills（如适用）|
+| `.tad/agents/agent-b-*.md` | 更新 Blake 的 recommended_skills（如适用）|
+
+### 4.5 示例：创建 "API 设计" Skill
 
 ```markdown
 # API Design Knowledge Base
@@ -388,6 +522,7 @@ GET /orders/{id}/items
 
 ## 检查清单：创建新 Skill
 
+### 内容创建
 - [ ] 确定了明确的领域和主题
 - [ ] 收集了可靠的知识来源
 - [ ] 使用了推荐的文件结构
@@ -397,6 +532,19 @@ GET /orders/{id}/items
 - [ ] 文件命名符合规范
 - [ ] 放入 `.claude/skills/` 目录
 
+### TAD 集成（必须完成）
+- [ ] 更新 `.tad/config.yaml` 的 skills_inventory
+  - [ ] total_count 已增加
+  - [ ] 添加到对应的 batch
+  - [ ] 添加到 by_category
+- [ ] 更新 Agent 定义
+  - [ ] Alex 的 recommended_skills（如适用）
+  - [ ] Blake 的 recommended_skills（如适用）
+- [ ] Skill frontmatter 包含 triggers 和 tad_gates
+- [ ] 运行验证命令确认集成成功
+
 ---
+
+> ⚠️ **重要提示**：只完成"内容创建"而不完成"TAD 集成"，Skill 将无法被 Agent 自动发现和使用。
 
 > 本 Skill 帮助你创建更多有价值的 Skills，持续增强 TAD 的知识库。

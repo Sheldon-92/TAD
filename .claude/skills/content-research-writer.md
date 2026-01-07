@@ -1,6 +1,34 @@
 # Content Research & Writing Skill
 
+---
+title: "Content Research & Writing"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [content, research, writing, seo]
+domains: [product, growth]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "Google SEO Guide"
+  - "Nielsen Norman Group"
+enforcement: recommended
+tad_gates: []
+---
+
 > 来源: anthropics/skills 官方仓库，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 研究：主题/受众/关键词/竞品
+2. [ ] 规划：大纲/结构/语气/示例
+3. [ ] 写作：AIDA/PAS/FAB 结构与可读性
+4. [ ] 审校：事实核验/引用/语法/风格
+5. [ ] 产出：来源清单/大纲/草稿版本
+```
+
+**Red Flags:** 无受众定位、无大纲、抄袭、堆关键词、无引用
 
 ## 触发条件
 
@@ -88,6 +116,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type  | Description         | Location                                   |
+|----------------|---------------------|--------------------------------------------|
+| `source_list`  | 来源与引用清单      | `.tad/evidence/content/sources.md`         |
+| `outline`      | 内容大纲与结构      | `.tad/evidence/content/outline.md`         |
+| `drafts`       | 草稿版本与迭代记录  | `.tad/evidence/content/drafts/`            |
+
+### Acceptance Criteria
+
+```
+[ ] 来源可靠；引用完整；无抄袭
+[ ] 大纲清晰；结构合理；语气一致
+[ ] 草稿多轮迭代；可读性达标
+```
+
+### Artifacts
+
+| Artifact     | Path                                      |
+|--------------|-------------------------------------------|
+| Sources      | `.tad/evidence/content/sources.md`        |
+| Outline      | `.tad/evidence/content/outline.md`        |
+| Drafts       | `.tad/evidence/content/drafts/`           |
 
 ## 内容结构模板
 

@@ -771,3 +771,13 @@ Tests: 24 passed, 24 total
 ---
 
 *This skill guides Claude in safely and effectively refactoring code.*
+
+---
+
+## Artifacts
+
+| Artifact         | Path                                   |
+|------------------|----------------------------------------|
+| Smells List      | `.tad/evidence/refactor/smells.md`     |
+| Refactor Steps   | `.tad/evidence/refactor/steps.md`      |
+| Tests (Green)    | `.tad/evidence/refactor/tests.txt`     |

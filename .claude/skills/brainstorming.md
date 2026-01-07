@@ -349,3 +349,29 @@ Claude: "好的！我推荐使用 Elasticsearch 配合 React Instant Search，
 ---
 
 *此 Skill 确保 Claude 在动手写代码前，先和用户充分讨论和设计。*
+
+---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type      | Description           | Location                                 |
+|--------------------|-----------------------|------------------------------------------|
+| `design_outline`   | 设计大纲与草案        | `.tad/evidence/design/outline.md`        |
+| `decision_rationale`| 决策理由与取舍       | `.tad/evidence/design/rationale.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] 至少2-3个方案对比；给出推荐与理由
+[ ] 设计大纲覆盖架构/数据/状态/错误处理
+[ ] 决策理由可追溯，含权衡与影响范围
+```
+
+### Artifacts
+
+| Artifact          | Path                                   |
+|-------------------|----------------------------------------|
+| Design Outline    | `.tad/evidence/design/outline.md`      |
+| Decision Rationale| `.tad/evidence/design/rationale.md`    |

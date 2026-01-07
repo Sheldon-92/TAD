@@ -1,6 +1,34 @@
 # Scientific Writing Skill
 
+---
+title: "Scientific Writing"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [paper, academic, latex, citations]
+domains: [research]
+level: intermediate
+estimated_time: "60min"
+prerequisites: []
+sources:
+  - "Model Cards"
+  - "IMRAD Structure"
+enforcement: recommended
+tad_gates: []
+---
+
 > 来源: K-Dense-AI/claude-scientific-writer，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 遵循 IMRAD 结构与期刊规范
+2. [ ] 引文管理与去重；图表规范
+3. [ ] 可复现实验与数据声明
+4. [ ] 同行评审前清单与打回修改机制
+5. [ ] 产出：大纲/引用库/构建日志
+```
+
+**Red Flags:** 引用缺失、结构混乱、复现性弱、图表不规范
 
 ## 触发条件
 
@@ -82,6 +110,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description                 | Location                                |
+|-------------------|-----------------------------|-----------------------------------------|
+| `outline`         | 论文大纲                    | `.tad/evidence/papers/outline.md`       |
+| `citations`       | 引文库（.bib）              | `.tad/evidence/papers/citations.bib`    |
+| `build_log`       | LaTeX/构建日志              | `.tad/evidence/papers/build.log`        |
+
+### Acceptance Criteria
+
+```
+[ ] 结构合规，引用完整规范
+[ ] 实验/数据声明可复现
+[ ] 构建通过、无编译错误
+```
+
+### Artifacts
+
+| Artifact      | Path                                     |
+|---------------|------------------------------------------|
+| Outline       | `.tad/evidence/papers/outline.md`        |
+| Citations     | `.tad/evidence/papers/citations.bib`     |
+| Build Log     | `.tad/evidence/papers/build.log`         |
 
 ## 各部分写作指南
 

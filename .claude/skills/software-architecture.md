@@ -328,6 +328,14 @@ Level 4: Code
 
 ---
 
+## Artifacts
+
+| Artifact               | Path                                |
+|------------------------|-------------------------------------|
+| ADR Records            | `.tad/docs/adr/`                    |
+| Architecture Diagrams  | `.tad/docs/architecture/`           |
+| Module Structure Notes | `.tad/evidence/arch/c4.md`          |
+
 ## Tools / Commands
 
 ### Documentation Tools

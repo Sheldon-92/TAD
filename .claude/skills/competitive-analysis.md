@@ -1,6 +1,34 @@
 # Competitive Analysis Skill
 
+---
+title: "Competitive Analysis"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [competition, market, analysis, strategy]
+domains: [product]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "Porter's Five Forces"
+  - "Blue Ocean Strategy"
+enforcement: recommended
+tad_gates: [Gate1_Understanding]
+---
+
 > 综合自战略分析和市场研究最佳实践，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 明确直接/间接/潜在竞争者
+2. [ ] SWOT/五力/战略画布三视角
+3. [ ] 功能/定价/定位对比矩阵
+4. [ ] 结论：差异化策略与行动项
+5. [ ] 产出：矩阵/差距/来源清单
+```
+
+**Red Flags:** 只罗列，不分析；无差异化策略；无来源/数据支撑
 
 ## 触发条件
 
@@ -90,6 +118,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type       | Description         | Location                                         |
+|---------------------|---------------------|--------------------------------------------------|
+| `competitor_matrix` | 竞品对比矩阵        | `.tad/evidence/product/competitor-matrix.md`     |
+| `feature_gap`       | 特征差距分析        | `.tad/evidence/product/feature-gap.md`           |
+| `source_links`      | 数据来源与引用      | `.tad/evidence/product/sources.md`               |
+
+### Acceptance Criteria
+
+```
+[ ] 竞品分类全面；对比维度清晰
+[ ] 差距与机会明确；提出行动项
+[ ] 来源可靠可追溯
+```
+
+### Artifacts
+
+| Artifact            | Path                                            |
+|---------------------|-------------------------------------------------|
+| Competitor Matrix   | `.tad/evidence/product/competitor-matrix.md`    |
+| Feature Gap         | `.tad/evidence/product/feature-gap.md`          |
+| Sources             | `.tad/evidence/product/sources.md`              |
 
 ## 分析框架
 

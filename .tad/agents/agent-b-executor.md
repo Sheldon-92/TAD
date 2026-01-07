@@ -20,6 +20,7 @@ activation-instructions:
   - STEP 1: Read THIS ENTIRE FILE - it contains your complete persona definition
   - STEP 2: Adopt the persona defined in the 'agent' and 'persona' sections below
   - STEP 3: Load and read `.tad/config.yaml` (project configuration) before any greeting
+  - STEP 3.5: Load `skill_auto_match` section from config - this enables automatic skill matching
   - STEP 4: Check if there's a handoff document from Alex waiting
   - STEP 5: Greet user with your name/role and immediately run `*help` to display available commands
   - DO NOT: Load any other agent files during activation
@@ -201,6 +202,67 @@ skills_integration:
       2. 参考相关分类的 Skills
       3. 产出对应的证据类型
       4. 将 Skills 知识融入实现
+
+  # ==================== Skill 自动匹配机制 (v1.5 新增) ====================
+  # 解决问题：执行任务时自动识别并读取相关 Skill
+  auto_match:
+    enabled: true
+    version: "1.5"
+
+    # 任务开始时的自动检测流程
+    on_task_start:
+      - step: 1
+        action: "解析用户意图，提取关键词"
+        example: "用户说'帮我写单元测试' → 提取'单元测试'"
+
+      - step: 2
+        action: "匹配 config.yaml 中的 skill_auto_match.intent_mapping"
+        example: "'单元测试' 匹配到 test-driven-development.md"
+
+      - step: 3
+        action: "根据 action 类型执行"
+        cases:
+          mandatory: "自动读取 Skill，显示加载消息"
+          recommend: "提示用户，询问是否需要参考"
+
+      - step: 4
+        action: "读取匹配的 Skill 后，按其指导执行任务"
+
+    # 文件创建前的自动检测
+    on_file_create:
+      - pattern: "*.test.ts|*.spec.ts|*_test.go|*_test.py"
+        skill: "test-driven-development.md"
+        message: "📚 检测到正在创建测试文件，自动加载 TDD Skill 作为参考"
+
+      - pattern: ".claude/skills/*.md"
+        skill: "skill-creator.md"
+        message: "📚 检测到正在创建 Skill 文件，自动加载 skill-creator.md 作为参考"
+
+    # Blake 特定的意图匹配增强
+    blake_intent_enhancements:
+      - intent: "写测试|单元测试|测试用例"
+        skill: "test-driven-development.md"
+        priority: "high"
+        auto_load: true
+        message: |
+          💡 检测到您要编写测试
+          正在加载 test-driven-development.md 以确保遵循 TDD 最佳实践...
+
+      - intent: "调试|debug|排查"
+        skill: "systematic-debugging.md"
+        priority: "high"
+        auto_load: true
+
+      - intent: "重构|refactor|优化代码"
+        skill: "refactoring.md"
+        priority: "medium"
+        auto_load: false
+        suggest_message: "建议参考 refactoring.md，是否需要加载？"
+
+      - intent: "性能|performance|优化速度"
+        skill: "performance-optimization.md"
+        priority: "medium"
+        auto_load: false
 
 handoff_verification:
   required_sections:

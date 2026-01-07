@@ -1,6 +1,34 @@
 # AI Integration & Application Skill
 
+---
+title: "AI Integration & Application"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [ai, llm, rag, integration, evaluation]
+domains: [ai]
+level: intermediate
+estimated_time: "60min"
+prerequisites: []
+sources:
+  - "OpenAI/Anthropic API Docs"
+  - "RAG Best Practices"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate3_Implementation_Quality]
+---
+
 > 综合自 AI 应用开发最佳实践和 LLM 应用架构，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 集成计划：目标/接口/数据/安全/评测
+2. [ ] 工具评估：成本/性能/质量/合规
+3. [ ] 观测：日志/指标/追踪/失败样例库
+4. [ ] 评测：黄金集/鲁棒性/安全性/偏见
+5. [ ] 产出：集成计划/工具评估/风险清单
+```
+
+**Red Flags:** 黑盒集成、无监控、无评测、无回退策略
 
 ## 触发条件
 
@@ -215,6 +243,32 @@ def handle_llm_error(error: Exception) -> str:
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description         | Location                                      |
+|-----------------|---------------------|-----------------------------------------------|
+| `integration_plan` | 集成计划与架构    | `.tad/evidence/integration/plan.md`           |
+| `tool_eval`        | 工具评估与对比    | `.tad/evidence/integration/tool-eval.md`      |
+| `risk_register`    | 风险清单与缓解    | `.tad/evidence/integration/risks.md`          |
+
+### Acceptance Criteria
+
+```
+[ ] 目标/接口/数据/安全清晰；评测指标合理
+[ ] 工具评估客观可复现；选择理由充分
+[ ] 风险与回退策略明确；监控观测到位
+```
+
+### Artifacts
+
+| Artifact          | Path                                         |
+|-------------------|----------------------------------------------|
+| Integration Plan  | `.tad/evidence/integration/plan.md`          |
+| Tool Evaluation   | `.tad/evidence/integration/tool-eval.md`     |
+| Risk Register     | `.tad/evidence/integration/risks.md`         |
 
 ## RAG 系统架构
 

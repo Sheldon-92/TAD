@@ -119,6 +119,14 @@ No errors found.
 
 ---
 
+### Artifacts
+
+| Artifact        | Path                                     |
+|-----------------|------------------------------------------|
+| Build Log       | `.tad/evidence/verification/build.log`   |
+| Lint Report     | `.tad/evidence/verification/lint.txt`    |
+| Test Summary    | `.tad/evidence/tests/summary.txt`        |
+
 ## Procedure
 
 ### Step 1: Identify Verification Commands

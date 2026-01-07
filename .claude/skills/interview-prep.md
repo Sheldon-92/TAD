@@ -1,6 +1,34 @@
 # Interview Preparation Skill
 
+---
+title: "Interview Preparation"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [interview, resume, questions, feedback]
+domains: [career]
+level: beginner-intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "Cracking the Coding Interview"
+  - "Google Interview Warmup"
+enforcement: recommended
+tad_gates: []
+---
+
 > 综合自面试最佳实践和职业发展指南，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 简历量化；STAR 法讲述经历
+2. [ ] 题库与答案库；模拟问答与反馈
+3. [ ] 行为/技术/案例题覆盖
+4. [ ] 演示材料与感谢信模板
+5. [ ] 产出：题库/答案/反馈记录
+```
+
+**Red Flags:** 陈述空泛无数据、准备只偏一类问题、无反馈改进
 
 ## 触发条件
 
@@ -81,6 +109,32 @@
 **Result (结果)**: 取得了什么成果？
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description            | Location                                   |
+|-----------------|------------------------|--------------------------------------------|
+| `question_bank` | 面试题库               | `.tad/evidence/interview/questions.md`     |
+| `answer_bank`   | 参考答案与讲述要点     | `.tad/evidence/interview/answers.md`       |
+| `feedback_log`  | 模拟面试与反馈记录     | `.tad/evidence/interview/feedback.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] 题库覆盖行为/技术/案例题；答案结构化
+[ ] 模拟与反馈记录完整；改进可见
+[ ] 简历/材料更新到位
+```
+
+### Artifacts
+
+| Artifact       | Path                                        |
+|----------------|---------------------------------------------|
+| Question Bank  | `.tad/evidence/interview/questions.md`      |
+| Answer Bank    | `.tad/evidence/interview/answers.md`        |
+| Feedback Log   | `.tad/evidence/interview/feedback.md`       |
 
 ### 示例
 

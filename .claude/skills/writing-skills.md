@@ -1,6 +1,34 @@
 # Writing Skills Skill (元技能)
 
+---
+title: "Writing Skills"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [writing, style, clarity, editing]
+domains: [all]
+level: beginner-intermediate
+estimated_time: "20min"
+prerequisites: []
+sources:
+  - "Google Writing Style Guide"
+  - "The Elements of Style"
+enforcement: recommended
+tad_gates: []
+---
+
 > 来源: obra/superpowers，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 先目的与受众；后结构与措辞
+2. [ ] 短句主动语态；并行结构；术语一致
+3. [ ] 列表/表格呈现复杂信息；示例优先
+4. [ ] 提交前自检清单；同伴审校
+5. [ ] 产出：风格清单/前后对比/参考集合
+```
+
+**Red Flags:** 空话、长句、被动语态、术语混乱、无示例
 
 ## 触发条件
 
@@ -110,6 +138,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description             | Location                                  |
+|-------------------|-------------------------|-------------------------------------------|
+| `style_checklist` | 文风与结构检查清单     | `.tad/evidence/writing/checklist.md`      |
+| `before_after`    | 修改前后对比样例       | `.tad/evidence/writing/before-after.md`   |
+| `references`      | 参考与术语表           | `.tad/evidence/writing/refs.md`           |
+
+### Acceptance Criteria
+
+```
+[ ] 目标与受众明确；结构清晰
+[ ] 文风简洁一致；示例充分
+[ ] 参考/术语表完善
+```
+
+### Artifacts
+
+| Artifact         | Path                                     |
+|------------------|------------------------------------------|
+| Style Checklist  | `.tad/evidence/writing/checklist.md`     |
+| Before/After     | `.tad/evidence/writing/before-after.md`  |
+| References       | `.tad/evidence/writing/refs.md`          |
 
 ## Skill 结构
 

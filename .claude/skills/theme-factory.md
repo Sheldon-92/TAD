@@ -183,6 +183,28 @@ const blueScale = generateScale(220);
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type    | Description               | Location                            |
+|------------------|---------------------------|-------------------------------------|
+| `palette_tokens` | 主题配色与 tokens         | `.tad/evidence/ui/palette.md`       |
+| `contrast_report`| 主要文本/控件对比度报告   | `.tad/evidence/ui/contrast.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] tokens 完整一致；暗/亮模式齐全
+[ ] 对比度满足 WCAG；异常有替代方案
+```
+
+### Artifacts
+
+| Artifact        | Path                               |
+|-----------------|------------------------------------|
+| Palette Tokens  | `.tad/evidence/ui/palette.md`      |
+| Contrast Report | `.tad/evidence/ui/contrast.md`     |
 ## 预设主题模板
 
 ### 商务专业主题

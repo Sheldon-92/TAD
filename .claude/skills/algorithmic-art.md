@@ -1,6 +1,34 @@
 # Algorithmic Art Skill
 
+---
+title: "Algorithmic Art"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [generative, art, p5js, rendering]
+domains: [creative]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "p5.js Reference"
+  - "Generative Art Patterns"
+enforcement: recommended
+tad_gates: []
+---
+
 > 来源: anthropics/skills 官方仓库，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 固定随机种子（可复现）
+2. [ ] 参数化渲染（尺寸/颜色/步长等）
+3. [ ] 导出多格式（PNG/GIF/SVG）与批处理脚本
+4. [ ] 输出画廊与最佳样例；记录配置
+5. [ ] 版权与许可标注
+```
+
+**Red Flags:** 不可复现、参数散落、未记录配置、输出单一格式
 
 ## 触发条件
 
@@ -83,6 +111,29 @@ function windowResized() {
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description            | Location                                |
+|-----------------|------------------------|-----------------------------------------|
+| `render_params` | 渲染参数与配置         | `.tad/evidence/art/params.md`           |
+| `output_gallery`| 输出画廊（样例图）     | `.tad/evidence/art/gallery/`            |
+
+### Acceptance Criteria
+
+```
+[ ] 作品可复现（固定种子+参数记录）
+[ ] 输出质量、尺寸与格式满足需求
+```
+
+### Artifacts
+
+| Artifact      | Path                              |
+|---------------|-----------------------------------|
+| Params        | `.tad/evidence/art/params.md`     |
+| Gallery       | `.tad/evidence/art/gallery/`      |
 
 ## 噪声与随机
 

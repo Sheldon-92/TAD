@@ -291,6 +291,29 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type    | Description         | Location                                  |
+|------------------|---------------------|-------------------------------------------|
+| `exported_svgs`  | 导出的 SVG/Canvas   | `.tad/evidence/design/svgs/`              |
+| `render_params`  | 渲染参数与尺寸说明  | `.tad/evidence/design/params.md`          |
+
+### Acceptance Criteria
+
+```
+[ ] 导出可用、可访问（标题/描述/对比度）
+[ ] 参数化可复现；尺寸与比例满足要求
+```
+
+### Artifacts
+
+| Artifact       | Path                                   |
+|----------------|----------------------------------------|
+| Exported SVGs  | `.tad/evidence/design/svgs/`           |
+| Render Params  | `.tad/evidence/design/params.md`       |
+
 ## Python 绘图（Pillow/Cairo）
 
 ### Pillow 基础

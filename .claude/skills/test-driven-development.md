@@ -2,8 +2,8 @@
 
 ---
 title: "Test-Driven Development"
-version: "3.0"
-last_updated: "2026-01-06"
+version: "3.1"
+last_updated: "2026-01-07"
 tags: [testing, mandatory, gate3, tdd, quality, evidence-driven]
 domains: [all]
 level: intermediate
@@ -15,6 +15,35 @@ sources:
   - "Growing Object-Oriented Software, Guided by Tests"
 enforcement: mandatory
 tad_gates: [Gate3_Testing]
+
+# v1.5 Skill 自动匹配触发条件
+triggers:
+  when_user_says:
+    - "写测试"
+    - "单元测试"
+    - "测试用例"
+    - "TDD"
+    - "write test"
+    - "unit test"
+    - "test case"
+
+  when_creating_file:
+    - "*.test.ts"
+    - "*.spec.ts"
+    - "*_test.go"
+    - "*_test.py"
+    - "test_*.py"
+    - "**/__tests__/**"
+
+  when_command:
+    - "*test"
+    - "*develop"
+
+  action: "mandatory"  # TDD 是强制性的
+  auto_load: true
+  message: |
+    📚 正在加载 TDD Skill (强制)
+    确保遵循红-绿-重构循环...
 ---
 
 ## TL;DR Quick Checklist

@@ -1,6 +1,34 @@
 # UX Research Skill
 
+---
+title: "UX Research"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [ux, research, usability, interviews, ab-testing]
+domains: [product]
+level: intermediate
+estimated_time: "60min"
+prerequisites: []
+sources:
+  - "NN/g Research Methods"
+  - "MeasuringU"
+enforcement: recommended
+tad_gates: [Gate1_Understanding, Gate2_Design]
+---
+
 > 综合自 UX 研究最佳实践和用户体验方法论，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 研究目标清晰；选对方法（定性/定量）
+2. [ ] 样本与偏差控制；知情同意
+3. [ ] 模板化材料：访谈大纲/问卷/任务脚本
+4. [ ] 记录与整理：逐字稿/可用性问题清单
+5. [ ] 产出：研究计划/访谈笔记/洞察报告
+```
+
+**Red Flags:** 方法与目标不匹配、样本偏差、无任务脚本、仅轶事证据
 
 ## 触发条件
 
@@ -172,6 +200,32 @@ UX 研究工具箱
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type    | Description         | Location                          |
+|------------------|---------------------|-----------------------------------|
+| `research_plan`  | 研究计划            | `.tad/evidence/ux/plan.md`        |
+| `interview_notes`| 访谈/可用性测试笔记 | `.tad/evidence/ux/interviews.md`  |
+| `insights_report`| 洞察与建议报告      | `.tad/evidence/ux/insights.md`    |
+
+### Acceptance Criteria
+
+```
+[ ] 研究目标/方法/样本合理
+[ ] 证据可追溯；结论与数据一致
+[ ] 可执行的产品建议与优先级
+```
+
+### Artifacts
+
+| Artifact        | Path                                |
+|-----------------|-------------------------------------|
+| Research Plan   | `.tad/evidence/ux/plan.md`          |
+| Interview Notes | `.tad/evidence/ux/interviews.md`    |
+| Insights Report | `.tad/evidence/ux/insights.md`      |
 
 ## 可用性测试
 

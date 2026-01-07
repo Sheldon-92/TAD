@@ -363,6 +363,31 @@ import { FormattedMessage } from 'react-intl';
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type  | Description               | Location                             |
+|----------------|---------------------------|--------------------------------------|
+| `keys_audit`   | 键值与占位符一致性审计    | `.tad/evidence/i18n/keys-audit.md`   |
+| `plural_rules` | 复数规则/ICU/CLDR 映射    | `.tad/evidence/i18n/plurals.md`      |
+| `screenshots`  | UI 截图（回看 QA）        | `.tad/evidence/i18n/screenshots/`    |
+
+### Acceptance Criteria
+
+```
+[ ] 变量占位符保护到位；不翻译变量名
+[ ] 复数/性别/地区规则正确映射
+[ ] 回看 QA 截图无截断/溢出/错位
+```
+
+### Artifacts
+
+| Artifact      | Path                                  |
+|---------------|---------------------------------------|
+| Keys Audit    | `.tad/evidence/i18n/keys-audit.md`    |
+| Plural Rules  | `.tad/evidence/i18n/plurals.md`       |
+| Screenshots   | `.tad/evidence/i18n/screenshots/`     |
 ## 日期/货币格式化
 
 ### 日期格式

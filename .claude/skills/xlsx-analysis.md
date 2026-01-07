@@ -85,6 +85,31 @@ Excel 数据分析工具箱
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description                 | Location                             |
+|-----------------|-----------------------------|--------------------------------------|
+| `notebook`      | 关键分析 Notebook           | `.tad/evidence/xlsx/notebook.ipynb`  |
+| `charts`        | 生成图表（嵌入或导出）      | `.tad/evidence/xlsx/charts/`         |
+| `export_excel`  | 导出结果 Excel              | `.tad/evidence/xlsx/output.xlsx`     |
+
+### Acceptance Criteria
+
+```
+[ ] Notebook 可运行且注释清晰
+[ ] 图表可读性良好；指标与标题规范
+[ ] 导出 Excel 结构清晰；格式化到位
+```
+
+### Artifacts
+
+| Artifact     | Path                                  |
+|--------------|---------------------------------------|
+| Notebook     | `.tad/evidence/xlsx/notebook.ipynb`   |
+| Charts       | `.tad/evidence/xlsx/charts/`          |
+| Export Excel | `.tad/evidence/xlsx/output.xlsx`      |
 ## 常用操作示例
 
 ### 读取 Excel 文件

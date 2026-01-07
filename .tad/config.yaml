@@ -1782,6 +1782,172 @@ skills_system:
       产品分析: [product-management.md, competitive-analysis.md, ux-research.md]
       # ... 其余 Skills 按现有分类
 
+  # ==================== Skill 自动匹配机制 (v1.5 新增) ====================
+  # 解决问题：Agent 执行任务时无法自动识别并读取相关 Skill
+  # 设计原则：意图匹配 + 文件模式 + 命令触发 三重机制
+  skill_auto_match:
+    enabled: true
+    version: "1.5"
+    description: "基于用户意图自动匹配并加载相关 Skill"
+
+    # 匹配触发时机
+    trigger_timing:
+      - "用户输入任务描述后，执行前"
+      - "调用 Write 工具创建特定类型文件前"
+      - "执行特定命令前"
+
+    # 匹配优先级
+    priority:
+      - mandatory_skills    # 最高：强制 Skills 不可跳过
+      - intent_match        # 次高：意图匹配的 Skills
+      - file_pattern_match  # 中等：文件模式匹配的 Skills
+      - command_trigger     # 一般：命令触发的 Skills
+
+    # 意图 → Skill 映射表
+    intent_mapping:
+      # 元技能 - 创建/维护 Skills
+      - intents: ["创建skill", "新skill", "添加skill", "create skill", "new skill", "write skill"]
+        skill: "skill-creator.md"
+        action: "recommend"
+        reason: "skill-creator.md 包含创建高质量 Skill 的完整指南"
+
+      - intents: ["整理文档", "文档混乱", "文档组织", "清理文档", "organize docs", "clean up docs"]
+        skill: "doc-organization.md"
+        action: "recommend"
+        reason: "doc-organization.md 提供文档整理的系统方法"
+
+      # 开发相关
+      - intents: ["设计API", "API设计", "创建API", "REST API", "GraphQL"]
+        skill: "api-design.md"
+        action: "recommend"
+
+      - intents: ["数据库设计", "表结构", "schema设计", "数据模型"]
+        skill: "database-patterns.md"
+        action: "recommend"
+
+      - intents: ["架构设计", "系统架构", "技术选型", "architecture"]
+        skill: "software-architecture.md"
+        action: "recommend"
+
+      - intents: ["写测试", "单元测试", "测试用例", "TDD", "test"]
+        skill: "test-driven-development.md"
+        action: "recommend"
+
+      - intents: ["调试", "debug", "排查问题", "找bug"]
+        skill: "systematic-debugging.md"
+        action: "recommend"
+
+      - intents: ["重构", "refactor", "代码优化", "改进代码"]
+        skill: "refactoring.md"
+        action: "recommend"
+
+      - intents: ["性能优化", "performance", "加速", "优化速度"]
+        skill: "performance-optimization.md"
+        action: "recommend"
+
+      # 设计相关
+      - intents: ["UI设计", "界面设计", "用户界面", "组件设计"]
+        skill: "ui-design.md"
+        action: "recommend"
+
+      - intents: ["配色", "主题", "颜色方案", "theme", "color scheme"]
+        skill: "theme-factory.md"
+        action: "recommend"
+
+      - intents: ["用户研究", "UX", "用户体验", "可用性"]
+        skill: "ux-research.md"
+        action: "recommend"
+
+      # AI/Prompt 相关
+      - intents: ["prompt设计", "提示词", "prompt engineering", "写prompt"]
+        skill: "prompt-engineering.md"
+        action: "recommend"
+
+      - intents: ["AI集成", "LLM", "接入AI", "调用AI"]
+        skill: "ai-integration.md"
+        action: "recommend"
+
+      # 产品/业务相关
+      - intents: ["产品需求", "PRD", "用户故事", "需求分析"]
+        skill: "product-management.md"
+        action: "recommend"
+
+      - intents: ["竞品分析", "竞争对手", "市场分析"]
+        skill: "competitive-analysis.md"
+        action: "recommend"
+
+      # 文档/内容相关
+      - intents: ["写文档", "技术文档", "API文档"]
+        skill: "content-research-writer.md"
+        action: "recommend"
+
+      - intents: ["学术写作", "论文", "科学写作"]
+        skill: "scientific-writing.md"
+        action: "recommend"
+
+    # 文件模式 → Skill 映射
+    file_pattern_mapping:
+      - pattern: ".claude/skills/*.md"
+        skill: "skill-creator.md"
+        action: "recommend"
+        description: "创建 Skill 文件时参考"
+
+      - pattern: "*.test.ts|*.spec.ts|*_test.go|*_test.py"
+        skill: "test-driven-development.md"
+        action: "recommend"
+        description: "创建测试文件时参考"
+
+      - pattern: "**/api/**|**/routes/**|**/endpoints/**"
+        skill: "api-design.md"
+        action: "recommend"
+        description: "创建 API 相关文件时参考"
+
+      - pattern: "**/migrations/**|**/schema/**|**/models/**"
+        skill: "database-patterns.md"
+        action: "recommend"
+        description: "创建数据库相关文件时参考"
+
+    # 命令 → Skill 映射
+    command_mapping:
+      - commands: ["*create-skill", "*new-skill"]
+        skill: "skill-creator.md"
+        action: "mandatory"
+
+      - commands: ["*test", "*develop"]
+        skill: "test-driven-development.md"
+        action: "recommend"
+
+      - commands: ["*review", "*code-review"]
+        skill: "code-review.md"
+        action: "recommend"
+
+      - commands: ["*deploy", "*release"]
+        skill: "security-checklist.md"
+        action: "mandatory"
+
+    # Agent 行为规范
+    agent_behavior:
+      on_match:
+        recommend:
+          action: "提示用户并建议读取，但不阻塞执行"
+          message_template: |
+            💡 检测到任务与 {skill_name} 相关
+            建议先参考此 Skill 以获得最佳实践指导
+            是否需要我先读取？[Y/n]
+
+        mandatory:
+          action: "自动读取 Skill，不询问用户"
+          message_template: |
+            📚 正在加载必要参考: {skill_name}
+            原因: {reason}
+
+      on_no_match:
+        action: "正常执行任务，不干预"
+
+      on_multiple_match:
+        action: "按优先级排序，提示用户选择或全部读取"
+        max_suggestions: 3
+
 # ==================== Learn 记忆系统 (v1.4 新增) ====================
 learn_system:
   enabled: true

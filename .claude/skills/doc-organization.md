@@ -2,8 +2,8 @@
 
 ---
 title: "Documentation Organization"
-version: "1.0"
-last_updated: "2026-01-06"
+version: "1.1"
+last_updated: "2026-01-07"
 tags: [documentation, organization, consistency, maintenance, hygiene]
 domains: [all]
 level: beginner
@@ -16,6 +16,29 @@ sources:
   - "TAD Framework"
 enforcement: recommended
 tad_gates: [handoff, task_completion]
+
+# v1.5 Skill 自动匹配触发条件
+triggers:
+  when_user_says:
+    - "整理文档"
+    - "文档混乱"
+    - "文档组织"
+    - "清理文档"
+    - "organize docs"
+    - "clean up docs"
+    - "document structure"
+    - "文档结构"
+
+  when_creating_file:
+    - "docs/**/*.md"
+    - "README.md"
+    - "NEXT.md"
+
+  action: "recommend"
+  auto_load: true
+  message: |
+    💡 检测到文档组织相关任务
+    正在加载 doc-organization.md 以确保文档一致性...
 ---
 
 ## TL;DR Quick Checklist
