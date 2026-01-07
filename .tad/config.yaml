@@ -1623,29 +1623,163 @@ skills_system:
       - "best-practices/" # 最佳实践
       - "domain/"         # 领域知识
 
-  # TAD 内置 Skills
-  builtin_skills:
-    ui_design:
-      file: ".claude/skills/ui-design.md"
-      description: "UI/UX 设计知识库，包含设计原则、配色方案、组件模式"
-      source: "基于 ui-ux-pro-max-skill 整理"
-      when_to_use: "涉及 UI 设计、界面美化、用户体验时"
+  # 完整 Skills 清单 (5批共42个) - 所有 Skills 通用
+  skills_inventory:
+    total_count: 42
+    last_updated: "2026-01-06"
+    access_policy: "universal"  # 所有 Skills 都是通用的
 
-    skill_creator:
-      file: ".claude/skills/skill-creator.md"
-      description: "元技能：如何创建新的 Skill"
-      when_to_use: "需要封装新知识为 Skill 时"
+    # 按批次列出
+    builtin: [ui-design.md, skill-creator.md]
+    batch_1_obra: [test-driven-development.md, systematic-debugging.md, code-review.md, brainstorming.md, verification.md]
+    batch_2_comprehensive: [parallel-agents.md, git-worktrees.md, software-architecture.md, api-design.md, security-checklist.md, performance-optimization.md, receiving-feedback.md, writing-skills.md, database-patterns.md, error-handling.md, git-workflow.md, refactoring.md, testing-strategy.md]
+    batch_3_anthropics: [pdf-processing.md, pptx-creation.md, xlsx-analysis.md, canvas-design.md, algorithmic-art.md, theme-factory.md, content-research-writer.md, scientific-writing.md]
+    batch_4_broad: [data-science.md, product-management.md, legal-documents.md, marketing-copywriting.md, i18n-translation.md, media-processing.md, meeting-notes.md, email-communication.md, knowledge-graph.md, interview-prep.md]
+    batch_5_user: [prompt-engineering.md, ux-research.md, competitive-analysis.md, ai-integration.md]
+
+    # 按分类索引 (便于查找)
+    by_category:
+      development: [test-driven-development, systematic-debugging, error-handling, git-workflow, refactoring, i18n-translation, parallel-agents, git-worktrees]
+      architecture: [software-architecture, api-design, database-patterns]
+      design: [ui-design, brainstorming, canvas-design, theme-factory, ux-research]
+      quality: [code-review, verification, testing-strategy, security-checklist]
+      data: [xlsx-analysis, data-science, knowledge-graph]
+      content: [scientific-writing, content-research-writer, marketing-copywriting, email-communication, interview-prep]
+      document: [pdf-processing, pptx-creation, legal-documents]
+      product: [product-management, competitive-analysis]
+      ai: [prompt-engineering, ai-integration]
+      process: [receiving-feedback, meeting-notes]
+      meta: [skill-creator, writing-skills]
+      media: [media-processing]
+      creative: [algorithmic-art]
+      optimization: [performance-optimization]
+
+  # Skills 与 TAD 系统映射
+  tad_integration:
+    mq_triggers:
+      MQ4_visual: ["ui-design.md", "canvas-design.md", "theme-factory.md"]
+      MQ6_technical: ["software-architecture.md", "api-design.md", "database-patterns.md", "prompt-engineering.md", "ai-integration.md"]
+
+    gate_mapping:
+      Gate1_search: "触发 MQ6 相关 Skills"
+      Gate2_existence: "参考 code-review.md"
+      Gate3_testing: ["test-driven-development.md", "testing-strategy.md"]
+      Gate5_security: ["security-checklist.md"]
+      Review_Phase: ["code-review.md", "verification.md"]
+
+    evidence_types:
+      search_result: "MQ1/MQ6 触发时产出"
+      code_location: "MQ2 定位时产出"
+      test_result: "Gate3 测试时产出"
+      data_flow: "MQ3 分析时产出"
+      ui_screenshot: "MQ4 视觉验证时产出"
+
+  # Skills 访问策略
+  access_policy:
+    type: "universal"
+    description: "所有 42 个 Skills 都是通用知识库，任何 Agent 都可按需使用"
+    principle: "Skills 是参考资料，不是权限控制"
 
   # Skills 使用规则
   usage_rules:
     auto_load: true
     description: "Claude Code 自动发现并加载 .claude/skills/ 下的所有 .md 文件"
-
-    agent_access:
-      alex: "可以使用所有 Skills 进行设计决策"
-      blake: "可以使用所有 Skills 进行实现参考"
-
     priority: "Skills 提供知识参考，但最终决策仍需 Human 确认"
+
+    recommended_by_context:
+      技术选型: [software-architecture.md, api-design.md, database-patterns.md]
+      UI设计: [ui-design.md, theme-factory.md, canvas-design.md]
+      测试: [test-driven-development.md, testing-strategy.md]
+      安全: [security-checklist.md]
+      调试: [systematic-debugging.md, error-handling.md]
+      性能: [performance-optimization.md]
+      AI集成: [prompt-engineering.md, ai-integration.md]
+      产品: [product-management.md, competitive-analysis.md, ux-research.md]
+      文档: [pdf-processing.md, pptx-creation.md, xlsx-analysis.md]
+      内容: [content-research-writer.md, scientific-writing.md, marketing-copywriting.md]
+
+  # ==================== 强制调用 Skills (v1.4.1 新增) ====================
+  # 基于研究：安全和测试相关 Skills 应强制调用，其余保持推荐
+  # 参考：Anthropic 三层设计 - Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
+  mandatory_skills:
+    enabled: true
+    version: "1.4.1"
+    description: "关键质量门禁必须参考的 Skills，不可跳过"
+
+    # 强制调用的 Skills 列表 (3个)
+    skills:
+      - name: "security-checklist.md"
+        trigger: "Gate5 安全检查 或 *deploy 命令"
+        enforcement: "必须读取并执行检查项"
+        reason: "安全是不可妥协的底线"
+
+      - name: "test-driven-development.md"
+        trigger: "Gate3 测试门禁 或 *test 命令"
+        enforcement: "必须有测试证据才能通过"
+        reason: "测试是质量保证的基础"
+
+      - name: "verification.md"
+        trigger: "handoff 创建前 或 任务完成前"
+        enforcement: "必须验证完整性"
+        reason: "确保交付物完整可用"
+
+    # 强制调用机制
+    enforcement_mechanism:
+      type: "gate_blocking"
+      description: "在指定 Gate 或命令触发时，Agent 必须先读取对应 Skill"
+
+      workflow:
+        - step: 1
+          action: "检测触发条件 (Gate/命令)"
+        - step: 2
+          action: "自动读取强制 Skill 文件"
+        - step: 3
+          action: "执行 Skill 中的检查项"
+        - step: 4
+          action: "记录检查证据"
+        - step: 5
+          action: "检查通过后才能继续"
+
+      violation_response: |
+        ⚠️ MANDATORY SKILL VIOLATION ⚠️
+        触发条件: {trigger}
+        必须参考: {skill_name}
+
+        正在自动加载 Skill 并执行检查...
+
+    # 与现有系统的集成
+    integration:
+      gate_mapping:
+        Gate3: "test-driven-development.md"
+        Gate5: "security-checklist.md"
+        handoff: "verification.md"
+
+      agent_mapping:
+        Alex:
+          - skill: "verification.md"
+            when: "*handoff 命令执行前"
+          - skill: "security-checklist.md"
+            when: "*review 命令执行时"
+        Blake:
+          - skill: "test-driven-development.md"
+            when: "*develop 或 *test 命令执行时"
+          - skill: "security-checklist.md"
+            when: "*deploy 命令执行前"
+
+  # ==================== 推荐调用 Skills (保持现状) ====================
+  # 其余 39 个 Skills 保持推荐模式，Agent 根据任务自动匹配
+  recommended_skills:
+    count: 39
+    description: "知识增强型 Skills，按需自动匹配，不强制要求"
+    policy: "Agent 根据任务类型和上下文自动选择参考"
+
+    # 推荐但不强制的场景
+    contexts:
+      架构设计: [software-architecture.md, api-design.md, database-patterns.md]
+      UI设计: [ui-design.md, theme-factory.md, canvas-design.md]
+      调试优化: [systematic-debugging.md, performance-optimization.md]
+      产品分析: [product-management.md, competitive-analysis.md, ux-research.md]
+      # ... 其余 Skills 按现有分类
 
 # ==================== Learn 记忆系统 (v1.4 新增) ====================
 learn_system:

@@ -111,6 +111,95 @@ dependencies:
   data:
     - technical-preferences.md
 
+# ==================== SKILLS INTEGRATION (v1.4.1 Enhancement) ====================
+# 混合策略：强制调用 (3个) + 推荐参考 (39个)
+# 参考：Anthropic 三层设计 - Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
+
+skills_integration:
+  enabled: true
+  version: "1.4.1"
+  description: "Skills 采用混合策略：关键质量 Skills 强制调用，其余推荐参考"
+  location: ".claude/skills/"
+
+  # ==================== 强制调用 Skills ====================
+  # 这些 Skills 在特定触发条件下必须读取和执行，不可跳过
+  mandatory_skills:
+    - skill: "test-driven-development.md"
+      trigger: "*develop 或 *test 命令执行时"
+      action: |
+        1. 读取 .claude/skills/test-driven-development.md
+        2. 遵循 TDD 红-绿-重构循环
+        3. 确保每个功能都有对应测试
+        4. 记录测试覆盖率证据
+      violation: "⚠️ MANDATORY: 开发必须遵循 TDD，先写测试再实现"
+
+    - skill: "security-checklist.md"
+      trigger: "*deploy 命令执行前"
+      action: |
+        1. 读取 .claude/skills/security-checklist.md
+        2. 执行 OWASP Top 10 检查
+        3. 记录安全审查结果
+        4. 所有安全检查通过后才能部署
+      violation: "⚠️ MANDATORY: 部署前必须通过安全检查"
+
+    - skill: "verification.md"
+      trigger: "任务完成标记前"
+      action: |
+        1. 读取 .claude/skills/verification.md
+        2. 验证所有实现与 handoff 要求一致
+        3. 确保所有测试通过
+        4. 记录完成证据
+      violation: "⚠️ MANDATORY: 任务完成前必须执行验证"
+
+  # ==================== 推荐参考 Skills ====================
+  # 这些 Skills 根据任务类型自动推荐，Agent 可按需参考
+  recommended_skills:
+    develop_phase:
+      - error-handling.md           # 错误处理
+      - refactoring.md              # 代码重构
+      - parallel-agents.md          # 并行执行
+      # test-driven-development.md 已移至强制
+
+    debug_phase:
+      - systematic-debugging.md     # 系统性调试
+      - performance-optimization.md # 性能优化
+
+    test_phase:
+      - testing-strategy.md         # 测试策略
+      - code-review.md              # 代码自查
+      # security-checklist.md 已移至强制
+
+    deploy_phase:
+      - git-workflow.md             # Git 工作流
+      # verification.md 已移至强制
+
+  # Skills 与 TAD 系统集成
+  tad_integration:
+    gate_mapping:
+      Gate3: "test-driven-development.md (MANDATORY)"
+      Gate5: "security-checklist.md (MANDATORY)"
+
+    evidence_types:
+      test_result: [test-driven-development.md, testing-strategy.md]
+      code_location: [systematic-debugging.md]
+      data_flow: [performance-optimization.md]
+      security_audit: [security-checklist.md]
+      completion_proof: [verification.md]
+
+    usage_principle: |
+      Blake Skills 使用原则 (v1.4.1 混合策略)：
+
+      【强制调用】触发时必须执行：
+      - *develop/*test 时 → 读取 test-driven-development.md，遵循 TDD
+      - *deploy 前 → 读取 security-checklist.md，安全检查
+      - 任务完成前 → 读取 verification.md，验证完整性
+
+      【推荐参考】按需自动匹配：
+      1. 识别当前任务类型 (develop/debug/test/deploy)
+      2. 参考相关分类的 Skills
+      3. 产出对应的证据类型
+      4. 将 Skills 知识融入实现
+
 handoff_verification:
   required_sections:
     - Task Overview

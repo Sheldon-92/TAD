@@ -110,6 +110,77 @@ dependencies:
     - brainstorming-techniques.md
     - technical-preferences.md
 
+# ==================== SKILLS INTEGRATION (v1.4.1 Enhancement) ====================
+# 混合策略：强制调用 (3个) + 推荐参考 (39个)
+# 参考：Anthropic 三层设计 - Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
+
+skills_integration:
+  enabled: true
+  version: "1.4.1"
+  description: "Skills 采用混合策略：关键质量 Skills 强制调用，其余推荐参考"
+  location: ".claude/skills/"
+
+  # ==================== 强制调用 Skills ====================
+  # 这些 Skills 在特定触发条件下必须读取和执行，不可跳过
+  mandatory_skills:
+    - skill: "verification.md"
+      trigger: "*handoff 命令执行前"
+      action: |
+        1. 读取 .claude/skills/verification.md
+        2. 执行完整性验证检查项
+        3. 记录验证证据
+        4. 所有检查通过后才能生成 handoff
+      violation: "⚠️ MANDATORY: 必须先执行 verification.md 验证才能创建 handoff"
+
+    - skill: "security-checklist.md"
+      trigger: "*review 命令执行时"
+      action: |
+        1. 读取 .claude/skills/security-checklist.md
+        2. 对 Blake 的实现进行安全审查
+        3. 记录安全检查结果
+      violation: "⚠️ MANDATORY: Review 必须包含安全检查"
+
+  # ==================== 推荐参考 Skills ====================
+  # 这些 Skills 根据任务类型自动推荐，Agent 可按需参考
+  recommended_skills:
+    analyze_phase:
+      - brainstorming.md        # 需求挖掘和创意生成
+      - ux-research.md          # 用户体验研究
+      - product-management.md   # 产品需求分析
+      - competitive-analysis.md # 竞品分析
+
+    design_phase:
+      - software-architecture.md # 系统架构设计
+      - api-design.md           # API 接口设计
+      - database-patterns.md    # 数据库设计
+      - ui-design.md            # UI/界面设计
+      - theme-factory.md        # 配色和主题
+
+    handoff_phase:
+      - scientific-writing.md   # 技术文档 (verification.md 已移至强制)
+
+    review_phase:
+      - code-review.md          # 代码审查 (security-checklist.md 已移至强制)
+
+  # Skills 与 TAD 系统集成
+  tad_integration:
+    mq_triggers:
+      MQ4: [ui-design.md, canvas-design.md, theme-factory.md]
+      MQ6: [software-architecture.md, api-design.md, database-patterns.md, prompt-engineering.md, ai-integration.md]
+
+    usage_principle: |
+      Alex Skills 使用原则 (v1.4.1 混合策略)：
+
+      【强制调用】触发时必须执行：
+      - *handoff 前 → 读取 verification.md，验证完整性
+      - *review 时 → 读取 security-checklist.md，安全审查
+
+      【推荐参考】按需自动匹配：
+      1. 识别当前任务类型 (analyze/design/handoff/review)
+      2. 参考相关分类的 Skills
+      3. 如触发 MQ6，先 WebSearch 再结合 Skills
+      4. 将 Skills 知识融入设计决策
+
 handoff_protocol:
   trigger_words: ["implement", "code", "develop", "execute", "build", "deploy"]
   action: |
