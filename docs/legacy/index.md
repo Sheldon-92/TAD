@@ -9,16 +9,16 @@
 
 | Document | Description | Notes |
 |----------|-------------|-------|
-| [TAD v1.3 Acceptance Report](../../TAD_V1.3_ACCEPTANCE_REPORT.md) | v1.3 upgrade acceptance | Evidence-Based Development |
-| [TAD v1.3 Upgrade Plan](../../TAD_V1.3_COMPREHENSIVE_UPGRADE_PLAN.md) | Comprehensive upgrade plan | 91KB detailed plan |
-| [TAD v3.1 Upgrade Complete](../../TAD_V3.1_UPGRADE_COMPLETE.md) | Internal v3.1 completion report | v3.1 internal = v1.3 external |
+| [TAD v1.3 Acceptance Report](./TAD_V1.3_ACCEPTANCE_REPORT.md) | v1.3 upgrade acceptance | Evidence-Based Development |
+| [TAD v1.3 Upgrade Plan](./TAD_V1.3_COMPREHENSIVE_UPGRADE_PLAN.md) | Comprehensive upgrade plan | 91KB detailed plan |
+| [TAD v3.1 Upgrade Complete](./TAD_V3.1_UPGRADE_COMPLETE.md) | Internal v3.1 completion report | v3.1 internal = v1.3 external |
 
 ## TAD v1.2 Documents
 
 | Document | Description | Notes |
 |----------|-------------|-------|
-| [Release v1.2.0](../../RELEASE_v1.2.0.md) | v1.2 release notes | MCP Integration |
-| [Changelog v1.2.1](../../CHANGELOG_v1.2.1.md) | v1.2.1 changes | Bug fixes and improvements |
+| [Release v1.2.0](./RELEASE_v1.2.0.md) | v1.2 release notes | MCP Integration |
+| [Changelog v1.2.1](./CHANGELOG_v1.2.1.md) | v1.2.1 changes | Bug fixes and improvements |
 
 ---
 

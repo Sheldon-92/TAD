@@ -18,11 +18,18 @@ Generated: [timestamp]
 [✅/❌] Template files
 [✅/❌] Project context files
 
+🧩 v1.4 MODULES
+[✅/❌] Mandatory Questions (MQ1–MQ6) configured
+[✅/❌] Research Phase enabled (requirement_elicitation.research_phase)
+[✅/❌] Skills System enabled (.claude/skills present)
+[✅/❌] Learn System enabled (/tad-learn available)
+
 📋 CONFIGURATION VERIFICATION
 - Version: [version number]
 - Scenarios: [count]/6 configured
 - Sub-agents: [count]/16 available
 - Templates: [count] handoff templates
+ - Skills: [count] files in .claude/skills
 
 ⚡ READINESS STATUS
 [✅/❌] Ready for Agent A activation
@@ -53,8 +60,9 @@ Checking TAD Framework status...
 
 2. Configuration:
    - Read .tad/config.yaml version
-   - Verify 6 scenarios configured
-   - Verify 16 sub-agents listed
+   - Verify v1.4 modules present: `mandatory_questions`, `requirement_elicitation.research_phase`, `skills_system`, `learn_system`
+   - Verify scenarios configured
+   - Verify sub-agents listed
 
 3. Project Files:
    - Check .tad/context/ directory
@@ -63,10 +71,9 @@ Checking TAD Framework status...
 
 4. Report:
    If all checks pass:
-   ✅ TAD Framework v2.0 installed
+   ✅ TAD Framework v1.4 installed
    ✅ Configuration valid
-   ✅ 6 scenarios available
-   ✅ 16 sub-agents configured
+   ✅ v1.4 modules available (MQ6, Research, Skills, Learn)
    ✅ Ready for use
 
    If issues found:

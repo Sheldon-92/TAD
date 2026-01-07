@@ -1,7 +1,7 @@
 > ⚠️ **Legacy Document - TAD v1.3**
 >
 > This document applies to TAD v1.3 (internal version v3.1) and is preserved for historical reference.
-> For the current version (v1.4), see the [Documentation Portal](docs/README.md).
+> For the current version (v1.4), see the [Documentation Portal](../README.md).
 >
 > ---
 

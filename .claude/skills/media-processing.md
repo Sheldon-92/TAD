@@ -1,10 +1,41 @@
 # Media Processing Skill
 
+---
+title: "Media Processing"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [media, ffmpeg, imagemagick, optimization]
+domains: [content, tooling]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "FFmpeg Documentation"
+  - "ImageMagick Usage"
+enforcement: recommended
+tad_gates: []
+---
+
 > 综合自 FFmpeg、ImageMagick 和多媒体处理最佳实践，已适配 TAD 框架
 
 ## 触发条件
 
 当用户需要处理音频、视频、图片格式转换、压缩、剪辑或生成媒体内容时，自动应用此 Skill。
+
+---
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 明确目标平台/格式（web/youtube/mobile），选用合适编码与参数
+2. [ ] 质量-体积-速度权衡（CRF/bitrate/preset），对比前后指标
+3. [ ] 跨平台兼容：像素格式 yuv420p、H.264、AAC（常见）
+4. [ ] 批处理脚本与可复现参数；保留命令日志
+5. [ ] 版权与许可检查（来源/授权/署名/商用）
+```
+
+**Red Flags:**
+- 只看主观画质；未记录命令；未考虑平台兼容；忽略版权
 
 ---
 
@@ -31,6 +62,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type | Description                    | Location                                      |
+|---------------|--------------------------------|-----------------------------------------------|
+| `cmd_log`     | 执行命令与参数（ffmpeg/convert）| `.tad/evidence/media/commands.log`            |
+| `metrics`     | 前后对比（体积/分辨率/码率/时长）| `.tad/evidence/media/metrics.md`              |
+| `compat_note` | 目标平台兼容性说明（像素格式等） | `.tad/evidence/media/compat.md`               |
+
+### Acceptance Criteria
+
+```
+[ ] 生成物在目标平台可播放/可用；像素/编码兼容
+[ ] 提供前后对比指标与可复现命令；质量达标
+[ ] 明确版权/授权信息（如使用第三方素材）
+```
+
+### Artifacts
+
+| Artifact         | Path                                    |
+|------------------|-----------------------------------------|
+| Command Log      | `.tad/evidence/media/commands.log`      |
+| Before/After KPI | `.tad/evidence/media/metrics.md`        |
+| Compatibility    | `.tad/evidence/media/compat.md`         |
 
 ## FFmpeg 常用命令
 

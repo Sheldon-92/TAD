@@ -1,12 +1,12 @@
-# /tad Command (TAD Framework v1.1 Main Entry)
+# /tad Command (TAD Framework v1.4 Main Entry)
 
 When this command is triggered, provide TAD framework guidance and options:
 
-## TAD Framework v1.1
-**Triangle Agent Development - Combining Simplicity with Enforcement**
+## TAD Framework v1.4
+**Triangle Agent Development — Evidence-Based + Research-Driven**
 
 ```
-Welcome to TAD v1.1 - Enhanced with BMAD's proven mechanisms
+Welcome to TAD v1.4 — Evidence-Based Quality + Research Phase + Skills/Learn
 
         Human (You)
          /\
@@ -36,7 +36,18 @@ Please select an option (0-9):
 Select 0-9:
 ```
 
-## Key Features in v1.1
+## Key Features in v1.4
+
+### 🆕 v1.4 Additions
+- **MQ6 Technical Research**: All technical decisions trigger lightweight research with sources
+- **Research Phase**: Inline research during elicitation + final tech stack confirmation report
+- **Skills System**: Auto-discovered knowledge base under `.claude/skills/`
+- **Learn System**: `/tad-learn` to record framework-level improvements for future releases
+
+### ✅ v1.3 Highlights (Preserved)
+- **Evidence-Based QA**: Mandatory evidence types with MQ1–MQ5 checks
+- **Progressive Validation**: Phase checkpoints with human-verified evidence
+- **Dual-Layer Verification**: Automated tests + human visual validation
 
 ### 🎯 From BMAD (Proven Mechanisms)
 - **Mandatory Interaction**: 0-9 options, never yes/no
@@ -63,6 +74,7 @@ Select 0-9:
 - `/handoff` - Create/verify handoff document
 - `/gate` - Execute quality gate
 - `/parallel` - Start parallel execution
+- `/tad-learn` - Record framework-level learning and suggestions (v1.4)
 
 ### Quick Sub-agent Access
 - `/product` - Launch product-expert
@@ -119,11 +131,13 @@ Select 0-9:
 
 ## Remember
 
-TAD v1.1 combines:
+TAD v1.4 combines:
 - ⚡ **Simplicity**: Only 3 roles
 - 💪 **Enforcement**: BMAD's proven mechanisms
-- 🚀 **Efficiency**: Parallel execution
-- 📊 **Learning**: Evidence-based improvement
+- 🧪 **Evidence**: MQ1–MQ6 with human-verifiable checkpoints
+- 🔎 **Research**: Tech decisions backed by lightweight research
+- 📚 **Knowledge**: Skills auto-loaded as references
+- 🚀 **Efficiency**: Parallel execution + progressive validation
 - ✅ **Quality**: 4-gate system
 
-[[LLM: This is the main entry point for TAD v1.1. When invoked, present these options and guide the user through TAD's enhanced workflow combining simplicity with enforcement.]]
+[[LLM: This is the main entry point for TAD v1.4. When invoked, present these options and guide the user through TAD's workflow with evidence-based QA, research phase, and skills/learn enhancements.]]

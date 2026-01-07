@@ -1,10 +1,33 @@
 # Marketing Copywriting Skill
 
-> 综合自营销实践和 SEO 最佳实践，已适配 TAD 框架
+---
+title: "Marketing Copywriting"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [marketing, copywriting, seo, content]
+domains: [product, growth]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "Ogilvy on Advertising"
+  - "Google SEO Starter Guide"
+enforcement: recommended
+tad_gates: []
+---
 
-## 触发条件
+## TL;DR Quick Checklist
 
-当用户需要撰写营销文案、广告文案、社交媒体内容、SEO 内容或品牌传播相关内容时，自动应用此 Skill。
+```
+1. [ ] 明确人群/场景/目标；用 AIDA/PAS/FAB 结构化表达
+2. [ ] 标题10法：数字/问题/指南/对比/秘密/错误/清单/教程/故事/口号
+3. [ ] 核心价值→优势→利益→CTA（含承诺与门槛）
+4. [ ] SEO 关键词自然分布；避免关键词堆砌；元信息完善
+5. [ ] 变体与测试计划（A/B），记录指标与结论
+```
+
+**Red Flags:**
+- 空泛口号；堆砌功能；无场景/无用户语言；无CTA
 
 ---
 
@@ -35,6 +58,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type | Description                       | Location                                 |
+|---------------|-----------------------------------|------------------------------------------|
+| `copy_variants`| 文案变体集合（≥3）               | `.tad/evidence/content/copy-variants.md` |
+| `ab_plan`      | A/B 测试计划与指标               | `.tad/evidence/content/ab-plan.md`       |
+| `seo_meta`     | 标题/描述/关键词/结构化数据      | `.tad/evidence/content/seo-meta.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] 结构清晰（AIDA/PAS/FAB）；目标人群/场景明确
+[ ] 至少3个有效变体并含差异点；有可执行的测试计划
+[ ] SEO 元信息完整；无关键词堆砌；语法与语气一致
+```
+
+### Artifacts
+
+| Artifact         | Path                                      |
+|------------------|-------------------------------------------|
+| Copy Variants    | `.tad/evidence/content/copy-variants.md`  |
+| A/B Plan         | `.tad/evidence/content/ab-plan.md`        |
+| SEO Meta         | `.tad/evidence/content/seo-meta.md`       |
 
 ## 文案公式
 

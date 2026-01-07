@@ -1,10 +1,40 @@
 # Parallel Agents Skill
 
+---
+title: "Parallel Agents"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [parallel, orchestration, coordination]
+domains: [engineering]
+level: intermediate
+estimated_time: "30min"
+prerequisites: []
+sources:
+  - "obra/superpowers parallel-agents"
+enforcement: recommended
+tad_gates: [Gate3_Implementation_Quality]
+---
+
 > 来源: obra/superpowers，已适配 TAD 框架
 
 ## 触发条件
 
 当 Claude 面对多个独立的问题（如多个测试失败、多个子系统故障）时，自动应用此 Skill。
+
+---
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 先分域：按独立问题域/文件/模块分组
+2. [ ] 每个并行任务范围可控（输入/输出/不改动清单）
+3. [ ] 并行执行前记录冲突风险（文件重叠/共享状态）
+4. [ ] 收敛后全量测试；冲突解决策略明确
+5. [ ] 产出并行任务定义与合并报告（证据）
+```
+
+**Red Flags:**
+- 模糊任务；未评估冲突；合并后未跑全量测试
 
 ---
 
@@ -92,6 +122,32 @@ Promise.all([
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description                      | Location                                       |
+|-----------------|----------------------------------|------------------------------------------------|
+| `task_defs`     | 并行任务定义清单（范围/输入/输出）| `.tad/evidence/parallel/task-defs.md`         |
+| `merge_report`  | 合并与冲突解决报告               | `.tad/evidence/parallel/merge-report.md`      |
+| `test_results`  | 合并后全量测试结果               | `.tad/evidence/tests/`                        |
+
+### Acceptance Criteria
+
+```
+[ ] 并行任务定义完整可追溯（输入/输出/不改动清单）
+[ ] 合并冲突被识别与解决；记录决策与影响范围
+[ ] 全量测试通过；关键路径验证证据齐备
+```
+
+### Artifacts
+
+| Artifact           | Path                                        |
+|--------------------|---------------------------------------------|
+| Parallel Task Defs | `.tad/evidence/parallel/task-defs.md`       |
+| Merge Report       | `.tad/evidence/parallel/merge-report.md`    |
+| Test Evidence      | `.tad/evidence/tests/`                      |
 
 ## 任务模板
 

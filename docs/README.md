@@ -17,8 +17,8 @@
 | Version | Release | Key Features | Links |
 |---------|---------|--------------|-------|
 | **v1.4** | 2026-01 | MQ6 Technical Research, Research Phase, Skills System, Learn System | [Release Notes](releases/v1.4-release.md) |
-| v1.3 | 2025-11 | Evidence-Based Development, MQ1-5, Human Visual Empowerment | [Acceptance Report](../TAD_V1.3_ACCEPTANCE_REPORT.md) |
-| v1.2 | 2025-09 | MCP Integration, Smart Project Detection, 16 Sub-agents | [Release Notes](../RELEASE_v1.2.0.md) |
+| v1.3 | 2025-11 | Evidence-Based Development, MQ1-5, Human Visual Empowerment | [Acceptance Report](legacy/TAD_V1.3_ACCEPTANCE_REPORT.md) |
+| v1.2 | 2025-09 | MCP Integration, Smart Project Detection, 16 Sub-agents | [Release Notes](legacy/RELEASE_v1.2.0.md) |
 
 ## Upgrade Paths
 
@@ -34,6 +34,12 @@
 > They may contain outdated information not applicable to v1.4.
 
 See [Legacy Index](legacy/index.md) for the complete list.
+
+## Archived Documents
+
+> Development reports, setup guides, and design documents from early TAD development.
+
+See [Archive Index](archive/index.md) for the complete list.
 
 ## Internal Documentation
 

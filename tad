@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# TAD Framework CLI v1.2
-# Simple command-line interface for TAD management
+# TAD Framework CLI v1.4
+# Simple command-line interface for TAD management (v1.4 compatible)
 
 # Colors
 RED='\033[0;31m'
@@ -46,17 +46,37 @@ case "$1" in
             echo -e "${YELLOW}⚠${NC} Version file missing"
         fi
 
-        # Check agents
-        if [ -f "$TAD_ROOT/.tad/agents/agent-a-architect-v1.1.md" ] && \
-           [ -f "$TAD_ROOT/.tad/agents/agent-b-executor-v1.1.md" ]; then
-            echo -e "${GREEN}✓${NC} Agent definitions present"
+        # Check agents (any version)
+        if [ -d "$TAD_ROOT/.tad/agents" ]; then
+            A_COUNT=$(find "$TAD_ROOT/.tad/agents" -maxdepth 1 -type f -name "agent-a-architect*.md" | wc -l | tr -d ' ')
+            B_COUNT=$(find "$TAD_ROOT/.tad/agents" -maxdepth 1 -type f -name "agent-b-executor*.md" | wc -l | tr -d ' ')
+            if [ "$A_COUNT" -ge 1 ] && [ "$B_COUNT" -ge 1 ]; then
+                echo -e "${GREEN}✓${NC} Agent definitions present (Alex: $A_COUNT, Blake: $B_COUNT)"
+            else
+                echo -e "${YELLOW}⚠${NC} Some agent definitions missing (Alex: $A_COUNT, Blake: $B_COUNT)"
+            fi
         else
-            echo -e "${YELLOW}⚠${NC} Some agent definitions missing"
+            echo -e "${YELLOW}⚠${NC} Agents directory missing"
         fi
 
-        # Check config
-        if [ -f "$TAD_ROOT/.tad/config-v3.yaml" ] || [ -L "$TAD_ROOT/.tad/config.yaml" ]; then
-            echo -e "${GREEN}✓${NC} Configuration files present"
+        # Check config (v1.4 uses .tad/config.yaml)
+        CONFIG_FILE="$TAD_ROOT/.tad/config.yaml"
+        if [ -f "$CONFIG_FILE" ] || [ -L "$CONFIG_FILE" ]; then
+            CFG_VER=$(grep -E '^version:' "$CONFIG_FILE" | head -n1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+            if [ -n "$CFG_VER" ]; then
+                echo -e "${GREEN}✓${NC} Configuration: config.yaml (v$CFG_VER)"
+                if [ -n "$VERSION" ]; then
+                    if [[ "$CFG_VER" == "$VERSION"* ]]; then
+                        echo -e "${GREEN}✓${NC} Config version matches CLI version"
+                    else
+                        echo -e "${YELLOW}⚠${NC} Version mismatch: version.txt=$VERSION, config.yaml=$CFG_VER"
+                    fi
+                fi
+            else
+                echo -e "${GREEN}✓${NC} Configuration: config.yaml (version unknown)"
+            fi
+        elif [ -f "$TAD_ROOT/.tad/config-v3.yaml" ]; then
+            echo -e "${YELLOW}⚠${NC} Legacy configuration detected: config-v3.yaml"
         else
             echo -e "${YELLOW}⚠${NC} Configuration files missing"
         fi
@@ -93,6 +113,10 @@ case "$1" in
             CURRENT_VERSION=$(cat "$TAD_ROOT/.tad/version.txt")
             echo "Current version: v$CURRENT_VERSION"
 
+            if [ "$CURRENT_VERSION" = "1.4" ] || [ "$CURRENT_VERSION" = "v1.4" ]; then
+                echo -e "${GREEN}You're already on the latest version!${NC}"
+                exit 0
+            fi
             if [ "$CURRENT_VERSION" = "1.2" ]; then
                 echo -e "${GREEN}You're already on the latest version!${NC}"
                 exit 0
@@ -106,7 +130,7 @@ case "$1" in
 
     help|--help|-h)
         echo "=========================================="
-        echo "TAD Framework CLI v1.2"
+        echo "TAD Framework CLI v1.4"
         echo "=========================================="
         echo ""
         echo "Usage: tad <command>"
