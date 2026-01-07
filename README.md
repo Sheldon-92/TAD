@@ -8,28 +8,14 @@
 
 ## 🚀 Quick Installation
 
-### Fresh Installation (Recommended)
+### One Command for Everything
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
-### Upgrade from v1.3 to v1.4
-```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.4.sh | bash
-```
-
-### Upgrade from v1.2 to v1.4
-```bash
-# First upgrade to v1.3, then to v1.4
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.3.sh | bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.4.sh | bash
-```
-
-### Upgrade from v1.1 or earlier
-```bash
-# Fresh install is recommended for older versions
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
-```
+This single command handles:
+- **Fresh install** - New projects without TAD
+- **Upgrade from any version** - v1.0 → v1.1 → v1.2 → v1.3 → v1.4 (auto-detected)
 
 ### Manual installation
 ```bash
