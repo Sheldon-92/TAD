@@ -1,3 +1,10 @@
+> ⚠️ **Legacy Document - TAD v1.3**
+>
+> This document applies to TAD v1.3 and is preserved for historical reference.
+> For the current version (v1.4), see the [Documentation Portal](docs/README.md).
+>
+> ---
+
 # TAD v1.3 综合升级方案 - 验收报告
 
 **验收日期**: 2025-11-25

@@ -1,3 +1,10 @@
+> ⚠️ **Legacy Document - TAD v1.2**
+>
+> This document applies to TAD v1.2 and is preserved for historical reference.
+> For the current version (v1.4), see the [Documentation Portal](docs/README.md).
+>
+> ---
+
 # TAD Framework v1.2.1 - Critical Design Fixes
 
 **Release Date:** 2025-01-30
