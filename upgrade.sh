@@ -82,15 +82,41 @@ touch .tad/working/gates/.gitkeep
 # Clean up download
 rm -rf TAD-main
 
-# Update .gitignore if needed
-if ! grep -q ".tad/evidence/project-logs/" .gitignore 2>/dev/null; then
-    echo "📝 Updating .gitignore for new evidence system..."
-    cat >> .gitignore << 'EOF'
+# Clean up old .gitignore TAD rules (v1.4 improvement)
+if [ -f ".gitignore" ]; then
+    if grep -q "\.tad/" .gitignore 2>/dev/null; then
+        echo "📝 Cleaning up old .gitignore TAD rules..."
+        # Create a backup
+        cp .gitignore .gitignore.backup
 
-# TAD v2.0 Evidence System
-.tad/evidence/project-logs/*/
-.tad/working/gates/*.md
+        # Remove all lines containing .tad/ ignores
+        sed -i.tmp '/^\.tad\//d' .gitignore
+        sed -i.tmp '/^# TAD v2\.0 Evidence System/d' .gitignore
+        sed -i.tmp '/^# TAD Framework$/d' .gitignore
+
+        # Remove the temporary file created by sed
+        rm -f .gitignore.tmp
+
+        # Add new TAD section if not exists
+        if ! grep -q "# TAD Framework - Version Control Recommended" .gitignore 2>/dev/null; then
+            cat >> .gitignore << 'EOF'
+
+# TAD Framework - Version Control Recommended
+# ⚠️  IMPORTANT: TAD files SHOULD be version controlled to preserve development history
+# Only exclude user-specific local settings below
+
+# Local settings (user-specific, should not be shared)
+.claude/settings.local.json
+
+# Temporary files
+*.log
+*.tmp
+*.bak
 EOF
+        fi
+
+        echo "✅ Old .gitignore rules removed. Backup saved as .gitignore.backup"
+    fi
 fi
 
 echo ""

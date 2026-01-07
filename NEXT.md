@@ -135,6 +135,11 @@
 - [x] 测试 v1.3 → v1.4 升级脚本
 - [x] 提交新增的 42 个 Skills 到 GitHub (5批共42个)
 - [x] 修复升级脚本 404 错误 (复制 upgrade-to-v1.1/v1.2/v1.3.sh 到根目录)
+- [x] 修复 .gitignore 版本控制问题 (2026-01-07)
+  - [x] 修改 install.sh 不再忽略 TAD 文件，添加"建议版本控制"说明
+  - [x] 修改 upgrade.sh 自动清理旧的 TAD 忽略规则
+  - [x] 更新 TAD 项目自身的 .gitignore，移除所有 TAD 忽略规则
+  - [x] 同步修改到 GitHub，确保后续安装能获取完整 TAD 文件
 
 ## 本周
 

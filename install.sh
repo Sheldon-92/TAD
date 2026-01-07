@@ -141,7 +141,7 @@ fi
 # Clean up
 rm -rf TAD-main
 
-# Update .gitignore for v1.2
+# Update .gitignore for v1.4
 echo "📝 Updating .gitignore..."
 if [ ! -f ".gitignore" ]; then
     touch .gitignore
@@ -151,22 +151,17 @@ fi
 if ! grep -q "# TAD Framework" .gitignore 2>/dev/null; then
     cat >> .gitignore << 'EOF'
 
-# TAD Framework
-.tad/working/
-.tad/context/PROJECT.md
-.tad/context/REQUIREMENTS.md
-.tad/context/ARCHITECTURE.md
-.tad/context/DECISIONS.md
-.tad/evidence/project-logs/*/
-.tad/logs/
-*.log
-*.tmp
+# TAD Framework - Version Control Recommended
+# ⚠️  IMPORTANT: TAD files SHOULD be version controlled to preserve development history
+# Only exclude user-specific local settings below
 
-# Local settings
+# Local settings (user-specific, should not be shared)
 .claude/settings.local.json
 
-# MCP (Model Context Protocol)
-.tad/mcp-config.json
+# Temporary files
+*.log
+*.tmp
+*.bak
 EOF
 fi
 
