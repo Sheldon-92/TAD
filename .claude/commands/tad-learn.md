@@ -120,8 +120,28 @@
 
 **选项 1 - 确认推送**:
 1. 将文件从 `pending/` 移动到 `pushed/`
-2. 复制到 TAD 仓库的 `.tad/learnings/suggestions/`
-3. 提示：可以通过 `git push` 推送到远程
+2. 更新文件状态为 `pushed`
+3. 通过 GitHub API 推送到 TAD 仓库:
+   ```bash
+   # 读取文件内容并编码
+   CONTENT=$(base64 -i {filename})
+   FILENAME=$(basename {filename})
+
+   # 推送到 TAD GitHub 仓库
+   gh api repos/Sheldon-92/TAD/contents/.tad/learnings/pushed/$FILENAME \
+     --method PUT \
+     -f message="learn: Add suggestion - ${FILENAME%.md}" \
+     -f content="$CONTENT" \
+     -f branch="main"
+   ```
+4. 显示推送结果:
+   ```
+   ✅ 学习记录已推送到 TAD 框架仓库
+
+   GitHub 链接: https://github.com/Sheldon-92/TAD/blob/main/.tad/learnings/pushed/{filename}
+
+   此建议将在 TAD v1.5 时被审阅和应用。
+   ```
 
 **选项 2 - 修改后推送**:
 1. 等待 Human 提供修改
@@ -188,9 +208,37 @@ Alex: 这是一个 Agent 配合问题。让我记录...
 
 ---
 
+## 推送机制说明
+
+### 前置条件
+
+推送到 TAD GitHub 需要：
+1. **gh CLI 已认证**: 运行 `gh auth status` 确认
+2. **网络连接**: 能访问 GitHub API
+3. **写权限**: 如果推送到自己 fork 的仓库，需要有 push 权限
+
+### 错误处理
+
+| 错误情况 | 处理方式 |
+|---------|---------|
+| gh CLI 未认证 | 提示运行 `gh auth login` |
+| 网络错误 | 提示检查网络，稍后重试 |
+| 文件已存在 | 询问是否覆盖（更新已有建议） |
+| 权限不足 | 提示联系维护者或 fork 仓库 |
+| API 限流 | 提示稍后重试，或手动推送 |
+
+### 手动推送备选方案
+
+如果自动推送失败，用户可以手动推送：
+1. 文件已保存在本地 `.tad/learnings/pushed/`
+2. 可以通过邮件/Issue 发送给维护者
+3. 或者 fork TAD 仓库，手动提交 PR
+
+---
+
 ## 后续处理
 
-推送到 TAD 仓库的建议会存放在 `.tad/learnings/suggestions/` 目录。
+推送到 TAD 仓库的建议会存放在 `.tad/learnings/pushed/` 目录。
 
 **处理时机**: TAD 版本升级时
 

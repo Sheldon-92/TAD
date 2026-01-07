@@ -590,9 +590,11 @@ learn_system:
 
     step4_push:
       condition: "Human 确认推送"
-      action: "推送到 TAD GitHub 仓库"
-      destination: "TAD仓库/.tad/learnings/suggestions/"
+      action: "通过 GitHub API 推送到 TAD 仓库"
+      destination: "TAD仓库/.tad/learnings/pushed/"
+      method: "gh api repos/Sheldon-92/TAD/contents/.tad/learnings/pushed/{filename}"
       filename: "{YYYY-MM-DD}-{short-description}.md"
+      note: "自动创建 commit，无需手动 git push"
 
   # 后续处理说明
   future_processing:
