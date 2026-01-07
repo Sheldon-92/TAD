@@ -79,13 +79,13 @@ echo -e "${GREEN}✓ Created learnings directories${NC}"
 mkdir -p .claude/skills
 echo -e "${GREEN}✓ Created skills directory${NC}"
 
-# Install built-in skills
+# Install built-in skills (all 43 skills)
 echo ""
 echo "📚 Installing built-in skills..."
 if [ -d "TAD-main/.claude/skills" ]; then
+    SKILL_COUNT=$(ls -1 TAD-main/.claude/skills/*.md 2>/dev/null | wc -l)
     cp TAD-main/.claude/skills/*.md .claude/skills/ 2>/dev/null || true
-    echo -e "${GREEN}✓ Installed ui-design.md${NC}"
-    echo -e "${GREEN}✓ Installed skill-creator.md${NC}"
+    echo -e "${GREEN}✓ Installed $SKILL_COUNT skills${NC}"
 fi
 
 # Install /tad-learn command
@@ -120,22 +120,24 @@ echo -e "${GREEN}✅ Upgrade to v1.4 Complete!${NC}"
 echo "======================================"
 echo ""
 echo "🎯 What's New in v1.4:"
+echo "  • ${BLUE}Skill Auto-Match${NC} - Auto-detect and load relevant skills"
+echo "  • ${BLUE}43 Built-in Skills${NC} - Complete knowledge base coverage"
 echo "  • ${BLUE}MQ6 Technical Research${NC} - All tech decisions trigger search"
 echo "  • ${BLUE}Research Phase${NC} - Inline research + final tech review"
-echo "  • ${BLUE}Skills System${NC} - .claude/skills/ knowledge base"
 echo "  • ${BLUE}Learn System${NC} - /tad-learn records framework improvements"
-echo "  • ${BLUE}Built-in Skills${NC} - ui-design.md, skill-creator.md"
 echo ""
 echo "📖 New Commands:"
 echo "  ${BLUE}/tad-learn${NC} - Record framework improvements"
 echo ""
 echo "📁 New Directories:"
-echo "  .claude/skills/        - Knowledge base files"
+echo "  .claude/skills/        - 43 knowledge base files"
 echo "  .tad/learnings/        - Framework learning records"
 echo ""
-echo "📚 Built-in Skills:"
-echo "  .claude/skills/ui-design.md       - UI/UX design knowledge"
-echo "  .claude/skills/skill-creator.md   - How to create new skills"
+echo "📚 Skills Categories:"
+echo "  Development: api-design, database, testing, git, security..."
+echo "  Design: ui-design, ux-research, theme-factory, canvas..."
+echo "  Content: writing, i18n, marketing, scientific-writing..."
+echo "  Data: data-science, xlsx-analysis, pdf-processing..."
 echo ""
 echo "💡 To rollback: cp .tad/config.yaml.v1.3.bak .tad/config.yaml"
 echo ""
