@@ -115,6 +115,22 @@
   - [x] 更新所有内部链接
   - [x] 完成最终审计报告
 
+- [x] Agent 文件整理
+  - [x] 合并 agent-a-architect (v1.1 → base)
+  - [x] 合并 agent-b-executor (v1.1 → base)
+  - [x] 删除未追踪的 v3 文件
+  - [x] 更新所有活跃文件的引用
+  - [x] 归档旧脚本到 scripts/archive/
+
+- [x] TAD v1.5 - Skills 自动匹配机制
+  - [x] 更新 config.yaml 添加 skill_auto_match 配置 (165行)
+  - [x] 意图映射：20+ 意图关键词 → Skill
+  - [x] 文件模式映射：10+ 文件模式 → Skill
+  - [x] 命令触发器：15+ 命令 → Skill
+  - [x] 更新 agent-a-architect.md 添加 STEP 3.5 自动匹配步骤
+  - [x] 更新 agent-b-executor.md 添加 STEP 3.5 自动匹配步骤
+  - [x] 为 20 个关键 Skills 添加 triggers frontmatter
+
 - [ ] 测试 v1.4 安装脚本在新项目中的效果
 - [ ] 测试 v1.3 → v1.4 升级脚本
 - [ ] 提交新增的 42 个 Skills 到 GitHub (5批共42个)
@@ -133,6 +149,17 @@
 ## 阻塞/等待
 
 （无）
+
+---
+
+## v1.5 变更摘要 (Skills 自动匹配)
+
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| Auto-Match | `.tad/config.yaml` | 新增 skill_auto_match 配置 (165行) |
+| Agent A | `.tad/agents/agent-a-architect.md` | 添加 STEP 3.5 + auto_match section |
+| Agent B | `.tad/agents/agent-b-executor.md` | 添加 STEP 3.5 + auto_match section |
+| 20 Skills | `.claude/skills/*.md` | 添加 triggers frontmatter |
 
 ---
 
