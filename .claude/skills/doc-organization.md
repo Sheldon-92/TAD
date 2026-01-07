@@ -17,7 +17,7 @@ sources:
 enforcement: recommended
 tad_gates: [handoff, task_completion]
 
-# v1.5 Skill 自动匹配触发条件
+# v1.4 Skill 自动匹配触发条件
 triggers:
   when_user_says:
     - "整理文档"

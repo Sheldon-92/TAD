@@ -16,7 +16,7 @@ sources:
 enforcement: mandatory
 tad_gates: [Gate3_Testing]
 
-# v1.5 Skill 自动匹配触发条件
+# v1.4 Skill 自动匹配触发条件
 triggers:
   when_user_says:
     - "写测试"

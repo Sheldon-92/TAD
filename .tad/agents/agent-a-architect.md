@@ -183,11 +183,11 @@ skills_integration:
       3. 如触发 MQ6，先 WebSearch 再结合 Skills
       4. 将 Skills 知识融入设计决策
 
-  # ==================== Skill 自动匹配机制 (v1.5 新增) ====================
+  # ==================== Skill 自动匹配机制 (v1.4 新增) ====================
   # 解决问题：执行任务时自动识别并读取相关 Skill
   auto_match:
     enabled: true
-    version: "1.5"
+    version: "1.4"
 
     # 任务开始时的自动检测流程
     on_task_start:

@@ -1782,12 +1782,12 @@ skills_system:
       产品分析: [product-management.md, competitive-analysis.md, ux-research.md]
       # ... 其余 Skills 按现有分类
 
-  # ==================== Skill 自动匹配机制 (v1.5 新增) ====================
+  # ==================== Skill 自动匹配机制 (v1.4 新增) ====================
   # 解决问题：Agent 执行任务时无法自动识别并读取相关 Skill
   # 设计原则：意图匹配 + 文件模式 + 命令触发 三重机制
   skill_auto_match:
     enabled: true
-    version: "1.5"
+    version: "1.4"
     description: "基于用户意图自动匹配并加载相关 Skill"
 
     # 匹配触发时机

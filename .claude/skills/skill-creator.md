@@ -15,7 +15,7 @@ sources:
 enforcement: recommended
 tad_gates: [Gate2_Design, Gate4_Review]
 
-# v1.5 Skill 自动匹配触发条件
+# v1.4 Skill 自动匹配触发条件
 triggers:
   # 意图匹配 - 用户说这些话时自动推荐此 Skill
   when_user_says:

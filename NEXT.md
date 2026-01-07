@@ -122,7 +122,7 @@
   - [x] 更新所有活跃文件的引用
   - [x] 归档旧脚本到 scripts/archive/
 
-- [x] TAD v1.5 - Skills 自动匹配机制
+- [x] TAD v1.4 - Skills 自动匹配机制
   - [x] 更新 config.yaml 添加 skill_auto_match 配置 (165行)
   - [x] 意图映射：20+ 意图关键词 → Skill
   - [x] 文件模式映射：10+ 文件模式 → Skill
@@ -152,17 +152,6 @@
 
 ---
 
-## v1.5 变更摘要 (Skills 自动匹配)
-
-| 模块 | 文件 | 说明 |
-|------|------|------|
-| Auto-Match | `.tad/config.yaml` | 新增 skill_auto_match 配置 (165行) |
-| Agent A | `.tad/agents/agent-a-architect.md` | 添加 STEP 3.5 + auto_match section |
-| Agent B | `.tad/agents/agent-b-executor.md` | 添加 STEP 3.5 + auto_match section |
-| 20 Skills | `.claude/skills/*.md` | 添加 triggers frontmatter |
-
----
-
 ## v1.4 变更摘要
 
 | 模块 | 文件 | 说明 |
@@ -171,6 +160,9 @@
 | Research Phase | `.tad/config.yaml` | 新增 research_phase 配置 |
 | Skills System | `.tad/config.yaml` | 新增 skills_system 配置 |
 | Learn System | `.tad/config.yaml` | 新增 learn_system 配置 |
+| **Skill Auto-Match** | `.tad/config.yaml` | 新增 skill_auto_match 配置 (165行) |
+| Agent A Auto-Match | `.tad/agents/agent-a-architect.md` | 添加 STEP 3.5 + auto_match section |
+| Agent B Auto-Match | `.tad/agents/agent-b-executor.md` | 添加 STEP 3.5 + auto_match section |
 | /tad-learn | `.claude/commands/tad-learn.md` | 新命令 |
 | ui-design | `.claude/skills/ui-design.md` | 内置 Skill |
 | skill-creator | `.claude/skills/skill-creator.md` | 元技能 |
