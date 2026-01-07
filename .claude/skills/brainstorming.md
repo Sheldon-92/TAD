@@ -1,6 +1,43 @@
 # Brainstorming Skill
 
-> 来源: obra/superpowers，已适配 TAD 框架
+---
+title: "Brainstorming & Design Discussion"
+version: "3.0"
+last_updated: "2026-01-06"
+tags: [brainstorming, design, planning, requirements, collaboration]
+domains: [all]
+level: beginner
+estimated_time: "15min"
+prerequisites: []
+sources:
+  - "obra/superpowers"
+  - "IDEO Design Thinking"
+  - "TAD Framework"
+enforcement: recommended
+tad_gates: [Gate1_Understanding, Gate2_Design]
+---
+
+> 来源: obra/superpowers，已适配 TAD 框架和文档合规标准
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] Understand current project state before suggesting
+2. [ ] Ask clarifying questions (one at a time)
+3. [ ] Propose 2-3 alternative approaches
+4. [ ] Evaluate trade-offs for each approach
+5. [ ] Document the chosen design with rationale
+6. [ ] Apply YAGNI - remove unnecessary features
+```
+
+**Red Flags:**
+- Jumping to solution without understanding requirements
+- Asking too many questions at once
+- Recommending complex solutions for simple problems
+- Not documenting design decisions
+- Adding "just in case" features
+
+---
 
 ## 触发条件
 
@@ -132,15 +169,139 @@ D) 其他（请说明）
 头脑风暴是 Alex（方案设计者）的核心工作：
 
 ```
-用户需求 → Alex 头脑风暴 → 设计文档 → Blake 实施
-              ↓
-         [ 此 Skill ]
+用户需求 → Alex 头脑风暴 → 设计文档 → Gate 审核 → Blake 实施
+              ↓                    ↓
+         [ 此 Skill ]        [证据收集]
 ```
 
 **TAD 集成点**：
 1. 在 `/tad-alex` 启动后使用
 2. 结合 MQ（Mandatory Questions）收集信息
 3. 设计完成后触发 Gate 审核
+
+### Gate Mapping
+
+```yaml
+Gate1_Understanding:
+  brainstorming_inputs:
+    - User requirements clarified
+    - Current state understood
+    - Constraints identified
+    - Success criteria defined
+
+Gate2_Design:
+  brainstorming_outputs:
+    - Multiple approaches explored (2-3 minimum)
+    - Trade-offs documented
+    - Recommended approach selected with rationale
+    - Design document created
+    - YAGNI review completed
+```
+
+### Evidence Template
+
+```markdown
+## Brainstorming Evidence - [Feature/Topic Name]
+
+**Date:** [Date]
+**Facilitator:** [Name]
+**Participants:** [List]
+
+---
+
+### 1. Problem Statement
+
+**Problem:** [Clear description of what we're solving]
+
+**Context:**
+- [Background point 1]
+- [Background point 2]
+
+**Constraints:**
+- [Technical constraint]
+- [Business constraint]
+- [Time constraint]
+
+---
+
+### 2. Requirements Gathered
+
+| Requirement | Priority | Source | Notes |
+|-------------|----------|--------|-------|
+| [Req 1] | Must | User | |
+| [Req 2] | Should | Stakeholder | |
+| [Req 3] | Could | Technical | |
+
+**Clarifying Questions Asked:**
+1. Q: [Question] → A: [Answer]
+2. Q: [Question] → A: [Answer]
+
+---
+
+### 3. Options Explored
+
+#### Option A: [Name]
+
+| Aspect | Assessment |
+|--------|------------|
+| Description | [What this approach does] |
+| Pros | [List of advantages] |
+| Cons | [List of disadvantages] |
+| Effort | [Low/Medium/High] |
+| Risk | [Low/Medium/High] |
+
+#### Option B: [Name]
+
+| Aspect | Assessment |
+|--------|------------|
+| Description | [What this approach does] |
+| Pros | [List of advantages] |
+| Cons | [List of disadvantages] |
+| Effort | [Low/Medium/High] |
+| Risk | [Low/Medium/High] |
+
+#### Option C: [Name] (if applicable)
+
+[Same structure]
+
+---
+
+### 4. Decision
+
+**Selected Option:** [Option A/B/C]
+
+**Rationale:**
+1. [Primary reason for selection]
+2. [Secondary reason]
+3. [How it addresses constraints]
+
+**Rejected Options Reasoning:**
+- Option X rejected because: [reason]
+- Option Y rejected because: [reason]
+
+---
+
+### 5. YAGNI Review
+
+Features explicitly excluded (not needed now):
+- [ ] [Feature removed] - Reason: [why not needed]
+- [ ] [Feature removed] - Reason: [why not needed]
+
+---
+
+### 6. Next Steps
+
+| Action | Owner | Timeline |
+|--------|-------|----------|
+| [Create design doc] | @name | [Date] |
+| [Prototype] | @name | [Date] |
+| [Review] | @name | [Date] |
+
+---
+
+**Brainstorming Complete:** ✅ Yes
+**Ready for Gate2:** ✅ Yes
+```
 
 ---
 

@@ -1,6 +1,38 @@
 # Error Handling Skill
 
-> 综合自多个开源仓库，已适配 TAD 框架
+---
+title: "Error Handling"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [errors, exceptions, resilience, logging, observability, http]
+domains: [backend, frontend, api]
+level: intermediate
+estimated_time: "30min"
+prerequisites: []
+sources:
+  - "Release It! 2nd Edition"
+  - "Google SRE Workbook"
+  - "RFC 7807 - Problem Details for HTTP APIs"
+enforcement: recommended
+tad_gates: [Gate3_Implementation_Quality, Gate4_Verification]
+---
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 分类错误：可恢复/不可恢复/编程错误（不要捕获编程错误）
+2. [ ] 对无效输入快速失败（Fail Fast），提供清晰消息
+3. [ ] 结构化日志 + 关联ID（traceId/correlationId）
+4. [ ] HTTP 错误采用 RFC7807 统一格式与状态码映射
+5. [ ] 覆盖错误路径与边界测试（含重试/降级/回退）
+```
+
+**Red Flags:**
+- 吞异常/静默失败；日志无上下文；将编程错误当业务错误处理
+- 使用 `eval/new Function` 动态执行；在前端直接渲染未转义的错误信息
+- HTTP 统一返回 200 + 错误文本；无标准错误结构
+
+---
 
 ## 触发条件
 
@@ -37,6 +69,35 @@
 ├── 断言失败
 └── 处理: 修复代码，不要 catch
 ```
+
+---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description                          | Location                                      |
+|-------------------|--------------------------------------|-----------------------------------------------|
+| `test_results`    | 错误路径与边界用例的测试输出         | `.tad/evidence/tests/`                        |
+| `error_contract`  | HTTP 错误模型（RFC7807 样例/约定）   | `.tad/evidence/api/error-contract.md`        |
+| `log_sample`      | 结构化日志样例（含 traceId）         | `.tad/evidence/observability/log-sample.txt` |
+
+### Acceptance Criteria
+
+```
+[ ] 为关键路径提供错误分类与处理策略（重试/降级/回退）
+[ ] RFC7807 错误结构与状态码映射一致且已示例
+[ ] 日志结构化、可关联（traceId），不泄露敏感数据
+[ ] 单元/集成测试覆盖错误与边界路径，全部通过
+```
+
+### Artifacts
+
+| Artifact                          | Path                                            | Template Hint                 |
+|-----------------------------------|-------------------------------------------------|-------------------------------|
+| Error Contract (Problem Details)  | `.tad/evidence/api/error-contract.md`           | fields: type/title/status/... |
+| Log Sample (Structured)           | `.tad/evidence/observability/log-sample.txt`    | JSON line with traceId        |
+| Test Evidence (Error Path)        | `.tad/evidence/tests/error-paths.txt`           | failing→passing snippet       |
 
 ---
 

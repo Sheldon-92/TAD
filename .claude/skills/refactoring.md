@@ -2,17 +2,20 @@
 
 ---
 title: "Refactoring"
-version: "2.0"
+version: "3.0"
 last_updated: "2026-01-06"
-tags: [refactoring, code-quality, engineering, maintenance]
+tags: [refactoring, code-quality, static-analysis, micro-commits, engineering, maintenance]
 domains: [all]
 level: intermediate
-estimated_time: "30min"
+estimated_time: "35min"
 prerequisites: [testing-strategy]
 sources:
   - "Refactoring - Martin Fowler"
   - "Working Effectively with Legacy Code - Michael Feathers"
+  - "ESLint/Biome Documentation"
+  - "SonarQube Rules"
 enforcement: recommended
+tad_gates: [Gate4_Review]
 ---
 
 ## TL;DR Quick Checklist
@@ -395,7 +398,7 @@ VS Code:
 - F2: Rename symbol
 ```
 
-### Static Analysis
+### Static Analysis (Basic)
 
 ```bash
 # Detect code smells (JS)
@@ -406,6 +409,272 @@ npx plato -r -d report src/
 
 # Python
 ruff check --fix .
+```
+
+---
+
+## Static Analysis Integration
+
+### Comprehensive Static Analysis Pipeline
+
+```yaml
+# .github/workflows/static-analysis.yml
+name: Static Analysis
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npx eslint . --format=json --output-file=eslint-report.json
+        continue-on-error: true
+
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+
+  complexity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cyclomatic Complexity Check
+        run: |
+          npx complexity-report src/ --format json > complexity.json
+          # Fail if any function has complexity > 10
+          jq -e '.functions | map(select(.cyclomatic > 10)) | length == 0' complexity.json
+
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for accurate blame
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+```
+
+### ESLint Configuration for Refactoring
+
+```javascript
+// eslint.config.js (ESLint 9+ flat config)
+import js from '@eslint/js';
+import typescript from '@typescript-eslint/eslint-plugin';
+import sonarjs from 'eslint-plugin-sonarjs';
+
+export default [
+  js.configs.recommended,
+  {
+    plugins: {
+      '@typescript-eslint': typescript,
+      sonarjs,
+    },
+    rules: {
+      // Code Complexity
+      'complexity': ['error', { max: 10 }],
+      'max-depth': ['error', { max: 4 }],
+      'max-nested-callbacks': ['error', { max: 3 }],
+      'max-params': ['error', { max: 4 }],
+      'max-statements': ['error', { max: 20 }],
+      'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true }],
+
+      // Code Smells (SonarJS)
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'sonarjs/no-duplicate-string': ['error', { threshold: 3 }],
+      'sonarjs/no-identical-functions': 'error',
+      'sonarjs/no-collapsible-if': 'error',
+      'sonarjs/no-redundant-jump': 'error',
+      'sonarjs/prefer-immediate-return': 'error',
+
+      // Best Practices
+      'no-else-return': 'error',  // Encourage guard clauses
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'eqeqeq': ['error', 'always'],
+    },
+  },
+];
+```
+
+### Biome (Faster Alternative)
+
+```json
+// biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/1.5.0/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 15 }
+        },
+        "noForEach": "warn",
+        "useFlatMap": "error"
+      },
+      "suspicious": {
+        "noDoubleEquals": "error",
+        "noExplicitAny": "warn"
+      },
+      "style": {
+        "noNegationElse": "error",
+        "useConst": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  }
+}
+```
+
+```bash
+# Biome commands
+npx @biomejs/biome check .              # Check all
+npx @biomejs/biome check --apply .       # Auto-fix
+npx @biomejs/biome lint .                # Lint only
+npx @biomejs/biome format --write .      # Format only
+```
+
+### SonarQube Quality Gate
+
+```yaml
+# sonar-project.properties
+sonar.projectKey=my-project
+sonar.sources=src
+sonar.tests=src/__tests__
+sonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+# Quality Gate Thresholds
+sonar.qualitygate.conditions=\
+  new_coverage >= 80,\
+  new_duplicated_lines_density <= 3,\
+  new_reliability_rating == A,\
+  new_security_rating == A,\
+  new_maintainability_rating == A
+
+# Code Smell Thresholds
+sonar.issue.ignore.multicriteria=e1,e2
+sonar.issue.ignore.multicriteria.e1.ruleKey=typescript:S1186
+sonar.issue.ignore.multicriteria.e1.resourceKey=**/*.test.ts
+```
+
+### Complexity Metrics Reference
+
+```
+Metric              | Good  | Warning | Critical
+--------------------|-------|---------|----------
+Cyclomatic          | ≤ 10  | 11-20   | > 20
+Cognitive           | ≤ 15  | 16-25   | > 25
+Nesting Depth       | ≤ 4   | 5-6     | > 6
+Function Length     | ≤ 30  | 31-50   | > 50
+File Length         | ≤ 300 | 301-500 | > 500
+Parameters          | ≤ 4   | 5-6     | > 6
+```
+
+---
+
+## Micro-Commits for Refactoring
+
+### The Micro-Commit Refactoring Pattern
+
+```
+Each refactoring step = one commit
+
+Pattern:
+1. refactor: rename variable X to Y
+2. refactor: extract method doFoo from processData
+3. refactor: move calculateTotal to OrderService
+4. refactor: inline temporary variable
+5. refactor: replace conditional with polymorphism
+```
+
+### Example Micro-Commit Sequence
+
+```bash
+# Refactoring a God Class (UserService)
+
+# Commit 1: Extract user validation
+git commit -m "refactor(user): extract UserValidator from UserService"
+
+# Commit 2: Extract email handling
+git commit -m "refactor(user): extract EmailService from UserService"
+
+# Commit 3: Extract persistence
+git commit -m "refactor(user): extract UserRepository from UserService"
+
+# Commit 4: Cleanup dependencies
+git commit -m "refactor(user): update UserService to use extracted services"
+
+# Commit 5: Remove dead code
+git commit -m "refactor(user): remove unused private methods"
+
+# Each commit:
+# - Compiles successfully
+# - All tests pass
+# - Is reversible independently
+```
+
+### Benefits of Micro-Commits
+
+```
+Why micro-commits matter for refactoring:
+
+□ Easy rollback: git revert specific change
+□ Easy review: each commit is small
+□ Git bisect: find which refactoring broke things
+□ Learning: clear history of transformations
+□ Safety: small steps, less risk
+
+Anti-pattern:
+❌ "refactor: refactor user service" (1000 lines changed)
+
+Better:
+✅ 5-10 small commits, each doing ONE thing
 ```
 
 ---

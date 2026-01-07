@@ -1,6 +1,45 @@
 # Data Science & Jupyter Workflows Skill
 
-> 综合自多个开源仓库和最佳实践，已适配 TAD 框架
+---
+title: "Data Science & Jupyter Workflows"
+version: "3.0"
+last_updated: "2026-01-06"
+tags: [data-science, ml, jupyter, mlops, reproducibility, experiment-tracking]
+domains: [data, ml, analytics]
+level: intermediate
+estimated_time: "60min"
+prerequisites: [python]
+sources:
+  - "MLflow Documentation"
+  - "Weights & Biases Best Practices"
+  - "Google ML Best Practices"
+  - "Model Cards for Model Reporting (Mitchell et al.)"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate3_Testing, Gate4_Review]
+---
+
+> 综合自多个开源仓库、MLOps 最佳实践和负责任 AI 指南，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] Set random seeds for reproducibility
+2. [ ] Lock dependencies (requirements.txt / conda.yaml)
+3. [ ] Track experiments with MLflow/W&B
+4. [ ] Version datasets with DVC
+5. [ ] Document model with Model Card
+6. [ ] Validate with hold-out test set
+```
+
+**Red Flags:**
+- No random seed set
+- Missing dependency versions
+- No experiment tracking
+- Unreproducible results across runs
+- No model documentation
+- Training on test data (data leakage)
+
+---
 
 ## 触发条件
 
@@ -32,6 +71,440 @@
     ├── Notebook 结构
     ├── 代码重构
     └── 生产化部署
+```
+
+---
+
+## Reproducibility (复现性)
+
+Reproducibility is **non-negotiable** for scientific validity and production reliability.
+
+### Setting Random Seeds
+
+```python
+import os
+import random
+import numpy as np
+import torch  # if using PyTorch
+
+def set_seed(seed: int = 42):
+    """Set all random seeds for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+
+    # PyTorch
+    if 'torch' in dir():
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+    # TensorFlow
+    try:
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+    except ImportError:
+        pass
+
+# Call at the START of every script/notebook
+SEED = 42
+set_seed(SEED)
+
+# Also pass to sklearn functions
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=SEED
+)
+```
+
+### Environment Management
+
+```yaml
+# environment.yml (Conda - RECOMMENDED)
+name: my-ml-project
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11.5
+  - numpy=1.26.2
+  - pandas=2.1.3
+  - scikit-learn=1.3.2
+  - matplotlib=3.8.2
+  - seaborn=0.13.0
+  - jupyter=1.0.0
+  - pip:
+    - mlflow==2.9.2
+    - wandb==0.16.1
+```
+
+```bash
+# Create and export environment
+conda env create -f environment.yml
+conda activate my-ml-project
+conda env export > environment.lock.yml  # Full lockfile
+
+# Pip alternative
+pip freeze > requirements.txt
+
+# Or use pip-tools for better dependency resolution
+pip-compile requirements.in -o requirements.txt
+```
+
+### Docker for Full Reproducibility
+
+```dockerfile
+# Dockerfile
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy and install dependencies first (better caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY . .
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONHASHSEED=42
+
+# Default command
+CMD ["python", "train.py"]
+```
+
+### Reproducibility Checklist
+
+```markdown
+## Reproducibility Verification
+
+### Environment
+- [ ] Python version pinned
+- [ ] All package versions locked
+- [ ] CUDA/cuDNN versions documented (if GPU)
+- [ ] Docker image available (optional but recommended)
+
+### Code
+- [ ] Random seeds set at script start
+- [ ] Seeds passed to all random functions
+- [ ] Data loading is deterministic
+- [ ] No hidden state between runs
+
+### Data
+- [ ] Data version tracked (hash or DVC)
+- [ ] Train/val/test splits saved or reproducible
+- [ ] Preprocessing steps documented
+- [ ] No data leakage between splits
+
+### Results
+- [ ] Metrics match across repeated runs (within tolerance)
+- [ ] Model weights can be reloaded
+- [ ] Inference results are reproducible
+```
+
+---
+
+## Experiment Tracking (实验追踪)
+
+Track every experiment systematically to avoid "which model was best again?"
+
+### MLflow Setup
+
+```python
+import mlflow
+import mlflow.sklearn
+from sklearn.metrics import accuracy_score, f1_score
+
+# Set tracking URI (local or remote)
+mlflow.set_tracking_uri("sqlite:///mlflow.db")  # Local
+# mlflow.set_tracking_uri("http://mlflow-server:5000")  # Remote
+
+# Set experiment name
+mlflow.set_experiment("customer-churn-prediction")
+
+# Training with tracking
+def train_with_tracking(X_train, y_train, X_test, y_test, params):
+    with mlflow.start_run(run_name=f"rf_{params['n_estimators']}trees"):
+        # Log parameters
+        mlflow.log_params(params)
+        mlflow.log_param("dataset_version", "v2.1")
+
+        # Train model
+        model = RandomForestClassifier(**params, random_state=SEED)
+        model.fit(X_train, y_train)
+
+        # Evaluate
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average='weighted')
+
+        # Log metrics
+        mlflow.log_metrics({
+            "accuracy": accuracy,
+            "f1_score": f1,
+            "train_samples": len(X_train),
+            "test_samples": len(X_test)
+        })
+
+        # Log model
+        mlflow.sklearn.log_model(model, "model")
+
+        # Log artifacts (plots, reports)
+        # mlflow.log_artifact("confusion_matrix.png")
+
+        # Log tags for organization
+        mlflow.set_tags({
+            "model_type": "random_forest",
+            "feature_set": "v3",
+            "author": "data-team"
+        })
+
+        return model, accuracy
+
+# Run experiments
+for n_trees in [50, 100, 200]:
+    params = {"n_estimators": n_trees, "max_depth": 10}
+    train_with_tracking(X_train, y_train, X_test, y_test, params)
+```
+
+### Weights & Biases (W&B)
+
+```python
+import wandb
+from wandb.integration.sklearn import plot_confusion_matrix
+
+# Initialize project
+wandb.init(
+    project="customer-churn",
+    name="experiment-001",
+    config={
+        "model": "random_forest",
+        "n_estimators": 100,
+        "learning_rate": 0.01,
+        "dataset": "churn_v2"
+    }
+)
+
+# Training loop with logging
+for epoch in range(epochs):
+    # ... training code ...
+
+    # Log metrics
+    wandb.log({
+        "epoch": epoch,
+        "train_loss": train_loss,
+        "val_loss": val_loss,
+        "val_accuracy": val_accuracy
+    })
+
+# Log confusion matrix
+wandb.sklearn.plot_confusion_matrix(y_test, y_pred, labels=class_names)
+
+# Log model artifact
+artifact = wandb.Artifact("model", type="model")
+artifact.add_file("model.pkl")
+wandb.log_artifact(artifact)
+
+wandb.finish()
+```
+
+### DVC for Data Versioning
+
+```bash
+# Initialize DVC
+dvc init
+
+# Track data files
+dvc add data/raw/customers.csv
+git add data/raw/customers.csv.dvc .gitignore
+git commit -m "Add raw customer data"
+
+# Create data pipeline
+dvc run -n preprocess \
+    -d data/raw/customers.csv \
+    -d src/preprocess.py \
+    -o data/processed/customers_clean.csv \
+    python src/preprocess.py
+
+dvc run -n train \
+    -d data/processed/customers_clean.csv \
+    -d src/train.py \
+    -o models/model.pkl \
+    -M metrics.json \
+    python src/train.py
+
+# dvc.yaml is created automatically
+# Push data to remote storage
+dvc remote add -d storage s3://my-bucket/dvc
+dvc push
+```
+
+### Experiment Comparison
+
+```python
+# MLflow: Compare runs programmatically
+import mlflow
+from mlflow.tracking import MlflowClient
+
+client = MlflowClient()
+experiment = client.get_experiment_by_name("customer-churn-prediction")
+
+# Get all runs
+runs = client.search_runs(
+    experiment_ids=[experiment.experiment_id],
+    order_by=["metrics.accuracy DESC"],
+    max_results=10
+)
+
+# Compare
+for run in runs:
+    print(f"Run: {run.info.run_name}")
+    print(f"  Accuracy: {run.data.metrics['accuracy']:.4f}")
+    print(f"  Params: {run.data.params}")
+```
+
+---
+
+## Model Cards (模型卡)
+
+Model Cards document model capabilities, limitations, and intended use for responsible AI.
+
+### Model Card Template
+
+```markdown
+# Model Card: Customer Churn Predictor
+
+## Model Details
+
+| Attribute | Value |
+|-----------|-------|
+| **Model Name** | ChurnPredictor-v2.1 |
+| **Model Type** | Gradient Boosting Classifier |
+| **Version** | 2.1.0 |
+| **Release Date** | 2026-01-06 |
+| **Developers** | Data Science Team |
+| **License** | Internal Use Only |
+| **Contact** | ml-team@company.com |
+
+## Intended Use
+
+### Primary Use Case
+Predict customer churn probability to enable proactive retention campaigns.
+
+### Intended Users
+- Customer Success Team
+- Marketing Automation Systems
+
+### Out-of-Scope Uses
+- ❌ Credit decisions
+- ❌ Employment decisions
+- ❌ Individual customer targeting without consent
+
+## Training Data
+
+| Attribute | Value |
+|-----------|-------|
+| **Dataset** | customer_data_v5 |
+| **Size** | 150,000 records |
+| **Time Period** | 2023-01 to 2025-12 |
+| **Features** | 45 (demographics, behavior, transactions) |
+| **Label** | Churned within 90 days (binary) |
+
+### Data Distribution
+- Churn Rate: 18%
+- Geographic: 60% US, 25% EU, 15% APAC
+- Customer Tenure: Mean 2.3 years
+
+## Performance
+
+### Overall Metrics
+| Metric | Value |
+|--------|-------|
+| Accuracy | 0.87 |
+| Precision | 0.82 |
+| Recall | 0.78 |
+| F1 Score | 0.80 |
+| AUC-ROC | 0.91 |
+
+### Performance by Subgroup
+| Segment | Accuracy | Precision | Recall |
+|---------|----------|-----------|--------|
+| US Customers | 0.89 | 0.84 | 0.81 |
+| EU Customers | 0.86 | 0.80 | 0.76 |
+| APAC Customers | 0.83 | 0.78 | 0.72 |
+| < 1 year tenure | 0.84 | 0.79 | 0.74 |
+| > 3 year tenure | 0.90 | 0.86 | 0.83 |
+
+## Limitations
+
+### Known Limitations
+- Lower performance for APAC region (less training data)
+- May not generalize to B2B customers (trained on B2C)
+- Seasonal patterns not fully captured
+
+### Failure Modes
+- Poor prediction for customers with < 30 days of data
+- May overpredict churn during promotional periods
+
+## Ethical Considerations
+
+### Fairness
+- Model tested for demographic parity
+- No protected attributes used directly
+- Regular bias audits scheduled
+
+### Privacy
+- No PII in features
+- Aggregated behavioral data only
+- GDPR compliant
+
+## Maintenance
+
+| Attribute | Value |
+|-----------|-------|
+| **Retraining Frequency** | Monthly |
+| **Monitoring** | Daily drift detection |
+| **Owner** | ML Platform Team |
+| **Last Audit** | 2025-12-15 |
+```
+
+### Model Card in Code (Hugging Face Format)
+
+```python
+from huggingface_hub import ModelCard, ModelCardData
+
+card_data = ModelCardData(
+    language='en',
+    license='mit',
+    library_name='sklearn',
+    tags=['classification', 'churn', 'tabular'],
+    datasets=['company/customer-data-v5'],
+    metrics=[
+        {'type': 'accuracy', 'value': 0.87},
+        {'type': 'f1', 'value': 0.80}
+    ],
+    model_name='ChurnPredictor-v2.1'
+)
+
+card = ModelCard.from_template(
+    card_data,
+    model_id="company/churn-predictor",
+    model_description="Predicts customer churn probability",
+    developers="Data Science Team",
+    model_type="Gradient Boosting Classifier"
+)
+
+# Save to README.md
+card.save("models/churn-predictor/README.md")
 ```
 
 ---
@@ -439,13 +912,182 @@ def plot_regression_results(y_true, y_pred):
           [ 此 Skill ]
 ```
 
+### Gate Mapping
+
+```yaml
+Gate2_Design:
+  ml_design:
+    - Problem definition documented
+    - Success metrics defined
+    - Data sources identified
+    - Experiment design outlined
+
+Gate3_Testing:
+  ml_validation:
+    - Reproducibility verified
+    - Cross-validation performed
+    - Hold-out test evaluation
+    - Baseline comparison
+
+Gate4_Review:
+  ml_documentation:
+    - Model Card completed
+    - Experiment tracked in MLflow/W&B
+    - Code peer reviewed
+    - Production readiness assessed
+```
+
+### Evidence Template
+
+```markdown
+## ML Evidence - [Model/Analysis Name]
+
+**Date:** [Date]
+**Developer:** [Name]
+**MLflow Run ID:** [run_id]
+
+---
+
+### 1. Problem Definition
+
+| Attribute | Value |
+|-----------|-------|
+| Business Objective | [Clear statement] |
+| ML Task | Classification / Regression / Clustering |
+| Success Metric | [e.g., F1 > 0.80] |
+| Baseline | [Previous model or simple heuristic] |
+
+### 2. Reproducibility Evidence
+
+**Environment:**
+\`\`\`
+Python: 3.11.5
+Key Packages:
+  - scikit-learn==1.3.2
+  - pandas==2.1.3
+  - numpy==1.26.2
+\`\`\`
+
+**Random Seed:** 42
+
+**Verification:**
+| Run | Accuracy | F1 | Status |
+|-----|----------|----| -------|
+| Run 1 | 0.8721 | 0.8015 | ✅ |
+| Run 2 | 0.8721 | 0.8015 | ✅ |
+| Run 3 | 0.8721 | 0.8015 | ✅ |
+
+### 3. Experiment Tracking
+
+**MLflow Experiment:** customer-churn-v3
+**Best Run:** rf_200trees_v3
+
+| Metric | Value |
+|--------|-------|
+| Accuracy | 0.872 |
+| Precision | 0.824 |
+| Recall | 0.783 |
+| F1 Score | 0.803 |
+| AUC-ROC | 0.912 |
+
+**Hyperparameters:**
+\`\`\`json
+{
+  "n_estimators": 200,
+  "max_depth": 12,
+  "min_samples_split": 5,
+  "class_weight": "balanced"
+}
+\`\`\`
+
+### 4. Data Versioning
+
+| Item | Version/Hash |
+|------|--------------|
+| Training Data | DVC: abc123 |
+| Test Data | DVC: def456 |
+| Feature Pipeline | v2.3 |
+
+### 5. Model Card Status
+
+- [x] Model details documented
+- [x] Intended use specified
+- [x] Training data described
+- [x] Performance metrics by subgroup
+- [x] Limitations documented
+- [x] Ethical considerations reviewed
+
+### 6. Review Sign-off
+
+| Reviewer | Area | Status |
+|----------|------|--------|
+| [Name] | Code Quality | ✅ |
+| [Name] | ML Methodology | ✅ |
+| [Name] | Data Privacy | ✅ |
+
+---
+
+**ML Pipeline Ready:** ✅ Yes
+**Model Registry:** models/churn-predictor-v2.1
+```
+
+### CI/CD for ML Projects
+
+```yaml
+# .github/workflows/ml-pipeline.yml
+name: ML Pipeline
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'data/**'
+      - 'dvc.yaml'
+
+jobs:
+  test-reproducibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Pull DVC data
+        run: dvc pull
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Run training (reproducibility check)
+        run: |
+          python train.py --seed 42
+          python train.py --seed 42
+          python scripts/compare_runs.py  # Verify identical results
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Upload metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-metrics
+          path: metrics.json
+```
+
 **使用场景**：
 - 探索性数据分析
 - 机器学习模型开发
 - A/B 测试分析
 - 预测建模
 - 数据报告生成
+- 模型审计与合规
 
 ---
 
-*此 Skill 帮助 Claude 进行高效的数据科学工作流。*
+*此 Skill 帮助 Claude 进行高效、可复现、负责任的数据科学工作流。*

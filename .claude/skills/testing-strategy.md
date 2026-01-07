@@ -2,18 +2,20 @@
 
 ---
 title: "Testing Strategy"
-version: "2.0"
+version: "3.0"
 last_updated: "2026-01-06"
-tags: [testing, quality, tdd, engineering]
+tags: [testing, quality, tdd, engineering, playwright, e2e]
 domains: [all]
 level: intermediate
-estimated_time: "30min"
+estimated_time: "45min"
 prerequisites: []
 sources:
   - "Growing Object-Oriented Software, Guided by Tests"
   - "xUnit Test Patterns"
   - "Google Testing Blog"
+  - "Playwright Documentation"
 enforcement: recommended
+tad_gates: [Gate3_Testing]
 ---
 
 ## TL;DR Quick Checklist
@@ -163,12 +165,15 @@ describe('UserService', () => {
 - May use real dependencies
 - Slower execution
 
-### Step 4: Write E2E Tests
+### Step 4: Write E2E Tests (Playwright)
 
-```javascript
+**Basic E2E Test Pattern:**
+```typescript
 // Test complete user flows
-describe('User Registration Flow', () => {
-  it('should allow user to register and login', async () => {
+import { test, expect } from '@playwright/test';
+
+test.describe('User Registration Flow', () => {
+  test('should allow user to register and login', async ({ page }) => {
     await page.goto('/register');
     await page.fill('[name="email"]', 'test@example.com');
     await page.fill('[name="password"]', 'password123');
@@ -184,6 +189,254 @@ describe('User Registration Flow', () => {
 - Simulates real user
 - Highest confidence
 - Slowest, most brittle
+
+### Playwright E2E Test Templates
+
+**1. Authentication Flow:**
+```typescript
+import { test, expect, Page } from '@playwright/test';
+
+test.describe('Authentication', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+  });
+
+  test('successful login redirects to dashboard', async ({ page }) => {
+    // Arrange
+    await page.fill('[data-testid="email"]', 'user@example.com');
+    await page.fill('[data-testid="password"]', 'password123');
+
+    // Act
+    await page.click('[data-testid="login-button"]');
+
+    // Assert
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+  });
+
+  test('invalid credentials shows error message', async ({ page }) => {
+    await page.fill('[data-testid="email"]', 'wrong@example.com');
+    await page.fill('[data-testid="password"]', 'wrongpass');
+    await page.click('[data-testid="login-button"]');
+
+    await expect(page.locator('[data-testid="error-message"]'))
+      .toContainText('Invalid credentials');
+    await expect(page).toHaveURL('/login');
+  });
+
+  test('logout clears session', async ({ page }) => {
+    // Login first
+    await page.fill('[data-testid="email"]', 'user@example.com');
+    await page.fill('[data-testid="password"]', 'password123');
+    await page.click('[data-testid="login-button"]');
+    await expect(page).toHaveURL('/dashboard');
+
+    // Logout
+    await page.click('[data-testid="user-menu"]');
+    await page.click('[data-testid="logout"]');
+
+    // Verify logged out
+    await expect(page).toHaveURL('/login');
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL('/login');  // Redirected
+  });
+});
+```
+
+**2. Form Submission Flow:**
+```typescript
+test.describe('Contact Form', () => {
+  test('submits form with valid data', async ({ page }) => {
+    await page.goto('/contact');
+
+    await page.fill('[data-testid="name"]', 'John Doe');
+    await page.fill('[data-testid="email"]', 'john@example.com');
+    await page.fill('[data-testid="message"]', 'Hello, this is a test message.');
+    await page.click('[data-testid="submit"]');
+
+    await expect(page.locator('[data-testid="success-toast"]'))
+      .toBeVisible();
+    await expect(page.locator('[data-testid="success-toast"]'))
+      .toContainText('Message sent');
+  });
+
+  test('shows validation errors for empty required fields', async ({ page }) => {
+    await page.goto('/contact');
+    await page.click('[data-testid="submit"]');
+
+    await expect(page.locator('[data-testid="name-error"]'))
+      .toContainText('Name is required');
+    await expect(page.locator('[data-testid="email-error"]'))
+      .toContainText('Email is required');
+  });
+});
+```
+
+**3. E-commerce Checkout Flow:**
+```typescript
+test.describe('Checkout Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    // Setup: Add item to cart
+    await page.goto('/products/widget-123');
+    await page.click('[data-testid="add-to-cart"]');
+  });
+
+  test('complete purchase flow', async ({ page }) => {
+    // Navigate to cart
+    await page.click('[data-testid="cart-icon"]');
+    await expect(page.locator('[data-testid="cart-item"]')).toHaveCount(1);
+
+    // Proceed to checkout
+    await page.click('[data-testid="checkout-button"]');
+
+    // Fill shipping info
+    await page.fill('[data-testid="shipping-address"]', '123 Test St');
+    await page.fill('[data-testid="shipping-city"]', 'Test City');
+    await page.fill('[data-testid="shipping-zip"]', '12345');
+    await page.click('[data-testid="continue-to-payment"]');
+
+    // Fill payment info (test card)
+    await page.fill('[data-testid="card-number"]', '4242424242424242');
+    await page.fill('[data-testid="card-expiry"]', '12/28');
+    await page.fill('[data-testid="card-cvc"]', '123');
+    await page.click('[data-testid="place-order"]');
+
+    // Verify order confirmation
+    await expect(page).toHaveURL(/\/orders\/[A-Z0-9]+/);
+    await expect(page.locator('[data-testid="order-confirmation"]'))
+      .toContainText('Order placed successfully');
+  });
+});
+```
+
+**4. Page Object Pattern (Recommended for large test suites):**
+```typescript
+// pages/LoginPage.ts
+import { Page, Locator, expect } from '@playwright/test';
+
+export class LoginPage {
+  readonly page: Page;
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly submitButton: Locator;
+  readonly errorMessage: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.emailInput = page.locator('[data-testid="email"]');
+    this.passwordInput = page.locator('[data-testid="password"]');
+    this.submitButton = page.locator('[data-testid="login-button"]');
+    this.errorMessage = page.locator('[data-testid="error-message"]');
+  }
+
+  async goto() {
+    await this.page.goto('/login');
+  }
+
+  async login(email: string, password: string) {
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
+  }
+
+  async expectError(message: string) {
+    await expect(this.errorMessage).toContainText(message);
+  }
+}
+
+// tests/login.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
+
+test('login with valid credentials', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('user@example.com', 'password123');
+  await expect(page).toHaveURL('/dashboard');
+});
+```
+
+**Playwright Configuration (playwright.config.ts):**
+```typescript
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-results.json' }]
+  ],
+
+  use: {
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['iPhone 13'] },
+    },
+  ],
+
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+**Selector Best Practices:**
+```typescript
+// ✅ Good - Resilient selectors
+page.locator('[data-testid="submit-button"]')    // Best: explicit test IDs
+page.locator('button[type="submit"]')             // Good: semantic
+page.getByRole('button', { name: 'Submit' })      // Good: accessible
+page.getByLabel('Email')                          // Good: form labels
+page.getByText('Welcome')                         // OK: visible text
+
+// ❌ Bad - Brittle selectors
+page.locator('.btn-primary')                      // Bad: CSS class
+page.locator('#submit')                           // Risky: ID changes
+page.locator('div > span > button')               // Bad: structure dependent
+page.locator(':nth-child(3)')                     // Bad: order dependent
+```
+
+**Dealing with Flaky Tests:**
+```typescript
+// Wait for network idle
+await page.waitForLoadState('networkidle');
+
+// Wait for specific element
+await page.waitForSelector('[data-testid="loaded"]');
+
+// Wait for API response
+await page.waitForResponse(resp =>
+  resp.url().includes('/api/users') && resp.status() === 200
+);
+
+// Retry assertions (built-in)
+await expect(page.locator('.dynamic-content'))
+  .toContainText('Loaded', { timeout: 10000 });
+
+// Explicit waits (avoid when possible)
+await page.waitForTimeout(1000);  // Last resort
+```
 
 ### Step 5: Name Tests Properly
 

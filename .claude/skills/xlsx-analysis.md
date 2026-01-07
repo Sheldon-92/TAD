@@ -1,6 +1,43 @@
 # Excel Data Analysis Skill
 
-> 来源: anthropics/skills 官方仓库，已适配 TAD 框架
+---
+title: "Excel Data Analysis"
+version: "3.0"
+last_updated: "2026-01-06"
+tags: [xlsx, excel, pandas, openpyxl, data-analysis]
+domains: [data, office]
+level: intermediate
+estimated_time: "30min"
+prerequisites: [python, pandas]
+sources:
+  - "pandas Documentation"
+  - "openpyxl Documentation"
+  - "Office Open XML (OOXML)"
+enforcement: recommended
+tad_gates: [Gate3_Testing, Gate4_Review]
+---
+
+> 来源: anthropics/skills 官方仓库，已适配 TAD 框架和文档合规标准
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] Backup original file before processing
+2. [ ] Handle encoding properly (UTF-8 BOM for Excel)
+3. [ ] Process large files in chunks
+4. [ ] Validate data types before operations
+5. [ ] Test output in multiple Excel versions
+6. [ ] Document data transformations for audit
+```
+
+**Red Flags:**
+- Overwriting original files without backup
+- Ignoring data type mismatches
+- Loading entire large files into memory
+- Missing null/empty value handling
+- Hardcoded file paths in scripts
+
+---
 
 ## 触发条件
 
@@ -333,14 +370,415 @@ def sales_analysis(file_path):
 
 ---
 
+## Data Compliance & Audit (数据合规)
+
+When processing Excel files, ensure proper data handling and audit trails.
+
+### Data Privacy Handling
+
+```python
+import pandas as pd
+import hashlib
+
+# PII fields that require special handling
+PII_FIELDS = [
+    'name', 'email', 'phone', 'address', 'ssn', 'id_card',
+    'credit_card', 'bank_account', 'birthdate', 'salary',
+    '姓名', '邮箱', '电话', '地址', '身份证', '银行卡'
+]
+
+def mask_pii(df: pd.DataFrame, columns: list = None):
+    """Mask PII data for safe processing."""
+    df = df.copy()
+    columns_to_mask = columns or [
+        c for c in df.columns
+        if any(pii in c.lower() for pii in PII_FIELDS)
+    ]
+
+    for col in columns_to_mask:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda x: mask_value(x) if pd.notna(x) else x)
+
+    return df
+
+def mask_value(value: str) -> str:
+    """Mask a single value."""
+    s = str(value)
+    if len(s) <= 4:
+        return '****'
+    return s[:2] + '*' * (len(s) - 4) + s[-2:]
+
+def hash_pii(df: pd.DataFrame, columns: list):
+    """Hash PII for anonymization while preserving groupability."""
+    df = df.copy()
+    for col in columns:
+        if col in df.columns:
+            df[col] = df[col].apply(
+                lambda x: hashlib.sha256(str(x).encode()).hexdigest()[:16]
+                if pd.notna(x) else x
+            )
+    return df
+
+# Example: Safe data export
+def export_safe_report(df: pd.DataFrame, output_path: str):
+    """Export data with PII masked."""
+    safe_df = mask_pii(df)
+    safe_df.to_excel(output_path, index=False)
+    return f"Exported {len(safe_df)} rows with PII masked"
+```
+
+### Audit Trail
+
+```python
+import pandas as pd
+from datetime import datetime
+import json
+
+class DataTransformationAudit:
+    """Track all transformations for audit compliance."""
+
+    def __init__(self):
+        self.log = []
+
+    def record(self, operation: str, details: dict):
+        """Record a transformation step."""
+        self.log.append({
+            'timestamp': datetime.now().isoformat(),
+            'operation': operation,
+            'details': details
+        })
+
+    def save(self, filepath: str):
+        """Save audit log."""
+        with open(filepath, 'w') as f:
+            json.dump(self.log, f, indent=2, ensure_ascii=False)
+
+# Usage example
+audit = DataTransformationAudit()
+
+# Original data
+df = pd.read_excel('raw_data.xlsx')
+audit.record('load', {
+    'file': 'raw_data.xlsx',
+    'rows': len(df),
+    'columns': list(df.columns)
+})
+
+# Clean data
+df.dropna(subset=['订单号'], inplace=True)
+audit.record('dropna', {
+    'column': '订单号',
+    'rows_remaining': len(df)
+})
+
+# Transform
+df['金额'] = df['金额'].astype(float)
+audit.record('type_conversion', {
+    'column': '金额',
+    'new_type': 'float'
+})
+
+# Save audit trail
+audit.save('transform_audit.json')
+```
+
+### Data Source Documentation
+
+```markdown
+## Data Source Documentation Template
+
+### Source Information
+
+| Attribute | Value |
+|-----------|-------|
+| File Name | [original_file.xlsx] |
+| Source System | [SAP / CRM / Manual Export] |
+| Data Owner | [Department/Person] |
+| Export Date | [YYYY-MM-DD] |
+| Data Period | [Start Date] - [End Date] |
+
+### Data Classification
+
+| Classification | Handling Requirements |
+|----------------|----------------------|
+| Public | No restrictions |
+| Internal | Company use only |
+| Confidential | Need-to-know basis |
+| Restricted | Special approval required |
+
+### Column Sensitivity
+
+| Column | Contains PII | Treatment |
+|--------|--------------|-----------|
+| customer_name | Yes | Mask for exports |
+| email | Yes | Hash for analysis |
+| sales_amount | No | No treatment |
+| region | No | No treatment |
+```
+
+---
+
+## Compatibility (兼容性)
+
+Ensure Excel files work across different versions and platforms.
+
+### Excel Format Compatibility
+
+```python
+# File format reference
+EXCEL_FORMATS = {
+    '.xlsx': {
+        'name': 'Office Open XML',
+        'since': 'Excel 2007',
+        'engine': 'openpyxl',
+        'max_rows': 1_048_576,
+        'max_cols': 16_384,
+    },
+    '.xls': {
+        'name': 'BIFF (Binary)',
+        'since': 'Excel 97-2003',
+        'engine': 'xlrd',
+        'max_rows': 65_536,
+        'max_cols': 256,
+    },
+    '.xlsb': {
+        'name': 'Binary Workbook',
+        'since': 'Excel 2007',
+        'engine': 'pyxlsb',
+        'max_rows': 1_048_576,
+        'faster': True,
+    },
+    '.csv': {
+        'name': 'Comma Separated',
+        'universal': True,
+        'encoding': 'utf-8-sig',  # For Excel compatibility
+    },
+}
+
+# Choose format based on use case
+def choose_format(row_count: int, needs_formatting: bool, target_excel: str):
+    """Recommend file format."""
+    if row_count > 1_000_000:
+        return '.csv', 'Too large for Excel, use CSV'
+    elif row_count > 100_000 and not needs_formatting:
+        return '.xlsb', 'Large file, binary for performance'
+    elif target_excel == '2003':
+        return '.xls', 'Legacy compatibility required'
+    else:
+        return '.xlsx', 'Standard modern format'
+```
+
+### Cross-Platform Testing Checklist
+
+```markdown
+## Excel Compatibility Verification
+
+### Desktop Applications
+- [ ] Microsoft Excel (Windows)
+- [ ] Microsoft Excel (macOS)
+- [ ] LibreOffice Calc (Linux)
+- [ ] Numbers (macOS)
+- [ ] WPS Office
+
+### Web/Cloud
+- [ ] Excel Online
+- [ ] Google Sheets (import)
+- [ ] OneDrive preview
+
+### Specific Checks
+- [ ] All sheets load correctly
+- [ ] Formulas calculate properly
+- [ ] Formatting preserved
+- [ ] Charts display correctly
+- [ ] Conditional formatting works
+- [ ] Pivot tables functional
+- [ ] Named ranges intact
+- [ ] Date formats correct
+- [ ] Number formats correct
+- [ ] Chinese characters display (UTF-8)
+```
+
+### Encoding & Locale Handling
+
+```python
+import pandas as pd
+from datetime import datetime
+
+def read_excel_safe(filepath: str):
+    """Read Excel with proper encoding handling."""
+    try:
+        # Try openpyxl first (xlsx)
+        return pd.read_excel(filepath, engine='openpyxl')
+    except Exception:
+        # Fall back to xlrd for xls
+        return pd.read_excel(filepath, engine='xlrd')
+
+def save_excel_compatible(df: pd.DataFrame, filepath: str):
+    """Save Excel file with maximum compatibility."""
+
+    # Ensure datetime columns are Excel-compatible
+    for col in df.select_dtypes(include=['datetime64']).columns:
+        # Excel has issues with dates before 1900
+        df[col] = df[col].apply(
+            lambda x: x if pd.isna(x) or x.year >= 1900 else pd.NaT
+        )
+
+    # Write with explicit settings
+    with pd.ExcelWriter(
+        filepath,
+        engine='openpyxl',
+        datetime_format='YYYY-MM-DD HH:MM:SS',
+        date_format='YYYY-MM-DD'
+    ) as writer:
+        df.to_excel(writer, index=False, sheet_name='Data')
+
+# CSV with Excel-compatible encoding
+def save_csv_for_excel(df: pd.DataFrame, filepath: str):
+    """Save CSV that Excel opens correctly (with BOM)."""
+    df.to_csv(filepath, index=False, encoding='utf-8-sig')
+```
+
+### Large File Handling
+
+```python
+import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+
+def process_large_excel(filepath: str, chunk_size: int = 50000):
+    """Process large Excel files efficiently."""
+
+    # Method 1: Chunked reading (if supported)
+    chunks = []
+    for chunk in pd.read_excel(filepath, chunksize=chunk_size):
+        # Process each chunk
+        processed = process_chunk(chunk)
+        chunks.append(processed)
+
+    return pd.concat(chunks, ignore_index=True)
+
+def write_large_excel(df: pd.DataFrame, filepath: str, chunk_size: int = 50000):
+    """Write large DataFrame to Excel efficiently."""
+
+    # For very large files, consider CSV or database instead
+    if len(df) > 500000:
+        print(f"Warning: {len(df)} rows - consider using CSV instead")
+
+    # Use write_only mode for better performance
+    from openpyxl import Workbook
+    wb = Workbook(write_only=True)
+    ws = wb.create_sheet('Data')
+
+    # Write header
+    ws.append(df.columns.tolist())
+
+    # Write data in chunks
+    for i in range(0, len(df), chunk_size):
+        chunk = df.iloc[i:i+chunk_size]
+        for row in chunk.values.tolist():
+            ws.append(row)
+
+    wb.save(filepath)
+```
+
+---
+
 ## 与 TAD 框架的集成
 
 在 TAD 的数据处理流程中：
 
 ```
-用户上传 Excel → Claude 分析数据 → 生成洞察 → 输出报表
-                      ↓
-                 [ 此 Skill ]
+用户上传 Excel → 数据校验 → 合规检查 → Claude 分析 → 生成洞察 → 审计日志 → 输出报表
+                      ↓            ↓                              ↓
+               [数据质量]    [隐私处理]                      [可追溯性]
+```
+
+### Gate Mapping
+
+```yaml
+Gate3_Testing:
+  data_quality:
+    - Input data validated
+    - Data types correctly handled
+    - Null/missing values addressed
+    - Transformations tested
+
+Gate4_Review:
+  excel_compliance:
+    - PII properly masked/hashed
+    - Audit trail documented
+    - Data source verified
+    - Output tested across Excel versions
+    - File encoding correct (UTF-8)
+```
+
+### Evidence Template
+
+```markdown
+## Excel Analysis Evidence - [Report Name]
+
+**Date:** [Date]
+**Analyst:** [Name]
+
+---
+
+### 1. Data Source
+
+| Attribute | Value |
+|-----------|-------|
+| Source File | [filename.xlsx] |
+| Source System | [SAP/CRM/Manual] |
+| Row Count | [X,XXX] rows |
+| Column Count | [XX] columns |
+| Data Period | [Start] - [End] |
+
+### 2. Data Quality
+
+| Check | Status | Details |
+|-------|--------|---------|
+| Missing Values | ✅ Handled | Filled/Dropped [X] rows |
+| Duplicates | ✅ Removed | [X] duplicate rows |
+| Data Types | ✅ Correct | All columns validated |
+| Encoding | ✅ UTF-8 | No character issues |
+
+### 3. Privacy Compliance
+
+| PII Column | Treatment | Method |
+|------------|-----------|--------|
+| customer_name | Masked | mask_pii() |
+| email | Hashed | SHA-256 |
+| phone | Masked | mask_pii() |
+
+### 4. Transformations Log
+
+| Step | Operation | Rows Before | Rows After |
+|------|-----------|-------------|------------|
+| 1 | Load raw data | - | [X,XXX] |
+| 2 | Drop nulls | [X,XXX] | [X,XXX] |
+| 3 | Remove duplicates | [X,XXX] | [X,XXX] |
+| 4 | Type conversion | [X,XXX] | [X,XXX] |
+
+### 5. Output Verification
+
+| Target | Status | Notes |
+|--------|--------|-------|
+| Excel Windows | ✅ Pass | |
+| Excel Mac | ✅ Pass | |
+| Excel Online | ✅ Pass | |
+| Formulas | ✅ Correct | All calculate |
+| Formatting | ✅ Preserved | |
+
+### 6. Files Generated
+
+| File | Purpose | Location |
+|------|---------|----------|
+| analysis_report.xlsx | Main output | /reports/ |
+| transform_audit.json | Audit log | /audit/ |
+| data_summary.md | Documentation | /docs/ |
+
+---
+
+**Excel Analysis Complete:** ✅ Yes
 ```
 
 **使用场景**：
@@ -349,6 +787,7 @@ def sales_analysis(file_path):
 - 库存数据统计汇总
 - 客户数据分析挖掘
 - 自动化周报/月报生成
+- 合规数据导出
 
 ---
 

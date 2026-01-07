@@ -2,9 +2,9 @@
 
 ---
 title: "Test-Driven Development"
-version: "2.0"
+version: "3.0"
 last_updated: "2026-01-06"
-tags: [testing, mandatory, gate3, tdd, quality]
+tags: [testing, mandatory, gate3, tdd, quality, evidence-driven]
 domains: [all]
 level: intermediate
 estimated_time: "30min"
@@ -12,7 +12,9 @@ prerequisites: []
 sources:
   - "obra/superpowers"
   - "Kent Beck - Test Driven Development"
+  - "Growing Object-Oriented Software, Guided by Tests"
 enforcement: mandatory
+tad_gates: [Gate3_Testing]
 ---
 
 ## TL;DR Quick Checklist
@@ -74,33 +76,144 @@ This proves the test actually validates the expected behavior - if a test passes
 | `coverage_report` | Coverage metrics | `.tad/evidence/tests/coverage/` |
 | `tdd_cycle_log` | RED → GREEN transitions | PR description or commit messages |
 
-### Minimum Evidence Package
+### Minimum Evidence Package (Required for Gate3)
+
+The TDD evidence package MUST demonstrate the complete RED → GREEN → COVERAGE cycle:
 
 ```markdown
-## TDD Evidence
+## TDD Evidence - [Feature Name]
 
-### 1. Test Written (RED)
+**Date:** [Date]
+**Developer:** [Name]
+**Commits:** [SHA range]
+
+---
+
+### 1. RED Phase - Failing Test
+
+**Test File:** `src/__tests__/cart.test.ts`
+
+**Test Code:**
+\`\`\`typescript
+describe('ShoppingCart', () => {
+  it('should calculate total with 10% discount for orders over $100', () => {
+    const cart = new ShoppingCart();
+    cart.addItem({ name: 'Widget', price: 50 });
+    cart.addItem({ name: 'Gadget', price: 70 });
+    expect(cart.calculateTotal()).toBe(108);
+  });
+});
 \`\`\`
+
+**Failure Output:**
+\`\`\`bash
 $ npm test -- --grep "should calculate total"
-FAIL  src/cart.test.ts
-  ✕ should calculate total with discount (1ms)
-    Expected: 90
-    Received: undefined
+
+FAIL  src/__tests__/cart.test.ts
+  ShoppingCart
+    ✕ should calculate total with 10% discount (3ms)
+
+  ● ShoppingCart › should calculate total with 10% discount
+
+    TypeError: cart.calculateTotal is not a function
+
+    Test Suites: 1 failed, 1 total
+    Tests:       1 failed, 1 total
 \`\`\`
 
-### 2. Implementation (GREEN)
+**Failure Reason Verification:**
+- [x] Fails for the RIGHT reason (missing implementation)
+- [x] NOT a syntax error
+- [x] NOT an import error
+- [x] NOT a test bug
+
+**Commit:** `test: add failing test for cart discount calculation`
+
+---
+
+### 2. GREEN Phase - Minimal Implementation
+
+**Implementation File:** `src/cart.ts`
+
+**Code Added:**
+\`\`\`typescript
+calculateTotal(): number {
+  const subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
+  if (subtotal > 100) {
+    return subtotal * 0.9;
+  }
+  return subtotal;
+}
 \`\`\`
+
+**Pass Output:**
+\`\`\`bash
 $ npm test -- --grep "should calculate total"
-PASS  src/cart.test.ts
-  ✓ should calculate total with discount (2ms)
+
+PASS  src/__tests__/cart.test.ts
+  ShoppingCart
+    ✓ should calculate total with 10% discount (2ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Time:        1.234s
 \`\`\`
 
-### 3. Coverage Report
+**All Tests Still Pass:**
+\`\`\`bash
+$ npm test
+
+Test Suites: 15 passed, 15 total
+Tests:       147 passed, 147 total
+Time:        8.456s
 \`\`\`
-File         | % Stmts | % Branch | % Funcs | % Lines
--------------|---------|----------|---------|--------
-cart.ts      |   95.2  |   88.5   |  100    |  94.8
+
+**Commit:** `feat: implement cart discount calculation`
+
+---
+
+### 3. COVERAGE Report
+
+**Overall Coverage:**
 \`\`\`
+File           | % Stmts | % Branch | % Funcs | % Lines | Uncovered
+---------------|---------|----------|---------|---------|----------
+All files      |   87.3  |   82.1   |   91.2  |   86.9  |
+ src/cart.ts   |   95.2  |   88.5   |   100   |   94.8  | 45-47
+\`\`\`
+
+**Coverage Thresholds:**
+| Metric | Required | Actual | Status |
+|--------|----------|--------|--------|
+| Statements | 80% | 87.3% | ✅ Pass |
+| Branches | 80% | 82.1% | ✅ Pass |
+| Functions | 80% | 91.2% | ✅ Pass |
+| Lines | 80% | 86.9% | ✅ Pass |
+
+**Critical Path Coverage (src/cart.ts):**
+| Metric | Required | Actual | Status |
+|--------|----------|--------|--------|
+| Lines | 90% | 94.8% | ✅ Pass |
+
+**Commit:** `refactor: extract discount constants and improve naming`
+
+---
+
+### 4. Edge Cases Covered
+
+| Case | Test | Status |
+|------|------|--------|
+| Order exactly $100 | `should not apply discount at $100 boundary` | ✅ |
+| Order $100.01 | `should apply discount just above threshold` | ✅ |
+| Empty cart | `should return 0 for empty cart` | ✅ |
+| Single item | `should calculate total for single item` | ✅ |
+
+---
+
+### Sign-off
+
+**TDD Cycle Complete:** ✅
+**Ready for Review:** Yes
 ```
 
 ### Acceptance Criteria

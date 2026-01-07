@@ -1,6 +1,43 @@
 # Canvas Design Skill
 
-> 来源: anthropics/skills 官方仓库，已适配 TAD 框架
+---
+title: "Canvas Design"
+version: "3.0"
+last_updated: "2026-01-06"
+tags: [canvas, svg, design, visualization, accessibility]
+domains: [frontend, design]
+level: intermediate
+estimated_time: "40min"
+prerequisites: [html, css, javascript]
+sources:
+  - "MDN Canvas API"
+  - "W3C SVG Specification"
+  - "WCAG 2.1 Guidelines"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate4_Review]
+---
+
+> 来源: anthropics/skills 官方仓库，已适配 TAD 框架和可访问性标准
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] Set canvas dimensions for high-DPI displays
+2. [ ] Use semantic colors with sufficient contrast
+3. [ ] Provide text alternatives for canvas content
+4. [ ] Support keyboard navigation where applicable
+5. [ ] Test with color blindness simulators
+6. [ ] Export in appropriate format (SVG for scalable)
+```
+
+**Red Flags:**
+- Low contrast text (< 4.5:1 ratio)
+- No fallback content for canvas
+- Relying solely on color to convey information
+- Fixed pixel dimensions without DPI scaling
+- Missing alt text for decorative canvas
+
+---
 
 ## 触发条件
 
@@ -456,14 +493,364 @@ function svgToPng(svgString, width, height) {
 
 ---
 
+## Accessibility (可访问性)
+
+Canvas and SVG content must be accessible to all users, including those with visual impairments.
+
+### Color Contrast Requirements
+
+```javascript
+// WCAG 2.1 Contrast Ratios
+// Normal text: 4.5:1 minimum
+// Large text (18px+ bold or 24px+): 3:1 minimum
+// UI components: 3:1 minimum
+
+// Contrast ratio calculator
+function getLuminance(r, g, b) {
+  const [rs, gs, bs] = [r, g, b].map(c => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function getContrastRatio(color1, color2) {
+  const l1 = getLuminance(...color1);
+  const l2 = getLuminance(...color2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Example usage
+const textColor = [26, 54, 93];    // #1a365d
+const bgColor = [255, 255, 255];   // #ffffff
+const ratio = getContrastRatio(textColor, bgColor);
+console.log(`Contrast ratio: ${ratio.toFixed(2)}:1`);  // 12.63:1 ✅
+
+// Verify before drawing
+function validateContrast(fgColor, bgColor, minRatio = 4.5) {
+  const ratio = getContrastRatio(fgColor, bgColor);
+  if (ratio < minRatio) {
+    console.warn(`Low contrast: ${ratio.toFixed(2)}:1 (minimum: ${minRatio}:1)`);
+    return false;
+  }
+  return true;
+}
+```
+
+### Color Blindness Safe Palettes
+
+```javascript
+// Colors distinguishable by most color blind users
+const colorBlindSafePalette = {
+  // Paul Tol's Color Schemes
+  qualitative: [
+    '#332288', // indigo
+    '#88CCEE', // cyan
+    '#44AA99', // teal
+    '#117733', // green
+    '#999933', // olive
+    '#DDCC77', // sand
+    '#CC6677', // rose
+    '#882255', // wine
+    '#AA4499', // purple
+  ],
+
+  // IBM Design Color Blind Safe
+  ibm: [
+    '#648FFF', // ultramarine
+    '#785EF0', // indigo
+    '#DC267F', // magenta
+    '#FE6100', // orange
+    '#FFB000', // gold
+  ],
+};
+
+// Don't rely solely on color - use patterns/shapes too
+function drawDataPointWithShape(ctx, x, y, category) {
+  const shapes = {
+    'A': () => { ctx.arc(x, y, 8, 0, Math.PI * 2); },          // circle
+    'B': () => { ctx.rect(x - 6, y - 6, 12, 12); },            // square
+    'C': () => {                                                // triangle
+      ctx.moveTo(x, y - 8);
+      ctx.lineTo(x + 7, y + 6);
+      ctx.lineTo(x - 7, y + 6);
+      ctx.closePath();
+    },
+    'D': () => {                                                // diamond
+      ctx.moveTo(x, y - 8);
+      ctx.lineTo(x + 8, y);
+      ctx.lineTo(x, y + 8);
+      ctx.lineTo(x - 8, y);
+      ctx.closePath();
+    }
+  };
+
+  ctx.beginPath();
+  shapes[category]();
+  ctx.fill();
+}
+```
+
+### Canvas Fallback Content
+
+```html
+<!-- Always provide fallback content for screen readers -->
+<canvas id="chart" width="600" height="400" role="img" aria-label="Sales chart showing monthly revenue">
+  <!-- Fallback content for screen readers and when JS is disabled -->
+  <h2>Monthly Sales Revenue 2025</h2>
+  <table>
+    <caption>Sales data by month</caption>
+    <tr><th>Month</th><th>Revenue</th></tr>
+    <tr><td>January</td><td>$45,000</td></tr>
+    <tr><td>February</td><td>$52,000</td></tr>
+    <tr><td>March</td><td>$48,500</td></tr>
+  </table>
+  <p>Trend: Revenue increased 7% from January to March.</p>
+</canvas>
+
+<!-- For complex interactive canvases -->
+<canvas id="interactive-chart" aria-describedby="chart-description">
+</canvas>
+<div id="chart-description" class="sr-only">
+  Interactive bar chart showing quarterly sales. Use Tab to navigate between bars,
+  Enter to see details. Currently showing Q1 2025 data with 4 categories.
+</div>
+```
+
+### SVG Accessibility
+
+```html
+<!-- Accessible SVG with proper ARIA -->
+<svg width="600" height="400"
+     role="img"
+     aria-labelledby="chart-title chart-desc">
+
+  <!-- Title and description -->
+  <title id="chart-title">Monthly Revenue Chart</title>
+  <desc id="chart-desc">
+    Bar chart showing monthly revenue from January to March 2025.
+    Revenue grew from $45,000 in January to $52,000 in February,
+    then decreased slightly to $48,500 in March.
+  </desc>
+
+  <!-- Chart content -->
+  <g role="list" aria-label="Revenue bars">
+    <g role="listitem">
+      <rect x="50" y="200" width="80" height="150" fill="#4472C4"
+            aria-label="January: $45,000" tabindex="0"/>
+      <text x="90" y="380" text-anchor="middle">Jan</text>
+    </g>
+    <g role="listitem">
+      <rect x="150" y="170" width="80" height="180" fill="#4472C4"
+            aria-label="February: $52,000" tabindex="0"/>
+      <text x="190" y="380" text-anchor="middle">Feb</text>
+    </g>
+    <g role="listitem">
+      <rect x="250" y="185" width="80" height="165" fill="#4472C4"
+            aria-label="March: $48,500" tabindex="0"/>
+      <text x="290" y="380" text-anchor="middle">Mar</text>
+    </g>
+  </g>
+</svg>
+```
+
+### Keyboard Navigation for Interactive Canvas
+
+```javascript
+class AccessibleCanvasChart {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.focusedIndex = -1;
+    this.items = [];  // Chart data items
+
+    // Make canvas focusable
+    canvas.tabIndex = 0;
+    canvas.setAttribute('role', 'application');
+    canvas.setAttribute('aria-label', 'Interactive chart. Use arrow keys to navigate.');
+
+    this.setupKeyboardNavigation();
+    this.setupScreenReaderAnnouncements();
+  }
+
+  setupKeyboardNavigation() {
+    this.canvas.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          this.focusNext();
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          this.focusPrevious();
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          this.selectCurrent();
+          break;
+        case 'Escape':
+          this.clearFocus();
+          break;
+      }
+    });
+  }
+
+  setupScreenReaderAnnouncements() {
+    // Create live region for announcements
+    this.liveRegion = document.createElement('div');
+    this.liveRegion.setAttribute('role', 'status');
+    this.liveRegion.setAttribute('aria-live', 'polite');
+    this.liveRegion.className = 'sr-only';
+    document.body.appendChild(this.liveRegion);
+  }
+
+  announce(message) {
+    this.liveRegion.textContent = message;
+  }
+
+  focusNext() {
+    this.focusedIndex = (this.focusedIndex + 1) % this.items.length;
+    this.render();
+    this.announce(this.items[this.focusedIndex].ariaLabel);
+  }
+
+  focusPrevious() {
+    this.focusedIndex = this.focusedIndex <= 0
+      ? this.items.length - 1
+      : this.focusedIndex - 1;
+    this.render();
+    this.announce(this.items[this.focusedIndex].ariaLabel);
+  }
+
+  render() {
+    // Draw with focus indicator for current item
+    this.items.forEach((item, index) => {
+      if (index === this.focusedIndex) {
+        // Draw focus ring
+        this.ctx.strokeStyle = '#005FCC';
+        this.ctx.lineWidth = 3;
+        this.ctx.setLineDash([5, 3]);
+        this.ctx.strokeRect(item.x - 2, item.y - 2, item.width + 4, item.height + 4);
+        this.ctx.setLineDash([]);
+      }
+    });
+  }
+}
+```
+
+### Accessibility Testing Checklist
+
+```markdown
+## Canvas/SVG Accessibility Verification
+
+### Color & Contrast
+- [ ] Text contrast ratio ≥ 4.5:1 (normal) or ≥ 3:1 (large)
+- [ ] UI element contrast ≥ 3:1
+- [ ] Tested with color blindness simulator (Sim Daltonism, Coblis)
+- [ ] Not relying solely on color to convey information
+- [ ] Added patterns/shapes/labels as secondary indicators
+
+### Screen Reader Support
+- [ ] Fallback content provided in canvas element
+- [ ] SVG has title and desc elements
+- [ ] Proper ARIA roles and labels
+- [ ] Live regions for dynamic updates
+- [ ] Meaningful reading order
+
+### Keyboard Navigation
+- [ ] All interactive elements reachable via Tab
+- [ ] Arrow key navigation within charts
+- [ ] Visible focus indicators
+- [ ] Escape key to exit
+- [ ] Enter/Space for selection
+
+### Motion & Animation
+- [ ] Respects prefers-reduced-motion
+- [ ] No flashing content (< 3 flashes per second)
+- [ ] Animation can be paused
+```
+
+---
+
 ## 与 TAD 框架的集成
 
 在 TAD 的设计流程中：
 
 ```
-设计需求 → 探索风格 → 绘制原型 → 输出成品
+设计需求 → 探索风格 → 绘制原型 → 可访问性验证 → 输出成品
                ↓
           [ 此 Skill ]
+```
+
+### Gate Mapping
+
+```yaml
+Gate2_Design:
+  visual_design:
+    - Color palette defined
+    - Contrast ratios verified
+    - Target dimensions specified
+    - Accessibility requirements identified
+
+Gate4_Review:
+  design_quality:
+    - Contrast compliance checked
+    - Screen reader tested
+    - Color blindness simulation passed
+    - Fallback content provided
+```
+
+### Evidence Template
+
+```markdown
+## Design Accessibility Evidence - [Asset Name]
+
+**Date:** [Date]
+**Designer:** [Name]
+
+---
+
+### 1. Color Contrast Verification
+
+| Element | Foreground | Background | Ratio | WCAG Level |
+|---------|------------|------------|-------|------------|
+| Heading | #1a365d | #ffffff | 12.63:1 | AAA ✅ |
+| Body text | #4a5568 | #ffffff | 7.02:1 | AAA ✅ |
+| Button | #ffffff | #4472C4 | 5.21:1 | AA ✅ |
+| Link | #3182ce | #ffffff | 4.54:1 | AA ✅ |
+
+**Tool Used:** WebAIM Contrast Checker
+
+### 2. Color Blindness Test
+
+| Type | Simulation Tool | Status |
+|------|-----------------|--------|
+| Protanopia (red-blind) | Sim Daltonism | ✅ Distinguishable |
+| Deuteranopia (green-blind) | Sim Daltonism | ✅ Distinguishable |
+| Tritanopia (blue-blind) | Sim Daltonism | ✅ Distinguishable |
+| Achromatopsia (monochrome) | Grayscale filter | ✅ Readable |
+
+### 3. Screen Reader Test
+
+| Reader | Browser | Result |
+|--------|---------|--------|
+| VoiceOver | Safari | ✅ All content announced |
+| NVDA | Chrome | ✅ Navigation works |
+
+### 4. Fallback Content
+
+- [x] Canvas has role="img" and aria-label
+- [x] SVG has title and desc elements
+- [x] Data table provided as fallback
+
+---
+
+**Accessibility Compliant:** ✅ Yes
 ```
 
 **使用场景**：
@@ -472,6 +859,7 @@ function svgToPng(svgString, width, height) {
 - 社交媒体图片
 - 演示文稿配图
 - Banner 和海报设计
+- 无障碍信息图表
 
 ---
 

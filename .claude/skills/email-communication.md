@@ -1,10 +1,34 @@
 # Business Email Communication Skill
 
-> 综合自商务沟通最佳实践，已适配 TAD 框架
+---
+title: "Business Email Communication"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [communication, email, templates, professionalism]
+domains: [product, operations]
+level: beginner-intermediate
+estimated_time: "20min"
+prerequisites: []
+sources:
+  - "Harvard Business Review - Email Etiquette"
+  - "Google Writing Style Guide"
+enforcement: recommended
+tad_gates: []
+---
 
-## 触发条件
+## TL;DR Quick Checklist
 
-当用户需要撰写商务邮件、回复邮件、处理邮件沟通或优化邮件表达时，自动应用此 Skill。
+```
+1. [ ] 主题精确；正文三段内说明目的、背景、行动项
+2. [ ] 明确 CTA（期望动作/截止时间/附件与链接）
+3. [ ] 语气专业简洁；避免模糊词与过度寒暄
+4. [ ] 模板复用：请求/会议/道歉/更新/催促/感谢
+5. [ ] 发送前自查：收件人/抄送/附件/链接/拼写
+```
+
+**Red Flags:**
+- 长段落无结构；主题与正文不一致；无明确行动项
+- 使用口语/情绪化表达；多收件人但无主责人
 
 ---
 
@@ -31,6 +55,30 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description                  | Location                                   |
+|-----------------|------------------------------|--------------------------------------------|
+| `email_template`| 选用/定制的模板样例          | `.tad/evidence/comms/email-templates.md`   |
+| `review_notes`  | 语气/结构审查笔记（可选）    | `.tad/evidence/comms/email-review.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] 主题与正文一致；目的明确；CTA 可执行且带截止
+[ ] 模板化结构清晰；适配场景；避免冗长与歧义
+[ ] 链接/附件正确；收件人/抄送/密送配置合理
+```
+
+### Artifacts
+
+| Artifact           | Path                                         |
+|--------------------|----------------------------------------------|
+| Templates Catalog  | `.tad/evidence/comms/email-templates.md`     |
+| Review Notes       | `.tad/evidence/comms/email-review.md`        |
 
 ## 邮件基本结构
 

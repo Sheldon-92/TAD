@@ -78,6 +78,29 @@
   - 更新 agent-a-architect-v1.1.md 添加强制调用逻辑
   - 更新 agent-b-executor-v1.1.md 添加强制调用逻辑
   - 更新 manifest.yaml 添加混合策略追踪
+
+- [x] Skills 质量升级 (基于 Codex 评估报告，87/100→目标95+)
+  - [x] 统一 Frontmatter 格式 (version 3.0, tad_gates, TL;DR checklist)
+  - [x] API Design - 版本化/RFC7807错误/幂等性/限流/GraphQL增强
+  - [x] Security Checklist - ASVS映射/SSRF/CSRF/供应链/工具矩阵
+  - [x] Testing Strategy + TDD - Gate绑定/覆盖率证据/E2E模板
+  - [x] Database Patterns - 零停机迁移/慢日志分析/多租户隔离
+  - [x] Performance Optimization - 性能预算/APM追踪/k6负载测试
+  - [x] Git Workflow + Refactoring - 保护分支/GPG签名/静态分析/微提交
+  - [x] i18n Translation - ICU MessageFormat/CLDR数据/RTL双向文字/回退策略
+  - [x] Data Science - 复现性(随机种子)/实验追踪(MLflow/W&B)/模型卡
+  - [x] 前端/设计类 (Canvas/Theme/UI) - 可访问性证据(WCAG对比度/色盲安全)
+  - [x] 媒体/办公类 (PDF/PPTX/XLSX) - 版权合规/字体许可/跨平台兼容性
+  - [x] 协作类 (Verification/Brainstorming/Meeting Notes) - Gate映射/证据模板
+
+- [x] 文档一致性项目 Phase 1
+  - [x] 创建 docs/ 门户结构 (docs/README.md, releases/, legacy/)
+  - [x] 添加 v1.4 发布说明 (docs/releases/v1.4-release.md)
+  - [x] 创建遗留文档索引 (docs/legacy/index.md)
+  - [x] 为 5 个历史文档添加 Legacy 横幅
+  - [x] 生成审计报告 (docs/AUDIT_REPORT.md)
+  - [x] 完成 3 个原子提交
+
 - [ ] 测试 v1.4 安装脚本在新项目中的效果
 - [ ] 测试 v1.3 → v1.4 升级脚本
 - [ ] 提交新增的 42 个 Skills 到 GitHub (5批共42个)

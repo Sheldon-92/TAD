@@ -2,7 +2,7 @@
 
 ---
 title: "Verification Before Completion"
-version: "2.0"
+version: "3.0"
 last_updated: "2026-01-06"
 tags: [verification, mandatory, handoff, evidence, quality]
 domains: [all]

@@ -1,6 +1,43 @@
 # Meeting Notes & Minutes Skill
 
-> 综合自会议管理最佳实践，已适配 TAD 框架
+---
+title: "Meeting Notes & Minutes"
+version: "3.0"
+last_updated: "2026-01-06"
+tags: [meeting, notes, minutes, action-items, collaboration]
+domains: [all]
+level: beginner
+estimated_time: "15min"
+prerequisites: []
+sources:
+  - "Meeting Management Best Practices"
+  - "GTD (Getting Things Done)"
+  - "TAD Framework"
+enforcement: recommended
+tad_gates: [Gate4_Review]
+---
+
+> 综合自会议管理最佳实践，已适配 TAD 框架和文档合规标准
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] Use standard template for consistency
+2. [ ] Capture decisions, not just discussions
+3. [ ] Assign clear owners to every action item
+4. [ ] Set specific deadlines for action items
+5. [ ] Send minutes within 24 hours
+6. [ ] Track action items to completion
+```
+
+**Red Flags:**
+- Meeting without agenda or goals
+- Action items without owners
+- No deadline on action items
+- Minutes sent days later
+- Decisions not documented with rationale
+
+---
 
 ## 触发条件
 
@@ -475,9 +512,9 @@
 在 TAD 的会议管理流程中：
 
 ```
-会议准备 → 会议进行 → 纪要整理 → 行动跟踪 → 复盘改进
-               ↓
-          [ 此 Skill ]
+会议准备 → 会议进行 → 纪要整理 → 质量检查 → 行动跟踪 → 复盘改进
+               ↓              ↓
+          [ 此 Skill ]   [Gate 检查]
 ```
 
 **使用场景**：
@@ -486,6 +523,149 @@
 - 行动项提取
 - 议程制定
 - 会议效率优化
+
+### Gate Mapping
+
+```yaml
+Gate4_Review:
+  meeting_quality:
+    - Standard template used
+    - All decisions documented with rationale
+    - Action items have owners and deadlines
+    - Minutes distributed within 24 hours
+    - Key attendees verified content
+```
+
+### Evidence Template
+
+```markdown
+## Meeting Documentation Evidence - [Meeting Title]
+
+**Date:** [Date]
+**Documented By:** [Name]
+
+---
+
+### 1. Meeting Summary
+
+| Attribute | Value |
+|-----------|-------|
+| Meeting Type | [Status/Planning/Brainstorm/1:1/Review] |
+| Date & Time | [YYYY-MM-DD HH:MM] |
+| Duration | [X minutes] |
+| Attendees | [Count] |
+| Absentees | [Count] |
+
+---
+
+### 2. Documentation Quality
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| Agenda provided | ✅/❌ | [Link if yes] |
+| Standard template used | ✅/❌ | [Template name] |
+| Decisions documented | ✅/❌ | [X] decisions recorded |
+| Action items captured | ✅/❌ | [X] items |
+| Owners assigned | ✅/❌ | All items have owners |
+| Deadlines set | ✅/❌ | All items have dates |
+
+---
+
+### 3. Decisions Made
+
+| # | Decision | Rationale | Impact |
+|---|----------|-----------|--------|
+| 1 | [Decision text] | [Why this decision] | [Who/what affected] |
+| 2 | [Decision text] | [Why this decision] | [Who/what affected] |
+
+---
+
+### 4. Action Items Summary
+
+| Status | Count |
+|--------|-------|
+| 🔴 Not Started | [X] |
+| 🟡 In Progress | [X] |
+| 🟢 Completed | [X] |
+| **Total** | [X] |
+
+**High Priority Items:**
+1. [Item] - @Owner - Due: [Date]
+2. [Item] - @Owner - Due: [Date]
+
+---
+
+### 5. Distribution
+
+| Recipient | Sent | Acknowledged |
+|-----------|------|--------------|
+| [Attendee 1] | ✅ | ✅/Pending |
+| [Attendee 2] | ✅ | ✅/Pending |
+| [Stakeholder] | ✅ | ✅/Pending |
+
+**Distribution Time:** [HH:MM] ([X hours after meeting])
+
+---
+
+### 6. Follow-up Schedule
+
+| Follow-up | Date | Purpose |
+|-----------|------|---------|
+| Action item check | [Date] | Verify progress |
+| Next meeting | [Date] | [Agenda preview] |
+
+---
+
+**Meeting Documentation Complete:** ✅ Yes
+**Distributed Within 24h:** ✅ Yes
+```
+
+### Action Item Tracking Template
+
+```markdown
+## Action Item Tracker - [Project/Team Name]
+
+**Last Updated:** [Date]
+**Update Frequency:** [Daily/Weekly]
+
+---
+
+### Open Items
+
+| ID | Task | Owner | Created | Due | Status | Notes |
+|----|------|-------|---------|-----|--------|-------|
+| A001 | [Task description] | @name | MM-DD | MM-DD | 🟡 In Progress | [Update] |
+| A002 | [Task description] | @name | MM-DD | MM-DD | 🔴 Not Started | |
+| A003 | [Task description] | @name | MM-DD | MM-DD | 🔵 Blocked | [Blocker] |
+
+---
+
+### Completed This Week
+
+| ID | Task | Owner | Completed |
+|----|------|-------|-----------|
+| A000 | [Task] | @name | MM-DD |
+
+---
+
+### Overdue Items
+
+| ID | Task | Owner | Due | Days Overdue | Action |
+|----|------|-------|-----|--------------|--------|
+| A099 | [Task] | @name | MM-DD | [X] days | [Next step] |
+
+---
+
+### Statistics
+
+| Metric | Value |
+|--------|-------|
+| Total Open | [X] |
+| Completed This Week | [X] |
+| Overdue | [X] |
+| Completion Rate | [X]% |
+| Avg Days to Complete | [X] days |
+```
 
 ---
 

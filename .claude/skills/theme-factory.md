@@ -1,6 +1,43 @@
 # Theme Factory Skill
 
-> 来源: anthropics/skills 官方仓库，已适配 TAD 框架
+---
+title: "Theme Factory"
+version: "3.0"
+last_updated: "2026-01-06"
+tags: [theme, colors, design-system, accessibility, dark-mode]
+domains: [frontend, design]
+level: intermediate
+estimated_time: "35min"
+prerequisites: [css]
+sources:
+  - "WCAG 2.1 Guidelines"
+  - "Material Design Color System"
+  - "Tailwind CSS Documentation"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate4_Review]
+---
+
+> 来源: anthropics/skills 官方仓库，已适配 TAD 框架和 WCAG 可访问性标准
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] Define primary, secondary, and semantic colors
+2. [ ] Generate full color scales (50-950)
+3. [ ] Verify contrast ratios (AA minimum: 4.5:1)
+4. [ ] Test with color blindness simulators
+5. [ ] Implement dark mode with CSS variables
+6. [ ] Document color tokens in design system
+```
+
+**Red Flags:**
+- Text contrast below 4.5:1
+- No dark mode support
+- Hardcoded color values instead of variables
+- Red/green only indicators (color blind issue)
+- No semantic color mapping (success, error, warning)
+
+---
 
 ## 触发条件
 
@@ -459,9 +496,96 @@ const colorBlindFriendly = {
 在 TAD 的设计流程中：
 
 ```
-品牌需求 → 情感定位 → 配色生成 → 主题系统 → 应用实施
+品牌需求 → 情感定位 → 配色生成 → 可访问性验证 → 主题系统 → 应用实施
                ↓
           [ 此 Skill ]
+```
+
+### Gate Mapping
+
+```yaml
+Gate2_Design:
+  theme_design:
+    - Brand colors defined
+    - Color scales generated
+    - Semantic colors mapped
+    - Dark mode strategy planned
+
+Gate4_Review:
+  theme_accessibility:
+    - All text meets AA contrast (4.5:1)
+    - UI elements meet 3:1 contrast
+    - Color blindness tested
+    - Dark mode fully implemented
+    - Design tokens documented
+```
+
+### Evidence Template
+
+```markdown
+## Theme Accessibility Evidence - [Project Name]
+
+**Date:** [Date]
+**Designer:** [Name]
+
+---
+
+### 1. Color Palette Definition
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| --color-primary | #3b82f6 | #60a5fa | Primary actions, links |
+| --color-secondary | #64748b | #94a3b8 | Secondary text |
+| --color-bg | #ffffff | #111827 | Page background |
+| --color-text | #111827 | #f9fafb | Body text |
+
+### 2. Contrast Ratio Verification
+
+| Combination | Light Mode | Dark Mode | WCAG Level |
+|-------------|------------|-----------|------------|
+| Text on Background | 15.23:1 | 16.41:1 | AAA ✅ |
+| Primary on Background | 3.84:1 | 4.12:1 | AA Large ✅ |
+| Primary on Primary-bg | 7.21:1 | 6.89:1 | AAA ✅ |
+| Secondary on Background | 5.42:1 | 4.87:1 | AA ✅ |
+
+**Tool Used:** WebAIM Contrast Checker
+
+### 3. Color Blindness Simulation
+
+| Type | Tool | Light Mode | Dark Mode |
+|------|------|------------|-----------|
+| Protanopia | Sim Daltonism | ✅ Pass | ✅ Pass |
+| Deuteranopia | Sim Daltonism | ✅ Pass | ✅ Pass |
+| Tritanopia | Sim Daltonism | ✅ Pass | ✅ Pass |
+| Achromatopsia | Grayscale | ✅ Pass | ✅ Pass |
+
+**Additional Measures:**
+- [x] Icons accompany color indicators
+- [x] Error states use both color and icon
+- [x] Chart data uses patterns in addition to color
+
+### 4. Dark Mode Implementation
+
+- [x] CSS custom properties for all colors
+- [x] System preference detection (`prefers-color-scheme`)
+- [x] Manual toggle with localStorage persistence
+- [x] No flash of wrong theme on load
+- [x] Images adapted for dark mode (where needed)
+
+### 5. Design Token Export
+
+\`\`\`
+Exported formats:
+- CSS Custom Properties ✅
+- Tailwind config ✅
+- JSON tokens ✅
+- Figma variables ✅
+\`\`\`
+
+---
+
+**Theme Accessibility Compliant:** ✅ Yes
+**Design System URL:** [Link to documentation]
 ```
 
 **使用场景**：
