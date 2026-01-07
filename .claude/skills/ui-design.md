@@ -1,12 +1,69 @@
 # UI Design Knowledge Base
 
+---
+title: "UI Design"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [ui, ux, accessibility, contrast, tokens]
+domains: [frontend, design]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "NN/g Usability Heuristics"
+  - "WCAG 2.2"
+  - "Material Design Guidelines"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate3_Implementation_Quality]
+---
+
 > TAD v1.4 内置 Skill - UI/UX 设计知识库
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 视觉层级清晰：大小/颜色/位置/留白/字重有区分（MQ4）
+2. [ ] 可访问性：关键文本对比度≥4.5:1，交互元素≥3:1（WCAG）
+3. [ ] 设计令牌：颜色/间距/字体/阴影使用统一 tokens
+4. [ ] 状态完整：默认/hover/active/disabled/loading/empty/error
+5. [ ] 截图证据：主要视图与边界状态 UI 截图归档
+```
+
+**Red Flags:**
+- 同质化层级（不可区分主次）、对比度不达标、无状态样式
 
 ## 概述
 
 本 Skill 提供 UI/UX 设计的核心知识，帮助非设计师背景的开发者做出更好的设计决策。
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description                          | Location                           |
+|-----------------|--------------------------------------|------------------------------------|
+| `ui_screens`    | 关键视图与状态的截图                 | `.tad/evidence/ui/screenshots/`    |
+| `contrast_report` | 对比度检查报告（主要文本/按钮）    | `.tad/evidence/ui/contrast.md`     |
+| `tokens_spec`   | 设计令牌清单（颜色/间距/字体等）     | `.tad/evidence/ui/tokens.md`       |
+
+### Acceptance Criteria
+
+```
+[ ] 视觉层级对应信息权重（MQ4），主要元素显著可见
+[ ] 对比度满足 WCAG 要求；异常情况有替代表现
+[ ] 状态样式齐全且一致；设计令牌被遵循
+```
+
+### Artifacts
+
+| Artifact        | Path                                |
+|-----------------|-------------------------------------|
+| Screenshots     | `.tad/evidence/ui/screenshots/`     |
+| Contrast Report | `.tad/evidence/ui/contrast.md`      |
+| Tokens Spec     | `.tad/evidence/ui/tokens.md`        |
+
 
 ## 1. 设计原则
 

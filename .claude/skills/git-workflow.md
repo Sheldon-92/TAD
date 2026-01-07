@@ -85,6 +85,14 @@ This skill guides Git usage for effective version control and team collaboration
 [ ] CI checks pass
 ```
 
+### Artifacts
+
+| Artifact             | Path                                 |
+|----------------------|--------------------------------------|
+| Branch Plan          | `.tad/evidence/git/plan.md`          |
+| PR Template/Content  | `.tad/evidence/git/pr-template.md`   |
+| Commit Log (sample)  | `.tad/evidence/git/commits.md`       |
+
 ---
 
 ## Procedure

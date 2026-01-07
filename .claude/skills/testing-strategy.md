@@ -742,6 +742,16 @@ All files      |   87.3  |   82.1   |   91.2  |   86.9
 
 ---
 
+## Artifacts
+
+| Artifact           | Path                                  |
+|--------------------|---------------------------------------|
+| Test Results       | `.tad/evidence/tests/`                |
+| Coverage Report    | `.tad/evidence/tests/coverage/`       |
+| Test Plan          | `.tad/evidence/tests/test-plan.md`    |
+
+---
+
 ## References
 
 - [Growing Object-Oriented Software, Guided by Tests](https://www.amazon.com/Growing-Object-Oriented-Software-Guided-Tests/dp/0321503627)

@@ -1,6 +1,34 @@
 # Git Worktrees Skill
 
+---
+title: "Git Worktrees"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [git, worktree, isolation, parallel]
+domains: [engineering]
+level: intermediate
+estimated_time: "20min"
+prerequisites: []
+sources:
+  - "Git Documentation"
+  - "obra/superpowers"
+enforcement: recommended
+tad_gates: [Gate3_Implementation_Quality]
+---
+
 > 来源: obra/superpowers，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 每个工作项创建独立 worktree（避免频繁切分支）
+2. [ ] 规划分支与路径；清理策略明确（worktree prune）
+3. [ ] 避免文件重叠造成冲突；建立 PR 合并路径
+4. [ ] 并行开发时说明限制与共享依赖
+5. [ ] 记录分支计划与合并策略（Artifacts）
+```
+
+**Red Flags:** 在同一工作区做多项工作、随意切换导致未保存更改丢失、worktree 残留未清理
 
 ## 触发条件
 
@@ -93,6 +121,32 @@ npm test
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type  | Description                 | Location                           |
+|----------------|-----------------------------|------------------------------------|
+| `branch_plan`  | 分支与 worktree 规划         | `.tad/evidence/git/plan.md`        |
+| `isolation`    | 隔离约束与共享依赖说明       | `.tad/evidence/git/isolation.md`   |
+| `merge_strategy`| 合并策略与冲突处理流程      | `.tad/evidence/git/merge-strategy.md` |
+
+### Acceptance Criteria
+
+```
+[ ] 独立 worktree 对应独立任务；分支规划清晰
+[ ] 冲突风险评估与处理流程明确
+[ ] 清理策略（prune）规范执行；无残留
+```
+
+### Artifacts
+
+| Artifact        | Path                                      |
+|-----------------|-------------------------------------------|
+| Branch Plan     | `.tad/evidence/git/plan.md`               |
+| Isolation Notes | `.tad/evidence/git/isolation.md`          |
+| Merge Strategy  | `.tad/evidence/git/merge-strategy.md`     |
 
 ## Worktree 管理命令
 

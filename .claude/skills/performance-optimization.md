@@ -87,6 +87,14 @@ This skill guides data-driven performance analysis and optimization across front
 [ ] No regression in other areas
 ```
 
+### Artifacts
+
+| Artifact            | Path                                  |
+|---------------------|---------------------------------------|
+| Baseline Profile    | `.tad/evidence/perf/baseline.md`      |
+| Improved Profile    | `.tad/evidence/perf/improved.md`      |
+| APM Trace/Report    | `.tad/evidence/perf/traces/`          |
+
 ---
 
 ## Procedure

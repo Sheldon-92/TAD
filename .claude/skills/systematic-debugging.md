@@ -1,6 +1,34 @@
 # Systematic Debugging Skill
 
+---
+title: "Systematic Debugging"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [debugging, root-cause, repro, logging]
+domains: [engineering]
+level: intermediate
+estimated_time: "30min"
+prerequisites: []
+sources:
+  - "obra/superpowers"
+  - "USENIX Debugging Best Practices"
+enforcement: recommended
+tad_gates: [Gate3_Implementation_Quality]
+---
+
 > 来源: obra/superpowers，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 先复现：稳定复现路径与最小重现仓库/脚本
+2. [ ] 证据收集：日志/栈/请求响应/系统状态（分层定位）
+3. [ ] 根因分析：与“正常路径”对比，记录差异
+4. [ ] 修复方案：最小改动 + 回归测试用例
+5. [ ] 复核：合并后全量测试 + 监控验证
+```
+
+**Red Flags:** 只改症状不找根因、无法复现、改动大且无回归、无证据链
 
 ## 触发条件
 
@@ -78,6 +106,32 @@
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description                     | Location                               |
+|-------------------|---------------------------------|----------------------------------------|
+| `repro_steps`     | 可稳定复现的步骤/最小重现       | `.tad/evidence/debug/repro.md`         |
+| `root_cause`      | 根因分析与证据链                | `.tad/evidence/debug/root-cause.md`    |
+| `fix_plan`        | 修复方案与回归用例清单          | `.tad/evidence/debug/fix-plan.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] 能稳定复现；最小重现可运行
+[ ] 根因与证据链一致，非猜测
+[ ] 修复范围最小化；回归用例补齐并通过
+```
+
+### Artifacts
+
+| Artifact     | Path                                  |
+|--------------|---------------------------------------|
+| Repro Steps  | `.tad/evidence/debug/repro.md`        |
+| Root Cause   | `.tad/evidence/debug/root-cause.md`   |
+| Fix Plan     | `.tad/evidence/debug/fix-plan.md`     |
 
 ## 危险信号 🚨
 

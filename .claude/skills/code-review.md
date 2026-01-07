@@ -1,6 +1,34 @@
 # Code Review Skill
 
+---
+title: "Code Review"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [code-review, quality, security, readability]
+domains: [engineering]
+level: intermediate
+estimated_time: "30min"
+prerequisites: []
+sources:
+  - "Google Engineering Practices - Code Review"
+  - "SEI CERT Secure Coding"
+enforcement: recommended
+tad_gates: [Gate3_Implementation_Quality]
+---
+
 > 来源: obra/superpowers，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 功能正确 + 边界/错误处理到位
+2. [ ] 可读性：命名清晰、职责单一、无重复
+3. [ ] 安全：输入校验、无注入/XSS、无敏感泄露
+4. [ ] 测试：关键路径覆盖 + 回归用例
+5. [ ] 提交与PR：原子化提交 + 清晰说明 + 风险与回滚
+```
+
+**Red Flags:** 大PR（>500行）且无拆分、隐式全局副作用、无测试或仅Happy Path、无错误处理
 
 ## 触发条件
 
@@ -88,6 +116,33 @@ git diff main...HEAD --stat
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type      | Description                      | Location                                 |
+|--------------------|----------------------------------|------------------------------------------|
+| `review_checklist` | 自查/他查清单勾选                 | `.tad/evidence/review/checklist.md`      |
+| `diff_stats`       | 变更统计（文件/行数/热点）        | `.tad/evidence/review/diff-stats.txt`    |
+| `findings_report`  | 主要问题与决策记录                | `.tad/evidence/review/findings.md`       |
+
+### Acceptance Criteria
+
+```
+[ ] 功能/质量/安全/测试四类问题均被审查并记录
+[ ] 提交原子化；PR 描述清晰，含风险与回滚说明
+[ ] 针对高风险变更安排后续验证（测试/灰度/监控）
+```
+
+### Artifacts
+
+| Artifact           | Path                                       |
+|--------------------|--------------------------------------------|
+| Review Checklist   | `.tad/evidence/review/checklist.md`        |
+| Diff Stats         | `.tad/evidence/review/diff-stats.txt`      |
+| Findings Report    | `.tad/evidence/review/findings.md`         |
+
 
 ## 处理审查反馈
 

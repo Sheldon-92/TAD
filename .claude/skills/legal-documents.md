@@ -1,6 +1,34 @@
 # Legal Documents Skill
 
+---
+title: "Legal Documents"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [legal, contracts, gdpr, compliance]
+domains: [legal]
+level: advanced
+estimated_time: "60min"
+prerequisites: []
+sources:
+  - "GDPR Text & EDPB Guidelines"
+  - "Common Contract Clauses"
+enforcement: recommended
+tad_gates: [Gate5_Security]
+---
+
 > 综合自 claudeskillshq.com 和法律文档最佳实践，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 合同审阅清单逐条过一遍（范围/条款/风险/终止）
+2. [ ] 高风险条款标注（责任限制/赔偿/保密/IP）
+3. [ ] 红线对比与修改建议留痕
+4. [ ] GDPR/隐私合规检查（数据/权利/跨境）
+5. [ ] 产出条款风险/红线对比/GDPR清单三件套
+```
+
+**Red Flags:** 未标注高风险条款、未做 GDPR 检查、条款缺少定义与适用范围
 
 ## 触发条件
 
@@ -213,6 +241,32 @@ Claude 不是律师，不能提供法律建议。
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type   | Description                 | Location                               |
+|-----------------|-----------------------------|----------------------------------------|
+| `clause_risks`  | 条款风险标注                 | `.tad/evidence/legal/risks.md`         |
+| `redline_diff`  | 红线对比与修改建议           | `.tad/evidence/legal/redline.md`       |
+| `gdpr_checklist`| GDPR检查清单与整改建议       | `.tad/evidence/legal/gdpr.md`          |
+
+### Acceptance Criteria
+
+```
+[ ] 高风险条款已标注并提出修改建议
+[ ] GDPR清单覆盖数据、处理、权利与跨境
+[ ] 关键术语定义清晰；争议/终止条款明确
+```
+
+### Artifacts
+
+| Artifact        | Path                                  |
+|-----------------|---------------------------------------|
+| Clause Risks    | `.tad/evidence/legal/risks.md`        |
+| Redline Diff    | `.tad/evidence/legal/redline.md`      |
+| GDPR Checklist  | `.tad/evidence/legal/gdpr.md`         |
 
 ## 法律文档摘要
 

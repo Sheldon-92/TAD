@@ -1,6 +1,34 @@
 # Prompt Engineering Skill
 
+---
+title: "Prompt Engineering"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [prompt, llm, evaluation, safety]
+domains: [ai]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "OpenAI, Anthropic Prompt Guides"
+  - "Self-Consistency, CoT, ReAct papers"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate3_Implementation_Quality]
+---
+
 > 综合自 OpenAI、Anthropic 最佳实践和提示词工程研究，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 明确角色/目标/约束/输出格式
+2. [ ] 设计 ≥3 变体；结构化 Few-shot 示例
+3. [ ] 评测：准确性/一致性/鲁棒性/安全性
+4. [ ] 失败分析+改进记录；版本化提示词
+5. [ ] 产出变体、评测结果与风险记录
+```
+
+**Red Flags:** 单一提示词、无评测、无失败分析、与安全策略冲突
 
 ## 触发条件
 
@@ -31,6 +59,32 @@ Prompt 工程工具箱
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description           | Location                               |
+|-------------------|-----------------------|----------------------------------------|
+| `prompt_variants` | 提示词变体与说明      | `.tad/evidence/prompt/variants.md`     |
+| `eval_results`    | 评测结果与样例        | `.tad/evidence/prompt/eval.md`         |
+| `risk_notes`      | 风险与缓解（安全/幻觉）| `.tad/evidence/prompt/risks.md`        |
+
+### Acceptance Criteria
+
+```
+[ ] 提示词变体覆盖关键策略；示例充分
+[ ] 评测维度完整；结果客观可复现
+[ ] 安全/幻觉等风险识别与缓解清晰
+```
+
+### Artifacts
+
+| Artifact        | Path                                 |
+|-----------------|--------------------------------------|
+| Variants        | `.tad/evidence/prompt/variants.md`   |
+| Evaluation      | `.tad/evidence/prompt/eval.md`       |
+| Risk Notes      | `.tad/evidence/prompt/risks.md`      |
 
 ## 基础提示技术
 

@@ -14,9 +14,6 @@
 .claude/commands/BMad/
 
 # Old version files (keep v1 and v2 for reference)
-.tad/agents/agent-a-architect-v3.md
-.tad/agents/agent-b-executor-v3.md
-.tad/config.yaml
 .tad/config-v2.yaml
 .tad/manifest.yaml
 

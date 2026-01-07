@@ -46,8 +46,8 @@ See [Archive Index](archive/index.md) for the complete list.
 | Document | Location | Description |
 |----------|----------|-------------|
 | TAD Config | `.tad/config.yaml` | Framework configuration |
-| Agent A | `.tad/agents/agent-a-architect-v1.1.md` | Solution Lead definition |
-| Agent B | `.tad/agents/agent-b-executor-v1.1.md` | Execution Master definition |
+| Agent A | `.tad/agents/agent-a-architect.md` | Solution Lead definition |
+| Agent B | `.tad/agents/agent-b-executor.md` | Execution Master definition |
 | Skills | `.claude/skills/` | Knowledge base (42 skills) |
 | Commands | `.claude/commands/` | Slash commands |
 

@@ -1,6 +1,34 @@
 # Product Management Skill
 
+---
+title: "Product Management"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [product, prd, roadmap, user-stories, acceptance]
+domains: [product]
+level: intermediate
+estimated_time: "45min"
+prerequisites: []
+sources:
+  - "SVPG - Inspired"
+  - "User Story Mapping"
+enforcement: recommended
+tad_gates: [Gate1_Understanding, Gate2_Design]
+---
+
 > 综合自 alirezarezvani/claude-skills 和最佳实践，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] PRD：背景/目标/范围/非目标/验收标准/风险
+2. [ ] 用户故事：As/When/Then 结构 + 验收准则
+3. [ ] 路线图：阶段目标与里程碑；优先级依据明确
+4. [ ] 需求切片：先价值最小可行集（MVP）
+5. [ ] 产出 PRD/Stories/Acceptance 三件套
+```
+
+**Red Flags:** 只有功能列表、无价值假设、缺验收标准、路线图无里程碑
 
 ## 触发条件
 
@@ -49,6 +77,32 @@
 | 评审人 | [技术负责人, 设计负责人] |
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type        | Description         | Location                              |
+|----------------------|---------------------|---------------------------------------|
+| `prd`                | 产品需求文档        | `.tad/evidence/product/prd.md`        |
+| `user_stories`       | 用户故事集          | `.tad/evidence/product/stories.md`    |
+| `acceptance_criteria`| 验收标准清单        | `.tad/evidence/product/acceptance.md` |
+
+### Acceptance Criteria
+
+```
+[ ] PRD 完整、清晰、可验证；限定非目标
+[ ] 用户故事遵循格式，包含验收标准
+[ ] MVP 切片合理；风险与依赖被识别
+```
+
+### Artifacts
+
+| Artifact            | Path                                     |
+|---------------------|------------------------------------------|
+| PRD                 | `.tad/evidence/product/prd.md`           |
+| User Stories        | `.tad/evidence/product/stories.md`       |
+| Acceptance Criteria | `.tad/evidence/product/acceptance.md`    |
 
 ## 1. 概述
 

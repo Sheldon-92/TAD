@@ -69,6 +69,30 @@ PDF 处理工具箱
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type | Description                     | Location                              |
+|---------------|---------------------------------|---------------------------------------|
+| `cmd_log`     | 执行命令与参数                  | `.tad/evidence/pdf/commands.log`      |
+| `samples`     | 提取样例（文本/表格/图片）      | `.tad/evidence/pdf/samples/`          |
+
+### Acceptance Criteria
+
+```
+[ ] 命令可复现；记录关键参数
+[ ] 提取结果清晰；表格列对齐；编码正确
+[ ] 不泄露敏感信息；必要时做脱敏
+```
+
+### Artifacts
+
+| Artifact     | Path                                  |
+|--------------|---------------------------------------|
+| Command Log  | `.tad/evidence/pdf/commands.log`      |
+| Samples      | `.tad/evidence/pdf/samples/`          |
+
 ## Python 库选择指南
 
 | 任务 | 推荐库 | 备注 |

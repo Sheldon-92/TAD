@@ -75,6 +75,37 @@ tad_gates: [Gate2_Design, Gate3_Testing, Gate4_Review]
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type      | Description                         | Location                            |
+|--------------------|-------------------------------------|-------------------------------------|
+| `eda_report`       | 探索性数据分析报告                  | `.tad/evidence/ds/eda.md`           |
+| `notebook`         | 可运行的 Notebook（关键步骤）       | `.tad/evidence/ds/notebooks/`       |
+| `repro_env`        | 复现环境（requirements/conda.yaml） | `.tad/evidence/ds/env.yaml`         |
+| `experiment_logs`  | 实验追踪日志（MLflow/W&B）          | `.tad/evidence/ds/experiments/`     |
+| `model_card`       | 模型卡（数据/指标/限制/偏差）      | `.tad/evidence/ds/model-card.md`    |
+
+### Acceptance Criteria
+
+```
+[ ] 实验可复现（固定随机种子、环境锁定）
+[ ] 关键实验记录完整（参数/指标/工件）
+[ ] 模型卡说明适用范围、限制与偏差控制
+[ ] 代码与数据分离，数据版本可追踪
+```
+
+### Artifacts
+
+| Artifact        | Path                                 |
+|-----------------|--------------------------------------|
+| EDA Report      | `.tad/evidence/ds/eda.md`            |
+| Notebook        | `.tad/evidence/ds/notebooks/`        |
+| Repro Env       | `.tad/evidence/ds/env.yaml`          |
+| Experiment Logs | `.tad/evidence/ds/experiments/`      |
+| Model Card      | `.tad/evidence/ds/model-card.md`     |
+
 ## Reproducibility (复现性)
 
 Reproducibility is **non-negotiable** for scientific validity and production reliability.

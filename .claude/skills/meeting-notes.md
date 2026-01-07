@@ -69,6 +69,32 @@ tad_gates: [Gate4_Review]
 
 ---
 
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type  | Description                 | Location                                  |
+|----------------|-----------------------------|-------------------------------------------|
+| `minutes`      | 标准模板纪要（议题/决策/行动项）| `.tad/evidence/meetings/minutes.md`       |
+| `action_items` | 责任人/截止时间清单          | `.tad/evidence/meetings/action-items.md`  |
+| `decisions`    | 决策与理由（Decision Log）   | `.tad/evidence/meetings/decisions.md`     |
+
+### Acceptance Criteria
+
+```
+[ ] 议程、出席、讨论要点、决策、行动项完整
+[ ] 每个行动项有责任人与明确截止日期
+[ ] 决策记录包含理由与影响范围（简要）
+```
+
+### Artifacts
+
+| Artifact       | Path                                       |
+|----------------|--------------------------------------------|
+| Minutes        | `.tad/evidence/meetings/minutes.md`        |
+| Action Items   | `.tad/evidence/meetings/action-items.md`   |
+| Decisions Log  | `.tad/evidence/meetings/decisions.md`      |
+
 ## 会议纪要模板
 
 ### 标准会议纪要

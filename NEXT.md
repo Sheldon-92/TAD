@@ -65,8 +65,8 @@
 
 ### Skills 与 TAD 系统集成
 - [x] manifest.yaml - 添加 Skills 追踪 (42个 Skills，通用访问)
-- [x] agent-a-architect-v1.1.md - 添加 skills_integration (推荐场景，无限制)
-- [x] agent-b-executor-v1.1.md - 添加 skills_integration (推荐场景，无限制)
+- [x] agent-a-architect.md - 添加 skills_integration (推荐场景，无限制)
+- [x] agent-b-executor.md - 添加 skills_integration (推荐场景，无限制)
 - [x] config.yaml - 完善 skills_inventory (通用策略 + MQ/Gate 映射)
 
 ## 今天
@@ -75,8 +75,8 @@
   - 研究 Anthropic 三层设计：Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
   - 确定 3 个强制调用 Skills: security-checklist, test-driven-development, verification
   - 更新 config.yaml 添加 mandatory_skills 配置
-  - 更新 agent-a-architect-v1.1.md 添加强制调用逻辑
-  - 更新 agent-b-executor-v1.1.md 添加强制调用逻辑
+  - 更新 agent-a-architect.md 添加强制调用逻辑
+  - 更新 agent-b-executor.md 添加强制调用逻辑
   - 更新 manifest.yaml 添加混合策略追踪
 
 - [x] Skills 质量升级 (基于 Codex 评估报告，87/100→目标95+)
@@ -107,6 +107,13 @@
   - [x] 更新 "What's New" 为 v1.4 特性
   - [x] 更新升级命令
   - [x] 更新审计报告
+
+- [x] 文档一致性项目 Phase 3 (Final)
+  - [x] 移动 5 个遗留文档到 docs/legacy/
+  - [x] 移动 12 个归档文档到 docs/archive/
+  - [x] 创建 docs/archive/index.md
+  - [x] 更新所有内部链接
+  - [x] 完成最终审计报告
 
 - [ ] 测试 v1.4 安装脚本在新项目中的效果
 - [ ] 测试 v1.3 → v1.4 升级脚本

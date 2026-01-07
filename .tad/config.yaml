@@ -1623,9 +1623,9 @@ skills_system:
       - "best-practices/" # 最佳实践
       - "domain/"         # 领域知识
 
-  # 完整 Skills 清单 (5批共42个) - 所有 Skills 通用
+  # 完整 Skills 清单 (5批共43个) - 所有 Skills 通用
   skills_inventory:
-    total_count: 42
+    total_count: 43
     last_updated: "2026-01-06"
     access_policy: "universal"  # 所有 Skills 都是通用的
 
@@ -1636,6 +1636,7 @@ skills_system:
     batch_3_anthropics: [pdf-processing.md, pptx-creation.md, xlsx-analysis.md, canvas-design.md, algorithmic-art.md, theme-factory.md, content-research-writer.md, scientific-writing.md]
     batch_4_broad: [data-science.md, product-management.md, legal-documents.md, marketing-copywriting.md, i18n-translation.md, media-processing.md, meeting-notes.md, email-communication.md, knowledge-graph.md, interview-prep.md]
     batch_5_user: [prompt-engineering.md, ux-research.md, competitive-analysis.md, ai-integration.md]
+    batch_6_workflow: [doc-organization.md]  # 文档组织和维护
 
     # 按分类索引 (便于查找)
     by_category:
@@ -1648,7 +1649,7 @@ skills_system:
       document: [pdf-processing, pptx-creation, legal-documents]
       product: [product-management, competitive-analysis]
       ai: [prompt-engineering, ai-integration]
-      process: [receiving-feedback, meeting-notes]
+      process: [receiving-feedback, meeting-notes, doc-organization]  # 新增 doc-organization
       meta: [skill-creator, writing-skills]
       media: [media-processing]
       creative: [algorithmic-art]

@@ -1,6 +1,34 @@
 # Skill Creator - 元技能
 
+---
+title: "Skill Creator"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [skills, documentation, templates, knowledge]
+domains: [all]
+level: beginner-intermediate
+estimated_time: "20min"
+prerequisites: []
+sources:
+  - "TAD Framework"
+  - "obra/superpowers"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate4_Review]
+---
+
 > TAD v1.4 内置 Skill - 如何创建新的 Skill
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 先有失败场景或真实需求，再写 Skill（反模式避免）
+2. [ ] 使用统一 frontmatter 与章节结构（TL;DR/Outputs/Evidence）
+3. [ ] 提供可操作的清单、示例与红旗（误用提示）
+4. [ ] 定义 Required Evidence 与 Artifacts（可被 Gate 审查）
+5. [ ] 维护 tags/domains/related skills，便于检索与联动
+```
+
+**Red Flags:** 没有真实问题驱动、过度理论、无证据/产物映射、与现有技能重复
 
 ## 概述
 
@@ -77,6 +105,34 @@ Skill 是存放在 `.claude/skills/` 目录下的 Markdown 文件，包含特定
 
 > 来源参考: [引用来源]
 ```
+
+---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type | Description                   | Location                                  |
+|---------------|-------------------------------|-------------------------------------------|
+| `template`    | 该 Skill 使用的模板样例       | `.tad/evidence/skills/template.md`        |
+| `examples`    | 成功应用的示例片段或链接      | `.tad/evidence/skills/examples/`          |
+| `styleguide`  | 写作与结构风格指南（可复用）  | `.tad/evidence/skills/styleguide.md`      |
+
+### Acceptance Criteria
+
+```
+[ ] frontmatter 与章节结构完整统一
+[ ] 提供 TL;DR、红旗、可复制的示例与检查清单
+[ ] 定义 Required Evidence + Artifacts，可被 Gate 审查
+```
+
+### Artifacts
+
+| Artifact   | Path                                   |
+|------------|----------------------------------------|
+| Template   | `.tad/evidence/skills/template.md`     |
+| Examples   | `.tad/evidence/skills/examples/`       |
+| Styleguide | `.tad/evidence/skills/styleguide.md`   |
 
 ### 2.2 文件命名规范
 

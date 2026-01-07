@@ -1,6 +1,36 @@
 # Receiving Feedback Skill
 
+---
+title: "Receiving Feedback"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [feedback, review, collaboration, decision-log]
+domains: [engineering]
+level: beginner-intermediate
+estimated_time: "20min"
+prerequisites: []
+sources:
+  - "obra/superpowers"
+  - "Google Engineering Practices"
+enforcement: recommended
+tad_gates: [Gate3_Implementation_Quality, Gate4_Review]
+---
+
 > 来源: obra/superpowers，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 先复述理解；验证上下文完整
+2. [ ] 基于技术价值评估（收益/成本/风险/替代）
+3. [ ] 给出行动：实施/澄清/反驳（含理由与证据）
+4. [ ] 变更后验证测试通过，无回归
+5. [ ] 记录决策（Decision Log），便于追踪
+```
+
+**Red Flags:** 立刻迎合、无验证、无上下文、修改范围不明确、无回归验证
+
+---
 
 ## 触发条件
 
@@ -236,3 +266,31 @@ Code Review → 收到反馈 → 处理反馈 → 更新代码
 ---
 
 *此 Skill 指导 Claude 以技术为导向处理反馈，避免无意义的社交表演。*
+
+---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type     | Description                     | Location                                 |
+|-------------------|---------------------------------|------------------------------------------|
+| `feedback_items`  | 反馈要点与理解复述              | `.tad/evidence/review/feedback.md`       |
+| `decision_log`    | 处理决策与理由（实施/澄清/反驳）| `.tad/evidence/review/decisions.md`      |
+| `before_after`    | 变更前后对比（代码/行为）       | `.tad/evidence/review/before-after.md`   |
+
+### Acceptance Criteria
+
+```
+[ ] 反馈被准确理解；上下文完整
+[ ] 决策有理由与证据支撑；必要时提供替代方案
+[ ] 变更后测试通过，无新增问题
+```
+
+### Artifacts
+
+| Artifact        | Path                                       |
+|-----------------|--------------------------------------------|
+| Feedback Items  | `.tad/evidence/review/feedback.md`         |
+| Decision Log    | `.tad/evidence/review/decisions.md`        |
+| Before/After    | `.tad/evidence/review/before-after.md`     |

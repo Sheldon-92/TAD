@@ -87,6 +87,14 @@ This skill guides database schema design, query optimization, and data patterns.
 [ ] No N+1 patterns in code
 ```
 
+### Artifacts
+
+| Artifact          | Path                                   |
+|-------------------|----------------------------------------|
+| Migration Plan    | `.tad/evidence/db/migrations.md`       |
+| EXPLAIN Outputs   | `.tad/evidence/db/explain.md`          |
+| Index Strategy    | `.tad/evidence/db/index-plan.md`       |
+
 ---
 
 ## Procedure

@@ -1,6 +1,34 @@
 # Knowledge Graph Skill
 
+---
+title: "Knowledge Graph"
+version: "3.0"
+last_updated: "2026-01-07"
+tags: [knowledge-graph, ontology, cypher, neo4j]
+domains: [data]
+level: intermediate
+estimated_time: "45min"
+prerequisites: [neo4j]
+sources:
+  - "Neo4j Cypher Manual"
+  - "Google Knowledge Graph Papers"
+enforcement: recommended
+tad_gates: [Gate2_Design, Gate3_Implementation_Quality]
+---
+
 > 综合自知识图谱最佳实践和图数据库技术，已适配 TAD 框架
+
+## TL;DR Quick Checklist
+
+```
+1. [ ] 本体设计（Classes/Relations/Constraints）与数据一致
+2. [ ] Cypher 查询与索引策略验证性能
+3. [ ] 数据导入脚本可复现（APOC/CSV/JSON）
+4. [ ] 图算法与查询结果可解释
+5. [ ] 产出本体/查询/导入脚本的证据与样例
+```
+
+**Red Flags:** 无唯一约束、关系方向混乱、无索引、导入不可复现
 
 ## 触发条件
 
@@ -323,6 +351,32 @@ class KnowledgeGraphBuilder:
 ```
 
 ---
+
+## Outputs / Evidence / Acceptance
+
+### Required Evidence
+
+| Evidence Type  | Description                 | Location                             |
+|----------------|-----------------------------|--------------------------------------|
+| `ontology`     | 本体设计（Classes/Relations）| `.tad/evidence/kg/ontology.yaml`     |
+| `queries`      | 核心查询（Cypher）           | `.tad/evidence/kg/queries.cypher`    |
+| `import_scripts`| 导入脚本与流程（APOC/CSV）  | `.tad/evidence/kg/import.md`         |
+
+### Acceptance Criteria
+
+```
+[ ] 本体设计准确，含唯一/完整性约束
+[ ] 查询性能达标（必要索引到位）
+[ ] 导入流程可复现；脚本可执行
+```
+
+### Artifacts
+
+| Artifact      | Path                                  |
+|---------------|---------------------------------------|
+| Ontology      | `.tad/evidence/kg/ontology.yaml`      |
+| Cypher Queries| `.tad/evidence/kg/queries.cypher`     |
+| Import Scripts| `.tad/evidence/kg/import.md`          |
 
 ## 知识图谱模式
 
