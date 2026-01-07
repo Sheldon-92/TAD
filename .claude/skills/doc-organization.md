@@ -334,40 +334,37 @@ Archived: archive/2024-01/design-v1-archived.md
 | Confusing version numbers | Human misjudges which is current | Use dates or clear deprecation |
 | Old versions not deleted | Agent may read wrong file | Delete or mark DEPRECATED |
 
-### Real Case: Version Number Confusion
+### Real Case: Version Number Confusion (Resolved)
 
 **Scenario (TAD Framework, 2026-01):**
 ```
+# BEFORE (confusing - 6 files):
 .tad/agents/
-├── agent-a-architect.md       (Sep 27) - no version
-├── agent-a-architect-v3.md    (Sep 28) - v3
-├── agent-a-architect.md  (Jan 6)  - v1.1 ← Actually current!
+├── agent-a-architect.md       (Sep 27) - old base
+├── agent-a-architect-v3.md    (Sep 28) - untracked, referenced non-existent config
+├── agent-a-architect-v1.1.md  (Jan 6)  - actual current version
+├── agent-b-executor.md        (Sep 27) - old base
+├── agent-b-executor-v3.md     (Sep 28) - untracked
+├── agent-b-executor-v1.1.md   (Jan 6)  - actual current version
+
+# AFTER (clean - 2 files):
+.tad/agents/
+├── agent-a-architect.md       (22KB) - consolidated current version
+├── agent-b-executor.md        (24KB) - consolidated current version
 ```
 
 **Problem:**
-- v1.1 is numerically smaller than v3, but v1.1 is the actual current version
-- Human assumed v3 was latest (intuitive but wrong)
-- Agent internally knew to use v1.1, but human didn't
-- Old files never cleaned up, causing ongoing confusion
-- New agent (in new session) modified wrong file based on filename guess
+- v1.1 is numerically smaller than v3, but v1.1 was the actual current version
+- v3 files were never committed to git, referenced non-existent config-v3.yaml
+- Multiple versions caused confusion about which file to use
 
-**Root Cause:**
-- Version naming switched schemes mid-project (v3 → v1.1 reboot)
-- No deprecation markers on old files
-- No single source of truth documenting "current version = v1.1"
+**Resolution Applied:**
+1. Merged v1.1 content into base filenames (agent-a-architect.md)
+2. Deleted all versioned files (v1.1, v3)
+3. Updated all references in active files
+4. Archived old scripts that referenced v1.1
 
-**Prevention:**
-```markdown
-Option 1: Delete old versions immediately
-Option 2: Add header to old files:
-  <!-- DEPRECATED: This file is no longer used. Current version: agent-a-architect.md -->
-Option 3: Use date-based naming:
-  agent-a-2024-09.md (old)
-  agent-a-2026-01.md (current)
-Option 4: Maintain VERSION.md or README noting current files
-```
-
-**Lesson:** Agent may "know" which file to use, but humans and new agents don't. Always make currency obvious.
+**Lesson:** Consolidate to single canonical files without version suffixes. Archive old versions, don't keep them alongside current files.
 
 ---
 
