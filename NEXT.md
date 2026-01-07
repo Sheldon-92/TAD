@@ -71,6 +71,22 @@
 
 ## 今天
 
+- [x] 修复 /tad-alex 配置文件超限问题 (2026-01-07)
+  - 拆分 config.yaml (2202行 → 1599行，减少27%)
+  - 提取 Skills 配置到 skills-config.yaml (611行)
+  - 备份原配置到 config-backup.yaml
+  - 解决 token 超限错误 (25595 → ~18000 tokens)
+  - 提交到 GitHub (commit 2929df0)
+
+- [x] 实现 /tad-learn 真正的跨项目学习积累 (2026-01-07)
+  - **问题**: /tad-learn 只保存到本地项目，无法推送到 TAD 框架仓库
+  - **解决**: 添加 GitHub API 自动推送功能
+  - 修改 .claude/commands/tad-learn.md (Step 5 添加 gh api 推送逻辑)
+  - 修改 .tad/skills-config.yaml (更新 step4_push 配置)
+  - 推送现有 6 条学习记录到 GitHub (commit 0399f90)
+  - 提交自动推送功能 (commit 2934e64)
+  - 现在用户在任何项目中调用 /tad-learn 都能自动推送到 TAD 仓库 ✅
+
 - [x] Skills 混合策略研究与实施 (v1.4.1)
   - 研究 Anthropic 三层设计：Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
   - 确定 3 个强制调用 Skills: security-checklist, test-driven-development, verification
