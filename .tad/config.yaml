@@ -1885,6 +1885,100 @@ skills_system:
         skill: "scientific-writing.md"
         action: "recommend"
 
+      # 开发工具相关
+      - intents: ["git", "分支", "提交", "合并", "branch", "commit", "merge"]
+        skill: "git-workflow.md"
+        action: "recommend"
+
+      - intents: ["worktree", "多分支", "并行开发", "git worktree"]
+        skill: "git-worktrees.md"
+        action: "recommend"
+
+      - intents: ["错误处理", "异常处理", "try catch", "error handling"]
+        skill: "error-handling.md"
+        action: "recommend"
+
+      - intents: ["测试策略", "测试金字塔", "E2E测试", "集成测试"]
+        skill: "testing-strategy.md"
+        action: "recommend"
+
+      - intents: ["并行agent", "多agent", "parallel", "并发任务"]
+        skill: "parallel-agents.md"
+        action: "recommend"
+
+      # 数据/办公相关
+      - intents: ["数据分析", "数据科学", "Jupyter", "机器学习", "ML", "pandas"]
+        skill: "data-science.md"
+        action: "recommend"
+
+      - intents: ["Excel", "表格", "数据表", "xlsx", "电子表格"]
+        skill: "xlsx-analysis.md"
+        action: "recommend"
+
+      - intents: ["PDF", "处理PDF", "PDF转换", "合并PDF"]
+        skill: "pdf-processing.md"
+        action: "recommend"
+
+      - intents: ["PPT", "演示文稿", "PowerPoint", "幻灯片", "presentation"]
+        skill: "pptx-creation.md"
+        action: "recommend"
+
+      - intents: ["视频处理", "音频处理", "ffmpeg", "媒体转换", "视频剪辑"]
+        skill: "media-processing.md"
+        action: "recommend"
+
+      # 创意/设计相关
+      - intents: ["生成艺术", "算法艺术", "p5.js", "创意编程", "generative art"]
+        skill: "algorithmic-art.md"
+        action: "recommend"
+
+      - intents: ["Canvas", "画布", "绑图", "可视化绘图"]
+        skill: "canvas-design.md"
+        action: "recommend"
+
+      - intents: ["头脑风暴", "brainstorm", "创意讨论", "想法"]
+        skill: "brainstorming.md"
+        action: "recommend"
+
+      # 沟通/文档相关
+      - intents: ["写邮件", "商务邮件", "email", "邮件模板"]
+        skill: "email-communication.md"
+        action: "recommend"
+
+      - intents: ["会议记录", "会议纪要", "meeting notes", "会议总结"]
+        skill: "meeting-notes.md"
+        action: "recommend"
+
+      - intents: ["营销文案", "广告文案", "copywriting", "推广文案"]
+        skill: "marketing-copywriting.md"
+        action: "recommend"
+
+      - intents: ["写作技巧", "技术写作", "文档写作"]
+        skill: "writing-skills.md"
+        action: "recommend"
+
+      - intents: ["反馈", "接收反馈", "feedback", "代码反馈"]
+        skill: "receiving-feedback.md"
+        action: "recommend"
+
+      # 国际化/本地化
+      - intents: ["国际化", "翻译", "i18n", "多语言", "本地化", "l10n"]
+        skill: "i18n-translation.md"
+        action: "recommend"
+
+      # 专业领域
+      - intents: ["法律文档", "合同", "协议", "GDPR", "隐私政策"]
+        skill: "legal-documents.md"
+        action: "recommend"
+
+      - intents: ["面试", "简历", "interview", "求职", "面试准备"]
+        skill: "interview-prep.md"
+        action: "recommend"
+
+      - intents: ["知识图谱", "Neo4j", "图数据库", "knowledge graph"]
+        skill: "knowledge-graph.md"
+        action: "recommend"
+
     # 文件模式 → Skill 映射
     file_pattern_mapping:
       - pattern: ".claude/skills/*.md"
@@ -1907,6 +2001,58 @@ skills_system:
         action: "recommend"
         description: "创建数据库相关文件时参考"
 
+      # 国际化文件
+      - pattern: "**/locales/**|**/i18n/**|**/*.po|**/*.pot"
+        skill: "i18n-translation.md"
+        action: "recommend"
+        description: "处理国际化文件时参考"
+
+      # 数据文件
+      - pattern: "*.xlsx|*.xls|*.csv"
+        skill: "xlsx-analysis.md"
+        action: "recommend"
+        description: "处理表格数据时参考"
+
+      - pattern: "*.pdf"
+        skill: "pdf-processing.md"
+        action: "recommend"
+        description: "处理 PDF 文件时参考"
+
+      - pattern: "*.pptx|*.ppt"
+        skill: "pptx-creation.md"
+        action: "recommend"
+        description: "创建演示文稿时参考"
+
+      # Jupyter notebooks
+      - pattern: "*.ipynb"
+        skill: "data-science.md"
+        action: "recommend"
+        description: "编写 Jupyter notebook 时参考"
+
+      # 媒体文件
+      - pattern: "*.mp4|*.mp3|*.wav|*.avi|*.mov"
+        skill: "media-processing.md"
+        action: "recommend"
+        description: "处理媒体文件时参考"
+
+      # Git 相关
+      - pattern: ".gitignore|.gitattributes|**/.git/**"
+        skill: "git-workflow.md"
+        action: "recommend"
+        description: "配置 Git 时参考"
+
+      # 组件/UI 文件
+      - pattern: "**/components/**/*.tsx|**/components/**/*.vue"
+        skill: "ui-design.md"
+        action: "recommend"
+        description: "创建 UI 组件时参考"
+
+      # 文档文件
+      - pattern: "docs/**/*.md|README.md|CHANGELOG.md"
+        skill: "doc-organization.md"
+        action: "recommend"
+        description: "整理文档时参考"
+
     # 命令 → Skill 映射
     command_mapping:
       - commands: ["*create-skill", "*new-skill"]
@@ -1924,6 +2070,30 @@ skills_system:
       - commands: ["*deploy", "*release"]
         skill: "security-checklist.md"
         action: "mandatory"
+
+      - commands: ["*debug", "*fix"]
+        skill: "systematic-debugging.md"
+        action: "recommend"
+
+      - commands: ["*refactor"]
+        skill: "refactoring.md"
+        action: "recommend"
+
+      - commands: ["*perf", "*optimize", "*performance"]
+        skill: "performance-optimization.md"
+        action: "recommend"
+
+      - commands: ["*handoff", "*alex"]
+        skill: "doc-organization.md"
+        action: "recommend"
+
+      - commands: ["*brainstorm", "*ideate"]
+        skill: "brainstorming.md"
+        action: "recommend"
+
+      - commands: ["*translate", "*i18n"]
+        skill: "i18n-translation.md"
+        action: "recommend"
 
     # Agent 行为规范
     agent_behavior:
