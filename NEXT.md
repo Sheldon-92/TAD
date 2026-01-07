@@ -131,9 +131,10 @@
   - [x] 更新 agent-b-executor.md 添加 STEP 3.5 自动匹配步骤
   - [x] 为 20 个关键 Skills 添加 triggers frontmatter
 
-- [ ] 测试 v1.4 安装脚本在新项目中的效果
-- [ ] 测试 v1.3 → v1.4 升级脚本
-- [ ] 提交新增的 42 个 Skills 到 GitHub (5批共42个)
+- [x] 测试 v1.4 安装脚本在新项目中的效果
+- [x] 测试 v1.3 → v1.4 升级脚本
+- [x] 提交新增的 42 个 Skills 到 GitHub (5批共42个)
+- [x] 修复升级脚本 404 错误 (复制 upgrade-to-v1.1/v1.2/v1.3.sh 到根目录)
 
 ## 本周
 
