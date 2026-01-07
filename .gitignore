@@ -1,36 +1,21 @@
 # OS Files
 .DS_Store
 
-# TAD Working Files
-.tad/working/
-.tad/context/PROJECT.md
-.tad/context/REQUIREMENTS.md
-.tad/context/ARCHITECTURE.md
-.tad/context/DECISIONS.md
-
 # BMAD Files (Not part of TAD)
 .bmad-core/
 .bmad/
 .claude/commands/BMad/
 
-# Old version files (keep v1 and v2 for reference)
-.tad/config-v2.yaml
-.tad/manifest.yaml
-
 # Local settings
 .claude/settings.local.json
-
-# MCP local config (user-specific)
-.tad/mcp-config.json
-
-# Evidence and logs (generated)
-.tad/evidence/
-.tad/logs/
-.tad/gates/
 
 # Dependencies
 node_modules/
 
 # Logs and temp files
 *.log
-*.tmp*.bak
+*.tmp
+*.bak
+
+# TAD Framework - 全部纳入版本控制，不忽略
+# (保留所有过程文件：handoffs, evidence, logs, context)
