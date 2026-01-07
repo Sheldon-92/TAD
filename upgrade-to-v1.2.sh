@@ -54,8 +54,8 @@ echo ""
 echo "Your existing configurations and data will be preserved."
 echo ""
 
-# Ask for confirmation
-read -p "Continue with upgrade? (y/N): " -n 1 -r
+# Ask for confirmation (read from /dev/tty for curl | bash compatibility)
+read -p "Continue with upgrade? (y/N): " -n 1 -r < /dev/tty
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Upgrade cancelled."

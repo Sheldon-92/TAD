@@ -39,7 +39,7 @@ if [ -d ".tad" ]; then
     echo "2) Fresh install v1.4 (removes existing TAD)"
     echo "3) Cancel"
     echo ""
-    read -p "Select option (1-3): " -n 1 -r
+    read -p "Select option (1-3): " -n 1 -r < /dev/tty
     echo ""
 
     if [[ $REPLY == "1" ]]; then
