@@ -1,8 +1,10 @@
 # TAD Method - Triangle Agent Development
 
-**Version 1.3 - Evidence-Based Development**
+**Version 1.4 - Proactive Technical Research & Knowledge System**
 
-> 🚀 **TAD v1.3 introduces Evidence-Based Development**: 95%+ problem detection rate through mandatory evidence, human visual empowerment, and continuous learning mechanisms - transforming from declarative to provable quality assurance.
+> 🚀 **TAD v1.4** builds on Evidence-Based Development with **MQ6 Technical Research**, **Skills Knowledge System** (42 built-in skills), and **Learn System** for framework-level improvements.
+>
+> 📚 **[Documentation Portal](docs/README.md)** | [v1.4 Release Notes](docs/releases/v1.4-release.md)
 
 ## 🚀 Quick Installation
 
@@ -11,21 +13,21 @@
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
-### Upgrade from v1.2 to v1.3
+### Upgrade from v1.3 to v1.4
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.3.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.4.sh | bash
 ```
 
-### Upgrade from v1.1 to v1.3
+### Upgrade from v1.2 to v1.4
 ```bash
-# First upgrade to v1.2, then to v1.3
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.2.sh | bash
+# First upgrade to v1.3, then to v1.4
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.3.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.4.sh | bash
 ```
 
-### Upgrade from v1.0 to v1.3
+### Upgrade from v1.1 or earlier
 ```bash
-# Upgrades through v1.1 and v1.2 automatically
+# Fresh install is recommended for older versions
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
@@ -46,14 +48,13 @@ tad init
 
 ## ⚙️ Configuration
 
-**Current Version (v1.3):**
-- Main config: `.tad/config.yaml` (v1.3.0)
+**Current Version (v1.4):**
+- Main config: `.tad/config.yaml` (v1.4.0)
+- Skills: `.claude/skills/` (42 knowledge files)
 - The framework automatically uses the correct version
 
 **Legacy Configs (Reference only):**
-- `.tad/archive/configs/config-v1.2.2.yaml` - v1.2.2 backup
-- `.tad/archive/configs/config-v1.1.yaml` - v1.1 configuration
-- `.tad/archive/configs/config-v2.yaml` - Experimental features
+- See [Legacy Documents Index](docs/legacy/index.md) for historical documentation
 
 **Note:** You don't need to manually edit configs. TAD agents know which version to use.
 
@@ -61,57 +62,45 @@ tad init
 
 This is TAD (Triangle Agent Development), a new software development methodology based on human-AI collaboration.
 
-## 🎯 What's New in v1.3
+## 🎯 What's New in v1.4
 
-### Evidence-Based Quality Assurance
-- **95%+ Problem Detection**: From 0-30% to 95%+ through mandatory evidence
-- **6 Evidence Types**: Search results, code location, data flow, state flow, UI screenshots, test results
-- **5 Mandatory Questions (MQ1-5)**: Prevent common failures before they happen
-  - MQ1: Historical code search (prevent duplicate creation)
-  - MQ2: Function existence (prevent runtime crashes)
-  - MQ3: Data flow completeness (ensure UI displays all data)
-  - MQ4: Visual hierarchy (make different states visually distinct)
-  - MQ5: State synchronization (prevent data inconsistency)
-- **Human-Verifiable Checkpoints**: Every evidence has clear validation criteria
+### MQ6 - Proactive Technical Research
+- **Automatic Trigger**: Any technical decision triggers a search
+- **Depth Auto-Determination**: Search depth based on decision complexity
+- **Evidence Collection**: Search results become part of design evidence
 
-### Human Visual Empowerment
-- **New Role**: Value Guardian + Checkpoint Validator
-- **3 Participation Points**:
-  - Gate 2 Review: 10-15 min (verify design evidence)
-  - Phase Checkpoints: 5-10 min each (progressive validation)
-  - Gate 3 Verification: 10-15 min (final validation)
-- **No Technical Knowledge Required**: Verify through charts and screenshots
-- **ROI 1:5 to 1:10**: Invest 30-60 min → Save 3-6 hours rework
+### Research Phase
+- **On-Demand Search**: Search as needed during implementation
+- **Final Technical Review**: Comprehensive review before completion
+- **Knowledge Capture**: Learnings recorded for future reference
 
-### Continuous Learning Mechanisms
-- **5 Learning Mechanisms**:
-  - Decision Rationale: Understand technical tradeoffs
-  - Interactive Challenge: Think before accepting solutions
-  - Impact Visualization: See ripple effects of changes
-  - What-If Scenarios: Compare alternative approaches
-  - Failure Learning Entry: Auto-improve from mistakes
-- **4 Learning Dimensions**: Tech tradeoffs, System thinking, UX intuition, Quality awareness
-- **Failure Learning Loop**: System gets smarter with each project
+### Skills Knowledge System
+- **42 Built-in Skills**: Covering development, design, security, testing, and more
+- **Auto-Discovery**: Skills automatically loaded based on task context
+- **Hybrid Strategy**: 3 mandatory skills + context-based recommendations
+- **Mandatory Skills**: security-checklist, test-driven-development, verification
 
-### Progressive Validation
-- **Phase-Based Approach**: Break large tasks into 2-4 hour phases
-- **Early Direction Validation**: Catch errors at 20% instead of 100%
-- **Evidence Requirements**: Each phase provides code, tests, and UI proof
-- **Continuous Feedback**: Human validates direction before next phase
+### Learn System
+- **`/tad-learn` Command**: Record framework suggestions
+- **Pattern Recognition**: Capture success and failure patterns
+- **Continuous Evolution**: Framework improves with each project
+
+### v1.3 Features (Preserved)
+- **Evidence-Based Development**: MQ1-5 mandatory questions
+- **Human Visual Empowerment**: Value Guardian role
+- **Progressive Validation**: Phase-based checkpoints
+- **Continuous Learning**: 5 learning mechanisms
 
 ### v1.2 Features (Preserved)
-- **MCP Integration**: 70-85% efficiency boost with Model Context Protocol
-- **Smart Project Detection**: Auto-recommend tools by project type
+- **MCP Integration**: 70-85% efficiency boost
 - **16 Real Sub-agents**: Claude Code platform agent access
-- **Parallel Execution**: 40%+ time savings
 - **4-Gate Quality System**: Systematic quality control
 
 ### Key Benefits
-- **100% Backward Compatible**: Works with v1.2 projects
-- **Evidence-Driven**: From "AI says" to "Human sees proof"
-- **Human Growth**: Build technical intuition through learning mechanisms
-- **Self-Improving**: Failure loop auto-generates new quality checks
-- **Measurable ROI**: Track time invested vs saved
+- **100% Backward Compatible**: Works with v1.3 and v1.2 projects
+- **Research-Driven**: Technical decisions backed by evidence
+- **Knowledge-First**: Skills system provides best practices
+- **Self-Improving**: Learn system captures improvements
 
 ## What is TAD?
 
@@ -266,14 +255,14 @@ You know TAD is working when:
 
 1. **Install TAD**: Use the one-line installer above or follow manual installation steps
 2. **Verify Installation**: Run `./tad doctor` to check your TAD installation health
-3. **Check Version**: Run `./tad version` to confirm v1.2 is installed
+3. **Check Version**: Run `./tad version` to confirm v1.4 is installed
 4. **Start Development**: Use `/alex` and `/blake` slash commands to activate agents
 5. **Start Small**: Try TAD on a simple feature first
 6. **Iterate**: Adjust the process based on what works
 
 ## CLI Commands
 
-TAD v1.2 includes a simple CLI for framework management:
+TAD v1.4 includes a simple CLI for framework management:
 
 ```bash
 ./tad version   # Show TAD version

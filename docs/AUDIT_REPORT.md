@@ -1,17 +1,19 @@
 # TAD Documentation Audit Report
 
 **Audit Date:** 2026-01-06
-**Audit Version:** Phase 1
+**Audit Version:** Phase 2
 **Auditor:** Document Engineer
 
 ---
 
 ## Executive Summary
 
-Phase 1 of documentation consistency project completed:
+Phase 1 & 2 of documentation consistency project completed:
 - Created documentation portal structure (`docs/`)
 - Added Legacy banners to 5 historical documents
 - Established version governance framework
+- Updated README.md version references (v1.3 → v1.4)
+- Added documentation portal links to main README
 
 ---
 
@@ -65,7 +67,7 @@ docs/
 
 | File | Current Reference | Target | Action Needed |
 |------|-------------------|--------|---------------|
-| README.md | v1.3 (line ~20) | v1.4 | Phase 2 |
+| README.md | v1.4 | v1.4 | OK (Phase 2 completed) |
 | .tad/config.yaml | v1.4.0 | v1.4.0 | OK |
 | docs/README.md | v1.4 | v1.4 | OK |
 
@@ -129,11 +131,13 @@ docs/
 
 ---
 
-## Phase 2 Recommendations
+## Phase 2 Completion Checklist
 
-1. **Update README.md version reference** from v1.3 to v1.4
-2. **Add docs/ link to main README.md** for documentation portal access
-3. **Update entry points** in install.sh if needed
+- [x] Update README.md version reference from v1.3 to v1.4
+- [x] Add docs/ link to main README.md for documentation portal access
+- [x] Update "What's New" section for v1.4 features
+- [x] Update upgrade commands in README.md
+- [ ] Update entry points in install.sh if needed (deferred)
 
 ## Phase 3 Recommendations
 
