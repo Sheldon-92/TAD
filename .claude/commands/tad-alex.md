@@ -138,7 +138,7 @@ acceptance_protocol:
   step3: "检查 Gate 3 & 4 是否通过"
   step4: "检查实际实现是否符合 handoff 要求"
   step5: "检查是否有与计划的重大差异"
-  step6: "验收通过后，将 handoff 移至 .tad/archive/handoffs/"
+  step6: "验收通过后，将 handoff 移至 tad-work/archive/handoffs/"
   step7: "限制 active handoffs 不超过 3 个"
 
   violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"

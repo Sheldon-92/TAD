@@ -100,8 +100,8 @@ Agent A -- Agent B
 ## Configuration Files
 - `.tad/config.yaml` - Main configuration
 - `.tad/agents/` - Agent definitions
-- `.tad/context/` - Project context
-- `.tad/working/` - Active work documents
+- `tad-work/context/` - Project context
+- `tad-work/working/` - Active work documents
 
 ## Sub-agents Available
 TAD integrates with 16 Claude Code sub-agents:

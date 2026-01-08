@@ -45,9 +45,9 @@ Use this checklist format to track progress:
    - Copy `README.md` as `.tad/README.md`
 
 4. **Create initial project files**
-   - Create `.tad/context/PROJECT.md` with project name
-   - Create `.tad/context/REQUIREMENTS.md` (empty template)
-   - Create `.tad/context/ARCHITECTURE.md` (empty template)
+   - Create `tad-work/context/PROJECT.md` with project name
+   - Create `tad-work/context/REQUIREMENTS.md` (empty template)
+   - Create `tad-work/context/ARCHITECTURE.md` (empty template)
 
 5. **Display success message**
    ```

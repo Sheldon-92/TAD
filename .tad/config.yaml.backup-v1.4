@@ -348,7 +348,7 @@ scenarios:
           - "架构设计图"
           - "实施步骤"
           - "验收标准"
-        format: "tad-work/handoffs/project_init_{timestamp}.md"
+        format: ".tad/active/handoffs/project_init_{timestamp}.md"
 
     agent_b_workflow:
       phase1_validation:
@@ -904,7 +904,7 @@ mandatory_questions:
   enabled: true
   blocking: true
   auto_sync: true
-  source: "tad-work/evidence/patterns/failure-patterns.md"
+  source: ".tad/evidence/patterns/failure-patterns.md"
   description: "从历史失败中提炼的必须回答的问题"
 
   # 问题库
@@ -1075,7 +1075,7 @@ mandatory_questions:
          - 分析为什么没拦住（trigger条件不够？evidence不够？）
          - 优化MQ的trigger条件或evidence要求
          - 更新config.yaml
-    output_location: "tad-work/evidence/failures/[timestamp]_mq_update.yaml"
+    output_location: ".tad/evidence/failures/[timestamp]_mq_update.yaml"
 
 # ==================== 渐进式验证系统 ====================
 progressive_validation:
@@ -1466,7 +1466,7 @@ failure_learning_loop:
         - should_be_caught_by: "应该由哪个Gate/MQ拦截"
         - actual_outcome: "实际上放行了"
         - user_impact: "给用户造成的影响"
-      output_file: "tad-work/evidence/failures/[timestamp]_failure.yaml"
+      output_file: ".tad/evidence/failures/[timestamp]_failure.yaml"
 
     step2_analyze:
       action: "分析应该增加什么检查点"
@@ -1475,7 +1475,7 @@ failure_learning_loop:
         - "现有的MQ能拦截吗？如果不能，为什么？"
         - "需要什么证据才能提前发现？"
         - "Human需要看什么才能判断？"
-      output_file: "tad-work/evidence/failures/[timestamp]_analysis.yaml"
+      output_file: ".tad/evidence/failures/[timestamp]_analysis.yaml"
 
     step3_propose:
       action: "生成配置更新建议"
@@ -1489,7 +1489,7 @@ failure_learning_loop:
           existing_mq: "MQ[Y]"
           enhancement: "[如何增强]"
           new_trigger: "[更准确的触发条件]"
-      output_file: "tad-work/evidence/failures/[timestamp]_proposal.yaml"
+      output_file: ".tad/evidence/failures/[timestamp]_proposal.yaml"
 
     step4_review:
       action: "Human审核提案"
@@ -1507,7 +1507,7 @@ failure_learning_loop:
       files_to_update:
         - ".tad/config.yaml"  # 添加/更新MQ
         - ".tad/templates/handoff-a-to-b.md"  # 更新模板
-        - "tad-work/evidence/patterns/failure-patterns.md"  # 更新记录
+        - ".tad/evidence/patterns/failure-patterns.md"  # 更新记录
       notification: "配置已自动更新，下个项目生效"
       changelog: "记录在.tad/CHANGELOG.md"
 
@@ -1517,7 +1517,7 @@ failure_learning_loop:
       - "failures_prevented": "新MQ拦截的失败"
       - "false_positive_rate": "误报率"
       - "mq_effectiveness": "每个MQ的有效性"
-    report_location: "tad-work/evidence/metrics/learning-effectiveness.md"
+    report_location: ".tad/evidence/metrics/learning-effectiveness.md"
 
 # ==================== 配置生效时间 ====================
 rollout_plan:

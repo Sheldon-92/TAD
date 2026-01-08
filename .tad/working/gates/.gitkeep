@@ -1,6 +1,0 @@
-# Gate Execution Logs
-
-This directory stores completed gate checklists for tracking and quality improvement.
-
-Format: gate-[number]-[project]-[timestamp].md
-Example: gate-1-requirements-20250927-143022.md

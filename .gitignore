@@ -19,3 +19,14 @@ node_modules/
 
 # TAD Framework - 全部纳入版本控制，不忽略
 # (保留所有过程文件：handoffs, evidence, logs, context)
+
+# TAD v1.5+ Work Directory
+# Temporary work files (optional to exclude)
+tad-work/working/*
+!tad-work/working/.gitkeep
+
+# Session context (optional - uncomment if you don't want to version control)
+# tad-work/context/*
+# !tad-work/context/.gitkeep
+
+# Everything else in tad-work/ SHOULD be committed (handoffs, evidence, learnings)

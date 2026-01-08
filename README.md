@@ -1,37 +1,61 @@
 # TAD Method - Triangle Agent Development
 
-**Version 1.4 - Proactive Technical Research & Knowledge System**
+**Version 1.5 - Framework & User Data Separation**
 
-> 🚀 **TAD v1.4** builds on Evidence-Based Development with **MQ6 Technical Research**, **Skills Knowledge System** (42 built-in skills), and **Learn System** for framework-level improvements.
+> 🚀 **TAD v1.5** introduces **clean separation** between framework files (`.tad/`) and user work (`tad-work/`), enabling **safe upgrades** without data loss.
 >
-> 📚 **[Documentation Portal](docs/README.md)** | [v1.4 Release Notes](docs/releases/v1.4-release.md)
+> 📚 **[Documentation Portal](docs/README.md)** | [v1.5 Release Notes](docs/releases/v1.5-release.md)
+
+## 🎯 What's New in v1.5
+
+### Directory Structure Revolution
+```
+project/
+├── .tad/        # Framework (config, templates, tasks) - Safe to upgrade
+└── tad-work/    # Your work (handoffs, evidence) - Never touched by upgrades
+```
+
+**Benefits:**
+- ✅ **Safe Upgrades** - Framework updates won't touch your work
+- ✅ **Clear Ownership** - Know what's framework vs. your data
+- ✅ **Better Git Control** - Separate .gitignore rules for each
+- ✅ **No Data Loss** - Migration preserves all history
+
+### v1.4 Features (Preserved)
+- MQ6 Technical Research & Skills Knowledge System (42 built-in skills)
+- Learn System for framework improvements
+- Evidence-Based Development (MQ1-5)
 
 ## 🚀 Quick Installation
 
-### One Command for Everything
+### Fresh Install (New Projects)
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
 ```
 
-This single command handles:
-- **Fresh install** - New projects without TAD
-- **Upgrade from any version** - v1.0 → v1.1 → v1.2 → v1.3 → v1.4 (auto-detected)
+For new projects without TAD.
 
-### Smart Upgrade (Recommended for existing projects)
+### Migrate to v1.5 (Existing Projects) ⭐ RECOMMENDED
+```bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/migrate-to-v1.5.sh | bash
+```
+
+**For projects using TAD v1.4 or earlier:**
+- ✅ Migrates to new directory structure (.tad/ + tad-work/)
+- ✅ Preserves ALL your work (handoffs, evidence, context)
+- ✅ Updates framework to v1.5
+- ✅ Zero data loss, safe migration
+
+**After migration:**
+- Framework upgrades won't touch your work anymore
+- Clear separation: `.tad/` (framework) vs `tad-work/` (yours)
+
+### Quick Fix Upgrade (v1.4 → v1.4.1)
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade.sh | bash
 ```
 
-**What it does:**
-- ✅ Updates framework files (config, commands, templates)
-- ✅ Preserves your work (handoffs, context, learnings)
-- ✅ Removes deprecated files
-- ✅ No data loss
-
-**When to use:**
-- Already have TAD v1.4 but need latest fixes
-- Want to update without losing work
-- Version check shows "already installed"
+Only for v1.4 users who need bug fixes but don't want structure change yet.
 
 ### Manual installation
 ```bash

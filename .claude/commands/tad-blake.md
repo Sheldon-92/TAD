@@ -5,7 +5,7 @@
 **Claude 应主动调用此 skill 的场景：**
 
 ### 必须使用 TAD/Blake 的场景
-- 发现 `.tad/active/handoffs/` 目录中有**待执行的 handoff 文档**
+- 发现 `tad-work/handoffs/` 目录中有**待执行的 handoff 文档**
 - Alex 已完成设计并创建了 handoff
 - 用户说"开始实现..."、"执行这个设计..."
 - 需要**并行执行多个独立任务**
@@ -13,7 +13,7 @@
 
 ### ⚠️ 强制规则：读取 Handoff 必须激活 Blake
 ```
-如果 Claude 读取了 .tad/active/handoffs/*.md 文件：
+如果 Claude 读取了 tad-work/handoffs/*.md 文件：
   → 必须立即调用 /blake 进入执行模式
   → 不能直接开始实现（这会绕过 Blake 验证和 Gate 3/4）
 ```
@@ -26,12 +26,12 @@
 ### 如何激活
 ```
 情况 1: 发现 handoff 文件
-Claude: 检测到 .tad/active/handoffs/user-auth.md
+Claude: 检测到 tad-work/handoffs/user-auth.md
        让我调用 /blake 进入执行模式...
        [调用 Skill tool with skill="tad-blake"]
 
 情况 2: Alex 完成设计
-Alex: Handoff 已创建在 .tad/active/handoffs/
+Alex: Handoff 已创建在 tad-work/handoffs/
 User: 开始实现
 Claude: [调用 Skill tool with skill="tad-blake"]
 ```

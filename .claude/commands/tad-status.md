@@ -65,8 +65,8 @@ Checking TAD Framework status...
    - Verify sub-agents listed
 
 3. Project Files:
-   - Check .tad/context/ directory
-   - Check .tad/working/ directory
+   - Check tad-work/context/ directory
+   - Check tad-work/working/ directory
    - List existing project documents
 
 4. Report:

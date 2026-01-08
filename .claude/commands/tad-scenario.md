@@ -34,8 +34,8 @@ Agent B (Executor) - Blake:
 3. [Final] → [Human]: [Final deliverable]
 
 📁 WORKING FILES CREATED
-- .tad/working/scenario-[name]-[timestamp].md
-- .tad/working/handoff-log.md
+- tad-work/working/scenario-[name]-[timestamp].md
+- tad-work/working/handoff-log.md
 - [Other scenario-specific files]
 
 ⚡ ACTIVATION COMMANDS
@@ -75,7 +75,7 @@ When scenario is selected:
    ```
 
 3. **Create working documents**:
-   - Create .tad/working/current-scenario.md with scenario details
+   - Create tad-work/working/current-scenario.md with scenario details
    - Initialize any needed templates
 
 4. **Provide activation instructions**:

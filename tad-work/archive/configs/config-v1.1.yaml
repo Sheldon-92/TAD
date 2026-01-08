@@ -1,0 +1,556 @@
+# TAD Configuration v1.1 - 完整借鉴 BMAD 机制的三角协作框架
+# Triangle Agent Development with BMAD Mechanisms
+
+method: TAD
+version: 1.1
+created_at: '2025-01-28T16:00:00.000Z'
+description: Triangle Agent Development - 简化角色，保留 BMAD 所有有效机制
+
+# ==================== 核心配置（借鉴 BMAD core-config.yaml） ====================
+core:
+  # 文档配置
+  markdownExploder: true
+
+  # 质量保证位置
+  qa:
+    qaLocation: .tad/qa
+
+  # 需求文档
+  requirements:
+    requirementsFile: .tad/docs/requirements.md
+    requirementsVersion: v1.1
+    requirementsSharded: true
+    requirementsShardedLocation: .tad/docs/requirements
+
+  # 设计文档
+  design:
+    designFile: .tad/docs/design.md
+    designVersion: v1.1
+    designSharded: true
+    designShardedLocation: .tad/docs/design
+
+  # Handoff 文档
+  handoff:
+    handoffFile: .tad/docs/handoff.md
+    handoffVersion: v1.1
+    handoffSharded: true
+    handoffShardedLocation: .tad/docs/handoff
+
+  # 开发时始终加载的文件
+  devLoadAlwaysFiles:
+    - .tad/docs/design/coding-standards.md
+    - .tad/docs/design/tech-stack.md
+    - .tad/docs/design/source-tree.md
+
+  # 调试日志
+  devDebugLog: .tad/logs/debug-log.md
+
+  # 任务位置
+  taskLocation: .tad/docs/tasks
+
+  # 命令前缀
+  commandPrefix: "*"
+
+# ==================== 文件管理系统（借鉴 BMAD install-manifest） ====================
+manifest:
+  version: 1.1
+  install_type: full
+  agent: null
+  tracking:
+    files: []  # 将由系统自动填充
+    format: |
+      - path: {file_path}
+        hash: {file_hash}
+        modified: {modified_status}
+        version: {file_version}
+
+# ==================== 三角模型定义 ====================
+triangle:
+  # Human - 价值守护者
+  human:
+    role: Value Guardian & Decision Maker
+    责任:
+      - 定义价值和需求
+      - 验证交付价值
+      - 做关键决策
+      - 在两个终端间传递信息
+    terminals:
+      - terminal_1: "与 Agent A 交互"
+      - terminal_2: "与 Agent B 交互"
+
+  # Agent A - 战略架构师（整合 BMAD 的 PM, PO, Analyst, Architect, UX 角色）
+  agent_a:
+    name: Alex
+    id: agent-a
+    title: Strategic Architect
+    icon: 🎯
+    terminal: 1
+    whenToUse: "需求分析、方案设计、架构规划、质量审查时使用"
+
+    # 继承的 BMAD 角色能力
+    inherited_roles:
+      - pm: "项目管理、需求优先级"
+      - po: "产品规划、价值定义"
+      - analyst: "需求分析、问题诊断"
+      - architect: "架构设计、技术选型"
+      - ux-expert: "用户体验、交互设计"
+
+    # 可以执行的任务类型
+    task_permissions:
+      - requirement-elicitation
+      - design-creation
+      - handoff-creation
+      - architecture-planning
+      - review-and-approval
+
+  # Agent B - 执行大师（整合 BMAD 的 Dev, QA, DevOps 角色）
+  agent_b:
+    name: Blake
+    id: agent-b
+    title: Execution Master
+    icon: 💻
+    terminal: 2
+    whenToUse: "代码实现、测试执行、部署运维、问题修复时使用"
+
+    # 继承的 BMAD 角色能力
+    inherited_roles:
+      - dev: "代码实现、功能开发"
+      - qa: "质量保证、测试验证"
+      - devops: "部署配置、运维管理"
+
+    # 可以执行的任务类型
+    task_permissions:
+      - implementation
+      - testing
+      - deployment
+      - bug-fixing
+      - performance-optimization
+
+# ==================== 命令系统（完全借鉴 BMAD） ====================
+command_system:
+  prefix: "*"
+  format: "所有命令必须以 * 开头（例如：*help, *task, *status）"
+
+  # 斜杠命令快捷方式（Claude Code 集成）
+  slash_commands:
+    # Agent 激活命令
+    /alex: "激活 Agent A (Alex) - 战略架构师"
+    /blake: "激活 Agent B (Blake) - 执行大师"
+
+    # 任务快捷命令
+    /elicit: "开始需求挖掘（3-5轮强制）"
+    /parallel: "启动并行执行分析"
+    /handoff: "创建或验证交接文档"
+    /gate: "执行质量门禁检查"
+
+    # Sub-agent 快捷访问
+    /product: "快速调用 product-expert"
+    /architect: "快速调用 backend-architect"
+    /coordinator: "快速调用 parallel-coordinator"
+    /bug: "快速调用 bug-hunter"
+    /test: "快速调用 test-runner"
+
+  # Agent A 命令集
+  agent_a_commands:
+    - help: "显示所有可用命令"
+    - analyze: "分析需求（使用 requirement-elicitation 任务）"
+    - design: "创建设计文档（使用 design-creation 任务）"
+    - handoff: "生成交接文档（使用 handoff-creation 任务）"
+    - review: "审查实现结果"
+    - checklist: "执行检查清单"
+    - status: "显示当前状态"
+    - task: "执行特定任务（列出可用任务）"
+    - doc-out: "输出完整文档"
+    - yolo: "切换 YOLO 模式（跳过确认）"
+    - exit: "退出当前 Agent"
+
+  # Agent B 命令集
+  agent_b_commands:
+    - help: "显示所有可用命令"
+    - develop: "开始开发任务"
+    - test: "执行测试"
+    - deploy: "部署应用"
+    - debug: "调试问题"
+    - checklist: "执行检查清单"
+    - status: "显示当前状态"
+    - task: "执行特定任务"
+    - run-tests: "运行所有测试"
+    - explain: "解释刚才的操作"
+    - exit: "退出当前 Agent"
+
+# ==================== 强制交互机制（Elicitation） ====================
+elicitation:
+  enabled: true
+  format: "1-9 数字选项"
+
+  # 标准选项模板
+  standard_options: |
+    请选择一个选项（0-8）或 9 继续：
+    0. [方法名称]
+    1. [方法名称]
+    2. [方法名称]
+    3. [方法名称]
+    4. [方法名称]
+    5. [方法名称]
+    6. [方法名称]
+    7. [方法名称]
+    8. [方法名称]
+    9. 继续 / 无需更多操作
+
+  # 强制规则
+  rules:
+    - "当 elicit: true 时，必须停止并等待用户输入"
+    - "永远不要使用 yes/no 问题"
+    - "必须使用 0-9 数字选项"
+    - "违规将触发 VIOLATION INDICATOR"
+
+# ==================== 任务系统（完全借鉴 BMAD） ====================
+task_system:
+  executable: true  # 任务文件是可执行的工作流，不是参考材料
+  violation_enforcement: true  # 启用违规检测
+  mandatory_rounds:
+    elicitation: 3  # 最少需求确认轮次
+  document_ownership:
+    enabled: true
+    permissions:
+      owner: "full"
+      editors: "modify"
+      viewers: "read"
+
+  location: .tad/tasks/
+
+  # Agent A 的任务
+  agent_a_tasks:
+    - requirement-elicitation.md: "需求挖掘（强制 3-5 轮确认）"
+    - design-creation.md: "设计文档创建"
+    - handoff-creation.md: "交接文档生成"
+    - architecture-planning.md: "架构规划"
+    - review-checklist.md: "审查检查清单"
+
+  # Agent B 的任务
+  agent_b_tasks:
+    - develop-task.md: "开发任务执行"
+    - test-execution.md: "测试执行"
+    - deployment.md: "部署任务"
+    - bug-fix.md: "Bug 修复"
+    - performance-optimization.md: "性能优化"
+
+  # 共享任务
+  shared_tasks:
+    - execute-checklist.md: "执行检查清单"
+    - advanced-elicitation.md: "高级挖掘"
+
+# ==================== 模板系统（借鉴 BMAD） ====================
+template_system:
+  location: .tad/templates/
+
+  templates:
+    - requirement-tmpl.yaml: "需求文档模板"
+    - design-tmpl.yaml: "设计文档模板"
+    - handoff-tmpl.yaml: "交接文档模板"
+    - task-tmpl.yaml: "任务文档模板"
+
+  # 模板处理规则
+  processing:
+    mode: interactive
+    elicitation: advanced-elicitation
+    output_format: markdown
+
+# ==================== 工作流系统（简化版 BMAD） ====================
+workflows:
+  location: .tad/workflows/
+
+  available_workflows:
+    new_project:
+      name: "新项目启动"
+      description: "从零开始的项目"
+      agents_involved: ["agent-a", "agent-b"]
+
+    feature_addition:
+      name: "功能添加"
+      description: "为现有项目添加功能"
+      agents_involved: ["agent-a", "agent-b"]
+
+    bug_fix:
+      name: "Bug 修复"
+      description: "修复问题"
+      agents_involved: ["agent-a", "agent-b"]
+
+    refactoring:
+      name: "代码重构"
+      description: "改进代码质量"
+      agents_involved: ["agent-b", "agent-a"]
+
+# ==================== 检查清单系统 ====================
+checklists:
+  location: .tad/checklists/
+
+  agent_a_checklists:
+    - requirement-checklist.md: "需求完整性检查"
+    - design-checklist.md: "设计完整性检查"
+    - handoff-checklist.md: "交接完整性检查"
+
+  agent_b_checklists:
+    - implementation-checklist.md: "实现完整性检查"
+    - test-checklist.md: "测试完整性检查"
+    - deployment-checklist.md: "部署就绪检查"
+
+# ==================== 数据资源 ====================
+data:
+  location: .tad/data/
+
+  resources:
+    - elicitation-methods.md: "挖掘方法库（20+ 方法）"
+    - brainstorming-techniques.md: "头脑风暴技术"
+    - technical-preferences.md: "技术偏好设置"
+
+# ==================== 违规检测系统 ====================
+violation_detection:
+  enabled: true
+
+  violations:
+    - id: "SKIP_ELICITATION"
+      description: "跳过强制交互"
+      severity: "HIGH"
+      action: "立即停止，重新执行"
+
+    - id: "WRONG_AGENT_TASK"
+      description: "Agent 执行了不属于自己的任务"
+      severity: "HIGH"
+      action: "阻止执行，提示正确的 Agent"
+
+    - id: "MISSING_HANDOFF"
+      description: "Agent B 开始执行但没有 handoff 文档"
+      severity: "CRITICAL"
+      action: "拒绝执行，要求 Agent A 生成 handoff"
+
+    - id: "NO_VALIDATION"
+      description: "跳过验证步骤"
+      severity: "MEDIUM"
+      action: "警告并要求执行验证"
+
+# ==================== Agent 激活协议（完全借鉴 BMAD） ====================
+activation_protocol:
+  mandatory_steps:
+    - step: 1
+      action: "读取完整 Agent 定义文件"
+      critical: true
+
+    - step: 2
+      action: "采用定义的 persona"
+      critical: true
+
+    - step: 3
+      action: "加载 config-v1.1.yaml"
+      critical: true
+
+    - step: 4
+      action: "自动运行 *help 显示所有命令"
+      critical: true
+
+    - step: 5
+      action: "等待用户命令"
+      critical: true
+
+  rules:
+    - "不要预加载其他文件"
+    - "只在需要时加载依赖"
+    - "保持角色身份"
+    - "所有命令需要 * 前缀"
+
+# ==================== 文档所有权系统（借鉴 BMAD） ====================
+document_ownership:
+  rules:
+    - "每个文档段落都有 owner 和 editors"
+    - "只有 editors 列表中的角色可以修改"
+    - "owner 负责初始创建"
+
+  example:
+    requirements:
+      owner: agent-a
+      editors: [agent-a, human]
+
+    implementation:
+      owner: agent-b
+      editors: [agent-b]
+
+    handoff:
+      owner: agent-a
+      editors: [agent-a]
+      readonly_after_creation: true
+
+# ==================== 质量门控 ====================
+quality_gates:
+  agent_a_gates:
+    - requirement_completeness: "需求必须经过 3-5 轮确认"
+    - design_completeness: "设计必须包含所有组件"
+    - handoff_completeness: "交接文档必须完整"
+
+  agent_b_gates:
+    - handoff_exists: "必须有交接文档"
+    - tests_pass: "所有测试必须通过"
+    - checklist_complete: "检查清单必须完成"
+
+# ==================== TAD 原创机制 ====================
+# Quality Gates (质量门禁系统) - TAD 原创的 4 门禁系统
+tad_quality_gates:
+  enabled: true
+  enforcement: "mandatory"  # 借鉴 BMAD 的强制执行
+  gates:
+    gate_1:
+      name: "Requirements Clarity"
+      owner: "agent-a"
+      when: "After requirement elicitation"
+      checklist: ".tad/gates/quality-gate-checklist.md#gate-1"
+      violation_if_skipped: true
+      evidence_required:
+        - elicitation_rounds_completed
+        - requirements_documented
+        - user_confirmation
+
+    gate_2:
+      name: "Design Completeness"
+      owner: "agent-a"
+      when: "Before handoff creation"
+      checklist: ".tad/gates/quality-gate-checklist.md#gate-2"
+      violation_if_skipped: true
+      evidence_required:
+        - design_document_complete
+        - architecture_reviewed
+        - data_flow_mapped
+
+    gate_3:
+      name: "Implementation Quality"
+      owner: "agent-b"
+      when: "After implementation"
+      checklist: ".tad/gates/quality-gate-checklist.md#gate-3"
+      violation_if_skipped: true
+      evidence_required:
+        - code_implemented
+        - tests_written
+        - function_verification_done
+
+    gate_4:
+      name: "Integration Verification"
+      owner: "agent-b"
+      when: "Before delivery"
+      checklist: ".tad/gates/quality-gate-checklist.md#gate-4"
+      violation_if_skipped: true
+      evidence_required:
+        - all_tests_passing
+        - integration_tested
+        - user_acceptance_ready
+
+# Evidence Collection System (证据收集系统) - TAD 原创
+evidence_system:
+  enabled: true
+  collection_required: true
+  storage: ".tad/evidence/"
+
+  categories:
+    project_logs:
+      path: ".tad/evidence/project-logs/"
+      description: "每个项目的执行证据"
+
+    success_patterns:
+      path: ".tad/evidence/patterns/success-patterns.md"
+      description: "成功模式收集"
+
+    failure_patterns:
+      path: ".tad/evidence/patterns/failure-patterns.md"
+      description: "失败模式分析"
+
+    gate_results:
+      path: ".tad/evidence/gates/"
+      description: "门禁执行结果"
+
+  mandatory_evidence:
+    - requirements_confirmation: "需求确认证据（3-5 轮）"
+    - design_approval: "设计批准证据"
+    - test_results: "测试结果证据"
+    - delivery_verification: "交付验证证据"
+
+  # 成功模式自动识别
+  pattern_recognition:
+    - "product-expert usage → 85% gate pass rate"
+    - "parallel-coordinator usage → 40% time reduction"
+    - "function verification → 95% error prevention"
+
+# Sub-agents Parallel Execution (子代理并行执行) - TAD 特色
+subagent_orchestration:
+  enabled: true
+  parallel_by_default: true  # Agent B 默认并行执行
+
+  # Claude Code 内置的 16 个真实子代理
+  available_agents:
+    strategic: # Agent A 主要使用
+      - product-expert: "需求分析，用户故事（必须用于需求）"
+      - backend-architect: "系统设计，架构决策（Opus 驱动）"
+      - api-designer: "API 设计，接口规范"
+      - code-reviewer: "代码质量审查（Opus 驱动）"
+      - ux-expert-reviewer: "UX 评估，用户流程优化"
+      - performance-optimizer: "性能分析优化（Opus 驱动）"
+      - data-analyst: "数据分析，洞察生成"
+
+    execution: # Agent B 主要使用
+      - parallel-coordinator: "并行任务协调（多组件必用）"
+      - fullstack-dev-expert: "全栈开发"
+      - frontend-specialist: "前端开发 React/Vue/Angular"
+      - refactor-specialist: "代码重构，技术债清理"
+      - bug-hunter: "Bug 诊断和修复"
+      - test-runner: "测试执行，覆盖率分析"
+      - devops-engineer: "CI/CD，部署，基础设施"
+      - database-expert: "数据库设计，查询优化"
+      - docs-writer: "文档编写，API 文档"
+
+  # 强制使用规则（结合 BMAD 的强制机制）
+  mandatory_usage:
+    agent_a:
+      - "requirement-elicitation → MUST use product-expert"
+      - "system-design → MUST use backend-architect"
+      - "api-design → MUST use api-designer"
+      - "design-review → SHOULD use code-reviewer"
+
+    agent_b:
+      - "multi-component → MUST use parallel-coordinator"
+      - "after-implementation → MUST use test-runner"
+      - "on-error → MUST use bug-hunter"
+      - "complex-feature → SHOULD use parallel streams"
+
+  # 并行执行模式
+  parallel_patterns:
+    frontend_backend:
+      description: "前后端同时开发"
+      coordinator: parallel-coordinator
+      streams:
+        - frontend: frontend-specialist
+        - backend: fullstack-dev-expert
+        - database: database-expert
+
+    feature_streams:
+      description: "独立功能并行开发"
+      coordinator: parallel-coordinator
+      approach: "分解 → 并行 → 集成"
+
+    test_deploy:
+      description: "测试和部署准备并行"
+      coordinator: parallel-coordinator
+      streams:
+        - testing: test-runner
+        - deployment: devops-engineer
+        - documentation: docs-writer
+
+# ==================== 成功指标（增强版） ====================
+success_metrics:
+  # BMAD 指标
+  - "首次理解正确率 > 80%"
+  - "强制交互执行率 = 100%"
+  - "违规发生率 < 5%"
+  - "文档完整性 = 100%"
+
+  # TAD 原创指标
+  - "门禁通过率 > 95%"
+  - "证据收集完整率 = 100%"
+  - "并行执行采用率 > 60%"
+  - "子代理使用有效率 > 80%"
+  - "测试覆盖率 > 80%"
