@@ -17,6 +17,22 @@ This single command handles:
 - **Fresh install** - New projects without TAD
 - **Upgrade from any version** - v1.0 → v1.1 → v1.2 → v1.3 → v1.4 (auto-detected)
 
+### Smart Upgrade (Recommended for existing projects)
+```bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade.sh | bash
+```
+
+**What it does:**
+- ✅ Updates framework files (config, commands, templates)
+- ✅ Preserves your work (handoffs, context, learnings)
+- ✅ Removes deprecated files
+- ✅ No data loss
+
+**When to use:**
+- Already have TAD v1.4 but need latest fixes
+- Want to update without losing work
+- Version check shows "already installed"
+
 ### Manual installation
 ```bash
 git clone https://github.com/Sheldon-92/TAD.git .tad-temp
