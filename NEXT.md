@@ -69,7 +69,27 @@
 - [x] agent-b-executor.md - 添加 skills_integration (推荐场景，无限制)
 - [x] config.yaml - 完善 skills_inventory (通用策略 + MQ/Gate 映射)
 
-## 今天
+## 今天 (2026-01-07)
+
+- [x] TAD v1.5 - 框架与用户数据分离架构重构
+  - **核心改进**: 彻底分离框架文件和用户数据
+  - 创建 `tad-work/` 目录存放所有用户数据
+  - `.tad/` 只保留框架文件（可安全删除重装）
+  - 更新所有路径引用：config.yaml、命令文件、模板
+  - 创建 `migrate-to-v1.5.sh` 自动迁移脚本
+  - 更新 `install.sh` 支持 v1.5 新结构
+  - 更新所有版本号到 v1.5
+  - 更新 README.md 和文档
+  - 提交 v1.5 到 GitHub (commits: 84e8bc1, 148f815)
+
+- [x] 修复 6 个学习记录问题（来自 menu-snap 项目）
+  - **问题 1**: 学习记录未积累 → 修复 /tad-learn 添加 GitHub API 自动推送
+  - **问题 2**: Skill 触发条件不明确 → 添加触发条件到 tad-alex/blake/gate.md
+  - **问题 3**: Handoff 绕过 → 创建 CLAUDE.md 规则文件
+  - **问题 4**: Gates 未执行 → 简化 Gates，添加执行记录模板
+  - **问题 5**: Handoff 闭环 → 添加完成协议和验收流程
+  - 创建 `upgrade.sh` 智能升级脚本
+  - 提交所有修复到 GitHub (commit: 9fff65a)
 
 - [x] 修复 /tad-alex 配置文件超限问题 (2026-01-07)
   - 拆分 config.yaml (2202行 → 1599行，减少27%)
