@@ -1,8 +1,8 @@
-# TAD Configuration v1.5 - Proactive Technical Research
+# TAD Configuration v1.6 - Evidence-Based Development
 method: TAD
-version: 1.5.0
-description: Triangle Agent Development - 主动技术调研 + 知识库系统
-last_updated: 2026-01-06
+version: 1.6.0
+description: Triangle Agent Development - 证据驱动开发 + 强制质量门禁
+last_updated: 2026-01-20
 
 # ==================== 文档管理系统 ====================
 document_management:

@@ -71,7 +71,7 @@
 
 ## 今天 (2026-01-20)
 
-### TAD v1.5.1 - menu-snap 实践同步
+### TAD v1.6 - Evidence-Based Development (menu-snap 实践同步)
 
 - [x] 从 menu-snap 项目同步最新 TAD 实践改进
   - **CLAUDE.md 增强** (113 → 315 行)

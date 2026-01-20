@@ -1,83 +1,62 @@
 # TAD Method - Triangle Agent Development
 
-**Version 1.5 - Framework & User Data Separation**
+**Version 1.6 - Evidence-Based Development**
 
-> 🚀 **TAD v1.5** introduces **clean separation** between framework files (`.tad/`) and user work (`tad-work/`), enabling **safe upgrades** without data loss.
+> 🚀 **TAD v1.6** brings **Evidence-Based Development** with mandatory quality gates, subagent review enforcement, and streamlined skills architecture.
 >
-> 📚 **[Documentation Portal](docs/README.md)** | [v1.5 Release Notes](docs/releases/v1.5-release.md)
+> 📚 **[Documentation Portal](docs/README.md)** | [v1.6 Release Notes](docs/releases/v1.6-release.md)
 
-## 🎯 What's New in v1.5
+## 🎯 What's New in v1.6
 
-### Directory Structure Revolution
-```
-project/
-├── .tad/        # Framework (config, templates, tasks) - Safe to upgrade
-└── tad-work/    # Your work (handoffs, evidence) - Never touched by upgrades
-```
+### Evidence-Based Quality Gates
+- **Gate 3 (Implementation)**: Mandatory `test-runner` subagent call with evidence
+- **Gate 4 (Integration)**: Mandatory `code-reviewer` + `security-auditor` + `performance-optimizer`
+- **Output Templates**: 12 standardized review formats in `.tad/templates/output-formats/`
 
-**Benefits:**
-- ✅ **Safe Upgrades** - Framework updates won't touch your work
-- ✅ **Clear Ownership** - Know what's framework vs. your data
-- ✅ **Better Git Control** - Separate .gitignore rules for each
-- ✅ **No Data Loss** - Migration preserves all history
+### Streamlined Skills Architecture
+- Core skills only: `code-review/`, `doc-organization.md`
+- 42 reference skills archived in `.claude/skills/_archived/`
+- Reduced context overhead, faster agent startup
 
-### v1.4 Features (Preserved)
-- MQ6 Technical Research & Skills Knowledge System (42 built-in skills)
-- Learn System for framework improvements
-- Evidence-Based Development (MQ1-5)
+### Enhanced Agent Commands
+- **Alex**: New `*accept` (with PROJECT_CONTEXT update) and `*exit` protocols
+- **Blake**: New `*exit` protocol and NEXT.md maintenance rules
+- **CLAUDE.md**: Comprehensive project rules (315 lines)
 
-## 🚀 Quick Installation
+### Project Knowledge System
+- `.tad/project-knowledge/` for project-specific learnings
+- Automatic capture triggers after Gate 3/4 pass
 
-### Fresh Install (New Projects)
+## 🚀 Installation & Upgrade
+
+### One Command for Everything
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
-For new projects without TAD.
+This smart script automatically:
+- **Fresh install**: Creates complete TAD structure
+- **v1.4 → v1.6**: Migrates directory structure + upgrades
+- **v1.5 → v1.6**: Upgrades framework files in place
+- **Already v1.6**: Reports "already up to date"
 
-### Migrate to v1.5 (Existing Projects) ⭐ RECOMMENDED
-```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/migrate-to-v1.5.sh | bash
-```
+All scenarios preserve your work data (handoffs, learnings, evidence).
 
-**For projects using TAD v1.4 or earlier:**
-- ✅ Migrates to new directory structure (.tad/ + tad-work/)
-- ✅ Preserves ALL your work (handoffs, evidence, context)
-- ✅ Updates framework to v1.5
-- ✅ Zero data loss, safe migration
-
-**After migration:**
-- Framework upgrades won't touch your work anymore
-- Clear separation: `.tad/` (framework) vs `tad-work/` (yours)
-
-### Quick Fix Upgrade (v1.4 → v1.4.1)
-```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade.sh | bash
-```
-
-Only for v1.4 users who need bug fixes but don't want structure change yet.
-
-### Manual installation
+### Manual Installation
 ```bash
 git clone https://github.com/Sheldon-92/TAD.git .tad-temp
 cp -r .tad-temp/.tad ./
 cp -r .tad-temp/.claude ./
-cp .tad-temp/*.md ./
+cp .tad-temp/CLAUDE.md ./
 rm -rf .tad-temp
-```
-
-### NPM installation (Coming soon)
-```bash
-npm install -g tad-framework
-tad init
 ```
 
 ## ⚙️ Configuration
 
-**Current Version (v1.4):**
-- Main config: `.tad/config.yaml` (v1.4.0)
-- Skills: `.claude/skills/` (42 knowledge files)
-- The framework automatically uses the correct version
+**Current Version (v1.6):**
+- Main config: `.tad/config.yaml`
+- Skills: `.claude/skills/` (streamlined)
+- Output templates: `.tad/templates/output-formats/`
 
 **Legacy Configs (Reference only):**
 - See [Legacy Documents Index](docs/legacy/index.md) for historical documentation
