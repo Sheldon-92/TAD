@@ -6,30 +6,36 @@ This is your TAD (Triangle Agent Development) setup - a simplified, value-focuse
 ## Directory Structure
 ```
 .tad/
-├── agents/          # Main agent definitions
-│   ├── agent-a-architect.md
-│   └── agent-b-executor.md
-├── sub-agents/      # Specialized agents (callable)
-├── context/         # Project information
-│   ├── PROJECT.md   # Project overview
-│   └── decisions.md # Architectural decisions
-├── working/         # Active work
-│   ├── sprint.md    # Current sprint
-│   └── report.md    # Latest report
-├── templates/       # Document templates
-└── config.yaml      # TAD configuration
+├── active/              # Active workspace
+│   └── handoffs/        # Current handoff documents
+├── archive/             # Archived documents
+│   └── handoffs/        # Completed handoffs
+├── gates/               # Quality gate templates
+├── learnings/           # Framework learnings
+│   ├── pending/
+│   └── pushed/
+├── project-knowledge/   # Project-specific learnings
+├── templates/           # Document templates
+│   └── output-formats/  # Output format templates
+└── config.yaml          # TAD configuration
+
+.claude/
+├── commands/            # TAD command definitions
+│   ├── tad-alex.md      # Agent A definition
+│   └── tad-blake.md     # Agent B definition
+└── skills/              # Skills (code-review, etc.)
 ```
 
 ## Quick Activation
 
 ### Terminal 1 - Agent A (Strategic Architect)
 ```
-You are Agent A. Read .tad/agents/agent-a-architect.md
+/alex
 ```
 
 ### Terminal 2 - Agent B (Execution Master)
 ```
-You are Agent B. Read .tad/agents/agent-b-executor.md
+/blake
 ```
 
 ## How TAD Works

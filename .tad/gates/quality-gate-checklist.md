@@ -111,6 +111,12 @@ Approved for implementation ✅
 - [ ] **Performance Acceptable**: Response times meet requirements
 - [ ] **Integration Working**: New code doesn't break existing features
 
+### ✅ Knowledge Capture (MANDATORY)
+**Agent B must record project knowledge if applicable:**
+- [ ] **Implementation Discoveries**: Any non-obvious solutions, workarounds, or gotchas documented in `.tad/project-knowledge/`
+- [ ] **Problems Solved**: Significant debugging insights or error resolutions recorded
+- [ ] **Skip Criteria Checked**: If nothing new learned, confirm it's generic knowledge AI already knows
+
 ### ⚠️ Gate Failure Conditions
 - Code doesn't compile → Fix syntax/import errors
 - Function not found → Use existing functions or implement missing ones
@@ -131,6 +137,8 @@ UI Completeness: [✅ All fields displayed]
 Safety Display: [✅ Warnings prominent]
 Performance: [Response time: X ms]
 Test Results: [X/Y tests passing]
+
+Knowledge Capture: [✅ Recorded in .tad/project-knowledge/{category}.md / ⏭️ Skipped - no new project-specific knowledge]
 
 Ready for review ✅
 ```
@@ -158,12 +166,28 @@ Ready for review ✅
 - [ ] **Known Issues**: Any limitations or future work needed
 - [ ] **User Guide**: How to use the new feature
 
+### ✅ Subagent Review Verification ⚠️ CRITICAL
+**Alex MUST complete actual review using subagents (NOT paper review only):**
+- [ ] **code-reviewer Called**: Code quality, standards, maintainability verified
+- [ ] **ux-expert-reviewer Called**: (if UI involved) UX/UI quality assessed
+- [ ] **security-auditor Called**: (if auth/data involved) Security scan completed
+- [ ] **performance-optimizer Called**: (if performance sensitive) Bottlenecks analyzed
+- [ ] **Subagent Feedback Documented**: All findings in acceptance report
+- [ ] **Critical Issues Resolved**: Blocking issues from subagents addressed
+
+### ✅ Knowledge Capture (MANDATORY)
+**Alex must record project knowledge from review insights:**
+- [ ] **Review Insights Recorded**: Patterns, anti-patterns, or architectural insights documented in `.tad/project-knowledge/`
+- [ ] **Skip Criteria Checked**: If nothing project-specific learned, confirm and note "No new project knowledge"
+
 ### ⚠️ Gate Failure Conditions
 - Feature incomplete → Continue implementation
 - Existing features broken → Fix regressions
 - Performance degraded → Optimize bottlenecks
 - Security concerns → Address vulnerabilities
 - UX problems → Improve user interactions
+- **Subagent review skipped → BLOCKED** (must call at least code-reviewer)
+- **Critical subagent feedback ignored → BLOCKED** (must address)
 
 ### 📝 Gate Completion Template
 ```
@@ -178,7 +202,111 @@ Security: [✅ No new vulnerabilities]
 User Experience: [✅ Smooth and intuitive]
 Documentation: [✅ Updated]
 
+Subagent Review Results:
+- code-reviewer: [✅ Passed / ⚠️ Minor issues / ❌ Blocked]
+- ux-expert-reviewer: [✅/⚠️/❌ or N/A]
+- security-auditor: [✅/⚠️/❌ or N/A]
+- performance-optimizer: [✅/⚠️/❌ or N/A]
+
+Critical Feedback Addressed: [✅ Yes / Items resolved]
+
+Knowledge Capture: [✅ Review insights recorded in .tad/project-knowledge/{category}.md / ⏭️ Skipped - no new project-specific knowledge]
+
 READY FOR DELIVERY TO HUMAN ✅
+```
+
+---
+
+## 🚪 Gate 3R: Release Quality Gate
+
+**Trigger:** Before executing any version release
+
+### ✅ Pre-Release Verification Checklist
+**Blake must verify:**
+- [ ] **Tests Pass**: All tests green (`npm test`)
+- [ ] **Build Succeeds**: Production build works (`npm run build`)
+- [ ] **Lint Clean**: No linting errors (`npm run lint`)
+- [ ] **CHANGELOG Updated**: Version changes documented
+- [ ] **Version Bump Correct**: SemVer rules followed (patch/minor/major)
+- [ ] **No Uncommitted Changes**: Working directory clean (except release updates)
+
+### ✅ Platform Impact Assessment
+**Blake must assess:**
+- [ ] **Web Impact**: Changes deployed to Vercel automatically?
+- [ ] **iOS Impact**: Does iOS need rebuild? (`npm run release:ios`)
+- [ ] **API Contract**: Any breaking API changes? (requires major bump)
+- [ ] **Database Changes**: Migration needed?
+
+### ⚠️ Gate Failure Conditions
+- Tests failing → Fix tests before release
+- Build broken → Fix build errors
+- CHANGELOG not updated → Document changes
+- Wrong version bump → Adjust version type
+- Breaking change with minor bump → Use major version
+
+### 📝 Gate Completion Template
+```
+✅ RELEASE QUALITY GATE PASSED
+Date: [timestamp]
+Verified by: Blake (Execution Master)
+
+Pre-Release:
+- Tests: [X/Y passing]
+- Build: [Success]
+- Lint: [Clean]
+- CHANGELOG: [Updated]
+
+Version: [old] → [new] ([patch|minor|major])
+Platform Impact:
+- Web: [Auto-deploy/None]
+- iOS: [Rebuild needed/None]
+
+Approved for release ✅
+```
+
+---
+
+## 🚪 Gate 4R: Release Verification Gate
+
+**Trigger:** After release deployment, before marking complete
+
+### ✅ Post-Release Verification Checklist
+**Blake must verify:**
+- [ ] **Web Deployment**: Vercel deployment successful
+- [ ] **Production URL**: Site accessible and functional
+- [ ] **Critical Paths**: Core features working (menu analysis, recommendations)
+- [ ] **Version Display**: Correct version shown (if applicable)
+- [ ] **Error Monitoring**: No spike in errors
+
+### ✅ iOS-Specific Verification (if applicable)
+**Blake must verify:**
+- [ ] **Version Sync**: iOS version matches package.json
+- [ ] **Build Success**: Xcode archive successful
+- [ ] **TestFlight**: App uploaded (if releasing to App Store)
+
+### ⚠️ Gate Failure Conditions
+- Deployment failed → Check Vercel logs, retry
+- Site not accessible → Rollback immediately
+- Critical features broken → Rollback, fix, re-release
+- Version mismatch → Run `npm run version:sync`
+
+### 📝 Gate Completion Template
+```
+✅ RELEASE VERIFICATION GATE PASSED
+Date: [timestamp]
+Verified by: Blake (Execution Master)
+
+Deployment:
+- Web: [Verified at URL]
+- iOS: [Verified/NA]
+
+Production Health:
+- Site Accessible: [Yes]
+- Features Working: [Yes]
+- Errors: [None/Normal levels]
+
+Release Complete ✅
+Version [X.Y.Z] successfully deployed
 ```
 
 ---

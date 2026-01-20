@@ -69,7 +69,79 @@
 - [x] agent-b-executor.md - 添加 skills_integration (推荐场景，无限制)
 - [x] config.yaml - 完善 skills_inventory (通用策略 + MQ/Gate 映射)
 
-## 今天 (2026-01-07)
+## 今天 (2026-01-20)
+
+### TAD v1.5.1 - menu-snap 实践同步
+
+- [x] 从 menu-snap 项目同步最新 TAD 实践改进
+  - **CLAUDE.md 增强** (113 → 315 行)
+    - 新增 Alex 验收规则（必须调用 subagents 进行实际验证）
+    - 新增 Output Template 规则（Gate 3/4 证据文件强制要求）
+    - 新增 Project Knowledge 记录规则（Gate 通过后触发）
+    - 新增版本发布规则（Alex/Blake 分工）
+  - **tad-alex.md 增强** (7055 → 15987 bytes)
+    - 新增 *accept 命令（强制更新 PROJECT_CONTEXT.md）
+    - 新增 *exit 协议（退出前检查 NEXT.md）
+    - 新增版本发布职责
+    - 新增验收时 subagent 强制调用
+  - **tad-blake.md 增强** (8057 → 10453 bytes)
+    - 新增 *exit 协议（退出前检查 NEXT.md）
+    - 新增版本发布职责（日常发布执行）
+    - 新增 NEXT.md 维护规则
+    - 新增 knowledge_capture 触发
+  - **tad-gate.md 增强** (4400 → 13743 bytes)
+    - Gate 3 新增前置条件（Completion Report 必须存在）
+    - Gate 3 新增必须调用 test-runner subagent
+    - Gate 4 新增必须调用 security-auditor + performance-optimizer
+    - 所有 Gate 新增 Post-Pass Actions（更新 NEXT.md、知识记录）
+    - 新增证据文件存储到 .tad/evidence/reviews/
+  - **config.yaml 同步** (1600 → 1910 行)
+    - 新增 next_md_maintenance 配置（500行上限、归档规则）
+    - 新增 release_management 配置（版本策略、发布流程）
+    - 新增 template_triggers 配置（模板触发和存储系统）
+  - **目录结构同步**
+    - 新增 .tad/evidence/reviews/
+    - 新增 .tad/evidence/completions/
+    - 新增 .tad/active/designs/
+    - 新增 .tad/active/handoffs/
+    - 新增 .tad/archive/handoffs/
+    - 新增 .tad/project-knowledge/
+    - 新增 .tad/reports/
+  - **模板同步**
+    - 新增 12 个 output-formats 模板
+    - 新增 next-md-template.md
+    - 新增 history-md-template.md
+    - 新增 release-handoff.md
+    - 更新 handoff-b-to-a.md（Alex 验收规则）
+  - **Skills 同步**
+    - 新增 .claude/skills/code-review/ 目录结构
+
+- [x] 记录批判性意见供未来验证
+  - 创建 .tad/learnings/pending/2026-01-20-v15-critical-review.md
+  - 记录对 Gate 4 多 subagent、Skills 规则、Evidence 存储的保留意见
+  - 计划 2-4 周后验证
+
+### 全面审核补充同步 (第二轮)
+
+- [x] 补充遗漏文件同步
+  - **新增 research.md** - Deep Research skill (424 行，多阶段研究模板)
+  - **新增 release-execution.md** - 版本发布执行任务 (335 行)
+  - **同步 elicitation-methods.md** - 从 data/ 移到 templates/
+  - **同步 tad-init.md** - 更新目录结构匹配 v1.5
+  - **同步 handoff-a-to-b.md** - 增强交接模板 (TAD v3.1 Evidence-Based Development)
+  - **同步 gate-execution-guide.md** - 增加 Gate 3/4 强制要求
+  - **同步 quality-gate-checklist.md** - 增加 subagent 验证和知识记录
+  - **更新 .tad/README.md** - 更新目录结构说明，激活方式改为 /alex /blake
+  - **更新 settings.json** - 激活方式从文件读取改为命令调用
+
+- [x] Skills 目录结构简化（匹配 menu-snap 精简策略）
+  - **归档 42 个 Skills** - 移至 `.claude/skills/_archived/`
+  - **仅保留活跃**：`code-review/` 目录 + `doc-organization.md`
+  - **原因**：Skills 过多导致上下文膨胀，精简为实际使用的核心技能
+
+---
+
+## 已完成 (2026-01-07)
 
 - [x] TAD v1.5 - 框架与用户数据分离架构重构
   - **核心改进**: 彻底分离框架文件和用户数据

@@ -8,13 +8,13 @@
     "agent_a": {
       "name": "Alex",
       "role": "Strategic Architect",
-      "activation": "Read .tad/agents/agent-a-architect.md",
+      "activation": "Use /alex command",
       "terminal": 1
     },
     "agent_b": {
       "name": "Blake",
       "role": "Execution Master",
-      "activation": "Read .tad/agents/agent-b-executor.md",
+      "activation": "Use /blake command",
       "terminal": 2
     }
   },
@@ -27,11 +27,7 @@
 
   "autoload": [
     ".tad/config.yaml",
-    ".tad/gates/quality-gate-checklist.md",
-    ".tad/templates/handoff-a-to-b.md",
-    ".tad/evidence/README.md",
-    "WORKFLOW_PLAYBOOK.md",
-    "CLAUDE_CODE_SUBAGENTS.md"
+    ".tad/gates/quality-gate-checklist.md"
   ],
 
   "prompts": {

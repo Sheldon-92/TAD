@@ -31,31 +31,35 @@ Use this checklist format to track progress:
 
 2. **Create TAD structure**
    ```bash
-   mkdir -p .tad/agents
-   mkdir -p .tad/context
-   mkdir -p .tad/working
+   mkdir -p .tad/active/handoffs
+   mkdir -p .tad/archive/handoffs
+   mkdir -p .tad/gates
+   mkdir -p .tad/learnings/pending
+   mkdir -p .tad/learnings/pushed
+   mkdir -p .tad/project-knowledge
+   mkdir -p .tad/templates/output-formats
+   mkdir -p .claude/commands
+   mkdir -p .claude/skills
    ```
 
 3. **Copy core files from TAD repository**
    - Copy `.tad/config.yaml`
-   - Copy `.tad/agents/agent-a-architect.md`
-   - Copy `.tad/agents/agent-b-executor.md`
-   - Copy `WORKFLOW_PLAYBOOK.md`
-   - Copy `CLAUDE_CODE_SUBAGENTS.md`
-   - Copy `README.md` as `.tad/README.md`
+   - Copy `.claude/commands/tad-alex.md`
+   - Copy `.claude/commands/tad-blake.md`
+   - Copy other TAD commands to `.claude/commands/`
 
 4. **Create initial project files**
-   - Create `tad-work/context/PROJECT.md` with project name
-   - Create `tad-work/context/REQUIREMENTS.md` (empty template)
-   - Create `tad-work/context/ARCHITECTURE.md` (empty template)
+   - Create `PROJECT_CONTEXT.md` in project root
+   - Create `NEXT.md` for task tracking
+   - Create `CLAUDE.md` with TAD rules
 
 5. **Display success message**
    ```
    ✅ TAD Framework initialized successfully!
 
    Next steps:
-   1. Terminal 1: Activate Agent A with "You are Agent A, read .tad/agents/agent-a-architect.md"
-   2. Terminal 2: Activate Agent B with "You are Agent B, read .tad/agents/agent-b-executor.md"
+   1. Terminal 1: Use /alex to activate Agent A
+   2. Terminal 2: Use /blake to activate Agent B
    3. State your project requirements
    4. Begin triangle collaboration
 

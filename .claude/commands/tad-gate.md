@@ -89,34 +89,292 @@ Output Format:
 ```yaml
 When: After implementation (BLOCKING)
 Owner: Agent B (Blake)
-Critical Check (3 items):
+
+# ⚠️ PREREQUISITE CHECK (BLOCKING)
+Prerequisite:
+  check: "Completion Report 是否存在？"
+  location: ".tad/active/handoffs/COMPLETION-*.md"
+
+  if_missing:
+    action: "BLOCK Gate 3"
+    message: |
+      ⚠️ Gate 3 无法执行 - 缺少 Completion Report
+
+      必须先创建 Completion Report 才能执行 Gate 3。
+      请执行 *complete 命令创建报告，然后重新执行 Gate 3。
+
+      Completion Report 应包含：
+      - 实际完成的任务列表
+      - 与 Handoff 计划的差异
+      - 遇到的问题和解决方案
+      - 测试执行结果
+    result: "BLOCKED - 等待 Completion Report"
+
+  if_exists:
+    action: "继续执行 Gate 3 检查项"
+
+# ⚠️ REQUIRED SUBAGENT CALL (BLOCKING)
+Required_Subagent:
+  subagent: "test-runner"
+  action: "MUST call test-runner subagent before Gate 3 can pass"
+  template: ".tad/templates/output-formats/testing-review-format.md"
+  output_to: ".tad/evidence/reviews/{date}-testing-review-{task}.md"
+
+  if_not_called:
+    action: "BLOCK Gate 3"
+    message: |
+      ⚠️ Gate 3 无法通过 - 缺少 test-runner 审查
+
+      必须调用 test-runner subagent 并生成审查报告。
+      报告输出位置：.tad/evidence/reviews/{date}-testing-review-{task}.md
+
+      执行步骤：
+      1. 调用 test-runner subagent
+      2. 使用 testing-review-format 模板输出
+      3. 保存到 .tad/evidence/reviews/ 目录
+      4. 重新执行 Gate 3
+
+# Gate 3 检查项（Prerequisite 和 Subagent 要求通过后执行）
+Critical Check (4 items):
   - [ ] Code complete (all handoff tasks done)
   - [ ] Tests pass (no failing tests)
   - [ ] Standards met (linting, formatting)
-Evidence: Record in completion report
+  - [ ] Evidence file exists (.tad/evidence/reviews/*-testing-review-*.md)
+Evidence: Record in completion report + evidence file
 Output Format:
   ### Gate 3 Result
+
+  #### Prerequisite
+  | Check | Status |
+  |-------|--------|
+  | Completion Report | ✅ 存在 |
+
+  #### Subagent Evidence Check
+  | Subagent | Called | Evidence File | Status |
+  |----------|--------|---------------|--------|
+  | test-runner | ✅ Yes | {date}-testing-review-{task}.md | ✅ Exists |
+
+  #### Quality Checks
   | Item | Status | Note |
   |------|--------|------|
   | Code Complete | ✅ Pass | ... |
   | Tests Pass | ✅ Pass | ... |
   | Standards | ✅ Pass | ... |
+  | Evidence | ✅ Pass | File exists |
+
+# ⚠️ POST-PASS ACTIONS (MANDATORY)
+# Gate 3 通过后，必须执行以下动作
+Post_Pass_Actions:
+  trigger: "Gate 3 所有检查项 PASS"
+
+  # Action 1: 更新 NEXT.md
+  update_next_md:
+    action: "更新 NEXT.md 反映实现完成状态"
+    steps:
+      - "标记已完成的实现任务为 [x]"
+      - "添加测试/集成相关的后续任务"
+      - "移动阻塞项到 Blocked 分类（如有）"
+    format: "English only"
+
+  # Action 2: 评估知识记录
+  knowledge_capture:
+    action: "评估本次实现是否有值得记录的发现"
+
+  evaluation_criteria:
+    record_if_any:
+      - "遇到了意外问题并解决（surprise factor）"
+      - "发现了可复用的模式或反模式"
+      - "做出了影响未来开发的技术决策"
+      - "同类问题可能再次出现（recurrence）"
+
+    skip_if:
+      - "常规实现，无特殊发现"
+      - "已有类似记录存在"
+
+  if_worth_recording:
+    step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
+    step2: "确定分类（或选择创建新类别）"
+    step3: "写入对应的 .tad/project-knowledge/{category}.md"
+    step4: "使用标准格式（见下方）"
+
+  category_discovery: |
+    Available categories (read from directory):
+    - code-quality, security, ux, architecture
+    - performance, testing, api-integration, mobile-platform
+    - [Any other .md files in the directory]
+    - [Create new category...] (if none fit)
+
+  new_category_criteria:
+    - 当前发现明显不属于任何现有类别
+    - 预计该主题会产生 3+ 条相关记录
+    - 参考 .tad/project-knowledge/README.md 的 Dynamic Category Creation
+
+  entry_format: |
+    ### [简短标题] - [YYYY-MM-DD]
+    - **Context**: 在做什么任务
+    - **Discovery**: 发现了什么
+    - **Action**: 建议未来如何处理
+
+  example: |
+    ### API Response Truncation - 2026-01-20
+    - **Context**: Implementing Anthony chat streaming
+    - **Discovery**: Long responses get truncated at 4000 chars by middleware
+    - **Action**: Always check response length and implement chunked responses for long content
 ```
 
-## Gate 4: Integration Verification (Blake) - **MANDATORY** 🔴
+## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴
 ```yaml
 When: Before delivery (BLOCKING)
-Owner: Agent B (Blake)
-Critical Check (2 items):
+Owner: Agent B (Blake) executes, Agent A (Alex) verifies with subagents
+
+# ⚠️ PREREQUISITE CHECK (BLOCKING)
+Prerequisite:
+  check: "Gate 3 是否已通过？"
+  evidence: ".tad/evidence/reviews/*-testing-review-*.md exists"
+
+  if_missing:
+    action: "BLOCK Gate 4"
+    message: |
+      ⚠️ Gate 4 无法执行 - Gate 3 未完成
+
+      必须先完成 Gate 3 并生成测试审查证据。
+    result: "BLOCKED - 等待 Gate 3 完成"
+
+# ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING)
+Required_Subagents:
+  - subagent: "security-auditor"
+    required: true
+    template: ".tad/templates/output-formats/security-review-format.md"
+    output_to: ".tad/evidence/reviews/{date}-security-review-{task}.md"
+
+  - subagent: "performance-optimizer"
+    required: true
+    template: ".tad/templates/output-formats/performance-review-format.md"
+    output_to: ".tad/evidence/reviews/{date}-performance-review-{task}.md"
+
+  - subagent: "code-reviewer"
+    required: true
+    output_to: ".tad/evidence/reviews/{date}-code-review-{task}.md"
+
+  - subagent: "ux-expert-reviewer"
+    required: "if UI involved"
+    output_to: ".tad/evidence/reviews/{date}-ux-review-{task}.md"
+
+  if_not_called:
+    action: "BLOCK Gate 4"
+    message: |
+      ⚠️ Gate 4 无法通过 - 缺少必要的 subagent 审查
+
+      必须调用以下 subagents 并生成审查报告：
+      1. security-auditor → .tad/evidence/reviews/{date}-security-review-{task}.md
+      2. performance-optimizer → .tad/evidence/reviews/{date}-performance-review-{task}.md
+
+      执行步骤：
+      1. 调用 security-auditor subagent，使用 security-review-format 模板
+      2. 调用 performance-optimizer subagent，使用 performance-review-format 模板
+      3. 保存输出到 .tad/evidence/reviews/ 目录
+      4. 重新执行 Gate 4
+
+# Gate 4 检查项（Prerequisite 和 Subagent 要求通过后执行）
+Critical Check (5 items):
   - [ ] Integration works (system-level test)
   - [ ] Ready for user (no known blockers)
-Evidence: Record in NEXT.md or completion report
+  - [ ] Security review evidence exists
+  - [ ] Performance review evidence exists
+  - [ ] All subagent feedback addressed
+Evidence: Record in NEXT.md or completion report + evidence files
 Output Format:
   ### Gate 4 Result
+
+  #### Prerequisite
+  | Check | Status |
+  |-------|--------|
+  | Gate 3 Passed | ✅ Yes |
+  | Testing Evidence | ✅ Exists |
+
+  #### Subagent Evidence Check (BLOCKING)
+  | Subagent | Required | Called | Evidence File | Status |
+  |----------|----------|--------|---------------|--------|
+  | security-auditor | ✅ Yes | ✅ Yes | {date}-security-review-{task}.md | ✅ Exists |
+  | performance-optimizer | ✅ Yes | ✅ Yes | {date}-performance-review-{task}.md | ✅ Exists |
+  | code-reviewer | ✅ Yes | ✅ Yes | {date}-code-review-{task}.md | ✅ Exists |
+  | ux-expert-reviewer | Conditional | ... | ... | ... |
+
+  #### Quality Checks
   | Item | Status | Note |
   |------|--------|------|
   | Integration | ✅ Pass | ... |
   | User Ready | ✅ Pass | ... |
+  | Security Evidence | ✅ Pass | File exists |
+  | Performance Evidence | ✅ Pass | File exists |
+  | Feedback Addressed | ✅ Pass | ... |
+
+## ⚠️ Gate 4 Subagent Requirement (CRITICAL)
+Alex 必须调用 subagents 进行实际验收，不可仅做纸面验收：
+
+Required Subagents (MANDATORY - Gate will BLOCK without these):
+  - security-auditor → Evidence in .tad/evidence/reviews/
+  - performance-optimizer → Evidence in .tad/evidence/reviews/
+  - code-reviewer (ALWAYS required)
+
+Conditional Subagents:
+  - ux-expert-reviewer (if UI involved)
+
+Workflow:
+  1. Blake completes Gate 3, creates completion report + testing evidence
+  2. Blake calls security-auditor → saves security-review evidence
+  3. Blake calls performance-optimizer → saves performance-review evidence
+  4. Alex reads completion report and evidence files
+  5. Alex calls code-reviewer (and ux-expert if UI involved)
+  6. Alex summarizes all subagent feedback
+  7. Alex decides: PASS / CONDITIONAL PASS / REJECT
+  8. If PASS: Gate 4 complete, deliver to user
+
+# ⚠️ POST-PASS ACTIONS (MANDATORY)
+# Gate 4 通过后，必须执行以下动作
+Post_Pass_Actions:
+  trigger: "Gate 4 所有检查项 PASS"
+
+  # Action 1: 更新 NEXT.md
+  update_next_md:
+    action: "更新 NEXT.md 反映交付完成状态"
+    steps:
+      - "标记已交付任务为 [x]"
+      - "添加用户反馈收集任务（如适用）"
+      - "清理已完成的相关任务"
+    format: "English only"
+
+  # Action 2: 评估知识记录 (MANDATORY)
+  knowledge_capture:
+    action: "评估审查过程中是否有值得记录的发现"
+
+    evaluation_criteria:
+      record_if_any:
+        - "发现了重复出现的代码质量问题"
+        - "发现了新的安全/性能风险模式"
+        - "做出了影响项目的架构决策"
+        - "审查中发现的最佳实践或反模式"
+
+      skip_if:
+        - "常规审查，无特殊发现"
+        - "已有类似记录存在"
+
+    if_worth_recording:
+      step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
+      step2: "确定分类（或选择创建新类别）"
+      step3: "写入对应的 .tad/project-knowledge/{category}.md"
+      step4: "使用标准格式（见 Gate 3 示例）"
+
+  # Action 3: 提示 Alex 执行 *accept
+  remind_accept:
+    action: "提示 Alex 执行 *accept 完成归档流程"
+    message: |
+      Gate 4 通过！任务已准备交付。
+
+      ⚠️ 提醒：Alex 需要执行 *accept 命令完成：
+      - 归档 handoff 和 completion report
+      - 更新 PROJECT_CONTEXT.md
+      - 确认 NEXT.md 状态
 ```
 
 ## Interactive Gate Execution

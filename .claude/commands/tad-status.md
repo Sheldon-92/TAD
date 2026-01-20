@@ -53,10 +53,10 @@ Checking TAD Framework status...
 
 1. Core Files:
    - Check if .tad/config.yaml exists
-   - Check if .tad/agents/agent-a-architect.md exists
-   - Check if .tad/agents/agent-b-executor.md exists
-   - Check if WORKFLOW_PLAYBOOK.md exists
-   - Check if CLAUDE_CODE_SUBAGENTS.md exists
+   - Check if .claude/commands/tad-alex.md exists
+   - Check if .claude/commands/tad-blake.md exists
+   - Check if CLAUDE.md exists (TAD rules)
+   - Check if PROJECT_CONTEXT.md exists
 
 2. Configuration:
    - Read .tad/config.yaml version
@@ -65,8 +65,8 @@ Checking TAD Framework status...
    - Verify sub-agents listed
 
 3. Project Files:
-   - Check tad-work/context/ directory
-   - Check tad-work/working/ directory
+   - Check .tad/active/handoffs/ directory
+   - Check .tad/project-knowledge/ directory
    - List existing project documents
 
 4. Report:

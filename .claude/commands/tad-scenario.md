@@ -34,13 +34,12 @@ Agent B (Executor) - Blake:
 3. [Final] → [Human]: [Final deliverable]
 
 📁 WORKING FILES CREATED
-- tad-work/working/scenario-[name]-[timestamp].md
-- tad-work/working/handoff-log.md
+- .tad/active/handoffs/HANDOFF-[date]-[name].md
 - [Other scenario-specific files]
 
 ⚡ ACTIVATION COMMANDS
-Terminal 1: You are Agent A. Read .tad/agents/agent-a-architect.md
-Terminal 2: You are Agent B. Read .tad/agents/agent-b-executor.md
+Terminal 1: /alex
+Terminal 2: /blake
 ```
 
 ---
@@ -75,7 +74,7 @@ When scenario is selected:
    ```
 
 3. **Create working documents**:
-   - Create tad-work/working/current-scenario.md with scenario details
+   - Create handoff in `.tad/active/handoffs/` if needed
    - Initialize any needed templates
 
 4. **Provide activation instructions**:

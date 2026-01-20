@@ -44,6 +44,66 @@ document_management:
       - modified_by: "{agent_name}"
       - change_summary: "{summary}"
 
+  # NEXT.md 维护规则 (防止文档无限增长)
+  next_md_maintenance:
+    description: "NEXT.md 是项目任务追踪文件，需要定期清理以保持可读性"
+
+    size_limits:
+      max_lines: 500
+      max_tokens: 20000  # 保持在 Claude 可一次读取的范围内
+      warning_threshold: 400  # 超过此行数时提醒清理
+
+    archive_rules:
+      # 归档触发条件（满足任一即触发）
+      triggers:
+        - "文件超过 500 行"
+        - "读取时出现 token 超限错误"
+        - "开始新的工作周"
+        - "用户明确要求"
+
+      # 归档目标
+      destinations:
+        completed_tasks: "docs/HISTORY.md"      # 已完成任务的历史记录
+        milestones: "CHANGELOG.md"              # 重大里程碑
+        technical_details: "docs/"              # 详细技术说明
+
+      # 保留内容
+      keep_in_next_md:
+        - "当前进行中的任务"
+        - "本周待办任务"
+        - "Blocked 任务"
+        - "最近 3 天的重要更新"
+
+    history_md_format: |
+      # Project History
+
+      ## Week of YYYY-MM-DD
+      ### Completed
+      - [x] Task 1 (date)
+      - [x] Task 2 (date)
+
+      ### Key Decisions
+      - Decision 1: reason
+
+      ### Lessons Learned
+      - Learning 1
+
+    cleanup_steps:
+      - step: 1
+        action: "识别超过 7 天的已完成任务"
+      - step: 2
+        action: "将历史内容移动到 docs/HISTORY.md"
+      - step: 3
+        action: "保留当前进行中和本周待办任务"
+      - step: 4
+        action: "更新 NEXT.md 头部的日期和状态"
+      - step: 5
+        action: "验证文件行数在 500 行以内"
+
+    agent_responsibility:
+      alex: "发现 NEXT.md 过大时，规划清理方案"
+      blake: "执行清理，移动内容到归档文件"
+
 # ==================== Agent 激活协议 ====================
 activation_protocol:
   # 强制4步激活流程（借鉴BMAD）
@@ -348,7 +408,7 @@ scenarios:
           - "架构设计图"
           - "实施步骤"
           - "验收标准"
-        format: "tad-work/handoffs/project_init_{timestamp}.md"
+        format: ".tad/active/handoffs/project_init_{timestamp}.md"
 
     agent_b_workflow:
       phase1_validation:
@@ -806,6 +866,166 @@ yolo_mode:
     - "不能跳过关键质量门控"
     - "必须记录原因"
 
+# ==================== 版本发布管理 (v1.5 新增) ====================
+release_management:
+  enabled: true
+  version: "1.0"
+  description: "多平台版本发布管理规则"
+
+  # 核心文档
+  documents:
+    changelog: "CHANGELOG.md"
+    release_sop: "RELEASE.md"
+    api_versioning: "docs/API-VERSIONING.md"
+    release_handoff_template: ".tad/templates/release-handoff.md"
+
+  # 版本策略
+  versioning:
+    scheme: "semver"  # Semantic Versioning
+    source_of_truth: "package.json"
+    format: "MAJOR.MINOR.PATCH"
+
+    rules:
+      patch: "Bug修复，无新功能，完全向后兼容"
+      minor: "新功能，向后兼容"
+      major: "破坏性变更，不向后兼容"
+
+  # 发布类型和分工
+  release_types:
+    routine_release:
+      description: "常规发布 (patch/minor)"
+      trigger_keywords: ["发布版本", "release", "部署新版本"]
+      workflow: "Blake 按 RELEASE.md SOP 执行"
+      needs_handoff: false
+      gates_required: ["gate3", "gate4"]
+
+    major_release:
+      description: "重大发布 (major/breaking)"
+      trigger_keywords: ["破坏性变更", "breaking change", "大版本", "major"]
+      workflow: "Alex 创建 release-handoff → Blake 执行"
+      needs_handoff: true
+      gates_required: ["gate2", "gate3", "gate4"]
+
+    ios_release:
+      description: "iOS App Store 发布"
+      trigger_keywords: ["发布iOS", "App Store", "iOS release"]
+      workflow: "Blake 执行 npm run release:ios + Xcode 提交"
+      needs_handoff: false
+      gates_required: ["gate3", "gate4"]
+      extra_steps:
+        - "npm run version:sync"
+        - "npm run build:ios"
+        - "Open Xcode and Archive"
+        - "Submit to App Store Connect"
+
+  # Agent 分工
+  agent_responsibilities:
+    alex:
+      tasks:
+        - "版本策略制定 (SemVer 规则)"
+        - "API 契约设计"
+        - "破坏性变更影响分析"
+        - "重大发布决策"
+        - "创建 release-handoff (仅 major)"
+      forbidden:
+        - "直接执行发布命令"
+        - "修改 CHANGELOG"
+        - "运行构建脚本"
+
+    blake:
+      tasks:
+        - "日常版本发布执行"
+        - "更新 CHANGELOG.md"
+        - "运行 npm run release:ios"
+        - "执行构建和部署"
+        - "版本号同步 (npm version)"
+      forbidden:
+        - "独立决定破坏性变更"
+        - "跳过 Gate 3/4 验证"
+
+  # 发布检查清单
+  release_checklist:
+    pre_release:
+      - check: "所有测试通过"
+        command: "npm test"
+        blocking: true
+      - check: "构建成功"
+        command: "npm run build"
+        blocking: true
+      - check: "CHANGELOG 已更新"
+        file: "CHANGELOG.md"
+        blocking: true
+      - check: "版本号已更新"
+        file: "package.json"
+        blocking: true
+
+    deploy:
+      - action: "推送到 main"
+        command: "git push origin main"
+        platforms: ["web"]
+      - action: "Vercel 自动部署"
+        platforms: ["web"]
+      - action: "构建 iOS"
+        command: "npm run release:ios"
+        platforms: ["ios"]
+
+    post_release:
+      - check: "生产环境可访问"
+        blocking: true
+      - check: "核心功能正常"
+        blocking: true
+      - check: "错误率无异常 (24h)"
+        blocking: false
+
+  # 多平台影响矩阵
+  platform_impact_matrix:
+    change_types:
+      ui_only:
+        description: "纯 UI 变更"
+        web_impact: "即时生效"
+        ios_impact: "需要重新构建"
+        action: "Web 自动，iOS 按需发布"
+
+      api_compatible:
+        description: "API 变更 (向后兼容)"
+        web_impact: "即时生效"
+        ios_impact: "即时生效"
+        action: "部署 Vercel 即可"
+
+      api_breaking:
+        description: "API 变更 (破坏性)"
+        web_impact: "即时生效"
+        ios_impact: "⚠️ 旧版本会崩溃"
+        action: "必须 API 版本化 + 同步发布所有客户端"
+
+  # API 版本管理
+  api_versioning:
+    strategy: "url_path"  # /api/v1/*
+    current_version: "v1"
+
+    backward_compatibility_rules:
+      - "NEVER 删除已有字段"
+      - "NEVER 修改字段类型"
+      - "NEVER 重命名端点"
+      - "ALWAYS 只添加新字段/端点"
+      - "DEPRECATE 需要 30+ 天过渡期"
+
+    migration_process:
+      step1: "创建新版本 API 保持旧版本运行"
+      step2: "更新所有客户端使用新 API"
+      step3: "监控旧 API 使用量"
+      step4: "90%+ 迁移后可删除旧 API"
+
+  # 快速命令参考
+  quick_commands:
+    version_bump:
+      patch: "npm version patch"
+      minor: "npm version minor"
+      major: "npm version major"
+    sync_ios: "npm run version:sync"
+    build_ios: "npm run release:ios"
+    check_version: "node -p \"require('./package.json').version\""
+
 # ==================== TAD v1.3 增强配置 ====================
 # 创建日期: 2025-11-25
 # 基于: MenuSnap项目实证分析 + 三份核心文档
@@ -904,7 +1124,7 @@ mandatory_questions:
   enabled: true
   blocking: true
   auto_sync: true
-  source: "tad-work/evidence/patterns/failure-patterns.md"
+  source: ".tad/archive/evidence/patterns/failure-patterns.md"
   description: "从历史失败中提炼的必须回答的问题"
 
   # 问题库
@@ -1075,7 +1295,7 @@ mandatory_questions:
          - 分析为什么没拦住（trigger条件不够？evidence不够？）
          - 优化MQ的trigger条件或evidence要求
          - 更新config.yaml
-    output_location: "tad-work/evidence/failures/[timestamp]_mq_update.yaml"
+    output_location: ".tad/archive/evidence/failures/[timestamp]_mq_update.yaml"
 
 # ==================== 渐进式验证系统 ====================
 progressive_validation:
@@ -1466,7 +1686,7 @@ failure_learning_loop:
         - should_be_caught_by: "应该由哪个Gate/MQ拦截"
         - actual_outcome: "实际上放行了"
         - user_impact: "给用户造成的影响"
-      output_file: "tad-work/evidence/failures/[timestamp]_failure.yaml"
+      output_file: ".tad/archive/evidence/failures/[timestamp]_failure.yaml"
 
     step2_analyze:
       action: "分析应该增加什么检查点"
@@ -1475,7 +1695,7 @@ failure_learning_loop:
         - "现有的MQ能拦截吗？如果不能，为什么？"
         - "需要什么证据才能提前发现？"
         - "Human需要看什么才能判断？"
-      output_file: "tad-work/evidence/failures/[timestamp]_analysis.yaml"
+      output_file: ".tad/archive/evidence/failures/[timestamp]_analysis.yaml"
 
     step3_propose:
       action: "生成配置更新建议"
@@ -1489,7 +1709,7 @@ failure_learning_loop:
           existing_mq: "MQ[Y]"
           enhancement: "[如何增强]"
           new_trigger: "[更准确的触发条件]"
-      output_file: "tad-work/evidence/failures/[timestamp]_proposal.yaml"
+      output_file: ".tad/archive/evidence/failures/[timestamp]_proposal.yaml"
 
     step4_review:
       action: "Human审核提案"
@@ -1507,7 +1727,7 @@ failure_learning_loop:
       files_to_update:
         - ".tad/config.yaml"  # 添加/更新MQ
         - ".tad/templates/handoff-a-to-b.md"  # 更新模板
-        - "tad-work/evidence/patterns/failure-patterns.md"  # 更新记录
+        - ".tad/archive/evidence/patterns/failure-patterns.md"  # 更新记录
       notification: "配置已自动更新，下个项目生效"
       changelog: "记录在.tad/CHANGELOG.md"
 
@@ -1517,7 +1737,7 @@ failure_learning_loop:
       - "failures_prevented": "新MQ拦截的失败"
       - "false_positive_rate": "误报率"
       - "mq_effectiveness": "每个MQ的有效性"
-    report_location: "tad-work/evidence/metrics/learning-effectiveness.md"
+    report_location: ".tad/archive/evidence/metrics/learning-effectiveness.md"
 
 # ==================== 配置生效时间 ====================
 rollout_plan:
@@ -1589,6 +1809,96 @@ backward_compatibility:
     method: "恢复备份的.tad/config.yaml.v1.2"
     data_preservation: "v1.3创建的证据文档保留，不影响回滚"
 
+
+# ==================== Template Trigger System (v1.0) ====================
+template_triggers:
+  version: "1.0"
+  enabled: true
+  description: "模板触发和存储系统 - 确保 subagent 输出格式一致并留存证据"
+
+  storage:
+    base_path: ".tad/evidence/reviews/"
+    naming: "{date}-{type}-{brief}.md"
+    date_format: "YYYY-MM-DD"
+
+  # MANDATORY: Subagent 必须输出，Gate 检查文件存在
+  mandatory:
+    gate_3:
+      subagent: test-runner
+      template: testing-review-format
+      template_path: ".tad/templates/output-formats/testing-review-format.md"
+      evidence_path: ".tad/evidence/reviews/{date}-testing-review-{task}.md"
+      blocking: true
+      description: "Gate 3 通过前必须有测试审查证据"
+
+    gate_4:
+      subagents:
+        - subagent: security-auditor
+          template: security-review-format
+          template_path: ".tad/templates/output-formats/security-review-format.md"
+          evidence_path: ".tad/evidence/reviews/{date}-security-review-{task}.md"
+        - subagent: performance-optimizer
+          template: performance-review-format
+          template_path: ".tad/templates/output-formats/performance-review-format.md"
+          evidence_path: ".tad/evidence/reviews/{date}-performance-review-{task}.md"
+      blocking: true
+      description: "Gate 4 通过前必须有安全和性能审查证据"
+
+  # RECOMMENDED: Subagent 应该输出，但不阻塞
+  recommended:
+    code_review:
+      subagent: code-reviewer
+      templates:
+        - git-workflow-format
+        - refactoring-review-format
+      trigger: "*review 命令"
+      blocking: false
+      description: "代码审查时推荐使用的模板"
+
+    refactoring:
+      subagent: refactor-specialist
+      template: refactoring-review-format
+      trigger: "重构任务"
+      blocking: false
+      description: "重构任务时推荐使用的模板"
+
+  # SELF-USE: Agent 自用，纯参考
+  self_use:
+    alex_design:
+      templates:
+        - api-review-format
+        - architecture-review-format
+        - database-review-format
+        - ui-review-format
+        - ux-research-format
+      trigger: "*design 或 *analyze 命令，Alex 根据任务类型选用"
+      description: "Alex 设计阶段可参考的模板"
+
+    blake_implement:
+      templates:
+        - debugging-format
+        - error-handling-format
+      trigger: "*debug 或 *implement 命令，Blake 根据需要选用"
+      description: "Blake 实现阶段可参考的模板"
+
+  # Enforcement rules
+  enforcement:
+    gate_3_check:
+      description: "Gate 3 通过条件"
+      requirements:
+        - "COMPLETION-*.md exists in .tad/active/handoffs/"
+        - "test-runner subagent was called"
+        - "testing-review evidence file exists in .tad/evidence/reviews/"
+      blocking: true
+
+    gate_4_check:
+      description: "Gate 4 通过条件"
+      requirements:
+        - "security-auditor subagent was called"
+        - "performance-optimizer subagent was called"
+        - "security-review evidence file exists in .tad/evidence/reviews/"
+        - "performance-review evidence file exists in .tad/evidence/reviews/"
+      blocking: true
 
 # ==================== 外部配置引用 ====================
 # Skills 系统配置已移至独立文件以优化性能

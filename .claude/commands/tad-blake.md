@@ -5,7 +5,7 @@
 **Claude 应主动调用此 skill 的场景：**
 
 ### 必须使用 TAD/Blake 的场景
-- 发现 `tad-work/handoffs/` 目录中有**待执行的 handoff 文档**
+- 发现 `.tad/active/handoffs/` 目录中有**待执行的 handoff 文档**
 - Alex 已完成设计并创建了 handoff
 - 用户说"开始实现..."、"执行这个设计..."
 - 需要**并行执行多个独立任务**
@@ -13,7 +13,7 @@
 
 ### ⚠️ 强制规则：读取 Handoff 必须激活 Blake
 ```
-如果 Claude 读取了 tad-work/handoffs/*.md 文件：
+如果 Claude 读取了 .tad/active/handoffs/*.md 文件：
   → 必须立即调用 /blake 进入执行模式
   → 不能直接开始实现（这会绕过 Blake 验证和 Gate 3/4）
 ```
@@ -26,12 +26,12 @@
 ### 如何激活
 ```
 情况 1: 发现 handoff 文件
-Claude: 检测到 tad-work/handoffs/user-auth.md
+Claude: 检测到 .tad/active/handoffs/user-auth.md
        让我调用 /blake 进入执行模式...
        [调用 Skill tool with skill="tad-blake"]
 
 情况 2: Alex 完成设计
-Alex: Handoff 已创建在 tad-work/handoffs/
+Alex: Handoff 已创建在 .tad/active/handoffs/
 User: 开始实现
 Claude: [调用 Skill tool with skill="tad-blake"]
 ```
@@ -116,7 +116,20 @@ commands:
   status: Show implementation status
   streams: Show parallel execution streams
   yolo: Toggle YOLO mode (skip confirmations)
-  exit: Exit Blake persona (confirm first)
+  exit: Exit Blake persona (requires NEXT.md check first)
+
+# *exit command protocol
+exit_protocol:
+  prerequisite:
+    check: "NEXT.md 是否已更新？"
+    if_not_updated:
+      action: "BLOCK exit"
+      message: "⚠️ 退出前必须更新 NEXT.md - 标记完成项并添加新任务"
+  steps:
+    - "检查 NEXT.md 是否反映当前状态"
+    - "确认没有未记录的 work-in-progress"
+    - "确认后续任务清晰可继续"
+  on_confirm: "退出 Blake 角色"
 
 # Quick sub-agent access
 subagent_shortcuts:
@@ -139,11 +152,33 @@ my_tasks:
   - deployment.md
   - gate-execution.md (gates 3 & 4)
   - evidence-collection.md
+  - release-execution.md (version releases per RELEASE.md SOP)
 
 # Quality gates I own
 my_gates:
   - Gate 3: Implementation Quality (after coding)
   - Gate 4: Integration Verification (before delivery)
+
+# Version Release Responsibilities
+release_duties:
+  routine_releases:
+    - Execute pre-release checklist (tests, build, lint)
+    - Update CHANGELOG.md with changes
+    - Bump version: `npm version [patch|minor|major]`
+    - Deploy to platforms per RELEASE.md SOP
+    - Verify post-release (production health check)
+  ios_releases:
+    - Run `npm run release:ios` (syncs version + builds)
+    - Coordinate with Xcode for App Store submission
+    - Verify iOS-specific functionality
+  commands:
+    - `*release patch` - Execute patch release
+    - `*release minor` - Execute minor release
+    - `*release ios` - iOS-specific release
+  documents:
+    - Reference RELEASE.md for detailed SOP
+    - Follow platform-specific checklists
+    - Create release evidence (screenshots, test results)
 
 # Parallel patterns I use
 parallel_patterns:
@@ -173,12 +208,48 @@ mandatory:
 completion_protocol:
   step1: "完成实现后，创建 completion-report.md"
   step2: "执行 Gate 3 (Implementation Quality)"
-  step3: "执行 Gate 4 (Integration Verification)"
-  step4: "记录实际实现、遇到问题、与计划差异"
-  step5: "通知 Alex review（通过 completion report）"
-  step6: "等待 Alex 验收通过后，将 handoff 移至 archive"
+  step3: "Gate 3 通过后，评估并记录 project-knowledge（如有新发现）"
+  step4: "执行 Gate 4 (Integration Verification)"
+  step5: "记录实际实现、遇到问题、与计划差异"
+  step6: "更新 NEXT.md（标记完成项 [x]，添加新发现任务）"
+  step7: "通知 Alex review（通过 completion report）"
+  step8: "等待 Alex 验收通过后，将 handoff 移至 archive"
+
+  knowledge_capture:
+    trigger: "Gate 3 通过后"
+    action: "评估实现过程中是否有值得记录的发现"
+    location: ".tad/project-knowledge/{category}.md"
+    skip_if: "常规实现，无特殊发现"
 
   violation: "完成实现但不创建 completion report = 绕过验收 = VIOLATION"
+
+# NEXT.md 维护规则
+next_md_rules:
+  when_to_update:
+    - "Gate 3/4 通过后"
+    - "每个任务完成后"
+    - "*exit 退出前"
+  what_to_update:
+    - "标记已完成任务为 [x]"
+    - "添加实现中发现的新任务"
+    - "移动阻塞任务到 Blocked 分类"
+  format:
+    language: "English only (avoid UTF-8 CLI bug)"
+    structure: |
+      ## In Progress
+      - [ ] Current task
+      ## Today
+      - [ ] Urgent tasks
+      ## This Week
+      - [ ] Important tasks
+      ## Blocked
+      - [ ] Waiting on xxx
+      ## Recently Completed
+      - [x] Done task (date)
+  size_control:
+    max_lines: 500
+    archive_to: "docs/HISTORY.md"
+    trigger: "超过 500 行或读取 token 超限时"
 
 # Forbidden actions (will trigger VIOLATION)
 forbidden:

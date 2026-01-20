@@ -117,7 +117,7 @@ Select 0-9:
 ## Evidence Collection
 
 ```yaml
-# tad-work/evidence/project-logs/[project]/handoff-evidence.yaml
+# .tad/archive/evidence/[project]/handoff-evidence.yaml
 handoff_quality:
   completeness: [percentage]
   clarity: [1-10]

@@ -29,8 +29,8 @@ Each command produces standardized output:
 
 🎭 AGENT ACTIVATION PROTOCOL
 Must follow exact format:
-Terminal 1: "You are Agent A. Read .tad/agents/agent-a-architect.md"
-Terminal 2: "You are Agent B. Read .tad/agents/agent-b-executor.md"
+Terminal 1: Use /alex command to activate Agent A
+Terminal 2: Use /blake command to activate Agent B
 
 ⚠️ CRITICAL SUCCESS FACTORS
 1. Agents MUST read their definition files first
@@ -69,19 +69,48 @@ Terminal 2: "You are Agent B. Read .tad/agents/agent-b-executor.md"
 - `performance` - Optimize performance
 - `refactoring` - Clean up technical debt
 - `deployment` - Deploy to production
+- `release` - Execute version release (see Release Management below)
+
+## Release Management
+
+### Version Commands
+- **Alex**: `*release plan` - Plan major release, create release handoff
+- **Blake**: `*release patch` - Execute patch release
+- **Blake**: `*release minor` - Execute minor release
+- **Blake**: `*release ios` - Execute iOS-specific release
+
+### Key Documents
+- `RELEASE.md` - Complete release SOP
+- `CHANGELOG.md` - Version history
+- `docs/API-VERSIONING.md` - API contract rules
+- `.tad/templates/release-handoff.md` - Major release template
+
+### Quick Release (Blake)
+```bash
+# Patch release
+npm test && npm run build && npm version patch && git push origin main
+
+# iOS release
+npm run release:ios && npx cap open ios
+```
+
+### Major Release Flow
+1. Alex: Analyze breaking changes, create release handoff
+2. Blake: Execute per handoff, pass Gate 3R & 4R
+3. Blake: Deploy web, then iOS if needed
 
 ## Activating Agents
 
 ### Agent A (Strategic Architect)
 In Terminal 1:
 ```
-You are Agent A. Read .tad/agents/agent-a-architect.md
+/alex
 ```
 
 ### Agent B (Execution Master)
 In Terminal 2:
 ```
-You are Agent B. Read .tad/agents/agent-b-executor.md
+/blake
 ```
 
 ## Triangle Collaboration Model
@@ -99,9 +128,10 @@ Agent A -- Agent B
 
 ## Configuration Files
 - `.tad/config.yaml` - Main configuration
-- `.tad/agents/` - Agent definitions
-- `tad-work/context/` - Project context
-- `tad-work/working/` - Active work documents
+- `.claude/commands/tad-alex.md` - Agent A definition
+- `.claude/commands/tad-blake.md` - Agent B definition
+- `.tad/active/handoffs/` - Active handoff documents
+- `.tad/project-knowledge/` - Project-specific learnings
 
 ## Sub-agents Available
 TAD integrates with 16 Claude Code sub-agents:

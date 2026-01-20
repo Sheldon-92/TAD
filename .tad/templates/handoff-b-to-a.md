@@ -190,6 +190,37 @@ API实现:
 - [ ] 性能指标满足要求
 - [ ] 准备好进入下一阶段
 
+## ⚠️ Alex 验收规则 - CRITICAL
+
+**Alex 必须调用 subagents 进行实际验证，禁止仅做纸面验收！**
+
+### 必须调用的 Subagents
+
+| 条件 | Subagent | 目的 |
+|------|----------|------|
+| 始终 | `code-reviewer` | 代码质量、规范、可维护性 |
+| UI 相关 | `ux-expert-reviewer` | 交互、视觉、可用性 |
+| 认证/数据 | `security-auditor` | 安全漏洞、权限控制 |
+| 性能敏感 | `performance-optimizer` | 响应时间、瓶颈 |
+
+### 验收流程
+
+```
+1. Alex 读取此完工报告
+2. Alex 确定需要调用哪些 subagents
+3. Alex 调用 subagents 审查实际代码/功能
+4. Alex 汇总所有 subagent 反馈
+5. Alex 做出验收结论：
+   - ✅ 验收通过
+   - ⚠️ 条件通过（需修复 N 项）
+   - ❌ 打回重做
+```
+
+### ❌ 禁止行为
+- 不调用任何 subagent 就通过验收
+- 只看文档描述不看实际代码
+- 忽略 subagent 提出的关键问题
+
 ## 🔄 后续行动
 
 基于实施结果的后续建议：

@@ -9,7 +9,7 @@ skills_system:
     tad_agents:
       description: "主角色/人格（Alex 和 Blake）"
       analogy: "团队中的固定成员"
-      location: ".tad/agents/"
+      location: ".claude/commands/"  # tad-alex.md, tad-blake.md
 
     subagents:
       description: "Claude Code 内置的16个专业代理"
