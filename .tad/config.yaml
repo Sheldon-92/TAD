@@ -1,8 +1,8 @@
-# TAD Configuration v1.6 - Evidence-Based Development
+# TAD Configuration v1.8 - Socratic-Driven Development
 method: TAD
-version: 1.6.0
-description: Triangle Agent Development - 证据驱动开发 + 强制质量门禁
-last_updated: 2026-01-20
+version: 1.8.0
+description: Triangle Agent Development - 苏格拉底式提问 + 知识驱动开发 + Handoff专家审查
+last_updated: 2026-01-23
 
 # ==================== 文档管理系统 ====================
 document_management:
@@ -135,12 +135,53 @@ activation_protocol:
 
 # ==================== 核心三角模型（增强版） ====================
 triangle:
+  # Terminal 隔离规则 (v1.8.0 新增) ⚠️ CRITICAL
+  terminal_isolation:
+    enabled: true
+    blocking: true
+    description: "Alex 和 Blake 必须在不同 Terminal 运行，人类是唯一的信息桥梁"
+
+    rule: |
+      Alex 写完 handoff 后，必须停止并等待人类传递信息给 Blake
+      不能在同一个 terminal 调用 /blake
+      人类是 Alex 和 Blake 之间唯一的信息桥梁
+
+    workflow:
+      terminal_1_alex:
+        - "需求分析 → 苏格拉底式提问 → 设计 → 写 handoff"
+        - "输出: 'Handoff 已创建，请在 Terminal 2 执行 /blake'"
+        - "停止，等待人类反馈"
+
+      human_action:
+        - "打开 Terminal 2"
+        - "执行 /blake"
+        - "告诉 Blake handoff 位置"
+
+      terminal_2_blake:
+        - "读取 handoff → 执行实现 → Gate 3/4"
+        - "输出: '实现完成，请通知 Alex 进行验收'"
+        - "停止，等待人类反馈"
+
+    forbidden_actions:
+      - "Alex 在同一个 terminal 调用 /blake"
+      - "Alex 直接执行实现代码"
+      - "Blake 在同一个 terminal 调用 /alex"
+      - "任何 Agent 试图绕过人类直接与另一个 Agent 通信"
+
+    violation:
+      detection: "检测到 Agent 试图在同一 terminal 调用另一个 Agent"
+      warning: "⚠️ VIOLATION: 禁止在同一 terminal 调用 /blake 或 /alex"
+      action: "立即停止，输出 handoff 位置，等待人类操作"
+
+    principle: "Human-in-the-Loop，人类掌控信息流动"
+
   human:
     role: Value Guardian
     responsibilities:
       - 定义价值和需求
       - 验证交付价值
       - 做关键决策
+      - 在 Alex 和 Blake 之间传递信息
     commands:
       - "*status": 查看当前状态
       - "*task": 查看任务列表
@@ -165,6 +206,8 @@ triangle:
       - "部署或运行应用"
       - "修改Agent B的代码"
       - "跳过需求确认"
+      - "在同一个 terminal 调用 /blake"
+      - "试图绕过人类直接与 Blake 通信"
 
     # 新增：强制交接触发词
     handoff_triggers:
@@ -202,6 +245,8 @@ triangle:
       - "更改架构设计"
       - "跳过测试"
       - "忽略设计规范"
+      - "在同一个 terminal 调用 /alex"
+      - "试图绕过人类直接与 Alex 通信"
 
     commands:
       - "*execute <handoff>": "执行交接任务"
@@ -383,6 +428,154 @@ requirement_elicitation:
       - "没有提出问题"
       - "少于3轮交互"
     action: "强制重新进入需求挖掘流程"
+
+# ==================== 苏格拉底式提问协议 (v1.8 新增) ====================
+socratic_inquiry_protocol:
+  enabled: true
+  version: "1.0"
+  description: "写 handoff 之前必须用 AskUserQuestion 工具进行苏格拉底式提问"
+  blocking: true
+  violation: "不调用 AskUserQuestion 直接写 handoff = VIOLATION"
+
+  # 目标
+  goals:
+    - "发现需求盲点"
+    - "验证完整性"
+    - "帮助用户做出更好决策"
+
+  # 复杂度判断
+  complexity_detection:
+    small:
+      criteria:
+        - "单文件修改"
+        - "配置调整"
+        - "简单 UI 变更"
+      question_count: "2-3"
+      example: "修改按钮颜色、更新配置文件"
+
+    medium:
+      criteria:
+        - "多文件修改"
+        - "新功能"
+        - "API 变更"
+      question_count: "4-5"
+      example: "添加新的 API 端点、实现表单验证"
+
+    large:
+      criteria:
+        - "架构变更"
+        - "复杂功能"
+        - "跨模块重构"
+      question_count: "6-8"
+      example: "重构认证系统、添加新的数据流"
+
+  # 问题维度
+  question_dimensions:
+    value_validation:
+      description: "验证价值"
+      example_questions:
+        - "这个功能解决的核心痛点是什么？"
+        - "如果不做这个功能，用户会怎样？"
+        - "这个功能的成功标准是什么？"
+
+    boundary_clarification:
+      description: "边界澄清"
+      example_questions:
+        - "哪些场景明确不需要支持？"
+        - "有什么约束条件我应该知道？"
+        - "最小可行版本应该包含什么？"
+
+    risk_foresight:
+      description: "风险预见"
+      example_questions:
+        - "如果这个功能出问题，最坏情况是什么？"
+        - "有什么依赖可能会失败？"
+        - "用户可能会怎么误用这个功能？"
+
+    acceptance_criteria:
+      description: "验收标准"
+      example_questions:
+        - "怎样算做完了？"
+        - "你会怎么测试这个功能？"
+        - "什么情况下你会说'这不是我要的'？"
+
+    user_scenarios:
+      description: "用户场景"
+      example_questions:
+        - "典型用户会怎么使用这个功能？"
+        - "有没有边缘用户群需要考虑？"
+        - "用户的使用频率如何？"
+
+    technical_constraints:
+      description: "技术约束"
+      example_questions:
+        - "有哪些现有系统的限制需要考虑？"
+        - "性能要求是什么？"
+        - "需要兼容哪些平台/浏览器？"
+
+  # 执行流程
+  execution_flow:
+    step_1:
+      name: "复杂度评估"
+      action: "根据任务描述判断复杂度级别"
+      output: "small/medium/large"
+
+    step_2:
+      name: "维度选择"
+      action: "根据任务类型选择 2-4 个最相关的问题维度"
+      guideline: "优先选择：value_validation, acceptance_criteria"
+
+    step_3:
+      name: "问题组织"
+      action: "从选中维度挑选最相关的问题"
+      format: "使用 AskUserQuestion 工具"
+
+    step_4:
+      name: "用户回答"
+      action: "收集用户答案"
+      follow_up: "可以进行自由讨论补充"
+
+    step_5:
+      name: "总结输出"
+      action: "生成 Inquiry Summary"
+      format: |
+        ## Socratic Inquiry Summary
+
+        **Task**: {任务描述}
+        **Complexity**: {small/medium/large}
+        **Questions Asked**: {问题数量}
+
+        ### Key Insights
+        - {洞察 1}
+        - {洞察 2}
+        ...
+
+        ### Clarified Requirements
+        - {澄清的需求 1}
+        - {澄清的需求 2}
+        ...
+
+        ### Risks Identified
+        - {识别的风险 1}
+        ...
+
+        ### Acceptance Criteria
+        - [ ] {验收标准 1}
+        - [ ] {验收标准 2}
+        ...
+
+  # 禁止行为
+  forbidden_actions:
+    - "不用 AskUserQuestion 直接写 handoff"
+    - "问完问题不等用户回答就开始写"
+    - "跳过复杂度评估，问题数量与任务不匹配"
+    - "只问一个维度的问题"
+
+  # 与 handoff 的集成
+  handoff_integration:
+    prerequisite: "必须先完成 Socratic Inquiry"
+    include_in_handoff: "在 handoff 中包含 Inquiry Summary"
+    verification: "Gate 2 检查是否有 Inquiry Summary"
 
 # ==================== 场景工作流（增强版） ====================
 scenarios:
@@ -1769,6 +1962,17 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v1.8.0:
+    date: "2026-01-23"
+    changes:
+      - "新增苏格拉底式提问协议（Socratic Inquiry Protocol）"
+      - "Alex 写 handoff 前必须用 AskUserQuestion 工具进行苏格拉底式提问"
+      - "基于任务复杂度自动调整问题数量（small: 2-3, medium: 4-5, large: 6-8）"
+      - "6 个问题维度：价值验证、边界澄清、风险预见、验收标准、用户场景、技术约束"
+      - "Inquiry Summary 必须包含在 handoff 文档中"
+    based_on: "用户反馈：需要更主动的需求挖掘，帮助用户发现盲点"
+    compatibility: "100%向后兼容v1.7"
+
   v1.4.0:
     date: "2026-01-06"
     changes:

@@ -65,7 +65,8 @@
 ## 3. Quality Gates 强制规则
 
 ```yaml
-规则 1: Alex 创建 handoff → 必须先执行 Gate 2
+规则 0: Alex 写 handoff 前 → 必须先用 AskUserQuestion 苏格拉底式提问
+规则 1: Alex 创建 handoff → 必须先经过专家审查 → 再执行 Gate 2
 规则 2: Blake 完成实现 → 必须执行 Gate 3
 规则 3: Blake 完成集成 → 必须执行 Gate 4
 规则 4: Gate 不通过 → 阻塞下一步，必须修复
@@ -74,17 +75,158 @@
 
 **Gate 是强制检查点，不可跳过。**
 
-### Project Knowledge 记录规则
+### Socratic Inquiry 规则 ⚠️ BLOCKING
 
 ```yaml
-触发点 1: Gate 3 通过后 → Blake 记录实现发现（solutions, workarounds, gotchas）
-触发点 2: Gate 4 通过后 → Alex 记录审查洞察（patterns, anti-patterns, architectural insights）
+规则: Alex 写 handoff 之前必须用 AskUserQuestion 工具进行苏格拉底式提问
+      帮助用户发现需求盲点、验证完整性、做出更好决策
+      不调用 AskUserQuestion 直接写 handoff = VIOLATION
 
-跳过条件:
-- 所学内容是 AI 已知的通用知识
-- 没有项目特定的新发现
+流程:
+  1. 评估任务复杂度 (small/medium/large)
+  2. 根据复杂度选择问题数量 (2-3/4-5/6-8 个问题)
+  3. 使用 AskUserQuestion 工具提问
+  4. 用户回答后可自由讨论补充
+  5. 输出 Inquiry Summary 并进入 handoff 编写
+
+问题维度:
+  - 价值验证: "这个功能解决的核心痛点是什么？"
+  - 边界澄清: "哪些场景明确不需要支持？"
+  - 风险预见: "如果这个功能出问题，最坏情况是什么？"
+  - 验收标准: "怎样算做完了？"
+  - 用户场景: "典型用户会怎么使用这个功能？"
+  - 技术约束: "有哪些现有系统的限制需要考虑？"
+
+复杂度判断:
+  small: 单文件修改、配置调整、简单 UI 变更 → 2-3 问题
+  medium: 多文件修改、新功能、API 变更 → 4-5 问题
+  large: 架构变更、复杂功能、跨模块重构 → 6-8 问题
+```
+
+**禁止行为**:
+- ❌ 不用 AskUserQuestion 直接写 handoff
+- ❌ 问完问题不等用户回答就开始写
+- ❌ 跳过复杂度评估，问题数量与任务不匹配
+
+### Handoff 专家审查规则 ⚠️ NEW
+
+```yaml
+规则: Alex 创建 handoff 初稿后，必须调用专家审查，然后才能标记为 Ready for Implementation
+
+流程:
+  1. Draft Creation: 创建 handoff 初稿（框架+核心内容）
+  2. Expert Selection: 选择 2+ 专家（code-reviewer 必选）
+  3. Parallel Review: 并行调用专家审查
+  4. Feedback Integration: 整合反馈，处理 P0 问题
+  5. Gate 2: 执行设计完整性检查
+  6. Ready: 标记为 Ready for Implementation
+
+专家选择规则:
+  必选: code-reviewer（类型安全、测试、代码结构）
+  后端相关: + backend-architect（数据流、API、架构）
+  前端相关: + ux-expert-reviewer（UI/UX、可访问性）
+  性能敏感: + performance-optimizer（性能、成本）
+  安全相关: + security-auditor（安全、漏洞）
+
+最低要求: 2 个专家
+```
+
+**禁止行为**:
+- ❌ 不经过专家审查直接发送 handoff 给 Blake
+- ❌ 忽略专家发现的 P0 问题
+
+### Project Knowledge 记录规则 ⚠️ BLOCKING
+
+```yaml
+规则: Knowledge Assessment 是 Gate 3/4 的阻塞性检查项
+      Gate 结果表格中必须包含 Knowledge Assessment 部分
+      否则 Gate 无效
+
+触发点:
+  Gate 3: Blake 必须在结果表格中回答 Knowledge Assessment
+  Gate 4: Alex 必须在结果表格中回答 Knowledge Assessment
+
+必须回答的问题（即使选 No 也要显式回答）:
+  1. 是否有新发现？ (✅ Yes / ❌ No)
+  2. 如果有，属于哪个类别？ ({category} 或 N/A)
+  3. 一句话总结 (即使无新发现也要写明原因)
+
+Gate 结果表格必须包含:
+  #### Knowledge Assessment (MANDATORY)
+  | Question | Answer | Action |
+  |----------|--------|--------|
+  | New discoveries? | ✅ Yes / ❌ No | ... |
+  | Category | {category} or N/A | ... |
+  | Brief summary | {1-line} | ... |
 
 记录位置: .tad/project-knowledge/{category}.md
+```
+
+**禁止行为**:
+- ❌ Gate 结果表格中没有 Knowledge Assessment 部分
+- ❌ 用"常规实现"作为借口跳过不填写
+
+### Knowledge Bootstrap 规则
+
+**区分两种知识类型：**
+
+| 类型 | 定义 | 何时写入 | 例子 |
+|------|------|----------|------|
+| **先验知识 (Foundational)** | 项目开始前就应确定的规范 | 项目初始化时 | 设计系统、代码规范、技术栈 |
+| **经验知识 (Accumulated)** | 开发过程中学到的 | Gate 通过后 | 踩坑记录、最佳实践、workaround |
+
+**Bootstrap 触发条件：**
+
+```yaml
+触发 1: /tad-init 初始化新项目
+  → 使用 .tad/templates/knowledge-bootstrap.md 模板
+  → 填充所有 knowledge 文件的 "Foundational" section
+
+触发 2: 发现某个 knowledge 文件只有模板头（无实际内容）
+  → 从代码中提取现有规范
+  → 补充 "Foundational" section
+
+触发 3: 用户明确要求 "补充项目知识" 或 "建立规范"
+  → 执行完整 Bootstrap 流程
+```
+
+**Bootstrap 流程：**
+
+```
+1. 读取 .tad/templates/knowledge-bootstrap.md
+2. 针对每个知识类别：
+   a. 检查对应 .md 文件是否有 "Foundational" section
+   b. 如果没有，从代码中提取信息填充
+   c. 信息来源：tailwind.config, globals.css, package.json, 现有组件等
+3. 先验知识只需写一次，后续只追加经验知识
+```
+
+**Knowledge 文件结构：**
+
+```markdown
+# {Category} Knowledge
+
+Project-specific {category} learnings accumulated through TAD workflow.
+
+---
+
+## Foundational: {标题}        ← 先验知识（Bootstrap 时写入）
+
+> Established at project inception.
+
+### [子章节]
+[从代码/配置中提取的规范]
+
+---
+
+## Accumulated Learnings       ← 经验知识（Gate 通过后追加）
+
+<!-- Entries from development experience below -->
+
+### [Short Title] - [YYYY-MM-DD]
+- **Context**: ...
+- **Discovery**: ...
+- **Action**: ...
 ```
 
 ---
@@ -236,12 +378,50 @@ Examples:
 
 ## 5. Agent 分工边界
 
+### Terminal 隔离规则 ⚠️ CRITICAL
+
+**Alex 和 Blake 必须在不同的 Terminal 运行，禁止在同一个会话中切换角色。**
+
+```yaml
+规则: Alex 写完 handoff 后，必须停止并等待人类传递信息给 Blake
+      不能在同一个 terminal 调用 /blake
+      人类是 Alex 和 Blake 之间唯一的信息桥梁
+
+流程:
+  Terminal 1 (Alex):
+    1. 需求分析 → 苏格拉底式提问 → 设计 → 写 handoff
+    2. 输出: "Handoff 已创建，请在 Terminal 2 执行 /blake"
+    3. 停止，等待人类反馈
+
+  人类动作:
+    - 打开 Terminal 2
+    - 执行 /blake
+    - 告诉 Blake handoff 位置
+
+  Terminal 2 (Blake):
+    1. 读取 handoff → 执行实现 → Gate 3/4
+    2. 输出: "实现完成，请通知 Alex 进行验收"
+    3. 停止，等待人类反馈
+```
+
+**禁止行为**:
+- ❌ Alex 在同一个 terminal 调用 /blake
+- ❌ Alex 直接执行实现代码
+- ❌ Blake 在同一个 terminal 调用 /alex
+- ❌ 任何 Agent 试图绕过人类直接与另一个 Agent 通信
+
+**原则**: Human-in-the-Loop，人类掌控信息流动
+
+---
+
 ### Alex (Solution Lead) - Terminal 1
 - ✅ 需求分析、方案设计、架构规划
 - ✅ 创建 handoff 文档
 - ✅ 执行 Gate 1 & 2
+- ✅ 验收 Blake 的实现（在 Terminal 1）
 - ❌ 不写实现代码
 - ❌ 不执行 Blake 的任务
+- ❌ 不在同一 terminal 调用 /blake
 
 ### Blake (Execution Master) - Terminal 2
 - ✅ 代码实现、测试、部署
@@ -249,6 +429,7 @@ Examples:
 - ✅ 执行 Gate 3 & 4
 - ❌ 不独立设计方案
 - ❌ 必须基于 Alex 的 handoff
+- ❌ 不在同一 terminal 调用 /alex
 
 ---
 

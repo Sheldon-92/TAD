@@ -135,11 +135,12 @@ Required_Subagent:
       4. 重新执行 Gate 3
 
 # Gate 3 检查项（Prerequisite 和 Subagent 要求通过后执行）
-Critical Check (4 items):
+Critical Check (5 items):
   - [ ] Code complete (all handoff tasks done)
   - [ ] Tests pass (no failing tests)
   - [ ] Standards met (linting, formatting)
   - [ ] Evidence file exists (.tad/evidence/reviews/*-testing-review-*.md)
+  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
 Evidence: Record in completion report + evidence file
 Output Format:
   ### Gate 3 Result
@@ -162,52 +163,52 @@ Output Format:
   | Standards | ✅ Pass | ... |
   | Evidence | ✅ Pass | File exists |
 
-# ⚠️ POST-PASS ACTIONS (MANDATORY)
-# Gate 3 通过后，必须执行以下动作
-Post_Pass_Actions:
-  trigger: "Gate 3 所有检查项 PASS"
+  #### Knowledge Assessment (MANDATORY - must answer)
+  | Question | Answer | Action |
+  |----------|--------|--------|
+  | New discoveries? | ✅ Yes / ❌ No | If Yes: recorded to .tad/project-knowledge/{category}.md |
+  | Category | {category} or N/A | ... |
+  | Brief summary | {1-line summary} | ... |
 
-  # Action 1: 更新 NEXT.md
-  update_next_md:
-    action: "更新 NEXT.md 反映实现完成状态"
-    steps:
-      - "标记已完成的实现任务为 [x]"
-      - "添加测试/集成相关的后续任务"
-      - "移动阻塞项到 Blocked 分类（如有）"
-    format: "English only"
+# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 3)
+# 必须在 Gate 结果表格中显式回答，不可跳过
+Knowledge_Assessment:
+  blocking: true
+  description: "Gate 3 无法 PASS 除非 Knowledge Assessment 表格已填写"
 
-  # Action 2: 评估知识记录
-  knowledge_capture:
-    action: "评估本次实现是否有值得记录的发现"
+  mandatory_questions:
+    - question: "本次实现是否有新发现？"
+      must_answer: true
+      options:
+        - "✅ Yes - 有新发现"
+        - "❌ No - 常规实现，无特殊发现"
+
+    - question: "如果有，属于哪个类别？"
+      must_answer: "if previous is Yes"
+      options: "从 .tad/project-knowledge/ 目录读取"
+
+    - question: "一句话总结"
+      must_answer: true
+      note: "即使无新发现，也要写明原因（如：常规 CRUD 实现）"
 
   evaluation_criteria:
-    record_if_any:
+    should_record_if:
       - "遇到了意外问题并解决（surprise factor）"
       - "发现了可复用的模式或反模式"
       - "做出了影响未来开发的技术决策"
       - "同类问题可能再次出现（recurrence）"
+      - "花了 >30 分钟解决的问题"
 
-    skip_if:
-      - "常规实现，无特殊发现"
-      - "已有类似记录存在"
+    can_skip_if:
+      - "纯粹的 CRUD 操作"
+      - "完全按照 handoff 执行，无任何偏差"
+      - "已有完全相同的记录"
 
-  if_worth_recording:
+  if_new_discovery:
     step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
     step2: "确定分类（或选择创建新类别）"
     step3: "写入对应的 .tad/project-knowledge/{category}.md"
-    step4: "使用标准格式（见下方）"
-
-  category_discovery: |
-    Available categories (read from directory):
-    - code-quality, security, ux, architecture
-    - performance, testing, api-integration, mobile-platform
-    - [Any other .md files in the directory]
-    - [Create new category...] (if none fit)
-
-  new_category_criteria:
-    - 当前发现明显不属于任何现有类别
-    - 预计该主题会产生 3+ 条相关记录
-    - 参考 .tad/project-knowledge/README.md 的 Dynamic Category Creation
+    step4: "使用标准格式"
 
   entry_format: |
     ### [简短标题] - [YYYY-MM-DD]
@@ -215,11 +216,19 @@ Post_Pass_Actions:
     - **Discovery**: 发现了什么
     - **Action**: 建议未来如何处理
 
-  example: |
-    ### API Response Truncation - 2026-01-20
-    - **Context**: Implementing Anthony chat streaming
-    - **Discovery**: Long responses get truncated at 4000 chars by middleware
-    - **Action**: Always check response length and implement chunked responses for long content
+  violation: "Gate 3 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
+
+# ⚠️ POST-PASS ACTIONS
+Post_Pass_Actions:
+  trigger: "Gate 3 所有检查项 PASS（包括 Knowledge Assessment）"
+
+  update_next_md:
+    action: "更新 NEXT.md 反映实现完成状态"
+    steps:
+      - "标记已完成的实现任务为 [x]"
+      - "添加测试/集成相关的后续任务"
+      - "移动阻塞项到 Blocked 分类（如有）"
+    format: "English only"
 ```
 
 ## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴
@@ -276,12 +285,13 @@ Required_Subagents:
       4. 重新执行 Gate 4
 
 # Gate 4 检查项（Prerequisite 和 Subagent 要求通过后执行）
-Critical Check (5 items):
+Critical Check (6 items):
   - [ ] Integration works (system-level test)
   - [ ] Ready for user (no known blockers)
   - [ ] Security review evidence exists
   - [ ] Performance review evidence exists
   - [ ] All subagent feedback addressed
+  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
 Evidence: Record in NEXT.md or completion report + evidence files
 Output Format:
   ### Gate 4 Result
@@ -309,6 +319,13 @@ Output Format:
   | Performance Evidence | ✅ Pass | File exists |
   | Feedback Addressed | ✅ Pass | ... |
 
+  #### Knowledge Assessment (MANDATORY - must answer)
+  | Question | Answer | Action |
+  |----------|--------|--------|
+  | New discoveries from review? | ✅ Yes / ❌ No | If Yes: recorded to .tad/project-knowledge/{category}.md |
+  | Category | {category} or N/A | ... |
+  | Brief summary | {1-line summary} | ... |
+
 ## ⚠️ Gate 4 Subagent Requirement (CRITICAL)
 Alex 必须调用 subagents 进行实际验收，不可仅做纸面验收：
 
@@ -330,12 +347,45 @@ Workflow:
   7. Alex decides: PASS / CONDITIONAL PASS / REJECT
   8. If PASS: Gate 4 complete, deliver to user
 
-# ⚠️ POST-PASS ACTIONS (MANDATORY)
-# Gate 4 通过后，必须执行以下动作
-Post_Pass_Actions:
-  trigger: "Gate 4 所有检查项 PASS"
+# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 4)
+# 必须在 Gate 结果表格中显式回答，不可跳过
+Knowledge_Assessment_Gate4:
+  blocking: true
+  description: "Gate 4 无法 PASS 除非 Knowledge Assessment 表格已填写"
 
-  # Action 1: 更新 NEXT.md
+  mandatory_questions:
+    - question: "本次审查是否有新发现？"
+      must_answer: true
+      options:
+        - "✅ Yes - 有新发现"
+        - "❌ No - 常规审查，无特殊发现"
+
+    - question: "如果有，属于哪个类别？"
+      must_answer: "if previous is Yes"
+      options: "从 .tad/project-knowledge/ 目录读取"
+
+    - question: "一句话总结"
+      must_answer: true
+      note: "即使无新发现，也要写明原因"
+
+  evaluation_criteria:
+    should_record_if:
+      - "发现了重复出现的代码质量问题"
+      - "发现了新的安全/性能风险模式"
+      - "做出了影响项目的架构决策"
+      - "审查中发现的最佳实践或反模式"
+      - "subagent 提出了重要的改进建议"
+
+    can_skip_if:
+      - "所有 subagent 结果都是 PASS，无特殊发现"
+      - "已有完全相同的记录"
+
+  violation: "Gate 4 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
+
+# ⚠️ POST-PASS ACTIONS
+Post_Pass_Actions:
+  trigger: "Gate 4 所有检查项 PASS（包括 Knowledge Assessment）"
+
   update_next_md:
     action: "更新 NEXT.md 反映交付完成状态"
     steps:
@@ -344,28 +394,6 @@ Post_Pass_Actions:
       - "清理已完成的相关任务"
     format: "English only"
 
-  # Action 2: 评估知识记录 (MANDATORY)
-  knowledge_capture:
-    action: "评估审查过程中是否有值得记录的发现"
-
-    evaluation_criteria:
-      record_if_any:
-        - "发现了重复出现的代码质量问题"
-        - "发现了新的安全/性能风险模式"
-        - "做出了影响项目的架构决策"
-        - "审查中发现的最佳实践或反模式"
-
-      skip_if:
-        - "常规审查，无特殊发现"
-        - "已有类似记录存在"
-
-    if_worth_recording:
-      step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
-      step2: "确定分类（或选择创建新类别）"
-      step3: "写入对应的 .tad/project-knowledge/{category}.md"
-      step4: "使用标准格式（见 Gate 3 示例）"
-
-  # Action 3: 提示 Alex 执行 *accept
   remind_accept:
     action: "提示 Alex 执行 *accept 完成归档流程"
     message: |

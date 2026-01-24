@@ -53,7 +53,49 @@ Use this checklist format to track progress:
    - Create `NEXT.md` for task tracking
    - Create `CLAUDE.md` with TAD rules
 
-5. **Display success message**
+5. **Bootstrap Project Knowledge** ⚠️ NEW
+   - Read `.tad/templates/knowledge-bootstrap.md` for guidance
+   - For each knowledge category, extract foundational info from codebase:
+
+   ```yaml
+   UX Knowledge:
+     sources:
+       - tailwind.config.ts (colors, fonts, spacing)
+       - app/globals.css (CSS variables, theme)
+       - components/ui/ (component library)
+     output: .tad/project-knowledge/ux.md → "Foundational" section
+
+   Code Quality:
+     sources:
+       - package.json (tech stack)
+       - tsconfig.json (TypeScript config)
+       - src/ structure (file organization)
+     output: .tad/project-knowledge/code-quality.md → "Foundational" section
+
+   Testing:
+     sources:
+       - vitest.config.ts or jest.config.js
+       - existing test files (patterns)
+       - package.json scripts
+     output: .tad/project-knowledge/testing.md → "Foundational" section
+   ```
+
+   - If sources don't exist (new project), prompt user for inputs
+   - Write "Foundational" section to each knowledge file
+   - Mark "Accumulated Learnings" section as empty (to be filled during development)
+
+6. **Verify Knowledge Bootstrap**
+   - Check each `.tad/project-knowledge/*.md` file has content beyond template header
+   - Report any files that need manual completion:
+   ```
+   Knowledge Bootstrap Status:
+   ✅ ux.md - Foundational section populated
+   ✅ code-quality.md - Foundational section populated
+   ⚠️ security.md - Needs manual input (no auth config found)
+   ✅ testing.md - Foundational section populated
+   ```
+
+7. **Display success message**
    ```
    ✅ TAD Framework initialized successfully!
 

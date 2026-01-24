@@ -207,19 +207,26 @@ mandatory:
 # Completion protocol (new requirement)
 completion_protocol:
   step1: "完成实现后，创建 completion-report.md"
-  step2: "执行 Gate 3 (Implementation Quality)"
-  step3: "Gate 3 通过后，评估并记录 project-knowledge（如有新发现）"
-  step4: "执行 Gate 4 (Integration Verification)"
-  step5: "记录实际实现、遇到问题、与计划差异"
-  step6: "更新 NEXT.md（标记完成项 [x]，添加新发现任务）"
-  step7: "通知 Alex review（通过 completion report）"
-  step8: "等待 Alex 验收通过后，将 handoff 移至 archive"
+  step2: "执行 Gate 3 (Implementation Quality) - 包含 Knowledge Assessment"
+  step3: "执行 Gate 4 (Integration Verification) - 包含 Knowledge Assessment"
+  step4: "记录实际实现、遇到问题、与计划差异"
+  step5: "更新 NEXT.md（标记完成项 [x]，添加新发现任务）"
+  step6: "通知 Alex review（通过 completion report）"
+  step7: "等待 Alex 验收通过后，将 handoff 移至 archive"
 
-  knowledge_capture:
-    trigger: "Gate 3 通过后"
-    action: "评估实现过程中是否有值得记录的发现"
+  # ⚠️ Knowledge Assessment 是 Gate 的一部分（BLOCKING）
+  knowledge_assessment:
+    blocking: true
+    when: "Gate 3 和 Gate 4 执行时"
+    requirement: "必须在 Gate 结果表格中填写 Knowledge Assessment 部分"
     location: ".tad/project-knowledge/{category}.md"
-    skip_if: "常规实现，无特殊发现"
+
+    must_answer:
+      - "是否有新发现？(Yes/No)"
+      - "如果有，属于哪个类别？"
+      - "一句话总结（即使无新发现也要写明原因）"
+
+    violation: "Gate 结果表格缺少 Knowledge Assessment = Gate 无效 = VIOLATION"
 
   violation: "完成实现但不创建 completion report = 绕过验收 = VIOLATION"
 
