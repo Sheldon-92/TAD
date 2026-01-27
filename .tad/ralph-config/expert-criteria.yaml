@@ -1,0 +1,249 @@
+# Expert Agent Pass Criteria v1.1
+# TAD v2.0 - Machine-Parseable Definitions
+# Created: 2026-01-26
+
+$schema: "../schemas/expert-criteria.schema.json"
+
+expert_criteria:
+  version: "1.1.0"
+  description: "Structured, machine-parseable pass criteria for expert agents"
+
+  # ==================== code-reviewer ====================
+  code-reviewer:
+    description: "Code quality and maintainability check"
+    subagent_type: "code-reviewer"
+
+    # Machine-parseable pass condition
+    pass_condition:
+      type: "severity_count"
+      rules:
+        - severity: "P0"
+          max_count: 0
+          blocking: true
+          description: "Critical issues must be zero"
+
+        - severity: "P1"
+          max_count: 0
+          blocking: true
+          description: "High severity issues must be zero"
+
+        - severity: "P2"
+          max_count: 10
+          blocking: false
+          description: "Allow up to 10 medium issues"
+
+        - severity: "P3"
+          max_count: -1  # Unlimited
+          blocking: false
+          description: "Low severity suggestions are unlimited"
+
+    severity_definitions:
+      P0:
+        name: "Critical"
+        description: "Security vulnerability, data loss, crash"
+        examples:
+          - "SQL injection vulnerability"
+          - "Unhandled exception that crashes app"
+          - "Data corruption possible"
+          - "Authentication bypass"
+          - "Sensitive data exposure"
+
+      P1:
+        name: "High"
+        description: "Logic errors, race conditions, broken features"
+        examples:
+          - "Logic error causing wrong calculation"
+          - "Race condition in async code"
+          - "Feature doesn't work as specified"
+          - "Missing error handling for likely failures"
+          - "Incorrect API contract"
+
+      P2:
+        name: "Medium"
+        description: "Style, naming, minor improvements"
+        examples:
+          - "Inconsistent naming convention"
+          - "Could use more descriptive variable name"
+          - "Minor code duplication"
+          - "Missing documentation"
+          - "Suboptimal but functional approach"
+
+      P3:
+        name: "Low"
+        description: "Suggestions, nice-to-haves"
+        examples:
+          - "Could add more comments"
+          - "Alternative approach might be cleaner"
+          - "Consider refactoring in future"
+          - "Stylistic preference"
+
+    output_format:
+      required_sections:
+        - "summary"
+        - "issues_by_severity"
+        - "pass_status"
+      evidence_template: ".tad/templates/output-formats/code-review-format.md"
+
+  # ==================== test-runner ====================
+  test-runner:
+    description: "Test execution and coverage check"
+    subagent_type: "test-runner"
+
+    pass_condition:
+      type: "metrics"
+      rules:
+        - metric: "test_pass_rate"
+          operator: "=="
+          value: 100
+          unit: "percent"
+          blocking: true
+          description: "All tests must pass"
+
+        - metric: "coverage"
+          operator: ">="
+          value: 70
+          unit: "percent"
+          configurable: true  # Per-project override
+          blocking: true
+          description: "Minimum 70% code coverage"
+
+    # Environment-specific overrides
+    environment_overrides:
+      production:
+        coverage: 80
+        description: "Production requires 80% coverage"
+
+      staging:
+        coverage: 70
+        description: "Staging requires standard 70%"
+
+      prototype:
+        coverage: 0  # Skip during prototyping
+        description: "Prototypes can skip coverage"
+
+    output_format:
+      required_sections:
+        - "test_summary"
+        - "coverage_report"
+        - "failed_tests"
+        - "pass_status"
+      evidence_template: ".tad/templates/output-formats/testing-review-format.md"
+
+  # ==================== security-auditor ====================
+  security-auditor:
+    description: "Security vulnerability check"
+    subagent_type: "security-auditor"
+    conditional: true
+
+    trigger:
+      type: "pattern_match"
+      pattern: "auth|token|password|credential|api.*key|encrypt|decrypt|session|cookie|sql|query|upload|file|exec|eval"
+      description: "Triggered when code contains security-sensitive patterns"
+
+    pass_condition:
+      type: "severity_count"
+      rules:
+        - severity: "critical"
+          max_count: 0
+          blocking: true
+          description: "No critical vulnerabilities allowed"
+
+        - severity: "high"
+          max_count: 0
+          blocking: true
+          description: "No high severity vulnerabilities allowed"
+
+        - severity: "medium"
+          max_count: 5
+          blocking: false
+          description: "Allow up to 5 medium issues with plan"
+
+        - severity: "low"
+          max_count: -1
+          blocking: false
+          description: "Low severity items are informational"
+
+    vulnerability_categories:
+      - "Injection (SQL, Command, XSS)"
+      - "Authentication/Authorization"
+      - "Data Exposure"
+      - "Cryptographic Issues"
+      - "Security Misconfiguration"
+      - "Input Validation"
+
+    output_format:
+      required_sections:
+        - "vulnerability_summary"
+        - "findings_by_severity"
+        - "remediation_recommendations"
+        - "pass_status"
+      evidence_template: ".tad/templates/output-formats/security-review-format.md"
+
+  # ==================== performance-optimizer ====================
+  performance-optimizer:
+    description: "Performance and efficiency check"
+    subagent_type: "performance-optimizer"
+    conditional: true
+
+    trigger:
+      type: "pattern_match"
+      pattern: "database|query|cache|batch|loop|sort|search|O\\(n"
+      description: "Triggered when code contains performance-sensitive patterns"
+
+    pass_condition:
+      type: "pattern_match"
+      rules:
+        - category: "algorithm_complexity"
+          blocking_patterns:
+            - "O(n^3) without justification"
+            - "O(n^2) in hot path without justification"
+            - "Unbounded recursion"
+          warning_patterns:
+            - "O(n^2) with justification"
+            - "Inefficient data structure choice"
+          description: "Check algorithmic complexity"
+
+        - category: "memory"
+          blocking_patterns:
+            - "Obvious memory leak"
+            - "Unbounded growth"
+            - "Large allocation in tight loop"
+          warning_patterns:
+            - "Large allocation in loop"
+            - "Potential memory pressure"
+          description: "Check memory usage patterns"
+
+        - category: "database"
+          blocking_patterns:
+            - "N+1 query pattern"
+            - "Missing index on frequent query"
+            - "Unbounded result set"
+          warning_patterns:
+            - "Could benefit from caching"
+            - "Consider pagination"
+          description: "Check database access patterns"
+
+    output_format:
+      required_sections:
+        - "performance_summary"
+        - "findings_by_category"
+        - "optimization_recommendations"
+        - "pass_status"
+      evidence_template: ".tad/templates/output-formats/performance-review-format.md"
+
+# ==================== Global Settings ====================
+global_settings:
+  # Default timeout for all experts
+  default_timeout: 300000  # 5 minutes
+
+  # Evidence storage
+  evidence_directory: ".tad/evidence/reviews"
+  evidence_naming: "{date}-{expert}-{task}-iter{n}.md"
+
+  # Retry behavior
+  retry_on_timeout: true
+  max_timeout_retries: 2
+
+  # Logging
+  log_level: "info"
+  log_directory: ".tad/logs/ralph-loop"

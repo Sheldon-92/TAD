@@ -1,0 +1,314 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tad-framework.dev/schemas/loop-config.schema.json",
+  "title": "Ralph Loop Configuration Schema",
+  "description": "JSON Schema for validating Ralph Loop configuration (TAD v2.0)",
+  "type": "object",
+  "required": ["ralph_loop"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema"
+    },
+    "ralph_loop": {
+      "type": "object",
+      "required": ["enabled", "version", "layer1", "layer2", "limits", "state_persistence", "evidence"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether Ralph Loop is enabled"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Ralph Loop version (semver)"
+        },
+        "description": {
+          "type": "string"
+        },
+        "layer1": {
+          "$ref": "#/definitions/layer1"
+        },
+        "layer2": {
+          "$ref": "#/definitions/layer2"
+        },
+        "limits": {
+          "$ref": "#/definitions/globalLimits"
+        },
+        "state_persistence": {
+          "$ref": "#/definitions/statePersistence"
+        },
+        "evidence": {
+          "$ref": "#/definitions/evidence"
+        },
+        "rollback": {
+          "$ref": "#/definitions/rollback"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "layer1": {
+      "type": "object",
+      "required": ["name", "commands", "limits", "circuit_breaker"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "command", "timeout", "required"],
+            "properties": {
+              "name": { "type": "string" },
+              "command": { "type": "string" },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 600000
+              },
+              "required": { "type": "boolean" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["max_retries"],
+          "properties": {
+            "max_retries": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "circuit_breaker": {
+          "type": "object",
+          "required": ["enabled", "consecutive_same_error", "action"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "consecutive_same_error": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 10
+            },
+            "action": {
+              "type": "string",
+              "enum": ["escalate_to_human", "abort", "notify"]
+            },
+            "message": { "type": "string" }
+          }
+        }
+      }
+    },
+    "layer2": {
+      "type": "object",
+      "required": ["name", "priority_groups", "limits", "escalation"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "priority_groups": {
+          "type": "object",
+          "patternProperties": {
+            "^group\\d+$": {
+              "$ref": "#/definitions/priorityGroup"
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["max_rounds"],
+          "properties": {
+            "max_rounds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          }
+        },
+        "escalation": {
+          "type": "object",
+          "required": ["enabled", "threshold", "action"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "threshold": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "action": {
+              "type": "string",
+              "enum": ["escalate_to_alex", "abort", "notify"]
+            },
+            "message": { "type": "string" }
+          }
+        }
+      }
+    },
+    "priorityGroup": {
+      "type": "object",
+      "required": ["name", "parallel", "experts"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "parallel": { "type": "boolean" },
+        "experts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/expert"
+          }
+        }
+      }
+    },
+    "expert": {
+      "type": "object",
+      "required": ["name", "subagent_type"],
+      "properties": {
+        "name": { "type": "string" },
+        "subagent_type": { "type": "string" },
+        "timeout": {
+          "oneOf": [
+            { "type": "integer" },
+            {
+              "type": "object",
+              "required": ["default"],
+              "properties": {
+                "default": { "type": "integer", "description": "Default timeout in milliseconds" },
+                "small_change": { "type": "integer" },
+                "large_change": { "type": "integer" },
+                "unit_only": { "type": "integer" },
+                "with_integration": { "type": "integer" },
+                "with_e2e": { "type": "integer" }
+              }
+            }
+          ]
+        },
+        "timeout_selection": {
+          "type": "string",
+          "enum": ["auto", "manual"]
+        },
+        "required": { "type": "boolean" },
+        "trigger_pattern": { "type": "string" },
+        "pass_criteria": {
+          "type": "object",
+          "description": "Expert-specific pass criteria",
+          "properties": {
+            "severity_threshold": { "type": "string" },
+            "max_issues": {
+              "type": "object",
+              "additionalProperties": { "type": "integer" }
+            },
+            "test_pass_rate": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "coverage_minimum": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "blocking_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "evidence_file": { "type": "string" }
+      }
+    },
+    "globalLimits": {
+      "type": "object",
+      "required": ["total_iterations", "timeout_minutes"],
+      "properties": {
+        "description": { "type": "string" },
+        "total_iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "timeout_minutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 480
+        },
+        "per_iteration_timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "abort_conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["condition", "action"],
+            "properties": {
+              "condition": { "type": "string" },
+              "action": {
+                "type": "string",
+                "enum": ["abort", "escalate", "notify"]
+              },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "statePersistence": {
+      "type": "object",
+      "required": ["enabled", "state_file"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "description": { "type": "string" },
+        "state_file": { "type": "string" },
+        "checkpoint_frequency": {
+          "type": "string",
+          "enum": ["after_each_layer", "after_each_iteration", "on_error"]
+        },
+        "state_schema": {
+          "type": "object"
+        },
+        "recovery": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "on_resume": { "type": "string" },
+            "stale_threshold_minutes": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 1440
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["directory", "files"],
+      "properties": {
+        "directory": { "type": "string" },
+        "files": {
+          "type": "object",
+          "properties": {
+            "state": { "type": "string" },
+            "summary": { "type": "string" },
+            "iterations": { "type": "string" }
+          }
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        },
+        "summary_format": { "type": "string" }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "on_abort": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "preserve_evidence": { "type": "boolean" },
+            "notification": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

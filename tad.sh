@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TAD Framework - Unified Install & Upgrade Script v1.6
+# TAD Framework - Unified Install & Upgrade Script v2.0
 # One command for all scenarios: fresh install, upgrade, or migration
 
 set -e
@@ -14,7 +14,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Version
-TARGET_VERSION="1.6"
+TARGET_VERSION="2.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
@@ -32,8 +32,10 @@ detect_state() {
         local ver=$(cat .tad/version.txt)
         if [[ "$ver" == "$TARGET_VERSION" ]]; then
             echo "current"
-        elif [[ "$ver" == "1.5"* ]]; then
-            echo "v1.5"
+        elif [[ "$ver" == "1.8"* ]]; then
+            echo "v1.8"
+        elif [[ "$ver" == "1.6"* ]] || [[ "$ver" == "1.5"* ]]; then
+            echo "v1.6"
         elif [[ "$ver" == "1.4"* ]]; then
             echo "v1.4"
         else
@@ -68,7 +70,13 @@ case $STATE in
         echo "   You're on the latest version!"
         ACTION="none"
         ;;
-    "v1.5")
+    "v1.8")
+        echo -e "   Status: ${YELLOW}Upgrade available${NC}"
+        echo "   Current: v${CURRENT_VERSION} → Target: v${TARGET_VERSION}"
+        echo "   (Will add Ralph Loop configuration)"
+        ACTION="upgrade"
+        ;;
+    "v1.6")
         echo -e "   Status: ${YELLOW}Upgrade available${NC}"
         echo "   Current: v${CURRENT_VERSION} → Target: v${TARGET_VERSION}"
         ACTION="upgrade"
@@ -158,6 +166,8 @@ case $ACTION in
         mkdir -p .tad/archive/handoffs
         mkdir -p .tad/evidence/reviews
         mkdir -p .tad/evidence/completions
+        mkdir -p .tad/evidence/ralph-loops
+        mkdir -p .tad/evidence/reviews/_iterations
         mkdir -p .tad/gates
         mkdir -p .tad/learnings/pending
         mkdir -p .tad/learnings/pushed
@@ -165,6 +175,8 @@ case $ACTION in
         mkdir -p .tad/templates/output-formats
         mkdir -p .tad/tasks
         mkdir -p .tad/reports
+        mkdir -p .tad/ralph-config
+        mkdir -p .tad/schemas
         mkdir -p .claude/commands
         mkdir -p .claude/skills
 
@@ -176,6 +188,10 @@ case $ACTION in
         cp -r "$TAD_SRC"/.tad/tasks/* .tad/tasks/ 2>/dev/null || true
         cp -r "$TAD_SRC"/.tad/README.md .tad/ 2>/dev/null || true
         cp -r "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+
+        # Copy Ralph Loop config (v2.0)
+        cp -r "$TAD_SRC"/.tad/ralph-config/* .tad/ralph-config/ 2>/dev/null || true
+        cp -r "$TAD_SRC"/.tad/schemas/* .tad/schemas/ 2>/dev/null || true
 
         # Copy commands
         cp "$TAD_SRC"/.claude/commands/*.md .claude/commands/
@@ -244,7 +260,11 @@ NEXTEOF
         mkdir -p .tad/tasks
         mkdir -p .tad/evidence/reviews
         mkdir -p .tad/evidence/completions
+        mkdir -p .tad/evidence/ralph-loops
+        mkdir -p .tad/evidence/reviews/_iterations
         mkdir -p .tad/project-knowledge
+        mkdir -p .tad/ralph-config
+        mkdir -p .tad/schemas
         mkdir -p .claude/skills/code-review
 
         # Update commands
@@ -282,6 +302,11 @@ NEXTEOF
         echo "  → Updating tasks..."
         cp -r "$TAD_SRC"/.tad/tasks/* .tad/tasks/ 2>/dev/null || true
 
+        # Install Ralph Loop config (v2.0 NEW)
+        echo "  → Installing Ralph Loop config..."
+        cp -r "$TAD_SRC"/.tad/ralph-config/* .tad/ralph-config/ 2>/dev/null || true
+        cp -r "$TAD_SRC"/.tad/schemas/* .tad/schemas/ 2>/dev/null || true
+
         # Update CLAUDE.md
         echo "  → Updating CLAUDE.md..."
         cp "$TAD_SRC"/CLAUDE.md ./
@@ -310,6 +335,8 @@ NEXTEOF
         mkdir -p .tad/archive/handoffs
         mkdir -p .tad/evidence/reviews
         mkdir -p .tad/evidence/completions
+        mkdir -p .tad/evidence/ralph-loops
+        mkdir -p .tad/evidence/reviews/_iterations
         mkdir -p .tad/gates
         mkdir -p .tad/learnings/pending
         mkdir -p .tad/learnings/pushed
@@ -317,6 +344,8 @@ NEXTEOF
         mkdir -p .tad/templates/output-formats
         mkdir -p .tad/tasks
         mkdir -p .tad/reports
+        mkdir -p .tad/ralph-config
+        mkdir -p .tad/schemas
         mkdir -p .claude/commands
         mkdir -p .claude/skills/_archived
         mkdir -p .claude/skills/code-review
@@ -351,6 +380,11 @@ NEXTEOF
         cp -r "$TAD_SRC"/.tad/tasks/* .tad/tasks/ 2>/dev/null || true
         cp -r "$TAD_SRC"/.tad/README.md .tad/ 2>/dev/null || true
         cp -r "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+
+        # Install Ralph Loop config (v2.0 NEW)
+        echo "  → Installing Ralph Loop config..."
+        cp -r "$TAD_SRC"/.tad/ralph-config/* .tad/ralph-config/ 2>/dev/null || true
+        cp -r "$TAD_SRC"/.tad/schemas/* .tad/schemas/ 2>/dev/null || true
 
         # Copy commands
         echo "  → Installing commands..."
@@ -439,8 +473,11 @@ echo "Directory structure:"
 echo "  .tad/"
 echo "  ├── active/handoffs/     # Current work"
 echo "  ├── archive/handoffs/    # Completed work"
-echo "  ├── evidence/reviews/    # Gate evidence"
-echo "  ├── learnings/           # Framework learnings"
+echo "  ├── evidence/"
+echo "  │   ├── reviews/         # Gate evidence"
+echo "  │   └── ralph-loops/     # Ralph iteration evidence (NEW)"
+echo "  ├── ralph-config/        # Ralph Loop configuration (NEW)"
+echo "  ├── schemas/             # JSON Schema validation (NEW)"
 echo "  ├── project-knowledge/   # Project-specific knowledge"
 echo "  └── templates/           # Handoff & output templates"
 echo ""

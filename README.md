@@ -1,36 +1,38 @@
 # TAD Method - Triangle Agent Development
 
-**Version 1.8.0 - Human-in-the-Loop Excellence**
+**Version 2.0.0 - Ralph Loop Fusion**
 
-> 🚀 **TAD v1.8** introduces **Socratic Inquiry Protocol**, **Terminal Isolation**, and **Knowledge Assessment** for higher quality human-AI collaboration.
+> 🚀 **TAD v2.0** introduces **Ralph Loop** - autonomous quality-driven development with expert review cycles.
 >
-> 📚 **[Documentation Portal](docs/README.md)** | [Version History](#version-history)
+> 📚 **[Documentation Portal](docs/README.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
-## 🎯 What's New in v1.8
+## 🎯 What's New in v2.0
 
-### Socratic Inquiry Protocol (NEW)
-- **Mandatory AskUserQuestion**: Before writing any handoff, Alex must use the `AskUserQuestion` tool
-- **6 Question Dimensions**: value_validation, boundary_clarification, risk_foresight, acceptance_criteria, user_scenarios, technical_constraints
-- **Complexity-Based Depth**: Small (2-3 questions), Medium (4-5), Large (6-8)
-- **Blindspot Discovery**: Help users discover requirements they hadn't considered
+### Ralph Loop Integration (NEW)
+- **Autonomous Quality Cycles**: Blake automatically iterates until experts approve
+- **Two-Layer Architecture**:
+  - **Layer 1 (Self-Check)**: Fast local checks (build/test/lint/tsc)
+  - **Layer 2 (Expert Review)**: Deep subagent verification
+- **Circuit Breaker**: 3 consecutive same errors → escalate to human
+- **State Persistence**: Checkpoint/resume for crash recovery
+- **Priority Groups**: code-reviewer first, then others in parallel
 
-### Terminal Isolation (NEW)
-- **Alex = Terminal 1**: Design, planning, review
-- **Blake = Terminal 2**: Implementation, testing, deployment
-- **Human Bridge**: Human is the ONLY information bridge between agents
-- **No Cross-Calling**: Alex cannot call `/blake` in same terminal (VIOLATION)
+### Restructured Gates (BREAKING CHANGE)
+- **Gate 3 v2 (Expanded)**: Technical Quality (Layer 1 + Layer 2 + old Gate 4 Part A)
+- **Gate 4 v2 (Simplified)**: Pure Alex Acceptance + Archive
+- **Clear Ownership**: Blake owns ALL technical quality, Alex owns business acceptance
 
-### Knowledge Assessment (Enhanced)
-- **BLOCKING Gate 3/4**: Knowledge capture is now mandatory for passing gates
-- **`/knowledge-audit` Command**: Audit project knowledge health
-- **Knowledge Bootstrap Template**: Establish foundational knowledge during init
+### Tiered Expert Timeout (Enhanced)
+- **code-reviewer**: 3min (small) / 10min (standard) / 15min (large)
+- **test-runner**: 3min (unit) / 10min (integration) / 20min (E2E)
+- **Auto-detection**: Timeout selected based on change size
 
-### Expert Review Protocol (Enhanced)
-- **Minimum 2 Experts**: Every handoff must be reviewed by at least 2 subagents
-- **code-reviewer Required**: Always required for every handoff
-- **Parallel Review**: Experts called in parallel for efficiency
+### From v1.8 (Retained)
+- Socratic Inquiry Protocol
+- Terminal Isolation (Alex=T1, Blake=T2)
+- Knowledge Assessment (mandatory for gates)
 
 ---
 
@@ -52,25 +54,30 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v1.8 configuration (2100+ lines)
+│   ├── config.yaml              # v2.0 configuration
+│   ├── ralph-config/            # Ralph Loop configuration (NEW)
+│   │   ├── loop-config.yaml     # Layer 1/2 settings
+│   │   └── expert-criteria.yaml # Expert pass conditions
+│   ├── schemas/                 # JSON Schema validation (NEW)
+│   │   ├── loop-config.schema.json
+│   │   └── expert-criteria.schema.json
 │   ├── active/handoffs/         # Active handoff documents
 │   ├── archive/handoffs/        # Completed handoffs
 │   ├── project-knowledge/       # Project-specific learnings
-│   ├── evidence/reviews/        # Gate evidence files
+│   ├── evidence/
+│   │   ├── reviews/             # Gate evidence files
+│   │   └── ralph-loops/         # Ralph iteration evidence (NEW)
 │   └── templates/               # Document templates
 │       ├── output-formats/      # 12 standardized review formats
 │       └── knowledge-bootstrap.md
 ├── .claude/
 │   ├── commands/                # Slash commands
 │   │   ├── tad-alex.md          # /alex - Solution Lead
-│   │   ├── tad-blake.md         # /blake - Execution Master
-│   │   ├── tad-gate.md          # /gate - Quality gates
-│   │   ├── tad-init.md          # /tad-init - Project setup
-│   │   ├── knowledge-audit.md   # /knowledge-audit - Health check
+│   │   ├── tad-blake.md         # /blake - Execution Master (with Ralph Loop)
+│   │   ├── tad-gate.md          # /gate - Quality gates v2
 │   │   └── ...
 │   └── skills/                  # Agent skills
-│       ├── code-review/         # Code review checklist
-│       └── doc-organization.md  # Documentation hygiene
+│       └── code-review/         # Code review checklist
 └── CLAUDE.md                    # Project rules (mandatory reading)
 ```
 
@@ -167,26 +174,41 @@ Alex: [Reviews with subagents, accepts or requests changes]
 
 ---
 
-## 🚦 4-Gate Quality System
+## 🚦 4-Gate Quality System (v2.0)
 
-| Gate | Name | Owner | Trigger |
-|------|------|-------|---------|
-| Gate 1 | Requirements Clarity | Alex | After 3-5 elicitation rounds |
-| Gate 2 | Design Completeness | Alex | Before creating handoff |
-| Gate 3 | Implementation Quality | Blake | After implementation |
-| Gate 4 | Integration Verification | Blake | Before delivery |
+| Gate | Name | Owner | What Changed in v2.0 |
+|------|------|-------|----------------------|
+| Gate 1 | Requirements Clarity | Alex | (unchanged) |
+| Gate 2 | Design Completeness | Alex | (unchanged) |
+| **Gate 3 v2** | **Implementation + Integration** | **Blake** | **Expanded: includes old Gate 4 Part A** |
+| **Gate 4 v2** | **Acceptance + Archive** | **Alex** | **Simplified: pure business acceptance** |
 
-### Gate Evidence Requirements (v1.8)
+### Gate 3 v2 (Blake - Technical Quality)
 
-**Gate 3 requires:**
-- `test-runner` subagent execution
-- Evidence file in `.tad/evidence/reviews/`
-- Knowledge assessment (record if discoveries made)
+**Layer 1 (Self-Check):**
+- build, test, lint, tsc
+- Max 15 retries with circuit breaker
 
-**Gate 4 requires:**
-- `code-reviewer` + `security-auditor` + `performance-optimizer`
-- All evidence files generated
-- Knowledge assessment completed
+**Layer 2 (Expert Review):**
+- Group 1: `code-reviewer` (blocking)
+- Group 2: `test-runner`, `security-auditor`, `performance-optimizer` (parallel)
+- Max 5 rounds with escalation to Alex
+
+**Evidence Required:**
+- All expert review files in `.tad/evidence/reviews/`
+- Iteration evidence in `.tad/evidence/ralph-loops/`
+- Knowledge assessment
+
+### Gate 4 v2 (Alex - Business Acceptance)
+
+**What Alex Verifies:**
+- Handoff requirements satisfied
+- Business value delivered
+- User acceptance confirmed
+
+**Actions:**
+- Archive handoff to `.tad/archive/handoffs/`
+- Record final knowledge assessment
 
 ---
 
@@ -209,9 +231,13 @@ Alex: [Reviews with subagents, accepts or requests changes]
 - `*accept` - Accept and archive handoff
 
 ### Blake Commands (use `*` prefix)
+- `*develop` - Start Ralph Loop (auto Layer 1 + Layer 2) **(NEW)**
 - `*implement` - Start implementation from handoff
-- `*test` - Run tests
-- `*gate 3` / `*gate 4` - Execute quality gates
+- `*layer1` - Run Layer 1 self-checks only
+- `*layer2` - Run Layer 2 expert review only
+- `*ralph-status` - Check Ralph Loop state **(NEW)**
+- `*ralph-resume` - Resume from checkpoint **(NEW)**
+- `*gate 3` - Execute Gate 3 v2 (technical quality)
 - `*complete` - Generate completion report
 
 ---
@@ -248,7 +274,8 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v1.8** | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
+| **v2.0** | **Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout** |
+| v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
 | v1.6 | Evidence-Based Gates, Output Templates, Skills Architecture |
 | v1.5 | Project Knowledge System, *accept/*exit protocols |
 | v1.4 | Proactive Research, Skills System, Learn Command |
@@ -331,6 +358,6 @@ Learnings are pushed to `.tad/learnings/pushed/` for framework updates.
 
 ---
 
-**Welcome to TAD v1.8 - Where humans and AI collaborate with excellence.**
+**Welcome to TAD v2.0 - Autonomous Quality-Driven Development.**
 
-*The goal is not perfect process, but delivering value through effective human-AI partnership.*
+*Ralph Loop: Let experts verify your work automatically, so you can focus on creating value.*

@@ -1,0 +1,290 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tad-framework.dev/schemas/expert-criteria.schema.json",
+  "title": "Expert Criteria Schema",
+  "description": "JSON Schema for validating expert agent pass criteria (TAD v2.0)",
+  "type": "object",
+  "required": ["expert_criteria"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema"
+    },
+    "expert_criteria": {
+      "type": "object",
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Expert criteria version (semver)"
+        },
+        "description": {
+          "type": "string"
+        },
+        "code-reviewer": {
+          "$ref": "#/definitions/codeReviewerCriteria"
+        },
+        "test-runner": {
+          "$ref": "#/definitions/testRunnerCriteria"
+        },
+        "security-auditor": {
+          "$ref": "#/definitions/securityAuditorCriteria"
+        },
+        "performance-optimizer": {
+          "$ref": "#/definitions/performanceOptimizerCriteria"
+        }
+      }
+    },
+    "global_settings": {
+      "$ref": "#/definitions/globalSettings"
+    }
+  },
+  "definitions": {
+    "codeReviewerCriteria": {
+      "type": "object",
+      "required": ["description", "subagent_type", "pass_condition", "severity_definitions"],
+      "properties": {
+        "description": { "type": "string" },
+        "subagent_type": {
+          "type": "string",
+          "const": "code-reviewer"
+        },
+        "pass_condition": {
+          "$ref": "#/definitions/severityCountCondition"
+        },
+        "severity_definitions": {
+          "type": "object",
+          "properties": {
+            "P0": { "$ref": "#/definitions/severityDefinition" },
+            "P1": { "$ref": "#/definitions/severityDefinition" },
+            "P2": { "$ref": "#/definitions/severityDefinition" },
+            "P3": { "$ref": "#/definitions/severityDefinition" }
+          },
+          "required": ["P0", "P1", "P2", "P3"]
+        },
+        "output_format": {
+          "$ref": "#/definitions/outputFormat"
+        }
+      }
+    },
+    "testRunnerCriteria": {
+      "type": "object",
+      "required": ["description", "subagent_type", "pass_condition"],
+      "properties": {
+        "description": { "type": "string" },
+        "subagent_type": {
+          "type": "string",
+          "const": "test-runner"
+        },
+        "pass_condition": {
+          "$ref": "#/definitions/metricsCondition"
+        },
+        "environment_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "coverage": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "output_format": {
+          "$ref": "#/definitions/outputFormat"
+        }
+      }
+    },
+    "securityAuditorCriteria": {
+      "type": "object",
+      "required": ["description", "subagent_type", "pass_condition"],
+      "properties": {
+        "description": { "type": "string" },
+        "subagent_type": {
+          "type": "string",
+          "const": "security-auditor"
+        },
+        "conditional": { "type": "boolean" },
+        "trigger": {
+          "$ref": "#/definitions/triggerCondition"
+        },
+        "pass_condition": {
+          "$ref": "#/definitions/severityCountCondition"
+        },
+        "vulnerability_categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "output_format": {
+          "$ref": "#/definitions/outputFormat"
+        }
+      }
+    },
+    "performanceOptimizerCriteria": {
+      "type": "object",
+      "required": ["description", "subagent_type", "pass_condition"],
+      "properties": {
+        "description": { "type": "string" },
+        "subagent_type": {
+          "type": "string",
+          "const": "performance-optimizer"
+        },
+        "conditional": { "type": "boolean" },
+        "trigger": {
+          "$ref": "#/definitions/triggerCondition"
+        },
+        "pass_condition": {
+          "$ref": "#/definitions/patternMatchCondition"
+        },
+        "output_format": {
+          "$ref": "#/definitions/outputFormat"
+        }
+      }
+    },
+    "severityCountCondition": {
+      "type": "object",
+      "required": ["type", "rules"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "severity_count"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["severity", "max_count", "blocking"],
+            "properties": {
+              "severity": { "type": "string" },
+              "max_count": {
+                "type": "integer",
+                "minimum": -1
+              },
+              "blocking": { "type": "boolean" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "metricsCondition": {
+      "type": "object",
+      "required": ["type", "rules"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "metrics"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["metric", "operator", "value"],
+            "properties": {
+              "metric": { "type": "string" },
+              "operator": {
+                "type": "string",
+                "enum": ["==", ">=", "<=", ">", "<", "!="]
+              },
+              "value": { "type": "number" },
+              "unit": { "type": "string" },
+              "configurable": { "type": "boolean" },
+              "blocking": { "type": "boolean" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "patternMatchCondition": {
+      "type": "object",
+      "required": ["type", "rules"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "pattern_match"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category"],
+            "properties": {
+              "category": { "type": "string" },
+              "blocking_patterns": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "warning_patterns": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "triggerCondition": {
+      "type": "object",
+      "required": ["type", "pattern"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["pattern_match", "file_type", "always"]
+        },
+        "pattern": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "severityDefinition": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "outputFormat": {
+      "type": "object",
+      "properties": {
+        "required_sections": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "evidence_template": { "type": "string" }
+      }
+    },
+    "globalSettings": {
+      "type": "object",
+      "properties": {
+        "default_timeout": {
+          "type": "integer",
+          "minimum": 60000,
+          "maximum": 1800000
+        },
+        "evidence_directory": { "type": "string" },
+        "evidence_naming": { "type": "string" },
+        "retry_on_timeout": { "type": "boolean" },
+        "max_timeout_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"]
+        },
+        "log_directory": { "type": "string" }
+      }
+    }
+  }
+}

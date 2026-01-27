@@ -1,0 +1,232 @@
+# Ralph Loop Configuration v1.1
+# TAD v2.0 - Blake Autonomous Execution
+# Updated with Expert Review Feedback
+# Created: 2026-01-26
+
+$schema: "../schemas/loop-config.schema.json"
+
+ralph_loop:
+  enabled: true
+  version: "1.1.0"
+  description: "Iterative quality loop with expert exit conditions"
+
+  # ==================== Layer 1: Self-Check ====================
+  layer1:
+    name: "Self-Check"
+    description: "Fast local checks before expert review"
+
+    commands:
+      - name: "build"
+        command: "npm run build"
+        timeout: 120000  # 2 minutes
+        required: true
+        description: "Build the project"
+
+      - name: "test"
+        command: "npm test"
+        timeout: 300000  # 5 minutes
+        required: true
+        description: "Run test suite"
+
+      - name: "lint"
+        command: "npm run lint"
+        timeout: 60000   # 1 minute
+        required: true
+        description: "Check code style"
+
+      - name: "typecheck"
+        command: "npx tsc --noEmit"
+        timeout: 120000  # 2 minutes
+        required: true
+        description: "TypeScript type checking"
+
+    # Iteration limits (clear semantics)
+    limits:
+      max_retries: 15  # Max Layer 1 retry count
+
+    # Circuit Breaker - prevents infinite loops on same error
+    circuit_breaker:
+      enabled: true
+      consecutive_same_error: 3  # Same error 3 times -> human intervention
+      action: "escalate_to_human"
+      message: "Layer 1 circuit breaker triggered. Same error occurred {count} times. Human intervention required."
+
+  # ==================== Layer 2: Expert Review ====================
+  layer2:
+    name: "Expert Review"
+    description: "Priority-grouped expert agent review"
+
+    # Priority Groups (code-reviewer first, then others in parallel)
+    priority_groups:
+      group1:
+        name: "Code Quality Gate"
+        description: "Must pass before other experts run"
+        parallel: false
+        experts:
+          - name: "code-reviewer"
+            subagent_type: "code-reviewer"
+            # Tiered timeout based on change size (v1.2 update)
+            timeout:
+              default: 600000      # 10 minutes - standard
+              small_change: 180000 # 3 minutes - single file fix
+              large_change: 900000 # 15 minutes - 50+ files
+            timeout_selection: "auto"  # auto-detect based on file count
+            pass_criteria:
+              severity_threshold: "P2"  # P0 and P1 are blocking
+              max_issues:
+                P0: 0
+                P1: 0
+                P2: 10  # Allow up to 10 P2 issues
+                P3: -1  # Unlimited
+            evidence_file: "{date}-code-review-{task}-iter{n}.md"
+
+      group2:
+        name: "Verification Experts"
+        description: "Run in parallel after Group 1 passes"
+        parallel: true
+        experts:
+          - name: "test-runner"
+            subagent_type: "test-runner"
+            # Tiered timeout based on test type (v1.2 update)
+            timeout:
+              default: 600000       # 10 minutes - standard
+              unit_only: 180000     # 3 minutes - unit tests only
+              with_integration: 600000  # 10 minutes - unit + integration
+              with_e2e: 1200000     # 20 minutes - includes E2E tests
+            timeout_selection: "auto"  # auto-detect based on test config
+            required: true
+            pass_criteria:
+              test_pass_rate: 100
+              coverage_minimum: 70
+            evidence_file: "{date}-testing-review-{task}-iter{n}.md"
+
+          - name: "security-auditor"
+            subagent_type: "security-auditor"
+            timeout: 300000  # 5 minutes - sufficient for pattern scanning
+            required: false  # Conditional
+            trigger_pattern: "auth|token|password|credential|api.*key|encrypt|decrypt|session|cookie|sql|query|upload|file|exec|eval"
+            pass_criteria:
+              severity_threshold: "medium"  # critical and high are blocking
+            evidence_file: "{date}-security-review-{task}-iter{n}.md"
+
+          - name: "performance-optimizer"
+            subagent_type: "performance-optimizer"
+            timeout: 300000  # 5 minutes - sufficient for complexity analysis
+            required: false  # Conditional
+            trigger_pattern: "database|query|cache|batch|loop|sort|search|O\\(n"
+            pass_criteria:
+              blocking_patterns:
+                - "O(n^3) without justification"
+                - "O(n^2) in hot path without justification"
+                - "Unbounded recursion"
+                - "Obvious memory leak"
+            evidence_file: "{date}-performance-review-{task}-iter{n}.md"
+
+    # Layer 2 specific limits
+    limits:
+      max_rounds: 5  # Max Layer 2 retry count
+
+    # Escalation threshold
+    escalation:
+      enabled: true
+      threshold: 3  # 3 failed rounds on same issue category -> escalate
+      action: "escalate_to_alex"
+      message: "Layer 2 escalation triggered. Same category of issue failed {count} times. Returning to Alex for re-design."
+
+  # ==================== Global Limits (Clear Semantics) ====================
+  limits:
+    description: "Total limits for entire Ralph Loop execution"
+
+    # Iteration counting: Layer 1 retry = 1, Layer 2 round = 1
+    total_iterations: 30  # Combined Layer 1 + Layer 2 count
+    timeout_minutes: 120  # Global timeout (2 hours)
+    per_iteration_timeout: 15  # Max time per single iteration (minutes)
+
+    abort_conditions:
+      - condition: "total_iterations >= 30"
+        action: "abort"
+        message: "Ralph Loop exceeded {limit} total iterations. Human intervention required."
+
+      - condition: "timeout_minutes >= 120"
+        action: "abort"
+        message: "Ralph Loop exceeded {limit} minute timeout. Human intervention required."
+
+      - condition: "layer1.circuit_breaker.triggered"
+        action: "abort"
+        message: "Layer 1 circuit breaker triggered. Human intervention required."
+
+      - condition: "layer2.escalation.triggered"
+        action: "escalate"
+        message: "Design-level issue detected. Escalating to Alex."
+
+  # ==================== State Persistence ====================
+  state_persistence:
+    enabled: true
+    description: "Persist loop state for crash recovery"
+
+    state_file: ".tad/evidence/ralph-loops/{task_id}_state.yaml"
+    checkpoint_frequency: "after_each_layer"  # Checkpoint after Layer 1 and Layer 2
+
+    state_schema:
+      current_iteration: 0
+      layer1_retries: 0
+      layer2_rounds: 0
+      last_completed_layer: null  # "layer1" or "layer2"
+      last_error_category: null
+      consecutive_same_error: 0
+      started_at: null
+      last_checkpoint_at: null
+
+    recovery:
+      enabled: true
+      on_resume: "continue_from_last_checkpoint"
+      stale_threshold_minutes: 30  # If state older than 30 min, start fresh
+
+  # ==================== Evidence and Logging ====================
+  evidence:
+    directory: ".tad/evidence/ralph-loops"
+
+    files:
+      state: "{task_id}_state.yaml"  # Current loop state
+      summary: "{task_id}_summary.md"  # Aggregated summary
+      iterations: "{timestamp}_{task_id}_iter_{n}.md"  # Per-iteration log
+
+    retention_days: 30
+
+    # Summary file format
+    summary_format: |
+      # Ralph Loop Summary: {task_id}
+
+      ## Execution Overview
+      - Total Iterations: {total_iterations}
+      - Layer 1 Retries: {layer1_retries}
+      - Layer 2 Rounds: {layer2_rounds}
+      - Final Status: {status}
+      - Duration: {duration}
+
+      ## Layer 1 Results
+      | Iteration | Build | Test | Lint | TSC | Result |
+      |-----------|-------|------|------|-----|--------|
+      {layer1_table}
+
+      ## Layer 2 Results
+      | Round | code-reviewer | test-runner | security | performance | Result |
+      |-------|---------------|-------------|----------|-------------|--------|
+      {layer2_table}
+
+      ## Evidence Files
+      - Final code review: {code_review_link}
+      - Final test report: {test_report_link}
+      - [Additional files...]
+
+  # ==================== Rollback Strategy ====================
+  rollback:
+    enabled: true
+    on_abort:
+      action: "git stash push -m 'Ralph Loop aborted: {task_id} iteration {n}'"
+      preserve_evidence: true
+      notification: |
+        Ralph Loop aborted at iteration {n}.
+        Partial changes stashed: {stash_ref}
+        Evidence preserved at: {evidence_path}
+        Human action required: Review and decide next steps.

@@ -1,8 +1,25 @@
-# TAD Configuration v1.8 - Socratic-Driven Development
+# TAD Configuration v2.0 - Ralph Loop Autonomous Quality
 method: TAD
-version: 1.8.0
-description: Triangle Agent Development - 苏格拉底式提问 + 知识驱动开发 + Handoff专家审查
-last_updated: 2026-01-23
+version: 2.0.0
+description: Triangle Agent Development - Ralph Loop 自动化质量循环 + 苏格拉底式提问 + 知识驱动开发
+last_updated: 2026-01-26
+
+# ==================== Ralph Loop Configuration Reference ====================
+# TAD v2.0 introduces Ralph Loop for Blake's execution phase
+ralph_loop:
+  enabled: true
+  config_file: ".tad/ralph-config/loop-config.yaml"
+  criteria_file: ".tad/ralph-config/expert-criteria.yaml"
+  schemas:
+    loop_config: ".tad/schemas/loop-config.schema.json"
+    expert_criteria: ".tad/schemas/expert-criteria.schema.json"
+  description: |
+    Ralph Loop automates quality checks during Blake's execution:
+    - Layer 1: Self-Check (build, test, lint, tsc)
+    - Layer 2: Expert Review (code-reviewer, test-runner, security-auditor, performance-optimizer)
+    - Circuit Breaker: Prevents infinite loops on same error
+    - State Persistence: Supports crash recovery
+    - Priority Groups: code-reviewer first, then others in parallel
 
 # ==================== 文档管理系统 ====================
 document_management:
@@ -694,6 +711,169 @@ quality_gates:
         - "覆盖率达标"
         - "性能符合要求"
       violation_action: "禁止交付"
+
+  # ==================== TAD v2.0 Gate Redefinition ====================
+  # Gate 3 and Gate 4 are redefined with Ralph Loop integration
+  # Gate 3: Expanded to include all technical quality checks
+  # Gate 4: Simplified to pure business acceptance
+
+  gate3_v2_implementation_integration:
+    name: "Implementation & Integration Quality"
+    version: "2.0"
+    owner: "Blake"
+    description: "All technical quality checks - Ralph Loop + original Gate 3 + Gate 4 Part A"
+
+    # Ralph Loop Evidence (Required)
+    ralph_loop_evidence:
+      required: true
+      config_file: ".tad/ralph-config/loop-config.yaml"
+      checks:
+        - "Ralph Loop completed successfully (no abort/escalation)"
+        - "State file shows clean completion"
+        - "Summary file generated"
+      evidence_required:
+        - ".tad/evidence/ralph-loops/{task_id}_state.yaml"
+        - ".tad/evidence/ralph-loops/{task_id}_summary.md"
+
+    # Expert Evidence (Required)
+    expert_evidence:
+      required: true
+      files:
+        - type: "code-review"
+          pattern: ".tad/evidence/reviews/{date}-code-review-{task}-final.md"
+          required: true
+        - type: "testing-review"
+          pattern: ".tad/evidence/reviews/{date}-testing-review-{task}-final.md"
+          required: true
+        - type: "security-review"
+          pattern: ".tad/evidence/reviews/{date}-security-review-{task}-*.md"
+          required: false  # Only if triggered
+        - type: "performance-review"
+          pattern: ".tad/evidence/reviews/{date}-performance-review-{task}-*.md"
+          required: false  # Only if triggered
+
+    # Original Gate 3 Checks
+    implementation_quality:
+      checks:
+        - "Code compiles without errors"
+        - "All functions referenced in handoff exist"
+        - "Type checking passes"
+        - "No linting errors"
+
+    # Moved from Gate 4 Part A
+    integration_verification:
+      checks:
+        - "All tests pass (unit + integration)"
+        - "Coverage meets threshold"
+        - "No regression in existing functionality"
+
+    # Knowledge Assessment (MANDATORY)
+    knowledge_assessment:
+      required: true
+      blocking: true
+      questions:
+        - "New discoveries during implementation? (Yes/No)"
+        - "Category (if yes)"
+        - "Brief summary"
+      output_location: ".tad/project-knowledge/{category}.md"
+
+    human_trigger:
+      command: "/gate 3"
+      description: "Blake completes Ralph Loop, Human triggers Gate 3 to confirm"
+
+  gate4_v2_acceptance_archive:
+    name: "Acceptance & Archive"
+    version: "2.0"
+    owner: "Alex"
+    description: "Pure business validation - technical quality already verified by Gate 3"
+
+    # Pre-condition
+    prerequisite:
+      - "Gate 3 v2 passed"
+      - "Blake's completion report received"
+
+    # Business Acceptance (Focus)
+    acceptance:
+      checks:
+        - "Business value delivered matches handoff intent"
+        - "User requirements satisfied"
+        - "No unexpected side effects on user experience"
+
+      # Review evidence only - no re-run needed
+      evidence_review:
+        description: "Review Blake's Gate 3 evidence (not re-execute)"
+        files:
+          - "{task_id}_summary.md"
+          - "Final code-review report"
+          - "Final testing-review report"
+
+      # Optional subagent calls (business focus)
+      optional_experts:
+        - name: "ux-expert-reviewer"
+          when: "UI/UX changes involved"
+        - name: "product-expert"
+          when: "Complex business logic"
+
+    # Archive
+    archive:
+      actions:
+        - "Move handoff to .tad/archive/by_task/"
+        - "Move evidence to .tad/archive/evidence/"
+        - "Update NEXT.md with completion status"
+
+    # Knowledge Assessment (MANDATORY)
+    knowledge_assessment:
+      required: true
+      blocking: true
+      questions:
+        - "New discoveries during acceptance? (Yes/No)"
+        - "Category (if yes)"
+        - "Brief summary"
+      output_location: ".tad/project-knowledge/{category}.md"
+
+    human_trigger:
+      command: "/gate 4"
+      description: "Alex reviews completion report and triggers Gate 4"
+
+  # Gate Responsibility Matrix (TAD v2.0)
+  gate_responsibility_matrix:
+    description: "Clear separation of Gate 3 and Gate 4 responsibilities"
+    version: "2.0"
+
+    matrix:
+      test-runner:
+        gate3: "Required (Layer 2)"
+        gate4: "N/A"
+        notes: "Already verified by Blake"
+
+      code-reviewer:
+        gate3: "Required (Layer 2)"
+        gate4: "Optional (second opinion)"
+        notes: "Alex can re-run if concerned"
+
+      security-auditor:
+        gate3: "Conditional (Layer 2)"
+        gate4: "Optional (verification)"
+        notes: "Alex reviews evidence only"
+
+      performance-optimizer:
+        gate3: "Conditional (Layer 2)"
+        gate4: "Optional (verification)"
+        notes: "Alex reviews evidence only"
+
+      ux-expert-reviewer:
+        gate3: "N/A"
+        gate4: "Optional (if UI involved)"
+        notes: "Business/UX focus"
+
+      product-expert:
+        gate3: "N/A"
+        gate4: "Optional (business logic)"
+        notes: "Business focus"
+
+    principles:
+      - "Gate 3 (Blake): Technical quality verification - MANDATORY technical experts"
+      - "Gate 4 (Alex): Business value acceptance - OPTIONAL business experts, technical experts only review evidence"
 
 # ==================== 交互协议 ====================
 interaction_protocol:
@@ -1962,6 +2142,24 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.0.0:
+    date: "2026-01-26"
+    changes:
+      - "新增 Ralph Loop 自动化质量循环（Blake 执行阶段）"
+      - "新增 Layer 1 自检（build/test/lint/tsc）"
+      - "新增 Layer 2 专家审核（code-reviewer, test-runner, security-auditor, performance-optimizer）"
+      - "新增断路器机制（连续相同错误触发人工介入）"
+      - "新增状态持久化（支持崩溃恢复）"
+      - "新增优先级组执行（code-reviewer 先行，其他并行）"
+      - "Gate 3 扩展为包含所有技术质量检查"
+      - "Gate 4 简化为纯业务验收 + 归档"
+      - "新增 Gate 职责矩阵（清晰划分技术/业务检查）"
+      - "新增 .tad/ralph-config/ 配置目录"
+      - "新增 .tad/schemas/ JSON Schema 验证"
+    based_on: "Ralph Wiggum 循环技术 + 专家审查反馈整合"
+    compatibility: "100%向后兼容v1.8，可选择性启用Ralph Loop"
+    breaking_changes: "无"
+
   v1.8.0:
     date: "2026-01-23"
     changes:
