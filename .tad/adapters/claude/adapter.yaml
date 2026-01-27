@@ -1,0 +1,162 @@
+# Claude Code Adapter Configuration
+# TAD v2.1 - Primary Platform
+
+adapter:
+  platform: "claude-code"
+  version: "1.0"
+  status: "primary"
+
+# ============================================
+# Platform Identification
+# ============================================
+identification:
+  name: "Claude Code"
+  id: "claude"
+  vendor: "Anthropic"
+  documentation: "https://docs.anthropic.com/claude-code"
+
+# ============================================
+# Detection Strategy
+# ============================================
+detection:
+  # Check if claude command exists
+  command_check:
+    command: "claude --version"
+    success_pattern: "claude-code"
+
+  # Check if config directory exists
+  directory_check:
+    path: "$HOME/.claude"
+    required_files: []
+
+  # Any method succeeding is sufficient
+  match_strategy: "any"
+
+# ============================================
+# Configuration Paths
+# ============================================
+paths:
+  user_config: "$HOME/.claude/settings.json"
+  project_config: ".claude/settings.json"
+  commands_dir: ".claude/commands"
+  skills_dir: ".claude/skills"
+  project_instructions: "CLAUDE.md"
+
+# ============================================
+# Skill Execution
+# ============================================
+skill_execution:
+  mode: "subagent"
+  description: "Use Claude Code's native subagent system via Task tool"
+
+  mapping:
+    testing:
+      subagent_type: "test-runner"
+      timeout: 300000
+      required: true
+
+    code-review:
+      subagent_type: "code-reviewer"
+      timeout: 180000
+      required: true
+
+    security-audit:
+      subagent_type: "security-auditor"
+      timeout: 240000
+      conditional: true
+      trigger_pattern: "auth|token|password|credential|api.*key|encrypt|decrypt|session|cookie|sql|query|upload|file|exec|eval"
+
+    performance:
+      subagent_type: "performance-optimizer"
+      timeout: 180000
+      conditional: true
+      trigger_pattern: "database|query|cache|batch|loop|sort|search|O\\(n"
+
+    ux-review:
+      subagent_type: "ux-expert-reviewer"
+      timeout: 180000
+      required: false
+
+    architecture:
+      subagent_type: "backend-architect"
+      timeout: 240000
+      required: false
+
+    api-design:
+      subagent_type: "api-designer"
+      timeout: 180000
+      required: false
+
+    debugging:
+      subagent_type: "debugging-assistant"
+      timeout: 300000
+      required: false
+
+  execution_template: |
+    Use Task tool with:
+    - subagent_type: "{subagent_type}"
+    - description: "Execute {skill_name} skill check"
+    - prompt: |
+        Execute the {skill_name} skill for the following files:
+        {file_list}
+
+        Context: {context}
+
+        Generate evidence file at: .tad/evidence/reviews/{date}-{skill_id}-{task}.md
+
+        Return structured results with:
+        - passed: boolean
+        - issues: array of {severity, file, line, description}
+        - evidence_path: string
+
+# ============================================
+# Command Format
+# ============================================
+commands:
+  format: "markdown"
+  extension: ".md"
+  location: "project"  # .claude/commands/ in project
+
+  # No conversion needed - Claude is the source format
+  conversion: null
+
+# ============================================
+# Evidence Collection
+# ============================================
+evidence:
+  directory: ".tad/evidence/reviews"
+  naming: "{date}-{skill_id}-{task}.md"
+  retention_days: 30
+
+# ============================================
+# Features
+# ============================================
+features:
+  native_subagents: true
+  task_tool: true
+  skill_system: true
+  mcp_servers: true
+  background_tasks: true
+  plan_mode: true
+
+# ============================================
+# TAD Integration
+# ============================================
+tad_integration:
+  # Claude is the primary platform - full integration
+  full_support: true
+
+  # All TAD commands available
+  commands:
+    - "/alex"
+    - "/blake"
+    - "/gate"
+    - "/tad-init"
+    - "/tad-status"
+    - "/tad-learn"
+
+  # Ralph Loop fully supported
+  ralph_loop:
+    supported: true
+    layer1_execution: "native"
+    layer2_execution: "subagent"

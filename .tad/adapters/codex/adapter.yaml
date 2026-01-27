@@ -1,0 +1,184 @@
+# Codex CLI Adapter Configuration
+# TAD v2.1 - Secondary Platform (OpenAI)
+
+adapter:
+  platform: "codex-cli"
+  version: "1.0"
+  status: "secondary"
+
+# ============================================
+# Platform Identification
+# ============================================
+identification:
+  name: "Codex CLI"
+  id: "codex"
+  vendor: "OpenAI"
+  documentation: "https://developers.openai.com/codex/cli/"
+
+# ============================================
+# Detection Strategy
+# ============================================
+detection:
+  command_check:
+    command: "codex --version"
+    success_pattern: "codex"
+
+  directory_check:
+    path: "$HOME/.codex"
+    required_files: []
+
+  match_strategy: "any"
+
+# ============================================
+# Configuration Paths
+# ============================================
+paths:
+  user_config: "$HOME/.codex/config.toml"
+  project_config: ".codex/config.toml"
+  commands_dir: "$HOME/.codex/prompts"  # User-level, not project
+  skills_dir: "$HOME/.codex/skills"     # Native Codex skills
+  project_instructions: "AGENTS.md"
+
+# ============================================
+# Skill Execution
+# ============================================
+skill_execution:
+  mode: "self-check"
+  description: "Read SKILL.md and execute checklist manually"
+
+  # Codex has native SKILL.md support - leverage it!
+  native_skills:
+    enabled: true
+    directory: "$HOME/.codex/skills"
+    format: "SKILL.md"
+    auto_discovery: true
+
+  # For TAD skills, copy to Codex skills directory
+  tad_skill_integration:
+    source: ".tad/skills"
+    target: "$HOME/.codex/skills/tad"
+    method: "symlink_or_copy"
+
+  execution_template: |
+    1. Read skill definition: .tad/skills/{skill_id}/SKILL.md
+    2. Parse checklist sections by priority (P0, P1, P2, P3)
+    3. For each checklist item:
+       a. Evaluate against target files
+       b. Record pass/fail
+       c. Note any issues found
+    4. Apply pass criteria:
+       - P0: All must pass
+       - P1: Based on skill's max_failures
+       - P2/P3: Informational
+    5. Generate evidence file: .tad/evidence/reviews/{date}-{skill_id}-{task}.md
+    6. Return: {passed, issues[], evidence_path}
+
+# ============================================
+# Command Format
+# ============================================
+commands:
+  format: "markdown"
+  extension: ".md"
+  location: "user"  # ~/.codex/prompts/ (user-level)
+  prefix: "tad_"    # tad_alex.md, tad_blake.md, etc.
+
+  conversion:
+    from: "claude"
+    transformations:
+      - action: "add_prefix"
+        prefix: "tad_"
+      - action: "adapt_placeholders"
+        mapping:
+          "$args": "$ARGUMENTS"
+          "$1": "$1"
+      - action: "preserve_markdown"
+      - action: "add_codex_header"
+        template: |
+          # TAD {command_name} Command
+
+          {original_content}
+
+          ## Execution
+          Follow the instructions above to complete the task.
+          Generate evidence files as specified.
+
+# ============================================
+# Project Instructions
+# ============================================
+project_instructions:
+  filename: "AGENTS.md"
+
+  generation:
+    source: "CLAUDE.md"
+    method: "convert"
+    transformations:
+      - "Remove Claude-specific references"
+      - "Adapt skill execution instructions"
+      - "Update command references (/ -> /prompts:tad_)"
+      - "Keep core TAD rules intact"
+
+# ============================================
+# Evidence Collection
+# ============================================
+evidence:
+  directory: ".tad/evidence/reviews"
+  naming: "{date}-{skill_id}-{task}.md"
+  retention_days: 30
+
+# ============================================
+# Features
+# ============================================
+features:
+  native_subagents: false
+  native_skills: true       # Codex has SKILL.md support!
+  agents_md: true
+  mcp_servers: true
+  full_auto_mode: true
+  review_command: true
+
+# ============================================
+# TAD Integration
+# ============================================
+tad_integration:
+  full_support: false
+  degraded_mode: true
+
+  # Available commands (via /prompts:tad_*)
+  commands:
+    - "/prompts:tad_alex"
+    - "/prompts:tad_blake"
+    - "/prompts:tad_gate"
+    - "/prompts:tad_init"
+
+  # Ralph Loop - self-check mode
+  ralph_loop:
+    supported: true
+    layer1_execution: "native"  # Build, test, lint
+    layer2_execution: "self-check"  # Read SKILL.md
+
+  # Limitations
+  limitations:
+    - "No native subagents - uses self-check"
+    - "Commands are user-level (not project-level)"
+    - "Some advanced TAD features may not work"
+
+# ============================================
+# Codex-Specific Settings
+# ============================================
+codex_specific:
+  placeholder_syntax:
+    positional: "$1, $2, ..., $9"
+    all_args: "$ARGUMENTS"
+    named: "$NAME"
+    named_usage: "NAME=value"
+
+  slash_commands:
+    init: "/init"
+    review: "/review"
+    diff: "/diff"
+    model: "/model"
+
+  skill_invocation: |
+    Codex automatically discovers skills in ~/.codex/skills/
+    TAD skills installed at: ~/.codex/skills/tad/{skill-id}/SKILL.md
+    Invoke via: Read and follow the skill checklist

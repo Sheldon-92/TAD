@@ -1,0 +1,166 @@
+# TAD Platform Codes v1.0
+# Defines supported AI coding platforms for TAD v2.1
+
+$schema: "../schemas/adapter-schema.yaml"
+
+platforms:
+  # ============================================
+  # Claude Code (Primary Platform)
+  # ============================================
+  claude-code:
+    name: "Claude Code"
+    id: "claude"
+    skill_execution: "subagent"
+    config_dir: ".claude"
+    config_format: "json"
+    command_format: "markdown"
+    command_dir: "commands"
+    project_instructions: "CLAUDE.md"
+
+    detection:
+      methods:
+        - command: "claude --version"
+        - directory: "$HOME/.claude"
+      any_match: true
+
+    skill_mapping:
+      testing: "test-runner"
+      code-review: "code-reviewer"
+      security-audit: "security-auditor"
+      performance: "performance-optimizer"
+      ux-review: "ux-expert-reviewer"
+      architecture: "backend-architect"
+      api-design: "api-designer"
+      debugging: "debugging-assistant"
+
+    features:
+      native_subagents: true
+      task_tool: true
+      skill_system: true
+      mcp_servers: true
+
+  # ============================================
+  # Codex CLI (OpenAI)
+  # ============================================
+  codex-cli:
+    name: "Codex CLI"
+    id: "codex"
+    skill_execution: "self-check"
+    config_dir: ".codex"
+    config_format: "toml"
+    command_format: "markdown"
+    command_dir: "prompts"
+    command_prefix: "tad_"
+    project_instructions: "AGENTS.md"
+
+    detection:
+      methods:
+        - command: "codex --version"
+        - directory: "$HOME/.codex"
+      any_match: true
+
+    # Codex has native SKILL.md support - leverage it
+    skill_integration:
+      native_skills: true
+      skill_dir: "$HOME/.codex/skills"
+      skill_format: "SKILL.md"
+      auto_discovery: true
+
+    placeholder_syntax:
+      positional: "$1, $2, ... $9, $ARGUMENTS"
+      named: "$NAME=value"
+
+    features:
+      native_subagents: false
+      native_skills: true  # Important: Codex has SKILL.md support!
+      agents_md: true
+      mcp_servers: true
+
+  # ============================================
+  # Gemini CLI (Google)
+  # ============================================
+  gemini-cli:
+    name: "Gemini CLI"
+    id: "gemini"
+    skill_execution: "self-check"
+    config_dir: ".gemini"
+    config_format: "json"
+    command_format: "toml"
+    command_dir: "commands"
+    project_instructions: "GEMINI.md"
+
+    detection:
+      methods:
+        - command: "gemini --version"
+        - directory: "$HOME/.gemini"
+      any_match: true
+
+    toml_syntax:
+      required_fields: ["prompt"]
+      optional_fields: ["description"]
+      placeholders:
+        arguments: "{{args}}"
+        file_content: "@{path/to/file}"
+        shell_output: "!{command}"
+      namespacing: "directory-based"  # commands/git/commit.toml -> /git:commit
+
+    features:
+      native_subagents: false
+      custom_commands: true
+      memory_commands: true
+      gemini_md: true
+
+# ============================================
+# Execution Strategy
+# ============================================
+skill_execution_rules:
+  subagent:
+    description: "Use platform's native subagent system"
+    applicable_to: ["claude"]
+    flow:
+      - "Call Task tool with subagent_type from skill_mapping"
+      - "Subagent executes with full capabilities"
+      - "Results returned with evidence file"
+
+  self-check:
+    description: "Read SKILL.md and execute checklist manually"
+    applicable_to: ["codex", "gemini"]
+    flow:
+      - "Read .tad/skills/{skill-id}/SKILL.md"
+      - "Parse checklist by severity (P0, P1, P2, P3)"
+      - "Execute each check item"
+      - "Generate evidence file at .tad/evidence/reviews/"
+      - "Return pass/fail based on pass criteria"
+
+# ============================================
+# Command Conversion Rules
+# ============================================
+command_conversion:
+  claude_to_codex:
+    format: "markdown"
+    prefix: "tad_"
+    location: "user_level"  # ~/.codex/prompts/
+    transformations:
+      - "Add TAD command prefix"
+      - "Preserve markdown structure"
+      - "Add Codex placeholder syntax"
+
+  claude_to_gemini:
+    format: "toml"
+    location: "project_level"  # .gemini/commands/
+    transformations:
+      - "Convert to TOML structure"
+      - "Extract description from first paragraph"
+      - "Convert instructions to prompt field"
+      - "Handle file references with @{} syntax"
+
+# ============================================
+# Installation Priority
+# ============================================
+installation:
+  default_platform: "claude"
+  detection_order:
+    - "claude"
+    - "codex"
+    - "gemini"
+  fallback: "claude"  # If no platform detected, assume Claude

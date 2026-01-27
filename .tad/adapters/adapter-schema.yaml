@@ -1,0 +1,127 @@
+# TAD Adapter Interface Schema v1.0
+# Defines the contract for platform adapters
+
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://tad-framework.dev/schemas/adapter-schema.yaml"
+title: "TAD Platform Adapter Schema"
+description: "Contract for platform-specific adapters in TAD v2.1"
+
+adapter_interface:
+  version: "1.0"
+
+  required_properties:
+    - name              # Platform display name
+    - id                # Unique identifier (e.g., "claude", "codex", "gemini")
+    - skill_execution   # Execution strategy: "subagent" | "self-check"
+    - config_dir        # Platform config directory (e.g., ".claude")
+    - command_format    # Command file format: "markdown" | "toml"
+    - project_instructions  # Project instruction filename (e.g., "CLAUDE.md")
+
+  optional_properties:
+    - command_prefix    # Prefix for commands (e.g., "tad_")
+    - skill_dir         # Custom skills directory
+    - detection         # How to detect if platform is installed
+    - features          # Platform-specific features
+
+  required_methods:
+    detect_installation:
+      description: "Detect if platform CLI is installed"
+      input: null
+      output:
+        type: boolean
+        description: "True if platform is available"
+      implementation: "Shell command or file existence check"
+
+    generate_config:
+      description: "Generate platform-specific configuration files"
+      input:
+        source_dir:
+          type: string
+          description: "Source TAD directory"
+      output:
+        files:
+          type: array
+          items: string
+          description: "List of generated file paths"
+
+    convert_command:
+      description: "Convert Claude command to platform format"
+      input:
+        source_file:
+          type: string
+          description: "Source .md command file"
+        target_format:
+          type: string
+          enum: ["markdown", "toml"]
+      output:
+        content:
+          type: string
+          description: "Converted command content"
+
+    execute_skill:
+      description: "Execute a TAD skill check"
+      input:
+        skill_id:
+          type: string
+          description: "Skill identifier (e.g., 'code-review')"
+        context:
+          type: object
+          properties:
+            file_paths:
+              type: array
+              items: string
+            changed_lines:
+              type: array
+            additional_context:
+              type: object
+      output:
+        passed:
+          type: boolean
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              severity: string
+              file: string
+              line: number
+              description: string
+        evidence_path:
+          type: string
+
+  skill_execution_modes:
+    subagent:
+      description: "Use platform's native subagent/task system"
+      platforms: ["claude"]
+      flow: |
+        1. Call Task tool with appropriate subagent_type
+        2. Subagent executes with full capabilities
+        3. Return structured results
+      advantages:
+        - Deep analysis capability
+        - Access to platform tools
+        - Specialized expertise
+
+    self-check:
+      description: "Read SKILL.md and execute checklist manually"
+      platforms: ["codex", "gemini"]
+      flow: |
+        1. Read .tad/skills/{skill-id}/SKILL.md
+        2. Parse checklist items
+        3. Execute each check in sequence
+        4. Generate evidence file
+        5. Return pass/fail with details
+      advantages:
+        - Platform agnostic
+        - Predictable behavior
+        - Lower resource usage
+
+  evidence_contract:
+    directory: ".tad/evidence/reviews/"
+    naming: "{date}-{skill-id}-{task}.md"
+    required_sections:
+      - summary
+      - checklist_results
+      - issues_found
+      - pass_status
+    retention_days: 30

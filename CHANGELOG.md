@@ -5,6 +5,68 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-01-26
+
+### Added
+
+- **Agent-Agnostic Architecture**: Multi-platform support for AI coding assistants
+  - Claude Code (primary): Full subagent support
+  - Codex CLI (secondary): Self-check mode with native SKILL.md support
+  - Gemini CLI (secondary): Self-check mode with TOML commands
+
+- **Platform-Agnostic Skills System** (`.tad/skills/`)
+  - 8 P0 skills: testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
+  - YAML frontmatter with platform compatibility info
+  - Checklist format executable by any AI assistant
+  - Pass criteria with severity levels (P0-P3)
+
+- **Platform Adapter System** (`.tad/adapters/`)
+  - `adapter-schema.yaml` - Adapter interface contract
+  - `platform-codes.yaml` - Platform definitions and detection
+  - Platform-specific adapters for Claude, Codex, and Gemini
+
+- **Multi-Platform Installation Script** (`tad.sh` v2.1)
+  - Auto-detection of installed AI CLI tools
+  - Automatic generation of platform-specific configs
+  - `AGENTS.md` generation for Codex CLI
+  - `GEMINI.md` generation for Gemini CLI
+  - TOML command conversion for Gemini
+  - Automatic rollback on failure
+
+- **Command Conversion Templates**
+  - `.tad/templates/command-converters/to-codex.template`
+  - `.tad/templates/command-converters/to-gemini.template`
+
+- **New Configuration**
+  - `multi_platform` section in `.tad/config.yaml`
+  - Platform-specific skill execution modes
+
+### Changed
+
+- Installation script now detects and configures multiple platforms
+- Skills now have YAML frontmatter for platform compatibility
+- Evidence directory structure supports multi-platform reviews
+
+### Research Findings
+
+- Codex CLI has native SKILL.md support (similar to TAD skills design)
+- Codex CLI uses TOML for config (not JSON as initially assumed)
+- Gemini CLI uses JSON settings + TOML commands
+- Both support hierarchical instruction loading
+
+### Backward Compatibility
+
+- Existing Claude Code users: No changes required
+- All `.claude/` configurations preserved
+- subagent calls unchanged for Claude Code
+
+### Documentation
+
+- Platform research evidence: `.tad/evidence/reviews/20260126-phase0-research-validation.md`
+- Skills README: `.tad/skills/README.md`
+
+---
+
 ## [2.0.0] - 2026-01-26
 
 ### Added

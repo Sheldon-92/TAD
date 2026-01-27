@@ -1,8 +1,57 @@
-# TAD Configuration v2.0 - Ralph Loop Autonomous Quality
+# TAD Configuration v2.1 - Agent-Agnostic Architecture
 method: TAD
-version: 2.0.0
-description: Triangle Agent Development - Ralph Loop 自动化质量循环 + 苏格拉底式提问 + 知识驱动开发
+version: 2.1.0
+description: Triangle Agent Development - Multi-Platform Support + Ralph Loop + 苏格拉底式提问 + 知识驱动开发
 last_updated: 2026-01-26
+
+# ==================== Multi-Platform Configuration (NEW in v2.1) ====================
+multi_platform:
+  enabled: true
+  version: "1.0"
+  description: |
+    TAD v2.1 supports multiple AI coding assistants:
+    - Claude Code (primary): Full subagent support
+    - Codex CLI (secondary): Self-check mode with native skills
+    - Gemini CLI (secondary): Self-check mode with TOML commands
+
+  platforms:
+    claude:
+      enabled: true
+      skill_execution: "subagent"
+      config_dir: ".claude"
+      project_instructions: "CLAUDE.md"
+
+    codex:
+      enabled: true
+      skill_execution: "self-check"
+      config_dir: ".codex"
+      project_instructions: "AGENTS.md"
+      notes: "Has native SKILL.md support"
+
+    gemini:
+      enabled: true
+      skill_execution: "self-check"
+      config_dir: ".gemini"
+      project_instructions: "GEMINI.md"
+      notes: "Uses TOML for custom commands"
+
+  skills:
+    directory: ".tad/skills"
+    count: 8
+    list:
+      - testing
+      - code-review
+      - security-audit
+      - performance
+      - ux-review
+      - architecture
+      - api-design
+      - debugging
+
+  adapters:
+    directory: ".tad/adapters"
+    schema: ".tad/adapters/adapter-schema.yaml"
+    platforms_config: ".tad/adapters/platform-codes.yaml"
 
 # ==================== Ralph Loop Configuration Reference ====================
 # TAD v2.0 introduces Ralph Loop for Blake's execution phase

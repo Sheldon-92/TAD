@@ -1,0 +1,100 @@
+# Gemini CLI Command Conversion Template
+# TAD v2.1 - Convert Claude Code commands to Gemini CLI TOML format
+
+## Source Format
+- Location: `.claude/commands/{command-name}.md`
+- Format: Markdown
+
+## Target Format
+- Location: `.gemini/commands/{command-name}.toml`
+- Format: TOML
+
+## Conversion Rules
+
+### 1. File Naming
+- Source: `tad-alex.md`
+- Target: `tad-alex.toml` (keep hyphen, change extension)
+
+### 2. TOML Structure
+```toml
+description = "{one-line description from first heading}"
+
+prompt = """
+{full markdown content}
+
+## Context
+@{GEMINI.md}
+@{.tad/skills/README.md}
+
+## User Arguments
+{{args}}
+
+## Evidence Output
+Generate evidence at: .tad/evidence/reviews/
+"""
+```
+
+### 3. Placeholder Conversion
+| Claude | Gemini |
+|--------|--------|
+| `$ARGUMENTS` | `{{args}}` |
+| `{args}` | `{{args}}` |
+| File reference | `@{path/to/file}` |
+| Shell command | `!{command}` |
+
+### 4. Skill References
+- Change: "call subagent `code-reviewer`"
+- To: "read skill from `.tad/skills/code-review/SKILL.md`"
+
+### 5. Context Injection
+Always add these context references:
+```toml
+@{GEMINI.md}
+@{.tad/skills/README.md}
+```
+
+## Example Conversion
+
+### Source (`.claude/commands/tad-gate.md`)
+```markdown
+# TAD Gate Command
+
+Execute quality gate verification.
+
+## Gates
+- Gate 1: Requirements
+- Gate 2: Design
+...
+```
+
+### Target (`.gemini/commands/tad-gate.toml`)
+```toml
+description = "TAD: TAD Gate Command"
+
+prompt = """
+# TAD Gate Command
+
+Execute quality gate verification.
+
+## Gates
+- Gate 1: Requirements
+- Gate 2: Design
+...
+
+## Context
+@{GEMINI.md}
+@{.tad/skills/README.md}
+
+## User Arguments
+{{args}}
+
+## Evidence Output
+Generate evidence at: .tad/evidence/reviews/
+"""
+```
+
+## Namespacing (Optional)
+
+For namespaced commands, use directory structure:
+- `.gemini/commands/tad/alex.toml` → `/tad:alex`
+- `.gemini/commands/tad/blake.toml` → `/tad:blake`
