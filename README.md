@@ -1,35 +1,35 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.0.0 - Ralph Loop Fusion**
+**Version 2.1.0 - Agent-Agnostic Architecture**
 
-> 🚀 **TAD v2.0** introduces **Ralph Loop** - autonomous quality-driven development with expert review cycles.
+> 🚀 **TAD v2.1** introduces **Multi-Platform Support** - use TAD with Claude Code, Codex CLI, or Gemini CLI.
 >
-> 📚 **[Documentation Portal](docs/README.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
+> 📚 **[Documentation Portal](docs/README.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
-## 🎯 What's New in v2.0
+## 🎯 What's New in v2.1
 
-### Ralph Loop Integration (NEW)
-- **Autonomous Quality Cycles**: Blake automatically iterates until experts approve
-- **Two-Layer Architecture**:
-  - **Layer 1 (Self-Check)**: Fast local checks (build/test/lint/tsc)
-  - **Layer 2 (Expert Review)**: Deep subagent verification
-- **Circuit Breaker**: 3 consecutive same errors → escalate to human
-- **State Persistence**: Checkpoint/resume for crash recovery
-- **Priority Groups**: code-reviewer first, then others in parallel
+### Agent-Agnostic Architecture (NEW)
+- **Multi-Platform Support**: TAD now works with multiple AI coding assistants
+  - **Claude Code**: Full subagent support (primary)
+  - **Codex CLI**: Self-check mode with native SKILL.md support
+  - **Gemini CLI**: Self-check mode with TOML commands
+- **8 Platform-Agnostic Skills**: testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
+- **Automatic Platform Detection**: Installation script detects and configures all installed tools
+- **100% Backward Compatible**: Existing Claude Code users need no changes
 
-### Restructured Gates (BREAKING CHANGE)
-- **Gate 3 v2 (Expanded)**: Technical Quality (Layer 1 + Layer 2 + old Gate 4 Part A)
+### Platform Adapter System (NEW)
+- `.tad/skills/` - Platform-agnostic skill definitions (YAML frontmatter + checklist)
+- `.tad/adapters/` - Platform-specific configurations
+- Automatic `AGENTS.md` generation for Codex CLI
+- Automatic `GEMINI.md` generation for Gemini CLI
+- TOML command conversion for Gemini
+
+### From v2.0 (Retained)
+- **Ralph Loop**: Autonomous quality cycles with expert review
+- **Gate 3 v2 (Expanded)**: Technical Quality (Layer 1 + Layer 2)
 - **Gate 4 v2 (Simplified)**: Pure Alex Acceptance + Archive
-- **Clear Ownership**: Blake owns ALL technical quality, Alex owns business acceptance
-
-### Tiered Expert Timeout (Enhanced)
-- **code-reviewer**: 3min (small) / 10min (standard) / 15min (large)
-- **test-runner**: 3min (unit) / 10min (integration) / 20min (E2E)
-- **Auto-detection**: Timeout selected based on change size
-
-### From v1.8 (Retained)
 - Socratic Inquiry Protocol
 - Terminal Isolation (Alex=T1, Blake=T2)
 - Knowledge Assessment (mandatory for gates)
@@ -45,40 +45,47 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
 This smart script automatically:
-- **Fresh install**: Creates complete TAD structure (`.tad/`, `.claude/`, `CLAUDE.md`)
+- **Detects platforms**: Claude Code, Codex CLI, Gemini CLI
+- **Fresh install**: Creates complete TAD structure for all detected platforms
 - **Upgrade**: Detects current version and upgrades in place
 - **Preserves data**: Your handoffs, learnings, and evidence are never overwritten
+- **Rollback on failure**: Automatic backup and restore if anything goes wrong
 
 ### What Gets Installed
 
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.0 configuration
-│   ├── ralph-config/            # Ralph Loop configuration (NEW)
-│   │   ├── loop-config.yaml     # Layer 1/2 settings
-│   │   └── expert-criteria.yaml # Expert pass conditions
-│   ├── schemas/                 # JSON Schema validation (NEW)
-│   │   ├── loop-config.schema.json
-│   │   └── expert-criteria.schema.json
+│   ├── config.yaml              # v2.1 configuration
+│   ├── skills/                  # Platform-agnostic skills (NEW in v2.1)
+│   │   ├── testing/SKILL.md
+│   │   ├── code-review/SKILL.md
+│   │   ├── security-audit/SKILL.md
+│   │   ├── performance/SKILL.md
+│   │   ├── ux-review/SKILL.md
+│   │   ├── architecture/SKILL.md
+│   │   ├── api-design/SKILL.md
+│   │   └── debugging/SKILL.md
+│   ├── adapters/                # Platform adapters (NEW in v2.1)
+│   │   ├── platform-codes.yaml
+│   │   ├── claude/adapter.yaml
+│   │   ├── codex/adapter.yaml
+│   │   └── gemini/adapter.yaml
+│   ├── ralph-config/            # Ralph Loop configuration
 │   ├── active/handoffs/         # Active handoff documents
 │   ├── archive/handoffs/        # Completed handoffs
 │   ├── project-knowledge/       # Project-specific learnings
-│   ├── evidence/
-│   │   ├── reviews/             # Gate evidence files
-│   │   └── ralph-loops/         # Ralph iteration evidence (NEW)
-│   └── templates/               # Document templates
-│       ├── output-formats/      # 12 standardized review formats
-│       └── knowledge-bootstrap.md
-├── .claude/
-│   ├── commands/                # Slash commands
-│   │   ├── tad-alex.md          # /alex - Solution Lead
-│   │   ├── tad-blake.md         # /blake - Execution Master (with Ralph Loop)
-│   │   ├── tad-gate.md          # /gate - Quality gates v2
-│   │   └── ...
-│   └── skills/                  # Agent skills
-│       └── code-review/         # Code review checklist
-└── CLAUDE.md                    # Project rules (mandatory reading)
+│   └── evidence/reviews/        # Gate evidence files
+├── .claude/                     # Claude Code configuration
+│   ├── commands/                # Slash commands (/alex, /blake, /gate)
+│   └── skills/                  # Claude-enhanced skills
+├── .codex/                      # Codex CLI configuration (if detected)
+│   └── prompts/                 # TAD commands for Codex
+├── .gemini/                     # Gemini CLI configuration (if detected)
+│   └── commands/                # TAD commands in TOML format
+├── CLAUDE.md                    # Project rules for Claude Code
+├── AGENTS.md                    # Project rules for Codex CLI (if detected)
+└── GEMINI.md                    # Project rules for Gemini CLI (if detected)
 ```
 
 ### Manual Installation
@@ -94,9 +101,17 @@ rm -rf .tad-temp
 ### Verify Installation
 
 ```bash
-# Check version in config
-grep "version:" .tad/config.yaml | head -1
-# Should show: version: "1.8.0"
+# Check version
+cat .tad/version.txt
+# Should show: 2.1
+
+# Check skills (v2.1)
+ls .tad/skills/
+# Should show: 8 skill directories
+
+# Check adapters (v2.1)
+ls .tad/adapters/
+# Should show: platform-codes.yaml, claude/, codex/, gemini/
 ```
 
 ---
@@ -274,7 +289,8 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v2.0** | **Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout** |
+| **v2.1** | **Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills** |
+| v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout |
 | v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
 | v1.6 | Evidence-Based Gates, Output Templates, Skills Architecture |
 | v1.5 | Project Knowledge System, *accept/*exit protocols |
@@ -352,12 +368,14 @@ Learnings are pushed to `.tad/learnings/pushed/` for framework updates.
 ## 📖 Further Reading
 
 - [Documentation Portal](docs/README.md)
+- [Multi-Platform Guide](docs/MULTI-PLATFORM.md)
+- [Ralph Loop Guide](docs/RALPH-LOOP.md)
 - [Agent Definitions](.claude/commands/)
 - [Configuration Guide](.tad/config.yaml)
-- [Output Templates](.tad/templates/output-formats/)
+- [Skills Reference](.tad/skills/README.md)
 
 ---
 
-**Welcome to TAD v2.0 - Autonomous Quality-Driven Development.**
+**Welcome to TAD v2.1 - Agent-Agnostic Quality-Driven Development.**
 
-*Ralph Loop: Let experts verify your work automatically, so you can focus on creating value.*
+*Use your favorite AI coding assistant. TAD adapts to your tools.*

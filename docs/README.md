@@ -1,6 +1,6 @@
 # TAD Documentation Portal
 
-> **Current Version: v1.4** | [Quick Start](../README.md#quick-installation) | [CLI](../README.md#cli-commands)
+> **Current Version: v2.1** | [Quick Start](../README.md#-installation--upgrade) | [Multi-Platform](MULTI-PLATFORM.md)
 
 ## Current Documentation
 
@@ -8,30 +8,53 @@
 |----------|-------------|
 | [README](../README.md) | Main entry, quick start, installation |
 | [Installation Guide](../INSTALLATION_GUIDE.md) | Detailed installation steps |
-| [Workflow Playbook](../WORKFLOW_PLAYBOOK.md) | Complete workflow guide |
-| [Upgrade Guide](../UPGRADE_GUIDE.md) | Version upgrade instructions |
-| [Claude Code Subagents](../CLAUDE_CODE_SUBAGENTS.md) | Sub-agent reference |
+| [Multi-Platform Guide](MULTI-PLATFORM.md) | Claude/Codex/Gemini support (v2.1) |
+| [Ralph Loop Guide](RALPH-LOOP.md) | Autonomous quality cycles (v2.0) |
+| [Migration Guide](MIGRATION-v2.md) | Upgrade from older versions |
 
 ## Version History
 
 | Version | Release | Key Features | Links |
 |---------|---------|--------------|-------|
-| **v1.4** | 2026-01 | MQ6 Technical Research, Research Phase, Skills System, Learn System | [Release Notes](releases/v1.4-release.md) |
-| v1.3 | 2025-11 | Evidence-Based Development, MQ1-5, Human Visual Empowerment | [Acceptance Report](legacy/TAD_V1.3_ACCEPTANCE_REPORT.md) |
-| v1.2 | 2025-09 | MCP Integration, Smart Project Detection, 16 Sub-agents | [Release Notes](legacy/RELEASE_v1.2.0.md) |
+| **v2.1** | 2026-01-26 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills | [Changelog](../CHANGELOG.md) |
+| v2.0 | 2026-01-26 | Ralph Loop Fusion, Gate 3/4 Restructure | [Ralph Loop](RALPH-LOOP.md) |
+| v1.8 | 2026-01-25 | Human-in-the-Loop, Terminal Isolation | - |
+| v1.6 | 2026-01-24 | Unified Install Script | [Release Notes](releases/v1.6-release.md) |
+| v1.4 | 2026-01-15 | Research Phase, Skills System | [Release Notes](releases/v1.4-release.md) |
 
 ## Upgrade Paths
 
 | From | To | Command |
 |------|----|---------|
-| Fresh | v1.4 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh \| bash` |
-| v1.3 | v1.4 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/upgrade-to-v1.4.sh \| bash` |
-| v1.2 | v1.4 | Upgrade to v1.3 first, then to v1.4 |
+| Fresh | v2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| v2.0 | v2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| v1.x | v2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+
+All upgrades preserve your data (handoffs, learnings, evidence).
+
+## Platform Support (v2.1)
+
+| Platform | Config | Commands | Skills |
+|----------|--------|----------|--------|
+| Claude Code | `.claude/` | `/alex`, `/blake` | subagent |
+| Codex CLI | `.codex/` | `/prompts:tad_alex` | self-check |
+| Gemini CLI | `.gemini/` | `/tad-alex` | self-check |
+
+See [Multi-Platform Guide](MULTI-PLATFORM.md) for details.
+
+## Internal Documentation
+
+| Document | Location | Description |
+|----------|----------|-------------|
+| TAD Config | `.tad/config.yaml` | Framework configuration |
+| Skills | `.tad/skills/` | Platform-agnostic skills (8) |
+| Adapters | `.tad/adapters/` | Platform configurations |
+| Commands | `.claude/commands/` | Slash commands |
+| Ralph Config | `.tad/ralph-config/` | Ralph Loop settings |
 
 ## Legacy Documents
 
 > These documents are preserved for historical reference.
-> They may contain outdated information not applicable to v1.4.
 
 See [Legacy Index](legacy/index.md) for the complete list.
 
@@ -41,16 +64,6 @@ See [Legacy Index](legacy/index.md) for the complete list.
 
 See [Archive Index](archive/index.md) for the complete list.
 
-## Internal Documentation
-
-| Document | Location | Description |
-|----------|----------|-------------|
-| TAD Config | `.tad/config.yaml` | Framework configuration |
-| Agent A | `.tad/agents/agent-a-architect.md` | Solution Lead definition |
-| Agent B | `.tad/agents/agent-b-executor.md` | Execution Master definition |
-| Skills | `.claude/skills/` | Knowledge base (42 skills) |
-| Commands | `.claude/commands/` | Slash commands |
-
 ---
 
-*Documentation Portal - Last updated: 2026-01-06*
+*Documentation Portal - Last updated: 2026-01-26*

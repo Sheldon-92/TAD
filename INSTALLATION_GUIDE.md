@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.0.0 - Ralph Loop Fusion**
+**Version 2.1.0 - Agent-Agnostic Architecture**
 
 ## 方式1：一键安装（推荐）
 
@@ -9,9 +9,12 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
 这个脚本会自动：
+- **检测平台**：自动检测 Claude Code、Codex CLI、Gemini CLI
 - **全新安装**：创建完整 TAD 结构（`.tad/`, `.claude/`, `CLAUDE.md`）
+- **多平台配置**：为检测到的每个平台生成配置文件
 - **升级**：检测当前版本并原地升级
 - **保留数据**：你的 handoffs、learnings、evidence 不会被覆盖
+- **失败回滚**：出错时自动恢复备份
 
 ## 方式2：Git安装
 
@@ -79,19 +82,31 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.0)
+### `.tad`文件夹结构 (v2.1)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置
-├── ralph-config/         # Ralph Loop配置 (NEW)
-│   ├── loop-config.yaml  # Layer 1/2设置
-│   └── expert-criteria.yaml # 专家通过条件
-├── schemas/              # JSON Schema验证 (NEW)
+├── version.txt           # 版本号 (2.1)
+├── skills/               # 平台无关技能 (v2.1 NEW)
+│   ├── testing/SKILL.md
+│   ├── code-review/SKILL.md
+│   ├── security-audit/SKILL.md
+│   ├── performance/SKILL.md
+│   ├── ux-review/SKILL.md
+│   ├── architecture/SKILL.md
+│   ├── api-design/SKILL.md
+│   └── debugging/SKILL.md
+├── adapters/             # 平台适配器 (v2.1 NEW)
+│   ├── platform-codes.yaml
+│   ├── claude/adapter.yaml
+│   ├── codex/adapter.yaml
+│   └── gemini/adapter.yaml
+├── ralph-config/         # Ralph Loop配置
+│   ├── loop-config.yaml
+│   └── expert-criteria.yaml
 ├── active/handoffs/      # 当前进行中的handoffs
 ├── archive/handoffs/     # 已完成的handoffs
-├── evidence/
-│   ├── reviews/          # Gate证据文件
-│   └── ralph-loops/      # Ralph迭代证据 (NEW)
+├── evidence/reviews/     # Gate证据文件
 ├── project-knowledge/    # 项目特定知识
 └── templates/            # 文档模板
 ```
@@ -150,23 +165,27 @@ claude .
 ### 检查清单
 - [ ] `.claude/settings.json` 存在
 - [ ] `.tad/config.yaml` 存在
-- [ ] `.tad/agents/` 包含两个agent文件
-- [ ] `WORKFLOW_PLAYBOOK.md` 可访问
-- [ ] `CLAUDE_CODE_SUBAGENTS.md` 可访问
+- [ ] `.tad/version.txt` 显示 2.1
+- [ ] `.tad/skills/` 包含 8 个技能目录
+- [ ] `.tad/adapters/` 包含平台配置
 
 ### 测试命令
 ```bash
 # 检查版本
 cat .tad/version.txt
-# 应该返回: 2.0
+# 应该返回: 2.1
+
+# 验证技能系统 (v2.1)
+ls .tad/skills/
+# 应该返回: api-design  architecture  code-review  debugging  performance  security-audit  testing  ux-review
+
+# 验证适配器系统 (v2.1)
+ls .tad/adapters/
+# 应该返回: adapter-schema.yaml  claude  codex  gemini  platform-codes.yaml
 
 # 验证Ralph Loop配置
 ls .tad/ralph-config/
 # 应该返回: expert-criteria.yaml  loop-config.yaml
-
-# 验证Schema
-ls .tad/schemas/
-# 应该返回: expert-criteria.schema.json  loop-config.schema.json
 ```
 
 ## 常见问题
@@ -190,56 +209,83 @@ TAD/
 ├── .claude/               # Claude Code配置
 │   ├── settings.json      # 框架识别
 │   ├── commands/          # 命令定义 (/alex, /blake, /gate...)
-│   └── skills/            # 技能定义
+│   └── skills/            # Claude增强技能
 ├── .tad/                  # TAD核心文件
 │   ├── config.yaml        # 主配置
-│   ├── ralph-config/      # Ralph Loop配置 (v2.0)
-│   ├── schemas/           # JSON Schema验证 (v2.0)
+│   ├── skills/            # 平台无关技能 (v2.1 NEW)
+│   ├── adapters/          # 平台适配器 (v2.1 NEW)
+│   ├── ralph-config/      # Ralph Loop配置
 │   ├── templates/         # 文档模板
 │   └── project-knowledge/ # 项目知识
 ├── docs/
-│   ├── RALPH-LOOP.md      # Ralph Loop文档 (v2.0)
-│   └── MIGRATION-v2.md    # 迁移指南 (v2.0)
+│   ├── MULTI-PLATFORM.md  # 多平台指南 (v2.1 NEW)
+│   ├── RALPH-LOOP.md      # Ralph Loop文档
+│   └── MIGRATION-v2.md    # 迁移指南
 ├── README.md              # TAD介绍
 ├── INSTALLATION_GUIDE.md  # 本文档
 ├── CHANGELOG.md           # 版本历史
-└── tad.sh                 # 一键安装/升级脚本
+└── tad.sh                 # 一键安装/升级脚本 (v2.1 多平台支持)
 ```
 
 ## 升级现有项目
 
 ```bash
-# 从任何v1.x版本升级到v2.0
+# 从任何旧版本升级到v2.1
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
 # - 检测当前版本
+# - 检测已安装的AI CLI工具 (Claude/Codex/Gemini)
 # - 保留你的handoffs、learnings、evidence
-# - 添加Ralph Loop配置
-# - 更新Gate定义
+# - 安装8个P0技能文件
+# - 安装平台适配器
+# - 为检测到的平台生成配置
 ```
 
-## 快速开始 (v2.0)
+## 快速开始 (v2.1)
 
 ```bash
 # 1. 安装TAD
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
-# 2. 打开两个Terminal
+# 2. 根据检测到的平台使用相应命令：
+
+# Claude Code:
 # Terminal 1: /alex (设计与规划)
 # Terminal 2: /blake (实现与Ralph Loop)
 
+# Codex CLI:
+# /prompts:tad_alex (设计与规划)
+# /prompts:tad_blake (实现)
+
+# Gemini CLI:
+# /tad-alex (设计与规划)
+# /tad-blake (实现)
+
 # 3. 开始协作
-# Terminal 1 (Alex): 创建handoff
-# Terminal 2 (Blake): *develop 自动进入Ralph Loop
+# Alex: 创建handoff
+# Blake: *develop 自动进入质量循环
 ```
+
+## 多平台使用
+
+| 平台 | 项目指令 | 命令格式 | 技能执行 |
+|------|----------|----------|----------|
+| Claude Code | `CLAUDE.md` | `/alex`, `/blake` | subagent |
+| Codex CLI | `AGENTS.md` | `/prompts:tad_alex` | self-check |
+| Gemini CLI | `GEMINI.md` | `/tad-alex` | self-check |
+
+**技能执行差异**：
+- **Claude Code**: 调用原生 subagent 进行深度审查
+- **Codex/Gemini**: 读取 `.tad/skills/` 中的 SKILL.md，按 checklist 自检
 
 ## 总结
 
-TAD v2.0 核心特性：
-1. **Ralph Loop** - 自动质量循环直到专家批准
-2. **Gate重构** - Gate 3扩展（技术质量），Gate 4简化（业务验收）
-3. **分层超时** - 根据变更规模自动调整（3-20分钟）
-4. **状态持久化** - 崩溃恢复，支持checkpoint/resume
+TAD v2.1 核心特性：
+1. **多平台支持** - Claude Code、Codex CLI、Gemini CLI
+2. **8个P0技能** - testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
+3. **自动平台检测** - 安装时自动检测并配置
+4. **100%向后兼容** - 现有Claude Code用户无需任何更改
+5. **Ralph Loop** - 自动质量循环直到专家批准（v2.0特性）
 
-任何新项目只要安装TAD，Claude Code就能立即识别并使用TAD方法论。
+任何新项目只要安装TAD，Claude Code、Codex CLI 或 Gemini CLI 都能立即识别并使用TAD方法论。
