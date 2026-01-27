@@ -1,24 +1,35 @@
 # TAD Installation & Usage Guide
 
-## 方式1：Git安装（推荐）
+**Version 2.0.0 - Ralph Loop Fusion**
+
+## 方式1：一键安装（推荐）
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+```
+
+这个脚本会自动：
+- **全新安装**：创建完整 TAD 结构（`.tad/`, `.claude/`, `CLAUDE.md`）
+- **升级**：检测当前版本并原地升级
+- **保留数据**：你的 handoffs、learnings、evidence 不会被覆盖
+
+## 方式2：Git安装
 
 ### Step 1: 在新项目中克隆TAD
 ```bash
 # 在你的新项目根目录
-git clone https://github.com/[your-username]/TAD.git .tad-temp
+git clone https://github.com/Sheldon-92/TAD.git .tad-temp
 
 # 复制必要文件
 cp -r .tad-temp/.tad ./
 cp -r .tad-temp/.claude ./
-cp .tad-temp/WORKFLOW_PLAYBOOK.md ./
-cp .tad-temp/CLAUDE_CODE_SUBAGENTS.md ./
-cp .tad-temp/README.md ./.tad/
+cp .tad-temp/CLAUDE.md ./
 
 # 清理临时文件
 rm -rf .tad-temp
 
-# 添加到.gitignore（避免提交TAD框架文件）
-echo ".tad/working/" >> .gitignore
+# 添加到.gitignore（避免提交工作文件）
+echo ".tad/active/" >> .gitignore
 ```
 
 ### Step 2: 用Claude Code打开项目
@@ -45,18 +56,10 @@ You are Agent A. Read .tad/agents/agent-a-architect.md
 You are Agent B. Read .tad/agents/agent-b-executor.md
 ```
 
-## 方式2：NPM包安装（未来）
-
-```bash
-# 未来可以发布为npm包
-npm install -g tad-framework
-tad init
-```
-
 ## 方式3：直接下载
 
 ### 从GitHub下载TAD压缩包
-1. 访问 https://github.com/[your-username]/TAD
+1. 访问 https://github.com/Sheldon-92/TAD
 2. Download ZIP
 3. 解压到项目目录
 4. 确保`.claude`和`.tad`文件夹在项目根目录
@@ -67,26 +70,44 @@ tad init
 ```
 .claude/
 ├── settings.json       # TAD框架识别配置
-├── commands/          # TAD命令定义
-│   ├── tad-init.md   # 初始化命令
-│   ├── tad-status.md # 状态检查命令
-│   └── tad-scenario.md # 场景执行命令
-└── agents/           # （可选）额外agent配置
+├── commands/           # TAD命令定义
+│   ├── tad-alex.md     # /alex - Solution Lead
+│   ├── tad-blake.md    # /blake - Execution Master (with Ralph Loop)
+│   ├── tad-gate.md     # /gate - Quality gates v2
+│   └── ...
+└── skills/             # Agent skills
+    └── code-review/    # Code review checklist
+```
+
+### `.tad`文件夹结构 (v2.0)
+```
+.tad/
+├── config.yaml           # TAD核心配置
+├── ralph-config/         # Ralph Loop配置 (NEW)
+│   ├── loop-config.yaml  # Layer 1/2设置
+│   └── expert-criteria.yaml # 专家通过条件
+├── schemas/              # JSON Schema验证 (NEW)
+├── active/handoffs/      # 当前进行中的handoffs
+├── archive/handoffs/     # 已完成的handoffs
+├── evidence/
+│   ├── reviews/          # Gate证据文件
+│   └── ralph-loops/      # Ralph迭代证据 (NEW)
+├── project-knowledge/    # 项目特定知识
+└── templates/            # 文档模板
 ```
 
 ### 关键配置文件
 
-#### `.claude/settings.json`
-- 告诉Claude Code这是TAD项目
-- 定义可用命令
-- 指定自动加载的文件
-- 配置agent激活方式
-
 #### `.tad/config.yaml`
 - TAD核心配置
-- 定义6个场景工作流
-- 配置16个真实sub-agents
-- 设置文档结构
+- Gate 3/4 v2定义
+- 专家subagent配置
+
+#### `.tad/ralph-config/loop-config.yaml`
+- Layer 1自检配置（build/test/lint/tsc）
+- Layer 2专家审查配置
+- 断路器和升级阈值
+- 状态持久化设置
 
 ## 工作流程
 
@@ -134,15 +155,18 @@ claude .
 - [ ] `CLAUDE_CODE_SUBAGENTS.md` 可访问
 
 ### 测试命令
-```markdown
-# 在Claude Code中
-/tad-status
+```bash
+# 检查版本
+cat .tad/version.txt
+# 应该返回: 2.0
 
-# 应该返回：
-✅ TAD Framework v2.0 installed
-✅ Configuration valid
-✅ 6 scenarios available
-✅ 16 sub-agents configured
+# 验证Ralph Loop配置
+ls .tad/ralph-config/
+# 应该返回: expert-criteria.yaml  loop-config.yaml
+
+# 验证Schema
+ls .tad/schemas/
+# 应该返回: expert-criteria.schema.json  loop-config.schema.json
 ```
 
 ## 常见问题
@@ -164,40 +188,58 @@ A: 从GitHub拉取最新版本，覆盖`.tad/`和`.claude/`目录
 ```
 TAD/
 ├── .claude/               # Claude Code配置
-│   ├── settings.json     # 框架识别
-│   └── commands/         # 命令定义
-├── .tad/                 # TAD核心文件
-│   ├── config.yaml       # 主配置
-│   ├── agents/           # Agent定义
-│   ├── context/          # 项目文档模板
-│   └── working/          # 工作文档模板
-├── WORKFLOW_PLAYBOOK.md  # 6个场景说明
-├── CLAUDE_CODE_SUBAGENTS.md # Sub-agents列表
-├── README.md             # TAD介绍
-├── INSTALLATION_GUIDE.md # 本文档
-└── CONFIG_AGENT_PROMPT.md # 配置管理指南
+│   ├── settings.json      # 框架识别
+│   ├── commands/          # 命令定义 (/alex, /blake, /gate...)
+│   └── skills/            # 技能定义
+├── .tad/                  # TAD核心文件
+│   ├── config.yaml        # 主配置
+│   ├── ralph-config/      # Ralph Loop配置 (v2.0)
+│   ├── schemas/           # JSON Schema验证 (v2.0)
+│   ├── templates/         # 文档模板
+│   └── project-knowledge/ # 项目知识
+├── docs/
+│   ├── RALPH-LOOP.md      # Ralph Loop文档 (v2.0)
+│   └── MIGRATION-v2.md    # 迁移指南 (v2.0)
+├── README.md              # TAD介绍
+├── INSTALLATION_GUIDE.md  # 本文档
+├── CHANGELOG.md           # 版本历史
+└── tad.sh                 # 一键安装/升级脚本
 ```
 
-## 发布到GitHub
+## 升级现有项目
 
 ```bash
-# 在TAD目录
-git init
-git add .
-git commit -m "TAD Framework v2.0"
-git remote add origin https://github.com/[your-username]/TAD.git
-git push -u origin main
+# 从任何v1.x版本升级到v2.0
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
-# 创建Release
-# 在GitHub上创建v2.0 release，附带安装说明
+# 脚本会自动：
+# - 检测当前版本
+# - 保留你的handoffs、learnings、evidence
+# - 添加Ralph Loop配置
+# - 更新Gate定义
+```
+
+## 快速开始 (v2.0)
+
+```bash
+# 1. 安装TAD
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+
+# 2. 打开两个Terminal
+# Terminal 1: /alex (设计与规划)
+# Terminal 2: /blake (实现与Ralph Loop)
+
+# 3. 开始协作
+# Terminal 1 (Alex): 创建handoff
+# Terminal 2 (Blake): *develop 自动进入Ralph Loop
 ```
 
 ## 总结
 
-通过`.claude`文件夹配置，TAD可以：
-1. **被Claude Code自动识别**
-2. **提供专用命令**（/tad-init等）
-3. **自动加载核心文件**
-4. **简化Agent激活流程**
+TAD v2.0 核心特性：
+1. **Ralph Loop** - 自动质量循环直到专家批准
+2. **Gate重构** - Gate 3扩展（技术质量），Gate 4简化（业务验收）
+3. **分层超时** - 根据变更规模自动调整（3-20分钟）
+4. **状态持久化** - 崩溃恢复，支持checkpoint/resume
 
-这样任何新项目只要安装TAD，Claude Code就能立即识别并使用TAD方法论。
+任何新项目只要安装TAD，Claude Code就能立即识别并使用TAD方法论。
