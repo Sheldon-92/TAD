@@ -60,6 +60,14 @@ Terminal 2: Use /blake command to activate Agent B
 - `/tad-help` - Show this help message
 - `/tad-maintain` - Document health check, sync, and cleanup (3 modes: check/sync/full)
 
+## Adaptive Complexity
+When you describe a task to Alex, he'll assess complexity and suggest one of:
+- **Full TAD**: 6-8 questions, expert review, detailed handoff (architecture/complex features)
+- **Standard TAD**: 4-5 questions, handoff, gates (new features, API changes)
+- **Light TAD**: 2-3 questions, quick handoff (small changes, configs)
+- **Skip TAD**: Direct implementation (trivial fixes, user opts out)
+Alex suggests, **you decide** the process depth.
+
 ## Available Scenarios
 - `new_project` - Start a new project from scratch
 - `add_feature` - Add new functionality to existing project
@@ -120,9 +128,15 @@ In Terminal 2:
 Agent A -- Agent B
 ```
 
-- **Human**: Defines value, validates delivery
+- **Human**: Defines value, validates delivery, relays messages between agents
 - **Agent A**: Designs solutions, reviews quality
 - **Agent B**: Implements code, runs tests
+
+### Bidirectional Message Protocol
+Agents auto-generate structured, copy-pasteable messages for the human to relay:
+- **Alex → Blake**: After handoff creation, Alex generates a "Message from Alex" with task, files, priority
+- **Blake → Alex**: After implementation, Blake generates a "Message from Blake" with status, changes, evidence
+- **Blake auto-detect**: On startup, Blake scans for active handoffs and offers to execute them
 
 ## Configuration Files
 - `.tad/config.yaml` - Main configuration

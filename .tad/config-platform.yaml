@@ -1,0 +1,287 @@
+# TAD Config Module: Platform & MCP Tools
+# Part of TAD config.yaml modular split (v2.2)
+# Contains: multi_platform, mcp_tools
+# Consumers: tad-init.md, tad-alex.md (MCP), tad-blake.md (MCP)
+
+# ==================== Multi-Platform Configuration (v2.1.1 Simplified) ====================
+multi_platform:
+  enabled: true
+  version: "1.1"
+  description: |
+    TAD v2.1.1 supports multiple AI coding assistants.
+    All conversion logic is in /tad-init command (no separate adapters).
+    - Claude Code (primary): Full subagent support
+    - Codex CLI (secondary): Self-check mode with native skills
+    - Gemini CLI (secondary): Self-check mode with TOML commands
+
+  platforms:
+    claude:
+      enabled: true
+      skill_execution: "subagent"
+      config_dir: ".claude"
+      commands_dir: ".claude/commands"
+      project_instructions: "CLAUDE.md"
+
+    codex:
+      enabled: true
+      skill_execution: "self-check"
+      config_dir: ".codex"
+      commands_dir: "~/.codex/prompts"
+      command_prefix: "tad_"
+      project_instructions: "AGENTS.md"
+
+    gemini:
+      enabled: true
+      skill_execution: "self-check"
+      config_dir: ".gemini"
+      commands_dir: ".gemini/commands"
+      command_format: "toml"
+      project_instructions: "GEMINI.md"
+
+  skills:
+    directory: ".tad/skills"
+    count: 8
+    list:
+      - testing
+      - code-review
+      - security-audit
+      - performance
+      - ux-review
+      - architecture
+      - api-design
+      - debugging
+
+  # NOTE: adapters directory removed in v2.1.1
+  # Conversion logic is now directly in /tad-init command
+
+# ==================== MCP 工具集成 (v1.2 新增) ====================
+mcp_tools:
+  enabled: true
+  version: "1.2"
+  registry_file: ".tad/mcp-registry.yaml"
+  description: "MCP tools enhance TAD agents but are NOT required for core functionality"
+
+  # Agent A (Alex) - Solution Lead MCP 配置
+  agent_a_tools:
+    core_layer:
+      tools: ["context7", "sequential-thinking", "memory-bank", "brave-search"]
+      description: "核心层工具,增强需求分析和设计能力"
+
+    auto_trigger:
+      context7:
+        description: "检测到框架/库关键词时自动调用最新文档"
+        keywords:
+          - "Next.js"
+          - "React"
+          - "Vue"
+          - "Tailwind"
+          - "TypeScript"
+          - "Supabase"
+          - "框架"
+          - "库"
+        action: "auto_call"
+        timing: "Round 1-2 之间"
+
+      memory-bank:
+        description: "需求分析开始前推荐调用项目历史"
+        action: "recommend"
+        timing:
+          - "Round 0 (需求分析开始)"
+          - "设计阶段开始"
+          - "回顾历史决策时"
+
+      sequential-thinking:
+        description: "复杂问题分解时建议使用"
+        keywords: ["复杂", "架构", "系统设计", "算法"]
+        action: "suggest"
+
+      brave-search:
+        description: "技术不确定时建议调研"
+        action: "suggest"
+        timing: ["Round 2 技术研究"]
+
+    workflow_integration:
+      requirement_analysis:
+        - "Round 0: RECOMMEND memory-bank"
+        - "Round 1-2: AUTO-TRIGGER context7 on framework mention"
+        - "Round 2: SUGGEST brave-search if technical uncertainty"
+        - "Round 2.5: AUTO-DETECT project type and recommend Project MCPs"
+
+      design_phase:
+        - "USE context7 for latest best practices"
+        - "USE sequential-thinking for complex architecture"
+        - "USE memory-bank to review past decisions"
+
+      handoff_creation:
+        - "INCLUDE MCP tools used in handoff document"
+        - "RECOMMEND Blake which Project MCPs to use"
+
+    forbidden_mcp_tools:
+      description: "Alex 不应使用的 MCP (Blake's domain)"
+      list:
+        - "filesystem"  # Blake 的文件操作
+        - "git"         # Blake 的版本控制
+        - "docker"      # Blake 的容器管理
+        - "kubernetes"  # Blake 的部署
+        - "terminal"    # Blake 的命令执行
+
+  # Agent B (Blake) - Execution Master MCP 配置
+  agent_b_tools:
+    core_layer:
+      tools: ["filesystem", "git", "github"]
+      required: ["filesystem", "git"]
+      description: "核心层工具,实现开发必备"
+
+    project_layer:
+      description: "根据 Alex 在 Round 2.5 推荐的项目类型工具"
+      examples:
+        web_fullstack: ["supabase", "playwright", "vercel", "react-mcp"]
+        data_science: ["jupyter", "pandas-mcp", "antv-chart", "postgres-mcp-pro"]
+        machine_learning: ["jupyter", "optuna", "huggingface", "zenml"]
+        devops: ["kubernetes", "docker", "aws", "terminal"]
+        creative: ["figma", "video-audio-mcp", "adobe-mcp"]
+
+    auto_use:
+      filesystem:
+        description: "所有文件创建、读取、修改操作自动使用"
+        operations: ["create", "read", "update", "delete", "list"]
+
+      git:
+        description: "所有版本控制操作自动使用"
+        operations: ["commit", "branch", "merge", "status"]
+
+      context7:
+        description: "实现框架代码时自动触发"
+        trigger: "when implementing framework-specific code"
+
+    workflow_integration:
+      pre_implementation:
+        - "VERIFY filesystem MCP is active"
+        - "VERIFY git MCP is active"
+        - "CHECK project MCPs from handoff recommendation"
+        - "HALT if required MCPs unavailable"
+
+      during_implementation:
+        - "AUTO-USE filesystem for all file operations"
+        - "AUTO-USE git for version control"
+        - "AUTO-TRIGGER context7 when implementing framework code"
+        - "USE project MCPs as recommended by Alex"
+
+      testing_phase:
+        - "USE playwright MCP for E2E tests (if available)"
+        - "USE terminal MCP for test execution"
+
+      deployment:
+        - "USE vercel/aws MCP for deployment (if configured)"
+        - "USE kubernetes/docker MCP for container deployment"
+
+    pre_flight_checks:
+      description: "Run before *develop command"
+      checklist:
+        - check: "filesystem MCP active"
+          action_if_fail: "HALT - Cannot proceed without filesystem access"
+          severity: "blocking"
+
+        - check: "git MCP active"
+          action_if_fail: "HALT - Cannot proceed without version control"
+          severity: "blocking"
+
+        - check: "handoff document exists"
+          action_if_fail: "HALT - Cannot start without handoff from Alex"
+          severity: "blocking"
+
+        - check: "project MCPs availability"
+          action_if_fail: "WARN - Suggest installing recommended MCPs"
+          severity: "warning"
+
+  # MCP 使用强制机制
+  enforcement:
+    mode: "recommend"
+    description: "推荐模式 - MCP 是增强,不是必需"
+
+    violation_detection:
+      enabled: true
+      checks:
+        - "Blake 尝试开始 *develop 但 filesystem MCP 不可用"
+        - "Blake 尝试开始 *develop 但 git MCP 不可用"
+        - "Alex 调用了 filesystem/git MCP (violation - Blake's domain)"
+
+    violation_action: "warn"
+    violation_format: |
+      ⚠️ MCP VIOLATION ⚠️
+      Agent: {agent_name}
+      Issue: {violation_description}
+      Action: {required_correction}
+
+    non_blocking:
+      description: "MCP 工具不可用时不阻塞原有 TAD 工作流"
+      fallback: "使用 Claude Code 内置能力继续执行"
+      log: "记录 MCP 不可用情况供后续改进"
+
+  # MCP 安全配置
+  security:
+    auto_approve_readonly: true
+    description: "只读操作自动批准,危险操作需确认"
+
+    auto_approve_safe:
+      - "git status"
+      - "git diff"
+      - "git log"
+      - "filesystem read operations"
+      - "context7 documentation queries"
+      - "memory-bank history queries"
+
+    always_confirm:
+      - "git push"
+      - "git push --force"
+      - "rm -rf"
+      - "filesystem delete operations"
+      - "docker rm"
+      - "kubectl delete"
+      - "vercel deploy --prod"
+      - "aws operations"
+
+  # Project Type Detection Integration
+  project_detection:
+    enabled: true
+    timing: "Round 2.5 (after tech stack confirmed)"
+    confidence_threshold:
+      web_fullstack: 0.7
+      data_science: 0.6
+      machine_learning: 0.8
+      devops: 0.7
+      creative: 0.7
+
+    detection_method:
+      - "Keywords in user responses"
+      - "File patterns in existing codebase"
+      - "Tech stack preferences"
+
+    action_on_detection:
+      - "Display project type and confidence"
+      - "Show recommended Project-Layer MCPs"
+      - "Offer installation options (0-2)"
+      - "Record user decision"
+      - "Continue to Round 3 regardless of choice"
+
+  # MCP 效率提升追踪
+  efficiency_tracking:
+    enabled: true
+    metrics:
+      - "MCP tools used per task"
+      - "Time saved estimates"
+      - "Documentation accuracy improvements"
+      - "Code quality improvements"
+
+    reporting:
+      location: ".tad/logs/mcp_usage.log"
+      format: "[{timestamp}] {agent} used {mcp_tool} for {task} - Estimated time saved: {minutes}m"
+
+  # 重要提醒
+  important_notes:
+    - "MCP 工具是 ENHANCEMENTS,不是 REQUIREMENTS"
+    - "所有原有 TAD 工作流在没有 MCP 的情况下仍完全可用"
+    - "MCP 工具失败时不应阻止进度"
+    - "始终通知用户正在使用哪些 MCP 工具"
+    - "MCP 故障应记录但不影响核心功能"
+    - "filesystem 和 git 是 Blake 的必需 MCP,其他都是可选"

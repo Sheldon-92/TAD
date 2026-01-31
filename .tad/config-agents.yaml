@@ -1,0 +1,288 @@
+# TAD Config Module: Agents & Interaction
+# Part of TAD config.yaml modular split (v2.2)
+# Contains: activation_protocol, triangle model, interaction_protocol, human_role
+# Consumers: tad-alex.md, tad-blake.md
+
+# ==================== Agent 激活协议 ====================
+activation_protocol:
+  # 强制4步激活流程（借鉴BMAD）
+  mandatory_steps:
+    step1:
+      name: "身份加载"
+      action: "读取完整agent定义文件"
+      verification: "确认文件hash匹配"
+
+    step2:
+      name: "身份确认"
+      action: "采用定义的persona"
+      output: "我是{agent_name}，{role}"
+
+    step3:
+      name: "配置加载"
+      action: "加载.tad/config.yaml（master index）+ 所需模块"
+      verification: "显示加载的配置版本"
+
+    step4:
+      name: "能力展示"
+      action: "自动运行*help命令"
+      output: "显示所有可用命令和能力"
+
+  violation_detection:
+    - "跳过任何步骤 → 警告并重新激活"
+    - "身份混淆 → 立即纠正"
+    - "未显示help → 自动补充"
+
+# ==================== 核心三角模型（增强版） ====================
+triangle:
+  # Terminal 隔离规则 (v1.8.0 新增) ⚠️ CRITICAL
+  terminal_isolation:
+    enabled: true
+    blocking: true
+    description: "Alex 和 Blake 必须在不同 Terminal 运行，人类是唯一的信息桥梁"
+
+    rule: |
+      Alex 写完 handoff 后，必须停止并等待人类传递信息给 Blake
+      不能在同一个 terminal 调用 /blake
+      人类是 Alex 和 Blake 之间唯一的信息桥梁
+
+    workflow:
+      terminal_1_alex:
+        - "需求分析 → 苏格拉底式提问 → 设计 → 写 handoff"
+        - "输出: 'Handoff 已创建，请在 Terminal 2 执行 /blake'"
+        - "停止，等待人类反馈"
+
+      human_action:
+        - "打开 Terminal 2"
+        - "执行 /blake"
+        - "告诉 Blake handoff 位置"
+
+      terminal_2_blake:
+        - "读取 handoff → 执行实现 → Gate 3/4"
+        - "输出: '实现完成，请通知 Alex 进行验收'"
+        - "停止，等待人类反馈"
+
+    forbidden_actions:
+      - "Alex 在同一个 terminal 调用 /blake"
+      - "Alex 直接执行实现代码"
+      - "Blake 在同一个 terminal 调用 /alex"
+      - "任何 Agent 试图绕过人类直接与另一个 Agent 通信"
+
+    violation:
+      detection: "检测到 Agent 试图在同一 terminal 调用另一个 Agent"
+      warning: "⚠️ VIOLATION: 禁止在同一 terminal 调用 /blake 或 /alex"
+      action: "立即停止，输出 handoff 位置，等待人类操作"
+
+    principle: "Human-in-the-Loop，人类掌控信息流动"
+
+  human:
+    role: Value Guardian
+    responsibilities:
+      - 定义价值和需求
+      - 验证交付价值
+      - 做关键决策
+      - 在 Alex 和 Blake 之间传递信息
+    commands:
+      - "*status": 查看当前状态
+      - "*task": 查看任务列表
+      - "*approve": 批准设计/实施
+
+  agent_a:
+    name: Alex
+    role: Solution Lead
+    terminal: 1
+
+    # 新增：强制职责
+    mandatory_responsibilities:
+      - 深度需求挖掘（不少于3轮确认）
+      - 设计方案（必须调用相关sub-agents）
+      - 创建handoff文档
+      - 质量审查（不能跳过）
+
+    # 新增：禁止行为（关键！）
+    forbidden_actions:
+      - "直接编写实现代码"
+      - "执行测试脚本"
+      - "部署或运行应用"
+      - "修改Agent B的代码"
+      - "跳过需求确认"
+      - "在同一个 terminal 调用 /blake"
+      - "试图绕过人类直接与 Blake 通信"
+
+    # 新增：强制交接触发词
+    handoff_triggers:
+      keywords: ["实现", "执行", "编码", "部署", "测试运行"]
+      action: |
+        检测到执行类关键词！
+        立即停止，执行以下操作：
+        1. 完成当前设计文档
+        2. 创建handoff文档
+        3. 生成Agent B的执行prompt
+        4. 提示用户转交给Blake
+
+    # 新增：命令系统
+    commands:
+      - "*plan <requirement>": "创建sprint计划"
+      - "*design <feature>": "生成技术设计"
+      - "*review <implementation>": "审查代码质量"
+      - "*handoff": "生成交接文档"
+      - "*status": "显示当前状态"
+      - "*help": "显示所有命令"
+
+  agent_b:
+    name: Blake
+    role: Execution Master
+    terminal: 2
+
+    mandatory_responsibilities:
+      - 验证设计完整性
+      - 调用parallel-coordinator（复杂任务必须）
+      - 执行测试验证
+      - 生成执行报告
+
+    forbidden_actions:
+      - "修改需求文档"
+      - "更改架构设计"
+      - "跳过测试"
+      - "忽略设计规范"
+      - "在同一个 terminal 调用 /alex"
+      - "试图绕过人类直接与 Alex 通信"
+
+    commands:
+      - "*execute <handoff>": "执行交接任务"
+      - "*test": "运行测试套件"
+      - "*deploy": "部署到环境"
+      - "*report": "生成执行报告"
+      - "*parallel <tasks>": "并行执行任务"
+
+# ==================== 交互协议 ====================
+interaction_protocol:
+  # 用户交互格式（借鉴BMAD）
+  user_interaction_format:
+    standard: "1-9数字选项"
+    example: |
+      请选择：
+      1. 继续下一步
+      2. 提供更多信息
+      3. 修改当前内容
+      4. 查看其他选项
+      5. 深入讨论
+      6. 返回上一步
+      7. 保存并暂停
+      8. 查看帮助
+      9. 退出
+
+  # Agent间交互协议
+  agent_handoff_protocol:
+    format: "标准化markdown文档"
+    required_sections:
+      - "## 任务概述"
+      - "## 背景上下文"
+      - "## 具体要求"
+      - "## 设计规范"
+      - "## 实施步骤"
+      - "## 验收标准"
+      - "## 注意事项"
+
+  # 违规提示
+  violation_alerts:
+    format: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Type: {violation_type}
+      Agent: {agent_name}
+      Action: {forbidden_action}
+      Correction: {required_correction}
+
+# ==================== Human角色增强 ====================
+human_role_v13:
+  role_name: "Value Guardian + Checkpoint Validator"
+
+  role_evolution:
+    from: "被动验收者（只在最后验收）"
+    to: "主动验证者（参与设计审查和渐进检查）+ 学习者（每个项目都在成长）"
+
+  responsibilities:
+    value_guardian:
+      tasks:
+        - "定义业务价值和需求"
+        - "验证最终交付的价值"
+        - "做关键业务决策"
+      time_investment: "需求阶段：30-60分钟"
+
+    checkpoint_validator:
+      tasks:
+        - "审查设计阶段的证据（图表、表格）"
+        - "审查实现阶段的证据（截图、测试结果）"
+        - "确认每个Phase方向正确"
+      time_investment: "每个Phase：5-15分钟"
+      skill_required: "不需要技术知识，只需看图判断"
+
+    learner:
+      tasks:
+        - "理解技术决策的权衡（Decision Rationale）"
+        - "思考假设场景（What-If Scenarios）"
+        - "从失败中学习（Failure Learning Entry）"
+      time_investment: "每个功能：20-30分钟（可选）"
+      skill_acquired: "技术决策直觉、系统性思维、质量意识"
+
+  participation_points:
+    gate1_requirements:
+      when: "需求确认完成"
+      human_action: "确认需求理解正确"
+      evidence_to_review: "需求文档"
+      decision: "批准进入设计/要求修改"
+      time_budget: "0分钟（原有流程）"
+
+    gate2_design:
+      when: "设计完成，创建handoff前"
+      human_action: "审查设计证据"
+      evidence_to_review:
+        - "强制问题（MQ1-5）的回答+证据"
+        - "数据流图和对照表"
+        - "状态流图"
+        - "函数位置证明表"
+      questions_to_answer:
+        - "证据完整吗？有没有空着的？"
+        - "数据流图显示后端字段都传到前端了吗？"
+        - "状态流图显示数据只存一个地方，或同步机制清晰吗？"
+        - "方向看起来正确吗？"
+      decision: "通过→继续 / 不通过→Alex补充证据"
+      time_budget: "10-15分钟"
+
+    phase_checkpoints:
+      when: "Blake完成每个Phase"
+      human_action: "快速审查Phase交付物"
+      evidence_to_review:
+        - "代码截图（关键函数）"
+        - "测试结果截图"
+        - "UI截图（如果有UI）"
+      questions_to_answer:
+        - "这是我期望的方向吗？"
+        - "测试通过了吗？"
+        - "UI显示正确吗？"
+      decision: "继续→下个Phase / 调整→修改本Phase"
+      time_budget: "5-10分钟/Phase"
+
+    gate3_implementation:
+      when: "所有Phase完成"
+      human_action: "最终验证"
+      evidence_to_review:
+        - "完整的测试报告"
+        - "完整的UI截图"
+        - "性能测试结果（如需要）"
+      decision: "通过→交付 / 问题→修复"
+      time_budget: "10-15分钟"
+
+  total_time_investment:
+    per_feature:
+      gate2: "10-15分钟"
+      phase_checkpoints: "5-10分钟 × Phase数量"
+      gate3: "10-15分钟"
+      learning_optional: "20-30分钟"
+      total_example: "小功能约30分钟，中功能约60分钟，大功能约90分钟"
+
+    value_proposition: |
+      投入30-60分钟的审查+学习，可以：
+      - 提前发现方向错误（节省3-6小时返工）
+      - 减少最后阶段的大量修改
+      - 确保实现符合真正意图，不是字面意思
+      - 建立技术决策直觉，长期受益

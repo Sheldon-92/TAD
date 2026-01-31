@@ -1,0 +1,375 @@
+# TAD Config Module: Execution & Learning
+# Part of TAD config.yaml modular split (v2.2)
+# Contains: ralph_loop, release_management, learning_mechanisms, failure_learning_loop
+# Consumers: tad-blake.md, tad-alex.md (release)
+# ==================== Ralph Loop Configuration Reference ====================
+# TAD v2.0 introduces Ralph Loop for Blake's execution phase
+ralph_loop:
+  enabled: true
+  config_file: ".tad/ralph-config/loop-config.yaml"
+  criteria_file: ".tad/ralph-config/expert-criteria.yaml"
+  schemas:
+    loop_config: ".tad/schemas/loop-config.schema.json"
+    expert_criteria: ".tad/schemas/expert-criteria.schema.json"
+  description: |
+    Ralph Loop automates quality checks during Blake's execution:
+    - Layer 1: Self-Check (build, test, lint, tsc)
+    - Layer 2: Expert Review (code-reviewer, test-runner, security-auditor, performance-optimizer)
+    - Circuit Breaker: Prevents infinite loops on same error
+    - State Persistence: Supports crash recovery
+    - Priority Groups: code-reviewer first, then others in parallel
+
+# ==================== 版本发布管理 (v1.5 新增) ====================
+release_management:
+  enabled: true
+  version: "1.0"
+  description: "多平台版本发布管理规则"
+
+  # 核心文档
+  documents:
+    changelog: "CHANGELOG.md"
+    release_sop: "RELEASE.md"
+    api_versioning: "docs/API-VERSIONING.md"
+    release_handoff_template: ".tad/templates/release-handoff.md"
+
+  # 版本策略
+  versioning:
+    scheme: "semver"  # Semantic Versioning
+    source_of_truth: "package.json"
+    format: "MAJOR.MINOR.PATCH"
+
+    rules:
+      patch: "Bug修复，无新功能，完全向后兼容"
+      minor: "新功能，向后兼容"
+      major: "破坏性变更，不向后兼容"
+
+  # 发布类型和分工
+  release_types:
+    routine_release:
+      description: "常规发布 (patch/minor)"
+      trigger_keywords: ["发布版本", "release", "部署新版本"]
+      workflow: "Blake 按 RELEASE.md SOP 执行"
+      needs_handoff: false
+      gates_required: ["gate3", "gate4"]
+
+    major_release:
+      description: "重大发布 (major/breaking)"
+      trigger_keywords: ["破坏性变更", "breaking change", "大版本", "major"]
+      workflow: "Alex 创建 release-handoff → Blake 执行"
+      needs_handoff: true
+      gates_required: ["gate2", "gate3", "gate4"]
+
+    ios_release:
+      description: "iOS App Store 发布"
+      trigger_keywords: ["发布iOS", "App Store", "iOS release"]
+      workflow: "Blake 执行 npm run release:ios + Xcode 提交"
+      needs_handoff: false
+      gates_required: ["gate3", "gate4"]
+      extra_steps:
+        - "npm run version:sync"
+        - "npm run build:ios"
+        - "Open Xcode and Archive"
+        - "Submit to App Store Connect"
+
+  # Agent 分工
+  agent_responsibilities:
+    alex:
+      tasks:
+        - "版本策略制定 (SemVer 规则)"
+        - "API 契约设计"
+        - "破坏性变更影响分析"
+        - "重大发布决策"
+        - "创建 release-handoff (仅 major)"
+      forbidden:
+        - "直接执行发布命令"
+        - "修改 CHANGELOG"
+        - "运行构建脚本"
+
+    blake:
+      tasks:
+        - "日常版本发布执行"
+        - "更新 CHANGELOG.md"
+        - "运行 npm run release:ios"
+        - "执行构建和部署"
+        - "版本号同步 (npm version)"
+      forbidden:
+        - "独立决定破坏性变更"
+        - "跳过 Gate 3/4 验证"
+
+  # 发布检查清单
+  release_checklist:
+    pre_release:
+      - check: "所有测试通过"
+        command: "npm test"
+        blocking: true
+      - check: "构建成功"
+        command: "npm run build"
+        blocking: true
+      - check: "CHANGELOG 已更新"
+        file: "CHANGELOG.md"
+        blocking: true
+      - check: "版本号已更新"
+        file: "package.json"
+        blocking: true
+
+    deploy:
+      - action: "推送到 main"
+        command: "git push origin main"
+        platforms: ["web"]
+      - action: "Vercel 自动部署"
+        platforms: ["web"]
+      - action: "构建 iOS"
+        command: "npm run release:ios"
+        platforms: ["ios"]
+
+    post_release:
+      - check: "生产环境可访问"
+        blocking: true
+      - check: "核心功能正常"
+        blocking: true
+      - check: "错误率无异常 (24h)"
+        blocking: false
+
+  # 多平台影响矩阵
+  platform_impact_matrix:
+    change_types:
+      ui_only:
+        description: "纯 UI 变更"
+        web_impact: "即时生效"
+        ios_impact: "需要重新构建"
+        action: "Web 自动，iOS 按需发布"
+
+      api_compatible:
+        description: "API 变更 (向后兼容)"
+        web_impact: "即时生效"
+        ios_impact: "即时生效"
+        action: "部署 Vercel 即可"
+
+      api_breaking:
+        description: "API 变更 (破坏性)"
+        web_impact: "即时生效"
+        ios_impact: "⚠️ 旧版本会崩溃"
+        action: "必须 API 版本化 + 同步发布所有客户端"
+
+  # API 版本管理
+  api_versioning:
+    strategy: "url_path"  # /api/v1/*
+    current_version: "v1"
+
+    backward_compatibility_rules:
+      - "NEVER 删除已有字段"
+      - "NEVER 修改字段类型"
+      - "NEVER 重命名端点"
+      - "ALWAYS 只添加新字段/端点"
+      - "DEPRECATE 需要 30+ 天过渡期"
+
+    migration_process:
+      step1: "创建新版本 API 保持旧版本运行"
+      step2: "更新所有客户端使用新 API"
+      step3: "监控旧 API 使用量"
+      step4: "90%+ 迁移后可删除旧 API"
+
+  # 快速命令参考
+  quick_commands:
+    version_bump:
+      patch: "npm version patch"
+      minor: "npm version minor"
+      major: "npm version major"
+    sync_ios: "npm run version:sync"
+    build_ios: "npm run release:ios"
+    check_version: "node -p \"require('./package.json').version\""
+
+# ==================== 学习机制系统 ====================
+learning_mechanisms:
+  enabled: true
+  description: "TAD不仅帮助Human执行项目，更帮助Human建立系统性思维和决策直觉"
+
+  philosophy: |
+    传统培训：读书 → 理解概念 → 应用（断层）
+    TAD学习：真实决策 → 看到后果 → 建立直觉 → 自然应用
+
+  learning_dimensions:
+    dimension1_technical_tradeoffs:
+      name: "技术决策权衡思维"
+      goal: "建立'没有完美方案，只有权衡'的思维"
+      levels:
+        - "Level 1: 知道有多个方案可选"
+        - "Level 2: 理解每个方案的优缺点"
+        - "Level 3: 能判断在当前场景下哪个更合适"
+        - "Level 4: 能预见未来场景变化时需要切换方案"
+      mechanisms: ["Decision Rationale", "Interactive Challenge"]
+
+    dimension2_systemic_thinking:
+      name: "系统性思维"
+      goal: "看到'局部改动'如何影响'整个系统'"
+      levels:
+        - "Level 1: 知道'改A会影响B'"
+        - "Level 2: 能画出影响链路（A → B → C）"
+        - "Level 3: 能预见第二层影响"
+        - "Level 4: 能设计'改A但不影响B'的隔离机制"
+      mechanisms: ["Impact Visualization", "What-If Scenarios"]
+
+    dimension3_product_ux:
+      name: "产品/UX直觉"
+      goal: "理解'用户看到什么'和'用户感受到什么'"
+      levels:
+        - "Level 1: 知道UI要好看"
+        - "Level 2: 理解不同视觉设计传达不同信息"
+        - "Level 3: 能判断哪个设计更符合用户任务"
+        - "Level 4: 能从用户行为数据推断UI问题"
+      mechanisms: ["What-If Scenarios", "Decision Rationale"]
+
+    dimension4_quality_awareness:
+      name: "质量意识和风险预见"
+      goal: "理解'什么地方容易出错'和'如何提前防御'"
+      levels:
+        - "Level 1: 知道要测试"
+        - "Level 2: 知道测试什么（边界情况、错误路径）"
+        - "Level 3: 能预见'改这里可能影响那里'"
+        - "Level 4: 能设计'防御性架构'（出错了也不会雪崩）"
+      mechanisms: ["Failure Learning Entry", "What-If Scenarios"]
+
+  mechanisms:
+    mechanism1_decision_rationale:
+      name: "Decision Rationale（决策理由）"
+      goal: "理解为什么选A不选B，建立权衡思维"
+      timing: "每个重要技术决策"
+      format: "对比表格 + 权衡分析 + 未来切换条件"
+      time_cost: "+5分钟"
+      learning_dimensions: ["技术决策", "系统思维"]
+
+    mechanism2_interactive_challenge:
+      name: "Interactive Challenge（互动挑战）"
+      goal: "让Human主动思考，而非被动接受答案"
+      timing: "关键决策点，在Alex给出方案之前"
+      format: "场景描述 + 备选方案 + 思考问题 → Alex分析"
+      time_cost: "+3分钟"
+      learning_dimensions: ["所有维度"]
+
+    mechanism3_impact_visualization:
+      name: "Impact Visualization（影响可视化）"
+      goal: "看到改动的连锁反应"
+      timing: "架构设计或数据流变更"
+      format: "影响链路图（Mermaid）+ 影响清单（3层）"
+      time_cost: "+2分钟"
+      learning_dimensions: ["系统思维"]
+
+    mechanism4_what_if_scenarios:
+      name: "What-If Scenarios（假设场景）"
+      goal: "通过对比理解为什么这样做"
+      timing: "每个Phase完成"
+      format: "实际方案 vs 替代方案的效果对比"
+      time_cost: "+3分钟"
+      learning_dimensions: ["所有维度"]
+
+    mechanism5_failure_learning:
+      name: "Failure Learning Entry（失败学习）"
+      goal: "每次出错都是学习机会，避免重复犯错"
+      timing: "Human发现问题、测试失败、用户报告Bug"
+      format: "根因分析 + 提炼原则 + 更新检查点"
+      time_cost: "+10分钟（但避免未来重复）"
+      learning_dimensions: ["质量意识"]
+
+  learning_metrics:
+    short_term:
+      participation_rate:
+        gate2_review_completion: ">90%"
+        interactive_challenge_response: ">80%"
+
+      understanding:
+        decision_rationale_understanding: "能说出2+个权衡维度"
+        gate2_issue_detection: "每个功能至少发现1个问题"
+
+    mid_term:
+      knowledge_reuse:
+        checklist_application: "主动使用上个项目的检查清单"
+        principle_recall: "能举例之前学到的原则"
+
+      independent_judgment:
+        level: "Human开始在Alex提出前就有判断"
+
+    long_term:
+      systemic_thinking:
+        impact_chain_length: "能预见1层/2层/3层影响"
+        failure_pattern_recognition: "能识别3+种失败模式"
+
+      quality_awareness:
+        edge_case_consideration: "主动提出边界情况"
+
+  learning_loop_completion:
+    signal: |
+      项目1 → 学到"单一数据源原则" → 更新MQ5
+             ↓
+      项目2 → Human主动问"数据存几个地方？"
+             → 设计时就避免了问题 ✅
+
+# ==================== 失败学习闭环 ====================
+failure_learning_loop:
+  enabled: true
+  description: "每次失败自动转化为未来的检查点"
+
+  trigger: "Human纠正AI错误，或发现Bug，或测试失败"
+
+  pipeline_steps:
+    step1_capture:
+      trigger: "Human说'不对'、'错了'、'这个有问题'"
+      action: "创建Failure Learning Entry"
+      data_to_capture:
+        - error_type: "技术问题类型"
+        - root_cause: "为什么发生"
+        - should_be_caught_by: "应该由哪个Gate/MQ拦截"
+        - actual_outcome: "实际上放行了"
+        - user_impact: "给用户造成的影响"
+      output_file: ".tad/archive/evidence/failures/[timestamp]_failure.yaml"
+
+    step2_analyze:
+      action: "分析应该增加什么检查点"
+      analysis_questions:
+        - "这个问题属于哪个阶段？（需求/设计/实现）"
+        - "现有的MQ能拦截吗？如果不能，为什么？"
+        - "需要什么证据才能提前发现？"
+        - "Human需要看什么才能判断？"
+      output_file: ".tad/archive/evidence/failures/[timestamp]_analysis.yaml"
+
+    step3_propose:
+      action: "生成配置更新建议"
+      proposal_content:
+        new_mq:
+          id: "MQ[X]"
+          question: "[生成的问题]"
+          required_evidence: "[证据类型]"
+          human_validation_point: "[Human看什么]"
+        or_mq_update:
+          existing_mq: "MQ[Y]"
+          enhancement: "[如何增强]"
+          new_trigger: "[更准确的触发条件]"
+      output_file: ".tad/archive/evidence/failures/[timestamp]_proposal.yaml"
+
+    step4_review:
+      action: "Human审核提案"
+      human_questions:
+        - "这个新检查点合理吗？"
+        - "会不会产生太多误报？"
+        - "我能看懂这个证据吗？"
+      decision:
+        approve: "自动更新config.yaml"
+        reject: "记录原因，不更新"
+        modify: "Human修改后更新"
+
+    step5_implement:
+      action: "自动更新配置文件"
+      files_to_update:
+        - ".tad/config.yaml"  # 添加/更新MQ
+        - ".tad/templates/handoff-a-to-b.md"  # 更新模板
+        - ".tad/archive/evidence/patterns/failure-patterns.md"  # 更新记录
+      notification: "配置已自动更新，下个项目生效"
+      changelog: "记录在.tad/CHANGELOG.md"
+
+  metrics_tracking:
+    track:
+      - "failure_count": "总失败次数"
+      - "failures_prevented": "新MQ拦截的失败"
+      - "false_positive_rate": "误报率"
+      - "mq_effectiveness": "每个MQ的有效性"
+    report_location: ".tad/archive/evidence/metrics/learning-effectiveness.md"
+

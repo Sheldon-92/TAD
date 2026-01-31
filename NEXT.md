@@ -271,7 +271,10 @@
 
 ## In Progress
 
-- [ ] TAD v2.2 improvements: handoff UX, adaptive complexity, config split
+- [ ] TAD v2.2 improvements
+  - [x] Bidirectional message protocol (Alex→Blake letter, Blake→Alex letter, Blake auto-detect)
+  - [x] Adaptive complexity assessment (Alex assesses S/M/L, suggests depth, human decides)
+  - [x] Config.yaml modular split (6 modules, master index, per-command binding)
 
 ## Pending
 

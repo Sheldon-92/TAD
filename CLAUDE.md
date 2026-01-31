@@ -60,6 +60,19 @@
 - 紧急热修复（生产环境问题）
 - 用户明确说"不用 TAD，直接帮我..."
 
+### Adaptive Complexity Assessment
+
+Alex 在用户描述任务后，自动评估复杂度并建议流程深度：
+
+| 复杂度 | 流程深度 | 说明 |
+|--------|----------|------|
+| Small | Light TAD | 2-3 问题 → 快速 Handoff → 精简 Gates |
+| Medium | Standard TAD | 4-5 问题 → Handoff → Gates |
+| Large | Full TAD | 6-8 问题 → 专家审查 → 详细 Handoff → 全部 Gates |
+| - | Skip TAD | 用户选择跳过，直接实现 |
+
+**核心原则**: Alex 评估并建议，**人类做最终决策**。Alex 不可自主决定流程深度。
+
 ---
 
 ## 3. Quality Gates 强制规则

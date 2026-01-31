@@ -1,0 +1,478 @@
+# TAD Config Module: Workflow & Document Management
+# Part of TAD config.yaml modular split (v2.2)
+# Contains: document_management, tad_maintain, requirement_elicitation,
+#           socratic_inquiry_protocol, scenarios
+# Consumers: tad-alex.md, tad-maintain.md, tad-handoff.md, tad-scenario.md, tad-elicit.md
+# ==================== 文档管理系统 ====================
+document_management:
+  manifest_file: .tad/manifest.yaml
+  naming_convention:
+    format: "{timestamp}_{version}_{task_id}_{type}_{status}.md"
+    example: "20250128_1430_v1.2_TASK001_design_draft.md"
+
+  structure:
+    active:           # 当前活跃任务
+      - tasks         # 任务追踪
+      - designs       # 设计文档
+      - handoffs      # 交接文档
+    archive:          # 已完成归档
+      - by_date       # 按日期
+      - by_task       # 按任务
+      - by_version    # 按版本
+    context: "项目长期信息"
+    working: "工作中文档"
+
+  version_control:
+    enabled: true
+    auto_increment: true
+    hash_verification: true
+    change_tracking: true
+
+  mandatory_sections:
+    header:
+      - task_id: "TASK-{YYYY}{MM}{DD}-{seq}"
+      - version: "v{major}.{minor}.{patch}"
+      - status: "draft|review|approved|implemented|archived"
+      - owner: "{agent_name}"
+      - created: "{timestamp}"
+      - modified: "{timestamp}"
+      - previous_version: "{link_to_previous}"
+
+    metadata:
+      - hash: "{file_hash}"
+      - modified_by: "{agent_name}"
+      - change_summary: "{summary}"
+
+  # Handoff 生命周期管理 (检测跨 slug 替代和过期 handoff)
+  handoff_lifecycle:
+    stale_age_days: 7                    # Active handoff 超过此天数未完成 → 标记 POTENTIALLY_STALE
+    cross_reference_window_days: 30      # 扫描 archive 中近 N 天的 handoff 进行主题匹配
+    topic_match_threshold: 2             # 标题/摘要中至少 N 个关键词重叠才判定为主题替代
+    common_words_exclude:                # 主题匹配时排除的通用词
+      - "tad"
+      - "implementation"
+      - "design"
+      - "handoff"
+      - "update"
+      - "fix"
+      - "feature"
+
+  # NEXT.md 维护规则 (防止文档无限增长)
+  next_md_maintenance:
+    description: "NEXT.md 是项目任务追踪文件，需要定期清理以保持可读性"
+
+    size_limits:
+      max_lines: 500
+      max_tokens: 20000  # 保持在 Claude 可一次读取的范围内
+      warning_threshold: 400  # 超过此行数时提醒清理
+
+    archive_rules:
+      # 归档触发条件（满足任一即触发）
+      triggers:
+        - "文件超过 500 行"
+        - "读取时出现 token 超限错误"
+        - "开始新的工作周"
+        - "用户明确要求"
+
+      # 归档目标
+      destinations:
+        completed_tasks: "docs/HISTORY.md"      # 已完成任务的历史记录
+        milestones: "CHANGELOG.md"              # 重大里程碑
+        technical_details: "docs/"              # 详细技术说明
+
+      # 保留内容
+      keep_in_next_md:
+        - "当前进行中的任务"
+        - "本周待办任务"
+        - "Blocked 任务"
+        - "最近 3 天的重要更新"
+
+    history_md_format: |
+      # Project History
+
+      ## Week of YYYY-MM-DD
+      ### Completed
+      - [x] Task 1 (date)
+      - [x] Task 2 (date)
+
+      ### Key Decisions
+      - Decision 1: reason
+
+      ### Lessons Learned
+      - Learning 1
+
+    cleanup_steps:
+      - step: 1
+        action: "识别超过 7 天的已完成任务"
+      - step: 2
+        action: "将历史内容移动到 docs/HISTORY.md"
+      - step: 3
+        action: "保留当前进行中和本周待办任务"
+      - step: 4
+        action: "更新 NEXT.md 头部的日期和状态"
+      - step: 5
+        action: "验证文件行数在 500 行以内"
+
+    agent_responsibility:
+      alex: "发现 NEXT.md 过大时，规划清理方案"
+      blake: "执行清理，移动内容到归档文件"
+
+# ==================== Document Maintenance Command ====================
+tad_maintain:
+  description: "Document health check and synchronization"
+  command_file: ".claude/commands/tad-maintain.md"
+  modes:
+    check:
+      description: "Read-only health scan"
+      triggers: ["agent_activation", "exit_command"]
+    sync:
+      description: "Scoped write operations"
+      triggers: ["accept_command"]
+    full:
+      description: "Comprehensive check + sync"
+      triggers: ["manual"]
+  auto_archive_criteria:
+    - "matching_completion_report"
+    - "superseded_by_newer_version"
+  safety:
+    write_strategy: "copy-then-delete"
+    idempotent: true
+    name_conflict_resolution: "append-timestamp-suffix"
+# ==================== 深度需求挖掘流程（借鉴BMAD的elicit） ====================
+requirement_elicitation:
+  # 强制多轮确认机制
+  mandatory_rounds:
+    minimum: 3
+    maximum: 5
+
+  round1_understanding:
+    agent_action:
+      - "复述用户需求"
+      - "识别关键价值点"
+      - "列出初步假设"
+    user_interaction:
+      format: "1-9选项格式"
+      options:
+        1: "继续下一步"
+        2: "澄清需求"
+        3: "提供更多背景"
+        4: "纠正理解偏差"
+        5: "添加约束条件"
+        6: "明确优先级"
+        7: "提供示例"
+        8: "讨论替代方案"
+        9: "重新开始"
+
+  round2_exploration:
+    agent_action:
+      - "展示理解的需求"
+      - "提出clarifying questions"
+      - "识别潜在风险"
+    must_check:
+      - "历史代码是否存在"
+      - "类似功能是否实现过"
+      - "是否有可复用组件"
+
+  round3_confirmation:
+    agent_action:
+      - "展示完整需求理解"
+      - "列出关键决策点"
+      - "确认验收标准"
+    final_check:
+      format: "必须获得明确确认"
+      options:
+        - "✅ 确认，开始设计"
+        - "🔄 需要调整"
+        - "❌ 重新分析"
+
+  # ==================== Research Phase (v1.4 新增) ====================
+  # 设计原则：融入现有 Round，按需搜索 + 最终技术回顾
+  research_phase:
+    enabled: true
+    version: "1.4"
+    description: "主动技术调研，确保技术选型基于最新信息"
+
+    # 过程中按需搜索（融入 Round 1-3）
+    inline_research:
+      trigger: "Round 中出现技术决策点"
+      action: "立即触发 MQ6 搜索"
+      examples:
+        - "用户提到想用某个框架 → 搜索该框架最新版本和最佳实践"
+        - "讨论到状态管理 → 搜索当前主流方案对比"
+        - "涉及 UI 组件库 → 搜索最新推荐"
+
+    # 最终技术回顾（Round 3 之后，设计之前）
+    final_tech_review:
+      timing: "Round 3 确认后，正式设计前"
+      name: "技术栈最终确认"
+      mandatory: true
+
+      checklist:
+        - item: "核心框架版本确认"
+          action: "搜索确认使用的是最新稳定版"
+          evidence: "版本号 + 发布日期"
+
+        - item: "关键依赖库确认"
+          action: "搜索每个关键库的最新版本和替代方案"
+          evidence: "库名 | 版本 | 替代方案 | 选择理由"
+
+        - item: "架构模式确认"
+          action: "搜索当前推荐的架构模式"
+          evidence: "模式名 | 适用场景 | 参考项目"
+
+        - item: "潜在问题预警"
+          action: "搜索该技术栈的常见坑点"
+          evidence: "问题 | 解决方案 | 来源"
+
+      output_format: |
+        ## 技术栈最终确认报告
+
+        ### 1. 核心框架
+        | 框架 | 版本 | 最新版本 | 是否需要升级 |
+        |-----|------|---------|-------------|
+
+        ### 2. 关键依赖
+        | 库名 | 选择版本 | 替代方案 | 选择理由 |
+        |-----|---------|---------|---------|
+
+        ### 3. 架构模式
+        | 模式 | 适用场景 | 参考项目/文章 |
+        |-----|---------|--------------|
+
+        ### 4. 已知坑点
+        | 问题 | 解决方案 | 来源 |
+        |-----|---------|-----|
+
+        ### 5. 调研总结
+        - 总共搜索了 X 个技术点
+        - 发现 Y 个需要注意的问题
+        - 建议：...
+
+      human_checkpoint:
+        question: "技术栈确认报告看起来完整吗？"
+        options:
+          - "✅ 确认，开始设计"
+          - "🔄 需要补充调研"
+          - "❓ 有疑问想讨论"
+
+  # 浅层响应检测
+  shallow_response_detection:
+    indicators:
+      - "立即生成技术方案"
+      - "跳过价值确认"
+      - "没有提出问题"
+      - "少于3轮交互"
+    action: "强制重新进入需求挖掘流程"
+
+# ==================== 苏格拉底式提问协议 (v1.8 新增) ====================
+socratic_inquiry_protocol:
+  enabled: true
+  version: "1.0"
+  description: "写 handoff 之前必须用 AskUserQuestion 工具进行苏格拉底式提问"
+  blocking: true
+  violation: "不调用 AskUserQuestion 直接写 handoff = VIOLATION"
+
+  # 目标
+  goals:
+    - "发现需求盲点"
+    - "验证完整性"
+    - "帮助用户做出更好决策"
+
+  # 复杂度判断
+  complexity_detection:
+    small:
+      criteria:
+        - "单文件修改"
+        - "配置调整"
+        - "简单 UI 变更"
+      question_count: "2-3"
+      example: "修改按钮颜色、更新配置文件"
+
+    medium:
+      criteria:
+        - "多文件修改"
+        - "新功能"
+        - "API 变更"
+      question_count: "4-5"
+      example: "添加新的 API 端点、实现表单验证"
+
+    large:
+      criteria:
+        - "架构变更"
+        - "复杂功能"
+        - "跨模块重构"
+      question_count: "6-8"
+      example: "重构认证系统、添加新的数据流"
+
+  # 问题维度
+  question_dimensions:
+    value_validation:
+      description: "验证价值"
+      example_questions:
+        - "这个功能解决的核心痛点是什么？"
+        - "如果不做这个功能，用户会怎样？"
+        - "这个功能的成功标准是什么？"
+
+    boundary_clarification:
+      description: "边界澄清"
+      example_questions:
+        - "哪些场景明确不需要支持？"
+        - "有什么约束条件我应该知道？"
+        - "最小可行版本应该包含什么？"
+
+    risk_foresight:
+      description: "风险预见"
+      example_questions:
+        - "如果这个功能出问题，最坏情况是什么？"
+        - "有什么依赖可能会失败？"
+        - "用户可能会怎么误用这个功能？"
+
+    acceptance_criteria:
+      description: "验收标准"
+      example_questions:
+        - "怎样算做完了？"
+        - "你会怎么测试这个功能？"
+        - "什么情况下你会说'这不是我要的'？"
+
+    user_scenarios:
+      description: "用户场景"
+      example_questions:
+        - "典型用户会怎么使用这个功能？"
+        - "有没有边缘用户群需要考虑？"
+        - "用户的使用频率如何？"
+
+    technical_constraints:
+      description: "技术约束"
+      example_questions:
+        - "有哪些现有系统的限制需要考虑？"
+        - "性能要求是什么？"
+        - "需要兼容哪些平台/浏览器？"
+
+  # 执行流程
+  execution_flow:
+    step_1:
+      name: "复杂度评估"
+      action: "根据任务描述判断复杂度级别"
+      output: "small/medium/large"
+
+    step_2:
+      name: "维度选择"
+      action: "根据任务类型选择 2-4 个最相关的问题维度"
+      guideline: "优先选择：value_validation, acceptance_criteria"
+
+    step_3:
+      name: "问题组织"
+      action: "从选中维度挑选最相关的问题"
+      format: "使用 AskUserQuestion 工具"
+
+    step_4:
+      name: "用户回答"
+      action: "收集用户答案"
+      follow_up: "可以进行自由讨论补充"
+
+    step_5:
+      name: "总结输出"
+      action: "生成 Inquiry Summary"
+      format: |
+        ## Socratic Inquiry Summary
+
+        **Task**: {任务描述}
+        **Complexity**: {small/medium/large}
+        **Questions Asked**: {问题数量}
+
+        ### Key Insights
+        - {洞察 1}
+        - {洞察 2}
+        ...
+
+        ### Clarified Requirements
+        - {澄清的需求 1}
+        - {澄清的需求 2}
+        ...
+
+        ### Risks Identified
+        - {识别的风险 1}
+        ...
+
+        ### Acceptance Criteria
+        - [ ] {验收标准 1}
+        - [ ] {验收标准 2}
+        ...
+
+  # 禁止行为
+  forbidden_actions:
+    - "不用 AskUserQuestion 直接写 handoff"
+    - "问完问题不等用户回答就开始写"
+    - "跳过复杂度评估，问题数量与任务不匹配"
+    - "只问一个维度的问题"
+
+  # 与 handoff 的集成
+  handoff_integration:
+    prerequisite: "必须先完成 Socratic Inquiry"
+    include_in_handoff: "在 handoff 中包含 Inquiry Summary"
+    verification: "Gate 2 检查是否有 Inquiry Summary"
+
+# ==================== 场景工作流（增强版） ====================
+scenarios:
+  # 每个场景都有强制要求
+  new_project:
+    trigger: "没有任何代码，从零开始"
+
+    agent_a_workflow:
+      phase1_requirements:
+        mandatory_subagents: ["product-expert"]
+        minimum_time: "30 minutes"
+        deliverable: ".tad/active/requirements_v{n}.md"
+        user_confirmation: required
+
+      phase2_architecture:
+        mandatory_subagents: ["backend-architect", "api-designer"]
+        deliverable: ".tad/active/architecture_v{n}.md"
+        review_required: true
+
+      phase3_handoff:
+        content:
+          - "完整需求文档"
+          - "架构设计图"
+          - "实施步骤"
+          - "验收标准"
+        format: ".tad/active/handoffs/project_init_{timestamp}.md"
+
+    agent_b_workflow:
+      phase1_validation:
+        check: "验证handoff完整性"
+        missing_info_action: "返回Agent A补充"
+
+      phase2_execution:
+        mandatory_subagents: ["parallel-coordinator", "devops-engineer"]
+        parallel_tasks:
+          - "项目结构创建"
+          - "基础配置设置"
+          - "开发环境搭建"
+
+      phase3_testing:
+        mandatory_subagents: ["test-runner"]
+        coverage_requirement: ">80%"
+
+  bug_fix:
+    trigger: "发现问题需要修复"
+
+    agent_a_workflow:
+      phase1_analysis:
+        mandatory_subagents: ["bug-hunter"]
+        deliverable: ".tad/active/tasks/bug_analysis_{id}.md"
+        must_include:
+          - "问题重现步骤"
+          - "根因分析"
+          - "影响范围"
+          - "修复方案"
+
+    agent_b_workflow:
+      phase1_reproduce:
+        action: "必须先重现问题"
+        failure_action: "返回Agent A重新分析"
+
+      phase2_fix:
+        mandatory_subagents: ["bug-hunter", "test-runner"]
+        regression_test: required
+

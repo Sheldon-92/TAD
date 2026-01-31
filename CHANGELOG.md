@@ -5,6 +5,48 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-01-31
+
+### Added
+
+- **Bidirectional Message Protocol**: Structured copy-pasteable messages between agents
+  - Alex auto-generates "Message from Alex" after handoff creation (task, priority, key files, notes)
+  - Blake auto-generates "Message from Blake" after completion (status, changes, evidence)
+  - Messages designed for human to copy-paste between Terminal 1 and Terminal 2
+
+- **Blake Active Handoff Auto-Detection** (STEP 3.6)
+  - On startup, Blake scans `.tad/active/handoffs/` for pending handoffs
+  - Presents list to user via AskUserQuestion
+  - User can pick one to execute or skip
+
+- **Adaptive Complexity Assessment**
+  - Alex auto-assesses task complexity (Small/Medium/Large) based on signals
+  - Suggests process depth: Full TAD / Standard TAD / Light TAD / Skip TAD
+  - Human makes final decision via AskUserQuestion
+  - User's choice overrides internal complexity detection
+
+- **Modular Config Architecture** (config.yaml split)
+  - `config.yaml` (master index, 327 lines) - module index, per-command binding, system config
+  - `config-agents.yaml` (288 lines) - activation protocol, triangle model, human role
+  - `config-quality.yaml` (741 lines) - quality gates, evidence, mandatory questions, sub-agents
+  - `config-workflow.yaml` (478 lines) - document management, elicitation, socratic inquiry
+  - `config-execution.yaml` (375 lines) - Ralph Loop, release management, learning mechanisms
+  - `config-platform.yaml` (287 lines) - multi-platform support, MCP tools
+  - Original 2398-line monolith → 6 focused modules with master index
+  - Per-command module binding: each command loads only what it needs
+  - Full backup preserved at `config-full-backup.yaml`
+
+### Changed
+
+- **Alex workflow** updated to 8 steps (added Assess step)
+- **Alex on_start** greeting mentions complexity assessment
+- **Blake on_start** greeting mentions auto-detect feature
+- **Agent STEP 3** now loads modular config files instead of monolithic config.yaml
+- **tad-help.md** updated with Adaptive Complexity and Bidirectional Message sections
+- **CLAUDE.md** updated with Adaptive Complexity table
+
+---
+
 ## [2.1.2] - 2026-01-31
 
 ### Removed
