@@ -1,0 +1,59 @@
+description = "Check TAD Framework Status - TAD Framework"
+
+prompt = """
+# /tad-status Command (TAD Status Check)
+
+Check and report TAD configuration status.
+
+## Context Files
+@{GEMINI.md}
+@{.tad/config.yaml}
+
+## Status Checks
+
+### 1. Core Files
+- .tad/config.yaml
+- .claude/commands/tad-alex.md
+- .claude/commands/tad-blake.md
+- CLAUDE.md (or GEMINI.md for Gemini CLI)
+- PROJECT_CONTEXT.md
+
+### 2. Configuration
+- Read .tad/config.yaml version
+- Verify scenarios configured
+- Verify sub-agents listed
+
+### 3. Project Files
+- .tad/active/handoffs/ directory
+- .tad/project-knowledge/ directory
+- Existing project documents
+
+### 4. Multi-Platform Support
+- Claude Code: CLAUDE.md + .claude/commands/
+- Codex CLI: AGENTS.md
+- Gemini CLI: GEMINI.md + .gemini/commands/
+
+## Output Format
+```
+TAD Framework Status Report
+Generated: [timestamp]
+
+INSTALLATION CHECK
+[status] Core directory structure
+[status] Agent definition files
+[status] Configuration files
+[status] Template files
+
+MULTI-PLATFORM STATUS
+[status] Claude Code: CLAUDE.md
+[status] Codex CLI: AGENTS.md
+[status] Gemini CLI: GEMINI.md
+
+READINESS STATUS
+[status] Ready for Agent A activation
+[status] Ready for Agent B activation
+```
+
+## Arguments
+{{args}}
+"""

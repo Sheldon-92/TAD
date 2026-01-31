@@ -1,15 +1,16 @@
-# TAD Configuration v2.1 - Agent-Agnostic Architecture
+# TAD Configuration v2.1.1 - Simplified Multi-Platform Architecture
 method: TAD
-version: 2.1.0
+version: 2.1.1
 description: Triangle Agent Development - Multi-Platform Support + Ralph Loop + 苏格拉底式提问 + 知识驱动开发
 last_updated: 2026-01-26
 
-# ==================== Multi-Platform Configuration (NEW in v2.1) ====================
+# ==================== Multi-Platform Configuration (v2.1.1 Simplified) ====================
 multi_platform:
   enabled: true
-  version: "1.0"
+  version: "1.1"
   description: |
-    TAD v2.1 supports multiple AI coding assistants:
+    TAD v2.1.1 supports multiple AI coding assistants.
+    All conversion logic is in /tad-init command (no separate adapters).
     - Claude Code (primary): Full subagent support
     - Codex CLI (secondary): Self-check mode with native skills
     - Gemini CLI (secondary): Self-check mode with TOML commands
@@ -19,21 +20,24 @@ multi_platform:
       enabled: true
       skill_execution: "subagent"
       config_dir: ".claude"
+      commands_dir: ".claude/commands"
       project_instructions: "CLAUDE.md"
 
     codex:
       enabled: true
       skill_execution: "self-check"
       config_dir: ".codex"
+      commands_dir: "~/.codex/prompts"
+      command_prefix: "tad_"
       project_instructions: "AGENTS.md"
-      notes: "Has native SKILL.md support"
 
     gemini:
       enabled: true
       skill_execution: "self-check"
       config_dir: ".gemini"
+      commands_dir: ".gemini/commands"
+      command_format: "toml"
       project_instructions: "GEMINI.md"
-      notes: "Uses TOML for custom commands"
 
   skills:
     directory: ".tad/skills"
@@ -48,10 +52,8 @@ multi_platform:
       - api-design
       - debugging
 
-  adapters:
-    directory: ".tad/adapters"
-    schema: ".tad/adapters/adapter-schema.yaml"
-    platforms_config: ".tad/adapters/platform-codes.yaml"
+  # NOTE: adapters directory removed in v2.1.1
+  # Conversion logic is now directly in /tad-init command
 
 # ==================== Ralph Loop Configuration Reference ====================
 # TAD v2.0 introduces Ralph Loop for Blake's execution phase
@@ -109,6 +111,20 @@ document_management:
       - hash: "{file_hash}"
       - modified_by: "{agent_name}"
       - change_summary: "{summary}"
+
+  # Handoff 生命周期管理 (检测跨 slug 替代和过期 handoff)
+  handoff_lifecycle:
+    stale_age_days: 7                    # Active handoff 超过此天数未完成 → 标记 POTENTIALLY_STALE
+    cross_reference_window_days: 30      # 扫描 archive 中近 N 天的 handoff 进行主题匹配
+    topic_match_threshold: 2             # 标题/摘要中至少 N 个关键词重叠才判定为主题替代
+    common_words_exclude:                # 主题匹配时排除的通用词
+      - "tad"
+      - "implementation"
+      - "design"
+      - "handoff"
+      - "update"
+      - "fix"
+      - "feature"
 
   # NEXT.md 维护规则 (防止文档无限增长)
   next_md_maintenance:
@@ -169,6 +185,28 @@ document_management:
     agent_responsibility:
       alex: "发现 NEXT.md 过大时，规划清理方案"
       blake: "执行清理，移动内容到归档文件"
+
+# ==================== Document Maintenance Command ====================
+tad_maintain:
+  description: "Document health check and synchronization"
+  command_file: ".claude/commands/tad-maintain.md"
+  modes:
+    check:
+      description: "Read-only health scan"
+      triggers: ["agent_activation", "exit_command"]
+    sync:
+      description: "Scoped write operations"
+      triggers: ["accept_command"]
+    full:
+      description: "Comprehensive check + sync"
+      triggers: ["manual"]
+  auto_archive_criteria:
+    - "matching_completion_report"
+    - "superseded_by_newer_version"
+  safety:
+    write_strategy: "copy-then-delete"
+    idempotent: true
+    name_conflict_resolution: "append-timestamp-suffix"
 
 # ==================== Agent 激活协议 ====================
 activation_protocol:

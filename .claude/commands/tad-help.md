@@ -9,7 +9,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
-Version: v1.4 | Generated: [timestamp]
+Version: v2.1.1 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -25,6 +25,7 @@ Each command produces standardized output:
 /tad-status   → Status report + readiness verification
 /tad-scenario → Scenario plan + agent assignments
 /tad-help     → This structured help guide
+/tad-maintain → Document health check, sync, and cleanup (3 modes: check/sync/full)
 /tad-learn    → Framework-level learning recorder (v1.4)
 
 🎭 AGENT ACTIVATION PROTOCOL
@@ -60,6 +61,7 @@ Terminal 2: Use /blake command to activate Agent B
 - `/tad-status` - Check TAD installation and configuration
 - `/tad-scenario [name]` - Start a development scenario
 - `/tad-help` - Show this help message
+- `/tad-maintain` - Document health check, sync, and cleanup (3 modes: check/sync/full)
 - `/tad-learn` - Record framework-level learning and suggestions (v1.4)
 
 ## Available Scenarios

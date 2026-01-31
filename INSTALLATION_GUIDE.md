@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.1.0 - Agent-Agnostic Architecture**
+**Version 2.1.1 - Document Lifecycle Management**
 
 ## 方式1：一键安装（推荐）
 
@@ -82,12 +82,12 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.1)
+### `.tad`文件夹结构 (v2.1.1)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置
-├── version.txt           # 版本号 (2.1)
-├── skills/               # 平台无关技能 (v2.1 NEW)
+├── version.txt           # 版本号 (2.1.1)
+├── skills/               # 平台无关技能 (8 P0 skills)
 │   ├── testing/SKILL.md
 │   ├── code-review/SKILL.md
 │   ├── security-audit/SKILL.md
@@ -96,19 +96,14 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
 │   ├── architecture/SKILL.md
 │   ├── api-design/SKILL.md
 │   └── debugging/SKILL.md
-├── adapters/             # 平台适配器 (v2.1 NEW)
-│   ├── platform-codes.yaml
-│   ├── claude/adapter.yaml
-│   ├── codex/adapter.yaml
-│   └── gemini/adapter.yaml
 ├── ralph-config/         # Ralph Loop配置
 │   ├── loop-config.yaml
 │   └── expert-criteria.yaml
+├── templates/            # 文档模板 (handoff, completion, output formats)
 ├── active/handoffs/      # 当前进行中的handoffs
 ├── archive/handoffs/     # 已完成的handoffs
 ├── evidence/reviews/     # Gate证据文件
-├── project-knowledge/    # 项目特定知识
-└── templates/            # 文档模板
+└── project-knowledge/    # 项目特定知识
 ```
 
 ### 关键配置文件
@@ -165,23 +160,23 @@ claude .
 ### 检查清单
 - [ ] `.claude/settings.json` 存在
 - [ ] `.tad/config.yaml` 存在
-- [ ] `.tad/version.txt` 显示 2.1
+- [ ] `.tad/version.txt` 显示 2.1.1
 - [ ] `.tad/skills/` 包含 8 个技能目录
-- [ ] `.tad/adapters/` 包含平台配置
+- [ ] `.claude/commands/tad-maintain.md` 存在
 
 ### 测试命令
 ```bash
 # 检查版本
 cat .tad/version.txt
-# 应该返回: 2.1
+# 应该返回: 2.1.1
 
-# 验证技能系统 (v2.1)
+# 验证技能系统
 ls .tad/skills/
 # 应该返回: api-design  architecture  code-review  debugging  performance  security-audit  testing  ux-review
 
-# 验证适配器系统 (v2.1)
-ls .tad/adapters/
-# 应该返回: adapter-schema.yaml  claude  codex  gemini  platform-codes.yaml
+# 验证 /tad-maintain 命令 (v2.1.1 NEW)
+cat .claude/commands/tad-maintain.md | head -1
+# 应该返回: # TAD Maintain Command
 
 # 验证Ralph Loop配置
 ls .tad/ralph-config/
@@ -212,8 +207,7 @@ TAD/
 │   └── skills/            # Claude增强技能
 ├── .tad/                  # TAD核心文件
 │   ├── config.yaml        # 主配置
-│   ├── skills/            # 平台无关技能 (v2.1 NEW)
-│   ├── adapters/          # 平台适配器 (v2.1 NEW)
+│   ├── skills/            # 平台无关技能 (8 P0 skills)
 │   ├── ralph-config/      # Ralph Loop配置
 │   ├── templates/         # 文档模板
 │   └── project-knowledge/ # 项目知识
@@ -224,13 +218,13 @@ TAD/
 ├── README.md              # TAD介绍
 ├── INSTALLATION_GUIDE.md  # 本文档
 ├── CHANGELOG.md           # 版本历史
-└── tad.sh                 # 一键安装/升级脚本 (v2.1 多平台支持)
+└── tad.sh                 # 一键安装/升级脚本 (多平台支持)
 ```
 
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到v2.1
+# 从任何旧版本升级到v2.1.1
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
@@ -238,7 +232,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 # - 检测已安装的AI CLI工具 (Claude/Codex/Gemini)
 # - 保留你的handoffs、learnings、evidence
 # - 安装8个P0技能文件
-# - 安装平台适配器
+# - 安装/tad-maintain命令 (v2.1.1 NEW)
 # - 为检测到的平台生成配置
 ```
 
@@ -281,11 +275,11 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 ## 总结
 
-TAD v2.1 核心特性：
-1. **多平台支持** - Claude Code、Codex CLI、Gemini CLI
-2. **8个P0技能** - testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
-3. **自动平台检测** - 安装时自动检测并配置
-4. **100%向后兼容** - 现有Claude Code用户无需任何更改
-5. **Ralph Loop** - 自动质量循环直到专家批准（v2.0特性）
+TAD v2.1.1 核心特性：
+1. **`/tad-maintain` 命令** - 文档健康检查、过期 handoff 检测、自动清理
+2. **多平台支持** - Claude Code、Codex CLI、Gemini CLI
+3. **8个P0技能** - testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
+4. **自动平台检测** - 安装时自动检测并配置
+5. **Ralph Loop** - 自动质量循环直到专家批准
 
 任何新项目只要安装TAD，Claude Code、Codex CLI 或 Gemini CLI 都能立即识别并使用TAD方法论。

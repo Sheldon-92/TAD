@@ -1,0 +1,73 @@
+# TAD Framework Rules (Codex CLI)
+
+This file defines TAD rules for Codex CLI. Converted from CLAUDE.md.
+
+## Platform Notes
+
+- **Skill execution**: Self-check mode (read SKILL.md manually instead of calling subagents)
+- **Commands**: Use `/prompts:tad_alex`, `/prompts:tad_blake`, etc.
+- **Evidence**: Same location `.tad/evidence/reviews/`
+- **Skills location**: `~/.codex/skills/tad/{skill-id}/SKILL.md`
+
+---
+
+## Command Reference
+
+| TAD Command | Codex Equivalent |
+|-------------|------------------|
+| /alex | /prompts:tad_alex |
+| /blake | /prompts:tad_blake |
+| /gate | /prompts:tad_gate |
+| /tad-init | /prompts:tad_init |
+| /tad-status | /prompts:tad_status |
+| /tad-help | /prompts:tad_help |
+
+---
+
+## Skill Execution (Self-Check Mode)
+
+Instead of calling subagents, read and follow skill checklists manually:
+
+1. **Code Review**: Read `~/.codex/skills/tad/code-review/SKILL.md`
+2. **Testing**: Read `~/.codex/skills/tad/testing/SKILL.md`
+3. **Security Audit**: Read `~/.codex/skills/tad/security-audit/SKILL.md`
+4. **Performance**: Read `~/.codex/skills/tad/performance/SKILL.md`
+
+### Execution Flow
+1. Read the SKILL.md file
+2. Parse checklist items by priority (P0, P1, P2, P3)
+3. Execute each check against target files
+4. Record pass/fail for each item
+5. Generate evidence file at `.tad/evidence/reviews/{date}-{skill}-{task}.md`
+6. P0 items must all pass; P1 based on skill's max_failures
+
+---
+
+## Core TAD Rules
+
+{PASTE_CLAUDE_MD_CORE_RULES_HERE}
+
+Replace this section with the core rules from CLAUDE.md, adjusting:
+- "Claude Code" → "Codex CLI"
+- "/alex" → "/prompts:tad_alex"
+- "/blake" → "/prompts:tad_blake"
+- "Task tool with subagent" → "read skill from .tad/skills/{skill}/SKILL.md"
+
+---
+
+## TAD Workflow Summary
+
+1. **Alex (Terminal 1)**: Requirements analysis and design
+   - Command: `/prompts:tad_alex`
+   - Creates handoff documents
+
+2. **Blake (Terminal 2)**: Implementation and execution
+   - Command: `/prompts:tad_blake`
+   - Executes based on handoff
+
+3. **Quality Gates**: Checkpoints throughout
+   - Command: `/prompts:tad_gate`
+   - Gate 1: Requirements Clarity
+   - Gate 2: Design Completeness
+   - Gate 3: Implementation Quality
+   - Gate 4: Integration Verification

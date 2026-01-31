@@ -1,30 +1,35 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.1.0 - Agent-Agnostic Architecture**
+**Version 2.1.1 - Document Lifecycle Management**
 
-> 🚀 **TAD v2.1** introduces **Multi-Platform Support** - use TAD with Claude Code, Codex CLI, or Gemini CLI.
+> 🚀 **TAD v2.1.1** adds **`/tad-maintain`** - automated document health checks and stale handoff detection.
 >
 > 📚 **[Documentation Portal](docs/README.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
-## 🎯 What's New in v2.1
+## 🎯 What's New in v2.1.1
 
-### Agent-Agnostic Architecture (NEW)
-- **Multi-Platform Support**: TAD now works with multiple AI coding assistants
-  - **Claude Code**: Full subagent support (primary)
-  - **Codex CLI**: Self-check mode with native SKILL.md support
-  - **Gemini CLI**: Self-check mode with TOML commands
+### `/tad-maintain` Command (NEW)
+- **3 Modes**: CHECK (read-only scan), SYNC (scoped writes), FULL (comprehensive)
+- **Handoff Lifecycle Audit**: 4 detection criteria
+  - Criterion A/B: Slug-based completion and version matching (auto)
+  - Criterion C: Age-based stale detection (>7 days, user confirms)
+  - Criterion D: Topic cross-reference against archived handoffs (user confirms)
+- **NEXT.md Monitoring**: Size thresholds, automatic archival to `docs/HISTORY.md`
+- **PROJECT_CONTEXT.md Sync**: Auto-create and keep in sync
+- **Auto-triggers**: Runs on agent activation, `*exit`, and `*accept`
+
+### Simplified Architecture (Changed in v2.1.1)
+- Removed `.tad/adapters/` directory — all conversion logic now in `/tad-init`
+- Removed command converter templates — simpler, more maintainable
+
+### Multi-Platform Support (from v2.1.0)
+- **Claude Code**: Full subagent support (primary)
+- **Codex CLI**: Self-check mode with native SKILL.md support
+- **Gemini CLI**: Self-check mode with TOML commands
 - **8 Platform-Agnostic Skills**: testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
-- **Automatic Platform Detection**: Installation script detects and configures all installed tools
-- **100% Backward Compatible**: Existing Claude Code users need no changes
-
-### Platform Adapter System (NEW)
-- `.tad/skills/` - Platform-agnostic skill definitions (YAML frontmatter + checklist)
-- `.tad/adapters/` - Platform-specific configurations
-- Automatic `AGENTS.md` generation for Codex CLI
-- Automatic `GEMINI.md` generation for Gemini CLI
-- TOML command conversion for Gemini
+- **Automatic Platform Detection**: Installation script detects and configures all tools
 
 ### From v2.0 (Retained)
 - **Ralph Loop**: Autonomous quality cycles with expert review
@@ -56,8 +61,8 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.1 configuration
-│   ├── skills/                  # Platform-agnostic skills (NEW in v2.1)
+│   ├── config.yaml              # v2.1.1 configuration
+│   ├── skills/                  # Platform-agnostic skills (8 P0 skills)
 │   │   ├── testing/SKILL.md
 │   │   ├── code-review/SKILL.md
 │   │   ├── security-audit/SKILL.md
@@ -66,12 +71,8 @@ your-project/
 │   │   ├── architecture/SKILL.md
 │   │   ├── api-design/SKILL.md
 │   │   └── debugging/SKILL.md
-│   ├── adapters/                # Platform adapters (NEW in v2.1)
-│   │   ├── platform-codes.yaml
-│   │   ├── claude/adapter.yaml
-│   │   ├── codex/adapter.yaml
-│   │   └── gemini/adapter.yaml
 │   ├── ralph-config/            # Ralph Loop configuration
+│   ├── templates/               # Handoff, completion, output format templates
 │   ├── active/handoffs/         # Active handoff documents
 │   ├── archive/handoffs/        # Completed handoffs
 │   ├── project-knowledge/       # Project-specific learnings
@@ -103,15 +104,15 @@ rm -rf .tad-temp
 ```bash
 # Check version
 cat .tad/version.txt
-# Should show: 2.1
+# Should show: 2.1.1
 
-# Check skills (v2.1)
+# Check skills
 ls .tad/skills/
 # Should show: 8 skill directories
 
-# Check adapters (v2.1)
-ls .tad/adapters/
-# Should show: platform-codes.yaml, claude/, codex/, gemini/
+# Check /tad-maintain command (v2.1.1)
+cat .claude/commands/tad-maintain.md | head -1
+# Should show: # TAD Maintain Command
 ```
 
 ---
@@ -236,6 +237,7 @@ Alex: [Reviews with subagents, accepts or requests changes]
 | `/gate N` | Both | Execute quality gate N |
 | `/knowledge-audit` | Both | Audit project knowledge health |
 | `/tad-init` | - | Initialize TAD in new project |
+| `/tad-maintain` | - | Document health check and sync |
 | `/tad-learn` | Both | Record framework improvement |
 
 ### Alex Commands (use `*` prefix)
@@ -289,7 +291,8 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v2.1** | **Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills** |
+| **v2.1.1** | **`/tad-maintain`, Stale Detection (Criterion C/D), Simplified Adapters** |
+| v2.1.0 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills |
 | v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout |
 | v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
 | v1.6 | Evidence-Based Gates, Output Templates, Skills Architecture |
@@ -376,6 +379,6 @@ Learnings are pushed to `.tad/learnings/pushed/` for framework updates.
 
 ---
 
-**Welcome to TAD v2.1 - Agent-Agnostic Quality-Driven Development.**
+**Welcome to TAD v2.1.1 - Agent-Agnostic Quality-Driven Development.**
 
 *Use your favorite AI coding assistant. TAD adapts to your tools.*

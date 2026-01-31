@@ -249,20 +249,33 @@
   - [x] 更新 TAD 项目自身的 .gitignore，移除所有 TAD 忽略规则
   - [x] 同步修改到 GitHub，确保后续安装能获取完整 TAD 文件
 
-## 本周
+## Recently Completed
 
-- [ ] 在实际项目中测试 MQ6 和 Research Phase
-- [ ] 收集使用反馈，优化 Skills 内容
+- [x] TAD v2.1.1 release (2026-01-31)
+  - /tad-maintain command (3 modes: check/sync/full)
+  - Criterion C/D stale detection (age + topic cross-reference)
+  - handoff_lifecycle config section
+  - CLAUDE.md section 8 (document maintenance rules)
+  - Simplified adapter architecture (removed .tad/adapters/)
+  - Updated all docs: README, CHANGELOG, INSTALLATION_GUIDE
+  - Pushed to GitHub
 
-## 待定
+- [x] Run `/tad-maintain` full mode to clean up stale active handoffs
+- [x] Archive multi-platform-init handoff (superseded by agent-agnostic-architecture)
 
-- [ ] 根据使用反馈优化 /tad-learn 工作流
-- [ ] 考虑 Skills 的版本管理机制
-- [ ] 探索 MQ6 搜索结果的缓存/复用
+## This Week
 
-## 阻塞/等待
+- [ ] Test auto-trigger behavior on next /alex or /blake activation
+- [ ] Verify Criterion C/D detection on real stale handoffs
 
-（无）
+## Pending
+
+- [ ] Optimize /tad-learn workflow based on usage feedback
+- [ ] Consider Skills version management
+
+## Blocked
+
+(none)
 
 ---
 

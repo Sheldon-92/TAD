@@ -485,7 +485,45 @@ npm version major       # 版本号 +1.0.0
 
 ---
 
-## 8. 违规处理
+## 8. 文档维护规则 (/tad-maintain)
+
+`/tad-maintain` 是独立于 Alex/Blake 的维护命令，可在任何 Terminal 运行（Terminal 隔离规则的显式例外）。
+
+### 三种模式
+| 模式 | 触发时机 | 操作范围 |
+|------|----------|----------|
+| CHECK | Agent 激活时、`*exit` 时 | 只读扫描，终端报告 |
+| SYNC | `*accept` 完成后 | 归档当前 handoff + NEXT.md 清理 |
+| FULL | 手动 `/tad-maintain` | 全面检查 + 全面同步 |
+
+### Handoff 自动清理条件（仅 SYNC/FULL 模式）
+满足以下条件的 active handoff 将被自动处理:
+1. **COMPLETED** (归档): archive 中已有对应的 COMPLETION 报告（slug 匹配）→ 移动到 archive
+2. **STALE** (删除): archive 中已有更高版本的同名文件（slug + version 匹配）→ 从 active 删除（archive 已有更新版本，无需再次归档）
+
+STALE 删除前必须验证 archive 中确实存在更新版本。
+
+以下条件需要用户确认（仅 FULL 模式，通过 AskUserQuestion 交互）:
+3. **POTENTIALLY_STALE** (超龄): active handoff 超过 `stale_age_days`（默认 7 天）未完成 → 提示用户确认归档/保留/删除
+4. **POTENTIALLY_SUPERSEDED** (主题替代): archive 中近期 handoff 的标题/摘要与 active handoff 主题重叠 → 提示用户确认
+
+**禁止**: 不得基于文件修改时间推测 handoff 是否完成。
+**禁止**: Criterion C/D 不得自动归档，必须经过用户确认。
+
+### NEXT.md 清理规则（阈值来自 config.yaml）
+- 超过 `warning_threshold`（默认 400 行）→ 报告 WARNING
+- 超过 `max_lines`（默认 500 行）→ 触发自动归档到 `docs/HISTORY.md`
+- 归档对象: 完成超过 7 天的 `## 已完成` 段落
+- 保留: In Progress / Today / This Week / Blocked / 近 7 天完成
+
+### 写操作安全规则
+- 先写目标文件，确认成功后再删除源文件
+- 文件名冲突时添加 `-dup-{timestamp}` 后缀
+- 操作前检查源文件是否仍存在（幂等性）
+
+---
+
+## 9. 违规处理
 
 如果 Claude 违反以上规则（如绕过 Blake、跳过 Gates）：
 1. 立即停止当前操作

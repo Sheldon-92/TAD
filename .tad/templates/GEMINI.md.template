@@ -1,0 +1,94 @@
+# TAD Framework Rules (Gemini CLI)
+
+This file defines TAD rules for Gemini CLI. Converted from CLAUDE.md.
+
+## Platform Notes
+
+- **Skill execution**: Self-check mode (read SKILL.md manually instead of calling subagents)
+- **Commands**: Use `/tad-alex`, `/tad-blake`, etc.
+- **Evidence**: Same location `.tad/evidence/reviews/`
+- **Context syntax**: Use `@{file}` for file references, `!{command}` for shell output
+
+---
+
+## Command Reference
+
+| TAD Command | Gemini Equivalent |
+|-------------|-------------------|
+| /alex | /tad-alex |
+| /blake | /tad-blake |
+| /gate | /tad-gate |
+| /tad-init | /tad-init |
+| /tad-status | /tad-status |
+| /tad-help | /tad-help |
+
+---
+
+## Gemini Context Syntax
+
+Use these special syntaxes for context injection:
+
+| Syntax | Purpose | Example |
+|--------|---------|---------|
+| `@{path}` | Include file content | `@{GEMINI.md}` |
+| `@{dir/}` | List directory | `@{.tad/skills/}` |
+| `!{cmd}` | Shell output | `!{git status}` |
+| `{{args}}` | User arguments | Command input |
+
+---
+
+## Skill Execution (Self-Check Mode)
+
+Instead of calling subagents, read and follow skill checklists manually:
+
+1. **Code Review**: Read `.tad/skills/code-review/SKILL.md`
+2. **Testing**: Read `.tad/skills/testing/SKILL.md`
+3. **Security Audit**: Read `.tad/skills/security-audit/SKILL.md`
+4. **Performance**: Read `.tad/skills/performance/SKILL.md`
+
+### Execution Flow
+1. Read the SKILL.md file: `@{.tad/skills/{skill-id}/SKILL.md}`
+2. Parse checklist items by priority (P0, P1, P2, P3)
+3. Execute each check against target files
+4. Record pass/fail for each item
+5. Generate evidence file at `.tad/evidence/reviews/{date}-{skill}-{task}.md`
+6. P0 items must all pass; P1 based on skill's max_failures
+
+---
+
+## Core TAD Rules
+
+{PASTE_CLAUDE_MD_CORE_RULES_HERE}
+
+Replace this section with the core rules from CLAUDE.md, adjusting:
+- "Claude Code" → "Gemini CLI"
+- "Task tool with subagent" → "read skill from .tad/skills/{skill}/SKILL.md"
+
+---
+
+## TAD Workflow Summary
+
+1. **Alex (Terminal 1)**: Requirements analysis and design
+   - Command: `/tad-alex`
+   - Creates handoff documents
+
+2. **Blake (Terminal 2)**: Implementation and execution
+   - Command: `/tad-blake`
+   - Executes based on handoff
+
+3. **Quality Gates**: Checkpoints throughout
+   - Command: `/tad-gate`
+   - Gate 1: Requirements Clarity
+   - Gate 2: Design Completeness
+   - Gate 3: Implementation Quality
+   - Gate 4: Integration Verification
+
+---
+
+## Memory Commands (Gemini-specific)
+
+Gemini CLI supports memory commands for context management:
+
+- `/memory show` - Display current memory/context
+- `/memory refresh` - Refresh context from files
+- `/memory add <text>` - Add text to memory

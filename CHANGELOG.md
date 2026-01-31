@@ -5,6 +5,51 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-01-31
+
+### Added
+
+- **`/tad-maintain` Command**: Document health check and synchronization
+  - Three modes: CHECK (read-only), SYNC (scoped writes), FULL (comprehensive)
+  - Handoff lifecycle audit with 4 detection criteria (A/B/C/D)
+  - NEXT.md automatic size monitoring and archival
+  - PROJECT_CONTEXT.md sync and creation
+  - Document consistency checks (version alignment, orphan detection)
+  - Auto-triggers on agent activation (`*exit`) and `*accept`
+
+- **Handoff Stale Detection** (Criterion C/D)
+  - Criterion C (AGE_STALE): Flags active handoffs older than `stale_age_days` (default 7)
+  - Criterion D (TOPIC_SUPERSEDED): Cross-references archived handoffs by topic keyword overlap
+  - Interactive user confirmation via AskUserQuestion (never auto-archives)
+  - Configurable thresholds in `config.yaml` under `handoff_lifecycle`
+
+- **New Configuration**: `handoff_lifecycle` section in `config.yaml`
+  - `stale_age_days`, `cross_reference_window_days`, `topic_match_threshold`
+  - `common_words_exclude` list for topic matching
+
+- **New Templates**
+  - `.tad/templates/AGENTS.md.template` - Codex CLI project instructions template
+  - `.tad/templates/GEMINI.md.template` - Gemini CLI project instructions template
+
+- **CLAUDE.md Section 8**: Document maintenance rules with Criterion 1-4
+
+### Changed
+
+- **Simplified Adapter Architecture**: Removed `.tad/adapters/` directory
+  - All platform conversion logic consolidated into `/tad-init` command
+  - Removed `adapter-schema.yaml`, `platform-codes.yaml`, per-platform adapter files
+  - Removed `.tad/templates/command-converters/` (to-codex.template, to-gemini.template)
+  - Simpler, more maintainable multi-platform support
+
+- **config.yaml**: Updated to v2.1.1 with `handoff_lifecycle` and simplified `multi_platform` section
+
+### Removed
+
+- `.tad/adapters/` directory (replaced by `/tad-init` inline logic)
+- `.tad/templates/command-converters/` directory (replaced by `/tad-init` inline logic)
+
+---
+
 ## [2.1.0] - 2026-01-26
 
 ### Added
