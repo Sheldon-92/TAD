@@ -1,43 +1,80 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.1.1 - Document Lifecycle Management**
+**Version 2.2.1 - Pair Testing Protocol**
 
-> 🚀 **TAD v2.1.1** adds **`/tad-maintain`** - automated document health checks and stale handoff detection.
->
 > 📚 **[Documentation Portal](docs/README.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
-## 🎯 What's New in v2.1.1
+## 💡 Philosophy: Beneficial Friction
 
-### `/tad-maintain` Command (NEW)
-- **3 Modes**: CHECK (read-only scan), SYNC (scoped writes), FULL (comprehensive)
-- **Handoff Lifecycle Audit**: 4 detection criteria
-  - Criterion A/B: Slug-based completion and version matching (auto)
-  - Criterion C: Age-based stale detection (>7 days, user confirms)
-  - Criterion D: Topic cross-reference against archived handoffs (user confirms)
-- **NEXT.md Monitoring**: Size thresholds, automatic archival to `docs/HISTORY.md`
-- **PROJECT_CONTEXT.md Sync**: Auto-create and keep in sync
+**TAD is not about making AI do more. It's about making human involvement more valuable.**
+
+Many AI coding tools promise: "Give AI a goal, it handles everything." This sounds appealing, but in practice leads to:
+- **Requirement drift**: AI's understanding diverges from what you actually need
+- **False quality**: AI says "all tests pass" — but it wrote those tests itself
+- **Priority confusion**: AI spends 80% of time on 20% of value
+
+TAD takes a different approach: **AI can do a lot, but must stop at three critical points for human confirmation.**
+
+### The Three Friction Points
+
+| Point | Why Human is Essential | Without Human |
+|-------|----------------------|---------------|
+| **Requirement Clarification** | Only humans know the real problem to solve | AI builds "technically correct but directionally wrong" things |
+| **Priority Decision** | Involves resources, time, business judgment | AI sorts by "technical complexity" instead of value |
+| **End-to-End Acceptance** | Only humans can judge "does this actually work" | AI passes all unit tests but UX is broken |
+
+These three points correspond to the **Value Guardian** role in the Triangle Model — not participating in every step, but gatekeeping at critical nodes.
+
+### Beneficial vs. Wasteful Friction
+
+| Wasteful Friction | Beneficial Friction |
+|-------------------|---------------------|
+| Copy-pasting code manually | Requirement clarification dialogue |
+| Formatting adjustments | Priority decisions |
+| Environment setup | End-to-end acceptance testing |
+| Waiting for builds | Feedback when acceptance fails |
+
+Wasteful friction should be automated. Beneficial friction should be **preserved and strengthened** — it's where value is created.
+
+### A Deeper Insight
+
+**The stronger AI becomes, the more critical human checkpoints are.**
+
+When AI is weak, humans must participate in every step. When AI is strong, humans can step back to higher levels — but those few critical points become even more important, because once AI deviates there, it races toward the wrong direction faster.
+
+This is why "fully autonomous AI development" is a false premise — **not because AI can't do it, but because AI without human gatekeeping produces unreliable results.**
+
+---
+
+## 🎯 What's New in v2.2.1
+
+### Pair Testing Protocol (NEW)
+- **Cross-tool E2E Testing**: Bridge between TAD (CLI) and Claude Desktop (GUI)
+- **TEST_BRIEF.md**: 8-section template for human-AI pair testing
+- **`/tad-test-brief`**: Standalone command to generate test briefs
+- **Auto-detection**: Alex detects `PAIR_TEST_REPORT.md` on activation
+- **Issue Classification**: Automatic fix handoff generation from test feedback
+
+### Bidirectional Messages (v2.2.0)
+- Structured copy-pasteable messages between Alex and Blake
+- Human remains the information bridge (Terminal Isolation preserved)
+
+### Adaptive Complexity (v2.2.0)
+- Alex assesses task complexity (Small/Medium/Large)
+- Suggests appropriate process depth
+- **Human makes final decision** on workflow depth
+
+### `/tad-maintain` Command (v2.1.1)
+- **3 Modes**: CHECK (read-only), SYNC (scoped writes), FULL (comprehensive)
+- **Stale Detection**: Age-based (>7 days) and topic cross-reference
 - **Auto-triggers**: Runs on agent activation, `*exit`, and `*accept`
 
-### Simplified Architecture (Changed in v2.1.1)
-- Removed `.tad/adapters/` directory — all conversion logic now in `/tad-init`
-- Removed command converter templates — simpler, more maintainable
-
-### Multi-Platform Support (from v2.1.0)
+### Multi-Platform Support (v2.1.0)
 - **Claude Code**: Full subagent support (primary)
-- **Codex CLI**: Self-check mode with native SKILL.md support
-- **Gemini CLI**: Self-check mode with TOML commands
+- **Codex CLI / Gemini CLI**: Self-check mode with native commands
 - **8 Platform-Agnostic Skills**: testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
-- **Automatic Platform Detection**: Installation script detects and configures all tools
-
-### From v2.0 (Retained)
-- **Ralph Loop**: Autonomous quality cycles with expert review
-- **Gate 3 v2 (Expanded)**: Technical Quality (Layer 1 + Layer 2)
-- **Gate 4 v2 (Simplified)**: Pure Alex Acceptance + Archive
-- Socratic Inquiry Protocol
-- Terminal Isolation (Alex=T1, Blake=T2)
-- Knowledge Assessment (mandatory for gates)
 
 ---
 
@@ -290,15 +327,13 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v2.1.1** | **`/tad-maintain`, Stale Detection (Criterion C/D), Simplified Adapters** |
+| **v2.2.1** | **Pair Testing Protocol, TEST_BRIEF.md, Cross-tool E2E** |
+| v2.2.0 | Bidirectional Messages, Adaptive Complexity, Modular Config |
+| v2.1.1 | `/tad-maintain`, Stale Detection, Simplified Adapters |
 | v2.1.0 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills |
 | v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout |
 | v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
 | v1.6 | Evidence-Based Gates, Output Templates, Skills Architecture |
-| v1.5 | Project Knowledge System, *accept/*exit protocols |
-| v1.4 | Proactive Research, Skills System, Learn Command |
-| v1.3 | Evidence-Based Development, Human Empowerment |
-| v1.2 | MCP Integration, 16 Sub-agents, 4-Gate System |
 
 ---
 
@@ -370,6 +405,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.1.1 - Agent-Agnostic Quality-Driven Development.**
+**Welcome to TAD v2.2.1 - Beneficial Friction for AI-Assisted Development.**
 
-*Use your favorite AI coding assistant. TAD adapts to your tools.*
+*AI does the work. Humans guard the value.*
