@@ -1,7 +1,7 @@
-# TAD Configuration v2.2.0 - Modular Config Architecture
+# TAD Configuration v2.2.1 - Modular Config Architecture
 method: TAD
-version: 2.2.0
-description: Triangle Agent Development - Modular Config + Bidirectional Messages + Adaptive Complexity
+version: 2.2.1
+description: Triangle Agent Development - Pair Testing Protocol + Modular Config + Bidirectional Messages + Adaptive Complexity
 last_updated: 2026-01-31
 
 # ==================== Modular Config Index ====================
@@ -48,6 +48,7 @@ config_modules:
     contains:
       - document_management (handoff_lifecycle, next_md_maintenance)
       - tad_maintain
+      - pair_testing
       - requirement_elicitation (research_phase)
       - socratic_inquiry_protocol
       - scenarios (new_project, bug_fix)
@@ -57,6 +58,7 @@ config_modules:
       - tad-handoff.md
       - tad-scenario.md
       - tad-elicit.md
+      - tad-test-brief.md
 
   config-execution.yaml:
     path: ".tad/config-execution.yaml"
@@ -123,6 +125,10 @@ command_module_binding:
   tad-elicit:
     modules: [config-workflow]
     note: "Elicitation is defined in workflow module"
+
+  tad-test-brief:
+    modules: [config-workflow]
+    note: "Test brief needs pair_testing config from workflow module"
 
 # ==================== 任务管理系统 ====================
 task_management:
@@ -271,6 +277,17 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.2.1:
+    date: "2026-01-31"
+    changes:
+      - "Pair Testing Protocol (cross-tool E2E testing: TAD CLI → Claude Desktop)"
+      - "TEST_BRIEF.md generation integrated into Gate 3→4 flow"
+      - "/tad-test-brief standalone command"
+      - "Alex *test-review command (report review → fix handoffs)"
+      - "Alex STEP 3.6 auto-detects PAIR_TEST_REPORT on startup"
+      - "File lifecycle management (naming, organization, archival)"
+      - "tad-maintain PAIR TESTING check items"
+
   v2.2.0:
     date: "2026-01-31"
     changes:

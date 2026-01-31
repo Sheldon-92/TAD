@@ -193,10 +193,17 @@ DOCUMENTS
   [icon] PROJECT_CONTEXT.md: {exists/missing}
   [icon] Version: {version.txt} / config: {config version}
 
+PAIR TESTING
+  [icon] TEST_BRIEF.md: {exists/none}
+  [icon] PAIR_TEST_REPORT.md: {exists (unprocessed!)/none}
+  [icon] e2e-screenshots/: {exists ({N} files)/none}
+
 {if issues found:}
 RECOMMENDED ACTIONS
   1. Run `/tad-maintain` to sync documents
   2. {specific recommendations}
+  {if PAIR_TEST_REPORT.md exists:}
+  N. Run *test-review in Alex to process pair test report
 
 HEALTH: {OK/WARNING/CRITICAL}
 ===
@@ -219,6 +226,11 @@ DOCUMENTS
   [icon] version.txt: v{version}
   [icon] NEXT.md: {lines} lines ({action taken or status})
   [icon] PROJECT_CONTEXT.md: {created/updated/ok}
+
+PAIR TESTING
+  [icon] TEST_BRIEF.md: {exists/none}
+  [icon] PAIR_TEST_REPORT.md: {exists (unprocessed!)/none}
+  [icon] e2e-screenshots/: {exists ({N} files)/none}
 
 CONSISTENCY
   [icon] Version alignment: {pass/fail}

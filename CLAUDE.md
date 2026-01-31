@@ -527,7 +527,26 @@ STALE 删除前必须验证 archive 中确实存在更新版本。
 
 ---
 
-## 8. 违规处理
+## 8. 配对测试规则
+
+### Gate 集成
+- Gate 3 通过后：Blake 必须生成 TEST_BRIEF.md（技术部分）
+- Gate 4 通过后：Alex 补充设计意图，提醒用户做配对 E2E 测试
+- 报告回流后：Alex 自动检测并生成修复 Handoff
+
+### 跨工具协作
+- TEST_BRIEF.md 是 TAD (CLI) → Claude Desktop (GUI) 的桥梁
+- PAIR_TEST_REPORT.md 是 Claude Desktop → TAD 的反馈通道
+- 人类是两个工具之间的信息桥梁（与 Terminal 隔离规则一致）
+
+### 文件生命周期
+- TEST_BRIEF.md 是单例：项目根目录同时只有一个
+- 报告处理后归档到 `.tad/evidence/pair-tests/`
+- 截图随报告一起归档
+
+---
+
+## 9. 违规处理
 
 如果 Claude 违反以上规则（如绕过 Blake、跳过 Gates）：
 1. 立即停止当前操作

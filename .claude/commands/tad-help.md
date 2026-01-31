@@ -145,6 +145,20 @@ Agents auto-generate structured, copy-pasteable messages for the human to relay:
 - `.tad/active/handoffs/` - Active handoff documents
 - `.tad/project-knowledge/` - Project-specific learnings
 
+## Pair Testing (E2E 配对测试)
+
+TAD 支持跨工具的配对 E2E 测试：
+
+| 阶段 | 触发 | 产出 |
+|------|------|------|
+| Gate 3 后 | Blake 自动生成 | TEST_BRIEF.md（技术部分）|
+| Gate 4 后 | Alex 补充并提醒 | TEST_BRIEF.md（完整版）|
+| 配对测试 | 用户 + Claude Desktop | PAIR_TEST_REPORT.md |
+| 报告回流 | Alex 检测报告 | 新 Handoff（修复任务）|
+
+手动命令：`/tad-test-brief` - 独立生成测试简报
+Alex 命令：`*test-review` - 审阅测试报告并生成修复 Handoff
+
 ## Sub-agents Available
 TAD integrates with 16 Claude Code sub-agents:
 - Strategic: product-expert, backend-architect, api-designer, etc.

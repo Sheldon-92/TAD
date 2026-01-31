@@ -5,6 +5,27 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-01-31
+
+### Added
+
+- **Pair Testing Protocol** - Cross-tool E2E testing integration (TAD CLI → Claude Desktop)
+  - `test-brief-template.md` - 8-section generic template (Web defaults, universal design)
+  - Blake `step4b`: Conditional TEST_BRIEF.md generation after Gate 3 (user-facing changes only)
+  - Alex `step_test_brief`: Supplement Section 5 (design intent) after Gate 4, remind user
+  - Alex `STEP 3.6`: Auto-detect `PAIR_TEST_REPORT*.md` on startup
+  - Alex `*test-review`: Read report → classify P0/P1/P2 → generate fix Handoff or add to NEXT.md
+  - `/tad-test-brief` standalone command for ad-hoc testing needs
+  - File lifecycle: naming conventions, directory structure, archival to `.tad/evidence/pair-tests/`
+  - `tad-maintain` integration: PAIR TESTING check items in CHECK and FULL mode reports
+  - CLAUDE.md §8: Pair testing rules (Gate integration, cross-tool collaboration, file lifecycle)
+
+### Changed
+
+- CLAUDE.md section renumbering: §8 = Pair Testing, §9 = Violations
+- `config-workflow.yaml`: Added `pair_testing` section (brief, report, screenshot config)
+- `config.yaml`: Updated module index and command binding for `tad-test-brief`
+
 ## [2.2.0] - 2026-01-31
 
 ### Added

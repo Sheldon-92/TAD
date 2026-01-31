@@ -251,33 +251,51 @@
 
 ## Recently Completed
 
+- [x] TAD v2.2.1 - Pair Testing Protocol (2026-01-31)
+  - Pair E2E testing integrated into Gate 3→4 flow
+  - test-brief-template.md (8-section generic template, Web defaults)
+  - /tad-test-brief standalone command
+  - Blake step4b: conditional TEST_BRIEF generation after Gate 3
+  - Alex STEP 3.6: auto-detect PAIR_TEST_REPORT on startup
+  - Alex *test-review: classify issues → generate fix Handoff
+  - Alex step_test_brief: supplement Section 5 after Gate 4
+  - tad-maintain: PAIR TESTING check items in both output modes
+  - File lifecycle: naming, organization, archival to .tad/evidence/pair-tests/
+
+- [x] TAD v2.2.0 improvements (2026-01-31)
+  - Bidirectional message protocol (Alex→Blake letter, Blake→Alex letter, Blake auto-detect)
+  - Adaptive complexity assessment (Alex assesses S/M/L, suggests depth, human decides)
+  - Config.yaml modular split (6 modules, master index, per-command binding)
+
 - [x] TAD v2.1.1 release (2026-01-31)
   - /tad-maintain command (3 modes: check/sync/full)
   - Criterion C/D stale detection (age + topic cross-reference)
   - handoff_lifecycle config section
-  - CLAUDE.md section 8 (document maintenance rules)
+  - CLAUDE.md section 7 (document maintenance rules)
   - Simplified adapter architecture (removed .tad/adapters/)
   - Updated all docs: README, CHANGELOG, INSTALLATION_GUIDE
   - Pushed to GitHub
 
 - [x] Run `/tad-maintain` full mode to clean up stale active handoffs
 - [x] Archive multi-platform-init handoff (superseded by agent-agnostic-architecture)
+- [x] Remove /tad-learn feature (deprecated - improve TAD directly in mother repo)
 
 ## This Week
 
 - [ ] Test auto-trigger behavior on next /alex or /blake activation
 - [ ] Verify Criterion C/D detection on real stale handoffs
-- [x] Remove /tad-learn feature (deprecated - improve TAD directly in mother repo)
 
 ## In Progress
 
-- [ ] TAD v2.2 improvements
-  - [x] Bidirectional message protocol (Alex→Blake letter, Blake→Alex letter, Blake auto-detect)
-  - [x] Adaptive complexity assessment (Alex assesses S/M/L, suggests depth, human decides)
-  - [x] Config.yaml modular split (6 modules, master index, per-command binding)
+(none)
 
 ## Pending
 
+- [ ] tad-maintain P0: Criterion D should reference config common_words_exclude, not hardcode
+- [ ] tad-maintain P0: SYNC mode needs target_slug parameter for scoped processing
+- [ ] tad-maintain P1: CLAUDE.md §1 add exemption for maintain-mode handoff reads
+- [ ] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header
+- [ ] tad-maintain P2: config.yaml clean up legacy `tad_version: 1.3.0` field
 - [ ] Consider Skills version management
 
 ## Blocked

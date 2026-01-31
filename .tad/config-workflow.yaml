@@ -138,6 +138,36 @@ tad_maintain:
     write_strategy: "copy-then-delete"
     idempotent: true
     name_conflict_resolution: "append-timestamp-suffix"
+
+# ==================== 配对测试协议 ====================
+pair_testing:
+  description: "Cross-tool E2E pair testing protocol (TAD CLI → Claude Desktop)"
+
+  brief:
+    template: ".tad/templates/test-brief-template.md"
+    output: "TEST_BRIEF.md"  # project root
+    trigger: "Gate 3 pass (Blake generates technical sections)"
+    finalize: "Gate 4 pass (Alex supplements design sections)"
+    sections:
+      blake_fills: [1, 2, 3, 4, 8]  # technical
+      alex_fills: [5]                 # design intent
+      template_default: [6, 7]        # workflow & output format
+
+  report:
+    expected_pattern: "PAIR_TEST_REPORT*.md"
+    location: "project root"
+    archive_to: ".tad/evidence/pair-tests/"
+    auto_detect_on_alex_start: true
+    issue_routing:
+      P0: "Create immediate handoff"
+      P1: "Create handoff"
+      P2: "Add to NEXT.md"
+
+  screenshot:
+    default_method: "gif_creator"  # for Web projects
+    output_dir: "e2e-screenshots/"
+    naming: "{NN}-{page-name}.gif"
+
 # ==================== 深度需求挖掘流程（借鉴BMAD的elicit） ====================
 requirement_elicitation:
   # 强制多轮确认机制

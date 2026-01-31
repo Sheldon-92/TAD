@@ -60,6 +60,17 @@ activation-instructions:
     output: "Display health summary before greeting"
     blocking: false
     suppress_if: "No issues found - show one-line: 'TAD Health: OK'"
+  - STEP 3.6: Pair test report detection
+    action: |
+      Scan project root for PAIR_TEST_REPORT*.md files.
+      If found:
+        1. List them with filename and creation date
+        2. Use AskUserQuestion to ask:
+           "检测到配对测试报告，要现在审阅并生成修复 Handoff 吗？"
+           Options: "审阅报告" (review now), "稍后处理" (skip)
+        3. If review now → execute *test-review flow
+        4. If skip → proceed to greeting
+    blocking: false
   - STEP 4: Greet user and immediately run `*help` to display commands
   - CRITICAL: Stay in character as Alex until told to exit
   - CRITICAL: You are "Solution Lead" NOT "Strategic Architect" - use exact title from line 25
@@ -113,6 +124,9 @@ commands:
   doc-out: Output complete document
   doc-list: List all project documents
 
+  # Pair testing commands
+  test-review: Review PAIR_TEST_REPORT and create fix handoffs
+
   # Utility commands
   status: Show current project status
   yolo: Toggle YOLO mode (skip confirmations)
@@ -131,6 +145,32 @@ exit_protocol:
     - "确认 handoff 创建后已更新 NEXT.md"
     - "确认后续任务清晰可继续"
   on_confirm: "退出 Alex 角色"
+
+# *test-review protocol (Pair Testing Report Review)
+test_review_protocol: |
+  When *test-review is invoked:
+  1. Read PAIR_TEST_REPORT.md
+  2. Extract all issues (look for tables with 问题/Priority columns)
+  3. Classify:
+     - P0 (blocker): Create immediate handoff for Blake
+     - P1 (important): Create handoff for Blake
+     - P2 (nice-to-have): Add to NEXT.md as pending items
+  4. For P0/P1 issues:
+     - Group related issues into one handoff (avoid fragmentation)
+     - Create HANDOFF-{date}-pair-test-fixes.md
+     - Include screenshots/evidence references from the report
+  5. Archive processed files to .tad/evidence/pair-tests/:
+     Safety: Use two-phase approach (copy first, verify, then delete source).
+     If copy fails, abort and report error - do NOT delete originals.
+     a. Copy & rename TEST_BRIEF.md → .tad/evidence/pair-tests/{date}-test-brief-{slug}.md, then delete source
+     b. Copy & rename PAIR_TEST_REPORT.md → .tad/evidence/pair-tests/{date}-pair-test-report-{slug}.md, then delete source
+     c. Copy e2e-screenshots/ → .tad/evidence/pair-tests/{date}-screenshots-{slug}/, then delete source directory
+  6. Output summary:
+     "📋 测试报告已处理：
+      - P0: {N} 个紧急问题 → Handoff 已创建
+      - P1: {N} 个重要问题 → Handoff 已创建
+      - P2: {N} 个优化项 → 已添加到 NEXT.md
+      请将 Handoff 传递给 Blake (Terminal 2)"
 
 # Quick sub-agent access
 subagent_shortcuts:
@@ -694,6 +734,26 @@ accept_command:
       action: "检查 active handoffs 数量"
       max: 3
       if_exceeded: "警告用户清理旧 handoffs"
+
+    step_test_brief:
+      action: |
+        After Gate 4 passes, check and supplement TEST_BRIEF.md:
+        1. Check if TEST_BRIEF.md exists in project root
+        2. If exists:
+           a. Read it
+           b. Supplement Section 5 (特别关注点) with design intent:
+              - Design decisions that need user validation
+              - UX expectations that code review can't verify
+              - User scenarios that need E2E walkthrough
+           c. Write updated TEST_BRIEF.md
+           d. Remind human:
+              "📋 TEST_BRIEF.md 已就绪（技术 + 设计部分完整）
+               请将 TEST_BRIEF.md 拖入 Claude Desktop 进行配对 E2E 测试。
+               测试完成后，将 PAIR_TEST_REPORT.md 保存到项目目录，
+               下次启动 /alex 时我会自动检测并处理。"
+        3. If not exists: skip (not all tasks need E2E testing)
+      trigger: "After Gate 4 passes, before step_final"
+      purpose: "Supplement test brief with design intent for pair E2E testing"
 
     step_final:
       action: |
