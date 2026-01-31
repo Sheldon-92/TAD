@@ -17,7 +17,6 @@ Version: v2.1.1 | Generated: [timestamp]
 - [ ] Verify: /tad-status
 - [ ] Choose scenario: /tad-scenario [name]
 - [ ] Activate agents: Follow terminal commands
- - [ ] Record learnings (optional): /tad-learn
 
 📋 COMMAND REFERENCE
 Each command produces standardized output:
@@ -26,7 +25,6 @@ Each command produces standardized output:
 /tad-scenario → Scenario plan + agent assignments
 /tad-help     → This structured help guide
 /tad-maintain → Document health check, sync, and cleanup (3 modes: check/sync/full)
-/tad-learn    → Framework-level learning recorder (v1.4)
 
 🎭 AGENT ACTIVATION PROTOCOL
 Must follow exact format:
@@ -54,7 +52,6 @@ Terminal 2: Use /blake command to activate Agent B
 2. **Initialize project**: `/tad-init`
 3. **Check status**: `/tad-status`
 4. **Start scenario**: `/tad-scenario [name]`
-5. **Record learnings (optional)**: `/tad-learn`
 
 ## Available Commands
 - `/tad-init` - Initialize TAD for your project
@@ -62,7 +59,6 @@ Terminal 2: Use /blake command to activate Agent B
 - `/tad-scenario [name]` - Start a development scenario
 - `/tad-help` - Show this help message
 - `/tad-maintain` - Document health check, sync, and cleanup (3 modes: check/sync/full)
-- `/tad-learn` - Record framework-level learning and suggestions (v1.4)
 
 ## Available Scenarios
 - `new_project` - Start a new project from scratch
@@ -145,13 +141,12 @@ TAD integrates with 16 Claude Code sub-agents:
 - Workflow Guide: See WORKFLOW_PLAYBOOK.md
 - Sub-agents: See CLAUDE_CODE_SUBAGENTS.md
  - Skills: `.claude/skills/` (auto-discovered knowledge base, v1.4)
- - v1.4 Features in config: `.tad/config.yaml` → `mandatory_questions`, `requirement_elicitation.research_phase`, `skills_system`, `learn_system`
+ - v1.4 Features in config: `.tad/config.yaml` → `mandatory_questions`, `requirement_elicitation.research_phase`, `skills_system`
 
-## TAD v1.4 Highlights
+## TAD v1.4+ Highlights
 - **MQ6 Technical Research**: Technical decisions require lightweight research with sources and a final tech stack confirmation report
 - **Research Phase**: Inline research during elicitation + pre-design final review
 - **Skills System**: Auto-load knowledge from `.claude/skills/` to support decisions
-- **Learn System**: Use `/tad-learn` to capture framework-level improvements
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues

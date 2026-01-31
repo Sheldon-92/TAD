@@ -581,12 +581,12 @@ main() {
                 esac
             done
             echo ""
-            echo -e "  ${GREEN}✓ Preserved:${NC} handoffs, learnings, evidence, project-knowledge"
+            echo -e "  ${GREEN}✓ Preserved:${NC} handoffs, evidence, project-knowledge"
             ;;
         "migrate")
             echo "  1. Backup existing .tad/ to .tad-backup/"
             echo "  2. Create new v2.1 directory structure"
-            echo "  3. Migrate your handoffs and learnings"
+            echo "  3. Migrate your handoffs and evidence"
             echo "  4. Install skills and adapters"
             for tool in $DETECTED_PLATFORMS; do
                 case $tool in
@@ -633,8 +633,7 @@ main() {
             mkdir -p .tad/evidence/ralph-loops
             mkdir -p .tad/evidence/reviews/_iterations
             mkdir -p .tad/gates
-            mkdir -p .tad/learnings/pending
-            mkdir -p .tad/learnings/pushed
+            # .tad/learnings/ removed in v2.1.2 (tad-learn deprecated)
             mkdir -p .tad/project-knowledge
             mkdir -p .tad/templates/output-formats
             mkdir -p .tad/tasks
@@ -819,8 +818,7 @@ NEXTEOF
             mkdir -p .tad/evidence/ralph-loops
             mkdir -p .tad/evidence/reviews/_iterations
             mkdir -p .tad/gates
-            mkdir -p .tad/learnings/pending
-            mkdir -p .tad/learnings/pushed
+            # .tad/learnings/ removed in v2.1.2 (tad-learn deprecated)
             mkdir -p .tad/project-knowledge
             mkdir -p .tad/templates/output-formats
             mkdir -p .tad/tasks
@@ -841,9 +839,7 @@ NEXTEOF
             if [ -d ".tad-backup/active/handoffs" ]; then
                 cp -r .tad-backup/active/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
             fi
-            if [ -d ".tad-backup/learnings" ]; then
-                cp -r .tad-backup/learnings/* .tad/learnings/ 2>/dev/null || true
-            fi
+            # learnings migration removed in v2.1.2 (tad-learn deprecated)
             if [ -d ".tad-backup/working" ]; then
                 cp -r .tad-backup/working/* .tad/active/ 2>/dev/null || true
             fi

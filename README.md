@@ -238,7 +238,6 @@ Alex: [Reviews with subagents, accepts or requests changes]
 | `/knowledge-audit` | Both | Audit project knowledge health |
 | `/tad-init` | - | Initialize TAD in new project |
 | `/tad-maintain` | - | Document health check and sync |
-| `/tad-learn` | Both | Record framework improvement |
 
 ### Alex Commands (use `*` prefix)
 - `*analyze` - Start requirement elicitation
@@ -356,15 +355,7 @@ Run `/knowledge-audit --fix` or manually bootstrap with templates.
 
 ## 🤝 Contributing
 
-TAD evolves through usage. Use `/tad-learn` to record improvement suggestions:
-```
-/tad-learn
-Category: workflow
-Finding: [What you discovered]
-Suggestion: [How to improve]
-```
-
-Learnings are pushed to `.tad/learnings/pushed/` for framework updates.
+TAD evolves through direct improvement in the [TAD repository](https://github.com/Sheldon-92/TAD). If you find issues or have suggestions, modify the framework directly or open an issue.
 
 ---
 

@@ -267,10 +267,14 @@
 
 - [ ] Test auto-trigger behavior on next /alex or /blake activation
 - [ ] Verify Criterion C/D detection on real stale handoffs
+- [x] Remove /tad-learn feature (deprecated - improve TAD directly in mother repo)
+
+## In Progress
+
+- [ ] TAD v2.2 improvements: handoff UX, adaptive complexity, config split
 
 ## Pending
 
-- [ ] Optimize /tad-learn workflow based on usage feedback
 - [ ] Consider Skills version management
 
 ## Blocked

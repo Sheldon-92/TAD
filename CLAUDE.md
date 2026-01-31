@@ -476,16 +476,7 @@ npm version major       # 版本号 +1.0.0
 
 ---
 
-## 7. 学习记录规则
-
-使用 `/tad-learn` 记录改进建议时：
-- 必须选择正确的分类（workflow/design/quality/tooling/documentation）
-- 必须提供清晰的发现和建议
-- 完成后自动推送到 TAD GitHub 仓库的 `.tad/learnings/pushed/`
-
----
-
-## 8. 文档维护规则 (/tad-maintain)
+## 7. 文档维护规则 (/tad-maintain)
 
 `/tad-maintain` 是独立于 Alex/Blake 的维护命令，可在任何 Terminal 运行（Terminal 隔离规则的显式例外）。
 
@@ -523,7 +514,7 @@ STALE 删除前必须验证 archive 中确实存在更新版本。
 
 ---
 
-## 9. 违规处理
+## 8. 违规处理
 
 如果 Claude 违反以上规则（如绕过 Blake、跳过 Gates）：
 1. 立即停止当前操作

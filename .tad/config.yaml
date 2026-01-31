@@ -1,6 +1,6 @@
-# TAD Configuration v2.1.1 - Simplified Multi-Platform Architecture
+# TAD Configuration v2.1.2 - Remove tad-learn, Streamlined Framework
 method: TAD
-version: 2.1.1
+version: 2.1.2
 description: Triangle Agent Development - Multi-Platform Support + Ralph Loop + 苏格拉底式提问 + 知识驱动开发
 last_updated: 2026-01-26
 
