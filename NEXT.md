@@ -2,6 +2,9 @@
 
 ## Recently Completed
 
+- [x] tad-maintain P0: Criterion D references config common_words_exclude (2026-02-01)
+- [x] tad-maintain P0: SYNC mode target_slug parameter for scoped processing (2026-02-01)
+
 - [x] CLAUDE.md Router Architecture (先补后砍) (2026-02-01)
   - Phase 1: 13 rules backfilled to agent files (tad-alex, tad-gate, tad-blake)
   - Phase 2: CLAUDE.md 657→109 lines (router pattern, enforcement markers preserved)
@@ -20,8 +23,6 @@
 
 ## Pending
 
-- [ ] tad-maintain P0: Criterion D should reference config common_words_exclude, not hardcode
-- [ ] tad-maintain P0: SYNC mode needs target_slug parameter for scoped processing
 - [ ] tad-maintain P1: CLAUDE.md §1 add exemption for maintain-mode handoff reads
 - [ ] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header
 - [ ] tad-maintain P1: Add 2 explicit prohibition statements (file-mtime, Criterion C/D auto-archive)

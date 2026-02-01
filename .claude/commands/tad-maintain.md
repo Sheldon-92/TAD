@@ -10,6 +10,9 @@ When this command is used, perform document health check and synchronization.
 
 **CHECK mode**: MUST NOT modify any files. Read-only scan and report only.
 **SYNC mode**: Scoped to the specific handoff being accepted + NEXT.md cleanup.
+**SYNC mode parameter**: `target_slug` - the canonical slug of the handoff just accepted.
+  When provided, Step 2 Handoff Lifecycle Audit processes ONLY the matching handoff (skip others).
+  When not provided (fallback), process all active handoffs (same as FULL mode behavior).
 **FULL mode**: CHECK + broad SYNC across all documents.
 
 ## Step 1: Gather Current State
@@ -27,6 +30,7 @@ Read these to establish baseline:
 ## Step 2: Handoff Lifecycle Audit
 
 For each file in `.tad/active/handoffs/`:
+(SYNC mode with target_slug: skip files whose extracted slug does not match target_slug)
 
 ### Step 2a: Extract Canonical Slug
 
@@ -63,7 +67,8 @@ For each active handoff's slug, search `.tad/archive/handoffs/` for:
   1. Read the active handoff's first 15 lines to extract title and Executive Summary keywords.
   2. Scan archived handoffs (created within `handoff_lifecycle.cross_reference_window_days`, default 30 days).
   3. Read each archive candidate's first 15 lines, compare title/summary keywords.
-  4. If significant keyword overlap found (≥2 shared topic words excluding common words like "TAD", "implementation", "design"):
+  4. Read `common_words_exclude` list from `.tad/config-workflow.yaml` → `document_management.handoff_lifecycle.common_words_exclude`.
+     If significant keyword overlap found (≥2 shared topic words, excluding words in the `common_words_exclude` list):
      Mark as POTENTIALLY_SUPERSEDED and record the matching archive file.
 
 **No match found by any criterion**: Keep as ACTIVE (in progress).

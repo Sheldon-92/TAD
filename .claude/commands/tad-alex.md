@@ -909,7 +909,8 @@ accept_command:
     step_final:
       action: |
         Run document sync in SYNC mode - scoped to the just-accepted handoff.
-        1. Archive the specific handoff that was just accepted
+        Pass the accepted handoff's canonical slug as target_slug to /tad-maintain SYNC.
+        1. Archive the specific handoff that was just accepted (target_slug scoping)
         2. Check NEXT.md line count against config thresholds
         3. If over max_lines: archive old completed sections
         4. Update PROJECT_CONTEXT.md active work section
