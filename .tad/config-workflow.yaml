@@ -15,10 +15,12 @@ document_management:
       - tasks         # 任务追踪
       - designs       # 设计文档
       - handoffs      # 交接文档
+      - epics         # Epic 多阶段任务追踪
     archive:          # 已完成归档
       - by_date       # 按日期
       - by_task       # 按任务
       - by_version    # 按版本
+      - epics         # 已完成的 Epic
     context: "项目长期信息"
     working: "工作中文档"
 
@@ -117,6 +119,55 @@ document_management:
       alex: "发现 NEXT.md 过大时，规划清理方案"
       blake: "执行清理，移动内容到归档文件"
 
+  # Epic 生命周期管理 (多阶段任务追踪)
+  epic_lifecycle:
+    enabled: true
+    version: "1.0"
+    description: "Epic is a container above handoffs for tracking multi-phase tasks"
+
+    locations:
+      active: ".tad/active/epics/"
+      archive: ".tad/archive/epics/"
+      template: ".tad/templates/epic-template.md"
+
+    naming_convention:
+      format: "EPIC-{YYYYMMDD}-{slug}.md"
+      example: "EPIC-20260201-auth-system.md"
+
+    constraints:
+      max_active_epics: 3                    # Maximum concurrent active Epics
+      sequential_constraint: true            # Only 1 Active phase per Epic at a time
+      stale_age_days: 7                      # Active phase stuck for >N days triggers warning
+
+    phase_statuses:
+      planned: "⬚ Planned"
+      active: "🔄 Active"
+      done: "✅ Done"
+
+    derived_status:
+      planning: "All phases are ⬚ Planned"
+      in_progress: "Any phase is 🔄 Active or ✅ Done"
+      complete: "All phases are ✅ Done"
+
+    phase_adjustment:
+      add_phase: "Alex appends new row to Phase Map (⬚ Planned), notes reason"
+      remove_phase: "Only ⬚ Planned phases can be removed, notes reason"
+      reorder_phase: "Only ⬚ Planned phases can be reordered"
+
+    error_handling:
+      epic_file_missing: "WARNING, continue *accept (don't block handoff archive)"
+      epic_format_invalid: "WARNING, skip update, remind user to fix"
+      handoff_ref_mismatch: "WARNING, prompt user to confirm correct phase"
+      concurrent_active_violation: "BLOCK, don't activate new phase"
+
+    health_checks:
+      - "STALE: All phases done but Epic not archived"
+      - "ORPHAN: No linked handoffs and older than stale_age_days"
+      - "DANGLING_REF: Phase Map references non-existent handoff"
+      - "BACK_REF_MISMATCH: Handoff references Epic but Epic doesn't list it"
+      - "STUCK: Active phase exceeds stale_age_days"
+      - "OVER_ACTIVE: Multiple Active phases in same Epic"
+
 # ==================== Document Maintenance Command ====================
 tad_maintain:
   description: "Document health check and synchronization"
@@ -134,6 +185,7 @@ tad_maintain:
   auto_archive_criteria:
     - "matching_completion_report"
     - "superseded_by_newer_version"
+    - "epic_all_phases_complete"
   safety:
     write_strategy: "copy-then-delete"
     idempotent: true

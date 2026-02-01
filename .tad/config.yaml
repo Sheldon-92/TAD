@@ -44,9 +44,9 @@ config_modules:
 
   config-workflow.yaml:
     path: ".tad/config-workflow.yaml"
-    description: "Document management, maintenance, requirement elicitation, socratic inquiry, scenarios"
+    description: "Document management, maintenance, requirement elicitation, socratic inquiry, scenarios, epic lifecycle"
     contains:
-      - document_management (handoff_lifecycle, next_md_maintenance)
+      - document_management (handoff_lifecycle, next_md_maintenance, epic_lifecycle)
       - tad_maintain
       - pair_testing
       - requirement_elicitation (research_phase)

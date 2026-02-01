@@ -107,7 +107,7 @@ npm run release:ios && npx cap open ios
 
 ## Activating Agents
 
-### Agent A (Strategic Architect)
+### Agent A (Solution Lead)
 In Terminal 1:
 ```
 /alex
@@ -144,6 +144,39 @@ Agents auto-generate structured, copy-pasteable messages for the human to relay:
 - `.claude/commands/tad-blake.md` - Agent B definition
 - `.tad/active/handoffs/` - Active handoff documents
 - `.tad/project-knowledge/` - Project-specific learnings
+
+## Epic/Roadmap (Multi-Phase Task Tracking)
+
+Epics track large tasks that span multiple handoffs/phases.
+
+### When to Use
+- Task requires multiple sequential phases (>1 handoff)
+- Alex suggests Epic during Adaptive Complexity assessment
+- User can always choose single handoff instead
+
+### How It Works
+```
+1. Alex assesses task → suggests Epic (user decides)
+2. Alex creates Epic file with Phase Map
+3. Alex creates Phase 1 Handoff (linked to Epic)
+4. Blake implements Phase 1 → Gate 3 → *accept
+5. *accept updates Epic: Phase 1 ✅, asks about Phase 2
+6. Repeat until all phases complete → Epic archived
+```
+
+### Key Concepts
+- **Phase Map**: Table tracking all phases with status (⬚ Planned / 🔄 Active / ✅ Done)
+- **Derived Status**: Epic status computed from Phase Map (no independent Status field)
+- **Sequential Constraint**: Only 1 Active phase per Epic at a time
+- **Error Resilience**: Epic update failure doesn't block handoff archiving
+
+### File Locations
+- Active: `.tad/active/epics/EPIC-{YYYYMMDD}-{slug}.md`
+- Archive: `.tad/archive/epics/`
+- Template: `.tad/templates/epic-template.md`
+
+### Health Checks (/tad-maintain)
+6 check types: STALE, ORPHAN, DANGLING_REF, BACK_REF_MISMATCH, STUCK, OVER_ACTIVE
 
 ## Pair Testing (E2E 配对测试)
 

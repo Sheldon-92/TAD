@@ -251,6 +251,23 @@
 
 ## Recently Completed
 
+- [x] Epic/Roadmap multi-phase task tracking (2026-02-01)
+  - Epic template with derived status (no independent Status field)
+  - Directory structure: .tad/active/epics/, .tad/archive/epics/
+  - Alex: step2b Epic Assessment in Adaptive Complexity
+  - Alex: step2b_epic_update in *accept (after handoff archive)
+  - Alex: epic_linkage in handoff creation protocol
+  - Handoff template: optional Epic field
+  - Config: epic_lifecycle in config-workflow.yaml
+  - CLAUDE.md: Section 2.1 Epic rules + Section 7 maintenance
+  - tad-maintain: 7 Epic check types (STALE/ORPHAN/DANGLING_REF/BACK_REF_MISMATCH/STUCK/OVER_ACTIVE/OVER_LIMIT)
+  - tad-help: Epic/Roadmap documentation
+
+- [x] Pair Testing Redesign - human-initiated, Alex-owned (2026-02-01)
+  - Moved from Gate 3 (Blake) to Gate 4 (Alex evaluates, human decides)
+  - Section 6 rewritten as Claude Desktop collaboration guide
+  - New pair-test-report-template.md
+
 - [x] TAD v2.2.1 - Pair Testing Protocol (2026-01-31)
   - Pair E2E testing integrated into Gate 3→4 flow
   - test-brief-template.md (8-section generic template, Web defaults)
@@ -287,7 +304,7 @@
 
 ## In Progress
 
-(none)
+- [ ] Test Epic flow end-to-end on next multi-phase task
 
 ## Pending
 

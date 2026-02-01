@@ -19,8 +19,10 @@ Read these to establish baseline:
 2. `.tad/config.yaml` (first 10 lines) → config version
 3. `ls .tad/active/handoffs/` → list active handoff files
 4. `ls .tad/archive/handoffs/` → list archived files
-5. `NEXT.md` → count lines, read content
-6. `PROJECT_CONTEXT.md` → check if exists
+5. `ls .tad/active/epics/` → list active epic files
+6. `ls .tad/archive/epics/` → list archived epic files
+7. `NEXT.md` → count lines, read content
+8. `PROJECT_CONTEXT.md` → check if exists
 
 ## Step 2: Handoff Lifecycle Audit
 
@@ -91,6 +93,53 @@ Actions by status:
 ### Step 2d: Idempotency Check
 
 Before any move/delete, verify the source file still exists in `active/`. If already moved (e.g., by a concurrent run), skip silently.
+
+## Step 2e: Epic Lifecycle Audit
+
+For each file in `.tad/active/epics/`:
+
+### Step 2e-i: Parse Epic
+
+1. Read the Epic file
+2. Extract Phase Map table
+3. For each phase, determine status (⬚ Planned / 🔄 Active / ✅ Done)
+4. Check if phase has a linked handoff filename
+
+### Step 2e-ii: Run 6 Check Types
+
+**Check 1 - STALE**: All phases are ✅ Done but Epic is still in `active/epics/`.
+→ Detection: Parse Phase Map, count statuses. If all ✅ → STALE.
+→ Action (SYNC/FULL): Move to `.tad/archive/epics/` (two-phase safety).
+
+**Check 2 - ORPHAN**: No linked handoffs AND Epic age > `stale_age_days`.
+→ Detection: Phase Map has no handoff filenames filled in, AND file date > threshold.
+→ Action (FULL only): AskUserQuestion - "Epic {name} has no linked handoffs and is {N} days old. Archive, keep, or delete?"
+
+**Check 3 - DANGLING_REF**: Phase Map references a handoff file that doesn't exist.
+→ Detection: For each handoff filename in Phase Map, check if file exists in `active/handoffs/` or `archive/handoffs/`.
+→ Action (all modes): Report WARNING. Do not auto-fix.
+
+**Check 4 - BACK_REF_MISMATCH**: A handoff has an `**Epic**` field referencing this Epic, but the Epic's Phase Map doesn't list that handoff.
+→ Detection: Scan active handoffs AND recently archived handoffs (within `cross_reference_window_days`) for Epic field, cross-reference with Phase Map.
+→ Action (all modes): Report WARNING. Do not auto-fix.
+
+**Check 5 - STUCK**: A phase is 🔄 Active but its linked handoff was created > `stale_age_days` ago, OR an Active phase has no linked handoff at all.
+→ Detection: Find Active phases, check handoff creation date from filename. If Active phase has no linked handoff (dash or empty), treat as STUCK immediately (an Active phase without a handoff is abnormal).
+→ Action (all modes): Report WARNING. Remind user to check progress.
+
+**Check 6 - OVER_ACTIVE**: More than 1 phase in the same Epic is 🔄 Active.
+→ Detection: Count Active phases per Epic. If > 1 → violation.
+→ Action (all modes): Report ERROR. This violates concurrent control rules.
+
+**Check 7 - OVER_LIMIT**: More than `max_active_epics` (default 3) Epics in `active/epics/`.
+→ Detection: Count Epic files in `.tad/active/epics/` (excluding `.gitkeep`). If > 3 → warning.
+→ Action (all modes): Report WARNING. Suggest completing existing Epics before creating new ones.
+
+### Step 2e-iii: Actions (SYNC/FULL mode only)
+
+- STALE → move to `.tad/archive/epics/` (two-phase safety: copy first, verify, then delete source)
+- ORPHAN → FULL mode only, interactive confirmation via AskUserQuestion
+- All others → report only, do not auto-fix
 
 ## Step 3: NEXT.md Maintenance
 
@@ -188,6 +237,9 @@ Keep under 150 lines.
 HANDOFFS
   [icon] {N} active | {N} completed (not archived) | {N} stale | {N} potentially stale (age>{threshold}d) | {N} potentially superseded
 
+EPICS
+  [icon] {N} active | {N} stale | {N} orphan | {N} stuck | {N} over-active | {N} dangling refs
+
 DOCUMENTS
   [icon] NEXT.md: {lines} lines {status}
   [icon] PROJECT_CONTEXT.md: {exists/missing}
@@ -220,6 +272,13 @@ HANDOFFS
   [icon] {N} stale -> cleaned (this run)
   [icon] {N} user-confirmed -> archived/deleted (this run)
   [icon] {N} active (in progress)
+
+EPICS
+  [icon] {N} properly archived
+  [icon] {N} stale -> archived (this run)
+  [icon] {N} orphan -> user-confirmed (this run)
+  [icon] {N} active (in progress)
+  [icon] {N} warnings (dangling refs, stuck, back-ref mismatch)
 
 DOCUMENTS
   [icon] config.yaml: v{version}

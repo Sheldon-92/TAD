@@ -271,6 +271,48 @@ adaptive_complexity_protocol:
           }]
         })
 
+    step2b:
+      name: "Epic Assessment"
+      action: |
+        After user selects process depth (standard or full), assess if the task
+        needs multiple phases (>1 handoff). This is an INTERNAL assessment.
+
+        Epic assessment signals (any 2+ = suggest Epic):
+        - User description contains sequential language ("first...then...after that...")
+        - Task involves 3+ independent functional modules
+        - Intermediate testing/validation needed before continuing
+        - Involves progressive migration or refactoring
+        - Estimated 3+ handoffs to complete
+
+        Before creating Epic, check active count:
+        1. Count files in .tad/active/epics/ (excluding .gitkeep)
+        2. If count >= max_active_epics (3 from config):
+           → Warn user: "已有 {N} 个活跃 Epic，建议先完成现有 Epic"
+           → User can override via AskUserQuestion
+
+        If signals detected AND user chose standard/full:
+          Use AskUserQuestion:
+            question: "这个任务预计需要多个阶段，建议创建 Epic Roadmap 来追踪整体进度。"
+            options:
+              - "创建 Epic (Recommended)": "先规划整体 Phase Map，再逐阶段创建 Handoff"
+              - "直接用单个 Handoff": "作为一个大 Handoff 处理，不创建 Epic"
+
+        If user chooses "创建 Epic":
+          1. Create Epic file: .tad/active/epics/EPIC-{YYYYMMDD}-{slug}.md
+             - Use .tad/templates/epic-template.md as base
+             - Fill Objective, Success Criteria, Phase Map
+          2. Then create first Phase's Handoff (linked to Epic)
+          3. Handoff header includes: **Epic:** EPIC-{YYYYMMDD}-{slug}.md (Phase 1/{N})
+
+        If user chooses "单个 Handoff" or signals not detected:
+          Proceed normally without Epic.
+
+      epic_assessment_signals:
+        sequential_language: ["first...then", "先...再...然后", "phase", "阶段", "分步"]
+        multiple_modules: "3+ independent functional modules"
+        intermediate_validation: "needs testing between stages"
+        progressive_change: "migration, refactoring, gradual rollout"
+
     step3:
       name: "Proceed"
       action: |
@@ -471,6 +513,16 @@ handoff_creation_protocol:
         - Acceptance criteria
         - Files to modify
         - Testing checklist
+      epic_linkage: |
+        If an active Epic exists in .tad/active/epics/:
+        1. Read the Epic's Phase Map to find the next ⬚ Planned phase
+        2. Add **Epic** metadata field to handoff header:
+           **Epic:** EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M})
+        3. Update the Epic Phase Map: set the corresponding phase to 🔄 Active
+           and fill in the handoff filename
+        4. Verify: no other phase is already 🔄 Active (concurrent control)
+           - If another phase is Active → BLOCK, do not create handoff
+        If no active Epic → omit the Epic field (normal handoff)
 
     step2:
       name: "Expert Selection"
@@ -721,6 +773,34 @@ accept_command:
       action: "将 completion report 移至 archive"
       from: ".tad/active/handoffs/COMPLETION-*.md"
       to: ".tad/archive/handoffs/"
+
+    step2b_epic_update:
+      action: "检查并更新关联的 Epic（如有）"
+      details: |
+        1. 使用 step1 归档前已读取的 handoff 头部信息，查找 **Epic** 字段
+       （不依赖从 archive 重新读取，避免文件名可能被 -dup- 后缀修改的问题）
+        2. 如果没有 Epic 字段 → 跳过，继续 step3
+        3. 如果有 Epic 字段:
+           a. 解析 Epic 文件名和 Phase 编号
+           b. 在 .tad/active/epics/ 中查找该 Epic 文件
+           c. 如果文件不存在 → WARNING 日志，继续 step3（不阻塞归档）
+           d. 如果文件存在但格式异常 → WARNING 日志，跳过更新，继续 step3
+           e. 读取 Epic Phase Map 表格
+           f. 并发检查: 确认当前没有其他 🔄 Active phase（除了刚完成的这个）
+              - 如果有其他 Active phase → BLOCK，报错，不激活新 phase
+           g. 更新 Phase Map: 将当前 phase 标记为 ✅ Done，填入 handoff 链接
+           h. 更新 "Context for Next Phase" section（摘要完成内容、决策、遗留问题）
+           i. 检查是否所有 phase 都已完成（从 Phase Map 派生）:
+              - 如果全部 ✅ → Epic 标记为 Complete，移至 .tad/archive/epics/（two-phase safety: copy first, verify, then delete source）
+              - 如果还有后续 ⬚ Planned phase:
+                → AskUserQuestion: "Phase {N} 完成。准备开始 Phase {N+1}: {phase_name} 吗？"
+                → 选项: "开始下一阶段" / "稍后再说"
+                → 用户选"开始" → Alex 开始下一阶段的设计
+                → 用户选"稍后" → 在 NEXT.md 中记录提醒
+      error_handling: |
+        Epic 更新失败不阻塞 handoff 归档。
+        Handoff 是原子操作（step1-2 已完成），Epic 是后续更新。
+        失败时记录 WARNING，继续后续 step。
 
     step3:
       action: "更新 PROJECT_CONTEXT.md"

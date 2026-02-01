@@ -73,6 +73,81 @@ Alex 在用户描述任务后，自动评估复杂度并建议流程深度：
 
 **核心原则**: Alex 评估并建议，**人类做最终决策**。Alex 不可自主决定流程深度。
 
+### Epic/Roadmap 触发
+
+当 Alex 评估为 Standard 或 Full TAD，且任务需要多个阶段（>1 个 handoff）时，额外建议创建 Epic。
+
+**触发信号**（满足 2+ 项）：
+- 用户描述中包含"先...再...然后..."等分步语言
+- 任务涉及 3+ 个独立功能模块
+- 需要中间测试/验证才能继续
+- 涉及渐进式迁移或重构
+
+**流程**: Alex 建议 → AskUserQuestion → 人类选择 "创建 Epic" 或 "直接用单个 Handoff"
+
+---
+
+## 2.1 Epic/Roadmap 规则
+
+### 核心概念
+
+Epic 是 handoff 之上的容器，追踪多阶段大任务的完整生命周期。
+
+```
+Epic (EPIC-{YYYYMMDD}-{slug}.md)
+  ├── Phase 1 → HANDOFF-{date}-{name}.md  ✅ Completed
+  ├── Phase 2 → HANDOFF-{date}-{name}.md  🔄 Active
+  └── Phase 3 → (not yet created)          ⬚ Planned
+```
+
+### 文件位置
+
+| 状态 | 目录 |
+|------|------|
+| 进行中 | `.tad/active/epics/` |
+| 已完成 | `.tad/archive/epics/` |
+| 模板 | `.tad/templates/epic-template.md` |
+
+### 生命周期规则
+
+```yaml
+创建: Alex 在 Adaptive Complexity 评估后，如需多阶段则建议创建 Epic
+更新: 每次 *accept 时，Alex 在 step2b 更新 Epic Phase Map
+归档: 所有 Phase 完成后，移至 .tad/archive/epics/
+```
+
+### 并发控制 ⚠️ CRITICAL
+
+```yaml
+规则: 同一 Epic 内，同一时间只能有 1 个 Phase 处于 🔄 Active 状态
+违反: 尝试激活新 phase 时发现已有另一个 Active phase → BLOCK
+例外: 用户可手动编辑 Epic 文件覆盖此约束（自行承担风险）
+```
+
+### 派生状态
+
+Epic 不存储独立的 Status 字段。状态从 Phase Map 动态派生：
+- **Planning**: 所有 phase 为 ⬚ Planned
+- **In Progress**: 有任何 🔄 Active 或 ✅ Done
+- **Complete**: 所有 phase 为 ✅ Done
+
+### 错误处理
+
+```yaml
+epic_file_missing: "WARNING 日志，继续 *accept 流程（不阻塞归档）"
+epic_format_invalid: "WARNING 日志，跳过自动更新，提醒用户手动修复"
+handoff_ref_mismatch: "WARNING 日志，提示用户确认正确的 phase 编号"
+concurrent_active_violation: "BLOCK - 不允许激活新 phase"
+
+原则: Epic 更新失败不阻塞 handoff 归档
+```
+
+### 阶段动态调整
+
+- **添加阶段**: Alex 在 Phase Map 末尾追加新行（仅 ⬚ Planned），Notes 中记录原因
+- **删除阶段**: 仅限 ⬚ Planned 状态的阶段，Notes 中记录原因
+- **重排阶段**: 仅限 ⬚ Planned 状态的阶段
+
 ---
 
 ## 3. Quality Gates 强制规则
@@ -519,6 +594,19 @@ STALE 删除前必须验证 archive 中确实存在更新版本。
 - 超过 `max_lines`（默认 500 行）→ 触发自动归档到 `docs/HISTORY.md`
 - 归档对象: 完成超过 7 天的 `## 已完成` 段落
 - 保留: In Progress / Today / This Week / Blocked / 近 7 天完成
+
+### Epic 维护规则
+
+`/tad-maintain` 在所有模式下检查 Epic 状态，共 6 种检查类型：
+
+| 类型 | 说明 | 处理方式 |
+|------|------|----------|
+| STALE | 所有 phase 完成但 Epic 未归档 | SYNC/FULL: 自动归档 |
+| ORPHAN | 无关联 handoff 且超龄 | FULL: 用户确认 |
+| DANGLING_REF | Phase Map 引用不存在的 handoff | 报告 WARNING |
+| BACK_REF_MISMATCH | Handoff 引用 Epic 但 Epic 未列出 | 报告 WARNING |
+| STUCK | Active phase 超过 stale_age_days | 报告 WARNING |
+| OVER_ACTIVE | 同一 Epic 有多个 Active phase | 报告 ERROR |
 
 ### 写操作安全规则
 - 先写目标文件，确认成功后再删除源文件
