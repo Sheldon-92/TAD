@@ -1,7 +1,7 @@
 # Legacy Documents Index
 
 > These documents are preserved for **historical reference only**.
-> They contain information specific to older TAD versions and may not apply to v1.4.
+> They contain information specific to older TAD versions and may not apply to the current version (v2.2.1).
 
 ---
 
@@ -45,4 +45,4 @@ When referencing legacy documents:
 
 ---
 
-*Legacy Index - Last updated: 2026-01-06*
+*Legacy Index - Last updated: 2026-02-01*

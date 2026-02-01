@@ -1,8 +1,8 @@
 # TAD Multi-Platform Guide
 
-**Version 2.1.0 - Agent-Agnostic Architecture**
+**Version 2.2.1**
 
-> TAD v2.1 supports multiple AI coding assistants: Claude Code, Codex CLI, and Gemini CLI.
+> TAD supports multiple AI coding assistants: Claude Code, Codex CLI, and Gemini CLI.
 
 ---
 

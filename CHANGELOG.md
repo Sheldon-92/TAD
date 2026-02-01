@@ -5,6 +5,35 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-02-01
+
+### Added
+
+- **Epic/Roadmap Multi-Phase Task Tracking**
+  - `epic-template.md` with derived status design (no independent Status field)
+  - Directory structure: `.tad/active/epics/`, `.tad/archive/epics/`
+  - Alex `step2b`: Epic Assessment in Adaptive Complexity protocol
+  - Alex `step2b_epic_update`: Epic update in `*accept` flow (after handoff archive)
+  - Alex `epic_linkage`: Concurrent control in handoff creation protocol
+  - Handoff template: optional `**Epic:**` field
+  - `config-workflow.yaml`: `epic_lifecycle` section (constraints, derived status, health checks)
+  - CLAUDE.md §2.1: Epic rules (lifecycle, sequential constraint, error handling)
+  - `tad-maintain`: 7 Epic check types (STALE, ORPHAN, DANGLING_REF, BACK_REF_MISMATCH, STUCK, OVER_ACTIVE, OVER_LIMIT)
+  - `tad-help`: Epic/Roadmap documentation section
+
+### Changed
+
+- **Pair Testing Redesign**: Human-initiated, Alex-owned
+  - Trigger moved from Gate 3 (Blake auto-generates) to Gate 4 (Alex evaluates, human decides)
+  - `test-brief-template.md` Section 6 rewritten as Claude Desktop collaboration guide (4 subsections)
+  - New `pair-test-report-template.md` for standardized report output
+  - `config-workflow.yaml`: Updated `pair_testing.brief.trigger` to Gate 4 + Alex
+  - `tad-blake.md`: Removed `step4b_generate_test_brief` and message line
+  - `tad-alex.md`: Added `step_pair_testing_assessment` with AskUserQuestion
+  - CLAUDE.md §8: Updated pair testing rules
+
+---
+
 ## [2.2.1] - 2026-01-31
 
 ### Added
@@ -19,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - File lifecycle: naming conventions, directory structure, archival to `.tad/evidence/pair-tests/`
   - `tad-maintain` integration: PAIR TESTING check items in CHECK and FULL mode reports
   - CLAUDE.md §8: Pair testing rules (Gate integration, cross-tool collaboration, file lifecycle)
+
+- **Philosophy: Beneficial Friction** - Core design rationale added to README.md
+  - Three critical friction points: requirement clarification, priority decision, E2E acceptance
+  - Beneficial vs wasteful friction distinction
+  - Key Principles section updated to reference Beneficial Friction consistently
 
 ### Changed
 

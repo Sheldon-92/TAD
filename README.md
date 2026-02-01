@@ -98,7 +98,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.1.1 configuration
+│   ├── config.yaml              # v2.2.1 configuration
 │   ├── skills/                  # Platform-agnostic skills (8 P0 skills)
 │   │   ├── testing/SKILL.md
 │   │   ├── code-review/SKILL.md
@@ -141,13 +141,13 @@ rm -rf .tad-temp
 ```bash
 # Check version
 cat .tad/version.txt
-# Should show: 2.1.1
+# Should show: 2.2.1
 
 # Check skills
 ls .tad/skills/
 # Should show: 8 skill directories
 
-# Check /tad-maintain command (v2.1.1)
+# Check /tad-maintain command
 cat .claude/commands/tad-maintain.md | head -1
 # Should show: # TAD Maintain Command
 ```
@@ -355,20 +355,22 @@ Run periodically to check knowledge health:
 
 ## 💡 Key Principles
 
-### 1. Human-in-the-Loop
-Human is not just a requester but an active bridge between agents. Information flows through the human.
+These principles are the practical implementation of [Beneficial Friction](#-philosophy-beneficial-friction) — each one preserves a human checkpoint where it matters most, while automating everything else.
+
+### 1. Human-in-the-Loop (Beneficial Friction)
+Human is not just a requester but the Value Guardian at three critical friction points: requirement clarification, priority decisions, and end-to-end acceptance. Information flows through the human.
 
 ### 2. Design Before Code
-Alex designs completely before Blake implements. No implementation without handoff.
+Alex designs completely before Blake implements. No implementation without handoff. This ensures requirements are clarified (friction point #1) before any code is written.
 
 ### 3. Evidence-Based Quality
-Every gate requires evidence. Subagent reviews are mandatory, not optional.
+Every gate requires evidence. Subagent reviews are mandatory, not optional. Automated checks eliminate wasteful friction; human review at gates preserves beneficial friction.
 
 ### 4. Knowledge Accumulation
 Project learns from every feature. Patterns captured prevent repeated mistakes.
 
 ### 5. Adaptive Complexity
-Scale process to task size. Small task = light process. Large task = full TAD.
+Scale process to task size. Small task = light process. Large task = full TAD. Match the amount of beneficial friction to the risk level.
 
 ---
 

@@ -47,4 +47,4 @@ Select 0-9:
 - **EVIDENCE**: Must document each round in evidence system
 - **OUTPUT**: Creates `.tad/docs/requirements/requirements_[timestamp].md`
 
-[[LLM: This command immediately starts the requirement elicitation process with Agent A persona, enforcing all mandatory rules from TAD v1.1.]]
+[[LLM: This command immediately starts the requirement elicitation process with Agent A persona, enforcing all mandatory rules from TAD v2.2.1.]]

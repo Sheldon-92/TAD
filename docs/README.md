@@ -1,6 +1,6 @@
 # TAD Documentation Portal
 
-> **Current Version: v2.1** | [Quick Start](../README.md#-installation--upgrade) | [Multi-Platform](MULTI-PLATFORM.md)
+> **Current Version: v2.2.1** | [Quick Start](../README.md#-installation--upgrade) | [Multi-Platform](MULTI-PLATFORM.md)
 
 ## Current Documentation
 
@@ -16,7 +16,9 @@
 
 | Version | Release | Key Features | Links |
 |---------|---------|--------------|-------|
-| **v2.1** | 2026-01-26 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills | [Changelog](../CHANGELOG.md) |
+| **v2.2.1** | 2026-02-01 | Pair Testing Protocol, Beneficial Friction Philosophy | [Changelog](../CHANGELOG.md) |
+| v2.2.0 | 2026-01-31 | Modular Config, Bidirectional Messages, Adaptive Complexity | [Changelog](../CHANGELOG.md) |
+| v2.1 | 2026-01-26 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills | [Changelog](../CHANGELOG.md) |
 | v2.0 | 2026-01-26 | Ralph Loop Fusion, Gate 3/4 Restructure | [Ralph Loop](RALPH-LOOP.md) |
 | v1.8 | 2026-01-25 | Human-in-the-Loop, Terminal Isolation | - |
 | v1.6 | 2026-01-24 | Unified Install Script | [Release Notes](releases/v1.6-release.md) |
@@ -26,13 +28,13 @@
 
 | From | To | Command |
 |------|----|---------|
-| Fresh | v2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
-| v2.0 | v2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
-| v1.x | v2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| Fresh | v2.2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| v2.x | v2.2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| v1.x | v2.2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
 
 All upgrades preserve your data (handoffs, learnings, evidence).
 
-## Platform Support (v2.1)
+## Platform Support (v2.2.1)
 
 | Platform | Config | Commands | Skills |
 |----------|--------|----------|--------|
@@ -66,4 +68,4 @@ See [Archive Index](archive/index.md) for the complete list.
 
 ---
 
-*Documentation Portal - Last updated: 2026-01-26*
+*Documentation Portal - Last updated: 2026-02-01*

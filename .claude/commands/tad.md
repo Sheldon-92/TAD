@@ -1,12 +1,12 @@
-# /tad Command (TAD Framework v1.4 Main Entry)
+# /tad Command (TAD Framework v2.2.1 Main Entry)
 
 When this command is triggered, provide TAD framework guidance and options:
 
-## TAD Framework v1.4
-**Triangle Agent Development — Evidence-Based + Research-Driven**
+## TAD Framework v2.2.1
+**Triangle Agent Development — Beneficial Friction for AI-Assisted Development**
 
 ```
-Welcome to TAD v1.4 — Evidence-Based Quality + Research Phase + Skills/Learn
+Welcome to TAD v2.2.1 — Beneficial Friction + Ralph Loop + Multi-Platform
 
         Human (You)
          /\
@@ -19,7 +19,7 @@ Alex -------- Blake
 
 ## Quick Start Options
 
-Please select an option (0-9):
+Please select an option (0-8):
 
 ```
 0. Initialize TAD in current project (/tad-init)
@@ -31,95 +31,101 @@ Please select an option (0-9):
 6. Start parallel execution (/parallel)
 7. Show TAD status (/tad-status)
 8. View help documentation (/tad-help)
-9. Select specific scenario (/tad-scenario)
 
-Select 0-9:
+Select 0-8:
 ```
 
-## Key Features in v1.4
+## Key Features in v2.2.1
 
-### 🆕 v1.4 Additions
-- **MQ6 Technical Research**: All technical decisions trigger lightweight research with sources
-- **Research Phase**: Inline research during elicitation + final tech stack confirmation report
-- **Skills System**: Auto-discovered knowledge base under `.claude/skills/`
-- **Learn System**: `/tad-learn` to record framework-level improvements for future releases
+### 🆕 v2.2.1 Additions
+- **Beneficial Friction Philosophy**: AI executes, humans guard value at 3 critical friction points
+- **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
+- **TEST_BRIEF.md**: Auto-generated after Gate 3, completed by Alex after Gate 4
 
-### ✅ v1.3 Highlights (Preserved)
-- **Evidence-Based QA**: Mandatory evidence types with MQ1–MQ5 checks
-- **Progressive Validation**: Phase checkpoints with human-verified evidence
-- **Dual-Layer Verification**: Automated tests + human visual validation
+### ✅ v2.2.0 Highlights (Preserved)
+- **Modular Config**: config.yaml split into 6 modules with per-command binding
+- **Bidirectional Messages**: Structured copy-pasteable messages between Alex ↔ Blake
+- **Adaptive Complexity**: Auto-suggest process depth (Light/Standard/Full/Skip TAD)
+- **Blake Auto-Detect**: Scans for active handoffs on startup
 
-### 🎯 From BMAD (Proven Mechanisms)
-- **Mandatory Interaction**: 0-9 options, never yes/no
-- **Violation Detection**: Automatic quality enforcement
-- **Command System**: * prefix for all commands
-- **4-Step Activation**: Consistent agent startup
-- **Document Ownership**: Clear responsibility tracking
+### 🔄 v2.0 Highlights (Preserved)
+- **Ralph Loop**: Blake's iterative quality cycle (Layer 1 self-check + Layer 2 expert review)
+- **Gate 3 v2 Expanded**: All technical quality checks consolidated
+- **Gate 4 v2 Simplified**: Pure business acceptance by Alex
+- **Circuit Breaker**: Auto-escalate after 3 same errors
+- **State Persistence**: Resume from crash without losing progress
 
-### 🚀 From TAD (Original Innovations)
-- **4-Gate Quality System**: Systematic quality control
-- **Evidence Collection**: Pattern-based improvement
-- **Parallel Execution**: 40%+ time savings
-- **16 Real Sub-agents**: Claude Code platform agents
-- **Simple Triangle Model**: Just 3 roles vs 10+
+### 🎯 Core Mechanisms
+- **4-Gate Quality System**: Systematic quality control with evidence
+- **Socratic Inquiry**: Alex must use AskUserQuestion before writing handoffs
+- **Expert Handoff Review**: 2+ experts review handoff before Blake executes
+- **Knowledge Accumulation**: Project learns from every feature
+- **Parallel Execution**: 40%+ time savings via parallel-coordinator
+- **Multi-Platform**: Claude Code, Codex CLI, Gemini CLI support
 
 ## Slash Commands Available
 
 ### Agent Activation
-- `/alex` - Activate Agent A (Strategic Architect)
+- `/alex` - Activate Agent A (Solution Lead)
 - `/blake` - Activate Agent B (Execution Master)
 
 ### Core Workflows
-- `/elicit` - Start requirement gathering (3-5 rounds)
+- `/elicit` - Start requirement gathering (Socratic inquiry)
 - `/handoff` - Create/verify handoff document
 - `/gate` - Execute quality gate
 - `/parallel` - Start parallel execution
-- `/tad-learn` - Record framework-level learning and suggestions (v1.4)
+
+### Utility
+- `/tad-init` - Initialize TAD for a project
+- `/tad-status` - Check TAD installation and configuration
+- `/tad-help` - View help documentation
+- `/tad-maintain` - Document health check, sync, and cleanup
+- `/tad-test-brief` - Generate test brief for E2E testing
+- `/knowledge-audit` - Audit project knowledge files
 
 ### Quick Sub-agent Access
 - `/product` - Launch product-expert
-- `/architect` - Launch backend-architect
 - `/coordinator` - Launch parallel-coordinator
-- `/bug` - Launch bug-hunter
-- `/test` - Launch test-runner
 
 ## Typical Workflow
 
 1. **Terminal 1**: `/alex` → Activate Agent A
-   - `*analyze` → Gather requirements (3-5 rounds)
-   - `*design` → Create technical design
+   - Socratic inquiry → Gather requirements (adaptive questions)
+   - `*design` → Create technical design with expert review
    - `*handoff` → Generate handoff for Blake
 
 2. **Terminal 2**: `/blake` → Activate Agent B
-   - Verify handoff from Alex
-   - `*parallel` → Decompose and execute
-   - `*test` → Run comprehensive tests
-   - `*gate 3` and `*gate 4` → Verify quality
+   - Verify handoff from Alex (auto-detect on startup)
+   - `*develop` → Ralph Loop (Layer 1 + Layer 2)
+   - Gate 3 v2 → Technical verification
+   - Report to Alex for Gate 4 v2
 
 ## Quality Gates (Mandatory)
 
 | Gate | Owner | When | Purpose |
 |------|-------|------|---------|
 | Gate 1 | Alex | After elicitation | Requirements clarity |
-| Gate 2 | Alex | Before handoff | Design completeness |
-| Gate 3 | Blake | After coding | Implementation quality |
-| Gate 4 | Blake | Before delivery | Integration verification |
+| Gate 2 | Alex | Before handoff | Design completeness (with expert review) |
+| Gate 3 | Blake | After Ralph Loop | Implementation & integration quality |
+| Gate 4 | Alex | After Gate 3 | Acceptance & archive (business-only) |
 
 ## Success Patterns
 
 ✅ **Always Do:**
-- Use product-expert for requirements
+- Use Socratic inquiry before designing
 - Search existing code before designing
-- Verify functions exist
-- Use parallel-coordinator for multi-component
-- Collect evidence for patterns
+- Use `*develop` for implementation (triggers Ralph Loop)
+- Use parallel-coordinator for multi-component tasks
+- Collect evidence at every step
+- Record knowledge discoveries in Gate results
 
 ❌ **Never Do:**
-- Skip elicitation rounds
+- Skip Socratic inquiry
 - Let Alex write code
 - Start Blake without handoff
-- Execute sequentially when parallel possible
+- Bypass Ralph Loop for implementation
 - Skip quality gates
+- Omit Knowledge Assessment from Gate results
 
 ## Need Help?
 
@@ -127,17 +133,17 @@ Select 0-9:
 - **Check Status**: `/tad-status`
 - **Select Scenario**: `/tad-scenario`
 - **View Evidence**: Check `.tad/evidence/`
-- **Review Patterns**: See `.tad/evidence/patterns/`
+- **Project Knowledge**: See `.tad/project-knowledge/`
 
 ## Remember
 
-TAD v1.4 combines:
-- ⚡ **Simplicity**: Only 3 roles
-- 💪 **Enforcement**: BMAD's proven mechanisms
-- 🧪 **Evidence**: MQ1–MQ6 with human-verifiable checkpoints
-- 🔎 **Research**: Tech decisions backed by lightweight research
-- 📚 **Knowledge**: Skills auto-loaded as references
-- 🚀 **Efficiency**: Parallel execution + progressive validation
-- ✅ **Quality**: 4-gate system
+TAD v2.2.1 combines:
+- 🎯 **Beneficial Friction**: Humans guard value at 3 critical points
+- ⚡ **Simplicity**: Only 3 roles (Human, Alex, Blake)
+- 🔄 **Ralph Loop**: Iterative quality with expert exit conditions
+- 🧪 **Evidence**: Mandatory at every gate
+- 📐 **Adaptive**: Scale process to task complexity
+- 🤝 **Multi-Platform**: Claude Code, Codex CLI, Gemini CLI
+- ✅ **Quality**: 4-gate system with knowledge accumulation
 
-[[LLM: This is the main entry point for TAD v1.4. When invoked, present these options and guide the user through TAD's workflow with evidence-based QA, research phase, and skills/learn enhancements.]]
+[[LLM: This is the main entry point for TAD v2.2.1. When invoked, present these options and guide the user through TAD's workflow with Beneficial Friction, Ralph Loop, Adaptive Complexity, and Multi-Platform support.]]

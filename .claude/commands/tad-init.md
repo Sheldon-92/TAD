@@ -34,8 +34,6 @@ Use this checklist format to track progress:
    mkdir -p .tad/active/handoffs
    mkdir -p .tad/archive/handoffs
    mkdir -p .tad/gates
-   mkdir -p .tad/learnings/pending
-   mkdir -p .tad/learnings/pushed
    mkdir -p .tad/project-knowledge
    mkdir -p .tad/templates/output-formats
    mkdir -p .claude/commands
@@ -112,7 +110,7 @@ Use this checklist format to track progress:
    ✅ testing.md - Foundational section populated
    ```
 
-7. **Multi-Platform Support** (TAD v2.1.1)
+7. **Multi-Platform Support** (TAD v2.2.1)
 
    Generate configurations for all supported AI coding platforms so the project works with Claude Code, Codex CLI, AND Gemini CLI.
 
