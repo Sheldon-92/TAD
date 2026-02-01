@@ -70,7 +70,6 @@ config_modules:
       - failure_learning_loop
     loaded_by:
       - tad-blake.md
-      - tad-alex.md  # release planning only
 
   config-platform.yaml:
     path: ".tad/config-platform.yaml"
@@ -87,8 +86,8 @@ config_modules:
 # Each command loads config.yaml (this file) + its required modules.
 command_module_binding:
   tad-alex:
-    modules: [config-agents, config-quality, config-workflow, config-execution, config-platform]
-    note: "Alex needs all modules for comprehensive design support"
+    modules: [config-agents, config-quality, config-workflow, config-platform]
+    note: "Alex needs agents (role), quality (gates), workflow (handoffs/epic), platform (MCP tools). Release duties are inline."
 
   tad-blake:
     modules: [config-agents, config-quality, config-execution, config-platform]

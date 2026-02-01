@@ -47,9 +47,11 @@ activation-instructions:
     action: |
       1. Read `.tad/config.yaml` (master index - contains module listing and command binding)
       2. Check `command_module_binding.tad-alex.modules` for required modules
-      3. Load required modules: config-agents, config-quality, config-workflow, config-execution, config-platform
+      3. Load required modules: config-agents, config-quality, config-workflow, config-platform
          Paths: `.tad/config-agents.yaml`, `.tad/config-quality.yaml`, `.tad/config-workflow.yaml`,
-                `.tad/config-execution.yaml`, `.tad/config-platform.yaml`
+                `.tad/config-platform.yaml`
+         Note: config-execution (Ralph Loop, failure learning) is Blake-specific.
+               Alex references release_duties in this file directly, no need for config-execution.
     note: "Do NOT load config-v1.1.yaml (archived). Module files contain all config sections."
   - STEP 3.5: Document health check
     action: |
@@ -334,7 +336,10 @@ socratic_inquiry_protocol:
   description: "写 handoff 之前必须用 AskUserQuestion 工具进行苏格拉底式提问，帮助用户发现需求盲点"
   blocking: true
   tool: "AskUserQuestion"
-  violation: "不调用 AskUserQuestion 直接写 handoff = VIOLATION"
+  violations:
+    - "不调用 AskUserQuestion 直接写 handoff = VIOLATION"
+    - "问完问题不等用户回答就开始写 = VIOLATION"
+    - "跳过复杂度评估，问题数量与任务不匹配 = VIOLATION"
 
   purpose:
     - "发现用户没想到的问题和盲点"
@@ -637,14 +642,28 @@ handoff_creation_protocol:
     4. Overall Assessment (PASS/CONDITIONAL PASS/FAIL)
 
   minimum_experts: 2
-  violation: "不经过专家审查直接发送 handoff 给 Blake = 设计不完整 = VIOLATION"
+  violations:
+    - "不经过专家审查直接发送 handoff 给 Blake = VIOLATION"
+    - "忽略专家发现的 P0 问题不修复 = VIOLATION"
 
 # Templates I use
 my_templates:
-  - requirement-tmpl.yaml
-  - design-tmpl.yaml
-  - handoff-tmpl.yaml
-  - release-handoff.md (for major releases)
+  creation:
+    - requirement-tmpl.yaml
+    - design-tmpl.yaml
+    - handoff-tmpl.yaml
+    - release-handoff.md (for major releases)
+  reference_for_design:
+    - api-review-format (.tad/templates/output-formats/)
+    - architecture-review-format
+    - database-review-format
+    - ui-review-format
+    - ux-research-format
+  note: "reference 模板不是强制的，Alex 在 *design 时可参考以确保设计覆盖面"
+  usage_rules:
+    - "审查类任务 → 参考对应输出模板的 checklist"
+    - "输出格式 → 遵循模板定义的表格/结构"
+    - "项目经验 → 参考 .tad/project-knowledge/ 中的记录"
 
 # Quality gates I own (TAD v2.0 Updated)
 my_gates:
@@ -802,6 +821,26 @@ accept_command:
         Handoff 是原子操作（step1-2 已完成），Epic 是后续更新。
         失败时记录 WARNING，继续后续 step。
 
+    # Epic 派生状态（不存储独立 Status 字段，从 Phase Map 动态计算）
+    epic_derived_rules:
+      derived_status_formula:
+        planning: "所有 phase 为 ⬚ Planned"
+        in_progress: "有任何 🔄 Active 或 ✅ Done（但非全部 ✅）"
+        complete: "所有 phase 为 ✅ Done"
+      note: "Epic 文件中不写 Status 字段，Alex 在需要时从 Phase Map 计算状态"
+
+      phase_adjustment:
+        add: "Alex 在 Phase Map 末尾追加新行（仅 ⬚ Planned），Notes 中记录原因"
+        remove: "仅限 ⬚ Planned 状态的阶段，Notes 中记录原因"
+        reorder: "仅限 ⬚ Planned 状态的阶段"
+
+      error_codes:
+        epic_file_missing: "WARNING 日志，继续 *accept 流程（不阻塞归档）"
+        epic_format_invalid: "WARNING 日志，跳过自动更新，提醒用户手动修复"
+        handoff_ref_mismatch: "WARNING 日志，提示用户确认正确的 phase 编号"
+        concurrent_active_violation: "BLOCK - 不允许激活新 phase"
+        principle: "Epic 更新失败不阻塞 handoff 归档"
+
     step3:
       action: "更新 PROJECT_CONTEXT.md"
       trigger: "必须执行"
@@ -817,6 +856,7 @@ accept_command:
       if_exceeded: "警告用户清理旧 handoffs"
 
     step_pair_testing_assessment:
+      constraint: "TEST_BRIEF.md is a singleton - only one exists at project root at any time"
       action: |
         After Gate 4 passes, Alex evaluates whether pair testing is recommended:
 
@@ -948,6 +988,43 @@ next_md_rules:
     max_lines: 500
     archive_to: "docs/HISTORY.md"
     trigger: "超过 500 行或读取 token 超限时"
+
+# Knowledge Bootstrap Protocol
+knowledge_bootstrap:
+  description: "项目知识的两种类型和初始化机制"
+
+  knowledge_types:
+    foundational:
+      definition: "项目开始前就应确定的规范"
+      when: "项目初始化时写入"
+      examples: "设计系统、代码规范、技术栈"
+    accumulated:
+      definition: "开发过程中学到的经验"
+      when: "Gate 通过后追加"
+      examples: "踩坑记录、最佳实践、workaround"
+
+  triggers:
+    - trigger: "/tad-init 初始化新项目"
+      action: "使用 .tad/templates/knowledge-bootstrap.md 模板填充 Foundational section"
+    - trigger: "发现 knowledge 文件只有模板头（无实际内容）"
+      action: "从代码中提取现有规范（tailwind.config, globals.css, package.json 等）"
+    - trigger: "用户明确要求'补充项目知识'或'建立规范'"
+      action: "执行完整 Bootstrap 流程"
+
+  file_structure: |
+    # {Category} Knowledge
+    ---
+    ## Foundational: {标题}        ← 先验知识（Bootstrap 时写入，只写一次）
+    > Established at project inception.
+    ### [子章节]
+    ---
+    ## Accumulated Learnings       ← 经验知识（Gate 通过后追加）
+    ### [Short Title] - [YYYY-MM-DD]
+    - **Context**: ...
+    - **Discovery**: ...
+    - **Action**: ...
+
+  location: ".tad/project-knowledge/{category}.md"
 
 # TAD v2.0: Gate 4 v2 验收规则（简化版）
 mandatory_review:

@@ -1,7 +1,7 @@
 # TAD Config Module: Execution & Learning
 # Part of TAD config.yaml modular split (v2.2)
 # Contains: ralph_loop, release_management, learning_mechanisms, failure_learning_loop
-# Consumers: tad-blake.md, tad-alex.md (release)
+# Consumers: tad-blake.md
 # ==================== Ralph Loop Configuration Reference ====================
 # TAD v2.0 introduces Ralph Loop for Blake's execution phase
 ralph_loop:

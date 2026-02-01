@@ -2,22 +2,17 @@
 
 ## Recently Completed
 
+- [x] CLAUDE.md Router Architecture (先补后砍) (2026-02-01)
+  - Phase 1: 13 rules backfilled to agent files (tad-alex, tad-gate, tad-blake)
+  - Phase 2: CLAUDE.md 657→109 lines (router pattern, enforcement markers preserved)
+  - Phase 3: Alex config 5→4 modules (dropped config-execution, kept config-platform)
+  - 3 expert reviews (code-reviewer, backend-architect, security-auditor), 9 P0 all resolved
+  - 24/24 verification criteria passed, Gate 3 + Gate 4 passed
+  - Backup: .tad/backups/CLAUDE.md.pre-slim-backup
+
 - [x] Epic/Roadmap multi-phase task tracking (2026-02-01)
-  - Epic template with derived status (no independent Status field)
-  - Directory structure: .tad/active/epics/, .tad/archive/epics/
-  - Alex: step2b Epic Assessment in Adaptive Complexity
-  - Alex: step2b_epic_update in *accept (after handoff archive)
-  - Alex: epic_linkage in handoff creation protocol
-  - Handoff template: optional Epic field
-  - Config: epic_lifecycle in config-workflow.yaml
-  - CLAUDE.md: Section 2.1 Epic rules + Section 7 maintenance
-  - tad-maintain: 7 Epic check types (STALE/ORPHAN/DANGLING_REF/BACK_REF_MISMATCH/STUCK/OVER_ACTIVE/OVER_LIMIT)
-  - tad-help: Epic/Roadmap documentation
 
 - [x] Pair Testing Redesign - human-initiated, Alex-owned (2026-02-01)
-  - Moved from Gate 3 (Blake) to Gate 4 (Alex evaluates, human decides)
-  - Section 6 rewritten as Claude Desktop collaboration guide
-  - New pair-test-report-template.md
 
 ## In Progress
 
@@ -29,6 +24,7 @@
 - [ ] tad-maintain P0: SYNC mode needs target_slug parameter for scoped processing
 - [ ] tad-maintain P1: CLAUDE.md §1 add exemption for maintain-mode handoff reads
 - [ ] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header
+- [ ] tad-maintain P1: Add 2 explicit prohibition statements (file-mtime, Criterion C/D auto-archive)
 - [ ] tad-maintain P2: config.yaml clean up legacy `tad_version: 1.3.0` field
 - [ ] Verify auto-trigger behavior on next /alex or /blake activation
 - [ ] Verify Criterion C/D detection on real stale handoffs

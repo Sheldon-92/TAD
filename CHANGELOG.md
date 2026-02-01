@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `tad-maintain`: 7 Epic check types (STALE, ORPHAN, DANGLING_REF, BACK_REF_MISMATCH, STUCK, OVER_ACTIVE, OVER_LIMIT)
   - `tad-help`: Epic/Roadmap documentation section
 
+- **CLAUDE.md Router Architecture (先补后砍)**
+  - Phase 1: 13 execution rules backfilled to agent files (`tad-alex.md`, `tad-gate.md`, `tad-blake.md`)
+  - Phase 2: `CLAUDE.md` rewritten from 657→109 lines (router pattern)
+  - Phase 3: Alex config loading optimized from 5→4 modules (dropped `config-execution`)
+  - Router preserves all enforcement markers: BLOCKING, VIOLATION, CRITICAL
+  - Backup: `.tad/backups/CLAUDE.md.pre-slim-backup`
+  - 3 expert reviews, 9 P0 resolved, 24/24 verification criteria passed
+
 ### Changed
 
 - **Pair Testing Redesign**: Human-initiated, Alex-owned

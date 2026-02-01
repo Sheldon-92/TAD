@@ -1,4 +1,5 @@
 # /gate Command (Execute Quality Gate)
+# Note: Gate 3/4 will NOT pass without their respective evidence files in .tad/evidence/reviews/
 
 ## 🎯 自动触发条件
 
@@ -269,6 +270,24 @@ Required_Subagents:
     required: "if UI involved"
     output_to: ".tad/evidence/reviews/{date}-ux-review-{task}.md"
 
+# Evidence File Naming Convention
+Evidence_Naming:
+  pattern: ".tad/evidence/reviews/{YYYY-MM-DD}-{type}-{brief-description}.md"
+  types: [testing-review, security-review, performance-review, code-review, ux-review]
+  examples:
+    - "2026-02-01-testing-review-user-flow.md"
+    - "2026-02-01-security-review-auth-api.md"
+    - "2026-02-01-performance-review-menu-load.md"
+
+# Recommended Templates (Non-blocking, for reference)
+Recommended_Templates:
+  - subagent: code-reviewer
+    template: git-workflow-format
+    when: "*review 命令"
+  - subagent: refactor-specialist
+    template: refactoring-review-format
+    when: "重构任务"
+
   if_not_called:
     action: "BLOCK Gate 4"
     message: |
@@ -346,6 +365,40 @@ Workflow:
   6. Alex summarizes all subagent feedback
   7. Alex decides: PASS / CONDITIONAL PASS / REJECT
   8. If PASS: Gate 4 complete, deliver to user
+
+# Alex Acceptance Report Format (used in Gate 4)
+Acceptance_Report_Format: |
+  ## Alex 验收报告
+
+  ### 1. Subagent 审查结果
+
+  **code-reviewer 结果：**
+  - 审查范围：[文件列表]
+  - 发现问题：[问题数量]
+  - 关键反馈：[摘要]
+  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
+
+  **security-auditor 结果：**
+  - 审查范围：[模块/API]
+  - 关键反馈：[摘要]
+  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
+
+  **performance-optimizer 结果：**（如适用）
+  - 关键反馈：[摘要]
+  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
+
+  **ux-expert-reviewer 结果：**（如适用）
+  - 审查范围：[页面/组件]
+  - UX 评分：[分数/等级]
+  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
+
+  ### 2. 综合验收结论
+  - [ ] 代码质量符合标准
+  - [ ] 用户体验达到要求
+  - [ ] 安全性无明显漏洞
+  - [ ] 性能满足预期
+
+  **最终结论**：✅ 验收通过 / ⚠️ 条件通过（需修复 N 项）/ ❌ 打回重做
 
 # ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 4)
 # 必须在 Gate 结果表格中显式回答，不可跳过
@@ -447,5 +500,12 @@ To continue:
 3. Collect evidence
 4. Get pass result
 ```
+
+# Universal Violation Recovery Protocol (applies to all gates)
+Violation_Recovery:
+  step1: "立即停止当前操作"
+  step2: "调用正确的 agent/command（如应走 /blake 的用 /blake）"
+  step3: "按规范流程从头重新执行"
+  principle: "违反任何规则 → 停止 → 纠正 → 重做"
 
 [[LLM: This command executes the appropriate quality gate based on current agent and project phase. Gates are mandatory checkpoints that ensure quality.]]

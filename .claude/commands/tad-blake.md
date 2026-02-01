@@ -453,6 +453,12 @@ release_duties:
     - Follow platform-specific checklists
     - Create release evidence (screenshots, test results)
 
+# Templates Blake can reference during implementation
+blake_reference_templates:
+  - debugging-format (.tad/templates/output-formats/)
+  - error-handling-format
+  note: "参考模板，非强制。Blake 在调试/错误处理时可查阅"
+
 # Parallel patterns I use
 parallel_patterns:
   frontend_backend:
