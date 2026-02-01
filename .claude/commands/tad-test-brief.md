@@ -30,7 +30,7 @@ Auto-fill from project context:
 2. **Section 2** (Scope): Ask user what pages/features to test, or detect from recent changes
 3. **Section 3** (Test data): Ask user for test accounts/data info
 4. **Section 4** (Known issues): Read from `NEXT.md` Blocked section, or ask user
-5. **Section 5** (Design intent): Leave placeholder if no Alex context available
+5. **Section 5** (Design intent): Fill with design decisions, UX expectations, E2E scenarios
 6. **Section 8** (Technical): Auto-detect tech stack and fill appropriate tips
 
 ### Step 4: Generate
@@ -47,8 +47,8 @@ Sections filled:
   [OK] 2. Test scope
   [OK] 3. Test accounts/data
   [OK] 4. Known issues
-  [INFO] 5. Design intent (placeholder - Alex will supplement)
-  [OK] 6. Workflow (template default)
+  [OK] 5. Design intent & UX expectations
+  [OK] 6. Collaboration guide (template default)
   [OK] 7. Output requirements (template default)
   [OK] 8. Technical notes
 

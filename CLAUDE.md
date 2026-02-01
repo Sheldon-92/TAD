@@ -529,10 +529,23 @@ STALE 删除前必须验证 archive 中确实存在更新版本。
 
 ## 8. 配对测试规则
 
-### Gate 集成
-- Gate 3 通过后：Blake 必须生成 TEST_BRIEF.md（技术部分）
-- Gate 4 通过后：Alex 补充设计意图，提醒用户做配对 E2E 测试
-- 报告回流后：Alex 自动检测并生成修复 Handoff
+### 所有权与触发
+- **所有权**: Alex 负责评估和生成，人类做最终决定
+- **触发时机**: Gate 4 通过后，Alex 评估任务是否涉及 UI/用户流变更
+- **决策流程**: Alex 建议 → AskUserQuestion → 人类选择生成或跳过
+- **生成方式**: Alex 统一填充 TEST_BRIEF.md 所有 Section（不再分 Blake/Alex 两阶段）
+
+### 跳过条件
+以下情况 Alex 静默跳过，不询问用户：
+- 纯后端变更（无 UI 影响）
+- 配置/环境变更
+- 文档更新
+- 内部重构（无用户可见行为变化）
+- 依赖更新（无功能变化）
+
+### 报告回流
+- Alex 启动时自动检测 PAIR_TEST_REPORT.md
+- 检测到后：Alex 审阅并根据优先级生成修复 Handoff
 
 ### 跨工具协作
 - TEST_BRIEF.md 是 TAD (CLI) → Claude Desktop (GUI) 的桥梁

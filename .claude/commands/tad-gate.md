@@ -400,6 +400,7 @@ Post_Pass_Actions:
       Gate 4 通过！任务已准备交付。
 
       ⚠️ 提醒：Alex 需要执行 *accept 命令完成：
+      - 评估配对测试（UI/用户流变更时建议）
       - 归档 handoff 和 completion report
       - 更新 PROJECT_CONTEXT.md
       - 确认 NEXT.md 状态

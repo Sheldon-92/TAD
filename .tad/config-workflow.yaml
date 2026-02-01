@@ -142,18 +142,25 @@ tad_maintain:
 # ==================== 配对测试协议 ====================
 pair_testing:
   description: "Cross-tool E2E pair testing protocol (TAD CLI → Claude Desktop)"
+  ownership: "Alex generates, human decides"
 
   brief:
     template: ".tad/templates/test-brief-template.md"
     output: "TEST_BRIEF.md"  # project root
-    trigger: "Gate 3 pass (Blake generates technical sections)"
-    finalize: "Gate 4 pass (Alex supplements design sections)"
+    trigger: "Gate 4 pass (Alex evaluates, recommends to human, human decides)"
     sections:
-      blake_fills: [1, 2, 3, 4, 8]  # technical
-      alex_fills: [5]                 # design intent
-      template_default: [6, 7]        # workflow & output format
+      alex_fills: [1, 2, 3, 4, 5, 8]  # all content sections
+      template_default: [6, 7]          # workflow & output format
+
+    skip_criteria:
+      - "Backend-only changes (no UI impact)"
+      - "Configuration/environment changes"
+      - "Documentation-only updates"
+      - "Internal refactoring with no user-facing behavior change"
+      - "Dependency updates with no feature change"
 
   report:
+    template: ".tad/templates/pair-test-report-template.md"
     expected_pattern: "PAIR_TEST_REPORT*.md"
     location: "project root"
     archive_to: ".tad/evidence/pair-tests/"

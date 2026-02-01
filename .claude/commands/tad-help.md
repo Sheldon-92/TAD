@@ -9,7 +9,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
-Version: v2.1.1 | Generated: [timestamp]
+Version: v2.2.1 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -37,7 +37,7 @@ Terminal 2: Use /blake command to activate Agent B
 3. Follow handoff templates for all exchanges
 4. Verify function existence before implementation
 5. Test end-to-end data flow
-6. v1.4: For technical decisions, run MQ6 research and provide sources
+6. Use *develop command for implementation (triggers Ralph Loop)
 ```
 
 ---
@@ -151,10 +151,13 @@ TAD 支持跨工具的配对 E2E 测试：
 
 | 阶段 | 触发 | 产出 |
 |------|------|------|
-| Gate 3 后 | Blake 自动生成 | TEST_BRIEF.md（技术部分）|
-| Gate 4 后 | Alex 补充并提醒 | TEST_BRIEF.md（完整版）|
+| Gate 4 后 | Alex 评估建议，人类决定 | TEST_BRIEF.md（完整版）|
 | 配对测试 | 用户 + Claude Desktop | PAIR_TEST_REPORT.md |
 | 报告回流 | Alex 检测报告 | 新 Handoff（修复任务）|
+
+- Alex 在 Gate 4 后评估是否需要配对测试（UI/用户流变更时建议）
+- 人类决定是否生成 TEST_BRIEF.md
+- 后端/配置/文档等非 UI 变更自动跳过
 
 手动命令：`/tad-test-brief` - 独立生成测试简报
 Alex 命令：`*test-review` - 审阅测试报告并生成修复 Handoff
@@ -168,13 +171,15 @@ TAD integrates with 16 Claude Code sub-agents:
 - GitHub: https://github.com/Sheldon-92/TAD
 - Workflow Guide: See WORKFLOW_PLAYBOOK.md
 - Sub-agents: See CLAUDE_CODE_SUBAGENTS.md
- - Skills: `.claude/skills/` (auto-discovered knowledge base, v1.4)
- - v1.4 Features in config: `.tad/config.yaml` → `mandatory_questions`, `requirement_elicitation.research_phase`, `skills_system`
+ - Skills: `.tad/skills/` (8 platform-agnostic skills)
+ - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v1.4+ Highlights
-- **MQ6 Technical Research**: Technical decisions require lightweight research with sources and a final tech stack confirmation report
-- **Research Phase**: Inline research during elicitation + pre-design final review
-- **Skills System**: Auto-load knowledge from `.claude/skills/` to support decisions
+## TAD v2.2.1 Highlights
+- **Beneficial Friction**: AI executes, humans guard value at 3 critical friction points
+- **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
+- **Adaptive Complexity**: Auto-suggest process depth based on task size
+- **Ralph Loop**: Iterative quality cycles with expert exit conditions
+- **Multi-Platform**: Claude Code, Codex CLI, Gemini CLI support
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues
