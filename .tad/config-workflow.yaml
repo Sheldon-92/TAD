@@ -193,16 +193,19 @@ tad_maintain:
 
 # ==================== 配对测试协议 ====================
 pair_testing:
-  description: "Cross-tool E2E pair testing protocol (TAD CLI → Claude Desktop)"
-  ownership: "Alex generates, human decides"
+  description: "Cross-tool E2E pair testing protocol (TAD CLI → Claude Desktop Cowork)"
+  ownership: "Alex generates brief, human decides, Claude Desktop executes with human"
+
+  # All pair testing files live in .tad/pair-testing/
+  base_dir: ".tad/pair-testing/"
 
   brief:
     template: ".tad/templates/test-brief-template.md"
-    output: "TEST_BRIEF.md"  # project root
+    output: ".tad/pair-testing/TEST_BRIEF.md"
     trigger: "Gate 4 pass (Alex evaluates, recommends to human, human decides)"
     sections:
       alex_fills: [1, 2, 3, 4, 5, 8]  # all content sections
-      template_default: [6, 7]          # workflow & output format
+      template_default: [6, 7]          # collaboration guide & output format
 
     skip_criteria:
       - "Backend-only changes (no UI impact)"
@@ -213,8 +216,8 @@ pair_testing:
 
   report:
     template: ".tad/templates/pair-test-report-template.md"
-    expected_pattern: "PAIR_TEST_REPORT*.md"
-    location: "project root"
+    expected_pattern: ".tad/pair-testing/PAIR_TEST_REPORT*.md"
+    location: ".tad/pair-testing/"
     archive_to: ".tad/evidence/pair-tests/"
     auto_detect_on_alex_start: true
     issue_routing:
@@ -223,9 +226,8 @@ pair_testing:
       P2: "Add to NEXT.md"
 
   screenshot:
-    default_method: "gif_creator"  # for Web projects
-    output_dir: "e2e-screenshots/"
-    naming: "{NN}-{page-name}.gif"
+    output_dir: ".tad/pair-testing/screenshots/"
+    naming: "R{N}-{NN}-{description}.gif"
 
 # ==================== 深度需求挖掘流程（借鉴BMAD的elicit） ====================
 requirement_elicitation:

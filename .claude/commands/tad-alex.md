@@ -64,7 +64,7 @@ activation-instructions:
     suppress_if: "No issues found - show one-line: 'TAD Health: OK'"
   - STEP 3.6: Pair test report detection
     action: |
-      Scan project root for PAIR_TEST_REPORT*.md files.
+      Scan .tad/pair-testing/ for PAIR_TEST_REPORT*.md files.
       If found:
         1. List them with filename and creation date
         2. Use AskUserQuestion to ask:
@@ -151,8 +151,8 @@ exit_protocol:
 # *test-review protocol (Pair Testing Report Review)
 test_review_protocol: |
   When *test-review is invoked:
-  1. Read PAIR_TEST_REPORT.md
-  2. Extract all issues (look for tables with 问题/Priority columns)
+  1. Read .tad/pair-testing/PAIR_TEST_REPORT.md
+  2. Extract all issues (look for tables with Finding/Priority columns)
   3. Classify:
      - P0 (blocker): Create immediate handoff for Blake
      - P1 (important): Create handoff for Blake
@@ -164,9 +164,9 @@ test_review_protocol: |
   5. Archive processed files to .tad/evidence/pair-tests/:
      Safety: Use two-phase approach (copy first, verify, then delete source).
      If copy fails, abort and report error - do NOT delete originals.
-     a. Copy & rename TEST_BRIEF.md → .tad/evidence/pair-tests/{date}-test-brief-{slug}.md, then delete source
-     b. Copy & rename PAIR_TEST_REPORT.md → .tad/evidence/pair-tests/{date}-pair-test-report-{slug}.md, then delete source
-     c. Copy e2e-screenshots/ → .tad/evidence/pair-tests/{date}-screenshots-{slug}/, then delete source directory
+     a. Copy & rename .tad/pair-testing/TEST_BRIEF.md → .tad/evidence/pair-tests/{date}-test-brief-{slug}.md, then delete source
+     b. Copy & rename .tad/pair-testing/PAIR_TEST_REPORT.md → .tad/evidence/pair-tests/{date}-pair-test-report-{slug}.md, then delete source
+     c. Copy .tad/pair-testing/screenshots/ → .tad/evidence/pair-tests/{date}-screenshots-{slug}/, then delete source contents (keep empty dir)
   6. Output summary:
      "📋 测试报告已处理：
       - P0: {N} 个紧急问题 → Handoff 已创建
@@ -856,7 +856,7 @@ accept_command:
       if_exceeded: "警告用户清理旧 handoffs"
 
     step_pair_testing_assessment:
-      constraint: "TEST_BRIEF.md is a singleton - only one exists at project root at any time"
+      constraint: "TEST_BRIEF.md is a singleton - only one exists in .tad/pair-testing/ at any time"
       action: |
         After Gate 4 passes, Alex evaluates whether pair testing is recommended:
 
@@ -870,7 +870,7 @@ accept_command:
                question: "本次实现涉及用户界面变更，建议做配对 E2E 测试。要现在生成测试简报吗？",
                header: "Pair Testing",
                options: [
-                 {label: "生成测试简报 (Recommended)", description: "生成 TEST_BRIEF.md 用于 Claude Desktop 配对测试"},
+                 {label: "生成测试简报 (Recommended)", description: "生成 .tad/pair-testing/TEST_BRIEF.md 用于 Claude Desktop Cowork 配对测试"},
                  {label: "跳过，直接归档", description: "不做配对测试，直接完成归档"}
                ],
                multiSelect: false
@@ -885,14 +885,14 @@ accept_command:
               - Section 3: Test accounts/data
               - Section 4: Known issues from Blake's completion report
               - Section 5: Design intent, UX expectations, validation goals (Alex's domain knowledge)
-              - Section 6: Template default (collaboration guide)
-              - Section 7: Template default (output requirements)
+              - Section 6: Round-by-Round collaboration guide (fill Round definitions in 6d)
+              - Section 7: Output requirements (template default)
               - Section 8: Technical notes (framework-specific testing tips)
-           c. Write to project root: `TEST_BRIEF.md`
+           c. Write to `.tad/pair-testing/TEST_BRIEF.md`
            d. Remind human:
-              "TEST_BRIEF.md 已生成（所有 Section 已填充）
-               请将 TEST_BRIEF.md 拖入 Claude Desktop 进行配对 E2E 测试。
-               测试完成后，将 PAIR_TEST_REPORT.md 保存到项目目录，
+              ".tad/pair-testing/TEST_BRIEF.md 已生成（所有 Section 已填充）
+               请将 .tad/pair-testing/TEST_BRIEF.md 拖入 Claude Desktop Cowork 进行配对 E2E 测试。
+               测试完成后，PAIR_TEST_REPORT.md 保存到 .tad/pair-testing/，
                下次启动 /alex 时我会自动检测并处理。"
 
         4. If user chooses "跳过" → proceed to step_final

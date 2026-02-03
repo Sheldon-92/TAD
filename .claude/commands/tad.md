@@ -40,7 +40,7 @@ Select 0-8:
 ### 🆕 v2.2.1 Additions
 - **Beneficial Friction Philosophy**: AI executes, humans guard value at 3 critical friction points
 - **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
-- **TEST_BRIEF.md**: Auto-generated after Gate 3, completed by Alex after Gate 4
+- **Pair Testing**: All files in `.tad/pair-testing/` (Brief, Report, Screenshots)
 
 ### ✅ v2.2.0 Highlights (Preserved)
 - **Modular Config**: config.yaml split into 6 modules with per-command binding

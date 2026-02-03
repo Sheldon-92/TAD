@@ -12,7 +12,7 @@ Generate or update a pair testing brief (TEST_BRIEF.md) for E2E pair testing wit
 
 ### Step 1: Check Existing Brief
 
-Check if `TEST_BRIEF.md` exists in project root.
+Check if `.tad/pair-testing/TEST_BRIEF.md` exists.
 
 - **If exists**: Use AskUserQuestion to ask:
   - "TEST_BRIEF.md already exists. What would you like to do?"
@@ -35,22 +35,22 @@ Auto-fill from project context:
 
 ### Step 4: Generate
 
-Write completed `TEST_BRIEF.md` to project root.
+Write completed `TEST_BRIEF.md` to `.tad/pair-testing/TEST_BRIEF.md`.
 
 ### Step 5: Output
 
 ```
-TEST_BRIEF.md generated successfully.
+.tad/pair-testing/TEST_BRIEF.md generated successfully.
 
 Sections filled:
   [OK] 1. Product overview
   [OK] 2. Test scope
   [OK] 3. Test accounts/data
   [OK] 4. Known issues
-  [OK] 5. Design intent & UX expectations
-  [OK] 6. Collaboration guide (template default)
-  [OK] 7. Output requirements (template default)
+  [OK] 5. Focus areas & UX expectations
+  [OK] 6. Collaboration guide (Round-by-Round protocol)
+  [OK] 7. Output requirements
   [OK] 8. Technical notes
 
-Next: Drag TEST_BRIEF.md into Claude Desktop to start pair E2E testing.
+Next: Drag .tad/pair-testing/TEST_BRIEF.md into Claude Desktop Cowork to start pair E2E testing.
 ```

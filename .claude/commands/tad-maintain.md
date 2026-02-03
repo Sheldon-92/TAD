@@ -250,10 +250,10 @@ DOCUMENTS
   [icon] PROJECT_CONTEXT.md: {exists/missing}
   [icon] Version: {version.txt} / config: {config version}
 
-PAIR TESTING
+PAIR TESTING (.tad/pair-testing/)
   [icon] TEST_BRIEF.md: {exists/none}
   [icon] PAIR_TEST_REPORT.md: {exists (unprocessed!)/none}
-  [icon] e2e-screenshots/: {exists ({N} files)/none}
+  [icon] screenshots/: {exists ({N} files)/none}
 
 {if issues found:}
 RECOMMENDED ACTIONS
@@ -291,10 +291,10 @@ DOCUMENTS
   [icon] NEXT.md: {lines} lines ({action taken or status})
   [icon] PROJECT_CONTEXT.md: {created/updated/ok}
 
-PAIR TESTING
+PAIR TESTING (.tad/pair-testing/)
   [icon] TEST_BRIEF.md: {exists/none}
   [icon] PAIR_TEST_REPORT.md: {exists (unprocessed!)/none}
-  [icon] e2e-screenshots/: {exists ({N} files)/none}
+  [icon] screenshots/: {exists ({N} files)/none}
 
 CONSISTENCY
   [icon] Version alignment: {pass/fail}
