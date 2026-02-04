@@ -486,6 +486,7 @@ mandatory:
   evidence: "MUST create evidence files in .tad/evidence/reviews/"
   gate3_v2: "MUST pass Gate 3 v2 (expanded) after Ralph Loop completes"
   gate4_v2: "MUST pass Gate 4 v2 (business acceptance) before archive"
+  acceptance_verification: "MUST generate and execute acceptance verification for every criterion before Gate 3"
   after_completion: "MUST create completion report"
 
 # Completion protocol (TAD v2.0 - Ralph Loop integrated)
@@ -493,6 +494,7 @@ completion_protocol:
   step1: "使用 *develop 启动 Ralph Loop"
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
   step3: "通过 Layer 2 专家审查（code-reviewer → parallel experts）"
+  step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
   step5: "创建 completion-report.md"
   step6: "记录实际实现、遇到问题、与计划差异"
@@ -544,6 +546,46 @@ completion_protocol:
     layer2: "Expert Review (max 5 rounds, escalation @ 3)"
     gate3_v2: "Expanded technical + integration checks"
     completion: "Report + handoff to Alex for Gate 4 v2"
+
+  # ⚠️ step3b 详细执行协议 (Acceptance Verification)
+  step3b_acceptance_verification:
+    description: "为每条验收标准生成并执行可运行的验证"
+    blocking: true
+    trigger: "Ralph Loop Layer 2 通过后（即 step3 完成后）"
+    guide: ".tad/templates/acceptance-verification-guide.md"
+
+    violations:
+      - "跳过验收验证直接进 Gate 3 = VIOLATION"
+      - "验收标准无对应验证 = VIOLATION"
+      - "验证未实际执行（只写了没跑）= VIOLATION"
+
+    process:
+      step1_read_criteria:
+        action: "读取 Handoff 的 Acceptance Criteria section"
+        output: "验收标准列表（编号）"
+
+      step2_generate_verifications:
+        action: "为每条标准生成验证脚本（形式参考 guide: bash/test file）"
+        output_dir: ".tad/evidence/acceptance-tests/{task_id}/"
+        naming: "AC-{NN}-{brief-slug}.{sh|test.ts|test.py}"
+
+      step3_execute:
+        action: "执行所有验证脚本，收集结果"
+        output: "acceptance-verification-report.md"
+
+      step4_handle_failures:
+        action: |
+          IF any FAIL:
+            场景 A (脚本 bug): 修脚本 → 仅重跑修复的验证
+            场景 B (代码缺陷): 修代码 → 重跑 Ralph Loop Layer 1 → 重跑所有验证
+          IF all PASS: 继续到 step4 (Gate 3)
+
+    verification_quality:
+      - "每个验证必须可独立运行（不依赖执行顺序）"
+      - "每个验证必须产出明确的 PASS 或 FAIL"
+      - "每个验证必须在 30 秒内完成（超时 = FAIL）"
+      - "Bash 脚本: exit 0 = PASS, exit 1 = FAIL"
+      - "测试文件使用项目测试框架，无框架时用 bash"
 
   # ⚠️ Knowledge Assessment 是 Gate 的一部分（BLOCKING）
   knowledge_assessment:

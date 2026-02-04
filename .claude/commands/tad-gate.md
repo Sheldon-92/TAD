@@ -135,7 +135,32 @@ Required_Subagent:
       3. 保存到 .tad/evidence/reviews/ 目录
       4. 重新执行 Gate 3
 
-# Gate 3 检查项（Prerequisite 和 Subagent 要求通过后执行）
+# ⚠️ ACCEPTANCE VERIFICATION CHECK (BLOCKING)
+Acceptance_Verification:
+  check: "验收验证报告是否存在且全部 PASS？"
+  location: ".tad/evidence/acceptance-tests/{task_id}/acceptance-verification-report.md"
+
+  if_missing:
+    action: "BLOCK Gate 3"
+    message: |
+      ⚠️ Gate 3 无法通过 - 缺少验收验证报告
+
+      Blake 必须：
+      1. 读取 Handoff 的 Acceptance Criteria
+      2. 为每条标准生成验证脚本
+      3. 执行所有验证
+      4. 生成 acceptance-verification-report.md
+      5. 全部 PASS 后重新执行 Gate 3
+
+  if_exists:
+    checks:
+      - "报告中 FAIL 数量 = 0"
+      - "报告中标准数量 = Handoff 中 Acceptance Criteria 数量（不遗漏）"
+    on_mismatch:
+      action: "BLOCK Gate 3"
+      message: "验收验证未全部通过或有遗漏标准"
+
+# Gate 3 检查项（Prerequisite, Subagent, Acceptance Verification 要求通过后执行）
 Critical Check (5 items):
   - [ ] Code complete (all handoff tasks done)
   - [ ] Tests pass (no failing tests)
@@ -155,6 +180,13 @@ Output Format:
   | Subagent | Called | Evidence File | Status |
   |----------|--------|---------------|--------|
   | test-runner | ✅ Yes | {date}-testing-review-{task}.md | ✅ Exists |
+
+  #### Acceptance Verification
+  | Check | Status |
+  |-------|--------|
+  | Report exists | ✅ / ❌ |
+  | All criteria covered | {N}/{N} |
+  | All PASS | {P} PASS, {F} FAIL |
 
   #### Quality Checks
   | Item | Status | Note |

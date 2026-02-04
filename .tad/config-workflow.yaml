@@ -16,11 +16,13 @@ document_management:
       - designs       # 设计文档
       - handoffs      # 交接文档
       - epics         # Epic 多阶段任务追踪
+      - playground    # Frontend Design Playground 预览
     archive:          # 已完成归档
       - by_date       # 按日期
       - by_task       # 按任务
       - by_version    # 按版本
       - epics         # 已完成的 Epic
+      - playground    # 已归档的 Playground 文件
     context: "项目长期信息"
     working: "工作中文档"
 
@@ -228,6 +230,49 @@ pair_testing:
   screenshot:
     output_dir: ".tad/pair-testing/screenshots/"
     naming: "R{N}-{NN}-{description}.gif"
+
+# ==================== Frontend Design Playground ====================
+playground:
+  enabled: true
+  version: "2.0"
+  description: "Curation-based visual design exploration for frontend tasks"
+  ownership: "Alex curates from pre-built library + runtime search, human selects, design persists to project-knowledge"
+  violations_defined_in: "tad-alex.md playground_protocol.violations"
+  base_dir: ".tad/active/playground/"
+  archive_dir: ".tad/archive/playground/"
+  naming: "PLAYGROUND-{YYYYMMDD}-{project-slug}/"
+
+  curation:
+    reference_db: ".tad/references/design-curations.yaml"
+    html_template: ".tad/templates/playground-template.html"
+    guide: ".tad/templates/playground-guide.md"
+    design_tokens_template: ".tad/templates/design-tokens-template.md"
+
+  runtime_search:
+    min_search_queries: 3
+    must_cover: ["design trends", "similar products", "best practices"]
+    fallback: "Use pre-built library only, mark SEARCH_FALLBACK"
+    # violations defined in tad-alex.md playground_protocol.violations (single source of truth)
+
+  template_fill:
+    max_directions: 3
+    min_directions: 2
+    local_server: "npx serve -p 3333"
+
+  selection:
+    progress_steps: ["Choose Direction", "Refine Details", "Confirm & Export"]
+    max_iterations: 2
+    quick_mode: "Skip & Use Recommended"
+
+  export:
+    design_tokens_formats: ["css", "json"]
+    persist_to: ".tad/project-knowledge/frontend-design.md"
+    embed_in_handoff: true
+
+  cleanup:
+    archive_on_accept: true
+    keep_tokens: true
+    delete_html_after_archive: false
 
 # ==================== 深度需求挖掘流程（借鉴BMAD的elicit） ====================
 requirement_elicitation:

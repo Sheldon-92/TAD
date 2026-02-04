@@ -104,7 +104,8 @@ commands:
 
   # Core workflow commands
   analyze: Start requirement elicitation (3-5 rounds mandatory)
-  design: Create technical design from requirements
+  design: Create technical design from requirements (includes *playground trigger for frontend tasks)
+  playground: Launch Curation-based Design Playground (sub-phase of *design)
   handoff: Generate handoff with expert review (see handoff_creation_protocol)
   review: Review Blake's completion report (MANDATORY before archiving)
   accept: Accept Blake's implementation and archive handoff
@@ -188,6 +189,7 @@ subagent_shortcuts:
 my_tasks:
   - requirement-elicitation.md (3-5 rounds mandatory)
   - design-creation.md
+  - playground-curation.md (curation-based frontend design exploration)
   - handoff-creation.md (Blake's only info source)
   - gate-execution.md (quality gates)
   - evidence-collection.md
@@ -495,6 +497,207 @@ socratic_inquiry_protocol:
 
       ### 最终确认
       ✅ 用户确认需求完整，可以开始写 Handoff
+
+# ⚠️ Design Protocol (*design workflow)
+design_protocol:
+  description: "Technical design creation workflow - includes Playground trigger for frontend tasks"
+  tool: "AskUserQuestion"
+
+  steps:
+    step1:
+      name: "Review Socratic Inquiry Results"
+      action: "Confirm all requirements are clarified from Socratic Inquiry"
+
+    step2:
+      name: "Frontend Detection"
+      action: "Check if task involves frontend/UI (triggers playground_protocol.step1_frontend_detection)"
+
+    step3:
+      name: "Execute Playground (if frontend detected and user accepts)"
+      action: "Run playground_protocol steps 1-7 if user opts in; skip if not frontend or user declines"
+
+    step4:
+      name: "Create Architecture Design"
+      action: "Design system architecture, data flow, API contracts"
+
+    step5:
+      name: "Create Data Flow / State Flow Diagrams"
+      action: "Map data flows and state management as required by MQ3/MQ5"
+
+    step6:
+      name: "Proceed to *handoff"
+      action: "Transition to handoff_creation_protocol"
+
+  note: "Playground is positioned after requirement confirmation, before architecture design"
+
+# ⚠️ Playground Protocol (*playground sub-command)
+playground_protocol:
+  enabled: true
+  version: "2.0"
+  description: "Curation-based Frontend Design Playground"
+  owner: "Alex"
+  tool: "AskUserQuestion"
+  trigger: "Alex *design phase when task involves frontend/UI"
+  blocking: false
+  prerequisite: "Socratic Inquiry completed"
+
+  violations:
+    - "不读 design-curations.yaml 直接搜索 = VIOLATION"
+    - "不做运行时搜索直接使用预置值 = VIOLATION (至少补充 1 个最新趋势)"
+    - "跳过用户选择直接导出 Design Tokens = VIOLATION"
+
+  # Step 1: Frontend Detection (trigger)
+  step1_frontend_detection:
+    description: "Detect whether the task involves frontend/UI work"
+    strong_signals:
+      keywords: ["UI", "界面", "前端", "用户界面", "dashboard", "landing page", "配色", "样式"]
+    weak_signals:
+      keywords: ["form", "navigation", "design", "页面", "组件", "布局"]
+    negative_signals:
+      keywords: ["API", "database", "backend", "服务端", "schema", "migration", "CLI"]
+    trigger_logic: |
+      IF any strong_signal keyword detected AND no negative_signal dominance:
+        → trigger AskUserQuestion
+      ELIF 2+ weak_signal keywords detected AND no negative_signal dominance:
+        → trigger AskUserQuestion
+      ELSE:
+        → do not trigger (proceed with normal *design)
+    trigger_action: |
+      AskUserQuestion({
+        questions: [{
+          question: "检测到这个任务涉及前端/UI，要启动 Design Playground 做视觉探索吗？",
+          header: "Playground",
+          options: [
+            {label: "启动 Playground (Recommended)", description: "从业界最佳实践中筛选设计方案，生成可预览的选择页面"},
+            {label: "跳过，直接设计", description: "不需要视觉预览，直接进入文字设计"}
+          ],
+          multiSelect: false
+        }]
+      })
+
+  # Step 2: Context Gathering
+  step2_context_gathering:
+    description: "Collect project context and load pre-built reference library"
+    actions:
+      - "Read .tad/references/design-curations.yaml → load pre-built reference library"
+      - "Identify project type → match industry_templates"
+      - "Check .tad/project-knowledge/frontend-design.md → historical design preferences"
+      - "Scan project code → package.json, tailwind.config, globals.css etc."
+
+  # Step 3: Runtime Search (supplement pre-built library with latest trends)
+  step3_runtime_search:
+    description: "Supplement search for latest design trends"
+    min_queries: 3
+    query_templates:
+      - "{project_type} design trends {current_year}"
+      - "best {project_type} UI {current_year} awwwards"
+      - "{industry} color palette {current_year}"
+    actions:
+      - "WebSearch at least 3 queries"
+      - "WebFetch 1-2 high-quality result pages"
+      - "Extract newly discovered design elements (palette, font, component style)"
+      - "Compare with pre-built library: supplement new, replace outdated"
+    search_fallback: "If all searches return low quality or unavailable, use pre-built library only, mark SEARCH_FALLBACK"
+
+  # Step 4: Assemble 2-3 Coherent Directions
+  step4_assemble_options:
+    description: "Assemble 2-3 complete direction packages"
+    actions:
+      - "Each direction = 1 palette + 1 font_pairing + 1 component_preset"
+      - "Ensure visible difference between directions (not 3 variations of same style)"
+      - "Each direction gets: name, description, best_for tags, reference products, rationale"
+    coherence_check: "Elements within a direction must harmonize (no clashing combinations)"
+
+  # Step 5: Fill HTML Template
+  step5_fill_template:
+    description: "Fill curated values into HTML template"
+    template: ".tad/templates/playground-template.html"
+    guide: ".tad/templates/playground-guide.md"
+    actions:
+      - "Copy playground-template.html to .tad/active/playground/PLAYGROUND-{date}-{slug}/"
+      - "Replace CSS Custom Properties values in :root"
+      - "Fill all {{placeholders}} with actual values"
+      - "Fill research notes and reference links in sidebar"
+      - "Start local server: npx serve {path} -p 3333 (or next available port)"
+      - "Tell user to open http://localhost:3333"
+
+  # Step 6: User Selection (Progressive Disclosure with progress indicator)
+  step6_user_selection:
+    description: "Progressive selection with progress indicator and exit strategy"
+    max_iterations: 2
+    progress_visualization: "3-step stepper in nav: [Choose Direction] → [Refine] → [Export]"
+    save_and_resume: "Allow saving current state to .tad/active/playground/temp-selection.json"
+
+    round1_direction:
+      scope: "Choose 1 of 2-3 complete direction packages (palette + font + component style)"
+      user_action: "Click 'Choose This Direction' or 'Skip & Use Recommended'"
+      result: "Locks in overall aesthetic — palette + font + component preset as a package"
+      quick_mode: "User can click 'Skip & Use Recommended' to export recommended direction without full review"
+
+    round2_refinement:
+      scope: "Adjust individual values WITHIN the chosen direction"
+      allowed_changes:
+        - "Swap 1-2 accent/secondary colors"
+        - "Adjust spacing scale (more/less spacious)"
+        - "Tweak border radius"
+      not_allowed:
+        - "Cannot switch font family (part of direction package)"
+        - "Cannot switch to entirely different palette (use 'Not Satisfied' instead)"
+      skip_option: "Button: 'Looks perfect, export now'"
+
+    not_satisfied:
+      iteration_ui: "Show 'Iteration X of 2' counter"
+      actions:
+        - "Collect specific feedback (which aspects are wrong)"
+        - "Re-execute step3 focused on problem areas"
+        - "Generate revised playground"
+      after_max_iterations: |
+        Show explicit message: "Based on 2 rounds of exploration, recommend choosing the closest option.
+        Details can be refined during Blake's implementation."
+        Option: Fall back to text-based design brief with reference links
+
+  # Step 7: Export & Persist
+  step7_export:
+    description: "Preview + Export Design Tokens"
+    design_tokens_template: ".tad/templates/design-tokens-template.md"
+    flow:
+      1_generate: "Generate design-tokens.css + .json + component-spec.md"
+      2_preview: "Display token summary in terminal (top 10 key variables)"
+      3_confirm: "Ask user: 'Token preview looks good? Export?' (yes/edit/back)"
+      4_export: "yes → write files + project-knowledge; edit → allow manual adjustment; back → return to step6"
+    outputs:
+      - "design-tokens.css (per design-tokens-template.md format)"
+      - "design-tokens.json"
+      - "component-spec.md"
+      - ".tad/project-knowledge/frontend-design.md"
+    project_knowledge_entry:
+      path: ".tad/project-knowledge/frontend-design.md"
+      creation_instructions: |
+        IF file does not exist:
+          1. Create .tad/project-knowledge/frontend-design.md
+          2. Use knowledge_bootstrap file_structure format
+          3. Write header: "# Frontend Design Knowledge"
+          4. Add Foundational section with selected Design Tokens summary
+        IF file exists:
+          Append to Accumulated Learnings section with standard entry format
+
+  # Integration with Handoff
+  handoff_integration:
+    description: "Embed Playground results into handoff"
+    action: |
+      In handoff Section 4.5 (User Interface Requirements):
+      1. Reference Design Tokens file paths
+      2. Reference component specification document
+      3. Attach Playground HTML path or key screenshots
+      4. Blake must use these Design Tokens during implementation
+
+  # Cleanup
+  cleanup:
+    description: "Playground file lifecycle"
+    rules:
+      - "Playground files archived with handoff on *accept"
+      - "Design Tokens and component spec persist in project-knowledge for future tasks"
+      - "HTML preview files archived (design decisions already persisted to tokens and spec)"
 
 # ⚠️ MANDATORY: Handoff Creation Protocol (Expert Review)
 handoff_creation_protocol:
@@ -1186,6 +1389,11 @@ success_patterns:
   - ALWAYS run expert review on handoff drafts (min 2 experts)
   - Call experts in PARALLEL for efficiency
   - Integrate ALL P0 issues before marking ready
+  - Use *playground for ALL frontend/UI design tasks (curation-based)
+  - ALWAYS read design-curations.yaml before runtime search
+  - ALWAYS do runtime search to supplement pre-built library (min 1 trend)
+  - Export Design Tokens after user selection (CSS + JSON)
+  - Persist design decisions to project-knowledge
 
 # On activation
 on_start: |
@@ -1216,6 +1424,8 @@ on_start: |
 
 ### Key Commands
 - `*analyze` - Start requirement gathering (mandatory 3-5 rounds)
+- `*design` - Create technical design (auto-detects frontend tasks for Playground)
+- `*playground` - Launch Curation-based Design Playground (curate → fill template → selection → export)
 - `*product` - Quick access to product-expert
 - `*architect` - Quick access to backend-architect
 - `*handoff` - Create handoff with expert review (6-step protocol)

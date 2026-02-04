@@ -27,6 +27,7 @@
 | 命令 | 触发条件 |
 |------|----------|
 | `/alex` | 新功能 (>3 文件), 架构变更, 复杂多步骤需求, 多模块重构 |
+| `/alex` + `*playground` | 任务涉及前端/UI 设计，需要可视化探索 |
 | `/blake` | 有 active handoff, Alex 已创建 handoff, 用户说"开始实现" |
 | `/blake` (release) | 常规 patch/minor 版本发布（按 RELEASE.md SOP 执行）|
 | `/alex` → `/blake` | Major/breaking 发布（Alex 先创建 release-handoff）|

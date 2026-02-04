@@ -145,6 +145,18 @@ quality_gates:
           pattern: ".tad/evidence/reviews/{date}-performance-review-{task}-*.md"
           required: false  # Only if triggered
 
+    # Acceptance Verification Evidence (Required)
+    acceptance_verification_evidence:
+      required: true
+      files:
+        - type: "acceptance-verification-report"
+          pattern: ".tad/evidence/acceptance-tests/{task_id}/acceptance-verification-report.md"
+          required: true
+        - type: "verification-scripts"
+          pattern: ".tad/evidence/acceptance-tests/{task_id}/AC-*.*"
+          required: true
+          min_count: "must match acceptance criteria count"
+
     # Original Gate 3 Checks
     implementation_quality:
       checks:
