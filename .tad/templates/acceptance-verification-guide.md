@@ -25,21 +25,54 @@ step4: Gate 3 v2
 
 ---
 
-## 3. Verification Type Selection
+## 3. Verification Placement: Project Tests vs TAD Evidence
 
-| Criterion Type | Verification Form | Example Filename |
-|----------------|-------------------|------------------|
-| File/directory exists | bash (`test -f` / `test -d`) | AC-01-file-exists.sh |
-| Content/format correct | bash (`grep` / `yq` / `jq`) | AC-02-yaml-structure.sh |
-| Code functionality | Test file (Jest/pytest) | AC-03-function.test.ts |
-| Config value correct | bash (check specific values) | AC-04-config-value.sh |
-| UI behavior correct | bash (`curl` + check) or E2E test | AC-05-api-response.sh |
-| Protocol structure correct | bash (grep YAML keys) | AC-06-protocol.sh |
-| No impact / no regression | bash (diff / grep unchanged) | AC-07-no-impact.sh |
+Each acceptance criterion falls into one of two categories. **Choose the right destination**:
+
+| Criterion Category | Destination | Why |
+|--------------------|------------|-----|
+| **Functional/behavioral** (user-facing logic, API behavior, UI interaction) | **Project's own test suite** (`src/tests/`, `__tests__/`, etc.) | Becomes permanent regression test — Layer 1 runs it on every future change |
+| **Structural/protocol** (file exists, config format, YAML keys, framework compliance) | **TAD evidence** (`.tad/evidence/acceptance-tests/`) | One-time verification of delivery, not reusable as product test |
+
+**Rule: If a verification tests product functionality, it MUST go into the project's test suite, not `.tad/evidence/`.**
+
+This ensures the project's test coverage grows with every feature Blake implements. Over time, Layer 1's `npm test` (or equivalent) automatically covers all historical features — no separate smoke test mechanism needed.
+
+### Examples
+
+```
+AC: "用户登录后跳转到首页"
+  → Write: src/__tests__/auth/login-redirect.test.ts  (project test)
+  → Also copy to: .tad/evidence/ as AC-01 (for step3b report)
+
+AC: "tad-blake.md 包含 step3b"
+  → Write: .tad/evidence/acceptance-tests/{task_id}/AC-02-step3b.sh  (TAD evidence only)
+```
+
+For criteria that produce project tests, the verification report should reference the project test path:
+
+```
+| 1 | Login redirects to home | src/__tests__/auth/login-redirect.test.ts | PASS | npm test output |
+```
 
 ---
 
-## 4. Naming Convention
+## 4. Verification Type Selection
+
+| Criterion Type | Verification Form | Example Filename | Destination |
+|----------------|-------------------|------------------|-------------|
+| File/directory exists | bash (`test -f` / `test -d`) | AC-01-file-exists.sh | TAD evidence |
+| Content/format correct | bash (`grep` / `yq` / `jq`) | AC-02-yaml-structure.sh | TAD evidence |
+| Code functionality | Test file (Jest/pytest) | login-redirect.test.ts | **Project tests** |
+| Config value correct | bash (check specific values) | AC-04-config-value.sh | TAD evidence |
+| UI behavior correct | Test file or E2E test | dashboard-load.test.ts | **Project tests** |
+| API behavior correct | Test file (supertest/httpx) | api-users.test.ts | **Project tests** |
+| Protocol structure correct | bash (grep YAML keys) | AC-06-protocol.sh | TAD evidence |
+| No impact / no regression | bash (diff / grep unchanged) | AC-07-no-impact.sh | TAD evidence |
+
+---
+
+## 5. Naming Convention
 
 ```
 AC-{NN}-{brief-slug}.{sh|test.ts|test.py}
@@ -49,7 +82,8 @@ AC-{NN}-{brief-slug}.{sh|test.ts|test.py}
 - `brief-slug`: 2-4 word kebab-case description
 - Extension: `.sh` for bash, `.test.ts` for Jest, `.test.py` for pytest
 
-**Output directory**: `.tad/evidence/acceptance-tests/{task_id}/`
+**TAD evidence directory**: `.tad/evidence/acceptance-tests/{task_id}/`
+**Project tests**: Follow the project's existing test directory convention
 
 ### Task ID Mapping
 
@@ -60,7 +94,7 @@ AC-{NN}-{brief-slug}.{sh|test.ts|test.py}
 
 ---
 
-## 5. Quality Requirements
+## 6. Quality Requirements
 
 - **Independent**: Each verification runs standalone, no dependency on execution order
 - **Deterministic**: Produces clear PASS or FAIL (never "looks OK")
@@ -70,7 +104,7 @@ AC-{NN}-{brief-slug}.{sh|test.ts|test.py}
 
 ---
 
-## 6. Report Format
+## 7. Report Format
 
 After executing all verifications, generate `acceptance-verification-report.md`:
 
@@ -90,7 +124,7 @@ Total: {N} criteria, {P} PASS, {F} FAIL
 
 ---
 
-## 7. Failure Handling
+## 8. Failure Handling
 
 | Failure Scenario | Action | Re-run Scope |
 |-----------------|--------|-------------|
@@ -100,7 +134,7 @@ Total: {N} criteria, {P} PASS, {F} FAIL
 
 ---
 
-## 8. Common Verification Patterns
+## 9. Common Verification Patterns
 
 ### File Exists
 ```bash
