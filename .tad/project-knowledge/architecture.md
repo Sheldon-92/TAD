@@ -40,3 +40,12 @@ Project-specific architecture learnings accumulated through TAD workflow.
   - Technical experts (code-reviewer, test-runner, security, performance) → Blake's Gate 3 v2
   - Business acceptance (requirement verification, user approval) → Alex's Gate 4 v2
 - **Action**: When designing quality gates, separate technical automation from business judgment
+
+### Cognitive Firewall: Embed Into Existing Flows, Don't Create New Ones - 2026-02-06
+- **Context**: Designing a 3-pillar human empowerment system (decision transparency, research-first, fatal operation protection)
+- **Discovery**: Cross-cutting concerns (like "human must approve tech decisions") are most effective when embedded into existing mandatory flows (Gates, Alex design phase, Blake execution) rather than creating standalone commands or modules. Key pattern:
+  1. **Insert, don't create**: New protocol inserted between Socratic Inquiry and Design — guaranteed to run
+  2. **Gate enforcement**: Risk Translation in Gate 3 makes protection mandatory, not optional
+  3. **Escalation over automation**: Blake PAUSE (not auto-proceed) respects terminal isolation principle
+  4. **Handoff-awareness**: Risk checks must understand intent to avoid blocking legitimate operations
+- **Action**: When adding cross-cutting quality/safety concerns, embed them as mandatory steps in existing flows rather than creating separate commands that can be forgotten
