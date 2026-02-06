@@ -286,3 +286,57 @@ human_role_v13:
       - 减少最后阶段的大量修改
       - 确保实现符合真正意图，不是字面意思
       - 建立技术决策直觉，长期受益
+
+# ==================== Agent Teams Configuration (v2.3 - experimental) ====================
+agent_teams:
+  enabled: true
+  version: "1.0"
+  experimental: true
+  description: "Agent Teams integration for parallel review and implementation"
+  prerequisite: "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in settings.json"
+
+  # Terminal Isolation Preservation (P0 from expert review)
+  terminal_isolation:
+    rule: "Agent Teams MUST NOT cross terminal boundaries"
+    alex_team_scope: "Requirements, design, review ONLY — NO implementation"
+    blake_team_scope: "Implementation, testing ONLY — NO design changes"
+    handoff_still_required: true
+    human_still_bridge: true
+
+  # Coexistence strategy
+  coexistence:
+    strategy: "auto_by_complexity"
+    rules:
+      full_tad: "agent_team"       # Full TAD → try Agent Team first
+      standard_tad: "subagent"     # Standard TAD → subagent
+      light_tad: "subagent"        # Light TAD → subagent
+      skip_tad: "none"             # Skip → direct
+    user_override: true            # User can always override
+
+  # Fallback
+  fallback:
+    enabled: true
+    strategy: "auto_fallback_to_subagent"
+    log: true
+    blocking: false
+    state_recovery: "git_stash"    # Checkpoint work before fallback
+
+  # Cost control
+  cost:
+    teammate_model: "sonnet"       # Teammates use Sonnet
+    lead_model: "inherit"          # Lead uses active model
+    max_teammates: 4
+
+  # Alex Review Team settings
+  alex_review_team:
+    min_reviewers: 3
+    debate_round: true
+    delegate_mode: true
+
+  # Blake Implementation Team settings
+  blake_implementation_team:
+    min_tasks_for_team: 3
+    delegate_mode: true
+    file_ownership_strict: true
+    dependency_analysis_required: true   # Must check file overlap before team
+    shared_config_reserved_for_lead: true

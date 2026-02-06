@@ -1,23 +1,25 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.2.1
-- **Last Updated**: 2026-02-01
-- **Framework**: TAD v2.2.1 - Router Architecture + Epic/Roadmap + Pair Testing + Modular Config
+- **Version**: 2.3.0 (experimental Agent Teams + Cognitive Firewall)
+- **Last Updated**: 2026-02-06
+- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall
 
 ## Active Work
 (none)
 
 ## Recent Decisions
-- CLAUDE.md Router Architecture: 657→109 lines, router vs execution separation, enforcement markers preserved (2026-02-01)
-- Alex Config Optimization: 5→4 modules (dropped config-execution, kept config-platform for MCP) (2026-02-01)
-- Epic/Roadmap: Multi-phase task tracking with derived status, sequential constraint, error resilience (2026-02-01)
-- Pair Testing Redesign: Human-initiated, Alex-owned (Gate 4 trigger, not Gate 3) (2026-02-01)
+- Cognitive Firewall: 3-pillar human empowerment system — research-first, decision transparency, fatal operation protection (2026-02-06)
+- Knowledge Auto-loading: CLAUDE.md Section 7 with 9 @import statements for project-knowledge (2026-02-06)
+- Agent Teams: Experimental parallel review (Alex) and implementation (Blake) with auto-fallback to subagent (2026-02-06)
+- Coexistence Strategy: Full TAD → Agent Team, Standard/Light → subagent (2026-02-06)
+- CLAUDE.md Router Architecture: 657→109 lines, router vs execution separation (2026-02-01)
 
 ## Known Issues
-- tad-maintain: 2 explicit prohibition statements need adding (P1, behavior correct)
+- Playground: Running suboptimally, Alex doesn't fully understand user intent — needs iteration
+- Agent Teams: Experimental, requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ## Next Direction
-- Test Epic flow end-to-end on next multi-phase task
-- Fix remaining tad-maintain P1 issues
-- Add explicit prohibition statements to tad-maintain.md (P1 from router refactoring)
+- Validate Cognitive Firewall (research_decision_protocol) on next real feature
+- Test Agent Teams on next Full TAD task
+- Iterate on Playground based on user feedback

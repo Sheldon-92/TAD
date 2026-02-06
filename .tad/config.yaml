@@ -83,20 +83,33 @@ config_modules:
       - tad-alex.md  # MCP tools
       - tad-blake.md  # MCP tools
 
+  config-cognitive.yaml:
+    path: ".tad/config-cognitive.yaml"
+    description: "Cognitive Firewall: research protocol, decision transparency, fatal operation protection, risk translation"
+    contains:
+      - decision_transparency (triggers, presentation, depth_rules)
+      - research_first (protocol, quality, violations)
+      - fatal_operations (universal_preset, project_custom, risk_translation, handoff_awareness)
+      - integration (alex_design_flow, blake_execution_flow, gate_flow)
+    loaded_by:
+      - tad-alex.md
+      - tad-blake.md
+      - tad-gate.md
+
 # ==================== Per-Command Module Binding ====================
 # Each command loads config.yaml (this file) + its required modules.
 command_module_binding:
   tad-alex:
-    modules: [config-agents, config-quality, config-workflow, config-platform]
-    note: "Alex needs agents (role), quality (gates), workflow (handoffs/epic), platform (MCP tools). Release duties are inline."
+    modules: [config-agents, config-quality, config-workflow, config-platform, config-cognitive]
+    note: "Alex needs agents (role), quality (gates), workflow (handoffs/epic), platform (MCP tools), cognitive (research/decisions). Release duties are inline."
 
   tad-blake:
-    modules: [config-agents, config-quality, config-execution, config-platform]
-    note: "Blake needs agents (role), quality (gates), execution (ralph/release), platform (MCP)"
+    modules: [config-agents, config-quality, config-execution, config-platform, config-cognitive]
+    note: "Blake needs agents (role), quality (gates), execution (ralph/release), platform (MCP), cognitive (decision escalation)"
 
   tad-gate:
-    modules: [config-quality]
-    note: "Gates only need quality definitions"
+    modules: [config-quality, config-cognitive]
+    note: "Gates need quality definitions + cognitive (risk translation, decision compliance)"
 
   tad-init:
     modules: [config-platform]
@@ -224,8 +237,7 @@ yolo_mode:
     - "不能跳过关键质量门控"
     - "必须记录原因"
 
-# ==================== TAD v1.3 增强配置 ====================
-tad_version: 1.3.0
+# ==================== 增强配置 ====================
 enhancement_date: 2025-11-25
 philosophy: "Evidence-Based Triangle Development with Continuous Learning"
 

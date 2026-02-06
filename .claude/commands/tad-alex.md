@@ -121,6 +121,7 @@ commands:
   architect: Call backend-architect for design
   api: Call api-designer for API design
   ux: Call ux-expert-reviewer for UX review
+  research: Research technical options and present comparison (part of design flow)
   reviewer: Call code-reviewer for design review
 
   # Document commands
@@ -498,6 +499,103 @@ socratic_inquiry_protocol:
       ### 最终确认
       ✅ 用户确认需求完整，可以开始写 Handoff
 
+# ⚠️ MANDATORY: Research & Decision Protocol (Cognitive Firewall - Pillar 1 & 2)
+research_decision_protocol:
+  description: "Research before designing. Present options. Human decides."
+  prerequisite: "Socratic Inquiry completed"
+  blocking: true
+  config: ".tad/config-cognitive.yaml"
+
+  violations:
+    - "Designing without researching existing solutions = VIOLATION"
+    - "Not presenting alternatives to human = VIOLATION"
+    - "Skipping research for important decisions = VIOLATION"
+
+  # Step 1: Identify technical decisions in this task
+  step1_identify_decisions:
+    name: "Decision Point Identification"
+    action: |
+      After Socratic Inquiry, analyze the task requirements and identify:
+      1. What technical decisions need to be made?
+      2. Classify each as simple or important (per config depth_rules)
+
+      Use AskUserQuestion to confirm identified decisions:
+        "Based on our discussion, I've identified these technical decisions to research:"
+        Options: each decision listed + "Add more" + "These are correct, proceed"
+
+  # Step 2: Research each decision
+  step2_research:
+    name: "Research Phase"
+    action: |
+      For each identified decision:
+
+      1. Execute Landscape Search (min 3 WebSearch queries):
+         - "{problem} best practices {current_year}"
+         - "{problem} open source solutions comparison"
+         - "{problem} {our_tech_stack} recommended approach"
+
+      2. WebFetch 1-2 high-quality results for deeper analysis
+
+      3. Evaluate options found:
+         - Maturity & community health
+         - Fit with our project context
+         - Cost & licensing
+         - Learning curve
+
+      4. Always include "build custom" as a comparison option
+
+    research_depth:
+      simple: "3 search queries, 2+ options, quick_comparison table"
+      important: "5+ search queries, 3+ options, quick_comparison + decision_record"
+
+    time_budget:
+      simple: "5-10 minutes per decision"
+      important: "15-30 minutes per decision"
+
+  # Step 3: Present to human
+  step3_present:
+    name: "Decision Presentation"
+    action: |
+      Present each decision using the appropriate format:
+
+      Simple decision:
+        Use AskUserQuestion with options based on research results.
+        Include quick_comparison table in the question context.
+
+      Important decision:
+        1. Output the quick_comparison table
+        2. Create draft Decision Record (.tad/decisions/DR-{date}-{slug}.md)
+        3. Use AskUserQuestion for human to choose
+        4. Record human's choice and rationale in Decision Record
+
+    human_learning_enhancement:
+      description: "Help human understand WHY each option matters"
+      include_in_presentation:
+        - "What does this choice enable/prevent in the future?"
+        - "What's the risk if this turns out to be wrong?"
+        - "What would experienced engineers consider here?"
+        - "Real-world examples of projects using each option"
+
+  # Step 4: Record and proceed
+  step4_record:
+    name: "Decision Recording"
+    action: |
+      After human decides:
+      1. Record decision in handoff (Decision Summary section)
+      2. If important: finalize Decision Record with human's rationale
+      3. Add to .tad/project-knowledge/architecture.md if architecturally significant
+      4. Proceed to design_protocol with decisions locked in
+
+    handoff_integration:
+      new_section: |
+        ## Decision Summary
+
+        | # | Decision | Options Considered | Chosen | Rationale |
+        |---|----------|-------------------|--------|-----------|
+        | 1 | {title} | {A, B, C} | {chosen} | {why} |
+
+        Decision Records: .tad/decisions/DR-{date}-{slug}.md (if any)
+
 # ⚠️ Design Protocol (*design workflow)
 design_protocol:
   description: "Technical design creation workflow - includes Playground trigger for frontend tasks"
@@ -741,6 +839,77 @@ handoff_creation_protocol:
       name: "Parallel Expert Review"
       action: "并行调用选定的专家审查初稿"
       execution: "使用 Task tool 并行调用多个专家"
+
+    # Agent Team Review Mode (TAD v2.3 - experimental)
+    # Alternative to step3 when process_depth == full and Agent Teams available
+    step3_agent_team:
+      name: "Agent Team Expert Review (Full TAD only)"
+      description: "Alternative to step3 when process_depth == full and Agent Teams available"
+      experimental: true
+
+      activation: |
+        This step REPLACES step3 when ALL conditions met:
+        1. process_depth == "full" (user chose Full TAD in adaptive complexity)
+        2. Agent Teams feature is available (env var set)
+        If any condition not met → skip this step, use original step3.
+        If Agent Team creation fails → fallback to original step3 automatically.
+
+      terminal_scope_constraint:
+        rule: "Review Team stays within Alex's domain — NO implementation code"
+        allowed: ["design review", "type safety check", "architecture analysis", "risk assessment"]
+        forbidden: ["writing code", "running builds", "executing tests", "file modifications"]
+
+      team_structure:
+        lead: "Alex (delegate mode — coordination only)"
+        teammates:
+          - role: "code-quality-reviewer"
+            focus: "Type safety, code structure, test requirements, execution order"
+          - role: "architecture-reviewer"
+            focus: "Data flow, API design, state management, system architecture"
+          - role: "domain-reviewer"
+            focus: "Dynamic: frontend→UX, security→audit, performance→optimize"
+
+      team_prompt_template: |
+        Create an agent team to review this handoff draft:
+
+        FILE: {handoff_path}
+
+        Spawn three reviewers:
+        - Code quality reviewer: type safety, interfaces, test requirements
+        - Architecture reviewer: data flow, API contracts, state management
+        - {domain_type} reviewer: {domain_focus}
+
+        WORKFLOW:
+        Phase 1 - Individual Review (parallel):
+          Each reviewer independently reviews and produces a structured report.
+
+        Phase 2 - Cross-Challenge:
+          After all reviews complete, each reviewer challenges one other:
+          - Code challenges Architecture findings
+          - Architecture challenges Domain findings
+          - Domain challenges Code findings
+          Focus: "Is this really P0? Could it be downgraded?"
+
+        Phase 3 - Consensus:
+          Synthesize into single report:
+          - P0 blocking issues (must fix)
+          - P1 recommendations (should address)
+          - P2 suggestions (nice to have)
+          - Overall: PASS / CONDITIONAL PASS / FAIL
+
+        CONSTRAINT: This is a REVIEW team. Do NOT write implementation code.
+
+      fallback_protocol: |
+        IF Agent Team creation fails OR errors during review:
+          1. Log: "⚠️ Agent Team review failed, falling back to subagent mode"
+          2. Execute original step3 (parallel Task tool calls with 2+ experts)
+          3. Continue handoff_creation_protocol from step4 normally
+        Fallback is automatic — no user intervention, no blocking.
+
+      output_format: |
+        Same as current Expert Review Status table, with added note:
+        "Reviewed via Agent Team (3 reviewers with cross-challenge)"
+        OR "Reviewed via subagent (fallback)" if fallback was used.
 
     step4:
       name: "Feedback Integration"
@@ -1391,6 +1560,10 @@ success_patterns:
   - Integrate ALL P0 issues before marking ready
   - Use *playground for ALL frontend/UI design tasks (curation-based)
   - ALWAYS read design-curations.yaml before runtime search
+  - ALWAYS research existing solutions before designing custom ones
+  - Present 2+ options for every significant technical decision
+  - Include "build custom" as explicit comparison option
+  - Record important decisions as Decision Records
   - ALWAYS do runtime search to supplement pre-built library (min 1 trend)
   - Export Design Tokens after user selection (CSS + JSON)
   - Persist design decisions to project-knowledge

@@ -2,6 +2,21 @@
 
 ## Recently Completed
 
+- [x] Cognitive Firewall - Human Empowerment System (2026-02-06)
+  - config-cognitive.yaml: 3 pillars (decision transparency, research-first, fatal operations)
+  - tad-alex.md: research_decision_protocol (4-step identify→research→present→record)
+  - tad-blake.md: implementation_decision_escalation (PAUSE behavior, P0-1 fixed)
+  - tad-gate.md: Risk_Translation (Gate 3) + Decision_Compliance (Gate 4)
+  - config.yaml: config-cognitive module registered, 3 command bindings updated
+  - Gate 3 PASS: 28/28 AC, code-review P0=0, all P0 fixes verified
+
+- [x] Knowledge Auto-loading + Agent Teams Integration (2026-02-06) - Gate 4 PASS
+  - CLAUDE.md Section 7: 9 @import statements for project-knowledge categories
+  - tad-alex.md: step3_agent_team (Agent Team review mode, experimental)
+  - tad-blake.md: agent_team_develop (Agent Team implementation mode, experimental)
+  - config-agents.yaml: agent_teams section with terminal isolation + fallback
+  - Gate 3 PASS: 8/8 AC, code-review P0=0 | Gate 4 PASS: business acceptance verified
+
 - [x] tad-maintain P0: Criterion D references config common_words_exclude (2026-02-01)
 - [x] tad-maintain P0: SYNC mode target_slug parameter for scoped processing (2026-02-01)
 
@@ -23,10 +38,11 @@
 
 ## Pending
 
-- [ ] tad-maintain P1: CLAUDE.md §1 add exemption for maintain-mode handoff reads
-- [ ] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header
-- [ ] tad-maintain P1: Add 2 explicit prohibition statements (file-mtime, Criterion C/D auto-archive)
-- [ ] tad-maintain P2: config.yaml clean up legacy `tad_version: 1.3.0` field
+- [x] tad-maintain P1: CLAUDE.md §1 add exemption for maintain-mode handoff reads (2026-02-06)
+- [x] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header (2026-02-06)
+- [x] tad-maintain P1: Add 2 explicit prohibition statements (file-mtime, Criterion C/D auto-archive) (2026-02-06)
+- [x] tad-maintain P2: config.yaml clean up legacy `tad_version: 1.3.0` field (2026-02-06)
+- [ ] Test Agent Teams on next Full TAD task (verify auto-trigger + fallback)
 - [ ] Verify auto-trigger behavior on next /alex or /blake activation
 - [ ] Verify Criterion C/D detection on real stale handoffs
 

@@ -160,6 +160,38 @@ Acceptance_Verification:
       action: "BLOCK Gate 3"
       message: "验收验证未全部通过或有遗漏标准"
 
+# ⚠️ RISK TRANSLATION CHECK (Cognitive Firewall - Pillar 3)
+Risk_Translation:
+  description: "Detect fatal operations and translate code changes to business consequences"
+  config: ".tad/config-cognitive.yaml → fatal_operations"
+  blocking: "Only for critical severity (forced_review = true)"
+
+  check_process:
+    step0_handoff_intent: "Read handoff task descriptions — operations matching handoff intent are EXPECTED, not blocked (P0-3 FIX)"
+    step1: "Read config-cognitive.yaml fatal_operations (universal_preset + project_custom)"
+    step2: "Scan all changed files against safety_net paths and patterns"
+    step2b: "For each match, cross-check against step0 handoff intent — skip EXPECTED operations"
+    step3: "For remaining matches, generate risk translation (one-liner + risk card)"
+    step4_decision: |
+      IF critical matches found:
+        → BLOCK Gate until human reviews and approves
+        → Present risk cards to human
+        → Human must explicitly approve: "I understand the risk, proceed"
+      IF high matches found:
+        → WARNING but not blocking
+        → Include in Gate output for human awareness
+      IF no matches:
+        → PASS (note: "No fatal operations detected")
+
+  output_format:
+    gate3_addition: |
+      #### Risk Translation (Cognitive Firewall)
+      | # | Operation | Severity | Business Impact | Human Review |
+      |---|-----------|----------|-----------------|--------------|
+      | 1 | {op} | 🔴 Critical | {impact} | ✅ Approved / ⏳ Pending |
+
+      {If critical items: show risk cards below the table}
+
 # Gate 3 检查项（Prerequisite, Subagent, Acceptance Verification 要求通过后执行）
 Critical Check (5 items):
   - [ ] Code complete (all handoff tasks done)
@@ -334,6 +366,27 @@ Recommended_Templates:
       2. 调用 performance-optimizer subagent，使用 performance-review-format 模板
       3. 保存输出到 .tad/evidence/reviews/ 目录
       4. 重新执行 Gate 4
+
+# ⚠️ DECISION COMPLIANCE CHECK (Cognitive Firewall - Pillar 1 verification)
+Decision_Compliance:
+  description: "Verify implementation follows the technical decisions made by human during design"
+  blocking: false  # Warning only, not blocking
+
+  check_process:
+    step1: "Read handoff Decision Summary section"
+    step2: "For each recorded decision, verify implementation matches the chosen option"
+    step3: "Flag any deviations"
+
+  if_deviation:
+    action: "WARNING - explain why implementation deviated from agreed decision"
+    human_action: "Human decides: accept deviation or request fix"
+
+  output_format:
+    gate4_addition: |
+      #### Decision Compliance Check
+      | # | Decision from Handoff | Implementation Match | Status |
+      |---|----------------------|---------------------|--------|
+      | 1 | {decision title} | {does code match decision?} | ✅/❌ |
 
 # Gate 4 检查项（Prerequisite 和 Subagent 要求通过后执行）
 Critical Check (6 items):

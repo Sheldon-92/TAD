@@ -95,6 +95,11 @@ Actions by status:
   5. In CHECK/SYNC mode: only report as finding, do NOT prompt or take action
 - ACTIVE → no action (leave in place)
 
+### Prohibitions
+
+1. **NEVER use file modification time (mtime)** to determine handoff age. Always extract date from filename (YYYYMMDD format). File mtime is unreliable (git operations, copies, editor saves change it).
+2. **Criterion C and D MUST NOT auto-archive.** They always require interactive user confirmation via AskUserQuestion. Only Criterion A (COMPLETED) and B (SUPERSEDED) may auto-archive in SYNC mode.
+
 ### Step 2d: Idempotency Check
 
 Before any move/delete, verify the source file still exists in `active/`. If already moved (e.g., by a concurrent run), skip silently.
@@ -169,6 +174,7 @@ Read `.tad/config.yaml` section `next_md_maintenance.size_limits`:
 | `## 待定` or `## Pending` | Active | Never |
 | `## 阻塞` or `## Blocked` | Active | Never |
 | `## vX.X 变更摘要` | Reference | Archive with its parent completed section |
+| `## Recently Completed` | Completed | Yes, if oldest entry > 7 days ago |
 | Any other `## ` section | Unknown | Flag in report, don't auto-archive |
 
 4. Check if total lines > `warning_threshold`

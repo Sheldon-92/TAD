@@ -18,6 +18,8 @@
 
 **原则**: 有 Handoff → 必须用 Blake → 必须过 Gates
 
+**豁免**: `/tad-maintain` 的 CHECK/SYNC 模式读取 handoff 做健康检查，不触发此规则。
+
 ---
 
 ## 2. TAD Framework 使用场景
@@ -108,3 +110,22 @@ Blake: 读 handoff → 实现 → Gate 3/4 → STOP → 等人类反馈
 | Gate 详细检查、Knowledge Assessment、Evidence 规则 | `tad-gate.md` |
 | 文档维护、Handoff 清理 | `tad-maintain.md` |
 | 版本发布 | `tad-alex.md` (策略) + `tad-blake.md` (执行) |
+
+---
+
+## 7. Project Knowledge (Auto-loaded)
+
+Project-specific learnings auto-loaded at startup via @import.
+Non-existent files are silently skipped. See .tad/project-knowledge/README.md for format.
+
+> Maintenance: If total knowledge exceeds ~30KB, consolidate per README.md guidelines.
+
+@.tad/project-knowledge/architecture.md
+@.tad/project-knowledge/code-quality.md
+@.tad/project-knowledge/security.md
+@.tad/project-knowledge/testing.md
+@.tad/project-knowledge/ux.md
+@.tad/project-knowledge/performance.md
+@.tad/project-knowledge/api-integration.md
+@.tad/project-knowledge/mobile-platform.md
+@.tad/project-knowledge/frontend-design.md

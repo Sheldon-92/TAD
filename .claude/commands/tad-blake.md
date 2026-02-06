@@ -264,6 +264,133 @@ subagent_shortcuts:
 
 # Ralph Loop Execution Logic (TAD v2.0)
 ralph_loop_execution:
+  # Agent Team Implementation Mode (TAD v2.3 - experimental)
+  # Parallel implementation with file ownership when conditions allow
+  agent_team_develop:
+    name: "Agent Team Implementation (Full TAD only)"
+    description: "Parallel implementation with file ownership when conditions allow"
+    experimental: true
+
+    activation: |
+      This mode REPLACES the standard sequential implementation when ALL conditions met:
+      1. process_depth == "full"
+      2. Agent Teams feature available
+      3. dependency_analysis confirms zero file overlap
+      4. handoff has 3+ independent tasks
+      If any condition not met → use standard Ralph Loop.
+      If Team fails mid-execution → fallback to standard Ralph Loop.
+
+    terminal_scope_constraint:
+      rule: "Implementation Team stays within Blake's domain"
+      allowed: ["code writing", "test writing", "building", "linting"]
+      forbidden: ["requirement changes", "handoff modifications", "design decisions"]
+
+    dependency_analysis:
+      step1: "Parse handoff task list and 'Files to Modify' section"
+      step2: "Map each task → set of files it will create/modify"
+      step3: "Compute intersection of all file sets"
+      step4_decision: |
+        overlap_count == 0 AND task_count >= 3 → PROCEED with Agent Team
+        overlap_count > 0 → FALLBACK to sequential Ralph Loop
+        task_count < 3 → FALLBACK (overhead not justified)
+
+    team_prompt_template: |
+      Create an agent team to implement this handoff:
+
+      HANDOFF: {handoff_path}
+
+      FILE OWNERSHIP (strictly enforced):
+      {file_ownership_map}
+
+      Rules:
+      1. Each teammate ONLY edits files in their ownership list
+      2. Shared config files (package.json, etc.) are RESERVED for the lead
+      3. After implementation, run: build check on your files + relevant tests
+      4. Report to lead: files changed, tests added, issues found
+
+      CONSTRAINT: This is an IMPLEMENTATION team. Do NOT change requirements or design.
+
+    workflow:
+      phase1_parallel_implementation:
+        - "Blake spawns teammates based on handoff tasks"
+        - "Each teammate implements their assigned tasks"
+        - "Each teammate runs lightweight self-check (tsc on their files, relevant tests)"
+
+      phase2_integration:
+        - "Blake (lead) applies shared config changes if needed"
+        - "Blake runs full Layer 1 (build + test + lint + tsc) on combined result"
+        - "Fix integration issues (Blake does this, not teammates)"
+
+      phase3_expert_review:
+        - "Blake runs standard Layer 2 (code-reviewer → test-runner etc.)"
+        - "Same quality gate as current Ralph Loop"
+        - "Gate 3 v2 checks apply normally"
+
+    fallback_protocol: |
+      Scenario A - Team creation fails:
+        → Automatic fallback to standard Ralph Loop
+      Scenario B - Teammate fails mid-execution:
+        → Checkpoint completed work (git stash)
+        → Remaining tasks: standard Ralph Loop
+      Scenario C - Integration issues after parallel work:
+        → Blake (lead) fixes integration in phase2
+      All fallbacks are automatic — no user intervention needed.
+
+    shared_files_strategy:
+      config_files: ["package.json", "tsconfig.json", ".env*", "*.config.*"]
+      rule: "Only the lead (Blake) modifies shared config files AFTER teammates finish"
+
+  # Implementation Decision Escalation (Cognitive Firewall - Pillar 1 supplement)
+  implementation_decision_escalation:
+    description: "When Blake encounters a technical choice not covered by handoff, escalate to human"
+    config: ".tad/config-cognitive.yaml → decision_transparency.decision_triggers"
+
+    trigger: |
+      During implementation, Blake encounters a situation where:
+      1. Multiple viable approaches exist AND
+      2. The handoff doesn't specify which approach to use AND
+      3. The choice matches decision_triggers (always_significant or contextually_significant)
+      Use classification_criteria to resolve ambiguous cases.
+
+    action: |
+      1. PAUSE implementation at this point
+      2. Git stash current changes (checkpoint)
+      3. Research the options (quick search, 2-3 minutes)
+      4. Present to human via structured message:
+
+      ────────────────────────────
+      ⏸️ PAUSED: Implementation Decision Needed
+
+      Context: While implementing {task}, I encountered a choice not covered by the handoff.
+
+      Decision: {what needs to be decided}
+
+      | Option | Pros | Cons |
+      |--------|------|------|
+      | A: {name} | ... | ... |
+      | B: {name} | ... | ... |
+
+      My recommendation: {option} because {reason}
+
+      ⚠️ I will NOT proceed until you respond. Please choose an option.
+      ────────────────────────────
+
+      5. Wait for human response (DO NOT auto-proceed — terminal isolation means human may be in Terminal 1)
+      6. On human response: git stash pop, apply decision, continue
+      7. Record in completion report's "Implementation Decisions" section
+
+    not_escalate:
+      - "Pure implementation details (function decomposition, variable naming)"
+      - "Decisions already made in handoff Decision Summary"
+      - "Trivial choices with no significant impact"
+
+    completion_report_section: |
+      ## Implementation Decisions (Made During Execution)
+
+      | # | Decision | Context | Chosen | Escalated? | Human Approved? |
+      |---|----------|---------|--------|------------|-----------------|
+      | 1 | {title} | {why it came up} | {option} | Yes/No | Yes/Default |
+
   # *develop command implementation
   develop_command:
     trigger: "*develop [task-id]"
@@ -488,6 +615,7 @@ mandatory:
   gate4_v2: "MUST pass Gate 4 v2 (business acceptance) before archive"
   acceptance_verification: "MUST generate and execute acceptance verification for every criterion before Gate 3"
   after_completion: "MUST create completion report"
+  decision_escalation: "MUST escalate significant implementation decisions not covered by handoff to human"
 
 # Completion protocol (TAD v2.0 - Ralph Loop integrated)
 completion_protocol:
