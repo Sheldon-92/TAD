@@ -264,19 +264,19 @@ subagent_shortcuts:
 
 # Ralph Loop Execution Logic (TAD v2.0)
 ralph_loop_execution:
-  # Agent Team Implementation Mode (TAD v2.3 - experimental)
-  # Parallel implementation with file ownership when conditions allow
+  # Agent Team Implementation Mode (TAD v2.3)
+  # Parallel implementation with file ownership — default for Full + Standard TAD
   agent_team_develop:
-    name: "Agent Team Implementation (Full TAD only)"
-    description: "Parallel implementation with file ownership when conditions allow"
+    name: "Agent Team Implementation (Full + Standard TAD)"
+    description: "Parallel implementation with file ownership — default for Full + Standard TAD"
     experimental: true
 
     activation: |
       This mode REPLACES the standard sequential implementation when ALL conditions met:
-      1. process_depth == "full"
+      1. process_depth in ["full", "standard"]
       2. Agent Teams feature available
       3. dependency_analysis confirms zero file overlap
-      4. handoff has 3+ independent tasks
+      4. handoff has 2+ independent tasks
       If any condition not met → use standard Ralph Loop.
       If Team fails mid-execution → fallback to standard Ralph Loop.
 
@@ -290,9 +290,9 @@ ralph_loop_execution:
       step2: "Map each task → set of files it will create/modify"
       step3: "Compute intersection of all file sets"
       step4_decision: |
-        overlap_count == 0 AND task_count >= 3 → PROCEED with Agent Team
+        overlap_count == 0 AND task_count >= 2 → PROCEED with Agent Team
         overlap_count > 0 → FALLBACK to sequential Ralph Loop
-        task_count < 3 → FALLBACK (overhead not justified)
+        task_count < 2 → FALLBACK (overhead not justified)
 
     team_prompt_template: |
       Create an agent team to implement this handoff:

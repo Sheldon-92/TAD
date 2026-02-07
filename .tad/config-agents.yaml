@@ -308,7 +308,7 @@ agent_teams:
     strategy: "auto_by_complexity"
     rules:
       full_tad: "agent_team"       # Full TAD → try Agent Team first
-      standard_tad: "subagent"     # Standard TAD → subagent
+      standard_tad: "agent_team"   # Standard TAD → Agent Team (default)
       light_tad: "subagent"        # Light TAD → subagent
       skip_tad: "none"             # Skip → direct
     user_override: true            # User can always override
@@ -335,7 +335,7 @@ agent_teams:
 
   # Blake Implementation Team settings
   blake_implementation_team:
-    min_tasks_for_team: 3
+    min_tasks_for_team: 2
     delegate_mode: true
     file_ownership_strict: true
     dependency_analysis_required: true   # Must check file overlap before team

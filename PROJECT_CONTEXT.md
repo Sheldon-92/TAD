@@ -2,7 +2,7 @@
 
 ## Current State
 - **Version**: 2.3.0 (experimental Agent Teams + Cognitive Firewall)
-- **Last Updated**: 2026-02-06
+- **Last Updated**: 2026-02-07
 - **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall
 
 ## Active Work
@@ -12,7 +12,7 @@
 - Cognitive Firewall: 3-pillar human empowerment system — research-first, decision transparency, fatal operation protection (2026-02-06)
 - Knowledge Auto-loading: CLAUDE.md Section 7 with 9 @import statements for project-knowledge (2026-02-06)
 - Agent Teams: Experimental parallel review (Alex) and implementation (Blake) with auto-fallback to subagent (2026-02-06)
-- Coexistence Strategy: Full TAD → Agent Team, Standard/Light → subagent (2026-02-06)
+- Coexistence Strategy: Full + Standard TAD → Agent Team, Light → subagent, min_tasks_for_team 3→2 (2026-02-07)
 - CLAUDE.md Router Architecture: 657→109 lines, router vs execution separation (2026-02-01)
 
 ## Known Issues
@@ -21,5 +21,5 @@
 
 ## Next Direction
 - Validate Cognitive Firewall (research_decision_protocol) on next real feature
-- Test Agent Teams on next Full TAD task
+- Test Agent Teams on next Full or Standard TAD task (now default for both)
 - Iterate on Playground based on user feedback

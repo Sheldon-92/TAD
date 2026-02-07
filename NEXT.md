@@ -2,6 +2,12 @@
 
 ## Recently Completed
 
+- [x] Agent Team Default for Full + Standard TAD (2026-02-07) - Gate 3 PASS + Gate 4 PASS
+  - config-agents.yaml: standard_tad → agent_team, min_tasks_for_team 3→2
+  - tad-alex.md: step3_agent_team widened to full+standard
+  - tad-blake.md: agent_team_develop widened to full+standard, task_count thresholds 3→2
+  - code-review: 1 P0 found and fixed (inline threshold mismatch), 7/7 AC passed
+
 - [x] Cognitive Firewall - Human Empowerment System (2026-02-06)
   - config-cognitive.yaml: 3 pillars (decision transparency, research-first, fatal operations)
   - tad-alex.md: research_decision_protocol (4-step identify→research→present→record)
@@ -42,7 +48,7 @@
 - [x] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header (2026-02-06)
 - [x] tad-maintain P1: Add 2 explicit prohibition statements (file-mtime, Criterion C/D auto-archive) (2026-02-06)
 - [x] tad-maintain P2: config.yaml clean up legacy `tad_version: 1.3.0` field (2026-02-06)
-- [ ] Test Agent Teams on next Full TAD task (verify auto-trigger + fallback)
+- [ ] Test Agent Teams on next Full or Standard TAD task (verify auto-trigger + fallback)
 - [ ] Verify auto-trigger behavior on next /alex or /blake activation
 - [ ] Verify Criterion C/D detection on real stale handoffs
 

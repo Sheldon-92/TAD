@@ -841,15 +841,15 @@ handoff_creation_protocol:
       execution: "使用 Task tool 并行调用多个专家"
 
     # Agent Team Review Mode (TAD v2.3 - experimental)
-    # Alternative to step3 when process_depth == full and Agent Teams available
+    # Alternative to step3 when process_depth is full or standard, and Agent Teams available
     step3_agent_team:
-      name: "Agent Team Expert Review (Full TAD only)"
-      description: "Alternative to step3 when process_depth == full and Agent Teams available"
+      name: "Agent Team Expert Review (Full + Standard TAD)"
+      description: "Alternative to step3 when process_depth is full or standard, and Agent Teams available"
       experimental: true
 
       activation: |
         This step REPLACES step3 when ALL conditions met:
-        1. process_depth == "full" (user chose Full TAD in adaptive complexity)
+        1. process_depth in ["full", "standard"] (user chose Full or Standard TAD)
         2. Agent Teams feature is available (env var set)
         If any condition not met → skip this step, use original step3.
         If Agent Team creation fails → fallback to original step3 automatically.
