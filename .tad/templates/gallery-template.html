@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Playground — {{PROJECT_NAME}}</title>
+  <style>
+    /* ============================================
+       Gallery Template — Design Playground v2
+       TAD Framework
+       No external dependencies — fully self-contained
+       ============================================ */
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface-hover: #222222;
+      --border: #2a2a2a;
+      --text: #e5e5e5;
+      --text-muted: #999999;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --star-color: #f59e0b;
+      --nav-height: 56px;
+      --sidebar-width: 0px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ── Top Navigation ── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-height);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 100;
+      gap: 8px;
+    }
+
+    .nav-brand {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      margin-right: 16px;
+      white-space: nowrap;
+    }
+
+    .nav-brand span {
+      color: var(--accent);
+    }
+
+    /* View Switcher */
+    .view-switcher {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 2px;
+      margin-right: 16px;
+    }
+
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+
+    .view-btn.active {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .view-btn:hover:not(.active) {
+      color: var(--text);
+    }
+
+    /* Version Tabs */
+    .version-tabs {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      flex: 1;
+      padding: 4px 0;
+      scrollbar-width: none;
+    }
+
+    .version-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .version-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .version-tab:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+
+    .version-tab.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .version-tab .star {
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: color 0.15s;
+    }
+
+    .version-tab .star.starred {
+      color: var(--star-color);
+    }
+
+    .version-tab .star:hover {
+      color: var(--star-color);
+    }
+
+    /* Round label in tab */
+    .version-tab .round-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* Version counter */
+    .version-counter {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    /* ── Main Content ── */
+    .main {
+      position: fixed;
+      top: var(--nav-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    /* Active View — shows selected version */
+    .active-view {
+      width: 100%;
+      height: 100%;
+    }
+
+    .active-view iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    /* History View — accordion of rounds */
+    .history-view {
+      display: none;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .round-group {
+      margin-bottom: 24px;
+    }
+
+    .round-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .round-header:hover {
+      background: var(--surface-hover);
+    }
+
+    .round-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .round-header .count {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .round-header .arrow {
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .round-header.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .round-versions {
+      display: none;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+
+    .round-versions.open {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .version-card {
+      background: var(--surface);
+      padding: 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .version-card:hover {
+      background: var(--surface-hover);
+    }
+
+    .version-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .version-card .style-name {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .version-card .star-btn {
+      float: right;
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .version-card .star-btn.starred {
+      color: var(--star-color);
+    }
+
+    /* Compare View — side by side */
+    .compare-view {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .compare-selector {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .compare-selector label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .compare-selector select {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .compare-frames {
+      display: flex;
+      height: calc(100% - 48px);
+    }
+
+    .compare-frames iframe {
+      flex: 1;
+      border: none;
+      background: white;
+    }
+
+    .compare-divider {
+      width: 4px;
+      background: var(--border);
+      cursor: col-resize;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .nav {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 8px;
+      }
+
+      .view-switcher {
+        order: -1;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 4px;
+      }
+
+      .version-tabs {
+        width: 100%;
+      }
+
+      .main {
+        top: 96px;
+      }
+
+      .compare-frames {
+        flex-direction: column;
+      }
+
+      .compare-divider {
+        width: 100%;
+        height: 4px;
+      }
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+    }
+
+    .empty-state h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="nav">
+    <div class="nav-brand">🎨 <span>Playground</span> — {{PROJECT_NAME}}</div>
+
+    <div class="view-switcher" role="tablist" aria-label="Gallery views">
+      <button class="view-btn active" data-view="active" onclick="switchView('active')" role="tab" aria-selected="true" aria-controls="activeView">Active</button>
+      <button class="view-btn" data-view="history" onclick="switchView('history')" role="tab" aria-selected="false" aria-controls="historyView">History</button>
+      <button class="view-btn" data-view="compare" onclick="switchView('compare')" role="tab" aria-selected="false" aria-controls="compareView">Compare</button>
+    </div>
+
+    <div class="version-tabs" id="versionTabs" role="tablist" aria-label="Version tabs">
+      <!-- Tabs injected by JS from state -->
+    </div>
+
+    <div class="version-counter" id="versionCounter">0 versions</div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Active View -->
+    <div class="active-view" id="activeView" role="tabpanel" aria-label="Active version preview">
+      <iframe id="previewFrame" src="about:blank" title="Design version preview"></iframe>
+    </div>
+
+    <!-- History View -->
+    <div class="history-view" id="historyView" role="tabpanel" aria-label="Version history">
+      <div id="historyContent">
+        <!-- Round groups injected by JS -->
+      </div>
+    </div>
+
+    <!-- Compare View -->
+    <div class="compare-view" id="compareView" role="tabpanel" aria-label="Compare versions">
+      <div class="compare-selector">
+        <label for="compareLeft">Left:</label>
+        <select id="compareLeft" onchange="updateCompare()"></select>
+        <label for="compareRight">Right:</label>
+        <select id="compareRight" onchange="updateCompare()"></select>
+      </div>
+      <div class="compare-frames">
+        <iframe id="compareFrameLeft" src="about:blank" title="Compare left version"></iframe>
+        <div class="compare-divider"></div>
+        <iframe id="compareFrameRight" src="about:blank" title="Compare right version"></iframe>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ============================================
+    // Gallery State Management
+    // ============================================
+
+    // State is loaded from playground-state.json or injected inline
+    // {{STATE_JSON}} is replaced by the agent when generating gallery
+    let STATE;
+    try {
+      STATE = {{STATE_JSON}};
+    } catch (e) {
+      console.error('Failed to parse gallery state:', e);
+      STATE = { project: 'unknown', rounds: [], session_status: 'error' };
+    }
+
+    // ── Initialization ──
+    function init() {
+      renderTabs();
+      renderHistory();
+      populateCompareSelects();
+      updateVersionCounter();
+
+      // Show latest version by default
+      const allVersions = getAllVersions();
+      if (allVersions.length > 0) {
+        const latest = allVersions[allVersions.length - 1];
+        selectVersion(latest.id);
+      } else {
+        showEmptyState();
+      }
+    }
+
+    function getAllVersions() {
+      const versions = [];
+      if (STATE.rounds) {
+        STATE.rounds.forEach(round => {
+          if (round.versions) {
+            round.versions.forEach(v => {
+              versions.push({ ...v, round: round.round });
+            });
+          }
+        });
+      }
+      return versions;
+    }
+
+    // ── View Switching ──
+    function switchView(view) {
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      const activeBtn = document.querySelector(`[data-view="${view}"]`);
+      activeBtn.classList.add('active');
+      activeBtn.setAttribute('aria-selected', 'true');
+
+      document.getElementById('activeView').style.display = view === 'active' ? 'block' : 'none';
+      document.getElementById('historyView').style.display = view === 'history' ? 'block' : 'none';
+      document.getElementById('compareView').style.display = view === 'compare' ? 'flex' : 'none';
+
+      // Show/hide tabs based on view
+      document.getElementById('versionTabs').style.display = view === 'active' ? 'flex' : 'none';
+    }
+
+    // ── Tab Rendering ──
+    function renderTabs() {
+      const tabsContainer = document.getElementById('versionTabs');
+      tabsContainer.innerHTML = '';
+
+      // In active view, show only latest round's versions (or all if <= 1 round)
+      const latestRound = STATE.rounds ? STATE.rounds[STATE.rounds.length - 1] : null;
+      if (!latestRound || !latestRound.versions) return;
+
+      latestRound.versions.forEach(v => {
+        const tab = document.createElement('button');
+        tab.className = 'version-tab';
+        tab.dataset.version = v.id;
+        tab.innerHTML = `
+          <span class="star ${v.starred ? 'starred' : ''}" onclick="event.stopPropagation(); toggleStar('${v.id}')">${v.starred ? '★' : '☆'}</span>
+          <span>${v.id}: ${v.name}</span>
+          <span class="round-label">R${latestRound.round}</span>
+        `;
+        tab.onclick = () => selectVersion(v.id);
+        tabsContainer.appendChild(tab);
+      });
+    }
+
+    // ── Version Selection ──
+    function selectVersion(versionId) {
+      // Update tab active state
+      document.querySelectorAll('.version-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.version === versionId);
+      });
+
+      // Load version in iframe (guard against unknown style)
+      const style = getVersionStyle(versionId);
+      const frame = document.getElementById('previewFrame');
+      if (style === 'unknown') {
+        frame.srcdoc = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;color:#888"><p>Version not found: ' + versionId + '</p></div>';
+        return;
+      }
+      frame.src = `versions/${versionId}-${style}.html`;
+    }
+
+    function getVersionStyle(versionId) {
+      const allVersions = getAllVersions();
+      const v = allVersions.find(ver => ver.id === versionId);
+      return v ? v.style : 'unknown';
+    }
+
+    // ── Star Toggle ──
+    function toggleStar(versionId) {
+      if (!STATE.rounds) return;
+      STATE.rounds.forEach(round => {
+        if (round.versions) {
+          round.versions.forEach(v => {
+            if (v.id === versionId) {
+              v.starred = !v.starred;
+            }
+          });
+        }
+      });
+      renderTabs();
+      renderHistory();
+    }
+
+    // ── History View ──
+    function renderHistory() {
+      const container = document.getElementById('historyContent');
+      container.innerHTML = '';
+
+      if (!STATE.rounds || STATE.rounds.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h2>No versions yet</h2><p>Run /playground to generate designs</p></div>';
+        return;
+      }
+
+      // Show rounds in reverse order (latest first)
+      [...STATE.rounds].reverse().forEach(round => {
+        const group = document.createElement('div');
+        group.className = 'round-group';
+
+        const isLatest = round.round === STATE.rounds.length;
+
+        group.innerHTML = `
+          <div class="round-header ${isLatest ? 'open' : ''}" onclick="toggleRound(this)">
+            <h3>Round ${round.round}</h3>
+            <span class="count">${round.versions ? round.versions.length : 0} versions</span>
+            ${round.feedback ? '<span style="color: var(--accent); font-size: 11px;">✓ Feedback recorded</span>' : ''}
+            <span class="arrow">▶</span>
+          </div>
+          <div class="round-versions ${isLatest ? 'open' : ''}">
+            ${(round.versions || []).map(v => `
+              <div class="version-card" onclick="switchView('active'); selectVersion('${v.id}')">
+                <button class="star-btn ${v.starred ? 'starred' : ''}" onclick="event.stopPropagation(); toggleStar('${v.id}')">${v.starred ? '★' : '☆'}</button>
+                <h4>${v.id}: ${v.name}</h4>
+                <div class="style-name">${v.style}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+        container.appendChild(group);
+      });
+    }
+
+    function toggleRound(header) {
+      header.classList.toggle('open');
+      const versions = header.nextElementSibling;
+      versions.classList.toggle('open');
+    }
+
+    // ── Compare View ──
+    function populateCompareSelects() {
+      const allVersions = getAllVersions();
+      const leftSelect = document.getElementById('compareLeft');
+      const rightSelect = document.getElementById('compareRight');
+
+      [leftSelect, rightSelect].forEach(select => {
+        select.innerHTML = '';
+        allVersions.forEach(v => {
+          const option = document.createElement('option');
+          option.value = v.id;
+          option.textContent = `${v.id}: ${v.name}`;
+          select.appendChild(option);
+        });
+      });
+
+      // Default: first and second versions
+      if (allVersions.length >= 2) {
+        leftSelect.value = allVersions[0].id;
+        rightSelect.value = allVersions[1].id;
+      }
+    }
+
+    function updateCompare() {
+      const leftId = document.getElementById('compareLeft').value;
+      const rightId = document.getElementById('compareRight').value;
+      const leftStyle = getVersionStyle(leftId);
+      const rightStyle = getVersionStyle(rightId);
+      const errorPage = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;color:#888"><p>Version not found</p></div>';
+      const leftFrame = document.getElementById('compareFrameLeft');
+      const rightFrame = document.getElementById('compareFrameRight');
+      if (leftStyle === 'unknown') { leftFrame.srcdoc = errorPage; } else { leftFrame.src = `versions/${leftId}-${leftStyle}.html`; }
+      if (rightStyle === 'unknown') { rightFrame.srcdoc = errorPage; } else { rightFrame.src = `versions/${rightId}-${rightStyle}.html`; }
+    }
+
+    // ── Utilities ──
+    function updateVersionCounter() {
+      const allVersions = getAllVersions();
+      const roundCount = STATE.rounds ? STATE.rounds.length : 0;
+      document.getElementById('versionCounter').textContent =
+        `${allVersions.length} version${allVersions.length !== 1 ? 's' : ''} (${roundCount} round${roundCount !== 1 ? 's' : ''})`;
+    }
+
+    function showEmptyState() {
+      document.getElementById('activeView').innerHTML =
+        '<div class="empty-state"><h2>No versions yet</h2><p>Run /playground to generate designs</p></div>';
+    }
+
+    // ── Initialize ──
+    init();
+  </script>
+</body>
+</html>

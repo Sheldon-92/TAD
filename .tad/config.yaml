@@ -49,7 +49,7 @@ config_modules:
       - document_management (handoff_lifecycle, next_md_maintenance, epic_lifecycle)
       - tad_maintain
       - pair_testing
-      - playground (curation, runtime_search, template_fill, selection, export)
+      - playground (command, resources, workflow, style_library, state, cleanup, legacy_v1)
       - requirement_elicitation (research_phase)
       - socratic_inquiry_protocol
       - scenarios (new_project, bug_fix)
@@ -142,6 +142,10 @@ command_module_binding:
   tad-test-brief:
     modules: [config-workflow]
     note: "Test brief needs pair_testing config from workflow module"
+
+  playground:
+    modules: [config-workflow]
+    note: "Playground needs workflow (playground section, document_management)"
 
 # ==================== 任务管理系统 ====================
 task_management:

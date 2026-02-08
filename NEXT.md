@@ -2,6 +2,16 @@
 
 ## Recently Completed
 
+- [x] Design Playground v2 — Independent `/playground` Command (2026-02-08) - Gate 3 PASS + Gate 4 PASS
+  - Created: `.claude/commands/playground.md` (standalone Design Explorer agent, 475 lines)
+  - Created: `.tad/references/design-styles.yaml` (32 styles, 7 categories)
+  - Created: `.tad/templates/gallery-template.html` (Active/History/Compare views, ARIA accessible)
+  - Updated: `tad-alex.md` (removed ~170 lines old protocol, added slim reference)
+  - Updated: `config.yaml` + `config-workflow.yaml` (playground v2.0 section)
+  - Archived: 3 legacy files → `.tad/archive/playground/legacy-v1/`
+  - Ralph Loop: Layer 1 self-check PASS, Layer 2 code-reviewer (3 P0 fixed) + ux-expert + style-validation PASS
+  - Acceptance: 17/17 AC verified
+
 - [x] Agent Team Default for Full + Standard TAD (2026-02-07) - Gate 3 PASS + Gate 4 PASS
   - config-agents.yaml: standard_tad → agent_team, min_tasks_for_team 3→2
   - tad-alex.md: step3_agent_team widened to full+standard

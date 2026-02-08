@@ -49,3 +49,21 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Escalation over automation**: Blake PAUSE (not auto-proceed) respects terminal isolation principle
   4. **Handoff-awareness**: Risk checks must understand intent to avoid blocking legitimate operations
 - **Action**: When adding cross-cutting quality/safety concerns, embed them as mandatory steps in existing flows rather than creating separate commands that can be forgotten
+
+### Standalone Agent Command Pattern - 2026-02-08
+- **Context**: Redesigning Design Playground from embedded Alex sub-phase to independent `/playground` command
+- **Discovery**: When a workflow grows beyond ~100 lines and has distinct skills/concerns from its host agent, extract it to a standalone command. Key pattern:
+  1. **Independence**: Standalone command with own persona, activation protocol, and workflow — not tied to Alex or Blake
+  2. **Output-only Integration**: Connects to the main system through output files (DESIGN-SPEC.md), not direct invocation
+  3. **Terminal Isolation Preserved**: Standalone commands must respect the same isolation rules (no cross-calling /alex or /blake)
+  4. **Session Recovery**: Standalone commands need their own state persistence since they run outside the main TAD flow
+- **Action**: When a sub-phase of Alex/Blake develops its own complex workflow (>100 lines, distinct skill profile), extract to standalone command with clear input/output contracts
+
+### Style Library Architecture - 2026-02-08
+- **Context**: Building a comprehensive design reference library for Playground v2
+- **Discovery**: Effective style/theme libraries require both aesthetic description AND usage guidance:
+  1. **Visual Spec**: colors (with hex), typography (with font names), layout approach, component patterns
+  2. **Usage Guidance**: `best_for` AND `avoid_for` tags — knowing when NOT to use a style is as important as knowing when to use it
+  3. **Category Indexing**: Two-tier discovery (Category → Style) prevents cognitive overload with 30+ options
+  4. **Schema Enforcement**: Required vs optional fields with build-time validation prevents incomplete entries
+- **Action**: When building reference libraries, include both positive and negative usage guidance, enforce schema at build time
