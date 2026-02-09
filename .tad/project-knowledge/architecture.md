@@ -67,3 +67,14 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Category Indexing**: Two-tier discovery (Category → Style) prevents cognitive overload with 30+ options
   4. **Schema Enforcement**: Required vs optional fields with build-time validation prevents incomplete entries
 - **Action**: When building reference libraries, include both positive and negative usage guidance, enforce schema at build time
+
+### Manifest + Directory Isolation for Multi-Instance Resources - 2026-02-09
+- **Context**: Upgrading pair testing from singleton (one TEST_BRIEF.md) to multi-session support
+- **Discovery**: When a system resource designed as singleton needs multi-instance support, the pattern is:
+  1. **Directory Isolation**: Each instance gets its own subdirectory (S01/, S02/) — eliminates naming conflicts
+  2. **Manifest Index**: A YAML/JSON manifest (SESSIONS.yaml) tracks all instances with metadata — single source of truth for system state
+  3. **Manifest Recovery**: Directories are the ground truth, manifest can be rebuilt from scanning directories — don't trust manifest alone
+  4. **Linear Inheritance**: For iterative workflows, single-parent context chain (inherits_from: S01) is sufficient — fan-out is a different paradigm
+  5. **Atomic Archive**: Use `mv` (atomic rename) over copy-then-delete for same-filesystem moves — prevents partial state
+  6. **Active Guard**: Enforce max_active constraint at creation time, not just in documentation
+- **Action**: When converting singleton resources to multi-instance, use directory isolation + manifest index. Always make directories the source of truth over manifest metadata.

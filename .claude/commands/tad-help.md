@@ -184,8 +184,8 @@ TAD 支持跨工具的配对 E2E 测试：
 
 | 阶段 | 触发 | 产出 |
 |------|------|------|
-| Gate 4 后 | Alex 评估建议，人类决定 | `.tad/pair-testing/TEST_BRIEF.md` |
-| 配对测试 | 用户 + Claude Desktop Cowork | `.tad/pair-testing/PAIR_TEST_REPORT.md` |
+| Gate 4 后 | Alex 评估建议，人类决定 | `.tad/pair-testing/{session_id}/TEST_BRIEF.md` |
+| 配对测试 | 用户 + Claude Desktop Cowork | `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md` |
 | 报告回流 | Alex 检测报告 | 新 Handoff（修复任务）|
 
 - Alex 在 Gate 4 后评估是否需要配对测试（UI/用户流变更时建议）

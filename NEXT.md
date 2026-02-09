@@ -48,6 +48,12 @@
 
 - [x] Pair Testing Redesign - human-initiated, Alex-owned (2026-02-01)
 
+- [x] Multi-Session Pair Testing upgrade (2026-02-09) - Gate 3 PASS + Gate 4 PASS
+  - 6 files modified: test-brief-template, pair-test-report-template, tad-alex, config-workflow, tad-test-brief, tad-help
+  - Singleton → session directories (S01/, S02/) + SESSIONS.yaml manifest
+  - Context inheritance, atomic mv archive, corruption recovery, active session guard
+  - 18/18 AC verified, 4 P1 fixed during code review
+
 ## In Progress
 
 - [ ] Test Epic flow end-to-end on next multi-phase task

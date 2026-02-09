@@ -64,14 +64,16 @@ activation-instructions:
     suppress_if: "No issues found - show one-line: 'TAD Health: OK'"
   - STEP 3.6: Pair test report detection
     action: |
-      Scan .tad/pair-testing/ for PAIR_TEST_REPORT*.md files.
-      If found:
-        1. List them with filename and creation date
-        2. Use AskUserQuestion to ask:
-           "检测到配对测试报告，要现在审阅并生成修复 Handoff 吗？"
-           Options: "审阅报告" (review now), "稍后处理" (skip)
-        3. If review now → execute *test-review flow
-        4. If skip → proceed to greeting
+      1. Read .tad/pair-testing/SESSIONS.yaml (if exists)
+      2. For each session with status "active":
+         Check if .tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md exists
+      3. Also scan .tad/pair-testing/S*/PAIR_TEST_REPORT.md as fallback
+      4. If reports found:
+         a. List them with session ID, scope, and creation date
+         b. Use AskUserQuestion:
+            "检测到 {N} 个配对测试报告，要现在审阅吗？"
+            Options per report: "审阅 {session_id}: {scope}" / "稍后处理"
+         c. If review → execute *test-review for selected session
     blocking: false
   - STEP 4: Greet user and immediately run `*help` to display commands
   - CRITICAL: Stay in character as Alex until told to exit
@@ -152,8 +154,8 @@ exit_protocol:
 
 # *test-review protocol (Pair Testing Report Review)
 test_review_protocol: |
-  When *test-review is invoked:
-  1. Read .tad/pair-testing/PAIR_TEST_REPORT.md
+  When *test-review is invoked (with session_id parameter, or auto-detected):
+  1. Read .tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md
   2. Extract all issues (look for tables with Finding/Priority columns)
   3. Classify:
      - P0 (blocker): Create immediate handoff for Blake
@@ -163,14 +165,27 @@ test_review_protocol: |
      - Group related issues into one handoff (avoid fragmentation)
      - Create HANDOFF-{date}-pair-test-fixes.md
      - Include screenshots/evidence references from the report
-  5. Archive processed files to .tad/evidence/pair-tests/:
-     Safety: Use two-phase approach (copy first, verify, then delete source).
-     If copy fails, abort and report error - do NOT delete originals.
-     a. Copy & rename .tad/pair-testing/TEST_BRIEF.md → .tad/evidence/pair-tests/{date}-test-brief-{slug}.md, then delete source
-     b. Copy & rename .tad/pair-testing/PAIR_TEST_REPORT.md → .tad/evidence/pair-tests/{date}-pair-test-report-{slug}.md, then delete source
-     c. Copy .tad/pair-testing/screenshots/ → .tad/evidence/pair-tests/{date}-screenshots-{slug}/, then delete source contents (keep empty dir)
+  5. Archive processed session to .tad/evidence/pair-tests/:
+     archive_protocol:
+       strategy: "atomic move (mv) when same filesystem, fallback to copy-verify-delete"
+       prerequisite: "Ensure .tad/evidence/pair-tests/ exists (create if missing)"
+       steps:
+         a. Move entire session directory (atomic):
+            mv .tad/pair-testing/{session_id}/ → .tad/evidence/pair-tests/{date}-{session_id}-{slug}/
+            Fallback (cross-filesystem): cp -r, verify file count + sizes match, then rm -rf source
+         b. Verification (only for copy fallback):
+            - Count files in source and destination match
+            - For TEST_BRIEF.md and PAIR_TEST_REPORT.md, verify content readable
+            - On mismatch:
+              1. Delete partial destination
+              2. Keep source intact
+              3. Log error with details
+              4. Notify user: "Archive failed: {reason}. Session {session_id} remains in place."
+         c. Update SESSIONS.yaml: set session status to "archived", add archived_to path
+         d. If this was the active_session, set active_session to null in manifest
+         e. Backup SESSIONS.yaml to SESSIONS.yaml.bak before any write
   6. Output summary:
-     "📋 测试报告已处理：
+     "📋 测试报告已处理 (Session {session_id}):
       - P0: {N} 个紧急问题 → Handoff 已创建
       - P1: {N} 个重要问题 → Handoff 已创建
       - P2: {N} 个优化项 → 已添加到 NEXT.md
@@ -1083,7 +1098,7 @@ accept_command:
       if_exceeded: "警告用户清理旧 handoffs"
 
     step_pair_testing_assessment:
-      constraint: "TEST_BRIEF.md is a singleton - only one exists in .tad/pair-testing/ at any time"
+      constraint: "Each TEST_BRIEF.md lives in its own session directory .tad/pair-testing/S{NN}/"
       action: |
         After Gate 4 passes, Alex evaluates whether pair testing is recommended:
 
@@ -1097,7 +1112,7 @@ accept_command:
                question: "本次实现涉及用户界面变更，建议做配对 E2E 测试。要现在生成测试简报吗？",
                header: "Pair Testing",
                options: [
-                 {label: "生成测试简报 (Recommended)", description: "生成 .tad/pair-testing/TEST_BRIEF.md 用于 Claude Desktop Cowork 配对测试"},
+                 {label: "生成测试简报 (Recommended)", description: "生成 .tad/pair-testing/{session_id}/TEST_BRIEF.md 用于 Claude Desktop Cowork 配对测试"},
                  {label: "跳过，直接归档", description: "不做配对测试，直接完成归档"}
                ],
                multiSelect: false
@@ -1105,21 +1120,46 @@ accept_command:
            })
 
         3. If user chooses "生成测试简报":
-           a. Read `.tad/templates/test-brief-template.md`
-           b. Fill ALL sections (1-8) with complete information:
-              - Section 1: Product info from project (package.json, README, etc.)
-              - Section 2: Test scope based on what was implemented
-              - Section 3: Test accounts/data
-              - Section 4: Known issues from Blake's completion report
-              - Section 5: Design intent, UX expectations, validation goals (Alex's domain knowledge)
-              - Section 6: Round-by-Round collaboration guide (fill Round definitions in 6d)
-              - Section 7: Output requirements (template default)
-              - Section 8: Technical notes (framework-specific testing tips)
-           c. Write to `.tad/pair-testing/TEST_BRIEF.md`
+           session_creation_flow: |
+             1. Read .tad/pair-testing/SESSIONS.yaml
+                - If not exists → create with empty sessions, total_sessions: 0
+                - If YAML parse error (corruption detected):
+                  a. mv SESSIONS.yaml → SESSIONS.yaml.corrupt.{timestamp}
+                  b. Scan S*/ directories to rebuild manifest
+                  c. Infer status: has PAIR_TEST_REPORT.md → "reviewed", no report → "active"
+                  d. Write rebuilt SESSIONS.yaml
+                  e. Log: "Recovered SESSIONS.yaml from directory scan"
+             2. Determine next session ID:
+                - Count existing S{NN} directories → next = S{NN+1} (zero-padded: S01, S02, ..., S99, S100+)
+             3. Check active session guard:
+                - If any session has status "active" → Use AskUserQuestion:
+                  "Session {id} ({scope}) is still active. What would you like to do?"
+                  Options: "Resume existing session" / "Archive it and start new" / "Cancel"
+             4. Check for inheritable context:
+                - Find most recent session with status "reviewed" or "archived"
+                - If found → read its PAIR_TEST_REPORT.md for findings summary
+                - Use AskUserQuestion: "上一次测试 ({prev_scope}) 发现了 {N} 个问题。要在新 brief 中包含回归验证项吗？"
+                  Options: "包含回归验证 (Recommended)" / "全新独立测试"
+             5. Create directory: .tad/pair-testing/{session_id}/ and .tad/pair-testing/{session_id}/screenshots/
+             6. Read `.tad/templates/test-brief-template.md`
+             7. Fill ALL sections (1-8) with complete information:
+                - Section 1: Product info from project (package.json, README, etc.)
+                - Section 2: Test scope based on what was implemented
+                - Section 3: Test accounts/data
+                - Section 4: Known issues from Blake's completion report
+                - Section 4b: Previous Session Context (if inheriting, populate from previous report)
+                - Section 5: Design intent, UX expectations, validation goals (Alex's domain knowledge)
+                - Section 6: Round-by-Round collaboration guide (fill Round definitions in 6d)
+                - Section 7: Output requirements (template default)
+                - Section 8: Technical notes (framework-specific testing tips)
+             8. Write to `.tad/pair-testing/{session_id}/TEST_BRIEF.md`
+             9. Update SESSIONS.yaml: add new session entry, set as active_session
+                - Backup SESSIONS.yaml to SESSIONS.yaml.bak before any write
            d. Remind human:
-              ".tad/pair-testing/TEST_BRIEF.md 已生成（所有 Section 已填充）
-               请将 .tad/pair-testing/TEST_BRIEF.md 拖入 Claude Desktop Cowork 进行配对 E2E 测试。
-               测试完成后，PAIR_TEST_REPORT.md 保存到 .tad/pair-testing/，
+              ".tad/pair-testing/{session_id}/TEST_BRIEF.md 已生成（所有 Section 已填充）
+               Session ID: {session_id} | 继承自: {prev_session or 'None'}
+               请将 .tad/pair-testing/{session_id}/TEST_BRIEF.md 拖入 Claude Desktop Cowork 进行配对 E2E 测试。
+               测试完成后，PAIR_TEST_REPORT.md 保存到 .tad/pair-testing/{session_id}/，
                下次启动 /alex 时我会自动检测并处理。"
 
         4. If user chooses "跳过" → proceed to step_final

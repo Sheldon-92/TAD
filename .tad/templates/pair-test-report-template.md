@@ -5,6 +5,16 @@
 
 ---
 
+## 0. Session Info
+
+| Item | Detail |
+|------|--------|
+| **Session ID** | {session_id} |
+| **Inherits from** | {previous_session_id or "None (first session)"} |
+| **Session manifest** | `.tad/pair-testing/SESSIONS.yaml` |
+
+---
+
 ## 1. Test Overview
 
 | Item | Detail |
@@ -26,6 +36,16 @@
 | R2 | {page_2} | {pass/fail/partial} | {count} | {refs} |
 
 **Total**: {total_rounds} Rounds, {total_pages} pages/features tested, {total_issues} issues found
+
+---
+
+## 2b. Regression Verification (from Previous Session)
+
+> Only present when inheriting from a previous session.
+
+| Previous Finding | Previous Severity | Re-tested | Result |
+|------------------|-------------------|-----------|--------|
+| {prev_finding} | P0 | Yes/No | Fixed / Still present / Regressed |
 
 ---
 
@@ -95,7 +115,7 @@
 |---|------|-------------|-----------------|
 | 01 | {filename} | {description} | {finding_ref_or_none} |
 
-**Screenshot directory**: `.tad/pair-testing/screenshots/`
+**Screenshot directory**: `.tad/pair-testing/{session_id}/screenshots/`
 
 ---
 

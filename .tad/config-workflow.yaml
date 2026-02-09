@@ -195,19 +195,26 @@ tad_maintain:
 
 # ==================== 配对测试协议 ====================
 pair_testing:
-  description: "Cross-tool E2E pair testing protocol (TAD CLI → Claude Desktop Cowork)"
+  description: "Cross-tool E2E pair testing protocol with multi-session support"
   ownership: "Alex generates brief, human decides, Claude Desktop executes with human"
-
-  # All pair testing files live in .tad/pair-testing/
   base_dir: ".tad/pair-testing/"
+  version: "2.0"
+
+  # Multi-session management
+  sessions:
+    manifest: ".tad/pair-testing/SESSIONS.yaml"
+    directory_pattern: ".tad/pair-testing/S{NN}/"
+    max_active_sessions: 1        # Only 1 session can be "active" at a time
+    session_id_format: "S{NN}"    # S01, S02, ..., S99, then S100+ (no padding beyond 99)
+    context_inheritance: true      # New sessions auto-inherit previous findings
 
   brief:
     template: ".tad/templates/test-brief-template.md"
-    output: ".tad/pair-testing/TEST_BRIEF.md"
+    output: ".tad/pair-testing/{session_id}/TEST_BRIEF.md"
     trigger: "Gate 4 pass (Alex evaluates, recommends to human, human decides)"
     sections:
-      alex_fills: [1, 2, 3, 4, 5, 8]  # all content sections
-      template_default: [6, 7]          # collaboration guide & output format
+      alex_fills: [1, 2, 3, 4, "4b", 5, 8]  # all content sections including session context
+      template_default: [6, 7]                 # collaboration guide & output format
 
     skip_criteria:
       - "Backend-only changes (no UI impact)"
@@ -218,9 +225,9 @@ pair_testing:
 
   report:
     template: ".tad/templates/pair-test-report-template.md"
-    expected_pattern: ".tad/pair-testing/PAIR_TEST_REPORT*.md"
-    location: ".tad/pair-testing/"
-    archive_to: ".tad/evidence/pair-tests/"
+    expected_pattern: ".tad/pair-testing/S*/PAIR_TEST_REPORT.md"
+    location: ".tad/pair-testing/{session_id}/"
+    archive_to: ".tad/evidence/pair-tests/{date}-{session_id}-{slug}/"
     auto_detect_on_alex_start: true
     issue_routing:
       P0: "Create immediate handoff"
@@ -228,8 +235,8 @@ pair_testing:
       P2: "Add to NEXT.md"
 
   screenshot:
-    output_dir: ".tad/pair-testing/screenshots/"
-    naming: "R{N}-{NN}-{description}.gif"
+    output_dir: ".tad/pair-testing/{session_id}/screenshots/"
+    naming: "R{N}-{NN}-{description}.png"
 
 # ==================== Frontend Design Playground v2 ====================
 playground:

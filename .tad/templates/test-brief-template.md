@@ -4,9 +4,11 @@
 > Supports two modes: **Claude Desktop Cowork** (MCP-based) or **Claude Code + Playwright** (CLI-based).
 > All sections are filled by Alex based on project context.
 >
-> **File location**: `.tad/pair-testing/TEST_BRIEF.md`
-> **Screenshots**: `.tad/pair-testing/screenshots/`
-> **Report output**: `.tad/pair-testing/PAIR_TEST_REPORT.md`
+> **Session**: `{session_id}` (e.g., S01, S02, ...)
+> **File location**: `.tad/pair-testing/{session_id}/TEST_BRIEF.md`
+> **Screenshots**: `.tad/pair-testing/{session_id}/screenshots/`
+> **Report output**: `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md`
+> **Manifest**: `.tad/pair-testing/SESSIONS.yaml`
 
 ---
 
@@ -54,6 +56,25 @@
 | Issue | Status |
 |-------|--------|
 | {known_issue_1} | {status_1} |
+
+---
+
+## 4b. Previous Session Context
+
+> Auto-populated from SESSIONS.yaml when this session inherits from a previous one.
+> If this is the first session (S01), this section is omitted.
+
+**Inherits from**: {previous_session_id}
+**Previous scope**: {previous_scope}
+**Previous findings summary**:
+
+| # | Finding | Severity | Status |
+|---|---------|----------|--------|
+| {prev_finding_1} | {desc} | P0 | Fixed / Open / Deferred |
+
+**Regression focus**: The following items from the previous session should be re-verified:
+- {regression_item_1}
+- {regression_item_2}
 
 ---
 
@@ -165,7 +186,7 @@ Before starting any test:
 2. **Confirm understanding with human**:
    > "I understand this test covers {scope}, focusing on {focus}. We'll go through {N} Rounds. After each action I'll screenshot and wait for your feedback. Test environment: {url}. Correct?"
 3. **Confirm test environment is accessible**
-4. **Confirm screenshot save location**: `.tad/pair-testing/screenshots/`
+4. **Confirm screenshot save location**: `.tad/pair-testing/{session_id}/screenshots/`
 5. **Confirm any test data/accounts needed**
 6. **Launch browser** (see Mode-specific setup below)
 
@@ -195,11 +216,11 @@ Before starting any test:
 
 ### 6e. Screenshot Conventions
 
-**Save location**: `.tad/pair-testing/screenshots/`
+**Save location**: `.tad/pair-testing/{session_id}/screenshots/`
 
 **Naming convention**:
 ```
-.tad/pair-testing/screenshots/R{N}-{NN}-{description}.png
+.tad/pair-testing/{session_id}/screenshots/R{N}-{NN}-{description}.png
 ```
 - `R{N}`: Round number (R1, R2, ..., R8)
 - `{NN}`: Sequence within Round (01, 02, ...)
@@ -208,7 +229,7 @@ Before starting any test:
 
 **Example**:
 ```
-.tad/pair-testing/screenshots/
+.tad/pair-testing/{session_id}/screenshots/
   R1-01-homepage-top.png
   R1-02-homepage-scrolled.png
   R2-01-upload-page.png
@@ -234,7 +255,7 @@ Use Chrome MCP's `gif_creator` tool:
 4. gif_creator(action: "export", download: true, filename: "R1-01-description.gif", tabId: {tabId})
 ```
 
-**Limitation**: Files download to browser's default folder. Human moves them to `.tad/pair-testing/screenshots/` after testing.
+**Limitation**: Files download to browser's default folder. Human moves them to `.tad/pair-testing/{session_id}/screenshots/` after testing.
 
 ### 6e-B. Mode B: Screenshots via Claude Code (Playwright)
 
@@ -247,7 +268,7 @@ echo '{"action":"screenshot","name":"R1-01-homepage-top.png"}' > /tmp/pw-cmd.jso
 for i in $(seq 1 15); do [ -f /tmp/pw-result.json ] && cat /tmp/pw-result.json && rm /tmp/pw-result.json && break; sleep 1; done
 ```
 
-Screenshots save directly to `.tad/pair-testing/screenshots/` — no manual file moving needed.
+Screenshots save directly to `.tad/pair-testing/{session_id}/screenshots/` — no manual file moving needed.
 
 **Full-page screenshot**:
 ```bash
@@ -313,15 +334,15 @@ OK Round {N} done. Ready for Round {N+1}?
 > 4. "Any missing features or unmet expectations?"
 > 5. "Priority suggestions for next steps?"
 
-**Step 3: Generate `.tad/pair-testing/PAIR_TEST_REPORT.md`**
+**Step 3: Generate `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md`**
 
 Combine **your observations + human feedback** into a unified test report.
-Save to `.tad/pair-testing/PAIR_TEST_REPORT.md`.
+Save to `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md`.
 
 **Step 4: Human Final Review**
 - Show the complete report to the human
 - Save only after human confirms
-- Remind human: "Report saved to `.tad/pair-testing/PAIR_TEST_REPORT.md`. Screenshots are in `.tad/pair-testing/screenshots/`. Next time you start /alex, Alex will auto-detect and process this report."
+- Remind human: "Report saved to `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md`. Screenshots are in `.tad/pair-testing/{session_id}/screenshots/`. Next time you start /alex, Alex will auto-detect and process this report."
 
 ### 6h. Mode B Setup: Command-Driven Browser Controller (Claude Code + Playwright)
 
@@ -364,7 +385,7 @@ const fs = require('fs');
 
 const CMD_FILE = '/tmp/pw-cmd.json';
 const RESULT_FILE = '/tmp/pw-result.json';
-const SCREENSHOT_DIR = '{project_dir}/.tad/pair-testing/screenshots';
+const SCREENSHOT_DIR = '{project_dir}/.tad/pair-testing/{session_id}/screenshots';
 
 (async () => {
   const browser = await chromium.launch({ headless: false });
@@ -475,7 +496,7 @@ node pair-test-browser.js &
 
 **Step 4: Ensure screenshots directory exists**
 ```bash
-mkdir -p .tad/pair-testing/screenshots
+mkdir -p .tad/pair-testing/{session_id}/screenshots
 ```
 
 #### Command Reference
@@ -521,12 +542,12 @@ for i in $(seq 1 15); do [ -f /tmp/pw-result.json ] && cat /tmp/pw-result.json &
 
 ### Screenshot Naming
 ```
-.tad/pair-testing/screenshots/R{N}-{NN}-{page-name}.png
+.tad/pair-testing/{session_id}/screenshots/R{N}-{NN}-{page-name}.png
 ```
 
 ### Report Format
 
-Output file: `.tad/pair-testing/PAIR_TEST_REPORT.md`
+Output file: `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md`
 
 The report should include:
 - Test environment info (URL, browser, viewport)
