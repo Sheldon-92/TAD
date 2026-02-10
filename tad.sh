@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TAD Framework - Unified Install & Upgrade Script v2.1
+# TAD Framework - Unified Install & Upgrade Script v2.2
 # Multi-Platform Support: Claude Code, Codex CLI, Gemini CLI
 # One command for all scenarios: fresh install, upgrade, or migration
 
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Version
-TARGET_VERSION="2.1"
+TARGET_VERSION="2.2"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
@@ -369,7 +369,46 @@ TOMLEOF
 }
 
 # ============================================
-# Phase 6: Validation
+# Phase 6a: Copy ALL Framework Files
+# ============================================
+# Replaces manual file-by-file copy with comprehensive sync.
+# Project-specific data (active/, archive/, evidence/, project-knowledge/,
+# pair-testing/) is never overwritten.
+copy_framework_files() {
+    local src="$1"
+    log_info "  → Syncing framework files from source..."
+
+    # --- .tad/ framework files (copy everything except project data) ---
+
+    # Top-level config & metadata files
+    for f in "$src"/.tad/*.yaml "$src"/.tad/*.md "$src"/.tad/*.txt; do
+        [ -f "$f" ] && cp "$f" .tad/ 2>/dev/null || true
+    done
+
+    # Framework subdirectories (full sync)
+    for dir in agents data gates guides ralph-config references schemas skills sub-agents tasks templates workflows; do
+        if [ -d "$src/.tad/$dir" ]; then
+            mkdir -p ".tad/$dir"
+            cp -r "$src/.tad/$dir/"* ".tad/$dir/" 2>/dev/null || true
+        fi
+    done
+
+    # --- .claude/ framework files ---
+    mkdir -p .claude/commands
+    mkdir -p .claude/skills/code-review
+    cp "$src"/.claude/commands/*.md .claude/commands/
+    cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
+    cp -r "$src"/.claude/skills/code-review/* .claude/skills/code-review/ 2>/dev/null || true
+    cp "$src"/.claude/skills/doc-organization.md .claude/skills/ 2>/dev/null || true
+
+    # Count installed files for verification
+    local count
+    count=$(find .tad -type f -not -path ".tad/active/*" -not -path ".tad/archive/*" -not -path ".tad/evidence/*" -not -path ".tad/project-knowledge/*" -not -path ".tad/pair-testing/*" | wc -l | tr -d ' ')
+    log_success "  → Synced $count framework files to .tad/"
+}
+
+# ============================================
+# Phase 6b: Validation
 # ============================================
 validate_generated_configs() {
     log_info "Validating generated configurations..."
@@ -390,9 +429,21 @@ validate_generated_configs() {
         ((errors++))
     fi
 
-    # Check adapters directory
-    if [ ! -d ".tad/adapters" ]; then
-        log_error "Missing adapters directory"
+    # Check agents directory
+    if [ ! -d ".tad/agents" ]; then
+        log_error "Missing agents directory"
+        ((errors++))
+    fi
+
+    # Check templates directory
+    if [ ! -d ".tad/templates" ]; then
+        log_error "Missing templates directory"
+        ((errors++))
+    fi
+
+    # Check commands directory
+    if [ ! -d ".claude/commands" ]; then
+        log_error "Missing .claude/commands directory"
         ((errors++))
     fi
 
@@ -441,6 +492,8 @@ detect_state() {
         local ver=$(cat .tad/version.txt)
         if [[ "$ver" == "$TARGET_VERSION" ]]; then
             echo "current"
+        elif [[ "$ver" == "2.1"* ]] || [[ "$ver" == "2.2"* ]]; then
+            echo "v2.0"
         elif [[ "$ver" == "2.0"* ]]; then
             echo "v2.0"
         elif [[ "$ver" == "1.8"* ]]; then
@@ -624,53 +677,30 @@ main() {
         "install")
             log_info "Installing TAD Framework..."
 
-            # Create directories
+            # Create project-specific directories (not in source repo)
             mkdir -p .tad/active/handoffs
             mkdir -p .tad/active/designs
+            mkdir -p .tad/active/epics
+            mkdir -p .tad/active/playground
             mkdir -p .tad/archive/handoffs
+            mkdir -p .tad/archive/epics
+            mkdir -p .tad/archive/playground
             mkdir -p .tad/evidence/reviews
             mkdir -p .tad/evidence/completions
             mkdir -p .tad/evidence/ralph-loops
             mkdir -p .tad/evidence/reviews/_iterations
-            mkdir -p .tad/gates
-            # .tad/learnings/ removed in v2.1.2 (tad-learn deprecated)
+            mkdir -p .tad/evidence/pair-tests
+            mkdir -p .tad/evidence/acceptance-tests
             mkdir -p .tad/project-knowledge
-            mkdir -p .tad/templates/output-formats
-            mkdir -p .tad/tasks
+            mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
-            mkdir -p .tad/ralph-config
-            mkdir -p .tad/schemas
-            mkdir -p .tad/skills
-            mkdir -p .tad/adapters
-            mkdir -p .claude/commands
             mkdir -p .claude/skills
 
-            # Copy framework files
-            cp -r "$TAD_SRC"/.tad/config.yaml .tad/
-            cp -r "$TAD_SRC"/.tad/skills-config.yaml .tad/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/gates/* .tad/gates/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/templates/* .tad/templates/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/tasks/* .tad/tasks/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/README.md .tad/ 2>/dev/null || true
+            # Copy ALL framework files (comprehensive sync)
+            copy_framework_files "$TAD_SRC"
+
+            # Copy project-knowledge README
             cp -r "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
-
-            # Copy Ralph Loop config
-            cp -r "$TAD_SRC"/.tad/ralph-config/* .tad/ralph-config/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/schemas/* .tad/schemas/ 2>/dev/null || true
-
-            # Copy skills (v2.1 NEW)
-            cp -r "$TAD_SRC"/.tad/skills/* .tad/skills/ 2>/dev/null || true
-
-            # Copy adapters (v2.1 NEW)
-            cp -r "$TAD_SRC"/.tad/adapters/* .tad/adapters/ 2>/dev/null || true
-
-            # Copy commands
-            cp "$TAD_SRC"/.claude/commands/*.md .claude/commands/
-            cp "$TAD_SRC"/.claude/settings.json .claude/ 2>/dev/null || true
-
-            # Copy Claude skills
-            cp -r "$TAD_SRC"/.claude/skills/code-review .claude/skills/ 2>/dev/null || true
-            cp "$TAD_SRC"/.claude/skills/doc-organization.md .claude/skills/ 2>/dev/null || true
 
             # Copy root files
             cp "$TAD_SRC"/CLAUDE.md ./
@@ -726,27 +756,25 @@ NEXTEOF
         "upgrade")
             log_info "Upgrading to v${TARGET_VERSION}..."
 
-            # Ensure directories exist
-            mkdir -p .tad/templates/output-formats
-            mkdir -p .tad/tasks
+            # Ensure project-specific directories exist
+            mkdir -p .tad/active/handoffs
+            mkdir -p .tad/active/designs
+            mkdir -p .tad/active/epics
+            mkdir -p .tad/active/playground
+            mkdir -p .tad/archive/handoffs
+            mkdir -p .tad/archive/epics
+            mkdir -p .tad/archive/playground
             mkdir -p .tad/evidence/reviews
             mkdir -p .tad/evidence/completions
             mkdir -p .tad/evidence/ralph-loops
             mkdir -p .tad/evidence/reviews/_iterations
+            mkdir -p .tad/evidence/pair-tests
+            mkdir -p .tad/evidence/acceptance-tests
             mkdir -p .tad/project-knowledge
-            mkdir -p .tad/ralph-config
-            mkdir -p .tad/schemas
-            mkdir -p .tad/skills
-            mkdir -p .tad/adapters
-            mkdir -p .claude/skills/code-review
+            mkdir -p .tad/pair-testing
+            mkdir -p .tad/reports
 
-            # Update commands
-            log_info "  → Updating commands..."
-            cp "$TAD_SRC"/.claude/commands/*.md .claude/commands/
-            cp "$TAD_SRC"/.claude/settings.json .claude/ 2>/dev/null || true
-
-            # Update skills structure
-            log_info "  → Restructuring skills..."
+            # Archive old skills if needed
             if [ -d ".claude/skills" ] && [ ! -d ".claude/skills/_archived" ]; then
                 mkdir -p .claude/skills/_archived
                 for f in .claude/skills/*.md; do
@@ -755,37 +783,9 @@ NEXTEOF
                     fi
                 done
             fi
-            cp -r "$TAD_SRC"/.claude/skills/code-review/* .claude/skills/code-review/ 2>/dev/null || true
 
-            # Update config
-            log_info "  → Updating config..."
-            cp "$TAD_SRC"/.tad/config.yaml .tad/
-            cp "$TAD_SRC"/.tad/skills-config.yaml .tad/ 2>/dev/null || true
-
-            # Update gates
-            log_info "  → Updating gates..."
-            cp -r "$TAD_SRC"/.tad/gates/* .tad/gates/ 2>/dev/null || true
-
-            # Update templates
-            log_info "  → Updating templates..."
-            cp -r "$TAD_SRC"/.tad/templates/* .tad/templates/
-
-            # Update tasks
-            log_info "  → Updating tasks..."
-            cp -r "$TAD_SRC"/.tad/tasks/* .tad/tasks/ 2>/dev/null || true
-
-            # Install Ralph Loop config
-            log_info "  → Installing Ralph Loop config..."
-            cp -r "$TAD_SRC"/.tad/ralph-config/* .tad/ralph-config/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/schemas/* .tad/schemas/ 2>/dev/null || true
-
-            # Install skills (v2.1 NEW)
-            log_info "  → Installing TAD skills..."
-            cp -r "$TAD_SRC"/.tad/skills/* .tad/skills/ 2>/dev/null || true
-
-            # Install adapters (v2.1 NEW)
-            log_info "  → Installing platform adapters..."
-            cp -r "$TAD_SRC"/.tad/adapters/* .tad/adapters/ 2>/dev/null || true
+            # Copy ALL framework files (comprehensive sync)
+            copy_framework_files "$TAD_SRC"
 
             # Update CLAUDE.md
             log_info "  → Updating CLAUDE.md..."
@@ -808,30 +808,26 @@ NEXTEOF
             fi
             cp -r .tad .tad-backup
 
-            # Create new structure
-            log_info "  → Creating new directory structure..."
+            # Create project-specific directories
             mkdir -p .tad/active/handoffs
             mkdir -p .tad/active/designs
+            mkdir -p .tad/active/epics
+            mkdir -p .tad/active/playground
             mkdir -p .tad/archive/handoffs
+            mkdir -p .tad/archive/epics
+            mkdir -p .tad/archive/playground
             mkdir -p .tad/evidence/reviews
             mkdir -p .tad/evidence/completions
             mkdir -p .tad/evidence/ralph-loops
             mkdir -p .tad/evidence/reviews/_iterations
-            mkdir -p .tad/gates
-            # .tad/learnings/ removed in v2.1.2 (tad-learn deprecated)
+            mkdir -p .tad/evidence/pair-tests
+            mkdir -p .tad/evidence/acceptance-tests
             mkdir -p .tad/project-knowledge
-            mkdir -p .tad/templates/output-formats
-            mkdir -p .tad/tasks
+            mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
-            mkdir -p .tad/ralph-config
-            mkdir -p .tad/schemas
-            mkdir -p .tad/skills
-            mkdir -p .tad/adapters
-            mkdir -p .claude/commands
             mkdir -p .claude/skills/_archived
-            mkdir -p .claude/skills/code-review
 
-            # Migrate user data from backup
+            # Migrate user data from backup (old directory layouts)
             log_info "  → Migrating user data..."
             if [ -d ".tad-backup/handoffs" ]; then
                 cp -r .tad-backup/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
@@ -839,7 +835,6 @@ NEXTEOF
             if [ -d ".tad-backup/active/handoffs" ]; then
                 cp -r .tad-backup/active/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
             fi
-            # learnings migration removed in v2.1.2 (tad-learn deprecated)
             if [ -d ".tad-backup/working" ]; then
                 cp -r .tad-backup/working/* .tad/active/ 2>/dev/null || true
             fi
@@ -847,36 +842,7 @@ NEXTEOF
                 cp -r .tad-backup/context/* .tad/active/ 2>/dev/null || true
             fi
 
-            # Copy new framework files
-            log_info "  → Installing framework files..."
-            cp -r "$TAD_SRC"/.tad/config.yaml .tad/
-            cp -r "$TAD_SRC"/.tad/skills-config.yaml .tad/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/gates/* .tad/gates/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/templates/* .tad/templates/
-            cp -r "$TAD_SRC"/.tad/tasks/* .tad/tasks/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/README.md .tad/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
-
-            # Install Ralph Loop config
-            log_info "  → Installing Ralph Loop config..."
-            cp -r "$TAD_SRC"/.tad/ralph-config/* .tad/ralph-config/ 2>/dev/null || true
-            cp -r "$TAD_SRC"/.tad/schemas/* .tad/schemas/ 2>/dev/null || true
-
-            # Install skills (v2.1 NEW)
-            log_info "  → Installing TAD skills..."
-            cp -r "$TAD_SRC"/.tad/skills/* .tad/skills/ 2>/dev/null || true
-
-            # Install adapters (v2.1 NEW)
-            log_info "  → Installing platform adapters..."
-            cp -r "$TAD_SRC"/.tad/adapters/* .tad/adapters/ 2>/dev/null || true
-
-            # Copy commands
-            log_info "  → Installing commands..."
-            cp "$TAD_SRC"/.claude/commands/*.md .claude/commands/
-            cp "$TAD_SRC"/.claude/settings.json .claude/ 2>/dev/null || true
-
-            # Archive old skills
-            log_info "  → Restructuring skills..."
+            # Archive old skills if needed
             if [ -d ".claude/skills" ]; then
                 for f in .claude/skills/*.md; do
                     if [ -f "$f" ] && [ "$(basename "$f")" != "doc-organization.md" ]; then
@@ -884,10 +850,15 @@ NEXTEOF
                     fi
                 done
             fi
-            cp -r "$TAD_SRC"/.claude/skills/code-review/* .claude/skills/code-review/ 2>/dev/null || true
+
+            # Copy ALL framework files (comprehensive sync)
+            copy_framework_files "$TAD_SRC"
 
             # Copy root files
             cp "$TAD_SRC"/CLAUDE.md ./
+
+            # Copy project-knowledge README
+            cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
 
             # Create user files if not exist
             if [ ! -f "PROJECT_CONTEXT.md" ]; then
@@ -959,10 +930,6 @@ NEXTEOF
     # Cleanup
     rm -rf "$TAD_SRC"
 
-    # Remove deprecated files
-    rm -f .tad/agents/agent-a-architect*.md 2>/dev/null || true
-    rm -f .tad/agents/agent-b-executor*.md 2>/dev/null || true
-
     echo ""
     echo -e "${GREEN}=====================================${NC}"
     echo -e "${GREEN}   ✅ TAD v${TARGET_VERSION} Ready!${NC}"
@@ -971,14 +938,14 @@ NEXTEOF
     echo "Directory structure:"
     echo "  .tad/"
     echo "  ├── active/handoffs/     # Current work"
+    echo "  ├── agents/              # Agent definitions"
     echo "  ├── archive/handoffs/    # Completed work"
-    echo "  ├── evidence/"
-    echo "  │   ├── reviews/         # Gate evidence"
-    echo "  │   └── ralph-loops/     # Ralph iteration evidence"
-    echo "  ├── skills/              # Platform-agnostic skills (NEW)"
-    echo "  ├── adapters/            # Platform adapters (NEW)"
-    echo "  ├── ralph-config/        # Ralph Loop configuration"
+    echo "  ├── evidence/            # Gate & test evidence"
+    echo "  ├── pair-testing/        # Pair test sessions"
     echo "  ├── project-knowledge/   # Project-specific knowledge"
+    echo "  ├── ralph-config/        # Ralph Loop configuration"
+    echo "  ├── skills/              # Platform-agnostic skills"
+    echo "  ├── sub-agents/          # Sub-agent definitions"
     echo "  └── templates/           # Handoff & output templates"
     echo ""
     echo -e "Platforms configured: ${CYAN}$DETECTED_PLATFORMS${NC}"
