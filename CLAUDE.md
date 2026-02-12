@@ -92,7 +92,22 @@ Blake: 读 handoff → 实现 → Gate 3/4 → STOP → 等人类反馈
 
 ---
 
-## 5. 违规处理
+## 5. Plan Mode 禁止 ⚠️ CRITICAL
+
+**当 TAD agent（Alex 或 Blake）处于激活状态时，禁止使用 `EnterPlanMode`。**
+
+TAD 自带完整规划流程（苏格拉底提问 → 设计 → 专家审查 → Handoff），与 Claude Code 内置 Plan Mode 不兼容。
+
+**禁止**:
+- ❌ Alex 激活时调用 EnterPlanMode（Alex 的 *analyze → *design → *handoff 就是规划流程）
+- ❌ Blake 激活时调用 EnterPlanMode（Blake 按 Handoff 执行，不需要额外规划）
+- ❌ 任何 TAD 命令执行期间进入 Plan Mode
+
+**如果检测到 Plan Mode 触发倾向**：直接使用 TAD 对应的工作流步骤替代。
+
+---
+
+## 6. 违规处理
 
 违反以上规则时：
 1. **立即停止**当前操作
@@ -101,7 +116,7 @@ Blake: 读 handoff → 实现 → Gate 3/4 → STOP → 等人类反馈
 
 ---
 
-## 6. 执行层协议位置
+## 7. 执行层协议位置
 
 | 协议 | 位置 |
 |------|------|
@@ -113,7 +128,7 @@ Blake: 读 handoff → 实现 → Gate 3/4 → STOP → 等人类反馈
 
 ---
 
-## 7. Project Knowledge (Auto-loaded)
+## 8. Project Knowledge (Auto-loaded)
 
 Project-specific learnings auto-loaded at startup via @import.
 Non-existent files are silently skipped. See .tad/project-knowledge/README.md for format.

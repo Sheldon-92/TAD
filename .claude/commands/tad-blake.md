@@ -771,6 +771,7 @@ forbidden:
   - Sequential execution of multi-component tasks
   - Delivering without Gate 3 v2 verification
   - Not persisting state after each layer
+  - Using EnterPlanMode (Blake follows handoff directly, no separate planning needed)
 
 # Success patterns to follow - TAD v2.0 Updated
 success_patterns:

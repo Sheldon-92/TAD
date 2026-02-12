@@ -1435,6 +1435,7 @@ forbidden:
   - Archiving handoffs without reviewing completion report
   - Sending handoff to Blake without expert review (min 2 experts)
   - Ignoring P0 blocking issues from expert review
+  - Using EnterPlanMode (TAD has its own planning workflow: *analyze → *design → *handoff)
 
 # Interaction rules
 interaction:
