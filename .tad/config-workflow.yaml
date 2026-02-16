@@ -572,6 +572,65 @@ socratic_inquiry_protocol:
     include_in_handoff: "在 handoff 中包含 Inquiry Summary"
     verification: "Gate 2 检查是否有 Inquiry Summary"
 
+# ==================== Intent Modes (v2.4) ====================
+intent_modes:
+  enabled: true
+  version: "1.0"
+  description: "Alex multi-mode routing — detect user intent before entering workflow"
+
+  modes:
+    bug:
+      command: "*bug"
+      label: "Bug/Fix"
+      icon: "🔧"
+      description: "Quick bug diagnosis and optional fix"
+      signal_words:
+        zh: ["bug", "报错", "出问题", "崩溃", "修复", "不工作", "出错", "异常", "失败"]
+        en: ["bug", "error", "broken", "crash", "fix", "not working", "fail", "issue"]
+      leads_to_handoff: "optional"
+
+    discuss:
+      command: "*discuss"
+      label: "Discussion"
+      icon: "💬"
+      description: "Free-form product/tech discussion, no handoff pressure"
+      signal_words:
+        zh: ["讨论", "聊聊", "怎么看", "方向", "策略", "纠结", "不确定", "想法", "觉得"]
+        en: ["discuss", "think about", "direction", "strategy", "opinion", "uncertain"]
+      leads_to_handoff: "never"
+
+    idea:
+      command: "*idea"
+      label: "Idea Capture"
+      icon: "💡"
+      description: "Capture and refine ideas for later"
+      signal_words:
+        zh: ["突然想到", "有个想法", "能不能加", "以后可以", "要不要做", "灵感"]
+        en: ["idea", "maybe", "what if", "could we", "someday", "nice to have"]
+      leads_to_handoff: "never"
+
+    analyze:
+      command: "*analyze"
+      label: "Standard TAD"
+      icon: "🎯"
+      description: "Full TAD workflow: Socratic inquiry → design → handoff"
+      signal_words: []
+      leads_to_handoff: "always"
+
+  detection:
+    strategy: "always_confirm"
+    fallback_mode: "analyze"
+    signal_confidence_threshold: 2
+
+    priority_order: ["bug", "idea", "discuss", "analyze"]
+    priority_note: |
+      When signal words match multiple modes equally:
+      1. bug — highest priority (immediate action needed)
+      2. idea — user is capturing something specific
+      3. discuss — broad conversation
+      4. analyze — fallback / default
+      Ties are broken by this priority order. Final confirmation via AskUserQuestion still applies.
+
 # ==================== 场景工作流（增强版） ====================
 scenarios:
   # 每个场景都有强制要求

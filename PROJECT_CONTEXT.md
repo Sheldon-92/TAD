@@ -1,14 +1,19 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.3.0 (experimental Agent Teams + Cognitive Firewall)
-- **Last Updated**: 2026-02-09
-- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing
+- **Version**: 2.4.0 (Intent Router + experimental Agent Teams + Cognitive Firewall)
+- **Last Updated**: 2026-02-16
+- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router
 
 ## Active Work
-(none)
+- **EPIC: Alex Flexibility + Learning + Project Management** (5 phases)
+  - Epic file: .tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
+  - Phase 1: ✅ Intent Router (Alex multi-mode switching) — Gate 3+4 PASS
+  - Phase 2 next: Learning Opportunity (*learn command + post-handoff learning invite)
 
 ## Recent Decisions
+- Intent Router Phase 1 DONE: Alex supports *bug/*discuss/*idea/*analyze, "route before process" pattern, Alex never codes even for bugs (2026-02-16)
+- Alex Flexibility Epic: Hybrid intent detection (Option C), local-first project mgmt (no MCP dependency), multi-model cross-review hypothesis rejected in favor of existing gate system (2026-02-16)
 - Multi-Session Pair Testing: Singleton → session directories (S01/, S02/) + SESSIONS.yaml manifest + context inheritance (2026-02-09)
 - Design Playground v2: Pivot from curation tokens → full HTML page generation, independent command (2026-02-08)
 - Cognitive Firewall: 3-pillar human empowerment system — research-first, decision transparency, fatal operation protection (2026-02-06)
