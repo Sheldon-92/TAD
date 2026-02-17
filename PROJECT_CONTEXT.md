@@ -1,19 +1,21 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.6.0 (Intent Router + *learn + Idea Pool + Standby + experimental Agent Teams + Cognitive Firewall)
+- **Version**: 2.8.0 (Intent Router + *learn + Idea Pool + Roadmap + *idea promote + *status + Standby + experimental Agent Teams + Cognitive Firewall)
 - **Last Updated**: 2026-02-16
-- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool
+- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration
 
 ## Active Work
-- **EPIC: Alex Flexibility + Learning + Project Management** (5 phases)
-  - Epic file: .tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
-  - Phase 1: ✅ Intent Router (Alex multi-mode switching) — Gate 3+4 PASS
-  - Phase 2: ✅ Learning Opportunity (*learn path + standby + idle detection) — Gate 3+4 PASS
-  - Phase 3: ✅ Idea Pool (.tad/active/ideas/ + *idea-list + template) — Gate 3+4 PASS
-  - Phase 4 next: Roadmap (ROADMAP.md + Alex startup loading)
+- (none — Epic complete, next task TBD)
+
+## Recently Completed
+- **EPIC: Alex Flexibility + Learning + Project Management** — ✅ ALL 5/5 PHASES COMPLETE (2026-02-16)
+  - Archived: .tad/archive/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
+  - Phase 1: Intent Router | Phase 2: *learn | Phase 3: Idea Pool | Phase 4: Roadmap | Phase 5: *idea promote + *status
 
 ## Recent Decisions
+- Layer Integration Phase 5 DONE (EPIC COMPLETE): *idea promote (upgrade to Epic/Handoff via *analyze), *status panoramic view (4-layer scan), standby + path_transitions updated (2026-02-16)
+- Roadmap Phase 4 DONE: ROADMAP.md theme-driven aggregation view, Alex STEP 3.4 startup loading, *discuss exit gains "Update ROADMAP" option with propose→confirm flow (2026-02-16)
 - Idea Pool Phase 3 DONE: *idea stores to .tad/active/ideas/ structured files, *idea-list for browsing, forward-only status lifecycle, NEXT.md cross-reference pattern (2026-02-16)
 - Learning Opportunity Phase 2 DONE: *learn (Socratic teaching) as 5th Intent Router mode, standby state defined, idle detection added, post-handoff invite removed (user self-initiates) (2026-02-16)
 - Intent Router Phase 1 DONE: Alex supports *bug/*discuss/*idea/*analyze, "route before process" pattern, Alex never codes even for bugs (2026-02-16)

@@ -53,6 +53,13 @@ activation-instructions:
          Note: config-execution (Ralph Loop, failure learning) is Blake-specific.
                Alex references release_duties in this file directly, no need for config-execution.
     note: "Do NOT load config-v1.1.yaml (archived). Module files contain all config sections."
+  - STEP 3.4: Load roadmap context
+    action: |
+      Read ROADMAP.md (project root) if it exists.
+      This provides strategic context for *discuss and *analyze paths.
+      If file doesn't exist or is empty, skip silently (not blocking).
+    blocking: false
+    suppress_if: "File not found or empty - skip silently"
   - STEP 3.5: Document health check
     action: |
       Run document health check in CHECK mode.
@@ -109,6 +116,7 @@ commands:
   discuss: Free-form discussion — product direction, strategy, technical questions (no handoff)
   idea: Capture an idea for later — lightweight discussion, store to .tad/active/ideas/
   idea-list: Browse saved ideas — show all ideas with status and scope
+  idea-promote: Promote an idea to Epic or Handoff — enters *analyze with idea context
   learn: Socratic teaching — understand technical concepts through guided questions
 
   # Core workflow commands
@@ -141,7 +149,7 @@ commands:
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
 
   # Utility commands
-  status: Show current project status
+  status: Panoramic project view — Roadmap themes, Epics, Handoffs, Ideas at a glance
   yolo: Toggle YOLO mode (skip confirmations)
   exit: Exit Alex persona (requires NEXT.md check first)
 
@@ -318,6 +326,9 @@ intent_router_protocol:
       - "After *learn step4: user selects 'Done, back to standby' → Enter standby"
       - "After *analyze handoff step7 completes → Enter standby"
       - "After any path transition fails or is cancelled → Enter standby"
+      - "After *idea-promote step2: user selects 'Cancel' → Enter standby"
+      - "After *idea-promote step1: no promotable ideas → Enter standby"
+      - "After *status step3 completes → Enter standby"
 
     on_new_input_in_standby: |
       When user sends a new message while Alex is in standby:
@@ -349,6 +360,9 @@ intent_router_protocol:
       - from: "learn"
         to: "analyze"
         trigger: "User says 'Back to work — start *analyze' from step4 options"
+      - from: "idea-promote"
+        to: "analyze"
+        trigger: "Automatic after idea status updated to 'promoted' (step4)"
     forbidden:
       - from: "analyze"
         to: "any"
@@ -464,6 +478,7 @@ discuss_path_protocol:
       - "Summarizing findings and presenting trade-offs"
       - "Updating NEXT.md or PROJECT_CONTEXT.md with discussion conclusions"
       - "Invoking research subagent (Explore) for deep investigation"
+      - "Proposing updates to ROADMAP.md (with user confirmation)"
     forbidden:
       - "Auto-generating handoff or design documents"
       - "Running Gate checks"
@@ -492,10 +507,104 @@ discuss_path_protocol:
       "Discussion seems to be wrapping up. Would you like to capture anything?"
       Options:
       - "Record conclusions to NEXT.md" → append summary to NEXT.md
-      - "Create an idea from this" → switch to idea_path_protocol
+      - "Update ROADMAP" → enter update_roadmap_protocol
       - "This needs proper design — start *analyze" → switch to adaptive_complexity_protocol
       - "No need to record, just a chat" → end, return to Alex standby
     note: "If user doesn't signal wrap-up, Alex does NOT proactively suggest ending"
+
+# Update ROADMAP Protocol (triggered from *discuss exit)
+update_roadmap_protocol:
+  description: "Propose and apply ROADMAP.md updates based on discussion conclusions"
+  trigger: "User selects 'Update ROADMAP' from *discuss exit_protocol"
+
+  execution:
+    step1:
+      name: "Read Current State"
+      action: |
+        Read ROADMAP.md (project root).
+        If not found: create from template (theme-driven structure with header, Themes section, Archive section).
+
+    step2:
+      name: "Propose Changes"
+      action: |
+        Based on discussion conclusions, Alex proposes specific changes:
+        - Add new theme?
+        - Update existing theme status (Active → Complete)?
+        - Add/remove items in a theme's table?
+        - Move completed theme to Archive section?
+        Present proposed changes as a bulleted summary to user.
+
+    step3:
+      name: "Confirm & Apply"
+      action: |
+        Use AskUserQuestion:
+        "Here are the proposed ROADMAP changes. Confirm?"
+        Options:
+        - "Apply all changes" → write to ROADMAP.md
+        - "Modify first" → user specifies adjustments, then re-confirm
+        After applying, return to Alex standby.
+
+  constraints:
+    - "Alex proposes, human confirms — no auto-updates"
+    - "Changes must be concise — ROADMAP stays under ~150 lines"
+    - "Only update based on discussion content — no speculative additions"
+
+# *status Panoramic Protocol
+status_panoramic_protocol:
+  description: "One-screen project overview scanning all management layers"
+  trigger: "User types *status"
+
+  execution:
+    step1:
+      name: "Scan All Layers"
+      action: |
+        Scan these sources (read-only, no modifications):
+        1. ROADMAP.md → extract themes with status
+           - If not found: show "No ROADMAP.md yet — use *discuss to create one"
+        2. .tad/active/epics/EPIC-*.md → extract name, derived status, progress (N/M phases)
+        3. .tad/active/handoffs/HANDOFF-*.md → extract name, date, priority
+        4. .tad/active/ideas/IDEA-*.md → count by status (captured/evaluated/promoted/archived)
+
+    step2:
+      name: "Display Summary"
+      action: |
+        Output a compact panoramic view:
+
+        ```
+        ## Project Status
+
+        ### Roadmap Themes
+        | Theme | Status |
+        |-------|--------|
+        | {name} | {Active/Planned/Complete} |
+
+        ### Active Epics
+        | Epic | Progress | Current Phase |
+        |------|----------|---------------|
+        | {name} | {N}/{M} phases | {current phase name} |
+        (or: "No active Epics" if .tad/active/epics/ is empty)
+
+        ### Active Handoffs
+        | Handoff | Date | Priority |
+        |---------|------|----------|
+        | {name} | {date} | {P0-P3} |
+        (or: "No active Handoffs" if .tad/active/handoffs/ is empty)
+
+        ### Ideas
+        | Status | Count |
+        |--------|-------|
+        | captured | {N} |
+        | evaluated | {N} |
+        | promoted | {N} |
+        (only show statuses with count > 0, exclude archived)
+        (or: "No ideas captured yet" if empty)
+        ```
+
+    step3:
+      name: "Next Action"
+      action: |
+        After displaying, return to standby.
+        No AskUserQuestion needed — *status is a read-only command.
 
 # *idea Path Protocol
 idea_path_protocol:
@@ -594,6 +703,57 @@ idea_list_protocol:
         - Ask new status: captured / evaluated / archived (forward only, no backwards)
         - Update the Status field in the idea .md file
         - If status → archived: also mark NEXT.md cross-reference as [x] (if exists)
+
+# *idea promote Protocol
+idea_promote_protocol:
+  description: "Upgrade an idea to Epic or Handoff — changes status and enters *analyze"
+  trigger: "User types *idea promote"
+
+  execution:
+    step1:
+      name: "Select Idea"
+      action: |
+        1. Scan .tad/active/ideas/ for IDEA-*.md files
+        2. Filter: show only ideas with status "captured" or "evaluated" (not already promoted/archived)
+        3. If no promotable ideas → "No ideas available to promote. Use *idea to capture one." → exit to standby
+        4. Display table (same format as *idea-list step2)
+        5. Ask user to select an idea by number
+
+    step2:
+      name: "Choose Target"
+      action: |
+        Read the selected idea file to get scope and summary.
+        Use AskUserQuestion:
+        "How would you like to promote this idea?"
+        Options:
+        - "Start as Epic (multi-phase)" → for medium/large scope ideas
+        - "Start as Handoff (single task)" → for small scope ideas
+        - "Cancel" → return to standby
+
+    step3:
+      name: "Update Idea Status"
+      action: |
+        1. Update the idea file's Status field: → "promoted"
+        2. Fill the "Promoted To" field at bottom of idea file:
+           - If Epic: "Promoted To: Epic (via *analyze — {date})"
+           - If Handoff: "Promoted To: Handoff (via *analyze — {date})"
+        3. Update NEXT.md cross-reference:
+           - Search for "IDEA-{id}" in NEXT.md
+           - If found: mark as [x] with note "(promoted)"
+           - If not found: no action needed (idea may predate cross-reference system)
+
+    step4:
+      name: "Transition to *analyze"
+      action: |
+        1. Announce: "Idea promoted. Entering *analyze with idea context pre-loaded."
+        2. Call adaptive_complexity_protocol with idea context:
+           - Title → becomes the task description for complexity assessment
+           - Scope → informs initial complexity guess (small→light, medium→standard, large→full)
+           - Summary & Problem → Alex presents this context at start of Socratic Inquiry
+           - Open Questions → Alex uses these as early Socratic discussion seed points
+        3. The *analyze flow runs normally from step1 (Assess) onward.
+           If user chose "Epic": Alex's step2b Epic Assessment will naturally trigger.
+        (Context transfer is via conversation memory — no special persistence mechanism needed)
 
 # *learn Path Protocol
 learn_path_protocol:
@@ -1954,6 +2114,8 @@ on_start: |
 - `*discuss` - Free-form product/tech discussion (no handoff)
 - `*idea` - Capture an idea for later — lightweight discussion, store to .tad/active/ideas/
 - `*idea-list` - Browse saved ideas — show all ideas with status and scope
+- `*idea-promote` - Promote an idea → Epic or Handoff (enters *analyze)
+- `*status` - Panoramic project view (Roadmap, Epics, Handoffs, Ideas)
 - `*learn` - Socratic teaching — understand concepts through guided questions
 - `*analyze` - Start requirement gathering (mandatory 3-5 rounds)
 - `*design` - Create technical design (suggests /playground for frontend tasks)

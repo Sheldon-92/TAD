@@ -23,4 +23,4 @@
 ---
 
 **Status Values**: captured → evaluated → promoted → archived
-**Promoted To**: (filled when *idea promote runs in Phase 5)
+**Promoted To**: (filled by *idea promote)

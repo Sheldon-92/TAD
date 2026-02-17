@@ -29,8 +29,8 @@
 | 1 | Intent Router (Alex Multi-mode) | ✅ Done | HANDOFF-20260216-intent-router.md | Alex 支持 *bug / *discuss / *idea / *analyze 4 条路径 + 自动意图检测 |
 | 2 | Learning Opportunity | ✅ Done | HANDOFF-20260216-learning-opportunity.md | *learn 路径 (Socratic teaching) + standby 定义 + idle 检测 |
 | 3 | Idea Pool | ✅ Done | HANDOFF-20260216-idea-pool.md | .tad/active/ideas/ + idea 模板 + *idea-list + 结构化存储 |
-| 4 | Roadmap | ⬚ Planned | — | ROADMAP.md + Alex 启动加载 + *discuss 可更新 |
-| 5 | Layer Integration | ⬚ Planned | — | *idea promote + *status 全景视图 + 层级流转机制 |
+| 4 | Roadmap | ✅ Done | HANDOFF-20260216-roadmap.md | ROADMAP.md + Alex 启动加载 + *discuss 可更新 |
+| 5 | Layer Integration | ✅ Done | HANDOFF-20260216-layer-integration.md | *idea promote + *status 全景视图 + 层级流转机制 |
 
 ### Phase Dependencies
 - Phase 1 是基础设施，Phase 2-5 均依赖于 Phase 1（*discuss / *idea 路径定义）
@@ -95,17 +95,37 @@ Status and progress are computed from the Phase Map:
 - **Phase 2 P0-3 (2026-02-16)**: Signal word overlap *discuss/*learn intentionally kept — resolved by AskUserQuestion + priority_order
 - **Phase 2 P0-4 (2026-02-16)**: 5-mode display: recommended + 2 relevant + analyze (always). User can type *learn via "Other"
 
+- **Phase 4: Roadmap** (2026-02-16) — Gate 3 PASS + Gate 4 PASS
+  - Created ROADMAP.md (53 lines) with theme-driven structure — 3 themes from current project state
+  - Added STEP 3.4 to Alex activation protocol (non-blocking ROADMAP.md loading)
+  - Updated *discuss exit_protocol: replaced "Create an idea" with "Update ROADMAP"
+  - Added update_roadmap_protocol (3-step: read → propose → confirm)
+  - Updated discuss allowed list to include ROADMAP.md updates
+  - Knowledge entry: "Aggregation Layer: Coexist Don't Replace" in architecture.md
+  - Key principle: Reference existing docs by link, keep updates human-initiated
+
+- **Phase 5: Layer Integration** (2026-02-16) — Gate 3 PASS + Gate 4 PASS
+  - Added idea_promote_protocol (4 steps: select → choose target → update status → transition to *analyze)
+  - Added status_panoramic_protocol (3 steps: scan 4 layers → display summary → standby)
+  - Updated commands section + Quick Reference with *idea-promote and *status
+  - Updated standby (3 new entries) + path_transitions (idea-promote→analyze)
+  - Updated idea-template.md and ROADMAP.md
+  - Knowledge entry: "Lifecycle Chain Closure" in architecture.md
+  - Key principle: Promote = status change + redirect; read-only commands skip interaction
+
 ### Known Issues / Carry-forward
-- Alex 的 tad-alex.md 已经很长（~1845 lines），需要注意新增内容的组织方式，避免文件膨胀
-- ~~Epic 系统本身未在实战中端到端测试过~~ → Phase 1-2 完成，Epic 系统运作正常
+- Alex 的 tad-alex.md 已经很长（~2120 lines），未来可能需要拆分
+- ~~Epic 系统本身未在实战中端到端测试过~~ → **已验证**: 5-phase Epic 全程运作正常
 - ~~*bug 路径中 Alex 能否"自己修"需要明确边界~~ → **已解决**: Alex 不修 bug，只诊断
 - *learn persistence deferred — no file writes in learning mode (may revisit in future)
 
-### Next Phase Scope
-Phase 1: ✅ Complete
-Phase 2: ✅ Complete
-Phase 3: ✅ Complete
-Phase 4 (next): Roadmap — ROADMAP.md + Alex 启动加载 + *discuss 可更新。依赖 Phase 3 的 Idea Pool（已完成）。
+### Final Status
+🎉 **EPIC COMPLETE** — All 5/5 phases done.
+Phase 1: ✅ Complete (Intent Router)
+Phase 2: ✅ Complete (Learning Opportunity)
+Phase 3: ✅ Complete (Idea Pool)
+Phase 4: ✅ Complete (Roadmap)
+Phase 5: ✅ Complete (Layer Integration)
 
 ---
 

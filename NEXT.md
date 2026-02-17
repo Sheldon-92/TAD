@@ -56,14 +56,14 @@
 
 ## In Progress
 
-- [ ] **EPIC: Alex Flexibility + Learning + Project Management** (EPIC-20260216-alex-flexibility-and-project-mgmt)
-  - Inspiration: Zevi Arnovitz (Meta PM) workflow analysis from Lenny's Podcast
-  - Phase 1: Intent Router (Alex multi-mode: *bug / *discuss / *idea / *analyze) — ✅ Gate 3+4 PASS
-  - Phase 2: Learning Opportunity (*learn path + standby + idle detection) — ✅ Gate 3+4 PASS
-  - Phase 3: Idea Pool (.tad/active/ideas/ + *idea-list + template) — ✅ Gate 3+4 PASS
-  - Phase 4: Roadmap (ROADMAP.md + Alex startup loading) — next
-  - Phase 5: Layer Integration (*idea promote + *status panoramic view)
-- [ ] Test Epic flow end-to-end on next multi-phase task (THIS EPIC is the test)
+(none)
+
+## Recently Completed Epic
+
+- [x] **EPIC: Alex Flexibility + Learning + Project Management** — ALL 5/5 PHASES COMPLETE (2026-02-16)
+  - Phase 1: Intent Router ✅ | Phase 2: *learn ✅ | Phase 3: Idea Pool ✅ | Phase 4: Roadmap ✅ | Phase 5: Layer Integration ✅
+  - Archived: .tad/archive/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
+- [x] Test Epic flow end-to-end on next multi-phase task — ✅ THIS EPIC was the test, 5 phases completed successfully
 
 ## Pending
 

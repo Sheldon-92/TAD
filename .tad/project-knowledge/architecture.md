@@ -107,3 +107,21 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Forward-only lifecycle**: Status fields with forward-only transitions (captured → evaluated → promoted → archived) prevent accidental state regression without complex validation
   4. **Section-aware append**: When creating cross-references in shared files, define explicit section placement rules (after ## Pending, before ## Blocked) to avoid disrupting document structure
 - **Action**: When upgrading storage from shared-file to individual-file pattern, always maintain cross-references in the original location and define template contracts first
+
+### Aggregation Layer: Coexist Don't Replace - 2026-02-16
+- **Context**: Adding ROADMAP.md as a strategic view above PROJECT_CONTEXT.md, NEXT.md, and Epic files
+- **Discovery**: When a project needs a higher-level view across existing documents, create an aggregation layer that references existing files rather than replacing or duplicating them:
+  1. **Distinct scopes**: Each document owns a specific scope (ROADMAP=strategic themes, PROJECT_CONTEXT=current state, NEXT=tactical tasks, Epics=multi-phase tracking)
+  2. **Reference, don't copy**: Use links/cross-references to source documents; never duplicate operational details
+  3. **Suggest, don't auto-sync**: Human-confirmed updates (via *discuss exit) are safer than auto-sync which risks stale or incorrect aggregation
+  4. **Non-blocking load**: Read aggregation files at startup for context, but never block on them — partial context is better than a blocked workflow
+- **Action**: When adding overview/dashboard layers, define clear scope boundaries, reference existing documents by link, and keep updates human-initiated
+
+### Lifecycle Chain Closure: Promote as Status Change + Handoff - 2026-02-16
+- **Context**: Adding *idea promote to close the Idea → Epic → Handoff lifecycle, and *status as a panoramic read-only view
+- **Discovery**: When creating a "promote" or "upgrade" command that bridges two lifecycle stages:
+  1. **Status change, then redirect**: Promote is two operations — update the source artifact's status, then enter the target workflow. Don't try to create the target artifact directly.
+  2. **Context via conversation, not files**: When transitioning between protocols (promote → analyze), pass context through conversation memory rather than intermediate persistence files. Simpler and sufficient for same-session transitions.
+  3. **Read-only commands need no interaction**: Dashboard/status commands should display and return to standby — no AskUserQuestion, no follow-up. Users invoke specific commands when they want to act.
+  4. **Standby exclusion for redirect steps**: When a protocol step transitions to another protocol (step4 → *analyze), that step must NOT appear in enters_standby — it's a redirect, not an exit.
+- **Action**: When building lifecycle bridges, separate the status update from the target workflow entry. Use conversation memory for context transfer within the same session.
