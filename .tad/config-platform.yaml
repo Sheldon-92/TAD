@@ -1,58 +1,7 @@
-# TAD Config Module: Platform & MCP Tools
+# TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
-# Contains: multi_platform, mcp_tools
-# Consumers: tad-init.md, tad-alex.md (MCP), tad-blake.md (MCP)
-
-# ==================== Multi-Platform Configuration (v2.1.1 Simplified) ====================
-multi_platform:
-  enabled: true
-  version: "1.1"
-  description: |
-    TAD v2.1.1 supports multiple AI coding assistants.
-    All conversion logic is in /tad-init command (no separate adapters).
-    - Claude Code (primary): Full subagent support
-    - Codex CLI (secondary): Self-check mode with native skills
-    - Gemini CLI (secondary): Self-check mode with TOML commands
-
-  platforms:
-    claude:
-      enabled: true
-      skill_execution: "subagent"
-      config_dir: ".claude"
-      commands_dir: ".claude/commands"
-      project_instructions: "CLAUDE.md"
-
-    codex:
-      enabled: true
-      skill_execution: "self-check"
-      config_dir: ".codex"
-      commands_dir: "~/.codex/prompts"
-      command_prefix: "tad_"
-      project_instructions: "AGENTS.md"
-
-    gemini:
-      enabled: true
-      skill_execution: "self-check"
-      config_dir: ".gemini"
-      commands_dir: ".gemini/commands"
-      command_format: "toml"
-      project_instructions: "GEMINI.md"
-
-  skills:
-    directory: ".tad/skills"
-    count: 8
-    list:
-      - testing
-      - code-review
-      - security-audit
-      - performance
-      - ux-review
-      - architecture
-      - api-design
-      - debugging
-
-  # NOTE: adapters directory removed in v2.1.1
-  # Conversion logic is now directly in /tad-init command
+# Contains: mcp_tools
+# Consumers: tad-alex.md (MCP), tad-blake.md (MCP)
 
 # ==================== MCP 工具集成 (v1.2 新增) ====================
 mcp_tools:

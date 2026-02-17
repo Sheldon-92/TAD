@@ -18,11 +18,11 @@ Generated: [timestamp]
 [✅/❌] Template files (.tad/templates/)
 [✅/❌] Project context files (PROJECT_CONTEXT.md, CLAUDE.md)
 
-🧩 v2.2.1 MODULES
+🧩 v2.3.0 MODULES
 [✅/❌] Modular Config (config-agents, config-quality, config-execution, config-platform)
 [✅/❌] Ralph Loop configured (.tad/ralph-config/)
 [✅/❌] Skills System (8 skills in .tad/skills/)
-[✅/❌] Multi-Platform adapters (.tad/adapters/)
+[✅/❌] Skills directory (.tad/skills/)
 [✅/❌] Pair Testing template (.tad/templates/test-brief-template.md)
 
 📋 CONFIGURATION VERIFICATION
@@ -85,9 +85,9 @@ Checking TAD Framework status...
 
 5. Report:
    If all checks pass:
-   ✅ TAD Framework v2.2.1 installed
+   ✅ TAD Framework v2.3.0 installed
    ✅ Configuration valid (modular config loaded)
-   ✅ v2.2.1 features available (Ralph Loop, Skills, Multi-Platform, Pair Testing)
+   ✅ v2.3.0 features available (Ralph Loop, Skills, Pair Testing)
    ✅ Ready for use
 
    If issues found:

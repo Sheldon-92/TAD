@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.2.1 - Pair Testing Protocol**
+**Version 2.3.0 - Multi-Platform Cleanup**
 
-> 📚 **[Documentation Portal](docs/README.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
+> 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
@@ -71,11 +71,6 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 - **Stale Detection**: Age-based (>7 days) and topic cross-reference
 - **Auto-triggers**: Runs on agent activation, `*exit`, and `*accept`
 
-### Multi-Platform Support (v2.1.0)
-- **Claude Code**: Full subagent support (primary)
-- **Codex CLI / Gemini CLI**: Self-check mode with native commands
-- **8 Platform-Agnostic Skills**: testing, code-review, security-audit, performance, ux-review, architecture, api-design, debugging
-
 ---
 
 ## 🚀 Installation & Upgrade
@@ -87,8 +82,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
 This smart script automatically:
-- **Detects platforms**: Claude Code, Codex CLI, Gemini CLI
-- **Fresh install**: Creates complete TAD structure for all detected platforms
+- **Fresh install**: Creates complete TAD structure for Claude Code
 - **Upgrade**: Detects current version and upgrades in place
 - **Preserves data**: Your handoffs, learnings, and evidence are never overwritten
 - **Rollback on failure**: Automatic backup and restore if anything goes wrong
@@ -98,7 +92,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.2.1 configuration
+│   ├── config.yaml              # v2.3.0 configuration
 │   ├── skills/                  # Platform-agnostic skills (8 P0 skills)
 │   │   ├── testing/SKILL.md
 │   │   ├── code-review/SKILL.md
@@ -117,13 +111,7 @@ your-project/
 ├── .claude/                     # Claude Code configuration
 │   ├── commands/                # Slash commands (/alex, /blake, /gate)
 │   └── skills/                  # Claude-enhanced skills
-├── .codex/                      # Codex CLI configuration (if detected)
-│   └── prompts/                 # TAD commands for Codex
-├── .gemini/                     # Gemini CLI configuration (if detected)
-│   └── commands/                # TAD commands in TOML format
 ├── CLAUDE.md                    # Project rules for Claude Code
-├── AGENTS.md                    # Project rules for Codex CLI (if detected)
-└── GEMINI.md                    # Project rules for Gemini CLI (if detected)
 ```
 
 ### Manual Installation
@@ -141,7 +129,7 @@ rm -rf .tad-temp
 ```bash
 # Check version
 cat .tad/version.txt
-# Should show: 2.2.1
+# Should show: 2.3
 
 # Check skills
 ls .tad/skills/
@@ -330,7 +318,7 @@ Run periodically to check knowledge health:
 | **v2.2.1** | **Pair Testing Protocol, TEST_BRIEF.md, Cross-tool E2E** |
 | v2.2.0 | Bidirectional Messages, Adaptive Complexity, Modular Config |
 | v2.1.1 | `/tad-maintain`, Stale Detection, Simplified Adapters |
-| v2.1.0 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills |
+| v2.1.0 | Agent-Agnostic Architecture, 8 P0 Skills |
 | v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout |
 | v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
 | v1.6 | Evidence-Based Gates, Output Templates, Skills Architecture |
@@ -399,7 +387,7 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 ## 📖 Further Reading
 
 - [Documentation Portal](docs/README.md)
-- [Multi-Platform Guide](docs/MULTI-PLATFORM.md)
+- [Specialized Tools Guide](docs/MULTI-PLATFORM.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
 - [Agent Definitions](.claude/commands/)
 - [Configuration Guide](.tad/config.yaml)
@@ -407,6 +395,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.2.1 - Beneficial Friction for AI-Assisted Development.**
+**Welcome to TAD v2.3.0 - Beneficial Friction for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

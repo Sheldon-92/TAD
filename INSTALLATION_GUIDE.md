@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.2.1 - Beneficial Friction for AI-Assisted Development**
+**Version 2.3.0 - Beneficial Friction for AI-Assisted Development**
 
 ## 方式1：一键安装（推荐）
 
@@ -9,9 +9,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
 这个脚本会自动：
-- **检测平台**：自动检测 Claude Code、Codex CLI、Gemini CLI
 - **全新安装**：创建完整 TAD 结构（`.tad/`, `.claude/`, `CLAUDE.md`）
-- **多平台配置**：为检测到的每个平台生成配置文件
 - **升级**：检测当前版本并原地升级
 - **保留数据**：你的 handoffs、learnings、evidence 不会被覆盖
 - **失败回滚**：出错时自动恢复备份
@@ -82,11 +80,11 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.2.1)
+### `.tad`文件夹结构 (v2.3.0)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置
-├── version.txt           # 版本号 (2.2.1)
+├── version.txt           # 版本号 (2.3.0)
 ├── skills/               # 平台无关技能 (8 P0 skills)
 │   ├── testing/SKILL.md
 │   ├── code-review/SKILL.md
@@ -160,7 +158,7 @@ claude .
 ### 检查清单
 - [ ] `.claude/settings.json` 存在
 - [ ] `.tad/config.yaml` 存在
-- [ ] `.tad/version.txt` 显示 2.2.1
+- [ ] `.tad/version.txt` 显示 2.3.0
 - [ ] `.tad/skills/` 包含 8 个技能目录
 - [ ] `.claude/commands/tad-maintain.md` 存在
 
@@ -168,7 +166,7 @@ claude .
 ```bash
 # 检查版本
 cat .tad/version.txt
-# 应该返回: 2.2.1
+# 应该返回: 2.3.0
 
 # 验证技能系统
 ls .tad/skills/
@@ -212,73 +210,48 @@ TAD/
 │   ├── templates/         # 文档模板
 │   └── project-knowledge/ # 项目知识
 ├── docs/
-│   ├── MULTI-PLATFORM.md  # 多平台指南 (v2.1 NEW)
+│   ├── MULTI-PLATFORM.md  # Specialized Tools Guide
 │   ├── RALPH-LOOP.md      # Ralph Loop文档
 │   └── MIGRATION-v2.md    # 迁移指南
 ├── README.md              # TAD介绍
 ├── INSTALLATION_GUIDE.md  # 本文档
 ├── CHANGELOG.md           # 版本历史
-└── tad.sh                 # 一键安装/升级脚本 (多平台支持)
+└── tad.sh                 # 一键安装/升级脚本
 ```
 
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到v2.2.1
+# 从任何旧版本升级到v2.3.0
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
 # - 检测当前版本
-# - 检测已安装的AI CLI工具 (Claude/Codex/Gemini)
 # - 保留你的handoffs、learnings、evidence
 # - 安装8个P0技能文件
-# - 为检测到的平台生成配置
 ```
 
-## 快速开始 (v2.1)
+## 快速开始
 
 ```bash
 # 1. 安装TAD
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
-# 2. 根据检测到的平台使用相应命令：
-
-# Claude Code:
+# 2. 使用 Claude Code 命令：
 # Terminal 1: /alex (设计与规划)
 # Terminal 2: /blake (实现与Ralph Loop)
-
-# Codex CLI:
-# /prompts:tad_alex (设计与规划)
-# /prompts:tad_blake (实现)
-
-# Gemini CLI:
-# /tad-alex (设计与规划)
-# /tad-blake (实现)
 
 # 3. 开始协作
 # Alex: 创建handoff
 # Blake: *develop 自动进入质量循环
 ```
 
-## 多平台使用
-
-| 平台 | 项目指令 | 命令格式 | 技能执行 |
-|------|----------|----------|----------|
-| Claude Code | `CLAUDE.md` | `/alex`, `/blake` | subagent |
-| Codex CLI | `AGENTS.md` | `/prompts:tad_alex` | self-check |
-| Gemini CLI | `GEMINI.md` | `/tad-alex` | self-check |
-
-**技能执行差异**：
-- **Claude Code**: 调用原生 subagent 进行深度审查
-- **Codex/Gemini**: 读取 `.tad/skills/` 中的 SKILL.md，按 checklist 自检
-
 ## 总结
 
-TAD v2.2.1 核心特性：
+TAD v2.3.0 核心特性：
 1. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
 2. **配对测试协议** - 跨工具 E2E 测试（TAD CLI → Claude Desktop）
 3. **自适应复杂度** - 根据任务规模自动建议流程深度
 4. **Ralph Loop** - 自动质量循环直到专家批准
-5. **多平台支持** - Claude Code、Codex CLI、Gemini CLI
 
-任何新项目只要安装TAD，Claude Code、Codex CLI 或 Gemini CLI 都能立即识别并使用TAD方法论。
+任何新项目只要安装TAD，Claude Code 都能立即识别并使用TAD方法论。

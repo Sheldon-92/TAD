@@ -40,6 +40,7 @@
 | Design Playground v2 (standalone command) | Direction | Stable | [/playground](./.claude/commands/playground.md) |
 | Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/commands/tad-test-brief.md) |
 | Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
+| Multi-Platform Cleanup (Codex/Gemini → specialized tools) | Direction | Complete | [Handoff](./.tad/active/handoffs/HANDOFF-20260217-multi-platform-cleanup.md) |
 | Iterate on Playground based on user feedback | Idea | Pending | — |
 | 3 P2 pair testing improvements | Idea | Pending | NEXT.md |
 

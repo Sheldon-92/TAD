@@ -56,7 +56,8 @@
 
 ## In Progress
 
-(none)
+- [x] Multi-Platform Cleanup: Remove full TAD runtime for Codex/Gemini, simplify to specialized tool model (v2.2.1 → v2.3.0)
+- [ ] P1-4 deferred: Consider renaming config-platform.yaml → config-mcp.yaml (future cleanup)
 
 ## Recently Completed Epic
 

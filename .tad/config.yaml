@@ -1,6 +1,6 @@
 # TAD Configuration v2.2.1 - Modular Config Architecture
 method: TAD
-version: 2.2.1
+version: 2.3.0
 description: Triangle Agent Development - Pair Testing Protocol + Modular Config + Bidirectional Messages + Adaptive Complexity
 last_updated: 2026-01-31
 
@@ -74,12 +74,10 @@ config_modules:
 
   config-platform.yaml:
     path: ".tad/config-platform.yaml"
-    description: "Multi-platform support, MCP tools integration"
+    description: "MCP tools integration"
     contains:
-      - multi_platform (claude, codex, gemini, skills)
       - mcp_tools (agent_a_tools, agent_b_tools, enforcement, security)
     loaded_by:
-      - tad-init.md
       - tad-alex.md  # MCP tools
       - tad-blake.md  # MCP tools
 
@@ -112,8 +110,8 @@ command_module_binding:
     note: "Gates need quality definitions + cognitive (risk translation, decision compliance)"
 
   tad-init:
-    modules: [config-platform]
-    note: "Init only needs platform configuration"
+    modules: []
+    note: "Init creates project structure, no config modules needed"
 
   tad-maintain:
     modules: [config-workflow]
@@ -293,6 +291,14 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.3.0:
+    date: "2026-02-17"
+    changes:
+      - "Multi-Platform Runtime Cleanup: Removed full TAD runtime for Codex/Gemini"
+      - "Codex/Gemini repositioned as specialized tools via existing Handoff mechanism"
+      - "Removed ~1000 lines of outdated multi-platform configuration"
+      - "docs/MULTI-PLATFORM.md rewritten as Specialized Tools Guide"
+
   v2.2.1:
     date: "2026-01-31"
     changes:

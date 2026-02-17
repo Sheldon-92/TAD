@@ -1,12 +1,12 @@
-# /tad Command (TAD Framework v2.2.1 Main Entry)
+# /tad Command (TAD Framework v2.3.0 Main Entry)
 
 When this command is triggered, provide TAD framework guidance and options:
 
-## TAD Framework v2.2.1
+## TAD Framework v2.3.0
 **Triangle Agent Development — Beneficial Friction for AI-Assisted Development**
 
 ```
-Welcome to TAD v2.2.1 — Beneficial Friction + Ralph Loop + Multi-Platform
+Welcome to TAD v2.3.0 — Beneficial Friction + Ralph Loop
 
         Human (You)
          /\
@@ -35,9 +35,9 @@ Please select an option (0-8):
 Select 0-8:
 ```
 
-## Key Features in v2.2.1
+## Key Features in v2.3.0
 
-### 🆕 v2.2.1 Additions
+### 🆕 v2.3.0 Additions
 - **Beneficial Friction Philosophy**: AI executes, humans guard value at 3 critical friction points
 - **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
 - **Pair Testing**: All files in `.tad/pair-testing/` (Brief, Report, Screenshots)
@@ -61,7 +61,6 @@ Select 0-8:
 - **Expert Handoff Review**: 2+ experts review handoff before Blake executes
 - **Knowledge Accumulation**: Project learns from every feature
 - **Parallel Execution**: 40%+ time savings via parallel-coordinator
-- **Multi-Platform**: Claude Code, Codex CLI, Gemini CLI support
 
 ## Slash Commands Available
 
@@ -137,13 +136,12 @@ Select 0-8:
 
 ## Remember
 
-TAD v2.2.1 combines:
+TAD v2.3.0 combines:
 - 🎯 **Beneficial Friction**: Humans guard value at 3 critical points
 - ⚡ **Simplicity**: Only 3 roles (Human, Alex, Blake)
 - 🔄 **Ralph Loop**: Iterative quality with expert exit conditions
 - 🧪 **Evidence**: Mandatory at every gate
 - 📐 **Adaptive**: Scale process to task complexity
-- 🤝 **Multi-Platform**: Claude Code, Codex CLI, Gemini CLI
 - ✅ **Quality**: 4-gate system with knowledge accumulation
 
-[[LLM: This is the main entry point for TAD v2.2.1. When invoked, present these options and guide the user through TAD's workflow with Beneficial Friction, Ralph Loop, Adaptive Complexity, and Multi-Platform support.]]
+[[LLM: This is the main entry point for TAD v2.3.0. When invoked, present these options and guide the user through TAD's workflow with Beneficial Friction, Ralph Loop, and Adaptive Complexity.]]

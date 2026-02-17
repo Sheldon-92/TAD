@@ -125,3 +125,12 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Read-only commands need no interaction**: Dashboard/status commands should display and return to standby — no AskUserQuestion, no follow-up. Users invoke specific commands when they want to act.
   4. **Standby exclusion for redirect steps**: When a protocol step transitions to another protocol (step4 → *analyze), that step must NOT appear in enters_standby — it's a redirect, not an exit.
 - **Action**: When building lifecycle bridges, separate the status update from the target workflow entry. Use conversation memory for context transfer within the same session.
+
+### Feature Deprecation Cleanup Pattern - 2026-02-17
+- **Context**: Removing full TAD runtime support for Codex/Gemini (~1100 lines across 20 files)
+- **Discovery**: When removing a cross-cutting feature from a mature codebase, two key patterns emerged:
+  1. **Function-name targeting over line numbers**: Shell scripts change frequently. Expert review caught that line-number-based removal instructions are risky — always reference function names (e.g., "delete `generate_codex_config()`") for surgical script cleanup
+  2. **Dual-purpose file detection**: config-platform.yaml contained BOTH the feature being removed (multi_platform, 55 lines) and an orthogonal feature (MCP tools, 233 lines). In-place cleanup (keep file, remove section) is safer than file splitting/renaming when the file is referenced in module binding chains
+  3. **Grep-driven completeness**: Expert review found 4 files the handoff missed by running broader grep patterns. Acceptance criteria MUST include automated grep verification, not manual file listing
+  4. **Backup files are expected exceptions**: grep hits in `.tad/config-backup.yaml` or `.tad/config-full-backup.yaml` are NOT dangling references — backup files preserve historical state by design
+- **Action**: For multi-file feature removal: (a) use function names not line numbers for scripts, (b) grep broadly for references before declaring the file list complete, (c) include automated grep verification in AC

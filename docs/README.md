@@ -1,6 +1,6 @@
 # TAD Documentation Portal
 
-> **Current Version: v2.2.1** | [Quick Start](../README.md#-installation--upgrade) | [Multi-Platform](MULTI-PLATFORM.md)
+> **Current Version: v2.3.0** | [Quick Start](../README.md#-installation--upgrade) | [Specialized Tools](MULTI-PLATFORM.md)
 
 ## Current Documentation
 
@@ -8,7 +8,7 @@
 |----------|-------------|
 | [README](../README.md) | Main entry, quick start, installation |
 | [Installation Guide](../INSTALLATION_GUIDE.md) | Detailed installation steps |
-| [Multi-Platform Guide](MULTI-PLATFORM.md) | Claude/Codex/Gemini support (v2.1) |
+| [Specialized Tools Guide](MULTI-PLATFORM.md) | Codex/Gemini as specialized tools via Handoff (v2.3) |
 | [Ralph Loop Guide](RALPH-LOOP.md) | Autonomous quality cycles (v2.0) |
 | [Migration Guide](MIGRATION-v2.md) | Upgrade from older versions |
 
@@ -18,7 +18,7 @@
 |---------|---------|--------------|-------|
 | **v2.2.1** | 2026-02-01 | Pair Testing Protocol, Beneficial Friction Philosophy | [Changelog](../CHANGELOG.md) |
 | v2.2.0 | 2026-01-31 | Modular Config, Bidirectional Messages, Adaptive Complexity | [Changelog](../CHANGELOG.md) |
-| v2.1 | 2026-01-26 | Agent-Agnostic Architecture, Multi-Platform Support, 8 P0 Skills | [Changelog](../CHANGELOG.md) |
+| v2.1 | 2026-01-26 | Agent-Agnostic Architecture, 8 P0 Skills | [Changelog](../CHANGELOG.md) |
 | v2.0 | 2026-01-26 | Ralph Loop Fusion, Gate 3/4 Restructure | [Ralph Loop](RALPH-LOOP.md) |
 | v1.8 | 2026-01-25 | Human-in-the-Loop, Terminal Isolation | - |
 | v1.6 | 2026-01-24 | Unified Install Script | [Release Notes](releases/v1.6-release.md) |
@@ -28,21 +28,21 @@
 
 | From | To | Command |
 |------|----|---------|
-| Fresh | v2.2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
-| v2.x | v2.2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
-| v1.x | v2.2.1 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| Fresh | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| v2.x | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| v1.x | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
 
 All upgrades preserve your data (handoffs, learnings, evidence).
 
-## Platform Support (v2.2.1)
+## Platform Support (v2.3)
 
-| Platform | Config | Commands | Skills |
-|----------|--------|----------|--------|
-| Claude Code | `.claude/` | `/alex`, `/blake` | subagent |
-| Codex CLI | `.codex/` | `/prompts:tad_alex` | self-check |
-| Gemini CLI | `.gemini/` | `/tad-alex` | self-check |
+| Platform | Role | Details |
+|----------|------|---------|
+| Claude Code | Primary runtime | Full TAD framework with subagents |
+| Codex | Specialized tool | Via Blake Handoff for specific tasks |
+| Gemini | Specialized tool | Via Blake Handoff for specific tasks |
 
-See [Multi-Platform Guide](MULTI-PLATFORM.md) for details.
+See [Specialized Tools Guide](MULTI-PLATFORM.md) for details.
 
 ## Internal Documentation
 
@@ -50,7 +50,7 @@ See [Multi-Platform Guide](MULTI-PLATFORM.md) for details.
 |----------|----------|-------------|
 | TAD Config | `.tad/config.yaml` | Framework configuration |
 | Skills | `.tad/skills/` | Platform-agnostic skills (8) |
-| Adapters | `.tad/adapters/` | Platform configurations |
+| Templates | `.tad/templates/` | Document templates |
 | Commands | `.claude/commands/` | Slash commands |
 | Ralph Config | `.tad/ralph-config/` | Ralph Loop settings |
 
