@@ -27,8 +27,8 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Intent Router (Alex Multi-mode) | ✅ Done | HANDOFF-20260216-intent-router.md | Alex 支持 *bug / *discuss / *idea / *analyze 4 条路径 + 自动意图检测 |
-| 2 | Learning Opportunity | ⬚ Planned | — | *learn 命令 + handoff 后学习邀请 |
-| 3 | Idea Pool | ⬚ Planned | — | .tad/active/ideas/ + idea 模板 + *idea 路径存储 |
+| 2 | Learning Opportunity | ✅ Done | HANDOFF-20260216-learning-opportunity.md | *learn 路径 (Socratic teaching) + standby 定义 + idle 检测 |
+| 3 | Idea Pool | ✅ Done | HANDOFF-20260216-idea-pool.md | .tad/active/ideas/ + idea 模板 + *idea-list + 结构化存储 |
 | 4 | Roadmap | ⬚ Planned | — | ROADMAP.md + Alex 启动加载 + *discuss 可更新 |
 | 5 | Layer Integration | ⬚ Planned | — | *idea promote + *status 全景视图 + 层级流转机制 |
 
@@ -62,24 +62,50 @@ Status and progress are computed from the Phase Map:
   - Knowledge entry: "Intent Router: Route Before Process" in architecture.md
   - Key finding: "Route before process" pattern — insert router before existing protocol, don't modify it
 
+- **Phase 2: Learning Opportunity** (2026-02-16) — Gate 3 PASS + Gate 4 PASS
+  - Added learn_path_protocol (Socratic teaching, 4-step: identify → assess → teach → wrap up) to tad-alex.md (+~85 lines)
+  - Added step1.5 idle detection to Intent Router (conservative heuristic for non-task messages)
+  - Added standby state definition with 7 enter conditions and automatic re-trigger
+  - Updated Intent Router to 5 modes with 4-option display strategy (recommended + 2 relevant + analyze)
+  - Updated config-workflow.yaml (learn mode, priority_order)
+  - Updated CLAUDE.md §2 table (+1 row)
+  - Knowledge entry: "Mode Addition Checklist Pattern" (5-layer integration) in architecture.md
+  - Key decision: Post-handoff learning invite REMOVED — user self-initiates via *learn
+
+- **Phase 3: Idea Pool** (2026-02-16) — Gate 3 PASS + Gate 4 PASS
+  - Created .tad/active/ideas/ directory + .tad/templates/idea-template.md (26 lines, 5 fields)
+  - Replaced idea_path_protocol step3: NEXT.md → individual IDEA-{date}-{slug}.md files + NEXT.md cross-reference
+  - Added idea_list_protocol (*idea-list command: scan → display → view/update/done)
+  - Status lifecycle: captured → evaluated → promoted → archived (forward-only)
+  - Updated Quick Reference with *idea-list
+  - Knowledge entry: "Lightweight Storage Upgrade Pattern" in architecture.md
+  - Key pattern: Cross-reference in NEXT.md preserves quick visibility while ideas/ has full detail
+
 ### Decisions Made So Far
 - Hybrid approach (Option C): Explicit commands (*bug, *discuss, *idea) + auto-detect with confirmation
-- Learning: Both *learn command and post-handoff auto-prompt adopted
+- ~~Learning: Both *learn command and post-handoff auto-prompt adopted~~ → **Updated**: Post-handoff invite removed, user self-initiates *learn
 - Project management: Local files first, MCP integration as optional future enhancement
 - Multi-model: Not pursuing "different models for quality assurance" — TAD's existing gate system is sufficient
 - Inspiration source: Zevi Arnovitz's workflow (single PM, slash command driven, multi-model, post-mortem learning)
 - **P0-1 Decision (2026-02-16)**: Alex NEVER writes code, even for bugs. *bug path = diagnose only + express mini-handoff to Blake. User chose "移除直接修复".
 - **P0-2 (2026-02-16)**: Added path transition rules + trigger timing clarification
 - **P0-3 (2026-02-16)**: *discuss allowed/forbidden lists clarified; compatible with Research Protocol
+- **Phase 2 P0-1 (2026-02-16)**: Post-handoff learning invite removed — user self-initiates *learn when they have questions
+- **Phase 2 P0-2 (2026-02-16)**: Idle detection added (step1.5) for non-task messages in standby
+- **Phase 2 P0-3 (2026-02-16)**: Signal word overlap *discuss/*learn intentionally kept — resolved by AskUserQuestion + priority_order
+- **Phase 2 P0-4 (2026-02-16)**: 5-mode display: recommended + 2 relevant + analyze (always). User can type *learn via "Other"
 
 ### Known Issues / Carry-forward
-- Alex 的 tad-alex.md 已经很长，需要注意新增内容的组织方式，避免文件膨胀
-- Epic 系统本身未在实战中端到端测试过（这将是首个真正的 Epic）
+- Alex 的 tad-alex.md 已经很长（~1845 lines），需要注意新增内容的组织方式，避免文件膨胀
+- ~~Epic 系统本身未在实战中端到端测试过~~ → Phase 1-2 完成，Epic 系统运作正常
 - ~~*bug 路径中 Alex 能否"自己修"需要明确边界~~ → **已解决**: Alex 不修 bug，只诊断
+- *learn persistence deferred — no file writes in learning mode (may revisit in future)
 
 ### Next Phase Scope
 Phase 1: ✅ Complete
-Phase 2 (next): Learning Opportunity — *learn 命令 + handoff 后学习邀请。依赖 Phase 1 的路径定义（已完成）。
+Phase 2: ✅ Complete
+Phase 3: ✅ Complete
+Phase 4 (next): Roadmap — ROADMAP.md + Alex 启动加载 + *discuss 可更新。依赖 Phase 3 的 Idea Pool（已完成）。
 
 ---
 

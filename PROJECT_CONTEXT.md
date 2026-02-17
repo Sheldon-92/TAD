@@ -1,17 +1,21 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.4.0 (Intent Router + experimental Agent Teams + Cognitive Firewall)
+- **Version**: 2.6.0 (Intent Router + *learn + Idea Pool + Standby + experimental Agent Teams + Cognitive Firewall)
 - **Last Updated**: 2026-02-16
-- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router
+- **Framework**: TAD v2.2.1 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool
 
 ## Active Work
 - **EPIC: Alex Flexibility + Learning + Project Management** (5 phases)
   - Epic file: .tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
   - Phase 1: ✅ Intent Router (Alex multi-mode switching) — Gate 3+4 PASS
-  - Phase 2 next: Learning Opportunity (*learn command + post-handoff learning invite)
+  - Phase 2: ✅ Learning Opportunity (*learn path + standby + idle detection) — Gate 3+4 PASS
+  - Phase 3: ✅ Idea Pool (.tad/active/ideas/ + *idea-list + template) — Gate 3+4 PASS
+  - Phase 4 next: Roadmap (ROADMAP.md + Alex startup loading)
 
 ## Recent Decisions
+- Idea Pool Phase 3 DONE: *idea stores to .tad/active/ideas/ structured files, *idea-list for browsing, forward-only status lifecycle, NEXT.md cross-reference pattern (2026-02-16)
+- Learning Opportunity Phase 2 DONE: *learn (Socratic teaching) as 5th Intent Router mode, standby state defined, idle detection added, post-handoff invite removed (user self-initiates) (2026-02-16)
 - Intent Router Phase 1 DONE: Alex supports *bug/*discuss/*idea/*analyze, "route before process" pattern, Alex never codes even for bugs (2026-02-16)
 - Alex Flexibility Epic: Hybrid intent detection (Option C), local-first project mgmt (no MCP dependency), multi-model cross-review hypothesis rejected in favor of existing gate system (2026-02-16)
 - Multi-Session Pair Testing: Singleton → session directories (S01/, S02/) + SESSIONS.yaml manifest + context inheritance (2026-02-09)

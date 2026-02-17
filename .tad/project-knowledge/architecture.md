@@ -87,3 +87,23 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Path isolation with escape hatches**: Each path has its own lifecycle, but defined transitions allow upgrading (discuss→analyze) while preventing downgrading (analyze→any)
   4. **Principle preservation**: New paths must respect ALL existing constraints (Alex never codes, terminal isolation) — don't create exemptions for convenience
 - **Action**: When adding multi-mode support to an agent, create a router that dispatches to isolated paths rather than adding conditional branches inside existing workflows
+
+### Mode Addition Checklist Pattern - 2026-02-16
+- **Context**: Adding *learn as 5th Intent Router mode (Phase 2 of Alex Flexibility Epic)
+- **Discovery**: Adding a new mode to a multi-mode router requires a 5-layer integration pattern to achieve zero regression:
+  1. **Config layer**: Add mode entry with signal words + priority in config-workflow.yaml
+  2. **Protocol layer**: Add path protocol (behavior + execution steps) in agent file
+  3. **Router layer**: Update step1 (explicit command), step3 (display logic with 4-option limit), step4 (routing table)
+  4. **Lifecycle layer**: Add standby integration (enter conditions, path transitions, idle detection coexistence)
+  5. **Surface layer**: Update commands section, on_start greeting, Quick Reference, CLAUDE.md routing table
+  Missing any layer creates a partial integration that may silently fail (e.g., mode exists in config but router doesn't recognize explicit command).
+- **Action**: Use this 5-layer checklist when adding future modes to Intent Router or similar multi-mode systems
+
+### Lightweight Storage Upgrade Pattern - 2026-02-16
+- **Context**: Upgrading *idea storage from NEXT.md one-liners to individual structured files in .tad/active/ideas/
+- **Discovery**: When upgrading from "append to shared file" to "individual structured files", follow this pattern:
+  1. **Template-first**: Create the template before changing the storage target — template defines the contract
+  2. **Cross-reference, don't migrate**: Keep a one-liner in the original location (NEXT.md) as cross-reference — avoids breaking existing workflows that scan the shared file
+  3. **Forward-only lifecycle**: Status fields with forward-only transitions (captured → evaluated → promoted → archived) prevent accidental state regression without complex validation
+  4. **Section-aware append**: When creating cross-references in shared files, define explicit section placement rules (after ## Pending, before ## Blocked) to avoid disrupting document structure
+- **Action**: When upgrading storage from shared-file to individual-file pattern, always maintain cross-references in the original location and define template contracts first

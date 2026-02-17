@@ -609,6 +609,16 @@ intent_modes:
         en: ["idea", "maybe", "what if", "could we", "someday", "nice to have"]
       leads_to_handoff: "never"
 
+    learn:
+      command: "*learn"
+      label: "Learn"
+      icon: "📚"
+      description: "Socratic teaching — understand concepts through guided questions"
+      signal_words:
+        zh: ["学习", "教我", "为什么", "怎么理解", "原理", "解释一下", "什么意思", "学一下"]
+        en: ["learn", "teach me", "why", "explain", "how does", "understand", "what is", "concept"]
+      leads_to_handoff: "never"
+
     analyze:
       command: "*analyze"
       label: "Standard TAD"
@@ -622,7 +632,7 @@ intent_modes:
     fallback_mode: "analyze"
     signal_confidence_threshold: 2
 
-    priority_order: ["bug", "idea", "discuss", "analyze"]
+    priority_order: ["bug", "idea", "discuss", "learn", "analyze"]
     priority_note: |
       When signal words match multiple modes equally:
       1. bug — highest priority (immediate action needed)

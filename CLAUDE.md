@@ -32,6 +32,7 @@
 | `/alex` + `*bug` | Bug found, need quick diagnosis. Alex diagnoses → creates express mini-handoff for Blake |
 | `/alex` + `*discuss` | Product direction question, strategy discussion, no handoff needed |
 | `/alex` + `*idea` | New idea to capture, not ready for implementation yet |
+| `/alex` + `*learn` | Want to understand a technical concept — Socratic teaching mode |
 | `/alex` + `*playground` | 任务涉及前端/UI 设计，需要可视化探索 |
 | `/blake` | 有 active handoff, Alex 已创建 handoff, 用户说"开始实现" |
 | `/blake` (release) | 常规 patch/minor 版本发布（按 RELEASE.md SOP 执行）|
