@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.3.0 - Beneficial Friction for AI-Assisted Development**
+**Version 2.4.0 - Beneficial Friction for AI-Assisted Development**
 
 ## 方式1：一键安装（推荐）
 
@@ -80,11 +80,11 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.3.0)
+### `.tad`文件夹结构 (v2.4.0)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置
-├── version.txt           # 版本号 (2.3.0)
+├── version.txt           # 版本号 (2.4.0)
 ├── skills/               # 平台无关技能 (8 P0 skills)
 │   ├── testing/SKILL.md
 │   ├── code-review/SKILL.md
@@ -158,7 +158,7 @@ claude .
 ### 检查清单
 - [ ] `.claude/settings.json` 存在
 - [ ] `.tad/config.yaml` 存在
-- [ ] `.tad/version.txt` 显示 2.3.0
+- [ ] `.tad/version.txt` 显示 2.4.0
 - [ ] `.tad/skills/` 包含 8 个技能目录
 - [ ] `.claude/commands/tad-maintain.md` 存在
 
@@ -166,7 +166,7 @@ claude .
 ```bash
 # 检查版本
 cat .tad/version.txt
-# 应该返回: 2.3.0
+# 应该返回: 2.4.0
 
 # 验证技能系统
 ls .tad/skills/
@@ -222,7 +222,7 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到v2.3.0
+# 从任何旧版本升级到v2.4.0
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
@@ -248,7 +248,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 ## 总结
 
-TAD v2.3.0 核心特性：
+TAD v2.4.0 核心特性：
 1. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
 2. **配对测试协议** - 跨工具 E2E 测试（TAD CLI → Claude Desktop）
 3. **自适应复杂度** - 根据任务规模自动建议流程深度

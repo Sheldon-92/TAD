@@ -1,6 +1,6 @@
 # TAD Configuration v2.2.1 - Modular Config Architecture
 method: TAD
-version: 2.3.0
+version: 2.4.0
 description: Triangle Agent Development - Pair Testing Protocol + Modular Config + Bidirectional Messages + Adaptive Complexity
 last_updated: 2026-01-31
 
@@ -291,6 +291,13 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.4.0:
+    date: "2026-02-17"
+    changes:
+      - "Added *publish and *sync commands for GitHub release and cross-project sync"
+      - "sync-registry.yaml for manual project registration"
+      - "deprecation.yaml for version-based file cleanup"
+
   v2.3.0:
     date: "2026-02-17"
     changes:

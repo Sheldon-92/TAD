@@ -18,7 +18,7 @@ Generated: [timestamp]
 [✅/❌] Template files (.tad/templates/)
 [✅/❌] Project context files (PROJECT_CONTEXT.md, CLAUDE.md)
 
-🧩 v2.3.0 MODULES
+🧩 v2.4.0 MODULES
 [✅/❌] Modular Config (config-agents, config-quality, config-execution, config-platform)
 [✅/❌] Ralph Loop configured (.tad/ralph-config/)
 [✅/❌] Skills System (8 skills in .tad/skills/)
@@ -55,7 +55,7 @@ Checking TAD Framework status...
 
 1. Core Files:
    - Check if .tad/config.yaml exists
-   - Check if .tad/version.txt exists (should read 2.2.1)
+   - Check if .tad/version.txt exists (should read 2.4)
    - Check if .claude/commands/tad-alex.md exists
    - Check if .claude/commands/tad-blake.md exists
    - Check if CLAUDE.md exists (TAD rules)
@@ -85,9 +85,9 @@ Checking TAD Framework status...
 
 5. Report:
    If all checks pass:
-   ✅ TAD Framework v2.3.0 installed
+   ✅ TAD Framework v2.4.0 installed
    ✅ Configuration valid (modular config loaded)
-   ✅ v2.3.0 features available (Ralph Loop, Skills, Pair Testing)
+   ✅ v2.4.0 features available (Ralph Loop, Skills, Pair Testing)
    ✅ Ready for use
 
    If issues found:

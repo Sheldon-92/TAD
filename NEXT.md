@@ -2,6 +2,13 @@
 
 ## Recently Completed
 
+- [x] TAD Publish & Sync: *publish + *sync Alex commands, v2.3.0 → v2.4.0 (2026-02-17) - Gate 3 PASS + Gate 4 PASS
+  - Created sync-registry.yaml (3 projects), deprecation.yaml (v2.3.0 entry)
+  - 4 protocols in tad-alex.md, version bumped, CLAUDE.md routing updated
+  - Expert review: code-reviewer + backend-architect, 6 P0 fixed
+
+- [x] Multi-Platform Cleanup: Remove Codex/Gemini full runtime, v2.2.1 → v2.3.0 (2026-02-17)
+
 - [x] Design Playground v2 — Independent `/playground` Command (2026-02-08) - Gate 3 PASS + Gate 4 PASS
   - Created: `.claude/commands/playground.md` (standalone Design Explorer agent, 475 lines)
   - Created: `.tad/references/design-styles.yaml` (32 styles, 7 categories)
@@ -56,7 +63,6 @@
 
 ## In Progress
 
-- [x] Multi-Platform Cleanup: Remove full TAD runtime for Codex/Gemini, simplify to specialized tool model (v2.2.1 → v2.3.0)
 - [ ] P1-4 deferred: Consider renaming config-platform.yaml → config-mcp.yaml (future cleanup)
 
 ## Recently Completed Epic

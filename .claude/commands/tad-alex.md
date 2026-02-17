@@ -148,6 +148,12 @@ commands:
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
 
+  # Framework management commands
+  publish: GitHub publish workflow — version check, changelog, push, tag
+  sync: Sync TAD to registered projects — framework files, cleanup, verify
+  sync-add: Register a new project for TAD sync
+  sync-list: List registered projects and sync status
+
   # Utility commands
   status: Panoramic project view — Roadmap themes, Epics, Handoffs, Ideas at a glance
   yolo: Toggle YOLO mode (skip confirmations)
@@ -329,6 +335,10 @@ intent_router_protocol:
       - "After *idea-promote step2: user selects 'Cancel' → Enter standby"
       - "After *idea-promote step1: no promotable ideas → Enter standby"
       - "After *status step3 completes → Enter standby"
+      - "After *publish step5 completes → Enter standby"
+      - "After *sync step4 completes → Enter standby"
+      - "After *sync-add step3 completes → Enter standby"
+      - "After *sync-list step1 completes → Enter standby"
 
     on_new_input_in_standby: |
       When user sends a new message while Alex is in standby:
@@ -2042,6 +2052,229 @@ mandatory_review:
       - **Discovery**: React components lack error boundaries, causing full-page crashes
       - **Action**: Always require error boundaries in feature handoffs for React components
 
+# *publish protocol (GitHub Publish Workflow)
+publish_protocol:
+  description: "GitHub publish workflow with version consistency checks"
+  trigger: "User types *publish"
+
+  execution:
+    step1:
+      name: "Version Consistency Check"
+      action: |
+        Read and compare version strings from these files:
+        1. .tad/version.txt (uses MAJOR.MINOR format, e.g., "2.3")
+        2. .tad/config.yaml → version field (uses MAJOR.MINOR.PATCH, e.g., "2.3.0")
+        3. tad.sh → TARGET_VERSION (uses MAJOR.MINOR format, e.g., "2.3")
+        4. INSTALLATION_GUIDE.md → version references
+        5. .claude/commands/tad-help.md → version references
+
+        Consistency rule: extract MAJOR.MINOR from all sources; they must match.
+        (config.yaml's ".0" patch suffix is expected and not a mismatch)
+
+        Display comparison table:
+        | File | Format | Version Found | MAJOR.MINOR | Status |
+        |------|--------|--------------|-------------|--------|
+
+        If ANY MAJOR.MINOR mismatch → list them and ask user to fix before continuing.
+        Alex does NOT fix version numbers directly (Alex doesn't code).
+
+    step2:
+      name: "CHANGELOG Check"
+      action: |
+        Read CHANGELOG.md.
+        Check if there's an entry for the current version.
+        If missing → warn: "CHANGELOG.md has no entry for v{version}. Add one before publishing."
+        If exists → show the entry summary.
+
+    step3:
+      name: "Git Status Check"
+      action: |
+        Display git status summary:
+        - Uncommitted changes?
+        - Unpushed commits?
+        - Current branch?
+        If uncommitted changes → warn and ask user to commit first.
+
+    step4:
+      name: "Confirm & Execute"
+      action: |
+        Use AskUserQuestion:
+        "Pre-publish checks complete. Ready to publish?"
+        Options:
+        - "Push + Tag" → execute git push && git tag v{version} && git push --tags
+        - "Push only" → git push (no tag)
+        - "Abort" → cancel
+
+        EXCEPTION TO "ALEX DOESN'T CODE":
+        Git push/tag are one-way publish operations with no design ambiguity.
+        Human confirms before each command via AskUserQuestion.
+        This exception does NOT extend to: code changes, build scripts,
+        configuration file edits, or any implementation work.
+
+    step5:
+      name: "Post-Publish"
+      action: |
+        After successful push:
+        1. Display confirmation with commit hash and tag
+        2. Suggest: "Run *sync to update registered projects"
+        Return to standby.
+
+# *sync protocol (Cross-Project Sync)
+sync_protocol:
+  description: "Sync TAD framework files to registered projects"
+  trigger: "User types *sync"
+
+  execution:
+    step1:
+      name: "Load Registry"
+      action: |
+        Check if .tad/sync-registry.yaml exists.
+        If missing → "Registry not found. Use *sync-add to register a project first." → standby.
+        Read .tad/sync-registry.yaml.
+        If projects list is empty → "No projects registered. Use *sync-add to register one." → standby.
+        Display project table:
+        | # | Project | Last Synced | Current | Status |
+
+    step2:
+      name: "Select Scope"
+      action: |
+        Use AskUserQuestion:
+        "Which projects to sync?"
+        Options:
+        - "All outdated projects" → sync all where last_synced < current
+        - "Select specific" → show numbered list, user picks
+        - "Cancel" → standby
+
+    step3:
+      name: "Execute Sync (per project)"
+      action: |
+        For each selected project, execute in order:
+
+        0. PATH VALIDATION:
+           - Check target path exists
+           - Check .tad/ directory exists at target
+           - If validation fails → mark as SKIPPED, log error, continue to next project
+
+        a. CLAUDE.md — based on claude_md_strategy:
+           - "overwrite": copy TAD source CLAUDE.md directly
+           - "merge":
+             1. Read target CLAUDE.md
+             2. Find first occurrence of `<!-- TAD:PROJECT-CONTENT-BELOW -->`
+             3. If marker found: replace everything ABOVE the marker with TAD source CLAUDE.md content, preserve marker + everything below
+             4. If marker NOT found: WARN user "Merge marker not found in {project}. Overwrite or skip?"
+                → AskUserQuestion: "Overwrite" / "Skip this project"
+           - After merge: backup original to CLAUDE.md.bak before writing
+
+        b. Framework files — copy from TAD source (mirror tad.sh copy_framework_files):
+           Top-level .tad/ config & metadata:
+           - .tad/*.yaml, .tad/*.md, .tad/*.txt (all top-level files)
+           Framework subdirectories (full recursive copy):
+           - .tad/agents/
+           - .tad/data/
+           - .tad/gates/
+           - .tad/guides/
+           - .tad/ralph-config/
+           - .tad/references/
+           - .tad/schemas/
+           - .tad/skills/
+           - .tad/sub-agents/
+           - .tad/tasks/
+           - .tad/templates/
+           - .tad/workflows/
+           .claude/ framework files:
+           - .claude/commands/*.md
+           - .claude/settings.json
+           - .claude/skills/code-review/* (recursive)
+           - .claude/skills/doc-organization.md
+           Root-level files:
+           - tad.sh
+           - docs/MULTI-PLATFORM.md
+           - README.md, INSTALLATION_GUIDE.md
+
+        c. Deprecation cleanup:
+           Read .tad/deprecation.yaml (if missing → skip silently, no deprecations to apply).
+           Version comparison rules (semver):
+           - Compare major.minor.patch numerically (2.10.0 > 2.3.0)
+           - Apply deprecations where: last_synced_version < deprecation_version <= current_version
+           - If deprecation.yaml has no entries for the version range → skip silently
+           - Ignore entries for versions > current_version (future deprecations)
+           For each matching deprecation: delete listed files/directories, log each deletion.
+
+        d. Verification:
+           - Check version.txt in target matches current TAD version
+           - Check CLAUDE.md exists and is readable
+           - If merge: verify project-specific content still present (check marker exists)
+
+        e. Update registry:
+           - Set last_synced_version and last_synced_date
+
+        PRESERVE (never touch):
+        - .tad/project-knowledge/
+        - .tad/active/ (handoffs, epics, ideas)
+        - .tad/archive/
+        - .tad/evidence/
+        - .tad/pair-testing/
+        - .tad/decisions/
+        - PROJECT_CONTEXT.md, NEXT.md, CHANGELOG.md (project-level)
+
+    step4:
+      name: "Summary"
+      action: |
+        Display sync summary:
+        | Project | Version | Files Updated | Files Deleted | Status |
+
+        Return to standby.
+
+# *sync-add protocol (Register Project)
+sync_add_protocol:
+  description: "Register a new project for TAD sync"
+  trigger: "User types *sync-add"
+
+  execution:
+    step1:
+      name: "Get Project Path"
+      action: |
+        Ask user for the project's absolute path.
+        Validate:
+        - Path exists
+        - .tad/ directory exists (has TAD installed)
+        - .tad/version.txt exists (can read current version)
+        If validation fails → error with specific message.
+
+    step2:
+      name: "Detect CLAUDE.md Strategy"
+      action: |
+        Read the project's CLAUDE.md.
+        If it contains `<!-- TAD:PROJECT-CONTENT-BELOW -->` marker:
+          → Pre-select "merge"
+          → Show: "Detected project-specific content in CLAUDE.md (N lines after marker)"
+        Else:
+          → Pre-select "overwrite"
+        Use AskUserQuestion to confirm strategy.
+        If user selects "merge" but marker doesn't exist yet:
+          → Inform: "You'll need to add `<!-- TAD:PROJECT-CONTENT-BELOW -->` to the project's CLAUDE.md before the project-specific section."
+
+    step3:
+      name: "Register"
+      action: |
+        Add entry to .tad/sync-registry.yaml with:
+        - path, name (derived from directory name), claude_md_strategy
+        - last_synced_version: read from target's .tad/version.txt
+        - last_synced_date: today
+        Confirm: "Project {name} registered for TAD sync."
+
+# *sync-list protocol (List Registered Projects)
+sync_list_protocol:
+  description: "List registered projects and their sync status"
+  trigger: "User types *sync-list"
+  execution:
+    step1:
+      name: "Display"
+      action: |
+        Read .tad/sync-registry.yaml.
+        Display table with: name, path, strategy, last synced version, current TAD version, status.
+        Return to standby.
+
 # Forbidden actions (will trigger VIOLATION)
 forbidden:
   - Writing implementation code
@@ -2089,6 +2322,8 @@ on_start: |
   - *discuss — Free-form product/tech discussion
   - *idea — Capture an idea for later
   - *learn — Understand a technical concept (Socratic teaching)
+  - *publish — Push TAD updates to GitHub (version check + push + tag)
+  - *sync — Sync TAD to your other projects
 
   Just describe what you need, and I'll figure out the right mode.
   Or use a command directly to skip detection.
@@ -2098,7 +2333,7 @@ on_start: |
 
 ## Quick Reference
 
-### My Workflow (TAD v2.2.1)
+### My Workflow (TAD v2.4.0)
 1. **Intent Route** → Detect mode (*bug / *discuss / *idea / *learn / *analyze)
 2. **Assess** → Evaluate complexity, suggest process depth (human decides) (*analyze only)
 3. **Understand** → Socratic inquiry scaled to chosen depth
@@ -2126,6 +2361,10 @@ on_start: |
 - `*gate 1` or `*gate 2` - Run my quality gates
 - `*gate 4` - Run Gate 4 v2 (business acceptance)
 - `*accept` - Archive handoff after acceptance
+- `*publish` - GitHub publish (version consistency check → push → tag)
+- `*sync` - Sync TAD framework to registered projects
+- `*sync-add` - Register a new project for sync
+- `*sync-list` - List registered sync projects
 
 ### Gate Ownership (since v2.0)
 ```

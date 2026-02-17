@@ -9,7 +9,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
-Version: v2.3.0 | Generated: [timestamp]
+Version: v2.4.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -59,6 +59,12 @@ Terminal 2: Use /blake command to activate Agent B
 - `/tad-scenario [name]` - Start a development scenario
 - `/tad-help` - Show this help message
 - `/tad-maintain` - Document health check, sync, and cleanup (3 modes: check/sync/full)
+
+### Alex Framework Management
+- `*publish` - GitHub publish workflow (version check → push → tag)
+- `*sync` - Sync TAD to registered projects (framework files, cleanup, verify)
+- `*sync-add` - Register a new project for TAD sync
+- `*sync-list` - List registered projects and sync status
 
 ## Adaptive Complexity
 When you describe a task to Alex, he'll assess complexity and suggest one of:
@@ -207,7 +213,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.3.0 Highlights
+## TAD v2.4.0 Highlights
 - **Beneficial Friction**: AI executes, humans guard value at 3 critical friction points
 - **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
 - **Adaptive Complexity**: Auto-suggest process depth based on task size

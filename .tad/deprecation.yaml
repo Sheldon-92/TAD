@@ -1,0 +1,14 @@
+# TAD Deprecation Registry — Files removed per version
+# Used by *sync to clean up target projects
+
+deprecations:
+  "2.3.0":
+    description: "Multi-platform cleanup — remove Codex/Gemini full runtime"
+    files:
+      - AGENTS.md
+      - GEMINI.md
+      - .codex/
+      - .gemini/
+      - .tad/templates/AGENTS.md.template
+      - .tad/templates/GEMINI.md.template
+    date: "2026-02-17"

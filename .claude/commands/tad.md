@@ -1,12 +1,12 @@
-# /tad Command (TAD Framework v2.3.0 Main Entry)
+# /tad Command (TAD Framework v2.4.0 Main Entry)
 
 When this command is triggered, provide TAD framework guidance and options:
 
-## TAD Framework v2.3.0
+## TAD Framework v2.4.0
 **Triangle Agent Development — Beneficial Friction for AI-Assisted Development**
 
 ```
-Welcome to TAD v2.3.0 — Beneficial Friction + Ralph Loop
+Welcome to TAD v2.4.0 — Beneficial Friction + Ralph Loop
 
         Human (You)
          /\
@@ -35,9 +35,9 @@ Please select an option (0-8):
 Select 0-8:
 ```
 
-## Key Features in v2.3.0
+## Key Features in v2.4.0
 
-### 🆕 v2.3.0 Additions
+### 🆕 v2.4.0 Additions
 - **Beneficial Friction Philosophy**: AI executes, humans guard value at 3 critical friction points
 - **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
 - **Pair Testing**: All files in `.tad/pair-testing/` (Brief, Report, Screenshots)
@@ -136,7 +136,7 @@ Select 0-8:
 
 ## Remember
 
-TAD v2.3.0 combines:
+TAD v2.4.0 combines:
 - 🎯 **Beneficial Friction**: Humans guard value at 3 critical points
 - ⚡ **Simplicity**: Only 3 roles (Human, Alex, Blake)
 - 🔄 **Ralph Loop**: Iterative quality with expert exit conditions
@@ -144,4 +144,4 @@ TAD v2.3.0 combines:
 - 📐 **Adaptive**: Scale process to task complexity
 - ✅ **Quality**: 4-gate system with knowledge accumulation
 
-[[LLM: This is the main entry point for TAD v2.3.0. When invoked, present these options and guide the user through TAD's workflow with Beneficial Friction, Ralph Loop, and Adaptive Complexity.]]
+[[LLM: This is the main entry point for TAD v2.4.0. When invoked, present these options and guide the user through TAD's workflow with Beneficial Friction, Ralph Loop, and Adaptive Complexity.]]

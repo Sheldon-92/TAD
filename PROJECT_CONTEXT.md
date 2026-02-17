@@ -1,14 +1,18 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.3.0 (Multi-Platform Cleanup + Intent Router + *learn + Idea Pool + Roadmap + *idea promote + *status + Standby + experimental Agent Teams + Cognitive Firewall)
+- **Version**: 2.4.0 (*publish + *sync commands for GitHub release and cross-project sync)
 - **Last Updated**: 2026-02-17
-- **Framework**: TAD v2.3.0 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration
+- **Framework**: TAD v2.4.0 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration + Publish & Sync
 
 ## Active Work
-- (none — next task TBD)
+(none)
 
 ## Recently Completed
+- **Publish & Sync Commands** — ✅ COMPLETE (2026-02-17) v2.3.0 → v2.4.0
+  - Added *publish (version check + changelog + push + tag) and *sync (registry + deprecation + CLAUDE.md merge)
+  - Created sync-registry.yaml (3 projects seeded) and deprecation.yaml (v2.3.0 entry)
+  - Archived: .tad/archive/handoffs/HANDOFF-20260217-tad-publish-sync.md
 - **Multi-Platform Cleanup** — ✅ COMPLETE (2026-02-17) v2.2.1 → v2.3.0
   - Removed full TAD runtime for Codex/Gemini (~1100 lines, 20 files)
   - Codex/Gemini repositioned as specialized tools via existing Handoff mechanism
@@ -18,6 +22,7 @@
   - Phase 1: Intent Router | Phase 2: *learn | Phase 3: Idea Pool | Phase 4: Roadmap | Phase 5: *idea promote + *status
 
 ## Recent Decisions
+- *publish + *sync commands: Added GitHub publish workflow (version check + push + tag) and cross-project sync (registry, deprecation, CLAUDE.md merge strategies). Version bumped v2.3.0 → v2.4.0 (2026-02-17)
 - Multi-Platform Cleanup: Removed full TAD runtime for Codex/Gemini, simplified to specialized tool model via existing Handoff mechanism. ~1100 lines removed, 20 files affected, version bumped v2.2.1 → v2.3.0 (2026-02-17)
 - Layer Integration Phase 5 DONE (EPIC COMPLETE): *idea promote (upgrade to Epic/Handoff via *analyze), *status panoramic view (4-layer scan), standby + path_transitions updated (2026-02-16)
 - Roadmap Phase 4 DONE: ROADMAP.md theme-driven aggregation view, Alex STEP 3.4 startup loading, *discuss exit gains "Update ROADMAP" option with propose→confirm flow (2026-02-16)
@@ -36,9 +41,9 @@
 - Agent Teams: Experimental, requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ## Next Direction
+- Use *publish and *sync on next TAD release to validate the new workflows
 - Consider renaming config-platform.yaml → config-mcp.yaml (follow-up from multi-platform cleanup)
 - Validate multi-session pair testing on next real project E2E test cycle
 - Validate Cognitive Firewall (research_decision_protocol) on next real feature
 - Test Agent Teams on next Full or Standard TAD task (now default for both)
 - Iterate on Playground based on user feedback
-- Address 3 P2 suggestions from pair testing review (Section 4b rendering, SESSIONS.yaml schema, session count warning)
