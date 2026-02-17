@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TAD Framework - Unified Install & Upgrade Script v2.2
+# TAD Framework - Unified Install & Upgrade Script v2.3
 # Claude Code Support
 # One command for all scenarios: fresh install, upgrade, or migration
 
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Version
-TARGET_VERSION="2.2"
+TARGET_VERSION="2.3"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
