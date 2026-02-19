@@ -2,6 +2,12 @@
 
 ## Recently Completed
 
+- [x] Context Refresh Protocol: 2 critical nodes + template enhancement (2026-02-19) - Gate 3 PASS + Gate 4 PASS
+  - tad-alex.md: step0_5 in handoff_creation_protocol (reads ALL project-knowledge)
+  - tad-blake.md: 1_5_context_refresh in develop_command (reads handoff + knowledge)
+  - handoff-a-to-b.md: MANDATORY READ block in Project Knowledge section
+  - Expert review: code-reviewer + backend-architect, trimmed from 9 to 2+1 nodes
+
 - [x] TAD Publish & Sync: *publish + *sync Alex commands, v2.3.0 → v2.4.0 (2026-02-17) - Gate 3 PASS + Gate 4 PASS
   - Created sync-registry.yaml (3 projects), deprecation.yaml (v2.3.0 entry)
   - 4 protocols in tad-alex.md, version bumped, CLAUDE.md routing updated

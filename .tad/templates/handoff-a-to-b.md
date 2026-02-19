@@ -82,6 +82,15 @@ Blake在开始实现前，请确认：
 
 **Alex 在创建 handoff 时必须完成以下步骤：**
 
+**⚠️ MANDATORY READ — Blake 在开始实现前，必须执行以下 Read 操作：**
+1. Read ALL `.tad/project-knowledge/*.md` files listed in 步骤 2 below
+2. Read the handoff's "⚠️ Blake 必须注意的历史教训" entries carefully
+3. This is NOT optional — project knowledge prevents repeated mistakes
+
+> **Why this matters**: In long sessions, project knowledge loaded at startup gets compressed
+> by Claude Code's context management. Reading it again here ensures Blake has full awareness
+> before writing any code.
+
 ### 步骤 1：识别相关类别
 
 本次任务涉及的领域（勾选所有适用项）：

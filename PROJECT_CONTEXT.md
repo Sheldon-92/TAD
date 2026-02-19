@@ -2,13 +2,18 @@
 
 ## Current State
 - **Version**: 2.4.0 (*publish + *sync commands for GitHub release and cross-project sync)
-- **Last Updated**: 2026-02-17
-- **Framework**: TAD v2.4.0 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration + Publish & Sync
+- **Last Updated**: 2026-02-19
+- **Framework**: TAD v2.4.0 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration + Publish & Sync + Context Refresh Protocol
 
 ## Active Work
 (none)
 
 ## Recently Completed
+- **Context Refresh Protocol** — ✅ COMPLETE (2026-02-19)
+  - Added mandatory Re-read at 2 critical nodes: Alex handoff creation + Blake develop start
+  - Strengthened handoff template with MANDATORY READ instruction
+  - Prevents long-session context compression from losing project knowledge
+  - Archived: .tad/archive/handoffs/HANDOFF-20260219-context-refresh-protocol.md
 - **Publish & Sync Commands** — ✅ COMPLETE (2026-02-17) v2.3.0 → v2.4.0
   - Added *publish (version check + changelog + push + tag) and *sync (registry + deprecation + CLAUDE.md merge)
   - Created sync-registry.yaml (3 projects seeded) and deprecation.yaml (v2.3.0 entry)
@@ -22,6 +27,7 @@
   - Phase 1: Intent Router | Phase 2: *learn | Phase 3: Idea Pool | Phase 4: Roadmap | Phase 5: *idea promote + *status
 
 ## Recent Decisions
+- Context Refresh Protocol: Minimal viable approach — 2 critical nodes (handoff write + develop start) instead of 9 possible nodes. Producer-consumer targeting pattern (2026-02-19)
 - *publish + *sync commands: Added GitHub publish workflow (version check + push + tag) and cross-project sync (registry, deprecation, CLAUDE.md merge strategies). Version bumped v2.3.0 → v2.4.0 (2026-02-17)
 - Multi-Platform Cleanup: Removed full TAD runtime for Codex/Gemini, simplified to specialized tool model via existing Handoff mechanism. ~1100 lines removed, 20 files affected, version bumped v2.2.1 → v2.3.0 (2026-02-17)
 - Layer Integration Phase 5 DONE (EPIC COMPLETE): *idea promote (upgrade to Epic/Handoff via *analyze), *status panoramic view (4-layer scan), standby + path_transitions updated (2026-02-16)

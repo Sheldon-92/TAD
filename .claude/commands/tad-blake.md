@@ -400,6 +400,18 @@ ralph_loop_execution:
         - "Check for existing state (resume vs fresh start)"
         - "Initialize iteration counter"
 
+      1_5_context_refresh:
+        description: "Context Refresh before implementation start"
+        action: |
+          Before starting implementation, re-read critical context:
+
+          1. Re-read the selected handoff document (full content)
+          2. Read the handoff's "📚 Project Knowledge" section to identify relevant files
+          3. Read matched .tad/project-knowledge/*.md files
+          4. If handoff has no Project Knowledge section, read architecture.md + code-quality.md as defaults
+          5. Brief output: "📖 Implementation context refreshed: {files read}"
+        purpose: "Ensure handoff context is fresh before coding, not just at activation"
+
       2_layer1_loop:
         description: "Self-Check Loop (max 15 retries)"
         commands:

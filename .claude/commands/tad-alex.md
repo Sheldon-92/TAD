@@ -1305,6 +1305,22 @@ handoff_creation_protocol:
       action: "检查是否已完成苏格拉底式提问"
       violation: "未完成 Socratic Inquiry 就开始写 handoff = VIOLATION"
 
+    step0_5:
+      name: "Context Refresh — Full Knowledge Reload"
+      action: |
+        Before writing handoff draft, reload ALL project knowledge to ensure
+        no historical lessons are missed in the handoff.
+
+        1. Read ALL files in .tad/project-knowledge/*.md (excluding README.md)
+        2. Read handoff_creation_protocol key rules from THIS file:
+           - expert_selection_rules (which experts to call)
+           - minimum_experts: 2
+           - step7 STOP rule (must generate Blake message, must not call /blake)
+        3. Read the handoff template: .tad/templates/handoff-a-to-b.md
+           (to ensure template structure is fresh in context)
+        4. Brief output: "📖 Full knowledge refreshed: {N} knowledge files + handoff protocol + template"
+      purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
+
     step1:
       name: "Draft Creation"
       action: "创建 handoff 初稿（框架+核心内容）"

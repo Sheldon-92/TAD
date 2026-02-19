@@ -134,3 +134,11 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Grep-driven completeness**: Expert review found 4 files the handoff missed by running broader grep patterns. Acceptance criteria MUST include automated grep verification, not manual file listing
   4. **Backup files are expected exceptions**: grep hits in `.tad/config-backup.yaml` or `.tad/config-full-backup.yaml` are NOT dangling references — backup files preserve historical state by design
 - **Action**: For multi-file feature removal: (a) use function names not line numbers for scripts, (b) grep broadly for references before declaring the file list complete, (c) include automated grep verification in AC
+
+### Minimal Viable Cross-Cutting Enhancement - 2026-02-19
+- **Context**: Adding Context Refresh Protocol to prevent long-session knowledge compression loss
+- **Discovery**: When adding a cross-cutting concern to multiple workflow nodes, start with the 2 most critical points rather than all possible points (started with 9, trimmed to 2+1):
+  1. **Producer-Consumer targeting**: Cover the information "write point" (Alex writing handoff) and "consume point" (Blake starting implementation) — these are where missing knowledge causes the most damage
+  2. **Over-engineering resistance**: Initial expert review expanded scope to 9 nodes; user correctly pushed back to minimal viable version. More nodes can be added later based on real need
+  3. **YAML structure awareness**: Protocol files mix flat (`step1: "string"`) and nested (`step1: { name, action }`) YAML formats. New insertions must match surrounding context exactly
+- **Action**: When enhancing workflows with cross-cutting features, identify the 2 most impactful nodes (producer + consumer) and implement there first. Expand only based on observed need, not theoretical completeness
