@@ -192,6 +192,27 @@ Risk_Translation:
 
       {If critical items: show risk cards below the table}
 
+# ⚠️ GIT COMMIT VERIFICATION CHECK (BLOCKING)
+Git_Commit_Verification:
+  check: "Implementation changes committed to git?"
+  method: "Check completion report for commit hash, AND verify via git log"
+
+  if_missing:
+    action: "BLOCK Gate 3"
+    message: |
+      ⚠️ Gate 3 无法通过 - 实现代码未 commit
+
+      Blake 必须在 Gate 3 之前执行 git commit (step3c)。
+      请执行 step3c (Git Commit Implementation) 然后重新执行 Gate 3。
+
+  if_exists:
+    checks:
+      - "commit_hash is not empty and not 'NONE' (unless doc-only handoff)"
+      - "If commit_hash is a real hash: verify via `git log --oneline -1 {hash}` returns valid output"
+      - "If commit_hash is 'NONE': verify handoff has no 'Files to Create/Modify' entries (truly doc-only)"
+    on_valid: "PASS"
+    on_invalid: "BLOCK - commit hash not found in git history or doc-only claim invalid"
+
 # Gate 3 检查项（Prerequisite, Subagent, Acceptance Verification 要求通过后执行）
 Critical Check (5 items):
   - [ ] Code complete (all handoff tasks done)
@@ -219,6 +240,11 @@ Output Format:
   | Report exists | ✅ / ❌ |
   | All criteria covered | {N}/{N} |
   | All PASS | {P} PASS, {F} FAIL |
+
+  #### Git Commit Verification
+  | Check | Status | Detail |
+  |-------|--------|--------|
+  | Changes committed | ✅ / ❌ | commit_hash: {hash} or NONE (doc-only) |
 
   #### Quality Checks
   | Item | Status | Note |

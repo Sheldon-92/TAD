@@ -1668,6 +1668,29 @@ accept_command:
     if_not: "BLOCK - 必须先完成验收流程"
 
   steps:
+    step0_git_check:
+      action: "Git status safety net — 检查是否有未 commit 的变更"
+      details: |
+        Before archiving, verify implementation code is committed:
+        1. Run `git status --porcelain`
+        2. If output is empty → PASS, proceed to step1
+        3. If output is non-empty:
+           a. Display the list of uncommitted changes
+           b. BLOCK: "⚠️ 发现未 commit 的变更。归档前必须先 commit 代码。"
+           c. Use AskUserQuestion:
+              question: "检测到未 commit 的文件变更，无法归档。请先处理："
+              options:
+                - "我去 Terminal 2 让 Blake commit" → BLOCK, remain in *accept (user returns after commit)
+                - "这些变更与本次 handoff 无关，继续归档" → proceed with WARNING in completion report
+                - "取消 *accept" → Abort entirely
+           d. If user chooses "无关":
+              → Log WARNING to completion report: "User override: uncommitted changes deemed unrelated"
+              → List the specific files that were overridden
+              → Proceed to step1
+           e. Otherwise → remain BLOCKED until resolved
+      blocking: true
+      purpose: "Safety net — catches cases where Blake's step3c was skipped or failed"
+
     step1:
       action: "将 handoff 移至 .tad/archive/handoffs/"
       from: ".tad/active/handoffs/HANDOFF-*.md"

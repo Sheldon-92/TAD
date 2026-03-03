@@ -182,6 +182,12 @@ quality_gates:
         - "Brief summary"
       output_location: ".tad/project-knowledge/{category}.md"
 
+    git_commit_verification:
+      required: true
+      checks:
+        - "Implementation changes committed (commit hash in completion report)"
+        - "Commit verified via git log (or NONE accepted for doc-only)"
+
     human_trigger:
       command: "/gate 3"
       description: "Blake completes Ralph Loop, Human triggers Gate 3 to confirm"

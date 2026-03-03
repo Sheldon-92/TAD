@@ -467,6 +467,7 @@ ralph_loop_execution:
           - "All Layer 2 experts passed"
           - "Evidence files created"
           - "Knowledge Assessment completed"
+          - "Implementation changes committed to git (step3c)"
 
   # Circuit Breaker Logic
   circuit_breaker:
@@ -544,6 +545,9 @@ my_gates:
         - "New discoveries documented? (Yes/No)"
         - "Category identified (if Yes)"
         - "Brief summary provided"
+      git_commit_verification:
+        - "Implementation changes committed to git (or NONE for doc-only)"
+        - "Commit hash recorded in completion report"
     blocking: true
 
   gate4_v2:
@@ -635,6 +639,7 @@ completion_protocol:
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
   step3: "通过 Layer 2 专家审查（code-reviewer → parallel experts）"
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
+  step3c: "Git commit: 执行 git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
   step5: "创建 completion-report.md"
   step6: "记录实际实现、遇到问题、与计划差异"
@@ -656,6 +661,7 @@ completion_protocol:
     ────────────────────────────────
     Task:      {task title from the handoff}
     Status:    ✅ Implementation Complete - Gate 3 Passed
+    Git Commit: {commit_hash}
     Handoff:   .tad/active/handoffs/HANDOFF-{date}-{name}.md
 
     What was done:
