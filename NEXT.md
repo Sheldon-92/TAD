@@ -69,6 +69,10 @@
 
 ## In Progress
 
+- [x] Git Commit Verification: two-layer protection (Blake step3c + Alex step0_git_check) — Gate 3 PASS (2026-03-03)
+  - 4 files: tad-blake.md, tad-alex.md, tad-gate.md, config-quality.yaml
+  - Code-reviewer: 1 P0 found (missing Gate 3 output section) + fixed, then PASS
+  - Commit: 80c52fb
 - [ ] P1-4 deferred: Consider renaming config-platform.yaml → config-mcp.yaml (future cleanup)
 
 ## Recently Completed Epic
