@@ -1,8 +1,8 @@
 # TAD Configuration v2.2.1 - Modular Config Architecture
 method: TAD
-version: 2.4.0
-description: Triangle Agent Development - Pair Testing Protocol + Modular Config + Bidirectional Messages + Adaptive Complexity
-last_updated: 2026-01-31
+version: 2.5.0
+description: Triangle Agent Development - Spec Compliance + Anti-Rationalization + TDD + Micro-Tasks + Worktree
+last_updated: 2026-03-23
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

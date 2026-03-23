@@ -5,6 +5,53 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-03-23
+
+### Added — Superpowers-Inspired Tactical Upgrades
+
+- **Spec Compliance Reviewer** (Ralph Loop Group 0)
+  - New `spec-compliance-reviewer` subagent runs BEFORE code-reviewer
+  - Separates "did we build the right thing?" from "did we build it right?"
+  - Blocking: Group 1 cannot start until Group 0 passes
+  - Handoff template gains optional §9.1 Spec Compliance Checklist
+
+- **Anti-Rationalization Tables**
+  - 12 entries across 3 categories: Socratic bypass (4), Gate bypass (5), Terminal isolation bypass (3)
+  - Standalone guide: `.tad/guides/anti-rationalization-tables.md`
+  - 8 inline embeds across `tad-alex.md`, `tad-blake.md`, `CLAUDE.md`
+
+- **TDD Enforcement Skill** (opt-in)
+  - `.tad/skills/tdd-enforcement/SKILL.md` with RED-GREEN-REFACTOR cycle
+  - Config toggle: `optional_features.tdd_enforcement.enabled: false` (default OFF)
+  - Blake `1_6_tdd_check` step in develop_command
+  - 5 TDD-specific anti-rationalization entries
+
+- **Micro-Tasks Template**
+  - Optional §6.1 Micro-Tasks section in handoff template
+  - 2-5 minute tasks with file paths + verification commands
+  - Recommended for Full/Standard TAD, skip for Light
+
+- **Pressure Testing Methodology**
+  - `.tad/guides/skill-pressure-testing.md` — RED-GREEN-REFACTOR for rules
+  - Metrics: Rule Hold Rate, Bypass Discovery Rate, False Positive Rate
+  - Worked example: Socratic Inquiry rule
+
+- **Git Worktree Integration** (opt-in)
+  - `*develop --worktree` creates isolated branch for implementation
+  - 4 finishing options: merge / PR / keep / discard
+  - Config: `optional_features.git_worktree.enabled: true`
+  - Edge cases: existing branch, merge conflicts, non-git repo
+
+### Changed
+- `loop-config.yaml` v1.1 → v1.2 (Group 0 added)
+- `expert-criteria.yaml` v1.1 → v1.2 (spec-compliance-reviewer entry)
+- Ralph Loop summary format includes spec-compliance column
+
+### Research
+- Session Hook Technical Spike: Verdict ⚠️ PARTIAL — hooks work but session start overhead is only ~8.5% of total context. Architecture already well-optimized. Knowledge: "Measure Before Optimizing" pattern.
+
+---
+
 ## [Unreleased] - 2026-02-01
 
 ### Added

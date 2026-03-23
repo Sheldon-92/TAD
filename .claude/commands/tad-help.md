@@ -9,7 +9,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
-Version: v2.4.0 | Generated: [timestamp]
+Version: v2.5.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -213,7 +213,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.4.0 Highlights
+## TAD v2.5.0 Highlights
 - **Beneficial Friction**: AI executes, humans guard value at 3 critical friction points
 - **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
 - **Adaptive Complexity**: Auto-suggest process depth based on task size
