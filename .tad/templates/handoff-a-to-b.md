@@ -314,6 +314,25 @@ graph LR
 
 ## 6. Implementation Steps（分Phase）
 
+## 6.1 Micro-Tasks (Optional — recommended for Full/Standard TAD)
+
+> Break implementation into 2-5 minute tasks with precise targets.
+> Each micro-task should be independently verifiable.
+> Skip this section for Light TAD or simple tasks.
+
+| # | File | Operation | Verification Command | Est. Time |
+|---|------|-----------|---------------------|-----------|
+| 1 | {path/to/file.ts} | {Add function X / Modify Y / Create Z} | {grep/test/build command to verify} | {2-5 min} |
+| 2 | {path/to/file.ts} | {description} | {verification} | {2-5 min} |
+
+### Micro-Task Rules
+- Each task targets ONE file (or 2-3 closely related files)
+- Operation is specific: "Add validateInput() function" not "add validation"
+- Verification is runnable: a grep, test, or build command
+- If TDD mode is enabled, each micro-task = one RED-GREEN-REFACTOR cycle
+
+---
+
 **🆕 Phase划分原则**：
 - 每个Phase：2-4小时
 - Phase之间有清晰的里程碑

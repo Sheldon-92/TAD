@@ -1336,6 +1336,7 @@ handoff_creation_protocol:
         - Acceptance criteria
         - Files to modify
         - Testing checklist
+        - "Micro-Tasks (optional — include for Full/Standard TAD when task has 5+ files)"
       epic_linkage: |
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase
