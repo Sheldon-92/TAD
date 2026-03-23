@@ -1,9 +1,9 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.4.0 (*publish + *sync commands for GitHub release and cross-project sync)
-- **Last Updated**: 2026-03-03
-- **Framework**: TAD v2.4.0 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration + Publish & Sync + Context Refresh Protocol + Git Commit Verification
+- **Version**: 2.5.0 (Superpowers-Inspired Tactical Upgrades)
+- **Last Updated**: 2026-03-23
+- **Framework**: TAD v2.5.0 + Spec Compliance Reviewer + Anti-Rationalization Tables + TDD Skill + Micro-Tasks + Pressure Testing + Git Worktree + all v2.4.0 features
 
 ## Active Work
 (none — pending v2.5.0 publish)

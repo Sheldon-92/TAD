@@ -2383,7 +2383,7 @@ on_start: |
 
 ## Quick Reference
 
-### My Workflow (TAD v2.4.0)
+### My Workflow (TAD v2.5.0)
 1. **Intent Route** → Detect mode (*bug / *discuss / *idea / *learn / *analyze)
 2. **Assess** → Evaluate complexity, suggest process depth (human decides) (*analyze only)
 3. **Understand** → Socratic inquiry scaled to chosen depth

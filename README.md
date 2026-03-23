@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.3.0 - Multi-Platform Cleanup**
+**Version 2.5.0 - Superpowers-Inspired Tactical Upgrades**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -48,14 +48,32 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 ---
 
-## 🎯 What's New in v2.2.1
+## 🎯 What's New in v2.5.0
 
-### Pair Testing Protocol (NEW)
-- **Cross-tool E2E Testing**: Bridge between TAD (CLI) and Claude Desktop (GUI)
-- **TEST_BRIEF.md**: 8-section template for human-AI pair testing
-- **`/tad-test-brief`**: Standalone command to generate test briefs
-- **Auto-detection**: Alex detects `PAIR_TEST_REPORT.md` on activation
-- **Issue Classification**: Automatic fix handoff generation from test feedback
+### Spec Compliance Reviewer (NEW)
+- **Ralph Loop Group 0**: New blocking review step before code-reviewer
+- Separates "did we build the right thing?" from "did we build it right?"
+- Auto-compares implementation against handoff Acceptance Criteria
+
+### Anti-Rationalization Tables (NEW)
+- **12 defensive entries** across 3 categories (Socratic, Gate, Terminal bypass)
+- 8 inline embeds at critical rule enforcement points
+- Standalone guide: `.tad/guides/anti-rationalization-tables.md`
+
+### TDD Enforcement Skill (NEW, opt-in)
+- RED-GREEN-REFACTOR cycle guidance for Blake's `*develop`
+- Config toggle: `optional_features.tdd_enforcement.enabled`
+- 5 TDD-specific anti-rationalization entries
+
+### Git Worktree Integration (NEW, opt-in)
+- `*develop --worktree` for isolated branch implementation
+- 4 finishing options: merge / PR / keep / discard
+
+### Also New in v2.3-2.4
+- Micro-Tasks template (§6.1) + Pressure Testing methodology guide
+- `*publish` + `*sync` commands for GitHub release and cross-project sync
+- Context Refresh Protocol, Git Commit Verification
+- Intent Router, *learn, *idea, *status, ROADMAP.md
 
 ### Bidirectional Messages (v2.2.0)
 - Structured copy-pasteable messages between Alex and Blake
@@ -315,7 +333,10 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v2.2.1** | **Pair Testing Protocol, TEST_BRIEF.md, Cross-tool E2E** |
+| **v2.5.0** | **Spec Compliance Reviewer, Anti-Rationalization, TDD Skill, Worktree** |
+| v2.4.0 | *publish + *sync, Context Refresh, Git Commit Verification |
+| v2.3.0 | Multi-Platform Cleanup, Intent Router, *learn, *idea, ROADMAP |
+| v2.2.1 | Pair Testing Protocol, TEST_BRIEF.md, Cross-tool E2E |
 | v2.2.0 | Bidirectional Messages, Adaptive Complexity, Modular Config |
 | v2.1.1 | `/tad-maintain`, Stale Detection, Simplified Adapters |
 | v2.1.0 | Agent-Agnostic Architecture, 8 P0 Skills |
