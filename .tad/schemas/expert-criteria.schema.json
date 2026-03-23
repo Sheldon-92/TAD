@@ -22,6 +22,9 @@
         "description": {
           "type": "string"
         },
+        "spec-compliance-reviewer": {
+          "$ref": "#/definitions/specComplianceReviewerCriteria"
+        },
         "code-reviewer": {
           "$ref": "#/definitions/codeReviewerCriteria"
         },
@@ -41,6 +44,33 @@
     }
   },
   "definitions": {
+    "specComplianceReviewerCriteria": {
+      "type": "object",
+      "required": ["description", "subagent_type", "pass_condition", "severity_definitions"],
+      "properties": {
+        "description": { "type": "string" },
+        "subagent_type": {
+          "type": "string",
+          "const": "spec-compliance-reviewer"
+        },
+        "conditional": { "type": "boolean" },
+        "pass_condition": {
+          "$ref": "#/definitions/severityCountCondition"
+        },
+        "severity_definitions": {
+          "type": "object",
+          "properties": {
+            "not_satisfied": { "$ref": "#/definitions/severityDefinition" },
+            "partially_satisfied": { "$ref": "#/definitions/severityDefinition" },
+            "satisfied": { "$ref": "#/definitions/severityDefinition" }
+          },
+          "required": ["not_satisfied", "partially_satisfied", "satisfied"]
+        },
+        "output_format": {
+          "$ref": "#/definitions/outputFormat"
+        }
+      }
+    },
     "codeReviewerCriteria": {
       "type": "object",
       "required": ["description", "subagent_type", "pass_condition", "severity_definitions"],

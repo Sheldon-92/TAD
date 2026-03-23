@@ -1,4 +1,4 @@
-# Ralph Loop Configuration v1.1
+# Ralph Loop Configuration v1.2
 # TAD v2.0 - Blake Autonomous Execution
 # Updated with Expert Review Feedback
 # Created: 2026-01-26
@@ -7,7 +7,7 @@ $schema: "../schemas/loop-config.schema.json"
 
 ralph_loop:
   enabled: true
-  version: "1.1.0"
+  version: "1.2.0"
   description: "Iterative quality loop with expert exit conditions"
 
   # ==================== Layer 1: Self-Check ====================
@@ -56,8 +56,28 @@ ralph_loop:
     name: "Expert Review"
     description: "Priority-grouped expert agent review"
 
-    # Priority Groups (code-reviewer first, then others in parallel)
+    # Priority Groups (spec-compliance first, then code-reviewer, then others in parallel)
     priority_groups:
+      group0:
+        name: "Spec Compliance Gate"
+        description: "Verify implementation matches handoff specification before quality review"
+        parallel: false
+        experts:
+          - name: "spec-compliance-reviewer"
+            subagent_type: "spec-compliance-reviewer"
+            timeout:
+              default: 180000      # 3 minutes
+              small_change: 120000 # 2 minutes
+              large_change: 300000 # 5 minutes
+            timeout_selection: "auto"
+            pass_criteria:
+              severity_threshold: "partially_satisfied"
+              max_issues:
+                not_satisfied: 0
+                partially_satisfied: 3
+                satisfied: -1
+            evidence_file: "{date}-spec-compliance-{task}-iter{n}.md"
+
       group1:
         name: "Code Quality Gate"
         description: "Must pass before other experts run"
@@ -82,7 +102,7 @@ ralph_loop:
 
       group2:
         name: "Verification Experts"
-        description: "Run in parallel after Group 1 passes"
+        description: "Run in parallel after Group 0 and Group 1 pass"
         parallel: true
         experts:
           - name: "test-runner"
@@ -210,11 +230,12 @@ ralph_loop:
       {layer1_table}
 
       ## Layer 2 Results
-      | Round | code-reviewer | test-runner | security | performance | Result |
-      |-------|---------------|-------------|----------|-------------|--------|
+      | Round | spec-compliance | code-reviewer | test-runner | security | performance | Result |
+      |-------|-----------------|---------------|-------------|----------|-------------|--------|
       {layer2_table}
 
       ## Evidence Files
+      - Final spec compliance: {spec_compliance_link}
       - Final code review: {code_review_link}
       - Final test report: {test_report_link}
       - [Additional files...]

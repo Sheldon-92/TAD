@@ -14,10 +14,10 @@ ralph_loop:
   description: |
     Ralph Loop automates quality checks during Blake's execution:
     - Layer 1: Self-Check (build, test, lint, tsc)
-    - Layer 2: Expert Review (code-reviewer, test-runner, security-auditor, performance-optimizer)
+    - Layer 2: Expert Review (spec-compliance-reviewer, code-reviewer, test-runner, security-auditor, performance-optimizer)
     - Circuit Breaker: Prevents infinite loops on same error
     - State Persistence: Supports crash recovery
-    - Priority Groups: code-reviewer first, then others in parallel
+    - Priority Groups: spec-compliance first, then code-reviewer, then others in parallel
 
 # ==================== 版本发布管理 (v1.5 新增) ====================
 release_management:

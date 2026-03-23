@@ -49,7 +49,7 @@ Ralph Loop 是 Blake 的迭代质量循环机制，通过 Layer 1 自检和 Laye
 ```yaml
 ralph_loop:
   layer1: "Self-Check (build, test, lint, tsc)"
-  layer2: "Expert Review (code-reviewer → test-runner/security/performance)"
+  layer2: "Expert Review (spec-compliance → code-reviewer → test-runner/security/performance)"
 
   key_concepts:
     - 专家说"PASS"才算完成，不是 Blake 自己判断
@@ -76,7 +76,10 @@ ralph_loop:
 ┌─────────────────────────────────────────────────────────┐
 │ Layer 2: Expert Review (最多 5 轮)                       │
 │                                                         │
-│   Group 1 (顺序执行，必须先通过):                          │
+│   Group 0 (顺序执行，必须先通过):                          │
+│     - spec-compliance-reviewer (AC 全部满足)             │
+│                                                         │
+│   Group 1 (顺序执行，Group 0 通过后):                      │
 │     - code-reviewer (P0/P1 blocking)                    │
 │                                                         │
 │   Group 2 (并行执行，Group 1 通过后):                      │
@@ -322,7 +325,7 @@ ralph_loop_execution:
         - "Fix integration issues (Blake does this, not teammates)"
 
       phase3_expert_review:
-        - "Blake runs standard Layer 2 (code-reviewer → test-runner etc.)"
+        - "Blake runs standard Layer 2 (spec-compliance → code-reviewer → test-runner etc.)"
         - "Same quality gate as current Ralph Loop"
         - "Gate 3 v2 checks apply normally"
 
@@ -430,6 +433,13 @@ ralph_loop_execution:
       3_layer2_loop:
         description: "Expert Review Loop (max 5 rounds)"
         priority_groups:
+          group0:
+            name: "Spec Compliance Gate"
+            parallel: false
+            experts:
+              - subagent: "spec-compliance-reviewer"
+                pass_criteria: "NOT_SATISFIED=0, PARTIALLY_SATISFIED≤3"
+                blocking: true
           group1:
             name: "Code Quality Gate"
             parallel: false
@@ -534,6 +544,7 @@ my_gates:
         - "Linting passes"
         - "TypeScript compiles without errors"
       layer2_verification:
+        - "spec-compliance-reviewer: all ACs satisfied or partially satisfied (NOT_SATISFIED=0)"
         - "code-reviewer: P0=0, P1=0"
         - "test-runner: coverage >= threshold"
         - "security-auditor: no critical/high (if triggered)"
@@ -637,7 +648,7 @@ mandatory:
 completion_protocol:
   step1: "使用 *develop 启动 Ralph Loop"
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
-  step3: "通过 Layer 2 专家审查（code-reviewer → parallel experts）"
+  step3: "通过 Layer 2 专家审查（spec-compliance → code-reviewer → parallel experts）"
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
   step3c: "Git commit: 执行 git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
@@ -809,7 +820,7 @@ on_start: |
   I transform Alex's designs into working software through:
   • Ralph Loop: Iterative quality with expert exit conditions
   • Layer 1: Self-check (build, test, lint, tsc)
-  • Layer 2: Expert review (code-reviewer → parallel experts)
+  • Layer 2: Expert review (spec-compliance → code-reviewer → parallel experts)
   • Circuit Breaker: Auto-escalate after 3 same errors
   • State Persistence: Resume from crash without losing progress
   • Auto-detect: I scan for active handoffs on startup
@@ -826,7 +837,7 @@ on_start: |
 1. **Receive** → Verify handoff from Alex
 2. **Develop** → `*develop` triggers Ralph Loop
 3. **Layer 1** → Self-check (build, test, lint, tsc)
-4. **Layer 2** → Expert review (code-reviewer first, then parallel)
+4. **Layer 2** → Expert review (spec-compliance first, then code-reviewer, then parallel)
 5. **Gate 3 v2** → Expanded technical + integration verification
 6. **Complete** → Report to Alex for Gate 4 v2
 
@@ -849,7 +860,10 @@ on_start: |
 
 ### Expert Priority Groups
 ```
-Group 1 (Sequential, Blocking):
+Group 0 (Sequential, Blocking):
+  └── spec-compliance-reviewer (NOT_SATISFIED = 0 to pass)
+
+Group 1 (Sequential, Blocking, after Group 0):
   └── code-reviewer (P0/P1 = 0 to pass)
 
 Group 2 (Parallel, after Group 1):

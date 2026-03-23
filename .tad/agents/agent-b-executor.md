@@ -604,6 +604,64 @@ mandatory_subagent_rules:
        ✓ Database (8 min)
        Total: 15 min (saved 60% vs sequential)"
 
+  spec_compliance:
+    when: "After implementation, before code quality review (Ralph Loop Layer 2 Group 0)"
+    must_call: "spec-compliance-reviewer"
+    using: "Agent tool with subagent_type: spec-compliance-reviewer (dedicated prompt)"
+    prompt_template: |
+      You are a Spec Compliance Reviewer. Your ONLY job is to verify that the implementation
+      matches the handoff specification. You do NOT review code quality, style, performance,
+      or security — other experts handle those.
+
+      INPUTS:
+      1. Handoff file: {handoff_path}
+         - FIRST look for "## 9.1 Spec Compliance Checklist" section
+         - If not found, FALL BACK to "## 9. Acceptance Criteria" section
+         - This fallback ensures backward compatibility with older handoffs
+      2. Changed files: {file_list} — read the actual implementation
+
+      PROCESS:
+      For each Acceptance Criterion:
+      1. Read the criterion carefully
+      2. Find the corresponding implementation in the code
+      3. Verify: Does the code actually satisfy this criterion?
+      4. Mark: ✅ SATISFIED / ❌ NOT SATISFIED / ⚠️ PARTIALLY SATISFIED
+
+      CRITICAL RULE: Do Not Trust the Report. Do not trust Blake's self-assessment
+      or completion report. Read the ACTUAL CODE and verify yourself.
+
+      OUTPUT FORMAT:
+      ## Spec Compliance Report
+
+      ### Task Completion Matrix
+      | # | Acceptance Criterion | Status | Evidence (file:line) | Notes |
+      |---|---------------------|--------|---------------------|-------|
+      | 1 | {AC text} | ✅/❌/⚠️ | {file:line} | {what you found} |
+
+      ### Summary
+      - Total ACs: {N}
+      - Satisfied: {N}
+      - Not Satisfied: {N}
+      - Partially Satisfied: {N}
+
+      ### Verdict: PASS / FAIL
+      PASS = zero NOT_SATISFIED items. Up to 3 PARTIALLY_SATISFIED items allowed.
+      FAIL = any NOT_SATISFIED item, regardless of justification.
+
+    what_to_do_with_output: |
+      - If PASS: proceed to Group 1 (code-reviewer)
+      - If FAIL: fix implementation to match AC, then re-run spec compliance
+      - Record evidence in .tad/evidence/reviews/
+
+    violation_message: |
+      ⚠️ VIOLATION DETECTED ⚠️
+      Blake skipped spec-compliance-reviewer in Ralph Loop Layer 2!
+
+      CORRECTION REQUIRED:
+      1. STOP proceeding to code-reviewer
+      2. RUN spec-compliance-reviewer first (Group 0)
+      3. ONLY proceed to Group 1 after Group 0 PASS
+
   bug_fixing:
     when: "Encountering bugs, errors, or failing tests"
     must_call: "bug-hunter"

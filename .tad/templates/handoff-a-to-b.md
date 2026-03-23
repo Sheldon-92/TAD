@@ -397,6 +397,20 @@ Blake的实现被认为完成，当且仅当：
 
 ---
 
+## 9.1 Spec Compliance Checklist (for automated verification)
+
+Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
+
+| # | Acceptance Criterion | Verification Method | Expected Evidence |
+|---|---------------------|--------------------|--------------------|
+| 1 | {same as AC above} | {how to verify: file check, grep, test run} | {what the reviewer should find} |
+
+> This section is OPTIONAL. If omitted, the spec-compliance-reviewer will use
+> the § Acceptance Criteria section directly. This section adds verification
+> guidance for more precise automated checking.
+
+---
+
 ## 10. Important Notes
 
 ### 10.1 Critical Warnings

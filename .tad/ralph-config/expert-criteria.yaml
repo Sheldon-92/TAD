@@ -1,12 +1,59 @@
-# Expert Agent Pass Criteria v1.1
+# Expert Agent Pass Criteria v1.2
 # TAD v2.0 - Machine-Parseable Definitions
 # Created: 2026-01-26
 
 $schema: "../schemas/expert-criteria.schema.json"
 
 expert_criteria:
-  version: "1.1.0"
+  version: "1.2.0"
   description: "Structured, machine-parseable pass criteria for expert agents"
+
+  # ==================== spec-compliance-reviewer ====================
+  spec-compliance-reviewer:
+    description: "Spec compliance check — verify implementation matches handoff AC"
+    subagent_type: "spec-compliance-reviewer"
+    conditional: false  # Always runs (not triggered by pattern)
+
+    pass_condition:
+      type: "severity_count"
+      rules:
+        - severity: "not_satisfied"
+          max_count: 0
+          blocking: true
+          description: "All acceptance criteria must be satisfied or partially satisfied"
+        - severity: "partially_satisfied"
+          max_count: 3
+          blocking: false
+          description: "Up to 3 partially satisfied ACs allowed"
+        - severity: "satisfied"
+          max_count: -1
+          blocking: false
+          description: "Unlimited satisfied ACs"
+
+    severity_definitions:
+      not_satisfied:
+        name: "Not Satisfied"
+        description: "AC requirement not met in implementation"
+        examples:
+          - "Feature described in AC not implemented"
+          - "File mentioned in AC not created or modified"
+          - "Behavior does not match AC description"
+      partially_satisfied:
+        name: "Partially Satisfied"
+        description: "AC partially met — implementation exists but incomplete or differs"
+        examples:
+          - "Feature implemented but missing edge case handling"
+          - "File created but not all required changes present"
+      satisfied:
+        name: "Satisfied"
+        description: "AC fully met — implementation matches requirement"
+
+    output_format:
+      required_sections:
+        - "task_completion_matrix"
+        - "summary"
+        - "pass_status"
+      evidence_template: ".tad/templates/output-formats/spec-compliance-format.md"
 
   # ==================== code-reviewer ====================
   code-reviewer:
