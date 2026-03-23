@@ -1,6 +1,13 @@
 # 下一步行动
 
+## Today
+
+- [ ] Publish v2.5.0 (*publish — version bump + changelog + push + tag)
+
 ## Recently Completed
+
+- [x] EPIC: Superpowers-Inspired Tactical Upgrades — ALL 6/6 phases (2026-03-23)
+  - Spec Compliance Reviewer, Anti-Rationalization Tables, TDD Skill, Micro-Tasks, Pressure Testing, Git Worktree
 
 - [x] Context Refresh Protocol: 2 critical nodes + template enhancement (2026-02-19) - Gate 3 PASS + Gate 4 PASS
   - tad-alex.md: step0_5 in handoff_creation_protocol (reads ALL project-knowledge)

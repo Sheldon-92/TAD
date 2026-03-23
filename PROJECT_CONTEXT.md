@@ -6,9 +6,22 @@
 - **Framework**: TAD v2.4.0 + Knowledge Auto-loading + Agent Teams + Cognitive Firewall + Playground v2 + Multi-Session Pair Testing + Intent Router + Learning Path + Idea Pool + Roadmap + Layer Integration + Publish & Sync + Context Refresh Protocol + Git Commit Verification
 
 ## Active Work
-(none)
+(none — pending v2.5.0 publish)
 
 ## Recently Completed
+- **EPIC: Superpowers-Inspired Tactical Upgrades** — ✅ ALL 6/6 PHASES COMPLETE (2026-03-23)
+  - Phase 0: Session Hook Spike (verdict: pivot — 8.5% overhead too small to optimize)
+  - Phase 1: Spec Compliance Reviewer (Ralph Loop Group 0 — separates "right thing" from "right way")
+  - Phase 2: Anti-Rationalization Tables (12 entries + 8 inline embeds across 3 files)
+  - Phase 3: TDD Enforcement Skill (opt-in via config.yaml, RED-GREEN-REFACTOR guidance)
+  - Phase 4: Micro-Tasks + Pressure Testing (§6.1 template + methodology guide)
+  - Phase 5: Git Worktree Integration (optional --worktree + 4-option finishing workflow)
+  - Archived: .tad/archive/epics/EPIC-20260323-superpowers-tactical-upgrades.md
+- **Session Hook Spike (Phase 0)** — ✅ COMPLETE (2026-03-23)
+  - Measured baseline: session start ~8.5% of total context (below 10% threshold)
+  - Verdict: hooks work but optimization unnecessary. TAD architecture already on-demand.
+  - Pivot: skip context optimization, proceed to value-adding features (Phase 1-5)
+  - Knowledge: "Measure before optimizing" added to architecture.md
 - **Git Commit Verification** — ✅ COMPLETE (2026-03-03)
   - Two-layer protection: Blake step3c (commit before Gate 3) + Alex step0_git_check (*accept safety net)
   - 4 files modified: tad-blake.md, tad-alex.md, tad-gate.md, config-quality.yaml

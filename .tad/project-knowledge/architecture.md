@@ -142,3 +142,12 @@ Project-specific architecture learnings accumulated through TAD workflow.
   2. **Over-engineering resistance**: Initial expert review expanded scope to 9 nodes; user correctly pushed back to minimal viable version. More nodes can be added later based on real need
   3. **YAML structure awareness**: Protocol files mix flat (`step1: "string"`) and nested (`step1: { name, action }`) YAML formats. New insertions must match surrounding context exactly
 - **Action**: When enhancing workflows with cross-cutting features, identify the 2 most impactful nodes (producer + consumer) and implement there first. Expand only based on observed need, not theoretical completeness
+
+### Measure Before Optimizing: Context Loading Spike - 2026-03-23
+- **Context**: Superpowers-inspired Epic assumed TAD's context footprint needed optimization (session hook for lazy loading). Spike measured actual baseline.
+- **Discovery**: TAD's architecture is ALREADY well-optimized for on-demand loading. Three key findings:
+  1. **Session start overhead is small (~8.5%)**: Only CLAUDE.md (~1,445 tokens) + resolved @imports (~3,617 tokens) load at start. Agent files + config modules already load on-demand via Skill tool.
+  2. **@import zero-cost for non-existent files**: 8 of 9 @import directives point to non-existent files and are silently skipped (zero tokens). This is effectively lazy loading.
+  3. **Hooks supplement, don't replace**: Claude Code hooks (shell command type) can inject context but cannot prevent CLAUDE.md from loading. They add to context, not reduce it.
+  4. **Spike-driven pivot works**: AC11 (threshold trigger) caught the small target early, enabling data-driven pivot instead of building unnecessary infrastructure.
+- **Action**: Always measure actual baseline before designing optimization systems. Include explicit pivot thresholds (like AC11's 10% rule) in spike acceptance criteria to enable early course correction.

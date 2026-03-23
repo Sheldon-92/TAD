@@ -31,6 +31,19 @@
 | Cognitive Firewall (human empowerment) | Direction | Active — needs real-feature validation | [config-cognitive.yaml](./.tad/config-cognitive.yaml) |
 | Agent Teams (experimental parallel review) | Direction | Experimental — needs real-task validation | [config-agents.yaml](./.tad/config-agents.yaml) |
 
+### Superpowers-Inspired Tactical Upgrades
+**Status:** Complete (2026-03-23)
+**Description:** Absorb key execution innovations from Superpowers methodology into TAD — session hook optimization, spec compliance separation, anti-rationalization defense, and optional TDD enforcement. Focused on execution quality improvements, not philosophy change. Source: [Research Note](../thoughts/discoveries/2026-03-23-claude-superpowers.md)
+
+| Item | Type | Status | Reference |
+|------|------|--------|-----------|
+| Phase 0: Session Hook Technical Spike | Spike | Complete (pivot) | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
+| Phase 1: Spec Compliance Reviewer (Ralph Loop split) | Feature | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
+| Phase 2: Anti-Rationalization Tables (12 entries) | Feature | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
+| Phase 3: TDD Enforcement Skill (opt-in) | Feature | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
+| Phase 4: Micro-Tasks + Pressure Testing | Enhancement | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
+| Phase 5: Git Worktree Integration | Enhancement | Complete | [Epic](./.tad/archive/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
+
 ### Developer Experience
 **Status:** Active
 **Description:** Improve the day-to-day experience of using TAD — design exploration, testing workflows, knowledge management, and onboarding.
