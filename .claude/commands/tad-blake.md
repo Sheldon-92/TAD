@@ -432,6 +432,8 @@ ralph_loop_execution:
 
       3_layer2_loop:
         description: "Expert Review Loop (max 5 rounds)"
+        # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
+        # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
         priority_groups:
           group0:
             name: "Spec Compliance Gate"
@@ -646,6 +648,8 @@ mandatory:
 
 # Completion protocol (TAD v2.0 - Ralph Loop integrated)
 completion_protocol:
+  # ⚠️ ANTI-RATIONALIZATION: "代码写完且通过测试了，Completion Report 只是文书工作"
+  # → Report 迫使 Blake 显式对比 handoff 计划 vs 实际交付。没有 Report = 没有偏差检测。
   step1: "使用 *develop 启动 Ralph Loop"
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
   step3: "通过 Layer 2 专家审查（spec-compliance → code-reviewer → parallel experts）"

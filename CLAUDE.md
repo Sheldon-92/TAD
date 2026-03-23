@@ -88,6 +88,9 @@ Blake: 读 handoff → 实现 → Gate 3/4 → STOP → 等人类反馈
 - ❌ Blake 在同一 terminal 调用 /alex
 - ❌ Agent 直接与另一 Agent 通信（必须经过人类）
 
+> ⚠️ ANTI-RATIONALIZATION: "用户正忙，我先帮他把 blake 也启动了"
+> → 终端隔离的意义：强制人类审查 handoff。自动传递 = 人类失去审查机会。
+
 ### Alex (Solution Lead) - Terminal 1
 - ✅ 需求分析、方案设计、创建 handoff、Gate 1/2/4、验收
 - ❌ 不写实现代码、不执行 Blake 的任务
