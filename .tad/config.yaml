@@ -372,6 +372,12 @@ optional_features:
     description: "When enabled, Blake follows RED-GREEN-REFACTOR cycle during implementation"
     skill_path: ".tad/skills/tdd-enforcement/SKILL.md"
 
+  git_worktree:
+    enabled: true  # Worktree support available (triggered by --worktree flag)
+    description: "When *develop --worktree is used, creates isolated branch for implementation"
+    worktree_dir: ".worktrees"
+    branch_prefix: "tad/"
+
 # ==================== 外部配置引用 ====================
 external_configs:
   skills_config:

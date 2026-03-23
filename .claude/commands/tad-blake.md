@@ -198,7 +198,7 @@ commands:
   help: Show all available commands with descriptions
 
   # Core workflow commands (Ralph Loop)
-  develop: Start Ralph Loop development cycle (Layer 1 + Layer 2)
+  develop: "Execute implementation using Ralph Loop (add --worktree for branch isolation)"
   implement: Start implementation from handoff (legacy, use *develop)
   parallel: Execute tasks in parallel streams
   test: Run comprehensive tests
@@ -438,6 +438,23 @@ ralph_loop_execution:
         optional: true
         skip_if: "tdd_enforcement.enabled == false or field not found"
 
+      1_7_worktree_setup:
+        description: "Optional: create git worktree for isolated implementation"
+        trigger: "*develop --worktree [task-id]"
+        action: |
+          1. Only runs if --worktree flag is present. Skip otherwise.
+          2. Derive branch name: tad/{task-id} (e.g., tad/TASK-20260323-006)
+          3. Create worktree:
+             git worktree add .worktrees/tad-{task-id} -b tad/{task-id}
+          4. Ensure .worktrees/ is in .gitignore (add if missing — check root .gitignore)
+          5. Announce: "Worktree created at .worktrees/tad-{task-id} on branch tad/{task-id}"
+          6. All subsequent implementation happens in the worktree directory
+          Edge cases:
+            - If branch tad/{task-id} already exists → ask user: reuse or rename
+            - If not a git repo → skip with warning
+        skip_if: "--worktree flag not present"
+        # NOTE: When worktree active, ALL steps run INSIDE .worktrees/tad-{task-id}/ directory.
+
       2_layer1_loop:
         description: "Self-Check Loop (max 15 retries)"
         commands:
@@ -503,6 +520,28 @@ ralph_loop_execution:
           - "Evidence files created"
           - "Knowledge Assessment completed"
           - "Implementation changes committed to git (step3c)"
+
+      5_worktree_finish:
+        description: "Worktree finishing workflow — only runs if worktree was created"
+        trigger: "After 4_gate3_v2 completes, if worktree is active"
+        action: |
+          Only runs if 1_7_worktree_setup was executed. Skip otherwise.
+
+          Use AskUserQuestion:
+          question: "Implementation complete in worktree. How to proceed?"
+          options:
+            - "Merge to {original_branch}" → cd to original repo, git merge tad/{task-id}, cleanup
+            - "Create PR" → git push -u origin tad/{task-id}, suggest gh pr create
+            - "Keep worktree" → leave as-is for manual review
+            - "Discard" → cleanup worktree and delete branch
+
+          Cleanup (for merge and discard):
+            git worktree remove .worktrees/tad-{task-id}
+            git branch -d tad/{task-id}  # -d (safe delete) for merge, -D (force) for discard
+
+          Edge cases:
+            - If merge conflicts → PAUSE, ask user to resolve manually
+        skip_if: "no worktree active"
 
   # Circuit Breaker Logic
   circuit_breaker:
@@ -869,7 +908,7 @@ on_start: |
 6. **Complete** → Report to Alex for Gate 4 v2
 
 ### Key Commands
-- `*develop [task-id]` - Start Ralph Loop development cycle (NEW)
+- `*develop [task-id]` - Start Ralph Loop development cycle (add `--worktree` for branch isolation)
 - `*ralph-status` - Show current Ralph Loop state
 - `*ralph-resume` - Resume from last checkpoint
 - `*layer1` - Run Layer 1 self-check only
