@@ -415,6 +415,29 @@ ralph_loop_execution:
           5. Brief output: "📖 Implementation context refreshed: {files read}"
         purpose: "Ensure handoff context is fresh before coding, not just at activation"
 
+      1_6_tdd_check:
+        description: "Check if TDD mode is enabled and set implementation guidance"
+        action: |
+          1. Read .tad/config.yaml → check optional_features.tdd_enforcement.enabled
+             (If config is malformed or field missing → treat as disabled, log warning)
+          2. If false → skip, proceed to normal implementation (no change to existing flow)
+          3. If true:
+             a. Read .tad/skills/tdd-enforcement/SKILL.md
+             b. Announce: "TDD mode enabled. Following RED-GREEN-REFACTOR cycle."
+             c. Set TDD guidance flag — Blake's IMPLEMENTATION phase (between 1_6 and 2_layer1)
+                follows RED-GREEN-REFACTOR per task/AC:
+                - RED: Write failing test first
+                - GREEN: Write minimum code to pass
+                - REFACTOR: Clean up, commit
+             d. Layer 1 then runs as normal VALIDATION (build/test/lint/tsc on all code)
+        interaction_with_layer1: |
+          TDD mode does NOT replace Layer 1. It changes HOW Blake writes code (test-first),
+          but Layer 1 still runs all checks as validation. The difference:
+          - Without TDD: Blake implements freely → Layer 1 catches issues
+          - With TDD: Blake implements test-first → Layer 1 validates (usually passes on first try)
+        optional: true
+        skip_if: "tdd_enforcement.enabled == false or field not found"
+
       2_layer1_loop:
         description: "Self-Check Loop (max 15 retries)"
         commands:
