@@ -1,8 +1,9 @@
 # 下一步行动
 
-## Today
+## Recently Completed
 
-- [ ] Publish v2.5.0 (*publish — version bump + changelog + push + tag)
+- [x] Publish v2.5.0 — pushed + tagged (2026-03-23)
+- [x] Project cleanup — legacy scripts/docs archived, backup files consolidated, version refs fixed (2026-03-23)
 
 ## Recently Completed
 

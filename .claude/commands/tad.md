@@ -42,7 +42,7 @@ Select 0-8:
 - **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
 - **Pair Testing**: All files in `.tad/pair-testing/` (Brief, Report, Screenshots)
 
-### ✅ v2.2.0 Highlights (Preserved)
+### ✅ Earlier Highlights (Preserved)
 - **Modular Config**: config.yaml split into 6 modules with per-command binding
 - **Bidirectional Messages**: Structured copy-pasteable messages between Alex ↔ Blake
 - **Adaptive Complexity**: Auto-suggest process depth (Light/Standard/Full/Skip TAD)

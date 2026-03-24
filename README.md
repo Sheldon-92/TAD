@@ -110,7 +110,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.3.0 configuration
+│   ├── config.yaml              # v2.5.0 configuration
 │   ├── skills/                  # Platform-agnostic skills (8 P0 skills)
 │   │   ├── testing/SKILL.md
 │   │   ├── code-review/SKILL.md
@@ -416,6 +416,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.3.0 - Beneficial Friction for AI-Assisted Development.**
+**Welcome to TAD v2.5.0 - Beneficial Friction for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

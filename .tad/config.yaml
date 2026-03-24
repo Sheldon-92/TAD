@@ -1,4 +1,4 @@
-# TAD Configuration v2.2.1 - Modular Config Architecture
+# TAD Configuration v2.5.0 - Modular Config Architecture
 method: TAD
 version: 2.5.0
 description: Triangle Agent Development - Spec Compliance + Anti-Rationalization + TDD + Micro-Tasks + Worktree
