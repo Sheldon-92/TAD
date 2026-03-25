@@ -8,6 +8,7 @@
 **Task ID:** TASK-[YYYYMMDD]-[###]
 **Handoff Version:** 3.1.0
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
+**Linear:** N/A <!-- Optional: TAD-42 or MENU-15 — links to Linear issue for auto-sync on *accept -->
 
 ---
 

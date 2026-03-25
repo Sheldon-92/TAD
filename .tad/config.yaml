@@ -74,9 +74,10 @@ config_modules:
 
   config-platform.yaml:
     path: ".tad/config-platform.yaml"
-    description: "MCP tools integration"
+    description: "MCP tools integration and Linear kanban"
     contains:
       - mcp_tools (agent_a_tools, agent_b_tools, enforcement, security)
+      - linear_integration
     loaded_by:
       - tad-alex.md  # MCP tools
       - tad-blake.md  # MCP tools

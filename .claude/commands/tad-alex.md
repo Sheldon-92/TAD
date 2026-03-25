@@ -1763,6 +1763,25 @@ accept_command:
       action: "更新 NEXT.md"
       details: "标记已完成任务 [x]，添加后续任务"
 
+    step4b_linear_sync:
+      action: "Sync completion to Linear (if linked issue exists)"
+      details: |
+        1. Check config-platform.yaml → linear_integration.enabled
+           If false → skip silently
+        2. Check if the archived handoff has a `linear_issue:` field in its header
+           (e.g., `**Linear:** TAD-42`)
+           If not present or N/A → skip: "Linear: no linked issue (manual update if needed)"
+        3. If present: use Linear MCP tools to update issue status to "Done"
+        4. Output: "Linear: {issue_id} → Done" or "Linear: no linked issue"
+      blocking: false
+      error_handling: |
+        - MCP server unreachable / timeout (10s): WARN "Linear sync skipped: MCP timeout", continue
+        - OAuth token expired: WARN "Linear auth expired, run /mcp to re-authenticate", continue
+        - Issue already Done: skip silently (idempotent)
+        - Issue not found by ID: WARN "Linear issue {id} not found", continue
+        - Any other error: WARN with error message, continue
+        Principle: Linear sync NEVER blocks *accept. All errors are warnings.
+
     step5:
       action: "检查 active handoffs 数量"
       max: 3

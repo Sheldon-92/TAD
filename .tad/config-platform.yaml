@@ -226,6 +226,23 @@ mcp_tools:
       location: ".tad/logs/mcp_usage.log"
       format: "[{timestamp}] {agent} used {mcp_tool} for {task} - Estimated time saved: {minutes}m"
 
+# ==================== Linear Integration ====================
+linear_integration:
+  enabled: true
+  description: "Cross-project kanban for human time/energy management"
+  mcp_server: "claude.ai Linear"  # Built-in cloud MCP (auto-connected via claude.ai OAuth)
+  linking_strategy: "explicit"  # Only sync when handoff has linear_issue field
+  timeout_seconds: 10  # MCP call timeout — single source of truth for all sync points
+  sync_points:
+    - trigger: "*accept"
+      action: "Mark linked Linear issue as Done (if linear_issue field present)"
+  project_mapping:
+    menu-snap: "Menu Snap"
+    TAD: "TAD Framework"
+    my-openclaw-agents: "OpenClaw Agents"
+    sober-creator: "Sober Creator"
+  issue_granularity: "feature/work-block (NOT handoff-level)"
+
   # 重要提醒
   important_notes:
     - "MCP 工具是 ENHANCEMENTS,不是 REQUIREMENTS"
