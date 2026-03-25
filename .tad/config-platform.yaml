@@ -231,7 +231,7 @@ linear_integration:
   enabled: true
   description: "Cross-project kanban for human time/energy management"
   mcp_server: "claude.ai Linear"  # Built-in cloud MCP (auto-connected via claude.ai OAuth)
-  linking_strategy: "explicit"  # Only sync when handoff has linear_issue field
+  linking_strategy: "auto"  # Auto-sync from NEXT.md (upgraded from "explicit")
   timeout_seconds: 10  # MCP call timeout — single source of truth for all sync points
   sync_points:
     - trigger: "*accept"
@@ -242,6 +242,37 @@ linear_integration:
     my-openclaw-agents: "OpenClaw Agents"
     sober-creator: "Sober Creator"
   issue_granularity: "feature/work-block (NOT handoff-level)"
+
+  # Auto-sync settings (TASK-20260325-004)
+  auto_sync:
+    startup_sync: true        # Full sync on Alex startup (step3.7)
+    accept_sync: true         # Incremental sync on *accept (existing step4b)
+    id_pattern: "\\[([A-Z]{2,10}-\\d{1,5})\\]$"  # Regex to extract Linear ID from NEXT.md lines
+    max_creations_per_sync: 10  # Cap new issue creation per startup to limit MCP calls
+    skip_completed_untagged: true  # Don't retroactively create issues for [x] items without tags
+    section_mapping:
+      "In Progress":
+        status: "In Progress"
+        priority: 2  # High
+      "Today":
+        status: "Todo"
+        priority: 1  # Urgent
+      "This Week":
+        status: "Todo"
+        priority: 2  # High
+      "Pending":
+        status: "Todo"
+        priority: 3  # Medium
+      "Blocked":
+        status: "Todo"
+        priority: 2  # High
+        label: "blocked"
+      "Ideas":
+        status: "Backlog"
+        priority: 4  # Low
+      "Recently Completed":
+        status: "Done"
+        priority: null  # Keep existing
 
   # 重要提醒
   important_notes:
