@@ -1783,7 +1783,7 @@ accept_command:
                question: "本次实现涉及用户界面变更，建议做配对 E2E 测试。要现在生成测试简报吗？",
                header: "Pair Testing",
                options: [
-                 {label: "生成测试简报 (Recommended)", description: "生成 .tad/pair-testing/{session_id}/TEST_BRIEF.md 用于 Claude Desktop Cowork 配对测试"},
+                 {label: "生成测试简报 (Recommended)", description: "生成 .tad/pair-testing/{session_id}/TEST_BRIEF.md 用于 Claude Code + Playwright 配对测试 (4D Protocol)"},
                  {label: "跳过，直接归档", description: "不做配对测试，直接完成归档"}
                ],
                multiSelect: false
@@ -1829,7 +1829,7 @@ accept_command:
            d. Remind human:
               ".tad/pair-testing/{session_id}/TEST_BRIEF.md 已生成（所有 Section 已填充）
                Session ID: {session_id} | 继承自: {prev_session or 'None'}
-               请将 .tad/pair-testing/{session_id}/TEST_BRIEF.md 拖入 Claude Desktop Cowork 进行配对 E2E 测试。
+               请在 Claude Code 中打开新 terminal，运行配对测试脚本（参考 TEST_BRIEF Section 6h）进行 E2E 测试。
                测试完成后，PAIR_TEST_REPORT.md 保存到 .tad/pair-testing/{session_id}/，
                下次启动 /alex 时我会自动检测并处理。"
 

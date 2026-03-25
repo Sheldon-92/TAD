@@ -1,6 +1,6 @@
 # TAD Test Brief Command
 
-Generate or update a pair testing brief (TEST_BRIEF.md) for E2E pair testing with Claude Desktop.
+Generate or update a pair testing brief (TEST_BRIEF.md) for E2E pair testing with Claude Code + Playwright (4D Protocol).
 
 ## When to Use
 
@@ -69,5 +69,5 @@ Sections filled:
   [OK] 7. Output requirements
   [OK] 8. Technical notes
 
-Next: Drag .tad/pair-testing/{session_id}/TEST_BRIEF.md into Claude Desktop Cowork to start pair E2E testing.
+Next: Open a new Claude Code terminal and run the pair testing script (see TEST_BRIEF Section 6h) to start E2E testing.
 ```

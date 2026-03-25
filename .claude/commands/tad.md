@@ -39,7 +39,7 @@ Select 0-8:
 
 ### 🆕 v2.5.0 Additions
 - **Beneficial Friction Philosophy**: AI executes, humans guard value at 3 critical friction points
-- **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
+- **Pair Testing Protocol**: E2E pair testing with Claude Code + Playwright (4D Protocol)
 - **Pair Testing**: All files in `.tad/pair-testing/` (Brief, Report, Screenshots)
 
 ### ✅ Earlier Highlights (Preserved)

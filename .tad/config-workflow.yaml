@@ -196,9 +196,10 @@ tad_maintain:
 # ==================== 配对测试协议 ====================
 pair_testing:
   description: "Cross-tool E2E pair testing protocol with multi-session support"
-  ownership: "Alex generates brief, human decides, Claude Desktop executes with human"
+  ownership: "Alex generates brief, human decides, Claude Code + Playwright executes with human"
+  methodology: "4D Protocol (Discover→Discuss→Decide→Deliver)"
   base_dir: ".tad/pair-testing/"
-  version: "2.0"
+  version: "2.1"
 
   # Multi-session management
   sessions:

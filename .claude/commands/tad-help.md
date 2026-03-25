@@ -191,7 +191,7 @@ TAD 支持跨工具的配对 E2E 测试：
 | 阶段 | 触发 | 产出 |
 |------|------|------|
 | Gate 4 后 | Alex 评估建议，人类决定 | `.tad/pair-testing/{session_id}/TEST_BRIEF.md` |
-| 配对测试 | 用户 + Claude Desktop Cowork | `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md` |
+| 配对测试 | 用户 + Claude Code + Playwright (4D Protocol) | `.tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md` |
 | 报告回流 | Alex 检测报告 | 新 Handoff（修复任务）|
 
 - Alex 在 Gate 4 后评估是否需要配对测试（UI/用户流变更时建议）
@@ -215,7 +215,7 @@ TAD integrates with 16 Claude Code sub-agents:
 
 ## TAD v2.5.0 Highlights
 - **Beneficial Friction**: AI executes, humans guard value at 3 critical friction points
-- **Pair Testing Protocol**: Cross-tool E2E testing (TAD CLI → Claude Desktop)
+- **Pair Testing Protocol**: E2E pair testing with Claude Code + Playwright (4D Protocol)
 - **Adaptive Complexity**: Auto-suggest process depth based on task size
 - **Ralph Loop**: Iterative quality cycles with expert exit conditions
 
