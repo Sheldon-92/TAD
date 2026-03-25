@@ -156,6 +156,29 @@ Blake在开始实现前，请确认：
 - NFR1: [性能、可用性等]
 - NFR2: [...]
 
+### 3.3 Optimization Target (Optional — triggers Autoresearch Mode)
+
+> Only include this section if the task has a measurable numeric optimization goal.
+> When present, Blake's Ralph Loop activates Layer 0.5 (autonomous optimization) before Layer 1+2.
+
+```yaml
+optimization_target:
+  metric: "{metric_name}"           # e.g., "response_time_ms", "accuracy_pct", "bundle_size_kb"
+  baseline: {current_value}         # Measured current value
+  target: {goal_value}              # Target value to reach
+  direction: "lower"                # "lower" = lower is better, "higher" = higher is better
+  benchmark_cmd: "{command}"        # Command that outputs the metric
+  metric_pattern: "{pattern}"       # Regex with capture group to extract metric value
+  scope:                            # Files agent can modify (limit blast radius)
+    - "{file_path_1}"
+    - "{file_path_2}"
+  time_budget: 60                   # Seconds per experiment (default: 60)
+  max_iterations: 50                # Max attempts (default: 50)
+  constraints:                      # Things agent must NOT change
+    - "{constraint_1}"
+    - "{constraint_2}"
+```
+
 ---
 
 ## 4. Technical Design

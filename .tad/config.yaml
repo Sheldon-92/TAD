@@ -378,6 +378,14 @@ optional_features:
     worktree_dir: ".worktrees"
     branch_prefix: "tad/"
 
+  autoresearch_mode:
+    enabled: true
+    description: "When enabled and handoff has optimization_target, Blake enters autoresearch optimization loop before standard Layer 1+2"
+    default_max_iterations: 50
+    default_time_budget: 60  # seconds per experiment
+    consecutive_fail_limit: 5  # circuit breaker threshold
+    results_dir: ".tad/evidence/optimization-runs/"
+
 # ==================== 外部配置引用 ====================
 external_configs:
   skills_config:

@@ -455,6 +455,105 @@ ralph_loop_execution:
         skip_if: "--worktree flag not present"
         # NOTE: When worktree active, ALL steps run INSIDE .worktrees/tad-{task-id}/ directory.
 
+      1_8_optimization_check:
+        description: "Detect optimization_target in handoff"
+        action: |
+          1. Read handoff Section 3 (Requirements)
+          2. Search for `optimization_target:` block
+          3. If NOT found → skip to IMPLEMENTATION (existing flow, no change)
+          4. If found:
+             a. Read config.yaml → check optional_features.autoresearch_mode.enabled
+             b. If disabled → skip with note: "Optimization target found but autoresearch_mode disabled in config"
+             c. If enabled → parse optimization_target fields
+             d. Validate required fields: metric, baseline, target, direction, benchmark_cmd, metric_pattern, scope
+             e. If validation fails → WARN, skip to IMPLEMENTATION
+             f. If valid → proceed to 1_9_optimization_loop
+        skip_if: "No optimization_target in handoff"
+
+      1_9_optimization_loop:
+        description: "Autoresearch-style optimization loop (Layer 0.5)"
+        prerequisite: "1_8_optimization_check found valid optimization_target"
+        action: |
+          ## Setup
+          1. Read .tad/templates/optimization-program.md for strategy guidance
+          2. Create results dir + file: `mkdir -p .tad/evidence/optimization-runs/`
+             Create: .tad/evidence/optimization-runs/{task_id}_results.tsv
+             Header: iteration\tcommit\tmetric_value\tstatus\tdescription\ttimestamp
+          3. **Safety anchor**: Ensure working tree is clean (`git status --porcelain` = empty).
+             If dirty → commit existing changes first: `git add -A && git commit -m "pre-optimization baseline"`
+             Then tag: `git tag tad-opt-baseline-{task_id}`
+             This tag is the "never reset past" boundary.
+          4. Run baseline benchmark: execute benchmark_cmd, extract metric via metric_pattern
+             If baseline doesn't match handoff's declared baseline → WARN but continue
+          5. Set best_value = baseline_value
+          6. Announce: "Entering optimization loop. Target: {metric} from {baseline} to {target} ({direction}). Max {max_iterations} iterations. Safety anchor: tad-opt-baseline-{task_id}"
+
+          ## Loop (max_iterations)
+          For each iteration:
+            a. **Hypothesize**: Based on scope files, previous results, and constraints,
+               decide what code change to try. Document reasoning briefly.
+            b. **Modify**: Edit file(s) within scope ONLY.
+               Respect constraints from optimization_target.
+            c. **Scope verify**: Run `git diff --name-only` and check that ALL changed files
+               are in the optimization_target.scope list. If any file outside scope was modified:
+               → `git checkout -- {out_of_scope_files}` to discard those changes
+               → If scope files were also changed, proceed. If not, treat as failed iteration.
+            d. **Commit**: `git add {scope_files} && git commit -m "opt-{iteration}: {description}"`
+            e. **Benchmark**: Run benchmark_cmd using Bash tool with timeout: time_budget * 1000 ms.
+               If timeout → treat as failure, log as "timeout".
+               If crash → treat as failure, log as "crash".
+               After benchmark: `git checkout -- {scope_files}` to discard any benchmark side effects.
+            f. **Extract**: Match benchmark output against metric_pattern regex.
+               Parse first capture group as numeric value.
+               If can't parse → treat as failure, log as "parse_error".
+            g. **Compare**:
+               - direction="lower": improved if new_value < best_value
+               - direction="higher": improved if new_value > best_value
+            h. **Decide**:
+               - If improved: KEEP commit. Update best_value. Log status="✓" to results.tsv.
+               - If not improved: `git reset --hard HEAD~1`. Log status="✗" to results.tsv.
+                 Guard: NEVER reset past tad-opt-baseline-{task_id} tag.
+               - If target reached (value meets or exceeds target): Log status="✓ TARGET". Exit loop.
+            i. **Constraint check** (on keep only): Before finalizing a kept commit, verify
+               constraints from optimization_target.constraints are not violated.
+               If violated → treat as not-improved, revert, log status="✗ constraint".
+            j. **Circuit breaker**: If 5 consecutive non-improvement (✗, timeout, crash, parse_error, ✗ constraint)
+               → exit loop with note "plateau reached"
+
+          ## Post-Loop
+          1. **Squash optimization commits**: Squash all kept optimization commits since
+             tad-opt-baseline-{task_id} into a single commit:
+             `git reset --soft tad-opt-baseline-{task_id} && git commit -m "opt: {metric} improved {baseline} → {best_value}"`
+             This keeps branch history clean for merge/PR.
+          2. Remove baseline tag: `git tag -d tad-opt-baseline-{task_id}`
+          3. Output summary:
+             "Optimization complete: {iterations_run} iterations, {kept_count} kept.
+              Metric: {baseline} → {best_value} (target: {target})
+              Status: {TARGET_REACHED / PLATEAU / MAX_ITERATIONS}"
+          4. If other implementation tasks remain in handoff → continue to IMPLEMENTATION
+          5. Proceed to 2_layer1_loop (standard Layer 1 checks on optimized code)
+
+        circuit_breaker:
+          consecutive_no_improvement: 5
+          action: "Exit optimization loop, proceed to Layer 1 with best result so far"
+
+        constraints:
+          - "Only modify files listed in optimization_target.scope (enforced by scope verify step)"
+          - "Respect all items in optimization_target.constraints (enforced by constraint check step)"
+          - "Prefer one conceptual change per iteration for clear attribution. Multiple small coupled changes acceptable."
+          - "Document reasoning for each change in commit message"
+
+        mode_interactions:
+          agent_team: |
+            If optimization_target is present, Agent Team mode is DISABLED for this handoff.
+            Optimization requires sequential git state management (commit/reset) that is
+            incompatible with parallel file ownership.
+          tdd: |
+            If both tdd_enforcement and autoresearch_mode are enabled:
+            - Autoresearch mode takes precedence for optimization_target.scope files
+            - TDD applies to remaining implementation tasks (if any) outside scope
+            - Rationale: optimization loop measures via benchmark_cmd, not test suite
+
       2_layer1_loop:
         description: "Self-Check Loop (max 15 retries)"
         commands:

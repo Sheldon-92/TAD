@@ -19,6 +19,35 @@ ralph_loop:
     - State Persistence: Supports crash recovery
     - Priority Groups: spec-compliance first, then code-reviewer, then others in parallel
 
+# ==================== Autoresearch Optimization Mode ====================
+autoresearch:
+  description: |
+    Optional Layer 0.5 in Ralph Loop — autonomous code optimization.
+    Inspired by Karpathy's autoresearch: modify → benchmark → keep/discard → repeat.
+    Only activates when handoff contains optimization_target with measurable metric.
+
+  position: "Before Layer 1 (build/test/lint) in Ralph Loop"
+  relationship_to_ralph_loop: "Layer 0.5 — runs BEFORE standard Layer 1+2, not replacing them"
+
+  design_principles:
+    - "Single metric: one number to optimize, no ambiguity"
+    - "Git as memory: commit on improvement, reset on failure"
+    - "Scope-limited: only modify files listed in optimization_target.scope"
+    - "One change per iteration: isolate variables for clear attribution"
+    - "Fixed time budget: each experiment runs in bounded time for fair comparison"
+    - "Circuit breaker: stop after 5 consecutive no-improvement (plateau)"
+
+  results_format:
+    file: ".tad/evidence/optimization-runs/{task_id}_results.tsv"
+    columns: ["iteration", "commit", "metric_value", "status", "description", "timestamp"]
+    status_values:
+      "✓": "Improvement, commit kept"
+      "✗": "No improvement, commit reverted"
+      "✓ TARGET": "Target reached, loop complete"
+      "timeout": "Benchmark exceeded time_budget"
+      "crash": "Benchmark crashed"
+      "parse_error": "Could not extract metric from output"
+
 # ==================== 版本发布管理 (v1.5 新增) ====================
 release_management:
   enabled: true
