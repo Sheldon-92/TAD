@@ -114,7 +114,11 @@ activation-instructions:
             - If NEXT.md item is [x] → update Linear to Done
             - If Linear issue not found → WARN (orphaned tag), skip
          b. Items WITHOUT [XXX-NN] tag AND unchecked `[ ]` (new untracked items):
-            - Create new Linear issue via MCP
+            - DEDUP CHECK: Before creating, search the Linear issues (already queried in step 6)
+              for a title that contains the NEXT.md item text as substring (or vice versa).
+              If match found → write back existing Linear ID to NEXT.md (no new issue created).
+              If multiple matches → pick the one with highest title similarity, WARN about ambiguity.
+              If no match → create new Linear issue via MCP.
             - IMMEDIATELY write back ID to NEXT.md (not batched — prevents duplicates on crash)
             - Max 10 creations per startup (if more → WARN "10 created, {N} remaining for next sync")
             - Title: item text without checkbox prefix, trimmed

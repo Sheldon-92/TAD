@@ -98,7 +98,7 @@
   - 4 files: tad-blake.md, tad-alex.md, tad-gate.md, config-quality.yaml
   - Code-reviewer: 1 P0 found (missing Gate 3 output section) + fixed, then PASS
   - Commit: 80c52fb
-- [ ] P1-4 deferred: Consider renaming config-platform.yaml → config-mcp.yaml (future cleanup)
+- [ ] P1-4 deferred: Consider renaming config-platform.yaml → config-mcp.yaml (future cleanup) [SHE-11]
 
 ## Recently Completed Epic
 
@@ -118,9 +118,9 @@
 - [x] tad-maintain P1: NEXT.md classification table add `## Recently Completed` header (2026-02-06)
 - [x] tad-maintain P1: Add 2 explicit prohibition statements (file-mtime, Criterion C/D auto-archive) (2026-02-06)
 - [x] tad-maintain P2: config.yaml clean up legacy `tad_version: 1.3.0` field (2026-02-06)
-- [ ] Test Agent Teams on next Full or Standard TAD task (verify auto-trigger + fallback)
-- [ ] Verify auto-trigger behavior on next /alex or /blake activation
-- [ ] Verify Criterion C/D detection on real stale handoffs
+- [ ] Test Agent Teams on next Full or Standard TAD task (verify auto-trigger + fallback) [SHE-12]
+- [ ] Verify auto-trigger behavior on next /alex or /blake activation [SHE-20]
+- [ ] Verify Criterion C/D detection on real stale handoffs [SHE-21]
 
 ## Blocked
 
