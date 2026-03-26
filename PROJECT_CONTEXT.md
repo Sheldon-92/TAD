@@ -1,14 +1,30 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.5.0 (Superpowers-Inspired Tactical Upgrades)
-- **Last Updated**: 2026-03-23
-- **Framework**: TAD v2.5.0 + Spec Compliance Reviewer + Anti-Rationalization Tables + TDD Skill + Micro-Tasks + Pressure Testing + Git Worktree + all v2.4.0 features
+- **Version**: 2.6.0 (4D Pair Testing + Autoresearch + Linear Integration)
+- **Last Updated**: 2026-03-25
+- **Framework**: TAD v2.6.0 + 4D Protocol + Autoresearch Mode + Linear Kanban + Auto-Sync
 
 ## Active Work
-(none — pending v2.5.0 publish)
+(none)
 
 ## Recently Completed
+- **Linear Auto-Sync** — ✅ COMPLETE (2026-03-25)
+  - step3.7 startup sync + enhanced step4b + auto_sync config
+  - Commit 7583fe5. Archived: .tad/archive/handoffs/HANDOFF-20260325-linear-auto-sync.md
+- **Linear Kanban Integration (code portion)** — ✅ PARTIAL COMPLETE (2026-03-25)
+  - AC3/4/7 PASS: config, step4b_linear_sync, handoff template field
+  - AC1/2/5/6 DEFERRED: MCP setup + project creation + seed issues (next session)
+  - Commit a086e68. Archived: .tad/archive/handoffs/HANDOFF-20260325-linear-kanban-integration.md
+- **Autoresearch Optimization Mode** — ✅ COMPLETE (2026-03-25)
+  - Ralph Loop Layer 0.5: autonomous optimization loop for numeric targets
+  - 5 files: tad-blake.md, config-execution.yaml, config.yaml, handoff template, optimization-program template
+  - Commit 585ef88. Archived: .tad/archive/handoffs/HANDOFF-20260325-autoresearch-optimization-mode.md
+- **4D Protocol Pair Testing Upgrade** — ✅ COMPLETE (2026-03-25)
+  - Removed Mode A (Chrome MCP), kept only Mode B (Claude Code + Playwright)
+  - Added 4D Protocol (Discover→Discuss→Decide→Deliver) as core pair testing methodology
+  - Updated 7 files: templates, config, command files. Commit b20ceef
+  - Archived: .tad/archive/handoffs/HANDOFF-20260325-4d-pair-testing-upgrade.md
 - **EPIC: Superpowers-Inspired Tactical Upgrades** — ✅ ALL 6/6 PHASES COMPLETE (2026-03-23)
   - Phase 0: Session Hook Spike (verdict: pivot — 8.5% overhead too small to optimize)
   - Phase 1: Spec Compliance Reviewer (Ralph Loop Group 0 — separates "right thing" from "right way")

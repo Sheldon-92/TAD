@@ -1,6 +1,23 @@
 # 下一步行动
 
+## In Progress
+
+
 ## Recently Completed
+
+- [x] Linear: 4 projects created + 15 issues seeded via MCP (2026-03-25)
+
+- [x] Linear Auto-Sync — Gate 4 PASS, archived (2026-03-25)
+  - step3.7 startup sync + enhanced step4b + auto_sync config, commit 7583fe5
+
+- [x] Autoresearch Optimization Mode — Gate 4 PASS, archived (2026-03-25)
+  - Ralph Loop Layer 0.5: autonomous optimization loop for numeric targets
+  - 5 files modified/created, commit 585ef88
+
+- [x] 4D Protocol Pair Testing Upgrade — Gate 4 PASS, archived (2026-03-25)
+  - Removed Mode A (Chrome MCP), added 4D Protocol as core methodology
+  - Updated 7 files, commit b20ceef
+  - P1 follow-up: Update stale "Claude Desktop" refs in docs/ files outside scope
 
 - [x] Publish v2.5.0 — pushed + tagged (2026-03-23)
 - [x] Project cleanup — legacy scripts/docs archived, backup files consolidated, version refs fixed (2026-03-23)
@@ -89,6 +106,11 @@
   - Phase 1: Intent Router ✅ | Phase 2: *learn ✅ | Phase 3: Idea Pool ✅ | Phase 4: Roadmap ✅ | Phase 5: Layer Integration ✅
   - Archived: .tad/archive/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
 - [x] Test Epic flow end-to-end on next multi-phase task — ✅ THIS EPIC was the test, 5 phases completed successfully
+
+## Ideas
+
+- [x] IDEA-20260325-linear-kanban-for-human: Linear Kanban for Human Time/Energy Management (promoted)
+- [x] IDEA-20260325-linear-auto-sync: Linear Auto-Sync — TAD as Single Source of Truth (promoted)
 
 ## Pending
 

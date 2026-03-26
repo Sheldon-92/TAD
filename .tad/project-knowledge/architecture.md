@@ -151,3 +151,12 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Hooks supplement, don't replace**: Claude Code hooks (shell command type) can inject context but cannot prevent CLAUDE.md from loading. They add to context, not reduce it.
   4. **Spike-driven pivot works**: AC11 (threshold trigger) caught the small target early, enabling data-driven pivot instead of building unnecessary infrastructure.
 - **Action**: Always measure actual baseline before designing optimization systems. Include explicit pivot thresholds (like AC11's 10% rule) in spike acceptance criteria to enable early course correction.
+
+### Long Context Enables In-Session Decision Making (4D Protocol) - 2026-03-25
+- **Context**: Upgrading pair testing protocol based on menu-snap S04 experience (4 sessions, 11 rounds)
+- **Discovery**: 1M context window fundamentally changes pair testing methodology. With full context preserved across 10+ rounds, "find bugs now → fix later" becomes "discover → discuss → decide → record" in a single session. Key pattern:
+  1. **Context richness at discovery**: Solutions decided at the moment of finding have the richest context (screenshot just viewed, code just analyzed, human reaction immediate)
+  2. **No information loss**: Round 10 still has Round 1's full details — no need to defer decisions to a separate review session
+  3. **Reports become action logs**: Output is "Findings + Solutions Decided" per round, not a bug list waiting for triage
+  4. **Tool capability shapes methodology**: The 4D Protocol exists because 1M context makes it possible — it wouldn't work with 8K/32K context
+- **Action**: When designing protocols that span long sessions, assume full context retention and design for in-session decision-making rather than deferred review. The "save context to document → review later" pattern is a workaround for limited context, not a best practice.

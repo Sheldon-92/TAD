@@ -1,8 +1,8 @@
-# TAD Configuration v2.5.0 - Modular Config Architecture
+# TAD Configuration v2.6.0 - Modular Config Architecture
 method: TAD
-version: 2.5.0
-description: Triangle Agent Development - Spec Compliance + Anti-Rationalization + TDD + Micro-Tasks + Worktree
-last_updated: 2026-03-23
+version: 2.6.0
+description: Triangle Agent Development - 4D Pair Testing + Autoresearch Mode + Linear Integration
+last_updated: 2026-03-25
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
@@ -292,6 +292,21 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.6.0:
+    date: "2026-03-25"
+    changes:
+      - "4D Protocol: Pair testing methodology upgrade (Discover→Discuss→Decide→Deliver)"
+      - "Autoresearch Optimization Mode: Ralph Loop Layer 0.5 for numeric optimization targets"
+      - "Linear Kanban Integration: Cross-project human dashboard via Linear MCP"
+      - "Linear Auto-Sync: NEXT.md → Linear one-way sync on Alex startup"
+      - "Removed Mode A (Chrome MCP) from pair testing, kept only Mode B (Playwright)"
+
+  v2.5.0:
+    date: "2026-03-23"
+    changes:
+      - "Spec Compliance Reviewer, Anti-Rationalization Tables, TDD Skill"
+      - "Micro-Tasks + Pressure Testing, Git Worktree Integration"
+
   v2.4.0:
     date: "2026-02-17"
     changes:

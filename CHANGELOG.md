@@ -5,6 +5,54 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-03-25
+
+### Added — 4D Pair Testing + Autoresearch + Linear Integration
+
+- **4D Protocol Pair Testing** (Discover→Discuss→Decide→Deliver)
+  - Core methodology upgrade: decisions made at discovery time, not deferred
+  - Leverages 1M context window for in-session decision-making
+  - Updated test-brief-template.md + pair-test-report-template.md
+  - "Solutions Decided" table added to Round summaries and reports
+
+- **Autoresearch Optimization Mode** (Ralph Loop Layer 0.5)
+  - Autonomous optimization loop for tasks with numeric targets
+  - Inspired by Karpathy's autoresearch: modify → benchmark → keep/discard → repeat
+  - Git commit/reset as state management, safety anchor tags
+  - Scope enforcement, circuit breaker (5 consecutive failures), max 50 iterations
+  - Config: `optional_features.autoresearch_mode` (opt-in, default enabled)
+  - New template: `.tad/templates/optimization-program.md`
+
+- **Linear Kanban Integration** (Cross-Project Human Dashboard)
+  - Linear MCP Server integration for cross-project time/energy management
+  - 4 projects: Menu Snap, TAD, OpenClaw Agents, Sober Creator
+  - `step4b_linear_sync` in Alex *accept flow (non-blocking, explicit ID linking)
+  - `linear_integration` section in config-platform.yaml
+  - Optional `**Linear:**` field in handoff template header
+
+- **Linear Auto-Sync** (NEXT.md → Linear One-Way Sync)
+  - `step3.7_linear_sync` in Alex activation protocol (startup full sync)
+  - NEXT.md sections map to Linear statuses (In Progress/Todo/Backlog/Done)
+  - Linear ID writeback `[XXX-NN]` to NEXT.md for reliable matching
+  - Max 10 creations per startup, skip untagged completed items
+  - Conflict detection (file modification time check)
+
+### Removed
+
+- **Mode A (Chrome MCP / Claude Desktop)** from pair testing templates and commands
+  - Only Mode B (Claude Code + Playwright) remains
+
+### Changed
+
+- `config-platform.yaml`: added `linear_integration` with `auto_sync` section
+- `config-execution.yaml`: added `autoresearch` section
+- `tad-alex.md`: added step3.7 (Linear sync) + step4b (enhanced) + 4D pair testing refs
+- `tad-blake.md`: added step 1_8 + 1_9 (autoresearch optimization loop)
+- `pair-test-report-template.md`: added Section 2c (Per-Round Findings & Decisions)
+- Removed "Claude Desktop" references from tad-test-brief.md, tad-help.md, tad.md
+
+---
+
 ## [2.5.0] - 2026-03-23
 
 ### Added — Superpowers-Inspired Tactical Upgrades
