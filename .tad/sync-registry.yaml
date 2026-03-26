@@ -45,3 +45,8 @@ projects:
     claude_md_strategy: "overwrite"
     last_synced_version: "2.6.0"
     last_synced_date: "2026-03-25"
+  - path: "/Users/sheldonzhao/01-on progress programs/toy"
+    name: "toy"
+    claude_md_strategy: "merge"
+    last_synced_version: "2.6.0"
+    last_synced_date: "2026-03-25"
