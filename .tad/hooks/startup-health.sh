@@ -4,8 +4,6 @@
 # Output: JSON with hookSpecificOutput wrapper.
 # Exit code: always 0 (never block session startup).
 
-set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -14,7 +12,7 @@ source "${SCRIPT_DIR}/lib/common.sh"
 read_stdin_json
 
 # Check source field — only run on "startup" (or if field missing, run anyway)
-SOURCE=$(get_json_field ".source")
+SOURCE=$(get_json_field ".source" || echo "")
 if [ -n "$SOURCE" ] && [ "$SOURCE" != "null" ] && [ "$SOURCE" != "startup" ]; then
   output_empty
   exit 0

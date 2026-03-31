@@ -22,7 +22,7 @@ get_json_field() {
   local json="${2:-$STDIN_JSON}"
 
   if [ "$HAS_JQ" = true ]; then
-    echo "$json" | jq -r "$field" 2>/dev/null
+    echo "$json" | jq -r "$field" 2>/dev/null || echo ""
   else
     # Grep fallback: only works for simple top-level or one-level nested fields
     # Extract last segment of jq path for grep (e.g., .tool_input.file_path -> file_path)
@@ -47,7 +47,7 @@ output_response() {
     # Manual JSON construction — safe because we control the inputs
     # Escape backslashes and quotes in context string
     local escaped_ctx
-    escaped_ctx=$(printf '%s' "$context" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    escaped_ctx=$(printf '%s' "$context" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
     cat <<EOF
 {"hookSpecificOutput":{"hookEventName":"${event_name}","additionalContext":"${escaped_ctx}"}}
 EOF
@@ -63,8 +63,11 @@ output_empty() {
 # Usage: safe_count ".tad/active/handoffs/HANDOFF-*.md"
 safe_count() {
   local pattern="$1"
-  # shellcheck disable=SC2086
-  local count
-  count=$(ls $pattern 2>/dev/null | wc -l | tr -d ' ')
-  echo "${count:-0}"
+  # shellcheck disable=SC2206
+  local matches=( $pattern )
+  if [ -e "${matches[0]}" ] 2>/dev/null; then
+    echo "${#matches[@]}"
+  else
+    echo "0"
+  fi
 }

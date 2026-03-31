@@ -5,8 +5,6 @@
 # Output: JSON with hookSpecificOutput wrapper, or empty JSON for non-TAD files.
 # Exit code: always 0 (async, never blocks).
 
-set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -15,7 +13,7 @@ source "${SCRIPT_DIR}/lib/common.sh"
 read_stdin_json
 
 # Extract file_path from tool_input
-FILE_PATH=$(get_json_field ".tool_input.file_path")
+FILE_PATH=$(get_json_field ".tool_input.file_path" || echo "")
 
 # If file_path extraction failed, exit silently
 if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
