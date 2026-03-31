@@ -1,0 +1,38 @@
+{
+  "name": "TAD Framework",
+  "version": "2.0",
+  "description": "Triangle Agent Development - Improved human-AI collaboration with quality gates",
+  "method": "TAD",
+
+  "agents": {
+    "agent_a": {
+      "name": "Alex",
+      "role": "Strategic Architect",
+      "activation": "Use /alex command",
+      "terminal": 1
+    },
+    "agent_b": {
+      "name": "Blake",
+      "role": "Execution Master",
+      "activation": "Use /blake command",
+      "terminal": 2
+    }
+  },
+
+  "commands": {
+    "tad-init": "Initialize TAD in current project",
+    "tad-status": "Check TAD configuration status",
+    "tad-scenario": "Execute a TAD scenario"
+  },
+
+  "autoload": [
+    ".tad/config.yaml",
+    ".tad/gates/quality-gate-checklist.md"
+  ],
+
+  "prompts": {
+    "project_start": "TAD Framework v2.0 detected with quality gates and templates. Use '/tad-status' to check installation.",
+    "agent_activation": "IMPORTANT: Agents must read their definition files first to access v2.0 startup checklists and sub-agent awareness.",
+    "quality_notice": "v2.0 includes manual quality gates (not automatic blocking) and evidence collection for continuous improvement."
+  }
+}
