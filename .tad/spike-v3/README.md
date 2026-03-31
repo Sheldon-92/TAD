@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-7 experiments validated Claude Code's native mechanisms for the TAD v3.0 rebuild. **5 mechanisms confirmed working, 2 found non-functional**. The core architecture (hooks + skills + agents) is viable, but tool restriction via `allowed-tools` and per-skill hooks are not available. Alternative approaches identified.
+7 experiments + 3 supplemental sub-experiments validated Claude Code's native mechanisms for the TAD v3.0 rebuild. **5 mechanisms confirmed working, 2 found non-functional, 1 partially functional**. The core architecture (hooks + skills + agents) is viable. **Major supplemental finding: `permissions.deny` provides hard tool-level restriction, and hooks cannot override it — establishing a clear enforcement priority order.**
 
 ---
 
@@ -25,6 +25,22 @@
 | 5 | Parallel Agent spawning | ✅ **PASS** | True concurrent execution with model override per agent |
 | 6 | Per-skill hooks in frontmatter | ❌ **FAIL** | Not implemented in v2.1.88 |
 | 7 | Hook `if` condition filter | ✅ **PASS** | Glob-style argument filtering works |
+| 3c | permissions.deny (supplemental) | ⚠️ **PARTIAL** | Blanket tool deny works; path patterns don't; hooks can't override |
+
+### Supplemental: Experiment 3c — permissions.deny Deep Test
+
+| Sub-Exp | Test | Result |
+|---------|------|--------|
+| 3c-1 | allowed-tools in bypass mode | Inconclusive (bypass overrides all) |
+| 3c-2 | `permissions.deny: ["Write"]` (blanket) | ✅ Tool completely removed |
+| 3c-2 | `permissions.deny: ["Write(*.ts)"]` (pattern) | ❌ Pattern not supported |
+| 3c-3 | deny + hook override | ❌ Hook cannot override deny |
+
+**Enforcement Priority Order (confirmed)**:
+```
+permissions.deny  →  hooks.PreToolUse  →  permissions.allow  →  user prompt
+(highest: removes tool)   (runs on available tools)   (auto-approval)   (asks user)
+```
 
 ---
 
@@ -131,9 +147,10 @@ The core mechanisms are solid:
 - ✅ Skill system works for prompt injection and model override
 - ✅ Agent parallelism works for concurrent expert reviews
 
-Two adjustments needed from original design:
-1. Replace `allowed-tools` reliance → PreToolUse prompt hooks (Exp 2 proved this works perfectly)
-2. Replace per-skill hooks → Global hooks with contextual matcher/if patterns (Exp 7 proved this works)
+Adjustments needed from original design:
+1. Replace `allowed-tools` reliance → Two-layer approach: `permissions.deny` for blanket tool removal + PreToolUse prompt hooks for path-level gating (Exp 3c)
+2. Replace per-skill hooks → Global hooks with contextual matcher/if patterns (Exp 7)
+3. **New pattern discovered**: "Default Deny + Hook Allow" — use `permissions.deny` for hard tool removal, PreToolUse hooks for intelligent gating on remaining tools
 
 **Phase 1 (Architecture Blueprint) can proceed with confidence.** The hook system is more capable than expected (full tool I/O in stdin, system-reminder-level context injection), compensating for the two non-functional features.
 
@@ -151,6 +168,7 @@ Two adjustments needed from original design:
 | Exp 5: Parallel agents | `exp5-parallel-agents/result.md` |
 | Exp 6: Per-skill hooks | `exp6-skill-hooks/result.md` |
 | Exp 7: Hook if condition | `exp7-hook-if-condition/result.md` |
+| Exp 3c: permissions.deny deep | `exp3c-allowedtools-deep/result.md` |
 
 ## Cleanup Verification
 
