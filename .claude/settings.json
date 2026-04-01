@@ -14,6 +14,19 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "A tool is about to modify a file. Here are the full details:\n\n$ARGUMENTS\n\nExtract the file path from the JSON above. Then apply these rules:\n- Files in .tad/ directory → ALLOW\n- Files in .claude/ directory → ALLOW\n- Markdown files (*.md) → ALLOW\n- YAML/JSON config files → ALLOW\n- Shell scripts (*.sh) → ALLOW\n- All other files → ALLOW (default permissive for framework project)\n\nRespond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"...\"}",
+            "model": "claude-haiku-4-5-20251001",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",

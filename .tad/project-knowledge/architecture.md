@@ -160,3 +160,31 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. **Reports become action logs**: Output is "Findings + Solutions Decided" per round, not a bug list waiting for triage
   4. **Tool capability shapes methodology**: The 4D Protocol exists because 1M context makes it possible — it wouldn't work with 8K/32K context
 - **Action**: When designing protocols that span long sessions, assume full context retention and design for in-session decision-making rather than deferred review. The "save context to document → review later" pattern is a workaround for limited context, not a best practice.
+
+### Claude Code Native Mechanism Validation — Hooks > Skill Frontmatter - 2026-03-31
+- **Context**: TAD v3.0 rebuild spike — tested 7 Claude Code mechanisms from leaked source code analysis
+- **Discovery**: Claude Code's enforcement capabilities are asymmetric:
+  1. **Hooks are production-ready and powerful**: PostToolUse/PreToolUse command hooks, prompt hooks (Haiku gating), SessionStart hooks, `if` condition filtering ALL work as documented. additionalContext injects as `<system-reminder>` (system-level authority).
+  2. **Skill frontmatter is limited**: `allowed-tools` field is NOT enforced (neither fork nor inline mode). Per-skill `hooks` frontmatter is NOT implemented (v2.1.88). Skills are good for prompt injection and model override, but NOT for tool restriction or hook registration.
+  3. **Hook event keys are PascalCase**: `PostToolUse`, `PreToolUse`, `SessionStart` — not kebab-case.
+  4. **Parallel Agent spawning works**: Multiple Agent tool calls in one message execute truly concurrently with per-agent model override.
+  5. **Design implication**: TAD v3.0 must use `settings.json` global hooks as primary enforcement layer. Tool restriction via PreToolUse prompt hooks (not allowed-tools). Context-specific behavior via `matcher` + `if` patterns (not per-skill hooks).
+- **Action**: When designing framework extensions on Claude Code, validate mechanisms via spike before designing architecture. Source code reading ≠ runtime behavior. Hooks are the reliable enforcement primitive; skill frontmatter is for prompt delivery and model selection only.
+
+### Judgment-Only Skill Files: 76% Reduction is Safe - 2026-03-31
+- **Context**: TAD v3.0 Phase 3 — slimming Alex (2528→570) and Blake (1052→283) skill files
+- **Discovery**: When hooks handle automation and config YAML holds definitions, skill files can be reduced to judgment-only residual with no functionality loss:
+  1. **78% of Alex was non-judgment**: mechanical file operations, config duplication, verbose format specs
+  2. **The judgment core is compact**: Intent Router (50 lines), Socratic Inquiry (63 lines), Adaptive Complexity (40 lines) — core protocols total ~300 lines
+  3. **One-liner replacements work**: Protocols like *status (56→5 lines) can be reduced to a single instruction line when the model has config files to reference
+  4. **Forbidden actions list is small but critical**: 10 lines of unique guardrails that exist nowhere else — never remove
+- **Action**: When skill files grow large, audit for judgment vs mechanical. Mechanical logic should be in hooks/scripts, config in YAML, leaving skills as pure reasoning guides.
+
+### Claude Code Enforcement Priority Order — permissions.deny > hooks > allow - 2026-03-31
+- **Context**: Supplementary spike (Exp 3c) testing tool restriction mechanisms
+- **Discovery**: Claude Code's enforcement is layered with strict priority:
+  1. `permissions.deny` removes tools ENTIRELY before hooks even see them. Hooks CANNOT override deny.
+  2. `permissions.deny` only works at tool-name level (e.g., `"Write"`), NOT path patterns (e.g., `"Write(*.ts)"` doesn't work).
+  3. `bypassPermissions` mode overrides EVERYTHING including deny — TAD v3.0 must NOT use bypass mode.
+  4. **Best pattern for context-aware restriction**: Don't deny tools that sometimes need to be used. Instead, use PreToolUse prompt hooks (Haiku) for intelligent path/context gating. Reserve deny only for tools that should NEVER be available.
+- **Action**: For TAD v3.0, use two-layer enforcement: `permissions.deny` for hard tool removal (Bash rm patterns if needed), PreToolUse prompt hooks for everything else. Never deny a tool that a hook needs to conditionally allow.
