@@ -171,7 +171,10 @@ develop_command:
         group0: "spec-compliance-reviewer (NOT_SATISFIED=0, PARTIALLY≤3)"
         group1: "code-reviewer (P0=0, P1=0, P2≤10)"
         group2_parallel: "test-runner (100% pass, 70% cov) + security-auditor + performance-optimizer (conditional)"
-      escalation: "Same category 3x → escalate_to_alex"
+      escalation: |
+        Same category 3x → PAUSE implementation, generate message for human:
+        "⚠️ ESCALATION: Layer 2 failing repeatedly on {category}. Returning to Alex for re-design."
+        Wait for human to relay to Alex (Terminal 1). Do NOT auto-proceed.
       on_failure: "Fix → restart from Layer 1"
 
     4_gate3_v2:
@@ -192,7 +195,7 @@ gate3_v2:
     layer1: ["Build passes", "Tests pass (100%)", "Lint passes", "TypeScript compiles"]
     layer2: ["spec-compliance: all ACs satisfied", "code-reviewer: P0=0 P1=0", "test-runner: coverage ≥ threshold"]
     evidence: ["Expert evidence in .tad/evidence/reviews/", "Ralph Loop summary"]
-    knowledge: ["New discoveries? Yes/No", "Category", "Brief summary"]
+    knowledge: ["⚠️ BLOCKING: New discoveries? Yes/No", "Category", "Brief summary — missing = Gate invalid"]
     git: ["Changes committed", "Commit hash recorded"]
   blocking: true
 

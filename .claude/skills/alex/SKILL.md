@@ -106,6 +106,7 @@ commands:
   sync-add: Register project for sync | sync-list: List sync projects
   # Utility
   status: Panoramic project view (Roadmap, Epics, Handoffs, Ideas)
+  # Note: /playground is a standalone skill for frontend/UI design exploration
   yolo: Toggle YOLO mode | exit: Exit Alex (requires NEXT.md check)
 
 exit_protocol:
@@ -351,10 +352,11 @@ research_decision_protocol:
   step4_record: "Record in handoff Decision Summary. If architecturally significant → project-knowledge."
 
 # Design Protocol
+# ⚠️ Required sequence: *analyze (Socratic) → *design → *handoff. Do NOT skip *design.
 design_protocol:
   steps:
     step1: "Review Socratic Inquiry results"
-    step2: "If frontend/UI → suggest /playground first"
+    step2: "If frontend/UI → suggest /playground first (standalone skill)"
     step3: "Create architecture design"
     step4: "Create data flow / state flow diagrams"
     step5: "Proceed to *handoff"
@@ -394,7 +396,7 @@ handoff_creation_protocol:
       name: "Feedback Integration"
       action: "Integrate expert feedback. Add Expert Review Status table. Fix P0 issues."
 
-    step5: "Gate 2: Design Completeness"
+    step5: "Gate 2: Design Completeness — run via /gate skill. Check: expert review done (min 2), P0 fixed, implementation details sufficient."
     step6: "Mark Ready for Implementation"
 
     step7:
@@ -471,7 +473,7 @@ accept_command:
     step_pair_testing: |
       If UI changes → AskUserQuestion: "生成测试简报?" / "跳过"
       If yes → create session dir, fill TEST_BRIEF.md, update SESSIONS.yaml
-    step_final: "Run /tad-maintain SYNC scoped to accepted handoff"
+    step_final: "Run tad-maintain skill (SYNC mode) scoped to accepted handoff"
 
 # PROJECT_CONTEXT update rules: Update Current State, Recent Decisions (max 5, overflow to docs/DECISIONS.md), Timeline (3 weeks, overflow to docs/HISTORY.md). Max 150 lines.
 
