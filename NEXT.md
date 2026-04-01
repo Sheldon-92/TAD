@@ -2,6 +2,9 @@
 
 ## In Progress
 
+- [x] **EPIC: TAD v2.7.0 Hook-Native Architecture Rebuild** — ALL 6/6 PHASES COMPLETE (2026-03-31)
+  - Phase 0: Mechanism Spike (5/7 pass) → Phase 1: Blueprint → Phase 2: Hooks → Phase 3: Skills 76% reduction → Phase 4: CLAUDE.md + PreToolUse → Phase 5: v2.7.0 release
+  - Archived: .tad/archive/epics/EPIC-20260331-tad-v3-hook-native-rebuild.md
 
 ## Recently Completed
 
