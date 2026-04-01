@@ -1,9 +1,9 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.6.0 (4D Pair Testing + Autoresearch + Linear Integration)
-- **Last Updated**: 2026-03-25
-- **Framework**: TAD v2.6.0 + 4D Protocol + Autoresearch Mode + Linear Kanban + Auto-Sync
+- **Version**: 2.7.0 (Hook-Native Architecture Rebuild)
+- **Last Updated**: 2026-03-31
+- **Framework**: TAD v2.7.0 + Hook-Native Architecture + 76% Context Reduction
 
 ## Active Work
 (none)

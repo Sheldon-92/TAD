@@ -1,3 +1,8 @@
+---
+name: tad-help
+description: Comprehensive help guide for TAD Framework usage, commands, and workflows.
+---
+
 # TAD Help Command
 
 When this command is used, provide comprehensive help for using TAD Framework.

@@ -1,8 +1,8 @@
-# TAD Configuration v2.6.0 - Modular Config Architecture
+# TAD Configuration v2.7.0 - Hook-Native Architecture
 method: TAD
-version: 2.6.0
-description: Triangle Agent Development - 4D Pair Testing + Autoresearch Mode + Linear Integration
-last_updated: 2026-03-25
+version: 2.7.0
+description: Triangle Agent Development - Hook-Native Architecture + 76% Context Reduction
+last_updated: 2026-03-31
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
@@ -292,6 +292,16 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.7.0:
+    date: "2026-03-31"
+    changes:
+      - "Hook-Native Architecture: settings.json rewrite with SessionStart, PostToolUse, PreToolUse hooks"
+      - "Skill Reduction: Alex 2528→570 (78%), Blake 1052→283 (73%), CLAUDE.md 155→69 (56%)"
+      - "Context Optimization: 76% total reduction (59K→14K tokens)"
+      - "PreToolUse Prompt Hook: Haiku-based intelligent gating for Write/Edit"
+      - "Hooks as primary enforcement layer, skills as judgment-only"
+    breaking_changes: "settings.json format changed, skill files reduced (judgment-only)"
+
   v2.6.0:
     date: "2026-03-25"
     changes:

@@ -5,6 +5,47 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-03-31
+
+### Breaking Changes — Hook-Native Architecture Rebuild
+
+- `settings.json` rewritten to Claude Code native format (hooks + permissions)
+- Alex SKILL.md reduced from 2528 to 570 lines (78% reduction)
+- Blake SKILL.md reduced from 1052 to 283 lines (73% reduction)
+- CLAUDE.md reduced from 155 to 69 lines (56% reduction)
+
+### New Features
+
+- **Hook Infrastructure**: SessionStart health check, PostToolUse workflow reminders
+- **PreToolUse Prompt Hook**: Haiku-based intelligent gating for Write/Edit operations
+- **Native Claude Code Integration**: settings.json uses Claude Code's hook system directly
+
+### Architecture Changes
+
+- 5-layer architecture: CLAUDE.md router → settings.json hooks → .tad/hooks/ scripts → Skills (judgment-only) → Config YAML
+- Hook event keys confirmed PascalCase (PostToolUse, PreToolUse, SessionStart)
+- additionalContext injects as `<system-reminder>` (system-level authority)
+- Enforcement priority: permissions.deny > hooks > allow > user prompt
+
+### Context Optimization
+
+- Total context footprint reduced ~76% (59K → 14K tokens)
+- Hook scripts execute externally (zero context cost)
+- Skills contain only judgment logic (Socratic inquiry, intent routing, design decisions)
+
+### Known Limitations
+
+- `allowed-tools` frontmatter not enforced in Claude Code v2.1.88
+- Per-skill hooks in frontmatter not implemented
+- PreToolUse prompt hook adds ~2-5s latency per Write/Edit (Haiku round trip)
+- `permissions.deny` only works at tool-name level (no path patterns)
+
+### Migration Notes
+
+- Old settings.json backed up as `.claude/settings.json.v2-backup`
+- Hooks require `jq` installed (with grep fallback)
+- TAD v2.7 should NOT use `bypassPermissions` mode (deny rules don't work in bypass)
+
 ## [2.6.0] - 2026-03-25
 
 ### Added — 4D Pair Testing + Autoresearch + Linear Integration

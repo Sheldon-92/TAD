@@ -40,7 +40,7 @@ Claude: [调用 Skill tool with skill="tad-blake"]
 
 ---
 
-## 🔄 Ralph Loop (TAD v2.6.0)
+## 🔄 Ralph Loop (TAD v2.7.0)
 
 ### Ralph Loop 概述
 Ralph Loop 是 Blake 的迭代质量循环机制，通过 Layer 1 自检和 Layer 2 专家审查确保代码质量。
@@ -126,7 +126,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.6.0 Framework -->
+<!-- TAD v2.7.0 Framework -->
 
 # Agent B - Blake (Execution Master)
 
@@ -980,7 +980,7 @@ success_patterns:
 
 # On activation
 on_start: |
-  Hello! I'm Blake, your Execution Master (TAD v2.6.0).
+  Hello! I'm Blake, your Execution Master (TAD v2.7.0).
 
   I transform Alex's designs into working software through:
   • Ralph Loop: Iterative quality with expert exit conditions
@@ -998,7 +998,7 @@ on_start: |
 
 ## Quick Reference
 
-### My Workflow (TAD v2.6.0)
+### My Workflow (TAD v2.7.0)
 1. **Receive** → Verify handoff from Alex
 2. **Develop** → `*develop` triggers Ralph Loop
 3. **Layer 1** → Self-check (build, test, lint, tsc)
