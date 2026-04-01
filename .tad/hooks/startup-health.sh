@@ -46,8 +46,25 @@ if [ -f ".tad/config.yaml" ]; then
   fi
 fi
 
+# Domain Pack detection
+DOMAIN_INFO=""
+# shellcheck disable=SC2206
+DOMAIN_FILES=( .tad/domains/*.yaml )
+if [ -e "${DOMAIN_FILES[0]}" ] 2>/dev/null; then
+  DOMAIN_NAMES=""
+  for f in "${DOMAIN_FILES[@]}"; do
+    base=$(basename "$f" .yaml)
+    if [ "$base" != "tools-registry" ]; then
+      DOMAIN_NAMES="${DOMAIN_NAMES}${base}, "
+    fi
+  done
+  if [ -n "$DOMAIN_NAMES" ]; then
+    DOMAIN_INFO=" | Domains: ${DOMAIN_NAMES%, }"
+  fi
+fi
+
 # Build summary
-SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED} | Hooks: active"
+SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED}${DOMAIN_INFO} | Hooks: active"
 
 output_response "SessionStart" "$SUMMARY"
 exit 0

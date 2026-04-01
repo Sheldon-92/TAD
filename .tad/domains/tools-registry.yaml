@@ -1,0 +1,259 @@
+# Domain Pack Tools Registry
+# All domain packs reference this registry for tool definitions.
+# Each tool has enough info for Claude to use it without prior knowledge.
+registry_version: 1
+last_updated: "2026-04-01"
+maintainer: "TAD Framework"
+
+# Pre-flight verification command (run before using any tool)
+preflight: |
+  for tool in typst pandoc python3 d2; do
+    which $tool >/dev/null 2>&1 && echo "$tool: OK" || echo "$tool: NOT FOUND"
+  done
+
+capabilities:
+
+  pdf_generation:
+    description: "生成专业 PDF 文档（报告、one-pager、PRD）"
+    recommended:
+      name: typst
+      type: cli
+      install: "brew install typst"
+      verify: "typst --version"
+      usage: |
+        1. Write .typ file with Typst markup
+        2. Run: typst compile input.typ output.pdf
+      example: |
+        // report.typ
+        #set page(paper: "a4", margin: 2cm)
+        #set text(size: 11pt)
+        = Product Analysis Report
+        == Executive Summary
+        This report analyzes the competitive landscape...
+        #table(
+          columns: (1fr, 1fr, 1fr),
+          [Competitor], [Strength], [Weakness],
+          [CompA], [Fast delivery], [High price],
+          [CompB], [Low cost], [Limited features],
+        )
+      output_format: "PDF file"
+      tested: true
+      test_result: "39KB professional PDF with tables and styling"
+    alternatives:
+      - name: pandoc
+        type: cli
+        install: "brew install pandoc"
+        verify: "pandoc --version"
+        usage: "pandoc input.md --pdf-engine=typst -o output.pdf"
+        note: "Accepts Markdown input, uses Typst as PDF engine"
+        tested: true
+
+  slideshow_generation:
+    description: "Markdown → 可演示的幻灯片（HTML 或 PDF）"
+    recommended:
+      name: pandoc-revealjs
+      type: cli
+      install: "brew install pandoc (已内置)"
+      verify: "pandoc --version"
+      usage: "pandoc slides.md -t revealjs -s -o slides.html -V revealjs-url=https://unpkg.com/reveal.js"
+      example: |
+        ---
+        title: Product Pitch
+        ---
+        # The Problem
+        Users struggle with X...
+        ---
+        # Our Solution
+        We built Y that...
+        ---
+        # Market Size
+        The market is $Z billion...
+      output_format: "HTML file (open in browser for presentation)"
+      tested: true
+      test_result: "7KB self-contained HTML slides"
+    alternatives:
+      - name: slidev
+        type: cli
+        install: "npm init slidev@latest"
+        usage: "npx slidev build slides.md"
+        note: "More polished Vue-rendered slides, needs Node.js ≥20"
+      - name: gamma-mcp
+        type: mcp-cloud
+        note: "AI-generated presentations, see presentation_generation"
+
+  diagram_generation:
+    description: "生成架构图、流程图、定位图（SVG/PNG）"
+    recommended:
+      name: d2
+      type: cli
+      install: "brew install d2"
+      verify: "d2 --version"
+      usage: "d2 input.d2 output.svg (or output.png)"
+      example: |
+        # competitive-positioning.d2
+        direction: right
+        CompA: "Competitor A" {
+          style.fill: "#ff6b6b"
+          style.font-color: "#fff"
+        }
+        CompB: "Competitor B" {
+          style.fill: "#ffd93d"
+        }
+        Us: "Our Product" {
+          style.fill: "#51cf66"
+          style.font-color: "#fff"
+        }
+        CompA -> Us: "lower price"
+        CompB -> Us: "better UX"
+      output_format: "SVG or PNG"
+      tested: true
+      test_result: "SVG diagram generated successfully"
+      note: "Pure Go binary, no browser dependency (unlike Mermaid CLI)"
+    alternatives:
+      - name: python-matplotlib
+        type: cli
+        usage: "python3 script.py (for scatter/positioning plots)"
+        note: "Better for data-driven positioning charts"
+        tested: true
+      - name: mermaid-ink
+        type: api
+        usage: "HTTP API: https://mermaid.ink/img/{base64}"
+        note: "Mermaid syntax via HTTP, no local Puppeteer needed"
+
+  data_chart:
+    description: "生成数据图表（柱状图、饼图、趋势图、散点图）"
+    recommended:
+      name: python-matplotlib
+      type: cli
+      install: "python3 已内置 (pip install matplotlib if missing)"
+      verify: "python3 -c 'import matplotlib; print(matplotlib.__version__)'"
+      usage: |
+        Write Python script using matplotlib/seaborn, run with python3.
+        Save: plt.savefig('output.png', dpi=150, bbox_inches='tight')
+      example: |
+        import matplotlib; matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        categories = ['CompA', 'CompB', 'Us']
+        scores = [7, 5, 9]
+        colors = ['#ff6b6b', '#ffd93d', '#51cf66']
+        plt.bar(categories, scores, color=colors)
+        plt.title('Feature Comparison')
+        plt.ylabel('Score')
+        plt.savefig('comparison.png', dpi=150, bbox_inches='tight')
+      output_format: "PNG or SVG"
+      tested: true
+      test_result: "34KB PNG + 27KB SVG competitive chart"
+
+  web_scraping:
+    description: "结构化抓取网页内容（竞品页面、定价、评论）"
+    recommended:
+      name: jina-reader
+      type: api
+      install: "无需安装（通过 URL 前缀使用）"
+      verify: "curl -s https://r.jina.ai/https://example.com | head -5"
+      usage: "Use WebFetch tool with URL: https://r.jina.ai/{target_url}"
+      example: "WebFetch https://r.jina.ai/https://competitor.com/pricing"
+      output_format: "Clean Markdown text"
+      note: "免费 10M tokens, 无需 API key, 零安装"
+      tested: false
+    alternatives:
+      - name: firecrawl-mcp
+        type: mcp
+        install: "claude mcp add firecrawl -- npx firecrawl-mcp"
+        usage: "crawl({url, format: 'markdown'})"
+        note: "更强大（全站爬取, JSON schema提取），需 API key, 500 credits/月免费"
+      - name: builtin-webfetch
+        type: builtin
+        usage: "WebFetch tool (already available)"
+        note: "内置能力，直接可用，但不支持反爬绕过"
+
+  wireframe_generation:
+    description: "生成线框图/UI 原型"
+    recommended:
+      name: html-prototype
+      type: builtin
+      install: "无需安装"
+      verify: "N/A (uses Write tool)"
+      usage: "Generate HTML+CSS file with Write tool, open in browser"
+      example: |
+        Write an HTML file with embedded CSS:
+        <!DOCTYPE html><html><head><style>
+        .card { border: 1px solid #ddd; padding: 16px; border-radius: 8px; }
+        </style></head><body>
+        <div class="card"><h2>Feature Card</h2><p>Description...</p></div>
+        </body></html>
+      output_format: "HTML file (open in browser)"
+      note: "最灵活，无限制，Claude 擅长生成 HTML+CSS"
+    alternatives:
+      - name: figma-mcp
+        type: mcp
+        install: "claude mcp add figma --transport http https://mcp.figma.com/mcp"
+        usage: "Use Figma MCP tools to create frames, components"
+        note: "专业级但免费版仅 6 次/月"
+
+  email_sending:
+    description: "发送验证材料、调研问卷给目标用户"
+    recommended:
+      name: gmail-mcp
+      type: mcp-cloud
+      install: "Claude.ai 内置，需 OAuth 授权"
+      verify: "Call mcp__claude_ai_Gmail__authenticate"
+      usage: "mcp__claude_ai_Gmail tools: search, read, draft, send"
+      note: "支持附件、CC/BCC、HTML body"
+
+  calendar_scheduling:
+    description: "安排验证访谈、用户测试时间"
+    recommended:
+      name: google-calendar-mcp
+      type: mcp-cloud
+      install: "Claude.ai 内置，需 OAuth 授权"
+      verify: "Call mcp__claude_ai_Google_Calendar tools"
+      usage: |
+        - gcal_find_my_free_time: 查找空闲时段
+        - gcal_create_event: 创建事件
+        - gcal_list_events: 列出日程
+
+  presentation_generation:
+    description: "生成精美演示文稿/pitch deck（AI 驱动）"
+    recommended:
+      name: gamma-mcp
+      type: mcp-cloud
+      install: "Claude.ai 内置，需 OAuth 授权"
+      verify: "Call mcp__claude_ai_Gamma__authenticate"
+      usage: "Gamma MCP tools for AI-generated presentations with themes"
+      note: "最美观选择，需 Gamma 账号，免费计划有限制"
+    alternatives:
+      - name: pandoc-revealjs
+        type: cli
+        note: "见 slideshow_generation（本地，无限制）"
+
+  poster_design:
+    description: "生成海报、one-pager、社交媒体设计"
+    recommended:
+      name: canva-mcp
+      type: mcp-cloud
+      install: "Claude.ai 内置，需 OAuth 授权"
+      verify: "Call mcp__claude_ai_Canva__authenticate"
+      usage: "Canva MCP tools for design creation with brand kit"
+      note: "专业设计，支持品牌套件，免费计划限制多"
+    alternatives:
+      - name: typst
+        type: cli
+        note: "用 Typst 排版 PDF one-pager（不如 Canva 美观但无限制）"
+
+  docx_generation:
+    description: "生成 Word 文档（用于分享给非技术人员）"
+    recommended:
+      name: pandoc
+      type: cli
+      install: "brew install pandoc (已内置)"
+      verify: "pandoc --version"
+      usage: "pandoc input.md -o output.docx"
+      example: "pandoc PRD.md -o PRD.docx --reference-doc=template.docx"
+      output_format: "DOCX file"
+      tested: true
+      test_result: "11KB DOCX from Markdown"
+    alternatives:
+      - name: typst
+        type: cli
+        note: "Typst 只输出 PDF，不支持 DOCX"

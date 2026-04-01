@@ -1,0 +1,260 @@
+# Domain Pack: Product Definition
+# From idea to validated product concept — with real tool outputs
+domain: product-definition
+version: 1.0.0
+requires_registry: ">=1"
+description: "产品定义：从想法到可验证的产品方案。核心价值：直接产出交付物（PDF、图表、邮件），不是写建议。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: 用户与市场研究
+# ═══════════════════════════════════════
+
+capabilities:
+
+  user_research:
+    description: "确定目标用户、市场规模、痛点 — 基于真实数据"
+
+    steps:
+      - id: search_social
+        action: "搜索 3+ 社交平台的用户声音（Reddit, Twitter, ProductHunt, 知乎）"
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" AND ("pain point" OR "frustration" OR "问题")'
+          - '"site:reddit.com {领域} complaint OR wish"'
+          - '"{领域}" AND ("recommendation" OR "alternative")'
+        output_file: "user-research.md"
+
+      - id: scrape_reviews
+        action: "抓取竞品评论（G2, Capterra, App Store），提取 1-2 星差评"
+        tool_ref: web_scraping
+        queries:
+          - '"{竞品名}" review site:g2.com'
+          - '"{领域}" tools 1-star review'
+        output_file: "user-research.md (append)"
+
+      - id: market_data
+        action: "搜索市场规模、增长率、行业趋势"
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" market size 2025 2026'
+          - '"{领域}" market analysis site:scholar.google.com'
+        output_file: "user-research.md (append)"
+
+      - id: market_chart
+        action: "生成市场数据图表（规模/趋势/用户分布）"
+        tool_ref: data_chart
+        output_file: "market-chart.png"
+
+      - id: compile
+        action: "综合为用户画像报告（含置信度标注）"
+        tool_ref: pdf_generation
+        output_file: "user-research.pdf"
+
+    quality_criteria:
+      - "用户画像基于 ≥5 个不同来源的真实数据"
+      - "每条痛点有用户原话引用和 URL"
+      - "市场数据有可信来源（不接受无来源估算）"
+      - "置信度标注诚实（Low 不丢人，编造才丢人）"
+    anti_patterns:
+      - "❌ 不搜索就写画像 = 编故事"
+      - "❌ 只搜索一个平台 = 样本偏差"
+      - "❌ 用户原话是 AI 总结的 = 不是原话"
+
+    reviewers:
+      - persona: "市场分析师"
+        checklist:
+          - "TAM/SAM 数据是否有可信来源？"
+          - "用户画像是否基于真实数据？"
+          - "市场趋势是否有多个来源交叉验证？"
+
+  competitive_analysis:
+    description: "找到竞品、分析优劣、生成定位图、发现差异化机会"
+
+    steps:
+      - id: search_competitors
+        action: "搜索 5+ 竞品（3 直接 + 2 间接/替代方案）"
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" solution OR tool OR app'
+          - '"site:producthunt.com {领域}"'
+          - '"{领域}" workaround OR hack'
+        output_file: "competitive-analysis.md"
+
+      - id: scrape_details
+        action: "抓取每个竞品的功能/定价/定位页面"
+        tool_ref: web_scraping
+        output_file: "competitive-analysis.md (append)"
+
+      - id: generate_positioning_map
+        action: "生成 2x2 竞品定位图（选两个有意义的维度）"
+        tool_ref: diagram_generation
+        output_file: "competitive-matrix.svg"
+
+      - id: generate_feature_chart
+        action: "生成功能对比柱状图"
+        tool_ref: data_chart
+        output_file: "feature-comparison.png"
+
+      - id: compile_report
+        action: "综合为竞品分析报告 PDF"
+        tool_ref: pdf_generation
+        output_file: "competitive-analysis.pdf"
+
+    quality_criteria:
+      - "≥5 个竞品（含直接+间接+替代方案）"
+      - "功能矩阵用 Full/Partial/None/Unknown"
+      - "定位图有两个有意义的维度"
+      - "差异化机会基于竞品真实劣势"
+
+    reviewers:
+      - persona: "市场分析师"
+        checklist:
+          - "竞品列表是否完整？"
+          - "差异化机会是否有依据？"
+          - "定价数据是否来自官网？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: 产品定义与 PRD
+  # ═══════════════════════════════════════
+
+  product_definition:
+    description: "定义问题、价值主张、MVP 范围，生成 PRD"
+
+    steps:
+      - id: define_problem
+        action: |
+          用 5 段式问题定义：
+          "I am [用户类型] trying to [目标] but [障碍]
+           because [根因] which makes me feel [情感影响]"
+        tool_ref: null  # Conversation with user
+        output_file: "PRD.md (section 1)"
+
+      - id: value_proposition
+        action: |
+          6 部分 JTBD 价值主张 + Geoffrey Moore 定位声明:
+          "For [target] who [need], [product] is a [category] that [benefit].
+           Unlike [competitor], [product] [differentiator]."
+        tool_ref: null
+        output_file: "PRD.md (section 2)"
+
+      - id: mvp_scope
+        action: "定义 In Scope (≤5 功能) / Out of Scope (≥3 条) / Future"
+        tool_ref: null
+        output_file: "PRD.md (section 5)"
+
+      - id: generate_prd
+        action: "综合研究数据生成完整 PRD（含指标、假设、风险）"
+        tool_ref: pdf_generation
+        output_file: "PRD.pdf"
+
+    quality_criteria:
+      - "问题可以一句话说清（≤50 字）"
+      - "MVP ≤ 5 个功能，Out of Scope ≥ 3 条"
+      - "成功指标可测量（有基线和目标）"
+      - "关键假设有验证方法"
+      - "PRD 15 分钟内可读完"
+
+  # ═══════════════════════════════════════
+  # Capability 3: 快速验证
+  # ═══════════════════════════════════════
+
+  quick_validation:
+    description: "生成验证材料，联系验证对象，收集反馈"
+
+    artifact_menu:
+      one_pager:
+        when: "验证方案是否有吸引力"
+        tool_ref: pdf_generation
+        output_file: "one-pager.pdf"
+      landing_page:
+        when: "验证用户是否愿意行动"
+        tool_ref: wireframe_generation
+        output_file: "landing-page.html"
+      pitch_slides:
+        when: "验证产品愿景"
+        tool_ref: slideshow_generation
+        output_file: "pitch-slides.html"
+      press_release:
+        when: "Amazon Working Backwards 验证"
+        tool_ref: pdf_generation
+        output_file: "press-release.pdf"
+
+    steps:
+      - id: choose_artifact
+        action: "根据当前阶段建议最合适的验证材料"
+        tool_ref: null
+
+      - id: generate_artifact
+        action: "生成选定的验证材料文件"
+        tool_ref: "(depends on artifact_menu choice)"
+        output_file: "(depends on choice)"
+
+      - id: send_to_targets
+        action: "通过邮件发送验证材料给目标用户"
+        tool_ref: email_sending
+        note: "需要 Gmail MCP OAuth 授权"
+
+      - id: schedule_interviews
+        action: "安排验证访谈时间"
+        tool_ref: calendar_scheduling
+        note: "需要 Google Calendar MCP OAuth 授权"
+
+      - id: collect_feedback
+        action: "收集反馈，综合分析，建议决策（继续/调整/转向）"
+        tool_ref: null
+        output_file: "validation-round-{N}.md"
+
+    quality_criteria:
+      - "至少 1 轮验证已完成（有反馈数据）"
+      - "假设验证状态已更新"
+      - "下一步决策明确"
+
+    reviewers:
+      - persona: "产品总监"
+        checklist:
+          - "问题是否真实存在（有用户证据）？"
+          - "MVP 范围是否合理？"
+          - "成功指标是否可测量？"
+          - "关键风险是否已识别？"
+
+# ═══════════════════════════════════════
+# 产出物目录结构
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── user-research.md              # 用户研究报告
+  ├── user-research.pdf             # PDF 版 (Typst)
+  ├── market-chart.png              # 市场数据图表 (matplotlib)
+  ├── competitive-analysis.md       # 竞品分析
+  ├── competitive-analysis.pdf      # PDF 版 (Typst)
+  ├── competitive-matrix.svg        # 竞品定位图 (D2)
+  ├── feature-comparison.png        # 功能对比图 (matplotlib)
+  ├── PRD.md                        # 产品需求文档
+  ├── PRD.pdf                       # PDF 版 (Typst)
+  ├── one-pager.pdf                 # One-pager (Typst)
+  ├── pitch-slides.html             # 幻灯片 (reveal.js)
+  ├── landing-page.html             # 着陆页 (HTML)
+  └── validation-round-{N}.md      # 验证反馈记录
+
+# ═══════════════════════════════════════
+# Domain-specific Gate 标准
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "用户研究基于 ≥5 个真实来源"
+      - "竞品分析 ≥5 个竞品（含替代方案）"
+      - "问题定义可以一句话说清"
+      - "MVP 范围有明确的 In/Out/Future"
+      - "关键假设有验证方法"
+
+  gate4_acceptance:
+    checklist:
+      - "PRD 15 分钟可读完"
+      - "至少 1 轮验证已完成"
+      - "假设验证状态已更新"
+      - "下一步决策明确"
