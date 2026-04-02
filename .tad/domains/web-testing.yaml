@@ -438,7 +438,7 @@ capabilities:
           2. Playwright installed for screenshots: `playwright screenshot URL output.png`
           3. Identify focus areas: new features, changed pages, high-risk flows
           4. Human decides: what to explore first
-        tool_ref: e2e_testing
+        tool_ref: null
         output_file: "pair-test-session-plan.md"
 
       # Discover — AI explores and finds issues
@@ -528,6 +528,7 @@ capabilities:
           4. What's the risk profile? (payments = high risk, blog = low risk)
           5. What existing tests exist? (check for tests/ directory, CI config)
           6. Search for similar app test strategies: "testing strategy {app-type} best practices"
+        quality: "Search must find ≥3 sources. Document existing test infrastructure honestly."
         tool_ref: web_scraping
         output_file: "test-strategy-research.md"
 
@@ -581,6 +582,7 @@ capabilities:
           6. Flaky test policy
           7. Tool stack summary
           Generate as PDF with Typst for stakeholder sharing.
+        quality: "All numbers in document must trace to prior analysis steps. No fabricated metrics."
         tool_ref: pdf_generation
         output_file: "test-strategy.pdf"
 

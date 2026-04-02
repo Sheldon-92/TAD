@@ -890,8 +890,8 @@ capabilities:
       test_result: "encrypt/decrypt/get 全部正常，无需认证"
       note: "无需外部服务。支持多环境（.env.production, .env.staging）。"
 
-  performance_audit:
-    description: "Web 性能审计（Lighthouse CI — 性能、可访问性、SEO 评分）"
+  performance_audit_ci:
+    description: "Web 性能审计 CI 集成（Lighthouse CI — CI 断言模式）"
     recommended:
       name: lighthouse-ci
       type: cli

@@ -224,6 +224,11 @@ capabilities:
           - "Sensitive data in SecureStore?"
           - "Offline cache works?"
           - "Network state handled?"
+      - persona: "Offline Architecture Reviewer"
+        checklist:
+          - "Offline-first pattern implemented?"
+          - "Cache invalidation strategy defined?"
+          - "Data conflicts handled on reconnect?"
 
   # ═══════════════════════════════════════
   # Capability 4: API Integration
@@ -294,6 +299,11 @@ capabilities:
           - "Offline-first architecture implemented?"
           - "Mutations queue when offline?"
           - "Error handling at every boundary?"
+      - persona: "Mobile Security Reviewer"
+        checklist:
+          - "Auth tokens stored in SecureStore?"
+          - "API keys not in client bundle?"
+          - "Certificate pinning considered?"
 
   # ═══════════════════════════════════════
   # Capability 5: Platform Features
@@ -333,7 +343,7 @@ capabilities:
           2. Permission denial handled (app doesn't crash, shows helpful message)
           3. app.json plugins correctly configured
           4. iOS privacy descriptions present
-        tool_ref: null
+        tool_ref: mobile_simulator
         output_file: "platform-features-verification.md"
 
       - id: optimize_features
@@ -406,7 +416,7 @@ capabilities:
         tool_ref: null
         output_file: "performance-results.md"
 
-      - id: optimize_further
+      - id: optimize_performance
         action: |
           Advanced optimizations if needed:
           1. Enable Hermes engine (default in Expo SDK ≥49)
