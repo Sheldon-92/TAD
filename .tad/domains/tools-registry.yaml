@@ -1030,3 +1030,161 @@ capabilities:
       tested: false
       test_result: "Not tested (requires Android SDK)"
       note: "Requires Android SDK. For Expo, use 'npx expo run:android' or 'eas build'."
+
+  # ═══════════════════════════════════════
+  # Mobile Release Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  fastlane_release:
+    description: "iOS/Android release automation — build, sign, upload, submit"
+    recommended:
+      name: fastlane
+      type: cli
+      install: "brew install fastlane"
+      verify: "fastlane --version"
+      usage: |
+        fastlane init                          # Setup (generates Appfile + Fastfile)
+        fastlane ios beta                      # Build + upload to TestFlight
+        fastlane ios release                   # Submit to App Store
+        fastlane deliver download_metadata     # Pull existing metadata
+        fastlane deliver download_screenshots  # Pull existing screenshots
+        fastlane match development             # Sync dev certificates
+        fastlane pilot upload                  # Upload to TestFlight
+        fastlane pilot add email@test.com      # Add tester
+        fastlane snapshot                      # Generate screenshots
+      example: |
+        # Setup
+        fastlane init
+        # Generates:
+        # fastlane/
+        # ├── Appfile      (app_identifier, apple_id, team_id)
+        # └── Fastfile     (lanes: test, beta, release)
+
+        # Upload to TestFlight
+        fastlane ios beta
+        # Steps: match → increment_build_number → gym → pilot upload
+      output_format: "IPA/AAB builds + App Store Connect upload"
+      tested: true
+      test_result: "fastlane 4.0.0 installed via brew, actions list works. Most operations need Apple Developer Account."
+      note: "Core tool for iOS release. Requires Apple Developer Account for most operations. Use API key auth (not password)."
+
+  eas_submit:
+    description: "Expo Application Services — build + submit for Expo projects"
+    recommended:
+      name: eas-cli
+      type: cli
+      install: "npm install -g eas-cli"
+      verify: "eas --version"
+      usage: |
+        eas build --platform ios              # Build iOS in cloud
+        eas submit --platform ios             # Submit to App Store / TestFlight
+        eas build --platform android          # Build Android in cloud
+        eas submit --platform android         # Submit to Play Store
+        eas update                            # OTA update (no rebuild)
+      example: |
+        # Configure (eas.json already created by expo init)
+        eas build:configure
+
+        # Build + submit to TestFlight
+        eas build --platform ios --profile production
+        eas submit --platform ios --latest
+      output_format: "Cloud build URL + submission status"
+      tested: false
+      test_result: "eas-cli 18.5.0 installed, version command works. Build/submit needs Expo account."
+      note: "Cloud-based — no local Xcode needed for builds. Requires Expo account + Apple Developer Account."
+
+  version_tool:
+    description: "Apple version number management (agvtool)"
+    recommended:
+      name: agvtool
+      type: cli
+      install: "macOS built-in (requires full Xcode, not just Command Line Tools)"
+      verify: "agvtool what-version"
+      usage: |
+        agvtool what-version                  # Show current build number
+        agvtool next-version -all             # Increment build number
+        agvtool new-version -all 42           # Set specific build number
+        agvtool what-marketing-version        # Show marketing version (CFBundleShortVersionString)
+        agvtool new-marketing-version 1.2.0   # Set marketing version
+      example: |
+        agvtool what-version
+        # Current version of project MyApp is: 23
+
+        agvtool next-version -all
+        # Setting version of project MyApp to: 24
+
+        agvtool new-marketing-version 1.2.0
+        # Setting CFBundleShortVersionString of project MyApp to: 1.2.0
+      output_format: "Terminal output with version numbers"
+      tested: false
+      test_result: "Binary exists at /usr/bin/agvtool but requires full Xcode"
+      note: "Only for native Xcode projects. For Expo, version is in app.json."
+
+  # ═══════════════════════════════════════
+  # Mobile Testing Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  bundle_analyzer:
+    description: "JS bundle 大小分析（source-map-explorer）— 无需模拟器"
+    recommended:
+      name: source-map-explorer
+      type: cli
+      install: "npx source-map-explorer (auto-downloads)"
+      verify: "npx source-map-explorer --version"
+      usage: |
+        npx source-map-explorer bundle.js           # 分析 bundle
+        npx source-map-explorer bundle.js --html report.html  # HTML 报告
+        npx source-map-explorer bundle.js --json report.json  # JSON 报告
+      example: |
+        # 分析 React Native bundle
+        npx source-map-explorer ios/main.jsbundle --json bundle-report.json
+        # Output: { "results": [{ "bundleName": "main.jsbundle", "totalBytes": 1234567, "files": {...} }] }
+      output_format: "HTML report or JSON analysis"
+      tested: true
+      test_result: "成功分析 JS bundle，输出文件大小分布"
+      note: "无需模拟器/真机。直接分析 .js/.jsbundle 文件。"
+
+  mobile_a11y_lint:
+    description: "React Native 可访问性静态检查（ESLint 插件）"
+    recommended:
+      name: eslint-plugin-react-native-a11y
+      type: cli
+      install: "npm install -D eslint-plugin-react-native-a11y"
+      verify: "npx eslint --print-config . | grep react-native-a11y"
+      usage: |
+        1. Add to .eslintrc: { "plugins": ["react-native-a11y"], "extends": ["plugin:react-native-a11y/all"] }
+        2. Run: npx eslint . --ext .tsx,.ts
+        3. Catches: missing accessibilityLabel, missing accessibilityRole, touchable without a11y props
+      example: |
+        npx eslint src/ --ext .tsx --rule 'react-native-a11y/has-accessibility-props: error'
+        # Output: src/Button.tsx(5,3): error Missing accessibilityLabel on Pressable
+      output_format: "Terminal diagnostics with file:line"
+      tested: true
+      test_result: "检测缺少 accessibilityLabel 和 accessibilityRole"
+      note: "静态检查，无需运行 App。覆盖 WCAG 约 30-40% 的可访问性问题。"
+
+  ios_simulator:
+    description: "iOS 模拟器管理（boot/screenshot/install/launch）"
+    recommended:
+      name: simctl
+      type: cli
+      install: "需要 Xcode（通过 /Applications/Xcode.app/.../simctl 调用）"
+      verify: "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl list devices"
+      usage: |
+        SIMCTL=/Applications/Xcode.app/Contents/Developer/usr/bin/simctl
+        $SIMCTL list devices available         # 列出可用设备
+        $SIMCTL boot "iPhone 16 Pro"           # 启动模拟器
+        $SIMCTL io booted screenshot out.png   # 截图
+        $SIMCTL install booted app.app         # 安装 App
+        $SIMCTL launch booted com.example.app  # 启动 App
+        $SIMCTL shutdown booted                # 关闭模拟器
+      example: |
+        SIMCTL=/Applications/Xcode.app/Contents/Developer/usr/bin/simctl
+        $SIMCTL boot "iPhone 16 Pro"
+        $SIMCTL io booted screenshot /tmp/sim-screenshot.png
+        # Output: /tmp/sim-screenshot.png (1290x2796 PNG)
+        $SIMCTL shutdown booted
+      output_format: "PNG screenshots, terminal output"
+      tested: true
+      test_result: "boot/screenshot/shutdown 全部成功，iOS 26.2 模拟器可用"
+      note: "需要完整 Xcode（非 Command Line Tools）。本机已安装。"

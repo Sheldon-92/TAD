@@ -1,0 +1,607 @@
+# Domain Pack: Mobile Release
+# From build to App Store — metadata, compliance, distribution, monitoring
+domain: mobile-release
+version: 1.0.0
+requires_registry: ">=1"  # Requires 2026-04-02 registry (fastlane_release, eas_submit, version_tool)
+description: "移动端发布：从构建到 App Store 上架（iOS 为主，Android 基础支持）。覆盖元数据、合规检查、TestFlight 分发、隐私政策、版本管理、发布自动化、发布后监控。核心价值：防止 App Store 审核拒审。"
+
+output_dir: ".tad/active/release/{project}/"
+# NOTE: Config files (Fastfile, eas.json) go into the project directory.
+# output_dir for TAD documentation (compliance reports, privacy policy drafts).
+
+# Capability types:
+#   Code B (4): store_metadata, testflight_distribution, version_management, release_automation
+#   Doc A (2): review_compliance, privacy_policy
+#   Mixed (1): post_release_monitoring
+
+capabilities:
+
+  # ═══════════════════════════════════════
+  # Capability 1: Store Metadata (Code B)
+  # ═══════════════════════════════════════
+
+  store_metadata:
+    description: "App Store metadata — title, description, keywords, screenshots, localization"
+
+    steps:
+      - id: select_metadata_strategy
+        action: |
+          Determine metadata approach:
+          1. New app → create from scratch
+          2. Existing app → `fastlane deliver download_metadata` to pull current
+          3. Multi-language? → plan localization files per language
+          4. Define target keywords (search volume vs competition, 100-char limit)
+          Review competitors' App Store listings for keyword inspiration.
+        tool_ref: web_scraping
+        output_file: "metadata-strategy.md"
+
+      - id: execute_metadata
+        action: |
+          Create metadata files:
+          1. Title (≤30 chars): clear, includes primary keyword
+          2. Subtitle (≤30 chars): value proposition
+          3. Keywords (100 chars): comma-separated, no spaces after commas, no title duplicates
+          4. Description: feature-focused, not marketing fluff. First 3 lines visible without "more"
+          5. Screenshots: actual app, correct device sizes (6.7" + 6.1" minimum)
+          6. App category: select most accurate category
+          Write to fastlane/metadata/en-US/ directory (or app.json for Expo).
+        tool_ref: fastlane_release
+        output_file: "fastlane/metadata/ (metadata files)"
+
+      - id: verify_metadata
+        action: |
+          Verify metadata quality:
+          1. Title ≤ 30 chars? Subtitle ≤ 30 chars?
+          2. Keywords ≤ 100 chars? No title word duplicates?
+          3. Screenshots show actual app (not mockups)?
+          4. Description first 3 lines compelling?
+          5. All required device sizes present?
+        tool_ref: null
+        output_file: "metadata-verification.md"
+
+      - id: optimize_metadata
+        action: |
+          ASO (App Store Optimization):
+          1. A/B test descriptions if possible (App Store Connect supports this)
+          2. Use all 100 keyword chars (don't waste space)
+          3. Avoid repeating words across title + subtitle + keywords
+          4. Localize for top markets (en, zh, ja, ko, de, fr minimum for global)
+        tool_ref: null
+        output_file: "metadata-optimization.md"
+
+    quality_criteria:
+      - "Title ≤ 30 chars, subtitle ≤ 30 chars"
+      - "Keywords ≤ 100 chars, no title duplicates, no spaces after commas"
+      - "Screenshots show actual app (not mockups or renders)"
+      - "Description first 3 lines explain what the app does"
+      - "Fabricated download numbers or invented reviews = FAIL"
+
+    anti_patterns:
+      - "❌ Screenshots showing features not in the app (guideline 2.3.1 rejection)"
+      - "❌ Keywords duplicating title words (wasted characters)"
+      - "❌ Marketing fluff description ('revolutionary', 'best ever')"
+      - "❌ Missing required device screenshot sizes"
+
+    reviewers:
+      - persona: "App Store Optimization Specialist"
+        checklist:
+          - "Keywords maximized within 100-char limit?"
+          - "Screenshots accurately represent app?"
+          - "Description conversion-focused?"
+
+  # ═══════════════════════════════════════
+  # Capability 2: TestFlight Distribution (Code B)
+  # ═══════════════════════════════════════
+
+  testflight_distribution:
+    description: "Build, sign, upload to TestFlight for beta testing"
+
+    steps:
+      - id: select_distribution_method
+        action: |
+          Choose distribution method:
+          1. Expo project → EAS Build + EAS Submit (`eas build --platform ios && eas submit`)
+          2. Native/RN CLI → fastlane (`fastlane ios beta`)
+          3. CI/CD → GitHub Actions + fastlane/EAS
+          Decision: Expo = EAS, Native = fastlane. Both need Apple Developer Account.
+        tool_ref: null
+        output_file: "distribution-plan.md"
+
+      - id: execute_distribution
+        action: |
+          For fastlane:
+          1. `fastlane match development` → sync certificates (encrypted git repo)
+          2. `fastlane run increment_build_number` → auto-increment
+          3. `fastlane gym` → build + archive
+          4. `fastlane pilot upload` → upload to TestFlight
+          5. `fastlane pilot add email@test.com` → add testers
+          For EAS:
+          1. `eas build:configure` → setup eas.json
+          2. `eas build --platform ios --profile preview` → cloud build
+          3. `eas submit --platform ios --latest` → upload to TestFlight
+          Auth: always use App Store Connect API key (.p8), NOT password.
+        tool_ref: fastlane_release
+        output_file: "fastlane/Fastfile (or eas.json)"
+
+      - id: verify_distribution
+        action: |
+          Verify:
+          1. Build succeeds (IPA generated or EAS build completes)
+          2. Upload to TestFlight succeeds
+          3. Build appears in App Store Connect
+          4. Testers can install via TestFlight
+        tool_ref: null
+        output_file: "distribution-verification.md"
+
+      - id: optimize_distribution
+        action: |
+          Optimize:
+          1. Cache certificates with fastlane match (avoid re-creating)
+          2. Use API key auth exclusively (faster, no 2FA prompts)
+          3. Add CI integration (GitHub Actions with setup_ci)
+          4. Auto-notify testers on new build
+        tool_ref: null
+        output_file: "distribution-optimization.md"
+
+    quality_criteria:
+      - "Build succeeds (IPA or EAS build)"
+      - "Upload to TestFlight succeeds"
+      - "API key auth used (not password)"
+      - "Build number incremented before each upload"
+      - "Fabricated build statuses or invented TestFlight URLs = FAIL"
+
+    anti_patterns:
+      - "❌ Password auth (deprecated, 2FA issues in CI)"
+      - "❌ Manual screenshot upload for multi-language"
+      - "❌ Not incrementing build number (upload rejected)"
+      - "❌ Sharing certificates via email (use fastlane match)"
+
+    reviewers:
+      - persona: "Release Engineer"
+        checklist:
+          - "Code signing automated (match or EAS)?"
+          - "Build number auto-incremented?"
+          - "CI/CD pipeline configured?"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Review Compliance (Doc A) — CORE VALUE
+  # ═══════════════════════════════════════
+
+  review_compliance:
+    description: "App Store review guideline compliance check — prevent rejection BEFORE submission"
+
+    steps:
+      # Layer 1: Search — gather current guidelines
+      - id: search_guidelines
+        action: |
+          Search for current Apple review guidelines and rejection data:
+          1. Read official guidelines: developer.apple.com/app-store/review/guidelines/
+          2. Search "App Store rejection reasons 2026" for current common issues
+          3. Check if app uses AI (new 2026 requirement: must disclose)
+          4. Check if app has IAP/subscriptions (strict pricing transparency rules)
+        quality: "Must reference actual Apple guideline numbers, not generic advice."
+        tool_ref: web_scraping
+        output_file: "guidelines-research.md"
+
+      # Layer 2: Analyze — check app against guidelines
+      - id: analyze_compliance
+        action: |
+          Run compliance checklist against THIS app (from theapplaunchpad 2026 research):
+          | # | Check | Guideline | Status | Notes |
+          |---|-------|-----------|--------|-------|
+          | 1 | App doesn't crash on launch or normal use | 2.1 | ? | |
+          | 2 | Privacy labels match actual data collection | 5.1.1 | ? | |
+          | 3 | Screenshots show actual app features | 2.3.1 | ? | |
+          | 4 | All links work (privacy policy, terms, support) | 2.1 | ? | |
+          | 5 | IAP pricing/terms clearly displayed | 3.1.1 | ? | |
+          | 6 | No excessive performance issues | 2.1 | ? | |
+          | 7 | Privacy policy accessible via link | 5.1.1 | ? | |
+          | 8 | AI features disclosed (if applicable) | 5.6.4 | ? | |
+          | 9 | Accessibility: Dynamic Type + Dark Mode | 2.1 | ? | |
+          | 10 | Built with latest Xcode + supports current iOS | 2.1 | ? | |
+          Mark each: PASS / FAIL / N/A. For FAIL, note specific issue.
+        quality: "Each check must reference the specific Apple guideline number."
+        tool_ref: null
+        output_file: "compliance-checklist.md"
+
+      # Layer 3: Derive — prioritize fixes
+      - id: derive_fix_plan
+        action: |
+          For each FAIL item:
+          1. Severity: blocking (will be rejected) vs warning (might be rejected)
+          2. Fix effort: quick (< 1 hour) vs significant (> 1 day)
+          3. Priority: blocking + quick first
+          4. If app has login → must provide demo account for Apple reviewer
+          Output: prioritized fix list with estimated effort.
+          If all PASS → output "✅ Ready for submission"
+        quality: "Fix plan must be actionable (specific code/config changes), not vague advice."
+        tool_ref: null
+        output_file: "compliance-fix-plan.md"
+
+      # Layer 4: Generate — produce compliance report
+      - id: generate_compliance_report
+        action: |
+          Generate formatted compliance report:
+          1. Executive summary: READY / NOT READY
+          2. Checklist table with all 10 items + status
+          3. Fix plan (if any items failed)
+          4. Apple reviewer notes (demo account, special instructions)
+          Generate as PDF for stakeholder review.
+        quality: "All guideline numbers must be accurate. No fabricated compliance statuses."
+        tool_ref: pdf_generation
+        output_file: "compliance-report.pdf"
+
+    quality_criteria:
+      - "All 10 checklist items evaluated with specific Apple guideline numbers"
+      - "Each FAIL has specific fix plan (not 'fix the bug')"
+      - "Demo account provided if app has login"
+      - "AI disclosure checked (2026 requirement)"
+      - "Fabricated compliance statuses or invented guideline numbers = FAIL"
+
+    anti_patterns:
+      - "❌ Submitting without running compliance check (1-7 day wait if rejected)"
+      - "❌ Partial fix for rejection issues (triggers re-rejection)"
+      - "❌ No demo account for reviewer (automatic rejection if login required)"
+      - "❌ Ignoring AI disclosure requirement (new in 2026)"
+
+    reviewers:
+      - persona: "App Store Review Specialist"
+        checklist:
+          - "All 10 compliance items checked?"
+          - "Guideline numbers accurate?"
+          - "Demo account ready?"
+      - persona: "Privacy Compliance Officer"
+        checklist:
+          - "Privacy labels match actual behavior?"
+          - "AI data usage disclosed?"
+          - "Third-party SDK data collection documented?"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Privacy Policy (Doc A)
+  # ═══════════════════════════════════════
+
+  privacy_policy:
+    description: "Generate privacy policy + App Privacy Labels — legally required, rejection-preventing"
+
+    steps:
+      - id: search_requirements
+        action: |
+          Identify privacy requirements for THIS app:
+          1. What user data is collected? (account info, location, photos, analytics, etc.)
+          2. What third-party SDKs are used? (each SDK collects data)
+          3. Does the app use AI/ML? (must disclose data sharing with AI providers)
+          4. Is the app for children? (COPPA requirements apply)
+          Search: "Apple App Privacy labels requirements 2026"
+        quality: "Must identify ALL data collection including third-party SDKs."
+        tool_ref: web_scraping
+        output_file: "privacy-audit.md"
+
+      - id: analyze_data_practices
+        action: |
+          For each data type collected, document:
+          | Data Type | Collected By | Purpose | Linked to User? | Used for Tracking? |
+          These map directly to App Privacy Labels in App Store Connect.
+          Categories: Contact Info, Health, Financial, Location, Sensitive, Contacts,
+          User Content, Browsing History, Search History, Identifiers, Usage Data,
+          Diagnostics, Other Data.
+        quality: "Every SDK must be checked for data collection. Missing one = privacy label mismatch = rejection."
+        tool_ref: null
+        output_file: "data-practices-matrix.md"
+
+      - id: interrogate_developer
+        action: |
+          BEFORE generating privacy policy, ask the developer:
+          1. List ALL third-party SDKs in your project (check package.json/Podfile)
+          2. Does the app collect user accounts? What fields?
+          3. Does the app use location/camera/microphone? When?
+          4. Does the app use AI/ML? Is data sent to a cloud API?
+          5. Is this app for children (under 13)?
+          6. Do you have a URL to host the privacy policy?
+          DO NOT PROCEED without developer's answers. A privacy policy with wrong
+          data categories is legally worse than no privacy policy.
+        quality: "Developer must confirm SDK list and data practices before any generation."
+        tool_ref: null
+        output_file: "developer-privacy-answers.md"
+
+      - id: derive_privacy_policy
+        action: |
+          Based on developer's answers, generate privacy policy content:
+          1. What data we collect (from audit above)
+          2. Why we collect it (purpose per data type)
+          3. How we store it (encryption, retention period)
+          4. Who we share it with (third-party list)
+          5. User rights (access, deletion, opt-out)
+          6. Contact info for privacy questions
+          7. AI/ML disclosure (if applicable)
+          8. Children's privacy (COPPA if applicable)
+        quality: "Privacy policy must be specific to THIS app, not a generic template."
+        tool_ref: null
+        output_file: "privacy-policy.md"
+
+      - id: generate_privacy_docs
+        action: |
+          Generate final documents:
+          1. Privacy policy page (HTML for hosting)
+          2. Privacy policy PDF (for records)
+          3. App Privacy Labels mapping (for App Store Connect entry)
+          Host privacy policy at accessible URL (required by Apple).
+        tool_ref: pdf_generation
+        output_file: "privacy-policy.html + privacy-policy.pdf"
+
+    quality_criteria:
+      - "All data collection identified (including third-party SDKs)"
+      - "App Privacy Labels match actual data practices exactly"
+      - "Privacy policy accessible via URL (not just in-app)"
+      - "AI/ML data disclosure included (if applicable)"
+      - "Fabricated privacy claims or invented data practices = FAIL"
+
+    anti_patterns:
+      - "❌ Generic template privacy policy (must be app-specific)"
+      - "❌ Privacy labels don't match actual behavior (top rejection reason)"
+      - "❌ Missing third-party SDK data disclosure"
+      - "❌ No accessible URL for privacy policy"
+
+    reviewers:
+      - persona: "Privacy Compliance Officer"
+        checklist:
+          - "All data collection accurately documented?"
+          - "Privacy labels match actual practices?"
+          - "Third-party SDKs all accounted for?"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Version Management (Code B)
+  # ═══════════════════════════════════════
+
+  version_management:
+    description: "Semantic versioning + build number management — automated, consistent, tagged"
+
+    steps:
+      - id: select_version_strategy
+        action: |
+          Choose versioning approach:
+          1. Expo → version in app.json ("version": "1.0.0", "ios.buildNumber": "1")
+          2. Native → agvtool or fastlane increment_build_number
+          3. Semantic versioning: MAJOR.MINOR.PATCH
+             - MAJOR: breaking changes / major redesign
+             - MINOR: new features
+             - PATCH: bug fixes
+          4. Build number: auto-increment on every TestFlight upload
+        tool_ref: null
+        output_file: "version-strategy.md"
+
+      - id: execute_versioning
+        action: |
+          Set up version management:
+          1. For Expo: script to bump app.json version + buildNumber
+          2. For native: fastlane lane to increment + commit
+          3. Git tag on each release: `git tag v{version}`
+          4. CHANGELOG.md generation (optional: from git commits)
+        tool_ref: version_tool
+        output_file: "version config files"
+
+      - id: verify_versioning
+        action: |
+          Verify:
+          1. Version number follows semver (X.Y.Z)
+          2. Build number increments on each upload
+          3. Git tag exists for current version
+          4. Version in app matches version in Store listing
+        tool_ref: null
+        output_file: "version-verification.md"
+
+      - id: optimize_versioning
+        action: |
+          Optimize:
+          1. Automate in CI (increment build number on merge to main)
+          2. Auto-generate CHANGELOG from conventional commits
+          3. Pre-release versions for beta: 1.0.0-beta.1
+        tool_ref: null
+        output_file: "version-optimization.md"
+
+    quality_criteria:
+      - "Version follows semantic versioning (MAJOR.MINOR.PATCH)"
+      - "Build number auto-incremented before each TestFlight upload"
+      - "Git tag exists for each release"
+      - "Fabricated version numbers or skipped builds = FAIL"
+
+    anti_patterns:
+      - "❌ Manual version bumping (error-prone, forgettable)"
+      - "❌ Same build number for multiple uploads (rejected)"
+      - "❌ No git tags (can't trace what was in which release)"
+
+    reviewers:
+      - persona: "Release Manager"
+        checklist:
+          - "Semver followed?"
+          - "Build numbers sequential?"
+          - "Git tags present?"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Release Automation (Code B)
+  # ═══════════════════════════════════════
+
+  release_automation:
+    description: "CI/CD pipeline for automated build → test → upload → submit"
+
+    steps:
+      - id: select_ci_platform
+        action: |
+          Choose CI/CD approach:
+          1. GitHub Actions + fastlane → most flexible, free for public repos
+          2. EAS Build → cloud-based, no local Xcode needed
+          3. Xcode Cloud → Apple-native, tight integration
+          Decision based on: existing CI, team familiarity, budget.
+        tool_ref: null
+        output_file: "ci-strategy.md"
+
+      - id: execute_ci_setup
+        action: |
+          Set up release pipeline:
+          1. Create .github/workflows/release.yml (or eas.json profiles)
+          2. Stages: lint → test → build → upload → notify
+          3. Secrets: Apple API key, match passphrase, team ID
+          4. For fastlane + GitHub Actions: use `setup_ci` action (temporary keychain)
+          5. For EAS: configure build profiles (development, preview, production)
+        tool_ref: fastlane_release
+        output_file: ".github/workflows/release.yml (or eas.json)"
+
+      - id: verify_ci
+        action: |
+          Verify pipeline:
+          1. Push to trigger branch → CI runs
+          2. Build succeeds in CI
+          3. Upload to TestFlight succeeds from CI
+          4. Secrets not exposed in logs
+        tool_ref: null
+        output_file: "ci-verification.md"
+
+      - id: optimize_ci
+        action: |
+          Optimize:
+          1. Cache dependencies (node_modules, CocoaPods)
+          2. Parallel jobs where possible (lint + test in parallel, build after)
+          3. Conditional submission (only on tagged commits)
+          4. Slack/Discord notification on success/failure
+        tool_ref: null
+        output_file: "ci-optimization.md"
+
+    quality_criteria:
+      - "CI pipeline triggers on push/tag"
+      - "Build + upload succeeds in CI environment"
+      - "Secrets stored securely (not in code)"
+      - "Pipeline has lint → test → build → upload stages"
+      - "Fabricated CI results or invented pipeline statuses = FAIL"
+
+    anti_patterns:
+      - "❌ Secrets in code (API keys, certificates)"
+      - "❌ No CI (manual build + upload every time)"
+      - "❌ Skipping tests in CI (false confidence)"
+
+    reviewers:
+      - persona: "DevOps Engineer"
+        checklist:
+          - "Secrets management secure?"
+          - "Pipeline stages complete?"
+          - "Cache strategy reduces build time?"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Post-Release Monitoring (Mixed)
+  # ═══════════════════════════════════════
+
+  post_release_monitoring:
+    description: "Monitor app health after release — crashes, ratings, reviews, downloads"
+
+    steps:
+      - id: setup_monitoring
+        action: |
+          Configure monitoring tools:
+          1. Crash reporting: Sentry or Firebase Crashlytics (integrate SDK)
+          2. Analytics: App Store Connect analytics (built-in)
+          3. Review monitoring: App Store Connect API or third-party (AppFollow)
+          4. Performance: Sentry performance monitoring
+        tool_ref: null
+        output_file: "monitoring-setup.md"
+
+      - id: define_alerts
+        action: |
+          Define alert thresholds:
+          1. Crash-free rate: alert if < 99%
+          2. Rating: alert if drops below 4.0
+          3. 1-star reviews: alert on each (respond within 48h)
+          4. Download trend: alert if drops > 30% week-over-week
+        tool_ref: null
+        output_file: "alert-config.md"
+
+      - id: respond_to_feedback
+        action: |
+          Review response protocol (from rshankras research):
+          1. Respond to all 1-2 star reviews within 48 hours
+          2. Thank positive reviewers (brief, authentic)
+          3. For bug reports in reviews: acknowledge + fix timeline
+          4. Never argue with reviewers
+          Human reviews and approves responses before posting.
+        tool_ref: null
+        output_file: "review-response-templates.md"
+
+      - id: iterate_release
+        action: |
+          Based on monitoring data:
+          1. Top crashes → hotfix release (version X.Y.Z+1)
+          2. Feature requests → add to backlog
+          3. Poor ratings on specific feature → investigate and prioritize
+          4. Track: crash-free rate, DAU, retention, rating trend
+        tool_ref: null
+        output_file: "post-release-analysis.md"
+
+    quality_criteria:
+      - "Crash reporting configured and tested"
+      - "Review response protocol defined (48h SLA)"
+      - "Alert thresholds set for crash rate and rating"
+      - "Fabricated monitoring data or invented crash rates = FAIL"
+
+    anti_patterns:
+      - "❌ No crash reporting (blind to production issues)"
+      - "❌ Ignoring 1-star reviews (missed feedback + poor optics)"
+      - "❌ No alert thresholds (find problems from user complaints, not data)"
+
+    reviewers:
+      - persona: "Product Manager"
+        checklist:
+          - "Crash reporting active?"
+          - "Review response SLA defined?"
+          - "Post-release metrics tracked?"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  {project}/fastlane/                   # Fastlane config (native)
+  ├── Appfile                           # App identifiers + team
+  ├── Fastfile                          # Lanes: test, beta, release
+  └── metadata/en-US/                   # Localized metadata
+      ├── name.txt
+      ├── subtitle.txt
+      ├── keywords.txt
+      ├── description.txt
+      └── release_notes.txt
+
+  {project}/                            # Expo config
+  ├── app.json                          # Version, buildNumber, plugins
+  └── eas.json                          # Build profiles
+
+  .tad/active/release/{project}/        # TAD documentation
+  ├── compliance-report.pdf             # Review compliance checklist
+  ├── compliance-checklist.md           # Raw checklist data
+  ├── privacy-policy.html              # Hosted privacy policy
+  ├── privacy-policy.pdf               # Privacy policy PDF
+  ├── data-practices-matrix.md          # App Privacy Labels mapping
+  ├── metadata-strategy.md              # ASO strategy
+  ├── distribution-plan.md              # TestFlight plan
+  ├── version-strategy.md               # Versioning approach
+  ├── ci-strategy.md                    # CI/CD plan
+  ├── monitoring-setup.md               # Post-release monitoring
+  └── review-response-templates.md      # Review response protocol
+
+# ═══════════════════════════════════════
+# Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Review compliance checklist complete (all 10 items)"
+      - "Privacy policy generated with App Privacy Labels mapping"
+      - "Metadata strategy defined (keywords, screenshots)"
+      - "Distribution method chosen (fastlane vs EAS)"
+      - "Version management strategy defined"
+
+  gate4_acceptance:
+    checklist:
+      - "Compliance report: all items PASS or fixes applied"
+      - "Privacy policy accessible via URL"
+      - "App Privacy Labels match documented data practices"
+      - "Fastlane/EAS config files generated and valid"
+      - "Version follows semver, build number auto-incremented"
+      - "CI/CD pipeline configured (if applicable)"
+      - "Demo account ready for Apple reviewer (if login required)"
