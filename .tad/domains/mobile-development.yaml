@@ -1,0 +1,562 @@
+# Domain Pack: Mobile Development
+# From design to running mobile app — scaffold, implement, optimize, ship
+domain: mobile-development
+version: 1.0.0
+requires_registry: ">=1"  # Requires 2026-04-02 registry (expo_scaffold, ios_build, etc.)
+description: "移动端开发：从设计稿到可运行的移动应用。覆盖 React Native/Expo/Swift，含离线优先、平台权限、性能优化。"
+
+output_dir: ".tad/active/mobile/{project}/"
+# NOTE: Project code scaffolded at repository root. output_dir for TAD docs.
+
+# All 7 capabilities are Code Type B: select → execute → verify → optimize
+
+capabilities:
+
+  # ═══════════════════════════════════════
+  # Capability 1: Project Scaffold
+  # ═══════════════════════════════════════
+
+  project_scaffold:
+    description: "Initialize mobile project — Expo (default) / React Native CLI / Swift"
+
+    steps:
+      - id: select_framework
+        action: |
+          Choose framework based on requirements:
+          1. **Expo (managed)** — default for most projects. Managed native modules, OTA updates, single codebase.
+             Choose when: standard features (camera, location, notifications), fast iteration, no custom native code.
+          2. **React Native CLI** — when custom native modules needed.
+             Choose when: Bluetooth, custom C++ modules, brownfield integration.
+          3. **Swift/SwiftUI** — iOS only.
+             Choose when: iOS-exclusive app, maximum native performance, Apple ecosystem deep integration.
+          Decision must tie to THIS project's requirements, not preference.
+        tool_ref: null
+        output_file: "scaffold-plan.md"
+
+      - id: execute_scaffold
+        action: |
+          Run scaffold (for Expo, the default):
+          1. npx create-expo-app@latest {project} --template blank-typescript
+          2. Set up directory structure: src/components/, src/screens/, src/hooks/, src/lib/
+          3. Configure TypeScript strict mode
+          4. Install core dependencies: expo-router (if navigation needed)
+        tool_ref: expo_scaffold
+        output_file: "{project}/ (project directory)"
+
+      - id: verify_scaffold
+        action: |
+          Verify project works:
+          1. npx expo start → Metro bundler starts without errors
+          2. npx tsc --noEmit → zero type errors
+          3. Check app.json has correct config (name, slug, version)
+        tool_ref: type_checking
+        output_file: "scaffold-verification.md"
+
+      - id: optimize_scaffold
+        action: |
+          Post-scaffold optimization:
+          1. Enable New Architecture in app.json if Expo SDK ≥52 ("newArchEnabled": true)
+             (~30% smoother rendering from Fabric + TurboModules)
+          2. Configure EAS Build for CI (eas.json)
+          3. Set up .env with expo-constants for environment variables
+        tool_ref: null
+        output_file: "scaffold-optimization.md"
+
+    quality_criteria:
+      - "npx expo start → Metro bundler runs without errors"
+      - "npx tsc --noEmit → zero type errors"
+      - "Framework choice documented with project-specific reasoning"
+      - "TypeScript strict mode enabled"
+      - "New Architecture enabled (Expo SDK ≥52)"
+      - "Fabricated build results = FAIL"
+
+    anti_patterns:
+      - "❌ Using RN CLI when Expo managed suffices (unnecessary complexity)"
+      - "❌ Starting without TypeScript"
+      - "❌ Not enabling New Architecture (missing ~30% perf gain)"
+      - "❌ Flat directory without src/ separation"
+
+    reviewers:
+      - persona: "Mobile Architect"
+        checklist:
+          - "Framework choice appropriate for requirements?"
+          - "New Architecture enabled?"
+          - "Directory structure follows conventions?"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Native Components
+  # ═══════════════════════════════════════
+
+  native_components:
+    description: "Implement mobile-native UI components — navigation, lists, forms, gestures"
+
+    steps:
+      - id: select_component_strategy
+        action: |
+          For each UI element, decide approach:
+          1. Navigation: Expo Router (file-based, recommended) or React Navigation
+          2. Lists: FlatList with optimization props (NOT ScrollView for long lists)
+          3. Forms: react-hook-form + Zod (same as web, cross-platform)
+          4. Gestures: react-native-gesture-handler for complex gestures
+          5. Styling: StyleSheet.create() — NOT inline styles
+          Use React.memo() for list items. Functional components + hooks only.
+        tool_ref: null
+        output_file: "component-plan.md"
+
+      - id: execute_components
+        action: |
+          Implement components:
+          1. Screens in src/screens/ — one file per screen
+          2. Reusable components in src/components/ — typed props, named exports
+          3. Use function keyword for components (from cursorrules research)
+          4. FlatList items: React.memo(), extract renderItem to named component
+          5. Styles: StyleSheet.create() at file bottom, not inline
+        tool_ref: null
+        output_file: "src/components/ and src/screens/"
+
+      - id: verify_components
+        action: |
+          Verify:
+          1. npx tsc --noEmit → zero errors
+          2. All components have TypeScript interfaces for props
+          3. No inline styles (all via StyleSheet.create)
+          4. FlatList items wrapped in React.memo
+        tool_ref: type_checking
+        output_file: "component-verification.md"
+
+      - id: optimize_components
+        action: |
+          Optimize for mobile:
+          1. FlatList: add getItemLayout for fixed-height items (highest impact optimization)
+          2. FlatList: windowSize=5-7, maxToRenderPerBatch=10, removeClippedSubviews (Android)
+          3. Images: use expo-image with caching (NOT default Image component)
+          4. Animations: use react-native-reanimated for 60fps (runs on UI thread)
+        tool_ref: null
+        output_file: "component-optimization.md"
+
+    quality_criteria:
+      - "All components typed with TypeScript interfaces"
+      - "FlatList used for all lists >20 items (NOT ScrollView)"
+      - "FlatList items use React.memo + getItemLayout"
+      - "Styles via StyleSheet.create (zero inline styles)"
+      - "Navigation configured with Expo Router or React Navigation"
+      - "Fabricated component APIs or invented native module behavior = FAIL"
+
+    anti_patterns:
+      - "❌ ScrollView for long lists (must use FlatList)"
+      - "❌ Inline styles (style={{color: 'red'}})"
+      - "❌ Anonymous renderItem in FlatList (extract + memo)"
+      - "❌ Default Image component for remote images (use expo-image)"
+      - "❌ Class components"
+
+    reviewers:
+      - persona: "React Native Performance Expert"
+        checklist:
+          - "FlatList optimized with getItemLayout?"
+          - "List items memoized?"
+          - "Images cached properly?"
+
+  # ═══════════════════════════════════════
+  # Capability 3: State Management
+  # ═══════════════════════════════════════
+
+  state_management:
+    description: "State management for mobile — server cache, client state, persistent storage, secure storage"
+
+    steps:
+      - id: select_state_strategy
+        action: |
+          Categorize state for mobile (extra categories vs web):
+          1. Server state → React Query (TanStack Query) with offline cache
+          2. Client state → Zustand (lightweight, <1KB)
+          3. Persistent state → AsyncStorage for non-sensitive, Expo SecureStore for tokens/keys
+          4. Form state → react-hook-form + Zod
+          5. **Network state** → NetInfo listener (mobile-specific: detect online/offline)
+          Key difference from web: MUST handle offline gracefully.
+        tool_ref: null
+        output_file: "state-strategy.md"
+
+      - id: execute_state
+        action: |
+          Implement state layer:
+          1. React Query with persistQueryClient for offline cache
+          2. Zustand store in src/lib/store/
+          3. AsyncStorage wrapper in src/lib/storage.ts
+          4. SecureStore wrapper in src/lib/secure-storage.ts
+          5. Network listener: useNetInfo() hook, show offline banner
+        tool_ref: null
+        output_file: "src/lib/store/ and src/lib/storage.ts"
+
+      - id: verify_state
+        action: |
+          Verify:
+          1. npx tsc --noEmit → all state typed
+          2. Offline scenario: app works with cached data when network off
+          3. Sensitive data in SecureStore (not AsyncStorage)
+        tool_ref: type_checking
+        output_file: "state-verification.md"
+
+      - id: optimize_state
+        action: |
+          Optimize for mobile:
+          1. React Query staleTime tuned per resource (user profile: 5min, feed: 30s)
+          2. Zustand store sliced (separate UI store from data store)
+          3. AsyncStorage batch operations (multiGet/multiSet)
+        tool_ref: null
+        output_file: "state-optimization.md"
+
+    quality_criteria:
+      - "All state fully typed (no any)"
+      - "Offline support: app shows cached data when network unavailable"
+      - "Sensitive data in SecureStore, NOT AsyncStorage"
+      - "Network status monitored (NetInfo)"
+      - "Fabricated offline behavior or invented storage APIs = FAIL"
+
+    anti_patterns:
+      - "❌ Storing tokens in AsyncStorage (use SecureStore)"
+      - "❌ No offline handling (app crashes without network)"
+      - "❌ Not monitoring network state"
+      - "❌ Single monolithic store (split by concern)"
+
+    reviewers:
+      - persona: "Mobile Security Reviewer"
+        checklist:
+          - "Sensitive data in SecureStore?"
+          - "Offline cache works?"
+          - "Network state handled?"
+
+  # ═══════════════════════════════════════
+  # Capability 4: API Integration
+  # ═══════════════════════════════════════
+
+  api_integration:
+    description: "API calls with offline-first architecture — cache, retry, network awareness"
+
+    steps:
+      - id: select_api_strategy
+        action: |
+          Design API layer for mobile (offline-first):
+          1. React Query as data layer (caching, retry, background refetch)
+          2. Optimistic updates for mutations (instant UI feedback)
+          3. Queue mutations when offline, replay on reconnect
+          4. NetInfo-based fetch policy: online → network, offline → cache
+          5. Typed responses from OpenAPI spec if available
+        tool_ref: null
+        output_file: "api-strategy.md"
+
+      - id: execute_api
+        action: |
+          Implement:
+          1. API client in src/lib/api/ with typed fetch wrappers
+          2. React Query hooks in src/hooks/use{Resource}.ts
+          3. Mutation queue in src/lib/mutation-queue.ts (persist to AsyncStorage)
+          4. Offline banner component triggered by NetInfo
+          5. Retry with exponential backoff for transient failures
+        tool_ref: null
+        output_file: "src/lib/api/ (API layer files)"
+
+      - id: verify_api
+        action: |
+          Verify:
+          1. npx tsc --noEmit → all API calls typed
+          2. Every fetch has error handling
+          3. Offline: mutations queued, replayed on reconnect
+          4. Loading states for all async operations
+        tool_ref: type_checking
+        output_file: "api-verification.md"
+
+      - id: optimize_api
+        action: |
+          Optimize:
+          1. Prefetch critical data on app start
+          2. Background refetch interval for frequently updated data
+          3. Request deduplication (React Query built-in)
+          4. Image URLs: use expo-image cache, not fetch
+        tool_ref: null
+        output_file: "api-optimization.md"
+
+    quality_criteria:
+      - "All API responses typed (no any)"
+      - "Offline: mutations queued and replayed"
+      - "Every fetch has error handling + loading state"
+      - "Retry with backoff for network errors"
+      - "Fabricated API responses or invented offline behavior = FAIL"
+
+    anti_patterns:
+      - "❌ No offline handling (app broken without network)"
+      - "❌ Fire-and-forget mutations (must handle failure)"
+      - "❌ Fetching images via API (use expo-image cache)"
+      - "❌ No retry logic for transient network errors"
+
+    reviewers:
+      - persona: "Mobile API Architect"
+        checklist:
+          - "Offline-first architecture implemented?"
+          - "Mutations queue when offline?"
+          - "Error handling at every boundary?"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Platform Features
+  # ═══════════════════════════════════════
+
+  platform_features:
+    description: "Integrate platform-specific features — camera, location, notifications, biometrics"
+
+    steps:
+      - id: select_features
+        action: |
+          Identify needed platform features:
+          1. Camera: expo-camera (photo/video capture)
+          2. Location: expo-location (GPS, geofencing)
+          3. Notifications: expo-notifications (push + local)
+          4. Biometrics: expo-local-authentication (Face ID / Touch ID)
+          5. File system: expo-file-system
+          For each: check permission requirements, check iOS/Android differences.
+        tool_ref: null
+        output_file: "platform-features-plan.md"
+
+      - id: execute_features
+        action: |
+          Implement each feature:
+          1. Permission flow: check → request → handle denial gracefully
+          2. Request permissions IN CONTEXT (when user needs the feature, not at app start)
+          3. Add to app.json plugins array for native configuration
+          4. iOS: add NSUsageDescription strings
+          5. Android: add to AndroidManifest.xml (Expo handles via plugins)
+        tool_ref: null
+        output_file: "platform feature code"
+
+      - id: verify_features
+        action: |
+          Verify:
+          1. Each feature works on simulator/device
+          2. Permission denial handled (app doesn't crash, shows helpful message)
+          3. app.json plugins correctly configured
+          4. iOS privacy descriptions present
+        tool_ref: null
+        output_file: "platform-features-verification.md"
+
+      - id: optimize_features
+        action: |
+          Optimize:
+          1. Lazy-load heavy feature modules (camera only when needed)
+          2. Cache permission status (don't re-check every render)
+          3. Background location: use significant-change mode (saves battery)
+        tool_ref: null
+        output_file: "platform-features-optimization.md"
+
+    quality_criteria:
+      - "Permission requested in context (not all at app start)"
+      - "Permission denial handled gracefully (no crash)"
+      - "iOS NSUsageDescription strings present for all used permissions"
+      - "app.json plugins correctly configured"
+      - "Fabricated platform behavior or invented permission APIs = FAIL"
+
+    anti_patterns:
+      - "❌ Requesting all permissions at app launch"
+      - "❌ App crashes when permission denied"
+      - "❌ Missing iOS usage description strings (App Store rejection)"
+      - "❌ Always-on location tracking (kills battery)"
+
+    reviewers:
+      - persona: "Platform Integration Reviewer"
+        checklist:
+          - "Permissions requested contextually?"
+          - "Denial handled gracefully?"
+          - "iOS privacy strings complete?"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Performance
+  # ═══════════════════════════════════════
+
+  performance:
+    description: "Mobile performance optimization — FlatList, images, startup, bundle size"
+
+    steps:
+      - id: select_optimization_targets
+        action: |
+          Identify performance bottlenecks (from callstackincubator research):
+          1. Lists: FlatList with 100+ items → virtualization critical
+          2. Images: remote images without cache → flickering, memory crashes
+          3. Startup: too many imports at launch → slow cold start
+          4. Bundle: unused dependencies → large download size
+          5. Animations: JS thread animations → janky 30fps
+          Measure FIRST, then optimize. Use React DevTools Profiler + Flipper.
+        tool_ref: null
+        output_file: "performance-baseline.md"
+
+      - id: execute_optimizations
+        action: |
+          Apply optimizations:
+          1. FlatList: getItemLayout + React.memo + windowSize=5 + keyExtractor
+          2. Images: expo-image with cachePolicy: 'disk' (replace default Image)
+          3. Startup: lazy-load non-critical screens with React.lazy
+          4. Bundle: analyze with metro-visualizer, remove unused packages
+          5. Animations: react-native-reanimated (UI thread, 60fps)
+        tool_ref: null
+        output_file: "performance optimizations applied"
+
+      - id: verify_performance
+        action: |
+          Verify improvements:
+          1. List scroll: 60fps on mid-range device (check with Profiler)
+          2. App startup: < 3s cold start on mid-range device
+          3. Bundle size: check with `npx expo export` output size
+          4. No memory leaks: monitor with Flipper/Instruments
+        tool_ref: null
+        output_file: "performance-results.md"
+
+      - id: optimize_further
+        action: |
+          Advanced optimizations if needed:
+          1. Enable Hermes engine (default in Expo SDK ≥49)
+          2. Precompile bytecode for faster startup
+          3. Code splitting by route
+          4. Tree-shake unused expo-* modules
+        tool_ref: null
+        output_file: "performance-advanced.md"
+
+    quality_criteria:
+      - "FlatList scroll at 60fps (no jank on mid-range device)"
+      - "Cold start < 3s on mid-range device"
+      - "Images use expo-image with caching (no flickering)"
+      - "No memory leaks in long sessions"
+      - "Fabricated performance numbers or invented benchmarks = FAIL. Measure, don't guess."
+
+    anti_patterns:
+      - "❌ Default windowSize=21 for FlatList (reduce to 5-7)"
+      - "❌ Default Image for remote images (use expo-image)"
+      - "❌ JS thread animations (use reanimated for UI thread)"
+      - "❌ Optimizing without profiling first"
+      - "❌ Not testing on mid-range devices (only high-end)"
+
+    reviewers:
+      - persona: "Mobile Performance Engineer"
+        checklist:
+          - "FlatList fully optimized?"
+          - "Image caching implemented?"
+          - "Startup time acceptable?"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Code Quality
+  # ═══════════════════════════════════════
+
+  code_quality:
+    description: "Code quality for mobile — lint, type-check, platform compatibility"
+
+    steps:
+      - id: select_quality_tools
+        action: |
+          Configure quality toolchain:
+          1. TypeScript: strict mode (same as web)
+          2. ESLint: @react-native/eslint-config
+          3. Prettier: consistent formatting
+          4. Platform compatibility: test on both iOS and Android
+        tool_ref: code_linting
+        output_file: "quality-config.md"
+
+      - id: execute_quality_checks
+        action: |
+          Run all checks:
+          1. npx tsc --noEmit → zero type errors
+          2. npx eslint . → zero lint errors
+          3. npx prettier --check . → zero formatting issues
+          4. npx expo start → Metro bundler starts clean
+        tool_ref: type_checking
+        output_file: "quality-audit.md"
+
+      - id: verify_quality
+        action: |
+          Verify:
+          1. All four checks pass
+          2. No any types in codebase
+          3. No platform-specific code without Platform.OS check
+          4. StyleSheet.create used everywhere (no inline)
+        tool_ref: null
+        output_file: "quality-verification.md"
+
+      - id: optimize_quality
+        action: |
+          Optimize:
+          1. Add pre-commit hook (husky + lint-staged)
+          2. CI pipeline: tsc + eslint + expo export on PR
+          3. Platform test matrix: iOS + Android in CI
+        tool_ref: null
+        output_file: "quality-optimization.md"
+
+    quality_criteria:
+      - "npx tsc --noEmit = 0 errors"
+      - "npx eslint . = 0 errors"
+      - "npx prettier --check . = 0 issues"
+      - "npx expo start = no errors"
+      - "No any types"
+      - "Platform.OS used for platform-specific code"
+      - "Fabricated lint results or suppressed errors = FAIL"
+
+    anti_patterns:
+      - "❌ any types"
+      - "❌ // eslint-disable without justification"
+      - "❌ @ts-ignore"
+      - "❌ Platform-specific code without Platform.OS guard"
+      - "❌ Testing only on one platform"
+
+    reviewers:
+      - persona: "Mobile Code Quality Reviewer"
+        checklist:
+          - "Zero type errors?"
+          - "Zero lint errors?"
+          - "Both platforms tested?"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  {project}/                            # Mobile project
+  ├── App.tsx                           # Entry point
+  ├── app.json                          # Expo config
+  ├── tsconfig.json                     # TypeScript config
+  ├── src/
+  │   ├── screens/                      # Screen components
+  │   ├── components/                   # Reusable components
+  │   ├── hooks/                        # Custom hooks
+  │   ├── lib/
+  │   │   ├── api/                      # API layer
+  │   │   ├── store/                    # Zustand stores
+  │   │   ├── storage.ts                # AsyncStorage wrapper
+  │   │   └── secure-storage.ts         # SecureStore wrapper
+  │   └── navigation/                   # Navigation config
+  ├── assets/                           # Images, fonts
+  └── eas.json                          # EAS Build config
+
+  .tad/active/mobile/{project}/         # TAD documentation
+  ├── scaffold-plan.md
+  ├── component-plan.md
+  ├── state-strategy.md
+  ├── api-strategy.md
+  ├── platform-features-plan.md
+  ├── performance-baseline.md
+  └── quality-verification.md
+
+# ═══════════════════════════════════════
+# Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Framework choice documented (Expo/RN CLI/Swift)"
+      - "Component list with FlatList optimization plan"
+      - "State management strategy with offline handling"
+      - "Platform features identified with permission plan"
+      - "Performance optimization targets defined"
+
+  gate4_acceptance:
+    checklist:
+      - "npx expo start → no errors"
+      - "npx tsc --noEmit → zero type errors"
+      - "npx eslint . → zero lint errors"
+      - "Offline mode works (shows cached data)"
+      - "FlatList optimized (getItemLayout + memo)"
+      - "Permissions requested contextually"
+      - "No any types in codebase"

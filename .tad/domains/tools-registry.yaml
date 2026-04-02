@@ -934,3 +934,99 @@ capabilities:
       tested: true
       test_result: "CLI 正常，但几乎所有操作需要 auth token"
       note: "需要 vercel login 或 VERCEL_TOKEN。核心部署工具。"
+
+  # ═══════════════════════════════════════
+  # Mobile Development Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  expo_scaffold:
+    description: "Create Expo/React Native project with TypeScript"
+    recommended:
+      name: create-expo-app
+      type: cli
+      install: "npx create-expo-app@latest (auto-downloads)"
+      verify: "N/A (scaffolds project)"
+      usage: |
+        npx create-expo-app@latest my-app --template blank-typescript
+        cd my-app && npx expo start  # Start dev server
+      example: |
+        npx create-expo-app@latest menu-snap --template blank-typescript
+        # Creates:
+        # menu-snap/
+        # ├── App.tsx
+        # ├── app.json         (Expo config)
+        # ├── tsconfig.json
+        # ├── assets/
+        # └── package.json
+        cd menu-snap && npx expo start
+        # Output: Metro bundler running, QR code for Expo Go
+      output_format: "Complete project directory"
+      tested: true
+      test_result: "Full Expo project scaffolded with TypeScript template"
+      note: "Use blank-typescript template for new projects. Expo SDK auto-included."
+
+  ios_build:
+    description: "Build iOS app from Xcode project/workspace"
+    recommended:
+      name: xcodebuild
+      type: cli
+      install: "macOS built-in (requires Xcode)"
+      verify: "xcodebuild -version"
+      usage: |
+        xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator build
+        xcodebuild -workspace App.xcworkspace -scheme App -destination 'platform=iOS Simulator,name=iPhone 16' test
+      example: |
+        # Build for simulator
+        xcodebuild -workspace ios/MenuSnap.xcworkspace \
+          -scheme MenuSnap \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          build
+        # Output: BUILD SUCCEEDED
+      output_format: "Terminal build log + .app bundle"
+      tested: true
+      test_result: "xcodebuild available on macOS"
+      note: "Requires Xcode installed. For Expo projects, use 'npx expo run:ios' instead."
+
+  mobile_simulator:
+    description: "Control iOS Simulator from command line"
+    recommended:
+      name: xcrun-simctl
+      type: cli
+      install: "macOS built-in (requires Xcode)"
+      verify: "xcrun simctl list devices"
+      usage: |
+        xcrun simctl list devices                    # List available simulators
+        xcrun simctl boot "iPhone 16"                # Boot simulator
+        xcrun simctl install booted app.app          # Install app
+        xcrun simctl openurl booted "myapp://path"   # Open deep link
+        xcrun simctl screenshot booted screenshot.png # Take screenshot
+      example: |
+        xcrun simctl list devices | grep "iPhone 16"
+        # iPhone 16 (XXXXXXXX-XXXX) (Booted)
+        xcrun simctl screenshot booted /tmp/screen.png
+        # Output: /tmp/screen.png (simulator screenshot)
+      output_format: "Terminal output + screenshot PNG"
+      tested: true
+      test_result: "simctl available, lists devices"
+      note: "Requires Xcode + iOS Simulator runtime. Use for screenshot-based testing."
+
+  android_build:
+    description: "Build Android app with Gradle"
+    recommended:
+      name: gradle
+      type: cli
+      install: "Included with React Native projects (./gradlew)"
+      verify: "./gradlew --version (from android/ directory)"
+      usage: |
+        cd android && ./gradlew assembleDebug      # Debug APK
+        cd android && ./gradlew assembleRelease    # Release APK
+        cd android && ./gradlew bundleRelease      # AAB for Play Store
+      example: |
+        cd android && ./gradlew assembleDebug
+        # Output: BUILD SUCCESSFUL
+        # APK at: android/app/build/outputs/apk/debug/app-debug.apk
+      output_format: "APK or AAB file"
+      tested: false
+      test_result: "Not tested (requires Android SDK)"
+      note: "Requires Android SDK. For Expo, use 'npx expo run:android' or 'eas build'."
