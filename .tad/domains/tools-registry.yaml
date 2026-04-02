@@ -2,7 +2,7 @@
 # All domain packs reference this registry for tool definitions.
 # Each tool has enough info for Claude to use it without prior knowledge.
 registry_version: 1
-last_updated: "2026-04-01"
+last_updated: "2026-04-02"
 maintainer: "TAD Framework"
 
 # Pre-flight verification command (run before using any tool)
@@ -257,3 +257,318 @@ capabilities:
       - name: typst
         type: cli
         note: "Typst 只输出 PDF，不支持 DOCX"
+
+  accessibility_check:
+    description: "WCAG 2.1 AA 可访问性自动检查（对比度、标签、ARIA）"
+    recommended:
+      name: pa11y
+      type: cli
+      install: "npx pa11y (auto-downloads, bundles own Puppeteer)"
+      verify: "npx pa11y --version"
+      usage: |
+        1. Write HTML file to test
+        2. Run: npx pa11y "file:///path/to/file.html" --reporter json
+        3. Parse JSON output for violations
+      example: |
+        npx pa11y "file:///tmp/test.html" --reporter json
+        Output: [{"code":"WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+                  "type":"error","message":"Insufficient contrast..."}]
+      output_format: "JSON array of WCAG violations"
+      tested: true
+      test_result: "Caught contrast violations + missing alt attributes"
+      note: "Bundles own Chromium via Puppeteer, no global browser needed"
+
+  design_tokens:
+    description: "Design Token 管理 — JSON → CSS 变量/SCSS/Less/iOS/Android"
+    recommended:
+      name: style-dictionary
+      type: cli
+      install: "npx style-dictionary (auto-downloads)"
+      verify: "npx style-dictionary --version"
+      usage: |
+        1. Create tokens.json with design token definitions
+        2. Create sd-config.json pointing to tokens + output format
+        3. Run: npx style-dictionary build --config sd-config.json
+      example: |
+        // tokens.json
+        {"color":{"primary":{"value":"#0066cc"},"text":{"value":"#333333"}},
+         "spacing":{"sm":{"value":"8px"},"md":{"value":"16px"}}}
+        // sd-config.json
+        {"source":["tokens.json"],"platforms":{"css":{
+          "transformGroup":"css","buildPath":"build/",
+          "files":[{"destination":"variables.css","format":"css/variables"}]}}}
+        // Run
+        npx style-dictionary build --config sd-config.json
+        // Output: build/variables.css with :root { --color-primary: #0066cc; ... }
+      output_format: "CSS variables, SCSS, Less, Android XML, iOS Swift"
+      tested: true
+      test_result: "Clean CSS variables output from JSON tokens"
+      note: "No browser dependency. Supports multi-platform output."
+
+  svg_optimization:
+    description: "SVG 文件优化（去冗余、压缩、精简属性）"
+    recommended:
+      name: svgo
+      type: cli
+      install: "npx svgo (auto-downloads)"
+      verify: "npx svgo --version"
+      usage: "npx svgo input.svg -o output.min.svg"
+      example: |
+        npx svgo diagram.svg -o diagram.min.svg
+        # 484 bytes -> 269 bytes (44% reduction, 17ms)
+      output_format: "Optimized SVG file"
+      tested: true
+      test_result: "44% size reduction on test SVG"
+      note: "No browser dependency. Fast. Good for D2 output post-processing."
+
+  html_screenshot:
+    description: "HTML → PNG 截图（用于 PDF 嵌入、视觉审查）"
+    recommended:
+      name: playwright-screenshot
+      type: cli
+      install: "npm install -g playwright && npx playwright install chromium"
+      verify: "playwright --version"
+      usage: |
+        playwright screenshot "file:///path/to/file.html" output.png --full-page
+        Options: --device "iPhone 11", --color-scheme dark, --viewport-size 1440,900
+      example: |
+        playwright screenshot "file:///tmp/wireframe.html" wireframe.png --full-page
+        # Output: 1280x720 PNG, ~18KB
+      output_format: "PNG screenshot"
+      tested: true
+      test_result: "18KB PNG from simple HTML page"
+      note: "Requires one-time Chromium install (~210MB). Supports device emulation."
+
+  # ═══════════════════════════════════════
+  # Web Frontend Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  project_scaffold:
+    description: "Create new frontend project with framework, TypeScript, linting, styling pre-configured"
+    recommended:
+      name: create-next-app
+      type: cli
+      install: "npx create-next-app@latest (auto-downloads)"
+      verify: "N/A (scaffolds a new project directory)"
+      usage: |
+        npx create-next-app@latest my-app --typescript --tailwind --eslint --app --src-dir --use-npm
+        Options:
+          --typescript   Enable TypeScript
+          --tailwind     Enable Tailwind CSS
+          --eslint       Enable ESLint
+          --app          Use App Router (not Pages Router)
+          --src-dir      Use src/ directory
+          --use-npm      Use npm (default is ask)
+          --no-git       Skip git init
+      example: |
+        npx create-next-app@latest todo-app --typescript --tailwind --eslint --app --src-dir --use-npm
+        # Creates:
+        # todo-app/
+        # ├── src/app/          (App Router pages)
+        # │   ├── layout.tsx
+        # │   ├── page.tsx
+        # │   └── globals.css
+        # ├── public/
+        # ├── tsconfig.json
+        # ├── tailwind.config.ts
+        # ├── next.config.ts
+        # └── package.json
+      output_format: "Complete project directory"
+      tested: true
+      test_result: "Full Next.js project scaffolded in ~20s with TS + Tailwind + ESLint + App Router"
+    alternatives:
+      - name: create-vite
+        type: cli
+        install: "npm create vite@latest (auto-downloads)"
+        usage: "npm create vite@latest my-app -- --template react-ts"
+        note: "Lighter weight, no SSR by default. Best for SPA/client-only apps."
+
+  component_library:
+    description: "Add pre-built, customizable UI components to a project (shadcn/ui)"
+    recommended:
+      name: shadcn
+      type: cli
+      install: "npx shadcn@latest (auto-downloads)"
+      verify: "N/A (works via npx)"
+      usage: |
+        1. Initialize in project root: npx shadcn@latest init -d
+           (-d flag auto-detects framework config)
+        2. Add components: npx shadcn@latest add button card input form dialog
+        3. Components are copied to src/components/ui/ (you own the code)
+      example: |
+        # Initialize shadcn in a Next.js project
+        npx shadcn@latest init -d
+        # Output: Created button.tsx + utils.ts
+
+        # Add specific components
+        npx shadcn@latest add card input dialog table
+        # Output: Created card.tsx, input.tsx, dialog.tsx, table.tsx in src/components/ui/
+
+        # Use in code:
+        import { Button } from "@/components/ui/button"
+        import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+      output_format: "React component files in src/components/ui/"
+      tested: true
+      test_result: "Init created button.tsx + utils.ts; add created card.tsx + input.tsx"
+      note: "Components are copied to your project (not a dependency). You can customize freely."
+
+  api_type_generation:
+    description: "Generate TypeScript types from OpenAPI/Swagger spec"
+    recommended:
+      name: openapi-typescript
+      type: cli
+      install: "npx openapi-typescript (auto-downloads)"
+      verify: "npx openapi-typescript --version"
+      usage: |
+        npx openapi-typescript api-spec.yaml -o src/lib/api-types.ts
+        Accepts: OpenAPI 3.0/3.1 YAML or JSON
+        Output: TypeScript interfaces for all paths, components, operations
+      example: |
+        # From a local spec file:
+        npx openapi-typescript api.yaml -o src/lib/api-types.ts
+
+        # From a remote URL:
+        npx openapi-typescript https://api.example.com/openapi.json -o src/lib/api-types.ts
+
+        # Generated output includes:
+        export interface paths {
+          "/todos": {
+            get: { responses: { 200: { content: { "application/json": components["schemas"]["Todo"][] } } } }
+          }
+        }
+        export interface components {
+          schemas: { Todo: { id: number; title: string; completed: boolean } }
+        }
+      output_format: "TypeScript definition file (.ts)"
+      tested: true
+      test_result: "Generated typed interfaces from OpenAPI YAML in 21ms"
+      note: "Auto-downloads via npx, no global install. Supports OpenAPI 3.0 and 3.1."
+
+  code_linting:
+    description: "Static code analysis for JavaScript/TypeScript (ESLint)"
+    recommended:
+      name: eslint
+      type: cli
+      install: "Included with create-next-app. Or: npm install -D eslint @eslint/js"
+      verify: "npx eslint --version"
+      usage: |
+        npx eslint .                        # Check all files
+        npx eslint . --fix                  # Auto-fix fixable issues
+        npx eslint . --max-warnings 0       # Fail on warnings too
+        npx eslint src/app/page.tsx         # Check single file
+      example: |
+        # Check entire project
+        npx eslint .
+        # Output: (empty = no errors)
+
+        # Check with strict mode
+        npx eslint . --max-warnings 0
+        # Output: ✖ 0 problems (0 errors, 0 warnings)
+      output_format: "Terminal output with file:line:col error/warning messages"
+      tested: true
+      test_result: "Zero errors on fresh Next.js scaffold"
+      note: "Comes pre-configured with create-next-app. ESLint v10+ uses flat config."
+
+  type_checking:
+    description: "TypeScript static type checking without emitting files"
+    recommended:
+      name: typescript
+      type: cli
+      install: "Included with create-next-app. Or: npm install -D typescript"
+      verify: "npx tsc --version"
+      usage: |
+        npx tsc --noEmit                    # Type-check without output files
+        npx tsc --noEmit --pretty           # Colored output
+        npx tsc --noEmit -p tsconfig.json   # Explicit config
+      example: |
+        # Type-check entire project
+        npx tsc --noEmit
+        # Output: (empty = no errors)
+
+        # With errors:
+        # src/app/page.tsx(5,3): error TS2322: Type 'string' is not assignable to type 'number'.
+      output_format: "Terminal output with file(line,col): error messages"
+      tested: true
+      test_result: "Zero errors on fresh Next.js + shadcn project"
+      note: "tsconfig.json comes with create-next-app. Strict mode recommended."
+
+  code_formatting:
+    description: "Consistent code formatting for JS/TS/CSS/JSON (Prettier)"
+    recommended:
+      name: prettier
+      type: cli
+      install: "npm install -D prettier"
+      verify: "npx prettier --version"
+      usage: |
+        npx prettier --check .              # Check formatting (exit 1 if issues)
+        npx prettier --write .              # Auto-format all files
+        npx prettier --check "src/**/*.tsx" # Check specific pattern
+      example: |
+        # Check formatting
+        npx prettier --check "src/**/*.{ts,tsx}"
+        # Output: Checking formatting...
+        #   src/components/ui/button.tsx
+        #   Code style issues found in 1 file. Run Prettier with --write to fix.
+
+        # Fix formatting
+        npx prettier --write "src/**/*.{ts,tsx}"
+      output_format: "Terminal output listing files with issues"
+      tested: true
+      test_result: "Correctly detects formatting differences in shadcn-generated components"
+      note: "v3.8.1 tested. Add .prettierrc for project-specific rules."
+
+  bundle_analysis:
+    description: "Visualize JavaScript bundle size and composition"
+    status: experimental  # Not tested end-to-end (requires project with real bundle)
+    recommended:
+      name: vite-bundle-visualizer
+      type: cli
+      install: "npx vite-bundle-visualizer (for Vite projects)"
+      verify: "N/A (runs via npx)"
+      usage: |
+        # For Next.js (which uses Turbopack/webpack):
+        ANALYZE=true npm run build
+        # (requires @next/bundle-analyzer plugin in next.config.ts)
+
+        # For Vite projects:
+        npx vite-bundle-visualizer
+      example: |
+        # Next.js bundle analysis setup:
+        # 1. Install: npm install -D @next/bundle-analyzer
+        # 2. In next.config.ts:
+        import withBundleAnalyzer from '@next/bundle-analyzer';
+        const config = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })({
+          // ... next config
+        });
+        export default config;
+        # 3. Run: ANALYZE=true npm run build
+        # 4. Opens browser with interactive treemap
+      output_format: "HTML treemap visualization in browser"
+      tested: false
+      test_result: "Not tested (requires project with actual bundle)"
+      note: "For Next.js use @next/bundle-analyzer. For Vite use vite-bundle-visualizer. Note: Next.js config may use CJS (require) or ESM (import) syntax depending on project setup."
+
+  build_verification:
+    description: "Verify production build succeeds (Next.js)"
+    recommended:
+      name: next-build
+      type: cli
+      install: "Included with create-next-app"
+      verify: "N/A (npm script)"
+      usage: |
+        npm run build                       # Full production build
+        # Checks: TypeScript, ESLint, page rendering, static generation
+      example: |
+        npm run build
+        # Output:
+        # ✓ Linting and checking validity of types
+        # ✓ Creating an optimized production build
+        # ✓ Generating static pages (4/4)
+        # Route (app)
+        # ┌ ○ /
+        # └ ○ /_not-found
+        # ○ (Static) prerendered as static content
+      output_format: "Terminal output with route summary"
+      tested: true
+      test_result: "Build succeeds, outputs static pages with route summary"
+      note: "npm run build is the single most comprehensive check — includes tsc + eslint + render."
