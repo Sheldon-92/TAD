@@ -1,0 +1,708 @@
+# Domain Pack: AI Tool Integration
+# Develop and integrate tools for AI agents — MCP servers, CLI wrappers, API integrations.
+# Covers the full lifecycle: schema design → implementation → testing → documentation.
+# Scope: Tool development (code + config), NOT agent architecture (see ai-agent-architecture pack).
+domain: ai-tool-integration
+version: 1.0.0
+requires_registry: ">=1"
+description: "AI 工具集成：为 agent 开发和集成工具。覆盖 MCP server 开发、CLI 封装、API 集成、schema 设计、权限模型、测试、文档。产出物是可运行的工具代码 + 设计文档。核心价值：让 agent 安全高效地使用外部工具。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: MCP Server Development (Type B: Code)
+# ═══════════════════════════════════════
+
+capabilities:
+
+  mcp_server_development:
+    description: "开发新的 MCP server — 从 API 研究到可运行的 STDIO/HTTP 服务器"
+
+    steps:
+      - id: research_api
+        action: |
+          研究目标 API/服务的接口：
+          1. 获取 API 文档：端点列表、认证方式、速率限制、错误码
+          2. 识别高价值端点：哪些操作是用户最常用的 workflow？
+          3. 设计工具合并策略（来源: ComposioHQ "Build for Workflows, Not API Endpoints"）：
+             - 相关操作合并为单个工具（create_and_configure > create + set_config）
+             - 目标: ≤15 个工具（GitHub MCP 35 工具 ≈ 26K tokens，太多）
+          4. 确定共享基础设施需求：分页、过滤、错误处理、认证管理
+        tool_ref: web_scraping
+        queries:
+          - '"{API名}" API documentation endpoints'
+          - '"{API名}" rate limits authentication'
+        output_file: "mcp-server/api-research.md"
+
+      - id: scaffold_project
+        action: |
+          创建 MCP server 项目（来源: MCP TypeScript SDK 标准结构）：
+          1. `mkdir {server-name} && cd {server-name}`
+          2. `npm init -y`
+          3. `npm install @modelcontextprotocol/sdk zod`
+          4. `npm install -D typescript @types/node`
+          5. 配置 tsconfig.json: target "ES2022", module "NodeNext", strict: true
+          6. 创建 src/index.ts: McpServer + StdioServerTransport 基础代码
+          7. 创建共享基础设施: src/utils/ (api-client, error-handler, pagination)
+        tool_ref: null
+        output_file: "mcp-server/src/index.ts"
+
+      - id: implement_tools
+        action: |
+          实现每个工具（来源: Claude Code Tool.ts 接口 + MCP SDK）：
+          对每个工具：
+          1. 定义 inputSchema (Zod .strict()): 类型 + 约束 + 描述 + 示例
+          2. 添加 tool annotations: readOnlyHint, destructiveHint, idempotentHint
+          3. 实现 handler: async/await, 使用共享 API client
+          4. 格式化输出: JSON + Markdown 双模式, ≤25K tokens 字符限制
+          5. 错误处理: 可操作消息 ("Try filter='active_only'" 不是 "error 400")
+
+          ⚠️ 关键: console.log() 禁用（STDIO 服务器，stdout 是 JSON-RPC 通道）。用 console.error() 或 server.sendLoggingMessage()。
+        tool_ref: null
+        output_file: "mcp-server/src/tools/"
+
+      - id: verify_build
+        action: |
+          验证项目可构建和运行：
+          1. `npx tsc --noEmit` — TypeScript 编译零错误
+          2. `npm run build` — 生成 dist/index.js
+          3. 验证 dist/index.js 存在且 >0 bytes
+          4. 快速冒烟测试：`echo '{}' | timeout 5s node dist/index.js` 不崩溃
+          注: 完整功能测试在 tool_testing capability 中做
+        tool_ref: null
+        output_file: "mcp-server/dist/"
+
+      - id: create_config
+        action: |
+          生成 Claude Code 集成配置：
+          ```json
+          {
+            "mcpServers": {
+              "{server-name}": {
+                "command": "node",
+                "args": ["{path}/dist/index.js"],
+                "env": { "API_KEY": "..." }
+              }
+            }
+          }
+          ```
+          + README.md: 安装步骤 + 配置步骤 + 使用示例
+        tool_ref: null
+        output_file: "mcp-server/README.md"
+
+    quality_criteria:
+      - "TypeScript strict mode, 零 `any` 类型"
+      - "每个工具有 Zod .strict() schema + annotations (readOnlyHint 等)"
+      - "输出 ≤25K tokens 有截断策略"
+      - "错误消息可操作（不是 'error 400'）"
+      - "共享代码提取到 utils/（不在工具间重复）"
+      - "`npx tsc --noEmit` 零错误"
+      - "README 有完整安装+配置+使用步骤"
+      - "编造 API 端点 = FAIL"
+
+    anti_patterns:
+      - "❌ 一个端点一个工具（合并为 workflow 工具）"
+      - "❌ 返回全部字段（只返回 agent 需要的高信号数据）"
+      - "❌ console.log() 在 STDIO 服务器（破坏 JSON-RPC 通道）"
+      - "❌ 无字符限制（agent context 被吃完）"
+      - "❌ 同步 I/O（必须 async/await）"
+
+    reviewers:
+      - persona: "MCP 协议专家"
+        checklist:
+          - "server 是否正确处理 STDIO transport？"
+          - "工具 schema 是否 strict？"
+          - "错误处理是否覆盖 auth/rate-limit/timeout？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: CLI Tool Wrapping (Type B: Code)
+  # ═══════════════════════════════════════
+
+  cli_tool_wrapping:
+    description: "把现有 CLI 工具封装为 agent 可用的格式 — registry 条目或 MCP wrapper"
+
+    steps:
+      - id: evaluate_cli
+        action: |
+          评估 CLI 工具是否适合封装：
+          | 标准 | 好 | 不好 |
+          | 安装 | `brew install X` 或 `npx X` | 需要编译/Docker/注册 |
+          | CLI 模式 | 命令行 + 参数 | 只有 GUI |
+          | 输出格式 | 文件/stdout (可解析) | 只在 GUI 显示 |
+          | 免费额度 | 无限或 >100/月 | <10/月 |
+          | 安全 | 无远程执行 | 需要 root/sudo |
+
+          测试安装: `brew install {tool}` 或 `npm install -g {tool}`
+          测试版本: `{tool} --version`
+          测试基本用法: `echo '{input}' | {tool}` 或 `{tool} {input} > output`
+        tool_ref: null
+        output_file: "cli-wrapper/evaluation.md"
+
+      - id: design_wrapper
+        action: |
+          设计封装接口（来源: TAD tools-registry.yaml 格式）：
+          1. 映射 CLI flags → tool input schema
+          2. 定义安全分类: read-only / write / destructive
+          3. 设计输出解析: stdout → 结构化数据
+          4. 设计错误映射: exit codes → 可操作消息
+          5. 设计超时策略: 长时间运行的命令有 timeout
+        tool_ref: null
+        output_file: "cli-wrapper/design.md"
+
+      - id: implement_wrapper
+        action: |
+          实现封装（两种格式选一）：
+
+          格式 A — tools-registry 条目（推荐: 简单 CLI）：
+          ```yaml
+          {tool_name}:
+            description: "{做什么}"
+            recommended:
+              name: {tool}
+              type: cli
+              install: "brew install {tool}"
+              verify: "{tool} --version"
+              usage: |
+                1. {步骤 1}
+                2. {步骤 2}
+              example: |
+                {完整的输入→命令→输出示例}
+              output_format: "{格式}"
+              tested: true
+              test_result: "{大小} {描述}"
+          ```
+
+          格式 B — MCP wrapper（推荐: 需要参数验证/复杂逻辑的 CLI）：
+          用 MCP SDK 封装 CLI 调用，添加 schema 验证和输出解析
+        tool_ref: null
+        output_file: "cli-wrapper/implementation/"
+
+      - id: verify_wrapper
+        action: |
+          验证封装可用：
+          1. 安装测试: 从零安装，按 install 命令执行
+          2. 基本用法: 按 example 执行，验证输出匹配
+          3. 错误测试: 给错误输入，验证错误消息有用
+          4. 文件大小: 输出文件 >0 bytes
+        tool_ref: null
+        output_file: "cli-wrapper/test-results.md"
+
+    quality_criteria:
+      - "安装命令 ≤2 步（brew/npx，不需要编译）"
+      - "verify 命令返回版本号"
+      - "usage 有步骤编号（不是一句话）"
+      - "example 有完整 输入→命令→输出（可复制粘贴运行）"
+      - "安全分类明确（read-only / write / destructive）"
+      - "实际测试通过（不是'应该能跑'）"
+      - "编造工具能力 = FAIL。不确定的标注 [NEEDS_TESTING]"
+
+    anti_patterns:
+      - "❌ 'Usage: use X to do Y'（Claude 不知道怎么用 — 需要具体命令）"
+      - "❌ 无 verify 命令（无法确认安装成功）"
+      - "❌ 封装 GUI-only 工具（Claude 无法交互 GUI）"
+      - "❌ 无 example（Claude 第一次见这个工具，不知道输入格式）"
+
+    reviewers:
+      - persona: "DevOps 工程师"
+        checklist:
+          - "安装是否简单可靠？"
+          - "示例是否可复制运行？"
+          - "错误处理是否覆盖常见情况？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: API Integration (Type B: Code)
+  # ═══════════════════════════════════════
+
+  api_integration:
+    description: "外部 API → agent tool — 含认证、重试、幂等性、速率限制"
+
+    steps:
+      - id: research_target_api
+        action: |
+          研究目标 API：
+          1. 端点列表 + HTTP 方法 + 参数
+          2. 认证方式: API key / OAuth / Bearer token
+          3. 速率限制: 每分钟/每天/每月限额
+          4. 错误码: 400/401/403/404/429/500 各表示什么
+          5. 分页模式: cursor / offset / page-based
+        tool_ref: web_scraping
+        queries:
+          - '"{API名}" API documentation reference'
+          - '"{API名}" rate limits error codes'
+        output_file: "api-integration/research.md"
+
+      - id: design_integration
+        action: |
+          设计集成架构（来源: Production Tool Use Patterns）：
+          1. 端点→工具映射: 哪些端点合并为一个工具？
+          2. 认证流程: API key 存在哪？怎么注入？
+          3. 重试策略: 指数退避在工具层（不是 agent 循环）
+          4. 幂等性: mutation 端点用 idempotency key
+          5. 速率限制: 每工具调用上限（通常 5/session）
+          6. 输入 schema: Zod strict + enum 参数（减少幻觉）
+          7. 输出格式: 结构化 JSON, ≤25K tokens
+        tool_ref: null
+        output_file: "api-integration/design.md"
+
+      - id: implement_integration
+        action: |
+          实现 API 集成代码：
+          1. API client: 认证 + base URL + 默认 headers
+          2. 重试 wrapper: exponential backoff (1s → 2s → 4s), max 3 retries
+          3. 每个工具: input schema → API call → output parsing → error mapping
+          4. Structured error: `{"error": "type", "message": "...", "hint": "..."}`
+          5. 幂等性 key: `{user-id}-{action}-{resource-id}` for mutations
+        tool_ref: null
+        output_file: "api-integration/src/"
+
+      - id: verify_integration
+        action: |
+          验证集成：
+          1. 认证测试: 有效/无效 API key
+          2. 正常流程: 每个工具至少 1 个成功调用
+          3. 错误处理: 模拟 429 (rate limit), 401 (auth), 500 (server error)
+          4. 幂等性: 同一请求发两次，结果相同（不重复创建）
+          5. 输出大小: 验证 ≤25K tokens 限制生效
+        tool_ref: null
+        output_file: "api-integration/test-results.md"
+
+    quality_criteria:
+      - "每个端点有 input schema + output schema + error codes"
+      - "重试策略: exponential backoff, max 3 retries"
+      - "幂等性 key 在所有 mutation 端点"
+      - "速率限制: 文档化的 per-tool cap"
+      - "Structured error objects（不是 raw traceback）"
+      - "编造 API 端点 = FAIL"
+
+    anti_patterns:
+      - "❌ Raw traceback 作为错误（model 无法推理）"
+      - "❌ 无重试逻辑（单次失败 = 任务失败）"
+      - "❌ 无速率限制（无限循环 = API 被禁 + 成本爆炸）"
+      - "❌ Mutation 无幂等性（重试创建重复数据）"
+      - "❌ 返回未过滤的 API 响应（浪费 context tokens）"
+
+    reviewers:
+      - persona: "API 架构师"
+        checklist:
+          - "认证是否安全（key 不硬编码）？"
+          - "重试和幂等性是否可靠？"
+          - "错误消息是否可操作？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Tool Schema Design (Type A: Doc)
+  # ═══════════════════════════════════════
+
+  tool_schema_design:
+    description: "工具输入/输出 schema 设计 — 类型、约束、错误码、权限声明"
+
+    steps:
+      - id: search_patterns
+        action: |
+          搜索工具 schema 设计的最佳实践：
+          1. 搜索 Anthropic tool_use schema 规范
+          2. 搜索 MCP tool schema 标准
+          3. 搜索 JSON Schema / Zod 高级模式
+        tool_ref: web_scraping
+        queries:
+          - '"tool_use" "input_schema" design best practices Anthropic'
+          - '"MCP tool" schema annotation readOnlyHint'
+          - '"Zod strict" schema design patterns TypeScript'
+        output_file: "schema-design.md"
+
+      - id: analyze_interface
+        action: |
+          分析目标工具的 schema 需求（来源: Claude Code Tool.ts 接口）：
+
+          对每个工具定义：
+          1. inputSchema (Zod .strict()):
+             | 参数名 | 类型 | 必填 | 约束 | 描述 | 示例 |
+             - Enum 参数优先（减少 AI 幻觉）
+             - 字符串有 maxLength
+             - 数字有 min/max
+
+          2. outputSchema:
+             | 字段名 | 类型 | 描述 |
+             - maxResultSizeChars 限制
+
+          3. 错误条件:
+             | 错误码 | 含义 | 恢复建议 |
+             - 至少 3 种: auth_error, invalid_input, rate_limit
+
+          4. 工具元数据（来源: Claude Code Tool.ts）:
+             - isConcurrencySafe(): 是否可并行调用？
+             - isReadOnly(): 是否不改变状态？
+             - isDestructive(): 是否不可逆？
+             - shouldDefer: 是否延迟加载？
+             - searchHint: 3-10 词搜索提示
+        quality: "每个参数有类型+约束+描述+示例。'string 类型'不够 — 要有 maxLength 和 pattern。"
+        tool_ref: null
+        output_file: "schema-design.md (append)"
+
+      - id: derive_schema_doc
+        action: |
+          基于分析推导 schema 设计文档：
+          1. 每个工具的完整 schema 定义（Zod 代码）
+          2. 工具分类表: read-only / write / destructive × concurrency safe / unsafe
+          3. 延迟加载策略: 哪些工具 defer, 哪些 alwaysLoad
+          4. schema 演化规则: 新增字段 optional, 删除字段 deprecated then removed
+        quality: "Schema 可以直接复制到代码中使用。不是伪代码。"
+        tool_ref: null
+        output_file: "schema-design.md (append)"
+
+      - id: generate_schema_diagrams
+        action: |
+          用 D2 生成：
+          1. 工具分类矩阵图: read/write/destructive × concurrent/serial
+          2. Schema 验证流程图: input → Zod validate → handler → output → format
+        tool_ref: diagram_generation
+        output_file: "schema-architecture.svg"
+
+      - id: compile_schema_report
+        action: "综合为 schema 设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "schema-design.pdf"
+
+    quality_criteria:
+      - "每个参数有: 类型 + 约束 + 描述 + 示例"
+      - "Enum 优先于 string（减少幻觉）"
+      - "`strict: true` 或 `.strict()` 在所有 schema"
+      - "错误条件 ≥3 种 per tool"
+      - "工具分类明确: read/write/destructive + concurrency"
+      - "编造参数类型 = FAIL"
+
+    anti_patterns:
+      - "❌ 无 schema（AI 幻觉参数 — 已知风险）"
+      - "❌ 全 string 类型（无验证 = 无安全）"
+      - "❌ 工具描述只说'what'不说'when'（agent 误触发）"
+      - "❌ 无 maxResultSizeChars（输出无限增长吃完 context）"
+
+    reviewers:
+      - persona: "Schema 设计师"
+        checklist:
+          - "Schema 是否 strict？"
+          - "参数约束是否完整？"
+          - "错误条件是否充分？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Tool Permission Model (Type A: Doc)
+  # ═══════════════════════════════════════
+
+  tool_permission_model:
+    description: "工具权限设计 — read-only/destructive/concurrent 分类 + 审批流程"
+
+    steps:
+      - id: search_models
+        action: |
+          搜索工具权限模型的最佳实践：
+          1. Claude Code 权限管线
+          2. MCP tool annotations 规范
+          3. 生产系统的确认门控模式
+        tool_ref: web_scraping
+        queries:
+          - '"tool permission" model design AI agent production'
+          - '"confirmation gate" destructive action AI agent'
+          - '"Claude Code" permission pipeline deny hooks allow'
+        output_file: "permission-model.md"
+
+      - id: analyze_permissions
+        action: |
+          分析目标工具集的权限需求（来源: Claude Code 4 级权限管线）：
+
+          1. 工具分类矩阵:
+             | 工具 | Read-Only | Destructive | Concurrent | Permission Level |
+             分类依据: isConcurrencySafe(), isReadOnly(), isDestructive()
+
+          2. 权限层级设计（来源: Claude Code enforcement 优先级）:
+             Level 1 — deny (移除工具): 绝对不允许的操作
+             Level 2 — hooks (条件判断): 基于上下文的动态决策
+             Level 3 — allow (自动通过): 安全的读操作
+             Level 4 — prompt (人类确认): 不可逆操作
+
+          3. 确认门控（来源: Production Tool Use Patterns）:
+             DESTRUCTIVE_TOOLS 列表: delete, send_email, execute_write
+             确认方式: 显示操作摘要 → 等待人类 approve/deny
+
+          4. 中断行为:
+             interruptBehavior(): 'cancel' (停止丢弃) vs 'block' (继续等待)
+             Read-only → cancel (随时可重做)
+             Write → block (避免数据不一致)
+        quality: "每个工具有明确的权限级别。'看情况'不是有效的权限设计。"
+        tool_ref: null
+        output_file: "permission-model.md (append)"
+
+      - id: derive_policy
+        action: |
+          基于分析推导权限策略文档：
+          1. 权限配置文件格式（allow/deny/ask 规则）
+          2. 升级路径: >3 连续 deny → 自动升级到人类确认
+          3. 审计日志格式: timestamp + tool + action + decision + reason
+          4. 权限测试清单: 每个级别验证一次
+        tool_ref: null
+        output_file: "permission-model.md (append)"
+
+      - id: generate_permission_diagrams
+        action: |
+          用 D2 生成：
+          1. 权限管线图: deny → hooks → allow → prompt（4 级递增）
+          2. 工具分类矩阵图
+        tool_ref: diagram_generation
+        output_file: "permission-pipeline.svg"
+
+      - id: compile_permission_report
+        action: "综合为权限模型设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "permission-model.pdf"
+
+    quality_criteria:
+      - "每个工具有权限级别（deny/hooks/allow/prompt）"
+      - "Destructive 操作有确认门控"
+      - "权限升级路径: >3 deny → 人类确认"
+      - "审计日志格式定义"
+      - "中断行为分类: cancel vs block"
+      - "编造权限机制 = FAIL"
+
+    anti_patterns:
+      - "❌ 所有工具同权限（destructive 自动通过 = 灾难）"
+      - "❌ 权限只在 prompt（可被绕过）"
+      - "❌ 无确认门控（delete 操作无人审批）"
+      - "❌ 无审计日志（出问题后无法追踪）"
+
+    reviewers:
+      - persona: "安全工程师"
+        checklist:
+          - "Destructive 操作是否需要确认？"
+          - "权限层级是否合理？"
+          - "审计日志是否完整？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Tool Testing (Type B: Code)
+  # ═══════════════════════════════════════
+
+  tool_testing:
+    description: "工具测试 — schema 验证、mock、集成测试、评估场景"
+
+    steps:
+      - id: design_test_plan
+        action: |
+          设计测试计划（来源: ComposioHQ 评估驱动开发）：
+
+          1. Schema 验证测试:
+             - 每个必填参数缺失 → 正确错误
+             - 每个约束违反 → 正确错误
+             - 额外参数 (strict mode) → 拒绝
+
+          2. Mock 测试:
+             - 每个工具 happy path: 已知输入 → 预期输出
+             - 每个错误条件: auth fail / rate limit / timeout
+             - 输出大小: 验证 ≤ maxResultSizeChars
+
+          3. 集成测试:
+             - 真实 API 调用（测试环境/sandbox）
+             - 端到端: 认证 → 调用 → 解析 → 格式化
+
+          4. 评估场景 (来源: ComposioHQ Phase 4):
+             10 个复杂真实场景，每个:
+             - 独立（不依赖其他测试）
+             - 只读（不修改数据）
+             - 复杂（需要多次工具调用）
+             - 可验证（明确答案，字符串比较）
+
+          ⚠️ STDIO MCP 服务器: 不能直接运行测试。用 `timeout 5s` 或 MCP SDK client。
+        tool_ref: null
+        output_file: "tool-testing/test-plan.md"
+
+      - id: implement_tests
+        action: |
+          实现测试代码:
+          1. 测试框架: vitest 或 jest (项目已有的优先)
+          2. Schema 测试: 使用 Zod .safeParse() 验证
+          3. Mock 测试: 模拟 API 响应，验证工具行为
+          4. 集成测试: 标记为 `test.skip` 默认跳过（需要真实 API key）
+          5. 评估场景: 写入 evaluations/ 目录，XML 格式
+        tool_ref: null
+        output_file: "tool-testing/tests/"
+
+      - id: run_tests
+        action: |
+          执行测试并收集结果:
+          1. `npm test` — 运行所有非 skip 测试
+          2. 记录: 通过/失败/跳过 数量
+          3. 修复失败测试
+          4. 生成覆盖率报告（如果有配置）
+        tool_ref: null
+        output_file: "tool-testing/results.md"
+
+      - id: optimize_tests
+        action: |
+          优化测试质量:
+          1. 覆盖率检查: 每个工具 ≥1 happy path + ≥1 error test
+          2. 边界测试: 空输入、超大输入、特殊字符
+          3. 性能: 每个测试 <5s（超时 = 问题）
+          4. CI 集成: 确保测试可在 CI 环境运行
+        tool_ref: null
+        output_file: "tool-testing/results.md (append)"
+
+    quality_criteria:
+      - "每个工具 ≥1 happy path test + ≥1 error test"
+      - "Schema 验证: 必填缺失 + 约束违反 + strict mode"
+      - "STDIO 服务器不直接运行（用 timeout 或 SDK client）"
+      - "评估场景 ≥5 个（复杂、独立、可验证）"
+      - "所有测试可在 CI 运行"
+      - "编造测试结果 = FAIL"
+
+    anti_patterns:
+      - "❌ 直接运行 STDIO MCP server 测试（无限挂起）"
+      - "❌ 只测 happy path（错误是工具失败的主要场景）"
+      - "❌ 无集成测试（mock 通过但真实 API 失败）"
+      - "❌ 测试超时 >5s（可能有问题）"
+
+    reviewers:
+      - persona: "QA 工程师"
+        checklist:
+          - "测试覆盖率是否足够？"
+          - "错误场景是否覆盖？"
+          - "CI 是否可运行？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Tool Documentation (Type A: Doc)
+  # ═══════════════════════════════════════
+
+  tool_documentation:
+    description: "工具文档即合约 — purpose + parameters + examples + errors + usage guidance"
+
+    steps:
+      - id: search_standards
+        action: |
+          搜索工具文档的最佳实践标准：
+          1. Anthropic tool documentation guidelines
+          2. OpenAPI/Swagger 文档标准
+          3. MCP tool description 规范
+        tool_ref: web_scraping
+        queries:
+          - '"tool documentation" "best practices" AI agent LLM'
+          - '"MCP tool" description annotation documentation'
+          - '"tool description" "when to use" "when not to use" AI'
+        output_file: "tool-documentation.md"
+
+      - id: analyze_docs
+        action: |
+          分析每个工具的文档需求（来源: Claude Code Tool.ts + Anthropic API 文档原则）：
+
+          对每个工具产出:
+          1. 一行摘要: 做什么（≤15 词）
+          2. 详细描述: 为什么用、怎么用、什么时候用
+          3. "When to use" 场景（≥3 个）
+          4. "When NOT to use" 场景（≥2 个 — 同样重要）
+          5. 参数文档: 每个参数有 类型 + 描述 + 示例 + 默认值 + 约束
+          6. 返回值文档: 结构 + 字段说明 + 示例输出
+          7. 错误文档: 每种错误 + 原因 + 恢复步骤
+          8. 完整示例: 输入 → 调用 → 输出（可复制运行）
+
+          文档可读性测试: "给一个不了解这个工具的 Claude，它能按文档正确使用吗？"
+        quality: "每个工具 8 个维度全覆盖。'Usage: use this tool' = FAIL。"
+        tool_ref: null
+        output_file: "tool-documentation.md (append)"
+
+      - id: derive_doc_template
+        action: |
+          基于分析推导文档模板和标准:
+          1. 标准文档模板（每个工具必须填写）
+          2. searchHint 编写规则: 3-10 词, 用 tool name 中没有的关键词
+          3. 文档版本管理: 何时更新、谁负责
+          4. 文档质量检查清单
+        tool_ref: null
+        output_file: "tool-documentation.md (append)"
+
+      - id: generate_doc_diagrams
+        action: |
+          用 D2 生成:
+          1. 工具使用流程图: 用户请求 → 选择工具 → 验证输入 → 执行 → 格式化输出
+          2. 文档结构图: 8 个维度的关系和层次
+        tool_ref: diagram_generation
+        output_file: "doc-architecture.svg"
+
+      - id: compile_doc_report
+        action: "综合为工具文档标准 PDF"
+        tool_ref: pdf_generation
+        output_file: "tool-documentation.pdf"
+
+    quality_criteria:
+      - "每个工具有 8 维度文档（摘要/描述/when to/when not/参数/返回/错误/示例）"
+      - "'When NOT to use' ≥2 个场景（和 'when to use' 同样重要）"
+      - "示例是完整的 输入→调用→输出（可复制运行）"
+      - "文档可读性: 不了解工具的 Claude 能正确使用"
+      - "searchHint 用 tool name 之外的关键词"
+      - "编造工具功能 = FAIL"
+
+    anti_patterns:
+      - "❌ 'Usage: use this tool'（没有示例、参数、错误处理）"
+      - "❌ 只文档 happy path（错误处理指导更关键）"
+      - "❌ 内部术语无解释"
+      - "❌ 过期示例（代码已变但文档未更新）"
+      - "❌ 无 'when NOT to use'（agent 在不该用时用了 = 浪费 + 错误）"
+
+    reviewers:
+      - persona: "技术文档专家"
+        checklist:
+          - "文档是否完整（8 维度）？"
+          - "示例是否可运行？"
+          - "可读性测试是否通过？"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── mcp-server/                      # MCP Server 开发
+  │   ├── api-research.md              # API 研究文档
+  │   ├── src/index.ts                 # Server 源码
+  │   ├── src/tools/                   # 工具实现
+  │   ├── package.json                 # 项目配置
+  │   ├── tsconfig.json                # TypeScript 配置
+  │   ├── dist/index.js                # 构建产物
+  │   └── README.md                    # 使用文档
+  ├── cli-wrapper/                     # CLI 封装
+  │   ├── evaluation.md                # 工具评估
+  │   ├── design.md                    # 封装设计
+  │   └── test-results.md              # 测试结果
+  ├── api-integration/                 # API 集成
+  │   ├── research.md                  # API 研究
+  │   ├── design.md                    # 集成设计
+  │   ├── src/                         # 集成代码
+  │   └── test-results.md              # 测试结果
+  ├── schema-design.md                 # Schema 设计文档
+  ├── schema-design.pdf                # PDF (Typst)
+  ├── schema-architecture.svg          # 分类矩阵图 (D2)
+  ├── permission-model.md              # 权限模型文档
+  ├── permission-model.pdf             # PDF (Typst)
+  ├── permission-pipeline.svg          # 权限管线图 (D2)
+  ├── tool-testing/                    # 测试
+  │   ├── test-plan.md                 # 测试计划
+  │   ├── tests/                       # 测试代码
+  │   └── results.md                   # 测试结果
+  ├── tool-documentation.md            # 文档标准
+  ├── tool-documentation.pdf           # PDF (Typst)
+  └── doc-architecture.svg             # 文档结构图 (D2)
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "7 capabilities: 4 Code B + 3 Doc A 各有正确的 step 模型"
+      - "Code B: 选型→执行→验证→优化"
+      - "Doc A: 搜索→分析→推导→生成"
+      - "quality_criteria 全部可量化"
+      - "anti_patterns 有具体案例"
+      - "工具引用在 tools-registry 有对应条目"
+
+  gate4_acceptance:
+    checklist:
+      - "E2E 测试 ≥5/7 维度 PASS"
+      - "Code B 产出物可构建可运行（npx tsc 零错误）"
+      - "Doc A 产出物有分析深度（不是数据罗列）"
+      - "零编造: 所有 API 端点/工具功能有来源"
+      - "文件可用: 代码可构建 + PDF/SVG >0 bytes"

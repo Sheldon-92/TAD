@@ -1,0 +1,175 @@
+direction: right
+
+title: {
+  label: "Menu Snap MCP Server — Tool Classification & Validation Flow"
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+# ================================================================
+# Tool Classification Matrix
+# ================================================================
+
+matrix: {
+  label: "Tool Classification Matrix"
+  style.font-size: 18
+  style.bold: true
+
+  read_safe: {
+    label: "Read-Only + Concurrency Safe"
+    style.fill: "#d4edda"
+    style.stroke: "#28a745"
+    style.border-radius: 8
+
+    search: {
+      label: |md
+        **search_dishes**
+        readOnly: true
+        destructive: false
+        concurrent: true
+        defer: false
+      |
+      style.fill: "#c3e6cb"
+    }
+
+    details: {
+      label: |md
+        **get_dish_details**
+        readOnly: true
+        destructive: false
+        concurrent: true
+        defer: false
+      |
+      style.fill: "#c3e6cb"
+    }
+  }
+
+  write_serial: {
+    label: "Write + Serial"
+    style.fill: "#fff3cd"
+    style.stroke: "#ffc107"
+    style.border-radius: 8
+
+    add: {
+      label: |md
+        **add_dish**
+        readOnly: false
+        destructive: false
+        concurrent: false
+        defer: true
+      |
+      style.fill: "#ffeeba"
+    }
+  }
+
+  destructive_serial: {
+    label: "Destructive + Serial"
+    style.fill: "#f8d7da"
+    style.stroke: "#dc3545"
+    style.border-radius: 8
+
+    update: {
+      label: |md
+        **update_dish_status**
+        readOnly: false
+        destructive: true (archive)
+        concurrent: false
+        defer: true
+      |
+      style.fill: "#f5c6cb"
+    }
+  }
+}
+
+# ================================================================
+# Validation Flow
+# ================================================================
+
+flow: {
+  label: "Schema Validation Flow"
+  style.font-size: 18
+  style.bold: true
+
+  input: {
+    label: "Tool Input (JSON)"
+    shape: document
+    style.fill: "#e2e3e5"
+  }
+
+  zod: {
+    label: |md
+      **Zod .strict() Parse**
+      - Type check
+      - Constraint check
+      - Enum validation
+      - Unknown key rejection
+    |
+    shape: hexagon
+    style.fill: "#cce5ff"
+    style.stroke: "#004085"
+  }
+
+  valid: {
+    label: "Valid"
+    shape: diamond
+    style.fill: "#d4edda"
+  }
+
+  invalid: {
+    label: |md
+      **Error Response**
+      code: invalid_input
+      message: details
+    |
+    shape: document
+    style.fill: "#f8d7da"
+    style.stroke: "#dc3545"
+  }
+
+  handler: {
+    label: |md
+      **Tool Handler**
+      Business Logic
+    |
+    shape: rectangle
+    style.fill: "#cce5ff"
+  }
+
+  db: {
+    label: "Database"
+    shape: cylinder
+    style.fill: "#e2e3e5"
+  }
+
+  output_validate: {
+    label: |md
+      **Output Validation**
+      maxResultSizeChars
+    |
+    shape: hexagon
+    style.fill: "#d4edda"
+    style.stroke: "#28a745"
+  }
+
+  response: {
+    label: "Tool Response (JSON)"
+    shape: document
+    style.fill: "#d4edda"
+  }
+
+  input -> zod: "safeParse()"
+  zod -> valid
+  valid -> invalid: "fail" {
+    style.stroke: "#dc3545"
+    style.stroke-dash: 3
+  }
+  valid -> handler: "pass" {
+    style.stroke: "#28a745"
+  }
+  handler -> db
+  db -> handler
+  handler -> output_validate
+  output_validate -> response: "truncate if > limit"
+}

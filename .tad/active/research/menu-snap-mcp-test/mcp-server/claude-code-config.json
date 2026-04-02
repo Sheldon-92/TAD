@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "menu-snap-dish-db": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/path/to/menu-snap-mcp-server",
+      "env": {}
+    }
+  }
+}
