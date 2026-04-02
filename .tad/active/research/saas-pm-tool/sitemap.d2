@@ -1,0 +1,88 @@
+# SaaS PM Tool — Site Map
+direction: down
+
+title: "FlowPM — Site Map" {
+  style.font-size: 28
+  style.bold: true
+  style.underline: true
+  shape: text
+}
+
+# Top Level
+app: "App Shell" {
+  style.fill: "#E8F4FD"
+  style.stroke: "#2196F3"
+  style.font-size: 18
+
+  sidebar: "Left Sidebar (6 items)" {
+    style.fill: "#FFF3E0"
+    style.stroke: "#FF9800"
+
+    my_issues: "1. My Issues" {
+      assigned: "Assigned to Me"
+      created: "Created by Me"
+      watching: "Watching"
+    }
+
+    projects: "2. Projects" {
+      project_a: "Project A" {
+        board: "Board (Kanban)"
+        backlog: "Backlog (List)"
+        timeline: "Timeline (Gantt)"
+        settings_proj: "Project Settings"
+      }
+      project_b: "Project B..."
+      create_project: "+ Create Project"
+    }
+
+    inbox: "3. Inbox" {
+      mentions: "Mentions"
+      updates: "Updates"
+      assigned_new: "Newly Assigned"
+    }
+
+    cycles: "4. Cycles" {
+      active_cycle: "Active Cycle"
+      upcoming: "Upcoming"
+      past: "Past Cycles"
+    }
+
+    views: "5. Views" {
+      saved_filters: "Saved Filters"
+      create_view: "+ Create View"
+    }
+
+    settings: "6. Settings (bottom)" {
+      workspace: "Workspace" {
+        general: "General"
+        members: "Members & Roles"
+        billing: "Billing"
+        integrations: "Integrations"
+      }
+    }
+  }
+
+  # Global overlays
+  overlays: "Global Overlays" {
+    style.fill: "#F3E5F5"
+    style.stroke: "#9C27B0"
+
+    cmd_k: "Cmd+K Search"
+    create_issue: "Quick Create Issue"
+    notifications: "Notification Toast"
+  }
+
+  # Content area
+  content: "Main Content Area" {
+    style.fill: "#E8F5E9"
+    style.stroke: "#4CAF50"
+
+    issue_detail: "Issue Detail Panel/Page"
+    bulk_actions: "Bulk Action Bar"
+  }
+}
+
+# Navigation flows
+app.sidebar.projects.project_a.board -> app.content.issue_detail: "click issue"
+app.overlays.cmd_k -> app.content.issue_detail: "search result"
+app.overlays.create_issue -> app.sidebar.projects.project_a.board: "created, appears on board"

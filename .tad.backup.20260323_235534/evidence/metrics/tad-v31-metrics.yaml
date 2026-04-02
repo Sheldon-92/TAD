@@ -1,0 +1,94 @@
+# TAD v3.1 指标追踪
+tracking_start_date: 2025-11-25
+
+# 质量指标
+quality_metrics:
+  problem_detection:
+    gate2_issues_found: 0  # 在Gate 2发现的问题数
+    phase_checkpoint_issues: 0  # 在Phase检查发现的问题数
+    gate3_issues_found: 0  # 在Gate 3发现的问题数
+    total_issues_found: 0
+
+  problem_prevention:
+    issues_prevented: 0  # 相比v3.0避免的问题数
+    rework_hours_saved: 0  # 节省的返工时间（小时）
+
+  false_positives:
+    total_alerts: 0  # MQ触发总次数
+    false_positive_count: 0  # 误报次数
+    false_positive_rate: "0%"  # 误报率
+
+# Human参与指标
+human_engagement:
+  gate2_reviews:
+    total_required: 0
+    completed: 0
+    completion_rate: "0%"
+
+  phase_checkpoints:
+    total_required: 0
+    completed: 0
+    completion_rate: "0%"
+
+  issues_raised: 0  # Human提出的问题/疑问数
+
+# MQ有效性
+mq_effectiveness:
+  MQ1_historical_code:
+    triggered: 0
+    issues_caught: 0
+    effectiveness: "0%"
+
+  MQ2_function_existence:
+    triggered: 0
+    issues_caught: 0
+    effectiveness: "0%"
+
+  MQ3_data_flow:
+    triggered: 0
+    issues_caught: 0
+    effectiveness: "0%"
+
+  MQ4_visual_hierarchy:
+    triggered: 0
+    issues_caught: 0
+    effectiveness: "0%"
+
+  MQ5_state_sync:
+    triggered: 0
+    issues_caught: 0
+    effectiveness: "0%"
+
+# 学习效果
+learning_outcomes:
+  decision_rationales_created: 0
+  interactive_challenges_completed: 0
+  failure_learning_entries: 0
+
+  principles_learned: []  # 学到的原则列表
+  patterns_recognized: []  # 识别的失败模式列表
+
+# 时间投入
+time_investment:
+  avg_gate2_review_time: 0  # 分钟
+  avg_phase_checkpoint_time: 0  # 分钟
+  avg_learning_time: 0  # 分钟/功能
+
+  total_time_invested: 0  # 总时间（小时）
+  total_time_saved: 0  # 节省时间（小时）
+  roi_ratio: 0  # 回报比
+
+# 项目记录
+projects:
+  # 示例结构：
+  # - id: "TASK-20251125-001"
+  #   name: "示例项目"
+  #   start_date: "2025-11-25"
+  #   end_date: "2025-11-26"
+  #   gate2_issues: 2
+  #   phase_issues: 1
+  #   gate3_issues: 0
+  #   mq_triggered: ["MQ2", "MQ3", "MQ5"]
+  #   learning_outcomes:
+  #     - "学到了单一数据源原则"
+  #   time_saved: 4  # 小时

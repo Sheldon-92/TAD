@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>Menu Snap iOS — Wireframe</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+    background: #E5E5EA;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 24px;
+    justify-content: center;
+  }
+
+  /* Phone Frame */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #F2F2F7;
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    border: 3px solid #1C1C1E;
+    flex-shrink: 0;
+  }
+  .phone-label {
+    text-align: center;
+    font-size: 14px;
+    color: #8E8E93;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .phone-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 37px;
+    background: #000;
+    border-radius: 24px;
+    z-index: 100;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    height: 59px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 24px 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1C1C1E;
+    position: relative;
+    z-index: 50;
+  }
+  .status-bar.light { color: #FFFFFF; }
+  .status-icons { display: flex; gap: 6px; font-size: 13px; }
+
+  /* Navigation Bar */
+  .nav-bar {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    position: relative;
+    background: #F2F2F7;
+    border-bottom: 0.5px solid #C6C6C8;
+  }
+  .nav-bar .title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1C1C1E;
+  }
+  .nav-bar .back {
+    position: absolute;
+    left: 16px;
+    font-size: 17px;
+    color: #007AFF;
+  }
+  .nav-bar .action {
+    position: absolute;
+    right: 16px;
+    font-size: 17px;
+    color: #007AFF;
+  }
+  .nav-bar-large {
+    padding: 8px 16px;
+    background: #F2F2F7;
+  }
+  .nav-bar-large .large-title {
+    font-size: 34px;
+    font-weight: 700;
+    color: #1C1C1E;
+  }
+
+  /* Tab Bar */
+  .tab-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 83px;
+    background: #F9F9F9;
+    border-top: 0.5px solid #C6C6C8;
+    display: flex;
+    padding-top: 6px;
+    padding-bottom: 34px;
+    z-index: 50;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: #8E8E93;
+  }
+  .tab-item.active { color: #007AFF; }
+  .tab-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  /* Content Area */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  /* ===== PAGE 1: Camera/Scan ===== */
+  .camera-bg {
+    background: #1C1C1E;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .viewfinder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .viewfinder-placeholder {
+    width: 340px;
+    height: 440px;
+    border: 2px dashed #48484A;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #636366;
+    font-size: 15px;
+    text-align: center;
+    padding: 16px;
+  }
+  .scan-frame {
+    position: absolute;
+    width: 300px;
+    height: 380px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .scan-corner {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-color: #007AFF;
+    border-style: solid;
+    border-width: 0;
+  }
+  .scan-corner.tl { top: 0; left: 0; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 8px; }
+  .scan-corner.tr { top: 0; right: 0; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 8px; }
+  .scan-corner.bl { bottom: 0; left: 0; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 8px; }
+  .scan-corner.br { bottom: 0; right: 0; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 8px; }
+  .camera-controls {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding-bottom: 83px;
+  }
+  .capture-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 4px solid #FFFFFF;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .capture-btn-inner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #FFFFFF;
+  }
+  .camera-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFF;
+    font-size: 20px;
+  }
+  .flash-toggle {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFD60A;
+    font-size: 18px;
+    z-index: 60;
+  }
+  .scan-hint {
+    position: absolute;
+    bottom: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #AEAEB2;
+    font-size: 15px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* ===== PAGE 2: Menu Results ===== */
+  .results-content { padding: 0 16px 100px; background: #F2F2F7; }
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 0;
+    overflow-x: auto;
+  }
+  .filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    white-space: nowrap;
+    background: #E5E5EA;
+    color: #1C1C1E;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+  .filter-chip.active {
+    background: #007AFF;
+    color: #FFF;
+  }
+  .dish-card {
+    background: #FFFFFF;
+    border-radius: 13px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .dish-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .dish-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1C1C1E;
+  }
+  .dish-original {
+    font-size: 13px;
+    color: #8E8E93;
+    margin-top: 2px;
+  }
+  .dish-price {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1C1C1E;
+  }
+  .dish-desc {
+    font-size: 15px;
+    color: #3C3C43;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .dietary-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-safe { background: #D1FAE5; color: #065F46; }
+  .badge-warning { background: #FEF3C7; color: #92400E; }
+  .badge-danger { background: #FEE2E2; color: #991B1B; }
+  .badge-info { background: #E0E7FF; color: #3730A3; }
+  .ai-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: #F5F3FF;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5B21B6;
+  }
+  .swipe-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #AEAEB2;
+    padding: 8px 0;
+  }
+  .rescan-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    background: #007AFF;
+    color: #FFF;
+    border-radius: 13px;
+    font-size: 17px;
+    font-weight: 600;
+    margin: 16px 0;
+  }
+
+  /* ===== PAGE 3: Dish Detail ===== */
+  .detail-content { background: #F2F2F7; padding-bottom: 100px; }
+  .detail-image {
+    width: 100%;
+    height: 260px;
+    background: #D1D1D6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8E8E93;
+    font-size: 15px;
+  }
+  .detail-body { padding: 16px; }
+  .detail-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1C1C1E;
+    margin-bottom: 4px;
+  }
+  .detail-original-name {
+    font-size: 17px;
+    color: #8E8E93;
+    margin-bottom: 12px;
+  }
+  .detail-section {
+    margin-top: 20px;
+  }
+  .detail-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8E8E93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .detail-text {
+    font-size: 17px;
+    color: #1C1C1E;
+    line-height: 1.5;
+  }
+  .ingredient-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ingredient-tag {
+    padding: 6px 12px;
+    background: #FFFFFF;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #1C1C1E;
+  }
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .action-btn {
+    flex: 1;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 13px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .action-btn.primary { background: #FF3B30; color: #FFF; }
+  .action-btn.secondary { background: #E5E5EA; color: #1C1C1E; }
+
+  /* ===== PAGE 4: Favorites ===== */
+  .fav-content { padding: 0 16px 100px; background: #F2F2F7; }
+  .fav-card {
+    background: #FFF;
+    border-radius: 13px;
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .fav-thumb {
+    width: 64px;
+    height: 64px;
+    background: #E5E5EA;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8E8E93;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .fav-info { flex: 1; }
+  .fav-name { font-size: 17px; font-weight: 600; color: #1C1C1E; }
+  .fav-restaurant { font-size: 13px; color: #8E8E93; margin-top: 2px; }
+  .fav-heart { font-size: 20px; color: #FF3B30; flex-shrink: 0; padding: 12px; }
+  .empty-state {
+    text-align: center;
+    padding: 80px 32px;
+    color: #8E8E93;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 20px; font-weight: 600; color: #1C1C1E; margin-bottom: 8px; }
+  .empty-desc { font-size: 15px; line-height: 1.4; }
+
+  /* ===== PAGE 5: Settings ===== */
+  .settings-content { padding: 0 16px 100px; background: #F2F2F7; }
+  .settings-group {
+    background: #FFF;
+    border-radius: 13px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .settings-group-title {
+    font-size: 13px;
+    color: #8E8E93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 16px;
+    margin-top: 16px;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    min-height: 44px;
+    border-bottom: 0.5px solid #E5E5EA;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #FFF;
+    font-size: 16px;
+  }
+  .settings-label { flex: 1; font-size: 17px; color: #1C1C1E; }
+  .settings-value { font-size: 17px; color: #8E8E93; margin-right: 8px; }
+  .settings-chevron { color: #C7C7CC; font-size: 14px; }
+  .toggle-track {
+    width: 51px;
+    height: 31px;
+    border-radius: 16px;
+    background: #34C759;
+    position: relative;
+  }
+  .toggle-thumb {
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: #FFF;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* Gesture annotations */
+  .gesture-annotation {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #FF9500;
+    z-index: 80;
+  }
+  .gesture-annotation::before {
+    content: '';
+    display: block;
+    border: 1px dashed #FF9500;
+  }
+  .gesture-label {
+    background: rgba(255, 149, 0, 0.1);
+    border: 1px dashed #FF9500;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    color: #FF9500;
+    white-space: nowrap;
+    position: absolute;
+    z-index: 90;
+  }
+
+  /* Safe Area annotations */
+  .safe-area-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 59px;
+    border-bottom: 1px dashed #FF3B30;
+    z-index: 90;
+    pointer-events: none;
+  }
+  .safe-area-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 34px;
+    border-top: 1px dashed #FF3B30;
+    z-index: 90;
+    pointer-events: none;
+  }
+  .safe-area-label {
+    position: absolute;
+    font-size: 9px;
+    color: #FF3B30;
+    background: rgba(255,59,48,0.08);
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+  .safe-area-label.top { top: 59px; right: 8px; }
+  .safe-area-label.bottom { bottom: 34px; right: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: Camera / Scan ==================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">1. Camera / Scan (Tab 1)</div>
+  <div class="phone">
+    <div class="dynamic-island"></div>
+    <div class="safe-area-top"></div>
+    <div class="safe-area-label top">Safe Area 59pt</div>
+    <div class="safe-area-bottom"></div>
+    <div class="safe-area-label bottom">Home Indicator 34pt</div>
+
+    <div class="camera-bg" style="display:flex;flex-direction:column;height:100%;">
+      <div class="status-bar light">
+        <span>9:41</span>
+        <div class="status-icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>WiFi</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <div class="flash-toggle">&#9889;</div>
+
+      <div class="viewfinder" style="flex:1;position:relative;">
+        <div class="viewfinder-placeholder">
+          Camera Viewfinder<br>(AVFoundation Preview Layer)
+        </div>
+        <div class="scan-frame">
+          <div class="scan-corner tl"></div>
+          <div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div>
+          <div class="scan-corner br"></div>
+        </div>
+        <div class="scan-hint">Point camera at menu to scan</div>
+
+        <!-- Gesture annotations -->
+        <div class="gesture-label" style="top: 12px; left: 12px;">Tap to focus</div>
+        <div class="gesture-label" style="top: 40px; left: 12px;">Pinch to zoom</div>
+      </div>
+
+      <div class="camera-controls" style="position:relative;">
+        <div class="camera-toggle">&#8635;</div>
+        <div class="capture-btn">
+          <div class="capture-btn-inner"></div>
+        </div>
+        <div class="camera-toggle" style="opacity:0;">&#8635;</div>
+        <div class="gesture-label" style="position:absolute;bottom:90px;left:50%;transform:translateX(-50%);">72pt capture button</div>
+      </div>
+    </div>
+
+    <div class="tab-bar" style="background:rgba(28,28,30,0.9);">
+      <div class="tab-item active">
+        <div class="tab-icon">&#128247;</div>
+        <span>Scan</span>
+      </div>
+      <div class="tab-item" style="color:#636366;">
+        <div class="tab-icon">&#128336;</div>
+        <span>History</span>
+      </div>
+      <div class="tab-item" style="color:#636366;">
+        <div class="tab-icon">&#9829;</div>
+        <span>Favorites</span>
+      </div>
+      <div class="tab-item" style="color:#636366;">
+        <div class="tab-icon">&#9881;</div>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: Menu Results ==================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">2. Menu Results</div>
+  <div class="phone">
+    <div class="dynamic-island"></div>
+    <div class="safe-area-top"></div>
+    <div class="safe-area-label top">Safe Area 59pt</div>
+    <div class="safe-area-bottom"></div>
+    <div class="safe-area-label bottom">Home Indicator 34pt</div>
+
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">&#9679;&#9679;&#9679;&#9679; WiFi 100%</div>
+      </div>
+
+      <div class="nav-bar">
+        <span class="back">&#8249; Scan</span>
+        <span class="title">Menu Results</span>
+        <span class="action">Filter</span>
+      </div>
+
+      <div class="results-content content" style="position:relative;">
+        <div class="gesture-label" style="top: 4px; right: 16px;">&#8595; Pull to rescan</div>
+
+        <div class="filter-bar">
+          <div class="filter-chip active">All (12)</div>
+          <div class="filter-chip">&#10003; Safe for me</div>
+          <div class="filter-chip">&#9733; AI Picks</div>
+          <div class="filter-chip">Vegetarian</div>
+          <div class="filter-chip">Seafood</div>
+        </div>
+
+        <div class="dish-card" style="position:relative;">
+          <div class="dish-card-header">
+            <div>
+              <div class="dish-name">Pad Thai</div>
+              <div class="dish-original">&#3612;&#3633;&#3604;&#3652;&#3607;&#3618;</div>
+            </div>
+            <div class="dish-price">$14</div>
+          </div>
+          <div class="dish-desc">Stir-fried rice noodles with shrimp, tofu, bean sprouts, and crushed peanuts</div>
+          <div class="dietary-badges">
+            <span class="badge badge-safe">&#10003; Gluten Free</span>
+            <span class="badge badge-warning">&#9888; Contains Peanuts</span>
+            <span class="badge badge-info">Popular</span>
+          </div>
+          <div class="ai-tag">&#10024; AI Pick — Great choice for first-timers</div>
+          <div class="gesture-label" style="position:absolute;right:-4px;top:50%;transform:translateY(-50%);">&#8592; Long-press to favorite</div>
+        </div>
+
+        <div class="dish-card">
+          <div class="dish-card-header">
+            <div>
+              <div class="dish-name">Green Curry</div>
+              <div class="dish-original">&#3649;&#3585;&#3591;&#3648;&#3586;&#3637;&#3618;&#3623;&#3627;&#3623;&#3634;&#3609;</div>
+            </div>
+            <div class="dish-price">$16</div>
+          </div>
+          <div class="dish-desc">Coconut milk curry with chicken, bamboo shoots, Thai basil, and eggplant</div>
+          <div class="dietary-badges">
+            <span class="badge badge-safe">&#10003; Dairy Free</span>
+            <span class="badge badge-danger">&#9888; Spicy</span>
+          </div>
+        </div>
+
+        <div class="dish-card">
+          <div class="dish-card-header">
+            <div>
+              <div class="dish-name">Mango Sticky Rice</div>
+              <div class="dish-original">&#3586;&#3657;&#3634;&#3623;&#3648;&#3627;&#3609;&#3637;&#3618;&#3623;&#3617;&#3632;&#3617;&#3656;&#3623;&#3591;</div>
+            </div>
+            <div class="dish-price">$8</div>
+          </div>
+          <div class="dish-desc">Sweet sticky rice with fresh mango and coconut cream</div>
+          <div class="dietary-badges">
+            <span class="badge badge-safe">&#10003; Vegan</span>
+            <span class="badge badge-safe">&#10003; Gluten Free</span>
+          </div>
+        </div>
+
+        <div class="swipe-hint">Swipe up for more dishes</div>
+
+        <div class="rescan-btn">&#128247; Rescan Menu</div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item active">
+        <div class="tab-icon">&#128247;</div>
+        <span>Scan</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#128336;</div>
+        <span>History</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#9829;</div>
+        <span>Favorites</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#9881;</div>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: Dish Detail ==================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">3. Dish Detail</div>
+  <div class="phone">
+    <div class="dynamic-island"></div>
+
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div class="status-bar" style="position:absolute;top:0;left:0;right:0;z-index:60;">
+        <span>9:41</span>
+        <div class="status-icons">&#9679;&#9679;&#9679;&#9679; WiFi 100%</div>
+      </div>
+
+      <div class="detail-content content">
+        <div class="detail-image" style="position:relative;">
+          AI-generated dish photo<br>[ASSUMPTION]
+          <div class="gesture-label" style="position:absolute;bottom:8px;left:8px;">Pinch to zoom image</div>
+        </div>
+
+        <div style="position:relative;">
+          <div class="nav-bar" style="background:transparent;border:none;position:absolute;top:-304px;z-index:70;">
+            <span class="back" style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:20px;color:#FFF;">&#8249; Back</span>
+            <span class="action" style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:20px;color:#FFF;">&#8942;</span>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <div class="detail-name">Pad Thai</div>
+          <div class="detail-original-name">&#3612;&#3633;&#3604;&#3652;&#3607;&#3618; &mdash; $14</div>
+
+          <div class="dietary-badges" style="margin-top:12px;">
+            <span class="badge badge-safe">&#10003; Gluten Free</span>
+            <span class="badge badge-warning">&#9888; Contains Peanuts</span>
+            <span class="badge badge-warning">&#9888; Contains Shrimp</span>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">Description</div>
+            <div class="detail-text">Thailand's most famous noodle dish. Stir-fried rice noodles with shrimp, pressed tofu, bean sprouts, Chinese chives, and tamarind sauce, topped with crushed roasted peanuts and a lime wedge.</div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">Key Ingredients</div>
+            <div class="ingredient-list">
+              <span class="ingredient-tag">Rice Noodles</span>
+              <span class="ingredient-tag">Shrimp</span>
+              <span class="ingredient-tag">Tofu</span>
+              <span class="ingredient-tag">Peanuts</span>
+              <span class="ingredient-tag">Bean Sprouts</span>
+              <span class="ingredient-tag">Tamarind</span>
+              <span class="ingredient-tag">Fish Sauce</span>
+              <span class="ingredient-tag">Lime</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">AI Recommendation</div>
+            <div class="ai-tag" style="margin-top:0;">&#10024; Perfect for first-time visitors. Ask for less sugar and extra lime for a more authentic taste.</div>
+          </div>
+
+          <div class="action-row">
+            <div class="action-btn primary">&#9829; Save</div>
+            <div class="action-btn secondary">&#8599; Share</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item active">
+        <div class="tab-icon">&#128247;</div>
+        <span>Scan</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#128336;</div>
+        <span>History</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#9829;</div>
+        <span>Favorites</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#9881;</div>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4: Favorites ==================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">4. Favorites (Tab 3)</div>
+  <div class="phone">
+    <div class="dynamic-island"></div>
+
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">&#9679;&#9679;&#9679;&#9679; WiFi 100%</div>
+      </div>
+
+      <div class="nav-bar-large">
+        <div class="large-title">Favorites</div>
+      </div>
+
+      <div class="fav-content content" style="position:relative;">
+        <div class="gesture-label" style="top:4px;right:16px;">&#8592; Swipe left to delete</div>
+
+        <div class="fav-card">
+          <div class="fav-thumb">Photo</div>
+          <div class="fav-info">
+            <div class="fav-name">Pad Thai</div>
+            <div class="fav-restaurant">Baan Thai Restaurant, Bangkok</div>
+            <div class="dietary-badges" style="margin-top:4px;">
+              <span class="badge badge-safe" style="font-size:11px;">GF</span>
+            </div>
+          </div>
+          <div class="fav-heart">&#9829;</div>
+        </div>
+
+        <div class="fav-card">
+          <div class="fav-thumb">Photo</div>
+          <div class="fav-info">
+            <div class="fav-name">Tonkotsu Ramen</div>
+            <div class="fav-restaurant">Ichiran, Tokyo</div>
+            <div class="dietary-badges" style="margin-top:4px;">
+              <span class="badge badge-warning" style="font-size:11px;">Pork</span>
+            </div>
+          </div>
+          <div class="fav-heart">&#9829;</div>
+        </div>
+
+        <div class="fav-card">
+          <div class="fav-thumb">Photo</div>
+          <div class="fav-info">
+            <div class="fav-name">Margherita Pizza</div>
+            <div class="fav-restaurant">Pizzeria Da Michele, Naples</div>
+            <div class="dietary-badges" style="margin-top:4px;">
+              <span class="badge badge-safe" style="font-size:11px;">Vegetarian</span>
+            </div>
+          </div>
+          <div class="fav-heart">&#9829;</div>
+        </div>
+
+        <div class="fav-card">
+          <div class="fav-thumb">Photo</div>
+          <div class="fav-info">
+            <div class="fav-name">Croissant aux Amandes</div>
+            <div class="fav-restaurant">Du Pain et des Idees, Paris</div>
+            <div class="dietary-badges" style="margin-top:4px;">
+              <span class="badge badge-warning" style="font-size:11px;">Nuts</span>
+            </div>
+          </div>
+          <div class="fav-heart">&#9829;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item">
+        <div class="tab-icon">&#128247;</div>
+        <span>Scan</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#128336;</div>
+        <span>History</span>
+      </div>
+      <div class="tab-item active">
+        <div class="tab-icon">&#9829;</div>
+        <span>Favorites</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#9881;</div>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 5: Settings ==================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">5. Settings (Tab 4)</div>
+  <div class="phone">
+    <div class="dynamic-island"></div>
+
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">&#9679;&#9679;&#9679;&#9679; WiFi 100%</div>
+      </div>
+
+      <div class="nav-bar-large">
+        <div class="large-title">Settings</div>
+      </div>
+
+      <div class="settings-content content">
+        <div class="settings-group-title">Dietary Preferences</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#34C759;">&#127813;</div>
+            <span class="settings-label">Dietary Restrictions</span>
+            <span class="settings-value">3 active</span>
+            <span class="settings-chevron">&#8250;</span>
+          </div>
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#FF9500;">&#9888;</div>
+            <span class="settings-label">Allergen Alerts</span>
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </div>
+        </div>
+
+        <div class="settings-group-title">Translation</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#007AFF;">&#127760;</div>
+            <span class="settings-label">My Language</span>
+            <span class="settings-value">English</span>
+            <span class="settings-chevron">&#8250;</span>
+          </div>
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#5856D6;">&#128172;</div>
+            <span class="settings-label">Show Original Text</span>
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </div>
+        </div>
+
+        <div class="settings-group-title">Camera</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#FF3B30;">&#128247;</div>
+            <span class="settings-label">Auto-Detect Menu</span>
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#FFD60A;color:#1C1C1E;">&#9889;</div>
+            <span class="settings-label">Flash</span>
+            <span class="settings-value">Auto</span>
+            <span class="settings-chevron">&#8250;</span>
+          </div>
+        </div>
+
+        <div class="settings-group-title">General</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#8E8E93;">&#128065;</div>
+            <span class="settings-label">Appearance</span>
+            <span class="settings-value">System</span>
+            <span class="settings-chevron">&#8250;</span>
+          </div>
+          <div class="settings-row">
+            <div class="settings-icon" style="background:#007AFF;">&#9432;</div>
+            <span class="settings-label">About Menu Snap</span>
+            <span class="settings-chevron">&#8250;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item">
+        <div class="tab-icon">&#128247;</div>
+        <span>Scan</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#128336;</div>
+        <span>History</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon">&#9829;</div>
+        <span>Favorites</span>
+      </div>
+      <div class="tab-item active">
+        <div class="tab-icon">&#9881;</div>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

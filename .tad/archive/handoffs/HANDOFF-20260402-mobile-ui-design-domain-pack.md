@@ -1,4 +1,4 @@
-# Handoff Template: Create New Domain Pack — Web Frontend
+# Handoff Template: Create New Domain Pack — Mobile UI Design
 
 **From:** Alex | **To:** Blake | **Date:** 2026-04-02
 
@@ -6,7 +6,7 @@
 
 ## 你要做什么
 
-为 **Web Frontend** 创建一个 Domain Pack — 一个 YAML 配置文件，让 TAD 能在这个领域"做事"。
+为 **Mobile UI Design** 创建一个 Domain Pack — 一个 YAML 配置文件，让 TAD 能在这个领域"做事"。
 
 "做事"不是写文字建议。是**用工具产出文件** — PDF 报告、SVG 图表、HTML 原型等可以直接发给别人用的东西。
 
@@ -31,14 +31,14 @@
 
 ### 怎么搜
 
-执行这 5 条 WebSearch（把 web-frontend 替换为具体领域）：
+执行这 5 条 WebSearch（把 mobile-ui-design 替换为具体领域）：
 
 ```
-1. "GitHub claude skills web-frontend SKILL.md"
-2. "GitHub AI agent web-frontend skill prompt framework"
-3. "GitHub awesome claude skills web-frontend"
-4. "web-frontend best practices checklist framework"
-5. "site:github.com web-frontend SKILL.md OR CLAUDE.md"
+1. "GitHub claude skills mobile-ui-design SKILL.md"
+2. "GitHub AI agent mobile-ui-design skill prompt framework"
+3. "GitHub awesome claude skills mobile-ui-design"
+4. "mobile-ui-design best practices checklist framework"
+5. "site:github.com mobile-ui-design SKILL.md OR CLAUDE.md"
 ```
 
 ### 怎么判断一个仓库值不值得深入看
@@ -108,7 +108,7 @@
 把所有仓库的提取结果合并。按你的 Domain Pack 要覆盖的 capability 分组。
 
 ```markdown
-# web-frontend Skills Best Practices
+# mobile-ui-design Skills Best Practices
 
 ## 来源
 | 仓库 | Stars | 特点 |
@@ -133,7 +133,7 @@
 {同样格式}
 ```
 
-**写入**：`.tad/spike-v3/domain-pack-tools/web-frontend-skills-best-practices.md`
+**写入**：`.tad/spike-v3/domain-pack-tools/mobile-ui-design-skills-best-practices.md`
 
 ### Phase 1 自检
 
@@ -297,36 +297,112 @@ gates:
     checklist: [...]
 ```
 
-### ⚠️ 最关键的规则：每个 capability 必须有四层 steps
+### ⚠️ 最关键的规则：Step 设计取决于 Pack 类型
+
+Domain Pack 分两类，step 结构不同：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 类型 A：文档/研究类（product-definition, 竞品分析, 法律...） │
+│                                                              │
+│ 产出物 = 文档/报告/分析                                      │
+│ 核心风险 = 搜索拼接、编造数据、分析太浅                       │
+│ Step 模型 = 四层：搜索 → 分析 → 推导 → 生成                  │
+│ 价值点 = 防止"写空话"                                        │
+├─────────────────────────────────────────────────────────────┤
+│ 类型 B：代码/工具类（frontend, backend, testing, 部署...）    │
+│                                                              │
+│ 产出物 = 可运行的代码/配置                                    │
+│ 核心风险 = 代码跑不通、缺少质量检查、架构选型错误             │
+│ Step 模型 = 四层：选型 → 执行 → 验证 → 优化                  │
+│ 价值点 = 防止"代码跑不起来"                                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**先判断你的 pack 是哪种类型，再选 step 模型。**
+
+---
+
+#### 类型 A：文档/研究类 — 搜索→分析→推导→生成
+
+适用于：产出物是文档、报告、分析结论的 pack。
 
 ```
 Layer 1: 搜索 — 去哪找数据
 Layer 2: 分析 — 数据意味着什么（So What）
 Layer 3: 推导 — 所以该怎么做（Therefore）
-Layer 4: 生成 — 用工具产出文件
+Layer 4: 生成 — 用工具产出文件（PDF/SVG/PNG）
 ```
 
-**怎么判断你写的步骤够不够深：**
+**怎么判断深度够不够：**
 
 ```
-❌ 太浅（只有 Layer 1 + 4）:
+❌ 太浅（只有搜索 + 生成）:
   step 1: WebSearch 搜索竞品
   step 2: 用 Typst 生成报告
   → 产出物 = 搜索结果拼接，没有分析
 
-⚠️ 有点深度但不够（有 Layer 1 + 2 + 4，缺 3）:
+⚠️ 中等（有分析没推导）:
   step 1: WebSearch 搜索竞品
   step 2: 对比功能和定价
   step 3: 用 Typst 生成报告
-  → 产出物 = 有对比表格，但没有"所以我们应该怎么做"的结论
+  → 有对比表格，但没有"所以我们应该怎么做"
 
 ✅ 够深（四层都有）:
-  step 1: WebSearch 搜索 5+ 竞品（Layer 1: 搜索）
-  step 2: 对每个竞品分析：为什么能活、用户不满什么、没做什么（Layer 2: 分析）
-  step 3: 基于分析推导：市场空白在哪、我们的定位应该是什么（Layer 3: 推导）
-  step 4: 用 D2 画定位图 + Typst 生成报告（Layer 4: 生成）
-  → 产出物 = 有分析深度的报告，有可执行的结论
+  step 1: WebSearch 搜索 5+ 竞品
+  step 2: 对每个竞品分析：为什么能活、用户不满什么、没做什么
+  step 3: 推导：市场空白在哪、我们的定位是什么
+  step 4: 用 D2 画定位图 + Typst 生成报告
+  → 有分析深度的报告，有可执行的结论
 ```
+
+---
+
+#### 类型 B：代码/工具类 — 选型→执行→验证→优化
+
+适用于：产出物是可运行代码、配置文件、部署环境的 pack。
+
+```
+Layer 1: 选型 — 选什么框架/工具/模式（需要搜索+分析）
+Layer 2: 执行 — 用工具生成代码/配置（脚手架、CLI 命令）
+Layer 3: 验证 — 自动化检查（lint, type check, build, test）
+Layer 4: 优化 — 性能、安全、可维护性检查
+```
+
+**怎么判断深度够不够：**
+
+```
+❌ 太浅（只有执行）:
+  step 1: npx create-next-app
+  → 跑了个脚手架，没选型、没验证、没优化
+
+⚠️ 中等（有执行+验证，没选型）:
+  step 1: npx create-next-app
+  step 2: tsc --noEmit && eslint .
+  → 代码能跑，但为什么选 Next.js？为什么不选 Vite？
+
+✅ 够深（四层都有）:
+  step 1: 搜索框架选项，对比 Next.js/Vite/Remix（选型）
+  step 2: npx create-next-app + shadcn add（执行）
+  step 3: tsc + eslint + npm run build 零错误（验证）
+  step 4: bundle-analyzer 检查大小 + Lighthouse 性能分（优化）
+  → 有选型理由、代码能跑、质量有保证
+```
+
+**关键区别**：
+- 类型 A 的 Layer 2-3（分析+推导）是防止"写空话"
+- 类型 B 的 Layer 1（选型）是防止"选错方案"，Layer 3-4（验证+优化）是防止"代码有问题"
+- **类型 B 的有些 capability 天然简单**（scaffold = 跑一个命令），不需要硬套四层。如果某个 capability 不需要选型分析，Layer 1 可以省略，直接 执行→验证→优化。
+
+---
+
+#### 混合类型
+
+有些 pack 两种都有。比如 `web-ui-design`：
+- `information_architecture`（类型 A：搜索竞品导航 → 分析 → 推导 → 生成站点地图）
+- `wireframing`（类型 B：选方案 → 生成 HTML 原型 → pa11y 验证 → 迭代）
+
+**每个 capability 单独判断用哪种模型。** 不要整个 pack 统一。
 
 ### 怎么写分析步骤（Layer 2）
 
@@ -440,7 +516,7 @@ quality_criteria 里必须写: "编造数据 = FAIL。不确定的标注 [UNVALI
 ```
 Agent({
   prompt: "你在做 '{测试议题}' 的 {capability_name}。
-  读取 .tad/domains/web-frontend.yaml 的 {capability} 部分，按 steps 逐步执行。
+  读取 .tad/domains/mobile-ui-design.yaml 的 {capability} 部分，按 steps 逐步执行。
   工具使用方法看 .tad/domains/tools-registry.yaml。
   产出文件写入 .tad/active/research/{test-project}/。
   使用真实 WebSearch（不要编造数据）。"
@@ -515,10 +591,10 @@ Agent({
 
 | # | 文件 | 检查 |
 |---|------|------|
-| 1 | `.tad/spike-v3/domain-pack-tools/web-frontend-skills-best-practices.md` | ≥3 仓库 × 5 维度 |
-| 2 | `.tad/spike-v3/domain-pack-tools/web-frontend-tool-research.md` | ≥2 工具实测 |
+| 1 | `.tad/spike-v3/domain-pack-tools/mobile-ui-design-skills-best-practices.md` | ≥3 仓库 × 5 维度 |
+| 2 | `.tad/spike-v3/domain-pack-tools/mobile-ui-design-tool-research.md` | ≥2 工具实测 |
 | 3 | `.tad/domains/tools-registry.yaml` 更新 | 新工具有完整条目 |
-| 4 | `.tad/domains/web-frontend.yaml` | 四层 steps + 质量标准 |
+| 4 | `.tad/domains/mobile-ui-design.yaml` | 四层 steps + 质量标准 |
 | 5 | E2E 测试结果 | ≥5/7 维度 PASS |
 | 6 | v1→v2 对比（如果迭代了） | 改善可见 |
 
@@ -536,109 +612,85 @@ Agent({
 
 ---
 
-## ⚠️ 上一次执行失败的原因
-
-上次 Blake 声称完成但文件不存在：
-- `web-frontend.yaml` 不在 `.tad/domains/` 里
-- `web-frontend-skills-best-practices.md` 不在 `.tad/spike-v3/domain-pack-tools/` 里
-- tools-registry.yaml 没有新增任何工具
-
-**这次必须严格验证每个文件确实写入了正确位置。每完成一个 Phase，立刻 `ls` 确认文件存在。**
-
----
-
-## Alex 的领域补充：Web Frontend 特定指引
+## Alex 的领域补充：Mobile UI Design 特定指引
 
 ### 范围定义
 
-**Web Frontend Pack 做前端代码实现。输入是 UI Design 的产出。**
-- ✅ 项目初始化（脚手架、目录结构、配置）
-- ✅ 组件开发（React/Vue 组件、状态管理）
-- ✅ 样式实现（CSS/Tailwind、响应式、动画）
-- ✅ API 集成（调用后端接口、数据获取）
-- ✅ 构建优化（Bundle size、代码分割、懒加载）
-- ✅ 代码质量（Lint、类型检查、格式化）
-- ❌ UI 设计（web-ui-design pack）
-- ❌ 后端 API 实现（未来 web-backend pack）
-- ❌ E2E 测试（未来 web-testing pack）
-- ❌ 部署（未来 web-deployment pack）
+**Mobile UI Design Pack 做移动端界面设计。和 web-ui-design 的核心区别是平台强制规范。**
+- ✅ iOS HIG (Human Interface Guidelines) 合规设计
+- ✅ Material Design 3 (Android) 合规设计
+- ✅ 平台原生组件选型（Tab Bar / Navigation Bar / Bottom Sheet）
+- ✅ 手势交互设计（滑动、长按、捏合）
+- ✅ 移动端响应式（不同屏幕尺寸、Safe Area）
+- ✅ 移动端设计系统（SF Symbols / Material Icons、平台字体）
+- ✅ 可用性审查（触控目标 ≥44pt、可达性）
+- ❌ 移动端代码实现（mobile-development pack）
+- ❌ App Store 提交（mobile-release pack）
+- ❌ Web 端设计（web-ui-design pack）
+
+### 和 web-ui-design 的关键区别
+
+| 维度 | Web UI Design | Mobile UI Design |
+|------|--------------|-----------------|
+| 设计规范 | 自由度高 | **平台强制**（iOS HIG / Material Design） |
+| 导航模式 | 侧边栏/顶栏自由选 | **Tab Bar / Stack Navigation / Bottom Sheet** |
+| 交互 | 鼠标点击 | **手势**（滑动删除、长按菜单、下拉刷新） |
+| 触控目标 | 无强制要求 | **≥44×44pt (iOS) / ≥48×48dp (Android)** |
+| 图标 | 任意 SVG | **SF Symbols (iOS) / Material Icons (Android)** |
+| 字体 | 任意 Web Font | **SF Pro (iOS) / Roboto (Android)** |
+| 屏幕适配 | 响应式断点 | **Safe Area + Dynamic Type + 多尺寸** |
 
 ### 建议的 Capabilities
 
-| Capability | 做什么 | 关键产出 | 工具 |
-|-----------|--------|---------|------|
-| `project_scaffold` | 项目初始化（框架、目录、配置） | 可运行的项目骨架 | create-next-app, create-vite |
-| `component_development` | 从设计稿实现 UI 组件 | React/Vue 组件代码 | shadcn CLI, Write |
-| `state_management` | 状态管理方案设计与实现 | Store/Context/Hook 代码 | Write |
-| `api_integration` | 前端调用后端 API | API 层代码 + 类型定义 | openapi-typescript |
-| `styling` | 样式实现（Tailwind/CSS） | 配置 + 组件样式 | Tailwind CLI |
-| `build_optimization` | 构建优化 + Bundle 分析 | 优化后的 build + 分析报告 | vite build, bundle-analyzer |
-| `code_quality` | Lint + 类型检查 + 格式化 | 零错误代码 | ESLint, tsc, Prettier |
+| Capability | 做什么 | 关键产出 |
+|-----------|--------|---------|
+| `platform_guidelines` | 研究目标平台规范（HIG/Material），确定设计约束 | 平台设计规范摘要 |
+| `mobile_navigation` | 导航架构设计（Tab/Stack/Drawer），信息层级 | 导航流程图 + 页面地图 |
+| `mobile_wireframing` | 移动端线框图（含手势交互标注） | HTML 原型或 Figma |
+| `mobile_visual_design` | 视觉设计（遵循平台规范，色彩/字体/图标） | Design Tokens + 样式指南 |
+| `gesture_interaction` | 手势交互定义（滑动/长按/捏合/下拉） | 交互规范 + 状态图 |
+| `mobile_design_system` | 移动端组件库（原生组件 + 自定义组件） | 组件清单 + 使用规范 |
+| `mobile_usability` | 可用性审查（触控目标、可达性、Dynamic Type） | 审查报告 |
 
 ### Phase 1 搜索关键词
 
 ```
-"GitHub claude skills React Next.js frontend SKILL.md"
-"GitHub claude skills component development workflow"
-"GitHub cursor rules React TypeScript best practices"
-"GitHub AI agent frontend code generation scaffold"
-"GitHub awesome claude skills frontend web development"
-"React component development checklist best practices 2026"
-"frontend code quality ESLint TypeScript AI agent"
-"Next.js project structure conventions"
+"GitHub claude skills mobile UI design iOS HIG SKILL.md"
+"GitHub claude skills mobile app design system"
+"GitHub cursor rules iOS SwiftUI React Native design"
+"GitHub AI agent mobile wireframe prototype"
+"iOS Human Interface Guidelines checklist 2026"
+"Material Design 3 component guidelines"
+"mobile app design best practices accessibility"
+"GitHub awesome claude skills mobile design figma"
 ```
 
-### Phase 2 工具
+### Phase 2 工具搜索提示
 
-| 类别 | 工具 | 说明 | 需要加到 registry |
-|------|------|------|-----------------|
-| 脚手架 | create-next-app / create-vite | `npx create-next-app@latest` | ✅ 需要 |
-| 组件库 | shadcn CLI | `npx shadcn@latest add button` | ✅ 需要 |
-| 类型生成 | openapi-typescript | 从 OpenAPI spec 生成 TS 类型 | ✅ 需要 |
-| Lint | ESLint | `npx eslint .` | ✅ 需要 |
-| 类型检查 | tsc | `npx tsc --noEmit` | ✅ 需要 |
-| 格式化 | Prettier | `npx prettier --check .` | ✅ 需要 |
-| Bundle | vite-bundle-visualizer | 打包分析 | ✅ 需要 |
-| 已有工具 | typst, d2, jina-reader | 文档/图表/搜索 | ❌ 已有 |
+| 类别 | 工具 | 说明 |
+|------|------|------|
+| 线框图 | Figma MCP | iOS/Android 组件库可用 |
+| HTML 原型 | Write (内置) | 移动端视口的 HTML 原型 |
+| 流程图 | D2 (已有) | 导航流程、手势状态图 |
+| Design Tokens | Style Dictionary (已有) | 跨平台 token 输出 |
+| 可访问性 | pa11y (已有) | 基础 WCAG 检查 |
+| 图标查询 | SF Symbols CLI? | 需要研究是否有 CLI 工具 |
 
-**注意：至少 6 个新工具需要加到 tools-registry.yaml。上次说"no new tools"是错误的。**
+**注意**：很多工具已在 registry 里（D2、Typst、pa11y、Style Dictionary）。重点搜**移动端特有**的工具。
 
-### 和 UI Design Pack 的衔接
+### 测试议题建议
+
+**"Menu Snap iOS 版的 UI 设计"** — 你马上要做的真实项目，最佳测试议题。
+
+### 和其他 Pack 的衔接
 
 ```
-Web UI Design 产出:              Web Frontend 输入:
-├── 线框图 (HTML/Figma)    →     组件结构参考
-├── Design Tokens (CSS vars) →   Tailwind 配置
-├── 交互规范              →      状态管理设计
-├── 组件清单              →      开发任务列表
+上游:
+├── product-definition → 需求和用户画像
+├── web-ui-design → 如果有 Web 版，复用设计语言
+
+下游:
+├── mobile-development → 线框图 + Design Tokens + 组件清单
+└── mobile-release → 截图 + 预览图（App Store 素材）
 ```
-
-### 测试议题
-
-**"Todo App 前端"**（和 UI Design 用同一议题验证衔接）:
-1. `npx create-next-app` 初始化
-2. `npx shadcn@latest add` 添加组件
-3. 实现 CRUD
-4. `npx tsc --noEmit` 零错误
-5. `npm run build` 成功
-
-### ⚠️ 产出是代码
-
-和 Product Definition（文档）不同，这个 pack 产出**可运行的代码**。quality_criteria 可自动化：
-- `tsc --noEmit` → 零错误
-- `npx eslint .` → 零错误
-- `npm run build` → 成功
-- Bundle size 报告生成
-
----
-
-## 强化的 Acceptance Criteria（防止上次问题重现）
-
-除了模板里的 AC1-AC9，额外增加：
-
-- [ ] AC10: **文件存在验证** — 执行 `ls .tad/domains/web-frontend.yaml` 确认文件存在
-- [ ] AC11: **研究文档存在** — 执行 `ls .tad/spike-v3/domain-pack-tools/web-frontend-skills-best-practices.md` 确认
-- [ ] AC12: **Registry 更新** — 执行 `grep "create_next_app\|eslint\|typescript_check\|shadcn" .tad/domains/tools-registry.yaml` 确认新工具已加入
-- [ ] AC13: **YAML 可解析** — 执行 `python3 -c "import yaml; yaml.safe_load(open('.tad/domains/web-frontend.yaml'))"` 
-- [ ] AC14: **每个 Phase 完成后立刻 `ls` 确认文件** — 不要到最后才检查
 

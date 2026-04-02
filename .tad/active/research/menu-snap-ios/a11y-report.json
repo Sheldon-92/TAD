@@ -1,0 +1,492 @@
+[
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"phone-label\">1. Camera / Scan (Tab 1)</div>",
+        "selector": "html > body > div:nth-child(1) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.84:1. Recommendation:  change text colour to #fff.",
+        "context": "<div class=\"viewfinder-placeholder\">\n          Camera Viewfinder<br...</div>",
+        "selector": "html > body > div:nth-child(1) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"phone-label\">2. Menu Results</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.02:1. Recommendation:  change background to #0072ef.",
+        "context": "<div class=\"filter-chip active\">All (12)</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(2) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"dish-original\">\u0e1c\u0e31\u0e14\u0e44\u0e17\u0e22</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(3) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"dish-original\">\u0e41\u0e01\u0e07\u0e40\u0e02\u0e35\u0e22\u0e27\u0e2b\u0e27\u0e32\u0e19</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(4) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"dish-original\">\u0e02\u0e49\u0e32\u0e27\u0e40\u0e2b\u0e19\u0e35\u0e22\u0e27\u0e21\u0e30\u0e21\u0e48\u0e27\u0e07</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(5) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1.98:1. Recommendation:  change text colour to #0d0d11.",
+        "context": "<div class=\"swipe-hint\">Swipe up for more dishes</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(6)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.02:1. Recommendation:  change background to #0072ef.",
+        "context": "<div class=\"rescan-btn\">\ud83d\udcf7 Rescan Menu</div>",
+        "selector": "html > body > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(3) > div:nth-child(7)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"phone-label\">3. Dish Detail</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.14:1. Recommendation:  change text colour to #5a5a5f.",
+        "context": "<div class=\"detail-image\" style=\"position:relative;\">\n          AI-generated dish ph...</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"detail-original-name\">\u0e1c\u0e31\u0e14\u0e44\u0e17\u0e22 \u2014 $14</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"detail-section-title\">Description</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"detail-section-title\">Key Ingredients</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(5) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"detail-section-title\">AI Recommendation</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(6) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.55:1. Recommendation:  change background to #e72318.",
+        "context": "<div class=\"action-btn primary\">\u2665 Save</div>",
+        "selector": "html > body > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(7) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"phone-label\">4. Favorites (Tab 3)</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"fav-thumb\">Photo</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"fav-restaurant\">Baan Thai Restaurant, Bangkok</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.55:1. Recommendation:  change text colour to #e72318.",
+        "context": "<div class=\"fav-heart\">\u2665</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"fav-thumb\">Photo</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(3) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"fav-restaurant\">Ichiran, Tokyo</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(3) > div:nth-child(2) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.55:1. Recommendation:  change text colour to #e72318.",
+        "context": "<div class=\"fav-heart\">\u2665</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(3) > div:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"fav-thumb\">Photo</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"fav-restaurant\">Pizzeria Da Michele, Naples</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(2) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.55:1. Recommendation:  change text colour to #e72318.",
+        "context": "<div class=\"fav-heart\">\u2665</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"fav-thumb\">Photo</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(5) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<div class=\"fav-restaurant\">Du Pain et des Idees, Paris</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(5) > div:nth-child(2) > div:nth-child(2)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.55:1. Recommendation:  change text colour to #e72318.",
+        "context": "<div class=\"fav-heart\">\u2665</div>",
+        "selector": "html > body > div:nth-child(4) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(5) > div:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.6:1. Recommendation:  change text colour to #08080d.",
+        "context": "<div class=\"phone-label\">5. Settings (Tab 4)</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"settings-group-title\">Dietary Preferences</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.22:1. Recommendation:  change background to #008a23.",
+        "context": "<div class=\"settings-icon\" style=\"background:#34C759;\">\ud83c\udf45</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(1) > div",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-value\">3 active</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(1) > span:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1.68:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-chevron\">\u203a</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(1) > span:nth-child(4)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.2:1. Recommendation:  change background to #ae6500.",
+        "context": "<div class=\"settings-icon\" style=\"background:#FF9500;\">\u26a0</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"settings-group-title\">Translation</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.02:1. Recommendation:  change background to #0072ef.",
+        "context": "<div class=\"settings-icon\" style=\"background:#007AFF;\">\ud83c\udf10</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(1) > div",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-value\">English</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(1) > span:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1.68:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-chevron\">\u203a</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(4) > div:nth-child(1) > span:nth-child(4)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"settings-group-title\">Camera</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(5)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.55:1. Recommendation:  change background to #e72318.",
+        "context": "<div class=\"settings-icon\" style=\"background:#FF3B30;\">\ud83d\udcf7</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(6) > div:nth-child(1) > div:nth-child(1)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-value\">Auto</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(6) > div:nth-child(2) > span:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1.68:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-chevron\">\u203a</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(6) > div:nth-child(2) > span:nth-child(4)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 2.92:1. Recommendation:  change text colour to #09090e.",
+        "context": "<div class=\"settings-group-title\">General</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(7)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change background to #76767b.",
+        "context": "<div class=\"settings-icon\" style=\"background:#8E8E93;\">\ud83d\udc41</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(8) > div:nth-child(1) > div",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.26:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-value\">System</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(8) > div:nth-child(1) > span:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1.68:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-chevron\">\u203a</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(8) > div:nth-child(1) > span:nth-child(4)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.02:1. Recommendation:  change background to #0072ef.",
+        "context": "<div class=\"settings-icon\" style=\"background:#007AFF;\">\u24d8</div>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(8) > div:nth-child(2) > div",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    },
+    {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "typeCode": 1,
+        "message": "This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1.68:1. Recommendation:  change text colour to #76767b.",
+        "context": "<span class=\"settings-chevron\">\u203a</span>",
+        "selector": "html > body > div:nth-child(5) > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div:nth-child(8) > div:nth-child(2) > span:nth-child(3)",
+        "runner": "htmlcs",
+        "runnerExtras": {}
+    }
+]

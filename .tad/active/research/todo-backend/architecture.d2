@@ -1,0 +1,78 @@
+direction: right
+
+title: {
+  label: "Todo App — Layered Architecture"
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+client: "HTTP Client" {
+  style.fill: "#E0E0E0"
+  style.stroke: "#616161"
+}
+
+middleware: "Middleware Layer" {
+  style.fill: "#E8F5E9"
+  style.stroke: "#2E7D32"
+  auth: "Auth Middleware\n(JWT verify)"
+  role: "Role Check"
+  error: "Error Handler"
+  reqid: "Request ID"
+}
+
+routes: "Route Layer" {
+  style.fill: "#E3F2FD"
+  style.stroke: "#1565C0"
+  auth_routes: "Auth Routes\n/auth/*"
+  user_routes: "User Routes\n/users/*"
+  todo_routes: "Todo Routes\n/todos/*"
+  cat_routes: "Category Routes\n/categories/*"
+}
+
+validators: "Validation Layer (Zod)" {
+  style.fill: "#FFF9C4"
+  style.stroke: "#F9A825"
+  auth_val: "Auth Schemas"
+  user_val: "User Schemas"
+  todo_val: "Todo Schemas"
+  cat_val: "Category Schemas"
+}
+
+services: "Service Layer" {
+  style.fill: "#FFF3E0"
+  style.stroke: "#E65100"
+  auth_svc: "AuthService\nregister, login,\nrefresh, logout"
+  user_svc: "UserService\ngetProfile, update,\nlist, delete"
+  todo_svc: "TodoService\ncreate, list, get,\nupdate, delete"
+  cat_svc: "CategoryService\ncreate, list, get,\nupdate, delete"
+}
+
+repos: "Repository Layer" {
+  style.fill: "#F3E5F5"
+  style.stroke: "#7B1FA2"
+  user_repo: "UserRepository"
+  todo_repo: "TodoRepository"
+  cat_repo: "CategoryRepository"
+}
+
+db: "SQLite Database" {
+  style.fill: "#FFCDD2"
+  style.stroke: "#C62828"
+  shape: cylinder
+}
+
+# Flow
+client -> middleware
+middleware -> routes
+routes -> validators: "Input validation"
+validators -> services: "Validated data"
+services -> repos: "Data operations"
+repos -> db: "Prisma ORM"
+
+# Error flow
+services -> middleware.error: "AppError" {
+  style.stroke: "#C62828"
+  style.stroke-dash: 3
+}

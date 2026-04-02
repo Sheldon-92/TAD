@@ -1,0 +1,52 @@
+direction: right
+
+title: "Menu Snap iOS — Page Map" {
+  style.font-size: 22
+  style.underline: true
+  near: top-center
+}
+
+L0: "Level 0 (Tab Roots)" {
+  style.fill: "#E8F0FE"
+  scan: "Scan" {style.fill: "#007AFF"; style.font-color: "#FFF"}
+  history: "History" {style.fill: "#5856D6"; style.font-color: "#FFF"}
+  favorites: "Favorites" {style.fill: "#FF3B30"; style.font-color: "#FFF"}
+  settings: "Settings" {style.fill: "#8E8E93"; style.font-color: "#FFF"}
+}
+
+L1: "Level 1 (Detail)" {
+  style.fill: "#F0F0F5"
+  menu-results: "Menu Results"
+  scan-detail: "Scan Detail"
+  language: "Language Settings"
+  about: "About"
+}
+
+L2: "Level 2 (Sub-detail)" {
+  style.fill: "#FAFAFA"
+  dish-detail: "Dish Detail"
+}
+
+Modal: "Modals" {
+  style.fill: "#FFF3E0"
+  style.stroke-dash: 3
+  onboarding: "Onboarding"
+  dietary-sheet: "Dietary Preferences\n(Bottom Sheet)"
+  share-sheet: "Share Sheet\n(System)"
+}
+
+# L0 → L1
+L0.scan -> L1.menu-results: "capture"
+L0.history -> L1.scan-detail: "tap"
+L0.settings -> L1.language: "push"
+L0.settings -> L1.about: "push"
+
+# L1 → L2
+L1.menu-results -> L2.dish-detail: "tap dish"
+L1.scan-detail -> L2.dish-detail: "tap dish"
+L0.favorites -> L2.dish-detail: "tap dish"
+
+# Modal triggers
+L0.scan -> Modal.onboarding: "first launch" {style.stroke-dash: 5}
+L0.settings -> Modal.dietary-sheet: "edit dietary" {style.stroke-dash: 3}
+L2.dish-detail -> Modal.share-sheet: "share" {style.stroke-dash: 3}

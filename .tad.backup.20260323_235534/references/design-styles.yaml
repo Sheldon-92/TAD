@@ -1,0 +1,596 @@
+# Design Styles Library v2.0
+# 32 aesthetic directions for Design Playground
+# Each style = complete aesthetic language (not just colors)
+
+metadata:
+  version: "2.0"
+  total_styles: 32
+  last_updated: "2026-02-08"
+  categories: 7
+
+reference_sources:
+  awards:
+    - name: "Awwwards"
+      url: "https://www.awwwards.com/"
+      use: "Award-winning website examples per style"
+    - name: "CSS Design Awards"
+      url: "https://www.cssdesignawards.com/"
+      use: "CSS-focused design excellence"
+    - name: "DesignRush"
+      url: "https://www.designrush.com/best-designs/websites"
+      use: "Best website designs by category"
+    - name: "A' Design Award"
+      url: "https://competition.adesignaward.com/"
+      use: "International design recognition"
+
+# ============================================================
+# STYLES
+# ============================================================
+
+styles:
+
+  # ── Classic Movements ──
+
+  bauhaus:
+    name: "Bauhaus"
+    category: "classic"
+    era: "1920s origin, timeless"
+    mood: "Functional, geometric, purposeful"
+    description: "Form follows function. Geometric forms, modular composition, primary colors. Rooted in the German art school that unified art, craft, and technology."
+    visual:
+      colors: "Primary colors (red #E63946, blue #457B9D, yellow #F4A261) + black #1D3557 / white #F1FAEE. High contrast, limited palette."
+      typography: "Sans-serif, strong weight hierarchy. Futura or DIN-style geometric fonts. Bold headings, thin body."
+      layout: "Grid-based, asymmetric, modular blocks. Clear visual hierarchy through scale and position."
+      components: "Clean geometric shapes, strong alignment lines, visible grid structure. Buttons are rectangular with sharp or slightly rounded corners."
+    best_for: ["developer tools", "productivity apps", "design tools", "architecture portfolios"]
+    avoid_for: ["children's apps", "luxury brands", "organic food brands"]
+    reference_products: ["Stripe", "Linear"]
+    reference_urls: []
+
+  swiss_international:
+    name: "Swiss / International Typographic Style"
+    category: "classic"
+    era: "1950s-1960s"
+    mood: "Ordered, clean, universal"
+    description: "Objective clarity through grid systems and sans-serif typography. Content speaks through structured whitespace and mathematical precision."
+    visual:
+      colors: "Monochrome base (black #000000, white #FFFFFF, grays). One accent color used sparingly (e.g., red #FF0000 or blue #0057B7)."
+      typography: "Helvetica, Univers, or Aktiv Grotesk. Flush-left, ragged-right. Size contrast creates hierarchy, not decoration."
+      layout: "Strict multi-column grid. Generous margins. Asymmetric balance. Photography as visual anchor."
+      components: "Ruled lines as dividers. Minimal ornamentation. Text-heavy with clear typographic scale. Buttons are understated."
+    best_for: ["corporate sites", "news/media", "government", "museums"]
+    avoid_for: ["playful brands", "gaming", "children's products"]
+    reference_products: ["Bloomberg", "Swiss Federal Railways"]
+    reference_urls: []
+
+  art_deco:
+    name: "Art Deco"
+    category: "classic"
+    era: "1920s-1930s"
+    mood: "Luxurious, glamorous, bold geometry"
+    description: "The style of the Roaring Twenties. Angular geometry meets lavish materials — gold, marble, and deep jewel tones."
+    visual:
+      colors: "Deep navy #1B1B3A, gold #C9A84C, emerald #2D6A4F, champagne #F2E9DC, black #0D0D0D. Rich and opulent palette."
+      typography: "Geometric display fonts (Poiret One, Broadway). Strong contrast between thick and thin strokes. Uppercase headings."
+      layout: "Symmetrical, with strong central axis. Decorative borders and frames. Layered depth with shadows and overlays."
+      components: "Fan shapes, sunburst patterns, chevron borders. Buttons with metallic gradients or outlined with gold. Cards with ornamental frames."
+    best_for: ["luxury brands", "hotels", "event sites", "cocktail bars"]
+    avoid_for: ["tech startups", "children's apps", "minimalist brands"]
+    reference_products: ["The Great Gatsby site", "Waldorf Astoria"]
+    reference_urls: []
+
+  art_nouveau:
+    name: "Art Nouveau"
+    category: "classic"
+    era: "1890s-1910s"
+    mood: "Organic, flowing, elegant"
+    description: "Nature-inspired curves and flowing lines. Ornamental yet functional, blending art with everyday design."
+    visual:
+      colors: "Muted earth tones — moss green #8B9556, dusty rose #C08B8B, gold #B8860B, cream #FFFDD0, deep brown #3E2723."
+      typography: "Decorative serif fonts with flowing curves (Playfair Display, EB Garamond). Ligatures and swashes welcome."
+      layout: "Organic flow, asymmetric but balanced. Curving lines connect sections. Vertical scrolling with natural transitions."
+      components: "Illustrated borders, floral motifs, curved cards. Buttons with soft rounded ends. Organic dividers instead of straight lines."
+    best_for: ["wine brands", "boutique hotels", "artisan products", "museums"]
+    avoid_for: ["tech products", "data dashboards", "developer tools"]
+    reference_products: ["Maison Margiela", "Paris Metro signage"]
+    reference_urls: []
+
+  constructivism:
+    name: "Constructivism"
+    category: "classic"
+    era: "1920s-1930s"
+    mood: "Bold, dynamic, urgent"
+    description: "Soviet-era avant-garde: diagonal composition, red-black-white palette, propaganda-poster energy adapted for the web."
+    visual:
+      colors: "Red #CC0000, black #000000, white #FFFFFF. Sometimes tan #D4A76A or grey #8C8C8C. Limited, high-impact palette."
+      typography: "Bold condensed sans-serif. Rotated text at 30-45 degrees. Mixed sizes and weights for emphasis. Uppercase dominance."
+      layout: "Diagonal lines, overlapping geometric shapes. Asymmetric, dynamic composition. Photo montage elements."
+      components: "Angled cards, bold bordered sections, rotated labels. Strong call-to-action buttons in red. Triangular and circular motifs."
+    best_for: ["activist orgs", "political campaigns", "art exhibitions", "music festivals"]
+    avoid_for: ["corporate B2B", "healthcare", "children's products"]
+    reference_products: ["Rodchenko posters", "The Constructivist Project"]
+    reference_urls: []
+
+  # ── Modern UI ──
+
+  glassmorphism:
+    name: "Glassmorphism"
+    category: "modern_ui"
+    era: "2020s"
+    mood: "Light, layered, contemporary"
+    description: "Frosted glass effect with background blur, subtle borders, and layered translucency. Modern and airy."
+    visual:
+      colors: "Vibrant gradient backgrounds (purple #7F5AF0 → blue #2CB67D or pink #FF6B6B → orange #FFC43D). Card surfaces: rgba(255,255,255,0.15). Dark variant uses rgba(0,0,0,0.3)."
+      typography: "Clean sans-serif (Inter, SF Pro). White or near-white text on glass surfaces. Medium weight for readability."
+      layout: "Overlapping translucent cards on gradient background. Floating elements with depth. Centered compositions."
+      components: "Frosted cards (backdrop-filter: blur(16px)). Thin 1px white/gray borders (rgba(255,255,255,0.18)). Subtle shadows. Pill-shaped buttons with glass effect."
+    best_for: ["social apps", "dashboards", "landing pages", "portfolios"]
+    avoid_for: ["e-commerce catalogs", "text-heavy content", "accessibility-critical apps"]
+    reference_products: ["Apple macOS Big Sur", "Windows 11", "Figma"]
+    reference_urls: []
+
+  neumorphism:
+    name: "Neumorphism"
+    category: "modern_ui"
+    era: "2020s"
+    mood: "Soft, tactile, refined"
+    description: "Soft UI with extruded and inset shadows creating a clay-like, tactile surface. Elements appear pressed into or raised from the background."
+    visual:
+      colors: "Monochrome base — light gray #E0E5EC or soft pastel. Shadows: dark side #A3B1C6, light side #FFFFFF. Accent: single muted color (e.g., teal #6FBEAB)."
+      typography: "Medium-weight sans-serif (Poppins, Inter). Muted text colors to match the soft surface aesthetic."
+      layout: "Generous spacing, elements float on the same-color background. Grouped controls in rounded containers."
+      components: "Soft raised cards (box-shadow: 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff). Inset inputs. Pill buttons with raised effect. Toggle switches."
+    best_for: ["settings pages", "calculators", "music players", "smart home UIs"]
+    avoid_for: ["e-commerce", "content-heavy sites", "accessibility-first apps"]
+    reference_products: ["Apple Calculator concept", "Smart Home UIs"]
+    reference_urls: []
+
+  neobrutalism:
+    name: "Neobrutalism"
+    category: "modern_ui"
+    era: "2020s"
+    mood: "Bold, raw, confrontational"
+    description: "Raw HTML energy meets design intention. Thick borders, solid shadows, loud colors, no pretense."
+    visual:
+      colors: "Bright, clashing: yellow #FFE347, hot pink #FF5C8A, electric blue #3D5AFE, lime #C6FF00, black #000000, white #FFFFFF. No gradients."
+      typography: "Monospace or heavy sans-serif (Space Mono, Epilogue Black). Large, chunky headings. Visible font stacks."
+      layout: "Visible borders on everything. Overlapping elements. Intentionally 'undesigned' feel. Asymmetric but structured."
+      components: "Cards with 3-4px black borders + offset shadow (4px 4px 0 #000). Chunky buttons. Exposed structure. No hover animations — just color swap."
+    best_for: ["portfolio sites", "creative agencies", "indie products", "blogs"]
+    avoid_for: ["corporate B2B", "healthcare", "financial services"]
+    reference_products: ["Gumroad", "Figma Community", "Notion Templates marketplace"]
+    reference_urls: []
+
+  flat_design:
+    name: "Flat Design"
+    category: "modern_ui"
+    era: "2012-present"
+    mood: "Clean, efficient, crisp"
+    description: "No shadows, no gradients, no textures — just flat colors, simple shapes, and clear typography."
+    visual:
+      colors: "Bright, saturated flat colors: blue #3498DB, green #2ECC71, red #E74C3C, orange #E67E22, purple #9B59B6, dark #2C3E50."
+      typography: "Clean sans-serif (Open Sans, Lato). Clear size hierarchy. No text effects or decorations."
+      layout: "Clean grid, generous whitespace. Content-focused sections. Simple two-tone backgrounds."
+      components: "Flat colored buttons with no shadow. Simple icon-based navigation. Cards without borders or with single-color fill. Ghost buttons with border only."
+    best_for: ["mobile apps", "web apps", "documentation", "admin panels"]
+    avoid_for: ["luxury brands", "editorial content", "immersive experiences"]
+    reference_products: ["Windows Metro", "Google Material (early)", "IBM Carbon"]
+    reference_urls: []
+
+  skeuomorphism:
+    name: "Skeuomorphism"
+    category: "modern_ui"
+    era: "2007-2013, revival 2024+"
+    mood: "Familiar, tactile, realistic"
+    description: "Real-world textures and materials in digital form. Leather, wood, metal, paper — elements that look like physical objects."
+    visual:
+      colors: "Rich, natural textures: leather brown #8B5E3C, brushed metal #C0C0C0, wood grain #DEB887, paper #FFF8DC. Gradient-heavy."
+      typography: "Serif fonts for labels (Georgia). Embossed or debossed text effects. Realistic lettering."
+      layout: "Object-oriented: each element mimics a physical object. Layered with depth. Perspective and 3D feel."
+      components: "Buttons with glossy highlight and shadow. Sliders that look like physical knobs. Toggle switches mimicking real toggles. Textured backgrounds."
+    best_for: ["music apps", "note-taking", "games", "nostalgic products"]
+    avoid_for: ["modern SaaS", "developer tools", "enterprise apps"]
+    reference_products: ["iOS 6", "Garage Band (old)", "Podcast Addict"]
+    reference_urls: []
+
+  # ── Minimal Spectrum ──
+
+  minimalism:
+    name: "Minimalism"
+    category: "minimal"
+    era: "Timeless"
+    mood: "Calm, focused, intentional"
+    description: "Maximum impact through minimal means. Every element earns its place. Whitespace is a feature."
+    visual:
+      colors: "Near-monochrome: white #FFFFFF, off-white #FAFAFA, black #111111, one accent (e.g., blue #0066FF or red #FF3B30). Max 3 colors."
+      typography: "Clean sans-serif (Helvetica Neue, SF Pro, Inter). Large headings, normal body. Weight contrast creates hierarchy."
+      layout: "Maximum whitespace. Single-column or wide two-column. Content breathes. Scroll-based progression."
+      components: "Ghost buttons or thin-bordered. Hairline dividers. No shadows. Cards defined by spacing, not borders. Minimal icons."
+    best_for: ["portfolio", "photography", "luxury e-commerce", "architecture"]
+    avoid_for: ["data-dense dashboards", "e-commerce catalogs", "kids' products"]
+    reference_products: ["Apple", "Muji", "Aesop"]
+    reference_urls: []
+
+  expressive_minimalism:
+    name: "Expressive Minimalism"
+    category: "minimal"
+    era: "2020s"
+    mood: "Restrained but bold"
+    description: "Minimal structure with expressive typography, bold color accents, or dramatic imagery. Less is more, but what's there is powerful."
+    visual:
+      colors: "Neutral base (white #FFFFFF, warm gray #F5F0EB) + one bold accent (vivid blue #0046FF or bright orange #FF6600). High contrast moments."
+      typography: "Oversized display fonts (Clash Display, Cabinet Grotesk) for headings. Thin body text. Mix of weights creates drama."
+      layout: "Generous whitespace with occasional full-bleed moments. Dramatic scale shifts between sections. Scrolling reveals."
+      components: "Text-forward hero sections. Minimal navigation. Full-width dividers. Buttons that break the grid slightly."
+    best_for: ["creative agencies", "fashion brands", "editorial", "product launches"]
+    avoid_for: ["enterprise software", "dense data apps", "form-heavy UIs"]
+    reference_products: ["Apple Product Pages", "Stripe Atlas", "Pentagram"]
+    reference_urls: []
+
+  geominimalism:
+    name: "Geominimalism"
+    category: "minimal"
+    era: "2020s"
+    mood: "Geometric, earthy, calm"
+    description: "Clean geometric shapes meet earthy, natural tones. The precision of minimalism with the warmth of organic palettes."
+    visual:
+      colors: "Earth tones: terracotta #CC5A47, sage #9CAF88, sand #E8D5B7, charcoal #2D2D2D, cream #FAF0E6."
+      typography: "Geometric sans-serif (Futura, Jost, Outfit). Clean, measured. Lowercase preference for softness."
+      layout: "Grid-based with circular and soft geometric accents. Balanced, centered compositions. Breathing room between elements."
+      components: "Rounded rectangles and circles. Soft-edge cards. Earth-toned icon sets. Buttons with generous padding and rounded corners."
+    best_for: ["wellness brands", "sustainable products", "real estate", "interior design"]
+    avoid_for: ["tech startups", "gaming", "high-energy brands"]
+    reference_products: ["Headspace", "Patagonia", "Kinfolk Magazine"]
+    reference_urls: []
+
+  japanese_minimalism:
+    name: "Japanese Minimalism (Wabi-Sabi)"
+    category: "minimal"
+    era: "Timeless (Zen tradition)"
+    mood: "Imperfect beauty, natural, serene"
+    description: "Finding beauty in imperfection and impermanence. Natural textures, asymmetric balance, quiet sophistication."
+    visual:
+      colors: "Muted naturals: stone gray #8C8C8C, warm white #F5F1EB, ink black #1A1A1A, moss #6B7F5E, clay #C4A882."
+      typography: "Thin, elegant sans-serif or transitional serif. Generous letter-spacing. Mixed with Japanese-style minimal characters."
+      layout: "Asymmetric balance (fukinsei). Generous ma (negative space). Vertical rhythms. Organic flow rather than rigid grid."
+      components: "Unbordered cards floating on neutral backgrounds. Handcraft-inspired textures (washi paper, brush strokes). Subtle hover states. Thin, understated buttons."
+    best_for: ["tea/food brands", "wellness", "ceramics/crafts", "meditation apps"]
+    avoid_for: ["high-energy brands", "gaming", "data-heavy dashboards"]
+    reference_products: ["Muji", "Aman Resorts", "Kinfolk"]
+    reference_urls: []
+
+  # ── Retro & Nostalgic ──
+
+  retro_vintage:
+    name: "Retro Vintage"
+    category: "retro"
+    era: "1950s-1970s nostalgia"
+    mood: "Nostalgic, warm, textured"
+    description: "Warm nostalgia of mid-century design — faded colors, hand-drawn illustrations, textured backgrounds, and authentic character."
+    visual:
+      colors: "Faded warm tones: burnt orange #CC5500, avocado green #568203, mustard #E1A95F, brown #6F4E37, cream #FFFDD0."
+      typography: "Retro display fonts (Cooper Black, Recoleta). Rounded, friendly letterforms. Script accents."
+      layout: "Centered compositions, arched headers, badge-style layouts. Texture overlays (grain, paper, halftone)."
+      components: "Rounded, badge-shaped buttons. Cards with textured backgrounds. Stamp-style labels. Illustration-forward design."
+    best_for: ["restaurants", "breweries", "vinyl/music", "barbershops"]
+    avoid_for: ["tech startups", "enterprise SaaS", "modern fintech"]
+    reference_products: ["Mailchimp (old brand)", "Almanac Beer Co"]
+    reference_urls: []
+
+  y2k_evolution:
+    name: "Y2K Evolution"
+    category: "retro"
+    era: "Late 1990s / early 2000s revival"
+    mood: "Metallic, holographic, playful nostalgia"
+    description: "The optimistic tech aesthetic of the millennium — chrome gradients, bubble fonts, and holographic surfaces reimagined for 2026."
+    visual:
+      colors: "Chrome silver #C0C0C0, holographic pink #FF69B4, cyber blue #00D4FF, white #FFFFFF, black #000000. Gradient-heavy."
+      typography: "Bubble/inflated fonts (Blobz, Adihaus). Clean sans-serif body (Eurostile). Metallic text effects."
+      layout: "Floating elements, 3D-looking layouts. Glossy surfaces. Centered with orbital arrangements. Transparency layers."
+      components: "Chrome/glass buttons with highlights. Holographic card backgrounds. Circular navigation. Animated cursor effects."
+    best_for: ["fashion brands", "music artists", "youth-targeted products", "creative portfolios"]
+    avoid_for: ["enterprise", "healthcare", "financial services"]
+    reference_products: ["AMBUSH", "Chrome Hearts website"]
+    reference_urls: []
+
+  retrofuturism:
+    name: "Retrofuturism"
+    category: "retro"
+    era: "1950s-1980s vision of the future"
+    mood: "Past visions of future, neon, chrome"
+    description: "How the past imagined the future — space-age optimism, atomic-era graphics, and mid-century futurism."
+    visual:
+      colors: "Space-age palette: midnight blue #191970, chrome silver #C0C0C0, atomic red #FF2400, teal #008080, gold #FFD700."
+      typography: "Retro-futuristic fonts (Orbitron, Audiowide, Space Grotesk). Uppercase, tracked-out headings."
+      layout: "Curved containers, orbital layouts, perspective grids. Star fields or gradient backgrounds. Concentric circles."
+      components: "Rounded, capsule-shaped buttons. Dashboard-style gauges. Radar/orbital UI elements. Glowing borders."
+    best_for: ["sci-fi projects", "space-themed brands", "tech innovation", "gaming"]
+    avoid_for: ["professional services", "healthcare", "children under 8"]
+    reference_products: ["SpaceX website", "NASA retro posters"]
+    reference_urls: []
+
+  american_kitsch:
+    name: "American Kitsch"
+    category: "retro"
+    era: "1950s-1960s Americana"
+    mood: "Campy, playful, ironic nostalgia"
+    description: "Pop culture Americana — diners, neon signs, roadside attractions. Deliberately over-the-top and self-aware."
+    visual:
+      colors: "Diner palette: cherry red #DC143C, turquoise #40E0D0, cream #FFFDD0, bubblegum pink #FFC0CB, neon yellow #FFFF00."
+      typography: "Script fonts (Pacifico, Lobster), retro sans-serif (Bebas Neue). Neon sign simulation. Shadowed text."
+      layout: "Busy but organized. Neon-sign style sections. Checkerboard patterns. Starburst accents."
+      components: "Neon-glow buttons. Diner menu-style cards. Retro badges and stamps. Marquee-style headers."
+    best_for: ["restaurants/diners", "entertainment", "pop culture", "novelty products"]
+    avoid_for: ["enterprise", "tech startups", "professional services", "minimalist brands"]
+    reference_products: ["In-N-Out website", "Route 66 tourism"]
+    reference_urls: []
+
+  eighties_electronic:
+    name: "80s Electronic / Synthwave"
+    category: "retro"
+    era: "1980s, revived 2020s"
+    mood: "Neon grids, sunset gradients, digital nostalgia"
+    description: "VHS tracking lines, chrome text, neon grids vanishing into sunset horizons. The 80s as filtered through modern nostalgia."
+    visual:
+      colors: "Neon on dark: hot pink #FF1493, electric cyan #00FFFF, neon purple #BF00FF, sunset orange #FF6347. Background: dark navy #0A0A2A."
+      typography: "Chrome/neon display fonts (Outrun, Streamster). Monospace for body. Glowing text effects."
+      layout: "Perspective grid floors, sunset gradient skies. Layered depth. Full-screen hero with glowing horizon."
+      components: "Neon-bordered buttons. Glowing cards on dark backgrounds. Scanline overlays. Chrome-style headings."
+    best_for: ["music/DJ sites", "gaming", "entertainment", "retro-themed brands"]
+    avoid_for: ["corporate", "healthcare", "children's products", "accessibility-first"]
+    reference_products: ["Synthwave music sites", "Stranger Things branding"]
+    reference_urls: []
+
+  # ── Expressive & Bold ──
+
+  new_maximalism:
+    name: "New Maximalism"
+    category: "expressive"
+    era: "2020s"
+    mood: "Vibrant, chaotic energy, abundant"
+    description: "More is more. Layer upon layer of color, pattern, texture, and type. Controlled chaos that demands attention."
+    visual:
+      colors: "Everything: hot pink #FF007F, electric blue #0057FF, neon green #39FF14, gold #FFD700, purple #8A2BE2. Multiple gradients."
+      typography: "Mixed typefaces per section. Variable fonts at extreme weights. Decorative display fonts. Overlapping text."
+      layout: "Overlapping layers, broken grid, mixed media. Collage-style compositions. Multiple focal points."
+      components: "Layered cards, gradient buttons, animated borders. Pattern-filled backgrounds. Mixed media elements."
+    best_for: ["fashion", "music", "art galleries", "festivals"]
+    avoid_for: ["enterprise SaaS", "documentation", "healthcare"]
+    reference_products: ["Gucci website", "Spotify Wrapped"]
+    reference_urls: []
+
+  psychedelic:
+    name: "Psychedelic"
+    category: "expressive"
+    era: "1960s origin, modern revival"
+    mood: "Trippy, swirling, consciousness-exploring"
+    description: "Melting typography, swirling patterns, vibrant colors that seem to pulse. The visual language of altered perception."
+    visual:
+      colors: "Saturated spectrum: electric purple #7B2D8E, acid green #A8E10C, hot pink #FF69B4, orange #FF8C00, deep blue #00008B."
+      typography: "Melting, distorted display fonts (Groovy, Peace Sans). Flowing letter-spacing. Art Nouveau-influenced curves."
+      layout: "Flowing, non-linear. Swirling containers. Organic shapes instead of rectangles. Layered, immersive."
+      components: "Blob-shaped cards. Gradient-morphing buttons. Lava-lamp style backgrounds. Organic dividers."
+    best_for: ["music festivals", "cannabis brands", "art events", "creative agencies"]
+    avoid_for: ["corporate", "healthcare", "government", "financial"]
+    reference_products: ["Coachella website", "Grateful Dead merch"]
+    reference_urls: []
+
+  punk:
+    name: "Punk"
+    category: "expressive"
+    era: "1970s origin, forever rebellious"
+    mood: "Raw, rebellious, DIY"
+    description: "Torn paper, safety pins, xerox textures. Anti-establishment design that embraces imperfection and confrontation."
+    visual:
+      colors: "Black #000000, white #FFFFFF, red #FF0000. Occasional neon yellow #FFFF00 or pink #FF00FF. High contrast, no subtlety."
+      typography: "Ransom note style (mixed fonts, sizes, weights). Typewriter fonts (Courier). Hand-scrawled lettering."
+      layout: "Collage: cut-and-paste, overlapping, rotated elements. Visible tape, staples, torn edges. Anti-grid."
+      components: "Torn-edge cards. Safety-pin-style dividers. Xerox-texture backgrounds. Aggressive, oversized buttons."
+    best_for: ["music brands", "zines", "activist orgs", "streetwear"]
+    avoid_for: ["corporate", "luxury", "healthcare", "children's"]
+    reference_products: ["Sex Pistols branding", "Maximum Rocknroll"]
+    reference_urls: []
+
+  grunge:
+    name: "Grunge"
+    category: "expressive"
+    era: "1990s"
+    mood: "Distressed, dark, authentic"
+    description: "Worn textures, faded elements, intentional decay. The visual language of 90s alternative culture."
+    visual:
+      colors: "Muted and dirty: charcoal #333333, dried blood #8B0000, forest #2E4600, rust #B7410E, faded denim #6F8FAF."
+      typography: "Distressed serif (Playfair Display with texture). Stamp/stencil fonts. Faded, worn text effects."
+      layout: "Textured backgrounds (concrete, paper, film grain). Overlapping elements with blending modes. Dark, moody."
+      components: "Distressed-edge cards. Stamped/stencil buttons. Film grain overlays. Scratched dividers."
+    best_for: ["music brands", "tattoo shops", "craft coffee", "vintage stores"]
+    avoid_for: ["corporate", "healthcare", "children's", "luxury"]
+    reference_products: ["Nirvana branding", "Dr. Martens website"]
+    reference_urls: []
+
+  modern_surrealism:
+    name: "Modern Surrealism"
+    category: "expressive"
+    era: "1920s origin, digital revival"
+    mood: "Dreamlike, unexpected, imaginative"
+    description: "Digital surrealism: impossible spaces, unexpected scale shifts, dream logic applied to UI design."
+    visual:
+      colors: "Dreamy pastels and unexpected pairings: lavender #E6E6FA, coral #FF7F50, sky blue #87CEEB, mint #98FFB3, deep purple #301934."
+      typography: "Elegant serif with unexpected placement. Text that flows around organic shapes. Dramatic size contrasts."
+      layout: "Unexpected spatial relationships. Elements that defy gravity. Portal-like transitions. Depth without logical perspective."
+      components: "Floating cards at unexpected angles. Morphing buttons. Background elements that interact with content. Parallax depth."
+    best_for: ["art galleries", "creative agencies", "fashion", "experimental brands"]
+    avoid_for: ["enterprise", "healthcare", "government", "e-commerce"]
+    reference_products: ["MSCHF", "Kenzo website"]
+    reference_urls: []
+
+  # ── 2026 Trends ──
+
+  bento_grid:
+    name: "Bento Grid"
+    category: "trending"
+    era: "2023-2026"
+    mood: "Organized, modular, compartmentalized"
+    description: "Japanese bento-box-inspired grid layout. Each cell is a self-contained unit displaying a feature, stat, or visual."
+    visual:
+      colors: "Clean neutrals: white #FFFFFF, light gray #F5F5F5, black #1A1A1A. Cards get individual accent colors (blue #3B82F6, green #10B981, purple #8B5CF6)."
+      typography: "System-default sans-serif (SF Pro, Inter). Bold numbers for stats. Clean, no-fuss hierarchy."
+      layout: "CSS Grid with varied cell sizes (1x1, 2x1, 1x2, 2x2). Gap-based spacing. Rounded corners on cells."
+      components: "Self-contained grid cells. Each cell has its own background, icon, and content. Hover lifts the cell. No borders — spacing defines structure."
+    best_for: ["feature showcases", "SaaS landing pages", "portfolios", "dashboards"]
+    avoid_for: ["text-heavy content", "editorial", "e-commerce product pages"]
+    reference_products: ["Apple feature pages", "Vercel", "Linear features"]
+    reference_urls: []
+
+  kinetic_typography:
+    name: "Kinetic Typography"
+    category: "trending"
+    era: "2024-2026"
+    mood: "Dynamic, animated, expressive text"
+    description: "Typography as the hero. Oversized, animated text that moves, transforms, and responds to interaction."
+    visual:
+      colors: "High contrast: black #000000 on white #FFFFFF, or single vivid accent (red #FF0000, blue #0000FF). Text IS the design."
+      typography: "Variable fonts at extreme settings (Instrument Sans, Cabinet Grotesk). Weights from 100-900. Sizes from 12px to 200px."
+      layout: "Text-dominant, single-column. Scroll-triggered text animations. Horizontal scrolling text sections."
+      components: "Animated headings (scroll-reveal, character-by-character). Hover-responsive text. Minimal UI — text carries everything."
+    best_for: ["creative agencies", "typography studios", "brand sites", "portfolios"]
+    avoid_for: ["e-commerce", "data apps", "documentation", "accessibility-critical"]
+    reference_products: ["Locomotive", "Resn.co.nz"]
+    reference_urls: []
+
+  scroll_storytelling:
+    name: "Scroll Storytelling"
+    category: "trending"
+    era: "2022-2026"
+    mood: "Cinematic, narrative, immersive"
+    description: "The page tells a story as you scroll. Sections reveal in sequence with animation, parallax, and visual progression."
+    visual:
+      colors: "Mood-driven, changes with scroll progress. Dark intro (#0A0A0A) → colorful middle (#various) → light conclusion (#FAFAFA). Section-specific palettes."
+      typography: "Large editorial serif for story beats (Playfair Display). Clean sans-serif for supporting content. Dramatic size changes."
+      layout: "Full-screen sections. Pinned/sticky elements. Scroll-triggered reveals. Progress indicators."
+      components: "Sticky hero images. Animated counters. Parallax backgrounds. Step indicators. 'Chapter' dividers."
+    best_for: ["annual reports", "product launches", "case studies", "brand stories"]
+    avoid_for: ["web apps", "dashboards", "frequent-return tools", "documentation"]
+    reference_products: ["Apple product pages", "Stripe Annual Letter"]
+    reference_urls: []
+
+  organic_anti_grid:
+    name: "Organic / Anti-Grid"
+    category: "trending"
+    era: "2024-2026"
+    mood: "Fluid, natural, asymmetric"
+    description: "Breaking free from rectangular grids. Blob shapes, curved containers, organic flow that mimics nature."
+    visual:
+      colors: "Soft, organic palette: sage #B2C9AB, peach #FFDAB9, sky #B5D5E8, sand #F4E4C1, charcoal #36454F."
+      typography: "Rounded, friendly sans-serif (Outfit, Plus Jakarta Sans). Flowing text wrapping around organic shapes."
+      layout: "Blob-shaped containers, curved section dividers. SVG clip-paths for organic edges. Asymmetric but balanced."
+      components: "Blob-shaped cards. Wavy dividers. Organic buttons with soft animation. Flowing hover states."
+    best_for: ["wellness brands", "organic products", "creative agencies", "eco brands"]
+    avoid_for: ["enterprise dashboards", "data-heavy apps", "developer tools"]
+    reference_products: ["Headspace", "Oatly website"]
+    reference_urls: []
+
+  dark_mode_first:
+    name: "Dark Mode First"
+    category: "trending"
+    era: "2020-2026"
+    mood: "Sleek, modern, eye-friendly"
+    description: "Designed dark from the start, not as an afterthought. Careful contrast management, glowing accents, depth through luminance."
+    visual:
+      colors: "Dark surfaces: #0A0A0A, #141414, #1E1E1E, #2A2A2A (layered depth). Accents: electric blue #3B82F6, green #10B981, purple #A855F7. Text: #E5E5E5, #999999."
+      typography: "Medium-weight sans-serif for readability on dark (Inter 400-500). Slightly elevated letter-spacing. Bright headings."
+      layout: "Layered depth through surface colors (not shadows). Subtle borders (1px rgba(255,255,255,0.06)). Cards float above background."
+      components: "Luminous accent buttons. Subtle glow effects on hover. Translucent overlays. Border-highlighted cards."
+    best_for: ["developer tools", "media players", "dashboards", "creative tools"]
+    avoid_for: ["children's apps", "print-heavy content", "elderly-focused apps"]
+    reference_products: ["Linear", "Vercel", "GitHub", "Discord"]
+    reference_urls: []
+
+  # ── Futuristic ──
+
+  pop_futurism:
+    name: "Pop Futurism"
+    category: "futuristic"
+    era: "2020s"
+    mood: "Optimistic future, neon, playful tech"
+    description: "A bright, optimistic take on the future. Candy-colored technology, rounded shapes, and playful interactions."
+    visual:
+      colors: "Candy neon: coral #FF6B6B, mint #4ECDC4, lavender #C3A6FF, sunny yellow #FFE66D, soft white #F7FFF7."
+      typography: "Rounded, friendly sans-serif (Nunito, Quicksand). Bouncy, inviting. Generous sizing."
+      layout: "Floating elements, soft depth. Rounded containers. Bouncy animations. Playful spatial relationships."
+      components: "Pill buttons with playful hover bounce. Floating cards with soft shadows. Emoji-style icons. Smooth micro-interactions."
+    best_for: ["consumer apps", "education", "health tech", "social platforms"]
+    avoid_for: ["enterprise B2B", "financial services", "government"]
+    reference_products: ["Duolingo", "Notion", "Pitch"]
+    reference_urls: []
+
+  cyberpunk:
+    name: "Cyberpunk"
+    category: "futuristic"
+    era: "1980s origin, 2020s revival"
+    mood: "High tech, low life, neon dystopia"
+    description: "Rain-soaked neon on dark chrome. Glitch effects, terminal aesthetics, and a sense of technological unease."
+    visual:
+      colors: "Neon on near-black: cyan #00FFFF, magenta #FF00FF, neon green #39FF14, dark #0D0D0D, gray #1A1A2E."
+      typography: "Monospace or condensed tech fonts (Share Tech Mono, Rajdhani). Glitch effects. Terminal-style readouts."
+      layout: "Dense, information-heavy. HUD-style overlays. Glitch animations. Scan-line effects. Grid with neon borders."
+      components: "Glitch-effect buttons. Neon-bordered cards. Terminal-style inputs. Loading bar animations. HUD corner brackets."
+    best_for: ["gaming", "cybersecurity", "crypto/web3", "tech demos"]
+    avoid_for: ["healthcare", "children's", "government", "traditional business"]
+    reference_products: ["Cyberpunk 2077 site", "Hacktoberfest branding"]
+    reference_urls: []
+
+  tech_mono:
+    name: "Technical Mono"
+    category: "futuristic"
+    era: "2020s"
+    mood: "Developer aesthetic, monospace, raw data"
+    description: "The aesthetic of code editors and terminals. Monospace everything, syntax-highlighting colors, data-forward design."
+    visual:
+      colors: "Terminal palette: background #1E1E1E, foreground #D4D4D4, green #4EC9B0, blue #569CD6, yellow #DCDCAA, red #F44747, purple #C586C0."
+      typography: "Monospace only (JetBrains Mono, Fira Code, IBM Plex Mono). Code-style formatting throughout."
+      layout: "Terminal-inspired: fixed-width containers, line-number gutters, code-block sections. Dense but organized."
+      components: "Command-line style inputs. Code-block cards. Syntax-highlighted content. Terminal cursor animations. JSON/YAML formatted data display."
+    best_for: ["developer tools", "API documentation", "CLI products", "tech blogs"]
+    avoid_for: ["consumer apps", "fashion", "food brands", "non-tech audiences"]
+    reference_products: ["Vercel CLI", "GitHub CLI", "Warp terminal"]
+    reference_urls: []
+
+# ============================================================
+# CATEGORY INDEX
+# ============================================================
+
+categories:
+  classic:
+    label: "Classic Movements"
+    description: "Timeless design philosophies from art and architecture history"
+    styles: [bauhaus, swiss_international, art_deco, art_nouveau, constructivism]
+
+  modern_ui:
+    label: "Modern UI Styles"
+    description: "Contemporary digital-native design approaches"
+    styles: [glassmorphism, neumorphism, neobrutalism, flat_design, skeuomorphism]
+
+  minimal:
+    label: "Minimal Spectrum"
+    description: "Various approaches to 'less is more'"
+    styles: [minimalism, expressive_minimalism, geominimalism, japanese_minimalism]
+
+  retro:
+    label: "Retro & Nostalgic"
+    description: "Past eras reimagined for the web"
+    styles: [retro_vintage, y2k_evolution, retrofuturism, american_kitsch, eighties_electronic]
+
+  expressive:
+    label: "Expressive & Bold"
+    description: "High-energy, rule-breaking aesthetics"
+    styles: [new_maximalism, psychedelic, punk, grunge, modern_surrealism]
+
+  trending:
+    label: "2026 Trends"
+    description: "Current and emerging design directions"
+    styles: [bento_grid, kinetic_typography, scroll_storytelling, organic_anti_grid, dark_mode_first]
+
+  futuristic:
+    label: "Futuristic"
+    description: "Forward-looking tech-inspired aesthetics"
+    styles: [pop_futurism, cyberpunk, tech_mono]

@@ -1,0 +1,710 @@
+# Domain Pack: Mobile UI Design
+# iOS HIG + Material Design compliant mobile interface design
+domain: mobile-ui-design
+version: 1.0.0
+requires_registry: ">=1"
+description: "移动端 UI 设计：遵循 iOS HIG / Material Design 3 的界面设计。产出物是线框图、Design Tokens、交互规范、组件清单。核心差异 vs Web：平台强制规范、手势交互、触控目标 ≥44pt。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: 平台规范研究（文档类）
+# ═══════════════════════════════════════
+
+capabilities:
+
+  platform_guidelines:
+    description: "研究目标平台规范（iOS HIG / Material Design 3），确定设计约束"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_platform_rules
+        action: |
+          搜索目标平台的最新设计规范：
+          1. iOS HIG: 搜索最新 Human Interface Guidelines 更新
+          2. Material Design 3: 搜索最新 M3 组件规范
+          3. 搜索目标领域 App 的设计模式参考（同类 App 截图/评测）
+          确定目标平台：iOS-only / Android-only / 跨平台
+        tool_ref: web_scraping
+        queries:
+          - '"iOS Human Interface Guidelines" {领域} app design 2026'
+          - '"Material Design 3" {领域} app component guidelines'
+          - '"{领域}" iOS app design review UI UX'
+        output_file: "platform-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_platform_constraints
+        action: |
+          提取目标平台的硬性设计约束：
+
+          iOS 约束清单：
+          | 约束 | 值 | 来源 |
+          - 触控目标 ≥ 44×44 pt
+          - Tab Bar ≤ 5 项
+          - Navigation Bar 高度 44pt
+          - Tab Bar 高度 49-83pt（含 Home Indicator）
+          - Status Bar 44pt（刘海）/ 59pt（灵动岛）
+          - Home Indicator Safe Area 底部 34pt
+          - 8pt 网格系统（4pt 微调）
+          - SF Pro Text ≤19pt / SF Pro Display ≥20pt
+          - 圆角：10pt（小）/ 13pt（中）/ 20pt（大）
+          - Back 按钮左上角，Action 按钮右上角，Tab 底部
+
+          Android 约束清单：
+          | 约束 | 值 | 来源 |
+          - 触控目标 ≥ 48×48 dp
+          - Bottom Navigation ≤ 5 项（必须有 label + icon）
+          - Top App Bar 高度 64dp
+          - 8dp 间距系统
+          - Roboto 字体（15 种 Typography tokens）
+          - 圆角：4dp（小）/ 12dp（中）/ 28dp（大/FAB）
+
+          跨平台差异清单：
+          | 维度 | iOS | Android |
+          - 导航返回：系统手势左滑 / 返回按钮
+          - 删除：左滑删除 / 长按菜单
+          - 模态：Sheet（从底部） / Dialog（居中）
+          - 图标：SF Symbols / Material Icons
+          - 字体：SF Pro / Roboto
+        quality: "每个约束有具体数值（pt/dp），不是'适当大小'。标注来源。"
+        tool_ref: null
+        output_file: "platform-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_design_decisions
+        action: |
+          基于平台约束和项目需求，做设计决策：
+          1. 目标平台选择（理由）：
+            - iOS-first → 为什么？（用户群、市场策略）
+            - Android-first → 为什么？
+            - 跨平台 → 共享设计语言 vs 平台原生？
+          2. 平台适配策略：
+            - 完全原生（每平台独立设计）— 最佳体验，双倍工作
+            - 共享核心+平台皮肤 — 平衡策略
+            - 完全共享（一套设计两平台）— 效率最高，体验折中
+          3. 需要平台特定处理的场景清单：
+            | 场景 | iOS 做法 | Android 做法 | 选择 |
+        quality: "每个决策有理由。跨平台差异有明确的处理方案。"
+        tool_ref: null
+        output_file: "platform-decisions.md"
+
+      # Layer 4: 生成
+      - id: generate_platform_summary
+        action: "综合为平台规范摘要 PDF（含约束清单、设计决策、跨平台差异表）"
+        tool_ref: pdf_generation
+        output_file: "platform-guidelines.pdf"
+
+    quality_criteria:
+      - "触控目标尺寸有具体数值（iOS ≥44pt, Android ≥48dp）"
+      - "字体系统有完整的 Typography scale（≥8 种 text style）"
+      - "跨平台差异有逐项对比表"
+      - "设计决策有理由（不是'选 iOS 因为好'）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 不查 HIG/Material 就开始设计 = 违反平台规范"
+      - "❌ 用 Web 的设计思路做移动端（侧边栏→Tab Bar）"
+      - "❌ 忽略 Safe Area（刘海/灵动岛/Home Indicator 遮挡内容）"
+      - "❌ 触控目标 <44pt（iOS 研究：<44pt 导致 25%+ 误触率）"
+      - "❌ 跨平台设计完全忽略平台差异（返回手势、删除模式不同）"
+
+    reviewers:
+      - persona: "iOS/Android 设计规范专家"
+        checklist:
+          - "是否遵循目标平台的官方设计规范？"
+          - "触控目标是否达标？"
+          - "平台特定的导航/交互模式是否正确？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: 移动导航架构（文档类）
+  # ═══════════════════════════════════════
+
+  mobile_navigation:
+    description: "移动端导航架构 — Tab Bar / Stack Nav / Drawer / Bottom Sheet"
+
+    steps:
+      - id: research_nav_patterns
+        action: |
+          搜索目标领域的移动端导航模式参考：
+          1. 搜索 3+ 同类 App 的导航结构
+          2. 参考 iOS Tab Bar / Navigation Stack / Modal Sheet 规范
+          3. 参考 Material Bottom Navigation / Navigation Drawer 规范
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" iOS app navigation pattern tab bar'
+          - '"{领域}" mobile app information architecture'
+        output_file: "navigation-research.md"
+
+      - id: analyze_nav_hierarchy
+        action: |
+          分析页面层级和导航需求：
+          1. 页面清单（从需求提取所有页面）：
+            | 页面 | 使用频率 | 层级深度 | 需要 Tab？ |
+          2. 导航模式选择：
+            - Tab Bar（≤5 项高频页面）→ iOS/Android 主导航
+            - Stack Navigation（详情页、子页面）→ push/pop
+            - Modal Sheet（快速操作、创建表单）→ iOS 半屏/全屏
+            - Drawer（低频设置、辅助功能）→ Android 更常见
+          3. 可达性分析（参考 Thumb Zone）：
+            - 底部 Tab Bar 在拇指热区 ✅
+            - 顶部导航栏在拇指冷区 → 避免放高频操作
+            - FAB 在右下角拇指自然位置 ✅
+          4. Deep Link 设计：每个页面是否有独立 URL/路径？
+        quality: "Tab Bar ≤5 项。高频操作在拇指热区。层级 ≤3 层。"
+        tool_ref: null
+        output_file: "navigation-research.md (append)"
+
+      - id: derive_nav_structure
+        action: |
+          推导导航结构：
+          1. Tab Bar 项目（≤5 个）+ 每项的 icon + label
+          2. 每个 Tab 下的 Stack 结构（Root → Detail → Sub-detail）
+          3. Modal 触发点（哪些操作用 Sheet 而非 Push）
+          4. 手势导航：
+            - 左滑返回（iOS 系统级）
+            - Tab 间滑动切换？（参考竞品决定）
+        quality: "导航结构有 D2 图。Tab Bar 项命名用动词或名词。"
+        tool_ref: null
+        output_file: "navigation-design.md"
+
+      - id: generate_nav_diagram
+        action: "用 D2 生成导航流程图（Tab → Stack → Modal 关系）"
+        tool_ref: diagram_generation
+        output_file: "navigation-flow.d2 → navigation-flow.svg"
+
+      - id: generate_sitemap
+        action: "用 D2 生成移动端页面地图"
+        tool_ref: diagram_generation
+        output_file: "mobile-sitemap.d2 → mobile-sitemap.svg"
+
+    quality_criteria:
+      - "Tab Bar ≤ 5 项"
+      - "页面层级 ≤ 3 层（Root → Detail → Sub-detail）"
+      - "高频操作在拇指热区（底部区域）"
+      - "每个页面有 Deep Link 路径"
+      - "有导航流程图（D2）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ Tab Bar 超过 5 项 = 认知过载（iOS HIG 硬限制）"
+      - "❌ 把重要操作放在屏幕顶部 = 单手不可达"
+      - "❌ 用 Hamburger Menu 替代 Tab Bar（隐藏 = 不存在）"
+      - "❌ Modal 套 Modal = 导航混乱"
+      - "❌ 没有返回路径（用户被困在详情页）"
+
+    reviewers:
+      - persona: "移动端 UX 架构师"
+        checklist:
+          - "导航模式是否符合平台规范？"
+          - "核心功能是否 ≤2 次点击可达？"
+          - "是否考虑了单手操作？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: 移动线框图（混合类）
+  # ═══════════════════════════════════════
+
+  mobile_wireframing:
+    description: "移动端线框图 — 含手势交互标注，HTML 原型用移动视口渲染"
+
+    steps:
+      - id: research_layouts
+        action: |
+          搜索目标领域的移动端界面布局参考：
+          1. 搜索 3+ 同类 App 的关键页面布局
+          2. 识别移动端布局模式：列表型/卡片型/全屏型/分段型
+          3. 记录每个参考 App 的核心交互模式
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" iOS app UI design screenshot'
+          - '"{领域}" mobile app layout pattern'
+        output_file: "wireframe-research.md"
+
+      - id: analyze_approaches
+        action: |
+          设计 3 个 UX 方案：
+          | 方案 | 布局哲学 | 优势 | 风险 |
+          方案 1: 参考最成功竞品的验证过模式
+          方案 2: 探索不同的信息组织方式
+          方案 3: 强调差异化的创新布局
+          每个方案评分：
+          - 学习成本（1=高, 5=低）
+          - 信息密度（1=低, 5=高）
+          - 平台规范合规度（1=低, 5=高）
+          - 单手操作友好度（1=低, 5=高）
+        quality: "3 个方案有实质差异。评分含平台合规和单手操作维度。"
+        tool_ref: null
+        output_file: "wireframe-research.md (append)"
+
+      - id: select_and_design
+        action: |
+          选定方案并设计线框图：
+          1. 综合评分选择最佳方案
+          2. 设计规则：
+            - 移动视口：390×844pt（iPhone 15 逻辑分辨率）
+            - 灰度色板（B&W 线框阶段）
+            - 标注触控目标区域（≥44pt 虚线框）
+            - 标注手势交互（左滑→删除，下拉→刷新 等）
+            - 标注 Safe Area（顶部 + 底部）
+          3. 覆盖所有关键页面（≥5 个页面）
+        quality: "线框图用移动视口。有手势标注。有 Safe Area 标注。"
+        tool_ref: null
+        output_file: "wireframe-design.md"
+
+      - id: generate_wireframe
+        action: |
+          生成 HTML 线框图原型（移动视口）：
+          - viewport: width=390px（CSS max-width: 390px; margin: auto）
+          - 灰度色板，系统字体
+          - Tab Bar 在底部，Navigation Bar 在顶部
+          - 可点击的 Tab 切换
+          - 手势标注用虚线 + 文字说明
+        tool_ref: wireframe_generation
+        output_file: "wireframe.html"
+
+      - id: screenshot_wireframe
+        action: "用 Playwright 以 390×844 视口截图 HTML 原型"
+        tool_ref: html_screenshot
+        output_file: "wireframe-screenshot.png"
+
+    quality_criteria:
+      - "线框图使用移动视口（390×844pt 或等效）"
+      - "所有触控目标 ≥ 44pt（iOS）或 ≥ 48dp（Android）"
+      - "有 Safe Area 标注（顶部状态栏 + 底部 Home Indicator）"
+      - "有手势交互标注（滑动、长按等）"
+      - "覆盖 ≥5 个关键页面"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 用桌面宽度设计移动端线框图（>430px 宽）"
+      - "❌ 触控按钮只有 20pt 高 = 无法点击"
+      - "❌ 忽略 Safe Area = 内容被刘海/Home Indicator 遮挡"
+      - "❌ 只画首页不画详情页和交互流程"
+      - "❌ 没有手势标注 = 开发时不知道要实现什么手势"
+
+    reviewers:
+      - persona: "移动端 UI 设计师"
+        checklist:
+          - "视口尺寸是否正确？"
+          - "触控目标是否达标？"
+          - "手势交互是否标注清楚？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: 移动视觉设计（文档类）
+  # ═══════════════════════════════════════
+
+  mobile_visual_design:
+    description: "移动端视觉设计 — 遵循平台规范的色彩/字体/图标系统"
+
+    steps:
+      - id: research_visual
+        action: |
+          搜索目标领域的移动端视觉设计参考：
+          1. 搜索同类 App 的视觉风格
+          2. 参考 Apple 系统颜色 / Material 3 Dynamic Color
+          3. 搜索移动端设计趋势
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" iOS app visual design color scheme 2026'
+          - '"Material You" dynamic color theme design'
+        output_file: "visual-research.md"
+
+      - id: analyze_visual_system
+        action: |
+          基于平台规范定义视觉系统：
+          1. 色彩系统：
+            iOS: 使用语义系统颜色（systemBlue, systemRed, label, secondaryLabel, systemBackground, secondarySystemBackground）+ 1 个品牌色
+            Android: Material 3 Color Scheme（primary, onPrimary, primaryContainer, secondary, surface, background）
+          2. 字体系统：
+            iOS: SF Pro（11 种 Dynamic Type style，必须支持 Dynamic Type 缩放）
+            Android: Roboto（15 种 Material Typography tokens）
+          3. 图标系统：
+            iOS: SF Symbols（weight 匹配文本 weight，rendering mode: monochrome/hierarchical/palette/multicolor）
+            Android: Material Icons（Outlined / Rounded / Sharp / Two-tone）
+          4. 间距系统：8pt 网格（iOS/Android 共用）
+          5. 暗色模式：
+            iOS: 使用 Elevated 背景色（不是简单反转）
+            Android: 使用 Surface tones（不是纯黑）
+        quality: "色彩/字体/图标全部使用平台原生系统，不自创。暗色模式有设计。"
+        tool_ref: null
+        output_file: "visual-research.md (append)"
+
+      - id: derive_tokens
+        action: |
+          推导 Design Tokens（JSON 格式）：
+          {
+            "color": {
+              "primary": {"ios": "systemBlue", "android": "#6750A4", "hex": "#007AFF"},
+              "background": {"ios": "systemBackground", "android": "surface"},
+              "text": {"ios": "label", "android": "onSurface"},
+              "textSecondary": {"ios": "secondaryLabel", "android": "onSurfaceVariant"},
+              "error": {"ios": "systemRed", "android": "error"}
+            },
+            "typography": {
+              "largeTitle": {"ios": "34pt Regular", "android": "57sp Display Large"},
+              "title": {"ios": "28pt Regular", "android": "32sp Headline Large"},
+              "body": {"ios": "17pt Regular", "android": "16sp Body Large"},
+              "caption": {"ios": "12pt Regular", "android": "12sp Body Small"}
+            },
+            "spacing": {"xs": "4pt", "sm": "8pt", "md": "16pt", "lg": "24pt", "xl": "32pt"},
+            "radius": {"sm": "10pt", "md": "13pt", "lg": "20pt"},
+            "touchTarget": {"ios": "44pt", "android": "48dp"}
+          }
+          验证所有文本-背景色对比度 ≥ 4.5:1
+        quality: "Tokens 区分 iOS/Android 系统值。对比度验证通过。"
+        tool_ref: null
+        output_file: "design-tokens.json"
+
+      - id: generate_tokens_css
+        action: "用 Style Dictionary 生成 CSS 变量（用于 HTML 原型）"
+        tool_ref: design_tokens
+        output_file: "design-tokens.css"
+
+      - id: generate_style_guide
+        action: "综合为移动端视觉规范 PDF（含色彩板、字体层级、图标规范、暗色模式）"
+        tool_ref: pdf_generation
+        output_file: "mobile-style-guide.pdf"
+
+    quality_criteria:
+      - "使用平台原生色彩系统（iOS systemColor / Material Color Scheme）"
+      - "支持 Dynamic Type 缩放（iOS）或 Material Typography（Android）"
+      - "图标使用 SF Symbols（iOS）或 Material Icons（Android），不用自定义 PNG"
+      - "有暗色模式设计（不是简单颜色反转）"
+      - "对比度 ≥ 4.5:1（WCAG AA）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 自定义字体替代 SF Pro/Roboto = 破坏 Dynamic Type 支持"
+      - "❌ 暗色模式用纯黑 #000000 = Material 规范禁止（用 Surface tones）"
+      - "❌ 图标用 PNG 不用矢量 = 不支持多尺寸/多色渲染"
+      - "❌ 忽略 Elevated 颜色层级（iOS 暗色模式有 3 级灰度）"
+      - "❌ 混用 SF Symbols 和 Material Icons = 视觉不一致"
+
+    reviewers:
+      - persona: "移动端视觉设计师"
+        checklist:
+          - "色彩系统是否遵循平台规范？"
+          - "字体是否支持 Dynamic Type？"
+          - "暗色模式是否正确（非简单反转）？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: 手势交互设计（文档类）
+  # ═══════════════════════════════════════
+
+  gesture_interaction:
+    description: "手势交互定义 — 滑动/长按/捏合/下拉/边缘手势"
+
+    steps:
+      - id: research_gestures
+        action: |
+          搜索移动端手势交互最佳实践：
+          1. 搜索同类 App 的手势交互方式
+          2. 参考 iOS/Android 系统级手势（不可覆盖）
+          3. 搜索手势可发现性的解决方案
+        tool_ref: web_scraping
+        queries:
+          - '"mobile gesture interaction" design pattern best practices'
+          - '"iOS swipe gesture" "long press" design guidelines'
+        output_file: "gesture-research.md"
+
+      - id: analyze_gesture_catalog
+        action: |
+          定义完整的手势目录：
+          | 手势 | 触发条件 | 动作 | 平台差异 | 反馈 |
+
+          系统级手势（不可覆盖）：
+          - iOS: 左边缘右滑 = 返回，底部上滑 = Home
+          - Android: 系统返回手势/按钮
+
+          自定义手势规格：
+          - 左滑删除：滑动距离 ≥ 50pt 触发，显示红色删除按钮
+          - 长按菜单：≥ 500ms 触发，Haptic 反馈（medium impact）
+          - 下拉刷新：下拉 ≥ 60pt 触发，显示加载指示器
+          - 捏合缩放：最小缩放 0.5x，最大 3x
+          - 边缘手势：识别区域 20pt 从屏幕边缘
+
+          动画时序：
+          - 微交互：150-300ms
+          - 页面转场：300-350ms
+          - 弹簧动画：iOS 默认 .spring(response: 0.5, dampingFraction: 0.8)
+          - 退出动画 = 进入动画 × 60-70%
+        quality: "每个手势有触发条件（pt/ms）和平台差异说明。系统手势已排除。"
+        tool_ref: null
+        output_file: "gesture-research.md (append)"
+
+      - id: derive_gesture_spec
+        action: |
+          推导手势交互规范：
+          1. 每个页面的手势清单：
+            | 页面 | 手势 | 目标元素 | 动作 | Haptic |
+          2. 手势冲突检测：
+            - 左滑删除 vs 左边缘返回 → 滑动起始区域区分
+            - 长按菜单 vs 拖拽排序 → 状态机区分
+          3. 手势可发现性方案：
+            - 首次使用提示（Tooltip/Coach Mark）
+            - 视觉暗示（列表项微微露出删除按钮边缘）
+            - 操作撤销（误操作后 Toast + Undo）
+          4. 无障碍替代：
+            - 每个手势都有非手势替代（按钮/菜单）
+            - VoiceOver/TalkBack 用户不依赖手势
+        quality: "手势冲突已识别并解决。每个手势有无障碍替代。"
+        tool_ref: null
+        output_file: "gesture-spec.md"
+
+      - id: generate_state_diagrams
+        action: "用 D2 生成手势状态图（长按: idle→pressing→menu_shown→action_selected）"
+        tool_ref: diagram_generation
+        output_file: "gesture-states.d2 → gesture-states.svg"
+
+      - id: generate_gesture_doc
+        action: "综合为手势交互规范 PDF"
+        tool_ref: pdf_generation
+        output_file: "gesture-interaction.pdf"
+
+    quality_criteria:
+      - "系统级手势已识别且不被覆盖"
+      - "每个自定义手势有触发条件（pt/ms 数值）"
+      - "手势冲突已检测并解决"
+      - "每个手势有无障碍替代"
+      - "有手势可发现性方案"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 覆盖系统返回手势 = iOS 审核风险"
+      - "❌ 左滑删除和边缘返回手势冲突未处理"
+      - "❌ 手势无视觉反馈（用户不知道手势是否触发）"
+      - "❌ 手势是唯一操作方式（VoiceOver 用户无法使用）"
+      - "❌ 长按触发 <500ms = 和普通点击混淆"
+
+    reviewers:
+      - persona: "交互设计师"
+        checklist:
+          - "手势是否符合平台习惯？"
+          - "手势冲突是否解决？"
+          - "无障碍替代是否完整？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: 移动设计系统（文档类）
+  # ═══════════════════════════════════════
+
+  mobile_design_system:
+    description: "移动端组件库 — 原生组件选型 + 自定义组件规范"
+
+    steps:
+      - id: research_components
+        action: |
+          搜索移动端组件参考：
+          1. iOS 原生组件清单（UIKit/SwiftUI）
+          2. Material 3 组件清单
+          3. 目标 App 需要的自定义组件
+        tool_ref: web_scraping
+        queries:
+          - '"iOS native components" UIKit SwiftUI list 2026'
+          - '"Material Design 3" component catalog'
+        output_file: "component-research.md"
+
+      - id: analyze_components
+        action: |
+          为每个组件定义规范：
+          优先使用平台原生组件。自定义组件仅在原生不满足需求时创建。
+
+          原生组件选型（至少覆盖）：
+          | 组件 | iOS | Android | 使用场景 |
+          - Navigation Bar: UINavigationBar / TopAppBar
+          - Tab Bar: UITabBar / BottomNavigation
+          - List: UITableView/List / LazyColumn
+          - Card: 自定义 / Card
+          - Button: UIButton / Button (3 种: Filled/Tonal/Text)
+          - TextField: UITextField / OutlinedTextField
+          - Sheet: UISheetPresentationController / BottomSheet
+          - Alert: UIAlertController / AlertDialog
+          - Toast: 无原生 / Snackbar
+          - FAB: 无原生(按钮替代) / FloatingActionButton
+          - Segmented Control: UISegmentedControl / SegmentedButton
+          - Switch: UISwitch / Switch
+          - Slider: UISlider / Slider
+
+          每个组件标注：
+          - 尺寸（高度、内边距）
+          - 状态（Default/Pressed/Disabled/Loading）
+          - 无障碍（VoiceOver label、最小触控区域）
+          - 平台差异
+        quality: "优先原生组件。每个组件有尺寸+状态+无障碍标注。"
+        tool_ref: null
+        output_file: "component-research.md (append)"
+
+      - id: derive_component_system
+        action: |
+          推导组件体系：
+          1. 原子 → 分子 → 有机体（Atomic Design）：
+            - 原子：Button, Icon, Label, Badge
+            - 分子：ListItem (Icon + Label + Chevron), SearchBar (TextField + Icon)
+            - 有机体：NavigationBar, TabBar, Card (Image + Title + Subtitle + Actions)
+          2. 自定义组件清单（原生不满足时才创建）：
+            | 组件 | 为什么不用原生 | 设计规范 |
+          3. 组件 API（属性/变体/尺寸）
+          4. Do/Don't 使用指南
+        quality: "自定义组件有'为什么不用原生'的理由。"
+        tool_ref: null
+        output_file: "component-spec.md"
+
+      - id: generate_showcase
+        action: "生成组件展示页 HTML（移动视口，使用 Design Tokens）"
+        tool_ref: wireframe_generation
+        output_file: "component-showcase.html"
+
+      - id: generate_system_doc
+        action: "综合为移动端设计系统文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "mobile-design-system.pdf"
+
+    quality_criteria:
+      - "原生组件优先（自定义组件有'为什么不用原生'理由）"
+      - "≥12 个组件有完整规范（尺寸+状态+无障碍）"
+      - "每个组件有平台差异标注（iOS vs Android）"
+      - "遵循 Atomic Design 分层"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 所有组件自定义（不用原生 Tab Bar、Navigation Bar）"
+      - "❌ 组件只有 Default 状态（缺 Pressed/Disabled/Loading）"
+      - "❌ 忽略 VoiceOver/TalkBack 无障碍标注"
+      - "❌ iOS 和 Android 用完全相同的组件（忽略平台差异）"
+
+    reviewers:
+      - persona: "设计系统架构师"
+        checklist:
+          - "原生组件是否优先使用？"
+          - "组件规范是否完整（尺寸+状态）？"
+          - "是否有平台差异标注？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: 移动可用性审查（混合类）
+  # ═══════════════════════════════════════
+
+  mobile_usability:
+    description: "移动端可用性审查 — 触控目标、可达性、Dynamic Type、无障碍"
+
+    steps:
+      - id: gather_artifacts
+        action: "收集所有已完成的设计产物（线框图、组件展示、手势规范）"
+        tool_ref: null
+        output_file: "usability-audit.md"
+
+      - id: automated_check
+        action: |
+          对 HTML 产物运行自动化检查：
+          1. pa11y WCAG 检查（对比度、标签、ARIA）
+          2. 触控目标尺寸审计（检查所有可点击元素 ≥44pt）：
+            - 在 HTML 中检查所有 button/a/input 的 height/width/padding
+            - 小于 44px 的标记为 P0 违规
+          3. 用 Playwright 以 390×844 视口截图验证移动端渲染
+        tool_ref: accessibility_check
+        output_file: "a11y-report.json"
+
+      - id: heuristic_evaluation
+        action: |
+          移动端专用启发式评估（Nielsen 10 条 + 移动端 5 条）：
+
+          Nielsen 10 条（略，参考 web-ui-design）
+
+          移动端额外 5 条：
+          11. 单手可操作性 — 核心功能能否单手完成？高频操作在拇指热区？
+          12. 触控目标达标 — 所有可交互元素 ≥44pt (iOS) / ≥48dp (Android)？
+          13. Dynamic Type 支持 — 放大字体后布局是否崩溃？
+          14. 手势可发现性 — 新用户能否不看说明就发现手势？
+          15. 平台规范合规 — 导航/交互是否符合 iOS HIG / Material Design？
+
+          每条评分 1-5，<3 的列为 P0 改进项。
+        quality: "15 条启发式全评。移动端 5 条额外项必须有具体发现。"
+        tool_ref: null
+        output_file: "usability-audit.md (append)"
+
+      - id: derive_improvements
+        action: |
+          综合审查结果，推导改进清单：
+          | # | 问题 | 严重度 | 来源 | 修复方案 |
+          P0: WCAG 违规、触控目标不达标、核心功能单手不可达
+          P1: 体验不佳但可用
+          P2: 美观优化
+        quality: "P0 问题 = 0 才算通过。每个问题有具体修复方案。"
+        tool_ref: null
+        output_file: "usability-audit.md (append)"
+
+      - id: generate_audit_report
+        action: "综合为可用性审查报告 PDF"
+        tool_ref: pdf_generation
+        output_file: "mobile-usability-audit.pdf"
+
+    quality_criteria:
+      - "自动化 WCAG 检查已执行"
+      - "触控目标审计已执行（所有可交互元素 ≥44pt）"
+      - "15 条启发式（Nielsen 10 + 移动 5）全评"
+      - "P0 问题有具体修复方案"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 只做自动化检查不做人工评估"
+      - "❌ 忽略 Dynamic Type（放大字体后文字被截断）"
+      - "❌ 忽略单手操作（重要按钮在屏幕顶部）"
+      - "❌ '界面清晰'这种空话结论（必须有具体发现）"
+
+    reviewers:
+      - persona: "移动端 QA 工程师"
+        checklist:
+          - "触控目标是否全部达标？"
+          - "Dynamic Type 放大后布局是否正常？"
+          - "核心流程能否单手完成？"
+
+# ═══════════════════════════════════════
+# 产出物目录结构
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── platform-research.md              # 平台规范研究
+  ├── platform-decisions.md             # 平台设计决策
+  ├── platform-guidelines.pdf           # 平台规范摘要 (Typst)
+  ├── navigation-research.md            # 导航架构研究
+  ├── navigation-design.md              # 导航设计
+  ├── navigation-flow.svg               # 导航流程图 (D2)
+  ├── mobile-sitemap.svg                # 页面地图 (D2)
+  ├── wireframe-research.md             # 线框图研究
+  ├── wireframe-design.md               # 线框图设计说明
+  ├── wireframe.html                    # HTML 原型 (移动视口)
+  ├── wireframe-screenshot.png          # 线框图截图 (Playwright)
+  ├── visual-research.md                # 视觉设计研究
+  ├── design-tokens.json                # Design Tokens (iOS/Android)
+  ├── design-tokens.css                 # CSS 变量 (Style Dictionary)
+  ├── mobile-style-guide.pdf            # 视觉规范 (Typst)
+  ├── gesture-research.md               # 手势交互研究
+  ├── gesture-spec.md                   # 手势交互规范
+  ├── gesture-states.svg                # 手势状态图 (D2)
+  ├── gesture-interaction.pdf           # 手势规范 (Typst)
+  ├── component-research.md             # 组件研究
+  ├── component-spec.md                 # 组件规范
+  ├── component-showcase.html           # 组件展示 (移动视口)
+  ├── mobile-design-system.pdf          # 设计系统文档 (Typst)
+  ├── usability-audit.md                # 可用性审查
+  ├── a11y-report.json                  # WCAG 检查结果
+  └── mobile-usability-audit.pdf        # 审查报告 (Typst)
+
+# ═══════════════════════════════════════
+# Gate 标准
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "平台规范约束已提取（具体数值）"
+      - "导航架构有 Tab Bar + Stack + Modal 设计"
+      - "线框图使用移动视口"
+      - "触控目标 ≥ 44pt (iOS) / ≥ 48dp (Android)"
+      - "手势交互有状态图和无障碍替代"
+
+  gate4_acceptance:
+    checklist:
+      - "pa11y WCAG 检查已执行"
+      - "15 条启发式评估 P0 = 0"
+      - "Design Tokens 区分 iOS/Android"
+      - "组件规范有平台差异标注"
+      - "暗色模式有设计（非简单反转）"

@@ -1,0 +1,58 @@
+{
+  "color": {
+    "primary": { "value": "#2563EB", "rationale": "Blue conveys productivity and trust. Used by 3/4 competitor todo apps (Microsoft To Do, Google Tasks, Apple Reminders)." },
+    "primary-hover": { "value": "#1D4ED8" },
+    "secondary": { "value": "#6B7280" },
+    "background": { "value": "#FAFAFA" },
+    "surface": { "value": "#FFFFFF" },
+    "surface-hover": { "value": "#F3F4F6" },
+    "border": { "value": "#E5E7EB" },
+    "border-strong": { "value": "#D1D5DB" },
+    "text": { "value": "#1F2937", "contrast_on_bg": "14.06:1 PASS" },
+    "text-secondary": { "value": "#6B7280", "contrast_on_bg": "4.63:1 PASS" },
+    "text-on-primary": { "value": "#FFFFFF", "contrast_on_primary": "5.17:1 PASS" },
+    "error": { "value": "#DC2626", "contrast_on_bg": "4.63:1 PASS" },
+    "success": { "value": "#047857", "contrast_on_bg": "5.25:1 PASS" },
+    "warning": { "value": "#D97706", "contrast_on_bg": "3.05:1 (decorative only, text uses text color)" }
+  },
+  "spacing": {
+    "xs": { "value": "4px" },
+    "sm": { "value": "8px" },
+    "md": { "value": "16px" },
+    "lg": { "value": "24px" },
+    "xl": { "value": "32px" },
+    "2xl": { "value": "48px" }
+  },
+  "font": {
+    "family": { "value": "'Inter', system-ui, -apple-system, sans-serif" },
+    "size": {
+      "xs": { "value": "12px" },
+      "sm": { "value": "14px" },
+      "base": { "value": "16px" },
+      "lg": { "value": "20px" },
+      "xl": { "value": "24px" },
+      "2xl": { "value": "32px" }
+    },
+    "weight": {
+      "normal": { "value": "400" },
+      "medium": { "value": "500" },
+      "semibold": { "value": "600" }
+    },
+    "line-height": {
+      "tight": { "value": "1.25" },
+      "base": { "value": "1.5" },
+      "relaxed": { "value": "1.75" }
+    }
+  },
+  "radius": {
+    "sm": { "value": "4px" },
+    "md": { "value": "8px" },
+    "lg": { "value": "12px" },
+    "full": { "value": "9999px" }
+  },
+  "shadow": {
+    "sm": { "value": "0 1px 2px 0 rgba(0,0,0,0.05)" },
+    "md": { "value": "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)" },
+    "lg": { "value": "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)" }
+  }
+}

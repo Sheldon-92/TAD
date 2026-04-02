@@ -1,0 +1,108 @@
+direction: down
+
+title: "Menu Snap iOS — Navigation Flow" {
+  style.font-size: 24
+  style.underline: true
+  near: top-center
+}
+
+tab-bar: "Tab Bar" {
+  style.fill: "#F2F2F7"
+  style.border-radius: 8
+  style.font-size: 16
+  style.bold: true
+
+  scan: "Scan\n(camera.viewfinder)" {
+    style.fill: "#007AFF"
+    style.font-color: "#FFF"
+  }
+  history: "History\n(clock.arrow.circlepath)" {
+    style.fill: "#8E8E93"
+    style.font-color: "#FFF"
+  }
+  favorites: "Favorites\n(heart.fill)" {
+    style.fill: "#FF3B30"
+    style.font-color: "#FFF"
+  }
+  settings: "Settings\n(gearshape)" {
+    style.fill: "#8E8E93"
+    style.font-color: "#FFF"
+  }
+}
+
+# Scan Stack
+camera: "Camera Viewfinder\n(Full-screen)" {
+  style.fill: "#1C1C1E"
+  style.font-color: "#FFF"
+  style.border-radius: 12
+}
+results: "Menu Results\n(Translated dishes list)" {
+  style.fill: "#FFFFFF"
+  style.border-radius: 12
+}
+dish-detail: "Dish Detail\n(Description + Dietary + Photo)" {
+  style.fill: "#FFFFFF"
+  style.border-radius: 12
+}
+
+# History Stack
+history-list: "Scan History\n(Chronological list)" {
+  style.fill: "#FFFFFF"
+  style.border-radius: 12
+}
+scan-detail: "Past Scan Detail\n(Saved results)" {
+  style.fill: "#FFFFFF"
+  style.border-radius: 12
+}
+
+# Favorites Stack
+fav-list: "Favorites List\n(Saved dishes)" {
+  style.fill: "#FFFFFF"
+  style.border-radius: 12
+}
+
+# Settings Stack
+settings-page: "Settings Page\n(Preferences list)" {
+  style.fill: "#F2F2F7"
+  style.border-radius: 12
+}
+dietary: "Dietary Preferences\n(Bottom Sheet)" {
+  style.fill: "#FFFFFF"
+  style.stroke: "#007AFF"
+  style.stroke-width: 2
+  style.border-radius: 12
+}
+language: "Language Settings" {
+  style.fill: "#FFFFFF"
+  style.border-radius: 12
+}
+
+# Modals
+onboarding: "Onboarding\n(Full-screen cover)" {
+  style.fill: "#007AFF"
+  style.font-color: "#FFF"
+  style.stroke-dash: 5
+  style.border-radius: 12
+}
+
+# Connections — Scan Tab
+tab-bar.scan -> camera: "tap" {style.stroke: "#007AFF"}
+camera -> results: "capture + process" {style.stroke: "#007AFF"; style.stroke-width: 2}
+results -> dish-detail: "tap dish" {style.stroke: "#007AFF"}
+
+# Connections — History Tab
+tab-bar.history -> history-list: "tap"
+history-list -> scan-detail: "tap scan"
+scan-detail -> dish-detail: "tap dish"
+
+# Connections — Favorites Tab
+tab-bar.favorites -> fav-list: "tap"
+fav-list -> dish-detail: "tap dish"
+
+# Connections — Settings Tab
+tab-bar.settings -> settings-page: "tap"
+settings-page -> dietary: "modal sheet" {style.stroke-dash: 3}
+settings-page -> language: "push"
+
+# Onboarding
+onboarding -> camera: "complete setup" {style.stroke-dash: 5; style.stroke: "#34C759"}

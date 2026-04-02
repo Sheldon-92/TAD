@@ -1,0 +1,1569 @@
+openapi: 3.1.0
+info:
+  title: Multi-Tenant SaaS Billing API
+  version: 1.0.0
+  description: |
+    RESTful API for multi-tenant SaaS subscription billing with Stripe integration.
+    Supports subscription lifecycle management, usage-based billing, and real-time notifications.
+  contact:
+    name: Platform Team
+    email: platform@example.com
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: https://api-staging.example.com/v1
+    description: Staging
+  - url: http://localhost:3000/v1
+    description: Development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Tenants
+    description: Tenant (organization) management
+  - name: Users
+    description: User management within tenants
+  - name: Plans
+    description: Subscription plan catalog
+  - name: Subscriptions
+    description: Subscription lifecycle management
+  - name: Invoices
+    description: Invoice and payment history
+  - name: Usage
+    description: Usage tracking and metering
+  - name: Webhooks
+    description: Stripe webhook receiver
+
+paths:
+  # ═══════════════ TENANTS ═══════════════
+  /tenants:
+    post:
+      operationId: createTenant
+      tags: [Tenants]
+      summary: Create a new tenant
+      description: Creates a new tenant organization. Only SuperAdmin can create tenants.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+            example:
+              name: "Acme Corp"
+              slug: "acme-corp"
+              billingEmail: "billing@acme.com"
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Tenant slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://api.example.com/errors/resource-already-exists"
+                title: "Resource Already Exists"
+                status: 409
+                detail: "A tenant with slug 'acme-corp' already exists."
+                error_code: "RESOURCE_ALREADY_EXISTS"
+    get:
+      operationId: listTenants
+      tags: [Tenants]
+      summary: List all tenants
+      description: Returns paginated list of tenants. SuperAdmin only.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CursorParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Paginated tenant list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tenants/{tenantId}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      operationId: getTenant
+      tags: [Tenants]
+      summary: Get tenant by ID
+      description: Returns tenant details. SuperAdmin sees any tenant; TenantAdmin sees own tenant only.
+      responses:
+        '200':
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateTenant
+      tags: [Tenants]
+      summary: Update tenant
+      description: Partial update of tenant fields.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantRequest'
+      responses:
+        '200':
+          description: Updated tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteTenant
+      tags: [Tenants]
+      summary: Soft-delete tenant
+      description: Marks tenant as deleted. SuperAdmin only. Active subscriptions must be canceled first.
+      responses:
+        '204':
+          description: Tenant deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Tenant has active subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  # ═══════════════ USERS ═══════════════
+  /tenants/{tenantId}/users:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    post:
+      operationId: createUser
+      tags: [Users]
+      summary: Create user in tenant
+      description: Creates a new user within the specified tenant. TenantAdmin only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            example:
+              email: "john@acme.com"
+              name: "John Doe"
+              role: "MEMBER"
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Email already exists in tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+    get:
+      operationId: listUsers
+      tags: [Users]
+      summary: List users in tenant
+      parameters:
+        - $ref: '#/components/parameters/CursorParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserRole'
+      responses:
+        '200':
+          description: Paginated user list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tenants/{tenantId}/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getUser
+      tags: [Users]
+      summary: Get user by ID
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateUser
+      tags: [Users]
+      summary: Update user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      operationId: deleteUser
+      tags: [Users]
+      summary: Soft-delete user
+      responses:
+        '204':
+          description: User deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ═══════════════ PLANS ═══════════════
+  /plans:
+    post:
+      operationId: createPlan
+      tags: [Plans]
+      summary: Create subscription plan
+      description: Creates a new plan with features and limits. SuperAdmin only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+            example:
+              name: "Pro"
+              slug: "pro"
+              description: "For growing teams"
+              priceMonthly: 4900
+              priceYearly: 49000
+              currency: "usd"
+              features:
+                - name: "api_calls"
+                  limit: 100000
+                  unit: "calls/month"
+                - name: "storage"
+                  limit: 50
+                  unit: "GB"
+                - name: "team_members"
+                  limit: 25
+                  unit: "seats"
+      responses:
+        '201':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    get:
+      operationId: listPlans
+      tags: [Plans]
+      summary: List available plans
+      description: Public endpoint. Returns all active plans with features.
+      security: []
+      parameters:
+        - name: active
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanList'
+
+  /plans/{planId}:
+    parameters:
+      - name: planId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getPlan
+      tags: [Plans]
+      summary: Get plan details with features
+      security: []
+      responses:
+        '200':
+          description: Plan with features
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updatePlan
+      tags: [Plans]
+      summary: Update plan
+      description: Update plan metadata. Price changes only affect new subscriptions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequest'
+      responses:
+        '200':
+          description: Updated plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ═══════════════ SUBSCRIPTIONS ═══════════════
+  /tenants/{tenantId}/subscriptions:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    post:
+      operationId: createSubscription
+      tags: [Subscriptions]
+      summary: Create subscription
+      description: |
+        Creates a new subscription for the tenant. Triggers Stripe customer and subscription creation.
+        If the plan has a trial period, subscription starts in TRIALING status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+            example:
+              planId: "plan_pro_monthly"
+              paymentMethodId: "pm_card_visa"
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '402':
+          description: Payment required / failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://api.example.com/errors/payment-failed"
+                title: "Payment Failed"
+                status: 402
+                detail: "Card ending in 4242 was declined."
+                error_code: "PAYMENT_FAILED"
+        '409':
+          description: Tenant already has an active subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+    get:
+      operationId: listSubscriptions
+      tags: [Subscriptions]
+      summary: List tenant subscriptions
+      parameters:
+        - $ref: '#/components/parameters/CursorParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/SubscriptionStatus'
+      responses:
+        '200':
+          description: Subscription list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    get:
+      operationId: getSubscription
+      tags: [Subscriptions]
+      summary: Get subscription details
+      responses:
+        '200':
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /subscriptions/{subscriptionId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    post:
+      operationId: cancelSubscription
+      tags: [Subscriptions]
+      summary: Cancel subscription
+      description: |
+        Cancels subscription at end of current billing period (default) or immediately.
+        7-day grace period before data access is revoked.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cancelImmediately:
+                  type: boolean
+                  default: false
+                  description: If true, cancel immediately instead of at period end
+                reason:
+                  type: string
+                  description: Cancellation reason
+      responses:
+        '200':
+          description: Subscription canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Subscription not in cancelable state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /subscriptions/{subscriptionId}/reactivate:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    post:
+      operationId: reactivateSubscription
+      tags: [Subscriptions]
+      summary: Reactivate canceled subscription
+      description: Reactivate within 7-day grace period after cancellation.
+      responses:
+        '200':
+          description: Subscription reactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '409':
+          description: Grace period expired or subscription not canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://api.example.com/errors/grace-period-expired"
+                title: "Grace Period Expired"
+                status: 409
+                detail: "The 7-day grace period has expired. Please create a new subscription."
+                error_code: "GRACE_PERIOD_EXPIRED"
+
+  /subscriptions/{subscriptionId}/change-plan:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    post:
+      operationId: changePlan
+      tags: [Subscriptions]
+      summary: Change subscription plan (upgrade/downgrade)
+      description: |
+        Changes the plan with proration calculation.
+        - Upgrade: immediate, prorated charge for remaining period
+        - Downgrade: takes effect at next billing cycle, credit applied
+        Uses optimistic locking (version field) for concurrent upgrade protection.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+            example:
+              newPlanId: "plan_enterprise_monthly"
+              version: 3
+      responses:
+        '200':
+          description: Plan changed with proration details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePlanResponse'
+        '402':
+          description: Payment for proration failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Concurrent modification (version mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://api.example.com/errors/concurrent-modification"
+                title: "Concurrent Modification"
+                status: 409
+                detail: "Subscription was modified by another request. Expected version 3, found 4."
+                error_code: "CONCURRENT_MODIFICATION"
+
+  /subscriptions/{subscriptionId}/proration-preview:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    get:
+      operationId: previewProration
+      tags: [Subscriptions]
+      summary: Preview proration for plan change
+      description: Returns proration calculation without modifying the subscription.
+      parameters:
+        - name: newPlanId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proration preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProrationPreview'
+              example:
+                currentPlan:
+                  id: "plan_pro_monthly"
+                  name: "Pro"
+                  priceMonthly: 4900
+                newPlan:
+                  id: "plan_enterprise_monthly"
+                  name: "Enterprise"
+                  priceMonthly: 19900
+                prorationAmount: 7500
+                credit: 2450
+                charge: 9950
+                remainingDays: 15
+                totalDays: 30
+                effectiveDate: "2026-04-15T00:00:00Z"
+
+  # ═══════════════ INVOICES ═══════════════
+  /subscriptions/{subscriptionId}/invoices:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    get:
+      operationId: listSubscriptionInvoices
+      tags: [Invoices]
+      summary: List invoices for subscription
+      parameters:
+        - $ref: '#/components/parameters/CursorParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/InvoiceStatus'
+      responses:
+        '200':
+          description: Invoice list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /tenants/{tenantId}/invoices:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      operationId: listTenantInvoices
+      tags: [Invoices]
+      summary: List all invoices for tenant
+      parameters:
+        - $ref: '#/components/parameters/CursorParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Invoice list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceList'
+
+  /invoices/{invoiceId}:
+    parameters:
+      - name: invoiceId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getInvoice
+      tags: [Invoices]
+      summary: Get invoice with line items
+      responses:
+        '200':
+          description: Invoice detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /invoices/{invoiceId}/pay:
+    parameters:
+      - name: invoiceId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: retryInvoicePayment
+      tags: [Invoices]
+      summary: Retry payment for failed invoice
+      responses:
+        '200':
+          description: Payment succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '402':
+          description: Payment failed again
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  # ═══════════════ USAGE ═══════════════
+  /usage-records:
+    post:
+      operationId: recordUsage
+      tags: [Usage]
+      summary: Record usage event
+      description: |
+        Server-to-server endpoint for recording API calls, storage usage, etc.
+        Uses API Key authentication. Idempotent via transactionId.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUsageRecordRequest'
+            example:
+              tenantId: "ten_abc123"
+              subscriptionId: "sub_xyz789"
+              featureName: "api_calls"
+              quantity: 150
+              transactionId: "txn_unique_123"
+              timestamp: "2026-04-01T12:00:00Z"
+      responses:
+        '201':
+          description: Usage recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageRecord'
+        '200':
+          description: Duplicate transaction (idempotent — returns existing record)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageRecord'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Subscription not active or feature not in plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /tenants/{tenantId}/usage:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      operationId: getTenantUsage
+      tags: [Usage]
+      summary: Get usage summary for tenant
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [current, previous]
+            default: current
+        - name: featureName
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usage summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummary'
+              example:
+                tenantId: "ten_abc123"
+                period: "2026-04"
+                features:
+                  - name: "api_calls"
+                    used: 85000
+                    limit: 100000
+                    percentUsed: 85.0
+                    overage: 0
+                  - name: "storage"
+                    used: 42
+                    limit: 50
+                    percentUsed: 84.0
+                    unit: "GB"
+
+  /subscriptions/{subscriptionId}/usage:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionIdParam'
+    get:
+      operationId: getSubscriptionUsage
+      tags: [Usage]
+      summary: Get usage for subscription
+      responses:
+        '200':
+          description: Usage details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummary'
+
+  # ═══════════════ WEBHOOKS ═══════════════
+  /webhooks/stripe:
+    post:
+      operationId: handleStripeWebhook
+      tags: [Webhooks]
+      summary: Receive Stripe webhook events
+      description: |
+        Receives Stripe events. Verifies signature using HMAC-SHA256.
+        Idempotent — stores event ID and skips duplicates.
+        Always returns 200 to Stripe (even for unknown event types).
+      security: []
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "Stripe webhook signature (t=timestamp,v1=signature)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe event object (varies by event type)
+      responses:
+        '200':
+          description: Event received (always 200 to Stripe)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained via login. Claims include:
+        `{ sub: userId, tenantId, role, permissions[] }`
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for server-to-server communication (usage recording)
+
+  parameters:
+    TenantIdParam:
+      name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Tenant ID (CUID)
+    SubscriptionIdParam:
+      name: subscriptionId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Subscription ID (CUID)
+    CursorParam:
+      name: cursor
+      in: query
+      schema:
+        type: string
+      description: Cursor for pagination (ID of last item)
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Number of items per page
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.example.com/errors/validation-failed"
+            title: "Validation Failed"
+            status: 400
+            detail: "Request body contains invalid fields."
+            error_code: "VALIDATION_FAILED"
+            errors:
+              - field: "email"
+                message: "Must be a valid email address"
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.example.com/errors/unauthorized"
+            title: "Unauthorized"
+            status: 401
+            detail: "Authentication credentials are missing or invalid."
+            error_code: "INVALID_TOKEN"
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.example.com/errors/forbidden"
+            title: "Forbidden"
+            status: 403
+            detail: "You do not have permission to perform this action."
+            error_code: "INSUFFICIENT_PERMISSIONS"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.example.com/errors/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "The requested resource was not found."
+            error_code: "RESOURCE_NOT_FOUND"
+
+  schemas:
+    # ═══════ Enums ═══════
+    UserRole:
+      type: string
+      enum: [SUPER_ADMIN, TENANT_ADMIN, BILLING_ADMIN, MEMBER]
+
+    SubscriptionStatus:
+      type: string
+      enum: [TRIALING, ACTIVE, PAST_DUE, CANCELED, EXPIRED]
+
+    InvoiceStatus:
+      type: string
+      enum: [DRAFT, OPEN, PAID, VOID, UNCOLLECTIBLE]
+
+    PaymentStatus:
+      type: string
+      enum: [PENDING, SUCCEEDED, FAILED, REFUNDED]
+
+    # ═══════ Core Models ═══════
+    Tenant:
+      type: object
+      required: [id, name, slug, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          description: CUID identifier
+          example: "ten_clx1234567890"
+        name:
+          type: string
+          example: "Acme Corp"
+        slug:
+          type: string
+          example: "acme-corp"
+        billingEmail:
+          type: string
+          format: email
+          example: "billing@acme.com"
+        stripeCustomerId:
+          type: [string, "null"]
+          example: "cus_abc123"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      required: [id, email, name, role, tenantId, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          example: "usr_clx1234567890"
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        tenantId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+
+    Plan:
+      type: object
+      required: [id, name, slug, priceMonthly, currency, isActive, createdAt]
+      properties:
+        id:
+          type: string
+          example: "plan_pro_monthly"
+        name:
+          type: string
+          example: "Pro"
+        slug:
+          type: string
+          example: "pro"
+        description:
+          type: string
+          example: "For growing teams"
+        priceMonthly:
+          type: integer
+          description: Price in cents
+          example: 4900
+        priceYearly:
+          type: integer
+          description: Annual price in cents (discounted)
+          example: 49000
+        currency:
+          type: string
+          default: "usd"
+        trialDays:
+          type: integer
+          default: 0
+        isActive:
+          type: boolean
+          default: true
+        stripePriceId:
+          type: [string, "null"]
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanFeature'
+        createdAt:
+          type: string
+          format: date-time
+
+    PlanFeature:
+      type: object
+      required: [name, limit, unit]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: "api_calls"
+        limit:
+          type: integer
+          example: 100000
+          description: "-1 for unlimited"
+        unit:
+          type: string
+          example: "calls/month"
+        overagePrice:
+          type: integer
+          description: Price per unit over limit, in cents
+          example: 1
+
+    Subscription:
+      type: object
+      required: [id, tenantId, planId, status, currentPeriodStart, currentPeriodEnd, version, createdAt]
+      properties:
+        id:
+          type: string
+          example: "sub_clx1234567890"
+        tenantId:
+          type: string
+        planId:
+          type: string
+        status:
+          $ref: '#/components/schemas/SubscriptionStatus'
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        canceledAt:
+          type: string
+          format: date-time
+        cancelReason:
+          type: [string, "null"]
+        trialEnd:
+          type: string
+          format: date-time
+        stripeSubscriptionId:
+          type: [string, "null"]
+        version:
+          type: integer
+          description: Optimistic locking version
+          example: 3
+        plan:
+          $ref: '#/components/schemas/Plan'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Invoice:
+      type: object
+      required: [id, subscriptionId, tenantId, status, amountDue, currency, createdAt]
+      properties:
+        id:
+          type: string
+        subscriptionId:
+          type: string
+        tenantId:
+          type: string
+        status:
+          $ref: '#/components/schemas/InvoiceStatus'
+        amountDue:
+          type: integer
+          description: Amount in cents
+        amountPaid:
+          type: integer
+        currency:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+        stripeInvoiceId:
+          type: [string, "null"]
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItem'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        createdAt:
+          type: string
+          format: date-time
+
+    InvoiceLineItem:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+          example: "Pro plan — Apr 2026"
+        quantity:
+          type: integer
+        unitPrice:
+          type: integer
+        amount:
+          type: integer
+        type:
+          type: string
+          enum: [SUBSCRIPTION, PRORATION_CREDIT, PRORATION_CHARGE, OVERAGE]
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceId:
+          type: string
+        amount:
+          type: integer
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        stripePaymentIntentId:
+          type: [string, "null"]
+        failureCode:
+          type: [string, "null"]
+          example: "card_declined"
+        failureMessage:
+          type: [string, "null"]
+        attemptNumber:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    UsageRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        subscriptionId:
+          type: string
+        featureName:
+          type: string
+        quantity:
+          type: integer
+        transactionId:
+          type: string
+          description: Client-provided ID for idempotency
+        timestamp:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    UsageSummary:
+      type: object
+      properties:
+        tenantId:
+          type: string
+        period:
+          type: string
+          example: "2026-04"
+        features:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              used:
+                type: integer
+              limit:
+                type: integer
+              percentUsed:
+                type: number
+              overage:
+                type: integer
+              unit:
+                type: string
+
+    ProrationPreview:
+      type: object
+      properties:
+        currentPlan:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            priceMonthly:
+              type: integer
+        newPlan:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            priceMonthly:
+              type: integer
+        prorationAmount:
+          type: integer
+          description: Net amount in cents (positive = charge, negative = credit)
+        credit:
+          type: integer
+          description: Credit for unused time on current plan
+        charge:
+          type: integer
+          description: Charge for remaining time on new plan
+        remainingDays:
+          type: integer
+        totalDays:
+          type: integer
+        effectiveDate:
+          type: string
+          format: date-time
+
+    # ═══════ Request Schemas ═══════
+    CreateTenantRequest:
+      type: object
+      required: [name, slug, billingEmail]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        slug:
+          type: string
+          pattern: "^[a-z0-9-]+$"
+          minLength: 3
+          maxLength: 63
+        billingEmail:
+          type: string
+          format: email
+
+    UpdateTenantRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        billingEmail:
+          type: string
+          format: email
+
+    CreateUserRequest:
+      type: object
+      required: [email, name, role]
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    CreatePlanRequest:
+      type: object
+      required: [name, slug, priceMonthly, currency]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        priceMonthly:
+          type: integer
+          minimum: 0
+        priceYearly:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          default: "usd"
+        trialDays:
+          type: integer
+          minimum: 0
+          default: 0
+        features:
+          type: array
+          items:
+            type: object
+            required: [name, limit, unit]
+            properties:
+              name:
+                type: string
+              limit:
+                type: integer
+              unit:
+                type: string
+              overagePrice:
+                type: integer
+
+    UpdatePlanRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        priceMonthly:
+          type: integer
+        priceYearly:
+          type: integer
+        isActive:
+          type: boolean
+
+    CreateSubscriptionRequest:
+      type: object
+      required: [planId]
+      properties:
+        planId:
+          type: string
+        paymentMethodId:
+          type: string
+          description: Stripe payment method ID
+
+    ChangePlanRequest:
+      type: object
+      required: [newPlanId, version]
+      properties:
+        newPlanId:
+          type: string
+        version:
+          type: integer
+          description: Current subscription version for optimistic locking
+
+    CreateUsageRecordRequest:
+      type: object
+      required: [tenantId, subscriptionId, featureName, quantity, transactionId]
+      properties:
+        tenantId:
+          type: string
+        subscriptionId:
+          type: string
+        featureName:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        transactionId:
+          type: string
+          description: Client-provided unique ID for idempotency
+        timestamp:
+          type: string
+          format: date-time
+
+    ChangePlanResponse:
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        proration:
+          $ref: '#/components/schemas/ProrationPreview'
+
+    # ═══════ Error ═══════
+    ProblemDetail:
+      type: object
+      description: RFC 7807 Problem Details
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://api.example.com/errors/not-found"
+        title:
+          type: string
+          example: "Not Found"
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: "The requested resource was not found."
+        instance:
+          type: string
+          description: URI of the request that caused the error
+        error_code:
+          type: string
+          example: "RESOURCE_NOT_FOUND"
+        request_id:
+          type: string
+          example: "req_abc123"
+        errors:
+          type: array
+          description: Field-level validation errors
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+    # ═══════ List Wrappers ═══════
+    TenantList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tenant'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    UserList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PlanList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
+
+    SubscriptionList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    InvoiceList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PaginationMeta:
+      type: object
+      properties:
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: [string, "null"]
+        totalCount:
+          type: integer

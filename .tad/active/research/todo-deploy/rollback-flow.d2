@@ -1,0 +1,90 @@
+direction: down
+
+title: "Rollback Decision Flow" {
+  style.font-size: 24
+  style.bold: true
+  near: top-center
+}
+
+incident: "Incident Detected\n(P0 Alert)" {
+  style.fill: "#ff6b6b"
+  style.font-color: "#fff"
+  style.bold: true
+}
+
+known: "Root cause\nknown?" {
+  style.fill: "#ffd93d"
+  shape: diamond
+}
+
+fixable: "Fix in\n< 15 min?" {
+  style.fill: "#ffd93d"
+  shape: diamond
+}
+
+db_change: "Database\nschema change?" {
+  style.fill: "#ffd93d"
+  shape: diamond
+}
+
+one_line: "One-line /\nconfig fix?" {
+  style.fill: "#ffd93d"
+  shape: diamond
+}
+
+rollback1: "ROLLBACK\nimmediately" {
+  style.fill: "#ff6b6b"
+  style.font-color: "#fff"
+  style.bold: true
+}
+
+rollback2: "ROLLBACK\nimmediately" {
+  style.fill: "#ff6b6b"
+  style.font-color: "#fff"
+  style.bold: true
+}
+
+rollback3: "ROLLBACK\nthen fix properly" {
+  style.fill: "#ff6b6b"
+  style.font-color: "#fff"
+  style.bold: true
+}
+
+forward_fix: "FORWARD FIX\n(expedited PR)" {
+  style.fill: "#51cf66"
+  style.font-color: "#fff"
+  style.bold: true
+}
+
+careful_fix: "ROLLBACK if possible\nForward fix carefully" {
+  style.fill: "#fab005"
+  style.font-color: "#000"
+  style.bold: true
+}
+
+verify: "Verify:\n- Health check 200\n- Error rate < 0.1%\n- p95 < 500ms" {
+  style.fill: "#339af0"
+  style.font-color: "#fff"
+}
+
+postmortem: "Post-mortem\nwithin 48h" {
+  style.fill: "#868e96"
+  style.font-color: "#fff"
+}
+
+incident -> known
+known -> rollback1: "No" {style.stroke: "#ff6b6b"}
+known -> fixable: "Yes"
+fixable -> rollback2: "No" {style.stroke: "#ff6b6b"}
+fixable -> db_change: "Yes"
+db_change -> careful_fix: "Yes" {style.stroke: "#fab005"}
+db_change -> one_line: "No"
+one_line -> forward_fix: "Yes" {style.stroke: "#51cf66"}
+one_line -> rollback3: "No" {style.stroke: "#ff6b6b"}
+
+rollback1 -> verify
+rollback2 -> verify
+rollback3 -> verify
+forward_fix -> verify
+careful_fix -> verify
+verify -> postmortem

@@ -1,0 +1,103 @@
+# User Flows — Todo App
+
+direction: down
+
+# Flow 1: Add Task
+add: "Flow 1: Add Task" {
+  style.fill: "#f0f0f0"
+  start: "Task List View" {
+    style.fill: "#fff"
+  }
+  tap_add: "Tap '+' Button" {
+    style.fill: "#ccc"
+  }
+  input: "Type Task Title" {
+    style.fill: "#fff"
+  }
+  confirm: "Tap 'Add' / Press Enter" {
+    style.fill: "#ccc"
+  }
+  success: "Task Appears in List\n(with animation)" {
+    style.fill: "#c8e6c9"
+  }
+  start -> tap_add -> input -> confirm -> success
+}
+
+# Flow 2: Complete Task
+complete: "Flow 2: Complete Task" {
+  style.fill: "#f0f0f0"
+  list: "Task List View" {
+    style.fill: "#fff"
+  }
+  tap_check: "Tap Checkbox" {
+    style.fill: "#ccc"
+  }
+  done: "Task Strikethrough\n+ Moves to Completed" {
+    style.fill: "#c8e6c9"
+  }
+  undo: "Undo Toast (4s)" {
+    style.fill: "#fff9c4"
+  }
+  list -> tap_check -> done
+  done -> undo: "optional"
+}
+
+# Flow 3: Filter Tasks
+filter: "Flow 3: Filter Tasks" {
+  style.fill: "#f0f0f0"
+  view: "Task List View" {
+    style.fill: "#fff"
+  }
+  tap_tab: "Tap Filter Tab\n(All / Active / Completed)" {
+    style.fill: "#ccc"
+  }
+  result: "List Updates Instantly" {
+    style.fill: "#c8e6c9"
+  }
+  view -> tap_tab -> result
+}
+
+# Flow 4: Edit Task
+edit: "Flow 4: Edit Task" {
+  style.fill: "#f0f0f0"
+  list2: "Task List View" {
+    style.fill: "#fff"
+  }
+  tap_task: "Tap Task Text" {
+    style.fill: "#ccc"
+  }
+  edit_mode: "Inline Edit Mode" {
+    style.fill: "#fff"
+  }
+  save: "Tap Save / Press Enter" {
+    style.fill: "#ccc"
+  }
+  updated: "Task Updated in Place" {
+    style.fill: "#c8e6c9"
+  }
+  list2 -> tap_task -> edit_mode -> save -> updated
+}
+
+# Flow 5: Delete Task
+delete: "Flow 5: Delete Task" {
+  style.fill: "#f0f0f0"
+  list3: "Task List View" {
+    style.fill: "#fff"
+  }
+  swipe: "Swipe Left (Mobile)\nor Click Delete Icon" {
+    style.fill: "#ccc"
+  }
+  confirm_del: "Confirm Delete?" {
+    style.fill: "#ffcdd2"
+    style.font-color: "#333"
+  }
+  yes: "Yes → Task Removed" {
+    style.fill: "#c8e6c9"
+  }
+  no: "No → Cancel" {
+    style.fill: "#fff"
+  }
+  list3 -> swipe -> confirm_del
+  confirm_del -> yes: "confirm"
+  confirm_del -> no: "cancel"
+}

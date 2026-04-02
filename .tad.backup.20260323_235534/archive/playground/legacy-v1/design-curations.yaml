@@ -1,0 +1,499 @@
+# .tad/references/design-curations.yaml
+# Alex's Curation Reference Database
+# Purpose: Alex selects and assembles design elements from this library based on project type
+# Layer 1 (Pre-built Design Reference DB) + Layer 4 (Industry Templates)
+
+version: "1.0"
+last_updated: "2026-02-04"
+
+# ==================== Source Registry ====================
+sources:
+  award_sites:
+    description: "Design award sites - award-winning work represents high quality benchmarks"
+    sites:
+      - name: "Awwwards"
+        url: "https://www.awwwards.com"
+        search_pattern: "awwwards {project_type} site of the day {year}"
+        value: "Overall design quality, creativity, interaction"
+      - name: "CSS Design Awards"
+        url: "https://www.cssdesignawards.com"
+        search_pattern: "cssdesignawards best {project_type} {year}"
+        value: "CSS/frontend technical implementation quality"
+      - name: "FWA"
+        url: "https://thefwa.com"
+        search_pattern: "FWA {project_type} winner"
+        value: "Innovative interaction, motion design"
+
+  design_systems:
+    description: "Documented design systems - token values can be directly extracted"
+    systems:
+      - name: "Shadcn/ui"
+        docs_url: "https://ui.shadcn.com"
+        style: "modern, minimal, accessible"
+        strengths: ["components", "theming", "dark mode"]
+        tokens:
+          colors:
+            # Shadcn uses oklch natively; hex approximations provided for cross-system compatibility
+            primary: "#171717"          # oklch(0.205 0 0) - near black
+            primary_foreground: "#FAFAFA" # oklch(0.985 0 0)
+            secondary: "#F5F5F5"        # oklch(0.97 0 0)
+            background: "#FFFFFF"       # oklch(1 0 0)
+            foreground: "#0A0A0A"       # oklch(0.145 0 0)
+            muted: "#F5F5F5"            # oklch(0.97 0 0)
+            muted_foreground: "#737373" # oklch(0.556 0 0)
+            accent: "#F5F5F5"           # oklch(0.97 0 0)
+            border: "#E5E5E5"           # oklch(0.922 0 0)
+            destructive: "#EF4444"      # oklch(0.577 0.245 27.325)
+          radius:
+            sm: "calc(0.625rem - 4px)"
+            md: "calc(0.625rem - 2px)"
+            lg: "0.625rem"
+          shadow:
+            sm: "0 1px 2px rgba(0,0,0,0.05)"
+            md: "0 4px 6px rgba(0,0,0,0.07)"
+          spacing:
+            base_unit: "4px"
+            scale: "4px, 8px, 12px, 16px, 24px, 32px, 48px"
+
+      - name: "Radix Themes"
+        docs_url: "https://www.radix-ui.com"
+        style: "clean, systematic, accessible"
+        strengths: ["accessibility", "primitives", "composition"]
+        tokens:
+          colors:
+            # Radix uses 12-step scales; key steps shown
+            primary: "#3E63DD"          # Indigo 9 (default accent)
+            primary_foreground: "#FFFFFF"
+            secondary: "#8B8D98"        # Gray 9
+            background: "#FFFFFF"
+            foreground: "#1C2024"       # Gray 12
+            muted: "#F0F0F3"            # Gray 3
+            muted_foreground: "#60646C" # Gray 11
+            accent: "#3E63DD"           # Indigo 9
+            border: "#D9D9E0"           # Gray 6
+            error: "#E5484D"            # Red 9
+            success: "#30A46C"          # Green 9
+          radius:
+            sm: "4px"
+            md: "8px"
+            lg: "12px"
+          shadow:
+            sm: "0 1px 3px rgba(0,0,0,0.08)"
+            md: "0 4px 8px rgba(0,0,0,0.08)"
+          spacing:
+            base_unit: "4px"
+            scale: "4px, 8px, 12px, 16px, 24px, 32px, 40px, 64px"
+
+      - name: "Ant Design"
+        docs_url: "https://ant.design"
+        style: "enterprise, structured, comprehensive"
+        strengths: ["data-dense UI", "form controls", "tables"]
+        tokens:
+          colors:
+            primary: "#1677FF"          # colorPrimary (seed token)
+            primary_foreground: "#FFFFFF"
+            secondary: "#D9D9D9"
+            background: "#FFFFFF"       # colorBgBase
+            foreground: "#000000"       # colorTextBase (rgba(0,0,0,0.88))
+            muted: "#F5F5F5"            # colorBgLayout
+            muted_foreground: "#00000073" # colorTextSecondary
+            accent: "#1677FF"
+            border: "#D9D9D9"           # colorBorder
+            error: "#FF4D4F"            # colorError
+            success: "#52C41A"          # colorSuccess
+            warning: "#FAAD14"          # colorWarning
+          radius:
+            sm: "4px"                   # borderRadiusSM
+            md: "6px"                   # borderRadius
+            lg: "8px"                   # borderRadiusLG
+          shadow:
+            sm: "0 1px 2px 0 rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02), 0 2px 4px 0 rgba(0,0,0,0.02)"
+            md: "0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05)"
+          spacing:
+            base_unit: "4px"
+            scale: "4px, 8px, 12px, 16px, 20px, 24px, 32px, 48px"
+
+      - name: "Material Design 3"
+        docs_url: "https://m3.material.io"
+        style: "vibrant, expressive, dynamic"
+        strengths: ["color system", "motion", "adaptive layouts"]
+        tokens:
+          colors:
+            # M3 baseline scheme
+            primary: "#6750A4"
+            primary_foreground: "#FFFFFF" # onPrimary
+            secondary: "#625B71"
+            background: "#FFFBFE"
+            foreground: "#1C1B1F"        # onBackground
+            surface: "#FFFBFE"
+            muted: "#E7E0EC"              # surfaceVariant (equivalent of muted in M3)
+            muted_foreground: "#49454E"  # onSurfaceVariant
+            accent: "#7D5260"            # Tertiary
+            border: "#79747E"            # outline
+            error: "#B3261E"
+            error_container: "#F9DEDC"
+            # Dark mode
+            dark_primary: "#D0BCFF"
+            dark_background: "#1C1B1E"
+            dark_surface: "#1C1B1E"
+            dark_foreground: "#E6E1E5"   # onSurface (dark)
+          radius:
+            sm: "8px"                    # extra small shape
+            md: "12px"                   # small shape
+            lg: "16px"                   # medium shape
+          shadow:
+            sm: "0 1px 3px 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.3)"
+            md: "0 2px 6px 2px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.3)"
+          spacing:
+            base_unit: "4px"
+            scale: "4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px"
+
+      - name: "Chakra UI"
+        docs_url: "https://chakra-ui.com"
+        style: "approachable, composable, accessible"
+        strengths: ["ease of use", "theming", "responsive"]
+        tokens:
+          colors:
+            primary: "#3182CE"          # blue.500
+            primary_foreground: "#FFFFFF"
+            secondary: "#718096"        # gray.500
+            background: "#FFFFFF"
+            foreground: "#1A202C"       # gray.800
+            muted: "#EDF2F7"            # gray.100
+            muted_foreground: "#718096" # gray.500
+            accent: "#3182CE"           # blue.500
+            border: "#E2E8F0"           # gray.200
+            error: "#E53E3E"            # red.500
+            success: "#38A169"          # green.500
+            warning: "#DD6B20"          # orange.500
+          radius:
+            sm: "0.125rem"              # 2px
+            md: "0.375rem"              # 6px
+            lg: "0.5rem"               # 8px
+          shadow:
+            sm: "0 1px 2px 0 rgba(0,0,0,0.05)"
+            md: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)"
+            lg: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)"
+          spacing:
+            base_unit: "4px"
+            scale: "4px, 8px, 12px, 16px, 20px, 24px, 32px, 48px, 64px"
+
+  inspiration_galleries:
+    description: "Design inspiration aggregation sites - browsable by style/industry"
+    sites:
+      - name: "Mobbin"
+        url: "https://mobbin.com"
+        value: "Real product UI screenshots, categorized by pattern"
+      - name: "Godly"
+        url: "https://godly.website"
+        value: "Curated excellent website designs"
+      - name: "Land-book"
+        url: "https://land-book.com"
+        value: "Landing page inspiration"
+      - name: "Dribbble"
+        url: "https://dribbble.com"
+        value: "Design concepts and visual exploration"
+
+  reference_products:
+    description: "Industry benchmark products - market-validated design"
+    products:
+      - name: "Stripe"
+        url: "https://stripe.com"
+        industry: "fintech"
+        design_traits: "trustworthy, precise, clean data display"
+        key_colors:
+          dark_blue: "#0A2540"
+          blurple: "#635BFF"
+          light_bg: "#F6F9FC"
+      - name: "Linear"
+        url: "https://linear.app"
+        industry: "developer tools"
+        design_traits: "dark-first, keyboard-driven, minimal"
+        key_colors:
+          indigo: "#5E6AD2"
+          dark_bg: "#08090A"
+          light_bg: "#F7F8F8"
+          gray: "#8A8F98"
+      - name: "Notion"
+        url: "https://notion.so"
+        industry: "productivity"
+        design_traits: "warm, spacious, content-first"
+        key_colors:
+          text: "#37352F"
+          light_bg: "#FFFFFF"
+          warm_bg: "#F7F6F3"
+          accent: "#2EAADC"
+      - name: "Vercel"
+        url: "https://vercel.com"
+        industry: "developer platform"
+        design_traits: "bold, high-contrast, modern"
+        key_colors:
+          black: "#000000"
+          white: "#FFFFFF"
+          blue: "#0070F3"
+          gray: "#888888"
+      - name: "Airbnb"
+        url: "https://airbnb.com"
+        industry: "consumer marketplace"
+        design_traits: "friendly, visual-rich, rounded"
+        key_colors:
+          rausch: "#FF5A5F"
+          babu: "#00A699"
+          arches: "#FC642D"
+          foggy: "#767676"
+
+# ==================== Pre-built Design Elements ====================
+
+color_palettes:
+  cool_minimal:
+    source: "Inspired by Linear/Vercel"
+    mood: "Cool minimal"
+    best_for: ["developer tools", "SaaS dashboard", "tech startup"]
+    light:
+      primary: "#5E6AD2"
+      secondary: "#8A8F98"
+      accent: "#0070F3"
+      background: "#FFFFFF"
+      surface: "#F7F8F8"
+      text: "#1A1A1A"
+      text_secondary: "#6B7280"
+      border: "#E5E7EB"
+      error: "#EF4444"
+      success: "#10B981"
+      warning: "#F59E0B"
+    dark:
+      primary: "#818CF8"
+      background: "#09090B"
+      surface: "#18181B"
+      text: "#FAFAFA"
+      text_secondary: "#A1A1AA"
+      border: "#27272A"
+
+  warm_professional:
+    source: "Inspired by Notion/Airbnb"
+    mood: "Warm professional"
+    best_for: ["consumer app", "marketplace", "content platform"]
+    light:
+      primary: "#EB5757"
+      secondary: "#F2994A"
+      accent: "#2D9CDB"
+      background: "#FFFFFF"
+      surface: "#F7F6F3"
+      text: "#37352F"
+      text_secondary: "#787774"
+      border: "#E6E4E0"
+      error: "#EB5757"
+      success: "#27AE60"
+      warning: "#F2994A"
+    dark:
+      primary: "#FF6B6B"
+      background: "#191919"
+      surface: "#252525"
+      text: "#E8E6E3"
+      text_secondary: "#9B9A97"
+      border: "#373737"
+
+  vibrant_modern:
+    source: "Inspired by Material Design 3"
+    mood: "Vibrant modern"
+    best_for: ["social app", "creative tool", "education"]
+    light:
+      primary: "#6750A4"
+      secondary: "#625B71"
+      accent: "#7D5260"
+      background: "#FFFBFE"
+      surface: "#F6F2FA"
+      text: "#1C1B1F"
+      text_secondary: "#49454E"
+      border: "#CAC4D0"
+      error: "#B3261E"
+      success: "#386A20"
+      warning: "#7D5800"
+    dark:
+      primary: "#D0BCFF"
+      background: "#1C1B1E"
+      surface: "#2B2930"
+      text: "#E6E1E5"
+      text_secondary: "#CAC4CF"
+      border: "#49454F"
+
+  dark_bold:
+    source: "Inspired by Linear/Arc"
+    mood: "Dark bold"
+    best_for: ["developer tool", "music/media", "gaming"]
+    light:
+      primary: "#5E6AD2"
+      secondary: "#E5484D"
+      accent: "#3E63DD"
+      background: "#FAFAFA"
+      surface: "#F0F0F0"
+      text: "#1C2024"
+      text_secondary: "#60646C"
+      border: "#D9D9E0"
+      error: "#E5484D"
+      success: "#30A46C"
+      warning: "#FFB224"
+    dark:
+      primary: "#5E6AD2"
+      background: "#08090A"
+      surface: "#111113"
+      text: "#EDEEF0"
+      text_secondary: "#8B8D98"
+      border: "#2B2F36"
+
+  neutral_enterprise:
+    source: "Inspired by Ant Design/Stripe"
+    mood: "Neutral enterprise"
+    best_for: ["enterprise SaaS", "admin dashboard", "B2B"]
+    light:
+      primary: "#1677FF"
+      secondary: "#722ED1"
+      accent: "#0A2540"
+      background: "#FFFFFF"
+      surface: "#F5F5F5"
+      text: "#000000DE"
+      text_secondary: "#00000073"
+      border: "#D9D9D9"
+      error: "#FF4D4F"
+      success: "#52C41A"
+      warning: "#FAAD14"
+    dark:
+      primary: "#1677FF"
+      background: "#141414"
+      surface: "#1F1F1F"
+      text: "#FFFFFFD9"
+      text_secondary: "#FFFFFF73"
+      border: "#424242"
+
+font_pairings:
+  modern_neutral:
+    heading: "Inter"
+    heading_fallback: "system-ui, -apple-system, sans-serif"
+    body: "Inter"
+    body_fallback: "system-ui, -apple-system, sans-serif"
+    mood: "Modern neutral, highly readable"
+    cjk_compatible: true
+    best_for: ["SaaS", "dashboard", "documentation"]
+
+  elegant_serif:
+    heading: "Playfair Display"
+    heading_fallback: "Georgia, 'Times New Roman', serif"
+    body: "Source Sans Pro"
+    body_fallback: "system-ui, sans-serif"
+    mood: "Elegant classic"
+    cjk_compatible: false
+    best_for: ["luxury brand", "editorial", "portfolio"]
+
+  tech_geometric:
+    heading: "Geist Sans"
+    heading_fallback: "system-ui, sans-serif"
+    body: "Geist Sans"
+    body_fallback: "system-ui, sans-serif"
+    mood: "Tech geometric feel"
+    cjk_compatible: false
+    best_for: ["developer tool", "tech startup"]
+
+  friendly_rounded:
+    heading: "Nunito"
+    heading_fallback: "system-ui, sans-serif"
+    body: "Open Sans"
+    body_fallback: "system-ui, sans-serif"
+    mood: "Friendly rounded"
+    cjk_compatible: true
+    best_for: ["education", "health", "consumer app"]
+
+  monospace_hacker:
+    heading: "JetBrains Mono"
+    heading_fallback: "ui-monospace, 'SF Mono', monospace"
+    body: "IBM Plex Sans"
+    body_fallback: "system-ui, sans-serif"
+    mood: "Developer/geek"
+    cjk_compatible: false
+    best_for: ["developer tool", "terminal app", "code editor"]
+
+component_presets:
+  rounded_soft:
+    radius: "12px"
+    shadow_style: "soft, diffused"
+    shadow_values:
+      sm: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)"
+      md: "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)"
+      lg: "0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.03)"
+    density: "spacious"
+    spacing_scale: "generous (base 16px, scale 1.5x)"
+    reference: "Notion, Raycast, Airbnb"
+    best_for: ["consumer", "content-first"]
+
+  sharp_dense:
+    radius: "4px"
+    shadow_style: "minimal, subtle"
+    shadow_values:
+      sm: "0 1px 2px rgba(0,0,0,0.05)"
+      md: "0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"
+      lg: "0 4px 8px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)"
+    density: "compact"
+    spacing_scale: "tight (base 8px, scale 1.25x)"
+    reference: "Linear, GitHub, VS Code"
+    best_for: ["developer tools", "data-heavy dashboards"]
+
+  pill_playful:
+    radius: "9999px (buttons), 16px (cards)"
+    shadow_style: "colored, soft"
+    shadow_values:
+      sm: "0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02)"
+      md: "0 4px 12px rgba(0,0,0,0.08)"
+      lg: "0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.04)"
+    density: "balanced"
+    spacing_scale: "standard (base 16px, scale 1.5x)"
+    reference: "Duolingo, Headspace, Spotify"
+    best_for: ["education", "wellness", "entertainment"]
+
+# ==================== Industry Templates (Layer 4) ====================
+industry_templates:
+  saas_dashboard:
+    description: "SaaS admin dashboard"
+    recommended_palettes: ["cool_minimal", "neutral_enterprise"]
+    recommended_fonts: ["modern_neutral", "tech_geometric"]
+    recommended_components: ["sharp_dense"]
+    avoid: ["pill_playful", "elegant_serif"]
+    key_ui_elements: ["data table", "chart/graph", "sidebar nav", "form controls", "metric cards"]
+    reference_products: ["Linear", "Vercel Dashboard", "Stripe Dashboard"]
+    search_queries:
+      - "best SaaS dashboard design {year}"
+      - "admin panel UI inspiration"
+
+  consumer_app:
+    description: "Consumer-facing application"
+    recommended_palettes: ["warm_professional", "vibrant_modern"]
+    recommended_fonts: ["friendly_rounded", "modern_neutral"]
+    recommended_components: ["rounded_soft", "pill_playful"]
+    avoid: ["sharp_dense"]
+    key_ui_elements: ["card list", "bottom nav/tab bar", "action button", "search bar", "profile"]
+    reference_products: ["Airbnb", "Duolingo", "Headspace"]
+    search_queries:
+      - "best consumer app design {year}"
+      - "{industry} app UI trends"
+
+  landing_page:
+    description: "Marketing landing page / product website"
+    recommended_palettes: ["vibrant_modern", "dark_bold"]
+    recommended_fonts: ["tech_geometric", "elegant_serif"]
+    recommended_components: ["rounded_soft"]
+    avoid: []
+    key_ui_elements: ["hero section", "CTA button", "feature grid", "testimonials", "pricing table"]
+    reference_products: ["Stripe", "Vercel", "Arc", "Linear Landing"]
+    search_queries:
+      - "best landing page design {year} awwwards"
+      - "{industry} landing page inspiration"
+
+  mobile_web:
+    description: "Mobile-first web application"
+    recommended_palettes: ["warm_professional", "vibrant_modern"]
+    recommended_fonts: ["friendly_rounded", "modern_neutral"]
+    recommended_components: ["rounded_soft", "pill_playful"]
+    avoid: ["sharp_dense"]
+    key_ui_elements: ["bottom sheet", "swipe actions", "pull to refresh", "floating action button"]
+    reference_products: ["Airbnb Mobile", "Instagram", "WeChat"]
+    search_queries:
+      - "best mobile web app design {year}"
+      - "mobile UI patterns {year}"

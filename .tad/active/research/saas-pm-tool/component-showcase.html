@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowPM — Design System Component Showcase</title>
+<style>
+  /* ═══ Design Tokens (from design-tokens.css) ═══ */
+  :root {
+    --color-primary: #0B7A6F;
+    --color-primary-hover: #095C54;
+    --color-primary-light: #CCFBF1;
+    --color-background: #FAFAFA;
+    --color-surface: #FFFFFF;
+    --color-sidebar: #F8FAFC;
+    --color-text: #1A1A2E;
+    --color-text-secondary: #64748B;
+    --color-text-muted: #78869B;
+    --color-border: #E2E8F0;
+    --color-border-strong: #CBD5E1;
+    --color-error: #DC2626;
+    --color-error-light: #FEF2F2;
+    --color-success: #15803D;
+    --color-success-light: #F0FDF4;
+    --color-warning: #D97706;
+    --color-warning-light: #FFFBEB;
+    --color-info: #2563EB;
+    --spacing-xs: 4px; --spacing-sm: 8px; --spacing-md: 16px; --spacing-lg: 24px; --spacing-xl: 32px;
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-size-xs: 12px; --font-size-sm: 14px; --font-size-base: 14px; --font-size-md: 16px; --font-size-lg: 20px; --font-size-xl: 24px; --font-size-2xl: 32px;
+    --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-xl: 12px; --radius-full: 9999px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    --transition-fast: 150ms ease; --transition-normal: 200ms ease;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-family); color: var(--color-text); background: var(--color-background); font-size: var(--font-size-base); line-height: 1.5; }
+
+  /* Layout */
+  .showcase { display: flex; min-height: 100vh; }
+  .showcase-nav {
+    width: 240px; background: var(--color-surface); border-right: 1px solid var(--color-border);
+    padding: var(--spacing-md); position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .showcase-nav h2 { font-size: var(--font-size-md); margin-bottom: var(--spacing-md); color: var(--color-primary); }
+  .showcase-nav a {
+    display: block; padding: 6px 12px; font-size: var(--font-size-sm); color: var(--color-text-secondary);
+    text-decoration: none; border-radius: var(--radius-sm); margin-bottom: 2px;
+  }
+  .showcase-nav a:hover { background: var(--color-primary-light); color: var(--color-primary); }
+  .showcase-main { flex: 1; padding: var(--spacing-xl) var(--spacing-xl); max-width: 960px; }
+
+  .section { margin-bottom: 48px; }
+  .section h2 { font-size: var(--font-size-xl); font-weight: 600; margin-bottom: 4px; color: var(--color-text); }
+  .section .desc { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--spacing-lg); }
+  .component-row { display: flex; gap: var(--spacing-md); align-items: flex-start; flex-wrap: wrap; margin-bottom: var(--spacing-lg); }
+  .component-label { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--spacing-xs); text-transform: uppercase; letter-spacing: 0.05em; }
+  .component-group { margin-bottom: var(--spacing-lg); }
+
+  /* ═══ 1. BUTTON ═══ */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 16px; border: 1px solid transparent; border-radius: var(--radius-md);
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    cursor: pointer; transition: all var(--transition-fast); line-height: 1; white-space: nowrap;
+  }
+  .btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  .btn-primary { background: var(--color-primary); color: #fff; }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-secondary { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+  .btn-secondary:hover { background: var(--color-background); border-color: var(--color-border-strong); }
+  .btn-ghost { background: transparent; color: var(--color-text-secondary); }
+  .btn-ghost:hover { background: var(--color-background); color: var(--color-text); }
+  .btn-danger { background: var(--color-error); color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-sm { padding: 4px 10px; font-size: var(--font-size-xs); }
+  .btn-lg { padding: 12px 24px; font-size: var(--font-size-md); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-loading { pointer-events: none; }
+  .btn-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ═══ 2. INPUT ═══ */
+  .input-field { display: flex; flex-direction: column; gap: 4px; }
+  .input-label { font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text); }
+  .input {
+    padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    font-family: var(--font-family); font-size: var(--font-size-sm); color: var(--color-text);
+    background: var(--color-surface); transition: border-color var(--transition-fast);
+    width: 280px;
+  }
+  .input:hover { border-color: var(--color-border-strong); }
+  .input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+  .input-error { border-color: var(--color-error); }
+  .input-error:focus { box-shadow: 0 0 0 3px var(--color-error-light); }
+  .input-error-msg { font-size: var(--font-size-xs); color: var(--color-error); }
+  .input:disabled { background: var(--color-sidebar); color: var(--color-text-muted); cursor: not-allowed; }
+
+  /* ═══ 3. ISSUE CARD ═══ */
+  .issue-card {
+    background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    padding: 12px; width: 300px; cursor: pointer; transition: all var(--transition-fast);
+  }
+  .issue-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-sm); }
+  .issue-card.selected { background: var(--color-primary-light); border-color: var(--color-primary); }
+  .issue-card.dragging { box-shadow: var(--shadow-lg); transform: scale(1.02); opacity: 0.9; }
+  .issue-card-id { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+  .issue-card-title { font-size: var(--font-size-sm); margin: 4px 0 8px; color: var(--color-text); }
+  .issue-card-meta { display: flex; align-items: center; justify-content: space-between; }
+
+  /* ═══ 4. KANBAN COLUMN ═══ */
+  .kanban-col { width: 300px; display: flex; flex-direction: column; gap: 8px; }
+  .kanban-col-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 4px; }
+  .kanban-col-header h4 { font-size: var(--font-size-sm); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .kanban-count { background: var(--color-background); border-radius: var(--radius-full); padding: 0 6px; font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+  /* ═══ 5. STATUS BADGE ═══ */
+  .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-size-xs); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-todo .status-dot { background: var(--color-text-muted); }
+  .status-progress .status-dot { background: var(--color-primary); }
+  .status-review .status-dot { background: var(--color-warning); }
+  .status-done .status-dot { background: var(--color-success); }
+
+  /* ═══ 6. PRIORITY ICON ═══ */
+  .priority-icon { display: inline-flex; gap: 1px; align-items: flex-end; height: 14px; }
+  .priority-bar { width: 3px; border-radius: 1px; }
+  .priority-urgent .priority-bar { background: var(--color-error); }
+  .priority-urgent .priority-bar:nth-child(1) { height: 6px; }
+  .priority-urgent .priority-bar:nth-child(2) { height: 10px; }
+  .priority-urgent .priority-bar:nth-child(3) { height: 14px; }
+  .priority-high .priority-bar { background: var(--color-text); }
+  .priority-high .priority-bar:nth-child(1) { height: 6px; }
+  .priority-high .priority-bar:nth-child(2) { height: 10px; }
+  .priority-high .priority-bar:nth-child(3) { height: 0; }
+  .priority-medium .priority-bar { background: var(--color-text-secondary); }
+  .priority-medium .priority-bar:nth-child(1) { height: 6px; }
+  .priority-medium .priority-bar:nth-child(2) { height: 0; }
+  .priority-medium .priority-bar:nth-child(3) { height: 0; }
+  .priority-low .priority-bar { background: var(--color-text-muted); }
+  .priority-low .priority-bar:nth-child(1) { height: 4px; opacity: 0.4; }
+
+  /* ═══ 7. AVATAR + AVATAR STACK ═══ */
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center; font-size: var(--font-size-xs);
+    font-weight: 500; color: #fff; flex-shrink: 0;
+  }
+  .avatar-teal { background: var(--color-primary); }
+  .avatar-blue { background: var(--color-info); }
+  .avatar-amber { background: var(--color-warning); }
+  .avatar-stack { display: flex; }
+  .avatar-stack .avatar { margin-left: -8px; border: 2px solid var(--color-surface); }
+  .avatar-stack .avatar:first-child { margin-left: 0; }
+  .avatar-overflow {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--color-border);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--color-text-secondary); margin-left: -8px;
+    border: 2px solid var(--color-surface);
+  }
+
+  /* ═══ 8. TIMELINE BAR ═══ */
+  .timeline-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+  .timeline-label { width: 140px; font-size: var(--font-size-xs); color: var(--color-text-secondary); text-align: right; }
+  .timeline-track { flex: 1; height: 24px; position: relative; background: var(--color-background); border-radius: var(--radius-sm); }
+  .timeline-bar { position: absolute; height: 20px; top: 2px; border-radius: 3px; font-size: 10px; color: #fff; display: flex; align-items: center; padding: 0 6px; white-space: nowrap; overflow: hidden; }
+  .timeline-bar.normal { background: var(--color-primary); }
+  .timeline-bar.overdue { background: var(--color-error); }
+  .timeline-bar.done { background: var(--color-success); opacity: 0.7; }
+
+  /* ═══ 9. MODAL ═══ */
+  .modal-demo {
+    border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+    width: 440px; background: var(--color-surface); box-shadow: var(--shadow-lg);
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--color-border); }
+  .modal-header h3 { font-size: var(--font-size-md); font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 20px; color: var(--color-text-muted); cursor: pointer; }
+  .modal-body { padding: 20px; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-border); }
+
+  /* ═══ 10. TOAST ═══ */
+  .toast {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    border-radius: var(--radius-lg); font-size: var(--font-size-sm);
+    box-shadow: var(--shadow-md); width: 360px;
+  }
+  .toast-success { background: var(--color-success-light); border: 1px solid var(--color-success); color: var(--color-success); }
+  .toast-error { background: var(--color-error-light); border: 1px solid var(--color-error); color: var(--color-error); }
+  .toast-warning { background: var(--color-warning-light); border: 1px solid var(--color-warning); color: var(--color-warning); }
+  .toast-action { margin-left: auto; font-weight: 500; text-decoration: underline; cursor: pointer; }
+
+  /* ═══ 11. BADGE ═══ */
+  .badge {
+    display: inline-flex; align-items: center; padding: 2px 8px;
+    border-radius: var(--radius-full); font-size: 11px; font-weight: 500;
+  }
+  .badge-default { background: var(--color-background); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+  .badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+  .badge-error { background: var(--color-error-light); color: var(--color-error); }
+  .badge-success { background: var(--color-success-light); color: var(--color-success); }
+
+  /* ═══ 12. EMPTY STATE ═══ */
+  .empty-state {
+    text-align: center; padding: 48px 24px; max-width: 400px;
+  }
+  .empty-state-icon { font-size: 48px; color: var(--color-text-muted); margin-bottom: var(--spacing-md); }
+  .empty-state h3 { font-size: var(--font-size-md); margin-bottom: 4px; }
+  .empty-state p { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--spacing-md); }
+
+  /* ═══ 13. TOGGLE ═══ */
+  .toggle {
+    width: 40px; height: 22px; border-radius: 11px; background: var(--color-border-strong);
+    position: relative; cursor: pointer; border: none; transition: background var(--transition-fast);
+  }
+  .toggle::after {
+    content: ''; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; position: absolute; top: 2px; left: 2px;
+    transition: left var(--transition-fast); box-shadow: var(--shadow-sm);
+  }
+  .toggle.on { background: var(--color-primary); }
+  .toggle.on::after { left: 20px; }
+
+  /* ═══ 14. CHECKBOX ═══ */
+  .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .checkbox-box {
+    width: 18px; height: 18px; border: 1px solid var(--color-border-strong);
+    border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all var(--transition-fast);
+  }
+  .checkbox-box.checked { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-size: 12px; }
+
+  /* ═══ 15. DROPDOWN ═══ */
+  .dropdown-demo {
+    width: 220px; background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 4px;
+  }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-radius: var(--radius-sm); font-size: var(--font-size-sm); cursor: pointer;
+  }
+  .dropdown-item:hover { background: var(--color-primary-light); }
+  .dropdown-item.selected { color: var(--color-primary); font-weight: 500; }
+  .dropdown-item.danger { color: var(--color-error); }
+  .dropdown-divider { height: 1px; background: var(--color-border); margin: 4px 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="showcase">
+  <!-- Navigation -->
+  <nav class="showcase-nav" aria-label="Component navigation">
+    <h2>FlowPM DS</h2>
+    <a href="#buttons">Button</a>
+    <a href="#inputs">Input</a>
+    <a href="#issue-card">Issue Card</a>
+    <a href="#kanban">Kanban Column</a>
+    <a href="#status">Status Badge</a>
+    <a href="#priority">Priority Icon</a>
+    <a href="#avatar">Avatar & Stack</a>
+    <a href="#timeline">Timeline Bar</a>
+    <a href="#modal">Modal</a>
+    <a href="#toast">Toast</a>
+    <a href="#badges">Badge</a>
+    <a href="#empty">Empty State</a>
+    <a href="#toggle">Toggle & Checkbox</a>
+    <a href="#dropdown">Dropdown</a>
+    <a href="#typography">Typography</a>
+  </nav>
+
+  <!-- Main content -->
+  <main class="showcase-main">
+    <h1 style="font-size:var(--font-size-2xl);margin-bottom:4px;">FlowPM Design System</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:48px;">Component showcase with all variants, states, and accessibility annotations.</p>
+
+    <!-- 1. Button -->
+    <section class="section" id="buttons">
+      <h2>Button</h2>
+      <p class="desc">Verb-first labels. Max 1 Primary per action group. Loading replaces label with spinner.</p>
+      <div class="component-group">
+        <div class="component-label">Variants</div>
+        <div class="component-row">
+          <button class="btn btn-primary">Create Issue</button>
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-ghost">Skip</button>
+          <button class="btn btn-danger">Delete Project</button>
+        </div>
+      </div>
+      <div class="component-group">
+        <div class="component-label">Sizes</div>
+        <div class="component-row">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary">Medium (default)</button>
+          <button class="btn btn-primary btn-lg">Large</button>
+        </div>
+      </div>
+      <div class="component-group">
+        <div class="component-label">States</div>
+        <div class="component-row">
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary" disabled>Disabled</button>
+          <button class="btn btn-primary btn-loading">Loading</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Input -->
+    <section class="section" id="inputs">
+      <h2>Input</h2>
+      <p class="desc">Label above. Validate on blur. Placeholder is hint, never label.</p>
+      <div class="component-row">
+        <div class="input-field">
+          <label class="input-label">Project Name</label>
+          <input class="input" type="text" placeholder="e.g., Mobile App" />
+        </div>
+        <div class="input-field">
+          <label class="input-label">Email (error)</label>
+          <input class="input input-error" type="email" value="invalid-email" aria-invalid="true" aria-describedby="email-err" />
+          <span class="input-error-msg" id="email-err">Please enter a valid email address.</span>
+        </div>
+        <div class="input-field">
+          <label class="input-label">Workspace URL (disabled)</label>
+          <input class="input" type="text" value="acme-studio" disabled />
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Issue Card -->
+    <section class="section" id="issue-card">
+      <h2>Issue Card</h2>
+      <p class="desc">PM-specific. Compact for board, expanded for list. No shadow AND border together.</p>
+      <div class="component-row">
+        <div>
+          <div class="component-label">Default</div>
+          <div class="issue-card">
+            <div class="issue-card-id">FPM-42</div>
+            <div class="issue-card-title">Add OAuth2 login with GitHub</div>
+            <div class="issue-card-meta">
+              <div class="priority-icon priority-urgent" aria-label="Priority: Urgent">
+                <div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div>
+              </div>
+              <span class="avatar avatar-teal">SZ</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="component-label">Selected</div>
+          <div class="issue-card selected">
+            <div class="issue-card-id">FPM-39</div>
+            <div class="issue-card-title">Design onboarding flow</div>
+            <div class="issue-card-meta">
+              <div class="priority-icon priority-high" aria-label="Priority: High">
+                <div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div>
+              </div>
+              <span class="avatar avatar-blue">AL</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="component-label">Dragging</div>
+          <div class="issue-card dragging">
+            <div class="issue-card-id">FPM-37</div>
+            <div class="issue-card-title">Markdown editor for descriptions</div>
+            <div class="issue-card-meta">
+              <div class="priority-icon priority-medium" aria-label="Priority: Medium">
+                <div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div>
+              </div>
+              <span class="avatar avatar-amber">JK</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Kanban Column -->
+    <section class="section" id="kanban">
+      <h2>Kanban Column</h2>
+      <p class="desc">Min 280px, max 360px. Sticky header. Empty state with CTA.</p>
+      <div class="component-row">
+        <div class="kanban-col" role="region" aria-label="In Progress column, 2 issues">
+          <div class="kanban-col-header">
+            <h4><span class="status-dot" style="background:var(--color-primary);"></span> In Progress <span class="kanban-count">2</span></h4>
+            <button class="btn btn-ghost btn-sm" aria-label="Add issue to In Progress">+</button>
+          </div>
+          <div class="issue-card">
+            <div class="issue-card-id">FPM-40</div>
+            <div class="issue-card-title">Build notification system</div>
+            <div class="issue-card-meta">
+              <span class="status-badge status-progress"><span class="status-dot"></span></span>
+              <span class="avatar avatar-teal">SZ</span>
+            </div>
+          </div>
+          <div class="issue-card">
+            <div class="issue-card-id">FPM-38</div>
+            <div class="issue-card-title">Implement drag-and-drop</div>
+            <div class="issue-card-meta">
+              <span class="status-badge status-progress"><span class="status-dot"></span></span>
+              <span class="avatar avatar-blue">AL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Status Badge -->
+    <section class="section" id="status">
+      <h2>Status Badge</h2>
+      <p class="desc">Always pair dot with text label for color-blind users. Never rely on color alone.</p>
+      <div class="component-row">
+        <span class="status-badge status-todo"><span class="status-dot"></span> Todo</span>
+        <span class="status-badge status-progress"><span class="status-dot"></span> In Progress</span>
+        <span class="status-badge status-review"><span class="status-dot"></span> In Review</span>
+        <span class="status-badge status-done"><span class="status-dot"></span> Done</span>
+      </div>
+    </section>
+
+    <!-- 6. Priority Icon -->
+    <section class="section" id="priority">
+      <h2>Priority Icon</h2>
+      <p class="desc">Bar-based (not color-only). Urgent uses error color; others grayscale.</p>
+      <div class="component-row" style="gap:24px;">
+        <div style="text-align:center;">
+          <div class="priority-icon priority-urgent" aria-label="Urgent"><div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div></div>
+          <div style="font-size:11px;color:var(--color-text-muted);margin-top:4px;">Urgent</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="priority-icon priority-high" aria-label="High"><div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div></div>
+          <div style="font-size:11px;color:var(--color-text-muted);margin-top:4px;">High</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="priority-icon priority-medium" aria-label="Medium"><div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div></div>
+          <div style="font-size:11px;color:var(--color-text-muted);margin-top:4px;">Medium</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="priority-icon priority-low" aria-label="Low"><div class="priority-bar"></div><div class="priority-bar"></div><div class="priority-bar"></div></div>
+          <div style="font-size:11px;color:var(--color-text-muted);margin-top:4px;">Low</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Avatar -->
+    <section class="section" id="avatar">
+      <h2>Avatar & Stack</h2>
+      <p class="desc">Max 3 visible in stack + overflow count. Consistent color per user.</p>
+      <div class="component-row">
+        <div>
+          <div class="component-label">Individual</div>
+          <div style="display:flex;gap:8px;">
+            <span class="avatar avatar-teal">SZ</span>
+            <span class="avatar avatar-blue">AL</span>
+            <span class="avatar avatar-amber">JK</span>
+          </div>
+        </div>
+        <div>
+          <div class="component-label">Stack (max 3 + overflow)</div>
+          <div class="avatar-stack">
+            <span class="avatar avatar-teal">SZ</span>
+            <span class="avatar avatar-blue">AL</span>
+            <span class="avatar avatar-amber">JK</span>
+            <span class="avatar-overflow">+2</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Timeline Bar -->
+    <section class="section" id="timeline">
+      <h2>Timeline Bar</h2>
+      <p class="desc">Min 20px width. Overdue = error color. Today line as dashed vertical.</p>
+      <div style="width:100%;max-width:600px;">
+        <div style="display:flex;padding:4px 0 4px 152px;font-size:10px;color:var(--color-text-muted);gap:0;">
+          <span style="flex:1;">Mar 25</span><span style="flex:1;">Apr 1</span><span style="flex:1;">Apr 8</span><span style="flex:1;">Apr 15</span>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-label">OAuth2 Login</div>
+          <div class="timeline-track"><div class="timeline-bar normal" style="left:5%;width:35%;">FPM-42</div></div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-label">Notification System</div>
+          <div class="timeline-track"><div class="timeline-bar overdue" style="left:0%;width:25%;">FPM-40 (overdue)</div></div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-label">CI/CD Pipeline</div>
+          <div class="timeline-track"><div class="timeline-bar done" style="left:0%;width:15%;">FPM-32</div></div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-label">Drag & Drop</div>
+          <div class="timeline-track"><div class="timeline-bar normal" style="left:20%;width:40%;">FPM-38</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Modal -->
+    <section class="section" id="modal">
+      <h2>Modal</h2>
+      <p class="desc">Focus trap. X + Cancel + Escape to close. Destructive actions use Danger button.</p>
+      <div class="component-row">
+        <div class="modal-demo" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <div class="modal-header">
+            <h3 id="modal-title">Delete Project?</h3>
+            <button class="modal-close" aria-label="Close">&times;</button>
+          </div>
+          <div class="modal-body">
+            This will permanently delete <strong>Mobile App</strong> and all its issues. This action cannot be undone.
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-danger">Delete Project</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Toast -->
+    <section class="section" id="toast">
+      <h2>Toast</h2>
+      <p class="desc">Auto-dismiss 5s. Error persists. Destructive actions have Undo (8s window).</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="toast toast-success" role="status"><span>&#10003;</span> Issue FPM-42 created successfully.</div>
+        <div class="toast toast-error" role="alert"><span>&#10007;</span> Failed to save. Network error. <span class="toast-action">Retry</span></div>
+        <div class="toast toast-warning" role="status"><span>&#9888;</span> 3 issues deleted. <span class="toast-action">Undo</span></div>
+      </div>
+    </section>
+
+    <!-- 11. Badge -->
+    <section class="section" id="badges">
+      <h2>Badge</h2>
+      <p class="desc">1-2 words max. Pill shape. Limited color palette.</p>
+      <div class="component-row">
+        <span class="badge badge-default">feature</span>
+        <span class="badge badge-primary">auth</span>
+        <span class="badge badge-error">bug</span>
+        <span class="badge badge-success">shipped</span>
+      </div>
+    </section>
+
+    <!-- 12. Empty State -->
+    <section class="section" id="empty">
+      <h2>Empty State</h2>
+      <p class="desc">Positive framing. Single CTA. Illustration is decorative (aria-hidden).</p>
+      <div style="border:1px dashed var(--color-border);border-radius:var(--radius-lg);display:flex;justify-content:center;">
+        <div class="empty-state">
+          <div class="empty-state-icon" aria-hidden="true">&#9744;</div>
+          <h3>No issues yet</h3>
+          <p>Create your first issue to start tracking work in this project.</p>
+          <button class="btn btn-primary">Create Issue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Toggle + Checkbox -->
+    <section class="section" id="toggle">
+      <h2>Toggle & Checkbox</h2>
+      <p class="desc">Toggle for on/off settings. Checkbox for multi-select.</p>
+      <div class="component-row" style="gap:32px;">
+        <div>
+          <div class="component-label">Toggle</div>
+          <div style="display:flex;gap:16px;align-items:center;">
+            <button class="toggle" aria-label="Disabled" onclick="this.classList.toggle('on')"></button>
+            <button class="toggle on" aria-label="Enabled" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div>
+          <div class="component-label">Checkbox</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label class="checkbox-item"><span class="checkbox-box checked">&#10003;</span> Auto-assign creator</label>
+            <label class="checkbox-item"><span class="checkbox-box"></span> Send email notifications</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. Dropdown -->
+    <section class="section" id="dropdown">
+      <h2>Dropdown</h2>
+      <p class="desc">Max 7 items visible. Destructive in red at bottom. Searchable when >7 options.</p>
+      <div class="dropdown-demo">
+        <div class="dropdown-item selected">&#10003; In Progress</div>
+        <div class="dropdown-item">Todo</div>
+        <div class="dropdown-item">In Review</div>
+        <div class="dropdown-item">Done</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger">Cancel Issue</div>
+      </div>
+    </section>
+
+    <!-- 15. Typography -->
+    <section class="section" id="typography">
+      <h2>Typography Scale</h2>
+      <p class="desc">Inter font family. 14px base for dense PM UI.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><span style="font-size:var(--font-size-2xl);font-weight:700;">Heading 1</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">32px / 700</span></div>
+        <div><span style="font-size:var(--font-size-xl);font-weight:600;">Heading 2</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">24px / 600</span></div>
+        <div><span style="font-size:var(--font-size-lg);font-weight:600;">Heading 3</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">20px / 600</span></div>
+        <div><span style="font-size:var(--font-size-md);font-weight:500;">Subheading</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">16px / 500</span></div>
+        <div><span style="font-size:var(--font-size-base);">Body text — The quick brown fox jumps over the lazy dog.</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">14px / 400</span></div>
+        <div><span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">Secondary text — metadata, labels, captions</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">14px / 400 (secondary color)</span></div>
+        <div><span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">Muted text — timestamps, hints</span> <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">12px / 400</span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>

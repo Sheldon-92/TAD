@@ -1,0 +1,69 @@
+direction: right
+
+title: {
+  label: "Todo App — API Resource Map"
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+# Resources
+auth: "Auth\n/v1/auth/*" {
+  style.fill: "#E8F5E9"
+  style.stroke: "#2E7D32"
+  style.font-size: 14
+  register: "POST /register"
+  login: "POST /login"
+  refresh: "POST /refresh"
+  logout: "POST /logout"
+}
+
+users: "Users\n/v1/users/*" {
+  style.fill: "#E3F2FD"
+  style.stroke: "#1565C0"
+  style.font-size: 14
+  me_get: "GET /me"
+  me_patch: "PATCH /me"
+  list: "GET / (Owner)"
+  get_by_id: "GET /{userId} (Owner)"
+  delete: "DELETE /{userId} (Owner)"
+}
+
+todos: "Todos\n/v1/todos/*" {
+  style.fill: "#FFF3E0"
+  style.stroke: "#E65100"
+  style.font-size: 14
+  list: "GET / (filter+paginate)"
+  create: "POST /"
+  get: "GET /{todoId}"
+  update: "PATCH /{todoId}"
+  delete: "DELETE /{todoId}"
+}
+
+categories: "Categories\n/v1/categories/*" {
+  style.fill: "#F3E5F5"
+  style.stroke: "#7B1FA2"
+  style.font-size: 14
+  list: "GET /"
+  create: "POST /"
+  get: "GET /{categoryId}"
+  update: "PATCH /{categoryId}"
+  delete: "DELETE /{categoryId}"
+}
+
+# Relationships
+auth -> users: "JWT Bearer" {
+  style.stroke: "#666"
+  style.stroke-dash: 3
+}
+users -> todos: "owns (1:N)" {
+  style.stroke: "#1565C0"
+}
+users -> categories: "owns (1:N)" {
+  style.stroke: "#1565C0"
+}
+categories -> todos: "groups (1:N, optional)" {
+  style.stroke: "#7B1FA2"
+  style.stroke-dash: 3
+}

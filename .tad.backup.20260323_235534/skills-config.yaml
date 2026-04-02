@@ -1,0 +1,613 @@
+# ==================== Skills 知识库系统 (v1.4 新增) ====================
+skills_system:
+  enabled: true
+  version: "1.4"
+  description: "Claude Code Skills 知识库，提供专业领域知识增强"
+
+  # 三层体系说明
+  hierarchy:
+    tad_agents:
+      description: "主角色/人格（Alex 和 Blake）"
+      analogy: "团队中的固定成员"
+      location: ".claude/commands/"  # tad-alex.md, tad-blake.md
+
+    subagents:
+      description: "Claude Code 内置的16个专业代理"
+      analogy: "临时请来的专家顾问"
+      invocation: "通过 Task 工具调用"
+
+    skills:
+      description: "知识库/参考资料"
+      analogy: "专家带来的教科书和参考手册"
+      location: ".claude/skills/"
+      auto_discovery: true
+
+  # Skills 目录结构
+  directory_structure:
+    path: ".claude/skills/"
+    auto_create: true
+    categories:
+      - "ui-design/"      # UI/UX 设计知识
+      - "architecture/"   # 架构模式知识
+      - "best-practices/" # 最佳实践
+      - "domain/"         # 领域知识
+
+  # 完整 Skills 清单 (5批共43个) - 所有 Skills 通用
+  skills_inventory:
+    total_count: 43
+    last_updated: "2026-01-06"
+    access_policy: "universal"  # 所有 Skills 都是通用的
+
+    # 按批次列出
+    builtin: [ui-design.md, skill-creator.md]
+    batch_1_obra: [test-driven-development.md, systematic-debugging.md, code-review.md, brainstorming.md, verification.md]
+    batch_2_comprehensive: [parallel-agents.md, git-worktrees.md, software-architecture.md, api-design.md, security-checklist.md, performance-optimization.md, receiving-feedback.md, writing-skills.md, database-patterns.md, error-handling.md, git-workflow.md, refactoring.md, testing-strategy.md]
+    batch_3_anthropics: [pdf-processing.md, pptx-creation.md, xlsx-analysis.md, canvas-design.md, algorithmic-art.md, theme-factory.md, content-research-writer.md, scientific-writing.md]
+    batch_4_broad: [data-science.md, product-management.md, legal-documents.md, marketing-copywriting.md, i18n-translation.md, media-processing.md, meeting-notes.md, email-communication.md, knowledge-graph.md, interview-prep.md]
+    batch_5_user: [prompt-engineering.md, ux-research.md, competitive-analysis.md, ai-integration.md]
+    batch_6_workflow: [doc-organization.md]  # 文档组织和维护
+
+    # 按分类索引 (便于查找)
+    by_category:
+      development: [test-driven-development, systematic-debugging, error-handling, git-workflow, refactoring, i18n-translation, parallel-agents, git-worktrees]
+      architecture: [software-architecture, api-design, database-patterns]
+      design: [ui-design, brainstorming, canvas-design, theme-factory, ux-research]
+      quality: [code-review, verification, testing-strategy, security-checklist]
+      data: [xlsx-analysis, data-science, knowledge-graph]
+      content: [scientific-writing, content-research-writer, marketing-copywriting, email-communication, interview-prep]
+      document: [pdf-processing, pptx-creation, legal-documents]
+      product: [product-management, competitive-analysis]
+      ai: [prompt-engineering, ai-integration]
+      process: [receiving-feedback, meeting-notes, doc-organization]  # 新增 doc-organization
+      meta: [skill-creator, writing-skills]
+      media: [media-processing]
+      creative: [algorithmic-art]
+      optimization: [performance-optimization]
+
+  # Skills 与 TAD 系统映射
+  tad_integration:
+    mq_triggers:
+      MQ4_visual: ["ui-design.md", "canvas-design.md", "theme-factory.md"]
+      MQ6_technical: ["software-architecture.md", "api-design.md", "database-patterns.md", "prompt-engineering.md", "ai-integration.md"]
+
+    gate_mapping:
+      Gate1_search: "触发 MQ6 相关 Skills"
+      Gate2_existence: "参考 code-review.md"
+      Gate3_testing: ["test-driven-development.md", "testing-strategy.md"]
+      Gate5_security: ["security-checklist.md"]
+      Review_Phase: ["code-review.md", "verification.md"]
+
+    evidence_types:
+      search_result: "MQ1/MQ6 触发时产出"
+      code_location: "MQ2 定位时产出"
+      test_result: "Gate3 测试时产出"
+      data_flow: "MQ3 分析时产出"
+      ui_screenshot: "MQ4 视觉验证时产出"
+
+  # Skills 访问策略
+  access_policy:
+    type: "universal"
+    description: "所有 42 个 Skills 都是通用知识库，任何 Agent 都可按需使用"
+    principle: "Skills 是参考资料，不是权限控制"
+
+  # Skills 使用规则
+  usage_rules:
+    auto_load: true
+    description: "Claude Code 自动发现并加载 .claude/skills/ 下的所有 .md 文件"
+    priority: "Skills 提供知识参考，但最终决策仍需 Human 确认"
+
+    recommended_by_context:
+      技术选型: [software-architecture.md, api-design.md, database-patterns.md]
+      UI设计: [ui-design.md, theme-factory.md, canvas-design.md]
+      测试: [test-driven-development.md, testing-strategy.md]
+      安全: [security-checklist.md]
+      调试: [systematic-debugging.md, error-handling.md]
+      性能: [performance-optimization.md]
+      AI集成: [prompt-engineering.md, ai-integration.md]
+      产品: [product-management.md, competitive-analysis.md, ux-research.md]
+      文档: [pdf-processing.md, pptx-creation.md, xlsx-analysis.md]
+      内容: [content-research-writer.md, scientific-writing.md, marketing-copywriting.md]
+
+  # ==================== 强制调用 Skills (v1.4.1 新增) ====================
+  # 基于研究：安全和测试相关 Skills 应强制调用，其余保持推荐
+  # 参考：Anthropic 三层设计 - Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
+  mandatory_skills:
+    enabled: true
+    version: "1.4.1"
+    description: "关键质量门禁必须参考的 Skills，不可跳过"
+
+    # 强制调用的 Skills 列表 (3个)
+    skills:
+      - name: "security-checklist.md"
+        trigger: "Gate5 安全检查 或 *deploy 命令"
+        enforcement: "必须读取并执行检查项"
+        reason: "安全是不可妥协的底线"
+
+      - name: "test-driven-development.md"
+        trigger: "Gate3 测试门禁 或 *test 命令"
+        enforcement: "必须有测试证据才能通过"
+        reason: "测试是质量保证的基础"
+
+      - name: "verification.md"
+        trigger: "handoff 创建前 或 任务完成前"
+        enforcement: "必须验证完整性"
+        reason: "确保交付物完整可用"
+
+    # 强制调用机制
+    enforcement_mechanism:
+      type: "gate_blocking"
+      description: "在指定 Gate 或命令触发时，Agent 必须先读取对应 Skill"
+
+      workflow:
+        - step: 1
+          action: "检测触发条件 (Gate/命令)"
+        - step: 2
+          action: "自动读取强制 Skill 文件"
+        - step: 3
+          action: "执行 Skill 中的检查项"
+        - step: 4
+          action: "记录检查证据"
+        - step: 5
+          action: "检查通过后才能继续"
+
+      violation_response: |
+        ⚠️ MANDATORY SKILL VIOLATION ⚠️
+        触发条件: {trigger}
+        必须参考: {skill_name}
+
+        正在自动加载 Skill 并执行检查...
+
+    # 与现有系统的集成
+    integration:
+      gate_mapping:
+        Gate3: "test-driven-development.md"
+        Gate5: "security-checklist.md"
+        handoff: "verification.md"
+
+      agent_mapping:
+        Alex:
+          - skill: "verification.md"
+            when: "*handoff 命令执行前"
+          - skill: "security-checklist.md"
+            when: "*review 命令执行时"
+        Blake:
+          - skill: "test-driven-development.md"
+            when: "*develop 或 *test 命令执行时"
+          - skill: "security-checklist.md"
+            when: "*deploy 命令执行前"
+
+  # ==================== 推荐调用 Skills (保持现状) ====================
+  # 其余 39 个 Skills 保持推荐模式，Agent 根据任务自动匹配
+  recommended_skills:
+    count: 39
+    description: "知识增强型 Skills，按需自动匹配，不强制要求"
+    policy: "Agent 根据任务类型和上下文自动选择参考"
+
+    # 推荐但不强制的场景
+    contexts:
+      架构设计: [software-architecture.md, api-design.md, database-patterns.md]
+      UI设计: [ui-design.md, theme-factory.md, canvas-design.md]
+      调试优化: [systematic-debugging.md, performance-optimization.md]
+      产品分析: [product-management.md, competitive-analysis.md, ux-research.md]
+      # ... 其余 Skills 按现有分类
+
+  # ==================== Skill 自动匹配机制 (v1.4 新增) ====================
+  # 解决问题：Agent 执行任务时无法自动识别并读取相关 Skill
+  # 设计原则：意图匹配 + 文件模式 + 命令触发 三重机制
+  skill_auto_match:
+    enabled: true
+    version: "1.4"
+    description: "基于用户意图自动匹配并加载相关 Skill"
+
+    # 匹配触发时机
+    trigger_timing:
+      - "用户输入任务描述后，执行前"
+      - "调用 Write 工具创建特定类型文件前"
+      - "执行特定命令前"
+
+    # 匹配优先级
+    priority:
+      - mandatory_skills    # 最高：强制 Skills 不可跳过
+      - intent_match        # 次高：意图匹配的 Skills
+      - file_pattern_match  # 中等：文件模式匹配的 Skills
+      - command_trigger     # 一般：命令触发的 Skills
+
+    # 意图 → Skill 映射表
+    intent_mapping:
+      # 元技能 - 创建/维护 Skills
+      - intents: ["创建skill", "新skill", "添加skill", "create skill", "new skill", "write skill"]
+        skill: "skill-creator.md"
+        action: "recommend"
+        reason: "skill-creator.md 包含创建高质量 Skill 的完整指南"
+
+      - intents: ["整理文档", "文档混乱", "文档组织", "清理文档", "organize docs", "clean up docs"]
+        skill: "doc-organization.md"
+        action: "recommend"
+        reason: "doc-organization.md 提供文档整理的系统方法"
+
+      # 开发相关
+      - intents: ["设计API", "API设计", "创建API", "REST API", "GraphQL"]
+        skill: "api-design.md"
+        action: "recommend"
+
+      - intents: ["数据库设计", "表结构", "schema设计", "数据模型"]
+        skill: "database-patterns.md"
+        action: "recommend"
+
+      - intents: ["架构设计", "系统架构", "技术选型", "architecture"]
+        skill: "software-architecture.md"
+        action: "recommend"
+
+      - intents: ["写测试", "单元测试", "测试用例", "TDD", "test"]
+        skill: "test-driven-development.md"
+        action: "recommend"
+
+      - intents: ["调试", "debug", "排查问题", "找bug"]
+        skill: "systematic-debugging.md"
+        action: "recommend"
+
+      - intents: ["重构", "refactor", "代码优化", "改进代码"]
+        skill: "refactoring.md"
+        action: "recommend"
+
+      - intents: ["性能优化", "performance", "加速", "优化速度"]
+        skill: "performance-optimization.md"
+        action: "recommend"
+
+      # 设计相关
+      - intents: ["UI设计", "界面设计", "用户界面", "组件设计"]
+        skill: "ui-design.md"
+        action: "recommend"
+
+      - intents: ["配色", "主题", "颜色方案", "theme", "color scheme"]
+        skill: "theme-factory.md"
+        action: "recommend"
+
+      - intents: ["用户研究", "UX", "用户体验", "可用性"]
+        skill: "ux-research.md"
+        action: "recommend"
+
+      # AI/Prompt 相关
+      - intents: ["prompt设计", "提示词", "prompt engineering", "写prompt"]
+        skill: "prompt-engineering.md"
+        action: "recommend"
+
+      - intents: ["AI集成", "LLM", "接入AI", "调用AI"]
+        skill: "ai-integration.md"
+        action: "recommend"
+
+      # 产品/业务相关
+      - intents: ["产品需求", "PRD", "用户故事", "需求分析"]
+        skill: "product-management.md"
+        action: "recommend"
+
+      - intents: ["竞品分析", "竞争对手", "市场分析"]
+        skill: "competitive-analysis.md"
+        action: "recommend"
+
+      # 文档/内容相关
+      - intents: ["写文档", "技术文档", "API文档"]
+        skill: "content-research-writer.md"
+        action: "recommend"
+
+      - intents: ["学术写作", "论文", "科学写作"]
+        skill: "scientific-writing.md"
+        action: "recommend"
+
+      # 开发工具相关
+      - intents: ["git", "分支", "提交", "合并", "branch", "commit", "merge"]
+        skill: "git-workflow.md"
+        action: "recommend"
+
+      - intents: ["worktree", "多分支", "并行开发", "git worktree"]
+        skill: "git-worktrees.md"
+        action: "recommend"
+
+      - intents: ["错误处理", "异常处理", "try catch", "error handling"]
+        skill: "error-handling.md"
+        action: "recommend"
+
+      - intents: ["测试策略", "测试金字塔", "E2E测试", "集成测试"]
+        skill: "testing-strategy.md"
+        action: "recommend"
+
+      - intents: ["并行agent", "多agent", "parallel", "并发任务"]
+        skill: "parallel-agents.md"
+        action: "recommend"
+
+      # 数据/办公相关
+      - intents: ["数据分析", "数据科学", "Jupyter", "机器学习", "ML", "pandas"]
+        skill: "data-science.md"
+        action: "recommend"
+
+      - intents: ["Excel", "表格", "数据表", "xlsx", "电子表格"]
+        skill: "xlsx-analysis.md"
+        action: "recommend"
+
+      - intents: ["PDF", "处理PDF", "PDF转换", "合并PDF"]
+        skill: "pdf-processing.md"
+        action: "recommend"
+
+      - intents: ["PPT", "演示文稿", "PowerPoint", "幻灯片", "presentation"]
+        skill: "pptx-creation.md"
+        action: "recommend"
+
+      - intents: ["视频处理", "音频处理", "ffmpeg", "媒体转换", "视频剪辑"]
+        skill: "media-processing.md"
+        action: "recommend"
+
+      # 创意/设计相关
+      - intents: ["生成艺术", "算法艺术", "p5.js", "创意编程", "generative art"]
+        skill: "algorithmic-art.md"
+        action: "recommend"
+
+      - intents: ["Canvas", "画布", "绑图", "可视化绘图"]
+        skill: "canvas-design.md"
+        action: "recommend"
+
+      - intents: ["头脑风暴", "brainstorm", "创意讨论", "想法"]
+        skill: "brainstorming.md"
+        action: "recommend"
+
+      # 沟通/文档相关
+      - intents: ["写邮件", "商务邮件", "email", "邮件模板"]
+        skill: "email-communication.md"
+        action: "recommend"
+
+      - intents: ["会议记录", "会议纪要", "meeting notes", "会议总结"]
+        skill: "meeting-notes.md"
+        action: "recommend"
+
+      - intents: ["营销文案", "广告文案", "copywriting", "推广文案"]
+        skill: "marketing-copywriting.md"
+        action: "recommend"
+
+      - intents: ["写作技巧", "技术写作", "文档写作"]
+        skill: "writing-skills.md"
+        action: "recommend"
+
+      - intents: ["反馈", "接收反馈", "feedback", "代码反馈"]
+        skill: "receiving-feedback.md"
+        action: "recommend"
+
+      # 国际化/本地化
+      - intents: ["国际化", "翻译", "i18n", "多语言", "本地化", "l10n"]
+        skill: "i18n-translation.md"
+        action: "recommend"
+
+      # 专业领域
+      - intents: ["法律文档", "合同", "协议", "GDPR", "隐私政策"]
+        skill: "legal-documents.md"
+        action: "recommend"
+
+      - intents: ["面试", "简历", "interview", "求职", "面试准备"]
+        skill: "interview-prep.md"
+        action: "recommend"
+
+      - intents: ["知识图谱", "Neo4j", "图数据库", "knowledge graph"]
+        skill: "knowledge-graph.md"
+        action: "recommend"
+
+    # 文件模式 → Skill 映射
+    file_pattern_mapping:
+      - pattern: ".claude/skills/*.md"
+        skill: "skill-creator.md"
+        action: "recommend"
+        description: "创建 Skill 文件时参考"
+
+      - pattern: "*.test.ts|*.spec.ts|*_test.go|*_test.py"
+        skill: "test-driven-development.md"
+        action: "recommend"
+        description: "创建测试文件时参考"
+
+      - pattern: "**/api/**|**/routes/**|**/endpoints/**"
+        skill: "api-design.md"
+        action: "recommend"
+        description: "创建 API 相关文件时参考"
+
+      - pattern: "**/migrations/**|**/schema/**|**/models/**"
+        skill: "database-patterns.md"
+        action: "recommend"
+        description: "创建数据库相关文件时参考"
+
+      # 国际化文件
+      - pattern: "**/locales/**|**/i18n/**|**/*.po|**/*.pot"
+        skill: "i18n-translation.md"
+        action: "recommend"
+        description: "处理国际化文件时参考"
+
+      # 数据文件
+      - pattern: "*.xlsx|*.xls|*.csv"
+        skill: "xlsx-analysis.md"
+        action: "recommend"
+        description: "处理表格数据时参考"
+
+      - pattern: "*.pdf"
+        skill: "pdf-processing.md"
+        action: "recommend"
+        description: "处理 PDF 文件时参考"
+
+      - pattern: "*.pptx|*.ppt"
+        skill: "pptx-creation.md"
+        action: "recommend"
+        description: "创建演示文稿时参考"
+
+      # Jupyter notebooks
+      - pattern: "*.ipynb"
+        skill: "data-science.md"
+        action: "recommend"
+        description: "编写 Jupyter notebook 时参考"
+
+      # 媒体文件
+      - pattern: "*.mp4|*.mp3|*.wav|*.avi|*.mov"
+        skill: "media-processing.md"
+        action: "recommend"
+        description: "处理媒体文件时参考"
+
+      # Git 相关
+      - pattern: ".gitignore|.gitattributes|**/.git/**"
+        skill: "git-workflow.md"
+        action: "recommend"
+        description: "配置 Git 时参考"
+
+      # 组件/UI 文件
+      - pattern: "**/components/**/*.tsx|**/components/**/*.vue"
+        skill: "ui-design.md"
+        action: "recommend"
+        description: "创建 UI 组件时参考"
+
+      # 文档文件
+      - pattern: "docs/**/*.md|README.md|CHANGELOG.md"
+        skill: "doc-organization.md"
+        action: "recommend"
+        description: "整理文档时参考"
+
+    # 命令 → Skill 映射
+    command_mapping:
+      - commands: ["*create-skill", "*new-skill"]
+        skill: "skill-creator.md"
+        action: "mandatory"
+
+      - commands: ["*test", "*develop"]
+        skill: "test-driven-development.md"
+        action: "recommend"
+
+      - commands: ["*review", "*code-review"]
+        skill: "code-review.md"
+        action: "recommend"
+
+      - commands: ["*deploy", "*release"]
+        skill: "security-checklist.md"
+        action: "mandatory"
+
+      - commands: ["*debug", "*fix"]
+        skill: "systematic-debugging.md"
+        action: "recommend"
+
+      - commands: ["*refactor"]
+        skill: "refactoring.md"
+        action: "recommend"
+
+      - commands: ["*perf", "*optimize", "*performance"]
+        skill: "performance-optimization.md"
+        action: "recommend"
+
+      - commands: ["*handoff", "*alex"]
+        skill: "doc-organization.md"
+        action: "recommend"
+
+      - commands: ["*brainstorm", "*ideate"]
+        skill: "brainstorming.md"
+        action: "recommend"
+
+      - commands: ["*translate", "*i18n"]
+        skill: "i18n-translation.md"
+        action: "recommend"
+
+    # Agent 行为规范
+    agent_behavior:
+      on_match:
+        recommend:
+          action: "提示用户并建议读取，但不阻塞执行"
+          message_template: |
+            💡 检测到任务与 {skill_name} 相关
+            建议先参考此 Skill 以获得最佳实践指导
+            是否需要我先读取？[Y/n]
+
+        mandatory:
+          action: "自动读取 Skill，不询问用户"
+          message_template: |
+            📚 正在加载必要参考: {skill_name}
+            原因: {reason}
+
+      on_no_match:
+        action: "正常执行任务，不干预"
+
+      on_multiple_match:
+        action: "按优先级排序，提示用户选择或全部读取"
+        max_suggestions: 3
+
+# ==================== Learn 记忆系统 (v1.4 新增) ====================
+learn_system:
+  enabled: true
+  version: "1.4"
+  description: "框架级建议记录系统，用于 TAD 持续改进"
+
+  # 核心原则
+  principles:
+    - "只记录框架级建议，不记录项目级内容"
+    - "项目级内容由 Alex 通过 handover/文档自行处理"
+    - "记录后需 Human 确认才推送到 TAD 仓库"
+    - "推送后的内容等 TAD 升级时再处理"
+
+  # /tad-learn 命令
+  command:
+    name: "/tad-learn"
+    invocation: "Alex 或 Blake 发现框架级改进建议时"
+
+    record_content:
+      - "开发流程改进建议"
+      - "Agent 配合问题/优化"
+      - "方法论发现"
+      - "有用的工具/项目/库"
+      - "新的检查点建议"
+
+    not_record:
+      - "项目特定的配置/决策"
+      - "项目的业务逻辑"
+      - "项目的代码实现"
+
+  # 工作流程
+  workflow:
+    step1_discover:
+      trigger: "Alex/Blake 发现有价值的框架级建议"
+      action: "执行 /tad-learn"
+
+    step2_record:
+      action: "记录建议内容"
+      format: |
+        ## Learning Entry
+        Date: {timestamp}
+        Agent: {alex|blake}
+        Category: {category}
+
+        ### 发现
+        {description}
+
+        ### 建议
+        {suggestion}
+
+        ### 来源
+        {source_url_or_context}
+      location: ".tad/learnings/pending/"
+
+    step3_confirm:
+      action: "Human 审核记录"
+      options:
+        - "✅ 确认并推送到 TAD 仓库"
+        - "📝 修改后推送"
+        - "❌ 不推送（仅保留本地）"
+
+    step4_push:
+      condition: "Human 确认推送"
+      action: "通过 GitHub API 推送到 TAD 仓库"
+      destination: "TAD仓库/.tad/learnings/pushed/"
+      method: "gh api repos/Sheldon-92/TAD/contents/.tad/learnings/pushed/{filename}"
+      filename: "{YYYY-MM-DD}-{short-description}.md"
+      note: "自动创建 commit，无需手动 git push"
+
+  # 后续处理说明
+  future_processing:
+    timing: "TAD 版本升级时"
+    action: "人工审阅 suggestions 目录，决定如何处理"
+    options:
+      - "更新 Alex/Blake 的描述文件"
+      - "创建新的 Skill"
+      - "更新 config.yaml 配置"
+      - "添加新的 MQ 问题"
+      - "其他改进方式"
+
+  # 存储结构
+  storage:
+    local_pending: ".tad/learnings/pending/"
+    local_pushed: ".tad/learnings/pushed/"

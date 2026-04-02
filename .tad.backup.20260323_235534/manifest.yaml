@@ -1,0 +1,149 @@
+# TAD Document Manifest
+version: 1.4
+created_at: '2025-01-28T14:00:00.000Z'
+last_updated: '2026-01-06T00:00:00.000Z'
+
+# 配置文件追踪
+configurations:
+  - path: .tad/config.yaml
+    version: "1.3.0"
+    hash: "pending_calculation"
+    modified: false
+    description: "主配置文件 - Evidence-Based Development"
+
+  - path: .tad/config-v2.yaml
+    version: "2.0"
+    hash: "archived"
+    modified: false
+    description: "旧版配置 - 已归档"
+
+# Agent 定义追踪
+agents:
+  - path: .tad/agents/agent-a-architect-v3.md
+    version: "3.0"
+    hash: "pending_calculation"
+    modified: false
+    description: "Agent A - 增加强制机制和违规检测"
+
+  - path: .tad/agents/agent-b-executor-v3.md
+    version: "3.0"
+    hash: "pending_calculation"
+    modified: false
+    description: "Agent B - 增加强制sub-agent调用"
+
+  - path: .tad/agents/agent-a-architect.md
+    version: "2.0"
+    hash: "archived"
+    modified: false
+    description: "Agent A 旧版 - 已归档"
+
+  - path: .tad/agents/agent-b-executor.md
+    version: "2.0"
+    hash: "archived"
+    modified: false
+    description: "Agent B 旧版 - 已归档"
+
+# 活跃任务追踪
+active_tasks:
+  # 任务将在这里追踪
+
+# 活跃文档追踪
+active_documents:
+  # 工作文档将在这里追踪
+
+# 归档文档
+archived_documents:
+  # 完成的文档将移到这里
+
+# 违规日志
+violation_log:
+  # 违规记录将在这里追踪
+
+# Sub-agent 使用统计
+subagent_usage:
+  total_calls: 0
+  by_agent:
+    agent_a:
+      product-expert: 0
+      backend-architect: 0
+      api-designer: 0
+      code-reviewer: 0
+    agent_b:
+      parallel-coordinator: 0
+      bug-hunter: 0
+      test-runner: 0
+      frontend-specialist: 0
+
+# 质量指标
+quality_metrics:
+  requirement_rounds_avg: 0
+  design_iterations_avg: 0
+  subagent_usage_rate: 0
+  violation_count: 0
+  rework_rate: 0
+
+# Skills 知识库追踪 (v1.4.1 混合策略)
+skills:
+  location: ".claude/skills/"
+  total_count: 42
+  last_updated: "2026-01-06"
+  version: "1.4.1"
+
+  # v1.4.1 混合策略：强制调用 (3个) + 推荐参考 (39个)
+  # 参考：Anthropic 三层设计 - Hooks(强制) / CLAUDE.md(建议) / Skills(自动匹配)
+  access_policy: "hybrid"
+
+  # ==================== 强制调用 Skills (3个) ====================
+  # 这些 Skills 在特定触发条件下必须读取和执行，不可跳过
+  mandatory_skills:
+    count: 3
+    description: "关键质量门禁必须参考的 Skills，不可跳过"
+    list:
+      - name: "security-checklist.md"
+        trigger: "Gate5 / *deploy / *review"
+        reason: "安全是不可妥协的底线"
+
+      - name: "test-driven-development.md"
+        trigger: "Gate3 / *develop / *test"
+        reason: "测试是质量保证的基础"
+
+      - name: "verification.md"
+        trigger: "handoff 前 / 任务完成前"
+        reason: "确保交付物完整可用"
+
+  # ==================== 推荐参考 Skills (39个) ====================
+  # 这些 Skills 根据任务类型自动推荐，Agent 可按需参考
+  recommended_skills:
+    count: 39
+    description: "知识增强型 Skills，按需自动匹配，不强制要求"
+
+  # 按批次记录
+  batches:
+    builtin: [ui-design.md, skill-creator.md]
+    batch_1_obra: [test-driven-development.md, systematic-debugging.md, code-review.md, brainstorming.md, verification.md]
+    batch_2_comprehensive: [parallel-agents.md, git-worktrees.md, software-architecture.md, api-design.md, security-checklist.md, performance-optimization.md, receiving-feedback.md, writing-skills.md, database-patterns.md, error-handling.md, git-workflow.md, refactoring.md, testing-strategy.md]
+    batch_3_anthropics: [pdf-processing.md, pptx-creation.md, xlsx-analysis.md, canvas-design.md, algorithmic-art.md, theme-factory.md, content-research-writer.md, scientific-writing.md]
+    batch_4_broad: [data-science.md, product-management.md, legal-documents.md, marketing-copywriting.md, i18n-translation.md, media-processing.md, meeting-notes.md, email-communication.md, knowledge-graph.md, interview-prep.md]
+    batch_5_user: [prompt-engineering.md, ux-research.md, competitive-analysis.md, ai-integration.md]
+
+  # Skills 分类统计
+  categories:
+    development: [test-driven-development, systematic-debugging, error-handling, git-workflow, refactoring, i18n-translation, parallel-agents, git-worktrees]
+    architecture: [software-architecture, api-design, database-patterns]
+    design: [ui-design, brainstorming, canvas-design, theme-factory, ux-research]
+    quality: [code-review, verification, testing-strategy, security-checklist]
+    data: [xlsx-analysis, data-science, knowledge-graph]
+    content: [scientific-writing, content-research-writer, marketing-copywriting, email-communication, interview-prep]
+    document: [pdf-processing, pptx-creation, legal-documents]
+    product: [product-management, competitive-analysis]
+    ai: [prompt-engineering, ai-integration]
+    process: [receiving-feedback, meeting-notes]
+    meta: [skill-creator, writing-skills]
+    media: [media-processing]
+    creative: [algorithmic-art]
+    optimization: [performance-optimization]
+
+  # 强制/推荐分类快速索引
+  by_enforcement:
+    mandatory: [security-checklist, test-driven-development, verification]
+    recommended: "其余 39 个 Skills"

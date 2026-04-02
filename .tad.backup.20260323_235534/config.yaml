@@ -1,0 +1,386 @@
+# TAD Configuration v2.5.0 - Modular Config Architecture
+method: TAD
+version: 2.5.0
+description: Triangle Agent Development - Spec Compliance + Anti-Rationalization + TDD + Micro-Tasks + Worktree
+last_updated: 2026-03-23
+
+# ==================== Modular Config Index ====================
+# config.yaml has been split into focused modules for maintainability.
+# Each command file specifies which modules it needs (per-command binding).
+# This master file is ALWAYS loaded first by all commands.
+#
+# IMPORTANT: If you need to find a config section, check the module index below.
+# No section has been removed - every section from the original config lives in a module.
+
+config_modules:
+  config-agents.yaml:
+    path: ".tad/config-agents.yaml"
+    description: "Agent definitions, triangle model, interaction protocols, human role"
+    contains:
+      - activation_protocol
+      - triangle (terminal_isolation, agent_a, agent_b, human)
+      - interaction_protocol
+      - human_role_v13
+    loaded_by:
+      - tad-alex.md
+      - tad-blake.md
+
+  config-quality.yaml:
+    path: ".tad/config-quality.yaml"
+    description: "Quality gates, evidence verification, mandatory questions, sub-agent enforcement"
+    contains:
+      - subagents_enforcement
+      - quality_gates (gate3_v2, gate4_v2, gate_responsibility_matrix)
+      - evidence_based_verification
+      - mandatory_questions (MQ1-MQ6)
+      - progressive_validation
+      - subagent_enforcement_v13
+      - template_triggers
+    loaded_by:
+      - tad-alex.md
+      - tad-blake.md
+      - tad-gate.md
+      - tad-handoff.md
+
+  config-workflow.yaml:
+    path: ".tad/config-workflow.yaml"
+    description: "Document management, maintenance, requirement elicitation, socratic inquiry, scenarios, epic lifecycle, playground"
+    contains:
+      - document_management (handoff_lifecycle, next_md_maintenance, epic_lifecycle)
+      - tad_maintain
+      - pair_testing
+      - playground (command, resources, workflow, style_library, state, cleanup, legacy_v1)
+      - requirement_elicitation (research_phase)
+      - socratic_inquiry_protocol
+      - scenarios (new_project, bug_fix)
+    loaded_by:
+      - tad-alex.md
+      - tad-maintain.md
+      - tad-handoff.md
+      - tad-scenario.md
+      - tad-elicit.md
+      - tad-test-brief.md
+
+  config-execution.yaml:
+    path: ".tad/config-execution.yaml"
+    description: "Ralph Loop, release management, learning mechanisms, failure learning"
+    contains:
+      - ralph_loop
+      - release_management
+      - learning_mechanisms
+      - failure_learning_loop
+    loaded_by:
+      - tad-blake.md
+
+  config-platform.yaml:
+    path: ".tad/config-platform.yaml"
+    description: "MCP tools integration"
+    contains:
+      - mcp_tools (agent_a_tools, agent_b_tools, enforcement, security)
+    loaded_by:
+      - tad-alex.md  # MCP tools
+      - tad-blake.md  # MCP tools
+
+  config-cognitive.yaml:
+    path: ".tad/config-cognitive.yaml"
+    description: "Cognitive Firewall: research protocol, decision transparency, fatal operation protection, risk translation"
+    contains:
+      - decision_transparency (triggers, presentation, depth_rules)
+      - research_first (protocol, quality, violations)
+      - fatal_operations (universal_preset, project_custom, risk_translation, handoff_awareness)
+      - integration (alex_design_flow, blake_execution_flow, gate_flow)
+    loaded_by:
+      - tad-alex.md
+      - tad-blake.md
+      - tad-gate.md
+
+# ==================== Per-Command Module Binding ====================
+# Each command loads config.yaml (this file) + its required modules.
+command_module_binding:
+  tad-alex:
+    modules: [config-agents, config-quality, config-workflow, config-platform, config-cognitive]
+    note: "Alex needs agents (role), quality (gates), workflow (handoffs/epic), platform (MCP tools), cognitive (research/decisions). Release duties are inline."
+
+  tad-blake:
+    modules: [config-agents, config-quality, config-execution, config-platform, config-cognitive]
+    note: "Blake needs agents (role), quality (gates), execution (ralph/release), platform (MCP), cognitive (decision escalation)"
+
+  tad-gate:
+    modules: [config-quality, config-cognitive]
+    note: "Gates need quality definitions + cognitive (risk translation, decision compliance)"
+
+  tad-init:
+    modules: []
+    note: "Init creates project structure, no config modules needed"
+
+  tad-maintain:
+    modules: [config-workflow]
+    note: "Maintain needs document_management and tad_maintain sections"
+
+  tad-handoff:
+    modules: [config-workflow, config-quality]
+    note: "Handoff needs workflow (doc mgmt) and quality (gate 2)"
+
+  tad-scenario:
+    modules: [config-workflow]
+    note: "Scenarios are defined in workflow module"
+
+  tad-status:
+    modules: []
+    note: "Status only needs this master config"
+
+  tad-help:
+    modules: []
+    note: "Help only needs this master config"
+
+  tad-elicit:
+    modules: [config-workflow]
+    note: "Elicitation is defined in workflow module"
+
+  tad-test-brief:
+    modules: [config-workflow]
+    note: "Test brief needs pair_testing config from workflow module"
+
+  playground:
+    modules: [config-workflow]
+    note: "Playground needs workflow (playground section, document_management)"
+
+# ==================== 任务管理系统 ====================
+task_management:
+  task_id_format: "TASK-{YYYY}{MM}{DD}-{3位序号}"
+
+  task_states:
+    - "pending": "待开始"
+    - "in_progress": "进行中"
+    - "blocked": "被阻塞"
+    - "review": "审查中"
+    - "completed": "已完成"
+    - "archived": "已归档"
+
+  task_tracking:
+    location: ".tad/active/tasks/"
+    format: "{task_id}_tracking.yaml"
+    required_fields:
+      - task_id
+      - title
+      - status
+      - owner
+      - created
+      - updated
+      - dependencies
+      - blockers
+      - deliverables
+
+  dependency_management:
+    check_before_start: true
+    block_if_unmet: true
+    alert_on_circular: true
+
+# ==================== 监控与报告 ====================
+monitoring:
+  violation_log:
+    location: ".tad/logs/violations.log"
+    format: "[{timestamp}] {agent} - {violation} - {action_taken}"
+
+  subagent_usage_log:
+    location: ".tad/logs/subagent_usage.log"
+    format: "[{timestamp}] {agent} → {subagent} for {task}"
+
+  performance_metrics:
+    track:
+      - "需求确认轮次"
+      - "设计迭代次数"
+      - "sub-agent调用率"
+      - "违规次数"
+      - "返工率"
+
+  daily_report:
+    generate: true
+    location: ".tad/reports/daily_{date}.md"
+    include:
+      - "任务完成情况"
+      - "违规统计"
+      - "sub-agent使用统计"
+      - "质量门控通过率"
+
+# ==================== 命令系统 ====================
+command_system:
+  prefix: "*"
+
+  global_commands:
+    - "*help": "显示所有可用命令"
+    - "*status": "显示当前状态"
+    - "*tasks": "显示任务列表"
+    - "*history": "显示历史记录"
+    - "*config": "显示当前配置"
+
+  agent_specific_commands:
+    agent_a:
+      - "*analyze <requirement>": "深度需求分析"
+      - "*design <feature>": "创建技术设计"
+      - "*review <code>": "代码审查"
+      - "*handoff": "生成交接文档"
+      - "*call <subagent>": "调用sub-agent"
+
+    agent_b:
+      - "*execute <handoff>": "执行交接任务"
+      - "*parallel <tasks>": "并行执行"
+      - "*test": "运行测试"
+      - "*deploy": "部署应用"
+      - "*report": "生成报告"
+
+# ==================== YOLO模式（可选） ====================
+yolo_mode:
+  enabled: false
+  activation: "#yolo"
+  warning: "⚠️ YOLO模式会跳过部分验证步骤，仅在紧急情况使用"
+  restrictions:
+    - "仍需遵守角色边界"
+    - "不能跳过关键质量门控"
+    - "必须记录原因"
+
+# ==================== 增强配置 ====================
+enhancement_date: 2025-11-25
+philosophy: "Evidence-Based Triangle Development with Continuous Learning"
+
+# ==================== 时间估算改进 ====================
+time_estimation_v13:
+  principle: "估算实现时间 × 2 = 实际预算时间"
+  reason: "考虑审查、迭代、意外问题、文档"
+
+  buffer_allocation:
+    implementation: 0.40
+    review_iteration: 0.30
+    unexpected_issues: 0.20
+    documentation: 0.10
+
+  checkpoint_timing:
+    rule: "在50%估算时间时，强制Human审查"
+    purpose: "及早发现方向偏差，避免全部返工"
+    example: |
+      估算：8小时
+      实际预算：16小时
+      强制检查点：4小时和12小时
+
+  tracking:
+    record:
+      - estimated_time: "估算时间"
+      - actual_time: "实际花费"
+      - deviation_reason: "偏差原因分类"
+    improve:
+      - "分析偏差原因"
+      - "调整未来估算系数"
+      - "识别常见延误因素"
+
+# ==================== 配置生效时间 ====================
+rollout_plan:
+  phase1_immediate:
+    description: "可以立即启用的增强"
+    items: ["mandatory_questions", "evidence_based_verification", "human_role_v13"]
+    risk: "低"
+
+  phase2_gradual:
+    description: "需要逐步推进的增强"
+    items: ["progressive_validation", "learning_mechanisms", "subagent_enforcement_v13"]
+    risk: "中"
+
+  phase3_advanced:
+    description: "需要工具支持的增强"
+    items: ["failure_learning_loop", "time_estimation_v13"]
+    risk: "低（可选）"
+
+# ==================== 版本控制 ====================
+version_history:
+  v2.4.0:
+    date: "2026-02-17"
+    changes:
+      - "Added *publish and *sync commands for GitHub release and cross-project sync"
+      - "sync-registry.yaml for manual project registration"
+      - "deprecation.yaml for version-based file cleanup"
+
+  v2.3.0:
+    date: "2026-02-17"
+    changes:
+      - "Multi-Platform Runtime Cleanup: Removed full TAD runtime for Codex/Gemini"
+      - "Codex/Gemini repositioned as specialized tools via existing Handoff mechanism"
+      - "Removed ~1000 lines of outdated multi-platform configuration"
+      - "docs/MULTI-PLATFORM.md rewritten as Specialized Tools Guide"
+
+  v2.2.1:
+    date: "2026-01-31"
+    changes:
+      - "Pair Testing Protocol (cross-tool E2E testing: TAD CLI → Claude Desktop)"
+      - "TEST_BRIEF.md generation integrated into Gate 3→4 flow"
+      - "/tad-test-brief standalone command"
+      - "Alex *test-review command (report review → fix handoffs)"
+      - "Alex STEP 3.6 auto-detects PAIR_TEST_REPORT on startup"
+      - "File lifecycle management (naming, organization, archival)"
+      - "tad-maintain PAIR TESTING check items"
+
+  v2.2.0:
+    date: "2026-01-31"
+    changes:
+      - "Modular config split (config.yaml → 6 focused modules)"
+      - "Bidirectional message protocol (Alex→Blake, Blake→Alex structured letters)"
+      - "Blake auto-detects active handoffs on startup (STEP 3.6)"
+      - "Adaptive complexity assessment (Alex suggests, human decides)"
+      - "Per-command module binding (each command loads only what it needs)"
+    breaking_changes: "Config file structure changed - agents must load modules via config_modules index"
+
+  v2.1.2:
+    date: "2026-01-31"
+    changes: ["Removed /tad-learn", "Archived learnings", "CLAUDE.md renumbering"]
+
+  v2.1.1:
+    date: "2026-01-31"
+    changes: ["/tad-maintain command", "Criterion C/D", "Simplified adapters"]
+
+  v2.1.0:
+    date: "2026-01-26"
+    changes: ["Agent-agnostic architecture", "Platform-agnostic skills", "Multi-platform install"]
+
+  v2.0.0:
+    date: "2026-01-26"
+    changes: ["Ralph Loop", "Gate 3v2/4v2 redefinition", "State persistence"]
+
+  v1.8.0:
+    date: "2026-01-23"
+    changes: ["Socratic Inquiry Protocol", "AskUserQuestion integration"]
+
+  v1.4.0:
+    date: "2026-01-06"
+    changes: ["MQ6 research", "Skills system"]
+
+  v1.3.0:
+    date: "2025-11-25"
+    changes: ["Evidence verification", "MQ1-5", "Progressive validation"]
+
+# ==================== 兼容性说明 ====================
+backward_compatibility:
+  v21_projects:
+    compatibility: "Requires updating STEP 3 in agent files to load modules"
+    migration: "Agent files updated to reference config_modules index"
+
+  rollback_support:
+    enabled: true
+    method: "Restore .tad/config-full-backup.yaml as .tad/config.yaml"
+
+# ==================== Optional Features ====================
+optional_features:
+  tdd_enforcement:
+    enabled: false  # Set to true to enable TDD mode in Blake's *develop
+    description: "When enabled, Blake follows RED-GREEN-REFACTOR cycle during implementation"
+    skill_path: ".tad/skills/tdd-enforcement/SKILL.md"
+
+  git_worktree:
+    enabled: true  # Worktree support available (triggered by --worktree flag)
+    description: "When *develop --worktree is used, creates isolated branch for implementation"
+    worktree_dir: ".worktrees"
+    branch_prefix: "tad/"
+
+# ==================== 外部配置引用 ====================
+external_configs:
+  skills_config:
+    file: ".tad/skills-config.yaml"
+    description: "Skills 知识库系统和自动匹配配置"
+    when_to_load: "需要 Skills 推荐或自动匹配时"

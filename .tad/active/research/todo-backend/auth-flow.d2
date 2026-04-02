@@ -1,0 +1,78 @@
+direction: down
+
+title: {
+  label: "Todo App — JWT Authentication Flow"
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+client: "Client (SPA/Mobile)" {
+  style.fill: "#E8F5E9"
+  style.stroke: "#2E7D32"
+}
+
+api: "API Server" {
+  style.fill: "#E3F2FD"
+  style.stroke: "#1565C0"
+
+  auth_mw: "Auth Middleware" {
+    style.fill: "#BBDEFB"
+  }
+  role_mw: "Role Middleware" {
+    style.fill: "#BBDEFB"
+  }
+  owner_check: "Ownership Check" {
+    style.fill: "#BBDEFB"
+  }
+}
+
+db: "Database (SQLite)" {
+  style.fill: "#FFF3E0"
+  style.stroke: "#E65100"
+}
+
+# Registration Flow
+client -> api: "1. POST /auth/register\n{email, password, name}" {
+  style.stroke: "#2E7D32"
+}
+api -> db: "2. Hash password (bcrypt)\nStore user" {
+  style.stroke: "#1565C0"
+}
+api -> client: "3. Return {accessToken, refreshToken}" {
+  style.stroke: "#2E7D32"
+}
+
+# Login Flow
+client -> api: "4. POST /auth/login\n{email, password}" {
+  style.stroke: "#FF9800"
+}
+api -> db: "5. Verify password hash" {
+  style.stroke: "#1565C0"
+}
+api -> client: "6. Return {accessToken (15m), refreshToken (7d)}" {
+  style.stroke: "#FF9800"
+}
+
+# Authenticated Request
+client -> api.auth_mw: "7. GET /todos\nAuthorization: Bearer {token}" {
+  style.stroke: "#1565C0"
+}
+api.auth_mw -> api.role_mw: "8. Verify JWT\nExtract userId, role"
+api.role_mw -> api.owner_check: "9. Check role permissions"
+api.owner_check -> db: "10. Query with userId scope"
+
+# Token Refresh
+client -> api: "11. POST /auth/refresh\n{refreshToken}" {
+  style.stroke: "#F44336"
+  style.stroke-dash: 3
+}
+api -> db: "12. Validate + rotate\nInvalidate old token" {
+  style.stroke: "#F44336"
+  style.stroke-dash: 3
+}
+api -> client: "13. New {accessToken, refreshToken}" {
+  style.stroke: "#F44336"
+  style.stroke-dash: 3
+}

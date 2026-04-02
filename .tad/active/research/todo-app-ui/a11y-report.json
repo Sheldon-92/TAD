@@ -1,0 +1,49 @@
+{
+  "wireframe.html": {
+    "total_errors": 11,
+    "issues": [
+      {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "message": "Insufficient contrast ratio 2.85:1 (requires 4.5:1)",
+        "affected_elements": [
+          ".task-count (#999 on #fff)",
+          ".task-meta (#999 on #fff)",
+          ".completed .task-text (#999 on #fff)",
+          "inactive .nav-item (#999 on #fff)"
+        ],
+        "fix": "Change #999 to #767676 or darker for all secondary text in wireframe"
+      }
+    ]
+  },
+  "component-showcase.html": {
+    "total_errors": 7,
+    "issues": [
+      {
+        "code": "WCAG2AA.Principle4.Guideline4_1.4_1_2.H91.InputText.Name",
+        "type": "error",
+        "count": 2,
+        "message": "Input fields in Input section missing accessible name (label 'for' attribute not linked)",
+        "fix": "Add 'for' attribute to labels matching input 'id', or add aria-label"
+      },
+      {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail",
+        "type": "error",
+        "count": 2,
+        "message": "Badge default variant contrast 4.39:1 (requires 4.5:1)",
+        "fix": "Darken badge-default text from #6B7280 to #636971 or darken background"
+      },
+      {
+        "code": "WCAG2AA.Principle1.Guideline1_4.1_4_3.G145.Fail",
+        "type": "error",
+        "count": 1,
+        "message": "Empty state icon contrast 1.47:1 (decorative, but flagged)",
+        "fix": "Darken empty-icon color or mark as aria-hidden='true' (decorative)"
+      }
+    ]
+  },
+  "responsive-wireframe.html": {
+    "total_errors": 0,
+    "issues": []
+  }
+}

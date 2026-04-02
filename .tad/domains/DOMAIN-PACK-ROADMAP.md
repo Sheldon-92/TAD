@@ -77,7 +77,31 @@ Mobile 需要新建的 pack:
 
 ---
 
-## Phase 3: 硬件开发链路
+## Phase 3: AI/Agent 开发链路
+
+**驱动力**：OpenClaw agents 日常使用 + TAD 框架本身就是 agent 开发。
+
+```
+AI/Agent 链路:  设计 → Prompt → 工具集成 → 测试 → 部署
+                  🔲      🔲        🔲       🔲     🔲
+```
+
+| # | Pack | 做什么 | 关键工具 | 优先级 |
+|---|------|--------|---------|--------|
+| 11 | **ai-agent-architecture** | Agent 架构设计、角色定义、工具选型、记忆系统 | WebSearch, D2 | 高 — agent 设计的基础 |
+| 12 | **ai-prompt-engineering** | Prompt 设计、测试、优化、版本管理 | Anthropic SDK, eval 工具 | 高 — 每天都在做 |
+| 13 | **ai-tool-integration** | MCP Server 开发、CLI 工具封装、API 集成 | MCP SDK, Node/Python CLI | 中 |
+| 14 | **ai-evaluation** | Agent 行为评估、A/B 测试、基准测试、回归测试 | 待研究 | 中 |
+
+### 和当前项目的关系
+
+- **TAD 本身** = ai-agent-architecture（Alex/Blake 角色设计）+ ai-prompt-engineering（SKILL.md 编写）
+- **OpenClaw agents** = 全链路覆盖
+- **Claude Code 源码研究** = 提供了 agent 架构的最佳参考
+
+---
+
+## Phase 4: 硬件开发链路
 
 **驱动力**：toy 课程项目（PSAM 5320 Making Wireless Toys）— 已有 4+ 个硬件项目。
 
@@ -132,14 +156,25 @@ Mobile 需要新建的 pack:
 
 ---
 
-## Phase 4: 按需扩展
+## Phase 5: CLI 工具开发
+
+**驱动力**：TAD 的 hook 脚本 + 未来可能的独立 CLI 工具。不紧急但有价值。
+
+| # | Pack | 做什么 | 关键工具 |
+|---|------|--------|---------|
+| 19 | **cli-tool-development** | CLI 架构、参数解析、交互设计、发布 | Commander.js, oclif, npm publish |
+
+---
+
+## Phase 6: 按需扩展
 
 | Pack | 触发条件 | 对应项目 |
 |------|---------|---------|
 | content-creation | Sober Creator 开始做内容时 | Sober Creator |
-| ai-agent-design | 改进 OpenClaw agents 时 | OpenClaw |
-| data-analytics | 项目需要数据分析时 | 通用 |
+| data-engineering | 项目需要数据管线时 | 通用 |
 | security-compliance | 合规AI 项目启动时 | 合规AI |
+| game-development | 概念验证成熟时 | 个人兴趣 |
+| desktop-app | 需要桌面应用时 | 暂无需求 |
 
 **有真实项目需求时用模板 1-2 天做一个。**
 
@@ -163,7 +198,12 @@ Mobile 需要新建的 pack:
 | 12 | hw-firmware | Hardware | 🔲 | — | — |
 | 13 | hw-enclosure | Hardware | 🔲 | — | — |
 | 14 | hw-testing | Hardware | 🔲 | — | — |
-| — | tools-registry | 共享 | 持续更新 | 701+ | 27+ |
+| 15 | ai-agent-architecture | AI/Agent | 🔲 | — | — |
+| 16 | ai-prompt-engineering | AI/Agent | 🔲 | — | — |
+| 17 | ai-tool-integration | AI/Agent | 🔲 | — | — |
+| 18 | ai-evaluation | AI/Agent | 🔲 | — | — |
+| 19 | cli-tool-development | CLI | 🔲 | — | — |
+| — | tools-registry | 共享 | 持续更新 | 701+ | 35+ |
 
 ---
 

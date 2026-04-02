@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo App — Responsive Wireframe</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-hover: #1D4ED8;
+    --color-secondary: #6B7280;
+    --color-background: #FAFAFA;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #F3F4F6;
+    --color-border: #E5E7EB;
+    --color-border-strong: #D1D5DB;
+    --color-text: #1F2937;
+    --color-text-secondary: #6B7280;
+    --color-text-on-primary: #FFFFFF;
+    --color-error: #DC2626;
+    --color-success: #047857;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
+    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; }
+  body {
+    font-family: var(--font-family);
+    background: var(--color-background);
+    color: var(--color-text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === SIDEBAR (desktop only) === */
+  .sidebar {
+    display: none;
+    width: 240px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    padding: var(--spacing-lg);
+    flex-direction: column;
+    z-index: 20;
+  }
+  .sidebar .logo { font-size: 20px; font-weight: 600; margin-bottom: var(--spacing-xl); color: var(--color-primary); }
+  .sidebar nav { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+  .sidebar .nav-link {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    color: var(--color-text);
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    font-family: var(--font-family);
+  }
+  .sidebar .nav-link:hover { background: var(--color-surface-hover); }
+  .sidebar .nav-link.active { background: rgba(37,99,235,0.1); color: var(--color-primary); font-weight: 500; }
+
+  /* === MAIN CONTENT === */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 60px; /* space for bottom nav */
+  }
+
+  /* === HEADER === */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header-actions { display: flex; gap: var(--spacing-sm); }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--color-secondary);
+  }
+  .icon-btn:hover { background: var(--color-surface-hover); }
+
+  /* === ADD TASK BAR (desktop: persistent, mobile: hidden until FAB) === */
+  .add-bar {
+    display: none;
+    padding: var(--spacing-md);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    gap: var(--spacing-sm);
+  }
+  .add-bar input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-family: var(--font-family);
+    outline: none;
+  }
+  .add-bar input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+  .add-bar .btn-add {
+    padding: 10px 16px;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-family);
+    white-space: nowrap;
+  }
+  .add-bar .btn-add:hover { background: var(--color-primary-hover); }
+
+  /* === FILTER TABS === */
+  .filter-tabs {
+    display: flex;
+    padding: 0 var(--spacing-md);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-tab {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--color-secondary);
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--font-family);
+  }
+  .filter-tab:hover { color: var(--color-text); }
+  .filter-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
+
+  /* === TASK COUNT === */
+  .task-count { padding: 8px var(--spacing-md); font-size: 12px; color: var(--color-secondary); background: var(--color-surface); }
+
+  /* === TASK LIST === */
+  .task-list { flex: 1; background: var(--color-surface); }
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 12px var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+    gap: 12px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .task-item:hover { background: var(--color-surface-hover); }
+  .task-checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid var(--color-border-strong);
+    border-radius: 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .task-checkbox:hover { border-color: var(--color-primary); }
+  .task-checkbox.done {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  .task-checkbox.done::after { content: "\2713"; color: #fff; font-size: 12px; font-weight: bold; }
+  .task-content { flex: 1; min-width: 0; }
+  .task-title { font-size: 15px; line-height: 1.4; }
+  .task-meta { font-size: 12px; color: var(--color-secondary); margin-top: 2px; }
+  .task-item.completed .task-title { text-decoration: line-through; color: var(--color-secondary); }
+  .task-actions {
+    display: none;
+    gap: var(--spacing-xs);
+  }
+  .task-action-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-secondary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .task-action-btn:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+  .task-action-btn.danger:hover { color: var(--color-error); border-color: var(--color-error); }
+
+  /* === FAB (mobile only) === */
+  .fab {
+    position: fixed;
+    bottom: 76px;
+    right: 20px;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+  }
+  .fab:hover { background: var(--color-primary-hover); }
+
+  /* === MOBILE ADD INPUT (slide-up) === */
+  .mobile-add {
+    display: none;
+    position: fixed;
+    bottom: 60px;
+    left: 0; right: 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+    z-index: 15;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  }
+  .mobile-add.visible { display: flex; }
+  .mobile-add input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-family: var(--font-family);
+    outline: none;
+  }
+  .mobile-add input:focus { border-color: var(--color-primary); }
+  .mobile-add .btn-add {
+    padding: 10px 16px;
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-family);
+  }
+
+  /* === BOTTOM NAV (mobile) === */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    display: flex;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 20;
+  }
+  .bottom-nav-item {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--color-secondary);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: var(--font-family);
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .bottom-nav-item:hover { color: var(--color-text); }
+  .bottom-nav-item.active { color: var(--color-primary); }
+  .bottom-nav-icon { font-size: 18px; margin-bottom: 2px; }
+
+  /* === RESPONSIVE: TABLET (768px) === */
+  @media (min-width: 768px) {
+    .main-content {
+      max-width: 640px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .header { padding: var(--spacing-lg); }
+    .header h1 { font-size: 24px; }
+    .filter-tabs { padding: 0 var(--spacing-lg); }
+    .task-count { padding: 8px var(--spacing-lg); }
+    .task-item { padding: var(--spacing-md) var(--spacing-lg); }
+    .fab { bottom: 84px; right: calc(50% - 320px + 24px); }
+  }
+
+  /* === RESPONSIVE: DESKTOP (1024px) === */
+  @media (min-width: 1024px) {
+    .sidebar { display: flex; }
+    .main-content {
+      margin-left: 240px;
+      padding-bottom: 0;
+      max-width: 720px;
+      margin-right: auto;
+    }
+    .bottom-nav { display: none; }
+    .fab { display: none; }
+    .add-bar { display: flex; }
+    .task-item:hover .task-actions { display: flex; }
+    .header h1 { font-size: 24px; }
+    .task-item { padding: var(--spacing-md) var(--spacing-xl); }
+    .filter-tabs { padding: 0 var(--spacing-xl); }
+    .task-count { padding: 8px var(--spacing-xl); }
+  }
+
+  /* === RESPONSIVE: WIDE DESKTOP (1440px) === */
+  @media (min-width: 1440px) {
+    .main-content { max-width: 800px; }
+    .header h1 { font-size: 28px; }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+    }
+  }
+
+  /* Viewport label (for demo) */
+  .viewport-label {
+    position: fixed;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: var(--color-text);
+    color: var(--color-text-on-primary);
+    padding: 4px 8px;
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport-label" id="viewport-label">375px</div>
+
+<!-- Sidebar (desktop) -->
+<aside class="sidebar" role="navigation" aria-label="Main navigation">
+  <div class="logo">Todo App</div>
+  <nav>
+    <button class="nav-link active">All Tasks</button>
+    <button class="nav-link">Active</button>
+    <button class="nav-link">Completed</button>
+    <hr style="border:none;border-top:1px solid var(--color-border);margin:var(--spacing-md) 0">
+    <button class="nav-link">Settings</button>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+  <header class="header">
+    <h1>My Tasks</h1>
+    <div class="header-actions">
+      <button class="icon-btn" aria-label="Search">&#128269;</button>
+    </div>
+  </header>
+
+  <!-- Add Bar (desktop persistent) -->
+  <div class="add-bar">
+    <input type="text" placeholder="What needs to be done?" aria-label="New task">
+    <button class="btn-add">Add Task</button>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs" role="tablist">
+    <button class="filter-tab active" role="tab">All</button>
+    <button class="filter-tab" role="tab">Active</button>
+    <button class="filter-tab" role="tab">Completed</button>
+  </div>
+
+  <div class="task-count">3 tasks remaining</div>
+
+  <!-- Task List -->
+  <div class="task-list" role="list">
+    <div class="task-item" role="listitem">
+      <div class="task-checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-title">Buy groceries for the week</div>
+        <div class="task-meta">Added today</div>
+      </div>
+      <div class="task-actions">
+        <button class="task-action-btn" aria-label="Edit">&#9998;</button>
+        <button class="task-action-btn danger" aria-label="Delete">&times;</button>
+      </div>
+    </div>
+    <div class="task-item" role="listitem">
+      <div class="task-checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-title">Review pull request #42</div>
+        <div class="task-meta">Added yesterday</div>
+      </div>
+      <div class="task-actions">
+        <button class="task-action-btn" aria-label="Edit">&#9998;</button>
+        <button class="task-action-btn danger" aria-label="Delete">&times;</button>
+      </div>
+    </div>
+    <div class="task-item" role="listitem">
+      <div class="task-checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-title">Schedule dentist appointment</div>
+        <div class="task-meta">Added 2 days ago</div>
+      </div>
+      <div class="task-actions">
+        <button class="task-action-btn" aria-label="Edit">&#9998;</button>
+        <button class="task-action-btn danger" aria-label="Delete">&times;</button>
+      </div>
+    </div>
+    <div class="task-item completed" role="listitem">
+      <div class="task-checkbox done" role="checkbox" aria-checked="true" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-title">Send weekly report</div>
+        <div class="task-meta">Completed today</div>
+      </div>
+      <div class="task-actions">
+        <button class="task-action-btn danger" aria-label="Delete">&times;</button>
+      </div>
+    </div>
+    <div class="task-item completed" role="listitem">
+      <div class="task-checkbox done" role="checkbox" aria-checked="true" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-title">Fix login page bug</div>
+        <div class="task-meta">Completed yesterday</div>
+      </div>
+      <div class="task-actions">
+        <button class="task-action-btn danger" aria-label="Delete">&times;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB (mobile) -->
+<button class="fab" id="fab" aria-label="Add new task">+</button>
+
+<!-- Mobile Add Input -->
+<div class="mobile-add" id="mobile-add">
+  <input type="text" placeholder="What needs to be done?" aria-label="New task">
+  <button class="btn-add">Add</button>
+</div>
+
+<!-- Bottom Nav (mobile) -->
+<nav class="bottom-nav" role="navigation" aria-label="Mobile navigation">
+  <button class="bottom-nav-item active"><span class="bottom-nav-icon">&#9776;</span>Tasks</button>
+  <button class="bottom-nav-item"><span class="bottom-nav-icon">&#128269;</span>Search</button>
+  <button class="bottom-nav-item"><span class="bottom-nav-icon">&#9881;</span>Settings</button>
+</nav>
+
+<script>
+  // Viewport label
+  function updateLabel() {
+    const w = window.innerWidth;
+    let label = w + 'px — ';
+    if (w < 768) label += 'Mobile';
+    else if (w < 1024) label += 'Tablet';
+    else if (w < 1440) label += 'Desktop';
+    else label += 'Wide Desktop';
+    document.getElementById('viewport-label').textContent = label;
+  }
+  updateLabel();
+  window.addEventListener('resize', updateLabel);
+
+  // FAB toggle
+  document.getElementById('fab').addEventListener('click', () => {
+    const bar = document.getElementById('mobile-add');
+    bar.classList.toggle('visible');
+    if (bar.classList.contains('visible')) bar.querySelector('input').focus();
+  });
+
+  // Checkbox toggle
+  document.querySelectorAll('.task-checkbox').forEach(cb => {
+    cb.addEventListener('click', () => {
+      const checked = cb.classList.toggle('done');
+      cb.setAttribute('aria-checked', checked);
+      cb.closest('.task-item').classList.toggle('completed', checked);
+    });
+  });
+
+  // Filter tabs
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Sidebar nav
+  document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+# Subscription State Machine — SaaS Billing
+# States: TRIALING → ACTIVE → PAST_DUE → CANCELED → EXPIRED
+
+direction: right
+
+# ═══════ States ═══════
+
+TRIALING: "TRIALING" {
+  style.fill: "#dbeafe"
+  style.stroke: "#2563eb"
+  style.font-color: "#1e40af"
+}
+
+ACTIVE: "ACTIVE" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+  style.font-color: "#166534"
+}
+
+PAST_DUE: "PAST_DUE" {
+  style.fill: "#fef3c7"
+  style.stroke: "#f59e0b"
+  style.font-color: "#92400e"
+}
+
+CANCELED: "CANCELED" {
+  style.fill: "#fee2e2"
+  style.stroke: "#dc2626"
+  style.font-color: "#991b1b"
+}
+
+EXPIRED: "EXPIRED" {
+  style.fill: "#f3f4f6"
+  style.stroke: "#6b7280"
+  style.font-color: "#374151"
+}
+
+# ═══════ Transitions ═══════
+
+TRIALING -> ACTIVE: "payment succeeds\n(trial ends)" {
+  style.stroke: "#16a34a"
+}
+TRIALING -> EXPIRED: "trial ends\n(no payment method)" {
+  style.stroke: "#6b7280"
+}
+
+ACTIVE -> PAST_DUE: "payment fails" {
+  style.stroke: "#f59e0b"
+}
+ACTIVE -> CANCELED: "user cancels" {
+  style.stroke: "#dc2626"
+}
+
+PAST_DUE -> ACTIVE: "retry succeeds" {
+  style.stroke: "#16a34a"
+}
+PAST_DUE -> CANCELED: "max retries exceeded\n(4 attempts: 1h,4h,24h,72h)" {
+  style.stroke: "#dc2626"
+}
+
+CANCELED -> ACTIVE: "resubscribe\n(within 7-day grace)" {
+  style.stroke: "#16a34a"
+  style.stroke-dash: 3
+}
+CANCELED -> EXPIRED: "grace period ends\n(7 days)" {
+  style.stroke: "#6b7280"
+}

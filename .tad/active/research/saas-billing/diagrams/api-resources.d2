@@ -1,0 +1,139 @@
+# API Resource Diagram — Multi-Tenant SaaS Billing
+direction: right
+
+# ═══════ Platform Resources (No Tenant Scope) ═══════
+
+platform: "Platform-Level" {
+  style.fill: "#ede9fe"
+
+  tenants: "/tenants" {
+    style.fill: "#c4b5fd"
+    ops: "POST GET"
+    nested: "/tenants/{id}\nGET PATCH DELETE"
+  }
+
+  plans: "/plans" {
+    style.fill: "#c4b5fd"
+    ops: "POST GET"
+    nested: "/plans/{id}\nGET PATCH"
+    note: "Public read, SuperAdmin write"
+  }
+
+  webhooks: "/webhooks/stripe" {
+    style.fill: "#c4b5fd"
+    ops: "POST"
+    note: "HMAC-SHA256 auth\n(not JWT)"
+  }
+}
+
+# ═══════ Tenant-Scoped Resources ═══════
+
+tenant_scoped: "Tenant-Scoped" {
+  style.fill: "#dbeafe"
+
+  users: "/tenants/{id}/users" {
+    style.fill: "#93c5fd"
+    ops: "POST GET"
+    nested: "/tenants/{id}/users/{id}\nGET PATCH DELETE"
+  }
+
+  subscriptions: "/tenants/{id}/subscriptions" {
+    style.fill: "#93c5fd"
+    ops: "POST GET"
+  }
+
+  invoices: "/tenants/{id}/invoices" {
+    style.fill: "#93c5fd"
+    ops: "GET"
+  }
+
+  usage: "/tenants/{id}/usage" {
+    style.fill: "#93c5fd"
+    ops: "GET"
+  }
+}
+
+# ═══════ Subscription Sub-Resources ═══════
+
+sub_resources: "Subscription Sub-Resources" {
+  style.fill: "#dcfce7"
+
+  sub_detail: "/subscriptions/{id}" {
+    style.fill: "#86efac"
+    ops: "GET"
+  }
+
+  cancel: "/subscriptions/{id}/cancel" {
+    style.fill: "#86efac"
+    ops: "POST"
+  }
+
+  reactivate: "/subscriptions/{id}/reactivate" {
+    style.fill: "#86efac"
+    ops: "POST"
+  }
+
+  change_plan: "/subscriptions/{id}/change-plan" {
+    style.fill: "#86efac"
+    ops: "POST"
+  }
+
+  proration: "/subscriptions/{id}/proration-preview" {
+    style.fill: "#86efac"
+    ops: "GET"
+  }
+
+  sub_invoices: "/subscriptions/{id}/invoices" {
+    style.fill: "#86efac"
+    ops: "GET"
+  }
+
+  sub_usage: "/subscriptions/{id}/usage" {
+    style.fill: "#86efac"
+    ops: "GET"
+  }
+}
+
+# ═══════ Independent Resources ═══════
+
+independent: "Direct Access" {
+  style.fill: "#fef3c7"
+
+  invoice_detail: "/invoices/{id}" {
+    style.fill: "#fde68a"
+    ops: "GET"
+  }
+
+  invoice_pay: "/invoices/{id}/pay" {
+    style.fill: "#fde68a"
+    ops: "POST"
+  }
+
+  usage_record: "/usage-records" {
+    style.fill: "#fde68a"
+    ops: "POST"
+    note: "API Key auth\nServer-to-server"
+  }
+}
+
+# ═══════ WebSocket ═══════
+
+websocket: "WebSocket" {
+  style.fill: "#fce7f3"
+
+  billing: "/ws/billing-events" {
+    style.fill: "#f9a8d4"
+    note: "Payment success/fail\nSubscription changes"
+  }
+
+  alerts: "/ws/usage-alerts" {
+    style.fill: "#f9a8d4"
+    note: "80%/90%/100% threshold\nOverage notifications"
+  }
+}
+
+# ═══════ Relationships ═══════
+
+tenant_scoped.subscriptions -> sub_resources: "nested"
+sub_resources.sub_invoices -> independent.invoice_detail: "refs"
+tenant_scoped.invoices -> independent.invoice_detail: "refs"

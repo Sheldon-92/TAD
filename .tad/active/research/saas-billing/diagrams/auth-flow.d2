@@ -1,0 +1,68 @@
+# Authentication Flow — JWT + API Key + Stripe Webhook
+direction: down
+
+# ═══════ Actors ═══════
+
+client: "Web Client\n(Browser)" {
+  style.fill: "#dbeafe"
+}
+server_app: "API Server\n(Backend)" {
+  style.fill: "#f3f4f6"
+}
+stripe: "Stripe" {
+  style.fill: "#635bff"
+  style.font-color: "#fff"
+}
+
+# ═══════ JWT Flow ═══════
+
+jwt_flow: "JWT Authentication Flow" {
+  style.fill: "#f0fdf4"
+
+  step1: "1. POST /auth/login\n{email, password}"
+  step2: "2. Validate credentials\n(bcrypt verify)"
+  step3: "3. Generate tokens\n{accessToken (15min),\nrefreshToken (7d)}"
+  step4: "4. Request with\nAuthorization: Bearer <token>"
+  step5: "5. Verify JWT\n(signature + expiry + claims)"
+  step6: "6. Extract tenant context\n{sub, tenantId, role}"
+  step7: "7. Token expired →\nPOST /auth/refresh"
+  step8: "8. Rotate refresh token\n(old invalidated)"
+
+  step1 -> step2 -> step3 -> step4 -> step5 -> step6
+  step4 -> step7: "401 expired" {style.stroke-dash: 3}
+  step7 -> step8 -> step3
+}
+
+# ═══════ API Key Flow ═══════
+
+apikey_flow: "API Key Authentication Flow" {
+  style.fill: "#fef3c7"
+
+  ak1: "1. Request with\nX-API-Key: sk_live_..."
+  ak2: "2. SHA-256 hash key"
+  ak3: "3. Lookup in ApiKey table\n(by keyHash)"
+  ak4: "4. Check: revoked? expired?"
+  ak5: "5. Set tenant context\nfrom API key record"
+
+  ak1 -> ak2 -> ak3 -> ak4 -> ak5
+}
+
+# ═══════ Stripe Webhook Flow ═══════
+
+webhook_flow: "Stripe Webhook Verification" {
+  style.fill: "#ede9fe"
+
+  wh1: "1. POST /webhooks/stripe\nStripe-Signature: t=...,v1=..."
+  wh2: "2. HMAC-SHA256 verify\n(webhook_secret + raw_body)"
+  wh3: "3. Check timestamp\n(reject if >300s old)"
+  wh4: "4. Idempotency check\n(stripeEventId in DB?)"
+  wh5: "5. Process event\n(always return 200)"
+
+  wh1 -> wh2 -> wh3 -> wh4 -> wh5
+}
+
+# ═══════ Connections ═══════
+
+client -> jwt_flow: "User sessions"
+server_app -> apikey_flow: "Server-to-server"
+stripe -> webhook_flow: "Webhook events"
