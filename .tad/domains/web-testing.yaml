@@ -206,6 +206,7 @@ capabilities:
       - "Tests assert behavior, not implementation details"
       - "Zero flaky unit tests"
       - "Tests co-located with source files"
+      - "Fabricated test results or invented coverage numbers = FAIL"
 
     anti_patterns:
       - "❌ expect(db.query).toHaveBeenCalled() — assert on output, not internal calls"
@@ -273,6 +274,7 @@ capabilities:
       - "Auth scenarios tested for all roles"
       - "Response schemas validated (Zod or TypeScript assertions)"
       - "All API tests pass in CI (no external dependencies)"
+      - "Fabricated API test results or invented response data = FAIL"
 
     anti_patterns:
       - "❌ Testing only happy path (most bugs are in error handling)"
@@ -406,6 +408,7 @@ capabilities:
       - "Color contrast ≥ 4.5:1 for all text"
       - "All interactive elements keyboard accessible"
       - "Focus management correct for modals/dialogs"
+      - "Fabricated accessibility audit results or invented violation counts = FAIL"
 
     anti_patterns:
       - "❌ Relying only on automated tools (they catch ~30-40%)"
@@ -492,6 +495,7 @@ capabilities:
       - "Severity rated by human (not AI alone)"
       - "Fix-now decisions have immediate handoff"
       - "'Won't fix' decisions have documented reasoning"
+      - "Fabricated findings or invented screenshots = FAIL"
 
     anti_patterns:
       - "❌ AI deciding severity without human input"
