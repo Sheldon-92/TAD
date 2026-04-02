@@ -1,0 +1,663 @@
+# Domain Pack: Web Testing
+# From test strategy to comprehensive quality assurance — automated + human-AI collaboration
+domain: web-testing
+version: 1.0.0
+requires_registry: ">=1"  # Requires 2026-04-02 registry update (e2e_testing, unit_testing, etc.)
+description: "Web 测试：从测试策略到全面质量保证。覆盖 E2E、单元、API、性能、可访问性自动化测试 + 人机协作测试（4D Protocol）。"
+
+output_dir: ".tad/active/testing/{project}/"
+# NOTE: Test code is written inside the project being tested.
+# output_dir is for TAD testing documentation (strategies, reports, analysis).
+
+# ═══════════════════════════════════════
+# Capability Type Guide
+# ═══════════════════════════════════════
+# This pack has THREE types of capabilities:
+#   - Code type (5): e2e, unit, api, performance, accessibility
+#     Steps: select → execute → verify → optimize
+#   - Mixed type (1): pair_testing (human + AI collaboration)
+#     Steps: prepare → discover → discuss → decide → deliver
+#   - Document type (1): test_strategy
+#     Steps: search → analyze → derive → generate
+
+capabilities:
+
+  # ═══════════════════════════════════════
+  # Capability 1: E2E Testing (Code Type)
+  # ═══════════════════════════════════════
+
+  e2e_testing:
+    description: "User flow automation testing with Playwright — semantic locators, Page Objects, network safeguards"
+
+    steps:
+      # Layer 1: Select — choose what to test and how
+      - id: identify_critical_flows
+        action: |
+          Identify user flows to test (risk-based, from qualiow research):
+          1. List all user-facing flows (login, CRUD, checkout, onboarding, etc.)
+          2. Classify by risk: critical-path (must test) / important (should test) / nice-to-have
+          3. Critical path = flows where failure means revenue loss or user churn
+          For each flow: name, steps count, auth required, data dependencies.
+          If project has roles → test critical path for EACH role.
+        tool_ref: null
+        output_file: "e2e-test-plan.md"
+
+      - id: setup_playwright
+        action: |
+          Set up Playwright in the project:
+          1. npm install -D @playwright/test
+          2. npx playwright install chromium
+          3. Create playwright.config.ts:
+             - baseURL from env
+             - retries: 2 (CI), 0 (local)
+             - reporter: [['html'], ['list']]
+             - trace: 'on-first-retry'
+          4. Create tests/ directory with first test file
+        tool_ref: e2e_testing
+        output_file: "playwright.config.ts"
+
+      # Layer 2: Execute — write and run tests
+      - id: implement_page_objects
+        action: |
+          Create Page Objects (from TestDino + qualiow research):
+          1. One class per page/major section: tests/pages/{page-name}.page.ts
+          2. Locators centralized as class properties (NEVER in test files)
+          3. Methods represent USER ACTIONS, not implementation details
+          4. Locator priority (from TestDino):
+             getByRole > getByText > getByLabel > getByTestId > CSS (last resort)
+          5. Component objects for reusable UI patterns (modals, tables, nav)
+          "Role-based locators survive redesigns. CSS selectors break when a dev renames a class."
+        tool_ref: null
+        output_file: "tests/pages/ (Page Object files)"
+
+      - id: write_e2e_tests
+        action: |
+          Write tests per critical flow:
+          1. One test file per user flow: tests/{flow-name}.spec.ts
+          2. Use Page Objects for all interactions (no raw locators in tests)
+          3. Network safeguards (from qualiow):
+             - waitForResponse for API-dependent actions
+             - toPass retry blocks for eventual consistency
+             - expect.poll for polling scenarios
+          4. Auth: use storageState for session reuse (no login per test)
+          5. Assertions: assert BEHAVIOR, not DOM structure
+        tool_ref: e2e_testing
+        output_file: "tests/*.spec.ts"
+
+      # Layer 3: Verify — run and check results
+      - id: run_and_verify
+        action: |
+          Run tests and verify:
+          1. npx playwright test → all tests pass
+          2. npx playwright show-report → review HTML report
+          3. Check: no flaky tests (run 3x, all pass)
+          4. Check: test isolation (each test independent, no shared state)
+        tool_ref: e2e_testing
+        output_file: "e2e-results.md"
+
+      # Layer 4: Optimize — improve reliability
+      - id: optimize_tests
+        action: |
+          Apply 7-category review (from qualiow):
+          1. Assertions: specific and behavior-based?
+          2. Selectors: semantic-first (getByRole)?
+          3. Timing: web-first assertions, no hardcoded waits?
+          4. Isolation: each test cleans up its data?
+          5. POM usage: all locators in page objects?
+          6. Readability: test intent clear from name?
+          7. Reliability: no flaky tests?
+          Fix any category that fails.
+        tool_ref: null
+        output_file: "e2e-optimization.md"
+
+    quality_criteria:
+      - "All critical-path flows have E2E tests"
+      - "npx playwright test → 100% pass rate"
+      - "All locators use semantic selectors (getByRole/getByText), zero raw CSS in tests"
+      - "Page Objects encapsulate all locators (zero locators in .spec.ts files)"
+      - "Zero hardcoded timeouts (use web-first assertions)"
+      - "Auth uses storageState session reuse"
+      - "Fabricated test results or invented pass rates = FAIL"
+
+    anti_patterns:
+      - "❌ Hardcoded timeouts (await page.waitForTimeout(3000))"
+      - "❌ CSS selectors when getByRole available"
+      - "❌ Repeated login per test (use storageState)"
+      - "❌ Raw locators in test files (must use Page Objects)"
+      - "❌ Assertions on DOM structure instead of visible behavior"
+      - "❌ Tests depending on execution order"
+
+    reviewers:
+      - persona: "QA Automation Lead"
+        checklist:
+          - "Critical flows all covered?"
+          - "Locator strategy semantic-first?"
+          - "Test isolation verified (run in random order)?"
+      - persona: "Reliability Engineer"
+        checklist:
+          - "Zero flaky tests?"
+          - "Network safeguards in place?"
+          - "Trace enabled for debug on failure?"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Unit Testing (Code Type)
+  # ═══════════════════════════════════════
+
+  unit_testing:
+    description: "Component and function testing with Vitest — fast, typed, coverage-tracked"
+
+    steps:
+      - id: select_test_targets
+        action: |
+          Identify what to unit test (from qa-automation research — 70% of test pyramid):
+          1. Pure functions and utilities (highest priority — deterministic, fast)
+          2. Custom hooks (state logic, side effects)
+          3. Complex components with business logic
+          4. Store slices (Zustand actions, reducers)
+          Do NOT unit test: simple UI components (no logic), external library wrappers.
+          Organize: tests co-located with source (src/lib/utils.test.ts next to utils.ts).
+        tool_ref: null
+        output_file: "unit-test-plan.md"
+
+      - id: setup_vitest
+        action: |
+          Set up Vitest:
+          1. npm install -D vitest @vitest/coverage-v8
+          2. Create vitest.config.ts with coverage thresholds
+          3. Add test scripts to package.json: "test": "vitest run", "test:watch": "vitest"
+        tool_ref: unit_testing
+        output_file: "vitest.config.ts"
+
+      - id: write_unit_tests
+        action: |
+          Write tests (from qa-automation research):
+          1. Test BEHAVIOR, not implementation (assert output, not internal calls)
+          2. Use vi.mock for module mocking, vi.fn for function spies
+          3. Data builders for test fixtures (not inline objects)
+          4. Each test: Arrange → Act → Assert (AAA pattern)
+          5. Descriptive test names: "should return empty array when no items match filter"
+        tool_ref: unit_testing
+        output_file: "**/*.test.ts files"
+
+      - id: verify_coverage
+        action: |
+          Run and verify:
+          1. npx vitest run → 100% pass
+          2. npx vitest run --coverage → check thresholds
+          3. Target: ≥80% line coverage on critical modules
+          4. Suite runtime < 10 minutes
+        tool_ref: test_coverage
+        output_file: "coverage/ (HTML report)"
+
+      - id: optimize_unit_tests
+        action: |
+          Review and optimize:
+          1. Remove snapshot tests that change frequently (noise, not value)
+          2. Replace implementation-detail assertions with behavior assertions
+          3. Ensure mock cleanup between tests (vi.restoreAllMocks)
+          4. Check for slow tests (>100ms = investigate)
+        tool_ref: null
+        output_file: "unit-test-optimization.md"
+
+    quality_criteria:
+      - "npx vitest run → 100% pass rate"
+      - "≥80% line coverage on critical modules"
+      - "Suite runs in < 10 minutes"
+      - "Tests assert behavior, not implementation details"
+      - "Zero flaky unit tests"
+      - "Tests co-located with source files"
+
+    anti_patterns:
+      - "❌ expect(db.query).toHaveBeenCalled() — assert on output, not internal calls"
+      - "❌ Excessive snapshot testing (generates noise on every UI change)"
+      - "❌ Shared mutable state between tests"
+      - "❌ Testing private methods directly"
+      - "❌ Coverage gaming: testing getters/setters to inflate numbers"
+
+    reviewers:
+      - persona: "Test Quality Reviewer"
+        checklist:
+          - "Tests assert behavior, not implementation?"
+          - "Coverage targets met for critical modules?"
+          - "No flaky tests?"
+
+  # ═══════════════════════════════════════
+  # Capability 3: API Testing (Code Type)
+  # ═══════════════════════════════════════
+
+  api_testing:
+    description: "API endpoint verification — contract testing, auth scenarios, error handling"
+
+    steps:
+      - id: select_endpoints
+        action: |
+          List all API endpoints to test:
+          1. From OpenAPI spec (if exists) or route files
+          2. For each: method, path, auth required, request/response shapes
+          3. Priority: auth endpoints > CRUD > admin > utility
+        tool_ref: null
+        output_file: "api-test-plan.md"
+
+      - id: write_api_tests
+        action: |
+          For each endpoint, test (from research):
+          1. Happy path: correct input → expected output + status code
+          2. Validation: missing/invalid fields → 400 with error message
+          3. Auth: no token → 401, wrong role → 403, expired → 401
+          4. Edge cases: empty arrays, max length, special characters
+          Validate response structure with Zod schemas (not just status codes).
+          Use curl for quick endpoint testing, Playwright API testing for complex flows.
+        tool_ref: api_testing
+        output_file: "api tests (scripts or spec files)"
+
+      - id: verify_api_tests
+        action: |
+          Run all API tests and verify:
+          1. All endpoints have happy path + ≥2 error cases
+          2. Response schemas match expected types
+          3. Auth matrix covered (all roles × all protected endpoints)
+        tool_ref: null
+        output_file: "api-test-results.md"
+
+      - id: optimize_api_tests
+        action: |
+          Optimize for CI:
+          1. Seed test data before suite, clean up after
+          2. Use test fixtures, not production data
+          3. Check: no tests depend on external services (mock them)
+        tool_ref: null
+        output_file: "api-test-optimization.md"
+
+    quality_criteria:
+      - "Every endpoint has happy path + ≥2 error case tests"
+      - "Auth scenarios tested for all roles"
+      - "Response schemas validated (Zod or TypeScript assertions)"
+      - "All API tests pass in CI (no external dependencies)"
+
+    anti_patterns:
+      - "❌ Testing only happy path (most bugs are in error handling)"
+      - "❌ Checking only status codes (response body must also be validated)"
+      - "❌ Hardcoded auth tokens (use test fixtures)"
+      - "❌ Tests hitting production APIs"
+
+    reviewers:
+      - persona: "API Security Reviewer"
+        checklist:
+          - "Auth scenarios cover all roles?"
+          - "Validation errors return safe messages (no stack traces)?"
+          - "Rate limiting tested?"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Performance Testing (Code Type)
+  # ═══════════════════════════════════════
+
+  performance_testing:
+    description: "Page performance auditing — Lighthouse scores, Core Web Vitals, performance budgets"
+
+    steps:
+      - id: select_pages
+        action: |
+          Identify pages to performance test:
+          1. Landing/marketing pages (SEO critical → must score high)
+          2. Core app pages (dashboard, main view → user experience)
+          3. Data-heavy pages (tables, lists → most likely to be slow)
+          Define targets: LCP < 2.5s, FID < 100ms, CLS < 0.1 (Core Web Vitals)
+        tool_ref: null
+        output_file: "performance-test-plan.md"
+
+      - id: run_lighthouse
+        action: |
+          Run Lighthouse on each page:
+          1. npx lighthouse URL --output=json --output-path=report.json --chrome-flags="--headless"
+          2. Extract scores: Performance, Accessibility, Best Practices, SEO
+          3. Extract Core Web Vitals: LCP, FID/TBT, CLS
+          4. For full-site scan: npx unlighthouse --site URL
+        tool_ref: performance_audit
+        output_file: "lighthouse-report.json"
+
+      - id: verify_performance
+        action: |
+          Check against targets:
+          1. Performance score ≥ 80
+          2. LCP < 2.5s, CLS < 0.1, TBT < 200ms
+          3. No critical audit failures
+          Document any pages below target with specific bottleneck.
+        tool_ref: null
+        output_file: "performance-results.md"
+
+      - id: optimize_performance
+        action: |
+          For pages below target:
+          1. Identify largest blocking resources (from Lighthouse audit)
+          2. Common fixes: dynamic import, image optimization, font loading
+          3. Re-run Lighthouse after fixes, compare before/after
+          Set up performance budgets in CI to prevent regression.
+        tool_ref: performance_audit
+        output_file: "performance-optimization.md"
+
+    quality_criteria:
+      - "Lighthouse Performance score ≥ 80 on all tested pages"
+      - "LCP < 2.5s, CLS < 0.1, TBT < 200ms"
+      - "Fabricated performance scores = FAIL. Run the actual audit."
+      - "Performance budgets defined for CI"
+
+    anti_patterns:
+      - "❌ Testing only in dev mode (production build gives different results)"
+      - "❌ Ignoring mobile performance (test both desktop and mobile presets)"
+      - "❌ Optimizing without measuring (always baseline first)"
+
+    reviewers:
+      - persona: "Performance Engineer"
+        checklist:
+          - "Core Web Vitals within targets?"
+          - "Heavy pages identified and optimized?"
+          - "CI budget prevents regression?"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Accessibility Testing (Code Type)
+  # ═══════════════════════════════════════
+
+  accessibility_testing:
+    description: "WCAG compliance checking — automated audits + keyboard + screen reader verification"
+
+    steps:
+      - id: select_pages_for_a11y
+        action: |
+          Identify pages for accessibility testing:
+          1. All public-facing pages (legal requirement in many jurisdictions)
+          2. All interactive forms and dialogs
+          3. All navigation flows (sidebar, breadcrumbs, command palette)
+          Target: WCAG 2.1 AA compliance
+        tool_ref: null
+        output_file: "a11y-test-plan.md"
+
+      - id: run_automated_audit
+        action: |
+          Run automated checks:
+          1. npx @axe-core/cli URL --tags wcag2aa → violations list
+          2. npx pa11y URL --reporter json → additional checks
+          3. For comprehensive: run both (they catch different issues)
+          Automated tools catch ~30-40% of a11y issues. Manual testing needed for the rest.
+        tool_ref: accessibility_audit
+        output_file: "a11y-audit-results.json"
+
+      - id: verify_a11y
+        action: |
+          Verify results:
+          1. Zero critical violations (missing alt text, no labels, broken ARIA)
+          2. Color contrast ratio ≥ 4.5:1 for all text
+          3. All interactive elements keyboard accessible (Tab, Enter, Escape)
+          4. Focus management correct (modals trap focus, close returns focus)
+        tool_ref: null
+        output_file: "a11y-verification.md"
+
+      - id: optimize_a11y
+        action: |
+          Fix violations and enhance:
+          1. Fix all critical/serious violations from automated audit
+          2. Add ARIA labels where needed
+          3. Test keyboard navigation flow (Tab order logical?)
+          4. Re-run audit after fixes, compare before/after
+        tool_ref: accessibility_audit
+        output_file: "a11y-optimization.md"
+
+    quality_criteria:
+      - "Zero critical WCAG 2.1 AA violations (axe-core + pa11y)"
+      - "Color contrast ≥ 4.5:1 for all text"
+      - "All interactive elements keyboard accessible"
+      - "Focus management correct for modals/dialogs"
+
+    anti_patterns:
+      - "❌ Relying only on automated tools (they catch ~30-40%)"
+      - "❌ Hiding elements with display:none to 'fix' violations"
+      - "❌ Adding ARIA without understanding (wrong ARIA is worse than none)"
+
+    reviewers:
+      - persona: "Accessibility Specialist"
+        checklist:
+          - "Automated audit shows zero critical violations?"
+          - "Keyboard navigation tested?"
+          - "Screen reader announcements for async operations?"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Pair Testing (Mixed Type — TAD 4D Protocol)
+  # ═══════════════════════════════════════
+
+  pair_testing:
+    description: "Human + AI collaborative testing using TAD's 4D Protocol — Discover, Discuss, Decide, Deliver"
+
+    steps:
+      # Prepare — set up the testing session
+      - id: prepare_session
+        action: |
+          Before starting pair testing:
+          1. Ensure app is running and accessible (local or staging URL)
+          2. Playwright installed for screenshots: `playwright screenshot URL output.png`
+          3. Identify focus areas: new features, changed pages, high-risk flows
+          4. Human decides: what to explore first
+        tool_ref: e2e_testing
+        output_file: "pair-test-session-plan.md"
+
+      # Discover — AI explores and finds issues
+      - id: discover
+        action: |
+          AI navigates the app and discovers issues:
+          1. Take screenshots of each page/state: `playwright screenshot URL page.png --full-page`
+          2. Analyze screenshot visually: layout issues, alignment, overflow, truncation
+          3. Check interactive elements: buttons clickable, forms submittable, navigation works
+          4. Check edge cases: empty states, long text, special characters, many items
+          5. Report each finding immediately with screenshot evidence
+          Human guides: "go to the settings page", "try adding 100 items", "switch to dark mode"
+        tool_ref: html_screenshot
+        output_file: "pair-test-findings/ (screenshots + notes)"
+
+      # Discuss — human and AI discuss findings
+      - id: discuss
+        action: |
+          For each finding, discuss (4D Protocol):
+          1. What is the issue? (AI describes, shows screenshot)
+          2. How severe? (Human judges: critical / major / minor / cosmetic)
+          3. Why is it happening? (AI analyzes code if needed)
+          4. Is it a real problem for users? (Human perspective)
+          Key: "1M context window means Round 10 still has Round 1's full details"
+        tool_ref: null
+        output_file: "pair-test-discussion.md (append per round)"
+
+      # Decide — make decisions in-session
+      - id: decide
+        action: |
+          For each discussed issue, decide NOW (not later):
+          1. Fix now — create immediate fix task
+          2. Fix later — add to backlog with priority
+          3. Won't fix — document reason (intentional, low impact, etc.)
+          "Decisions made with full context beat deferred triage — no information loss."
+        tool_ref: null
+        output_file: "pair-test-decisions.md"
+
+      # Deliver — record everything
+      - id: deliver
+        action: |
+          Generate session report:
+          1. Summary: rounds completed, findings count, decisions made
+          2. Per-round: finding + severity + decision + evidence (screenshot)
+          3. Fix tasks: generate handoffs for "fix now" items
+          4. Metrics: discovery rate, fix ratio, session duration
+          Use Typst to generate PDF report if needed.
+        tool_ref: pdf_generation
+        output_file: "pair-test-report.md (and optional .pdf)"
+
+    quality_criteria:
+      - "Each round produces decisions (not just bug list)"
+      - "All findings have screenshot evidence"
+      - "Severity rated by human (not AI alone)"
+      - "Fix-now decisions have immediate handoff"
+      - "'Won't fix' decisions have documented reasoning"
+
+    anti_patterns:
+      - "❌ AI deciding severity without human input"
+      - "❌ Deferring all decisions to 'later triage meeting'"
+      - "❌ Testing without screenshots (no evidence)"
+      - "❌ Ignoring human intuition ('this feels wrong' is valid input)"
+
+    reviewers:
+      - persona: "QA Lead"
+        checklist:
+          - "Coverage of new/changed features?"
+          - "Decisions made for all findings?"
+          - "Evidence (screenshots) for each finding?"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Test Strategy (Document Type)
+  # ═══════════════════════════════════════
+
+  test_strategy:
+    description: "Design the testing strategy — what to test, how to test, how much to test"
+
+    steps:
+      # Layer 1: Search — gather project context
+      - id: search_project_context
+        action: |
+          Gather information about the project:
+          1. What does the app do? (core user flows)
+          2. What's the tech stack? (framework, API, database)
+          3. What's the team size? (affects how much testing is practical)
+          4. What's the risk profile? (payments = high risk, blog = low risk)
+          5. What existing tests exist? (check for tests/ directory, CI config)
+          6. Search for similar app test strategies: "testing strategy {app-type} best practices"
+        tool_ref: web_scraping
+        output_file: "test-strategy-research.md"
+
+      # Layer 2: Analyze — determine test distribution
+      - id: analyze_test_distribution
+        action: |
+          Determine test pyramid for THIS project (from qa-automation research):
+          1. Default: 70% unit / 20% integration / 10% E2E
+          2. Adjust for project type:
+             - Data-heavy app → more integration tests (API layer critical)
+             - UI-heavy app → more E2E tests (visual correctness matters)
+             - Logic-heavy app → more unit tests (algorithms, calculations)
+          3. Risk-based testing: identify highest-risk areas, test those first
+          4. Map each risk area to a test level (unit/integration/E2E)
+          "Test pyramid is a guideline, not law. Adapt to YOUR project's risk profile."
+        quality: "Distribution must have project-specific reasoning, not just '70/20/10 because best practice'."
+        tool_ref: null
+        output_file: "test-distribution-analysis.md"
+
+      # Layer 3: Derive — create concrete test plan
+      - id: derive_test_plan
+        action: |
+          Create actionable test plan:
+          1. Per-module coverage targets (not global average):
+             - Auth module: 90% (high risk)
+             - Utility functions: 80% (medium risk)
+             - UI components: 60% (low risk, tested by E2E)
+          2. CI pipeline integration:
+             - Pre-commit: lint + type check
+             - PR: unit + integration tests
+             - Merge to main: full E2E suite
+             - Nightly: performance + accessibility audit
+          3. Quality gates (from qa-automation research):
+             - Build fails on ANY test failure (zero tolerance)
+             - Coverage below threshold blocks merge
+             - Performance regression blocks deploy
+          4. Flaky test policy: quarantine → fix within 48h → restore or delete
+        quality: "Test plan is executable (CI commands, not vague goals)."
+        tool_ref: null
+        output_file: "test-plan.md"
+
+      # Layer 4: Generate — produce test strategy document
+      - id: generate_strategy_doc
+        action: |
+          Generate the final test strategy document:
+          1. Executive summary (1 paragraph)
+          2. Test pyramid with project-specific rationale
+          3. Per-module coverage targets table
+          4. CI pipeline configuration (YAML or description)
+          5. Quality gates definition
+          6. Flaky test policy
+          7. Tool stack summary
+          Generate as PDF with Typst for stakeholder sharing.
+        tool_ref: pdf_generation
+        output_file: "test-strategy.pdf"
+
+    quality_criteria:
+      - "Test pyramid adapted to project type (not generic 70/20/10)"
+      - "Per-module coverage targets (not global average)"
+      - "CI pipeline defined with run timing"
+      - "Quality gates are enforceable (build fails, merge blocks)"
+      - "Flaky test policy documented"
+      - "Fabricated coverage numbers or invented metrics = FAIL"
+
+    anti_patterns:
+      - "❌ Generic '80% coverage' without per-module targets"
+      - "❌ Test strategy without CI integration (tests that don't run automatically are worthless)"
+      - "❌ Allowing flaky tests to persist (they erode trust in the entire suite)"
+      - "❌ Testing everything equally (risk-based prioritization is essential)"
+
+    reviewers:
+      - persona: "Engineering Manager"
+        checklist:
+          - "Test strategy practical for team size?"
+          - "Coverage targets risk-proportional?"
+          - "CI pipeline defined and implementable?"
+      - persona: "QA Strategist"
+        checklist:
+          - "All risk areas covered by appropriate test level?"
+          - "Flaky test policy realistic?"
+          - "Quality gates enforceable?"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  {project}/tests/                      # Test code (lives in project)
+  ├── e2e/
+  │   ├── pages/                        # Page Objects
+  │   │   ├── login.page.ts
+  │   │   └── dashboard.page.ts
+  │   ├── login.spec.ts                 # E2E test specs
+  │   └── dashboard.spec.ts
+  ├── unit/                             # Co-located with source (or here)
+  │   └── *.test.ts
+  ├── api/                              # API test scripts
+  │   └── *.api.test.ts
+  └── fixtures/                         # Shared test data
+
+  {project}/                            # Config files
+  ├── playwright.config.ts
+  ├── vitest.config.ts
+  └── .lighthouserc.json               # Performance budgets (optional)
+
+  .tad/active/testing/{project}/        # TAD documentation
+  ├── test-strategy.md                  # Strategy document
+  ├── test-strategy.pdf                 # PDF version
+  ├── e2e-test-plan.md                  # E2E planning
+  ├── unit-test-plan.md                 # Unit test planning
+  ├── performance-results.md            # Lighthouse results
+  ├── a11y-verification.md              # Accessibility results
+  ├── pair-test-report.md               # Pair testing session report
+  └── pair-test-findings/               # Screenshots from pair testing
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Test strategy document complete with per-module targets"
+      - "Critical flows identified for E2E testing"
+      - "Test pyramid adapted to project type"
+      - "CI pipeline plan defined"
+      - "Tool stack selected with rationale"
+
+  gate4_acceptance:
+    checklist:
+      - "npx playwright test → 100% pass"
+      - "npx vitest run → 100% pass"
+      - "npx vitest run --coverage → meets per-module thresholds"
+      - "Lighthouse Performance ≥ 80 on key pages"
+      - "axe-core: zero critical WCAG violations"
+      - "All critical-path flows have E2E tests"
+      - "CI pipeline configured and working"
