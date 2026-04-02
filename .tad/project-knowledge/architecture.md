@@ -189,6 +189,11 @@ Project-specific architecture learnings accumulated through TAD workflow.
   4. **Each capability judged independently** — same pack can mix all three types. web-testing has 5 code, 1 mixed, 1 document.
 - **Action**: When designing Domain Pack capabilities, first classify each as A/B/Mixed, then apply the corresponding step model. Don't force all capabilities into the same structure.
 
+### Domain Pack Must Declare Tool Availability Boundaries - 2026-04-02
+- **Context**: Building mobile-testing domain pack; expert review flagged Android coverage missing
+- **Discovery**: Mobile testing CLI tools have severe availability gaps vs web: VoiceOver has no CLI audit tool (ecosystem blank), Android emulator needs full SDK (35GB+), xcrun simctl needs Xcode absolute path (CLT insufficient). A domain pack named "mobile-testing" but only covering iOS creates false expectations.
+- **Action**: Domain Pack description must declare platform/tool scope explicitly (e.g., "iOS/RN-first, Android deferred to v1.1"). Don't name a pack broadly if tool availability only covers one platform. Include scope comments at YAML top level.
+
 ### Hook Path Matching: Glob Prefix Must Handle Relative Paths - 2026-04-02
 - **Context**: post-write-sync.sh case patterns used `*/.tad/` which requires a character + `/` before `.tad`. Claude Code passes file_path as relative (`.tad/active/...`) not absolute (`/path/.tad/...`).
 - **Discovery**: `*/.tad/` does NOT match `.tad/` (no character before the slash). Must use `*.tad/` (any prefix including empty) to handle both absolute and relative paths. Similarly, `*NEXT.md` is too broad (matches WHATSNEXT.md) — use `*/NEXT.md|NEXT.md` for exact matching.
