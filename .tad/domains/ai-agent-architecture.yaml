@@ -1,0 +1,965 @@
+# Domain Pack: AI Agent Architecture
+# Design reliable AI agents — from concept to production-ready blueprint.
+# Framework-agnostic: applies to Claude Code, OpenClaw, LangChain, or custom.
+# Scope: Architecture design (documents + diagrams), NOT code implementation.
+domain: ai-agent-architecture
+version: 1.0.0
+requires_registry: ">=1"
+description: "AI Agent 架构设计：从概念到可实现的蓝图。产出物是设计文档 + 架构图，不是代码。框架无关：适用于 Claude Code / OpenClaw / LangChain / 自建。核心价值：防止 agent 在生产中失败（幻觉、无限循环、越权、成本爆炸）。"
+
+# Platform scope: All agent environments (Claude Code, OpenClaw, Anthropic API, LangGraph, CrewAI, custom)
+# Type: All capabilities are Type A (Document/Research)
+# Step model: search → analyze → derive → generate
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: Reliability Design
+# ═══════════════════════════════════════
+
+capabilities:
+
+  reliability_design:
+    description: "三层验证架构设计 — schema/语义/权限门控 + enforcement 机制选型"
+
+    steps:
+      - id: search_environment
+        action: |
+          搜索目标 agent 运行环境的 enforcement 机制：
+          1. 搜索环境文档/源码，列出所有可用的约束机制
+          2. 对每个机制分类：Prompt 级 / Hook-中间件级 / 架构约束级
+          3. 搜索该环境的已知安全事故和绕过案例
+        tool_ref: web_scraping
+        queries:
+          - '"{环境名}" agent guardrails enforcement mechanisms'
+          - '"{环境名}" agent security bypass vulnerability'
+          - '"{环境名}" agent reliability production patterns 2026'
+        output_file: "reliability-design.md"
+
+      - id: analyze_layers
+        action: |
+          对目标环境做三层验证分析（来源: Alex 三层可靠性模型）：
+
+          Layer 1 — Schema 验证（结构正确吗？）：
+          - 目标环境有什么 schema 验证工具？（strict mode? JSON Schema? 类型系统?）
+          - 现有验证覆盖率：所有输入/输出都有 schema 吗？
+          - 缺失的验证点在哪？
+
+          Layer 2 — 语义验证（逻辑正确吗？）：
+          - 参数组合合理性怎么检查？（例: 删除操作 + 生产环境 = 需要人工确认）
+          - 上下文匹配怎么验证？（例: 当前对话上下文是否支持这个工具调用）
+          - 现有环境有什么中间件/hook 可以实现？
+
+          Layer 3 — 权限验证（允许执行吗？）：
+          - 权限模型是什么？（角色/状态/条件）
+          - 什么操作是不可逆的？（需要更高级别审批）
+          - 有没有"硬约束"（架构上不可能违反）vs "软约束"（prompt 建议，可被绕过）？
+
+          关键数据点：每层列出 ≥2 个具体机制 + 1 个已知绕过案例。
+        quality: "每个层至少 2 个具体机制，不接受'加 guardrails'这种空话。"
+        tool_ref: null
+        output_file: "reliability-design.md (append)"
+
+      - id: derive_architecture
+        action: |
+          基于三层分析推导验证架构（来源: Claude Code enforcement 优先级模式）：
+
+          1. 优先级设计：
+             确定 deny > hooks > prompt 的具体映射
+             哪些规则必须在最高层（架构约束）？
+             哪些可以在中间层（hook/middleware）？
+             哪些只需 prompt 级别？
+
+          2. 冗余设计：
+             每个关键行为至少 2 层独立 enforcement
+             单点故障分析：如果 Layer N 被绕过，Layer N+1 能兜底吗？
+
+          3. 步骤最小化（来源: "10 步 85% → 80% 失败率"原则）：
+             当前设计有多少步骤？能否减少到 ≤5 步？
+             每减少一步，可靠性提升多少？（用公式: 失败率 = 1 - 准确率^步骤数）
+
+          如果环境不支持多层 enforcement → 诚实标注 "⚠️ 仅有 prompt 级约束，生产风险较高"
+        quality: "架构必须有冗余分析。结论有计算支撑（步骤数×准确率）。"
+        tool_ref: null
+        output_file: "reliability-design.md (append)"
+
+      - id: generate_reliability_diagrams
+        action: |
+          用 D2 生成两张架构图：
+          1. 三层验证流程图：输入 → Schema 验证 → 语义验证 → 权限验证 → 执行
+             标注每层的具体工具/机制名称
+          2. Enforcement 优先级图：从最强（架构约束）到最弱（prompt），标注每层覆盖的规则
+        tool_ref: diagram_generation
+        output_file: "reliability-architecture.svg"
+
+      - id: compile_reliability_report
+        action: "综合为可靠性设计文档 PDF（含分析、架构图、选型理由）"
+        tool_ref: pdf_generation
+        output_file: "reliability-design.pdf"
+
+    quality_criteria:
+      - "三层验证每层有 ≥2 个具体机制（不是'加 guardrails'）"
+      - "优先级设计有明确的 deny > hooks > prompt 映射"
+      - "冗余分析：每个关键行为有 ≥2 层独立 enforcement"
+      - "步骤数分析有失败率计算（1 - accuracy^steps）"
+      - "如果环境不支持多层 → 诚实标注风险"
+      - "编造机制 = FAIL。不确定的标注 [UNVERIFIED]"
+
+    anti_patterns:
+      - "❌ 只靠 prompt 约束关键行为（'MANDATORY' in prompt ≠ enforced）"
+      - "❌ 单层 enforcement（一个绕过 = 全部失效）"
+      - "❌ 步骤数不分析（每多一步，失败率指数增长）"
+      - "❌ 过度约束（OVER_CONSTRAINED — 限制太多导致 agent 无法工作）"
+      - "❌ 安全事故无案例引用（凭空说'可能被绕过'不算分析）"
+
+    reviewers:
+      - persona: "安全架构师"
+        checklist:
+          - "三层验证是否都有具体实现机制？"
+          - "优先级是否明确（硬约束 > 软约束）？"
+          - "冗余设计是否覆盖关键行为？"
+          - "是否考虑了已知绕过模式？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Role & Behavior Design
+  # ═══════════════════════════════════════
+
+  role_behavior_design:
+    description: "Agent 角色定义、行为边界、不可变约束 — 三文件分离模式"
+
+    steps:
+      - id: search_patterns
+        action: |
+          搜索目标领域的 agent 角色设计模式：
+          1. 该领域有哪些成功的 agent 角色？（搜索 GitHub + 产品文档）
+          2. 这些 agent 的身份定义怎么写的？（persona, mission, style）
+          3. 它们有什么行为约束？（forbidden actions, mandatory rules）
+          4. 搜索该领域的 agent 事故/失败案例（越权、幻觉、不当行为）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" AI agent persona design best practices'
+          - '"{领域}" AI agent failure inappropriate behavior'
+          - '"AGENTS.md" OR "SOUL.md" OR "system prompt" agent role definition'
+        output_file: "role-behavior-design.md"
+
+      - id: analyze_identity
+        action: |
+          用三文件分离模式分析角色设计（来源: OpenClaw AGENTS/SOUL/HEARTBEAT 模式）：
+
+          文件 1 — Identity (SOUL 层)：
+          - 角色名称、使命、核心哲学
+          - 人格特质和沟通风格
+          - 什么是这个 agent 的"灵魂"（不可改变的核心信念）？
+          对比参考: OpenClaw SOUL.md 的 "Discussion over consumption" 哲学
+
+          文件 2 — Operations (AGENTS 层)：
+          - 命令清单和处理流程
+          - 每种输入类型的标准响应
+          - 状态转换规则
+          对比参考: OpenClaw AGENTS.md 的 Command Reference 表
+
+          文件 3 — Hard Rules (HEARTBEAT 层)：
+          - 绝对不能做的事（有事故案例支撑）
+          - 每条规则的成本/风险理由
+          - 违反后的处理方式
+          对比参考: OpenClaw HEARTBEAT.md 的 "NEVER loop" (¥74 事故)
+
+          每条规则回答：WHY（为什么要这条规则）+ HOW（怎么 enforce）+ WHAT IF（违反了会怎样）
+        quality: "每条 NEVER 规则必须有事故案例或风险计算支撑。'因为不安全'不够具体。"
+        tool_ref: null
+        output_file: "role-behavior-design.md (append)"
+
+      - id: derive_matrix
+        action: |
+          基于分析推导行为矩阵：
+
+          1. 输入→行为映射表：
+             | 输入类型 | Agent 行为 | Enforcement 层 | 如果违反 |
+             覆盖所有可能的输入类型（包括边缘情况和恶意输入）
+
+          2. 权限边界表：
+             | 操作 | 允许/拒绝/需确认 | 条件 | 升级路径 |
+             特别关注不可逆操作的审批流程
+
+          3. 角色升级/降级条件：
+             什么情况下 agent 应该说"我不能做这个，请找人类"？
+             什么情况下可以自主决策？
+
+          如果存在"未定义行为"（某些输入没有对应规则）→ 标注 "⚠️ 需要补充规则"
+        quality: "行为矩阵必须覆盖所有输入类型。未定义行为 = 安全漏洞。"
+        tool_ref: null
+        output_file: "role-behavior-design.md (append)"
+
+      - id: generate_role_diagrams
+        action: |
+          用 D2 生成：
+          1. 角色架构图：三文件关系 (Identity → Operations → Hard Rules)
+          2. 行为状态机：输入类型 → 状态转换 → 输出
+        tool_ref: diagram_generation
+        output_file: "role-behavior-architecture.svg"
+
+      - id: compile_role_report
+        action: "综合为角色行为设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "role-behavior-design.pdf"
+
+    quality_criteria:
+      - "三文件分离明确（Identity / Operations / Hard Rules 不混杂）"
+      - "每条 NEVER 规则有事故/成本理由"
+      - "行为矩阵覆盖所有输入类型（无未定义行为）"
+      - "不可逆操作有人类审批流程"
+      - "自知规则：agent 被问到'你怎么工作'时必须读自己的配置（不猜测）"
+      - "编造角色能力 = FAIL。不确定的标注 [NEEDS_VALIDATION]"
+
+    anti_patterns:
+      - "❌ 'Be helpful and safe'（太笼统，无法 enforce）"
+      - "❌ 只用 prompt MANDATORY（没有 hook/architecture 层 enforce = 建议不是规则）"
+      - "❌ Identity/Operations/Rules 混在一个文件（难以维护和审查）"
+      - "❌ NEVER 规则没有 WHY（没有理由的规则会被下一个开发者删掉）"
+      - "❌ 行为矩阵有空白（未定义行为 = agent 自由发挥 = 风险）"
+
+    reviewers:
+      - persona: "Agent 设计师"
+        checklist:
+          - "角色定义是否清晰具体？"
+          - "行为边界是否完整无遗漏？"
+          - "Hard Rules 是否有事故案例支撑？"
+          - "Enforcement 层级是否合理？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Tool System Design
+  # ═══════════════════════════════════════
+
+  tool_system_design:
+    description: "工具清单、权限模型、并发策略、schema 合约 — 让 agent 安全高效用工具"
+
+    steps:
+      - id: search_tools
+        action: |
+          搜索目标 agent 需要的工具和现有最佳实践：
+          1. 列出 agent 需要调用的所有外部工具/API
+          2. 搜索这些工具的 schema 规范和安全指南
+          3. 搜索 tool_use/function_calling 的生产最佳实践
+        tool_ref: web_scraping
+        queries:
+          - '"tool_use" OR "function_calling" agent best practices 2026'
+          - '"{环境名}" tool permission model design'
+          - '"strict schema" agent tool validation production'
+        output_file: "tool-system-design.md"
+
+      - id: analyze_tools
+        action: |
+          对每个工具做安全分类分析（来源: Claude Code Tool 系统）：
+
+          | 工具名 | 读/写/危险 | 并发安全 | Schema 严格度 | 错误影响 |
+
+          分类标准：
+          - **isConcurrencySafe()**: 多次并行调用是否安全？（读操作通常安全，写操作不安全）
+          - **isReadOnly()**: 是否不改变外部状态？
+          - **isDestructive()**: 是否可能造成不可逆损害？
+
+          对每个工具设计 schema（来源: Anthropic API tool_use 规范）：
+          - input_schema: 参数类型 + 必填/选填 + 值域约束
+          - strict: true（防止 AI 幻觉参数）
+          - error_conditions: 什么情况下会失败 + 失败时返回什么
+          - escalation_path: 失败后怎么办（重试/降级/人工）
+        quality: "每个工具必须有安全分类 + schema + 错误处理。'调 API'不够具体。"
+        tool_ref: null
+        output_file: "tool-system-design.md (append)"
+
+      - id: derive_permission_model
+        action: |
+          基于工具分析推导权限和并发模型（来源: Claude Code Permission Pipeline）：
+
+          1. 权限管线设计（4 级，成本递增）：
+             Level 1 — 静态规则（即时）：allow/deny 列表
+             Level 2 — 模式规则（即时）：基于上下文/状态的条件判断
+             Level 3 — LLM 分类器（慢）：AI 判断是否允许
+             Level 4 — 人类审批（阻塞）：不可逆操作需要确认
+
+          2. 并发模型设计：
+             Parallel batch: 哪些工具可以并行执行？（read-only, 上限 N）
+             Serial batch: 哪些工具必须串行？（write, destructive）
+             失败处理: 一个并行工具失败时，其他工具怎么办？
+
+          3. Schema 加载策略：
+             全量加载 vs 延迟加载？（工具数 >20 时建议延迟加载节省 context）
+
+          如果工具间有依赖关系 → 画依赖图，标注执行顺序
+        quality: "权限模型必须分层。并发安全必须有明确的 parallel/serial 分类。"
+        tool_ref: null
+        output_file: "tool-system-design.md (append)"
+
+      - id: generate_tool_diagrams
+        action: |
+          用 D2 生成：
+          1. 权限管线图：输入 → 静态规则 → 模式规则 → LLM 判断 → 人类审批 → 执行
+          2. 并发模型图：Parallel pool + Serial queue + 失败处理路径
+        tool_ref: diagram_generation
+        output_file: "tool-permission-pipeline.svg"
+
+      - id: compile_tool_report
+        action: "综合为工具系统设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "tool-system-design.pdf"
+
+    quality_criteria:
+      - "每个工具有安全分类（read/write/destructive + concurrency）"
+      - "每个工具有 strict schema（input types + error conditions）"
+      - "权限管线分 4 层（static → mode → LLM → human），成本递增"
+      - "并发模型明确（parallel vs serial + 失败处理）"
+      - "危险操作有人类审批（不是自动通过）"
+      - "编造工具能力 = FAIL。不确定的标注 [NEEDS_TESTING]"
+
+    anti_patterns:
+      - "❌ 所有工具同等权限（没有分级 = 最弱的工具决定安全水位）"
+      - "❌ 没有 schema（AI 幻觉参数 — Anthropic API 已知风险）"
+      - "❌ 全量加载所有 schema（>20 工具时浪费 context，用延迟加载）"
+      - "❌ 忽略并发安全（并行写操作导致数据损坏）"
+      - "❌ 错误消息只说'error'（必须: 什么参数错了 + 建议什么值）"
+
+    reviewers:
+      - persona: "API 架构师"
+        checklist:
+          - "Schema 是否完整且 strict?"
+          - "权限分层是否合理？"
+          - "并发安全是否有保障？"
+          - "错误处理是否具体可操作？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Memory Design
+  # ═══════════════════════════════════════
+
+  memory_design:
+    description: "记忆架构设计 — 会话内/跨会话/持久化，检索策略，context budget"
+
+    steps:
+      - id: search_patterns
+        action: |
+          搜索 agent 记忆系统的设计模式和最佳实践：
+          1. 搜索不同框架的记忆实现（LangGraph, CrewAI, Claude Code memdir）
+          2. 搜索 context window 管理和 compaction 策略
+          3. 搜索 RAG vs 结构化记忆 vs LLM 驱动选择的对比
+        tool_ref: web_scraping
+        queries:
+          - '"agent memory system" design architecture patterns 2026'
+          - '"context window" management compaction strategy LLM'
+          - '"persistent memory" agent "cross session" implementation'
+        output_file: "memory-design.md"
+
+      - id: analyze_needs
+        action: |
+          分析目标 agent 的记忆需求（来源: Claude Code 4 tier compaction + OpenClaw changelog）：
+
+          1. 记忆分层分类：
+             | 类型 | 生命周期 | 存储位置 | 检索方式 | 大小预估 |
+             | 工作记忆 | 当前会话 | Conversation context | 自动（in context） | ~tokens |
+             | 短期记忆 | 跨几轮 | Session state file | 手动读取 | ~KB |
+             | 长期记忆 | 跨会话 | Persistent files/DB | 语义/LLM 选择 | ~MB |
+             | 外部记忆 | 永久 | 外部 API/DB | API call | ~GB |
+
+          2. Context budget 分析：
+             | 层 | Max tokens | 内容 |
+             | System prompt | X | 固定指令 + 工具描述 |
+             | User context | X | 持久配置 (CLAUDE.md 类) |
+             | Conversation | X | 动态增长 |
+             | Reserved | X | 模型响应预留 |
+             Total = context_window - reserved
+
+          3. 衰减/清理需求：
+             什么记忆需要定期清理？（日志、临时状态）
+             什么记忆需要"越老越不重要"？（新闻、趋势）
+             什么记忆永不过期？（用户偏好、安全规则）
+        quality: "记忆分层必须有 token 预估。'存起来'不够具体 — 存在哪、多大、怎么找？"
+        tool_ref: null
+        output_file: "memory-design.md (append)"
+
+      - id: derive_compaction
+        action: |
+          基于需求分析推导 compaction 和检索策略（来源: Claude Code 4-tier compaction）：
+
+          1. Progressive compaction 设计：
+             Tier 1 — Micro-compact (阈值 ~80%): 清除旧工具输出（最便宜、最精确）
+             Tier 2 — Auto-compact (阈值 ~N tokens): 摘要旧对话（中等成本）
+             Tier 3 — Session memory (阈值 ~90%): 提取到持久化存储（高成本）
+             Tier 4 — Reactive (API error): 截断最旧消息（最后手段）
+             每层目标不同信息类型。Circuit breaker: 3 次连续失败 → 禁用该层。
+
+          2. 检索策略选择：
+             | 方法 | 精度 | 速度 | 适用场景 |
+             | 关键词匹配 | 低 | 快 | 简单命令查找 |
+             | 语义搜索 (embedding) | 中 | 中 | 文档检索 |
+             | LLM 驱动选择 | 高 | 慢 | 复杂上下文需要判断 |
+             建议: Claude Code 使用 LLM sidequery 选 ≤5 条相关记忆
+
+          3. 持久化格式：
+             推荐 MEMORY.md index (≤200 行) + 独立主题文件（来源: Claude Code memdir 模式）
+
+          如果 context window 太小无法做多层 compaction → 标注限制和替代方案
+        quality: "Compaction 必须有阈值。检索必须有精度/速度对比。编造 token 数 = FAIL。"
+        tool_ref: null
+        output_file: "memory-design.md (append)"
+
+      - id: generate_memory_diagrams
+        action: |
+          用 D2 生成：
+          1. 记忆层次图：工作记忆 → 短期 → 长期 → 外部（标注存储和检索方式）
+          2. Compaction 流程图：4 tier 逐级降级（标注触发阈值和 circuit breaker）
+        tool_ref: diagram_generation
+        output_file: "memory-architecture.svg"
+
+      - id: compile_memory_report
+        action: "综合为记忆系统设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "memory-design.pdf"
+
+    quality_criteria:
+      - "记忆分 ≥3 层（工作/短期/长期），每层有存储+检索+大小预估"
+      - "Context budget 每层有 max tokens（加起来 ≤ context window）"
+      - "Compaction 有 ≥2 tier，每 tier 有触发阈值 + circuit breaker"
+      - "检索策略有精度/速度对比（不是只选一个）"
+      - "衰减规则明确（什么过期、什么永久）"
+      - "编造 token 数 = FAIL。不确定的标注 [ESTIMATED]"
+
+    anti_patterns:
+      - "❌ 无 compaction（context 增长直到崩溃）"
+      - "❌ 只用关键词检索（错过语义相关记忆）"
+      - "❌ 存所有东西不清理（记忆膨胀，噪音盖过信号）"
+      - "❌ 无衰减机制（过时记忆被当成当前事实）"
+      - "❌ 单层 compaction（没有逐级降级 = 要么全保留要么全丢失）"
+
+    reviewers:
+      - persona: "系统架构师"
+        checklist:
+          - "记忆分层是否合理？"
+          - "Context budget 是否可行？"
+          - "Compaction 是否有 fallback？"
+          - "检索精度是否满足需求？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Multi-Agent Design
+  # ═══════════════════════════════════════
+
+  multi_agent_design:
+    description: "多 agent 协作模式 — 分工、通信协议、隔离机制、成本控制"
+
+    steps:
+      - id: search_patterns
+        action: |
+          搜索多 agent 协作的设计模式和生产经验：
+          1. 搜索主流框架的多 agent 实现（LangGraph, CrewAI, AutoGen）
+          2. 搜索 Claude Code 的 coordinator/teams 模式
+          3. 搜索多 agent 事故案例（循环、成本爆炸、死锁）
+        tool_ref: web_scraping
+        queries:
+          - '"multi-agent" orchestration patterns production 2026'
+          - '"agent team" coordination communication protocol'
+          - '"multi-agent" failure loop cost explosion incident'
+        output_file: "multi-agent-design.md"
+
+      - id: analyze_collaboration
+        action: |
+          分析目标系统的多 agent 需求（来源: Claude Code 三级执行模式）：
+
+          1. 是否真的需要多 agent？
+             | 场景 | 单 agent 够吗 | 多 agent 理由 |
+             如果单 agent 能完成 → 不要加复杂性。多 agent 的额外成本：通信、同步、调试。
+
+          2. 协作模式选择：
+             | 模式 | 适用场景 | 复杂度 | 失败风险 |
+             | Sequential pipeline | A → B → C 顺序处理 | 低 | 低 |
+             | Parallel fan-out | 同时执行独立任务 | 中 | 中 |
+             | Hierarchical (coordinator) | 一个管理者分配任务 | 中 | 中 |
+             | Peer-to-peer | Agent 之间直接通信 | 高 | 高 |
+             Claude Code 三级: Sub-agent (隔离) → Coordinator (编排) → Team (持久化)
+
+          3. Agent 清单和模型分配（来源: wshobson/agents tier 模式）：
+             | Agent | 职责 | Model Tier | 成本/次 |
+             关键任务 → Tier 1 (最强模型), 支持任务 → Tier 3/4 (最快/最便宜)
+
+          4. 通信协议设计：
+             | Channel | 同步/异步 | 格式 | 适用场景 |
+             | In-process queue | 异步 | 结构化消息 | 同进程 |
+             | File-based mailbox | 异步 | JSON/YAML | 跨进程/跨机器 |
+             | Broadcast | 异步 | to="*" | 全体通知 |
+        quality: "必须先论证'是否需要多 agent'。不需要时不加复杂性。"
+        tool_ref: null
+        output_file: "multi-agent-design.md (append)"
+
+      - id: derive_isolation
+        action: |
+          基于协作分析推导隔离和安全机制：
+
+          1. 隔离边界：
+             每个 agent 能访问什么文件/工具？（最小权限原则）
+             Agent 之间能直接调用对方吗？（推荐: 不能，人类是信息桥梁 — TAD terminal 隔离模式）
+             Shared state 怎么处理？（读写锁？scratchpad？消息传递？）
+
+          2. 成本控制：
+             每个 agent 有 budget ceiling（model logic 不能覆盖）
+             总预算 = Σ(agent budgets) + 通信开销 + buffer
+             Circuit breaker: 单 agent 超预算 → 停止 + 通知
+
+          3. 生命周期管理：
+             Agent 怎么启动？（on-demand vs always-on）
+             Agent 怎么停止？（graceful shutdown 需要 approval flow）
+             Agent 崩溃怎么恢复？（checkpoint + 从最近状态恢复）
+
+          4. 循环检测（来源: 2026 industry research）：
+             机械检测（不是问 agent "你在循环吗"）
+             计数器 + 超时 + 状态比较
+             检测到循环 → 立即停止 + 升级到人类
+
+          如果系统规模小（≤3 agents）→ 推荐 sequential pipeline，不需要复杂协调
+        quality: "隔离边界必须明确。成本 ceiling 必须有具体数字。循环检测必须是机械的。"
+        tool_ref: null
+        output_file: "multi-agent-design.md (append)"
+
+      - id: generate_multi_agent_diagrams
+        action: |
+          用 D2 生成：
+          1. Agent 协作架构图（角色、边界、通信通道）
+          2. Agent 通信序列图（请求→处理→响应→确认的完整流程）
+          注: D2 支持序列图语法，无需额外工具
+        tool_ref: diagram_generation
+        output_file: "multi-agent-architecture.svg"
+
+      - id: compile_multi_agent_report
+        action: "综合为多 agent 设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "multi-agent-design.pdf"
+
+    quality_criteria:
+      - "先论证'是否需要多 agent'（不需要 = 不加复杂性）"
+      - "协作模式有对比选择（不是默认用最复杂的）"
+      - "每个 agent 有 budget ceiling（具体数字，不是'合理限制'）"
+      - "隔离边界明确（文件/工具/通信 三维度）"
+      - "循环检测是机械的（不是问 agent 自己）"
+      - "通信协议有格式定义（不是'发消息'）"
+      - "编造 budget 数字或协作模式 = FAIL。不确定的标注 [ESTIMATED]"
+
+    anti_patterns:
+      - "❌ 不需要多 agent 却用多 agent（复杂性是成本不是功能）"
+      - "❌ Agent 自报循环状态（必须机械证明 — 2026 共识）"
+      - "❌ 无 budget ceiling（成本爆炸 — OpenClaw ¥74 事故）"
+      - "❌ Shared mutable state 无锁（竞态条件导致数据损坏）"
+      - "❌ Fan-out 无聚合（结果丢失，资源浪费）"
+      - "❌ 无 shutdown 协议（orphaned agent 持续消耗资源）"
+
+    reviewers:
+      - persona: "分布式系统专家"
+        checklist:
+          - "多 agent 是否真的必要？"
+          - "隔离边界是否有效？"
+          - "成本控制是否足够？"
+          - "循环/死锁检测是否可靠？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Safety Design
+  # ═══════════════════════════════════════
+
+  safety_design:
+    description: "防越权、防幻觉、防无限循环、人在回路边界 — 安全约束全覆盖"
+
+    steps:
+      - id: search_risks
+        action: |
+          搜索目标领域的 agent 安全风险和防护方案：
+          1. 搜索 AI agent 安全事故和攻击方式
+          2. 搜索 guardrails 框架（NeMo, Guardrails AI, custom）
+          3. 搜索特定领域的安全合规要求（如医疗、金融）
+        tool_ref: web_scraping
+        queries:
+          - '"AI agent" security vulnerability prompt injection 2026'
+          - '"agent guardrails" framework comparison production'
+          - '"{领域}" AI safety compliance requirements'
+        output_file: "safety-design.md"
+
+      - id: analyze_threats
+        action: |
+          对目标 agent 做威胁建模（来源: NeMo 三轨模型 + Guardrails AI）：
+
+          1. Input rails — 输入安全：
+             | 威胁 | 检测方法 | 处理方式 |
+             | Prompt injection | 模式匹配 + LLM 分类 | 拒绝 + 告警 |
+             | PII 泄露 | 正则 + NER | 脱敏 + 告警 |
+             | 越权请求 | 权限检查 | 拒绝 + 升级 |
+
+          2. Execution rails — 执行安全：
+             | 威胁 | 检测方法 | 处理方式 |
+             | 无限循环 | 计数器 + 超时 | Circuit breaker (3 次 → 停) |
+             | 工具滥用 | Budget ceiling + 频率限制 | 停止 + 告警 |
+             | 危险操作 | 操作分类 (destructive) | 人类审批 |
+
+          3. Output rails — 输出安全：
+             | 威胁 | 检测方法 | 处理方式 |
+             | 幻觉/编造 | Schema 验证 + 来源检查 | 标注 [UNVERIFIED] |
+             | 不当内容 | 分类器 + 关键词 | 过滤 + 告警 |
+             | 数据泄露 | PII 扫描 + 敏感词 | 脱敏 |
+
+          每个威胁的检测方法区分: 机械检测（规则/正则, 快速可靠）vs 认知检测（LLM, 慢但灵活）
+        quality: "每个威胁有检测+处理双方案。'注意安全'不够具体。必须区分机械vs认知检测。"
+        tool_ref: null
+        output_file: "safety-design.md (append)"
+
+      - id: derive_boundaries
+        action: |
+          基于威胁分析推导人在回路边界：
+
+          1. 不可逆性矩阵（来源: Alex 人在回路边界模式）：
+             | 操作 | 可逆性 | 影响范围 | 自动/需确认/禁止 |
+             定义阈值: 影响范围 > X 或 可逆性 = 不可逆 → 必须人类确认
+             特定领域关键判断: 例如医疗过敏 = 不可逆风险 → 架构层禁止自动推荐
+
+          2. Circuit breaker 设计：
+             | 触发条件 | 动作 | 恢复方式 |
+             | 3 次同类错误 | 停止 + 通知人类 | 人类审查后恢复 |
+             | Budget 超限 | 停止 + 告警 | 人类批准追加 |
+             | 超时 | 停止 + 保存状态 | 从 checkpoint 恢复 |
+
+          3. 降级策略：
+             如果 安全检查服务挂了 → 退回到更严格的默认规则（fail-closed, 不是 fail-open）
+             如果 LLM 分类器不可用 → 退回到规则引擎
+             如果 全部不可用 → 停止服务，不冒险
+
+          4. 可审计性：
+             每个安全决策（allow/deny/escalate）记录: 时间 + 上下文 + 理由 + 结果
+        quality: "不可逆操作必须有人类确认。降级必须是 fail-closed。审计日志格式必须定义。"
+        tool_ref: null
+        output_file: "safety-design.md (append)"
+
+      - id: generate_safety_diagrams
+        action: |
+          用 D2 生成：
+          1. 三轨安全架构图：Input rails → Execution rails → Output rails
+          2. Circuit breaker 状态机：正常 → 半开 → 断开 → 恢复
+        tool_ref: diagram_generation
+        output_file: "safety-architecture.svg"
+
+      - id: compile_safety_report
+        action: "综合为安全设计文档 PDF（含威胁模型、边界定义、降级策略）"
+        tool_ref: pdf_generation
+        output_file: "safety-design.pdf"
+
+    quality_criteria:
+      - "三轨威胁模型（input/execution/output）每轨 ≥3 个威胁"
+      - "每个威胁有检测 + 处理双方案（不是只检测不处理）"
+      - "机械 vs 认知检测有明确区分"
+      - "不可逆操作有人类确认（不是 auto-approve）"
+      - "Circuit breaker 有 3 个触发条件 + 恢复方式"
+      - "降级策略是 fail-closed（不是 fail-open）"
+      - "编造安全机制 = FAIL"
+
+    anti_patterns:
+      - "❌ 'Please don't be harmful' in prompt（LLM-only safety 不可靠）"
+      - "❌ 无 budget limit（无限循环 = 无限成本）"
+      - "❌ Safety 作为事后添加（必须从设计阶段开始）"
+      - "❌ 只测 happy path（必须做对抗测试）"
+      - "❌ Fail-open 降级（安全检查挂了就放行 = 最危险的模式）"
+      - "❌ 无 circuit breaker（3 次同错还在重试 = 浪费 + 风险）"
+
+    reviewers:
+      - persona: "安全工程师"
+        checklist:
+          - "威胁模型是否完整？"
+          - "不可逆操作是否有人工审批？"
+          - "Circuit breaker 是否可靠？"
+          - "降级策略是否 fail-closed？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Prompt Architecture
+  # ═══════════════════════════════════════
+
+  prompt_architecture:
+    description: "System prompt 分层设计、组装流程、缓存策略、context budget"
+
+    steps:
+      - id: search_patterns
+        action: |
+          搜索 system prompt 架构设计的最佳实践：
+          1. 搜索大型 agent 系统的 prompt 组织方式
+          2. 搜索 prompt caching 和 context 优化技术
+          3. 搜索 prompt 注入防护和隔离技术
+        tool_ref: web_scraping
+        queries:
+          - '"system prompt" architecture layers design agent 2026'
+          - '"prompt caching" optimization context budget LLM'
+          - '"prompt injection" prevention system prompt isolation'
+        output_file: "prompt-architecture.md"
+
+      - id: analyze_hierarchy
+        action: |
+          分析目标系统的 prompt 层次需求（来源: Claude Code prompt hierarchy + SKILL 加载）：
+
+          1. Prompt 层次设计：
+             | Layer | 内容 | 加载时机 | Max Tokens | 变更频率 |
+             | System core | 不变的身份和规则 | 每次 | ~X | 极低 |
+             | User context | 持久配置 (CLAUDE.md 类) | 每次 | ~X | 低 |
+             | Domain knowledge | 领域知识 | 按需 | ~X | 中 |
+             | Dynamic context | 当前任务上下文 | 实时 | ~X | 高 |
+             | Tool schemas | 工具定义 | 延迟加载 | ~X | 低 |
+
+          2. 加载策略分析：
+             | 策略 | 优点 | 缺点 | 适用场景 |
+             | 全量加载 | 简单 | 浪费 context | 工具 <10 个 |
+             | Metadata + 延迟加载 | 节省 50%+ context | 首次调用慢 | 工具 >20 个 |
+             | 按需加载 (skill) | 最省 | 加载延迟 | domain 知识 |
+             Claude Code 模式: tool names in prompt, ToolSearch for full schema on demand
+
+          3. 缓存分析：
+             什么可以跨请求缓存？（system core, user context → cache HIT）
+             什么不能缓存？（dynamic context → 每次重算）
+             Fork pattern: 多 sub-agent 共享 prefix → 全部 cache HIT（来源: Claude Code gist）
+        quality: "每层有 max tokens 估算。加载策略有对比选择。缓存 HIT 率有预估。"
+        tool_ref: null
+        output_file: "prompt-architecture.md (append)"
+
+      - id: derive_assembly
+        action: |
+          基于层次分析推导组装流程和 budget：
+
+          1. 组装流水线：
+             Step 1: 加载 system core（固定）
+             Step 2: 合并 user context（CLAUDE.md hierarchy: global → user → project → local）
+             Step 3: 注入 domain knowledge（如果用户请求匹配 capability）
+             Step 4: 注入动态上下文（当前文件、错误信息、搜索结果）
+             Step 5: 注入工具 schemas（延迟加载: 只加载被调用的工具）
+             每步有 overflow 处理: 超预算 → 截断最不重要的层
+
+          2. Context budget 计算：
+             Total available = context_window - reserved_output
+             优先级分配:
+             P0: system core + hard rules （不可裁减）
+             P1: current task context （任务必需）
+             P2: user context + domain （可部分裁减）
+             P3: tool schemas + examples （可延迟/按需）
+
+          3. Prompt 安全：
+             用户输入和 system prompt 之间有隔离吗？（标记？嵌套？）
+             如何防止用户通过输入覆盖 system rules？
+             如何防止工具输出注入 prompt？（<system-reminder> 等标记）
+        quality: "组装流水线有明确步骤和 overflow 处理。Budget 有优先级和裁减策略。"
+        tool_ref: null
+        output_file: "prompt-architecture.md (append)"
+
+      - id: generate_prompt_diagrams
+        action: |
+          用 D2 生成：
+          1. Prompt 层次图：5 层从 system core 到 dynamic context（标注 token budget）
+          2. 组装流水线图：加载 → 合并 → 注入 → 验证 → 发送
+        tool_ref: diagram_generation
+        output_file: "prompt-architecture.svg"
+
+      - id: compile_prompt_report
+        action: "综合为 Prompt 架构设计文档 PDF"
+        tool_ref: pdf_generation
+        output_file: "prompt-architecture.pdf"
+
+    quality_criteria:
+      - "Prompt 分 ≥4 层，每层有 max tokens + 加载时机"
+      - "加载策略有对比（全量 vs 延迟 vs 按需）"
+      - "缓存策略有 HIT 率预估"
+      - "Context budget 有优先级（P0 不可裁减 → P3 可延迟）"
+      - "Overflow 有处理方案（不是'加更大 context window'）"
+      - "Prompt 安全有隔离机制"
+      - "编造 token 数 = FAIL。不确定的标注 [ESTIMATED]"
+
+    anti_patterns:
+      - "❌ 全部塞 system prompt（context 爆炸，真正需要的被压缩掉）"
+      - "❌ 无层次（flat prompt = 大了无法维护）"
+      - "❌ 全量加载所有工具 schema（>20 工具浪费数千 tokens）"
+      - "❌ 不考虑缓存（每次重算 = 慢 + 贵）"
+      - "❌ 引用不存在的文件（ORPHAN_REFERENCE — wshobson PluginEval）"
+      - "❌ 用户输入可覆盖 system rules（prompt injection 漏洞）"
+
+    reviewers:
+      - persona: "Prompt 工程师"
+        checklist:
+          - "层次设计是否合理？"
+          - "Token budget 是否可行？"
+          - "缓存策略是否有效？"
+          - "Prompt 注入防护是否到位？"
+
+  # ═══════════════════════════════════════
+  # Capability 8: Production Readiness
+  # ═══════════════════════════════════════
+
+  production_readiness:
+    description: "生产化设计 — 状态持久化、错误恢复、可观测性、降级策略、部署检查清单"
+
+    steps:
+      - id: search_practices
+        action: |
+          搜索 AI agent 生产化的最佳实践和检查清单：
+          1. 搜索 agent 生产部署的常见问题和解决方案
+          2. 搜索可观测性和监控方案（日志、metrics、tracing）
+          3. 搜索 agent 系统的 SRE/运维最佳实践
+        tool_ref: web_scraping
+        queries:
+          - '"AI agent" production deployment checklist 2026'
+          - '"agent observability" monitoring logging best practices'
+          - '"agent" state persistence crash recovery implementation'
+        output_file: "production-readiness.md"
+
+      - id: analyze_readiness
+        action: |
+          对目标系统做生产就绪性分析（来源: Alex 生产检查清单 + Claude Code 状态管理）：
+
+          1. 状态持久化：
+             | 状态类型 | 存储方案 | 恢复方式 | RPO |
+             Agent 任务进度 → checkpoint 文件/DB？
+             用户会话上下文 → session state？
+             中间计算结果 → cache？
+
+             测试: kill -9 进程 → 重启 → 从哪里恢复？丢失多少？
+             Claude Code 模式: state_file 作为 source of truth，每阶段 checkpoint
+
+          2. 错误通信（来源: Alex 错误反馈设计模式）：
+             | 错误类型 | 给 agent 的消息 | 给用户的消息 |
+             规则: 具体（什么错了）+ 可操作（怎么修）+ 不循环（同错 3 次 → 停止）
+
+          3. 可观测性：
+             | 维度 | 工具 | 记录什么 | 告警条件 |
+             | Logs | 结构化日志 | 每个决策 + 上下文 + 理由 | Error rate > X% |
+             | Metrics | 计数器/延迟 | 工具调用次数/延迟/成本 | Cost > budget |
+             | Traces | 分布式追踪 | 请求→工具→响应全链路 | Latency > Xms |
+
+          4. 依赖故障分析：
+             | 外部依赖 | 如果挂了会怎样 | 降级方案 | 恢复方案 |
+             每个外部 API/DB/服务都要回答这个问题
+
+          5. 部署策略：
+             Canary → 渐进发布 → 全量？
+             回滚方案？（多快能回到上一个版本？）
+             Feature flags?（能不能只对部分用户开新功能？）
+        quality: "每个外部依赖有故障分析。错误消息有'具体+可操作'示例。RPO 有具体数字。"
+        tool_ref: null
+        output_file: "production-readiness.md (append)"
+
+      - id: derive_checklist
+        action: |
+          基于分析推导部署检查清单（来源: Alex 生产检查清单模式 + Claude Code MCP 状态管理）：
+
+          ## Pre-Launch Checklist
+
+          ### 状态与恢复
+          - [ ] 状态持久化方案已实现（存储位置 + 格式 + 恢复流程）
+          - [ ] Kill-and-recover 测试通过（丢失 < X 分钟的工作）
+          - [ ] 所有 checkpoint 有写入确认（不是 fire-and-forget）
+
+          ### 错误处理
+          - [ ] 每种错误类型有具体 + 可操作的消息
+          - [ ] Circuit breaker 配置：3 次同错 → 停止 + 通知
+          - [ ] 外部依赖故障有降级方案（fail-closed）
+
+          ### 可观测性
+          - [ ] 结构化日志覆盖所有关键决策
+          - [ ] 成本监控有告警（>X 时通知）
+          - [ ] 追踪链路覆盖请求全路径
+
+          ### 安全
+          - [ ] 所有安全 rails 已激活（input + execution + output）
+          - [ ] 对抗测试已完成（≥5 种攻击尝试）
+          - [ ] 人在回路边界已配置（不可逆操作需确认）
+
+          ### 部署
+          - [ ] 回滚方案已测试（< X 分钟恢复）
+          - [ ] Canary 发布计划（先 X% 用户，观察 Y 时间）
+          - [ ] Feature flag 覆盖关键功能
+
+          每个 checklist 项必须有"怎么验证"的描述（不是打勾就行）。
+        quality: "Checklist ≥15 项。每项有验证方法。不接受'确保安全'这种空项。"
+        tool_ref: null
+        output_file: "production-readiness.md (append)"
+
+      - id: generate_production_diagrams
+        action: |
+          用 D2 生成：
+          1. 状态机图：Agent 生命周期（启动 → 运行 → 错误 → 恢复 → 停止）
+          2. 依赖关系图：Agent → 外部依赖，标注每个依赖的降级方案
+        tool_ref: diagram_generation
+        output_file: "production-lifecycle.svg"
+
+      - id: compile_production_report
+        action: "综合为生产就绪性文档 PDF（含检查清单、架构图、降级方案）"
+        tool_ref: pdf_generation
+        output_file: "production-readiness.pdf"
+
+    quality_criteria:
+      - "状态持久化有方案 + RPO 数字 + kill-recover 测试"
+      - "错误消息有'具体+可操作'示例（不是'请重试'）"
+      - "每个外部依赖有'如果挂了'分析 + 降级方案"
+      - "可观测性三维度（log/metric/trace）每个有具体配置"
+      - "部署检查清单 ≥15 项，每项有验证方法"
+      - "回滚 < 5 分钟（或有明确 SLA）"
+      - "编造 SLA/RPO = FAIL"
+
+    anti_patterns:
+      - "❌ 无状态持久化（crash = 从头开始）"
+      - "❌ 通用错误消息（'something went wrong' — agent 无法自我修复）"
+      - "❌ 无降级策略（一个依赖挂 = 全系统停）"
+      - "❌ 无成本监控（发现 $74 账单时已经晚了 — OpenClaw 事故）"
+      - "❌ 无回滚计划（部署出问题只能等修复）"
+      - "❌ Checklist 只有标题没有验证方法（打勾不等于验证）"
+
+    reviewers:
+      - persona: "SRE 工程师"
+        checklist:
+          - "状态持久化是否可靠？"
+          - "故障恢复是否有测试？"
+          - "监控告警是否完善？"
+          - "部署回滚是否可行？"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── reliability-design.md           # 三层验证设计文档
+  ├── reliability-design.pdf          # PDF (Typst)
+  ├── reliability-architecture.svg    # 验证架构图 (D2)
+  ├── role-behavior-design.md         # 角色行为设计文档
+  ├── role-behavior-design.pdf        # PDF (Typst)
+  ├── role-behavior-architecture.svg  # 角色架构图 (D2)
+  ├── tool-system-design.md           # 工具系统设计文档
+  ├── tool-system-design.pdf          # PDF (Typst)
+  ├── tool-permission-pipeline.svg    # 权限管线图 (D2)
+  ├── memory-design.md                # 记忆系统设计文档
+  ├── memory-design.pdf               # PDF (Typst)
+  ├── memory-architecture.svg         # 记忆架构图 (D2)
+  ├── multi-agent-design.md           # 多 Agent 设计文档
+  ├── multi-agent-design.pdf          # PDF (Typst)
+  ├── multi-agent-architecture.svg    # 协作架构图 (D2)
+  ├── safety-design.md                # 安全设计文档
+  ├── safety-design.pdf               # PDF (Typst)
+  ├── safety-architecture.svg         # 安全架构图 (D2)
+  ├── prompt-architecture.md          # Prompt 架构文档
+  ├── prompt-architecture.pdf         # PDF (Typst)
+  ├── prompt-architecture.svg         # Prompt 层次图 (D2)
+  ├── production-readiness.md         # 生产就绪文档
+  ├── production-readiness.pdf        # PDF (Typst)
+  └── production-lifecycle.svg        # 生命周期图 (D2)
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "8 capabilities 每个有 4+ steps (search → analyze → derive → generate)"
+      - "分析步骤基于 Phase 1 研究（有来源标注）"
+      - "quality_criteria 全部可量化（有数字或具体要求）"
+      - "anti_patterns 有具体案例（不是'不要犯错'）"
+      - "reviewers 有领域专家 persona + checklist"
+      - "工具引用在 tools-registry 有对应条目"
+
+  gate4_acceptance:
+    checklist:
+      - "E2E 测试 ≥5/7 维度 PASS"
+      - "分析深度: 有 'So What' 层（不是数据罗列）"
+      - "推导链: 结论←分析←数据 可追溯"
+      - "零编造: 所有数据有来源 URL"
+      - "文件可用: PDF/SVG 生成且 >0 bytes"
+      - "框架无关: 不绑定特定环境"
