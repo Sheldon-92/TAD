@@ -1,0 +1,756 @@
+# Domain Pack: Web Backend
+# API + Database + Auth + Business Logic — from design to working backend
+domain: web-backend
+version: 1.0.0
+requires_registry: ">=1"
+description: "Web 后端：API 设计、数据库建模、认证授权、业务逻辑、文档生成。产出物是可运行的代码、Schema 文件、OpenAPI spec、ER 图。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: API 设计
+# ═══════════════════════════════════════
+
+capabilities:
+
+  api_design:
+    description: "设计 RESTful API — 资源建模、端点定义、OpenAPI spec 生成"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_api_patterns
+        action: |
+          搜索目标领域的 API 设计参考：
+          1. 搜索 3+ 同类产品的公开 API 文档（端点结构、命名、版本策略）
+          2. 参考 REST 惯例（Richardson Maturity Model Level 2+）
+          3. 记录每个参考 API 的资源命名、分页方式、错误格式
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" REST API documentation reference'
+          - '"{领域}" API design best practices endpoints'
+        output_file: "api-research.md"
+
+      # Layer 2: 分析
+      - id: model_resources
+        action: |
+          基于需求和参考，建模 API 资源（参考 Jeffallan/api-designer 6 步法 Step 2）：
+          1. 识别所有业务实体（名词）→ 映射为 API 资源
+          2. 定义资源间关系（1:1, 1:N, M:N）
+          3. 每个资源列出支持的操作（CRUD + 自定义动作）
+          4. 确定 URI 结构：
+            - 资源名用复数名词小写（/users, /todos）
+            - 最多 2-3 层嵌套（/users/{id}/todos）
+            - 自定义动作用子资源（/todos/{id}/complete 而非 /completeTodo）
+          5. 选择分页策略（offset/cursor/keyset）+ 过滤/排序参数规范
+          | 资源 | URI | 方法 | 描述 | 认证 |
+        quality: "URI 用名词不用动词。嵌套 ≤3 层。每个资源的 CRUD 完整。"
+        tool_ref: null
+        output_file: "api-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_api_contract
+        action: |
+          基于资源模型，推导完整 API 契约：
+          1. HTTP 方法语义严格遵循 RFC 9110：
+            - GET = 安全+幂等（只读）
+            - POST = 创建（非幂等）
+            - PUT = 全量替换（幂等）
+            - PATCH = 部分更新（幂等）
+            - DELETE = 删除（幂等）
+          2. 状态码规范：
+            - 200 OK, 201 Created, 204 No Content
+            - 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+            - 409 Conflict, 422 Unprocessable Entity, 429 Too Many Requests
+          3. 错误格式用 RFC 7807 Problem Details：
+            { "type": "URI", "title": "string", "status": int, "detail": "string", "errors": [] }
+          4. 认证方案：Bearer Token (JWT) 或 Cookie Session
+          5. 版本策略：URL path (/v1/) 或 Header (Accept-Version)
+          6. 分页响应格式：{ "data": [], "meta": { "total", "page", "pageSize" } }
+        quality: "每个端点有明确的请求/响应 Schema。错误格式统一。"
+        tool_ref: null
+        output_file: "api-contract.md"
+
+      # Layer 4: 生成
+      - id: generate_openapi_spec
+        action: |
+          生成 OpenAPI 3.1 YAML spec 文件，包含：
+          - info (title, version, description)
+          - servers (dev/staging/prod URLs)
+          - paths (所有端点 + 方法 + 参数 + 请求体 + 响应)
+          - components/schemas (所有数据模型用 $ref)
+          - components/securitySchemes (Bearer JWT)
+          - 每个端点的 operationId
+          - 每个端点的 error responses (400/401/403/404/500)
+        tool_ref: null
+        output_file: "openapi.yaml"
+
+      - id: validate_spec
+        action: "用 Redocly CLI 验证 OpenAPI spec：npx @redocly/cli lint openapi.yaml"
+        tool_ref: openapi_linter
+        output_file: "api-lint-report.txt"
+
+      - id: generate_api_diagram
+        action: "用 D2 生成 API 资源关系图（资源 → 关系 → 操作）"
+        tool_ref: diagram_generation
+        output_file: "api-resources.d2 → api-resources.svg"
+
+    quality_criteria:
+      - "所有资源 URI 用复数名词，无动词"
+      - "每个端点有完整的 request/response schema"
+      - "错误格式统一使用 RFC 7807 Problem Details"
+      - "OpenAPI spec 通过 npx @redocly/cli lint 零 error"
+      - "每个端点有 operationId"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ URI 用动词（/getUser → 用 GET /users/{id}）"
+      - "❌ 返回 200 OK 包含错误信息"
+      - "❌ 端点间错误格式不一致"
+      - "❌ 暴露实现细节（数据库列名、堆栈跟踪）"
+      - "❌ 嵌套超过 3 层（/a/{id}/b/{id}/c/{id}/d）"
+      - "❌ GET 请求带 action 参数（?action=delete）"
+
+    reviewers:
+      - persona: "API 架构师"
+        checklist:
+          - "资源建模是否反映业务领域？"
+          - "HTTP 方法语义是否正确？"
+          - "是否有版本策略和演进计划？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: 数据库设计
+  # ═══════════════════════════════════════
+
+  database_design:
+    description: "数据库 Schema 设计 — 实体建模、关系定义、迁移脚本、ER 图"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_data_patterns
+        action: |
+          搜索目标领域的数据模型参考：
+          1. 搜索同类产品的数据库设计讨论或开源 schema
+          2. 参考 Supabase 34 条 Postgres 最佳实践（按影响优先级）
+          3. 确定数据库选型（默认 PostgreSQL，除非有明确理由用 NoSQL）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" database schema design ERD'
+          - '"{领域}" data model open source schema'
+        output_file: "db-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_entities
+        action: |
+          从需求中提取实体和关系（参考 alirezarezvani 9 步法）：
+          1. 识别所有业务实体（从 API 资源模型 + 需求文档）
+          2. 每个实体定义字段：
+            - 主键：UUID/CUID（不用自增整数 — 防止 ID 泄漏）
+            - 必填/可选标注（NOT NULL 除非有业务理由允许 null）
+            - 类型选择（String/Int/DateTime/Boolean/Enum/JSON）
+          3. 定义关系和基数（1:1, 1:N, M:N）：
+            - M:N 需要中间表
+            - 每个外键必须有索引
+          4. 添加横切关注点：
+            - 审计字段：createdAt, updatedAt（所有表必须有）
+            - 软删除：deletedAt TIMESTAMPTZ（需要审计的表）
+            - 乐观锁：version INTEGER（高并发更新的表）
+            - 多租户：organizationId（租户范围的表）
+          5. 正则化到 3NF，只在有量化的查询性能理由时才反正则化
+        quality: "每个外键有索引。所有表有 createdAt/updatedAt。主键用 UUID/CUID。"
+        tool_ref: null
+        output_file: "db-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_schema
+        action: |
+          基于实体分析，推导 Prisma Schema：
+          1. 写 schema.prisma 文件（datasource + generator + models）
+          2. 每个 model 验证：
+            - 主键 @id @default(cuid())
+            - 关系字段有 @relation 定义
+            - Unique 约束在数据库层而非应用层
+            - Enum 用 Prisma enum 定义
+          3. 索引策略：
+            - 外键字段自动索引
+            - 常用查询字段加 @@index
+            - 唯一业务规则用 @@unique
+            - 软删除表加部分索引概念（在迁移中实现）
+          4. 用 `npx prisma validate` 验证 schema 正确性
+          5. 用 `npx prisma format` 格式化
+        quality: "npx prisma validate 零错误。所有关系有完整的 @relation。"
+        tool_ref: prisma_orm
+        output_file: "prisma/schema.prisma"
+
+      # Layer 4: 生成
+      - id: generate_erd
+        action: "用 D2 生成 ER 图（实体 + 字段 + 关系线）"
+        tool_ref: diagram_generation
+        output_file: "erd.d2 → erd.svg"
+
+      - id: generate_db_doc
+        action: "综合为数据库设计文档 PDF（含 ER 图、字段说明、索引策略、迁移计划）"
+        tool_ref: pdf_generation
+        output_file: "database-design.pdf"
+
+    quality_criteria:
+      - "所有表有 createdAt + updatedAt 时间戳"
+      - "所有外键有索引"
+      - "主键用 UUID/CUID（不用自增整数）"
+      - "Nullable 字段有业务理由说明"
+      - "npx prisma validate 零错误"
+      - "唯一业务规则在数据库层强制（@@unique）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 可变主键（email/slug 作为 PK）"
+      - "❌ 软删除无索引 → 全表扫描"
+      - "❌ SELECT * 而非选择需要的列"
+      - "❌ N+1 查询（循环内逐条查关联数据）"
+      - "❌ 缺少连接池配置（规则：2 × vCPU 核数）"
+      - "❌ 忽略 EXPLAIN ANALYZE 输出"
+
+    reviewers:
+      - persona: "DBA"
+        checklist:
+          - "正则化是否到 3NF？"
+          - "索引策略是否覆盖主要查询？"
+          - "迁移脚本是否可回滚？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: 认证授权
+  # ═══════════════════════════════════════
+
+  authentication:
+    description: "设计 Auth 方案 — JWT/OAuth/Session、RBAC、安全最佳实践"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_auth_patterns
+        action: |
+          搜索目标领域的认证方案参考：
+          1. 搜索同类产品的认证方式（JWT/OAuth/API Key/Session）
+          2. 参考 OWASP Authentication Cheat Sheet
+          3. 确定需求：单用户/多租户、角色数量、第三方登录需求
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" authentication API JWT OAuth best practices'
+          - '"OWASP" authentication session management checklist'
+        output_file: "auth-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_auth_requirements
+        action: |
+          分析认证需求（参考 auth0/agent-skills 模式）：
+          1. 认证方式选型：
+            - SPA → OAuth 2.0 + PKCE（浏览器无法安全存储 client secret）
+            - Server-rendered → Session-based（httpOnly cookie）
+            - API-only → JWT Bearer Token
+            - M2M → Client Credentials Grant
+          2. 角色和权限矩阵：
+            | 角色 | 资源 | Create | Read | Update | Delete |
+            标注每个权限是"自己的"还是"所有人的"
+          3. 安全要求清单（OWASP）：
+            - 密码哈希：bcrypt/argon2（服务端）
+            - Session cookie：Secure + HttpOnly + SameSite=Strict
+            - Token 过期：Access 15min, Refresh 7d + 轮换
+            - 登录失败不泄漏"用户名不存在"还是"密码错误"
+            - 敏感操作需要重新认证
+            - 登录端点有速率限制
+        quality: "RBAC 矩阵覆盖所有资源×所有角色。安全清单基于 OWASP。"
+        tool_ref: null
+        output_file: "auth-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_auth_design
+        action: |
+          基于需求分析，推导 Auth 实现方案：
+          1. 选择 Auth Provider：
+            - Supabase Auth（开源、PostgreSQL 原生、RLS 集成）
+            - Auth0（企业级、多 IdP、migration 工具）
+            - NextAuth/Auth.js（Next.js 原生、多 provider）
+            - 自建（仅当以上都不满足需求时 — 标注 [HIGH RISK]）
+          2. Token 流程设计：
+            - 登录 → 发放 access_token + refresh_token
+            - 请求 → Authorization: Bearer {access_token}
+            - 过期 → 用 refresh_token 换新 access_token（旧 refresh_token 失效）
+          3. 中间件设计：
+            - 路由保护：哪些路由需要认证、哪些公开
+            - 角色检查：中间件验证 JWT claims 中的 role
+            - 资源所有权检查：确认用户只能访问自己的数据
+          4. 安全配置清单：
+            - CORS 白名单（不用 *）
+            - Rate limiting 配置（登录: 5次/分钟）
+            - CSRF 保护（如果用 cookie）
+        quality: "Auth 方案选择有理由。Token 流程有完整的生命周期。安全配置全覆盖。"
+        tool_ref: null
+        output_file: "auth-design.md"
+
+      # Layer 4: 生成
+      - id: generate_auth_flow_diagram
+        action: "用 D2 生成认证流程图（登录→Token发放→请求验证→刷新→登出）"
+        tool_ref: diagram_generation
+        output_file: "auth-flow.d2 → auth-flow.svg"
+
+      - id: generate_auth_middleware
+        action: |
+          生成认证中间件代码框架（TypeScript）：
+          - JWT 验证函数
+          - 角色检查中间件
+          - 路由保护配置
+          注意：这是设计框架，不是完整实现。
+        tool_ref: null
+        output_file: "auth-middleware.ts"
+
+    quality_criteria:
+      - "RBAC 矩阵覆盖所有资源×角色组合"
+      - "Token 生命周期有明确的过期 + 刷新策略"
+      - "OWASP 安全清单已检查"
+      - "认证失败不泄漏具体原因"
+      - "敏感操作有重新认证要求"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ Token 存 localStorage（XSS 可窃取 → 用 httpOnly cookie）"
+      - "❌ 长期不过期的 access token"
+      - "❌ 密钥硬编码在代码中"
+      - "❌ 仅客户端认证检查（必须服务端验证）"
+      - "❌ 登录返回'用户不存在'或'密码错误'（合并为'认证失败'）"
+      - "❌ 跳过 OAuth state 验证 → CSRF 攻击"
+
+    reviewers:
+      - persona: "安全工程师"
+        checklist:
+          - "是否遵循 OWASP 认证最佳实践？"
+          - "Token 管理是否安全（短期 access + 轮换 refresh）？"
+          - "RBAC 是否覆盖所有敏感操作？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: 业务逻辑
+  # ═══════════════════════════════════════
+
+  business_logic:
+    description: "服务层设计 — Repository 模式、事务、验证、缓存策略"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_patterns
+        action: |
+          搜索目标领域的后端架构模式参考：
+          1. 搜索同类产品的后端架构讨论（分层方式、设计模式）
+          2. 参考 Clean Architecture / Hexagonal Architecture 原则
+          3. 确定核心业务规则（不变量、验证规则、状态机）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" backend architecture service layer pattern'
+          - '"{领域}" business logic validation rules'
+        output_file: "business-logic-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_domain_logic
+        action: |
+          分析核心业务逻辑（参考 affaan-m 服务层模式）：
+          1. 分层架构定义：
+            - Controller/Route：处理 HTTP，调用 Service
+            - Service：业务逻辑，调用 Repository
+            - Repository：数据访问，封装 ORM 调用
+          2. 核心业务规则提取：
+            | 规则 | 涉及实体 | 触发条件 | 验证逻辑 | 失败行为 |
+          3. 状态机识别（如果有）：
+            - 哪些实体有状态流转？（如：订单 draft→paid→shipped→delivered）
+            - 每个状态转换的前置条件是什么？
+          4. 事务边界识别：
+            - 哪些操作需要原子性？（如：创建订单 = 扣库存 + 创建记录 + 发通知）
+            - 哪些可以最终一致？（如：发邮件通知可以异步）
+          5. 验证层级：
+            - 输入验证（格式、范围）→ Controller/Route 层
+            - 业务验证（规则、权限）→ Service 层
+            - 数据约束（唯一、外键）→ Database 层
+        quality: "业务规则在 Service 层，不在 Controller 或 Repository。事务边界明确。"
+        tool_ref: null
+        output_file: "business-logic-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_service_design
+        action: |
+          基于分析，推导服务层代码结构：
+          1. 目录结构：
+            src/
+            ├── routes/       # HTTP 路由 + 输入解析
+            ├── services/     # 业务逻辑
+            ├── repositories/ # 数据访问
+            ├── validators/   # 输入验证 Schema (Zod)
+            └── types/        # TypeScript 类型定义
+          2. 每个 Service 的方法签名：
+            | Service | Method | Input | Output | Side Effects |
+          3. 验证 Schema 定义（Zod）：
+            - 每个 API 端点的 request body/query 有对应的 Zod schema
+            - Zod schema 和 Prisma model 一致（可用 zod-prisma-types 自动生成）
+          4. 错误处理策略：
+            - 业务错误 → 自定义 AppError 类（继承 Error，含 statusCode + errorCode）
+            - 数据库错误 → 捕获 Prisma 错误码（P2002=唯一冲突 → 409）
+            - 未知错误 → 500 + 通用消息 + 日志详细信息
+        quality: "Controller 只做 HTTP 解析，不含业务逻辑。Service 不直接使用 ORM。"
+        tool_ref: null
+        output_file: "service-design.md"
+
+      # Layer 4: 生成
+      - id: generate_service_code
+        action: |
+          生成核心 Service 和 Repository 的代码框架（TypeScript）：
+          - 每个 Service 有完整的方法签名 + 类型
+          - Repository 接口定义
+          - Zod 验证 Schema
+          注意：这是架构框架，业务逻辑需要根据具体需求填充。
+        tool_ref: null
+        output_file: "src/services/ + src/repositories/ + src/validators/"
+
+      - id: generate_architecture_diagram
+        action: "用 D2 生成服务层架构图（Route→Service→Repository→Database）"
+        tool_ref: diagram_generation
+        output_file: "architecture.d2 → architecture.svg"
+
+    quality_criteria:
+      - "三层分离：Controller/Service/Repository 各司其职"
+      - "业务规则全部在 Service 层"
+      - "多步操作有事务边界"
+      - "每个 API 端点有 Zod 输入验证"
+      - "错误处理有统一的 AppError 类"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 业务逻辑在 Controller 中（fat controller）"
+      - "❌ Route handler 直接写数据库查询"
+      - "❌ 业务规则和特定 ORM 耦合"
+      - "❌ 多步操作无事务边界"
+      - "❌ 同步调用外部服务无超时/重试"
+
+    reviewers:
+      - persona: "后端架构师"
+        checklist:
+          - "分层是否清晰？"
+          - "事务边界是否正确？"
+          - "验证是否在正确的层级？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: API 文档
+  # ═══════════════════════════════════════
+
+  api_documentation:
+    description: "自动生成 + 验证 API 文档 — OpenAPI spec 是唯一真相源"
+
+    steps:
+      # Layer 1: 收集
+      - id: collect_spec
+        action: "从 api_design 阶段获取 openapi.yaml，确认是最新版本"
+        tool_ref: null
+        output_file: "openapi.yaml (验证已存在)"
+
+      # Layer 2: 分析
+      - id: analyze_doc_completeness
+        action: |
+          检查 OpenAPI spec 的文档完整性：
+          | 检查项 | 状态 | 备注 |
+          - 每个端点有 summary + description？
+          - 每个参数有 description？
+          - 每个 schema 有 example？
+          - error responses 有具体的 type URI？
+          - 认证方式有文档？
+          - 分页/过滤参数有说明？
+          - 有 servers 定义（dev/staging/prod URL）？
+          缺失项标注为 TODO。
+        quality: "每个端点至少有 summary。每个 schema 至少有一个 example。"
+        tool_ref: null
+        output_file: "doc-audit.md"
+
+      # Layer 3: 推导
+      - id: enhance_spec
+        action: |
+          补全文档缺失项：
+          1. 为缺少 example 的 schema 添加真实示例
+          2. 为缺少 description 的参数添加说明
+          3. 添加 API 使用指南（Getting Started 部分）
+          4. 添加认证指南（How to authenticate 部分）
+          5. 添加错误处理指南（Error codes 部分）
+          6. 重新运行 npx @redocly/cli lint 验证
+        tool_ref: openapi_linter
+        output_file: "openapi.yaml (更新)"
+
+      # Layer 4: 生成
+      - id: generate_doc_pdf
+        action: "生成 API 文档 PDF（含端点列表、Schema 说明、认证指南、错误码表）"
+        tool_ref: pdf_generation
+        output_file: "api-documentation.pdf"
+
+    quality_criteria:
+      - "每个端点有 summary + description + example"
+      - "每个 error response 有 type URI + example"
+      - "有 Getting Started 指南"
+      - "有认证说明"
+      - "npx @redocly/cli lint 零 error"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ Spec 和实现不同步（无 CI 验证）"
+      - "❌ 缺少错误响应文档"
+      - "❌ 复杂嵌套对象无 example"
+      - "❌ 未文档化的查询参数"
+
+    reviewers:
+      - persona: "前端开发者"
+        checklist:
+          - "仅看文档能否成功调用 API？"
+          - "错误码是否清晰可处理？"
+          - "认证流程是否有完整指南？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: 种子数据
+  # ═══════════════════════════════════════
+
+  data_seeding:
+    description: "生成种子数据脚本 — 开发/测试/演示环境的初始数据"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_seed_patterns
+        action: |
+          确定种子数据需求：
+          1. 从 database_design 获取 Schema 定义
+          2. 识别所有 Enum 值和状态（每个状态至少一条数据）
+          3. 确定数据量级：dev(最小), staging(真实感), stress(压测)
+        tool_ref: null
+        output_file: "seed-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_seed_requirements
+        action: |
+          分析种子数据规则（参考 alirezarezvani 种子最佳实践）：
+          1. 插入顺序（尊重外键约束）：
+            - 先父表（User），后子表（Todo）
+            - 先枚举/配置表，后业务表
+          2. 边界值覆盖：
+            | 场景 | 数据 | 目的 |
+            - 空字符串/null（可选字段）
+            - 最大长度字符串
+            - Unicode 字符（中文/emoji）
+            - 过期/失效数据（deletedAt 不为 null）
+          3. 角色覆盖：
+            - 每个 RBAC 角色至少一个测试用户
+            - 包含"边缘"用户（无权限、被封禁）
+          4. 确定性种子：faker.seed(42) 保证可复现
+        quality: "所有 Enum 值有数据。所有角色有测试用户。种子可复现。"
+        tool_ref: null
+        output_file: "seed-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_seed_script
+        action: |
+          基于分析，编写 Prisma seed 脚本（TypeScript）：
+          1. 用 @faker-js/faker 生成真实感数据
+          2. faker.seed(42) 确保确定性
+          3. 按外键依赖顺序插入
+          4. 脚本幂等（先 deleteMany 再 create，或用 upsert）
+          5. 分 profile（dev/staging/stress）：
+            - dev: 5 users, 20 items
+            - staging: 50 users, 500 items
+            - stress: 1000 users, 50000 items
+        quality: "脚本幂等。外键顺序正确。用 faker.seed() 保证可复现。"
+        tool_ref: seed_data
+        output_file: "prisma/seed.ts"
+
+      # Layer 4: 生成
+      - id: validate_seed
+        action: |
+          验证种子脚本：
+          1. npx prisma db push（确保 schema 最新）
+          2. npx tsx prisma/seed.ts（运行种子脚本）
+          3. 验证数据已插入（查询计数）
+          如果无法实际运行（无 DB）→ 用 npx prisma validate 验证 schema + 代码审查 seed 脚本逻辑
+        tool_ref: prisma_orm
+        output_file: "seed-validation.md"
+
+    quality_criteria:
+      - "所有 Enum 状态有种子数据"
+      - "所有 RBAC 角色有测试用户"
+      - "种子脚本幂等（安全重复运行）"
+      - "用 faker.seed(N) 保证可复现"
+      - "插入顺序尊重外键约束"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 硬编码 ID 和自增 ID 冲突"
+      - "❌ 种子数据违反业务规则"
+      - "❌ 非确定性种子导致测试不稳定"
+      - "❌ 缺少引用完整性（子表数据引用不存在的父表 ID）"
+
+    reviewers:
+      - persona: "QA 工程师"
+        checklist:
+          - "种子数据是否覆盖所有状态？"
+          - "是否有边界值和异常数据？"
+          - "脚本是否可安全重复运行？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: 错误处理
+  # ═══════════════════════════════════════
+
+  error_handling:
+    description: "统一错误处理 — RFC 7807 格式、错误目录、日志配置、重试策略"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_error_patterns
+        action: |
+          搜索错误处理最佳实践：
+          1. 参考 RFC 7807 Problem Details 规范
+          2. 搜索同类产品的错误响应格式
+          3. 参考 12-Factor App 日志原则
+        tool_ref: web_scraping
+        queries:
+          - '"RFC 7807" problem details API error handling best practices'
+          - '"12-factor app" logging monitoring error handling'
+        output_file: "error-handling-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_error_catalog
+        action: |
+          定义完整的错误目录（参考 Jeffallan/api-designer 错误分类）：
+          | HTTP 状态 | 错误码 | type URI | 描述 | 可重试 |
+          必须覆盖：
+          - 400: REQUIRED, INVALID_FORMAT, OUT_OF_RANGE, INVALID_ENUM
+          - 401: MISSING_TOKEN, INVALID_TOKEN, EXPIRED_TOKEN
+          - 403: INSUFFICIENT_PERMISSIONS, RESOURCE_FORBIDDEN
+          - 404: RESOURCE_NOT_FOUND
+          - 409: RESOURCE_ALREADY_EXISTS, CONCURRENT_MODIFICATION
+          - 422: VALIDATION_FAILED（多字段验证）
+          - 429: RATE_LIMIT_EXCEEDED（含 Retry-After header）
+          - 500: INTERNAL_ERROR（通用消息，日志详细信息）
+          分类每个错误的可重试性：
+          - 可重试：429, 503, 5xx（指数退避）
+          - 不可重试：400, 401, 403, 404, 409
+        quality: "每个错误码有 type URI + 描述 + 可重试标注。"
+        tool_ref: null
+        output_file: "error-handling-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_error_implementation
+        action: |
+          推导错误处理实现方案：
+          1. 自定义 AppError 类：
+            - statusCode: number
+            - errorCode: string (如 RESOURCE_NOT_FOUND)
+            - type: string (URI)
+            - detail: string (人类可读)
+            - errors?: FieldError[] (字段级验证错误)
+          2. 全局错误中间件：
+            - 捕获所有未处理错误
+            - 已知 AppError → 返回结构化响应
+            - Prisma 错误 → 映射到对应 HTTP 状态
+            - 未知错误 → 500 + 通用消息 + 记录详细日志
+          3. 日志策略：
+            - 结构化 JSON 日志（不是 console.log 纯文本）
+            - 每个请求有 requestId（X-Request-ID header）
+            - 日志级别：error(500) > warn(4xx) > info(请求日志) > debug
+            - 日志不含敏感数据（密码、token、PII）
+          4. 请求追踪：
+            - 中间件生成 requestId（UUID）
+            - 所有日志和错误响应携带 requestId
+            - 响应 header 包含 X-Request-ID
+        quality: "5xx 错误不泄漏实现细节。每个响应有 requestId。日志不含敏感信息。"
+        tool_ref: null
+        output_file: "error-design.md"
+
+      # Layer 4: 生成
+      - id: generate_error_code
+        action: |
+          生成错误处理代码框架（TypeScript）：
+          - AppError 类定义
+          - 全局错误中间件
+          - Prisma 错误映射函数
+          - requestId 中间件
+          - 错误码常量文件
+        tool_ref: null
+        output_file: "src/errors/ (AppError.ts + errorMiddleware.ts + prismaErrors.ts)"
+
+      - id: generate_error_catalog_doc
+        action: "生成错误码参考文档 PDF（开发者可查阅的完整错误码表）"
+        tool_ref: pdf_generation
+        output_file: "error-catalog.pdf"
+
+    quality_criteria:
+      - "错误格式统一使用 RFC 7807"
+      - "每个错误码有 type URI + 描述"
+      - "5xx 响应不包含堆栈跟踪/数据库信息"
+      - "每个响应有 X-Request-ID"
+      - "日志不含密码/token/PII"
+      - "可重试/不可重试错误有明确分类"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 返回 200 OK 包含错误信息"
+      - "❌ 各端点错误格式不一致"
+      - "❌ 生产环境暴露堆栈跟踪或数据库错误"
+      - "❌ 通用'Something went wrong'无 requestId"
+      - "❌ 错误码只是 HTTP 状态码复述（不是领域特定的）"
+      - "❌ 缺少 429 的 Retry-After header"
+
+    reviewers:
+      - persona: "SRE 工程师"
+        checklist:
+          - "错误日志是否足够排查问题？"
+          - "requestId 是否贯穿请求链？"
+          - "是否有重试指导？"
+
+# ═══════════════════════════════════════
+# 产出物目录结构
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── api-research.md                   # API 设计研究
+  ├── api-contract.md                   # API 契约文档
+  ├── openapi.yaml                      # OpenAPI 3.1 规范
+  ├── api-lint-report.txt               # Redocly lint 结果
+  ├── api-resources.svg                 # API 资源关系图 (D2)
+  ├── api-documentation.pdf             # API 文档 (Typst)
+  ├── db-research.md                    # 数据库设计研究
+  ├── prisma/schema.prisma              # Prisma Schema
+  ├── prisma/seed.ts                    # 种子数据脚本
+  ├── erd.svg                           # ER 图 (D2)
+  ├── database-design.pdf               # 数据库文档 (Typst)
+  ├── auth-research.md                  # 认证方案研究
+  ├── auth-design.md                    # 认证设计文档
+  ├── auth-flow.svg                     # 认证流程图 (D2)
+  ├── auth-middleware.ts                # Auth 中间件框架
+  ├── business-logic-research.md        # 业务逻辑分析
+  ├── service-design.md                 # 服务层设计
+  ├── architecture.svg                  # 架构图 (D2)
+  ├── src/services/                     # Service 代码框架
+  ├── src/repositories/                 # Repository 代码框架
+  ├── src/validators/                   # Zod 验证 Schema
+  ├── src/errors/                       # 错误处理框架
+  ├── error-handling-research.md        # 错误处理研究
+  ├── error-design.md                   # 错误设计文档
+  ├── error-catalog.pdf                 # 错误码参考 (Typst)
+  ├── seed-research.md                  # 种子数据分析
+  └── seed-validation.md                # 种子验证结果
+
+# ═══════════════════════════════════════
+# Domain-specific Gate 标准
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "OpenAPI spec 通过 Redocly lint 零 error"
+      - "Prisma schema 通过 npx prisma validate"
+      - "RBAC 矩阵覆盖所有资源×角色"
+      - "错误目录覆盖所有 HTTP 状态码"
+      - "ER 图反映所有实体和关系"
+
+  gate4_acceptance:
+    checklist:
+      - "API 端点可通过 curl 测试"
+      - "种子数据脚本可运行"
+      - "认证流程有完整的 token 生命周期"
+      - "所有 5xx 响应不泄漏实现细节"
+      - "结构化日志有 requestId"

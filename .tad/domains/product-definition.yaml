@@ -47,6 +47,31 @@ capabilities:
         tool_ref: data_chart
         output_file: "market-chart.png"
 
+      - id: segment_users
+        action: |
+          基于搜索数据，识别用户细分群体（参考 product-on-purpose/foundation-persona 11 维度）：
+          1. 至少区分 3 个用户群体（按使用场景/人口特征/付费意愿）
+          2. 每个群体描述：谁是他们、多大规模、核心痛点、当前替代方案
+          3. 标注每个群体的 Evidence Confidence (High/Medium/Low) + 来源类型
+          4. 标注哪个群体的痛点最尖锐（频率 × 严重度）
+          5. 如果搜索数据不足以区分 → 诚实标注"数据不足，需要访谈验证"
+        quality: "每个群体描述必须有搜索证据支撑，不接受假设性分类。Demographics without behavior = useless persona。"
+        tool_ref: null
+        output_file: "user-research.md (append)"
+
+      - id: prioritize_pains
+        action: |
+          对所有发现的痛点做优先级排序（参考 phuryn/sentiment-analysis 量化方法）：
+          | 痛点 | 提及频率 | 严重度(-1~+1) | 现有解决方案 | 解决满意度 | 机会大小 |
+          每个痛点必须回答：
+          - 有多少人提到这个问题？（频率 — 搜索命中数 + 来源数）
+          - 没有这个功能会怎样？（严重度 — 用户原话中的情绪强度）
+          - 现在怎么解决的？解决得好吗？（竞争空白）
+          饱和度检查（deanpeters）：3+ 不同来源出现相同痛点 → 高置信度；仅 1 来源 → 标注 [SINGLE SOURCE - VALIDATE]
+        quality: "排序必须基于数据，不是直觉。频率来自搜索命中数，严重度来自用户原话情绪。"
+        tool_ref: null
+        output_file: "user-research.md (append)"
+
       - id: compile
         action: "综合为用户画像报告（含置信度标注）"
         tool_ref: pdf_generation
@@ -56,11 +81,16 @@ capabilities:
       - "用户画像基于 ≥5 个不同来源的真实数据"
       - "每条痛点有用户原话引用和 URL"
       - "市场数据有可信来源（不接受无来源估算）"
+      - "市场数据矛盾时必须分析原因（不能只说'定义不同'）"
+      - "至少识别 3 个用户细分群体（有 Evidence Confidence 标注）"
+      - "痛点按频率×严重度排序，有数据支撑"
       - "置信度标注诚实（Low 不丢人，编造才丢人）"
     anti_patterns:
       - "❌ 不搜索就写画像 = 编故事"
       - "❌ 只搜索一个平台 = 样本偏差"
       - "❌ 用户原话是 AI 总结的 = 不是原话"
+      - "❌ Don't ask 'Would you use this?' → Ask 'What have you tried? Why did it work/fail?'"
+      - "❌ Treating proto-persona as validated fact = dangerous"
 
     reviewers:
       - persona: "市场分析师"
@@ -87,8 +117,41 @@ capabilities:
         tool_ref: web_scraping
         output_file: "competitive-analysis.md (append)"
 
+      - id: deep_analyze
+        action: |
+          对每个竞品回答 4 个深度问题（参考 product-on-purpose 7 步法）：
+          1. 它为什么能活下来？（核心不可替代优势是什么 — 必须具体到哪个功能/网络效应/生态）
+          2. 用户最不满意什么？（必须引用 1-2 星评论原文 + URL，不接受"功能丰富"这种空话）
+          3. 它没做什么？为什么没做？（刻意选择 vs 能力不足 — 从 job postings、roadmap 推断）
+          4. 用户会因为什么原因离开它？（流失信号 — 评论中的 "switched to"、"looking for alternative"）
+          每个回答必须有证据（评论 URL、产品页描述）。推测标注 [INFERRED]。
+          Strengths 必须承认竞品的真实优势（"respect drives better strategy"）。
+        quality: "不接受'功能丰富'这种空话。必须具体到哪个功能、什么评价、什么来源。"
+        tool_ref: null
+        output_file: "competitive-analysis.md (append)"
+
+      - id: derive_positioning
+        action: |
+          基于深度分析推导定位（April Dunford 6 步法）：
+          1. Competitive alternatives: 用户不用你会用什么？（从 deep_analyze 的替代方案提取）
+          2. Unique attributes: 你有什么别人没有的？（从竞品"没做什么"中提取空白）
+          3. Value: 这些属性给用户带来什么价值？（连接到 user_research 的痛点）
+          4. Best-fit customers: 谁最在乎这个价值？（连接到 segment_users 的群体）
+          5. Category: 你属于什么类别？（现有类别 vs 创建新类别）
+          6. Trends: 什么趋势在帮你？（从 market_data 提取）
+
+          最终输出 Geoffrey Moore 定位声明：
+          "For [target] who [need], [product] is a [category] that [benefit].
+           Unlike [competitor], [product] [differentiator]."
+          声明中的每个词必须有前面研究数据的支撑。
+
+          如果结论是"没有明确空白" → 诚实输出 "⚠️ 差异化风险高，建议重新评估方向"
+        quality: "定位声明中的每个 claim 必须可追溯到具体研究数据。编造 = FAIL。"
+        tool_ref: null
+        output_file: "competitive-analysis.md (append)"
+
       - id: generate_positioning_map
-        action: "生成 2x2 竞品定位图（选两个有意义的维度）"
+        action: "生成 2x2 竞品定位图（维度基于 deep_analyze 发现选择，不是随意画）"
         tool_ref: diagram_generation
         output_file: "competitive-matrix.svg"
 
@@ -103,10 +166,12 @@ capabilities:
         output_file: "competitive-analysis.pdf"
 
     quality_criteria:
-      - "≥5 个竞品（含直接+间接+替代方案）"
-      - "功能矩阵用 Full/Partial/None/Unknown"
-      - "定位图有两个有意义的维度"
-      - "差异化机会基于竞品真实劣势"
+      - "≥5 个竞品（含直接+间接+替代方案，按 3 层分类）"
+      - "功能矩阵用 Full/Partial/None/Unknown — 有证据才标 Full，推测标 [INFERRED]"
+      - "每个竞品有 4 问深度分析（为何活/用户不满/没做什么/流失原因）"
+      - "定位图维度基于研究数据选择，不是随意画"
+      - "差异化定位有数据支撑（April Dunford 6 步推导），不是'我觉得'"
+      - "找不到差异化 → 诚实输出风险警告"
 
     reviewers:
       - persona: "市场分析师"
@@ -144,8 +209,39 @@ capabilities:
         tool_ref: null
         output_file: "PRD.md (section 5)"
 
+      - id: validate_assumptions
+        action: |
+          列出 PRD 中所有关键假设，按 phuryn 的 8 类风险分类审查：
+          | 假设 | 风险类别 | 证据 | 置信度 | 如果错了会怎样 | 验证方法 |
+
+          8 类风险（每类至少检查一个假设）：
+          1. Desirability — 用户真的想要吗？（连接到 user_research 痛点数据）
+          2. Viability — 商业可行吗？（收入模型、定价依据）
+          3. Feasibility — 技术做得到吗？（技术风险评估）
+          4. Usability — 用户会用吗？（交互复杂度）
+          5. Ethics — 有伦理问题吗？（数据隐私、用户安全）
+          6. GTM — 能推出去吗？（渠道、获客成本）
+          7. Strategy — 符合战略吗？（与现有业务的关系）
+          8. Team — 团队能做吗？（能力、资源）
+
+          定价假设必须有推导过程：
+          - 竞品定价参考（价格锚点）
+          - 用户支付意愿信号（评论中"太贵"/"划算"的频率）
+          - 成本结构倒推（如果有硬件/服务成本）
+          - 价值感知定价（解决这个问题值多少钱）
+          每种推导方式标注置信度。
+
+          用 XYZ 假设格式量化关键假设：
+          "至少 X% 的 Y 会 Z" — 可量化、可验证
+          "skin-in-the-game": 用户说"我会用"不算验证，注册/付费才算
+
+          没有证据的假设标注 [UNVALIDATED] — 这些是验证阶段必须测试的。
+        quality: "定价必须有推导过程（竞品价格×系数、用户支付意愿），不接受凭空编号。8 类风险每类至少检查一个。"
+        tool_ref: null
+        output_file: "PRD.md (append)"
+
       - id: generate_prd
-        action: "综合研究数据生成完整 PRD（含指标、假设、风险）"
+        action: "综合研究数据生成完整 PRD（含指标、假设验证表、风险矩阵）"
         tool_ref: pdf_generation
         output_file: "PRD.pdf"
 
@@ -153,7 +249,9 @@ capabilities:
       - "问题可以一句话说清（≤50 字）"
       - "MVP ≤ 5 个功能，Out of Scope ≥ 3 条"
       - "成功指标可测量（有基线和目标）"
-      - "关键假设有验证方法"
+      - "定价有推导过程（竞品锚点+支付意愿+成本倒推），不是编的"
+      - "每个关键假设标注证据和置信度（8 类风险全覆盖）"
+      - "无证据假设标注 [UNVALIDATED]，有 XYZ 格式验证计划"
       - "PRD 15 分钟内可读完"
 
   # ═══════════════════════════════════════
@@ -190,6 +288,26 @@ capabilities:
         action: "生成选定的验证材料文件"
         tool_ref: "(depends on artifact_menu choice)"
         output_file: "(depends on choice)"
+
+      - id: verify_artifact_claims
+        action: |
+          审查验证材料中的每一个 claim：
+          | Claim | 数据来源 | 可追溯到研究阶段 | 需要修改 |
+
+          检查清单：
+          - 产品名是否有依据？（如果是占位符 → 标注为"Working Title"）
+          - 定价是否来自 validate_assumptions 的推导？（凭空编 → 删除或改为"定价待验证"）
+          - 融资金额/市场数据是否来自 user_research？（编造 → 删除）
+          - 用户痛点引用是否有原话支撑？（AI 总结 → 替换为真实引用）
+          - 数字是否精确到不合理的程度？（"$2.3M" → 改为"~$2M"并标注来源）
+
+          处理规则：
+          - 编造的数据 → 删除或标注为"[待验证]"
+          - 不确定的 claim → 改为问句（"您愿意为这个功能付费吗？"）
+          - 有研究依据的 claim → 标注来源（"基于 G2 评论分析"）
+        quality: "验证材料中零编造数据。不确定的转为验证问题。每个数字可追溯。"
+        tool_ref: null
+        output_file: "(same as generated artifact)"
 
       - id: send_to_targets
         action: "通过邮件发送验证材料给目标用户"

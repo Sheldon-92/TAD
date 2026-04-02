@@ -1,0 +1,764 @@
+# Domain Pack: Web Deployment
+# From code to production — CI/CD, monitoring, security, rollback
+domain: web-deployment
+version: 1.0.0
+requires_registry: ">=1"
+description: "Web 部署：平台选型、CI/CD 流水线、环境配置、监控告警、安全加固、回滚策略。产出物是可运行的配置文件（YAML/JSON）和决策文档。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: 平台选型（文档类）
+# Step 模型: 搜索→分析→推导→生成
+# ═══════════════════════════════════════
+
+capabilities:
+
+  platform_selection:
+    description: "部署平台对比分析 — Vercel/Netlify/Cloudflare/Docker 选型决策"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_platforms
+        action: |
+          搜索部署平台的最新对比信息：
+          1. 搜索 Vercel/Netlify/Cloudflare Pages/Docker 的最新功能和限制
+          2. 搜索目标项目类型（SSR/SSG/SPA）的最佳平台推荐
+          3. 搜索定价对比和免费额度限制
+          4. 搜索真实用户的迁移经验和踩坑记录
+        tool_ref: web_scraping
+        queries:
+          - '"Vercel vs Netlify vs Cloudflare" deployment 2026 comparison'
+          - '"{项目框架}" deployment platform recommendation'
+          - '"Vercel pricing" vs "Netlify pricing" limits 2026'
+        output_file: "platform-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_requirements
+        action: |
+          基于项目需求，分析平台适配度（参考 12-Factor App 评估）：
+          1. 应用需求清单：
+            | 需求 | 权重 | 说明 |
+            - 渲染模式（SSR/SSG/SPA/混合）
+            - Edge 功能需求（中间件/地理路由）
+            - 数据库耦合（Serverless Functions vs 独立 API）
+            - 构建时间约束（monorepo 大小）
+            - 合规要求（数据驻留/SOC 2/PCI-DSS）
+          2. 加权决策矩阵：
+            | 维度(权重) | Vercel | Netlify | Cloudflare | Docker/K8s |
+            - 性能(25%): TTFB、冷启动、CDN 覆盖
+            - 成本(20%): 免费额度、增长成本曲线
+            - 开发体验(20%): CLI、预览部署、日志
+            - 可扩展性(15%): 并发限制、带宽
+            - 安全(10%): WAF、DDoS、CSP 支持
+            - 锁定风险(10%): 平台特有 API 依赖度
+          3. 每项评 1-5 分，标注评分依据（来源 URL 或 [ASSUMPTION]）
+        quality: "评分有依据（官方文档/用户评测），不是凭印象打分。"
+        tool_ref: null
+        output_file: "platform-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_platform_decision
+        action: |
+          基于加权矩阵，推导平台选择：
+          1. 计算加权总分，排名
+          2. 对前 2 名做深度对比：
+            - 选第 1 名的理由（3 条具体优势）
+            - 不选第 2 名的理由（2 条具体劣势）
+            - 迁移成本评估（如果以后要换平台）
+          3. 用 ADR（Architecture Decision Record）格式记录：
+            - 背景：项目需求
+            - 决策：选择什么平台
+            - 理由：加权分析结果
+            - 后果：锁定风险、迁移路径
+          4. 6 个月成本预估（基于预期流量）
+        quality: "ADR 格式完整。成本预估有计算过程。迁移路径有具体步骤。"
+        tool_ref: null
+        output_file: "platform-decision.md"
+
+      # Layer 4: 生成
+      - id: generate_comparison_chart
+        action: "用 matplotlib 生成平台对比雷达图（6 维度得分可视化）"
+        tool_ref: data_chart
+        output_file: "platform-comparison.png"
+
+      - id: generate_decision_doc
+        action: "综合为平台选型文档 PDF（含 ADR + 对比图 + 成本预估）"
+        tool_ref: pdf_generation
+        output_file: "platform-selection.pdf"
+
+    quality_criteria:
+      - "≥3 个平台有加权对比（不只看免费额度）"
+      - "评分每项有依据（URL 或数据）"
+      - "成本预估有 6 个月计算过程"
+      - "ADR 格式完整（背景/决策/理由/后果）"
+      - "迁移路径有具体步骤"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ '大家都用 Vercel 所以选 Vercel' = 无需求分析"
+      - "❌ 假设 serverless = 更便宜（稳定流量未必）"
+      - "❌ 忽略平台特有 API 的锁定风险"
+      - "❌ 基于免费额度选型不预测增长成本"
+      - "❌ 不测冷启动延迟"
+
+    reviewers:
+      - persona: "DevOps 工程师"
+        checklist:
+          - "平台选择是否匹配应用架构？"
+          - "成本预估是否考虑了增长？"
+          - "是否有迁移 Plan B？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: CI/CD 流水线（代码类）
+  # Step 模型: 选型→执行→验证→优化
+  # ═══════════════════════════════════════
+
+  ci_cd_pipeline:
+    description: "GitHub Actions CI/CD 流水线 — 构建、测试、部署自动化"
+
+    steps:
+      # Layer 1: 选型
+      - id: select_pipeline_strategy
+        action: |
+          选择 CI/CD 策略：
+          1. 触发策略：
+            - push to main → 部署到生产
+            - push to develop → 部署到 staging
+            - PR → 预览部署 + 测试
+          2. 阶段设计：
+            | 阶段 | 做什么 | 失败行为 |
+            - lint: ESLint + Prettier check
+            - typecheck: tsc --noEmit
+            - test: vitest/jest (coverage ≥ 阈值)
+            - build: npm run build
+            - deploy: vercel deploy (preview/prod)
+          3. 缓存策略：
+            - node_modules → actions/cache with package-lock.json hash
+            - .next/cache → 增量构建缓存
+          4. 安全考虑（参考 iuliandita CI/CD security 12 项）：
+            - actions 版本用 SHA pinning（不用 @latest）
+            - permissions 块明确声明（最小权限）
+            - secrets 不在日志中打印
+            - 第三方 action 审查
+        quality: "每个阶段有明确的失败行为。actions 用 SHA pinning。"
+        tool_ref: null
+        output_file: "ci-cd-design.md"
+
+      # Layer 2: 执行
+      - id: generate_workflow
+        action: |
+          生成 GitHub Actions workflow YAML：
+          - .github/workflows/ci.yml（PR 检查：lint + type + test + build）
+          - .github/workflows/deploy-preview.yml（PR → Vercel preview）
+          - .github/workflows/deploy-production.yml（main push → Vercel prod）
+          每个 workflow 包含：
+          - permissions 块（最小权限）
+          - concurrency 设置（防止并行部署冲突）
+          - node 版本矩阵或固定版本
+          - 缓存配置
+          - 环境变量从 secrets 获取
+        tool_ref: null
+        output_file: ".github/workflows/*.yml"
+
+      # Layer 3: 验证
+      - id: validate_workflows
+        action: |
+          用 actionlint 验证所有 workflow 文件：
+          actionlint .github/workflows/ci.yml
+          actionlint .github/workflows/deploy-preview.yml
+          actionlint .github/workflows/deploy-production.yml
+          修复所有错误直到零 error。
+        tool_ref: actions_linter
+        output_file: "ci-lint-report.txt"
+
+      # Layer 4: 优化
+      - id: optimize_pipeline
+        action: |
+          审查和优化流水线：
+          1. 并行化：lint + typecheck + test 可以并行（不互相依赖）
+          2. 构建缓存：确认 .next/cache 或框架缓存正确配置
+          3. 条件执行：paths-ignore 跳过文档变更的 CI
+          4. 超时设置：每个 job 有 timeout-minutes
+          5. 失败通知：Slack/Discord webhook 通知部署失败
+          6. 安全检查：
+            - 是否所有 actions 用 SHA pinning？
+            - 是否声明了 permissions？
+            - 是否有 dependency review（供应链安全）？
+        quality: "lint/typecheck/test 并行。所有 actions SHA pinned。"
+        tool_ref: null
+        output_file: "ci-cd-design.md (append)"
+
+    quality_criteria:
+      - "actionlint 验证零 error"
+      - "所有 third-party actions 用 SHA pinning（不用 @latest/@v4）"
+      - "每个 workflow 有 permissions 块"
+      - "有 concurrency 防止并行部署冲突"
+      - "lint/typecheck/test 并行执行"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ actions/checkout@latest = 供应链风险（用 SHA）"
+      - "❌ 无 permissions 块 = 默认权限过大"
+      - "❌ lint→typecheck→test→build 全部串行 = 慢"
+      - "❌ 无缓存 = 每次全量安装依赖"
+      - "❌ secrets 打印到日志（即使 mask 也不安全）"
+
+    reviewers:
+      - persona: "安全工程师"
+        checklist:
+          - "actions 是否 SHA pinned？"
+          - "permissions 是否最小权限？"
+          - "secrets 管理是否安全？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: 环境配置（代码类）
+  # Step 模型: 选型→执行→验证→优化
+  # ═══════════════════════════════════════
+
+  environment_config:
+    description: "多环境配置管理 — 环境变量、secrets、.env 文件"
+
+    steps:
+      # Layer 1: 选型
+      - id: select_env_strategy
+        action: |
+          选择环境管理策略：
+          1. 环境定义：
+            | 环境 | 用途 | 数据源 | 谁能访问 |
+            - development: 本地开发，SQLite/mock
+            - preview: PR 预览，staging DB
+            - staging: 预发布，生产镜像 DB
+            - production: 线上，真实 DB
+          2. Secret 分级（参考 alirezarezvani 4 级体系）：
+            - L1 Critical: 数据库密码、API 主密钥、加密密钥 → 仅 CI/CD 注入
+            - L2 Sensitive: 第三方 API key、SMTP 凭证 → 平台 env vars
+            - L3 Config: 功能开关、API base URL → .env 文件
+            - L4 Public: 应用名、版本号 → 代码中直接定义
+          3. 命名规范：
+            - SCREAMING_SNAKE_CASE
+            - 前缀分组：DB_*, AUTH_*, NEXT_PUBLIC_*
+            - NEXT_PUBLIC_ 开头 = 客户端可见（安全警告）
+        quality: "Secret 有分级。NEXT_PUBLIC_ 变量已审查安全性。"
+        tool_ref: null
+        output_file: "env-design.md"
+
+      # Layer 2: 执行
+      - id: generate_env_files
+        action: |
+          生成环境配置文件：
+          1. .env.example — 所有变量的模板（无真实值）
+          2. .env.development — 本地开发默认值
+          3. vercel.json 或 netlify.toml — 平台环境配置
+          4. .gitignore 确认 .env* 已忽略（.env.example 除外）
+          每个变量标注：
+          - 类型（string/number/boolean/url）
+          - 必填/可选
+          - 安全等级（L1-L4）
+          - 示例值
+        tool_ref: null
+        output_file: ".env.example + .env.development"
+
+      # Layer 3: 验证
+      - id: validate_env
+        action: |
+          验证环境配置：
+          1. 检查 .env.example 中每个变量是否在代码中被使用
+          2. 检查代码中引用的 env var 是否都在 .env.example 中定义
+          3. 用 dotenvx 验证 .env 文件格式：
+            npx @dotenvx/dotenvx get  # 列出所有变量
+          4. 检查 NEXT_PUBLIC_ 变量不包含 secret（L1/L2 级别的变量不能有此前缀）
+        tool_ref: env_manager
+        output_file: "env-validation.md"
+
+      # Layer 4: 优化
+      - id: optimize_env
+        action: |
+          优化环境配置：
+          1. 加密敏感 .env 文件（如果需要 git 追踪）：
+            npx @dotenvx/dotenvx encrypt
+          2. 添加 env 验证脚本（启动时检查必填变量）：
+            - Node.js: zod schema 验证 process.env
+            - 缺失必填变量 → 启动失败 + 明确错误消息
+          3. 文档化：每个变量的获取方式（在哪里申请 API key 等）
+        tool_ref: env_manager
+        output_file: "env-design.md (append)"
+
+    quality_criteria:
+      - "所有环境变量在 .env.example 中有文档"
+      - "Secret 有分级（L1-L4）"
+      - "NEXT_PUBLIC_ 变量不包含敏感信息"
+      - ".env 文件在 .gitignore 中"
+      - "有启动时的 env 验证逻辑"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ .env 提交到 git = 密钥泄漏"
+      - "❌ 硬编码 API key 在代码中"
+      - "❌ NEXT_PUBLIC_ 前缀的变量包含 secret"
+      - "❌ 开发环境用生产数据库连接"
+      - "❌ .env.example 没有示例值或说明"
+
+    reviewers:
+      - persona: "安全工程师"
+        checklist:
+          - "是否有 secret 泄漏到客户端的风险？"
+          - "分级是否正确？"
+          - "是否有启动时验证？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: 域名与 DNS（代码类）
+  # Step 模型: 选型→执行→验证→优化
+  # ═══════════════════════════════════════
+
+  domain_dns:
+    description: "域名配置 + DNS + HTTPS + CDN 设置"
+
+    steps:
+      # Layer 1: 选型
+      - id: select_dns_strategy
+        action: |
+          设计 DNS 和域名方案：
+          1. 域名结构：
+            - 生产: app.example.com
+            - Staging: staging.example.com
+            - API: api.example.com（如果前后端分离）
+            - 文档: docs.example.com
+          2. DNS 提供商选择：
+            - Cloudflare（免费 CDN + DNS + DDoS 保护）
+            - Vercel DNS（和部署平台集成最紧密）
+            - Route 53（AWS 生态）
+          3. SSL/TLS 策略：
+            - 平台自动管理（Vercel/Netlify 自动 Let's Encrypt）
+            - 或 Cloudflare 代理（Full Strict 模式）
+          4. Cache-Control 策略：
+            - 静态资源: max-age=31536000, immutable（带 hash 文件名）
+            - HTML: no-cache（始终验证最新版）
+            - API: no-store 或 短 TTL
+        quality: "DNS 记录类型正确（A/CNAME/AAAA）。SSL 配置完整。"
+        tool_ref: null
+        output_file: "dns-design.md"
+
+      # Layer 2: 执行
+      - id: generate_dns_config
+        action: |
+          生成 DNS 配置文档和部署平台配置：
+          1. DNS 记录表：
+            | 类型 | 名称 | 值 | TTL | 说明 |
+          2. vercel.json（如果用 Vercel）：
+            - rewrites/redirects 规则
+            - headers 配置（安全头）
+            - regions 设置
+          3. _headers 或 netlify.toml（如果用 Netlify）
+          4. CAA 记录（限定谁能签发 SSL 证书）
+        tool_ref: null
+        output_file: "dns-records.md + vercel.json"
+
+      # Layer 3: 验证
+      - id: validate_dns
+        action: |
+          验证 DNS 配置：
+          1. 用 curl 检查 HTTPS 和重定向：
+            curl -sI https://example.com  # 检查 status + headers
+            curl -sI http://example.com   # 应 301 → https
+          2. 检查安全头是否正确设置：
+            - Strict-Transport-Security
+            - X-Frame-Options
+            - X-Content-Type-Options
+          3. 检查 SSL 证书有效性
+          注意：如果是设计阶段（无真实域名），记录验证命令供部署后执行。
+        tool_ref: api_testing
+        output_file: "dns-validation.md"
+
+      # Layer 4: 优化
+      - id: optimize_dns
+        action: |
+          优化 DNS 和 CDN 配置：
+          1. 预连接关键域名：<link rel="preconnect" href="...">
+          2. DNS 预解析：<link rel="dns-prefetch" href="...">
+          3. 字体预加载：<link rel="preload" as="font" ...>
+          4. 图片 CDN 配置（Next.js Image Optimization 或 Cloudflare Images）
+          5. Brotli 压缩确认（比 gzip 小 15-20%）
+        tool_ref: null
+        output_file: "dns-design.md (append)"
+
+    quality_criteria:
+      - "DNS 记录类型正确（CNAME for subdomains, A for apex）"
+      - "HTTP → HTTPS 重定向配置"
+      - "SSL/TLS 配置（Full Strict 如果用 Cloudflare）"
+      - "Cache-Control 策略区分静态/动态资源"
+      - "有 CAA 记录限制证书签发"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ HTTP 不重定向到 HTTPS"
+      - "❌ 静态资源无 Cache-Control = 每次重新下载"
+      - "❌ API 响应设置长缓存 = 数据过期"
+      - "❌ SSL 用 Flexible 模式（源站到 CDN 明文）"
+
+    reviewers:
+      - persona: "网络工程师"
+        checklist:
+          - "DNS 记录是否正确？"
+          - "SSL/TLS 是否 Full Strict？"
+          - "缓存策略是否合理？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: 监控与告警（代码类）
+  # Step 模型: 选型→执行→验证→优化
+  # ═══════════════════════════════════════
+
+  monitoring:
+    description: "错误监控 + 性能监控 + Uptime 告警配置"
+
+    steps:
+      # Layer 1: 选型
+      - id: select_monitoring_stack
+        action: |
+          选择监控方案：
+          1. 错误监控: Sentry（行业标准，免费 5K events/月）
+          2. 性能监控: Vercel Analytics + Lighthouse CI
+          3. Uptime 监控: BetterUptime / UptimeRobot（免费 50 monitors）
+          4. 日志: Vercel Logs / Axiom（结构化日志）
+          5. SLO/SLI 定义（参考 alirezarezvani observability-designer）：
+            | 指标 | SLI | SLO | 告警阈值 |
+            - 可用性: 成功请求/总请求 ≥ 99.9%
+            - 延迟: p95 响应时间 ≤ 500ms
+            - 错误率: 5xx/总请求 ≤ 0.1%
+        quality: "SLO 有具体数值。每个监控层有选型理由。"
+        tool_ref: null
+        output_file: "monitoring-design.md"
+
+      # Layer 2: 执行
+      - id: generate_monitoring_config
+        action: |
+          生成监控配置文件：
+          1. Sentry 配置（sentry.client.config.ts + sentry.server.config.ts）：
+            - DSN 从环境变量获取
+            - 环境标签（production/staging）
+            - 采样率配置（tracesSampleRate: 0.1 生产, 1.0 开发）
+            - Source maps 上传配置
+          2. Lighthouse CI 配置（lighthouserc.js）：
+            - 性能阈值（performance ≥ 0.9, accessibility ≥ 0.9）
+            - 预算（JS bundle ≤ 200KB, 图片 ≤ 500KB）
+          3. 告警规则：
+            - 错误率 > 1% → Slack 通知
+            - p95 > 1s → PagerDuty
+            - Uptime < 99.9% → 邮件 + Slack
+        tool_ref: null
+        output_file: "sentry.config.ts + lighthouserc.js"
+
+      # Layer 3: 验证
+      - id: validate_monitoring
+        action: |
+          验证监控配置：
+          1. Lighthouse CI 本地运行（如果有 HTML 文件）：
+            npx @lhci/cli autorun --collect.url=file:///path/to/index.html
+          2. 检查 Sentry 配置文件语法
+          3. 验证告警规则覆盖所有关键指标
+          注意：Sentry 完整验证需要账号，这里只验证配置文件正确性。
+        tool_ref: performance_audit
+        output_file: "monitoring-validation.md"
+
+      # Layer 4: 优化
+      - id: optimize_monitoring
+        action: |
+          优化监控策略：
+          1. 告警疲劳防治：
+            - 分级：P0(立即响应) / P1(1小时) / P2(下个工作日)
+            - 聚合：相同错误 5 分钟内只通知一次
+            - 静默：计划维护期间静默告警
+          2. Dashboard 设计：
+            - 核心 4 指标：错误率、p95 延迟、Uptime、部署频率
+            - 趋势而非绝对值（本周 vs 上周对比）
+          3. 成本控制：
+            - Sentry 采样率调优（从 0.1 开始，按需提高）
+            - 日志保留期限（30 天 vs 90 天 trade-off）
+        tool_ref: null
+        output_file: "monitoring-design.md (append)"
+
+    quality_criteria:
+      - "SLO/SLI 有具体数值（不是'高可用'）"
+      - "告警规则覆盖可用性、延迟、错误率"
+      - "告警分级（P0/P1/P2）防止疲劳"
+      - "Sentry 配置正确（DSN from env, 采样率合理）"
+      - "Lighthouse CI 有性能阈值"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 只监控不告警 = 没人看 dashboard"
+      - "❌ 所有告警同级 = 告警疲劳"
+      - "❌ Sentry DSN 硬编码 = 安全风险"
+      - "❌ 采样率 1.0 在生产 = 成本爆炸"
+      - "❌ 无 SLO = 不知道什么算'出问题了'"
+
+    reviewers:
+      - persona: "SRE 工程师"
+        checklist:
+          - "SLO 是否合理？"
+          - "告警是否有分级？"
+          - "成本是否可控？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: 安全加固（混合类）
+  # Step 模型: 搜索→分析→推导→生成（生成部分是代码）
+  # ═══════════════════════════════════════
+
+  security_hardening:
+    description: "安全头、CSP、Rate Limiting、Secret Management — 从分析到配置"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_security
+        action: |
+          搜索 Web 安全加固最佳实践：
+          1. 参考 OWASP 安全头推荐（设置 + 移除清单）
+          2. 搜索目标平台的安全配置方式
+          3. 搜索 CSP 实施经验和常见问题
+        tool_ref: web_scraping
+        queries:
+          - '"OWASP" security headers checklist 2026'
+          - '"Content-Security-Policy" best practices implementation'
+          - '"{部署平台}" security headers configuration'
+        output_file: "security-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_security_surface
+        action: |
+          分析安全攻击面（参考 OWASP 安全头完整清单）：
+          必须设置的 headers：
+          | Header | 值 | 防护什么 |
+          - Content-Security-Policy: 防 XSS（两阶段: report-only → enforce）
+          - Strict-Transport-Security: max-age=31536000; includeSubDomains
+          - X-Content-Type-Options: nosniff
+          - X-Frame-Options: DENY（或 CSP frame-ancestors）
+          - Referrer-Policy: strict-origin-when-cross-origin
+          - Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+          必须移除的 headers：
+          - X-Powered-By（泄漏技术栈）
+          - Server（泄漏服务器信息）
+
+          额外安全措施：
+          - Rate Limiting: 登录 5/min, API 60/min, 通用 1000/min
+          - CORS 白名单（不用 *）
+          - Cookie: Secure + HttpOnly + SameSite=Strict
+        quality: "OWASP 推荐的 header 全覆盖。CSP 有两阶段实施计划。"
+        tool_ref: null
+        output_file: "security-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_security_config
+        action: |
+          基于分析，推导具体的安全配置：
+          1. CSP 策略（nonce-based strict CSP）：
+            - 阶段 1: Content-Security-Policy-Report-Only（收集违规报告）
+            - 阶段 2: Content-Security-Policy（强制执行）
+            - 使用 nonce 而非 unsafe-inline
+          2. 平台配置方式：
+            - Vercel: vercel.json headers 字段
+            - Netlify: _headers 文件
+            - Next.js: next.config.js headers 函数
+          3. Rate Limiting 实现：
+            - Vercel Edge Middleware（@vercel/kv）
+            - 或 upstash-ratelimit（Redis-based）
+        quality: "CSP 策略具体到指令级别。Rate Limit 有具体的阈值。"
+        tool_ref: null
+        output_file: "security-config.md"
+
+      # Layer 4: 生成
+      - id: generate_security_headers
+        action: |
+          生成安全配置代码：
+          - vercel.json 或 next.config.js 的 headers 配置
+          - middleware.ts 的 Rate Limiting 逻辑
+          - CSP nonce 生成和注入逻辑
+        tool_ref: null
+        output_file: "security-headers.ts + vercel.json headers"
+
+      - id: generate_security_checklist
+        action: "生成安全加固检查清单 PDF（部署前逐项确认）"
+        tool_ref: pdf_generation
+        output_file: "security-checklist.pdf"
+
+    quality_criteria:
+      - "OWASP 推荐 header 全覆盖（≥6 个设置 + ≥2 个移除）"
+      - "CSP 有两阶段计划（report-only → enforce）"
+      - "Rate Limiting 有具体阈值"
+      - "CORS 用白名单不用 *"
+      - "Cookie 设置 Secure + HttpOnly + SameSite"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ CSP 用 unsafe-inline = 等于没有 CSP"
+      - "❌ CORS: * = 任何人都能调 API"
+      - "❌ 不移除 X-Powered-By = 泄漏技术栈"
+      - "❌ Rate Limiting 只在应用层不在 Edge = 流量已经到服务器了"
+      - "❌ 一步到位 enforce CSP = 大量误杀"
+
+    reviewers:
+      - persona: "安全审计师"
+        checklist:
+          - "OWASP 推荐 header 是否全覆盖？"
+          - "CSP 是否有渐进实施计划？"
+          - "是否有 Rate Limiting？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: 回滚策略（文档类）
+  # Step 模型: 搜索→分析→推导→生成
+  # ═══════════════════════════════════════
+
+  rollback_strategy:
+    description: "回滚方案、蓝绿部署、灾备策略、数据备份 SOP"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_rollback
+        action: |
+          搜索回滚和灾备最佳实践：
+          1. 搜索部署策略对比（蓝绿/金丝雀/滚动/直接替换）
+          2. 搜索 Vercel/Netlify 的回滚机制
+          3. 搜索数据库回滚和备份策略
+        tool_ref: web_scraping
+        queries:
+          - '"rollback strategy" web application deployment best practices'
+          - '"blue green" vs "canary" vs "rolling" deployment comparison'
+          - '"{部署平台}" rollback instant deployment'
+        output_file: "rollback-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_deployment_strategies
+        action: |
+          对比部署策略：
+          | 策略 | 停机时间 | 风险 | 回滚速度 | 资源成本 | 适用场景 |
+          - 直接替换: 有停机, 高风险, 慢, 低成本, 小项目
+          - 蓝绿: 零停机, 低风险, 即时, 2x 资源, 关键应用
+          - 金丝雀: 零停机, 最低风险, 即时, 1.x 资源, 大流量
+          - 滚动: 零停机, 中风险, 中速, 1.x 资源, 微服务
+          - Vercel 默认: 零停机, 低风险, 即时（promote previous）, 平台管理
+
+          Forward Fix vs Rollback 决策树：
+          - 影响面 > 50% 用户 → 立即回滚
+          - 影响面 < 10% + 已知修复 → Forward Fix
+          - 数据损坏 → 立即回滚 + 数据库恢复
+        quality: "策略对比有量化指标。决策树有具体的触发条件。"
+        tool_ref: null
+        output_file: "rollback-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_rollback_sop
+        action: |
+          基于分析，推导回滚 SOP（Standard Operating Procedure）：
+          1. 回滚触发条件：
+            - 错误率 > 5%（自动回滚）
+            - p95 > 3s（人工评估）
+            - 关键功能不可用（立即回滚）
+          2. 回滚步骤：
+            Step 1: 确认问题（< 2 分钟）
+            Step 2: 决策回滚 vs forward fix（< 3 分钟）
+            Step 3: 执行回滚（平台命令）
+            Step 4: 验证回滚成功（健康检查）
+            Step 5: 通知团队（Slack/Email）
+            Step 6: 事后分析（Post-mortem）
+          3. 平台特定回滚命令：
+            - Vercel: `vercel rollback` 或 Dashboard → Promote previous
+            - Netlify: Dashboard → Published deploys → Publish deploy
+            - Docker: `docker service rollback` 或 K8s `kubectl rollout undo`
+          4. 数据库回滚策略：
+            - 有回滚迁移（down.sql）→ 执行
+            - 无回滚迁移 → 数据库快照恢复
+            - 数据损坏 → Point-in-time recovery
+          5. 演练计划：每季度一次回滚演练
+        quality: "SOP 有时间目标（<5 分钟完成回滚）。有演练计划。"
+        tool_ref: null
+        output_file: "rollback-sop.md"
+
+      # Layer 4: 生成
+      - id: generate_rollback_diagram
+        action: "用 D2 生成回滚决策流程图（问题发现→评估→回滚/修复→验证→通知）"
+        tool_ref: diagram_generation
+        output_file: "rollback-flow.d2 → rollback-flow.svg"
+
+      - id: generate_rollback_doc
+        action: "综合为回滚与灾备文档 PDF（含 SOP + 决策树 + 流程图）"
+        tool_ref: pdf_generation
+        output_file: "rollback-strategy.pdf"
+
+    quality_criteria:
+      - "部署策略有对比表（≥3 种策略）"
+      - "回滚 SOP 有时间目标（<5 分钟）"
+      - "有 Forward Fix vs Rollback 决策树"
+      - "有平台特定的回滚命令"
+      - "有数据库回滚策略"
+      - "有季度演练计划"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 无回滚计划 = 出事靠运气"
+      - "❌ 只有应用回滚不管数据库 = 数据不一致"
+      - "❌ 回滚步骤在人脑里不在文档里 = 关键人休假就完了"
+      - "❌ 从不演练 = 真出事时手忙脚乱"
+
+    reviewers:
+      - persona: "SRE 工程师"
+        checklist:
+          - "回滚 SOP 是否可在 5 分钟内执行？"
+          - "数据库回滚是否有方案？"
+          - "是否有演练计划？"
+
+# ═══════════════════════════════════════
+# 产出物目录结构
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── platform-research.md              # 平台选型研究
+  ├── platform-decision.md              # ADR 决策文档
+  ├── platform-comparison.png           # 雷达图 (matplotlib)
+  ├── platform-selection.pdf            # 选型文档 (Typst)
+  ├── ci-cd-design.md                   # CI/CD 设计
+  ├── .github/workflows/ci.yml          # CI workflow
+  ├── .github/workflows/deploy-preview.yml
+  ├── .github/workflows/deploy-production.yml
+  ├── ci-lint-report.txt                # actionlint 结果
+  ├── env-design.md                     # 环境配置设计
+  ├── .env.example                      # 环境变量模板
+  ├── .env.development                  # 开发环境默认
+  ├── env-validation.md                 # 环境验证结果
+  ├── dns-design.md                     # DNS 设计
+  ├── dns-records.md                    # DNS 记录表
+  ├── vercel.json                       # Vercel 配置
+  ├── dns-validation.md                 # DNS 验证结果
+  ├── monitoring-design.md              # 监控设计
+  ├── sentry.config.ts                  # Sentry 配置
+  ├── lighthouserc.js                   # Lighthouse CI 配置
+  ├── monitoring-validation.md          # 监控验证
+  ├── security-research.md              # 安全研究
+  ├── security-config.md                # 安全配置方案
+  ├── security-headers.ts               # 安全头代码
+  ├── security-checklist.pdf            # 安全检查清单 (Typst)
+  ├── rollback-research.md              # 回滚策略研究
+  ├── rollback-sop.md                   # 回滚 SOP
+  ├── rollback-flow.svg                 # 回滚流程图 (D2)
+  └── rollback-strategy.pdf             # 回滚文档 (Typst)
+
+# ═══════════════════════════════════════
+# Domain-specific Gate 标准
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "平台选型有加权对比分析"
+      - "CI/CD workflow 通过 actionlint 零 error"
+      - "环境变量有分级和 .env.example"
+      - "安全头覆盖 OWASP 推荐清单"
+      - "回滚 SOP 有时间目标和演练计划"
+
+  gate4_acceptance:
+    checklist:
+      - "GitHub Actions YAML 可直接使用"
+      - "vercel.json 配置完整"
+      - "Sentry + Lighthouse CI 配置正确"
+      - "CSP 有两阶段实施计划"
+      - "回滚流程图清晰可执行"

@@ -25,6 +25,24 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/pre-accept-check.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/pre-gate-check.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -33,8 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .tad/hooks/post-write-sync.sh",
-            "async": true
+            "command": "bash .tad/hooks/post-write-sync.sh"
           }
         ]
       }

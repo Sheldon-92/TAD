@@ -841,3 +841,96 @@ capabilities:
       - name: pa11y
         type: cli
         note: "Already in registry. Lighter weight, bundles own Puppeteer."
+
+  # ═══════════════════════════════════════
+  # Web Deployment Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  actions_linter:
+    description: "GitHub Actions YAML 静态验证（语法、表达式、安全检查）"
+    recommended:
+      name: actionlint
+      type: cli
+      install: "brew install actionlint"
+      verify: "actionlint --version"
+      usage: |
+        actionlint .github/workflows/ci.yml     # 验证单个文件
+        actionlint                                # 验证所有 workflow 文件
+        actionlint -format '{{json .}}'          # JSON 输出
+      example: |
+        actionlint .github/workflows/ci.yml
+        # 捕获: actions/setup-node 缺少 @ref
+        # 捕获: expression 语法错误 (= vs ==)
+        # 退出码 1 = 有错误（CI 友好）
+      output_format: "Terminal diagnostics with file:line"
+      tested: true
+      test_result: "捕获缺少 @ref、表达式语法、shell injection 风险"
+      note: "零配置，离线工作，无需认证。6MB 二进制。"
+
+  env_manager:
+    description: "环境变量管理（加密/解密/验证）"
+    recommended:
+      name: dotenvx
+      type: cli
+      install: "npx @dotenvx/dotenvx (auto-downloads)"
+      verify: "npx @dotenvx/dotenvx --version"
+      usage: |
+        npx @dotenvx/dotenvx encrypt           # 加密 .env → .env.vault
+        npx @dotenvx/dotenvx decrypt           # 解密
+        npx @dotenvx/dotenvx get KEY           # 获取单个变量
+        npx @dotenvx/dotenvx set KEY=VALUE     # 设置变量
+      example: |
+        echo "DATABASE_URL=sqlite://dev.db" > .env
+        npx @dotenvx/dotenvx encrypt
+        # Output: .env.vault created (encrypted)
+        npx @dotenvx/dotenvx get DATABASE_URL
+        # Output: sqlite://dev.db
+      output_format: "Terminal output + encrypted .env.vault file"
+      tested: true
+      test_result: "encrypt/decrypt/get 全部正常，无需认证"
+      note: "无需外部服务。支持多环境（.env.production, .env.staging）。"
+
+  performance_audit:
+    description: "Web 性能审计（Lighthouse CI — 性能、可访问性、SEO 评分）"
+    recommended:
+      name: lighthouse-ci
+      type: cli
+      install: "npx @lhci/cli (auto-downloads, 需要 Chrome)"
+      verify: "npx @lhci/cli --version"
+      usage: |
+        npx @lhci/cli autorun --collect.url=URL  # 运行审计
+        npx @lhci/cli assert --preset lighthouse:recommended  # 断言阈值
+      example: |
+        npx @lhci/cli autorun --collect.url=http://localhost:3000
+        # Output: JSON scores
+        # performance: 0.84, accessibility: 0.92, best-practices: 1.0, seo: 0.91
+      output_format: "JSON scores + HTML report"
+      tested: true
+      test_result: "成功运行，输出结构化评分"
+      note: "需要 Chrome/Chromium。可配置断言阈值（性能 ≥0.9 等）。"
+
+  deployment_platform:
+    description: "Vercel 部署平台 CLI（部署、环境变量、预览）"
+    recommended:
+      name: vercel-cli
+      type: cli
+      install: "npm install -g vercel"
+      verify: "vercel --version"
+      usage: |
+        vercel deploy              # 部署到预览环境
+        vercel deploy --prod       # 部署到生产
+        vercel env pull            # 拉取环境变量到本地 .env
+        vercel build               # 本地构建测试
+        vercel inspect URL         # 查看部署信息
+      example: |
+        # 部署到预览
+        vercel deploy
+        # Output: https://my-app-abc123.vercel.app
+
+        # 部署到生产
+        vercel deploy --prod
+        # Output: https://my-app.vercel.app
+      output_format: "Terminal output with deployment URL"
+      tested: true
+      test_result: "CLI 正常，但几乎所有操作需要 auth token"
+      note: "需要 vercel login 或 VERCEL_TOKEN。核心部署工具。"

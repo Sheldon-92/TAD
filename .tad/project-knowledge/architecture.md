@@ -180,6 +180,20 @@ Project-specific architecture learnings accumulated through TAD workflow.
   4. **Forbidden actions list is small but critical**: 10 lines of unique guardrails that exist nowhere else — never remove
 - **Action**: When skill files grow large, audit for judgment vs mechanical. Mechanical logic should be in hooks/scripts, config in YAML, leaving skills as pure reasoning guides.
 
+### Domain Pack Step Model: Type A/B/Mixed - 2026-04-02
+- **Context**: Building web-testing Domain Pack with 7 capabilities across 3 types
+- **Discovery**: Domain Pack capabilities need different step structures based on their nature:
+  1. **Type A (Document/Research)**: search→analyze→derive→generate. For capabilities producing analysis/reports. Prevents "search-then-paste" shallow output.
+  2. **Type B (Code/Tool)**: select→execute→verify→optimize. For capabilities producing runnable code/config. Prevents "wrong framework choice" and "code doesn't compile."
+  3. **Type Mixed (Human-AI)**: Cannot be fully automated. pair_testing with 4D Protocol (Discover→Discuss→Decide→Deliver) forces in-session decision-making rather than deferred triage. Value = human intuition + AI analysis, decided together.
+  4. **Each capability judged independently** — same pack can mix all three types. web-testing has 5 code, 1 mixed, 1 document.
+- **Action**: When designing Domain Pack capabilities, first classify each as A/B/Mixed, then apply the corresponding step model. Don't force all capabilities into the same structure.
+
+### Hook Path Matching: Glob Prefix Must Handle Relative Paths - 2026-04-02
+- **Context**: post-write-sync.sh case patterns used `*/.tad/` which requires a character + `/` before `.tad`. Claude Code passes file_path as relative (`.tad/active/...`) not absolute (`/path/.tad/...`).
+- **Discovery**: `*/.tad/` does NOT match `.tad/` (no character before the slash). Must use `*.tad/` (any prefix including empty) to handle both absolute and relative paths. Similarly, `*NEXT.md` is too broad (matches WHATSNEXT.md) — use `*/NEXT.md|NEXT.md` for exact matching.
+- **Action**: All hook case patterns must use `*.tad/` not `*/.tad/`. Test with both relative and absolute paths. For exact filename matches, use `*/name|name` pattern.
+
 ### Claude Code Enforcement Priority Order — permissions.deny > hooks > allow - 2026-03-31
 - **Context**: Supplementary spike (Exp 3c) testing tool restriction mechanisms
 - **Discovery**: Claude Code's enforcement is layered with strict priority:

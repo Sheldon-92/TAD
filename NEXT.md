@@ -112,6 +112,20 @@
 
 ## Ideas
 
+- [x] IDEA-20260401-domain-pack-framework: Domain Pack Framework — Extensible Domain Support (promoted)
+- [x] Domain Pack: Tool Research Spike — ✅ 10 tools in 3 tiers, 5 tested
+- [x] **EPIC: Domain Pack Framework** — ALL 3/3 PHASES COMPLETE (2026-04-01)
+  - Archived: .tad/archive/epics/EPIC-20260401-domain-pack-framework.md
+
+- [ ] **Domain Pack Phase 1: 软件开发全链路** (5/7 完成)
+  - ✅ product-definition (含深度迭代)
+  - ✅ web-ui-design (压力测试 7/7)
+  - ✅ web-frontend (744 行, 压力测试 7/7)
+  - ✅ web-backend (756 行, 压力测试 7/7)
+  - ✅ web-frontend (Gate 3 PASS, commit fe2b027, 压力测试 7/7)
+  - ✅ web-testing (Gate 3 PASS, commit d562e08, 7 caps, 4D Protocol)
+  - 🔲 web-deployment
+  - 🔲 content-creation
 - [x] IDEA-20260325-linear-kanban-for-human: Linear Kanban for Human Time/Energy Management (promoted)
 - [x] IDEA-20260325-linear-auto-sync: Linear Auto-Sync — TAD as Single Source of Truth (promoted)
 
