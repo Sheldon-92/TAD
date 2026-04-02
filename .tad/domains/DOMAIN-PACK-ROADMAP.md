@@ -192,14 +192,14 @@ AI/Agent 链路:  设计 → Prompt → 工具集成 → 测试 → 部署
 | 6 | web-deployment | Web | ✅ | 764 | +4 |
 | 7 | mobile-ui-design | Mobile | ✅ | ~600 | +0 (复用) |
 | 8 | mobile-development | Mobile | ✅ | 572 | +4 |
-| 9 | mobile-testing | Mobile | 🔲 | — | — |
-| 10 | mobile-release | Mobile | 🔲 | — | — |
+| 9 | mobile-testing | Mobile | ✅ | 564 | +0 (复用) |
+| 10 | mobile-release | Mobile | ✅ | 607 | +3 |
 | 11 | hw-circuit-design | Hardware | 🔲 | — | — |
 | 12 | hw-firmware | Hardware | 🔲 | — | — |
 | 13 | hw-enclosure | Hardware | 🔲 | — | — |
 | 14 | hw-testing | Hardware | 🔲 | — | — |
-| 15 | ai-agent-architecture | AI/Agent | 🔲 | — | — |
-| 16 | ai-prompt-engineering | AI/Agent | 🔲 | — | — |
+| 15 | ai-agent-architecture | AI/Agent | ✅ | 965 | +0 |
+| 16 | ai-prompt-engineering | AI/Agent | ✅ | 706 | +2 |
 | 17 | ai-tool-integration | AI/Agent | 🔲 | — | — |
 | 18 | ai-evaluation | AI/Agent | 🔲 | — | — |
 | 19 | cli-tool-development | CLI | 🔲 | — | — |

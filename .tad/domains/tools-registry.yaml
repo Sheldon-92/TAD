@@ -1188,3 +1188,175 @@ capabilities:
       tested: true
       test_result: "boot/screenshot/shutdown 全部成功，iOS 26.2 模拟器可用"
       note: "需要完整 Xcode（非 Command Line Tools）。本机已安装。"
+
+  # ═══════════════════════════════════════
+  # AI Prompt Engineering Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  prompt_evaluation:
+    description: "Prompt testing, A/B comparison, regression testing with automated assertions"
+    recommended:
+      name: promptfoo
+      type: cli
+      install: "npx promptfoo (auto-downloads, no global install needed)"
+      verify: "npx promptfoo --version"
+      usage: |
+        1. Create promptfooconfig.yaml with prompts, providers, and test cases
+        2. Run: npx promptfoo eval
+        3. View results: npx promptfoo view (opens web UI)
+        4. CI/CD: npx promptfoo eval --ci (exits with error code on failures)
+      example: |
+        # promptfooconfig.yaml
+        description: "Dish recognition prompt test"
+        prompts:
+          - "Identify the dish: {{input}}"
+          - |
+            You are a culinary expert. Analyze this dish description:
+            1) Dish name 2) Cuisine type 3) Key ingredients
+            Description: {{input}}
+        providers:
+          - openai:gpt-4o      # or anthropic:claude-sonnet-4-20250514
+        tests:
+          - vars:
+              input: "A bowl of spicy noodles with red chili oil and Sichuan peppercorn"
+            assert:
+              - type: contains
+                value: "noodle"
+              - type: llm-rubric
+                value: "Response correctly identifies the cuisine as Sichuan/Chinese"
+          - vars:
+              input: "Grilled salmon with lemon butter sauce on asparagus"
+            assert:
+              - type: icontains
+                value: "salmon"
+              - type: cost
+                threshold: 0.01
+
+        # Run: npx promptfoo eval --no-cache
+        # Output: Table showing PASS/FAIL per prompt × test case
+      output_format: "Terminal table + web UI + JSON export"
+      tested: true
+      test_result: "v0.121.3, 6 test cases executed, assertions verified (contains/icontains)"
+      note: "Used by OpenAI and Anthropic. Supports 60+ providers. Assertion types: contains, icontains, llm-rubric, cost, latency, javascript, python."
+    alternatives:
+      - name: deepeval
+        type: cli
+        install: "pip install deepeval"
+        usage: "deepeval test run test_file.py"
+        note: "Pytest-style LLM evaluation. Good for Python-native teams."
+
+  json_schema_validation:
+    description: "Validate LLM JSON output against defined schemas"
+    recommended:
+      name: python3-json-validation
+      type: cli
+      install: "python3 已内置 (no extra install)"
+      verify: "python3 -c 'import json; print(\"OK\")'"
+      usage: |
+        Write a Python script that:
+        1. Defines expected JSON Schema (required fields, types, constraints)
+        2. Parses LLM output as JSON
+        3. Validates against schema
+        4. Reports violations
+      example: |
+        python3 -c "
+        import json, sys
+        schema = {
+            'required': ['dish_name', 'cuisine', 'ingredients'],
+            'types': {'dish_name': str, 'cuisine': str, 'ingredients': list}
+        }
+        output = json.loads(sys.argv[1])
+        for field in schema['required']:
+            if field not in output:
+                print(f'FAIL: Missing {field}')
+                sys.exit(1)
+        for field, expected_type in schema['types'].items():
+            if field in output and not isinstance(output[field], expected_type):
+                print(f'FAIL: {field} should be {expected_type.__name__}')
+                sys.exit(1)
+        print('PASS: Schema valid')
+        " '{"dish_name":"Pizza","cuisine":"Italian","ingredients":["dough","tomato","mozzarella"]}'
+        # Output: PASS: Schema valid
+      output_format: "PASS/FAIL with violation details"
+      tested: true
+      test_result: "Validates required fields and types correctly"
+      note: "Zero install. For production use, consider jsonschema package (pip install jsonschema)."
+
+  # ═══════════════════════════════════════
+  # AI Evaluation Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  llm_evaluation:
+    description: "LLM/Agent prompt evaluation, regression testing, A/B comparison, and red teaming"
+    recommended:
+      name: promptfoo
+      type: cli
+      install: "npx promptfoo@latest (auto-downloads via npx, no global install needed)"
+      verify: "npx promptfoo --version"
+      usage: |
+        1. Create eval-config.yaml with prompts, providers, test cases, and assertions
+        2. Run: npx promptfoo eval --config eval-config.yaml --output results.json
+        3. For CI/CD: npx promptfoo eval --config eval-config.yaml --ci (exits non-zero on failure)
+        4. For red teaming: npx promptfoo redteam run --config redteam-config.yaml
+        5. For side-by-side comparison: define multiple providers in config
+        6. View results: npx promptfoo view (opens web UI on localhost)
+      example: |
+        # eval-config.yaml
+        description: "Agent behavior evaluation"
+        prompts:
+          - "You are a helpful assistant. {{task}}"
+        providers:
+          - id: echo
+            config:
+              text: "Test response for {{task}}"
+        tests:
+          - vars:
+              task: "Summarize this document"
+            assert:
+              - type: contains
+                value: "summary"
+              - type: javascript
+                value: "output.length > 50"
+              - type: llm-rubric
+                value: "Is the response helpful and on-topic?"
+                threshold: 0.7
+              - type: cost
+                threshold: 0.10
+              - type: latency
+                threshold: 30000
+
+        # Run evaluation
+        npx promptfoo eval --config eval-config.yaml --output results.json
+        # Output: results.json (8KB+ JSON with evalId, results per test, pass/fail counts)
+
+        # CI mode (exits non-zero if any test fails)
+        npx promptfoo eval --config eval-config.yaml --ci
+
+        # Red teaming
+        npx promptfoo redteam run --config redteam-config.yaml
+      output_format: "JSON results file + terminal summary (pass/fail counts, duration)"
+      tested: true
+      test_result: "v0.121.3: 2 test cases with 3 assertion types executed, 8KB JSON output generated"
+      note: |
+        Maintained by OpenAI (March 2026), MIT licensed, 300K+ developers.
+        Supports 90+ model providers. Assertion types include:
+        - contains, contains-json, javascript (deterministic)
+        - llm-rubric (LLM-as-judge, 0.0-1.0 scoring)
+        - trajectory:step-count (agent behavior)
+        - cost, latency (efficiency)
+        Red teaming: 67+ security attack plugins.
+    alternatives:
+      - name: deepeval
+        type: cli
+        install: "pip install deepeval (requires Python ≥3.10)"
+        verify: "deepeval --version"
+        usage: |
+          1. Write test file: test_eval.py with LLMTestCase + metrics
+          2. Run: deepeval test run test_eval.py
+          3. 50+ metrics: G-Eval, Task Completion, Tool Correctness, Faithfulness, etc.
+        note: "Python-native, pytest integration. Heavy dependency tree. Requires Python ≥3.10."
+      - name: deepteam
+        type: cli
+        install: "pip install deepteam (requires Python ≥3.10)"
+        usage: "Red teaming with 37+ vulnerability types in 6 categories (Responsible AI, Safety, Security, Privacy, Business, Agentic)"
+        note: "OWASP Top 10 for LLMs + Agents 2026. Binary 0/1 scoring. Same ecosystem as deepeval."
