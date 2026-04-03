@@ -200,6 +200,9 @@ commands:
   doc-out: Output complete document
   doc-list: List all project documents
 
+  # Self-evolution commands (TAD v2.8)
+  optimize: "Analyze execution traces and propose Domain Pack improvements"
+
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
 
@@ -1941,6 +1944,90 @@ accept_command:
     ✅ NEXT.md 已更新
 
     Active handoffs: {count}/3
+
+    💡 If .tad/evidence/traces/ has data: "Trace data available. Run *optimize to analyze execution history and propose improvements."
+
+# *optimize command — Trace Analysis & Domain Pack Improvement (TAD v2.8)
+optimize_protocol:
+  description: "Analyze execution traces and propose Domain Pack improvements"
+  trigger: "User types *optimize"
+  minimum_traces: 3
+
+  steps:
+    step1_read_traces:
+      name: "Read Traces"
+      action: |
+        1. Read all .tad/evidence/traces/*.jsonl files
+        2. Parse each line as JSON, collect into array
+        3. Count total trace entries (JSONL lines across all files)
+        4. If total < 3:
+           Output: "⚠️ Not enough trace data ({count} traces found, need at least 3).
+           Continue using TAD to accumulate more execution history, then try again."
+           → Return to standby (do not proceed to step2)
+        5. If total >= 3: proceed with analysis
+
+    step2_aggregate:
+      name: "Aggregate Patterns"
+      action: |
+        From collected traces, compute:
+        1. Execution stats by type (handoff_created, task_completed, domain_pack_step, evidence_created, step_start, step_end)
+        2. Per-domain stats (which Domain Packs are used, how often)
+        3. Failure patterns:
+           a. Steps with status=failed (from step_end traces)
+           b. Steps started but never ended (step_start without matching step_end)
+              Note: orphaned starts at the END of a trace file are likely session boundaries, not failures.
+              Only flag if same capability has 2+ orphaned starts across different sessions.
+           c. Anomalous file sizes (domain_pack_step with size_bytes < 100 — possibly empty/stub output)
+        4. Duration analysis (if both step_start and step_end exist for same capability+step):
+           Calculate duration_ms from timestamp difference
+           Flag outliers (> 2x average for that step type)
+        5. Output summary table to user
+
+    step3_generate_proposals:
+      name: "Generate Improvement Proposals"
+      action: |
+        For each identified issue, generate a structured proposal:
+        {
+          "target": "{domain}.yaml",
+          "capability": "{capability_name}",
+          "change_type": "tighten_criteria | add_step | fix_step | add_anti_pattern",
+          "current": "current quality_criteria or step definition",
+          "proposed": "suggested modification",
+          "evidence": "based on which trace data (count, examples)",
+          "confidence": 0.0-1.0
+        }
+        If no issues found:
+          Output: "✅ No improvement proposals — execution traces look healthy.
+          Stats: {summary}"
+          → Return to standby
+
+    step4_human_approval:
+      name: "Human Approval"
+      action: |
+        For each proposal, use AskUserQuestion:
+        question: "基于 {N} 次执行 trace，建议修改 {target}:"
+        Display:
+          - 当前: {current}
+          - 建议: {proposed}
+          - 证据: {evidence}
+          - 置信度: {confidence}
+        options:
+          - "接受" → queue for application
+          - "修改后接受" → ask for user's modification, then queue
+          - "拒绝" → skip this proposal
+
+    step5_apply:
+      name: "Apply Accepted Changes"
+      action: |
+        Note: Domain Pack YAML edits are configuration, not code — within Alex's scope.
+        For each accepted proposal:
+        1. Read the target domain.yaml file
+           If file not found: WARN "Target {file} not found — skipping this proposal", continue
+        2. Apply the modification (edit quality_criteria, add step, etc.)
+        3. Git commit with message: "optimize({domain}): {change_type} — {brief description}"
+        4. Output: "Applied {count} improvements to {domains}."
+        If no proposals accepted:
+          Output: "No changes applied."
 
 # PROJECT_CONTEXT 更新规则 (在 *accept 时执行)
 project_context_update:
