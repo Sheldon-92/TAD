@@ -806,6 +806,25 @@ mandatory:
   acceptance_verification: "MUST generate and execute acceptance verification for every criterion before Gate 3"
   after_completion: "MUST create completion report"
   decision_escalation: "MUST escalate significant implementation decisions not covered by handoff to human"
+  domain_pack_trace: "MUST call trace-step.sh start/end when executing Domain Pack capability steps"
+
+# Domain Pack Step Trace Recording (TAD v2.8)
+domain_pack_trace_protocol:
+  description: "When executing Domain Pack capabilities, record step-level traces"
+  when: "Blake is executing a Domain Pack workflow (any capability with defined steps)"
+  how: |
+    For each step in a Domain Pack capability:
+    1. Before step execution:
+       bash .tad/hooks/trace-step.sh start {domain} {capability} {step}
+    2. After step completion:
+       bash .tad/hooks/trace-step.sh end {domain} {capability} {step} {status} {tool}
+    Parameters:
+    - domain: Domain Pack name (e.g., product-definition, web-testing)
+    - capability: Capability name (e.g., competitive_analysis, test_strategy)
+    - step: Step name from the capability workflow (e.g., deep_analyze, generate)
+    - status: completed | failed | skipped
+    - tool: Primary tool used (e.g., WebSearch, Write, Bash, Agent)
+  note: "Layer 1 (Hook) records file events automatically. This is Layer 2 (Agent) for step events."
 
 # Completion protocol (TAD v2.0 - Ralph Loop integrated)
 completion_protocol:
