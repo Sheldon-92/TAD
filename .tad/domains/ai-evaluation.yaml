@@ -1,0 +1,831 @@
+# Domain Pack: AI Evaluation
+# Evaluate, benchmark, and test AI agent behavior — with real tool outputs.
+# Scope: Agent behavior evaluation and testing, NOT architecture design (see ai-agent-architecture pack).
+# Platform scope: Any LLM/agent system (Claude Code, OpenClaw, custom agents, RAG pipelines).
+domain: ai-evaluation
+version: 1.0.0
+requires_registry: ">=1"
+description: "AI 评估：Agent 行为的基准测试、回归检测、对抗性安全验证、自动化评估管线。核心价值：用工具产出评估报告和测试脚本，不是写建议。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: Evaluation Framework Design (Type A — Document)
+# Step model: search → analyze → derive → generate
+# ═══════════════════════════════════════
+
+capabilities:
+
+  eval_framework_design:
+    description: "设计评估维度和评分标准 — 定义什么是'好的' agent 输出"
+
+    steps:
+      - id: search_eval_approaches
+        action: |
+          搜索目标 agent 领域的评估方法论和现有基准：
+          1. 搜索学术和工业界的评估框架（G-Eval, RAGAS, AgentBench 等）
+          2. 搜索同类 agent 的评估案例（如何评估 coding agent, customer service agent 等）
+          3. 搜索评估指标分类学（capability vs reliability vs safety vs efficiency）
+        tool_ref: web_scraping
+        queries:
+          - '"{agent类型}" evaluation metrics framework benchmark'
+          - '"LLM agent evaluation" best practices quality scoring 2026'
+          - '"agent evaluation" task completion tool correctness step efficiency'
+        output_file: "eval-framework.md"
+
+      - id: analyze_dimensions
+        action: |
+          基于搜索数据，分析评估需要覆盖的维度（来源: DeepEval 指标分类学 + Skill-Eval）：
+
+          1. 能力维度（Capability）— agent 能不能做到？
+             - Task Completion: 任务是否完成？（二元 pass/fail 或 0-1 连续分）
+             - Tool Correctness: 是否调用了正确的工具？参数是否正确？
+             - Plan Quality: 执行计划是否合理？
+
+          2. 可靠性维度（Reliability）— agent 是否一致地做到？
+             - Pass@k: k 次尝试中至少成功 1 次？（能力下限）
+             - Pass^k: k 次尝试中全部成功？（生产可靠性）
+             - Variance: 同一输入的输出波动有多大？
+
+          3. 质量维度（Quality）— agent 输出有多好？
+             - G-Eval: 自然语言标准 → LLM 评分（0.0-1.0）
+             - Faithfulness: 输出是否与事实/上下文一致？
+             - Role Adherence: 是否保持预设角色？
+
+          4. 安全维度（Safety）— agent 是否在边界内？
+             - Bias, Toxicity, PII Leakage
+             - Excessive Agency: 是否超出权限？
+             - Autonomous Drift: 是否偏离既定目标？
+
+          5. 效率维度（Efficiency）— 成本和速度如何？
+             - Token 消耗（input + output）
+             - 延迟（端到端时间）
+             - 步骤数（越少越好 — "10 步 85% 准确率 → 80% 失败率"原则）
+
+          对每个维度：标注"对目标 agent 是否适用？"和"优先级 (P0/P1/P2)"。
+          如果某维度不适用 → 标注原因，不硬套。
+        quality: "每个维度至少标注适用性和优先级。不适用的维度诚实跳过。"
+        tool_ref: null
+        output_file: "eval-framework.md (append)"
+
+      - id: derive_scoring_rubric
+        action: |
+          基于维度分析推导评分标准（来源: Skill-Eval + Promptfoo 原则）：
+
+          1. 对每个 P0/P1 维度，设计具体的评分规则：
+             - 确定评分类型：二元 (pass/fail) vs 连续 (0.0-1.0) vs 等级 (1-5)
+             - 设定阈值：什么分数 = PASS？（推荐 ≥0.7 for production）
+             - 写出每个等级的锚定描述（anchored rubric）：
+               1.0 = "完全满足所有标准，输出可直接使用"
+               0.7 = "满足核心标准，有小问题但不影响可用性"
+               0.3 = "部分满足，需要人工修正才能使用"
+               0.0 = "完全不满足或产生有害输出"
+
+          2. 对每个评分规则，确定评价方式：
+             - Deterministic: shell 脚本/代码检查（最可靠但只能检查结构）
+             - LLM-as-Judge: 用 LLM 打分（灵活但需要良好 rubric）
+             - Human: 人工评分（最准确但最慢，用于校准）
+
+          3. "Outcomes over Steps"原则（Skill-Eval）：
+             评分检查"文件是否被正确修改" 而不是"agent 是否运行了特定命令"
+
+          如果某些维度无法定量评估 → 标注为需要人工评估 + 建议校准频率。
+        quality: "每个 P0/P1 维度有具体的评分规则、阈值、锚定描述。评价方式三选一有理由。"
+        tool_ref: null
+        output_file: "eval-framework.md (append)"
+
+      - id: generate_framework_diagrams
+        action: |
+          用 D2 生成两张图：
+          1. 评估维度全景图：5 个维度 → 每个维度的具体指标 → 评价方式
+          2. 评分流程图：输入 → 确定性检查 → LLM-as-Judge → 人工校准 → 最终分数
+        tool_ref: diagram_generation
+        output_file: "eval-framework-architecture.svg"
+
+      - id: compile_framework_report
+        action: "综合为评估框架设计文档 PDF（含维度分析、评分标准、架构图）"
+        tool_ref: pdf_generation
+        output_file: "eval-framework.pdf"
+
+    quality_criteria:
+      - "≥3 个评估维度有 P0/P1 优先级标注"
+      - "每个 P0 维度有锚定评分描述（1.0/0.7/0.3/0.0 四档）"
+      - "评分方式（deterministic/LLM/human）有选择理由"
+      - "指标命名具体（'Task Completion' 不是 '质量'）"
+      - "不适用的维度诚实跳过，不硬套"
+      - "编造评分标准 = FAIL。不确定的标注 [NEEDS CALIBRATION]"
+    anti_patterns:
+      - "❌ 只用 '质量' '准确性' 等模糊维度 — 必须具体到可测量指标"
+      - "❌ 所有维度都用 LLM-as-Judge — 能用确定性检查的优先用"
+      - "❌ 评分标准没有锚定描述 — '1-5 分' 没有 '3 分长什么样' = 不可用"
+      - "❌ 检查步骤而非结果 — 'agent 调用了 X 工具' vs 'agent 完成了任务'"
+
+    reviewers:
+      - persona: "评估方法论专家"
+        checklist:
+          - "维度是否覆盖 capability + reliability + safety？"
+          - "评分标准是否可操作（给另一个人看能打出一致的分）？"
+          - "是否有 outcomes over steps 的设计原则？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Benchmark Testing (Type B — Code)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  benchmark_testing:
+    description: "预定义场景 → 自动运行 → 评分 — 建立 agent 行为基线"
+
+    steps:
+      - id: select_eval_tool
+        action: |
+          选择评估工具（来源: tools-registry llm_evaluation）：
+
+          | 场景 | 推荐工具 | 原因 |
+          |------|---------|------|
+          | YAML-driven 评估 + CI/CD | promptfoo | CLI native, npx 零安装, 90+ providers |
+          | Python pytest 集成 | deepeval | 50+ metrics, pytest 原生 |
+          | 需要 tracing + 实验管理 | langfuse + deepeval | 可视化 + 历史对比 |
+
+          基于目标 agent 的运行环境和团队技术栈选择。
+          如果不确定 → 默认选 promptfoo（覆盖面最广）。
+        tool_ref: null
+        output_file: "benchmark-config.md"
+
+      - id: design_test_scenarios
+        action: |
+          为目标 agent 设计基准测试场景（来源: Skill-Eval multi-trial + Promptfoo agent eval）：
+
+          1. 定义 ≥5 个测试场景，覆盖：
+             - 核心功能（agent 必须做对的事）≥2 个
+             - 边界情况（模糊输入、缺失信息）≥1 个
+             - 错误处理（无效输入、工具失败）≥1 个
+             - 性能场景（大输入、复杂任务）≥1 个
+
+          2. 每个场景定义：
+             - input: 给 agent 的具体输入
+             - expected_behavior: agent 应该做什么（outcomes, not steps）
+             - assertions: ≥3 个断言（structural + behavioral + qualitative）
+             - cost_budget: 最大允许成本
+             - latency_budget: 最大允许延迟
+
+          3. 写成 promptfoo YAML 格式：
+             ```yaml
+             tests:
+               - vars: { scenario: "核心功能1" }
+                 assert:
+                   - type: contains-json  # 结构检查
+                   - type: javascript     # 行为检查
+                     value: "..."
+                   - type: llm-rubric     # 质量检查
+                     value: "..."
+                     threshold: 0.7
+                   - type: cost
+                     threshold: 0.25
+             ```
+        tool_ref: null
+        output_file: "benchmark-scenarios.yaml"
+
+      - id: execute_benchmark
+        action: |
+          运行基准测试：
+          1. npx promptfoo eval --config benchmark-scenarios.yaml --output benchmark-results.json --repeat 3
+          2. 或: deepeval test run test_benchmark.py (如果选了 deepeval)
+          3. 收集结果：每个场景的 pass/fail、分数、cost、latency
+        tool_ref: llm_evaluation
+        output_file: "benchmark-results.json"
+
+      - id: verify_results
+        action: |
+          验证基准测试结果质量：
+          1. 所有场景都执行了？（无 error/skip）
+          2. Pass rate 计算正确？（手动复核 2-3 个）
+          3. 跨 3 次 run 的 variance 是否可接受？（同一场景不应跨越 pass/fail 边界）
+          4. Cost 和 latency 在预算内？
+          5. 生成结果摘要表：
+             | 场景 | Pass@3 | Pass^3 | 平均分 | 平均成本 | 平均延迟 |
+        tool_ref: null
+        output_file: "benchmark-report.md"
+
+      - id: generate_benchmark_charts
+        action: "生成基准评分图表（雷达图: 各维度得分, 柱状图: 场景对比）"
+        tool_ref: data_chart
+        output_file: "benchmark-charts.png"
+
+      - id: compile_benchmark_report
+        action: "综合为基准测试报告 PDF（含场景、结果、图表、建议）"
+        tool_ref: pdf_generation
+        output_file: "benchmark-report.pdf"
+
+    quality_criteria:
+      - "≥5 个测试场景（覆盖核心/边界/错误/性能）"
+      - "每个场景 ≥3 个断言（structural + behavioral + qualitative）"
+      - "≥3 次重复运行（variance 评估）"
+      - "Pass@k 和 Pass^k 都有计算和报告"
+      - "Cost 和 latency 有预算且在范围内"
+      - "编造测试结果 = FAIL。运行失败的场景标注 [EXECUTION ERROR]"
+    anti_patterns:
+      - "❌ 测知识（'解释 X'）而非能力（'做 X'）— agent eval 测行为"
+      - "❌ 只跑 1 次 — 非确定性系统需要多次运行才有信号"
+      - "❌ 只有 pass/fail 没有分数 — 需要连续分数才能追踪改善"
+      - "❌ 没有 baseline 对比 — 纯 LLM vs agent 对比揭示能力差异"
+
+    reviewers:
+      - persona: "QA 测试架构师"
+        checklist:
+          - "场景覆盖是否充分（核心+边界+错误+性能）？"
+          - "断言是否检查 outcomes 而非 steps？"
+          - "多次运行的 variance 是否报告？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: A/B Testing (Type B — Code)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  ab_testing:
+    description: "两个 prompt/配置/模型 → 同场景对比 → 数据驱动选择"
+
+    steps:
+      - id: define_comparison
+        action: |
+          定义 A/B 对比实验：
+          1. 明确变量（什么在变？）：
+             - prompt 不同？model 不同？config 不同？tools 不同？
+          2. 明确控制（什么不变？）：
+             - 相同的测试数据集（≥20 个 test cases）
+             - 相同的断言和评分标准
+             - 相同的运行环境
+          3. 定义胜出标准：
+             - 质量分数提升 ≥N%？
+             - 成本降低 ≥N%？
+             - 延迟降低 ≥N%？
+             - 综合加权？（例: quality×0.6 + cost×0.2 + latency×0.2）
+        tool_ref: null
+        output_file: "ab-test-design.md"
+
+      - id: configure_ab_test
+        action: |
+          配置 A/B 测试（promptfoo 多 provider 模式）：
+          ```yaml
+          description: "A/B test: {变量描述}"
+          prompts:
+            - file://prompt-a.txt
+            - file://prompt-b.txt   # 或同 prompt + 不同 providers
+          providers:
+            - id: {provider-a}
+              label: "Config A"
+            - id: {provider-b}
+              label: "Config B"
+          tests:
+            - vars: { ... }
+              assert: [ ... ]   # 相同断言
+          ```
+          关键：两个配置使用完全相同的 test cases 和 assertions。
+        tool_ref: null
+        output_file: "ab-test-config.yaml"
+
+      - id: execute_ab_test
+        action: |
+          运行 A/B 测试：
+          1. npx promptfoo eval --config ab-test-config.yaml --output ab-results.json --repeat 3
+          2. 如果用 Langfuse：两个 experiment run 用同一 dataset
+          3. 收集：每个 test case × 每个 config × 每次 run 的结果
+        tool_ref: llm_evaluation
+        output_file: "ab-results.json"
+
+      - id: verify_statistical_significance
+        action: |
+          验证 A/B 结果的统计显著性：
+          1. 计算 Config A 和 Config B 的聚合指标：
+             | 指标 | Config A | Config B | 差异 | 方向 |
+             |------|---------|---------|------|------|
+             | Pass rate | | | | |
+             | 平均质量分 | | | | |
+             | 平均成本 | | | | |
+             | 平均延迟 | | | | |
+          2. 检查：差异是否大于 variance？（如果 3 次 run 的 variance > A/B 差异 → 不显著）
+          3. 检查：是否所有维度都改善？还是 tradeoff？（质量+5% 但成本+50% = 不一定赢）
+          4. 结论：推荐 Config A / Config B / 无显著差异
+             如果无显著差异 → "⚠️ 需要更多 test cases 或更多 runs"
+        quality: "差异必须大于 variance 才能声称显著。单维度胜出不代表整体胜出。"
+        tool_ref: null
+        output_file: "ab-test-report.md"
+
+      - id: generate_comparison_chart
+        action: "生成 A/B 对比图表（分组柱状图: A vs B 各维度得分）"
+        tool_ref: data_chart
+        output_file: "ab-comparison.png"
+
+      - id: compile_ab_report
+        action: "综合为 A/B 测试报告 PDF（含设计、结果、图表、推荐）"
+        tool_ref: pdf_generation
+        output_file: "ab-test-report.pdf"
+
+    quality_criteria:
+      - "≥20 个 test cases（相同数据集用于 A 和 B）"
+      - "≥3 次重复运行（variance 评估）"
+      - "多维度对比（质量 + 成本 + 延迟）不是单维度"
+      - "声称显著性时差异 > variance"
+      - "有明确推荐（A/B/无差异）和理由"
+      - "编造对比数据 = FAIL"
+    anti_patterns:
+      - "❌ A 和 B 用不同 test cases → 无效对比"
+      - "❌ 只比质量不比成本 → 可能 10x 成本换 5% 质量"
+      - "❌ 样本量太小下结论 → ≥20 cases + ≥3 runs 才有信号"
+      - "❌ 'Config B 某个 case 好 5%' → 要看聚合指标不是单个 case"
+
+    reviewers:
+      - persona: "数据科学家"
+        checklist:
+          - "实验设计是否控制了变量？"
+          - "统计显著性是否有 variance 对比？"
+          - "推荐是否考虑多维度 tradeoff？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Regression Testing (Type B — Code)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  regression_testing:
+    description: "改动后 → 验证已有行为不变 — 防止改了 prompt 破坏功能"
+
+    steps:
+      - id: establish_golden_suite
+        action: |
+          建立或加载 golden test suite（回归基线）：
+
+          1. 如果是第一次：从 benchmark_testing 的结果中提取通过的 test cases 作为 golden suite
+          2. 如果已有：加载 golden-suite.yaml（版本控制中）
+          3. Golden suite 要求：
+             - 每个 test case 有明确的 expected_behavior
+             - 有上次运行的 baseline 分数
+             - 标注 critical (P0, 不允许退化) vs non-critical (P1, 允许 ≤10% 退化)
+
+          ```yaml
+          # golden-suite.yaml
+          golden_tests:
+            - id: core-task-1
+              priority: P0  # zero regression tolerance
+              baseline_score: 0.85
+              baseline_pass_rate: "3/3"
+            - id: edge-case-1
+              priority: P1  # ≤10% degradation allowed
+              baseline_score: 0.72
+          ```
+        tool_ref: null
+        output_file: "golden-suite.yaml"
+
+      - id: execute_regression_test
+        action: |
+          运行回归测试：
+          1. 应用变更（新 prompt, 新 config, 新 model）
+          2. npx promptfoo eval --config golden-suite.yaml --output regression-results.json --repeat 3
+          3. 或: deepeval test run test_golden.py --regression
+        tool_ref: llm_evaluation
+        output_file: "regression-results.json"
+
+      - id: verify_no_regression
+        action: |
+          对比当前结果 vs baseline：
+          1. 逐 test case 对比：
+             | Test | Baseline Score | Current Score | Delta | Regression? |
+             对于 P0 tests: 任何 score 下降 = REGRESSION
+             对于 P1 tests: score 下降 >10% = REGRESSION
+          2. Pass rate 对比：
+             Baseline Pass@3 vs Current Pass@3
+             如果 Pass^3 下降 → 可靠性退化
+          3. Cost/Latency 对比：
+             成本增加 >20% = COST REGRESSION
+             延迟增加 >50% = LATENCY REGRESSION
+          4. 汇总：
+             - 0 regressions = ✅ SAFE TO MERGE
+             - P1 only regressions = ⚠️ REVIEW NEEDED
+             - Any P0 regression = ❌ BLOCK MERGE
+        quality: "逐 test case 对比，不只看聚合。P0 test regression = hard block。"
+        tool_ref: null
+        output_file: "regression-report.md"
+
+      - id: generate_regression_chart
+        action: "生成回归对比图（折线图: baseline vs current per test case）"
+        tool_ref: data_chart
+        output_file: "regression-chart.png"
+
+      - id: compile_regression_report
+        action: "综合为回归测试报告 PDF"
+        tool_ref: pdf_generation
+        output_file: "regression-report.pdf"
+
+    quality_criteria:
+      - "Golden suite 在版本控制中维护"
+      - "P0 tests 零退化容忍"
+      - "P1 tests ≤10% 退化容忍"
+      - "逐 test case 对比（不只看聚合 pass rate）"
+      - "Cost 和 latency regression 也检查"
+      - "≥3 次 run 消除 noise"
+      - "编造回归测试结果 = FAIL。运行失败的标注 [EXECUTION ERROR]"
+    anti_patterns:
+      - "❌ 没有 golden suite → 没有 baseline 何来回归"
+      - "❌ 只跑 1 次对比 → noise 可能伪装成 regression"
+      - "❌ 只看 pass/fail 不看分数 → 从 0.9 降到 0.71 仍然 pass 但是 regression"
+      - "❌ 忽略 cost/latency regression → 同质量但 5x 慢 = 退化"
+
+    reviewers:
+      - persona: "QA 测试架构师"
+        checklist:
+          - "Golden suite 是否完整（覆盖核心功能）？"
+          - "回归判定标准是否合理（P0 vs P1）？"
+          - "是否检查了 cost 和 latency？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Adversarial Testing (Type B — Code)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  adversarial_testing:
+    description: "对抗性输入 → 验证安全约束生效 — 红队测试 agent 安全边界"
+
+    steps:
+      - id: define_safety_boundaries
+        action: |
+          定义目标 agent 的安全边界（必须在测试前明确）：
+          1. 列出 agent 必须遵守的约束：
+             - 不能做什么？（forbidden actions）
+             - 不能泄露什么？（sensitive data boundaries）
+             - 不能接受什么指令？（injection resistance）
+          2. 按 DeepTeam 6 类风险分类：
+             - Responsible AI: agent 输出是否有偏见/毒性？
+             - Data Privacy: 是否泄露 PII 或 prompt？
+             - Security: 是否可被注入 shell/SQL？是否有 BOLA/BFLA？
+             - Safety: 是否产生有害内容？
+             - Business: 是否传播错误信息？是否推荐竞品？
+             - Agentic: 是否超出权限？是否自主漂移？是否被工具劫持？
+          3. 标注每类的优先级：
+             P0 = 必须通过（PII 泄露, Shell 注入, 越权）
+             P1 = 应该通过（偏见, 竞品推荐）
+             P2 = 建议通过（风格一致性）
+        tool_ref: null
+        output_file: "adversarial-plan.md"
+
+      - id: configure_adversarial_tests
+        action: |
+          配置对抗性测试：
+
+          使用 promptfoo red team（推荐）：
+          ```yaml
+          # redteam-config.yaml
+          redteam:
+            purpose: "{agent 的预期用途描述}"
+            plugins:
+              - prompt-injection
+              - jailbreak
+              - pii:direct
+              - excessive-agency
+              - rbac
+              - competitors
+            strategies:
+              - basic
+              - crescendo
+              - jailbreak:tree
+          ```
+
+          或使用 deepteam（Python）：
+          ```python
+          from deepteam import red_team
+          red_team(
+            model=target_agent,
+            vulnerabilities=["PIILeakage", "ShellInjection", "ExcessiveAgency"],
+            attacks=["prompt_injection", "crescendo_jailbreak"]
+          )
+          ```
+
+          覆盖要求：
+          - ≥3 个 P0 vulnerability 类别
+          - single-turn + multi-turn attacks 都有
+          - 映射到 OWASP Top 10 for LLMs/Agents
+        tool_ref: llm_evaluation
+        output_file: "redteam-config.yaml"
+
+      - id: execute_adversarial_tests
+        action: |
+          运行对抗性测试：
+          1. npx promptfoo redteam run --config redteam-config.yaml --output redteam-results.json
+          2. 或: deepteam run --config redteam.yaml
+          3. 收集：每个 vulnerability × 每个 attack 的 pass/fail + attack trace
+        tool_ref: llm_evaluation
+        output_file: "redteam-results.json"
+
+      - id: verify_safety_compliance
+        action: |
+          分析对抗性测试结果：
+          1. 逐 vulnerability 汇总：
+             | Category | Vulnerability | Tests | Passed | Failed | Status |
+             P0 vulnerability 有任何 fail = ❌ CRITICAL
+             P1 vulnerability fail rate >20% = ⚠️ WARNING
+          2. 分析失败的 attack traces：
+             - 什么类型的攻击成功了？
+             - agent 的哪个环节被绕过了？（prompt? tool? permission?）
+             - 修复建议：加 guardrail? 改 prompt? 改架构?
+          3. OWASP 合规检查：
+             - 映射结果到 OWASP Top 10 for LLMs
+             - 映射结果到 OWASP Top 10 for Agents 2026
+        quality: "P0 vulnerability 零容忍。每个 fail 有 attack trace 和修复建议。"
+        tool_ref: null
+        output_file: "adversarial-report.md"
+
+      - id: generate_safety_chart
+        action: "生成安全测试结果图（热力图: vulnerability × attack method → pass/fail）"
+        tool_ref: data_chart
+        output_file: "safety-heatmap.png"
+
+      - id: compile_adversarial_report
+        action: "综合为安全测试报告 PDF（含边界定义、测试结果、OWASP 映射、修复建议）"
+        tool_ref: pdf_generation
+        output_file: "adversarial-report.pdf"
+
+    quality_criteria:
+      - "≥3 个 P0 vulnerability 类别测试"
+      - "single-turn + multi-turn attacks 都覆盖"
+      - "P0 vulnerability 零容忍（任何 fail = CRITICAL）"
+      - "每个 fail 有 attack trace + 修复建议"
+      - "映射到 OWASP Top 10（LLMs + Agents）"
+      - "编造测试结果 = FAIL"
+    anti_patterns:
+      - "❌ 只测 prompt injection → agent 有 action-level 风险（越权, 工具滥用）"
+      - "❌ 手动红队不自动化 → 不可重复, 不能 CI 集成"
+      - "❌ 测 model safety 不测 agent safety → ExcessiveAgency, ToolAbuse 是 agent 特有"
+      - "❌ 不分优先级 → PII 泄露 和 风格偏差 不是同一级别"
+
+    reviewers:
+      - persona: "安全工程师"
+        checklist:
+          - "是否覆盖 OWASP Top 10 关键项？"
+          - "P0 漏洞是否零容忍？"
+          - "修复建议是否可操作？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Automated Pipeline (Type B — Code)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  automated_pipeline:
+    description: "CI 集成 → 每次改动自动评估 — 防止回归悄悄上线"
+
+    steps:
+      - id: select_ci_platform
+        action: |
+          确定 CI 平台和集成方式：
+          | CI 平台 | 集成方式 | 推荐 |
+          |--------|---------|------|
+          | GitHub Actions | npx promptfoo eval --ci | ✅ 最简单 |
+          | GitLab CI | deepeval test run --regression | ✅ Python 项目 |
+          | Local pre-commit | hook 触发 eval | ⚠️ 慢但实时 |
+        tool_ref: null
+        output_file: "pipeline-design.md"
+
+      - id: configure_pipeline
+        action: |
+          创建 CI 管线配置：
+
+          GitHub Actions 示例：
+          ```yaml
+          # .github/workflows/eval.yml
+          name: Agent Evaluation
+          on:
+            pull_request:
+              paths:
+                - 'prompts/**'
+                - 'config/**'
+                - 'skills/**'
+          jobs:
+            eval:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - name: Run evaluation
+                  run: npx promptfoo eval --config eval/golden-suite.yaml --ci --repeat 3
+                  env:
+                    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+                - name: Run red team
+                  run: npx promptfoo redteam run --config eval/redteam.yaml --ci
+                  if: contains(github.event.pull_request.labels.*.name, 'safety-check')
+          ```
+
+          成本控制：
+          - 只在相关文件变更时触发（paths filter）
+          - 设置 per-eval 成本预算（cost assertion）
+          - Red team 只在标签触发时运行
+        tool_ref: null
+        output_file: "ci-eval.yml"
+
+      - id: execute_pipeline_test
+        action: |
+          本地测试管线：
+          1. 模拟 CI 环境：npx promptfoo eval --config eval/golden-suite.yaml --ci --repeat 1
+          2. 验证：exit code 0 = pass, non-zero = fail
+          3. 验证：results.json 生成且结构正确
+          4. 验证：cost 在预算内
+        tool_ref: llm_evaluation
+        output_file: "pipeline-test-results.json"
+
+      - id: verify_pipeline_quality
+        action: |
+          验证管线质量：
+          1. 触发条件正确？（只在 prompt/config/skill 变更时触发）
+          2. 失败时 CI 正确 block merge？
+          3. 结果可追溯？（有 evalId, 可以对比历史）
+          4. 成本可控？（per-run 成本 × 月预计 PR 数 ≤ 月预算）
+          5. 超时设置？（防止 eval 卡住 CI）
+        tool_ref: null
+        output_file: "pipeline-design.md (append)"
+
+      - id: compile_pipeline_report
+        action: "综合为管线设计文档 PDF（含 CI config, 成本分析, 维护指南）"
+        tool_ref: pdf_generation
+        output_file: "pipeline-report.pdf"
+
+    quality_criteria:
+      - "CI config 文件可直接使用（复制到 .github/workflows/ 即可）"
+      - "只在相关文件变更时触发（有 paths filter）"
+      - "成本有预算控制（per-eval 和 per-month）"
+      - "失败时正确 block merge（--ci flag 或 pytest exit code）"
+      - "有超时设置防止卡住"
+      - "编造管线运行结果 = FAIL"
+    anti_patterns:
+      - "❌ 每次 push 都跑全量 eval → 成本爆炸"
+      - "❌ eval 只在本地跑不在 CI → 回归悄悄上线"
+      - "❌ CI 中 eval 失败但不 block merge → 形同虚设"
+      - "❌ 没有成本预算 → eval 本身比 agent 运行还贵"
+
+    reviewers:
+      - persona: "DevOps 工程师"
+        checklist:
+          - "CI config 是否可直接使用？"
+          - "触发条件是否精准（不多不少）？"
+          - "成本预算是否合理？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Human Evaluation Protocol (Type Mixed)
+  # 4D Protocol extension: Discover → Discuss → Decide → Deliver
+  # ═══════════════════════════════════════
+
+  human_eval_protocol:
+    description: "人工评估的结构化流程 — 校准自动化指标, 处理自动化无法覆盖的维度"
+
+    steps:
+      - id: design_rubric
+        action: |
+          设计人工评估 rubric（来源: DeepEval + Langfuse）：
+
+          1. 选择需要人工评估的维度（自动化无法覆盖的）：
+             - 输出的有用性（对目标用户是否有价值）
+             - 交互的自然度（对话是否流畅）
+             - 创造性（是否有超出预期的好方案）
+             - 一致性（长对话中是否保持角色和风格）
+
+          2. 对每个维度写锚定描述（5 分制）：
+             5 = "输出超出预期，可直接使用，有创造性洞察"
+             4 = "输出满足所有要求，无需修改"
+             3 = "输出基本满足要求，有小问题需要修正"
+             2 = "输出部分满足要求，需要大量修正"
+             1 = "输出不满足要求或有害"
+
+          3. 提供评分示例：
+             对每个分数等级，给出 1 个具体的 agent 输出示例
+             让评估者在正式评估前先对示例打分 → 校准
+        tool_ref: null
+        output_file: "human-eval-rubric.md"
+
+      - id: prepare_eval_dataset
+        action: |
+          准备人工评估数据集：
+          1. 从 benchmark_testing 的结果中选取 ≥20 个代表性输出
+             - ≥5 个高分输出（验证 rubric 上界校准）
+             - ≥5 个低分输出（验证 rubric 下界校准）
+             - ≥10 个中间分数输出（最需要人工判断的区域）
+          2. 匿名化：去除 config 标签（evaluator 不知道哪个配置产出的）
+          3. 打乱顺序（避免序列偏差）
+        tool_ref: null
+        output_file: "human-eval-dataset.md"
+
+      - id: execute_human_eval
+        action: |
+          执行人工评估（4D Protocol 扩展）：
+
+          Round N（每轮处理 5 个输出）：
+          1. Discover: 评估者阅读 agent 输出 + 完整 trace
+          2. Discuss: 评估者和 AI 讨论 — "这个输出的问题在哪？亮点在哪？"
+          3. Decide: 打分 + 写出理由 + 标注是否需要修复
+          4. Deliver: 记录到评估表（输出 ID + 各维度分数 + 理由）
+
+          人工评估要求：
+          - ≥2 位独立评估者
+          - 先在 3 个校准样本上对齐打分标准
+          - 每个输出每位评估者独立打分后再对比
+        tool_ref: null
+        output_file: "human-eval-results.md"
+
+      - id: analyze_inter_rater
+        action: |
+          分析评估者一致性：
+          1. 计算每个维度的一致率：
+             完全一致（分差=0）+ 基本一致（分差≤1）+ 不一致（分差≥2）
+          2. 目标：基本一致率 ≥70%
+          3. 不一致的 case → 讨论解决 → 更新 rubric（如果 rubric 不够清晰）
+          4. 对比人工评分 vs 自动化评分：
+             | Output | Human Avg | Auto Score | Gap | 需要校准? |
+             如果 gap >0.3 → 自动化指标需要调整
+        quality: "inter-rater agreement ≥70%。人工 vs 自动的 gap 必须分析原因。"
+        tool_ref: null
+        output_file: "human-eval-results.md (append)"
+
+      - id: generate_calibration_chart
+        action: "生成校准图（散点图: human score vs auto score, 对角线 = 完美校准）"
+        tool_ref: data_chart
+        output_file: "calibration-chart.png"
+
+      - id: compile_human_eval_report
+        action: "综合为人工评估报告 PDF（含 rubric, 结果, 一致性分析, 校准建议）"
+        tool_ref: pdf_generation
+        output_file: "human-eval-report.pdf"
+
+    quality_criteria:
+      - "Rubric 有 5 级锚定描述 + 每级有具体示例"
+      - "≥20 个输出被评估"
+      - "≥2 位独立评估者"
+      - "Inter-rater agreement ≥70%"
+      - "人工 vs 自动评分对比有分析"
+      - "不一致的 case 有讨论解决记录"
+      - "编造评估分数或 inter-rater 数据 = FAIL"
+    anti_patterns:
+      - "❌ 无锚定 rubric — '1-5 分' 没有描述 = 每人标准不同"
+      - "❌ 单评估者 — 无法衡量评估可靠性"
+      - "❌ 人工评估和自动评估脱节 — 不校准就无法改进自动化"
+      - "❌ 只做一次不迭代 — rubric 需要在使用中改进"
+
+    reviewers:
+      - persona: "用户研究员"
+        checklist:
+          - "Rubric 是否有锚定描述和示例？"
+          - "数据集是否有代表性（高/中/低分都有）？"
+          - "Inter-rater agreement 是否报告？"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── eval-framework.md               # 评估框架设计
+  ├── eval-framework.pdf              # PDF 版 (Typst)
+  ├── eval-framework-architecture.svg # 维度全景图 (D2)
+  ├── benchmark-config.md             # 基准测试配置说明
+  ├── benchmark-scenarios.yaml        # 测试场景 (Promptfoo YAML)
+  ├── benchmark-results.json          # 测试结果 (JSON)
+  ├── benchmark-report.md             # 基准报告
+  ├── benchmark-report.pdf            # PDF 版
+  ├── benchmark-charts.png            # 评分图表 (matplotlib)
+  ├── ab-test-design.md               # A/B 测试设计
+  ├── ab-test-config.yaml             # A/B 配置 (Promptfoo YAML)
+  ├── ab-results.json                 # A/B 结果 (JSON)
+  ├── ab-test-report.md               # A/B 报告
+  ├── ab-test-report.pdf              # PDF 版
+  ├── ab-comparison.png               # 对比图表
+  ├── golden-suite.yaml               # 回归测试 golden suite
+  ├── regression-results.json         # 回归结果
+  ├── regression-report.md            # 回归报告
+  ├── regression-report.pdf           # PDF 版
+  ├── regression-chart.png            # 回归对比图
+  ├── adversarial-plan.md             # 安全边界定义
+  ├── redteam-config.yaml             # 红队配置
+  ├── redteam-results.json            # 红队结果
+  ├── adversarial-report.md           # 安全报告
+  ├── adversarial-report.pdf          # PDF 版
+  ├── safety-heatmap.png              # 安全热力图
+  ├── ci-eval.yml                     # CI 管线配置
+  ├── pipeline-design.md              # 管线设计
+  ├── pipeline-report.pdf             # PDF 版
+  ├── human-eval-rubric.md            # 人工评估 rubric
+  ├── human-eval-dataset.md           # 评估数据集
+  ├── human-eval-results.md           # 评估结果
+  ├── human-eval-report.pdf           # PDF 版
+  └── calibration-chart.png           # 校准图
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "评估框架覆盖 ≥3 个维度（capability + reliability + safety）"
+      - "评分标准有锚定描述（不是模糊的 1-5 分）"
+      - "测试场景 ≥5 个（覆盖核心/边界/错误/性能）"
+      - "工具选型有理由（不是随机选）"
+      - "安全边界有明确定义（forbidden actions + priorities）"
+
+  gate4_acceptance:
+    checklist:
+      - "基准测试已执行，Pass@k 和 Pass^k 有报告"
+      - "回归测试 golden suite 已建立且通过"
+      - "对抗性测试 P0 vulnerabilities 通过"
+      - "人工评估 inter-rater agreement ≥70%"
+      - "CI 管线配置可直接使用"
