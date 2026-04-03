@@ -910,13 +910,12 @@ capabilities:
           - "监控告警是否完善？"
           - "部署回滚是否可行？"
 
-# ═══════════════════════════════════════
-# Capability 9: Self-Improvement Design
-# ═══════════════════════════════════════
+  # ═══════════════════════════════════════
+  # Capability 9: Self-Improvement Design
+  # ═══════════════════════════════════════
 
   self_improvement_design:
     description: "设计 agent 的自我优化机制 — 让 agent 能从执行历史中学习并改进自己"
-    type: "doc_a"  # 搜索→分析→推导→生成
 
     steps:
       - id: research_evolution_patterns
@@ -926,7 +925,13 @@ capabilities:
           - Meta-Harness 模式：trace → proposer → evaluate
           - JiuwenClaw 模式：工具失败 → 根因分析 → 技能优化
           分析哪种模式适合当前 agent 的运行环境。
+          对比各模式的：触发方式、数据需求、优化范围、收敛策略。
         tool_ref: web_scraping
+        queries:
+          - '"agent self-improvement" "execution trace" optimization loop'
+          - '"EvoAgentX" OR "meta-harness" agent evolution feedback'
+          - '"LLM agent" "self-optimization" safety boundaries rollback'
+        output_file: "self-improvement-design.md"
 
       - id: define_trace_schema
         action: |
@@ -939,7 +944,10 @@ capabilities:
           - 为什么要记这个？（优化什么用？）
           - 存在哪里？（文件/数据库/API？）
           - 保留多久？（按天/按月/永久？）
-        output_file: "trace-schema.md"
+          - 隐私影响？（是否包含用户数据？脱敏策略？）
+        tool_ref: null
+        quality: "每个 trace 字段有明确的'为什么记'理由 + 存储位置 + 保留策略"
+        output_file: "self-improvement-design.md (append)"
 
       - id: design_analysis_loop
         action: |
@@ -949,16 +957,22 @@ capabilities:
           3. 可优化参数 — 哪些可以改（prompt/工具选择/重试策略）？
           4. 不可优化参数 — 哪些绝对不能改（安全约束/权限边界）？
           5. 收敛检测 — 什么时候停止优化（N 轮无改善）？
-        output_file: "improvement-loop.md"
+          6. 最低数据量 — 多少 trace 才够做有意义的分析？
+        tool_ref: null
+        quality: "闭环五要素（触发、分析、可改、不可改、收敛）每个有具体定义"
+        output_file: "self-improvement-design.md (append)"
 
       - id: design_safety_boundaries
         action: |
           定义自我优化的安全边界：
           1. 不可变约束清单 — 列出所有不能被优化掉的行为（如"不推荐过敏食物"）
           2. 人审批触发条件 — 什么级别的修改需要人确认？
-          3. 回滚机制 — 优化后效果变差怎么恢复？
+          3. 回滚机制 — 优化后效果变差怎么恢复？版本化策略？
           4. 审计日志 — 每次优化改了什么、基于什么证据
-        output_file: "safety-boundaries.md"
+          5. 受保护条款正则 — 哪些关键词/模式不允许被削弱？
+        tool_ref: null
+        quality: "不可变约束 ≥3 条 + 回滚 < 5 分钟（或有明确 SLA）+ 审计日志格式定义"
+        output_file: "self-improvement-design.md (append)"
 
       - id: generate_blueprint
         action: |
@@ -968,13 +982,14 @@ capabilities:
           - Optimization parameters（改什么）
           - Safety boundaries（不能改什么）
           - Implementation guide（在具体运行环境中怎么实现）
+          蓝图必须包含具体的运行环境适配（不是通用模板）。
         tool_ref: pdf_generation
         output_file: "self-improvement-blueprint.pdf"
 
     quality_criteria:
       - "trace schema 每个字段有'为什么记'的理由"
       - "不可变约束清单 ≥3 条"
-      - "回滚机制明确定义"
+      - "回滚机制明确定义（含 SLA 或时间目标）"
       - "优化参数和不可优化参数有清晰边界"
       - "蓝图适配具体运行环境（不是通用空话）"
       - "编造数据 = FAIL"
@@ -984,6 +999,8 @@ capabilities:
       - "❌ 全自动无人审批 = 失控风险"
       - "❌ 只记录成功不记录失败 = 学不到教训"
       - "❌ 优化频率太高 = 噪音大于信号"
+      - "❌ 样本不足就优化（<10 条 trace 不够看出模式）"
+      - "❌ 指标代理问题（优化可测量指标，忽略真正目标 — Goodhart's Law）"
 
     reviewers:
       - persona: "AI 安全审查员"
@@ -991,6 +1008,7 @@ capabilities:
           - "不可变约束是否覆盖了所有安全关键行为？"
           - "人审批流程是否在关键路径上？"
           - "回滚机制是否经过验证？"
+          - "trace schema 是否覆盖了决策点和结果？"
 
 # ═══════════════════════════════════════
 # Output Structure
@@ -1022,10 +1040,8 @@ output_structure: |
   ├── production-readiness.md         # 生产就绪文档
   ├── production-readiness.pdf        # PDF (Typst)
   ├── production-lifecycle.svg        # 生命周期图 (D2)
-  ├── self-improvement-blueprint.pdf  # 自我优化蓝图 (Typst)
-  ├── trace-schema.md                 # Trace 数据定义
-  ├── improvement-loop.md             # 优化闭环设计
-  └── safety-boundaries.md            # 安全边界定义
+  ├── self-improvement-design.md       # 自我优化设计文档（trace + loop + safety）
+  └── self-improvement-blueprint.pdf  # 自我优化蓝图 (Typst)
 
 # ═══════════════════════════════════════
 # Domain-specific Gate Standards
