@@ -1,0 +1,1115 @@
+# Domain Pack: HW Firmware
+# Embedded firmware development — ESP32/Arduino ecosystem
+# Type: Primarily B (code/tools), firmware_documentation is A/Mixed
+domain: hw-firmware
+version: 1.0.0
+requires_registry: ">=1"
+description: "嵌入式固件开发：架构设计、外设驱动、低功耗、通信协议、构建上传、测试调试、文档生成。面向 ESP32-S3/C3 + Arduino 框架，产出物是可编译的固件代码和硬件文档。"
+
+# Platform scope declaration (per architecture learning)
+platform_scope: "ESP32-S3/C3 primary, Arduino framework. STM32/nRF deferred to v1.1."
+
+output_dir: ".tad/active/research/{project}/"
+
+# Common hardware context (user's standard kit)
+hardware_context:
+  mcu:
+    - "Seeed XIAO ESP32-S3 (FQBN: esp32:esp32:XIAO_ESP32S3)"
+    - "ESP32-C3 (FQBN: esp32:esp32:esp32c3)"
+  displays:
+    - "SH1106 OLED 128x64 (I2C addr 0x3C)"
+    - "E-ink (SPI, various drivers: GxEPD2)"
+  peripherals:
+    - "SparkFun DA7280 Haptic (I2C addr 0x4A)"
+    - "Capacitive Touch (ESP32 built-in touchRead())"
+  communication:
+    - "WiFi STA/AP (built-in)"
+    - "BLE (built-in, NimBLE stack)"
+    - "MQTT (PubSubClient / AsyncMqttClient)"
+  build_tools:
+    - "arduino-cli v1.4.1 (verified installed)"
+    - "esp32 core 3.3.6 (verified installed)"
+
+# ═══════════════════════════════════════════════════════════════
+# Capability 1: 固件架构设计
+# Main loop design + state machine + task scheduling
+# Type B: select → execute → verify → optimize
+# ═══════════════════════════════════════════════════════════════
+
+capabilities:
+
+  firmware_architecture:
+    description: "设计固件架构 — Main loop 结构、状态机、任务调度、模块划分"
+
+    steps:
+      # Layer 1: Select — choose architecture pattern
+      - id: select_architecture_pattern
+        action: |
+          根据项目需求选择架构模式：
+          1. **Super Loop（默认）**: 单线程 loop() 轮询，millis() 定时器
+             - 适用：外设 ≤5 个，无实时性要求，简单状态机
+             - 参考模板：_template.ino 的 loop() 结构
+          2. **FreeRTOS 多任务**: xTaskCreatePinnedToCore() 多核并行
+             - 适用：WiFi + 显示 + 传感器并行，需要优先级调度
+             - Core 0: WiFi/BLE 协议栈（系统保留）
+             - Core 1: 用户任务（显示、传感器、业务逻辑）
+          3. **Event-driven**: 中断 + 事件队列 + 状态机
+             - 适用：低功耗场景，大部分时间休眠，事件触发唤醒
+
+          选型决策表：
+          | 条件 | 推荐模式 |
+          |------|----------|
+          | 外设 ≤5, 无实时要求 | Super Loop |
+          | WiFi + 显示 + 传感器并行 | FreeRTOS |
+          | Deep Sleep 为主, 周期唤醒 | Event-driven |
+          | 混合（唤醒后需并行处理） | Event-driven + FreeRTOS |
+        tool_ref: null
+        output_file: "firmware-architecture.md"
+
+      # Layer 2: Execute — design module structure
+      - id: design_module_structure
+        action: |
+          设计模块划分（参考 _template 的 .h 分离模式）：
+          1. **config.h** — 所有引脚定义、阈值、时间常量（唯一硬件配置源）
+             - 每个引脚必须有注释：GPIO号 + 物理标记 + 用途
+             - 所有 I2C 地址集中定义
+             - 所有时间常量用 _MS 后缀
+          2. **state.h** — 状态机定义 + 状态转换矩阵
+             - enum 定义所有状态
+             - 转换函数带 guard condition
+          3. **drivers/*.h** — 每个外设一个驱动封装
+             - init() 返回 bool（检测外设是否存在）
+             - 所有 I2C/SPI 操作封装在驱动内
+          4. **network.h** — WiFi/BLE/MQTT 通信封装
+          5. **power.h** — 电源管理（Deep Sleep、RTC、唤醒源）
+          6. **main.ino** — setup() + loop() 仅做调度
+
+          模块依赖规则：
+          - config.h 被所有模块包含，不包含任何其他头文件
+          - drivers 只依赖 config.h + 库头文件
+          - network 可依赖 config.h + state.h
+          - main.ino 包含所有模块
+        tool_ref: null
+        output_file: "firmware-architecture.md (append)"
+
+      # Layer 3: Verify — validate architecture
+      - id: verify_architecture
+        action: |
+          验证架构设计：
+          1. **编译验证**: 创建骨架代码并编译
+             arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 ./project/
+             目标：零 error，warnings ≤3
+          2. **内存预算检查**:
+             - Flash: 编译输出 "Sketch uses X bytes (Y%)"
+             - RAM: "Global variables use X bytes (Y%)"
+             - ESP32-S3: Flash 8MB, SRAM 512KB
+             - 预算：Flash < 75%, RAM < 60%（留余量给运行时）
+          3. **模块独立性**: 每个 .h 文件单独 #include 到空 .ino 能编译通过
+          4. **初始化顺序**: 验证外设 init 顺序不冲突
+             - I2C bus init (Wire.begin) → OLED → Haptic → 其他 I2C 设备
+             - SPI bus init → E-ink → SD card（如有）
+             - WiFi/BLE init 放最后（耗时最长）
+        tool_ref: arduino_cli
+        output_file: "firmware-architecture.md (append)"
+
+      # Layer 4: Optimize — refine for maintainability
+      - id: optimize_architecture
+        action: |
+          优化架构：
+          1. **Config 集中化**: 确认所有魔法数字已移入 config.h
+          2. **状态机完整性**: 检查是否有未处理的状态转换
+          3. **错误恢复**: 每个 init 失败有优雅降级路径
+             - OLED 失败 → Serial 替代输出
+             - Haptic 失败 → PWM fallback → 跳过
+             - WiFi 失败 → 离线模式继续运行
+          4. **Non-blocking 检查**: loop() 中无 delay() 调用（除 yield delay(1)）
+             - 所有定时用 millis() 差值比较
+             - 所有 I2C 操作有超时保护
+          5. **PROGMEM 检查**: 大数组（sprite、字符串表）是否用 PROGMEM
+        tool_ref: null
+        output_file: "firmware-architecture.md (append)"
+
+    quality_criteria:
+      - "config.h 包含所有引脚定义，每个引脚有 GPIO号+物理标记 注释"
+      - "编译零 error，warnings ≤3"
+      - "Flash 使用率 < 75%，RAM 使用率 < 60%"
+      - "loop() 中无阻塞 delay()（除 delay(1) yield）"
+      - "每个外设 init 失败有降级路径，不 while(1) 卡死"
+      - "状态机所有状态转换有明确定义"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 魔法数字散落在代码各处（→ 集中到 config.h）"
+      - "❌ loop() 中用 delay(1000) 做定时（→ millis() 非阻塞）"
+      - "❌ 外设 init 失败时 while(1) 卡死（→ 优雅降级）"
+      - "❌ 全局变量满天飞（→ 按模块用 struct 封装状态）"
+      - "❌ setup() 中不做 I2C scan 就假设外设存在"
+      - "❌ FreeRTOS 任务不指定 Core（→ pinToCore 明确绑定）"
+
+    reviewers:
+      - persona: "嵌入式架构师"
+        checklist:
+          - "模块划分是否清晰？依赖方向是否单一？"
+          - "状态机是否覆盖所有合法状态转换？"
+          - "内存预算是否合理？有没有预留 OTA 空间？"
+          - "初始化顺序是否考虑了总线共享？"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Capability 2: 外设驱动开发
+  # Peripheral init + driver wrapping
+  # Type B: select → execute → verify → optimize
+  # ═══════════════════════════════════════════════════════════════
+
+  peripheral_drivers:
+    description: "外设驱动封装 — I2C/SPI 设备初始化、驱动 API 封装、错误处理"
+
+    steps:
+      # Layer 1: Select — identify peripherals and libraries
+      - id: select_peripherals
+        action: |
+          盘点所有外设，为每个选择驱动库：
+          1. 列出所有外设：
+             | 外设 | 接口 | 地址/引脚 | 库 | 版本 |
+          2. 驱动库选择优先级：
+             a. Adafruit 官方库（文档最全、社区最大）
+             b. SparkFun 官方库（硬件匹配的模块）
+             c. 芯片原厂 SDK 封装
+             d. 社区高星库（>100 stars, 近 6 个月有更新）
+             e. 自写驱动（仅当无现成库时，标注 [CUSTOM]）
+          3. 每个库验证：
+             arduino-cli lib search "库名"
+             arduino-cli lib install "库名@版本"
+          4. I2C 地址冲突检查：列出所有 I2C 设备地址，确认无冲突
+
+          常用库参考（用户验证过）：
+          - OLED SH1106: Adafruit_SH110X + Adafruit_GFX
+          - Haptic DA7280: SparkFun Haptic_Driver
+          - E-ink: GxEPD2 (Jean-Marc Zingg)
+          - Touch: ESP32 内置 touchRead()（无需额外库）
+          - WiFi: WiFi.h (ESP32 内置)
+          - BLE: NimBLE-Arduino（比官方 BLE 库省 ~50% Flash）
+        tool_ref: arduino_cli
+        output_file: "peripheral-drivers.md"
+
+      # Layer 2: Execute — write driver wrappers
+      - id: write_driver_wrappers
+        action: |
+          为每个外设写驱动封装 .h 文件：
+
+          驱动封装模板：
+          ```cpp
+          #pragma once
+          #include "config.h"
+          #include <ExternalLib.h>
+
+          // Driver state
+          static bool _deviceReady = false;
+
+          // Init: returns true if device found
+          bool deviceName_init() {
+            // I2C: check address responds
+            Wire.beginTransmission(DEVICE_ADDR);
+            if (Wire.endTransmission() != 0) {
+              Serial.println("[WARN] DeviceName not found at 0x" + String(DEVICE_ADDR, HEX));
+              return false;
+            }
+            // Library-specific init
+            _deviceReady = true;
+            return true;
+          }
+
+          // Getter: check _deviceReady before operation
+          int deviceName_read() {
+            if (!_deviceReady) return -1;
+            return lib.readValue();
+          }
+          ```
+
+          关键规则：
+          1. 每个驱动文件 #pragma once + #include "config.h"
+          2. init() 先做 I2C/SPI 存在性检测，再调库 init
+          3. 所有公开函数检查 _deviceReady 状态
+          4. Serial.println 日志标注 [OK] / [WARN] / [ERR] 前缀
+          5. 不在驱动内调 delay()（交给调用者决定）
+        tool_ref: null
+        output_file: "drivers/ (per-device .h files)"
+
+      # Layer 3: Verify — test each driver independently
+      - id: verify_drivers
+        action: |
+          逐个验证驱动：
+          1. **编译测试**: 每个 driver .h 单独 include 到测试 .ino 编译
+             arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 ./test-driver/
+          2. **I2C scan 验证**: 运行 i2cScan() 确认设备在线
+             串口输出应有: "Found 0x3C (OLED)" 等
+          3. **基本功能测试**: 每个驱动写最小测试
+             - 显示驱动: 画一个像素点 → display.display()
+             - 传感器: 读取一个值 → Serial.println()
+             - 触摸: touchRead() 返回值在合理范围
+          4. **错误路径测试**: 拔掉外设（或不连接）→ init() 返回 false，不崩溃
+          5. **内存占用**: 编译输出对比每加一个驱动的内存增量
+        tool_ref: arduino_cli
+        output_file: "peripheral-drivers.md (append)"
+
+      # Layer 4: Optimize — reduce footprint and improve reliability
+      - id: optimize_drivers
+        action: |
+          优化驱动：
+          1. **Flash 优化**:
+             - 字符串用 F() 宏: Serial.println(F("[OK] OLED ready"))
+             - 大查找表用 PROGMEM
+             - 不用的库功能用 #define 关闭
+          2. **RAM 优化**:
+             - 显示 buffer 检查是否可以用部分刷新（E-ink: window mode）
+             - 字符串拼接用 snprintf 替代 String 类（避免堆碎片）
+          3. **可靠性**:
+             - I2C 操作加超时: Wire.setTimeOut(100)
+             - SPI 操作前检查 busy 标志
+             - 看门狗: esp_task_wdt_add(NULL) 防止死循环卡死
+          4. **总线共享**:
+             - I2C 多设备: 确保不在中断中调用 Wire
+             - SPI 多设备: 正确使用 CS 引脚切换
+        tool_ref: null
+        output_file: "peripheral-drivers.md (append)"
+
+    quality_criteria:
+      - "每个外设有独立的 driver .h 文件"
+      - "所有 init() 返回 bool，失败时不崩溃"
+      - "I2C 地址无冲突（运行 i2cScan 验证）"
+      - "每个驱动单独编译零 error"
+      - "Serial 日志用 [OK]/[WARN]/[ERR] 前缀标注"
+      - "无 String 拼接（用 snprintf 或 F() 宏）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 不检测外设就直接调用库函数（→ init 先 probe）"
+      - "❌ 驱动内用 delay() 等待（→ 用 millis 或让调用者决定）"
+      - "❌ 用 String 类做频繁拼接（→ snprintf + char[]，避免堆碎片）"
+      - "❌ I2C 操作无超时（→ Wire.setTimeOut()）"
+      - "❌ 所有外设代码堆在 main.ino（→ 每个外设独立 .h）"
+      - "❌ init 失败 while(1) 死循环（→ return false + 降级）"
+
+    reviewers:
+      - persona: "硬件驱动工程师"
+        checklist:
+          - "每个驱动的初始化顺序是否正确？"
+          - "总线共享是否有冲突保护？"
+          - "错误恢复路径是否完整？"
+          - "内存使用是否在预算内？"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Capability 3: 低功耗设计
+  # Deep Sleep + RTC + power budget
+  # Type B: select → execute → verify → optimize
+  # ═══════════════════════════════════════════════════════════════
+
+  low_power_design:
+    description: "低功耗设计 — Deep Sleep 模式、RTC 记忆、唤醒策略、功耗预算"
+
+    steps:
+      # Layer 1: Select — choose sleep strategy
+      - id: select_sleep_strategy
+        action: |
+          根据需求选择 ESP32 睡眠策略：
+
+          ESP32 睡眠模式参考：
+          | 模式 | 电流 | 保留 | 唤醒时间 | 用途 |
+          |------|------|------|----------|------|
+          | Active | 80-240mA | 全部 | N/A | 正常运行 |
+          | Modem Sleep | 20-30mA | CPU+RAM | 即时 | WiFi 间歇 |
+          | Light Sleep | 0.8mA | CPU+RAM | <1ms | 快速响应 |
+          | Deep Sleep | 10-150μA | RTC MEM (8KB) | ~250ms | 周期唤醒 |
+          | Hibernation | 2.5μA | RTC Timer | ~250ms | 极长待机 |
+
+          唤醒源选择：
+          | 唤醒源 | API | 适用场景 |
+          |--------|-----|----------|
+          | 定时器 | esp_sleep_enable_timer_wakeup(us) | 周期采集 |
+          | GPIO | esp_sleep_enable_ext0_wakeup(pin, level) | 按钮唤醒 |
+          | Touch | esp_sleep_enable_touchpad_wakeup() | 触摸唤醒 |
+          | ULP | esp_sleep_enable_ulp_wakeup() | 传感器阈值 |
+
+          决策流程：
+          1. 计算一个工作周期的时间（唤醒→采集→传输→显示→睡眠）
+          2. 计算 duty cycle: 工作时间 / 总周期时间
+          3. 如果 duty cycle < 5% → Deep Sleep 收益最大
+          4. 如果需要快速响应（<1ms）→ Light Sleep
+          5. 如果只需定时唤醒（无外部触发）→ Hibernation
+        tool_ref: null
+        output_file: "low-power-design.md"
+
+      # Layer 2: Execute — implement sleep/wake cycle
+      - id: implement_sleep_wake
+        action: |
+          实现 Deep Sleep 周期：
+
+          ```cpp
+          #include <esp_sleep.h>
+          #include <driver/rtc_io.h>
+
+          // RTC memory survives Deep Sleep (max 8KB)
+          RTC_DATA_ATTR int bootCount = 0;
+          RTC_DATA_ATTR time_t lastSyncTime = 0;
+          RTC_DATA_ATTR uint8_t cachedData[256];
+
+          void enterDeepSleep(uint64_t sleepTimeSec) {
+            // 1. Save state to RTC memory
+            lastSyncTime = time(nullptr);
+
+            // 2. Deinit peripherals (prevent current leak)
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_OFF);
+            btStop();
+            // E-ink: put to sleep mode BEFORE deep sleep
+            display.hibernate();
+
+            // 3. Configure GPIO hold (prevent floating pins)
+            gpio_deep_sleep_hold_en();
+
+            // 4. Configure wake source
+            esp_sleep_enable_timer_wakeup(sleepTimeSec * 1000000ULL);
+
+            // 5. Enter deep sleep
+            Serial.println(F("[SLEEP] Entering deep sleep for ") + String(sleepTimeSec) + "s");
+            Serial.flush();
+            esp_deep_sleep_start();
+            // ← execution stops here, resumes from setup()
+          }
+
+          void setup() {
+            bootCount++;
+            esp_sleep_wakeup_cause_t wakeup = esp_sleep_get_wakeup_cause();
+            if (wakeup == ESP_SLEEP_WAKEUP_TIMER) {
+              // Fast path: skip splash, restore from RTC
+              quickBoot();
+            } else {
+              // Cold boot: full init
+              fullBoot();
+            }
+          }
+          ```
+
+          关键实现细节：
+          1. **RTC 变量**: 用 RTC_DATA_ATTR 标记需要跨 sleep 保留的变量
+          2. **外设断电**: WiFi.disconnect(true) + WiFi.mode(WIFI_OFF) 确保射频关闭
+          3. **GPIO hold**: gpio_deep_sleep_hold_en() 防止引脚浮空导致外设异常
+          4. **E-ink 特殊处理**: Deep Sleep 前必须调 display.hibernate()，否则 E-ink 持续耗电
+          5. **快速启动路径**: 定时器唤醒跳过 splash，直接从 RTC 恢复状态
+        tool_ref: null
+        output_file: "low-power-design.md (append)"
+
+      # Layer 3: Verify — measure actual power consumption
+      - id: verify_power
+        action: |
+          验证功耗：
+          1. **编译验证**: 包含 esp_sleep.h 的代码编译无 error
+             arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 ./project/
+          2. **串口验证**: 检查 boot 计数和唤醒原因
+             输出示例: "[BOOT] count=5, wakeup=TIMER"
+          3. **功耗预算计算**（无万用表时的理论计算）:
+             | 阶段 | 电流 (mA) | 时间 (s) | 能量 (mAs) |
+             |------|-----------|----------|------------|
+             | Boot + Init | 80 | 0.5 | 40 |
+             | WiFi Connect | 240 | 3 | 720 |
+             | Data Fetch | 80 | 2 | 160 |
+             | Display Update | 40 | 1 | 40 |
+             | Deep Sleep | 0.01 | 3594 | 35.94 |
+             | **周期合计** | | 3600 | 995.94 |
+             平均电流 = 995.94 / 3600 = 0.277 mA
+             电池寿命 = 容量(mAh) / 平均电流
+             1000mAh 电池 ≈ 150 天
+          4. **RTC 变量验证**: 变量在 Deep Sleep 后保持值
+          5. **唤醒延迟**: 从触发到 setup() 第一行 Serial 输出的时间
+        tool_ref: arduino_cli
+        output_file: "low-power-design.md (append)"
+
+      # Layer 4: Optimize — squeeze more battery life
+      - id: optimize_power
+        action: |
+          功耗优化策略（按影响排序）：
+          1. **WiFi 优化（影响最大）**:
+             - 存储上次 WiFi channel + BSSID → 快速重连（3s → 0.5s）
+             - 用 RTC_DATA_ATTR 缓存: wifi_channel, bssid[6]
+             - WiFi.begin(ssid, pass, channel, bssid) 跳过 scan
+          2. **传输优化**:
+             - 批量发送: 累积 N 次采集 → 一次 WiFi 传输
+             - 压缩: 二进制协议替代 JSON（省 60-80% 字节）
+             - MQTT QoS 0 替代 QoS 1（省一个 RTT）
+          3. **显示优化**:
+             - E-ink: 局部刷新替代全刷（省 50-70% 时间和功耗）
+             - OLED: 降低亮度 + 减少刷新率
+          4. **CPU 优化**:
+             - 降频: setCpuFrequencyMhz(80) 替代默认 240MHz
+             - 计算在 Light Sleep 间完成（比持续 Active 省电）
+          5. **GPIO 优化**:
+             - 未使用引脚设为 INPUT（不要 OUTPUT + HIGH）
+             - rtc_gpio_isolate() 断开 RTC GPIO 漏电
+        tool_ref: null
+        output_file: "low-power-design.md (append)"
+
+    quality_criteria:
+      - "功耗预算表包含每个阶段的电流、时间、能量"
+      - "Deep Sleep 电流 < 150μA（无外部上拉）"
+      - "RTC 变量在唤醒后正确恢复（串口日志验证）"
+      - "WiFi 重连时间 < 3s（有缓存时 < 1s）"
+      - "E-ink 在 Deep Sleep 前调用 hibernate()"
+      - "电池寿命估算公式和参数均可追溯"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ Deep Sleep 前不关 WiFi（→ WiFi.disconnect(true) + WIFI_OFF）"
+      - "❌ 不用 RTC_DATA_ATTR 就假设变量保留（→ Deep Sleep 清除所有 RAM）"
+      - "❌ E-ink 不 hibernate 就 Deep Sleep（→ E-ink 控制器持续耗电）"
+      - "❌ 功耗估算不含 WiFi 连接阶段（→ 这是最耗电的阶段）"
+      - "❌ 定时唤醒间隔硬编码（→ 用 config.h 定义 SLEEP_DURATION_S）"
+      - "❌ 唤醒后重新校准触摸（→ 用 RTC 存 baseline）"
+
+    reviewers:
+      - persona: "低功耗设计专家"
+        checklist:
+          - "功耗预算是否包含所有阶段（含 Boot）？"
+          - "唤醒策略是否匹配使用场景？"
+          - "RTC 内存使用量是否在 8KB 限制内？"
+          - "是否有 WiFi 快速重连优化？"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Capability 4: 通信协议
+  # WiFi/BLE/MQTT protocol implementation
+  # Type B: select → execute → verify → optimize
+  # ═══════════════════════════════════════════════════════════════
+
+  communication:
+    description: "通信协议实现 — WiFi STA/AP、BLE、MQTT、HTTP API、OTA 更新"
+
+    steps:
+      # Layer 1: Select — choose communication stack
+      - id: select_comm_stack
+        action: |
+          根据需求选择通信方案：
+
+          | 需求 | 推荐方案 | 库 |
+          |------|----------|-----|
+          | 连接家庭 WiFi 拉取数据 | WiFi STA | WiFi.h (内置) |
+          | 手机直接控制（无路由器）| WiFi AP + Captive Portal | WiFi.h + WebServer |
+          | 低功耗近距离手机连接 | BLE | NimBLE-Arduino |
+          | 云端双向通信 | MQTT | PubSubClient |
+          | HTTP API 调用 | HTTPS Client | WiFiClientSecure |
+          | 固件远程更新 | OTA | ArduinoOTA / esp_https_ota |
+
+          组合模式：
+          1. **WiFi STA + HTTPS**: 周期性拉取 API 数据（如 Movebank）
+          2. **WiFi AP + WebServer**: 本地配置页面（参考 _template wifi_server.h）
+          3. **WiFi STA + MQTT**: IoT 云平台双向通信
+          4. **BLE + WiFi STA**: BLE 配网 → WiFi 传数据（节省配置步骤）
+
+          安全选择：
+          - HTTPS: WiFiClientSecure + CA 证书或指纹验证
+          - MQTT: TLS 1.2 + client cert（如有）
+          - BLE: NimBLE 配对 + 绑定
+        tool_ref: null
+        output_file: "communication-design.md"
+
+      # Layer 2: Execute — implement communication module
+      - id: implement_communication
+        action: |
+          实现通信模块（以 WiFi STA + HTTPS 为例）：
+
+          ```cpp
+          // network.h
+          #pragma once
+          #include "config.h"
+          #include <WiFi.h>
+          #include <WiFiClientSecure.h>
+          #include <HTTPClient.h>
+
+          // RTC-cached WiFi params for fast reconnect
+          RTC_DATA_ATTR uint8_t savedBSSID[6] = {};
+          RTC_DATA_ATTR int32_t savedChannel = 0;
+
+          bool wifi_connect(const char* ssid, const char* pass, uint32_t timeoutMs = 10000) {
+            WiFi.mode(WIFI_STA);
+            WiFi.setAutoReconnect(false);  // Manual control for power
+
+            // Fast reconnect if we have cached params
+            if (savedChannel > 0) {
+              WiFi.begin(ssid, pass, savedChannel, savedBSSID, true);
+            } else {
+              WiFi.begin(ssid, pass);
+            }
+
+            uint32_t start = millis();
+            while (WiFi.status() != WL_CONNECTED) {
+              if (millis() - start > timeoutMs) {
+                Serial.println(F("[ERR] WiFi timeout"));
+                WiFi.disconnect(true);
+                return false;
+              }
+              delay(100);
+            }
+
+            // Cache for next fast reconnect
+            memcpy(savedBSSID, WiFi.BSSID(), 6);
+            savedChannel = WiFi.channel();
+
+            Serial.print(F("[OK] WiFi connected, IP: "));
+            Serial.println(WiFi.localIP());
+            return true;
+          }
+
+          String https_get(const char* url, const char* caCert = nullptr) {
+            WiFiClientSecure client;
+            if (caCert) {
+              client.setCACert(caCert);
+            } else {
+              client.setInsecure();  // Skip cert verify — [WARN] dev only
+            }
+
+            HTTPClient http;
+            http.begin(client, url);
+            http.setTimeout(10000);
+            int code = http.GET();
+
+            String payload = "";
+            if (code == HTTP_CODE_OK) {
+              payload = http.getString();
+              Serial.println(F("[OK] HTTPS GET ") + String(code));
+            } else {
+              Serial.println(F("[ERR] HTTPS GET ") + String(code));
+            }
+            http.end();
+            return payload;
+          }
+
+          void wifi_disconnect() {
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_OFF);
+          }
+          ```
+
+          MQTT 实现要点：
+          - PubSubClient 默认 buffer 128 字节 → 调大: client.setBufferSize(1024)
+          - Keepalive: client.setKeepAlive(60)
+          - Last Will: client.connect(id, willTopic, willQos, willRetain, willMsg)
+          - 重连: 非阻塞 millis 计时，不用 while loop
+        tool_ref: null
+        output_file: "communication-design.md (append)"
+
+      # Layer 3: Verify — test connectivity
+      - id: verify_communication
+        action: |
+          验证通信：
+          1. **编译**: 通信模块编译零 error
+             arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 ./project/
+          2. **WiFi 连接**: 串口输出 "[OK] WiFi connected, IP: x.x.x.x"
+          3. **HTTPS 请求**: 对目标 API 做 GET 请求，验证返回 200
+             测试 URL: https://httpbin.org/get
+          4. **超时处理**: WiFi 密码错误 → 10s 超时 → 不卡死
+          5. **断线重连**: WiFi.disconnect() → 自动重连 → 串口日志确认
+          6. **内存检查**: esp_get_free_heap_size() 在连接前后对比
+             WiFi + TLS 典型消耗: 30-50KB heap
+          7. **RSSI 检查**: WiFi.RSSI() > -70dBm 为良好信号
+        tool_ref: arduino_cli
+        output_file: "communication-design.md (append)"
+
+      # Layer 4: Optimize — reliability and efficiency
+      - id: optimize_communication
+        action: |
+          通信优化：
+          1. **连接速度**:
+             - WiFi 快速重连（RTC 缓存 BSSID + Channel）
+             - DNS 缓存或直接用 IP
+          2. **流量优化**:
+             - JSON → MessagePack / CBOR（省 40-60% 字节）
+             - 批量传输（N 条数据一次发送）
+             - gzip 压缩（如果服务端支持）
+          3. **可靠性**:
+             - 发送失败 → 存入 SPIFFS/LittleFS 队列 → 下次补发
+             - MQTT QoS 选择: 状态更新 QoS 0, 重要事件 QoS 1
+          4. **安全**:
+             - 生产环境不用 setInsecure()（→ 嵌入 CA 证书）
+             - API key 不硬编码（→ 存 NVS 或 config portal 输入）
+             - 证书到期检查（Let's Encrypt 90 天）
+          5. **OTA 准备**:
+             - 预留 Flash 分区给 OTA（至少 50% 空闲）
+             - esp_https_ota() 远程固件更新
+        tool_ref: null
+        output_file: "communication-design.md (append)"
+
+    quality_criteria:
+      - "WiFi 连接有超时保护（默认 10s），不无限等待"
+      - "HTTPS 请求有 CA 证书验证（dev 可 setInsecure 但标注 [DEV ONLY]）"
+      - "WiFi 密码不硬编码在源码中（→ config portal 或 NVS）"
+      - "MQTT buffer size 已调整（默认 128 太小）"
+      - "断线有重连逻辑，且为非阻塞"
+      - "通信模块编译零 error"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ WiFi.begin() 后 while(!connected) 无超时（→ millis 超时）"
+      - "❌ setInsecure() 在生产固件中使用（→ 嵌入 CA 证书）"
+      - "❌ API key 硬编码在 .ino 文件中（→ NVS / config portal）"
+      - "❌ MQTT 重连用 delay() 阻塞（→ millis 非阻塞重连）"
+      - "❌ 不检查 HTTP 返回码就解析 body（→ 先检查 200）"
+      - "❌ WiFi 每次 Deep Sleep 唤醒都全量 scan（→ RTC 缓存 channel）"
+
+    reviewers:
+      - persona: "IoT 通信工程师"
+        checklist:
+          - "通信协议选择是否匹配功耗需求？"
+          - "TLS 配置是否安全？"
+          - "断线重连是否可靠？"
+          - "数据格式是否高效？"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Capability 5: 构建与上传
+  # Compile + upload + version management
+  # Type B: select → execute → verify → optimize
+  # ═══════════════════════════════════════════════════════════════
+
+  build_upload:
+    description: "构建与上传 — 编译配置、上传流程、版本管理、分区表"
+
+    steps:
+      # Layer 1: Select — choose build configuration
+      - id: select_build_config
+        action: |
+          确定构建配置：
+          1. **Board FQBN**: 从 arduino-cli board listall 选择
+             常用:
+             - esp32:esp32:XIAO_ESP32S3
+             - esp32:esp32:esp32c3
+             - esp32:esp32:esp32s3
+          2. **分区表**:
+             默认分区表 (4MB Flash):
+             | 分区 | 偏移 | 大小 | 用途 |
+             |------|------|------|------|
+             | nvs | 0x9000 | 20KB | WiFi 配置、用户数据 |
+             | otadata | 0xE000 | 8KB | OTA 状态 |
+             | app0 | 0x10000 | 1.25MB | 主固件 |
+             | app1 | 0x150000 | 1.25MB | OTA 固件 |
+             | spiffs | 0x290000 | 1.5MB | 文件系统 |
+
+             如需更大 app 空间（无 OTA）:
+             - huge_app.csv: app 3MB + spiffs 1MB
+          3. **构建参数**:
+             - Flash Mode: QIO (最快) / DIO (兼容)
+             - Flash Freq: 80MHz (默认) / 40MHz (省电)
+             - CPU Freq: 240MHz (默认) / 80MHz (省电)
+             - PSRAM: Enable (如果板载有 PSRAM)
+          4. **库依赖**: 列出所有需要的库及版本
+             arduino-cli lib install "库名@版本"
+        tool_ref: arduino_cli
+        output_file: "build-config.md"
+
+      # Layer 2: Execute — build and upload workflow
+      - id: execute_build
+        action: |
+          构建与上传流程：
+
+          ```bash
+          # Step 1: 安装/更新库依赖
+          arduino-cli lib install "Adafruit GFX Library@1.11.11"
+          arduino-cli lib install "Adafruit SH110X@2.1.11"
+          arduino-cli lib install "GxEPD2@1.6.0"
+          arduino-cli lib install "PubSubClient@2.8"
+
+          # Step 2: 编译
+          arduino-cli compile \
+            --fqbn esp32:esp32:XIAO_ESP32S3 \
+            --build-property "build.extra_flags=-DVERSION=\"1.0.0\"" \
+            --warnings more \
+            --verbose \
+            ./project/ 2>&1 | tee build.log
+
+          # Step 3: 检查编译输出
+          # Sketch uses XXXXX bytes (XX%) of program storage space.
+          # Global variables use XXXXX bytes (XX%) of dynamic memory.
+
+          # Step 4: 上传
+          arduino-cli upload \
+            -p /dev/cu.usbmodem* \
+            --fqbn esp32:esp32:XIAO_ESP32S3 \
+            ./project/
+
+          # Step 5: 串口监控验证
+          arduino-cli monitor -p /dev/cu.usbmodem* --config baudrate=115200
+          ```
+
+          版本管理：
+          - 在 config.h 中定义: #define FW_VERSION "1.0.0"
+          - 编译时注入: --build-property "build.extra_flags=-DVERSION=\"1.0.0\""
+          - setup() 中打印: Serial.println(F("Firmware v" FW_VERSION))
+          - 用 sketch.yaml 记录板卡和库依赖（arduino-cli 项目文件）
+        tool_ref: arduino_cli
+        output_file: "build-config.md (append)"
+
+      # Layer 3: Verify — validate build output
+      - id: verify_build
+        action: |
+          验证构建结果：
+          1. **编译结果**: 零 error, warnings ≤3
+          2. **Flash 使用率**: < 75%（留 OTA 空间）
+          3. **RAM 使用率**: < 60%（留运行时堆空间）
+          4. **上传成功**: 串口输出 boot 信息
+          5. **版本确认**: 串口输出含 FW_VERSION 字符串
+          6. **功能验证**: 运行基本功能检查清单
+             - [ ] I2C scan 输出所有设备
+             - [ ] OLED 显示正常
+             - [ ] WiFi 连接成功
+             - [ ] Touch 响应
+             - [ ] Deep Sleep 进入和唤醒
+          7. **构建可重复**: 同一代码第二次编译结果一致
+        tool_ref: arduino_cli
+        output_file: "build-config.md (append)"
+
+      # Layer 4: Optimize — streamline build process
+      - id: optimize_build
+        action: |
+          构建优化：
+          1. **编译速度**:
+             - arduino-cli 缓存: 默认启用，第二次编译快 50%+
+             - 只修改的文件重新编译（增量编译）
+          2. **Flash 优化**:
+             - 移除未使用的库 include
+             - -Os 优化级别（默认）
+             - LTO (Link Time Optimization): --build-property "compiler.c.elf.extra_flags=-flto"
+          3. **sketch.yaml 锁定**:
+             ```yaml
+             default_fqbn: esp32:esp32:XIAO_ESP32S3
+             default_port: /dev/cu.usbmodem*
+             profiles:
+               xiao_s3:
+                 fqbn: esp32:esp32:XIAO_ESP32S3
+                 libraries:
+                   - name: "Adafruit GFX Library"
+                     version: "1.11.11"
+             ```
+          4. **CI 准备**:
+             - 把 arduino-cli compile 命令写入 Makefile
+             - GitHub Actions 支持 arduino-cli 编译验证
+        tool_ref: arduino_cli
+        output_file: "build-config.md (append)"
+
+    quality_criteria:
+      - "编译零 error，warnings ≤3"
+      - "Flash 使用率 < 75%，RAM 使用率 < 60%"
+      - "sketch.yaml 或 platformio.ini 锁定所有库版本"
+      - "FW_VERSION 宏在 config.h 定义且 Serial 启动时打印"
+      - "上传后串口输出确认所有外设初始化状态"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 库版本不锁定（→ sketch.yaml 指定精确版本）"
+      - "❌ 忽略编译 warnings（→ --warnings more + 逐条解决）"
+      - "❌ 分区表不匹配 Flash 大小（→ 先确认芯片型号和 Flash 容量）"
+      - "❌ 上传前不检查端口（→ arduino-cli board list 确认）"
+      - "❌ 不记录构建参数（→ 写入 build.log 或 Makefile）"
+      - "❌ 生产固件用 debug 分区表（→ 切换到 OTA 分区表）"
+
+    reviewers:
+      - persona: "构建工程师"
+        checklist:
+          - "所有库依赖是否版本锁定？"
+          - "分区表是否为目标场景优化？"
+          - "构建是否可重复（其他人 clone 能直接编译）？"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Capability 6: 固件测试
+  # Serial debug + unit test + integration test
+  # Type B: select → execute → verify → optimize
+  # ═══════════════════════════════════════════════════════════════
+
+  firmware_testing:
+    description: "固件测试 — 串口调试、单元测试、集成测试、自动化验证"
+
+    steps:
+      # Layer 1: Select — choose testing strategy
+      - id: select_test_strategy
+        action: |
+          确定测试策略（嵌入式三层模型）：
+
+          | 层级 | 内容 | 工具 | 运行环境 |
+          |------|------|------|----------|
+          | L1: 编译 | 编译通过 + 静态检查 | arduino-cli | Host |
+          | L2: 逻辑 | 纯逻辑单元测试（无硬件依赖） | PlatformIO Unity / ArduinoUnit | Host (native) |
+          | L3: 硬件 | 外设交互测试 | Serial 日志 + 人工验证 | Target board |
+
+          L1 编译测试（必须）:
+          - arduino-cli compile 零 error
+          - --warnings more 无新 warning
+
+          L2 逻辑测试（推荐）:
+          - 状态机转换逻辑
+          - 数据解析/编码
+          - 配置参数校验
+          - 可以在 host (PC) 上运行，不需要硬件
+
+          L3 硬件测试（关键路径）:
+          - Serial.println 日志 + 人工观察
+          - 结构化测试日志格式: [TEST] name: PASS/FAIL
+          - I2C scan / WiFi connect / touch read
+        tool_ref: null
+        output_file: "firmware-testing.md"
+
+      # Layer 2: Execute — implement tests
+      - id: implement_tests
+        action: |
+          实现测试代码：
+
+          **L1 编译测试脚本**:
+          ```bash
+          #!/bin/bash
+          # test-compile.sh
+          set -e
+          echo "=== Compile Test ==="
+          arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 \
+            --warnings more ./project/ 2>&1 | tee build.log
+
+          # Check for errors
+          if grep -q "error:" build.log; then
+            echo "[TEST] compile: FAIL"
+            exit 1
+          fi
+          echo "[TEST] compile: PASS"
+
+          # Check flash/ram usage
+          FLASH_PCT=$(grep "Sketch uses" build.log | grep -o '[0-9]*%' | tr -d '%')
+          RAM_PCT=$(grep "Global variables" build.log | grep -o '[0-9]*%' | tr -d '%')
+          echo "[TEST] flash_usage: ${FLASH_PCT}% (limit: 75%)"
+          echo "[TEST] ram_usage: ${RAM_PCT}% (limit: 60%)"
+          ```
+
+          **L3 硬件自测函数**（在 setup() 中可选调用）:
+          ```cpp
+          void runSelfTest() {
+            Serial.println(F("\n=== SELF TEST ==="));
+            int passed = 0, failed = 0;
+
+            // Test 1: I2C bus
+            Wire.beginTransmission(OLED_ADDR);
+            if (Wire.endTransmission() == 0) {
+              Serial.println(F("[TEST] i2c_oled: PASS"));
+              passed++;
+            } else {
+              Serial.println(F("[TEST] i2c_oled: FAIL"));
+              failed++;
+            }
+
+            // Test 2: Touch input (read value, check range)
+            uint32_t tv = touchRead(TOUCH_PINS[0]);
+            if (tv > 0 && tv < 500000) {
+              Serial.println(F("[TEST] touch_read: PASS (") + String(tv) + ")");
+              passed++;
+            } else {
+              Serial.println(F("[TEST] touch_read: FAIL (") + String(tv) + ")");
+              failed++;
+            }
+
+            // Test 3: Free heap
+            uint32_t heap = esp_get_free_heap_size();
+            if (heap > 100000) {
+              Serial.println(F("[TEST] heap_free: PASS (") + String(heap) + ")");
+              passed++;
+            } else {
+              Serial.println(F("[TEST] heap_free: FAIL (") + String(heap) + ")");
+              failed++;
+            }
+
+            Serial.print(F("=== RESULT: "));
+            Serial.print(passed); Serial.print(F(" passed, "));
+            Serial.print(failed); Serial.println(F(" failed ==="));
+          }
+          ```
+
+          日志格式规范:
+          - 前缀: [TEST] [OK] [WARN] [ERR] [SLEEP] [BOOT]
+          - 测试: [TEST] test_name: PASS/FAIL (optional_value)
+          - 时间戳: millis() 在关键事件旁
+        tool_ref: arduino_cli
+        output_file: "firmware-testing.md (append)"
+
+      # Layer 3: Verify — run all test layers
+      - id: verify_tests
+        action: |
+          运行测试套件：
+          1. **L1 运行**: bash test-compile.sh → 零 error + usage 在预算内
+          2. **L3 运行**: 上传 → 串口监控 → 检查 [TEST] 输出
+             arduino-cli upload ... && arduino-cli monitor ...
+          3. **结果汇总**:
+             - 所有 [TEST] 行收集 → PASS/FAIL 统计
+             - 任何 FAIL → 标记为 blocking issue
+          4. **回归检查**: 修改代码后重新跑 L1 + L3
+          5. **边界条件**: 特别关注
+             - WiFi 连接超时
+             - I2C 设备不存在
+             - Flash 写满（SPIFFS/LittleFS）
+             - Deep Sleep 唤醒后状态恢复
+        tool_ref: arduino_cli
+        output_file: "firmware-testing.md (append)"
+
+      # Layer 4: Optimize — improve test coverage and speed
+      - id: optimize_tests
+        action: |
+          测试优化：
+          1. **自测模式开关**:
+             - #define SELF_TEST_ON_BOOT 1 (config.h)
+             - 生产固件设为 0 → 跳过自测节省启动时间
+          2. **测试自动化**:
+             - test-compile.sh 集成到 pre-commit hook
+             - CI: GitHub Actions + arduino-cli compile
+          3. **串口日志解析**:
+             - 脚本自动解析 [TEST] 行 → 生成报告
+             - grep "\[TEST\]" serial.log | grep "FAIL" → 快速发现失败
+          4. **Mock 模式**:
+             - #define MOCK_PERIPHERALS 1 → 跳过真实 I2C 操作
+             - 用于无硬件环境的逻辑测试
+          5. **性能基准**:
+             - 记录 setup() 耗时: millis() at start vs end
+             - 记录 loop() 单次耗时 → 确保不超过显示刷新间隔
+        tool_ref: null
+        output_file: "firmware-testing.md (append)"
+
+    quality_criteria:
+      - "L1 编译测试脚本存在且可运行"
+      - "L3 自测函数覆盖所有外设"
+      - "所有测试输出用 [TEST] name: PASS/FAIL 格式"
+      - "Flash < 75% 和 RAM < 60% 作为自动化检查"
+      - "WiFi 超时和 I2C 缺失有测试覆盖"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 不测试就上传（→ 至少 L1 编译测试）"
+      - "❌ 测试日志无结构（→ [TEST] 前缀 + PASS/FAIL）"
+      - "❌ 只测试 happy path（→ 必须测试外设缺失和超时）"
+      - "❌ 自测代码和生产代码混在一起（→ #ifdef SELF_TEST 隔离）"
+      - "❌ 测试依赖特定 WiFi 网络（→ AP 模式或 mock）"
+      - "❌ 不记录内存使用变化（→ 每次编译记录 Flash/RAM %）"
+
+    reviewers:
+      - persona: "QA 测试工程师"
+        checklist:
+          - "测试层级是否覆盖编译+逻辑+硬件？"
+          - "错误路径是否有测试覆盖？"
+          - "测试是否可自动化运行？"
+          - "测试输出是否可机器解析？"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Capability 7: 固件文档
+  # Pin mapping + API docs + data flow diagrams
+  # Type A/Mixed: search → analyze → derive → generate
+  # ═══════════════════════════════════════════════════════════════
+
+  firmware_documentation:
+    description: "固件文档 — 引脚映射图、API 文档、数据流图、硬件接线图"
+
+    steps:
+      # Layer 1: Search — gather documentation sources
+      - id: gather_doc_sources
+        action: |
+          收集文档素材：
+          1. **从代码提取**:
+             - config.h → 引脚定义表
+             - 所有 .h 文件 → 公开函数列表
+             - setup() → 初始化顺序
+             - loop() → 主循环数据流
+          2. **从硬件参考**:
+             - MCU datasheet 引脚图
+             - 外设模块原理图
+             - I2C/SPI 地址汇总
+          3. **从设计文档**:
+             - firmware-architecture.md → 架构概览
+             - low-power-design.md → 功耗预算
+             - communication-design.md → 通信协议
+        tool_ref: null
+        output_file: "firmware-docs.md"
+
+      # Layer 2: Analyze — organize documentation structure
+      - id: analyze_doc_structure
+        action: |
+          确定文档结构：
+
+          **引脚映射表**（从 config.h 自动生成）:
+          | GPIO | 板标记 | 功能 | 接口 | 外设 | 备注 |
+          |------|--------|------|------|------|------|
+          | 1 | D0 | Touch | — | 触摸按钮 0 | threshold>80000 |
+          | 5 | D4 | SDA | I2C | OLED + Haptic | 400kHz |
+          | 6 | D5 | SCL | I2C | OLED + Haptic | 400kHz |
+
+          **API 文档**（每个 .h 文件）:
+          - 函数签名 + 参数说明 + 返回值
+          - 调用前提条件（init 是否成功）
+          - 线程安全性（是否可从多个 task 调用）
+
+          **数据流图**:
+          - 传感器 → 数据处理 → 显示/传输
+          - 唤醒 → 采集 → 发送 → 睡眠（周期图）
+          - 用户操作 → 状态机转换 → UI 响应
+        tool_ref: null
+        output_file: "firmware-docs.md (append)"
+
+      # Layer 3: Derive — generate diagrams
+      - id: derive_diagrams
+        action: |
+          用 D2 生成图表：
+          1. **引脚映射图**: MCU 中心，外设环绕，连线标注 GPIO 号
+             ```d2
+             mcu: ESP32-S3 {
+               shape: rectangle
+             }
+             oled: SH1106 OLED {
+               shape: rectangle
+             }
+             mcu -> oled: "I2C (SDA=GPIO5, SCL=GPIO6)\nAddr: 0x3C"
+             ```
+          2. **数据流图**: 从输入到输出的完整数据路径
+          3. **状态机图**: 所有状态 + 转换条件
+          4. **电源状态图**: Active ↔ Sleep 转换 + 唤醒源
+
+          命令: d2 input.d2 output.svg
+        tool_ref: d2_diagram
+        output_file: "*.d2 → *.svg"
+
+      # Layer 4: Generate — produce final documents
+      - id: generate_docs
+        action: |
+          生成最终文档：
+          1. **README.md**: 项目概览 + 快速开始
+             - 硬件清单（含购买链接如有）
+             - 接线说明
+             - 编译上传步骤
+             - 简要使用说明
+          2. **Pin Map PDF**: Typst 生成引脚映射表 PDF
+             typst compile pin-map.typ pin-map.pdf
+          3. **API Reference**: 每个模块的函数文档
+          4. **Architecture Diagram Set**: 所有 D2 图 → SVG
+
+          文档维护规则:
+          - config.h 变更 → 引脚映射表必须同步更新
+          - 新增 .h 文件 → API 文档必须补充
+          - 版本号变更 → README 和 CHANGELOG 更新
+        tool_ref: typst_pdf
+        output_file: "firmware-docs/ (directory)"
+
+    quality_criteria:
+      - "引脚映射表与 config.h 完全一致（逐行可对照）"
+      - "所有公开函数有参数+返回值文档"
+      - "数据流图覆盖主要使用场景"
+      - "README 包含从零开始的编译步骤（新人 clone 能直接跑）"
+      - "图表用 D2 生成（可版本控制、可重新生成）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 引脚映射表和代码不同步（→ 从 config.h 自动提取）"
+      - "❌ README 缺少接线说明（→ 新人必须知道如何连线）"
+      - "❌ 用截图而非文本描述引脚（→ 不可搜索、不可维护）"
+      - "❌ API 文档只有函数名没有参数说明"
+      - "❌ 图表用 GUI 工具画（→ D2 文本格式可版本控制）"
+      - "❌ 文档和代码分开仓库（→ 同仓库、同 PR 更新）"
+
+    reviewers:
+      - persona: "技术文档工程师"
+        checklist:
+          - "新人读完文档能否独立完成硬件接线和固件烧录？"
+          - "引脚映射表是否与代码一致？"
+          - "图表是否用可版本控制的格式（D2/Mermaid）？"
+          - "是否有 CHANGELOG 记录版本变更？"

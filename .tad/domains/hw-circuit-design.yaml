@@ -1,0 +1,872 @@
+# Domain Pack: Hardware Circuit Design
+# From requirements to manufacturing-ready design — schematic, PCB, BOM, power
+domain: hw-circuit-design
+version: 1.0.0
+requires_registry: ">=1"
+description: "硬件电路设计：从需求到可制造的电路方案。产出物是原理图、PCB 布局、BOM、功耗分析，不是纸上建议。"
+scope: "ESP32 系列 MCU 为主（C3/S3），低功耗 IoT 设备，电池供电，显示屏（E-ink/OLED）。不覆盖高频 RF 设计（>2.4GHz 天线除外）和高压电路（>48V）。"
+
+output_dir: ".tad/active/hw-design/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: 元器件选型 (Type A: search→analyze→derive→generate)
+# ═══════════════════════════════════════
+
+capabilities:
+
+  component_selection:
+    description: "选择核心元器件 + 替代方案 + 供应链风险评估"
+
+    steps:
+      # Layer 1: Search — gather component candidates
+      - id: search_components
+        action: |
+          基于功能需求，搜索每个功能模块的候选元器件：
+          1. MCU: 搜索符合 GPIO/外设/功耗/封装要求的芯片（ESP32-C3/S3 系列优先）
+          2. 显示: 搜索显示模块（E-ink 型号、OLED 型号、驱动 IC）
+          3. 电源: 搜索 LDO/DCDC/充电 IC（输入输出电压、电流、静态功耗）
+          4. 传感器/通信: 搜索项目需要的传感器和通信模块
+          5. 被动元件: 搜索关键被动元件（晶振、ESD 保护、滤波电容）
+          每个类别至少找 3 个候选器件。
+          来源：乐鑫官方文档、LCSC、DigiKey、Mouser、厂商 datasheet。
+        tool_ref: web_scraping
+        output_file: "component-candidates.md"
+
+      # Layer 2: Analyze — compare candidates
+      - id: analyze_candidates
+        action: |
+          对每个功能模块的候选元器件做对比分析：
+          | 参数 | 候选A | 候选B | 候选C |
+          |------|-------|-------|-------|
+          | 型号 | ... | ... | ... |
+          | 关键规格 | ... | ... | ... |
+          | 封装 | ... | ... | ... |
+          | 单价(1K) | ... | ... | ... |
+          | 供货状态 | ... | ... | ... |
+          | 功耗(active/sleep) | ... | ... | ... |
+
+          重点评估维度：
+          1. 电气兼容性：电压/电平/接口是否匹配
+          2. 功耗：active 和 sleep 模式电流
+          3. 封装：是否适合目标 PCB 尺寸和手焊/回流焊
+          4. 供应链：LCSC 有货 > 仅 DigiKey > 仅厂商直供
+          5. 社区支持：是否有 Arduino/ESP-IDF 驱动库
+          数据必须来自 datasheet，推测标注 [INFERRED]。
+        quality: "每个参数必须注明出处（datasheet 页码或 URL）。编造数据 = FAIL。"
+        tool_ref: null
+        output_file: "component-analysis.md"
+
+      # Layer 3: Derive — make selection decisions
+      - id: derive_selection
+        action: |
+          基于分析做出选型决策：
+          1. 每个功能模块选择 primary + backup 器件
+          2. Primary 选择理由（必须引用具体参数数据）
+          3. Backup 器件的 pin-compatible 程度（完全兼容 / 需改 PCB / 需改软件）
+          4. 标注供应链风险：
+             - LOW: 多供应商 + LCSC/DigiKey 都有 + 非停产
+             - MEDIUM: 单供应商 或 仅一个渠道有货
+             - HIGH: 停产预警 / 长交期(>12周) / 仅厂商直供
+          5. 关键设计约束记录（如 ESP32-C3 的 GPIO 数量限制、E-ink 刷新时序要求）
+
+          如果找不到满足所有要求的器件 → 诚实标注 [TRADEOFF] 并说明妥协了什么。
+        quality: "选型决策必须有数据支撑。'我觉得这个好' = FAIL。"
+        tool_ref: null
+        output_file: "component-selection.md"
+
+      # Layer 4: Generate — output selection report
+      - id: generate_selection_report
+        action: |
+          生成元器件选型报告：
+          1. 选型总览表（所有选定器件 + backup）
+          2. 供应链风险矩阵图（D2 可视化）
+          3. 关键器件 datasheet 链接汇总
+          4. 设计约束与注意事项清单
+          5. 初步成本估算（基于 1K 数量单价）
+        tool_ref: [diagram_generation, pdf_generation]
+        output_file: "component-selection-report.pdf"
+
+    quality_criteria:
+      - "每个功能模块至少 3 个候选器件对比"
+      - "每个选定器件有 primary + backup（pin-compatible 程度标注）"
+      - "参数数据来自 datasheet，有页码或 URL 引用"
+      - "供应链风险评估（LOW/MEDIUM/HIGH）+ 至少一个非 LCSC 渠道"
+      - "功耗数据包含 active 和 sleep 模式"
+      - "编造数据 = FAIL。推测标注 [INFERRED]，缺失标注 [NOT FOUND]"
+
+    anti_patterns:
+      - "❌ 只看一个供应商就选型 = 供应链风险"
+      - "❌ 不查 datasheet 就写功耗数据 = 编造"
+      - "❌ 选最便宜的不考虑供货 = 断供风险"
+      - "❌ 不考虑封装兼容性（QFN vs WLCSP 对手焊影响完全不同）"
+      - "❌ 忽略 GPIO 数量限制导致后期改 MCU = 返工"
+
+    reviewers:
+      - persona: "供应链工程师"
+        checklist:
+          - "是否有双供应商策略？"
+          - "交期是否在项目计划内（<8 周）？"
+          - "器件生命周期状态（Active/NRND/EOL）？"
+      - persona: "硬件工程师"
+        checklist:
+          - "电气参数是否匹配（电压/电流/接口）？"
+          - "封装是否适合目标工艺（手焊 vs SMT）？"
+          - "关键器件是否有验证过的驱动库？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: 原理图设计 (Type B: select→execute→verify→optimize)
+  # ═══════════════════════════════════════
+
+  schematic_design:
+    description: "原理图绘制 + 模块化设计 + 电气规则检查"
+
+    steps:
+      # Layer 1: Select — choose design approach and tools
+      - id: select_design_approach
+        action: |
+          确定原理图设计方案：
+          1. 工具选择：KiCad 8+ （推荐，开源免费）
+          2. 模块化划分：将电路按功能拆分为独立模块
+             - 电源模块（充电 + 稳压 + 电池管理）
+             - MCU 核心模块（MCU + 晶振 + 复位 + 下载口）
+             - 显示模块（E-ink/OLED + 驱动 + 连接器）
+             - 传感器/通信模块
+             - 连接器/接口模块（USB、排针、测试点）
+          3. 层次原理图 vs 单页：>50 个元件推荐层次原理图
+          4. 网络标签命名规范：
+             - 电源网络: VCC_3V3, VBUS_5V, VBAT, GND
+             - 信号网络: SPI_MOSI, I2C_SDA, UART_TX
+             - 大写 + 下划线，有意义的缩写
+        quality: "模块划分必须基于功能和电气隔离原则，不是随意分组。"
+        tool_ref: kicad_cli
+        output_file: "schematic-plan.md"
+
+      # Layer 2: Execute — create schematic
+      - id: execute_schematic
+        action: |
+          按模块创建原理图（每个模块一个 sheet 或区域）：
+
+          **电源模块必须包含：**
+          - USB 输入保护（ESD + 过流）
+          - 充电 IC 外围电路（参考 datasheet 典型应用）
+          - LDO/DCDC 输入输出电容（按 datasheet 推荐值）
+          - 电池接口 + 保护（如有）
+          - 电源指示 LED（充电状态）
+
+          **MCU 模块必须包含：**
+          - 去耦电容（每个 VDD pin 100nF + 共用 10uF）
+          - 晶振电路（负载电容按 datasheet 计算）
+          - 复位电路（RC 延时 + 按键）
+          - Boot/下载模式选择（ESP32: GPIO0 + EN）
+          - 未使用 GPIO 处理（内部上拉/下拉或外部拉低）
+
+          **显示模块必须包含：**
+          - FPC/排线连接器
+          - 驱动 IC 外围（如果显示模块不集成）
+          - 电平转换（如果需要）
+
+          **每个模块边界处必须有：**
+          - 测试点（关键电压/信号）
+          - 连接器或网络标签（模块间接口明确）
+
+          关键参数标注在原理图上（电阻值、电容值、电压标注）。
+        quality: "每个 IC 的外围电路必须参考 datasheet 典型应用电路。自创电路 = 风险。"
+        tool_ref: kicad_cli
+        output_file: "{project}.kicad_sch"
+
+      # Layer 3: Verify — run ERC and review
+      - id: verify_erc
+        action: |
+          运行电气规则检查 (ERC)：
+          1. kicad-cli sch erc --output erc-report.json --severity-all <schematic>
+          2. 分析 ERC 报告：
+             - ERROR: 必须全部修复（未连接 pin、短路、电源冲突）
+             - WARNING: 逐条评估（未使用 pin 如果有意为之可标注 no-connect）
+             - 目标: 0 ERROR, WARNING 全部评估
+          3. 手动检查项（ERC 检不出的）：
+             - 去耦电容是否就近放置（原理图中标注位置要求）
+             - 电源网络是否有正确的电压标注
+             - 所有连接器 pin 定义是否与实物匹配
+             - 晶振负载电容计算是否正确
+        quality: "ERC 0 ERROR 是最低要求。WARNING 必须逐条有处理决策（fix/waive+理由）。"
+        tool_ref: kicad_cli
+        output_file: "erc-report.json"
+
+      # Layer 4: Optimize — refine and export
+      - id: optimize_schematic
+        action: |
+          优化原理图：
+          1. 添加设计备注（关键计算过程、datasheet 参考页码）
+          2. 检查 BOM 一致性（原理图值 vs 实际采购型号）
+          3. 添加版本信息和修订记录（title block）
+          4. 导出 PDF 供评审：kicad-cli sch export pdf -o schematic.pdf <schematic>
+          5. 导出网表供 PCB：kicad-cli sch export netlist -o netlist.xml <schematic>
+          6. 生成模块连接框图（D2 可视化模块间信号流）
+        tool_ref: [kicad_cli, diagram_generation]
+        output_file: "schematic.pdf"
+
+    quality_criteria:
+      - "模块化设计：每个功能模块独立且接口明确"
+      - "ERC: 0 ERROR, 所有 WARNING 有处理记录"
+      - "每个 IC 去耦电容完整（按 datasheet 推荐）"
+      - "所有 GPIO 分配有记录（哪个 pin 连哪个功能）"
+      - "关键信号有测试点"
+      - "网络标签命名一致（大写 + 下划线）"
+      - "编造数据 = FAIL。电阻/电容值必须有计算或 datasheet 依据。"
+
+    anti_patterns:
+      - "❌ 不看 datasheet 典型电路就画原理图 = 电气风险"
+      - "❌ 去耦电容省略或随意放 = EMI/稳定性问题"
+      - "❌ ESP32 未处理 GPIO0/EN 的 boot 模式 = 无法下载"
+      - "❌ 未使用 GPIO 悬空 = 噪声和功耗"
+      - "❌ 电源网络命名不一致（混用 3V3/3.3V/VCC）= 连接错误"
+      - "❌ 忽略 FPC 连接器 pin 序号方向 = 显示屏接反"
+
+    reviewers:
+      - persona: "电子工程师"
+        checklist:
+          - "电源方案是否满足所有模块的电压/电流需求？"
+          - "去耦电容布局是否符合 datasheet 推荐？"
+          - "关键信号是否有 ESD/过压保护？"
+          - "GPIO 分配是否考虑了复用冲突？"
+      - persona: "EMC 工程师"
+        checklist:
+          - "高速信号是否有源端串阻？"
+          - "电源滤波是否充分？"
+          - "晶振周围是否有地保护？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: PCB 布局与布线 (Type B: select→execute→verify→optimize)
+  # ═══════════════════════════════════════
+
+  pcb_layout:
+    description: "PCB 布局布线 + 设计规则 + 制造要求"
+
+    steps:
+      # Layer 1: Select — determine PCB parameters
+      - id: select_pcb_parameters
+        action: |
+          确定 PCB 设计参数：
+          1. 板层数：
+             - 2 层: 简单设计、成本优先（ESP32 模组方案可用）
+             - 4 层: 复杂设计、EMC 要求高（ESP32 芯片方案推荐）
+          2. 板厚: 1.6mm（标准）/ 0.8mm（紧凑）/ 1.0mm（折中）
+          3. 最小线宽/间距: 6mil/6mil（标准）/ 4mil/4mil（精细，成本+30%）
+          4. 过孔: 0.3mm 钻孔 / 0.6mm 焊盘（标准）
+          5. 表面处理: HASL（便宜）/ ENIG（平整，适合 BGA/FPC）
+          6. 板框尺寸: 基于外壳和连接器位置确定
+          7. 铜厚: 1oz（标准信号）/ 2oz（大电流 >1A）
+
+          设计规则基于目标制造商能力（嘉立创 / PCBWAY）。
+          输出 DRC 规则文件。
+        quality: "PCB 参数必须基于制造商能力规格，不是随意选。"
+        tool_ref: kicad_cli
+        output_file: "pcb-parameters.md"
+
+      # Layer 2: Execute — layout and routing
+      - id: execute_layout
+        action: |
+          PCB 布局布线（遵循以下优先级）：
+
+          **布局优先级（先放后连线）：**
+          1. 连接器位置（USB、FPC、排针 — 由外壳决定）
+          2. 关键 IC 位置（MCU 居中，电源 IC 靠近输入）
+          3. 去耦电容紧贴对应 IC 的 VDD pin（越近越好）
+          4. 晶振紧贴 MCU，走线尽量短
+          5. 大电流路径要宽走线（电源 >20mil，信号 8-10mil）
+
+          **布线规则：**
+          - 电源走线: ≥20mil (0.5mm)，大电流 ≥40mil (1mm)
+          - 信号走线: 8-10mil (0.2-0.25mm)
+          - 差分对: USB D+/D- 等阻抗匹配（90Ω ±10%）
+          - 地平面: 尽量完整，避免割裂（特别是 MCU 和晶振下方）
+          - 禁止走线从晶振下方穿过
+          - 电源和信号走线不要平行长距离
+
+          **分区原则：**
+          - 模拟区（传感器）和数字区（MCU）分开
+          - 电源区靠近输入连接器
+          - 高频区（天线、晶振）远离噪声源
+          - ESP32 天线区域下方禁止铺铜和走线
+        quality: "布局必须遵循信号完整性和电源完整性原则。随意摆放 = EMC 风险。"
+        tool_ref: kicad_cli
+        output_file: "{project}.kicad_pcb"
+
+      # Layer 3: Verify — run DRC
+      - id: verify_drc
+        action: |
+          运行设计规则检查 (DRC)：
+          1. kicad-cli pcb drc --output drc-report.json <board.kicad_pcb>
+          2. 检查项目：
+             - 线宽违规（信号线 < 最小线宽）
+             - 间距违规（走线间距 < 最小间距）
+             - 未连接网络（ratsnest）
+             - 过孔违规（孔径/焊盘不符合规则）
+             - 焊盘间距违规（元件太近无法焊接）
+          3. 手动检查（DRC 检不出的）：
+             - 天线净空区是否满足（ESP32 天线 15mm 范围无铺铜）
+             - 去耦电容是否真的在 IC 旁边（不仅原理图上连着）
+             - FPC 连接器方向和 pin 序是否正确
+             - 安装孔位置是否与外壳匹配
+          4. 目标: 0 DRC 违规
+        quality: "DRC 0 violation 是最低要求。天线净空和去耦电容位置必须人工复查。"
+        tool_ref: kicad_cli
+        output_file: "drc-report.json"
+
+      # Layer 4: Optimize — finalize for manufacturing
+      - id: optimize_for_manufacturing
+        action: |
+          制造优化：
+          1. 铜皮填充（copper pour）: GND 铺铜覆盖空白区域
+          2. 丝印优化：元件标号可读、不被焊盘遮挡、方向统一
+          3. 添加丝印信息: 项目名、版本号、日期、生产商 logo 区域
+          4. 坐标原点设置: 左下角对齐制造要求
+          5. 导出制造文件：
+             - Gerber: kicad-cli pcb export gerbers -o gerber/ <board>
+             - 钻孔: kicad-cli pcb export drill -o gerber/ <board>
+             - 贴片坐标: kicad-cli pcb export pos -o pick-place.csv <board>
+          6. 生成 3D 渲染预览（如果有 3D 模型）
+          7. 制造商 DFM 检查提交（嘉立创/PCBWAY 在线 DFM）
+        tool_ref: kicad_cli
+        output_file: "gerber/"
+
+    quality_criteria:
+      - "DRC: 0 violation（线宽、间距、连接性全部通过）"
+      - "去耦电容距离 IC VDD pin ≤3mm"
+      - "电源走线宽度 ≥20mil，大电流 ≥40mil"
+      - "ESP32 天线区域 15mm 范围内无铺铜和走线"
+      - "地平面完整性 >80%（无大面积割裂）"
+      - "Gerber 文件完整（铜层 + 阻焊 + 丝印 + 钻孔 + 坐标）"
+      - "编造数据 = FAIL。线宽计算必须基于电流和铜厚。"
+
+    anti_patterns:
+      - "❌ 去耦电容远离 IC = 形同虚设"
+      - "❌ 天线区域下方铺铜 = WiFi/BLE 信号严重衰减"
+      - "❌ 电源走线太细承载大电流 = 发热甚至烧毁"
+      - "❌ 地平面被走线割裂 = EMI 问题"
+      - "❌ 忽略制造商最小工艺能力 = 无法生产"
+      - "❌ 不检查 FPC 连接器方向 = 显示屏插反"
+
+    reviewers:
+      - persona: "PCB 布局工程师"
+        checklist:
+          - "关键 IC 的去耦电容是否就近放置？"
+          - "高速信号是否有阻抗控制？"
+          - "地平面是否完整？"
+          - "散热是否考虑（大电流路径、IC 热焊盘）？"
+      - persona: "制造工程师"
+        checklist:
+          - "Gerber 文件是否完整且格式正确？"
+          - "最小线宽/间距是否在制造能力内？"
+          - "元件间距是否满足贴片机要求？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: BOM 管理 (Type B: select→execute→verify→optimize)
+  # ═══════════════════════════════════════
+
+  bom_management:
+    description: "BOM 生成 + 成本估算 + 双供应商策略"
+
+    steps:
+      # Layer 1: Select — define BOM format and requirements
+      - id: select_bom_format
+        action: |
+          确定 BOM 管理方案：
+          1. BOM 来源: 从 KiCad 原理图导出基础 BOM
+             kicad-cli sch export bom -o bom-raw.csv <schematic>
+          2. BOM 格式定义（标准列）：
+             | 列名 | 说明 |
+             |------|------|
+             | Item | 序号 |
+             | Reference | 元件标号 (R1, C1, U1) |
+             | Value | 标称值 (10kΩ, 100nF, ESP32-C3) |
+             | Footprint | 封装 (0402, 0603, QFN-32) |
+             | Description | 功能描述 |
+             | Manufacturer | 制造商 |
+             | MPN | 制造商料号 |
+             | Supplier_1 | 主供应商 (LCSC) |
+             | Supplier_1_PN | 主供应商料号 |
+             | Supplier_2 | 备选供应商 (DigiKey/Mouser) |
+             | Supplier_2_PN | 备选供应商料号 |
+             | Unit_Price_1K | 1K 数量单价 (USD) |
+             | Qty | 单板用量 |
+             | Category | 分类 (active/passive/connector/mechanical) |
+          3. 数量阶梯: 10pcs（原型）, 100pcs（小批量）, 1Kpcs（量产）
+        quality: "BOM 格式必须包含双供应商信息，单供应商 = 风险。"
+        tool_ref: [kicad_cli, bom_processor]
+        output_file: "bom-format.md"
+
+      # Layer 2: Execute — build complete BOM
+      - id: execute_bom_build
+        action: |
+          构建完整 BOM：
+          1. 导入 KiCad 导出的原始 BOM
+          2. 合并相同器件（R1,R2,R3 = 10kΩ 0402 × 3）
+          3. 补充每个器件的：
+             - 制造商和 MPN（从 component_selection 结果引用）
+             - 主供应商料号（LCSC 优先，搜索 lcsc.com）
+             - 备选供应商料号（DigiKey/Mouser）
+             - 1K 数量单价
+          4. 分类标注：active（IC/MCU）/ passive（R/C/L）/ connector / mechanical
+          5. 标注关键器件（长交期、单源、高价值）
+        quality: "每个器件必须有至少一个供应商料号。'待定' 不超过总数的 10%。"
+        tool_ref: bom_processor
+        output_file: "bom-complete.csv"
+
+      # Layer 3: Verify — validate BOM completeness and cost
+      - id: verify_bom
+        action: |
+          BOM 验证：
+          1. 完整性检查：
+             - 原理图上每个元件都在 BOM 中
+             - 每个器件有 MPN（无 MPN 的标注原因）
+             - 双供应商覆盖率 ≥80%（关键 IC 必须 100%）
+          2. 成本汇总：
+             - 单板成本 = Σ(单价 × 用量) + PCB 成本估算
+             - 分类成本饼图（active vs passive vs connector）
+             - 成本 Top 5 器件（关注降本空间）
+          3. 供应链风险汇总：
+             - 单源器件列表（需要寻找替代）
+             - 长交期器件列表（>8 周需要提前备货）
+             - EOL/NRND 器件列表（需要替代方案）
+          4. 与 component_selection 交叉验证（选型报告中的器件 = BOM 中的器件）
+        quality: "BOM 总成本必须基于真实报价，不接受估算超过 ±20% 的数据。"
+        tool_ref: [bom_processor, data_chart]
+        output_file: "bom-verification.md"
+
+      # Layer 4: Optimize — cost reduction and reporting
+      - id: optimize_bom
+        action: |
+          BOM 优化与报告：
+          1. 降本建议：
+             - 被动元件统一封装（减少料号种类，如全部用 0402）
+             - 多个相同阻值/容值合并为同一料号
+             - 替代方案对比（国产替代进口，如果参数满足）
+          2. 生成 BOM 报告 PDF：
+             - 完整 BOM 表格
+             - 成本分布饼图
+             - 供应链风险矩阵
+             - 降本建议清单
+          3. 生成采购清单（按供应商分组）：
+             - LCSC 采购清单
+             - DigiKey 采购清单
+        tool_ref: [bom_processor, data_chart, pdf_generation]
+        output_file: "bom-report.pdf"
+
+    quality_criteria:
+      - "BOM 覆盖率 100%（原理图每个元件都有对应条目）"
+      - "双供应商覆盖率 ≥80%（关键 IC = 100%）"
+      - "每个器件有 MPN 和至少一个供应商料号"
+      - "成本估算基于真实报价（标注报价日期和数量阶梯）"
+      - "BOM 按类别汇总成本（饼图可视化）"
+      - "编造数据 = FAIL。价格必须来自供应商网站，推测标 [ESTIMATED]。"
+
+    anti_patterns:
+      - "❌ BOM 缺少 MPN（只写 '10kΩ 电阻' 无法采购）"
+      - "❌ 单一供应商无备选 = 断供风险"
+      - "❌ 价格编造（不查供应商网站就写价格）= 成本失控"
+      - "❌ 不合并相同器件 = 料号种类过多增加管理成本"
+      - "❌ 忽略 MOQ（最小起订量）= 原型阶段买不到"
+
+    reviewers:
+      - persona: "采购工程师"
+        checklist:
+          - "每个器件是否有可采购的料号？"
+          - "关键器件是否有双供应商？"
+          - "价格是否基于合理数量阶梯？"
+      - persona: "成本工程师"
+        checklist:
+          - "单板成本是否在目标范围内？"
+          - "是否有明显的降本空间？"
+          - "被动元件封装是否统一？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: 电源设计 (Type B: select→execute→verify→optimize)
+  # ═══════════════════════════════════════
+
+  power_design:
+    description: "电源方案设计 + 功耗预算 + 电池续航估算"
+
+    steps:
+      # Layer 1: Select — determine power architecture
+      - id: select_power_architecture
+        action: |
+          确定电源架构：
+          1. 输入源: USB 5V / 电池 3.7V / 太阳能 / 多源
+          2. 电压域识别：
+             - 3.3V: MCU, 传感器, E-ink 逻辑
+             - 1.8V: 某些传感器（如果需要）
+             - VBAT: RTC 备用电池
+             - 5V: USB 直供（充电 IC 输入）
+          3. 稳压方案选择：
+             - LDO: 压差小（<1V）、电流小（<500mA）、噪声要求高
+             - DCDC Buck: 压差大、电流大、效率优先
+             - Charge Pump: 负压或升压小电流
+          4. 充电方案（如果电池供电）：
+             - 线性充电: TP4056（简单，500mA-1A）
+             - 开关充电: BQ24072（高效，支持路径管理）
+          5. 电池类型: LiPo / LiFePO4 / 锂亚 / 干电池
+          6. 画出电源拓扑图（D2 框图）
+
+          关键决策依据：效率 vs 成本 vs 噪声 vs 复杂度。
+        quality: "电源架构决策必须基于负载需求计算，不是凭感觉。"
+        tool_ref: [diagram_generation, power_calculator]
+        output_file: "power-architecture.md"
+
+      # Layer 2: Execute — power budget calculation
+      - id: execute_power_budget
+        action: |
+          详细功耗预算计算：
+          1. 列出所有模块的电流消耗（来自 datasheet）：
+             | 模块 | 模式 | 电压(V) | 电流(mA) | 占空比(%) | 平均电流(mA) |
+             |------|------|---------|----------|-----------|-------------|
+             | ESP32-C3 | Active TX | 3.3 | 350 | 0.5 | 1.75 |
+             | ESP32-C3 | Active RX | 3.3 | 80 | 1.0 | 0.80 |
+             | ESP32-C3 | Modem Sleep | 3.3 | 15 | 8.0 | 1.20 |
+             | ESP32-C3 | Deep Sleep | 3.3 | 0.005 | 90.5 | 0.0045 |
+             | E-ink | Refresh | 3.3 | 40 | 0.1 | 0.04 |
+             | E-ink | Idle | 3.3 | 0.001 | 99.9 | 0.001 |
+             | RTC | Active | 3.3 | 0.002 | 100 | 0.002 |
+             （以上为示例，实际值必须来自 datasheet）
+
+          2. 计算系统级功耗：
+             - 平均电流 = Σ(各模块平均电流)
+             - 峰值电流 = Σ(各模块最大电流同时出现)
+             - 考虑稳压器效率（LDO ~90%, DCDC ~85-95%）
+          3. 电池续航计算：
+             - 续航时间(h) = 电池容量(mAh) / 平均电流(mA) × 0.8（降额系数）
+             - 考虑自放电（LiPo ~3%/月）
+             - 考虑温度影响（低温容量降低 10-30%）
+          4. 不同使用场景的续航估算：
+             - 正常模式: 每小时唤醒一次发数据
+             - 省电模式: 每天唤醒几次
+             - 高频模式: 持续在线
+        quality: "每个电流值必须标注 datasheet 来源。计算过程必须可复现。编造数据 = FAIL。"
+        tool_ref: power_calculator
+        output_file: "power-budget.md"
+
+      # Layer 3: Verify — validate power design
+      - id: verify_power_design
+        action: |
+          电源设计验证：
+          1. 稳压器输出能力验证：
+             - LDO 最大输出电流 > 峰值负载电流 × 1.5（安全余量）
+             - DCDC 最大输出电流 > 峰值负载电流 × 1.3
+             - 散热验证: P_dissipation = (Vin - Vout) × I_load, Tj < 125°C
+          2. 电池选型验证：
+             - 电池容量 > 目标续航时间 × 平均电流 / 0.8
+             - 电池放电倍率 > 峰值电流 / 容量
+             - 电池尺寸是否装得下（物理约束）
+          3. 充电时间估算：
+             - 充电时间(h) ≈ 电池容量(mAh) / 充电电流(mA) × 1.2
+          4. 电源上电时序验证：
+             - MCU 在电源稳定后才释放复位
+             - 外设在 MCU 初始化后才上电（如果有使能控制）
+          5. 异常场景：
+             - USB 拔出时电池无缝切换
+             - 电池低压保护触发电压 vs MCU 最低工作电压
+        quality: "每个验证项必须有计算过程和 PASS/FAIL 结论。"
+        tool_ref: power_calculator
+        output_file: "power-verification.md"
+
+      # Layer 4: Optimize — improve efficiency and generate report
+      - id: optimize_power
+        action: |
+          电源优化与报告：
+          1. 优化方向：
+             - 如果 LDO 压差大 → 考虑换 DCDC（提升效率 10-20%）
+             - 如果 deep sleep 电流过大 → 检查哪个模块漏电流大
+             - 如果续航不达标 → 调整唤醒策略或增大电池
+             - 使能控制: 不用的模块关电源（GPIO 控制 LDO EN pin）
+          2. 生成功耗分布图：
+             - 饼图: 各模块功耗占比
+             - 柱状图: 不同模式下的电流对比
+             - 时间线: 典型工作周期的电流波形
+          3. 生成电源设计报告 PDF：
+             - 电源拓扑图
+             - 功耗预算表
+             - 电池续航估算
+             - 优化建议
+        tool_ref: [power_calculator, data_chart, diagram_generation, pdf_generation]
+        output_file: "power-report.pdf"
+
+    quality_criteria:
+      - "功耗预算覆盖所有模块的 active/sleep 电流"
+      - "电流数据来自 datasheet（标注页码/表格编号）"
+      - "电池续航计算包含降额系数（≥0.8）和温度影响"
+      - "稳压器输出余量 ≥30%（峰值）"
+      - "电源上电时序有明确描述"
+      - "至少 3 种使用场景的续航估算"
+      - "编造数据 = FAIL。每个电流值必须有 datasheet 来源。"
+
+    anti_patterns:
+      - "❌ 用 datasheet typical 值当 max 用 = 余量不足"
+      - "❌ 忘记稳压器自身功耗和效率 = 实际续航比计算短"
+      - "❌ 不考虑峰值电流只看平均 = 稳压器过载"
+      - "❌ 电池续航不降额 = 过于乐观"
+      - "❌ 不考虑温度对电池容量的影响 = 冬天没电"
+      - "❌ LDO 压差 >1V 且电流 >100mA 不考虑散热 = 过热"
+
+    reviewers:
+      - persona: "电源工程师"
+        checklist:
+          - "电源拓扑是否最优（效率 vs 成本 vs 噪声）？"
+          - "功耗预算是否完整且保守？"
+          - "电池续航是否满足产品需求？"
+          - "异常场景是否有保护？"
+      - persona: "可靠性工程师"
+        checklist:
+          - "稳压器散热是否考虑？"
+          - "电池保护电路是否完备？"
+          - "温度范围是否覆盖使用场景？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: 设计评审 (Type A: search→analyze→derive→generate)
+  # ═══════════════════════════════════════
+
+  design_review:
+    description: "DRC/ERC 自动检查 + 专家评审清单 + 问题追踪"
+
+    steps:
+      # Layer 1: Search — collect all design artifacts
+      - id: search_design_artifacts
+        action: |
+          收集所有需要评审的设计文件：
+          1. 原理图文件 (.kicad_sch) + PDF 导出
+          2. PCB 文件 (.kicad_pcb) + Gerber 导出
+          3. BOM 文件 (CSV)
+          4. 元器件选型报告
+          5. 电源设计报告
+          6. ERC/DRC 报告（JSON）
+          7. 设计约束文档
+
+          检查文件版本一致性（原理图修改后 BOM/PCB 是否同步更新）。
+        tool_ref: null
+        output_file: "review-artifacts.md"
+
+      # Layer 2: Analyze — run automated checks
+      - id: analyze_automated_checks
+        action: |
+          运行自动化检查：
+          1. ERC 检查: kicad-cli sch erc --output erc-final.json --severity-all <schematic>
+          2. DRC 检查: kicad-cli pcb drc --output drc-final.json <board>
+          3. BOM vs 原理图一致性:
+             - 原理图元件数量 = BOM 条目数量
+             - 原理图值 = BOM 值（10kΩ 不能写成 10K）
+          4. 网表一致性: PCB 网表 vs 原理图网表（无差异）
+          5. 设计规则合规: 线宽/间距/过孔全部在制造商能力内
+
+          输出自动检查报告（PASS/FAIL 清单）。
+        quality: "自动检查结果必须全部附上工具输出。手动伪造 PASS = 严重违规。"
+        tool_ref: kicad_cli
+        output_file: "automated-check-report.md"
+
+      # Layer 3: Derive — expert review checklist
+      - id: derive_expert_review
+        action: |
+          基于自动检查结果，执行专家评审清单：
+
+          **电气评审：**
+          □ 电源方案满足所有模块需求（电压/电流/纹波）
+          □ 去耦电容完整且就近放置
+          □ ESD 保护覆盖所有外部接口
+          □ 晶振电路负载电容计算正确
+          □ 复位电路可靠（上电延时 + 手动复位）
+          □ 未使用 GPIO 有明确处理（不悬空）
+          □ 电池保护电路完备（过充/过放/过流/短路）
+
+          **PCB 评审：**
+          □ 天线净空区满足要求（ESP32: ≥15mm）
+          □ 地平面完整性 >80%
+          □ 高速信号阻抗控制（USB 差分 90Ω ±10%）
+          □ 热设计合理（大电流走线宽度、IC 热焊盘）
+          □ 丝印可读且不被遮挡
+          □ 安装孔/定位孔位置与外壳匹配
+
+          **制造评审：**
+          □ 最小线宽/间距在制造商能力内
+          □ Gerber 文件完整（所有层 + 钻孔 + 坐标）
+          □ BOM 中所有器件可采购
+          □ 没有 DNP（Do Not Populate）器件遗留
+
+          **可靠性评审：**
+          □ 温度范围覆盖使用场景（-20°C ~ +60°C 典型）
+          □ 湿度/防水考虑（如果是户外设备）
+          □ 震动/跌落考虑（连接器牢固性）
+
+          每个检查项标注 PASS/FAIL/NA + 备注。FAIL 项必须有修复建议。
+        quality: "评审清单每项必须有明确的 PASS/FAIL 判定，不接受模糊的 'OK'。"
+        tool_ref: null
+        output_file: "expert-review.md"
+
+      # Layer 4: Generate — review report with action items
+      - id: generate_review_report
+        action: |
+          生成设计评审报告：
+          1. 评审总结：
+             - 自动检查通过率: X/Y 项
+             - 专家评审通过率: X/Y 项
+             - 整体评审结论: PASS / CONDITIONAL PASS / FAIL
+          2. 问题清单（按严重度排序）：
+             - CRITICAL: 必须修复才能投产（如电源短路、天线遮挡）
+             - MAJOR: 强烈建议修复（如去耦电容过远、单源器件）
+             - MINOR: 建议改进（如丝印优化、成本降低）
+          3. 行动计划：
+             - 每个 CRITICAL/MAJOR 问题有责任人和截止日期
+             - 修复后需要重新评审的项目标注
+          4. 导出 PDF 评审报告
+        tool_ref: pdf_generation
+        output_file: "design-review-report.pdf"
+
+    quality_criteria:
+      - "ERC/DRC 自动检查结果全部附上（不能跳过）"
+      - "专家评审 ≥20 个检查项全部有 PASS/FAIL/NA 判定"
+      - "CRITICAL 问题 0 个 = 可以投产；>0 = 阻塞"
+      - "每个 FAIL 项有具体修复建议"
+      - "BOM vs 原理图一致性验证通过"
+      - "编造数据 = FAIL。评审必须基于实际设计文件。"
+
+    anti_patterns:
+      - "❌ 跳过 ERC/DRC 直接说'设计没问题' = 纸面验收"
+      - "❌ FAIL 项没有修复建议 = 无用评审"
+      - "❌ 只做自动检查不做人工评审 = 遗漏设计缺陷"
+      - "❌ 评审报告模板化不关联实际设计 = 走过场"
+      - "❌ 不检查 BOM 一致性 = 采购错误器件"
+
+    reviewers:
+      - persona: "首席硬件工程师"
+        checklist:
+          - "评审是否覆盖电气/PCB/制造/可靠性四个维度？"
+          - "CRITICAL 问题是否全部有修复方案？"
+          - "设计文件版本是否一致？"
+      - persona: "质量工程师"
+        checklist:
+          - "评审流程是否完整（自动 + 人工）？"
+          - "问题追踪是否有闭环？"
+          - "可靠性评估是否覆盖目标使用场景？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: 设计文档 (Type A: search→analyze→derive→generate)
+  # ═══════════════════════════════════════
+
+  design_documentation:
+    description: "原理图文档 + 设计决策记录 + 制造指导"
+
+    steps:
+      # Layer 1: Search — gather all design decisions and rationale
+      - id: search_design_decisions
+        action: |
+          收集整个设计过程中的所有决策：
+          1. 元器件选型决策（来自 component_selection）
+          2. 电源架构决策（来自 power_design）
+          3. PCB 参数决策（来自 pcb_layout）
+          4. 接口定义（GPIO 分配、通信协议选择）
+          5. 设计约束和妥协（[TRADEOFF] 标记的项目）
+          6. 版本变更历史（如果有迭代）
+
+          检查是否有未记录的决策（口头讨论但没写下来的）。
+        tool_ref: null
+        output_file: "design-decisions-raw.md"
+
+      # Layer 2: Analyze — organize into structured documentation
+      - id: analyze_documentation_structure
+        action: |
+          将设计信息组织为结构化文档：
+          1. 设计概述（Design Overview）:
+             - 系统框图
+             - 功能需求 → 电路实现的映射
+             - 关键性能指标（KPI）
+
+          2. 模块设计说明（Module Design Notes）:
+             - 每个模块: 功能描述 + 电路原理 + 关键参数 + 设计理由
+             - 电源模块: 拓扑选择理由 + 效率计算 + 热分析
+             - MCU 模块: GPIO 分配表 + 外设配置 + Boot 模式
+             - 显示模块: 接口定义 + 刷新时序 + 功耗模式
+
+          3. 设计决策记录（Design Decision Records, DDR）:
+             - DDR-001: 为什么选 ESP32-C3 不选 S3
+             - DDR-002: 为什么用 LDO 不用 DCDC
+             - DDR-003: ...
+             每条 DDR: 背景 + 选项 + 决策 + 理由 + 影响
+
+          4. 已知问题与后续改进（Known Issues & TODO）:
+             - 当前版本的已知限制
+             - 下一版本计划改进的点
+        quality: "文档必须覆盖 WHY（为什么这样设计），不仅是 WHAT（设计了什么）。"
+        tool_ref: null
+        output_file: "documentation-structure.md"
+
+      # Layer 3: Derive — create manufacturing guide
+      - id: derive_manufacturing_guide
+        action: |
+          编写制造指导文档：
+          1. PCB 制造规格：
+             - 板层数、板厚、铜厚、表面处理
+             - 最小线宽/间距、最小孔径
+             - 特殊要求（阻抗控制、板材等级）
+          2. SMT 贴片要求：
+             - 钢网厚度建议（0.12mm 标准）
+             - 回流焊温度曲线要求
+             - 需要手焊的元件清单（如有）
+          3. 测试要求：
+             - ICT 测试点定义
+             - 功能测试流程（上电 → 下载固件 → 自检）
+             - 合格标准（电压测量点 + 允许范围）
+          4. 包装要求（如有）：
+             - 外壳装配顺序
+             - 标签/铭牌内容
+        quality: "制造指导必须具体到可以直接交给工厂，不能有模糊描述。"
+        tool_ref: null
+        output_file: "manufacturing-guide.md"
+
+      # Layer 4: Generate — compile all documentation
+      - id: generate_documentation_package
+        action: |
+          编译完整设计文档包：
+          1. 设计规格书（Design Specification）PDF:
+             - 目录
+             - 设计概述
+             - 模块设计说明（含原理图截图/链接）
+             - GPIO 分配表
+             - 电源设计说明
+             - 设计决策记录
+          2. 制造文件包（Manufacturing Package）:
+             - Gerber 文件 + 钻孔文件
+             - BOM (CSV + PDF)
+             - 贴片坐标文件
+             - 制造指导 PDF
+          3. 设计文件索引（File Index）:
+             - 所有文件清单 + 版本 + 最后更新时间
+             - 文件间依赖关系
+
+          文档版本号与原理图版本一致。
+        tool_ref: [pdf_generation, diagram_generation]
+        output_file: "design-documentation-package/"
+
+    quality_criteria:
+      - "设计规格书覆盖所有模块的功能/电路/参数说明"
+      - "每个关键决策有 DDR（Decision Record）记录"
+      - "GPIO 分配表完整且与原理图一致"
+      - "制造指导具体到可交付工厂（PCB 规格 + SMT 要求 + 测试流程）"
+      - "文档版本与设计文件版本一致"
+      - "编造数据 = FAIL。文档内容必须来自实际设计过程。"
+
+    anti_patterns:
+      - "❌ 只有原理图没有设计说明 = 后人无法理解设计意图"
+      - "❌ 设计决策不记录 = 下次迭代重新踩坑"
+      - "❌ 制造指导模糊（'请注意焊接质量'）= 工厂无法执行"
+      - "❌ 文档和实际设计不同步 = 误导后续开发"
+      - "❌ 不记录已知问题 = 下一版本忘记修复"
+      - "❌ GPIO 表缺失或与原理图不一致 = 软件开发走弯路"
+
+    reviewers:
+      - persona: "技术文档工程师"
+        checklist:
+          - "文档结构是否清晰完整？"
+          - "设计理由是否充分记录？"
+          - "制造指导是否可操作？"
+      - persona: "项目经理"
+        checklist:
+          - "文件包是否完整可交付？"
+          - "版本控制是否一致？"
+          - "已知问题是否有跟进计划？"

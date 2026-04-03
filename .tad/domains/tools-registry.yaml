@@ -7,7 +7,7 @@ maintainer: "TAD Framework"
 
 # Pre-flight verification command (run before using any tool)
 preflight: |
-  for tool in typst pandoc python3 d2; do
+  for tool in typst pandoc python3 d2 openscad; do
     which $tool >/dev/null 2>&1 && echo "$tool: OK" || echo "$tool: NOT FOUND"
   done
 
@@ -1360,3 +1360,148 @@ capabilities:
         install: "pip install deepteam (requires Python ≥3.10)"
         usage: "Red teaming with 37+ vulnerability types in 6 categories (Responsible AI, Safety, Security, Privacy, Business, Agentic)"
         note: "OWASP Top 10 for LLMs + Agents 2026. Binary 0/1 scoring. Same ecosystem as deepeval."
+
+  # ═══════════════════════════════════════
+  # Hardware / CAD Tools (added 2026-04-02)
+  # ═══════════════════════════════════════
+
+  parametric_cad:
+    description: "参数化 3D 建模 — 用代码定义实体模型，生成 STL/OFF 用于 3D 打印或 CNC"
+    recommended:
+      name: openscad
+      type: cli
+      install: "brew install --cask openscad"
+      verify: "openscad --version"
+      usage: |
+        1. Write .scad file with OpenSCAD script (CSG modeling: union, difference, intersection)
+        2. Preview: openscad input.scad (opens GUI)
+        3. Export STL: openscad -o output.stl input.scad
+        4. Export PNG render: openscad -o output.png --camera=0,0,0,55,0,25,200 --imgsize=1024,768 input.scad
+        Key flags:
+          -D 'var=value'    Override script variables from CLI (parametric control)
+          -o output.stl     Export to STL (also supports .off, .amf, .3mf, .csg, .dxf, .svg, .png)
+          --render           Full CGAL render (slower but correct for export)
+          --camera=tx,ty,tz,rx,ry,rz,dist   Camera position for PNG export
+          --imgsize=W,H     Image size for PNG export
+      example: |
+        // enclosure.scad — parametric box with lid
+        wall = 2;           // wall thickness mm
+        inner_w = 60;       // inner width
+        inner_d = 40;       // inner depth
+        inner_h = 25;       // inner height
+        corner_r = 3;       // corner radius
+        tol = 0.2;          // print tolerance
+
+        module rounded_box(w, d, h, r) {
+          minkowski() {
+            cube([w - 2*r, d - 2*r, h - r], center=true);
+            cylinder(r=r, h=r, $fn=32);
+          }
+        }
+
+        // Bottom shell
+        difference() {
+          rounded_box(inner_w + 2*wall, inner_d + 2*wall, inner_h + wall, corner_r);
+          translate([0, 0, wall])
+            rounded_box(inner_w, inner_d, inner_h + 1, corner_r - wall);
+        }
+
+        // Export: openscad -o enclosure.stl enclosure.scad
+        // Parametric override: openscad -D 'wall=3' -D 'inner_w=80' -o custom.stl enclosure.scad
+      output_format: "STL (3D print), PNG (render preview), DXF (2D laser cut), SVG (2D)"
+      tested: false
+      test_result: "Not yet tested (requires brew install --cask openscad)"
+      note: |
+        OpenSCAD uses CSG (Constructive Solid Geometry): combine primitives with
+        union/difference/intersection. All dimensions in mm. Use $fn for curve resolution
+        (32 for preview, 64+ for export). Parametric: all dimensions should be variables
+        at top of file for CLI override with -D flag. Key for hardware:
+        - Always add tolerance (0.2mm FDM, 0.1mm SLA) to mating surfaces
+        - Use minkowski() for fillets, hull() for organic shapes
+        - $fn=6 for hex, $fn=4 for square rotated 45deg
+    alternatives:
+      - name: cadquery-python
+        type: cli
+        install: "pip install cadquery (requires Python ≥3.9)"
+        verify: "python3 -c 'import cadquery; print(cadquery.__version__)'"
+        usage: |
+          Python API for parametric CAD. More powerful than OpenSCAD for complex geometry.
+          Export: result.val().exportStl('output.stl')
+        note: "Python-based, STEP export support (OpenSCAD cannot). Heavier dependency (OCP kernel)."
+      - name: freecad-cli
+        type: cli
+        install: "brew install --cask freecad"
+        usage: "freecadcmd script.py (headless mode for batch processing)"
+        note: "Full-featured CAD, STEP/IGES import/export. Heavy (~1GB). Good for assembly verification."
+
+  # ═══════════════════════════════════════
+  # Hardware / EDA + Firmware Tools (added 2026-04-03)
+  # ═══════════════════════════════════════
+
+  kicad_cli:
+    description: "KiCad CLI — ERC/DRC 检查、原理图导出、BOM 生成、Gerber 输出"
+    recommended:
+      name: kicad-cli
+      type: cli
+      install: "brew install --cask kicad (includes kicad-cli)"
+      verify: "kicad-cli --version"
+      usage: |
+        ERC: kicad-cli sch erc --output report.json <schematic.kicad_sch>
+        DRC: kicad-cli pcb drc --output report.json <board.kicad_pcb>
+        Export PDF: kicad-cli sch export pdf -o schematic.pdf <schematic.kicad_sch>
+        Export BOM: kicad-cli sch export bom -o bom.csv <schematic.kicad_sch>
+        Export Gerber: kicad-cli pcb export gerbers -o gerber_dir/ <board.kicad_pcb>
+      example: |
+        kicad-cli sch erc --output erc-report.json --severity-all tracker.kicad_sch
+        kicad-cli sch export bom -o bom.csv tracker.kicad_sch
+        kicad-cli pcb export gerbers -o gerber/ tracker.kicad_pcb
+      note: "Requires KiCad 8.0+. CLI bundled with full KiCad application."
+
+  arduino_cli:
+    description: "Arduino CLI — 编译、上传、板卡管理、库管理、串口监视"
+    recommended:
+      name: arduino-cli
+      type: cli
+      install: "brew install arduino-cli"
+      verify: "arduino-cli version"
+      usage: |
+        Core: arduino-cli core install esp32:esp32
+        Compile: arduino-cli compile --fqbn esp32:esp32:esp32c3 ./project/
+        Upload: arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:esp32c3 ./project/
+        Library: arduino-cli lib install "Adafruit GFX Library"
+        Monitor: arduino-cli monitor -p /dev/cu.usbmodem* --config baudrate=115200
+      example: |
+        arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 \
+          --build-property "build.extra_flags=-DBOARD_HAS_PSRAM" ./my-project/
+        arduino-cli upload -p /dev/cu.usbmodem14101 \
+          --fqbn esp32:esp32:XIAO_ESP32S3 ./my-project/
+      note: "Tested v1.4.1 + esp32 core 3.3.6. Primary firmware build tool."
+
+  platformio_cli:
+    description: "PlatformIO CLI — 多平台嵌入式构建 + Unity 单元测试框架"
+    recommended:
+      name: pio
+      type: cli
+      install: "python3 -m venv ~/.platformio-venv && source ~/.platformio-venv/bin/activate && pip install platformio"
+      verify: "pio --version"
+      usage: |
+        Init: pio project init --board seeed_xiao_esp32s3
+        Compile: pio run
+        Upload: pio run --target upload
+        Test: pio test -e native
+        Monitor: pio device monitor --baud 115200
+      note: "Alternative to arduino-cli. Install if Unity test framework needed."
+
+  esptool:
+    description: "ESP32 固件烧录 — 直接 flash 操作、备份、擦除"
+    recommended:
+      name: esptool.py
+      type: cli
+      install: "pip install esptool"
+      verify: "esptool.py version"
+      usage: |
+        Chip info: esptool.py --port /dev/cu.usbmodem* chip_id
+        Flash: esptool.py --port /dev/cu.usbmodem* write_flash 0x0 firmware.bin
+        Erase: esptool.py --port /dev/cu.usbmodem* erase_flash
+        Backup: esptool.py --port /dev/cu.usbmodem* read_flash 0x0 0x400000 backup.bin
+      note: "Bundled with ESP32 Arduino core. Standalone install for direct flash ops."

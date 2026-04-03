@@ -1,0 +1,130 @@
+# Hardware Circuit Design — Tool Registry Additions
+# Merge into tools-registry.yaml after review
+# Created: 2026-04-03
+
+capabilities:
+
+  kicad_cli:
+    description: "KiCad CLI for schematic/PCB/BOM operations (ERC, DRC, export, BOM)"
+    recommended:
+      name: kicad-cli
+      type: cli
+      install: "brew install --cask kicad (includes kicad-cli)"
+      verify: "kicad-cli --version"
+      usage: |
+        KiCad CLI provides non-interactive access to KiCad project operations:
+        - ERC: kicad-cli sch erc --output report.json <schematic.kicad_sch>
+        - DRC: kicad-cli pcb drc --output report.json <board.kicad_pcb>
+        - Export schematic PDF: kicad-cli sch export pdf -o schematic.pdf <schematic.kicad_sch>
+        - Export PCB SVG: kicad-cli pcb export svg -o board.svg <board.kicad_pcb>
+        - Export BOM: kicad-cli sch export bom -o bom.csv <schematic.kicad_sch>
+        - Export netlist: kicad-cli sch export netlist -o netlist.xml <schematic.kicad_sch>
+        - Export Gerber: kicad-cli pcb export gerbers -o gerber_dir/ <board.kicad_pcb>
+        - Export drill: kicad-cli pcb export drill -o drill_dir/ <board.kicad_pcb>
+      example: |
+        # Run ERC on schematic
+        kicad-cli sch erc --output erc-report.json --severity-all tracker.kicad_sch
+
+        # Export BOM as CSV
+        kicad-cli sch export bom -o bom.csv tracker.kicad_sch
+
+        # Run DRC on PCB
+        kicad-cli pcb drc --output drc-report.json tracker.kicad_pcb
+
+        # Export Gerber files for manufacturing
+        kicad-cli pcb export gerbers -o gerber/ tracker.kicad_pcb
+        kicad-cli pcb export drill -o gerber/ tracker.kicad_pcb
+      output_format: "JSON (reports), CSV (BOM), PDF/SVG (drawings), Gerber (manufacturing)"
+      tested: false
+      test_result: "NOT TESTED — kicad-cli not found on current system. Install KiCad 8+ to enable."
+      note: "Requires KiCad 8.0+ installed. CLI is bundled with the full KiCad application."
+    alternatives:
+      - name: python-kicad-skip
+        type: cli
+        install: "pip install kicad-skip"
+        usage: "Python library for programmatic KiCad schematic/PCB manipulation"
+        note: "For scripted modifications, not interactive design"
+
+  schematic_diagram:
+    description: "Generate schematic block diagrams and circuit topology visualization"
+    recommended:
+      name: d2
+      type: cli
+      install: "brew install d2"
+      verify: "d2 --version"
+      usage: |
+        Use D2 for block-level schematic diagrams (power topology, module interconnect).
+        NOT for detailed circuit schematics (use KiCad for that).
+        d2 input.d2 output.svg
+      example: |
+        # power-topology.d2
+        direction: down
+        Battery: "LiPo 3.7V\n1200mAh" { style.fill: "#4ecdc4" }
+        Charger: "TP4056\nCharge IC" { style.fill: "#ff6b6b" }
+        LDO: "ME6211\n3.3V LDO" { style.fill: "#45b7d1" }
+        ESP32: "ESP32-C3\nMCU" { style.fill: "#96ceb4" }
+        Eink: "7-color E-ink\nDisplay" { style.fill: "#ffeaa7" }
+
+        USB -> Charger: "5V"
+        Charger -> Battery: "4.2V charge"
+        Battery -> LDO: "3.0-4.2V"
+        LDO -> ESP32: "3.3V"
+        LDO -> Eink: "3.3V"
+      output_format: "SVG or PNG"
+      tested: true
+      note: "Reuses existing d2 registry entry. For block diagrams only — detailed schematics go in KiCad."
+
+  power_calculator:
+    description: "Power budget calculation and battery life estimation"
+    recommended:
+      name: python-power-calc
+      type: cli
+      install: "python3 built-in"
+      verify: "python3 -c 'print(\"OK\")'"
+      usage: |
+        Write Python script for power budget calculations.
+        Inputs: component current draw (active/sleep), duty cycle, battery capacity.
+        Output: power budget table + estimated battery life.
+      example: |
+        # power_budget.py
+        components = [
+            {"name": "ESP32-C3 Active", "current_mA": 80, "duty_pct": 1.0, "voltage_V": 3.3},
+            {"name": "ESP32-C3 Sleep", "current_mA": 0.005, "duty_pct": 99.0, "voltage_V": 3.3},
+            {"name": "E-ink Refresh", "current_mA": 40, "duty_pct": 0.1, "voltage_V": 3.3},
+            {"name": "RTC DS3231", "current_mA": 0.002, "duty_pct": 100.0, "voltage_V": 3.3},
+        ]
+        battery_mAh = 1200
+        total_avg_mA = sum(c["current_mA"] * c["duty_pct"] / 100 for c in components)
+        hours = battery_mAh / total_avg_mA
+        print(f"Average current: {total_avg_mA:.3f} mA")
+        print(f"Battery life: {hours:.0f} hours ({hours/24:.1f} days)")
+      output_format: "Text report + optional matplotlib chart"
+      tested: true
+      note: "Pure Python calculation — no external dependencies required."
+
+  bom_processor:
+    description: "BOM (Bill of Materials) processing, cost estimation, and supply chain check"
+    recommended:
+      name: python-bom-csv
+      type: cli
+      install: "python3 built-in (uses csv module)"
+      verify: "python3 -c 'import csv; print(\"OK\")'"
+      usage: |
+        Process BOM CSV files exported from KiCad:
+        1. Parse BOM CSV → structured data
+        2. Add cost estimates, supplier info, alternative parts
+        3. Generate formatted BOM report (CSV/PDF)
+        4. Flag single-source components for dual-sourcing
+      example: |
+        import csv
+        # Read KiCad BOM export
+        with open('bom.csv') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                ref = row['Reference']
+                value = row['Value']
+                footprint = row['Footprint']
+                print(f"{ref}: {value} ({footprint})")
+      output_format: "CSV + optional PDF via Typst"
+      tested: true
+      note: "For cost estimation, manually add unit prices or integrate with LCSC/DigiKey data."
