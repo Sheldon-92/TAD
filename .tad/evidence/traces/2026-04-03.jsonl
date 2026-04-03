@@ -5,3 +5,7 @@
 {"ts":"2026-04-03T04:16:39Z","type":"handoff_created","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260403-self-improvement-implementation.md","domain":"","size_bytes":4948}
 {"ts":"2026-04-03T04:34:49Z","type":"handoff_created","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260403-tad-v28-release.md","domain":"","size_bytes":3805}
 {"ts":"2026-04-03T04:35:00Z","type":"handoff_created","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260403-tad-v28-release.md","domain":"","size_bytes":4153}
+{"ts":"2026-04-03T13:45:09Z","type":"evidence_created","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/hw-circuit-tools-registry-additions.yaml","domain":"","size_bytes":5775}
+{"ts":"2026-04-03T13:45:50Z","type":"evidence_created","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/hw-firmware-tools-registry-additions.yaml","domain":"","size_bytes":5981}
+{"ts":"2026-04-03T13:53:24Z","type":"task_completed","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/COMPLETION-20260403-hw-enclosure-domain-pack.md","domain":"","size_bytes":1246}
+{"ts":"2026-04-03T13:53:35Z","type":"task_completed","project":"TAD","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/COMPLETION-20260403-hw-testing-domain-pack.md","domain":"","size_bytes":1245}
