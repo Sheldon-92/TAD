@@ -19,8 +19,26 @@ Gate 4 通过后自动 spawn 一个 "Optimizer Agent"，读取执行 trace，聚
 ## 2. 必读
 
 - `.tad/spike-v3/domain-pack-tools/v28-research-synthesis.md` — trace 格式 + 优化循环设计
-- `.tad/hooks/post-write-sync.sh` — Phase 1 的 trace 记录实现
-- `.tad/evidence/traces/2026-04-02.jsonl` — 真实 trace 数据样例
+- `.tad/hooks/post-write-sync.sh` — Layer 1 trace（文件事件自动记录）
+- `.tad/hooks/trace-step.sh` — Layer 2 trace（step 事件手动记录）
+- `.tad/evidence/traces/*.jsonl` — 真实 trace 数据
+
+### Trace Schema（两层）
+
+**Layer 1 — Hook 自动记录（文件事件）**：
+```json
+{"ts":"...","type":"task_completed","project":"TAD","file":"...COMPLETION-*.md","domain":"","size_bytes":1254}
+```
+type: handoff_created | task_completed | domain_pack_step | evidence_created
+
+**Layer 2 — Agent 手动记录（step 事件）**：
+```json
+{"ts":"...","type":"step_start","project":"TAD","domain":"product-definition","capability":"competitive_analysis","step":"deep_analyze"}
+{"ts":"...","type":"step_end","project":"TAD","domain":"product-definition","capability":"competitive_analysis","step":"deep_analyze","status":"completed","tool":"WebSearch"}
+```
+type: step_start | step_end。duration 从 start/end 的 ts 差值计算。
+
+**注意：当前数据量很少（2 条）。*optimize 必须处理数据不足的情况。**
 
 ## 3. Technical Design
 
