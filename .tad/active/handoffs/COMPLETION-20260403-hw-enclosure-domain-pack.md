@@ -25,7 +25,17 @@
   - P1-2: D2 is approximate for engineering dimension drawings (acknowledged limitation)
 - Positive: "Hardware-specific numbers are accurate", "Step depth is excellent", "Anti-patterns are specific and actionable"
 
+## E2E Test Results
+
+- **Score: 6/7** (User Segmentation = N/A for hardware pack)
+- Test topic: Wayo 大象追踪器外壳 (ESP32-C3 + 5.65" E-ink + 18650, IP54)
+- Capabilities tested: material_selection, enclosure_design, enclosure_documentation (3/7)
+- Files generated: 13 (2 PDF compiled, 2 SVG compiled, 1 .scad syntax-valid)
+- All search data from real URLs (Espressif, Waveshare, UnionFab, Ultimaker TDS)
+- Multiple [UNVALIDATED] markers where data uncertain
+- Details: `.tad/active/research/wayo-enclosure-test/E2E-RESULTS.md`
+
 ## Deviations
 
-- Simplified workflow: skipped Phase 1 (GitHub research), Phase 4-5 (E2E testing)
+- Skipped Phase 1 (GitHub research) — YAML based on LLM domain knowledge
 - OpenSCAD not added to tools-registry (tool not installed on machine)

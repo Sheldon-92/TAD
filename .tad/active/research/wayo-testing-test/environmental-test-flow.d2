@@ -1,0 +1,119 @@
+direction: down
+
+title: {
+  label: "Wayo Environmental Test Sequence"
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+# Phase definitions
+baseline: "Baseline Functional Test\n(25°C, all functions)" {
+  shape: rectangle
+  style.fill: "#e8f5e9"
+  style.stroke: "#2e7d32"
+}
+
+week1: "WEEK 1: Temperature Tests" {
+  style.fill: "#fff3e0"
+  style.stroke: "#e65100"
+
+  t1: "T1: High Temp\n+60°C, 16h\nIEC 60068-2-2" {
+    shape: rectangle
+    style.fill: "#ffccbc"
+  }
+  t2: "T2: Low Temp\n−10°C, 16h\nIEC 60068-2-1" {
+    shape: rectangle
+    style.fill: "#bbdefb"
+  }
+  t3: "T3: Temp Cycling\n−10°C ↔ +60°C\n10 cycles\nIEC 60068-2-14" {
+    shape: rectangle
+    style.fill: "#ffe0b2"
+  }
+
+  t1 -> t2
+  t2 -> t3
+}
+
+week2: "WEEK 2: Humidity Test" {
+  style.fill: "#e3f2fd"
+  style.stroke: "#1565c0"
+
+  t4: "T4: Damp Heat\n40°C / 93% RH, 96h\nIEC 60068-2-78" {
+    shape: rectangle
+    style.fill: "#b3e5fc"
+  }
+}
+
+week3: "WEEK 3: Mechanical + IP Tests" {
+  style.fill: "#f3e5f5"
+  style.stroke: "#6a1b9a"
+
+  t6: "T6: Vibration\n10–500Hz, 3-axis\nIEC 60068-2-6" {
+    shape: rectangle
+    style.fill: "#e1bee7"
+  }
+  ip: "IP Testing" {
+    style.fill: "#f8bbd0"
+
+    t7: "T7: Dust (IP6X)\n8h chamber\nIEC 60529" {
+      shape: rectangle
+    }
+    t8: "T8: Immersion (IPX7)\n1m, 30min\nIEC 60529" {
+      shape: rectangle
+    }
+    t9: "T9: Water Jet (IPX5)\n12.5 L/min\nIEC 60529" {
+      shape: rectangle
+    }
+  }
+
+  t6 -> ip
+}
+
+week4: "WEEK 4: Drop Test (Destructive)" {
+  style.fill: "#fce4ec"
+  style.stroke: "#c62828"
+
+  t5: "T5: Drop Test\n1.5m, 6 faces\nIEC 60068-2-31" {
+    shape: rectangle
+    style.fill: "#ef9a9a"
+  }
+}
+
+final: "Final Report\n& Verdict" {
+  shape: rectangle
+  style.fill: "#e8f5e9"
+  style.stroke: "#2e7d32"
+  style.bold: true
+}
+
+# Connections
+baseline -> week1: "3 units\n(reusable)" {
+  style.stroke: "#388e3c"
+}
+week1 -> week2: "Same or\nfresh units" {
+  style.stroke: "#1976d2"
+}
+week2 -> week3: "2 dedicated\nIP units" {
+  style.stroke: "#7b1fa2"
+}
+week3 -> week4: "3 dedicated\nunits (may break)" {
+  style.stroke: "#d32f2f"
+}
+week4 -> final
+
+# Legend
+legend: "Legend" {
+  style.fill: "#fafafa"
+  style.stroke: "#9e9e9e"
+
+  non_destructive: "Non-destructive (units reusable)" {
+    shape: rectangle
+    style.fill: "#e8f5e9"
+  }
+  destructive: "Potentially destructive" {
+    shape: rectangle
+    style.fill: "#fce4ec"
+  }
+}

@@ -25,7 +25,18 @@
   - P1-3: Hardcoded test topic in gate4 — consistent with existing domain pack patterns
 - Positive: "Hardware testing knowledge is authentic and deep", "measurement methodology reflects real embedded engineering practice"
 
+## E2E Test Results
+
+- **Score: 7/7**
+- Test topic: Testing Wayo prototype (ESP32-C3 + 5.65" E-ink + 18650, outdoor tracker)
+- Capabilities tested: power_on_test, power_measurement, environmental_test (3/7)
+- Files generated: 20 (4 PDF compiled, 1 SVG compiled, Python scripts runnable)
+- All data from real WebSearch (ESP32-C3 datasheet, Espressif docs, Waveshare specs, IEC standards)
+- 8 [UNVALIDATED] markers where data uncertain
+- Battery life calculation: 86-93 days (3 scenarios with sensitivity analysis)
+- Details: `.tad/active/research/wayo-testing-test/E2E-RESULTS.md`
+
 ## Deviations
 
-- Simplified workflow: skipped Phase 1 (GitHub research), Phase 4-5 (E2E testing)
+- Skipped Phase 1 (GitHub research) — YAML based on LLM domain knowledge
 - No new tools needed — uses existing registry tools (pdf_generation, web_scraping, diagram_generation)

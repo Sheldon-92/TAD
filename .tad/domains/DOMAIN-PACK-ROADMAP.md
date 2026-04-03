@@ -1,6 +1,6 @@
 # Domain Pack Roadmap
 
-> 目标：先覆盖软件开发全链路（Web + Mobile），再按需扩展。
+> 目标：覆盖软件开发 + 移动端 + AI Agent + 硬件的完整链路。
 > 基于用户实际项目需求排序。
 
 ---
@@ -8,175 +8,108 @@
 ## 全景进度
 
 ```
-Web 链路:     想法 → 定义 → 设计 → 前端 → 后端 → 测试 → 部署 → 运营
-               ✅     ✅     ✅     ✅     ✅     ✅     ✅     🔲
+Web 链路:       想法 → 定义 → 设计 → 前端 → 后端 → 测试 → 部署
+                 ✅     ✅     ✅     ✅     ✅     ✅     ✅
 
-Mobile 链路:  想法 → 定义 → 设计 → 开发 → 测试 → 发布
-               ✅     ✅     ✅     ✅     ✅     ✅
-              (复用)  (复用)
+Mobile 链路:    想法 → 定义 → 设计 → 开发 → 测试 → 发布
+                 ✅     ✅     ✅     ✅     ✅     ✅
+
+AI/Agent 链路:  架构 → Prompt → 工具 → 评估
+                 ✅      ✅      ✅     ✅
+
+Hardware 链路:  概念 → 电路 → 固件 → 外壳 → 测试
+                 ✅     ✅     ✅     ✅     ✅
+                (复用)  (E2E补跑中)
 ```
 
 ---
 
-## Phase 1: Web 全链路（接近完成）
+## Phase 1: Web 全链路 ✅
 
-| # | Pack | 状态 | 压力测试 |
-|---|------|------|---------|
-| 1 | product-definition | ✅ | ✅ 深度迭代通过 |
-| 2 | web-ui-design | ✅ | ✅ SaaS PM 7/7 |
-| 3 | web-frontend | ✅ | ✅ SaaS PM 7/7 |
-| 4 | web-backend | ✅ | ✅ SaaS Billing 7/7 |
-| 5 | web-testing | ✅ | 🔲 |
-| 6 | web-deployment | 🔄 执行中 | 🔲 |
-
-**剩余**: web-deployment 完成后 Web 链路闭环。
+| # | Pack | 状态 | 压力测试 | 行数 |
+|---|------|------|---------|------|
+| 1 | product-definition | ✅ | ✅ 深度迭代 | ~260 |
+| 2 | web-ui-design | ✅ | ✅ SaaS PM 7/7 | ~660 |
+| 3 | web-frontend | ✅ | ✅ SaaS PM 7/7 | 744 |
+| 4 | web-backend | ✅ | ✅ SaaS Billing 7/7 | 756 |
+| 5 | web-testing | ✅ | 🔲 | 663 |
+| 6 | web-deployment | ✅ | 🔲 | 764 |
 
 ---
 
-## Phase 2: Mobile 链路（下一优先级）
+## Phase 2: Mobile 链路 ✅
 
-**驱动力**：Menu Snap iOS 版即将发布。
-
-```
-Mobile 链路复用 Web 链路的通用 pack:
-  product-definition  → 复用（产品定义是通用的）
-  web-ui-design       → 部分复用（但 iOS 有 HIG 规范差异）
-
-Mobile 需要新建的 pack:
-  mobile-ui-design    → iOS/Android 平台设计规范
-  mobile-development  → React Native / Swift / Flutter
-  mobile-testing      → 设备测试 + 模拟器 + 性能
-  mobile-release      → App Store / TestFlight / Play Store
-```
-
-| # | Pack | 做什么 | 关键工具 | 优先级 |
-|---|------|--------|---------|--------|
-| 7 | **mobile-ui-design** | iOS HIG / Material Design 规范、平台适配、原生组件 | Figma MCP, SF Symbols | 高 — Menu Snap iOS |
-| 8 | **mobile-development** | React Native / Swift 实现、原生模块、导航 | Expo CLI, Xcode CLI, CocoaPods | 高 — Menu Snap iOS |
-| 9 | **mobile-testing** | 模拟器测试、设备兼容性、性能 profiling | xcrun simctl, Detox, XCTest | 中 |
-| 10 | **mobile-release** | App Store 审核准备、TestFlight、元数据 | fastlane, App Store Connect API | 中 — 发布时需要 |
-
-### Mobile 和 Web 的区别
-
-| 维度 | Web Pack | Mobile Pack |
-|------|---------|-------------|
-| 设计规范 | 自由度高 | **平台强制**（iOS HIG, Material Design） |
-| 开发工具 | npm/vite/Next.js | **Expo/Xcode/Android Studio CLI** |
-| 测试 | Playwright (浏览器) | **模拟器 + 真机**（xcrun simctl） |
-| 发布 | Vercel 一键 | **App Store 审核流程**（fastlane） |
-| 性能 | Lighthouse | **Instruments/Profiler** |
-
-**核心差异**：Mobile 有平台审核（App Store Review），设计有强制规范（HIG），发布流程复杂度远超 Web。
-
-### 建议执行顺序
-
-1. **mobile-ui-design** — 先做设计（iOS HIG 差异最大）
-2. **mobile-development** — 再做开发（Expo/RN 或 Swift）
-3. **mobile-release** — 发布时做（fastlane + App Store）
-4. **mobile-testing** — 可以和 release 并行
+| # | Pack | 状态 | 行数 |
+|---|------|------|------|
+| 7 | mobile-ui-design | ✅ | ~600 |
+| 8 | mobile-development | ✅ | 572 |
+| 9 | mobile-testing | ✅ | 564 |
+| 10 | mobile-release | ✅ | 607 |
 
 ---
 
-## Phase 3: AI/Agent 开发链路
+## Phase 3: AI/Agent 链路 ✅
 
-**驱动力**：OpenClaw agents 日常使用 + TAD 框架本身就是 agent 开发。
-
-```
-AI/Agent 链路:  设计 → Prompt → 工具集成 → 测试 → 部署
-                  ✅      ✅        ✅       ✅     🔲
-```
-
-| # | Pack | 做什么 | 关键工具 | 优先级 |
-|---|------|--------|---------|--------|
-| 11 | **ai-agent-architecture** | Agent 架构设计、角色定义、工具选型、记忆系统 | WebSearch, D2 | 高 — agent 设计的基础 |
-| 12 | **ai-prompt-engineering** | Prompt 设计、测试、优化、版本管理 | Anthropic SDK, eval 工具 | 高 — 每天都在做 |
-| 13 | **ai-tool-integration** | MCP Server 开发、CLI 工具封装、API 集成 | MCP SDK, Node/Python CLI | 中 |
-| 14 | **ai-evaluation** | Agent 行为评估、A/B 测试、基准测试、回归测试 | 待研究 | 中 |
-
-### 和当前项目的关系
-
-- **TAD 本身** = ai-agent-architecture（Alex/Blake 角色设计）+ ai-prompt-engineering（SKILL.md 编写）
-- **OpenClaw agents** = 全链路覆盖
-- **Claude Code 源码研究** = 提供了 agent 架构的最佳参考
+| # | Pack | 状态 | 行数 | 特殊 |
+|---|------|------|------|------|
+| 11 | ai-agent-architecture | ✅ | 1126 | 9 caps（含 self_improvement_design） |
+| 12 | ai-prompt-engineering | ✅ | 720 | promptfoo 集成 |
+| 13 | ai-tool-integration | ✅ | 708 | Claude Code Tool.ts 参考 |
+| 14 | ai-evaluation | ✅ | 831 | 4D Protocol 扩展 |
 
 ---
 
-## Phase 4: 硬件开发链路
+## Phase 4: Hardware 链路 ⚠️ E2E 补跑中
 
-**驱动力**：toy 课程项目（PSAM 5320 Making Wireless Toys）— 已有 4+ 个硬件项目。
+| # | Pack | 状态 | 行数 | E2E |
+|---|------|------|------|-----|
+| 15 | hw-circuit-design | ✅ 结构完成 | 872 | ⚠️ 补跑中 |
+| 16 | hw-firmware | ✅ 结构完成 | 1115 | ⚠️ 补跑中 |
+| 17 | hw-enclosure | ✅ 结构完成 | 849 | ⚠️ 补跑中（Phase 1 研究也在补） |
+| 18 | hw-testing | ✅ 结构完成 | 1054 | ⚠️ 补跑中（Phase 1 研究也在补） |
 
-**项目背景**（来自 toy/PROJECT_CONTEXT.md）：
-- Mimikyu Emotional Pet（ESP32-S3 + OLED + Haptic）
-- HeartBeatZoo（ESP32-S3 + OLED + Haptic + WiFi）
-- Wayo Elephant Tracker（ESP32-C3 + 7-color E-ink）
-- Piano Coach（ESP32-S3 Audio Board + FFT + AI）
-- Spotify Controller（ESP32-S3 Touch LCD）
-- 技术栈：arduino-cli, ESP32 系列, OLED/E-ink 显示, 触摸/触觉反馈, WiFi/BLE
-
-```
-硬件链路:  概念 → 电路设计 → 固件开发 → 外壳设计 → 测试 → 展示
-                    🔲          🔲          🔲        🔲     🔲
-           (复用 product-definition)
-```
-
-| # | Pack | 做什么 | 关键工具 | 优先级 |
-|---|------|--------|---------|--------|
-| 11 | **hw-circuit-design** | 原理图 + PCB + BOM + 元器件选型 | KiCad CLI, D2 (已有) | 高 |
-| 12 | **hw-firmware** | ESP32 固件开发 (Arduino/PlatformIO) | arduino-cli, platformio | 高 — toy 项目直接用 |
-| 13 | **hw-enclosure** | 3D 外壳设计 + 打印 | OpenSCAD, FreeCAD CLI | 中 |
-| 14 | **hw-testing** | 硬件测试 + 调试 + 功耗优化 | serial monitor, 示波器指导 | 中 |
-
-### 硬件和软件的关键区别
-
-| 维度 | Web/Mobile Pack | Hardware Pack |
-|------|----------------|---------------|
-| 构建工具 | npm/vite/Xcode | **arduino-cli / platformio** |
-| 验证方式 | 浏览器/模拟器 | **实际硬件上电测试**（无法纯自动化） |
-| 调试 | console.log / DevTools | **Serial Monitor / 示波器** |
-| 迭代速度 | 秒级热更新 | **分钟级编译上传** |
-| 物料 | 无 | **BOM + 采购 + 焊接** |
-| 产出 | 代码文件 | **代码 + 物理原型** |
-
-### 你已有的硬件基础设施
-
-从 toy 项目提取的可复用模式：
-- `_template/` — 可复用的 ESP32 项目模板（WiFi + Haptic + Touch + Sprite）
-- `devices/` — 设备文档（3 个 Waveshare 板子的 pinout + 能力）
-- `generate_sprites.py` — PNG → C header 精灵图管线
-- HeartBeatZoo 的数据驱动架构（动物作为 struct，per-animal timing）
-
-**这些是 hw-firmware pack 的天然输入** — pack 可以引用这些已有模式。
-
-### 建议执行顺序
-
-1. **hw-firmware** — 最急需（你当前就在写 ESP32 固件），arduino-cli 工具成熟
-2. **hw-circuit-design** — KiCad CLI 有但生态小，可能需要更多研究
-3. **hw-enclosure** — OpenSCAD 有 CLI，但 3D 设计复杂度高
-4. **hw-testing** — 硬件测试很难自动化，可能更偏文档类
+**注意**：hw-enclosure 和 hw-testing 跳过了 Phase 1 研究，正在补。
 
 ---
 
-## Phase 5: CLI 工具开发
+## Phase 5: 安全链路 🔲（Epic 级）
 
-**驱动力**：TAD 的 hook 脚本 + 未来可能的独立 CLI 工具。不紧急但有价值。
+**驱动力**：供应链投毒频发（litellm 1.82.7/1.82.8 事件）、AI 时代开源工具大量使用、合规AI 项目需求。
 
-| # | Pack | 做什么 | 关键工具 |
+```
+安全链路:  依赖审计 → 代码安全 → AI 安全 → 合规 → 监控
+              🔲         🔲        🔲      🔲     🔲
+```
+
+| # | Pack | 做什么 | 关键场景 |
 |---|------|--------|---------|
-| 19 | **cli-tool-development** | CLI 架构、参数解析、交互设计、发布 | Commander.js, oclif, npm publish |
+| 20 | **supply-chain-security** | 依赖审计、版本锁定、投毒检测、lock 文件管理 | npm/pip/cargo 依赖安全 |
+| 21 | **code-security** | OWASP Top 10、SQL 注入、XSS、CSRF、Secret 泄露检测 | Web/API 代码安全 |
+| 22 | **ai-security** | Prompt injection、数据泄露、模型滥用、输出安全 | LLM 应用安全 |
+| 23 | **compliance** | GDPR、SOC2、HIPAA、App Store 合规、隐私政策 | 企业/产品合规 |
+| 24 | **security-monitoring** | 漏洞扫描、依赖更新监控、安全告警 | 持续安全 |
+
+**你的真实经验**：2026-03-24 litellm 投毒事件，你安装的 1.82.6 刚好躲过。这种经验应该内化到 supply-chain-security pack 里。
 
 ---
 
-## Phase 6: 按需扩展
+## Phase 6: CLI 工具开发 🔲
+
+| # | Pack | 状态 |
+|---|------|------|
+| 19 | cli-tool-development | 🔲 按需 |
+
+---
+
+## Phase 7: 按需扩展
 
 | Pack | 触发条件 | 对应项目 |
 |------|---------|---------|
-| content-creation | Sober Creator 开始做内容时 | Sober Creator |
-| data-engineering | 项目需要数据管线时 | 通用 |
-| security-compliance | 合规AI 项目启动时 | 合规AI |
+| content-creation | Sober Creator 做内容时 | Sober Creator |
+| data-engineering | 需要数据管线时 | 通用 |
+| security-compliance | 合规AI 启动时 | 合规AI |
 | game-development | 概念验证成熟时 | 个人兴趣 |
 | desktop-app | 需要桌面应用时 | 暂无需求 |
-
-**有真实项目需求时用模板 1-2 天做一个。**
 
 ---
 
@@ -190,20 +123,22 @@ AI/Agent 链路:  设计 → Prompt → 工具集成 → 测试 → 部署
 | 4 | web-backend | Web | ✅ | 756 | +4 |
 | 5 | web-testing | Web | ✅ | 663 | +5 |
 | 6 | web-deployment | Web | ✅ | 764 | +4 |
-| 7 | mobile-ui-design | Mobile | ✅ | ~600 | +0 (复用) |
+| 7 | mobile-ui-design | Mobile | ✅ | ~600 | +0 |
 | 8 | mobile-development | Mobile | ✅ | 572 | +4 |
-| 9 | mobile-testing | Mobile | ✅ | 564 | +0 (复用) |
+| 9 | mobile-testing | Mobile | ✅ | 564 | +0 |
 | 10 | mobile-release | Mobile | ✅ | 607 | +3 |
-| 11 | hw-circuit-design | Hardware | 🔲 | — | — |
-| 12 | hw-firmware | Hardware | 🔲 | — | — |
-| 13 | hw-enclosure | Hardware | 🔲 | — | — |
-| 14 | hw-testing | Hardware | 🔲 | — | — |
-| 15 | ai-agent-architecture | AI/Agent | ✅ | 1126 | +0 |
-| 16 | ai-prompt-engineering | AI/Agent | ✅ | 720 | +2 |
-| 17 | ai-tool-integration | AI/Agent | ✅ | 708 | +0 |
-| 18 | ai-evaluation | AI/Agent | ✅ | 831 | +0 |
+| 11 | ai-agent-architecture | AI | ✅ | 1126 | +0 |
+| 12 | ai-prompt-engineering | AI | ✅ | 720 | +2 |
+| 13 | ai-tool-integration | AI | ✅ | 708 | +0 |
+| 14 | ai-evaluation | AI | ✅ | 831 | +0 |
+| 15 | hw-circuit-design | HW | ⚠️ E2E补 | 872 | +4 |
+| 16 | hw-firmware | HW | ⚠️ E2E补 | 1115 | +0 |
+| 17 | hw-enclosure | HW | ⚠️ E2E补 | 849 | +0 |
+| 18 | hw-testing | HW | ⚠️ E2E补 | 1054 | +0 |
 | 19 | cli-tool-development | CLI | 🔲 | — | — |
 | — | tools-registry | 共享 | 持续更新 | 1362 | 51 |
+
+**总计**: 18 个 pack 完成（4 个 E2E 补跑中），1 个待做
 
 ---
 

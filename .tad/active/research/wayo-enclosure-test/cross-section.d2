@@ -1,0 +1,22 @@
+direction: down
+
+section: "Longitudinal Cross-Section (Y-Z plane)\n\nTop wall: 2.0mm\nDisplay lip: 0.8mm recess\nE-ink module: 1.2mm (138.5×100.5mm)\nFPC bend zone: 8.0mm\n--- Split line / gasket groove ---\nWire clearance: 2.0mm\nPCB: ESP32-C3 (54.4×18.0mm)\n  top components: 3.0mm\n  standoff: 4.0mm\n--- Battery zone ---\n18650 battery: Ø18.6 × 68mm\nBattery clearance: 1.0mm each side\nBottom wall: 2.0mm" {
+  style.fill: "#ECEFF1"
+  style.stroke: "#333"
+  style.font-size: 13
+}
+
+wall_detail: "Gasket Groove Detail\n\nGroove width: 2.0mm\nGroove depth: 1.5mm\nGasket: 1.5mm closed-cell foam\nCompression: ~30%\nIP rating: IP54" {
+  style.fill: "#FFF3E0"
+  style.stroke: "#E65100"
+  style.font-size: 12
+}
+
+screw_detail: "Screw Boss Detail\n\nScrew: M2 × 8mm self-tapping\nBoss OD: 5.0mm\nPilot hole: 1.6mm\nBoss height: 31.6mm\n4× reinforcement ribs (0.8mm)\nTorque: 0.15-0.20 Nm\nQuantity: 4 (corners)" {
+  style.fill: "#E8F5E9"
+  style.stroke: "#2E7D32"
+  style.font-size: 12
+}
+
+section -> wall_detail: "detail A" {style.stroke-dash: 3}
+section -> screw_detail: "detail B" {style.stroke-dash: 3}
