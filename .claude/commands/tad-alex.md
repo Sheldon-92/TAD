@@ -202,6 +202,7 @@ commands:
 
   # Self-evolution commands (TAD v2.8)
   optimize: "Analyze execution traces and propose Domain Pack improvements"
+  evolve: "Cross-project trace aggregation — analyze all projects and propose TAD framework improvements"
 
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
@@ -1984,48 +1985,133 @@ optimize_protocol:
         5. Output summary table to user
 
     step3_generate_proposals:
-      name: "Generate Improvement Proposals"
+      name: "Generate Improvement Proposals + Write PROPOSAL YAML"
       action: |
-        For each identified issue, generate a structured proposal:
-        {
-          "target": "{domain}.yaml",
-          "capability": "{capability_name}",
-          "change_type": "tighten_criteria | add_step | fix_step | add_anti_pattern",
-          "current": "current quality_criteria or step definition",
-          "proposed": "suggested modification",
-          "evidence": "based on which trace data (count, examples)",
-          "confidence": 0.0-1.0
-        }
-        If no issues found:
-          Output: "✅ No improvement proposals — execution traces look healthy.
-          Stats: {summary}"
-          → Return to standby
+        For each identified issue:
+        1. Generate proposal_id: "PROPOSAL-{YYYYMMDD}-{NNN}" (NNN = zero-padded sequence)
+        2. Run safety check BEFORE writing (see safety_constraints below)
+        3. Write PROPOSAL YAML file to .tad/evidence/proposals/{proposal_id}.yaml:
+
+        ```yaml
+        proposal_id: "PROPOSAL-{date}-{NNN}"
+        created: "{ISO 8601 timestamp}"
+        status: "pending"  # pending | accepted | rejected | modified | deferred | blocked | stale
+
+        target:
+          file: ".tad/domains/{domain}.yaml"
+          capability: "{capability_name}"
+          section: "{quality_criteria | steps | anti_patterns}"
+
+        change:
+          type: "{tighten_criteria | add_step | fix_step | add_anti_pattern}"
+          current: "{current value}"
+          proposed: "{proposed value}"
+          diff: |
+            - "{current value}"
+            + "{proposed value}"
+
+        evidence:
+          trace_count: {N}
+          failure_pattern: "{description of pattern found}"
+          trace_refs:
+            - "{trace_file}:line{N}"
+          confidence: {0.0-1.0}
+
+        safety:
+          checked: true
+          safe: {true|false}
+          blocked_reason: "{reason if unsafe, null if safe}"
+
+        review:
+          reviewed_at: null
+          reviewer: null
+          decision: null
+          notes: null
+        ```
+
+        4. If safety check flags unsafe → set safe: false, blocked_reason, status: "blocked"
+        5. If no issues found:
+           Output: "✅ No improvement proposals — execution traces look healthy.
+           Stats: {summary}"
+           → Return to standby
+
+      safety_constraints:
+        description: |
+          Hardcoded regex check on protected_patterns list below.
+          Independence: the patterns are hardcoded strings, not LLM-generated judgment.
+          The LLM executes the regex match, but CANNOT modify the pattern list or skip the check.
+        protected_patterns:
+          - "编造.*FAIL"
+          - "fabricat.*FAIL"
+          - "MANDATORY"
+          - "VIOLATION"
+          - "编造数据"
+        check_logic: |
+          For each proposal, BEFORE writing the YAML file:
+          1. Read the current value from target file
+          2. Check if current value matches any protected_pattern (regex)
+          3. If current matches a protected pattern:
+             a. Check if proposed value ALSO contains the same protected pattern
+             b. If proposed REMOVES or WEAKENS the protected term → BLOCK
+                (e.g., "FAIL" → "WARNING", or protected term deleted entirely)
+             c. If proposed KEEPS the protected term intact → ALLOW
+          4. If current does NOT match any protected pattern → ALLOW (no protection needed)
+          Result: set safety.safe and safety.blocked_reason in proposal YAML
+        recheck_on_modify: |
+          When user chooses "修改后接受" (option 2), re-run safety check on user's modified text
+          before queuing for step5. If modified text fails safety → BLOCK, inform user.
 
     step4_human_approval:
-      name: "Human Approval"
+      name: "Human Approval (4-option)"
       action: |
-        For each proposal, use AskUserQuestion:
-        question: "基于 {N} 次执行 trace，建议修改 {target}:"
+        For each proposal with safety.safe == true and status == "pending":
+        Use AskUserQuestion:
+        question: "基于 {trace_count} 次执行 trace，建议修改 {target.file}:"
         Display:
-          - 当前: {current}
-          - 建议: {proposed}
-          - 证据: {evidence}
-          - 置信度: {confidence}
+          目标: {target.capability} → {target.section}
+          当前: {change.current}
+          建议: {change.proposed}
+          证据: {evidence.failure_pattern}
+          置信度: {evidence.confidence}
         options:
-          - "接受" → queue for application
-          - "修改后接受" → ask for user's modification, then queue
-          - "拒绝" → skip this proposal
+          1. "接受 — 直接应用修改"
+          2. "修改后接受 — 你调整措辞后应用"
+          3. "拒绝 — 不修改"
+          4. "稍后处理 — 保留提议，下次再看"
+
+        On response:
+          - "接受": update PROPOSAL status→"accepted", queue for step5
+          - "修改后接受": ask user for modified text, update proposed in PROPOSAL,
+            status→"modified", queue for step5
+          - "拒绝": update PROPOSAL status→"rejected", review.decision→"rejected",
+            review.reviewed_at→now, review.reviewer→"human"
+          - "稍后处理": update PROPOSAL status→"deferred", skip (file stays for next *optimize run)
+
+        For proposals with safety.safe == false:
+          Display: "⚠️ BLOCKED: {proposal_id} — 触碰受保护条款: {blocked_reason}"
+          Do NOT offer approval — auto-reject with status→"blocked"
 
     step5_apply:
       name: "Apply Accepted Changes"
       action: |
-        Note: Domain Pack YAML edits are configuration, not code — within Alex's scope.
-        For each accepted proposal:
+        Scope: Domain Pack YAML edits are configuration, not code — within Alex's scope.
+        Authorization: Handoff HANDOFF-20260402-tad-v28-approval-workflow.md Section 3.3 explicitly assigns
+        this Edit responsibility to Alex ("Alex 执行应用").
+        For each accepted/modified proposal:
         1. Read the target domain.yaml file
-           If file not found: WARN "Target {file} not found — skipping this proposal", continue
-        2. Apply the modification (edit quality_criteria, add step, etc.)
-        3. Git commit with message: "optimize({domain}): {change_type} — {brief description}"
-        4. Output: "Applied {count} improvements to {domains}."
+           If file not found: WARN "Target {file} not found — skipping", update PROPOSAL status→"rejected", continue
+        2. Locate the target section (capability → section)
+        3. Staleness check: verify that change.current still matches the actual file content.
+           If mismatch (file was modified by a prior proposal in this batch or externally):
+           → WARN "Stale proposal: {proposal_id} — target content changed since proposal was generated"
+           → Skip this proposal, update PROPOSAL status→"stale"
+        4. Use Edit tool to replace current → proposed
+        5. Update PROPOSAL YAML: status→"accepted", review.reviewed_at→now, review.reviewer→"human"
+        6. Git commit with message: "optimize({domain}): {change_type} — {brief description}"
+        7. Output per proposal: "✅ Applied: {proposal_id} → {target.file}"
+
+        After all proposals processed:
+          Output: "Applied {accepted_count}/{total_count} improvements. {rejected_count} rejected, {deferred_count} deferred."
         If no proposals accepted:
           Output: "No changes applied."
 
