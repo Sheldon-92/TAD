@@ -1,8 +1,8 @@
-# TAD Configuration v2.7.0 - Hook-Native Architecture
+# TAD Configuration v2.8.0 - Self-Evolving Framework
 method: TAD
-version: 2.7.0
-description: Triangle Agent Development - Hook-Native Architecture + 76% Context Reduction
-last_updated: 2026-03-31
+version: 2.8.0
+description: Triangle Agent Development - Self-Evolving Framework + Execution Trace + Domain Packs
+last_updated: 2026-04-03
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
@@ -292,6 +292,17 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.8.0:
+    date: "2026-04-03"
+    changes:
+      - "Self-Evolving Framework: Execution trace recording (PostToolUse JSONL + trace-step.sh)"
+      - "*optimize command: Trace analysis → Domain Pack + Project Knowledge improvement proposals"
+      - "Human Approval Workflow: PROPOSAL YAML schema + 4-option AskUserQuestion + safety constraints"
+      - "Quality Gate Hooks: pre-accept-check.sh, pre-gate-check.sh (BLOCK enforcement)"
+      - "Domain Packs: 14 packs across Web/Mobile/AI (35+ tools in registry)"
+      - "AI Agent Self-Improvement: 6-step design process + 6-environment reference table"
+      - "Architecture Knowledge: Domain Pack Step Model, Hook path matching, enforcement priority"
+
   v2.7.0:
     date: "2026-03-31"
     changes:

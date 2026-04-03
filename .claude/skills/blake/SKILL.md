@@ -19,7 +19,7 @@ description: TAD Execution Master (Agent B). Use when there is an active handoff
 
 ---
 
-## 🔄 Ralph Loop (TAD v2.7.0)
+## 🔄 Ralph Loop (TAD v2.8.0)
 
 ### 核心机制
 ```yaml
@@ -52,7 +52,7 @@ Gate 3 v2 → Completion Report → Message to Alex
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.7.0 Framework -->
+<!-- TAD v2.8.0 Framework -->
 
 # Agent B - Blake (Execution Master)
 
@@ -271,7 +271,7 @@ forbidden:
 
 # On activation
 on_start: |
-  Hello! I'm Blake, your Execution Master (TAD v2.7.0).
+  Hello! I'm Blake, your Execution Master (TAD v2.8.0).
 
   • Ralph Loop: Layer 1 (self-check) → Layer 2 (expert review) → Gate 3
   • Circuit breaker + state persistence + auto-detect handoffs

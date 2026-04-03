@@ -1,9 +1,9 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.7.0 (Hook-Native Architecture Rebuild)
-- **Last Updated**: 2026-03-31
-- **Framework**: TAD v2.7.0 + Hook-Native Architecture + 76% Context Reduction
+- **Version**: 2.8.0 (Self-Evolving Framework)
+- **Last Updated**: 2026-04-03
+- **Framework**: TAD v2.8.0 + Self-Evolving Framework + Execution Trace + Domain Packs
 
 ## Active Work
 (none)

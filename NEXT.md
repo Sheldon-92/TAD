@@ -2,11 +2,23 @@
 
 ## In Progress
 
+- [ ] Push TAD v2.8.0 to GitHub (user manual)
+
+## Recently Completed
+
+- [x] **TAD v2.8.0 Self-Evolving Framework Release** (2026-04-03)
+  - Phase 1: Trace infrastructure (PostToolUse JSONL + trace-step.sh)
+  - Phase 1.5: Trace schema enrichment (step-level recording)
+  - Phase 2: *optimize command (trace analysis → improvement proposals)
+  - Phase 3: Quality Gate Hooks (pre-accept, pre-gate enforcement)
+  - Phase 4: Human Approval Workflow (PROPOSAL YAML + safety constraints)
+  - Phase 5: Version bump + release
+  - Domain Packs: 14 packs complete (Web 6 + Mobile 4 + AI 4), 51 tools in registry
+  - self_improvement_design: 6-step process + 6-environment reference table
+
 - [x] **EPIC: TAD v2.7.0 Hook-Native Architecture Rebuild** — ALL 6/6 PHASES COMPLETE (2026-03-31)
   - Phase 0: Mechanism Spike (5/7 pass) → Phase 1: Blueprint → Phase 2: Hooks → Phase 3: Skills 76% reduction → Phase 4: CLAUDE.md + PreToolUse → Phase 5: v2.7.0 release
   - Archived: .tad/archive/epics/EPIC-20260331-tad-v3-hook-native-rebuild.md
-
-## Recently Completed
 
 - [x] Linear: 4 projects created + 15 issues seeded via MCP (2026-03-25)
 

@@ -5,6 +5,40 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.0] - 2026-04-03
+
+### New Features — Self-Evolving Framework
+- **Execution Trace Recording**: PostToolUse hook auto-records file events (JSONL)
+- **Step-Level Trace**: trace-step.sh CLI for Domain Pack step start/end recording
+- **`*optimize` Command**: Analyze project traces → propose Domain Pack + Project Knowledge improvements
+- **`*evolve` Command**: Cross-project trace aggregation → propose TAD framework improvements
+- **Human Approval Workflow**: PROPOSAL YAML schema + AskUserQuestion approval + safety constraints
+- **Quality Gate Hooks**: pre-accept-check.sh (BLOCK without COMPLETION), pre-gate-check.sh (BLOCK Gate 3 without evidence)
+
+### Domain Packs (14 packs, 6 research areas)
+- Phase 1 Web: product-definition, web-ui-design, web-frontend, web-backend, web-testing, web-deployment
+- Phase 2 Mobile: mobile-ui-design, mobile-development, mobile-testing, mobile-release
+- Phase 3 AI: ai-agent-architecture (9 caps incl self-improvement), ai-prompt-engineering, ai-tool-integration, ai-evaluation
+- tools-registry.yaml: 35+ tools across all packs
+- Domain Pack creation template + HOW-TO guide + ROADMAP
+
+### AI Agent Self-Improvement
+- self_improvement_design capability with 6-step design process
+- 6-environment reference table (OpenClaw, LangSmith, Firebase RC, Langfuse, Claude Code, Enterprise)
+- Based on production research (Meta-Harness, EvoAgentX, NeMo Guardrails, DeerFlow)
+
+### Quality Enforcement
+- pre-accept-check.sh: BLOCK *accept without COMPLETION report (exit 2)
+- pre-gate-check.sh: BLOCK /gate 3 without evidence (cold-start safe)
+- Enhanced post-write-sync.sh: COMPLETION→Gate3 reminder, HANDOFF→expert review 4-step checklist, Ralph Loop→workflow reminder
+- Batch expert review of all 6 initial Domain Packs (4 P0 fixed)
+
+### Architecture Knowledge
+- Domain Pack Step Model: Type A (doc) / B (code) / Mixed
+- Hook path matching: *.tad/ for relative+absolute
+- Judgment-only skill files: 76% reduction safe when hooks handle automation
+- Claude Code enforcement priority: deny > hooks > allow
+
 ## [2.7.0] - 2026-03-31
 
 ### Breaking Changes — Hook-Native Architecture Rebuild

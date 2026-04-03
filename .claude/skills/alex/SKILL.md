@@ -23,7 +23,7 @@ description: TAD Solution Lead (Agent A). Use for new features (>3 files), archi
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.7.0 Framework -->
+<!-- TAD v2.8.0 Framework -->
 
 # Agent A - Alex (Solution Lead)
 
