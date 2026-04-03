@@ -1,0 +1,175 @@
+# Handoff: TAD v2.8 Phase 2 — Project-Level Optimizer Agent
+
+**From:** Alex | **To:** Blake | **Date:** 2026-04-02
+**Task ID:** TASK-20260402-016
+**Epic:** EPIC-20260402-tad-v28-self-evolving.md (Phase 2/5)
+
+---
+
+## 🔴 Gate 2: ✅ PASS
+
+---
+
+## 1. What We're Building
+
+Gate 4 通过后自动 spawn 一个 "Optimizer Agent"，读取执行 trace，聚合失败模式，提议 Domain Pack quality_criteria 更新。人审批后应用。
+
+这是 TAD 从"静态框架"到"自我进化"的核心机制。
+
+## 2. 必读
+
+- `.tad/spike-v3/domain-pack-tools/v28-research-synthesis.md` — trace 格式 + 优化循环设计
+- `.tad/hooks/post-write-sync.sh` — Phase 1 的 trace 记录实现
+- `.tad/evidence/traces/2026-04-02.jsonl` — 真实 trace 数据样例
+
+## 3. Technical Design
+
+### 3.1 触发时机
+
+在 Alex 的 `*accept` 命令执行归档后，自动提示：
+
+```
+"Task archived. Trace data available.
+Run *optimize to analyze execution history and propose improvements."
+```
+
+**不自动 spawn** — 用 `*optimize` 命令手动触发。原因：
+- 不是每次归档都需要优化分析
+- 用户可能在赶进度，不想等
+- 保持人在控制
+
+### 3.2 *optimize 命令实现
+
+在 Alex SKILL.md 中新增 `*optimize` 命令：
+
+```yaml
+optimize:
+  description: "分析执行 trace，提议 Domain Pack 改进"
+  trigger: "用户输入 *optimize"
+  steps:
+    step1:
+      name: "读取 Trace"
+      action: |
+        读取 .tad/evidence/traces/ 下所有 JSONL 文件
+        统计：
+        - 总执行次数（按 type 分类）
+        - 失败次数和原因
+        - 各 domain pack 的使用频率
+        - 平均文件大小趋势
+
+    step2:
+      name: "聚合失败模式"
+      action: |
+        从 trace 数据中识别：
+        1. 反复失败的 step（同一个 step 多次出现 status=failed）
+        2. 被跳过的 step（应该有但 trace 里没出现）
+        3. 异常耗时的 step（duration 远超平均）
+        4. 文件大小异常（产出物太小可能是空文件）
+
+    step3:
+      name: "生成改进提议"
+      action: |
+        对每个发现的问题，生成结构化提议：
+        {
+          "target": "product-definition.yaml",
+          "capability": "competitive_analysis",
+          "change_type": "tighten_criteria | add_step | fix_step | add_anti_pattern",
+          "current": "当前的 quality_criteria 或 step",
+          "proposed": "建议的修改",
+          "evidence": "基于哪些 trace 数据",
+          "confidence": 0.0-1.0
+        }
+
+    step4:
+      name: "人审批"
+      action: |
+        用 AskUserQuestion 展示每个提议：
+        "基于 N 次执行 trace，建议修改 {target}:"
+        - 当前: {current}
+        - 建议: {proposed}
+        - 证据: {evidence}
+        选项: "接受" / "修改后接受" / "拒绝"
+
+    step5:
+      name: "应用变更"
+      action: |
+        对接受的提议，修改对应的 domain.yaml 文件
+        Git commit 记录变更原因
+```
+
+### 3.3 实现方式
+
+**不用新 Hook** — *optimize 是 Alex 的命令，在 Alex SKILL.md 中定义。实现很轻：
+
+1. Alex SKILL.md 加一个 `optimize` 命令定义（~30 行）
+2. post-write-sync.sh 在归档时加一行提醒（"Run *optimize to analyze traces"）
+3. 执行逻辑靠 Alex 自身的 LLM 能力（读 JSONL + 分析 + 提议）
+
+**不需要单独的 agent 或脚本** — Alex 自己就能做这件事。
+
+### 3.4 Trace 分析的最低数据要求
+
+至少需要 3 条 trace 才有分析价值。如果 trace 数据不足，*optimize 输出 "Not enough trace data. Need at least 3 executions."
+
+## 4. post-write-sync.sh 修改
+
+在归档检测分支中（如果有的话），或在 `*accept` 相关的提醒中增加：
+
+现有的 COMPLETION 提醒之后不需要改 — 因为归档是 Alex 做的（不是 Blake 写文件）。
+
+**实际上**：这个提醒应该在 Alex 的 `*accept` 命令流程中，不是 Hook。Alex 归档完成后，作为 *accept 的最后一步输出：
+
+```
+"✅ Handoff archived.
+💡 Trace data available. Run *optimize to analyze execution history and propose improvements."
+```
+
+这只需要在 Alex SKILL.md 的 accept_command 流程末尾加一句提醒。
+
+## 5. Implementation Steps
+
+### Step 1: 在 Alex SKILL.md 中添加 *optimize 命令
+
+在 commands 列表中加：
+```yaml
+optimize: "Analyze execution traces and propose Domain Pack improvements"
+```
+
+在 SKILL.md 中加 optimize_protocol 节（~30 行），定义 step1-5。
+
+### Step 2: 在 *accept 流程末尾加提醒
+
+在 accept_command 的 step_final 之后加：
+```
+output: "💡 Trace data available. Run *optimize to analyze execution history."
+```
+
+### Step 3: 测试
+
+1. 确认 .tad/evidence/traces/ 有数据
+2. 手动运行 *optimize
+3. 验证 Alex 能读取 trace、分析模式、生成提议
+4. 验证 AskUserQuestion 展示提议
+5. 验证接受后的变更正确应用
+
+## 6. AC
+
+- [ ] AC1: Alex SKILL.md 有 *optimize 命令
+- [ ] AC2: *optimize 能读取 .tad/evidence/traces/*.jsonl
+- [ ] AC3: 输出执行统计（总次数、失败、频率）
+- [ ] AC4: 识别失败模式（反复失败、被跳过、异常耗时）
+- [ ] AC5: 生成结构化提议（target + change_type + current + proposed + evidence）
+- [ ] AC6: AskUserQuestion 展示提议让人审批
+- [ ] AC7: 接受的提议正确修改 domain.yaml
+- [ ] AC8: *accept 末尾有 *optimize 提醒
+- [ ] AC9: trace 数据不足时给出提示（<3 条）
+- [ ] AC10: 必须走 Ralph Loop + Gate 3
+
+## 7. Notes
+
+- ⚠️ *optimize 是 Alex 命令，不是 Blake 命令
+- ⚠️ 不自动触发 — 人手动决定什么时候优化
+- ⚠️ 所有变更需要人审批（AskUserQuestion）
+- ⚠️ 修改 Alex SKILL.md 要小心 — 不能破坏现有命令
+
+**Handoff Created By**: Alex

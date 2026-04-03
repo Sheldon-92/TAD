@@ -26,7 +26,7 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 0 | 深度源码研究 | ✅ Done | v28-research-synthesis.md | 6 agent 完成，5 项目源码 + Claude Code trace 机制全部研究 |
-| 1 | Trace 基础设施 | ⬚ Planned | — | PostToolUse hook 自动记录 step trace + JSONL 存储 |
+| 1 | Trace 基础设施 | ✅ Done | HANDOFF-20260402-tad-v28-trace-infrastructure.md | record_trace() + JSONL + 递归防护 + 跨平台 |
 | 2 | 项目级分析 Agent | ⬚ Planned | — | Gate 4 后自动 spawn 分析 agent → 读 trace → 提议改进 |
 | 3 | 跨项目聚合 | ⬚ Planned | — | TAD 主项目的 *evolve 命令 → 聚合所有项目 trace → 提议框架修改 |
 | 4 | 人审批工作流 | ⬚ Planned | — | AskUserQuestion 展示提议 → 人选择接受/拒绝/修改 → 应用变更 |
