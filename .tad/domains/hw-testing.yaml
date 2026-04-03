@@ -1,0 +1,1054 @@
+# Domain Pack: Hardware Testing
+# From power-on to production validation — physical measurement + AI-guided analysis
+# Scope: Embedded hardware prototypes (MCU-based, battery-powered devices)
+# NOTE: Hardware testing requires PHYSICAL instruments (multimeter, oscilloscope, power analyzer).
+# This pack's value: what to test + how to test + pass/fail criteria + documentation.
+domain: hw-testing
+version: 1.0.0
+requires_registry: ">=1"
+description: "硬件测试：从上电到量产验证。覆盖上电测试、功能验证、功耗测量、环境测试、EMC 预检、测试治具设计 + 人机协作硬件测试（4D Protocol）。核心价值：测试规程 + 判定标准 + 结果记录模板，不是空泛建议。"
+
+output_dir: ".tad/active/hw-testing/{project}/"
+
+# ═══════════════════════════════════════
+# Capability Type Guide
+# ═══════════════════════════════════════
+# This pack has THREE types of capabilities:
+#   - Code B type (3): power_on_test, functional_test, power_measurement
+#     Steps: select → execute → verify → optimize
+#     "Code" here means: generate scripts, checklists, measurement procedures
+#   - Document A type (3): environmental_test, emc_precheck, test_fixture
+#     Steps: search → analyze → derive → generate
+#   - Mixed type (1): hw_pair_testing (human operates instruments, AI guides + analyzes)
+#     Steps: prepare → discover → discuss → decide → deliver
+
+capabilities:
+
+  # ═══════════════════════════════════════
+  # Capability 1: Power-On Test (Code B)
+  # ═══════════════════════════════════════
+
+  power_on_test:
+    description: "Power-on sequence verification — voltage rails, current limits, LED indicators, smoke test. First test on every new board."
+
+    steps:
+      # Layer 1: Select — define what to check and in what order
+      - id: identify_power_rails
+        action: |
+          Identify all power rails and their expected values from schematic:
+          1. List every voltage rail: VIN, 3V3, 1V8, VBAT, VBUS, etc.
+          2. For each rail: expected voltage ±5% tolerance, max current rating, regulator type (LDO/DCDC)
+          3. Identify power-on sequence order (which rail must be stable before the next)
+          4. Identify test points (TP) or accessible measurement locations for each rail
+          5. Note protection circuits: reverse polarity, overcurrent, overvoltage, TVS diodes
+          If schematic not available → list known rails from MCU datasheet + board markings.
+        tool_ref: null
+        output_file: "power-on-test-plan.md"
+
+      - id: create_power_on_checklist
+        action: |
+          Generate step-by-step power-on checklist (execute in exact order):
+          ── PRE-POWER CHECKS ──
+          1. Visual inspection: solder bridges, missing components, reversed polarity marks
+          2. Continuity check: VCC to GND must NOT be short (multimeter beep mode)
+             - Expect: >1kΩ (short = DO NOT POWER ON)
+          3. Set bench supply current limit to 100mA initially (prevent damage)
+          ── POWER-ON SEQUENCE ──
+          4. Apply VIN at nominal voltage (e.g., 5V USB or 3.7V LiPo)
+          5. Monitor current draw: expect <50mA at idle for typical MCU board
+             - If >200mA immediately → POWER OFF, check for shorts
+          6. SMOKE TEST: observe 5 seconds for heat, smoke, burning smell
+             - Any anomaly → POWER OFF IMMEDIATELY
+          ── RAIL VERIFICATION ──
+          7. Measure each rail with multimeter:
+             | Rail | Expected | Tolerance | Actual | PASS/FAIL |
+             | 3V3  | 3.300V   | ±165mV    |        |           |
+             | 1V8  | 1.800V   | ±90mV     |        |           |
+          8. LED indicator check: power LED on? status LED blinking?
+          ── POST-POWER ──
+          9. MCU responds to serial/JTAG/SWD? (probe with logic analyzer or UART terminal)
+          10. Record all measurements in test log
+          Generate as executable checklist with checkboxes.
+        tool_ref: pdf_generation
+        output_file: "power-on-checklist.pdf"
+
+      # Layer 2: Execute — generate measurement scripts/tools
+      - id: generate_serial_probe
+        action: |
+          Generate serial port probe script for initial MCU communication check:
+          ```python
+          # power_on_probe.py — verify MCU is alive via serial
+          import serial, sys, time
+          PORT = sys.argv[1] if len(sys.argv) > 1 else '/dev/tty.usbserial-0001'
+          BAUD = int(sys.argv[2]) if len(sys.argv) > 2 else 115200
+          try:
+              ser = serial.Serial(PORT, BAUD, timeout=3)
+              time.sleep(2)  # wait for boot message
+              data = ser.read(1024)
+              if data:
+                  print(f"✓ MCU responding: {data.decode(errors='replace')[:200]}")
+              else:
+                  print("⚠ No data received — check UART TX/RX, baud rate, boot mode")
+              ser.close()
+          except serial.SerialException as e:
+              print(f"✗ Serial error: {e}")
+          ```
+          Also generate a simple voltage logging template (CSV format) for recording measurements.
+        tool_ref: null
+        output_file: "power-on-probe.py"
+
+      # Layer 3: Verify — validate results against criteria
+      - id: verify_power_on
+        action: |
+          Verify all power-on criteria met:
+          1. All voltage rails within ±5% of nominal
+          2. Quiescent current within expected range (datasheet typical ±20%)
+          3. No thermal anomalies (touch test: no component >50°C at idle)
+          4. MCU serial/debug port responsive
+          5. All protection circuits verified (if testable without destructive test)
+          Generate PASS/FAIL verdict with supporting measurements.
+          Any rail >±10% off nominal = FAIL (investigate before proceeding).
+        tool_ref: null
+        output_file: "power-on-results.md"
+
+      # Layer 4: Optimize — improve the test procedure
+      - id: optimize_power_on
+        action: |
+          Refine power-on procedure based on results:
+          1. If any rail was marginal (>±3% but <±5%): add to watch list
+          2. If current draw was higher than expected: identify which subsystem draws most
+          3. Update checklist with actual measured values as baseline
+          4. Add board-specific notes (e.g., "J3 must be jumpered for USB power")
+          5. Generate final power-on SOP (Standard Operating Procedure) as PDF
+        tool_ref: pdf_generation
+        output_file: "power-on-sop.pdf"
+
+    quality_criteria:
+      - "Every voltage rail has expected value, tolerance, and measurement point documented"
+      - "Power-on sequence order matches schematic design intent"
+      - "Current limit set on bench supply BEFORE first power-on"
+      - "Smoke test explicitly included as a mandatory step"
+      - "All measurements recorded with actual values (not just PASS/FAIL)"
+      - "编造数据 = FAIL — every voltage/current value must come from actual measurement"
+
+    anti_patterns:
+      - "❌ Powering on without checking for shorts first (can destroy board)"
+      - "❌ Setting bench supply to unlimited current (use 100mA limit initially)"
+      - "❌ Skipping visual inspection (solder bridges are the #1 prototype killer)"
+      - "❌ Recording only PASS/FAIL without actual measured values"
+      - "❌ Testing with battery before bench supply verification (battery has no current limit)"
+
+    reviewers:
+      - persona: "Hardware Test Engineer"
+        checklist:
+          - "Power-on sequence matches schematic power tree?"
+          - "All rails have ±5% tolerance and measurement points?"
+          - "Current limit set before first power-on?"
+          - "Smoke test included as explicit step?"
+      - persona: "Safety Engineer"
+        checklist:
+          - "Protection circuits documented and tested?"
+          - "No high-voltage rails measured without proper equipment?"
+          - "ESD precautions mentioned?"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Functional Test (Code B)
+  # ═══════════════════════════════════════
+
+  functional_test:
+    description: "Peripheral-by-peripheral verification — display, sensors, buttons, wireless, storage. Each subsystem tested independently."
+
+    steps:
+      # Layer 1: Select — enumerate all peripherals to test
+      - id: enumerate_peripherals
+        action: |
+          List all peripherals/subsystems on the board:
+          1. Display: type (E-ink/LCD/OLED), interface (SPI/I2C/parallel), resolution
+          2. Sensors: type (temp, humidity, IMU, light), interface, I2C address
+          3. User input: buttons, touch, rotary encoder — GPIO pins, debounce needed?
+          4. Wireless: WiFi, BLE, LoRa, Zigbee — module type, antenna
+          5. Storage: SD card, SPI flash, EEPROM — interface, capacity
+          6. Audio: speaker, microphone, codec — interface (I2S/PDM/analog)
+          7. Motor/actuator: type, driver IC, PWM frequency
+          8. Other: RTC, USB, LED strips, etc.
+          For each: mark as CRITICAL (must work) or OPTIONAL (nice to have).
+          Priority order: power → comms (serial/USB) → display → sensors → wireless → storage → others
+        tool_ref: null
+        output_file: "functional-test-plan.md"
+
+      # Layer 2: Execute — generate test scripts per peripheral
+      - id: generate_display_test
+        action: |
+          Generate display test script/procedure:
+          For E-ink (e.g., GDEW0154T8, SSD1681 controller):
+            1. Full refresh: fill screen white → black → white (verify no stuck pixels)
+            2. Pattern test: checkerboard pattern (verify all pixels addressable)
+            3. Text rendering: display "Hello World" + timestamp (verify font rendering)
+            4. Partial refresh: update a region (verify partial update works)
+            5. Measure refresh time: expect 2-3s full refresh for typical 1.54" E-ink
+          For LCD/OLED:
+            1. Color bars (R/G/B/W/K) → verify color channels
+            2. Brightness levels (0%, 50%, 100%) → verify backlight PWM
+            3. Touch calibration (if touchscreen)
+          Generate as Python/MicroPython script or Arduino sketch depending on platform.
+        tool_ref: null
+        output_file: "test-display.py"
+
+      - id: generate_peripheral_tests
+        action: |
+          Generate test procedures for each remaining peripheral:
+          ── SENSORS ──
+          Temperature/humidity (e.g., SHT40, BME280):
+            - Read 10 samples, 1s interval → verify values in sane range (15-35°C, 20-80% RH)
+            - Compare with reference thermometer (±2°C acceptable for most sensors)
+            - I2C scan: verify device responds at expected address
+          IMU (e.g., MPU6050, LSM6DS3):
+            - Read accel at rest → expect ~0, 0, ±9.8 m/s² (±0.5)
+            - Read gyro at rest → expect ~0, 0, 0 °/s (±5)
+            - Tilt test: rotate 90° → accel axis should shift by ~9.8
+          ── BUTTONS/INPUT ──
+            - Press each button → verify GPIO interrupt/poll triggers
+            - Debounce test: rapid press → verify no double triggers
+            - Long press: hold 3s → verify long-press event fires
+          ── WIRELESS ──
+          WiFi:
+            - Scan networks → expect ≥1 SSID found
+            - Connect to known AP → verify DHCP, ping gateway
+            - RSSI measurement: expect >-70 dBm at 1m from AP
+          BLE:
+            - Start advertising → verify visible from phone (nRF Connect app)
+            - GATT service discovery → verify custom service UUID
+            - Data transfer: send 100 bytes → verify received correctly
+          ── STORAGE ──
+          SD card / SPI flash:
+            - Write 1KB test pattern → read back → verify byte-for-byte match
+            - Write speed measurement: write 1MB → measure time (expect >100KB/s for SD)
+            - Filesystem: mount, create file, list directory
+          Generate individual test scripts for each peripheral.
+        tool_ref: null
+        output_file: "test-peripherals/ (one script per peripheral)"
+
+      # Layer 3: Verify — run tests and record results
+      - id: verify_functional
+        action: |
+          Run all peripheral tests and compile results:
+          | Peripheral | Test | Expected | Actual | PASS/FAIL | Notes |
+          |-----------|------|----------|--------|-----------|-------|
+          | E-ink     | Full refresh | <3s, no artifacts | | | |
+          | SHT40     | Temp reading | 15-35°C | | | |
+          | WiFi      | Scan networks | ≥1 SSID | | | |
+          | BLE       | Advertise | Visible on phone | | | |
+          | SD card   | Write/read | 1KB match | | | |
+          | Button A  | Press detect | GPIO trigger | | | |
+          Criteria for PASS: all CRITICAL peripherals pass. OPTIONAL failures noted but don't block.
+        tool_ref: null
+        output_file: "functional-test-results.md"
+
+      # Layer 4: Optimize — document known issues and workarounds
+      - id: optimize_functional
+        action: |
+          Document findings and optimize:
+          1. Failed peripherals: root cause analysis (hardware? software? configuration?)
+          2. Marginal results: document and add to regression test
+          3. Generate a consolidated functional test report with:
+             - Board revision, serial number, test date
+             - Per-peripheral PASS/FAIL with measurements
+             - Known issues and workarounds
+             - Recommended firmware version for each test
+          4. Create a quick-test script that runs all automated tests in sequence
+        tool_ref: pdf_generation
+        output_file: "functional-test-report.pdf"
+
+    quality_criteria:
+      - "Every peripheral on the BOM has a test procedure"
+      - "Each test has quantitative pass/fail criteria (not just 'works')"
+      - "Sensor readings compared against reference instrument or datasheet typical values"
+      - "Wireless tests include RSSI/signal quality measurement"
+      - "Storage tests include write-read-verify pattern"
+      - "编造数据 = FAIL — sensor readings, RSSI values, timing measurements must be real"
+
+    anti_patterns:
+      - "❌ Testing only happy path ('it displayed something' without checking correctness)"
+      - "❌ Skipping I2C address scan (address conflicts are common on prototype boards)"
+      - "❌ Not recording actual sensor values (only PASS/FAIL loses diagnostic data)"
+      - "❌ Testing wireless without RSSI measurement (range problems hide in 'connected = pass')"
+      - "❌ Assuming SD card works after 1 write (test with larger payload for reliability)"
+
+    reviewers:
+      - persona: "Embedded Systems Engineer"
+        checklist:
+          - "All peripherals from BOM covered?"
+          - "I2C addresses verified against datasheet?"
+          - "Test scripts match the actual MCU platform (Arduino/MicroPython/ESP-IDF)?"
+      - persona: "QA Engineer"
+        checklist:
+          - "Pass/fail criteria quantitative?"
+          - "Test results include actual measurements?"
+          - "Regression test list updated?"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Power Measurement (Code B)
+  # ═══════════════════════════════════════
+
+  power_measurement:
+    description: "Per-mode power profiling — active, idle, deep sleep. Battery life calculation based on actual measurements."
+
+    steps:
+      # Layer 1: Select — define power modes and measurement setup
+      - id: define_power_modes
+        action: |
+          Identify all power modes for the device:
+          1. Active mode: CPU running, all peripherals on, display updating, wireless active
+          2. Idle mode: CPU running, peripherals on standby, display static, wireless connected but idle
+          3. Light sleep: CPU paused, RAM retained, wakeup sources active (GPIO, timer, UART)
+          4. Deep sleep: CPU off, only RTC + wakeup logic powered, RAM lost
+          5. Power-off / shipping mode: everything off, <1µA (battery disconnect or ultra-low-power shutdown)
+          For each mode: expected current (from MCU datasheet), measurement instrument needed:
+          - Active/Idle: multimeter on mA range (or bench supply current readout)
+          - Deep sleep: multimeter on µA range (CRITICAL: use µA range, not auto-range — auto-range injects noise)
+          - For dynamic profiling: oscilloscope + current sense resistor (10Ω for µA, 0.1Ω for mA)
+          Document the measurement circuit: where to insert ammeter (break battery line or use current sense header).
+        tool_ref: null
+        output_file: "power-measurement-plan.md"
+
+      # Layer 2: Execute — perform measurements and generate analysis tools
+      - id: measure_power_modes
+        action: |
+          Measurement procedure for each mode:
+          ── ACTIVE MODE ──
+          1. Trigger worst-case scenario: display refresh + WiFi TX + sensor read simultaneously
+          2. Measure peak current (use oscilloscope for transients, multimeter for average)
+          3. Record: average current (mA), peak current (mA), duration of active period
+          ── IDLE MODE ──
+          4. Wait for all peripherals to settle (>5s after last activity)
+          5. Measure steady-state current on mA range
+          6. Record: average current (mA) over 30s window
+          ── DEEP SLEEP ──
+          7. Trigger deep sleep via firmware command
+          8. Switch multimeter to µA range (BEFORE entering sleep — switching causes glitch)
+          9. Wait 10s for stable reading
+          10. Record: sleep current (µA) — typical ESP32-C3: ~5µA, ESP32-S3: ~7µA, nRF52840: ~1.5µA
+          11. If reading is >100µA: suspect peripheral not powered down (check LDO quiescent, LED leakage)
+          ── TRANSITION PROFILING ──
+          12. Optional: capture sleep→wake→active→sleep cycle on oscilloscope
+          13. Measure wake-up time: time from wakeup trigger to first instruction (~ms)
+
+          Generate Python script for power profile visualization:
+          ```python
+          # power_profile_chart.py — visualize power modes
+          import matplotlib.pyplot as plt
+          modes = ['Active', 'Idle', 'Light Sleep', 'Deep Sleep']
+          current_mA = [120, 25, 0.8, 0.005]  # Replace with actual measurements
+          fig, ax = plt.subplots(figsize=(10, 6))
+          bars = ax.bar(modes, current_mA, color=['#e74c3c', '#f39c12', '#3498db', '#2ecc71'])
+          ax.set_ylabel('Current (mA)')
+          ax.set_title('Power Profile by Mode')
+          ax.set_yscale('log')  # Log scale because sleep current is 1000x less
+          for bar, val in zip(bars, current_mA):
+              ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
+                      f'{val} mA' if val >= 1 else f'{val*1000:.0f} µA',
+                      ha='center', va='bottom', fontweight='bold')
+          plt.tight_layout()
+          plt.savefig('power-profile.png', dpi=150)
+          print('Saved power-profile.png')
+          ```
+        tool_ref: null
+        output_file: "power-measurements.md"
+
+      # Layer 3: Verify — calculate battery life
+      - id: calculate_battery_life
+        action: |
+          Calculate estimated battery life based on measurements:
+          1. Define usage profile (example for IoT sensor):
+             - Active: 5s every 15min (sensor read + BLE transmit)
+             - Idle: 0s (not used in this profile)
+             - Deep sleep: remaining time (~14min 55s per cycle)
+          2. Calculate average current:
+             I_avg = (I_active × t_active + I_sleep × t_sleep) / t_cycle
+             Example: (120mA × 5s + 0.005mA × 895s) / 900s = 0.672 mA
+          3. Calculate battery life:
+             Battery capacity (e.g., 500mAh LiPo) / I_avg = 744 hours = 31 days
+          4. Apply 80% derating for real-world conditions (temperature, aging, self-discharge):
+             Practical battery life = 744h × 0.8 = 595h ≈ 25 days
+          5. Compare against product requirement (e.g., "must last 30 days"):
+             25 days < 30 days → FAIL → need to optimize (reduce active time, lower TX power, etc.)
+          Verify: measurements are self-consistent (deep sleep < idle < active).
+          Flag if deep sleep current > datasheet typical × 2 (something is not sleeping).
+        tool_ref: null
+        output_file: "battery-life-calculation.md"
+
+      # Layer 4: Optimize — identify power optimization opportunities
+      - id: optimize_power
+        action: |
+          Identify and prioritize power optimizations:
+          1. If deep sleep current too high:
+             - Check: all GPIO pins configured (floating pins leak current)
+             - Check: all peripherals powered down (LDO enable pins, MOSFET switches)
+             - Check: pull-up/pull-down resistors not creating current paths
+             - Check: LED leakage through GPIO (even 'off' LEDs can leak ~100µA)
+          2. If active current too high:
+             - Reduce CPU clock frequency (80MHz vs 240MHz for ESP32)
+             - Use DMA for data transfers instead of CPU polling
+             - Reduce WiFi TX power (lower dBm = less range but less current)
+             - Batch sensor reads instead of continuous polling
+          3. Generate optimization recommendation table:
+             | Optimization | Current Savings | Complexity | Recommendation |
+             | Lower TX power 20→10 dBm | ~50mA peak reduction | Low | DO |
+             | CPU 240→80 MHz | ~20mA active reduction | Low | DO |
+             | Fix floating GPIO | ~50-500µA sleep reduction | Medium | DO |
+          4. Re-measure after optimizations, update power profile chart
+        tool_ref: pdf_generation
+        output_file: "power-optimization-report.pdf"
+
+    quality_criteria:
+      - "All power modes measured with actual instrument readings"
+      - "Deep sleep measured on µA range (not auto-range)"
+      - "Battery life calculation shows formula with actual measured values"
+      - "Usage profile matches realistic product scenario"
+      - "80% derating applied for real-world battery life estimate"
+      - "Power profile chart generated from actual data"
+      - "编造数据 = FAIL — current values must come from multimeter/oscilloscope readings"
+
+    anti_patterns:
+      - "❌ Using auto-range multimeter for µA measurements (injects measurement noise)"
+      - "❌ Calculating battery life from datasheet typical values instead of actual measurements"
+      - "❌ Not derating battery life estimate (real-world is 70-80% of calculated)"
+      - "❌ Measuring deep sleep current immediately after entering sleep (wait for stabilization)"
+      - "❌ Ignoring peripheral quiescent current (LDO Iq can dominate in deep sleep)"
+
+    reviewers:
+      - persona: "Power Electronics Engineer"
+        checklist:
+          - "Measurement setup correct (ammeter placement, range selection)?"
+          - "Deep sleep current within datasheet expectations?"
+          - "Battery life calculation formula correct?"
+          - "Derating factor applied?"
+      - persona: "Product Manager"
+        checklist:
+          - "Usage profile matches real product scenario?"
+          - "Battery life meets product requirement?"
+          - "Optimization plan prioritized by impact/effort?"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Environmental Test (Doc A)
+  # ═══════════════════════════════════════
+
+  environmental_test:
+    description: "Environmental test plan — temperature, humidity, mechanical shock, vibration. Design the test matrix before sending to test lab."
+
+    steps:
+      # Layer 1: Search — gather applicable standards and requirements
+      - id: search_environmental_standards
+        action: |
+          Search for applicable environmental test standards:
+          1. Product category → applicable standards:
+             - Consumer electronics (indoor): IEC 60068 series, EN 60068
+             - Outdoor/industrial: MIL-STD-810H, IP67/IP68 (IEC 60529)
+             - Automotive: ISO 16750, AEC-Q100 (components)
+             - Medical: IEC 60601 environmental requirements
+          2. Search for specific test conditions:
+             - "IEC 60068-2-1 cold test conditions" (operating -20°C for outdoor)
+             - "IEC 60068-2-2 dry heat test conditions" (operating +60°C for outdoor)
+             - "IEC 60068-2-78 humidity test 85/85" (85°C, 85% RH for reliability)
+             - "IEC 60068-2-31 drop test portable electronics"
+          3. Identify product-specific requirements:
+             - Operating temperature range (consumer: 0~40°C, outdoor: -20~60°C, industrial: -40~85°C)
+             - Storage temperature range (typically wider: -40~85°C)
+             - Ingress protection target (IP54 splash-proof, IP67 submersible)
+             - Drop height (handheld: 1.5m, desktop: 0.75m)
+        quality: "Standards must be cited with specific clause numbers. Do not guess test conditions — look them up."
+        tool_ref: web_scraping
+        queries:
+          - '"IEC 60068-2" test conditions consumer electronics'
+          - '"MIL-STD-810H" temperature humidity vibration test methods'
+          - '"IP67" test procedure IEC 60529'
+          - '"drop test" portable electronics height standard'
+        output_file: "environmental-test-research.md"
+
+      # Layer 2: Analyze — determine which tests apply to this product
+      - id: analyze_environmental_requirements
+        action: |
+          Analyze which environmental tests apply to THIS product:
+          1. Product environment classification:
+             - Where will it be used? (indoor controlled, outdoor exposed, vehicle, pocket/wearable)
+             - What abuse will it see? (dropped, shaken, rained on, left in hot car)
+             - What is the expected lifetime? (1 year consumer, 5 year industrial, 10+ year infrastructure)
+          2. Test selection matrix:
+             | Test | Applicable? | Standard | Severity Level | Reason |
+             |------|------------|----------|---------------|--------|
+             | High temperature operation | Yes | IEC 60068-2-2 | +60°C, 8h | Outdoor use |
+             | Low temperature operation | Yes | IEC 60068-2-1 | -20°C, 8h | Winter outdoor |
+             | Temperature cycling | Yes | IEC 60068-2-14 | -20↔+60°C, 10 cycles | Thermal stress |
+             | Humidity | Depends | IEC 60068-2-78 | 40°C/93%RH, 96h | If not sealed |
+             | Drop/shock | Yes | IEC 60068-2-31 | 1.5m, 6 faces | Handheld device |
+             | Vibration | If shipped | IEC 60068-2-6 | 10-500Hz sweep | Transport simulation |
+             | Dust/water | If outdoor | IEC 60529 | IP rating test | Ingress protection |
+          3. For each test: document sample size (minimum 3 units), test duration, pass/fail criteria
+        quality: "Test conditions must match product environment. Don't apply automotive specs to a desk gadget."
+        tool_ref: null
+        output_file: "environmental-test-analysis.md"
+
+      # Layer 3: Derive — create the complete test plan
+      - id: derive_environmental_plan
+        action: |
+          Create detailed test plan for each applicable test:
+          ── TEMPERATURE TESTS ──
+          High temp operation:
+            - Condition: +60°C (or product-specific), 8 hours minimum
+            - Pre-test: functional test at room temperature (baseline)
+            - During test: monitor for display anomalies, sensor drift, wireless performance
+            - Post-test: functional test at room temperature (compare to baseline)
+            - Pass criteria: all functions work during AND after exposure, no physical damage
+          Low temp operation:
+            - Condition: -20°C (or product-specific), 8 hours minimum
+            - Specific concern: LiPo battery performance degrades below 0°C
+            - Pass criteria: device boots, display readable, battery can power device for ≥50% of room-temp duration
+          Temperature cycling:
+            - Profile: -20°C (30min soak) → ramp 5°C/min → +60°C (30min soak), 10 cycles
+            - Inspect after: solder joint cracks, display delamination, seal integrity
+          ── MECHANICAL TESTS ──
+          Drop test:
+            - Height: 1.5m (pocket height) onto concrete
+            - Orientations: 6 faces + 4 edges + 4 corners = 14 drops (or per standard: 6 faces)
+            - Pass criteria: enclosure intact, display uncracked, device boots, all functions work
+          ── INGRESS PROTECTION (if applicable) ──
+          IP67 test:
+            - Dust: 8 hours in dust chamber, no ingress to enclosure
+            - Water: 1m submersion for 30 minutes, no water ingress
+          Document: test lab requirements, estimated cost, lead time (typically 2-4 weeks).
+        tool_ref: null
+        output_file: "environmental-test-plan.md"
+
+      # Layer 4: Generate — produce the test plan document
+      - id: generate_environmental_doc
+        action: |
+          Generate comprehensive environmental test plan as PDF:
+          1. Cover page: product name, revision, test plan version, date
+          2. Test summary table: all tests, conditions, sample sizes, estimated duration
+          3. Per-test detailed procedure (from derive step)
+          4. Test equipment requirements:
+             - Temperature chamber (range must cover test extremes)
+             - Drop test fixture or measured height
+             - IP test equipment (if applicable)
+          5. Sample allocation plan: which units for which tests (some tests are destructive)
+          6. Timeline: test sequence (non-destructive first, destructive last)
+          7. Reporting template: per-test results form
+          Generate environmental test flow diagram with D2 (test sequence visualization).
+        tool_ref: pdf_generation
+        output_file: "environmental-test-plan.pdf"
+
+    quality_criteria:
+      - "All test conditions traceable to specific IEC/MIL/ISO standard clauses"
+      - "Temperature ranges match product's intended operating environment"
+      - "Sample sizes specified per test (minimum 3 for statistical relevance)"
+      - "Pass/fail criteria quantitative (not just 'still works')"
+      - "Test sequence considers destructive vs non-destructive ordering"
+      - "Battery behavior at temperature extremes explicitly addressed"
+      - "编造数据 = FAIL — standard references, test conditions must be verified from actual standards"
+
+    anti_patterns:
+      - "❌ Applying MIL-STD-810H to a consumer desk gadget (overkill, expensive)"
+      - "❌ Not testing at temperature extremes with battery powered (LiPo at -20°C is a real failure mode)"
+      - "❌ Testing only 1 sample (insufficient for reliability conclusions)"
+      - "❌ Doing drop test before temperature test (drop test may damage device, invalidating later tests)"
+      - "❌ Specifying IP67 without understanding the test cost and design implications"
+
+    reviewers:
+      - persona: "Reliability Engineer"
+        checklist:
+          - "Standards correctly referenced?"
+          - "Test conditions appropriate for product category?"
+          - "Sample sizes adequate?"
+          - "Non-destructive tests scheduled before destructive?"
+      - persona: "Mechanical Engineer"
+        checklist:
+          - "Drop test height appropriate for product form factor?"
+          - "Temperature range covers worst-case deployment scenario?"
+          - "Ingress protection level justified by use case?"
+
+  # ═══════════════════════════════════════
+  # Capability 5: EMC Pre-Compliance (Doc A)
+  # ═══════════════════════════════════════
+
+  emc_precheck:
+    description: "EMC pre-compliance checklist — radiated emissions, conducted emissions, ESD immunity. Catch issues before expensive lab testing."
+
+    steps:
+      # Layer 1: Search — gather EMC standards and common issues
+      - id: search_emc_standards
+        action: |
+          Search for applicable EMC standards:
+          1. Market-specific requirements:
+             - USA: FCC Part 15 (Class B for consumer, Class A for industrial)
+             - EU: EN 55032 (emissions), EN 55035 (immunity), CE marking
+             - China: GB 9254 (emissions), GB/T 17618 (immunity), CCC if applicable
+          2. Product-specific standards:
+             - All electronics: IEC 61000-4-2 (ESD), IEC 61000-4-3 (radiated immunity)
+             - Wireless devices: additional radio-specific (e.g., FCC Part 15.247 for WiFi/BLE)
+          3. Search for common EMC failure modes:
+             - "EMC failure common causes PCB design"
+             - "radiated emissions pre-compliance testing"
+             - "ESD protection circuit design best practices"
+          4. Identify the pre-compliance test equipment available:
+             - Near-field probe set + spectrum analyzer (most useful for pre-compliance)
+             - ESD gun (IEC 61000-4-2 levels: ±2kV contact, ±4kV air minimum)
+        quality: "Standards must specify edition/year. EMC standards update frequently — cite current versions."
+        tool_ref: web_scraping
+        queries:
+          - '"EN 55032" "EN 55035" limits consumer electronics'
+          - '"FCC Part 15" Class B radiated emission limits'
+          - '"IEC 61000-4-2" ESD test levels'
+          - '"EMC pre-compliance" near-field probe testing methodology'
+        output_file: "emc-research.md"
+
+      # Layer 2: Analyze — assess the design for EMC risks
+      - id: analyze_emc_risks
+        action: |
+          Analyze the PCB design for EMC risk factors:
+          1. Clock frequencies inventory:
+             - List all oscillators, clock signals, switching converters
+             - Calculate harmonics: a 48MHz USB clock has 3rd harmonic at 144MHz, 5th at 240MHz
+             - FCC Class B limit at 240MHz: ~40 dBµV/m at 3m — this WILL be close
+          2. PCB layout review checklist:
+             | Risk Factor | Status | Severity | Notes |
+             |------------|--------|----------|-------|
+             | Ground plane continuous under ICs? | | High | Gaps in ground plane = antenna |
+             | Decoupling caps <5mm from IC pins? | | High | Long traces add inductance |
+             | Crystal/oscillator trace length? | | Medium | Keep <10mm, ground guard |
+             | DCDC inductor shielded? | | High | Unshielded inductors radiate |
+             | USB/HDMI impedance controlled? | | Medium | Mismatch = emissions |
+             | Cable entry points filtered? | | High | Cables are the #1 antenna |
+             | ESD protection on all external ports? | | Critical | Missing = instant fail |
+          3. Identify top 3 highest-risk signals (highest frequency × longest trace = most radiation)
+        quality: "Risk assessment must reference actual clock frequencies from the design, not generic advice."
+        tool_ref: null
+        output_file: "emc-risk-analysis.md"
+
+      # Layer 3: Derive — create the pre-compliance test plan
+      - id: derive_emc_checklist
+        action: |
+          Create EMC pre-compliance checklist:
+          ── DESIGN REVIEW (before board spin) ──
+          □ Ground plane: continuous, no splits under high-speed signals
+          □ Decoupling: 100nF + 10µF per power pin, placed <5mm from pin
+          □ Crystal: guard ring, short traces, ground plane underneath
+          □ DCDC: shielded inductor, input/output caps close, snubber if needed
+          □ Connectors: filter caps or ferrite beads on all external-facing signals
+          □ ESD: TVS diodes on USB, buttons, antenna feed, any user-touchable signal
+            - USB: minimum ±8kV contact (IEC 61000-4-2 Level 4)
+            - Other ports: minimum ±4kV contact
+          □ Antenna: keep-out zone respected, ground plane extends ≥λ/4 beyond antenna
+
+          ── PRE-COMPLIANCE MEASUREMENTS (with near-field probe) ──
+          1. Radiated emissions scan (30MHz - 1GHz):
+             - Use near-field H-probe, sweep over PCB surface
+             - Identify hotspots (>6 dB above average)
+             - Compare peaks against FCC/EN limit with estimated margin
+          2. Conducted emissions check:
+             - Measure on power cable with LISN (if available)
+             - Check 150kHz - 30MHz range
+          3. ESD testing:
+             - ±2kV contact discharge to all metal parts
+             - ±4kV air discharge to all external ports
+             - ±8kV contact to USB connector specifically
+             - Pass criteria: no reset, no data loss, no damage
+             - Acceptable: momentary display glitch if self-recovers within 2s
+
+          ── FIXES FOR COMMON FAILURES ──
+          Radiated emissions too high:
+            - Add ferrite bead on offending trace/cable
+            - Add shielding can over noisy IC
+            - Reduce clock frequency if possible (80MHz vs 240MHz for ESP32)
+          ESD failure:
+            - Add TVS diode (response time <1ns)
+            - Add series resistor (100Ω) before TVS for energy limiting
+            - Verify ground path impedance (TVS ground must be low impedance)
+        tool_ref: null
+        output_file: "emc-pre-compliance-checklist.md"
+
+      # Layer 4: Generate — produce the EMC pre-compliance report
+      - id: generate_emc_report
+        action: |
+          Generate EMC pre-compliance report as PDF:
+          1. Executive summary: overall EMC risk assessment (High/Medium/Low)
+          2. Standards applicability table: which standards, which markets
+          3. Design review findings: per-item status from checklist
+          4. Pre-compliance measurement results (if measurements were taken)
+          5. Risk items ranked by severity with remediation plan
+          6. Estimated cost for formal compliance testing ($5K-$15K typical for FCC+CE)
+          7. Timeline: design fixes → re-test → formal submission
+          Generate PCB EMC annotation diagram with D2 (show hotspots, ground plane gaps, etc.)
+        tool_ref: pdf_generation
+        output_file: "emc-pre-compliance-report.pdf"
+
+    quality_criteria:
+      - "All clock frequencies inventoried with harmonic analysis"
+      - "ESD protection verified on every external port"
+      - "PCB layout review covers ground plane, decoupling, trace routing"
+      - "Pre-compliance test procedure references specific frequency ranges and limit levels"
+      - "Applicable standards identified per target market (FCC, CE, CCC)"
+      - "编造数据 = FAIL — harmonic frequencies must be calculated from actual clock values"
+
+    anti_patterns:
+      - "❌ Skipping design review and going straight to measurement (cheaper to fix on paper)"
+      - "❌ Not testing ESD on USB port (most common compliance failure)"
+      - "❌ Assuming shielding solves everything (shielding without proper grounding makes it worse)"
+      - "❌ Ignoring cable radiation (cables are often the dominant emission source)"
+      - "❌ Using unshielded DCDC inductor and hoping for the best"
+
+    reviewers:
+      - persona: "EMC Engineer"
+        checklist:
+          - "All clock harmonics analyzed against emission limits?"
+          - "ESD protection on every external interface?"
+          - "Ground plane integrity verified?"
+          - "Near-field probe measurement methodology correct?"
+      - persona: "Compliance Manager"
+        checklist:
+          - "Target markets identified with correct standards?"
+          - "Pre-compliance testing covers critical frequency ranges?"
+          - "Formal test lab budget and timeline estimated?"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Test Fixture Design (Doc A)
+  # ═══════════════════════════════════════
+
+  test_fixture:
+    description: "Test fixture design for production testing — pogo pin contact, programming header, test point access, reproducibility."
+
+    steps:
+      # Layer 1: Search — gather fixture design practices and components
+      - id: search_fixture_practices
+        action: |
+          Search for test fixture design best practices:
+          1. Fixture types for electronics:
+             - Bed-of-nails: pogo pins contact PCB test points (most common for production)
+             - Clamshell: hinged fixture with alignment pins (faster operator cycle time)
+             - Flying probe: automated but slow (for prototyping, not production)
+          2. Component selection:
+             - "pogo pin spring contact PCB test" — pitch, stroke, current rating
+             - "PCB alignment pin press-fit fixture" — accuracy ±0.1mm
+             - "test fixture 3D printed jig" — rapid prototyping approach
+          3. Programming interface requirements:
+             - SWD/JTAG: need SWDIO, SWCLK, GND, VCC (4 pins minimum)
+             - UART: need TX, RX, GND (3 pins for serial flash)
+             - Tag-Connect: pogo pin programming cable (no headers needed on PCB)
+          4. Production test sequence:
+             - "production test fixture cycle time" (target: <30 seconds per board)
+             - "automated test sequence programming + verification"
+        quality: "Fixture design must reference actual pogo pin specifications (pitch, stroke, contact resistance)."
+        tool_ref: web_scraping
+        queries:
+          - '"bed of nails" test fixture PCB pogo pin design guide'
+          - '"Tag-Connect" pogo pin programming cable footprint'
+          - '"test fixture" 3D print jig electronics production'
+          - '"production test" cycle time fixture automated'
+        output_file: "fixture-research.md"
+
+      # Layer 2: Analyze — determine fixture requirements for this board
+      - id: analyze_fixture_requirements
+        action: |
+          Analyze what the test fixture must do for this specific board:
+          1. Test point inventory from PCB:
+             | Test Point | Signal | Purpose | Pin Type | Location (mm) |
+             |-----------|--------|---------|----------|--------------|
+             | TP1 | 3V3 | Rail verify | Pogo | Top, (12, 45) |
+             | TP2 | GND | Reference | Pogo | Top, (14, 45) |
+             | TP3 | SWDIO | Programming | Pogo | Bottom, (8, 20) |
+             | TP4 | SWCLK | Programming | Pogo | Bottom, (10, 20) |
+             | TP5 | UART_TX | Serial log | Pogo | Top, (30, 10) |
+             | TP6 | UART_RX | Serial cmd | Pogo | Top, (32, 10) |
+          2. Fixture requirements:
+             - Single-side or dual-side contact? (prefer single-side to simplify fixture)
+             - Board alignment method: edge guides, alignment holes, or vision system
+             - Operator interface: manual press, pneumatic clamp, or lever
+             - Cycle time target: <30 seconds (insert + test + remove)
+          3. Production volume estimate:
+             - <100 units: manual fixture with 3D-printed jig is sufficient
+             - 100-10K units: aluminum fixture with pogo pins, manual operation
+             - >10K units: automated fixture with pneumatic clamp + test software
+        quality: "Test point list must come from actual PCB design files, not assumed."
+        tool_ref: null
+        output_file: "fixture-requirements.md"
+
+      # Layer 3: Derive — design the fixture
+      - id: derive_fixture_design
+        action: |
+          Create detailed fixture design specification:
+          1. Mechanical design:
+             - Base plate: material (aluminum for production, 3D print for prototype)
+             - Board cradle: edge guides with 0.2mm clearance per side
+             - Alignment pins: 2× press-fit pins matching PCB mounting holes
+             - Pogo pin selection:
+               | Parameter | Specification |
+               |-----------|--------------|
+               | Pitch | ≥2.54mm (standard), 1.27mm (fine pitch) |
+               | Stroke | 1.0-2.0mm (allows for board warpage) |
+               | Contact resistance | <50mΩ |
+               | Current rating | ≥2A for power pins, ≥0.5A for signal |
+               | Tip shape | Crown/serrated for through-hole pads, flat for SMD pads |
+               | Lifecycle | >100K cycles for production |
+          2. Electrical design:
+             - Wiring from pogo pins to test controller (shielded for analog signals)
+             - Power injection: supply 5V/3.3V through fixture (or USB connector)
+             - Programming connection: SWD/JTAG header to J-Link/ST-Link debugger
+             - Serial connection: UART to USB adapter for test log capture
+          3. Test sequence (automated):
+             Step 1: Apply power, verify rails (power_on_test subset)
+             Step 2: Flash firmware via SWD (5-15 seconds)
+             Step 3: Run self-test firmware (tests all peripherals, reports via UART)
+             Step 4: Verify UART output matches expected pattern
+             Step 5: Record serial number + test result to database/CSV
+             Step 6: Power off, operator removes board
+          4. Fixture BOM: list all components needed to build the fixture
+        tool_ref: null
+        output_file: "fixture-design-spec.md"
+
+      # Layer 4: Generate — produce fixture documentation
+      - id: generate_fixture_docs
+        action: |
+          Generate complete fixture documentation:
+          1. Fixture design drawing (top view, side view with dimensions) using D2
+          2. BOM (Bill of Materials) for fixture construction
+          3. Assembly instructions for building the fixture
+          4. Test sequence flowchart (D2 diagram)
+          5. Operator guide: step-by-step with expected pass/fail indicators
+             - Green LED = PASS, Red LED = FAIL, Yellow LED = RETEST
+          6. Maintenance schedule: pogo pin replacement every 100K cycles
+          Generate as PDF for manufacturing handoff.
+        tool_ref: pdf_generation
+        output_file: "test-fixture-design.pdf"
+
+    quality_criteria:
+      - "Every test point on PCB mapped to fixture contact point"
+      - "Pogo pin specifications match PCB pad size and pitch"
+      - "Test sequence completes in <30 seconds per board"
+      - "Alignment method achieves <±0.2mm repeatability"
+      - "Fixture BOM includes all components with part numbers"
+      - "Operator guide requires no engineering knowledge to follow"
+      - "编造数据 = FAIL — fixture dimensions, pogo pin specs must match actual PCB design"
+
+    anti_patterns:
+      - "❌ Designing fixture without PCB test point layout (fixture must match PCB exactly)"
+      - "❌ Using undersized pogo pins for power rails (need ≥2A rating for VCC/GND)"
+      - "❌ No alignment mechanism (operator will misalign, pogo pins will miss pads)"
+      - "❌ Manual pass/fail judgment (automate with UART self-test output parsing)"
+      - "❌ Forgetting maintenance plan (pogo pins wear out, contact resistance increases)"
+
+    reviewers:
+      - persona: "Manufacturing Engineer"
+        checklist:
+          - "Fixture compatible with production line workflow?"
+          - "Cycle time <30 seconds achievable?"
+          - "Operator instructions clear for non-engineers?"
+          - "Pogo pin lifecycle adequate for production volume?"
+      - persona: "Test Engineer"
+        checklist:
+          - "All critical test points accessible?"
+          - "Programming interface reliable (SWD/JTAG)?"
+          - "Self-test firmware covers all peripherals?"
+          - "Test result logging automated?"
+
+  # ═══════════════════════════════════════
+  # Capability 7: HW Pair Testing (Mixed — 4D Protocol)
+  # ═══════════════════════════════════════
+
+  hw_pair_testing:
+    description: "Human + AI collaborative hardware testing using 4D Protocol — Human operates instruments (multimeter, oscilloscope, logic analyzer), AI guides measurement sequence + analyzes readings + identifies anomalies."
+
+    steps:
+      # Prepare — set up the testing session
+      - id: prepare_session
+        action: |
+          Before starting HW pair testing session:
+          1. Confirm available instruments:
+             - Multimeter (DMM): brand/model, resolution (4.5 digit preferred for µA)
+             - Oscilloscope: bandwidth (≥100MHz for digital), probe count
+             - Logic analyzer: sample rate, channel count
+             - Power supply: voltage/current range, current readback resolution
+             - Optional: thermal camera, LCR meter, spectrum analyzer
+          2. Confirm board under test:
+             - Board revision, serial number
+             - Firmware version loaded
+             - Known issues from previous tests
+          3. Define session focus (human decides):
+             - "I want to debug why deep sleep current is too high"
+             - "I want to verify the new display controller works"
+             - "I want to check EMC before sending to lab"
+          4. AI prepares measurement sequence for the focus area
+        tool_ref: null
+        output_file: "hw-pair-session-plan.md"
+
+      # Discover — human measures, AI analyzes
+      - id: discover
+        action: |
+          Iterative discovery cycle (repeat for each measurement):
+          1. AI instructs: "Measure voltage at TP3 (3V3 rail) with multimeter on DC V range"
+          2. Human measures and reports: "Reading: 3.287V"
+          3. AI analyzes:
+             - Expected: 3.300V ±5% (3.135V - 3.465V)
+             - Actual: 3.287V → PASS (within spec, -0.4% deviation)
+             - Context: slight low reading could indicate load regulation — check current draw
+          4. AI guides next measurement based on findings:
+             - If nominal → move to next test point
+             - If anomaly → drill down (measure upstream, check load, probe with scope)
+          5. For oscilloscope measurements:
+             - Human captures screenshot/photo of scope display
+             - AI analyzes waveform: frequency, amplitude, rise time, ringing, noise
+             - "Take photo of scope screen showing SPI clock to E-ink display"
+          6. For current measurements:
+             - Guide human through ammeter insertion point
+             - Specify range selection (start high, go lower for resolution)
+          Each round: one measurement → analysis → decision on next step.
+        tool_ref: null
+        output_file: "hw-pair-findings/ (measurement logs)"
+
+      # Discuss — interpret results together
+      - id: discuss
+        action: |
+          For each finding, discuss (4D Protocol):
+          1. What does this measurement mean?
+             - AI: "3.287V is within spec but 13mV low. At 200mA load, this suggests
+                    ~65mΩ total path resistance (trace + connector). Normal for prototype."
+          2. Is this a problem?
+             - Human judges: "Acceptable for prototype, but trace width should increase for production."
+          3. What could cause anomalies?
+             - AI provides differential diagnosis:
+               "Deep sleep current of 150µA (expected <10µA) → possible causes:
+                a) GPIO pin left floating (most common, ~50µA per pin)
+                b) LDO quiescent current higher than expected (check datasheet Iq)
+                c) Peripheral not fully powered down (check enable pin state)
+                d) LED leakage through reverse-biased GPIO"
+          4. What should we check next?
+             - Human and AI decide together based on the diagnosis
+          Key: "1M context means we remember every measurement from round 1. No need to re-measure."
+        tool_ref: null
+        output_file: "hw-pair-discussion.md (append per round)"
+
+      # Decide — make decisions in-session
+      - id: decide
+        action: |
+          For each finding, decide NOW:
+          1. Hardware fix needed — document: what to modify, which component, expected improvement
+             Example: "Add 10kΩ pull-down on GPIO4 to eliminate 50µA leakage"
+          2. Firmware fix needed — document: what to change in code
+             Example: "Configure GPIO4 as input with pull-down before entering deep sleep"
+          3. Acceptable as-is — document reasoning
+             Example: "3V3 rail at 3.287V is within ±5% spec, no action needed"
+          4. Needs further investigation — document what equipment/test is needed
+             Example: "Need spectrum analyzer to identify 240MHz peak source"
+          Decisions made with probe still on the board > decisions made from memory later.
+        tool_ref: null
+        output_file: "hw-pair-decisions.md"
+
+      # Deliver — compile session report
+      - id: deliver
+        action: |
+          Generate session report:
+          1. Session summary: board ID, instruments used, focus area, rounds completed
+          2. Measurement log table:
+             | Round | Test Point | Expected | Measured | Verdict | Decision |
+             |-------|-----------|----------|----------|---------|----------|
+             | 1 | TP3 (3V3) | 3.300V ±5% | 3.287V | PASS | Accept |
+             | 2 | TP5 (VBAT) | 4.200V | 4.187V | PASS | Accept |
+             | 3 | Deep sleep I | <10µA | 150µA | FAIL | Fix GPIO4 |
+          3. Action items: hardware modifications, firmware changes, follow-up tests
+          4. Updated baseline measurements (for regression comparison)
+          Generate as PDF with measurement summary table.
+        tool_ref: pdf_generation
+        output_file: "hw-pair-test-report.pdf"
+
+    quality_criteria:
+      - "Every measurement has: test point, expected value, actual value, instrument used"
+      - "AI analysis references datasheet values and tolerances"
+      - "Anomalies investigated with differential diagnosis (not just 'it failed')"
+      - "Decisions made in-session for every finding"
+      - "Measurement log complete enough to reproduce the session"
+      - "Human makes severity/priority decisions (not AI alone)"
+      - "编造数据 = FAIL — all measurement values must come from human-reported instrument readings"
+
+    anti_patterns:
+      - "❌ AI fabricating measurement values (only human reads the instrument)"
+      - "❌ Deferring all decisions to 'review meeting later' (decide while probe is on board)"
+      - "❌ Measuring without specifying instrument range (auto-range on µA measurements = noise)"
+      - "❌ AI deciding hardware modifications without human approval"
+      - "❌ Not recording instrument model/calibration status (traceability)"
+
+    reviewers:
+      - persona: "Senior HW Engineer"
+        checklist:
+          - "Measurement methodology correct for each test point?"
+          - "Anomaly root cause analysis plausible?"
+          - "Hardware fix recommendations safe and practical?"
+      - persona: "QA Lead"
+        checklist:
+          - "All measurements recorded with traceability?"
+          - "Decisions documented for every finding?"
+          - "Action items have owners and deadlines?"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/hw-testing/{project}/
+  ├── power-on-test-plan.md              # Rail identification + sequence
+  ├── power-on-checklist.pdf             # Printable checklist for bench
+  ├── power-on-probe.py                  # Serial probe script
+  ├── power-on-sop.pdf                   # Standard Operating Procedure
+  ├── functional-test-plan.md            # Peripheral inventory
+  ├── test-display.py                    # Display test script
+  ├── test-peripherals/                  # Per-peripheral test scripts
+  │   ├── test-sensors.py
+  │   ├── test-wireless.py
+  │   ├── test-storage.py
+  │   └── test-buttons.py
+  ├── functional-test-report.pdf         # Consolidated results
+  ├── power-measurement-plan.md          # Mode definitions + setup
+  ├── power-measurements.md              # Raw measurement data
+  ├── power-profile.png                  # Power profile chart
+  ├── battery-life-calculation.md        # Battery life analysis
+  ├── power-optimization-report.pdf      # Optimization recommendations
+  ├── environmental-test-research.md     # Standards research
+  ├── environmental-test-plan.pdf        # Complete test plan for lab
+  ├── emc-research.md                    # EMC standards research
+  ├── emc-risk-analysis.md               # Design review findings
+  ├── emc-pre-compliance-checklist.md    # Pre-compliance checklist
+  ├── emc-pre-compliance-report.pdf      # Report for compliance manager
+  ├── fixture-research.md                # Fixture design research
+  ├── fixture-design-spec.md             # Detailed fixture specification
+  ├── test-fixture-design.pdf            # Manufacturing-ready fixture docs
+  ├── hw-pair-session-plan.md            # Pair testing session plan
+  ├── hw-pair-findings/                  # Per-round measurement logs
+  ├── hw-pair-discussion.md              # Discussion log
+  ├── hw-pair-decisions.md               # Decision log
+  └── hw-pair-test-report.pdf            # Session report
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Test plan covers all 7 capabilities relevant to the product"
+      - "Power-on checklist complete with all voltage rails identified"
+      - "Peripheral test list matches BOM (every IC has a test)"
+      - "Environmental test conditions reference applicable standards"
+      - "EMC pre-compliance checklist addresses all external interfaces"
+      - "Test fixture design matches PCB test point layout"
+
+  gate4_acceptance:
+    test_topic: "Testing Wayo prototype"
+    checklist:
+      - "Power-on: all voltage rails within ±5% of nominal"
+      - "Power-on: quiescent current within datasheet typical ±20%"
+      - "Functional: E-ink display refreshes without artifacts, <3s full refresh"
+      - "Functional: all I2C devices respond at expected addresses"
+      - "Functional: WiFi/BLE scan returns results, RSSI >-70 dBm at 1m"
+      - "Power: deep sleep current measured on µA range, <10µA for ESP32-C3"
+      - "Power: battery life calculation shows formula with actual measured values"
+      - "Environmental: test plan ready for lab submission with standard references"
+      - "EMC: design review complete, ESD protection on all external ports verified"
+      - "Fixture: test point map matches PCB, pogo pin specs selected"
+      - "All measurement values are from actual instruments — 编造数据 = FAIL"

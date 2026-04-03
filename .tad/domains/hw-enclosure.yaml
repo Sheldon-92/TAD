@@ -1,0 +1,849 @@
+# Domain Pack: Hardware Enclosure Design
+# From PCB dimensions to print-ready enclosure — with real tool outputs (STL, PDF, diagrams).
+# Scope: IoT / embedded device enclosures. FDM/SLA 3D printing primary, injection molding secondary.
+# Platform scope: macOS CLI (OpenSCAD + D2 + Typst). OpenSCAD requires: brew install --cask openscad
+domain: hw-enclosure
+version: 1.0.0
+requires_registry: ">=1"
+description: "硬件外壳设计：从 PCB 尺寸到可打印的 STL。核心价值：直接产出 .scad 参数化模型 + STL 导出 + 装配图 + 尺寸图纸，不是画草图。所有公差、壁厚、卡扣参数基于制造约束，不是凭感觉。"
+
+# Type distribution:
+#   Code B (tool output): enclosure_design, pcb_fitting, manufacturing_export, enclosure_documentation
+#   Doc A (research): material_selection, ergonomics
+#   Mixed: assembly_design
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: Parametric Enclosure Design
+# Type B — select → execute → verify → optimize
+# ═══════════════════════════════════════
+
+capabilities:
+
+  enclosure_design:
+    description: "参数化 3D 外壳建模 — 从需求到可打印的 .scad + STL"
+
+    steps:
+      - id: gather_constraints
+        action: |
+          收集硬件约束参数（所有数值必须有来源，不接受凭感觉）：
+          1. PCB 尺寸：长×宽×高（含最高元器件），安装孔位置和直径
+          2. 连接器位置：USB/天线/按钮/LED 的 XYZ 坐标 + 朝向 + 开口尺寸
+          3. 电池尺寸：型号、长×宽×高、固定方式
+          4. 工作环境：室内/室外、温度范围、IP 等级要求
+          5. 制造方式：FDM/SLA/注塑 → 决定最小壁厚和公差
+          如果用户未提供 PCB 尺寸 → 搜索该开发板的官方尺寸图。
+        tool_ref: null
+        output_file: "enclosure-constraints.md"
+
+      - id: select_enclosure_type
+        action: |
+          根据约束选择外壳类型（必须给出选型理由）：
+          | 类型 | 适用场景 | 壁厚 | 分模方式 |
+          |------|---------|------|---------|
+          | 上下壳体 (clamshell) | 通用，维修方便 | ≥1.5mm FDM / ≥1.0mm SLA | 水平分模 |
+          | 滑入式 (slide-in) | 薄型设备，扁平 PCB | ≥1.2mm | 侧面滑入 |
+          | 卡扣式 (snap-fit) | 无螺丝外观，消费级 | ≥2.0mm（卡扣处 ≥2.5mm）| 卡扣+导槽 |
+          | 防水密封 (sealed) | IP65+，户外 | ≥2.5mm + 密封槽 | O-ring 压缩 |
+
+          决定关键参数：
+          - wall_thickness: mm（基于制造方式 + 结构强度）
+          - corner_radius: mm（≥2mm 减少应力集中）
+          - tolerance: mm（FDM=0.2, SLA=0.1, 注塑=0.05）
+          - draft_angle: deg（注塑 ≥1.5°，3D 打印=0°）
+          - screw_boss_od: mm（螺丝外径×2.5 经验值）
+        tool_ref: null
+        output_file: "enclosure-constraints.md (append)"
+
+      - id: generate_scad
+        action: |
+          用 OpenSCAD 生成参数化外壳模型：
+          1. 文件顶部声明所有参数变量（方便 -D 覆盖）
+          2. 使用 module 封装每个子组件（底壳、顶盖、螺丝柱、通风孔）
+          3. 关键设计规则：
+             - 所有内角用 minkowski() 做圆角（减少应力集中）
+             - 螺丝柱用 difference() 从壳体长出来，不是独立粘贴
+             - 配合面加 tolerance 变量（lid_inner = shell_outer + 2*tol）
+             - 通风孔用 for() 循环阵列，间距≥1.5mm（FDM 可打印）
+             - $fn=32 预览，$fn=64 导出
+          4. 底壳和顶盖分别作为 module，可独立导出
+          ⚠️ 所有尺寸必须来自 gather_constraints 步骤的实际数据
+        tool_ref: parametric_cad
+        output_file: "enclosure.scad"
+
+      - id: render_preview
+        action: |
+          用 OpenSCAD CLI 渲染预览图（4 个视角）：
+          openscad -o enclosure-front.png --camera=0,0,0,55,0,25,200 --imgsize=1024,768 enclosure.scad
+          openscad -o enclosure-top.png --camera=0,0,0,90,0,0,200 --imgsize=1024,768 enclosure.scad
+          openscad -o enclosure-iso.png --camera=0,0,0,45,0,45,200 --imgsize=1024,768 enclosure.scad
+          openscad -o enclosure-section.png --camera=0,0,0,55,0,25,200 --imgsize=1024,768 --render enclosure.scad
+          确认：壁厚均匀、无穿模、螺丝柱位置正确、连接器开口对齐。
+        tool_ref: parametric_cad
+        output_file: "enclosure-*.png"
+
+      - id: verify_dimensions
+        action: |
+          验证关键尺寸（人工检查 + 脚本计算）：
+          1. 内腔是否能容纳 PCB + 电池 + 线缆（每边至少 1mm 间隙）
+          2. 连接器开口是否对齐（位置偏差 ≤0.5mm）
+          3. 壁厚是否满足最小值（grep wall 变量 vs 实际 difference）
+          4. 总外形尺寸是否符合用户要求
+          5. 预估打印时间和材料用量（基于体积）
+          如果发现尺寸错误 → 修改 .scad 参数 → 重新渲染
+        tool_ref: null
+        output_file: "enclosure-constraints.md (append)"
+
+      - id: optimize_printability
+        action: |
+          打印友好性优化（基于制造方式）：
+          FDM 优化：
+          - 悬空角度 ≤45° 或添加支撑结构
+          - 首层接触面积 ≥ 总底面积 20%（防翘曲）
+          - 薄壁方向与打印层方向一致（强度最大化）
+          - 桥接距离 ≤10mm
+          SLA 优化：
+          - 排水孔（封闭腔体必须有 ≥2mm 孔）
+          - 支撑点避开外观面
+          通用：
+          - 消除尖角（应力集中 → 开裂）
+          - 配合面倒角 0.5mm（引导装配）
+        tool_ref: parametric_cad
+        output_file: "enclosure.scad (update)"
+
+    quality_criteria:
+      - "所有尺寸参数化（顶部变量声明，可通过 -D 覆盖）"
+      - "壁厚满足制造最小值（FDM ≥1.5mm, SLA ≥1.0mm, 注塑 ≥1.2mm）"
+      - "配合面公差正确（FDM=0.2mm, SLA=0.1mm）"
+      - "螺丝柱外径 ≥ 螺丝外径×2.5"
+      - "所有内角有圆角（corner_radius ≥2mm）"
+      - ".scad 文件可直接 openscad -o output.stl 编译无错误"
+      - "编造尺寸 = FAIL。PCB 数据必须来自数据手册或实测"
+
+    anti_patterns:
+      - "❌ 硬编码尺寸（magic numbers）→ 必须用变量"
+      - "❌ 忽略公差（配合面无间隙 → 装不进去）"
+      - "❌ 壁厚凭感觉（必须基于制造方式的最小值）"
+      - "❌ 不渲染预览就交付（肉眼检查 = 必须步骤）"
+      - "❌ 单体建模（底壳+顶盖应该是独立 module，可分别导出 STL）"
+
+    reviewers:
+      - persona: "机械工程师"
+        checklist:
+          - "壁厚是否满足制造方式的最小值？"
+          - "配合面公差是否正确？"
+          - "螺丝柱结构是否合理（外径、高度、加强筋）？"
+          - "悬空角度是否在 45° 以内？"
+          - ".scad 文件能否无错误编译导出 STL？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: PCB Fitting
+  # Type B — select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  pcb_fitting:
+    description: "PCB 安装定位 — 安装柱 + 连接器开口 + 线缆走线空间"
+
+    steps:
+      - id: measure_pcb
+        action: |
+          精确测量/获取 PCB 数据（±0.1mm 精度）：
+          1. PCB 外形尺寸：长×宽×厚（含 FR4 + 焊盘高度）
+          2. 安装孔：数量、直径、中心坐标（以 PCB 左下角为原点）
+          3. 最高元器件高度（正面/背面分别）
+          4. 连接器列表：
+             | 名称 | 类型 | 中心 X | 中心 Y | Z(从PCB底面) | 开口宽 | 开口高 | 朝向 |
+          5. 天线位置和净空要求（金属外壳需要天线窗口）
+          6. 散热元件位置（需要通风孔或散热柱对齐）
+          数据来源优先级：数据手册 > KiCad/EDA 文件 > 实测
+        tool_ref: null
+        output_file: "pcb-fitting.md"
+
+      - id: generate_mounting
+        action: |
+          在 .scad 中添加 PCB 安装结构：
+          1. 安装柱（standoff）：
+             - 高度 = PCB 底面净空需求（通常 3-5mm）
+             - 外径 = 安装孔直径 × 2.5（M2 孔 → OD=5mm, M3 孔 → OD=7.5mm）
+             - 内孔 = 自攻螺丝预钻孔径（M2=1.6mm, M3=2.5mm FDM）
+             - 顶部加 0.5mm 倒角（引导 PCB 放入）
+          2. 定位销（alignment pin）— 无螺丝方案：
+             - 2 个定位销 + 2 个安装柱（对角布局）
+             - 销直径 = 安装孔直径 - 0.3mm（过盈配合）
+          3. PCB 边缘导槽（可选）：
+             - 槽宽 = PCB 厚度 + 0.3mm
+             - 槽深 ≥ 1.5mm
+          ⚠️ 安装柱位置必须与 measure_pcb 的坐标精确对应
+        tool_ref: parametric_cad
+        output_file: "enclosure.scad (update)"
+
+      - id: generate_connector_cutouts
+        action: |
+          在外壳侧面/底面开连接器窗口：
+          1. 每个连接器开口：
+             - 位置 = 连接器中心坐标 + PCB 安装高度 + 壳壁偏移
+             - 宽度 = 连接器宽 + 1.0mm（FDM）或 + 0.5mm（SLA）
+             - 高度 = 连接器高 + 0.8mm
+             - 圆角 = 0.5mm（减少应力集中）
+          2. USB-C 开口标准尺寸：9.5mm × 3.5mm（含公差）
+          3. LED 导光孔：直径 = LED 直径 + 0.5mm，深度 = 壁厚 - 0.5mm（留薄层导光）
+          4. 按钮孔：直径 = 按钮直径 + 0.3mm，加防尘唇 0.3mm
+          5. E-ink/LCD 显示窗：开口 = 可视区域 + 1mm 每边，加 0.8mm 台阶压屏
+          ⚠️ 开口位置误差超过 ±0.5mm = 连接器无法插入或外观丑陋
+        tool_ref: parametric_cad
+        output_file: "enclosure.scad (update)"
+
+      - id: verify_fitting
+        action: |
+          验证 PCB 装配可行性：
+          1. 用 OpenSCAD 的 # 透明修饰符检查 PCB 与壳体的空间关系：
+             在 .scad 中添加 PCB 占位块（透明）：
+             #color("green", 0.3) translate([pcb_x, pcb_y, pcb_z]) cube([pcb_l, pcb_w, pcb_h]);
+          2. 检查清单：
+             □ PCB 四边间隙 ≥1mm
+             □ 最高元器件到顶盖间隙 ≥1.5mm
+             □ 连接器开口与连接器对齐（渲染侧视图确认）
+             □ 线缆弯曲半径 ≥ 线缆直径×3
+             □ 天线区域无金属遮挡
+          3. 渲染截面图确认内部空间
+          如果间隙不足 → 调整参数 → 重新渲染
+        tool_ref: parametric_cad
+        output_file: "pcb-fitting-verify.png"
+
+      - id: optimize_cable_routing
+        action: |
+          线缆走线空间优化：
+          1. 电池连接线：预留弯曲半径 ≥ 线径×3 的通道
+          2. FPC 排线（如屏幕）：预留 90° 弯折空间 + 最小弯曲半径
+          3. 天线馈线：避开大电流走线，预留 SMA/U.FL 连接器操作空间
+          4. 如果空间紧张：在壳体内壁加走线槽（宽=线径+1mm, 深=线径）
+          5. 装配顺序标注：哪根线先接，避免"装不进去"
+        tool_ref: null
+        output_file: "pcb-fitting.md (append)"
+
+    quality_criteria:
+      - "安装柱位置与 PCB 安装孔坐标误差 ≤0.1mm"
+      - "连接器开口尺寸包含制造公差（FDM +1.0mm, SLA +0.5mm）"
+      - "PCB 四边间隙 ≥1mm，顶部间隙 ≥1.5mm"
+      - "有 PCB 占位块透明渲染验证"
+      - "线缆弯曲半径 ≥ 线径×3"
+      - "编造 PCB 尺寸 = FAIL。必须引用数据手册或实测数据"
+
+    anti_patterns:
+      - "❌ 安装孔位置靠目测（必须用坐标数据）"
+      - "❌ 连接器开口不加公差（插不进去）"
+      - "❌ 忽略 PCB 背面元器件高度（安装柱高度不够 → 短路）"
+      - "❌ 不验证就交付（必须有透明 PCB 占位块渲染）"
+      - "❌ 忘记天线净空（金属外壳挡天线 → 信号衰减 20dB+）"
+
+    reviewers:
+      - persona: "硬件工程师"
+        checklist:
+          - "安装柱尺寸是否匹配螺丝规格？"
+          - "连接器开口位置是否与 PCB 实际位置对齐？"
+          - "电池和 PCB 之间是否有足够间隙？"
+          - "天线区域是否避开了金属结构？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Material Selection
+  # Type A — search → analyze → derive → generate
+  # ═══════════════════════════════════════
+
+  material_selection:
+    description: "材料选型 + 制造工艺 + 成本分析 — 基于真实供应商数据"
+
+    steps:
+      - id: search_materials
+        action: |
+          搜索候选材料的工程参数（≥3 种候选）：
+          1. 3D 打印材料：PLA, PETG, ABS, ASA, Nylon, Resin
+          2. 注塑材料：ABS, PC, PC/ABS, PP, Nylon66
+          3. 搜索每种材料的：
+             - 拉伸强度 (MPa), 弯曲模量 (GPa), 热变形温度 (°C)
+             - 耐紫外线、耐化学品、吸湿率
+             - 颜色选项、表面处理可能性
+          4. 搜索供应商价格（Hatchbox, eSUN, Polymaker for FDM; JLCPCB, PCBWay for SLA/注塑）
+        tool_ref: web_scraping
+        queries:
+          - '"PLA vs PETG vs ABS" enclosure "mechanical properties" comparison'
+          - '"3D printing material selection" IoT enclosure outdoor'
+          - '"{制造方式}" material cost per unit volume 2026'
+          - '"JLCPCB" OR "PCBWay" injection molding minimum order price'
+        output_file: "material-selection.md"
+
+      - id: analyze_requirements
+        action: |
+          基于产品需求筛选材料（决策矩阵，每个标准有权重）：
+          | 标准 | 权重 | PLA | PETG | ABS | ASA | Nylon |
+          |------|------|-----|------|-----|-----|-------|
+          | 强度 (MPa) | W1 | 实际值 | ... | ... | ... | ... |
+          | 耐温 (°C) | W2 | ... | ... | ... | ... | ... |
+          | 耐紫外 | W3 | ... | ... | ... | ... | ... |
+          | 打印难度 | W4 | ... | ... | ... | ... | ... |
+          | 成本 ($/kg) | W5 | ... | ... | ... | ... | ... |
+          | 总分 | | Σ | Σ | Σ | Σ | Σ |
+
+          权重基于产品约束（户外→耐紫外权重高，消费级→成本权重高）。
+          每个数值必须有搜索来源。无数据 → 标注 [DATA NEEDED]。
+        quality: "决策矩阵中的每个数值必须有来源。权重选择必须有理由。"
+        tool_ref: null
+        output_file: "material-selection.md (append)"
+
+      - id: derive_recommendation
+        action: |
+          材料推荐 + 制造工艺匹配：
+          1. 首选材料 + 备选材料（含切换条件）
+          2. 配套制造工艺：
+             | 制造方式 | 单件成本 | 模具成本 | 最小起订 | 交期 | 适合阶段 |
+             | FDM 自制 | $2-8 | $0 | 1 | 1天 | 原型 |
+             | SLA 外发 | $5-20 | $0 | 1 | 3-5天 | 小批量 |
+             | SLS | $15-40 | $0 | 1 | 5-7天 | 功能验证 |
+             | 注塑 | $0.5-3 | $2K-15K | 500+ | 3-6周 | 量产 |
+          3. 阶段建议：原型用 X → 小批量用 Y → 量产用 Z
+          4. 总成本估算：单件×数量 + 模具分摊 + 后处理
+          如果预算不支持注塑 → 诚实说明 3D 打印的量产限制
+        quality: "成本数据必须来自搜索结果。推测标注 [ESTIMATED]。"
+        tool_ref: null
+        output_file: "material-selection.md (append)"
+
+      - id: generate_report
+        action: "综合为材料选型报告 PDF（含决策矩阵、成本分析、阶段建议）"
+        tool_ref: pdf_generation
+        output_file: "material-selection.pdf"
+
+    quality_criteria:
+      - "≥3 种候选材料，每种有 ≥5 项工程参数"
+      - "决策矩阵权重有明确理由"
+      - "成本数据来自真实供应商（有 URL 或搜索来源）"
+      - "阶段建议覆盖原型→小批量→量产"
+      - "编造材料参数 = FAIL。数据手册数值 vs 供应商声称要分开标注"
+
+    anti_patterns:
+      - "❌ 不搜索就推荐 PLA（PLA 不耐温、脆，不是万能材料）"
+      - "❌ 忽略后处理成本（打磨、喷漆、攻丝都是钱）"
+      - "❌ 成本只算材料不算人工和模具分摊"
+      - "❌ 推荐注塑但不说模具成本（$2K-$15K 门槛）"
+      - "❌ 材料参数来源混乱（不同测试标准的数据不能直接比较）"
+
+    reviewers:
+      - persona: "材料工程师"
+        checklist:
+          - "材料参数是否来自正规数据手册？"
+          - "决策矩阵权重是否合理？"
+          - "成本估算是否包含模具/后处理？"
+          - "阶段建议是否考虑了转换成本？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Assembly Design
+  # Type Mixed — analysis + D2 diagrams
+  # ═══════════════════════════════════════
+
+  assembly_design:
+    description: "装配方式设计 — 紧固方式 + 装配顺序 + 可维修性"
+
+    steps:
+      - id: search_fastening
+        action: |
+          搜索适合该产品的紧固方式：
+          1. 螺丝紧固：M2/M3 自攻螺丝 + 铜螺母嵌件（塑料外壳标准方案）
+          2. 卡扣（snap-fit）：悬臂梁卡扣 / 环形卡扣 / 扭转卡扣
+          3. 超声波焊接：一次性密封方案（不可拆）
+          4. 胶粘：结构胶 / 双面胶 / UV胶
+          搜索每种方式的：
+          - 保持力 (N), 循环次数, 工具需求, 单件时间
+          - 适用壁厚, 材料兼容性, 防水能力
+        tool_ref: web_scraping
+        queries:
+          - '"snap fit design" 3D printed enclosure cantilever beam'
+          - '"plastic enclosure fastening" screws vs snap-fit vs ultrasonic'
+          - '"heat-set insert" 3D print M2 M3 specification'
+          - '"IP65 enclosure sealing" gasket O-ring design'
+        output_file: "assembly-design.md"
+
+      - id: analyze_serviceability
+        action: |
+          可维修性分析（影响用户体验和产品寿命）：
+          1. 电池可更换性：需要几步？需要工具吗？
+          2. PCB 可接触性：调试/固件更新是否需要拆壳？
+          3. 密封 vs 可拆卸权衡：
+             - IP65 要求 O-ring + 螺丝（可拆但复杂）
+             - 超声波焊接（密封好但不可维修）
+             - 卡扣 + 密封垫圈（折中方案）
+          4. 拆装循环次数：消费级 ≥20 次，工业级 ≥100 次
+          5. 工具需求：无工具 > 通用工具 > 专用工具
+          决策依据：产品定位（一次性 vs 长寿命）、维修频率、目标成本
+        quality: "每个决策必须说明权衡（tradeoff），不能只推荐一种方案。"
+        tool_ref: null
+        output_file: "assembly-design.md (append)"
+
+      - id: derive_assembly_sequence
+        action: |
+          设计装配顺序（必须考虑人机工程）：
+          1. 列出所有零件清单（BOM 简表）：
+             | # | 零件 | 数量 | 材料 | 来源 |
+          2. 装配顺序（每步≤1个动作）：
+             Step 1: 将 X 放入 Y（方向：从上往下）
+             Step 2: 插入 Z（施力方向：水平推入）
+             ...
+          3. 每步标注：
+             - 施力方向和大小（捏合力 ≤30N 手指可操作）
+             - 对齐特征（导槽/定位销/倒角引导）
+             - 不可逆操作警告（⚠️ 超声波焊接后不可拆）
+          4. 估算总装配时间（目标：手工 ≤3分钟，流水线 ≤30秒）
+        tool_ref: null
+        output_file: "assembly-design.md (append)"
+
+      - id: generate_assembly_diagram
+        action: |
+          用 D2 生成装配爆炸图（分层视图）：
+          1. 每个零件一个节点，按装配顺序从下到上排列
+          2. 用箭头标注装配方向和紧固方式
+          3. 标注关键尺寸（螺丝长度、卡扣间隙）
+          4. 用颜色区分：壳体(蓝)、PCB(绿)、紧固件(红)、附件(灰)
+          示例 D2 结构：
+          direction: down
+          bottom_shell: "底壳" { style.fill: "#4A90D9" }
+          pcb: "PCB + 电池" { style.fill: "#7BC67E" }
+          top_cover: "顶盖" { style.fill: "#4A90D9" }
+          screws: "M2×6 螺丝 ×4" { style.fill: "#E74C3C" }
+          bottom_shell -> pcb: "放入（从上往下）" { style.stroke-dash: 5 }
+          pcb -> top_cover: "扣合" { style.stroke-dash: 5 }
+          top_cover -> screws: "拧紧 0.3Nm"
+        tool_ref: diagram_generation
+        output_file: "assembly-exploded.svg"
+
+      - id: generate_fastening_detail
+        action: |
+          用 D2 生成紧固细节图：
+          1. 螺丝柱截面图（含尺寸标注）
+          2. 卡扣截面图（含悬臂长度、偏转量、应力）
+          3. 密封结构截面图（O-ring 槽尺寸、压缩比）
+          每个细节图标注关键尺寸 ±公差
+        tool_ref: diagram_generation
+        output_file: "fastening-detail.svg"
+
+    quality_criteria:
+      - "装配步骤每步 ≤1 个动作，有施力方向标注"
+      - "总装配时间估算 ≤3 分钟（手工）"
+      - "捏合力 ≤30N（手指可操作）"
+      - "拆装循环次数满足产品定位（消费≥20，工业≥100）"
+      - "有爆炸图 + 紧固细节图"
+      - "编造紧固参数 = FAIL（卡扣应力必须有计算或参考值）"
+
+    anti_patterns:
+      - "❌ 只考虑紧固不考虑拆卸（维修时怎么拆？）"
+      - "❌ 卡扣设计没有应力校验（断裂 = 产品报废）"
+      - "❌ 装配顺序不考虑线缆（先盖盖子再接线 = 灾难）"
+      - "❌ 螺丝扭矩不标注（拧过头 = 螺丝柱开裂）"
+      - "❌ 爆炸图没有方向箭头（看图猜装配顺序）"
+
+    reviewers:
+      - persona: "生产工程师"
+        checklist:
+          - "装配顺序是否合理（先内后外、先重后轻）？"
+          - "紧固方式是否匹配材料和壁厚？"
+          - "是否考虑了批量生产的工时优化？"
+          - "密封设计是否满足 IP 等级要求？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Ergonomics & Appearance
+  # Type A — search → analyze → derive → generate
+  # ═══════════════════════════════════════
+
+  ergonomics:
+    description: "人机工程 + 外观 + 手感 — 基于人体测量学数据"
+
+    steps:
+      - id: search_ergonomics
+        action: |
+          搜索目标使用场景的人机工程数据：
+          1. 握持方式：单手/双手/桌面放置/壁挂/佩戴
+          2. 手掌尺寸数据（ISO 7250）：
+             - 成人手掌宽度 P50: 男 83mm / 女 74mm
+             - 握力 P5: 男 275N / 女 166N
+             - 拇指操作范围：单手持握时 ≤70mm
+          3. 搜索同类产品的尺寸和人体工学评测
+          4. 搜索目标用户群体的特殊需求（老人→大按钮、防滑；儿童→圆角、无小零件）
+        tool_ref: web_scraping
+        queries:
+          - '"handheld device ergonomics" dimensions grip comfort'
+          - '"IoT device form factor" user study'
+          - '"{产品类型}" ergonomic design guidelines'
+          - '"enclosure surface finish" texture grip comparison'
+        output_file: "ergonomics.md"
+
+      - id: analyze_form_factor
+        action: |
+          外形因素分析：
+          1. 尺寸约束：
+             - 最大外形 = 人体工学限制 vs 内部元器件需求
+             - 如果内部元器件大于人体工学最佳尺寸 → 必须权衡
+          2. 握持舒适度：
+             - 边缘圆角 ≥3mm（长时间握持不割手）
+             - 背面曲率匹配手掌弧度（R=80-120mm）
+             - 重心位置（偏下 = 稳定感，偏上 = 翻倒风险）
+          3. 操作界面布局：
+             - 按钮位置在拇指自然触达范围内
+             - 显示屏可视角度 ≥30°（倾斜使用时）
+             - LED 指示灯不在强光直射面
+          4. 表面处理：
+             - 哑光 = 防指纹 + 防滑
+             - 亮面 = 高级感但滑
+             - 纹理 = 最佳手感但增加模具成本
+        quality: "人体尺寸数据必须引用标准（ISO 7250）或搜索来源，不是凭经验。"
+        tool_ref: null
+        output_file: "ergonomics.md (append)"
+
+      - id: derive_design_language
+        action: |
+          外观设计语言定义：
+          1. 设计风格关键词：3-5 个形容词（如：极简/坚固/科技感/自然/可爱）
+          2. 色彩方案：
+             - 主色 + 辅色 + 强调色（Hex 值）
+             - 色彩心理学依据（白=清洁, 黑=专业, 绿=环保）
+          3. 分型线处理：
+             - 隐藏在边缘圆角处（不在正面可见位置）
+             - 与表面纹理方向一致（减少视觉突兀）
+          4. 标识/Logo 位置和方式：
+             - 凸刻（FDM 友好）vs 凹刻（注塑友好）vs 丝印
+          5. 参考产品图片（搜索 3+ 个同类优秀设计）
+        tool_ref: null
+        output_file: "ergonomics.md (append)"
+
+      - id: generate_report
+        action: "综合为人机工程报告 PDF（含尺寸分析、外观定义、参考图）"
+        tool_ref: pdf_generation
+        output_file: "ergonomics.pdf"
+
+    quality_criteria:
+      - "人体尺寸数据引用 ISO 7250 或等效标准"
+      - "边缘圆角 ≥3mm（长时间握持）"
+      - "按钮在拇指自然触达范围内（单手 ≤70mm）"
+      - "设计语言有 3-5 个明确关键词 + 色彩方案"
+      - "≥3 个参考产品设计（有图片来源）"
+      - "编造人体数据 = FAIL"
+
+    anti_patterns:
+      - "❌ 外形只看内部元器件不考虑握持（方盒子≠好设计）"
+      - "❌ 圆角凭感觉（必须基于使用场景和制造方式）"
+      - "❌ 按钮位置不考虑单手操作（拇指够不到 = 差体验）"
+      - "❌ 颜色选择无理由（'我觉得好看'不是理由）"
+      - "❌ 忽略分型线（在正面留一条丑线 = 廉价感）"
+
+    reviewers:
+      - persona: "工业设计师"
+        checklist:
+          - "外形尺寸是否符合人体工学？"
+          - "操作界面布局是否方便单手使用？"
+          - "设计语言是否与品牌一致？"
+          - "分型线是否隐藏在不显眼位置？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Manufacturing Export
+  # Type B — select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  manufacturing_export:
+    description: "STL/STEP 导出 + 打印参数 + 制造文件包"
+
+    steps:
+      - id: select_export_format
+        action: |
+          根据制造方式选择导出格式：
+          | 制造方式 | 主格式 | 辅格式 | 用途 |
+          |---------|-------|-------|------|
+          | FDM 自制 | STL | 3MF | 切片软件输入 |
+          | SLA 外发 | STL | - | 服务商通用 |
+          | SLS/MJF | STL | 3MF | 服务商通用 |
+          | CNC | STEP | DXF | CAM 编程 |
+          | 注塑 | STEP | IGES | 模具设计 |
+          注意：OpenSCAD 不能直接导出 STEP。
+          如果需要 STEP → 导出 STL → 用 FreeCAD 转换（或推荐 CadQuery）。
+        tool_ref: null
+        output_file: "manufacturing-export.md"
+
+      - id: export_stl
+        action: |
+          用 OpenSCAD CLI 导出 STL（分零件导出）：
+          1. 底壳：openscad -D 'part="bottom"' -o bottom_shell.stl --render enclosure.scad
+          2. 顶盖：openscad -D 'part="top"' -o top_cover.stl --render enclosure.scad
+          3. 附件（按钮帽、装饰件等）：单独导出
+          导出前在 .scad 中添加零件选择逻辑：
+          part = "all"; // "bottom", "top", "button", "all"
+          if (part == "bottom" || part == "all") bottom_shell();
+          if (part == "top" || part == "all") top_cover();
+          ⚠️ 必须用 --render 标志（CGAL 完整渲染），否则 STL 可能有非流形错误
+        tool_ref: parametric_cad
+        output_file: "*.stl"
+
+      - id: verify_stl
+        action: |
+          STL 文件质量验证：
+          1. 文件大小合理性（简单外壳 0.5-5MB，过大说明 $fn 过高）
+          2. 非流形检查（OpenSCAD --render 通常无此问题）
+          3. 尺寸验证：用 Python 读取 STL 边界框确认尺寸
+             python3 -c "
+             import struct
+             with open('bottom_shell.stl','rb') as f:
+               f.read(80); n=struct.unpack('I',f.read(4))[0]
+               xs,ys,zs=[],[],[]
+               for _ in range(n):
+                 f.read(12)
+                 for _ in range(3):
+                   x,y,z=struct.unpack('fff',f.read(12))
+                   xs.append(x);ys.append(y);zs.append(z)
+                 f.read(2)
+               print(f'Size: {max(xs)-min(xs):.1f} x {max(ys)-min(ys):.1f} x {max(zs)-min(zs):.1f} mm')
+               print(f'Triangles: {n}')
+             "
+          4. 如果尺寸与设计不符 → 回退检查 .scad
+        tool_ref: null
+        output_file: "manufacturing-export.md (append)"
+
+      - id: generate_print_profile
+        action: |
+          生成 3D 打印参数推荐（基于材料和零件特征）：
+          | 参数 | 底壳 | 顶盖 | 理由 |
+          |------|------|------|------|
+          | 层高 | 0.2mm | 0.2mm | 功能件标准 |
+          | 壁数 | 3 | 3 | 强度需求 |
+          | 填充率 | 20% | 15% | 底壳承重多 |
+          | 填充图案 | gyroid | gyroid | 各向同性强度 |
+          | 支撑 | 需要/不需要 | ... | 基于悬空分析 |
+          | 打印方向 | 开口朝上 | 开口朝上 | 最少支撑 |
+          | 床温 | 60°C | 60°C | PETG 标准 |
+          | 喷嘴温度 | 240°C | 240°C | PETG 标准 |
+          | 打印速度 | 50mm/s | 50mm/s | 外壳品质优先 |
+          | 预估时间 | Xh Xm | Xh Xm | 基于体积估算 |
+          | 预估材料 | Xg | Xg | 基于体积×密度 |
+        tool_ref: null
+        output_file: "manufacturing-export.md (append)"
+
+      - id: package_deliverables
+        action: |
+          制造文件包整理（创建 release/ 目录）：
+          release/
+          ├── STL/
+          │   ├── bottom_shell.stl
+          │   ├── top_cover.stl
+          │   └── accessories/
+          ├── SCAD/
+          │   └── enclosure.scad (参数化源文件)
+          ├── RENDERS/
+          │   ├── enclosure-iso.png
+          │   ├── enclosure-front.png
+          │   └── assembly-exploded.svg
+          ├── PRINT_GUIDE.md (打印参数 + 注意事项)
+          └── BOM.md (物料清单)
+        tool_ref: null
+        output_file: "release/ (directory)"
+
+    quality_criteria:
+      - "STL 文件可在 Cura/PrusaSlicer 中打开且无非流形错误"
+      - "STL 尺寸与 .scad 设计一致（误差 ≤0.1mm）"
+      - "底壳和顶盖分别导出为独立 STL"
+      - "打印参数有明确理由（不是默认值）"
+      - "制造文件包结构清晰，含 README"
+      - "编造打印时间/材料用量 = FAIL（必须基于体积计算）"
+
+    anti_patterns:
+      - "❌ 导出整体 STL 不分零件（无法分别打印/分色）"
+      - "❌ 不用 --render 导出（F5 预览导出的 STL 可能有错误）"
+      - "❌ $fn 过高导致 STL 巨大（$fn=256 → 文件 50MB+）"
+      - "❌ 打印参数照抄网上不适配当前零件"
+      - "❌ 不验证 STL 尺寸（OpenSCAD 单位是 mm，切片软件可能按 inch 理解）"
+
+    reviewers:
+      - persona: "3D 打印工程师"
+        checklist:
+          - "STL 文件是否无非流形错误？"
+          - "打印方向是否最优（最少支撑+最高强度）？"
+          - "打印参数是否匹配材料和零件特征？"
+          - "文件包是否完整（STL+源文件+参数+BOM）？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Enclosure Documentation
+  # Type B — select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  enclosure_documentation:
+    description: "尺寸图纸 + 装配指南 — 专业 PDF 交付"
+
+    steps:
+      - id: generate_dimension_drawing
+        action: |
+          用 D2 生成三视图尺寸标注：
+          1. 正视图：总宽×总高 + 连接器开口位置
+          2. 侧视图：总深×总高 + 按钮/开关位置
+          3. 俯视图：总宽×总深 + 安装孔位置
+          每个视图标注：
+          - 外形尺寸（±0.5mm）
+          - 关键特征尺寸（开口、孔位、壁厚）
+          - 公差标注（配合面标注 ±公差值）
+          - 比例尺标注
+          用 D2 的 near/连接线 模拟尺寸标注线
+        tool_ref: diagram_generation
+        output_file: "dimension-drawing.svg"
+
+      - id: generate_cross_section
+        action: |
+          用 D2 生成截面图：
+          1. 纵向截面：壁厚、内腔高度、PCB 安装高度、螺丝柱结构
+          2. 横向截面：卡扣/密封结构细节
+          标注：
+          - 壁厚尺寸
+          - PCB 到顶/底间隙
+          - 卡扣悬臂长度和偏转量
+          - O-ring 槽尺寸（如有密封需求）
+        tool_ref: diagram_generation
+        output_file: "cross-section.svg"
+
+      - id: write_assembly_guide
+        action: |
+          用 Typst 编写装配指南 PDF：
+          1. 封面：产品名称、版本、日期
+          2. BOM 物料清单表格
+          3. 工具需求清单
+          4. 分步装配指南（每步配图）：
+             - 步骤编号 + 文字描述
+             - 施力方向箭头说明
+             - 注意事项（⚠️ 标注）
+          5. 故障排除（常见问题 + 解决方案）
+          6. 附录：打印参数快速参考
+          Typst 模板要求：
+          - A4 横版（装配图需要宽幅）
+          - 步骤编号用大字号圆形标记
+          - 尺寸数据用等宽字体
+        tool_ref: pdf_generation
+        output_file: "assembly-guide.typ"
+
+      - id: compile_documentation
+        action: |
+          编译所有文档：
+          1. typst compile assembly-guide.typ assembly-guide.pdf
+          2. 验证 PDF 页数和内容完整性
+          3. 确认所有 SVG 图片正确嵌入
+          4. 检查尺寸标注值与 .scad 参数一致
+          如果有不一致 → 修改文档 → 重新编译
+        tool_ref: pdf_generation
+        output_file: "assembly-guide.pdf"
+
+      - id: verify_consistency
+        action: |
+          文档与设计一致性验证：
+          1. 提取 .scad 文件中的关键参数值
+          2. 提取文档中的尺寸标注值
+          3. 逐项比对：
+             □ 外形尺寸一致
+             □ 壁厚一致
+             □ 安装孔位置一致
+             □ 连接器开口尺寸一致
+             □ BOM 与实际零件一致
+          不一致项 → 修改文档/设计 → 重新验证
+        tool_ref: null
+        output_file: "documentation-checklist.md"
+
+    quality_criteria:
+      - "三视图 + 截面图覆盖所有关键尺寸"
+      - "装配指南每步 ≤1 个动作，配有示意图"
+      - "PDF 排版专业（A4、等宽数字、尺寸标注线）"
+      - "文档中的尺寸与 .scad 参数 100% 一致"
+      - "BOM 物料清单完整（含规格和来源）"
+      - "编造尺寸 = FAIL（必须与 .scad 源文件交叉验证）"
+
+    anti_patterns:
+      - "❌ 尺寸图不标公差（制造时无法判断精度要求）"
+      - "❌ 装配指南无图（纯文字 = 没人看）"
+      - "❌ 文档尺寸与 .scad 不一致（改了设计忘改文档）"
+      - "❌ BOM 缺少紧固件（螺丝、垫圈、O-ring 容易遗漏）"
+      - "❌ PDF 不含比例尺（无法直接量测）"
+
+    reviewers:
+      - persona: "技术文档工程师"
+        checklist:
+          - "三视图是否完整（正/侧/俯）？"
+          - "截面图是否标注了壁厚和内部结构？"
+          - "装配指南是否清晰可执行？"
+          - "所有尺寸是否与 CAD 源文件一致？"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure:
+  directory: ".tad/active/research/{project}/"
+  files:
+    - "enclosure-constraints.md — 硬件约束 + 设计参数"
+    - "enclosure.scad — 参数化 OpenSCAD 源文件（核心交付物）"
+    - "enclosure-*.png — 渲染预览图（4 视角）"
+    - "pcb-fitting.md — PCB 安装分析"
+    - "pcb-fitting-verify.png — PCB 装配验证渲染"
+    - "material-selection.md — 材料选型分析"
+    - "material-selection.pdf — 材料选型报告"
+    - "assembly-design.md — 装配方式分析"
+    - "assembly-exploded.svg — 装配爆炸图"
+    - "fastening-detail.svg — 紧固细节图"
+    - "ergonomics.md — 人机工程分析"
+    - "ergonomics.pdf — 人机工程报告"
+    - "manufacturing-export.md — 制造导出说明"
+    - "*.stl — 导出的 STL 文件（分零件）"
+    - "dimension-drawing.svg — 三视图尺寸标注"
+    - "cross-section.svg — 截面图"
+    - "assembly-guide.typ — Typst 装配指南源文件"
+    - "assembly-guide.pdf — 装配指南 PDF"
+    - "documentation-checklist.md — 文档一致性验证"
+    - "release/ — 制造文件包（完整交付目录）"
+
+# ═══════════════════════════════════════
+# Quality Gates (Test Topic)
+# ═══════════════════════════════════════
+
+gates:
+  test_topic: "Wayo 大象追踪器外壳 — ESP32-C3 + 5.65 inch E-ink + 18650 电池"
+  test_constraints:
+    pcb: "ESP32-C3 DevKit (18×20mm), 5.65 inch E-ink (114.9×85.8mm active area, 122×95mm module)"
+    battery: "18650 锂电池 (65×18mm diameter), 侧放"
+    connectors: "USB-C (充电+调试), SMA 天线座, 电源开关"
+    environment: "户外使用, 温度 -10~55°C, 防雨 (IP54+)"
+    manufacturing: "原型 FDM (PETG), 小批量 SLA"
+    special: "E-ink 显示窗需要保护但透光, 天线需要净空, 电池可更换"
+
+  gate_checks:
+    - gate: "enclosure_design"
+      verify: |
+        1. .scad 文件能否无错误编译：openscad -o test.stl --render enclosure.scad
+        2. 壁厚 ≥1.5mm (PETG FDM)
+        3. E-ink 显示窗开口尺寸 ≥ 活动区域 (114.9×85.8mm)
+        4. 所有尺寸参数化（可通过 -D 覆盖）
+
+    - gate: "pcb_fitting"
+      verify: |
+        1. ESP32-C3 安装柱位置匹配数据手册
+        2. E-ink FPC 排线有 90° 弯折空间
+        3. USB-C 开口 9.5×3.5mm（含公差）
+        4. SMA 天线座开口 + 天线净空区域无金属
+
+    - gate: "material_selection"
+      verify: |
+        1. PETG 选型有工程参数支撑（耐温 ≥70°C, 耐紫外优于 PLA）
+        2. 成本估算含材料 + 打印时间
+        3. 有户外耐候性数据（ASA 作为备选？）
+
+    - gate: "assembly_design"
+      verify: |
+        1. 电池可更换（无需工具或仅需一字螺丝刀）
+        2. 装配 ≤5 步
+        3. 有爆炸图
+
+    - gate: "manufacturing_export"
+      verify: |
+        1. 底壳/顶盖/电池盖分别导出 STL
+        2. STL 尺寸与设计一致
+        3. 打印参数匹配 PETG + 零件特征
+
+    - gate: "enclosure_documentation"
+      verify: |
+        1. 三视图覆盖所有外形尺寸
+        2. 装配指南含 BOM + 分步说明
+        3. 文档尺寸与 .scad 一致
