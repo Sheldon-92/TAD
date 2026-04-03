@@ -1984,6 +1984,24 @@ optimize_protocol:
            Flag outliers (> 2x average for that step type)
         5. Output summary table to user
 
+    step2b_project_knowledge:
+      name: "Identify Project-Specific Learnings"
+      action: |
+        From trace data, identify project-specific patterns (NOT Domain Pack generic issues):
+        1. Repeated search term modifications (user keeps changing search scope → default scope wrong for this project)
+        2. Repeated tool replacements (user keeps switching tools → recommended tool doesn't fit this project)
+        3. Project-specific failure patterns (only appear in this project, not cross-project)
+
+        For each finding, generate a project-knowledge proposal:
+        {
+          "target": ".tad/project-knowledge/{category}.md",
+          "type": "add_knowledge",
+          "content": "### {Title} - {date}\n- **Context**: {what was happening}\n- **Discovery**: {what was learned}\n- **Action**: {what to do differently}",
+          "evidence": "trace refs with specific line numbers"
+        }
+        These proposals join the Domain Pack proposals in step3 for YAML persistence and step4 for approval.
+        In step4, display project-knowledge proposals under a separate "📚 项目知识更新" heading.
+
     step3_generate_proposals:
       name: "Generate Improvement Proposals + Write PROPOSAL YAML"
       action: |
@@ -2064,6 +2082,11 @@ optimize_protocol:
     step4_human_approval:
       name: "Human Approval (4-option)"
       action: |
+        Group proposals by type before display:
+          📦 Domain Pack 修改: proposals where target.file matches .tad/domains/*.yaml
+          📚 项目知识更新: proposals where target.file matches .tad/project-knowledge/*.md
+        Display each group under its heading, then process proposals one-by-one.
+
         For each proposal with safety.safe == true and status == "pending":
         Use AskUserQuestion:
         question: "基于 {trace_count} 次执行 trace，建议修改 {target.file}:"
