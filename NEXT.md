@@ -2,10 +2,10 @@
 
 ## In Progress
 
-- [ ] **EPIC: Security Domain Pack Chain** — Phase 0 COMPLETE, Phase 1 next
+- [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, Phase 2 next
   - ✅ Phase 0: Security Tool Research — 40 tools, 5 domains, 25 capabilities (commit e2c325a)
-  - 🔲 Phase 1: supply-chain + code-security packs (needs Alex handoff)
-  - 🔲 Phase 2: ai-security + compliance packs
+  - ✅ Phase 1: supply-chain-security (639 lines) + code-security (873 lines) + 24 tools (commit 39e8017)
+  - 🔲 Phase 2: ai-security + compliance packs (needs Alex handoff)
   - 🔲 Phase 3: security-monitoring + TAD integration
   - 🔲 Phase 4: E2E validation
 - [ ] Push TAD v2.8.0 to GitHub (user manual)
