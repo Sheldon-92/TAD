@@ -26,8 +26,8 @@
 
 | Item | Type | Status | Reference |
 |------|------|--------|-----------|
-| Four-Gate quality system (v2.0) | Direction | Stable | [Gate protocol](./.claude/commands/tad-gate.md) |
-| Ralph Loop two-layer architecture | Direction | Stable | [Blake protocol](./.claude/commands/tad-blake.md) |
+| Four-Gate quality system (v2.0) | Direction | Stable | [Gate protocol](./.claude/skills/gate/SKILL.md) |
+| Ralph Loop two-layer architecture | Direction | Stable | [Blake protocol](./.claude/skills/blake/SKILL.md) |
 | Cognitive Firewall (human empowerment) | Direction | Active — needs real-feature validation | [config-cognitive.yaml](./.tad/config-cognitive.yaml) |
 | Agent Teams (experimental parallel review) | Direction | Experimental — needs real-task validation | [config-agents.yaml](./.tad/config-agents.yaml) |
 
@@ -50,8 +50,8 @@
 
 | Item | Type | Status | Reference |
 |------|------|--------|-----------|
-| Design Playground v2 (standalone command) | Direction | Stable | [/playground](./.claude/commands/playground.md) |
-| Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/commands/tad-test-brief.md) |
+| Design Playground v2 (standalone command) | Direction | Stable | [/playground](./.claude/skills/playground/SKILL.md) |
+| Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/skills/tad-test-brief/SKILL.md) |
 | Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
 | Multi-Platform Cleanup (Codex/Gemini → specialized tools) | Direction | Complete | [Handoff](./.tad/active/handoffs/HANDOFF-20260217-multi-platform-cleanup.md) |
 | Iterate on Playground based on user feedback | Idea | Pending | — |

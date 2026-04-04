@@ -151,8 +151,8 @@ Agents auto-generate structured, copy-pasteable messages for the human to relay:
 
 ## Configuration Files
 - `.tad/config.yaml` - Main configuration
-- `.claude/commands/tad-alex.md` - Agent A definition
-- `.claude/commands/tad-blake.md` - Agent B definition
+- `.claude/skills/alex/SKILL.md` - Agent A definition
+- `.claude/skills/blake/SKILL.md` - Agent B definition
 - `.tad/active/handoffs/` - Active handoff documents
 - `.tad/project-knowledge/` - Project-specific learnings
 

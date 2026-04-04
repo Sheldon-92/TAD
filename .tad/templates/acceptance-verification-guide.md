@@ -151,7 +151,7 @@ fi
 ### YAML Key Check
 ```bash
 #!/bin/bash
-if grep -q "step3b:" .claude/commands/tad-blake.md; then
+if grep -q "step3b:" .claude/skills/blake/SKILL.md; then
   echo "PASS: step3b found in completion_protocol"
   exit 0
 else
@@ -177,8 +177,8 @@ fi
 ```bash
 #!/bin/bash
 # Verify specific file was NOT modified
-if git diff HEAD -- .claude/commands/tad-maintain.md | grep -q "^[-+]"; then
-  echo "FAIL: tad-maintain.md was modified (should not be)"
+if git diff HEAD -- .claude/skills/tad-maintain/SKILL.md | grep -q "^[-+]"; then
+  echo "FAIL: tad-maintain SKILL.md was modified (should not be)"
   exit 1
 else
   echo "PASS: tad-maintain.md unchanged"

@@ -173,7 +173,7 @@ document_management:
 # ==================== Document Maintenance Command ====================
 tad_maintain:
   description: "Document health check and synchronization"
-  command_file: ".claude/commands/tad-maintain.md"
+  command_file: ".claude/skills/tad-maintain/SKILL.md"
   modes:
     check:
       description: "Read-only health scan"
@@ -247,7 +247,7 @@ playground:
   ownership: "Independent Design Explorer agent. Alex references outputs, Blake implements from spec."
 
   # Command definition
-  command: ".claude/commands/playground.md"
+  command: ".claude/skills/playground/SKILL.md"
 
   # Core resources
   resources:

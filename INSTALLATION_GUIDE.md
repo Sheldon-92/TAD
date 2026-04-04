@@ -172,7 +172,7 @@ claude .
 - [ ] `.tad/version.txt` 显示 2.8
 - [ ] `.tad/skills/` 包含技能目录
 - [ ] `.tad/hooks/` 包含 hook 脚本
-- [ ] `.claude/commands/tad-maintain.md` 存在
+- [ ] `.claude/skills/tad-maintain/SKILL.md` 存在
 
 ### 测试命令
 ```bash
@@ -185,8 +185,8 @@ ls .tad/skills/
 # 应该返回: api-design  architecture  code-review  debugging  performance  security-audit  testing  ux-review
 
 # 验证 /tad-maintain 命令
-cat .claude/commands/tad-maintain.md | head -1
-# 应该返回: # TAD Maintain Command
+cat .claude/skills/tad-maintain/SKILL.md | head -5
+# 应该返回: frontmatter + TAD Maintain Command
 
 # 验证Ralph Loop配置
 ls .tad/ralph-config/
@@ -199,7 +199,7 @@ ls .tad/ralph-config/
 A: 检查`.claude/settings.json`是否存在且格式正确
 
 ### Q: 命令不可用？
-A: 确保`.claude/commands/`目录包含命令定义文件
+A: 确保`.claude/skills/`目录包含技能定义文件（每个技能一个目录，内含 SKILL.md）
 
 ### Q: Sub-agents调用失败？
 A: 验证使用的是真实的Claude Code sub-agents，参考`CLAUDE_CODE_SUBAGENTS.md`

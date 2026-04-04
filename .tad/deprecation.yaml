@@ -12,3 +12,26 @@ deprecations:
       - .tad/templates/AGENTS.md.template
       - .tad/templates/GEMINI.md.template
     date: "2026-02-17"
+
+  "2.8.1":
+    description: "Commands consolidated into skills — remove .claude/commands/ files"
+    files:
+      - ".claude/commands/tad-alex.md"
+      - ".claude/commands/tad-blake.md"
+      - ".claude/commands/tad-gate.md"
+      - ".claude/commands/tad.md"
+      - ".claude/commands/tad-init.md"
+      - ".claude/commands/tad-maintain.md"
+      - ".claude/commands/tad-status.md"
+      - ".claude/commands/tad-elicit.md"
+      - ".claude/commands/tad-handoff.md"
+      - ".claude/commands/tad-scenario.md"
+      - ".claude/commands/tad-parallel.md"
+      - ".claude/commands/tad-test-brief.md"
+      - ".claude/commands/tad-help.md"
+      - ".claude/commands/playground.md"
+      - ".claude/commands/coordinator.md"
+      - ".claude/commands/product.md"
+      - ".claude/commands/research.md"
+      - ".claude/commands/knowledge-audit.md"
+    date: "2026-04-04"

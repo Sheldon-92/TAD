@@ -118,12 +118,12 @@ copy_framework_files() {
     done
 
     # --- .claude/ framework files ---
-    mkdir -p .claude/commands
-    mkdir -p .claude/skills/code-review
-    cp "$src"/.claude/commands/*.md .claude/commands/
+    mkdir -p .claude/skills
+    # Copy all skill directories (each skill is a directory with SKILL.md)
+    if [ -d "$src/.claude/skills" ]; then
+        cp -r "$src"/.claude/skills/* .claude/skills/
+    fi
     cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
-    cp -r "$src"/.claude/skills/code-review/* .claude/skills/code-review/ 2>/dev/null || true
-    cp "$src"/.claude/skills/doc-organization.md .claude/skills/ 2>/dev/null || true
 
     # Count installed files for verification
     local count
@@ -317,11 +317,11 @@ main() {
         "install")
             echo "  1. Create .tad/ directory structure"
             echo "  2. Create .tad/skills/ with 8 P0 skills (NEW)"
-            echo "  3. Create .claude/commands/ with TAD commands"
+            echo "  3. Create .claude/skills/ with TAD skill files"
             echo "  4. Create CLAUDE.md project rules"
             ;;
         "upgrade")
-            echo "  1. Update .claude/commands/"
+            echo "  1. Update .claude/skills/"
             echo "  2. Install .tad/skills/ (8 P0 skills) (NEW)"
             echo "  3. Update .tad/config.yaml and templates/"
             echo ""

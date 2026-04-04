@@ -260,11 +260,15 @@ Output Format:
   | Evidence | ✅ Pass | File exists |
 
   #### Knowledge Assessment (MANDATORY - must answer)
-  | Question | Answer | Action |
-  |----------|--------|--------|
-  | New discoveries? | ✅ Yes / ❌ No | If Yes: recorded to .tad/project-knowledge/{category}.md |
-  | Category | {category} or N/A | ... |
-  | Brief summary | {1-line summary} | ... |
+  | Question | Answer | Evidence |
+  |----------|--------|----------|
+  | New discoveries? | ✅ Yes / ❌ No | — |
+  | If Yes: written to | .tad/project-knowledge/{category}.md | Entry title: "### {title} - {date}" |
+  | If No: reason | {why no new discovery} | — |
+
+  ⚠️ "Yes" without a file path + entry title = Gate 3 FAIL.
+  Blake must write directly to project-knowledge, NOT to completion report.
+  Completion report references the entry, it does not contain the entry.
 
 # ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 3)
 # 必须在 Gate 结果表格中显式回答，不可跳过
@@ -305,6 +309,12 @@ Knowledge_Assessment:
     step2: "确定分类（或选择创建新类别）"
     step3: "写入对应的 .tad/project-knowledge/{category}.md"
     step4: "使用标准格式"
+    step5_verify: "在 Gate 3 表格的 Evidence 列填写：文件路径 + 条目标题。无此信息 = Gate FAIL"
+
+  completion_report_rule: |
+    Completion report 的 Knowledge Assessment 节只写引用：
+    "New discovery recorded: .tad/project-knowledge/{category}.md → '### {title}'"
+    完整内容在 project-knowledge 文件中，不在 completion report 中重复。
 
   entry_format: |
     ### [简短标题] - [YYYY-MM-DD]
@@ -455,11 +465,16 @@ Output Format:
   | Feedback Addressed | ✅ Pass | ... |
 
   #### Knowledge Assessment (MANDATORY - must answer)
-  | Question | Answer | Action |
-  |----------|--------|--------|
-  | New discoveries from review? | ✅ Yes / ❌ No | If Yes: recorded to .tad/project-knowledge/{category}.md |
-  | Category | {category} or N/A | ... |
-  | Brief summary | {1-line summary} | ... |
+  | Question | Answer | Evidence |
+  |----------|--------|----------|
+  | New discoveries? | ✅ Yes / ❌ No | — |
+  | If Yes: written to | .tad/project-knowledge/{category}.md | Entry title: "### {title} - {date}" |
+  | If No: reason | {why no new discovery} | — |
+
+  ⚠️ Alex writes business/architecture discoveries. Blake writes implementation discoveries.
+  No overlap: Blake owns Gate 3 knowledge, Alex owns Gate 4 knowledge.
+  Tiebreaker: HOW code works (tool quirks, build issues, API gotchas) → Blake Gate 3.
+             WHY a design should change (architecture patterns, requirement gaps) → Alex Gate 4.
 
 ## ⚠️ Gate 4 Subagent Requirement (CRITICAL)
 Alex 必须调用 subagents 进行实际验收，不可仅做纸面验收：
@@ -523,6 +538,13 @@ Knowledge_Assessment_Gate4:
   description: "Gate 4 无法 PASS 除非 Knowledge Assessment 表格已填写"
 
   mandatory_questions:
+    - question: "Blake Gate 3 知识是否已验证？（project-knowledge 文件中条目存在）"
+      must_answer: true
+      options:
+        - "✅ Yes - 已验证条目存在"
+        - "⚠️ Blake said Yes but entry missing - BLOCK"
+        - "N/A - Blake said No (no discovery)"
+
     - question: "本次审查是否有新发现？"
       must_answer: true
       options:
@@ -548,6 +570,18 @@ Knowledge_Assessment_Gate4:
     can_skip_if:
       - "所有 subagent 结果都是 PASS，无特殊发现"
       - "已有完全相同的记录"
+
+  if_new_discovery:
+    step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
+    step2: "确定分类（或选择创建新类别）"
+    step3: "写入对应的 .tad/project-knowledge/{category}.md"
+    step4: "使用标准格式"
+    step5_verify: "在 Gate 4 表格的 Evidence 列填写：文件路径 + 条目标题。无此信息 = Gate FAIL"
+
+  acceptance_report_rule: |
+    Gate 4 验收报告的 Knowledge Assessment 节只写引用：
+    "New discovery recorded: .tad/project-knowledge/{category}.md → '### {title}'"
+    完整内容在 project-knowledge 文件中，不在验收报告中重复。
 
   violation: "Gate 4 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
 

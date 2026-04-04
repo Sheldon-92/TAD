@@ -56,13 +56,8 @@ Use this checklist format to track progress:
    - Copy `.tad/skills/` (recursive)
    - Copy `.tad/schemas/` (recursive)
 
-   **TAD commands only** (DO NOT copy non-TAD files like BMad):
-   - Copy `.claude/commands/tad-*.md` (all files matching this pattern)
-   - Copy `.claude/commands/coordinator.md`
-   - Copy `.claude/commands/product.md`
-   - Copy `.claude/commands/research.md`
-   - Copy `.claude/commands/knowledge-audit.md`
-   - ❌ DO NOT copy any directories inside `.claude/commands/`
+   **TAD skills** (DO NOT copy non-TAD files like BMad):
+   - Copy `.claude/skills/` (recursive — each skill is a directory with SKILL.md)
    - ❌ DO NOT copy files that don't belong to TAD
 
    **TAD skills:**
