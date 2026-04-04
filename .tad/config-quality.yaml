@@ -178,9 +178,12 @@ quality_gates:
       blocking: true
       questions:
         - "New discoveries during implementation? (Yes/No)"
-        - "Category (if yes)"
-        - "Brief summary"
+        - "If Yes: file path written to (.tad/project-knowledge/{category}.md)"
+        - "If Yes: entry title (### {title} - {date})"
+        - "If No: reason"
       output_location: ".tad/project-knowledge/{category}.md"
+      evidence_required: "Yes answer without file path + entry title = Gate FAIL"
+      write_rule: "Write to project-knowledge directly. Completion report only references the entry, does not contain it."
 
     git_commit_verification:
       required: true
@@ -237,10 +240,13 @@ quality_gates:
       required: true
       blocking: true
       questions:
-        - "New discoveries during acceptance? (Yes/No)"
-        - "Category (if yes)"
-        - "Brief summary"
+        - "A. Blake Gate 3 knowledge verified? (check project-knowledge file exists)"
+        - "B. New discoveries during acceptance? (Yes/No)"
+        - "If B=Yes: file path + entry title"
+        - "If A and B both No: reason"
       output_location: ".tad/project-knowledge/{category}.md"
+      evidence_required: "Yes answer without file path + entry title = Gate FAIL"
+      responsibility: "Blake writes implementation knowledge (Gate 3). Alex writes business knowledge (Gate 4). No overlap."
 
     human_trigger:
       command: "/gate 4"

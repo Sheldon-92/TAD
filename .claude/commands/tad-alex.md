@@ -1382,6 +1382,20 @@ handoff_creation_protocol:
         3. Read the handoff template: .tad/templates/handoff-a-to-b.md
            (to ensure template structure is fresh in context)
         4. Brief output: "📖 Full knowledge refreshed: {N} knowledge files + handoff protocol + template"
+        # Knowledge Matching — ensure relevant history reaches Blake
+        5. After reading all knowledge files, scan each entry (### title - date) for relevance:
+           a. Extract task keywords from current Socratic Inquiry results (topics, technologies, file paths, domain)
+           b. For each knowledge entry: does its Context/Discovery mention any of these keywords?
+           c. Collect all matching entries into a "relevant_knowledge" list
+        6. When writing handoff §📚 Project Knowledge → "⚠️ Blake 必须注意的历史教训":
+           a. ALL entries from relevant_knowledge list MUST be included (not optional, not "Alex picks")
+           b. Format: entry title + source file + 1-line summary of why it's relevant to this task
+           c. If relevant_knowledge is empty: write "✅ 已检查所有 knowledge 文件，无与本任务直接相关的历史教训"
+        7. This replaces the current manual "Alex reads and picks relevant entries" approach.
+           The scan is keyword-based and exhaustive — Alex cannot silently skip a matching entry.
+        8. Matching is LLM semantic scan, not regex. Match related concepts
+           (e.g., "hook" matches entries about hook scripts, shell portability).
+           When in doubt, include — false positives acceptable, false negatives are not.
       purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
 
     step1:
@@ -1729,7 +1743,25 @@ acceptance_protocol:
     blocking: true
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
-  step7: "【Knowledge Assessment】记录新发现（如有）"
+  step7:
+    name: "Knowledge Assessment — Write + Verify"
+    action: |
+      Two responsibilities:
+
+      A. VERIFY Blake's Gate 3 knowledge (10 seconds):
+         1. Read Blake's completion report → find "New discovery recorded: {path} → '{title}'"
+         2. If Blake said "Yes": Read the referenced project-knowledge file, confirm the entry exists
+         3. If entry missing → BLOCK *accept, inform user "Blake reported knowledge but didn't write it"
+
+      B. WRITE Alex's own Gate 4 knowledge (if any):
+         1. Evaluate: did this acceptance reveal business/architecture insights?
+         2. If Yes → write directly to .tad/project-knowledge/{category}.md
+         3. Fill Gate 4 Knowledge Assessment table with file path + entry title
+
+      Separation of concerns:
+      - Blake writes implementation knowledge (Gate 3): tool behaviors, code patterns, workarounds
+      - Alex writes business knowledge (Gate 4): requirement gaps, architecture decisions, process improvements
+    blocking: true
   step7b: "【配对测试评估】评估是否建议配对 E2E 测试（UI/用户流变更时建议，人类决定）"
   step8: "【强制】执行 *accept 命令完成归档流程"
   step9: "限制 active handoffs 不超过 3 个"
@@ -1750,9 +1782,9 @@ acceptance_protocol:
       - "演示/走查完成"
       - "用户确认满意"
     knowledge_assessment:
-      - "是否有新发现？(Yes/No) — 必须明确回答"
-      - "如果有，确认已写入 .tad/project-knowledge/{category}.md"
-      - "如果没有，确认原因合理（不能只写 N/A）"
+      - "A. 验证 Blake Gate 3 知识：读 completion report 引用 → 确认 project-knowledge 条目存在"
+      - "B. Alex 自己的发现：(Yes/No) — Yes 时填写文件路径 + 条目标题"
+      - "如果 A 和 B 都是 No，确认原因合理（不能只写 N/A）"
       # ⚠️ ANTI-RATIONALIZATION: "常规 CRUD，没有新发现，Knowledge Assessment 是浪费"
       # → 即使无新发现也必须显式写 "No" + 原因。跳过 = 表格不完整 = Gate 无效。
 
