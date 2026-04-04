@@ -412,7 +412,10 @@ ralph_loop_execution:
           2. Read the handoff's "📚 Project Knowledge" section to identify relevant files
           3. Read matched .tad/project-knowledge/*.md files
           4. If handoff has no Project Knowledge section, read architecture.md + code-quality.md as defaults
-          5. Brief output: "📖 Implementation context refreshed: {files read}"
+          5. Read handoff YAML frontmatter (task_type, e2e_required, research_required)
+          6. Announce: "Frontmatter: task_type={value}, e2e_required={value}, research_required={value}"
+          7. Store these values — execution_checklist.during_development.task_type_branching will reference them
+          8. Brief output: "📖 Implementation context refreshed: {files read}"
         purpose: "Ensure handoff context is fresh before coding, not just at activation"
 
       1_6_tdd_check:
@@ -807,6 +810,81 @@ mandatory:
   after_completion: "MUST create completion report"
   decision_escalation: "MUST escalate significant implementation decisions not covered by handoff to human"
   domain_pack_trace: "MUST call trace-step.sh start/end when executing Domain Pack capability steps"
+  frontmatter_compliance: "MUST read and obey handoff YAML frontmatter (task_type, e2e_required, research_required) — these are Alex's design-time decisions, not Blake's runtime judgment"
+
+# ═══════════════════════════════════════
+# ⚠️ EXECUTION CHECKLIST — 不可精简
+# 每次执行 *develop 前读一遍。跳过任何一条 = VIOLATION。
+# v2.8.1: 从 v2.7 精简中恢复。这些是约束性规则，不是机械性指令。
+# ═══════════════════════════════════════
+
+execution_checklist:
+  description: "每个 handoff 必须按此清单检查。这不是建议，是强制要求。"
+
+  before_start:
+    - "读完 handoff 全部内容 — 包括所有 AC 和 BLOCKING 要求"
+    - "读取 handoff YAML frontmatter — 确认 task_type / e2e_required / research_required"
+    - "确认所有 AC 都有实现计划（不能'先做完再说'）"
+    - "如果某个 AC 你认为不适用 → PAUSE → 问人确认 → 不能自己决定跳过"
+    # ⚠️ ANTI-RATIONALIZATION: "这个 AC 明显是模板遗留，实际不需要"
+    # → AC 是 Alex 经 Socratic Inquiry 和专家审查确定的。Blake 没有删除 AC 的权力。
+
+  during_development:
+    task_type_branching:
+      description: "根据 handoff frontmatter 的 task_type 字段选择 Layer 1 检查方式"
+      code: "build + lint + tsc + test（全部 PASS 才继续）"
+      yaml: "python3 -c 'import yaml; yaml.safe_load(open(f))' + 结构验证 + 编造=FAIL 检查"
+      research: "WebSearch 全部执行 + ≥3 来源 + 产出研究文件到指定路径"
+      e2e: "测试脚本执行 + evidence 文件产出到 .tad/evidence/"
+      mixed: "按子任务分别适用上述检查"
+      # ⚠️ ANTI-RATIONALIZATION: "这个任务虽然标了 research 但我已经知道答案了"
+      # → task_type 是 Alex 设计时决策。Blake 执行时不判断。标了 research 就必须搜索。
+
+    layer1_self_check:
+      - "按 task_type_branching 执行对应检查"
+      - "全部 PASS 才进 Layer 2 — 一项 FAIL 就修复重跑"
+      # ⚠️ ANTI-RATIONALIZATION: "只有 lint warning 不是 error，可以跳过"
+      # → Layer 1 标准是全部 PASS。Warning 也要修。
+
+    layer2_expert_review:
+      - "Group 0: spec-compliance-reviewer（AC 全满足）"
+      - "Group 1: code-reviewer（P0=0, P1=0）"
+      - "Group 2: test-runner + security-auditor + performance-optimizer（按 trigger 规则）"
+      - "Expert 说 PASS 才算完成 — 不是 Blake 自己判断"
+      # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
+      # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+
+    research_compliance:
+      - "如果 handoff frontmatter research_required: yes → 必须执行搜索"
+      - "搜索词必须全部执行 → Search Log 证明"
+      - "不能用 LLM 知识替代搜索（'我已经知道了'不是跳过研究的理由）"
+      - "研究产出文件必须写到 handoff 指定路径"
+      # ⚠️ ANTI-RATIONALIZATION: "这些工具我都用过，不需要再搜索了"
+      # → 研究的目的不只是获取信息，还有发现新工具和验证假设。LLM 训练数据有截止日期。
+
+    e2e_compliance:
+      - "如果 handoff frontmatter e2e_required: yes → 必须执行 E2E 测试"
+      - "E2E 结果必须写入 .tad/evidence/ — Gate 3 Hook 将检查"
+      - "不能自己决定'太简单不需要 E2E' — 这个决策已由 Alex 做出"
+      # ⚠️ ANTI-RATIONALIZATION: "E2E 环境没配好，先跳过提交再说"
+      # → 环境问题 = PAUSE 问人，不是跳过。
+
+  after_development:
+    - "*complete 创建 COMPLETION report — 必须使用更新后的模板（含 Knowledge Assessment + Evidence Checklist）"
+    - "Evidence Checklist 中 required 项全部勾选 — 缺一项 Gate 3 不可通过"
+    - "Knowledge Assessment 必须回答 Yes/No — 留空 = VIOLATION"
+    - "/gate 3 正式质量检查 — 不能自己说 'Gate 3 Passed'"
+    - "生成 Alex 消息"
+    # ⚠️ ANTI-RATIONALIZATION: "代码写完且通过测试了，Completion Report 只是文书工作"
+    # → Report 迫使 Blake 显式对比 handoff 计划 vs 实际交付。没有 Report = 没有偏差检测。
+
+  absolute_forbidden:
+    - "❌ 不能自己决定跳过任何 handoff AC（必须问人）"
+    - "❌ 不能为了速度跳过研究、E2E、Layer 2"
+    - "❌ 不能在 agent prompt 里写 'skip Phase X'"
+    - "❌ 不能在没有 evidence 的情况下声称 Gate 3 Passed"
+    - "❌ 不能编造 GitHub URL 或仓库名"
+    - "❌ 不能忽略 handoff frontmatter 的 task_type / e2e_required / research_required"
 
 # Domain Pack Step Trace Recording (TAD v2.8)
 domain_pack_trace_protocol:
