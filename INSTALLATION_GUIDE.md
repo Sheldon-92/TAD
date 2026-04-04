@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.5.0 - Beneficial Friction for AI-Assisted Development**
+**Version 2.8.0 - Self-Evolving Framework**
 
 ## 方式1：一键安装（推荐）
 
@@ -80,28 +80,39 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.5.0)
+### `.tad`文件夹结构 (v2.8.0)
 ```
 .tad/
-├── config.yaml           # TAD核心配置
-├── version.txt           # 版本号 (2.5.0)
-├── skills/               # 平台无关技能 (8 P0 skills)
-│   ├── testing/SKILL.md
-│   ├── code-review/SKILL.md
-│   ├── security-audit/SKILL.md
-│   ├── performance/SKILL.md
-│   ├── ux-review/SKILL.md
-│   ├── architecture/SKILL.md
-│   ├── api-design/SKILL.md
-│   └── debugging/SKILL.md
-├── ralph-config/         # Ralph Loop配置
+├── config.yaml           # TAD核心配置 (master index)
+├── config-agents.yaml    # Agent 定义 + 交互协议
+├── config-quality.yaml   # 质量门控 + evidence 验证
+├── config-workflow.yaml   # 文档管理 + 工作流
+├── config-execution.yaml  # Ralph Loop + 发布管理
+├── config-platform.yaml   # MCP 工具 + Linear 集成
+├── version.txt           # 版本号 (2.8)
+├── skills/               # 平台无关技能 (9 skills)
+├── domains/              # Domain Packs (20 packs: Web/Mobile/AI/HW/Security)
+├── hooks/                # Hook 脚本 (pre-gate, post-write, trace)
+│   ├── pre-gate-check.sh     # Gate 3 综合 evidence 检查 (BLOCK)
+│   ├── pre-accept-check.sh   # Gate 4 前置检查 (BLOCK)
+│   ├── post-write-sync.sh    # 文件写入检测 + workflow 提醒
+│   ├── trace-step.sh         # Domain Pack step trace 记录
+│   └── lib/common.sh         # 共享 helper 函数
+├── ralph-config/         # Ralph Loop 配置
 │   ├── loop-config.yaml
 │   └── expert-criteria.yaml
-├── templates/            # 文档模板 (handoff, completion, output formats)
-├── active/handoffs/      # 当前进行中的handoffs
-├── archive/handoffs/     # 已完成的handoffs
-├── evidence/reviews/     # Gate证据文件
-└── project-knowledge/    # 项目特定知识
+├── templates/            # 文档模板 (handoff, completion, epic, test-brief)
+├── active/               # 当前活跃文件
+│   ├── handoffs/         # 待执行的 handoff
+│   ├── epics/            # 多阶段任务追踪
+│   └── ideas/            # 捕获的想法
+├── archive/              # 已完成归档
+├── evidence/             # Gate 证据文件
+│   ├── reviews/          # Expert review 报告
+│   ├── ralph-loops/      # Ralph Loop state + summary
+│   ├── acceptance-tests/ # AC 验证脚本 + 报告
+│   └── traces/           # 执行 trace (JSONL)
+└── project-knowledge/    # 项目特定知识 (架构/安全/测试...)
 ```
 
 ### 关键配置文件
@@ -158,15 +169,16 @@ claude .
 ### 检查清单
 - [ ] `.claude/settings.json` 存在
 - [ ] `.tad/config.yaml` 存在
-- [ ] `.tad/version.txt` 显示 2.5.0
-- [ ] `.tad/skills/` 包含 8 个技能目录
+- [ ] `.tad/version.txt` 显示 2.8
+- [ ] `.tad/skills/` 包含技能目录
+- [ ] `.tad/hooks/` 包含 hook 脚本
 - [ ] `.claude/commands/tad-maintain.md` 存在
 
 ### 测试命令
 ```bash
 # 检查版本
 cat .tad/version.txt
-# 应该返回: 2.5.0
+# 应该返回: 2.8
 
 # 验证技能系统
 ls .tad/skills/
@@ -205,7 +217,7 @@ TAD/
 │   └── skills/            # Claude增强技能
 ├── .tad/                  # TAD核心文件
 │   ├── config.yaml        # 主配置
-│   ├── skills/            # 平台无关技能 (8 P0 skills)
+│   ├── skills/            # 平台无关技能 (9 skills)
 │   ├── ralph-config/      # Ralph Loop配置
 │   ├── templates/         # 文档模板
 │   └── project-knowledge/ # 项目知识
@@ -222,7 +234,7 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到v2.5.0
+# 从任何旧版本升级到v2.8.0
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
@@ -248,7 +260,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 ## 总结
 
-TAD v2.5.0 核心特性：
+TAD v2.8.0 核心特性：
 1. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
 2. **配对测试协议** - 跨工具 E2E 测试（TAD CLI → Claude Desktop）
 3. **自适应复杂度** - 根据任务规模自动建议流程深度

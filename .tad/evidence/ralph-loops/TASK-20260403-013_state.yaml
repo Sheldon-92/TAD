@@ -1,0 +1,21 @@
+task_id: TASK-20260403-013
+title: "Hook Coverage Boost — Content-Level Verification"
+started: "2026-04-03"
+last_completed_layer: layer2
+layer1:
+  status: PASS
+  checks:
+    bash_n: PASS
+layer2:
+  status: PASS
+  rounds: 1
+  spec_compliance:
+    result: "5/5 SATISFIED (AC6 N/A)"
+    not_satisfied: 0
+  code_reviewer:
+    result: "PASS (2 P1 fixed)"
+    p0_found: 0
+    p1_found: 2
+    p1_fixed: 2
+    details: "Check 10 grep tightened, Check 12 pattern tightened"
+current_state: gate3_pending

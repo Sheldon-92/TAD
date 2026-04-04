@@ -1,0 +1,25 @@
+task_id: TASK-20260404-017
+title: "Domain Pack Workflow Integration (2-point injection)"
+status: completed
+started: "2026-04-04"
+completed: "2026-04-04"
+
+layer1:
+  status: PASS
+  note: "Protocol enhancement — single .md file, no build/test/lint"
+
+layer2:
+  rounds: 1
+  group0_spec_compliance:
+    status: PASS
+    result: "8/8 AC SATISFIED"
+  group1_code_reviewer:
+    status: PASS
+    result: "0 P0, 1 P1 cosmetic (marker format), 2 P2"
+
+gate3:
+  status: PASS
+  commit: "4d4b4c3"
+  knowledge_assessment:
+    new_discovery: false
+    reason: "Insertions followed handoff's precise before/after — no surprising decisions"

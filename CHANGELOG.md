@@ -15,12 +15,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Human Approval Workflow**: PROPOSAL YAML schema + AskUserQuestion approval + safety constraints
 - **Quality Gate Hooks**: pre-accept-check.sh (BLOCK without COMPLETION), pre-gate-check.sh (BLOCK Gate 3 without evidence)
 
-### Domain Packs (14 packs, 6 research areas)
+### Domain Packs (20 packs, 78 tools across 5 chains)
 - Phase 1 Web: product-definition, web-ui-design, web-frontend, web-backend, web-testing, web-deployment
 - Phase 2 Mobile: mobile-ui-design, mobile-development, mobile-testing, mobile-release
 - Phase 3 AI: ai-agent-architecture (9 caps incl self-improvement), ai-prompt-engineering, ai-tool-integration, ai-evaluation
-- tools-registry.yaml: 35+ tools across all packs
+- Phase 4 Hardware: hw-circuit-design, hw-enclosure, hw-firmware, hw-testing (research supplement: +4 steps, +2 tools)
+- Phase 5 Security: supply-chain-security (litellm-class attack detection), code-security (SAST + DAST + secrets + IaC)
+- tools-registry.yaml: 78 tools across all packs
 - Domain Pack creation template + HOW-TO guide + ROADMAP
+
+### Knowledge Assessment Pipeline Fix
+- Gate 3/4 tables upgraded: Action → Evidence column (file path + entry title required)
+- "Yes" without evidence = Gate FAIL enforcement
+- Alex step7 split: A (verify Blake's Gate 3 knowledge) + B (write own Gate 4 knowledge)
+- Handoff step0_5: keyword-based semantic scan of all knowledge entries for exhaustive matching
+
+### Domain Pack Workflow Integration (2-Point Injection)
+- design_protocol step1_5: Domain Pack Loading with AskUserQuestion confirmation
+- handoff step1a: Domain Pack Injection — quality_criteria as advisory ACs, anti_patterns to Important Notes
+- Both points have skip_conditions for Light TAD and no-match scenarios
 
 ### AI Agent Self-Improvement
 - self_improvement_design capability with 6-step design process
@@ -33,11 +46,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced post-write-sync.sh: COMPLETION→Gate3 reminder, HANDOFF→expert review 4-step checklist, Ralph Loop→workflow reminder
 - Batch expert review of all 6 initial Domain Packs (4 P0 fixed)
 
+### Quality Chain Full Repair (4-Phase Epic)
+- **Root cause**: v2.7 slimming misclassified constraint rules as mechanical instructions
+- **Three-layer defense**: Prompt (what to do) + Template (how to record) + Hook (did you do it)
+- Phase 1: Handoff YAML frontmatter (task_type/e2e_required/research_required) + completion-report Gate 3 v2 structure + Knowledge Assessment + Evidence Checklist
+- Phase 2: Blake EXECUTION CHECKLIST (4 stages + task_type branching + 7 anti-rationalization comments) + frontmatter_compliance mandatory rule
+- Phase 3: Alex step1b frontmatter validation + step4 AC-by-AC verification table + step4b evidence completeness check + Knowledge Assessment enforcement + step0b archive safety net
+- Phase 4: pre-gate-check.sh comprehensive Gate 3 checks (evidence files, Ralph Loop state, conditional E2E/research BLOCK, Git dirty check)
+- Hook Coverage Boost: 8 content-level checks (evidence non-empty, Knowledge Assessment filled, Evidence Checklist checked, Gate 3 FAIL→BLOCK, AC count matching, Ralph Loop layer2 completion, expert review ≥2, commit hash non-placeholder)
+- Hook coverage: 2.5% → ~35-40% (from 3 rules to ~45 rules)
+- New architecture learning: Three-type rule classification (judgment / mechanical / constraint)
+
 ### Architecture Knowledge
 - Domain Pack Step Model: Type A (doc) / B (code) / Mixed
 - Hook path matching: *.tad/ for relative+absolute
 - Judgment-only skill files: 76% reduction safe when hooks handle automation
 - Claude Code enforcement priority: deny > hooks > allow
+- **Three-type rule classification**: judgment (keep in SKILL.md), mechanical (move to hook/config), constraint (NEVER remove — anti-LLM-shortcut guardrails)
 
 ## [2.7.0] - 2026-03-31
 

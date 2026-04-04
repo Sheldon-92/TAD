@@ -82,6 +82,22 @@ case "$FILE_PATH" in
   *.tad/evidence/ralph-loops/*_state.yaml)
     output_response "PostToolUse" "Ralph Loop state detected. MANDATORY workflow reminder: 1. Layer 1: build + test + lint + tsc (ALL must pass) 2. Layer 2: code-reviewer + test-runner sub-agents (P0=0 required) 3. *complete to write COMPLETION report 4. /gate 3 formal quality check (Hook will BLOCK if evidence missing) 5. Message to Alex. SKIPPING ANY STEP = VIOLATION."
     ;;
+  *.tad/domains/*.yaml)
+    DOMAIN_NAME=$(basename "$FILE_PATH" .yaml)
+    RESEARCH_FILE=".tad/spike-v3/domain-pack-tools/${DOMAIN_NAME}-skills-best-practices.md"
+
+    if [ ! -f "$RESEARCH_FILE" ]; then
+      EXTRA_CONTEXT="⚠️ Domain Pack ${DOMAIN_NAME} created WITHOUT Phase 1 research. Research file missing: ${RESEARCH_FILE}. Consider running research before finalizing this domain pack."
+    fi
+
+    record_trace "domain_pack_created" "$FILE_PATH" "$DOMAIN_NAME"
+
+    if [ -n "${EXTRA_CONTEXT:-}" ]; then
+      output_response "PostToolUse" "$EXTRA_CONTEXT"
+    else
+      output_response "PostToolUse" "Domain Pack ${DOMAIN_NAME} updated. Trace recorded."
+    fi
+    ;;
   *.tad/active/research/*)
     record_trace "domain_pack_step" "$FILE_PATH" ""
     output_empty

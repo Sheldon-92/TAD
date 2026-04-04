@@ -6,9 +6,21 @@
 - **Framework**: TAD v2.8.0 + Self-Evolving Framework + Execution Trace + Domain Packs
 
 ## Active Work
-(none)
+- **EPIC: Security Domain Pack Chain** — Phase 0+1 done, **evaluating before Phase 2**
+  - Epic: .tad/active/epics/EPIC-20260403-security-domain-pack-chain.md
+  - ✅ Phase 0: Tool Research (40 tools, 25 capabilities, commit e2c325a)
+  - ✅ Phase 1: Core Packs (supply-chain 644L + code-security 881L + 24 tools, commit 39e8017)
+  - Decision: Run real-project audit before deciding whether to continue Phase 2-4
 
 ## Recently Completed
+- **EPIC: OpenHarness Agent Architecture Upgrade** — ✅ ALL 3/3 PHASES COMPLETE (2026-04-03)
+  - Phase 1: Reference doc (887 lines), Phase 2: Domain Pack v1.1.0, Phase 3: 2 NEXT.md + 3 ideas
+  - Archived: .tad/archive/epics/EPIC-20260403-openharness-agent-architecture-upgrade.md
+- **HW Domain Pack Phase 1 Research Supplement** — ✅ COMPLETE (2026-04-03)
+  - 4 research files (21 repos/resources × 5 dimensions) + 4 YAML iterations (+156 lines, 40 hunks)
+  - Key: 4 new workflow steps (scan_anti_patterns, verify_static_analysis, validate_manifold, declare_measurement_specs)
+  - 2 new tools in registry (platformio_check, admesh). Commit 48a69c6
+  - Archived: .tad/archive/handoffs/HANDOFF-20260403-hw-research-supplement.md
 - **Linear Auto-Sync** — ✅ COMPLETE (2026-03-25)
   - step3.7 startup sync + enhanced step4b + auto_sync config
   - Commit 7583fe5. Archived: .tad/archive/handoffs/HANDOFF-20260325-linear-auto-sync.md

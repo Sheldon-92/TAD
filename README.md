@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.5.0 - Superpowers-Inspired Tactical Upgrades**
+**Version 2.8.0 - Self-Evolving Framework**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -48,46 +48,54 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 ---
 
-## 🎯 What's New in v2.5.0
+## 🎯 What's New in v2.8
 
-### Spec Compliance Reviewer (NEW)
-- **Ralph Loop Group 0**: New blocking review step before code-reviewer
-- Separates "did we build the right thing?" from "did we build it right?"
-- Auto-compares implementation against handoff Acceptance Criteria
+### Self-Evolving Framework (v2.8)
+- **Execution Traces**: PostToolUse hook auto-records file events (JSONL) + step-level trace recording
+- **`*optimize`**: Analyze project traces → propose Domain Pack + Project Knowledge improvements
+- **`*evolve`**: Cross-project trace aggregation → propose TAD framework improvements
+- **Human Approval Workflow**: PROPOSAL YAML schema + AskUserQuestion approval + safety constraints
 
-### Anti-Rationalization Tables (NEW)
-- **12 defensive entries** across 3 categories (Socratic, Gate, Terminal bypass)
-- 8 inline embeds at critical rule enforcement points
-- Standalone guide: `.tad/guides/anti-rationalization-tables.md`
+### Domain Packs (v2.8) — 20 Packs, 78 Tools
+- **5 Domain Chains**: Web (6 packs), Mobile (4), AI (4), Hardware (4), Security (2)
+- Each pack includes: capabilities, workflow steps, quality criteria, anti-patterns, tool references
+- `tools-registry.yaml`: 78 CLI/MCP tools across all packs
+- **Workflow Integration**: Packs actively loaded during `*design` and injected into handoffs
+- Pack creation template + HOW-TO guide for custom domain packs
 
-### TDD Enforcement Skill (NEW, opt-in)
-- RED-GREEN-REFACTOR cycle guidance for Blake's `*develop`
-- Config toggle: `optional_features.tdd_enforcement.enabled`
-- 5 TDD-specific anti-rationalization entries
+### Quality Gate Hooks (v2.8)
+- `pre-accept-check.sh`: BLOCK `*accept` without COMPLETION report
+- `pre-gate-check.sh`: BLOCK Gate 3 without evidence (cold-start safe)
+- `post-write-sync.sh`: Workflow reminders for handoffs, completions, Ralph Loop
 
-### Git Worktree Integration (NEW, opt-in)
-- `*develop --worktree` for isolated branch implementation
-- 4 finishing options: merge / PR / keep / discard
+### Knowledge Assessment Pipeline (v2.8)
+- Gate 3/4 tables require evidence (file path + entry title) — "Yes" without proof = FAIL
+- Alex verifies Blake's Gate 3 knowledge entries exist before accepting
+- Handoff creation scans all knowledge entries for keyword-relevant history
 
-### Also New in v2.3-2.4
-- Micro-Tasks template (§6.1) + Pressure Testing methodology guide
-- `*publish` + `*sync` commands for GitHub release and cross-project sync
-- Context Refresh Protocol, Git Commit Verification
-- Intent Router, *learn, *idea, *status, ROADMAP.md
+### Hook-Native Architecture (v2.7)
+- **5-layer architecture**: CLAUDE.md router → settings.json hooks → .tad/hooks/ scripts → Skills (judgment-only) → Config YAML
+- SessionStart health check, PostToolUse workflow reminders, PreToolUse intelligent gating
+- Skill files reduced ~76% (judgment-only residual) — hooks handle automation
+- Total context footprint reduced ~76% (59K → 14K tokens)
 
-### Bidirectional Messages (v2.2.0)
-- Structured copy-pasteable messages between Alex and Blake
-- Human remains the information bridge (Terminal Isolation preserved)
+### 4D Protocol Pair Testing (v2.6)
+- **Discover → Discuss → Decide → Deliver** — decisions made at discovery time, not deferred
+- Leverages 1M context window for in-session decision-making
 
-### Adaptive Complexity (v2.2.0)
-- Alex assesses task complexity (Small/Medium/Large)
-- Suggests appropriate process depth
-- **Human makes final decision** on workflow depth
+### Autoresearch Optimization Mode (v2.6)
+- Ralph Loop Layer 0.5: autonomous optimization loop for numeric targets
+- Git commit/reset as state management, safety anchor tags, circuit breaker
 
-### `/tad-maintain` Command (v2.1.1)
-- **3 Modes**: CHECK (read-only), SYNC (scoped writes), FULL (comprehensive)
-- **Stale Detection**: Age-based (>7 days) and topic cross-reference
-- **Auto-triggers**: Runs on agent activation, `*exit`, and `*accept`
+### Linear Kanban Integration (v2.6)
+- Cross-project human dashboard via Linear MCP
+- NEXT.md → Linear one-way auto-sync on Alex startup
+
+### Earlier Releases (v2.2–v2.5)
+- **v2.5**: Spec Compliance Reviewer, Anti-Rationalization Tables, TDD Skill, Git Worktree
+- **v2.4**: `*publish` + `*sync`, Context Refresh, Git Commit Verification
+- **v2.3**: Intent Router, `*learn`, `*idea`, `*status`, ROADMAP.md
+- **v2.2**: Bidirectional Messages, Adaptive Complexity, Modular Config, `/tad-maintain`
 
 ---
 
@@ -110,26 +118,21 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.5.0 configuration
-│   ├── skills/                  # Platform-agnostic skills (8 P0 skills)
-│   │   ├── testing/SKILL.md
-│   │   ├── code-review/SKILL.md
-│   │   ├── security-audit/SKILL.md
-│   │   ├── performance/SKILL.md
-│   │   ├── ux-review/SKILL.md
-│   │   ├── architecture/SKILL.md
-│   │   ├── api-design/SKILL.md
-│   │   └── debugging/SKILL.md
+│   ├── config.yaml              # v2.8.0 configuration (modular: 6 config files)
+│   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
+│   ├── hooks/                   # Shell hooks (5 scripts: startup, trace, gate, sync)
+│   ├── skills/                  # Platform-agnostic skills (9 skills)
 │   ├── ralph-config/            # Ralph Loop configuration
 │   ├── templates/               # Handoff, completion, output format templates
 │   ├── active/handoffs/         # Active handoff documents
 │   ├── archive/handoffs/        # Completed handoffs
 │   ├── project-knowledge/       # Project-specific learnings
-│   └── evidence/reviews/        # Gate evidence files
+│   └── evidence/                # Gate evidence (reviews/, ralph-loops/, traces/)
 ├── .claude/                     # Claude Code configuration
-│   ├── commands/                # Slash commands (/alex, /blake, /gate)
-│   └── skills/                  # Claude-enhanced skills
-├── CLAUDE.md                    # Project rules for Claude Code
+│   ├── commands/                # Slash commands (/alex, /blake, /gate, etc.)
+│   ├── skills/                  # Claude-enhanced skills (alex, blake)
+│   └── settings.json            # Hook-native architecture (SessionStart, PostToolUse, PreToolUse)
+├── CLAUDE.md                    # Project rules for Claude Code (router pattern)
 ```
 
 ### Manual Installation
@@ -147,15 +150,15 @@ rm -rf .tad-temp
 ```bash
 # Check version
 cat .tad/version.txt
-# Should show: 2.3
+# Should show: 2.8
 
 # Check skills
 ls .tad/skills/
-# Should show: 8 skill directories
+# Should show: 9 skill directories
 
-# Check /tad-maintain command
-cat .claude/commands/tad-maintain.md | head -1
-# Should show: # TAD Maintain Command
+# Check domain packs
+ls .tad/domains/*.yaml | wc -l
+# Should show: 21 (20 packs + tools-registry)
 ```
 
 ---
@@ -284,18 +287,20 @@ Alex: [Reviews with subagents, accepts or requests changes]
 
 ### Alex Commands (use `*` prefix)
 - `*analyze` - Start requirement elicitation
-- `*design` - Create technical design
+- `*design` - Create technical design (with Domain Pack loading)
 - `*handoff` - Generate handoff with expert review
 - `*review` - Review Blake's completion
 - `*accept` - Accept and archive handoff
+- `*optimize` - Analyze traces → propose improvements
+- `*evolve` - Cross-project framework evolution
+- `*status` - Panoramic project status view
 
 ### Blake Commands (use `*` prefix)
-- `*develop` - Start Ralph Loop (auto Layer 1 + Layer 2) **(NEW)**
-- `*implement` - Start implementation from handoff
+- `*develop` - Start Ralph Loop (auto Layer 1 + Layer 2)
 - `*layer1` - Run Layer 1 self-checks only
 - `*layer2` - Run Layer 2 expert review only
-- `*ralph-status` - Check Ralph Loop state **(NEW)**
-- `*ralph-resume` - Resume from checkpoint **(NEW)**
+- `*ralph-status` - Check Ralph Loop state
+- `*ralph-resume` - Resume from checkpoint
 - `*gate 3` - Execute Gate 3 v2 (technical quality)
 - `*complete` - Generate completion report
 
@@ -333,16 +338,16 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v2.5.0** | **Spec Compliance Reviewer, Anti-Rationalization, TDD Skill, Worktree** |
+| **v2.8.0** | **Self-Evolving Framework, 20 Domain Packs (78 tools), Execution Traces, Quality Gate Hooks** |
+| **v2.7.0** | **Hook-Native Architecture, 76% context reduction, PreToolUse gating** |
+| **v2.6.0** | **4D Protocol Pair Testing, Autoresearch Optimization, Linear Integration** |
+| v2.5.0 | Spec Compliance Reviewer, Anti-Rationalization, TDD Skill, Worktree |
 | v2.4.0 | *publish + *sync, Context Refresh, Git Commit Verification |
 | v2.3.0 | Multi-Platform Cleanup, Intent Router, *learn, *idea, ROADMAP |
-| v2.2.1 | Pair Testing Protocol, TEST_BRIEF.md, Cross-tool E2E |
-| v2.2.0 | Bidirectional Messages, Adaptive Complexity, Modular Config |
-| v2.1.1 | `/tad-maintain`, Stale Detection, Simplified Adapters |
-| v2.1.0 | Agent-Agnostic Architecture, 8 P0 Skills |
-| v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure, Tiered Timeout |
+| v2.2.x | Bidirectional Messages, Adaptive Complexity, Pair Testing, Modular Config |
+| v2.1.x | Agent-Agnostic Architecture, 9 Skills, `/tad-maintain` |
+| v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure |
 | v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
-| v1.6 | Evidence-Based Gates, Output Templates, Skills Architecture |
 
 ---
 
@@ -416,6 +421,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.5.0 - Beneficial Friction for AI-Assisted Development.**
+**Welcome to TAD v2.8.0 - Self-Evolving Framework for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

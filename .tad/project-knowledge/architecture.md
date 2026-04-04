@@ -207,3 +207,16 @@ Project-specific architecture learnings accumulated through TAD workflow.
   3. `bypassPermissions` mode overrides EVERYTHING including deny — TAD v3.0 must NOT use bypass mode.
   4. **Best pattern for context-aware restriction**: Don't deny tools that sometimes need to be used. Instead, use PreToolUse prompt hooks (Haiku) for intelligent path/context gating. Reserve deny only for tools that should NEVER be available.
 - **Action**: For TAD v3.0, use two-layer enforcement: `permissions.deny` for hard tool removal (Bash rm patterns if needed), PreToolUse prompt hooks for everything else. Never deny a tool that a hook needs to conditionally allow.
+
+### Domain Pack Research: Workflow Steps > Quality Criteria Text - 2026-04-03
+- **Context**: HW Domain Pack Phase 1 research supplement — two rounds of YAML iteration
+- **Discovery**: When improving Domain Pack quality via research, **new workflow steps** (adding a step to the capability pipeline) deliver far more value than **quality_criteria text additions** (adding a line to the checklist). First round added ~20 quality_criteria lines — Blake self-assessed as insufficient. Second round added 4 new steps (scan_anti_patterns, verify_static_analysis, validate_manifold, declare_measurement_specs) + 2 tool integrations — this changed how the pack actually operates.
+  1. **Steps change behavior**: A new step in the pipeline is mandatory — it runs every time. A quality_criteria line is advisory — it can be skimmed or ignored.
+  2. **Tool integration amplifies steps**: Steps referencing tool_ref (platformio_cli, admesh) create verifiable checkpoints. Text-only criteria rely on LLM judgment.
+  3. **Research ROI hierarchy**: new step with tool_ref > new step without tool > new anti_pattern > new quality_criteria text
+- **Action**: When designing Domain Pack research tasks, explicitly require "at least 1 new step per pack" as an AC. Text-only quality_criteria additions should be a secondary output, not the primary deliverable.
+
+### Hook Shell Portability: No grep -P on macOS - 2026-04-03
+- **Context**: Quality Chain Phase 4 — code-reviewer caught `grep -oP` (Perl regex) in pre-gate-check.sh
+- **Discovery**: macOS ships BSD grep which does NOT support `-P` (Perl regex). `grep -oP '(?<=pattern).*'` silently fails or errors on stock macOS. The portable alternative is `grep -o 'full_pattern' | sed 's/prefix//'`. This is critical for hook scripts that must run on any developer machine.
+- **Action**: Never use `grep -P` in hook scripts. Use `grep -o` + `sed` for lookbehind-like extractions. Add this to hook code review checklist.

@@ -1,9 +1,10 @@
 # TAD Specialized Tools Guide
 
-**Version 2.3.0**
+**Version 2.8.0**
 
-> TAD runs on Claude Code as its primary runtime. Codex CLI and Gemini CLI can serve as
-> specialized execution tools for specific tasks via the Handoff mechanism.
+> TAD runs on Claude Code as its primary runtime with hook-native architecture,
+> 20 Domain Packs (78 tools), execution traces, and self-evolution capabilities.
+> Codex CLI and Gemini CLI can serve as specialized execution tools via the Handoff mechanism.
 
 ---
 
@@ -11,7 +12,7 @@
 
 | Platform | Role | How It Works |
 |----------|------|--------------|
-| **Claude Code** | Full TAD Runtime | Alex (design) + Blake (implement) + Gates |
+| **Claude Code** | Full TAD Runtime | Alex (design) + Blake (implement) + Gates + Domain Packs + Hooks + Traces |
 | **Codex CLI** | Specialized Executor | Receives Handoff → executes task → human returns result to Alex |
 | **Gemini CLI** | Specialized Executor | Receives Handoff → executes task → human returns result to Alex |
 
@@ -54,4 +55,4 @@ The `.tad/skills/` directory contains platform-agnostic quality checklists:
 
 ---
 
-*TAD v2.3.0 — Claude Code primary, Codex/Gemini as specialized tools.*
+*TAD v2.8.0 — Claude Code primary (hooks + 20 Domain Packs + 78 tools), Codex/Gemini as specialized tools.*
