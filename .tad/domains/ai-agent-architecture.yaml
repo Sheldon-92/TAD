@@ -3,7 +3,7 @@
 # Framework-agnostic: applies to Claude Code, OpenClaw, LangChain, or custom.
 # Scope: Architecture design (documents + diagrams), NOT code implementation.
 domain: ai-agent-architecture
-version: 1.0.0
+version: 1.1.0
 requires_registry: ">=1"
 description: "AI Agent 架构设计：从概念到可实现的蓝图。产出物是设计文档 + 架构图，不是代码。框架无关：适用于 Claude Code / OpenClaw / LangChain / 自建。核心价值：防止 agent 在生产中失败（幻觉、无限循环、越权、成本爆炸）。"
 
@@ -92,6 +92,18 @@ capabilities:
         tool_ref: diagram_generation
         output_file: "reliability-architecture.svg"
 
+      - id: verify_loop_bounds
+        action: |
+          验证 agent loop 有明确的循环上限和重试边界 — 来源: OpenHarness §Engine
+          1. 确认 agent loop 有 max_turns 参数（推荐默认 ≤10，OpenHarness 默认 8）
+          2. 确认 API 调用有 max_retries（推荐 ≤3）
+          3. 确认有 circuit breaker：连续 N 次相同错误 → 停止 + 升级
+          4. 验证超限行为：超过 max_turns 时必须抛错或升级，不能静默忽略
+          5. 如果 agent 支持并行工具执行 → 确认并行上限和失败策略
+        tool_ref: null
+        quality: "必须有具体的 max_turns 和 max_retries 数值。'合理限制'不够具体。"
+        output_file: "reliability-design.md (append)"
+
       - id: compile_reliability_report
         action: "综合为可靠性设计文档 PDF（含分析、架构图、选型理由）"
         tool_ref: pdf_generation
@@ -103,6 +115,8 @@ capabilities:
       - "冗余分析：每个关键行为有 ≥2 层独立 enforcement"
       - "步骤数分析有失败率计算（1 - accuracy^steps）"
       - "如果环境不支持多层 → 诚实标注风险"
+      - "agent loop 有 max_turns 上限 + max_retries + circuit breaker — 来源: OpenHarness §Engine (max_turns=8)"
+      - "工具执行失败返回错误上下文（ToolResult.is_error=True）而非抛异常，让模型看到错误并自我修正 — 来源: OpenHarness §Engine + §Tools (G10 Error as Context)"
       - "编造机制 = FAIL。不确定的标注 [UNVERIFIED]"
 
     anti_patterns:
@@ -209,6 +223,7 @@ capabilities:
       - "行为矩阵覆盖所有输入类型（无未定义行为）"
       - "不可逆操作有人类审批流程"
       - "自知规则：agent 被问到'你怎么工作'时必须读自己的配置（不猜测）"
+      - "Skill/角色定义文件必须有结构化元数据（YAML frontmatter: name, description, source），支持 registry 自动发现 — 来源: OpenHarness §Skills (SkillDefinition frozen dataclass)"
       - "编造角色能力 = FAIL。不确定的标注 [NEEDS_VALIDATION]"
 
     anti_patterns:
@@ -298,6 +313,22 @@ capabilities:
         tool_ref: diagram_generation
         output_file: "tool-permission-pipeline.svg"
 
+      - id: verify_tool_schema
+        action: |
+          验证每个工具的 schema 定义和读写声明 — 来源: OpenHarness §Tools
+          1. 确认每个工具有类型化输入 schema（Pydantic BaseModel / JSON Schema / Zod）
+             - 必填字段有约束（type, min/max, enum）
+             - schema 能自动生成 API 格式（to_api_schema() 模式）
+          2. 确认每个工具声明 is_read_only 属性
+             - 读操作（Read, Grep, Glob）→ is_read_only=True → 权限系统可跳过确认
+             - 写操作（Write, Edit, Bash）→ is_read_only=False → 需权限检查
+          3. 确认工具结果有统一格式（output: str + is_error: bool）
+             - 失败返回错误信息而非抛异常（G10 Error as Context）
+          4. 如果工具 >20 个 → 确认有延迟加载策略（metadata-first, full schema on demand）
+        tool_ref: null
+        quality: "每个工具必须有 schema + is_read_only 声明。无 schema 的工具 = 安全风险。"
+        output_file: "tool-system-design.md (append)"
+
       - id: compile_tool_report
         action: "综合为工具系统设计文档 PDF"
         tool_ref: pdf_generation
@@ -309,6 +340,7 @@ capabilities:
       - "权限管线分 4 层（static → mode → LLM → human），成本递增"
       - "并发模型明确（parallel vs serial + 失败处理）"
       - "危险操作有人类审批（不是自动通过）"
+      - "agent 行为可通过 lifecycle hooks 扩展（pre_tool_use / post_tool_use），无需修改核心代码 — 来源: OpenHarness §Hooks (G4 Lifecycle Hooks)"
       - "编造工具能力 = FAIL。不确定的标注 [NEEDS_TESTING]"
 
     anti_patterns:
@@ -419,6 +451,8 @@ capabilities:
       - "Compaction 有 ≥2 tier，每 tier 有触发阈值 + circuit breaker"
       - "检索策略有精度/速度对比（不是只选一个）"
       - "衰减规则明确（什么过期、什么永久）"
+      - "持久化记忆必须有 index file（MEMORY.md 模式：索引 + 独立 topic 文件），索引可从目录重建 — 来源: OpenHarness §Memory (G7 File-Based Memory)"
+      - "多项目 memory 需命名空间隔离（项目路径 hash 或目录前缀），防止同名项目数据冲突 — 来源: OpenHarness §Memory (SHA1 hash 隔离)"
       - "编造 token 数 = FAIL。不确定的标注 [ESTIMATED]"
 
     anti_patterns:
@@ -513,6 +547,27 @@ capabilities:
           如果系统规模小（≤3 agents）→ 推荐 sequential pipeline，不需要复杂协调
         quality: "隔离边界必须明确。成本 ceiling 必须有具体数字。循环检测必须是机械的。"
         tool_ref: null
+        output_file: "multi-agent-design.md (append)"
+
+      - id: design_coordination_model
+        action: |
+          设计多 agent 协调模型 — 来源: OpenHarness §Coordinator (G6 Minimal Coordination)
+          1. 协调复杂度评估：
+             - ≤3 agents → 推荐 TeamRegistry 模式（team = agent 列表 + append-only 消息日志）
+             - >3 agents 或跨机器 → 考虑消息队列（但先论证是否真的需要）
+          2. Team Registry 设计（如适用）：
+             - create_team(name, description) → TeamRecord
+             - add_agent(team_name, task_id) → 去重追加
+             - send_message(team_name, message) → append-only 审计日志
+             - agent 通过 task_id 引用（字符串松耦合，不直接引用对象）
+          3. Agent 角色预定义：
+             - 列出 ≤5 个内置角色（如 default/worker/explorer）
+             - 每个角色有 name + description，用于 spawn 时选择
+          4. 状态管理决策：
+             - 内存 vs 持久化？（短生命周期用内存，长任务用文件）
+             - 单例 vs 多实例？（推荐全局单例 TeamRegistry）
+        tool_ref: null
+        quality: "协调模型必须有复杂度评估。不需要复杂框架时不加复杂性。"
         output_file: "multi-agent-design.md (append)"
 
       - id: generate_multi_agent_diagrams
@@ -626,6 +681,28 @@ capabilities:
              每个安全决策（allow/deny/escalate）记录: 时间 + 上下文 + 理由 + 结果
         quality: "不可逆操作必须有人类确认。降级必须是 fail-closed。审计日志格式必须定义。"
         tool_ref: null
+        output_file: "safety-design.md (append)"
+
+      - id: design_permission_layers
+        action: |
+          设计分层权限过滤器 — 来源: OpenHarness §Permissions (G3 Permission Layering)
+          1. 实现 ≥3 层过滤器（每层可短路返回）：
+             Layer 1 — 显式拒绝/允许列表：denied_tools / allowed_tools（最快，O(1) 查找）
+             Layer 2 — 路径/命令规则：fnmatch glob 匹配文件路径 + 危险命令模式
+             Layer 3 — 模式策略：根据运行模式决定（default=需确认, plan=阻止写, auto=全允许）
+          2. 每层的决策结构：PermissionDecision(allowed, requires_confirmation, reason)
+             - 每个决策携带 reason 字符串（可审计）
+             - requires_confirmation 触发人类确认流程
+          3. 读写感知：
+             - 工具自声明 is_read_only → 读操作跳过 Layer 3 确认
+             - 写/危险操作 → 完整三层过滤
+          4. 量化指标：
+             | 指标 | 推荐值 | 来源 |
+             | permission_modes | ≥3 (default/plan/auto) | OpenHarness permissions/modes.py |
+             | denied_tools 响应时间 | O(1) set lookup | OpenHarness permissions/checker.py |
+             | path_rules 匹配 | fnmatch glob | OpenHarness permissions/checker.py |
+        tool_ref: null
+        quality: "权限层必须 ≥3 层。每层有短路返回。deny 优先级最高。"
         output_file: "safety-design.md (append)"
 
       - id: generate_safety_diagrams
@@ -762,6 +839,7 @@ capabilities:
       - "Context budget 有优先级（P0 不可裁减 → P3 可延迟）"
       - "Overflow 有处理方案（不是'加更大 context window'）"
       - "Prompt 安全有隔离机制"
+      - "system prompt 分层组装：base prompt + environment info + project instructions + memory context，每层独立可选 — 来源: OpenHarness §Prompts (G8 Layered Prompt Assembly)"
       - "编造 token 数 = FAIL。不确定的标注 [ESTIMATED]"
 
     anti_patterns:
@@ -892,6 +970,8 @@ capabilities:
       - "可观测性三维度（log/metric/trace）每个有具体配置"
       - "部署检查清单 ≥15 项，每项有验证方法"
       - "回滚 < 5 分钟（或有明确 SLA）"
+      - "配置加载有明确优先级链：CLI args > 环境变量 > 配置文件 > hardcoded defaults — 来源: OpenHarness §Config (G9 Settings Validation)"
+      - "配置必须有 schema 验证（Pydantic / JSON Schema / Zod），加载时自动校验，无效配置 fail-fast 而非静默使用默认值 — 来源: OpenHarness §Config (Settings.model_validate)"
       - "编造 SLA/RPO = FAIL"
 
     anti_patterns:
@@ -1060,6 +1140,7 @@ capabilities:
       - "❌ 优化频率太高 = 噪音大于信号"
       - "❌ 样本不足就优化（<10 条 trace 不够看出模式）"
       - "❌ 指标代理问题（优化可测量指标，忽略真正目标 — Goodhart's Law）"
+      - "❌ 无执行追踪 = 无法自我优化（没有 trace 数据就没有改进依据，优化变成猜测） — 来源: OpenHarness §Engine (StreamEvent 全链路事件追踪)"
 
     reviewers:
       - persona: "AI 安全审查员"
