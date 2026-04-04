@@ -1396,6 +1396,7 @@ handoff_creation_protocol:
         - Files to modify
         - Testing checklist
         - "Micro-Tasks (optional — include for Full/Standard TAD when task has 5+ files)"
+        - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
       epic_linkage: |
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase
@@ -1406,6 +1407,15 @@ handoff_creation_protocol:
         4. Verify: no other phase is already 🔄 Active (concurrent control)
            - If another phase is Active → BLOCK, do not create handoff
         If no active Epic → omit the Epic field (normal handoff)
+
+    step1b:
+      name: "Frontmatter Validation"
+      action: "验证 handoff 草稿的 YAML frontmatter 三个字段都已填写且值合法"
+      validation:
+        task_type: "must be one of: code, yaml, research, e2e, mixed"
+        e2e_required: "must be yes or no"
+        research_required: "must be yes or no"
+      violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
 
     step2:
       name: "Expert Selection"
@@ -1691,7 +1701,32 @@ acceptance_protocol:
   step1: "Blake 完成 Gate 3 v2 后，会创建 completion-report.md"
   step2: "Alex 确认 Gate 3 v2 已通过（检查 completion report）"
   step3: "执行 Gate 4 v2: 业务验收"
-  step4: "【业务检查】验证实现是否符合 handoff 原始需求"
+  step4:
+    action: "【业务检查 — 逐条 AC 对照】"
+    details: |
+      1. 读取 handoff 的 Acceptance Criteria section
+      2. 读取 Blake 的 completion report
+      3. 逐条对照每个 AC：
+         - AC 是否在 completion report 中标记完成？
+         - AC 的验证方法是否有对应 evidence？
+         - 如果 AC 标记未完成 → 记录为"未满足"
+      4. 输出对照表：
+         | AC# | 要求 | Blake 报告状态 | Evidence 存在 | Alex 判定 |
+         |-----|------|---------------|--------------|----------|
+      5. 如有任何 AC 未满足 → 不通过，退回 Blake
+    blocking: true
+    # ⚠️ ANTI-RATIONALIZATION: "仔细审查了 completion report，功能看起来完全符合"
+    # → "看起来符合"≠实际验证。必须输出逐条对照表。
+  step4b:
+    action: "【Evidence 完整性检查】"
+    details: |
+      1. 读取 completion report 的 Evidence Checklist 节
+      2. 检查 required 项是否全部勾选
+      3. 读取 handoff YAML frontmatter:
+         - 如果 e2e_required: yes → 确认 E2E evidence 路径存在
+         - 如果 research_required: yes → 确认研究文件路径存在
+      4. 如有 required evidence 缺失 → 不通过，退回 Blake
+    blocking: true
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7: "【Knowledge Assessment】记录新发现（如有）"
@@ -1715,8 +1750,11 @@ acceptance_protocol:
       - "演示/走查完成"
       - "用户确认满意"
     knowledge_assessment:
-      - "是否有新发现？(Yes/No)"
-      - "如果有，记录到 .tad/project-knowledge/"
+      - "是否有新发现？(Yes/No) — 必须明确回答"
+      - "如果有，确认已写入 .tad/project-knowledge/{category}.md"
+      - "如果没有，确认原因合理（不能只写 N/A）"
+      # ⚠️ ANTI-RATIONALIZATION: "常规 CRUD，没有新发现，Knowledge Assessment 是浪费"
+      # → 即使无新发现也必须显式写 "No" + 原因。跳过 = 表格不完整 = Gate 无效。
 
   violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"
   violation2: "Gate 3 v2 未通过就执行 Gate 4 v2 = VIOLATION"
@@ -1754,6 +1792,14 @@ accept_command:
            e. Otherwise → remain BLOCKED until resolved
       blocking: true
       purpose: "Safety net — catches cases where Blake's step3c was skipped or failed"
+
+    step0b_evidence_check:
+      action: "Evidence 完整性 — 确认 Gate 4 step4b 已执行"
+      details: |
+        This is a safety net — step4b should have already caught missing evidence.
+        Quick re-check: read completion report Evidence Checklist, confirm all required items checked.
+        If any required unchecked → BLOCK with "Evidence incomplete, cannot archive."
+      blocking: true
 
     step1:
       action: "将 handoff 移至 .tad/archive/handoffs/"
