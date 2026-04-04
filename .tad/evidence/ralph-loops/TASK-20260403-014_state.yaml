@@ -1,0 +1,35 @@
+task_id: TASK-20260403-014
+title: "Security Domain Pack — Phase 0 Tool Research"
+status: layer2_complete
+started: "2026-04-03"
+handoff: ".tad/active/handoffs/HANDOFF-20260403-security-tool-research.md"
+epic: "EPIC-20260403-security-domain-pack-chain.md"
+
+layer1:
+  status: passed
+  attempts: 1
+  checks:
+    - name: "file_existence"
+      status: passed
+      detail: "6/6 files exist"
+    - name: "line_count_150"
+      status: passed
+      detail: "346, 408, 336, 337, 370, 189 lines"
+    - name: "template_compliance"
+      status: passed
+      detail: "All 5 dimensions + Search Log in all files"
+
+layer2:
+  status: passed
+  rounds: 1
+  groups:
+    group0_spec_compliance:
+      status: passed
+      verdict: "PASS — 10/10 ACs satisfied"
+      evidence: ".tad/evidence/reviews/TASK-20260403-014-spec-compliance.md"
+    group1_code_reviewer:
+      status: passed
+      verdict: "CONDITIONAL_PASS → PASS (4 P0 fixed, 8 P1 noted)"
+      evidence: ".tad/evidence/reviews/TASK-20260403-014-code-review.md"
+
+notes: "Research task — all P0 issues resolved. P1 items deferred to Phase 1."
