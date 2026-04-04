@@ -2,9 +2,33 @@
 
 ## In Progress
 
+- [ ] **EPIC: Security Domain Pack Chain** — Phase 0 COMPLETE, Phase 1 next
+  - ✅ Phase 0: Security Tool Research — 40 tools, 5 domains, 25 capabilities (commit e2c325a)
+  - 🔲 Phase 1: supply-chain + code-security packs (needs Alex handoff)
+  - 🔲 Phase 2: ai-security + compliance packs
+  - 🔲 Phase 3: security-monitoring + TAD integration
+  - 🔲 Phase 4: E2E validation
 - [ ] Push TAD v2.8.0 to GitHub (user manual)
+- [ ] Add Bash command deny patterns to PreToolUse hook (rm -rf, DROP TABLE etc.) — source: OpenHarness §Permissions
+- [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **EPIC: OpenHarness Agent Architecture Upgrade** — ALL 3/3 PHASES COMPLETE (2026-04-03)
+  - Phase 1: Reference doc 887 lines (commit 75d75f6)
+  - Phase 2: ai-agent-architecture.yaml v1.1.0 (+4 steps, +8 criteria, commit f1af57e)
+  - Phase 3: 2 NEXT.md items + 3 ideas identified
+
+- [x] **EPIC: Quality Chain Full Repair** — ALL 4/4 PHASES COMPLETE (2026-04-03)
+  - Phase 1: Template metadata + Gate 3 v2 structure (commit 679d1fa)
+  - Phase 2: Blake EXECUTION CHECKLIST + frontmatter compliance (commit db54386)
+  - Phase 3: Alex prompt layer hardening (commit faebb49)
+  - Phase 4: Hook validation layer upgrade (pre-gate evidence checks + domain pack detection)
+  - Three-layer defense: Prompt (Phase 2-3) → Template (Phase 1) → Hook (Phase 4)
+
+- [x] **HW Domain Pack Phase 1 Research Supplement** — Gate 4 PASS, archived (2026-04-03)
+  - 4 research files (21 repos × 5 dimensions), 4 YAML iterations (+156 lines)
+  - 4 new steps + 2 new tools (platformio_check, admesh), commit 48a69c6
 
 - [x] **TAD v2.8.0 Self-Evolving Framework Release** (2026-04-03)
   - Phase 1: Trace infrastructure (PostToolUse JSONL + trace-step.sh)
