@@ -1,0 +1,881 @@
+# Domain Pack: Code Security
+# SAST + DAST + Secrets + IaC Linting + Vulnerability Triage
+# Phase 5 of Domain Pack Roadmap — Security Chain
+domain: code-security
+version: 1.0.0
+requires_registry: ">=1"
+description: |
+  代码安全：静态分析(SAST)、动态测试(DAST)、密钥检测、IaC 安全审查、漏洞分诊。
+  核心问题："Does my code have vulnerabilities?"
+  产出物是 SARIF 扫描结果 + 分诊行动计划，不是安全教程。
+  Scope: Find vulnerabilities in YOUR code. Does NOT own compliance proof (compliance pack)
+  or post-install CVE monitoring (security-monitoring pack).
+  Covers: SAST (static), DAST (dynamic), secrets, IaC linting.
+  Does NOT cover: runtime WAF, RASP, cloud posture management (CSPM).
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Pipeline Gating — MANDATORY for security packs
+# ═══════════════════════════════════════
+
+severity_policy:
+  block_pipeline: ["CRITICAL", "HIGH"]
+  warn_only: ["MEDIUM", "LOW"]
+  accept_risk_requires: "documented justification with CWE mapping and owner sign-off"
+  grace_period: "existing findings get 2-sprint remediation window via baseline mode"
+  baseline_mode: |
+    For existing codebases, use baseline comparison to avoid alert fatigue:
+    - semgrep: --baseline-commit=<main-branch-sha>
+    - detect-secrets: .secrets.baseline
+    - gitleaks: --baseline-path=.gitleaks-baseline.json
+    New findings block pipeline. Existing findings tracked in backlog.
+
+# ═══════════════════════════════════════
+# Reference: SAST vs DAST Coverage Matrix
+# ═══════════════════════════════════════
+#
+# | Vulnerability Type      | SAST Tools                    | DAST Tools      | Gap              |
+# |------------------------|-------------------------------|-----------------|------------------|
+# | SQL Injection           | semgrep, bandit, codeql       | ZAP, nuclei     | Stored procs     |
+# | XSS (Reflected)         | semgrep, codeql, bearer       | ZAP, nuclei     | DOM-based: DAST  |
+# | XSS (Stored)            | semgrep, codeql               | ZAP             | Multi-step DAST  |
+# | Command Injection       | semgrep, bandit, codeql       | ZAP             | SAST stronger    |
+# | Path Traversal          | semgrep, codeql, bearer       | ZAP, nuclei     | Both effective   |
+# | SSRF                    | semgrep, codeql               | ZAP, nuclei     | SAST stronger    |
+# | Insecure Deserialization| semgrep, codeql               | nuclei (CVEs)   | SAST stronger    |
+# | Hardcoded Secrets       | semgrep (rules)               | none            | Dedicated tools  |
+# | Broken Auth             | limited (codeql)              | ZAP (auth)      | Mostly manual    |
+# | Broken Access Control   | limited                       | ZAP (auth ctx)  | Mostly manual    |
+# | Security Misconfiguration| hadolint, checkov            | ZAP, nikto      | IaC + DAST       |
+# | Cryptographic Failures  | semgrep, bandit, codeql       | limited         | SAST dominant    |
+#
+# Key insight: SAST and DAST are complementary. Never rely on one alone.
+
+# ═══════════════════════════════════════
+# Capability 1: SAST Scan
+# ═══════════════════════════════════════
+
+capabilities:
+
+  sast_scan:
+    description: "Static Application Security Testing — find vulnerabilities in source code without executing it"
+
+    steps:
+      - id: detect_language
+        action: |
+          Identify project languages and select appropriate scanner(s):
+
+          Multi-language (always start here):
+            semgrep — covers 30+ languages with 2000+ free rules
+
+          Language-specific (add for deeper analysis):
+            Python: bandit (AST-based, 47+ security checks)
+            C/C++/C#/Go/Java/JS/TS/Python/Ruby/Swift/Kotlin: codeql (deep semantic)
+            Ruby/JS/TS/Java/Go/PHP/Python: bearer (data-flow PII tracking)
+
+          Decision matrix:
+          - Single language, quick scan → semgrep
+          - Python project → semgrep + bandit
+          - Deep analysis needed → semgrep + codeql
+          - PII/data flow concerns → semgrep + bearer
+        tool_ref: null
+        output_file: "sast-report.md (language detection)"
+        quality: "All project languages identified. Scanner selection justified."
+
+      - id: select_rules
+        action: |
+          Choose ruleset based on scan objective:
+
+          General security:
+            semgrep scan --config auto .
+
+          OWASP Top 10 focused:
+            semgrep scan --config p/owasp-top-ten .
+
+          Language-specific:
+            semgrep scan --config p/python .
+            semgrep scan --config p/javascript .
+            semgrep scan --config p/golang .
+
+          For bandit (Python):
+            bandit -r ./src -ll  # medium severity and above
+
+          For codeql:
+            codeql database create my-db --language=python --source-root=./src
+            codeql database analyze my-db codeql/python-queries:codeql-suites/python-security-extended.qls
+
+          For baseline mode (existing codebase):
+            semgrep scan --config auto --baseline-commit=$(git merge-base HEAD main) .
+        tool_ref: semgrep_cli
+        output_file: "sast-report.md (ruleset selection)"
+        quality: "Ruleset matches project language(s) and scan objective."
+
+      - id: execute_scan
+        action: |
+          Run selected scanner(s) with SARIF output for standardized results:
+
+          semgrep (primary):
+            semgrep scan --config auto --sarif --output=sast-semgrep.sarif .
+            semgrep scan --config auto --json-output=sast-semgrep.json .
+
+          bandit (Python):
+            bandit -r ./src -f sarif -o sast-bandit.sarif
+
+          codeql (deep):
+            codeql database analyze my-db --format=sarif-latest --output=sast-codeql.sarif
+
+          bearer (data-flow):
+            bearer scan . --format sarif --output sast-bearer.sarif --severity critical,high
+
+          SARIF is the standard interchange format — all tools produce it.
+          Keep both SARIF (for CI/GitHub Security tab) and JSON (for programmatic processing).
+        tool_ref: semgrep_cli
+        output_file: "sast-semgrep.sarif"
+        quality: "SARIF output generated. No scan errors."
+
+      - id: map_to_cwe
+        action: |
+          For each finding, ensure CWE mapping exists:
+          - semgrep findings typically include CWE IDs in rule metadata
+          - bandit findings map to CWE via B-code (e.g., B101 → CWE-703)
+          - codeql findings include CWE in query metadata
+
+          Cross-reference with:
+          - OWASP Top 10 (2021/2025) categories
+          - CWE Top 25 (2023) entries
+          - ASVS 4.0.3 chapters (V1-V14)
+
+          Findings without CWE mapping should be flagged for manual classification.
+        tool_ref: null
+        output_file: "sast-report.md (CWE mapping)"
+        quality: "Every finding has a CWE ID. OWASP Top 10 mapping included."
+
+      - id: prioritize_findings
+        action: |
+          Classify findings and produce actionable report:
+
+          Priority levels:
+          P0 (fix immediately): CRITICAL severity + reachable code path + no compensating control
+          P1 (fix this sprint): HIGH severity or CRITICAL with compensating control
+          P2 (backlog): MEDIUM severity, tracked but not blocking
+          P3 (informational): LOW severity, accept or suppress
+
+          Deduplication:
+          - Same finding from multiple tools (semgrep + bandit) counts once
+          - Use CWE ID + file + line for dedup key
+
+          ## SAST Scan Report
+          - **Date**: {timestamp}
+          - **Scanner(s)**: {list}
+          - **Rules**: {ruleset}
+          - **Baseline**: {commit or "full scan"}
+
+          ### Summary
+          | Severity | Count | New (vs baseline) | CWE Categories |
+
+          ### P0 Findings (Fix Immediately)
+          | # | File:Line | CWE | Rule | Severity | Description | Remediation |
+
+          ### P1 Findings
+          (same table)
+
+          ### False Positive Suppressions
+          | # | Rule | Reason | Suppressed By |
+        tool_ref: null
+        output_file: "sast-report.md"
+        quality: "Every finding prioritized. Dedup across tools applied."
+
+    quality_criteria:
+      - "Must produce SARIF output for CI/CD integration"
+      - "Must support baseline comparison for existing codebases"
+      - "Must cover OWASP Top 10 A02 (Crypto), A03 (Injection), A07 (Auth), A10 (SSRF) at minimum"
+      - "Every finding has CWE mapping"
+      - "False positive rate below 30% on standard benchmarks"
+      - "Deduplication applied when multiple scanners used"
+
+    anti_patterns:
+      - "❌ SAST-only false confidence — SAST cannot detect runtime issues like broken access control (A01)"
+      - "❌ Running all rules on legacy code without baseline — creates thousands of findings, team ignores all"
+      - "❌ Suppressing findings without documented justification — creates security blind spots"
+
+  # ═══════════════════════════════════════
+  # Capability 2: DAST Scan
+  # ═══════════════════════════════════════
+
+  dast_scan:
+    description: "Dynamic Application Security Testing — test running application for vulnerabilities via HTTP"
+
+    steps:
+      - id: configure_target
+        action: |
+          Set target URL, authentication, and scan policy:
+
+          Target: staging/dev environment URL (NEVER production for active scans)
+          Authentication: configure if app requires login
+          Rate limiting: set scan speed to avoid overwhelming target
+
+          For ZAP:
+            Baseline scan (passive, safe for prod): ~1 minute
+            Full scan (active, staging only): 10-60 minutes
+            API scan (OpenAPI input): variable
+
+          For nuclei:
+            Severity filter recommended: -severity critical,high
+            Rate limit: -rate-limit 50 (requests/second)
+        tool_ref: null
+        output_file: "dast-report.md (target configuration)"
+        quality: "Target is staging/dev, NOT production. Auth configured if needed."
+
+      - id: select_scan_type
+        action: |
+          Choose scan type based on context:
+
+          Quick assessment:
+            ZAP baseline (passive only, safe):
+            docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable \
+              zap-baseline.py -t https://staging.example.com -r baseline-report.html -J baseline-report.json
+
+          Thorough scan:
+            ZAP full scan (active, spider + attack):
+            docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable \
+              zap-full-scan.py -t https://staging.example.com -r full-report.html -J full-report.json
+
+          API-specific:
+            ZAP API scan (reads OpenAPI spec):
+            docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable \
+              zap-api-scan.py -t openapi.yaml -f openapi -r api-report.html
+
+          CVE-focused:
+            nuclei -u https://staging.example.com -severity critical,high -tags cve -o nuclei-cve.txt
+
+          Server sweep:
+            nikto -h https://staging.example.com -Format json -o nikto-report.json
+        tool_ref: zap_dast
+        output_file: "dast-report.md (scan type selection)"
+        quality: "Scan type matches context. Rate limits set."
+
+      - id: execute_scan
+        action: |
+          Run selected DAST tool(s):
+
+          ZAP (comprehensive):
+            docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable \
+              zap-full-scan.py -t https://staging.example.com \
+              -r dast-zap-report.html -J dast-zap-report.json
+
+          nuclei (template-based):
+            nuclei -update-templates  # always update first
+            nuclei -u https://staging.example.com \
+              -severity critical,high \
+              -json -o dast-nuclei.json
+
+          nikto (server sweep):
+            nikto -h https://staging.example.com \
+              -Format json -o dast-nikto.json
+
+          Multiple tools recommended — ZAP for web app logic, nuclei for known CVEs,
+          nikto for server misconfiguration.
+        tool_ref: zap_dast
+        output_file: "dast-zap-report.json"
+        quality: "Scan completed without errors. All tools updated before scan."
+
+      - id: correlate_with_sast
+        action: |
+          Cross-reference DAST findings with SAST results:
+
+          For each DAST finding:
+          1. Check if SAST found the same vulnerability (e.g., SQL injection found by both semgrep and ZAP)
+          2. If both found it → HIGH confidence (verified by two methods)
+          3. If only DAST found it → check if SAST could have found it (might be runtime-only like misconfig)
+          4. If only SAST found it → DAST may not have reached that code path
+
+          Dedup key: CWE ID + endpoint/file + vulnerability type
+          Keep both findings but mark as "confirmed by SAST+DAST" for dual-verified items.
+        tool_ref: null
+        output_file: "dast-report.md (SAST correlation)"
+        quality: "Cross-reference completed. Dual-verified findings marked."
+
+      - id: prioritize_exploitability
+        action: |
+          Rank DAST findings by actual exploitability:
+
+          P0 (exploit verified):
+          - ZAP confirmed the vulnerability is exploitable
+          - nuclei matched a known CVE with public exploit
+
+          P1 (likely exploitable):
+          - DAST found the pattern but couldn't fully exploit (e.g., blind SQLi)
+          - Confirmed by SAST correlation
+
+          P2 (potential):
+          - DAST flagged but may be false positive
+          - Needs manual verification
+
+          ## DAST Scan Report
+          - **Date**: {timestamp}
+          - **Target**: {URL}
+          - **Scanner(s)**: {list}
+          - **Scan Type**: {baseline/full/API}
+          - **Duration**: {time}
+
+          ### Summary
+          | Severity | Count | Verified Exploitable | SAST Correlation |
+
+          ### P0 Findings (Verified Exploitable)
+          | # | Endpoint | CWE | Tool | Description | Reproduction Steps | Remediation |
+
+          ### P1 Findings
+          (same table)
+        tool_ref: null
+        output_file: "dast-report.md"
+        quality: "Every finding has reproduction steps. Exploitability verified where possible."
+
+    quality_criteria:
+      - "Must not disrupt production systems (rate limiting, safe mode)"
+      - "Must cover OWASP Top 10 A01 (Access Control), A03 (Injection), A05 (Misconfig)"
+      - "Must support authenticated scanning for non-trivial applications"
+      - "Report includes reproduction steps for each finding"
+      - "SAST-DAST cross-reference completed"
+
+    anti_patterns:
+      - "❌ Running active DAST scans against production — causes service disruption"
+      - "❌ DAST without authentication — misses all auth-required vulnerabilities"
+      - "❌ Nuclei without -update-templates — misses recently disclosed CVEs"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Secret Detection
+  # ═══════════════════════════════════════
+
+  secret_detection:
+    description: "Detect hardcoded credentials, API keys, tokens, and secrets in code and git history"
+
+    steps:
+      - id: select_detection_mode
+        action: |
+          Choose detection mode based on context:
+
+          Pre-commit (fast, staged files only — developer feedback loop):
+            gitleaks protect --staged -v
+            Time: < 5 seconds
+
+          CI scan (full repo, mandatory safety net):
+            gitleaks git -v --source=. --report-format=json --report-path=gitleaks-report.json
+            Time: varies by repo size
+
+          Historical audit (full git history, first-time or periodic):
+            trufflehog git file://. --only-verified --json > trufflehog-report.json
+            Time: minutes to hours depending on history size
+
+          Baseline mode (avoid alert fatigue on existing secrets):
+            detect-secrets scan > .secrets.baseline
+            detect-secrets audit .secrets.baseline  # interactive: mark false positives
+        tool_ref: gitleaks_cli
+        output_file: "secrets-report.md (mode selection)"
+        quality: "Mode matches context. Pre-commit < 5 seconds."
+
+      - id: configure_rules
+        action: |
+          Set custom rules and allowlists:
+
+          For gitleaks:
+            Create .gitleaks.toml in repo root:
+            [allowlist]
+              paths = ["test/fixtures/*", "*.test.*"]
+              regexes = ["EXAMPLE_KEY_.*"]
+
+          For detect-secrets:
+            detect-secrets scan --baseline .secrets.baseline
+            # Audit to mark known false positives:
+            detect-secrets audit .secrets.baseline
+
+          For trufflehog:
+            Use --only-verified flag to reduce noise
+            (only reports secrets that are confirmed active by testing against services)
+
+          Custom patterns:
+          - Add company-specific secret patterns (internal API key format)
+          - Exclude test fixtures and documentation examples
+          - Exclude known safe patterns (placeholder keys like "sk-test-...")
+        tool_ref: null
+        output_file: ".gitleaks.toml or .secrets.baseline"
+        quality: "Allowlist excludes test data. Custom patterns for company secrets."
+
+      - id: execute_scan
+        action: |
+          Run selected scanner(s):
+
+          gitleaks (speed, pre-commit + CI):
+            gitleaks git -v --source=. \
+              --report-format=json --report-path=secrets-gitleaks.json
+
+          trufflehog (depth + verification):
+            trufflehog git file://. --only-verified --json > secrets-trufflehog.json
+
+          detect-secrets (baseline comparison):
+            detect-secrets scan > .secrets.baseline.new
+            detect-secrets audit .secrets.baseline  # interactive: compare with previous baseline
+
+          Recommended combination:
+          - Pre-commit: gitleaks protect --staged (fast)
+          - CI: gitleaks git (comprehensive) + trufflehog --only-verified (verification)
+          - First-time audit: trufflehog full history scan
+        tool_ref: gitleaks_cli
+        output_file: "secrets-gitleaks.json"
+        quality: "Both gitleaks and trufflehog run. Verified vs unverified distinguished."
+
+      - id: verify_secrets
+        action: |
+          Verify which found secrets are still active:
+
+          TruffleHog does this automatically with --only-verified flag:
+          it tests found credentials against their respective services
+          (AWS, GitHub, Slack, Stripe, etc.) and marks them as:
+          - Verified: credential is active and functional
+          - Unverified: found pattern matches but couldn't confirm
+
+          For gitleaks findings (no auto-verification):
+          - Check if the secret is in current code (vs only in git history)
+          - Check if the secret has been rotated already
+          - Check if the service the secret belongs to is still in use
+
+          Priority: Verified active secrets > Unverified in current code > Historical only
+        tool_ref: trufflehog_cli
+        output_file: "secrets-report.md (verification results)"
+        quality: "Active secrets identified. Verification status clear."
+
+      - id: remediate_ordered
+        action: |
+          ⚠️ CRITICAL: Follow this EXACT order. Assume compromised secrets are already exfiltrated.
+
+          Step 1: IMMEDIATELY ROTATE the compromised credential
+            - Generate new API key/token/password via the service's dashboard
+            - Update the running application to use the new credential
+            - The old credential is assumed compromised from the moment it was committed
+
+          Step 2: Remove from code and prevent recurrence
+            - Delete the secret from source code
+            - Add the pattern to .gitleaks.toml allowlist (so the OLD secret doesn't trigger alerts)
+            - Add the file path to .gitignore if it's a config file that should never be committed
+
+          Step 3: Purge from git history (if secret was committed)
+            - Use git filter-repo or BFG Repo-Cleaner:
+              bfg --replace-text passwords.txt repo.git
+              git filter-repo --invert-paths --path secrets.env
+            - Force push the cleaned history
+            - Notify all contributors to re-clone
+
+          Step 4: Update secret storage
+            - Store new credential in vault/env/CI secrets (not code)
+            - Update deployment configs to reference the new secret location
+
+          Step 5: Add pre-commit hook to prevent recurrence
+            - gitleaks protect --staged (in .pre-commit-config.yaml)
+            - detect-secrets-hook --baseline .secrets.baseline
+
+          ## Secret Detection Report
+          - **Date**: {timestamp}
+          - **Scanner(s)**: {list}
+          - **Mode**: {pre-commit/CI/historical}
+
+          ### Active Secrets (ROTATE IMMEDIATELY)
+          | # | Type | File | Line | Verified | Service | Status |
+
+          ### Historical Secrets (already rotated?)
+          | # | Type | Commit | File | Rotated? | Action |
+
+          ### Remediation Checklist
+          - [ ] Credential rotated
+          - [ ] Secret removed from code
+          - [ ] Git history purged
+          - [ ] Secret storage updated
+          - [ ] Pre-commit hook installed
+        tool_ref: null
+        output_file: "secrets-report.md"
+        quality: "Rotation is ALWAYS step 1. No secret left unrotated."
+
+    quality_criteria:
+      - "Pre-commit scan completes in < 5 seconds"
+      - "Must detect top 20 secret types (AWS keys, GitHub tokens, private keys, DB passwords, etc.)"
+      - "Must support baseline mode to avoid alert fatigue"
+      - "Verification of live secrets is mandatory for CI mode"
+      - "Remediation follows correct order: rotate FIRST, then cleanup"
+
+    anti_patterns:
+      - "❌ Pre-commit hooks without CI verification — git commit --no-verify bypasses pre-commit"
+      - "❌ Cleaning code without rotating the secret first — the secret is already compromised"
+      - "❌ Treating all findings as equal — verified active secrets are P0, historical-only are P2"
+
+  # ═══════════════════════════════════════
+  # Capability 4: IaC Security Lint
+  # ═══════════════════════════════════════
+
+  iac_security_lint:
+    description: "Lint infrastructure-as-code files for security misconfigurations before deployment"
+
+    steps:
+      - id: detect_iac_files
+        action: |
+          Scan project for IaC files:
+          - Dockerfile, docker-compose.yml → Docker
+          - *.tf, *.tfvars → Terraform
+          - *.yaml/*.yml in k8s/ or manifests/ → Kubernetes
+          - template.yaml, template.json → CloudFormation
+          - *.bicep → Azure Bicep
+          - helmfile.yaml, Chart.yaml → Helm
+
+          Record which IaC types are present and their locations.
+          Skip if no IaC files found (not all projects have infrastructure code).
+        tool_ref: null
+        output_file: "iac-report.md (IaC detection)"
+        quality: "All IaC file types detected. None missed."
+
+      - id: select_linter
+        action: |
+          Choose linter based on IaC type:
+
+          Dockerfile:
+            hadolint Dockerfile
+            Checks: running as root, unpinned base images, unsafe practices
+
+          Terraform / CloudFormation / K8s / Helm / Bicep:
+            checkov -d . --framework terraform
+            checkov -d ./k8s/ --framework kubernetes
+            Checks: 1000+ policies covering CIS, encryption, public access
+
+          Multi-IaC (when multiple types coexist):
+            checkov -d . (auto-detects all frameworks)
+
+          For Kubernetes specifically, also consider:
+            checkov -d . --framework kubernetes --check CKV_K8S_1,CKV_K8S_8,CKV_K8S_14
+            (container running as root, liveness probe, read-only filesystem)
+        tool_ref: hadolint_cli
+        output_file: "iac-report.md (linter selection)"
+        quality: "Linter matches IaC type. All IaC files covered."
+
+      - id: execute_lint
+        action: |
+          Run selected linter(s):
+
+          Dockerfile:
+            hadolint Dockerfile -f json > iac-hadolint.json
+            hadolint Dockerfile --ignore DL3008 (if pinning apt packages is impractical)
+
+          Terraform (with compliance framework):
+            checkov -d . --framework terraform --output json --output-file-path iac-checkov.json
+
+          Kubernetes:
+            checkov -d ./k8s/ --framework kubernetes --output json --output-file-path iac-k8s-checkov.json
+
+          All IaC (auto-detect):
+            checkov -d . --output json --output-file-path iac-checkov-all.json
+
+          Keep JSON output for CI integration and SARIF for GitHub Security tab.
+        tool_ref: checkov_cli
+        output_file: "iac-checkov.json"
+        quality: "All IaC files scanned. JSON output generated."
+
+      - id: map_to_compliance
+        action: |
+          Map findings to relevant compliance frameworks:
+
+          For Dockerfile findings:
+          - DL3007 (unpinned tag) → CIS Docker 4.7
+          - DL3002 (running as root) → CIS Docker 4.1
+
+          For Terraform findings:
+          - Public S3 bucket → CIS AWS 2.1.5
+          - Unencrypted EBS → CIS AWS 2.2.1
+          - Public RDS → CIS AWS 4.1
+
+          For Kubernetes findings:
+          - Running as root → CIS K8s 5.2.6
+          - No resource limits → CIS K8s 5.4.1
+
+          Cross-reference with compliance pack's scope:
+          This step maps findings for REMEDIATION CONTEXT only.
+          Formal compliance evidence generation (audit trails, control mapping,
+          attestation) belongs to the compliance pack.
+          This capability FINDS misconfigurations; compliance pack PROVES adherence.
+        tool_ref: null
+        output_file: "iac-report.md (compliance mapping)"
+        quality: "Key findings mapped to CIS benchmarks."
+
+      - id: fail_or_warn
+        action: |
+          Apply severity threshold for pipeline gating:
+
+          FAIL pipeline (CRITICAL/HIGH):
+          - Running as root in production containers
+          - Public access to databases or storage
+          - Missing encryption at rest
+          - Hardcoded credentials in IaC
+          - Wildcard IAM permissions
+
+          WARN (MEDIUM/LOW):
+          - Missing health checks
+          - Non-pinned base image tags
+          - Missing resource limits (K8s)
+          - Logging not configured
+
+          ## IaC Security Lint Report
+          - **Date**: {timestamp}
+          - **IaC Types**: {list}
+          - **Linter(s)**: {list}
+
+          ### Summary
+          | IaC Type | Files Scanned | CRITICAL | HIGH | MEDIUM | LOW | Pass Rate |
+
+          ### FAIL Items (Pipeline Blocked)
+          | # | File | Check | CIS Mapping | Description | Remediation |
+
+          ### WARN Items (Track in Backlog)
+          | # | File | Check | Description |
+        tool_ref: null
+        output_file: "iac-report.md"
+        quality: "Clear FAIL/WARN threshold. Pipeline gating enforced."
+
+    quality_criteria:
+      - "Must check: running as root, exposed ports, pinned versions (Dockerfile)"
+      - "Must validate: least-privilege IAM, encryption at rest, public access blocks (Terraform/CloudFormation)"
+      - "Must integrate with pre-commit hooks for shift-left"
+      - "Must produce machine-readable output (JSON/SARIF)"
+      - "CIS benchmark mapping for key findings"
+
+    anti_patterns:
+      - "❌ Ignoring IaC security until deployment — misconfigs are cheaper to fix at code-write time"
+      - "❌ Suppressing 'running as root' without documented justification"
+      - "❌ Treating IaC lint as optional when code lint is mandatory — same pipeline stage"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Vulnerability Triage
+  # ═══════════════════════════════════════
+
+  vulnerability_triage:
+    description: "Aggregate findings from SAST, DAST, and secrets scans into a prioritized action plan"
+
+    steps:
+      - id: collect_reports
+        action: |
+          Gather all scan outputs from previous capabilities:
+
+          SAST:
+          - sast-semgrep.sarif / sast-semgrep.json
+          - sast-bandit.sarif (if Python)
+          - sast-codeql.sarif (if deep analysis)
+          - sast-bearer.sarif (if data-flow)
+
+          DAST:
+          - dast-zap-report.json
+          - dast-nuclei.json
+          - dast-nikto.json
+
+          Secrets:
+          - secrets-gitleaks.json
+          - secrets-trufflehog.json
+
+          IaC:
+          - iac-checkov.json
+          - iac-hadolint.json
+
+          Verify all expected reports exist. Flag missing scans.
+        tool_ref: null
+        output_file: "triage-plan.md (input inventory)"
+        quality: "All scan reports collected. Missing scans flagged."
+
+      - id: deduplicate
+        action: |
+          Cross-reference findings across tools to eliminate duplicates:
+
+          Dedup rules:
+          1. Same CWE + same file + same line → single finding (mark "confirmed by N tools")
+          2. Same endpoint + same vulnerability type (SAST + DAST) → single finding (mark "dual-verified")
+          3. Same secret in multiple commits → single finding (track earliest commit)
+
+          Dedup key construction:
+          - SAST: CWE + file_path + line_number
+          - DAST: CWE + endpoint + parameter
+          - Secrets: secret_type + file_path (or commit if historical)
+          - IaC: check_id + file_path
+
+          After dedup, tag each finding with source tools for audit trail.
+        tool_ref: null
+        output_file: "triage-plan.md (deduplication log)"
+        quality: "Same vuln from multiple tools counts once. Source tools recorded."
+
+      - id: enrich_context
+        action: |
+          Add context to each unique finding:
+
+          1. CWE mapping (if not already present)
+          2. OWASP Top 10 category
+          3. CVSS score (for CVE-linked findings)
+          4. EPSS score (exploit probability, where available)
+          5. KEV status (is this in CISA Known Exploited Vulnerabilities catalog?)
+          6. Affected component: direct code, dependency, infrastructure
+          7. Reachability: is the vulnerable code path reachable from user input?
+
+          For DAST findings, add:
+          - Reproduction steps
+          - Request/response evidence
+
+          For secret findings, add:
+          - Verification status (active/rotated/unknown)
+          - Service the secret belongs to
+        tool_ref: null
+        output_file: "triage-plan.md (enrichment)"
+        quality: "Every finding has CWE + OWASP mapping. KEV checked."
+
+      - id: prioritize
+        action: |
+          Rank all findings using risk-based prioritization:
+
+          P0 — Fix immediately (blocks release):
+          - Verified exploitable (DAST confirmed) + CRITICAL CVSS
+          - Active secret (verified by trufflehog)
+          - KEV-listed vulnerability
+          - IaC misconfig: public database or wildcard IAM
+
+          P1 — Fix this sprint:
+          - HIGH CVSS + reachable code path
+          - Dual-verified by SAST+DAST
+          - IaC misconfig: running as root, missing encryption
+
+          P2 — Backlog:
+          - MEDIUM CVSS or unreachable code path
+          - SAST-only finding without DAST confirmation
+          - IaC warning-level findings
+
+          P3 — Accept risk (requires documented justification):
+          - LOW severity informational findings
+          - False positive candidates (with evidence)
+          - Known limitations of test environment
+
+          Sort within each priority by: KEV > EPSS > CVSS > tool confidence
+        tool_ref: null
+        output_file: "triage-plan.md (prioritization)"
+        quality: "Every finding has P0-P3 priority. KEV items always P0."
+
+      - id: generate_action_plan
+        action: |
+          Produce the final triage document:
+
+          ## Vulnerability Triage Action Plan
+          - **Date**: {timestamp}
+          - **Project**: {name}
+          - **Scans Included**: SAST ({tools}), DAST ({tools}), Secrets ({tools}), IaC ({tools})
+
+          ### Executive Summary
+          | Category | Total | Unique (deduped) | P0 | P1 | P2 | P3 |
+          |----------|-------|-----------------|----|----|----|----|
+          | SAST     |       |                 |    |    |    |    |
+          | DAST     |       |                 |    |    |    |    |
+          | Secrets  |       |                 |    |    |    |    |
+          | IaC      |       |                 |    |    |    |    |
+          | **Total**|       |                 |    |    |    |    |
+
+          ### P0 Action Items (Release Blockers)
+          | # | Finding | CWE | Source | CVSS | KEV | Owner | Deadline | Status |
+
+          ### P1 Action Items (This Sprint)
+          (same table)
+
+          ### P2 Backlog Items
+          (same table, no deadline)
+
+          ### Accepted Risks
+          | # | Finding | Justification | Approved By | Review Date |
+
+          ### Coverage Gaps
+          - Scans NOT run: {list any missing}
+          - Endpoints NOT tested (DAST): {list}
+          - Languages NOT covered (SAST): {list}
+        tool_ref: null
+        output_file: "triage-plan.md"
+        quality: "Action plan is complete. Every P0 has owner + deadline."
+
+    quality_criteria:
+      - "Must deduplicate across tools (same SQLi found by semgrep and ZAP counts once)"
+      - "Must map every finding to CWE ID"
+      - "Must separate verified vulnerabilities from potential/unverified"
+      - "Action plan has clear ownership and timeline per P0/P1 finding"
+      - "Coverage gaps explicitly documented"
+
+    anti_patterns:
+      - "❌ Scan everything, fix nothing (alert fatigue) — use baseline mode and prioritize ruthlessly"
+      - "❌ Treating all CRITICAL CVSS equally — EPSS + KEV + reachability matter more than raw score"
+      - "❌ Skipping triage and sending raw scanner output to developers — raw output is noise"
+
+# ═══════════════════════════════════════
+# Review Configuration
+# ═══════════════════════════════════════
+# Note: Security packs use a top-level review section (not per-capability reviewers)
+# because security review is cross-cutting — the same persona reviews all capabilities
+# in a single audit pass. This differs from web-backend.yaml's per-capability pattern.
+
+review:
+  persona: "Application Security Engineer"
+  focus: |
+    Focus on: code vulnerabilities, secret exposure, infrastructure misconfigurations.
+    Context: find-and-fix, not prove compliance. Compliance proof is separate pack.
+    Key question: "Would an attacker find this before we fix it?"
+  checklist:
+    - "Are SAST and DAST both run (not just one)?"
+    - "Is secret detection running in pre-commit AND CI (two layers)?"
+    - "Are CRITICAL findings blocking the pipeline?"
+    - "Is baseline mode used for existing codebases?"
+    - "Are IaC files included in the security scan scope?"
+    - "Is the triage plan deduped and prioritized (not raw scanner output)?"
+    - "Are verified active secrets being rotated FIRST (before code cleanup)?"
+    - "Are DAST scans running against staging (not production)?"
+    - "Are all languages in the project covered by SAST?"
+    - "Is there an accept-risk process for P3 findings?"
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Scan scope covers all project languages and IaC types"
+      - "SAST + DAST + secrets scanning all planned"
+      - "Severity policy defined with pipeline gating"
+      - "Baseline mode configured for existing codebase"
+      - "DAST target is staging/dev environment (not production)"
+
+  gate4_acceptance:
+    checklist:
+      - "All P0 findings resolved or have documented accept-risk"
+      - "SAST SARIF uploaded to GitHub Security tab"
+      - "Active secrets rotated"
+      - "IaC misconfigurations fixed or risk-accepted"
+      - "Triage plan reviewed and approved by security owner"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+# Note: Uses nested format (description + tree) for richer documentation.
+# This is an intentional enhancement over the flat string format in earlier packs.
+
+output_structure:
+  description: "Expected output directory tree from code security audit"
+  tree: |
+    {project}/
+    ├── sast-report.md                   # SAST analysis with CWE mapping
+    ├── sast-semgrep.sarif               # Semgrep SARIF output
+    ├── sast-semgrep.json                # Semgrep JSON output
+    ├── sast-bandit.sarif                # Bandit SARIF (Python projects)
+    ├── sast-codeql.sarif                # CodeQL SARIF (deep analysis)
+    ├── sast-bearer.sarif                # Bearer SARIF (data-flow)
+    ├── dast-report.md                   # DAST analysis with reproduction steps
+    ├── dast-zap-report.json             # ZAP JSON output
+    ├── dast-nuclei.json                 # Nuclei JSON output
+    ├── dast-nikto.json                  # Nikto JSON output
+    ├── secrets-report.md                # Secret detection with remediation status
+    ├── secrets-gitleaks.json            # Gitleaks JSON output
+    ├── secrets-trufflehog.json          # TruffleHog JSON output
+    ├── iac-report.md                    # IaC lint with CIS mapping
+    ├── iac-checkov.json                 # Checkov JSON output
+    ├── iac-hadolint.json                # Hadolint JSON output
+    └── triage-plan.md                   # Prioritized action plan (P0-P3)

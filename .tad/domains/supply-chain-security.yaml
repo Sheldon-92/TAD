@@ -1,0 +1,644 @@
+# Domain Pack: Supply Chain Security
+# Pre-install trust analysis: dependency audit, behavioral analysis, provenance, lock files, typosquatting
+# Phase 5 of Domain Pack Roadmap — Security Chain
+domain: supply-chain-security
+version: 1.0.0
+requires_registry: ">=1"
+description: |
+  供应链安全：依赖审计、行为分析、来源验证、锁文件完整性、名称仿冒检测。
+  核心问题："Should I trust this dependency?"
+  产出物是结构化审计报告 + 修复计划，不是代码。
+  Scope: Pre-install analysis ONLY. Post-install CVE monitoring belongs to security-monitoring pack.
+  Ecosystem coverage: npm, pip, cargo, go (multi-ecosystem via tool_ref selection).
+  Known limitation: lockfile_integrity is full for npm/yarn, partial for pip/go (no hash verification equivalent).
+  Reference incident: litellm 1.82.7/1.82.8 PyPI poisoning (2026-03-24) — CVE-only scanners missed it entirely.
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Pipeline Gating — MANDATORY for security packs
+# ═══════════════════════════════════════
+
+severity_policy:
+  block_pipeline: ["CRITICAL", "HIGH"]
+  warn_only: ["MEDIUM", "LOW"]
+  accept_risk_requires: "documented justification in triage report with owner sign-off"
+  grace_period: "existing findings get 2-sprint remediation window"
+  litellm_rule: |
+    For behavioral analysis findings (socket CLI alerts), there is NO grace period.
+    Behavioral anomalies in new/updated dependencies block merge immediately.
+
+# ═══════════════════════════════════════
+# Capability 1: Dependency Audit
+# ═══════════════════════════════════════
+
+capabilities:
+
+  dependency_audit:
+    description: "Scan project dependencies against known vulnerability databases across all ecosystems"
+
+    steps:
+      - id: generate_sbom
+        action: |
+          Generate Software Bill of Materials (SBOM) as the foundation artifact.
+          This SBOM is consumed by other capabilities (typosquat_detection, monitoring pack).
+
+          For source code:
+            syft dir:/path/to/project -o cyclonedx-json > sbom.cdx.json
+
+          For container images:
+            syft <image>:<tag> -o cyclonedx-json > sbom.cdx.json
+
+          For specific ecosystem:
+            syft dir:. -o spdx-json > sbom.spdx.json
+
+          Verify SBOM includes both direct AND transitive dependencies.
+          CycloneDX format preferred (spec >= 1.5).
+        tool_ref: syft_sbom
+        output_file: "sbom.cdx.json"
+        quality: "SBOM includes all lockfile dependencies. Direct vs transitive marked."
+
+      - id: detect_ecosystem
+        action: |
+          Scan project root for package manager files to determine ecosystem(s):
+          - package.json / package-lock.json / yarn.lock → npm ecosystem
+          - requirements.txt / Pipfile / pyproject.toml / uv.lock / poetry.lock → pip ecosystem
+          - Cargo.toml / Cargo.lock → cargo ecosystem
+          - go.mod / go.sum → go ecosystem
+          - pom.xml / build.gradle → maven/gradle ecosystem
+          - Gemfile / Gemfile.lock → ruby ecosystem
+          - composer.json / composer.lock → PHP ecosystem
+
+          Multiple ecosystems may coexist (e.g., JS frontend + Python backend).
+          Record all detected ecosystems for subsequent steps.
+        tool_ref: null
+        output_file: "audit-report.md (ecosystem detection section)"
+        quality: "All package manager files detected. No ecosystem missed."
+
+      - id: run_scanner
+        action: |
+          Execute ecosystem-appropriate vulnerability scanner(s):
+
+          Multi-ecosystem (recommended first pass):
+            osv-scanner -r /path/to/project --format json > osv-results.json
+
+          Ecosystem-specific (run if osv-scanner insufficient):
+            npm: npm audit --json > npm-audit.json
+            pip: pip-audit -r requirements.txt --format json -o pip-audit.json
+            cargo: cargo audit --json > cargo-audit.json
+            go: osv-scanner --lockfile=go.sum
+
+          OWASP deep scan (dependency confusion, risk audit):
+            depscan --src $PWD --deep --reports-dir $PWD/reports
+
+          Run ALL applicable scanners — cross-reference finds blind spots.
+        tool_ref: osv_scanner
+        output_file: "osv-results.json"
+        quality: "All detected ecosystems scanned. Zero lockfiles skipped."
+
+      - id: analyze_severity
+        action: |
+          Parse scan results and classify findings:
+          1. Filter by severity: CRITICAL > HIGH > MEDIUM > LOW
+          2. For each CRITICAL/HIGH finding:
+             - Check if a fix version exists
+             - Assess upgrade risk (breaking changes between current and fix version)
+             - Check EPSS score if available (exploit probability)
+             - Check KEV catalog (known exploited vulnerabilities — highest priority)
+          3. Separate direct vs transitive dependency findings
+          4. Flag unmaintained dependencies (no release in 12+ months)
+        tool_ref: null
+        output_file: "audit-report.md (severity analysis section)"
+        quality: "Every CRITICAL/HIGH has remediation path or documented accept-risk."
+
+      - id: generate_report
+        action: |
+          Produce structured audit report:
+
+          ## Dependency Audit Report
+          - **Date**: {timestamp}
+          - **Project**: {name}
+          - **Ecosystems**: {detected list}
+          - **SBOM**: sbom.cdx.json ({N} components)
+
+          ### Summary
+          | Severity | Count | Fixable | Accept-Risk |
+          |----------|-------|---------|-------------|
+
+          ### CRITICAL Findings
+          | Package | Version | CVE | CVSS | EPSS | Fix Version | KEV | Action |
+
+          ### HIGH Findings
+          (same table)
+
+          ### Remediation Plan
+          | Priority | Package | Current | Target | Breaking Changes | Effort |
+
+          ### Transitive Dependencies
+          | Vulnerable Dep | Via (direct dep) | Depth | Fix Strategy |
+        tool_ref: null
+        output_file: "audit-report.md"
+        quality: "Report is actionable — every finding has a clear next step."
+
+    quality_criteria:
+      - "All direct dependencies scanned (zero skip)"
+      - "CRITICAL vulnerabilities have explicit remediation path or documented accept-risk"
+      - "Report includes transitive dependency depth for each finding"
+      - "SBOM generated as foundation artifact (CycloneDX >= 1.5)"
+      - "JSON output available for CI pipeline consumption"
+      - "Cross-reference at least 2 scanners for CRITICAL findings"
+
+    anti_patterns:
+      - "❌ CVE-only scanning without behavioral analysis — misses litellm-class zero-day attacks"
+      - "❌ Scanning only direct dependencies while ignoring transitive (the axios attack came through a transitive dep)"
+      - "❌ Auto-fixing without checking breaking changes — cargo audit fix / npm audit fix may introduce regressions"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Behavioral Analysis
+  # ═══════════════════════════════════════
+
+  behavioral_analysis:
+    description: "Detect suspicious behavioral changes in new or updated dependencies (network calls, fs writes, eval)"
+
+    steps:
+      - id: select_packages
+        action: |
+          Identify new or updated dependencies from lockfile diff:
+            git diff HEAD~1 -- package-lock.json yarn.lock Cargo.lock poetry.lock uv.lock go.sum
+
+          For each changed entry, extract:
+          - Package name and version (old → new)
+          - Whether it's new (added) or updated (version changed)
+          - Whether it's a direct or transitive dependency
+
+          Priority: new packages > version updates > transitive updates.
+        tool_ref: null
+        output_file: "behavioral-report.md (changed packages section)"
+        quality: "All lockfile changes captured. Old → new version pairs recorded."
+
+      - id: run_behavioral_scan
+        action: |
+          Execute socket CLI scan on changed packages:
+
+          Enable socket wrapper (intercepts npm/yarn install):
+            socket wrapper on
+
+          Or create explicit scan report:
+            socket scan create --repo .
+
+          Socket checks for:
+          - Network access patterns (unexpected outbound connections)
+          - Filesystem writes outside expected paths
+          - Shell command execution (child_process, exec, system)
+          - Obfuscated code (base64 encoding, eval usage)
+          - Install scripts with side effects
+
+          For Python packages, also run:
+            depscan --src $PWD --deep
+          (dep-scan's deep mode checks for dependency confusion attacks)
+        tool_ref: socket_cli
+        output_file: "socket-scan-results.json"
+        quality: "Every new/updated package scanned. Behavioral profile generated."
+
+      - id: evaluate_risk_signals
+        action: |
+          Compare behavioral profile against baselines:
+
+          HIGH RISK signals (block immediately):
+          - New network calls to unknown domains
+          - New filesystem writes outside package directory
+          - New eval/exec/system usage that wasn't in previous version
+          - Install script added where none existed before
+          - Obfuscated code detected
+
+          MEDIUM RISK signals (review required):
+          - New optional dependencies added
+          - Maintainer change between versions
+          - Significant code size change (>50% increase)
+
+          LOW RISK signals (informational):
+          - Minor version bump with no behavioral change
+          - Dev dependency update
+
+          For each flagged package, produce evidence:
+          - What changed (diff summary)
+          - Why it's suspicious (which signal triggered)
+          - Comparison to known-good baseline
+        tool_ref: null
+        output_file: "behavioral-report.md (risk analysis section)"
+        quality: "Every flagged package has evidence. No block without explanation."
+
+      - id: generate_decision
+        action: |
+          Produce allow/block/review recommendation for each package:
+
+          ## Behavioral Analysis Report
+          - **Date**: {timestamp}
+          - **Packages Analyzed**: {N} new, {M} updated
+
+          ### Blocked (DO NOT MERGE)
+          | Package | Version | Signal | Evidence | Action |
+
+          ### Review Required
+          | Package | Version | Signal | Evidence | Reviewer |
+
+          ### Allowed
+          | Package | Version | Note |
+
+          ### litellm-class Attack Coverage
+          Would this scan have caught the litellm 1.82.7 behavioral change?
+          Answer: {yes/no with explanation}
+        tool_ref: null
+        output_file: "behavioral-report.md"
+        quality: "Every package has a clear allow/block/review decision with evidence."
+
+    quality_criteria:
+      - "Every new/updated dependency scanned before merge"
+      - "Behavioral changes between versions explicitly documented"
+      - "Network access patterns listed (domains, ports)"
+      - "litellm-class attack coverage: would this have caught the 1.82.7 behavioral change? (must answer)"
+      - "HIGH RISK signals block pipeline immediately (no grace period)"
+
+    anti_patterns:
+      - "❌ Treating all socket CLI warnings as false positives — behavioral anomalies require investigation"
+      - "❌ Only scanning direct dependencies when transitive deps change"
+      - "❌ Auto-merging dependency PRs without behavioral review (Dependabot/Renovate + socket CLI needed)"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Provenance Verification
+  # ═══════════════════════════════════════
+
+  provenance_verification:
+    description: "Verify package origin authenticity — publisher identity, build provenance, SLSA level, trust score"
+
+    steps:
+      - id: check_signatures
+        action: |
+          For container images, verify cosign signatures and attestations:
+            cosign verify myregistry.io/myimage:latest \
+              --certificate-identity=expected@publisher.com \
+              --certificate-oidc-issuer=https://accounts.google.com
+
+          For npm packages, verify provenance:
+            npm audit signatures
+
+          For GitHub Actions:
+            Verify actions are pinned to full commit SHA (not mutable tags).
+            Check: grep -r "uses:" .github/workflows/ | grep -v "@[a-f0-9]\{40\}"
+            Any match = unpinned action = supply chain risk.
+            Reference: trivy-action March 2026 compromise (75/76 tags hijacked).
+        tool_ref: cosign_sigstore
+        output_file: "provenance-report.md (signature section)"
+        quality: "All container images verified. All GH Actions pinned to SHA."
+
+      - id: verify_build_provenance
+        action: |
+          Check SLSA provenance attestations for critical dependencies:
+
+          Verify SLSA attestation:
+            cosign verify-attestation --type slsaprovenance <artifact>
+
+          Assess SLSA level:
+          - Level 1: Provenance exists (build metadata documented)
+          - Level 2: Signed provenance (cryptographic signature)
+          - Level 3: Hardened builds (isolated, reproducible build environment)
+
+          For each critical dependency, record:
+          - Does provenance exist? (many PyPI packages: no)
+          - Is it signed? (sigstore adoption still growing)
+          - What build system produced it? (GitHub Actions, Jenkins, etc.)
+        tool_ref: cosign_sigstore
+        output_file: "provenance-report.md (SLSA section)"
+        quality: "SLSA level documented for each critical dependency."
+
+      - id: validate_publisher
+        action: |
+          Cross-reference package publisher identity with expected maintainer:
+
+          npm: Check package page → publisher field vs known maintainer
+          PyPI: Check Trusted Publishers (GitHub OIDC-based publishing)
+          Docker: Check image publisher in registry metadata
+
+          For npm:
+            npm view <package> maintainers
+
+          Flag if:
+          - Publisher changed between versions
+          - Package has single maintainer (bus factor = 1)
+          - Publisher email domain changed
+          - Package ownership transferred recently
+        tool_ref: null
+        output_file: "provenance-report.md (publisher section)"
+        quality: "Publisher identity verified for top-10 most critical deps."
+
+      - id: score_trust
+        action: |
+          Run OSSF Scorecard on dependency repos to quantify trust:
+
+            scorecard --repo=github.com/owner/repo --format json > scorecard.json
+
+          Key checks to examine:
+          - Branch-Protection (are PRs reviewed?)
+          - Code-Review (are changes reviewed by different person?)
+          - Vulnerabilities (known unpatched vulns?)
+          - Maintained (recent commits?)
+          - Signed-Releases (are releases cryptographically signed?)
+          - Token-Permissions (are CI tokens minimal scope?)
+
+          Flag repos with:
+          - Overall score < 5 (out of 10)
+          - Branch-Protection = 0
+          - Code-Review = 0
+          - Any check = 0 for critical dependencies
+
+          Combine: signature status + SLSA level + Scorecard score = provenance grade.
+        tool_ref: ossf_scorecard
+        output_file: "provenance-report.md (trust scores section)"
+        quality: "Scorecard results for top-10 critical deps. Cached and refreshed weekly."
+
+    quality_criteria:
+      - "All container images have verified signatures before deployment"
+      - "SLSA level documented for each critical dependency"
+      - "Publisher identity verified for top-10 most critical dependencies"
+      - "Scorecard results cached and refreshed weekly"
+      - "GitHub Actions pinned to full commit SHA"
+
+    anti_patterns:
+      - "❌ Trust-by-popularity — GitHub stars are gameable (axios had 100M+ weekly downloads and was still compromised)"
+      - "❌ Assuming cosign coverage is universal — most PyPI packages have NOT opted into sigstore"
+      - "❌ Checking provenance once without continuous monitoring — maintainer changes happen anytime"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Lockfile Integrity
+  # ═══════════════════════════════════════
+
+  lockfile_integrity:
+    description: "Validate lockfile hash integrity, HTTPS-only sources, and lockfile-manifest consistency"
+
+    steps:
+      - id: detect_lockfiles
+        action: |
+          Find all lockfiles in the repository:
+          - package-lock.json / yarn.lock → npm/yarn
+          - Cargo.lock → Rust
+          - poetry.lock / uv.lock → Python
+          - go.sum → Go
+          - Gemfile.lock → Ruby
+          - composer.lock → PHP
+          - pnpm-lock.yaml → pnpm
+
+          Record:
+          - Which lockfiles exist
+          - Which lockfiles are MISSING (manifest without lockfile = risk)
+          - Whether lockfiles are in .gitignore (they should NOT be for apps)
+        tool_ref: null
+        output_file: "lockfile-report.md (detection section)"
+        quality: "All lockfiles found. Missing lockfiles flagged."
+
+      - id: validate_hashes
+        action: |
+          For npm/yarn lockfiles:
+            lockfile-lint --path package-lock.json --type npm \
+              --allowed-hosts npm --validate-https --validate-integrity
+
+          Checks performed:
+          - sha512 integrity hashes present for every entry
+          - All packages resolved from HTTPS sources (no http://, git://)
+          - No packages from unauthorized registries
+
+          For Cargo.lock:
+            Cargo.lock includes sha256 checksums by default — verify file isn't manually edited:
+            cargo generate-lockfile --check (fails if lockfile is stale)
+
+          Known limitation: pip requirements.txt has no hashes by default.
+          For pip: recommend pip-compile --generate-hashes (pip-tools) or uv lock.
+        tool_ref: lockfile_lint
+        output_file: "lockfile-report.md (hash validation section)"
+        quality: "All npm/yarn entries have sha512. No non-HTTPS sources."
+
+      - id: check_consistency
+        action: |
+          Compare lockfile against manifest to detect drift:
+
+          npm:
+            npm ls --all 2>&1 | grep "missing:" (finds orphan deps)
+            diff <(jq '.dependencies | keys' package.json) <(jq '.packages | keys' package-lock.json)
+
+          Cargo:
+            cargo generate-lockfile --check (exits non-zero if lockfile is stale)
+
+          Flag issues:
+          - Lockfile has packages not in manifest (orphan deps)
+          - Manifest has packages not in lockfile (unresolved deps)
+          - Lockfile was manually modified (no corresponding manifest change)
+        tool_ref: null
+        output_file: "lockfile-report.md (consistency section)"
+        quality: "Lockfile matches manifest. No orphan deps."
+
+      - id: enforce_policy
+        action: |
+          Produce policy enforcement result:
+
+          FAIL pipeline if:
+          - Any lockfile is missing for a manifest file
+          - npm/yarn lockfile has entries without integrity hashes
+          - Any package resolved from non-HTTPS source
+          - Lockfile modified without corresponding manifest change
+
+          WARN if:
+          - pip requirements.txt lacks hash pins
+          - go.sum has entries not corresponding to go.mod
+
+          ## Lockfile Integrity Report
+          | Lockfile | Hashes | HTTPS-only | Manifest Match | Status |
+          |----------|--------|------------|----------------|--------|
+        tool_ref: null
+        output_file: "lockfile-report.md"
+        quality: "Clear pass/fail per lockfile with actionable remediation."
+
+    quality_criteria:
+      - "All lockfiles have integrity hashes (sha512 for npm, sha256 for Cargo)"
+      - "No packages resolved from non-HTTPS sources"
+      - "Lockfile-to-manifest consistency verified"
+      - "Pre-commit hook recommendation for lockfile modification"
+      - "Known limitations documented (pip hash gaps)"
+
+    anti_patterns:
+      - "❌ Having a lockfile without verifying hashes — provides reproducibility but NOT integrity"
+      - "❌ Adding lockfiles to .gitignore for applications (libraries may exclude, apps should not)"
+      - "❌ Assuming pip requirements.txt provides lockfile-level integrity (it doesn't without --hash flags)"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Typosquat Detection
+  # ═══════════════════════════════════════
+
+  typosquat_detection:
+    description: "Detect typosquatting package names — character swap, omission, addition, homoglyph substitution"
+
+    steps:
+      - id: extract_dependencies
+        action: |
+          Parse all manifest files to get dependency names:
+          - package.json → dependencies + devDependencies
+          - requirements.txt / pyproject.toml → all listed packages
+          - Cargo.toml → [dependencies] + [dev-dependencies]
+          - go.mod → require block
+
+          Produce a flat list of all dependency names across all ecosystems.
+          Include both direct and (if SBOM available) transitive dependencies.
+        tool_ref: null
+        output_file: "typosquat-report.md (dependency list)"
+        quality: "All manifest files parsed. Complete dependency name list."
+
+      - id: generate_variants
+        action: |
+          For each dependency name, generate typosquat variants:
+
+          Techniques:
+          1. Character swap: express → exrpess, expreess
+          2. Character omission: express → expres, xpress
+          3. Character addition: express → expresss, eexpress
+          4. Homoglyph substitution: express → еxpress (Cyrillic е)
+          5. Hyphen/underscore confusion: my-package → my_package → mypackage
+          6. Scope confusion: @scope/pkg → scope-pkg, @other/pkg
+
+          Use typosquatting CLI for automated variant generation:
+            typosquatting check express --ecosystem npm
+        tool_ref: typosquatting_cli
+        output_file: "typosquat-report.md (variants section)"
+        quality: "At least 4 variant techniques applied per dependency."
+
+      - id: check_registries
+        action: |
+          Query package registries for variant names:
+
+          For each generated variant:
+          1. Check if the variant name is a registered package
+          2. If registered, compare publisher with the original package's publisher
+          3. Check download count (low downloads + similar name = suspicious)
+          4. Check creation date (recently created + similar name = suspicious)
+
+          Also use socket CLI's built-in typosquat detection:
+            socket scan create --repo .
+          Socket automatically flags known typosquat patterns.
+        tool_ref: socket_cli
+        output_file: "typosquat-report.md (registry check section)"
+        quality: "All variants checked against live registries."
+
+      - id: cross_reference_sbom
+        action: |
+          If SBOM was generated (by dependency_audit capability, CycloneDX format):
+            typosquatting scan --sbom sbom.cdx.json
+
+          This scans ALL components in the SBOM (including transitive) for
+          typosquat risk. Cross-reference with the dependency list to ensure
+          no typosquat made it into the resolved dependency tree.
+        tool_ref: typosquatting_cli
+        output_file: "typosquat-report.md (SBOM cross-reference)"
+        quality: "Full SBOM scanned. Transitive deps included."
+
+      - id: alert_on_matches
+        action: |
+          Generate alert for each potential typosquat:
+
+          ## Typosquat Detection Report
+          - **Date**: {timestamp}
+          - **Dependencies Checked**: {N}
+          - **Variants Generated**: {M}
+
+          ### Confirmed Typosquats (BLOCK)
+          | Original | Typosquat | Registry | Downloads | Publisher Match | Action |
+
+          ### Suspicious (REVIEW)
+          | Original | Suspected | Registry | Reason | Action |
+
+          ### Clean
+          {N} dependencies checked, no typosquat candidates found.
+
+          Maintain an allowlist of verified-safe package names to reduce false
+          positives on subsequent runs.
+        tool_ref: null
+        output_file: "typosquat-report.md"
+        quality: "Every alert has publisher comparison. Allowlist maintained."
+
+    quality_criteria:
+      - "All direct dependencies checked for typosquat variants"
+      - "Flagged packages include publisher identity comparison"
+      - "Known-good package names maintained in allowlist"
+      - "Detection covers: character swap, omission, addition, homoglyph"
+      - "SBOM cross-reference catches typosquats in transitive deps"
+
+    anti_patterns:
+      - "❌ Only checking direct dependencies — typosquats hide in transitive deps"
+      - "❌ Ignoring homoglyph attacks (Cyrillic е looks identical to Latin e)"
+      - "❌ Running detection once without maintaining allowlist — creates alert fatigue"
+
+# ═══════════════════════════════════════
+# Review Configuration
+# ═══════════════════════════════════════
+# Note: Security packs use a top-level review section (not per-capability reviewers)
+# because security review is cross-cutting — the same persona reviews all capabilities
+# in a single audit pass. This differs from web-backend.yaml's per-capability pattern.
+
+review:
+  persona: "Supply Chain Security Engineer"
+  focus: |
+    Focus on: dependency trust, behavioral anomalies, publisher provenance,
+    lockfile integrity, package naming attacks.
+    Context: assumes pre-install analysis — post-install monitoring is separate pack.
+  checklist:
+    - "Are ALL ecosystems in the project covered by scanning?"
+    - "Are behavioral analysis results reviewed for new/updated dependencies?"
+    - "Are CRITICAL findings blocking the pipeline (not just warning)?"
+    - "Is the SBOM complete (direct + transitive dependencies)?"
+    - "Are GitHub Actions pinned to full commit SHA?"
+    - "Would this audit have detected the litellm 1.82.7 behavioral change?"
+    - "Are lockfile hashes validated (not just lockfile existence)?"
+    - "Is there an accept-risk process for findings that cannot be fixed immediately?"
+    - "Are provenance checks running for container images?"
+    - "Is the typosquat allowlist maintained and up-to-date?"
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Audit scope covers all project ecosystems (not just primary language)"
+      - "Behavioral analysis included (not CVE-only scanning)"
+      - "SBOM generation planned as foundation step"
+      - "Severity policy defined with pipeline gating thresholds"
+      - "Accept-risk process documented"
+
+  gate4_acceptance:
+    checklist:
+      - "All CRITICAL/HIGH findings have remediation plan or accept-risk documentation"
+      - "Behavioral analysis run on last dependency change"
+      - "Container images have verified signatures"
+      - "Lockfile integrity validated"
+      - "Audit report is machine-readable (JSON) for CI consumption"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+# Note: Uses nested format (description + tree) for richer documentation.
+# This is an intentional enhancement over the flat string format in earlier packs.
+
+output_structure:
+  description: "Expected output directory tree from supply chain security audit"
+  tree: |
+    {project}/
+    ├── sbom.cdx.json                    # CycloneDX SBOM (foundation artifact)
+    ├── audit-report.md                  # Dependency audit with severity analysis
+    ├── osv-results.json                 # Raw osv-scanner output
+    ├── behavioral-report.md             # Behavioral analysis with allow/block decisions
+    ├── socket-scan-results.json         # Raw socket CLI scan output
+    ├── provenance-report.md             # Signature, SLSA, publisher, trust scores
+    ├── scorecard.json                   # OSSF Scorecard results
+    ├── lockfile-report.md               # Lockfile integrity validation
+    ├── typosquat-report.md              # Typosquat detection results
+    └── scan-results/                    # Additional scanner outputs
+        ├── pip-audit.json
+        ├── cargo-audit.json
+        └── npm-audit.json

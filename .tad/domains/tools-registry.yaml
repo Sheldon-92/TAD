@@ -1540,3 +1540,372 @@ capabilities:
       output_format: "Console report"
       note: "来源: cad-agent + openscad-agent 共识 — non-manifold geometry 是 3D 打印失败第一因。导出 STL 前必须跑 admesh --check。"
       tested: false
+
+  # ═══════════════════════════════════════════════════════════
+  # Security: Supply Chain
+  # ═══════════════════════════════════════════════════════════
+
+  osv_scanner:
+    description: "Multi-ecosystem vulnerability scanner (Google) — scans lockfiles against OSV database"
+    recommended:
+      name: osv-scanner
+      type: cli
+      install: "go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest  # or: brew install osv-scanner"
+      verify: "osv-scanner --version"
+      usage: |
+        Scan project directory: osv-scanner -r /path/to/project
+        Scan lockfile: osv-scanner --lockfile=package-lock.json
+        Scan SBOM: osv-scanner --sbom=sbom.spdx.json
+        JSON output: osv-scanner -r . --format json > osv-results.json
+      output_format: "JSON with vulnerability IDs, severity, affected versions, fix versions"
+      note: "~8.6k GitHub stars. Covers 11+ ecosystems (npm, pip, cargo, go, maven, nuget, gem, etc.). Google-backed."
+      tested: false
+
+  pip_audit:
+    description: "Python dependency vulnerability scanner (PyPA) — audits pip packages against advisory DB"
+    recommended:
+      name: pip-audit
+      type: cli
+      install: "pip install pip-audit"
+      verify: "pip-audit --version"
+      usage: |
+        Scan current env: pip-audit
+        Scan requirements: pip-audit -r requirements.txt
+        JSON output: pip-audit --format json -o vulnerabilities.json
+        Auto-fix: pip-audit --fix
+      output_format: "Table or JSON with package, version, vulnerability ID, fix version"
+      note: "~1.2k stars. PyPA official. Python-only."
+      tested: false
+
+  cargo_audit:
+    description: "Rust dependency vulnerability scanner (RustSec) — audits Cargo.lock against RustSec DB"
+    recommended:
+      name: cargo-audit
+      type: cli
+      install: "cargo install cargo-audit --locked"
+      verify: "cargo audit --version"
+      usage: |
+        Run audit: cargo audit
+        Auto-fix: cargo audit fix
+        Audit binary: cargo audit bin ./target/release/myapp
+      output_format: "Console report with advisory IDs, severity, fix versions"
+      note: "~1.9k stars (rustsec mono). Rust/Cargo only."
+      tested: false
+
+  socket_cli:
+    description: "Behavioral analysis of packages — detects network calls, fs writes, eval, obfuscated code"
+    recommended:
+      name: socket
+      type: cli
+      install: "npm install -g @socketsecurity/cli"
+      verify: "socket --version"
+      usage: |
+        Enable wrapper: socket wrapper on
+        Then normal install is protected: npm install some-package
+        Create scan report: socket scan create --repo .
+      output_format: "Console alerts + JSON scan report"
+      note: "Only tool that detects litellm-class behavioral attacks. Flagged axios malware in 6 min. Free for OSS."
+      tested: false
+
+  ossf_scorecard:
+    description: "Project health scoring (OpenSSF) — branch protection, code review, vulnerability, maintainer trust"
+    recommended:
+      name: scorecard
+      type: cli
+      install: "go install github.com/ossf/scorecard/v5/cmd/scorecard@latest"
+      verify: "scorecard version"
+      usage: |
+        Score a repo: scorecard --repo=github.com/owner/repo
+        JSON output: scorecard --repo=github.com/owner/repo --format json > scorecard.json
+      output_format: "Scores 0-10 per check (Branch-Protection, Code-Review, Vulnerabilities, etc.)"
+      note: "~5.3k stars. Evidence-based trust metrics for dependency repos."
+      tested: false
+
+  syft_sbom:
+    description: "SBOM generation (Anchore) — produces CycloneDX/SPDX from source, containers, filesystems"
+    recommended:
+      name: syft
+      type: cli
+      install: "brew install syft"
+      verify: "syft version"
+      usage: |
+        SBOM from directory: syft dir:/path/to/project -o spdx-json > sbom.spdx.json
+        SBOM from image: syft alpine:latest -o cyclonedx-json > sbom.cdx.json
+        SBOM from archive: syft file:app.tar.gz -o cyclonedx-json
+      output_format: "CycloneDX JSON, SPDX JSON, or table"
+      note: "~8.4k stars. Pairs with grype for scan. Multi-ecosystem."
+      tested: false
+
+  npm_audit:
+    description: "Node.js built-in dependency audit — scans node_modules against GitHub Advisory DB"
+    recommended:
+      name: npm-audit
+      type: cli
+      install: "Ships with npm (no separate install)"
+      verify: "npm audit --version (part of npm)"
+      usage: |
+        Run audit: npm audit
+        JSON output: npm audit --json > npm-audit.json
+        Fix: npm audit fix
+        Signatures: npm audit signatures
+      output_format: "Table or JSON with severity, advisory URL, fix available"
+      note: "Built-in to npm. npm/yarn ecosystem only."
+      tested: false
+
+  lockfile_lint:
+    description: "Lock file integrity verification — validates hashes, HTTPS-only hosts, no git:// URLs"
+    recommended:
+      name: lockfile-lint
+      type: cli
+      install: "npm install -g lockfile-lint"
+      verify: "lockfile-lint --version"
+      usage: |
+        Lint: lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https
+        Validate hashes: lockfile-lint --path package-lock.json --type npm --validate-integrity
+      output_format: "Console pass/fail per check"
+      note: "npm/yarn only. No equivalent for pip or Cargo."
+      tested: false
+
+  cargo_vet:
+    description: "Supply chain audit trail for Rust (Mozilla) — human review records per crate version"
+    recommended:
+      name: cargo-vet
+      type: cli
+      install: "cargo install cargo-vet"
+      verify: "cargo vet --version"
+      usage: |
+        Initialize: cargo vet init
+        Check all deps: cargo vet
+        Record audit: cargo vet certify crate-name 1.0.0
+      output_format: "Console pass/fail with unaudited crate list"
+      note: "Rust/Cargo only. Mozilla-originated. Best for human audit trails."
+      tested: false
+
+  cosign_sigstore:
+    description: "Package signing and provenance verification (Sigstore) — keyless signing for containers and npm"
+    recommended:
+      name: cosign
+      type: cli
+      install: "go install github.com/sigstore/cosign/v3/cmd/cosign@latest  # or: brew install cosign"
+      verify: "cosign version"
+      usage: |
+        Sign image (keyless): cosign sign myregistry.io/myimage:latest
+        Verify image: cosign verify myregistry.io/myimage:latest --certificate-identity=name@example.com --certificate-oidc-issuer=https://accounts.example.com
+        Verify npm provenance: cosign verify-attestation --type slsaprovenance <artifact>
+      output_format: "Console verification result (pass/fail with certificate chain)"
+      note: "Keyless signing via OIDC. Only works if publisher opted into sigstore."
+      tested: false
+
+  typosquatting_cli:
+    description: "Typosquatting package name detection — generates name variants and checks registries"
+    recommended:
+      name: typosquatting
+      type: cli
+      install: "gem install typosquatting"
+      verify: "typosquatting --version"
+      usage: |
+        Check a name: typosquatting check express --ecosystem npm
+        Scan SBOM: typosquatting scan --sbom sbom.spdx.json
+      output_format: "Console list of potential typosquat matches"
+      note: "Multi-ecosystem (PyPI, npm, RubyGems, Cargo, Go, Maven, NuGet). Verification status: gem existence and exact CLI flags unverified — socket CLI typosquat detection is the safer alternative."
+      tested: false
+
+  dep_scan:
+    description: "OWASP dependency scanner — SCA + dependency confusion + deep risk audit"
+    recommended:
+      name: depscan
+      type: cli
+      install: "pip install owasp-depscan"
+      verify: "depscan --version"
+      usage: |
+        Scan project: depscan --src $PWD --reports-dir $PWD/reports
+        Deep risk audit: depscan --src $PWD --deep
+      output_format: "HTML/JSON reports in reports directory"
+      note: "OWASP project. Multi-ecosystem (Python, JS, Java, Go, Rust, PHP, .NET)."
+      tested: false
+
+  # ═══════════════════════════════════════════════════════════
+  # Security: Code Security
+  # ═══════════════════════════════════════════════════════════
+
+  semgrep_cli:
+    description: "Multi-language SAST scanner — 2000+ free rules, YAML-based custom rules, SARIF output"
+    recommended:
+      name: semgrep
+      type: cli
+      install: "brew install semgrep  # or: pip install semgrep"
+      verify: "semgrep --version"
+      usage: |
+        Auto scan: semgrep scan --config auto .
+        OWASP rules: semgrep scan --config p/owasp-top-ten --sarif --output=results.sarif .
+        Multi-output: semgrep scan --text --output=report.txt --json-output=report.json --sarif-output=report.sarif .
+      output_format: "Text, JSON, SARIF (concurrent multi-stream)"
+      note: "14.3k stars. 30+ languages. CE free, Platform paid. Primary SAST recommendation."
+      tested: false
+
+  bandit_cli:
+    description: "Python-specific SAST scanner — AST-based security checks for common Python vulnerabilities"
+    recommended:
+      name: bandit
+      type: cli
+      install: "pip install bandit"
+      verify: "bandit --version"
+      usage: |
+        Scan directory: bandit -r ./src -f json -o bandit-report.json
+        Severity filter: bandit -r ./src -ll  # medium and above
+        SARIF output: bandit -r ./src -f sarif -o bandit.sarif
+      output_format: "Text, JSON, SARIF, CSV, HTML"
+      note: "7.8k stars. Python only. 47+ security checks."
+      tested: false
+
+  codeql_cli:
+    description: "GitHub-native deep SAST with query language — semantic analysis, free for public repos"
+    recommended:
+      name: codeql
+      type: cli
+      install: "gh extension install github/gh-codeql"
+      verify: "codeql --version"
+      usage: |
+        Create database: codeql database create my-db --language=python --source-root=./src
+        Analyze: codeql database analyze my-db --format=sarif-latest --output=results.sarif
+        Security suite: codeql database analyze my-db codeql/python-queries:codeql-suites/python-security-extended.qls --format=sarif-latest --output=results.sarif
+      output_format: "SARIF"
+      note: "8.2k stars (queries repo). C/C++, C#, Go, Java, JS/TS, Python, Ruby, Swift, Kotlin."
+      tested: false
+
+  bearer_cli:
+    description: "Data-flow aware SAST — tracks PII/sensitive data flow through code, OWASP-aligned"
+    recommended:
+      name: bearer
+      type: cli
+      install: "brew install bearer/tap/bearer"
+      verify: "bearer version"
+      usage: |
+        Basic scan: bearer scan .
+        SARIF with filter: bearer scan . --format sarif --output bearer-report.sarif --severity critical,high
+        HTML report: bearer scan . --format html --output security-report.html
+      output_format: "Table, JSON, SARIF, HTML"
+      note: "Ruby, JS/TS, Java, Go, PHP, Python. Data-flow analysis for PII tracking."
+      tested: false
+
+  zap_dast:
+    description: "OWASP ZAP — comprehensive DAST web application scanner (baseline, full, API scan modes)"
+    recommended:
+      name: zap
+      type: cli
+      install: "brew install zaproxy  # or: docker pull zaproxy/zap-stable"
+      verify: "zap.sh -version"
+      usage: |
+        Baseline (passive): docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable zap-baseline.py -t https://target.example.com -r baseline-report.html
+        Full scan: docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable zap-full-scan.py -t https://target.example.com -r full-report.html -J full-report.json
+        API scan: docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable zap-api-scan.py -t openapi.yaml -f openapi -r api-report.html
+      output_format: "HTML, JSON, XML, SARIF"
+      note: "14.9k stars. Checkmarx-backed. Docker recommended for CI. Language-agnostic (HTTP)."
+      tested: false
+
+  nikto_cli:
+    description: "Web server DAST scanner — quick sweep for misconfigurations, default credentials, outdated software"
+    recommended:
+      name: nikto
+      type: cli
+      install: "apt install nikto  # or: brew install nikto  # or: docker"
+      verify: "nikto -Version"
+      usage: |
+        Scan host: nikto -h https://target.example.com
+        JSON output: nikto -h https://target.example.com -Format json -o nikto-report.json
+      output_format: "Text, JSON, XML, HTML, CSV"
+      note: "10.2k stars. 7000+ checks. Quick server-level sweep, not deep app testing."
+      tested: false
+
+  nuclei_cli:
+    description: "Template-based vulnerability scanner — 9000+ community templates for CVEs, misconfigs, exposures"
+    recommended:
+      name: nuclei
+      type: cli
+      install: "brew install nuclei  # or: go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest"
+      verify: "nuclei -version"
+      usage: |
+        Update templates: nuclei -update-templates
+        Scan URL: nuclei -u https://target.example.com
+        Severity filter: nuclei -u https://target.example.com -severity critical,high
+        CVE only: nuclei -u https://target.example.com -tags cve -o cve-results.txt
+        Multi-target: nuclei -l targets.txt -severity critical -o results.txt
+      output_format: "Text, JSON, SARIF"
+      note: "26.9k stars. 9000+ templates. Multi-protocol (HTTP, DNS, network). ProjectDiscovery."
+      tested: false
+
+  gitleaks_cli:
+    description: "Fast secret detection — scans git history and staged files for hardcoded credentials"
+    recommended:
+      name: gitleaks
+      type: cli
+      install: "brew install gitleaks"
+      verify: "gitleaks version"
+      usage: |
+        Scan git history: gitleaks git -v --source=. --report-format=json --report-path=gitleaks-report.json
+        Pre-commit (staged): gitleaks protect --staged -v
+        Commit range: gitleaks git -v --log-opts="--all commitA..commitB" .
+      output_format: "JSON report with secret type, file, line, commit"
+      note: "25.8k stars. Language-agnostic regex. Pre-commit hook integration."
+      tested: false
+
+  trufflehog_cli:
+    description: "Deep secret scanning with verification — tests found secrets against live services"
+    recommended:
+      name: trufflehog
+      type: cli
+      install: "brew install trufflehog"
+      verify: "trufflehog --version"
+      usage: |
+        Scan repo (verified only): trufflehog git file://. --only-verified --json
+        Scan remote: trufflehog git https://github.com/org/repo --only-verified
+        Scan filesystem: trufflehog filesystem /path/to/project --json
+      output_format: "JSON with secret type, verification status, source location"
+      note: "24.5k stars. 800+ secret types. AGPL-3. Unique: verifies secrets are still active."
+      tested: false
+
+  detect_secrets_cli:
+    description: "Baseline-approach secret detection (Yelp) — maintains allowlist to reduce false positives"
+    recommended:
+      name: detect-secrets
+      type: cli
+      install: "pip install detect-secrets"
+      verify: "detect-secrets --version"
+      usage: |
+        Create baseline: detect-secrets scan > .secrets.baseline
+        Audit baseline: detect-secrets audit .secrets.baseline
+        Pre-commit hook: detect-secrets-hook --baseline .secrets.baseline
+      output_format: "JSON baseline file with secret locations and types"
+      note: "4.3k stars. Baseline approach avoids alert fatigue on existing code."
+      tested: false
+
+  hadolint_cli:
+    description: "Dockerfile security linter — checks for running as root, unpinned versions, unsafe practices"
+    recommended:
+      name: hadolint
+      type: cli
+      install: "brew install hadolint"
+      verify: "hadolint --version"
+      usage: |
+        Lint: hadolint Dockerfile
+        Ignore rules: hadolint --ignore DL3008 --ignore DL3009 Dockerfile
+        JSON output: hadolint -f json Dockerfile > hadolint-report.json
+      output_format: "Text, JSON, SARIF, CodeClimate"
+      note: "11.9k stars. Integrates ShellCheck for inline bash. Dockerfile + bash."
+      tested: false
+
+  checkov_cli:
+    description: "IaC compliance scanner — 1000+ policies for Terraform, K8s, Docker, CloudFormation (CIS/SOC2/HIPAA)"
+    recommended:
+      name: checkov
+      type: cli
+      install: "pip install checkov"
+      verify: "checkov --version"
+      usage: |
+        Scan Terraform: checkov -d . --framework terraform
+        Compliance: checkov -d . --compliance-framework cis_aws
+        HIPAA: checkov -d . --compliance-framework hipaa --output json --output-file-path report.json
+        K8s: checkov -d ./k8s/ --framework kubernetes
+      output_format: "Text, JSON, JUnit XML, SARIF"
+      note: "8.6k stars. Used by both code-security (IaC lint) and compliance (policy proof) packs."
+      tested: false
