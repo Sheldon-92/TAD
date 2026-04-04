@@ -1505,3 +1505,38 @@ capabilities:
         Erase: esptool.py --port /dev/cu.usbmodem* erase_flash
         Backup: esptool.py --port /dev/cu.usbmodem* read_flash 0x0 0x400000 backup.bin
       note: "Bundled with ESP32 Arduino core. Standalone install for direct flash ops."
+
+  platformio_check:
+    description: "PlatformIO 静态分析 — 基于 cppcheck/clang-tidy 的嵌入式代码检查"
+    recommended:
+      name: pio-check
+      type: cli
+      install: "pip install platformio (same as platformio_cli)"
+      verify: "pio check --version"
+      usage: |
+        Full check: pio check --skip-packages --severity=high ./project/
+        Specific file: pio check --src-filter="+<src/driver_oled.h>" ./project/
+        With flags: pio check --flags "--enable=all --suppress=missingInclude" ./project/
+      example: |
+        pio check --skip-packages --severity=high --json-output ./my-firmware/ > check-report.json
+      output_format: "Console report or JSON"
+      note: "来源: Koopman CMU checklist 推荐静态分析作为代码审查前置步骤。PlatformIO 内置 cppcheck 集成。检查 null pointer, buffer overflow, uninitialized var, dead code。"
+      tested: false
+
+  admesh:
+    description: "STL 网格验证和修复 — 流形检查、面修复、法线方向修正"
+    recommended:
+      name: admesh
+      type: cli
+      install: "brew install admesh"
+      verify: "admesh --version"
+      usage: |
+        Check: admesh --check model.stl
+        Fix + export: admesh --fix-all --write-binary-stl=fixed.stl model.stl
+        Info: admesh --info model.stl
+      example: |
+        admesh --check enclosure-bottom.stl
+        # Output: Degenerate facets: 0, Edges fixed: 0, Facets reversed: 0 = PASS
+      output_format: "Console report"
+      note: "来源: cad-agent + openscad-agent 共识 — non-manifold geometry 是 3D 打印失败第一因。导出 STL 前必须跑 admesh --check。"
+      tested: false

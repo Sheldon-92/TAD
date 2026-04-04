@@ -45,6 +45,29 @@ capabilities:
         tool_ref: null
         output_file: "power-on-test-plan.md"
 
+      # Layer 1.5: Declare specs BEFORE testing (来源: OpenHTF spec-first measurement pattern)
+      - id: declare_measurement_specs
+        action: |
+          ⚠️ MUST complete BEFORE any measurements. Declare pass/fail specs upfront:
+          For each voltage rail from identify_power_rails:
+            measurement:
+              name: "{rail_name}_voltage"
+              expected: {nominal_value}  # from schematic
+              tolerance: ±5%  # or tighter per regulator datasheet
+              unit: "V"
+              validator: "in_range({min}, {max})"
+          For current draw:
+            measurement:
+              name: "idle_current"
+              expected: "<50mA"  # typical for MCU board without WiFi
+              abort_threshold: ">200mA"  # immediate power-off
+              unit: "mA"
+          This prevents "measure first, decide pass/fail after" anti-pattern.
+          All thresholds from datasheet or schematic design intent — not from actual measurement.
+          Output: measurement spec table (used by all subsequent test steps).
+        tool_ref: null
+        output_file: "measurement-specs.md"
+
       - id: create_power_on_checklist
         action: |
           Generate step-by-step power-on checklist (execute in exact order):
@@ -128,6 +151,7 @@ capabilities:
       - "Power-on sequence order matches schematic design intent"
       - "Current limit set on bench supply BEFORE first power-on"
       - "Smoke test explicitly included as a mandatory step"
+      - "Spec-first measurement: ALL pass/fail specs MUST be declared BEFORE executing tests (not decided after seeing results) — source: OpenHTF pattern"
       - "All measurements recorded with actual values (not just PASS/FAIL)"
       - "编造数据 = FAIL — every voltage/current value must come from actual measurement"
 
@@ -137,6 +161,7 @@ capabilities:
       - "❌ Skipping visual inspection (solder bridges are the #1 prototype killer)"
       - "❌ Recording only PASS/FAIL without actual measured values"
       - "❌ Testing with battery before bench supply verification (battery has no current limit)"
+      - "❌ Measuring first, then deciding pass/fail (spec-first measurement: declare thresholds from datasheet/design BEFORE testing — source: OpenHTF)"
 
     reviewers:
       - persona: "Hardware Test Engineer"
@@ -265,6 +290,8 @@ capabilities:
       - "Sensor readings compared against reference instrument or datasheet typical values"
       - "Wireless tests include RSSI/signal quality measurement"
       - "Storage tests include write-read-verify pattern"
+      - "Test completeness measured by coverage (% of BOM peripherals tested), not by test count — source: awesome-open-hardware-verification pattern"
+      - "Hardware mocking path defined for CI: pyvisa-sim or equivalent for automated regression without physical hardware — source: awesome-hardware-test"
       - "编造数据 = FAIL — sensor readings, RSSI values, timing measurements must be real"
 
     anti_patterns:
@@ -273,6 +300,8 @@ capabilities:
       - "❌ Not recording actual sensor values (only PASS/FAIL loses diagnostic data)"
       - "❌ Testing wireless without RSSI measurement (range problems hide in 'connected = pass')"
       - "❌ Assuming SD card works after 1 write (test with larger payload for reliability)"
+      - "❌ No hardware abstraction layer in test scripts (tests coupled to specific instruments = can't run in CI — source: awesome-hardware-test)"
+      - "❌ Paper/Excel-based test management (no traceability, no version control — source: OpenHTF test database pattern)"
 
     reviewers:
       - persona: "Embedded Systems Engineer"
@@ -686,6 +715,8 @@ capabilities:
       - "ESD protection verified on every external port"
       - "PCB layout review covers ground plane, decoupling, trace routing"
       - "Pre-compliance test procedure references specific frequency ranges and limit levels"
+      - "FCC radiated emission limits used as thresholds: Class B (3m) 40.0 dBuV/m @30-88MHz, 43.5 @88-216MHz, 46.0 @216-960MHz, 54.0 @>960MHz — source: FCC Title 47 CFR Part 15"
+      - "FCC conducted emission limits: Class B (QP) 66→56 dBuV @150kHz-500kHz, 56 @500kHz-5MHz, 60 @5-30MHz — source: FCC Part 15"
       - "Applicable standards identified per target market (FCC, CE, CCC)"
       - "编造数据 = FAIL — harmonic frequencies must be calculated from actual clock values"
 
@@ -695,6 +726,9 @@ capabilities:
       - "❌ Assuming shielding solves everything (shielding without proper grounding makes it worse)"
       - "❌ Ignoring cable radiation (cables are often the dominant emission source)"
       - "❌ Using unshielded DCDC inductor and hoping for the best"
+      - "❌ Testing without chamber calibration (must verify 16 points in 1.5m×1.5m area first — source: GTEM cell testing guide)"
+      - "❌ Frequency step size >1% of current frequency or dwell time <0.5s/frequency (insufficient resolution — source: IEC 61000-4-3)"
+      - "❌ EUT cables touching reference ground plane (must be elevated ≥30mm — source: EMC pre-compliance testing guide)"
 
     reviewers:
       - persona: "EMC Engineer"

@@ -102,22 +102,46 @@ capabilities:
           - 悬空角度 ≤45° 或添加支撑结构
           - 首层接触面积 ≥ 总底面积 20%（防翘曲）
           - 薄壁方向与打印层方向一致（强度最大化）
-          - 桥接距离 ≤10mm
+          - 桥接距离 ≤5mm（来源: Protolabs/Hubs DFM — 原值 10mm 过于宽松）
+          - 水平孔使用 Teardrop 形状（来源: NopSCADlib Teardrops module — 圆孔 FDM 顶部塌陷）
           SLA 优化：
           - 排水孔（封闭腔体必须有 ≥2mm 孔）
           - 支撑点避开外观面
+          CNC 优化（来源: NopSCADlib Dogbones module）：
+          - 内角使用 Dogbone 减压槽（CNC 无法铣出尖内角）
+          - 槽宽 = 刀具直径 + 0.2mm 余量
           通用：
           - 消除尖角（应力集中 → 开裂）
           - 配合面倒角 0.5mm（引导装配）
         tool_ref: parametric_cad
         output_file: "enclosure.scad (update)"
 
+      # Layer 3.5: Validate — manifold check before export (来源: cad-agent + openscad-agent 共识)
+      - id: validate_manifold
+        action: |
+          STL 导出前强制流形验证（non-manifold = 3D 打印失败第一因）：
+          1. OpenSCAD 渲染模式验证:
+             openscad -o /dev/null --render enclosure.scad 2>&1 | grep -i "error\|warning"
+             如果有 geometry 警告 → 修复后重新渲染
+          2. 如果有 ADMesh 工具:
+             admesh --check enclosure.stl
+             检查项: Degenerate facets = 0, Edges fixed = 0, Facets reversed = 0
+          3. 人工检查: 在 OpenSCAD 预览模式(F5)查看是否有穿模/自交
+          4. 最终导出:
+             openscad -o enclosure-bottom.stl -D 'part="bottom"' enclosure.scad
+             openscad -o enclosure-top.stl -D 'part="top"' enclosure.scad
+          ⚠️ 此步骤是 HARD GATE — 验证不通过禁止交付 STL
+        tool_ref: parametric_cad
+        output_file: "enclosure-bottom.stl, enclosure-top.stl"
+
     quality_criteria:
       - "所有尺寸参数化（顶部变量声明，可通过 -D 覆盖）"
-      - "壁厚满足制造最小值（FDM ≥1.5mm, SLA ≥1.0mm, 注塑 ≥1.2mm）"
-      - "配合面公差正确（FDM=0.2mm, SLA=0.1mm）"
-      - "螺丝柱外径 ≥ 螺丝外径×2.5"
-      - "所有内角有圆角（corner_radius ≥2mm）"
+      - "壁厚满足制造最小值（FDM ≥1.5mm / 绝对最小 0.8mm 即 2 perimeters, SLA ≥1.0mm, 注塑 ≥1.2mm）— 来源: NopSCADlib + Protolabs"
+      - "配合面公差正确（FDM=0.2mm, SLA=0.1mm），端口/孔洞公差 0.2-0.3mm — 来源: Cadence PCB enclosure guidelines"
+      - "螺丝柱外径 ≥ 螺丝外径×2.5，角落螺丝区域留足装配空间 — 来源: easy-enclosure fastener clearance warning"
+      - "所有内角有圆角（corner_radius ≥2mm），圆角最小 0.1mm 保证壳体厚度一致 — 来源: Cadence guidelines"
+      - "STL 导出前必须通过流形/水密性验证（non-manifold geometry = 3D 打印失败第一因 — 来源: cad-agent + openscad-agent 共识）"
+      - "FDM 悬空角度 ≤ 45°、无支撑桥接跨度 ≤ 5mm — 来源: Protolabs/Hubs DFM rules"
       - ".scad 文件可直接 openscad -o output.stl 编译无错误"
       - "编造尺寸 = FAIL。PCB 数据必须来自数据手册或实测"
 
@@ -125,8 +149,10 @@ capabilities:
       - "❌ 硬编码尺寸（magic numbers）→ 必须用变量"
       - "❌ 忽略公差（配合面无间隙 → 装不进去）"
       - "❌ 壁厚凭感觉（必须基于制造方式的最小值）"
-      - "❌ 不渲染预览就交付（肉眼检查 = 必须步骤）"
+      - "❌ 不渲染预览就交付（肉眼检查 = 必须步骤）— 所有成功的 AI-CAD 系统都实现 render-inspect-iterate 循环（来源: MEDA, cad-agent, openscad-agent）"
       - "❌ 单体建模（底壳+顶盖应该是独立 module，可分别导出 STL）"
+      - "❌ 材料与环境不匹配：PLA 用在室外（UV/热变形）、ABS 长期 UV 暴露（降解）、刚性密封件（压缩不良）— 来源: 多源共识"
+      - "❌ 不计算紧固件占用体积就设计外壳（→ 角落螺丝空间不足是最常见装配失败原因 — 来源: easy-enclosure + NopSCADlib）"
 
     reviewers:
       - persona: "机械工程师"
@@ -228,6 +254,7 @@ capabilities:
       - "PCB 四边间隙 ≥1mm，顶部间隙 ≥1.5mm"
       - "有 PCB 占位块透明渲染验证"
       - "线缆弯曲半径 ≥ 线径×3"
+      - "CNC 加工内角使用 Dogbone 减压槽，FDM 水平孔使用 Teardrop 形状 — 来源: NopSCADlib DFM modules"
       - "编造 PCB 尺寸 = FAIL。必须引用数据手册或实测数据"
 
     anti_patterns:
@@ -236,6 +263,7 @@ capabilities:
       - "❌ 忽略 PCB 背面元器件高度（安装柱高度不够 → 短路）"
       - "❌ 不验证就交付（必须有透明 PCB 占位块渲染）"
       - "❌ 忘记天线净空（金属外壳挡天线 → 信号衰减 20dB+）"
+      - "❌ 依赖外壳做 EMI 屏蔽而不在 PCB 层面解决（外壳不是 EMI 一线防护 — 来源: Cadence guidelines）"
 
     reviewers:
       - persona: "硬件工程师"
@@ -317,6 +345,8 @@ capabilities:
       - "决策矩阵权重有明确理由"
       - "成本数据来自真实供应商（有 URL 或搜索来源）"
       - "阶段建议覆盖原型→小批量→量产"
+      - "材料-环境兼容性矩阵为必选检查项：ABS 不用于长期 UV 暴露、PLA 不用于 >50°C 环境、PC 优先用于需透明/抗冲击场景 — 来源: 多源研究共识"
+      - "防护等级标注（如需要）：NEMA 1-4X / IP54-IP67 — 参考: IEC 60529 IP 等级标准 + Cadence guidelines"
       - "编造材料参数 = FAIL。数据手册数值 vs 供应商声称要分开标注"
 
     anti_patterns:
@@ -325,6 +355,7 @@ capabilities:
       - "❌ 成本只算材料不算人工和模具分摊"
       - "❌ 推荐注塑但不说模具成本（$2K-$15K 门槛）"
       - "❌ 材料参数来源混乱（不同测试标准的数据不能直接比较）"
+      - "❌ 壁厚不均匀（注塑导致缩印/翘曲，FDM 导致强度不一致 — 来源: Cadence anti-patterns）"
 
     reviewers:
       - persona: "材料工程师"

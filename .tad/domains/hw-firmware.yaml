@@ -112,6 +112,26 @@ capabilities:
         tool_ref: arduino_cli
         output_file: "firmware-architecture.md (append)"
 
+      # Layer 3.5: Verify — static analysis (来源: PlatformIO + Koopman checklist)
+      - id: verify_static_analysis
+        action: |
+          在人工审查前先跑静态分析（便宜的检查先做，贵的检查后做 — Ralph Loop 原则）：
+          1. **编译检查** (零 warnings):
+             arduino-cli compile --warnings all --fqbn esp32:esp32:XIAO_ESP32S3 ./project/ 2>&1
+             如果有 warnings → 必须修复，不能 suppress
+          2. **静态分析** (如果有 PlatformIO):
+             pio check --skip-packages --severity=high ./project/
+             关注: null pointer, buffer overflow, uninitialized var, dead code
+          3. **代码度量** (Koopman thresholds):
+             - 函数长度: 每个函数 ≤50 行（一屏可读）
+             - 圈复杂度: < 15（用 cppcheck --enable=all 或手动检查）
+             - ISR 长度: ≤ 25 行，仅设 flag/入队
+             - 嵌套深度: if/else ≤2 层
+          4. **#define 审计**: 搜索项目内 #define，确认用 const/inline/enum 替代的没有遗漏
+          分析结果输出为检查报告。静态分析 0 high severity → 进入人工审查。
+        tool_ref: platformio_cli
+        output_file: "static-analysis-report.md"
+
       # Layer 4: Optimize — refine for maintainability
       - id: optimize_architecture
         action: |
@@ -131,9 +151,12 @@ capabilities:
 
     quality_criteria:
       - "config.h 包含所有引脚定义，每个引脚有 GPIO号+物理标记 注释"
-      - "编译零 error，warnings ≤3"
+      - "编译零 error，零 warnings（来源: Koopman CMU 嵌入式代码审查 — 零容忍警告策略）"
       - "Flash 使用率 < 75%，RAM 使用率 < 60%"
+      - "函数长度 ≤50 行（一屏可读），圈复杂度 < 15（来源: Koopman checklist）"
+      - "ISR 长度 ≤ 半页（~25 行），仅设 flag/入队，不做复杂逻辑（来源: Koopman + Embedded Artistry 共识）"
       - "loop() 中无阻塞 delay()（除 delay(1) yield）"
+      - "嵌套深度 ≤ 2 层 if/else，switch 内 0 层嵌套（来源: Koopman checklist）"
       - "每个外设 init 失败有降级路径，不 while(1) 卡死"
       - "状态机所有状态转换有明确定义"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
@@ -145,6 +168,9 @@ capabilities:
       - "❌ 全局变量满天飞（→ 按模块用 struct 封装状态）"
       - "❌ setup() 中不做 I2C scan 就假设外设存在"
       - "❌ FreeRTOS 任务不指定 Core（→ pinToCore 明确绑定）"
+      - "❌ ISR 中做循环/复杂逻辑/I2C/SPI 操作（→ ISR 只设 flag，主循环处理 — 来源: 所有嵌入式 repo 共识）"
+      - "❌ 用 #define 替代 const/inline/enum（→ 类型安全 + 调试可见 — 来源: Koopman checklist）"
+      - "❌ 假设硬件状态在 deep sleep 后保留（→ 唤醒后必须重新初始化外设 — 来源: ESP-IDF power management API）"
 
     reviewers:
       - persona: "嵌入式架构师"
@@ -274,11 +300,13 @@ capabilities:
 
     quality_criteria:
       - "每个外设有独立的 driver .h 文件"
-      - "所有 init() 返回 bool，失败时不崩溃"
+      - "所有 init() 返回 bool，失败时不崩溃（返回 void 的 init = 无法检测失败 — 来源: Wayo 项目审查发现 epd_init() 返回 void）"
       - "I2C 地址无冲突（运行 i2cScan 验证）"
       - "每个驱动单独编译零 error"
       - "Serial 日志用 [OK]/[WARN]/[ERR] 前缀标注"
       - "无 String 拼接（用 snprintf 或 F() 宏）"
+      - "驱动代码通过静态分析（pio check 或 cppcheck）无 high severity 问题 — 来源: PlatformIO toolchain"
+      - "代码审查速度 ≤ 200 行/小时，单次审查 ≤ 2 小时（来源: Koopman checklist — 超速审查遗漏缺陷）"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
 
     anti_patterns:
@@ -288,6 +316,8 @@ capabilities:
       - "❌ I2C 操作无超时（→ Wire.setTimeOut()）"
       - "❌ 所有外设代码堆在 main.ino（→ 每个外设独立 .h）"
       - "❌ init 失败 while(1) 死循环（→ return false + 降级）"
+      - "❌ 关中断/持锁时间过长（→ 最小化临界区，尽快释放 — 来源: Koopman + ESP-IDF power lock API）"
+      - "❌ 跳过静态分析直接人工 review（→ 先跑 pio check，再人工审查 — 来源: PlatformIO best practice）"
 
     reviewers:
       - persona: "硬件驱动工程师"
@@ -453,6 +483,8 @@ capabilities:
       - "RTC 变量在唤醒后正确恢复（串口日志验证）"
       - "WiFi 重连时间 < 3s（有缓存时 < 1s）"
       - "E-ink 在 Deep Sleep 前调用 hibernate()"
+      - "电源管理锁使用引用计数模式（acquire/release），支持 3 种锁类型：NO_SLEEP / APB_FREQ_MAX / CPU_FREQ_MAX — 来源: ESP-IDF pm_locks API"
+      - "Light Sleep 切换延迟 0.2-40μs 可接受，CPU 最低频率 ≥10MHz 保证外设正常 — 来源: ESP-IDF power management docs"
       - "电池寿命估算公式和参数均可追溯"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
 
@@ -463,6 +495,7 @@ capabilities:
       - "❌ 功耗估算不含 WiFi 连接阶段（→ 这是最耗电的阶段）"
       - "❌ 定时唤醒间隔硬编码（→ 用 config.h 定义 SLEEP_DURATION_S）"
       - "❌ 唤醒后重新校准触摸（→ 用 RTC 存 baseline）"
+      - "❌ 把功耗管理当事后优化（→ 必须在架构阶段设计，不能后补 — 来源: ESP-IDF 及所有嵌入式资源共识）"
 
     reviewers:
       - persona: "低功耗设计专家"
@@ -641,6 +674,7 @@ capabilities:
       - "WiFi 密码不硬编码在源码中（→ config portal 或 NVS）"
       - "MQTT buffer size 已调整（默认 128 太小）"
       - "断线有重连逻辑，且为非阻塞"
+      - "HTTP/JSON 响应有大小限制：JsonDocument 指定 capacity 或用 DeserializationOption::Filter，防止异常/恶意响应 OOM（来源: Wayo 项目实测 — ArduinoJson 无限制解析可耗尽 heap）"
       - "通信模块编译零 error"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
 
@@ -651,6 +685,7 @@ capabilities:
       - "❌ MQTT 重连用 delay() 阻塞（→ millis 非阻塞重连）"
       - "❌ 不检查 HTTP 返回码就解析 body（→ 先检查 200）"
       - "❌ WiFi 每次 Deep Sleep 唤醒都全量 scan（→ RTC 缓存 channel）"
+      - "❌ JsonDocument 不设 capacity 上限（→ 恶意/异常 API 返回超大 JSON 导致 OOM crash — 来源: Wayo 项目审查发现）"
 
     reviewers:
       - persona: "IoT 通信工程师"

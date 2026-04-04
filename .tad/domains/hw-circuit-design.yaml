@@ -92,6 +92,8 @@ capabilities:
       - "参数数据来自 datasheet，有页码或 URL 引用"
       - "供应链风险评估（LOW/MEDIUM/HIGH）+ 至少一个非 LCSC 渠道"
       - "功耗数据包含 active 和 sleep 模式"
+      - "电容降额：陶瓷电容额定电压 ≥ 工作电压×2（50% derating），电解电容 ≥ 工作电压×1.25（80% derating）— 来源: kicad-happy"
+      - "晶振精度标注：ESP32 要求 ±10ppm，温度范围内仍满足 — 来源: Espressif HW Design Guidelines"
       - "编造数据 = FAIL。推测标注 [INFERRED]，缺失标注 [NOT FOUND]"
 
     anti_patterns:
@@ -100,6 +102,8 @@ capabilities:
       - "❌ 选最便宜的不考虑供货 = 断供风险"
       - "❌ 不考虑封装兼容性（QFN vs WLCSP 对手焊影响完全不同）"
       - "❌ 忽略 GPIO 数量限制导致后期改 MCU = 返工"
+      - "❌ 不做电容降额直接用额定值 = 寿命和可靠性风险（陶瓷电容 DC bias 效应导致实际容值下降）"
+      - "❌ 忽略器件生命周期状态（Active/NRND/EOL）= 量产时断供 — 来源: Espressif guidelines"
 
     reviewers:
       - persona: "供应链工程师"
@@ -332,20 +336,24 @@ capabilities:
 
     quality_criteria:
       - "DRC: 0 violation（线宽、间距、连接性全部通过）"
-      - "去耦电容距离 IC VDD pin ≤3mm"
+      - "去耦电容距离 IC VDD pin ≤7mm（理想 ≤3mm）— 来源: kicad-happy 42-rule EMC checklist"
       - "电源走线宽度 ≥20mil，大电流 ≥40mil"
       - "ESP32 天线区域 15mm 范围内无铺铜和走线"
+      - "差分对偏差 (skew) < 25ps — 来源: kicad-happy"
+      - "串扰间距：高速信号间距 ≥ 3× 走线宽度 — 来源: JAK Services PCB review"
       - "地平面完整性 >80%（无大面积割裂）"
       - "Gerber 文件完整（铜层 + 阻焊 + 丝印 + 钻孔 + 坐标）"
       - "编造数据 = FAIL。线宽计算必须基于电流和铜厚。"
 
     anti_patterns:
-      - "❌ 去耦电容远离 IC = 形同虚设"
+      - "❌ 去耦电容远离 IC = 形同虚设（>7mm 等于没放 — kicad-happy）"
       - "❌ 天线区域下方铺铜 = WiFi/BLE 信号严重衰减"
       - "❌ 电源走线太细承载大电流 = 发热甚至烧毁"
-      - "❌ 地平面被走线割裂 = EMI 问题"
+      - "❌ 地平面被走线割裂 = EMI 问题（高速信号绝不能跨越地平面分割 — 来源: 多个 PCB review repo 共识）"
       - "❌ 忽略制造商最小工艺能力 = 无法生产"
       - "❌ 不检查 FPC 连接器方向 = 显示屏插反"
+      - "❌ ESD/TVS 放在电路后面而非连接器处 = 保护无效（必须在连接器和电路之间 — 来源: Schemalyzer review guide）"
+      - "❌ 热焊盘 via 数量不足 = 散热不良（QFN exposed pad 需要 ≥4 个 via — 来源: kicad-happy thermal check）"
 
     reviewers:
       - persona: "PCB 布局工程师"
@@ -661,19 +669,52 @@ capabilities:
         tool_ref: kicad_cli
         output_file: "automated-check-report.md"
 
+      # Layer 2.5: Anti-pattern scan (来源: kicad-happy 42-rule EMC checklist + Schemalyzer)
+      - id: scan_anti_patterns
+        action: |
+          在人工评审前，先做自动化反模式扫描（最高价值活动 — 来源: 研究共识）：
+
+          **电容降额检查：**
+          □ 每个陶瓷电容额定电压 ≥ 工作电压×2（50% derating）
+          □ 每个电解电容额定电压 ≥ 工作电压×1.25（80% derating）
+          □ DC bias 效应: X5R/X7R 在工作电压下容值衰减是否仍满足需求
+
+          **去耦距离检查（kicad-happy 阈值）：**
+          □ 每个 IC VDD pin 的去耦电容距离 ≤7mm（理想 ≤3mm）
+          □ 大电流 IC（电源芯片）的输入/输出电容距离 ≤5mm
+
+          **保护缺失检查：**
+          □ 每个外部连接器有 TVS/ESD（且在连接器和电路之间，不是之后）
+          □ 无浮空输入（每个未使用 GPIO 有上拉/下拉/禁用处理）
+          □ 热焊盘 via 数量: QFN/DFN exposed pad ≥4 个热 via
+
+          **信号完整性检查：**
+          □ 差分对 skew < 25ps
+          □ 高速信号间距 ≥ 3× 走线宽度（串扰）
+          □ 高速信号不跨越地平面分割
+
+          每个检查标注 PASS/FAIL + 具体位置。输出反模式扫描报告。
+        quality: "检查项必须有数值证据（实际距离、实际电压比），不接受'看起来 OK'"
+        tool_ref: kicad_cli
+        output_file: "anti-pattern-scan.md"
+
       # Layer 3: Derive — expert review checklist
       - id: derive_expert_review
         action: |
-          基于自动检查结果，执行专家评审清单：
+          基于自动检查 + 反模式扫描结果，执行 4 阶段专家评审
+          （来源: Schemalyzer 4-phase review — 架构级→模块级→元器件级→自动检查）：
 
-          **电气评审：**
+          **阶段 1: 架构级评审**
           □ 电源方案满足所有模块需求（电压/电流/纹波）
+          □ 功能模块划分合理，信号流向清晰
+          □ 电池保护电路完备（过充/过放/过流/短路）
+
+          **阶段 2: 模块级评审**
           □ 去耦电容完整且就近放置
           □ ESD 保护覆盖所有外部接口
           □ 晶振电路负载电容计算正确
           □ 复位电路可靠（上电延时 + 手动复位）
           □ 未使用 GPIO 有明确处理（不悬空）
-          □ 电池保护电路完备（过充/过放/过流/短路）
 
           **PCB 评审：**
           □ 天线净空区满足要求（ESP32: ≥15mm）
@@ -724,6 +765,8 @@ capabilities:
       - "CRITICAL 问题 0 个 = 可以投产；>0 = 阻塞"
       - "每个 FAIL 项有具体修复建议"
       - "BOM vs 原理图一致性验证通过"
+      - "评审分 4 阶段执行：架构级→模块级→元器件级→自动检查（来源: Schemalyzer 4-phase review methodology）"
+      - "每个 IC 电源引脚有去耦电容、所有外部接口有 ESD 保护、无浮空输入 — 来源: Schemalyzer + kicad-happy 共识"
       - "编造数据 = FAIL。评审必须基于实际设计文件。"
 
     anti_patterns:
@@ -732,6 +775,8 @@ capabilities:
       - "❌ 只做自动检查不做人工评审 = 遗漏设计缺陷"
       - "❌ 评审报告模板化不关联实际设计 = 走过场"
       - "❌ 不检查 BOM 一致性 = 采购错误器件"
+      - "❌ 压制 ERC 警告不调查原因 = 隐藏错误（来源: Schemalyzer anti-pattern — net label typos 导致静默断连）"
+      - "❌ 忽略错误成本乘数效应：原理图阶段 1x → 布局 10x → 打样 100x → 量产 1000x（来源: Schemalyzer Rule of 10）"
 
     reviewers:
       - persona: "首席硬件工程师"
