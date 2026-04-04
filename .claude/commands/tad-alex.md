@@ -1311,9 +1311,64 @@ design_protocol:
       name: "Review Socratic Inquiry Results"
       action: "Confirm all requirements are clarified from Socratic Inquiry"
 
+    step1_5:
+      name: "Domain Pack Loading"
+      action: |
+        Based on Socratic Inquiry results, identify relevant Domain Packs:
+
+        1. Extract task keywords: technologies, product type, domains involved
+           (e.g., "React frontend" → web-frontend, "REST API" → web-backend,
+            "AI agent" → ai-agent-architecture, "dependency audit" → supply-chain-security)
+
+        2. Match keywords against Domain Pack capabilities from session start context.
+           Session start injects all pack names + capabilities into additionalContext.
+           Use this list for matching — do NOT scan .tad/domains/ directory manually.
+
+        3. Confirm with user via AskUserQuestion:
+           "Based on requirements, I identified these relevant Domain Packs:
+            - {pack1}: {matched capabilities}
+            - {pack2}: {matched capabilities}
+            Confirm, adjust, or skip?"
+           Options:
+           - "Confirmed" → proceed to step 4
+           - "Add/remove packs" → user specifies, then proceed
+           - "Skip Domain Packs" → proceed to step2 without pack loading
+
+        State persistence: After loading, record matched packs in conversation as:
+        "🔧 Loaded Domain Packs: {pack1}, {pack2}"
+        step1a will check for this marker to know which packs to inject into handoff.
+
+        4. For each confirmed pack, Read the YAML file:
+           `.tad/domains/{pack-name}.yaml`
+           Extract and note:
+           - capabilities (names + step sequences)
+           - quality_criteria (per capability)
+           - anti_patterns (per capability)
+           - review persona + checklist
+
+        5. Use loaded pack content in subsequent *design steps:
+           - Reference capabilities when designing architecture (step3)
+           - Reference quality_criteria when defining acceptance standards
+           - Reference anti_patterns when identifying risks
+           - Output: "Loaded Domain Packs: {list}" as confirmation line
+
+      note: |
+        This step is INFORMING design, not CONSTRAINING it.
+        Alex uses pack content as expert reference, not as rigid template.
+        If the pack's recommended approach conflicts with user's specific needs,
+        user's needs take priority.
+
+      skip_conditions:
+        - "User chose 'Skip Domain Packs' in step1_5 confirmation above"
+        - "No matching Domain Pack found (e.g., novel domain not covered)"
+        - "Light TAD process depth (keep lightweight)"
+
     step2:
       name: "Frontend Detection & Playground Reference"
       action: |
+        If any relevant Domain Pack was loaded in step1_5, reference its capabilities
+        in design suggestions (e.g., web-frontend pack for component patterns,
+        web-backend pack for API conventions, ai-agent-architecture for agent design).
         If task involves frontend/UI, suggest: "Consider running /playground first for visual direction."
         Reference any existing playground outputs in .tad/active/playground/ or .tad/project-knowledge/frontend-design.md.
         Playground is now a standalone command — Alex does not execute it directly.
@@ -1411,6 +1466,7 @@ handoff_creation_protocol:
         - Testing checklist
         - "Micro-Tasks (optional — include for Full/Standard TAD when task has 5+ files)"
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
+        - "Domain Pack References (if packs loaded in *design step1_5)"
       epic_linkage: |
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase
@@ -1421,6 +1477,52 @@ handoff_creation_protocol:
         4. Verify: no other phase is already 🔄 Active (concurrent control)
            - If another phase is Active → BLOCK, do not create handoff
         If no active Epic → omit the Epic field (normal handoff)
+
+    step1a:
+      name: "Domain Pack Injection"
+      action: |
+        If Domain Packs were loaded during *design step1_5:
+
+        1. Add a new section to the handoff draft after "📚 Project Knowledge":
+
+           ## 🔧 Domain Pack References (Blake 必读)
+
+           **Loaded Packs:**
+           | Pack | File | Matched Capabilities |
+           |------|------|---------------------|
+           | {pack1} | .tad/domains/{pack1}.yaml | {cap1, cap2} |
+           | {pack2} | .tad/domains/{pack2}.yaml | {cap3, cap4} |
+
+           **⚠️ Blake 必须在开始实现前 Read 上述 YAML 文件。**
+           Pack 内容包含：工作流步骤、工具推荐、质量标准、反模式。
+
+        2. Merge pack quality_criteria into "## 9. Acceptance Criteria":
+           For each matched capability's quality_criteria:
+           - Append as supplementary AC items
+           - Tag each with source: `[from: {pack-name} → {capability}]`
+           - These are ADVISORY, not mandatory — Blake uses judgment on applicability
+
+           Example:
+           ```
+           - [ ] AC11: [from: web-frontend → component_development] Component has error boundary
+           - [ ] AC12: [from: web-backend → api_design] API follows RESTful naming conventions
+           ```
+
+        3. Merge pack anti_patterns into "## 10. Important Notes":
+           Append under a sub-heading:
+           ```
+           ### 10.4 Domain Pack Anti-Patterns
+           - ⚠️ [web-frontend] Don't use inline styles for layout — use design tokens
+           - ⚠️ [web-backend] Don't expose internal IDs in API responses
+           ```
+
+        4. Merge pack tool recommendations into "## 10.3 Sub-Agent 使用建议":
+           If pack has tool_ref that maps to CLI tools, suggest Blake use them.
+
+        If no Domain Packs were loaded: skip this step entirely.
+      skip_conditions:
+        - "No Domain Packs loaded during *design"
+        - "Light TAD (skip for lightweight process)"
 
     step1b:
       name: "Frontmatter Validation"
