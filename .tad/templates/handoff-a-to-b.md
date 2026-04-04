@@ -1,3 +1,10 @@
+---
+# Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3)
+task_type: code       # code | yaml | research | e2e | mixed
+e2e_required: no      # yes | no - yes 时 Blake 必须产出 E2E evidence
+research_required: no # yes | no - yes 时 Blake 必须产出研究文件
+---
+
 # Handoff Document for Agent B (Blake)
 ## TAD v3.1 - Evidence-Based Development
 

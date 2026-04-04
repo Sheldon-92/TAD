@@ -9,50 +9,54 @@
 
 ---
 
-## 🔴 Gate 3: Implementation Quality (Blake必填)
+## 🔴 Gate 3 v2: Implementation & Integration Quality (Blake必填)
 
 **执行时间**: [YYYY-MM-DD HH:MM]
 
-### Gate 3 检查结果
+### Layer 1 (Self-Check)
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| Code Complete | ✅/⚠️/❌ | [所有 handoff 任务是否完成] |
-| Tests Pass | ✅/⚠️/❌ | [测试通过情况，附截图] |
-| Standards Met | ✅/⚠️/❌ | [代码规范、格式化检查] |
+| Build Passes | ✅/⚠️/❌ | [构建是否通过] |
+| Tests Pass (100%) | ✅/⚠️/❌ | [测试通过情况] |
+| Lint Passes | ✅/⚠️/❌ | [代码规范检查] |
+| TypeScript Compiles | ✅/⚠️/❌ | [类型检查（如适用）] |
 
-**Gate 3 结果**: ✅ PASS / ⚠️ PARTIAL PASS / ❌ FAIL
+### Layer 2 (Expert Review)
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| spec-compliance | ✅/⚠️/❌ | [所有 AC 满足] |
+| code-reviewer | ✅/⚠️/❌ | [P0=0, P1=0] |
+| test-runner | ✅/⚠️/❌ | [覆盖率 ≥ threshold] |
+| security-auditor | ✅/⚠️/❌/N/A | [安全审查（如触发）] |
+| performance-optimizer | ✅/⚠️/❌/N/A | [性能审查（如触发）] |
+
+### Evidence
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| Expert Evidence | ✅/⚠️/❌ | [.tad/evidence/reviews/ 下有审查文件] |
+| Ralph Loop Summary | ✅/⚠️/❌ | [Ralph Loop 执行摘要] |
+| Acceptance Verification | ✅/⚠️/❌ | [AC 验证脚本执行通过] |
+
+### Knowledge Assessment
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| ⚠️ New Discoveries Documented | ✅/❌ | [Yes/No + 类别 — 留空 = Gate 无效] |
+
+### Git
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| Changes Committed | ✅/❌ | [Commit hash] |
+
+**Gate 3 v2 结果**: ✅ PASS / ⚠️ PARTIAL PASS / ❌ FAIL
 
 **如果 PARTIAL PASS 或 FAIL，说明**:
 - [未完成项1]
 - [未完成项2]
-
-**证据**:
-- 测试结果截图: [链接或嵌入]
-- 代码检查输出: [链接或嵌入]
-
----
-
-## 🔴 Gate 4: Integration Verification (Blake必填)
-
-**执行时间**: [YYYY-MM-DD HH:MM]
-
-### Gate 4 检查结果
-
-| 检查项 | 状态 | 说明 |
-|--------|------|------|
-| Integration Works | ✅/⚠️/❌ | [系统级测试是否通过] |
-| User Ready | ✅/⚠️/❌ | [是否有已知阻塞问题] |
-
-**Gate 4 结果**: ✅ PASS / ⚠️ PARTIAL PASS / ❌ FAIL
-
-**如果 PARTIAL PASS 或 FAIL，说明**:
-- [阻塞问题1]
-- [阻塞问题2]
-
-**证据**:
-- 集成测试结果: [链接或嵌入]
-- UI演示截图/视频: [链接或嵌入]
 
 ---
 
@@ -135,13 +139,61 @@ path/to/new-file2.ts  # [用途说明]
 
 ---
 
+## 📖 Knowledge Assessment (MANDATORY — Gate 3 BLOCKING)
+
+**是否有新发现？** ✅ Yes / ❌ No
+
+**如果 Yes：**
+- **类别**: [architecture / code-quality / security / testing / performance / ux / api-integration / mobile-platform / frontend-design / other]
+- **标题**: [简短描述]
+- **内容摘要**: [1-2 句话]
+- **已写入**: .tad/project-knowledge/{category}.md ✅/❌
+
+**如果 No：**
+- **原因**: [常规实现无特殊发现 / 已有类似记录 / etc.]
+
+⚠️ 此节留空 = Gate 3 无效 = VIOLATION
+
+---
+
+## 📂 Evidence Checklist (MANDATORY)
+
+### Ralph Loop Evidence
+- [ ] State file: .tad/evidence/ralph-loops/{task_id}_state.yaml
+- [ ] Summary: .tad/evidence/ralph-loops/{task_id}_summary.md
+
+### Expert Review Evidence
+- [ ] Code review: .tad/evidence/reviews/{date}-code-review-{task}-final.md
+- [ ] Testing review: .tad/evidence/reviews/{date}-testing-review-{task}-final.md
+- [ ] Security review: .tad/evidence/reviews/{date}-security-review-{task}-*.md (if triggered)
+- [ ] Performance review: .tad/evidence/reviews/{date}-performance-review-{task}-*.md (if triggered)
+
+### Acceptance Verification Evidence
+- [ ] Report: .tad/evidence/acceptance-tests/{task_id}/acceptance-verification-report.md
+- [ ] Scripts: .tad/evidence/acceptance-tests/{task_id}/AC-*.* ({count} scripts)
+
+### Git Commit
+- **Commit Hash**: [hash or NONE for doc-only]
+- **Verified**: `git log --oneline -1` output matches ✅/❌
+
+### Conditional Evidence (from Handoff metadata)
+- **E2E Required (from Handoff)**: yes/no
+  - If yes → E2E evidence file: [path] ✅/❌
+- **Research Required (from Handoff)**: yes/no
+  - If yes → Research file: [path] ✅/❌
+
+⚠️ Required evidence 未勾选 = Gate 3 不可通过
+
+---
+
 ## 🎯 验收检查清单
 
 Blake确认以下所有项：
 - [ ] 所有 handoff 要求的功能已实现
-- [ ] Gate 3 通过（代码质量合格）
-- [ ] Gate 4 通过（集成验证完成）
+- [ ] Gate 3 v2 通过（实现 + 集成质量合格）
 - [ ] 所有测试通过（有证据）
+- [ ] Knowledge Assessment 已完成（非空）
+- [ ] Evidence Checklist 已勾选（required 项）
 - [ ] 无已知阻塞问题
 - [ ] 文档已更新（如需要）
 
@@ -167,4 +219,4 @@ Blake确认以下所有项：
 
 **Report Created By**: Blake (Agent B)
 **Date**: [Date]
-**Version**: 1.0
+**Version**: 2.0
