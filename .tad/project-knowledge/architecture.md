@@ -171,7 +171,15 @@ Project-specific architecture learnings accumulated through TAD workflow.
   5. **Design implication**: TAD v3.0 must use `settings.json` global hooks as primary enforcement layer. Tool restriction via PreToolUse prompt hooks (not allowed-tools). Context-specific behavior via `matcher` + `if` patterns (not per-skill hooks).
 - **Action**: When designing framework extensions on Claude Code, validate mechanisms via spike before designing architecture. Source code reading ≠ runtime behavior. Hooks are the reliable enforcement primitive; skill frontmatter is for prompt delivery and model selection only.
 
-### Judgment-Only Skill Files: 76% Reduction is Safe - 2026-03-31
+### Judgment-Only Skill Files: 76% Reduction Was NOT Safe — AMENDED 2026-04-04
+- **Amendment**: The original "76% reduction is safe" conclusion was proven WRONG by Quality Chain failure.
+  - v2.7 slim skills (570/283 lines) removed constraint rules alongside mechanical logic
+  - v2.8 Quality Chain Phases 2-3 restored constraints to COMMAND files, but never synced back to skills
+  - Result: commands and skills diverged for weeks, slim skills were missing critical guardrails
+  - **Corrected action**: Constraint rules (MUST/MANDATORY/VIOLATION) are NOT mechanical — they cannot be removed. Only truly mechanical logic (file I/O, config duplication) is safe to extract.
+  - **Resolution (v2.8.1)**: Commands consolidated into skills. Single source of truth restored.
+
+### [ORIGINAL — superseded by amendment above] Judgment-Only Skill Files: 76% Reduction is Safe - 2026-03-31
 - **Context**: TAD v3.0 Phase 3 — slimming Alex (2528→570) and Blake (1052→283) skill files
 - **Discovery**: When hooks handle automation and config YAML holds definitions, skill files can be reduced to judgment-only residual with no functionality loss:
   1. **78% of Alex was non-judgment**: mechanical file operations, config duplication, verbose format specs
@@ -220,3 +228,10 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Context**: Quality Chain Phase 4 — code-reviewer caught `grep -oP` (Perl regex) in pre-gate-check.sh
 - **Discovery**: macOS ships BSD grep which does NOT support `-P` (Perl regex). `grep -oP '(?<=pattern).*'` silently fails or errors on stock macOS. The portable alternative is `grep -o 'full_pattern' | sed 's/prefix//'`. This is critical for hook scripts that must run on any developer machine.
 - **Action**: Never use `grep -P` in hook scripts. Use `grep -o` + `sed` for lookbehind-like extractions. Add this to hook code review checklist.
+
+### Expert Review Blind Spot: Cross-File Internal References - 2026-04-04
+- **Context**: Commands/Skills consolidation handoff — expert review caught config files and tad.sh but missed skill-to-skill cross-references
+- **Discovery**: When renaming/moving files, expert reviewers (code-reviewer + architect) checked config files, installer scripts, and documentation — but did NOT check references WITHIN the skill files themselves (tad-help, tad-status, tad-init all had `.claude/commands/` internal references). Blake's broader grep caught these.
+  1. **Expert review checks "known reference points"** (configs, scripts, docs) but misses **peer references** (skill A referencing skill B's old path)
+  2. **Broader grep is the safety net** — always run `grep -r` across the entire active codebase as a final verification step, don't rely on expert-identified file lists alone
+- **Action**: For file rename/move handoffs, always include an AC that requires `grep -r '{old_path}'` across the entire project (excluding archive/backup). This catches references that expert review misses.

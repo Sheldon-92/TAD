@@ -12,6 +12,13 @@
 
 ## Recently Completed
 
+- [x] **Commands/Skills Consolidation v2.8.1** (2026-04-04)
+  - Merged 18 commands into skills (alex 3080L, blake 1149L, gate 660L)
+  - Fixed all .claude/commands/ path references across 10+ files
+  - Added domain_pack_awareness to *discuss mode
+  - deprecation.yaml updated for downstream sync cleanup
+  - Commits: 1392ce5, cf8b5fd
+
 - [x] **EPIC: OpenHarness Agent Architecture Upgrade** — ALL 3/3 PHASES COMPLETE (2026-04-03)
   - Phase 1: Reference doc 887 lines (commit 75d75f6)
   - Phase 2: ai-agent-architecture.yaml v1.1.0 (+4 steps, +8 criteria, commit f1af57e)
