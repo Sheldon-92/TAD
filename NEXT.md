@@ -2,10 +2,11 @@
 
 ## In Progress
 
-- [ ] **EPIC: Domain Pack 可靠加载机制** (2026-04-07) — Phase 1 ✅ Done, Phase 2 🔄 Active
+- [ ] **EPIC: Domain Pack 可靠加载机制** (2026-04-07) — Phase 1+2a ✅ Done, Phase 2b 🔄 Active
   - File: `.tad/active/epics/EPIC-20260407-domain-pack-reliable-loading.md`
-  - ✅ Phase 1: Spike — UserPromptSubmit verified, Haiku accuracy 93.75%, latency proxy artifact
-  - 🔄 Phase 2: Hook 实现 + Skill 强制检查点 (designing now)
+  - ✅ Phase 1: Spike — UserPromptSubmit verified, Haiku accuracy 93.75%
+  - ✅ Phase 2a: Contract spike — `type:prompt` is permission gate only, NOT injection. Architecture A DEAD
+  - 🔄 Phase 2b: Architecture C — type:command hook + 关键词匹配 (designing now)
   - ⬚ Phase 3: 多 Pack 集成测试
   - ⬚ Phase 4: (Optional) Tuning
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
@@ -17,6 +18,13 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Phase 2a Contract Micro-Spike (Epic 1 Phase 2a)** — ✅ Gate 4 PASS, NO-GO verdict (2026-04-07)
+  - Decisive finding: `type:prompt` on UserPromptSubmit is permission gate only, NOT context injection
+  - Architecture A pivoted to Architecture C (keyword matching) — user explicit decision
+  - Bonus: stdin payload schema documented (6 fields, user msg in `prompt` field)
+  - architecture.md updated with sub-finding (existing entry extended, not duplicated)
+  - Spike: `.tad/evidence/spikes/SPIKE-20260407-phase2a-prompt-contract/`
 
 - [x] **Domain Pack Hook Spike (Epic 1 Phase 1)** — ✅ Gate 4 PASS PARTIAL (2026-04-07)
   - UserPromptSubmit hook verified in Claude Code 2.1.92 (4th validated event)

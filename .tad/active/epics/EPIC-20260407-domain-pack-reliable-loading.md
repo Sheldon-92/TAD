@@ -25,7 +25,8 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Spike: Hook 可行性 + Haiku 准确率验证 | ✅ Done | HANDOFF-20260407-domain-pack-hook-spike.md | SPIKE-REPORT verdict: PARTIAL (integration:GO / accuracy:GO / latency:NO-GO-proxy-caveat) |
-| 2 | Hook 实现 + Skill 强制检查点 | 🔄 Active | TBD | hook 脚本 + Alex/Blake skill 检查点修改 |
+| 2a | 微 spike: 验证 type:prompt 对 UserPromptSubmit 契约 | ✅ Done | HANDOFF-20260407-phase2a-prompt-hook-contract-spike.md | NO-GO on type:prompt for injection. Decisive contract evidence + stdin payload schema |
+| 2b | Architecture C 实现:type:command hook + 关键词匹配 | 🔄 Active | TBD | bash hook 脚本 + 关键词 YAML + skill 检查点 |
 | 3 | 多 Pack 集成测试 + 准确率/误报率数据 | ⬚ Planned | — | 5+ 真实场景测试报告 |
 | 4 | (Optional) Tuning：阈值/prompt/检查点位置调整 | ⬚ Planned | — | 调优后的 hook v2 |
 
@@ -130,9 +131,68 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4 (顺序执行)。Phase 4 是可选�
 - **Single-capability test only**: Phase 1 used only `web-frontend.component_development`. Phase 2 must test multi-pack disambiguation
 - **Cost question open**: $0.0054/call OAuth tier vs $0.0002/call API target — unconfirmed
 
-### Next Phase Scope (Phase 2)
+### Phase 2 Split Rationale (2026-04-07 post-expert-review pivot)
 
-**Phase 2: Hook 实现 + Skill 强制检查点**
+**Original Phase 2 plan**: single handoff doing contract verification + production hook + skill changes.
+
+**Why split into 2a + 2b**: Expert review (code-reviewer + backend-architect) on the Phase 2 draft surfaced 4 P0 issues:
+
+1. **Contract unverified at deeper level**: Phase 1 validated UserPromptSubmit event via `command` type hook. But Phase 2 wants `type: prompt` — and existing PreToolUse prompt hook returns `{"ok":bool}` (permission gating), NOT `additionalContext` envelope. The substitution variable name (`$ARGUMENTS`?), payload shape, and injection response contract are ALL unverified.
+2. **Pack count wrong**: Alex said "14 packs"; actual count in `.tad/domains/` is **20 production packs** (~160 capabilities total). Prompt size impact ~10k input tokens.
+3. **UX latency disaster**: UserPromptSubmit fires on every message including "yes"/"ok"/"继续". Without pre-filter, a 5-round Socratic inquiry gets taxed 5× the Haiku latency. Within a week user would remove the hook.
+4. **Skill checkpoint "secondary defense" was incoherent**: trigger fires only when hook successfully injects → fully coupled to primary mechanism → not a defense.
+
+**Token cost (P0-2)** was NOT a real problem — user is on Claude Code Max, token cost is absorbed by subscription.
+
+**Split resolution**:
+- **Phase 2a (this active phase)**: Micro-spike (~30 min) to verify contract, measure real latency, test pre-filter approach in prompt
+- **Phase 2b (planned)**: Production hook design based on 2a's real data. Will include:
+  - Pre-filter (early-exit for trivial messages)
+  - Honest defense framing (rename `domain_pack_loading_enforcement`, no fake defense-in-depth claim)
+  - Auto-generated capability list from `.tad/domains/*.yaml` (all 20 packs)
+  - Exact skill file insertion points (line ranges, not abstract refs)
+  - Step 5 test set = reuse Phase 1's 18 cases (not regress to 5)
+
+### Phase 2a Findings (✅ Done 2026-04-07)
+
+**Architecture A is DEAD**. Decisive evidence from 5 probes:
+
+| Contract | Result |
+|----------|--------|
+| A (explicit `hookSpecificOutput` envelope) | ❌ Discarded by Claude Code |
+| B (auto-find `additionalContext` field) | ❌ Discarded |
+| C (`{ok:bool, reason:str}` permission gate) | ✅ Works — but ONLY as gate, NOT injection |
+
+**Smoking gun**: P3b sent `{ok:false}` → Claude Code blocked the message (`result=""`, model never ran). Proves Contract C is real, not silent ignore.
+
+**Bonus discoveries**:
+- `type: prompt` on UserPromptSubmit is **permission gate only** (same as PreToolUse `type:prompt`)
+- For context injection, MUST use `type: command` (Phase 1 proven pattern)
+- stdin payload for command hooks: `{session_id, transcript_path, cwd, permission_mode, hook_event_name, prompt}` — user message is in **`prompt`** field, NOT `$ARGUMENTS`
+- Architecture.md updated with sub-finding (existing UserPromptSubmit Verified entry extended)
+
+### Phase 2a → 2b Decisions (Alex Gate 4)
+
+1. **Architecture pivot**: A → C (keyword matching) — user explicit choice
+2. **AC12 deviation accepted**: Blake used `claude -p` instead of new terminal; P3b smoking gun proves hook output IS processed in `-p` mode (else blocking wouldn't work). Equivalent to Phase 1's sentinel-based ground truth.
+3. **No retroactive 5-min interactive smoke test required** (research reviewer's optional rec)
+
+### Next Phase Scope (Phase 2b — Architecture C)
+
+**Phase 2a: Contract + Latency Micro-Spike** (~30 min)
+
+Verify 3 things before designing production hook:
+1. Does `type: prompt` work with UserPromptSubmit event?
+2. What's the exact response contract for additionalContext injection?
+3. Real latency with realistic prompt size (not echo test)
+4. Bonus: can in-prompt pre-filter (early-exit for short messages) work?
+
+If 2a GO → 2b handoff will be designed with full knowledge of the contract.
+If 2a NO-GO → escalate to Alex for architecture C (keyword matching) redesign.
+
+### Next Phase Scope (Phase 2b - planned)
+
+**Phase 2b: Hook 实现 + Skill 强制检查点**
 
 Sub-phases (recommend running as a single Standard TAD task):
 

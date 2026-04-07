@@ -1,0 +1,22 @@
+{
+  "_probe": "P4",
+  "_purpose": "Pre-filter viability: whitelist exact-match short-circuit test. If Contract A proves out, this uses the A schema. Tests whether Haiku reliably recognizes and early-returns on whitelisted inputs (yes/no/ok/继续/etc) to save latency on trivial prompts. MANDATORY per handoff P0-6.",
+  "_note": "This config uses Contract A envelope. If Contract B is the confirmed type from Probe 1a or 2, swap the prompt body accordingly.",
+  "UserPromptSubmit": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "CRITICAL OUTPUT RULES:\n- Your entire response must be a single JSON object\n- No markdown fences, no preamble\n- First character {, last character }\n\nPRE-FILTER: If the user input (below between triple pipes) EXACTLY matches one of these whitelisted inputs, return the skip envelope.\nWhitelist (exact match, case-sensitive): \"yes\", \"no\", \"ok\", \"y\", \"n\", \"继续\", \"嗯\", \"明白\", \"收到\", \"好的\"\n\nIf whitelisted → respond with:\n{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"\"}}\n\nOtherwise → respond with:\n{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"P4-FILTER-PASSED\"}}\n\n|||$ARGUMENTS|||",
+          "model": "claude-haiku-4-5-20251001",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "echo \"$(date +%s) P4-SENTINEL\" >> /tmp/phase2a-sentinel.log"
+        }
+      ]
+    }
+  ]
+}
