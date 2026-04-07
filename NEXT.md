@@ -2,6 +2,12 @@
 
 ## In Progress
 
+- [ ] **EPIC: Domain Pack 可靠加载机制** (2026-04-07) — Phase 1 ✅ Done, Phase 2 🔄 Active
+  - File: `.tad/active/epics/EPIC-20260407-domain-pack-reliable-loading.md`
+  - ✅ Phase 1: Spike — UserPromptSubmit verified, Haiku accuracy 93.75%, latency proxy artifact
+  - 🔄 Phase 2: Hook 实现 + Skill 强制检查点 (designing now)
+  - ⬚ Phase 3: 多 Pack 集成测试
+  - ⬚ Phase 4: (Optional) Tuning
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -11,6 +17,13 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Domain Pack Hook Spike (Epic 1 Phase 1)** — ✅ Gate 4 PASS PARTIAL (2026-04-07)
+  - UserPromptSubmit hook verified in Claude Code 2.1.92 (4th validated event)
+  - Haiku-4.5 accuracy 93.75% high-conf / 94.44% all (18 cases)
+  - Latency 4567ms proxy artifact — Phase 2 must remeasure with direct API
+  - Architecture.md gained 2 entries: UserPromptSubmit verification + Spike-driven Epic de-risking pattern
+  - Spike: `.tad/evidence/spikes/SPIKE-20260407-domain-pack-hook/`
 
 - [x] **Commands/Skills Consolidation v2.8.1** (2026-04-04)
   - Merged 18 commands into skills (alex 3080L, blake 1149L, gate 660L)
@@ -71,6 +84,8 @@
 
 ## Ideas
 
+- [ ] IDEA-20260407-local-skill-capture: 本地 Skill 捕获机制（未来 Epic 2，依赖 Epic 1 完成）
+- [ ] IDEA-20260407-cross-project-skill-harvest: 跨项目 Skill Harvest 与晋升（未来 Epic 3，依赖 Epic 2 + 1-2 个月数据积累）
 - [x] IDEA-20260401-domain-pack-framework: Domain Pack Framework — Extensible Domain Support (promoted)
 - [x] Domain Pack: Tool Research Spike — ✅ 10 tools in 3 tiers, 5 tested
 - [x] **EPIC: Domain Pack Framework** — ALL 3/3 PHASES COMPLETE (2026-04-01)

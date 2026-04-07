@@ -229,6 +229,27 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Discovery**: macOS ships BSD grep which does NOT support `-P` (Perl regex). `grep -oP '(?<=pattern).*'` silently fails or errors on stock macOS. The portable alternative is `grep -o 'full_pattern' | sed 's/prefix//'`. This is critical for hook scripts that must run on any developer machine.
 - **Action**: Never use `grep -P` in hook scripts. Use `grep -o` + `sed` for lookbehind-like extractions. Add this to hook code review checklist.
 
+### UserPromptSubmit Hook Verified — 4th Validated Hook Event - 2026-04-07
+- **Context**: Epic 1 Phase 1 spike (SPIKE-20260407-domain-pack-hook) validated whether Claude Code's `UserPromptSubmit` hook event exists and can deliver `additionalContext` to the main conversation. This event was NOT in the verified list from 2026-03-31.
+- **Discovery**: `UserPromptSubmit` IS supported in Claude Code 2.1.92. Settings.json accepts the event without error, hook fires reliably on every user prompt submission, and `hookSpecificOutput.UserPromptSubmit.additionalContext` is delivered into the model context (proven by 3/3 child sessions returning MARKER_SEEN to a marker injection). **Validated hook event list grows to 4: SessionStart, PreToolUse, PostToolUse, UserPromptSubmit.**
+  - Hook stdin payload contains `session_id`, `transcript_path` keys (same envelope as PreToolUse/SessionStart, consumable by `lib/common.sh::read_stdin_json`)
+  - additionalContext output format identical to SessionStart (`output_response()` works)
+  - Hook command can be inline bash OR a separate script (spike used `bash '/abs/path/spike-hook.sh'` cleanly)
+  - **CAVEAT — Latency measured via `claude -p` proxy is misleading**: `claude -p` adds ~3-4s overhead from process spawn + 19k cache_creation tokens + extended thinking. A 4567ms proxy measurement does NOT mean Haiku takes 4.5s. Direct API curl with `max_tokens` cap is required for true latency.
+  - **CAVEAT — Haiku-4.5 ALWAYS wraps JSON in ```json fences** despite explicit "no fences" instruction. Production hooks calling Haiku for JSON output MUST include a fence-stripper, or use stop_sequences `["\n```","```"]`.
+- **Action**: Production hooks using UserPromptSubmit follow the same pattern as PreToolUse prompt hooks. When measuring Haiku latency, always use direct API not `claude -p`. When parsing Haiku JSON, always strip markdown fences post-hoc.
+
+### Spike-Driven Epic De-Risking with Light TAD - 2026-04-07
+- **Context**: Epic 1 Phase 1 was a Light TAD spike to validate two unknowns (UserPromptSubmit existence + Haiku classification accuracy) before committing to full Epic design
+- **Discovery**: The Light TAD + spike combination is a powerful pattern for de-risking Epics that contain "mechanism unknown" risks. Key elements that made this work:
+  1. **Cheap to fail**: ~50 minutes actual time (vs 4.5h hard cap) — failure cost is bounded
+  2. **Pivot threshold in AC**: AC11 explicit time cap + AC6 hard accuracy/latency bar = automatic pivot signal
+  3. **Two-axis verdict** (`integration:GO / accuracy:GO / latency:NO-GO`) instead of single GO/NO-GO — captures partial success without forcing false binary
+  4. **Forward compatibility built-in**: spike's schema (matched_packs envelope, recipe field) reserved for downstream Epics (Epic 3) to avoid retrofitting
+  5. **Failed sub-AC ≠ failed spike**: latency missed the bar but the spike was still valuable because the failure had a clear remediation path. PARTIAL verdict is honest and useful.
+  6. **In-spike escalation**: when ANTHROPIC_API_KEY was missing, Blake escalated to user mid-spike rather than abandoning. User chose proxy mode, which produced inflated but still informative numbers + a clear "Phase 2 must remeasure" caveat.
+- **Action**: When an Epic contains "is mechanism X possible?" type unknowns, always insert a Light TAD spike as Phase 1. Build the spike's verdict structure as multi-axis (integration / accuracy / latency / cost) not single GO/NO-GO. Pre-allocate forward-compatibility fields (envelope schemas) even when spike only tests one case.
+
 ### Expert Review Blind Spot: Cross-File Internal References - 2026-04-04
 - **Context**: Commands/Skills consolidation handoff — expert review caught config files and tad.sh but missed skill-to-skill cross-references
 - **Discovery**: When renaming/moving files, expert reviewers (code-reviewer + architect) checked config files, installer scripts, and documentation — but did NOT check references WITHIN the skill files themselves (tad-help, tad-status, tad-init all had `.claude/commands/` internal references). Blake's broader grep caught these.
