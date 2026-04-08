@@ -53,6 +53,7 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 | Ralph Loop、并行执行 | `/blake` |
 | Gate 检查、Knowledge Assessment | `/gate` |
 | 文档维护、Handoff 清理 | `/tad-maintain` |
+| **Release + Sync 清单与陷阱**(`*publish` / `*sync` 前必读)| `.claude/skills/release-runbook/SKILL.md` |
 
 ## 7. Project Knowledge (Auto-loaded)
 

@@ -2745,6 +2745,15 @@ publish_protocol:
   description: "GitHub publish workflow with version consistency checks"
   trigger: "User types *publish"
 
+  prerequisite:
+    mandatory_read: ".claude/skills/release-runbook/SKILL.md"
+    action: |
+      ⚠️ BEFORE executing any *publish step, Read the release runbook.
+      It contains the exhaustive version-bump file list (14 strings across 6 files),
+      known jq gotchas, deprecation mechanics, and post-flight verification.
+      Past releases shipped with stale versions because this step was skipped.
+    blocking: true
+
   execution:
     step1:
       name: "Version Consistency Check"
@@ -2811,6 +2820,18 @@ publish_protocol:
 sync_protocol:
   description: "Sync TAD framework files to registered projects"
   trigger: "User types *sync"
+
+  prerequisite:
+    mandatory_read: ".claude/skills/release-runbook/SKILL.md"
+    action: |
+      ⚠️ BEFORE executing any *sync step, Read the release runbook.
+      It contains the mixed-strategy sync matrix (incremental / full-refresh /
+      merge / strict-delete / zero-touch), jq flag compatibility notes, the
+      deprecation-cleanup gotcha (tad.sh historically missed it), CLAUDE.md
+      marker handling, and mandatory post-flight verification per project.
+      Past syncs left 18 deprecated files behind on 10 projects because
+      this step was skipped.
+    blocking: true
 
   execution:
     step1:
