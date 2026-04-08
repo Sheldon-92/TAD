@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.8.0 - Self-Evolving Framework**
+**Version 2.8.2 - Domain Pack Auto-Loading Hook**
 
 ## 方式1：一键安装（推荐）
 
@@ -80,7 +80,7 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.8.0)
+### `.tad`文件夹结构 (v2.8.2)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置 (master index)
@@ -234,13 +234,14 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到v2.8.0
+# 从任何旧版本升级到 v2.8.2
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
 # - 检测当前版本
-# - 保留你的handoffs、learnings、evidence
-# - 安装8个P0技能文件
+# - 保留你的 handoffs、learnings、evidence
+# - 安装最新框架文件 + Domain Pack 自动加载 hook
+# - 清理已废弃的文件（per .tad/deprecation.yaml）
 ```
 
 ## 快速开始
@@ -260,10 +261,12 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 ## 总结
 
-TAD v2.8.0 核心特性：
-1. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
-2. **配对测试协议** - 跨工具 E2E 测试（TAD CLI → Claude Desktop）
-3. **自适应复杂度** - 根据任务规模自动建议流程深度
-4. **Ralph Loop** - 自动质量循环直到专家批准
+TAD v2.8.2 核心特性：
+1. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
+2. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
+3. **配对测试协议** - 跨工具 E2E 测试（4D Protocol）
+4. **自适应复杂度** - 根据任务规模自动建议流程深度
+5. **Ralph Loop** - 自动质量循环直到专家批准
+6. **Self-Evolving Framework** - 20 Domain Packs + 执行 trace + `*optimize` / `*evolve` 改进建议
 
 任何新项目只要安装TAD，Claude Code 都能立即识别并使用TAD方法论。

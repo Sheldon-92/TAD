@@ -110,7 +110,9 @@ copy_framework_files() {
     done
 
     # Framework subdirectories (full sync)
-    for dir in agents data gates guides ralph-config references schemas skills sub-agents tasks templates workflows; do
+    # NOTE (v2.8.2): domains/ and hooks/ added — were omitted from previous
+    # versions, caused downstream projects to miss Domain Packs + router hook.
+    for dir in agents data domains gates guides hooks ralph-config references schemas skills sub-agents tasks templates workflows; do
         if [ -d "$src/.tad/$dir" ]; then
             mkdir -p ".tad/$dir"
             cp -r "$src/.tad/$dir/"* ".tad/$dir/" 2>/dev/null || true
@@ -125,10 +127,93 @@ copy_framework_files() {
     fi
     cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
 
+    # --- Deprecation cleanup (v2.8.2) ---
+    # Read .tad/deprecation.yaml and delete files listed for deprecation
+    # versions ≤ current TARGET_VERSION. Previously no deprecation processing,
+    # which caused 2.8.1 command file cleanup to never execute on downstream projects.
+    apply_deprecations "$src"
+
     # Count installed files for verification
     local count
     count=$(find .tad -type f -not -path ".tad/active/*" -not -path ".tad/archive/*" -not -path ".tad/evidence/*" -not -path ".tad/project-knowledge/*" -not -path ".tad/pair-testing/*" | wc -l | tr -d ' ')
     log_success "  → Synced $count framework files to .tad/"
+}
+
+# ============================================
+# Phase 4b: Apply Deprecations (v2.8.2+)
+# ============================================
+# Reads .tad/deprecation.yaml and removes files listed for versions
+# from (old_version, current_version]. Simple semver parser — no yq dependency.
+# Safe: deletion errors are non-fatal.
+apply_deprecations() {
+    local src="$1"
+    local dep_file="$src/.tad/deprecation.yaml"
+
+    [ -f "$dep_file" ] || return 0
+
+    # Read TARGET_VERSION (MAJOR.MINOR) and actual full version
+    local current_version
+    if [ -f ".tad/version.txt" ]; then
+        current_version=$(head -1 .tad/version.txt | tr -d '[:space:]')
+    elif [ -f "$src/.tad/version.txt" ]; then
+        current_version=$(head -1 "$src/.tad/version.txt" | tr -d '[:space:]')
+    else
+        current_version="${TARGET_VERSION}.0"
+    fi
+
+    log_info "  → Applying deprecations for versions ≤ $current_version..."
+
+    local deleted=0
+    local current_dep_version=""
+    local in_files=0
+
+    # Very simple YAML parser: we process one deprecation version at a time.
+    # When we encounter a version key (e.g. "  \"2.8.2\":"), we record it.
+    # When we encounter "    files:", we start reading file paths.
+    # File paths are lines starting with "      - " (YAML list item).
+    while IFS= read -r line; do
+        # Match version key: e.g.   "2.8.2":
+        if printf '%s' "$line" | grep -qE '^[[:space:]]+"[0-9]+\.[0-9]+\.[0-9]+":'; then
+            current_dep_version=$(printf '%s' "$line" | sed -E 's/^[[:space:]]+"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+            in_files=0
+            continue
+        fi
+        # Match files: line
+        if printf '%s' "$line" | grep -qE '^[[:space:]]+files:[[:space:]]*$'; then
+            in_files=1
+            continue
+        fi
+        # Non-file line (description, date, note) → exit files section
+        if [ "$in_files" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+[a-z_]+:'; then
+            in_files=0
+            continue
+        fi
+        # File list item: e.g.       - ".claude/commands/foo.md"
+        if [ "$in_files" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+-[[:space:]]+'; then
+            # Only process if dep_version ≤ current_version (lexicographic is fine for semver with fixed digits)
+            if version_le "$current_dep_version" "$current_version"; then
+                local target
+                target=$(printf '%s' "$line" | sed -E 's/^[[:space:]]+-[[:space:]]+//' | tr -d '"')
+                if [ -e "$target" ]; then
+                    rm -rf -- "$target" 2>/dev/null && deleted=$((deleted + 1))
+                fi
+            fi
+        fi
+    done < "$dep_file"
+
+    if [ "$deleted" -gt 0 ]; then
+        log_success "  → Removed $deleted deprecated file(s)"
+    else
+        log_info "  → No deprecated files to remove"
+    fi
+}
+
+# Compare two semver versions: returns 0 if $1 ≤ $2, 1 otherwise
+version_le() {
+    local v1="$1"
+    local v2="$2"
+    # Sort the two versions and see if v1 comes first (or equal)
+    [ "$(printf '%s\n%s\n' "$v1" "$v2" | sort -V | head -1)" = "$v1" ]
 }
 
 # ============================================

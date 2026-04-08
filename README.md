@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.8.0 - Self-Evolving Framework**
+**Version 2.8.2 - Domain Pack Auto-Loading Hook**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -118,9 +118,9 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.8.0 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.8.2 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
-│   ├── hooks/                   # Shell hooks (5 scripts: startup, trace, gate, sync)
+│   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
 │   ├── ralph-config/            # Ralph Loop configuration
 │   ├── templates/               # Handoff, completion, output format templates
@@ -338,6 +338,8 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.8.2** | **Domain Pack Auto-Loading Hook (UserPromptSubmit + keyword router, 100% acc / 81ms), tad.sh bug fixes** |
+| **v2.8.1** | **Commands consolidated into skills (18 command files → skills), deprecation registry** |
 | **v2.8.0** | **Self-Evolving Framework, 20 Domain Packs (78 tools), Execution Traces, Quality Gate Hooks** |
 | **v2.7.0** | **Hook-Native Architecture, 76% context reduction, PreToolUse gating** |
 | **v2.6.0** | **4D Protocol Pair Testing, Autoresearch Optimization, Linear Integration** |
@@ -415,12 +417,12 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 - [Documentation Portal](docs/README.md)
 - [Specialized Tools Guide](docs/MULTI-PLATFORM.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
-- [Agent Definitions](.claude/commands/)
+- [Agent Skills](.claude/skills/)
 - [Configuration Guide](.tad/config.yaml)
 - [Skills Reference](.tad/skills/README.md)
 
 ---
 
-**Welcome to TAD v2.8.0 - Self-Evolving Framework for AI-Assisted Development.**
+**Welcome to TAD v2.8.2 - Domain Pack Auto-Loading Framework for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

@@ -5,6 +5,42 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.2] - 2026-04-08
+
+### New Features — Domain Pack Auto-Loading Hook (Epic 1)
+- **UserPromptSubmit keyword router hook**: `.tad/hooks/userprompt-domain-router.sh` — production `type: command` hook that classifies user messages against 20 Domain Packs using deterministic keyword matching (no LLM calls)
+- **20-pack keywords database**: `.tad/hooks/keywords.yaml` — hand-curated, zero cross-pack collisions, ≥3 unique anchors per pack, Chinese + English coverage
+- **One-shot generator**: `.tad/hooks/generate-keywords.sh` — English-heuristic baseline generator for future pack additions
+- **Regression test harness**: `.tad/hooks/run-phase2b-tests.sh` — standalone 30-case integration test + latency microbench
+- **Performance**: 30/30 = 100% accuracy, 81ms median latency (2.4x under 200ms target)
+- **Kill-switch**: `TAD_DOMAIN_ROUTER=off` env var OR `.tad/hooks/.router-disabled` file
+- **Structured log**: `.tad/hooks/.router.log` (size-rotated, privacy-safe, no prompt content)
+
+### Bug Fixes
+- **tad.sh deprecation cleanup**: `copy_framework_files()` now reads `.tad/deprecation.yaml` and deletes files listed for deprecation ≤ current version (fixes 2.8.1 cleanup that never actually executed — downstream projects still had old `/tad-alex`, `/tad-blake` slash commands)
+- **tad.sh hooks copy**: added `hooks` to framework subdirectories copy list (was missing)
+- **config.yaml stale version**: was 2.8.0 since 2.8.1 release, now 2.8.2
+
+### Epic 1 Architecture Journey (3 spikes → production)
+- **Phase 1**: Light TAD spike validated `UserPromptSubmit` hook exists + Haiku accuracy 93.75% (`type: command` proof)
+- **Phase 2a**: Contract micro-spike proved `type: prompt` is permission-gate-only — Architecture A DEAD, pivoted to Architecture C
+- **Phase 2b**: Production `type: command` keyword router shipped with 100% accuracy
+- **Knowledge captured**: 4 new architecture.md entries (hook perf single-awk pattern, `claude -p` as valid testing channel, keyword uniqueness > count, Epic architecture pivot through successive spikes)
+
+### Documentation
+- README.md, INSTALLATION_GUIDE.md, tad-help SKILL version refs updated 2.8.0 → 2.8.2
+- CHANGELOG retroactive 2.8.1 entry added below
+
+## [2.8.1] - 2026-04-04
+
+### Refactor — Commands Consolidation
+- **Commands → Skills migration**: 18 `.claude/commands/*.md` files merged into `.claude/skills/*/SKILL.md` (single source of truth)
+- `/alex`, `/blake`, `/gate`, `/tad-maintain` etc. are now skill invocations
+- Path references updated across 10+ files (tad.sh, config files, docs)
+- `domain_pack_awareness` added to `*discuss` mode
+- **Deprecation registry**: `.tad/deprecation.yaml` added with 18 command file entries for sync cleanup
+- **Known bug (fixed in 2.8.2)**: deprecation cleanup was never actually applied — `tad.sh` didn't read deprecation.yaml. Fixed in 2.8.2.
+
 ## [2.8.0] - 2026-04-03
 
 ### New Features — Self-Evolving Framework
