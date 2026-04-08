@@ -2,13 +2,6 @@
 
 ## In Progress
 
-- [ ] **EPIC: Domain Pack 可靠加载机制** (2026-04-07) — Phase 1+2a ✅ Done, Phase 2b 🔄 Active
-  - File: `.tad/active/epics/EPIC-20260407-domain-pack-reliable-loading.md`
-  - ✅ Phase 1: Spike — UserPromptSubmit verified, Haiku accuracy 93.75%
-  - ✅ Phase 2a: Contract spike — `type:prompt` is permission gate only, NOT injection. Architecture A DEAD
-  - 🔄 Phase 2b: Architecture C — type:command hook + 关键词匹配 (designing now)
-  - ⬚ Phase 3: 多 Pack 集成测试
-  - ⬚ Phase 4: (Optional) Tuning
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -18,6 +11,16 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **EPIC: Domain Pack 可靠加载机制** — ✅ ALL 4/4 PHASES COMPLETE (2026-04-08)
+  - Archived: `.tad/archive/epics/EPIC-20260407-domain-pack-reliable-loading.md`
+  - Phase 1: Spike — UserPromptSubmit hook verified (4th validated hook event)
+  - Phase 2a: Contract spike — Architecture A dead, pivoted to C
+  - Phase 2b: Production hook — **30/30 accuracy, 81ms latency, 7-9x perf improvement via single-awk pattern**
+  - Phase 3: absorbed by 2b's 30-case × 5-family integration test
+  - Phase 4: skipped (no tuning needed — 100% accuracy)
+  - **Production hook LIVE**: `.tad/hooks/userprompt-domain-router.sh` + 20 curated packs in `keywords.yaml`
+  - 4 new architecture.md entries (hook perf, claude -p testing, keyword uniqueness, epic pivot pattern)
 
 - [x] **Phase 2a Contract Micro-Spike (Epic 1 Phase 2a)** — ✅ Gate 4 PASS, NO-GO verdict (2026-04-07)
   - Decisive finding: `type:prompt` on UserPromptSubmit is permission gate only, NOT context injection
