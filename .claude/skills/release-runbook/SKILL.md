@@ -29,8 +29,26 @@ Phase 7: Verify          (post-flight check each project actually works)
 
 ## Phase 1 — Pre-flight
 
+### ⚠️ Guard 0: TAD-main-only check (runs BEFORE anything else)
+
+`*publish` and `*sync` only make sense in the TAD source repo. Running them in a downstream project (menu-snap, ArtForge, etc.) is dangerous:
+- `*publish` would push to the wrong git origin
+- `*sync` would treat the downstream project as the source and overwrite OTHER projects with its files
+
+**Check before any phase**:
+```bash
+ORIGIN=$(git config --get remote.origin.url 2>/dev/null || echo "none")
+echo "$ORIGIN" | grep -q "Sheldon-92/TAD" || {
+  echo "❌ This is not the TAD source repo. Refusing to run publish/sync."
+  exit 1
+}
+```
+
+This guard is also enforced in `alex/SKILL.md` `publish_protocol.prerequisite.tad_main_guard` and `sync_protocol.prerequisite.tad_main_guard` — Alex will refuse to proceed in downstream projects.
+
 ### Checklist (all must pass before continuing)
 
+- [ ] TAD-main guard passed (see above)
 - [ ] `git status --short` is clean (or only intentional changes)
 - [ ] `git log origin/main..HEAD` shows the commits you intend to release
 - [ ] Current version identified: `cat .tad/version.txt`

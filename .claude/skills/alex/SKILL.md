@@ -2746,6 +2746,34 @@ publish_protocol:
   trigger: "User types *publish"
 
   prerequisite:
+    # Guard 1: TAD-main-only check (CRITICAL — prevents wrong-repo push in downstream projects)
+    tad_main_guard:
+      check: |
+        Run bash command: git config --get remote.origin.url 2>/dev/null || echo "none"
+        If output contains "Sheldon-92/TAD" → PASS (this IS the TAD source repo)
+        Else → FAIL (this is a downstream project that only USES TAD)
+      on_fail:
+        behavior: "REFUSE to proceed. Do not run ANY publish step. Exit to standby."
+        message: |
+          ❌ *publish is a TAD framework release command, not a project command.
+
+          Current directory: {basename of cwd}
+          Git origin:        {the origin url or 'none'}
+
+          This command ONLY runs in the TAD source repository
+          (github.com/Sheldon-92/TAD). In any other project it would:
+          - Push to the wrong repo (your project's origin, not TAD's)
+          - Create TAD version tags in a non-TAD namespace
+          - Potentially corrupt your project's release history
+
+          To update the TAD framework installed in this project:
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+
+          To release your own project, use your project's own release workflow —
+          not *publish.
+      blocking: true
+
+    # Guard 2: Mandatory runbook read (prevents recurring release bugs)
     mandatory_read: ".claude/skills/release-runbook/SKILL.md"
     action: |
       ⚠️ BEFORE executing any *publish step, Read the release runbook.
@@ -2822,6 +2850,35 @@ sync_protocol:
   trigger: "User types *sync"
 
   prerequisite:
+    # Guard 1: TAD-main-only check (CRITICAL — prevents wrong-source sync in downstream projects)
+    tad_main_guard:
+      check: |
+        Run bash command: git config --get remote.origin.url 2>/dev/null || echo "none"
+        If output contains "Sheldon-92/TAD" → PASS (this IS the TAD source repo)
+        Else → FAIL (this is a downstream project that only USES TAD)
+      on_fail:
+        behavior: "REFUSE to proceed. Do not run ANY sync step. Exit to standby."
+        message: |
+          ❌ *sync is a TAD framework distribution command, not a project command.
+
+          Current directory: {basename of cwd}
+          Git origin:        {the origin url or 'none'}
+
+          This command ONLY runs in the TAD source repository
+          (github.com/Sheldon-92/TAD). In any other project it would:
+          - Read sync-registry.yaml (which points to TAD's registered projects)
+          - Treat the CURRENT project as the "source of truth"
+          - Push the current project's files TO the 10 registered projects
+          - This can silently corrupt OTHER projects with files from this one
+
+          To update the TAD framework installed in this project:
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+
+          To sync TAD updates to all your registered projects, switch to the
+          TAD source repo first, then run *sync there.
+      blocking: true
+
+    # Guard 2: Mandatory runbook read (prevents recurring sync bugs)
     mandatory_read: ".claude/skills/release-runbook/SKILL.md"
     action: |
       ⚠️ BEFORE executing any *sync step, Read the release runbook.
