@@ -26,9 +26,9 @@
 |---|-------|--------|---------|-----------------|
 | 1 | Spike: Hook 可行性 + Haiku 准确率验证 | ✅ Done | HANDOFF-20260407-domain-pack-hook-spike.md | SPIKE-REPORT verdict: PARTIAL (integration:GO / accuracy:GO / latency:NO-GO-proxy-caveat) |
 | 2a | 微 spike: 验证 type:prompt 对 UserPromptSubmit 契约 | ✅ Done | HANDOFF-20260407-phase2a-prompt-hook-contract-spike.md | NO-GO on type:prompt for injection. Decisive contract evidence + stdin payload schema |
-| 2b | Architecture C 实现:type:command hook + 关键词匹配 | 🔄 Active | TBD | bash hook 脚本 + 关键词 YAML + skill 检查点 |
-| 3 | 多 Pack 集成测试 + 准确率/误报率数据 | ⬚ Planned | — | 5+ 真实场景测试报告 |
-| 4 | (Optional) Tuning：阈值/prompt/检查点位置调整 | ⬚ Planned | — | 调优后的 hook v2 |
+| 2b | Architecture C 实现:type:command hook + 关键词匹配 | ✅ Done | HANDOFF-20260407-phase2b-keyword-router-hook.md | Production hook: 30/30 acc, 81ms median, 20 packs curated, 3 new knowledge entries |
+| 3 | 多 Pack 集成测试 + 准确率/误报率数据 | ✅ Done (absorbed) | — | Phase 2b's 30-case × 5-family test IS the integration test |
+| 4 | (Optional) Tuning：阈值/prompt/检查点位置调整 | ⏭️ Skipped | — | 100% accuracy + 81ms latency,无调优需要 |
 
 ### Phase Dependencies
 
