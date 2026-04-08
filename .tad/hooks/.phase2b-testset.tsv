@@ -1,0 +1,30 @@
+TC01	web-frontend	做一个 React button 组件
+TC02	web-backend	我想加一个登录 API 端点用 Express
+TC03	web-frontend	Vue 组件的 props 传递怎么做
+TC04	web-backend	PostgreSQL 索引优化
+TC05	web-ui-design	需要一套设计系统 tokens
+TC06	_any_web	网页上显示一个按钮列表，后端也要返回数据
+TC07	mobile-ui-design	iOS App 的导航栏用 SwiftUI 怎么做
+TC08	mobile-testing	React Native 测试 Detox 配置
+TC09	mobile-release	Android Release 到 Play Store 流程
+TC10	mobile-development	为 iPhone App 加 Gesture 手势
+TC11	_any_mobile	移动端 performance 怎么测
+TC12	NONE	桌面应用 Electron
+TC13	ai-agent-architecture	设计一个 RAG agent 架构
+TC14	ai-prompt-engineering	我的 prompt 总是漂移，怎么优化
+TC15	ai-evaluation	如何评估 agent 的准确率
+TC16	ai-tool-integration	写一个 MCP server 集成
+TC17	_any_ai	agent 的 prompt 怎么设计防幻觉
+TC18	NONE	chatgpt 和 claude 哪个好
+TC19	code-security	审查一下这段代码有没有 SQL 注入
+TC20	supply-chain-security	这个 npm 包能信任吗
+TC21	code-security	生产环境密钥泄漏排查
+TC22	_any_security	依赖项有个 CVE，怎么评估
+TC23	NONE	密码忘记了怎么办
+TC24	NONE	SSH key 用法基础
+TC25	hw-circuit-design	PCB 布线密度怎么算
+TC26	hw-firmware	ESP32-S3 驱动 SSD1306 OLED
+TC27	hw-enclosure	3D 打印外壳公差设计
+TC28	hw-testing	电路板上电测试流程
+TC29	_any_hw_fw_or_circuit	固件低功耗优化
+TC30	NONE	yes
