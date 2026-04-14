@@ -1,0 +1,6 @@
+fixture	exit	log_lines_after
+minimal-stdin-override-valid.json	0	1
+minimal-stdin-override-too-short.json	0	1
+minimal-stdin-override-not-present.json	0	1
+--- log content ---
+2026-04-14T03:46:43Z gate=gate3 reason=this is a sufficient reason with length
