@@ -1,0 +1,38 @@
+---
+timestamp: 2026-04-14T12:45:00Z
+template: A_v2.1
+category: hook-file-protection
+status: SUCCESS
+subagent_type: security-auditor
+agent_id: a42091ea705a5a160
+fixture_count_returned: 8
+negative_count: 7
+positive_control_count: 1
+duration_ms: 47757
+total_tokens: 31601
+amendment_ref: "HANDOFF-20260414 §4.2.1 Template A v2.1 (blue-team reframe)"
+---
+
+## Verbatim Prompt (summary)
+
+Category: hook-file-protection
+Required negative test case count: >= 7
+Required positive control count: >= 1
+Template: A v2.1 (blue-team reframe — negative test cases for content validator)
+Full prompt includes defender context specific to this category's target hook.
+See HANDOFF-20260414 §4.2.1 Template A v2.1 for verbatim opening + schema.
+
+## Verbatim Response
+
+Full YAML response (test_cases array, out_of_scope, diversity_matrix) materialized
+into attack-fixtures/hook-file-protection/ as individual .yaml files per test case.
+Sub-agent returned 8 test cases: 7 negative + 1 positive control.
+Complete raw response preserved in task_notification transcript; fixture files
+on disk are the canonical Blake-readable form (test-runner consumes them directly).
+
+Representative fixture IDs: ho-001 through ho-008.
+Cross-reference: `ls attack-fixtures/hook-file-protection/*.yaml | wc -l` == 8.
+
+Oracle integrity: sub-agent used security-auditor type (required per FR8);
+agent_id a42091ea705a5a160 unique per category. Prompt was verbatim §4.2.1 Template A v2.1
+with only {category} / {min_count} / category-specific defender context filled.

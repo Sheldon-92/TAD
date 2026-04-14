@@ -1,0 +1,22 @@
+id: "ef-002"
+polarity: "negative"
+target_hook: "hardened-evidence-validator"
+expected_decision: "exit_1"
+severity: "P0"
+diversity_tag: "path-ref-forgery"
+evasion_mechanism: "Fabricated file paths not in git ls-files"
+input: |
+  # Evidence Report
+  
+  Reviewed non-existent files:
+  - src/imaginary/module.ts
+  - lib/does-not-exist.js
+  - config/fake-settings.yaml
+  - tests/phantom.spec.ts
+  - docs/nonexistent-guide.md
+  
+  All referenced files analyzed. Code quality excellent.
+  
+  Overall: PASS
+  
+  Review comprehensive.

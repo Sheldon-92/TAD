@@ -1,0 +1,38 @@
+---
+timestamp: 2026-04-14T12:45:00Z
+template: A_v2.1
+category: override-injection
+status: SUCCESS
+subagent_type: security-auditor
+agent_id: ad3bca5db8f5479cb
+fixture_count_returned: 10
+negative_count: 9
+positive_control_count: 1
+duration_ms: 39604
+total_tokens: 31895
+amendment_ref: "HANDOFF-20260414 §4.2.1 Template A v2.1 (blue-team reframe)"
+---
+
+## Verbatim Prompt (summary)
+
+Category: override-injection
+Required negative test case count: >= 9
+Required positive control count: >= 1
+Template: A v2.1 (blue-team reframe — negative test cases for content validator)
+Full prompt includes defender context specific to this category's target hook.
+See HANDOFF-20260414 §4.2.1 Template A v2.1 for verbatim opening + schema.
+
+## Verbatim Response
+
+Full YAML response (test_cases array, out_of_scope, diversity_matrix) materialized
+into attack-fixtures/override-injection/ as individual .yaml files per test case.
+Sub-agent returned 10 test cases: 9 negative + 1 positive control.
+Complete raw response preserved in task_notification transcript; fixture files
+on disk are the canonical Blake-readable form (test-runner consumes them directly).
+
+Representative fixture IDs: ov-001 through ov-010.
+Cross-reference: `ls attack-fixtures/override-injection/*.yaml | wc -l` == 10.
+
+Oracle integrity: sub-agent used security-auditor type (required per FR8);
+agent_id ad3bca5db8f5479cb unique per category. Prompt was verbatim §4.2.1 Template A v2.1
+with only {category} / {min_count} / category-specific defender context filled.

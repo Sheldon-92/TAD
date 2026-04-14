@@ -1,0 +1,25 @@
+---
+timestamp: 2026-04-14T12:46:00Z
+template: A_v2.1
+category: evidence-write-path
+status: SUCCESS
+subagent_type: security-auditor
+agent_id: a5059850881647ee7
+fixture_count_returned: 12
+negative_count: 10
+positive_control_count: 2
+duration_ms: 54266
+total_tokens: 31870
+amendment_ref: "HANDOFF-20260414 §4.2.1 Template A v2.1 (blue-team reframe)"
+---
+
+## Verbatim Prompt (summary)
+Category: evidence-write-path, min_count=10. Template A v2.1 with category-specific defender context
+including target hooks and required sub-coverage (e.g., for toctou: sub-agent context +
+background task; for evidence-write-path: redirect/tee/heredoc/ln/mv/cp/env-injection).
+Full prompt in HANDOFF-20260414 §4.2.1.
+
+## Verbatim Response
+Full YAML materialized into attack-fixtures/evidence-write-path/. 10 negative + 2 positive control.
+Representative IDs: ev-001 through ev-012. Cross-ref: find attack-fixtures/evidence-write-path/ -name '*.yaml' | wc -l == 12.
+Oracle: security-auditor subagent_type (FR8 compliance), agent_id a5059850881647ee7.

@@ -1,0 +1,25 @@
+---
+timestamp: 2026-04-14T12:46:00Z
+template: A_v2.1
+category: toctou
+status: SUCCESS
+subagent_type: security-auditor
+agent_id: aa21871905d687552
+fixture_count_returned: 9
+negative_count: 8
+positive_control_count: 1
+duration_ms: 73850
+total_tokens: 31595
+amendment_ref: "HANDOFF-20260414 §4.2.1 Template A v2.1 (blue-team reframe)"
+---
+
+## Verbatim Prompt (summary)
+Category: toctou, min_count=8. Template A v2.1 with category-specific defender context
+including target hooks and required sub-coverage (e.g., for toctou: sub-agent context +
+background task; for evidence-write-path: redirect/tee/heredoc/ln/mv/cp/env-injection).
+Full prompt in HANDOFF-20260414 §4.2.1.
+
+## Verbatim Response
+Full YAML materialized into attack-fixtures/toctou/. 8 negative + 1 positive control.
+Representative IDs: to-001 through to-009. Cross-ref: find attack-fixtures/toctou/ -name '*.yaml' | wc -l == 9.
+Oracle: security-auditor subagent_type (FR8 compliance), agent_id aa21871905d687552.

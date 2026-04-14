@@ -1,0 +1,24 @@
+id: "ef-008"
+polarity: "positive_control"
+target_hook: "hardened-evidence-validator"
+expected_decision: "exit_0"
+severity: "P0"
+diversity_tag: "positive-baseline"
+evasion_mechanism: "Valid fresh evidence with 5 real paths"
+input: |
+  # Review Evidence — Handoff Completion
+  
+  ## Files Reviewed
+  - README.md
+  - CLAUDE.md
+  - tad.sh
+  - LICENSE
+  - .gitignore
+  
+  ## Findings
+  Implementation matches handoff. No P0/P1 issues. Coverage adequate.
+  
+  ## Verdict
+  Overall: PASS
+  
+  Fresh evidence, not recycled.

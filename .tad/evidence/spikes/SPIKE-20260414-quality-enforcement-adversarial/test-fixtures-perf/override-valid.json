@@ -1,0 +1,1 @@
+{"session_id":"s","transcript_path":"/tmp/t","cwd":"/tmp","permission_mode":"d","hook_event_name":"UserPromptSubmit","prompt":"TAD_OVERRIDE: gate3 ticket=TAD-4521 nonce=deadbeef87654321 legitimate override for scheduled maintenance window"}
