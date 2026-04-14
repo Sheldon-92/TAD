@@ -928,7 +928,13 @@ completion_protocol:
     All {placeholders} must be replaced with actual values.
     The message inside the code block is designed for the human to copy-paste directly to Terminal 1.
 
-    Output format:
+    ⚠️ ORDER REQUIREMENT (MANDATORY):
+    The response output MUST be in this exact order:
+      1. The 人话版 section (defined below) — appears FIRST
+      2. The structured Alex message in code block — appears SECOND
+    Rationale: user sees the explanation before the technical block they need to copy.
+
+    Output format (structured Alex message — appears SECOND in response):
     ---
     ## ✅ Implementation Complete
 
@@ -960,6 +966,63 @@ completion_protocol:
 
     ⚠️ **我不会在这个 Terminal 调用 /alex**
     人类是 Alex 和 Blake 之间唯一的信息桥梁。
+    ---
+
+    ---
+
+    PLAIN-LANGUAGE EXPLANATION (MANDATORY)
+
+    After the structured Alex message above, the response MUST also include
+    a plain-Chinese explanation section addressed to the human user (NOT Alex).
+    As specified by ORDER REQUIREMENT, this section appears FIRST in the
+    actual response output, even though it is documented here second.
+
+    Heading: ## 🗣️ 人话版：我刚做了什么
+
+    Audience: Someone who requested this work and now needs to understand
+    what was delivered before passing it back to Alex for verification.
+    Assume domain knowledge full, framework knowledge zero.
+
+    Required content:
+      1. 我刚做完什么 — what was just delivered, in everyday language
+         (no jargon: Layer 2, Gate 3, completion report, hooks must be
+         inline-defined or replaced with analogy)
+      2. 关键决策的理由 — why I made the technical choices
+         (analogies welcome: 锁/装修/考试/律师/医生 etc)
+      3. Alex 接下来会做什么 + 你需要注意什么 — what verification Alex
+         will do, what user should watch for in the report (so they can
+         flag if anything looks off)
+
+    Length scaling (per complexity):
+      - Express tasks (1 step, 1-2 files): 1-2 short paragraphs
+      - Standard tasks (multi-file feature): 3-4 paragraphs
+      - Full TAD / Epic phase tasks: 4-5 paragraphs (max)
+    Padding shorter tasks to hit a paragraph count = VIOLATION.
+
+    Anti-theater rule (MANDATORY):
+      The explanation MUST contain at least 1 sentence that would be FALSE
+      if applied to a different completion. Generic completion descriptions
+      that could fit any Blake completion = VIOLATION.
+
+    Negative example (formulaic compliance — DO NOT do this):
+      "我已经完成了所有任务，所有 AC 都通过了，请 Alex 验证并归档。"
+      → Could fit ANY Blake completion. Zero task-specific content. VIOLATION.
+
+    Positive example (task-specific, with concrete numbers):
+      "我在 Phase 1a 跑了 3 个 experiment，最关键的是验证了 hook 真的能在
+       Blake 试图发 'Message from Blake' 时把文件创建挡下来 —— 不是事后报警，
+       是真挡住。性能 37 毫秒，远快于 200 毫秒的预算。
+       接下来 Alex 会实际跑 cat results/exp1-decisions.tsv 等命令验证我的
+       报告，不是看我的总结。如果 Alex 发现实际数字和我说的对不上，那就是
+       我的报告有问题。"
+      → Specific numbers (37ms vs 200ms), specific verification expectation,
+        names actual mechanism.
+
+    Purpose anchor (self-check before writing):
+      "If the user reads this and Alex's verification fails, will the user
+      understand the discrepancy enough to take a side?" If no → rewrite.
+
+    violation_plain_language: "Sending Message to Alex without 人话版 section = VIOLATION. Wrong order (technical block before 人话版) = VIOLATION. Formulaic compliance (no task-specific content) = VIOLATION."
     ---
   step9: "Alex 执行 Gate 4 v2 (Acceptance) 后，将 handoff 移至 archive"
 

@@ -1662,14 +1662,20 @@ handoff_creation_protocol:
 
     step7:
       name: "⚠️ STOP - Human Handover"
-      action: "停止当前会话，生成给 Blake 的信，等待人类传递"
+      action: "停止当前会话，生成给 Blake 的信 + 人话版解释，等待人类传递"
       blocking: true
       generate_message: |
         Alex MUST auto-generate the following structured message.
         All {placeholders} must be replaced with actual values from the handoff.
         The message inside the code block is designed for the human to copy-paste directly to Terminal 2.
 
-        Output format:
+        ⚠️ ORDER REQUIREMENT (MANDATORY):
+        The response output MUST be in this exact order:
+          1. The 人话版 section (defined below) — appears FIRST
+          2. The structured Blake message in code block — appears SECOND
+        Rationale: user sees the explanation before the technical block they need to copy.
+
+        Output format (structured Blake message — appears SECOND in response):
         ---
         ## ✅ Handoff Complete
 
@@ -1699,7 +1705,60 @@ handoff_creation_protocol:
         > 💡 如果 Blake 已经在运行，直接粘贴即可。
         > 如果 Blake 尚未启动，先执行 `/blake`，Blake 会自动检测到这个 handoff。
         ---
+
+        ---
+
+        PLAIN-LANGUAGE EXPLANATION (MANDATORY)
+
+        After the structured Blake message above, the response MUST also include
+        a plain-Chinese explanation section addressed to the human user (NOT Blake).
+        As specified by ORDER REQUIREMENT, this section appears FIRST in the
+        actual response output, even though it is documented here second.
+
+        Heading: ## 🗣️ 人话版：这一步是什么意思
+
+        Audience: Someone who understands WHAT they want done (because they
+        requested it) but has zero knowledge of TAD internals, agent architecture,
+        or why steps happen in this order. Assume domain knowledge full,
+        framework knowledge zero.
+
+        Required content:
+          1. 现在做什么 — current stage in everyday language (no TAD jargon:
+             handoff/Gate/Epic/spike must be inline-defined or replaced with analogy)
+          2. 为什么这么决定 — reasoning + analogies if helpful
+             (锁/装修/考试/律师/医生 etc)
+          3. 接下来会发生什么 — what to expect, what user should watch for
+
+        Length scaling (per complexity):
+          - Express handoffs (1 step, 1-2 files): 1-2 short paragraphs
+          - Standard handoffs (multi-file feature): 3-4 paragraphs
+          - Full TAD / Epic phase handoffs: 4-5 paragraphs (max)
+        Padding shorter handoffs to hit a paragraph count = VIOLATION.
+
+        Anti-theater rule (MANDATORY):
+          The explanation MUST contain at least 1 sentence that would be FALSE
+          if applied to a different task. Generic workflow descriptions that
+          could fit any handoff = VIOLATION (formulaic-compliance trap).
+
+        Negative example (formulaic compliance — DO NOT do this):
+          "我们现在在做 Phase 1b，这是一个重要阶段，需要 Blake 仔细执行。
+           接下来 Blake 会按计划进行，请你转交 message。"
+          → Reads correctly, contains zero task-specific content, fails
+            anti-theater rule.
+
+        Positive example (task-specific, with analogy):
+          "Blake 在搭防作弊系统。Phase 1a 我们证明了'锁能锁住门'，
+           现在 1b 是请白帽黑客 (security-auditor) 来撬这把锁。
+           用户的关键决策是：任意 1 个攻击成功 → NO-GO，
+           这就是为什么我们让 Blake 先做 1 个样板间停下来给你看。"
+          → Specific to this Phase 1b context, uses 锁 + 装修 analogies,
+            names actual decisions.
+
+        Purpose anchor (self-check before writing):
+          "If the user reads this and something is wrong, will they understand
+          enough to ask a clarifying question?" If no → rewrite.
       forbidden: "在同一个 terminal 调用 /blake = VIOLATION"
+      violation_plain_language: "Generating Blake message without the 人话版 section in same response = VIOLATION. Wrong order (technical block before 人话版) = VIOLATION. Formulaic compliance (no task-specific content) = VIOLATION."
 
   expert_selection_rules:
     always_required:
