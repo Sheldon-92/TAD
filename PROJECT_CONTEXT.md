@@ -6,14 +6,15 @@
 - **Framework**: TAD v2.8.2 + Self-Evolving + Execution Trace + Domain Packs + Symmetric Quality Enforcement (in progress)
 
 ## Active Work
-- **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / Phase 2 🔄 design (2026-04-14)
+- **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / 2 ✅ (2026-04-14, 2/5 phases complete)
   - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
-  - Origin: user-reported systematic pattern of Alex/Blake skipping quality gates. Text constraints insufficient → mechanical hook enforcement.
-  - ✅ Phase 1a: Mechanism existence (commit ac68849) — 37ms median / 48ms p95, all 14 AC PASS
-  - 🟡 Phase 1b: Adversarial robustness (commit 8774da3) — PARTIAL (76 fixtures, 0 BYPASSED; p95 104-114ms 超标; AC17 fail-OPEN 发现)
-  - 🟡 Phase 1c: PARTIAL ACCEPT (Gate 4, 2026-04-14) — AC17 fail-OPEN **已修** (4/4 PASS, PATH pin + 白名单 + hardcoded deny JSON); exit-code 契约 CC 2.1.107 实证 (`exit 0 + stdout deny` 真阻断, 原 `exit 2` 猜测作废); apples-to-apples PASS. **AC6 FAIL 确认非噪声**: evidence-validator p95=156.51ms, bash-watcher p95=130.57ms; AC8-B FAIL 因 handoff 层 AC12/AC15 设计冲突 (Alex 承认). Phase 3 前置: 放开 AC12 + CI runner + read -t 2 + single-awk 优化. 新知识: claude -p hook 契约测试方法论
-  - 🔄 Phase 2: Enforcement Matrix design — parallel (design-only)
-  - ⬚ Phase 3+: 待 Phase 2 设计完成后启动，带入 1c 的 3 条前置
+  - Origin: user-reported systematic Alex/Blake quality gate skipping. Text constraints insufficient → mechanical hook enforcement.
+  - ✅ Phase 1a: Mechanism existence (commit ac68849) — 37/48ms p50/p95, 14/14 AC PASS
+  - 🟡 Phase 1b: Adversarial robustness (commit 8774da3) — 76 fixtures 0 BYPASSED; p95 104-114ms 超标; AC17 fail-OPEN 发现
+  - 🟡 Phase 1c: AC17 fail-OPEN **已修** (4/4 PASS, PATH pin + 白名单 + hardcoded deny JSON); exit-code 契约 CC 2.1.107 实证 (exit 0 + stdout deny 真阻断); apples-to-apples PASS. AC6 真超标 (validator 156ms, bash-watcher 130ms 非噪声); AC8-B FAIL 因 handoff AC 设计冲突
+  - ✅ Phase 2: Enforcement Matrix 设计冻结 — `.tad/evidence/designs/DESIGN-20260414-phase2-enforcement-matrix.md`. Gate 2 PASS v2. 2 experts 13 P0 整合完成 (Edit/MultiEdit bypass, cross-role edit, MCP coverage, slug 派生, gate verdicts, Unicode confusables, external HMAC witness, grapheme reason, state/ gitignore, dogfooding bootstrap exception 等)
+  - ⬚ Phase 3: 实现 handoff，BLOCKED on 1c 3 前置 + Phase 2 5 前置 (放开 AC12 + CI runner + read -t 2 + size cap + archive manifest cache + gitignore + HMAC witness)
+  - ⬚ Phase 4-5: Dogfooding + *sync
 - **EPIC: Security Domain Pack Chain** — Phase 0+1 done, **evaluating before Phase 2**
   - Epic: .tad/active/epics/EPIC-20260403-security-domain-pack-chain.md
   - ✅ Phase 0: Tool Research (40 tools, 25 capabilities, commit e2c325a)

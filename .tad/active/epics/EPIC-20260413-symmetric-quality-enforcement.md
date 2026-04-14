@@ -26,7 +26,7 @@
 | 1a | Spike — 机制存在性验证 | ✅ Done | archive/HANDOFF-20260413-quality-enforcement-spike.md | **Overall: PASS (GO)** — PreToolUse Write 阻断验证、UserPromptSubmit Override 识别、exp3 evidence checker、fail-closed 语义全部工作；median 37ms / p95 48ms 远低于 200/300ms 阈值 |
 | 1b | Spike — 对抗鲁棒性验证 | 🟡 PARTIAL | archive/HANDOFF-20260414-quality-enforcement-adversarial.md | **PARTIAL ACCEPT** — 安全核心 PASS (76 fixtures: 64 BLOCKED + 10 positive controls + 2 KNOWN-GAP per-cat ≤1 + cat5/7 零 KNOWN-GAP + 0 BYPASSED)；**perf PARTIAL** (p95 104-114ms 超 100ms 阈值 4-14ms)；**AC17 有真洞** (missing_dep fail-OPEN — jq 缺失时 hook 静默放行，Gate 4 发现) |
 | 1c | Spike — 性能补修 + AC17 fail-OPEN 修复 | 🟡 PARTIAL | archive/HANDOFF-20260414-phase1c-perf-ac17-fix.md | **PARTIAL ACCEPT (Gate 4, 2026-04-14)** — AC17 fail-OPEN 已修（4/4 PASS, PATH pin + 白名单 + exit 0 + stdout deny 硬编码）、exit-code 契约 CC 2.1.107 实证（`exit 0` 真阻断，原 `exit 2` 猜测作废）、apples-to-apples PASS。**AC6 FAIL 确认**（evidence-validator p95=156.51ms、bash-watcher p95=130.57ms 真超标，非噪声；pretool=67.44 / override=52.48 健康）、**AC8-B FAIL** 因 AC12 字节保持与 AC15/read -t 内部超时设计冲突（handoff 层 bug，Alex 已承认）。Phase 3 前置：(1) 放开 AC12 字节约束，(2) CI runner 非 dev host 跑 perf gate，(3) 加 `read -t 2` + single-awk/cache 优化 evidence-validator + bash-watcher。新知识入库：claude -p hook 契约测试方法论。 |
-| 2 | 设计 — Enforcement Matrix (可并行开始) | 🔄 Active (design-only) | — | 对称强制矩阵文档 + Checker 架构设计 + SKILL 硬化条款清单 + Override 认证结构。**基于 1b 的 H-001..H-009 9 项确认加固作输入**。可并行进行，但 Phase 3 实现须等 1c GO |
+| 2 | 设计 — Enforcement Matrix | ✅ Done | evidence/designs/DESIGN-20260414-phase2-enforcement-matrix.md | **Gate 2 PASS v2 (2026-04-14)** — 对称强制矩阵 13 事件 + Checker 架构 (共享 lib/quality-checker.sh + per-hook driver) + SKILL 硬化逐字节条款 (anti_rationalization_registry §4.1.1 + honest_partial_protocol §4.2.1) + Override 认证结构 (grapheme-based reason + 幂等 nonce + 外部 HMAC witness). 2 轮专家审查: code-reviewer + security-auditor 共 13 P0 全整合 (Edit/MultiEdit bypass, cross-role edit, MCP coverage, slug derivation, gate verdict artifacts, dogfooding contradiction, Unicode confusables, casefold 完备性, state/ gitignore, external HMAC anchor, 等). KG-001 升级到 sha-based binding, KG-002 加主动检测. |
 | 3 | 实现 — Hooks + SKILL | ⬚ Planned | — | **BLOCKED on 1c GO** — `.tad/hooks/quality-enforcement.sh` + settings.json 更新 + Alex/Blake SKILL.md 同步 + Message 模板加 evidence 清单 |
 | 4 | 验证 — Dogfooding | ⬚ Planned | — | Next Guest + menu-snap 对抗测试通过报告 + 边缘情况处理记录 |
 | 5 | 发布 + 监控 | ⬚ Planned | — | `*sync` 推到 10 个注册项目 + 1 个月 trace 指标仪表 |
@@ -49,7 +49,7 @@
 ### Derived Status
 Status and progress are computed from the Phase Map:
 - **Status**: If all ⬚ → Planning | If any 🔄 or ✅ → In Progress | If all ✅ → Complete
-- **Progress**: 0 / 5 phases complete
+- **Progress**: 2 / 5 phases complete (1a ✅, 2 ✅; 1b 🟡 PARTIAL, 1c 🟡 PARTIAL count as In Progress; 3-5 ⬚ Planned). Phase 3 blocked on Phase 1c prerequisite resolution (§Phase 3 scope contract §8 in design doc)
 
 ---
 

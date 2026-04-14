@@ -2,13 +2,13 @@
 
 ## In Progress
 
-- [ ] **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / Phase 2 🔄 design-only (2026-04-14)
+- [ ] **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / 2 ✅ (2026-04-14)
   - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
   - ✅ Phase 1a: Mechanism existence (median 37ms / p95 48ms, all 14 AC PASS)
-  - 🟡 Phase 1b: Adversarial robustness — PARTIAL (76 fixtures, 0 BYPASSED; p95 104-114ms over 100ms on 3/4 hooks; AC17 missing_dep fail-OPEN)
-  - 🟡 Phase 1c: PARTIAL ACCEPT (2026-04-14) — AC17 fail-OPEN 已修 (4/4 PASS, PATH pin + 白名单 + exit 0 hardcoded deny); CC 2.1.107 exit-code 契约实证; apples-to-apples PASS. AC6 FAIL 确认 (validator p95=156.51ms, bash-watcher p95=130.57ms 真超标非噪声); AC8-B FAIL 因 AC12/AC15 设计冲突 (Alex handoff bug)
-  - 🔄 Phase 2: Enforcement Matrix design (design-only, parallel OK)
-  - ⬚ Phase 3: **Prerequisites from 1c Gate 4**: (1) 放开 AC12 字节约束, (2) 专用 CI runner 跑 perf gate (Blake 发现 dev host 噪声), (3) evidence-validator + bash-watcher 加 `read -t 2` + single-awk/cache 优化
+  - 🟡 Phase 1b: Adversarial robustness PARTIAL (76 fixtures, 0 BYPASSED; p95 超标; AC17 fail-OPEN)
+  - 🟡 Phase 1c: AC17 已修 + exit-code 契约实证 + perf 短板定位 (validator 156ms / bash-watcher 130ms 真超标非噪声)
+  - ✅ Phase 2: Enforcement Matrix 设计冻结 — `.tad/evidence/designs/DESIGN-20260414-phase2-enforcement-matrix.md`, Gate 2 PASS v2, 13 P0 整合完成 (Edit/MultiEdit, cross-role, MCP, slug 派生, gate verdicts, Unicode confusables, 外部 HMAC witness, grapheme reason rule 等)
+  - ⬚ Phase 3: **Prerequisites from 1c + 2 design**: (1) 放开 AC12 字节约束, (2) 专用 CI runner 跑 perf gate, (3) read -t 2 + 1MB size cap + single-awk + archive manifest cache (promoted to MVP scope), (4) `.tad/state/` gitignore + 历史 secret.key 扫描, (5) 外部 HMAC witness (.tad/audit/chain-tip.txt + ~/.claude/tad-chain-witnesses/)
   - ⬚ Phase 4-5: Dogfooding + *sync
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
