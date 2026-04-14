@@ -2,6 +2,14 @@
 
 ## In Progress
 
+- [ ] **EPIC: Symmetric Quality Enforcement** — Phase 1a DONE (2026-04-14), Phase 1b active
+  - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
+  - ✅ Phase 1a: Mechanism existence spike — PreToolUse deny + UserPromptSubmit override + evidence checker + fail-closed all verified (median 37ms / p95 48ms)
+  - 🔄 Phase 1b: Adversarial robustness spike — handoff being designed this session
+  - ⬚ Phase 2: Design enforcement matrix (symmetric Alex + Blake)
+  - ⬚ Phase 3: Implementation (hooks + SKILL hardening + Message template)
+  - ⬚ Phase 4: Dogfooding (Next Guest + menu-snap)
+  - ⬚ Phase 5: *sync to 10 projects + 1-month violation monitoring
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -11,6 +19,13 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Express: Plain-Language Explanation as TAD Capability** (2026-04-14)
+  - User feedback: agents should write 人话版 section after every handoff/completion message so user learns instead of just relaying
+  - Folded into Alex `step7.generate_message` + Blake `step8_generate_message` (NO new step8/step9 — preserves STOP semantic)
+  - Includes: ORDER REQUIREMENT (人话版 FIRST), length scaling, anti-theater rule, negative/positive examples, purpose anchor, violation_plain_language clause
+  - Commit 514849f. Archived: `.tad/archive/handoffs/HANDOFF-20260414-plain-language-after-handoffs.md` + COMPLETION
+  - Self-caught anti-pattern logged: architecture.md "Express Handoff is NOT Review-Exemption - 2026-04-14"
 
 - [x] **EPIC: Domain Pack 可靠加载机制** — ✅ ALL 4/4 PHASES COMPLETE (2026-04-08)
   - Archived: `.tad/archive/epics/EPIC-20260407-domain-pack-reliable-loading.md`

@@ -168,8 +168,8 @@ $ grep -n '^  step8_generate_message' .claude/skills/blake/SKILL.md
 - [x] AC5 grep: 本报告 §测试证据 已记录实跑输出
 
 ### Git Commit
-- **Commit Hash**: [待 commit 后回填]
-- **Verified**: `git log --oneline -1` 将在 commit 后确认
+- **Commit Hash**: 514849f
+- **Verified**: `git log --oneline -1` 输出 `514849f feat(TAD): fold "plain-language for human" into Alex step7 + Blake step8 message templates ...` ✅
 
 ### Conditional Evidence (from Handoff metadata)
 - **E2E Required**: no ✅

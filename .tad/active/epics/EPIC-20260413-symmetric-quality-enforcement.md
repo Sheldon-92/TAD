@@ -23,8 +23,8 @@
 
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
-| 1a | Spike — 机制存在性验证 | 🔄 Active | HANDOFF-20260413-quality-enforcement-spike.md | PreToolUse 拦截 + UserPromptSubmit Override + 基本 evidence checker 可行性 + 性能基线 + fail-closed 语义 |
-| 1b | Spike — 对抗鲁棒性验证 | ⬚ Planned | — | Sentinel bypass 矩阵（≥8 种）+ Evidence 伪造测试（padding / stale / copy-paste）+ Override 注入场景（4 种）+ Log 完整性 + Hook 文件保护 |
+| 1a | Spike — 机制存在性验证 | ✅ Done | archive/HANDOFF-20260413-quality-enforcement-spike.md | **Overall: PASS (GO)** — PreToolUse Write 阻断验证、UserPromptSubmit Override 识别、exp3 evidence checker、fail-closed 语义全部工作；median 37ms / p95 48ms 远低于 200/300ms 阈值 |
+| 1b | Spike — 对抗鲁棒性验证 | 🔄 Active | (handoff being designed 2026-04-14) | Sentinel bypass 矩阵（≥8 种）+ Evidence 伪造测试（padding / stale / copy-paste）+ Override 注入场景（4 种）+ Log 完整性 + Hook 文件保护 |
 | 2 | 设计 — Enforcement Matrix | ⬚ Planned | — | 对称强制矩阵文档 + Checker 架构设计 + SKILL 硬化条款清单 + Override 认证结构（基于 1a + 1b 结果） |
 | 3 | 实现 — Hooks + SKILL | ⬚ Planned | — | `.tad/hooks/quality-enforcement.sh` + settings.json 更新 + Alex/Blake SKILL.md 同步 + Message 模板加 evidence 清单 |
 | 4 | 验证 — Dogfooding | ⬚ Planned | — | Next Guest + menu-snap 对抗测试通过报告 + 边缘情况处理记录 |
@@ -55,7 +55,13 @@ Status and progress are computed from the Phase Map:
 ## Context for Next Phase
 
 ### Completed Work Summary
-- (Phase 1 尚未完成)
+- **Phase 1a (2026-04-14, ~1.5h actual vs 4-6h budget)**: Mechanism existence spike. All 14 ACs verified. PreToolUse Write 能以 `permissionDecision:"deny"` 真阻断工具；UserPromptSubmit 能识别 `^TAD_OVERRIDE: <gate> <reason≥20>$` 格式；exp3 evidence checker 区分 valid/empty/missing-keyword；fail-closed 在 malformed stdin 下触发 deny。性能 median 37ms / p95 48ms。3 条 architecture.md knowledge entries 产出（python3 timing 陷阱、Alex handoff AC 漏洞、Gate 4 验证诚信）。
+
+### Decisions Made So Far (update from Phase 1a)
+- **PreToolUse（不是 PostToolUse）** 是唯一可阻断机制 —— v1 handoff 设计错误，专家审查捕获
+- **Phase 1 拆分为 1a + 1b** 是正确决策（security-auditor 建议），1a 验证机制存在性，1b 将验证对抗鲁棒性
+- **`perl -MTime::HiRes`** 替代 `python3` 作为 per-step CHECKPOINT（macOS startup 开销差异）
+- **Alex 自身同样需要 hook 强制** —— Phase 1a Gate 4 发现我自己 handoff AC 漏掉 COMPLETION-REPORT.md，证明对称 enforcement 的 Alex 侧等价必要
 
 ### Decisions Made So Far
 

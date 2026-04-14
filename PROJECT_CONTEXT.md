@@ -1,11 +1,17 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.8.0 (Self-Evolving Framework)
-- **Last Updated**: 2026-04-03
-- **Framework**: TAD v2.8.0 + Self-Evolving Framework + Execution Trace + Domain Packs
+- **Version**: 2.8.2 (Self-Evolving Framework)
+- **Last Updated**: 2026-04-14
+- **Framework**: TAD v2.8.2 + Self-Evolving + Execution Trace + Domain Packs + Symmetric Quality Enforcement (in progress)
 
 ## Active Work
+- **EPIC: Symmetric Quality Enforcement** — Phase 1a DONE, Phase 1b active (2026-04-14)
+  - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
+  - Origin: user-reported systematic pattern of Alex/Blake skipping quality gates (expert review, Completion Report, Gate 3). Text-based MANDATORY constraints insufficient — mechanical hook enforcement required.
+  - ✅ Phase 1a: Mechanism existence spike (commit ac68849, Overall:PASS) — PreToolUse Write deny + UserPromptSubmit override + evidence checker + fail-closed all verified; performance 37ms median / 48ms p95
+  - 🔄 Phase 1b: Adversarial robustness spike — handoff in design (this session)
+  - ⬚ Phase 2-5: design → implementation → dogfooding → *sync + 1-month violation monitoring
 - **EPIC: Security Domain Pack Chain** — Phase 0+1 done, **evaluating before Phase 2**
   - Epic: .tad/active/epics/EPIC-20260403-security-domain-pack-chain.md
   - ✅ Phase 0: Tool Research (40 tools, 25 capabilities, commit e2c325a)
@@ -13,6 +19,13 @@
   - Decision: Run real-project audit before deciding whether to continue Phase 2-4
 
 ## Recently Completed
+
+- **Framework capability: Plain-Language Explanation after Handoffs** — ✅ COMPLETE (2026-04-14)
+  - Alex/Blake 在写完跨终端 message 后必须额外生成 `## 🗣️ 人话版` 段，便于用户学习 + 决策
+  - Folded into existing `step7.generate_message` (Alex) + `step8_generate_message` (Blake) — no new step, preserves STOP semantic
+  - Commit 514849f. 11 issues from 2 expert reviews integrated (code-reviewer + ux-expert)
+
+
 - **EPIC: OpenHarness Agent Architecture Upgrade** — ✅ ALL 3/3 PHASES COMPLETE (2026-04-03)
   - Phase 1: Reference doc (887 lines), Phase 2: Domain Pack v1.1.0, Phase 3: 2 NEXT.md + 3 ideas
   - Archived: .tad/archive/epics/EPIC-20260403-openharness-agent-architecture-upgrade.md
