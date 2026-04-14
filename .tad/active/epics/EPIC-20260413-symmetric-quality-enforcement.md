@@ -24,9 +24,10 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1a | Spike — 机制存在性验证 | ✅ Done | archive/HANDOFF-20260413-quality-enforcement-spike.md | **Overall: PASS (GO)** — PreToolUse Write 阻断验证、UserPromptSubmit Override 识别、exp3 evidence checker、fail-closed 语义全部工作；median 37ms / p95 48ms 远低于 200/300ms 阈值 |
-| 1b | Spike — 对抗鲁棒性验证 | 🔄 Active | (handoff being designed 2026-04-14) | Sentinel bypass 矩阵（≥8 种）+ Evidence 伪造测试（padding / stale / copy-paste）+ Override 注入场景（4 种）+ Log 完整性 + Hook 文件保护 |
-| 2 | 设计 — Enforcement Matrix | ⬚ Planned | — | 对称强制矩阵文档 + Checker 架构设计 + SKILL 硬化条款清单 + Override 认证结构（基于 1a + 1b 结果） |
-| 3 | 实现 — Hooks + SKILL | ⬚ Planned | — | `.tad/hooks/quality-enforcement.sh` + settings.json 更新 + Alex/Blake SKILL.md 同步 + Message 模板加 evidence 清单 |
+| 1b | Spike — 对抗鲁棒性验证 | 🟡 PARTIAL | archive/HANDOFF-20260414-quality-enforcement-adversarial.md | **PARTIAL ACCEPT** — 安全核心 PASS (76 fixtures: 64 BLOCKED + 10 positive controls + 2 KNOWN-GAP per-cat ≤1 + cat5/7 零 KNOWN-GAP + 0 BYPASSED)；**perf PARTIAL** (p95 104-114ms 超 100ms 阈值 4-14ms)；**AC17 有真洞** (missing_dep fail-OPEN — jq 缺失时 hook 静默放行，Gate 4 发现) |
+| 1c | Spike — 性能补修 + AC17 fail-OPEN 修复 | ⬚ Planned | (pending design) | N≥100 重测 p95 明确是噪声 or 真回归；修复 missing_dep fail-OPEN（加 `command -v jq \|\| deny` guard）；加测 timeout trigger；evidence-validator 热路径优化（17% 尾巴非噪声） |
+| 2 | 设计 — Enforcement Matrix (可并行开始) | 🔄 Active (design-only) | — | 对称强制矩阵文档 + Checker 架构设计 + SKILL 硬化条款清单 + Override 认证结构。**基于 1b 的 H-001..H-009 9 项确认加固作输入**。可并行进行，但 Phase 3 实现须等 1c GO |
+| 3 | 实现 — Hooks + SKILL | ⬚ Planned | — | **BLOCKED on 1c GO** — `.tad/hooks/quality-enforcement.sh` + settings.json 更新 + Alex/Blake SKILL.md 同步 + Message 模板加 evidence 清单 |
 | 4 | 验证 — Dogfooding | ⬚ Planned | — | Next Guest + menu-snap 对抗测试通过报告 + 边缘情况处理记录 |
 | 5 | 发布 + 监控 | ⬚ Planned | — | `*sync` 推到 10 个注册项目 + 1 个月 trace 指标仪表 |
 

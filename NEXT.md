@@ -2,14 +2,14 @@
 
 ## In Progress
 
-- [ ] **EPIC: Symmetric Quality Enforcement** — Phase 1a DONE (2026-04-14), Phase 1b active
+- [ ] **EPIC: Symmetric Quality Enforcement** — 1a DONE + 1b PARTIAL + 1c planned + Phase 2 design-only active (2026-04-14)
   - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
-  - ✅ Phase 1a: Mechanism existence spike — PreToolUse deny + UserPromptSubmit override + evidence checker + fail-closed all verified (median 37ms / p95 48ms)
-  - 🔄 Phase 1b: Adversarial robustness spike — handoff being designed this session
-  - ⬚ Phase 2: Design enforcement matrix (symmetric Alex + Blake)
-  - ⬚ Phase 3: Implementation (hooks + SKILL hardening + Message template)
-  - ⬚ Phase 4: Dogfooding (Next Guest + menu-snap)
-  - ⬚ Phase 5: *sync to 10 projects + 1-month violation monitoring
+  - ✅ Phase 1a: Mechanism existence — PreToolUse deny + UserPromptSubmit override + evidence checker + fail-closed (median 37ms / p95 48ms)
+  - 🟡 Phase 1b: Adversarial robustness — PARTIAL ACCEPT (76 fixtures, 0 BYPASSED, cat5/7 zero KNOWN-GAP ✅; p95 104-114ms over 100ms threshold on 3/4 hooks; missing_dep fail-OPEN at AC17 — real security hole)
+  - ⬚ Phase 1c: **NEW — Perf hardening + AC17 fail-OPEN fix** — 4-6h spike needed before Phase 3 can start. Fix `command -v jq || deny` guard + N≥100 perf retest + evidence-validator hot path opt + timeout trigger
+  - 🔄 Phase 2: Enforcement Matrix design — can start now (design-only, parallel with 1c). Based on H-001..H-009 from 1b.
+  - ⬚ Phase 3: BLOCKED on 1c GO
+  - ⬚ Phase 4-5: Dogfooding + *sync
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)

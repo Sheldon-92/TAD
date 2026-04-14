@@ -6,12 +6,14 @@
 - **Framework**: TAD v2.8.2 + Self-Evolving + Execution Trace + Domain Packs + Symmetric Quality Enforcement (in progress)
 
 ## Active Work
-- **EPIC: Symmetric Quality Enforcement** — Phase 1a DONE, Phase 1b active (2026-04-14)
+- **EPIC: Symmetric Quality Enforcement** — 1a DONE + 1b PARTIAL + 1c planned + Phase 2 design active (2026-04-14)
   - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
-  - Origin: user-reported systematic pattern of Alex/Blake skipping quality gates (expert review, Completion Report, Gate 3). Text-based MANDATORY constraints insufficient — mechanical hook enforcement required.
-  - ✅ Phase 1a: Mechanism existence spike (commit ac68849, Overall:PASS) — PreToolUse Write deny + UserPromptSubmit override + evidence checker + fail-closed all verified; performance 37ms median / 48ms p95
-  - 🔄 Phase 1b: Adversarial robustness spike — handoff in design (this session)
-  - ⬚ Phase 2-5: design → implementation → dogfooding → *sync + 1-month violation monitoring
+  - Origin: user-reported systematic pattern of Alex/Blake skipping quality gates. Text constraints insufficient → mechanical hook enforcement.
+  - ✅ Phase 1a: Mechanism existence (commit ac68849) — all verified, 37ms median / 48ms p95
+  - 🟡 Phase 1b: Adversarial robustness (commit 8774da3) — **PARTIAL ACCEPT**. 76 fixtures across 8 categories: 0 BYPASSED, cat5/7 zero KNOWN-GAP, oracle integrity verified. BUT: p95 4-14ms over 100ms threshold on 3/4 hooks (likely noise-amplified by N=30 outliers, needs N≥100 retest) + AC17 missing_dep fail-OPEN found at Gate 4 (real security hole — jq absent silently disables enforcement)
+  - ⬚ Phase 1c: **NEW** Perf hardening + AC17 fix spike (~4-6h, pending design)
+  - 🔄 Phase 2: Enforcement Matrix design — parallel with 1c (design-only, no production deploy)
+  - ⬚ Phase 3+: BLOCKED on 1c GO
 - **EPIC: Security Domain Pack Chain** — Phase 0+1 done, **evaluating before Phase 2**
   - Epic: .tad/active/epics/EPIC-20260403-security-domain-pack-chain.md
   - ✅ Phase 0: Tool Research (40 tools, 25 capabilities, commit e2c325a)
