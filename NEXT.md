@@ -2,13 +2,13 @@
 
 ## In Progress
 
-- [ ] **EPIC: Symmetric Quality Enforcement** — 1a DONE + 1b PARTIAL + 1c planned + Phase 2 design-only active (2026-04-14)
+- [ ] **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / Phase 2 🔄 design-only (2026-04-14)
   - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
-  - ✅ Phase 1a: Mechanism existence — PreToolUse deny + UserPromptSubmit override + evidence checker + fail-closed (median 37ms / p95 48ms)
-  - 🟡 Phase 1b: Adversarial robustness — PARTIAL ACCEPT (76 fixtures, 0 BYPASSED, cat5/7 zero KNOWN-GAP ✅; p95 104-114ms over 100ms threshold on 3/4 hooks; missing_dep fail-OPEN at AC17 — real security hole)
-  - ⬚ Phase 1c: **NEW — Perf hardening + AC17 fail-OPEN fix** — 4-6h spike needed before Phase 3 can start. Fix `command -v jq || deny` guard + N≥100 perf retest + evidence-validator hot path opt + timeout trigger
-  - 🔄 Phase 2: Enforcement Matrix design — can start now (design-only, parallel with 1c). Based on H-001..H-009 from 1b.
-  - ⬚ Phase 3: BLOCKED on 1c GO
+  - ✅ Phase 1a: Mechanism existence (median 37ms / p95 48ms, all 14 AC PASS)
+  - 🟡 Phase 1b: Adversarial robustness — PARTIAL (76 fixtures, 0 BYPASSED; p95 104-114ms over 100ms on 3/4 hooks; AC17 missing_dep fail-OPEN)
+  - 🟡 Phase 1c: PARTIAL ACCEPT (2026-04-14) — AC17 fail-OPEN 已修 (4/4 PASS, PATH pin + 白名单 + exit 0 hardcoded deny); CC 2.1.107 exit-code 契约实证; apples-to-apples PASS. AC6 FAIL 确认 (validator p95=156.51ms, bash-watcher p95=130.57ms 真超标非噪声); AC8-B FAIL 因 AC12/AC15 设计冲突 (Alex handoff bug)
+  - 🔄 Phase 2: Enforcement Matrix design (design-only, parallel OK)
+  - ⬚ Phase 3: **Prerequisites from 1c Gate 4**: (1) 放开 AC12 字节约束, (2) 专用 CI runner 跑 perf gate (Blake 发现 dev host 噪声), (3) evidence-validator + bash-watcher 加 `read -t 2` + single-awk/cache 优化
   - ⬚ Phase 4-5: Dogfooding + *sync
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)

@@ -1,0 +1,5 @@
+hook	jq_present	exit_code	output_bytes	jq_valid	deny_detected	no_var_interp	verdict
+hardened-pretool-interceptor.sh	no	0	208	yes	yes	yes	PASS
+hardened-bash-watcher.sh	no	0	208	yes	yes	yes	PASS
+hardened-override-detector.sh	no	0	208	yes	yes	yes	PASS
+hardened-evidence-validator.sh	no	0	208	yes	yes	yes	PASS
