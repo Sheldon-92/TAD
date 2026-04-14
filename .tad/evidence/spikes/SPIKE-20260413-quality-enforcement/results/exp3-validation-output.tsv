@@ -1,0 +1,4 @@
+fixture	exit	stderr
+fake-empty-review.md	1	FAIL: too small (8 bytes, need > 100)
+fake-missing-keyword.md	1	FAIL: missing '^Overall: (PASS|FAIL)$' line
+fake-valid-review.md	0	
