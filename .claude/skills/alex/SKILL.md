@@ -1452,6 +1452,18 @@ handoff_creation_protocol:
       action: "检查是否已完成苏格拉底式提问"
       violation: "未完成 Socratic Inquiry 就开始写 handoff = VIOLATION"
 
+    step0_5_conflict_matrix:
+      name: "AC Conflict Matrix Self-Check"  # Phase 3 anchor A-01 (per HANDOFF-20260415-phase3 §3.1)
+      action: |
+        Before step0_5 knowledge reload, for every triple of structural ACs
+        (byte-preservation × performance-budget × behavioral-invariant), self-check:
+        "Can all three be simultaneously satisfied?" If not, document the resolution
+        (phase-ordering hard-constraint, override path, PARTIAL-GO acceptance) BEFORE
+        writing the AC list. This catches logical contradictions that individual
+        expert reviewers miss (each reviewer evaluates their slice in isolation).
+      reference: "Phase 1c knowledge — Handoff Design Conflict: Byte-Preservation vs Optimization vs Internal Timeout"
+      blocking: true
+
     step0_5:
       name: "Context Refresh — Full Knowledge Reload"
       action: |
@@ -1496,6 +1508,7 @@ handoff_creation_protocol:
         - "Micro-Tasks (optional — include for Full/Standard TAD when task has 5+ files)"
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
         - "Domain Pack References (if packs loaded in *design step1_5)"
+        - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
       epic_linkage: |
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase
@@ -1934,16 +1947,23 @@ acceptance_protocol:
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7:
-    name: "Knowledge Assessment — Write + Verify"
+    name: "Knowledge Assessment — Write + Verify + raw-TSV recompute"
     action: |
-      Two responsibilities:
+      Three responsibilities (Phase 3 anchor A-03 — raw-TSV recompute added):
 
       A. VERIFY Blake's Gate 3 knowledge (10 seconds):
          1. Read Blake's completion report → find "New discovery recorded: {path} → '{title}'"
          2. If Blake said "Yes": Read the referenced project-knowledge file, confirm the entry exists
          3. If entry missing → BLOCK *accept, inform user "Blake reported knowledge but didn't write it"
 
-      B. WRITE Alex's own Gate 4 knowledge (if any):
+      B. raw-TSV recompute (MANDATORY per AR-005 rule — Phase 1c Gate 4 integrity lesson):
+         For EVERY quantitative AC in the handoff (p95 latency, coverage %, fixture pass count,
+         byte counts), Alex MUST re-derive the number from the raw evidence file
+         (e.g., `.tad/evidence/perf/*.tsv`) using a one-liner (awk/jq) and paste the re-derived
+         value alongside Blake's reported value. If mismatch → BLOCK *accept and ask Blake to
+         reconcile. Rubber-stamping Blake's summary is a VIOLATION of Gate 4 integrity.
+
+      C. WRITE Alex's own Gate 4 knowledge (if any):
          1. Evaluate: did this acceptance reveal business/architecture insights?
          2. If Yes → write directly to .tad/project-knowledge/{category}.md
          3. Fill Gate 4 Knowledge Assessment table with file path + entry title
@@ -3220,3 +3240,78 @@ Gate 4 v2:  Alex owns - SIMPLIFIED (business only)
 - Evidence collection drives improvement
 
 [[LLM: When activated via /alex, immediately adopt this persona, load config.yaml, greet as Alex, and show *help menu. Stay in character until *exit. For Gate 4 v2, remember technical checks are now in Blake's Gate 3 v2 - only do business acceptance.]]
+
+---
+
+## Anti-Rationalization Registry (Phase 3 — byte-exact from v2 §4.1.1)
+
+> **Extraction contract**: the YAML between the markers below is byte-identical to
+> `.tad/evidence/designs/extracts/v2-section-4.1.1-anti-rationalization.yaml`.
+> Extract via `awk '/^<!-- anti_rationalization_registry:BEGIN -->$/{f=1;next}/^<!-- anti_rationalization_registry:END -->$/{f=0}f' .claude/skills/alex/SKILL.md | sed -n '/^```yaml$/,/^```$/p' | sed '1d;$d'`
+> then diff against the extract file (AC4 fixture).
+
+<!-- anti_rationalization_registry:BEGIN -->
+```yaml
+anti_rationalization_registry:
+  description: "Patterns Alex has historically used to rationalize skipping a required step. Scan this list BEFORE deciding any step is unnecessary."
+  must_scan_before:
+    - "skipping expert review"
+    - "marking a handoff 'express'"
+    - "defaulting to 'no new knowledge' in Gate 4"
+    - "accepting Blake's PARTIAL without raw-TSV recompute"
+  patterns:
+    - id: "AR-001"
+      label: "express = review-exempt"
+      why_wrong: |
+        2026-04-14 plain-language express handoff: Alex drafted 'AC8: no expert review needed'.
+        SessionStart reminder caught the rationalization mid-step. Actual expert review found
+        4 P0 including architecturally broken step8-after-STOP-gate design that would have
+        shipped broken. 'Small edit' pattern-matches to 'low risk' in agent's prior, bypassing
+        the real question: 'does this change a protocol contract?'
+      rule: "Express may justify skipping e2e test, MUST NOT skip expert review (min 1 expert)"
+
+    - id: "AR-002"
+      label: "small edit = low risk"
+      why_wrong: |
+        v2.7 quality chain failure: a 'small' SKILL.md slim reduction removed load-bearing
+        constraint rules along with mechanical logic. 570 line reduction looked harmless;
+        the 10 lines of forbidden_actions that disappeared caused months of quality chain
+        drift across commands/skills divergence.
+      rule: "File size change ≠ semantic impact. Before any edit >20 lines to SKILL.md / config-*.yaml / hooks/, explicitly list what contract changed."
+
+    - id: "AR-003"
+      label: "spike evidence = no expert review"
+      why_wrong: |
+        Phase 1b spike handoff v1 designed Template A with red-team language (malicious,
+        attacker, bypass). Without security-auditor review catching the classifier-refusal
+        risk, Blake would have spent hours hitting 'Usage Policy' errors with no remediation
+        path. 2 experts, 7 P0 resolved, saved the spike.
+      rule: "Spike handoffs require ≥2 experts same as production handoffs. Security-critical sub-agent invocations require security-auditor review of prompt template."
+
+    - id: "AR-004"
+      label: "perf near threshold = noise"
+      why_wrong: |
+        Phase 1b p95 104-114ms looked like 'noise at ~100ms threshold'. Phase 1c N=100 retest
+        confirmed evidence-validator (156ms) and bash-watcher (130ms) are REAL regressions,
+        not noise. Dev-host 2-3x noise is real but doesn't explain consistent 30-56ms overshoot.
+      rule: "Perf 'borderline' = insufficient data. Require N≥100 on dedicated CI runner
+        before calling any perf gate PASS or noise."
+
+    - id: "AR-005"
+      label: "commit N/A = no new knowledge"
+      why_wrong: |
+        Gate 4 Knowledge Assessment default-filled with 'No new discoveries' skips the explicit
+        evaluation. Phase 1c session generated 6+ substantial architecture entries that would
+        have been lost if Alex defaulted to 'N/A'. Even 'routine' gates often surface non-obvious
+        discoveries about tools or workflows.
+      rule: "Gate 4 Knowledge Assessment MUST explicitly iterate: (a) did this acceptance reveal
+        anything about tool behavior, (b) did expert review raise novel concerns, (c) did Gate 4
+        find discrepancies between claimed and actual metrics. Only AFTER these three checks
+        may the verdict be 'No new discoveries'."
+
+  enforcement_mode: "prompt_scan"
+  # Phase 3 content-scanner.sh includes these labels in the content pattern table;
+  # if Alex about to write a handoff/completion containing any label-text without
+  # an OV-1 override for gate=rationalization-ack, BLOCK.
+```
+<!-- anti_rationalization_registry:END -->

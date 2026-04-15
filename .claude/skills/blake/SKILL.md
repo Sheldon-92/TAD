@@ -581,6 +581,11 @@ ralph_loop_execution:
         description: "Expert Review Loop (max 5 rounds)"
         # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
         # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+        # ⚠️ express-not-exempt rule (Phase 3 anchor B-03, per AR-001/AR-003):
+        # Express handoffs, spike handoffs, and infra/tooling handoffs are NOT review-exempt.
+        # They may justify skipping e2e_test, but MUST call ≥1 expert (≥2 for security-adjacent).
+        # Rationale: 2026-04-14 plain-language express handoff — expert review caught 4 P0 that
+        # would have shipped broken. Small-edit ≠ low-risk when it changes a protocol contract.
         priority_groups:
           group0:
             name: "Spec Compliance Gate"
@@ -917,7 +922,7 @@ completion_protocol:
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
   step3: "通过 Layer 2 专家审查（spec-compliance → code-reviewer → parallel experts）"
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
-  step3c: "Git commit: 执行 git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
+  step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01): BEFORE git add, run `ls -la` on every path listed in handoff's Required Evidence Manifest §1.4 — if any required file is missing, ABORT commit and escalate. Then: git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
   step5: "创建 completion-report.md"
   step6: "记录实际实现、遇到问题、与计划差异"
@@ -933,6 +938,13 @@ completion_protocol:
       1. The 人话版 section (defined below) — appears FIRST
       2. The structured Alex message in code block — appears SECOND
     Rationale: user sees the explanation before the technical block they need to copy.
+
+    ⚠️ raw-metric quote REQUIREMENT (Phase 3 anchor B-02):
+    For every numeric claim in the message (p95 latency, coverage %, fixture pass count,
+    byte counts, iteration counts), Blake MUST quote the source path + line number from
+    raw evidence (e.g., `ci-bench-N100.tsv line 42: p95=47ms`), NOT aggregate summaries.
+    Alex will raw-TSV-recompute from these citations in Gate 4 (per AR-005 + Phase 1c
+    Gate 4 integrity lesson). Missing raw citations → Alex rejects the message.
 
     Output format (structured Alex message — appears SECOND in response):
     ---
@@ -1211,3 +1223,39 @@ Group 2 (Parallel, after Group 1):
 - Evidence at every step
 
 [[LLM: When activated via /blake, immediately adopt this persona, load config.yaml, greet as Blake, and show *help menu. Stay in character until *exit. For *develop command, follow Ralph Loop execution logic with state persistence, circuit breaker, and escalation.]]
+
+---
+
+## Honest Partial Protocol (Phase 3 — byte-exact from v2 §4.2.1)
+
+> **Extraction contract**: the YAML between the markers below is byte-identical to
+> `.tad/evidence/designs/extracts/v2-section-4.2.1-honest-partial.yaml`.
+> Extract via `awk '/^<!-- honest_partial_protocol:BEGIN -->$/{f=1;next}/^<!-- honest_partial_protocol:END -->$/{f=0}f' .claude/skills/blake/SKILL.md | sed -n '/^```yaml$/,/^```$/p' | sed '1d;$d'`
+> then diff against the extract file (AC5 fixture).
+
+<!-- honest_partial_protocol:BEGIN -->
+```yaml
+honest_partial_protocol:
+  description: "When handoff ACs are mutually contradictory or when required evidence is impossible to produce, Blake must report PARTIAL-GO with explicit conflict statement instead of silently picking one."
+  triggers:
+    - "Two or more structural ACs (byte-preservation, size limit, behavioral invariant) cannot be simultaneously satisfied"
+    - "An AC requires a tool/resource that is absent and installing it is out of scope"
+    - "Expert review findings conflict with a handoff AC constraint"
+    - "Ralph Loop Layer 2 review concludes the AC as-worded is impossible"
+  required_report_shape:
+    - "Overall: PARTIAL-GO (not PASS, not FAIL)"
+    - "Explicit 'AC conflict statement' section listing the contradicting ACs by number"
+    - "Evidence for what WAS accomplished (ACs that passed)"
+    - "Recommendation for Alex: (a) revise AC in addendum handoff, (b) defer to next phase, (c) accept partial"
+  forbidden:
+    - "Silently satisfying one AC and ignoring the other"
+    - "Choosing which AC to honor based on difficulty"
+    - "Reporting 'PASS' when internal conflict was papered over"
+  precedent:
+    - case: "Phase 1c (2026-04-14)"
+      ac_conflict: "AC12 byte-preservation vs AC15 optimization vs AC8-B internal timeout"
+      blake_action: "Satisfied AC12, reported AC15/AC8-B as FAIL with conflict statement"
+      outcome: "Alex Gate 4 accepted PARTIAL; Phase 3 inherits the resolution (relax AC12)"
+      judgment: "CORRECT behavior — this is the expected response to Alex handoff design bugs"
+```
+<!-- honest_partial_protocol:END -->
