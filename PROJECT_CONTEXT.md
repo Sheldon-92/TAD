@@ -12,8 +12,8 @@
   - ✅ Phase 1a: Mechanism existence (commit ac68849) — 37/48ms p50/p95, 14/14 AC PASS
   - 🟡 Phase 1b: Adversarial robustness (commit 8774da3) — 76 fixtures 0 BYPASSED; p95 104-114ms 超标; AC17 fail-OPEN 发现
   - 🟡 Phase 1c: AC17 fail-OPEN **已修** (4/4 PASS, PATH pin + 白名单 + hardcoded deny JSON); exit-code 契约 CC 2.1.107 实证 (exit 0 + stdout deny 真阻断); apples-to-apples PASS. AC6 真超标 (validator 156ms, bash-watcher 130ms 非噪声); AC8-B FAIL 因 handoff AC 设计冲突
-  - ✅ Phase 2: Enforcement Matrix 设计冻结 — `.tad/evidence/designs/DESIGN-20260414-phase2-enforcement-matrix.md`. Gate 2 PASS v2. 2 experts 13 P0 整合完成 (Edit/MultiEdit bypass, cross-role edit, MCP coverage, slug 派生, gate verdicts, Unicode confusables, external HMAC witness, grapheme reason, state/ gitignore, dogfooding bootstrap exception 等)
-  - ⬚ Phase 3: 实现 handoff，BLOCKED on 1c 3 前置 + Phase 2 5 前置 (放开 AC12 + CI runner + read -t 2 + size cap + archive manifest cache + gitignore + HMAC witness)
+  - ✅ Phase 2: Enforcement Matrix 设计冻结 — v3-LEAN 为 Phase 3 实际规范 (8 事件 + 6 lib + 纯 JSONL log), v2 作为未来扩展参考 (多租户/对抗威胁场景). 用户反馈"不要过度工程化"后瘦身: 砍 external HMAC witness, TR39 confusables, grapheme rule, SHA binding, archive cache, MCP coverage. Epic 核心目标不变.
+  - ⬚ Phase 3: 实现 handoff, 预估 AC ≤15 + 工期 4-6h. Prerequisites: 放开 AC12 + CI runner + read -t 2 + 1MB size cap + .tad/state/ gitignore + secret.key 历史扫描
   - ⬚ Phase 4-5: Dogfooding + *sync
 - **EPIC: Security Domain Pack Chain** — Phase 0+1 done, **evaluating before Phase 2**
   - Epic: .tad/active/epics/EPIC-20260403-security-domain-pack-chain.md

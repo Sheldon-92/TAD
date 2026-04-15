@@ -7,8 +7,8 @@
   - ✅ Phase 1a: Mechanism existence (median 37ms / p95 48ms, all 14 AC PASS)
   - 🟡 Phase 1b: Adversarial robustness PARTIAL (76 fixtures, 0 BYPASSED; p95 超标; AC17 fail-OPEN)
   - 🟡 Phase 1c: AC17 已修 + exit-code 契约实证 + perf 短板定位 (validator 156ms / bash-watcher 130ms 真超标非噪声)
-  - ✅ Phase 2: Enforcement Matrix 设计冻结 — `.tad/evidence/designs/DESIGN-20260414-phase2-enforcement-matrix.md`, Gate 2 PASS v2, 13 P0 整合完成 (Edit/MultiEdit, cross-role, MCP, slug 派生, gate verdicts, Unicode confusables, 外部 HMAC witness, grapheme reason rule 等)
-  - ⬚ Phase 3: **Prerequisites from 1c + 2 design**: (1) 放开 AC12 字节约束, (2) 专用 CI runner 跑 perf gate, (3) read -t 2 + 1MB size cap + single-awk + archive manifest cache (promoted to MVP scope), (4) `.tad/state/` gitignore + 历史 secret.key 扫描, (5) 外部 HMAC witness (.tad/audit/chain-tip.txt + ~/.claude/tad-chain-witnesses/)
+  - ✅ Phase 2: Enforcement Matrix 设计冻结 — v3-LEAN 为 Phase 3 实际规范 (`DESIGN-20260414-phase2-enforcement-matrix-v3-LEAN.md`), v2 作为扩展参考 (多租户/对抗威胁)。按单用户 CLI 威胁模型瘦身：砍外部 HMAC witness、TR39 confusables、grapheme rule、SHA binding、archive cache、MCP coverage
+  - ⬚ Phase 3: **Prerequisites**: (1) 放开 AC12, (2) CI runner, (3) read -t 2 + 1MB size cap + single-awk, (4) `.tad/state/` gitignore + 历史 secret.key 扫描. 预估 AC ≤15, 工期 4-6h (v2 版本会是 8-12h)
   - ⬚ Phase 4-5: Dogfooding + *sync
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
