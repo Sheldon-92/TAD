@@ -2,14 +2,11 @@
 
 ## In Progress
 
-- [ ] **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / 2 ✅ (2026-04-14)
-  - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
-  - ✅ Phase 1a: Mechanism existence (median 37ms / p95 48ms, all 14 AC PASS)
-  - 🟡 Phase 1b: Adversarial robustness PARTIAL (76 fixtures, 0 BYPASSED; p95 超标; AC17 fail-OPEN)
-  - 🟡 Phase 1c: AC17 已修 + exit-code 契约实证 + perf 短板定位 (validator 156ms / bash-watcher 130ms 真超标非噪声)
-  - ✅ Phase 2: Enforcement Matrix 设计冻结 — v3-LEAN 为 Phase 3 实际规范 (`DESIGN-20260414-phase2-enforcement-matrix-v3-LEAN.md`), v2 作为扩展参考 (多租户/对抗威胁)。按单用户 CLI 威胁模型瘦身：砍外部 HMAC witness、TR39 confusables、grapheme rule、SHA binding、archive cache、MCP coverage
-  - ⬚ Phase 3: **Prerequisites**: (1) 放开 AC12, (2) CI runner, (3) read -t 2 + 1MB size cap + single-awk, (4) `.tad/state/` gitignore + 历史 secret.key 扫描. 预估 AC ≤15, 工期 4-6h (v2 版本会是 8-12h)
-  - ⬚ Phase 4-5: Dogfooding + *sync
+- [ ] **Possible follow-up: Quality Radar (trace + human audit)** — Epic 1 取消后的替代方向
+  - 设计思路：PostToolUse hook 只记录 Write `.tad/active/handoffs/*` 到 `.tad/evidence/traces/skip-audit.jsonl`，不阻断
+  - Alex `*accept` 时 grep trace：无对应 `.tad/evidence/reviews/blake/<slug>/` 目录 → 红字警告（不阻塞）
+  - 工作量估算 ~1.5h；待有空或 Blake 再次跳 Layer 2 时启动
+  - 不今天做，不开新 Epic
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -19,6 +16,16 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **🚫 EPIC: Symmetric Quality Enforcement — Cancelled (product decision 2026-04-15)**
+  - Archived Epic: `.tad/archive/epics/EPIC-20260413-symmetric-quality-enforcement.md`
+  - ✅ Phase 1a/1b/1c/2 技术验证全部 PASS；v3-LEAN 设计 Gate 2 PASS
+  - 🚫 Phase 3 实装首次激活 → `dep-guard.sh` Apple Silicon PATH bug → Claude 全工具锁死 → 用户判断"恢复成本 > 防滥用收益"
+  - **保留**：Phase 3.A SKILL 硬化 commit `4e4d581`（`anti_rationalization_registry` + `honest_partial_protocol`，纯文字软提醒）
+  - **归档**：Phase 3 handoff / 3 份 expert review / v2 extract / gate2-verdict → `.tad/archive/spikes/phase3-attempt-20260415/`
+  - **撤销**：settings.json 已 git checkout；Phase 4-5 N/A
+  - Knowledge entry: architecture.md "Mechanical Enforcement Rejected on Single-User CLI - 2026-04-15"
+  - 教训：LLM 对齐 ≠ 必须拦截工具；deployment threat model 决定手段；"最严格"不等于"最好"
 
 - [x] **Express: Plain-Language Explanation as TAD Capability** (2026-04-14)
   - User feedback: agents should write 人话版 section after every handoff/completion message so user learns instead of just relaying

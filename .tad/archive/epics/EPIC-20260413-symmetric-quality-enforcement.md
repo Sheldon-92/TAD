@@ -3,6 +3,7 @@
 **Epic ID**: EPIC-20260413-symmetric-quality-enforcement
 **Created**: 2026-04-13
 **Owner**: Alex
+**Status**: 🚫 **Cancelled — product decision 2026-04-15**（见下方 Cancellation Notes）
 
 ---
 
@@ -27,9 +28,9 @@
 | 1b | Spike — 对抗鲁棒性验证 | 🟡 PARTIAL | archive/HANDOFF-20260414-quality-enforcement-adversarial.md | **PARTIAL ACCEPT** — 安全核心 PASS (76 fixtures: 64 BLOCKED + 10 positive controls + 2 KNOWN-GAP per-cat ≤1 + cat5/7 零 KNOWN-GAP + 0 BYPASSED)；**perf PARTIAL** (p95 104-114ms 超 100ms 阈值 4-14ms)；**AC17 有真洞** (missing_dep fail-OPEN — jq 缺失时 hook 静默放行，Gate 4 发现) |
 | 1c | Spike — 性能补修 + AC17 fail-OPEN 修复 | 🟡 PARTIAL | archive/HANDOFF-20260414-phase1c-perf-ac17-fix.md | **PARTIAL ACCEPT (Gate 4, 2026-04-14)** — AC17 fail-OPEN 已修（4/4 PASS, PATH pin + 白名单 + exit 0 + stdout deny 硬编码）、exit-code 契约 CC 2.1.107 实证（`exit 0` 真阻断，原 `exit 2` 猜测作废）、apples-to-apples PASS。**AC6 FAIL 确认**（evidence-validator p95=156.51ms、bash-watcher p95=130.57ms 真超标，非噪声；pretool=67.44 / override=52.48 健康）、**AC8-B FAIL** 因 AC12 字节保持与 AC15/read -t 内部超时设计冲突（handoff 层 bug，Alex 已承认）。Phase 3 前置：(1) 放开 AC12 字节约束，(2) CI runner 非 dev host 跑 perf gate，(3) 加 `read -t 2` + single-awk/cache 优化 evidence-validator + bash-watcher。新知识入库：claude -p hook 契约测试方法论。 |
 | 2 | 设计 — Enforcement Matrix | ✅ Done (lean) | evidence/designs/DESIGN-20260414-phase2-enforcement-matrix-v3-LEAN.md (Phase 3 spec) + v2 (reference) | **Gate 2 PASS v3-LEAN (2026-04-14)** — 对称强制矩阵 8 事件 (精简 v2 的 13) + 简化 checker (6 lib + 2 dispatcher) + SKILL 硬化逐字节条款 (保留 v2 高价值部分) + 简化 override (≥20 非空白 + 幂等 nonce + 纯 JSONL 无 HMAC 链). v2 作为"理想版" archive 不删，含 13 P0 完整整合 (多租户 / 对抗性威胁模型扩展参考). v3-LEAN cut: 外部 HMAC witness, TR39 confusables, grapheme category rule, SHA content-binding, archive manifest cache, MCP coverage, 主动 concurrent-session 检测. 按单用户 CLI 威胁模型校准. |
-| 3 | 实现 — Hooks + SKILL | ⬚ Planned | — | **BLOCKED on 1c GO** — `.tad/hooks/quality-enforcement.sh` + settings.json 更新 + Alex/Blake SKILL.md 同步 + Message 模板加 evidence 清单 |
-| 4 | 验证 — Dogfooding | ⬚ Planned | — | Next Guest + menu-snap 对抗测试通过报告 + 边缘情况处理记录 |
-| 5 | 发布 + 监控 | ⬚ Planned | — | `*sync` 推到 10 个注册项目 + 1 个月 trace 指标仪表 |
+| 3 | 实现 — Hooks + SKILL | 🚫 Cancelled (2026-04-15) | archive/spikes/phase3-attempt-20260415/ | **PARTIAL EXECUTION — CANCELLED MID-IMPLEMENTATION**. Phase 3.A SKILL 硬化已 commit (`4e4d581`，保留)；Phase 3.B hook 代码未 commit（归档到 spikes 作研究资产）；Phase 3.C settings.json 注册触发 `dep-guard.sh` Apple Silicon Homebrew PATH bug → Claude 工具全锁死，用户手动 `git checkout` 回退。产品决策：单用户 CLI 不采用机械强制 |
+| 4 | 验证 — Dogfooding | N/A (Cancelled) | — | — |
+| 5 | 发布 + 监控 | N/A (Cancelled) | — | — |
 
 ### Phase Dependencies
 
@@ -101,3 +102,40 @@ Status and progress are computed from the Phase Map:
 - 本 Epic 源自 2026-04-13 用户反馈：Blake 两次在 Next Guest / menu-snap 项目显式跳过 Layer 2，被问时坦承"我倾向于用 Layer 1 自检 + 手动 grep 替代正式专家审查"
 - 这证明**文字约束对模型行为无效**，必须机械强制（ai-agent-architecture pack 反模式第 2 条："只用 prompt MANDATORY（没有 hook/architecture 层 enforce = 建议不是规则）"）
 - 发布后需监控 1 个月 trace，若仍有 violations 则继续下一轮优化
+
+---
+
+## 🚫 Cancellation Notes (2026-04-15)
+
+### What happened
+- Phase 1a/1b/1c/2 全部按计划完成，机制技术验证 PASS（hook 能拦、对抗鲁棒、fail-closed 纪律成立）
+- Phase 3 实装时：Blake commit Phase 3.A SKILL 硬化 → 写 Phase 3.B hook 代码 → 改 settings.json 激活（Phase 3.C）→ 首次 PreToolUse 调用命中 `dep-guard.sh` Apple Silicon Homebrew PATH bug → `jq/yq` 不在 pinned PATH → fail-closed 纪律生效 → Claude 所有工具（Bash/Write/Edit/MultiEdit/Task）被阻断
+- 用户无法通过 Claude 任何工具自恢复（OV-1 override 在 dep-guard 解析 stdin 之前就被 exit），只能在独立终端 `git checkout .claude/settings.json` 手动回退
+- 用户决策：**"我不需要这种限制 Claude 能力的措施"**
+
+### Why cancelled (not "fixed and continued")
+- 不是 dep-guard bug 本身——那个一行 `sed` 就能修
+- 是**设计层暴露的副作用**：fail-closed 纪律 + 复杂依赖栈 = 环境小 bug 即可全锁死 Claude
+- 单用户 CLI 场景下，"Claude 全锁死→人类独立终端手动修"这条恢复路径的日常成本 > 防 Blake 偶尔跳 Layer 2 的收益
+- 多用户/生产/不信任的 LLM 部署仍适用机械强制；单用户高信任场景不适用
+
+### What's kept
+- **Phase 3.A SKILL 硬化**（commit `4e4d581`，保留）——`anti_rationalization_registry` + `honest_partial_protocol` + 6 处 anchor 插入。纯文字，零副作用，零运行时成本。软提醒作用
+- **Phase 1a/1b/1c/2 所有设计文档 + 专家审查 + 知识条目**——作为研究资产保留。未来 TAD 若扩展到多用户场景，v2 "理想版" 设计可直接复活
+- **v3-LEAN 设计文档 + Phase 3 handoff + 3 份专家 review** → 归档到 `.tad/archive/spikes/phase3-attempt-20260415/`
+
+### What's cancelled
+- Phase 3.B hook 代码（8 个脚本 + 3 个 YAML schema）→ 归档到 spikes 不删不激活
+- Phase 3.C settings.json 注册 → 已 `git checkout` 回退
+- Phase 4 Dogfooding / Phase 5 *sync → N/A
+
+### Replacement direction (not a new Epic yet, just noted)
+- **Trace + human audit** 取代 **hook + machine enforcement**
+- PostToolUse hook 只记录 Write 事件到 `.tad/evidence/traces/skip-audit.jsonl`，不阻断
+- Alex Gate 4 执行 `*accept` 时 grep trace 验证本次 handoff 有对应 `.tad/evidence/reviews/blake/<slug>/` → 缺失就红字警告，但不阻塞
+- 装"烟雾报警器"不装"自动灭火系统"——人类保留最终决策权
+- 估算 1.5h 工作，未来某个 session 再开小 Epic 或直接 express handoff
+
+### Key knowledge extracted
+- See `.tad/project-knowledge/architecture.md` entry: **"Mechanical Enforcement Rejected on Single-User CLI - 2026-04-15"**
+- Core lesson: LLM 对齐 ≠ 必须拦截工具。Deployment threat model 决定手段选择

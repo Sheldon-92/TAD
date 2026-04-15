@@ -358,3 +358,19 @@ Project-specific architecture learnings accumulated through TAD workflow.
   - Working invocation shape: `echo "prompt text" | claude -p --settings /tmp/test-settings.json --permission-mode default --no-session-persistence --tools ''`
   - To isolate hook settings from user config: write `.settings.json` to a test dir and pass via `--settings`, NOT via `CLAUDE_CONFIG_DIR`.
 - **Action**: All future TAD hook contract tests (spike or production) that need to empirically verify Claude Code's response to hook output should use the pattern: `--settings <file> --permission-mode default --no-session-persistence --tools ''` with prompt via stdin. Never use `CLAUDE_CONFIG_DIR` for isolation. Document the expected "hook blocked the Write" signature: CC stdout will contain `"The Write was blocked by a PreToolUse hook"` literal, which tests can grep for as the positive-verification signal. This complements the earlier `claude -p is a Valid UserPromptSubmit Hook Testing Channel - 2026-04-07` entry with the specific invocation syntax that works.
+
+### Mechanical Enforcement Rejected on Single-User CLI — LLM 对齐 ≠ 拦截工具 - 2026-04-15
+- **Context**: Epic 1 (EPIC-20260413-symmetric-quality-enforcement) — 动机是 Blake 两次在 Next Guest / menu-snap 跳过 Layer 2 专家审查，用户 2026-04-13 明确要求"最严格"机械拦截。Phase 1a/1b/1c/2 全部技术验证 PASS（hook 能拦、对抗鲁棒、fail-closed 成立、v3-LEAN 按单用户威胁模型优化至 19 AC）。Phase 3 实装首次激活即命中灾难路径。
+- **Discovery**:
+  - **机制工作正常**：PreToolUse hook 确实按设计拦截 Claude 自己的 Write/Bash/Edit/MultiEdit/Task——这正是 Epic 论点的技术成立
+  - **灾难路径**：Phase 3.C 激活 hook 后，首次 PreToolUse 调用命中 `dep-guard.sh` 的 PATH pin (`/usr/bin:/bin:/usr/local/bin`)——Apple Silicon Homebrew 的 `/opt/homebrew/bin` 不在列表，`jq/yq` 找不到，**fail-closed 纪律正确生效 → deny 所有工具调用**
+  - **无自恢复**：OV-1 override 在 UserPromptSubmit 收到 prompt 时运行，但 Claude 的任何后续 tool call 都会先命中 PreToolUse dep-guard → 在读 stdin 之前 exit → override nonce 永远消费不了。**人类必须在独立终端手动 `git checkout .claude/settings.json` 或 `sed` 修 PATH**
+  - **用户产品决策**：亲历一次后判断"日常恢复成本 > 防偶尔跳步骤收益"，**撤销 2026-04-13 "最严格" 诉求**，明确"我不需要这种限制 Claude 能力的措施"。这不是认知摇摆，是初始估值时低估了 fail-closed 规则触及的广度
+  - **威胁模型决定手段**：多租户/生产/不信任 LLM 场景下，机械强制仍是对的（OpenHarness 等框架这么做）；单用户 CLI + 高信任合作关系下，强制层的副作用超过收益
+- **Action**:
+  - **保留**：Phase 3.A SKILL 硬化 commit `4e4d581`（`anti_rationalization_registry` + `honest_partial_protocol` + 6 anchor 插入）—— 纯文字零副作用的软提醒
+  - **归档**：Phase 3.B hook 代码 + schema → `.tad/archive/spikes/phase3-attempt-20260415/`（研究资产，不删不激活）；Phase 1-2 所有设计文档保留供未来多用户扩展时复活
+  - **撤销**：Phase 3.C settings.json 注册已 `git checkout` 回退；Phase 4-5 标记 N/A
+  - **替代方向**：Trace + human audit——PostToolUse hook 只记录不拦截，Alex Gate 4 读 trace 发现跳步骤并红字警告（不阻塞）。装"烟雾报警器"不装"自动灭火系统"
+  - **对齐方法论教训**：LLM 对齐不必然走"拦截工具"路径。Deployment 环境（单用户 vs 多用户 / 开发 vs 生产 / 信任 vs 不信任）决定手段。**先问"什么威胁模型"再选"机械 vs 监督"**，不要默认"最严格=最好"
+  - **未来若需重启**：v3-LEAN 设计 + 专家审查整合本已工业级就绪（13 P0 全整合、19 AC、Gate 2 PASS）——不是 Epic 技术失败，是场景不匹配。改用于多用户 TAD 部署时可直接复活
