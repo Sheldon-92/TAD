@@ -2,11 +2,7 @@
 
 ## In Progress
 
-- [ ] **Possible follow-up: Quality Radar (trace + human audit)** — Epic 1 取消后的替代方向
-  - 设计思路：PostToolUse hook 只记录 Write `.tad/active/handoffs/*` 到 `.tad/evidence/traces/skip-audit.jsonl`，不阻断
-  - Alex `*accept` 时 grep trace：无对应 `.tad/evidence/reviews/blake/<slug>/` 目录 → 红字警告（不阻塞）
-  - 工作量估算 ~1.5h；待有空或 Blake 再次跳 Layer 2 时启动
-  - 不今天做，不开新 Epic
+_(监督层替代方案已 2026-04-15 express handoff 落地——`layer2-audit.sh` + Alex SKILL step4c + Blake Slug Contract。见 Recently Completed)_
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -16,6 +12,15 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Express: Layer 2 Audit — Alex *accept 红字警告 (2026-04-15)**
+  - Handoff: `.tad/archive/handoffs/HANDOFF-20260415-layer2-audit.md`
+  - 监督层替代 Epic 1 机械强制——Alex *accept step4c 跑 `layer2-audit.sh <slug>` 检查 Blake reviewer artifacts 存在性
+  - 产出：88 行 shell 工具 + Alex SKILL step4c + Blake SKILL Slug Contract + 11 fixture (5 FAIL + 4 slug-negative + 2 dogfood)
+  - Gate 3 PASS (Blake 自检 + code-reviewer 0 P0 5 P1) / Gate 4 PASS (Alex 独立 raw-data 复现 8/8 AC + meta-dogfood)
+  - 零 `.claude/settings.json` 改动——无 dogfood paradox 风险
+  - 元趣味：该工具第一次运行时审计了自己 (slug=`layer2-audit` → exit 0，找到自己的 code-reviewer.md)
+  - Commit (Blake): `ff1e32a feat(TAD): implement layer2-audit [Gate 3 PASS]`
 
 - [x] **🚫 EPIC: Symmetric Quality Enforcement — Cancelled (product decision 2026-04-15)**
   - Archived Epic: `.tad/archive/epics/EPIC-20260413-symmetric-quality-enforcement.md`
