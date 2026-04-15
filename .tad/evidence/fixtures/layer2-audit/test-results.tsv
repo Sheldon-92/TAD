@@ -1,0 +1,12 @@
+fixture	expected_exit	expected_stderr_has	actual_exit	actual_stderr_has	verdict
+slug_empty	2	invalid slug	2	Layer 2 audit FAIL: invalid slug '' (size-check is smoke-alarm heuristic; see AC2 whitelist)	PASS
+slug_traversal	2	invalid slug	2	Layer 2 audit FAIL: invalid slug '..' (size-check is smoke-alarm heuristic; see AC2 whitelist)	PASS
+slug_slash	2	invalid slug	2	Layer 2 audit FAIL: invalid slug 'a/b' (size-check is smoke-alarm heuristic; see AC2 whitelist)	PASS
+slug_leading_dash	2	invalid slug	2	Layer 2 audit FAIL: invalid slug '-rf' (size-check is smoke-alarm heuristic; see AC2 whitelist)	PASS
+dir_missing	1	directory missing	1	Layer 2 audit FAIL: directory missing: .tad/evidence/reviews/blake/audittest_dir_missing (size-check	PASS
+empty_dir	1	no .md files	1	Layer 2 audit FAIL: no .md files in .tad/evidence/reviews/blake/audittest_empty_dir (size-check is s	PASS
+tiny_md	1	under 200B	1	Layer 2 audit FAIL: all 1 .md file(s) in .tad/evidence/reviews/blake/audittest_tiny_md under 200B (s	PASS
+symlink_small	1	symlinked target too small	1	Layer 2 audit FAIL: symlinked target too small in .tad/evidence/reviews/blake/audittest_symlink_smal	PASS
+dotfile_only	1	only dotfiles	1	Layer 2 audit FAIL: only dotfiles in .tad/evidence/reviews/blake/audittest_dotfile_only (hidden revi	PASS
+dogfood-pass	0	EMPTY	0	(empty)	PASS
+dogfood-fail	1	no .md files	1	Layer 2 audit FAIL: no .md files in .tad/evidence/reviews/blake/dogfood-fail (size-check is smoke-al	PASS

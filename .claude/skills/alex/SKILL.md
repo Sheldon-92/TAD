@@ -1944,6 +1944,51 @@ acceptance_protocol:
          - 如果 research_required: yes → 确认研究文件路径存在
       4. 如有 required evidence 缺失 → 不通过，退回 Blake
     blocking: true
+  step4c:
+    name: "Layer 2 Audit (红字警告，不阻塞) — smoke-alarm replacement for Epic 1 mechanical enforcement"
+    action: |
+      Epic 1 (Mechanical Enforcement) was cancelled 2026-04-15. This step is the
+      monitoring-layer replacement: check Blake's reviewer artifacts actually exist
+      on disk before Alex proceeds to Knowledge Assessment. This is a SMOKE ALARM
+      — size/presence heuristic only — not a structural guarantee.
+
+      1. Extract handoff slug from current filename. Use regex:
+         ^(HANDOFF|COMPLETION)-\d{8}-([a-zA-Z0-9_][a-zA-Z0-9_-]*[a-zA-Z0-9_])\.md$
+         Capture group $2 is the slug. This whitelist is SYMMETRIC with
+         layer2-audit.sh's own slug whitelist — SKILL rejects invalid slugs early,
+         don't wait for the script's exit 2.
+
+      2. If slug extraction fails (non-standard filename, e.g. single-char slug,
+         slug with leading/trailing dash): acceptance report records
+         "Layer 2 audit N/A: non-standard handoff filename — manual review required"
+         and proceed to step7. Do NOT block.
+
+      3. If slug valid: run
+           bash .tad/hooks/lib/layer2-audit.sh <slug>
+         capturing exit code + stderr.
+
+      4. Interpret:
+         - exit 0  → acceptance report: "✅ Layer 2 artifacts verified: .tad/evidence/reviews/blake/<slug>/ (N reviewer artifacts, size-check is smoke-alarm heuristic)"
+         - exit 1  → acceptance report inserts at a VISIBLE position (before Gate 4 checklist):
+             ```
+             ⚠️ LAYER 2 AUDIT FAIL
+             Blake completion report claimed Layer 2 review, but .tad/evidence/reviews/blake/<slug>/
+             shows missing/under-sized reviewer artifacts.
+             Reason (from script stderr): <stderr first line>
+             Human accepter: confirm whether Blake actually ran expert review.
+             If confirmed skipped, require Blake to re-do or document exception.
+             ```
+         - exit 2  → treat as "Layer 2 audit N/A" (slug invalid — should not happen
+           if SKILL-layer regex did its job, but defense in depth).
+
+      5. Continue to step7 regardless of exit code. Acceptance is NOT blocked by this
+         check — is a smoke alarm, not a lock. Human accepter has final call.
+
+      Rationale: This replaces the mechanical Blake→Write deny we would have had
+      from Epic 1 PreToolUse hook. We lose fail-closed guarantee; we gain no
+      dogfood paradox risk + trivial recovery if script itself breaks.
+    blocking: false
+
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7:
