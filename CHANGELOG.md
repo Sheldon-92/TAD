@@ -5,6 +5,36 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.3] - 2026-04-15
+
+### New Feature — Layer 2 Audit (smoke-alarm replacement for Epic 1)
+- **`.tad/hooks/lib/layer2-audit.sh`** (88 lines): Utility script invoked by Alex `*accept` step4c. Validates Blake's Layer 2 reviewer artifacts exist on disk (`.tad/evidence/reviews/blake/<slug>/` with ≥1 ≥200B md file). Non-hook, non-blocking, zero `.claude/settings.json` footprint — no dogfood-paradox risk
+- **Alex SKILL `acceptance_protocol.step4c`**: Runs audit between business AC verification and Knowledge Assessment. FAIL → red-flag warning in verdict (does NOT block acceptance — human accepter decides)
+- **Blake SKILL `completion_protocol.step3c` — Slug Contract (MANDATORY)**: Blake MUST write reviewer artifacts to `.tad/evidence/reviews/blake/<slug-from-handoff-filename>/` with exact slug from regex `^(HANDOFF|COMPLETION)-\d{8}-(.+)\.md$` $2. No abbreviation, no case change, no suffix
+- **Fixture matrix**: 11 cases (4 slug-validation negatives + 5 FAIL scenarios + 2 independent dogfood) — all PASS
+
+### SKILL Hardening (from archived Phase 3.A work)
+- **Alex SKILL `anti_rationalization_registry`**: 5 named rationalization patterns (AR-001 express-exempt / AR-002 small-edit / AR-003 spike-exempt / AR-004 perf-borderline / AR-005 knowledge-default) with explicit `must_scan_before` list. Soft reminders, zero runtime cost
+- **Blake SKILL `honest_partial_protocol`**: Mandates `Overall: PARTIAL-GO` with explicit AC conflict statement when handoff ACs contradict — replaces silent AC-picking
+- **Alex SKILL `handoff_creation_protocol` step0_5**: AC Conflict Matrix self-check before finalizing AC list
+- **Alex SKILL `acceptance_protocol.step7`**: Raw-TSV recompute for Gate 4 verification integrity
+
+### Product Decision — Epic 1 Mechanical Enforcement Cancelled
+- **Epic 1 (EPIC-20260413-symmetric-quality-enforcement)** cancelled mid-Phase-3 implementation after dogfood paradox: Phase 3.C activated PreToolUse hook → `dep-guard.sh` PATH pin missed Apple Silicon Homebrew (`/opt/homebrew/bin`) → jq/yq not found → fail-closed denied ALL Claude tool calls → user had to manually `git checkout` in a separate terminal to recover
+- **Technical verdict**: all 4 prior phases (1a/1b/1c/2) PASS — mechanism works. **Product verdict**: single-user CLI threat model doesn't justify "Claude tools can be totally locked out via minor env bug" cost
+- **Archived**: Phase 3 handoff + 3 expert reviews + v2 extracts in `.tad/archive/spikes/phase3-attempt-20260415/`; Phase 3.B hook code in `.tad/archive/spikes/phase3-hooks-prototype/`
+- **Knowledge**: `.tad/project-knowledge/architecture.md` entry "Mechanical Enforcement Rejected on Single-User CLI - 2026-04-15" — core lesson: LLM alignment ≠ must intercept tools; deployment threat model determines mechanism
+
+### Documentation
+- CHANGELOG entry for this release (you're reading it)
+- README version history row for v2.8.3
+- Epic 1 cancellation notes inline in archived Epic file
+
+### Migration Notes
+- **No breaking changes**. Existing `.claude/settings.json` hooks unchanged — v2.8.3 adds NO new hook registration
+- SKILL additions are pure prose; downstream agents will pick them up on next session start
+- `layer2-audit.sh` is opt-in via Alex SKILL; if downstream projects haven't synced the Alex SKILL, audit simply won't run (no error)
+
 ## [2.8.2] - 2026-04-08
 
 ### New Features — Domain Pack Auto-Loading Hook (Epic 1)

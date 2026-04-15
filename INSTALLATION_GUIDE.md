@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.8.2 - Domain Pack Auto-Loading Hook**
+**Version 2.8.3 - Layer 2 Audit + Epic 1 Cancellation**
 
 ## 方式1：一键安装（推荐）
 
@@ -80,7 +80,7 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.8.2)
+### `.tad`文件夹结构 (v2.8.3)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置 (master index)
@@ -234,7 +234,7 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到 v2.8.2
+# 从任何旧版本升级到 v2.8.3
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
@@ -261,7 +261,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 ## 总结
 
-TAD v2.8.2 核心特性：
+TAD v2.8.3 核心特性：
 1. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
 2. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
 3. **配对测试协议** - 跨工具 E2E 测试（4D Protocol）

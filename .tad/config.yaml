@@ -1,8 +1,8 @@
-# TAD Configuration v2.8.2 - Domain Pack Auto-Loading Hook
+# TAD Configuration v2.8.3 - Layer 2 Audit + Epic 1 Cancellation
 method: TAD
-version: 2.8.2
+version: 2.8.3
 description: Triangle Agent Development - Self-Evolving Framework + Domain Pack Auto-Loading Hook + Execution Trace + Domain Packs
-last_updated: 2026-04-08
+last_updated: 2026-04-15
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

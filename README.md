@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.8.2 - Domain Pack Auto-Loading Hook**
+**Version 2.8.3 - Layer 2 Audit + Epic 1 Cancellation**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -118,7 +118,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.8.2 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.8.3 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -338,6 +338,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.8.3** | **Layer 2 Audit (smoke-alarm replacement for Epic 1 mechanical enforcement), Alex `*accept` step4c red-flag, SKILL hardening (anti_rationalization_registry + honest_partial_protocol + Slug Contract), Epic 1 cancelled** |
 | **v2.8.2** | **Domain Pack Auto-Loading Hook (UserPromptSubmit + keyword router, 100% acc / 81ms), tad.sh bug fixes** |
 | **v2.8.1** | **Commands consolidated into skills (18 command files → skills), deprecation registry** |
 | **v2.8.0** | **Self-Evolving Framework, 20 Domain Packs (78 tools), Execution Traces, Quality Gate Hooks** |
@@ -423,6 +424,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.8.2 - Domain Pack Auto-Loading Framework for AI-Assisted Development.**
+**Welcome to TAD v2.8.3 - Layer 2 Audit + Epic 1 Cancellation Framework for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*
