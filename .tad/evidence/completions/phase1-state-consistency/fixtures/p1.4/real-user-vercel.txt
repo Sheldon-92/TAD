@@ -1,0 +1,1 @@
+帮我添加一个部署到 Vercel 的流程，我希望 git push 自动触发 production deployment，同时把 environment variables 也配好。

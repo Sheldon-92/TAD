@@ -66,6 +66,16 @@ if [ -z "$USER_MSG" ]; then
   exit 0
 fi
 
+# ─── Phase 1 P1.4 (2026-04-24): skip system-injected prompts ──────────────
+# Claude Code harness delivers hook events (task-notification, system-reminder,
+# function_results) through UserPromptSubmit — these look like user prompts to
+# the router but are not. Filter them out BEFORE keyword matching.
+# Evidence: 2026-04-24 session 2x false positives (web-deployment 2/14 + ai-tool-integration 1/12).
+# Reuses $USER_MSG — no second jq call, no perf regression (~1ms grep).
+if printf '%s' "$USER_MSG" | grep -qE '<task-notification>|<system-reminder>|<function_results>'; then
+  exit 0
+fi
+
 # ─── Trim leading/trailing whitespace via sed (P0-C3 fix) ─────────────────
 # `tr -d '[:space:]'` strips ALL whitespace including internal, which is wrong.
 # sed preserves internal spacing but removes leading/trailing.

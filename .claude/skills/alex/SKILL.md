@@ -1663,6 +1663,16 @@ handoff_creation_protocol:
         - "添加 Expert Review Status 表格"
         - "添加 P0 Blocking Issues（如有）"
         - "补充专家建议的类型定义/测试/安全措施"
+      audit_trail_requirement: |
+        (Phase 1 P1.5, 2026-04-24) 将每个专家反馈 integrate 为 Audit Trail 4-列表格一行：
+        | Reviewer | Issue | Resolution Section | Status |
+        Status 字段必填（Resolved / Open / Deferred）。
+        Resolved MUST point to the resolution section in the handoff
+        (e.g., "§Task P1.2 实现提示 #3" or "AC-P1.2-i") — 不是"已修复"这种自由文本。
+        自由文本不可接受；表格是 canonical format。
+        Rationale: toy 项目自发演化出此格式，比自由文本更可审计，且使未来 /tad-maintain
+        能对"哪些 P0 被真正解决"做结构化扫描。
+        Template reference: .tad/templates/handoff-a-to-b.md §9.2.
 
     step5:
       name: "Gate 2 Check"

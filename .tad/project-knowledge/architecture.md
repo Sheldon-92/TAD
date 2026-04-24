@@ -374,3 +374,21 @@ Project-specific architecture learnings accumulated through TAD workflow.
   - **替代方向**：Trace + human audit——PostToolUse hook 只记录不拦截，Alex Gate 4 读 trace 发现跳步骤并红字警告（不阻塞）。装"烟雾报警器"不装"自动灭火系统"
   - **对齐方法论教训**：LLM 对齐不必然走"拦截工具"路径。Deployment 环境（单用户 vs 多用户 / 开发 vs 生产 / 信任 vs 不信任）决定手段。**先问"什么威胁模型"再选"机械 vs 监督"**，不要默认"最严格=最好"
   - **未来若需重启**：v3-LEAN 设计 + 专家审查整合本已工业级就绪（13 P0 全整合、19 AC、Gate 2 PASS）——不是 Epic 技术失败，是场景不匹配。改用于多用户 TAD 部署时可直接复活
+
+### Word-Boundary Matching for Identifier-Style Slugs — Not `\b` - 2026-04-24
+- **Context**: Phase 1 P1.2.b zombie detection needs `slug="auth"` to NOT match commits mentioning `post-auth` or `pre-auth`. Blake first tried `git log -E --grep='\bauth\b'` (handoff's suggested regex) then switched to `grep -iE '\bauth\b'` after git log --grep returned empty.
+- **Discovery**: Two layered portability traps:
+  1. **git log --grep + `-E` does NOT portably support `\b`**: git's regex engine differs from system grep. Empirical test (macOS git 2.43): `git log -E --grep='\b${slug}\b'` returned nothing for commits that `git log --grep='${slug}'` (no `-E`) matched. Work-around: pipe `git log --format='%H %s'` through bash `grep -iE`.
+  2. **Even bash `grep -iE '\bSLUG\b'` is WRONG for identifier-style slugs**: BSD grep (macOS default) treats `-` as a word boundary. So `grep -iE '\bauth\b'` matches `post-auth` (boundary between `-` and `a`). For slugs that are compound identifiers containing `-`, use explicit bracket class: `(^|[^A-Za-z0-9_-])SLUG([^A-Za-z0-9_-]|$)`. This correctly treats `-` as part of the identifier (so `post-auth` is NOT a boundary-delimited match of `auth`, but `(auth)` or ` auth ` IS).
+  - Tested on: `feat(zombie-fixture): x` → matches `zombie-fixture` via bracket class. `post-auth` vs `auth` slug → does NOT match. `auth subsystem` vs `auth` slug → matches.
+- **Action**: For any shell-level slug/identifier matching against commit messages or log text, use `(^|[^A-Za-z0-9_-])PATTERN([^A-Za-z0-9_-]|$)` not `\b`. `\b` is only correct when the pattern itself contains no `_` or `-`.
+
+### Drift-Check Allowlist: Shared Project-Level Paths Are Cross-Handoff by Design - 2026-04-24
+- **Context**: Phase 1 P1.2.a slug-consistency subcheck dogfooded on its own handoff — flagged `.tad/project-knowledge/architecture.md` as drift because the path doesn't contain slug `phase1-state-consistency`.
+- **Discovery**: Project-level files are INTENTIONALLY cross-handoff. Required Evidence Manifest paths of this shape should be exempted from slug-match validation:
+  - `.tad/project-knowledge/*` — knowledge is by definition accumulated across many handoffs
+  - `NEXT.md`, `PROJECT_CONTEXT.md`, `CHANGELOG.md`, `README.md` — project-level docs that every handoff might touch
+  - `.tad/config*.yaml` — shared configuration
+  - `.claude/skills/`, `.tad/hooks/`, `.tad/templates/` — framework code/config that any handoff may modify
+  - Without this allowlist, `AC clean active/ → 0 drift` fails on any well-formed handoff that updates knowledge. The check becomes noisy and gets ignored — defeating the smoke-alarm purpose.
+- **Action**: When a "handoff-scoped" drift detector encounters paths, always maintain an allowlist for files that are legitimately shared across handoffs. The list should be minimal but explicit — document what goes in it and why. For TAD specifically: the allowlist lives in `drift-check.sh` `check_slug_consistency` as a single regex constant.

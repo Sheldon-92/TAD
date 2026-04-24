@@ -42,6 +42,42 @@ if ! [[ "$slug_raw" =~ ^[A-Za-z0-9_]([A-Za-z0-9_-]*[A-Za-z0-9_])?$ ]]; then
 fi
 slug="$slug_raw"
 
+# ── Slug truncation fallback (P1.3, 2026-04-24) ────────────────────────
+# When the exact slug dir is missing/empty, try up to 2 levels of trailing
+# "-segment" truncation. Precedent: toy 2026-04-23 loop-mpr121-da7280 vs
+# -integration FN fired twice in 8 days. Bounded to 2 attempts — anything
+# further is not canonicalization, it's guessing.
+# Single-segment slug (no '-') OR empty truncation → skip fallback (CR-P1-3).
+
+_has_review_md() {
+  # True if dir exists and contains ≥1 non-dotfile .md file.
+  [ -d "$1" ] || return 1
+  local first_match
+  first_match=$(find -L -- "$1" -maxdepth 1 -type f -name '[!.]*.md' -print -quit 2>/dev/null || true)
+  [ -n "$first_match" ]
+}
+
+if ! _has_review_md ".tad/evidence/reviews/blake/${slug}"; then
+  slug_try1="${slug%-*}"
+  if [ "$slug_try1" = "$slug" ] || [ -z "$slug_try1" ]; then
+    # Single-segment slug OR truncation collapsed to empty — do not recurse.
+    :
+  elif _has_review_md ".tad/evidence/reviews/blake/${slug_try1}"; then
+    printf "Layer 2 audit WARN: exact slug '%s' not found; matched truncated '%s' — consider canonicalizing slug.\n" \
+      "$slug" "$slug_try1" >&2
+    slug="$slug_try1"
+  else
+    slug_try2="${slug_try1%-*}"
+    if [ -n "$slug_try2" ] && [ "$slug_try2" != "$slug_try1" ] \
+       && _has_review_md ".tad/evidence/reviews/blake/${slug_try2}"; then
+      printf "Layer 2 audit WARN: exact slug '%s' not found; matched doubly-truncated '%s'\n" \
+        "$slug" "$slug_try2" >&2
+      slug="$slug_try2"
+    fi
+    # else: fall through to original FAIL path below.
+  fi
+fi
+
 # ── Target dir check ────────────────────────────────────────────────────
 dir=".tad/evidence/reviews/blake/${slug}"
 if [ ! -d "$dir" ]; then

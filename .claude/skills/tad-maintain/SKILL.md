@@ -32,6 +32,70 @@ Read these to establish baseline:
 7. `NEXT.md` → count lines, read content
 8. `PROJECT_CONTEXT.md` → check if exists
 
+## Step 1.5: Drift Detection (Phase 1 P1.2, 2026-04-24)
+
+Run drift detection BEFORE the handoff lifecycle audit (Step 2). Drift findings are
+**advisory** (smoke alarm only) — they never auto-modify files; they surface patterns
+that need human review.
+
+### Invocation
+
+```bash
+bash .tad/hooks/lib/drift-check.sh check-all
+```
+
+The script snapshots `.tad/active/handoffs/` ONCE at entry and runs 4 subchecks
+serially against that snapshot. Output on stdout is one JSON line per finding;
+stderr has human-readable status lines `[drift-check] {subcheck} {handoff} {status}`.
+
+### Subchecks Run
+
+| Subcheck | What it detects | Evidence source |
+|----------|----------------|-----------------|
+| `slug_consistency` | handoff filename slug not in Required Evidence Manifest paths | menu-snap 2026-04-11 + toy layer2-audit FN 2x in 8d |
+| `zombie_handoffs`  | git commit found for slug + COMPLETION archived + handoff still active | menu-snap code-quality.md:36 |
+| `supersedes_chains` | `Supersedes:` field points to a handoff still in active/ | Next Guest 3 same-day handoffs |
+| `ghost_tasks`      | housekeeping/sync/cleanup slug missing `grounded_state` frontmatter | toy 2026-04-24 |
+
+### Report Inclusion
+
+Aggregate drift findings in the CHECK-mode report as a new top-level section
+**before** `RECOMMENDED ACTIONS`. Example:
+
+```
+DRIFT FINDINGS (advisory — human review required)
+  [icon] slug_consistency: {N} drift | {N} info | {N} ok
+  [icon] zombie_handoffs:  {N} drift | {N} info | {N} ok
+  [icon] supersedes_chains: {N} drift
+  [icon] ghost_tasks:      {N} drift
+
+  TOP DRIFTS:
+    - {handoff}: {subcheck}: {message}. Suggested: {suggested_action}
+    - ...
+```
+
+### Modes
+
+- **CHECK**: Run drift detection, report findings (read-only). Do NOT auto-archive
+  supersedees or move zombies — Criterion C/D-style interactive confirmation still applies
+  in SYNC/FULL modes via the Step 2 Handoff Lifecycle Audit.
+- **SYNC**: Drift findings are displayed alongside lifecycle audit, but SYNC does
+  not auto-apply drift suggestions. User may run Step 2 actions separately.
+- **FULL**: Same as SYNC + include drift findings.
+
+### Config
+
+`.tad/config-workflow.yaml → drift_check:` controls:
+- `zombie_window_days` (default 60) — how far back git log is scanned
+- `ghost_task_prefixes` (default `[housekeeping, sync, rsync, cleanup, maintenance, audit, refresh]`)
+
+### Failure isolation
+
+- If git is unavailable → `zombie_handoffs` emits `status:error`, the other 3 subchecks
+  still run to completion.
+- jq missing → the whole tool fails with exit 1 (jq is required for safe JSON emission).
+- Any subcheck internal exception → caught by the dispatch's `|| _emit error` safety net.
+
 ## Step 2: Handoff Lifecycle Audit
 
 For each file in `.tad/active/handoffs/`:

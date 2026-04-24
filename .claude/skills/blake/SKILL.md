@@ -719,6 +719,53 @@ my_gates:
         - "All tests pass (100% pass rate)"
         - "Linting passes"
         - "TypeScript compiles without errors"
+        - "git_tracked_dirs assertion (if handoff frontmatter declares it) — see git_tracked_dirs_verification below"
+      git_tracked_dirs_verification:
+        description: |
+          Phase 1 P1.1 (2026-04-24) — smoke alarm for "code exists but never committed".
+          Precedent: toy 2026-04-22 — 38 production files accumulated for weeks without `git add`,
+          nearly shipped untracked. Gate 3 must catch this before acceptance.
+          Smoke alarm only: frontmatter opt-in (absent → skip), warn-not-fail on edge cases.
+        helper_script: ".tad/hooks/lib/gate3-git-tracked-check.sh <handoff-path>"
+        usage: "Blake runs the helper during Gate 3; exit 0 = PASS or skip; exit 1 = FAIL with dir list; exit 2 = usage error."
+        source: "handoff YAML frontmatter field `git_tracked_dirs: [dir1, dir2, ...]` (optional)"
+        procedure: |
+          1. Parse handoff frontmatter; read `git_tracked_dirs` field.
+
+          2. Field ABSENT, null, or [] → SKIP this check entirely.
+             Emit INFO: "git_tracked_dirs not declared — skip (backward-compat for doc-only / pre-Phase-1 handoffs)".
+
+          3. Field is NOT a list (e.g., string, int, bool) → FAIL the check with a clear error:
+             "git_tracked_dirs must be a list (got {type}: {value}); ask Alex to fix handoff frontmatter."
+             Do NOT crash; do NOT guess intent.
+
+          4. Verify this is a git repo:
+             `git rev-parse --is-inside-work-tree 2>/dev/null`
+             Non-zero exit → FAIL: "Not inside a git repo; git_tracked_dirs check cannot run."
+             Clear message, not a stack trace.
+
+          5. COLLECT (do NOT short-circuit) failures across all declared dirs:
+             For each dir in git_tracked_dirs, classify into ONE of:
+               (a) dir not on disk → WARN "dir '{dir}' not found on disk; skipping"
+                   [rationale: don't block Gate 3 when a dir was temporarily removed/moved]
+               (b) dir covered by .gitignore:
+                   `git check-ignore -q "$dir"` exits 0 → WARN "dir '{dir}' is covered by .gitignore;
+                   legitimate ignore, skipping (distinct from untracked)."
+               (c) dir exists AND not ignored AND `git ls-files "$dir"` is empty
+                   → add to FAIL list.
+               (d) dir exists AND has ≥1 git-tracked file → PASS for this dir.
+
+          6. After iterating ALL dirs:
+             - FAIL list empty → PASS. Emit:
+               "git_tracked_dirs check PASS: {N} dirs verified ({M} warned, {K} passed)".
+             - FAIL list non-empty → FAIL with COMPLETE list:
+               "git_tracked_dirs check FAIL: untracked dirs: {dir1}, {dir2}, ...
+                Blake must run `git add <dir>` before Gate 3 accepts this handoff."
+
+          Implementation hints:
+          - `git ls-files <dir>` works without a clean working tree; no need for `git status --porcelain`.
+          - `git check-ignore` exit 0 = path IS ignored; exit 1 = NOT ignored; exit 128 = error.
+          - Warn path (a) and (b) are deliberately non-blocking — smoke alarm, not mechanical lock.
       layer2_verification:
         - "spec-compliance-reviewer: all ACs satisfied or partially satisfied (NOT_SATISFIED=0)"
         - "code-reviewer: P0=0, P1=0"

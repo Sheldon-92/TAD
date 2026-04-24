@@ -3,6 +3,11 @@
 task_type: code       # code | yaml | research | e2e | mixed
 e2e_required: no      # yes | no - yes 时 Blake 必须产出 E2E evidence
 research_required: no # yes | no - yes 时 Blake 必须产出研究文件
+
+# Optional: production directories that must have ≥1 git-tracked file at Gate 3
+# (Phase 1 P1.1, 2026-04-24). Leave blank/omit for doc-only or config-only handoffs.
+# Smoke-alarm check: missing/absent → skip; covered-by-.gitignore → warn, not fail.
+git_tracked_dirs: []  # e.g., ["src/pages", "packages/api/routes"]
 ---
 
 # Handoff Document for Agent B (Blake)
@@ -16,6 +21,7 @@ research_required: no # yes | no - yes 时 Blake 必须产出研究文件
 **Handoff Version:** 3.1.0
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Linear:** N/A <!-- Optional: TAD-42 or MENU-15 — links to Linear issue for auto-sync on *accept -->
+**Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md — cite previous handoff if this one supersedes. Enables /tad-maintain drift check (Phase 1 P1.2.c) to propose archiving the superseded one. -->
 
 ---
 
@@ -458,6 +464,39 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 > This section is OPTIONAL. If omitted, the spec-compliance-reviewer will use
 > the § Acceptance Criteria section directly. This section adds verification
 > guidance for more precise automated checking.
+
+---
+
+## 9.2 Expert Review Status (Alex 必填)
+
+> Alex MUST integrate every expert finding into an Audit Trail table row before sending to Blake.
+> Free-text narratives are NOT acceptable — the table is the canonical format (Phase 1 P1.5, 2026-04-24, dogfooded by HANDOFF-20260424-phase1-state-consistency).
+
+### Audit Trail
+
+| Reviewer | Issue | Resolution Section | Status |
+|----------|-------|-------------------|--------|
+| code-reviewer | _(concise: severity + one-line symptom, e.g., "P0: shell script crashes on empty array")_ | _(cite specific section, e.g., "§Task P1.2 实现提示 #3" or "AC-P1.2-i")_ | Resolved / Open / Deferred |
+| backend-architect | ... | ... | ... |
+
+**Status legend:**
+- **Resolved** — fix applied in this handoff; Resolution Section MUST point to where the fix lives
+- **Open** — not yet addressed; Blake should see this as a known gap
+- **Deferred** — consciously deferred to future handoff; cite rationale in Notes
+
+### Expert Prompts Used (optional, for reproducibility)
+
+<!-- If you want reviewers to be able to re-run the same review later: paste the full prompt(s) sent to each reviewer here. Helps when a later regression needs the same reviewer lens. -->
+
+### Experts Selected
+
+1. **{reviewer-name}** — {why this reviewer was chosen for this handoff's risk profile}
+2. **{reviewer-name}** — {why}
+
+### Overall Assessment (post-integration)
+
+- {reviewer-name}: {CONDITIONAL PASS / PASS / FAIL} ({N} P0 resolved, {N} P1 resolved)
+- {reviewer-name}: {verdict}
 
 ---
 

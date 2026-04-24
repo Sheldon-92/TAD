@@ -170,6 +170,32 @@ document_management:
       - "STUCK: Active phase exceeds stale_age_days"
       - "OVER_ACTIVE: Multiple Active phases in same Epic"
 
+# ==================== Drift Detection (Phase 1 P1.2, 2026-04-24) ====================
+# Configuration for .tad/hooks/lib/drift-check.sh — 4 subchecks detecting handoff
+# lifecycle drift. Called by /tad-maintain CHECK mode.
+# Smoke alarm only: produces reports + suggestions, never auto-modifies files.
+drift_check:
+  enabled: true
+  version: "1.0"
+
+  # P1.2.b — zombie detection window
+  # How far back git log is scanned for implementing commits. 60 days covers
+  # typical Epic duration + paused-handoff drift without pulling all history.
+  zombie_window_days: 60
+
+  # P1.2.d — ghost task prefix list
+  # Slugs matching `^(prefix1|prefix2|...)-` trigger grounded_state requirement.
+  # Rationale: housekeeping/audit/sync handoffs commonly cite stale repo state
+  # (toy 2026-04-24: 3 handoffs in 4 days flagged for this).
+  ghost_task_prefixes:
+    - housekeeping
+    - sync
+    - rsync
+    - cleanup
+    - maintenance
+    - audit
+    - refresh
+
 # ==================== Document Maintenance Command ====================
 tad_maintain:
   description: "Document health check and synchronization"
