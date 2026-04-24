@@ -56,7 +56,13 @@
 
 ## Git Commit Verification
 
-Pending (step3c in progress). Commit hash will be appended below after commit.
+**Commit hash**: `08e9e74` (verified via `git log --oneline -1`)
+**Message**: `feat(TAD): implement phase1-state-consistency [Gate 3 pending]`
+**Files committed**: 38 (3 SKILL.md + 1 YAML + 4 shell + 2 template + 22 evidence + 1 NEXT.md + 5 reviews)
+**Excluded from commit** (per step3c policy):
+- `.tad/active/handoffs/*` (Alex archives at Gate 4)
+- `.tad/evidence/traces/*.jsonl` (runtime logs, not code)
+- `.tad/sync-registry.yaml` (pre-existing 2026-04-19 change, unrelated)
 
 ## Verdict
 

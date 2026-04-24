@@ -421,6 +421,24 @@ path/to/new-file.ts  # Purpose
 path/to/existing.ts  # Changes
 ```
 
+### 7.3 Grounded Against (Phase 2 P2.2 — Alex step1c, 2026-04-24)
+
+**Grounded Against** (Alex step1c 实际 Read 过的源文件):
+
+<!--
+  Alex step1c 强制填写: After step1b (frontmatter validation) and BEFORE step2
+  (expert review), Alex Reads head 50 lines of every existing file in §7.1/7.2
+  and lists them here. Files marked "(new — will be created)" are skipped.
+
+  Exemptions (skip the section entirely):
+    - Pre-Phase-2 handoffs (filename date < 2026-04-24)
+    - task_type: doc-only
+    - §7.1 + §7.2 both empty
+-->
+
+- _(file path 1, head 50 lines, read at YYYY-MM-DD HH:MM)_
+- _(file path 2 — or "(new — will be created)" for new files)_
+
 ---
 
 ## 8. Testing Requirements

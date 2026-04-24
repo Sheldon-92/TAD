@@ -32,7 +32,54 @@ project-knowledge/
 - **Context**: What was being done
 - **Discovery**: What was learned
 - **Action**: Recommended approach going forward
+- **Grounded in**: <optional> source files / configs the entry depends on
+- **Revalidated**: <optional> YYYY-MM-DD (Alex re-verified entry still accurate)
 ```
+
+### Grounded in — strict grammar (Phase 2 P2.1, 2026-04-24)
+
+`Grounded in` is the bullet that lets `.tad/hooks/lib/stale-knowledge-check.sh`
+detect when an entry's underlying source has drifted (toy OPRO 2026-04-21 case:
+entry written 04-07, code migrated 04-11–14, Alex still cited the stale entry
+on 04-21).
+
+The grammar is **strict** so the parser doesn't silently mis-interpret intent:
+
+- Multiple paths separated by `, ` (comma + space) — e.g., `path1, path2, path3`
+- Each path may carry an optional anchor: `:LINE` (single integer) OR `:SYMBOL`
+- **Forbidden**: paths containing `,`, ` ` (space), or `:` (except as the anchor delimiter)
+- **Forbidden**: line ranges like `:42-55` (use `:42` single point, or omit anchor)
+- A path that doesn't yet exist on disk may be marked `(new — will be created)`
+  — this is the ONLY exception; the marker tells the checker to emit INFO not WARN.
+
+Example (real, parseable):
+
+```markdown
+- **Grounded in**: loop_voice/config.py:QWEN_OMNI_MODEL, .tad/hooks/lib/router.sh:42, .tad/templates/test-brief-template.md
+```
+
+Example (illegal — would emit WARN, not silently miss):
+
+```markdown
+- **Grounded in**: loop_voice/config.py, foo.py:42-55, bar:baz:42
+                                          ^^^^^^^^^^  ^^^^^^^^^^^^
+                                          line range  multiple colons
+```
+
+### Revalidated — alarm-fatigue defense (Phase 2 P2.1, BA-P0-2)
+
+`Revalidated: YYYY-MM-DD` is bumped by Alex (or whoever updates the entry) when
+they have re-read the `Grounded in` files and confirmed the entry is still
+accurate. The stale-check baseline is `max(entry_date, revalidated_date)` —
+without this, every entry whose underlying file has been touched since creation
+would alarm forever, and Alex would learn to ignore all STALE warnings within
+~3 months. **Don't skip the Revalidated bullet when re-confirming an entry.**
+
+### Backward compatibility
+
+Pre-Phase-2 entries (no `Grounded in` bullet) are reported as `INFO` by the
+stale-check tool, never `STALE`. Old entries are NOT backfilled — only new
+entries are required to declare `Grounded in`.
 
 ## Quantity Limits & Consolidation
 

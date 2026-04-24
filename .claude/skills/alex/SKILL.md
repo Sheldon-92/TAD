@@ -1492,6 +1492,21 @@ handoff_creation_protocol:
         8. Matching is LLM semantic scan, not regex. Match related concepts
            (e.g., "hook" matches entries about hook scripts, shell portability).
            When in doubt, include — false positives acceptable, false negatives are not.
+        9. After knowledge matching, run stale-knowledge-check.sh (Phase 2 P2.1, advisory only):
+             bash .tad/hooks/lib/stale-knowledge-check.sh --json 2>/dev/null
+           Failure handling:
+             - If exit code != 0: emit stderr warning
+               "stale-check.sh failed (exit {code}); continuing without staleness data"
+               and proceed. Handoff drafting MUST NOT be blocked by this advisory tool.
+             - If exit code == 0: parse JSONL.
+               For each entry in relevant_knowledge with status="STALE":
+                 output to user: "⚠️ Knowledge entry '{title}' may be stale:
+                 {path} changed {N} days after baseline"
+                 Do NOT block. User may re-verify and bump `Revalidated` (per README
+                 Entry Format), or proceed with awareness.
+               INFO/WARN entries: just count for transparency; no UI noise.
+           Anti-Epic-1 reminder: stale-check is a CLI tool, NOT a hook. Never
+           registered in settings.json. Failure here MUST fall through.
       purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
 
     step1:
@@ -1574,6 +1589,54 @@ handoff_creation_protocol:
         e2e_required: "must be yes or no"
         research_required: "must be yes or no"
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
+
+    step1c:
+      name: "Grounding Pass — Read target files before sending to Expert Review"
+      trigger: "After step1b frontmatter validation, before step2 expert selection"
+      enforcement: "prompt-level-only"  # ⚠️ NOT a hook, NOT in settings.json, NOT a tool block
+      rationale: |
+        Phase 2 P2.2 (2026-04-24) — Alex 经常基于过期或想当然的代码认知写 handoff
+        (toy OPRO 2026-04-21 case). 在 step1 draft 完成、§6 Files to Modify 已存在
+        之后，强制 Read 目标文件 head 50 行作为 reality check。
+        先 reload knowledge (step0_5) 是 Alex 已知的"过去印象"; 后做 grounding (step1c)
+        是验证印象是否仍准确。顺序不可颠倒——step0_5 之前 §6 不存在。
+      blocking_in_alex_protocol: true  # Alex 自身 protocol 流程内必做才能进 step2
+                                        # 但**不**是 hook-level / tool-block — 是 SKILL 顺序约束
+      action: |
+        1. Identify target files in handoff scope:
+           a. Parse step1 draft's §6 (Files to Modify / Create) section
+           b. Plus paths under frontmatter `git_tracked_dirs[]` if relevant
+        2. For each EXISTING target file:
+           - Use Read tool with offset=1 limit=50 to fetch head 50 lines
+           - Note any surprises vs Alex's design-time assumptions (renamed function,
+             changed interface, moved path, etc.)
+           - On significant surprise: return to step1 to revise §6, or escalate to user
+        3. For files Alex plans to CREATE (don't yet exist):
+           - Skip Read; mark as `(new — will be created)` in Grounded Against
+        4. Append to handoff §6 末尾:
+           **Grounded Against** (Alex step1c 实际 Read 过的源文件):
+           - .tad/hooks/lib/foo.sh (head 50, read at YYYY-MM-DD HH:MM)
+           - .tad/templates/handoff-a-to-b.md (head 50, read at YYYY-MM-DD HH:MM)
+           - .tad/hooks/lib/bar.sh (new — will be created)
+      exemption_pre_phase2_handoffs: |
+        Skip step1c for handoffs that predate Phase 2 (filename date < 2026-04-24
+        OR no git_tracked_dirs frontmatter present): warn-only on revision.
+        Skip automatically for `task_type: doc-only` handoffs (no source files).
+        Skip automatically for handoffs with empty §6 (no files to modify/create).
+      exemption_express:
+        note: "*express path 是否豁免 grounding pass 留待 Phase 3 决定"
+        until_phase3: "*express 暂时也跑 step1c (与 standard 一致)，Phase 3 再 revisit"
+      violation_self_audit: |
+        At step2 (expert review), if §6 has no Grounded Against line AND §6 is non-empty
+        AND no exemption applies: self-audit failed → return to step1c.
+        This is Alex's own check — NOT a hook, NOT a tool block.
+      forbidden_implementations:
+        - "MUST NOT register as PreToolUse hook in .claude/settings.json"
+        - "MUST NOT register as UserPromptSubmit hook in .claude/settings.json"
+        - "MUST NOT add to .tad/hooks/*.sh as auto-fired script"
+        - "MUST NOT return deny exit code from any wrapping script"
+        - "MUST NOT block ANY tool call (Write/Edit/Read)"
+        - "violation level mirrors anti_rationalization_registry: prompt-only enforcement"
 
     step2:
       name: "Expert Selection"
