@@ -37,3 +37,6 @@ P4.6 (current state, expected 0 — modify LAST): 0
 ═══════════════════════════════════════════════════════════════
 Total: 27 checks (24 P4.x specific + 1 P4.6 deferred + 2 P4.5.3 sub-checks)
 ═══════════════════════════════════════════════════════════════
+
+─── P4.6 README check (post-commit, AC-P4.6-c LAST commit fired) ───
+✅ P4.6 (event-triggered, populated when running /playground): ≥1 hit (1) in .tad/project-knowledge/README.md

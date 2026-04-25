@@ -14,7 +14,7 @@ project-knowledge/
   testing.md          # Test patterns, edge cases discovered
   api-integration.md  # External API quirks, third-party services
   mobile-platform.md  # Capacitor, iOS, Android specific issues
-  frontend-design.md  # Frontend design decisions - Design Tokens, component specs, visual style
+  frontend-design.md  # Frontend design decisions - event-triggered, populated when running /playground, not continuous
   [dynamic]           # New categories can be created (see below)
 ```
 
