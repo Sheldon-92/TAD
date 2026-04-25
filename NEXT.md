@@ -3,18 +3,16 @@
 ## In Progress
 
 _(监督层替代方案已 2026-04-15 express handoff 落地——`layer2-audit.sh` + Alex SKILL step4c + Blake Slug Contract。见 Recently Completed)_
-- [ ] **EPIC: TAD Self-Upgrade from Cross-Project Learning** — Phase 2/6 DONE, awaiting Gate 4 (2026-04-24)
+- [ ] **EPIC: TAD Self-Upgrade from Cross-Project Learning** — Phase 5/6 DONE (2026-04-25)
   - Epic: `.tad/active/epics/EPIC-20260424-tad-self-upgrade-from-consumers.md`
   - Evidence: `.tad/evidence/learnings/HARVEST-20260424-cross-project.md`
-  - 来源：4 消费者项目（menu-snap / my-openclaw-agents / toy / Next Guest）经验反哺 + 9 条 TAD 原始假设审视 + 5 个数据采集缺口
   - Phase Map:
-    - ✅ P1: State Consistency Mechanical Checks — committed 08e9e74 (awaiting Alex Gate 4 / archive)
-    - ✅ P2: Grounding & Anti-Stale-Knowledge — Blake Gate 3 PASS (awaiting Alex Gate 4)
-    - ⬚ P3: New Paths for Real Usage Patterns（*express + *experiment + skip_KA）
-    - ⬚ P4: Domain Pack Expansion（cost-obs + agent-runtime-security + 3 扩展）
-    - ⬚ P5: Evolve Data Capture Infrastructure（为未来 *evolve 自动化）
-    - ⬚ P6: Assumption Re-Design（v3 候选，需 P1-5 数据）
-  - 下一步：Alex 执行 Gate 4 accept on Phase 1 + Phase 2，archive handoff pairs，然后启动 Phase 3 handoff
+    - ✅ P1: State Consistency Mechanical Checks (commit 08e9e74)
+    - ✅ P2: Grounding & Anti-Stale-Knowledge (commit 0b2e25d)
+    - ✅ P3: New Paths for Real Usage Patterns (commit ff96bd5)
+    - ✅ P4: Domain Pack Expansion (commits d2a73a1 + 93fcb50; 8 packs / 21 items / DESIGN.md spec / Anti-AI-Slop)
+    - ✅ P5: Evolve Data Capture Infrastructure (commit d578707; gate4_delta + AskUserQuestion capture + *cancel + per-handoff trace + 4 P4 inject; Gate 4 PASS 2026-04-25)
+    - ⬚ P6: Assumption Re-Design — v3 候选，建议拆为独立 Epic; 输入累积包括: ≥2 项目证据规则 / 双轮 review 必要性 / Gate 3-4 分工 / Pack 分类学 / AC 验证命令模式 (3 phases drift) / Layer 2 单 reviewer 模式 (3 phases drift)
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2 [SHE-23]
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
