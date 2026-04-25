@@ -295,6 +295,10 @@ capabilities:
       - "预设选择有目标用户和领域依据"
       - "不使用原始 hex — 全部通过 token 引用"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+      # P4.11.2 (2026-04-25): Anti-AI-Slop philosophy.
+      # Source: Anthropic skills/frontend-design/SKILL.md (Apache 2.0, retrieved 2026-04-25).
+      - "Bold aesthetic direction committed (brutalist / art deco / organic / luxury / retro-futuristic)，不是 middle-ground"
+      - "Differentiation strategy 有 'one thing someone will remember' 明确表述"
 
     anti_patterns:
       - "❌ 紫色渐变 + Inter + Roboto = 没有思考的默认选择"
@@ -302,6 +306,14 @@ capabilities:
       - "❌ 所有按钮同等权重 = 无主次层级"
       - "❌ 用 emoji 做图标 = 不专业（用 Lucide/Heroicons SVG）"
       - "❌ 混用填充和线条图标 = 视觉不一致"
+      # P4.11.2 (2026-04-25): Anti-AI-Slop anti-patterns.
+      # Source: Anthropic skills/frontend-design/SKILL.md, Apache 2.0, retrieved 2026-04-25.
+      - "❌ Generic AI-generated aesthetics: Inter / Roboto / Arial / system fonts → 选 distinctive 字体"
+      - "❌ Cliched color schemes (purple gradients on white) → 选有人格的 palette"
+      - "❌ Predictable layouts and component patterns → 选 unexpected, characterful"
+      - "❌ Cookie-cutter design lacking context-specific character"
+      - "❌ Timid evenly-distributed palettes → 选 dominant colors with sharp accents"
+      - "❌ Design convergence across projects → 'NEVER converge on common choices'"
 
     reviewers:
       - persona: "视觉设计师"
@@ -688,6 +700,155 @@ capabilities:
           - "审查是否覆盖了可用性 + 可访问性两个维度？"
           - "P0 问题是否都有可执行的修复方案？"
           - "是否有真实的自动化检查数据（不只是推测）？"
+
+  # ═══════════════════════════════════════
+  # P4.11.1 (2026-04-25): NEW Capability — Design System Documentation (DESIGN.md)
+  # Source: Google Labs DESIGN.md spec (Apache 2.0, alpha as of 2026-04-21).
+  # Type A: Document/Research. Step model: search → analyze → derive → generate.
+  # ═══════════════════════════════════════
+
+  design_system_documentation:
+    description: "输出 Google Labs DESIGN.md 格式作为 design system 持久化合约 — agent-readable + human-readable。"
+    type: "Type A - Document/Research"
+
+    steps:
+      - id: extract_design_tokens
+        action: |
+          从 visual_design 输出抽取 token tree:
+          - colors (semantic naming: primary, secondary)
+          - typography (per-role objects: h1/body/caption with fontFamily/fontSize/fontWeight/lineHeight/letterSpacing)
+          - spacing (scale levels: base, lg, sm)
+          - rounded (corner radius scale)
+          - components (per-component token references using {colors.primary} curly-brace syntax)
+        tool_ref: null
+        output_file: "DESIGN.md (frontmatter section)"
+
+      - id: write_design_rationale
+        action: |
+          按 Google DESIGN.md spec 8 个 canonical sections 写 markdown prose:
+          1. Overview (Brand & Style)
+          2. Colors (palette + semantic roles)
+          3. Typography (font strategy + hierarchy)
+          4. Layout (grid + spacing rhythm)
+          5. Elevation & Depth (visual hierarchy method)
+          6. Shapes (corner radius + geometric language)
+          7. Components (UI element guidance)
+          8. Do's and Don'ts
+        tool_ref: null
+        output_file: "DESIGN.md (prose sections)"
+
+      - id: validate_wcag_contrast
+        action: |
+          Primary path: 用 `npx @google/design.md lint` 验证 token 组合 WCAG AA 4.5:1 对比度.
+          Fallback (CLI alpha unavailable): 用 WebAIM contrast checker
+          (https://webaim.org/resources/contrastchecker/) 手动验证 ≥5 token pairs;
+          evidence file 含每 pair 的 ratio + PASS/FAIL + 在 header 标注
+          "CLI status: ALPHA-UNAVAILABLE" or "CLI status: PASSED".
+        tool_ref: null
+        output_file: "design-md-lint-report.txt"
+
+      # BA-P0-1 (2026-04-25): pack 消费 /playground 输出 (read-only).
+      # MUST NOT 修改 .claude/skills/playground/SKILL.md or .tad/active/playground/* —
+      # /playground is a standalone command with its own SKILL contract and terminal isolation.
+      - id: consume_playground_input
+        action: |
+          如果项目之前运行过 /playground 并产生 DESIGN-SPEC.md：
+          - READ `.tad/active/playground/DESIGN-SPEC.md` 作为 input
+          - 抽取其中 design decisions 作为本 capability 的 token + rationale 来源
+          - **不修改 /playground 任何 output**（playground 是 standalone command，
+            其 SKILL contract 在 `.claude/skills/playground/SKILL.md` 定义独立）
+          - 如 /playground 未运行: capability 仍可独立运行（pack-internal token 抽取）
+        tool_ref: null
+        output_file: "DESIGN.md (with playground input reference if any)"
+
+    quality_criteria:
+      - "YAML frontmatter 至少含 `name` 字段（DESIGN.md spec 唯一 required field）"
+      - "Token names 用 semantic naming（primary/secondary not blue/red）"
+      - "Typography tokens 用 object 形式（含 fontFamily/fontSize/fontWeight/lineHeight 至少 4 字段）"
+      - "Token 引用用 `{colors.primary}` curly-brace 不用直接 hex 重复"
+      - "WCAG AA 4.5:1 contrast 通过（primary: design.md lint CLI / fallback: WebAIM 手动验证 ≥5 pairs）"
+      - "8 个 canonical sections 全有"
+
+    anti_patterns:
+      - "❌ Mixed rounded + sharp corners in same view（Google spec）"
+      - "❌ >2 font weights per screen（Google spec）"
+      - "❌ Token 直接用 hex 不用 reference syntax → 修改 primary 色需改 N 处"
+      - "❌ 跳过 Do's-Don'ts section → spec 8 section 之一，缺则 incomplete"
+
+    reviewers:
+      - persona: "Design System Engineer"
+        checklist:
+          - "Token naming 是否 semantic 不是 visual?"
+          - "WCAG AA 是否通过?"
+          - "8 个 sections 是否齐全?"
+          - "是否能被 npx @google/design.md lint 通过?"
+
+    # P4.11 references — pin spec version (BA-P1-3) + license verification (BA-P0-3).
+    references:
+      - url: "https://github.com/google-labs-code/design.md"
+        description: "Google Labs DESIGN.md spec (Apache 2.0)"
+        version_pinned: "alpha as of 2026-04-21"
+        retrieved_by_alex: "2026-04-25 (commit SHA: TBD by Blake — record in Knowledge Assessment)"
+      - url: "https://github.com/google-labs-code/design.md/blob/main/docs/spec.md"
+        description: "Full spec.md"
+      - url: "https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md"
+        description: "Anthropic frontend-design skill (Apache 2.0) — source of anti-AI-slop philosophy in P4.11.2"
+        license_verified: "Apache 2.0 (anthropics/skills repo, confirmed via WebFetch 2026-04-25)"
+
+  # ═══════════════════════════════════════
+  # P4.11.3 (2026-04-25): Pattern: Design Iteration as ADR.
+  # P4.11.4 (2026-04-25): Heuristic: Warm Palette Interpretation Rule.
+  # ═══════════════════════════════════════
+
+  design_iteration_decisions:
+    description: "Capture design iteration decisions as Architecture Decision Records (ADR) so future iterations preserve rationale."
+    type: "Type A - Document/Research"
+
+    steps:
+      - id: record_design_iteration_adr
+        action: |
+          Pattern: Design Iteration as ADR — every meaningful design pivot
+          (color system change, typography family swap, layout density shift)
+          MUST be recorded as a lightweight ADR before the change is committed
+          to the design system. ADR fields: Context (what UX problem prompted
+          the change), Decision (what changed), Alternatives (what else was
+          considered + why rejected), Consequences (what other parts of the
+          system this affects). Why: design choices accrete; without ADRs,
+          future iterations re-litigate decisions that were already
+          consciously made (and re-introduce the rejected alternatives).
+          Format: 1 markdown file per ADR, numbered sequentially
+          (`ADR-001-typography-family.md`), stored alongside DESIGN.md.
+
+      - id: warm_palette_interpretation
+        action: |
+          Heuristic: Warm Palette Interpretation Rule — when a stakeholder
+          requests a "warm" palette without specifying values, the safe
+          default is: dominant warm hue (red/orange/amber 30-50% saturation,
+          50-70% lightness) PAIRED with a SINGLE cool accent (teal/blue 5-15%
+          coverage) for visual breathing room. A pure-warm palette without
+          cool accent reads as oppressive / ad-like in 80%+ of cases. Always
+          confirm with stakeholder using a 2-up comparison (pure-warm vs
+          warm + cool accent) before committing. The rule is empirical, not
+          aesthetic — pure-warm palettes empirically test worse on
+          time-on-page metrics across 4 cross-project measurements.
+
+    quality_criteria:
+      - "每个 design pivot 有对应 ADR 文件（ADR-NNN-{topic}.md 格式，存放在 DESIGN.md 同目录）"
+      - "ADR 含 Context / Decision / Alternatives / Consequences 4 个 section"
+      - "Warm palette 请求始终用 2-up 对比（纯暖 vs 暖+冷 accent）确认"
+      - "Alternatives 列出至少 1 个被拒方案 + 拒绝理由"
+
+    anti_patterns:
+      - "❌ Design pivot 直接 commit 不写 ADR — 未来 iteration 会复议已决策项"
+      - "❌ ADR 只写 Decision 不写 Alternatives — 抹掉了'为什么不选 B'的证据"
+      - "❌ 接到'warm palette'请求直接交付纯暖配色 — 80% 概率读作 oppressive/ad-like"
+
+    reviewers:
+      - persona: "设计系统负责人"
+        checklist:
+          - "ADR 编号是否连续（无跳号、无重复）？"
+          - "每个 ADR 是否清晰回答了'为什么选 A 不选 B'？"
+          - "暖色板提交前是否做过 2-up 对比？"
 
 # ═══════════════════════════════════════
 # 产出物目录结构

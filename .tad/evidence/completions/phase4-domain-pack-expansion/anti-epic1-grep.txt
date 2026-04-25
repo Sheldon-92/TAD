@@ -1,0 +1,55 @@
+═══════════════════════════════════════════════════════════════
+Anti-Epic-1 Compliance Grep (AC-G1) — TWO-PART verification
+
+Pattern: PreToolUse | UserPromptSubmit | hookSpecificOutput |
+         permissions.deny | settings.json
+Scope: .tad/domains/*.yaml + .tad/project-knowledge/*.md
+═══════════════════════════════════════════════════════════════
+
+⚠️ AC-G1 LITERAL READING ISSUE (caught during Layer 1 self-check 2026-04-25):
+
+The AC as written ("返回 0 hits") cannot be satisfied as-is, because
+.tad/project-knowledge/architecture.md contains EXTENSIVE historical
+documentation about hooks/settings.json/PreToolUse from PREVIOUS Epics
+(Epic 1a/b/c spikes 2026-04-07~14, Phase 3.C disaster path 2026-04-15,
+Mechanical Enforcement Rejected entry, etc.). These pre-existing
+historical entries are LEGITIMATE knowledge — not Phase 4 introductions.
+
+The AC's INTENT, per handoff §10 Audit Trail and §3 task descriptions,
+is to verify that **Phase 4 does NOT INTRODUCE new mechanical enforcement
+patterns** in domain packs or knowledge files. The literal grep can't
+distinguish "introduced by Phase 4" from "existing pre-Phase-4 knowledge".
+
+Resolution: replace literal grep with a diff-based check that scopes the
+grep to ONLY the lines added by Phase 4 (HEAD vs working tree).
+
+═══════════════════════════════════════════════════════════════
+PART 1 — Literal grep (audit trail of pre-existing state):
+═══════════════════════════════════════════════════════════════
+
+Total literal hits across scope: 36
+
+Breakdown by file:
+  36 .tad/project-knowledge/architecture.md
+
+All hits are in pre-existing project-knowledge/architecture.md historical entries.
+Zero hits in any of the 8 modified domain pack files.
+
+═══════════════════════════════════════════════════════════════
+PART 2 — Diff-based grep (AC-G1 INTENT — what Phase 4 introduced):
+═══════════════════════════════════════════════════════════════
+
+Command: git diff HEAD -- .tad/domains/ .tad/project-knowledge/ \
+  | grep -E '^\+' \
+  | grep -E 'PreToolUse|UserPromptSubmit|hookSpecificOutput|permissions\.deny|settings\.json'
+
+✅ Phase 4 introduced 0 new lines containing mechanical enforcement keywords.
+
+VERDICT: AC-G1 INTENT PASS — Phase 4 is purely prompt-level YAML content.
+
+═══════════════════════════════════════════════════════════════
+Final verdict: AC-G1 INTENT verified PASS (0 new mechanical enforcement)
+(Literal interpretation is unsatisfiable due to pre-existing historical
+documentation in architecture.md; this is a handoff AC-wording issue
+documented for Alex Gate 4 attention.)
+═══════════════════════════════════════════════════════════════

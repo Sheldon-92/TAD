@@ -59,6 +59,13 @@ capabilities:
           3. 输出格式锁定: 在前 30% 定义输出 schema/template
           4. 上下文边界: 明确什么信息可用、什么不可用
           5. 防幻觉护栏: "Use only information you are highly confident about. Mark uncertain claims [uncertain]. Do not fabricate."
+          5b. **Capability Declaration pattern (P4.3.2, 2026-04-25)**: include an explicit
+              "What I CAN do" + "What I CANNOT do" mini-section near the top of the system
+              prompt. Reduces both over-promising (model claims it can browse / run code
+              when the host hasn't wired those tools) and under-promising (model refuses
+              tasks it actually can do). Format: `Capabilities:\n- I can: ...\n- I cannot: ...`.
+              Cross-link: agent-side analog lives at
+              ai-agent-architecture.yaml `reliability_design.steps` (P4.4.2).
           6. 降级策略: 如果信息不足怎么办（标注 [INSUFFICIENT DATA]，不猜测）
           7. 安全边界: Prompt injection 防御（delimiter 隔离用户输入、角色锁定）
 
@@ -80,6 +87,15 @@ capabilities:
       - "MUST/NEVER 约束 ≤10 条（太多=稀释信号强度）"
       - "关键指令在 prompt 前 30%"
       - "编造约束 = FAIL"
+      # P4.3.3 (2026-04-25): Char limit ≤15K chars (~3.5K tokens) — empirical sweet spot.
+      - |
+        Char limit ≤15K chars (≈3.5K tokens) — empirical sweet spot for system prompts
+        across Claude Sonnet/Opus and GPT-4o. Beyond ≤15K chars, instruction recall
+        degrades non-linearly: critical MUST/NEVER constraints near the middle of a
+        long prompt get diluted. If the prompt exceeds 15K, split into base prompt +
+        retrieved prompt fragments via prompt caching, OR move long examples to a
+        few-shot capability that's loaded conditionally. Measure char count not just
+        token count because non-Latin scripts skew the ratio.
 
     anti_patterns:
       - "❌ 'You are a helpful assistant' — 太泛，必须有领域+价值观（prompt-architect）"
@@ -87,6 +103,16 @@ capabilities:
       - "❌ 关键约束在 prompt 末尾 — 放前 30%（prompt-master critical weight rule）"
       - "❌ 没有 Don't 列表 — anti-patterns 会泄漏（TIDD-EC pattern）"
       - "❌ 没有防幻觉机制 — Claude 会自信地编造（Lakera）"
+      # P4.3.1 (2026-04-25): Cross-Section Example Pollution.
+      - |
+        ❌ Anti-pattern: Cross-Section Example Pollution — placing concrete examples
+        from one capability/section near the system prompt's instructions for a
+        different capability. Example: a "summarize" prompt that includes a
+        translation example near its instruction block. The model conflates the
+        two — its summary outputs partially mirror the translation example's
+        format. Fix: keep examples ADJACENT to the instructions they
+        illustrate, separate sections with delimiters (`---` or `<example>`
+        tags), and never reuse examples across instruction sections.
 
     reviewers:
       - persona: "Prompt Security Auditor"

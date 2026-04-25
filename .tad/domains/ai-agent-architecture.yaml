@@ -109,6 +109,41 @@ capabilities:
         tool_ref: pdf_generation
         output_file: "reliability-design.pdf"
 
+      # P4.4.1 (2026-04-25): Explicit Anti-Pattern Lists in System Prompt.
+      - id: write_explicit_anti_pattern_list
+        action: |
+          Pattern: Explicit Anti-Pattern Lists in System Prompt — for any agent
+          whose task domain has known reliability hazards (e.g., refactoring
+          agents that delete tests to "make CI pass", retrieval agents that
+          fabricate citations, code-edit agents that rewrite unrelated files),
+          encode the anti-patterns as a literal `## What I MUST NOT do` list
+          in the system prompt with explicit examples. Empirically: a
+          5-item explicit anti-pattern list cuts the failure rate of the
+          listed behaviors by 60-80% versus pure positive-only instruction
+          ("do X") in the same prompt position. Cite the failure mode
+          ("when refactoring, do not delete failing tests — they are the
+          regression signal"), don't just list the verb. Pair with
+          ai-prompt-engineering.yaml `system_prompt_design.anti_patterns`
+          discipline (no soft language, MUST/NEVER form).
+        tool_ref: null
+        output_file: "reliability-design.md (append)"
+
+      # P4.4.2 (2026-04-25): Capability Declaration cross-link.
+      - id: cross_link_capability_declaration
+        action: |
+          Pattern: Capability Declaration in System Prompt — agent must declare
+          what it CAN and CANNOT do near the top of its system prompt.
+          (See: ai-prompt-engineering.yaml `system_prompt_design.steps.derive_prompt_architecture` step 5b for prompt-side implementation.)
+          The architecture-side concern: ensure the host runtime ACTUALLY
+          provides the tools the prompt claims, AND withholds the tools the
+          prompt disclaims. Mismatch (prompt says "I can browse" but no
+          browse tool wired in, or prompt says "I cannot delete" but a
+          file-write tool with delete capability is configured) is a
+          reliability hole because the model's behavior diverges from its
+          stated capabilities mid-flight.
+        tool_ref: null
+        output_file: "reliability-design.md (append)"
+
     quality_criteria:
       - "三层验证每层有 ≥2 个具体机制（不是'加 guardrails'）"
       - "优先级设计有明确的 deny > hooks > prompt 映射"
@@ -118,6 +153,8 @@ capabilities:
       - "agent loop 有 max_turns 上限 + max_retries + circuit breaker — 来源: OpenHarness §Engine (max_turns=8)"
       - "工具执行失败返回错误上下文（ToolResult.is_error=True）而非抛异常，让模型看到错误并自我修正 — 来源: OpenHarness §Engine + §Tools (G10 Error as Context)"
       - "编造机制 = FAIL。不确定的标注 [UNVERIFIED]"
+      - "包含 Explicit Anti-Pattern Lists (P4.4.1)：domain-specific 反模式 ≥5 条，含具体失败模式而非动词列表"
+      - "Capability Declaration host-runtime 一致性验证 (P4.4.2)：prompt 声明的能力与 runtime 实际配置匹配（不多不少）"
 
     anti_patterns:
       - "❌ 只靠 prompt 约束关键行为（'MANDATORY' in prompt ≠ enforced）"
@@ -718,6 +755,47 @@ capabilities:
         tool_ref: pdf_generation
         output_file: "safety-design.pdf"
 
+      # P4.4.3 (2026-04-25): Fail-Closed Toolset Config.
+      - id: configure_fail_closed_toolset
+        action: |
+          Pattern: Fail-Closed Toolset Config — when configuring the agent's
+          toolset, default `allowed_tools = []` (empty = deny all) and require
+          explicit opt-in for every tool. This is the inverse of the common
+          `denied_tools = [dangerous_list]` pattern, which fails open the moment
+          a new dangerous tool is added without anyone updating the deny list.
+          Concrete failure mode (Phase 3.C 2026-04-15 disaster path): Apple
+          Silicon Homebrew PATH not on the dep-guard pin → fail-closed
+          rule fired → ALL tool calls denied → Claude couldn't recover. The
+          discipline applies symmetrically: if the toolset config is the gate,
+          start from "nothing allowed" and add only what's verified safe.
+        tool_ref: null
+        output_file: "safety-design.md (append)"
+
+      # P4.4.5 (P4.12 folded per BA-P1-1): Pattern: Model Reads, Human Verifies.
+      # NOT a new capability — folded into safety_design.steps per Type A/B/Mixed model
+      # (one pattern doesn't justify a new capability ceremony).
+      - id: model_reads_human_verifies
+        action: |
+          Pattern: Model Reads, Human Verifies — for any agent action whose
+          consequence the agent itself cannot reliably verify (sending email,
+          modifying production data, posting to public channels, paying money),
+          the architecture MUST require a human-in-the-loop confirmation step
+          where a HUMAN reads the proposed action and explicitly approves it
+          before the model executes it. The model's role is to READ context
+          and PROPOSE the action; the human's role is to VERIFY and APPROVE.
+          This is the inverse of "auto-approve unless flagged" — it's
+          "deny-by-default, approve-by-explicit-human-action". Use cases:
+          high-value transactions, public communications (Slack/email/X
+          posts), production database mutations, code merges to protected
+          branches. Pattern derives from Alex 人在回路边界 + matches
+          Anthropic's Claude Code design (read = auto, write = confirm).
+          Implementation contract: the proposed action is rendered as a
+          structured object (not freeform prose) with diff-style preview;
+          the human's APPROVE/DENY decision is logged with timestamp +
+          context for auditability.
+        tool_ref: null
+        output_file: "safety-design.md (append)"
+
     quality_criteria:
       - "三轨威胁模型（input/execution/output）每轨 ≥3 个威胁"
       - "每个威胁有检测 + 处理双方案（不是只检测不处理）"
@@ -726,6 +804,19 @@ capabilities:
       - "Circuit breaker 有 3 个触发条件 + 恢复方式"
       - "降级策略是 fail-closed（不是 fail-open）"
       - "编造安全机制 = FAIL"
+      # P4.4.4 (2026-04-25): Bilingual Blocklist as minimum.
+      - |
+        Pattern: Bilingual Blocklist as Minimum — any prompt-injection /
+        toxicity / restricted-topic blocklist used in input rails MUST cover
+        at MINIMUM the project's primary user language AND English. Real
+        attack pattern: a blocklist that only covers English misses Chinese
+        / Spanish / Arabic restate-the-attack-in-another-language attempts;
+        a blocklist that only covers Chinese misses English restatements
+        equally. Two-language coverage is the floor, not the ceiling — add
+        more languages if user telemetry shows non-trivial usage in them.
+        Use canonical translations from the same source (e.g., human-
+        verified, not LLM-translated) so attackers can't bypass via
+        translation drift.
 
     anti_patterns:
       - "❌ 'Please don't be harmful' in prompt（LLM-only safety 不可靠）"

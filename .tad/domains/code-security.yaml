@@ -343,6 +343,34 @@ capabilities:
       - "❌ DAST without authentication — misses all auth-required vulnerabilities"
       - "❌ Nuclei without -update-templates — misses recently disclosed CVEs"
 
+    # P4.8 (2026-04-25): safe_fetch 7-Layer SSRF Defense Architecture (reference impl).
+    # Concrete pattern for the deterministic server-side fetcher (NOT agent-runtime LLM-controlled URLs).
+    # See boundary comment below.
+    reference_implementations:
+      - id: safe_fetch_7_layer_ssrf
+        name: "safe_fetch 7-Layer SSRF Defense Architecture"
+        description: |
+          Reference implementation for a deterministic server-side `safe_fetch(url)` helper
+          that defends against Server-Side Request Forgery (SSRF) when the URL originates
+          from user input, third-party content, or external configuration. 7 sequential
+          layers; later layers depend on earlier ones holding.
+        layers:
+          - "1. Scheme allowlist — accept only `http://` and `https://`. Reject `file://`, `gopher://`, `dict://`, `ftp://`, `ldap://`, custom schemes."
+          - "2. Hostname syntax validation — reject IPv4-in-URL forms (decimal `2130706433`, octal `0177.0.0.1`, hex `0x7f.0.0.1`), `[` IPv6 brackets without explicit allow, and userinfo (`user@host`)."
+          - "3. DNS resolve once — call `getaddrinfo` exactly once, cache the result. Reject if any returned IP is in private (RFC 1918), loopback (127.0.0.0/8), link-local (169.254.0.0/16, fe80::/10), multicast, broadcast, IPv6 ULA (fc00::/7), or cloud metadata (169.254.169.254, fd00:ec2::254) ranges."
+          - "4. Connect to the resolved IP directly — pass IP not hostname to the socket layer to defeat DNS rebinding (resolver returns public IP on first call, private IP on follow-up)."
+          - "5. Verify TLS hostname against the original host — pass the original hostname to TLS SNI / cert validation so a private-IP-with-stolen-cert attack fails."
+          - "6. HTTP redirect handling — disable automatic redirects; if the application needs redirect-following, recurse through `safe_fetch` from layer 1 with the new URL (chained validation, max 5 hops, accumulate visited host set to prevent loops)."
+          - "7. Response-side limits — cap response body size (e.g., 10 MB), enforce request + read timeout (e.g., 5s + 10s), reject responses with `Content-Type: text/html` if the caller expected JSON/binary (defends against HTML injection if response leaks to a downstream renderer)."
+        languages:
+          python: "Combine `urllib.parse.urlparse` + `socket.getaddrinfo` + `ipaddress.ip_address(...).is_private` + `httpx.AsyncClient(transport=httpx.HTTPTransport(local_address=...))`. See OWASP SSRF Cheat Sheet."
+          node: "Use `dns.lookup` with `family: 0`, validate via `net.isIP` + `ipaddr.js` private-range check, then `https.request` with explicit `host` (IP) + `servername` (original hostname for SNI)."
+          go: "`net.LookupIP` + `netip.Addr.IsPrivate()`/`IsLoopback()` + `http.Transport.DialContext` overriding DNS."
+        boundary: |
+          # Boundary: Agent-runtime SSRF (LLM-controlled URL fetching) belongs to
+          # ai-security pack (Security Chain EPIC-20260403 Phase 2). This capability
+          # covers the deterministic server-side fetcher only.
+
   # ═══════════════════════════════════════
   # Capability 3: Secret Detection
   # ═══════════════════════════════════════

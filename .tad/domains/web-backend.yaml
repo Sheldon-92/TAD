@@ -101,6 +101,11 @@ capabilities:
       - "OpenAPI spec 通过 npx @redocly/cli lint 零 error"
       - "每个端点有 operationId"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+      # P4.10 (2026-04-25): UUID-Scoped Pub/Sub Channel Names — StrictMode + topic-sharing defense.
+      # Cross-project pattern: when multiple browser tabs / React StrictMode duplicate-mounts /
+      # multiple instances share a single pub/sub topic name, messages cross-bleed. Fix:
+      # scope every channel name with a UUID generated per consumer instance.
+      - "Pattern: UUID-Scoped Pub/Sub Channel Names — every realtime channel name MUST embed a per-instance UUID (e.g., `topic:orders:${instanceId}`) so React StrictMode duplicate-mount, multi-tab opens, and parallel test runs cannot cross-pollute messages. Topic-sharing across instances = data leakage risk."
 
     anti_patterns:
       - "❌ URI 用动词（/getUser → 用 GET /users/{id}）"
@@ -109,6 +114,7 @@ capabilities:
       - "❌ 暴露实现细节（数据库列名、堆栈跟踪）"
       - "❌ 嵌套超过 3 层（/a/{id}/b/{id}/c/{id}/d）"
       - "❌ GET 请求带 action 参数（?action=delete）"
+      - "❌ Pub/Sub channel name without per-instance UUID scoping → StrictMode + multi-tab + topic-sharing cross-bleed (see P4.10 quality criterion)"
 
     reviewers:
       - persona: "API 架构师"

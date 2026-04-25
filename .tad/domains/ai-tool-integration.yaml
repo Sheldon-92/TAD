@@ -195,12 +195,33 @@ capabilities:
       - "安全分类明确（read-only / write / destructive）"
       - "实际测试通过（不是'应该能跑'）"
       - "编造工具能力 = FAIL。不确定的标注 [NEEDS_TESTING]"
+      # P4.7.1 (2026-04-25): Parallel CLI Prefetch — BSD bash 3.2 portable.
+      # When a workflow needs N independent CLI calls, fork them in parallel and `wait`.
+      # Cuts N×latency to 1×latency on the slowest call.
+      - |
+        Pattern: Parallel CLI Prefetch (BSD bash 3.2 portable) — when a workflow
+        triggers N≥2 independent read-only CLI calls (e.g., gh api, jq,
+        npm view, curl), fan them out in parallel via subshells `(cmd1) &`
+        and `wait`, redirecting each to a temp file. macOS BSD bash 3.2 lacks
+        `wait -n`, so use the explicit form:
+          `for cmd in cmd_a cmd_b cmd_c; do ($cmd > /tmp/$cmd.out) & done; wait`
+        Verifies portability across macOS default shell, Linux bash 4+, and
+        zsh. Avoid GNU `parallel` (extra dependency).
 
     anti_patterns:
       - "❌ 'Usage: use X to do Y'（Claude 不知道怎么用 — 需要具体命令）"
       - "❌ 无 verify 命令（无法确认安装成功）"
       - "❌ 封装 GUI-only 工具（Claude 无法交互 GUI）"
       - "❌ 无 example（Claude 第一次见这个工具，不知道输入格式）"
+      # P4.7.2 (2026-04-25): Vision OOM via base64 in conversation history.
+      - |
+        ❌ Anti-pattern: Claude Vision OOM via base64 in History — sending
+        base64-encoded images repeatedly across conversation turns inflates
+        the message history because each turn carries the full image bytes
+        (Claude does not deduplicate). Result: long-running visual sessions
+        OOM the API request before the model even runs. Fix: store images
+        once via the Files API (or upload to a CDN and pass URLs), then
+        reference them by ID/URL in subsequent turns. Never re-paste base64.
 
     reviewers:
       - persona: "DevOps 工程师"

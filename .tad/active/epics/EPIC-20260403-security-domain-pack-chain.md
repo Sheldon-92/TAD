@@ -68,6 +68,16 @@ Resume criteria: User runs supply-chain + code-security audit on an actual proje
 If value confirmed → Phase 2 (ai-security + compliance).
 If value insufficient → Evaluate whether to iterate on Phase 1 packs or deprioritize Phase 2-4.
 
+#### Phase 2 ai-security scope notes (P4.8 backref, 2026-04-25)
+
+⚠️ When Phase 2 builds the `ai-security` pack, **avoid duplicating P4.8 safe_fetch
+7-Layer SSRF Defense Architecture**. That implementation lives in
+`.tad/domains/code-security.yaml` (`dast_scan.reference_implementations`) and
+covers the **deterministic server-side fetcher** case (developer-written URL
+input). Agent-runtime SSRF — where the LLM itself decides which URL to fetch
+based on prompt input or tool output — is the orthogonal concern that belongs
+to ai-security. Cross-link the two so future readers see the boundary.
+
 ---
 
 ## Notes

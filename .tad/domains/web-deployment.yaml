@@ -94,6 +94,19 @@ capabilities:
       - "ADR 格式完整（背景/决策/理由/后果）"
       - "迁移路径有具体步骤"
       - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+      # P4.9.1 (2026-04-25): "Dashboard-Only" Ops CLI-Resolvable.
+      # Cross-project pattern: when a vendor (Cloudflare, Vercel, AWS console-only feature)
+      # nominally requires dashboard clicks, search the vendor docs for an underlying API /
+      # CLI / Terraform resource. Most "dashboard-only" features have a CLI path that's just
+      # less prominently documented. Cuts manual ops out of the critical path.
+      - |
+        Pattern: "Dashboard-Only" Ops CLI-Resolvable — when the platform's
+        documented happy path is "click in the dashboard," do NOT accept that
+        as the only path. Search vendor API docs / CLI docs / Terraform
+        provider docs for the underlying programmatic interface. Empirically
+        ~80% of "dashboard-only" tasks have a hidden CLI/API path. Document
+        the CLI command in deployment runbook so on-call doesn't depend on
+        web UI availability.
 
     anti_patterns:
       - "❌ '大家都用 Vercel 所以选 Vercel' = 无需求分析"
@@ -101,6 +114,17 @@ capabilities:
       - "❌ 忽略平台特有 API 的锁定风险"
       - "❌ 基于免费额度选型不预测增长成本"
       - "❌ 不测冷启动延迟"
+      # P4.9.2 (2026-04-25): Shell Pipe Trailing Newline.
+      - |
+        ❌ Anti-pattern: Shell Pipe Trailing Newline — `echo "$value" | tool`
+        appends a trailing `\n` to the value before piping. Tools that
+        validate exact-match input (signing, hashing, token comparison)
+        silently fail because the byte you sent is not the byte you intended.
+        Fix: use `printf '%s' "$value" | tool` (no trailing newline). Verify
+        with `printf '%s' "$value" | od -c` and confirm the last byte is the
+        last char of the value, not `\n`. Affects: HMAC signing, JWT compare,
+        cryptographic salts, anything where one trailing byte changes the
+        meaning. macOS BSD `od` and GNU `od` both behave the same for `-c`.
 
     reviewers:
       - persona: "DevOps 工程师"

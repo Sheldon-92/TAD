@@ -89,8 +89,24 @@ capabilities:
           3. "Outcomes over Steps"原则（Skill-Eval）：
              评分检查"文件是否被正确修改" 而不是"agent 是否运行了特定命令"
 
+          # P4.5.1 (2026-04-25): Metadata field — determinismLevel.
+          4. **determinismLevel metadata** (P4.5.1, 2026-04-25): each rubric item MUST
+             carry a `determinismLevel` field with one of three values:
+               - `deterministic` — output is byte-stable across runs (e.g., file
+                 existence, exact string match, hash equality). Score independent of
+                 model temperature/seed.
+               - `semi-deterministic` — output is stable in shape but variable in
+                 surface form (e.g., LLM-as-Judge with anchored rubric, JSON schema
+                 validation). Run ≥3× to bound variance.
+               - `non-deterministic` — output meaningfully varies (e.g., free-form
+                 prose quality). Run ≥10× and report distribution, not point estimate.
+             Why this matters: pass@k metrics on a deterministic rubric is wasted
+             compute; running pass@1 on a non-deterministic rubric is statistical
+             noise. The metadata tells the eval runner how many samples to draw
+             before reporting a verdict.
+
           如果某些维度无法定量评估 → 标注为需要人工评估 + 建议校准频率。
-        quality: "每个 P0/P1 维度有具体的评分规则、阈值、锚定描述。评价方式三选一有理由。"
+        quality: "每个 P0/P1 维度有具体的评分规则、阈值、锚定描述。评价方式三选一有理由。每个 rubric item 含 determinismLevel 字段（deterministic / semi-deterministic / non-deterministic）。"
         tool_ref: null
         output_file: "eval-framework.md (append)"
 
@@ -228,6 +244,19 @@ capabilities:
       - "❌ 只跑 1 次 — 非确定性系统需要多次运行才有信号"
       - "❌ 只有 pass/fail 没有分数 — 需要连续分数才能追踪改善"
       - "❌ 没有 baseline 对比 — 纯 LLM vs agent 对比揭示能力差异"
+      # P4.5.2 (2026-04-25): Mocks Hide SDK Shape Validation.
+      - |
+        ❌ Anti-pattern: Mocks Hide SDK Shape Validation — when benchmark tests mock
+        the agent's SDK calls (Anthropic SDK, OpenAI SDK, vendor SDK), the mock
+        returns whatever response shape the test author imagined. If the real SDK's
+        response shape ever drifts (new field added, optional field becomes required,
+        type narrows from string to enum), the mock-based benchmark continues to
+        PASS while production breaks at runtime. This is exactly how the menu-snap
+        SDK shape cast bug shipped: tests passed, prod crashed on a missing-but-
+        type-cast-as-present field. Fix: hit the real SDK in at least one
+        integration-tier benchmark (cheap models, low-cost prompts), so SDK shape
+        regressions surface in CI not prod. Mocks are still fine for
+        capability/coverage benchmarks — but never the SOLE benchmark layer.
 
     reviewers:
       - persona: "QA 测试架构师"
@@ -332,6 +361,23 @@ capabilities:
       - "❌ 只比质量不比成本 → 可能 10x 成本换 5% 质量"
       - "❌ 样本量太小下结论 → ≥20 cases + ≥3 runs 才有信号"
       - "❌ 'Config B 某个 case 好 5%' → 要看聚合指标不是单个 case"
+      # P4.5.3 (2026-04-25): Self-Enhancement (Judge=Optimizer) — known LLM-as-Judge bias.
+      - |
+        ❌ Anti-pattern: Self-Enhancement (Judge=Optimizer) — when the same model
+        family (or the SAME model) is used as both the optimizer/generator and the
+        judge in an A/B comparison or OPRO-style optimization loop, the model
+        systematically rates its own outputs higher than another model's output
+        of equivalent quality (self-enhancement bias, well-documented in 2024+
+        LLM-as-Judge literature). Concrete failure mode from toy OPRO 2026-04:
+        Claude Sonnet was BOTH generator AND judge — the loop converged on
+        prompts that scored high on Claude's preferences, not on objective task
+        quality, and the optimization "win" did not transfer to a different
+        production model. Rule: judge ≠ optimizer. Use a DIFFERENT model
+        family (e.g., generator=Claude Sonnet, judge=GPT-4o, optimizer=Claude
+        Haiku) or, if the same family is forced, document the bias as an
+        accepted limitation in the A/B report and flag the result as
+        "internally consistent only — needs cross-family validation before
+        production."
 
     reviewers:
       - persona: "数据科学家"
