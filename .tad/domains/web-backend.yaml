@@ -105,7 +105,7 @@ capabilities:
       # Cross-project pattern: when multiple browser tabs / React StrictMode duplicate-mounts /
       # multiple instances share a single pub/sub topic name, messages cross-bleed. Fix:
       # scope every channel name with a UUID generated per consumer instance.
-      - "Pattern: UUID-Scoped Pub/Sub Channel Names — every realtime channel name MUST embed a per-instance UUID (e.g., `topic:orders:${instanceId}`) so React StrictMode duplicate-mount, multi-tab opens, and parallel test runs cannot cross-pollute messages. Topic-sharing across instances = data leakage risk."
+      - "Pattern: UUID-Scoped Pub/Sub Channel Names — every realtime channel name MUST embed a per-instance UUID (e.g., `topic:orders:${instanceId}`) so React StrictMode duplicate-mount, multi-tab opens, and parallel test runs cannot cross-pollute messages. Topic-sharing across instances = data leakage risk. [applies_when: supabase_realtime + react_strictmode]"
 
     anti_patterns:
       - "❌ URI 用动词（/getUser → 用 GET /users/{id}）"

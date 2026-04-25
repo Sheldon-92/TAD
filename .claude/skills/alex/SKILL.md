@@ -186,6 +186,7 @@ commands:
   handoff: Generate handoff with expert review (see handoff_creation_protocol)
   review: Review Blake's completion report (MANDATORY before archiving)
   accept: Accept Blake's implementation and archive handoff
+  cancel: Cancel an active handoff (P5.3 — 4-reason taxonomy + rationale + move to cancelled/ archive; bypasses Gate 4)
 
   # Task execution
   task: Execute specific task from .tad/tasks/
@@ -2304,6 +2305,60 @@ acceptance_protocol:
       dogfood paradox risk + trivial recovery if script itself breaks.
     blocking: false
 
+  step4d:
+    name: "trace-digest.sh advisory check (P5.4 2026-04-25 — smoke-alarm for skipped Domain Pack steps)"
+    helper_script: ".tad/hooks/lib/trace-digest.sh <slug>"
+    blocking: false  # advisory; mirrors step4c
+    action: |
+      Phase 5 P5.4 introduced per-handoff trace subdirectory at
+      `.tad/evidence/traces/per-handoff/{slug}/{date}.jsonl`. Blake invokes
+      trace-step.sh during Domain Pack capability execution and the hook
+      records step_start / step_end events to both date-keyed and per-handoff
+      paths. step4d reads the per-handoff trace and surfaces obvious anomalies
+      (orphaned starts = step skipped mid-execution, all-failed step_ends =
+      capability never recovered, etc.) BEFORE Alex declares Gate 4 acceptance.
+
+      1. Extract handoff slug from current filename (same regex as step4c):
+           ^(HANDOFF|COMPLETION)-\d{8}-([a-zA-Z0-9_][a-zA-Z0-9_-]*[a-zA-Z0-9_])\.md$
+         Capture group $2 is the slug.
+
+      2. If slug extraction fails: acceptance report records
+         "trace-digest N/A: non-standard handoff filename — manual review required"
+         and proceed to step5. Do NOT block.
+
+      3. If slug valid: run
+           bash .tad/hooks/lib/trace-digest.sh <slug>
+         capturing exit code + stdout + stderr.
+
+      4. Interpret:
+         - exit 0 (PASS) → acceptance report inserts trace summary:
+             "✅ Trace digest: <step_start_count> step events captured;
+              <orphan_count> orphans; <failed_count> failed. (trace-digest is
+              smoke-alarm only — manual review for any orphan/failed > 0)"
+         - exit 1 (FAIL — orphan/failed counts non-zero) → acceptance report
+           inserts at VISIBLE position (before Gate 4 checklist):
+             ```
+             ⚠️ TRACE DIGEST WARN
+             Per-handoff trace shows skipped/failed Domain Pack steps:
+             <stderr from trace-digest.sh>
+             Human accepter: confirm whether Blake actually completed all
+             Domain Pack steps. If skipped legitimately, document exception
+             in completion report.
+             ```
+         - exit 2 (advisory — trace dir missing OR slug invalid) → acceptance
+           report records "trace-digest N/A: <reason from stderr>" and proceed.
+
+      5. Continue to step5 regardless of exit code. Acceptance is NOT blocked
+         by this check — smoke alarm only, mirrors step4c. Human accepter has
+         final call.
+
+      Rationale: trace-digest.sh is the Blake-side analog of step4c
+      (Layer 2 reviewer artifacts). step4c verifies "Blake claimed expert
+      review" — step4d verifies "Blake claimed Domain Pack execution".
+      Together they provide a smoke-alarm replacement for the mechanical
+      enforcement Epic 1 was rejected for (per architecture.md
+      "Mechanical Enforcement Rejected on Single-User CLI - 2026-04-15").
+
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7:
@@ -2425,6 +2480,63 @@ acceptance_protocol:
       - "MUST NOT return deny exit code from any wrapping script that reads skip_knowledge_assessment"
       - "MUST NOT auto-inject override marker via hook — Blake writes it manually based on judgment"
       - "MUST NOT couple skip_KA logic to Layer 2 audit (step4c) — they are orthogonal"
+
+  step7d:
+    name: "Capture Gate 4 deltas (gate4_delta — P5.1 2026-04-25)"
+    blocking: false  # advisory; prompt-level reminder only
+    purpose: |
+      During step7 raw-TSV recompute (step B) and AC alignment (step A), Alex
+      MAY discover gaps between what Alex's handoff claimed vs what Gate 4
+      verification actually shows. Examples:
+        - Alex said "p95 < 200ms achievable", Gate 4 measured p95 = 156ms
+          BUT coverage dropped 3% (tradeoff Alex didn't surface)
+        - Alex said "ai-evaluation pack covers OPRO", Gate 4 found pack lacks
+          control-variable check (caught by Gate 3 reviewer, surfaced at Gate 4)
+        - Alex said "scope = 8 files", Gate 4 review revealed 11 files actually
+          touched (handoff §6 estimate inaccurate)
+      These are NOT failures — they're "Alex 提议 vs Gate 4 reality" gaps that
+      future *evolve queries can use to detect Alex-side estimation drift.
+
+    action: |
+      IF Alex during step7 (raw-TSV recompute / AC alignment / business
+      acceptance) finds a substantive "Alex 提议 vs Gate 4 reality" gap,
+      Alex MAY append an entry to the handoff frontmatter `gate4_delta:`
+      list with these 4 keys:
+        - field:        "<which AC# or handoff §, e.g. AC11 or §6 estimate>"
+        - alex_said:    "<what handoff predicted, one sentence>"
+        - actual:       "<what Gate 4 verification showed, one sentence>"
+        - caught_by:    "<who/what surfaced the gap: 'Alex raw-TSV recompute',
+                         'Gate 3 code-reviewer P0', 'human walkthrough', etc.>"
+
+      Example entry (added to handoff frontmatter `gate4_delta:`):
+      ```yaml
+      gate4_delta:
+        - field: "AC11"
+          alex_said: "p95 < 200ms achievable with single-awk"
+          actual: "p95 = 156ms but coverage dropped 3% — tradeoff caught at Gate 4"
+          caught_by: "Alex raw-TSV recompute"
+      ```
+
+      Empty list (`gate4_delta: []`) is the default and is correct when no gaps
+      surface. Alex MUST NOT fabricate gaps to fill the field — empty is
+      semantically meaningful (means handoff predictions held up).
+
+    enforcement: "prompt-level-only"
+    forbidden_implementations:
+      - "MUST NOT register PreToolUse / PostToolUse hook to mechanically diff Alex prediction vs Gate 4 reality"
+      - "MUST NOT add to .claude/settings.json"
+      - "MUST NOT auto-populate gate4_delta entries via any hook or script — Alex writes them based on judgment"
+      - "MUST NOT block *accept on gate4_delta presence/absence — empty is semantically valid"
+      - "MUST NOT couple gate4_delta to skip_knowledge_assessment — orthogonal concerns"
+
+    rationale: |
+      Phase 5 P5.1 builds the data-capture substrate for future *evolve cross-
+      project drift detection. Without structured gate4_delta records, *evolve
+      cannot tell "Alex over-promised on perf" from "tests genuinely flaky" —
+      both look like AC failures in retrospect. The 4-key structure (field,
+      alex_said, actual, caught_by) is the minimum *evolve needs to attribute
+      drift to a source.
+
   step7b: "【配对测试评估】评估是否建议配对 E2E 测试（UI/用户流变更时建议，人类决定）"
   step8: "【强制】执行 *accept 命令完成归档流程"
   step9: "限制 active handoffs 不超过 3 个"
@@ -2454,6 +2566,132 @@ acceptance_protocol:
   violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"
   violation2: "Gate 3 v2 未通过就执行 Gate 4 v2 = VIOLATION"
   violation3: "验收通过后不执行 *accept 归档 = VIOLATION"
+
+# ═══════════════════════════════════════
+# *cancel command (P5.3, 2026-04-25)
+# Formalizes "abandoned handoff" workflow with 4-reason taxonomy + rationale.
+# Bypasses Gate 4 ceremony BY DESIGN — cancelled work doesn't need acceptance,
+# but DOES need structured archival so future *evolve can detect cancellation
+# patterns (Alex over-promising, scope-shift drift, supersede chain integrity).
+# Symmetric forbidden_implementations 5-item block per Path Layering 2026-04-24.
+# ═══════════════════════════════════════
+cancel_protocol:
+  description: "Cancel active handoff that won't be completed — 4-reason taxonomy + rationale + cancelled/ archive. Skips Gate 4."
+
+  trigger:
+    type: "user_explicit_only"
+    activation_word: "*cancel"
+    NOT_via_alex_suggestion: |
+      Alex MUST NOT proactively recommend *cancel. Specifically:
+      (a) MUST NOT add *cancel to adaptive_complexity_protocol step2 AskUserQuestion options
+      (b) MUST NOT pre-select *cancel as Recommended in any AskUserQuestion
+      (c) MUST NOT signal-word-detect "abandon" / "scrap" / "give up" → *cancel
+      Reason: Anti-AR-001. *cancel is for explicit user-initiated abandonment with
+      full reason+rationale ceremony. Auto-suggesting it creates a path of least
+      resistance away from completion — exactly the AR-001 attack surface.
+
+  reason_taxonomy:
+    options:
+      - id: "pivoted"
+        label: "Pivoted"
+        description: "Direction changed — different approach now correct, this handoff's scope no longer fits"
+      - id: "obsolete"
+        label: "Obsolete"
+        description: "External change made this handoff irrelevant (vendor deprecation, policy change, etc.)"
+      - id: "superseded"
+        label: "Superseded"
+        description: "A newer handoff covers this scope better; cite the superseding handoff in rationale"
+      - id: "scope-change"
+        label: "Scope Change"
+        description: "Original scope was wrong; the actual work is too big or too small for this handoff"
+
+  required_inputs:
+    - "cancel_reason: exactly one of [pivoted, obsolete, superseded, scope-change]"
+    - "cancel_rationale: free-text one-line explanation (why this reason was chosen, what triggered cancellation)"
+    - "Both fields MANDATORY — empty rationale → block *cancel and re-prompt"
+
+  execution:
+    step1:
+      name: "Confirm cancellation intent"
+      action: |
+        Use AskUserQuestion to confirm user explicitly wants to cancel (not pause):
+          question: "Cancel this handoff? Cancelled handoffs bypass Gate 4 and archive to cancelled/ — this is permanent (handoff won't complete)."
+          options:
+            - "Yes, cancel — I'll provide reason next"
+            - "No, keep active — I'll resume later"
+            - "Pause instead — keep in active/, no archive"
+        IF user picks "No" or "Pause" → exit cancel_protocol; return to standby.
+
+    step2:
+      name: "Capture reason + rationale"
+      action: |
+        Use AskUserQuestion to select reason from 4-option taxonomy
+        (see reason_taxonomy.options above). Then prompt user for one-line
+        rationale (free text). Both fields are REQUIRED.
+
+    step3:
+      name: "Append cancel fields to handoff frontmatter"
+      action: |
+        Read current handoff frontmatter. Append (NOT replace) two scalar fields:
+          cancel_reason: <chosen reason id>
+          cancel_rationale: "<one-line rationale, YAML-escaped>"
+        Note: gate4_delta is NOT touched — that's for accepted handoffs only.
+        skip_knowledge_assessment is NOT touched — orthogonal concern.
+
+    step4:
+      name: "Move handoff to cancelled/ archive"
+      action: |
+        Create `.tad/archive/handoffs/cancelled/` if missing (mkdir -p).
+        Move the cancelled handoff file (atomic mv):
+          mv .tad/active/handoffs/HANDOFF-{date}-{slug}.md \
+             .tad/archive/handoffs/cancelled/HANDOFF-{date}-{slug}.md
+        Move any matching COMPLETION-{date}-{slug}.md if it exists (incomplete completion).
+
+    step5:
+      name: "Update NEXT.md"
+      action: |
+        In NEXT.md:
+        1. Find the In Progress entry for this handoff slug → remove it
+        2. Find or create a "## Cancelled" section (after "## Recently Completed" or at end)
+        3. Add line: "- [c] {slug} ({date}) — {reason}: {rationale truncated to 80 chars}"
+        4. Use [c] marker (not [x]) to distinguish cancelled from completed.
+
+    step6:
+      name: "Skip Gate 4 ceremony — by design"
+      action: |
+        Do NOT execute *accept ceremony. Do NOT add `## Gate 4` section to handoff.
+        Do NOT call layer2-audit.sh. Do NOT call trace-digest.sh.
+        Cancelled work has no acceptance — only archival. This is the explicit
+        contract that makes cancellation distinct from completion.
+      verification: |
+        AC-P5.3-f verifies: post-cancel diff shows NO `## Gate 4` section addition.
+
+    step7:
+      name: "Confirm + return to standby"
+      action: |
+        Output to user: "✅ Cancelled: {slug}. Reason: {reason}. Rationale recorded.
+        Archived to .tad/archive/handoffs/cancelled/. Returning to standby."
+        Enter Alex standby state (per intent_router_protocol.standby).
+
+  enforcement: "prompt-level-only"
+
+  # P5.3 BA-P0-3: symmetric forbidden_implementations 5-item block
+  # (parity with *express / *experiment / skip_knowledge_assessment per
+  # Path Layering 2026-04-24 attack-surface defense)
+  forbidden_implementations:
+    - "MUST NOT register PreToolUse / PostToolUse / UserPromptSubmit hook to auto-trigger *cancel"
+    - "MUST NOT add to .claude/settings.json"
+    - "MUST NOT couple *cancel to skip_knowledge_assessment (cancelled handoffs bypass Gate 4 by design but MUST still write cancel_reason + cancel_rationale)"
+    - "Anti-AR-001: '*cancel = silent abandonment' is a forbidden interpretation — both reason taxonomy AND rationale text are mandatory"
+    - "MUST NOT auto-downgrade Standard TAD handoff to *cancel via any mechanism (no Alex AskUserQuestion suggestion, no signal-word auto-detection)"
+
+  rationale: |
+    Phase 5 P5.3 formalizes what was previously the "silent abandoned handoff"
+    failure mode (toy 2026-04-11 example: handoff sat in active/ for weeks,
+    never accepted, never deleted, eventually disappeared without record).
+    Structured cancellation gives future *evolve a way to distinguish "Alex
+    over-scoped" from "external pivot" from "supersede chain" — all of which
+    look like missing-completion to a naive aggregator.
 
 # *accept 命令流程 (BLOCKING - 必须完成才能开始新任务)
 accept_command:

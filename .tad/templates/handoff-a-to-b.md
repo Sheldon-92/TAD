@@ -11,11 +11,19 @@ git_tracked_dirs: []  # e.g., ["src/pages", "packages/api/routes"]
 
 # Optional: Skip Alex Gate 4 Knowledge Assessment ceremony for trivial handoffs
 # (Phase 3 P3.3, 2026-04-24). Alex sets default; Blake can override unskip via
-# completion-report `## Knowledge Updates` marker if implementation surfaces real findings.
+# completion-report `## Knowledge Assessment` marker if implementation surfaces real findings.
 # Recommended: yes for task_type=doc-only / trivial CSS / copy / single-file config.
 #              no  for task_type=mixed / code / research (default).
 # Backward compat: field absent → treated as `no` (existing behavior preserved).
 skip_knowledge_assessment: no  # yes | no
+
+# Optional: Capture "Alex 提议 vs Gate 4 reality" gaps surfaced during *accept
+# (Phase 5 P5.1, 2026-04-25). Empty list is the default and means handoff
+# predictions held up. Alex MAY append entries with 4 keys (field/alex_said/
+# actual/caught_by) when raw-TSV recompute or AC alignment shows a gap.
+# Future *evolve queries use this for cross-project drift detection.
+# Cancelled handoffs do NOT use this field — they use cancel_reason instead.
+gate4_delta: []
 ---
 
 # Handoff Document for Agent B (Blake)

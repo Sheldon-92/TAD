@@ -54,6 +54,15 @@
             "command": "bash .tad/hooks/post-write-sync.sh"
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/lib/askuser-capture.sh"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

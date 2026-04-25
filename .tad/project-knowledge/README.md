@@ -124,6 +124,37 @@ Example consolidation:
 - **Action**: Always set explicit timeouts, implement retry with backoff, add circuit breaker for critical paths
 ```
 
+## Domain Pack vs Project-Knowledge Decision Rule
+
+When recording a learning, decide where it lives.
+
+### → Domain Pack (`.tad/domains/{name}.yaml`)
+
+Place a learning here only if **either** condition holds:
+
+- **≥ 2 不同项目的独立证据** (cross-project evidence) — pattern observed in 2+ different consumer projects.
+- **行业 standard import** (industry standard reference) — verbatim lift from established public source (e.g., Anthropic skills, Google Labs DESIGN.md spec) with license verification.
+
+### → project-knowledge (`.tad/project-knowledge/{category}.md`)
+
+Place here when **any** condition holds:
+
+- **单项目证据** (single-project evidence) — pattern observed in only one project so far.
+- **Project-specific stack pattern** — uses tech stack/services unique to this consumer.
+- **Tactical workaround** — likely to be obsoleted by tooling/version upgrade.
+
+### Transition Zone (single-project, high confidence)
+
+If a learning has only single-project evidence but high confidence:
+
+- **Stay in project-knowledge** by default.
+- **Promote to Domain Pack only after** observing the same pattern in a second project.
+- **Alternative**: place in Domain Pack with `[applies_when: ...]` annotation (see `.tad/domains/web-backend.yaml` UUID Pub/Sub pattern for reference) to limit scope to a specific stack.
+
+### Why this rule
+
+Phase 4 of EPIC-20260424 (2026-04-25) caught 3 over-fit items (P4.10 / P4.11.3 / P4.11.4) where single-project evidence was prematurely promoted to Domain Pack. Result: Pack signals became diluted with project-specific advice. Phase 5 P5.7 demoted Warm Palette Interpretation back to project-knowledge as a corrective. The rule keeps Pack-level learning portable across consumer projects.
+
 ## What NOT to Record
 
 - Generic best practices (AI already knows these)
