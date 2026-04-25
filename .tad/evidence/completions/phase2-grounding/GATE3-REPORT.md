@@ -60,7 +60,14 @@
 
 ## Git Commit Verification
 
-Pending step3c. Hash recorded below post-commit.
+**Commit hash**: `0b2e25d` (verified via `git log --oneline -1`)
+**Message**: `feat(TAD): implement phase2-grounding [Gate 3 pending]`
+**Excluded from commit** (per step3c policy):
+- `.tad/active/handoffs/*` (Alex archives at Gate 4)
+- `.tad/sync-registry.yaml` (pre-existing change)
+- `.tad/evidence/traces/*.jsonl` (runtime logs)
+- `.tad/active/epics/EPIC-...` and `.tad/evidence/learnings/HARVEST-...` (pre-existing Alex artifacts)
+- `.tad/archive/handoffs/*phase1*` (Alex's Phase 1 archive moves, not Phase 2 work)
 
 ## Verdict
 
