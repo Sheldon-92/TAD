@@ -646,6 +646,33 @@ intent_modes:
         en: ["learn", "teach me", "why", "explain", "how does", "understand", "what is", "concept"]
       leads_to_handoff: "never"
 
+    # Phase 3 P3.1 (2026-04-24): *express trivial-handoff path
+    express:
+      command: "*express"
+      label: "Express"
+      icon: "⚡"
+      description: "Quick path for trivial bugfix / small UX polish (≤3 files). Skips ceremony, keeps ≥1 review."
+      # ⚠️ Intentionally empty signal_words — Alex MUST NOT auto-detect *express
+      # (per express_path_protocol.trigger.NOT_via_alex_suggestion).
+      # User must type *express explicitly. Listed here so step1 explicit-command
+      # bypass recognizes the keyword.
+      signal_words:
+        zh: []
+        en: []
+      leads_to_handoff: "always"
+      user_explicit_only: true
+
+    # Phase 3 P3.2 (2026-04-24): *experiment OPRO/A-B/benchmark path
+    experiment:
+      command: "*experiment"
+      label: "Experiment"
+      icon: "🧪"
+      description: "OPRO / A-B test / benchmark / prompt tuning. Gates ADD experiment-validity checks."
+      signal_words:
+        zh: ["opro", "评估", "对比", "基准", "调优", "benchmark", "ab测试", "实验"]
+        en: ["opro", "evaluate", "benchmark", "tune", "ab test", "experiment", "rubric", "eval-loop"]
+      leads_to_handoff: "always"
+
     analyze:
       command: "*analyze"
       label: "Standard TAD"
@@ -659,14 +686,22 @@ intent_modes:
     fallback_mode: "analyze"
     signal_confidence_threshold: 2
 
-    priority_order: ["bug", "idea", "discuss", "learn", "analyze"]
+    # Phase 3 P3.1 (2026-04-24): priority_order extended to include experiment + express.
+    # *express is LAST among non-analyze on purpose — never wins a tiebreaker against
+    # any specific mode (anti-AR-001 — see express_path_protocol.trigger.NOT_via_alex_suggestion).
+    priority_order: ["bug", "idea", "experiment", "express", "discuss", "learn", "analyze"]
     priority_note: |
       When signal words match multiple modes equally:
       1. bug — highest priority (immediate action needed)
       2. idea — user is capturing something specific
-      3. discuss — broad conversation
-      4. analyze — fallback / default
+      3. experiment — measurable A/B/eval task with rubric
+      4. express — last among non-analyze; user-explicit-only entry; never wins ambiguous tiebreaker
+      5. discuss — broad conversation
+      6. learn — Socratic teaching
+      7. analyze — fallback / default
       Ties are broken by this priority order. Final confirmation via AskUserQuestion still applies.
+      ⚠️ *express never appears as Recommended (Option 1) in step3 display — even when
+      signal-word detection favors it. See intent_router_protocol step3 7-mode display strategy.
 
 # ==================== 场景工作流（增强版） ====================
 scenarios:

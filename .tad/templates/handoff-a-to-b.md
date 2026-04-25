@@ -8,6 +8,14 @@ research_required: no # yes | no - yes 时 Blake 必须产出研究文件
 # (Phase 1 P1.1, 2026-04-24). Leave blank/omit for doc-only or config-only handoffs.
 # Smoke-alarm check: missing/absent → skip; covered-by-.gitignore → warn, not fail.
 git_tracked_dirs: []  # e.g., ["src/pages", "packages/api/routes"]
+
+# Optional: Skip Alex Gate 4 Knowledge Assessment ceremony for trivial handoffs
+# (Phase 3 P3.3, 2026-04-24). Alex sets default; Blake can override unskip via
+# completion-report `## Knowledge Updates` marker if implementation surfaces real findings.
+# Recommended: yes for task_type=doc-only / trivial CSS / copy / single-file config.
+#              no  for task_type=mixed / code / research (default).
+# Backward compat: field absent → treated as `no` (existing behavior preserved).
+skip_knowledge_assessment: no  # yes | no
 ---
 
 # Handoff Document for Agent B (Blake)

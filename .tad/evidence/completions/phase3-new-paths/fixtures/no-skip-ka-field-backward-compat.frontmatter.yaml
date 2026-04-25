@@ -1,0 +1,17 @@
+# Fixture: skip_knowledge_assessment field ABSENT (P3.3 AC-P3.3-f, BA-P2-4)
+# Purpose: Backward compat — handoffs created BEFORE Phase 3 (Phase 1+2 archive).
+# Expected Alex step7 routing: branch_3 (treat as `no` per backward compat rule).
+#
+# Source: real archived handoff frontmatter from
+#   .tad/archive/handoffs/HANDOFF-20260424-phase1-state-consistency.md
+# (verified absent of skip_knowledge_assessment field)
+---
+task_type: mixed
+e2e_required: no
+research_required: no
+git_tracked_dirs: [".tad", ".tad/hooks"]
+# NOTE: skip_knowledge_assessment field is ABSENT here.
+# Alex acceptance_protocol.step7.pre_check rule:
+#   "if field ABSENT → treat as `skip_knowledge_assessment: no`"
+# This preserves Phase 1+2 archive behavior unchanged.
+---

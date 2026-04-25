@@ -1149,6 +1149,67 @@ completion_protocol:
 
   violation: "完成实现但不创建 completion report = 绕过验收 = VIOLATION"
 
+# ⚠️ P3.3 (2026-04-24): Blake override unskip protocol
+# Safety net: even if handoff frontmatter says skip_knowledge_assessment: yes,
+# Blake MUST add KA when implementation surfaces reusable knowledge.
+# Precedent: menu-snap SDK shape cast bug (architecture.md:55) was found in what
+# looked like a small bugfix — without override channel that lesson would be lost.
+completion_knowledge_override:
+  rule: |
+    Even when handoff frontmatter says skip_knowledge_assessment: yes,
+    Blake MUST add knowledge entries to architecture.md (or relevant category file)
+    if implementation surfaces ANY of the following:
+      - Reusable bash/CLI pattern (e.g., parallel CLI prefetch, awk over grep loop)
+      - Library / SDK / API quirk reproducible across projects
+      - LLM behavior pattern (drift / refusal / hallucination signature)
+      - Anti-pattern with clear remediation
+      - TAD framework mechanism discovery (hook contract / shell portability / etc)
+
+  override_marker_anchor: "## Knowledge Assessment"
+  # Exact section header in COMPLETION-{slug}.md (markdown level-2 heading).
+  # Matches the canonical .tad/templates/completion-report.md section header
+  # AND the existing 10+ archived completion reports (verified 2026-04-24).
+
+  override_marker_format: |
+    Override marker is inserted AS A NEW LINE between the section header
+    `## Knowledge Assessment` and the existing template body
+    (`**是否有新发现？** ✅ Yes / ❌ No` line). Existing template body remains
+    intact below.
+
+    The marker line itself, literal:
+
+    `**knowledge_assessment_override: unskip — reason: <one sentence why this trivial-tagged
+    handoff actually surfaced reusable knowledge>**`
+
+    Format MUST be exactly:
+      - Bold markdown (literal `**...**` wrapping the entire line)
+      - No leading whitespace
+      - Single line (no internal newlines)
+      - Phrase prefix: `knowledge_assessment_override:` then space then `unskip`
+      - The literal "unskip" keyword (not "yes", "true", "force")
+      - One-sentence reason after `— reason:`
+
+  alex_grep_pattern: '^\*\*knowledge_assessment_override:\s*unskip'
+  # Case-sensitive, line-anchored. Alex acceptance_protocol.step7.pre_check uses this
+  # exact pattern over the first ~5 lines after `## Knowledge Assessment` header
+  # (rather than strict "first non-blank line") so a future template tweak that
+  # adds boilerplate above the marker doesn't break the match. Keep these two
+  # patterns in sync (Blake-side format spec ↔ Alex-side grep window).
+
+  rationale: |
+    menu-snap SDK shape cast bug (architecture.md:55) was found in what looked like a
+    small bugfix. If the handoff had skip_KA=yes and Blake had no override channel,
+    the lesson would have been lost. Override is the safety net.
+
+  # Anti-Epic-1 parity with P3.1 (express) / P3.2 (experiment) — P3.3 BA-P0-3.
+  # All three new paths share the same prompt-level-only attack surface defense.
+  forbidden_implementations:
+    - "MUST NOT register PreToolUse / PostToolUse / UserPromptSubmit hook to read frontmatter and skip step7 mechanically"
+    - "MUST NOT add to .claude/settings.json"
+    - "MUST NOT return deny exit code from any wrapping script that reads skip_knowledge_assessment"
+    - "MUST NOT auto-inject override marker via hook — Blake writes it manually based on judgment"
+    - "MUST NOT couple skip_KA logic to Layer 2 audit (step4c) — they are orthogonal"
+
 # NEXT.md 维护规则
 next_md_rules:
   when_to_update:

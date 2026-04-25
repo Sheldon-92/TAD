@@ -307,9 +307,14 @@ intent_router_protocol:
     step1:
       name: "Check Explicit Command"
       action: |
-        If user input starts with *bug, *discuss, *idea, *learn, or *analyze:
+        If user input starts with *bug, *discuss, *idea, *learn, *express, *experiment, or *analyze:
           → Skip detection, go directly to the corresponding path
           → For *analyze: proceed to adaptive_complexity_protocol (existing flow)
+          → For *express: enter express_path_protocol (Phase 3 P3.1)
+          → For *experiment: enter experiment_path_protocol (Phase 3 P3.2)
+          → No new step3 special case — *express / *experiment reuse the same explicit-command
+            bypass mechanism as *bug / *discuss / *idea / *learn (step3 is skipped automatically
+            because step1 routes directly to step4).
 
     step1_5:
       name: "Idle Detection"
@@ -339,18 +344,34 @@ intent_router_protocol:
         If no mode reaches threshold → pre-select "analyze" (standard TAD).
 
     step3:
-      name: "User Confirmation (ALWAYS)"
+      name: "User Confirmation (ALWAYS — only triggers when input is ambiguous text, not explicit command)"
       action: |
         Use AskUserQuestion to confirm detected intent.
 
-        5-mode display strategy (AskUserQuestion 4-option limit):
+        # Phase 3 P3.1 (BA-P0-1, 2026-04-24): 7-mode display strategy with 4-option overflow
+        # Modes available: bug / idea / discuss / learn / experiment / express / analyze
+        # AskUserQuestion hard cap: 4 options.
+        7-mode display strategy:
         1. Option 1: {detected_mode} (Recommended) — always first
+           ⚠️ EXCEPTION (BA-P1-2 + AR-001 letter-not-spirit defense):
+              *express MUST NOT appear as Option 1 (Recommended) even if signal-word
+              detection favors it. If signals suggest express, classify as analyze with
+              note "looks small — start *analyze; user can downgrade by typing *express".
+              Reason: prevents Alex from auto-downgrading scope to fit *express
+              (anti_rationalization_registry AR-001 attack surface).
         2. Options 2-3: next 2 modes by signal match count (descending)
-        3. Option 4: analyze — ALWAYS included as fallback/default
-        4. Drop: the mode with lowest signal match (if not already shown)
+        3. Option 4: analyze — ALWAYS included as fallback/default (always 4th position)
+        4. Drop: modes with lower signal match (>4 candidates → tiebreak by priority_order)
 
-        Exception: if detected_mode IS analyze, show analyze as recommended
-        and fill options 2-4 with the 3 modes that had highest signal counts.
+        Tiebreaker (when >4 candidate modes):
+          Read priority_order from .tad/config-workflow.yaml → intent_modes.detection.priority_order:
+            bug > idea > experiment > express > discuss > learn > analyze
+          Pick top 3 non-analyze modes by (signal_count desc, priority_order asc).
+          analyze always occupies position 4.
+
+        Exception: if detected_mode IS analyze, show analyze as recommended (Option 1)
+        and fill options 2-4 with the 3 modes that had highest signal counts (subject
+        to *express never-Recommended rule above).
 
         AskUserQuestion({
           questions: [{
@@ -366,8 +387,8 @@ intent_router_protocol:
           }]
         })
 
-        Note: User can always type *learn (or any mode) directly via "Other" if their
-        desired mode was dropped from the 4 options.
+        Note: User can always type *express / *experiment / *learn (or any mode)
+        directly via "Other" if their desired mode was dropped from the 4 options.
 
     step4:
       name: "Route"
@@ -377,6 +398,8 @@ intent_router_protocol:
         - discuss → Enter discuss_path_protocol
         - idea → Enter idea_path_protocol
         - learn → Enter learn_path_protocol
+        - express → Enter express_path_protocol (Phase 3 P3.1)
+        - experiment → Enter experiment_path_protocol (Phase 3 P3.2)
         - analyze → Enter adaptive_complexity_protocol (existing, unchanged)
 
   # Standby State Definition (P1 fix from Phase 1)
@@ -394,6 +417,8 @@ intent_router_protocol:
       - "After *discuss exit_protocol: user selects 'Record conclusions to NEXT.md' (after recording) → Enter standby"
       - "After *idea step4: user selects 'Done, back to standby' → Enter standby"
       - "After *learn step4: user selects 'Done, back to standby' → Enter standby"
+      - "After *express completes Gate 4 accept → Enter standby"
+      - "After *experiment completes Gate 4 accept → Enter standby"
       - "After *analyze handoff step7 completes → Enter standby"
       - "After any path transition fails or is cancelled → Enter standby"
       - "After *idea-promote step2: user selects 'Cancel' → Enter standby"
@@ -417,7 +442,7 @@ intent_router_protocol:
     - If user sends *analyze explicitly, Intent Router still runs but skips to step4 immediately
 
   path_transitions:
-    description: "Rules for switching between paths mid-session"
+    description: "Rules for switching between paths mid-session (Phase 3 P3.1 BA-P1-1, 2026-04-24: complete matrix)"
     allowed:
       - from: "discuss"
         to: "analyze"
@@ -437,10 +462,39 @@ intent_router_protocol:
       - from: "idea-promote"
         to: "analyze"
         trigger: "Automatic after idea status updated to 'promoted' (step4)"
+      # Phase 3 P3.1 (2026-04-24): 3 new allowed transitions for *express / *experiment
+      - from: "express"
+        to: "analyze"
+        trigger: "User says 'this turned out bigger than I thought' — *express scope insufficient for the actual work"
+      - from: "express"
+        to: "experiment"
+        trigger: "User realizes the bugfix is actually an A/B test (e.g., 'I want to compare two approaches')"
+      - from: "experiment"
+        to: "analyze"
+        trigger: "Experiment results show this needs production design — promote findings into Standard TAD handoff"
     forbidden:
       - from: "analyze"
         to: "any"
         reason: "Once in standard TAD flow (Socratic/Design/Handoff), switching out would lose context. Complete or abort first."
+      # Phase 3 P3.1 (2026-04-24): explicit forbidden for analyze→express / analyze→experiment
+      # Even though "any" already covers these, AC-P3.1-l requires explicit declaration
+      # to defend against AR-001 mid-flight scope downgrade attack.
+      - from: "analyze"
+        to: "express"
+        reason: |
+          Once in Standard TAD with Socratic complete, downgrading to *express loses ceremony
+          rationale (AR-001 attack surface — Alex auto-rationalizing 'this turned out small,
+          let's downgrade'). User must explicitly *cancel current *analyze handoff and start
+          a fresh *express if scope truly shrunk.
+      - from: "analyze"
+        to: "experiment"
+        reason: |
+          Same — analyze→experiment would hide a scope shift mid-flight. User must explicitly
+          *cancel current *analyze and start a fresh *experiment if the work turned out to be
+          an A/B test.
+      - from: "any"
+        to: "any (other than listed allowed)"
+        reason: "Default deny — only the explicitly listed allowed transitions are permitted."
     mechanism: |
       Path transitions use AskUserQuestion to confirm.
       On transition, Alex announces: "Switching from {from_mode} to {to_mode}."
@@ -925,6 +979,194 @@ learn_path_protocol:
         - "Learn another topic" → restart step1
         - "Back to work — start *analyze" → transition to analyze path
         - "Done, back to standby" → exit to standby (Intent Router re-triggers on next input)
+
+# *express Path Protocol (Phase 3 P3.1, 2026-04-24)
+# Quick path for trivial bugfix / small UX polish. Skips ceremony, KEEPS ≥1 expert review.
+# Scope: Next Guest "skip Socratic, skip epic review" pattern formalized as a first-class path.
+express_path_protocol:
+  description: "Quick path for trivial bugfix / small UX polish. Skips ceremony, keeps ≥1 review."
+
+  trigger:
+    type: "user_explicit_only"
+    activation_word: "*express"
+    NOT_via_alex_suggestion: |
+      Alex MUST NOT proactively recommend *express. Specifically:
+      (a) MUST NOT add *express to adaptive_complexity_protocol step2 AskUserQuestion options
+      (b) MUST NOT pre-select *express as Recommended (Option 1) in intent_router_protocol step3
+          even if signal-word detection favors it (signal detection of express keywords routes to
+          analyze with a 'looks small — start *analyze; user can downgrade by typing *express' note)
+      (c) MUST NOT use AskUserQuestion to suggest *express in any other workflow step
+      Reason: avoids anti-rationalization (AR-001) where Alex auto-downgrades scope to fit
+      *express. User must explicitly type *express to opt in.
+
+  scope_constraints:
+    file_count_max: 3   # files in §6 Files to Modify / Create
+    over_limit_action: |
+      Use AskUserQuestion: "你的 *express 涉及 {N} 文件，超出 *express ≤3 文件硬上限。
+      要降到 Standard TAD 还是拆成多个 *express?"
+      Options:
+        - "降到 Standard TAD (Recommended for >3 files)"
+        - "拆成多个 *express handoffs (each ≤3 files)"
+        - "我理解但坚持 *express 单 handoff (override — 解释原因)"
+      override 选项需用户写明原因，**强制**记入 §11 Decision Summary 一行
+      (Gate 2 检查若 §11 未含 override row → FAIL)
+
+  required_steps:
+    # ⚠️ AR-001 hard guarantee: cannot be skipped (text grep'd by AC-P3.1-h).
+    # The literal phrase "expert review" + "code-reviewer" must remain on consecutive
+    # tokens within ~30 lines following `express_path_protocol:` header.
+    - "step1 draft creation (handoff scaffold + frontmatter)"
+    - "step1b frontmatter validation (含 git_tracked_dirs)"
+    - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
+    - "step2 expert review with ≥1 expert (code-reviewer 必选; ≥1 expert; 视场景可加第 2 个)"
+    - "step4 Audit Trail integration (P1.5 dogfood — *express 仍含 Audit Trail，记录 ≥1 review 的可审计证据)"
+    - "step5 Gate 2 check"
+    - "step7 Blake message generation with 人话版"
+    - "Gate 3 v2 (Blake side: build/test/lint + Layer 2 ≥1 expert)"
+    - "Gate 4 v2 acceptance (Alex side)"
+
+  skipped_steps:
+    - "Socratic Inquiry Protocol (3-5 rounds)"
+    - "Adaptive Complexity Protocol step2 (no scope choice — *express IS the scope)"
+    - "Epic Phase Map evaluation (express handoffs not part of Epics)"
+    - "Knowledge Assessment ceremony (skip_knowledge_assessment defaults to yes; Blake can override unskip per P3.3)"
+
+  enforcement: "prompt-level-only"
+  forbidden_implementations:
+    - "MUST NOT register PreToolUse / UserPromptSubmit hook to gate *express"
+    - "MUST NOT add to .claude/settings.json"
+    - "MUST NOT return deny exit code from any wrapping script"
+    - "Anti-AR-001: 'express = review-exempt' is a forbidden interpretation"
+    - "MUST NOT auto-downgrade Standard TAD handoff to *express via any mechanism"
+
+  when_appropriate:
+    - "Single-file CSS / copy / config tweak (Next Guest pattern)"
+    - "Trivial bugfix where root cause is obvious and fix is ≤10 lines"
+    - "Small UX polish (label change, color swap, spacing)"
+    - "Same-day supersede correction (small follow-up to a recent handoff)"
+  when_NOT_appropriate:
+    - "Architecture or contract change (interface, protocol, shared schema)"
+    - "Multi-module refactor"
+    - "Anything affecting >3 files (use over_limit_action AskUserQuestion)"
+    - "Security-adjacent changes (auth/token/encrypt → Standard TAD with security review)"
+    - "Performance-adjacent changes (optimization → use *experiment instead)"
+
+# *experiment Path Protocol (Phase 3 P3.2, 2026-04-24)
+# OPRO / A-B test / benchmark / prompt tuning / eval-loop tasks.
+# Gates ADD experiment-validity checks; original Gate 3/4 still applies to harness code.
+experiment_path_protocol:
+  description: "For OPRO / A-B test / benchmark / prompt tuning / eval-loop tasks. Gates ADD experiment-validity checks; original Gate 3 still applies to harness code."
+
+  trigger:
+    type: "user_explicit_OR_frontmatter"
+    activation_word: "*experiment"
+    frontmatter_field: "task_type=experiment"
+    note: |
+      User can say *experiment to enter (via existing step1 explicit-command bypass).
+      OR Alex during *analyze can set task_type=experiment based on signals (then path is
+      Standard *analyze with experiment_specific_gates AUGMENTING Gate 3/4 criteria).
+    auto_detection_signals:
+      - "task involves OPRO / A-B / benchmark / eval-loop"
+      - "comparing prompts/models/configs and measuring against rubric"
+      - "iteratively tuning generator/optimizer/judge model"
+
+  alex_evaluation_signals:
+    when_to_suggest_task_type_experiment:
+      - "Socratic answers mention 'iteratively', 'rubric', 'A vs B', 'optimize prompt', 'eval against baseline'"
+      - "Domain Pack ai-evaluation or ai-prompt-engineering matches"
+      - "Output measured by score not by 'feature works'"
+    note: |
+      Alex MAY set task_type=experiment in frontmatter during *analyze drafting.
+      Alex MUST NOT bypass *analyze and route directly to *experiment without user explicit input.
+
+  domain_pack_auto_load:
+    rule: "experiment_path_protocol step1 MUST Read .tad/domains/ai-evaluation.yaml at start of drafting"
+    rationale: |
+      *experiment is a router mode, not a UserPromptSubmit keyword pattern; the existing
+      Domain Pack loader (keywords.yaml) does not auto-fire on protocol routing. Without
+      this explicit Read, *experiment users get workflow without tools — exactly what
+      the protocol is meant to prevent.
+    fallback: |
+      If ai-evaluation.yaml missing → emit WARN
+      "ai-evaluation pack not found; experiment_path_protocol will use default workflow only"
+      and continue (do not block).
+    on_load_announcement: |
+      Alex MUST output the literal string "Loaded Domain Pack: ai-evaluation"
+      (or "ai-evaluation pack not found" on fallback) so AC-P3.2-i fixture
+      can grep the announcement.
+
+  required_steps:
+    # P1-3 (CR review 2026-04-24): list ALL Standard TAD steps explicitly to mirror
+    # express_path_protocol.required_steps. Avoids the "Standard TAD steps DO follow"
+    # shorthand letting a future Alex skip Gate 2 / step7 / Gate 3 / Gate 4.
+    - "Socratic Inquiry Protocol (3-5 rounds) — DO follow"
+    - "step0_5 Risk Translation (cognitive firewall) — DO follow"
+    - "step1 draft creation (handoff scaffold + frontmatter)"
+    - "step1 explicit Read of .tad/domains/ai-evaluation.yaml (per domain_pack_auto_load)"
+    - "step1 §6 may be 'Experiment Setup' (rubric / fixture / generator-judge config) instead of 'Files to Modify'"
+    - "step1b frontmatter validation (含 git_tracked_dirs)"
+    - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
+    - "step2 expert review — recommend security-auditor SKIP unless safety-critical (toy OPRO 非 safety); add product-expert IF stakeholder validation matters"
+    - "step4 Audit Trail integration (P1.5 — record reviewer findings)"
+    - "step5 Gate 2 check (Design Completeness)"
+    - "step7 Blake message generation with 人话版"
+    - "Gate 3 v2 (Blake side: build/test/lint on harness AUGMENTED with 5 experiment-validity checks)"
+    - "Gate 4 v2 acceptance (Alex side: business AC AUGMENTED with 4 experiment outcome checks)"
+
+  experiment_specific_gates:
+    gate3_focus_AUGMENTATION:
+      # ⚠️ AUGMENT not REPLACE (BA-P0-2 critical fix).
+      # Original Gate 3 v2 still applies to any harness code.
+      semantics: |
+        Original Gate 3 v2 (build / test / lint / coverage) STILL APPLIES to any
+        harness/runner code in the experiment. The following 5 checks are ADDITIONAL —
+        BOTH layers must PASS. A harness syntax error → Gate 3 FAIL even if all 5
+        experiment checks pass (verified by AC-P3.2-h fixture).
+      additional_checks:
+        - "1. Control variables clear (which model is generator? judge? optimizer? all 3 different or some shared?)"
+        - "2. Self-enhancement bias mitigated (judge ≠ optimizer; or documented as accepted limitation with rationale)"
+        - "3. Baseline established (what's the 'before optimization' score; how was it measured)"
+        - "4. Reproducibility (rubric saved, fixtures saved, hyperparams saved)"
+        - "5. Generator model = production model (toy OPRO 教训: 别在 Qwen Plus 上调出 prompt 然后部署到 qwen3-omni-flash)"
+
+    gate4_focus_AUGMENTATION:
+      # ⚠️ AUGMENT not REPLACE.
+      semantics: |
+        Original Gate 4 v2 (user-facing behavior + business AC) STILL APPLIES.
+        The following 4 checks are ADDITIONAL — BOTH layers must PASS.
+      additional_checks:
+        - "1. Score improvement statistically meaningful (not within noise)"
+        - "2. Improvement transfers to production model (re-eval on production model if generator differed)"
+        - "3. No regression on holdout / negative test cases"
+        - "4. Discoveries (positive findings + anti-patterns) captured in knowledge_updates"
+
+  required_evidence_manifest_template:
+    experiment_design: ".tad/evidence/experiments/{slug}/experiment-design.md"
+    rubric: ".tad/evidence/experiments/{slug}/rubric.yaml"
+    raw_results: ".tad/evidence/experiments/{slug}/results.tsv"
+    analysis: ".tad/evidence/experiments/{slug}/analysis.md"
+    baseline: ".tad/evidence/experiments/{slug}/baseline.txt"
+    production_validation:
+      path: ".tad/evidence/experiments/{slug}/production-validation.txt"
+      conditional: |
+        REQUIRED IF gate3_focus_AUGMENTATION check #5 detects generator≠production model
+        mismatch; OPTIONAL otherwise.
+
+  domain_pack_integration:
+    pack: "ai-evaluation"
+    pack_path: ".tad/domains/ai-evaluation.yaml"
+    relationship: |
+      Pack is tool/framework recommendations (promptfoo / DSPy / trulens).
+      experiment_path_protocol is the workflow + Gate semantics.
+      Loaded explicitly via domain_pack_auto_load (above) at protocol entry.
+
+  enforcement: "prompt-level-only"
+  forbidden_implementations:
+    - "MUST NOT register hooks to gate *experiment"
+    - "MUST NOT add to settings.json"
+    - "MUST NOT return deny exit code from gate replacement scripts"
+    - "MUST NOT replace Gate 3/4 silently — semantics is AUGMENT (additive), original criteria still apply"
+    - "MUST NOT bypass *analyze Socratic for *experiment — all Standard TAD steps DO run"
 
 # ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)
 adaptive_complexity_protocol:
@@ -2065,31 +2307,124 @@ acceptance_protocol:
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7:
-    name: "Knowledge Assessment — Write + Verify + raw-TSV recompute"
-    action: |
-      Three responsibilities (Phase 3 anchor A-03 — raw-TSV recompute added):
+    name: "Knowledge Assessment — Write + Verify + raw-TSV recompute (with skip_KA branch routing — P3.3 2026-04-24)"
+    blocking: true
 
-      A. VERIFY Blake's Gate 3 knowledge (10 seconds):
-         1. Read Blake's completion report → find "New discovery recorded: {path} → '{title}'"
-         2. If Blake said "Yes": Read the referenced project-knowledge file, confirm the entry exists
-         3. If entry missing → BLOCK *accept, inform user "Blake reported knowledge but didn't write it"
+    # Phase 3 P3.3 (2026-04-24): skip_knowledge_assessment frontmatter routing.
+    # Three branches: skip-no-override / skip-with-override / no-skip.
+    # Layer 2 audit (step4c) is ORTHOGONAL to skip_KA — runs regardless.
+    layer_2_audit_decoupling:
+      note: |
+        step4c Layer 2 audit runs BEFORE step7 regardless of skip_knowledge_assessment value.
+        Layer 2 verifies reviewer artifacts on disk (orthogonal concern to KA ceremony).
+        Do NOT couple skip_KA logic to Layer 2 audit decisions.
 
-      B. raw-TSV recompute (MANDATORY per AR-005 rule — Phase 1c Gate 4 integrity lesson):
-         For EVERY quantitative AC in the handoff (p95 latency, coverage %, fixture pass count,
-         byte counts), Alex MUST re-derive the number from the raw evidence file
-         (e.g., `.tad/evidence/perf/*.tsv`) using a one-liner (awk/jq) and paste the re-derived
-         value alongside Blake's reported value. If mismatch → BLOCK *accept and ask Blake to
-         reconcile. Rubber-stamping Blake's summary is a VIOLATION of Gate 4 integrity.
+    pre_check:
+      action: |
+        1. Read handoff frontmatter `skip_knowledge_assessment` field:
+           - if field ABSENT → treat as `skip_knowledge_assessment: no` (backward compat for
+             Phase 1+2 archive; existing behavior preserved)
+           - if field == "yes" → proceed to override-marker check (step 2)
+           - if field == "no" → branch_3 (full step7 A/B/C, existing behavior)
+           - if field is any other value (typo, malformed) → WARN and treat as "no" (default safe)
 
-      C. WRITE Alex's own Gate 4 knowledge (if any):
-         1. Evaluate: did this acceptance reveal business/architecture insights?
-         2. If Yes → write directly to .tad/project-knowledge/{category}.md
-         3. Fill Gate 4 Knowledge Assessment table with file path + entry title
+        2. If field == "yes": Read Blake completion report at
+           `.tad/active/handoffs/COMPLETION-{slug}.md`
+           Locate "## Knowledge Assessment" section header (markdown level-2).
+           This anchor matches the canonical template
+           (`.tad/templates/completion-report.md`) and 10+ archived precedents.
+           Grep for override marker within the first ~5 non-blank lines under that header
+           (a small window — not strictly the first line — so a future template tweak
+           that adds boilerplate above the marker doesn't break the match):
+             pattern: `^\*\*knowledge_assessment_override:\s*unskip`
+             - case-sensitive, line-anchored (no leading whitespace permitted)
+             - must be bold markdown (literal `**...**`)
+           Blake's emission contract (Blake SKILL completion_knowledge_override.override_marker_format):
+             Marker is inserted AS A NEW LINE between the `## Knowledge Assessment` header
+             and the existing template body. Alex's grep window covers exactly that
+             insertion zone.
+           If marker present → branch_2_skip_with_override
+           If marker absent  → branch_1_skip_no_override
 
-      Separation of concerns:
+    branch_1_skip_no_override:
+      condition: "skip_knowledge_assessment: yes AND no override marker"
+      A_verify_blake_claims: SKIP
+      B_raw_tsv_recompute: REQUIRED
+      C_alex_own_discoveries: SKIP
+      acceptance_report_text: |
+        "✅ Knowledge Assessment skipped — handoff frontmatter declared trivial
+        (skip_knowledge_assessment: yes); Blake did not override.
+        Layer 2 audit + raw-TSV recompute still ran."
+      semantic_note: |
+        # P3.3 Phase 3 Audit Trail (CR-P1-2 spec divergence — documented Resolved):
+        # Original handoff §3 P3.3.b spec said branch_1 A_verify_blake_claims: REQUIRED.
+        # Implementation deviates to A=SKIP because there is logically nothing to verify
+        # under skip — Blake had NO KA obligation, so there are no "Blake KA claims"
+        # to read or cross-check. B (raw-TSV recompute for quantitative ACs) still runs
+        # — that's the integrity guarantee, not A. C (Alex own discoveries) is also SKIP
+        # since the handoff was declared trivial.
+        # Net effect matches spec intent: Layer 2 + raw-TSV still run; only the redundant
+        # claim-verification ceremony is skipped.
+
+    branch_2_skip_with_override:
+      condition: "skip_knowledge_assessment: yes AND override marker found"
+      A_verify_blake_claims: REQUIRED
+      B_raw_tsv_recompute: REQUIRED
+      C_alex_own_discoveries: REQUIRED  # full execution despite skip flag
+      acceptance_report_text: |
+        "⚠️ Knowledge Assessment EXECUTED despite skip flag —
+        Blake override marker found. Reason: {extracted from marker text}"
+      if_section_missing:
+        # BA-P2-1: override marker but no actual KA section content
+        condition: "Override marker line exists but no substantive KA content follows"
+        verdict: "Gate 4: PARTIAL"
+        acceptance_report_text: |
+          "⚠️ Gate 4: PARTIAL — KA override declared but section missing.
+          Blake to add Knowledge Assessment content before final accept.
+          User can resume *accept after Blake fills KA."
+        action: "Do NOT FAIL Gate 4 — emit actionable feedback to Blake; *accept paused"
+
+    branch_3_no_skip:
+      condition: "skip_knowledge_assessment: no OR field absent (backward compat)"
+      A_verify_blake_claims: REQUIRED
+      B_raw_tsv_recompute: REQUIRED
+      C_alex_own_discoveries: REQUIRED
+      acceptance_report_text: |
+        "✅ Knowledge Assessment fully executed (existing behavior)"
+
+    # ─── Existing A/B/C semantics (unchanged from pre-P3.3) ───
+    A_verify_blake_claims:
+      action: |
+        1. Read Blake's completion report → find "New discovery recorded: {path} → '{title}'"
+        2. If Blake said "Yes": Read the referenced project-knowledge file, confirm the entry exists
+        3. If entry missing → BLOCK *accept, inform user "Blake reported knowledge but didn't write it"
+
+    B_raw_tsv_recompute:
+      action: |
+        MANDATORY per AR-005 rule (Phase 1c Gate 4 integrity lesson):
+        For EVERY quantitative AC in the handoff (p95 latency, coverage %, fixture pass count,
+        byte counts), Alex MUST re-derive the number from the raw evidence file
+        (e.g., `.tad/evidence/perf/*.tsv`) using a one-liner (awk/jq) and paste the re-derived
+        value alongside Blake's reported value. If mismatch → BLOCK *accept and ask Blake to
+        reconcile. Rubber-stamping Blake's summary is a VIOLATION of Gate 4 integrity.
+
+    C_alex_own_discoveries:
+      action: |
+        1. Evaluate: did this acceptance reveal business/architecture insights?
+        2. If Yes → write directly to .tad/project-knowledge/{category}.md
+        3. Fill Gate 4 Knowledge Assessment table with file path + entry title
+
+    separation_of_concerns: |
       - Blake writes implementation knowledge (Gate 3): tool behaviors, code patterns, workarounds
       - Alex writes business knowledge (Gate 4): requirement gaps, architecture decisions, process improvements
-    blocking: true
+
+    # P3.3 forbidden_implementations (Anti-Epic-1 parity with P3.1 / P3.2)
+    forbidden_implementations:
+      - "MUST NOT register PreToolUse / PostToolUse / UserPromptSubmit hook to read frontmatter and skip step7 mechanically"
+      - "MUST NOT add to .claude/settings.json"
+      - "MUST NOT return deny exit code from any wrapping script that reads skip_knowledge_assessment"
+      - "MUST NOT auto-inject override marker via hook — Blake writes it manually based on judgment"
+      - "MUST NOT couple skip_KA logic to Layer 2 audit (step4c) — they are orthogonal"
   step7b: "【配对测试评估】评估是否建议配对 E2E 测试（UI/用户流变更时建议，人类决定）"
   step8: "【强制】执行 *accept 命令完成归档流程"
   step9: "限制 active handoffs 不超过 3 个"
