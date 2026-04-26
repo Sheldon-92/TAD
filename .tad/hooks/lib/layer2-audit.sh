@@ -24,6 +24,70 @@ else
   _file_size() { stat -f%z -- "$1" 2>/dev/null || echo 0; }
 fi
 
+# ── Phase 6-A.2 (2026-04-25): Reviewer-name detection ───────────────────
+# BA-P0-2: Single source of truth for Layer 2 reviewer agent types.
+# Blake SKILL `gate3_v2.layer2_expert_review.hard_requirement_distinct_reviewers`
+# references THIS array via prose, does NOT enumerate. Add new sub-agent types
+# here when first used as Layer 2 reviewer; SKILL automatically inherits.
+KNOWN_REVIEWERS_LIST="code-reviewer backend-architect security-auditor performance-optimizer ux-expert-reviewer api-designer data-analyst bug-hunter test-runner spec-compliance-reviewer refactor-specialist devops-engineer database-expert frontend-specialist docs-writer"
+
+# SUBSTITUTION_HEURISTICS: filenames that look reviewer-ish but are NOT
+# external sub-agent invocations. self-review = Blake reviewing Blake (no
+# second perspective). feedback-integration = synthesis doc, not review.
+# gate3-verdict = Blake's own gate verdict, not external review.
+SUBSTITUTION_HEURISTICS_LIST="self-review feedback-integration gate3-verdict"
+
+# CR-P0-6 fix: word-boundary express slug detection (NOT substring).
+# Defends against false-positives: "expression" / "compress" / "espresso".
+# Patterns:
+#   - "express"               (slug literally is "express")
+#   - "*-express"             (slug ends with "-express", e.g. "phase6-express")
+#   - "*-express-*"           (slug contains "-express-", e.g. "phase6-express-styling")
+#   - "express-*"             (slug starts with "express-", e.g. "express-bugfix")
+is_express_slug() {
+  local s="$1"
+  case "$s" in
+    express|*-express|*-express-*|express-*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# CR-P0-4 fix: detect distinct reviewer agent NAMES via find -print0 + read -d ''
+# loop with case statement (BSD-portable, fork-free, faster than per-name grep).
+# Outputs structured machine-readable lines (CR-P0-5 fix) for AC matching:
+#   DISTINCT_COUNT=N
+#   DISTINCT_LIST=<space-separated reviewer names>
+#   SUBSTITUTIONS=<space-separated substitution names found>
+#   UNKNOWN=<space-separated names not in either list>
+detect_distinct_reviewers() {
+  local d="$1"
+  local distinct_count=0
+  local distinct_list=""
+  local substitutions_list=""
+  local unknown_list=""
+  local name
+  while IFS= read -r -d '' f; do
+    name="${f##*/}"
+    name="${name%.md}"
+    case " $KNOWN_REVIEWERS_LIST " in
+      *" $name "*)
+        distinct_list="$distinct_list $name"
+        distinct_count=$((distinct_count + 1))
+        ;;
+      *)
+        case " $SUBSTITUTION_HEURISTICS_LIST " in
+          *" $name "*) substitutions_list="$substitutions_list $name" ;;
+          *) unknown_list="$unknown_list $name" ;;
+        esac
+        ;;
+    esac
+  done < <(find -L -- "$d" -maxdepth 1 -type f -name '[!.]*.md' -print0 2>/dev/null)
+  printf 'DISTINCT_COUNT=%d\n' "$distinct_count"
+  printf 'DISTINCT_LIST=%s\n' "${distinct_list# }"
+  printf 'SUBSTITUTIONS=%s\n' "${substitutions_list# }"
+  printf 'UNKNOWN=%s\n' "${unknown_list# }"
+}
+
 # ── Arg parse + slug whitelist ─────────────────────────────────────────
 if [ $# -ne 1 ]; then
   _err "usage: $(basename -- "$0") <slug>"
@@ -79,7 +143,11 @@ if ! _has_review_md ".tad/evidence/reviews/blake/${slug}"; then
 fi
 
 # ── Target dir check ────────────────────────────────────────────────────
-dir=".tad/evidence/reviews/blake/${slug}"
+# P6-A.2 fixture support (P1-5): LAYER2_AUDIT_REVIEW_ROOT env var lets test
+# fixtures override the canonical reviews root without touching production paths.
+# When unset, defaults to ".tad/evidence/reviews/blake".
+review_root="${LAYER2_AUDIT_REVIEW_ROOT:-.tad/evidence/reviews/blake}"
+dir="${review_root}/${slug}"
 if [ ! -d "$dir" ]; then
   _err "Layer 2 audit FAIL: directory missing: ${dir} (size-check is smoke-alarm heuristic — Blake may have skipped Layer 2)"
   exit 1
@@ -110,8 +178,47 @@ done < <(find -L -- "$dir" -maxdepth 1 -type f -name '[!.]*.md' -print0 2>/dev/n
 
 # ── Verdict ─────────────────────────────────────────────────────────────
 if [ "$qualified" -ge 1 ]; then
-  # PASS: stdout only, stderr MUST be empty
-  printf 'Layer 2 audit PASS: %d reviewer artifacts found\n' "$qualified"
+  # P6-A.2 (2026-04-25): Add distinct-reviewer-NAME detection on top of
+  # existing min-bytes filter (CR-P1-6: layer ON TOP, not IN PLACE OF).
+  # Produces structured machine-readable output for AC matching.
+  reviewer_stats=$(detect_distinct_reviewers "$dir")
+  printf '%s\n' "$reviewer_stats"
+  distinct_count=$(printf '%s' "$reviewer_stats" | grep -E '^DISTINCT_COUNT=' | sed 's/^DISTINCT_COUNT=//')
+  distinct_list=$(printf '%s' "$reviewer_stats" | grep -E '^DISTINCT_LIST=' | sed 's/^DISTINCT_LIST=//')
+  substitutions_list=$(printf '%s' "$reviewer_stats" | grep -E '^SUBSTITUTIONS=' | sed 's/^SUBSTITUTIONS=//')
+  unknown_list=$(printf '%s' "$reviewer_stats" | grep -E '^UNKNOWN=' | sed 's/^UNKNOWN=//')
+
+  # Echo unknown names to stderr WARN (CR-P0-4: don't silently drop)
+  if [ -n "$unknown_list" ]; then
+    printf 'Layer 2 audit WARN: unknown reviewer name(s) — add to KNOWN_REVIEWERS in layer2-audit.sh if legitimate: %s\n' "$unknown_list" >&2
+  fi
+
+  # Verdict logic:
+  #   ≥2 distinct      → PASS
+  #   =1 distinct + express slug → PASS_EXPRESS (advisory PASS, exit 0)
+  #   =1 distinct, non-express   → WARN (advisory, exit 0; structured WARN_REVIEWER_COUNT=1)
+  #   =0 distinct + substitutions only → FAIL (existing path, structured WARN_REVIEWER_COUNT=0_SUBSTITUTIONS_ONLY)
+  #   =0 distinct + 0 substitutions    → fall through to legacy total_found path
+  if [ "${distinct_count:-0}" -ge 2 ]; then
+    printf 'Layer 2 audit PASS: %d reviewer artifacts found (size-check); %d distinct reviewers found: %s\n' \
+      "$qualified" "$distinct_count" "$distinct_list"
+    exit 0
+  elif [ "${distinct_count:-0}" -eq 1 ] && is_express_slug "$slug"; then
+    printf 'Layer 2 audit PASS: 1 distinct reviewer (express path exception): %s\n' "$distinct_list"
+    printf 'WARN_REVIEWER_COUNT=1_EXPRESS_OK\n'
+    exit 0
+  elif [ "${distinct_count:-0}" -eq 1 ]; then
+    _err "Layer 2 audit WARN: 1 distinct reviewer (need ≥2 unless *express); found: ${distinct_list# }"
+    printf 'WARN_REVIEWER_COUNT=1\n'
+    exit 0  # advisory (per FR4: existing exit 0 preserved)
+  elif [ -n "$substitutions_list" ]; then
+    _err "Layer 2 audit FAIL: 0 distinct reviewers, only substitutions: ${substitutions_list# }"
+    printf 'WARN_REVIEWER_COUNT=0_SUBSTITUTIONS_ONLY\n'
+    exit 1
+  fi
+  # Distinct=0 AND substitutions=0 — preserve legacy artifacts-found message
+  # (this happens when all .md files are unknown — already WARNed to stderr).
+  printf 'Layer 2 audit PASS: %d reviewer artifacts found (size-check is smoke-alarm heuristic; no canonical reviewer names matched)\n' "$qualified"
   exit 0
 fi
 

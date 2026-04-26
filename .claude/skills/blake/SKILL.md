@@ -904,12 +904,62 @@ execution_checklist:
       # → Layer 1 标准是全部 PASS。Warning 也要修。
 
     layer2_expert_review:
-      - "Group 0: spec-compliance-reviewer（AC 全满足）"
-      - "Group 1: code-reviewer（P0=0, P1=0）"
-      - "Group 2: test-runner + security-auditor + performance-optimizer（按 trigger 规则）"
-      - "Expert 说 PASS 才算完成 — 不是 Blake 自己判断"
-      # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
-      # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+      bullets:
+        - "Group 0: spec-compliance-reviewer（AC 全满足）"
+        - "Group 1: code-reviewer（P0=0, P1=0）"
+        - "Group 2: test-runner + security-auditor + performance-optimizer（按 trigger 规则）"
+        - "Expert 说 PASS 才算完成 — 不是 Blake 自己判断"
+        # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
+        # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+
+      # Phase 6-A.2 (2026-04-25): Hard requirement — Layer 2 reviewer count discipline.
+      # Phase 1-5 累积 3 次 Blake 用 self-review.md 替代 backend-architect 的 drift。
+      # 修复：≥2 distinct sub-agent invocations，substitution heuristics 不算。
+      hard_requirement_distinct_reviewers:
+        rule: |
+          Layer 2 MUST invoke ≥2 DISTINCT sub-agents:
+          - code-reviewer (REQUIRED — every Layer 2 round)
+          - PLUS ≥1 from layer2-audit.sh's KNOWN_REVIEWERS whitelist (canonical
+            single source of truth — see `.tad/hooks/lib/layer2-audit.sh`
+            top-of-file array). Choose by task fit (e.g., backend-architect for
+            architecture handoffs; security-auditor for auth/secrets;
+            performance-optimizer for hot-path; ux-expert-reviewer for UI; etc.).
+
+        rationale_single_source: |
+          BA-P0-2 fix (2026-04-25): SKILL does NOT inline-enumerate reviewer names.
+          The canonical list lives in layer2-audit.sh KNOWN_REVIEWERS array. SKILL
+          references that array. New reviewer types are added to the array, and
+          SKILL automatically inherits — no SKILL/script drift.
+
+        exception_express:
+          rule: |
+            *express path 仅需 code-reviewer (single expert OK per architecture.md
+            "Express Handoff is NOT Review-Exemption" 2026-04-14 — exempts from
+            ≥2 reviewer rule but NOT from ≥1 reviewer rule. AR-001 anchor
+            preserved: *express still requires expert review, just not 2.).
+          slug_detection: |
+            layer2-audit.sh detects *express via word-boundary case matching:
+              case "$slug" in express|*-express|*-express-*|express-*) ;; esac
+            BA-P0-3 fix: NOT via task_type frontmatter (express is path-state,
+            not in task_type enum {code|yaml|research|e2e|mixed|doc-only}).
+            CR-P0-6 fix: word-boundary defends against expression/compress/espresso
+            false-positives.
+
+        forbidden:
+          - "self-review.md does NOT count as Layer 2 reviewer (Blake reviewing Blake = no second perspective)"
+          - "feedback-integration.md does NOT count (synthesis doc, not review)"
+          - "gate3-verdict.md does NOT count (Blake's own gate verdict, not external review)"
+          - "Substituting domain expert with self-review = VIOLATION (AR-001 attack surface — Phase 1-5 drift root cause)"
+
+        enforcement: "prompt-level-only via Blake SKILL text + layer2-audit.sh advisory CLI"
+
+        forbidden_implementations:
+          # 5 items per BA-P0-1 baseline; symmetric to Phase 3/4/5 forbidden_implementations blocks
+          - "MUST NOT register PreToolUse hook to count reviewers"
+          - "MUST NOT add to .claude/settings.json"
+          - "MUST NOT return deny exit code from layer2-audit.sh — it remains advisory CLI exit 0/1/2"
+          - "Anti-AR-001: 'this task is simple, code-reviewer covers it' is forbidden interpretation for non-*express paths — must add ≥1 domain expert by task fit"
+          - "MUST NOT couple Layer 2 reviewer count to step4c audit script — Blake invokes sub-agents based on judgment; audit is downstream advisory, not gate"
 
     research_compliance:
       - "如果 handoff frontmatter research_required: yes → 必须执行搜索"

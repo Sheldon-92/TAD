@@ -34,7 +34,23 @@
 | 3 | New Paths for Real Usage Patterns | ✅ Done | [HANDOFF-20260424-phase3-new-paths.md](../../archive/handoffs/HANDOFF-20260424-phase3-new-paths.md) | *express + *experiment + skip_knowledge_assessment 三路径正式化 — 32 ACs all PASS, AR-001 mechanical anchor 加上, Gate AUGMENT not REPLACE 修复, symmetric forbidden_implementations 5/5/5 (Gate 4 2026-04-25, commit ff96bd5) |
 | 4 | Domain Pack Expansion | ✅ Done | [HANDOFF-20260425-phase4-domain-pack-expansion.md](../../archive/handoffs/HANDOFF-20260425-phase4-domain-pack-expansion.md) | 8 Domain Pack YAML 扩展 21 items + 1 README + 2 architecture.md entries — 包含 Google DESIGN.md spec 集成（Apache 2.0 verified）+ Anthropic Anti-AI-Slop 哲学（Apache 2.0 verified）。P4.1 deferred + P4.2 redirected per pretriage (Gate 4 2026-04-25, commits d2a73a1 + 93fcb50) |
 | 5 | Evolve Data Capture Infrastructure | ✅ Done | [HANDOFF-20260425-phase5-evolve-data-capture.md](../../archive/handoffs/HANDOFF-20260425-phase5-evolve-data-capture.md) | gate4_delta + AskUserQuestion capture hook + *cancel command + per-handoff trace + 4 P4 inject — 27/29 ACs hard-PASS, 2 deferred (need runtime *cancel), 1 INTENT-PASS LITERAL-FAIL (handoff bug), 1 PARTIAL (P5.2-d perf dev-host caveat per architecture.md 2026-04-14). 3 gate4_delta entries logged (meta-trifecta dogfood). 1 Alex KA entry on recurring AC-verification-command pattern (Phase 6 input). Gate 4 PASS 2026-04-25, commit d578707 |
-| 6 | Assumption Re-Design (v3 candidate) | ⬚ Planned | — | Alex/Blake 边界 / Gate 3/4 分工 / Pack 分类学 / Express vs anti-rationalization 审计 |
+| 6 | Assumption Re-Design (v3 candidate) | ⏸️ Paused (P6-A done PARTIAL; B/C/D/E/F deferred) | Sub-A: [HANDOFF-20260425-phase6a-process-quality-foundation.md](../../archive/handoffs/HANDOFF-20260425-phase6a-process-quality-foundation.md) | **Sub-A (P6-A) PARTIAL ACCEPT 2026-04-25**: 18/18 implementation ACs PASS; Stage D.3 ≥2 sub-agent self-dogfood DEFERRED until org monthly limit resets (~2026-05-01). Honest_partial_protocol invoked correctly — rule installed, audit script catches its own gap as designed. P6.1-P6.8 全部 demote 到候选（user decision 2026-04-25）。Mon/Tue resume: read NEXT.md "Phase 6 候选评估" |
+
+### Pause Point — 2026-04-25 (user-set)
+
+**今天目标**: P6-A 走完整个闭环（Blake 实现 + Alex Gate 4 + 归档 commit）即停。
+
+**周一周二恢复时**：
+1. 读 NEXT.md "Phase 6 候选评估" 段
+2. 评估 P6-B/C/D/E/F **是否值得做**（基于 P6-A 实际效果）
+3. 选项：(a) 继续 Phase 6 某个 sub-handoff (b) Phase 6 暂时 frozen + 转其他 Epic (c) 把 Phase 6 拆成独立 v3 Epic
+
+**Phase 6 候选 sub-handoffs (NOT committed, do not start without explicit user approval)**:
+- P6-B: P6.1 Alex/Blake 边界 + Blake→Alex feedback 机制（核心争议，需 P6-A 落地后评估）
+- P6-C: P6.2 Gate 3/4 分工 + Staging Smoke as Gate 4 prereq（依赖 P6-B 决策框架）
+- P6-D: P6.3 Domain Pack 分类学审视（21 packs 重组）
+- P6-E: P6.4 *express vs AR-001 一致性 + P6.5 Phase N+1a/b 切分协议
+- P6-F: P6.6 capture rate 健康阈值 + P6.7 Partial Gate 4 + P6.8 Compliance handoff scheduling
 
 ### Phase Dependencies
 

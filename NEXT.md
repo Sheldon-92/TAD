@@ -12,7 +12,27 @@ _(监督层替代方案已 2026-04-15 express handoff 落地——`layer2-audit.
     - ✅ P3: New Paths for Real Usage Patterns (commit ff96bd5)
     - ✅ P4: Domain Pack Expansion (commits d2a73a1 + 93fcb50; 8 packs / 21 items / DESIGN.md spec / Anti-AI-Slop)
     - ✅ P5: Evolve Data Capture Infrastructure (commit d578707; gate4_delta + AskUserQuestion capture + *cancel + per-handoff trace + 4 P4 inject; Gate 4 PASS 2026-04-25)
-    - ⬚ P6: Assumption Re-Design — v3 候选，建议拆为独立 Epic; 输入累积包括: ≥2 项目证据规则 / 双轮 review 必要性 / Gate 3-4 分工 / Pack 分类学 / AC 验证命令模式 (3 phases drift) / Layer 2 单 reviewer 模式 (3 phases drift)
+    - ⏸️ P6: Assumption Re-Design — Paused (P6-A done PARTIAL; B/C/D/E/F demoted to candidates)
+      - ⚠️ P6-A: Process Quality Foundation — **PARTIAL ACCEPT 2026-04-25**. 18/18 implementation ACs PASS. Stage D.3 ≥2 sub-agent self-dogfood DEFERRED (org monthly limit; retry ~2026-05-01). Honest_partial_protocol first real-use. Rule installed; future handoffs receive benefit immediately.
+      - ⬚ P6-B/C/D/E/F: 候选 — **周一周二恢复时评估是否做** (见下方 "Phase 6 候选评估")
+      - **Pending follow-up**: Post org-limit reset (~2026-05-01), re-invoke code-reviewer + backend-architect on P6-A implementation; reviews land in `.tad/evidence/reviews/blake/phase6a-process-quality-foundation/`, re-run `bash .tad/hooks/lib/layer2-audit.sh phase6a-process-quality-foundation` should return DISTINCT_COUNT≥2 PASS. This closes the deferred Layer 2 gap.
+
+## Phase 6 候选评估 (周一周二恢复时读)
+
+**已 demote 到候选** (2026-04-25, user 决策："不紧急，先停"):
+
+| Sub | 内容 | 评估问题 (周一周二回答) |
+|-----|------|---------------------|
+| P6-B | P6.1 Alex/Blake 边界 + Blake→Alex feedback 机制 | P6-A 落地后，process 纪律是否足够支撑核心架构争议？ |
+| P6-C | P6.2 Gate 3/4 分工 + Staging Smoke as Gate 4 prereq | 是否依赖 P6-B 决策？是否独立做有意义？ |
+| P6-D | P6.3 Domain Pack 分类学审视 | 21 packs 重组的 ROI 比新功能高吗？ |
+| P6-E | P6.4 *express vs AR-001 一致性 + P6.5 Phase N+1a/b 切分协议 | 审计性质，是否有触发场景？ |
+| P6-F | P6.6 capture rate 阈值 + P6.7 Partial Gate 4 + P6.8 Compliance schedule | 是否有 production 紧迫性？ |
+
+**评估时 3 个出口**:
+1. **继续做某个 sub** → 启动 /alex 跑 Socratic + Standard TAD
+2. **Phase 6 暂时 frozen** → 留 EPIC-20260424 在 Active，但优先转其他 Epic
+3. **拆为独立 v3 Epic** → close 当前 Epic（P6-A 算最后 sub），新建 v3-redesign Epic
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2 [SHE-23]
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)

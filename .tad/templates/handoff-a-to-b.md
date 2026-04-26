@@ -491,9 +491,21 @@ Blake的实现被认为完成，当且仅当：
 
 Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 
-| # | Acceptance Criterion | Verification Method | Expected Evidence |
-|---|---------------------|--------------------|--------------------|
-| 1 | {same as AC above} | {how to verify: file check, grep, test run} | {what the reviewer should find} |
+> **Verification Type column** (Phase 6-A.1, 2026-04-25):
+> - `pre-impl-verifiable` — Alex dry-runs at handoff drafting (step1d); paste raw output into Verified Output column
+> - `post-impl-verifiable` — Blake runs at Gate 3 v2 Layer 1 after implementation creates the artifact
+>
+> **Pipe-escape note**: Markdown tables require `|` inside regex to be written `\|` for cell rendering.
+> When extracting commands to run in bash, **un-escape**: `grep -cE 'a\|b\|c'` (rendered) → `grep -cE 'a|b|c'` (run).
+> Step1d Sub-rule 1 mandates dry-running from raw form, not rendered.
+>
+> The `Verified Output` column is filled by Alex during step1d for pre-impl rows;
+> by Blake during Gate 3 for post-impl rows. Empty Verified Output post step1d
+> with non-empty Verification Method = handoff incomplete.
+
+| # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
+|---|---------------------|-------------------|--------------------|--------------------|-------------------------------|
+| 1 | {same as AC above} | pre-impl-verifiable / post-impl-verifiable | {how to verify: file check, grep, test run} | {what the reviewer should find} | {Alex paste raw output, OR "(post-impl)" for post-impl rows} |
 
 > This section is OPTIONAL. If omitted, the spec-compliance-reviewer will use
 > the § Acceptance Criteria section directly. This section adds verification

@@ -1881,6 +1881,74 @@ handoff_creation_protocol:
         - "MUST NOT block ANY tool call (Write/Edit/Read)"
         - "violation level mirrors anti_rationalization_registry: prompt-only enforcement"
 
+    step1d:
+      name: "AC Dry-Run Pass — verify §9.1 verification commands actually work (P6-A.1, 2026-04-25)"
+      trigger: "After step1c grounding pass, before step2 expert review"
+      enforcement: "prompt-level-only"  # ⚠️ NOT a hook, NOT in settings.json, NOT a tool block
+      rationale: |
+        Phase 3 / 4 / 5 累积 3 次 §9.1 verification command 在 Blake runtime 出错
+        (Phase 3 模板 anchor / Phase 4 grep scope / Phase 5 grep -n single-file output format).
+        根因是 Alex 脑内模拟 grep/awk/jq/markdown-table-pipe-escape output shape 不可靠。
+        step1d 强制实跑 + 3 self-defending sub-rules (CR self-dogfood verdict).
+      blocking_in_alex_protocol: true
+      action: |
+        1. Parse step1 draft's §9.1 Spec Compliance Checklist table.
+           NOTE: handoff template numbering — §9.1 = Spec Compliance, §9.2 = Expert Review.
+           Don't confuse with the handoff's own internal §9.x numbering.
+        2. For each §9.1 row, classify per Verification Type:
+           a. **pre-impl-verifiable**: command can run NOW on existing artifacts
+           b. **post-impl-verifiable**: command requires Blake's NEW artifacts
+        3. **Sub-rule 1: Raw-form-before-rendered-form (CR self-dogfood)**:
+           - Author commands in RAW shell form first (e.g., `grep -cE 'a|b|c'`)
+           - Dry-run from RAW form, NOT from markdown-rendered escaped form
+           - Only escape pipes (`|` → `\|`) when inserting into markdown table cells
+           - In §6.7 dry-run log, paste BOTH raw command + un-escaped output
+        4. **Sub-rule 2: Syntax-validate even post-impl-verifiable rows**:
+           - Even rows that can't fully run (file doesn't exist yet), run `bash -n` /
+             shellcheck on the command, OR run a syntactic dry-run with `--help`-style
+             expansion to confirm command parses
+           - Catches `\|` literal-pipe-in-grep-E and similar regex bugs that don't
+             require the target file to exist
+        5. **Sub-rule 3: Re-derive every pre-impl AC value with a one-liner**:
+           - Never quote AC values from memory or another section of the same doc
+           - For pre-impl rows, run the command exactly as written, paste actual output
+           - Cross-check against §6.7 dry-run log to catch mismatches early
+             (Phase 6-A v1 caught its OWN AC-G2 quoting wrong number due to violation
+              of this rule — fixed by pasting the actual `grep -c '"deny"'` output)
+        6. For each pre-impl-verifiable row:
+           - Run command, capture stdout + exit code
+           - Paste result into "Verified Output" column of handoff §9.1
+           - If output ≠ AC's "Expected Evidence" → fix the AC's Verification Method
+        7. For each post-impl-verifiable row:
+           - Mark "Verified Output" column as "(post-impl — Blake runs at Gate 3 v2 Layer 1)"
+           - Apply Sub-rule 2 (syntax-validate)
+           - DO NOT mock the future artifact (no `echo > /tmp/...` hacks)
+        8. Append `## AC Dry-Run Log` (or "Step1d Dry-Run Log") to handoff §6.5 / §6.7:
+           ```
+           **AC Dry-Run Log** (Alex step1d 实际 dry-runs at YYYY-MM-DD HH:MM):
+           - AC-X-y: ✅ pre-impl-verifiable, raw cmd: <cmd>, output matched expected
+           - AC-X-z: ✅ post-impl-verifiable, syntax-validated, deferred to Gate 3
+           - AC-X-w: ⚠️ pre-impl-verifiable, output mismatch — Verification Method revised
+           ```
+      exemption_doc_only: |
+        Skip step1d for handoffs with task_type=doc-only AND empty §9.1.
+      exemption_pre_phase6: |
+        BA-P1-1 fix: AND not OR. Pre-Phase-6 handoffs (filename date < 2026-04-25
+        AND no §9.1 dual columns): skip step1d.
+        NEW handoffs (date >= 2026-04-25) MUST have dual columns; missing dual cols
+        is a step1 draft error, not exemption case.
+      violation_self_audit: |
+        At step2, if §9.1 has rows but no AC Dry-Run Log section AND no exemption:
+        self-audit failed → return to step1d.
+      forbidden_implementations:
+        # 5 items per BA-P0-1 baseline; symmetric to step1c / express_path_protocol.
+        # All items start with "MUST NOT" for AC-P6A-1-b grep compatibility.
+        - "MUST NOT register as PreToolUse / UserPromptSubmit hook in .claude/settings.json"
+        - "MUST NOT add to .tad/hooks/*.sh as auto-fired script"
+        - "MUST NOT return deny exit code from any wrapping script"
+        - "MUST NOT block ANY tool call (Write/Edit/Read)"
+        - "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
+
     step2:
       name: "Expert Selection"
       action: "根据任务类型确定需要调用的专家"
