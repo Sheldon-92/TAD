@@ -924,6 +924,12 @@ execution_checklist:
             top-of-file array). Choose by task fit (e.g., backend-architect for
             architecture handoffs; security-auditor for auth/secrets;
             performance-optimizer for hot-path; ux-expert-reviewer for UI; etc.).
+          # P6-A.2 v2 (2026-04-27): tier rule by handoff frontmatter task_type
+          # Tier 1 (≥2 distinct): task_type=code OR task_type=mixed (current rigor)
+          # Tier 2 (≥1 distinct, code-reviewer): task_type=yaml OR task_type=research OR task_type=doc-only
+          # Tier e2e (≥2 distinct, test-runner+code-reviewer or equiv): task_type=e2e
+          # Fallback: task_type missing/unrecognized → Tier 1 (safe default per NFR1+NFR4)
+          # *express exception: existing exception_express below still applies (≥1 regardless of task_type)
 
         rationale_single_source: |
           BA-P0-2 fix (2026-04-25): SKILL does NOT inline-enumerate reviewer names.

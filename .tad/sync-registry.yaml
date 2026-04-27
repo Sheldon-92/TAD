@@ -60,3 +60,8 @@ projects:
     claude_md_strategy: "overwrite"
     last_synced_version: "2.8.3"
     last_synced_date: "2026-04-15"
+  - path: "/Users/sheldonzhao/01-on progress programs/下载md插件"
+    name: "下载md插件"
+    claude_md_strategy: "overwrite"
+    last_synced_version: "2.8.3"
+    last_synced_date: "2026-04-19"

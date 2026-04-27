@@ -946,13 +946,13 @@ express_path_protocol:
       *express. User must explicitly type *express to opt in.
 
   scope_constraints:
-    file_count_max: 3   # files in §6 Files to Modify / Create
+    file_count_max: 5   # files in §6 Files to Modify / Create (L4: 2026-04-27 widened from 3 per Opus 4.7 token-economics relief)
     over_limit_action: |
-      Use AskUserQuestion: "你的 *express 涉及 {N} 文件，超出 *express ≤3 文件硬上限。
+      Use AskUserQuestion: "你的 *express 涉及 {N} 文件，超出 *express ≤5 文件硬上限。
       要降到 Standard TAD 还是拆成多个 *express?"
       Options:
-        - "降到 Standard TAD (Recommended for >3 files)"
-        - "拆成多个 *express handoffs (each ≤3 files)"
+        - "降到 Standard TAD (Recommended for >5 files)"
+        - "拆成多个 *express handoffs (each ≤5 files)"
         - "我理解但坚持 *express 单 handoff (override — 解释原因)"
       override 选项需用户写明原因，**强制**记入 §11 Decision Summary 一行
       (Gate 2 检查若 §11 未含 override row → FAIL)
@@ -993,7 +993,7 @@ express_path_protocol:
   when_NOT_appropriate:
     - "Architecture or contract change (interface, protocol, shared schema)"
     - "Multi-module refactor"
-    - "Anything affecting >3 files (use over_limit_action AskUserQuestion)"
+    - "Anything affecting >5 files (use over_limit_action AskUserQuestion) — L4 (2026-04-27): widened from 3"
     - "Security-adjacent changes (auth/token/encrypt → Standard TAD with security review)"
     - "Performance-adjacent changes (optimization → use *experiment instead)"
 
@@ -1655,46 +1655,59 @@ handoff_creation_protocol:
     step0_5:
       name: "Context Refresh — Full Knowledge Reload"
       action: |
-        Before writing handoff draft, reload ALL project knowledge to ensure
-        no historical lessons are missed in the handoff.
+        Before writing handoff draft, reload **relevant** project knowledge.
+        L2 lazy-load (2026-04-27): only read files matching task keywords, not all.
 
-        1. Read ALL files in .tad/project-knowledge/*.md (excluding README.md)
-        2. Read handoff_creation_protocol key rules from THIS file:
+        1. **Identify task keywords** from current Socratic Inquiry results / *discuss
+           context (topics, technologies, file paths, domain). Output: keyword list.
+        2. **Read .tad/project-knowledge/README.md** (always, ~5KB cheap) — contains
+           category index + Domain Pack vs Project-Knowledge Decision Rule.
+        3. **Match keywords against category list** in README. Identify relevant
+           category files (typically 1-3 of: architecture, code-quality, security,
+           ux, performance, testing, api-integration, mobile-platform,
+           frontend-design). Default include: architecture.md (most entries land
+           there).
+        4. **Read ONLY matching category files**. Files NOT matched are skipped
+           (token savings — typically 30-50K tokens vs full reload).
+        5. Read handoff_creation_protocol key rules from THIS file:
            - expert_selection_rules (which experts to call)
-           - minimum_experts: 2
+           - minimum_experts: 2 (or 1 per L1 tier rule — see Blake SKILL hard_requirement_distinct_reviewers)
            - step7 STOP rule (must generate Blake message, must not call /blake)
-        3. Read the handoff template: .tad/templates/handoff-a-to-b.md
+        6. Read the handoff template: .tad/templates/handoff-a-to-b.md
            (to ensure template structure is fresh in context)
-        4. Brief output: "📖 Full knowledge refreshed: {N} knowledge files + handoff protocol + template"
-        # Knowledge Matching — ensure relevant history reaches Blake
-        5. After reading all knowledge files, scan each entry (### title - date) for relevance:
+        7. Brief output: "📖 Knowledge refreshed: README + {N} matched files (skipped {M}) + handoff protocol + template"
+        # Knowledge Matching — ensure relevant history reaches Blake (BA-P1-3: scan operates on partial corpus per L2 lazy-load; inclusivity rule below preserves "false negatives are not acceptable")
+        8. After reading matched knowledge files (per step 4 — partial corpus by design),
+           scan each entry (### title - date) for relevance:
            a. Extract task keywords from current Socratic Inquiry results (topics, technologies, file paths, domain)
            b. For each knowledge entry: does its Context/Discovery mention any of these keywords?
            c. Collect all matching entries into a "relevant_knowledge" list
-        6. When writing handoff §📚 Project Knowledge → "⚠️ Blake 必须注意的历史教训":
+        9. When writing handoff §📚 Project Knowledge → "⚠️ Blake 必须注意的历史教训":
            a. ALL entries from relevant_knowledge list MUST be included (not optional, not "Alex picks")
            b. Format: entry title + source file + 1-line summary of why it's relevant to this task
-           c. If relevant_knowledge is empty: write "✅ 已检查所有 knowledge 文件，无与本任务直接相关的历史教训"
-        7. This replaces the current manual "Alex reads and picks relevant entries" approach.
-           The scan is keyword-based and exhaustive — Alex cannot silently skip a matching entry.
-        8. Matching is LLM semantic scan, not regex. Match related concepts
-           (e.g., "hook" matches entries about hook scripts, shell portability).
-           When in doubt, include — false positives acceptable, false negatives are not.
-        9. After knowledge matching, run stale-knowledge-check.sh (Phase 2 P2.1, advisory only):
-             bash .tad/hooks/lib/stale-knowledge-check.sh --json 2>/dev/null
-           Failure handling:
-             - If exit code != 0: emit stderr warning
-               "stale-check.sh failed (exit {code}); continuing without staleness data"
-               and proceed. Handoff drafting MUST NOT be blocked by this advisory tool.
-             - If exit code == 0: parse JSONL.
-               For each entry in relevant_knowledge with status="STALE":
-                 output to user: "⚠️ Knowledge entry '{title}' may be stale:
-                 {path} changed {N} days after baseline"
-                 Do NOT block. User may re-verify and bump `Revalidated` (per README
-                 Entry Format), or proceed with awareness.
-               INFO/WARN entries: just count for transparency; no UI noise.
-           Anti-Epic-1 reminder: stale-check is a CLI tool, NOT a hook. Never
-           registered in settings.json. Failure here MUST fall through.
+           c. If relevant_knowledge is empty: write "✅ 已检查匹配类别 knowledge 文件，无与本任务直接相关的历史教训"
+        10. This replaces the current manual "Alex reads and picks relevant entries" approach.
+            The scan is keyword-based and exhaustive within the matched corpus — Alex cannot silently skip a matching entry.
+        11. Matching is LLM semantic scan, not regex. Match related concepts
+            (e.g., "hook" matches entries about hook scripts, shell portability).
+            When in doubt, include — false positives acceptable, false negatives are not.
+            If keyword identification (step 1) feels under-coverage for a cross-cutting task,
+            EXPAND step 3 category match (e.g., add architecture.md as broad fallback).
+        12. After knowledge matching, run stale-knowledge-check.sh (Phase 2 P2.1, advisory only):
+              bash .tad/hooks/lib/stale-knowledge-check.sh --json 2>/dev/null
+            Failure handling:
+              - If exit code != 0: emit stderr warning
+                "stale-check.sh failed (exit {code}); continuing without staleness data"
+                and proceed. Handoff drafting MUST NOT be blocked by this advisory tool.
+              - If exit code == 0: parse JSONL.
+                For each entry in relevant_knowledge with status="STALE":
+                  output to user: "⚠️ Knowledge entry '{title}' may be stale:
+                  {path} changed {N} days after baseline"
+                  Do NOT block. User may re-verify and bump `Revalidated` (per README
+                  Entry Format), or proceed with awareness.
+                INFO/WARN entries: just count for transparency; no UI noise.
+            Anti-Epic-1 reminder: stale-check is a CLI tool, NOT a hook. Never
+            registered in settings.json. Failure here MUST fall through.
       purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
 
     step1:
@@ -2313,10 +2326,33 @@ acceptance_protocol:
 
       3. If slug valid: run
            bash .tad/hooks/lib/layer2-audit.sh <slug>
-         capturing exit code + stderr.
+         capturing exit code + stderr (DISTINCT_COUNT field appears in stderr summary).
+
+      3.5. **Read task_type** from handoff frontmatter (L1 tier rule, 2026-04-27).
+           Active-first path (CR-P1-5): try `.tad/active/handoffs/HANDOFF-*-${slug}.md`
+           via `ls` glob; if empty, fall back to `.tad/archive/handoffs/HANDOFF-*-${slug}.md`.
+           Then extract:
+             awk '/^---$/{c++; if(c>=2)exit; next} c==1 && /^task_type:/{print $2}' "$HANDOFF_FILE"
+           Map TASK_TYPE → tier_threshold:
+           - TASK_TYPE = `code` OR `mixed` → tier_threshold=2, tier_name="Tier 1"
+           - TASK_TYPE = `yaml` OR `research` OR `doc-only` → tier_threshold=1, tier_name="Tier 2"
+           - TASK_TYPE = `e2e` → tier_threshold=2, tier_name="Tier e2e (test-runner + code-reviewer)"
+           - TASK_TYPE empty / unrecognized → tier_threshold=2, tier_name="Tier 1 (fallback)"
+             (NFR1+NFR4 safe default — silent quality loss is more dangerous than silent token waste)
+           - If slug matches *express pattern (already detected by layer2-audit.sh via
+             word-boundary case match `express|*-express|*-express-*|express-*`) →
+             tier_threshold=1, tier_name="Express (≥1 expert per existing exception)".
+             *express exception takes precedence over task_type.
 
       4. Interpret:
-         - exit 0  → acceptance report: "✅ Layer 2 artifacts verified: .tad/evidence/reviews/blake/<slug>/ (N reviewer artifacts, size-check is smoke-alarm heuristic)"
+         - exit 0 AND DISTINCT_COUNT ≥ tier_threshold → acceptance report: "✅ Layer 2 artifacts verified: .tad/evidence/reviews/blake/<slug>/ (N reviewer artifacts, DISTINCT_COUNT={n}/{tier_threshold}, tier={tier_name}, size-check is smoke-alarm heuristic)"
+         - exit 0 AND DISTINCT_COUNT < tier_threshold → acceptance report inserts VISIBLE warning (before Gate 4 checklist):
+             ```
+             ⚠️ LAYER 2 TIER UNDER-MET
+             DISTINCT_COUNT={n} < tier threshold {tier_threshold} for task_type={task_type} ({tier_name}).
+             Required: ≥{tier_threshold} distinct sub-agents per Blake SKILL hard_requirement_distinct_reviewers tier rule.
+             Human accepter: confirm tier assignment correct, or require Blake to add another reviewer.
+             ```
          - exit 1  → acceptance report inserts at a VISIBLE position (before Gate 4 checklist):
              ```
              ⚠️ LAYER 2 AUDIT FAIL
