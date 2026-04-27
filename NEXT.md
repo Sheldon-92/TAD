@@ -10,11 +10,12 @@
   - Pivot threshold: P0 Spike ≥4/6 PASS continue；<4/6 STOP
   - 用户痛点：Claude Code 周限额是 hard ceiling，撞顶后 1-3 天无法做事
 
-- [ ] **v2.8.4 release** — ✅ pre-publish follow-up Gate 4 PASS 2026-04-27 (commit 95b154b accepted), now ready
+- [ ] **v2.8.4 release** — ✅ pre-publish follow-up Gate 4 PASS 2026-04-27 + ✅ token efficiency Gate 3 PASS 2026-04-27 (awaiting Alex Gate 4), now nearly ready
   - 14+2 处 version bump（per release-runbook Phase 2）
-  - CHANGELOG entry (草稿见 conversation history 2026-04-27)
+  - CHANGELOG entry — needs L1 tier rule + L2 lazy knowledge + L4 *express ≤5 (commit `c3ce273`) added on top of pre-publish cleanup
   - README/INSTALLATION_GUIDE/tad-help SKILL highlights 更新
   - **release-runbook smoke test 现在能在下游 11 个项目正常 PASS**（pre-publish cleanup 已修 dangling refs）
+  - Token efficiency bundle landed on top: tier rule (yaml/research/doc-only handoffs → ≥1 reviewer), knowledge lazy load (~30-50K saved per handoff), *express widen 3→5 files
 
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2 [SHE-23]
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
@@ -26,6 +27,17 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks [SHE-26]
 
 ## Recently Completed
+
+- [x] **TAD Token Efficiency — L1 Tiered Layer 2 + L2 Lazy Knowledge + L4 *express ≤5 + L6 Narrow-Scope Expert Prompts (2026-04-27)** — Gate 4 PASS
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260427-tad-token-efficiency.md` + COMPLETION
+  - **All 19 ACs PASS** (16 v2 + 3 v3 L6) — Blake implemented FULL v2+v3 scope (L1+L2+L4+L6) but committed in 2 stages: c3ce273 (v2 L1+L2+L4) + working-tree v3 L6 → bundled into Alex Gate 4 acceptance commit
+  - Edits: Alex SKILL line 949+996+1655+2167+2295 (5 edits) + Blake SKILL line 906+918 (2 edits) = 7 edits across 2 files
+  - Layer 2: 4 review files saved (Alex pre-handoff + Blake post-impl × code-reviewer + backend-architect; Blake added `-v3.md` for v3 L6 follow-on review)；layer2-audit.sh DISTINCT_COUNT=2 exit 0
+  - Constraint preservation NFR2: alex=64 (= baseline) + blake=34 (≥ 32 baseline, +2 from L6 forbidden_implementations); AR-001 anchor count=2 (= baseline)
+  - Estimated token savings: L4 ~250-280K per newly-fitting *express handoff; L2 ~30-50K per future handoff; L1 ~60K per yaml/research/doc-only handoff; **L6 ~50% per sub-agent review × 4 reviews = ~240K per Standard architecture handoff**
+  - 3 gate4_delta entries captured (v3 L6 commit-timing drift / AC16 5th consecutive INTENT-PASS-LITERAL-FAIL / 11-space vs 10-space indent spec drift)
+  - layer2-audit.sh untouched (Anti-Epic-1 preserved); no settings.json / hook script changes
+  - Commits: `c3ce273` (Blake v2 L1+L2+L4) + Alex Gate 4 batch commit (Blake's uncommitted v3 L6 + Alex Gate 4 metadata + archive moves)
 
 - [x] **Pre-publish Cleanup — Dangling Refs Migration + 人话版 BUSINESS-VALUE-FIRST Rule (2026-04-27)** — Gate 4 PASS
   - Archived: `.tad/archive/handoffs/HANDOFF-20260427-pre-publish-cleanup.md` + COMPLETION

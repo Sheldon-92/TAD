@@ -2165,12 +2165,33 @@ handoff_creation_protocol:
       prompt_focus: "Review auth flows, data exposure risks, injection vulnerabilities"
 
   expert_prompt_template: |
-    Review this handoff draft for Phase {phase}:
+    Review this handoff draft for Phase {phase}.
 
-    FILE: {handoff_path}
+    ⚠️ NARROW-SCOPE INSTRUCTION (L6, 2026-04-27): Read ONLY the focused sections listed below.
+    Do NOT read full handoff. Do NOT free-grep wider codebase except for explicit blast-radius
+    checks listed in FOCUS AREAS. Saves ~50% per review (~115K→~50-60K) without reducing P0
+    finding rate (P0s mostly live in §6/§9/diff range).
+
+    REQUIRED READS:
+    - {handoff_path} §6 (Implementation Steps)
+    - {handoff_path} §9 (Acceptance Criteria) + §9.1 (Spec Compliance Checklist)
+    - {handoff_path} §10 (Important Notes — anti-patterns + warnings)
+    - Specific files listed in §7 (Files to Modify): {list_of_files}
+
+    OPTIONAL READS (only if REQUIRED reads alone are ambiguous for the finding you're evaluating):
+    - {handoff_path} §3 (Requirements)
+    - {handoff_path} §4 (Technical Design)
+    - {handoff_path} §11 (Decision Summary)
 
     FOCUS AREAS:
     {expert_specific_focus}
+
+    EXPLICIT BLAST-RADIUS CHECKS (only run these greps if listed):
+    {blast_radius_grep_patterns}
+
+    NOT ALLOWED:
+    - Free-explore wider codebase outside REQUIRED + OPTIONAL + listed grep patterns
+    - Reading full handoff if §6 + §9 + §10 + listed files is sufficient
 
     OUTPUT FORMAT:
     1. Critical Issues (P0 - must fix before implementation)

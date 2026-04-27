@@ -967,6 +967,46 @@ execution_checklist:
           - "Anti-AR-001: 'this task is simple, code-reviewer covers it' is forbidden interpretation for non-*express paths — must add ≥1 domain expert by task fit"
           - "MUST NOT couple Layer 2 reviewer count to step4c audit script — Blake invokes sub-agents based on judgment; audit is downstream advisory, not gate"
 
+      # L6 (2026-04-27 v3): narrow-scope mandate for Layer 2 sub-agent invocations.
+      # Symmetric with Alex SKILL expert_prompt_template — Blake's Layer 2 reviewers
+      # must be invoked with focused context (diff + §6 + §9), not full handoff.
+      expert_prompt_template:
+        rule: |
+          Layer 2 sub-agent invocations MUST follow narrow-scope template:
+
+          REQUIRED READS:
+          - Diff of THIS handoff's implementation changes (git diff <range>)
+          - {handoff_path} §6 (Implementation Steps) — what Blake intended to do
+          - {handoff_path} §9 (Acceptance Criteria) — what Blake claims is done
+          - Specific changed files (already in diff)
+
+          OPTIONAL READS (only if needed):
+          - Other handoff sections only if REQUIRED reads insufficient
+
+          EXPLICIT BLAST-RADIUS CHECKS (per handoff §10 specific patterns):
+          - For backend-architect: targeted grep for downstream consumers of
+            changed APIs/symbols if §10 lists relevant patterns
+          - For code-reviewer: re-verify each AC's verification command against
+            Blake's actual diff
+
+          NOT ALLOWED:
+          - Free-explore wider codebase outside REQUIRED + OPTIONAL + §10 patterns
+          - Reading full handoff if §6 + §9 + diff is sufficient
+
+        rationale: |
+          Same as Alex SKILL expert_prompt_template (L6 narrow-scope) — saves ~50%
+          per review (115K → 50-60K) without reducing P0 finding rate. Blake's
+          post-impl reviews catch DIFFERENT P0 classes than Alex Gate 2 (blast
+          radius / out-of-scope consumers per Phase 6-A 2026-04-27 lesson) — both
+          still load-bearing, just narrower in context per invocation.
+
+        enforcement: "prompt-level-only via Blake SKILL text"
+
+        forbidden_implementations:
+          - "MUST NOT register hook to enforce narrow-scope via tool blocking"
+          - "MUST NOT add to .claude/settings.json"
+          - "Anti-AR-001: 'narrow scope = skip review' is forbidden interpretation — narrow scope ≠ shallow review"
+
     research_compliance:
       - "如果 handoff frontmatter research_required: yes → 必须执行搜索"
       - "搜索词必须全部执行 → Search Log 证明"
