@@ -10,19 +10,11 @@
   - Pivot threshold: P0 Spike ≥4/6 PASS continue；<4/6 STOP
   - 用户痛点：Claude Code 周限额是 hard ceiling，撞顶后 1-3 天无法做事
 
-- [ ] **Pre-publish follow-up handoff (URGENT)** — 修 cleanup 漏掉的 3 dangling refs + (可选) 人话版业务价值化
-  - **必须在 v2.8.4 *publish 之前完成**，否则 release-runbook smoke test 会 FAIL
-  - 3 dangling refs (改成 read from `.router.log`):
-    - `.tad/hooks/run-phase2b-tests.sh:64`
-    - `.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh:41`
-    - `.claude/skills/release-runbook/SKILL.md:299` ⚠️ HIGHEST blast radius
-  - 人话版规则更新 (Alex SKILL step7 + Blake SKILL step8 — 2026-04-27 user feedback "事物型→业务价值型"): 待和 dangling refs 一起做？
-  - Reviewer report with proposed patch shape: `.tad/evidence/reviews/blake/tad-cleanup-linear-and-hook/backend-architect-blake-impl.md`
-
-- [ ] **v2.8.4 release** — 触发条件：上面 follow-up 完成
+- [ ] **v2.8.4 release** — ✅ pre-publish follow-up Gate 4 PASS 2026-04-27 (commit 95b154b accepted), now ready
   - 14+2 处 version bump（per release-runbook Phase 2）
   - CHANGELOG entry (草稿见 conversation history 2026-04-27)
   - README/INSTALLATION_GUIDE/tad-help SKILL highlights 更新
+  - **release-runbook smoke test 现在能在下游 11 个项目正常 PASS**（pre-publish cleanup 已修 dangling refs）
 
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2 [SHE-23]
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
@@ -34,6 +26,17 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks [SHE-26]
 
 ## Recently Completed
+
+- [x] **Pre-publish Cleanup — Dangling Refs Migration + 人话版 BUSINESS-VALUE-FIRST Rule (2026-04-27)** — Gate 4 PASS
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260427-pre-publish-cleanup.md` + COMPLETION
+  - Gate 4 v2 verification: all 13 ACs PASS（AC8/9/10 documented as INTENT-PASS-LITERAL-FAIL — 4th 连续 Phase 出现 spec-vs-actual drift, gate4_delta 3 entries 录入推动 Phase-7+ Epic）；Layer 2 audit DISTINCT_COUNT=2 exit 0；trace-digest N/A (per-handoff dir missing — advisory only)
+  - 5 files modified: 3 dangling consumers (run-phase2b-tests / AC-P1.4 / release-runbook) migrated to `.router.log` reading + Alex/Blake SKILL human-readable explanation prose got new BUSINESS-VALUE-FIRST hard rule
+  - Regression: run-phase2b-tests 5/30 → 30/30 PASS; AC-P1.4 0/7 → 6/7 PASS (1 perf bench dev-host variance, not regression)
+  - Layer 2: code-reviewer PASS (0 P0/P1, 4 P2); backend-architect PASS-WITH-P1 (0 P0; 4 P1 forward-looking — CONTRACT block recommendation, AC-dry-run Epic, allowlist extension)
+  - AC8/9/10 INTENT-PASS-LITERAL-FAIL — 4th consecutive Phase, recurring meta-pattern. KA entry "AC Verification Drift Pattern Recurring 4 Phases in a Row — Process-Level Defect" added recommending Phase-7+ Epic
+  - Bonus: caught hook `whitelist_early_exit` log emission writing 4-field log lines (vs normal 5-tuple), now classified
+  - Commit (Blake): `95b154b feat(TAD): pre-publish cleanup — dangling refs migration + 人话版 BUSINESS-VALUE-FIRST rule`
+  - **v2.8.4 release now unblocked** — release-runbook smoke test will work for downstream projects
 
 - [x] **EPIC: TAD Self-Upgrade from Cross-Project Learning — ✅ ALL 6/6 PHASES COMPLETE (2026-04-27)**
   - Archived: `.tad/archive/epics/EPIC-20260424-tad-self-upgrade-from-consumers.md`

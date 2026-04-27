@@ -4,7 +4,19 @@ e2e_required: no
 research_required: no
 git_tracked_dirs: []
 skip_knowledge_assessment: no
-gate4_delta: []
+gate4_delta:
+  - field: "AC8 / AC9 literal count expected"
+    alex_said: "grep -c 'BUSINESS-VALUE-FIRST' .claude/skills/alex/SKILL.md returns 1; same for Blake SKILL"
+    actual: "Returns 2 in both files because the sentinel `<!-- END-BUSINESS-VALUE-FIRST -->` (added in same handoff per AC10 fix) also contains the substring 'BUSINESS-VALUE-FIRST'. INTENT (≥1 occurrence of the rule) satisfied; LITERAL spec count is wrong by 1. Same drift class as Phase 5 AC-G2 grep field-count issue."
+    caught_by: "Blake post-impl Layer 2 self-verification (claimed INTENT-PASS-LITERAL-FAIL); Alex Gate 4 raw-TSV recompute confirmed 2/2"
+  - field: "AC10 awk diff verification method"
+    alex_said: "awk '/BUSINESS-VALUE-FIRST RULE/,/END-BUSINESS-VALUE-FIRST/' diff should output empty"
+    actual: "Diff outputs whitespace-only differences because Alex SKILL embeds rule at deeper YAML indent (8-space) than Blake SKILL (4-space). Content semantically byte-symmetric AFTER `sed 's/^[[:space:]]*//'` strip. Pattern recurring: 4 consecutive Phases (3, 4, 5, this one) have INTENT-PASS-LITERAL-FAIL on §9.1 verification commands."
+    caught_by: "Blake post-impl Layer 2 (verified content equivalence after whitespace normalize); Alex Gate 4 verified empty-diff after sed strip"
+  - field: "AC verification drift recurrence"
+    alex_said: "Pre-ship dry-run (handoff_creation_protocol step1d) should catch literal-form AC bugs before Blake encounters them"
+    actual: "step1d ran but Alex's dry-run was on simplified form, not on the literal cell-rendered command Blake executes. 4th consecutive Phase exhibits this. Blake's new KA entry recommends Phase-7+ Epic to operationalize via PreToolUse hook on handoff Write blocking on '(post-impl)' placeholder leak in §9.1 Verified Output column."
+    caught_by: "Cumulative Blake observations across Phase 3 / Phase 4 / Phase 5 / this handoff; Blake added KA entry 'AC Verification Drift Pattern Recurring 4 Phases in a Row — Process-Level Defect'"
 ---
 
 # Handoff: Pre-Publish Cleanup — Dangling Refs Migration + 人话版 业务价值化 Rule
