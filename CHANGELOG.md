@@ -5,6 +5,80 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.4] - 2026-04-27
+
+### New Features — Token Efficiency Bundle (4 levers)
+
+#### L1 — Tiered Layer 2 Reviewer Count by `task_type`
+- **Blake SKILL `gate3_v2.layer2_expert_review.hard_requirement_distinct_reviewers`**: Layer 2 reviewer count is now task_type-aware:
+  - `task_type: code` OR `mixed` → ≥2 distinct sub-agents (current rigor)
+  - `task_type: yaml` OR `research` OR `doc-only` → ≥1 distinct (code-reviewer required)
+  - `task_type: e2e` → ≥2 distinct (test-runner + code-reviewer or equivalent)
+  - Fallback (missing/unrecognized task_type) → Tier 1 ≥2 (NFR1 + NFR4 silent quality loss prevention)
+- **Alex SKILL `acceptance_protocol.step4c`**: New step 3.5 reads handoff frontmatter `task_type`, applies tier rule; step 4 Interpret adds tier-aware PASS/`LAYER 2 TIER UNDER-MET` WARN branches
+- **Token savings**: ~60K per yaml/research/doc-only handoff (1 fewer reviewer)
+
+#### L2 — Lazy Knowledge Load
+- **Alex SKILL `handoff_creation_protocol.step0_5`**: Reordered from "read all 9 project-knowledge files" to "identify task keywords → read README index → match → read only matched category files"
+- Inclusivity rule preserved (`relevant_knowledge` MUST include all matches; "false positives acceptable, false negatives are not")
+- `stale-knowledge-check.sh` advisory call preserved
+- **Token savings**: ~30-50K per handoff (skip 3-4 unrelated category files; architecture.md still loaded for most handoffs as default)
+
+#### L4 — `*express` Default-ization (≤3 → ≤5 files)
+- **Alex SKILL `express_path_protocol.scope_constraints.file_count_max`**: 3 → 5
+- **Alex SKILL `express_path_protocol.when_NOT_appropriate`**: ">3 files" → ">5 files" (P0 fix from 2-expert review — was missed in initial draft)
+- More cleanup/config handoffs eligible for `*express` (skips Socratic + ≥1 reviewer instead of ≥2)
+- AR-001 mechanical SKILL grep anchor (`expert review.*code-reviewer`) preserved
+- **Token savings**: ~250-280K per handoff that newly fits `*express` scope (Socratic skip + 1 fewer reviewer)
+
+#### L6 — Narrow-Scope Expert Prompts
+- **Alex SKILL `expert_prompt_template`** (line 2167): replaced from "FILE + FOCUS AREAS" stub with structured narrow-scope template
+  - REQUIRED READS: §6 (Implementation Steps) + §9 (Acceptance Criteria) + §10 (Important Notes) + specific files in §7
+  - OPTIONAL READS: §3 / §4 / §11 (only if §6 ambiguous)
+  - NOT ALLOWED: free-grep wider codebase (except explicit blast-radius checks)
+- **Blake SKILL `layer2_expert_review.expert_prompt_template`** (new sub-section): byte-symmetric with Alex template, oriented to post-impl reviewer context (diff + §6 + §9 instead of full handoff)
+- **Token savings**: ~50% per sub-agent review (~115K → ~50-60K), 4 reviews per handoff = ~240K savings per Standard architecture handoff
+
+### Total Estimated Savings
+- Architecture-heavy week (most handoffs ≥5 files / code task_type): **~30-35% per handoff**
+- Mixed week: ~25-30% per handoff
+- Cleanup-heavy week (most handoffs newly fit `*express`): up to ~40% per handoff
+- Quality防线 fully preserved (4-reviewer count unchanged for code handoffs; only context narrowed)
+
+### New Features — Cleanup + Linear Removal (commit 2209648)
+- **Linear integration removed** across 5 files (Alex STEP 3.7 startup full sync + `*accept` step4b_linear_sync + config-platform.yaml linear_integration section + config.yaml description/contains + handoff template `**Linear:**` field + post-write-sync.sh hint) — user judged feature unused
+- **`*accept` slim**: Removed duplicate `step0b_evidence_check` (was strict subset of `acceptance_protocol.step4b`)
+- **Domain Pack router hook → passive mode**: `userprompt-domain-router.sh` no longer injects `additionalContext` into agent context; keyword scoring + `.router.log` write preserved for future trace analysis
+- **YAML structural fix**: `important_notes` dedented to top-level in config-platform.yaml (was incorrectly nested under linear_integration)
+- Aligns with 2026-04-15 mechanical-enforcement-rejected lesson: smoke alarm > auto-extinguisher
+
+### Bug Fixes — Pre-Publish Cleanup (commit 95b154b)
+- **3 dangling consumers of removed `additionalContext` injection migrated to read `.router.log`**:
+  - `.tad/hooks/run-phase2b-tests.sh`: Python `run_case` parser
+  - `.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh`: Bash `_assert_match`
+  - `.claude/skills/release-runbook/SKILL.md`: per-project smoke test (would have BROKEN every downstream `*publish` smoke test if not fixed)
+- **Phase 2b regression test recovery**: 5/30 → 30/30 PASS
+- **AC-P1.4 acceptance test recovery**: 0/7 → 6/7 PASS (1 perf bench dev-host variance, not regression)
+- **BUSINESS-VALUE-FIRST RULE installed** (Alex SKILL step7 + Blake SKILL step8): handoff/completion 人话版 must lead with what user gains, not with file counts / expert findings / P0 numbers
+
+### Migration Notes
+- **No breaking changes for active code** (Linear integration was optional and unused; removal is config-section deletion only)
+- New frontmatter fields `skip_knowledge_assessment` and `gate4_delta` continue to default to safe values when absent
+- Domain Pack router hook passive mode: agents no longer see "⚠️ 检测到任务匹配 Domain Pack..." injection — pack catalog still injected via SessionStart hook for awareness
+- `claude.ai` Linear MCP connection unaffected — only TAD's automatic sync was removed
+- `deprecation.yaml` "2.8.4" entry lists files modified for downstream sync awareness
+- `*express` widening (≤3 → ≤5 files): more handoffs naturally fit `*express` scope going forward — review your in-flight handoff drafts
+
+### Documentation
+- README.md / INSTALLATION_GUIDE.md / tad-help SKILL.md: version banner + tagline updated to "Token Efficiency + Linear Cleanup + Hook Passive Mode"
+- README.md version history table: new v2.8.4 row
+- `.tad/project-knowledge/architecture.md`: 5 new entries (cleanup scope-estimation drift / AC self-leak / pre-handoff vs post-impl reviewer scope / AC verification drift recurring 4-6 phases / honest_partial protocol real use validation)
+
+### Known Issues Carried Forward
+- **AC verification command literal-form drift**: 6 consecutive phases exhibited INTENT-PASS-LITERAL-FAIL on §9.1 verification commands. Recommended Phase-7+ Epic to operationalize "Alex MUST dry-run AC verification commands during handoff drafting" via PreToolUse hook on handoff Write. Tracked in NEXT.md.
+- **L6 placeholder substitution**: `{list_of_files}` and `{blast_radius_grep_patterns}` placeholders introduced in expert_prompt_template but no Alex SKILL step populates them at runtime. v2.8.5 sub-handoff candidate to wire substitution.
+- **Token savings unmeasurable from diff**: ~30-35% claim is estimate-only. v2.9.0 `*evolve` schema may add `est_input_tokens` field to gate4_delta for empirical measurement.
+
 ## [2.8.3] - 2026-04-15
 
 ### New Feature — Layer 2 Audit (smoke-alarm replacement for Epic 1)
