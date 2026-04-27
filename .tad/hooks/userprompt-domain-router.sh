@@ -221,17 +221,9 @@ if [ -n "$SCORE_RESULT" ]; then
   BEST_FILE=$(printf '%s' "$SCORE_RESULT" | cut -f4)
 fi
 
-# ─── Emit hookSpecificOutput if a match passed threshold ──────────────────
-if [ -n "$BEST_PACK" ]; then
-  # Human-readable reminder (Chinese — matches TAD convention)
-  REMINDER="⚠️ 检测到任务匹配 Domain Pack [${BEST_PACK}]（命中 ${BEST_MATCHED}/${BEST_TOTAL} 关键词）。请 Read ${BEST_FILE} 加载对应 capability 和 quality_criteria 后再响应。"
-
-  # Safe JSON emission via jq (no string escaping pitfalls)
-  jq -nc \
-    --arg ctx "$REMINDER" \
-    '{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:$ctx}}' \
-    2>/dev/null || true
-fi
+# ─── Passive mode (TAD 2.8.4): no context injection emitted. Score + log only.
+#     Agent decides Pack loading via *discuss / *design self-judgment.
+#     See deprecation.yaml entry 2.8.4 for rationale.
 
 # ─── Log rotation + structured append (no prompt content — privacy) ──────
 elapsed_ms=$(( $(perl -MTime::HiRes=time -e 'printf "%d\n", time()*1000' 2>/dev/null || echo "$START_MS") - START_MS ))

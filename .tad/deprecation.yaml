@@ -59,3 +59,17 @@ deprecations:
       - ".claude/commands/research.md"
       - ".claude/commands/knowledge-audit.md"
     date: "2026-04-08"
+
+  "2.8.4":
+    description: "Linear integration removed (cleanup). User judged Linear sync as unused functionality. Domain Pack router hook switched to passive mode."
+    files: []  # No standalone files removed; changes are within existing files
+    note: |
+      Changes within existing files (no file deletion needed for *sync):
+      - .claude/skills/alex/SKILL.md: STEP 3.7 + step4b_linear_sync + step0b_evidence_check removed
+      - .tad/config-platform.yaml: linear_integration section removed, important_notes dedented to top-level
+      - .tad/config.yaml: config_modules.config-platform description + contains updated
+      - .tad/templates/handoff-a-to-b.md: **Linear:** field removed from header template
+      - .tad/hooks/post-write-sync.sh: NEXT.md hint Linear reference removed
+      - .tad/hooks/userprompt-domain-router.sh: additionalContext injection removed (passive mode)
+      Downstream projects: just re-sync to get the updated files. Linear MCP connection (claude.ai) remains usable manually.
+    date: "2026-04-27"

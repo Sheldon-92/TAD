@@ -71,7 +71,7 @@ case "$FILE_PATH" in
     output_response "PostToolUse" "COMPLETION report detected. You MUST run /gate 3 before sending results to Alex. Gate 3 is MANDATORY, not optional. The pre-gate hook will BLOCK /gate 3 if evidence is missing. Gate 3 includes Knowledge Assessment — if you learned anything project-specific, record it to .tad/project-knowledge/ BEFORE running Gate 3."
     ;;
   */NEXT.md|NEXT.md)
-    output_response "PostToolUse" "NEXT.md updated. Linear sync may be needed if items changed."
+    output_response "PostToolUse" "NEXT.md updated."
     ;;
   *.tad/active/epics/EPIC-*.md)
     output_response "PostToolUse" "Epic updated. Check if phase status changed."

@@ -36,7 +36,6 @@ gate4_delta: []
 **Task ID:** TASK-[YYYYMMDD]-[###]
 **Handoff Version:** 3.1.0
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
-**Linear:** N/A <!-- Optional: TAD-42 or MENU-15 — links to Linear issue for auto-sync on *accept -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md — cite previous handoff if this one supersedes. Enables /tad-maintain drift check (Phase 1 P1.2.c) to propose archiving the superseded one. -->
 
 ---

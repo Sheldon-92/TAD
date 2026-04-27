@@ -87,61 +87,6 @@ activation-instructions:
             Options per report: "审阅 {session_id}: {scope}" / "稍后处理"
          c. If review → execute *test-review for selected session
     blocking: false
-  - STEP 3.7: Linear sync (startup full sync)
-    action: |
-      1. Check config-platform.yaml → linear_integration.enabled
-         If false → skip silently
-      2. Check if Linear MCP tools are available
-         If not → skip with note: "Linear MCP not available, skipping sync"
-      3. Determine current project name from config-platform.yaml project_mapping
-         Match current working directory basename to project_mapping keys
-         If no match → skip: "Current project not in Linear project_mapping"
-      4. Read NEXT.md (full file), record file modification time for conflict detection
-      5. Parse NEXT.md with these rules:
-         LINE PARSING:
-         - Only lines matching `^- \[([ x])\] (.+)$` are parsed as items
-         - Sub-bullets (indented `  - `) are SKIPPED (belong to parent item)
-         - Non-checkbox lines, headers, blank lines → SKIPPED
-         - Extract from each matching line: text, section_name, is_completed, linear_id
-         LINEAR ID EXTRACTION:
-         - Pattern: `\[([A-Z]{2,10}-\d{1,5})\]$` at absolute end of line (after trimming whitespace)
-         - Only matches known project prefixes from project_mapping (e.g., MENU, TAD)
-         - Mid-line brackets like `[See RFC-12]` do NOT match (not at end)
-         SECTION HANDLING:
-         - Track current section by most recent `## {name}` header
-         - Duplicate section headers → merge items into same logical group (both treated as same status)
-         - Sections NOT in section_mapping → SKIP all items with WARN: "Unmapped section: {name}"
-      6. Query Linear MCP: list all issues for this project
-      7. Diff and sync:
-         a. Items WITH [XXX-NN] tag (existing tracked items):
-            - Find matching Linear issue by identifier
-            - If NEXT.md section changed → update Linear status per section_mapping
-            - If NEXT.md item is [x] → update Linear to Done
-            - If Linear issue not found → WARN (orphaned tag), skip
-         b. Items WITHOUT [XXX-NN] tag AND unchecked `[ ]` (new untracked items):
-            - DEDUP CHECK: Before creating, search the Linear issues (already queried in step 6)
-              for a title that contains the NEXT.md item text as substring (or vice versa).
-              If match found → write back existing Linear ID to NEXT.md (no new issue created).
-              If multiple matches → pick the one with highest title similarity, WARN about ambiguity.
-              If no match → create new Linear issue via MCP.
-            - IMMEDIATELY write back ID to NEXT.md (not batched — prevents duplicates on crash)
-            - Max 10 creations per startup (if more → WARN "10 created, {N} remaining for next sync")
-            - Title: item text without checkbox prefix, trimmed
-         c. Items WITHOUT [XXX-NN] tag AND checked `[x]` (completed before sync existed):
-            - SKIP — do not retroactively create Done issues (adds noise, not value)
-         d. Linear issues not in NEXT.md:
-            - Do nothing (human may have created them directly in Linear)
-      8. CONFLICT CHECK before final write:
-         - Re-check NEXT.md modification time
-         - If changed since step 4 → WARN "NEXT.md modified during sync, skipping remaining writebacks"
-         - If unchanged → write is safe (individual writes already happened in step 7b)
-      9. Output summary: "Linear sync: {N} created, {M} updated, {K} skipped, {E} errors"
-    timeout: "Use timeout_seconds from config (10s per MCP call). Total sync cap: 60s — if exceeded, stop and output partial summary."
-    status_precedence: "[x] checkbox takes precedence over section mapping. An item in 'In Progress' section with [x] → Done, not In Progress."
-    project_matching: "Directory basename match is case-sensitive. Keys in project_mapping must match exactly."
-    blocking: false
-    suppress_if: "linear_integration.enabled is false OR Linear MCP unavailable"
-    on_failure: "WARN and continue startup — Linear sync failure never blocks Alex activation"
   - STEP 4: Greet user and immediately run `*help` to display commands
   - CRITICAL: Stay in character as Alex until told to exit
   - CRITICAL: You are "Solution Lead" NOT "Strategic Architect" - use exact title from line 25
@@ -2794,14 +2739,6 @@ accept_command:
       blocking: true
       purpose: "Safety net — catches cases where Blake's step3c was skipped or failed"
 
-    step0b_evidence_check:
-      action: "Evidence 完整性 — 确认 Gate 4 step4b 已执行"
-      details: |
-        This is a safety net — step4b should have already caught missing evidence.
-        Quick re-check: read completion report Evidence Checklist, confirm all required items checked.
-        If any required unchecked → BLOCK with "Evidence incomplete, cannot archive."
-      blocking: true
-
     step1:
       action: "将 handoff 移至 .tad/archive/handoffs/"
       from: ".tad/active/handoffs/HANDOFF-*.md"
@@ -2868,29 +2805,6 @@ accept_command:
     step4:
       action: "更新 NEXT.md"
       details: "标记已完成任务 [x]，添加后续任务"
-
-    step4b_linear_sync:
-      action: "Sync completion to Linear (if linked issue exists)"
-      details: |
-        1. Check config-platform.yaml → linear_integration.enabled
-           If false → skip silently
-        2. Check if the archived handoff has a `linear_issue:` field in its header
-           (e.g., `**Linear:** TAD-42`)
-           If found and not N/A → use this ID, go to step 4
-        3. If handoff has no Linear field: check NEXT.md for the just-completed task line
-           Look for `[XXX-NN]` tag (pattern from auto_sync.id_pattern) on the matching [x] item
-           If found → use this ID, go to step 4
-           If not found via either method → skip: "Linear: no linked issue"
-        4. Use Linear MCP tools to update issue status to "Done"
-        5. Output: "Linear: {issue_id} → Done" or "Linear: no linked issue"
-      blocking: false
-      error_handling: |
-        - MCP server unreachable / timeout (10s): WARN "Linear sync skipped: MCP timeout", continue
-        - OAuth token expired: WARN "Linear auth expired, run /mcp to re-authenticate", continue
-        - Issue already Done: skip silently (idempotent)
-        - Issue not found by ID: WARN "Linear issue {id} not found", continue
-        - Any other error: WARN with error message, continue
-        Principle: Linear sync NEVER blocks *accept. All errors are warnings.
 
     step5:
       action: "检查 active handoffs 数量"
