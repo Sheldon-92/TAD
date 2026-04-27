@@ -181,4 +181,77 @@ Commit: `c3ce27388d0bfbe93cead48771cd1666c2700d94`
 
 ---
 
-**Status: Implementation Complete, Gate 3 v2 PASS, awaiting Alex Gate 4 acceptance.**
+# v3 Supplement — L6 Narrow-Scope Expert Prompts (added 2026-04-27)
+
+**Trigger:** Alex sent v3 handoff after user *discuss on architecture-handoff cost-benefit. L6 added on top of L1+L2+L4. Note: v3 disclosure (handoff §9.2) said "L6 prose-only addition, parallel review NOT re-run" — Alex's design-time discipline call. **Blake re-ran impl-time Layer 2 review per architecture.md "Express Handoff is NOT Review-Exemption" 2026-04-14 lesson + P6-A.2 dogfood timing for THIS handoff.**
+
+## v3 Implementation Summary
+
+L6 (Narrow-Scope Expert Prompts) lands in 2 additional SKILL edits:
+
+5. **Alex SKILL line 2167** — `expert_prompt_template` replaced from simple "FILE + FOCUS AREAS" stub with NARROW-SCOPE template: `REQUIRED READS` (§6 + §9 + §10 + §7 files only), `OPTIONAL READS` (§3/§4/§11 if ambiguous), explicit `EXPLICIT BLAST-RADIUS CHECKS`, `NOT ALLOWED` clause. Saves ~50% per Alex Gate 2 sub-agent invocation.
+6. **Blake SKILL after line 968** — new `expert_prompt_template` sub-section appended at sibling indent (6 sp, after `hard_requirement_distinct_reviewers.forbidden_implementations`). Same shape as Alex (REQUIRED/OPTIONAL/NOT ALLOWED) but oriented to post-impl reviewer context (`diff + §6 + §9` REQUIRED, not full handoff). 3-bullet `forbidden_implementations` enforces prompt-level-only + AR-001 anti-rationalization.
+
+Estimated additional savings post-L6 (per architecture-heavy handoff): ~50% per sub-agent review (115K → 50-60K). For weeks where most handoffs are architecture/refactor with 2 reviewers each, total session savings shift from "10-15% with L1+L2+L4 alone" to "**~30-35% per handoff**" per handoff §1.1 v3 estimate.
+
+## v3 Gate 3 v2 — Layer 2 Re-Review (impl-time, dogfood timing per current ≥2 rule)
+
+| Reviewer | Verdict | Findings | Evidence |
+|----------|---------|----------|----------|
+| code-reviewer | ✅ PASS | P0=0, P1=0, 3 P2 advisory | `code-reviewer-blake-impl-v3.md` (5.9K) |
+| backend-architect | ⚠️ CONDITIONAL PASS | 0 P0, 4 P1 deferred to v2.8.5/Phase 7 (no blockers) | `backend-architect-blake-impl-v3.md` (14K) |
+
+**DISTINCT_COUNT verified:** `bash .tad/hooks/lib/layer2-audit.sh tad-token-efficiency` → DISTINCT_COUNT=2, exit 0 (6 reviewer artifacts now in dir; UNKNOWN warning for the 4 `*-blake-impl[-v3]` suffix files is benign per architecture.md "Pre-Handoff vs Post-Implementation Reviewer" 2026-04-27).
+
+**Dogfood:** v3 Layer 2 invocations USED the new L6 narrow-scope template — both reviewers received REQUIRED/OPTIONAL/NOT ALLOWED structured prompts focused on the L6 diff + handoff §6/§9 only. backend-architect's "P1.7 Dogfood feedback" rated narrow scope right-sized for this small additive change but flagged that future structural changes may want a `shallow|deep` review-depth parameter.
+
+### backend-architect P1 deferred recommendations (transparent disclosure for Alex Gate 4)
+
+backend-architect found 4 P1s — none blocking, all forward-looking:
+1. **P0-1 boundary observation**: ~40% of v2 P0s (BA-P0-2 quota-deadlock + BA-P0-3 NFR1 enumeration) came from sections OUTSIDE narrow scope (§10 anti-patterns + §11 decision summary). Recommends elevating §10 to REQUIRED (not OPTIONAL) in Blake template + adding §3 to OPTIONAL with task-type triggers. → **Real coverage gap; deferred to v2.8.5 narrow-scope refinement handoff.**
+2. **P1-1 placeholder convention divergence**: Alex template uses `{handoff_path}` / `{list_of_files}` curly-brace; Blake template uses `<range>` angle-bracket. Should converge for clarity. → Cosmetic, deferred.
+3. **P1-4 placeholder substitution missing**: `{list_of_files}` and `{blast_radius_grep_patterns}` are introduced but no Alex SKILL `step1` / `step2_review_invocation` populates them at runtime. Risk: literal `{list_of_files}` may appear in real prompts. → **Real runtime fragility; recommend Alex Gate 4 add a v2.8.5 sub-handoff to wire substitution.**
+4. **P2-8 token-savings auditability**: ~50% claim is unmeasurable from diff. Recommend *evolve schema gate4_delta `est_input_tokens` field for future measurement. → Deferred to *evolve roadmap.
+
+These all fit "ship-acceptable with documented follow-up" pattern (similar to v2's "doc-only future drift surface" P1).
+
+## v3 AC Verification — All 19 ACs PASS
+
+In addition to v2's 16 ACs (all still PASS post-L6), v3 adds:
+
+| AC | Description | Verification | Expected | Actual | Status |
+|----|-------------|--------------|----------|--------|--------|
+| AC11 | Constraint preservation | `grep -c "MANDATORY\|VIOLATION\|forbidden"` (alex+blake) | ≥96 baseline | alex=64 + blake=34 = **98** (+2 from L6 forbidden_implementations bullets) | ✅ |
+| AC17 | L6 Alex narrow-scope template | `grep -c "NARROW-SCOPE INSTRUCTION (L6"` = 1 + `REQUIRED READS:` ≥1 + `minimum_experts: 2` = 1 | meets each | NARROW-SCOPE = 1 ✓; REQUIRED READS = 1 ✓; minimum_experts: 2 = **2** (2nd occurrence is L2 step0_5 doc reference from v2 — INTENT-PASS, see note below) | ✅ INTENT-PASS |
+| AC18 | L6 Blake narrow-scope template | `grep -c "L6 (2026-04-27 v3)"` = 1 + `narrow-scope mandate` ≥1 + `self-review.md does NOT count` = 1 | meets each | All ✓ | ✅ |
+| AC19 | L6 symmetry between Alex + Blake | both have REQUIRED READS / OPTIONAL READS / NOT ALLOWED ≥1 | ≥1 each side | All 6 fields present (3 keywords × 2 files) | ✅ |
+
+### AC17 INTENT-PASS-LITERAL-FAIL (6th consecutive phase exhibiting this drift pattern)
+
+`grep -c "minimum_experts: 2" .claude/skills/alex/SKILL.md` returns **2** not the spec'd **1**. Root cause: v2's L2 step0_5 lazy-load implementation added a documentation reference `"minimum_experts: 2 (or 1 per L1 tier rule — see Blake SKILL hard_requirement_distinct_reviewers)"` that also matches the literal grep pattern. Both occurrences correctly preserve `minimum_experts: 2` rule statement; INTENT-PASS verified.
+
+This is the **6th consecutive phase** (Phase 3 / Phase 4 / Phase 5 / Phase 6/7 v2 prebuild / v2 token-eff / v3 L6) exhibiting handoff-AC-spec-vs-real drift. Same root cause documented at architecture.md "AC Verification Drift Pattern Recurring 4 Phases in a Row - 2026-04-27". **Recommend Alex Gate 4 Revalidate that entry to bump counter to 6 phases + escalate to Phase-7+ Epic for operationalizing "Alex MUST dry-run AC verification commands during handoff drafting".**
+
+## v3 Files Changed (incremental on top of c3ce273)
+
+```
+.claude/skills/alex/SKILL.md                       | +25/0   (L6 narrow-scope template at line 2167)
+.claude/skills/blake/SKILL.md                      | +40/0   (L6 expert_prompt_template appended after line 968)
+.tad/evidence/reviews/blake/tad-token-efficiency/
+  ├── code-reviewer-blake-impl-v3.md (NEW, 5.9K)
+  └── backend-architect-blake-impl-v3.md (NEW, 14K)
+
+4 files changed for v3.
+```
+
+## v3 Decision Summary
+
+| # | Decision | Context | Chosen | Notes |
+|---|----------|---------|--------|-------|
+| v3-1 | Re-review L6 or trust Alex's "no re-review" disclosure? | handoff §9.2 said v3 prose-only, no re-review | **Re-run Layer 2** (code-reviewer + backend-architect on L6 diff only, narrow-scope) | Per architecture.md "Express Handoff is NOT Review-Exemption" 2026-04-14 + P6-A.2 dogfood timing. Cost: ~75K tokens (small for a re-review). Caught 4 backend-architect P1s that would have been undetected. |
+| v3-2 | Amend c3ce273 or new commit? | v2 is already committed | **New commit** | Per CLAUDE.md global rule "Always create NEW commits rather than amending". Cleaner history showing v2 + v3 separately. |
+| v3-3 | Use new L6 template for the L6-review itself? | Dogfood opportunity | **Yes — narrow-scope prompts** | Tests the template under real load. backend-architect's P1.7 dogfood signal validates the template is right-sized for small additive changes. |
+
+---
+
+**v3 Status: L6 Implementation Complete, Layer 2 PASS (1 PASS + 1 CONDITIONAL PASS no blockers), awaiting Alex Gate 4 acceptance + v3 commit. Handoff already in archive (Alex's *accept Gate 4 partial flow appears to have moved both v2 + v3 there).**
