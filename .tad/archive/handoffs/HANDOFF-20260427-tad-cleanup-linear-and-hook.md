@@ -4,7 +4,15 @@ e2e_required: no
 research_required: no
 git_tracked_dirs: []   # framework files only, no production app code
 skip_knowledge_assessment: no
-gate4_delta: []
+gate4_delta:
+  - field: "Handoff scope file count estimation"
+    alex_said: "v1 draft: 4 files (Linear cut + accept slim + hook passive)"
+    actual: "v2 post-Alex-review: 7 files (BA P0-1 +3: config.yaml / handoff template / post-write-sync.sh). Post-impl Blake Layer 2: 10 files truly needed (3 more dangling refs of removed additionalContext in run-phase2b-tests.sh + AC-P1.4-router-event-filter.sh + release-runbook SKILL.md). Estimation was 250%+ off from final reality."
+    caught_by: "Alex Gate 2 review caught 4→7; Blake post-impl backend-architect Layer 2 caught 7→10 (3 dangling consumers)"
+  - field: "AC4 / Linear blast radius coverage scope"
+    alex_said: "5 active code/config/template files grep -i linear should be empty after delete"
+    actual: "Pre-handoff backend-architect grep'd primary Linear mentions (config / SKILL / template) but NOT downstream consumers of removed mechanism (additionalContext). 3 files still consume the deleted injection: phase2b test runner / phase1 acceptance test / release-runbook smoke test. Post-impl Layer 2 backend-architect found these by fresh grep on additionalContext consumers."
+    caught_by: "Blake post-impl backend-architect Layer 2 review (vs Alex pre-handoff backend-architect)"
 ---
 
 # Handoff: TAD Bloat Cleanup — Linear Integration + *accept Slim + Domain Pack Hook Passive Mode

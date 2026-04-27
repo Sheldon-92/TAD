@@ -2,37 +2,28 @@
 
 ## In Progress
 
-_(监督层替代方案已 2026-04-15 express handoff 落地——`layer2-audit.sh` + Alex SKILL step4c + Blake Slug Contract。见 Recently Completed)_
-- [ ] **EPIC: TAD Self-Upgrade from Cross-Project Learning** — Phase 5/6 DONE (2026-04-25)
-  - Epic: `.tad/active/epics/EPIC-20260424-tad-self-upgrade-from-consumers.md`
-  - Evidence: `.tad/evidence/learnings/HARVEST-20260424-cross-project.md`
-  - Phase Map:
-    - ✅ P1: State Consistency Mechanical Checks (commit 08e9e74)
-    - ✅ P2: Grounding & Anti-Stale-Knowledge (commit 0b2e25d)
-    - ✅ P3: New Paths for Real Usage Patterns (commit ff96bd5)
-    - ✅ P4: Domain Pack Expansion (commits d2a73a1 + 93fcb50; 8 packs / 21 items / DESIGN.md spec / Anti-AI-Slop)
-    - ✅ P5: Evolve Data Capture Infrastructure (commit d578707; gate4_delta + AskUserQuestion capture + *cancel + per-handoff trace + 4 P4 inject; Gate 4 PASS 2026-04-25)
-    - ⏸️ P6: Assumption Re-Design — Paused (P6-A done PARTIAL; B/C/D/E/F demoted to candidates)
-      - ⚠️ P6-A: Process Quality Foundation — **PARTIAL ACCEPT 2026-04-25**. 18/18 implementation ACs PASS. Stage D.3 ≥2 sub-agent self-dogfood DEFERRED (org monthly limit; retry ~2026-05-01). Honest_partial_protocol first real-use. Rule installed; future handoffs receive benefit immediately.
-      - ⬚ P6-B/C/D/E/F: 候选 — **周一周二恢复时评估是否做** (见下方 "Phase 6 候选评估")
-      - **Pending follow-up**: Post org-limit reset (~2026-05-01), re-invoke code-reviewer + backend-architect on P6-A implementation; reviews land in `.tad/evidence/reviews/blake/phase6a-process-quality-foundation/`, re-run `bash .tad/hooks/lib/layer2-audit.sh phase6a-process-quality-foundation` should return DISTINCT_COUNT≥2 PASS. This closes the deferred Layer 2 gap.
+- [ ] **EPIC: Codex CLI Adaptation — TAD 跨平台 fallback** — ⬚ Planning (created 2026-04-27)
+  - Epic: `.tad/active/epics/EPIC-20260427-codex-cli-adaptation.md`
+  - Target Release: v2.9.0 (minor bump — new platform support)
+  - **触发条件**：v2.8.4 release 完成后启动 P0 Spike（4 小时硬上限）
+  - 3 phases: Spike / Build (TAD-Core Portable + Adapter) / Validate-Document
+  - Pivot threshold: P0 Spike ≥4/6 PASS continue；<4/6 STOP
+  - 用户痛点：Claude Code 周限额是 hard ceiling，撞顶后 1-3 天无法做事
 
-## Phase 6 候选评估 (周一周二恢复时读)
+- [ ] **Pre-publish follow-up handoff (URGENT)** — 修 cleanup 漏掉的 3 dangling refs + (可选) 人话版业务价值化
+  - **必须在 v2.8.4 *publish 之前完成**，否则 release-runbook smoke test 会 FAIL
+  - 3 dangling refs (改成 read from `.router.log`):
+    - `.tad/hooks/run-phase2b-tests.sh:64`
+    - `.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh:41`
+    - `.claude/skills/release-runbook/SKILL.md:299` ⚠️ HIGHEST blast radius
+  - 人话版规则更新 (Alex SKILL step7 + Blake SKILL step8 — 2026-04-27 user feedback "事物型→业务价值型"): 待和 dangling refs 一起做？
+  - Reviewer report with proposed patch shape: `.tad/evidence/reviews/blake/tad-cleanup-linear-and-hook/backend-architect-blake-impl.md`
 
-**已 demote 到候选** (2026-04-25, user 决策："不紧急，先停"):
+- [ ] **v2.8.4 release** — 触发条件：上面 follow-up 完成
+  - 14+2 处 version bump（per release-runbook Phase 2）
+  - CHANGELOG entry (草稿见 conversation history 2026-04-27)
+  - README/INSTALLATION_GUIDE/tad-help SKILL highlights 更新
 
-| Sub | 内容 | 评估问题 (周一周二回答) |
-|-----|------|---------------------|
-| P6-B | P6.1 Alex/Blake 边界 + Blake→Alex feedback 机制 | P6-A 落地后，process 纪律是否足够支撑核心架构争议？ |
-| P6-C | P6.2 Gate 3/4 分工 + Staging Smoke as Gate 4 prereq | 是否依赖 P6-B 决策？是否独立做有意义？ |
-| P6-D | P6.3 Domain Pack 分类学审视 | 21 packs 重组的 ROI 比新功能高吗？ |
-| P6-E | P6.4 *express vs AR-001 一致性 + P6.5 Phase N+1a/b 切分协议 | 审计性质，是否有触发场景？ |
-| P6-F | P6.6 capture rate 阈值 + P6.7 Partial Gate 4 + P6.8 Compliance schedule | 是否有 production 紧迫性？ |
-
-**评估时 3 个出口**:
-1. **继续做某个 sub** → 启动 /alex 跑 Socratic + Standard TAD
-2. **Phase 6 暂时 frozen** → 留 EPIC-20260424 在 Active，但优先转其他 Epic
-3. **拆为独立 v3 Epic** → close 当前 Epic（P6-A 算最后 sub），新建 v3-redesign Epic
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2 [SHE-23]
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -43,6 +34,21 @@ _(监督层替代方案已 2026-04-15 express handoff 落地——`layer2-audit.
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks [SHE-26]
 
 ## Recently Completed
+
+- [x] **EPIC: TAD Self-Upgrade from Cross-Project Learning — ✅ ALL 6/6 PHASES COMPLETE (2026-04-27)**
+  - Archived: `.tad/archive/epics/EPIC-20260424-tad-self-upgrade-from-consumers.md`
+  - Phase 1-5: see commits 08e9e74 / 0b2e25d / ff96bd5 / d2a73a1 + 93fcb50 / d578707
+  - Phase 6: P6-A PARTIAL (process quality foundation) + cleanup (Linear cut + *accept slim + hook passive) replaced 5 deferred sub-handoffs (P6-B/C/E/F + P6-A v2 follow-up all killed by user 2026-04-27 over-engineering reflection)
+  - 18,433 net insertions / 86 deletions over 10 commits
+
+- [x] **TAD Bloat Cleanup — Linear cut + *accept slim + Hook passive mode (2026-04-27)** — Gate 4 PASS
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260427-tad-cleanup-linear-and-hook.md` + COMPLETION
+  - 7 files modified (-129 net lines): Linear integration完全砍除 + step0b重复检查删除 + Hook从active注入改为passive logging only + deprecation 2.8.4
+  - Layer 2: code-reviewer PASS 0 P0; backend-architect CONDITIONAL PASS — flagged 3 OUT-OF-SCOPE P0 cross-references (see Pre-publish follow-up above)
+  - Commit (Blake): `2209648 feat(TAD): bloat cleanup — Linear cut + *accept slim + hook passive mode`
+  - Gate 4 v2 verification: 17 ACs all PASS (raw-TSV recompute matches Blake report); Layer 2 audit DISTINCT_COUNT=2 exit 0
+  - 3 architecture.md KA entries (2 from Blake + 1 from Alex on scope-estimation drift pattern)
+  - 2 gate4_delta entries captured (scope estimation 4→7→10 drift; AC4 blast radius coverage gap)
 
 - [x] **Express: Layer 2 Audit — Alex *accept 红字警告 (2026-04-15)**
   - Handoff: `.tad/archive/handoffs/HANDOFF-20260415-layer2-audit.md`

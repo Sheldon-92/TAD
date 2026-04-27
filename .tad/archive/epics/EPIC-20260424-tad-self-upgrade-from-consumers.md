@@ -2,7 +2,7 @@
 
 **Epic ID**: EPIC-20260424-tad-self-upgrade-from-consumers
 **Created**: 2026-04-24
-**Last Updated**: 2026-04-24 (Phase ordering revised — see Notes)
+**Last Updated**: 2026-04-27 (Phase 6 pruned — over-engineering reflection by user)
 **Owner**: Alex
 **Evidence reference**: `.tad/evidence/learnings/HARVEST-20260424-cross-project.md`
 
@@ -34,23 +34,34 @@
 | 3 | New Paths for Real Usage Patterns | ✅ Done | [HANDOFF-20260424-phase3-new-paths.md](../../archive/handoffs/HANDOFF-20260424-phase3-new-paths.md) | *express + *experiment + skip_knowledge_assessment 三路径正式化 — 32 ACs all PASS, AR-001 mechanical anchor 加上, Gate AUGMENT not REPLACE 修复, symmetric forbidden_implementations 5/5/5 (Gate 4 2026-04-25, commit ff96bd5) |
 | 4 | Domain Pack Expansion | ✅ Done | [HANDOFF-20260425-phase4-domain-pack-expansion.md](../../archive/handoffs/HANDOFF-20260425-phase4-domain-pack-expansion.md) | 8 Domain Pack YAML 扩展 21 items + 1 README + 2 architecture.md entries — 包含 Google DESIGN.md spec 集成（Apache 2.0 verified）+ Anthropic Anti-AI-Slop 哲学（Apache 2.0 verified）。P4.1 deferred + P4.2 redirected per pretriage (Gate 4 2026-04-25, commits d2a73a1 + 93fcb50) |
 | 5 | Evolve Data Capture Infrastructure | ✅ Done | [HANDOFF-20260425-phase5-evolve-data-capture.md](../../archive/handoffs/HANDOFF-20260425-phase5-evolve-data-capture.md) | gate4_delta + AskUserQuestion capture hook + *cancel command + per-handoff trace + 4 P4 inject — 27/29 ACs hard-PASS, 2 deferred (need runtime *cancel), 1 INTENT-PASS LITERAL-FAIL (handoff bug), 1 PARTIAL (P5.2-d perf dev-host caveat per architecture.md 2026-04-14). 3 gate4_delta entries logged (meta-trifecta dogfood). 1 Alex KA entry on recurring AC-verification-command pattern (Phase 6 input). Gate 4 PASS 2026-04-25, commit d578707 |
-| 6 | Assumption Re-Design (v3 candidate) | ⏸️ Paused (P6-A done PARTIAL; B/C/D/E/F deferred) | Sub-A: [HANDOFF-20260425-phase6a-process-quality-foundation.md](../../archive/handoffs/HANDOFF-20260425-phase6a-process-quality-foundation.md) | **Sub-A (P6-A) PARTIAL ACCEPT 2026-04-25**: 18/18 implementation ACs PASS; Stage D.3 ≥2 sub-agent self-dogfood DEFERRED until org monthly limit resets (~2026-05-01). Honest_partial_protocol invoked correctly — rule installed, audit script catches its own gap as designed. P6.1-P6.8 全部 demote 到候选（user decision 2026-04-25）。Mon/Tue resume: read NEXT.md "Phase 6 候选评估" |
+| 6 | Assumption Re-Design (Pruned then Cleanup-Closed 2026-04-27) | ✅ Done | Sub-A: [HANDOFF-20260425-phase6a-process-quality-foundation.md](../../archive/handoffs/HANDOFF-20260425-phase6a-process-quality-foundation.md) — PARTIAL ACCEPT 2026-04-25; Sub-Final: [HANDOFF-20260427-tad-cleanup-linear-and-hook.md](../../archive/handoffs/HANDOFF-20260427-tad-cleanup-linear-and-hook.md) — Gate 4 PASS 2026-04-27 (commit 2209648) | **CLOSED 2026-04-27**: User explicit decision (2026-04-27) "P6 后面的我觉得都可以不做" — kill all P6-B/C/D/E/F + P6-A v2 follow-up. Cleanup handoff (Linear cut + *accept slim + hook passive) replaces the entire planned Phase 6 batch. Net Phase 6 deliverable: P6-A PARTIAL (process quality rule installed) + cleanup (Linear killed + accept slimmed + hook passive). Demoted as IDEA: P6-D → IDEA-20260427-domain-pack-taxonomy-reorg.md. Killed: P6-A v2 follow-up (procedural symmetry, 0 user value), P6-B/C/E/F (no concrete痛点 / over-engineering reflection). |
 
-### Pause Point — 2026-04-25 (user-set)
+### Phase 6 Pruning Decision — 2026-04-27 (user-driven over-engineering reflection)
 
-**今天目标**: P6-A 走完整个闭环（Blake 实现 + Alex Gate 4 + 归档 commit）即停。
+**Trigger**: User flagged "现在的划分有点过度工程化了" + "为什么有这么多 epic 还没做" + "什么必须做、什么可以不做做一个反思" — explicit demand for honest pruning rather than execute-everything-on-list inertia.
 
-**周一周二恢复时**：
-1. 读 NEXT.md "Phase 6 候选评估" 段
-2. 评估 P6-B/C/D/E/F **是否值得做**（基于 P6-A 实际效果）
-3. 选项：(a) 继续 Phase 6 某个 sub-handoff (b) Phase 6 暂时 frozen + 转其他 Epic (c) 把 Phase 6 拆成独立 v3 Epic
+**Honest diagnosis**:
+1. Most P6 sub-handoffs are SKILL.md text-level规范化 (rule micro-tuning, threshold setting, audit) — running each through full Standard TAD (Socratic + 2 expert + Gate 1-4) is exactly the over-engineering the `*express` path was created to avoid.
+2. Only **P6-B is core architecture decision** (Alex/Blake boundary). Others are post-hoc formalization of patterns already in use.
+3. 4-24 cross-project harvest 收集 20+ proposals → Epic 把全部装进去 → "完成清单"惯性 → 价值密度低的也走重流程。
+4. TAD-self-improvement 容易陷入 perfectionism trap — 框架做产品工具用就好，不要做成"完美的元工具"。
 
-**Phase 6 候选 sub-handoffs (NOT committed, do not start without explicit user approval)**:
-- P6-B: P6.1 Alex/Blake 边界 + Blake→Alex feedback 机制（核心争议，需 P6-A 落地后评估）
-- P6-C: P6.2 Gate 3/4 分工 + Staging Smoke as Gate 4 prereq（依赖 P6-B 决策框架）
-- P6-D: P6.3 Domain Pack 分类学审视（21 packs 重组）
-- P6-E: P6.4 *express vs AR-001 一致性 + P6.5 Phase N+1a/b 切分协议
-- P6-F: P6.6 capture rate 健康阈值 + P6.7 Partial Gate 4 + P6.8 Compliance handoff scheduling
+**Active work items after pruning** (reduced from 6 sub-handoffs to 3 effective):
+
+| ID | Sub-handoff | Mode | Trigger | Notes |
+|----|-------------|------|---------|-------|
+| **P6-A v2 follow-up** | re-run ≥2 sub-agent review on phase6a artifacts | manual 5-min op | ≥ 2026-05-01 (org monthly limit reset) | Closes Stage D.3 deferred缺口; `bash .tad/hooks/lib/layer2-audit.sh phase6a-process-quality-foundation` should return DISTINCT_COUNT≥2 PASS |
+| **P6-B** | Alex/Blake 边界 + Blake→Alex feedback 机制 | Standard TAD (Socratic + 2 experts + Gate 1-4) | 即可启动 | 唯一核心架构争议 — 决定 TAD 长期演化方向。Original P6.1 scope. |
+| **Express Batch** | P6-E + P6-F + P1.4 hook threshold ≥3 fix | `*express` handoff (single, ≤3 files combined) | 即可启动；P6-B 完成后回看 | (a) P6.4 *express vs AR-001 audit (b) P6.5 Phase N+1a/b 切分协议 (c) P6.6 capture rate阈值 (d) P6.7 Partial Gate 4 正式化 (e) P6.8 Compliance scheduling (f) P1.4 carryover: `userprompt-domain-router.sh` threshold from ≥2 to ≥3 + 30-case regression. All SKILL.md / hook-config text edits, batchable. |
+
+**Demoted (no concrete trigger; revisit when痛点出现)**:
+
+| Sub | Demote reason | Re-trigger condition |
+|-----|--------------|---------------------|
+| P6-C (Gate 3/4 分工 + Staging Smoke prereq) | Depends on P6-B decision framework — premature to design now | After P6-B if outcome creates need for Gate 3/4 boundary重画 |
+| P6-D (Domain Pack 分类学重组) | Large rename工程; user has no "找不到该用哪个 pack" pain point | When ≥2 cross-project cases of "obvious pack mismatch" surface. Tracked: IDEA-20260427-domain-pack-taxonomy-reorg.md |
+
+**Estimated impact**: ~2-3 weeks of "list completion" reduced to ~1 week of high-value work, with all real-pain items still addressed (hook false-positives folded into express batch). Both Epics close after these 3 items + Security Epic Phase 2 (ai-security pack only — see EPIC-20260403 update).
 
 ### Phase Dependencies
 
@@ -66,7 +77,7 @@ Status computed from Phase Map:
 - Any 🔄 or ✅ → **In Progress**
 - All ✅ → **Complete**
 
-Current: **Planning**. Phase 1 handoff is the next step.
+Current: **✅ Complete** (all 6 phases ✅ Done as of 2026-04-27). Epic moves to `.tad/archive/epics/` after Gate 4 acceptance of HANDOFF-20260427-tad-cleanup-linear-and-hook.
 
 ---
 
