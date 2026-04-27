@@ -49,6 +49,19 @@ import json, subprocess, re, sys
 hook, testset, results_path, quiet = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] == "true"
 
 def run_case(msg: str):
+    # Passive mode (TAD 2.8.4): hook does not emit stdout context.
+    # Read .tad/hooks/.router.log last line instead. P1-A: derive log_path
+    # from hook location to be cwd-independent.
+    import os
+    log_path = os.path.join(os.path.dirname(hook), ".router.log")
+
+    # Capture pre-test log line count for delta detection.
+    try:
+        with open(log_path) as f:
+            pre_lines = sum(1 for _ in f)
+    except FileNotFoundError:
+        pre_lines = 0
+
     out = subprocess.run(
         ["bash", hook],
         input=json.dumps({"prompt": msg}),
@@ -56,16 +69,26 @@ def run_case(msg: str):
     )
     if out.returncode != 0:
         return ("", f"EXIT{out.returncode}")
-    if not out.stdout.strip():
-        return ("", "")
+
+    # Read .router.log last line. Format (5-tuple, space-separated):
+    #   <ISO-timestamp> <elapsed_ms> <pack_name|none> <matched/total|0> <msglen>
+    # Example: 2026-04-27T09:30:59-0400 137 mobile-ui-design 1/13 4641
     try:
-        last = out.stdout.strip().splitlines()[-1]
-        d = json.loads(last)
-        ctx = d.get("hookSpecificOutput", {}).get("additionalContext", "")
-        m = re.search(r"Pack \[([^\]]+)\]", ctx)
-        mm = re.search(r"命中 (\d+)/(\d+)", ctx)
-        return (m.group(1) if m else "",
-                f"{mm.group(1)}/{mm.group(2)}" if mm else "")
+        with open(log_path) as f:
+            lines = f.readlines()
+        if len(lines) <= pre_lines:
+            return ("", "NO_LOG_DELTA")  # hook didn't write — defensive
+        last = lines[-1].strip().split()
+        if len(last) < 5:
+            return (None, f"LOG_PARSE_ERR:{last}")
+        pack = last[2]
+        ratio = last[3]
+        # "none" = no keyword match. "whitelist_early_exit" = hook bailed on
+        # whitelist-only short inputs like "yes" (line 95-98 of hook). Both
+        # mean "no pack injection" — treat as empty for classify().
+        if pack in ("none", "whitelist_early_exit") or ratio == "0":
+            return ("", "")
+        return (pack, ratio)
     except Exception as e:
         return (None, f"PARSE_ERR:{e}")
 

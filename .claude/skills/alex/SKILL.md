@@ -2052,6 +2052,25 @@ handoff_creation_protocol:
 
         PLAIN-LANGUAGE EXPLANATION (MANDATORY)
 
+        ⚠️ BUSINESS-VALUE-FIRST RULE (MANDATORY, 2026-04-27 user feedback):
+        人话版第一段必须以"业务价值"开头，回答"完成后用户的日常体验有什么改变"。
+
+        ✅ 正例（业务价值型）：
+        "Linear 集成砍掉之后，你 /alex 启动从 ~60s 降到 < 5s。Domain Pack 误触不再注入烦人提示。
+        *accept 验收时少绕一步重复检查。"
+
+        ❌ 反例（事物型/流水账型 — VIOLATION）：
+        "Handoff 已经写完，过了两个专家平行审查，5 个 P0 全部修完。第二轮专家发现的关键问题是
+        '我漏数了'——原本只看到 4 个文件要改..."
+
+        原则：
+        1. 第一句话必须是"after this lands, your [...] experience changes by [...]"或
+           "你的 [...] 会变 [...]"句式，**不允许**以 "Handoff 已经..." / "改了 X 个文件" /
+           "专家发现 N 个 P0" / "commit hash" 等动作叙述开头。
+        2. 文件数量 / 专家数量 / P0 数量 / commit hash 等动作细节，放在结尾的 1 句不超过 1 行。
+        3. 用户读完第一段应该能回答："这件事让我下次用 TAD 时哪里好了"——回答不出 → VIOLATION。
+        <!-- END-BUSINESS-VALUE-FIRST -->
+
         After the structured Blake message above, the response MUST also include
         a plain-Chinese explanation section addressed to the human user (NOT Blake).
         As specified by ORDER REQUIREMENT, this section appears FIRST in the

@@ -36,13 +36,35 @@ _invoke_hook() {
 
 _assert_match() {
   local name="$1" prompt_file="$2"
-  local out
+  # P0-B fix (CR review 2026-04-27): file uses $REPO_ROOT (defined at line 9 of this script),
+  # NOT $SCRIPT_DIR. Verified: `grep -n REPO_ROOT AC-P1.4-router-event-filter.sh` line 9.
+  local out log="${REPO_ROOT}/.tad/hooks/.router.log"
+
+  # Capture pre-invoke log line count.
+  # P0-C fix (CR review 2026-04-27): `wc -l < missing 2>/dev/null | tr -d ' ' || echo 0`
+  # produces empty string not "0" because `tr` succeeds on empty stdin so `||` never fires.
+  # Use parameter expansion fallback `${var:-0}` AFTER assignment.
+  local pre_count post_count
+  pre_count=$(wc -l < "$log" 2>/dev/null | tr -d ' ')
+  pre_count="${pre_count:-0}"
+
   out=$(_invoke_hook "$(cat "$prompt_file")")
-  if [ -n "$out" ] && printf '%s' "$out" | grep -q 'additionalContext'; then
-    printf '[PASS] %s (hook emitted hookSpecificOutput)\n' "$name"
+
+  # passive mode (2.8.4): hook never emits stdout context — read .router.log instead
+  post_count=$(wc -l < "$log" 2>/dev/null | tr -d ' ')
+  post_count="${post_count:-0}"
+
+  local last_pack
+  if [ "$post_count" -gt "$pre_count" ]; then
+    last_pack=$(tail -1 "$log" 2>/dev/null | awk '{print $3}')
+  else
+    last_pack="NO_LOG_DELTA"
+  fi
+  if [ -n "$last_pack" ] && [ "$last_pack" != "none" ] && [ "$last_pack" != "NO_LOG_DELTA" ] && [ "$last_pack" != "whitelist_early_exit" ]; then
+    printf '[PASS] %s (hook scored pack: %s)\n' "$name" "$last_pack"
     PASS=$((PASS + 1))
   else
-    printf '[FAIL] %s (expected hookSpecificOutput, got: %q)\n' "$name" "$out"
+    printf '[FAIL] %s (expected non-none pack, got: %s)\n' "$name" "$last_pack"
     FAIL=$((FAIL + 1))
   fi
 }

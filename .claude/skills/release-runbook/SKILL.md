@@ -295,9 +295,10 @@ for dep_file in $(yq ".deprecations.\"$NEW_VERSION\".files[]" .tad/deprecation.y
 done
 
 # 6. Live smoke test — hook actually works
+# passive mode (2.8.4): hook does NOT emit stdout context. Smoke target is the .router.log line written by the keyword scoring path.
 echo '{"prompt":"做一个 React button 组件","session_id":"","transcript_path":"","cwd":"","permission_mode":"","hook_event_name":"UserPromptSubmit"}' \
-  | bash "$project/.tad/hooks/userprompt-domain-router.sh" \
-  | grep -q "web-frontend"
+  | bash "$project/.tad/hooks/userprompt-domain-router.sh" >/dev/null
+tail -1 "$project/.tad/hooks/.router.log" 2>/dev/null | grep -q "web-frontend"
 ```
 
 ### Summary table format (print to user)
