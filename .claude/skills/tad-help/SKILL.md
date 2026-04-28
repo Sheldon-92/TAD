@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.8.4 | Generated: [timestamp]
+ Version: v2.8.5 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -218,10 +218,10 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.8.4 Highlights
-- **Domain Pack Auto-Loading Hook**: UserPromptSubmit hook + keyword router (20 packs, 100% acc / 81ms, no LLM)
-- **Beneficial Friction**: AI executes, humans guard value at 3 critical friction points
-- **Pair Testing Protocol**: E2E pair testing with Claude Code + Playwright (4D Protocol)
+## TAD v2.8.5 Highlights
+- **Compact Recovery**: Two-layer session state persistence — CLAUDE.md self-check + session-state.md prevents identity loss after context compaction
+- **Token Efficiency**: Tiered Layer 2, lazy knowledge load, narrow-scope expert prompts (~30-35% savings)
+- **Domain Pack Auto-Loading Hook**: UserPromptSubmit hook + keyword router (20 packs, 100% acc / 81ms)
 - **Adaptive Complexity**: Auto-suggest process depth based on task size
 - **Ralph Loop**: Iterative quality cycles with expert exit conditions
 

@@ -1,27 +1,29 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.8.2 (Self-Evolving Framework)
-- **Last Updated**: 2026-04-14
-- **Framework**: TAD v2.8.2 + Self-Evolving + Execution Trace + Domain Packs + Symmetric Quality Enforcement (in progress)
+- **Version**: 2.8.4 (Self-Evolving Framework)
+- **Last Updated**: 2026-04-28
+- **Framework**: TAD v2.8.4 + Self-Evolving + Execution Trace + Domain Packs + Compact Recovery
 
 ## Active Work
-- **EPIC: Symmetric Quality Enforcement** — 1a ✅ / 1b 🟡 / 1c 🟡 / 2 ✅ (2026-04-14, 2/5 phases complete)
-  - Epic: `.tad/active/epics/EPIC-20260413-symmetric-quality-enforcement.md`
-  - Origin: user-reported systematic Alex/Blake quality gate skipping. Text constraints insufficient → mechanical hook enforcement.
-  - ✅ Phase 1a: Mechanism existence (commit ac68849) — 37/48ms p50/p95, 14/14 AC PASS
-  - 🟡 Phase 1b: Adversarial robustness (commit 8774da3) — 76 fixtures 0 BYPASSED; p95 104-114ms 超标; AC17 fail-OPEN 发现
-  - 🟡 Phase 1c: AC17 fail-OPEN **已修** (4/4 PASS, PATH pin + 白名单 + hardcoded deny JSON); exit-code 契约 CC 2.1.107 实证 (exit 0 + stdout deny 真阻断); apples-to-apples PASS. AC6 真超标 (validator 156ms, bash-watcher 130ms 非噪声); AC8-B FAIL 因 handoff AC 设计冲突
-  - ✅ Phase 2: Enforcement Matrix 设计冻结 — v3-LEAN 为 Phase 3 实际规范 (8 事件 + 6 lib + 纯 JSONL log), v2 作为未来扩展参考 (多租户/对抗威胁场景). 用户反馈"不要过度工程化"后瘦身: 砍 external HMAC witness, TR39 confusables, grapheme rule, SHA binding, archive cache, MCP coverage. Epic 核心目标不变.
-  - ⬚ Phase 3: 实现 handoff, 预估 AC ≤15 + 工期 4-6h. Prerequisites: 放开 AC12 + CI runner + read -t 2 + 1MB size cap + .tad/state/ gitignore + secret.key 历史扫描
-  - ⬚ Phase 4-5: Dogfooding + *sync
-- **EPIC: Security Domain Pack Chain** — Phase 0+1 done, **evaluating before Phase 2**
-  - Epic: .tad/active/epics/EPIC-20260403-security-domain-pack-chain.md
-  - ✅ Phase 0: Tool Research (40 tools, 25 capabilities, commit e2c325a)
-  - ✅ Phase 1: Core Packs (supply-chain 644L + code-security 881L + 24 tools, commit 39e8017)
-  - Decision: Run real-project audit before deciding whether to continue Phase 2-4
+- **EPIC: Codex CLI Adaptation** — ⬚ Planning (created 2026-04-27)
+  - Epic: `.tad/active/epics/EPIC-20260427-codex-cli-adaptation.md`
+  - Target: v2.9.0 — TAD cross-platform fallback for Claude Code weekly quota limits
+- **EPIC: Security Domain Pack Chain** — Phase 0+1 done, evaluating before Phase 2
+  - Epic: `.tad/active/epics/EPIC-20260403-security-domain-pack-chain.md`
+  - ✅ Phase 0+1 complete; ⏸️ Phase 2-4 paused pending real-project validation
 
 ## Recently Completed
+
+- **Compact Recovery Protocol** — ✅ COMPLETE (2026-04-28)
+  - Two-layer session state persistence: CLAUDE.md §4.5 self-check + session-state.md on-disk file
+  - Prevents agent identity/task loss after context compaction (Sonnet 4.6 short context)
+  - Commit 028974c. Archived: .tad/archive/handoffs/HANDOFF-20260428-compact-recovery.md
+
+- **TAD v2.8.4 Release** — ✅ COMPLETE (2026-04-27)
+  - Token efficiency (L1 tier + L2 lazy knowledge + L4 *express ≤5 + L6 narrow-scope prompts)
+  - Linear integration removed, hook passive mode, pre-publish cleanup
+  - Synced to 12 registered projects
 
 - **Framework capability: Plain-Language Explanation after Handoffs** — ✅ COMPLETE (2026-04-14)
   - Alex/Blake 在写完跨终端 message 后必须额外生成 `## 🗣️ 人话版` 段，便于用户学习 + 决策

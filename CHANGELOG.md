@@ -5,6 +5,21 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.5] - 2026-04-28
+
+### New Features
+
+#### Compact Recovery — Two-Layer Session State Persistence
+- **CLAUDE.md §4.5**: Post-Compact Recovery self-check — agents verify identity + task state before every response
+- **Blake SKILL `session_state_protocol`**: Session state written at 4 key moments (init, Layer 1 pass, Layer 2 rounds, completion)
+- **Alex SKILL STEP 3.7**: 5-case routing on startup based on session-state.md (resume, Blake-done detection, stale skip)
+- **`post-write-sync.sh`**: `update_session_state_metadata()` — hook updates timestamps when HANDOFF/COMPLETION files are written
+- **New template**: `.tad/templates/session-state-template.md` with Big Picture fields (Goal, Why Now, Key Constraint, Success When)
+- **`.gitignore`**: session-state.md excluded (runtime file, not versioned)
+
+### Purpose
+Prevents agent identity and task progress loss after Claude Code context compaction (Sonnet 4.6 shorter context triggers auto-compact, causing agents to forget their role and current handoff).
+
 ## [2.8.4] - 2026-04-27
 
 ### New Features — Token Efficiency Bundle (4 levers)

@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.8.4 - Token Efficiency + Linear Cleanup + Hook Passive Mode**
+**Version 2.8.5 - Compact Recovery + Token Efficiency**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -118,7 +118,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.8.4 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.8.5 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -338,6 +338,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.8.5** | **Compact Recovery (two-layer session state persistence — CLAUDE.md self-check + session-state.md on-disk file; prevents agent identity/task loss after context compaction)** |
 | **v2.8.4** | **Token Efficiency (L1 tiered Layer 2 reviewer count by task_type / L2 lazy knowledge load / L4 *express ≤5 files / L6 narrow-scope expert prompts) ~30-35% per architecture handoff savings; Linear integration removed (unused); Hook passive mode (no more additionalContext injection — keyword scoring + log preserved); BUSINESS-VALUE-FIRST rule for handoff/completion 人话版** |
 | **v2.8.3** | **Layer 2 Audit (smoke-alarm replacement for Epic 1 mechanical enforcement), Alex `*accept` step4c red-flag, SKILL hardening (anti_rationalization_registry + honest_partial_protocol + Slug Contract), Epic 1 cancelled** |
 | **v2.8.2** | **Domain Pack Auto-Loading Hook (UserPromptSubmit + keyword router, 100% acc / 81ms), tad.sh bug fixes** |
@@ -425,6 +426,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.8.4 - Token Efficiency + Linear Cleanup Framework for AI-Assisted Development.**
+**Welcome to TAD v2.8.5 - Compact Recovery + Token Efficiency Framework for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

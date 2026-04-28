@@ -28,6 +28,12 @@
 
 ## Recently Completed
 
+- [x] **Compact Recovery Protocol — Two-Layer Session State Persistence (2026-04-28)** — Gate 4 PASS
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260428-compact-recovery.md` + COMPLETION
+  - Commit: `028974c` — 6 files: CLAUDE.md §4.5, blake/alex SKILL, post-write-sync.sh, session-state-template.md, .gitignore
+  - Layer 2: code-reviewer (Round 1 FAIL → P0 fix → Round 2 PASS) + backend-architect (PASS); DISTINCT_COUNT=2
+  - Knowledge: "Two-Layer Compact Recovery Pattern — 2026-04-28" added to architecture.md
+
 - [x] **TAD Token Efficiency — L1 Tiered Layer 2 + L2 Lazy Knowledge + L4 *express ≤5 + L6 Narrow-Scope Expert Prompts (2026-04-27)** — Gate 4 PASS
   - Archived: `.tad/archive/handoffs/HANDOFF-20260427-tad-token-efficiency.md` + COMPLETION
   - **All 19 ACs PASS** (16 v2 + 3 v3 L6) — Blake implemented FULL v2+v3 scope (L1+L2+L4+L6) but committed in 2 stages: c3ce273 (v2 L1+L2+L4) + working-tree v3 L6 → bundled into Alex Gate 4 acceptance commit
