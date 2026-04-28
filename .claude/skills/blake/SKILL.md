@@ -407,6 +407,17 @@ ralph_loop_execution:
         - "Load/create state file: .tad/evidence/ralph-loops/{task_id}_state.yaml"
         - "Check for existing state (resume vs fresh start)"
         - "Initialize iteration counter"
+        - "Create/overwrite .tad/active/session-state.md from .tad/templates/session-state-template.md:
+           substitute ALL {placeholders} with actual values:
+           - Status = ACTIVE
+           - Active Agent.Role = Blake
+           - Active Task.Handoff = <full path of current handoff>
+           - Big Picture.Goal = <from handoff §1 Executive Summary — one sentence>
+           - Big Picture.Why Now = <from handoff §1 problem description>
+           - Big Picture.Key Constraint = <most important constraint from handoff §10>
+           - Big Picture.Success When = <copy key ACs summary>
+           - Current Position = 'Ralph Loop → start'
+           - Last Updated = <current ISO timestamp>"
 
       1_5_context_refresh:
         description: "Context Refresh before implementation start"
@@ -694,6 +705,32 @@ ralph_loop_execution:
       stale_check: "If state > 30 min old, ask user: resume or fresh?"
       resume_action: "continue_from_last_checkpoint"
       fresh_action: "reset state and start from Layer 1"
+
+  # Session State for Compact Recovery (v2.8.5)
+  session_state_protocol:
+    description: "人类可读的 session 状态快照，用于 compact 后恢复身份 + 任务进度"
+    file: ".tad/active/session-state.md"
+    template: ".tad/templates/session-state-template.md"
+
+    stale_detection: |
+      读取 session-state.md 时先检查：
+      1. Status 字段 != ACTIVE → 不 resume（旧 handoff 已完成）
+      2. Status = ACTIVE 但 Active Task.Handoff 路径文件不存在（已归档） → 视为 stale，忽略
+      3. Status = ACTIVE 且 handoff 文件存在 → 正常 resume
+
+    write_triggers:
+      - "develop_command.1_init — 启动时从模板创建，Status=ACTIVE"
+      - "After Layer 1 ALL PASS — 更新 Current Position + Status=ACTIVE"
+      - "After each Layer 2 round — 更新 Completed + Current Position"
+      - "completion_protocol 写完 COMPLETION 报告后 — Status=COMPLETE（必须）"
+
+    compact_recovery_self_check: |
+      ⚠️ 每次回复前自检：我知道当前 handoff 的完整文件路径吗？
+      如果 NO：
+        1. Read .tad/active/session-state.md
+        2. 检查 Status = ACTIVE 且 handoff 路径文件存在（stale_detection）
+        3. Re-run /blake to reload full SKILL
+        4. Resume from Current Position
 
 # Core tasks I execute
 my_tasks:
@@ -1068,6 +1105,13 @@ completion_protocol:
   step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01) + Slug Contract (layer2-audit 2026-04-15): BEFORE git add, run `ls -la` on every path listed in handoff's Required Evidence Manifest §1.4 — if any required file is missing, ABORT commit and escalate. **SLUG CONTRACT (MANDATORY)**: Blake MUST write reviewer artifacts to `.tad/evidence/reviews/blake/<slug-from-handoff-filename>/` where `<slug-from-handoff-filename>` is the EXACT string captured by regex `^(HANDOFF|COMPLETION)-\\d{8}-(.+)\\.md$` group $2 — no abbreviation, no case change, no suffix. Alex `acceptance_protocol.step4c` runs layer2-audit.sh against this exact slug; a mismatch → 红字警告 in verdict. Then: git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
   step5: "创建 completion-report.md"
+  step_session_state_complete:
+    name: "Update session-state.md Status to COMPLETE"
+    action: |
+      Read .tad/active/session-state.md (if exists).
+      Write: update Status field → COMPLETE, Current Position → "Completion report written — awaiting Alex Gate 4"
+      This enables Alex STEP 3.7 to detect the handoff is done and suggest *review/*accept.
+    trigger: "After COMPLETION-*.md is written successfully"
   step6: "记录实际实现、遇到问题、与计划差异"
   step7: "更新 NEXT.md（标记完成项 [x]，添加新发现任务）"
   step8: "生成给 Alex 的信，通知人类传递到 Terminal 1"
@@ -1392,6 +1436,8 @@ on_start: |
 
   I work in Terminal 2, receiving handoffs from Alex (Terminal 1).
   Use `*develop` to start the Ralph Loop development cycle.
+  If .tad/active/session-state.md exists, read it (stale_detection rules apply).
+  If Status=ACTIVE and handoff file exists: proceed to *develop to resume.
 
   *help
 ```

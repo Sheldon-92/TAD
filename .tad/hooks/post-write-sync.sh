@@ -9,6 +9,37 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
+# Update session-state.md metadata (compact recovery support)
+# Only runs if session-state.md already exists (agent creates it; hook only updates)
+update_session_state_metadata() {
+  local written_file="$1"
+  local state_file=".tad/active/session-state.md"
+
+  [ -f "$state_file" ] || return 0   # agent creates; hook only updates existing
+
+  local ts
+  ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+  # Escape sed metacharacters (& \ #) for # delimiter — avoids | delimiter collision
+  local escaped_file
+  escaped_file=$(printf '%s' "$written_file" | sed 's/[\\&#]/\\&/g')
+
+  # Update Hook Last Touched — BSD-portable sed -i with .bak; always rm (use ; not &&)
+  # Use # as delimiter to avoid | collision; $ts is always ISO format with no special chars
+  if grep -q "^Hook Last Touched:" "$state_file"; then
+    sed -i.bak "s#^Hook Last Touched:.*#Hook Last Touched: $ts#" "$state_file"; rm -f "${state_file}.bak"
+  else
+    echo "Hook Last Touched: $ts" >> "$state_file"
+  fi
+
+  # Update Last File Written — append if line missing (fallback for partial files)
+  if grep -q "^Last File Written:" "$state_file"; then
+    sed -i.bak "s#^Last File Written:.*#Last File Written: $escaped_file#" "$state_file"; rm -f "${state_file}.bak"
+  else
+    echo "Last File Written: $escaped_file" >> "$state_file"
+  fi
+}
+
 # Record a trace entry to .tad/evidence/traces/{date}.jsonl
 # Usage: record_trace "type" "file_path" "domain"
 record_trace() {
@@ -63,10 +94,12 @@ fi
 # Patterns use *.tad/* to match both absolute (/path/.tad/) and relative (.tad/) paths
 case "$FILE_PATH" in
   *.tad/active/handoffs/HANDOFF-*.md)
+    update_session_state_metadata "$FILE_PATH"
     record_trace "handoff_created" "$FILE_PATH" ""
     output_response "PostToolUse" "Handoff created. BEFORE sending to Blake: 1. Call 2+ expert sub-agents (code-reviewer REQUIRED + 1 domain expert) 2. Fix ALL P0 issues from expert review 3. Run /gate 2 4. Generate Blake message (Step 7). Skipping expert review = VIOLATION."
     ;;
   *.tad/active/handoffs/COMPLETION-*.md)
+    update_session_state_metadata "$FILE_PATH"
     record_trace "task_completed" "$FILE_PATH" ""
     output_response "PostToolUse" "COMPLETION report detected. You MUST run /gate 3 before sending results to Alex. Gate 3 is MANDATORY, not optional. The pre-gate hook will BLOCK /gate 3 if evidence is missing. Gate 3 includes Knowledge Assessment — if you learned anything project-specific, record it to .tad/project-knowledge/ BEFORE running Gate 3."
     ;;

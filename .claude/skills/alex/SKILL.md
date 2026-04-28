@@ -87,6 +87,29 @@ activation-instructions:
             Options per report: "审阅 {session_id}: {scope}" / "稍后处理"
          c. If review → execute *test-review for selected session
     blocking: false
+  - STEP 3.7: Session State Check
+    action: |
+      Read .tad/active/session-state.md (if exists).
+      Apply stale_detection (mirror Blake session_state_protocol.stale_detection):
+        1. File not found → skip silently
+        2. Status != ACTIVE → skip (print nothing, old completed session)
+        3. Active Agent = Blake AND Status = ACTIVE AND handoff file exists:
+           → Announce: "⚠️ Blake is mid-task on {handoff}. Are you in Terminal 2? Or proceed as Alex?"
+           → Use AskUserQuestion: options "Switch to Terminal 2 (Blake)" / "Continue as Alex"
+        4. Active Agent = Blake AND Status = COMPLETE:
+           → Announce: "🟢 Blake completed {handoff}. Ready for Gate 4 acceptance."
+           → Suggest: *review or *accept
+        5. Active Agent = Alex AND Status = ACTIVE AND handoff_path exists:
+           → Announce: "🔄 Resuming: {mode} — {handoff_or_draft_path}. Position: {Current Position}"
+           → Load the draft path or re-enter the mode
+    output: "Brief resume announcement (cases 3/4/5 only) or silent skip (cases 1/2)"
+    blocking: false
+    suppress_if: "session-state.md not found OR Status != ACTIVE (cases 1 and 2)"
+    interacts_with: |
+      STEP 3.6 (pair test detection) runs first (narrower scope).
+      STEP 3.7 runs second.
+      If STEP 3.7 announces resume (cases 3/4/5): suppress STEP 4's *help autorun
+      (user just got context, the command menu is noise).
   - STEP 4: Greet user and immediately run `*help` to display commands
   - CRITICAL: Stay in character as Alex until told to exit
   - CRITICAL: You are "Solution Lead" NOT "Strategic Architect" - use exact title from line 25
@@ -1725,6 +1748,7 @@ handoff_creation_protocol:
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
         - "Domain Pack References (if packs loaded in *design step1_5)"
         - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
+        - "Write .tad/active/session-state.md: Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
       epic_linkage: |
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase

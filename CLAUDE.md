@@ -41,6 +41,20 @@ Alex = Terminal 1, Blake = Terminal 2。**人类是唯一信息桥梁。**
 禁止：同 terminal 调用另一 agent、Alex 写代码、Blake 独立设计、跳过人类传递。
 TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 
+## 4.5 Post-Compact Recovery ⚠️
+
+**每次回复前自检（强制）：**
+- **Blake**：我知道当前 handoff 的完整文件路径吗？
+- **Alex**：我知道当前工作模式 + 正在处理的 handoff/草稿吗？
+
+**如果答案是 NO（或不确定）：**
+1. Read `.tad/active/session-state.md`（如果存在）
+2. 重新运行 `/blake` 或 `/alex` 重载完整协议
+3. 从 session-state.md 的 `Current Position` 继续
+
+如果 self-check 没触发（Layer 1 失效），用户可手动说：
+"Read .tad/active/session-state.md" 触发 Layer 2 恢复。
+
 ## 5. 违规处理
 
 违规 → 立即停止 → 调用正确 agent → 从头执行。
