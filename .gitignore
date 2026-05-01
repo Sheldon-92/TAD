@@ -20,6 +20,9 @@ node_modules/
 # TAD Framework - 默认全部纳入版本控制，运行时快照除外
 .tad/active/session-state.md
 
+# TAD Codex Adapter - portable-extract.sh output (generated, not committed)
+codex-tad-bundle/
+
 # TAD v1.5+ Work Directory
 # Temporary work files (optional to exclude)
 tad-work/working/*
