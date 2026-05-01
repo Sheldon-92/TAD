@@ -2,13 +2,12 @@
 
 ## In Progress
 
-- [ ] **EPIC: Codex CLI Adaptation — TAD 跨平台 fallback** — ⬚ Planning (created 2026-04-27)
+- [x] **EPIC: Codex CLI Adaptation — Phase 1 Build COMPLETE (2026-05-01)** — Gate 3 PASS, awaiting Alex Gate 4
   - Epic: `.tad/active/epics/EPIC-20260427-codex-cli-adaptation.md`
-  - Target Release: v2.9.0 (minor bump — new platform support)
-  - **触发条件**：v2.8.4 release 完成后启动 P0 Spike（4 小时硬上限）
-  - 3 phases: Spike / Build (TAD-Core Portable + Adapter) / Validate-Document
-  - Pivot threshold: P0 Spike ≥4/6 PASS continue；<4/6 STOP
-  - 用户痛点：Claude Code 周限额是 hard ceiling，撞顶后 1-3 天无法做事
+  - Handoff: `.tad/active/handoffs/HANDOFF-20260501-codex-phase1-build.md`
+  - Commit: `659c689` — 15 files: 9 in .tad/codex/ + portable-rules.md + portable-extract.sh + .gitignore + 3 evidence
+  - All 13 ACs PASS: launchers, SKILL sizes (25KB/35KB), constraint counts (18/52), portable-extract, gitignore
+  - Knowledge: 2 entries added to architecture.md (strip-only rule + codex exec --full-auto unverified)
 
 - [ ] **v2.8.4 release** — ✅ pre-publish follow-up Gate 4 PASS 2026-04-27 + ✅ token efficiency Gate 3 PASS 2026-04-27 (awaiting Alex Gate 4), now nearly ready
   - 14+2 处 version bump（per release-runbook Phase 2）
