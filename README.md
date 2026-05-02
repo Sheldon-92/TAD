@@ -48,6 +48,19 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 ---
 
+## 🔄 Codex CLI Support (ships in v2.9.0)
+
+Run TAD workflows on OpenAI Codex CLI when Claude Code quota is reached:
+
+```bash
+bash .tad/codex/codex-tad-alex.sh   # Start Alex (design) session
+bash .tad/codex/codex-tad-blake.sh  # Start Blake (execution) session
+```
+
+See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for full setup instructions.
+
+---
+
 ## 🎯 What's New in v2.8
 
 ### Self-Evolving Framework (v2.8)

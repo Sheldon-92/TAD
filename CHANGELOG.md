@@ -5,6 +5,26 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2026-05-02
+
+### New Features — Codex CLI Support
+
+#### Codex CLI Adapter (`.tad/codex/`)
+- **NEW**: Codex CLI adapter — run full TAD workflows on OpenAI Codex CLI as a fallback when Claude Code quota is exhausted
+- **NEW**: Launchers: `bash .tad/codex/codex-tad-alex.sh` / `codex-tad-blake.sh` — one-command Codex TAD sessions with `--dry-run` and `--extract-only` flags
+- **NEW**: Static Codex-edition SKILL files (25KB Blake, 35KB Alex) — stripped Claude Code-only tools, preserved all constraint rules (18 / 52 MUST/MANDATORY/VIOLATION lines)
+- **NEW**: Portable extraction: `portable-rules.md` (classification) + `portable-extract.sh` (export helper)
+- **NEW**: 4 operation guides: `manual-gates.md`, `sequential-review.md`, `socratic-fallback.md`, `expert-review-sequential.md`
+- **NEW**: INSTALLATION_GUIDE Codex CLI Setup chapter
+- **NEW**: release-runbook Codex Adapter Smoke Test — 5-step verification, hard block on minor+ releases
+
+#### Validation
+- Phase 0 spike: 5/6 PASS | Phase 1 build: 13/13 ACs PASS | Phase 2 dogfood: `codex exec --full-auto` CONFIRMED, write access confirmed, both personas operational
+
+#### Known Limitations
+- ChatGPT sandbox: write access confirmed in testing; use interactive mode if writes fail in other environments
+- No AskUserQuestion: options presented as numbered text; no parallel sub-agents; gpt-5.5 default
+
 ## [2.8.5] - 2026-04-28
 
 ### New Features

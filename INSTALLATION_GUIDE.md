@@ -259,14 +259,87 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 # Blake: *develop 自动进入质量循环
 ```
 
+---
+
+## Codex CLI Setup (v2.9.0+)
+
+When Claude Code quota is exhausted (weekly limit), use OpenAI Codex CLI to continue TAD workflows.
+
+### Prerequisites
+
+```bash
+# Codex CLI must be installed
+codex --version   # should show 0.125.0 or later
+
+# OpenAI auth must be configured (ChatGPT account or API key)
+# ChatGPT: visit chatgpt.com/codex → authorize → codex will use your account
+# API key: export OPENAI_API_KEY="sk-..."
+```
+
+### Quick Start
+
+```bash
+# From your TAD project root:
+
+# Start Alex (design/planning session)
+bash .tad/codex/codex-tad-alex.sh
+
+# Start Blake (implementation session)
+bash .tad/codex/codex-tad-blake.sh
+
+# Verify without launching (check SKILL file path + size)
+bash .tad/codex/codex-tad-blake.sh --dry-run
+bash .tad/codex/codex-tad-alex.sh --dry-run
+```
+
+### When to Use Codex vs Claude Code
+
+| Situation | Use |
+|-----------|-----|
+| Normal work | Claude Code (primary — better tool integration) |
+| Claude Code weekly quota exhausted | Codex CLI (fallback) |
+| Quick design question | Codex Alex session |
+| Implementation with file writes | Codex Blake session |
+
+### Known Limitations
+
+- **No AskUserQuestion tool**: Alex/Blake present options as numbered text. See `.tad/codex/socratic-fallback.md`.
+- **No parallel reviewers**: Layer 2 expert review runs sequentially. See `.tad/codex/sequential-review.md`.
+- **No auto-hooks**: Gate scripts must be run manually. See `.tad/codex/manual-gates.md`.
+- **Token budget**: ~48-52K tokens per TAD session step; budget 100K per full workflow session.
+
+### Multi-Turn Sessions
+
+```bash
+# Turn 1: Start Alex
+cat .tad/codex/codex-alex-skill.md | codex exec --full-auto "You are Alex. *analyze: [task]"
+
+# Turn 2+: Continue in same session
+codex exec resume --last "My answers: 1. [answer]. Continue to Round 2."
+
+# Turn N: Complete
+codex exec resume --last "Proceed to create handoff."
+```
+
+### Troubleshooting
+
+**Skill load warnings** (`failed to load skill: missing field description`): Non-blocking. Clean up old spike files: `rm -rf ~/.codex/skills/tad/`
+
+**Blake writes fail on sandbox**: Use interactive mode: `cat .tad/codex/codex-blake-skill.md | codex "You are Blake..."` (remove `exec --full-auto`)
+
+**Context lost mid-workflow**: Use `codex exec resume --last` to restore context.
+
+---
+
 ## 总结
 
-TAD v2.8.5 核心特性：
-1. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
-2. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
-3. **配对测试协议** - 跨工具 E2E 测试（4D Protocol）
-4. **自适应复杂度** - 根据任务规模自动建议流程深度
-5. **Ralph Loop** - 自动质量循环直到专家批准
-6. **Self-Evolving Framework** - 20 Domain Packs + 执行 trace + `*optimize` / `*evolve` 改进建议
+TAD v2.9.0 核心特性：
+1. **Codex CLI Support** - 限额撞顶时切换 Codex 继续 TAD 工作流（一行命令启动）
+2. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
+3. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
+4. **配对测试协议** - 跨工具 E2E 测试（4D Protocol）
+5. **自适应复杂度** - 根据任务规模自动建议流程深度
+6. **Ralph Loop** - 自动质量循环直到专家批准
+7. **Self-Evolving Framework** - 20 Domain Packs + 执行 trace + `*optimize` / `*evolve` 改进建议
 
 任何新项目只要安装TAD，Claude Code 都能立即识别并使用TAD方法论。
