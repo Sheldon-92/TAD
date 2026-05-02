@@ -586,3 +586,15 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: No launcher changes needed — `codex exec --full-auto` is the correct and validated pattern. Future releases: keep the pre-flight write test in Blake launcher (sandbox conditions vary across Codex account types). The Codex SKILL files also now have version bump entries (#15, #16) in release-runbook Phase 2.
 - **Grounded in**: .tad/evidence/dogfood/DOGFOOD-20260502-codex-loop.md §Pre-flight, .tad/evidence/dogfood/alex-session-raw.txt + blake-session-raw.txt
 - **Revalidated**: 2026-05-02
+
+### Codex AGENTS.md Auto-Load Mirrors Claude Code CLAUDE.md — 2026-05-02
+- **Context**: Express handoff HANDOFF-20260502-codex-agents-md created AGENTS.md in TAD project root for Codex native role switching. CR-P0-1 validation tested the "Read file then follow protocol" reference pattern before committing to it.
+- **Discovery**: Codex CLI auto-loads `AGENTS.md` from project root on `codex` startup — analogous to how Claude Code reads `CLAUDE.md`. Key validated behaviors:
+  1. **Reference-and-read works**: Instructions in AGENTS.md like "When user says X, read file Y and follow protocol" actually trigger Codex to execute `sed`/`rg` on the referenced file and follow the protocol (verified via AC6 live test: Codex read codex-blake-skill.md and answered Layer 1 = build/test/lint/tsc).
+  2. **No launcher script needed for interactive use**: Users can run `codex` in the project root and say "当 Blake" — Codex auto-loads AGENTS.md, reads the SKILL file, and activates the persona. Previously required `bash .tad/codex/codex-tad-blake.sh`.
+  3. **AGENTS.md is the routing layer, SKILL files are the protocol layer**: Keep AGENTS.md slim (<5KB) and focused on role identification + switching triggers. Full protocol lives in the SKILL files which AGENTS.md references. Avoid pasting SKILL content into AGENTS.md — context cost at startup.
+  4. **Trigger phrase breadth matters**: Initial 4-phrase list (当 Alex/Alex 模式/switch to Alex/act as Alex) missed common patterns (切换到/启动/用/slash form /alex). Use ≥8 phrases covering Chinese + English + slash form per role.
+  5. **Default Behavior guard (Rule 1 analog)**: Without explicit "do NOT read handoff content" in the Default Behavior section, Codex helpfully `cat`s whatever file it's told to list. AGENTS.md must explicitly forbid reading handoff content outside a Blake activation to preserve terminal isolation intent.
+- **Action**: For any dual-platform (Claude Code + Codex) TAD project: keep `AGENTS.md` (Codex) and `CLAUDE.md` (Claude Code) as parallel routing documents — each platform-specific rendering of the same role-routing intent. When SKILL files change, update AGENTS.md reference paths if filenames change. AGENTS.md is the single entry point for Codex interactive sessions; launcher scripts (.sh) remain valid for non-interactive/scripted use.
+- **Grounded in**: AGENTS.md (project root), .tad/codex/README.md (Recommended Entry Point section), COMPLETION-20260502-codex-agents-md.md (AC5/AC6 live test results, CR-P0-1 validation)
+- **Revalidated**: 2026-05-02

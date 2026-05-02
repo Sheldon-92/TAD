@@ -32,9 +32,9 @@
 
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
-| 0 | **Spike — Codex 全 TAD 可行性** | ⬚ Planned | TBD | 6-test matrix SPIKE-REPORT.md + pivot 决策（continue / stop） |
-| 1 | **Build — TAD-Core Portable + Codex Adapter** | ⬚ Planned | TBD | 元数据标记 + helper 脚本 + Blake/Alex launcher + 手动 gate / 顺序 review 文档 |
-| 2 | **Validate + Document** | ⬚ Planned | TBD | TAD 自己 dogfood 闭环 + INSTALLATION_GUIDE + release-runbook 维护协议 |
+| 0 | **Spike — Codex 全 TAD 可行性** | ✅ Done | HANDOFF-20260501-codex-spike-phase0.md | 5/6 PASS → CONTINUE (Blake 2/3, Alex 3/3) |
+| 1 | **Build — TAD-Core Portable + Codex Adapter** | ✅ Done | HANDOFF-20260501-codex-phase1-build.md | 9 files: launchers + SKILLs (25KB/35KB) + 4 guides + portable + README |
+| 2 | **Validate + Document** | ✅ Done | HANDOFF-20260502-codex-phase2-validate.md | Dogfood CONFIRMED + INSTALLATION_GUIDE + release-runbook smoke test + README + CHANGELOG v2.9.0 |
 
 ### Phase Dependencies
 

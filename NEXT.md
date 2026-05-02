@@ -2,12 +2,16 @@
 
 ## In Progress
 
-- [x] **EPIC: Codex CLI Adaptation — Phase 1 Build COMPLETE (2026-05-01)** — Gate 3 PASS, awaiting Alex Gate 4
-  - Epic: `.tad/active/epics/EPIC-20260427-codex-cli-adaptation.md`
-  - Handoff: `.tad/active/handoffs/HANDOFF-20260501-codex-phase1-build.md`
-  - Commit: `659c689` — 15 files: 9 in .tad/codex/ + portable-rules.md + portable-extract.sh + .gitignore + 3 evidence
-  - All 13 ACs PASS: launchers, SKILL sizes (25KB/35KB), constraint counts (18/52), portable-extract, gitignore
-  - Knowledge: 2 entries added to architecture.md (strip-only rule + codex exec --full-auto unverified)
+- [x] **AGENTS.md — Codex native role switching (2026-05-02)** — Gate 3 PASS, awaiting Alex Gate 4
+  - Commit: `4d4fee5` — AGENTS.md (2956 bytes) + README.md Recommended Entry Point section
+  - AC5/AC6 live-tested: Codex identifies both roles + loads Blake SKILL content
+  - Knowledge: "Codex AGENTS.md Auto-Load Mirrors Claude Code CLAUDE.md" → architecture.md
+
+- [x] **EPIC: Codex CLI Adaptation — ✅ ALL 3/3 PHASES COMPLETE (2026-05-02)** — Gate 4 PASS, Epic archived
+  - Archived: `.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md`
+  - Phase 0: 5/6 spike | Phase 1: 13/13 AC | Phase 2: 8/8 AC, dogfood CONFIRMED
+  - Commits: 659c689 (P1) + 9f2ee46 (P2) + bc7d650 (completion)
+  - **v2.9.0 release ready** — run `*publish` when ready to ship
 
 - [ ] **v2.8.4 release** — ✅ pre-publish follow-up Gate 4 PASS 2026-04-27 + ✅ token efficiency Gate 3 PASS 2026-04-27 (awaiting Alex Gate 4), now nearly ready
   - 14+2 处 version bump（per release-runbook Phase 2）
