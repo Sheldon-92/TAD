@@ -580,9 +580,9 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Grounded in**: .tad/codex/codex-blake-skill.md (after P1-2 fix), .tad/evidence/reviews/blake/codex-phase1-build/backend-architect.md (P1-2 finding)
 - **Revalidated**: 2026-05-01
 
-### `codex exec --full-auto` Combination Unverified in Spike — 2026-05-01
-- **Context**: Phase 1 launcher scripts use `cat skill.md | codex exec --full-auto "prompt"`. Backend-architect review noted spike only validated `codex exec "prompt"` (no --full-auto) and `cat | codex --full-auto "prompt"` (no exec) separately.
-- **Discovery**: The handoff §4.2 explicitly designed `codex exec --full-auto` as the canonical launcher pattern (Alex accepted this as CR-P0-3 resolution at Gate 2), but the exact combination was never empirically tested in Phase 0. If it fails on first user invocation, the fallback is plain `codex exec "prompt"` (remove --full-auto).
-- **Action**: Phase 2 first-use should validate `codex exec --full-auto` with a simple probe (e.g., `echo "say hello" | codex exec --full-auto "say hello"`). If it works: record as validated. If it fails: update both launchers to plain `codex exec "prompt"` and document the discovery.
-- **Grounded in**: .tad/codex/codex-tad-blake.sh (line 78), .tad/evidence/reviews/blake/codex-phase1-build/backend-architect.md (P1-1 finding), .tad/active/handoffs/HANDOFF-20260501-codex-phase1-build.md §10.3
-- **Revalidated**: 2026-05-01
+### `codex exec --full-auto` VALIDATED in Phase 2 Dogfood — 2026-05-02
+- **Context**: Phase 1 P1-1 noted `cat skill.md | codex exec --full-auto "prompt"` was never independently tested. Phase 2 dogfood ran Pre-flight Test 1 and Test 2.
+- **Discovery**: CONFIRMED WORKING. Test 1: `echo "Say hello" | codex exec --full-auto "respond with exactly: HELLO_CONFIRMED"` → output: `HELLO_CONFIRMED`. Sandbox is `workspace-write [workdir, /tmp, $TMPDIR, ~/.codex/memories]` — writes ARE allowed to workdir. Test 2: file write to `/tmp/tad-preflight-write.txt` → `WRITE_VALIDATED`. Both Alex and Blake dogfood sessions ran successfully with this invocation pattern.
+- **Action**: No launcher changes needed — `codex exec --full-auto` is the correct and validated pattern. Future releases: keep the pre-flight write test in Blake launcher (sandbox conditions vary across Codex account types). The Codex SKILL files also now have version bump entries (#15, #16) in release-runbook Phase 2.
+- **Grounded in**: .tad/evidence/dogfood/DOGFOOD-20260502-codex-loop.md §Pre-flight, .tad/evidence/dogfood/alex-session-raw.txt + blake-session-raw.txt
+- **Revalidated**: 2026-05-02
