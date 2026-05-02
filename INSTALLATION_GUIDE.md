@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.8.5 - Compact Recovery + Token Efficiency**
+**Version 2.9.0 - Codex CLI Support + Cross-Platform TAD**
 
 ## 方式1：一键安装（推荐）
 
@@ -80,7 +80,7 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad`文件夹结构 (v2.8.5)
+### `.tad文件夹结构 (v2.9.0)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置 (master index)
@@ -234,7 +234,7 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到 v2.8.5
+# 从任何旧版本升级到 v2.9.0
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：

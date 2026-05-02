@@ -1,8 +1,8 @@
-# TAD Configuration v2.8.5 - Compact Recovery + Token Efficiency + Hook Passive Mode
+# TAD Configuration v2.9.0 - Codex CLI Support + Full Cross-Platform TAD
 method: TAD
-version: 2.8.5
-description: Triangle Agent Development - Self-Evolving Framework + Domain Pack Auto-Loading Hook + Execution Trace + Domain Packs
-last_updated: 2026-04-28
+version: 2.9.0
+description: Triangle Agent Development - Self-Evolving Framework + Codex CLI Adapter + Domain Packs + Cross-Platform Portable
+last_updated: 2026-05-02
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
