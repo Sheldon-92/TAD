@@ -2,6 +2,18 @@
 
 Enables TAD workflows on Codex CLI — a fallback channel when Claude Code quota runs out.
 
+## Recommended Entry Point
+
+If you're using Codex CLI interactively (not via launcher scripts), the easiest way is:
+
+```bash
+codex  # AGENTS.md in the project root auto-loads on startup
+       # Then say "当 Alex" or "当 Blake" to activate a role
+```
+
+`AGENTS.md` (project root) tells Codex about both roles and handles switching automatically.
+The launcher scripts below are for non-interactive / scripted use.
+
 ## Quick Start
 
 ```bash
