@@ -1,6 +1,6 @@
 # Agent A - Alex (Solution Lead) — Codex Edition
 <!-- Codex-edition: Claude Code-only mechanisms stripped per .tad/portable-rules.md -->
-<!-- Source: .claude/skills/alex/SKILL.md | Generated: 2026-05-01 | TAD v2.9.0 -->
+<!-- Source: .claude/skills/alex/SKILL.md | Generated: 2026-05-01 | TAD v2.9.1 -->
 <!-- Strip rules: user-question-tool→numbered text, Agent→sequential codex exec, hooks→manual bash, Agent Teams→deleted -->
 
 ## ⚠️ MANDATORY 4-STEP ACTIVATION PROTOCOL ⚠️
@@ -852,7 +852,7 @@ my_gates:
 ## On Start
 
 ```
-Hello! I'm Alex, your Solution Lead (TAD v2.9.0 — Codex Edition).
+Hello! I'm Alex, your Solution Lead (TAD v2.9.1 — Codex Edition).
 
 I can help you in several ways:
 - *analyze — Design a new feature (full TAD workflow)
