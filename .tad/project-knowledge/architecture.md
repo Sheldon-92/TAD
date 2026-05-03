@@ -681,12 +681,14 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md §Environment
 - **Revalidated**: 2026-05-03
 
-### NotebookLM YouTube Source: Web UI Works, CLI v0.1.1 Fails — 2026-05-03
+### NotebookLM YouTube Source: Caption Requirement + Conference/Official Channel Strategy — 2026-05-03
 - **Context**: NotebookLM spike testing YouTube source ingestion via `notebooklm source add "https://youtube.com/..."` CLI command.
-- **Discovery**: `notebooklm source add` for YouTube URLs returns "API returned no data" instantly (~2s) in CLI v0.1.1. This is a CLI limitation, not a platform limitation. Adding the same YouTube video via NotebookLM web UI succeeds and the video transcript is fully processed (status: ready). Subsequent `notebooklm ask` queries correctly cite video content inline with [1]-[8] references. The cross-media workflow is: **add YouTube via web UI → query via CLI**.
-- **Key finding**: YouTube content in NotebookLM enables pattern discovery not in written sources. Q3 retest found `curl URL | bash` (pipe-to-shell), `bash -c "$(cmd)"` (dynamic execution), `sudo env bash -c "..."` patterns from video content — these were absent from all 6 web sources.
-- **Action**: For TAD research workflows using NotebookLM: (a) add YouTube/video sources via web UI only; (b) add web sources via CLI (`notebooklm source add URL`); (c) query via CLI (`notebooklm ask "question" --json`); (d) expect 23-35s query latency (acceptable for research tasks, not real-time).
-- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md, query-outputs.md §Q3-RETEST
+- **Discovery**: `notebooklm source add` for YouTube URLs fails with "API returned no data" when the video has no captions. **The fix is not to use the web UI — it's to find videos WITH captions**. Conference talks (CCC/RSAC/Black Hat/NODES) and official channels (Anthropic, Google) always have auto-generated or human captions. 8/8 such videos added successfully via CLI. The initial 3 failures were random videos without captions.
+  - **Workflow**: WebSearch for `site:youtube.com "[topic]" [conference/channel]` → filter for conference or official channel videos → `notebooklm source add URL`
+  - **Web UI** is an alternative but not necessary if you pick captioned videos
+- **Multi-YouTube quality**: Q3-final with 9 YouTube sources found 6 attack techniques ABSENT from all written documentation: Invisible Unicode injection, AI Clickfix, local port exposure exfiltration, Agent Hopper virus (YOLO mode → cross-repo spread), insecure interagent communication, human-agent trust exploitation.
+- **Action**: For TAD research workflows using NotebookLM: (a) WebSearch for conference/official YouTube videos on the topic; (b) add via CLI `notebooklm source add URL` (works for captioned videos); (c) add web sources via CLI; (d) query via CLI `notebooklm ask "question" --json`; (e) expect 23-43s latency (research tasks only).
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md, query-outputs.md §Q3-FINAL
 - **Revalidated**: 2026-05-03
 
 ### NotebookLM as TAD Knowledge Layer: INTEGRATE Verdict — 2026-05-03

@@ -61,6 +61,29 @@
 
 ---
 
+## Q3-FINAL: Multi-YouTube Corpus (9 Videos) ✅✅
+
+**Query**: "Based on all sources including all video content, what bash command patterns should an AI agent deny? What attack techniques from the videos are NOT covered by written documentation?"
+**Latency**: 43s
+**YouTube cited**: ✅ YES — multiple videos cited inline, 37 total citations
+
+**New deny patterns from videos (not in web docs)**:
+- `find -exec` — weaponized to run arbitrary OS commands while allowlisted
+- `ping`, `host`, `nslookup`, `dig` — DNS exfiltration of env vars/secrets when curl blocked
+- `kubectl delete namespace`, `terraform destroy`, `aws terminate-instances` — cloud infrastructure teardown
+
+**Video-exclusive attack techniques (NOT in any written doc)**:
+1. **Invisible Unicode Command Injection** — hidden Unicode tag characters in GitHub issues, Linear, SO; invisible to humans, read by LLM
+2. **AI "Clickfix" Social Engineering** — fake "Verify you're a computer" → clipboard payload → agent pastes + executes in terminal
+3. **Local Port Exposure Exfiltration** — agent writes local webserver, exposes to internet, leaks filesystem URL to attacker
+4. **"Agent Hopper" AI Virus** — single repo compromise → enables YOLO mode → agent scans machine for other repos → spreads payload → pushes to GitHub
+5. **Insecure Interagent Communication** — multi-agent trust exploitation; single injected fault cascades across entire workflow
+6. **Human-Agent Trust Exploitation** — agent uses persuasive explanations to get human to "Allow" the harmful action; audit trail is clean
+
+**Quality**: 5/5 — this is definitively the "search can't do this" result
+
+---
+
 ## Q3-RETEST: Cross-Media Reasoning with YouTube Source ✅
 
 **Query**: "Based on all sources including the video content, what bash command patterns should an AI agent deny? Include any insights specifically from the video."

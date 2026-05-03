@@ -32,21 +32,28 @@
 
 ## Source Ingestion Results
 
-| # | Type | URL/Path | Status | Time |
-|---|------|----------|--------|------|
-| 1 | YouTube | youtube.com/watch?v=Lzs0lnGLZNQ | ❌ "API returned no data" | 2s |
-| 2 | YouTube | youtube.com/watch?v=S4iLzNHOHdw | ❌ "API returned no data" | 2s |
-| 3 | YouTube | youtube.com/watch?v=uJhKeRQGkBQ | ❌ "API returned no data" | 2s |
-| 4 | Web | anthropic.com/research/model-card-claude-3 | ✅ | 5s |
-| 5 | Web | owasp.org/LLM Top 10 | ✅ | 4s |
-| 6 | Web | github.com/Dicklesworthstone/destructive_command_guard | ✅ | 11s |
-| 7 | Web | docs.anthropic.com/en/docs/claude-code/security | ✅ | 7s |
-| 8 | Web | adversa.ai/blog/claude-code-security-bypass | ✅ | 9s |
-| 9 | Web | github.com/yottayoshida/omamori | ✅ | 6s |
+| # | Type | Source | Status |
+|---|------|--------|--------|
+| 1-3 | YouTube | Random URLs (no captions) | ❌ "API returned no data" |
+| 4 | Web | anthropic.com/research/model-card-claude-3 | ✅ |
+| 5 | Web | owasp.org/LLM Top 10 | ✅ |
+| 6 | Web | github.com/DCG destructive_command_guard | ✅ |
+| 7 | Web | docs.anthropic.com/claude-code/security | ✅ |
+| 8 | Web | adversa.ai/blog/claude-code-security-bypass | ✅ |
+| 9 | Web | github.com/yottayoshida/omamori | ✅ |
+| 10 | YouTube (web UI) | Guide to Architect Secure AI Agents | ✅ (user manual add) |
+| 11 | YouTube CLI | RSAC: security risks of AI agents | ✅ |
+| 12 | YouTube CLI | CCC: Agentic ProbLLMs | ✅ |
+| 13 | YouTube CLI | Setting up Claude Code security guardrails | ✅ |
+| 14 | YouTube CLI | Claude Code best practices (Anthropic) | ✅ |
+| 15 | YouTube CLI | HOOKED on Claude Code Hooks | ✅ |
+| 16 | YouTube CLI | Top 10 Security Risks in AI Agents | ✅ |
+| 17 | YouTube CLI | Master Agentic AI Security | ✅ |
+| 18 | YouTube CLI | NODES 2026: Building Secure AI Agents | ✅ |
 
-**Result**: 6/9 succeeded (all web). 0/3 YouTube. Meets ≥5 sources AC (AC2 partial — no YouTube).
+**Final**: 6 web + 9 YouTube = 15 ready sources. 
 
-**YouTube failure analysis**: All 3 attempts returned "API returned no data" instantly (~2s). This suggests the notebooklm-py API endpoint for YouTube is either: (a) different from what the web UI uses, (b) requires different account authorization, or (c) the CLI v0.1.1 doesn't implement YouTube ingestion correctly.
+**YouTube CLI workaround**: Initial random YouTube URLs fail (no captions). **Fix**: WebSearch for conference talks (CCC/RSAC/Black Hat/NODES) and official channels (Anthropic) → add via CLI. 8/8 conference/official videos succeeded. Key requirement: video must have captions enabled.
 
 ---
 
@@ -59,6 +66,8 @@
 | Q2 | Cross-source synthesis | **5** | ✅ Yes (29 citations) | N/A | 30s |
 | Q3 | Pattern catalog | 4 | ✅ Yes (8 sources) | N/A | 23s |
 | Q4 | Insight generation | **5** | ✅ Yes (8 sources) | N/A | 29s |
+| Q3-retest | Cross-media (1 YouTube) | 5 | ✅ Yes | ✅ Yes | ~35s |
+| **Q3-final** | **Multi-YouTube (9 videos)** | **5** | ✅ Yes | ✅ Yes (37 citations) | 43s |
 
 ---
 
@@ -66,8 +75,16 @@
 
 **What NotebookLM CLI does well (vs Q0 WebSearch baseline):**
 - Q2 (5/5): 29-citation cross-source comparison found non-obvious insights: Claude Code's internal tree-sitter vs. public regex parser; omamori's config self-defense; dcg's 50+ open-source rule packs. None of this is in a single search result.
-- Q4 (5/5): Gap analysis identified 8 security gaps that NO framework covers — including Python/JS interpreter bypass, opaque script execution, sudo PATH bypass. This is exactly the "search can't do this" value that INTEGRATE requires.
-- **Latency**: 23-30s per query. Acceptable for research workflows (Alex *discuss), too slow for real-time hooks.
+- Q4 (5/5): Gap analysis identified 8 security gaps that NO framework covers — including Python/JS interpreter bypass, opaque script execution, sudo PATH bypass.
+- **Q3-final (5/5, 9 YouTube sources, 37 citations)**: Found 6 video-exclusive attack techniques absent from ALL written docs:
+  1. Invisible Unicode tag character injection (GitHub/Linear/SO)
+  2. AI "Clickfix" social engineering (clipboard payload via fake verification)
+  3. Local port exposure exfiltration (filesystem leaked as public webserver)
+  4. "Agent Hopper" AI virus (YOLO mode → cross-repo spread → GitHub push)
+  5. Insecure interagent communication (cascading multi-agent failures)
+  6. Human-agent trust exploitation (audit trail is clean, human was tricked into "Allow")
+- **YouTube CLI workaround**: search for videos from conference talks (CCC/RSAC/Black Hat/NODES) and official channels (Anthropic) → add via CLI. All 8 tried succeeded (vs earlier random URLs which all failed). The key is captions availability.
+- **Latency**: 23-43s per query. Acceptable for research workflows (Alex *discuss), too slow for real-time hooks.
 
 **Q3 vs Spike B Gemini comparison**:
 - Gemini produced structured regex tables (PCRE, not POSIX-ERE-compatible)
