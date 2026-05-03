@@ -703,6 +703,20 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md, SPIKE-REPORT.md §Phase 1 Scope Impact
 - **Revalidated**: 2026-05-03
 
+### Venv Absolute Path for AI-Invoked CLI Tools — 2026-05-03
+- **Context**: Phase 1 cross-model integration — *research-notebook SKILL.md initially used bare `notebooklm` command. backend-architect review caught that AI agents invoke CLI from non-activated shell contexts.
+- **Discovery**: When a CLI tool is installed in a Python venv (`~/.tad-notebooklm-venv/bin/notebooklm`) and an AI agent (not human shell) invokes it, the venv is NOT activated. Bare `notebooklm` will fail with "command not found" even if setup is complete. `which notebooklm` preflight is equally broken. Must use absolute path `~/.tad-venv-name/bin/tool` everywhere in SKILL.md. Same issue applies to `python3` inside setup scripts after `source activate` — use `$VENV_PATH/bin/python` explicitly. The pattern: **every CLI-in-venv SKILL.md invocation requires absolute path, never bare command name.**
+- **Action**: In any TAD skill that invokes venv-installed CLIs: (a) define `notebooklm_bin: "~/.venv-name/bin/tool"` in preflight; (b) replace all bare invocations with absolute path via global search-replace; (c) preflight check must be `test -x <absolute-path>` not `which tool`. This is TAD-specific analog of the "dep-guard PATH pin" lesson (2026-04-15) applied to SKILL files rather than hook scripts.
+- **Grounded in**: .claude/skills/research-notebook/SKILL.md (11 invocations updated), .tad/evidence/reviews/blake/cross-model-phase1-protocol/backend-architect.md (P0-1 finding)
+- **Revalidated**: 2026-05-03
+
+### Registry Lifecycle State Machine: Hybrid Persisted+Derived Pattern — 2026-05-03
+- **Context**: *research-notebook REGISTRY.yaml has three states (active/dormant/archived). Review caught that the state machine had undefined transitions and ambiguous status field semantics.
+- **Discovery**: When a registry has states that are both user-set (archived) and date-derived (active/dormant), you must explicitly document: (a) which states are user-set vs derived, (b) which operations persist state, (c) how *list recomputes derived states at display time, (d) all possible transitions including dormant→active and archived→active. Without this, REGISTRY drift is inevitable (persisted "dormant" + recent `last_queried` is a contradictory state). Resolution pattern: *list always recomputes active/dormant from `last_queried` when status != "archived"; *ask persists status=active on success; archived is only cleared by explicit user confirmation.
+- **Action**: For any TAD registry with multi-state lifecycle: add a `status_field_semantics` block documenting the hybrid model, and a `state_transitions` map listing every A→B transition (or "NOT automatic" for forbidden ones). Document in the SKILL.md lifecycle section, not just README.
+- **Grounded in**: .claude/skills/research-notebook/SKILL.md (lifecycle_rules section + status_field_semantics block), .tad/evidence/reviews/blake/cross-model-phase1-protocol/backend-architect.md (P0-2 finding)
+- **Revalidated**: 2026-05-03
+
 ### Passive-Mode Hook Migration: `_assert_skip` Becomes No-Op if Not Migrated — 2026-05-03
 - **Context**: Commit 95b154b migrated test assertions from stdout JSON (`hookSpecificOutput.additionalContext`) to `.router.log` file delta in passive mode (TAD 2.8.4). `_assert_match` was correctly migrated; `_assert_skip` was left on the obsolete `[ -z "$out" ]` check.
 - **Discovery**: In passive mode, the hook NEVER emits stdout for any input (matched, unmatched, or event-filtered). `[ -z "$out" ]` is therefore always true. `_assert_skip` passes trivially without exercising the event filter — 5 of 7 skip assertions become no-ops, silently disabling Phase 1 P1.4's regression guard for `<task-notification>` / `<system-reminder>` events. Production code-reviewer caught this as P0; neither generic Claude nor Codex found it.
