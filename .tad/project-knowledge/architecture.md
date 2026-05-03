@@ -632,3 +632,79 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: All Codex output parsers should: (a) check exit code first; (b) extract content from stdout by searching for first meaningful content marker (e.g., `## Findings`) rather than line-count skipping; (c) ignore stderr unless exit code indicates failure. Never test for "no stderr = success".
 - **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-cross-model-orchestration/SPIKE-REPORT.md (Test 2b §"Codex stderr noise" + Test 3a)
 - **Revalidated**: 2026-05-03
+
+### `codex exec review --commit` Incompatible with `--full-auto [PROMPT]` — Use Stdin Fallback — 2026-05-03
+- **Context**: Cross-model Phase 0 Spike A — attempting to run `codex exec review --commit 95b154b --full-auto "review prompt"`.
+- **Discovery**: `--commit` and a positional `[PROMPT]` argument cannot be used together with `--full-auto`. Command fails immediately with "the argument '--commit <SHA>' cannot be used with '[PROMPT]'". The working fallback is stdin: `{ echo "Review this diff:"; echo ""; cat /tmp/diff.txt; } | codex exec --full-auto "review instructions"`.
+- **Action**: Never combine `codex exec review --commit SHA --full-auto` with a trailing prompt string. Use stdin pipe to deliver both diff content and instructions in a single `codex exec --full-auto` call.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-phase0/spike-a-codex-review.md, SPIKE-REPORT.md §Spike A Test Setup
+- **Revalidated**: 2026-05-03
+
+### Gemini CLI `-p` Mode is Read-Only — Cannot Create Files or Execute Shell Commands — 2026-05-03
+- **Context**: Cross-model Phase 0 Spike C — testing Gemini image generation via `gemini -p`.
+- **Discovery**: Gemini CLI in `-p` (non-interactive) mode has a read-only tool set: only `grep_search`, `read_file`, `glob` are available. `write_file`, `run_shell_command`, and `invoke_agent` all return "tool not found". Gemini can read project files and search, but cannot write files, create images, or execute code. When given a "generate diagram" task, Gemini attempted to produce Mermaid code but failed to save it. Gemini is suitable ONLY for text-output research/analysis tasks in TAD context.
+- **Action**: Do not assign Gemini tasks that require creating files, executing commands, or generating binary artifacts (images, binaries). Gemini via `-p` = read + analyze + produce text. Codex via `--full-auto` = read + write + execute.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-phase0/spike-c-results.md §Gemini Image Generation, SPIKE-REPORT.md §Spike C
+- **Revalidated**: 2026-05-03
+
+### Gemini Regex Output Requires BSD grep-E Validation Before Use in TAD Hooks — 2026-05-03
+- **Context**: Cross-model Phase 0 Spike B — Gemini produced a structured table of bash deny patterns including `\bDELETE\s+FROM\s+\w+\b(?!.*\bWHERE\b)`.
+- **Discovery**: Gemini emits PCRE-style regex by default, including negative lookahead `(?!...)`. macOS BSD `grep -E` uses POSIX ERE which does NOT support lookahead syntax. Patterns using `(?!...)`, `(?=...)`, `(?<!...)`, `(?<=...)` will silently fail (match nothing or produce errors) on macOS. TAD hooks use `grep -E` per architecture.md "Hook Shell Portability: No grep -P on macOS" rule. Gemini's `DELETE FROM ... WHERE` detection pattern is therefore non-functional as emitted.
+- **Systematic rule**: Always validate Gemini-emitted regex with `echo "test_positive" | grep -E 'PATTERN'` on macOS before inserting into any TAD hook. When prompting Gemini for regex, specify "POSIX ERE compatible with BSD grep -E, no lookahead or lookbehind".
+- **Action**: (a) Never ship Gemini regex to hooks without `grep -E` smoke test. (b) Add to Gemini research prompts: "output POSIX ERE compatible with BSD grep -E — no lookahead/lookbehind". (c) Phase 2 retest spec for Gemini research integration requires per-regex smoke test as AC.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-phase0/spike-b-gemini-research.md line 29 (`(?!.*WHERE)` regex), code-reviewer Layer 2 P1-2, SPIKE-REPORT.md §Spike B Critical Regex Portability Issue
+- **Revalidated**: 2026-05-03
+
+### Cross-Model Capability Spike: Prompt Symmetry is Load-Bearing for Verdict Validity — 2026-05-03
+- **Context**: Cross-model Phase 0 Spike B — comparing Claude iterative WebSearch vs Gemini single-prompt structured research on same topic.
+- **Discovery**: When evaluating two AI models for a capability, asymmetric prompt shapes produce asymmetric output formats that cannot be attributed to model capability. In Spike B: Claude received open-ended discovery prompts; Gemini received an explicit "produce structured regex tables with sections for each category" instruction. Gemini's structured table output was partially an artifact of being explicitly instructed to produce structured output — not a model capability advantage. Code-reviewer caught this: "the methodology measures prompt engineering, not model capability." Initial verdict of INTEGRATE was downgraded to DEFER pending symmetric-prompt retest.
+- **Three-way comparison pattern (Spike A lesson)**: When evaluating external models vs the TAD incumbent (production code-reviewer), always include the incumbent as a third-way baseline. Spike A compared generic Claude vs Codex, missing the fact that production code-reviewer found a P0 that generic Claude missed. Without the baseline, "generic Claude finds 11, Codex finds 5" understates the real capability gap.
+- **Action**: For future cross-model capability spikes: (a) use identical prompts to both models — or explicitly document and control for prompt differences; (b) include the production incumbent (production code-reviewer, Alex WebSearch workflow) as third-way baseline; (c) pilot verdict on ≥3 test cases before recommending INTEGRATE for any capability.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-phase0/SPIKE-REPORT.md §Spike B (DEFER verdict + asymmetric prompts), code-reviewer Layer 2 P0-1, backend-architect Layer 2 P0-BA
+- **Revalidated**: 2026-05-03
+
+### NotebookLM CLI Auth Path Mismatch + Playwright Export Fix — 2026-05-03
+- **Context**: notebooklm-py 0.1.1 `notebooklm login` uses Playwright persistent browser profile at `~/.notebooklm/browser_profile/`, but all subsequent CLI commands (`list`, `ask`, `source add`) read `~/.notebooklm/storage_state.json`. These are different paths, causing "Not logged in" after a successful login.
+- **Discovery**: The fix is a one-time Playwright export step after login:
+  ```python
+  from playwright.sync_api import sync_playwright
+  import json, os
+  profile = os.path.expanduser('~/.notebooklm/browser_profile')
+  out = os.path.expanduser('~/.notebooklm/storage_state.json')
+  with sync_playwright() as p:
+      ctx = p.chromium.launch_persistent_context(profile, headless=True)
+      json.dump(ctx.storage_state(), open(out,'w'))
+      ctx.close()
+  ```
+  Run this once after `notebooklm login`, and again when session expires (Google cookies typically last weeks). Also: notebooklm-py requires Python 3.10+ (uses `str | None` union syntax); macOS system Python 3.9 will fail with TypeError.
+- **Action**: (a) Always use Python 3.10+ venv for notebooklm-py (`/opt/homebrew/bin/python3.13 -m venv`); (b) After `notebooklm login`, run the Playwright export script; (c) When `notebooklm list` returns "Not logged in", re-run the export (not the full login) — browser_profile stays valid longer than storage_state.json assumptions.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md §Environment
+- **Revalidated**: 2026-05-03
+
+### NotebookLM YouTube Source: Web UI Works, CLI v0.1.1 Fails — 2026-05-03
+- **Context**: NotebookLM spike testing YouTube source ingestion via `notebooklm source add "https://youtube.com/..."` CLI command.
+- **Discovery**: `notebooklm source add` for YouTube URLs returns "API returned no data" instantly (~2s) in CLI v0.1.1. This is a CLI limitation, not a platform limitation. Adding the same YouTube video via NotebookLM web UI succeeds and the video transcript is fully processed (status: ready). Subsequent `notebooklm ask` queries correctly cite video content inline with [1]-[8] references. The cross-media workflow is: **add YouTube via web UI → query via CLI**.
+- **Key finding**: YouTube content in NotebookLM enables pattern discovery not in written sources. Q3 retest found `curl URL | bash` (pipe-to-shell), `bash -c "$(cmd)"` (dynamic execution), `sudo env bash -c "..."` patterns from video content — these were absent from all 6 web sources.
+- **Action**: For TAD research workflows using NotebookLM: (a) add YouTube/video sources via web UI only; (b) add web sources via CLI (`notebooklm source add URL`); (c) query via CLI (`notebooklm ask "question" --json`); (d) expect 23-35s query latency (acceptable for research tasks, not real-time).
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md, query-outputs.md §Q3-RETEST
+- **Revalidated**: 2026-05-03
+
+### NotebookLM as TAD Knowledge Layer: INTEGRATE Verdict — 2026-05-03
+- **Context**: Feasibility spike testing NotebookLM as "external memory layer" for TAD research tasks. 6 web sources + 1 YouTube video (web UI) queried via CLI.
+- **Discovery**: Cross-source synthesis quality (Q2: 29 citations, 5/5) and gap analysis (Q4: 8 uncovered gaps identified, 5/5) substantially exceed WebSearch baseline (Q0: 3/5). NotebookLM's unique value is citation-grounded cross-source reasoning over a user-curated corpus — not available via single-shot search. Key differentiators:
+  1. **Citation transparency**: every claim traceable to specific source paragraph
+  2. **Cross-media reasoning**: synthesizes video + doc + web sources in one answer
+  3. **Gap analysis**: identifies what NO source covers — requires having all sources in corpus simultaneously
+  4. **Complementary to Gemini**: Gemini generates structured regex patterns from training data; NotebookLM synthesizes from curated sources with citations. Use together for highest quality research output.
+- **Scope constraints**: 23-35s latency (research only, not real-time hooks); YouTube must be added via web UI; session requires periodic storage_state.json refresh.
+- **Action**: Integrate NotebookLM into Alex `*discuss` and `research_required: yes` handoffs. Pre-load topic notebook with sources, query via `notebooklm ask "question" --json`. Treat as complement to Gemini (structured patterns) and Claude WebSearch (discovery).
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-notebooklm/SPIKE-REPORT.md, SPIKE-REPORT.md §Phase 1 Scope Impact
+- **Revalidated**: 2026-05-03
+
+### Passive-Mode Hook Migration: `_assert_skip` Becomes No-Op if Not Migrated — 2026-05-03
+- **Context**: Commit 95b154b migrated test assertions from stdout JSON (`hookSpecificOutput.additionalContext`) to `.router.log` file delta in passive mode (TAD 2.8.4). `_assert_match` was correctly migrated; `_assert_skip` was left on the obsolete `[ -z "$out" ]` check.
+- **Discovery**: In passive mode, the hook NEVER emits stdout for any input (matched, unmatched, or event-filtered). `[ -z "$out" ]` is therefore always true. `_assert_skip` passes trivially without exercising the event filter — 5 of 7 skip assertions become no-ops, silently disabling Phase 1 P1.4's regression guard for `<task-notification>` / `<system-reminder>` events. Production code-reviewer caught this as P0; neither generic Claude nor Codex found it.
+- **Pattern**: When migrating a hook's output mechanism (stdout → log file, JSON → plaintext, etc.), audit ALL test assertion variants — not just the "happy path" (`_assert_match`) but also negative/skip assertions (`_assert_skip`, `_assert_no_match`). The negative assertions are more likely to become no-ops because they check for absence, which is trivially true when the output mechanism changes.
+- **Action**: After any hook output-mechanism change: (a) enumerate all test assertion types in the test harness; (b) verify each type still exercises the code under test (not just returns the expected value trivially); (c) specifically check "skip/no-op/empty" assertions — these are the highest risk for silent no-op conversion.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-phase0 code-reviewer Round 2 P0-1, commit 95b154b diff, .tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh
+- **Revalidated**: 2026-05-03
