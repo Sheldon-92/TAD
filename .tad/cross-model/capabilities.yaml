@@ -1,0 +1,75 @@
+# Cross-Model Capability Catalog
+# Protocol fixed, capabilities pluggable.
+# New capability discovered → add entry → TAD immediately usable.
+# NOTE: This file is catalog only (metadata per capability).
+# Fallback chains and orchestration logic live in config-workflow.yaml research_notebook.fallback_chains
+version: 1.0.0
+last_updated: 2026-05-03
+
+capabilities:
+  codex_image_gen:
+    platform: codex
+    cli_command: 'codex exec --full-auto "Generate image: {prompt}. Save the image to the project directory."'
+    description: "GPT Image-2 image generation (UI mockups, architecture diagrams, charts, icons)"
+    output_location: "~/.codex/generated_images/ → copy to project directory"
+    verified: true
+    spike_ref: "SPIKE-20260503-phase0/spike-c-results.md"
+    use_when: "Need to generate images, diagrams, UI mockups, architecture visuals"
+    dont_use_when: "Need photorealistic images / need precise pixel control / need vector output"
+    fallback: "Mermaid / PlantUML / draw.io (manual)"
+    budget: "GPT Plus credits, ≤20/month recommended"
+    latency: "~120s per image"
+    setup_required: false
+    notes: "codex exec --full-auto validated in Phase 2 dogfood (2026-05-02). --skip-git-repo-check needed for non-git dirs."
+
+  notebooklm_research:
+    platform: notebooklm
+    cli_command: 'notebooklm ask "{question}"'
+    description: "Multi-source cross-media deep research (YouTube + PDF + web corpus cross-source reasoning)"
+    verified: true
+    spike_ref: "SPIKE-20260503-notebooklm/SPIKE-REPORT.md"
+    use_when: "Research-intensive topics needing cross-source synthesis + video content + citations"
+    dont_use_when: "Quick fact lookup (use WebSearch) / real-time data (NotebookLM does not fetch live web)"
+    fallback: "WebSearch ×5-8 (Claude iterative search)"
+    setup_required: true
+    setup_ref: "*research-notebook create OR bash .tad/cross-model/setup-notebooklm.sh"
+    latency: "23-43s per query"
+    notes: |
+      Citation-grounded cross-source reasoning over user-curated corpus.
+      YouTube sources: must have captions. Use conference talks (CCC/RSAC/Black Hat/NODES)
+      or official channels (Anthropic, Google) — 8/8 success rate in Phase 0b spike.
+      Auth expires: re-run setup-notebooklm.sh when CLI returns auth error.
+
+  gemini_research:
+    platform: gemini
+    cli_command: 'gemini -p "{question}"'
+    description: "Google Search Grounding real-time research (~40% hallucination reduction vs baseline)"
+    verified: true
+    spike_ref: "SPIKE-20260503-cross-model-orchestration/SPIKE-REPORT.md"
+    use_when: "Need real-time web info + fact-checking with Google search grounding"
+    dont_use_when: "Need deep cross-source synthesis (use NotebookLM) / need to write files (Gemini -p is read-only)"
+    fallback: "WebSearch (Claude built-in)"
+    status: "DEFER — symmetric prompt retest required (Phase 0 Spike B asymmetry issue)"
+    latency: "~61s per query"
+    notes: |
+      -p flag required for non-interactive (non-TTY) invocation — without it, hangs indefinitely.
+      Read-only mode: only grep_search, read_file, glob available. Cannot write files.
+      Regex output is PCRE-style; validate with BSD grep -E before using in TAD hooks.
+      Exit code is source of truth (stderr noise is benign — see architecture.md 2026-05-03).
+
+  # Future capabilities (discovered but unverified — fill in after spike)
+  # gemini_veo_video:
+  #   platform: gemini
+  #   status: "unverified"
+  #   description: "Veo video generation"
+  # gemini_lyria_audio:
+  #   platform: gemini
+  #   status: "unverified"
+  #   description: "Lyria audio generation"
+  # codex_web_search:
+  #   platform: codex
+  #   status: "unverified"
+  #   description: "Codex web search tool"
+
+# fallback_chains: defined in .tad/config-workflow.yaml research_notebook.fallback_chains
+# (BA-P1-2: capabilities.yaml is catalog-only; orchestration/routing lives in config-workflow.yaml)

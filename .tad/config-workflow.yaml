@@ -767,3 +767,28 @@ scenarios:
         mandatory_subagents: ["bug-hunter", "test-runner"]
         regression_test: required
 
+# ==================== Research Notebook Configuration ====================
+# Cross-Model Orchestration Phase 1 (2026-05-03)
+# Lifecycle thresholds and fallback chains for *research-notebook skill.
+# Catalog data (per-capability metadata) lives in .tad/cross-model/capabilities.yaml
+research_notebook:
+  # Lifecycle thresholds (days)
+  dormant_after_days: 30           # active → dormant after N days without query
+  archive_suggest_after_days: 90   # suggest archive after M days dormant
+  max_sources_per_notebook: 20     # *add prompts curate when exceeded
+  source_stale_after_days: 90      # curate flags sources older than N days
+
+  # Fallback chains for cross-model capability routing
+  # Primary → secondary → tertiary fallback order
+  # BA-P1-2: orchestration logic here, not in capabilities.yaml (catalog-only)
+  fallback_chains:
+    research:
+      primary: notebooklm_research
+      secondary: gemini_research       # DEFER status — skip until symmetric-prompt retest passes
+      tertiary: claude_websearch
+    image_generation:
+      primary: codex_image_gen
+      secondary: manual_mermaid
+    code_review:
+      primary: claude_code_reviewer
+

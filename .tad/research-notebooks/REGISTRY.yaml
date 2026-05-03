@@ -1,0 +1,66 @@
+# TAD Research Notebook Registry
+# Local index of NotebookLM notebooks known to TAD.
+# Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
+version: 1.0.0
+last_updated: 2026-05-03
+
+# Currently active notebook (used when no --notebook flag specified)
+active_notebook: "ai-agent-security-phase0b"
+
+notebooks:
+  - id: "ai-agent-security-phase0b"
+    topic: "AI Agent Security"
+    created: "2026-05-03"
+    status: active        # active / dormant / archived
+    last_queried: "2026-05-03"
+    source_count: 9
+    notes: "Phase 0b spike notebook — 6 video-exclusive attack techniques found absent from all written docs"
+    sources:
+      - url: "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        type: web
+        added: "2026-05-03"
+        title: "OWASP LLM Top 10"
+      - url: "https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/"
+        type: web
+        added: "2026-05-03"
+        title: "OWASP LLM Top 10 2025"
+      - url: "https://www.anthropic.com/research/claude-agent-safety"
+        type: web
+        added: "2026-05-03"
+        title: "Anthropic: Claude Agent Safety"
+      - url: "https://arxiv.org/abs/2311.07590"
+        type: web
+        added: "2026-05-03"
+        title: "Prompt Injection Attacks Against LLM-Integrated Applications"
+      - url: "https://lilianweng.github.io/posts/2023-10-25-adv-attack-llm/"
+        type: web
+        added: "2026-05-03"
+        title: "Adversarial Attacks on LLMs (Lilian Weng)"
+      - url: "https://simonwillison.net/2023/Apr/14/prompt-injection/"
+        type: web
+        added: "2026-05-03"
+        title: "Simon Willison: Prompt Injection"
+      # YouTube sources (added via NotebookLM web UI — URLs not captured at add-time)
+      # curate command: skip URL-reachability check when url field starts with "(web-UI added"
+      - url: "(web-UI added, URL not recorded)"
+        type: youtube
+        added: "2026-05-03"
+        title: "Conference talk on AI agent security — source 1 of 3"
+      - url: "(web-UI added, URL not recorded)"
+        type: youtube
+        added: "2026-05-03"
+        title: "Conference talk on AI agent security — source 2 of 3"
+      - url: "(web-UI added, URL not recorded)"
+        type: youtube
+        added: "2026-05-03"
+        title: "Conference talk on AI agent security — source 3 of 3"
+
+# Template for new notebooks:
+# - id: "<slug>"
+#   topic: "<human-readable topic>"
+#   created: "<YYYY-MM-DD>"
+#   status: active
+#   last_queried: "<YYYY-MM-DD>"
+#   source_count: 0
+#   notes: ""
+#   sources: []

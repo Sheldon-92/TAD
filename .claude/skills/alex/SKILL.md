@@ -600,6 +600,22 @@ discuss_path_protocol:
         *discuss 不需要走 AskUserQuestion 确认（不同于 *design 的 step1_5）
         匹配是 LLM 语义判断，不是精确字符串匹配。
 
+    research_notebook_awareness:
+      trigger: "话题内容涉及研究密集型课题时（需要多源深度研究）"
+      action: |
+        在 domain_pack_awareness 之后，检查 .tad/research-notebooks/REGISTRY.yaml：
+        1. 如果存在匹配课题的 active notebook：
+           → 输出: "📚 Found existing notebook: '{topic}' ({source_count} sources).
+             Use *research-notebook ask to query it."
+        2. 如果不存在匹配 notebook 但课题需要多源深度研究：
+           → 建议: "This topic might benefit from a research notebook.
+             Use *research-notebook create '{topic}' to build a multi-source knowledge base."
+        3. 这是建议不是强制——用户可以忽略继续用 WebSearch
+      note: |
+        匹配是 LLM 语义判断，不是精确字符串匹配。
+        如果 REGISTRY.yaml 不存在 → 静默跳过，不报错。
+        NotebookLM 是 WebSearch 的补充（跨源综合 + 引用），不是替代。
+
     forbidden:
       - "Auto-generating handoff or design documents"
       - "Running Gate checks"
@@ -1489,13 +1505,31 @@ research_decision_protocol:
 
       4. Always include "build custom" as a comparison option
 
-    research_depth:
-      simple: "3 search queries, 2+ options, quick_comparison table"
-      important: "5+ search queries, 3+ options, quick_comparison + decision_record"
+  # Step 2.5: Optional notebook check (before or alongside Landscape Search)
+  step2_5_notebook_check:
+    name: "Check Research Notebook (optional)"
+    blocking: false
+    action: |
+      Before executing Landscape Search (WebSearch ×N):
+      1. Check .tad/research-notebooks/REGISTRY.yaml for a notebook matching this decision's domain
+      2. If found (active notebook) → query it first:
+         notebooklm use <notebook_id>
+         notebooklm ask "<decision question>"
+      3. Use notebook answer as SUPPLEMENT to WebSearch, not replacement:
+         - notebook = curated deep knowledge (cross-source, citations, video content)
+         - WebSearch = current broad coverage (freshness, breadth)
+      4. If not found → skip, proceed with standard WebSearch flow
+    note: |
+      This is optional — if REGISTRY.yaml doesn't exist or no matching notebook found,
+      skip silently and proceed with WebSearch. Never block research on notebook availability.
 
-    time_budget:
-      simple: "5-10 minutes per decision"
-      important: "15-30 minutes per decision"
+  research_depth:
+    simple: "3 search queries, 2+ options, quick_comparison table"
+    important: "5+ search queries, 3+ options, quick_comparison + decision_record"
+
+  time_budget:
+    simple: "5-10 minutes per decision"
+    important: "15-30 minutes per decision"
 
   # Step 3: Present to human
   step3_present:
