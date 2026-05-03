@@ -5,6 +5,33 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.1] - 2026-05-03
+
+### New Features — Cross-Model Orchestration + NotebookLM Knowledge Layer
+
+#### Cross-Model Orchestration (EPIC-20260503)
+- **NEW**: `*research-notebook` skill — 8-command NotebookLM integration (create/add/ask/list/sync/curate/archive/use)
+- **NEW**: `.tad/cross-model/capabilities.yaml` — pluggable capability catalog for cross-model abilities
+- **NEW**: `.tad/research-notebooks/REGISTRY.yaml` — notebook lifecycle management (active/dormant/archived)
+- **NEW**: `.tad/cross-model/setup-notebooklm.sh` — one-time auth setup with persistent venv
+- **NEW**: Alex SKILL integration — `research_notebook_awareness` in *discuss + `step2_5_notebook_check` in Research Decision Protocol
+- **NEW**: Fallback chains in config-workflow.yaml (research / image_generation / code_review)
+
+#### Cross-Model Capabilities Verified
+- **Codex Image-2**: GPT Image-2 image generation via `codex exec --full-auto` (architecture diagrams, UI mockups)
+- **NotebookLM**: Multi-source knowledge base (YouTube + PDF + web) with cross-source reasoning via CLI
+- **Gemini CLI**: Accessible from sub-agents (`gemini -p`), DEFER for research (needs symmetric-prompt retest)
+
+#### Architecture Findings (8 new entries in architecture.md)
+- Gemini CLI `-p` flag required for non-TTY invocation
+- Codex stderr noise is benign — exit code is source of truth
+- `codex exec review --commit` incompatible with `--full-auto [PROMPT]`
+- Gemini CLI `-p` mode is read-only (no write_file/shell)
+- Gemini regex uses PCRE — validate with BSD grep -E before use in hooks
+- NotebookLM YouTube source strategy: conference/official videos with captions
+- Cross-model prompt symmetry is load-bearing for fair comparison
+- NotebookLM cross-source quality: 5/5, cites video content inline
+
 ## [2.9.0] - 2026-05-02
 
 ### New Features — Codex CLI Support

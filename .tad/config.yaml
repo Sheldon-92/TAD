@@ -1,8 +1,8 @@
-# TAD Configuration v2.9.0 - Codex CLI Support + Full Cross-Platform TAD
+# TAD Configuration v2.9.1 - Cross-Model Orchestration + NotebookLM Knowledge Layer
 method: TAD
-version: 2.9.0
-description: Triangle Agent Development - Self-Evolving Framework + Codex CLI Adapter + Domain Packs + Cross-Platform Portable
-last_updated: 2026-05-02
+version: 2.9.1
+description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
+last_updated: 2026-05-03
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
