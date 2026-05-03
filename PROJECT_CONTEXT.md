@@ -1,120 +1,59 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.8.4 (Self-Evolving Framework)
-- **Last Updated**: 2026-04-28
-- **Framework**: TAD v2.8.4 + Self-Evolving + Execution Trace + Domain Packs + Compact Recovery
+- **Version**: 2.9.0 (Codex CLI Support + Cross-Platform TAD)
+- **Last Updated**: 2026-05-02
+- **Framework**: TAD v2.9.0 + Self-Evolving + Domain Packs + Codex CLI Adapter + Compact Recovery
 
 ## Active Work
-- **EPIC: Codex CLI Adaptation** — ⬚ Planning (created 2026-04-27)
-  - Epic: `.tad/active/epics/EPIC-20260427-codex-cli-adaptation.md`
-  - Target: v2.9.0 — TAD cross-platform fallback for Claude Code weekly quota limits
 - **EPIC: Security Domain Pack Chain** — Phase 0+1 done, evaluating before Phase 2
   - Epic: `.tad/active/epics/EPIC-20260403-security-domain-pack-chain.md`
   - ✅ Phase 0+1 complete; ⏸️ Phase 2-4 paused pending real-project validation
 
 ## Recently Completed
 
-- **Compact Recovery Protocol** — ✅ COMPLETE (2026-04-28)
-  - Two-layer session state persistence: CLAUDE.md §4.5 self-check + session-state.md on-disk file
-  - Prevents agent identity/task loss after context compaction (Sonnet 4.6 short context)
-  - Commit 028974c. Archived: .tad/archive/handoffs/HANDOFF-20260428-compact-recovery.md
+- **EPIC: Cross-Model Orchestration Phase 0/0b/1** — ✅ Phase 1 Gate 4 PASS (2026-05-03)
+  - Phase 0: Spike A SKIP | Spike B DEFER | Spike C INTEGRATE
+  - Phase 0b: NotebookLM INTEGRATE (6 video-exclusive attack techniques)
+  - Phase 1: `*research-notebook` SKILL (8 commands) + capabilities.yaml + Alex SKILL integration
+  - Phase 2 planned: real-project validation
 
-- **TAD v2.8.4 Release** — ✅ COMPLETE (2026-04-27)
-  - Token efficiency (L1 tier + L2 lazy knowledge + L4 *express ≤5 + L6 narrow-scope prompts)
-  - Linear integration removed, hook passive mode, pre-publish cleanup
+- **v2.9.0 Release + Sync** — ✅ COMPLETE (2026-05-02)
+  - Codex CLI Adapter: launcher scripts, static SKILL files, AGENTS.md native role switching
   - Synced to 12 registered projects
+  - Commits: c0ecc9c (release) + 0d5a1a3 (sync)
 
-- **Framework capability: Plain-Language Explanation after Handoffs** — ✅ COMPLETE (2026-04-14)
-  - Alex/Blake 在写完跨终端 message 后必须额外生成 `## 🗣️ 人话版` 段，便于用户学习 + 决策
-  - Folded into existing `step7.generate_message` (Alex) + `step8_generate_message` (Blake) — no new step, preserves STOP semantic
-  - Commit 514849f. 11 issues from 2 expert reviews integrated (code-reviewer + ux-expert)
+- **EPIC: Codex CLI Adaptation** — ✅ ALL 3/3 PHASES COMPLETE (2026-05-02)
+  - Phase 0: Feasibility spike (5/6 GO) | Phase 1: Build (13/13 AC) | Phase 2: Dogfood (8/8 AC)
+  - AGENTS.md: Codex auto-loads on startup, native role switching without launcher scripts
+  - Archived: `.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md`
 
+- **Compact Recovery Protocol** — ✅ COMPLETE (2026-04-28)
+  - Two-layer session state persistence: CLAUDE.md §4.5 self-check + session-state.md on-disk
+  - Commit 028974c
 
-- **EPIC: OpenHarness Agent Architecture Upgrade** — ✅ ALL 3/3 PHASES COMPLETE (2026-04-03)
-  - Phase 1: Reference doc (887 lines), Phase 2: Domain Pack v1.1.0, Phase 3: 2 NEXT.md + 3 ideas
-  - Archived: .tad/archive/epics/EPIC-20260403-openharness-agent-architecture-upgrade.md
-- **HW Domain Pack Phase 1 Research Supplement** — ✅ COMPLETE (2026-04-03)
-  - 4 research files (21 repos/resources × 5 dimensions) + 4 YAML iterations (+156 lines, 40 hunks)
-  - Key: 4 new workflow steps (scan_anti_patterns, verify_static_analysis, validate_manifold, declare_measurement_specs)
-  - 2 new tools in registry (platformio_check, admesh). Commit 48a69c6
-  - Archived: .tad/archive/handoffs/HANDOFF-20260403-hw-research-supplement.md
-- **Linear Auto-Sync** — ✅ COMPLETE (2026-03-25)
-  - step3.7 startup sync + enhanced step4b + auto_sync config
-  - Commit 7583fe5. Archived: .tad/archive/handoffs/HANDOFF-20260325-linear-auto-sync.md
-- **Linear Kanban Integration (code portion)** — ✅ PARTIAL COMPLETE (2026-03-25)
-  - AC3/4/7 PASS: config, step4b_linear_sync, handoff template field
-  - AC1/2/5/6 DEFERRED: MCP setup + project creation + seed issues (next session)
-  - Commit a086e68. Archived: .tad/archive/handoffs/HANDOFF-20260325-linear-kanban-integration.md
-- **Autoresearch Optimization Mode** — ✅ COMPLETE (2026-03-25)
-  - Ralph Loop Layer 0.5: autonomous optimization loop for numeric targets
-  - 5 files: tad-blake.md, config-execution.yaml, config.yaml, handoff template, optimization-program template
-  - Commit 585ef88. Archived: .tad/archive/handoffs/HANDOFF-20260325-autoresearch-optimization-mode.md
-- **4D Protocol Pair Testing Upgrade** — ✅ COMPLETE (2026-03-25)
-  - Removed Mode A (Chrome MCP), kept only Mode B (Claude Code + Playwright)
-  - Added 4D Protocol (Discover→Discuss→Decide→Deliver) as core pair testing methodology
-  - Updated 7 files: templates, config, command files. Commit b20ceef
-  - Archived: .tad/archive/handoffs/HANDOFF-20260325-4d-pair-testing-upgrade.md
-- **EPIC: Superpowers-Inspired Tactical Upgrades** — ✅ ALL 6/6 PHASES COMPLETE (2026-03-23)
-  - Phase 0: Session Hook Spike (verdict: pivot — 8.5% overhead too small to optimize)
-  - Phase 1: Spec Compliance Reviewer (Ralph Loop Group 0 — separates "right thing" from "right way")
-  - Phase 2: Anti-Rationalization Tables (12 entries + 8 inline embeds across 3 files)
-  - Phase 3: TDD Enforcement Skill (opt-in via config.yaml, RED-GREEN-REFACTOR guidance)
-  - Phase 4: Micro-Tasks + Pressure Testing (§6.1 template + methodology guide)
-  - Phase 5: Git Worktree Integration (optional --worktree + 4-option finishing workflow)
-  - Archived: .tad/archive/epics/EPIC-20260323-superpowers-tactical-upgrades.md
-- **Session Hook Spike (Phase 0)** — ✅ COMPLETE (2026-03-23)
-  - Measured baseline: session start ~8.5% of total context (below 10% threshold)
-  - Verdict: hooks work but optimization unnecessary. TAD architecture already on-demand.
-  - Pivot: skip context optimization, proceed to value-adding features (Phase 1-5)
-  - Knowledge: "Measure before optimizing" added to architecture.md
-- **Git Commit Verification** — ✅ COMPLETE (2026-03-03)
-  - Two-layer protection: Blake step3c (commit before Gate 3) + Alex step0_git_check (*accept safety net)
-  - 4 files modified: tad-blake.md, tad-alex.md, tad-gate.md, config-quality.yaml
-  - Prevents code loss from archived-but-uncommitted handoffs (real incident: 20/56 changes lost)
-  - Archived: .tad/archive/handoffs/HANDOFF-20260303-git-commit-verification.md
-- **Context Refresh Protocol** — ✅ COMPLETE (2026-02-19)
-  - Added mandatory Re-read at 2 critical nodes: Alex handoff creation + Blake develop start
-  - Strengthened handoff template with MANDATORY READ instruction
-  - Prevents long-session context compression from losing project knowledge
-  - Archived: .tad/archive/handoffs/HANDOFF-20260219-context-refresh-protocol.md
-- **Publish & Sync Commands** — ✅ COMPLETE (2026-02-17) v2.3.0 → v2.4.0
-  - Added *publish (version check + changelog + push + tag) and *sync (registry + deprecation + CLAUDE.md merge)
-  - Created sync-registry.yaml (3 projects seeded) and deprecation.yaml (v2.3.0 entry)
-  - Archived: .tad/archive/handoffs/HANDOFF-20260217-tad-publish-sync.md
-- **Multi-Platform Cleanup** — ✅ COMPLETE (2026-02-17) v2.2.1 → v2.3.0
-  - Removed full TAD runtime for Codex/Gemini (~1100 lines, 20 files)
-  - Codex/Gemini repositioned as specialized tools via existing Handoff mechanism
-  - Archived: .tad/archive/handoffs/HANDOFF-20260217-multi-platform-cleanup.md
-- **EPIC: Alex Flexibility + Learning + Project Management** — ✅ ALL 5/5 PHASES COMPLETE (2026-02-16)
-  - Archived: .tad/archive/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md
-  - Phase 1: Intent Router | Phase 2: *learn | Phase 3: Idea Pool | Phase 4: Roadmap | Phase 5: *idea promote + *status
+- **v2.8.4 Bundle** — ✅ COMPLETE (2026-04-27), superseded by v2.9.0
+  - Token efficiency (L1 tier + L2 lazy knowledge + L4 *express ≤5 + L6 narrow-scope prompts)
+  - Pre-publish cleanup, dangling refs migration, BUSINESS-VALUE-FIRST rule
+
+- **EPIC: TAD Self-Upgrade from Cross-Project Learning** — ✅ ALL 6/6 PHASES (2026-04-27)
+  - Archived: `.tad/archive/epics/EPIC-20260424-tad-self-upgrade-from-consumers.md`
 
 ## Recent Decisions
-- Git Commit Verification: Two-layer protection — step3c commit before Gate 3 (primary) + step0_git_check in *accept (safety net). Opt-out commit scope, BLOCK on uncommitted changes with user override (2026-03-03)
-- Context Refresh Protocol: Minimal viable approach — 2 critical nodes (handoff write + develop start) instead of 9 possible nodes. Producer-consumer targeting pattern (2026-02-19)
-- *publish + *sync commands: Added GitHub publish workflow (version check + push + tag) and cross-project sync (registry, deprecation, CLAUDE.md merge strategies). Version bumped v2.3.0 → v2.4.0 (2026-02-17)
-- Multi-Platform Cleanup: Removed full TAD runtime for Codex/Gemini, simplified to specialized tool model via existing Handoff mechanism. ~1100 lines removed, 20 files affected, version bumped v2.2.1 → v2.3.0 (2026-02-17)
-- Layer Integration Phase 5 DONE (EPIC COMPLETE): *idea promote (upgrade to Epic/Handoff via *analyze), *status panoramic view (4-layer scan), standby + path_transitions updated (2026-02-16)
-- Roadmap Phase 4 DONE: ROADMAP.md theme-driven aggregation view, Alex STEP 3.4 startup loading, *discuss exit gains "Update ROADMAP" option with propose→confirm flow (2026-02-16)
-- Idea Pool Phase 3 DONE: *idea stores to .tad/active/ideas/ structured files, *idea-list for browsing, forward-only status lifecycle, NEXT.md cross-reference pattern (2026-02-16)
-- Learning Opportunity Phase 2 DONE: *learn (Socratic teaching) as 5th Intent Router mode, standby state defined, idle detection added, post-handoff invite removed (user self-initiates) (2026-02-16)
-- Intent Router Phase 1 DONE: Alex supports *bug/*discuss/*idea/*analyze, "route before process" pattern, Alex never codes even for bugs (2026-02-16)
-- Alex Flexibility Epic: Hybrid intent detection (Option C), local-first project mgmt (no MCP dependency), multi-model cross-review hypothesis rejected in favor of existing gate system (2026-02-16)
-- Multi-Session Pair Testing: Singleton → session directories (S01/, S02/) + SESSIONS.yaml manifest + context inheritance (2026-02-09)
-- Design Playground v2: Pivot from curation tokens → full HTML page generation, independent command (2026-02-08)
-- Cognitive Firewall: 3-pillar human empowerment system — research-first, decision transparency, fatal operation protection (2026-02-06)
-- Agent Teams: Experimental parallel review (Alex) and implementation (Blake) with auto-fallback to subagent (2026-02-06)
-- Coexistence Strategy: Full + Standard TAD → Agent Team, Light → subagent, min_tasks_for_team 3→2 (2026-02-07)
+- Codex CLI Adaptation: static SKILL files (strip-only from Claude Code source) + AGENTS.md for native role switching + launcher scripts for non-interactive use (2026-05-02)
+- Mechanical Enforcement Rejected: single-user CLI context, LLM alignment ≠ tool interception. Soft SKILL reminders kept, hooks archived (2026-04-15)
+- Compact Recovery: Two-layer (CLAUDE.md trigger + session-state.md on-disk). Hook writes metadata, SKILL writes semantics (2026-04-28)
+- Token Efficiency: L1 tiered Layer 2 (yaml/research → ≥1 reviewer), L2 lazy knowledge load (~30-50K saved), L6 narrow-scope expert prompts (~50% per review) (2026-04-27)
+- Git Commit Verification: Two-layer protection — step3c + step0_git_check (2026-03-03)
 
 ## Known Issues
-- Playground v1: Archived to .tad/archive/playground/legacy-v1/ — replaced by standalone /playground command
 - Agent Teams: Experimental, requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+- Security Domain Pack Chain: Phase 2-4 paused — needs real-project security audit to validate value
 
 ## Next Direction
-- Use *publish and *sync on next TAD release to validate the new workflows
-- Consider renaming config-platform.yaml → config-mcp.yaml (follow-up from multi-platform cleanup)
-- Validate multi-session pair testing on next real project E2E test cycle
+- Run real-project security audit to decide Security Domain Pack Phase 2
 - Validate Cognitive Firewall (research_decision_protocol) on next real feature
-- Test Agent Teams on next Full or Standard TAD task (now default for both)
-- Iterate on Playground based on user feedback
+- Test Agent Teams on next Full or Standard TAD task
+- Consider Domain Pack taxonomy reorg (IDEA-20260427)
+- Explore TAD Universal Method for non-dev use cases (IDEA-20260502)
+- Cross-Model Orchestration: design protocol for Codex review + Gemini research in TAD workflow (IDEA-20260503, spike GO)

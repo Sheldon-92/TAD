@@ -4,7 +4,11 @@ e2e_required: no
 research_required: no
 git_tracked_dirs: []
 skip_knowledge_assessment: yes
-gate4_delta: []
+gate4_delta:
+  - field: "Test 2 severity agreement"
+    alex_said: "Both platforms should identify same P0 issues"
+    actual: "Gemini found 3 P0s, Codex found 2 P0s — disagreement on plaintext password storage severity"
+    caught_by: "Blake SPIKE-REPORT Test 2 notes"
 ---
 
 # Mini-Handoff: Spike — Cross-Model Orchestration Feasibility

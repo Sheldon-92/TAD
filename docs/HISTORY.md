@@ -5,6 +5,35 @@
 
 ---
 
+## v2.5.0 → v2.8.4 (2026-03-23 → 2026-04-27)
+
+### Completed Tasks
+
+- [x] TAD Token Efficiency — L1 Tiered Layer 2 + L2 Lazy Knowledge + L4 *express ≤5 + L6 Narrow-Scope Expert Prompts (2026-04-27)
+- [x] Pre-publish Cleanup — Dangling Refs Migration + BUSINESS-VALUE-FIRST Rule (2026-04-27)
+- [x] EPIC: TAD Self-Upgrade from Cross-Project Learning — ALL 6/6 PHASES (2026-04-27)
+- [x] TAD Bloat Cleanup — Linear cut + *accept slim + Hook passive mode (2026-04-27)
+- [x] Express: Layer 2 Audit — Alex *accept red-flag warning (2026-04-15)
+- [x] EPIC: Symmetric Quality Enforcement — Cancelled (product decision 2026-04-15)
+- [x] Express: Plain-Language Explanation as TAD Capability (2026-04-14)
+- [x] EPIC: Domain Pack Reliable Loading — ALL 4/4 PHASES (2026-04-08)
+  - Production hook LIVE: userprompt-domain-router.sh + 20 curated packs in keywords.yaml
+- [x] Commands/Skills Consolidation v2.8.1 (2026-04-04)
+- [x] EPIC: OpenHarness Agent Architecture Upgrade — ALL 3/3 PHASES (2026-04-03)
+- [x] EPIC: Quality Chain Full Repair — ALL 4/4 PHASES (2026-04-03)
+- [x] HW Domain Pack Phase 1 Research Supplement (2026-04-03)
+- [x] TAD v2.8.0 Self-Evolving Framework Release (2026-04-03)
+- [x] EPIC: TAD v2.7.0 Hook-Native Architecture Rebuild — ALL 6/6 PHASES (2026-03-31)
+- [x] Linear Auto-Sync (2026-03-25) — removed in v2.8.4
+- [x] Autoresearch Optimization Mode (2026-03-25)
+- [x] 4D Protocol Pair Testing Upgrade (2026-03-25)
+- [x] Publish v2.5.0 (2026-03-23)
+- [x] EPIC: Superpowers-Inspired Tactical Upgrades — ALL 6/6 PHASES (2026-03-23)
+- [x] EPIC: Alex Flexibility + Learning + Project Management — ALL 5/5 PHASES (2026-02-16)
+- [x] EPIC: Domain Pack Framework — ALL 3/3 PHASES (2026-04-01)
+
+---
+
 ## Week of 2026-01-27 (v2.1.1 → v2.2.1)
 
 ### Completed Tasks

@@ -8,17 +8,15 @@
 
 ## Themes
 
-### Alex Flexibility & Learning
+### Codex CLI Adaptation
 **Status:** Active
-**Description:** Transform Alex from a single-mode analyst into a multi-mode assistant with routing, teaching, idea management, and strategic overview capabilities.
+**Description:** Enable TAD to run on Codex CLI as a fallback channel when Claude Code quota is exhausted. Static SKILL files + AGENTS.md native role switching.
 
 | Item | Type | Status | Reference |
 |------|------|--------|-----------|
-| Intent Router (multi-mode switching) | Epic Phase 1 | Complete | [Epic](./.tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md) |
-| Learning Opportunity (*learn Socratic teaching) | Epic Phase 2 | Complete | [Epic](./.tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md) |
-| Idea Pool (structured idea storage + browsing) | Epic Phase 3 | Complete | [Epic](./.tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md) |
-| Roadmap (ROADMAP.md + Alex startup loading) | Epic Phase 4 | Complete | [Epic](./.tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md) |
-| Layer Integration (*idea promote + *status) | Epic Phase 5 | Complete | [Epic](./.tad/active/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md) |
+| Feasibility Spike (6-test matrix) | Epic Phase 0 | Complete | [Epic](./.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md) |
+| Build (launchers + static SKILLs) | Epic Phase 1 | Complete | [Epic](./.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md) |
+| Dogfood + AGENTS.md | Epic Phase 2 | Complete | [Epic](./.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md) |
 
 ### Quality System
 **Status:** Active
@@ -31,19 +29,6 @@
 | Cognitive Firewall (human empowerment) | Direction | Active — needs real-feature validation | [config-cognitive.yaml](./.tad/config-cognitive.yaml) |
 | Agent Teams (experimental parallel review) | Direction | Experimental — needs real-task validation | [config-agents.yaml](./.tad/config-agents.yaml) |
 
-### Superpowers-Inspired Tactical Upgrades
-**Status:** Complete (2026-03-23)
-**Description:** Absorb key execution innovations from Superpowers methodology into TAD — session hook optimization, spec compliance separation, anti-rationalization defense, and optional TDD enforcement. Focused on execution quality improvements, not philosophy change. Source: [Research Note](../thoughts/discoveries/2026-03-23-claude-superpowers.md)
-
-| Item | Type | Status | Reference |
-|------|------|--------|-----------|
-| Phase 0: Session Hook Technical Spike | Spike | Complete (pivot) | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
-| Phase 1: Spec Compliance Reviewer (Ralph Loop split) | Feature | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
-| Phase 2: Anti-Rationalization Tables (12 entries) | Feature | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
-| Phase 3: TDD Enforcement Skill (opt-in) | Feature | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
-| Phase 4: Micro-Tasks + Pressure Testing | Enhancement | Complete | [Epic](./.tad/active/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
-| Phase 5: Git Worktree Integration | Enhancement | Complete | [Epic](./.tad/archive/epics/EPIC-20260323-superpowers-tactical-upgrades.md) |
-
 ### Developer Experience
 **Status:** Active
 **Description:** Improve the day-to-day experience of using TAD — design exploration, testing workflows, knowledge management, and onboarding.
@@ -53,14 +38,17 @@
 | Design Playground v2 (standalone command) | Direction | Stable | [/playground](./.claude/skills/playground/SKILL.md) |
 | Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/skills/tad-test-brief/SKILL.md) |
 | Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
-| Multi-Platform Cleanup (Codex/Gemini → specialized tools) | Direction | Complete | [Handoff](./.tad/active/handoffs/HANDOFF-20260217-multi-platform-cleanup.md) |
 | Iterate on Playground based on user feedback | Idea | Pending | — |
-| 3 P2 pair testing improvements | Idea | Pending | NEXT.md |
 
 ---
 
 ## Archive
 
-Completed themes move here with completion date.
+### Alex Flexibility & Learning — Complete (2026-02-16)
+All 5 phases complete: Intent Router, *learn, Idea Pool, Roadmap, Layer Integration. [Epic](./.tad/archive/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md)
 
-<!-- No completed themes yet -->
+### Superpowers-Inspired Tactical Upgrades — Complete (2026-03-23)
+All 6 phases: Session Hook Spike (pivot), Spec Compliance, Anti-Rationalization, TDD, Micro-Tasks, Worktree. [Epic](./.tad/archive/epics/EPIC-20260323-superpowers-tactical-upgrades.md)
+
+### Multi-Platform Cleanup — Complete (2026-02-17)
+Codex/Gemini removed as full TAD runtimes (~1100 lines), repositioned as specialized tools. Superseded by Codex CLI Adaptation (v2.9.0).
