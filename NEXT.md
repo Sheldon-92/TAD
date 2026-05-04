@@ -6,6 +6,17 @@
   - Phase 0 ✅ + Phase 1 ✅ 在此完成；Phase 2+ 在 ~/tad-method-dev/ 继续
   - 产品代码: ~/tad-method/ | 开发管理: ~/tad-method-dev/
 
+- [x] **EPIC: NotebookLM Research Director — ALL 4/4 PHASES COMPLETE (2026-05-04)** — Epic archived
+  - Phase 0: spike 24-row | Phase 1: SKILL 14 cmd | Phase 2: Director+19 cmd | Phase 3: E2E 6/6 PASS
+  - Archived: `.tad/archive/epics/EPIC-20260504-notebooklm-research-director.md`
+
+- [ ] **EPIC: Goal-Driven Research Director** — 业务目标驱动自主研究 (NEW)
+  - Epic: `.tad/active/epics/EPIC-20260504-goal-driven-research.md`
+  - ⬚ Phase 0: Cross-Project Sync Wizard (方案 C — 解决 29 vs 1 REGISTRY 差距)
+  - ✅ Phase 1: Business Objective Definition (OBJECTIVES.md OKR) — DONE 2026-05-04 (commit cc2ceff)
+  - ⬚ Phase 2: Autonomous Research Strategy (目标→研究问题→自主发起)
+  - ⬚ Phase 3: Research-Decision Loop (追踪 + --caller flag)
+
 - [ ] **EPIC: Cross-Model Orchestration** — Phase 0/0b/1 ✅ DONE, Phase 2 (validation) planned
   - Epic: `.tad/active/epics/EPIC-20260503-cross-model-orchestration.md`
   - ✅ Phase 0: Spike A SKIP | Spike B DEFER | Spike C INTEGRATE
@@ -22,6 +33,11 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Cross-Model CLI Invocation Knowledge (2026-05-04)** — Gate 4 PASS
+  - Alex/Blake now natively know how to invoke Codex CLI + Gemini CLI on user request
+  - 3 files: guide (170L) + Alex SKILL section + Blake SKILL section
+  - Commit: `584aa39` | *sync to distribute to all projects
 
 - [x] **Spike: Cross-Model Orchestration Feasibility (2026-05-03)** — Gate 4 PASS, Verdict: GO (3/3)
   - Gemini CLI + Codex CLI both callable from Claude Code sub-agents
@@ -53,6 +69,7 @@
 
 ## Ideas
 
+- [x] IDEA-20260504-goal-driven-research-director: Goal-Driven Research Director — (promoted to Epic)
 - [ ] IDEA-20260503-cross-model-orchestration: Cross-Model Orchestration (sub-agent Codex/Gemini for review + research)
 - [ ] IDEA-20260502-tad-universal-method: TAD Universal Method (extract methodology for non-devs)
 - [ ] IDEA-20260427-domain-pack-taxonomy-reorg: Domain Pack Taxonomy Reorg
