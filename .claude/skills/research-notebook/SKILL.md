@@ -1,6 +1,6 @@
 ---
 name: research-notebook
-description: TAD Research Notebook Manager — NotebookLM multi-source knowledge base for Alex *discuss and research workflows. 14 sub-commands for full research lifecycle management.
+description: TAD Research Notebook Manager — NotebookLM multi-source knowledge base for Alex *discuss and research workflows. 19 sub-commands for full research lifecycle management.
 ---
 
 # /research-notebook Command (NotebookLM Integration)

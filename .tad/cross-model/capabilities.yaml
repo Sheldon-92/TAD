@@ -36,7 +36,7 @@ capabilities:
     description: "Multi-source cross-media deep research: automated source discovery, cross-source reasoning, report generation, persona configuration, content-staleness audit"
     verified: true
     spike_ref: "SPIKE-20260503-notebooklm/SPIKE-REPORT.md, SPIKE-20260504-notebooklm-capabilities/SPIKE-REPORT.md"
-    skill_ref: "*research-notebook (14 commands: create, add, ask, list, sync, curate, archive, use, research, report, guide, configure, topics, ingest)"
+    skill_ref: "*research-notebook (19 commands: create, add, ask, list, sync, curate, archive, use, research, report, guide, configure, topics, ingest, fulltext, language, consolidate, quiz, flashcards)"
     use_when: "Research-intensive topics needing cross-source synthesis + video content + citations; auto source discovery (research cmd); report generation (report cmd)"
     dont_use_when: "Quick fact lookup (use WebSearch) / real-time data (NotebookLM does not fetch live web)"
     fallback: "WebSearch ×5-8 (Claude iterative search)"
