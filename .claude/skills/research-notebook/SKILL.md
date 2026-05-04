@@ -123,12 +123,13 @@ Step 2: Activate notebook
 Step 3: Execute query (stale conversation fallback)
   Layer 1 (normal):
     → ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>"
-    → Measure wall-clock time
     → If exit 0 and output non-empty → proceed to Step 4
-    → If exit != 0 AND stderr matches "timeout|stale|conversation.*not found|expired":
-  Layer 2 (stale conversation retry — only for stale-specific failures):
+    → If exit != 0:
+  Layer 2 (force fresh conversation — retry on any non-zero exit):
     → ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>" -c 00000000-0000-0000-0000-000000000000
-    → If still fails or exit != 0 for non-stale reason: "⚠️ Query failed. Check auth or notebook state."
+    → If exit 0 → proceed to Step 4
+    → If still fails: "⚠️ Query failed. Check auth or notebook state."
+  (Note: --new flag does NOT exist in 0.3.4; -c 00000000... is the only fresh-conversation mechanism)
 
 Step 4: Return results
   → Output query result to user
@@ -153,11 +154,12 @@ List all registered notebooks + status + source count. Runs lightweight sync.
 ```
 Step 1: Read REGISTRY.yaml
 
-Step 2: Lightweight sync (single cloud call — P0-3 fix)
+Step 2: Lightweight sync (single cloud call — do NOT call per notebook)
   → cloud_json=$(~/.tad-notebooklm-venv/bin/notebooklm list --json)
   → For each REGISTRY active/dormant notebook:
-    → If notebook_id not found in cloud_json → mark with ⚠️ "cloud-deleted"
-  (Note: notebooklm list returns ALL notebooks in one call — do NOT call per notebook)
+    → Check membership: echo "$cloud_json" | jq -e --arg id "$notebook_id" '.notebooks[] | select(.id == $id)' >/dev/null
+    → If not found (jq exit 1) → mark with ⚠️ "cloud-deleted"
+  (cloud_json schema: {"notebooks": [{"id": "<uuid>", "title": "...", ...}]})
 
 Step 3: Apply lifecycle rules (from config-workflow.yaml research_notebook section)
   → active: last_queried within dormant_after_days → show normally
@@ -316,11 +318,10 @@ Step 2: Execute
   → If fast mode:
     → ~/.tad-notebooklm-venv/bin/notebooklm source add-research "{topic}" --mode fast --import-all -n <id>
   → If deep mode:
-    → ~/.tad-notebooklm-venv/bin/notebooklm source add-research "{topic}" --mode deep --import-all --no-wait -n <id>
-    → Portable timeout for research wait (max 600s):
-      timeout_cmd="timeout"; command -v gtimeout >/dev/null && timeout_cmd="gtimeout"
-      $timeout_cmd 600 ~/.tad-notebooklm-venv/bin/notebooklm research wait -n <id>
-    → If exit code 124 (timeout): "⚠️ Deep research still running after 10min. Sources may be partially imported. Check: *research-notebook list" + EXIT
+    → ~/.tad-notebooklm-venv/bin/notebooklm source add-research "{topic}" --mode deep --no-wait -n <id>
+    → ~/.tad-notebooklm-venv/bin/notebooklm research wait -n <id> --timeout 600 --import-all
+    → (--timeout 600: native CLI flag, max 10min. --import-all: required to import sources after wait)
+    → If exit != 0 (including timeout): "⚠️ Deep research timed out or failed. Sources may be partially imported. Check: *research-notebook list" + EXIT
   → Capture output (source count + titles)
   → ⚠️ ERROR HANDLING:
     - If exit code != 0 (non-timeout): "❌ Research failed: {stderr}" + EXIT (do NOT proceed to Step 3)
@@ -356,11 +357,10 @@ Generate a structured report + download as local markdown.
 Step 0: Resolve target notebook (same as ask command)
 
 Step 1: Validate download capability (first-time only per session)
-  → ~/.tad-notebooklm-venv/bin/notebooklm download report --help 2>&1 | grep -q "dry-run"
-  → If grep matches → CLI supports report download, proceed
-  → If not → "⚠️ download report not available in this CLI version. Update: bash .tad/cross-model/setup-notebooklm.sh" + EXIT
-  → Cache validation result: skip this check on subsequent *report calls in same session
-  (Note: --dry-run validates CLI capability, not artifact presence)
+  → If preflight version check passed (0.3.4+), `download report` is available — proceed directly
+  → Preflight already ensures CLI capability; no additional check needed
+  → Cache validation result: skip this step entirely on subsequent *report calls in same session
+  (Note: `download report` ships in all notebooklm-py 0.3.4+ builds)
 
 Step 2: Generate
   → ~/.tad-notebooklm-venv/bin/notebooklm generate report "{description}" -n <id> --wait
@@ -425,16 +425,26 @@ Step 1: If no flags → show current config + AskUserQuestion for what to change
     - "Reset to default"
     - "Cancel"
 
-Step 2: Execute (mutually exclusive cases — check in order)
-  Case A — Reset (selected from Step 1 menu OR --mode default passed):
+Step 1b: Resolve action from flags OR menu
+  → After flags/menu, resolve to a tuple: (persona_action, mode_action)
+    persona_action: one of {none, set:"<text>", reset}
+    mode_action: one of {none, set:<mode>, reset}
+  → If user chose "Reset to default" from menu: persona_action=reset, mode_action=reset
+  → If user chose "Set custom persona" from menu: prompt for text → persona_action=set:"<text>", mode_action=none
+  → If user chose "Use preset mode" from menu: prompt for mode → persona_action=none, mode_action=set:<mode>
+  → If --persona flag passed: persona_action=set:"<text>"
+  → If --mode flag passed: mode_action=set:<mode>
+
+Step 2: Execute based on resolved action tuple
+  Case A — Reset (persona_action=reset AND/OR mode_action=reset):
     → ~/.tad-notebooklm-venv/bin/notebooklm configure --mode default --persona "" -n <id>
-  Case B — Both --persona AND --mode flags specified simultaneously:
+    (Use both flags together — required to reset both axes per spike T2 evidence)
+  Case B — Set both (persona_action=set AND mode_action=set):
     → ~/.tad-notebooklm-venv/bin/notebooklm configure --persona "{text}" --mode {mode} -n <id>
-  Case C — Persona only (--persona specified, no --mode):
+  Case C — Persona only (persona_action=set, mode_action=none):
     → ~/.tad-notebooklm-venv/bin/notebooklm configure --persona "{text}" -n <id>
-  Case D — Mode only (--mode specified, no --persona):
+  Case D — Mode only (persona_action=none, mode_action=set):
     → ~/.tad-notebooklm-venv/bin/notebooklm configure --mode {mode} -n <id>
-  (Note: Reset uses BOTH --mode default AND --persona "" — required to reset both axes)
 
 Step 3: Confirm
   → "✅ Notebook configured."
@@ -458,10 +468,10 @@ Step 1: Fetch summary + topics (stale conversation fallback)
   Layer 1 (normal):
     → ~/.tad-notebooklm-venv/bin/notebooklm summary --topics -n <id>
     → If exit 0 and output non-empty → proceed to Step 2
-    → If exit != 0 AND stderr matches "timeout|stale|conversation.*not found|expired":
-  Layer 2 (retry with fresh conversation — stale-specific failures only):
+    → If exit != 0:
+  Layer 2 (force fresh conversation — retry on any non-zero exit):
     → ~/.tad-notebooklm-venv/bin/notebooklm summary --topics -n <id> -c 00000000-0000-0000-0000-000000000000
-    → If still fails or non-stale error: report error to user
+    → If still fails: report error to user
 
 Step 2: Display
   → Output formatted summary paragraph
@@ -499,14 +509,15 @@ Step 3: Execute
   → ~/.tad-notebooklm-venv/bin/notebooklm source add "{file_path}" -n <id>
   → If exit code != 0: "❌ source add failed: {stderr}" + EXIT
 
-Step 4: (Optional) Verify ingestion — only if --verify flag passed
-  → Default (no --verify): skip. source add success implies ingestion (~30s indexing).
-  → If --verify flag present:
-    → Wait 30s
-    → ~/.tad-notebooklm-venv/bin/notebooklm ask "summarize the content from {filename}" -n <id> -c 00000000-0000-0000-0000-000000000000
-    → If answer references file content: "✅ Ingestion verified — content is queryable."
-    → If answer doesn't reference content: "⚠️ Content added but not yet indexed. Try asking again in ~60s."
-      (This is a transient state — content IS added, may need more time to index)
+Step 4: Verify ingestion (default: ON; skip with --no-verify)
+  → Wait 30s for indexing
+  → ~/.tad-notebooklm-venv/bin/notebooklm ask "summarize the content from {filename}" -n <id> -c 00000000-0000-0000-0000-000000000000
+  → If answer references file content: "✅ Ingestion verified — content is queryable."
+  → If answer doesn't reference content:
+    → Wait 60s, retry once more (indexing can be variable, up to ~90s)
+    → If still no reference: "⚠️ Content added but not yet appearing in answers. It is indexed — try *ask again in ~60s."
+    (Content IS added regardless of verification result; verification is a confidence check)
+  → If --no-verify flag: skip Step 4 entirely (use when batch-ingesting multiple files)
 
 Step 5: Update REGISTRY
   → Increment source_count, add source entry (filename, type=file, added date)
