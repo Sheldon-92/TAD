@@ -1620,7 +1620,7 @@ adaptive_complexity_protocol:
       error_blocking: false
       user_interaction: conditional
       skip_conditions:
-        - "User chose 'Skip TAD' in step2 — proceed directly without GitHub check"
+        - "User chose 'Skip TAD' or 'Light TAD' in step2 — proceed directly without GitHub check"
         - ".tad/github-registry/REGISTRY.yaml not found → skip silently"
       failure_handling: |
         REGISTRY.yaml malformed → log warning, skip step entirely (do NOT clear notebook_id)
@@ -1641,14 +1641,20 @@ adaptive_complexity_protocol:
               → If entry not found → skip, clear notebook_id (stale reference)
               → If status == "active" or "dormant" → proceed to refresh
            b. Auto-refresh notebook (変更 A caps: ≤10 sources checked, ≤5 refreshed, 30s timeout)
-           c. Output: "📦 Found research notebook for '{domain}' ({source_count} sources, refreshed). Key findings available during design."
+           b2. After refresh: update last_refreshed for this notebook in .tad/research-notebooks/REGISTRY.yaml:
+               yq -i '(.notebooks[] | select(.id == "<notebook_id>") | .last_refreshed) = "<YYYY-MM-DD>"' \
+                 .tad/research-notebooks/REGISTRY.yaml
+               (prevents *ask Step 2b from double-refreshing in the same session)
+           c. Extract source_count from the research-notebooks REGISTRY entry found in step 4a.
+              Output: "📦 Found research notebook for '{domain}' ({source_count} sources, refreshed). Key findings available during design."
            d. No AskUserQuestion — passively available for Socratic + design
 
         5. If match found AND no notebook_id (no notebook yet):
            → AskUserQuestion: "'{domain}' 领域有 {N} 个 awesome-list。要先研究参考项目再开始设计吗？"
              Options: "研究一下 (Recommended)" / "跳过，直接设计"
            → "研究一下" → delegate to *research-github explore <slug> + notebook <slug>
-             → After delegation completes: announce "Research complete. 回到你的任务。"
+             → If user cancels notebook creation mid-delegation → announce "操作已取消。进入设计阶段。" and proceed to step3
+             → After successful delegation: announce "Research complete. 回到你的任务。"
            → "跳过" → continue
         6. If no match → skip silently
 

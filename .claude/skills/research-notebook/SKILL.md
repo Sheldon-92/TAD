@@ -136,14 +136,16 @@ Step 2b (NEW): Auto-refresh stale sources (with latency cap)
   → Cap: check at most 10 sources, refresh at most 5 stale ones
   → Wall-clock timeout: record start_ts=$(date +%s) before loop
     abort loop when $(($(date +%s) - start_ts)) -ge 30 (30s ceiling)
-  → For each web source (up to cap, while elapsed < 30s):
-      # Note: exit 0 = stale (inverted convention, shell-if-compatible)
-      if ~/.tad-notebooklm-venv/bin/notebooklm source stale <source_id> -n <notebook_id>; then
-        ~/.tad-notebooklm-venv/bin/notebooklm source refresh <source_id> -n <notebook_id>
-      fi
-  → On any CLI failure (auth expired, network error) → skip silently, proceed to ask
-  → After refresh loop completes: update last_refreshed field in .tad/research-notebooks/REGISTRY.yaml
-    for this notebook entry (set to today's date YYYY-MM-DD)
+  → Wrap each CLI call with `timeout 10` to protect against hung subprocess:
+    if timeout 10 ~/.tad-notebooklm-venv/bin/notebooklm source stale <source_id> -n <notebook_id>; then
+      timeout 10 ~/.tad-notebooklm-venv/bin/notebooklm source refresh <source_id> -n <notebook_id>
+    fi
+    (timeout 10: exit 124 on hang → treat as failure → continue loop)
+  → On any CLI failure or timeout → skip silently, proceed to ask
+  → After refresh loop completes: update last_refreshed in .tad/research-notebooks/REGISTRY.yaml:
+      yq -i '(.notebooks[] | select(.id == "<notebook_id>") | .last_refreshed) = "<YYYY-MM-DD>"' \
+        .tad/research-notebooks/REGISTRY.yaml
+    Fallback if yq unavailable: skip the write and log "last_refreshed not updated (yq absent)"
 
 Step 2.5 (NEW): Source targeting (optional)
   → If user specifies --source <id>:
