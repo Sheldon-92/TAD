@@ -1,0 +1,2 @@
+✓ Source is fresh
+stale_exit=1

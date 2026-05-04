@@ -1,0 +1,8 @@
+Note created
+Note(
+    id='8c97894e-9500-4508-b532-980326e9509e',
+    notebook_id='c4f2aae5-baed-4111-9367-1674b64368cf',
+    title='Spike Finding',
+    content='从 spike 测试发现：generate report 能力可用',
+    created_at=None
+)

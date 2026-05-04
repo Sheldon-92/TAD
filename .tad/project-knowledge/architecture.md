@@ -724,3 +724,24 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: After any hook output-mechanism change: (a) enumerate all test assertion types in the test harness; (b) verify each type still exercises the code under test (not just returns the expected value trivially); (c) specifically check "skip/no-op/empty" assertions — these are the highest risk for silent no-op conversion.
 - **Grounded in**: .tad/evidence/spikes/SPIKE-20260503-phase0 code-reviewer Round 2 P0-1, commit 95b154b diff, .tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh
 - **Revalidated**: 2026-05-03
+
+### notebooklm-py 0.1.1 Deprecated — Minimum 0.3.4 Required — 2026-05-04
+- **Context**: SPIKE-20260504 tested 13 NotebookLM CLI commands; all AI-dependent commands failed on 0.1.1 with "No result found for RPC ID". Upgrading to 0.3.4 (released 2026-03-12, 2 months old) resolved all failures.
+- **Discovery**: notebooklm-py 0.1.1's RPC API endpoints are deprecated server-side as of ~2026-Q2. Commands affected: `ask`, `summary`, `source list`, `source guide`, `configure`, `generate report`, `artifact suggestions`. Only metadata/list commands (notebook list, note list when empty, artifact list when empty) appeared to work — likely because those return empty lists rather than making real AI API calls. The 2026-05-03 "INTEGRATE Verdict" entry was validated against 0.1.1 when only `ask` was used and it worked — that timing was after 0.3.4 had already been available for 2 months but before the API deprecation took full effect. **`setup-notebooklm.sh` still pins 0.1.1 and must be updated to 0.3.4.**
+- **Action**: (a) Pin `notebooklm-py[browser]==0.3.4` in setup-notebooklm.sh (existing regression); (b) Add SKILL preflight version check: `notebooklm --version` compared against minimum 0.3.4; (c) If version check fails, error message: "notebooklm-py < 0.3.4 has broken AI endpoints — re-run setup-notebooklm.sh"; (d) 0.3.4 removed `--new` flag from `ask` (use `-c` flag or omit for default behavior).
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260504-notebooklm-capabilities/SPIKE-REPORT.md §E1, backend-architect review P0-1
+- **Revalidated**: 2026-05-04
+
+### NotebookLM CLI Capability Matrix — 2026-05-04
+- **Context**: SPIKE-20260504 tested 13 CLI commands (T1-T13) on real notebooks. This supersedes the 2026-05-03 "INTEGRATE Verdict" entry's limited command set (which only tested ask/source add).
+- **Discovery**: Full capability map with 0.3.4 + correct notebook ID:
+  1. **GO (immediate value)**: `summary --topics` (3s), `source guide` (1-2s + JSON), `source add-research --mode fast` (1s, 10 sources), `source add-research --mode deep` (214s, 64 sources + AI synthesis report), `configure --persona/--mode` (1s, both work + reset confirmed), `artifact suggestions` (13-18s + JSON schema with `prompt` field)
+  2. **GO but content not CLI-accessible**: `generate report` (28-84s → artifact metadata only, not content), `generate data-table` (28s → artifact), `generate mind-map` (1s → NOTE, not artifact — unique behavior)
+  3. **Note CRUD**: `note create/list/get/save(--content)/delete(--yes)` all GO; **but notes do NOT appear in `ask` context** — notes are annotations only, not knowledge enrichment
+  4. **source stale**: exit 0 = stale, exit 1 = fresh (shell script convention, GO)
+  5. **`source add-research --mode deep` guardrails needed**: 226s blocking + permanently adds 64 sources; NOT idempotent (re-running doubles sources). Requires AskUserQuestion confirmation in SKILL.
+- **Stale conversation workaround**: `-c 00000000-0000-0000-0000-000000000000` (all-zeros UUID) consistently works as "force new conversation" signal when old conversation times out (31s). Mechanism is undocumented server behavior — needs two-layer fallback in production SKILL (try without `-c` first, fallback to zeros UUID on timeout, log workaround trigger).
+- **Artifact content gap**: `generate report/data-table` creates artifact but `artifact get` returns metadata only (title/type/status/created). Content only accessible in web UI or via `artifact export --type docs` (untested in this spike — needs T13 verification before shipping `generate report` in SKILL).
+- **Action**: Phase 1 *research-notebook SKILL v2 priority order: (1) `source add-research --mode fast --import-all`, (2) `summary --topics`, (3) `source guide`, (4) `configure --persona` — these have clear value. Defer `generate report` until T13 (artifact export) tested. Drop `note create` from Phase 1 (knowledge loop NEGATIVE). Require `--yes` flag for any `delete` command in non-interactive SKILL context.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260504-notebooklm-capabilities/SPIKE-REPORT.md, code-reviewer + backend-architect reviews
+- **Revalidated**: 2026-05-04

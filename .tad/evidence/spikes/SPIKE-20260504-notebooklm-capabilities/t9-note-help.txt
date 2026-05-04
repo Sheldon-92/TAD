@@ -1,0 +1,37 @@
+Usage: notebooklm note [OPTIONS] COMMAND [ARGS]...
+
+  Note management commands.
+
+  Commands:
+    list    List all notes
+    create  Create a new note
+    get     Get note content
+    save    Update note content
+    delete  Delete a note
+
+  Partial ID Support:
+    NOTE_ID arguments support partial matching. Instead of typing the full
+    UUID, you can use a prefix (e.g., 'abc' matches 'abc123def456...').
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  create  Create a new note.
+  delete  Delete a note.
+  get     Get note content.
+  list    List all notes in a notebook.
+  rename  Rename a note.
+  save    Update note content.
+Usage: notebooklm note save [OPTIONS] NOTE_ID
+
+  Update note content.
+
+  NOTE_ID can be a full UUID or a partial prefix (e.g., 'abc' matches
+  'abc123...').
+
+Options:
+  -n, --notebook TEXT  Notebook ID (uses current if not set)
+  --title TEXT         New title
+  --content TEXT       New content
+  --help               Show this message and exit.

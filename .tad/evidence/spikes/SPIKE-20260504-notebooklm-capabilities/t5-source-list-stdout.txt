@@ -1,0 +1,87 @@
+{
+  "notebook_id": "c4f2aae5-baed-4111-9367-1674b64368cf",
+  "notebook_title": "True Crime \u4e0e\u6050\u6016\u64ad\u5ba2 - \u5185\u5bb9\u5236\u4f5c\u624b\u6cd5\u7814\u7a76",
+  "sources": [
+    {
+      "index": 1,
+      "id": "32faeffa-2982-407b-80b1-adbda361be52",
+      "title": "19 of the Best True Crime Podcasts to Listen to in 2026 | Podcast.co",
+      "type": "SourceType.WEB_PAGE",
+      "url": "https://blog.podcast.co/inspire/best-true-crime-podcasts",
+      "status": "ready",
+      "status_id": 2,
+      "created_at": "2026-05-03T21:13:21"
+    },
+    {
+      "index": 2,
+      "id": "01fdd416-4e66-4aaf-beb7-603aa9703ddc",
+      "title": "20 Best True Crime Podcasts To Sink Your Teeth Into",
+      "type": "SourceType.WEB_PAGE",
+      "url": "https://saspod.com/blog/post/best-true-crime-podcasts",
+      "status": "ready",
+      "status_id": 2,
+      "created_at": "2026-05-03T21:13:06"
+    },
+    {
+      "index": 3,
+      "id": "beb9fe0c-48ed-4a1b-917f-6c2726ee2c46",
+      "title": "Researching and Writing Easy-to-Understand True Crime | True Crime Research Training",
+      "type": "SourceType.WEB_PAGE",
+      "url": "https://truecrimepodcasttraining.com/researching-and-writing-easy-to-understand-true-crime/",
+      "status": "ready",
+      "status_id": 2,
+      "created_at": "2026-05-03T21:13:35"
+    },
+    {
+      "index": 4,
+      "id": "1214af85-4bcc-40ca-9bca-9437e9d55048",
+      "title": "Serial Storytelling Podcast Planning: Managing Multi-Episode Narratives - PodRewind Blog",
+      "type": "SourceType.WEB_PAGE",
+      "url": "https://podrewind.com/blog/serial-storytelling-podcast-planning",
+      "status": "ready",
+      "status_id": 2,
+      "created_at": "2026-05-03T21:12:34"
+    },
+    {
+      "index": 5,
+      "id": "9ea0a586-328f-426b-a9fe-8b53f1c44595",
+      "title": "how to write true crime podcast - Podcasting Business Guides - Call For Content",
+      "type": "SourceType.WEB_PAGE",
+      "url": "https://callforcontent.com/how-to-write-true-crime-podcast/",
+      "status": "ready",
+      "status_id": 2,
+      "created_at": "2026-05-03T21:12:48"
+    },
+    {
+      "index": 6,
+      "id": "f1049b4d-80ea-47a4-a327-2530cba1c098",
+      "title": "https://writeatlas.com/how-to-script-true-crime-podcasts/",
+      "type": "SourceType.WEB_PAGE",
+      "url": null,
+      "status": "error",
+      "status_id": 3,
+      "created_at": "2026-05-03T21:12:24"
+    },
+    {
+      "index": 7,
+      "id": "18912057-1c28-4abb-8fb4-a28d408bb290",
+      "title": "https://www.crimecastbeginner.live/creating-quality-content-scriptwriting-tips",
+      "type": "SourceType.WEB_PAGE",
+      "url": null,
+      "status": "error",
+      "status_id": 3,
+      "created_at": "2026-05-03T21:12:16"
+    },
+    {
+      "index": 8,
+      "id": "3b5e70a0-9b90-4561-a3c9-f5b7b8d7369b",
+      "title": "https://www.oreateai.com/blog/the-impact-of-serial-how-a-podcast-changed-the-narrative-around-true-crime/2ad021c28849bad5370ddd36cf5f5d08",
+      "type": "SourceType.WEB_PAGE",
+      "url": null,
+      "status": "error",
+      "status_id": 3,
+      "created_at": "2026-05-03T21:12:58"
+    }
+  ],
+  "count": 8
+}

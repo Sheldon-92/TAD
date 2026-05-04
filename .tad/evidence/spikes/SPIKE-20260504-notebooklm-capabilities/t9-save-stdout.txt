@@ -1,0 +1,5 @@
+Usage: notebooklm note save [OPTIONS] NOTE_ID
+Try 'notebooklm note save --help' for help.
+
+Error: Got unexpected extra argument (更新内容：确认 note 可被 ask 查询引用)
+note_save_exit=2
