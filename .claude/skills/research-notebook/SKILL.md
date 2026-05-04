@@ -121,6 +121,30 @@ Step 1: Resolve target notebook
 Step 2: Activate notebook
   → ~/.tad-notebooklm-venv/bin/notebooklm use <notebook_id>
 
+Step 2b (NEW): Auto-refresh stale sources (with latency cap)
+  Field location: `last_refreshed` lives in .tad/research-notebooks/REGISTRY.yaml,
+                  per-notebook entry (sibling to last_queried and status fields).
+                  (last_refreshed tracks SOURCE REFRESH events; last_queried tracks ASK events — distinct)
+
+  Guard: Check .tad/research-notebooks/REGISTRY.yaml for this notebook's last_refreshed field.
+         If last_refreshed is set AND was updated < 24h ago → SKIP entire Step 2b.
+         If last_refreshed field is ABSENT → treat as "needs refresh" (bootstrap path for new notebooks).
+
+  If guard passes (refresh needed):
+  → ~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <notebook_id>
+  → Filter: only sources where type == "SourceType.WEB_PAGE"
+  → Cap: check at most 10 sources, refresh at most 5 stale ones
+  → Wall-clock timeout: record start_ts=$(date +%s) before loop
+    abort loop when $(($(date +%s) - start_ts)) -ge 30 (30s ceiling)
+  → For each web source (up to cap, while elapsed < 30s):
+      # Note: exit 0 = stale (inverted convention, shell-if-compatible)
+      if ~/.tad-notebooklm-venv/bin/notebooklm source stale <source_id> -n <notebook_id>; then
+        ~/.tad-notebooklm-venv/bin/notebooklm source refresh <source_id> -n <notebook_id>
+      fi
+  → On any CLI failure (auth expired, network error) → skip silently, proceed to ask
+  → After refresh loop completes: update last_refreshed field in .tad/research-notebooks/REGISTRY.yaml
+    for this notebook entry (set to today's date YYYY-MM-DD)
+
 Step 2.5 (NEW): Source targeting (optional)
   → If user specifies --source <id>:
     → Build source flags: --source <id1> [--source <id2> ...]

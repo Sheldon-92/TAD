@@ -1614,6 +1614,46 @@ adaptive_complexity_protocol:
         intermediate_validation: "needs testing between stages"
         progressive_change: "migration, refactoring, gradual rollout"
 
+    step2c_github:
+      name: "GitHub Registry Check"
+      trigger: "User confirmed process depth (step2 done), before Socratic Inquiry starts"
+      error_blocking: false
+      user_interaction: conditional
+      skip_conditions:
+        - "User chose 'Skip TAD' in step2 — proceed directly without GitHub check"
+        - ".tad/github-registry/REGISTRY.yaml not found → skip silently"
+      failure_handling: |
+        REGISTRY.yaml malformed → log warning, skip step entirely (do NOT clear notebook_id)
+        Cross-reg notebook_id stale → write cleared value back to github-registry REGISTRY
+        notebooklm CLI unavailable → skip refresh silently, still announce notebook exists
+        notebooklm auth expired → skip refresh silently, announce "results may be slightly stale"
+        Mutation policy: use Edit tool on REGISTRY.yaml; ONLY clear notebook_id and last_researched
+                         fields for the matched domain; preserve all other fields and YAML comments
+      action: |
+        1. Read .tad/github-registry/REGISTRY.yaml (if not found → skip silently)
+        2. Extract keywords from user's task description (LLM semantic match against domain name/slug)
+        3. Match against domain names/slugs in REGISTRY
+
+        4. If match found AND domain has notebook_id (notebook exists):
+           a. Cross-check: Read .tad/research-notebooks/REGISTRY.yaml
+              → Find entry by notebook_id
+              → If status == "archived" → skip, clear notebook_id in github-registry REGISTRY
+              → If entry not found → skip, clear notebook_id (stale reference)
+              → If status == "active" or "dormant" → proceed to refresh
+           b. Auto-refresh notebook (変更 A caps: ≤10 sources checked, ≤5 refreshed, 30s timeout)
+           c. Output: "📦 Found research notebook for '{domain}' ({source_count} sources, refreshed). Key findings available during design."
+           d. No AskUserQuestion — passively available for Socratic + design
+
+        5. If match found AND no notebook_id (no notebook yet):
+           → AskUserQuestion: "'{domain}' 领域有 {N} 个 awesome-list。要先研究参考项目再开始设计吗？"
+             Options: "研究一下 (Recommended)" / "跳过，直接设计"
+           → "研究一下" → delegate to *research-github explore <slug> + notebook <slug>
+             → After delegation completes: announce "Research complete. 回到你的任务。"
+           → "跳过" → continue
+        6. If no match → skip silently
+
+        → ALWAYS proceed to step3 (Socratic Inquiry) after this step completes
+
     step3:
       name: "Proceed"
       action: |
@@ -1973,6 +2013,51 @@ design_protocol:
         - "User chose 'Skip Domain Packs' in step1_5 confirmation above"
         - "No matching Domain Pack found (e.g., novel domain not covered)"
         - "Light TAD process depth (keep lightweight)"
+
+      research_priority_rule:
+        scope: "design_protocol.step1_5 ONLY — does NOT apply to *discuss domain_pack_awareness"
+        trigger: "Domain Pack loaded AND same domain has a refreshed Research Notebook"
+
+        conflict_definition: |
+          "Conflict" means: Research finding EXPLICITLY recommends an approach that
+          Domain Pack criteria EXPLICITLY prohibits or contradicts.
+          ⚠️ Silence from research is NOT conflict. If research doesn't mention a topic,
+          Domain Pack criteria applies by default.
+
+        non_overridable_criteria: |
+          The following Domain Pack criteria types are NON-OVERRIDABLE regardless of research:
+          - Security (auth, encryption, input validation, XSS/SQLi prevention)
+          - Data integrity (backup, transaction, consistency)
+          - Compliance (privacy, GDPR, licensing)
+          - Safety (rate limiting, circuit breakers, fail-safe defaults)
+          Even if research shows "nobody does this" — these standards hold.
+
+        feedback_entry_schema: |
+          Exact YAML structure for each feedback entry:
+          - date: "YYYY-MM-DD"
+            domain_pack: "<pack-name>"        # e.g., "web-frontend"
+            criteria: "<verbatim quality_criteria text from pack>"
+            research_finding: "<concise summary of what research recommends instead>"
+            source_notebook: "<notebook_id from research-notebooks/REGISTRY.yaml>"
+            conflict_type: "explicit_recommendation"  # one of: explicit_recommendation, alternative_approach, deprecated_practice
+            handoff_ref: "HANDOFF-YYYYMMDD-{slug}.md"
+
+        action: |
+          When citing Domain Pack quality_criteria in design:
+          1. Check if there's a refreshed Research Notebook for same domain
+          2. If yes AND explicit conflict found (per conflict_definition above):
+             a. Check: is the conflicting criterion in non_overridable_criteria?
+                → YES: follow Domain Pack, ignore research on this point
+                → NO: follow research (latest practice wins)
+             b. Append entry to .tad/github-registry/domain-pack-feedback.yaml
+                using feedback_entry_schema above. Use yq if available:
+                  yq -i '.feedback += [{date: "YYYY-MM-DD", domain_pack: "...", ...}]' \
+                    .tad/github-registry/domain-pack-feedback.yaml
+                If yq unavailable, line-by-line append (NEVER read-modify-rewrite the whole file):
+                  echo "  - date: \"$(date -u +%Y-%m-%d)\"" >> .tad/github-registry/domain-pack-feedback.yaml
+                  echo "    domain_pack: \"...\"" >> ...
+             c. Note in handoff §11 Decision Summary: "Research overrides Domain Pack: {details}"
+          3. If no conflict: Domain Pack criteria apply normally
 
     step2:
       name: "Frontend Detection & Playground Reference"

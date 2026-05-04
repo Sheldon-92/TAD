@@ -21,8 +21,8 @@
 
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
-| 1 | GitHub Registry Foundation | 🔄 Active | HANDOFF-20260504-github-registry-phase1.md | YAML 注册表 + `*research-github` 命令 + 50+ awesome-list 数据 |
-| 2 | Alex Workflow Integration | ⬚ Planned | — | *analyze/*design 自动推荐 + 一键建 notebook |
+| 1 | GitHub Registry Foundation | ✅ Done | [HANDOFF](../../archive/handoffs/HANDOFF-20260504-github-registry-phase1.md) | YAML 注册表 + `*research-github` 命令 + 50+ awesome-list 数据 |
+| 2 | Alex Workflow Integration | 🔄 Active | [HANDOFF](../../active/handoffs/HANDOFF-20260504-github-integration-phase2.md) | *analyze/*design 自动推荐 + 一键建 notebook |
 | 3 | Automation Pipeline | ⬚ Planned | — | 定期刷新 + 新 repo 自动发现 + trending 检测 |
 
 ### Phase Dependencies
@@ -58,8 +58,13 @@ Experiment results validating the technical approach:
 - NotebookLM source limits per notebook — need smart source selection
 - NotebookLM query latency (23-43s) — not for real-time use, research-phase only
 
+### Phase 1 Completion (2026-05-04)
+- Delivered: 24 domains, 50 awesome-lists, 6 commands, entry template
+- Blake discoveries: `gh api` snake_case vs `gh search` camelCase; `git/trees?recursive=1` for file enumeration
+- Carry-forward: entry count at 50 floor; `auto_query_keywords` deferred to Phase 2
+
 ### Next Phase Scope
-Phase 1: Build the GitHub Awesome Registry foundation — YAML schema, CLI commands, initial data population.
+Phase 2: Alex *analyze/*design auto-recommends repos from registry. When user describes a task, Alex matches domain → queries registry → suggests top repos → one-click creates notebook.
 
 ---
 

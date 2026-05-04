@@ -60,7 +60,8 @@ notebooks:
 #   topic: "<human-readable topic>"
 #   created: "<YYYY-MM-DD>"
 #   status: active
-#   last_queried: "<YYYY-MM-DD>"
+#   last_queried: "<YYYY-MM-DD>"    # updated by *ask and *topics (tracks query events)
+#   last_refreshed: null            # updated by *ask Step 2b auto-refresh (tracks source refresh events)
 #   source_count: 0
 #   notes: ""
 #   sources: []
