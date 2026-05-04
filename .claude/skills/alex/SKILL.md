@@ -142,7 +142,7 @@ activation-instructions:
          - O2: {title} — ✅ / ⚠️
          ```
          If ANY gap detected:
-         → "💡 建议: 运行 *research-review 进行完整组合诊断（含 KR 完成度对齐）"
+         → "💡 建议: 运行 *research-plan 来生成目标导向的研究计划并执行"
          (不自动发起 — 只提示)
     blocking: false
     suppress_if: "(REGISTRY.yaml not found OR 0 active + 0 dormant notebooks) AND OBJECTIVES.md not found"
@@ -220,6 +220,7 @@ commands:
 
   # Research management commands
   research-review: "Research portfolio review — classify all notebooks by goal alignment + action plan"
+  research-plan: "基于 OBJECTIVES.md gap analysis，提出研究计划并执行"
 
   # Self-evolution commands (TAD v2.8)
   optimize: "Analyze execution traces and propose Domain Pack improvements"
@@ -474,6 +475,7 @@ intent_router_protocol:
       - "After *status step3 completes → Enter standby"
       - "After *research-review step3 completes (user selects 'only look, no action') → Enter standby"
       - "After *research-review step4 operations complete → Enter standby"
+      - "After *research-plan step5 completes → Enter standby"
       - "After *publish step5 completes → Enter standby"
       - "After *sync step4 completes → Enter standby"
       - "After *sync-add step3 completes → Enter standby"
@@ -705,11 +707,15 @@ discuss_path_protocol:
                 - "不需要，继续讨论" → skip
 
         4. If no matching notebook AND topic needs deep research:
-           a. AskUserQuestion: "这个话题可能需要深度研究。要创建一个 research notebook 吗？"
-              Options:
+           a. Check if topic matches a ⬚ KR gap in OBJECTIVES.md (LLM semantic match, if OBJECTIVES.md exists)
+              → gap_kr: first matching KR description (highest priority: O1>O2, KR1>KR2), or null if no match / OBJECTIVES.md absent
+             (if multiple KRs match, pick highest-priority and append "(+N more — see *research-plan)")
+           b. AskUserQuestion: "这个话题可能需要深度研究。要创建一个 research notebook 吗？"
+              Options (if gap_kr found, replace "用 WebSearch 就够了" with research-plan; ≤4 hard cap):
                 - "创建 notebook + Deep Research" → *research-notebook create + *research-notebook research --mode deep
                 - "创建 notebook (manual sources)" → *research-notebook create
-                - "用 WebSearch 就够了" → skip
+                - "生成 *research-plan 并执行 (针对 {gap_kr})" → enter research_plan_protocol step1 with pre-filled context  [only shown if gap_kr found]
+                - "用 WebSearch 就够了" → skip  [shown only when gap_kr not found]
 
         5. If multiple matching notebooks found (>2 on same topic):
            → Trigger notebook_consolidation_suggestion protocol (see below)
@@ -869,6 +875,111 @@ status_panoramic_protocol:
       action: |
         After displaying, return to standby.
         No AskUserQuestion needed — *status is a read-only command.
+
+# *research-plan Protocol (A7)
+research_plan_protocol:
+  description: "Alex 主动提出目标导向的研究计划，用户确认后执行"
+  trigger: |
+    手动: 用户输入 *research-plan
+    自动建议: STEP 3.8 检测到 gap 时输出 "💡 运行 *research-plan 来生成目标导向的研究计划并执行"
+
+  execution:
+    step1:
+      name: "读取目标 + 现有研究"
+      action: |
+        0. Preflight:
+           → If OBJECTIVES.md not found:
+             → "⚠️ *research-plan requires OBJECTIVES.md. Run *analyze first to define project objectives, or use *research-notebook research directly for ad-hoc research."
+             → standby
+           → If REGISTRY.yaml not found:
+             → Treat as "all KRs are gaps" (no existing research) — proceed normally
+
+        1. Read OBJECTIVES.md → extract all Objectives + Key Results with status ⬚/🔄
+        2. Read REGISTRY.yaml → list all active notebooks with topics (empty if absent)
+        3. Identify gaps: which ⬚/🔄 KRs have NO aligned notebook research? (LLM semantic match)
+        4. If no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
+
+    step2:
+      name: "生成研究计划"
+      action: |
+        For each identified gap:
+        - Research Question: 为了推进 KR-X，需要回答什么问题？
+        - Research Method: deep search / targeted ask / report generation
+        - Expected Output: notebook 新增源 / 报告 / 决策依据
+        - Estimated Time: fast (~1min) / deep (~4min) / report (~2min)
+
+        Output as structured plan:
+        ```
+        ## 📋 研究计划 (基于 OBJECTIVES.md gap analysis)
+
+        | # | 目标 KR | 研究问题 | 方法 | 预期产出 | 时间 |
+        |---|---------|---------|------|---------|------|
+        | 1 | O1-KR2 (TTS 工具链) | 哪个 TTS 工具最适合恐怖叙事？ | report | 工具对比报告 | ~2min |
+        | 2 | O1-KR3 (分发平台) | 哪些平台对恐怖播客友好？ | deep search | 10+ 源 | ~4min |
+        ```
+
+    step3:
+      name: "用户确认"
+      action: |
+        AskUserQuestion:
+        "这是基于你的业务目标生成的研究计划。怎么处理？"
+        Options:
+          - "全部执行" → step4 (逐个执行)
+          - "选择性执行" → user picks which rows → step4 (只执行选中的)
+          - "调整计划" → user modifies → back to step3
+          - "不执行，只记录" → mkdir -p .tad/evidence/research/ → save plan to .tad/evidence/research/research-plan-{YYYY-MM-DD}.md → standby
+
+    step4:
+      name: "执行研究"
+      action: |
+        For each confirmed research item:
+
+        a. 确定 target notebook:
+           → If existing notebook matches topic → use it
+           → If no match → *research-notebook create "{topic}" (new notebook)
+
+        b. Execute based on method:
+           - "deep search" → *research-notebook research "{question}" --mode deep
+           - "report" → *research-notebook report "{question}"
+           - "targeted ask" → *research-notebook ask "{question}" --save-as-note
+             → After ask completes: write answer to .tad/evidence/research/{slug}-ask.md
+               → *research-notebook ingest .tad/evidence/research/{slug}-ask.md
+               (note for human reading + ingest for future ask context — notes are NOT queryable)
+
+        c. After each item completes (success OR failure):
+           → SUCCESS: Display brief result summary
+             → If report generated → "📄 Report saved: {path}"
+             → If deep search → "🔍 {N} sources added to '{notebook}'"
+           → FAILURE: Immediate inline notice (don't wait for final summary):
+             → "⚠️ {item description} failed ({reason: auth/timeout/error}). Skipping."
+             → Continue to next item (don't block)
+
+        d. After ALL items complete:
+           → If success_count >= 1:
+             → For each distinct touched_notebook (collected during step4.a/b):
+               → *research-notebook ingest <plan_path> --notebook {touched_notebook}
+               (plan document = metadata source for future "what was researched and why")
+           → If success_count == 0: skip ingest
+
+    step5:
+      name: "更新 OBJECTIVES 研究覆盖"
+      action: |
+        For each executed research item:
+        → Read OBJECTIVES.md
+        → Fill "Research needed" field under the corresponding Objective:
+          "Research needed: ✅ Covered — see notebook '{topic}', report '{path}'"
+        → If a KR's prerequisite research is now complete, note it:
+          "Research done. Ready for implementation."
+
+        Output: "✅ 研究计划执行完成。{N} 项研究已完成，OBJECTIVES.md 已更新。"
+
+  enters_standby: "After step5 completes → standby"
+
+  constraints:
+    - "每个 research item 执行前不再重复确认（step3 已整体确认）"
+    - "如果某个 item 执行失败（auth/timeout）→ 跳过，在最终 summary 中标注失败"
+    - "不自动创建 handoff（研究≠实现）— 研究结束后用户决定下一步"
+    - "plan 中的 notebook 选择是 Alex LLM 判断，用户可在 step3 修改"
 
 # *research-review Protocol (A6)
 research_review_protocol:
