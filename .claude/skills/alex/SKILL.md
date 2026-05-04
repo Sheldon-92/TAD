@@ -342,6 +342,7 @@ cross_model_awareness:
     - "MUST NOT auto-invoke codex/gemini from any Alex protocol step (Socratic, design, handoff_creation)"
     - "MUST NOT use AskUserQuestion to suggest codex/gemini as a default Recommended option"
     - "MUST NOT couple cross-model invocation with skip_knowledge_assessment or *express path"
+    - "MUST NOT use cross-model delegation to bypass Socratic Inquiry — any handoff delegating implementation to external CLI must complete Socratic rounds first"
 
 # ⚠️ MANDATORY: Intent Router Protocol (First Contact)
 intent_router_protocol:
@@ -4352,6 +4353,7 @@ anti_rationalization_registry:
     - "marking a handoff 'express'"
     - "defaulting to 'no new knowledge' in Gate 4"
     - "accepting Blake's PARTIAL without raw-TSV recompute"
+    - "auto-invoking external CLI (codex/gemini) without user confirmation (NOT_via_alex_auto)"
   patterns:
     - id: "AR-001"
       label: "express = review-exempt"
