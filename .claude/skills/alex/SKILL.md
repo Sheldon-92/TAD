@@ -110,6 +110,27 @@ activation-instructions:
       STEP 3.7 runs second.
       If STEP 3.7 announces resume (cases 3/4/5): suppress STEP 4's *help autorun
       (user just got context, the command menu is noise).
+  - STEP 3.8: Research Landscape Scan
+    action: |
+      After STEP 3.7, check research landscape:
+      1. Check if .tad/research-notebooks/REGISTRY.yaml exists
+         → If not: skip silently (project has no NotebookLM integration)
+      2. If exists: Read REGISTRY.yaml
+         a. Count notebooks by status (active/dormant/archived)
+         b. Derive topics_summary: first 3 active notebook topic fields (comma-separated)
+         c. If active_count > 5:
+            → Output: "📚 Research: {active_count} active notebooks. Consider *research-notebook curate to consolidate."
+         d. If active_count > 0 AND active_count <= 5:
+            → Output: "📚 Research: {active_count} notebooks available ({topics_summary})"
+         e. If active_count == 0 AND dormant_count > 0:
+            → Output: "📚 Research: {dormant_count} dormant notebooks. Use *research-notebook list to review."
+    blocking: false
+    suppress_if: "REGISTRY.yaml not found OR 0 active + 0 dormant notebooks"
+    interacts_with: |
+      Runs AFTER STEP 3.7 (session state), regardless of STEP 3.7 outcome.
+      Does NOT affect STEP 4 suppression — STEP 3.7's interacts_with rule controls that.
+      If STEP 3.7 already suppresses STEP 4, STEP 3.8 output still shows
+      (research landscape is informational, independent of greeting).
   - STEP 4: Greet user and immediately run `*help` to display commands
   - CRITICAL: Stay in character as Alex until told to exit
   - CRITICAL: You are "Solution Lead" NOT "Strategic Architect" - use exact title from line 25
@@ -173,6 +194,9 @@ commands:
   # Document commands
   doc-out: Output complete document
   doc-list: List all project documents
+
+  # Research management commands
+  research-review: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
   # Self-evolution commands (TAD v2.8)
   optimize: "Analyze execution traces and propose Domain Pack improvements"
@@ -393,6 +417,8 @@ intent_router_protocol:
       - "After *idea-promote step2: user selects 'Cancel' → Enter standby"
       - "After *idea-promote step1: no promotable ideas → Enter standby"
       - "After *status step3 completes → Enter standby"
+      - "After *research-review step3 completes (user selects 'only look, no action') → Enter standby"
+      - "After *research-review step4 operations complete → Enter standby"
       - "After *publish step5 completes → Enter standby"
       - "After *sync step4 completes → Enter standby"
       - "After *sync-add step3 completes → Enter standby"
@@ -601,20 +627,50 @@ discuss_path_protocol:
         匹配是 LLM 语义判断，不是精确字符串匹配。
 
     research_notebook_awareness:
-      trigger: "话题内容涉及研究密集型课题时（需要多源深度研究）"
+      trigger: "进入 *discuss 后，首次回答用户话题之前"
+      # ⚠️ REPLACEMENT BOUNDARY: replace only research_notebook_awareness block
+      # (trigger + action + note + fallback sub-fields).
+      # Do NOT touch the forbidden: list or note_on_research_protocol: block below.
       action: |
-        在 domain_pack_awareness 之后，检查 .tad/research-notebooks/REGISTRY.yaml：
-        1. 如果存在匹配课题的 active notebook：
-           → 输出: "📚 Found existing notebook: '{topic}' ({source_count} sources).
-             Use *research-notebook ask to query it."
-        2. 如果不存在匹配 notebook 但课题需要多源深度研究：
-           → 建议: "This topic might benefit from a research notebook.
-             Use *research-notebook create '{topic}' to build a multi-source knowledge base."
-        3. 这是建议不是强制——用户可以忽略继续用 WebSearch
+        ⚠️ 以下步骤在 domain_pack_awareness 之后、首次回答之前执行。
+
+        1. Read .tad/research-notebooks/REGISTRY.yaml
+           → If not found → skip silently (同现有 fallback)
+
+        2. Match current topic against notebook topics (LLM semantic match):
+           → For each active/dormant notebook: does its `topic` field relate to the current discussion?
+
+        3. If matching notebook found:
+           a. Output: "📚 Found relevant notebook: '{topic}' ({source_count} sources, last queried: {date})"
+           b. Run: *research-notebook topics (display-only summary of that notebook)
+           c. AskUserQuestion: "要在讨论中引用这个 notebook 的知识吗？"
+              Options:
+                - "查询 notebook" → execute *research-notebook ask "{topic-related question}" with notebook
+                - "先看源质量" → execute *research-notebook fulltext on top 2 sources, display preview
+                - "不需要，继续讨论" → skip
+
+        4. If no matching notebook AND topic needs deep research:
+           a. AskUserQuestion: "这个话题可能需要深度研究。要创建一个 research notebook 吗？"
+              Options:
+                - "创建 notebook + Deep Research" → *research-notebook create + *research-notebook research --mode deep
+                - "创建 notebook (manual sources)" → *research-notebook create
+                - "用 WebSearch 就够了" → skip
+
+        5. If multiple matching notebooks found (>2 on same topic):
+           → Trigger notebook_consolidation_suggestion protocol (see below)
+
+      fallback: "REGISTRY.yaml 不存在或 NotebookLM 未安装 → 静默跳过"
       note: |
         匹配是 LLM 语义判断，不是精确字符串匹配。
-        如果 REGISTRY.yaml 不存在 → 静默跳过，不报错。
         NotebookLM 是 WebSearch 的补充（跨源综合 + 引用），不是替代。
+
+    passive_detection_during_discuss:
+      trigger: "*discuss 中 Alex 发现用户在谈论一个已有 dormant notebook 的话题"
+      action: |
+        如果话题与一个 dormant (>14天未查询) notebook 高度匹配:
+        → "我注意到你有一个关于 '{topic}' 的 notebook (💤 {days} 天未使用)。
+           要重新激活并用它辅助讨论吗？或者它已经完成使命可以归档？"
+      blocking: false
 
     forbidden:
       - "Auto-generating handoff or design documents"
@@ -701,6 +757,9 @@ status_panoramic_protocol:
         2. .tad/active/epics/EPIC-*.md → extract name, derived status, progress (N/M phases)
         3. .tad/active/handoffs/HANDOFF-*.md → extract name, date, priority
         4. .tad/active/ideas/IDEA-*.md → count by status (captured/evaluated/promoted/archived)
+        5. .tad/research-notebooks/REGISTRY.yaml → extract notebooks with status + last_queried
+           - Also read ROADMAP.md + NEXT.md to understand current project goals for relevance judgment
+           - If REGISTRY not found: skip Research Portfolio section silently
 
     step2:
       name: "Display Summary"
@@ -735,6 +794,19 @@ status_panoramic_protocol:
         | promoted | {N} |
         (only show statuses with count > 0, exclude archived)
         (or: "No ideas captured yet" if empty)
+
+        ### Research Portfolio
+        (Only show if REGISTRY.yaml found with ≥1 non-archived notebook)
+        | Notebook | Status | Sources | Last Activity | Relevance to Current Goals |
+        |----------|--------|---------|---------------|---------------------------|
+        | {topic}  | 🟢 Active / 💤 Dormant / ❓ Drifting | {N} | {date} | {Alex judgment} |
+
+        Relevance judgment logic:
+        - Read current ROADMAP.md themes + NEXT.md active tasks
+        - For each notebook: does its topic align with active Epic/task/roadmap theme?
+          → YES: "🎯 Aligned with: {Epic/task name}"
+          → No clear alignment: "❓ No current alignment — consider archive or pivot"
+          → Actively supporting in-progress task: "🔥 Supporting: {task name}"
         ```
 
     step3:
@@ -742,6 +814,73 @@ status_panoramic_protocol:
       action: |
         After displaying, return to standby.
         No AskUserQuestion needed — *status is a read-only command.
+
+# *research-review Protocol (A6)
+research_review_protocol:
+  description: "Research portfolio review — classify all notebooks by goal alignment + produce action plan"
+  trigger: "User types *research-review OR Alex proactively suggests it in *discuss when research is scattered"
+
+  execution:
+    step1:
+      name: "全景扫描"
+      action: |
+        1. Read REGISTRY.yaml → all notebooks (active, dormant, archived)
+        2. Read ROADMAP.md → project themes + goals (if exists)
+        3. Read NEXT.md → current tasks + epics
+        4. For each active/dormant notebook:
+           → last_queried date (freshness)
+           → source_count (depth)
+           → Alignment with current project goals (LLM semantic judgment)
+
+    step2:
+      name: "分类诊断"
+      action: |
+        将所有 active/dormant notebooks 分为四类:
+        - 🔥 **加强**: 与当前目标强相关 + 最近活跃 → "这个研究应该继续深入"
+        - ✅ **维持**: 与当前目标相关 + 已有充足成果 → "保持，需要时查询"
+        - 🔄 **转向**: 与当前目标不再相关但有价值 → "话题需要调整方向"
+        - 📦 **关闭**: 与当前目标无关 + 长期不活跃 → "建议归档"
+
+        Output: 分类表格 + 每个 notebook 一句话理由
+
+    step3:
+      name: "行动建议"
+      action: |
+        AskUserQuestion: "这是你的研究组合诊断。要执行哪些操作？"
+        Options:
+          - "执行全部建议" → step4 (execute per category)
+          - "只执行关闭/归档" → step4_close only
+          - "逐个确认" → per-notebook AskUserQuestion
+          - "只看看，不操作" → exit → standby
+
+    step4_strengthen:
+      name: "加强研究"
+      action: |
+        For each 🔥 notebook:
+        → AskUserQuestion: "'{topic}' 需要加强。怎么做？"
+          Options:
+            - "Deep research (自动加源)" → *research-notebook research --mode deep
+            - "生成一份综合报告" → *research-notebook report "comprehensive summary of {topic}"
+            - "我来指定新源" → *research-notebook add
+            - "跳过"
+
+    step4_close:
+      name: "关闭研究"
+      action: |
+        For each 📦 notebook:
+        → *research-notebook archive (with user confirmation per existing archive flow)
+
+    step4_pivot:
+      name: "研究转向"
+      action: |
+        For each 🔄 notebook:
+        → AskUserQuestion: "'{topic}' 需要转向。新方向是什么？"
+          Options:
+            - "重新定向" → create new notebook with new topic + *research-notebook consolidate to migrate + archive old
+              (notebooklm rename 不存在 — use create+consolidate+archive pattern)
+            - "保留源，新建角度" → *research-notebook configure --persona to reframe research lens
+            - "整合到另一个 notebook" → trigger notebook_consolidation_suggestion
+            - "直接归档" → *research-notebook archive
 
 # *idea Path Protocol
 idea_path_protocol:
@@ -952,6 +1091,28 @@ learn_path_protocol:
         4. Check: "Does this make sense? Want to go deeper or move on?"
 
         Keep each exchange SHORT (2-4 sentences from Alex, then a question).
+
+    step3_5_quiz_generation:
+      name: "Generate Learning Assessment (optional)"
+      trigger: "After 3+ Socratic rounds, when user shows understanding"
+      action: |
+        1. Check if current topic has a matching notebook in .tad/research-notebooks/REGISTRY.yaml
+        2. If yes → AskUserQuestion:
+           "你对这个话题理解得不错了。要生成一个小测验来巩固学习吗？"
+           Options:
+             - "生成 Quiz (推荐)" → Step 3 (quiz)
+             - "生成 Flashcards" → Step 4 (flashcards)
+             - "不需要，继续学习" → skip
+        3. Generate Quiz:
+           → *research-notebook quiz --difficulty medium --quantity standard (with notebook from step 1)
+           → Quiz downloaded to .tad/evidence/research/{topic}/quiz-{date}.md
+           → Read + display quiz content to user
+        4. Generate Flashcards:
+           → *research-notebook flashcards --difficulty medium --quantity standard (with notebook from step 1)
+           → Flashcards downloaded to .tad/evidence/research/{topic}/flashcards-{date}.md
+           → Read + display flashcard content
+        5. If no matching notebook → skip silently (quiz/flashcards need source corpus)
+      blocking: false
 
     step4:
       name: "Wrap Up"
@@ -1767,6 +1928,24 @@ handoff_creation_protocol:
             registered in settings.json. Failure here MUST fall through.
       purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
 
+    step0_5b:
+      name: "Research Asset Check (post-Socratic)"
+      trigger: "After step0_5 knowledge reload completes, before step1 draft creation"
+      action: |
+        1. Read REGISTRY.yaml → find notebooks relevant to this handoff's scope
+           (match against task keywords from step0_5 step 1)
+        2. If relevant notebook exists:
+           a. Run: *research-notebook topics (get suggested queries for that notebook)
+           b. Check: are there research findings in .tad/evidence/research/ for this topic?
+           c. If findings exist → note them for citation in handoff §📚 Project Knowledge section
+           d. If notebook exists but no findings → AskUserQuestion:
+              "有一个相关 notebook '{topic}' 但还没产出研究报告。要现在生成吗？"
+              Options:
+                - "生成 briefing report" → *research-notebook report "...related to handoff scope"
+                - "跳过，不影响 handoff" → continue
+        3. If no relevant notebook → skip (existing research_decision_protocol handles WebSearch)
+      blocking: false
+
     step1:
       name: "Draft Creation"
       action: "创建 handoff 初稿（框架+核心内容）"
@@ -2261,6 +2440,49 @@ handoff_creation_protocol:
   violations:
     - "不经过专家审查直接发送 handoff 给 Blake = VIOLATION"
     - "忽略专家发现的 P0 问题不修复 = VIOLATION"
+
+# Research Citation in Handoff (A5)
+research_citation_in_handoff:
+  trigger: "handoff_creation_protocol step1 draft 写作时，当 step0_5b found research findings"
+  action: |
+    If step0_5b found relevant notebook findings:
+    1. In §📚 Project Knowledge section, add sub-section:
+       "### Research Notebook Findings
+        Notebook: '{topic}' ({source_count} sources)
+        Key findings relevant to this handoff:
+        - {finding 1 from *research-notebook ask}
+        - {finding 2}
+        Report: {path to .tad/evidence/research/ if generated by step0_5b}"
+
+    2. In §11 Decision Summary, if any decision was informed by notebook research:
+       Add "Research source" column showing which notebook/source informed the decision
+  blocking: false
+  skip_if: "step0_5b found no relevant notebooks OR no research findings exist"
+
+# Notebook Consolidation Suggestion (A4)
+notebook_consolidation_suggestion:
+  trigger: "A2 research_notebook_awareness step 5 detects >2 notebooks matching same topic OR A1 STEP 3.8 detects >5 active notebooks"
+  action: |
+    1. Analyze overlap:
+       → For each matching notebook pair: compare topic field + source list overlap
+       → Group by semantic similarity: "这 N 个 notebook 都在研究 {topic cluster}"
+
+    2. Propose consolidation plan:
+       → "建议将以下 notebook 整合：
+          - '{nb1}' ({N} sources) + '{nb2}' ({M} sources) → 合并为 '{suggested_merged_topic}'
+          原因：主题高度重叠，合并后 ask 能跨源综合分析"
+
+    3. AskUserQuestion: "要执行整合吗？"
+       Options:
+         - "执行整合" → Step 4
+         - "只整合部分" → user picks which notebooks
+         - "不整合" → skip
+
+    4. Delegate execution to *research-notebook consolidate (B6):
+       → This protocol is detection + suggestion layer ONLY
+       → Pass selected groups to consolidate command
+       → Do NOT re-implement merge logic (avoid A4/B6 dual implementation drift)
+  blocking: false
 
 # Templates I use
 my_templates:

@@ -25,9 +25,10 @@ preflight:
   checks:
     - "notebooklm CLI available: test -x ~/.tad-notebooklm-venv/bin/notebooklm"
     - "Version check: ver=$(~/.tad-notebooklm-venv/bin/notebooklm --version | awk '{print $NF}'); printf '%s\\n0.3.4\\n' \"$ver\" | sort -V | head -1 | grep -qx '0.3.4'"
-    - "Auth valid: ~/.notebooklm/storage_state.json exists (not checking expiry)"
+    - "Auth valid: ~/.tad-notebooklm-venv/bin/notebooklm auth check --test 2>&1 | grep -q 'authenticated'"
   on_fail_missing: "Output: '⚠️ NotebookLM not ready. Run: bash .tad/cross-model/setup-notebooklm.sh'"
   on_fail_version: "Output: '⚠️ notebooklm-py < 0.3.4 has broken AI endpoints — re-run: bash .tad/cross-model/setup-notebooklm.sh'"
+  on_fail_auth: "Output: '⚠️ NotebookLM auth expired. Run: bash .tad/cross-model/setup-notebooklm.sh'"
   on_pass: "Proceed to sub-command"
   invocation_pattern: "~/.tad-notebooklm-venv/bin/notebooklm <subcommand>"
 ```
@@ -120,13 +121,25 @@ Step 1: Resolve target notebook
 Step 2: Activate notebook
   → ~/.tad-notebooklm-venv/bin/notebooklm use <notebook_id>
 
+Step 2.5 (NEW): Source targeting (optional)
+  → If user specifies --source <id>:
+    → Build source flags: --source <id1> [--source <id2> ...]
+    → Display: "🎯 Querying specific sources: {source_titles}"
+  → If no --source: query all sources (existing behavior)
+
 Step 3: Execute query (stale conversation fallback)
+  Note: --save-as-note flag is CALLER'S RESPONSIBILITY (Alex decides when to use).
+        Research-notebook SKILL supports the flag but does NOT auto-add it.
+        Use --no-save to suppress auto-save in privacy-sensitive contexts.
   Layer 1 (normal):
-    → ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>"
+    → ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>" {source_flags} {save_flags}
+      where {source_flags} = "--source <id>" if Step 2.5 specified, else empty
+      where {save_flags} = "--save-as-note --note-title 'TAD Research: {first 40 chars of question}'" if caller passed --save-as-note
+                         = "" if --no-save passed or no flag
     → If exit 0 and output non-empty → proceed to Step 4
     → If exit != 0:
   Layer 2 (force fresh conversation — retry on any non-zero exit):
-    → ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>" -c 00000000-0000-0000-0000-000000000000
+    → ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>" {source_flags} {save_flags} -c 00000000-0000-0000-0000-000000000000
     → If exit 0 → proceed to Step 4
     → If still fails: "⚠️ Query failed. Check auth or notebook state."
   (Note: --new flag does NOT exist in 0.3.4; -c 00000000... is the only fresh-conversation mechanism)
@@ -362,8 +375,16 @@ Step 1: Validate download capability (first-time only per session)
   → Cache validation result: skip this step entirely on subsequent *report calls in same session
   (Note: `download report` ships in all notebooklm-py 0.3.4+ builds)
 
+Step 1.5 (NEW): Customize report (optional)
+  → AskUserQuestion: "要给报告追加特殊要求吗？"
+    Options:
+      - "使用默认模板" → no --append, no --source filter
+      - "追加自定义指令" → user types instruction → append_flag="--append '{instruction}'"
+      - "限定特定源" → show source list from notebooklm source list -n <id> → user picks → source_flags="--source <id>" (repeatable)
+      - "追加指令 + 限定源" → combine both
+
 Step 2: Generate
-  → ~/.tad-notebooklm-venv/bin/notebooklm generate report "{description}" -n <id> --wait
+  → ~/.tad-notebooklm-venv/bin/notebooklm generate report "{description}" {append_flag} {source_flags} --retry 3 -n <id> --wait
   → Display: "Generating report... (typically 30-90s)"
   → If exit code != 0: "❌ Report generation failed: {stderr}" + EXIT
 
@@ -530,6 +551,153 @@ Step 6: Confirm
 
 ---
 
+### `*research-notebook fulltext <source_id>`
+
+Preview or save the full text content of a source.
+
+```
+Step 0: Resolve target notebook (same as ask command)
+
+Step 1: Get source ID
+  → If <source_id> provided → use it
+  → If not → ~/.tad-notebooklm-venv/bin/notebooklm source list -n <id>
+    → Display numbered list
+    → AskUserQuestion: "Which source to view fulltext?"
+
+Step 2: Extract fulltext
+  → ~/.tad-notebooklm-venv/bin/notebooklm source fulltext <source_id> -n <id> -o /tmp/tad-fulltext-{source_id}.txt
+  → Read first 100 lines for preview
+
+Step 3: Display + option to save
+  → Display preview (first 100 lines)
+  → AskUserQuestion: "Save fulltext to project?"
+    Options:
+      - "Save to .tad/evidence/research/" → mkdir -p .tad/evidence/research/{topic}/ → cp /tmp/tad-fulltext-{source_id}.txt .tad/evidence/research/{topic}/fulltext-{source_id}.txt
+      - "Just preview, don't save" → rm -f /tmp/tad-fulltext-{source_id}.txt
+
+Use case: Alex Research Director evaluates source quality before recommending deep dives
+```
+
+---
+
+### `*research-notebook language [set|get|list]`
+
+Manage NotebookLM output language setting.
+
+```
+*research-notebook language set <code>:
+  Step 0: Resolve target notebook (same as ask command)
+  Step 1: → ~/.tad-notebooklm-venv/bin/notebooklm language set <code> -n <id>
+  Step 2: → "✅ NotebookLM output language set to {language_name}. Affects all future reports/quizzes."
+
+*research-notebook language get:
+  Step 0: Resolve target notebook
+  Step 1: → ~/.tad-notebooklm-venv/bin/notebooklm language get --local -n <id>
+  Step 2: → Display current language setting
+
+*research-notebook language list:
+  Step 1: → ~/.tad-notebooklm-venv/bin/notebooklm language list
+  Step 2: → Display supported languages table
+```
+
+---
+
+### `*research-notebook consolidate`
+
+Merge overlapping notebooks: detect → confirm → execute. Execution layer for A4.
+
+```
+Step 1: List all active notebooks with topics
+  → ~/.tad-notebooklm-venv/bin/notebooklm list → display table
+
+Step 2: Analyze overlap (LLM semantic judgment)
+  → Group notebooks by semantic similarity of topic field
+  → For each group with >1 notebook:
+    → Display: "这 {N} 个 notebook 话题重叠: {list with source counts}"
+
+Step 3: AskUserQuestion for each group:
+  "建议整合这组 notebook。选择操作："
+  Options:
+    - "整合为一个" → Step 4
+    - "保留独立" → skip this group
+    - "删除其中 N 个" → user picks which to delete → *research-notebook archive for each selected
+
+Step 4: Execute merge
+  → AskUserQuestion: "合并后的 notebook 名称是什么？" (suggest: combined topic summary)
+  → ~/.tad-notebooklm-venv/bin/notebooklm create "{merged_topic_name}"
+  → Capture new notebook_id
+  → For each old notebook in group:
+    → ~/.tad-notebooklm-venv/bin/notebooklm source list -n <old_id> → get source URLs/IDs
+    → For each source URL: ~/.tad-notebooklm-venv/bin/notebooklm source add <url> -n <new_id>
+    → (Skip file-type sources — these cannot be re-added by URL)
+  → Register new notebook to REGISTRY.yaml
+  → *research-notebook archive for each old notebook (with user confirmation)
+  → "✅ Merged {N} notebooks into '{merged_topic_name}'. Old notebooks archived."
+
+Note: A4 (notebook_consolidation_suggestion) in Alex SKILL calls this command with
+pre-selected groups. Pass groups via context — no extra parameters needed.
+```
+
+---
+
+### `*research-notebook quiz [--difficulty easy|medium|hard] [--quantity fewer|standard|more]`
+
+Generate a quiz from notebook content + download as markdown.
+
+```
+Step 0: Resolve target notebook (same as ask command)
+
+Step 1: Generate quiz
+  → defaults: --difficulty medium --quantity standard
+  → ~/.tad-notebooklm-venv/bin/notebooklm generate quiz --difficulty {d} --quantity {q} -n <id> --retry 3 --wait
+  → Display: "Generating quiz... (typically 15-30s)"
+  → If exit code != 0: "❌ Quiz generation failed: {stderr}" + EXIT
+
+Step 2: Download as markdown
+  → output_path: .tad/evidence/research/{notebook_topic}/quiz-{YYYY-MM-DD}.md
+    (mkdir -p the directory if missing; collision: append -2, -3 etc.)
+  → ~/.tad-notebooklm-venv/bin/notebooklm download quiz --format markdown "{output_path}" -n <id>
+  → If download fails:
+    → Wait 20s, retry once
+    → If still fails: "⚠️ Quiz generated but download failed. Try *research-notebook list to verify."
+
+Step 3: Display + confirm
+  → Read downloaded file content
+  → Display full quiz to user
+  → "✅ Quiz saved: {path}"
+```
+
+---
+
+### `*research-notebook flashcards [--difficulty easy|medium|hard] [--quantity fewer|standard|more]`
+
+Generate flashcards from notebook content + download as markdown.
+
+```
+Step 0: Resolve target notebook (same as ask command)
+
+Step 1: Generate flashcards
+  → defaults: --difficulty medium --quantity standard
+  → ~/.tad-notebooklm-venv/bin/notebooklm generate flashcards --difficulty {d} --quantity {q} -n <id> --retry 3 --wait
+  → Display: "Generating flashcards... (typically 15-30s)"
+  → If exit code != 0: "❌ Flashcard generation failed: {stderr}" + EXIT
+
+Step 2: Download as markdown
+  → output_path: .tad/evidence/research/{notebook_topic}/flashcards-{YYYY-MM-DD}.md
+    (mkdir -p the directory if missing; collision: append -2, -3 etc.)
+  → ~/.tad-notebooklm-venv/bin/notebooklm download flashcards --format markdown "{output_path}" -n <id>
+  → If download fails:
+    → Wait 20s, retry once
+    → If still fails: "⚠️ Flashcards generated but download failed."
+
+Step 3: Display + confirm
+  → Read downloaded file content
+  → Display flashcards to user
+  → "✅ Flashcards saved: {path}"
+```
+
+---
+
 ## Notebook Lifecycle Rules
 
 ```yaml
@@ -605,3 +773,8 @@ lifecycle_rules:
 | `*research-notebook configure` | Set notebook persona / query mode |
 | `*research-notebook topics` | Quick overview + suggested query topics |
 | `*research-notebook ingest <file>` | Add local .md/.txt as source (knowledge loop GO) |
+| `*research-notebook fulltext <source_id>` | Preview or save full source text content |
+| `*research-notebook language [set\|get\|list]` | Manage NotebookLM output language |
+| `*research-notebook consolidate` | Merge overlapping notebooks (A4 execution layer) |
+| `*research-notebook quiz` | Generate quiz from notebook → download as .md |
+| `*research-notebook flashcards` | Generate flashcards from notebook → download as .md |
