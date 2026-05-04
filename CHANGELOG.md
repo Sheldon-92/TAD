@@ -5,6 +5,28 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.0] - 2026-05-04
+
+### New Features — Goal-Driven Research Director + NotebookLM Full Integration
+- **NotebookLM Research Director**: Complete research lifecycle integration (19 commands in *research-notebook SKILL). Includes: source add-research (deep mode: 64 sources + AI synthesis), generate report + download as markdown, knowledge loop (source add local .md → queryable in 30s), fulltext extraction, quiz/flashcards for *learn mode, notebook consolidation, language set, and more.
+- **Alex Research Director Behavior**: STEP 3.8 research + objective alignment scan at activation. *research-review command for portfolio management (4-category diagnostic: strengthen/maintain/pivot/close). Proactive notebook consolidation suggestions. Research citations in handoffs.
+- **`*research-plan` Command**: Autonomous goal-driven research — reads OBJECTIVES.md, identifies gaps, generates research plan, user confirms, Alex executes via NotebookLM. Updates objective coverage status.
+- **OBJECTIVES.md (OKR Format)**: Business objective definition template. Alex reads at startup and checks research coverage against Key Results.
+- **Blake NotebookLM Access**: Read-only + controlled ingest channel (10 allowed / 9 forbidden commands with default-deny rule).
+- **Cross-Model Invocation Guide**: Best practices for calling Gemini/Codex as sub-agents from Claude Code.
+
+### Bug Fixes
+- Fixed setup-notebooklm.sh pinning deprecated notebooklm-py 0.1.1 → now pins 0.3.4
+- Fixed NotebookLM CLI auth preflight: uses `auth check --test` instead of file-exists check
+
+### Documentation
+- New: `.tad/templates/objectives-template.md`
+- New: `.tad/guides/cross-model-invocation.md` (Codex/Gemini sub-agent best practices)
+- Updated: `.tad/cross-model/capabilities.yaml` (+89 lines — fulltext, quiz, flashcards, language capabilities)
+- 3 new architecture.md knowledge entries (version deprecation, capability matrix, knowledge feedback loop)
+
+---
+
 ## [2.9.1] - 2026-05-03
 
 ### New Features — Cross-Model Orchestration + NotebookLM Knowledge Layer

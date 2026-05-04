@@ -1,8 +1,8 @@
-# TAD Configuration v2.9.1 - Cross-Model Orchestration + NotebookLM Knowledge Layer
+# TAD Configuration v2.10.0 - Goal-Driven Research Director + NotebookLM Full Integration
 method: TAD
-version: 2.9.1
+version: 2.10.0
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
-last_updated: 2026-05-03
+last_updated: 2026-05-04
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
