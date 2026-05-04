@@ -36,8 +36,8 @@ source "$VENV_PATH/bin/activate"
 
 # Step 2: Install pinned version (security principle: never upgrade blindly)
 echo ""
-echo "Installing notebooklm-py==0.1.1 (pinned for supply-chain safety)..."
-pip install -q "notebooklm-py[browser]==0.1.1"
+echo "Installing notebooklm-py==0.3.4 (pinned for supply-chain safety)..."
+pip install -q "notebooklm-py[browser]==0.3.4"
 playwright install chromium 2>/dev/null || echo "  (playwright chromium may already be installed)"
 echo "✅ notebooklm-py installed"
 

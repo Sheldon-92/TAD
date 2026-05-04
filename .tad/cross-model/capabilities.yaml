@@ -24,21 +24,52 @@ capabilities:
 
   notebooklm_research:
     platform: notebooklm
-    cli_command: 'notebooklm ask "{question}"'
-    description: "Multi-source cross-media deep research (YouTube + PDF + web corpus cross-source reasoning)"
+    cli_commands:
+      - 'notebooklm ask "{question}"'
+      - 'notebooklm source add-research "{topic}" --mode fast|deep --import-all'
+      - 'notebooklm generate report "{description}" --wait'
+      - 'notebooklm download report --latest -n <id> "{output_path}"'
+      - 'notebooklm summary --topics'
+      - 'notebooklm source guide <source_id> --json'
+      - 'notebooklm configure --persona "{text}" --mode {mode}'
+      - 'notebooklm source stale <source_id>'
+    description: "Multi-source cross-media deep research: automated source discovery, cross-source reasoning, report generation, persona configuration, content-staleness audit"
     verified: true
-    spike_ref: "SPIKE-20260503-notebooklm/SPIKE-REPORT.md"
-    use_when: "Research-intensive topics needing cross-source synthesis + video content + citations"
+    spike_ref: "SPIKE-20260503-notebooklm/SPIKE-REPORT.md, SPIKE-20260504-notebooklm-capabilities/SPIKE-REPORT.md"
+    skill_ref: "*research-notebook (14 commands: create, add, ask, list, sync, curate, archive, use, research, report, guide, configure, topics, ingest)"
+    use_when: "Research-intensive topics needing cross-source synthesis + video content + citations; auto source discovery (research cmd); report generation (report cmd)"
     dont_use_when: "Quick fact lookup (use WebSearch) / real-time data (NotebookLM does not fetch live web)"
     fallback: "WebSearch ×5-8 (Claude iterative search)"
     setup_required: true
     setup_ref: "*research-notebook create OR bash .tad/cross-model/setup-notebooklm.sh"
-    latency: "23-43s per query"
+    minimum_version: "notebooklm-py==0.3.4 (0.1.1 has deprecated RPC endpoints — all AI commands fail)"
+    latency:
+      ask: "23-43s per query"
+      source_add_research_fast: "~1s"
+      source_add_research_deep: "~3-4min (50+ sources)"
+      generate_report: "30-90s"
+      download_report: "~2s"
+      summary_topics: "~3s"
+    sub_capabilities:
+      automated_source_discovery:
+        command: "*research-notebook research <topic> [--mode fast|deep]"
+        description: "Auto-discover and import sources from NotebookLM's research engine"
+        modes: "fast (~1s, 10 sources) / deep (~3-4min, 50+ sources)"
+      report_generation:
+        command: "*research-notebook report <description>"
+        description: "Generate structured report + download as local .md to .tad/evidence/research/"
+        prerequisite: "notebooklm download report --dry-run must succeed"
+      knowledge_ingest:
+        command: "*research-notebook ingest <file.md>"
+        description: "Add local .md as notebook source (knowledge loop hypothesis — GO/NO-GO)"
+        status: "HYPOTHESIS — verify result recorded in completion report"
     notes: |
       Citation-grounded cross-source reasoning over user-curated corpus.
       YouTube sources: must have captions. Use conference talks (CCC/RSAC/Black Hat/NODES)
       or official channels (Anthropic, Google) — 8/8 success rate in Phase 0b spike.
       Auth expires: re-run setup-notebooklm.sh when CLI returns auth error.
+      Stale conversation: all ask-based commands implement 2-layer fallback (-c 00000000... on timeout).
+      Minimum notebooklm-py 0.3.4 — earlier versions have deprecated RPC endpoints.
 
   gemini_research:
     platform: gemini
