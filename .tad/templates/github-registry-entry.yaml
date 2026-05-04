@@ -1,0 +1,88 @@
+# Template for adding a new domain or awesome-list to .tad/github-registry/REGISTRY.yaml
+# Usage: copy the appropriate block and fill in placeholders
+
+# ─── New Domain Entry ───────────────────────────────────────────────────────
+# Use when adding a brand-new domain not yet in the registry.
+# Add under the `domains:` list in REGISTRY.yaml
+
+new_domain_entry: |
+  - name: "{Human Readable Domain Name}"
+    slug: "{kebab-case-slug}"    # used for --domain flag in *research-github commands
+    description: "{One-line description of what this domain covers}"
+    awesome_lists:
+      - repo: "{owner}/{repo}"
+        stars: {integer}
+        url: "https://github.com/{owner}/{repo}"
+        last_checked: {YYYY-MM-DD}     # date you verified this entry
+        description: "{Short description from GitHub}"
+    notebook_id: null              # filled by *research-github notebook
+    last_researched: null          # filled by *research-github notebook
+
+
+# ─── New Awesome-List Entry ──────────────────────────────────────────────────
+# Use when adding a new list to an EXISTING domain.
+# Insert under the domain's `awesome_lists:` list.
+
+new_awesome_list_entry: |
+    - repo: "{owner}/{repo}"
+      stars: {integer}
+      url: "https://github.com/{owner}/{repo}"
+      last_checked: {YYYY-MM-DD}
+      description: "{Short description from GitHub}"
+
+
+# ─── Field Reference ────────────────────────────────────────────────────────
+
+field_reference:
+  repo:
+    type: string
+    format: "{owner}/{repo}"
+    example: "sindresorhus/awesome-nodejs"
+    note: "Do NOT include https://github.com/ prefix"
+
+  stars:
+    type: integer
+    note: "Approximate count at last_checked time — will drift, that's ok"
+    example: 66000
+
+  url:
+    type: string
+    format: "https://github.com/{owner}/{repo}"
+    note: "Always use https://github.com/ base, no trailing slash"
+
+  last_checked:
+    type: string
+    format: "YYYY-MM-DD"
+    note: "Date you verified the repo exists and stars are approximately correct"
+
+  description:
+    type: string
+    max_length: 120
+    note: "Copy from GitHub repo description, or write a brief summary"
+
+  notebook_id:
+    type: string or null
+    note: "Set by *research-github notebook command. Never set manually."
+
+  last_researched:
+    type: string or null
+    format: "YYYY-MM-DD"
+    note: "Set by *research-github notebook command. Never set manually."
+
+  slug:
+    type: string
+    format: "lowercase-kebab-case"
+    note: "Used in --domain flag: *research-github refresh --domain {slug}"
+    examples: ["ai-agents", "mcp-servers", "web-frontend"]
+
+
+# ─── Validation Checklist ───────────────────────────────────────────────────
+
+validation_checklist:
+  - "repo field uses owner/repo format (not full URL)"
+  - "url field includes full https://github.com/ prefix"
+  - "stars is an integer (not a string)"
+  - "last_checked is YYYY-MM-DD format"
+  - "slug is kebab-case (lowercase, hyphens only)"
+  - "notebook_id and last_researched are null (not empty string)"
+  - "YAML is valid: yq eval '.domains | length' .tad/github-registry/REGISTRY.yaml"
