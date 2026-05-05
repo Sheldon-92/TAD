@@ -10,7 +10,21 @@
   - Phase 0: spike 24-row | Phase 1: SKILL 14 cmd | Phase 2: Director+19 cmd | Phase 3: E2E 6/6 PASS
   - Archived: `.tad/archive/epics/EPIC-20260504-notebooklm-research-director.md`
 
-- [ ] **EPIC: Goal-Driven Research Director** — 业务目标驱动自主研究 (NEW)
+- [ ] **EPIC: TAD Depth-First Capability Building** — 先深后宽，原能力打磨 + Domain Pack 重建 (NEW 2026-05-05)
+  - Research notebook: `37cfefa5` (49 sources, 5 rounds deep ask)
+  - Research findings: `.tad/evidence/research/2026-05-05-tad-evolution-deep-ask-findings.md`
+  - **Phase 1: Research Capability Polish** — code changes DONE (2026-05-05, commits 69b2450 + 6b86950)
+    - ✅ Fix auto-activation: CLAUDE.md §2 routing row + /deep-research exclusion
+    - ✅ Fix session continuity: SKILL.md Standalone Usage + REGISTRY check in routing
+    - ✅ Close the loop: step6 Research → Action Bridge (5 options)
+    - ⬚ Real-project validation: 在下一个真实项目中验证研究 pipeline 是否自动触发
+  - **Phase 2: Domain Pack Freeze + Rebuild**
+    - ⬚ Freeze 20 YAML domain packs (停止维护，降权 keyword router hook)
+    - ⬚ When real project needs a domain: NotebookLM research → SKILL.md format rebuild
+    - ⬚ Key insight: SKILL.md (菜谱/action-ready) > YAML (食材清单/informational)
+    - Evidence: Knowledge Activation paper (arxiv 2603.14805) — "retrieval returns content for reading, activation delivers guidance for acting"
+
+- [ ] **EPIC: Goal-Driven Research Director** — 业务目标驱动自主研究
   - Epic: `.tad/active/epics/EPIC-20260504-goal-driven-research.md`
   - ⬚ Phase 0: Cross-Project Sync Wizard (方案 C — 解决 29 vs 1 REGISTRY 差距)
   - ✅ Phase 1: Business Objective Definition (OBJECTIVES.md OKR) — DONE 2026-05-04 (commit cc2ceff)
@@ -40,6 +54,12 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Research Capability Polish — Auto-activation + Session Continuity (2026-05-05)** — Gate 3 PASS
+  - CLAUDE.md: routing row for deep research + /deep-research exclusion note
+  - research-notebook SKILL: "Standalone Usage" section + removed "Alex-domain only" restriction
+  - alex SKILL: step6 "Research → Action Bridge" with 5 next-step options
+  - Commits: 69b2450 + 6b86950 | KA: CLAUDE.md routing label must not share keyword with AC grep
 
 - [x] **Research Pipeline Iterative Enrichment + Curate Acceleration (2026-05-05)** — Gate 4 PASS ✅
   - Added PHASE 4b CRAG Judge Loop: auto gap detection + targeted re-research per question (max 1 re-ask)

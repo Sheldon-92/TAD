@@ -5,6 +5,24 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.5] - 2026-05-05
+
+### New Features — Research Routing + Action Bridge
+- **CLAUDE.md Global Research Routing**: Added `深度研究` routing row to §2 使用场景 table. Deep research tasks (signal: 研究/research/调研/landscape/对比/深入) now route to `*research-notebook` CLI pipeline instead of WebSearch. Quick lookups still use WebSearch.
+- **Global Skill Exclusion**: Added `研究工具排除` note suppressing `/deep-research` global skill and generic Agent web searches for research tasks. Prevents routing race where global skill wins over TAD's NotebookLM integration.
+- **Standalone Research Mode**: `*research-notebook` SKILL now usable without `/alex` activation. Removed "Alex-domain only" restriction. Added "Standalone Usage" section with precedence rule (when /alex IS active, Alex's own protocols take over).
+- **Research → Action Bridge (step6)**: After `*research-plan` completes, Alex offers 5 next-step options: enter *analyze design / add to NEXT.md / continue researching / save to project-knowledge / just save. Closes the gap between "research done" and "what to do next".
+
+### Research Infrastructure
+- **Persistent Research Notebook**: Created NotebookLM notebook `37cfefa5` with 49 curated sources on AI Agent Framework Landscape 2025-2026. 5 rounds of deep ask completed covering: competitive analysis, failure modes, evaluation, memory systems, domain pack activation.
+- **OBJECTIVES.md**: Created project-level OKR defining 3 research objectives (competitive positioning, upgrade directions, persistent knowledge base).
+- **Research Findings**: Documented in `.tad/evidence/research/2026-05-05-tad-evolution-deep-ask-findings.md`.
+
+### Strategic Direction
+- **Depth-First Capability Building**: New epic prioritizing primitive capability deepening over Domain Pack breadth. Key insight from Knowledge Activation paper: SKILL.md (action-ready recipes) > YAML Domain Packs (informational ingredient lists).
+
+---
+
 ## [2.10.4] - 2026-05-05
 
 ### New Features — CRAG Judge Loop + Parallel Curate
