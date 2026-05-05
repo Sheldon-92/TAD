@@ -5,6 +5,20 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.3] - 2026-05-05
+
+### New Features — Research Methodology Upgrade (5-Phase Pipeline)
+- **5-Phase Research Pipeline**: Upgraded `*research-plan` step4 from report-only to full lifecycle: PHASE 1 (Deep Research) → PHASE 2 (Auto-Curate: clean errors + dedup + tier) → PHASE 3 (Baseline Report) → PHASE 4 (Question Tree + Ask Loops) → PHASE 5 (Extract Actionable Items → AC bridge)
+- **Auto-Curate**: `*research-notebook curate` now includes Step 1b (auto-clean error sources) + Step 1c (auto-deduplicate by title+domain) + source quality tiering (Tier 1/2/3 by URL pattern)
+- **Question Tree**: Alex generates KR-driven questions from OBJECTIVES.md (1-3 per KR based on breadth), user confirms before executing
+- **Cross-Notebook Query**: Serial query across multiple relevant notebooks with `-n` flag (stateless, no `use` state leak)
+- **Research→AC Bridge**: Phase 5 extracts actionable items from ask answers, suggests AC entries for future handoffs
+
+### Bug Fixes
+- Fixed NotebookLM CLI state leak: cross-notebook loops now use `-n` flag only (no `use` command)
+- Added OBJECTIVES.md existence guard in Phase 4-5 (graceful skip if absent)
+- Added defensive JSON guard for `source list --json` output format changes
+
 ## [2.10.2] - 2026-05-05
 
 ### New Features — Global Skill Exclusion + Tool Quick Reference
