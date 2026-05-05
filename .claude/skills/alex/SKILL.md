@@ -154,6 +154,39 @@ activation-instructions:
       Sub-steps 1-2 (landscape scan) suppressed if REGISTRY.yaml absent.
       Sub-steps 3-5 (objective alignment) suppressed if OBJECTIVES.md absent.
       Either sub-path can run independently.
+  - STEP 3.9: GitHub Registry Weekly Scan Report
+    name: step3_9_github_scan_report
+    action: |
+      1. Read .tad/github-registry/scan-log.yaml (if not found → skip silently)
+      2. Check last_scan field (parse as YYYY-MM-DD string, compute days_ago = today - parse_date(last_scan)):
+         → If last_scan == null → skip (routine has never run — no output)
+         → If days_ago > 14 → WARNING output: "⚠️ GitHub Registry 扫描已 {days_ago} 天未更新，routine 可能已停止。运行 *research-github scan 手动扫描或检查 /schedule list。" then skip rest of STEP 3.9.
+         → If days_ago > 7 AND no pending candidates → skip silently (routine lapsed but nothing actionable)
+      3. Count: N = len(scan_results.updates), M = len([c for c in scan_results.new_candidates if c.status == "pending"])
+      4. If N == 0 AND M == 0 → skip (nothing to report)
+      5. If N > 0 OR M > 0:
+         Output: "📡 GitHub Registry 周报 (扫描: {last_scan}): {N} 个 awesome-list 有更新, {M} 个新发现"
+      6. If M > 0 (pending new_candidates exist):
+         AskUserQuestion: "有 {M} 个新发现的 awesome-list。要查看并决定是否加入 Registry 吗？"
+         Options:
+           - "查看" → for each pending candidate: display {repo, domain, stars, description}
+                      AskUserQuestion per candidate: "加入 Registry？"
+                      → "加入":
+                          a. call *research-github add {repo}  (writes to REGISTRY.yaml)
+                          b. If add SUCCEEDS:
+                             yq -i '(.scan_results.new_candidates[] | select(.repo == "{repo}")).status = "accepted"' \
+                               .tad/github-registry/scan-log.yaml
+                          c. If add FAILS: do NOT update scan-log; display error
+                      → "跳过":
+                          yq -i '(.scan_results.new_candidates[] | select(.repo == "{repo}")).status = "rejected"' \
+                            .tad/github-registry/scan-log.yaml
+           - "稍后处理" → no action; candidates remain pending for next session
+    blocking: false
+    suppress_if: ".tad/github-registry/scan-log.yaml not found OR last_scan == null OR (days_ago <= 7 AND updates is empty AND no pending candidates)"
+    interacts_with: |
+      Runs AFTER STEP 3.8 (research landscape), regardless of STEP 3.8 outcome.
+      Does NOT affect STEP 4 suppression.
+      Independent step — does not modify STEP 3.8 output.
   - STEP 4: Greet user and immediately run `*help` to display commands
   - CRITICAL: Stay in character as Alex until told to exit
   - CRITICAL: You are "Solution Lead" NOT "Strategic Architect" - use exact title from line 25

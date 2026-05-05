@@ -301,7 +301,9 @@ Step 1: Determine scope:
   → If no flag: check all domains (may be slow; warn user: "Checking {N} awesome-lists — this may take 1-2 minutes")
 
 Step 2: For each awesome-list in scope:
-  → gh api "repos/{owner}/{repo}/commits?per_page=1" --jq '.[0].commit.author.date'
+  → gh api "repos/{owner}/{repo}/commits?per_page=1" --jq '.[0].commit.committer.date'
+  Note: Use `committer.date` (reliable merge date — matches GitHub "last updated" display).
+        Never use `author.date` — can be stale when old PRs are merged recently.
   Note: Use ?per_page=1 query param (NOT --limit flag — --limit is for gh search, not gh api)
   → Parse date as last_commit_date
   → Compare to last_checked in REGISTRY.yaml
@@ -322,6 +324,177 @@ Step 6: Update REGISTRY.yaml for confirmed lists:
   → Set last_checked = today for updated entries
   → If repo ARCHIVED: add note field: "archived: true" to entry (don't delete — preserve history)
 ```
+
+---
+
+### `*research-github scan [--domain <slug>]`
+
+Manual trigger for weekly scan logic: check freshness + discover new lists. Writes results to scan-log.yaml (single-writer principle — does NOT update REGISTRY.yaml last_checked).
+
+**API call budget**: ~75 calls total (50 REST `commits` + 24 `gh search`). gh search has 30/min limit — builds in 2s delay between search calls.
+
+```
+Step 1: Determine scope:
+  → If --domain <slug>: check only that domain
+  → If no flag: check all domains
+
+Step 1b: Today-guard (avoid duplicate scan):
+  → Read scan-log.yaml: if last_scan == today YYYY-MM-DD:
+    AskUserQuestion: "Already scanned today ({last_scan}). Re-scan?"
+    Options: "Yes, re-scan" / "Show last results → *research-github scan-log"
+    → "Show last results": redirect to *research-github scan-log + EXIT
+
+Step 2: Freshness check (Behavior A — already-registered lists)
+  For each awesome_list in scope:
+  → gh api "repos/{owner}/{repo}/commits?per_page=1" --jq '.[0].commit.committer.date'
+    Note: Use `committer.date` (reliable merge date), not `author.date`
+    Note: Use ?per_page=1 query param (NOT --limit — --limit is for gh search, not gh api)
+  → If last_commit_date > awesome_list.last_checked → mark as "updated"
+  → If repo returns 404 → mark as "archived"
+  → Collect {repo, domain_slug, last_commit, previous_checked} per updated entry
+
+Step 3: Discovery check (Behavior B — new awesome-lists, with rate-limit guard)
+  For each domain in scope:
+  → gh search repos "awesome {domain.slug}" --sort stars --limit 5 \
+      --json fullName,stargazersCount,description
+    Note: --json uses camelCase (fullName, stargazersCount) — gh search CLI convention
+  → Rate-limit handling: if gh search returns HTTP 403 / rate-limit error:
+    → Wait 60s and retry once
+    → If still fails: log {domain, error: "rate_limited"} and continue to next domain
+  → Sleep 2s between domain searches to stay under 30/min limit
+  → For each result NOT already in domain.awesome_lists (match by fullName):
+    → If stargazersCount > 500: mark as "new_candidate"
+    → Collect {repo, domain, stars, description}  (status assigned in Step 4 merge)
+  (Repos with ≤500 stars are silently filtered — avoids noise)
+
+Step 4: Merge-write scan-log.yaml (NEVER full overwrite — preserve user decisions):
+  → Read existing scan-log.yaml (if exists)
+  → Build merged new_candidates list:
+      For each newly-found candidate {repo, domain}:
+        If already exists in scan_results.new_candidates with status == "accepted":
+          SKIP (already in REGISTRY — drop from scan-log)
+        If already exists with status == "rejected":
+          PRESERVE rejected status (do NOT reset to pending)
+        If new entry: status = pending
+  → GC: remove entries with status: accepted (in REGISTRY already)
+         remove entries with status: rejected AND created more than 2 scan-cycles ago
+  → Write merged result to .tad/github-registry/scan-log.yaml:
+      version: 1.0.0
+      last_scan: {today YYYY-MM-DD}
+      scan_results:
+        updates: [{repo, domain, last_commit, previous_checked}]
+        new_candidates: [{repo, domain, stars, description, status}]
+
+Step 5: Display summary:
+  "✅ Scan complete: {N} lists updated, {M} new candidates found ({K} previously rejected preserved)."
+  "Results saved to .tad/github-registry/scan-log.yaml"
+  "Alex will report next time on session start (STEP 3.9)."
+
+Single-writer for scan-log.yaml data: scan command + routine write scan data here.
+Status mutations (accept/reject) are also written to scan-log.yaml but via separate yq commands
+in scan-log interactive flow and STEP 3.9 — see mutation_protocol in those commands.
+REGISTRY.yaml is NOT modified. To update last_checked: use *research-github refresh.
+```
+
+---
+
+### `*research-github scan-log`
+
+Display the most recent scan results from scan-log.yaml.
+
+```
+Step 1: Read .tad/github-registry/scan-log.yaml
+  → If file not found or last_scan == null: "📡 No scan results yet. Run *research-github scan to start."
+
+Step 2: Display scan summary header:
+  "📡 Last scan: {last_scan} ({N_days} ago)"
+
+Step 3: Display updates section:
+  If scan_results.updates is empty: "✅ No updates — all lists are current."
+  Else:
+  "🔄 Updated lists ({N}):"
+  | Repo | Domain | Last Commit | Was Checked |
+  |------|--------|-------------|-------------|
+  For each updated entry.
+  → Suggest: "Run *research-github refresh to update REGISTRY.yaml last_checked dates."
+
+Step 4: Display new candidates section:
+  If scan_results.new_candidates is empty: "🔍 No new candidates found."
+  Else:
+  "🆕 New candidates ({M}) — status: pending:"
+  | Repo | Domain | Stars | Description |
+  |------|--------|-------|-------------|
+  For each candidate with status == "pending".
+  If any pending candidates:
+    AskUserQuestion: "有 {M} 个新发现的 awesome-list。要现在处理吗？"
+    Options:
+      - "逐一查看并决定 (accept/reject)"
+      - "全部接受 (add to REGISTRY)"
+      - "全部跳过 (mark rejected)"
+      - "稍后处理 (leave as pending)"
+    → "逐一查看":
+        For each candidate: display + AskUserQuestion "加入 Registry？"
+        → "加入":
+            1. call *research-github add {candidate.repo}  (writes to REGISTRY.yaml)
+            2. If add SUCCEEDS: write status to scan-log.yaml (scan-log status update ONLY after add succeeds):
+               yq -i '(.scan_results.new_candidates[] | select(.repo == "{candidate.repo}")).status = "accepted"' \
+                 .tad/github-registry/scan-log.yaml
+            3. If add FAILS: do NOT update scan-log.yaml; display: "⚠️ Add failed — scan-log unchanged. Retry manually."
+        → "跳过":
+            yq -i '(.scan_results.new_candidates[] | select(.repo == "{candidate.repo}")).status = "rejected"' \
+              .tad/github-registry/scan-log.yaml
+    → "全部接受": loop each pending candidate through the "加入" mutation_protocol above (REGISTRY write first, scan-log second)
+    → "全部跳过":
+            yq -i '.scan_results.new_candidates[] |= (select(.status == "pending") | .status = "rejected")' \
+              .tad/github-registry/scan-log.yaml
+    → "稍后处理": no action (Alex will prompt again next session)
+
+Step 5: Display archived entries (if any):
+  If any entries marked "archived" in updates: warn user, suggest removing from REGISTRY.
+```
+
+---
+
+## Setup: Scheduled Routine
+
+To enable weekly automatic scanning, create a Claude Code scheduled routine via `/schedule`.
+
+### Routine prompt (copy-paste to `/schedule`):
+
+```
+Read .tad/github-registry/REGISTRY.yaml.
+
+For each domain in .domains:
+  For each awesome_list in domain.awesome_lists:
+    last_commit = run: gh api "repos/{awesome_list.repo}/commits?per_page=1" --jq '.[0].commit.committer.date'
+    If last_commit > awesome_list.last_checked: record {repo, domain.slug, last_commit, awesome_list.last_checked} as "updated".
+
+  search_results = run: gh search repos "awesome {domain.slug}" --sort stars --limit 5 --json fullName,stargazersCount,description
+  For each result with fullName NOT in domain.awesome_lists and stargazersCount > 500:
+    Record {fullName, domain.slug, stargazersCount, description, status: pending} as "new_candidate".
+
+Write results to .tad/github-registry/scan-log.yaml:
+  version: 1.0.0
+  last_scan: {today YYYY-MM-DD}
+  scan_results:
+    updates: [{repo, domain, last_commit, previous_checked}]
+    new_candidates: [{repo, domain, stars, description, status: pending}]
+
+Do NOT modify REGISTRY.yaml last_checked. Do NOT add candidates to REGISTRY.yaml.
+Single-writer principle: scan-log.yaml is the only output of this routine.
+```
+
+### Schedule: Weekly (Sunday 23:00 or Monday 00:00)
+
+### Setup steps:
+1. Type `/schedule` in Claude Code
+2. Paste the routine prompt above
+3. Set schedule: weekly (Sunday night)
+4. Confirm creation
+
+### Verification:
+- After first run: `*research-github scan-log` shows last_scan date
+- Alex will automatically report in STEP 3.9 on next session start
 
 ---
 
@@ -386,5 +559,7 @@ Sync rules:
 | `explore <domain>` | Read README, pick repos | Yes | No |
 | `notebook <domain>` | Create research notebook | Yes | Yes |
 | `refresh` | Check for updates | Yes | No |
+| `scan` | Manual weekly scan (freshness + discovery) | Yes | No |
+| `scan-log` | Display latest scan results | No | No |
 
 [[LLM: When activated via /research-github, always run preflight checks before any operation. For notebook command, follow the 11-step pipeline exactly — especially Step 3 (query default_branch) and Step 10 (update BOTH registries). Use absolute notebooklm path everywhere.]]
