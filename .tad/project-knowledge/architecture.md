@@ -785,3 +785,36 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: When designing automation that writes shared state: (1) distinguish "fresh scan data" (overwrite-safe) from "user decision state" (must preserve); (2) if both live in same file, use merge logic for scan + field-level yq updates for decisions; (3) if designing from scratch, consider separate files (immutable scan output + mutable decision file) to make writer boundaries explicit.
 - **Grounded in**: .claude/skills/research-github/SKILL.md (scan Step 4 merge logic, scan-log yq mutation protocol), .claude/skills/alex/SKILL.md (STEP 3.9 mutation_protocol), .tad/evidence/reviews/blake/github-automation-phase3/backend-architect.md (P0-1 finding)
 - **Revalidated**: 2026-05-04
+
+### NotebookLM Research Methodology: Report Is Baseline, Multi-Round Ask Is Value — 2026-05-05
+- **Context**: Menu-snap project real-world test. Alex (v2.10.1) ran `*research-plan` with 4 research items — spawned 4 generic WebSearch agents instead of using NotebookLM CLI. User forced proper workflow: `notebooklm create` → `source add-research --mode deep` → clean error sources → deduplicate → report → 3 rounds of targeted ask → save findings. Two notebooks built: iOS submission (288 sources → 110-line report) and allergen detection (296 sources → 76 curated after cleanup → 93-line report + 3 deep ask findings).
+- **Discovery**: Five-step research methodology empirically validated:
+  1. **Create + Deep Research**: `notebooklm source add-research --mode deep` produces 80-100 initial sources; backend import may expand to 200-400. Token cost: ~15-20K total vs ~100-170K for equivalent WebSearch coverage. Token efficiency: ~60 tokens/source vs ~10K tokens/source (150-200x improvement).
+  2. **Curate (clean + deduplicate)**: Deep research imports contain ~30% error sources and ~25% duplicates (same article imported 4-8 times). Must clean BEFORE asking. Rate limit caveat: batch delete needs 0.5s delay between calls.
+  3. **Report (baseline)**: `notebooklm generate report` produces structured overview. Purpose is orientation ("what does the knowledge base contain"), NOT the final deliverable. Report alone = wasting notebook's core capability.
+  4. **Multi-round Ask (value extraction)**: Targeted questions driven by OBJECTIVES.md KRs. Each ask triggers cross-source reasoning across all curated sources. This is where engineering decisions emerge (e.g., "Kung Pao → sesame mapping rule" directly translates to allergen-rules.ts code change). Three ask rounds in the test produced more actionable findings than the report.
+  5. **Structured Save**: Findings saved as separate files alongside report. Report = `.../comprehensive-guide.md`, ask findings = `.../deep-ask-findings.md`.
+- **Five identified improvement directions** (from user + Alex analysis):
+  a. Source quality tiering (Tier 1: official/academic, Tier 2: industry, Tier 3: community) — ask important questions against Tier 1 only
+  b. Question Tree methodology — derive questions from OBJECTIVES.md KR hierarchy, not ad-hoc
+  c. Research-to-handoff bridge — extract actionable items from ask answers → write directly into handoff AC
+  d. Cross-notebook queries — currently notebooks are siloed; GDPR requirements span both iOS and allergen notebooks
+  e. Automated cleanup — `*research-notebook curate` should auto-delete error sources + deduplicate + report quality distribution
+- **Root cause of initial failure** (Alex using WebSearch instead of NotebookLM):
+  a. Global `/deep-research` skill shadowed TAD's `*research-notebook research` (naming collision — fixed in v2.10.2 via global_skill_exclusion)
+  b. Alex SKILL referenced `*research-notebook` commands by name but never loaded the SKILL file containing CLI paths (execution bridge gap — fixed in v2.10.2 via tool-quick-reference-alex.md loaded at STEP 3.3)
+  c. Alex wrote fake REGISTRY entries (notebook IDs that didn't exist in NotebookLM cloud) — no verification mechanism existed
+- **Action**: Upgrade `*research-plan` step4 from "create → research → report → done" to "create → research → curate → report → multi-round ask → save findings". The report is Step 3 of 5, not the final step. `*research-notebook curate` needs automated error+duplicate cleanup. Future: Question Tree methodology and research-to-handoff AC bridge.
+- **Grounded in**: /Users/sheldonzhao/01-on progress programs/menu-snap/.tad/evidence/research/2026-05-05-notebooklm-research-session-log.md (264 lines, full session transcript)
+- **Revalidated**: 2026-05-05
+
+### NotebookLM CLI State Management: `-n` Flag vs `use` Command — 2026-05-05
+- **Context**: Research Methodology Upgrade handoff — implementing cross-notebook serial query loop in `*research-plan` step4 Phase 4.
+- **Discovery**: `notebooklm use <id>` and `notebooklm ask -n <id>` are two different notebook-selection mechanisms with critically different state semantics:
+  1. **`use <id>`** mutates global active-notebook state (persisted in CLI config). In a cross-notebook loop (`use A → ask → use B → ask`), if error aborts mid-loop, global state is left pointing at the last `use`d notebook, not the user's original. This is a **state leak**.
+  2. **`-n <id>`** is per-command override, stateless. Does NOT mutate global state. `ask -n B` queries notebook B but leaves global active notebook unchanged. This is the **correct pattern for loops**.
+  3. Using BOTH (`use A` then `ask -n A`) is redundant — the `-n` flag makes `use` a no-op that only introduces state mutation risk.
+  4. **Related drift**: When Phase 2 curate logic was inlined in `*research-plan` step4 alongside the canonical curate command, the error filter diverged (`status != "ready"` inline vs `status contains "error"` canonical). This is the same single-source-of-truth violation pattern from v2.8.1 commands/skills consolidation. Inline duplication of CLI logic should be delegated to the canonical command (future: `curate --auto` flag).
+- **Action**: For any NotebookLM CLI loop that iterates over multiple notebooks: use `-n <id>` exclusively, never `use`. Reserve `use` for single-notebook interactive sessions where the user explicitly switches context. For inline CLI logic that duplicates a canonical command: delegate rather than duplicate.
+- **Grounded in**: .claude/skills/alex/SKILL.md (step4 Phase 4 cross-notebook), .claude/skills/research-notebook/SKILL.md (ask Step 2, curate Step 1b-1c), .tad/evidence/reviews/blake/research-methodology-upgrade/backend-architect.md (P0-1)
+- **Revalidated**: 2026-05-05

@@ -41,6 +41,12 @@
 
 ## Recently Completed
 
+- [x] **Research Methodology Upgrade — 5-Phase Pipeline (2026-05-05)** — Gate 4 PASS
+  - Upgraded *research-plan from report-only to: curate → report → Question Tree → ask loops → AC extraction
+  - Added curate auto-clean (error sources) + auto-dedup (title+domain) + source quality tiering
+  - Cross-notebook serial query with `-n` flag (no state leak)
+  - Commit: `2d306a3` | KA: NotebookLM CLI state management pattern
+
 - [x] **Global Skill Exclusion + Tool Quick Reference (2026-05-05)** — Gate 4 PASS
   - Fixed: global skills (/deep-research, /code-review etc.) shadowing TAD methods
   - Added: tool-quick-reference-alex.md + blake.md (CLI cheat sheets loaded at activation)
