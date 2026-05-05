@@ -1042,28 +1042,95 @@ research_plan_protocol:
            → If existing notebook matches topic → use it
            → If no match → *research-notebook create "{topic}" (new notebook)
 
-        b. Execute based on method:
-           - "deep search" → *research-notebook research "{question}" --mode deep
-           - "report" → *research-notebook report "{question}"
-           - "targeted ask" → *research-notebook ask "{question}" --save-as-note
-             → After ask completes: write answer to .tad/evidence/research/{slug}-ask.md
-               → *research-notebook ingest .tad/evidence/research/{slug}-ask.md
-               (note for human reading + ingest for future ask context — notes are NOT queryable)
+        b. PHASE 1 — Deep Research:
+           → *research-notebook research "{question}" --mode deep
+           → Wait for completion, capture source_count
 
-        c. After each item completes (success OR failure):
-           → SUCCESS: Display brief result summary
-             → If report generated → "📄 Report saved: {path}"
-             → If deep search → "🔍 {N} sources added to '{notebook}'"
-           → FAILURE: Immediate inline notice (don't wait for final summary):
-             → "⚠️ {item description} failed ({reason: auth/timeout/error}). Skipping."
-             → Continue to next item (don't block)
+        c. PHASE 2 — Auto-Curate (fully automatic, no user interaction):
+           → Step 1: Delete error sources (uses same filter as *research-notebook curate Step 1b)
+             → ~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <id>
+             → Parse JSON: each source has an `id` field (UUID string). Filter sources where
+               `status` field contains "error" (explicit error only).
+               Do NOT delete sources with status "preparing" or "processing" — these may succeed.
+             → ⚠️ DEFENSIVE: If JSON shape is unexpected (no `id` field), STOP and report:
+               "source list JSON format changed — manual curate needed"
+             → For each error source:
+               → ~/.tad-notebooklm-venv/bin/notebooklm source delete <source.id> -n <id> --yes
+               → sleep 0.5 (rate limit protection)
+             → Report: "🧹 Cleaned {N} error sources"
+           → Step 2: Deduplicate (title + domain match)
+             → Group sources by (lowercase title, URL domain)
+             → Sources without URL (type=text/file) → skip dedup (unique by definition)
+             → For each group with count > 1: keep first, delete rest
+             → sleep 0.5 between deletes
+             → Report: "🔄 Removed {N} duplicates, {M} unique sources remain"
+           → Step 3: Source quality tiering (use canonical patterns from *research-notebook curate Step 3)
+             → tier1_patterns: [".gov", ".edu", "arxiv.org", "pubmed", ".who.int", "fda.gov",
+                  "developer.apple.com", "developers.google.com", "docs.anthropic.com",
+                  "owasp.org", "w3.org", "ietf.org"]
+             → tier2_patterns: ["medium.com", "dev.to", "stackoverflow.com", "docs.*", "blog.*",
+                  ".readthedocs.io", "github.com/*/wiki"]
+             → tier3_patterns: ["reddit.com", "x.com", "twitter.com", "forum.*", "community.*",
+                  "news.ycombinator.com"]
+             → Classify each source; store tier in conversation context (ephemeral judgment)
+             → Report: "📊 Source quality: {T1} Tier 1, {T2} Tier 2, {T3} Tier 3"
 
-        d. After ALL items complete:
-           → If success_count >= 1:
-             → For each distinct touched_notebook (collected during step4.a/b):
-               → *research-notebook ingest <plan_path> --notebook {touched_notebook}
-               (plan document = metadata source for future "what was researched and why")
-           → If success_count == 0: skip ingest
+        d. PHASE 3 — Baseline Report:
+           → *research-notebook report "{topic} comprehensive analysis"
+           → Save to .tad/evidence/research/{slug}/{date}-report.md
+           → Report: "📄 Baseline report saved. This is orientation, not the final deliverable."
+
+        e. PHASE 4 — Question Tree + Ask Loops:
+           → Step 1: Generate Question Tree from OBJECTIVES.md
+             → If OBJECTIVES.md not found in project root:
+               → Display: "No OBJECTIVES.md found — skipping Question Tree + AC Bridge (Phase 4-5)."
+               → SKIP Phase 4 and Phase 5 entirely. Phase 3 report is the final deliverable.
+               → Proceed to step5 (OBJECTIVES coverage update — which no-ops when OBJECTIVES.md is absent)
+             → Read OBJECTIVES.md KRs aligned with this research item
+             → For each KR with status ⬚/🔄, generate 1-3 targeted questions depending on KR breadth:
+               (KRs with status ✅ → skip, 0 questions. Broad KRs → up to 3 sub-questions.)
+               Format: "KR: {KR description} → Q: {specific question this notebook can answer}"
+             → Display Question Tree to user:
+               "📋 Question Tree (based on {N} KRs):"
+               | # | KR | Question | Priority |
+             → AskUserQuestion: "这些问题对吗？"
+               Options: "确认执行" / "我要调整" / "加自定义问题" / "跳过 ask"
+           → Step 2: Execute ask loops (sequential, with 1s delay between asks)
+             → For each confirmed question:
+               → Construct query: if KR status is ⬚ (incomplete) →
+                 query = "{question} — prioritize official/academic sources"
+                 else → query = "{question}" as-is
+               → If cross-notebook query needed (topic spans multiple notebooks):
+                 → Identify relevant notebooks from REGISTRY (LLM semantic match)
+                 → If REGISTRY has only 1 active notebook → skip cross-notebook, use single ask
+                 → For each relevant notebook:
+                   → ~/.tad-notebooklm-venv/bin/notebooklm ask "{constructed_query}" -n <notebook_id>
+                   → (Use -n flag ONLY — do NOT call `notebooklm use`. -n is stateless per-command override.
+                      `use` mutates global active notebook state which leaks across loop iterations.
+                      REGISTRY.yaml active_notebook is unchanged — no save/restore needed with -n.)
+                   → sleep 1
+                 → Alex synthesizes answers from all notebooks in conversation
+                 → Note which notebook contributed what (for traceability)
+               → Else (single notebook):
+                 → ~/.tad-notebooklm-venv/bin/notebooklm ask "{constructed_query}" -n <id>
+               → sleep 1 between consecutive ask calls (rate limit protection)
+           → Step 3: Save findings
+             → Write all ask results to .tad/evidence/research/{slug}/{date}-ask-findings.md
+             → Format: per-question sections with KR reference, answer summary, source citations
+
+        f. PHASE 5 — Extract Actionable Items (Research→AC Bridge):
+           → Step 1: From all ask answers, extract engineering-actionable items
+             → Format: "Based on {KR}, research shows: {finding} → Suggested AC: {concrete acceptance criterion}"
+             → Example: "KR1 sesame recall: 担担面 → sesame paste mapping → AC: allergen-rules must contain dandan→sesame rule"
+           → Step 2: Display extracted ACs to user
+             → AskUserQuestion: "研究提取了 {N} 个可执行项。哪些要写入下一个 handoff 的 AC？"
+               Options: "全部采纳" / "逐条确认" / "只保存，不写 AC"
+           → Step 3: Write extracted items per user choice:
+             → "全部采纳": write all to {date}-extracted-acs.md, M = N
+             → "逐条确认": per-item AskUserQuestion, write only adopted items, M = adopted count
+             → "只保存，不写 AC": write all to {date}-research-findings.md (not -acs.md), M = 0
+             → In all cases: the saved file is READY TO REFERENCE in future handoff §9
+           → Report: "✅ Research complete. {N} actionable items extracted, {M} adopted as future ACs."
 
     step5:
       name: "更新 OBJECTIVES 研究覆盖"

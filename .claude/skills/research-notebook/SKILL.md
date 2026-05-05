@@ -248,6 +248,30 @@ Audit and maintain source quality for a notebook.
 ```
 Step 1: Read REGISTRY.yaml sources for target notebook
 
+Step 1b: Auto-clean error sources (NEW — fully automatic)
+  → ~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <notebook_id>
+  → Parse JSON: each source object has an `id` field (server-side UUID string).
+    Filter sources where `status` field contains "error" (explicit error state only).
+    Do NOT delete sources with status "preparing" or "processing" — these may complete successfully.
+  → For each error source:
+    → ~/.tad-notebooklm-venv/bin/notebooklm source delete <source.id> -n <notebook_id> --yes
+    → sleep 0.5 (rate limit protection — empirically required per menu-snap test)
+  → Report: "🧹 Cleaned {N} error sources ({M} remaining)"
+  → If N == 0: "✅ No error sources found"
+  → ⚠️ DEFENSIVE: If `source list --json` output structure is unexpected (no `id` field,
+    different JSON shape), STOP and report: "source list JSON format changed — manual curate needed"
+
+Step 1c: Auto-deduplicate (NEW — fully automatic)
+  → From remaining sources, group by (lowercase(title), extract_domain(url))
+  → extract_domain: parse URL to domain only (e.g., "arxiv.org", "developer.apple.com")
+    → Sources without URL (type=text/file) → skip dedup (unique by definition)
+  → For each group with count > 1:
+    → Keep the FIRST source (by add date), delete rest
+    → ~/.tad-notebooklm-venv/bin/notebooklm source delete <source.id> -n <notebook_id> --yes
+    → sleep 0.5
+  → Report: "🔄 Removed {N} duplicates ({M} unique sources remain)"
+  → If N == 0: "✅ No duplicates found"
+
 Step 2: Check each source (age-based staleness)
   → Added >90 days ago (source_stale_after_days) → ⚠️ possibly stale
   → URL unreachable (if WebFetch available) → ❌ broken
@@ -272,9 +296,19 @@ Step 2c (refresh stale sources — URL-type only):
         - "Skip, review manually" → continue
         - "Skip all refreshes" → continue
 
-Step 3: Output curation report
-  | # | Source | Type | Added | Age-Stale | Content-Stale | Suggestion |
-  |---|--------|------|-------|-----------|---------------|------------|
+Step 3: Output curation report with quality tier
+  Tier classification rules (by URL pattern):
+    tier1_patterns: [".gov", ".edu", "arxiv.org", "pubmed", ".who.int", "fda.gov",
+                     "developer.apple.com", "developers.google.com", "docs.anthropic.com",
+                     "owasp.org", "w3.org", "ietf.org"]
+    tier2_patterns: ["medium.com", "dev.to", "stackoverflow.com", "docs.*", "blog.*",
+                     ".readthedocs.io", "github.com/*/wiki"]
+    tier3_patterns: ["reddit.com", "x.com", "twitter.com", "forum.*", "community.*",
+                     "news.ycombinator.com"]
+    unknown: everything else → ❓
+  Tier values: 🏛️ T1 (official/academic) / 📰 T2 (industry) / 💬 T3 (community) / ❓ Unknown
+  | # | Source | Type | Tier | Added | Age-Stale | Content-Stale | Suggestion |
+  |---|--------|------|------|-------|-----------|---------------|------------|
 
 Step 4: AskUserQuestion (for removal suggestions)
   Options:

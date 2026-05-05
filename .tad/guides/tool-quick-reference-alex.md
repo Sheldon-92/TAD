@@ -53,17 +53,21 @@
 
 ## TAD Research Commands (Alex-domain)
 
-### *research-notebook (19 commands — top 6 for daily use)
+### *research-notebook (19 commands — top 7 for daily use)
 | Command | What it does | When to use |
 |---------|-------------|-------------|
 | `*research-notebook create "<topic>"` | Create notebook + add sources | New research topic |
 | `*research-notebook research "<topic>" --mode deep` | Auto-discover 50+ sources | Deep dive |
+| `*research-notebook curate` (upgraded) | Auto-clean errors + dedup + quality tier | After every deep research |
 | `*research-notebook ask "<question>"` | Cross-source Q&A with citations | During *discuss or *design |
 | `*research-notebook report "<desc>"` | Generate structured report | Before handoff creation |
 | `*research-notebook ingest <file_path>` | Feed local findings back into notebook | After writing research notes |
 | `*research-notebook list` | Show all notebooks with status | Portfolio check |
 
 Execution: Read `.claude/skills/research-notebook/SKILL.md` for the sub-command, then run CLI via Bash tool. SEQUENTIAL, not parallel Agent tools.
+
+**`*research-plan` now uses 5-Phase Pipeline** (v2.10.2):
+Phase 1 Deep Research → Phase 2 Auto-Curate → Phase 3 Baseline Report → Phase 4 Question Tree (OBJECTIVES.md KRs) → Phase 5 Research→AC Bridge
 
 ### *research-github (6 commands — top 3)
 | Command | What it does | When to use |
