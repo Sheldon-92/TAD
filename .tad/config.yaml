@@ -1,8 +1,8 @@
-# TAD Configuration v2.10.1 - Goal-Driven Research Director + NotebookLM Full Integration
+# TAD Configuration v2.10.2 - Global Skill Exclusion + Tool Quick Reference
 method: TAD
-version: 2.10.1
+version: 2.10.2
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
-last_updated: 2026-05-04
+last_updated: 2026-05-05
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

@@ -43,7 +43,7 @@ Claude: [调用 Skill tool with skill="tad-blake"]
 
 **核心原则**: 有 Handoff → 必须用 Blake；直接实现 → 绕过质量门控
 
-# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.10.1)
+# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.10.2)
 # When Blake is active, DO NOT invoke these global skills:
 # - /code-review → Use Layer 2 code-reviewer sub-agent with TAD prompt template
 # - /review → Blake does not do PR review; Layer 2 handles code review
@@ -58,7 +58,7 @@ Claude: [调用 Skill tool with skill="tad-blake"]
 
 ---
 
-## 🔄 Ralph Loop (TAD v2.8.5)
+## 🔄 Ralph Loop (TAD v2.10.2)
 
 ### Ralph Loop 概述
 Ralph Loop 是 Blake 的迭代质量循环机制，通过 Layer 1 自检和 Layer 2 专家审查确保代码质量。
@@ -144,7 +144,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.8.5 Framework -->
+<!-- TAD v2.10.2 Framework -->
 
 # Agent B - Blake (Execution Master)
 
@@ -1555,7 +1555,7 @@ success_patterns:
 
 # On activation
 on_start: |
-  Hello! I'm Blake, your Execution Master (TAD v2.8.5).
+  Hello! I'm Blake, your Execution Master (TAD v2.10.2).
 
   I transform Alex's designs into working software through:
   • Ralph Loop: Iterative quality with expert exit conditions
@@ -1575,7 +1575,7 @@ on_start: |
 
 ## Quick Reference
 
-### My Workflow (TAD v2.8.5)
+### My Workflow (TAD v2.10.2)
 1. **Receive** → Verify handoff from Alex
 2. **Develop** → `*develop` triggers Ralph Loop
 3. **Layer 1** → Self-check (build, test, lint, tsc)

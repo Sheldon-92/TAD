@@ -41,6 +41,12 @@
 
 ## Recently Completed
 
+- [x] **Global Skill Exclusion + Tool Quick Reference (2026-05-05)** — Gate 4 PASS
+  - Fixed: global skills (/deep-research, /code-review etc.) shadowing TAD methods
+  - Added: tool-quick-reference-alex.md + blake.md (CLI cheat sheets loaded at activation)
+  - Archived: 5 conflicting project-level skills
+  - Commit: `2b83513`
+
 - [x] **EPIC: GitHub Knowledge Integration — Phase 1 COMPLETE (2026-05-04)** — Gate 3 PASS
   - REGISTRY.yaml: 24 domains, 50 awesome-lists | *research-github SKILL: 6 commands
   - Commit: `047266c` | Knowledge: 2 new architecture.md entries (gh api snake_case, git/trees recursive)

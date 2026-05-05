@@ -5,6 +5,18 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.2] - 2026-05-05
+
+### New Features — Global Skill Exclusion + Tool Quick Reference
+- **Global Skill Exclusion**: Added `global_skill_exclusion` block to Alex SKILL preventing 10 global/user-level skills from shadowing TAD-specific methods (deep-research, code-review, review, consulting-analysis, security-review, frontend-design, archive:full-review, archive:security-check, archive:refactor-module, archive:deploy-prep)
+- **Tool Quick Reference Cards**: Created `tool-quick-reference-alex.md` and `tool-quick-reference-blake.md` — compact CLI cheat sheets loaded at activation so Alex/Blake know CLI paths, preflight checks, and key commands for NotebookLM, Codex, Gemini, gh, and TAD hook scripts
+- **Execution Mechanism Declaration**: Added explicit anti-delegation rule in `*research-plan` step4 — Alex must execute `*research-notebook` commands IN-SESSION via Bash tool, not spawn background Agent tools
+- **Activation Protocol STEP 3.3**: Alex now reads tool quick reference at startup before roadmap context
+
+### Bug Fixes
+- Fixed stale version strings: Alex SKILL header (was v2.8.5), Blake SKILL header (was v2.8.5), tad.sh TARGET_VERSION (was "2.8")
+- Archived 5 conflicting project-level skills that duplicated global skill functionality (research, code-review, coordinator, product)
+
 ## [2.10.0] - 2026-05-04
 
 ### New Features — Goal-Driven Research Director + NotebookLM Full Integration
