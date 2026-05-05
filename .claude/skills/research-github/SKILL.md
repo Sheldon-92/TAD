@@ -32,7 +32,7 @@ preflight:
   on_fail_version: "Output: '⚠️ notebooklm-py < 0.3.4 has broken AI endpoints — re-run: bash .tad/cross-model/setup-notebooklm.sh'"
   on_fail_registry: "Output: '⚠️ REGISTRY.yaml not found. Expected at .tad/github-registry/REGISTRY.yaml'"
   on_pass: "Proceed to sub-command"
-  note: "gh auth check is required only for explore/notebook/search/refresh commands (not list)"
+  note: "gh auth check is NOT required for: list, scan-log. Required for all other commands (explore, notebook, search, refresh, scan, add)."
 ```
 
 > Note: All `notebooklm` CLI invocations use the absolute path `~/.tad-notebooklm-venv/bin/notebooklm`
@@ -377,7 +377,9 @@ Step 4: Merge-write scan-log.yaml (NEVER full overwrite — preserve user decisi
           PRESERVE rejected status (do NOT reset to pending)
         If new entry: status = pending
   → GC: remove entries with status: accepted (in REGISTRY already)
-         remove entries with status: rejected AND created more than 2 scan-cycles ago
+         remove entries with status: rejected AND first_seen < previous last_scan date
+         (first_seen field: written as {today} when a new candidate is first added to scan_results.new_candidates)
+  → Ensure new_candidates entries include first_seen field: {today YYYY-MM-DD} for new entries
   → Write merged result to .tad/github-registry/scan-log.yaml:
       version: 1.0.0
       last_scan: {today YYYY-MM-DD}

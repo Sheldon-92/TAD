@@ -161,7 +161,8 @@ activation-instructions:
       2. Check last_scan field (parse as YYYY-MM-DD string, compute days_ago = today - parse_date(last_scan)):
          → If last_scan == null → skip (routine has never run — no output)
          → If days_ago > 14 → WARNING output: "⚠️ GitHub Registry 扫描已 {days_ago} 天未更新，routine 可能已停止。运行 *research-github scan 手动扫描或检查 /schedule list。" then skip rest of STEP 3.9.
-         → If days_ago > 7 AND no pending candidates → skip silently (routine lapsed but nothing actionable)
+         → If days_ago > 7 AND no pending candidates AND updates is empty → skip silently (routine lapsed, nothing actionable)
+         → If days_ago > 7 AND (updates > 0 OR pending candidates > 0) → continue to step 3 (report even for slightly stale data)
       3. Count: N = len(scan_results.updates), M = len([c for c in scan_results.new_candidates if c.status == "pending"])
       4. If N == 0 AND M == 0 → skip (nothing to report)
       5. If N > 0 OR M > 0:
