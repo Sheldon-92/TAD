@@ -1,6 +1,6 @@
-# TAD Configuration v2.10.3 - Research Methodology Upgrade (5-Phase Pipeline)
+# TAD Configuration v2.10.4 - CRAG Judge Loop + Parallel Curate
 method: TAD
-version: 2.10.3
+version: 2.10.4
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
 last_updated: 2026-05-05
 

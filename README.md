@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.10.3 - Global Skill Exclusion + Tool Quick Reference**
+**Version 2.10.4 - CRAG Judge Loop + Parallel Curate**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -131,7 +131,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.10.3 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.10.4 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -351,6 +351,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.10.4** | **CRAG Judge Loop + Parallel Curate — Phase 4b auto gap detection in research pipeline (3 signal phrases, per-notebook scope, max 1 re-ask, diminishing returns check); xargs -P5 parallel batch delete for Phase 2 curate (~2x faster); validated on real NotebookLM API (0 rate limit errors)** |
 | **v2.10.3** | **Global Skill Exclusion + Tool Quick Reference — prevents global skills from shadowing TAD methods; tool-quick-reference-alex/blake.md loaded at activation (CLI paths for NotebookLM/Codex/Gemini/gh); archived 5 conflicting skills; fixed stale version strings in Alex/Blake SKILL** |
 | **v2.10.1** | **GitHub Knowledge Integration — `*research-github` 8-command skill; GitHub Awesome-List Registry (24 domains, 50 lists); Alex step2c_github auto-recommend; notebook auto-refresh; research priority rule; weekly scan automation; domain-pack-feedback loop** |
 | **v2.10.0** | **Goal-Driven Research Director + NotebookLM Full Integration — `*research-notebook` 19-command skill; Alex STEP 3.8 research scan; `*research-plan` autonomous goal-driven research; OBJECTIVES.md OKR template; Blake NotebookLM read-only access; cross-model invocation guide** |
@@ -444,6 +445,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.10.3 - Global Skill Exclusion + Tool Quick Reference for AI-Assisted Development.**
+**Welcome to TAD v2.10.4 - Global Skill Exclusion + Tool Quick Reference for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

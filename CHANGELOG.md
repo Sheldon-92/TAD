@@ -5,6 +5,18 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.4] - 2026-05-05
+
+### New Features — CRAG Judge Loop + Parallel Curate
+- **PHASE 4b CRAG Judge Loop**: Auto-detects source gaps in NotebookLM ask answers (3 signal phrases: "sources do not contain" / "not from your sources" / "not mentioned in the provided sources"), triggers targeted `--mode fast` re-research per-notebook, re-asks with enriched sources. `max_reask_per_question: 1` prevents infinite loops; diminishing returns detection stops wasted re-asks.
+- **Parallel Batch Delete**: Replaced 4x sequential `source delete + sleep 0.5` loops with `xargs -P5` two-step batch pattern (collect IDs → parallel delete with safe `"$1"` positional args). Applies to both Alex `*research-plan` Phase 2 and `*research-notebook curate` Step 1b/1c. ~2x faster on real NotebookLM API (tested: 10/10 OK, 0 rate limit errors).
+- **Query Narrowing**: PHASE 4b extracts 2-3 specific noun phrases from the original KR question for targeted fast research (avoids reproducing broad search that missed intersections).
+- **Zero-Source Guard**: Skips re-ask if fast research returns 0 usable new sources after error cleanup.
+
+### Research Backing
+- Autonomous Research Agents notebook (`f3d46229`) with 15 sources: identified CRAG (Corrective RAG), STORM multi-perspective, and IterDRAG reflection loop as candidate architectures. CRAG chosen for lowest cost (NotebookLM provides free gap signals).
+- menu-snap experiment report validated 5-Phase pipeline and identified the 4 improvement recommendations that drove this release.
+
 ## [2.10.3] - 2026-05-05
 
 ### New Features — Research Methodology Upgrade (5-Phase Pipeline)

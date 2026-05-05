@@ -41,6 +41,12 @@
 
 ## Recently Completed
 
+- [x] **Research Pipeline Iterative Enrichment + Curate Acceleration (2026-05-05)** — Gate 4 PASS ✅
+  - Added PHASE 4b CRAG Judge Loop: auto gap detection + targeted re-research per question (max 1 re-ask)
+  - Replaced 4x sequential delete+sleep with xargs -P5 parallel batch delete (~17 deletes/sec vs sequential)
+  - Live-tested on real NotebookLM notebook: 10/10 deletes OK, gap signal detected, 0 rate limit errors
+  - Files: alex/SKILL.md + research-notebook/SKILL.md | Commits: 0bd1a93 + 63e4669
+
 - [x] **Research Methodology Upgrade — 5-Phase Pipeline (2026-05-05)** — Gate 4 PASS
   - Upgraded *research-plan from report-only to: curate → report → Question Tree → ask loops → AC extraction
   - Added curate auto-clean (error sources) + auto-dedup (title+domain) + source quality tiering
