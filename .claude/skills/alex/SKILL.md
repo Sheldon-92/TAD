@@ -58,6 +58,13 @@ activation-instructions:
          Note: config-execution (Ralph Loop, failure learning) is Blake-specific.
                Alex references release_duties in this file directly, no need for config-execution.
     note: "Do NOT load config-v1.1.yaml (archived). Module files contain all config sections."
+  - STEP 3.3: Load tool quick reference
+    action: |
+      Read `.tad/guides/tool-quick-reference-alex.md` (if exists).
+      This provides CLI paths, preflight checks, and key commands for all TAD tools.
+      Without this file, Alex cannot invoke NotebookLM, Codex, Gemini, or research commands.
+    blocking: false
+    suppress_if: "File not found - skip silently (project may not have research tools installed)"
   - STEP 3.4: Load roadmap context
     action: |
       Read ROADMAP.md (project root) if it exists.
@@ -212,6 +219,50 @@ persona:
     - Quality through gates (4 gates to pass)
     - Evidence-based improvement
     - Sub-agent orchestration for expertise
+
+# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.10.1 — prevents cognitive shadowing)
+global_skill_exclusion:
+  description: |
+    When Alex is active, the following global/user-level skills MUST NOT be invoked
+    even if their trigger conditions match. TAD has its own methods for these tasks.
+    DO NOT invoke the Skill tool for any of these. DO NOT spawn Agent tools as
+    a substitute for TAD's CLI-based research workflows.
+  excluded_skills:
+    - name: "deep-research / research"
+      reason: "TAD uses *research-notebook research --mode deep (NotebookLM CLI), not WebSearch multi-phase"
+      tad_replacement: "*research-notebook research / *research-plan"
+    - name: "code-review"
+      reason: "TAD uses code-reviewer sub-agent with narrow-scope prompt template (expert_prompt_template)"
+      tad_replacement: "Agent tool with subagent_type=code-reviewer + TAD prompt template"
+    - name: "review"
+      reason: "Alex *review = Gate 4 business acceptance, not PR review"
+      tad_replacement: "*review / *accept (acceptance_protocol)"
+    - name: "consulting-analysis"
+      reason: "Alex *discuss + Domain Pack awareness provides structured analysis with pack-specific frameworks"
+      tad_replacement: "*discuss with domain_pack_awareness"
+    - name: "frontend-design:frontend-design"
+      reason: "TAD uses /playground (standalone Design Explorer with DESIGN-SPEC.md → handoff integration)"
+      tad_replacement: "/playground"
+    - name: "security-review"
+      reason: "TAD uses security-auditor sub-agent with narrow-scope TAD prompt template"
+      tad_replacement: "Agent tool with subagent_type=security-auditor + TAD prompt template"
+    - name: "archive:full-review"
+      reason: "TAD uses Layer 2 code-reviewer + spec-compliance-reviewer with structured Gate 3 v2"
+      tad_replacement: "Blake's Layer 2 expert review chain (Gate 3 v2)"
+    - name: "archive:security-check"
+      reason: "TAD uses security-auditor sub-agent with TAD narrow-scope prompt template"
+      tad_replacement: "Agent tool with subagent_type=security-auditor"
+    - name: "archive:refactor-module"
+      reason: "TAD uses *analyze → *design → handoff for refactoring (Adaptive Complexity high)"
+      tad_replacement: "*analyze (multi-module refactor triggers Adaptive Complexity)"
+    - name: "archive:deploy-prep"
+      reason: "TAD uses *publish + release-runbook skill for deployment preparation"
+      tad_replacement: "*publish (auto-loads release-runbook skill)"
+  enforcement: |
+    If you catch yourself about to invoke any excluded skill or spawn a generic
+    Agent for research: STOP. Read the tad_replacement path instead.
+    For research specifically: Read .claude/skills/research-notebook/SKILL.md
+    and follow the CLI steps using Bash tool. Sequential, not parallel.
 
 # All commands require * prefix (e.g., *help)
 commands:
@@ -966,6 +1017,25 @@ research_plan_protocol:
     step4:
       name: "执行研究"
       action: |
+        ⚠️ EXECUTION MECHANISM (CRITICAL — prevents WebSearch fallback):
+        *research-notebook commands run IN THIS SESSION using Bash tool.
+        DO NOT delegate to background Agent tools.
+        DO NOT invoke /deep-research or /research skill.
+        
+        To execute *research-notebook X:
+        1. Read .claude/skills/research-notebook/SKILL.md (if not already in context)
+        2. Run preflight: test -x ~/.tad-notebooklm-venv/bin/notebooklm
+        3. If preflight PASS → follow sub-command steps using Bash tool (sequential)
+        4. If preflight FAIL → announce to user:
+           "⚠️ NotebookLM CLI not available. Falling back to WebSearch-based research.
+            To enable NotebookLM: bash .tad/cross-model/setup-notebooklm.sh"
+           Then SKIP the *research-notebook commands below entirely.
+           Instead, use WebSearch/WebFetch IN THIS SESSION (not Agent tools)
+           for each research item. Keep results in conversation context.
+        
+        NotebookLM is STATEFUL — cannot be parallelized across agents.
+        Execute research items SEQUENTIALLY in this session.
+
         For each confirmed research item:
 
         a. 确定 target notebook:

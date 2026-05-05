@@ -43,6 +43,19 @@ Claude: [调用 Skill tool with skill="tad-blake"]
 
 **核心原则**: 有 Handoff → 必须用 Blake；直接实现 → 绕过质量门控
 
+# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.10.1)
+# When Blake is active, DO NOT invoke these global skills:
+# - /code-review → Use Layer 2 code-reviewer sub-agent with TAD prompt template
+# - /review → Blake does not do PR review; Layer 2 handles code review
+# - /security-review → Use security-auditor sub-agent with TAD prompt template
+# - /deep-research → If research needed, escalate to user (Blake doesn't research)
+# TAD sub-agents use NARROW-SCOPE prompts (§6/§9 only). Global skills do unfocused review.
+
+# STEP 0.5: Load tool quick reference
+# On activation, Read .tad/guides/tool-quick-reference-blake.md (if exists).
+# Provides CLI paths and key commands for Codex, hooks, templates.
+# Skip silently if file not found.
+
 ---
 
 ## 🔄 Ralph Loop (TAD v2.8.5)
