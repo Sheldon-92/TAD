@@ -12,7 +12,24 @@ Use for research-intensive topics requiring cross-source synthesis (YouTube + PD
 
 **Key principle**: NotebookLM is a knowledge asset (stateful, persistent), not a stateless tool call.
 
-**This skill is Alex-domain only** — research happens in design/discuss phase, not implementation.
+**Primary use: Alex design/discuss phase.** Also usable standalone (without /alex) via CLAUDE.md §2 research routing — see "Standalone Usage" below.
+
+---
+
+## Standalone Usage (without /alex)
+
+When invoked via CLAUDE.md research routing (without /alex active):
+- Run preflight check (same as below)
+- Use the same CLI commands (create / ask / source add-research)
+- Skip Alex-specific protocols (Socratic, handoff, Gate, domain_pack_awareness)
+- After research completes → soft suggestion of next steps (see below)
+- When /alex IS active, Alex's own research protocols (research_notebook_awareness, research_plan_protocol) take precedence
+
+### After Research Completes (Standalone)
+
+Inform user: "研究完成。Findings saved to {path}."
+Then suggest (non-blocking text, NOT AskUserQuestion):
+"接下来你可以：用 /alex *analyze 进入设计 / 添加到 NEXT.md / 继续深入研究 / 保存到 project-knowledge。"
 
 ---
 

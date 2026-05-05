@@ -21,10 +21,12 @@
 | `/alex` + `*sync` | 同步到注册项目 |
 | `/blake` | 有 handoff → 实现；常规发布 |
 | `/gate` | Gate 1-4 |
+| 深度研究 | 需要持久积累的研究任务（研究/research/调研/landscape/对比/深入）→ 读 `.claude/skills/research-notebook/SKILL.md` 按步骤执行。快速查询（语法/API/单一事实）仍用 WebSearch |
 
 跳过 TAD：单文件修复、配置调整、文档更新、用户说"直接帮我"。
 Adaptive Complexity：Alex 评估建议，**人类做最终决策**。
 Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
+研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。原因：NotebookLM 是持久知识库（反复查询），一次性搜索结果会丢失。
 
 ## 3. Quality Gates
 

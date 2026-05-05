@@ -1200,7 +1200,22 @@ research_plan_protocol:
 
         Output: "✅ 研究计划执行完成。{N} 项研究已完成，OBJECTIVES.md 已更新。"
 
-  enters_standby: "After step5 completes → standby"
+    step6:
+      name: "Research → Action Bridge"
+      trigger: "After step5 completes (OBJECTIVES updated)"
+      action: |
+        AskUserQuestion:
+        question: "研究完成，发现已保存。基于这些发现，下一步是什么？"
+        Options:
+          - "这些发现需要实现 — 进入 *analyze 设计" → transition to adaptive_complexity_protocol
+          - "添加到 NEXT.md 作为待办" → append summary to NEXT.md In Progress
+          - "继续研究 — 还需要更多信息" → return to step4 (another ask round)
+          - "保存到 project-knowledge" → write to .tad/project-knowledge/ appropriate category
+          - "只保存，不做行动" → standby
+      enters_standby: "After user picks option 5"
+      note: "OBJECTIVES.md update already done in step5 — not offered as option here"
+
+  enters_standby: "After step6 completes (option 5) → standby"
 
   constraints:
     - "每个 research item 执行前不再重复确认（step3 已整体确认）"
