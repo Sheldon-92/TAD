@@ -1,0 +1,26 @@
+OpenAPI Lint Report — Redocly CLI
+==================================
+Date: 2026-04-01
+Tool: @redocly/cli (built-in recommended config)
+
+Result: VALID (0 errors, 3 warnings)
+
+Warnings (acceptable for design phase):
+[1] servers/0/url — localhost URL (expected for dev server)
+[2] servers/1/url — example.com URL (placeholder for staging)
+[3] servers/2/url — example.com URL (placeholder for production)
+
+Note: Server URLs are intentionally placeholder values for the design phase.
+      Real URLs will be configured per deployment environment.
+
+Previous issues fixed:
+- Removed `nullable: true` (OpenAPI 3.0 syntax) → replaced with `type: ["string", "null"]` (OpenAPI 3.1 syntax)
+- Added `identifier: MIT` to license object
+
+All 20 endpoints validated with:
+- operationId on every operation
+- Request/response schemas with $ref
+- RFC 7807 error responses (400, 401, 403, 404)
+- Bearer JWT security scheme
+- Pagination parameters
+- Examples on all schemas

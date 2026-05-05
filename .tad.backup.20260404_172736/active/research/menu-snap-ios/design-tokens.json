@@ -1,0 +1,287 @@
+{
+  "color": {
+    "primary": {
+      "ios": "systemBlue",
+      "hex": "#007AFF",
+      "description": "Primary brand + interactive elements"
+    },
+    "primaryVariant": {
+      "ios": "systemBlue (dark)",
+      "hex": "#0A84FF",
+      "description": "Primary in dark mode"
+    },
+    "secondary": {
+      "ios": "systemOrange",
+      "hex": "#FF9500",
+      "description": "Warnings, dietary alerts"
+    },
+    "accent": {
+      "ios": "systemGreen",
+      "hex": "#34C759",
+      "description": "Safe dietary badges, success states"
+    },
+    "danger": {
+      "ios": "systemRed",
+      "hex": "#FF3B30",
+      "description": "Allergen warnings, delete actions, favorites heart"
+    },
+    "background": {
+      "ios": "systemBackground",
+      "hex_light": "#FFFFFF",
+      "hex_dark": "#000000",
+      "description": "Primary background"
+    },
+    "backgroundSecondary": {
+      "ios": "secondarySystemBackground",
+      "hex_light": "#F2F2F7",
+      "hex_dark": "#1C1C1E",
+      "description": "Grouped list background"
+    },
+    "backgroundTertiary": {
+      "ios": "tertiarySystemBackground",
+      "hex_light": "#FFFFFF",
+      "hex_dark": "#2C2C2E",
+      "description": "Elevated cards in dark mode"
+    },
+    "backgroundElevated": {
+      "ios": "systemBackground (elevated)",
+      "hex_light": "#FFFFFF",
+      "hex_dark": "#1C1C1E",
+      "description": "Elevated surface (sheets, modals)"
+    },
+    "text": {
+      "ios": "label",
+      "hex_light": "#000000",
+      "hex_dark": "#FFFFFF",
+      "description": "Primary text"
+    },
+    "textSecondary": {
+      "ios": "secondaryLabel",
+      "hex_light": "#3C3C43",
+      "hex_dark": "#EBEBF5",
+      "opacity_dark": 0.6,
+      "description": "Secondary text, subtitles"
+    },
+    "textTertiary": {
+      "ios": "tertiaryLabel",
+      "hex_light": "#3C3C43",
+      "hex_dark": "#EBEBF5",
+      "opacity_light": 0.3,
+      "opacity_dark": 0.3,
+      "description": "Placeholder text"
+    },
+    "separator": {
+      "ios": "separator",
+      "hex_light": "#C6C6C8",
+      "hex_dark": "#38383A",
+      "description": "List separators"
+    },
+    "fill": {
+      "ios": "systemFill",
+      "hex_light": "#787880",
+      "hex_dark": "#787880",
+      "opacity": 0.2,
+      "description": "Filled controls background"
+    }
+  },
+  "dietary_badge_colors": {
+    "safe": {
+      "background_light": "#D1FAE5",
+      "text_light": "#065F46",
+      "background_dark": "#064E3B",
+      "text_dark": "#6EE7B7",
+      "description": "Allergen-safe, dietary match"
+    },
+    "warning": {
+      "background_light": "#FEF3C7",
+      "text_light": "#92400E",
+      "background_dark": "#78350F",
+      "text_dark": "#FCD34D",
+      "description": "Contains potential allergen"
+    },
+    "danger": {
+      "background_light": "#FEE2E2",
+      "text_light": "#991B1B",
+      "background_dark": "#7F1D1D",
+      "text_dark": "#FCA5A5",
+      "description": "Known allergen match"
+    },
+    "info": {
+      "background_light": "#E0E7FF",
+      "text_light": "#3730A3",
+      "background_dark": "#312E81",
+      "text_dark": "#A5B4FC",
+      "description": "Informational (popular, AI pick)"
+    }
+  },
+  "typography": {
+    "largeTitle": {
+      "ios_style": "Large Title",
+      "font": "SF Pro Display",
+      "size": "34pt",
+      "weight": "Regular",
+      "leading": "41pt",
+      "dynamic_type": true
+    },
+    "title1": {
+      "ios_style": "Title 1",
+      "font": "SF Pro Display",
+      "size": "28pt",
+      "weight": "Regular",
+      "leading": "34pt",
+      "dynamic_type": true
+    },
+    "title2": {
+      "ios_style": "Title 2",
+      "font": "SF Pro Display",
+      "size": "22pt",
+      "weight": "Regular",
+      "leading": "28pt",
+      "dynamic_type": true
+    },
+    "title3": {
+      "ios_style": "Title 3",
+      "font": "SF Pro Display",
+      "size": "20pt",
+      "weight": "Regular",
+      "leading": "25pt",
+      "dynamic_type": true
+    },
+    "headline": {
+      "ios_style": "Headline",
+      "font": "SF Pro Text",
+      "size": "17pt",
+      "weight": "Semibold",
+      "leading": "22pt",
+      "dynamic_type": true
+    },
+    "body": {
+      "ios_style": "Body",
+      "font": "SF Pro Text",
+      "size": "17pt",
+      "weight": "Regular",
+      "leading": "22pt",
+      "dynamic_type": true
+    },
+    "callout": {
+      "ios_style": "Callout",
+      "font": "SF Pro Text",
+      "size": "16pt",
+      "weight": "Regular",
+      "leading": "21pt",
+      "dynamic_type": true
+    },
+    "subheadline": {
+      "ios_style": "Subheadline",
+      "font": "SF Pro Text",
+      "size": "15pt",
+      "weight": "Regular",
+      "leading": "20pt",
+      "dynamic_type": true
+    },
+    "footnote": {
+      "ios_style": "Footnote",
+      "font": "SF Pro Text",
+      "size": "13pt",
+      "weight": "Regular",
+      "leading": "18pt",
+      "dynamic_type": true
+    },
+    "caption1": {
+      "ios_style": "Caption 1",
+      "font": "SF Pro Text",
+      "size": "12pt",
+      "weight": "Regular",
+      "leading": "16pt",
+      "dynamic_type": true
+    },
+    "caption2": {
+      "ios_style": "Caption 2",
+      "font": "SF Pro Text",
+      "size": "11pt",
+      "weight": "Regular",
+      "leading": "13pt",
+      "dynamic_type": true
+    }
+  },
+  "spacing": {
+    "xs": "4pt",
+    "sm": "8pt",
+    "md": "16pt",
+    "lg": "24pt",
+    "xl": "32pt",
+    "xxl": "48pt"
+  },
+  "radius": {
+    "sm": "10pt",
+    "md": "13pt",
+    "lg": "20pt",
+    "xl": "44pt",
+    "description": "iOS HIG standard corner radii. xl for pill shapes."
+  },
+  "touchTarget": {
+    "minimum": "44pt",
+    "recommended": "48pt",
+    "platform": "iOS",
+    "source": "Apple HIG"
+  },
+  "layout": {
+    "screenWidth": "390pt",
+    "screenHeight": "844pt",
+    "statusBarHeight_dynamicIsland": "59pt",
+    "navBarHeight": "44pt",
+    "tabBarHeight": "83pt",
+    "homeIndicator": "34pt",
+    "contentInset": "16pt",
+    "gridUnit": "8pt"
+  },
+  "icons": {
+    "system": "SF Symbols",
+    "rendering_mode": "hierarchical",
+    "weight": "regular",
+    "app_specific": {
+      "scan_tab": "camera.viewfinder",
+      "history_tab": "clock.arrow.circlepath",
+      "favorites_tab": "heart.fill",
+      "settings_tab": "gearshape",
+      "flash": "bolt.fill",
+      "camera_switch": "arrow.triangle.2.circlepath.camera",
+      "filter": "line.3.horizontal.decrease",
+      "share": "square.and.arrow.up",
+      "allergen_warning": "exclamationmark.triangle.fill",
+      "safe_check": "checkmark.circle.fill",
+      "ai_sparkle": "sparkles",
+      "back": "chevron.left",
+      "chevron_right": "chevron.right",
+      "close": "xmark",
+      "search": "magnifyingglass",
+      "delete": "trash",
+      "rescan": "arrow.clockwise"
+    }
+  },
+  "animation": {
+    "micro_interaction": "150-300ms",
+    "page_transition": "300-350ms",
+    "spring": {
+      "response": 0.5,
+      "dampingFraction": 0.8
+    },
+    "exit_multiplier": "0.6-0.7x of enter"
+  },
+  "dark_mode": {
+    "strategy": "iOS Elevated system — NOT simple color inversion",
+    "background_levels": {
+      "base": "#000000",
+      "elevated_1": "#1C1C1E",
+      "elevated_2": "#2C2C2E",
+      "elevated_3": "#3A3A3C"
+    },
+    "text_on_dark": {
+      "primary": "#FFFFFF",
+      "secondary": "rgba(235, 235, 245, 0.6)",
+      "tertiary": "rgba(235, 235, 245, 0.3)"
+    },
+    "separator": "#38383A",
+    "notes": "Cards in dark mode use elevated_2 to create depth. Tab bar and nav bar use system blur material."
+  }
+}

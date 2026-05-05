@@ -1,0 +1,72 @@
+direction: right
+
+title: {
+  label: "Todo App — Entity Relationship Diagram"
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+User: {
+  shape: sql_table
+  style.fill: "#E3F2FD"
+  style.stroke: "#1565C0"
+  id: "String @id @default(cuid())" {constraint: primary_key}
+  email: "String @unique" {constraint: unique}
+  name: "String"
+  passwordHash: "String"
+  role: "String @default('member')"
+  refreshToken: "String?"
+  deletedAt: "DateTime?"
+  createdAt: "DateTime @default(now())"
+  updatedAt: "DateTime @updatedAt"
+}
+
+Todo: {
+  shape: sql_table
+  style.fill: "#FFF3E0"
+  style.stroke: "#E65100"
+  id: "String @id @default(cuid())" {constraint: primary_key}
+  title: "String (max 255)"
+  description: "String? (max 2000)"
+  completed: "Boolean @default(false)"
+  priority: "String @default('medium')"
+  dueDate: "DateTime?"
+  userId: "String" {constraint: foreign_key}
+  categoryId: "String?" {constraint: foreign_key}
+  createdAt: "DateTime @default(now())"
+  updatedAt: "DateTime @updatedAt"
+}
+
+Category: {
+  shape: sql_table
+  style.fill: "#F3E5F5"
+  style.stroke: "#7B1FA2"
+  id: "String @id @default(cuid())" {constraint: primary_key}
+  name: "String (max 50)"
+  color: "String?"
+  userId: "String" {constraint: foreign_key}
+  createdAt: "DateTime @default(now())"
+  updatedAt: "DateTime @updatedAt"
+  unique_constraint: "@@unique([userId, name])" {constraint: unique}
+}
+
+User.id -> Todo.userId: "1:N (cascade delete)" {
+  style.stroke: "#E65100"
+  source-arrowhead: "1"
+  target-arrowhead: "*"
+}
+
+User.id -> Category.userId: "1:N (cascade delete)" {
+  style.stroke: "#7B1FA2"
+  source-arrowhead: "1"
+  target-arrowhead: "*"
+}
+
+Category.id -> Todo.categoryId: "1:N (set null)" {
+  style.stroke: "#7B1FA2"
+  style.stroke-dash: 3
+  source-arrowhead: "1"
+  target-arrowhead: "*"
+}

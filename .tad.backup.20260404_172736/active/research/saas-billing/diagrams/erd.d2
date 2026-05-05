@@ -1,0 +1,179 @@
+# ER Diagram — Multi-Tenant SaaS Billing System
+direction: right
+
+# ═══════ Core Entities ═══════
+
+Tenant: "Tenant" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  name: string
+  slug: string {constraint: unique}
+  billingEmail: string
+  stripeCustomerId: string? {constraint: unique}
+  deletedAt: datetime?
+  createdAt: datetime
+  updatedAt: datetime
+}
+
+User: "User" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  email: string
+  name: string
+  passwordHash: string
+  role: UserRole
+  tenantId: cuid {constraint: FK}
+  deletedAt: datetime?
+  createdAt: datetime
+  updatedAt: datetime
+}
+
+ApiKey: "ApiKey" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  keyHash: string {constraint: unique}
+  name: string
+  tenantId: cuid {constraint: FK}
+  expiresAt: datetime?
+  revokedAt: datetime?
+}
+
+# ═══════ Plan Entities ═══════
+
+Plan: "Plan" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  name: string
+  slug: string {constraint: unique}
+  priceMonthly: int
+  priceYearly: int?
+  currency: string
+  trialDays: int
+  isActive: boolean
+  stripePriceId: string? {constraint: unique}
+}
+
+PlanFeature: "PlanFeature" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  planId: cuid {constraint: FK}
+  name: string
+  limit: int
+  unit: string
+  overagePrice: int?
+}
+
+# ═══════ Subscription Entities ═══════
+
+Subscription: "Subscription" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  tenantId: cuid {constraint: FK}
+  planId: cuid {constraint: FK}
+  status: SubscriptionStatus
+  currentPeriodStart: datetime
+  currentPeriodEnd: datetime
+  version: int
+  stripeSubscriptionId: string? {constraint: unique}
+}
+
+SubscriptionItem: "SubscriptionItem" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  subscriptionId: cuid {constraint: FK}
+  planFeatureId: cuid {constraint: FK}
+  quantity: int
+}
+
+# ═══════ Billing Entities ═══════
+
+Invoice: "Invoice" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  subscriptionId: cuid {constraint: FK}
+  tenantId: cuid {constraint: FK}
+  status: InvoiceStatus
+  amountDue: int
+  amountPaid: int
+  dueDate: datetime
+  stripeInvoiceId: string? {constraint: unique}
+}
+
+InvoiceLineItem: "InvoiceLineItem" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  invoiceId: cuid {constraint: FK}
+  description: string
+  quantity: int
+  unitPrice: int
+  amount: int
+  type: LineItemType
+}
+
+Payment: "Payment" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  invoiceId: cuid {constraint: FK}
+  amount: int
+  status: PaymentStatus
+  failureCode: string?
+  attemptNumber: int
+}
+
+# ═══════ Tracking Entities ═══════
+
+UsageRecord: "UsageRecord" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  tenantId: cuid {constraint: FK}
+  subscriptionId: cuid {constraint: FK}
+  featureName: string
+  quantity: int
+  transactionId: string {constraint: unique}
+  timestamp: datetime
+}
+
+WebhookEvent: "WebhookEvent" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  stripeEventId: string {constraint: unique}
+  eventType: string
+  status: WebhookEventStatus
+  payload: json
+  retryCount: int
+}
+
+AuditLog: "AuditLog" {
+  shape: sql_table
+  id: cuid {constraint: PK}
+  tenantId: cuid? {constraint: FK}
+  userId: cuid? {constraint: FK}
+  action: AuditAction
+  entityType: string
+  entityId: string
+  before: json?
+  after: json?
+}
+
+# ═══════ Relationships ═══════
+
+Tenant -> User: "1:N" {style.stroke: "#2563eb"}
+Tenant -> ApiKey: "1:N" {style.stroke: "#2563eb"}
+Tenant -> Subscription: "1:N" {style.stroke: "#2563eb"}
+Tenant -> Invoice: "1:N" {style.stroke: "#2563eb"}
+Tenant -> UsageRecord: "1:N" {style.stroke: "#2563eb"}
+Tenant -> AuditLog: "1:N" {style.stroke: "#2563eb"}
+
+Plan -> PlanFeature: "1:N" {style.stroke: "#16a34a"}
+Plan -> Subscription: "1:N" {style.stroke: "#16a34a"}
+
+Subscription -> SubscriptionItem: "1:N" {style.stroke: "#dc2626"}
+Subscription -> Invoice: "1:N" {style.stroke: "#dc2626"}
+Subscription -> UsageRecord: "1:N" {style.stroke: "#dc2626"}
+
+PlanFeature -> SubscriptionItem: "1:N" {style.stroke: "#16a34a"}
+
+Invoice -> InvoiceLineItem: "1:N" {style.stroke: "#f59e0b"}
+Invoice -> Payment: "1:N" {style.stroke: "#f59e0b"}
+
+User -> AuditLog: "1:N" {style.stroke: "#8b5cf6"}

@@ -1,0 +1,132 @@
+# State Diagrams — FlowPM Interaction Design
+
+# ═══════════════════════════════════════
+# Drag-and-Drop State Machine
+# ═══════════════════════════════════════
+
+dnd: "Drag & Drop State Machine" {
+  style.font-size: 22
+  style.bold: true
+
+  idle: "IDLE" {
+    style.fill: "#E8F5E9"
+    style.font-size: 16
+  }
+  hover: "HOVER" {
+    style.fill: "#E3F2FD"
+    style.font-size: 16
+  }
+  grab: "GRAB\n(150ms hold)" {
+    style.fill: "#FFF3E0"
+    style.font-size: 16
+  }
+  dragging: "DRAGGING\n(card follows cursor)" {
+    style.fill: "#FCE4EC"
+    style.font-size: 16
+  }
+  over_target: "OVER TARGET\n(column highlighted)" {
+    style.fill: "#F3E5F5"
+    style.font-size: 16
+  }
+  drop: "DROP" {
+    style.fill: "#E8EAF6"
+    style.font-size: 16
+  }
+  reorder: "REORDER\nANIMATION\n(200ms ease)" {
+    style.fill: "#FFF8E1"
+    style.font-size: 16
+  }
+  settled: "SETTLED\n(API persist)" {
+    style.fill: "#E8F5E9"
+    style.font-size: 16
+  }
+  cancel: "CANCEL\n(return to origin)" {
+    style.fill: "#FFEBEE"
+    style.font-size: 16
+  }
+
+  idle -> hover: "mouseenter"
+  hover -> idle: "mouseleave"
+  hover -> grab: "mousedown + 150ms"
+  grab -> idle: "mouseup (was click)"
+  grab -> dragging: "mousemove > 5px"
+  dragging -> over_target: "enter column"
+  dragging -> cancel: "mouseup outside\nor Escape"
+  over_target -> dragging: "leave column"
+  over_target -> drop: "mouseup"
+  drop -> reorder: "cards shift"
+  reorder -> settled: "animation done"
+  settled -> idle: "API success"
+  cancel -> idle: "200ms return"
+}
+
+# ═══════════════════════════════════════
+# Bulk Selection State Machine
+# ═══════════════════════════════════════
+
+bulk: "Bulk Operation States" {
+  style.font-size: 22
+  style.bold: true
+
+  normal: "NORMAL MODE" {
+    style.fill: "#E8F5E9"
+    style.font-size: 16
+  }
+  select: "SELECT MODE\n(action bar visible)" {
+    style.fill: "#E3F2FD"
+    style.font-size: 16
+  }
+  menu: "ACTION MENU\n(Change Status/Priority\nAssign/Label/Delete)" {
+    style.fill: "#FFF3E0"
+    style.font-size: 16
+  }
+  confirm: "CONFIRM\n(destructive only)" {
+    style.fill: "#FFEBEE"
+    style.font-size: 16
+  }
+  apply: "APPLY\n(optimistic update)" {
+    style.fill: "#E8F5E9"
+    style.font-size: 16
+  }
+
+  normal -> select: "click checkbox\nor press X"
+  select -> normal: "Escape or Cancel"
+  select -> menu: "click action button"
+  menu -> select: "cancel"
+  menu -> confirm: "destructive action"
+  menu -> apply: "non-destructive\n(immediate)"
+  confirm -> apply: "user confirms"
+  confirm -> select: "user cancels"
+  apply -> normal: "toast + deselect"
+}
+
+# ═══════════════════════════════════════
+# Modal Lifecycle
+# ═══════════════════════════════════════
+
+modal: "Modal Lifecycle" {
+  style.font-size: 22
+  style.bold: true
+
+  closed: "CLOSED" {
+    style.fill: "#EEEEEE"
+    style.font-size: 16
+  }
+  opening: "OPENING\n(200ms)\nscale 0.95→1\nopacity 0→1" {
+    style.fill: "#E3F2FD"
+    style.font-size: 16
+  }
+  open: "OPEN\n(focus trapped)" {
+    style.fill: "#E8F5E9"
+    style.font-size: 16
+  }
+  closing: "CLOSING\n(140ms)\nreverse animation" {
+    style.fill: "#FFF3E0"
+    style.font-size: 16
+  }
+
+  closed -> opening: "trigger action"
+  opening -> open: "animation complete"
+  open -> closing: "Escape / X / Cancel\n/ overlay click"
+  closing -> closed: "animation complete\nfocus returns to trigger"
+}

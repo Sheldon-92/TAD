@@ -1,0 +1,744 @@
+# Domain Pack: Web UI Design
+# From requirements to complete UI design system — design only, no code delivery
+domain: web-ui-design
+version: 1.0.0
+requires_registry: ">=1"
+description: "Web UI 设计：从需求到完整设计系统。产出物是设计文件（线框图、Design Tokens、交互规范、PDF 报告），不是交付代码。HTML 原型是设计工具，不是产品代码。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: 信息架构
+# ═══════════════════════════════════════
+
+capabilities:
+
+  information_architecture:
+    description: "定义页面结构、导航体系、用户流程 — 先理清信息，再画界面"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_patterns
+        action: |
+          搜索目标领域的信息架构参考：
+          1. 搜索 3+ 同类产品的导航结构（截图 or 文字描述）
+          2. 识别常见的页面层级模式（扁平/树形/Hub-and-Spoke）
+          3. 记录每个参考产品的主导航项数量和层级深度
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" app navigation structure site map'
+          - '"{领域}" information architecture best practices'
+        output_file: "ia-research.md"
+
+      - id: inventory_content
+        action: |
+          列出产品需要承载的所有内容类型和功能：
+          | 内容/功能 | 类型(页面/弹窗/内嵌) | 用户频率(高/中/低) | 优先级 |
+          按使用频率排序 — 高频功能必须在主导航可达。
+        tool_ref: null
+        output_file: "ia-research.md (append)"
+
+      # Layer 2: 分析
+      - id: analyze_user_flows
+        action: |
+          为 3-5 个核心用户任务绘制用户流程：
+          每个流程回答：
+          1. 用户从哪里开始？（入口点）
+          2. 完成任务需要几步？（步骤数 — 核心任务应 ≤5 步）
+          3. 每一步需要什么信息/操作？
+          4. 哪里可能卡住？（决策点、错误场景）
+          5. 完成后去哪？（成功状态、下一步引导）
+          用 D2 语法绘制每个流程图。
+        tool_ref: diagram_generation
+        quality: "核心任务 ≤5 步完成。每个决策点有明确的分支处理。"
+        output_file: "user-flows.d2 → user-flows.svg"
+
+      # Layer 3: 推导
+      - id: derive_navigation
+        action: |
+          基于内容清单和用户流程，推导导航结构：
+          1. 选择导航模式（参考研究中最匹配的模式）
+            - 扁平导航：≤7 个顶级项，功能少、用户任务集中
+            - 层级导航：>7 个功能区，需要分组
+            - Hub-and-Spoke：任务独立、互不关联
+          2. 主导航 ≤5 项（底部导航）或 ≤7 项（侧边栏）
+          3. 每个导航项的命名：动词优先（"创建"而非"创建页面"）、用户语言（非技术术语）
+          4. 验证：每个高频功能是否 2 次点击内可达？如果不是 → 调整结构
+          选择依据必须引用 research_patterns 的数据。
+        quality: "导航项命名用用户语言。高频功能 ≤2 次点击可达。选择有数据依据。"
+        tool_ref: null
+        output_file: "ia-research.md (append)"
+
+      # Layer 4: 生成
+      - id: generate_sitemap
+        action: "用 D2 生成站点地图（页面层级 + 导航关系）"
+        tool_ref: diagram_generation
+        output_file: "sitemap.d2 → sitemap.svg"
+
+      - id: compile_ia_report
+        action: "综合为信息架构文档 PDF（含站点地图、用户流程图、导航说明）"
+        tool_ref: pdf_generation
+        output_file: "information-architecture.pdf"
+
+    quality_criteria:
+      - "站点地图覆盖所有已知页面和功能"
+      - "核心用户任务 ≤5 步可完成"
+      - "主导航 ≤5 项（移动端底部导航）或 ≤7 项（桌面端侧边栏）"
+      - "高频功能 2 次点击内可达"
+      - "导航模式选择有竞品参考数据支撑"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 不做用户流程就画站点地图 = 猜测导航结构"
+      - "❌ 主导航超过 7 项 = 认知过载"
+      - "❌ 混合 Tab + Sidebar + Bottom Nav 在同一层级"
+      - "❌ 用汉堡菜单隐藏桌面端主导航（空间够就展开）"
+      - "❌ Modal 用于主导航流程"
+
+    reviewers:
+      - persona: "UX 架构师"
+        checklist:
+          - "导航结构是否匹配用户心智模型？"
+          - "核心任务路径是否够短？"
+          - "信息分组是否符合用户预期而非组织内部结构？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: 线框图
+  # ═══════════════════════════════════════
+
+  wireframing:
+    description: "低保真 → 高保真线框图，探索多种 UX 方案，产出 HTML 原型"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_layouts
+        action: |
+          搜索目标领域的界面布局参考：
+          1. 搜索 3+ 同类产品的关键页面截图/描述
+          2. 识别布局模式：列表型/卡片型/仪表盘型/表单型/分栏型
+          3. 记录每个参考产品的核心交互模式（拖拽/滑动/点击等）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" UI layout design inspiration'
+          - '"{领域}" app screenshot wireframe reference'
+        output_file: "wireframe-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_approaches
+        action: |
+          基于参考研究，设计 3 个 UX 方案（参考 Magdoub 5 选法，精简为 3 个）：
+          | 方案 | UX 哲学 | 适用场景 | 风险 |
+          方案 1: 安全方案 — 复制同类产品验证过的模式
+          方案 2: 探索方案 A — 从以下选择最匹配的：
+            Progressive Disclosure / Dashboard-First / Wizard / Hub-and-Spoke /
+            Split View / Card-Based / Conversational / Kanban / Timeline / Search-First
+          方案 3: 探索方案 B — 选另一种
+          每个方案标注 1-5 分评分：
+          - 学习成本（1=高, 5=低）
+          - 信息密度（1=低, 5=高）
+          - 移动端适配难度（1=高, 5=低）
+        quality: "3 个方案必须有真正的差异（不是同一种布局的微调）。"
+        tool_ref: null
+        output_file: "wireframe-research.md (append)"
+
+      # Layer 3: 推导
+      - id: select_approach
+        action: |
+          基于评分和目标用户，推荐最佳方案：
+          1. 综合评分（学习成本 × 信息密度 × 移动端适配）
+          2. 考虑目标用户技术水平（新手 → 低学习成本优先；专家 → 信息密度优先）
+          3. 考虑核心场景（频繁操作 → 效率优先；偶尔使用 → 易学性优先）
+          明确选择一个方案并说明原因。如果用户没有明确偏好 → 推荐安全方案。
+        quality: "选择必须有依据，不是'我觉得好看'。"
+        tool_ref: null
+        output_file: "wireframe-research.md (append)"
+
+      # Layer 4: 生成
+      - id: generate_wireframe
+        action: |
+          用 HTML + CSS 生成选定方案的线框图原型。
+          B&W 线框规则（参考 Magdoub）：
+          - 严格灰度色板：#000, #333, #666, #999, #ccc, #eee, #fff
+          - 系统字体：font-family: system-ui, -apple-system, sans-serif
+          - 无外部依赖（无 CDN、无图片链接）
+          - 实线边框，无阴影/渐变
+          - 交互元素可点击（tab 切换、hover 状态）
+          - 标注关键区域编号 (1)(2)(3)
+          覆盖 information_architecture 中定义的所有关键页面。
+        tool_ref: wireframe_generation
+        output_file: "wireframe.html"
+
+      - id: screenshot_wireframe
+        action: "截图 HTML 原型为 PNG（用于 PDF 嵌入和评审分享）"
+        tool_ref: html_screenshot
+        output_file: "wireframe-screenshot.png"
+
+    quality_criteria:
+      - "3 个 UX 方案有真正差异（不同布局哲学）"
+      - "选定方案有评分依据"
+      - "线框图覆盖所有关键页面（不只首页）"
+      - "HTML 原型可在浏览器中直接打开且交互正常"
+      - "B&W 阶段无颜色（严格灰度）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 只画首页 = 没有考虑完整用户流程"
+      - "❌ 线框图就加颜色和渐变 = 过早视觉设计"
+      - "❌ 3 个方案实质相同（只是按钮位置不同）= 伪探索"
+      - "❌ 全屏宽文字无 max-width = 阅读体验差"
+      - "❌ 外部 CDN 依赖 = 线框图离线不可用"
+
+    reviewers:
+      - persona: "UX 设计师"
+        checklist:
+          - "方案选择是否匹配目标用户？"
+          - "关键页面是否都有线框图？"
+          - "交互流程是否流畅（无死胡同）？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: 视觉设计
+  # ═══════════════════════════════════════
+
+  visual_design:
+    description: "定义色彩、字体、组件视觉风格 — 产出 Design Tokens 和视觉规范"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_visual_style
+        action: |
+          搜索目标领域的视觉设计参考：
+          1. 搜索 3+ 同类产品的视觉风格（配色、字体、间距）
+          2. 搜索设计趋势（Dribbble、Behance 上的该领域作品）
+          3. 识别目标用户期望的视觉调性（专业/活泼/极简/信息密集）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" UI design inspiration dribbble behance'
+          - '"{领域}" app color scheme typography 2026'
+        output_file: "visual-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_visual_direction
+        action: |
+          基于参考研究，选择设计预设（参考 ui-design-brain 5 预设）：
+          1. Modern SaaS — 中性色 + 一个强调色，8px 网格，大量留白
+          2. Apple-level Minimal — 近单色暖灰，大字体层级，紧凑字距
+          3. Enterprise/Corporate — 信息密集，紧凑间距(4/8/12/16/24)，完整键盘导航
+          4. Creative/Portfolio — 大胆、不对称布局、戏剧性缩放对比
+          5. Data Dashboard — 高数据密度，一致垂直对齐，KPI→趋势→详情层级
+
+          选择最匹配的预设并说明原因。然后定义：
+          - 色彩方向：主色 + 辅色 + 语义色（error/success/warning）
+          - 字体方向：衬线/无衬线/混合，推荐具体字体名
+          - 间距节奏：4px/8px 基础单位
+          - 圆角/阴影/边框风格
+        quality: "预设选择有目标用户和领域依据。不是'我喜欢 Modern SaaS'。"
+        tool_ref: null
+        output_file: "visual-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_design_tokens
+        action: |
+          基于视觉方向，推导完整的 Design Tokens：
+          ```json
+          {
+            "color": {
+              "primary": {"value": "#hex", "rationale": "为什么选这个颜色"},
+              "secondary": {"value": "#hex"},
+              "background": {"value": "#hex"},
+              "surface": {"value": "#hex"},
+              "text": {"value": "#hex"},
+              "text-secondary": {"value": "#hex"},
+              "error": {"value": "#DC3545"},
+              "success": {"value": "#28A745"},
+              "warning": {"value": "#FFC107"}
+            },
+            "spacing": {"xs": "4px", "sm": "8px", "md": "16px", "lg": "24px", "xl": "32px", "2xl": "48px"},
+            "font": {
+              "family": "'Inter', system-ui, sans-serif",
+              "size": {"xs": "12px", "sm": "14px", "base": "16px", "lg": "20px", "xl": "24px", "2xl": "32px"},
+              "weight": {"normal": 400, "medium": 500, "bold": 600}
+            },
+            "radius": {"sm": "4px", "md": "8px", "lg": "12px", "full": "9999px"},
+            "shadow": {"sm": "...", "md": "...", "lg": "..."}
+          }
+          ```
+          每个颜色选择验证对比度：
+          - text on background ≥ 4.5:1 (WCAG AA)
+          - text-secondary on background ≥ 3:1
+          - 用 Node.js 脚本验证对比度数值
+        quality: "每个主要颜色对组合必须通过 WCAG AA 对比度检查。"
+        tool_ref: null
+        output_file: "design-tokens.json"
+
+      # Layer 4: 生成
+      - id: generate_css_tokens
+        action: "用 Style Dictionary 将 JSON tokens 转换为 CSS 变量文件"
+        tool_ref: design_tokens
+        output_file: "design-tokens.css"
+
+      - id: generate_style_guide
+        action: |
+          生成视觉规范 PDF，包含：
+          - 色彩板（每个颜色的 hex + 用途 + 对比度）
+          - 字体层级示例
+          - 间距系统可视化
+          - 圆角/阴影示例
+          - 可访问性对比度验证结果
+        tool_ref: pdf_generation
+        output_file: "style-guide.pdf"
+
+    quality_criteria:
+      - "Design Tokens 覆盖 color/spacing/font/radius/shadow 五大类"
+      - "主要文本-背景色对比度 ≥ 4.5:1 (WCAG AA)"
+      - "字体大小 base ≥ 16px（避免 iOS 自动缩放）"
+      - "间距系统基于 4px/8px 基础单位"
+      - "预设选择有目标用户和领域依据"
+      - "不使用原始 hex — 全部通过 token 引用"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 紫色渐变 + Inter + Roboto = 没有思考的默认选择"
+      - "❌ 每个状态一个彩色 badge 无语义含义 = 彩虹 badge"
+      - "❌ 所有按钮同等权重 = 无主次层级"
+      - "❌ 用 emoji 做图标 = 不专业（用 Lucide/Heroicons SVG）"
+      - "❌ 混用填充和线条图标 = 视觉不一致"
+
+    reviewers:
+      - persona: "视觉设计师"
+        checklist:
+          - "色彩系统是否有语义层级（primary/secondary/semantic）？"
+          - "对比度是否通过 WCAG AA？"
+          - "字体层级是否清晰（heading/body/caption 明确区分）？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: 交互设计
+  # ═══════════════════════════════════════
+
+  interaction_design:
+    description: "定义状态变化、微交互、反馈机制 — 不是写代码，是写交互规范"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_interactions
+        action: |
+          搜索目标领域的交互设计参考：
+          1. 搜索同类产品的交互模式（动效、反馈、状态切换）
+          2. 搜索 Material Design 3 / Apple HIG 的相关交互指南
+          3. 识别核心交互类型（点击/拖拽/滑动/长按/键盘快捷键）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" micro interaction animation design pattern'
+          - '"Material Design 3" OR "Apple HIG" {领域} interaction guidelines'
+        output_file: "interaction-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_states
+        action: |
+          为每个核心组件定义状态矩阵（参考 ui-ux-pro-max 标准）：
+          | 组件 | Default | Hover | Focus | Active/Pressed | Disabled | Loading | Error | Empty |
+          重点组件（至少覆盖）：
+          - Button（主要/次要/危险）
+          - Input（文本/选择/搜索）
+          - Card（列表项/操作卡片）
+          - Modal（确认/表单/信息）
+          - Toast/Notification
+          每个状态标注：视觉变化（颜色/阴影/大小）+ 过渡时间
+        quality: "每个交互元素必须定义 hover/focus/active/disabled 四个基础状态。"
+        tool_ref: null
+        output_file: "interaction-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_interaction_spec
+        action: |
+          基于状态分析，推导交互规范：
+          1. 动画时序规范（参考 ui-ux-pro-max）：
+            - 微交互：150-300ms
+            - 复杂转场：≤400ms
+            - 禁止 >500ms
+            - 退出动画 = 进入动画 × 60-70%
+            - 列表项依次出现间隔 30-50ms
+          2. 反馈规范：
+            - 点击后 100ms 内必须有视觉反馈
+            - 异步操作：按钮禁用 + 加载指示
+            - 成功/失败：Toast 4-6s 自动消失，破坏性操作有 Undo
+          3. 键盘导航规范：
+            - Tab 顺序 = 视觉顺序
+            - Escape 关闭 Modal/Drawer
+            - Enter 确认，Cmd/Ctrl+K 打开搜索
+          4. 可访问性：
+            - 尊重 prefers-reduced-motion
+            - 动画必须可中断
+            - 永远不要 transition: all
+        quality: "时序数值必须具体（150ms 而非'快'）。"
+        tool_ref: null
+        output_file: "interaction-spec.md"
+
+      # Layer 4: 生成
+      - id: generate_state_diagram
+        action: "用 D2 生成核心组件的状态转换图（Default→Hover→Active→Loading→Success/Error）"
+        tool_ref: diagram_generation
+        output_file: "state-diagrams.d2 → state-diagrams.svg"
+
+      - id: compile_interaction_doc
+        action: "综合为交互规范 PDF（含状态矩阵、动画时序、键盘导航表）"
+        tool_ref: pdf_generation
+        output_file: "interaction-spec.pdf"
+
+    quality_criteria:
+      - "核心组件（Button/Input/Card/Modal/Toast）都有完整状态矩阵"
+      - "动画时序有具体数值（ms），不是'快/慢'"
+      - "键盘导航有明确的快捷键定义"
+      - "尊重 prefers-reduced-motion"
+      - "异步操作有 loading→success/error 完整流程"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ transition: all = 性能差且不可预测"
+      - "❌ 动画 >500ms = 让用户等待"
+      - "❌ outline: none 不提供替代 focus 样式 = 键盘用户看不见焦点"
+      - "❌ 用 width/height/top/left 做动画 = 触发重排，用 transform/opacity"
+      - "❌ user-scalable=no 或 maximum-scale=1 = 禁止缩放违反 WCAG"
+
+    reviewers:
+      - persona: "交互设计师"
+        checklist:
+          - "所有交互状态是否有视觉反馈？"
+          - "动画时序是否在 150-400ms 合理范围？"
+          - "键盘用户能否完成所有核心任务？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: 设计系统
+  # ═══════════════════════════════════════
+
+  design_system:
+    description: "定义可复用组件库 — 组件清单、变体、使用规范"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_components
+        action: |
+          搜索目标领域常用的组件模式：
+          1. 搜索同类产品使用的组件（按钮/卡片/表格/表单/导航）
+          2. 参考 Material Design 3 / shadcn/ui / Radix 的组件定义
+          3. 列出本产品需要的组件清单（从 wireframing 的线框图提取）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" UI component library design system'
+          - '"design system" component specification template documentation'
+        output_file: "design-system-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_component_needs
+        action: |
+          为每个组件定义规范（参考 ui-design-brain 60 组件模式）：
+          | 组件 | 变体 | 尺寸 | 状态 | 可访问性要求 | 关键规则 |
+          至少覆盖 Top 15 组件：
+          1. Button — 动词优先标签，每个区域最多 1 个 Primary
+          2. Card — Media→Title→Meta→Action 顺序，shadow OR border 不同时用
+          3. Modal — 焦点陷阱，X+Cancel+Escape 关闭，关闭后焦点回到触发元素
+          4. Navigation — ≤7 项，清晰 active 状态
+          5. Table — Sticky header，数字右对齐，可排序列
+          6. Tabs — 2-7 个，移动端考虑折叠为 Accordion
+          7. Form — 单列，标签在上，blur 时行内验证
+          8. Toast — 4-6s 自动消失，破坏性操作有 Undo
+          9. Alert — 语义色 + 图标，最多 2 句话
+          10. Drawer — 右侧详情 / 左侧导航，桌面端 320-480px
+          11. Search — Cmd/Ctrl+K，输入防抖 200-300ms
+          12. Empty State — 插图 + 标题 + CTA，正面措辞
+          13. Skeleton — 匹配实际布局形状，shimmer 动画，300ms 后显示
+          14. Badge — 1-2 个词，pill 形状，有限色板
+          15. Dropdown — 7±2 项，破坏性操作红色在最后
+        quality: "每个组件规范必须包含可访问性要求（ARIA、键盘导航）。"
+        tool_ref: null
+        output_file: "design-system-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_component_hierarchy
+        action: |
+          基于组件分析，推导设计系统结构：
+          1. 原子 → 分子 → 有机体（Atomic Design 分层）
+            - 原子：Button, Input, Badge, Icon, Typography
+            - 分子：Search (Input + Icon + Dropdown), Form Field (Label + Input + Error)
+            - 有机体：Header (Logo + Nav + Search + Avatar), Card (Media + Title + Actions)
+          2. Token 引用链：design-tokens.json → 组件 CSS 变量 → 组件样式
+          3. 组件 API 定义：每个组件的 props / variants / sizes / states
+          4. 组件用法 Do/Don't 示例
+        quality: "原子→分子→有机体层级清晰。组件间没有循环依赖。"
+        tool_ref: null
+        output_file: "component-spec.md"
+
+      # Layer 4: 生成
+      - id: generate_component_html
+        action: |
+          生成组件展示页 HTML（Design System Showcase）：
+          每个组件展示所有变体和状态，使用 design-tokens.css 的变量。
+          布局：左侧组件列表导航，右侧展示区。
+          每个组件区域包含：名称、描述、变体展示、代码片段。
+        tool_ref: wireframe_generation
+        output_file: "component-showcase.html"
+
+      - id: compile_design_system_doc
+        action: "综合为设计系统文档 PDF（含组件清单、规范、Token 引用）"
+        tool_ref: pdf_generation
+        output_file: "design-system.pdf"
+
+    quality_criteria:
+      - "≥15 个组件有完整规范（变体/状态/可访问性）"
+      - "组件遵循 Atomic Design 分层（原子/分子/有机体）"
+      - "所有组件使用 Design Tokens，无硬编码值"
+      - "每个组件有 Do/Don't 使用指南"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 组件无可访问性说明 = 不完整的规范"
+      - "❌ 硬编码 #hex 颜色 = 无法维护"
+      - "❌ 组件只有 default 状态 = 忽略真实使用场景"
+      - "❌ shadow AND border 同时用 = 视觉噪音（Card）"
+
+    reviewers:
+      - persona: "设计系统架构师"
+        checklist:
+          - "Token 引用链是否完整（token→组件）？"
+          - "组件是否覆盖所有必要状态？"
+          - "是否有明确的组件使用边界？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: 响应式设计
+  # ═══════════════════════════════════════
+
+  responsive_design:
+    description: "定义断点系统、各尺寸布局规则、移动端优先策略"
+
+    steps:
+      # Layer 1: 搜索
+      - id: research_breakpoints
+        action: |
+          搜索目标领域的响应式设计参考：
+          1. 目标用户的设备分布（移动/平板/桌面比例）
+          2. 同类产品的响应式断点策略
+          3. 当前主流设备尺寸（375/768/1024/1440）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" responsive design breakpoints mobile first'
+          - '"device usage statistics" {领域} 2025 2026'
+        output_file: "responsive-research.md"
+
+      # Layer 2: 分析
+      - id: analyze_layout_shifts
+        action: |
+          对每个关键页面，分析在不同断点下的布局变化：
+          | 页面 | Mobile (375) | Tablet (768) | Desktop (1024) | Wide (1440) |
+          | 首页 | 单列堆叠 | 2列网格 | 侧边栏+内容 | 侧边栏+内容+辅助面板 |
+          每个断点回答：
+          1. 隐藏/折叠了什么？（侧边栏→汉堡菜单，次要信息→折叠）
+          2. 重排了什么？（横排→竖排，多列→单列）
+          3. 适配了什么？（字号缩小、间距减少、触控目标增大）
+          特别关注（参考 ui-ux-pro-max）：
+          - Mobile: 底部 Tab Bar, min 16px 字体, 44x44pt 触控目标
+          - Desktop: 侧边栏导航, 60-75 字符行宽, 键盘快捷键
+        quality: "每个关键页面有 4 个断点的布局描述。不是'移动端自适应'这种笼统话。"
+        tool_ref: null
+        output_file: "responsive-research.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_responsive_rules
+        action: |
+          基于布局分析，推导响应式规则集：
+          1. 断点定义：
+            - sm: 375px (手机竖屏)
+            - md: 768px (平板竖屏)
+            - lg: 1024px (小桌面/平板横屏)
+            - xl: 1440px (标准桌面)
+          2. 间距规则：
+            - sm: 16px 内边距, 8px 元素间距
+            - md: 24px 内边距, 12px 元素间距
+            - lg+: 32px 内边距, 16px 元素间距
+          3. 导航切换规则：
+            - <768px: 底部 Tab Bar（≤5 项）
+            - ≥768px: 顶部导航栏或侧边栏
+          4. 内容优先级：移动端先显示核心内容，折叠次要内容
+          5. 安全区域：env(safe-area-inset-*) 处理刘海/底部栏
+          6. 禁止 100vh（用 dvh 替代移动端全屏高度）
+        quality: "规则必须具体到 px 值和 CSS 属性，不是'间距变小'。"
+        tool_ref: null
+        output_file: "responsive-spec.md"
+
+      # Layer 4: 生成
+      - id: generate_responsive_wireframes
+        action: |
+          生成 4 个断点的线框图 HTML（375/768/1024/1440），
+          使用 CSS media queries 实现真正的响应式效果。
+          可以在浏览器中拖拽窗口大小看到布局变化。
+        tool_ref: wireframe_generation
+        output_file: "responsive-wireframe.html"
+
+      - id: compile_responsive_doc
+        action: "综合为响应式规范 PDF（含断点表、布局变化图、间距规则）"
+        tool_ref: pdf_generation
+        output_file: "responsive-spec.pdf"
+
+    quality_criteria:
+      - "4 个断点（375/768/1024/1440）都有明确的布局规则"
+      - "移动端字体 ≥ 16px，触控目标 ≥ 44x44pt"
+      - "行宽 ≤ 75 字符（桌面端）/ ≤ 60 字符（移动端）"
+      - "使用 env(safe-area-inset-*) 处理安全区域"
+      - "HTML 原型在浏览器中拖拽缩放可见布局变化"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 所有设备用同样的 gutter = 移动端太窄/桌面端太宽"
+      - "❌ 平板端全宽长文本 = 阅读体验差（>75 字符/行）"
+      - "❌ 100vh 在移动端 = 底部栏遮挡内容（用 dvh）"
+      - "❌ 只写 Mobile + Desktop 忽略 Tablet = 768px 处布局破碎"
+
+    reviewers:
+      - persona: "前端工程师"
+        checklist:
+          - "断点定义是否清晰可实现？"
+          - "移动端布局是否考虑触控操作？"
+          - "安全区域是否处理？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: 可用性审查
+  # ═══════════════════════════════════════
+
+  usability_review:
+    description: "对已完成的设计进行可用性和可访问性审查，产出审查报告和改进建议"
+
+    steps:
+      # Layer 1: 搜索
+      - id: gather_design_artifacts
+        action: |
+          收集所有已完成的设计产物：
+          - wireframe.html（线框图）
+          - design-tokens.css（Design Tokens）
+          - component-showcase.html（组件展示）
+          - responsive-wireframe.html（响应式线框图）
+          读取每个文件，准备审查。
+        tool_ref: null
+        output_file: "usability-audit.md"
+
+      # Layer 2: 分析
+      - id: automated_a11y_check
+        action: |
+          对所有 HTML 产物运行 pa11y 自动化可访问性检查：
+          npx pa11y "file://{path}/wireframe.html" --reporter json
+          npx pa11y "file://{path}/component-showcase.html" --reporter json
+          npx pa11y "file://{path}/responsive-wireframe.html" --reporter json
+          记录所有 WCAG 违规项。
+        tool_ref: accessibility_check
+        output_file: "a11y-report.json"
+
+      - id: heuristic_evaluation
+        action: |
+          用 Jakob Nielsen 10 条可用性启发式逐一评估设计（参考 Owl-Listener）：
+          | # | 启发式 | 评分(1-5) | 发现 | 改进建议 |
+          1. 系统状态可见性 — 用户知道现在在哪、在做什么吗？
+          2. 系统与现实匹配 — 用语是用户语言还是技术术语？
+          3. 用户控制与自由 — 有撤销/返回吗？误操作可恢复吗？
+          4. 一致性与标准 — 组件行为是否一致？符合平台惯例吗？
+          5. 错误预防 — 危险操作有确认吗？表单有约束吗？
+          6. 识别而非回忆 — 选项可见吗？不需要记忆操作步骤？
+          7. 灵活性与效率 — 有快捷键/批量操作吗？新手和专家都适用？
+          8. 美观简约 — 每个元素都有目的吗？无多余信息？
+          9. 错误恢复 — 错误消息说明原因 + 修复方法吗？
+          10. 帮助与文档 — 复杂功能有说明吗？
+          评分 <3 的项列为 P0 改进项。
+        quality: "每条启发式必须有具体发现（好或坏），不是打个分就完。"
+        tool_ref: null
+        output_file: "usability-audit.md (append)"
+
+      # Layer 3: 推导
+      - id: derive_improvements
+        action: |
+          综合自动化检查 + 启发式评估，推导改进清单：
+          | # | 问题 | 严重度(P0/P1/P2) | 来源 | 改进方案 | 预期效果 |
+          分类规则：
+          - P0（必须修复）：WCAG 违规、无法完成核心任务、键盘不可达
+          - P1（应该修复）：体验不佳但可用、一致性问题
+          - P2（建议修复）：美观性、锦上添花
+          每个 P0 问题必须有具体的修复方案（不是"改善可访问性"）。
+        quality: "P0 问题 = 0 才算审查通过。每个问题有具体修复方案。"
+        tool_ref: null
+        output_file: "usability-audit.md (append)"
+
+      # Layer 4: 生成
+      - id: generate_audit_report
+        action: "综合为可用性审查报告 PDF（含 Nielsen 评分表、WCAG 结果、改进清单）"
+        tool_ref: pdf_generation
+        output_file: "usability-audit.pdf"
+
+    quality_criteria:
+      - "自动化 WCAG 检查已对所有 HTML 产物执行"
+      - "10 条 Nielsen 启发式都有评分和发现"
+      - "P0 问题有具体修复方案"
+      - "改进建议按严重度排序"
+      - "审查基于实际设计文件（不是假设性评估）"
+      - "编造数据 = FAIL。不确定标注 [ASSUMPTION]。"
+
+    anti_patterns:
+      - "❌ 只跑自动化工具不做人工评估 = 漏掉 UX 问题"
+      - "❌ 只做人工评估不跑工具 = 漏掉对比度/ARIA 问题"
+      - "❌ '改善可访问性'这种笼统建议 = 不可执行"
+      - "❌ 审查空的/未完成的设计 = 无意义"
+
+    reviewers:
+      - persona: "UX 研究员"
+        checklist:
+          - "审查是否覆盖了可用性 + 可访问性两个维度？"
+          - "P0 问题是否都有可执行的修复方案？"
+          - "是否有真实的自动化检查数据（不只是推测）？"
+
+# ═══════════════════════════════════════
+# 产出物目录结构
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── ia-research.md                    # 信息架构研究
+  ├── user-flows.svg                    # 用户流程图 (D2)
+  ├── sitemap.svg                       # 站点地图 (D2)
+  ├── information-architecture.pdf      # IA 文档 (Typst)
+  ├── wireframe-research.md             # 线框图研究
+  ├── wireframe.html                    # HTML 线框图原型
+  ├── wireframe-screenshot.png          # 线框图截图 (Playwright)
+  ├── visual-research.md                # 视觉设计研究
+  ├── design-tokens.json                # Design Tokens 源文件
+  ├── design-tokens.css                 # CSS 变量 (Style Dictionary)
+  ├── style-guide.pdf                   # 视觉规范 (Typst)
+  ├── interaction-research.md           # 交互研究
+  ├── interaction-spec.md               # 交互规范
+  ├── state-diagrams.svg                # 状态转换图 (D2)
+  ├── interaction-spec.pdf              # 交互规范 (Typst)
+  ├── design-system-research.md         # 设计系统研究
+  ├── component-spec.md                 # 组件规范
+  ├── component-showcase.html           # 组件展示页 (HTML)
+  ├── design-system.pdf                 # 设计系统文档 (Typst)
+  ├── responsive-research.md            # 响应式研究
+  ├── responsive-spec.md                # 响应式规范
+  ├── responsive-wireframe.html         # 响应式线框图 (HTML)
+  ├── responsive-spec.pdf               # 响应式规范 (Typst)
+  ├── usability-audit.md                # 可用性审查
+  ├── a11y-report.json                  # WCAG 自动检查结果 (pa11y)
+  └── usability-audit.pdf               # 审查报告 (Typst)
+
+# ═══════════════════════════════════════
+# Domain-specific Gate 标准
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "信息架构有站点地图 + 用户流程图"
+      - "线框图覆盖所有关键页面"
+      - "Design Tokens 覆盖 color/spacing/font/radius/shadow"
+      - "主要文本-背景色通过 WCAG AA 对比度检查"
+      - "交互规范有状态矩阵和动画时序"
+
+  gate4_acceptance:
+    checklist:
+      - "所有 HTML 原型可在浏览器中直接打开"
+      - "pa11y 自动检查 WCAG 违规数 = 0"
+      - "Nielsen 启发式评估 P0 问题 = 0"
+      - "4 个断点的响应式布局正常工作"
+      - "Design Tokens 已转换为 CSS 变量"

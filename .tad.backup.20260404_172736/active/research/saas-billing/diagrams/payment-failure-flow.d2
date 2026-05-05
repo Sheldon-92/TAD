@@ -1,0 +1,72 @@
+# Payment Failure Flow — Complete Lifecycle
+direction: down
+
+# ═══════ Steps ═══════
+
+step1: "1. Stripe sends\ninvoice.payment_failed" {
+  style.fill: "#fee2e2"
+  style.stroke: "#dc2626"
+}
+
+step2: "2. Log WebhookEvent\n(idempotency check)" {
+  style.fill: "#f3f4f6"
+}
+
+step3: "3. Update Subscription\nstatus → PAST_DUE" {
+  style.fill: "#fef3c7"
+  style.stroke: "#f59e0b"
+}
+
+step4: "4. Notify\nTenantAdmin + BillingAdmin\n(email + WebSocket)" {
+  style.fill: "#dbeafe"
+}
+
+step5: "5. Schedule Retry\n(exponential backoff)" {
+  style.fill: "#f0fdf4"
+}
+
+retry_schedule: "Retry Schedule" {
+  style.fill: "#f0fdf4"
+  r1: "Attempt 1: +1 hour"
+  r2: "Attempt 2: +4 hours"
+  r3: "Attempt 3: +24 hours"
+  r4: "Attempt 4: +72 hours"
+  r1 -> r2 -> r3 -> r4
+}
+
+decision: "Payment\nSucceeded?" {
+  shape: diamond
+  style.fill: "#ede9fe"
+}
+
+success_path: "6a. Restore to ACTIVE\nNotify tenant" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+}
+
+max_retries: "6b. Max retries exceeded" {
+  style.fill: "#fee2e2"
+}
+
+step7: "7. Cancel Subscription\nSet 7-day grace period" {
+  style.fill: "#fee2e2"
+  style.stroke: "#dc2626"
+}
+
+step8: "8. Send Final Notice\n'Resolve payment within 7 days'" {
+  style.fill: "#fef3c7"
+}
+
+step9: "9. Grace Period Ends\nRevoke data access\nstatus → EXPIRED" {
+  style.fill: "#f3f4f6"
+  style.stroke: "#6b7280"
+}
+
+# ═══════ Flow ═══════
+
+step1 -> step2 -> step3 -> step4 -> step5
+step5 -> retry_schedule
+retry_schedule -> decision
+decision -> success_path: "Yes" {style.stroke: "#16a34a"}
+decision -> max_retries: "No (after 4 attempts)" {style.stroke: "#dc2626"}
+max_retries -> step7 -> step8 -> step9

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo App — Wireframe (B&W)</title>
+<style>
+  /* B&W Wireframe — strict grayscale */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #fff;
+    color: #333;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    border: 1px solid #ccc;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* (1) Header */
+  .header {
+    padding: 16px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; color: #000; }
+  .header .icon-btn {
+    width: 36px; height: 36px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #666;
+  }
+  .header .icon-btn:hover { background: #eee; }
+
+  /* (2) Filter Tabs */
+  .filter-tabs {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    padding: 0 16px;
+  }
+  .filter-tab {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    background: none;
+    border-top: none; border-left: none; border-right: none;
+  }
+  .filter-tab:hover { color: #333; }
+  .filter-tab.active {
+    color: #000;
+    border-bottom-color: #000;
+    font-weight: 500;
+  }
+
+  /* (3) Task Count */
+  .task-count {
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #999;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* (4) Task List */
+  .task-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 80px; /* space for FAB */
+  }
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    gap: 12px;
+  }
+  .task-item:hover { background: #f5f5f5; }
+  .task-item.completed .task-text { text-decoration: line-through; color: #999; }
+
+  .checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid #999;
+    border-radius: 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+  }
+  .checkbox:hover { border-color: #666; }
+  .checkbox.checked {
+    background: #999;
+    border-color: #999;
+  }
+  .checkbox.checked::after {
+    content: "\2713";
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .task-content { flex: 1; min-width: 0; }
+  .task-text { font-size: 15px; color: #333; line-height: 1.4; }
+  .task-meta { font-size: 12px; color: #999; margin-top: 2px; }
+
+  .task-delete {
+    width: 28px; height: 28px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    color: #999;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .task-item:hover .task-delete { display: flex; }
+  .task-delete:hover { border-color: #666; color: #666; }
+
+  /* (5) Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: #999;
+    display: none;
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; color: #ccc; }
+  .empty-state h3 { font-size: 16px; color: #666; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; }
+
+  /* (6) FAB — Add Task */
+  .fab {
+    position: fixed;
+    bottom: 80px;
+    right: calc(50% - 240px + 24px);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: #333;
+    color: #fff;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: none;
+  }
+  .fab:hover { background: #000; }
+
+  /* (7) Add Task Input */
+  .add-task-bar {
+    position: fixed;
+    bottom: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    padding: 12px 16px;
+    background: #fff;
+    border-top: 1px solid #ccc;
+    display: none;
+  }
+  .add-task-bar.visible { display: flex; gap: 8px; }
+  .add-task-bar input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+  }
+  .add-task-bar input:focus { border-color: #666; }
+  .add-task-bar button {
+    padding: 10px 16px;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .add-task-bar button:hover { background: #000; }
+
+  /* (8) Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    display: flex;
+    border-top: 1px solid #ccc;
+    background: #fff;
+  }
+  .nav-item {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+  .nav-item:hover { color: #666; }
+  .nav-item.active { color: #000; font-weight: 500; }
+  .nav-item .nav-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+
+  /* Settings Page */
+  .page { display: none; flex-direction: column; flex: 1; }
+  .page.active { display: flex; }
+
+  .settings-list { flex: 1; }
+  .settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+  }
+  .settings-item:hover { background: #f5f5f5; }
+  .settings-label { font-size: 15px; color: #333; }
+  .settings-value { font-size: 14px; color: #999; }
+  .settings-arrow { color: #ccc; }
+
+  /* Annotations */
+  .annotation {
+    position: absolute;
+    background: #000;
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<!-- Annotations -->
+<span class="annotation" style="top: 8px; left: -28px;">1</span>
+<span class="annotation" style="top: 56px; left: -28px;">2</span>
+<span class="annotation" style="top: 100px; left: -28px;">3</span>
+<span class="annotation" style="top: 140px; left: -28px;">4</span>
+
+<!-- Page: Tasks -->
+<div class="page active" id="page-tasks">
+  <!-- (1) Header -->
+  <div class="header">
+    <h1>My Tasks</h1>
+    <button class="icon-btn" title="Search" aria-label="Search tasks">&#x1F50D;</button>
+  </div>
+
+  <!-- (2) Filter Tabs -->
+  <div class="filter-tabs" role="tablist">
+    <button class="filter-tab active" role="tab" aria-selected="true" data-filter="all">All</button>
+    <button class="filter-tab" role="tab" aria-selected="false" data-filter="active">Active</button>
+    <button class="filter-tab" role="tab" aria-selected="false" data-filter="completed">Completed</button>
+  </div>
+
+  <!-- (3) Task Count -->
+  <div class="task-count"><span id="count">3</span> tasks remaining</div>
+
+  <!-- (4) Task List -->
+  <div class="task-list" id="task-list">
+    <div class="task-item" data-status="active">
+      <div class="checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-text">Buy groceries for the week</div>
+        <div class="task-meta">Added today</div>
+      </div>
+      <button class="task-delete" aria-label="Delete task">&times;</button>
+    </div>
+    <div class="task-item" data-status="active">
+      <div class="checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-text">Review pull request #42</div>
+        <div class="task-meta">Added yesterday</div>
+      </div>
+      <button class="task-delete" aria-label="Delete task">&times;</button>
+    </div>
+    <div class="task-item" data-status="active">
+      <div class="checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-text">Schedule dentist appointment</div>
+        <div class="task-meta">Added 2 days ago</div>
+      </div>
+      <button class="task-delete" aria-label="Delete task">&times;</button>
+    </div>
+    <div class="task-item completed" data-status="completed">
+      <div class="checkbox checked" role="checkbox" aria-checked="true" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-text">Send weekly report</div>
+        <div class="task-meta">Completed today</div>
+      </div>
+      <button class="task-delete" aria-label="Delete task">&times;</button>
+    </div>
+    <div class="task-item completed" data-status="completed">
+      <div class="checkbox checked" role="checkbox" aria-checked="true" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-text">Fix login page bug</div>
+        <div class="task-meta">Completed yesterday</div>
+      </div>
+      <button class="task-delete" aria-label="Delete task">&times;</button>
+    </div>
+  </div>
+
+  <!-- (6) FAB -->
+  <button class="fab" id="fab-add" aria-label="Add new task">+</button>
+
+  <!-- (7) Add Task Input Bar -->
+  <div class="add-task-bar" id="add-bar">
+    <input type="text" id="new-task-input" placeholder="What needs to be done?" aria-label="New task title">
+    <button id="add-btn">Add</button>
+  </div>
+</div>
+
+<!-- Page: Settings -->
+<div class="page" id="page-settings">
+  <div class="header">
+    <h1>Settings</h1>
+    <div></div>
+  </div>
+  <div class="settings-list">
+    <div class="settings-item">
+      <span class="settings-label">Theme</span>
+      <span class="settings-value">Light <span class="settings-arrow">&#8250;</span></span>
+    </div>
+    <div class="settings-item">
+      <span class="settings-label">Clear Completed Tasks</span>
+      <span class="settings-value"><span class="settings-arrow">&#8250;</span></span>
+    </div>
+    <div class="settings-item">
+      <span class="settings-label">About</span>
+      <span class="settings-value">v1.0 <span class="settings-arrow">&#8250;</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- (8) Bottom Navigation -->
+<nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+  <button class="nav-item active" data-page="page-tasks">
+    <span class="nav-icon">&#9776;</span>
+    Tasks
+  </button>
+  <button class="nav-item" data-page="page-settings">
+    <span class="nav-icon">&#9881;</span>
+    Settings
+  </button>
+</nav>
+
+<script>
+  // Tab filtering
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      const filter = tab.dataset.filter;
+      document.querySelectorAll('.task-item').forEach(item => {
+        if (filter === 'all') item.style.display = 'flex';
+        else if (filter === 'active') item.style.display = item.dataset.status === 'active' ? 'flex' : 'none';
+        else item.style.display = item.dataset.status === 'completed' ? 'flex' : 'none';
+      });
+      updateCount();
+    });
+  });
+
+  // Checkbox toggle
+  document.querySelectorAll('.checkbox').forEach(cb => {
+    cb.addEventListener('click', () => {
+      const item = cb.closest('.task-item');
+      const isChecked = cb.classList.toggle('checked');
+      cb.setAttribute('aria-checked', isChecked);
+      item.classList.toggle('completed', isChecked);
+      item.dataset.status = isChecked ? 'completed' : 'active';
+      updateCount();
+    });
+  });
+
+  // FAB toggle add bar
+  document.getElementById('fab-add').addEventListener('click', () => {
+    const bar = document.getElementById('add-bar');
+    bar.classList.toggle('visible');
+    if (bar.classList.contains('visible')) {
+      document.getElementById('new-task-input').focus();
+    }
+  });
+
+  // Add task
+  function addTask() {
+    const input = document.getElementById('new-task-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const list = document.getElementById('task-list');
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    item.dataset.status = 'active';
+    item.innerHTML = `
+      <div class="checkbox" role="checkbox" aria-checked="false" tabindex="0"></div>
+      <div class="task-content">
+        <div class="task-text">${text}</div>
+        <div class="task-meta">Added just now</div>
+      </div>
+      <button class="task-delete" aria-label="Delete task">&times;</button>
+    `;
+    list.prepend(item);
+    item.querySelector('.checkbox').addEventListener('click', function() {
+      const isChecked = this.classList.toggle('checked');
+      this.setAttribute('aria-checked', isChecked);
+      item.classList.toggle('completed', isChecked);
+      item.dataset.status = isChecked ? 'completed' : 'active';
+      updateCount();
+    });
+    item.querySelector('.task-delete').addEventListener('click', function() {
+      item.remove();
+      updateCount();
+    });
+    input.value = '';
+    updateCount();
+  }
+
+  document.getElementById('add-btn').addEventListener('click', addTask);
+  document.getElementById('new-task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  // Delete buttons
+  document.querySelectorAll('.task-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.task-item').remove();
+      updateCount();
+    });
+  });
+
+  // Bottom nav
+  document.querySelectorAll('.nav-item').forEach(nav => {
+    nav.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      nav.classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(nav.dataset.page).classList.add('active');
+    });
+  });
+
+  // Count
+  function updateCount() {
+    const active = document.querySelectorAll('.task-item[data-status="active"]');
+    const visible = [...active].filter(i => i.style.display !== 'none');
+    document.getElementById('count').textContent = visible.length || active.length;
+  }
+</script>
+</body>
+</html>

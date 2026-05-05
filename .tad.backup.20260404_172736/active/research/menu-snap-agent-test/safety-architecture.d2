@@ -1,0 +1,261 @@
+direction: down
+
+title: {
+  label: "Menu Snap AI — Three-Rail Safety Architecture"
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+  }
+}
+
+# External inputs
+user: "User" {
+  shape: person
+  style.fill: "#E3F2FD"
+}
+
+menu_photo: "Menu Photo\n(external input)" {
+  shape: document
+  style.fill: "#FFF3E0"
+}
+
+# ============================================
+# INPUT RAILS
+# ============================================
+
+input_rails: "INPUT RAILS" {
+  style.fill: "#FFEBEE"
+  style.stroke: "#C62828"
+  style.font-size: 18
+  style.bold: true
+
+  ocr: "OCR + Text Extraction" {
+    style.fill: "#FFCDD2"
+  }
+
+  injection_detector: "Prompt Injection\nDetector" {
+    style.fill: "#FFCDD2"
+    style.stroke: "#D32F2F"
+  }
+
+  schema_validator: "Allergen Schema\nValidation" {
+    style.fill: "#FFCDD2"
+    style.stroke: "#D32F2F"
+  }
+
+  pii_scanner: "PII Scanner\n(regex + NER)" {
+    style.fill: "#FFCDD2"
+  }
+
+  memory_guard: "Memory Poisoning\nGuard" {
+    style.fill: "#FFCDD2"
+    style.stroke: "#D32F2F"
+  }
+
+  ocr -> injection_detector: "extracted text"
+  injection_detector -> schema_validator: "clean text"
+  schema_validator -> pii_scanner
+}
+
+# ============================================
+# EXECUTION RAILS
+# ============================================
+
+execution_rails: "EXECUTION RAILS" {
+  style.fill: "#FFF8E1"
+  style.stroke: "#F57F17"
+  style.font-size: 18
+  style.bold: true
+
+  llm_engine: "LLM Recommendation\nEngine" {
+    shape: hexagon
+    style.fill: "#FFF9C4"
+  }
+
+  circuit_breaker: "Circuit Breaker\n(3 strikes → stop)" {
+    shape: diamond
+    style.fill: "#FFE082"
+    style.stroke: "#E65100"
+  }
+
+  hallucination_check: "Hallucination Check\n(item ∈ menu?)" {
+    style.fill: "#FFF9C4"
+  }
+
+  budget_monitor: "Budget Monitor\n(API cost ceiling)" {
+    style.fill: "#FFF9C4"
+  }
+
+  cross_contam: "Cross-Contamination\nWarning Engine" {
+    style.fill: "#FFE082"
+    style.stroke: "#E65100"
+  }
+
+  llm_engine -> circuit_breaker
+  circuit_breaker -> hallucination_check: "OK"
+  hallucination_check -> cross_contam
+  budget_monitor -> llm_engine: "within budget"
+}
+
+# ============================================
+# OUTPUT RAILS
+# ============================================
+
+output_rails: "OUTPUT RAILS" {
+  style.fill: "#E8F5E9"
+  style.stroke: "#2E7D32"
+  style.font-size: 18
+  style.bold: true
+
+  allergen_filter: "ALLERGEN HARD FILTER\n⚠️ Architecture-Level\n(code, NOT prompt)" {
+    shape: hexagon
+    style.fill: "#C8E6C9"
+    style.stroke: "#1B5E20"
+    style.stroke-width: 4
+    style.font-size: 14
+    style.bold: true
+  }
+
+  confidence_scorer: "Confidence Scorer\n(OCR quality → score)" {
+    style.fill: "#C8E6C9"
+  }
+
+  health_claim_filter: "Health Claim Filter\n(remove unverified)" {
+    style.fill: "#C8E6C9"
+  }
+
+  disclaimer_engine: "Disclaimer Engine\n(add safety notices)" {
+    style.fill: "#C8E6C9"
+  }
+
+  allergen_filter -> confidence_scorer: "safe items only"
+  confidence_scorer -> health_claim_filter
+  health_claim_filter -> disclaimer_engine
+}
+
+# ============================================
+# OUTPUT
+# ============================================
+
+safe_response: "Safe Recommendation\nto User" {
+  shape: document
+  style.fill: "#E8F5E9"
+  style.stroke: "#2E7D32"
+  style.stroke-width: 3
+}
+
+blocked: "BLOCKED\n(allergen match)" {
+  shape: hexagon
+  style.fill: "#F44336"
+  style.font-color: white
+  style.bold: true
+}
+
+# ============================================
+# SUPPORT SYSTEMS
+# ============================================
+
+allergen_db: "User Allergen\nProfile DB" {
+  shape: cylinder
+  style.fill: "#E1BEE7"
+  style.stroke: "#6A1B9A"
+}
+
+audit_log: "Audit Log\n(every decision)" {
+  shape: cylinder
+  style.fill: "#F3E5F5"
+}
+
+human_ops: "Human Ops\n(escalation)" {
+  shape: person
+  style.fill: "#FCE4EC"
+}
+
+# ============================================
+# CONNECTIONS
+# ============================================
+
+user -> input_rails.ocr: "photo + preferences"
+menu_photo -> input_rails.ocr
+
+input_rails.pii_scanner -> execution_rails.llm_engine: "validated input"
+input_rails.memory_guard -> allergen_db: "verify changes"
+
+execution_rails.cross_contam -> output_rails.allergen_filter: "candidates"
+
+allergen_db -> output_rails.allergen_filter: "user allergens" {
+  style.stroke: "#D32F2F"
+  style.stroke-width: 3
+  style.stroke-dash: 0
+}
+
+output_rails.allergen_filter -> blocked: "match found" {
+  style.stroke: "#F44336"
+  style.stroke-width: 3
+}
+
+output_rails.disclaimer_engine -> safe_response
+
+# Circuit breaker escalation
+execution_rails.circuit_breaker -> human_ops: "OPEN state" {
+  style.stroke: "#E65100"
+  style.stroke-dash: 5
+}
+
+# Audit connections
+output_rails.allergen_filter -> audit_log: "log decision" {
+  style.stroke: "#9E9E9E"
+  style.stroke-dash: 5
+}
+execution_rails.circuit_breaker -> audit_log: "log state" {
+  style.stroke: "#9E9E9E"
+  style.stroke-dash: 5
+}
+input_rails.injection_detector -> audit_log: "log detection" {
+  style.stroke: "#9E9E9E"
+  style.stroke-dash: 5
+}
+
+# ============================================
+# Circuit Breaker State Machine (bottom)
+# ============================================
+
+cb_states: "Circuit Breaker State Machine" {
+  style.fill: "#ECEFF1"
+  style.font-size: 16
+  style.bold: true
+
+  closed: "CLOSED\n(normal)" {
+    shape: circle
+    style.fill: "#4CAF50"
+    style.font-color: white
+  }
+
+  half_open: "HALF-OPEN\n(testing)" {
+    shape: circle
+    style.fill: "#FF9800"
+    style.font-color: white
+  }
+
+  open: "OPEN\n(stopped)" {
+    shape: circle
+    style.fill: "#F44336"
+    style.font-color: white
+  }
+
+  closed -> open: "3 failures" {
+    style.stroke: "#F44336"
+    style.stroke-width: 2
+  }
+  open -> half_open: "timeout (60s)" {
+    style.stroke: "#FF9800"
+  }
+  half_open -> closed: "success" {
+    style.stroke: "#4CAF50"
+  }
+  half_open -> open: "failure" {
+    style.stroke: "#F44336"
+  }
+}

@@ -23,7 +23,7 @@
 |---|-------|--------|---------|-----------------|
 | 1 | GitHub Registry Foundation | ✅ Done | [HANDOFF](../../archive/handoffs/HANDOFF-20260504-github-registry-phase1.md) | YAML 注册表 + `*research-github` 命令 + 50+ awesome-list 数据 |
 | 2 | Alex Workflow Integration | ✅ Done | [HANDOFF](../../archive/handoffs/HANDOFF-20260504-github-integration-phase2.md) | *analyze/*design 自动推荐 + 一键建 notebook |
-| 3 | Automation Pipeline | 🔄 Active | [HANDOFF](../../active/handoffs/HANDOFF-20260504-github-automation-phase3.md) | 定期刷新 + 新 repo 自动发现 + trending 检测 |
+| 3 | Automation Pipeline | ✅ Done | [HANDOFF](../../archive/handoffs/HANDOFF-20260504-github-automation-phase3.md) | 定期刷新 + 新 repo 自动发现 + trending 检测 |
 
 ### Phase Dependencies
 All phases are sequential: Phase 1 → Phase 2 → Phase 3.

@@ -1,0 +1,25 @@
+task_id: TASK-20260404-018
+title: "Documentation Overhaul v2.5→v2.8 Full Sync"
+status: completed
+started: "2026-04-04"
+completed: "2026-04-04"
+
+layer1:
+  status: PASS
+  note: "Documentation only — no build/test/lint"
+
+layer2:
+  rounds: 1
+  group0_spec_compliance:
+    status: PASS
+    result: "11/11 AC SATISFIED"
+  group1_code_reviewer:
+    status: SKIP
+    note: "Documentation task — spec compliance sufficient"
+
+gate3:
+  status: PASS
+  commit: "517a466"
+  knowledge_assessment:
+    new_discovery: false
+    reason: "Documentation sync task — no new discoveries, just updating docs to match existing code"

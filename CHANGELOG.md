@@ -759,3 +759,19 @@ See `docs/MIGRATION-v2.md` for detailed migration instructions.
 - Blake (Execution Master) agent
 - 4-gate quality system
 - Handoff-based workflow
+
+## [2.10.1] - 2026-05-04
+
+### New Features
+- GitHub Awesome-List Registry: 24 domains, 50 curated awesome-lists (.tad/github-registry/)
+- `*research-github` SKILL with 8 commands: list, search, add, explore, notebook, refresh, scan, scan-log
+- Alex step2c_github: auto-checks GitHub Registry during *analyze, offers research before design
+- Notebook auto-refresh: sources refreshed before query (30s timeout, max 5 sources)
+- Research priority rule: fresh research overrides stale Domain Pack criteria (with feedback log)
+- Weekly scan automation: scan-log.yaml + STEP 3.9 SessionStart report + scheduled routine docs
+- domain-pack-feedback.yaml: records research/DomainPack conflicts for *evolve processing
+
+### Architecture
+- Three-layer knowledge model: Registry (discovery) → Notebook (understanding) → Domain Pack (standards)
+- Cross-registry sync contract: github-registry ↔ research-notebooks REGISTRY consistency
+- Single-writer principle: scan routine only writes scan-log, REGISTRY updated only on consumption

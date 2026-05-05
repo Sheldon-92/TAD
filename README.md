@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.10.0 - Goal-Driven Research Director + NotebookLM Full Integration**
+**Version 2.10.1 - GitHub Knowledge Integration**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -131,7 +131,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.10.0 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.10.1 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -351,6 +351,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.10.1** | **GitHub Knowledge Integration — `*research-github` 8-command skill; GitHub Awesome-List Registry (24 domains, 50 lists); Alex step2c_github auto-recommend; notebook auto-refresh; research priority rule; weekly scan automation; domain-pack-feedback loop** |
 | **v2.10.0** | **Goal-Driven Research Director + NotebookLM Full Integration — `*research-notebook` 19-command skill; Alex STEP 3.8 research scan; `*research-plan` autonomous goal-driven research; OBJECTIVES.md OKR template; Blake NotebookLM read-only access; cross-model invocation guide** |
 | **v2.9.1** | **Cross-Model Orchestration + NotebookLM Knowledge Layer — `*research-notebook` skill (8 commands) for multi-source research (YouTube + PDF + web); cross-model capability catalog (Codex Image-2, NotebookLM, Gemini); notebook lifecycle management; Alex integration for research workflows** |
 | **v2.9.0** | **Codex CLI Support — cross-platform TAD via OpenAI Codex (AGENTS.md native role switching, launcher scripts, static Codex-edition SKILLs, 4 operation guides, portable extraction system)** |
@@ -442,6 +443,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.10.0 - Goal-Driven Research Director + NotebookLM Full Integration for AI-Assisted Development.**
+**Welcome to TAD v2.10.1 - GitHub Knowledge Integration for AI-Assisted Development.**
 
 *AI does the work. Humans guard the value.*

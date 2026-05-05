@@ -1,0 +1,26 @@
+task_id: TASK-20260404-015
+title: "Security Domain Pack — Phase 1 Core Packs"
+status: in_progress
+started: "2026-04-04"
+handoff: ".tad/active/handoffs/HANDOFF-20260404-security-core-packs.md"
+epic: "EPIC-20260403-security-domain-pack-chain.md"
+
+layer1:
+  status: pending
+  checks:
+    - name: "yaml_parse"
+      status: pending
+    - name: "line_count_500"
+      status: pending
+    - name: "tool_ref_resolution"
+      status: pending
+
+layer2:
+  status: pending
+  groups:
+    group0_spec_compliance:
+      status: pending
+    group1_code_reviewer:
+      status: pending
+
+notes: "YAML task — Layer 1 = parse + line count + tool_ref check, Layer 2 = spec + reviewer"

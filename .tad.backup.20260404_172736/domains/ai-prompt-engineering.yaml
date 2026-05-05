@@ -1,0 +1,720 @@
+# Domain Pack: AI Prompt Engineering
+# Design, test, optimize, and version-manage prompts for production LLM applications.
+# Scope: Prompt lifecycle (design → test → optimize → deploy), NOT agent architecture or tool integration.
+# Type: Mixed — 3 Doc A (research/design), 3 Code B (code/tool), 1 Mixed (human-AI)
+domain: ai-prompt-engineering
+version: 1.0.0
+requires_registry: ">=1"
+description: "AI Prompt Engineering：从设计到生产的 prompt 全生命周期。核心价值：用工具验证 prompt 质量（promptfoo 测试、schema 验证、diff 追踪），不是写建议。"
+
+output_dir: ".tad/active/research/{project}/"
+
+# ═══════════════════════════════════════
+# Capability 1: System Prompt Design (Type A — Doc/Research)
+# Step model: search → analyze → derive → generate
+# ═══════════════════════════════════════
+
+capabilities:
+
+  system_prompt_design:
+    description: "设计 system prompt — 角色定义、行为约束、输出格式、防幻觉机制"
+
+    steps:
+      - id: search_patterns
+        action: |
+          搜索目标领域的 system prompt 设计模式：
+          1. 搜索同类产品的公开 system prompt（GitHub leak/开源项目）
+          2. 搜索目标 LLM 的官方 prompt 指南（Anthropic/OpenAI/Google）
+          3. 搜索该领域的 prompt 安全问题（injection, jailbreak 案例）
+        tool_ref: web_scraping
+        queries:
+          - '"{领域}" system prompt design pattern 2026'
+          - '"site:github.com {领域} system prompt" OR "CLAUDE.md" OR "SKILL.md"'
+          - '"{目标LLM}" prompt best practices official guide'
+        output_file: "system-prompt-design.md"
+
+      - id: analyze_patterns
+        action: |
+          对搜索到的 prompt 逐个分析（来源: prompt-architect CO-STAR + TIDD-EC 框架）：
+
+          对每个参考 prompt 回答 6 个问题：
+          1. Role Definition — 角色定义多具体？（"helpful assistant" vs "Sichuan cuisine expert who prioritizes ingredient accuracy"）
+          2. Constraint Signal Strength — 约束用什么语气？（MUST/NEVER vs should/avoid — 强信号 vs 弱信号）
+          3. Critical Position — 关键指令在 prompt 的哪个位置？（前 30% = 好，末尾 = 容易被忽略）
+          4. Anti-hallucination — 有没有防幻觉机制？（"mark uncertain [uncertain]" / "only use verified info"）
+          5. Output Lock — 有没有明确输出格式？（JSON schema / template / "respond only with..."）
+          6. Do/Don't Balance — 有没有明确的"不要做"列表？（TIDD-EC 模式：缺 Don't 则 anti-patterns 泄漏）
+
+          每个分析必须引用具体的 prompt 文本段落，不接受"设计合理"这种空话。
+        quality: "每个参考 prompt 都有 6 维度分析，每个分析有具体引文。"
+        tool_ref: null
+        output_file: "system-prompt-design.md (append)"
+
+      - id: derive_prompt_architecture
+        action: |
+          基于分析推导目标 prompt 的架构（来源: prompt-master 9 维度意图提取）：
+
+          1. 角色+价值观声明: "You are a [role] who prioritizes [value]"
+          2. 核心行为约束: 用 MUST/NEVER 列出 ≤10 条硬规则
+          3. 输出格式锁定: 在前 30% 定义输出 schema/template
+          4. 上下文边界: 明确什么信息可用、什么不可用
+          5. 防幻觉护栏: "Use only information you are highly confident about. Mark uncertain claims [uncertain]. Do not fabricate."
+          6. 降级策略: 如果信息不足怎么办（标注 [INSUFFICIENT DATA]，不猜测）
+          7. 安全边界: Prompt injection 防御（delimiter 隔离用户输入、角色锁定）
+
+          输出: 完整的 system prompt 草稿（可直接使用）。
+          如果目标领域找不到足够参考 → 诚实标注 "⚠️ 参考不足，需要更多领域调研"
+        quality: "推导出的 prompt 每条约束都可追溯到分析阶段的发现。编造规则 = FAIL。"
+        tool_ref: null
+        output_file: "system-prompt-design.md (append)"
+
+      - id: generate_prompt_document
+        action: "综合为 system prompt 设计文档 PDF（含参考分析、架构推导、最终 prompt 全文）"
+        tool_ref: pdf_generation
+        output_file: "system-prompt-design.pdf"
+
+    quality_criteria:
+      - "≥3 个参考 prompt 被分析（含公开 system prompt 或官方指南）"
+      - "每个参考有 6 维度分析（Role/Signal/Position/Anti-hallucination/Output/DoDont）"
+      - "最终 prompt 的每条约束可追溯到分析发现"
+      - "MUST/NEVER 约束 ≤10 条（太多=稀释信号强度）"
+      - "关键指令在 prompt 前 30%"
+      - "编造约束 = FAIL"
+
+    anti_patterns:
+      - "❌ 'You are a helpful assistant' — 太泛，必须有领域+价值观（prompt-architect）"
+      - "❌ Soft language ('could you', 'please') — 浪费 token，用 MUST/NEVER（prompt-master）"
+      - "❌ 关键约束在 prompt 末尾 — 放前 30%（prompt-master critical weight rule）"
+      - "❌ 没有 Don't 列表 — anti-patterns 会泄漏（TIDD-EC pattern）"
+      - "❌ 没有防幻觉机制 — Claude 会自信地编造（Lakera）"
+
+    reviewers:
+      - persona: "Prompt Security Auditor"
+        checklist:
+          - "Prompt 是否有 injection 防御（delimiter 隔离、角色锁定）？"
+          - "约束信号强度是否一致（全用 MUST/NEVER，不混用 should）？"
+          - "降级策略是否明确（信息不足时怎么办）？"
+      - persona: "Domain Expert"
+        checklist:
+          - "角色定义是否准确反映领域需求？"
+          - "约束是否覆盖了该领域的核心风险？"
+          - "输出格式是否适合下游消费者？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Few-Shot Example Design (Type A — Doc/Research)
+  # Step model: search → analyze → derive → generate
+  # ═══════════════════════════════════════
+
+  few_shot_design:
+    description: "设计 few-shot 示例集 — 选什么示例、怎么组织、多少个够"
+
+    steps:
+      - id: search_examples
+        action: |
+          搜索目标任务的示例设计模式：
+          1. 搜索目标任务的已有 few-shot 示例（GitHub, 论文, API docs）
+          2. 搜索该任务类型的常见失败案例（edge cases）
+          3. 搜索不同 LLM 对 few-shot 数量的敏感度研究
+        tool_ref: web_scraping
+        queries:
+          - '"{任务类型}" few-shot examples prompt design'
+          - '"{任务类型}" edge cases failure modes LLM'
+          - '"few-shot" optimal number examples research 2026'
+        output_file: "few-shot-design.md"
+
+      - id: analyze_example_quality
+        action: |
+          对收集到的示例评估质量（来源: Lakera + RISE-IX 框架）：
+
+          对每组示例回答 5 个问题：
+          1. Diversity — 示例覆盖了多少种输入类型？（只有 happy path = 不够）
+          2. Format Consistency — 所有示例的输出格式是否一致？（不一致 = 模型困惑）
+          3. Difficulty Gradient — 示例有没有从简单到复杂排列？（随机排列 = 次优）
+          4. Anti-example — 有没有展示"不应该怎么做"？（仅正例 = 缺少负向引导）
+          5. Independence — 每个示例是否独立可理解？（有依赖 = 脆弱）
+
+          统计：当前示例集覆盖了目标任务的百分比（用 edge case 清单衡量）。
+        quality: "每组示例有 5 维度评估。覆盖率有量化估计。"
+        tool_ref: null
+        output_file: "few-shot-design.md (append)"
+
+      - id: derive_example_set
+        action: |
+          基于分析推导最优示例集（来源: Lakera 最小集原则）：
+
+          1. 确定数量: 从 1 个示例开始，逐步添加直到输出稳定（通常 3-5 个）
+          2. 选择策略:
+             - 必须包含: 1 个典型 happy path + 1 个 edge case + 1 个 anti-example
+             - 可选添加: 领域特定难题、多语言输入、格式边界
+          3. 排列顺序: 简单 → 复杂 → edge case
+          4. 格式标准: 每个示例用 delimiter 隔离（---EXAMPLE START/END---）
+          5. Token budget: 总 few-shot section ≤ prompt 总量的 40%
+
+          输出: 编号的示例集 + 每个示例的选择理由。
+          如果 1 个示例就够 → 诚实说明，不为了"看起来完整"而添加冗余示例。
+        quality: "每个示例有选择理由。token budget 有估算。"
+        tool_ref: null
+        output_file: "few-shot-design.md (append)"
+
+      - id: generate_example_document
+        action: "综合为 few-shot 设计文档（含示例集全文、选择理由、覆盖率分析）"
+        tool_ref: pdf_generation
+        output_file: "few-shot-design.pdf"
+
+    quality_criteria:
+      - "示例集覆盖 ≥3 种输入类型（happy path + edge case + anti-example）"
+      - "所有示例输出格式一致"
+      - "示例按难度排列（简单→复杂→边界）"
+      - "每个示例有选择理由（不是随便选的）"
+      - "总 few-shot section ≤ prompt 的 40% token"
+      - "≤5 个示例（超过 5 个收益递减）"
+      - "示例输出必须来自真实运行结果，编造示例 = FAIL"
+
+    anti_patterns:
+      - "❌ 只有 happy-path 示例（不覆盖 edge case）（Lakera）"
+      - "❌ 示例格式不一致（degrades model performance）（Lakera）"
+      - "❌ 示例之间有依赖关系（前一个的输出是后一个的输入 = 脆弱）"
+      - "❌ 过于复杂的示例（Claude 会过度模仿复杂度）"
+      - "❌ 用 AI 总结的输出当示例（应该用真实的理想输出）"
+
+    reviewers:
+      - persona: "QA Engineer"
+        checklist:
+          - "示例集是否覆盖了已知 edge cases？"
+          - "示例数量是否最优（不多不少）？"
+          - "格式一致性是否通过自动检查？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: Prompt Testing (Type B — Code/Tool)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  prompt_testing:
+    description: "用 promptfoo 对 prompt 做自动化测试 — 回归检测、A/B 对比、assertion 验证"
+
+    steps:
+      - id: select_test_strategy
+        action: |
+          根据 prompt 类型选择测试策略：
+
+          1. 确定测试范围:
+             - 功能测试: prompt 是否产出正确结果？（golden dataset）
+             - 边界测试: 异常输入时表现如何？（空输入、超长输入、对抗输入）
+             - 一致性测试: 同一输入多次调用结果是否稳定？（非确定性检查）
+             - 对比测试: 新版 prompt vs 旧版（A/B 回归）
+          2. 选择 assertion 类型:
+             - contains/icontains: 输出必须包含特定文本
+             - llm-rubric: 用 LLM 评判输出质量（适合主观判断）
+             - cost: 成本阈值
+             - latency: 延迟阈值
+             - javascript/python: 自定义验证逻辑
+          3. 确定 provider:
+             - 测试用 provider（快速、便宜）
+             - 生产用 provider（准确、可靠）
+        tool_ref: null
+        output_file: "prompt-test-config.md"
+
+      - id: build_golden_dataset
+        action: |
+          创建 golden dataset（来源: promptfoo best practices）：
+
+          1. 核心用例: 10-20 个代表性输入（覆盖主要使用场景）
+          2. Edge cases: 5-10 个边界输入（空值、超长、特殊字符、多语言）
+          3. 对抗用例: 3-5 个 adversarial 输入（prompt injection 尝试、误导性指令）
+          4. 每个 test case 包含:
+             - vars: 输入变量
+             - assert: 期望行为（至少 1 个 assertion）
+             - description: 测试目的（可选但推荐）
+
+          写入 promptfooconfig.yaml。
+        tool_ref: prompt_evaluation
+        output_file: "promptfooconfig.yaml"
+
+      - id: execute_evaluation
+        action: |
+          运行 promptfoo 评估:
+          1. npx promptfoo eval --no-cache
+          2. 记录: 总 test cases, PASS 数, FAIL 数, cost, latency
+        tool_ref: prompt_evaluation
+        output_file: "prompt-test-results.md"
+
+      - id: verify_results
+        action: |
+          验证测试结果:
+          1. PASS rate ≥80%? 如果 <80% → 标注 "⚠️ prompt 需要优化"
+          2. 对每个 FAIL case 记录具体失败原因（task/context/format/scope failure）
+          3. 一致性检查: 同一 test case 3 次运行结果是否一致？
+          4. 成本/延迟: 是否在 budget 阈值内？
+        tool_ref: null
+        output_file: "prompt-test-results.md (append)"
+
+      - id: optimize_based_on_results
+        action: |
+          基于验证结果优化:
+          1. 对每个 FAIL case 做根因分析
+          2. 修改 prompt 并重新运行
+          3. 生成 v1 vs v2 对比报告:
+             | Test Case | v1 Result | v2 Result | Change |
+          4. 确认无回归（v1 PASS 的 case 在 v2 仍然 PASS）
+        tool_ref: prompt_evaluation
+        output_file: "prompt-test-results.md (append)"
+
+    quality_criteria:
+      - "Golden dataset ≥15 test cases（10 core + 5 edge）"
+      - "每个 test case 有 ≥1 个 assertion"
+      - "PASS rate ≥80% on golden dataset"
+      - "≥80% consistency across 3 runs（非确定性检查）"
+      - "Cost per eval ≤ budget threshold"
+      - "A/B 对比无回归（旧 PASS 不变新 FAIL = 阻塞）"
+      - "promptfooconfig.yaml 是有效 YAML（可验证）"
+      - "测试结果必须来自实际 promptfoo 运行，编造通过率 = FAIL"
+
+    anti_patterns:
+      - "❌ 只测 happy path 不测 edge cases（promptfoo）"
+      - "❌ 纯人工 review 不用 assertions（不可复现、不可 CI）"
+      - "❌ Golden dataset <10 cases（覆盖不足）（promptfoo）"
+      - "❌ 不做回归测试 — prompt 修改后旧功能失效（promptfoo CI gate）"
+      - "❌ 只在一个 model 上测试（overfitting to model quirks）（Lakera）"
+
+    reviewers:
+      - persona: "QA Engineer"
+        checklist:
+          - "Test cases 是否覆盖了所有已知使用场景？"
+          - "Assertion 类型是否适合各测试目的？"
+          - "是否有回归测试（新版不能破坏旧版通过的 case）？"
+      - persona: "Prompt Engineer"
+        checklist:
+          - "Golden dataset 是否代表真实用户输入分布？"
+          - "Edge cases 是否包含对抗性输入？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: Prompt Optimization (Type Mixed — Human-AI)
+  # Cannot be fully automated — requires human judgment on trade-offs
+  # Protocol: Diagnose → Discuss → Apply → Verify
+  # ═══════════════════════════════════════
+
+  prompt_optimization:
+    description: "迭代优化 prompt — 诊断问题、讨论方案、决定改进、交付验证"
+
+    steps:
+      - id: diagnostic_scan
+        action: |
+          对当前 prompt 做 6 维度诊断扫描（来源: prompt-master diagnostic categories）：
+
+          1. Task Clarity — 动词是否精确？（"analyze" → "extract and rank by frequency"）
+          2. Context Sufficiency — 有没有假设模型已知信息？（需要 memory block?）
+          3. Format Precision — 输出格式是否明确锁定？（"JSON" vs 具体 schema）
+          4. Scope Boundary — 作用范围是否有限？（"entire codebase" = 太宽）
+          5. Reasoning Support — 推理任务有没有 scaffolding？（CoT for standard models, NOT for reasoning-native）
+          6. Agentic Safety — Agent 场景有没有 stop conditions + human review triggers?
+
+          每个维度打分 1-10。≤4 分的维度 = 需要修复。
+          输出: 诊断报告表格 + 推荐修复优先级。
+        tool_ref: null
+        output_file: "prompt-optimization.md"
+
+      - id: discuss_tradeoffs
+        action: |
+          对每个需要修复的维度，呈现选项和 trade-off（人类决策）：
+
+          格式:
+          | 维度 | 当前问题 | 选项 A | 选项 B | Trade-off |
+          例如:
+          | Scope | "analyze all files" 太宽 | 限制到 src/ | 限制到当前文件 | A: 覆盖多但慢; B: 快但可能遗漏 |
+
+          ⚠️ 呈现选项后 PAUSE，等人类选择。不要自己决定。
+        quality: "每个修复有 ≥2 个选项 + trade-off 分析。不自动选择。"
+        tool_ref: null
+        output_file: "prompt-optimization.md (append)"
+
+      - id: apply_fixes
+        action: |
+          根据人类决策应用修复，生成优化后的 prompt。
+
+          优化时执行 6-point 预交付检查（来源: prompt-master）：
+          1. ✅ Tool syntax: 格式是否适合目标 LLM？
+          2. ✅ Critical weight: 关键约束在前 30%？
+          3. ✅ Signal strength: MUST > should, NEVER > avoid？
+          4. ✅ Fabrication audit: 禁止的技术已移除？
+          5. ✅ Token efficiency: 每句话都有用？无冗余形容词？
+          6. ✅ First-pass success: 粘贴即可用？零需要重新提示？
+
+          输出: 优化前 vs 优化后对比 + 6-point 检查结果。
+        tool_ref: null
+        output_file: "prompt-optimization.md (append)"
+
+      - id: verify_improvement
+        action: |
+          用 promptfoo 验证优化效果:
+          1. 用同一 golden dataset 测试优化前后两个版本
+          2. 对比 PASS rate, cost, latency
+          3. 确认无回归
+          4. 生成改进报告
+        tool_ref: prompt_evaluation
+        output_file: "prompt-optimization-results.md"
+
+    quality_criteria:
+      - "诊断覆盖 6 个维度，每个有 1-10 评分"
+      - "每个修复有 ≥2 选项 + trade-off 分析"
+      - "人类选择后才应用修复（不自动决策）"
+      - "6-point 预交付检查全通过"
+      - "优化后 PASS rate ≥ 优化前（或相同但 cost/latency 降低）"
+      - "无回归（旧 PASS 不变新 FAIL = 阻塞）"
+      - "优化前后对比必须来自实际测试，编造改进数据 = FAIL"
+
+    anti_patterns:
+      - "❌ 随机改词碰运气（不诊断就修）（prompt-master）"
+      - "❌ 给 reasoning-native 模型加 CoT（o3/o4-mini/DeepSeek-R1 已内建推理）（prompt-master）"
+      - "❌ 一次改多处无法归因（一次只改一个维度）"
+      - "❌ 感情用语 ('broken', 'terrible') — 提取具体技术问题（prompt-master）"
+      - "❌ 不验证就宣布优化完成"
+
+    reviewers:
+      - persona: "Prompt Engineer"
+        checklist:
+          - "诊断是否覆盖了所有 6 个维度？"
+          - "Trade-off 分析是否客观？"
+          - "优化是否有 A/B 测试验证？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Output Format Control (Type B — Code/Tool)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  output_format_control:
+    description: "设计和验证 LLM 输出格式 — JSON Schema、Markdown 模板、结构化输出"
+
+    steps:
+      - id: select_format_type
+        action: |
+          根据下游消费者选择输出格式:
+
+          | 消费者 | 推荐格式 | 原因 |
+          |--------|---------|------|
+          | API/代码 | JSON + Schema | 可解析、可验证 |
+          | 人类阅读 | Markdown + 标题 | 可扫描、结构清晰 |
+          | 数据管线 | CSV/TSV | 直接导入 |
+          | LLM 链式调用 | XML tags | Claude 偏好 `<tag>` 分隔（Lakera） |
+          | 混合 | JSON 嵌 Markdown | 机器解析 + 人类可读 |
+
+          确认选择后进入执行。
+        tool_ref: null
+        output_file: "output-format-design.md"
+
+      - id: define_schema
+        action: |
+          定义完整的输出 schema:
+
+          对 JSON 格式:
+          1. 列出所有必需字段（required）+ 可选字段
+          2. 每个字段定义类型 + 约束（enum/pattern/minLength）
+          3. 定义嵌套对象结构
+          4. 定义 edge case 处理:
+             - 数据缺失 → explicit null（不是省略字段）
+             - 不确定 → confidence 字段（0-1）
+             - 错误 → error 字段 + 错误码
+
+          对 Markdown 格式:
+          1. 定义标题层级 + 必须包含的 section
+          2. 定义列表/表格格式
+          3. 定义代码块语言标注
+
+          输出: 完整 schema 定义文件 + 3 个示例输出。
+        tool_ref: null
+        output_file: "output-format-design.md (append)"
+
+      - id: embed_in_prompt
+        action: |
+          将格式约束嵌入 system prompt:
+
+          1. 在 prompt 前 30% 放格式指令: "IMPORTANT: Respond only with the following structure."
+          2. 嵌入完整 schema 或 template
+          3. 添加禁止指令: "Do not explain your answer. Do not add commentary outside the schema."
+          4. 添加 prefill/anchor（如果 API 支持）: 用预填充开头引导格式
+        tool_ref: null
+        output_file: "output-format-design.md (append)"
+
+      - id: verify_output_compliance
+        action: |
+          自动验证 LLM 输出是否符合 schema:
+
+          1. 生成 10+ 个测试输入
+          2. 收集 LLM 输出
+          3. 用 JSON schema 验证器检查每个输出:
+             - 必需字段是否存在？
+             - 类型是否正确？
+             - 约束是否满足？
+          4. 计算 compliance rate
+          5. 对非 compliant 输出分析原因（格式指令不够强？schema 太复杂？）
+        tool_ref: json_schema_validation
+        output_file: "output-format-validation.md"
+
+      - id: optimize_format_instructions
+        action: |
+          基于验证结果优化格式指令:
+          1. Compliance rate <90% → 加强格式锁定（"RESPOND ONLY IN THIS FORMAT"）
+          2. 特定字段频繁违规 → 为该字段添加单独约束
+          3. Schema 太复杂 → 简化（减少嵌套层级）
+          4. 重新验证直到 compliance ≥95%
+        tool_ref: json_schema_validation
+        output_file: "output-format-validation.md (append)"
+
+    quality_criteria:
+      - "Schema 定义完整（所有字段有类型+约束）"
+      - "Edge case 处理明确（null/confidence/error）"
+      - "格式指令在 prompt 前 30%"
+      - "Compliance rate ≥95%（自动验证）"
+      - "有 ≥3 个示例输出通过验证"
+      - "编造字段值 = FAIL"
+
+    anti_patterns:
+      - "❌ 'Respond in JSON' 不给 schema（字段名每次不同）（Lakera）"
+      - "❌ 格式指令在 prompt 末尾（容易被忽略）"
+      - "❌ 混合格式（JSON 里嵌散文解释）"
+      - "❌ 不做自动验证（silent schema violations 累积）"
+      - "❌ Schema 过度复杂（>3 层嵌套 → compliance 下降）"
+
+    reviewers:
+      - persona: "API Consumer Developer"
+        checklist:
+          - "Schema 是否足够下游代码直接 parse？"
+          - "Edge case（null, error）是否有明确处理？"
+          - "字段命名是否一致（camelCase or snake_case，不混用）？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Context Management (Type A — Doc/Research)
+  # Step model: search → analyze → derive → generate
+  # ═══════════════════════════════════════
+
+  context_management:
+    description: "管理 prompt 的 context — token budget 分配、信息优先级、压缩策略"
+
+    steps:
+      - id: audit_current_context
+        action: |
+          对当前 prompt/context 做 token 审计:
+
+          1. 用 python3 估算每个 section 的 token 数:
+             - System prompt: N tokens
+             - Few-shot examples: N tokens
+             - User context: N tokens
+             - Instructions: N tokens
+          2. 计算各 section 占比
+          3. 标注 token 利用效率:
+             - High-signal: 每 token 贡献信息量高
+             - Low-signal: 礼貌用语、重复信息、过度解释
+             - Dead: 被 attention 衰减影响的中间段内容
+        tool_ref: null
+        note: "Uses data_chart (matplotlib) for token distribution visualization"
+        output_file: "context-audit.md"
+
+      - id: analyze_attention_pattern
+        action: |
+          分析 attention 分布和信息优先级（来源: context-engineering skills）：
+
+          1. U 形 attention 曲线分析:
+             - 前 30% 和后 10% = attention 最高（放关键信息）
+             - 中间 60% = attention 衰减（"lost in the middle" 风险）
+          2. 标注当前 prompt 中哪些内容在 attention 低谷区
+          3. 评估 progressive disclosure 可行性:
+             - 哪些信息可以按需加载而不是全量预加载？
+             - 哪些信息只在特定条件下需要？
+
+          输出: 信息优先级矩阵
+          | Section | 当前位置 | Token 数 | Signal 质量 | 建议位置 |
+        quality: "每个 section 有 signal 质量评估。低谷区内容已识别。"
+        tool_ref: null
+        output_file: "context-audit.md (append)"
+
+      - id: derive_compression_plan
+        action: |
+          基于审计和分析推导压缩方案（来源: Lakera + LangChain 4 策略）：
+
+          对每个 low-signal section，选择压缩策略:
+          1. Delete — 完全移除（冗余/已过时）
+          2. Compress — 句子→标签指令（"Could you please carefully analyze" → "Analyze:"）
+          3. Relocate — 从低 attention 区移到高 attention 区
+          4. Externalize — 移到外部存储，按需检索（LangChain Write/Select）
+          5. Isolate — 分离到独立 context（multi-agent 场景）
+
+          输出: 压缩方案表格 + 预期 token 节省量
+          | Section | 策略 | 操作 | 节省 tokens | 风险 |
+
+          目标: 压缩率 ≥30% 且不丢失关键信息。
+          如果压缩率 <30% → 诚实说明"当前 context 已较精简"
+        quality: "每个压缩操作有风险评估。总压缩率有估算。"
+        tool_ref: null
+        output_file: "context-audit.md (append)"
+
+      - id: generate_context_report
+        action: "综合为 context 管理报告 PDF（含审计数据、attention 分析图、压缩方案）"
+        tool_ref: pdf_generation
+        output_file: "context-management-report.pdf"
+
+    quality_criteria:
+      - "Token 审计覆盖所有 prompt sections"
+      - "每个 section 有 signal 质量评估（High/Low/Dead）"
+      - "关键信息在前 30% + 后 10%（U-shaped attention）"
+      - "压缩率 ≥30%（或说明已精简）"
+      - "压缩不丢失关键信息（有风险评估）"
+      - "Token 数量必须来自实际计算，编造压缩率 = FAIL"
+
+    anti_patterns:
+      - "❌ 全量 context 不做筛选（'把所有文件都加上'）（context-engineering）"
+      - "❌ 关键信息在中间段（lost-in-the-middle）（context-engineering）"
+      - "❌ 礼貌用语浪费 token（'Could you please carefully...' → 'Analyze:'）（Lakera）"
+      - "❌ 不估算 token 就说'足够了'（必须量化）"
+      - "❌ 忽略模型差异（不同模型 context window 和 attention 模式不同）（prompt-master）"
+
+    reviewers:
+      - persona: "Performance Engineer"
+        checklist:
+          - "Token 使用是否在模型 context window 的安全范围内（≤80%）？"
+          - "高 attention 区是否放了最关键的信息？"
+          - "压缩是否保留了所有功能性信息？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Prompt Versioning (Type B — Code/Tool)
+  # Step model: select → execute → verify → optimize
+  # ═══════════════════════════════════════
+
+  prompt_versioning:
+    description: "版本管理 prompt — git 追踪、语义版本号、回归测试、变更日志"
+
+    steps:
+      - id: setup_version_structure
+        action: |
+          建立 prompt 版本管理结构:
+
+          1. 目录结构:
+             prompts/
+             ├── {prompt-name}/
+             │   ├── prompt.md          # 当前版本全文
+             │   ├── CHANGELOG.md       # 变更日志
+             │   ├── promptfooconfig.yaml  # 测试配置
+             │   └── test-results/      # 历史测试结果
+             └── ...
+
+          2. 版本号规则（语义版本）:
+             - MAJOR (1.x.x): 行为变更（输出格式改变、角色重定义）
+             - MINOR (x.1.x): 改进（新增约束、优化措辞、性能提升）
+             - PATCH (x.x.1): 修正（typo、格式微调）
+
+          3. 每个版本必须包含:
+             - 版本号 + 日期
+             - 变更原因（Why）
+             - 测试结果摘要
+             - 回滚方法
+        tool_ref: null
+        output_file: "prompt-versioning-setup.md"
+
+      - id: implement_change_tracking
+        action: |
+          实现变更追踪:
+
+          1. Git commit message 格式: "prompt({name}): {type} - {description}"
+             type: feat (新功能), fix (修复), perf (优化), refactor (重构)
+          2. CHANGELOG.md 格式:
+             ## [1.1.0] - 2026-04-02
+             ### Changed
+             - Added anti-hallucination guardrail (Why: false claims in testing)
+             ### Test Results
+             - PASS rate: 85% → 92% (+7%)
+             - Regression: 0 cases broken
+          3. Diff 可视化: git diff 查看具体变更
+        tool_ref: null
+        output_file: "prompt-versioning-setup.md (append)"
+
+      - id: verify_regression
+        action: |
+          对每次版本变更运行回归测试:
+
+          1. 加载上一版本的 golden dataset test results
+          2. 用新版本 prompt 重新运行同一 golden dataset
+          3. 对比:
+             | Metric | v(n-1) | v(n) | Delta |
+             | PASS rate | X% | Y% | +/-Z% |
+             | Cost | $X | $Y | +/-$Z |
+             | Latency | Xms | Yms | +/-Zms |
+          4. 阻塞条件: 旧版 PASS 的 case 新版 FAIL = 阻塞发布
+          5. 通过 → 更新 CHANGELOG + commit
+        tool_ref: prompt_evaluation
+        output_file: "prompt-version-regression.md"
+
+      - id: optimize_versioning_workflow
+        action: |
+          优化版本管理工作流:
+          1. 设置 CI/CD 门控: PR 包含 prompt 变更 → 自动运行 promptfoo eval
+          2. 设置回滚脚本: git checkout {version} -- prompts/{name}/prompt.md
+          3. 记录版本历史可视化: 版本号 × PASS rate 趋势图
+        tool_ref: data_chart
+        output_file: "prompt-version-trend.png"
+
+    quality_criteria:
+      - "每次变更有 commit message + CHANGELOG 条目"
+      - "每个版本有关联的测试结果"
+      - "回归测试 = 旧 PASS 不变新 FAIL → 阻塞"
+      - "Diff 可查看（git diff works）"
+      - "回滚到任意版本 <1 分钟"
+      - "变更原因（Why）必须记录，不只是 What"
+      - "回归测试结果必须来自实际运行，编造版本对比 = FAIL"
+
+    anti_patterns:
+      - "❌ Prompt 硬编码在源码中（无法单独版本追踪）（promptfoo）"
+      - "❌ 手动复制粘贴版本管理（'prompt_v2_final_FINAL.txt'）"
+      - "❌ 版本无测试结果（无法对比好坏）"
+      - "❌ 变更无原因（3 个月后不知道为什么改的）"
+      - "❌ 不做回归就发布（旧功能 silently broken）"
+
+    reviewers:
+      - persona: "Release Engineer"
+        checklist:
+          - "版本号是否遵循语义版本规则？"
+          - "CHANGELOG 是否包含 Why + test results？"
+          - "回归测试是否通过？"
+          - "回滚方案是否可执行？"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── system-prompt-design.md         # System prompt 设计过程
+  ├── system-prompt-design.pdf        # PDF 版 (Typst)
+  ├── few-shot-design.md              # Few-shot 示例设计
+  ├── few-shot-design.pdf             # PDF 版
+  ├── prompt-test-config.md           # 测试策略文档
+  ├── promptfooconfig.yaml            # promptfoo 配置
+  ├── prompt-test-results.md          # 测试结果
+  ├── prompt-optimization.md          # 优化过程（诊断+修复）
+  ├── prompt-optimization-results.md  # 优化前后对比
+  ├── output-format-design.md         # 输出格式设计
+  ├── output-format-validation.md     # 格式验证结果
+  ├── context-audit.md                # Context 审计
+  ├── context-management-report.pdf   # Context 报告 PDF
+  ├── prompt-versioning-setup.md      # 版本管理方案
+  ├── prompt-version-regression.md    # 回归测试结果
+  └── prompt-version-trend.png        # 版本趋势图 (matplotlib)
+
+# ═══════════════════════════════════════
+# Domain-specific Gates
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "System prompt 有 ≥3 个参考分析"
+      - "Few-shot 示例覆盖 happy path + edge case + anti-example"
+      - "测试策略有 golden dataset (≥15 cases)"
+      - "输出格式有完整 schema 定义"
+      - "Context 有 token 审计"
+      - "版本管理方案已定义"
+
+  gate4_acceptance:
+    checklist:
+      - "promptfoo 测试 PASS rate ≥80%"
+      - "输出格式 compliance ≥95%"
+      - "Context 压缩率 ≥30%（或说明已精简）"
+      - "版本管理有回归测试"
+      - "所有文档可在 15 分钟内读完"

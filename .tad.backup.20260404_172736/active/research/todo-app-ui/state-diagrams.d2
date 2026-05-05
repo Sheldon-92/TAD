@@ -1,0 +1,66 @@
+# State Diagrams — Todo App Core Components
+
+direction: right
+
+# Task Item Lifecycle
+task: "Task Item States" {
+  style.fill: "#f0f0f0"
+
+  default: "Default" { style.fill: "#fff" }
+  hover: "Hover\n(bg: surface-hover)" { style.fill: "#e8e8e8" }
+  editing: "Editing\n(inline input)" { style.fill: "#dbeafe" }
+  completing: "Completing\n(300ms anim)" { style.fill: "#d1fae5" }
+  completed: "Completed\n(strikethrough)" { style.fill: "#c8e6c9" }
+  deleting: "Deleting\n(slide left)" { style.fill: "#fee2e2" }
+  removed: "Removed" { style.fill: "#fca5a5" }
+
+  default -> hover: "mouse enter"
+  hover -> default: "mouse leave"
+  hover -> editing: "click text"
+  hover -> completing: "click checkbox"
+  editing -> default: "Escape / blur"
+  editing -> default: "Enter (save)"
+  completing -> completed: "200ms"
+  completed -> default: "Undo (4s toast)"
+  hover -> deleting: "swipe / delete icon"
+  deleting -> removed: "confirm"
+  deleting -> default: "cancel"
+}
+
+# Button States
+button: "Button States" {
+  style.fill: "#f0f0f0"
+
+  btn_default: "Default\n(bg: primary)" { style.fill: "#93c5fd" }
+  btn_hover: "Hover\n(bg: primary-hover)" { style.fill: "#60a5fa" }
+  btn_focus: "Focus\n(ring: 2px)" { style.fill: "#93c5fd" }
+  btn_active: "Active\n(scale: 0.98)" { style.fill: "#3b82f6" }
+  btn_loading: "Loading\n(spinner)" { style.fill: "#d1d5db" }
+  btn_disabled: "Disabled\n(opacity: 0.5)" { style.fill: "#e5e7eb" }
+
+  btn_default -> btn_hover: "mouse enter\n150ms"
+  btn_hover -> btn_default: "mouse leave"
+  btn_default -> btn_focus: "Tab"
+  btn_focus -> btn_default: "blur"
+  btn_hover -> btn_active: "mousedown\n100ms"
+  btn_active -> btn_loading: "async action"
+  btn_loading -> btn_default: "success"
+  btn_loading -> btn_default: "error"
+  btn_default -> btn_disabled: "condition"
+}
+
+# Checkbox States
+checkbox: "Checkbox States" {
+  style.fill: "#f0f0f0"
+
+  unchecked: "Unchecked\n(border: secondary)" { style.fill: "#fff" }
+  cb_hover: "Hover\n(border: primary)" { style.fill: "#dbeafe" }
+  checked: "Checked\n(bg: primary, icon)" { style.fill: "#93c5fd" }
+
+  unchecked -> cb_hover: "hover\n150ms"
+  cb_hover -> unchecked: "leave"
+  cb_hover -> checked: "click\n200ms (bounce)"
+  checked -> unchecked: "click\n200ms"
+  unchecked -> checked: "Space key"
+  checked -> unchecked: "Space key"
+}

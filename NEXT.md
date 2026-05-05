@@ -24,6 +24,13 @@
   - ✅ Phase 1: *research-notebook SKILL (8 commands) + capabilities.yaml + Alex integration
   - ⬚ Phase 2: Validation — 真实项目使用 *research-notebook + Codex image_gen
 
+- [x] **EPIC: GitHub Knowledge Integration — ALL 3/3 PHASES COMPLETE (2026-05-04)**
+  - Archived: `.tad/archive/epics/EPIC-20260504-github-knowledge-integration.md`
+  - ✅ Phase 1: GitHub Registry (24 domains, 50 awesome-lists, 6 commands)
+  - ✅ Phase 2: Alex Workflow (step2c_github + auto-refresh + research priority rule)
+  - ✅ Phase 3: Automation (weekly scan routine + scan-log + STEP 3.9 notification)
+  - To activate: user runs /schedule with routine prompt from research-github SKILL
+
 - [ ] **EPIC: Security Domain Pack Chain** — Phase 0+1 COMPLETE, evaluate before Phase 2
   - ✅ Phase 0: Security Tool Research (commit e2c325a)
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
@@ -33,6 +40,11 @@
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **EPIC: GitHub Knowledge Integration — Phase 1 COMPLETE (2026-05-04)** — Gate 3 PASS
+  - REGISTRY.yaml: 24 domains, 50 awesome-lists | *research-github SKILL: 6 commands
+  - Commit: `047266c` | Knowledge: 2 new architecture.md entries (gh api snake_case, git/trees recursive)
+  - Gate 4 (AC7 live test): Alex runs explore → notebook → ask → verify code-level answer
 
 - [x] **Cross-Model CLI Invocation Knowledge (2026-05-04)** — Gate 4 PASS
   - Alex/Blake now natively know how to invoke Codex CLI + Gemini CLI on user request
