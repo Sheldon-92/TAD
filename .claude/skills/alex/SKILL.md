@@ -1054,15 +1054,28 @@ research_plan_protocol:
                Do NOT delete sources with status "preparing" or "processing" — these may succeed.
              → ⚠️ DEFENSIVE: If JSON shape is unexpected (no `id` field), STOP and report:
                "source list JSON format changed — manual curate needed"
-             → For each error source:
-               → ~/.tad-notebooklm-venv/bin/notebooklm source delete <source.id> -n <id> --yes
-               → sleep 0.5 (rate limit protection)
+             → Step A — Collect error IDs (single Bash call):
+               error_ids=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <id> | \
+                 jq -r '.[] | select(.status | test("error")) | .id')
+             → Step B — Parallel delete (single Bash call):
+               echo "$error_ids" | xargs -P5 -n1 sh -c '
+                 ~/.tad-notebooklm-venv/bin/notebooklm source delete "$1" -n <id> --yes 2>&1 | \
+                   grep -q "error\|429" && echo "FAIL:$1" || echo "OK:$1"
+                 sleep 0.2
+               ' _
+             → If any FAIL: lines in output: "⚠️ {N} deletes failed — consider reducing to -P3 or -P1"
              → Report: "🧹 Cleaned {N} error sources"
            → Step 2: Deduplicate (title + domain match)
              → Group sources by (lowercase title, URL domain)
              → Sources without URL (type=text/file) → skip dedup (unique by definition)
-             → For each group with count > 1: keep first, delete rest
-             → sleep 0.5 between deletes
+             → For each group with count > 1: keep first, collect rest as dedup_ids
+             → Parallel delete (single Bash call):
+               echo "$dedup_ids" | xargs -P5 -n1 sh -c '
+                 ~/.tad-notebooklm-venv/bin/notebooklm source delete "$1" -n <id> --yes 2>&1 | \
+                   grep -q "error\|429" && echo "FAIL:$1" || echo "OK:$1"
+                 sleep 0.2
+               ' _
+             → If any FAIL: lines in output: "⚠️ {N} deletes failed — consider reducing to -P3 or -P1"
              → Report: "🔄 Removed {N} duplicates, {M} unique sources remain"
            → Step 3: Source quality tiering (use canonical patterns from *research-notebook curate Step 3)
              → tier1_patterns: [".gov", ".edu", "arxiv.org", "pubmed", ".who.int", "fda.gov",
@@ -1108,12 +1121,55 @@ research_plan_protocol:
                    → (Use -n flag ONLY — do NOT call `notebooklm use`. -n is stateless per-command override.
                       `use` mutates global active notebook state which leaks across loop iterations.
                       REGISTRY.yaml active_notebook is unchanged — no save/restore needed with -n.)
+                   → PHASE 4b: scan this notebook's answer for gap signals; run enrichment if found (see PHASE 4b below)
                    → sleep 1
                  → Alex synthesizes answers from all notebooks in conversation
                  → Note which notebook contributed what (for traceability)
                → Else (single notebook):
                  → ~/.tad-notebooklm-venv/bin/notebooklm ask "{constructed_query}" -n <id>
+                 → PHASE 4b: scan answer for gap signals; run enrichment if found (see PHASE 4b below)
                → sleep 1 between consecutive ask calls (rate limit protection)
+
+           → PHASE 4b — Gap Detection + Auto-Enrichment (CRAG Judge Loop):
+             max_reask_per_question: 1  # 1 re-ask attempt; original ask + re-ask = 2 total per question
+             gap_signals:  # scan answer text case-insensitive
+               - "sources do not contain"
+               - "not from your sources"
+               - "not mentioned in the provided sources"
+             scope: per-notebook answer (cross-notebook mode); per-question answer (single notebook mode)
+
+             When gap signal found in answer:
+             1. Report: "🔄 Gap detected on Q{N}. Attempting targeted enrichment for notebook <target_notebook_id>..."
+             2. Query narrowing: extract 2-3 most specific noun phrases from the original question.
+                Construct: fast_query = "{noun_phrase_1} {noun_phrase_2}"  # NOT the full KR question verbatim
+             3. Fast research: ~/.tad-notebooklm-venv/bin/notebooklm source add-research "{fast_query}" --mode fast --import-all -n <target_notebook_id>
+             4. Zero-source check: count sources before/after (exclude error sources). If net new sources = 0:
+                → Report: "⚠️ Fast research found 0 usable sources for Q{N}. Keeping original answer."
+                → Skip re-ask, proceed to next question
+             5. Lightweight re-curate (error cleanup only — skip dedup + tiering for speed):
+                → error_ids=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <target_notebook_id> | \
+                    jq -r '.[] | select(.status | test("error")) | .id')
+                → echo "$error_ids" | xargs -P5 -n1 sh -c '
+                    ~/.tad-notebooklm-venv/bin/notebooklm source delete "$1" -n <target_notebook_id> --yes 2>&1 | \
+                      grep -q "error\|429" && echo "FAIL:$1" || echo "OK:$1"
+                    sleep 0.2
+                  ' _
+             6. Report + re-ask:
+                → Report: "🔄 Gap detected on Q{N}. Added {M} targeted sources. Re-asking..."
+                → ~/.tad-notebooklm-venv/bin/notebooklm ask "{original_question}" -n <target_notebook_id>
+             7. Diminishing returns check (after re-ask answer received):
+                → original_citations=$(echo "<original_answer>" | grep -oE '\[[0-9]+\]' | sort -u | wc -l)
+                → reask_citations=$(echo "<reask_answer>" | grep -oE '\[[0-9]+\]' | sort -u | wc -l)
+                → If reask_citations ≤ original_citations AND gap signal still present in re-ask answer:
+                  → Report: "📉 Diminishing returns on Q{N}: citation count unchanged ({reask_citations}), gap signal persists. Stopping."
+                  → Accept re-ask answer as-is, proceed to next question
+                → Else if gap signal still present in re-ask answer:
+                  → Report: "⚠️ Gap persists after enrichment for Q{N}. Accepting answer as-is."
+                  → Accept re-ask answer as-is, proceed to next question
+                → Else (gap resolved): use re-ask answer, proceed to next question
+
+             When no gap signal: skip PHASE 4b entirely, proceed normally
+
            → Step 3: Save findings
              → Write all ask results to .tad/evidence/research/{slug}/{date}-ask-findings.md
              → Format: per-question sections with KR reference, answer summary, source citations

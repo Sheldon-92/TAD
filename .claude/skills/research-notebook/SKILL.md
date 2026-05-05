@@ -253,9 +253,16 @@ Step 1b: Auto-clean error sources (NEW — fully automatic)
   → Parse JSON: each source object has an `id` field (server-side UUID string).
     Filter sources where `status` field contains "error" (explicit error state only).
     Do NOT delete sources with status "preparing" or "processing" — these may complete successfully.
-  → For each error source:
-    → ~/.tad-notebooklm-venv/bin/notebooklm source delete <source.id> -n <notebook_id> --yes
-    → sleep 0.5 (rate limit protection — empirically required per menu-snap test)
+  → Step A — Collect error IDs (single Bash call):
+    error_ids=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <notebook_id> | \
+      jq -r '.[] | select(.status | test("error")) | .id')
+  → Step B — Parallel delete (single Bash call):
+    echo "$error_ids" | xargs -P5 -n1 sh -c '
+      ~/.tad-notebooklm-venv/bin/notebooklm source delete "$1" -n <notebook_id> --yes 2>&1 | \
+        grep -q "error\|429" && echo "FAIL:$1" || echo "OK:$1"
+      sleep 0.2
+    ' _
+  → If any FAIL: lines in output: "⚠️ {N} deletes failed — consider reducing to -P3 or -P1"
   → Report: "🧹 Cleaned {N} error sources ({M} remaining)"
   → If N == 0: "✅ No error sources found"
   → ⚠️ DEFENSIVE: If `source list --json` output structure is unexpected (no `id` field,
@@ -265,10 +272,14 @@ Step 1c: Auto-deduplicate (NEW — fully automatic)
   → From remaining sources, group by (lowercase(title), extract_domain(url))
   → extract_domain: parse URL to domain only (e.g., "arxiv.org", "developer.apple.com")
     → Sources without URL (type=text/file) → skip dedup (unique by definition)
-  → For each group with count > 1:
-    → Keep the FIRST source (by add date), delete rest
-    → ~/.tad-notebooklm-venv/bin/notebooklm source delete <source.id> -n <notebook_id> --yes
-    → sleep 0.5
+  → For each group with count > 1: keep FIRST source (by add date), collect rest as dedup_ids
+  → Parallel delete (single Bash call):
+    echo "$dedup_ids" | xargs -P5 -n1 sh -c '
+      ~/.tad-notebooklm-venv/bin/notebooklm source delete "$1" -n <notebook_id> --yes 2>&1 | \
+        grep -q "error\|429" && echo "FAIL:$1" || echo "OK:$1"
+      sleep 0.2
+    ' _
+  → If any FAIL: lines in output: "⚠️ {N} deletes failed — consider reducing to -P3 or -P1"
   → Report: "🔄 Removed {N} duplicates ({M} unique sources remain)"
   → If N == 0: "✅ No duplicates found"
 
