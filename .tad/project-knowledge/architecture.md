@@ -825,3 +825,17 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: For future CLAUDE.md additions with single-count ACs: use unique label prefixes for exclusion/annotation lines that don't echo the primary routing keyword. Gate 2 checklist should include "dry-run each grep AC on the proposed text diff". Blake can fix self-caught conflicts in Layer 1 (done here by relabeling); the preference is to catch it in Alex Gate 2 instead.
 - **Grounded in**: HANDOFF-20260505-research-capability-polish.md §4.1 + §6 AC1, CLAUDE.md (diff 2026-05-05)
 - **Revalidated**: 2026-05-05
+
+### Capability Pack: YAML Frontmatter is Load-Bearing for Claude Code SKILL.md Files — 2026-05-07
+- **Context**: Building first Agent Capability Pack (web-ui-design) — a standalone, portable product installed into `.claude/skills/` via install.sh. Backend-architect review caught that the pack would silently fail to load.
+- **Discovery**: Claude Code requires every `SKILL.md` file to begin with YAML frontmatter (`name:` + `description:` fields) for the skill loader to register it. A `SKILL.md` without frontmatter installs successfully (no error from install.sh) but is invisible to Claude Code's skill system — `bash install.sh` exits 0, but the skill never activates. This is distinct from TAD's Domain Pack `.yaml` files (which don't use frontmatter). Verified by comparing installed skills: deep-research, alex, blake, research-notebook all have `---\nname: ...\ndescription: ...\n---` at line 1. The `description:` field is the semantic trigger surface — phrase it so Claude Code's UserPromptSubmit hook matches UI/design/frontend tasks.
+- **Action**: Any Capability Pack or SKILL.md file destined for `.claude/skills/` MUST have YAML frontmatter as the first content. Gate 2 for Capability Pack handoffs should include an explicit AC: "CAPABILITY.md has YAML frontmatter with name + description". install.sh should validate frontmatter presence before copying (or add the template automatically).
+- **Grounded in**: ~/web-ui-design-capability/CAPABILITY.md (frontmatter added post-review), .claude/skills/deep-research/SKILL.md (precedent)
+- **Revalidated**: 2026-05-07
+
+### Capability Pack: Multi-Agent Install Pattern — Phase N Stubs — 2026-05-07
+- **Context**: Building install.sh for web-ui-design Capability Pack. The handoff declared Phase 3 (Codex/Cursor/Gemini) interfaces "reserved" but the first implementation had zero abstraction — Phase 3 would require full restructure not "adding a case".
+- **Discovery**: For CLI installers targeting multiple runtimes incrementally, the "Phase N stub" pattern works: add the `--agent=<name>` flag, implement the default (Phase 1), and for future agents return `exit 2` with an informative "not yet implemented" message listing what the Phase 3 path WOULD do. This converts a "full restructure needed" scenario into a "add one case" scenario for Phase 3. Key constraint: each agent's install target path must be abstracted as a variable (`TARGET_DIR`) not hardcoded, so Phase 3 cases just set a different value.
+- **Action**: Any CLI tool claiming multi-target support should have the `--agent/--target` flag + stub cases from Phase 1, even if only one case is implemented. Document the expected target path for each stub so Phase 3 implementers have a clear spec.
+- **Grounded in**: ~/web-ui-design-capability/install.sh (--agent flag with codex/cursor/gemini stubs)
+- **Revalidated**: 2026-05-07
