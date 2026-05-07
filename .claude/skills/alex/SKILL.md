@@ -1038,13 +1038,47 @@ research_plan_protocol:
 
         For each confirmed research item:
 
+        a0. PHASE 0 — Research Plan (NEW — define before sourcing):
+           → Step 1: Define 5-10 specific research questions from the gap analysis
+             Format rule: questions MUST include a specificity anchor:
+             ✅ "From GitHub repos: what specific CLI tools exist for X?"
+             ✅ "What token structure does Shopify Polaris use in its polaris-tokens package?"
+             ❌ "What are best practices for X?" (too vague — REJECT and rephrase)
+             ❌ "How should we approach X?" (no specificity anchor — REJECT)
+           → Step 2: Define source type priority for this research topic:
+             | Priority | Source Type | Example |
+             |----------|------------|---------|
+             | 1 (first) | GitHub awesome-lists | awesome-design-systems, awesome-tailwindcss |
+             | 2 | Real company repos | Shopify/polaris, primer/react, adobe/react-spectrum |
+             | 3 | Tool official repos | storybookjs/storybook, amzn/style-dictionary |
+             | 4 | Tool documentation sites | docs.anthropic.com, storybook.js.org |
+             | 5 (last) | Deep research (articles) | ONLY if Phases 1-3 leave gaps |
+           → Step 3: Define success criteria:
+             "After this research, I should be able to decide: {specific decision}"
+           → Display plan to user for confirmation before proceeding
+
         a. 确定 target notebook:
            → If existing notebook matches topic → use it
            → If no match → *research-notebook create "{topic}" (new notebook)
 
-        b. PHASE 1 — Deep Research:
-           → *research-notebook research "{question}" --mode deep
-           → Wait for completion, capture source_count
+        b. PHASE 1 — GitHub-First Sourcing (replaces old "Deep Research"):
+           → Step 1: Search for awesome-lists
+             WebSearch: "github awesome list {topic} site:github.com"
+             For each relevant awesome-list found:
+               ~/.tad-notebooklm-venv/bin/notebooklm source add "https://github.com/{org}/{repo}" -n <id>
+               sleep 2
+           → Step 2: Explore awesome-list sub-pages
+             For TOP 3 most relevant awesome-lists:
+               gh api "repos/{org}/{repo}/git/trees/main?recursive=1" --jq '[.tree[] | select(.type == "blob" and (.path | test("\\.md$"))) | .path][:20]'
+               For each actionable sub-page (DESIGN.md files, specific tool docs, subagent definitions):
+                 ~/.tad-notebooklm-venv/bin/notebooklm source add "https://github.com/{org}/{repo}/blob/main/{path}" -n <id>
+                 sleep 1
+           → Step 3: Add real company repos (if topic involves a specific technology/pattern)
+             WebSearch: "github {technology} design system stars:>5000"
+             Add top 3-5 repos
+           → Step 4: Add tool official repos (for each tool mentioned in Phase 0 questions)
+             ~/.tad-notebooklm-venv/bin/notebooklm source add "https://github.com/{tool-org}/{tool-repo}" -n <id>
+           → Report: "📦 Phase 1 sourcing: {N} GitHub sources added ({awesome} awesome-lists + {sub} sub-pages + {company} company repos + {tool} tool repos)"
 
         c. PHASE 2 — Auto-Curate (fully automatic, no user interaction):
            → Step 1: Delete error sources (uses same filter as *research-notebook curate Step 1b)
@@ -1103,6 +1137,13 @@ research_plan_protocol:
              → For each KR with status ⬚/🔄, generate 1-3 targeted questions depending on KR breadth:
                (KRs with status ✅ → skip, 0 questions. Broad KRs → up to 3 sub-questions.)
                Format: "KR: {KR description} → Q: {specific question this notebook can answer}"
+             Question format rules (MANDATORY):
+             ✅ Include specificity anchor: "From [source type]: what [specific thing]?"
+             ✅ Ask for CLI commands, not concepts: "What CLI tool does X?"
+             ✅ Reference specific sources: "From the Shopify Polaris repo: how do they structure tokens?"
+             ❌ REJECT "What are best practices for X?" — rephrase to "What do [companies] actually use for X?"
+             ❌ REJECT "How should we approach X?" — rephrase to "What specific tools/patterns exist for X?"
+             If a generated question matches a ❌ pattern, Alex MUST rephrase before adding to tree.
              → Display Question Tree to user:
                "📋 Question Tree (based on {N} KRs):"
                | # | KR | Question | Priority |
@@ -1143,6 +1184,13 @@ research_plan_protocol:
              2. Query narrowing: extract 2-3 most specific noun phrases from the original question.
                 Construct: fast_query = "{noun_phrase_1} {noun_phrase_2}"  # NOT the full KR question verbatim
              3. Fast research: ~/.tad-notebooklm-venv/bin/notebooklm source add-research "{fast_query}" --mode fast --import-all -n <target_notebook_id>
+             3b. If fast research finds 0 usable sources AND this is the first gap for this topic:
+                → Escalate to deep research as fallback:
+                  ~/.tad-notebooklm-venv/bin/notebooklm source add-research "{broader_topic}" --mode deep -n <target_notebook_id>
+                  Report: "🔍 Gap persists after fast research. Running deep research as fallback..."
+                → Auto-curate (error + dedup) after deep research completes
+                → Then retry the ask
+                → This is the ONLY path where deep research runs. It is a fallback, not a primary.
              4. Zero-source check: count sources before/after (exclude error sources). If net new sources = 0:
                 → Report: "⚠️ Fast research found 0 usable sources for Q{N}. Keeping original answer."
                 → Skip re-ask, proceed to next question

@@ -450,6 +450,20 @@ Step 5: Update REGISTRY
 
 ---
 
+### Source Strategy Note (GitHub-First)
+
+When building a notebook for a new topic, source quality matters more than quantity.
+Preferred order:
+1. GitHub awesome-lists (`source add "https://github.com/org/awesome-topic"`)
+2. GitHub sub-pages from awesome-lists (explore with `gh api` tree, add key .md files)
+3. Real company repos (how production systems actually do it)
+4. Tool repos (official source, not blog posts about the tool)
+5. `source add-research --mode deep` (LAST RESORT for gaps only)
+
+10 curated GitHub repos > 350 deep research articles.
+
+---
+
 ### `*research-notebook report <description>`
 
 Generate a structured report + download as local markdown.
