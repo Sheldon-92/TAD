@@ -2355,6 +2355,82 @@ design_protocol:
              c. Note in handoff §11 Decision Summary: "Research overrides Domain Pack: {details}"
           3. If no conflict: Domain Pack criteria apply normally
 
+    step1_5b:
+      name: "Capability Pack Loading (from registry)"
+      trigger: "After existing Domain Pack matching (step1_5)"
+      action: |
+        1. Read .tad/capability-packs/pack-registry.yaml
+           If not found → skip this step entirely (no error)
+
+        2. Match task keywords against each pack entry's `keywords` + `description`:
+           - Use semantic matching (LLM judgment, same approach as step1_5)
+           - Consider both Chinese and English keywords in the pack entry
+           - A pack matches if it serves the user's stated task
+
+        3. Dedup annotation (soft-warn, not auto-skip):
+           Check the "🔧 Loaded Domain Packs: ..." marker from step1_5.
+           For each matched Capability Pack, if its name matches an already-loaded
+           Domain Pack, add a "(⚡ Domain Pack also loaded)" annotation to that
+           option. DO NOT auto-skip — user decides.
+           Note in the question: "Packs marked ⚡ overlap with a loaded Domain Pack
+           — loading both adds execution rules on top of quality standards (OK for
+           deep design); skip if you want to avoid duplicate coverage."
+           Rationale: Domain Packs (YAML quality standards) and Capability Packs
+           (SKILL.md execution modules) serve different purposes even for the same
+           domain; auto-skip would remove user choice.
+
+        4. If ≥1 match found:
+           a. Present matched packs to user via AskUserQuestion:
+              "Based on your task, these Capability Packs may be useful:
+               - {pack.name} [{type}]: {pack.description (first 80 chars)}
+                 (CONSUMES: {pack.consumes} → PRODUCES: {pack.produces})
+                 {if overlaps Domain Pack: '(⚡ Domain Pack also loaded)'}
+               Confirm which packs to use?"
+              Options: up to 4 packs as options + "None — skip packs"
+           b. On confirmation, load confirmed pack CAPABILITY.md files:
+              Read `.tad/capability-packs/{name}/CAPABILITY.md`
+           c. State persistence: Record confirmed packs as:
+              "🎯 Loaded Capability Packs: {pack1}, {pack2}"
+
+        5. If ≥2 confirmed packs:
+           a. Analyze CONSUMES/PRODUCES chain from pack entries
+              Order rule: if pack-A's `produces` contains keywords from pack-B's `consumes`,
+              pack-A must run before pack-B. Check string overlap, not just LLM judgment.
+              (e.g., web-ui-design.produces "DESIGN.md" matches web-frontend.consumes "DESIGN.md")
+           b. Propose serial execution order based on data flow
+              (e.g., research-methodology → product-thinking → web-backend)
+           c. AskUserQuestion:
+              "建议按此顺序使用 {N} 个 pack:
+               {pack1} → {pack2} (→ {pack3})
+               确认顺序，或调整？"
+              Options: "Confirmed order" / "Reorder" / "Run independently"
+
+        6. Pack count guardrail:
+           If registry has >12 packs, only show top 4 matches
+           Ranking: by keyword overlap count (most overlapping keywords first),
+           then alphabetical for ties. Cap at 4 to respect AskUserQuestion 4-option limit.
+           Note to user: "Also potentially relevant (not shown): {5th, 6th ...}"
+           (≤12 accuracy threshold — per research RS-20260508-002; AskUserQuestion 4-option cap)
+
+        7. Use loaded Capability Pack content in subsequent *design steps:
+           - Reference pack rules when designing architecture
+           - Reference pack quality criteria when defining ACs
+           - Reference pack anti-patterns when identifying risks
+
+      note: |
+        Capability Packs (SKILL.md based) and Domain Packs (YAML based) serve
+        different purposes. Domain Packs = TAD project quality standards (YAML).
+        Capability Packs = portable agent skill modules (SKILL.md based).
+        5 Capability Packs share names with Domain Packs (web-frontend, web-backend,
+        web-ui-design, ai-agent-architecture, ai-prompt-engineering) — step 3 dedup
+        prevents double-loading when both exist.
+
+      skip_conditions:
+        - "pack-registry.yaml not found (packs not installed)"
+        - "No matching pack found for this task"
+        - "User chose 'None — skip packs'"
+        - "Light TAD process depth"
+
     step2:
       name: "Frontend Detection & Playground Reference"
       action: |
@@ -4645,6 +4721,7 @@ sync_protocol:
         - .tad/evidence/
         - .tad/pair-testing/
         - .tad/decisions/
+        - .tad/capability-packs/ (installed via install.sh, NOT synced — downstream projects install packs independently)
         - PROJECT_CONTEXT.md, NEXT.md, CHANGELOG.md (project-level)
 
     step4:
