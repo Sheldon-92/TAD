@@ -871,3 +871,50 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: Any capability pack, pattern guide, or checklist covering Kubernetes deployments MUST include the preStop sleep pattern alongside the SIGTERM handler. Production.md or infrastructure.md should call it out: graceful shutdown without preStop is incomplete in Kubernetes.
 - **Grounded in**: ~/web-backend/references/infrastructure.md Rule 7 (preStop YAML added), .tad/evidence/reviews/blake/capability-pack-web-backend/backend-architect.md (P1-8 finding), Kubernetes documentation — Pod Lifecycle Termination
 - **Revalidated**: 2026-05-07
+
+### Capability Pack: Dual-Agent Requires Structured Parser Output (CaMeL-Style Defense) — 2026-05-07
+- **Context**: Building AI Agent Architecture Capability Pack (D5 permissions-safety.md). Backend-architect Layer 2 P1-2 catch: initial dual-agent description said "Parser has zero tools" but missed a second requirement.
+- **Discovery**: The dual-agent architecture for untrusted data has TWO necessary conditions:
+  1. **Parser has zero tools** (prevents injection from triggering actions directly)
+  2. **Privileged Planner treats Parser output as typed data, NOT instructions** (prevents injection from hopping through the Parser)
+  If the Planner reads free-form text from the Parser and executes commands found in it ("the document says to email X"), the prompt injection has bypassed the isolation. Parser output must be returned as a typed schema (fixed JSON structure, pre-categorized fields) — the Planner consumes VALUES, not VERBS. This is the CaMeL-style defense (Beurer-Kellner et al. 2025).
+- **Action**: Any capability pack or design guide covering dual-agent security must include both requirements explicitly. "Parser has no tools" alone is incomplete — it's the necessary but not sufficient condition.
+- **Grounded in**: ~/ai-agent-architecture/references/permissions-safety.md (Key requirement 2 added), .tad/evidence/reviews/blake/capability-pack-ai-agent-architecture/backend-architect.md (P1-2)
+- **Revalidated**: 2026-05-07
+
+### Capability Pack: Parallel Tool-Call Atomic Boundary Rule Extension — 2026-05-07
+- **Context**: Building AI Agent Architecture Capability Pack (D6 context-compression.md). The Hermes "atomic tool-call boundary" rule was originally stated as "never split a tool_call from its tool_result." Backend-architect P1-3 identified this is insufficient for modern parallel tool-use.
+- **Discovery**: Modern agent frameworks (Claude, OpenAI) emit MULTIPLE tool_calls in one assistant turn, each with a matching tool_result. The compression boundary rule must be extended:
+  - **Original rule**: never split a single tool_call from its tool_result
+  - **Extended rule**: compression boundaries fall only between FULLY RESOLVED ASSISTANT TURNS — a turn is fully resolved when every tool_call in it has a matching tool_result
+  Compressing a partially-resolved parallel-call turn leaves the model with orphaned tool_calls, which models handle unpredictably (re-issue calls, fabricate results, or halt).
+- **Action**: When documenting compression atomic boundaries in any agent architecture guide, explicitly add the parallel tool-call extension. The single-pair rule is insufficient for current production agents.
+- **Grounded in**: ~/ai-agent-architecture/references/context-compression.md (Parallel tool-call extension added), .tad/evidence/reviews/blake/capability-pack-ai-agent-architecture/backend-architect.md (P1-3)
+- **Revalidated**: 2026-05-07
+
+### Capability Pack: Use Cost Ratios Not Absolute Prices — 2026-05-07
+- **Context**: Building AI Agent Architecture Capability Pack (D7 cost-token-economics.md). Backend-architect P1-5 catch: initial cost estimates used absolute dollar amounts that were already stale.
+- **Discovery**: LLM provider pricing changes quarterly. Any capability pack that includes absolute token costs (e.g., "$0.01/1K tokens", "$550/day for 40 MCP tools") will be wrong within months. The architectural RATIOS are stable across years:
+  - Hooks: 0 tokens (free)
+  - Skills: ~1x
+  - Plugins: ~4x
+  - MCP servers: ~16-100x
+  - Deferred loading saves ~55x vs upfront loading (55,000 tokens vs 1,000 tokens for 40 tools)
+  These relative ratios hold regardless of absolute pricing. Always express cost decisions as ratios anchored to a baseline tier, with a note to verify current pricing with the provider.
+- **Action**: All future capability packs covering cost must: (a) use relative ratios not absolute dollar amounts; (b) include a note "verify current pricing — these ratios are stable, absolute costs are not"; (c) make cost profiles comparative (vs simple chatbot baseline).
+- **Grounded in**: ~/ai-agent-architecture/references/cost-token-economics.md (converted to ratios), .tad/evidence/reviews/blake/capability-pack-ai-agent-architecture/backend-architect.md (P1-5)
+- **Revalidated**: 2026-05-07
+
+### Research Findings ≠ API Ground Truth — Capability Pack Rule Sourcing Extension — 2026-05-07
+- **Context**: Building AI Prompt Engineering Capability Pack — `references/claude.md` had Rule 1 referencing an "effort parameter" and Rule 2 citing "Mythos architecture" + prefilling deprecation. Both came from NotebookLM research findings (26012e7b) verbatim. Both experts (code-reviewer P0-3/P0-4, backend-architect P0-1/P0-2) flagged these as factually wrong.
+- **Discovery**: Research notebooks can aggregate content that itself misuses API terminology. The 24 sources in the notebook included blogs and guides that: (a) used "effort" loosely to describe Claude 4.x's reasoning control mechanism — the actual Anthropic API parameter is `thinking.budget_tokens`; (b) mentioned "Mythos architecture" without verification — this is not a published Anthropic architecture name; prefilling is still documented and supported. Research findings documents reproduce these without cross-checking against primary sources.
+  1. **Research findings = what to COVER, not what to SAY**: The finding that "Claude 4.x handles reasoning internally via budget control" is correct. The parameter name "effort" was wrong. Research findings are inputs for scope decisions, not for exact wording.
+  2. **API-targeting rules require primary source verification**: When a capability pack rule references a specific parameter name, method signature, or deprecation notice, that claim must be traced to the official API documentation — not to a blog post aggregated in a research notebook.
+  3. **The "Capability Pack Rule Sourcing" lesson (2026-05-07) extends to research-notebook-derived rules**: The original lesson covered YAML Domain Pack rules. This incident confirms the same discipline is required for SKILL.md reference files that target specific APIs.
+- **Action**: For capability packs targeting a specific API (Anthropic, OpenAI, DSPy, etc.):
+  1. For every rule that names a parameter, method, or deprecation notice → WebFetch the official API docs and confirm the exact name before writing the rule
+  2. If a rule says "parameter X is deprecated" → find the deprecation notice in the official docs (not a blog post)
+  3. If a cited source uses vendor-specific terminology → verify it applies to the correct vendor (e.g., "effort" is OpenAI's term; `budget_tokens` is Anthropic's)
+  4. Research findings are high-value for SCOPE (what topics to cover) and LOW-value for EXACT API NAMES (which need primary source verification)
+- **Grounded in**: ~/ai-prompt-engineering/references/claude.md (Rule 1 + Rule 2 pre/post fix), .tad/evidence/reviews/blake/capability-pack-ai-prompt-engineering/code-reviewer.md (P0-3/P0-4), .tad/evidence/reviews/blake/capability-pack-ai-prompt-engineering/backend-architect.md (P0-1/P0-2)
+- **Revalidated**: 2026-05-07

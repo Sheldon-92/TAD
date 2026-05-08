@@ -18,11 +18,13 @@
     - ✅ Fix session continuity: SKILL.md Standalone Usage + REGISTRY check in routing
     - ✅ Close the loop: step6 Research → Action Bridge (5 options)
     - ⬚ Real-project validation: 在下一个真实项目中验证研究 pipeline 是否自动触发
-  - **Phase 2: Domain Pack Freeze + Rebuild**
-    - ⬚ Freeze 20 YAML domain packs (停止维护，降权 keyword router hook)
-    - ⬚ When real project needs a domain: NotebookLM research → SKILL.md format rebuild
-    - ⬚ Key insight: SKILL.md (菜谱/action-ready) > YAML (食材清单/informational)
-    - Evidence: Knowledge Activation paper (arxiv 2603.14805) — "retrieval returns content for reading, activation delivers guidance for acting"
+  - **Phase 2: Domain Pack Freeze + Rebuild** — Decision made 2026-05-07
+    - ⬚ Remove 13 frozen packs from keywords.yaml (keep 8 active: web-frontend, web-backend, web-ui-design, mobile-development, mobile-release, ai-agent-architecture, ai-prompt-engineering, product-definition)
+    - ⬚ Merge mobile-testing → web-testing, mobile-ui-design → web-ui-design (mobile-specific quality criteria only)
+    - ⬚ Archive tools-registry.yaml → .tad/archive/domains/
+    - ⬚ Rebuild strategy: on-demand when real project needs it → NotebookLM research → SKILL.md
+    - Key insight: SKILL.md (菜谱/action-ready) > YAML (食材清单/informational)
+    - Evidence: Knowledge Activation paper (arxiv 2603.14805)
 
 - [ ] **EPIC: Goal-Driven Research Director** — 业务目标驱动自主研究
   - Epic: `.tad/active/epics/EPIC-20260504-goal-driven-research.md`
@@ -50,10 +52,45 @@
   - ✅ Phase 1: supply-chain (639L) + code-security (873L) + 24 tools (commit 39e8017)
   - ⏸️ Phase 2-4: Paused — run real-project security audit first to validate Pack value
 
+- [x] **Agent Capability Pack — product-thinking** — ✅ Gate 4 PASS 2026-05-07
+  - 3 deep skills (pressure-test/shotgun/define) + 6 adapters + session.json cross-skill flow
+  - ~/product-thinking/ repo, commit 389a110, 2532 lines
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260507-capability-pack-product-thinking.md`
+
+- [x] **Agent Capability Pack — web-backend** — ✅ Gate 4 PASS 2026-05-07
+  - 43 domain judgment rules + 46-item PRR (3 tiers) + 4 validation scripts
+  - ~/web-backend/ repo, commit 5c4c6ab, 3165 lines
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260507-capability-pack-web-backend.md`
+
+- [x] **Agent Capability Pack — ai-agent-architecture** — ✅ Gate 4 PASS 2026-05-07
+  - 10 architectural decisions with selection matrices + 7 production disaster causal chains
+  - ~/ai-agent-architecture/ repo, commits 4501f6a + 6a336c1, 2255 lines
+  - Archived: `.tad/archive/handoffs/HANDOFF-20260507-capability-pack-ai-agent-architecture.md`
+
+- [ ] **Agent Capability Pack — ai-prompt-engineering** — ✅ Gate 3 PASS 2026-05-07 | Awaiting Gate 4
+  - 4-phase production prompt lifecycle (Write/Test/Optimize/Ship) — 484-line CAPABILITY.md + 5 refs
+  - ~/ai-prompt-engineering/ repo, 2 commits, 2940 lines
+  - 11 P0 fixes: removed fabricated effort param + Mythos architecture, dspy-ai→dspy, real A-02 adversarial
+  - Gate 4 action: Alex verify 19 ACs + update architecture.md + archive handoffs
+
+- [ ] **Capability Upgrade SKILL created** — `/capability-upgrade` at `.claude/skills/capability-upgrade/SKILL.md`
+  - 5-stage methodology: Assess → Research (GitHub-First) → Design → Build → Validate
+  - Based on web-ui-design upgrade experience (踩坑 + 纠正全记录)
+  - CLAUDE.md routing table updated
+
 - [ ] Add Bash command deny patterns to PreToolUse hook (rm -rf, DROP TABLE etc.) — source: OpenHarness §Permissions
 - [ ] Promote prompt hook from "spike-verified" to documented recommended hook type — source: OpenHarness §Hooks
 
 ## Recently Completed
+
+- [x] **Agent Capability Pack — web-ui-design Phase 1 (2026-05-07)** — Gate 4 PASS ✅
+  - 18 files at ~/web-ui-design-capability/ | 3927 lines | 114 CSS tokens | 17 CLI tools | 144 checklist items
+  - Commits: b4e3558 + f82a3d3 + d18636e | KA: YAML frontmatter + Phase N stub install pattern
+
+- [x] **Research Pipeline — GitHub-First Source Strategy (2026-05-07)** — Gate 4 PASS ✅
+  - Inverted research order: GitHub awesome-list first, deep research last (fallback only)
+  - Added Phase 0 (Research Plan) + question format rules (❌ REJECT vague questions)
+  - Commit: 0a6c16b
 
 - [x] **Research Capability Polish — Auto-activation + Session Continuity (2026-05-05)** — Gate 3 PASS
   - CLAUDE.md: routing row for deep research + /deep-research exclusion note
