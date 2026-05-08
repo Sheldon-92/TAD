@@ -918,3 +918,66 @@ Project-specific architecture learnings accumulated through TAD workflow.
   4. Research findings are high-value for SCOPE (what topics to cover) and LOW-value for EXACT API NAMES (which need primary source verification)
 - **Grounded in**: ~/ai-prompt-engineering/references/claude.md (Rule 1 + Rule 2 pre/post fix), .tad/evidence/reviews/blake/capability-pack-ai-prompt-engineering/code-reviewer.md (P0-3/P0-4), .tad/evidence/reviews/blake/capability-pack-ai-prompt-engineering/backend-architect.md (P0-1/P0-2)
 - **Revalidated**: 2026-05-07
+
+### Lighthouse TBT vs INP: Lab-Mode CWV Measurement Boundary — 2026-05-08
+- **Context**: Building web-frontend capability pack validation script (lighthouse-check.sh). Performance rule cited INP < 200ms as release threshold and the script was written to verify it via Lighthouse CLI.
+- **Discovery**: Lighthouse runs in **lab mode** and CANNOT measure real INP (Interaction to Next Paint). Lighthouse's `interaction-to-next-paint` audit is not populated in standard headless runs — it requires real user interactions in a live session. The proxy Lighthouse DOES provide is TBT (Total Blocking Time), which measures the sum of long tasks during load. TBT and INP are numerically similar ranges (<200ms "good") but measure different phenomena: TBT is a load-time aggregate; INP is a per-interaction p98 latency measured over a real session. A product can pass TBT < 200ms in CI and still have INP regressions in production for specific interactions.
+  - **Fix pattern**: When a script falls back TBT for INP, label it dynamically ("TBT (INP lab proxy)") and add disclosure: "For true INP, use Real User Monitoring (Vercel Analytics, Datadog RUM, web-vitals library in production)"
+  - **Rules file fix**: The capability pack rule that cites INP as a threshold should note: "Lighthouse measures TBT as a lab-mode proxy — verify in production via RUM"
+- **Action**: For any capability pack or validation script that references INP as a CWV threshold:
+  1. Do NOT present TBT measurements as INP without disclosure
+  2. Label Lighthouse metrics with their actual audit key (`total-blocking-time`, not `interaction-to-next-paint`)
+  3. Always recommend a RUM tool for true INP measurement
+  4. The threshold (<200ms) applies to BOTH TBT and INP for the "Good" range, but they measure different things
+- **Grounded in**: ~/web-frontend/scripts/lighthouse-check.sh (dynamic label fix), ~/web-frontend/references/performance.md Rule 1 (RUM note), .tad/evidence/reviews/blake/capability-pack-web-frontend/backend-architect.md (P0-1)
+- **Revalidated**: 2026-05-08
+
+### FFmpeg `sidechaincompress` Uses Milliseconds for attack/release — 2026-05-08
+- **Context**: Building video-creation capability pack audio-design.md. Two FFmpeg `sidechaincompress` examples were written with `attack=0.2:release=0.5` from training data intuition. Backend-architect P0-1 catch.
+- **Discovery**: FFmpeg `sidechaincompress` filter parameters `attack` and `release` are in **milliseconds**, not seconds. Valid range: attack 0.01–2000ms (default 20ms), release 0.01–9000ms (default 250ms). Values like `attack=0.2` are interpreted as 0.2ms — effectively instant gain reduction, producing harsh clicks not smooth ducking. This is a subtle trap because documentation examples sometimes show small decimal values without specifying units.
+  - **Correct example**: `sidechaincompress=threshold=0.1:ratio=4:attack=20:release=250`
+  - **Wrong example**: `sidechaincompress=threshold=0.01:ratio=4:attack=0.2:release=0.5` — attack/release 200× too small
+- **Action**: When writing any FFmpeg filter examples, verify parameter units from the official FFmpeg filter documentation (`ffmpeg -h filter=sidechaincompress`), not from inference. Add a comment explaining the unit after each `sidechaincompress` example: "attack/release in milliseconds". Recurring pattern — FFmpeg filter docs list ranges but units are not always prominently labeled.
+- **Grounded in**: ~/video-creation/references/audio-design.md (fixed examples), .tad/evidence/reviews/blake/capability-pack-video-creation/backend-architect.md (P0-1)
+- **Revalidated**: 2026-05-08
+
+### Capability Pack Quick Rule Index: Exact Heading Match Required — 2026-05-08
+- **Context**: Building video-creation capability pack CAPABILITY.md Quick Rule Index. 25 `→ §SectionName` pointers used paraphrased headings. Code-reviewer P1-1 catch.
+- **Discovery**: AI agents doing section-lookup match `§` anchor text against actual `## Heading` text byte-exactly. Paraphrased pointers cause a silent miss — the agent falls back to reading the full reference file. Pattern that fails: "→ §GSAP Easing Table" when actual heading is `## GSAP Easing-by-Emotion Table`. Pattern that works: exact heading text copied from the reference file.
+- **Action**: When authoring Quick Rule Index entries in CAPABILITY.md: (a) copy the exact `## ` heading text from the reference file; (b) do NOT paraphrase or abbreviate; (c) after writing all pointers, verify each by searching the target file. Same class of issue as "override-marker-anchor template typo" (CR-P0-1, 2026-04-24) — exact anchor text matters.
+- **Grounded in**: ~/video-creation/CAPABILITY.md (25 pointers fixed), .tad/evidence/reviews/blake/capability-pack-video-creation/code-reviewer.md (P1-1)
+- **Revalidated**: 2026-05-08
+
+### Capability Pack CONSUMES/PRODUCES Interface Contract — 2026-05-08
+- **Context**: Gate 4 acceptance of web-frontend capability pack (Phase 1e). The pack declares `**This pack CONSUMES design artifacts. It does NOT create them.**` at line 8 of CAPABILITY.md, creating an explicit interface with the web-ui-design pack.
+- **Discovery**: As the capability pack ecosystem grows, each pack's CAPABILITY.md becomes a contract node in a directed graph: web-ui-design (PRODUCES DESIGN.md + tokens) → web-frontend (CONSUMES DESIGN.md → PRODUCES production code). The CONSUMES/PRODUCES declaration at line 8 is not documentation — it's the integration spec. Without it, packs are islands with no clear invocation order. Two required fields emerging as standards:
+  1. **CONSUMES**: which upstream pack's output this pack depends on (or "standalone" if none)
+  2. **PRODUCES**: what artifact this pack creates for downstream packs (or end state)
+  These two fields should be in every pack's CAPABILITY.md header, at lines 7-8 immediately after YAML frontmatter, before the Step 0 instructions.
+- **Action**: Future capability pack templates should include CONSUMES and PRODUCES fields as mandatory header items. Existing packs (web-ui-design, product-thinking, web-backend) should be updated to declare these fields on their next iteration. The field enables future tooling to auto-detect invocation order without reading full CAPABILITY.md content.
+- **Grounded in**: ~/web-frontend/CAPABILITY.md line 8, ~/web-ui-design-capability/CAPABILITY.md (PRODUCES counterpart), Phase 1e Gate 4 observation
+- **Revalidated**: 2026-05-08
+
+### Capability Pack Archive Timing: Write to Project Root First, Session Dir Only on Gate Approval — 2026-05-08
+- **Context**: Building Research Methodology Capability Pack — backend-architect P0-1 caught that CAPABILITY.md Phase 5 wrote QCE report directly to `.research/sessions/{session_id}/report.md` BEFORE GATE H3 approval.
+- **Discovery**: When a multi-phase workflow has a "review gate" before archiving artifacts, the artifacts must be written to a temporary/project-level location first, and moved to the final archive location ONLY on gate approval. Writing to the archive directory before the gate creates a silent overwrite hazard: if the user declines at the gate and requests changes, the session state shows `phase != complete`, resume protocol detects an active session, and re-running Phase 5 writes to the same session directory path — silently destroying the prior version with no diff. The TAD-specific pattern:
+  1. Phase N writes artifacts to `.research/report.md` (project root — temporary, visible, overwrite-safe because it's always the current in-progress report)
+  2. GATE approval runs `mkdir -p sessions/{id}/ && mv .research/report.md sessions/{id}/report.md`
+  3. State file moves last: `mv .research/research-state.yaml sessions/{id}/` with phase updated to `complete`
+  This pattern applies to any capability pack or workflow where: (a) there is a user review gate AFTER artifact generation, and (b) the archive location is keyed by session ID (immutable once written).
+- **Action**: Any future capability pack with output-then-gate pattern must follow: write to project-level temp location → gate → archive to session dir. Never write directly to the session archive directory before gate approval. This lesson complements "Manifest + Directory Isolation for Multi-Instance Resources - 2026-02-09" (which covers the archive structure itself).
+- **Grounded in**: ~/research-methodology/CAPABILITY.md Phase 5 + §H3 (post-fix), .tad/evidence/reviews/blake/capability-pack-research-methodology/backend-architect.md (P0-1)
+- **Revalidated**: 2026-05-08
+
+### Saturation Detection Requires Three States, Not Two — 2026-05-08
+- **Context**: Implementing FR4 saturation detection for Research Methodology Capability Pack — initial AC spec said "output SATURATED or CONTINUE", but the algorithm in references/quality-control.md §4 defines a third state.
+- **Discovery**: When implementing a "stop when knowledge is exhausted" detector for iterative information gathering (ask loops, research rounds, etc.), two states are insufficient. A proper saturation detector needs three states:
+  1. **SATURATED** (hard stop): rate = 0 for ≥N consecutive rounds AND total findings ≥ minimum threshold. Agent stops, proceeds to next phase.
+  2. **DIMINISHING** (soft signal): rate ≤ low_threshold for ≥M consecutive rounds. Agent surfaces AskUserQuestion — user decides whether to continue. The LLM cannot make this decision unilaterally because diminishing returns may still be valuable depending on research stakes.
+  3. **CONTINUE**: all other cases. Agent proceeds autonomously.
+  The two-state version (SATURATED/CONTINUE) is dangerous because it forces either premature stop or infinite continuation. The three-state version transfers the diminishing-returns decision to the human, where it belongs.
+  - **Minimum threshold matters**: Declaring SATURATED when total_findings < 3 is a false positive — the first ask round might legitimately return 0 new findings if the question was too broad. Require total ≥ 3 findings before SATURATED is valid.
+  - **Consecutive rounds matter**: A single round of rate=0 may be a bad question, not saturation. Require ≥2 consecutive zero rounds for SATURATED, ≥3 consecutive low rounds for DIMINISHING.
+- **Action**: When designing any iterative-stop algorithm for research, data gathering, or ask loops: use three states (hard-stop / soft-signal / continue), define minimum total threshold to prevent false-positive stops, and require ≥2 consecutive signals before triggering either soft or hard stop.
+- **Grounded in**: ~/research-methodology/scripts/saturation-check.sh, ~/research-methodology/references/quality-control.md §4, HANDOFF-20260508-capability-pack-research-methodology.md FR4
+- **Revalidated**: 2026-05-08
