@@ -1024,3 +1024,28 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: (1) For shell dispatchers using `set -e` with non-zero success exit codes, no explicit passthrough plumbing needed — case arms propagate naturally. (2) Always wrap `timeout` calls with portability detection. (3) For newly-added-item identification in ordered-but-not-guaranteed lists, use set-diff, not positional index. (4) For query-string manipulation, operate per-param (split by `&`) not as a single-string regex.
 - **Grounded in**: .tad/cross-model/source-preprocessor.sh, .tad/evidence/reviews/blake/notebooklm-source-preprocessor/backend-architect.md (BA-P0-1/P0-2/P0-3), .tad/evidence/reviews/blake/notebooklm-source-preprocessor/code-reviewer.md (CR-P0-1)
 - **Revalidated**: 2026-05-09
+
+### NotebookLM Source Import: "False Success" More Dangerous Than Failure — 2026-05-09
+- **Context**: SPIKE-20260509 systematically tested 14 source types against NotebookLM `source add`. 4 failed outright (YouTube ×2, Substack, Medium). 7 returned `status: ready` but contained useless content (navigation bars, error pages, login walls). Only 3 had genuinely useful content (arXiv PDF excellent, arXiv abstract marginal, ACM abstract-only).
+- **Discovery**: NotebookLM's `status: ready` is NOT a content quality signal — it means "the URL was fetched and something was stored," not "the stored content is useful." Three failure modes discovered:
+  1. **SPA shell capture**: Bilibili, AWS docs, GitHub all returned `ready` but content was site navigation/TOC — the headless browser fetched the HTML shell before JS rendered the actual content.
+  2. **Login wall capture**: X/Twitter returned `ready` but content was a single "privacy extension warning" — the login wall was captured as "content."
+  3. **WAF error capture**: Semantic Scholar returned `ready` but content was a CloudFront 403 error page — the WAF block was treated as valid content.
+  The common root cause: NotebookLM's backend doesn't validate content quality — any HTTP 200 response with >0 bytes is accepted as a source. This means any research pipeline that trusts `status: ready` as a quality signal will silently accumulate garbage sources. The fix is mandatory post-import quality verification (implemented as `verify_import_quality` in SKILL.md with structured QUALITY:HIGH/LOW/NONE probe + 30s wait for indexing).
+- **Action**: (a) Never trust `status: ready` alone — always run a quality probe after import; (b) PDF is the only reliably high-quality import path; (c) for web pages, default expectation should be "will probably fail" with preprocessing as the primary path, not the fallback; (d) the spike's 14-source test matrix (.tad/evidence/spikes/SPIKE-20260509-notebooklm-import-boundary.md) is the canonical reference for which source types need preprocessing.
+- **Grounded in**: .tad/evidence/spikes/SPIKE-20260509-notebooklm-import-boundary.md, .claude/skills/research-notebook/SKILL.md (add-smart + verify_import_quality)
+- **Revalidated**: 2026-05-09
+
+### Multi-Phase Handler Fallback: Fast-Fail Before Slow-Fail — 2026-05-09
+- **Context**: Bilibili handler rewrite — 4-phase fallback (CC subs → B站API → yt-dlp metadata → Jina). Decision: should B站 API (fast fail ~1-2s on non-China IPs) come before yt-dlp metadata (slow ~5-10s)?
+- **Discovery**: Put the fast-fail phase first even when it fails more frequently. B站 API returns `code=62002` in ~1-2s (the geo-restriction response is immediate, not a timeout). If the API succeeds (China IP or future policy change), total latency = ~200ms instead of 5-10s. Expected-value-positive regardless of current failure rate. The pattern: "cheap fail + rare win" beats "skip to avoid failure" — because the win case justifies the 1-2s cost across the fleet.
+- **Action**: When designing multi-phase fallback chains, order phases by: (1) success probability × inverse latency. A phase that fails in 1-2s is still worth calling before a phase that takes 5-10s to fail, if the success case is fast enough.
+- **Grounded in**: .tad/cross-model/handlers/bilibili-handler.sh (Phase B before Phase C), .tad/evidence/reviews/blake/bilibili-and-quality-fixes/backend-architect.md (Q1 analysis)
+- **Revalidated**: 2026-05-09
+
+### Phase-Specific method: Field as Zero-Cost Audit Trail — 2026-05-09
+- **Context**: Bilibili handler with 4 phases, each succeeds via different mechanism. Design question: should each phase write a different `method:` value in the .md frontmatter?
+- **Discovery**: Yes — write phase-specific method: values (yt-dlp-cc-subtitles, bilibili-api, yt-dlp-metadata, jina-reader-fallback) as frontmatter. Zero cost because no downstream code parses `method:` — it's pure audit trail. Backend-architect confirmed no consumer exists. This creates free observability: when inspecting a cached .md, you can see which extraction path succeeded. Compare to `.router.log` 5-tuple (which IS load-bearing and has breaking-change semantics) — frontmatter method: is intentionally NOT load-bearing, giving maximum freedom to add/rename variants.
+- **Action**: For shell handlers with multiple fallback paths: include a `method:` frontmatter field per phase. Declare it explicitly as "audit-trail-only, no stability guarantee" via a `# CONTRACT: method: field is audit-trail, not API` comment if other developers might mistakenly parse it.
+- **Grounded in**: .tad/cross-model/handlers/bilibili-handler.sh, .tad/evidence/reviews/blake/bilibili-and-quality-fixes/backend-architect.md (Q3 analysis)
+- **Revalidated**: 2026-05-09

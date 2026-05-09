@@ -241,13 +241,22 @@ verify_import_quality(notebook_id, source_id):
   3. If source_status == "error" → return FAIL immediately (no probe needed)
 
   4. If source_status == "ready":
-     Run structured probe (force fresh conversation for reliable response):
+
+     4a. Structural pre-check — skip LLM if content too short (< 500 chars):
+         content_len=$(echo "$source_record" | jq -r '.content_length // .char_count // ""' 2>/dev/null || true)
+         If content_len is a non-empty integer AND content_len < 500:
+           → return FAIL "content too short (<500 chars) — stub or error page (no LLM call needed)"
+         (If content_len field absent from source record → skip pre-check, proceed to 4b)
+
+     4b. LLM probe (force fresh conversation for reliable response):
        response=$(~/.tad-notebooklm-venv/bin/notebooklm ask \
          "Rate the content quality of the most recently added source titled '${source_title}'.
           Respond with ONLY one of these exact labels:
-          QUALITY:HIGH — contains substantive article/paper/video text
-          QUALITY:LOW — contains some useful content mixed with navigation noise
-          QUALITY:NONE — contains only navigation menus, error messages, login walls, or cookie banners" \
+          QUALITY:HIGH — contains substantive article/paper/video text with ≥3 substantive paragraphs
+          QUALITY:LOW — contains some useful paragraphs but heavily mixed with navigation noise
+          QUALITY:NONE — if content consists PRIMARILY of: navigation menus, sidebar links, footer
+            elements, table-of-contents listings without article body text, cookie/privacy banners,
+            login/paywall prompts, or fewer than 3 substantive paragraphs of actual content" \
          -n <notebook_id> -c 00000000-0000-0000-0000-000000000000)
 
      Parse first line of response:

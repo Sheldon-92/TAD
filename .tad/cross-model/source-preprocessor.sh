@@ -132,7 +132,12 @@ case "$cmd" in
         run_with_timeout bash "$HANDLERS_DIR/x-handler.sh" tweet "$norm_url" "$output_dir"
         ;;
       bilibili)
-        run_with_timeout bash "$HANDLERS_DIR/bilibili-handler.sh" video "$norm_url" "$output_dir"
+        # Bilibili has 4-phase fallback (CC→API→yt-dlp→Jina); budget 60s instead of default 30s
+        if [ -n "$TIMEOUT_BIN" ]; then
+          "$TIMEOUT_BIN" 60 bash "$HANDLERS_DIR/bilibili-handler.sh" video "$norm_url" "$output_dir"
+        else
+          bash "$HANDLERS_DIR/bilibili-handler.sh" video "$norm_url" "$output_dir"
+        fi
         ;;
       arxiv_pdf)
         # Proven direct path — return URL for source add
