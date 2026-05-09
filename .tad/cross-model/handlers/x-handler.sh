@@ -65,8 +65,9 @@ case "$mode" in
     fi
 
     response=$(curl -s -w "\n%{http_code}" \
+      -H "X-API-Key: ${API_KEY}" \
       -- "https://api.twitterapi.io/twitter/article?tweet_id=${tweet_id}" \
-      -H "X-API-Key: ${API_KEY}" 2>/dev/null)
+      2>/dev/null)
     http_code=$(echo "$response" | tail -1)
     body=$(echo "$response" | sed '$d')
     handle_http_error "$http_code"
@@ -116,8 +117,9 @@ case "$mode" in
 
     # Fetch main tweet
     response=$(curl -s -w "\n%{http_code}" \
+      -H "X-API-Key: ${API_KEY}" \
       -- "https://api.twitterapi.io/twitter/tweets?tweet_ids=${tweet_id}" \
-      -H "X-API-Key: ${API_KEY}" 2>/dev/null)
+      2>/dev/null)
     http_code=$(echo "$response" | tail -1)
     body=$(echo "$response" | sed '$d')
     handle_http_error "$http_code"
@@ -131,8 +133,9 @@ case "$mode" in
     # Thread detection: attempt to fetch thread context (graceful degradation on failure)
     thread_content=""
     thread_response=$(curl -s -w "\n%{http_code}" \
+      -H "X-API-Key: ${API_KEY}" \
       -- "https://api.twitterapi.io/twitter/tweet/thread?tweet_id=${tweet_id}" \
-      -H "X-API-Key: ${API_KEY}" 2>/dev/null) || true
+      2>/dev/null) || true
     thread_code=$(echo "$thread_response" | tail -1)
     if [ "$thread_code" = "200" ]; then
       thread_body=$(echo "$thread_response" | sed '$d')
