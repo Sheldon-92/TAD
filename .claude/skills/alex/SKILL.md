@@ -1127,15 +1127,20 @@ research_plan_protocol:
            → Save to .tad/evidence/research/{slug}/{date}-report.md
            → Report: "📄 Baseline report saved. This is orientation, not the final deliverable."
 
-        e. PHASE 4 — Question Tree + Ask Loops:
-           → Step 1: Generate Question Tree from OBJECTIVES.md
+        e. PHASE 4 — Seed Questions + Dynamic Ask (depth-first):
+           → Step 1: Generate 2-3 seed questions from OBJECTIVES.md KRs
+             Note: each seed question triggers dynamic_ask_protocol (step3_5 in *research-notebook ask)
+             automatically — depth-first instead of breadth-first. Alex may generate 4-5 seeds
+             with written justification if KR count is unusually high.
+             Latency note: 2-3 seeds × max_depth 4 = 8-12 NotebookLM calls (~23-43s each)
+             → ~4-8 min per research item. Inform user before starting Phase 4.
              → If OBJECTIVES.md not found in project root:
                → Display: "No OBJECTIVES.md found — skipping Question Tree + AC Bridge (Phase 4-5)."
                → SKIP Phase 4 and Phase 5 entirely. Phase 3 report is the final deliverable.
                → Proceed to step5 (OBJECTIVES coverage update — which no-ops when OBJECTIVES.md is absent)
              → Read OBJECTIVES.md KRs aligned with this research item
-             → For each KR with status ⬚/🔄, generate 1-3 targeted questions depending on KR breadth:
-               (KRs with status ✅ → skip, 0 questions. Broad KRs → up to 3 sub-questions.)
+             → For each KR with status ⬚/🔄, generate 1 seed question (max 2-3 total across all KRs):
+               (KRs with status ✅ → skip. Prioritize KRs with highest uncertainty.)
                Format: "KR: {KR description} → Q: {specific question this notebook can answer}"
              Question format rules (MANDATORY):
              ✅ Include specificity anchor: "From [source type]: what [specific thing]?"
@@ -1205,6 +1210,8 @@ research_plan_protocol:
              6. Report + re-ask:
                 → Report: "🔄 Gap detected on Q{N}. Added {M} targeted sources. Re-asking..."
                 → ~/.tad-notebooklm-venv/bin/notebooklm ask "{original_question}" -n <target_notebook_id>
+                  (Raw CLI call — NOT *research-notebook ask — intentional: avoids nested step3_5 loop.
+                   If this is ever migrated to *research-notebook ask, add --no-follow flag.)
              7. Diminishing returns check (after re-ask answer received):
                 → original_citations=$(echo "<original_answer>" | grep -oE '\[[0-9]+\]' | sort -u | wc -l)
                 → reask_citations=$(echo "<reask_answer>" | grep -oE '\[[0-9]+\]' | sort -u | wc -l)

@@ -268,11 +268,16 @@ verify_import_quality(notebook_id, source_id):
 
 ---
 
-### `*research-notebook ask <question> [--notebook <id>]`
+### `*research-notebook ask <question> [--notebook <id>] [--no-follow]`
 
-Query a notebook (cross-source reasoning).
+Query a notebook (cross-source reasoning). By default, triggers dynamic multi-round research (step3_5).
+Pass `--no-follow` to preserve single Q→A behavior (no auto follow-up).
 
 ```
+Step 0: Parse flags
+  → If --no-follow in args: set dynamic_follow = false; remove --no-follow before passing to CLI
+  → Else: set dynamic_follow = true (default — dynamic protocol runs after answer)
+
 Step 1: Resolve target notebook
   → If --notebook <id> specified → use that
   → Else read REGISTRY.yaml active_notebook field
@@ -330,6 +335,101 @@ Step 3: Execute query (stale conversation fallback)
     → If exit 0 → proceed to Step 4
     → If still fails: "⚠️ Query failed. Check auth or notebook state."
   (Note: --new flag does NOT exist in 0.3.4; -c 00000000... is the only fresh-conversation mechanism)
+
+Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
+  ─────────────────────────────────────────────────────────────────────────────
+  TRIGGER: Every ask where dynamic_follow == true (default)
+  MAX DEPTH: max_depth = 4 rounds total (including initial ask in Step 3)
+  TRACK: current_depth = 1 (after Step 3); new_citations_this_round; prev_zero_citation_rounds = 0
+
+  EXTRACT four dimensions from the Step 3 answer:
+    surprising:  "最令人惊讶的 1 个发现（与常识/预期不同的）"
+    gap:         "答案暗示了什么未被覆盖的领域 ('sources do not contain' signals)"
+    conflict:    "不同源之间是否有矛盾 ('Source A says X, but Source B says Y')"
+    actionable:  "是否有可以直接转化为决策/代码变更的信息"
+
+  COUNT new citations (saturation signal):
+    extract all [N] markers from current answer → count unique markers not seen in prior rounds
+    new_citations = count of unique [N] markers not previously seen
+
+  CHAIN STORAGE — incremental writes (compact-safe):
+    Path: .tad/evidence/research/{notebook_topic}/{date}-chain-{topic_slug}-{uid}.md
+    {notebook_topic}: read from .tad/research-notebooks/REGISTRY.yaml → this notebook's topic field
+    {topic_slug}: first 30 chars of seed question, alphanum+hyphens only, lowercase
+      (CJK stripped by alphanum filter — if slug ≤4 chars after filter, use "q" prefix e.g. "q-ab12")
+    {uid}: first 4 hex chars of md5(seed_question_full_text); prevents same-day same-slug collision
+      bash: uid=$(printf '%s' "$seed_question" | { md5 2>/dev/null || md5sum 2>/dev/null; } | cut -c1-4)
+    Collision guard: if file exists at chain init AND first line does NOT match same seed_question,
+      append "-2" suffix (then "-3" etc.) until a free path is found.
+    Append each completed round immediately after it finishes (do NOT batch-write at chain end)
+    Saturation state in each round's Analysis block: include `new_citations: N` and `prev_zero_streak: N`
+      so compact-recovery can rebuild counter by reading the last round's Analysis block.
+    File format (frontmatter + round blocks per §4.3 of HANDOFF-20260509-dynamic-research-strategies):
+      --- type: research-chain, notebook_id, seed_question, depth, strategies_used, total_citations, created_at ---
+      ## Seed Question / ## Round N — {strategy} / ### Analysis (surprising, strategy chosen, new_citations: N, prev_zero_streak: N)
+      ## Chain Summary (key finding + action items + sources cited)
+
+  STRATEGY SELECTION (priority order):
+
+    # 1. Hard stop — checked FIRST (evidence-based: nothing new to find)
+    IF new_citations == 0 AND prev_zero_citation_rounds >= 1:  [saturated: 0 new citations × 2 consecutive rounds]
+      → strategy = "saturated"
+      → Finalize chain .md. Report: "🔬 Saturated after {current_depth} rounds. Chain saved to {path}"
+      → EXIT step 3.5 → go to Step 4.
+
+    # 2. Highest-value: cross-source conflict resolution
+    ELIF conflict detected:
+      → strategy = "contradiction"
+      → Build self-contained follow-up (embed claims as quotes — NEVER use "你提到..." referential phrasing):
+        "关于'{topic}'，一些源认为'{claim_A}'，而另一些源认为'{claim_B}'。
+         基于你的所有源，哪个说法有更强的证据支撑？请引用具体段落并解释矛盾的原因。"
+      → Execute: ~/.tad-notebooklm-venv/bin/notebooklm ask "{follow_up}" -n <notebook_id>
+        USE -n flag only. DO NOT use -c 00000000... fresh conversation (follow-ups need prior context).
+        If ask fails: fail-fast. Save chain as-is. Do NOT retry. Exit step 3.5.
+      → Count new citations in follow-up answer; update saturation counter:
+          If new_citations == 0: prev_zero_citation_rounds += 1; else: prev_zero_citation_rounds = 0
+      → sleep 1; increment current_depth; append round to chain .md; loop back to step 3.5.
+
+    # 3. Chase surprising findings deeper
+    ELIF surprising finding AND current_depth < max_depth:
+      → strategy = "follow_thread"
+      → Build self-contained follow-up (embed the finding as quoted context):
+        "关于'{surprising_finding}'（来自关于'{topic}'的研究），这具体是怎么实现的？
+         有哪些已知的局限或失败案例？请从你的源中找到具体例子。"
+      → Execute follow-up ask (same -n flag rule and fail-fast rule as contradiction above)
+      → Count new citations; update saturation counter:
+          If new_citations == 0: prev_zero_citation_rounds += 1; else: prev_zero_citation_rounds = 0
+      → sleep 1; increment current_depth; append round to chain .md; loop back to step 3.5.
+
+    # 4. Gap enrichment — standalone only (NOT inside *research-plan Phase 4)
+    ELIF gap detected AND NOT inside_research_plan:
+      → strategy = "gap_enrichment"
+      → inside_research_plan detection (two conditions BOTH required):
+          (a) .research/research-state.yaml exists AND phase field == "ask"
+          (b) the current notebook_id appears in research-state.yaml's notebook_ids list
+        If either condition false → inside_research_plan = false (standalone ask context)
+      → Trigger Phase 4b CRAG Judge Loop (source add-research fast → re-ask)
+      → (gap_enrichment DISABLED inside *research-plan — Phase 4b already handles gaps; would double-loop)
+
+    # 5. Budget-based forced close — checked AFTER saturation
+    ELIF current_depth >= max_depth:
+      → strategy = "so_what"  [TERMINAL — always exits after one so-what round, never loops back]
+      → Read project_context (capped at ~600 chars total):
+          If OBJECTIVES.md exists: extract KR bullet descriptions only (max 200 chars/KR, max 3 KRs, skip ✅)
+          Elif PROJECT_CONTEXT.md exists: extract "## Current Goal" section only (max 500 chars)
+          Else: use the notebook topic string (always ≤ 100 chars)
+      → Build self-contained so-what question:
+        "基于到目前为止关于'{topic}'的所有发现，对于{project_context}，
+         最重要的 3 个行动建议是什么？每个建议请对应具体的源引用。"
+      → Execute so-what ask (same -n flag rule)
+      → DO NOT loop back. so_what is ALWAYS terminal. Append final round. Finalize chain .md.
+      → Report: "🔬 Research chain complete: {current_depth} rounds, strategies used: {list}. Chain saved to {path}"
+      → EXIT step 3.5 → go to Step 4.
+
+    ELSE:
+      → strategy = "continue" (no auto-follow-up; chain may be partial; user can manually ask next)
+      → EXIT step 3.5 → go to Step 4.
+  ─────────────────────────────────────────────────────────────────────────────
 
 Step 4: Return results
   → Output query result to user
