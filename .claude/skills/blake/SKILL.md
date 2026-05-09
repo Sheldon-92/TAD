@@ -506,6 +506,131 @@ ralph_loop_execution:
           8. Brief output: "📖 Implementation context refreshed: {files read}"
         purpose: "Ensure handoff context is fresh before coding, not just at activation"
 
+      1_5b_notebook_check:
+        description: "Check for relevant research notebooks before implementation"
+        action: |
+          0. P1-1 early-exit: Read stored task_type (from 1_5_context_refresh).
+             If task_type == "research" → SKIP this step entirely.
+             Rationale: 1_5c will run the full research pipeline which includes
+             its own notebook queries. Avoids duplicate 23-43s latency.
+
+          1. Read .tad/research-notebooks/REGISTRY.yaml
+             If not found → skip silently (no error)
+
+          2. Identify relevant notebook:
+             a. Check handoff §5 Research Evidence for explicit notebook_id reference
+                → If found: use that notebook_id directly
+             b. If no explicit reference: match handoff topic/task against notebook
+                `topic` fields using LLM semantic judgment
+                → Match if notebook topic clearly covers the implementation domain
+
+          3. If relevant notebook found:
+             a. Announce: "📚 Found relevant notebook: '{topic}' ({source_count} sources)"
+             b. Run: *research-notebook ask --notebook {notebook_id}
+                     "What are the key implementation patterns and constraints for {handoff_task_summary}?"
+                (Uses allowed command from notebooklm_access — NOT raw ~/.tad-notebooklm-venv/bin/notebooklm binary.
+                 Expect 23-43s latency — acceptable since step is non-blocking.)
+             c. Note key findings in context: "📌 Notebook findings: {brief_summary}"
+             d. For deeper lookup during implementation: see notebooklm_access.allowed for full
+                permitted command list (*research-notebook ask, fulltext, guide, topics, list)
+
+          4. Skip silently when:
+             - REGISTRY.yaml not found
+             - No notebook matches the handoff topic
+             - *research-notebook command unavailable (preflight fail)
+             - Notebook query returns error or timeout
+        blocking: false
+        purpose: "Surface existing research findings before Blake starts coding — avoid re-searching what's already known"
+
+      1_5c_research_task_detection:
+        description: "Detect if this handoff's primary deliverable is research, and execute research-methodology pack pipeline"
+        action: |
+          1. Read handoff frontmatter `task_type` field (already stored from 1_5_context_refresh)
+
+          2. Detection rule (CR-P1-3 fix — strict):
+             Trigger IF AND ONLY IF: task_type == "research"
+             ⚠️ research_required: yes alone is NOT sufficient — it means "research supports
+             the implementation", not "research IS the implementation". Ignore research_required
+             for detection purposes. Only task_type: research triggers this path.
+
+          3. If research task detected:
+             a. Announce: "🔬 This is a research task. Loading research-methodology capability pack.
+                           Entering research-task mode — expanded notebook access active."
+             b. Read .tad/capability-packs/research-methodology/CAPABILITY.md
+                If NOT found → go to step 5 (fallback)
+             c. Execute the pack's 5-phase pipeline (Plan→Source→Curate→Analyze→Output)
+                as the PRIMARY implementation workflow — INSTEAD of normal code implementation.
+                Pack outputs are the deliverables:
+                - .research/report.md (QCE-structured research report)
+                - .research/acs.md (extracted ACs from research)
+             d. H3 gate quality checks (CR-P0-2 fix — BEFORE presenting to user):
+                - Citation count: ≥3 unique sources cited per Claim
+                - T1 source ratio: ≥30% of cited sources are T1 (official/academic)
+                - Contradictory evidence: every Claim has non-empty contradictory evidence section
+                - Extracted ACs: ≥1 concrete AC per research question in the question tree
+                If any check fails → note gap and present to user with warning (not blocking)
+             e. After pipeline completes, announce:
+                "Exiting research-task mode — notebook access reverted to read-only."
+
+          4. If NOT a research task → skip this step entirely, proceed to 1_6_tdd_check
+
+          5. Fallback (CAPABILITY.md missing — CR-P1-4 fix):
+             Warn: "⚠️ research-methodology pack not installed at .tad/capability-packs/research-methodology/.
+                    Falling back to WebSearch-based research."
+             Execute WebSearch-based research inline, following the research-methodology
+             degraded mode: Plan question tree → Search ≥3 sources per question →
+             Curate findings → QCE structure output → Reference .research/report.md
+
+        blocking: true
+        purpose: "Enable Blake to execute complete research workflows when research IS the deliverable"
+
+        notebooklm_access_override:
+          description: "CR-P0-1 fix: temporarily expands allowed notebook commands during pack execution only"
+          rationale: |
+            notebooklm_access.forbidden was designed for Blake-as-code-implementer.
+            When Blake executes research-methodology pack as primary task, the pack
+            requires source management operations (add, research, curate) that are
+            normally Alex-only. The override is STRICTLY SCOPED: active only during
+            step 3c pipeline execution, reverts to normal forbidden list after pipeline.
+          semantics: |
+            P0-1 delta formulation (avoids snapshot-drift): During 1_5c pipeline execution,
+            the effective allowed set is: base.allowed ∪ pack_required_commands.
+            The effective forbidden set is: base.forbidden − pack_required_commands.
+            Any command in base.forbidden NOT listed in pack_required_commands remains
+            forbidden — INCLUDING any future-added forbidden subcommands. This override
+            does NOT enumerate the still-forbidden list (to avoid two diverging sources
+            of truth); it defines only the delta (the 4 newly allowed commands).
+          pack_required_commands:
+            - "*research-notebook research --mode fast/deep"  # Phase 2 SOURCE
+            - "*research-notebook add <url>"                  # Phase 2 SOURCE
+            - "*research-notebook curate"                     # Phase 3 CURATE
+            - "*research-notebook report"                     # Phase 4 ANALYZE baseline
+          still_forbidden_notable_examples:
+            # Non-exhaustive — for human readability only. The delta semantics above
+            # are the authoritative rule; this list does NOT limit the forbidden set.
+            - "*research-notebook create"        # notebook must exist before handoff (Alex creates)
+            - "*research-notebook configure"     # Alex sets persona/mode
+            - "*research-notebook use <id>"      # writes REGISTRY active_notebook — Alex-owned state
+            - "*research-notebook language set"  # writes persistent per-notebook config — Alex configures
+            - "*research-notebook consolidate, archive, sync"  # Alex lifecycle management
+          visibility_mechanism: |
+            P1-2 rename: Announcements in step 3a ("Entering research-task mode") and
+            step 3e ("Exiting research-task mode") make override scope visible to user.
+            Honoring base.forbidden for non-pack commands is Blake's protocol responsibility
+            (text-level discipline, consistent with TAD's single-user CLI alignment model).
+
+        completion_report_requirements:
+          description: "AC9: completion report references pack outputs as evidence"
+          items:
+            - "Reference .research/report.md in evidence list"
+            - "Reference .research/acs.md in evidence list"
+            - "Note which pack phases completed successfully"
+
+        constraints:
+          - "Blake executes the pack pipeline but does NOT modify the pack CAPABILITY.md itself"
+          - "notebooklm_access_override applies ONLY during 1_5c pipeline execution"
+          - "After pack pipeline completes, Blake writes normal completion report"
+
       1_6_tdd_check:
         description: "Check if TDD mode is enabled and set implementation guidance"
         action: |
