@@ -1,8 +1,8 @@
-# TAD Configuration v2.11.0 - Research Routing + Action Bridge
+# TAD Configuration v2.12.0 - Research Routing + Action Bridge
 method: TAD
-version: 2.11.0
+version: 2.12.0
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

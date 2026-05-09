@@ -2,6 +2,11 @@
 
 ## In Progress
 
+- [x] **NotebookLM Research Upgrade (TASK-20260509-001~004)** — All 4 Gate 4 PASS, archived
+  - add-smart: URL detect + 4 handlers + quality verify + bilibili 4-phase fallback + probe tuning
+  - Dynamic research: step3_5 follow_thread/contradiction/so_what + chain storage + saturation
+  - Commits: cce7306, e6a9b06, 9985ed4, 0502acc, 38fb888
+
 - [x] **Pack Integration & Migration (TASK-20260508-002)** — Gate 3 PASS 2026-05-08, commit 49b0e50
   - 7 packs migrated to .tad/capability-packs/; pack-registry.yaml auto-generated; Alex step1_5b added
   - Awaiting Alex Gate 4 acceptance

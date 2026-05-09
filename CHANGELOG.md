@@ -5,6 +5,30 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.0] - 2026-05-09
+
+### New Features — Source Preprocessor + Dynamic Research
+- **`add-smart` command**: Auto-detects URL type (X/Bilibili/arXiv/Scholar/Substack/Medium/generic) and routes to appropriate handler for preprocessing before NotebookLM import
+- **4 Handler scripts**: x-handler.sh (twitterapi.io articles + tweets), bilibili-handler.sh (4-phase fallback: CC subs → B站API → yt-dlp → Jina), scholar-handler.sh (Semantic Scholar API + arXiv PDF), jina-handler.sh (Jina Reader generic)
+- **Quality verification probe**: Post-import structural pre-check (<500 chars → QUALITY:NONE) + LLM probe (QUALITY:HIGH/LOW/NONE) with false-success detection and Jina fallback recovery
+- **Dynamic Research Protocol (step3_5)**: Every `ask` now auto-chains follow-up questions with 3 strategies — Follow-the-Thread (chase surprising findings), Contradiction Hunting (resolve cross-source conflicts), So-What Chain (force actionable conclusions)
+- **Research chain storage**: Multi-round findings saved as structured .md to `.tad/evidence/research/{topic}/` with frontmatter metadata
+- **`--no-follow` flag**: Opt-out of dynamic follow-up, preserving single Q→A behavior
+- **Seed question model**: *research-plan Phase 4 reduced from 5-10 static questions to 2-3 seed questions with depth-first dynamic exploration
+
+### Bug Fixes
+- X article handler: `.content` → `.contents` (plural) jq path fix
+- All handlers: added `--connect-timeout 10 --max-time 25` for stock macOS (no gtimeout)
+- Jina handler: curl exit 3 on nested URLs (`|| true` fix) + empty response guard
+- Scholar handler: md5 portability (`$1` not `$NF`) + title-search fallback for all-null S2 responses
+- Bilibili handler: `--no-playlist` before `--` separator + `jq`/`curl` preflight
+
+### Architecture Knowledge
+- NotebookLM Source Import: "False Success" More Dangerous Than Failure (7/14 tested sources returned `ready` with useless content)
+- Shell Dispatcher: set -e + Exit-10 Propagation, Portable Timeout, Set-Diff Source ID
+- Expert Reviewer Premise Check: Raw CLI vs SKILL Command Distinction
+- Dynamic Research Chain: Saturation Counter Must Be Explicitly Persisted
+
 ## [2.11.0] - 2026-05-08
 
 ### New Features — Capability Pack System

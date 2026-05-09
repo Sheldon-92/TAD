@@ -1049,3 +1049,20 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: For shell handlers with multiple fallback paths: include a `method:` frontmatter field per phase. Declare it explicitly as "audit-trail-only, no stability guarantee" via a `# CONTRACT: method: field is audit-trail, not API` comment if other developers might mistakenly parse it.
 - **Grounded in**: .tad/cross-model/handlers/bilibili-handler.sh, .tad/evidence/reviews/blake/bilibili-and-quality-fixes/backend-architect.md (Q3 analysis)
 - **Revalidated**: 2026-05-09
+
+### Expert Reviewer Premise Check: Raw CLI vs SKILL Command Distinction — 2026-05-09
+- **Context**: backend-architect Layer 2 review of dynamic-research-strategies flagged Phase 4b re-ask (alex/SKILL.md line 1210) as a `*research-notebook ask` SKILL invocation that would trigger step3_5 (nested loop). This was a P0 finding. But the actual line is `~/.tad-notebooklm-venv/bin/notebooklm ask` — raw CLI binary, not a SKILL command.
+- **Discovery**: Expert reviewers can confuse raw CLI calls (`~/.tad-notebooklm-venv/bin/notebooklm ask`) with SKILL command invocations (`*research-notebook ask`). These are fundamentally different: SKILL commands go through the full SKILL.md protocol (including all steps), raw CLI calls bypass SKILL protocol entirely. The distinction matters when:
+  1. A SKILL command has post-processing (like step3_5) that the raw CLI lacks
+  2. An expert claims a CLI call "will trigger" a SKILL protocol
+  3. Reviewing code paths that mix raw CLI with SKILL command calls
+- **Action**: When expert review claims "X calls *research-notebook ask which triggers Y", verify the actual invocation: is it `*research-notebook ask` (SKILL) or `~/.tad-notebooklm-venv/bin/notebooklm ask` (raw CLI)? These are not equivalent. Always add protective comments to raw CLI calls in mixed contexts: "(Raw CLI — NOT *research-notebook ask; if ever migrated, add --no-follow)".
+- **Grounded in**: .tad/evidence/reviews/blake/dynamic-research-strategies/backend-architect.md (P0-1 post-analysis), .claude/skills/alex/SKILL.md line 1210
+- **Revalidated**: 2026-05-09
+
+### Dynamic Research Chain: Saturation Counter Must Be Explicitly Persisted — 2026-05-09
+- **Context**: step3_5 dynamic follow-up protocol uses `prev_zero_citation_rounds` to detect saturation (0 new citations × 2 consecutive rounds). code-reviewer P0-1 caught that the counter was declared in TRACK but never updated in loop-back paths.
+- **Discovery**: When designing multi-round loops with state machines: any counter that controls loop termination MUST have an explicit update rule at every loop-back point. Declaring a variable in a "TRACK" header is not sufficient — agents reading the protocol won't update it without an explicit instruction. The pattern: (1) declare with initial value (`prev_zero_citation_rounds = 0`), (2) update at EVERY loop-back (`if new == 0: counter += 1 else counter = 0`), (3) embed counter in each round's written artifact so compact-recovery can rebuild it.
+- **Action**: For any LLM protocol with a "stop after N consecutive signals" loop: (a) declare variable with explicit initial value, (b) add explicit update instruction at each loop-back, (c) write the counter value to the on-disk artifact each round so compact recovery can reconstruct the loop state without relying on conversation context.
+- **Grounded in**: .claude/skills/research-notebook/SKILL.md (step3_5 prev_zero_citation_rounds), .tad/evidence/reviews/blake/dynamic-research-strategies/code-reviewer.md (P0-1 finding)
+- **Revalidated**: 2026-05-09
