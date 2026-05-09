@@ -54,8 +54,8 @@ case "$mode" in
     # Determine if Semantic Scholar or Google Scholar
     s2_id=$(extract_s2_id "$url")
     if [ -n "$s2_id" ]; then
-      # Semantic Scholar direct paper lookup
-      response=$(curl -s -- \
+      # Semantic Scholar direct paper lookup — P0-2 fix: --connect-timeout + --max-time
+      response=$(curl -s --connect-timeout 10 --max-time 25 -- \
         "https://api.semanticscholar.org/graph/v1/paper/${s2_id}?fields=title,abstract,openAccessPdf,externalIds" \
         2>/dev/null)
     else
@@ -65,14 +65,16 @@ case "$mode" in
         echo "ERROR: Could not extract search query from Google Scholar URL" >&2
         exit 1
       fi
-      # P0-3 fix: use jq @uri (jq is already a hard dep) — avoids Python -c shell interpolation risk
+      # use jq @uri — avoids Python -c shell interpolation risk
       encoded_query=$(printf '%s' "$query" | jq -sRr '@uri' 2>/dev/null || echo "${query// /+}")
-      response=$(curl -s -- \
+      # P0-2 fix: --connect-timeout + --max-time
+      response=$(curl -s --connect-timeout 10 --max-time 25 -- \
         "https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded_query}&fields=title,abstract,openAccessPdf,externalIds&limit=1" \
         2>/dev/null)
       # For search results, the paper is nested under .data[0]
-      response=$(echo "$response" | jq '.data[0] // {}' 2>/dev/null)
-      s2_id=$(echo "$response" | jq -r '.paperId // ""' 2>/dev/null)
+      # P1-3 fix: printf '%s\n' to avoid echo backslash interpretation
+      response=$(printf '%s\n' "$response" | jq '.data[0] // {}' 2>/dev/null)
+      s2_id=$(printf '%s\n' "$response" | jq -r '.paperId // ""' 2>/dev/null)
     fi
 
     if [ -z "$response" ] || [ "$response" = "null" ] || [ "$response" = "{}" ]; then
@@ -80,24 +82,44 @@ case "$mode" in
       exit 1
     fi
 
+    # P1-2 fix: if all key fields null, try title-based re-search
+    s2_title=$(printf '%s\n' "$response" | jq -r '.title // empty' 2>/dev/null)
+    s2_abstract=$(printf '%s\n' "$response" | jq -r '.abstract // empty' 2>/dev/null)
+    if [ -z "$s2_title" ] && [ -z "$s2_abstract" ]; then
+      fallback_query=$(echo "$url" | sed 's|.*/paper/||' | sed 's|/[a-f0-9]*$||' | sed 's/%3A/:/g; s/-/ /g; s/+/ /g')
+      if [ -n "$fallback_query" ]; then
+        encoded_q=$(printf '%s' "$fallback_query" | jq -sRr '@uri')
+        fallback_resp=$(curl -s --connect-timeout 10 --max-time 25 -- \
+          "https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded_q}&fields=title,abstract,openAccessPdf,externalIds&limit=1" \
+          2>/dev/null || true)
+        fallback_data=$(printf '%s\n' "$fallback_resp" | jq '.data[0] // empty' 2>/dev/null)
+        if [ -n "$fallback_data" ]; then
+          response="$fallback_data"
+        fi
+      fi
+    fi
+
     # Try open-access PDF first
-    pdf_url=$(echo "$response" | jq -r '.openAccessPdf.url // empty' 2>/dev/null)
+    # P1-3 fix: printf '%s\n' to avoid echo backslash interpretation
+    pdf_url=$(printf '%s\n' "$response" | jq -r '.openAccessPdf.url // empty' 2>/dev/null)
     if [ -n "$pdf_url" ]; then
       echo "$pdf_url"
       exit 10
     fi
 
     # Try arXiv ID as fallback PDF source
-    arxiv_id=$(echo "$response" | jq -r '.externalIds.ArXiv // empty' 2>/dev/null)
+    arxiv_id=$(printf '%s\n' "$response" | jq -r '.externalIds.ArXiv // empty' 2>/dev/null)
     if [ -n "$arxiv_id" ]; then
       echo "https://arxiv.org/pdf/${arxiv_id}"
       exit 10
     fi
 
     # Fallback: write abstract-only .md
-    title=$(echo "$response" | jq -r '.title // "Unknown Paper"' 2>/dev/null)
-    abstract=$(echo "$response" | jq -r '.abstract // "Abstract not available."' 2>/dev/null)
-    paper_id="${s2_id:-$(echo "$url" | md5 2>/dev/null | cut -c1-8 || echo "paper")}"
+    title=$(printf '%s\n' "$response" | jq -r '.title // "Unknown Paper"' 2>/dev/null)
+    abstract=$(printf '%s\n' "$response" | jq -r '.abstract // "Abstract not available."' 2>/dev/null)
+    # P1-1 fix: portable md5 truncation (matches bilibili-handler.sh pattern)
+    # $1 is correct for both BSD md5 (single-field output) and GNU md5sum (<hash>  -)
+    paper_id="${s2_id:-$(printf '%s' "$url" | { md5 2>/dev/null || md5sum 2>/dev/null; } | awk '{print substr($1,1,8)}')}"
 
     out_file="$output_dir/scholar-${paper_id}.md"
     {

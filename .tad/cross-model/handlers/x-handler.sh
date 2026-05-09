@@ -36,7 +36,8 @@ mkdir -p "$output_dir"
 
 # Extract tweet_id from URL — last numeric segment in /status/DIGITS path
 extract_tweet_id() {
-  echo "$1" | grep -oE '/status/[0-9]+' | grep -oE '[0-9]+'
+  # Handle both /status/DIGITS (tweet URLs) and /articles/DIGITS (article URLs)
+  echo "$1" | grep -oE '/(status|articles)/[0-9]+' | grep -oE '[0-9]+'
 }
 
 # Generate ISO timestamp
@@ -64,7 +65,7 @@ case "$mode" in
       exit 1
     fi
 
-    response=$(curl -s -w "\n%{http_code}" \
+    response=$(curl -s --connect-timeout 10 --max-time 25 -w "\n%{http_code}" \
       -H "X-API-Key: ${API_KEY}" \
       -- "https://api.twitterapi.io/twitter/article?tweet_id=${tweet_id}" \
       2>/dev/null)
@@ -72,9 +73,10 @@ case "$mode" in
     body=$(echo "$response" | sed '$d')
     handle_http_error "$http_code"
 
-    # Convert content blocks to Markdown
-    md_content=$(echo "$body" | jq -r '
-      .data.article.content // .article.content // .content // [] |
+    # P0-1 fix: API returns .contents (plural) not .content
+    # P1-3 fix: printf '%s\n' avoids echo backslash interpretation
+    md_content=$(printf '%s\n' "$body" | jq -r '
+      .data.article.contents // .article.contents // .contents // .data.article.content // .article.content // .content // [] |
       .[] |
       if .type == "unstyled" then (.text // "")
       elif .type == "header-one" then "# " + (.text // "")
@@ -116,7 +118,7 @@ case "$mode" in
     fi
 
     # Fetch main tweet
-    response=$(curl -s -w "\n%{http_code}" \
+    response=$(curl -s --connect-timeout 10 --max-time 25 -w "\n%{http_code}" \
       -H "X-API-Key: ${API_KEY}" \
       -- "https://api.twitterapi.io/twitter/tweets?tweet_ids=${tweet_id}" \
       2>/dev/null)
@@ -124,7 +126,8 @@ case "$mode" in
     body=$(echo "$response" | sed '$d')
     handle_http_error "$http_code"
 
-    tweet_text=$(echo "$body" | jq -r '.data[0].full_text // .data[0].text // .tweets[0].full_text // .tweets[0].text // ""' 2>/dev/null)
+    # P1-3 fix: printf to avoid echo backslash interpretation
+    tweet_text=$(printf '%s\n' "$body" | jq -r '.data[0].full_text // .data[0].text // .tweets[0].full_text // .tweets[0].text // ""' 2>/dev/null)
     if [ -z "$tweet_text" ]; then
       echo "ERROR: No tweet text found in API response" >&2
       exit 1
@@ -132,7 +135,7 @@ case "$mode" in
 
     # Thread detection: attempt to fetch thread context (graceful degradation on failure)
     thread_content=""
-    thread_response=$(curl -s -w "\n%{http_code}" \
+    thread_response=$(curl -s --connect-timeout 10 --max-time 25 -w "\n%{http_code}" \
       -H "X-API-Key: ${API_KEY}" \
       -- "https://api.twitterapi.io/twitter/tweet/thread?tweet_id=${tweet_id}" \
       2>/dev/null) || true

@@ -19,10 +19,20 @@ mkdir -p "$output_dir"
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Fetch via Jina Reader
-response=$(curl -s -w "\n%{http_code}" \
-  -- "https://r.jina.ai/${url}" \
+# curl returns exit 3 ("URL malformed") for nested https://r.jina.ai/https://... URLs
+# even when content is successfully fetched. Suppress with || true; validate via http_code + body.
+# P0-2 fix: --connect-timeout + --max-time for handler-level timeout enforcement
+response=$(curl -s --connect-timeout 10 --max-time 25 -w "\n%{http_code}" \
   -H "Accept: text/markdown" \
-  2>/dev/null)
+  -- "https://r.jina.ai/${url}" \
+  2>/dev/null || true)
+
+# P0-3 fix: guard against empty response (network/DNS failure)
+if [ -z "$response" ]; then
+  echo "ERROR: Jina Reader returned no response (network/DNS failure?)" >&2
+  exit 1
+fi
+
 http_code=$(echo "$response" | tail -1)
 body=$(echo "$response" | sed '$d')
 
