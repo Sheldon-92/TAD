@@ -124,6 +124,141 @@ Step 4: Update REGISTRY
 
 ---
 
+### `*research-notebook add-smart <url> [--notebook <id>]`
+
+Import a source with automatic type detection and preprocessing. Handles X/Twitter threads,
+Bilibili videos, academic papers, paywalled articles (Substack/Medium), and generic web content.
+Uses `.tad/cross-model/source-preprocessor.sh` for URL routing and handler dispatch.
+
+```
+Step 1: Resolve target notebook (same as `add`)
+  → If --notebook <id> specified → use that
+  → Else read .tad/research-notebooks/REGISTRY.yaml active_notebook field
+  → If no active notebook → AskUserQuestion: "Which notebook to import into?"
+    Options: list of active notebooks + "Cancel"
+
+Step 2: Validate + detect URL type
+  → Validate: echo '<url>' | bash .tad/cross-model/source-preprocessor.sh validate
+    If exit 1 → "❌ Invalid URL: contains unsafe characters or missing http(s)://" + EXIT
+  → Detect: url_type=$(echo '<url>' | bash .tad/cross-model/source-preprocessor.sh detect)
+  → Set output_dir: .research/preprocessed/<notebook_id>/
+    mkdir -p "$output_dir"
+
+Step 3: Capture existing source IDs before import (BA-P0-1 fix)
+  → ids_before=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <notebook_id> | jq -r '.[].id' | sort)
+
+Step 4: Dispatch handler + import based on url_type
+
+  [Direct path — proven arXiv PDF, no preprocessing]
+  If url_type == "arxiv_pdf":
+    → ~/.tad-notebooklm-venv/bin/notebooklm source add <url> -n <notebook_id>
+    → handler_label="arxiv-direct"
+
+  [Handler paths — preprocessing → local .md or remote URL → source add]
+  If url_type in [x_article, x_tweet, bilibili, arxiv_abs, scholar, substack, medium]:
+    → result=$(bash .tad/cross-model/source-preprocessor.sh dispatch <url> <notebook_id> <output_dir>)
+    → dispatch_exit=$?
+    → If dispatch_exit == 2: "❌ Missing dependency: {stderr}" + EXIT
+    → If dispatch_exit == 1: "⚠️ Extraction failed. {stderr}" + EXIT
+    → If dispatch_exit == 10: source add <result> -n <notebook_id>   [result = remote URL]
+    → If dispatch_exit == 0:  source add <result> -n <notebook_id>   [result = local .md path]
+    → Else (exit $dispatch_exit, e.g., 124=timeout / 127=missing-tool):
+      "❌ Handler dispatch failed (exit $dispatch_exit). Install coreutils or check stderr." + EXIT
+    → handler_label="$url_type"
+
+  [Generic web path — try direct first, Jina fallback triggered by quality failure in Step 6]
+  If url_type == "generic_web":
+    → ~/.tad-notebooklm-venv/bin/notebooklm source add <url> -n <notebook_id>
+    → handler_label="generic-direct"
+    → Note: if verify_import_quality returns FAIL → Jina fallback runs inside Step 6
+
+Step 5: Identify new source_id via set-difference (BA-P0-1 fix — avoids unreliable .[-1])
+  → ids_after=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <notebook_id> | jq -r '.[].id' | sort)
+  → new_source_id=$(comm -13 <(echo "$ids_before") <(echo "$ids_after") | head -1)
+  → If new_source_id is empty → "❌ Could not identify newly-added source id. Source may still be importing." + EXIT
+  → Capture: source_title=$(notebooklm source list --json -n <notebook_id> | jq -r --arg id "$new_source_id" '.[] | select(.id == $id) | .title // "unknown"')
+
+Step 6: verify_import_quality passing new_source_id (see [HELPER] below)
+  → Wait 30s for NotebookLM indexing
+  → Run structured quality probe on new_source_id (not .[-1])
+  → On PASS: "✅ Source '{title}' imported with good content quality."
+  → On WARN: "⚠️ Source '{title}' has mixed quality. Content may include navigation noise."
+  → On FAIL (QUALITY:NONE or status=="error"):
+     a. Delete bad source (guard against failure — BA-P1-1 fix):
+        del_exit=0
+        ~/.tad-notebooklm-venv/bin/notebooklm source delete "$new_source_id" -n <notebook_id> --yes || del_exit=$?
+        If del_exit != 0: "⚠️ Could not delete bad source (id=$new_source_id, exit=$del_exit). Stopping to avoid duplicates." + EXIT
+     b. If url_type == "generic_web":
+        → Jina fallback: jina_result=$(bash .tad/cross-model/handlers/jina-handler.sh <url> <output_dir>)
+        → If jina exit 0: source add "$jina_result" -n <notebook_id> → re-run verify_import_quality
+        → If Jina also fails: "⚠️ Could not import useful content from this URL." + EXIT
+     c. If url_type != "generic_web": "⚠️ Handler content failed quality check." + EXIT
+
+Step 7: Update REGISTRY + metadata
+  → Update REGISTRY.yaml: increment source_count, append source entry (url, type, added date)
+  → Update .research/preprocessed/<notebook_id>/metadata.yaml:
+    BA-P1-2 fix — schema + append protocol:
+    File schema (top-level `entries` list, YAML-valid):
+      # metadata.yaml
+      entries:
+        - file: "x-article-12345.md"       # path relative to output_dir, or null for URL-direct
+          original_url: "https://..."
+          handler: "x_article"
+          extracted_at: "2026-05-09T12:00:00Z"
+          source_id: "<NotebookLM source UUID from Step 5>"
+          quality_verified: true
+    Create if absent: write header `entries:\n` to new file.
+    Append entry: yq -i '.entries += [{"file": "...", "original_url": "...", "handler": "...", "extracted_at": "...", "source_id": "...", "quality_verified": true}]' metadata.yaml
+    Concurrency: v1 assumes single-writer — document as v1 constraint.
+    Recover: metadata.yaml is an audit log; if lost, rebuild from `notebooklm source list` + dir scan.
+
+Step 8: Report result
+  → "✅ Imported via {handler_label}: '{source_title}'"
+  → Quality: HIGH / LOW (WARN) / UNKNOWN
+  → If preprocessed .md was saved: "📄 Cached: {out_file}"
+```
+
+[HELPER] verify_import_quality procedure:
+Caller passes: notebook_id + source_id (from set-diff in Step 5 — do NOT use .[-1])
+```
+verify_import_quality(notebook_id, source_id):
+
+  1. sleep 30                                   [Wait 30s — NotebookLM indexing takes ~30s]
+
+  2. Fetch source record by source_id:
+     source_json=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <notebook_id>)
+     source_record=$(echo "$source_json" | jq --arg id "$source_id" '.[] | select(.id == $id)')
+     source_title=$(echo "$source_record" | jq -r '.title // "unknown"')
+     source_status=$(echo "$source_record" | jq -r '.status')
+
+  2b. BA-P1-3 fix — retry if status is "preparing" or "processing" (indexing can take up to ~90s):
+     If source_status in ["preparing", "processing"]:
+       sleep 60                                 [second wait, total 90s]
+       Re-fetch source_record + source_status (same jq query above)
+     If still preparing/processing after retry:
+       → return WARN "Source still indexing — re-verify later via *ask"
+
+  3. If source_status == "error" → return FAIL immediately (no probe needed)
+
+  4. If source_status == "ready":
+     Run structured probe (force fresh conversation for reliable response):
+       response=$(~/.tad-notebooklm-venv/bin/notebooklm ask \
+         "Rate the content quality of the most recently added source titled '${source_title}'.
+          Respond with ONLY one of these exact labels:
+          QUALITY:HIGH — contains substantive article/paper/video text
+          QUALITY:LOW — contains some useful content mixed with navigation noise
+          QUALITY:NONE — contains only navigation menus, error messages, login walls, or cookie banners" \
+         -n <notebook_id> -c 00000000-0000-0000-0000-000000000000)
+
+     Parse first line of response:
+       If starts with "QUALITY:NONE" → return FAIL
+       If starts with "QUALITY:LOW"  → return WARN (keep source)
+       If starts with "QUALITY:HIGH" → return PASS
+       If no QUALITY: prefix found   → return WARN (probe inconclusive — keep source)
+```
+
+---
+
 ### `*research-notebook ask <question> [--notebook <id>]`
 
 Query a notebook (cross-source reasoning).
@@ -862,7 +997,8 @@ lifecycle_rules:
 | Command | Purpose |
 |---------|---------|
 | `*research-notebook create <topic>` | New notebook + guide sources + register |
-| `*research-notebook add <url>` | Add source to active notebook |
+| `*research-notebook add <url>` | Add source to active notebook (direct) |
+| `*research-notebook add-smart <url>` | Auto-detect URL type + preprocess + import + quality verify |
 | `*research-notebook ask <question>` | Query notebook (cross-source reasoning) |
 | `*research-notebook list` | List all notebooks + lightweight sync |
 | `*research-notebook sync` | Full cloud sync |
