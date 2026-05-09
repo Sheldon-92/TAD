@@ -1,0 +1,18 @@
+                               Suggested Reports                                
+┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ # ┃ Title                  ┃ Description                                     ┃
+┡━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 1 │ Strategic Framework    │ A comprehensive strategy for transforming raw   │
+│   │                        │ data into structured professional assets for    │
+│   │                        │ organizational decision-making.                 │
+│ 2 │ Operational Whitepaper │ An in-depth analysis of information             │
+│   │                        │ architecture principles applied to the creation │
+│   │                        │ of transformative professional documentation.   │
+│ 3 │ Concept Explainer      │ A clear breakdown of how to identify and        │
+│   │                        │ categorize different types of professional      │
+│   │                        │ documents.                                      │
+│ 4 │ Foundational Primer    │ An introductory guide to the core rules and     │
+│   │                        │ constraints of structured content generation.   │
+└───┴────────────────────────┴─────────────────────────────────────────────────┘
+
+Use the prompt with: notebooklm generate report "<prompt>"

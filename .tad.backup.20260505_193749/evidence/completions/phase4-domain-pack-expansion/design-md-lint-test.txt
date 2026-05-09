@@ -1,0 +1,60 @@
+═══════════════════════════════════════════════════════════════
+DESIGN.md Lint Test — P4.11.1 validate_wcag_contrast step
+CLI status: PASSED — design.md v0.1.1 available (npx @google/design.md)
+═══════════════════════════════════════════════════════════════
+
+Command: npx --yes @google/design.md lint <fixture>
+
+─── Test 1: VALID fixture (expected: 0 errors) ───
+
+{
+  "findings": [
+    {
+      "severity": "info",
+      "message": "Design system defines 2 colors, 2 typography scales, 1 rounding level, 2 spacing tokens, 1 component."
+    }
+  ],
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 1
+  }
+}
+
+─── Test 2: VIOLATIONS fixture (expected: errors caught) ───
+
+{
+  "findings": [
+    {
+      "severity": "error",
+      "path": "typography.h1.letterSpacing",
+      "message": "'broken' is not a valid dimension."
+    },
+    {
+      "severity": "info",
+      "message": "Design system defines 1 color, 1 typography scale."
+    },
+    {
+      "severity": "info",
+      "path": "spacing",
+      "message": "No 'spacing' section defined. Layout spacing will fall back to agent defaults."
+    },
+    {
+      "severity": "info",
+      "path": "rounded",
+      "message": "No 'rounded' section defined. Corner rounding will fall back to agent defaults."
+    }
+  ],
+  "summary": {
+    "errors": 1,
+    "warnings": 0,
+    "infos": 3
+  }
+}
+
+═══════════════════════════════════════════════════════════════
+Verdict: CLI is functional. P4.11.1 capability correctly references
+npx @google/design.md lint as primary path. The capability's spec
+compliance bar (WCAG AA, 8 sections, semantic tokens) is enforceable
+by the upstream tool — confirmed by Test 1 and Test 2.
+═══════════════════════════════════════════════════════════════

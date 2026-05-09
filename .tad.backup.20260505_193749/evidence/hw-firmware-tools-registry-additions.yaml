@@ -1,0 +1,154 @@
+# HW Firmware Domain Pack — Tool Registry Additions
+# Merge into .tad/domains/tools-registry.yaml after review
+# Generated: 2026-04-03
+
+# ─────────────────────────────────────
+# Tool 1: arduino-cli
+# ─────────────────────────────────────
+arduino_cli:
+  description: "Arduino CLI — 编译、上传、板卡管理、库管理（替代 Arduino IDE）"
+  recommended:
+    name: arduino-cli
+    type: cli
+    install: "brew install arduino-cli"
+    verify: "arduino-cli version"
+    usage: |
+      # Board management
+      arduino-cli core update-index
+      arduino-cli core install esp32:esp32
+      arduino-cli board listall | grep -i esp32
+
+      # Compile
+      arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 ./project/
+
+      # Upload (auto-detect port)
+      arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:XIAO_ESP32S3 ./project/
+
+      # Library management
+      arduino-cli lib install "Adafruit GFX Library"
+      arduino-cli lib install "Adafruit SH110X"
+      arduino-cli lib list
+
+      # Monitor serial output
+      arduino-cli monitor -p /dev/cu.usbmodem* --config baudrate=115200
+    example: |
+      # Full compile+upload cycle for XIAO ESP32-S3
+      arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 \
+        --build-property "build.extra_flags=-DBOARD_HAS_PSRAM" \
+        ./my-project/
+      arduino-cli upload -p /dev/cu.usbmodem14101 \
+        --fqbn esp32:esp32:XIAO_ESP32S3 ./my-project/
+
+      # ESP32-C3 variant
+      arduino-cli compile --fqbn esp32:esp32:esp32c3 ./my-project/
+    output_format: "Compiled binary (.bin) + serial upload"
+    tested: true
+    test_result: "arduino-cli v1.4.1, esp32 core 3.3.6 installed, XIAO_ESP32S3 board available"
+  common_fqbn:
+    - "esp32:esp32:XIAO_ESP32S3  # Seeed XIAO ESP32-S3"
+    - "esp32:esp32:esp32c3        # Generic ESP32-C3"
+    - "esp32:esp32:esp32s3        # Generic ESP32-S3"
+    - "esp32:esp32:esp32          # Generic ESP32"
+
+# ─────────────────────────────────────
+# Tool 2: platformio-cli
+# ─────────────────────────────────────
+platformio_cli:
+  description: "PlatformIO CLI — 多平台嵌入式构建系统（替代 arduino-cli，支持更多芯片）"
+  recommended:
+    name: pio
+    type: cli
+    install: |
+      # Option A: pip (recommended for isolation)
+      python3 -m venv ~/.platformio-venv
+      source ~/.platformio-venv/bin/activate
+      pip install platformio
+
+      # Option B: brew
+      brew install platformio
+    verify: "pio --version"
+    usage: |
+      # Init project
+      pio project init --board seeed_xiao_esp32s3
+
+      # Compile
+      pio run
+
+      # Upload
+      pio run --target upload
+
+      # Serial monitor
+      pio device monitor --baud 115200
+
+      # Unit test (PlatformIO Unity)
+      pio test -e native
+    example: |
+      # platformio.ini for XIAO ESP32-S3
+      [env:xiao_esp32s3]
+      platform = espressif32
+      board = seeed_xiao_esp32s3
+      framework = arduino
+      monitor_speed = 115200
+      lib_deps =
+        adafruit/Adafruit GFX Library
+        adafruit/Adafruit SH110X
+        sparkfun/SparkFun Qwiic Haptic Driver DA7280
+    output_format: "Compiled firmware (.bin/.elf) + serial upload"
+    tested: false
+    test_result: "NOT INSTALLED on this machine. arduino-cli is primary."
+  note: "Not installed. Use arduino-cli as primary. Install PlatformIO only if Unity test framework or multi-board CI is needed."
+
+# ─────────────────────────────────────
+# Tool 3: esptool (already bundled with esp32 core, but useful standalone)
+# ─────────────────────────────────────
+esptool:
+  description: "ESP32 固件烧录工具 — 直接烧录 .bin、读取 flash、擦除 flash"
+  recommended:
+    name: esptool.py
+    type: cli
+    install: "pip install esptool  # or: brew install esptool"
+    verify: "esptool.py version"
+    usage: |
+      # Read chip info
+      esptool.py --port /dev/cu.usbmodem* chip_id
+
+      # Flash firmware
+      esptool.py --port /dev/cu.usbmodem* write_flash 0x0 firmware.bin
+
+      # Erase flash (factory reset)
+      esptool.py --port /dev/cu.usbmodem* erase_flash
+
+      # Read flash to file (backup)
+      esptool.py --port /dev/cu.usbmodem* read_flash 0x0 0x400000 backup.bin
+    output_format: "Direct flash operations"
+    tested: false
+    test_result: "Bundled with ESP32 Arduino core; standalone install optional"
+  note: "Usually invoked indirectly via arduino-cli upload. Direct use for flash backup/restore or OTA image preparation."
+
+# ─────────────────────────────────────
+# Tool 4: serial monitor (minicom/screen as fallback)
+# ─────────────────────────────────────
+serial_monitor:
+  description: "串口监视 — 查看 Serial.println 输出、调试日志"
+  recommended:
+    name: arduino-cli monitor
+    type: cli
+    install: "Bundled with arduino-cli"
+    verify: "arduino-cli monitor --help"
+    usage: |
+      # Basic monitor
+      arduino-cli monitor -p /dev/cu.usbmodem* --config baudrate=115200
+
+      # With timestamp
+      arduino-cli monitor -p /dev/cu.usbmodem* --config baudrate=115200 --timestamp
+    output_format: "Real-time serial text stream"
+    tested: true
+    test_result: "Works with arduino-cli v1.4.1"
+  alternatives:
+    - name: minicom
+      type: cli
+      install: "brew install minicom"
+      usage: "minicom -D /dev/cu.usbmodem* -b 115200"
+    - name: screen
+      type: builtin
+      usage: "screen /dev/cu.usbmodem* 115200  # Ctrl-A K to quit"

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowPM — Wireframe Prototype</title>
+<style>
+  /* ═══ B&W WIREFRAME: Strict grayscale palette ═══ */
+  :root {
+    --black: #000;
+    --dark: #333;
+    --mid: #666;
+    --muted: #999;
+    --light: #ccc;
+    --lighter: #eee;
+    --white: #fff;
+    --sidebar-w: 220px;
+    --sidebar-collapsed: 48px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; color: var(--dark); background: var(--lighter); font-size: 14px; line-height: 1.5; }
+
+  /* ═══ LAYOUT SHELL ═══ */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--white);
+    border-right: 1px solid var(--light);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sidebar-header h2 { font-size: 15px; font-weight: 600; }
+  .sidebar-section { padding: 8px 0; }
+  .sidebar-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 4px 16px; }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 16px; cursor: pointer; font-size: 13px; color: var(--mid);
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .sidebar-item:hover { background: var(--lighter); color: var(--dark); }
+  .sidebar-item.active { background: var(--lighter); color: var(--black); font-weight: 500; }
+  .sidebar-item .icon { width: 16px; text-align: center; font-size: 14px; }
+  .sidebar-item .badge { margin-left: auto; background: var(--lighter); border-radius: 10px; padding: 0 6px; font-size: 11px; color: var(--muted); }
+  .sidebar-sub { padding-left: 32px; }
+  .sidebar-sub .sidebar-item { font-size: 12px; padding: 4px 16px 4px 0; }
+  .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--light); padding: 8px 0; }
+
+  /* Main Content */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; border-bottom: 1px solid var(--light); background: var(--white);
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    padding: 6px 12px; border: 1px solid var(--light); border-radius: 6px;
+    background: var(--white); cursor: pointer; font-size: 13px; color: var(--dark);
+  }
+  .btn:hover { background: var(--lighter); }
+  .btn-primary { background: var(--dark); color: var(--white); border-color: var(--dark); }
+  .btn-primary:hover { background: var(--black); }
+  .content { flex: 1; overflow: auto; padding: 0; }
+
+  /* ═══ PAGE: BOARD (Kanban) ═══ */
+  .board { display: flex; gap: 16px; padding: 20px 24px; height: 100%; overflow-x: auto; }
+  .board-column { min-width: 280px; max-width: 320px; flex: 1; display: flex; flex-direction: column; }
+  .column-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; margin-bottom: 8px;
+  }
+  .column-header h3 { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .column-count { background: var(--lighter); border-radius: 10px; padding: 0 6px; font-size: 11px; color: var(--muted); }
+  .column-add { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; }
+  .column-add:hover { color: var(--dark); }
+  .column-cards { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+  .issue-card {
+    background: var(--white); border: 1px solid var(--light); border-radius: 6px;
+    padding: 10px 12px; cursor: pointer;
+  }
+  .issue-card:hover { border-color: var(--muted); }
+  .issue-card-id { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .issue-card-title { font-size: 13px; font-weight: 400; color: var(--dark); margin-bottom: 6px; }
+  .issue-card-meta { display: flex; align-items: center; justify-content: space-between; }
+  .issue-card-meta .priority { font-size: 11px; }
+  .issue-card-meta .priority.urgent { color: var(--black); font-weight: 600; }
+  .issue-card-meta .priority.high { color: var(--dark); }
+  .issue-card-meta .priority.medium { color: var(--mid); }
+  .issue-card-meta .priority.low { color: var(--muted); }
+  .avatar {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--light);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 500; color: var(--mid);
+  }
+  .label-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+
+  /* ═══ PAGE: ISSUE DETAIL (Side Panel) ═══ */
+  .issue-panel {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 520px;
+    background: var(--white); border-left: 1px solid var(--light);
+    display: none; flex-direction: column; z-index: 100;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.05);
+  }
+  .issue-panel.open { display: flex; }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--light);
+  }
+  .panel-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); }
+  .panel-close:hover { color: var(--dark); }
+  .panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .panel-title-input {
+    font-size: 18px; font-weight: 600; border: none; outline: none;
+    width: 100%; padding: 0; margin-bottom: 16px; color: var(--black);
+  }
+  .panel-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .panel-field { display: flex; align-items: center; }
+  .panel-field-label { width: 100px; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .panel-field-value {
+    font-size: 13px; padding: 4px 8px; border: 1px solid transparent;
+    border-radius: 4px; cursor: pointer; flex: 1;
+  }
+  .panel-field-value:hover { border-color: var(--light); background: var(--lighter); }
+  .panel-description {
+    border: 1px solid var(--light); border-radius: 6px; padding: 12px;
+    min-height: 120px; font-size: 13px; color: var(--mid);
+  }
+  .panel-section-title { font-size: 12px; font-weight: 600; color: var(--dark); margin: 20px 0 8px 0; }
+  .panel-comment-box {
+    border: 1px solid var(--light); border-radius: 6px; padding: 10px;
+    font-size: 13px; color: var(--muted); min-height: 60px; margin-top: 8px;
+  }
+
+  /* ═══ PAGE: SETTINGS ═══ */
+  .settings-page { display: none; padding: 32px 40px; max-width: 720px; }
+  .settings-page.visible { display: block; }
+  .settings-page h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .settings-page .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .settings-section { margin-bottom: 32px; }
+  .settings-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .settings-section p { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .settings-field { margin-bottom: 16px; }
+  .settings-label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+  .settings-input {
+    width: 100%; max-width: 400px; padding: 8px 12px; border: 1px solid var(--light);
+    border-radius: 6px; font-size: 13px; background: var(--white);
+  }
+  .settings-input:focus { outline: none; border-color: var(--muted); }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--lighter); }
+  .settings-row .name { font-size: 13px; }
+  .settings-row .role { font-size: 12px; color: var(--muted); }
+  .settings-row .email { font-size: 12px; color: var(--muted); }
+  .toggle {
+    width: 36px; height: 20px; border-radius: 10px; background: var(--light);
+    position: relative; cursor: pointer; border: none;
+  }
+  .toggle::after {
+    content: ''; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--white); position: absolute; top: 2px; left: 2px;
+    transition: left 0.15s;
+  }
+  .toggle.on { background: var(--dark); }
+  .toggle.on::after { left: 18px; }
+
+  /* Role badge */
+  .role-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; border: 1px solid var(--light);
+  }
+
+  /* ═══ PAGE: MY ISSUES ═══ */
+  .my-issues-page { display: none; padding: 20px 24px; }
+  .my-issues-page.visible { display: block; }
+  .issue-list-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 12px; border-bottom: 1px solid var(--lighter); cursor: pointer;
+  }
+  .issue-list-item:hover { background: var(--lighter); }
+  .issue-list-item .checkbox { width: 16px; height: 16px; border: 1px solid var(--light); border-radius: 3px; flex-shrink: 0; }
+  .issue-list-item .id { font-size: 11px; color: var(--muted); width: 60px; flex-shrink: 0; }
+  .issue-list-item .title { flex: 1; font-size: 13px; }
+  .issue-list-item .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ═══ TAB NAVIGATION (Board/Backlog/Timeline) ═══ */
+  .view-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--light); background: var(--white); padding: 0 24px; }
+  .view-tab {
+    padding: 8px 16px; font-size: 13px; color: var(--muted);
+    cursor: pointer; border: none; background: none;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .view-tab:hover { color: var(--dark); }
+  .view-tab.active { color: var(--dark); border-bottom-color: var(--dark); font-weight: 500; }
+
+  /* ═══ COMMAND PALETTE (Cmd+K) ═══ */
+  .cmd-palette-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+    display: none; align-items: flex-start; justify-content: center;
+    padding-top: 120px; z-index: 200;
+  }
+  .cmd-palette-overlay.open { display: flex; }
+  .cmd-palette {
+    width: 560px; background: var(--white); border-radius: 12px;
+    border: 1px solid var(--light); overflow: hidden;
+  }
+  .cmd-input {
+    width: 100%; padding: 14px 16px; border: none; outline: none;
+    font-size: 15px; border-bottom: 1px solid var(--lighter);
+  }
+  .cmd-results { padding: 8px; }
+  .cmd-result-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .cmd-result-item:hover, .cmd-result-item.selected { background: var(--lighter); }
+  .cmd-result-item .shortcut { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .cmd-section-title { font-size: 11px; color: var(--muted); padding: 6px 10px 2px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  /* Annotation markers */
+  .annotation {
+    position: absolute; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--dark); color: var(--white); font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+
+  /* Page switcher tabs at very top */
+  .page-switcher {
+    display: flex; gap: 0; background: var(--dark); padding: 0;
+  }
+  .page-switch-btn {
+    padding: 8px 20px; color: var(--muted); background: none; border: none;
+    cursor: pointer; font-size: 12px; letter-spacing: 0.02em;
+  }
+  .page-switch-btn:hover { color: var(--lighter); }
+  .page-switch-btn.active { color: var(--white); background: var(--mid); }
+</style>
+</head>
+<body>
+
+<!-- PAGE SWITCHER (Wireframe navigation — not part of the product) -->
+<div class="page-switcher">
+  <button class="page-switch-btn active" onclick="showPage('board')">PAGE 1: Board</button>
+  <button class="page-switch-btn" onclick="showPage('issues')">PAGE 2: My Issues</button>
+  <button class="page-switch-btn" onclick="showPage('settings')">PAGE 3: Settings</button>
+  <button class="page-switch-btn" onclick="toggleCmdPalette()">Cmd+K Palette</button>
+</div>
+
+<div class="app">
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="sidebar-header">
+      <h2>FlowPM</h2>
+      <button class="btn" style="padding:2px 6px;font-size:11px;" title="Collapse sidebar">&#9776;</button>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="sidebar-item" onclick="showPage('issues')">
+        <span class="icon">&#9744;</span> My Issues <span class="badge">12</span>
+      </button>
+      <button class="sidebar-item">
+        <span class="icon">&#9993;</span> Inbox <span class="badge">3</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Projects</div>
+      <button class="sidebar-item active" onclick="showPage('board')">
+        <span class="icon">&#9632;</span> Mobile App
+      </button>
+      <div class="sidebar-sub">
+        <button class="sidebar-item active"><span class="icon">&#9638;</span> Board</button>
+        <button class="sidebar-item"><span class="icon">&#9776;</span> Backlog</button>
+        <button class="sidebar-item"><span class="icon">&#8594;</span> Timeline</button>
+      </div>
+      <button class="sidebar-item">
+        <span class="icon">&#9632;</span> API Backend
+      </button>
+      <button class="sidebar-item">
+        <span class="icon">&#9632;</span> Marketing Site
+      </button>
+      <button class="sidebar-item" style="color:var(--muted)">
+        <span class="icon">+</span> New Project
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Cycles</div>
+      <button class="sidebar-item">
+        <span class="icon">&#10227;</span> Sprint 14 (Active)
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Views</div>
+      <button class="sidebar-item">
+        <span class="icon">&#9733;</span> My Bugs
+      </button>
+      <button class="sidebar-item">
+        <span class="icon">&#9733;</span> Urgent Items
+      </button>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="sidebar-item" onclick="showPage('settings')">
+        <span class="icon">&#9881;</span> Settings
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="main">
+    <!-- ═══ PAGE 1: BOARD (Kanban) ═══ -->
+    <div id="page-board">
+      <div class="topbar">
+        <div>
+          <h1>Mobile App</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" style="font-size:12px;color:var(--muted);">&#8984;K Search</button>
+          <button class="btn">Filter</button>
+          <button class="btn">Group by</button>
+          <button class="btn btn-primary" onclick="togglePanel()">+ Issue</button>
+        </div>
+      </div>
+      <div class="view-tabs">
+        <button class="view-tab active">Board</button>
+        <button class="view-tab">Backlog</button>
+        <button class="view-tab">Timeline</button>
+      </div>
+      <div class="content">
+        <div class="board">
+          <!-- Column: Todo -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="label-dot" style="background:var(--muted)"></span> Todo <span class="column-count">4</span></h3>
+              <button class="column-add">+</button>
+            </div>
+            <div class="column-cards">
+              <div class="issue-card" onclick="togglePanel()">
+                <div class="issue-card-id">FPM-42</div>
+                <div class="issue-card-title">Add OAuth2 login with GitHub provider</div>
+                <div class="issue-card-meta">
+                  <span class="priority urgent">!!! Urgent</span>
+                  <span class="avatar">SZ</span>
+                </div>
+              </div>
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-39</div>
+                <div class="issue-card-title">Design onboarding flow for new workspaces</div>
+                <div class="issue-card-meta">
+                  <span class="priority high">!! High</span>
+                  <span class="avatar">AL</span>
+                </div>
+              </div>
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-37</div>
+                <div class="issue-card-title">Implement Markdown editor for issue descriptions</div>
+                <div class="issue-card-meta">
+                  <span class="priority medium">! Medium</span>
+                  <span class="avatar">JK</span>
+                </div>
+              </div>
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-35</div>
+                <div class="issue-card-title">Add bulk action support for multi-select</div>
+                <div class="issue-card-meta">
+                  <span class="priority low">Low</span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column: In Progress -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="label-dot" style="background:var(--dark)"></span> In Progress <span class="column-count">3</span></h3>
+              <button class="column-add">+</button>
+            </div>
+            <div class="column-cards">
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-40</div>
+                <div class="issue-card-title">Build notification system with WebSocket</div>
+                <div class="issue-card-meta">
+                  <span class="priority high">!! High</span>
+                  <span class="avatar">SZ</span>
+                </div>
+              </div>
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-38</div>
+                <div class="issue-card-title">Implement drag-and-drop for board columns</div>
+                <div class="issue-card-meta">
+                  <span class="priority medium">! Medium</span>
+                  <span class="avatar">AL</span>
+                </div>
+              </div>
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-36</div>
+                <div class="issue-card-title">API rate limiting and throttling</div>
+                <div class="issue-card-meta">
+                  <span class="priority medium">! Medium</span>
+                  <span class="avatar">JK</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column: In Review -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="label-dot" style="background:var(--mid)"></span> In Review <span class="column-count">2</span></h3>
+              <button class="column-add">+</button>
+            </div>
+            <div class="column-cards">
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-34</div>
+                <div class="issue-card-title">User profile settings page</div>
+                <div class="issue-card-meta">
+                  <span class="priority low">Low</span>
+                  <span class="avatar">AL</span>
+                </div>
+              </div>
+              <div class="issue-card">
+                <div class="issue-card-id">FPM-33</div>
+                <div class="issue-card-title">Keyboard shortcut handler refactor</div>
+                <div class="issue-card-meta">
+                  <span class="priority medium">! Medium</span>
+                  <span class="avatar">SZ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column: Done -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="label-dot" style="background:var(--light)"></span> Done <span class="column-count">5</span></h3>
+              <button class="column-add">+</button>
+            </div>
+            <div class="column-cards">
+              <div class="issue-card" style="opacity: 0.6;">
+                <div class="issue-card-id">FPM-32</div>
+                <div class="issue-card-title">Setup CI/CD pipeline with GitHub Actions</div>
+                <div class="issue-card-meta">
+                  <span class="priority low">Low</span>
+                  <span class="avatar">JK</span>
+                </div>
+              </div>
+              <div class="issue-card" style="opacity: 0.6;">
+                <div class="issue-card-id">FPM-31</div>
+                <div class="issue-card-title">Database schema v1 migration</div>
+                <div class="issue-card-meta">
+                  <span class="priority high">!! High</span>
+                  <span class="avatar">SZ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE 2: MY ISSUES ═══ -->
+    <div id="page-issues" class="my-issues-page">
+      <div class="topbar" style="margin: -20px -24px 20px; padding: 12px 24px; border-bottom: 1px solid var(--light); background: var(--white);">
+        <h1>My Issues</h1>
+        <div class="topbar-actions">
+          <button class="btn">Filter</button>
+          <button class="btn btn-primary">+ Issue</button>
+        </div>
+      </div>
+
+      <div style="background:var(--white); border: 1px solid var(--light); border-radius: 8px; overflow: hidden;">
+        <div style="padding: 10px 16px; font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--lighter); color: var(--muted);">
+          ASSIGNED TO ME (8)
+        </div>
+        <div class="issue-list-item">
+          <div class="checkbox"></div>
+          <div class="status-dot" style="background:var(--dark)"></div>
+          <div class="id">FPM-42</div>
+          <div class="title">Add OAuth2 login with GitHub provider</div>
+          <span class="priority urgent" style="font-size:11px;width:60px;">!!! Urgent</span>
+          <span style="font-size:11px;color:var(--muted);width:80px;">Mobile App</span>
+        </div>
+        <div class="issue-list-item">
+          <div class="checkbox"></div>
+          <div class="status-dot" style="background:var(--dark)"></div>
+          <div class="id">FPM-40</div>
+          <div class="title">Build notification system with WebSocket</div>
+          <span class="priority high" style="font-size:11px;width:60px;">!! High</span>
+          <span style="font-size:11px;color:var(--muted);width:80px;">Mobile App</span>
+        </div>
+        <div class="issue-list-item">
+          <div class="checkbox"></div>
+          <div class="status-dot" style="background:var(--mid)"></div>
+          <div class="id">FPM-33</div>
+          <div class="title">Keyboard shortcut handler refactor</div>
+          <span class="priority medium" style="font-size:11px;width:60px;">! Medium</span>
+          <span style="font-size:11px;color:var(--muted);width:80px;">Mobile App</span>
+        </div>
+        <div class="issue-list-item" style="opacity:0.5;">
+          <div class="checkbox"></div>
+          <div class="status-dot" style="background:var(--light)"></div>
+          <div class="id">FPM-31</div>
+          <div class="title">Database schema v1 migration</div>
+          <span class="priority high" style="font-size:11px;width:60px;">!! High</span>
+          <span style="font-size:11px;color:var(--muted);width:80px;">Mobile App</span>
+        </div>
+
+        <div style="padding: 10px 16px; font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--lighter); border-top: 1px solid var(--lighter); color: var(--muted); margin-top: 8px;">
+          CREATED BY ME (3)
+        </div>
+        <div class="issue-list-item">
+          <div class="checkbox"></div>
+          <div class="status-dot" style="background:var(--muted)"></div>
+          <div class="id">FPM-35</div>
+          <div class="title">Add bulk action support for multi-select</div>
+          <span class="priority low" style="font-size:11px;width:60px;">Low</span>
+          <span style="font-size:11px;color:var(--muted);width:80px;">Mobile App</span>
+        </div>
+        <div class="issue-list-item">
+          <div class="checkbox"></div>
+          <div class="status-dot" style="background:var(--muted)"></div>
+          <div class="id">FPM-29</div>
+          <div class="title">Document API endpoints for external integrations</div>
+          <span class="priority low" style="font-size:11px;width:60px;">Low</span>
+          <span style="font-size:11px;color:var(--muted);width:80px;">API Backend</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE 3: SETTINGS ═══ -->
+    <div id="page-settings" class="settings-page">
+      <h1>Workspace Settings</h1>
+      <p class="subtitle">Manage your workspace configuration, team, and billing.</p>
+
+      <!-- Settings sub-nav -->
+      <div class="view-tabs" style="margin: 0 -40px 24px; padding: 0 40px;">
+        <button class="view-tab active" onclick="showSettingsTab('general')">General</button>
+        <button class="view-tab" onclick="showSettingsTab('members')">Members</button>
+        <button class="view-tab" onclick="showSettingsTab('billing')">Billing</button>
+        <button class="view-tab" onclick="showSettingsTab('integrations')">Integrations</button>
+      </div>
+
+      <!-- General Settings -->
+      <div id="settings-general">
+        <div class="settings-section">
+          <h2>Workspace</h2>
+          <p>Basic workspace information visible to all members.</p>
+          <div class="settings-field">
+            <label class="settings-label">Workspace Name</label>
+            <input class="settings-input" type="text" value="Acme Indie Studio" />
+          </div>
+          <div class="settings-field">
+            <label class="settings-label">Workspace URL</label>
+            <input class="settings-input" type="text" value="acme-indie" disabled style="color:var(--muted);background:var(--lighter);" />
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h2>Issue Defaults</h2>
+          <p>Default values for new issues in this workspace.</p>
+          <div class="settings-field">
+            <label class="settings-label">Default Priority</label>
+            <select class="settings-input" style="max-width:200px;">
+              <option>None</option>
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+              <option>Urgent</option>
+            </select>
+          </div>
+          <div class="settings-field" style="display:flex;align-items:center;gap:12px;">
+            <label class="settings-label" style="margin-bottom:0;">Auto-assign creator</label>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h2>Danger Zone</h2>
+          <p>Irreversible actions. Be careful.</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--light);border-radius:6px;">
+            <div>
+              <div style="font-size:13px;font-weight:500;">Delete Workspace</div>
+              <div style="font-size:12px;color:var(--muted);">All data will be permanently deleted.</div>
+            </div>
+            <button class="btn" style="color:#c00;border-color:#c00;">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Members Settings -->
+      <div id="settings-members" style="display:none;">
+        <div class="settings-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2>Team Members (4)</h2>
+            <button class="btn btn-primary">+ Invite Member</button>
+          </div>
+          <div style="border:1px solid var(--light);border-radius:6px;overflow:hidden;">
+            <div class="settings-row" style="padding:12px 16px;">
+              <div>
+                <div class="name">Sheldon Zhao</div>
+                <div class="email">sheldon@acme.dev</div>
+              </div>
+              <span class="role-badge" style="background:var(--dark);color:var(--white);border:none;">Owner</span>
+            </div>
+            <div class="settings-row" style="padding:12px 16px;">
+              <div>
+                <div class="name">Alex Liu</div>
+                <div class="email">alex@acme.dev</div>
+              </div>
+              <span class="role-badge">Admin</span>
+            </div>
+            <div class="settings-row" style="padding:12px 16px;">
+              <div>
+                <div class="name">Jordan Kim</div>
+                <div class="email">jordan@acme.dev</div>
+              </div>
+              <span class="role-badge">Member</span>
+            </div>
+            <div class="settings-row" style="padding:12px 16px;opacity:0.6;">
+              <div>
+                <div class="name">Client (Pending Invite)</div>
+                <div class="email">client@external.com</div>
+              </div>
+              <span class="role-badge">Viewer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Billing Settings -->
+      <div id="settings-billing" style="display:none;">
+        <div class="settings-section">
+          <h2>Current Plan</h2>
+          <div style="border:1px solid var(--light);border-radius:8px;padding:20px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:16px;font-weight:600;">Pro Plan</div>
+                <div style="font-size:13px;color:var(--muted);">$8/member/month, billed monthly</div>
+              </div>
+              <button class="btn">Change Plan</button>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:24px;">
+              <div>
+                <div style="font-size:11px;color:var(--muted);">Members</div>
+                <div style="font-size:15px;font-weight:500;">4 / 10</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--muted);">Projects</div>
+                <div style="font-size:15px;font-weight:500;">3 / Unlimited</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--muted);">Next billing</div>
+                <div style="font-size:15px;font-weight:500;">Apr 15, 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Integrations Settings -->
+      <div id="settings-integrations" style="display:none;">
+        <div class="settings-section">
+          <h2>Connected Integrations</h2>
+          <p>Connect external services to your workspace.</p>
+          <div style="border:1px solid var(--light);border-radius:6px;overflow:hidden;">
+            <div class="settings-row" style="padding:12px 16px;">
+              <div>
+                <div class="name">GitHub</div>
+                <div style="font-size:12px;color:var(--muted);">Link PRs and commits to issues</div>
+              </div>
+              <button class="btn" style="background:var(--dark);color:var(--white);">Connected</button>
+            </div>
+            <div class="settings-row" style="padding:12px 16px;">
+              <div>
+                <div class="name">Slack</div>
+                <div style="font-size:12px;color:var(--muted);">Get notifications in Slack channels</div>
+              </div>
+              <button class="btn">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:12px 16px;">
+              <div>
+                <div class="name">Figma</div>
+                <div style="font-size:12px;color:var(--muted);">Embed design files in issues</div>
+              </div>
+              <button class="btn">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ ISSUE DETAIL SIDE PANEL ═══ -->
+  <aside class="issue-panel" id="issuePanel" role="dialog" aria-label="Issue detail">
+    <div class="panel-header">
+      <span style="font-size:12px;color:var(--muted);">FPM-42 &middot; Mobile App</span>
+      <button class="panel-close" onclick="togglePanel()" aria-label="Close panel">&times;</button>
+    </div>
+    <div class="panel-body">
+      <input class="panel-title-input" type="text" value="Add OAuth2 login with GitHub provider" aria-label="Issue title" />
+
+      <div class="panel-fields">
+        <div class="panel-field">
+          <span class="panel-field-label">Status</span>
+          <span class="panel-field-value">Todo</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field-label">Priority</span>
+          <span class="panel-field-value" style="font-weight:600;">!!! Urgent</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field-label">Assignee</span>
+          <span class="panel-field-value"><span class="avatar" style="display:inline-flex;vertical-align:middle;margin-right:4px;">SZ</span> Sheldon Zhao</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field-label">Labels</span>
+          <span class="panel-field-value">feature, auth</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field-label">Cycle</span>
+          <span class="panel-field-value">Sprint 14</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field-label">Due Date</span>
+          <span class="panel-field-value">Apr 10, 2026</span>
+        </div>
+      </div>
+
+      <div class="panel-section-title">Description</div>
+      <div class="panel-description">
+        Implement OAuth2 login flow using GitHub as the identity provider.<br><br>
+        Requirements:<br>
+        - GitHub OAuth app registration<br>
+        - Token exchange and storage<br>
+        - User profile sync from GitHub<br>
+        - Error handling for denied permissions
+      </div>
+
+      <div class="panel-section-title">Activity</div>
+      <div style="font-size:12px;color:var(--muted);padding:8px 0;">
+        <div style="margin-bottom:8px;"><strong>Sheldon</strong> created this issue &middot; 2 hours ago</div>
+        <div style="margin-bottom:8px;"><strong>Alex</strong> changed priority to Urgent &middot; 1 hour ago</div>
+      </div>
+
+      <div class="panel-section-title">Comment</div>
+      <div class="panel-comment-box" contenteditable="true">Write a comment...</div>
+    </div>
+  </aside>
+</div>
+
+<!-- ═══ COMMAND PALETTE ═══ -->
+<div class="cmd-palette-overlay" id="cmdPalette" onclick="if(event.target===this)toggleCmdPalette()">
+  <div class="cmd-palette">
+    <input class="cmd-input" type="text" placeholder="Search issues, projects, or type a command..." autofocus />
+    <div class="cmd-results">
+      <div class="cmd-section-title">Recent</div>
+      <div class="cmd-result-item selected">
+        <span class="icon" style="color:var(--muted);">&#9632;</span>
+        FPM-42: Add OAuth2 login with GitHub provider
+      </div>
+      <div class="cmd-result-item">
+        <span class="icon" style="color:var(--muted);">&#9632;</span>
+        FPM-40: Build notification system with WebSocket
+      </div>
+      <div class="cmd-section-title">Commands</div>
+      <div class="cmd-result-item">
+        <span class="icon" style="color:var(--muted);">+</span>
+        Create new issue
+        <span class="shortcut">Cmd+C</span>
+      </div>
+      <div class="cmd-result-item">
+        <span class="icon" style="color:var(--muted);">&#9881;</span>
+        Go to Settings
+        <span class="shortcut">Cmd+,</span>
+      </div>
+      <div class="cmd-result-item">
+        <span class="icon" style="color:var(--muted);">&#9776;</span>
+        Switch Project...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Page switching (wireframe demo navigation)
+function showPage(page) {
+  document.getElementById('page-board').style.display = page === 'board' ? 'block' : 'none';
+  document.getElementById('page-issues').style.display = page === 'issues' ? 'block' : 'none';
+  document.getElementById('page-issues').classList.toggle('visible', page === 'issues');
+  document.getElementById('page-settings').style.display = page === 'settings' ? 'block' : 'none';
+  document.getElementById('page-settings').classList.toggle('visible', page === 'settings');
+
+  // Update page switcher
+  document.querySelectorAll('.page-switch-btn').forEach((btn, i) => {
+    const pages = ['board', 'issues', 'settings'];
+    btn.classList.toggle('active', pages[i] === page);
+  });
+
+  // Close panel if open
+  document.getElementById('issuePanel').classList.remove('open');
+}
+
+// Issue detail panel toggle
+function togglePanel() {
+  document.getElementById('issuePanel').classList.toggle('open');
+}
+
+// Command palette
+function toggleCmdPalette() {
+  const el = document.getElementById('cmdPalette');
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) {
+    el.querySelector('.cmd-input').focus();
+  }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    toggleCmdPalette();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('issuePanel').classList.remove('open');
+    document.getElementById('cmdPalette').classList.remove('open');
+  }
+});
+
+// Settings tab switching
+function showSettingsTab(tab) {
+  ['general', 'members', 'billing', 'integrations'].forEach(t => {
+    const el = document.getElementById('settings-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  // Update tab active state
+  const tabs = document.querySelectorAll('#page-settings .view-tab');
+  const tabNames = ['general', 'members', 'billing', 'integrations'];
+  tabs.forEach((t, i) => t.classList.toggle('active', tabNames[i] === tab));
+}
+
+// Show board by default
+showPage('board');
+</script>
+</body>
+</html>

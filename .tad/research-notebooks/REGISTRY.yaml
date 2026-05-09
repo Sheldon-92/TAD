@@ -2,7 +2,7 @@
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
 version: 1.0.0
-last_updated: 2026-05-05
+last_updated: 2026-05-08
 
 # Currently active notebook (used when no --notebook flag specified)
 active_notebook: "tad-evolution-research"
@@ -117,6 +117,130 @@ notebooks:
         added: "2026-05-03"
         title: "Conference talk on AI agent security — source 3 of 3"
 
+  - id: "web-ui-design-rebuild"
+    notebook_id: "fd4f9117-a869-4d4e-ade9-6eea34d031b2"
+    topic: "Web UI Design — Best Practices, Design Systems, and Tools 2025-2026"
+    created: "2026-05-07"
+    status: active
+    last_queried: "2026-05-07"
+    source_count: 73
+    notes: "Domain Pack rebuild research. 73 sources (deep research + 20 GitHub awesome-lists/tool repos). 9 capability questions answered. Findings: .tad/evidence/research/web-ui-design-rebuild/2026-05-07-research-findings.md"
+    sources:
+      - url: "https://github.com/alexpate/awesome-design-systems"
+        type: web
+        added: "2026-05-07"
+        title: "Awesome Design Systems"
+      - url: "https://github.com/troxler/awesome-css-frameworks"
+        type: web
+        added: "2026-05-07"
+        title: "Awesome CSS Frameworks"
+      - url: "https://github.com/shadcn-ui/ui"
+        type: web
+        added: "2026-05-07"
+        title: "shadcn/ui"
+      - url: "https://github.com/storybookjs/storybook"
+        type: web
+        added: "2026-05-07"
+        title: "Storybook"
+      - url: "https://github.com/dequelabs/axe-core"
+        type: web
+        added: "2026-05-07"
+        title: "axe-core accessibility engine"
+      - url: "(deep-research auto-import + 15 additional GitHub repos)"
+        type: mixed
+        added: "2026-05-07"
+        title: "49 deep research articles + 24 GitHub repos (Radix, Tailwind, React Aria, Style Dictionary, Chromatic, etc.)"
+
+  - id: "product-thinking-research"
+    notebook_id: "a8f77481-802c-42f5-bf29-5f66fac7c888"
+    topic: "Product Management & Innovation — Capability Pack Research 2026"
+    created: "2026-05-07"
+    status: active
+    last_queried: "2026-05-07"
+    source_count: 52
+    notes: "Product thinking capability pack research. 52 sources: pm-skills (Triple Diamond, 40 skills), GStack (office-hours, design-shotgun, CEO-review), startup-pressure-test, last30days-skill, aso-skills, Amazon seller tools, ecommerce resources. Key finding: 3 deep skills > 40 thin templates. Adapter pattern for 6 product types."
+    sources:
+      - url: "https://github.com/product-on-purpose/pm-skills"
+        type: web
+        added: "2026-05-07"
+        title: "PM-Skills (40 skills, Triple Diamond)"
+      - url: "https://github.com/garrytan/gstack"
+        type: web
+        added: "2026-05-07"
+        title: "GStack (Garry Tan's AI engineering team)"
+      - url: "https://github.com/mvanhorn/last30days-skill"
+        type: web
+        added: "2026-05-07"
+        title: "last30days (Reddit/HN/X/Polymarket research)"
+      - url: "(12 GStack sub-pages + 12 pm-skills sub-pages + 8 ecommerce/Amazon tools)"
+        type: mixed
+        added: "2026-05-07"
+        title: "28 additional sub-page sources"
+
+  - id: "ai-agent-architecture-pack"
+    notebook_id: "8da09b3b-b325-44e9-8905-b4e3bc2c42dc"
+    topic: "AI Agent Architecture — Design Judgment Rules for Reliable Agent Systems"
+    created: "2026-05-07"
+    status: active
+    last_queried: "2026-05-07"
+    source_count: 31
+    notes: "Capability pack research. 31 sources (frameworks, production failures, MCP security, memory architecture, anti-patterns). 5 deep ask rounds + cross-query with tad-evolution notebook (45 sources). Covers: 10 failure modes, 24 decision rules, 7 production disaster causal chains, 5 memory patterns, 7 MCP security rules, 5-category tool mapping."
+    sources:
+      - url: "https://www.anthropic.com/research/building-effective-agents"
+        type: web
+        added: "2026-05-07"
+        title: "Anthropic: Building Effective Agents"
+      - url: "https://github.com/ai-boost/awesome-harness-engineering"
+        type: web
+        added: "2026-05-07"
+        title: "Awesome Harness Engineering"
+      - url: "https://github.com/ucsb-mlsec/Awesome-Agent-Security"
+        type: web
+        added: "2026-05-07"
+        title: "Awesome Agent Security (UCSB)"
+      - url: "(28 additional sources: CrewAI, Claude Agent SDK, NeMo Guardrails, Mem0, MCP security guides, production case studies, etc.)"
+        type: mixed
+        added: "2026-05-07"
+        title: "28 additional curated sources"
+
+  - id: "web-backend-capability-pack"
+    notebook_id: "20c498da-7a87-442e-88ed-1b1b57571908"
+    topic: "Web Backend Capability Pack — API Design, Data Modeling, Production Readiness"
+    created: "2026-05-07"
+    status: active
+    last_queried: "2026-05-07"
+    source_count: 41
+    notes: "Capability pack research. 30 manual GitHub sources + 11 deep research imports. 4 rounds of deep ask. Covers: 5 backend quality problem areas with CLI tools, complete PRR checklist (46 items), 5 architecture pattern decision criteria, AI agent-specific backend weaknesses."
+    sources:
+      - url: "https://github.com/Sairyss/backend-best-practices"
+        type: web
+        added: "2026-05-07"
+        title: "Backend Best Practices (TypeScript+NodeJS)"
+      - url: "https://github.com/binhnguyennus/awesome-scalability"
+        type: web
+        added: "2026-05-07"
+        title: "Awesome Scalability"
+      - url: "https://github.com/zalando/restful-api-guidelines"
+        type: web
+        added: "2026-05-07"
+        title: "Zalando RESTful API Guidelines"
+      - url: "https://github.com/OWASP/API-Security"
+        type: web
+        added: "2026-05-07"
+        title: "OWASP API Security"
+      - url: "https://github.com/mercari/production-readiness-checklist"
+        type: web
+        added: "2026-05-07"
+        title: "Mercari Production Readiness Checklist"
+      - url: "https://github.com/Sairyss/domain-driven-hexagon"
+        type: web
+        added: "2026-05-07"
+        title: "Domain-Driven Hexagon"
+      - url: "(20+ additional GitHub awesome-lists + deep research articles)"
+        type: mixed
+        added: "2026-05-07"
+        title: "Additional sources: awesome-sre, awesome-api-security, awesome-ddd, awesome-db-tools, Spectral, Atlas, SQLFluff, etc."
+
 # Template for new notebooks:
 # - id: "<slug>"
 #   topic: "<human-readable topic>"
@@ -127,3 +251,126 @@ notebooks:
 #   source_count: 0
 #   notes: ""
 #   sources: []
+
+  - id: "web-frontend-capability-pack"
+    notebook_id: "430044a7-d808-4a70-9969-24e00c92da8d"
+    topic: "Web Frontend Engineering Judgment — Component Architecture, State Management, Design Tokens, Performance, Accessibility"
+    created: "2026-05-08"
+    status: active
+    last_queried: "2026-05-08"
+    source_count: 299
+    notes: "Capability pack research. 299 sources (14 manual GitHub + 52 deep research + auto-import). 4 rounds of deep ask (8 questions). Covers: 3 composition patterns, state selection matrix, DTCG token workflow, CWV thresholds, top a11y failures, testing strategy. Findings: .tad/evidence/research/web-frontend-capability-pack/2026-05-08-research-findings.md"
+    sources:
+      - url: "https://github.com/shopify/polaris"
+        type: web
+        added: "2026-05-08"
+        title: "Shopify Polaris Design System"
+      - url: "https://github.com/adobe/react-spectrum"
+        type: web
+        added: "2026-05-08"
+        title: "Adobe React Spectrum"
+      - url: "https://github.com/radix-ui/primitives"
+        type: web
+        added: "2026-05-08"
+        title: "Radix UI Primitives"
+      - url: "https://github.com/pmndrs/zustand"
+        type: web
+        added: "2026-05-08"
+        title: "Zustand State Management"
+      - url: "https://github.com/TanStack/query"
+        type: web
+        added: "2026-05-08"
+        title: "TanStack Query"
+      - url: "https://github.com/amzn/style-dictionary"
+        type: web
+        added: "2026-05-08"
+        title: "Amazon Style Dictionary"
+      - url: "https://github.com/dequelabs/axe-core"
+        type: web
+        added: "2026-05-08"
+        title: "axe-core Accessibility Engine"
+      - url: "https://github.com/VoltAgent/awesome-design-md"
+        type: web
+        added: "2026-05-08"
+        title: "VoltAgent awesome-design-md (68+ brand DESIGN.md files)"
+      - url: "(285 additional sources: deep research articles, GitHub repos for testing-library, Storybook, web-vitals, Jotai, Tailwind, etc.)"
+        type: mixed
+        added: "2026-05-08"
+        title: "Additional auto-imported + manual sources"
+
+  - id: "video-creation-capability-pack"
+    notebook_id: "a62f253b-c31a-448e-abcc-10e98c3755bf"
+    topic: "Programmatic Video Creation — AI Agent Video Production Skills"
+    created: "2026-05-08"
+    status: active
+    last_queried: "2026-05-08"
+    source_count: 27
+    notes: "Capability pack research. 27 sources: 3 awesome-lists + HyperFrames/Remotion repos + design principles + AI video workflows + audio/social specs. 5 layers × 5 deep ask rounds. Covers: HyperFrames vs Remotion architecture, codifiable pacing rules, motion design principles, AI agent failure modes, video type templates. Findings: .tad/evidence/research/video-creation-capability-pack/2026-05-08-ask-findings.md"
+    sources:
+      - url: "https://github.com/heygen-com/hyperframes"
+        type: web
+        added: "2026-05-08"
+        title: "HyperFrames (HeyGen) — HTML-native video rendering for AI agents"
+      - url: "https://github.com/remotion-dev/remotion"
+        type: web
+        added: "2026-05-08"
+        title: "Remotion — React programmatic video framework"
+      - url: "https://github.com/ad-si/awesome-video-production"
+        type: web
+        added: "2026-05-08"
+        title: "Awesome Video Production"
+      - url: "https://github.com/sitkevij/awesome-video"
+        type: web
+        added: "2026-05-08"
+        title: "Awesome Video"
+      - url: "https://github.com/backblaze-labs/awesome-video-generation"
+        type: web
+        added: "2026-05-08"
+        title: "Awesome Video Generation"
+      - url: "(22 additional sources: HyperFrames docs, Remotion agents guide, Microsoft Fluent 2 motion, brand motion guidelines, FFmpeg handbook, social media specs, MindStudio workflows, Motion Canvas, student kit, video pacing articles)"
+        type: mixed
+        added: "2026-05-08"
+        title: "22 additional curated sources"
+
+  - id: "ai-prompt-engineering-research"
+    notebook_id: "26012e7b-7a2c-465c-8778-68afe3f84c5b"
+    topic: "AI Prompt Engineering — Production Lifecycle"
+    created: "2026-05-07"
+    status: active
+    last_queried: "2026-05-07"
+    source_count: 24
+    notes: "Capability pack research. 24 sources: 6 awesome-lists + 4 tool repos (promptfoo, DSPy, Anthropic) + 4 Anthropic docs + 10 articles (Lakera, Braintrust, production failures, evaluation tools). Q1-Q6 answered."
+
+  - id: "ai-asset-generation-video"
+    notebook_id: "7e9c2c57-3cf4-4cb7-b669-fae9fb1a8f9a"
+    topic: "AI Asset Generation for Video Pipeline — Seedance 2.0 + Codex Image Generation"
+    created: "2026-05-08"
+    status: active
+    last_queried: "2026-05-08"
+    source_count: 18
+    notes: "Video-creation pack upgrade research. 18 healthy sources (Seedance 2.0 official + fal.ai endpoints + Codex $imagegen + Runway API + Kling docs + HyperFrames + Remotion). 7 ask rounds: endpoint specs, async API patterns, pipeline integration, competitive comparison, prompt consistency rules, cost control. QCE report: .research/sessions/RS-20260508-001/report.md"
+    sources:
+      - url: "https://seed.bytedance.com/en/seedance2_0"
+        type: web
+        added: "2026-05-08"
+        title: "Seedance 2.0 (ByteDance official)"
+      - url: "https://docs.byteplus.com/en/docs/ModelArk/1520757"
+        type: web
+        added: "2026-05-08"
+        title: "Seedance 2.0 API Reference (BytePlus ModelArk)"
+      - url: "https://github.com/fal-ai/seedance-2.0-api"
+        type: web
+        added: "2026-05-08"
+        title: "fal-ai/seedance-2.0-api (official SDK repo)"
+      - url: "https://developers.openai.com/codex/cli/features"
+        type: web
+        added: "2026-05-08"
+        title: "Codex CLI Features (image generation)"
+      - url: "https://developers.openai.com/learn/imagegen"
+        type: web
+        added: "2026-05-08"
+        title: "OpenAI Image Generation docs"
+      - url: "(13 additional sources: fal.ai endpoints ×4, Codex imagegen SKILL.md, gpt-image-2 prompt library, Runway API docs ×2, Kling docs, Atlas Cloud guide, NxCode guide, Seedance Python wrapper, HyperFrames + Remotion repos)"
+        type: mixed
+        added: "2026-05-08"
+        title: "13 additional T1/T2 sources"

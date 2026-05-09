@@ -1,0 +1,120 @@
+direction: right
+
+title: "Menu Snap iOS — Gesture State Diagrams" {
+  style.font-size: 22
+  near: top-center
+}
+
+# ===== Long-Press to Favorite =====
+long-press: "Long-Press to Favorite" {
+  style.fill: "#FFF3E0"
+  style.border-radius: 12
+
+  idle: "Idle\n(finger not on card)" {
+    style.fill: "#E8F5E9"
+  }
+  pressing: "Pressing\n(finger down, < 500ms)" {
+    style.fill: "#FFF9C4"
+  }
+  triggered: "Menu Shown\n(haptic fired, context menu)" {
+    style.fill: "#BBDEFB"
+  }
+  action: "Action Selected\n(save/share/copy)" {
+    style.fill: "#C8E6C9"
+  }
+  cancelled: "Cancelled\n(finger moved > 10pt\nor lifted < 500ms)" {
+    style.fill: "#FFCDD2"
+  }
+
+  idle -> pressing: "touch down"
+  pressing -> triggered: ">= 500ms held"
+  pressing -> cancelled: "finger moved > 10pt\nOR lifted < 500ms"
+  triggered -> action: "tap menu item"
+  triggered -> idle: "tap outside menu"
+  action -> idle: "action complete"
+  cancelled -> idle: "reset"
+}
+
+# ===== Pull-to-Rescan =====
+pull-rescan: "Pull-to-Rescan" {
+  style.fill: "#E8EAF6"
+  style.border-radius: 12
+
+  rest: "At Rest\n(scroll at top)" {
+    style.fill: "#E8F5E9"
+  }
+  pulling: "Pulling Down\n(< 60pt)" {
+    style.fill: "#FFF9C4"
+  }
+  ready: "Ready to Rescan\n(>= 60pt, icon visible)" {
+    style.fill: "#BBDEFB"
+  }
+  scanning: "Rescanning...\n(spinner, processing)" {
+    style.fill: "#CE93D8"
+    style.font-color: "#FFF"
+  }
+  done: "Results Updated\n(new data loaded)" {
+    style.fill: "#C8E6C9"
+  }
+
+  rest -> pulling: "pull down"
+  pulling -> rest: "release (< 60pt)"
+  pulling -> ready: ">= 60pt"
+  ready -> scanning: "release finger"
+  ready -> pulling: "push back up"
+  scanning -> done: "OCR + translate complete"
+  done -> rest: "auto (scroll snaps back)"
+}
+
+# ===== Pinch-to-Zoom =====
+pinch-zoom: "Pinch-to-Zoom" {
+  style.fill: "#FCE4EC"
+  style.border-radius: 12
+
+  normal: "Normal View\n(1.0x)" {
+    style.fill: "#E8F5E9"
+  }
+  zooming: "Zooming\n(real-time scale)" {
+    style.fill: "#FFF9C4"
+  }
+  zoomed: "Zoomed In\n(> 1.0x, panning enabled)" {
+    style.fill: "#BBDEFB"
+  }
+
+  normal -> zooming: "two fingers down"
+  zooming -> zoomed: "release (scale > 1.0x)"
+  zooming -> normal: "release (scale <= 1.0x)\nsnap back"
+  zoomed -> zooming: "pinch again"
+  zoomed -> normal: "double-tap\nOR pinch to 1.0x"
+}
+
+# ===== Swipe-to-Delete =====
+swipe-delete: "Swipe-to-Delete (Favorites)" {
+  style.fill: "#EFEBE9"
+  style.border-radius: 12
+
+  default: "Default\n(card at rest)" {
+    style.fill: "#E8F5E9"
+  }
+  swiping: "Swiping Left\n(< 50pt)" {
+    style.fill: "#FFF9C4"
+  }
+  revealed: "Delete Revealed\n(>= 50pt)" {
+    style.fill: "#FFCDD2"
+  }
+  deleted: "Deleted\n(toast + undo)" {
+    style.fill: "#EF9A9A"
+  }
+  undone: "Undone\n(card restored)" {
+    style.fill: "#C8E6C9"
+  }
+
+  default -> swiping: "left swipe start"
+  swiping -> default: "release (< 50pt)"
+  swiping -> revealed: ">= 50pt"
+  revealed -> deleted: "tap Delete"
+  revealed -> default: "tap elsewhere"
+  deleted -> undone: "tap Undo (within 5s)"
+  deleted -> default: "5s timeout (permanent)"
+  undone -> default: "card restored"
+}

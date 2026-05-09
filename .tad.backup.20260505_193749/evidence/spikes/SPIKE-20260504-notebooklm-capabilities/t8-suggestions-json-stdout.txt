@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Strategic White Paper",
+    "description": "A comprehensive analysis of core themes to guide long-term 
+organizational strategy and executive decision-making.",
+    "prompt": "Synthesize the primary arguments and data points from the source 
+into a forward-looking document that outlines strategic implications. The tone 
+must be authoritative and formal, focusing on how these concepts can be 
+leveraged to drive institutional growth and operational excellence."
+  },
+  {
+    "title": "Impact Assessment Report",
+    "description": "An evaluative document detailing how the subject matter 
+influences current industry standards and professional practices.",
+    "prompt": "Examine the specific principles and findings within the source to
+determine their effect on modern professional environments. Provide a deep-dive 
+analysis that interprets complex information as actionable insights for industry
+leaders, maintaining a high level of professional scrutiny and depth."
+  },
+  {
+    "title": "Conceptual Primer",
+    "description": "A clear, foundational introduction to the essential ideas 
+and terminology found within the material.",
+    "prompt": "Deconstruct the complex concepts presented in the source context 
+into an accessible starting point for a new student. Use an encouraging tone to 
+explain fundamental principles, ensuring the learner can build a solid mental 
+model of the topic before advancing."
+  },
+  {
+    "title": "Explanatory Narrative",
+    "description": "A story-based explanation that contextualizes abstract 
+information through a relatable and practical scenario.",
+    "prompt": "Translate the technical or dense information from the source into
+a cohesive narrative format. By placing the key concepts within a simplified, 
+real-world context, help the learner visualize how these ideas function in 
+practice, making the material more memorable and less intimidating."
+  }
+]

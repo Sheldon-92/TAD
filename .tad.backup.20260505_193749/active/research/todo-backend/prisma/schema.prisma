@@ -1,0 +1,87 @@
+// Prisma Schema for Todo App Backend
+// Provider: SQLite (zero-infrastructure for development)
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── User Model ───────────────────────────────────────────
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String // bcrypt hash, never exposed via API
+  role         String   @default("member") // "owner" | "member"
+
+  // Refresh token for JWT rotation
+  refreshToken String?
+
+  // Soft delete
+  deletedAt DateTime?
+
+  // Audit timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  todos      Todo[]
+  categories Category[]
+
+  @@index([email])
+  @@index([deletedAt])
+}
+
+// ─── Todo Model ───────────────────────────────────────────
+model Todo {
+  id          String   @id @default(cuid())
+  title       String // max 255 chars (validated at app layer)
+  description String? // max 2000 chars (validated at app layer)
+  completed   Boolean  @default(false)
+  priority    String   @default("medium") // "low" | "medium" | "high" | "urgent"
+  dueDate     DateTime?
+
+  // Foreign keys
+  userId     String
+  categoryId String?
+
+  // Audit timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([userId, completed])
+  @@index([userId, priority])
+  @@index([userId, dueDate])
+}
+
+// ─── Category Model ───────────────────────────────────────
+model Category {
+  id    String  @id @default(cuid())
+  name  String // max 50 chars (validated at app layer)
+  color String? // hex color code e.g. "#FF6B6B"
+
+  // Foreign key
+  userId String
+
+  // Audit timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  todos Todo[]
+
+  // Business rule: category name unique per user
+  @@unique([userId, name])
+  @@index([userId])
+}

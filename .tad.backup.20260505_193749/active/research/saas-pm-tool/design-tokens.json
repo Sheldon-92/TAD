@@ -1,0 +1,128 @@
+{
+  "color": {
+    "primary": {
+      "value": "#0B7A6F",
+      "rationale": "Teal differentiates from Linear (purple), Jira (blue), Asana (pink), Notion (B&W). Conveys calm confidence suited for indie dev productivity."
+    },
+    "primary-hover": {
+      "value": "#095C54",
+      "rationale": "Darker teal for hover/active states. 1.3:1 ratio with primary for subtle state change."
+    },
+    "primary-light": {
+      "value": "#CCFBF1",
+      "rationale": "Very light teal for selected backgrounds, subtle highlights."
+    },
+    "background": {
+      "value": "#FAFAFA",
+      "rationale": "Warm near-white. Avoids clinical pure white. Matches Cloud Dancer trend."
+    },
+    "surface": {
+      "value": "#FFFFFF",
+      "rationale": "Cards, panels, modals use pure white to lift above background."
+    },
+    "sidebar": {
+      "value": "#F8FAFC",
+      "rationale": "Slightly cooler than background for visual separation without hard contrast."
+    },
+    "text": {
+      "value": "#1A1A2E",
+      "rationale": "Near-black with slight blue-warmth. Softer than pure #000 but high contrast."
+    },
+    "text-secondary": {
+      "value": "#64748B",
+      "rationale": "Slate gray for labels, metadata, secondary information."
+    },
+    "text-muted": {
+      "value": "#78869B",
+      "rationale": "Muted slate for placeholder text, disabled states."
+    },
+    "border": {
+      "value": "#E2E8F0",
+      "rationale": "Subtle slate border. Visible but not heavy."
+    },
+    "border-strong": {
+      "value": "#CBD5E1",
+      "rationale": "Stronger border for focused inputs, important dividers."
+    },
+    "error": {
+      "value": "#DC2626",
+      "rationale": "Standard semantic red. High urgency, delete actions."
+    },
+    "error-light": {
+      "value": "#FEF2F2",
+      "rationale": "Error background for inline messages."
+    },
+    "success": {
+      "value": "#15803D",
+      "rationale": "Standard semantic green. Done states, confirmations."
+    },
+    "success-light": {
+      "value": "#F0FDF4",
+      "rationale": "Success background for inline messages."
+    },
+    "warning": {
+      "value": "#D97706",
+      "rationale": "Amber for caution. Pending reviews, expiring items."
+    },
+    "warning-light": {
+      "value": "#FFFBEB",
+      "rationale": "Warning background for inline messages."
+    },
+    "info": {
+      "value": "#2563EB",
+      "rationale": "Blue for informational states. Tips, help text."
+    }
+  },
+  "spacing": {
+    "xs": { "value": "4px" },
+    "sm": { "value": "8px" },
+    "md": { "value": "16px" },
+    "lg": { "value": "24px" },
+    "xl": { "value": "32px" },
+    "2xl": { "value": "48px" },
+    "3xl": { "value": "64px" }
+  },
+  "font": {
+    "family": {
+      "value": "'Inter', system-ui, -apple-system, sans-serif"
+    },
+    "size": {
+      "xs": { "value": "12px" },
+      "sm": { "value": "14px" },
+      "base": { "value": "14px" },
+      "md": { "value": "16px" },
+      "lg": { "value": "20px" },
+      "xl": { "value": "24px" },
+      "2xl": { "value": "32px" }
+    },
+    "weight": {
+      "normal": { "value": "400" },
+      "medium": { "value": "500" },
+      "semibold": { "value": "600" },
+      "bold": { "value": "700" }
+    },
+    "lineHeight": {
+      "tight": { "value": "1.25" },
+      "normal": { "value": "1.5" },
+      "relaxed": { "value": "1.75" }
+    }
+  },
+  "radius": {
+    "sm": { "value": "4px" },
+    "md": { "value": "6px" },
+    "lg": { "value": "8px" },
+    "xl": { "value": "12px" },
+    "full": { "value": "9999px" }
+  },
+  "shadow": {
+    "sm": { "value": "0 1px 2px rgba(0, 0, 0, 0.05)" },
+    "md": { "value": "0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)" },
+    "lg": { "value": "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)" },
+    "xl": { "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04)" }
+  },
+  "transition": {
+    "fast": { "value": "150ms ease" },
+    "normal": { "value": "200ms ease" },
+    "slow": { "value": "300ms ease" }
+  }
+}

@@ -2,6 +2,10 @@
 
 ## In Progress
 
+- [x] **Pack Integration & Migration (TASK-20260508-002)** — Gate 3 PASS 2026-05-08, commit 49b0e50
+  - 7 packs migrated to .tad/capability-packs/; pack-registry.yaml auto-generated; Alex step1_5b added
+  - Awaiting Alex Gate 4 acceptance
+
 - [x] **EPIC: TAD Universal Method** — 已迁移到独立开发项目 `~/tad-method-dev/` (2026-05-02)
   - Phase 0 ✅ + Phase 1 ✅ 在此完成；Phase 2+ 在 ~/tad-method-dev/ 继续
   - 产品代码: ~/tad-method/ | 开发管理: ~/tad-method-dev/
@@ -67,11 +71,38 @@
   - ~/ai-agent-architecture/ repo, commits 4501f6a + 6a336c1, 2255 lines
   - Archived: `.tad/archive/handoffs/HANDOFF-20260507-capability-pack-ai-agent-architecture.md`
 
-- [ ] **Agent Capability Pack — ai-prompt-engineering** — ✅ Gate 3 PASS 2026-05-07 | Awaiting Gate 4
+- [x] **Agent Capability Pack — ai-prompt-engineering** — ✅ Gate 4 PASS 2026-05-08
   - 4-phase production prompt lifecycle (Write/Test/Optimize/Ship) — 484-line CAPABILITY.md + 5 refs
   - ~/ai-prompt-engineering/ repo, 2 commits, 2940 lines
   - 11 P0 fixes: removed fabricated effort param + Mythos architecture, dspy-ai→dspy, real A-02 adversarial
-  - Gate 4 action: Alex verify 19 ACs + update architecture.md + archive handoffs
+  - KA: "Research Findings ≠ API Ground Truth" — research notebooks can misuse API terminology; always WebFetch official docs
+  - Archived: .tad/archive/handoffs/HANDOFF-20260507-capability-pack-ai-prompt-engineering.md
+
+- [x] **Agent Capability Pack — web-frontend** — ✅ Gate 4 PASS 2026-05-08
+  - 41 React judgment rules across 7 dimensions + 3 validation scripts + 3-tier quality checklist
+  - ~/web-frontend/ repo (independent dir), 2693 lines, 18 files
+  - 7 P0 fixes: INP/TBT label, axe --reporter flag, bundle server scan, bc precision, context keyword, disambiguation rule, Gate → CI terminology
+  - KA (Blake): Lighthouse TBT vs INP lab-mode measurement boundary (architecture.md 2026-05-08)
+  - KA (Alex): CONSUMES/PRODUCES interface contract standard for capability pack ecosystem (architecture.md 2026-05-08)
+  - Archived: .tad/archive/handoffs/HANDOFF-20260508-capability-pack-web-frontend.md
+
+- [x] **Agent Capability Pack — research-methodology** — ✅ Gate 4 PASS 2026-05-08
+  - 5-phase pipeline + state-tracking + saturation detection + anti-hallucination + QCE output
+  - Now at .tad/capability-packs/research-methodology/ (migrated)
+  - Archived: .tad/archive/handoffs/HANDOFF-20260508-capability-pack-research-methodology.md
+
+- [x] **Capability Pack Integration & Migration** — ✅ Gate 4 PASS 2026-05-08
+  - 7 packs migrated from ~/ to .tad/capability-packs/ + pack-registry.yaml + Alex step1_5b orchestration
+  - scan-packs.sh auto-generates registry; .tad/capability-packs/ added to *sync PRESERVE
+  - Archived: .tad/archive/handoffs/HANDOFF-20260508-pack-integration-and-migration.md
+
+- [x] **Agent Capability Pack — video-creation** — ✅ Gate 4 PASS 2026-05-08
+  - 25 video production judgment rules across 6 dimensions + HyperFrames-first tool selection + 3 video type pacing patterns
+  - ~/video-creation/ repo, commit 200d216, 12 files, 2203 lines
+  - 2 P0 fixes: sidechaincompress ms units, CRF range labeling
+  - Research: NotebookLM notebook a62f253b (35 sources, 8 ask rounds) — HyperFrames, Remotion, motion design, video pacing
+  - KA (Blake): FFmpeg sidechaincompress ms + Quick Rule Index exact heading match (architecture.md 2026-05-08)
+  - Archived: .tad/archive/handoffs/HANDOFF-20260508-capability-pack-video-creation.md
 
 - [ ] **Capability Upgrade SKILL created** — `/capability-upgrade` at `.claude/skills/capability-upgrade/SKILL.md`
   - 5-stage methodology: Assess → Research (GitHub-First) → Design → Build → Validate

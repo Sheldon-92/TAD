@@ -1,0 +1,34 @@
+# Fixture: *experiment via frontmatter task_type=experiment (P3.2 AC-P3.2-b)
+# Purpose: Dual-trigger support — frontmatter alone routes to experiment_path_protocol
+#          even without user typing the explicit *experiment command.
+#
+# Note: This is a pure-YAML frontmatter sample (no markdown body) so it parses
+# cleanly with safe_load_all. The full handoff context is described in comments.
+---
+task_type: experiment
+e2e_required: no
+research_required: no
+git_tracked_dirs:
+  - .tad/evidence/experiments
+skip_knowledge_assessment: no
+# Note: experiments produce knowledge — never skip.
+
+# ----- Handoff context (in comments to keep the fixture pure-YAML) -----
+# Title: Optimize prompt for code-summarization agent (Experiment)
+# Type: experiment (entered via task_type=experiment in frontmatter)
+# Pack: ai-evaluation (auto-loaded per domain_pack_auto_load)
+#
+# Section 6 (Experiment Setup, replacing "Files to Modify"):
+#   generator: claude-sonnet-4-6
+#   judge: claude-opus-4-7  # different from generator — bias mitigated
+#   optimizer: claude-haiku-4-5  # cheap iterations
+#   rubric: rubric.yaml (5-dim score 1-5)
+#   fixtures: 50 code-summarization tasks
+#   baseline: existing prompt v1 score = 3.2 mean
+#
+# Acceptance criteria:
+#   - experiment design saved to .tad/evidence/experiments/{slug}/experiment-design.md
+#   - rubric saved to .tad/evidence/experiments/{slug}/rubric.yaml
+#   - raw results saved to .tad/evidence/experiments/{slug}/results.tsv
+#   - baseline saved to .tad/evidence/experiments/{slug}/baseline.txt
+#   - production validation IF generator differs from production model

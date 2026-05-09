@@ -1,0 +1,294 @@
+# TAD Config Module: Cognitive Firewall
+# Part of TAD config.yaml modular split (v2.3)
+# Contains: research_protocol, decision_transparency, fatal_operations, risk_translation
+# Consumers: tad-alex.md, tad-blake.md, tad-gate.md
+
+# ==================== Pillar 1: Technical Decision Transparency ====================
+decision_transparency:
+  description: "Every significant technical choice must be visible, researched, and decided by human"
+
+  # What counts as a "significant technical decision"
+  decision_triggers:
+    # P0-2 FIX: Classification criteria for clear boundaries
+    classification_criteria:
+      always_significant:
+        reversibility: "Hard or impossible to reverse"
+        blast_radius: "Project-wide or external-facing"
+        lock_in: "Creates vendor/framework/architecture lock-in"
+      contextually_significant:
+        reversibility: "Moderate effort to reverse"
+        blast_radius: "Module-level impact"
+        lock_in: "Limited scope, alternatives accessible"
+
+    always_significant:
+      - "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)"
+      - "Architecture pattern choice (e.g., monolith vs microservice, REST vs GraphQL)"
+      - "Data storage strategy (e.g., SQL vs NoSQL, which DB engine)"
+      - "Authentication/authorization approach"
+      - "State management strategy"
+      - "Third-party service selection (e.g., payment processor, email service)"
+      - "Deployment architecture (e.g., serverless vs containers)"
+
+    contextually_significant:
+      - "Algorithm choice when multiple viable options exist"
+      - "Caching strategy when performance is a concern"
+      - "API versioning strategy"
+      - "Testing strategy for complex features"
+
+    not_significant:
+      - "Variable naming conventions (follow project standards)"
+      - "Import ordering"
+      - "Specific CSS values within agreed design tokens"
+      - "Internal function decomposition (implementation detail)"
+
+    # When in doubt, use classification_criteria to resolve:
+    # Does it match always_significant criteria? → always_significant
+    # Does it match contextually_significant? → contextually_significant
+    # Neither? → not_significant
+
+  # Decision presentation format
+  presentation:
+    quick_comparison:
+      description: "For simple decisions — table format"
+      format: |
+        ### 🔍 Technical Decision: {decision_title}
+
+        | Dimension | Option A: {name} | Option B: {name} | Option C: {name} |
+        |-----------|-------------------|-------------------|-------------------|
+        | Summary | ... | ... | ... |
+        | Pros | ... | ... | ... |
+        | Cons | ... | ... | ... |
+        | Best for | ... | ... | ... |
+        | Community/Maturity | ... | ... | ... |
+        | Our context fit | ... | ... | ... |
+
+        **Alex's recommendation**: Option {X} because {reason}
+        **Risk if wrong**: {what happens if this choice turns out poorly}
+
+    decision_record:
+      description: "For important decisions — structured document, archived for future reference"
+      location: ".tad/decisions/DR-{YYYYMMDD}-{slug}.md"
+      format: |
+        # Decision Record: {title}
+
+        **Date**: {date}
+        **Status**: Proposed → Accepted/Rejected
+        **Decider**: Human (Value Guardian)
+        **Context**: {what task/feature triggered this decision}
+
+        ## Problem
+        {what problem are we solving}
+
+        ## Options Considered
+
+        ### Option A: {name}
+        - **Description**: ...
+        - **Pros**: ...
+        - **Cons**: ...
+        - **Evidence**: {links to docs, benchmarks, case studies}
+        - **Open source options**: {if applicable}
+
+        ### Option B: {name}
+        (same structure)
+
+        ## Recommendation
+        {Alex's recommendation with reasoning}
+
+        ## Decision
+        {Human's final choice and rationale — filled after human decides}
+
+        ## Consequences
+        - What this enables: ...
+        - What this prevents: ...
+        - Risks to monitor: ...
+
+  # Adaptive depth: when to use which format
+  depth_rules:
+    simple_decision:
+      criteria: "Easily reversible, limited blast radius, well-understood options"
+      format: "quick_comparison"
+      research_time: "5-10 minutes"
+      example: "Which CSS-in-JS library for this component"
+
+    important_decision:
+      criteria: "Hard to reverse, broad impact, or unfamiliar territory"
+      format: "quick_comparison + decision_record"
+      research_time: "15-30 minutes"
+      example: "Database engine selection, auth architecture"
+
+# ==================== Pillar 2: Research-First Protocol ====================
+research_first:
+  description: "AI must research before designing — find best practices, open source, proven patterns"
+  blocking: true
+
+  # Mandatory research steps (inserted into Alex's design flow)
+  protocol:
+    step1_search:
+      name: "Landscape Search"
+      action: |
+        Before designing ANY solution, search for:
+        1. Existing open-source solutions that solve this problem
+        2. Industry best practices for this type of problem
+        3. How mature products solve similar problems
+        4. Relevant libraries, frameworks, tools
+      min_queries: 3
+      tools: ["WebSearch", "WebFetch"]
+
+    step2_evaluate:
+      name: "Evaluate & Compare"
+      action: |
+        For each viable option found:
+        - Maturity (stars, last update, version stability)
+        - Community (contributors, Stack Overflow questions, Discord/GitHub activity)
+        - Fit (does it match our tech stack, constraints, scale?)
+        - Cost (free/paid, licensing implications)
+        - Learning curve (documentation quality, examples)
+
+    step3_present:
+      name: "Present to Human"
+      action: |
+        Present findings using decision_transparency format:
+        - "Build custom" should always be listed as an option
+        - But clearly state the tradeoffs vs using existing solutions
+        - Recommend reuse when a good option exists
+
+    step4_record:
+      name: "Record Decision"
+      action: |
+        After human decides:
+        - Simple decision: note in handoff
+        - Important decision: create Decision Record in .tad/decisions/
+
+  # Research quality criteria
+  quality:
+    minimum:
+      - "At least 3 search queries executed"
+      - "At least 2 viable options compared"
+      - "Evidence links provided (not just opinions)"
+    ideal:
+      - "5+ search queries across different angles"
+      - "3+ options compared with structured analysis"
+      - "Real-world case studies or benchmarks cited"
+
+  # Anti-patterns to detect
+  violations:
+    - "Designing a custom solution without searching for existing ones = VIOLATION"
+    - "Recommending only one option without alternatives = VIOLATION"
+    - "No evidence links in comparison = VIOLATION (for important decisions)"
+    - "Ignoring well-known open-source solutions = VIOLATION"
+
+# ==================== Pillar 3: Fatal Operation Protection ====================
+fatal_operations:
+  description: "Risk filter for operations that could cause irreversible damage"
+
+  # Universal preset (applies to all projects)
+  universal_preset:
+    data_loss:
+      operations:
+        - "Database schema DROP or destructive migration"
+        - "File deletion (rm -rf, unlink in batch)"
+        - "Data truncation or overwrite without backup"
+        - "Storage bucket deletion"
+      severity: "critical"
+      forced_review: true
+
+    data_leak:
+      operations:
+        - "API endpoint exposing sensitive data without auth"
+        - "Logging sensitive information (passwords, tokens, PII)"
+        - "Removing authentication/authorization checks"
+        - "Changing data visibility from private to public"
+      severity: "critical"
+      forced_review: true
+
+    financial_loss:
+      operations:
+        - "Payment processing logic changes"
+        - "Pricing calculation modifications"
+        - "Subscription/billing flow changes"
+        - "Removing rate limits on paid APIs"
+      severity: "critical"
+      forced_review: true
+
+    service_crash:
+      operations:
+        - "Production deployment configuration changes"
+        - "Database connection pool changes"
+        - "Removing error handling in critical paths"
+        - "Changing timeout/retry logic in core services"
+      severity: "high"
+      forced_review: true
+
+  # Project-specific additions (user can customize)
+  project_custom:
+    location: ".tad/config-cognitive.yaml → fatal_operations.project_custom"
+    format: |
+      project_custom:
+        {category_name}:
+          operations:
+            - "description of operation"
+          severity: "critical|high"
+          forced_review: true
+
+  # Risk translation: code change → business consequence
+  risk_translation:
+    format: |
+      ⚠️ RISK DETECTED: {operation_description}
+
+      📊 Business Impact:
+      - What could happen: {business consequence in plain language}
+      - Who is affected: {users/customers/business}
+      - Reversibility: {easy/hard/impossible to reverse}
+
+      🛡️ Recommendation: {what the human should verify}
+
+    output_modes:
+      one_liner: "{severity_emoji} {operation} → {business consequence}"
+      risk_card: "Full structured format above"
+
+    # Both modes used: one-liner in summary, risk card in detail
+
+  # P0-3 FIX: Handoff-awareness — don't block operations that ARE the approved fix
+  handoff_awareness:
+    description: "Before blocking, check if detected operation is the intended fix from handoff"
+    process: |
+      1. Read handoff task descriptions and acceptance criteria
+      2. If detected operation matches handoff's stated intent → mark as EXPECTED
+      3. Only BLOCK if the operation appears BEYOND handoff scope
+      4. Example: Handoff says "Add auth to admin API" → changing auth checks = EXPECTED, not blocked
+
+  # Safety net: critical paths always get human review
+  safety_net:
+    always_review_paths:
+      - "database/migrations/*"
+      - "auth/*"
+      - "payment/*"
+      - "billing/*"
+      - "**/middleware/auth*"
+      - "**/api/admin/*"
+
+    always_review_patterns:
+      - "DROP TABLE|DROP INDEX|DROP DATABASE"
+      - "DELETE FROM .* WHERE 1|DELETE FROM .* WITHOUT WHERE"
+      - "process\\.env\\.(SECRET|KEY|TOKEN|PASSWORD)"
+      - "chmod 777|chmod 666"
+      - "sudo|--force|--no-verify"
+
+# ==================== Integration Points ====================
+integration:
+  alex_design_flow:
+    insert_after: "socratic_inquiry_protocol"
+    insert_before: "design_protocol"
+    new_step: "research_and_decision_protocol"
+
+  blake_execution_flow:
+    insert_at: "ralph_loop_execution.develop_command"
+    new_step: "implementation_decision_escalation"
+
+  gate_flow:
+    gate3_addition: "risk_translation_check"
+    gate4_addition: "decision_compliance_check"
+
+  config_master:
+    add_module: "config-cognitive"
+    consumers: ["tad-alex.md", "tad-blake.md", "tad-gate.md"]

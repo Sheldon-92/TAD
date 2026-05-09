@@ -1,0 +1,564 @@
+# Domain Pack: Mobile Testing
+# Full-stack mobile testing — E2E, unit, performance, accessibility, device compat
+domain: mobile-testing
+version: 1.0.0
+requires_registry: ">=1"
+description: "移动端测试（iOS/React Native 优先）：E2E（Detox/Maestro）、单元测试、设备兼容性、性能、可访问性、人机协作测试。当前版本以 iOS + React Native 为主线，Android/TalkBack 为扩展方向。核心差异 vs Web：模拟器/真机、设备碎片化、VoiceOver。"
+
+# Scope Note: v1.0 covers iOS + React Native testing.
+# Android (TalkBack, adb, emulator) planned for v1.1 when Android SDK is available.
+# Native Swift/Kotlin unit testing patterns also deferred to v1.1.
+
+output_dir: ".tad/active/research/{project}/"
+
+capabilities:
+
+  # ═══════════════════════════════════════
+  # Capability 1: E2E 测试（代码类）
+  # ═══════════════════════════════════════
+
+  mobile_e2e:
+    description: "模拟器/真机上的用户流程 E2E 测试 — Detox 或 Maestro"
+
+    steps:
+      # Layer 1: 选型
+      - id: select_e2e_framework
+        action: |
+          选择 E2E 框架（参考 Maestro Claude Skill + Callstack 研究）：
+          | 维度 | Detox | Maestro | Appium |
+          - 方式: 灰盒(进程内) / 黑盒(YAML声明) / 黑盒(WebDriver)
+          - 片状率: <2% / 低(自动重试) / 10-15%
+          - 速度: 最快(内部同步) / 中(12-18s/流) / 最慢
+          - 学习曲线: 中(JS) / 低(YAML) / 高(WebDriver)
+          - 适用: RN 专用 / 跨框架 / 企业级
+          选择依据：项目框架(RN→Detox, 原生→Maestro)、团队技术栈、CI 集成需求
+        quality: "选型有对比表和项目匹配理由。"
+        tool_ref: null
+        output_file: "e2e-design.md"
+
+      # Layer 2: 执行
+      - id: write_e2e_tests
+        action: |
+          编写核心流程 E2E 测试（≥5 个关键流程）：
+          Detox 模式（参考 callstackincubator）：
+          - 元素选择: 始终用 testID（不用 text，防动态内容不稳定）
+          - 等待: waitFor().toBeVisible().withTimeout(5000)（禁止 sleep()）
+          - 启动: beforeAll → launchApp, beforeEach → reloadReactNative
+          - 滚动: whileElement().scroll() 模式
+          Maestro YAML 模式：
+          - launchApp → assertVisible → tapOn → inputText → assertVisible
+          - 禁用 JavaScript 表达式（GraalJS 限制多）
+          - clearState 不清 Keychain → 需额外 clearKeychain
+          每个测试文件有明确的 Arrange/Act/Assert 结构
+        tool_ref: null
+        output_file: "e2e/*.test.ts 或 e2e/*.yaml"
+
+      # Layer 3: 验证
+      - id: verify_e2e
+        action: |
+          验证 E2E 测试（需要模拟器）：
+          Detox: npx detox test --configuration ios.sim.release
+          Maestro: maestro test e2e/flow.yaml
+          如果无法运行模拟器 → 代码审查验证：
+          - 测试文件语法正确？
+          - 所有 element(by.id()) 的 testID 在源码中存在？
+          - 无 sleep() 调用？
+          - 每个测试有独立状态（不依赖前一个测试）？
+        tool_ref: null
+        output_file: "e2e-validation.md"
+
+      # Layer 4: 优化
+      - id: optimize_e2e
+        action: |
+          优化 E2E 测试：
+          1. 并行化: 独立流程可以多模拟器并行
+          2. 测试数据隔离: 每个测试用独立数据（不共享状态）
+          3. 截图策略: 失败时自动截图（Detox: takeScreenshot, Maestro: 自动）
+          4. CI 集成: GitHub Actions + 模拟器 setup
+          5. 片状率监控: >5% 片状率 = 必须修复
+        tool_ref: null
+        output_file: "e2e-design.md (append)"
+
+    quality_criteria:
+      - "≥5 个核心流程有 E2E 测试"
+      - "零 sleep() 调用（用显式等待）"
+      - "元素选择用 testID（不用 text matcher）"
+      - "每个测试独立（不依赖执行顺序）"
+      - "失败时有自动截图"
+      - "Fabricated test results or pass rates = FAIL"
+
+    anti_patterns:
+      - "❌ sleep(3000) 替代 waitFor = 不稳定 + 慢"
+      - "❌ by.text('动态内容') = 语言切换/数据变化后必 FAIL"
+      - "❌ 测试间共享状态 = 顺序依赖 = 片状"
+      - "❌ 只测 happy path 不测错误/边界场景"
+      - "❌ E2E 测试超过 20 个流程 = 维护成本爆炸（10-20 个核心流程足够）"
+
+    reviewers:
+      - persona: "移动端 QA 工程师"
+        checklist:
+          - "E2E 是否覆盖核心用户流程？"
+          - "是否有片状率监控？"
+          - "CI 中是否可运行？"
+
+  # ═══════════════════════════════════════
+  # Capability 2: 单元测试（代码类）
+  # ═══════════════════════════════════════
+
+  mobile_unit_test:
+    description: "组件/逻辑单元测试 — Jest + React Native Testing Library"
+
+    steps:
+      - id: select_test_approach
+        action: |
+          确定单元测试策略（参考 callstackincubator 模式）：
+          1. 测试框架: Jest 30+（原生 TS 支持，无需 ts-jest）
+          2. 组件测试: React Native Testing Library（RNTL）
+          3. 查询优先级（RNTL 官方）：
+            getByRole > getByLabelText > getByText > getByTestId
+            禁止: getByType, 直接访问组件实例
+          4. Mock 策略:
+            - 网络: MSW (Mock Service Worker) 或 jest.mock('fetch')
+            - 导航: jest.mock('@react-navigation/native')
+            - 原生模块: jest.mock('react-native-camera')
+          5. 覆盖率目标: ≥80% 关键模块, ≥60% 整体
+        tool_ref: null
+        output_file: "unit-test-design.md"
+
+      - id: write_unit_tests
+        action: |
+          编写单元测试：
+          1. 组件测试: render → query → assert → fireEvent → assert
+          2. Hook 测试: renderHook → act → assert
+          3. 工具函数测试: 纯输入/输出
+          4. 每个测试文件 co-located（__tests__/ 或 .test.ts 后缀）
+        tool_ref: null
+        output_file: "src/**/__tests__/*.test.tsx"
+
+      - id: verify_unit_tests
+        action: |
+          验证：npx jest --coverage
+          检查: 100% 通过率, 覆盖率达标, 无片状测试
+          如无法运行 → 代码审查：语法正确、mock 合理、assertion 有意义
+        tool_ref: null
+        output_file: "unit-test-validation.md"
+
+      - id: optimize_coverage
+        action: |
+          优化覆盖率:
+          1. 识别未覆盖的关键路径（覆盖率报告红色行）
+          2. 边界值测试: 空数组、null、超长字符串、网络错误
+          3. 快照测试: 仅用于稳定的 UI 组件（不用于频繁变化的）
+        tool_ref: null
+        output_file: "unit-test-design.md (append)"
+
+    quality_criteria:
+      - "npx jest → 100% 通过率"
+      - "关键模块覆盖率 ≥ 80%"
+      - "查询用 getByRole/getByText（不用 getByType）"
+      - "测试 co-located（不放单独的 tests/ 目录树）"
+      - "零片状单元测试"
+      - "Fabricated test results or coverage numbers = FAIL"
+
+    anti_patterns:
+      - "❌ getByType(Button) = 测试实现细节而非行为"
+      - "❌ 快照测试覆盖所有组件 = 每次 UI 微调都要更新快照"
+      - "❌ 测试间共享可变状态"
+      - "❌ mock 过度 = 测试只验证 mock 行为不验证真实逻辑"
+
+    reviewers:
+      - persona: "React Native 开发者"
+        checklist:
+          - "测试是否验证行为而非实现？"
+          - "Mock 是否合理（不过度）？"
+          - "覆盖率是否达标？"
+
+  # ═══════════════════════════════════════
+  # Capability 3: 设备兼容性（混合类）
+  # ═══════════════════════════════════════
+
+  device_compatibility:
+    description: "多设备多版本兼容性测试 — 屏幕尺寸、OS 版本、设备特性"
+
+    steps:
+      - id: research_device_matrix
+        action: |
+          搜索目标市场的设备分布数据：
+          1. iOS 版本分布（Apple 官方 + StatCounter）
+          2. 目标地区的 iPhone 型号分布
+          3. 屏幕尺寸分布（SE/Mini/标准/Plus/Pro Max）
+        tool_ref: web_scraping
+        queries:
+          - '"iOS version" market share distribution 2026'
+          - '"iPhone model" market share {目标地区} 2026'
+        output_file: "device-research.md"
+
+      - id: analyze_device_matrix
+        action: |
+          定义最小测试矩阵（参考 senaiverse 8 设备规则）：
+          | 设备 | 屏幕 | OS 版本 | 为什么测 |
+          iOS 最小矩阵（4 台）：
+          - iPhone SE 3 (4.7"): 最小屏幕，测布局压缩
+          - iPhone 15 (6.1"): 主流尺寸，基准设备
+          - iPhone 16 Pro Max (6.9"): 最大屏幕，测布局拉伸
+          - iPad mini (8.3"): 平板适配（如果支持）
+          OS 版本覆盖: 当前版本 + 前一个大版本（如 iOS 18 + iOS 17）
+        quality: "最小矩阵 ≥ 4 台设备。有'为什么测这台'的理由。"
+        tool_ref: null
+        output_file: "device-research.md (append)"
+
+      - id: execute_compat_tests
+        action: |
+          在模拟器上逐设备测试：
+          1. 用 simctl 启动每个设备模拟器
+          2. 安装 App → 运行核心流程 → 截图
+          3. 检查: 布局溢出、文字截断、触控目标、Safe Area
+          4. 每个设备截图保存为 {device-name}.png
+          如无法运行模拟器 → 生成兼容性检查清单 + 手动测试脚本
+        tool_ref: ios_simulator
+        output_file: "compat-screenshots/ + compat-report.md"
+
+      - id: generate_compat_report
+        action: "综合为设备兼容性报告 PDF（含矩阵表 + 截图对比 + 问题清单）"
+        tool_ref: pdf_generation
+        output_file: "device-compatibility.pdf"
+
+    quality_criteria:
+      - "测试矩阵 ≥ 4 台设备（覆盖最小/主流/最大屏幕）"
+      - "覆盖当前 OS + 前一个大版本"
+      - "每台设备有截图证据"
+      - "布局溢出/截断问题 = 0"
+      - "Fabricated compatibility results = FAIL"
+
+    anti_patterns:
+      - "❌ 只在一台设备上测试 = 小屏幕/大屏幕布局问题遗漏"
+      - "❌ 只测最新 OS = 老版本用户遇到崩溃"
+      - "❌ 不测横屏（如果 App 支持旋转）"
+      - "❌ 兼容性报告没有截图 = 无法验证"
+
+    reviewers:
+      - persona: "QA 主管"
+        checklist:
+          - "设备矩阵是否覆盖关键分布？"
+          - "是否有逐设备截图？"
+          - "OS 版本覆盖是否合理？"
+
+  # ═══════════════════════════════════════
+  # Capability 4: 性能测试（代码类）
+  # ═══════════════════════════════════════
+
+  mobile_performance:
+    description: "启动时间、内存占用、帧率、包大小测试"
+
+    steps:
+      - id: select_perf_metrics
+        action: |
+          定义性能指标和阈值（参考 senaiverse 性能预算）：
+          | 指标 | 阈值 | 测量方法 |
+          - 冷启动时间: < 2s（从点击图标到首屏可交互）
+          - JS Bundle 大小: < 1.5MB（生产版）
+          - 帧率: > 55 FPS（滚动/动画时）
+          - 内存占用: < 250MB 活跃态, < 50MB 后台
+          - 16ms 帧渲染阈值（60FPS = 16.67ms/帧）
+          - App 二进制大小: < 50MB（下载大小）
+        quality: "每个指标有具体阈值和测量方法。"
+        tool_ref: null
+        output_file: "performance-design.md"
+
+      - id: analyze_bundle
+        action: |
+          分析 JS Bundle 大小：
+          npx source-map-explorer main.jsbundle --json bundle-report.json
+          检查: 大文件(>100KB 的依赖)、重复依赖、tree-shaking 效果
+          如无 bundle 文件 → 生成 bundle 分析配置，供构建后执行
+        tool_ref: bundle_analyzer
+        output_file: "bundle-report.json"
+
+      - id: generate_perf_tests
+        action: |
+          生成性能测试脚本：
+          1. 启动时间测量（Detox/Maestro 计时 + Xcode Instruments）
+          2. 帧率监控（React Native Performance Monitor 或 Flipper）
+          3. 内存泄漏检测（重复导航 10 次后内存不持续增长）
+          4. CI 集成: 性能指标作为 pass/fail 门控
+        tool_ref: null
+        output_file: "performance-tests/"
+
+      - id: generate_perf_report
+        action: "综合为性能测试报告 PDF（含指标表、bundle 分析图、优化建议）"
+        tool_ref: pdf_generation
+        output_file: "performance-report.pdf"
+
+    quality_criteria:
+      - "冷启动 < 2s"
+      - "JS Bundle < 1.5MB"
+      - "帧率 > 55 FPS（动画/滚动时）"
+      - "内存 < 250MB 活跃态"
+      - "有 bundle 大小分析（按依赖拆分）"
+      - "Fabricated performance numbers = FAIL. Run actual measurements."
+
+    anti_patterns:
+      - "❌ 只在 Debug 模式测性能（Release 模式结果完全不同）"
+      - "❌ 只看整体 bundle 大小不分析依赖拆分"
+      - "❌ 帧率只看平均值不看 p99（偶尔卡顿用户也能感知）"
+      - "❌ 内存测试只看单次快照不看趋势（泄漏需要时间暴露）"
+
+    reviewers:
+      - persona: "性能工程师"
+        checklist:
+          - "阈值是否合理（对比行业标准）？"
+          - "是否在 Release 模式测量？"
+          - "是否有回归检测机制？"
+
+  # ═══════════════════════════════════════
+  # Capability 5: 可访问性测试（代码类）
+  # ═══════════════════════════════════════
+
+  mobile_accessibility:
+    description: "VoiceOver (iOS) / TalkBack (Android) 无障碍合规测试"
+
+    steps:
+      - id: select_a11y_approach
+        action: |
+          确定可访问性测试策略：
+          1. 自动化层（覆盖 30-40%）：
+            - eslint-plugin-react-native-a11y（静态检查）
+            - RNTL 的 getByRole/getByLabelText 查询（组件测试隐含 a11y 检查）
+          2. 手动层（覆盖剩余 60-70%）：
+            - VoiceOver 完整导航（所有页面逐元素检查）
+            - 触控目标审计（≥44pt）
+            - 动态字体测试（最大字号下布局不崩溃）
+          3. WCAG 2.2 AA 对标：
+            - 对比度 ≥ 4.5:1
+            - 触控目标 ≥ 44×44pt
+            - 所有可交互元素有 accessibilityLabel
+            - 表单有关联的 accessibilityHint
+        quality: "自动化 + 手动双层覆盖。WCAG AA 标准对标。"
+        tool_ref: null
+        output_file: "a11y-design.md"
+
+      - id: run_static_a11y
+        action: |
+          运行静态可访问性检查：
+          npx eslint src/ --ext .tsx,.ts --rule 'react-native-a11y/has-accessibility-props: error'
+          检查: 缺少 accessibilityLabel、缺少 accessibilityRole、Touchable 无 a11y 属性
+        tool_ref: mobile_a11y_lint
+        output_file: "a11y-lint-report.txt"
+
+      - id: generate_a11y_checklist
+        action: |
+          生成 VoiceOver 手动测试清单：
+          每个页面检查：
+          | 页面 | 元素 | accessibilityLabel | 焦点顺序 | 操作提示 | PASS/FAIL |
+          - 所有文本有合理朗读内容？
+          - 图片有描述性 label？
+          - 按钮 label 描述操作（"保存菜单"而非"按钮"）？
+          - 焦点顺序符合视觉逻辑？
+          - 自定义组件有正确的 accessibilityRole？
+        tool_ref: null
+        output_file: "a11y-checklist.md"
+
+      - id: generate_a11y_report
+        action: "综合为可访问性报告 PDF（含 lint 结果 + 手动清单 + 修复建议）"
+        tool_ref: pdf_generation
+        output_file: "accessibility-report.pdf"
+
+    quality_criteria:
+      - "eslint-plugin-react-native-a11y 零 error"
+      - "所有可交互元素有 accessibilityLabel"
+      - "触控目标 ≥ 44×44pt"
+      - "对比度 ≥ 4.5:1"
+      - "VoiceOver 手动测试清单已完成"
+      - "Fabricated accessibility results = FAIL"
+
+    anti_patterns:
+      - "❌ 只跑自动化工具就宣告 a11y 达标（自动化只覆盖 30-40%）"
+      - "❌ accessibilityLabel 写'按钮'而非操作描述（'保存到收藏'）"
+      - "❌ 图片装饰性标注为'图片'而非设为 accessible={false}"
+      - "❌ VoiceOver 焦点顺序和视觉顺序不一致"
+
+    reviewers:
+      - persona: "可访问性专家"
+        checklist:
+          - "VoiceOver 能否完成所有核心流程？"
+          - "所有 label 是否描述性而非通用？"
+          - "触控目标是否达标？"
+
+  # ═══════════════════════════════════════
+  # Capability 6: 人机协作测试（混合类）
+  # ═══════════════════════════════════════
+
+  mobile_pair_testing:
+    description: "4D Protocol 人机协作测试 — AI 分析截图 + 人类判断手感"
+
+    steps:
+      - id: prepare_session
+        action: |
+          准备移动端协作测试：
+          1. App 在模拟器或真机上运行
+          2. simctl 或真机截图工具就绪
+          3. 确定焦点: 新功能/变更页面/高风险流程
+          4. 人类决定: 先探索什么
+          移动端特有 round 类型（参考 Maestro Skill 研究）：
+          - 手势交互 round: 滑动/长按/下拉的感觉
+          - 网络状态 round: 弱网/离线时的行为
+          - 状态转换 round: 前后台切换、旋转、中断（来电）
+          - 键盘交互 round: 键盘弹出时布局变化
+        tool_ref: null
+        output_file: "pair-test-plan.md"
+
+      - id: discover
+        action: |
+          AI 分析 + 人类操作：
+          1. 人类操作 App，AI 分析截图
+          2. 截图: simctl io booted screenshot round-{N}.png
+          3. AI 检查: 布局问题、对齐、溢出、截断、触控目标
+          4. 人类检查: 动画手感、手势流畅度、响应速度"体感"
+        tool_ref: ios_simulator
+        output_file: "pair-test-findings.md"
+
+      - id: discuss_and_decide
+        action: |
+          4D Protocol — Discuss + Decide:
+          每个发现当场决定: Fix Now / Fix Later / Won't Fix
+          移动端特有判断: "这个动画卡顿是 1 帧还是持续的？人类说了算。"
+        tool_ref: null
+        output_file: "pair-test-findings.md (append)"
+
+      - id: deliver
+        action: "生成测试报告: 发现 + 截图 + 决策 + 修复建议"
+        tool_ref: pdf_generation
+        output_file: "pair-test-report.pdf"
+
+    quality_criteria:
+      - "每轮有截图证据"
+      - "严重度由人类决定（不是 AI 单独判断）"
+      - "Fix Now 有即时 handoff"
+      - "覆盖移动端特有场景（手势/网络/状态转换）"
+      - "Fabricated findings or screenshots = FAIL"
+
+    anti_patterns:
+      - "❌ AI 单独决定严重度（人类的'感觉'无法量化但很重要）"
+      - "❌ 只看静态截图不测动态交互（动画/手势需要人类判断）"
+      - "❌ 跳过弱网测试（移动端最常见的体验问题）"
+
+    reviewers:
+      - persona: "产品经理"
+        checklist:
+          - "核心流程是否测过？"
+          - "发现的问题是否有决策（不只是 bug 列表）？"
+
+  # ═══════════════════════════════════════
+  # Capability 7: 测试策略（文档类）
+  # ═══════════════════════════════════════
+
+  mobile_test_strategy:
+    description: "移动端测试策略设计 — 测试金字塔、CI/CD 集成、设备策略"
+
+    steps:
+      - id: research_strategy
+        action: |
+          搜索移动端测试策略最佳实践：
+          1. 搜索移动端测试金字塔分布
+          2. 搜索 CI/CD 中的移动端测试集成方案
+          3. 搜索云测试平台（Firebase Test Lab, BrowserStack）
+        tool_ref: web_scraping
+        queries:
+          - '"mobile testing" pyramid strategy unit E2E ratio'
+          - '"React Native" CI CD testing GitHub Actions'
+        output_file: "strategy-research.md"
+
+      - id: analyze_test_distribution
+        action: |
+          确定测试金字塔（参考 senaiverse 70/20/10）：
+          | 层级 | 比例 | 覆盖什么 | 运行频率 |
+          - 单元: 70% (组件/逻辑/工具函数) → 每次 commit
+          - 集成: 20% (API 调用/状态管理/导航) → 每次 PR
+          - E2E: 10% (10-20 个核心流程) → 每次合并到 main
+          调整因素: App 类型（UI 重 → 更多 E2E，逻辑重 → 更多单元）
+          移动端特有: 设备矩阵测试 → 每周/每个 release
+        quality: "金字塔比例有项目类型依据（不是通用 70/20/10）。"
+        tool_ref: null
+        output_file: "strategy-research.md (append)"
+
+      - id: derive_strategy
+        action: |
+          推导完整测试策略：
+          1. 按模块的覆盖率目标（不是全局平均）
+          2. CI 流水线: lint → unit → build → e2e(模拟器) → deploy(TestFlight)
+          3. 片状率政策: >5% = P0 必须修复
+          4. 设备测试策略: 模拟器(CI) + 云测试(release) + 真机(关键版本)
+          5. 性能回归: 每个 release 前跑性能基准对比
+        tool_ref: null
+        output_file: "test-strategy.md"
+
+      - id: generate_strategy_doc
+        action: "综合为测试策略文档 PDF（含金字塔图、CI 配置、设备矩阵、质量门控）"
+        tool_ref: pdf_generation
+        output_file: "mobile-test-strategy.pdf"
+
+    quality_criteria:
+      - "测试金字塔适配项目类型（非通用比例）"
+      - "按模块覆盖率目标（非全局平均）"
+      - "CI 流水线有明确的阶段和失败策略"
+      - "片状率 >5% 有处理政策"
+      - "设备测试有分层策略（模拟器/云/真机）"
+      - "Fabricated coverage or metrics = FAIL"
+
+    anti_patterns:
+      - "❌ 通用 70/20/10 不根据项目调整"
+      - "❌ 没有片状率监控 = 测试套件慢慢腐烂"
+      - "❌ 只用模拟器不用真机 = 漏掉真机特有问题"
+      - "❌ 性能只测一次不做回归 = 慢慢变慢没人发现"
+
+    reviewers:
+      - persona: "QA 主管"
+        checklist:
+          - "金字塔是否匹配项目特点？"
+          - "CI 集成是否完整？"
+          - "设备策略是否分层？"
+
+# ═══════════════════════════════════════
+# 产出物目录结构
+# ═══════════════════════════════════════
+
+output_structure: |
+  .tad/active/research/{project}/
+  ├── e2e-design.md                     # E2E 测试设计
+  ├── e2e/*.test.ts 或 *.yaml           # E2E 测试文件
+  ├── e2e-validation.md                 # E2E 验证结果
+  ├── unit-test-design.md               # 单元测试设计
+  ├── unit-test-validation.md           # 单元测试验证
+  ├── device-research.md                # 设备兼容性研究
+  ├── compat-screenshots/               # 多设备截图
+  ├── device-compatibility.pdf          # 兼容性报告 (Typst)
+  ├── performance-design.md             # 性能测试设计
+  ├── bundle-report.json                # Bundle 分析
+  ├── performance-report.pdf            # 性能报告 (Typst)
+  ├── a11y-design.md                    # 可访问性设计
+  ├── a11y-lint-report.txt              # ESLint a11y 结果
+  ├── a11y-checklist.md                 # VoiceOver 手动检查清单
+  ├── accessibility-report.pdf          # 可访问性报告 (Typst)
+  ├── pair-test-plan.md                 # 人机协作测试计划
+  ├── pair-test-findings.md             # 发现 + 决策
+  ├── pair-test-report.pdf              # 协作测试报告 (Typst)
+  ├── strategy-research.md              # 测试策略研究
+  ├── test-strategy.md                  # 测试策略文档
+  └── mobile-test-strategy.pdf          # 策略 PDF (Typst)
+
+gates:
+  gate2_design:
+    checklist:
+      - "E2E 框架选型有对比表"
+      - "测试金字塔适配项目类型"
+      - "设备矩阵 ≥ 4 台"
+      - "可访问性有自动化 + 手动双层"
+      - "性能指标有具体阈值"
+
+  gate4_acceptance:
+    checklist:
+      - "E2E 测试覆盖 ≥5 核心流程"
+      - "单元测试覆盖率 ≥ 80% 关键模块"
+      - "eslint a11y 零 error"
+      - "性能指标全部达标"
+      - "设备兼容性报告有截图"

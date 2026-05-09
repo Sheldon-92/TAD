@@ -22,6 +22,7 @@
 | `/blake` | 有 handoff → 实现；常规发布 |
 | `/gate` | Gate 1-4 |
 | 深度研究 | 需要持久积累的研究任务（研究/research/调研/landscape/对比/深入）→ 读 `.claude/skills/research-notebook/SKILL.md` 按步骤执行。快速查询（语法/API/单一事实）仍用 WebSearch |
+| 能力包升级 | Domain Pack 升级为 Capability Pack（升级/重建/capability pack）→ 调用 `/capability-upgrade` 按 5 阶段流程执行 |
 
 跳过 TAD：单文件修复、配置调整、文档更新、用户说"直接帮我"。
 Adaptive Complexity：Alex 评估建议，**人类做最终决策**。

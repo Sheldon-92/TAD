@@ -1,0 +1,14 @@
+AC-P2.1-q Failure Isolation Test
+--------------------------------
+Test: stale-check.sh fed a knowledge file with a malformed header
+(### Bad Header No Date — no parseable date)
+
+Expected: stale-check.sh emits findings for valid entries, skips bad,
+          exits 0 (advisory). Caller (Alex step0_5) is not blocked.
+
+Actual exit code: 0
+
+Output:
+{"file":".tad/project-knowledge/testing.md","title":"Good Entry","path":"file_a.py","status":"STALE","days_delta":14,"msg":"'file_a.py' mtime is 14 days newer than baseline 2026-04-01"}
+
+Conclusion: 0 == 0 → PASS (Alex step0_5 stderr warns + continues)

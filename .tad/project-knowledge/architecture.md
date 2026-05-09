@@ -981,3 +981,35 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: When designing any iterative-stop algorithm for research, data gathering, or ask loops: use three states (hard-stop / soft-signal / continue), define minimum total threshold to prevent false-positive stops, and require ≥2 consecutive signals before triggering either soft or hard stop.
 - **Grounded in**: ~/research-methodology/scripts/saturation-check.sh, ~/research-methodology/references/quality-control.md §4, HANDOFF-20260508-capability-pack-research-methodology.md FR4
 - **Revalidated**: 2026-05-08
+
+### Capability Pack Architecture Spectrum: Three Validated Patterns — 2026-05-08
+- **Context**: After shipping 7 capability packs in 2 days, three distinct architecture patterns emerged, each suited to different pack purposes. CR-P0-3 (code-reviewer) caught that the research-methodology pack was about to ship as a 700-line monolith and forced a split.
+- **Discovery**: Capability packs fall into three architectural patterns based on their primary value proposition:
+  1. **Reference-based** (web-backend, ai-agent-architecture): CAPABILITY.md is a thin router (~130-150 lines) with Step 0 context detection + routing table. Bulk of value lives in `references/*.md` as domain judgment rules. Pack's value = "what to check."
+  2. **Deep-skill** (product-thinking): 3 interconnected SKILL.md files (~500-800 lines each) with cross-skill state flow via session.json. Each skill has its own interaction contract. Pack's value = "how to reason through structured interaction."
+  3. **Orchestration-router** (research-methodology): CAPABILITY.md is a state-machine router (~250 lines) defining phase transitions, gates, and preflight. Phase-specific executable logic lives in `references/*.md` (loaded on demand). Pack's value = "how to execute a multi-phase workflow with quality controls."
+  Key design signal: **judgment rules** → reference-based. **Structured interaction** → deep-skill. **Workflow orchestration** → orchestration-router. Misclassifying leads to monolith SKILLs (too large) or fragmented templates (too shallow).
+- **Action**: Before starting any new capability pack, classify its type first. The classification determines file structure, CAPABILITY.md line budget, and where the bulk of content lives.
+- **Grounded in**: ~/web-backend/CAPABILITY.md, ~/product-thinking/skills/, ~/research-methodology/CAPABILITY.md, .tad/evidence/reviews/blake/capability-pack-research-methodology/code-reviewer.md (CR-P0-3)
+- **Revalidated**: 2026-05-08
+
+### Async API Durable State for Paid Generation — 2026-05-08
+- **Context**: Building video-creation AI asset generation rules (Seedance 2.0 integration). Blake's implementation surfaced a crash-resume gap.
+- **Discovery**: For capability packs documenting APIs with paid async generation, the rule "persist request_hash + task_id to durable storage immediately after submit returns — before the first poll" must be explicitly stated. Without it, agent crashes between submit and first poll lose the task_id, causing duplicate paid generations on restart.
+- **Action**: Any capability pack reference covering async paid APIs must include both: (a) request hashing for intentional dedup, AND (b) immediate durable persistence of task_id for crash-resume. Neither alone is sufficient.
+- **Grounded in**: ~/video-creation/references/ai-asset-generation.md §Request Hashing, COMPLETION-20260508-video-creation-ai-asset-generation.md KA finding 1
+- **Revalidated**: 2026-05-08
+
+### Presigned URL Hash Hazard in Request Deduplication — 2026-05-08
+- **Context**: Same Seedance integration. Request hashing includes media_urls for dedup.
+- **Discovery**: Presigned S3/R2/GCS URLs contain query params that change on every upload of the same file. Hashing with query params → hash changes every time → dedup fails silently → duplicate paid generations. Fix: strip query params before hashing, or use content hash.
+- **Action**: Any capability pack rule involving request hashing with media URLs must explicitly state "strip query params from presigned URLs before hashing."
+- **Grounded in**: ~/video-creation/references/ai-asset-generation.md §Request Hashing, COMPLETION-20260508-video-creation-ai-asset-generation.md KA finding 2
+- **Revalidated**: 2026-05-08
+
+### Research-Methodology Pack as Capability Pack Factory — 2026-05-08
+- **Context**: Used research-methodology pack's 5-phase pipeline as upstream research for video-creation AI asset generation upgrade.
+- **Discovery**: The pipeline (Plan→Source→Curate→Analyze→Output) produces higher-quality rules than ad-hoc WebSearch: (a) persistent NotebookLM notebook enables cross-source synthesis with citations; (b) 7 ask rounds extracted specific rules (e.g., "avoid word 'fast' in Seedance prompts") that wouldn't surface from a few searches; (c) QCE report ensures Blake can verify every rule against its source; (d) notebook persists for future upgrades. Added ~25 min but eliminated the "rules from training data intuition" failure mode (11 P1s in web-backend pack, 2026-05-07).
+- **Action**: For capability packs involving external APIs or cross-vendor comparisons, run research-methodology as Phase 0. For well-known domains where training data is reliable, skip.
+- **Grounded in**: .research/sessions/RS-20260508-001/, HANDOFF-20260508-video-creation-ai-asset-generation.md, *discuss session 2026-05-08
+- **Revalidated**: 2026-05-08

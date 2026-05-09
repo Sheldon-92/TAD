@@ -1,0 +1,416 @@
+# Domain Pack Keywords Database
+# Phase 2b — Architecture C (deterministic keyword match, no LLM)
+# Curated: 2026-04-07 by Blake (Phase 2b handoff + Round 2 tuning)
+#
+# EDITING GUIDELINES
+#  - Each pack: >= 3 distinct English keywords + >= 3 distinct Chinese keywords
+#  - Each pack: >= 3 UNIQUE anchors (zero cross-pack)
+#  - No keyword should appear in > 2 packs (integrity audit enforced)
+#  - Min length: English 3 chars, Chinese 2 chars
+#  - Threshold = DISTINCT KEYWORD MATCH COUNT required
+#  - Matching is case-insensitive, literal substring (awk tolower + index)
+#  - Keywords SHOULD include both hyphenated AND space-separated variants of
+#    multi-word terms (e.g. "react native" + "react-native") because bash
+#    literal match won't bridge the gap.
+#  - Banned high-collision words: build, code, test, project, system, api,
+#    design, tool, file, data — DO NOT add unless absolutely pack-defining
+
+whitelist:
+  - "yes"
+  - "no"
+  - "ok"
+  - "y"
+  - "n"
+  - "继续"
+  - "嗯"
+  - "明白"
+  - "收到"
+  - "好的"
+
+packs:
+
+  # ─── AI family ───────────────────────────────────────────
+  - name: ai-agent-architecture
+    file: .tad/domains/ai-agent-architecture.yaml
+    keywords:
+      - "langchain"
+      - "openclaw"
+      - "agentic"
+      - "multi-agent"
+      - "multi agent"
+      - "rag agent"
+      - "hallucinat"         # stem of hallucination
+      - "guardrail"
+      - "tool use"
+      - "智能体"
+      - "代理架构"
+      - "多智能体"
+      - "幻觉"
+      - "防幻觉"
+      - "agent 架构"
+    threshold: 1
+
+  - name: ai-evaluation
+    file: .tad/domains/ai-evaluation.yaml
+    keywords:
+      - "benchmark"
+      - "adversarial"
+      - "llm-as-judge"
+      - "llm as judge"
+      - "eval-suite"
+      - "eval suite"
+      - "ragas"
+      - "promptfoo"
+      - "评估 agent"
+      - "基准测试"
+      - "对抗测试"
+      - "回归测试"
+      - "准确率"
+      - "评估指标"
+    threshold: 1
+
+  - name: ai-prompt-engineering
+    file: .tad/domains/ai-prompt-engineering.yaml
+    keywords:
+      - "few-shot"
+      - "few shot"
+      - "chain-of-thought"
+      - "chain of thought"
+      - "jailbreak"
+      - "prompt-template"
+      - "prompt template"
+      - "prompt 漂移"
+      - "prompt drift"
+      - "prompt 优化"
+      - "漂移"              # standalone — specific to AI/ML drift contexts
+      - "系统提示"
+      - "提示词"
+      - "思维链"
+      - "小样本"
+      - "prompt 工程"
+    threshold: 1
+
+  - name: ai-tool-integration
+    file: .tad/domains/ai-tool-integration.yaml
+    keywords:
+      - "mcp"
+      - "mcp-server"
+      - "mcp server"
+      - "function-calling"
+      - "function calling"
+      - "tool-use"
+      - "json-schema"
+      - "stdio"
+      - "工具调用"
+      - "函数调用"
+      - "工具封装"
+      - "mcp 集成"
+    threshold: 1
+
+  # ─── Security family ─────────────────────────────────────
+  - name: code-security
+    file: .tad/domains/code-security.yaml
+    keywords:
+      - "sast"
+      - "dast"
+      - "semgrep"
+      - "vulnerability"
+      - "cve"
+      - "owasp"
+      - "gitleaks"
+      - "trivy"
+      - "sql 注入"
+      - "xss"
+      - "漏洞"
+      - "注入"
+      - "越权"
+      - "安全扫描"
+      - "密钥泄漏"
+      - "代码审计"
+    threshold: 1
+
+  - name: supply-chain-security
+    file: .tad/domains/supply-chain-security.yaml
+    keywords:
+      - "typosquat"
+      - "supply-chain"
+      - "supply chain"
+      - "lockfile"
+      - "provenance"
+      - "slsa"
+      - "socket.dev"
+      - "osv-scanner"
+      - "npm 包"
+      - "npm install"
+      - "pypi"
+      - "软件供应链"
+      - "依赖审计"
+      - "投毒"
+      - "锁文件"
+      - "依赖信任"
+    threshold: 1
+
+  # ─── Hardware family ─────────────────────────────────────
+  - name: hw-circuit-design
+    file: .tad/domains/hw-circuit-design.yaml
+    keywords:
+      - "pcb"
+      - "schematic"
+      - "kicad"
+      - "altium"
+      - "footprint"
+      - "bom"
+      - "drc"
+      - "erc"
+      - "pcb 布线"
+      - "原理图"
+      - "布线密度"
+      - "电路板设计"
+      - "元件选型"
+    threshold: 1
+
+  - name: hw-enclosure
+    file: .tad/domains/hw-enclosure.yaml
+    keywords:
+      - "enclosure"
+      - "openscad"
+      - ".scad"
+      - "stl export"
+      - "fdm"
+      - "snap-fit"
+      - "snap fit"
+      - "外壳"
+      - "3d 打印"
+      - "3d打印"
+      - "卡扣"
+      - "装配图"
+      - "公差设计"
+    threshold: 1
+
+  - name: hw-firmware
+    file: .tad/domains/hw-firmware.yaml
+    keywords:
+      - "esp32"
+      - "esp32-s3"
+      - "arduino"
+      - "firmware"
+      - "mcu"
+      - "i2c"
+      - "spi"
+      - "uart"
+      - "platformio"
+      - "固件"
+      - "外设驱动"
+      - "低功耗"
+      - "嵌入式"
+      - "固件低功耗"
+    threshold: 1
+
+  - name: hw-testing
+    file: .tad/domains/hw-testing.yaml
+    keywords:
+      - "oscilloscope"
+      - "multimeter"
+      - "logic-analyzer"
+      - "logic analyzer"
+      - "emc"
+      - "esd"
+      - "test-jig"
+      - "test jig"
+      - "power-on test"
+      - "电路板上电"
+      - "上电测试"
+      - "功耗测量"
+      - "测试治具"
+      - "环境测试"
+    threshold: 1
+
+  # ─── Mobile family ───────────────────────────────────────
+  - name: mobile-development
+    file: .tad/domains/mobile-development.yaml
+    keywords:
+      - "react-native"
+      - "react native"
+      - "expo"
+      - "swiftui"
+      - "xcode"
+      - "kotlin"
+      - "offline-first"
+      - "offline first"
+      - "asyncstorage"
+      - "iphone app"
+      - "移动端"
+      - "原生应用"
+      - "离线优先"
+      - "手势"
+      - "gesture"
+    threshold: 1
+
+  - name: mobile-release
+    file: .tad/domains/mobile-release.yaml
+    keywords:
+      - "testflight"
+      - "app-store"
+      - "app store"
+      - "play-store"
+      - "play store"
+      - "xcarchive"
+      - "fastlane"
+      - "ipa"
+      - "aab"
+      - "android release"
+      - "审核"
+      - "上架"
+      - "提审"
+      - "发版"
+      - "版本号"
+    threshold: 1
+
+  - name: mobile-testing
+    file: .tad/domains/mobile-testing.yaml
+    keywords:
+      - "detox"
+      - "maestro"
+      - "xcuitest"
+      - "espresso"
+      - "appium"
+      - "talkback"
+      - "voiceover"
+      - "设备兼容"
+      - "真机测试"
+      - "无障碍"
+      - "移动端测试"
+      - "detox 配置"
+    threshold: 1
+
+  - name: mobile-ui-design
+    file: .tad/domains/mobile-ui-design.yaml
+    keywords:
+      - "hig"
+      - "ios hig"
+      - "material design 3"
+      - "material-design-3"
+      - "44pt"
+      - "bottom-sheet"
+      - "bottom sheet"
+      - "ios 导航栏"
+      - "手势交互"
+      - "导航栏"
+      - "移动端设计"
+      - "触控目标"
+      - "ios 设计规范"
+    threshold: 1
+
+  # ─── Product ─────────────────────────────────────────────
+  - name: product-definition
+    file: .tad/domains/product-definition.yaml
+    keywords:
+      - "prd"
+      - "mvp"
+      - "user research"
+      - "user-research"
+      - "competitive analysis"
+      - "competitive-analysis"
+      - "persona"
+      - "jtbd"
+      - "产品定义"
+      - "用户调研"
+      - "竞品分析"
+      - "产品需求"
+    threshold: 1
+
+  # ─── Web family ──────────────────────────────────────────
+  - name: web-backend
+    file: .tad/domains/web-backend.yaml
+    keywords:
+      - "openapi"
+      - "restful"
+      - "graphql"
+      - "postgres"
+      - "postgresql"
+      - "prisma"
+      - "oauth"
+      - "jwt"
+      - "endpoint"
+      - "express.js"
+      - "登录 api"
+      - "登录接口"
+      - "后端"
+      - "数据库"
+      - "鉴权"
+      - "业务逻辑"
+      - "api 端点"
+    threshold: 1
+
+  - name: web-deployment
+    file: .tad/domains/web-deployment.yaml
+    keywords:
+      - "vercel"
+      - "netlify"
+      - "cloudflare"
+      - "dockerfile"
+      - "github-actions"
+      - "github actions"
+      - "rollback"
+      - "staging"
+      - "cdn"
+      - "部署"
+      - "流水线"
+      - "环境变量"
+      - "回滚"
+      - "ci/cd"
+    threshold: 1
+
+  - name: web-frontend
+    file: .tad/domains/web-frontend.yaml
+    keywords:
+      - "react"
+      - "vue"
+      - "nextjs"
+      - "next.js"
+      - "vite"
+      - "typescript"
+      - "tailwind"
+      - "shadcn"
+      - "jsx"
+      - "tsx"
+      - "前端组件"
+      - "组件"
+      - "页面"
+      - "样式"
+      - "按钮组件"
+    threshold: 1
+
+  - name: web-testing
+    file: .tad/domains/web-testing.yaml
+    keywords:
+      - "playwright"
+      - "vitest"
+      - "cypress"
+      - "lighthouse"
+      - "wcag"
+      - "e2e test"
+      - "e2e-test"
+      - "contract test"
+      - "端到端测试"
+      - "单元测试"
+      - "可访问性"
+      - "性能审计"
+    threshold: 1
+
+  - name: web-ui-design
+    file: .tad/domains/web-ui-design.yaml
+    keywords:
+      - "wireframe"
+      - "design tokens"
+      - "design-tokens"
+      - "design system"
+      - "design-system"
+      - "figma"
+      - "information architecture"
+      - "information-architecture"
+      - "线框图"
+      - "设计系统"
+      - "交互规范"
+      - "视觉稿"
+    threshold: 1

@@ -1,0 +1,120 @@
+# Service Architecture — Multi-Tenant SaaS Billing
+direction: right
+
+# ═══════ External ═══════
+
+client: "Web Client" {
+  style.fill: "#dbeafe"
+}
+stripe_api: "Stripe API" {
+  style.fill: "#635bff"
+  style.font-color: "#fff"
+}
+ws_client: "WebSocket Client" {
+  style.fill: "#dbeafe"
+}
+
+# ═══════ API Layer ═══════
+
+api: "API Layer" {
+  style.fill: "#f0fdf4"
+
+  middleware: "Middleware Stack" {
+    requestId: "requestId"
+    auth: "authenticate()"
+    tenantScope: "enforceTenantScope()"
+    validate: "zodValidation()"
+    rateLimit: "rateLimiter"
+  }
+
+  routes: "Routes" {
+    tenants: "/tenants"
+    users: "/tenants/{id}/users"
+    plans: "/plans"
+    subscriptions: "/subscriptions"
+    invoices: "/invoices"
+    usage: "/usage-records"
+    webhooks: "/webhooks/stripe"
+  }
+
+  ws: "WebSocket Server" {
+    billing_events: "/ws/billing-events"
+    usage_alerts: "/ws/usage-alerts"
+  }
+}
+
+# ═══════ Service Layer ═══════
+
+services: "Service Layer (Business Logic)" {
+  style.fill: "#fef3c7"
+
+  SubscriptionService: "SubscriptionService\n- create/cancel/reactivate\n- changePlan (proration)\n- state machine" {
+    style.fill: "#dcfce7"
+  }
+  InvoiceService: "InvoiceService\n- createInvoice\n- markPaid\n- prorationInvoice"
+  UsageService: "UsageService\n- recordUsage (idempotent)\n- getUsageSummary\n- checkLimits + alerts" {
+    style.fill: "#dcfce7"
+  }
+  WebhookService: "WebhookService\n- processEvent (idempotent)\n- dispatch handlers\n- payment lifecycle" {
+    style.fill: "#dcfce7"
+  }
+  PaymentRetryService: "PaymentRetryService\n- exponential backoff\n- 1h→4h→24h→72h\n- auto-cancel"
+  NotificationService: "NotificationService\n- email alerts\n- role-targeted"
+  WebSocketService: "WebSocketService\n- real-time events\n- tenant-scoped broadcast"
+  AuditService: "AuditService\n- before/after snapshots"
+  StripeService: "StripeService\n- Stripe SDK wrapper"
+}
+
+# ═══════ Repository Layer ═══════
+
+repos: "Repository Layer (Data Access)" {
+  style.fill: "#fee2e2"
+
+  SubscriptionRepo: "SubscriptionRepository\n- findById, findByStripeId\n- updateWithVersion (optimistic lock)"
+  UsageRepo: "UsageRecordRepository\n- sumQuantity (aggregation)\n- idempotency via transactionId"
+  WebhookRepo: "WebhookEventRepository\n- idempotency via stripeEventId\n- cleanup old events"
+  InvoiceRepo: "InvoiceRepository"
+  TenantRepo: "TenantRepository"
+  PlanRepo: "PlanRepository"
+  AuditRepo: "AuditLogRepository"
+}
+
+# ═══════ Database ═══════
+
+db: "PostgreSQL" {
+  style.fill: "#336791"
+  style.font-color: "#fff"
+  note: "Shared DB + tenant_id\n13 tables, 3NF"
+}
+
+queue: "Job Queue\n(BullMQ/Redis)" {
+  style.fill: "#dc382c"
+  style.font-color: "#fff"
+  note: "Payment retries\nCron jobs"
+}
+
+# ═══════ Connections ═══════
+
+client -> api.routes: "HTTPS"
+ws_client -> api.ws: "WSS"
+stripe_api -> api.routes.webhooks: "HMAC-signed"
+
+api.routes -> api.middleware -> services
+api.ws -> services.WebSocketService
+
+services.SubscriptionService -> repos.SubscriptionRepo
+services.SubscriptionService -> repos.PlanRepo
+services.InvoiceService -> repos.InvoiceRepo
+services.UsageService -> repos.UsageRepo
+services.WebhookService -> repos.WebhookRepo
+services.AuditService -> repos.AuditRepo
+
+services.WebhookService -> services.InvoiceService
+services.WebhookService -> services.PaymentRetryService
+services.WebhookService -> services.NotificationService
+services.PaymentRetryService -> queue
+
+services.StripeService -> stripe_api: "Stripe SDK"
+services.WebSocketService -> ws_client: "Events"
+
+repos -> db: "Prisma ORM"

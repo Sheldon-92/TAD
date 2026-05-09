@@ -1,0 +1,136 @@
+# SPIKE-20260407 Test Cases — 18 total
+# PoC capability: web-frontend.component_development
+#
+# Ground truth rule: expected=true iff the user's primary intent is producing
+# runnable component code/markup. Discussions ABOUT components without intent
+# to build = false. Tasks where component work is one of multiple workstreams
+# (e.g. login page) = true if UI work is >50% of effort.
+#
+# label_confidence:
+#   high   — unambiguous, defensible label
+#   medium — defensible but reasonable people could disagree
+#   low    — contested; report accuracy on this case separately
+#
+# Authored: Alex (per HANDOFF-20260407-domain-pack-hook-spike §4.2 Component 3)
+# Cases: 5 clear_match + 5 clear_nonmatch + 5 edge + 3 chat_noop = 18
+
+test_cases:
+  # === 5 clear matches ===
+  - id: TC01
+    message: "做一个 React button 组件"
+    expected: true
+    category: clear_match
+    label_confidence: high
+
+  - id: TC02
+    message: "需要写一个 form validation 的组件"
+    expected: true
+    category: clear_match
+    label_confidence: high
+
+  - id: TC03
+    message: "How do I build a reusable modal component in React?"
+    expected: true
+    category: clear_match
+    label_confidence: high
+
+  - id: TC04
+    message: "组件状态管理用 useState 还是 useReducer?"
+    expected: true
+    category: clear_match
+    label_confidence: high
+
+  - id: TC05
+    message: "I need to create a list component that supports pagination"
+    expected: true
+    category: clear_match
+    label_confidence: high
+
+  # === 5 clear nonmatches ===
+  - id: TC06
+    message: "怎么连接 PostgreSQL 数据库"
+    expected: false
+    category: clear_nonmatch
+    label_confidence: high
+
+  - id: TC07
+    message: "今天天气怎么样"
+    expected: false
+    category: clear_nonmatch
+    label_confidence: high
+
+  - id: TC08
+    message: "写一个 bash 脚本备份文件"
+    expected: false
+    category: clear_nonmatch
+    label_confidence: high
+
+  - id: TC09
+    message: "解释一下 SQL 注入是什么"
+    expected: false
+    category: clear_nonmatch
+    label_confidence: high
+
+  - id: TC10
+    message: "我想发一封邮件给团队"
+    expected: false
+    category: clear_nonmatch
+    label_confidence: high
+
+  # === 5 edges ===
+  - id: TC11
+    message: "做一个登录页"
+    expected: true
+    category: edge
+    label_confidence: low
+    note: "Login page is mostly UI form work; could also be auth-related. Borderline."
+
+  - id: TC12
+    message: "性能优化"
+    expected: false
+    category: edge
+    label_confidence: high
+    note: "Too vague to pin to component_development."
+
+  - id: TC13
+    message: "改个按钮样式"
+    expected: true
+    category: edge
+    label_confidence: high
+    note: "Trivial but clearly component territory."
+
+  - id: TC14
+    message: "API 设计要遵循什么规范"
+    expected: false
+    category: edge
+    label_confidence: high
+    note: "Backend/API design topic, not component."
+
+  - id: TC15
+    message: "showcase 一个商品列表"
+    expected: true
+    category: edge
+    label_confidence: low
+    note: "showcase could mean 'demo/present' (= ask for example) instead of 'build'. Contested."
+
+  # === 3 chat / no-op (P1: measure no-op latency + ensure short messages don't false-match) ===
+  - id: TC16
+    message: "thanks"
+    expected: false
+    category: chat_noop
+    label_confidence: high
+    note: "Affirmation/chat message — should not match any capability."
+
+  - id: TC17
+    message: "ok 继续"
+    expected: false
+    category: chat_noop
+    label_confidence: high
+    note: "Continuation prompt — should not match."
+
+  - id: TC18
+    message: "yes"
+    expected: false
+    category: chat_noop
+    label_confidence: high
+    note: "Single-word affirmation — should not match."

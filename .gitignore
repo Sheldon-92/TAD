@@ -33,3 +33,6 @@ tad-work/working/*
 # !tad-work/context/.gitkeep
 
 # Everything else in tad-work/ SHOULD be committed (handoffs, evidence, learnings)
+
+# Research Methodology Capability Pack session data
+.research/

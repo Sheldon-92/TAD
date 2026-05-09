@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowPM — Responsive Wireframe (Resize browser to test)</title>
+<style>
+  :root {
+    --color-primary: #0B7A6F;
+    --color-primary-light: #CCFBF1;
+    --color-bg: #FAFAFA;
+    --color-surface: #FFFFFF;
+    --color-text: #1A1A2E;
+    --color-text-secondary: #64748B;
+    --color-text-muted: #78869B;
+    --color-border: #E2E8F0;
+    --sidebar-w: 220px;
+    --sidebar-collapsed: 48px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--color-text); background: var(--color-bg);
+    font-size: 14px; line-height: 1.5;
+  }
+
+  /* ═══ BREAKPOINT INDICATOR (for testing) ═══ */
+  .bp-indicator {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+    background: var(--color-primary); color: #fff; text-align: center;
+    font-size: 11px; padding: 4px; letter-spacing: 0.05em;
+  }
+  .bp-indicator::after { content: 'MOBILE (< 768px)'; }
+  @media (min-width: 768px) { .bp-indicator::after { content: 'TABLET (768px - 1023px)'; } }
+  @media (min-width: 1024px) { .bp-indicator::after { content: 'DESKTOP (1024px - 1439px)'; } .bp-indicator { background: #095C54; } }
+  @media (min-width: 1440px) { .bp-indicator::after { content: 'WIDE DESKTOP (>= 1440px)'; } .bp-indicator { background: #064E45; } }
+
+  /* ═══ APP SHELL ═══ */
+  .app {
+    display: flex;
+    min-height: 100dvh;
+    padding-top: 24px; /* space for bp indicator */
+  }
+
+  /* ═══ SIDEBAR — Desktop ═══ */
+  .sidebar {
+    display: none; /* hidden on mobile */
+    width: var(--sidebar-collapsed);
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    flex-shrink: 0;
+    flex-direction: column;
+    padding: 12px 8px;
+    overflow: hidden;
+    transition: width 0.2s ease;
+  }
+  .sidebar-icon { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; color: var(--color-text-secondary); margin-bottom: 4px; font-size: 16px; }
+  .sidebar-icon:hover { background: var(--color-primary-light); color: var(--color-primary); }
+  .sidebar-icon.active { background: var(--color-primary-light); color: var(--color-primary); }
+  .sidebar-label { display: none; font-size: 13px; margin-left: 8px; white-space: nowrap; }
+
+  @media (min-width: 768px) {
+    .sidebar { display: flex; width: var(--sidebar-collapsed); }
+  }
+  @media (min-width: 1024px) {
+    .sidebar { width: var(--sidebar-collapsed); }
+  }
+  @media (min-width: 1440px) {
+    .sidebar { width: var(--sidebar-w); padding: 12px; }
+    .sidebar-icon { width: auto; justify-content: flex-start; padding: 0 8px; gap: 8px; }
+    .sidebar-label { display: inline; }
+  }
+
+  /* ═══ MAIN CONTENT ═══ */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ═══ TOPBAR ═══ */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; }
+  .topbar-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 6px;
+    background: var(--color-surface); font-size: 13px; cursor: pointer; color: var(--color-text);
+  }
+  .btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  @media (min-width: 768px) { .topbar { padding: 12px 20px; } }
+  @media (min-width: 1024px) { .topbar { padding: 12px 24px; } }
+
+  /* ═══ BOARD — The key responsive challenge ═══ */
+  .board-container { flex: 1; overflow: hidden; }
+
+  /* MOBILE: Single column swipe view */
+  .board {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    padding: 16px;
+    gap: 16px;
+  }
+  .board-column {
+    min-width: calc(100vw - 32px); /* full screen minus padding */
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Column dots indicator (mobile only) */
+  .column-dots {
+    display: flex; justify-content: center; gap: 6px;
+    padding: 8px; background: var(--color-surface);
+  }
+  .column-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); }
+  .column-dot.active { background: var(--color-primary); }
+
+  /* TABLET: 2 columns visible */
+  @media (min-width: 768px) {
+    .board { gap: 12px; padding: 16px 20px; scroll-snap-type: none; }
+    .board-column { min-width: 300px; max-width: 340px; scroll-snap-align: none; }
+    .column-dots { display: none; }
+  }
+
+  /* DESKTOP: All columns visible, no scroll needed */
+  @media (min-width: 1024px) {
+    .board { padding: 20px 24px; gap: 16px; overflow-x: auto; }
+    .board-column { min-width: 280px; flex: 1; max-width: 360px; }
+  }
+
+  .column-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 4px; margin-bottom: 8px;
+  }
+  .column-header h3 { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .column-count { background: var(--color-bg); border-radius: 10px; padding: 0 6px; font-size: 11px; color: var(--color-text-muted); }
+
+  /* Issue cards */
+  .card {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; cursor: pointer;
+  }
+  .card:hover { border-color: var(--color-text-muted); }
+  .card-id { font-size: 11px; color: var(--color-text-muted); }
+  .card-title { font-size: 13px; margin: 2px 0 6px; }
+  .card-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--color-text-secondary); }
+  .avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--color-primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  /* ═══ BOTTOM TAB BAR — Mobile only ═══ */
+  .bottom-tabs {
+    display: flex; align-items: center; justify-content: space-around;
+    background: var(--color-surface); border-top: 1px solid var(--color-border);
+    padding: 8px 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    position: sticky; bottom: 0;
+  }
+  .tab-item {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: 10px; color: var(--color-text-secondary); cursor: pointer;
+    padding: 4px 12px; min-width: 44px; min-height: 44px;
+    justify-content: center; border: none; background: none;
+  }
+  .tab-item.active { color: var(--color-primary); }
+  .tab-icon { font-size: 18px; }
+
+  @media (min-width: 768px) { .bottom-tabs { display: none; } }
+
+  /* ═══ ISSUE DETAIL PANEL ═══ */
+  /* Mobile: full page */
+  .detail-panel {
+    display: none; /* toggle via JS */
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--color-surface);
+    flex-direction: column; overflow-y: auto;
+    padding-top: 24px; /* bp indicator */
+  }
+  .detail-panel.open { display: flex; }
+  .detail-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--color-border);
+  }
+  .detail-back { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-secondary); padding: 4px; }
+  .detail-body { padding: 16px; flex: 1; overflow-y: auto; }
+  .detail-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .detail-field { display: flex; padding: 8px 0; border-bottom: 1px solid var(--color-bg); }
+  .detail-field-label { width: 90px; font-size: 12px; color: var(--color-text-muted); flex-shrink: 0; }
+  .detail-field-value { font-size: 13px; }
+  .detail-desc {
+    margin-top: 16px; padding: 12px; border: 1px solid var(--color-border);
+    border-radius: 6px; font-size: 13px; color: var(--color-text-secondary); min-height: 80px;
+  }
+
+  /* Tablet/Desktop: side panel */
+  @media (min-width: 1024px) {
+    .detail-panel {
+      position: fixed; left: auto; right: 0; top: 0; bottom: 0;
+      width: 480px; border-left: 1px solid var(--color-border);
+      box-shadow: -4px 0 12px rgba(0,0,0,0.05);
+    }
+  }
+  @media (min-width: 1440px) {
+    .detail-panel { width: 520px; }
+  }
+
+  /* ═══ SETTINGS — responsive centered ═══ */
+  .settings-page { display: none; padding: 16px; }
+  .settings-page.visible { display: block; }
+  .settings-page h1 { font-size: 20px; margin-bottom: 4px; }
+  .settings-subtitle { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px; }
+  .settings-section { margin-bottom: 24px; }
+  .settings-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .settings-input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--color-border);
+    border-radius: 6px; font-size: 16px; /* 16px prevents iOS zoom */
+  }
+
+  @media (min-width: 768px) {
+    .settings-page { padding: 24px 40px; max-width: 640px; margin: 0 auto; }
+    .settings-input { font-size: 14px; max-width: 400px; }
+  }
+
+  /* ═══ MOBILE SPECIFIC ═══ */
+  @media (max-width: 767px) {
+    /* Ensure touch targets are 44x44pt minimum */
+    .btn, .tab-item, .card, .sidebar-icon { min-height: 44px; }
+    /* 16px minimum font for inputs (prevents iOS zoom) */
+    input, select, textarea { font-size: 16px; }
+    /* Hide desktop-only elements */
+    .topbar-actions .btn:not(.btn-primary) { display: none; }
+  }
+
+  /* ═══ prefers-reduced-motion ═══ */
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+
+  /* Page switcher (wireframe demo) */
+  .demo-tabs {
+    display: flex; gap: 0; background: #1A1A2E; position: fixed; top: 24px;
+    left: 0; right: 0; z-index: 998;
+  }
+  .demo-tab {
+    padding: 6px 16px; color: #78869B; background: none; border: none;
+    cursor: pointer; font-size: 11px;
+  }
+  .demo-tab:hover { color: #ccc; }
+  .demo-tab.active { color: #fff; background: #333; }
+  .app { padding-top: 52px; } /* bp indicator + demo tabs */
+</style>
+</head>
+<body>
+
+<!-- Breakpoint indicator -->
+<div class="bp-indicator"></div>
+
+<!-- Demo page switcher -->
+<div class="demo-tabs">
+  <button class="demo-tab active" onclick="showView('board')">Board</button>
+  <button class="demo-tab" onclick="showView('settings')">Settings</button>
+  <button class="demo-tab" onclick="toggleDetail()">Issue Detail</button>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR (hidden on mobile, icon-only on tablet, full on wide desktop) -->
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="sidebar-icon active" title="My Issues">
+      <span>&#9744;</span><span class="sidebar-label">My Issues</span>
+    </div>
+    <div class="sidebar-icon" title="Board">
+      <span>&#9638;</span><span class="sidebar-label">Board</span>
+    </div>
+    <div class="sidebar-icon" title="Inbox">
+      <span>&#9993;</span><span class="sidebar-label">Inbox</span>
+    </div>
+    <div class="sidebar-icon" title="Cycles">
+      <span>&#10227;</span><span class="sidebar-label">Cycles</span>
+    </div>
+    <div class="sidebar-icon" title="Views">
+      <span>&#9733;</span><span class="sidebar-label">Views</span>
+    </div>
+    <div style="margin-top:auto;">
+      <div class="sidebar-icon" title="Settings">
+        <span>&#9881;</span><span class="sidebar-label">Settings</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- BOARD VIEW -->
+    <div id="view-board">
+      <div class="topbar">
+        <h1>Mobile App</h1>
+        <div class="topbar-actions">
+          <button class="btn" style="font-size:12px;color:var(--color-text-muted);">&#8984;K</button>
+          <button class="btn">Filter</button>
+          <button class="btn btn-primary">+ Issue</button>
+        </div>
+      </div>
+
+      <!-- Column dots (mobile only) -->
+      <div class="column-dots">
+        <span class="column-dot active"></span>
+        <span class="column-dot"></span>
+        <span class="column-dot"></span>
+        <span class="column-dot"></span>
+      </div>
+
+      <div class="board-container">
+        <div class="board">
+          <!-- Todo -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="status-dot" style="background:var(--color-text-muted);"></span> Todo <span class="column-count">3</span></h3>
+            </div>
+            <div class="card" onclick="toggleDetail()">
+              <div class="card-id">FPM-42</div>
+              <div class="card-title">Add OAuth2 login with GitHub provider</div>
+              <div class="card-meta">
+                <span style="font-weight:600;">!!! Urgent</span>
+                <span class="avatar">SZ</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-id">FPM-39</div>
+              <div class="card-title">Design onboarding flow for new workspaces</div>
+              <div class="card-meta"><span>!! High</span><span class="avatar">AL</span></div>
+            </div>
+            <div class="card">
+              <div class="card-id">FPM-37</div>
+              <div class="card-title">Implement Markdown editor for descriptions</div>
+              <div class="card-meta"><span>! Medium</span><span class="avatar" style="background:var(--color-text-secondary);">JK</span></div>
+            </div>
+          </div>
+
+          <!-- In Progress -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="status-dot" style="background:var(--color-primary);"></span> In Progress <span class="column-count">2</span></h3>
+            </div>
+            <div class="card">
+              <div class="card-id">FPM-40</div>
+              <div class="card-title">Build notification system with WebSocket</div>
+              <div class="card-meta"><span>!! High</span><span class="avatar">SZ</span></div>
+            </div>
+            <div class="card">
+              <div class="card-id">FPM-38</div>
+              <div class="card-title">Implement drag-and-drop for board</div>
+              <div class="card-meta"><span>! Medium</span><span class="avatar">AL</span></div>
+            </div>
+          </div>
+
+          <!-- In Review -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="status-dot" style="background:#D97706;"></span> In Review <span class="column-count">1</span></h3>
+            </div>
+            <div class="card">
+              <div class="card-id">FPM-34</div>
+              <div class="card-title">User profile settings page</div>
+              <div class="card-meta"><span>Low</span><span class="avatar">AL</span></div>
+            </div>
+          </div>
+
+          <!-- Done -->
+          <div class="board-column">
+            <div class="column-header">
+              <h3><span class="status-dot" style="background:#15803D;"></span> Done <span class="column-count">2</span></h3>
+            </div>
+            <div class="card" style="opacity:0.6;">
+              <div class="card-id">FPM-32</div>
+              <div class="card-title">Setup CI/CD pipeline</div>
+              <div class="card-meta"><span>Low</span><span class="avatar" style="background:var(--color-text-secondary);">JK</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="view-settings" class="settings-page">
+      <h1>Workspace Settings</h1>
+      <p class="settings-subtitle">Manage configuration, team, and billing.</p>
+      <div class="settings-section">
+        <h2>General</h2>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:12px;font-weight:500;margin-bottom:4px;">Workspace Name</label>
+          <input class="settings-input" type="text" value="Acme Indie Studio" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:12px;font-weight:500;margin-bottom:4px;">Default Priority</label>
+          <select class="settings-input" style="max-width:200px;">
+            <option>None</option><option selected>Medium</option><option>High</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h2>Team Members</h2>
+        <div style="border:1px solid var(--color-border);border-radius:6px;overflow:hidden;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--color-bg);">
+            <div><div style="font-size:13px;">Sheldon Zhao</div><div style="font-size:11px;color:var(--color-text-muted);">sheldon@acme.dev</div></div>
+            <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--color-primary);color:#fff;">Owner</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;">
+            <div><div style="font-size:13px;">Alex Liu</div><div style="font-size:11px;color:var(--color-text-muted);">alex@acme.dev</div></div>
+            <span style="font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--color-border);">Admin</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM TAB BAR (mobile only) -->
+    <div class="bottom-tabs">
+      <button class="tab-item active" aria-label="My Issues">
+        <span class="tab-icon">&#9744;</span>Issues
+      </button>
+      <button class="tab-item" aria-label="Board">
+        <span class="tab-icon">&#9638;</span>Board
+      </button>
+      <button class="tab-item" aria-label="Inbox">
+        <span class="tab-icon">&#9993;</span>Inbox
+      </button>
+      <button class="tab-item" aria-label="Search">
+        <span class="tab-icon">&#128269;</span>Search
+      </button>
+      <button class="tab-item" aria-label="Menu">
+        <span class="tab-icon">&#9776;</span>Menu
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- ISSUE DETAIL PANEL (full page on mobile, side panel on desktop) -->
+<div class="detail-panel" id="detailPanel" role="dialog" aria-label="Issue detail">
+  <div class="detail-header">
+    <button class="detail-back" onclick="toggleDetail()" aria-label="Back">&larr;</button>
+    <span style="font-size:12px;color:var(--color-text-muted);">FPM-42</span>
+    <button class="detail-back" onclick="toggleDetail()" aria-label="Close">&times;</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-title">Add OAuth2 login with GitHub provider</div>
+    <div class="detail-field">
+      <span class="detail-field-label">Status</span>
+      <span class="detail-field-value">Todo</span>
+    </div>
+    <div class="detail-field">
+      <span class="detail-field-label">Priority</span>
+      <span class="detail-field-value" style="font-weight:600;">!!! Urgent</span>
+    </div>
+    <div class="detail-field">
+      <span class="detail-field-label">Assignee</span>
+      <span class="detail-field-value"><span class="avatar" style="width:18px;height:18px;font-size:9px;vertical-align:middle;margin-right:4px;">SZ</span> Sheldon Zhao</span>
+    </div>
+    <div class="detail-field">
+      <span class="detail-field-label">Labels</span>
+      <span class="detail-field-value">feature, auth</span>
+    </div>
+    <div class="detail-field">
+      <span class="detail-field-label">Due Date</span>
+      <span class="detail-field-value">Apr 10, 2026</span>
+    </div>
+    <div class="detail-desc">
+      Implement OAuth2 login flow using GitHub as the identity provider.
+      Requirements: GitHub OAuth app registration, token exchange, user profile sync, error handling for denied permissions.
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(view) {
+  document.getElementById('view-board').style.display = view === 'board' ? 'block' : 'none';
+  document.getElementById('view-settings').style.display = view === 'settings' ? 'block' : 'none';
+  document.getElementById('view-settings').classList.toggle('visible', view === 'settings');
+  document.querySelectorAll('.demo-tab').forEach((t, i) => t.classList.toggle('active', ['board','settings'][i] === view));
+  document.getElementById('detailPanel').classList.remove('open');
+}
+function toggleDetail() {
+  document.getElementById('detailPanel').classList.toggle('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('detailPanel').classList.remove('open'); });
+showView('board');
+</script>
+</body>
+</html>

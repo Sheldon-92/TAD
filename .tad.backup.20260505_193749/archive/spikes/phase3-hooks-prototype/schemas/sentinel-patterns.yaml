@@ -1,0 +1,39 @@
+# TAD Sentinel Patterns Schema (Phase 3, v3-LEAN §3)
+# Loaded by sentinel-detect.sh. All literal-matches apply AFTER canonicalization:
+#   1. Strip U+200B..U+200F, U+202A..U+202E, U+2060..U+2069, U+FEFF (invisible formatters)
+#   2. Unicode casefold via perl -CSD -MUnicode::CaseFold (locale=und)
+# No TR39 confusables mapping. No box-drawing variant normalization.
+
+blake_completion_sentinel:
+  primary:
+    requires_all:
+      - literal: "📨 message from blake"        # post-casefold
+      - box_drawing_regex: "\\x{2500}{16,}"     # raw U+2500, 16+
+  secondary:
+    path_in:
+      - ".tad/active/handoffs/HANDOFF-*.md"
+      - ".tad/active/handoffs/COMPLETION-*.md"
+
+alex_handoff_sentinel:
+  primary:
+    requires_all:
+      - literal: "📨 message from alex"
+      - box_drawing_regex: "\\x{2500}{16,}"
+  secondary:
+    path_in:
+      - ".tad/active/handoffs/HANDOFF-*.md"
+
+# Precedence:
+#   primary match + path_in match → BLOCK (enforcement)
+#   secondary alone (no primary)  → LOG-ONLY
+#   prose substring in allowlist path → ALLOW
+
+# Dogfood / docs allowlist: sentinel inside ``` fences → LOG-ONLY
+allowlist_paths:
+  - ".tad/evidence/designs/**"
+  - ".tad/evidence/spikes/**/SPIKE-REPORT.md"
+  - ".tad/evidence/spikes/**/COMPLETION-REPORT.md"
+  - ".tad/project-knowledge/**"
+
+# OV-2: fake-override literal (post-canonicalization)
+fake_override_literal: "tad_override:"

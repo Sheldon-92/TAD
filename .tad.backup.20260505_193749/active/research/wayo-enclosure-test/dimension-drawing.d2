@@ -1,0 +1,28 @@
+direction: right
+
+front_view: "Front View\n146.5 × 44.6 mm\n\nE-ink Window: 116.9 × 87.8mm\nUSB-C cutout: 9.5 × 3.5mm (bottom edge)\nWall thickness: 2.0mm\nCorner radius: 3.0mm" {
+  style.fill: "#F5F5F5"
+  style.stroke: "#333"
+  style.font-size: 13
+}
+
+side_view: "Side View\n108.5 × 44.6 mm\n\nTop shell: display zone (9.2mm)\nSplit line at 33.6mm\nPCB zone: 8.6mm\nWire clearance: 2.0mm\nBattery zone: 20.6mm\nBottom wall: 2.0mm\n\nPower switch: left, 12×5mm\nSMA antenna: top, Ø8mm" {
+  style.fill: "#F5F5F5"
+  style.stroke: "#333"
+  style.font-size: 13
+}
+
+top_view: "Top View\n146.5 × 108.5 mm\n\nE-ink Display Window: 116.9 × 87.8mm\nM2 screw holes: 4× corners\nScrew inset: 6mm from wall\nCorner radius: 3.0mm\nTolerance: ±0.2mm (FDM)" {
+  style.fill: "#F5F5F5"
+  style.stroke: "#333"
+  style.font-size: 13
+}
+
+front_view -> side_view: "" {style.stroke-dash: 5; style.opacity: 0.3}
+side_view -> top_view: "" {style.stroke-dash: 5; style.opacity: 0.3}
+
+dims: "Key Dimensions\n\nOverall: 146.5 × 108.5 × 44.6mm (±0.5)\nWall: 2.0mm (±0.2)\nDisplay window: 116.9 × 87.8mm (±0.3)\nUSB-C cutout: 9.5 × 3.5mm (±0.3)\nSMA hole: Ø8.0mm (±0.2)\nScrew boss OD: Ø5.0mm\nCorner radius: 3.0mm\nGasket groove: 2.0W × 1.5D mm" {
+  style.fill: "#FFFDE7"
+  style.stroke: "#F57F17"
+  style.font-size: 12
+}

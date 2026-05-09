@@ -1,0 +1,67 @@
+# Sitemap — Todo App
+
+direction: down
+
+app: "Todo App" {
+  style.fill: "#333"
+  style.font-color: "#fff"
+}
+
+# Level 1: Main Sections
+tasks: "Tasks (Main View)" {
+  style.fill: "#e3f2fd"
+}
+settings: "Settings" {
+  style.fill: "#f3e5f5"
+}
+
+app -> tasks
+app -> settings
+
+# Level 2: Task List Sub-views (Tabs, not pages)
+all: "All Tasks" {
+  style.fill: "#fff"
+}
+active: "Active Tasks" {
+  style.fill: "#fff"
+}
+completed: "Completed Tasks" {
+  style.fill: "#fff"
+}
+
+tasks -> all
+tasks -> active
+tasks -> completed
+
+# Task Actions (inline, not pages)
+add_task: "Add Task\n(inline/modal)" {
+  style.fill: "#c8e6c9"
+  style.stroke-dash: 3
+}
+edit_task: "Edit Task\n(inline/modal)" {
+  style.fill: "#c8e6c9"
+  style.stroke-dash: 3
+}
+delete_task: "Delete Task\n(confirm dialog)" {
+  style.fill: "#ffcdd2"
+  style.stroke-dash: 3
+}
+
+all -> add_task: "FAB +"
+all -> edit_task: "tap task"
+all -> delete_task: "swipe/icon"
+
+# Settings Sub-sections
+theme: "Theme\n(Light/Dark)" {
+  style.fill: "#fff"
+}
+clear: "Clear Completed" {
+  style.fill: "#fff"
+}
+about: "About" {
+  style.fill: "#fff"
+}
+
+settings -> theme
+settings -> clear
+settings -> about

@@ -1,0 +1,180 @@
+# Menu Snap AI -- Three-Layer Reliability Architecture
+
+direction: down
+
+title: {
+  label: "Menu Snap AI: Three-Layer Verification Architecture"
+  style.font-size: 28
+  style.font-color: "#1a1a2e"
+  near: top-center
+}
+
+# === Input ===
+input: "User Input\n(Menu Photo + Query)" {
+  style.fill: "#e8f4f8"
+  style.stroke: "#2196f3"
+  style.font-size: 18
+}
+
+# === Layer 1: Schema ===
+schema: "Layer 1: Schema Validation" {
+  style.fill: "#fff3e0"
+  style.stroke: "#ff9800"
+  style.font-size: 20
+  style.bold: true
+
+  strict_schema: "strict: true\nGrammar-Constrained Sampling" {
+    style.fill: "#ffe0b2"
+    style.font-size: 14
+  }
+  tool_choice: "tool_choice + \ndisable_parallel_tool_use\n(1 tool per turn)" {
+    style.fill: "#ffe0b2"
+    style.font-size: 14
+  }
+  input_validation: "input_schema\nJSON Schema on all 4 tools\n(type, enum, maxItems, required)" {
+    style.fill: "#ffe0b2"
+    style.font-size: 14
+  }
+}
+
+# === Layer 2: Semantic ===
+semantic: "Layer 2: Semantic Validation" {
+  style.fill: "#e8f5e9"
+  style.stroke: "#4caf50"
+  style.font-size: 20
+  style.bold: true
+
+  allergen_check: "Allergen Cross-Check\n(rec vs user profile)" {
+    style.fill: "#c8e6c9"
+    style.font-size: 14
+  }
+  budget_check: "Budget Validator\n(price <= budget * 1.1)" {
+    style.fill: "#c8e6c9"
+    style.font-size: 14
+  }
+  preference_consistency: "Preference Consistency\n(contradiction detection\n+ rate limiting)" {
+    style.fill: "#c8e6c9"
+    style.font-size: 14
+  }
+}
+
+# === Layer 3: Permission ===
+permission: "Layer 3: Permission Validation" {
+  style.fill: "#fce4ec"
+  style.stroke: "#e91e63"
+  style.font-size: 20
+  style.bold: true
+
+  tool_scoping: "Tool Scoping\nOnly 4 tools exposed\n(no file/network/DB access)" {
+    style.fill: "#f8bbd0"
+    style.font-size: 14
+  }
+  state_machine: "State Machine\nIDLE -> UPLOADED -> ANALYZING\n-> RECOMMENDING -> DONE" {
+    style.fill: "#f8bbd0"
+    style.font-size: 14
+  }
+  user_confirmation: "User Confirmation\n(update_preferences requires\nexplicit mobile UI confirm)" {
+    style.fill: "#f8bbd0"
+    style.font-size: 14
+  }
+}
+
+# === Execution ===
+execution: "Execution\n(Tool Call Processed)" {
+  style.fill: "#e8eaf6"
+  style.stroke: "#3f51b5"
+  style.font-size: 18
+}
+
+# === Reject ===
+reject: "Reject\n(Error Response to User)" {
+  style.fill: "#ffebee"
+  style.stroke: "#f44336"
+  style.font-size: 16
+}
+
+# === Flow ===
+input -> schema: "All tool calls" {
+  style.stroke: "#2196f3"
+  style.stroke-width: 3
+}
+schema -> semantic: "Schema valid" {
+  style.stroke: "#ff9800"
+  style.stroke-width: 3
+}
+semantic -> permission: "Logic valid" {
+  style.stroke: "#4caf50"
+  style.stroke-width: 3
+}
+permission -> execution: "Permitted" {
+  style.stroke: "#e91e63"
+  style.stroke-width: 3
+}
+
+schema -> reject: "Schema violation" {
+  style.stroke: "#f44336"
+  style.stroke-dash: 5
+}
+semantic -> reject: "Semantic violation\n(allergen, budget)" {
+  style.stroke: "#f44336"
+  style.stroke-dash: 5
+}
+permission -> reject: "Permission denied\n(wrong state, rate limit)" {
+  style.stroke: "#f44336"
+  style.stroke-dash: 5
+}
+
+# === Enforcement Priority Diagram (right side) ===
+priority: "Enforcement Priority" {
+  style.fill: "#f5f5f5"
+  style.stroke: "#607d8b"
+  style.font-size: 20
+  style.bold: true
+
+  p0: "P0: Architecture Constraints\n(CANNOT be bypassed by model)" {
+    style.fill: "#d32f2f"
+    style.font-color: "#ffffff"
+    style.font-size: 14
+
+    p0_items: |
+      - Tool scoping (only 4 tools exist)
+      - strict: true (grammar-constrained)
+      - Rate limiting (server-side)
+      - Anthropic classifiers
+    |
+  }
+
+  p1: "P1: Middleware / App Harness\n(Runs in app code, not model)" {
+    style.fill: "#f57c00"
+    style.font-color: "#ffffff"
+    style.font-size: 14
+
+    p1_items: |
+      - Allergen cross-check
+      - Budget validation
+      - State machine
+      - Preference rate limit
+    |
+  }
+
+  p2: "P2: Prompt Instructions\n(Soft, bypassable via injection)" {
+    style.fill: "#fbc02d"
+    style.font-size: 14
+
+    p2_items: |
+      - Tone/style guidance
+      - Dietary awareness prompting
+      - Preference memory behavior
+      - Image instruction filtering
+    |
+  }
+
+  p0 -> p1: "If bypassed" {
+    style.stroke: "#ff5722"
+    style.stroke-width: 2
+  }
+  p1 -> p2: "If bypassed" {
+    style.stroke: "#ff5722"
+    style.stroke-width: 2
+  }
+}

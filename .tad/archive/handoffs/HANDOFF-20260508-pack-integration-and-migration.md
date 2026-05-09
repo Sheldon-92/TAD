@@ -1,0 +1,315 @@
+---
+task_type: mixed
+e2e_required: no
+research_required: yes
+git_tracked_dirs: [".tad/capability-packs"]
+skip_knowledge_assessment: no
+gate4_delta: []
+---
+
+# Handoff: Capability Pack Integration & Migration
+## TAD v3.1 - Evidence-Based Development
+
+**From:** Alex (Agent A - Solution Lead)
+**To:** Blake (Agent B - Execution Master)
+**Date:** 2026-05-08
+**Project:** TAD Framework
+**Task ID:** TASK-20260508-002
+**Handoff Version:** 3.1.0
+
+---
+
+## 1. Task Overview
+
+Migrate 7 standalone capability packs (video-creation excluded — user actively updating) from scattered `~/` directories into `.tad/capability-packs/`, build a pack registry, and integrate pack orchestration into Alex's workflow. This closes the gap between "independent packs" and "TAD-integrated capabilities."
+
+**Three deliverables:**
+1. **Migration** — Move 7 packs into `.tad/capability-packs/`, delete old directories
+2. **Registry** — Auto-generated `pack-registry.yaml` from scanning installed packs
+3. **Alex Integration** — Update Alex SKILL step1_5 to use registry for pack matching + serial pipeline orchestration
+
+---
+
+## 2. Business Context
+
+**Problem:** 7 capability packs exist (video-creation excluded) as independent products scattered across `~/`. TAD doesn't know they exist, can't auto-discover them, and can't orchestrate multi-pack workflows. User must manually remember which pack to use and chain them by hand.
+
+**After this lands:** When user starts *analyze, Alex automatically checks which packs are relevant (from registry), loads them, and proposes a serial pipeline. "研究 X → 产品评估 → 技术设计" happens as a suggested flow, not manual pack-by-pack invocation.
+
+---
+
+## 3. Requirements
+
+### 3.1 Migration
+
+**M1 — Move 7 packs to `.tad/capability-packs/`:**
+
+| # | Source | Destination |
+|---|--------|-------------|
+| 1 | `~/web-ui-design-capability/` | `.tad/capability-packs/web-ui-design/` |
+| 2 | `~/product-thinking/` | `.tad/capability-packs/product-thinking/` |
+| 3 | `~/web-backend/` | `.tad/capability-packs/web-backend/` |
+| 4 | `~/ai-agent-architecture/` | `.tad/capability-packs/ai-agent-architecture/` |
+| 5 | `~/ai-prompt-engineering/` | `.tad/capability-packs/ai-prompt-engineering/` |
+| 6 | `~/web-frontend/` | `.tad/capability-packs/web-frontend/` |
+| 7 | `~/research-methodology/` | `.tad/capability-packs/research-methodology/` |
+| ~~8~~ | ~~`~/video-creation/`~~ | ~~`.tad/capability-packs/video-creation/`~~ | **EXCLUDED — user actively updating, migrate later** |
+
+**M2 — Delete old directories** after migration verified (all files present in destination).
+
+**M3 — Sync zero-touch (BA-P0-1 fix):**
+`.tad/capability-packs/` must be added to the `*sync` zero-touch list (PRESERVE section in Alex SKILL sync_protocol step3). Packs are NOT synced to downstream projects — downstream projects install specific packs via `install.sh` from the TAD source repo. Also update Decision #6 rationale: install.sh paths are relative to SCRIPT_DIR (self-locating), not to .tad/.
+
+**M3b — Already-installed SKILL handling:**
+- `research-methodology` is already installed at `.claude/skills/research-methodology/SKILL.md`
+- After migration, update install.sh source paths in all packs to reference `.tad/capability-packs/{name}/` instead of `~/{name}/`
+- Re-install research-methodology from new location to verify install.sh works
+
+**M4 — Migration method (CR-P0-4 fix):** Use `cp -r` then verify then `rm -rf`. NOT `mv` (may fail across filesystem boundaries). Verification: after `cp -r` and removing `.git/` from destination, run `diff -rq source/ dest/` — only proceed to delete source if diff reports no differences. Individual pack git histories are NOT preserved in TAD repo.
+
+**M5 — Pre-migration: Create CAPABILITY.md for product-thinking (CR-P0-3 + BA-P0-2 fix):**
+`product-thinking` has no `CAPABILITY.md` (it has 3 skill files in `skills/`). Before migration, create `~/product-thinking/CAPABILITY.md` with:
+- YAML frontmatter: `name: product-thinking`, `description:` from README.md
+- CONSUMES/PRODUCES lines
+- Step 0 context detection routing to the 3 skills
+This is required because `scan-packs.sh` scans `*/CAPABILITY.md`.
+
+**M6 — Pre-migration: Backfill CONSUMES/PRODUCES in 5 packs (BA-P0-3 fix):**
+5 packs lack standardized CONSUMES/PRODUCES lines: web-backend, ai-agent-architecture, web-ui-design, ai-prompt-engineering, product-thinking (after M5 creates its CAPABILITY.md). Before migration, add to each CAPABILITY.md after the frontmatter closing `---`:
+```
+**CONSUMES**: {what the pack takes as input}
+**PRODUCES**: {what the pack outputs}
+```
+Also add `keywords:` field to each CAPABILITY.md frontmatter for scan-packs.sh extraction (BA-P1-2 fix).
+
+### 3.2 Registry
+
+**R1 — Auto-generate `pack-registry.yaml`:**
+
+Create a script that scans `.tad/capability-packs/*/CAPABILITY.md` and extracts YAML frontmatter fields (name, description) + CONSUMES/PRODUCES lines to build:
+
+```yaml
+# Auto-generated by scan-packs.sh — do not edit manually
+version: 1.0.0
+last_scanned: "2026-05-08"
+packs:
+  - name: "web-backend"
+    description: "Web backend capability pack. Gives AI agents..."
+    path: ".tad/capability-packs/web-backend/"
+    consumes: "User backend task + optional existing codebase context"
+    produces: "Applied judgment rules + quality checklist results"
+    keywords: ["backend", "API", "REST", "database", "security", "deploy"]
+    type: "reference-based"  # reference-based | deep-skill | orchestration-router
+  - name: "research-methodology"
+    description: "Unified research pipeline..."
+    path: ".tad/capability-packs/research-methodology/"
+    consumes: "User research question + optional existing context"
+    produces: "QCE-structured research report + extracted AC list"
+    keywords: ["研究", "research", "调研", "landscape"]
+    type: "orchestration-router"
+  # ... 6 more packs
+```
+
+**R2 — `keywords` field:** Extract from CAPABILITY.md description + Step 0 trigger keywords (if present). These are used by Alex for semantic matching.
+
+**R3 — `type` field:** Classify each pack per the 3-pattern taxonomy (architecture.md entry "Capability Pack Architecture Spectrum"):
+- `reference-based`: web-backend, ai-agent-architecture, web-frontend, web-ui-design, ai-prompt-engineering, video-creation
+- `deep-skill`: product-thinking
+- `orchestration-router`: research-methodology
+
+**R4 — Scan script:** `.tad/scripts/scan-packs.sh` — idempotent, can be re-run anytime. Overwrites pack-registry.yaml on each run.
+
+### 3.3 Alex Integration
+
+**A1 — Update Alex SKILL step1_5 (Domain Pack Loading):**
+Currently step1_5 reads Domain Pack YAML from `.tad/domains/`. Add a parallel path:
+1. Read `.tad/capability-packs/pack-registry.yaml`
+2. Match task keywords against pack `keywords` + `description` (LLM semantic match)
+3. Present matched packs to user via AskUserQuestion (same UX as current step1_5)
+4. On confirmation, load matched pack's CAPABILITY.md
+
+**A2 — Serial Pipeline suggestion (new):**
+When ≥2 packs are matched in step1_5:
+- Propose execution order based on CONSUMES/PRODUCES chain
+- Example: research-methodology (produces: QCE report) → product-thinking (consumes: product idea context) → web-backend (consumes: backend task context)
+- AskUserQuestion: "建议按此顺序使用 {N} 个 pack: {pack1} → {pack2}。确认吗？"
+- This is a SUGGESTION only — user can reorder or skip packs
+
+**A3 — Pack count guardrail:**
+If registry has >12 packs, step1_5 only shows top 4 matches (≤12 safety threshold from research).
+
+---
+
+## 4. Technical Design
+
+### Migration Flow
+```
+0. Pre-migration:
+   a. Create ~/product-thinking/CAPABILITY.md (M5)
+   b. Backfill CONSUMES/PRODUCES + keywords in 5 packs (M6)
+1. mkdir -p .tad/capability-packs/
+2. For each of the 7 packs:
+   a. cp -r ~/{pack}/ .tad/capability-packs/{pack}/
+   b. rm -rf .tad/capability-packs/{pack}/.git/ (don't import pack git history)
+   c. Verify: diff -rq ~/{pack}/ .tad/capability-packs/{pack}/ --exclude=.git
+      (must report no differences — if any, STOP and investigate)
+   d. After ALL 7 packs verified → rm -rf source dirs
+3. Add .tad/capability-packs/ to Alex SKILL sync_protocol PRESERVE list (M3)
+4. Run scan-packs.sh → generate pack-registry.yaml
+5. Re-install research-methodology from new path → verify .claude/skills/ SKILL.md updated
+```
+
+### Alex SKILL Modification
+
+Add to step1_5 after the existing Domain Pack loading block:
+
+```yaml
+step1_5b:
+  name: "Capability Pack Loading (from registry)"
+  trigger: "After existing Domain Pack matching (step1_5)"
+  action: |
+    1. Read .tad/capability-packs/pack-registry.yaml (if not found → skip)
+    2. Match task keywords against pack entries (semantic match, same as step1_5)
+    3. If ≥1 match:
+       a. Show matched packs to user
+       b. AskUserQuestion: confirm which packs to use
+       c. Load confirmed pack CAPABILITY.md files
+    4. If ≥2 confirmed packs:
+       a. Analyze CONSUMES/PRODUCES chain
+       b. Propose serial execution order
+       c. AskUserQuestion: confirm order
+    5. Store confirmed pack list + order in conversation context
+       for use during design and handoff creation
+```
+
+---
+
+## 5. Research Evidence
+
+Research session RS-20260508-002 (17 sources, 3 ask rounds). Key findings:
+
+1. **Option C (Pack Manifest + LLM Natural Chaining)** chosen over programmatic router (Option B) and semantic registry (Option A)
+2. **≤12 skills is accuracy limit** — beyond that, LLM routing degrades
+3. **Claude Code skills are isolated** — LLM is the only bridge, no peer-worker dependencies
+4. **Orchestra uses file-based state passing** — research-state.yaml pattern, exactly what we already have
+5. **Sub-agents as context firewall** — reduces token consumption 67% for parallel pack execution
+
+Full report: `.research/sessions/RS-20260508-002/report.md`
+Extracted ACs: `.research/sessions/RS-20260508-002/acs.md`
+
+---
+
+## 6. Files to Create / Modify
+
+| # | Action | Path | Purpose |
+|---|--------|------|---------|
+| 1 | CREATE | `.tad/capability-packs/` | Directory for all 7 packs |
+| 2 | MOVE | 7 pack directories | From ~/ to .tad/capability-packs/ |
+| 3 | CREATE | `.tad/scripts/scan-packs.sh` | Registry generator script |
+| 4 | CREATE | `.tad/capability-packs/pack-registry.yaml` | Auto-generated pack index |
+| 5 | MODIFY | `.claude/skills/alex/SKILL.md` | Add step1_5b (capability pack loading from registry) |
+| 6 | MODIFY | Alex SKILL sync_protocol PRESERVE list | Add `.tad/capability-packs/` to zero-touch (M3) |
+| 7 | RE-INSTALL | `.claude/skills/research-methodology/SKILL.md` | Re-install from new path to verify |
+
+**Grounded Against** (Alex step1c):
+- `.claude/skills/alex/SKILL.md` (head 50, read at activation — step1_5 at lines ~550-650)
+- `~/research-methodology/install.sh` (read during earlier acceptance — lines 1-50)
+- `~/web-backend/CAPABILITY.md` (head 40, read during earlier Socratic)
+
+---
+
+## 7. Acceptance Criteria
+
+### Migration
+- [ ] **AC1**: All 7 pack directories exist under `.tad/capability-packs/` with all files (video-creation excluded)
+- [ ] **AC2**: Old directories for the 7 migrated packs deleted (~/video-creation/ untouched)
+- [ ] **AC3**: No `.git/` directories in `.tad/capability-packs/*/` (pack git histories not imported)
+
+### Registry
+- [ ] **AC4**: `pack-registry.yaml` exists at `.tad/capability-packs/pack-registry.yaml` with 7 entries (video-creation added later)
+- [ ] **AC5**: Each entry has: name, description, path, consumes, produces, keywords, type
+- [ ] **AC6**: `scan-packs.sh` is idempotent — running twice produces identical output
+- [ ] **AC7**: `type` field correctly classifies: 5 reference-based, 1 deep-skill, 1 orchestration-router (7 total)
+
+### Alex Integration
+- [ ] **AC8**: Alex SKILL step1_5b reads pack-registry.yaml and matches against task keywords
+- [ ] **AC9**: When ≥2 packs matched, Alex proposes serial pipeline order based on CONSUMES/PRODUCES
+- [ ] **AC10**: Pack count guardrail: if >12 packs in registry, only top 4 matches shown
+
+### Install Path Update
+- [ ] **AC11**: All 7 install.sh use `SCRIPT_DIR` self-location (no hardcoded paths). Verify: `bash .tad/capability-packs/web-backend/install.sh --agent=claude-code --dry-run` resolves source from new location
+- [ ] **AC12**: `bash .tad/capability-packs/research-methodology/install.sh --agent=claude-code` installs SKILL.md correctly
+- [ ] **AC13**: research-methodology SKILL.md at `.claude/skills/research-methodology/SKILL.md` is functional after re-install
+
+---
+
+## 8. Important Notes
+
+### 8.1 Key Design Decisions
+
+| # | Decision | Chosen | Rationale |
+|---|----------|--------|-----------|
+| 1 | Pack location | `.tad/capability-packs/` | Inside TAD repo for unified management; can extract later for independent distribution |
+| 2 | Registry format | Auto-generated YAML from scan | No manual maintenance; scan-packs.sh is source of truth |
+| 3 | Alex integration | step1_5b (parallel to existing Domain Pack step1_5) | Additive, doesn't break existing flow |
+| 4 | Multi-pack orchestration | Serial pipeline via AskUserQuestion | Research showed LLM as bridge is best fit; no programmatic router |
+| 5 | Old directories | Delete after verified migration | Single source of truth; no dual-maintenance |
+| 6 | Install.sh paths | SCRIPT_DIR self-location (unchanged) | install.sh already uses SCRIPT_DIR — works from any location. Packs are NOT synced; downstream installs via install.sh (BA-P0-1 fix) |
+
+### 8.2 Anti-Patterns
+- ❌ Keeping both old (~/) and new (.tad/) pack locations (dual source of truth)
+- ❌ Importing pack .git/ history into TAD repo (bloats TAD, no value)
+- ❌ Manually maintaining pack-registry.yaml (will drift — must be auto-generated)
+- ❌ Building a programmatic router for pack chaining (LLM is the bridge, per research)
+- ❌ Loading all 7 pack CAPABILITY.md files simultaneously (context budget — load on demand)
+
+---
+
+## 📚 Project Knowledge
+
+### ⚠️ Blake 必须注意的历史教训
+
+| Entry | Source | Relevance |
+|-------|--------|-----------|
+| Capability Pack Architecture Spectrum: Three Validated Patterns | architecture.md | type field classification (reference-based / deep-skill / orchestration-router) |
+| Capability Pack: YAML Frontmatter is Load-Bearing | architecture.md | CAPABILITY.md must have frontmatter — scan-packs.sh parses this |
+| Capability Pack: Multi-Agent Install Pattern | architecture.md | install.sh --agent= flag convention |
+
+---
+
+## 9. Spec Compliance Checklist
+
+### 9.1 Acceptance Criteria Verification
+
+| AC# | Verification Method | Expected |
+|-----|--------------------|----|
+| AC1 | `ls .tad/capability-packs/ \| wc -l` | 7 directories (excl. video-creation) |
+| AC4 | `cat .tad/capability-packs/pack-registry.yaml \| grep -c 'name:'` | 7 |
+| AC6 | Run scan-packs.sh twice, diff output | Identical |
+| AC7 | `grep -c 'reference-based' pack-registry.yaml` + `grep -c 'deep-skill'` + `grep -c 'orchestration-router'` | 5 + 1 + 1 |
+| AC12 | `bash .tad/capability-packs/research-methodology/install.sh --agent=claude-code --dry-run` | Prints correct paths |
+
+### 9.2 Expert Review Audit Trail
+
+| Reviewer | Issue | Resolution | Status |
+|----------|-------|------------|--------|
+| code-reviewer | CR-P0-1: AC11 wrong — install.sh self-locates | AC11 rewritten: verify SCRIPT_DIR resolves from new path, no file edits | Resolved |
+| code-reviewer | CR-P0-2: 7 residual "8" references | Global text fix across all sections | Resolved |
+| code-reviewer | CR-P0-3: product-thinking no CAPABILITY.md | Added M5: create CAPABILITY.md pre-migration | Resolved |
+| code-reviewer | CR-P0-4: Migration verification weak + M4 contradiction | M4 rewritten: cp-r → diff -rq verify → rm-rf. No more ls wc -l | Resolved |
+| backend-architect | BA-P0-1: *sync blast radius — packs to all projects | Added M3: capability-packs/ in sync PRESERVE (zero-touch). Decision #6 corrected | Resolved |
+| backend-architect | BA-P0-3: CONSUMES/PRODUCES missing in 5/7 packs | Added M6: backfill pre-migration step | Resolved |
+| code-reviewer | CR-P1-2: keywords extraction too vague | M6 includes adding keywords: to frontmatter | Resolved |
+| backend-architect | BA-P1-3: step1_5b vs step1_5 deduplication | Domain Packs (YAML) and Capability Packs (SKILL.md) serve different purposes — no dedup needed, documented | Noted |
+| backend-architect | BA-P1-6: M4 "mv" vs Section 4 "cp -r" contradiction | Unified to cp-r → diff -rq → rm-rf in both M4 and Section 4 | Resolved |
+| code-reviewer | CR-P0-2 + BA-P0-4: count inconsistency 8→7 | All references updated to 7 | Resolved |
+
+---
+
+## 11. Decision Summary
+
+| # | Decision | Options | Chosen | Rationale |
+|---|----------|---------|--------|-----------|
+| 1 | Integration architecture | Registry (A) / Orchestrator (B) / Manifest (C) | C: Manifest + LLM chaining | Research: LLM is execution engine → file-based state passing > programmatic routing |
+| 2 | Pack storage | ~/ independent / .tad/ integrated / .claude/ direct | .tad/capability-packs/ | User decision: "先集成进 TAD，以后再独立分发" |
+| 3 | Old dirs | Keep / Delete / Symlink | Delete | Single source of truth |

@@ -1,0 +1,40 @@
+═══════════════════════════════════════════════════════════════
+AC-P3.1-h: AR-001 mechanical anchor (SKILL-text grep)
+═══════════════════════════════════════════════════════════════
+
+Purpose:
+  AR-001 ("express = review-exempt") is a forbidden interpretation.
+  This grep mechanically verifies that express_path_protocol's required_steps
+  contains the literal phrase "expert review" AND "code-reviewer" within ~30 lines
+  of the protocol header. SKILL-text grep is prompt-level (no runtime hook).
+
+Command:
+  grep -A 30 'express_path_protocol:' .claude/skills/alex/SKILL.md \
+    | grep -c 'expert review.*code-reviewer\|code-reviewer.*expert review'
+
+Expected exit:
+  Returns ≥ 1 (i.e., at least one line within 30 lines of the protocol header
+  contains both "expert review" and "code-reviewer" tokens).
+
+Live result (from this Phase 3 implementation):
+───────────────────────────────────────────────────────────────
+$ cd "/Users/sheldonzhao/01-on progress programs/TAD"
+$ grep -A 30 'express_path_protocol:' .claude/skills/alex/SKILL.md \
+    | grep -c 'expert review.*code-reviewer\|code-reviewer.*expert review'
+
+(see ar001-grep.txt — populated during Layer 1 self-check)
+───────────────────────────────────────────────────────────────
+
+Why this is the right mechanical anchor:
+  - Cheap: a single grep, no runtime cost.
+  - Robust: Alex SKILL.md text is the source of truth for the protocol.
+    A future edit that removes "expert review" or "code-reviewer" from
+    required_steps would silently bypass the AR-001 guarantee — this grep
+    catches that.
+  - Prompt-level only: not a hook, not a settings.json entry, just text.
+
+If the grep returns 0:
+  → Phase 3 implementation is INCOMPLETE / regressed.
+  → AR-001 anchor lost; *express becomes vulnerable to "review-exempt" misuse.
+  → Re-add the literal "expert review with ≥1 expert (code-reviewer 必选)"
+    line to express_path_protocol.required_steps.

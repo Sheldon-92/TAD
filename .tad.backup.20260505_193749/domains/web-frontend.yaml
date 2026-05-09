@@ -1,0 +1,744 @@
+# Domain Pack: Web Frontend
+# From design to working code — scaffold, implement, optimize, ship
+domain: web-frontend
+version: 1.0.0
+requires_registry: ">=1"  # Requires 2026-04-02 registry update (project_scaffold, component_library, etc.)
+description: "Web 前端开发：从设计稿到可运行的代码。产出物是可构建、可测试、可部署的前端项目，不是建议文档。"
+
+output_dir: ".tad/active/frontend/{project}/"
+# NOTE: The actual frontend project code is scaffolded at the repository root ({project}/).
+# output_dir is for TAD documentation files (plans, analysis, verification).
+# The project directory location is always relative to the repository root (cwd).
+
+# ═══════════════════════════════════════
+# Capability 1: Project Scaffold
+# ═══════════════════════════════════════
+
+capabilities:
+
+  project_scaffold:
+    description: "Initialize a new frontend project with framework, TypeScript, styling, linting pre-configured"
+
+    steps:
+      # Layer 1: Search — gather requirements and best practices
+      - id: gather_requirements
+        action: |
+          Before scaffolding, collect project context:
+          1. What framework? (Next.js App Router for most cases, Vite for SPA-only)
+          2. What styling? (Tailwind CSS default, CSS Modules if team prefers)
+          3. What component library? (shadcn/ui default, none if custom design)
+          4. What package manager? (npm default)
+          5. Does a UI Design pack output exist? If yes, read design tokens from it.
+        tool_ref: null
+        output_file: "scaffold-plan.md"
+
+      # Layer 2: Analyze — evaluate framework choice
+      - id: analyze_framework_fit
+        action: |
+          Based on requirements, evaluate framework choice (from wsimmonds/claude-nextjs-skills research):
+          1. Does the app need SSR/SSG? → Next.js App Router (prefer Server Components)
+          2. Is it a pure SPA with no SEO needs? → Vite + React may be simpler
+          3. Does it need API routes? → Next.js Server Actions > Route Handlers
+          4. What's the team's existing knowledge? → Don't force framework switch without reason
+          Decision must answer: "Why this framework for THIS project?"
+          If requirements are ambiguous → default to Next.js App Router (broadest capability).
+        quality: "Framework choice must have a reason tied to project requirements, not preference."
+        tool_ref: null
+        output_file: "scaffold-plan.md (append)"
+
+      # Layer 3: Derive — determine exact scaffold configuration
+      - id: derive_scaffold_config
+        action: |
+          Based on analysis, determine exact commands:
+          1. Scaffold command with all flags
+          2. Post-scaffold setup (shadcn init, additional packages)
+          3. Directory structure adjustments (if design pack specifies conventions)
+          4. Initial configuration (tsconfig strict, tailwind custom tokens, eslint rules)
+          If UI Design tokens exist → integrate into tailwind.config.ts
+        quality: "Every config choice traceable to a requirement or best practice."
+        tool_ref: null
+        output_file: "scaffold-plan.md (append)"
+
+      # Layer 4: Generate — execute scaffold
+      - id: execute_scaffold
+        action: |
+          Run scaffold commands:
+          1. npx create-next-app@latest {project} --typescript --tailwind --eslint --app --src-dir --use-npm
+          2. cd {project} && npx shadcn@latest init -d
+          3. npx shadcn@latest add {components from design spec}
+          4. Verify: npx tsc --noEmit && npx eslint . && npm run build
+        tool_ref: project_scaffold
+        output_file: "{project}/ (entire project directory)"
+
+      - id: verify_scaffold
+        action: |
+          Post-scaffold verification:
+          1. ls src/app/ → layout.tsx, page.tsx exist
+          2. ls src/components/ui/ → shadcn components exist
+          3. npx tsc --noEmit → zero errors
+          4. npm run build → success
+          Report any failures immediately.
+        tool_ref: build_verification
+        output_file: "scaffold-verification.md"
+
+    quality_criteria:
+      - "Project builds successfully (npm run build = 0 errors)"
+      - "TypeScript strict mode enabled in tsconfig.json"
+      - "ESLint configured and passing (npx eslint . = 0 errors)"
+      - "Directory follows convention: src/app/, src/components/ui/, src/hooks/, src/lib/"
+      - "Framework choice has documented reasoning"
+      - "Fabricated configurations or invented dependencies = FAIL. Unverified tool versions must be marked [UNVALIDATED]."
+
+    anti_patterns:
+      - "❌ Using Pages Router instead of App Router (wsimmonds: causes 20% eval failures)"
+      - "❌ Starting without TypeScript strict mode"
+      - "❌ Flat directory without src/ separation"
+      - "❌ Skipping ESLint setup — tech debt from day 1"
+
+    reviewers:
+      - persona: "Senior Frontend Architect"
+        checklist:
+          - "Framework choice appropriate for requirements?"
+          - "TypeScript strict mode and path aliases configured?"
+          - "Build pipeline (lint + type-check + build) works end-to-end?"
+
+  # ═══════════════════════════════════════
+  # Capability 2: Component Development
+  # ═══════════════════════════════════════
+
+  component_development:
+    description: "Implement UI components from design specs — typed, accessible, composable"
+
+    steps:
+      # Layer 1: Search — gather component requirements
+      - id: inventory_components
+        action: |
+          From the design spec or wireframes, create a component inventory:
+          1. List every unique UI element (buttons, cards, forms, modals, tables, etc.)
+          2. For each: name, props it needs, states it has (default/hover/disabled/loading/error)
+          3. Classify: shadcn built-in (use as-is) vs custom (implement from scratch)
+          4. Identify shared components vs page-specific components
+          Check shadcn registry: npx shadcn@latest add --list
+        tool_ref: null
+        output_file: "component-inventory.md"
+
+      # Layer 2: Analyze — design component architecture
+      - id: analyze_component_architecture
+        action: |
+          For each custom component, analyze architecture (from everything-claude-code research):
+          1. Does it need shared state? → Compound component with Context API
+          2. Does it need flexible rendering? → Render props or children composition
+          3. Does it fetch data? → Server Component (no 'use client')
+          4. Does it handle user interaction? → Client Component with minimal scope
+          5. Can it be decomposed? → Exported component → subcomponents → helpers
+          Apply the "minimize 'use client'" principle: only wrap interactive parts.
+        quality: "Each component has a documented reason for being Server or Client."
+        tool_ref: null
+        output_file: "component-architecture.md"
+
+      # Layer 3: Derive — define implementation plan
+      - id: derive_implementation_order
+        action: |
+          Order components for implementation:
+          1. Shared/base components first (buttons, inputs, layout primitives)
+          2. Composite components next (forms, cards, tables)
+          3. Page-specific components last (feature-specific UI)
+          For each component, specify:
+          - TypeScript interface for props
+          - Which shadcn primitives to compose
+          - Accessibility requirements (keyboard nav, ARIA, focus management)
+        quality: "Implementation order respects dependency graph — no forward references."
+        tool_ref: null
+        output_file: "component-plan.md"
+
+      # Layer 4: Generate — implement components
+      - id: implement_components
+        action: |
+          For each component (from everything-claude-code + cursorrules best practices):
+          1. Define TypeScript interface (interfaces > types, avoid enums → use maps)
+          2. Use function keyword (not const arrow) for component declaration
+          3. Implement with composition: props + children, named exports
+          4. Add loading/error states where applicable
+          5. Ensure accessibility: keyboard navigation, ARIA labels, focus management
+          6. Structure: Exported component → subcomponents → helpers → types at file end
+          Variable naming: isLoading, hasError, canSubmit (auxiliary verbs)
+        tool_ref: null
+        output_file: "src/components/ (component files)"
+
+      - id: verify_components
+        action: |
+          After implementation:
+          1. npx tsc --noEmit → zero type errors
+          2. npx eslint src/components/ → zero lint errors
+          3. Visual check: each component renders correctly
+        tool_ref: type_checking
+        output_file: "component-verification.md"
+
+    quality_criteria:
+      - "All components have TypeScript interfaces for props"
+      - "Server Components used by default, 'use client' only when required (interaction/hooks)"
+      - "Each client component wrapped in Suspense with fallback"
+      - "Accessibility: keyboard navigable, ARIA labels present, focus managed"
+      - "npx tsc --noEmit = 0 errors after implementation"
+      - "No any types in component code"
+      - "Fabricated component APIs or invented prop types = FAIL. Check actual shadcn docs."
+
+    anti_patterns:
+      - "❌ Using useEffect for data fetching — use Server Components (wsimmonds finding)"
+      - "❌ Marking everything 'use client' — minimize client boundary"
+      - "❌ Using class components or inheritance (composition only)"
+      - "❌ Missing loading/error states for async components"
+      - "❌ Using any type instead of proper interfaces"
+      - "❌ Not handling keyboard navigation (inaccessible)"
+
+    reviewers:
+      - persona: "Accessibility Expert"
+        checklist:
+          - "All interactive elements keyboard accessible?"
+          - "ARIA attributes correct and complete?"
+          - "Focus management for modals/dialogs?"
+      - persona: "React Architect"
+        checklist:
+          - "Server/Client boundary minimal and correct?"
+          - "Component composition clean (no prop drilling)?"
+          - "TypeScript types precise (no any)?"
+
+  # ═══════════════════════════════════════
+  # Capability 3: State Management
+  # ═══════════════════════════════════════
+
+  state_management:
+    description: "Design and implement state management — server state, client state, URL state, form state"
+
+    steps:
+      # Layer 1: Search — catalog all state in the app
+      - id: catalog_state
+        action: |
+          Identify every piece of state in the application:
+          1. Server state: data from APIs/database (list endpoints + data shapes)
+          2. Client state: UI-only state (modals open, sidebar collapsed, theme)
+          3. URL state: filters, pagination, search params
+          4. Form state: user input, validation errors
+          For each, note: where it's used, how often it changes, who needs it.
+        tool_ref: null
+        output_file: "state-catalog.md"
+
+      # Layer 2: Analyze — choose strategy per state type
+      - id: analyze_state_strategy
+        action: |
+          For each state category, choose approach (from cursorrules + everything-claude-code research):
+          1. Server state → Server Components for initial load, React Query/SWR for client cache
+             Rule: "Minimize useEffect and setState. Favor RSC." (cursorrules)
+          2. Client global state → Zustand (lightweight, < 1KB) or Context + useReducer (built-in)
+             Decision: Zustand if 3+ consumers, Context if 1-2 consumers
+          3. URL state → useSearchParams + Suspense boundary
+             Rule: always Suspense-wrap useSearchParams (wsimmonds eval)
+          4. Form state → react-hook-form + Zod validation
+             Rule: "Use Zod for form validation" (cursorrules)
+          Document WHY each choice was made (not just WHAT).
+        quality: "Each state strategy has a reason. No 'we always use Redux' without justification."
+        tool_ref: null
+        output_file: "state-strategy.md"
+
+      # Layer 3: Derive — design state architecture
+      - id: derive_state_architecture
+        action: |
+          Based on strategy, design the state architecture:
+          1. Draw data flow: Server → Component → User → Server (round-trip)
+          2. Identify state colocation: state lives closest to where it's consumed
+          3. Define store structure (if using Zustand): slices, actions, selectors
+          4. Define Server Actions (if using Next.js): input schema (Zod) → ActionResponse
+          5. Check: no prop drilling beyond 2 levels → use Context or store
+          Use next-safe-action pattern for all server mutations.
+        quality: "State architecture eliminates prop drilling and unnecessary re-renders."
+        tool_ref: null
+        output_file: "state-architecture.md"
+
+      # Layer 4: Generate — implement state layer
+      - id: implement_state
+        action: |
+          Implement according to architecture:
+          1. Create store files in src/lib/store/ (Zustand) or src/contexts/ (Context)
+          2. Create Server Actions in src/app/actions/ with Zod schemas
+          3. Create React Query/SWR hooks in src/hooks/ for data fetching
+          4. Wire up: components → hooks/store → actions/API
+          5. Verify: no unnecessary re-renders (check with React DevTools if available)
+        tool_ref: null
+        output_file: "src/lib/store/ and src/hooks/ (state files)"
+
+      - id: verify_state
+        action: |
+          After implementation:
+          1. npx tsc --noEmit → zero errors (all state is typed)
+          2. Test state flow: action → state change → UI update
+          3. No any types in store or hook files
+        tool_ref: type_checking
+        output_file: "state-verification.md"
+
+    quality_criteria:
+      - "All state fully typed (no any)"
+      - "Server state fetched via Server Components or React Query (not useEffect)"
+      - "No prop drilling beyond 2 levels"
+      - "Form validation uses Zod schemas"
+      - "Server Actions use next-safe-action with typed responses"
+      - "State colocation: state lives closest to consumers"
+      - "Fabricated store structures or invented hook APIs = FAIL. Verify against library docs."
+
+    anti_patterns:
+      - "❌ useEffect + useState for server data fetching (use Server Components/React Query)"
+      - "❌ Prop drilling through 3+ levels (use Context or Zustand)"
+      - "❌ Multiple competing state libraries in one project"
+      - "❌ Storing derived/computed state (compute from source instead)"
+      - "❌ Missing Suspense boundary around useSearchParams"
+
+    reviewers:
+      - persona: "React Performance Engineer"
+        checklist:
+          - "Unnecessary re-renders eliminated?"
+          - "State colocation correct?"
+          - "Server/client state boundary clean?"
+      - persona: "State Architecture Reviewer"
+        checklist:
+          - "Form validation uses Zod schemas?"
+          - "Zustand store structure flat and sliced?"
+          - "Server Actions properly typed with ActionResponse?"
+
+  # ═══════════════════════════════════════
+  # Capability 4: API Integration
+  # ═══════════════════════════════════════
+
+  api_integration:
+    description: "Connect frontend to backend APIs — typed, cached, error-handled"
+
+    steps:
+      # Layer 1: Search — understand API contract
+      - id: gather_api_spec
+        action: |
+          Collect API information:
+          1. Is there an OpenAPI/Swagger spec? If yes, download it.
+          2. If no spec, document endpoints manually: method, path, request body, response shape
+          3. Check authentication: API key, JWT, cookies, OAuth?
+          4. Check rate limits and error format
+        tool_ref: null
+        output_file: "api-spec-analysis.md"
+
+      # Layer 2: Analyze — design integration layer
+      - id: analyze_api_patterns
+        action: |
+          For each endpoint, decide integration pattern (from cursorrules research):
+          1. Read-only data for page render → Server Component fetch (no client JS)
+          2. User-triggered mutation → Server Action with next-safe-action + Zod
+          3. Real-time data → WebSocket or polling with React Query
+          4. File upload → Server Action with FormData
+          Rules:
+          - "Expected errors are return values, not exceptions" (cursorrules)
+          - "Services directory code throws user-friendly errors for tanStackQuery" (cursorrules)
+          - Server Actions > Route Handlers when possible (wsimmonds)
+        quality: "Each endpoint has a documented integration strategy with error handling plan."
+        tool_ref: null
+        output_file: "api-integration-plan.md"
+
+      # Layer 3: Derive — generate types and plan error handling
+      - id: derive_api_types
+        action: |
+          1. If OpenAPI spec exists: npx openapi-typescript api.yaml -o src/lib/api-types.ts
+          2. If no spec: manually define TypeScript interfaces in src/lib/api-types.ts
+          3. Define ActionResponse<T> type for Server Actions:
+             type ActionResponse<T> = { success: true; data: T } | { success: false; error: string }
+          4. Define error handling strategy:
+             - Network errors → retry with exponential backoff
+             - 4xx errors → show user-friendly message
+             - 5xx errors → log + generic error to user
+        quality: "All API responses typed. No any. All error paths handled."
+        tool_ref: api_type_generation
+        output_file: "src/lib/api-types.ts"
+
+      # Layer 4: Generate — implement API layer
+      - id: implement_api_layer
+        action: |
+          Create API integration code:
+          1. src/lib/api/ → fetch wrappers with typed request/response
+          2. src/app/actions/ → Server Actions with Zod input validation
+          3. src/hooks/ → React Query hooks for client-side caching
+          4. Error boundaries: error.tsx per route segment
+          Pattern: useActionState + react-hook-form for form submissions
+        tool_ref: null
+        output_file: "src/lib/api/ and src/app/actions/ (API files)"
+
+      - id: verify_api
+        action: |
+          After implementation:
+          1. npx tsc --noEmit → all API calls fully typed
+          2. Every fetch has error handling
+          3. Every mutation has loading state
+          4. No any types in API layer
+        tool_ref: type_checking
+        output_file: "api-verification.md"
+
+    quality_criteria:
+      - "All API responses have TypeScript types (no any)"
+      - "Every fetch point has error handling"
+      - "Every async operation has loading state"
+      - "Server Actions use Zod input validation"
+      - "Errors returned as values, not thrown (ActionResponse pattern)"
+      - "OpenAPI types auto-generated if spec exists"
+      - "Fabricated API endpoints or invented response shapes = FAIL. Verify against actual spec."
+
+    anti_patterns:
+      - "❌ Untyped API responses (any type)"
+      - "❌ Missing error handling on fetch calls"
+      - "❌ Using Route Handlers when Server Actions suffice"
+      - "❌ Client-side fetch when Server Component can do it"
+      - "❌ try/catch for expected errors (use return values)"
+
+    reviewers:
+      - persona: "API Integration Specialist"
+        checklist:
+          - "All endpoints typed?"
+          - "Error handling at every boundary?"
+          - "Loading states for all async operations?"
+          - "Authentication handled correctly?"
+
+  # ═══════════════════════════════════════
+  # Capability 5: Styling
+  # ═══════════════════════════════════════
+
+  styling:
+    description: "Implement styles — Tailwind config, design tokens, responsive, animation"
+
+    steps:
+      # Layer 1: Search — gather design requirements
+      - id: gather_design_tokens
+        action: |
+          Collect design specifications:
+          1. Does a UI Design pack output exist? Read design tokens (CSS vars, colors, fonts, spacing)
+          2. If no design spec, define minimum tokens: primary/secondary colors, font family, spacing scale
+          3. Check responsive breakpoints needed (mobile/tablet/desktop)
+          4. Check animation requirements (page transitions, micro-interactions)
+        tool_ref: null
+        output_file: "styling-requirements.md"
+
+      # Layer 2: Analyze — evaluate design system approach
+      - id: analyze_styling_approach
+        action: |
+          Choose styling strategy (from anthropics/claude-code + claude-frontend-skills research):
+          1. Typography: distinctive font pairing (display + body)
+             Rule: avoid Inter/Roboto as display fonts (generic AI aesthetic)
+             Use extreme weight contrast when appropriate (200 vs 900)
+          2. Color: "Dominant colors with sharp accents > evenly-distributed palettes"
+          3. Layout: mobile-first responsive with Tailwind breakpoints
+          4. Motion: "One well-orchestrated page load > scattered micro-interactions"
+          5. Is custom design needed? → bold direction, avoid cookie-cutter
+          6. Is functional design sufficient? → shadcn defaults, focus on UX
+          Decision: custom aesthetic vs functional aesthetic for THIS project.
+        quality: "Styling choices serve the project goals, not personal preference."
+        tool_ref: null
+        output_file: "styling-strategy.md"
+
+      # Layer 3: Derive — create token configuration
+      - id: derive_tailwind_config
+        action: |
+          Based on analysis, create Tailwind configuration:
+          1. Map design tokens to tailwind.config.ts (colors, fonts, spacing, breakpoints)
+          2. Define CSS custom properties in globals.css for dynamic theming
+          3. Plan responsive breakpoints (sm:640, md:768, lg:1024, xl:1280)
+          4. Plan animation utilities (if custom animations needed)
+          If Design Tokens JSON exists → use style-dictionary to generate CSS vars first.
+        quality: "All design tokens traceable to design spec or documented decision."
+        tool_ref: design_tokens
+        output_file: "tailwind.config.ts + globals.css"
+
+      # Layer 4: Generate — implement styles
+      - id: implement_styles
+        action: |
+          Apply styles to components:
+          1. Configure tailwind.config.ts with custom tokens
+          2. Set up globals.css with CSS variables and base styles
+          3. Apply Tailwind classes to components (mobile-first: base → sm: → md: → lg:)
+          4. Add animations where specified (CSS transitions or Framer Motion)
+          5. Verify responsive: check at mobile (375px), tablet (768px), desktop (1280px)
+        tool_ref: null
+        output_file: "styled components and config files"
+
+      - id: verify_styles
+        action: |
+          After implementation:
+          1. npm run build → CSS generated without errors
+          2. Visual check at 3 breakpoints (if screenshots available)
+          3. pa11y accessibility check on generated HTML (contrast ratios)
+        tool_ref: accessibility_check
+        output_file: "styling-verification.md"
+
+    quality_criteria:
+      - "All design tokens defined in tailwind.config.ts (no magic values in components)"
+      - "Responsive design works at mobile (375px), tablet (768px), desktop (1280px)"
+      - "No hardcoded colors/spacing in components (use Tailwind classes)"
+      - "CSS custom properties used for dynamic values (themes)"
+      - "WCAG AA contrast ratios met (verified by pa11y if applicable)"
+      - "Fabricated color values or invented design tokens = FAIL. Must trace to design spec."
+
+    anti_patterns:
+      - "❌ Hardcoded colors (#fff, rgb(0,0,0)) in component files — use Tailwind tokens"
+      - "❌ Desktop-first responsive (missing mobile styles)"
+      - "❌ Inter/Roboto as primary display font (generic AI look)"
+      - "❌ Purple-on-white gradient (clichéd AI color scheme)"
+      - "❌ No responsive testing — only looks good at one width"
+
+    reviewers:
+      - persona: "UI Design Reviewer"
+        checklist:
+          - "Design tokens consistent across all components?"
+          - "Responsive at all breakpoints?"
+          - "Accessibility contrast ratios met?"
+
+  # ═══════════════════════════════════════
+  # Capability 6: Build Optimization
+  # ═══════════════════════════════════════
+
+  build_optimization:
+    description: "Optimize bundle size, loading performance, and Core Web Vitals"
+
+    steps:
+      # Layer 1: Search — measure current performance
+      - id: measure_baseline
+        action: |
+          Establish performance baseline:
+          1. npm run build → record build output (route sizes, static/dynamic)
+          2. Check total JS bundle size from build output
+          3. Identify largest route segments
+          4. Note: any route marked as "dynamic" that could be static?
+        tool_ref: build_verification
+        output_file: "performance-baseline.md"
+
+      # Layer 2: Analyze — identify optimization opportunities
+      - id: analyze_performance
+        action: |
+          For each optimization area (from cursorrules + wsimmonds research):
+          1. Code splitting: are non-critical components dynamically imported?
+             Rule: "Use dynamic loading for non-critical components"
+          2. Image optimization: are all images using next/image with proper sizing?
+             Rule: "WebP format, size data, lazy loading"
+          3. Data fetching: any serial awaits that can be parallelized?
+             Rule: "Avoid serial awaits — parallelize when possible"
+          4. Unused code: any imported-but-unused dependencies?
+          5. Cache: are static pages leveraging ISR/static generation?
+          Prioritize by impact: LCP > CLS > FID (Core Web Vitals priority)
+        quality: "Each optimization has measured impact potential, not just theoretical benefit."
+        tool_ref: null
+        output_file: "optimization-analysis.md"
+
+      # Layer 3: Derive — create optimization plan
+      - id: derive_optimization_plan
+        action: |
+          Rank optimizations by effort-to-impact ratio:
+          1. Quick wins (< 5 min): dynamic imports, image optimization, parallel fetching
+          2. Medium effort: code splitting by route, tree-shaking imports
+          3. Large effort: caching strategy, ISR configuration
+          For each: estimated bundle size reduction and affected Web Vital.
+          If baseline is already good (< 100KB first-load JS) → document and skip optimization.
+        quality: "Optimization plan is prioritized by measurable impact, not theoretical benefit."
+        tool_ref: null
+        output_file: "optimization-plan.md"
+
+      # Layer 4: Generate — apply optimizations
+      - id: apply_optimizations
+        action: |
+          Execute optimizations from plan:
+          1. Replace raw <img> with next/image (WebP, lazy, sized)
+          2. Add next/dynamic for non-critical components
+          3. Parallelize serial awaits with Promise.all
+          4. Verify: npm run build → compare route sizes vs baseline
+        tool_ref: build_verification
+        output_file: "optimization-results.md"
+
+      - id: verify_optimization
+        action: |
+          Compare before/after:
+          1. npm run build → total JS size
+          2. Route-by-route comparison
+          3. Any regression? (larger after "optimization" = revert)
+        tool_ref: build_verification
+        output_file: "optimization-verification.md"
+
+    quality_criteria:
+      - "First-load JS < 100KB (or documented reason if larger)"
+      - "All images use next/image component (no raw <img> tags)"
+      - "No serial awaits in Server Components (parallelized)"
+      - "Non-critical components use dynamic imports"
+      - "Build output shows no unexpected dynamic routes"
+      - "Fabricated performance numbers or invented benchmark results = FAIL. Measure, don't guess."
+
+    anti_patterns:
+      - "❌ Importing entire libraries (import _ from 'lodash' → import debounce from 'lodash/debounce')"
+      - "❌ Missing loading.tsx for route segments"
+      - "❌ Raw <img> tags instead of next/image"
+      - "❌ Serial data fetching when parallelizable"
+      - "❌ Optimizing without measuring baseline first"
+
+    reviewers:
+      - persona: "Performance Engineer"
+        checklist:
+          - "Bundle size reasonable for feature set?"
+          - "Core Web Vitals optimized (LCP, CLS, FID)?"
+          - "No performance regressions from optimizations?"
+
+  # ═══════════════════════════════════════
+  # Capability 7: Code Quality
+  # ═══════════════════════════════════════
+
+  code_quality:
+    description: "Enforce code quality — lint, type-check, format, verify build"
+
+    steps:
+      # Layer 1: Search — audit current quality status
+      - id: audit_code_quality
+        action: |
+          Run all quality checks and collect results:
+          1. npx tsc --noEmit → type errors
+          2. npx eslint . → lint errors and warnings
+          3. npx prettier --check "src/**/*.{ts,tsx}" → formatting issues
+          4. npm run build → build errors
+          Collect all errors into a single report.
+        tool_ref: code_linting
+        output_file: "quality-audit.md"
+
+      # Layer 2: Analyze — categorize and prioritize issues
+      - id: analyze_quality_issues
+        action: |
+          For each issue found, categorize (from cursorrules + ai-coding-starter-kit research):
+          1. Type errors → fix immediately (most impactful for correctness)
+          2. any types → replace with proper interfaces/generics
+          3. ESLint errors → fix (may indicate bugs)
+          4. ESLint warnings → evaluate (some are project-specific)
+          5. Formatting → auto-fix with prettier --write
+          6. Build errors → fix immediately (blocks deployment)
+          Apply guard clause pattern: handle errors at function start, happy path last.
+          Apply RORO pattern: Receive an Object, Return an Object.
+        quality: "Issues prioritized by severity: type errors > lint errors > warnings > formatting."
+        tool_ref: null
+        output_file: "quality-analysis.md"
+
+      # Layer 3: Derive — determine fix strategy
+      - id: derive_fix_strategy
+        action: |
+          For remaining issues, determine fix approach:
+          1. Auto-fixable (prettier, some eslint) → batch fix
+          2. Type errors → fix one-by-one with proper types (never any)
+          3. Architecture issues → may need refactoring (escalate if large)
+          File naming convention check: lowercase-with-dashes for directories (cursorrules).
+          Named exports > default exports for components.
+        quality: "Fix strategy addresses root cause, not just suppresses warnings."
+        tool_ref: null
+        output_file: "fix-strategy.md"
+
+      # Layer 4: Generate — apply fixes and verify
+      - id: apply_quality_fixes
+        action: |
+          Execute fixes:
+          1. npx prettier --write "src/**/*.{ts,tsx}" → auto-format
+          2. Fix type errors (replace any, add interfaces)
+          3. Fix lint errors (follow ESLint suggestions)
+          4. Verify all: npx tsc --noEmit && npx eslint . && npm run build
+        tool_ref: code_formatting
+        output_file: "quality-fixes.md"
+
+      - id: verify_quality
+        action: |
+          Final quality gate:
+          1. npx tsc --noEmit → ZERO errors
+          2. npx eslint . → ZERO errors
+          3. npx prettier --check . → ZERO issues
+          4. npm run build → SUCCESS
+          ALL FOUR must pass. Any failure = not done.
+        tool_ref: type_checking
+        output_file: "quality-verification.md"
+
+    quality_criteria:
+      - "npx tsc --noEmit = 0 errors"
+      - "npx eslint . = 0 errors"
+      - "npx prettier --check . = 0 issues"
+      - "npm run build = success"
+      - "No any types in codebase"
+      - "All directories lowercase-with-dashes"
+      - "All components use named exports"
+      - "Fabricated lint results or suppressed errors = FAIL. Run checks, don't fake them."
+
+    anti_patterns:
+      - "❌ Using any type (use unknown + type guards if truly dynamic)"
+      - "❌ Suppressing errors with // eslint-disable (fix root cause)"
+      - "❌ Ignoring TypeScript errors with @ts-ignore"
+      - "❌ Inconsistent naming (mixing camelCase/kebab-case for directories)"
+      - "❌ Missing error boundaries for route segments (error.tsx)"
+
+    reviewers:
+      - persona: "Code Quality Reviewer"
+        checklist:
+          - "Zero type errors?"
+          - "Zero lint errors?"
+          - "Consistent code formatting?"
+          - "Build succeeds?"
+          - "No any types?"
+
+# ═══════════════════════════════════════
+# Output Structure
+# ═══════════════════════════════════════
+
+output_structure: |
+  {project}/                            # Runnable frontend project
+  ├── src/
+  │   ├── app/                          # Next.js App Router
+  │   │   ├── layout.tsx
+  │   │   ├── page.tsx
+  │   │   ├── globals.css
+  │   │   ├── error.tsx                 # Error boundary
+  │   │   ├── loading.tsx               # Loading UI
+  │   │   └── actions/                  # Server Actions
+  │   ├── components/
+  │   │   └── ui/                       # shadcn + custom components
+  │   ├── hooks/                        # Custom React hooks
+  │   ├── lib/
+  │   │   ├── api/                      # API integration layer
+  │   │   ├── api-types.ts              # Auto-generated types
+  │   │   ├── store/                    # Zustand stores
+  │   │   └── utils.ts                  # Utilities
+  │   └── contexts/                     # React Contexts (if used)
+  ├── public/                           # Static assets
+  ├── tsconfig.json                     # TypeScript config (strict)
+  ├── tailwind.config.ts                # Tailwind with custom tokens
+  ├── next.config.ts                    # Next.js config
+  ├── package.json
+  └── eslint.config.mjs                 # ESLint config (flat config for ESLint v9+)
+
+  .tad/active/frontend/{project}/       # TAD documentation
+  ├── scaffold-plan.md
+  ├── component-inventory.md
+  ├── component-architecture.md
+  ├── state-strategy.md
+  ├── api-integration-plan.md
+  ├── styling-strategy.md
+  ├── performance-baseline.md
+  ├── optimization-results.md
+  └── quality-verification.md
+
+# ═══════════════════════════════════════
+# Domain-specific Gate Standards
+# ═══════════════════════════════════════
+
+gates:
+  gate2_design:
+    checklist:
+      - "Component inventory complete (all design elements listed)"
+      - "State management strategy documented with rationale"
+      - "API integration plan covers all endpoints"
+      - "Framework choice has documented reasoning"
+      - "Styling approach defined (tokens, responsive strategy)"
+
+  gate4_acceptance:
+    checklist:
+      - "npm run build succeeds with zero errors"
+      - "npx tsc --noEmit produces zero type errors"
+      - "npx eslint . produces zero lint errors"
+      - "All components render correctly"
+      - "Responsive design works at 3 breakpoints"
+      - "No any types in codebase"
+      - "Code quality verification report complete"

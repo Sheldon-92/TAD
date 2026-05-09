@@ -1,0 +1,154 @@
+# Cross-Model Capability Catalog
+# Protocol fixed, capabilities pluggable.
+# New capability discovered → add entry → TAD immediately usable.
+# NOTE: This file is catalog only (metadata per capability).
+# Fallback chains and orchestration logic live in config-workflow.yaml research_notebook.fallback_chains
+version: 1.0.0
+last_updated: 2026-05-03
+
+capabilities:
+  codex_image_gen:
+    platform: codex
+    cli_command: 'codex exec --full-auto "Generate image: {prompt}. Save the image to the project directory."'
+    description: "GPT Image-2 image generation (UI mockups, architecture diagrams, charts, icons)"
+    output_location: "~/.codex/generated_images/ → copy to project directory"
+    verified: true
+    spike_ref: "SPIKE-20260503-phase0/spike-c-results.md"
+    use_when: "Need to generate images, diagrams, UI mockups, architecture visuals"
+    dont_use_when: "Need photorealistic images / need precise pixel control / need vector output"
+    fallback: "Mermaid / PlantUML / draw.io (manual)"
+    budget: "GPT Plus credits, ≤20/month recommended"
+    latency: "~120s per image"
+    setup_required: false
+    notes: "codex exec --full-auto validated in Phase 2 dogfood (2026-05-02). --skip-git-repo-check needed for non-git dirs."
+
+  notebooklm_research:
+    platform: notebooklm
+    cli_commands:
+      - 'notebooklm ask "{question}"'
+      - 'notebooklm source add-research "{topic}" --mode fast|deep --import-all'
+      - 'notebooklm generate report "{description}" --wait'
+      - 'notebooklm download report --latest -n <id> "{output_path}"'
+      - 'notebooklm summary --topics'
+      - 'notebooklm source guide <source_id> --json'
+      - 'notebooklm configure --persona "{text}" --mode {mode}'
+      - 'notebooklm source stale <source_id>'
+    description: "Multi-source cross-media deep research: automated source discovery, cross-source reasoning, report generation, persona configuration, content-staleness audit"
+    verified: true
+    spike_ref: "SPIKE-20260503-notebooklm/SPIKE-REPORT.md, SPIKE-20260504-notebooklm-capabilities/SPIKE-REPORT.md"
+    skill_ref: "*research-notebook (19 commands: create, add, ask, list, sync, curate, archive, use, research, report, guide, configure, topics, ingest, fulltext, language, consolidate, quiz, flashcards)"
+    use_when: "Research-intensive topics needing cross-source synthesis + video content + citations; auto source discovery (research cmd); report generation (report cmd)"
+    dont_use_when: "Quick fact lookup (use WebSearch) / real-time data (NotebookLM does not fetch live web)"
+    fallback: "WebSearch ×5-8 (Claude iterative search)"
+    setup_required: true
+    setup_ref: "*research-notebook create OR bash .tad/cross-model/setup-notebooklm.sh"
+    minimum_version: "notebooklm-py==0.3.4 (0.1.1 has deprecated RPC endpoints — all AI commands fail)"
+    latency:
+      ask: "23-43s per query"
+      source_add_research_fast: "~1s"
+      source_add_research_deep: "~3-4min (50+ sources)"
+      generate_report: "30-90s"
+      download_report: "~2s"
+      summary_topics: "~3s"
+    sub_capabilities:
+      automated_source_discovery:
+        command: "*research-notebook research <topic> [--mode fast|deep]"
+        description: "Auto-discover and import sources from NotebookLM's research engine"
+        modes: "fast (~1s, 10 sources) / deep (~3-4min, 50+ sources)"
+      report_generation:
+        command: "*research-notebook report <description>"
+        description: "Generate structured report + download as local .md to .tad/evidence/research/"
+        prerequisite: "notebooklm download report --dry-run must succeed"
+      knowledge_ingest:
+        command: "*research-notebook ingest <file.md>"
+        description: "Add local .md as notebook source (knowledge loop hypothesis — GO/NO-GO)"
+        status: "HYPOTHESIS — verify result recorded in completion report"
+    notes: |
+      Citation-grounded cross-source reasoning over user-curated corpus.
+      YouTube sources: must have captions. Use conference talks (CCC/RSAC/Black Hat/NODES)
+      or official channels (Anthropic, Google) — 8/8 success rate in Phase 0b spike.
+      Auth expires: re-run setup-notebooklm.sh when CLI returns auth error.
+      Stale conversation: all ask-based commands implement 2-layer fallback (-c 00000000... on timeout).
+      Minimum notebooklm-py 0.3.4 — earlier versions have deprecated RPC endpoints.
+      Phase 2 additions: fulltext, quiz, flashcards, language commands (see *research-notebook SKILL).
+
+  notebooklm_fulltext:
+    platform: notebooklm
+    cli_command: 'notebooklm source fulltext <source_id> -n <notebook_id> -o /tmp/tad-fulltext-{source_id}.txt'
+    description: "Extract and preview full text content of a specific source — source quality evaluation"
+    verified: false
+    spike_ref: "SPIKE-20260504-notebooklm-capabilities/FULL-CLI-RESEARCH.md"
+    skill_ref: "*research-notebook fulltext <source_id>"
+    use_when: "Evaluate source quality before deep research, verify source content"
+    dont_use_when: "Just need a summary (use source guide instead)"
+    setup_required: true
+    setup_ref: "bash .tad/cross-model/setup-notebooklm.sh"
+
+  notebooklm_quiz:
+    platform: notebooklm
+    cli_command: 'notebooklm generate quiz --difficulty medium --quantity standard -n <id> --retry 3 --wait && notebooklm download quiz --format markdown <output_path> -n <id>'
+    description: "Generate quiz from notebook content + download as local markdown — for *learn integration"
+    verified: false
+    spike_ref: "SPIKE-20260504-notebooklm-capabilities/FULL-CLI-RESEARCH.md"
+    skill_ref: "*research-notebook quiz [--difficulty] [--quantity]"
+    use_when: "Generate learning assessments after *learn Socratic sessions, consolidate knowledge"
+    dont_use_when: "Need flashcards (use notebooklm_flashcards)"
+    latency: "15-30s"
+    setup_required: true
+
+  notebooklm_flashcards:
+    platform: notebooklm
+    cli_command: 'notebooklm generate flashcards --difficulty medium --quantity standard -n <id> --retry 3 --wait && notebooklm download flashcards --format markdown <output_path> -n <id>'
+    description: "Generate flashcards from notebook content + download as local markdown"
+    verified: false
+    spike_ref: "SPIKE-20260504-notebooklm-capabilities/FULL-CLI-RESEARCH.md"
+    skill_ref: "*research-notebook flashcards [--difficulty] [--quantity]"
+    use_when: "Generate spaced repetition cards after *learn sessions"
+    dont_use_when: "Need quiz format (use notebooklm_quiz)"
+    latency: "15-30s"
+    setup_required: true
+
+  notebooklm_language:
+    platform: notebooklm
+    cli_command: 'notebooklm language set <code> -n <id>'
+    description: "Manage NotebookLM output language — affects reports, quizzes, flashcards, summaries"
+    verified: false
+    spike_ref: "SPIKE-20260504-notebooklm-capabilities/FULL-CLI-RESEARCH.md"
+    skill_ref: "*research-notebook language [set|get|list]"
+    use_when: "Need reports/quizzes in non-English language (Chinese, French, etc.)"
+    dont_use_when: "English output is acceptable (default)"
+    setup_required: true
+
+  gemini_research:
+    platform: gemini
+    cli_command: 'gemini -p "{question}"'
+    description: "Google Search Grounding real-time research (~40% hallucination reduction vs baseline)"
+    verified: true
+    spike_ref: "SPIKE-20260503-cross-model-orchestration/SPIKE-REPORT.md"
+    use_when: "Need real-time web info + fact-checking with Google search grounding"
+    dont_use_when: "Need deep cross-source synthesis (use NotebookLM) / need to write files (Gemini -p is read-only)"
+    fallback: "WebSearch (Claude built-in)"
+    status: "DEFER — symmetric prompt retest required (Phase 0 Spike B asymmetry issue)"
+    latency: "~61s per query"
+    notes: |
+      -p flag required for non-interactive (non-TTY) invocation — without it, hangs indefinitely.
+      Read-only mode: only grep_search, read_file, glob available. Cannot write files.
+      Regex output is PCRE-style; validate with BSD grep -E before using in TAD hooks.
+      Exit code is source of truth (stderr noise is benign — see architecture.md 2026-05-03).
+
+  # Future capabilities (discovered but unverified — fill in after spike)
+  # gemini_veo_video:
+  #   platform: gemini
+  #   status: "unverified"
+  #   description: "Veo video generation"
+  # gemini_lyria_audio:
+  #   platform: gemini
+  #   status: "unverified"
+  #   description: "Lyria audio generation"
+  # codex_web_search:
+  #   platform: codex
+  #   status: "unverified"
+  #   description: "Codex web search tool"
+
+# fallback_chains: defined in .tad/config-workflow.yaml research_notebook.fallback_chains
+# (BA-P1-2: capabilities.yaml is catalog-only; orchestration/routing lives in config-workflow.yaml)

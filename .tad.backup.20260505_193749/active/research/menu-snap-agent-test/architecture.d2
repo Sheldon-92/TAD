@@ -1,0 +1,170 @@
+# Menu Snap AI — Single Agent + Tool Suite Architecture
+# Decision: Multi-agent NOT needed. Single agent with tools is simpler and sufficient.
+
+direction: right
+
+title: {
+  label: "Menu Snap AI — Single Agent Architecture"
+  style: {
+    font-size: 28
+    bold: true
+    underline: true
+  }
+}
+
+user: "User" {
+  shape: person
+  style: {
+    fill: "#E3F2FD"
+  }
+}
+
+# Core Agent
+agent: "Core Agent\n(Sonnet 4.6)" {
+  shape: rectangle
+  style: {
+    fill: "#FFF3E0"
+    stroke: "#E65100"
+    stroke-width: 3
+    font-size: 18
+    bold: true
+  }
+}
+
+# Tool Suite (all tools owned by the single agent)
+tools: "Tool Suite" {
+  style: {
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+    stroke-width: 2
+  }
+
+  vision: "Vision Tool\n(Menu OCR)" {
+    shape: hexagon
+    style: {
+      fill: "#E8F5E9"
+    }
+  }
+
+  allergy: "Allergy Checker\n(Rule-based)" {
+    shape: hexagon
+    style: {
+      fill: "#FFEBEE"
+    }
+  }
+
+  preference: "Preference Matcher\n(Haiku / Rules)" {
+    shape: hexagon
+    style: {
+      fill: "#E0F7FA"
+    }
+  }
+
+  memory: "Memory Tool\n(Vector DB)" {
+    shape: hexagon
+    style: {
+      fill: "#FFF9C4"
+    }
+  }
+}
+
+# External Services
+services: "External Services" {
+  style: {
+    fill: "#ECEFF1"
+    stroke: "#607D8B"
+    stroke-dash: 5
+  }
+
+  vision_api: "Vision API\n(Claude/GPT)" {
+    shape: cloud
+  }
+
+  allergen_db: "Allergen\nDatabase" {
+    shape: cylinder
+  }
+
+  vector_db: "Order History\n(Vector DB)" {
+    shape: cylinder
+  }
+}
+
+# Safety Controls
+controls: "Safety Controls" {
+  style: {
+    fill: "#FCE4EC"
+    stroke: "#C62828"
+    stroke-width: 2
+  }
+
+  budget: |md
+    Budget: 0.05 USD/req
+    Tokens: 10K max
+  | {
+    shape: document
+  }
+
+  loop_detect: "Loop Detector\n8 calls max\nHash comparison" {
+    shape: document
+  }
+
+  timeout: "Timeout\n30s wall-clock\n10s target" {
+    shape: document
+  }
+}
+
+# Flow
+user -> agent: "Menu photo\n+ preferences" {
+  style: {
+    stroke: "#1565C0"
+    stroke-width: 2
+  }
+}
+
+agent -> tools.vision: "1. Extract menu"
+tools.vision -> services.vision_api: "API call"
+
+agent -> tools.memory: "2. Fetch history"
+tools.memory -> services.vector_db: "Query"
+
+agent -> tools.allergy: "3. Filter unsafe"
+tools.allergy -> services.allergen_db: "Lookup"
+
+agent -> tools.preference: "4. Score & rank"
+
+agent -> user: "Recommendations\n+ reasoning" {
+  style: {
+    stroke: "#2E7D32"
+    stroke-width: 2
+  }
+}
+
+# Safety connections
+controls.budget -> agent: "enforce" {
+  style: {
+    stroke: "#C62828"
+    stroke-dash: 3
+  }
+}
+controls.loop_detect -> agent: "monitor" {
+  style: {
+    stroke: "#C62828"
+    stroke-dash: 3
+  }
+}
+controls.timeout -> agent: "limit" {
+  style: {
+    stroke: "#C62828"
+    stroke-dash: 3
+  }
+}
+
+# Legend
+legend: "VERDICT: Single Agent + Tools\nMulti-agent adds cost & complexity\nwith zero benefit for this use case." {
+  style: {
+    fill: "#C8E6C9"
+    stroke: "#2E7D32"
+    font-size: 16
+    bold: true
+  }
+}

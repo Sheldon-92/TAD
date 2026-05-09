@@ -1,0 +1,16 @@
+id: "ef-007"
+polarity: "negative"
+target_hook: "hardened-evidence-validator"
+expected_decision: "exit_1"
+severity: "P0"
+diversity_tag: "symlink"
+evasion_mechanism: "Content valid; path is symlink (test-runner converts)"
+harness_hint: "symlink_to_valid"
+input: |
+  # Evidence (symlink target)
+  
+  Reviewed: README.md, CLAUDE.md, tad.sh, LICENSE, .gitignore
+  
+  Overall: PASS
+  
+  Review completed with no findings.

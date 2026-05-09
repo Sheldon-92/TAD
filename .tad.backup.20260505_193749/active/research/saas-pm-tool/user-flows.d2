@@ -1,0 +1,197 @@
+# User Flows — SaaS PM Tool for Indie Devs
+
+# ═══════════════════════════════════════
+# Flow 1: Create Issue (Core — must be ≤3 steps)
+# ═══════════════════════════════════════
+
+flow1: "Flow 1: Create Issue" {
+  style.font-size: 22
+  style.bold: true
+
+  start: "User on any page" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+  step1: "Press Cmd+C or click '+'" {
+    style.fill: "#E3F2FD"
+  }
+  step2: "Quick Create Modal opens\n- Title (required)\n- Project (auto-selected)\n- Status, Priority, Assignee" {
+    style.fill: "#E3F2FD"
+  }
+  decision1: "Full detail needed?" {
+    shape: diamond
+    style.fill: "#FFF9C4"
+  }
+  step3a: "Press Enter → Issue created" {
+    style.fill: "#E3F2FD"
+  }
+  step3b: "Click 'Open full' →\nIssue detail editor" {
+    style.fill: "#E3F2FD"
+  }
+  done: "Issue visible on Board" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+
+  start -> step1: "1 action"
+  step1 -> step2: "modal appears (200ms)"
+  step2 -> decision1
+  decision1 -> step3a: "No (quick)"
+  decision1 -> step3b: "Yes (detailed)"
+  step3a -> done: "2 steps total"
+  step3b -> done: "3 steps total"
+}
+
+# ═══════════════════════════════════════
+# Flow 2: Triage Board (Daily workflow)
+# ═══════════════════════════════════════
+
+flow2: "Flow 2: Triage Issues on Board" {
+  style.font-size: 22
+  style.bold: true
+
+  start: "Open project Board" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+  step1: "Scan Kanban columns\n(Todo → In Progress → Review → Done)" {
+    style.fill: "#E3F2FD"
+  }
+  step2: "Drag issue between columns\nOR click to open detail" {
+    style.fill: "#E3F2FD"
+  }
+  decision: "Need to update details?" {
+    shape: diamond
+    style.fill: "#FFF9C4"
+  }
+  step3a: "Drop in new column → status updated" {
+    style.fill: "#E3F2FD"
+  }
+  step3b: "Side panel opens → edit fields\n→ press Esc to close" {
+    style.fill: "#E3F2FD"
+  }
+  step4: "Continue triaging\nor mark cycle complete" {
+    style.fill: "#E3F2FD"
+  }
+  done: "Board reflects current state" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+
+  start -> step1: "1 click from sidebar"
+  step1 -> step2: "visual scan"
+  step2 -> decision
+  decision -> step3a: "Status change only"
+  decision -> step3b: "Need detail edit"
+  step3a -> step4
+  step3b -> step4
+  step4 -> done: "3-4 steps per issue"
+}
+
+# ═══════════════════════════════════════
+# Flow 3: Invite Team Member (Admin flow)
+# ═══════════════════════════════════════
+
+flow3: "Flow 3: Invite Team Member" {
+  style.font-size: 22
+  style.bold: true
+
+  start: "Admin on any page" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+  step1: "Settings → Members" {
+    style.fill: "#E3F2FD"
+  }
+  step2: "Click 'Invite Member'" {
+    style.fill: "#E3F2FD"
+  }
+  step3: "Enter email + select role\n(Owner/Admin/Member/Viewer)" {
+    style.fill: "#E3F2FD"
+  }
+  step4: "Click Send Invite" {
+    style.fill: "#E3F2FD"
+  }
+  done: "Invite sent, pending in list" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+
+  start -> step1: "2 clicks"
+  step1 -> step2: "1 click"
+  step2 -> step3: "form"
+  step3 -> step4: "1 click"
+  step4 -> done: "4 steps total"
+}
+
+# ═══════════════════════════════════════
+# Flow 4: Search and Jump (Power user)
+# ═══════════════════════════════════════
+
+flow4: "Flow 4: Global Search (Cmd+K)" {
+  style.font-size: 22
+  style.bold: true
+
+  start: "User anywhere in app" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+  step1: "Press Cmd+K" {
+    style.fill: "#E3F2FD"
+  }
+  step2: "Command palette opens\n- Recent items\n- Type to search" {
+    style.fill: "#E3F2FD"
+  }
+  step3: "Type query → results appear\n(issues, projects, members)" {
+    style.fill: "#E3F2FD"
+  }
+  step4: "Arrow keys to select\nEnter to navigate" {
+    style.fill: "#E3F2FD"
+  }
+  done: "Landed on target\n(issue, project, page)" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+
+  start -> step1: "1 shortcut"
+  step1 -> step2: "instant"
+  step2 -> step3: "type 2-3 chars"
+  step3 -> step4: "select"
+  step4 -> done: "3 steps to anywhere"
+}
+
+# ═══════════════════════════════════════
+# Flow 5: Change Billing Plan (Owner only)
+# ═══════════════════════════════════════
+
+flow5: "Flow 5: Upgrade Plan (Owner)" {
+  style.font-size: 22
+  style.bold: true
+
+  start: "Owner on Settings" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+  step1: "Settings → Billing" {
+    style.fill: "#E3F2FD"
+  }
+  step2: "View current plan\n+ usage metrics" {
+    style.fill: "#E3F2FD"
+  }
+  step3: "Click 'Upgrade'\n→ Plan comparison modal" {
+    style.fill: "#E3F2FD"
+  }
+  step4: "Select plan → Enter payment\n→ Confirm" {
+    style.fill: "#E3F2FD"
+  }
+  done: "Plan updated, confirmation shown" {
+    style.fill: "#C8E6C9"
+    shape: oval
+  }
+
+  start -> step1: "1 click"
+  step1 -> step2: "review"
+  step2 -> step3: "1 click"
+  step3 -> step4: "form + confirm"
+  step4 -> done: "4 steps total"
+}

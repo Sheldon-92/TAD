@@ -1,0 +1,5 @@
+Usage: notebooklm delete [OPTIONS]
+Try 'notebooklm delete --help' for help.
+
+Error: Got unexpected extra argument (d5d726b4-8aa4-4628-99b7-1c9e491840a2)
+delete_nb_exit=2

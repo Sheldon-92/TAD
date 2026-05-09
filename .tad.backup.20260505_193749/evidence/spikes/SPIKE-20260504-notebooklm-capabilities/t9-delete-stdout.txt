@@ -1,0 +1,2 @@
+Delete note 8c97894e-9500-4508-b532-980326e9509e? [y/N]: Error: 
+delete_exit=1
