@@ -1,39 +1,32 @@
-# Layer 2 Code Review — research-methodology-upgrade
+# Code Review: research-methodology-upgrade (STORM + Elicit + Auto Source + Adaptive)
+**Reviewer**: code-reviewer sub-agent
+**Date**: 2026-05-09
+**Handoff**: HANDOFF-20260509-research-methodology-upgrade.md
+**Verdict**: PASS (after P1-1 fix) — final P0=0, P1=0, P2=3
 
-**Reviewer:** code-reviewer sub-agent
-**Date:** 2026-05-05
-**Handoff:** HANDOFF-20260505-research-methodology-upgrade.md
+## P1-1 Found + Fixed
+Tunnel detection off-by-one: `current_depth >= 2 AND strategies_used[-1] == strategies_used[-2]` fails when strategies_used has only 1 element (after first loop iteration, [-2] is out-of-bounds).
+**Fix**: Changed to `current_depth >= 3 AND len(strategies_used) >= 2 AND strategies_used[-1] == strategies_used[-2] AND strategies_used[-1] != "perspective_shift"`. Folded consecutive guard into ELIF, removed dead Else branch, added is_dynamic origin note.
 
-## Summary
-Found 3 P0s + multiple P1s. All P0s and key P1s fixed in Round 2.
+## P2 Advisory (open)
+P2-1: Inner consecutive guard semantics clarified by folding into ELIF (resolved as part of P1-1 fix).
+P2-2: Dead `Else (no handler match)` branch — removed.
+P2-3: `is_dynamic` origin tag — added note to Step 2.5.
 
-## P0 Findings
-
-**P0-1 (FIXED):** Phase 4 OBJECTIVES.md skip path referenced "step d" (deleted by diff)
-- Fix: Changed to "Proceed to step5"
-
-**P0-2 (FIXED):** Phase 2 error filter `status != "ready"` contradicts curate Step 1b's `status contains "error"` — would delete in-progress sources
-- Fix: Changed to `status contains "error"`, added "Do NOT delete preparing/processing", added defensive JSON shape check, added `source.id` field spec
-
-**P0-3 (FIXED partial):** Phase 2 duplicates curate Step 1b/1c with divergent semantics
-- Fix: Phase 2 now explicitly references curate's canonical tier patterns and filter semantics; full delegation deferred (requires `--auto` flag addition to curate command)
-
-## P1 Findings
-
-**P1-1 (FIXED):** Dead save/restore `active_notebook` lines — no-op given `-n` flag
-- Fix: Removed save/restore lines, added explanatory comment
-
-**P1-2 (FIXED):** Duplicate ask calls — "prefer Tier 1" branch issued second ask instead of modifying query
-- Fix: Restructured to single ask with `constructed_query` (query prefix if KR is ⬚)
-
-**P1-4 CR (FIXED):** Phase 5 "只保存，不写 AC" branch undefined
-- Fix: Added explicit 3-branch handling (全部采纳/逐条确认/只保存) with different output files
-
-**P1-3 CR (DEFERRED):** Tier classification ephemeral — not persisted to file, Phase 4 dependency on in-memory tier table
-- Rationale: Adding file I/O for tier table significantly expands scope; protocol notes tier as "ephemeral judgment"; deferred to follow-up handoff
-
-**P1-6 (DEFERRED):** AC1 "PHASE [1-5]" grep not verifying order/uniqueness
-- Rationale: AC serves as smoke-alarm; deeper structural check deferred to Phase 6 process quality work
-
-## Final Verdict
-**PASS** — All P0s fixed, key P1s fixed, deferred items documented.
+## AC Verification
+| AC | Result |
+|----|--------|
+| AC1 perspective_shift ≥3 | 4 ✅ |
+| AC2 3-tier fallback | Tier 1/2/3 present ✅ |
+| AC3 tunnel detection | strategies_used[-1] == strategies_used[-2] ✅ |
+| AC4 PHASE 4.5 | 1 ✅ |
+| AC5 ONLY inside *research-plan | 1 ✅ |
+| AC6 5 academic filters | all 5 on same line ✅ |
+| AC7 after fast+deep fail | 2 ✅ |
+| AC8 Max URLs: 3 | 1 ✅ |
+| AC9 source-preprocessor.sh | 1 ✅ |
+| AC10 MAX_DYNAMIC_SEEDS: 2 | 1 ✅ |
+| AC11 AskUserQuestion | present ✅ |
+| AC12 append to end | 2 ✅ |
+| AC13 6-strategy priority list | 2 ✅ |
+| AC14 only 2 files | confirmed ✅ |

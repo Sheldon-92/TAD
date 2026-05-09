@@ -1196,6 +1196,37 @@ research_plan_protocol:
                 → Auto-curate (error + dedup) after deep research completes
                 → Then retry the ask
                 → This is the ONLY path where deep research runs. It is a fallback, not a primary.
+             3c. External Source Discovery (WebSearch + add-smart) — last resort:
+                Trigger: AFTER step 3 (fast research) AND step 3b (deep research fallback, if triggered)
+                         AND net new usable sources still == 0
+                → Report: "🌐 Internal enrichment found 0 sources. Searching externally..."
+                → WebSearch "{gap_noun_phrases} {broader_topic}" (1 search query)
+                → From results, select top 3 URLs (prefer: official docs > GitHub > blog posts)
+                  Max URLs: 3 (hard cap per user decision — do NOT exceed)
+                → For each URL (up to 3):
+                  a. Dedup check:
+                     source_urls=$(~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <id> | jq -r '.[].url // empty')
+                     If URL already in source_urls → skip
+                  b. Preprocess if URL matches bilibili/youtube/substack/medium handler patterns:
+                     result=$(bash .tad/cross-model/source-preprocessor.sh dispatch "$url" <notebook_id>)
+                     dispatch_exit=$?
+                     If dispatch_exit == 0 → add_target="$result" (local .md)
+                     If dispatch_exit == 10 → add_target="$result" (remote URL)
+                     If dispatch_exit >= 1 → skip URL (handler failure or unknown type)
+                  c. Import: ~/.tad-notebooklm-venv/bin/notebooklm source add "$add_target" -n <id>
+                  d. sleep 2
+                → Per-source quality verification via source ID (architecture.md "False Success" pattern):
+                  Before each source add (step c): capture ids_before (source list --json | jq -r '.[].id')
+                  After source add: ids_after = new source list IDs; new_source_id = comm set-diff (same pattern as STEP 3c.a dedup check)
+                  For each new_source_id: call verify_import_quality(notebook_id, new_source_id)
+                    per research-notebook/SKILL.md HELPER block (source-ID-based, includes title in probe — avoids "most recently added" ambiguity)
+                  If FAIL → mark source as failed import; do NOT count toward net new.
+                  If WARN or PASS → count as successful import.
+                → Re-count quality-verified sources:
+                  If net new > 0 → Report: "🌐 Added {N} external sources (quality-verified). Re-asking..."
+                             → Proceed to step 5 (lightweight re-curate) then step 6 (re-ask)
+                  If net new == 0 → Report: "⚠️ External search also found 0 usable sources for Q{N}."
+                             → Proceed to step 4 (zero-source check → skip re-ask)
              4. Zero-source check: count sources before/after (exclude error sources). If net new sources = 0:
                 → Report: "⚠️ Fast research found 0 usable sources for Q{N}. Keeping original answer."
                 → Skip re-ask, proceed to next question
@@ -1225,9 +1256,71 @@ research_plan_protocol:
 
              When no gap signal: skip PHASE 4b entirely, proceed normally
 
+           → Step 2.5: Adaptive Seed Generation (after each seed's chain + Phase 4b completes)
+             MAX_DYNAMIC_SEEDS: 2  # hard cap — total across all seeds, prevents unbounded growth
+             TRACK: dynamic_seeds_added = 0 (initialized at Phase 4 entry)
+             Compact recovery: dynamic_seeds_added is recoverable from chain frontmatter:
+               bash: dynamic_seeds_added=$(grep -rl 'seed_origin: dynamic' .tad/evidence/research/ | wc -l | tr -d ' ')
+               (Each dynamic seed's chain .md has `seed_origin: dynamic` in frontmatter — see research-notebook/SKILL.md chain format)
+             Scope: runs ONLY for original seeds (NOT for dynamically-added seeds — prevents meta-seed recursion)
+             Origin tracking: each seed has `is_dynamic = false` (confirmed_questions) or `is_dynamic = true` (Step 2.5 appended).
+               Step 2.5 evaluation: if current seed's `is_dynamic == true` → skip entirely.
+
+             After each original seed's step3_5 chain AND Phase 4b gap enrichment completes:
+             → Read the chain's so_what round (or final round if saturated early)
+             → Analyze: "Did this chain reveal a sub-topic NOT covered by any existing or pending seed?"
+               Detection signals:
+                 - Answer mentions a concept/tool/framework not referenced in any seed question
+                 - Answer explicitly says "this area needs further investigation"
+                 - Chain surfaced a surprising finding (from step3_5 surprising dimension) that opens a new thread
+             → If new sub-topic detected AND dynamic_seeds_added < MAX_DYNAMIC_SEEDS:
+               a. Generate new seed question following format rules (specificity anchor mandatory):
+                  Format: "Based on chain finding '{surprising_finding}': {specific question with anchor}"
+               b. AskUserQuestion: "研究中发现了新的子话题。要追加一个新的研究问题吗？"
+                  question: "Chain '{original_seed}' revealed: '{finding_summary}'. 追加新问题？"
+                  Options:
+                    - "追加: {generated_question} (Recommended)" → append to seed queue; dynamic_seeds_added += 1
+                    - "跳过这个发现" → continue to next seed
+                    - "自定义问题" → user types their own question; dynamic_seeds_added += 1
+               c. New seed inherits notebook context (same -n flag, same Phase 4 execution path)
+                  Cross-notebook mode: dynamic seeds undergo same notebook relevance check as original seeds
+               d. New seed executes AFTER all original seeds complete (append to END of queue, not insert mid-queue)
+               e. Dynamic seeds receive full Phase 4b treatment (gap detection + auto-enrichment + Auto Source Discovery)
+               f. Adaptive Seed check does NOT run for dynamically-added seeds (prevents meta-seed generation)
+                  Queue is flat — all dynamic seeds append to end regardless of which original seed spawned them
+             → If dynamic_seeds_added >= MAX_DYNAMIC_SEEDS:
+               → Report: "📋 Dynamic seed cap reached (2/2). Remaining findings saved for reference."
+               → Continue without adding more seeds
+
            → Step 3: Save findings
              → Write all ask results to .tad/evidence/research/{slug}/{date}-ask-findings.md
              → Format: per-question sections with KR reference, answer summary, source citations
+
+        e_5. PHASE 4.5 — Structured Paper Extraction (Elicit-style):
+           Trigger: ONLY inside *research-plan (never standalone *research-notebook ask)
+           → Step 1: Identify academic sources in current notebook
+             → ~/.tad-notebooklm-venv/bin/notebooklm source list --json -n <id>
+             → Filter sources where url contains "arxiv.org" OR "scholar" OR ".edu" OR "acm.org" OR "ieee.org"
+             → If 0 academic sources → skip Phase 4.5 entirely, proceed to Phase 5
+           → Step 2: For each academic source (max 5 papers per research item):
+             → Extract structured fields via raw CLI:
+               ~/.tad-notebooklm-venv/bin/notebooklm ask \
+                 "For the paper from {source_url}, extract in structured format:
+                  1. Research Question (one sentence)
+                  2. Methodology (one sentence)
+                  3. Key Findings (list: finding + metric + value where available)
+                  4. Stated Limitations (list)
+                  5. Baselines Compared (list)
+                  6. Publication Year (if identifiable from source URL or content)" \
+                 -n <id>
+               (Raw CLI call — NOT *research-notebook ask — intentional: avoids nested step3_5 loop.
+                Note: --no-follow is a SKILL protocol flag parsed in Step 0 of *research-notebook ask;
+                it is NOT a raw CLI flag and must NOT be passed to the binary here.)
+             → sleep 1
+           → Step 3: Save all extractions to
+             .tad/evidence/research/{slug}/{date}-paper-extractions.md
+             Format: one section per paper, structured fields as returned
+           → Report: "📄 Extracted structured data from {N} academic papers → {path}"
 
         f. PHASE 5 — Extract Actionable Items (Research→AC Bridge):
            → Step 1: From all ask answers, extract engineering-actionable items

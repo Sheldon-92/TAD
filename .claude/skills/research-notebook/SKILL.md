@@ -340,7 +340,8 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
   ─────────────────────────────────────────────────────────────────────────────
   TRIGGER: Every ask where dynamic_follow == true (default)
   MAX DEPTH: max_depth = 4 rounds total (including initial ask in Step 3)
-  TRACK: current_depth = 1 (after Step 3); new_citations_this_round; prev_zero_citation_rounds = 0
+  TRACK: current_depth = 1 (after Step 3); new_citations_this_round; prev_zero_citation_rounds = 0;
+         strategies_used: [] (append strategy name each round — for tunnel detection)
 
   EXTRACT four dimensions from the Step 3 answer:
     surprising:  "最令人惊讶的 1 个发现（与常识/预期不同的）"
@@ -365,11 +366,20 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
     Saturation state in each round's Analysis block: include `new_citations: N` and `prev_zero_streak: N`
       so compact-recovery can rebuild counter by reading the last round's Analysis block.
     File format (frontmatter + round blocks per §4.3 of HANDOFF-20260509-dynamic-research-strategies):
-      --- type: research-chain, notebook_id, seed_question, depth, strategies_used, total_citations, created_at ---
+      --- type: research-chain, notebook_id, seed_question, depth, strategies_used, total_citations, created_at,
+          seed_origin: original | dynamic, dynamic_index: N (0-based for dynamic seeds; omit for original) ---
       ## Seed Question / ## Round N — {strategy} / ### Analysis (surprising, strategy chosen, new_citations: N, prev_zero_streak: N)
       ## Chain Summary (key finding + action items + sources cited)
+    Compact recovery for dynamic_seeds_added: count chain files with `seed_origin: dynamic` in current Phase 4 output dir.
+      bash: dynamic_seeds_added=$(grep -rl 'seed_origin: dynamic' .tad/evidence/research/ | wc -l | tr -d ' ')
 
-  STRATEGY SELECTION (priority order):
+  STRATEGY SELECTION (priority order — 6 strategies):
+    1. saturated (hard stop — evidence-based)
+    2. contradiction (cross-source conflict resolution)
+    3. follow_thread (chase surprising findings)
+    4. perspective_shift (break tunnel vision — NEW)
+    5. gap_enrichment (standalone only, NOT inside *research-plan)
+    6. so_what (budget-forced close, TERMINAL)
 
     # 1. Hard stop — checked FIRST (evidence-based: nothing new to find)
     IF new_citations == 0 AND prev_zero_citation_rounds >= 1:  [saturated: 0 new citations × 2 consecutive rounds]
@@ -388,6 +398,7 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
         If ask fails: fail-fast. Save chain as-is. Do NOT retry. Exit step 3.5.
       → Count new citations in follow-up answer; update saturation counter:
           If new_citations == 0: prev_zero_citation_rounds += 1; else: prev_zero_citation_rounds = 0
+      → Append "contradiction" to strategies_used
       → sleep 1; increment current_depth; append round to chain .md; loop back to step 3.5.
 
     # 3. Chase surprising findings deeper
@@ -399,9 +410,40 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
       → Execute follow-up ask (same -n flag rule and fail-fast rule as contradiction above)
       → Count new citations; update saturation counter:
           If new_citations == 0: prev_zero_citation_rounds += 1; else: prev_zero_citation_rounds = 0
+      → Append "follow_thread" to strategies_used
       → sleep 1; increment current_depth; append round to chain .md; loop back to step 3.5.
 
-    # 4. Gap enrichment — standalone only (NOT inside *research-plan Phase 4)
+    # 4. Perspective shift — break tunnel vision when same strategy repeats
+    # Requires ≥2 prior strategy entries (current_depth >= 3, strategies_used has ≥2 elements)
+    ELIF current_depth >= 3 AND current_depth < max_depth
+         AND len(strategies_used) >= 2
+         AND strategies_used[-1] == strategies_used[-2]  [last 2 rounds used same strategy]
+         AND strategies_used[-1] != "perspective_shift"  [prevents consecutive perspective_shifts]
+         AND NOT conflict AND NOT gap:
+      → strategy = "perspective_shift"
+      → Derive expert perspectives from project context (3-tier fallback):
+          Tier 1 — If OBJECTIVES.md exists:
+            Extract stakeholder roles implied by KR descriptions
+            e.g. KR about "user retention" → perspective_role="PM", perspective_focus="retention, onboarding, churn signals"
+            e.g. KR about "cold-start latency <2s" → perspective_role="SRE", perspective_focus="latency, reliability, observability"
+          Tier 2 — Elif .tad/domains/ has loaded packs:
+            Use reviewer persona from the most relevant Domain Pack
+          Tier 3 — Else use 3 generic perspectives:
+            - engineer → perspective_focus="implementation feasibility, technical debt, performance"
+            - end-user → perspective_focus="usability, onboarding friction, error recovery"
+            - skeptic → perspective_focus="assumptions being made, missing counter-evidence, claims without data"
+      → Select the perspective LEAST represented in strategies_used (favor unexplored angle)
+      → Build self-contained follow-up (embed perspective identity in question):
+        "作为一个{perspective_role}（关注{perspective_focus}），关于'{topic}'，
+         我最关心的问题是什么？现有发现中哪些对{perspective_role}最重要，哪些被忽略了？"
+      → Execute: ~/.tad-notebooklm-venv/bin/notebooklm ask "{follow_up}" -n <notebook_id>
+        (same -n flag rule and fail-fast rule as contradiction above — raw CLI, not *research-notebook ask)
+      → Count new citations; update saturation counter:
+          If new_citations == 0: prev_zero_citation_rounds += 1; else: prev_zero_citation_rounds = 0
+      → Append "perspective_shift" to strategies_used
+      → sleep 1; increment current_depth; append round to chain .md; loop back to step 3.5.
+
+    # 5. Gap enrichment — standalone only (NOT inside *research-plan Phase 4)
     ELIF gap detected AND NOT inside_research_plan:
       → strategy = "gap_enrichment"
       → inside_research_plan detection (two conditions BOTH required):
@@ -411,7 +453,7 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
       → Trigger Phase 4b CRAG Judge Loop (source add-research fast → re-ask)
       → (gap_enrichment DISABLED inside *research-plan — Phase 4b already handles gaps; would double-loop)
 
-    # 5. Budget-based forced close — checked AFTER saturation
+    # 6. Budget-based forced close — checked AFTER saturation
     ELIF current_depth >= max_depth:
       → strategy = "so_what"  [TERMINAL — always exits after one so-what round, never loops back]
       → Read project_context (capped at ~600 chars total):

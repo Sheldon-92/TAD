@@ -1066,3 +1066,10 @@ Project-specific architecture learnings accumulated through TAD workflow.
 - **Action**: For any LLM protocol with a "stop after N consecutive signals" loop: (a) declare variable with explicit initial value, (b) add explicit update instruction at each loop-back, (c) write the counter value to the on-disk artifact each round so compact recovery can reconstruct the loop state without relying on conversation context.
 - **Grounded in**: .claude/skills/research-notebook/SKILL.md (step3_5 prev_zero_citation_rounds), .tad/evidence/reviews/blake/dynamic-research-strategies/code-reviewer.md (P0-1 finding)
 - **Revalidated**: 2026-05-09
+
+### LLM Protocol Index-Access Guards: Off-by-One in Array-Based Tunnel Detection — 2026-05-09
+- **Context**: perspective_shift strategy uses `strategies_used[-1] == strategies_used[-2]` for tunnel detection. code-reviewer P1-1 caught that after the first loop iteration, `strategies_used` has length 1, making `[-2]` an out-of-bounds access.
+- **Discovery**: When designing LLM protocol conditions that compare array-indexed values (`arr[-1]`, `arr[-2]`), always include an explicit length guard (`len(arr) >= 2`) AND a minimum depth guard that ensures the array has enough entries (`current_depth >= N where N > array index needed`). Without the length guard, the condition is undefined/out-of-bounds when the array hasn't accumulated enough history. The pattern: `current_depth >= 3 AND len(arr) >= 2 AND arr[-1] == arr[-2]` — not just `current_depth >= 2 AND arr[-1] == arr[-2]`.
+- **Action**: For any LLM protocol that reads from a history array (`strategies_used`, `prior_citations`, `context_history`), always add a `len(array) >= N` guard before accessing index `[-N]`. This prevents off-by-one failures when the array is shorter than expected.
+- **Grounded in**: .claude/skills/research-notebook/SKILL.md (perspective_shift trigger line), .tad/evidence/reviews/blake/research-methodology-upgrade/code-reviewer.md (P1-1 finding)
+- **Revalidated**: 2026-05-09
