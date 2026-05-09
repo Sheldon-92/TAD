@@ -2379,16 +2379,56 @@ design_protocol:
            (SKILL.md execution modules) serve different purposes even for the same
            domain; auto-skip would remove user choice.
 
-        4. If ≥1 match found:
-           a. Present matched packs to user via AskUserQuestion:
+        4. If ≥1 match found — 3-tier pack lookup (AC2):
+           For EACH matched pack, determine availability:
+
+           Tier 1 — pack source installed (TAD project):
+             Check: .tad/capability-packs/{pack_name}/CAPABILITY.md exists
+             → Load CAPABILITY.md directly from this path
+
+           Tier 2 — pack installed as skill (downstream project or manual install):
+             Check: .claude/skills/{pack_name}/SKILL.md exists
+             → Load that SKILL.md as the pack content
+
+           Tier 3 — pack matched but not installed:
+             Neither path exists → offer install via AskUserQuestion:
+             "检测到 '{pack_name}' pack 与你的任务相关，但未安装。要安装吗？"
+             Options: "安装 (Recommended)" / "跳过"
+
+             If user chooses 安装:
+               → Read registry fields: source_repo, source_branch, source_base_path
+               → Display BOTH install commands (Alex does NOT run them — user copies):
+
+               If source_repo is present in registry:
+                 P1-4: Display pack URL first so user can verify before running pipe-to-bash:
+                   "Pack 来源: https://github.com/{source_repo}/tree/{source_branch}/{source_base_path}/{pack_name}/
+                    请先访问此 URL 确认 pack 存在，再运行下面的安装命令。"
+
+                 私有仓库 (gh CLI, works with existing GitHub auth):
+                   gh api "repos/{source_repo}/contents/{source_base_path}/{pack_name}/install.sh?ref={source_branch}" \
+                     --jq '.content' | base64 -d | bash -s -- --agent=claude-code
+
+                 公开仓库 (curl, no auth needed):
+                   curl -sSL "https://raw.githubusercontent.com/{source_repo}/{source_branch}/{source_base_path}/{pack_name}/install.sh" \
+                     | bash -s -- --agent=claude-code
+
+                 Note: "私有仓库用 gh 命令，公开仓库用 curl 命令。运行后重启对话，pack 将在下次自动加载。"
+                 P1-3 404 hint: "如果命令返回 404，pack 可能尚未推送到远端。请先检查上方 URL 确认文件存在。"
+
+               If source_repo missing from registry (AC6 fallback):
+                 Display: "无法自动安装 — pack registry 缺少 source_repo。
+                           请手动从 GitHub clone TAD 仓库，然后运行：
+                           bash .tad/capability-packs/{pack_name}/install.sh --agent=claude-code"
+
+           a. Present matched packs (with tier labels) to user via AskUserQuestion:
               "Based on your task, these Capability Packs may be useful:
-               - {pack.name} [{type}]: {pack.description (first 80 chars)}
+               - {pack.name} [{type}] {if Tier 2: '(installed as skill)'} {if Tier 3: '(not installed)'}:
+                 {pack.description (first 80 chars)}
                  (CONSUMES: {pack.consumes} → PRODUCES: {pack.produces})
                  {if overlaps Domain Pack: '(⚡ Domain Pack also loaded)'}
                Confirm which packs to use?"
               Options: up to 4 packs as options + "None — skip packs"
-           b. On confirmation, load confirmed pack CAPABILITY.md files:
-              Read `.tad/capability-packs/{name}/CAPABILITY.md`
+           b. On confirmation, load confirmed pack CAPABILITY.md (Tier 1) or SKILL.md (Tier 2)
            c. State persistence: Record confirmed packs as:
               "🎯 Loaded Capability Packs: {pack1}, {pack2}"
 
@@ -4696,6 +4736,8 @@ sync_protocol:
            - tad.sh
            - docs/MULTI-PLATFORM.md
            - README.md, INSTALLATION_GUIDE.md
+           Capability Pack registry (index only — pack source dirs are NOT synced):
+           - .tad/capability-packs/pack-registry.yaml
 
         c. Deprecation cleanup:
            Read .tad/deprecation.yaml (if missing → skip silently, no deprecations to apply).

@@ -90,10 +90,49 @@ cat > "$OUTPUT" << 'HEADER'
 # Re-generate: bash .tad/scripts/scan-packs.sh after editing any CAPABILITY.md
 HEADER
 
+# Auto-detect source_repo from git remote (AC5 — not hardcoded, works for forks/renames)
+# P1-1 fix: strip credentials from HTTPS URL before normalization;
+#           only set SOURCE_REPO for known github.com hosts (avoid non-github leakage)
+# P1-2 fix: treat detached HEAD ("HEAD") as "main" for safe gh/curl URLs
+SOURCE_REPO=""
+SOURCE_BRANCH=""
+if git -C "$TAD_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  raw_url=$(git -C "$TAD_DIR" remote get-url origin 2>/dev/null || true)
+  if [ -n "$raw_url" ]; then
+    # Strip credential-bearing HTTPS prefix (e.g. https://x-access-token:TOKEN@github.com/...)
+    raw_url=$(echo "$raw_url" | sed -E 's#^(https?://)[^@]+@#\1#')
+    # Only normalize GitHub.com URLs; leave SOURCE_REPO empty for other hosts (triggers AC6 fallback)
+    case "$raw_url" in
+      git@github.com:*|https://github.com/*)
+        SOURCE_REPO=$(echo "$raw_url" | sed \
+          -e 's#^git@github\.com:##' \
+          -e 's#^https://github\.com/##' \
+          -e 's#\.git$##')
+        ;;
+      *)
+        SOURCE_REPO=""
+        ;;
+    esac
+    # P1-2: rev-parse --abbrev-ref HEAD returns "HEAD" in detached state — fall back to "main"
+    _branch=$(git -C "$TAD_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+    [ "$_branch" = "HEAD" ] && SOURCE_BRANCH="main" || SOURCE_BRANCH="$_branch"
+  fi
+fi
+
+# Read version from .tad/version.txt (if exists)
+SYNCED_VERSION=""
+if [ -f "$TAD_DIR/version.txt" ]; then
+  SYNCED_VERSION=$(cat "$TAD_DIR/version.txt" | tr -d '[:space:]')
+fi
+
 # P1-5 fix: use UTC date
 cat >> "$OUTPUT" << EOF
 version: 1.0.0
 last_scanned: "$(date -u +%Y-%m-%d)"
+source_repo: "${SOURCE_REPO}"
+source_branch: "${SOURCE_BRANCH}"
+source_base_path: ".tad/capability-packs"
+synced_from_version: "${SYNCED_VERSION}"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
 packs:
 EOF
 
