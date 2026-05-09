@@ -5,6 +5,24 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.13.0] - 2026-05-09
+
+### New Features — Research Methodology Upgrade
+- **STORM Multi-Perspective Questioning**: New `perspective_shift` strategy (#4 of 6) in step3_5 dynamic follow-up protocol. Simulates 2-3 expert viewpoints derived from OBJECTIVES.md stakeholders (Tier 1), Domain Pack reviewer personas (Tier 2), or generic [engineer, end-user, skeptic] (Tier 3). Triggers when same strategy fires 2+ consecutive rounds (tunnel detection). Includes self-loop guard and `current_depth < max_depth` overflow protection.
+- **Elicit Structured Paper Extraction**: New Phase 4.5 in *research-plan. Auto-extracts Research Question, Methodology, Key Findings, Stated Limitations, Baselines Compared, and Publication Year from academic sources (arxiv, scholar, .edu, ACM, IEEE). Runs ONLY inside *research-plan, never on standalone ask. Max 5 papers per research item.
+- **Auto Source Discovery**: New Phase 4b step 3c. When both fast AND deep internal gap enrichment fail (net new sources = 0), automatically searches externally via WebSearch → selects top 3 URLs → routes through source-preprocessor.sh → adds with quality probe verification → re-asks. Last-resort fallback, not primary.
+- **Adaptive Seed Generation**: New Phase 4 Step 2.5. After each seed's chain + Phase 4b completes, analyzes chain findings for uncovered sub-topics. Generates new seed question with user confirmation (AskUserQuestion). Max 2 dynamic seeds total. Seeds execute after all original seeds (append to end, not insert). Dynamic seeds receive full Phase 4b treatment but do NOT trigger further adaptive seeds (prevents meta-seed explosion).
+
+### Bug Fixes
+- Bilibili handler: 4-phase fallback rewrite (CC subs → B站API → yt-dlp metadata → Jina) with per-phase `method:` audit trail
+- Quality probe: structural pre-check (<500 chars → QUALITY:NONE) + improved QUALITY:NONE criteria
+- Source preprocessor: bilibili-specific timeout 60s (per-handler override, not global)
+
+### Architecture Knowledge
+- Multi-Phase Handler Fallback: Fast-Fail Before Slow-Fail (bilibili ordering rationale)
+- Phase-Specific method: Field as Zero-Cost Audit Trail
+- LLM Protocol Index-Access Guards: Off-by-One in Array-Based Tunnel Detection
+
 ## [2.12.0] - 2026-05-09
 
 ### New Features — Source Preprocessor + Dynamic Research

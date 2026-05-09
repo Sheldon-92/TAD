@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.12.0 | Generated: [timestamp]
+ Version: v2.13.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -218,12 +218,12 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.12.0 Highlights
-- **Compact Recovery**: Two-layer session state persistence — CLAUDE.md self-check + session-state.md prevents identity loss after context compaction
-- **Token Efficiency**: Tiered Layer 2, lazy knowledge load, narrow-scope expert prompts (~30-35% savings)
-- **Domain Pack Auto-Loading Hook**: UserPromptSubmit hook + keyword router (20 packs, 100% acc / 81ms)
-- **Adaptive Complexity**: Auto-suggest process depth based on task size
-- **Ralph Loop**: Iterative quality cycles with expert exit conditions
+## TAD v2.13.0 Highlights
+- **STORM Multi-Perspective**: step3_5 strategy #4 — OBJECTIVES.md-derived stakeholder viewpoints break tunnel vision
+- **Elicit Paper Extraction**: Phase 4.5 structured extraction from academic sources (arxiv, scholar, ACM, IEEE)
+- **Auto Source Discovery**: WebSearch fallback in Phase 4b when internal gap enrichment fails (max 3 URLs, quality-probed)
+- **Adaptive Seed**: Dynamic research plan expansion — max 2 user-confirmed seeds based on chain findings
+- **Bilibili 4-Phase Fallback**: CC subs → B站 API → yt-dlp metadata → Jina reader
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues
