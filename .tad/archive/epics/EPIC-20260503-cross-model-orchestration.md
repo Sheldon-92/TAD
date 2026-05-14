@@ -13,10 +13,10 @@
 
 ## Success Criteria
 
-- [ ] 至少 2 个跨模型能力通过 spike 验证（INTEGRATE 判定）
-- [ ] 编排协议设计完成：capability catalog YAML + prompt template + fallback chain
-- [ ] TAD SKILL 集成完成：Blake 和/或 Alex SKILL 中有跨模型调用路径
-- [ ] 在至少 1 个真实项目任务中端到端使用跨模型能力，体验正向
+- [x] 至少 2 个跨模型能力通过 spike 验证（INTEGRATE 判定） — NotebookLM INTEGRATE + Codex Image-2 INTEGRATE
+- [x] 编排协议设计完成：capability catalog YAML + prompt template + fallback chain — capabilities.yaml + *research-notebook SKILL 8 commands
+- [x] TAD SKILL 集成完成：Blake 和/或 Alex SKILL 中有跨模型调用路径 — Alex step2c_github, research_notebook_awareness, *research-plan
+- [x] 在至少 1 个真实项目任务中端到端使用跨模型能力，体验正向 — menu-snap: 4 notebooks, 646 sources, 10 research outputs
 
 ---
 
@@ -27,7 +27,7 @@
 | 0 | Real-Scenario Spikes | ✅ Done | HANDOFF-20260503-cross-model-phase0-spikes.md (archived) | Spike A: SKIP, Spike B: DEFER, Spike C: INTEGRATE (Codex Image-2 → *publish) |
 | 0b | NotebookLM Knowledge Layer Spike | ✅ Done | HANDOFF-20260503-notebooklm-knowledge-layer-spike.md (archived) | INTEGRATE: 15 sources (6 web + 9 YouTube), Q3-final 5/5 with 37 video citations, 6 video-exclusive findings |
 | 1 | Protocol Design + Integration | ✅ Done | HANDOFF-20260503-cross-model-phase1-protocol.md (archived) | *research-notebook SKILL (8 commands) + REGISTRY + capabilities.yaml + Alex SKILL integration |
-| 2 | Validation Run | ⬚ Planned | — | 真实项目使用 *research-notebook + Codex image_gen 验证 |
+| 2 | Validation Run | ✅ Done | (validated organically) | menu-snap: 4 notebooks (646 sources), 10 research files, *research-plan pipeline used end-to-end (2026-05-04~05-14) |
 
 ### Phase Dependencies
 

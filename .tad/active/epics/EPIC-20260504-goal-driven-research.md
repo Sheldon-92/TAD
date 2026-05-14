@@ -25,7 +25,7 @@
 |---|-------|--------|---------|-----------------|
 | 0 | Cross-Project Sync Wizard (方案 C) | ⏭️ Skipped | — | 用户决定手动补 REGISTRY，跳过向导基础设施。Phase 1 包含手动注册步骤。 |
 | 1 | Business Objective Definition | ✅ Done | HANDOFF-20260504-goal-driven-phase1 | OBJECTIVES.md OKR template + Alex STEP 3.8 gap analysis + 内容副业 REGISTRY 11 notebooks + OBJECTIVES O1/O2 |
-| 2 | Autonomous Research Strategy | ✅ Done | HANDOFF-20260504-autonomous-research-phase2 | *research-plan command (5-step protocol: read→plan→confirm→execute→update OBJECTIVES) |
+| 2 | Autonomous Research Strategy | ✅ Done | HANDOFF-20260504-autonomous-research-phase2 | *research-plan command (5-step protocol: read→plan→confirm→execute→update OBJECTIVES). Validated: menu-snap research-plan-2026-05-04.md + 4 notebooks generated + OBJECTIVES KR research status tracked. |
 | 3 | Research-Decision Loop | ⬚ Planned | — | 研究→决策追踪 + 决策→行动→结果反哺 + `--caller` flag |
 
 ### Phase Dependencies
