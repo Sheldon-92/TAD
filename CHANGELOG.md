@@ -5,6 +5,27 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.1] - 2026-05-14
+
+### New Features — Research Adversarial Challenge
+- **Dual-model adversarial review**: Research pipeline now has 3 challenge points (Phase 0c/4c/5b) where Codex + Gemini independently challenge Alex's research conclusions
+- **5-dimension challenge framework**: Evidence sufficiency, angle completeness, assumption reliability, causal reasoning, decision support strength
+- **Pass criteria**: Both models must rate ADEQUATE+ (strict — prevents single-model bias)
+- **Max 2-round loop**: INSUFFICIENT triggers gap-driven re-research, hard cap prevents infinite loops
+- **Experiment mode**: First 3 runs collect data from both models for comparison
+- **Challenge prompt template**: `.tad/templates/research-challenge-prompt.md` with 3 adversarial variants (plan/findings/actions)
+
+### Improvements
+- **Fail-closed rating extraction**: `grep -oE` on first 5 lines, defaults to INSUFFICIENT if unparseable
+- **CHALLENGE_INSTRUCTION constant**: Symmetric prompt string defined once, referenced across all phases (prevents cross-model prompt asymmetry)
+- **AskUserQuestion gate**: Each challenge point requires user confirmation (respects NOT_via_alex_auto constraint)
+- **Graceful degradation**: Codex/Gemini unavailable → single-model or skip with WARN
+
+### Cleanup
+- Archived Cross-Model Orchestration Epic (4/4 phases validated via menu-snap)
+- Archived 8 obsolete/promoted/done Ideas (19→11 active)
+- NEXT.md rewritten: 235→75 lines
+
 ## [2.14.0] - 2026-05-14
 
 ### New Features — YOLO Mode (Autonomous Epic Execution)

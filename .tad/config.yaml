@@ -1,6 +1,6 @@
-# TAD Configuration v2.14.0 - YOLO Mode + LSP Code Understanding
+# TAD Configuration v2.14.1 - Research Adversarial Challenge
 method: TAD
-version: 2.14.0
+version: 2.14.1
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
 last_updated: 2026-05-14
 
