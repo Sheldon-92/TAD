@@ -307,9 +307,10 @@ commands:
   research-review: "Research portfolio review — classify all notebooks by goal alignment + action plan"
   research-plan: "基于 OBJECTIVES.md gap analysis，提出研究计划并执行"
 
-  # Self-evolution commands (TAD v2.8)
+  # Self-evolution commands (TAD v2.8+)
   optimize: "Analyze execution traces and propose Domain Pack improvements"
   evolve: "Cross-project trace aggregation — analyze all projects and propose TAD framework improvements"
+  dream: "Consolidate project-knowledge files — dedup, merge, prune stale refs, reduce bloat (candidates only, originals untouched)"
 
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
@@ -565,6 +566,7 @@ intent_router_protocol:
       - "After *sync step4 completes → Enter standby"
       - "After *sync-add step3 completes → Enter standby"
       - "After *sync-list step1 completes → Enter standby"
+      - "After *dream completes (promote/skip) → Enter standby"
 
     on_new_input_in_standby: |
       When user sends a new message while Alex is in standby:
@@ -5531,6 +5533,165 @@ sync_list_protocol:
         Display table with: name, path, strategy, last synced version, current TAD version, status.
         Return to standby.
 
+# *dream command — Knowledge Consolidation (TAD v2.14.1)
+dream_protocol:
+  description: "Consolidate project-knowledge files: dedup, merge, prune stale refs, reduce bloat"
+  trigger: "User types *dream"
+  safety_principle: "NEVER modify originals directly — produce candidates for human review"
+
+  flags:
+    default: "Generate candidates only (no promotion)"
+    promote: "*dream --promote — backup originals + replace with accepted candidates"
+    rollback: "*dream --rollback — restore from latest snapshot"
+
+  steps:
+    step1_orient:
+      name: "Orient — Map Current Knowledge State"
+      action: |
+        1. List all .tad/project-knowledge/*.md files (exclude README.md)
+        2. For each file:
+           a. Count ### entries: `grep -c '^### ' "$file"`
+           b. Count lines: `wc -l < "$file"`
+           c. Extract entry titles + dates: `grep -E '^### .+ [—-] [0-9]{4}-[0-9]{2}-[0-9]{2}' "$file"`
+           d. Count safety keywords: `grep -coE 'MUST|MANDATORY|VIOLATION|BLOCKING' "$file"`
+        3. Output orientation report as table:
+           | File | Entries | Lines | Safety Keywords | Oldest | Newest |
+        4. Store baseline counts (used by validator in step4)
+
+    step2_gather_signal:
+      name: "Gather Signal — Identify Consolidation Opportunities"
+      action: |
+        For each knowledge file:
+
+        1. **Stale file refs**: For every "Grounded in" line, extract file paths and
+           check if each path exists on disk. Mark entries where ALL grounded-in paths
+           are missing as [STALE].
+
+        2. **AMENDED pairs**: Search for entries containing "AMENDED" in title or body.
+           Find the corresponding original entry (usually referenced by title).
+           These are merge candidates.
+
+        3. **Topic overlap**: Group entries by semantic topic similarity:
+           - Entries sharing the same primary subject (e.g., "Hook Performance" entries)
+           - Entries about the same Epic/Phase (e.g., multiple Phase 1c entries)
+           - Entries where one supersedes another (look for "superseded" keyword)
+
+        4. **Foundational section boundary**: Identify the line "## Accumulated Learnings"
+           Everything ABOVE this line is Foundational and MUST NOT be modified.
+
+        5. Output signal report:
+           "📊 Consolidation opportunities found:
+            - {N} stale ref entries
+            - {N} AMENDED pairs ready to merge
+            - {N} topic overlap groups
+            - Foundational section: lines 1-{M} (protected)"
+
+    step3_consolidate:
+      name: "Consolidate — Produce Candidate Files"
+      action: |
+        For each knowledge file, create a candidate in .tad/active/dream-candidates/:
+
+        0. **Copy Foundational section byte-exactly** from original to candidate.
+           Everything from line 1 to (and including) the "## Accumulated Learnings" line.
+
+        1. **Dedup & Merge** (deterministic rules — merge when ANY of these hold):
+           a. AMENDED+ORIGINAL pair: entry title contains "AMENDED" and references an original
+           b. Identical title prefix: two entries share the first 5+ words of title
+           c. Same handoff Context: entries reference the same handoff/phase in Context line
+           - Keep the MOST RECENT entry's date and structure
+           - Combine unique Action items from all merged entries
+           - Add provenance: "Supersedes: {old title 1}, {old title 2}"
+
+        2. **Contradiction Resolution**:
+           - Entries containing MUST/MANDATORY/VIOLATION/BLOCKING keywords:
+             → NEVER auto-resolve. Keep ALL such entries unchanged. Add a flag:
+             "⚠️ SAFETY ENTRY — requires human review for any modification"
+           - Non-safety contradictions: newest entry wins.
+             Add provenance note: "Supersedes: {old title}"
+
+        3. **Stale Ref Cleanup**:
+           - Entries where ALL "Grounded in" paths are missing from disk:
+             → Remove the entry entirely (it references nothing that still exists)
+           - Entries where SOME paths are missing:
+             → Keep the entry, remove only the missing paths from "Grounded in"
+
+        4. **Inline Compression** (target: ≤50% of original line count):
+           - Entries >15 lines: compress to ≤8 lines while preserving:
+             Context (1 line), Discovery (2-3 lines), Action (1-2 lines)
+           - Remove verbose examples that repeat the same point
+           - Preserve "Revalidated" dates (used by stale-knowledge-check.sh as alarm quieting)
+           - Collapse multi-paragraph Discovery sections into key finding + rule
+
+        5. Write candidate to .tad/active/dream-candidates/{filename}
+
+      constraints:
+        - "Safety keyword entries (MUST/MANDATORY/VIOLATION/BLOCKING in body) are EXCLUDED from auto-merge"
+        - "Foundational section is byte-identical to original"
+        - "Every merge produces a provenance note"
+        - "No entry is silently deleted — stale removals are logged in step4"
+
+    step4_validate_and_review:
+      name: "Validate & Human Review"
+      action: |
+        For each candidate file:
+
+        1. Run validator:
+           `bash .tad/hooks/lib/dream-validator.sh {original} {candidate}`
+           Display full output to user.
+
+        2. Show diff summary:
+           - Entries removed (with reason: stale / merged)
+           - Entries merged (with provenance)
+           - Entries compressed (line count before → after)
+           - Safety entries preserved (count)
+
+        3. Present to user via AskUserQuestion:
+           question: "{filename}: {orig_entries} → {cand_entries} entries, {orig_lines} → {cand_lines} lines ({reduction}% reduction). Accept?"
+           options:
+             - "Accept this candidate"
+             - "Show me the full diff first"
+             - "Skip this file (keep original)"
+
+        4. If "Show diff" → display `diff {original} {candidate}`, then re-ask accept/skip
+        5. If accepted → mark for promotion
+        6. After all files reviewed:
+           - If --promote flag: execute promotion (step5)
+           - Otherwise: "Candidates saved in .tad/active/dream-candidates/. Run *dream --promote to apply."
+
+    step5_promote:
+      name: "Promote Accepted Candidates"
+      trigger: "*dream --promote OR user accepts during step4"
+      action: |
+        1. Create snapshot directory (with timestamp to prevent same-day overwrite):
+           .tad/archive/knowledge-snapshots/{YYYY-MM-DD-HHMMSS}/
+        2. For each accepted candidate:
+           a. Copy original → snapshot directory (backup)
+           b. Copy candidate → original path (replace)
+        3. Remove .tad/active/dream-candidates/ contents (cleanup)
+        4. Output: "✅ Promoted {N} files. Snapshot saved to .tad/archive/knowledge-snapshots/{date}/
+           Run *dream --rollback to undo."
+
+    step6_rollback:
+      name: "Rollback from Snapshot"
+      trigger: "*dream --rollback"
+      action: |
+        1. Find latest snapshot: `ls -d .tad/archive/knowledge-snapshots/*/ | sort -r | head -1`
+        2. If no snapshots exist → "No snapshots found. Nothing to roll back."
+        3. List snapshot contents with dates
+        4. AskUserQuestion: "Restore from snapshot {date}? This will overwrite current knowledge files."
+        5. If confirmed:
+           a. Copy each file from snapshot → .tad/project-knowledge/
+           b. Output: "✅ Rolled back to snapshot {date}."
+
+  validator:
+    script: ".tad/hooks/lib/dream-validator.sh"
+    checks:
+      - "Safety keyword count: candidate ≥ original"
+      - "Entry count: candidate > 0"
+      - "Foundational section: byte-identical"
+      - "Grounded-in paths: existence check (advisory)"
+    enforcement: "advisory — validator reports results, does not block promotion"
+
 # Forbidden actions (will trigger VIOLATION)
 # ⚠️ ANTI-RATIONALIZATION: "Blake 的修复很简单，只改一行，我帮他改了省得切 terminal"
 # → 一行修改也需通过 Ralph Loop。Alex 改了就跳过了 Layer 1 + Layer 2。
@@ -5580,6 +5741,7 @@ on_start: |
   - *discuss — Free-form product/tech discussion
   - *idea — Capture an idea for later
   - *learn — Understand a technical concept (Socratic teaching)
+  - *dream — Consolidate project-knowledge files (dedup, merge, prune stale refs)
   - *publish — Push TAD updates to GitHub (version check + push + tag)
   - *sync — Sync TAD to your other projects
 
@@ -5623,6 +5785,7 @@ on_start: |
 - `*sync` - Sync TAD framework to registered projects
 - `*sync-add` - Register a new project for sync
 - `*sync-list` - List registered sync projects
+- `*dream` - Consolidate project-knowledge (dedup + merge + prune stale refs)
 
 ### Gate Ownership (since v2.0)
 ```
