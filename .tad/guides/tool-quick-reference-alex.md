@@ -51,6 +51,24 @@
   - Repo contents: `gh api repos/{owner}/{repo}/contents/` (root only — use git/trees for full)
 - **Full workflow:** `.claude/skills/research-github/SKILL.md`
 
+## Claude Code Native Tools
+
+### LSP (Code Intelligence — Claude Code Native)
+- **Availability:** Requires language-specific plugin. See `.tad/guides/lsp-language-map.yaml`
+- **Preflight:** Try `LSP documentSymbol` on a target file. "No LSP server available" → needs plugin install.
+- **Auto-install:** `claude plugin install {plugin_name}` (takes effect next session)
+- **Key operations:**
+  - Impact analysis: `LSP incomingCalls` — who calls this function?
+  - Dependency chain: `LSP outgoingCalls` — what does this function call?
+  - All references: `LSP findReferences` — every usage of this symbol
+  - File structure: `LSP documentSymbol` — all symbols in a file
+  - Workspace search: `LSP workspaceSymbol` — find symbol across project
+  - Type info: `LSP hover` — documentation and type at a position
+- **Parameters:** operation, filePath (absolute), line (1-based), character (1-based)
+- **Note:** `documentSymbol` and `workspaceSymbol` require line+character by tool schema but don't use them semantically. Pass line=1, character=1.
+- **Session constraint:** Newly installed plugins need NEW session to activate.
+- **Mapping:** `.tad/guides/lsp-language-map.yaml`
+
 ## TAD Research Commands (Alex-domain)
 
 ### *research-notebook (19 commands — top 7 for daily use)

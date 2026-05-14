@@ -2849,9 +2849,99 @@ handoff_creation_protocol:
         - "MUST NOT block ANY tool call (Write/Edit/Read)"
         - "violation level mirrors anti_rationalization_registry: prompt-only enforcement"
 
+    # ──────────────────────────────────────────────────────────
+    # LSP Auto-Provision Protocol (shared by Alex + Blake)
+    # ──────────────────────────────────────────────────────────
+    lsp_provision_protocol:
+      description: "Detect → try → install → fallback. Zero user interaction."
+
+      step1_detect:
+        action: "Extract primary file extensions from §6 Files to Modify"
+        output: "dominant_extension (e.g., '.ts')"
+
+      step2_lookup:
+        action: "Match dominant_extension against .tad/guides/lsp-language-map.yaml"
+        output: "plugin_name, prereq_command"
+
+      step3_try:
+        action: "LSP documentSymbol on first existing file in §6 (line=1, character=1)"
+        on_success: "LSP available → proceed to impact analysis"
+        on_no_server: "goto step4_install"
+
+      step4_install:
+        action: |
+          a. Prereq install (split by weight):
+             - npm-based prereqs (typescript-lsp, pyright-lsp, php-lsp): auto-install silently
+               Bash("npm i -g {prereq_package}") — lightweight, seconds, standard dev tooling
+             - brew-based prereqs (rust-analyzer, jdtls, llvm, kotlin-lsp, etc.): DO NOT auto-install
+               Log: "LSP prereq needs: {prereq_command}. Run manually if you want LSP for {language}."
+               Reason: brew packages can be 2GB+ (llvm); silent install violates user's env safety rule
+          b. Plugin install: Bash("claude plugin install {plugin_name}")
+          c. Retry LSP documentSymbol (line=1, character=1)
+        on_retry_success: "LSP available → proceed to impact analysis"
+        on_retry_fail: |
+          LSP installed but needs new session to activate.
+          Log: "LSP plugin {plugin_name} installed. Available next session."
+          Fallback to grep for this session.
+        time_budget: "step3_try: <2s. step4_install npm prereq: 5-30s. step4_install plugin: <5s. If total >60s, abort and fallback."
+
+      step5_fallback:
+        action: "Use existing grep + Read approach (current behavior, zero regression)"
+        note: "No error output, no user prompt. Silent degradation."
+
+    # ──────────────────────────────────────────────────────────
+    # step1c_lsp: LSP Impact Analysis — scope gap detection
+    # ──────────────────────────────────────────────────────────
+    step1c_lsp:
+      name: "LSP Impact Analysis — scope gap detection"
+      trigger: "After step1c grounding pass, before step1d AC Dry-Run pass"
+      prerequisite: "lsp_provision_protocol completed (step3 or step4 succeeded)"
+      enforcement: "prompt-level-only"
+
+      action: |
+        For each EXISTING file in §6 that handoff proposes to MODIFY (not create):
+
+        1. Run LSP documentSymbol (line=1, character=1 — required by tool schema but not
+           semantically used for this operation) → identify exported functions/classes/constants
+        2. Cross-reference with handoff task description: which symbols will change?
+           (LLM judgment — match task description against symbol names.
+           Bias: when uncertain, CHECK the symbol. False positive = cheap extra LSP call.
+           False negative = missed scope gap, defeating the entire purpose.)
+        3. For each symbol identified as "will be modified":
+           Extract the symbol's line and character position from the documentSymbol result,
+           then run LSP incomingCalls with those coordinates → get all callers
+        4. Collect all caller file paths into a set: lsp_callers
+        5. Compare lsp_callers against §6 file list:
+           - Caller in §6 → ✅ covered
+           - Caller NOT in §6 → ⚠️ scope gap
+        6. If scope gaps found:
+           a. Output: "⚠️ LSP: {N} files call modified symbols but are not in §6: {list}"
+           b. Add to §6 with annotation: "(LSP: calls modified {symbol_name})"
+           c. Read head 30 of each gap file (lightweight grounding)
+        7. Append to Grounded Against:
+           "LSP impact: {N} symbols checked, {M} callers found, {G} scope gaps added"
+
+      skip_if:
+        - "LSP not available (provision failed) → existing step1c is sufficient"
+        - "§6 is empty or all files are new (create, not modify)"
+        - "task_type is doc-only, yaml, or research"
+
+      token_budget: "~5 LSP calls per file × ~3 files = ~15 calls. Each returns ~200 tokens."
+
+      compact_recovery: "LSP annotations in §6 are idempotent. Re-running after compact is safe but redundant if Grounded Against already shows LSP impact line."
+
+      known_limitations: "Provisions one language per session. Multi-language handoffs get LSP for dominant extension only; others fall back to grep."
+
+      forbidden_implementations:
+        - "MUST NOT register as PreToolUse hook in .claude/settings.json"
+        - "MUST NOT register as UserPromptSubmit hook in .claude/settings.json"
+        - "MUST NOT add to .tad/hooks/*.sh as auto-fired script"
+        - "MUST NOT return deny exit code from any wrapping script"
+        - "MUST NOT block ANY tool call (Write/Edit/Read)"
+
     step1d:
       name: "AC Dry-Run Pass — verify §9.1 verification commands actually work (P6-A.1, 2026-04-25)"
-      trigger: "After step1c grounding pass, before step2 expert review"
+      trigger: "After step1c_lsp (or step1c if LSP unavailable), before step2 expert review"
       enforcement: "prompt-level-only"  # ⚠️ NOT a hook, NOT in settings.json, NOT a tool block
       rationale: |
         Phase 3 / 4 / 5 累积 3 次 §9.1 verification command 在 Blake runtime 出错

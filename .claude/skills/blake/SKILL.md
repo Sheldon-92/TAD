@@ -572,7 +572,7 @@ ralph_loop_execution:
              e. After pipeline completes, announce:
                 "Exiting research-task mode — notebook access reverted to read-only."
 
-          4. If NOT a research task → skip this step entirely, proceed to 1_6_tdd_check
+          4. If NOT a research task → skip this step entirely, proceed to 1_5d_lsp_blast_radius
 
           5. Fallback (CAPABILITY.md missing — CR-P1-4 fix):
              Warn: "⚠️ research-methodology pack not installed at .tad/capability-packs/research-methodology/.
@@ -630,6 +630,47 @@ ralph_loop_execution:
           - "Blake executes the pack pipeline but does NOT modify the pack CAPABILITY.md itself"
           - "notebooklm_access_override applies ONLY during 1_5c pipeline execution"
           - "After pack pipeline completes, Blake writes normal completion report"
+
+      # ──────────────────────────────────────────────────────────
+      # 1_5d: LSP Blast Radius Check
+      # ──────────────────────────────────────────────────────────
+      1_5d_lsp_blast_radius:
+        name: "LSP Blast Radius Check"
+        trigger: "After 1_5c_research_task_detection, before 1_6_tdd_check"
+        prerequisite: "lsp_provision_protocol completed (see Alex SKILL lsp_provision_protocol)"
+
+        action: |
+          1. Follow lsp_provision_protocol per Alex SKILL §lsp_provision_protocol
+             (detect → try → install → fallback). If LSP available → continue.
+             If not → skip this step silently.
+
+          2. For each file in handoff §6 marked as MODIFY:
+             a. Run LSP documentSymbol (line=1, character=1) → exported symbols
+             b. For key symbols (functions/classes with >0 callers likely):
+                Extract the symbol's line and character position from the documentSymbol result,
+                then run LSP incomingCalls with those coordinates → caller list
+             c. Output blast radius summary:
+                "🔍 Blast radius for {file}:
+                 - {symbol}: {N} callers in {M} files
+                 - {symbol}: {N} callers in {M} files"
+             d. If ANY caller is NOT in handoff §6:
+                Output: "⚠️ {caller_file}:{caller_func} calls {symbol} but is not in handoff scope.
+                Verify this caller won't break after the change."
+
+          3. This is INFORMATIONAL — does NOT block implementation.
+             Blake uses judgment on whether to also update the unlisted callers.
+
+        skip_if:
+          - "LSP not available (provision failed) → skip silently"
+          - "All files in §6 are new (create, not modify)"
+          - "task_type is doc-only, yaml, or research"
+
+        compact_recovery: "Step produces no persistent state. Safe to skip after compact."
+
+        forbidden_implementations:
+          - "MUST NOT register as PreToolUse hook in .claude/settings.json"
+          - "MUST NOT block implementation based on blast radius findings"
+          - "MUST NOT auto-expand handoff §6 (informational only — Alex owns scope)"
 
       1_6_tdd_check:
         description: "Check if TDD mode is enabled and set implementation guidance"

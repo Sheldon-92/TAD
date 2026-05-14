@@ -1,0 +1,42 @@
+# LSP Language → Plugin Mapping
+# Used by Alex step1c_lsp and Blake 1_5d_lsp_blast_radius
+# Source: ~/.claude/plugins/marketplaces/claude-plugins-official/plugins/
+# Note: prereq install commands are macOS-oriented (Homebrew). Adjust for other platforms.
+
+lsp_plugins:
+  - extensions: [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".mjs", ".cjs"]
+    plugin: "typescript-lsp"
+    prereq: "npm i -g typescript-language-server typescript"
+  - extensions: [".py", ".pyi"]
+    plugin: "pyright-lsp"
+    prereq: "npm i -g pyright"
+  - extensions: [".rs"]
+    plugin: "rust-analyzer-lsp"
+    prereq: "brew install rust-analyzer"
+  - extensions: [".go"]
+    plugin: "gopls-lsp"
+    prereq: null
+  - extensions: [".swift"]
+    plugin: "swift-lsp"
+    prereq: null
+  - extensions: [".kt", ".kts"]
+    plugin: "kotlin-lsp"
+    prereq: "brew install JetBrains/utils/kotlin-lsp"
+  - extensions: [".java"]
+    plugin: "jdtls-lsp"
+    prereq: "brew install jdtls"
+  - extensions: [".cs"]
+    plugin: "csharp-lsp"
+    prereq: "brew install csharp-ls"
+  - extensions: [".php"]
+    plugin: "php-lsp"
+    prereq: "npm i -g intelephense"
+  - extensions: [".rb", ".rake", ".gemspec"]
+    plugin: "ruby-lsp"
+    prereq: null
+  - extensions: [".lua"]
+    plugin: "lua-lsp"
+    prereq: "brew install lua-language-server"
+  - extensions: [".c", ".cpp", ".cc", ".h", ".hpp"]
+    plugin: "clangd-lsp"
+    prereq: "brew install llvm"
