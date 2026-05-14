@@ -3,6 +3,12 @@
 ## In Progress
 
 - [x] **LSP Code Understanding Integration** — Gate 4 PASS 2026-05-14, commit 328b21a
+
+- [ ] **EPIC: YOLO Mode** — Phase 1 ✅ + Phase 2 ✅ + Phase 3 🔄 (audit script done, dogfood pending)
+  - Phase 1: Epic 模板增强 ✅ (commit ff6a8b2)
+  - Phase 2: YOLO 执行机制 ✅ (commit 5a8ace3, +276 lines Alex SKILL)
+  - Phase 3A: audit-yolo.sh ✅ (commit 0d6b307, 379 lines)
+  - Phase 3B: Dogfood ⬚ (下次新 session → /alex → 选一个 menu-snap 功能 → 首次 YOLO 执行)
   - LSP incomingCalls/outgoingCalls integrated into Alex step1c + Blake 1_5d
   - 12-language plugin map, auto-provision, graceful fallback to grep
   - Triggered by codegraph-rust evaluation → discovered Claude Code native LSP is sufficient
