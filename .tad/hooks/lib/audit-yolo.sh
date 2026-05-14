@@ -352,8 +352,8 @@ if [ -z "$epic_file" ] && [ -d .tad/archive/epics ]; then
 fi
 
 if [ -n "$epic_file" ]; then
-  planned=$(grep -c "⬚ Planned" "$epic_file" 2>/dev/null || echo 0)
-  active=$(grep -c "🔄 Active" "$epic_file" 2>/dev/null || echo 0)
+  planned=$(grep -c "⬚ Planned" "$epic_file" 2>/dev/null) || planned=0
+  active=$(grep -c "🔄 Active" "$epic_file" 2>/dev/null) || active=0
   planned=${planned:-0}
   active=${active:-0}
   if [ "$planned" -eq 0 ] && [ "$active" -eq 0 ]; then
