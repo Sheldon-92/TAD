@@ -2,6 +2,11 @@
 
 ## In Progress
 
+- [x] **LSP Code Understanding Integration** — Gate 4 PASS 2026-05-14, commit 328b21a
+  - LSP incomingCalls/outgoingCalls integrated into Alex step1c + Blake 1_5d
+  - 12-language plugin map, auto-provision, graceful fallback to grep
+  - Triggered by codegraph-rust evaluation → discovered Claude Code native LSP is sufficient
+
 - [x] **NotebookLM Research Upgrade (TASK-20260509-001~005)** — All 5 Gate 4 PASS, archived
   - add-smart: URL detect + 4 handlers + quality verify + bilibili 4-phase fallback + probe tuning
   - Dynamic research: step3_5 follow_thread/contradiction/so_what + chain storage + saturation
