@@ -5,6 +5,17 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.13.1] - 2026-05-14
+
+### New Features — LSP Code Understanding
+- **LSP Auto-Provision Protocol**: Alex/Blake auto-detect project language → try LSP → install plugin if missing → graceful fallback to grep. npm prereqs auto-install; brew prereqs recommend only. 12-language mapping in `.tad/guides/lsp-language-map.yaml`
+- **Alex step1c_lsp**: After grounding pass, runs LSP `incomingCalls` on modified symbols to detect scope gaps in §6 file list. Auto-adds missing callers with annotation. Directly addresses the 4-instance scope estimation drift pattern
+- **Blake 1_5d_lsp_blast_radius**: Before implementation, checks blast radius via LSP `incomingCalls`. Informational only — does not block
+- **Tool Quick References**: Both alex and blake reference files updated with LSP section under new "Claude Code Native Tools" heading
+
+### Bug Fixes
+- Fixed stale transition arrow in Blake 1_5c (`proceed to 1_6_tdd_check` → `proceed to 1_5d_lsp_blast_radius`)
+
 ## [2.13.0] - 2026-05-09
 
 ### New Features — Research Methodology Upgrade

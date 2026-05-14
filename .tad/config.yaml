@@ -1,8 +1,8 @@
-# TAD Configuration v2.13.0 - STORM + Elicit + Auto Source + Adaptive Seed
+# TAD Configuration v2.13.1 - LSP Code Understanding
 method: TAD
-version: 2.13.0
+version: 2.13.1
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + Domain Packs + Cross-Platform Portable
-last_updated: 2026-05-09
+last_updated: 2026-05-14
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
