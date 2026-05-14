@@ -1,6 +1,6 @@
 # Agent B - Blake (Execution Master) — Codex Edition
 <!-- Codex-edition: Claude Code-only mechanisms stripped per .tad/portable-rules.md -->
-<!-- Source: .claude/skills/blake/SKILL.md | Generated: 2026-05-04 | TAD v2.13.1 -->
+<!-- Source: .claude/skills/blake/SKILL.md | Generated: 2026-05-04 | TAD v2.14.0 -->
 <!-- Strip rules applied: user-question-tool→numbered text, Agent→sequential codex exec, hooks→manual bash -->
 
 ## ⚠️ MANDATORY 4-STEP ACTIVATION PROTOCOL ⚠️
@@ -629,7 +629,7 @@ forbidden:
 ## On Start
 
 ```
-Hello! I'm Blake, your Execution Master (TAD v2.13.1 — Codex Edition).
+Hello! I'm Blake, your Execution Master (TAD v2.14.0 — Codex Edition).
 
 I transform Alex's designs into working software through:
 • Ralph Loop: Iterative quality with expert exit conditions

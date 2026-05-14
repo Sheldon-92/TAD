@@ -5,6 +5,26 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.0] - 2026-05-14
+
+### New Features — YOLO Mode (Autonomous Epic Execution)
+- **YOLO Execution Protocol**: Alex can now autonomously drive multi-Phase Epics — spawns Blake sub-agent for implementation, runs independent reviewer sub-agents for design + code review, executes Gates, all with persistent file artifacts. Human only participates at Epic definition and final acceptance.
+- **Enhanced Epic Template**: Phase Detail Blocks with Scope/Input/Output/AC/Files/Dependencies/Notes. When sufficiently detailed, Alex reduces Socratic inquiry to light tier (2-3 questions instead of 3-5).
+- **Step7 Execution Mode**: After Gate 2, Epic handoffs offer 3 execution modes — manual (current), YOLO (full auto), semi-auto (pause between phases).
+- **audit-yolo.sh**: 4-dimension post-execution audit script — artifact chain completeness, content truthfulness (min lines + P0/P1/P2 classification), code verification (tsc re-run), timing order. 379 lines, pure bash.
+- **Dogfood Validated**: First real YOLO execution on menu-snap (Chinese allergen detection, 2 phases) — 39/39 audit checks passed.
+
+### New Features — LSP Code Understanding (from v2.13.1)
+- **LSP Auto-Provision**: 12-language plugin mapping, auto-detect + install + graceful fallback to grep
+- **Alex step1c_lsp**: incomingCalls scope gap detection after grounding pass
+- **Blake 1_5d_lsp_blast_radius**: impact analysis before implementation
+
+### Architecture Decisions
+- Conductor = Alex (not a separate role). YOLO mode is an Alex capability, not a new entity.
+- Sub-agents have no Agent tool (nesting impossible). All independent review at Conductor (Alex) level.
+- File is source of truth — sub-agent prompts contain only file paths, never business content.
+- 34-step TAD flow mapped: 18 KEEP, 7 ADAPT, 5 SKIP, 4 REPLACE for YOLO mode.
+
 ## [2.13.1] - 2026-05-14
 
 ### New Features — LSP Code Understanding
