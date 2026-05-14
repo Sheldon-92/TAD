@@ -4,7 +4,19 @@ e2e_required: no
 research_required: no
 skip_knowledge_assessment: no
 git_tracked_dirs: [".claude/skills/alex", ".tad/templates", ".tad/guides"]
-gate4_delta: []
+gate4_delta:
+  - field: "AC1"
+    alex_said: "grep -c challenge_type template = 3"
+    actual: "challenge_type doesn't appear in template; correct check is grep -c '<!-- BEGIN' = 4. Spec bug, not impl bug."
+    caught_by: "Blake completion report INTENT-PASS notation"
+  - field: "KA"
+    alex_said: "skip_knowledge_assessment: no → Blake writes KA"
+    actual: "Blake reported KA discovery but did not write to project-knowledge. Alex补写 at Gate 4."
+    caught_by: "Alex Gate 4 KA verification (grep found 0 matches)"
+  - field: "Archive timing"
+    alex_said: "Gate 4 before archive"
+    actual: "Handoff archived (commit 751ef37) before Gate 4 ran. Process gap — cleanup script should not archive before Gate 4 acceptance."
+    caught_by: "Alex Gate 4 found handoff already in archive/"
 ---
 
 # Handoff: Research Adversarial Challenge Layer

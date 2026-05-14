@@ -15,6 +15,11 @@
   - Phase 3: Cross-agent validation (same pack on Codex)
   - Phase 4: Template extraction (CONSUMES/PRODUCES standard)
 
+- [x] **\*dream Knowledge Consolidation** — Gate 4 PASS + PROMOTED 2026-05-14
+  - architecture.md: 1125→262 lines (76% reduction), 120→60 entries
+  - Safety keywords: 15→15 preserved. Foundational section byte-identical.
+  - Snapshot: `.tad/archive/knowledge-snapshots/2026-05-14/`
+
 - [ ] **EPIC: Goal-Driven Research Director** — 3/4 Phases Done
   - Epic: `.tad/active/epics/EPIC-20260504-goal-driven-research.md`
   - Phase 3: Research-Decision Loop (decision traceability + --caller flag)

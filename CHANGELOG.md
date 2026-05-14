@@ -5,6 +5,28 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.0] - 2026-05-14
+
+### New Features — *dream Knowledge Consolidation
+- **`*dream` command**: 4-phase knowledge consolidation for Alex — Orient → Gather Signal → Consolidate → Summarize & Rebuild
+- **dream-validator.sh**: Safety validator preserving MUST/MANDATORY/VIOLATION/BLOCKING keyword count + Foundational section byte-identical check
+- **Candidate-only model**: Never modifies originals — produces candidate file for human review, with backup snapshot for rollback
+- **`--promote` / `--rollback`**: Backup originals → replace with candidate; restore from `.tad/archive/knowledge-snapshots/`
+- **Deterministic merge rules**: AMENDED+ORIGINAL pairs, identical title prefix, same handoff Context (not vague "70% overlap")
+- **Safety entry protection**: Entries containing MUST/MANDATORY/VIOLATION/BLOCKING excluded from auto-merge — human-only review
+
+### Results (first run on TAD itself)
+- architecture.md: 1125 → 262 lines (**76% reduction**), 120 → 60 entries
+- Safety keywords: 15 → 15 lines preserved (0 information loss)
+- Foundational section: byte-identical
+- 5 merge demonstrations with Supersedes: provenance
+- Per-session token savings: ~30K → ~7K (~77% reduction)
+
+### Research Foundation
+- NotebookLM notebook query (49 sources) → Anthropic Dreams API + dream-skill + Mem0 patterns
+- Codex+Gemini dual-model adversarial challenge (2 rounds, plan + findings)
+- Key pivot: Gemini corrected research paradigm from "runtime memory" to "offline batch consolidation"
+
 ## [2.14.1] - 2026-05-14
 
 ### New Features — Research Adversarial Challenge
