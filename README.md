@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.15.0 - Dream Knowledge Consolidation**
+**Version 2.15.1 - Capability Pack Auto-Awareness**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -131,7 +131,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.15.0 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.15.1 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -449,6 +449,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.15.0 - Dream Knowledge Consolidation
+**Welcome to TAD v2.15.1 - Capability Pack Auto-Awareness
 
 *AI does the work. Humans guard the value.*

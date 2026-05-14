@@ -2,6 +2,12 @@
 
 ## In Progress
 
+- [x] **Capability Pack Auto-Awareness + Sync Install** — Gate 4 PASS + ARCHIVED 2026-05-14
+  - *sync step b2 installs all 8 packs to downstream projects
+  - Alex step4_5 pack awareness scan across 6 modes
+  - Blake 1_5a auto-detection in *develop
+  - Commit: baf5618 + e28acbf
+
 - [ ] **Domain Pack Freeze + Rebuild** (TAD Depth-First Phase 2)
   - Remove 13 frozen packs from keywords.yaml (keep 8 active)
   - Archive tools-registry.yaml

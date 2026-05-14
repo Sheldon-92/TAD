@@ -5,6 +5,20 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.1] - 2026-05-14
+
+### Enhancement — Capability Pack Auto-Awareness
+- **`*sync` step b2**: Automatically installs all 8 capability packs to downstream projects during sync (via install.sh --force)
+- **Alex `step4_5`**: Pack awareness scan fires after intent router for all 6 user-task modes (*analyze, *express, *bug, *discuss, *learn, *experiment)
+- **Blake `1_5a`**: Auto-detects relevant packs from handoff file types during *develop, independent of Alex's handoff references
+- **Post-install validation**: Verifies SKILL.md YAML frontmatter after each pack install (catches silent registration failures)
+- **Expert review fixes**: Separate Bash calls per pack (prevents set -e propagation), .claude/ pre-check, broadened keyword mapping, max 2 packs ranking rule
+
+### Context
+- Diagnosed: 14 downstream projects had pack-registry.yaml but zero packs actually installed as skills
+- Prior activation surface: only Alex *design step1_5b (missed 99% of use cases)
+- Now: Alex all modes + Blake *develop = packs loaded proactively without user intervention
+
 ## [2.15.0] - 2026-05-14
 
 ### New Features — *dream Knowledge Consolidation
