@@ -1991,12 +1991,48 @@ adaptive_complexity_protocol:
         If user chooses "创建 Epic":
           1. Create Epic file: .tad/active/epics/EPIC-{YYYYMMDD}-{slug}.md
              - Use .tad/templates/epic-template.md as base
-             - Fill Objective, Success Criteria, Phase Map
-          2. Then create first Phase's Handoff (linked to Epic)
-          3. Handoff header includes: **Epic:** EPIC-{YYYYMMDD}-{slug}.md (Phase 1/{N})
+             - Fill Objective, Success Criteria, Phase Map TABLE (overview)
+          2. For EACH Phase in the Phase Map: fill the Phase Detail Block
+             - Scope: derive from Socratic discussion context (≥2 sentences, explicit NOT-in-scope)
+             - Input/Output: derive from phase sequencing (Phase N input = Phase N-1 output)
+             - AC: at least 3 per Phase, specific and verifiable
+             - Files Likely Affected: derive from scope + codebase knowledge (≥1 concrete path with CREATE/MODIFY)
+             - Dependencies: derive from phase ordering
+             - Execution: set to "pending" (user chooses mode at confirmation)
+          3. AskUserQuestion: confirm Epic + Phase definitions
+             question: "Epic 和 Phase 定义如下，确认后开始 Phase 1。"
+             options:
+               - "确认，开始 Phase 1": "创建 Phase 1 handoff，准备交给 Blake 实现"
+               - "需要调整": "修改 Phase 定义后重新确认"
+          4. After confirmation: create first Phase's Handoff (linked to Epic)
+          5. Handoff header includes: **Epic:** EPIC-{YYYYMMDD}-{slug}.md (Phase 1/{N})
 
         If user chooses "单个 Handoff" or signals not detected:
           Proceed normally without Epic.
+
+    step2b_phase_detail_check:
+      name: "Phase Detail Block Sufficiency Check (pre-Socratic)"
+      trigger: "After step2b, before Socratic Inquiry — only when continuing an existing Epic"
+      action: |
+        If an active Epic exists in .tad/active/epics/ AND the current task is
+        starting the next Phase (not creating a new Epic):
+          1. Read the Epic file
+          2. Find the next ⬚ Planned Phase in the Phase Map
+          3. Look for the corresponding Phase Detail Block (### Phase {N}: {name})
+          4. If no Phase Detail Block found → skip (backward compat, normal Socratic)
+          5. Run sufficiency check:
+             - Scope: ≥2 sentences (not placeholder like "TBD" or "{...}")
+             - AC: ≥3 items, each with checkbox (- [ ]) and ≥1 of: file path, command, numeric threshold, or comparison operator
+             - Files: ≥1 concrete path with CREATE/MODIFY annotation (not "TBD" or "{...}")
+          6. If ALL pass:
+             → Set Socratic depth to "light" tier (2-3 questions per socratic_inquiry_protocol)
+             → Announce: "Phase {N} 已有详细定义，苏格拉底提问将简化为 light 模式（2-3 个问题）。"
+             → Light questions should focus on dimensions NOT in the Detail Block
+               (risk_foresight, user_scenarios, edge cases)
+          7. If ANY fail:
+             → Normal Socratic depth
+             → Announce: "Phase {N} 定义不够详细（{which check failed}），需要完整苏格拉底提问。"
+        If no active Epic or creating a new Epic → skip entirely.
 
       epic_assessment_signals:
         sequential_language: ["first...then", "先...再...然后", "phase", "阶段", "分步"]
@@ -2738,10 +2774,22 @@ handoff_creation_protocol:
       epic_linkage: |
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase
+        1b. Read the Phase Detail Block for this Phase (### Phase {N}: {name}),
+            using Phase number N and name from step 1:
+            - Extract Scope → use as task description context for design
+            - Extract AC → pre-fill handoff AC section
+            - Extract Files Likely Affected → pre-fill handoff §5 Files to Modify
+            - Extract Input/Output → inform design context
+            NOTE: Socratic reduction was already determined by step2b_phase_detail_check
+            (runs before Socratic). This step only pre-fills handoff sections.
+            If no Phase Detail Block found (backward compat):
+              → No pre-fill available (behavior unchanged from pre-enhancement)
         2. Add **Epic** metadata field to handoff header:
            **Epic:** EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M})
         3. Update the Epic Phase Map: set the corresponding phase to 🔄 Active
            and fill in the handoff filename
+        3b. Update the Phase Detail Block Status (if exists): ⬚ Planned → 🔄 Active
+            If no Phase Detail Block → skip (backward compat)
         4. Verify: no other phase is already 🔄 Active (concurrent control)
            - If another phase is Active → BLOCK, do not create handoff
         If no active Epic → omit the Epic field (normal handoff)
@@ -3983,6 +4031,10 @@ accept_command:
            f. 并发检查: 确认当前没有其他 🔄 Active phase（除了刚完成的这个）
               - 如果有其他 Active phase → BLOCK，报错，不激活新 phase
            g. 更新 Phase Map: 将当前 phase 标记为 ✅ Done，填入 handoff 链接
+           g2. 更新 Phase Detail Block (if exists):
+               - Status: 🔄 Active → ✅ Done (accept ⬚ Planned as fallback for backward compat)
+               - Append under Notes: "Completed: {date}, Handoff: {filename}, Commit: {hash}"
+               If no Phase Detail Block → skip (backward compat with old Epics)
            h. 更新 "Context for Next Phase" section（摘要完成内容、决策、遗留问题）
            i. 检查是否所有 phase 都已完成（从 Phase Map 派生）:
               - 如果全部 ✅ → Epic 标记为 Complete，移至 .tad/archive/epics/（two-phase safety: copy first, verify, then delete source）
@@ -4005,9 +4057,9 @@ accept_command:
       note: "Epic 文件中不写 Status 字段，Alex 在需要时从 Phase Map 计算状态"
 
       phase_adjustment:
-        add: "Alex 在 Phase Map 末尾追加新行（仅 ⬚ Planned），Notes 中记录原因"
-        remove: "仅限 ⬚ Planned 状态的阶段，Notes 中记录原因"
-        reorder: "仅限 ⬚ Planned 状态的阶段"
+        add: "Alex 在 Phase Map 末尾追加新行（仅 ⬚ Planned），Notes 中记录原因。Also: add corresponding Phase Detail Block using epic-template.md structure (if Phase Details section exists)"
+        remove: "仅限 ⬚ Planned 状态的阶段，Notes 中记录原因。Also: remove corresponding Phase Detail Block (if exists)"
+        reorder: "仅限 ⬚ Planned 状态的阶段。Also: reorder corresponding Phase Detail Blocks to match new Phase Map order (if exist)"
 
       error_codes:
         epic_file_missing: "WARNING 日志，继续 *accept 流程（不阻塞归档）"
