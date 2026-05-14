@@ -504,7 +504,43 @@ ralph_loop_execution:
           6. Announce: "Frontmatter: task_type={value}, e2e_required={value}, research_required={value}"
           7. Store these values — execution_checklist.during_development.task_type_branching will reference them
           8. Brief output: "📖 Implementation context refreshed: {files read}"
+          
+          → Proceed to 1_5a_pack_detection
         purpose: "Ensure handoff context is fresh before coding, not just at activation"
+
+      1_5a_pack_detection:
+        description: "Auto-detect and load relevant capability packs based on handoff content"
+        action: |
+          1. Check handoff for explicit pack references:
+             a. Look for "🔧 Domain Pack References" section in handoff
+             b. If found: read referenced pack files directly → announce + skip auto-detection
+          
+          2. If no explicit references (Alex didn't include pack section):
+             a. Extract primary file extensions from handoff §6 (Files to Modify):
+                - .tsx/.jsx/.css/.scss → keywords: ["frontend", "component", "UI"]
+                - .ts/.js (in api/, routes/, server/, services/) → keywords: ["backend", "API"]
+                - .py → keywords: ["backend", "agent"]
+                - .md (DESIGN.md, design tokens) → keywords: ["UI", "design"]
+             b. Read .tad/capability-packs/pack-registry.yaml (or scan .claude/skills/)
+                If not found or YAML parse error → skip silently
+             c. Match extracted keywords against pack keyword lists
+             d. For each matched pack (max 2):
+                → Check availability: .claude/skills/{name}/SKILL.md or .tad/capability-packs/{name}/CAPABILITY.md
+                → If available: Read SKILL.md/CAPABILITY.md
+                → Output: "🎯 Pack loaded: {name} — applying quality rules during implementation"
+          
+          3. If no pack matches: skip silently
+          
+          → Proceed to 1_5b_notebook_check
+        
+        blocking: false
+        purpose: "Catch packs Alex missed — Blake independently identifies relevant quality rules"
+        note: |
+          This is INDEPENDENT of Alex's handoff. Even if Alex loaded a pack,
+          Blake re-checks because: (a) Alex may have used *express which skips
+          step1_5b entirely, (b) Alex's keyword matching may have missed a relevant pack.
+          If the same pack was already loaded via handoff's Domain Pack References (step 1),
+          don't re-read it.
 
       1_5b_notebook_check:
         description: "Check for relevant research notebooks before implementation"

@@ -536,6 +536,55 @@ intent_router_protocol:
         - express → Enter express_path_protocol (Phase 3 P3.1)
         - experiment → Enter experiment_path_protocol (Phase 3 P3.2)
         - analyze → Enter adaptive_complexity_protocol (existing, unchanged)
+        
+        → After routing decision, execute step4_5 (Pack Awareness Scan) before entering the path protocol
+
+    step4_5:
+      name: "Pack Awareness Scan"
+      trigger: "After intent router resolves (step4), before entering the specific path"
+      action: |
+        1. Check if .tad/capability-packs/pack-registry.yaml exists
+           → If not: skip silently (no packs registered)
+        
+        2. Read pack-registry.yaml → extract all pack entries with keywords
+        
+        3. For each pack, determine availability (same 3-tier as step1_5b):
+           Tier 1: .tad/capability-packs/{name}/CAPABILITY.md exists → available
+           Tier 2: .claude/skills/{name}/SKILL.md exists → available
+           Tier 3: neither → not installed, skip (don't offer install here — not the right moment)
+        
+        4. Match user input keywords against available packs' keywords lists
+           (LLM semantic match, same mechanism as step1_5b)
+        
+        5. If ≥1 pack matches:
+           → Read matched pack(s) SKILL.md (Tier 2) or CAPABILITY.md (Tier 1)
+           → Output: "🎯 Pack loaded: {name} — {one-line description}"
+           → Pack content is now in context for the entire path execution
+        
+        6. If no match: skip silently (no output)
+      
+      applies_to: "All user-task modes: *analyze, *express, *bug, *discuss, *learn, *experiment"
+      skip_if:
+        - "pack-registry.yaml not found or YAML parse error (WARN + skip)"
+        - "No available packs (all Tier 3)"
+        - "Framework management commands: *publish, *sync, *sync-add, *sync-list, *status, *dream, *optimize, *evolve, *idea-list, *idea-promote, *research-review, *research-plan, *test-review, *cancel"
+      
+      max_packs: 2  # Load at most 2 packs per session (context budget)
+      ranking_when_over_limit: |
+        If >2 packs match, select 2 with highest keyword overlap count.
+        Break ties by pack order in pack-registry.yaml (earlier = higher priority).
+      
+      does_NOT_write_to_handoff: |
+        step4_5 loads pack into conversation context only — it does NOT inject
+        the "🔧 Domain Pack References" section into the handoff. That remains
+        step1_5b's responsibility during *design. Blake's 1_5a independently
+        re-detects packs, so Alex and Blake may load different packs for the
+        same task. This is intentional — Blake catches what Alex missed.
+      note: |
+        This does NOT replace step1_5b in *design — step1_5b has the full
+        confirmation flow (AskUserQuestion, CONSUMES/PRODUCES chain, install offer).
+        step4_5 is lightweight and silent — no user interaction.
+        If step4_5 already loaded a pack, step1_5b should detect it and skip re-loading.
 
   # Standby State Definition (P1 fix from Phase 1)
   standby:
@@ -571,6 +620,7 @@ intent_router_protocol:
     on_new_input_in_standby: |
       When user sends a new message while Alex is in standby:
       → Run Intent Router from step1 (full detection cycle, including step1.5 idle check)
+      → step4_5 (Pack Awareness Scan) re-runs on each new input since packs may be relevant to the new task
       → This is AUTOMATIC — no need for user to say "start over" or re-invoke /alex
       → Idle messages (step1.5) get brief response without triggering full routing
 
@@ -5448,6 +5498,23 @@ sync_protocol:
            Capability Pack registry (index only — pack source dirs are NOT synced):
            - .tad/capability-packs/pack-registry.yaml
 
+        b2. Capability Pack installation:
+            Pre-check: verify {target_project_path}/.claude/ exists.
+              If missing: WARN "Skipping pack install for {project_name}: .claude/ not found" and skip to step c.
+            
+            For each pack directory in {TAD_SOURCE}/.tad/capability-packs/*/ that contains install.sh:
+              1. Execute as a SEPARATE Bash tool call (NOT chained with && — one pack's failure must not prevent others):
+                 cd {target_project_path} && bash {TAD_SOURCE}/.tad/capability-packs/{pack_name}/install.sh --force; echo "EXIT:$?"
+              2. If exit code non-zero: WARN "{pack_name} install failed on {project_name}: exit {code}" and continue to next pack
+              3. Post-install validation: verify the installed SKILL.md has YAML frontmatter
+                 head -3 {target_project_path}/.claude/skills/{pack_name}/SKILL.md | grep -q "^name:"
+                 If grep fails: WARN "{pack_name} installed but SKILL.md lacks frontmatter — skill may not activate" and increment fail counter
+            
+            Output: "📦 {N} capability packs installed ({success} success, {fail} failed)"
+            Note: install.sh uses CWD for .claude/ detection, so cd is required.
+            Note: --force ensures packs are updated on each sync (idempotent).
+            Note: Each install.sh runs in its own Bash call to prevent set -euo pipefail propagation.
+
         c. Deprecation cleanup:
            Read .tad/deprecation.yaml (if missing → skip silently, no deprecations to apply).
            Version comparison rules (semver):
@@ -5472,7 +5539,7 @@ sync_protocol:
         - .tad/evidence/
         - .tad/pair-testing/
         - .tad/decisions/
-        - .tad/capability-packs/ (installed via install.sh, NOT synced — downstream projects install packs independently)
+        - .tad/capability-packs/ (source dirs NOT synced — packs installed via step b2's install.sh during *sync)
         - PROJECT_CONTEXT.md, NEXT.md, CHANGELOG.md (project-level)
 
     step4:
