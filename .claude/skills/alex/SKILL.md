@@ -1057,6 +1057,77 @@ research_plan_protocol:
              "After this research, I should be able to decide: {specific decision}"
            → Display plan to user for confirmation before proceeding
 
+        a0_c. PHASE 0c — Adversarial Challenge: Research Plan:
+           Trigger: After Phase 0 plan confirmed by user, before Phase 1 sourcing.
+           CHALLENGE_INSTRUCTION: "Review the research input below. Follow the output format exactly. Be adversarial — challenge quality, do not agree."
+           (Symmetric instruction — BOTH Codex and Gemini receive this identical string. Per architecture.md prompt symmetry rule.)
+
+           → Step 1: AskUserQuestion gate (NOT_via_alex_auto constraint):
+             question: "运行 Codex+Gemini adversarial challenge 审视研究计划？"
+             Options: "执行 challenge (Recommended)" / "跳过，直接进入 Phase 1"
+             If user picks "跳过" → skip to Phase 1 (step a).
+           → Step 2: Preflight (run ONCE per *research-plan execution, cache result):
+             codex_available=$(command -v codex >/dev/null 2>&1 && echo 1 || echo 0)
+             gemini_available=$(command -v gemini >/dev/null 2>&1 && echo 1 || echo 0)
+             If both == 0 → WARN "adversarial review unavailable — both Codex and Gemini missing" → skip to Phase 1
+           → Step 3: Assemble challenge payload:
+             Collect all Phase 0 research questions into a temp file:
+             rm -f /tmp/tad-challenge-plan.md
+             sed -n '/<!-- BEGIN plan -->/,/<!-- END plan -->/{ /<!-- BEGIN/d; /<!-- END/d; p; }' .tad/templates/research-challenge-prompt.md > /tmp/tad-challenge-plan.md
+             printf '\n---\n## 研究问题列表\n' >> /tmp/tad-challenge-plan.md
+             (Append the Phase 0 question list from conversation context via printf '%s\n' >> /tmp/tad-challenge-plan.md)
+           → Step 4: Invoke models (sequential: Codex → Gemini):
+             If codex_available == 1:
+               codex_result=$(cat /tmp/tad-challenge-plan.md | codex exec --full-auto --skip-git-repo-check \
+                 "$CHALLENGE_INSTRUCTION" 2>/dev/null)
+               codex_exit=$?
+               if [ $codex_exit -eq 0 ] && [ -n "$codex_result" ]; then
+                 printf '%s' "$codex_result" > .tad/evidence/research/{slug}/challenge-plan-codex.md
+               else
+                 printf 'UNAVAILABLE: Codex exit %d' "$codex_exit" > .tad/evidence/research/{slug}/challenge-plan-codex.md
+               fi
+             If gemini_available == 1:
+               gemini_result=$(cat /tmp/tad-challenge-plan.md | gemini -p \
+                 "$CHALLENGE_INSTRUCTION" 2>/dev/null)
+               gemini_exit=$?
+               if [ $gemini_exit -eq 0 ] && [ -n "$gemini_result" ]; then
+                 printf '%s' "$gemini_result" > .tad/evidence/research/{slug}/challenge-plan-gemini.md
+               else
+                 printf 'UNAVAILABLE: Gemini exit %d' "$gemini_exit" > .tad/evidence/research/{slug}/challenge-plan-gemini.md
+               fi
+           → Step 5: Extract ratings + decide:
+             For each model file (challenge-plan-codex.md, challenge-plan-gemini.md):
+               rating=$(head -5 <file> | grep -oE 'INSUFFICIENT|ADEQUATE|STRONG' | head -1)
+               if [ -z "$rating" ]; then
+                 rating=$(grep -ioE 'INSUFFICIENT|ADEQUATE|STRONG' <file> | head -1 | tr '[:lower:]' '[:upper:]')
+               fi
+               if [ -z "$rating" ]; then rating="INSUFFICIENT"; fi  # fail-closed
+               Handle UNAVAILABLE: if file starts with "UNAVAILABLE:" → treat as model unavailable (NFR2 degradation)
+             Pass logic:
+               Both available: PASS if both ADEQUATE or STRONG
+               Single model (other UNAVAILABLE): PASS if that model ADEQUATE or STRONG
+               Neither available: auto-PASS (already warned in Step 2)
+             If PASS:
+               Report: "✅ Phase 0c challenge PASSED (Codex: {rating}, Gemini: {rating})"
+               Even on PASS: read dimension-level findings from both reports,
+               append as "Advisory: [model] flagged: [gap]" to conversation context
+               → Log to challenge-log.md (Step 6) → Proceed to Phase 1 (step a)
+             If FAIL (any INSUFFICIENT):
+               Report: "⚠️ Phase 0c challenge FAILED — extracting refined questions"
+               Extract "修正后的问题列表" from ALL INSUFFICIENT model outputs.
+               If both INSUFFICIENT: merge + deduplicate refined questions across models.
+               If only one INSUFFICIENT: also read ADEQUATE model's dimension findings for supplementary perspective.
+               → AskUserQuestion:
+                 question: "Challenge 层修正了研究问题。如何处理？"
+                 Options:
+                   - "采纳修正后的问题 (Recommended)" → replace Phase 0 questions with refined set → Phase 1
+                   - "手动调整" → user edits, then → Phase 1
+                   - "忽略 challenge，使用原始问题" → keep original questions → Phase 1
+               → Log to challenge-log.md (Step 6) → Proceed to Phase 1 (step a)
+           → Step 6: Log to challenge-log.md:
+             Append entry to .tad/evidence/research/{slug}/challenge-log.md:
+             "Phase 0c | Codex: {rating} | Gemini: {rating} | Gaps: {key gaps} | Led to refinement: {yes/no}"
+
         a. 确定 target notebook:
            → If existing notebook matches topic → use it
            → If no match → *research-notebook create "{topic}" (new notebook)
@@ -1296,6 +1367,74 @@ research_plan_protocol:
              → Write all ask results to .tad/evidence/research/{slug}/{date}-ask-findings.md
              → Format: per-question sections with KR reference, answer summary, source citations
 
+        e_c. PHASE 4c — Adversarial Challenge: Research Findings (CORE):
+           Trigger: After Phase 4 Step 3 (findings saved to file), before Phase 4.5.
+           ⚠️ NOT inside Phase 4b per-question loop — this is batch challenge AFTER all questions complete.
+           MAX_CHALLENGE_ROUNDS: 2 (per research item, not global)
+           TRACK: challenge_round = 0
+           Uses CHALLENGE_INSTRUCTION from Phase 0c (symmetric prompt for both models).
+
+           → Step 1: AskUserQuestion gate (NOT_via_alex_auto constraint):
+             question: "运行 Codex+Gemini adversarial challenge 审视研究发现？"
+             Options: "执行 challenge (Recommended)" / "跳过，直接进入 Phase 4.5"
+             If user picks "跳过" → skip to Phase 4.5 (e_5).
+
+           → Step 2: Assemble challenge payload (loop entry point for re-challenge):
+             challenge_round += 1
+             rm -f /tmp/tad-challenge-findings.md
+             sed -n '/<!-- BEGIN findings -->/,/<!-- END findings -->/{ /<!-- BEGIN/d; /<!-- END/d; p; }' .tad/templates/research-challenge-prompt.md > /tmp/tad-challenge-findings.md
+             printf '\n---\n' >> /tmp/tad-challenge-findings.md
+             cat .tad/evidence/research/{slug}/{date}-ask-findings.md >> /tmp/tad-challenge-findings.md
+
+           → Step 3: Invoke models:
+             Use cached preflight results (codex_available / gemini_available from Phase 0c).
+             Codex: cat /tmp/tad-challenge-findings.md | codex exec --full-auto --skip-git-repo-check \
+               "$CHALLENGE_INSTRUCTION" 2>/dev/null
+             Save to .tad/evidence/research/{slug}/challenge-findings-r{challenge_round}-codex.md (exit code gate: printf '%s' on success, printf 'UNAVAILABLE: ...' on failure)
+             Gemini: cat /tmp/tad-challenge-findings.md | gemini -p \
+               "$CHALLENGE_INSTRUCTION" 2>/dev/null
+             Save to .tad/evidence/research/{slug}/challenge-findings-r{challenge_round}-gemini.md (exit code gate)
+
+           → Step 4: Extract ratings (same mechanism as Phase 0c Step 5):
+             For each model: head -5 grep → case-insensitive fallback → fail-closed INSUFFICIENT
+             Handle UNAVAILABLE (NFR2): if file starts with "UNAVAILABLE:" → treat as model unavailable.
+             Single-model degradation (inlined): if one model UNAVAILABLE + other ADEQUATE+ → PASS.
+             Both UNAVAILABLE → auto-PASS with WARN.
+
+           → Step 5: Pass/fail decision:
+             Both ADEQUATE or STRONG → PASS
+             Any INSUFFICIENT → FAIL
+
+             On PASS:
+               Report: "✅ Phase 4c challenge PASSED round {challenge_round} (Codex: {rating}, Gemini: {rating})"
+               Read dimension-level findings from both reports even on PASS:
+               Append to findings file: "## Advisory (Phase 4c Challenge Round {challenge_round})"
+               For each model, append: "### {Model} flagged:\n{dimension findings summary}"
+               → Log to challenge-log.md (Step 6) → Proceed to Phase 4.5 (e_5)
+
+             On FAIL:
+               Report: "⚠️ Phase 4c challenge round {challenge_round} FAILED"
+               → Log to challenge-log.md (Step 6)
+               If challenge_round >= MAX_CHALLENGE_ROUNDS (2):
+                 → WARN user: "2 轮 challenge 后仍有未解决弱点："
+                 → Display unresolved weaknesses from latest INSUFFICIENT report
+                 → Append "## Unresolved Weaknesses (Phase 4c)" section to findings file
+                 → Proceed to Phase 4.5 (e_5) — do NOT block
+               Else (challenge_round < MAX_CHALLENGE_ROUNDS):
+                 → Extract "需要补充研究的问题" sections from ALL INSUFFICIENT model reports
+                 → Merge + deduplicate gap questions across models
+                 → Report: "🔄 Extracted {N} gap questions. Running lightweight re-ask..."
+                 → Lightweight re-ask loop (NOT full Phase 4 re-execution):
+                   For each gap question:
+                     ~/.tad-notebooklm-venv/bin/notebooklm ask "{gap_question}" -n <id>
+                     (Raw CLI — NOT *research-notebook ask — avoids nested step3_5)
+                     sleep 1
+                   Append re-ask results to .tad/evidence/research/{slug}/{date}-ask-findings.md
+                 → Return to PHASE 4c Step 2 (re-assemble with updated findings — skip Step 1 gate on re-entry)
+
+           → Step 6: Log to challenge-log.md (called from both PASS and FAIL paths):
+             Append: "Phase 4c round {challenge_round} | Codex: {rating} | Gemini: {rating} | Gaps: {key_gaps} | Led to re-ask: {yes/no}"
+
         e_5. PHASE 4.5 — Structured Paper Extraction (Elicit-style):
            Trigger: ONLY inside *research-plan (never standalone *research-notebook ask)
            → Step 1: Identify academic sources in current notebook
@@ -1326,7 +1465,57 @@ research_plan_protocol:
            → Step 1: From all ask answers, extract engineering-actionable items
              → Format: "Based on {KR}, research shows: {finding} → Suggested AC: {concrete acceptance criterion}"
              → Example: "KR1 sesame recall: 担担面 → sesame paste mapping → AC: allergen-rules must contain dandan→sesame rule"
-           → Step 2: Display extracted ACs to user
+
+           → Step 1b (PHASE 5b — Adversarial Challenge: Action Recommendations):
+             Trigger: After Step 1 extraction, BEFORE Step 2 display to user.
+             ⚠️ User sees ACs with support_strength labels already attached — not approve-then-challenge.
+             ⚠️ Phase 5b is SINGLE-PASS — no re-challenge loop. Unlike Phase 4c, INSUFFICIENT actions
+             are labeled and shown to user, not re-researched. User decides what to do with weak ACs.
+             Uses CHALLENGE_INSTRUCTION from Phase 0c (symmetric prompt for both models).
+
+             → Gate: AskUserQuestion (NOT_via_alex_auto constraint):
+               question: "运行 Codex+Gemini adversarial challenge 审视行动建议？"
+               Options: "执行 challenge (Recommended)" / "跳过，直接展示 AC"
+               If user picks "跳过" → skip to Step 2 (display ACs as-is, no labels).
+
+             → Assemble payload:
+               rm -f /tmp/tad-challenge-actions.md
+               sed -n '/<!-- BEGIN actions -->/,/<!-- END actions -->/{ /<!-- BEGIN/d; /<!-- END/d; p; }' .tad/templates/research-challenge-prompt.md > /tmp/tad-challenge-actions.md
+               printf '\n---\n## Extracted ACs\n' >> /tmp/tad-challenge-actions.md
+               (Append the Step 1 extracted ACs list + their supporting research findings via printf)
+
+             → Invoke models:
+               Use cached preflight results.
+               Codex: cat /tmp/tad-challenge-actions.md | codex exec --full-auto --skip-git-repo-check \
+                 "$CHALLENGE_INSTRUCTION" 2>/dev/null
+               Save to .tad/evidence/research/{slug}/challenge-actions-codex.md (exit code gate)
+               Gemini: cat /tmp/tad-challenge-actions.md | gemini -p \
+                 "$CHALLENGE_INSTRUCTION" 2>/dev/null
+               Save to .tad/evidence/research/{slug}/challenge-actions-gemini.md (exit code gate)
+
+             → Extract overall rating (same mechanism: head-5 grep → fallback → fail-closed):
+               Overall rating per model: INSUFFICIENT / ADEQUATE / STRONG
+               Handle UNAVAILABLE (NFR2): single-model degradation (inlined from Phase 0c).
+
+             → Parse per-AC support_strength (Alex LLM judgment — NOT mechanical grep):
+               The "actions" template produces a Markdown table with per-AC ratings.
+               Alex reads BOTH model output tables and applies conservative merge:
+               If both models rate an AC → use the MORE CONSERVATIVE rating
+               If only one model available → use that model's rating
+               UNSUPPORTED by either model → mark as UNSUPPORTED (conservative)
+
+             → Apply labels:
+               For each AC, attach support_strength label:
+               STRONG → no special marker
+               WEAK → "⚠️ WEAK — {model's reason summary}"
+               UNSUPPORTED → "🚫 UNSUPPORTED — needs more research or downgrade to hypothesis"
+
+             → Log to challenge-log.md:
+               "Phase 5b | Codex: {rating} | Gemini: {rating} | STRONG: {N} | WEAK: {N} | UNSUPPORTED: {N}"
+
+             → Proceed to Step 2 with labeled ACs
+
+           → Step 2: Display extracted ACs to user (now with support_strength labels from Phase 5b if executed)
              → AskUserQuestion: "研究提取了 {N} 个可执行项。哪些要写入下一个 handoff 的 AC？"
                Options: "全部采纳" / "逐条确认" / "只保存，不写 AC"
            → Step 3: Write extracted items per user choice:

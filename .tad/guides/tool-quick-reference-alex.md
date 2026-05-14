@@ -69,6 +69,47 @@
 - **Session constraint:** Newly installed plugins need NEW session to activate.
 - **Mapping:** `.tad/guides/lsp-language-map.yaml`
 
+## Adversarial Challenge (Cross-Model Review)
+
+### Challenge Prompt Assembly
+- **Template:** `.tad/templates/research-challenge-prompt.md`
+- **Extract variant:** `sed -n '/<!-- BEGIN {variant} -->/,/<!-- END {variant} -->/p' .tad/templates/research-challenge-prompt.md`
+- **Variants:** `plan` (Phase 0c), `findings` (Phase 4c), `actions` (Phase 5b)
+
+### Challenge Invocation Pattern
+```bash
+# Symmetric instruction (BOTH models receive identical string)
+CHALLENGE_INSTRUCTION="Review the research input below. Follow the output format exactly. Be adversarial — challenge quality, do not agree."
+
+# Assemble: extract variant (strip delimiters) + append data
+rm -f /tmp/tad-challenge-findings.md
+sed -n '/<!-- BEGIN findings -->/,/<!-- END findings -->/{ /<!-- BEGIN/d; /<!-- END/d; p; }' \
+  .tad/templates/research-challenge-prompt.md > /tmp/tad-challenge-findings.md
+printf '\n---\n' >> /tmp/tad-challenge-findings.md
+cat .tad/evidence/research/{slug}/{date}-ask-findings.md >> /tmp/tad-challenge-findings.md
+
+# Codex (stdin=data, positional=instruction)
+codex_result=$(cat /tmp/tad-challenge-findings.md | codex exec --full-auto --skip-git-repo-check \
+  "$CHALLENGE_INSTRUCTION" 2>/dev/null)
+
+# Gemini (stdin=data, -p=instruction)
+gemini_result=$(cat /tmp/tad-challenge-findings.md | gemini -p \
+  "$CHALLENGE_INSTRUCTION" 2>/dev/null)
+```
+
+### Rating Extraction (fail-closed)
+```bash
+rating=$(head -5 challenge-file.md | grep -oE 'INSUFFICIENT|ADEQUATE|STRONG' | head -1)
+[ -z "$rating" ] && rating=$(grep -ioE 'INSUFFICIENT|ADEQUATE|STRONG' challenge-file.md | head -1 | tr '[:lower:]' '[:upper:]')
+[ -z "$rating" ] && rating="INSUFFICIENT"  # fail-closed default
+```
+
+### Challenge Output Paths
+- Plan: `.tad/evidence/research/{slug}/challenge-plan-{codex|gemini}.md`
+- Findings: `.tad/evidence/research/{slug}/challenge-findings-r{N}-{codex|gemini}.md`
+- Actions: `.tad/evidence/research/{slug}/challenge-actions-{codex|gemini}.md`
+- Log: `.tad/evidence/research/{slug}/challenge-log.md`
+
 ## TAD Research Commands (Alex-domain)
 
 ### *research-notebook (19 commands — top 7 for daily use)
