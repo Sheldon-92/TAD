@@ -5494,7 +5494,7 @@ sync_protocol:
            Root-level files:
            - tad.sh
            - docs/MULTI-PLATFORM.md
-           - README.md, INSTALLATION_GUIDE.md
+           - README.md, INSTALLATION_GUIDE.md, CHANGELOG.md
            Capability Pack registry (index only — pack source dirs are NOT synced):
            - .tad/capability-packs/pack-registry.yaml
 
@@ -5540,13 +5540,37 @@ sync_protocol:
         - .tad/pair-testing/
         - .tad/decisions/
         - .tad/capability-packs/ (source dirs NOT synced — packs installed via step b2's install.sh during *sync)
-        - PROJECT_CONTEXT.md, NEXT.md, CHANGELOG.md (project-level)
+        - PROJECT_CONTEXT.md, NEXT.md
+
+    step3_commit:
+      name: "Auto-Commit (optional)"
+      trigger: "After all projects synced in step3"
+      action: |
+        Use AskUserQuestion:
+        "Sync complete. Commit TAD files in each project?"
+        Options:
+        - "Commit all" → for each synced project with .git directory:
+            git add -- .tad/*.yaml .tad/*.md .tad/*.txt \
+              .tad/agents/ .tad/data/ .tad/domains/ .tad/gates/ .tad/guides/ \
+              .tad/hooks/ .tad/ralph-config/ .tad/references/ .tad/schemas/ \
+              .tad/skills/ .tad/sub-agents/ .tad/tasks/ \
+              .tad/templates/ .tad/workflows/ \
+              .tad/capability-packs/pack-registry.yaml \
+              .claude/skills/ .claude/settings.json \
+              CLAUDE.md tad.sh README.md INSTALLATION_GUIDE.md CHANGELOG.md \
+              docs/MULTI-PLATFORM.md 2>/dev/null
+            git commit -m "chore: sync TAD v{version} to {project_name}"
+        - "Commit + Push" → same as above, then git push for projects with remote
+            (confirm before push if current branch is main/master)
+        - "Skip" → leave uncommitted
+      note: "Only runs on projects with .git directory. No-git projects skipped silently.
+             git add paths MUST match sync scope exactly — do NOT use broad .tad/ or docs/."
 
     step4:
       name: "Summary"
       action: |
         Display sync summary:
-        | Project | Version | Files Updated | Files Deleted | Status |
+        | Project | Version | Files Updated | Files Deleted | Committed | Status |
 
         Return to standby.
 
