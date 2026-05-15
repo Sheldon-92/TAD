@@ -82,6 +82,7 @@ fi
 
 # ── File list ────────────────────────────────────────────────────────────────
 FILES=(
+  "SKILL.md"
   "skills/pressure-test.md"
   "skills/shotgun.md"
   "skills/define.md"

@@ -12,6 +12,7 @@ set -euo pipefail
 PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT="claude-code"
 DRY_RUN=false
+FORCE=false
 ALLOW_GLOBAL=false
 
 # Parse arguments
@@ -22,6 +23,9 @@ for arg in "$@"; do
       ;;
     --dry-run)
       DRY_RUN=true
+      ;;
+    --force)
+      FORCE=true
       ;;
     --global)
       ALLOW_GLOBAL=true
@@ -72,7 +76,7 @@ install_claude_code() {
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "DRY RUN — would install:"
     echo "  mkdir -p $TARGET_DIR/references"
-    echo "  cp $PACK_DIR/CAPABILITY.md -> $TARGET_DIR/CAPABILITY.md"
+    echo "  cp $PACK_DIR/CAPABILITY.md -> $TARGET_DIR/SKILL.md"
     for f in "$PACK_DIR"/references/*.md; do
       echo "  cp $f -> $TARGET_DIR/references/$(basename "$f")"
     done
@@ -85,7 +89,7 @@ install_claude_code() {
 
   # Install
   mkdir -p "$TARGET_DIR/references"
-  cp "$PACK_DIR/CAPABILITY.md" "$TARGET_DIR/CAPABILITY.md"
+  cp "$PACK_DIR/CAPABILITY.md" "$TARGET_DIR/SKILL.md"
   cp "$PACK_DIR"/references/*.md "$TARGET_DIR/references/"
   cp "$PACK_DIR/LICENSE" "$TARGET_DIR/LICENSE"
   cp "$PACK_DIR/LICENSE-ATTRIBUTION.md" "$TARGET_DIR/LICENSE-ATTRIBUTION.md"

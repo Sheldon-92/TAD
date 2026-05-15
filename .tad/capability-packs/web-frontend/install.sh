@@ -14,6 +14,7 @@ set -euo pipefail
 PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT="claude-code"
 DRY_RUN=false
+FORCE=false
 ALLOW_GLOBAL=false
 
 # Parse arguments
@@ -24,6 +25,9 @@ for arg in "$@"; do
       ;;
     --dry-run)
       DRY_RUN=true
+      ;;
+    --force)
+      FORCE=true
       ;;
     --global)
       ALLOW_GLOBAL=true
@@ -94,14 +98,10 @@ install_claude_code() {
     return 0
   fi
 
-  # Check for existing installation
-  if [[ -d "$TARGET_DIR" ]]; then
+  if [[ -d "$TARGET_DIR" ]] && [[ "$FORCE" = false ]]; then
     echo "⚠️  Existing installation found at $TARGET_DIR"
-    read -r -p "Overwrite? [y/N] " confirm
-    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-      echo "Installation cancelled."
-      exit 0
-    fi
+    echo "   Use --force to overwrite."
+    exit 0
   fi
 
   # Create target directory structure
@@ -113,7 +113,7 @@ install_claude_code() {
   echo "Installing files..."
 
   # Main files
-  cp "$PACK_DIR/CAPABILITY.md" "$TARGET_DIR/CAPABILITY.md"
+  cp "$PACK_DIR/CAPABILITY.md" "$TARGET_DIR/SKILL.md"
   cp "$PACK_DIR/CONVENTIONS.md" "$TARGET_DIR/CONVENTIONS.md"
   cp "$PACK_DIR/README.md" "$TARGET_DIR/README.md"
   cp "$PACK_DIR/LICENSE" "$TARGET_DIR/LICENSE"

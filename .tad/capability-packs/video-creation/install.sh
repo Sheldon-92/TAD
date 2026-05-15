@@ -47,6 +47,9 @@ while [[ $# -gt 0 ]]; do
       CHECK_ONLY=true
       shift
       ;;
+    --force)
+      shift
+      ;;
     --help|-h)
       usage
       ;;
@@ -126,8 +129,13 @@ check_prerequisites() {
 install_claude_code() {
   if [[ -n "$CUSTOM_TARGET" ]]; then
     TARGET_DIR="$CUSTOM_TARGET"
-  else
+  elif [[ -d ".claude" ]]; then
+    TARGET_DIR=".claude/skills/${PACK_NAME}"
+  elif [[ -d "${HOME}/.claude" ]]; then
     TARGET_DIR="${HOME}/.claude/skills/${PACK_NAME}"
+  else
+    echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
+    exit 1
   fi
 
   echo "=== Installing ${PACK_NAME} v${PACK_VERSION} for Claude Code ==="
@@ -137,8 +145,8 @@ install_claude_code() {
   mkdir -p "${TARGET_DIR}/references"
 
   # Copy CAPABILITY.md
-  cp "${SCRIPT_DIR}/CAPABILITY.md" "${TARGET_DIR}/CAPABILITY.md"
-  echo "✅  CAPABILITY.md"
+  cp "${SCRIPT_DIR}/CAPABILITY.md" "${TARGET_DIR}/SKILL.md"
+  echo "✅  SKILL.md"
 
   # Copy all references
   for ref_file in "${SCRIPT_DIR}/references/"*.md; do
