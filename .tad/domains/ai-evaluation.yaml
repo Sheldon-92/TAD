@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'ai-evaluation' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/ai-evaluation/SKILL.md
+
 # Domain Pack: AI Evaluation
 # Evaluate, benchmark, and test AI agent behavior — with real tool outputs.
 # Scope: Agent behavior evaluation and testing, NOT architecture design (see ai-agent-architecture pack).

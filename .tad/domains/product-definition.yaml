@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'product-thinking' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/product-thinking/SKILL.md
+
 # Domain Pack: Product Definition
 # From idea to validated product concept — with real tool outputs
 domain: product-definition

@@ -54,6 +54,32 @@ If no role is requested, act as a general TAD assistant:
 
 ---
 
+## Capability Packs (Domain Expertise)
+
+When a user's task matches a capability pack's keywords, read the pack's SKILL.md BEFORE responding. These packs contain research-grounded judgment rules that improve output quality.
+
+| Pack | Keywords | SKILL.md Path |
+|------|----------|---------------|
+| ai-agent-architecture | agent, multi-agent, MCP, 智能体, 架构 | `.claude/skills/ai-agent-architecture/SKILL.md` |
+| ai-evaluation | evaluation, eval, benchmark, 评估, 基准测试, promptfoo, deepeval | `.claude/skills/ai-evaluation/SKILL.md` |
+| ai-prompt-engineering | prompt, system prompt, 提示词, hallucination, DSPy | `.claude/skills/ai-prompt-engineering/SKILL.md` |
+| ai-tool-integration | MCP server, tool, CLI wrapping, API integration, 工具集成 | `.claude/skills/ai-tool-integration/SKILL.md` |
+| code-security | security, SAST, DAST, secret, vulnerability, 安全, semgrep | `.claude/skills/code-security/SKILL.md` |
+| product-thinking | product, strategy, business, PMF, 产品, 商业 | `.claude/skills/product-thinking/SKILL.md` |
+| research-methodology | 研究, research, 调研, landscape, deep research | `.claude/skills/research-methodology/SKILL.md` |
+| video-creation | video, animation, motion, HyperFrames, Remotion, 视频 | `.claude/skills/video-creation/SKILL.md` |
+| web-backend | backend, API, REST, database, 后端, 接口 | `.claude/skills/web-backend/SKILL.md` |
+| web-deployment | deploy, CI/CD, Docker, Vercel, monitoring, 部署 | `.claude/skills/web-deployment/SKILL.md` |
+| web-frontend | React, frontend, component, CSS, 前端, 组件 | `.claude/skills/web-frontend/SKILL.md` |
+| web-testing | testing, test, E2E, unit test, Playwright, 测试 | `.claude/skills/web-testing/SKILL.md` |
+| web-ui-design | UI, UX, design, wireframe, 设计, 界面 | `.claude/skills/web-ui-design/SKILL.md` |
+
+**How to use:** When keywords match, read the SKILL.md file. It contains a context detection router that dispatches to `references/*.md` files with specific rules. Follow the pack's Step 0 → Step 1 → Step 2 workflow.
+
+**Do NOT load packs preemptively.** Only load when the user's task clearly matches keywords.
+
+---
+
 ## Codex-Specific Notes
 
 - Use `codex exec resume --last` to continue multi-turn TAD workflows

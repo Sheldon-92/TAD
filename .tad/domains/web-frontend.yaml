@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'web-frontend' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/web-frontend/SKILL.md
+
 # Domain Pack: Web Frontend
 # From design to working code — scaffold, implement, optimize, ship
 domain: web-frontend

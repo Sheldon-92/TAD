@@ -1,6 +1,6 @@
 # TAD Installation & Usage Guide
 
-**Version 2.15.1 - Capability Pack Auto-Awareness**
+**Version 2.16.0 - Capability Pack Auto-Awareness**
 
 ## 方式1：一键安装（推荐）
 
@@ -80,7 +80,7 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad文件夹结构 (v2.15.1)
+### `.tad文件夹结构 (v2.16.0)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置 (master index)
@@ -234,7 +234,7 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到 v2.15.1
+# 从任何旧版本升级到 v2.16.0
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
@@ -333,7 +333,7 @@ codex exec resume --last "Proceed to create handoff."
 
 ## 总结
 
-TAD v2.15.1 核心特性：
+TAD v2.16.0 核心特性：
 1. **Codex CLI Support** - 限额撞顶时切换 Codex 继续 TAD 工作流（一行命令启动）
 2. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
 3. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）

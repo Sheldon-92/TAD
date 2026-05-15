@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'code-security' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/code-security/SKILL.md
+
 # Domain Pack: Code Security
 # SAST + DAST + Secrets + IaC Linting + Vulnerability Triage
 # Phase 5 of Domain Pack Roadmap — Security Chain

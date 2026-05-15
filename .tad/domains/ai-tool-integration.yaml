@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'ai-tool-integration' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/ai-tool-integration/SKILL.md
+
 # Domain Pack: AI Tool Integration
 # Develop and integrate tools for AI agents — MCP servers, CLI wrappers, API integrations.
 # Covers the full lifecycle: schema design → implementation → testing → documentation.

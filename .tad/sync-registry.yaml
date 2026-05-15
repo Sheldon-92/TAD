@@ -75,3 +75,8 @@ projects:
     claude_md_strategy: "overwrite"
     last_synced_version: "2.15.1"
     last_synced_date: "2026-05-14"
+  - path: "/Users/sheldonzhao/01-on progress programs/Monica-website"
+    name: "Monica-website"
+    claude_md_strategy: "overwrite"
+    last_synced_version: "2.15.1"
+    last_synced_date: "2026-05-15"

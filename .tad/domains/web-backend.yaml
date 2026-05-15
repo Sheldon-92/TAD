@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'web-backend' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/web-backend/SKILL.md
+
 # Domain Pack: Web Backend
 # API + Database + Auth + Business Logic — from design to working backend
 domain: web-backend

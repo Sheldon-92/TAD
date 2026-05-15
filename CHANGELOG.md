@@ -5,6 +5,41 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.16.0] - 2026-05-15
+
+### New Features — Capability Pack Expansion (8→13 packs)
+- **5 new capability packs** built via research-driven /capability-upgrade methodology:
+  - `ai-evaluation`: 43 rules — promptfoo, deepeval, deepteam, ragas; eval frameworks, benchmarking, adversarial red-teaming, regression testing, A/B comparison (n≥550 statistical rigor), human eval calibration (ICC>0.92)
+  - `web-testing`: 48 rules — Playwright, Vitest Browser Mode, k6, axe-core, MSW, Pact; unit/API/performance/accessibility/pair testing, testing pyramid strategy
+  - `code-security`: 36 rules — Semgrep, Nuclei, Gitleaks/TruffleHog, Checkov, Trivy; SAST/DAST/secret detection/IaC security, four-gate pipeline architecture (exit codes: Semgrep 1, TruffleHog 183)
+  - `web-deployment`: 51 rules — Vercel/Netlify/Fly.io/Coolify, GitHub Actions (SHA pinning, scoped secrets), OIDC auth, Uptime Kuma/Prometheus, blue-green/canary/atomic rollback, domain/DNS/SSL
+  - `ai-tool-integration`: MCP server dev (TypeScript SDK), CLI wrapping (inner/outer loop decision), API integration (OpenAPI-to-MCP), OAuth 2.1/PKCE, tool schema design, MCP Inspector testing
+- **5 NotebookLM research notebooks** created with ~400+ curated sources (GitHub-First methodology)
+- **YOLO mode Epic execution**: first full autonomous Epic — research→build→validate→freeze in one session
+
+### Domain Pack YAML Freeze
+- **11 Domain Pack YAMLs deprecated**: ai-agent-architecture, ai-evaluation, ai-prompt-engineering, ai-tool-integration, code-security, product-definition, web-backend, web-deployment, web-frontend, web-testing, web-ui-design
+- **Deprecation header**: `# DEPRECATED: Frozen as of 2026-05-15. Use capability pack instead.`
+- **SessionStart hook**: automatically skips frozen packs (no longer injected into additionalContext)
+- **9 unconverted packs remain active**: hw-circuit-design, hw-enclosure, hw-firmware, hw-testing, mobile-development, mobile-release, mobile-testing, mobile-ui-design, supply-chain-security
+
+### Cross-Agent Validation
+- **AGENTS.md**: added 13-pack routing table for Codex — keyword matching → SKILL.md path
+- **Codex validation**: tested 2 tasks (code-security + web-deployment), packs loaded and rules extracted correctly
+
+### Template Extraction
+- **Capability pack template**: `.tad/templates/capability-pack-template/` — CAPABILITY.md template + reference file template + install.sh template + README
+- **Documented patterns**: 3 architecture types (reference-based/deep-skill/orchestration-router), CONSUMES/PRODUCES interface, anti-slop formula, quality bar metrics
+
+### Cross-Model Quality Audit
+- **Codex audit**: 22.2/25 pack quality (3 STRONG, 2 ADEQUATE), 23/35 workflow
+- **Gemini audit**: 23/25 pack quality (5 STRONG), 24/35 workflow
+- **Key findings recorded**: validation theater, rule soup risk, behavioral eval needed — saved to project-knowledge/architecture.md
+
+### Knowledge
+- 4 new architecture.md entries: YOLO Audit Findings, YOLO Mode Strengths, Anti-Slop Metrics, capability pack quality bar
+- OBJECTIVES.md O2-KR2 and O2-KR3 completed (Feasibility × Impact matrix + 3 Epic outlines)
+
 ## [2.15.1] - 2026-05-14
 
 ### Enhancement — Capability Pack Auto-Awareness

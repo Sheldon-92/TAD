@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'ai-prompt-engineering' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/ai-prompt-engineering/SKILL.md
+
 # Domain Pack: AI Prompt Engineering
 # Design, test, optimize, and version-manage prompts for production LLM applications.
 # Scope: Prompt lifecycle (design → test → optimize → deploy), NOT agent architecture or tool integration.

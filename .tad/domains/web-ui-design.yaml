@@ -1,3 +1,7 @@
+# DEPRECATED: Frozen as of 2026-05-15. Use capability pack 'web-ui-design' instead.
+# This YAML file is preserved for reference but is no longer actively maintained.
+# New functionality goes to: .claude/skills/web-ui-design/SKILL.md
+
 # Domain Pack: Web UI Design
 # From requirements to complete UI design system — design only, no code delivery
 domain: web-ui-design

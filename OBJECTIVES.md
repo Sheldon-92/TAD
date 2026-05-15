@@ -28,8 +28,8 @@
 | # | Key Result | Current | Target | Status |
 |---|-----------|---------|--------|--------|
 | KR1 | Candidate upgrade directions extracted from research | 12 candidates (Round 3) | ≥10 candidates with evidence | 🔄 |
-| KR2 | Feasibility × Impact prioritization matrix | none | Top 5 ranked with rationale | ⬚ |
-| KR3 | Actionable Epic drafts for top directions | 0 | ≥3 Epic outlines ready for *discuss | ⬚ |
+| KR2 | Feasibility × Impact prioritization matrix | Top 5 ranked (2026-05-14) | Top 5 ranked with rationale | ✅ |
+| KR3 | Actionable Epic drafts for top directions | 3 Epic outlines (A/B/C) | ≥3 Epic outlines ready for *discuss | ✅ |
 
 **Research needed:** Agent observability/tracing; agent memory systems (episodic, graph); async/background execution patterns; agent evaluation benchmarks beyond SWE-bench; incremental adoption/onboarding; cost optimization; MCP ecosystem trends; KPI-driven development.
 
@@ -52,3 +52,4 @@
 
 <!-- Research notebook: tad-evolution-research (37cfefa5-52b3-4a8a-a8e3-a83f32150759) — CREATED 2026-05-05, 45 sources, 3 deep-ask rounds -->
 <!-- Findings: .tad/evidence/research/2026-05-05-tad-evolution-deep-ask-findings.md -->
+<!-- KR2/KR3: .tad/evidence/research/2026-05-14-kr2-kr3-ask-findings.md -->

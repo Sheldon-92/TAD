@@ -54,6 +54,8 @@ if [ -e "${DOMAIN_FILES[0]}" ] 2>/dev/null; then
   for domain_file in "${DOMAIN_FILES[@]}"; do
     base=$(basename "$domain_file" .yaml)
     [ "$base" = "tools-registry" ] && continue
+    # Skip frozen/deprecated packs (replaced by Capability Packs)
+    head -1 "$domain_file" | grep -q '^# DEPRECATED' && continue
 
     # Extract description
     desc=$(grep -m1 '^description:' "$domain_file" 2>/dev/null | sed 's/^description:[[:space:]]*//;s/"//g' || echo "")
