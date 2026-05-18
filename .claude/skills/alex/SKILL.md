@@ -77,10 +77,20 @@ activation-instructions:
       Run document health check in CHECK mode.
       Scan .tad/active/handoffs/, NEXT.md, PROJECT_CONTEXT.md.
       Output a brief health summary (the CHECK mode report from /tad-maintain).
+      # --- Zombie Handoff Detection (added 2026-05-17) — READ-ONLY scan ---
+      4. Scan .tad/active/handoffs/HANDOFF-*.md files
+      5. For each file: extract date from filename (YYYYMMDD), compute age_days = today - date
+      6. Filter: exclude handoffs whose Epic field references a file in .tad/active/epics/
+         (these are part of an in-progress Epic, not zombies)
+      7. Collect zombies: remaining files where age_days > 14
+      8. Store zombie list in conversation context (zombie_handoffs = [{slug, age, has_completion}])
+      9. If zombie_count > 0:
+         Append to health summary output: "⚠️ {zombie_count} 个 handoff 超过 14 天未归档"
+      10. If zombie_count == 0: no additional output
       This is READ-ONLY - do not modify any files.
     output: "Display health summary before greeting"
     blocking: false
-    suppress_if: "No issues found - show one-line: 'TAD Health: OK'"
+    suppress_if: "No issues found AND zombie_count == 0 - show one-line: 'TAD Health: OK'"
   - STEP 3.6: Pair test report detection
     action: |
       1. Read .tad/pair-testing/SESSIONS.yaml (if exists)
@@ -117,6 +127,26 @@ activation-instructions:
       STEP 3.7 runs second.
       If STEP 3.7 announces resume (cases 3/4/5): suppress STEP 4's *help autorun
       (user just got context, the command menu is noise).
+  - STEP 3.55: Zombie handoff cleanup (conditional)
+    trigger: "zombie_handoffs list from STEP 3.5 is non-empty"
+    action: |
+      1. Display zombie table:
+         | Handoff | Age (days) | Has COMPLETION |
+         |---------|-----------|----------------|
+         | {slug}  | {age}     | ✅/❌          |
+      2. AskUserQuestion:
+         question: "要批量清理这 {N} 个僵尸 handoff 吗？"
+         options:
+           - "全部归档 (quick mode)" → execute *accept --quick for each zombie
+           - "逐个确认" → per-zombie AskUserQuestion: archive / keep / skip
+           - "稍后处理" → skip, continue activation
+    blocking: false
+    suppress_if: "zombie_handoffs is empty (STEP 3.5 found no zombies)"
+    interacts_with: |
+      Runs AFTER STEP 3.7 (session state check).
+      If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.55
+      (user is probably in Terminal 2 for Blake, not here to clean up).
+      Does NOT affect STEP 3.8 suppression.
   - STEP 3.8: Research Landscape + Objective Alignment Scan
     action: |
       After STEP 3.7, check research landscape:
@@ -3819,6 +3849,8 @@ yolo_execution_protocol:
            a. Update Epic Phase status: 🔄 Active → ✅ Done
               (both Phase Map table AND Phase Detail Block Status field)
            b. Archive handoff + completion to .tad/archive/handoffs/
+              (both HANDOFF-*-{slug}.md AND COMPLETION-*-{slug}.md)
+              Update NEXT.md: mark corresponding entry [x]
            c. Announce: "✅ Phase {N} complete. Moving to Phase {N+1}."
         7. If FAIL:
            a. Use honest_partial_protocol: mark PARTIAL, do NOT fake PASS
@@ -3864,6 +3896,12 @@ yolo_execution_protocol:
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
       4. Archive Epic: .tad/active/epics/ → .tad/archive/epics/
          (two-phase safety: copy first, verify, then delete source)
+      4b. Verify clean active/:
+          残留检查: ls .tad/active/handoffs/*{epic-slug}* 2>/dev/null
+          If any files remain: WARN "⚠️ {N} files remain in active/ for this Epic"
+          and list them. For each remaining file, execute quick archive:
+          mv to .tad/archive/handoffs/ (same as *accept --quick step2_archive).
+          This is the actual safety net — catches any per-phase archive that silently failed.
       5. Announce to user:
          "🎉 Epic {name} 全部完成。{N} 个 Phase, {M} 个文件, {K} 个 commit。
           审计报告: .tad/evidence/yolo/{epic-slug}/EPIC-COMPLETION.md
@@ -4499,6 +4537,49 @@ accept_command:
     check: "验收是否已通过（step1-7 完成）"
     if_not: "BLOCK - 必须先完成验收流程"
 
+  quick_mode:
+    trigger: "User types *accept --quick OR user selects 'batch cleanup' from STEP 3.55"
+    description: "Minimal archive — skip all ceremony, just move files"
+    steps:
+      step1_identify:
+        action: |
+          If specific slug provided: target that handoff
+          If batch mode (from STEP 3.55): target all zombie handoffs
+          For each target:
+            1. Verify .tad/active/handoffs/HANDOFF-*-{slug}.md exists
+            2. Check for matching COMPLETION-*-{slug}.md (optional — may not exist)
+      step2_archive:
+        action: |
+          For each target handoff:
+            1. mv HANDOFF to .tad/archive/handoffs/
+            2. mv COMPLETION to .tad/archive/handoffs/ (if exists)
+            3. If no COMPLETION: log "(no completion report — direct archive)"
+      step3_update:
+        action: |
+          1. Update NEXT.md: find matching entry → mark [x]
+          2. If handoff has Epic field:
+             → ONLY update Phase Map status marker: 🔄 Active → ✅ Done
+             → Do NOT trigger Epic completion check (all-phases-done → archive Epic)
+             → Do NOT trigger next-phase AskUserQuestion prompt
+             → Do NOT update Phase Detail Block notes or Context for Next Phase
+             → These require full *accept (step2b_epic_update has error handling,
+               concurrent checks, and Phase Detail Block logic that --quick skips)
+          3. Track quick_accept_count: increment counter in session context
+             → If quick_accept_count >= 3 since last PROJECT_CONTEXT.md update:
+               Output soft reminder: "💡 PROJECT_CONTEXT.md 已 {N} 次 --quick 未更新，
+               考虑运行完整 *accept 或 *tad-maintain sync"
+          4. Output: "✅ Archived: {slug} (quick mode — no KA, no Layer 2)"
+    skipped_steps:
+      - "step0_git_check (git status)"
+      - "step4 (AC line-by-line)"
+      - "step4b (evidence completeness)"
+      - "step4c (Layer 2 audit)"
+      - "step4d (trace-digest)"
+      - "step7 (Knowledge Assessment)"
+      - "step_pair_testing_assessment"
+      - "step3 (PROJECT_CONTEXT.md update)"
+    note: "Full *accept is UNCHANGED. --quick is additive, not replacement."
+
   steps:
     step0_git_check:
       action: "Git status safety net — 检查是否有未 commit 的变更"
@@ -4717,21 +4798,47 @@ optimize_protocol:
         5. If total >= 3: proceed with analysis
 
     step2_aggregate:
-      name: "Aggregate Patterns"
+      name: "Lifecycle Health Analysis"
       action: |
-        From collected traces, compute:
-        1. Execution stats by type (handoff_created, task_completed, domain_pack_step, evidence_created, step_start, step_end)
-        2. Per-domain stats (which Domain Packs are used, how often)
-        3. Failure patterns:
-           a. Steps with status=failed (from step_end traces)
-           b. Steps started but never ended (step_start without matching step_end)
-              Note: orphaned starts at the END of a trace file are likely session boundaries, not failures.
-              Only flag if same capability has 2+ orphaned starts across different sessions.
-           c. Anomalous file sizes (domain_pack_step with size_bytes < 100 — possibly empty/stub output)
-        4. Duration analysis (if both step_start and step_end exist for same capability+step):
-           Calculate duration_ms from timestamp difference
-           Flag outliers (> 2x average for that step type)
-        5. Output summary table to user
+        From collected traces, compute lifecycle health metrics:
+
+        1. Trace type breakdown:
+           Count per type: handoff_created, evidence_created, task_completed, domain_pack_step
+           Output: pie chart (text-based) showing distribution
+
+        2. Zombie rate:
+           Join key: the `file` field in each trace JSON line. Both handoff_created and
+           task_completed use the full file path (e.g., "/path/.tad/active/handoffs/HANDOFF-20260504-foo.md").
+           Normalization: extract slug from file path using regex:
+             slug = basename(file).replace(/^(HANDOFF|COMPLETION)-\d{8}-/, '').replace(/\.md$/, '')
+           This produces identical slugs regardless of HANDOFF vs COMPLETION prefix.
+
+           - Extract unique slugs from handoff_created events (using normalized slug)
+           - Check which slugs also appear in task_completed events (same normalization)
+           - zombie_rate = (handoff_slugs - completed_slugs) / handoff_slugs
+           - Fallback: if both trace types exist but zero slug matches found,
+             WARN "slug format mismatch detected — check trace file field format"
+             instead of reporting 100% zombie rate
+           - Output: "Zombie rate: {rate}% ({N} handoffs never completed)"
+           - If zombie_rate > 20%: flag as unhealthy
+
+        3. Completion cycle time:
+           - For each slug with both handoff_created AND task_completed:
+             cycle_time = task_completed.ts - handoff_created.ts (first occurrence of each)
+           - Compute: median, p90, max
+           - Output: "Cycle time: median {N}h, p90 {N}h, max {N}h"
+
+        4. Evidence production rate:
+           - evidence_per_handoff = evidence_created_count / handoff_created_unique_slugs
+           - Output: "Evidence rate: {N} evidence files per handoff"
+           - If < 1.0: flag as low (healthy projects produce ≥2 evidence per handoff)
+
+        5. Activity timeline:
+           - Group traces by week (from ts field)
+           - Output: bar chart (text-based) showing weekly activity
+           - Identify inactive periods (>2 weeks gap)
+
+        6. Output summary table to user
 
     step2b_project_knowledge:
       name: "Identify Project-Specific Learnings"
@@ -4748,7 +4855,7 @@ optimize_protocol:
           "content": "### {Title} - {date}\n- **Context**: {what was happening}\n- **Discovery**: {what was learned}\n- **Action**: {what to do differently}",
           "evidence": "trace refs with specific line numbers"
         }
-        These proposals join the Domain Pack proposals in step3 for YAML persistence and step4 for approval.
+        These proposals join the lifecycle health proposals in step3 for YAML persistence and step4 for approval.
         In step4, display project-knowledge proposals under a separate "📚 项目知识更新" heading.
 
     step3_generate_proposals:
@@ -4765,9 +4872,10 @@ optimize_protocol:
         status: "pending"  # pending | accepted | rejected | modified | deferred | blocked | stale
 
         target:
-          file: ".tad/domains/{domain}.yaml"
-          capability: "{capability_name}"
-          section: "{quality_criteria | steps | anti_patterns}"
+          file: ".tad/project-knowledge/{category}.md"  # or ".claude/skills/{skill}/SKILL.md"
+          # was: ".tad/domains/{domain}.yaml" — Domain Packs are frozen
+          capability: "{optional — only if targeting a specific SKILL capability}"
+          section: "{quality_criteria | steps | anti_patterns | protocol_section}"
 
         change:
           type: "{tighten_criteria | add_step | fix_step | add_anti_pattern}"
