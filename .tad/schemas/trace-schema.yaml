@@ -1,0 +1,41 @@
+schema_version: "2.0"
+description: "TAD decision-level trace schema. Consumed by *dream, *optimize, *evolve."
+
+# Common fields (all events)
+common_fields:
+  ts: {type: string, format: "ISO 8601", required: true}
+  type: {type: string, required: true, enum: [see event_types]}
+  project: {type: string, required: true}
+  schema_version: {type: string, required: true, default: "2.0"}
+  actor_tag: {type: string, required: true, enum: [human_confirmed, agent_inferred, agent_verified, human_overridden], default: agent_inferred}
+  detail_level: {type: string, required: true, enum: [full, summary], default: summary}
+
+# Preserved fields (backward compat)
+legacy_fields:
+  file: {type: string, required: false, note: "present in v1 events"}
+  domain: {type: string, required: false, note: "present in v1 events"}
+  size_bytes: {type: integer, required: false, note: "present in v1 events"}
+
+# New context fields (v2 events)
+v2_fields:
+  context: {type: string, required: false, max_bytes: 2048, note: "truncated to 200B at summary, up to 2KB at full"}
+  outcome: {type: string, required: false, enum: [pass, fail, error, skip, partial]}
+  slug: {type: string, required: false, note: "handoff slug for cross-referencing"}
+  agent: {type: string, required: false, note: "alex|blake|conductor|sub-agent for lifecycle events; free-form tool name for tool_call_outcome"}
+  duration_ms: {type: integer, required: false, note: "elapsed time for timed events"}
+
+event_types:
+  # --- v1 (preserved, unchanged) ---
+  handoff_created: {fields: [file, domain, size_bytes]}
+  task_completed: {fields: [file, domain, size_bytes]}
+  domain_pack_created: {fields: [file, domain, size_bytes]}
+  domain_pack_step: {fields: [file, domain, size_bytes], note: "legacy Domain Pack step event"}
+  evidence_created: {fields: [file, domain, size_bytes]}
+
+  # --- v2 (new) ---
+  gate_result: {fields: [slug, agent, outcome, context, duration_ms], note: "Gate 2/3/4 verdict"}
+  expert_review_finding: {fields: [slug, agent, outcome, context], note: "P0/P1/P2 from expert review"}
+  reflexion_diagnosis: {fields: [slug, agent, context, outcome], note: "Phase 2 — structured failure reflection"}
+  decision_point: {fields: [slug, agent, context, outcome, actor_tag], note: "key decision with rationale"}
+  tool_call_outcome: {fields: [agent, outcome, context, duration_ms], note: "sub-agent or tool result"}
+  knowledge_extraction: {fields: [file, slug, context, actor_tag], note: "knowledge write to project-knowledge/"}

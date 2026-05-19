@@ -40,43 +40,7 @@ update_session_state_metadata() {
   fi
 }
 
-# Record a trace entry to .tad/evidence/traces/{date}.jsonl
-# Usage: record_trace "type" "file_path" "domain"
-record_trace() {
-  local type="$1"
-  local file_path="$2"
-  local domain="${3:-}"
-
-  local trace_dir=".tad/evidence/traces"
-  mkdir -p "$trace_dir"
-
-  local today
-  today=$(date +%Y-%m-%d)
-  local ts
-  ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  local project
-  project=$(basename "$(pwd)")
-  local size
-  size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path" 2>/dev/null || echo "0")
-
-  if [ "$HAS_JQ" = true ]; then
-    jq -nc \
-      --arg ts "$ts" \
-      --arg type "$type" \
-      --arg project "$project" \
-      --arg file "$file_path" \
-      --arg domain "$domain" \
-      --argjson size "$size" \
-      '{ts:$ts,type:$type,project:$project,file:$file,domain:$domain,size_bytes:$size}' \
-      >> "$trace_dir/$today.jsonl"
-  else
-    local safe_path safe_domain safe_project
-    safe_path=$(printf '%s' "$file_path" | sed 's/\\/\\\\/g; s/"/\\"/g')
-    safe_domain=$(printf '%s' "$domain" | sed 's/\\/\\\\/g; s/"/\\"/g')
-    safe_project=$(printf '%s' "$project" | sed 's/\\/\\\\/g; s/"/\\"/g')
-    echo "{\"ts\":\"$ts\",\"type\":\"$type\",\"project\":\"$safe_project\",\"file\":\"$safe_path\",\"domain\":\"$safe_domain\",\"size_bytes\":$size}" >> "$trace_dir/$today.jsonl"
-  fi
-}
+# record_trace() moved to lib/common.sh (v2.0 — sourced via line 10)
 
 # Read stdin JSON from Claude Code
 read_stdin_json
