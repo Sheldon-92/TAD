@@ -52,3 +52,17 @@ trace_knowledge_extraction() {
   TRACE_CONTEXT="$ctx" TRACE_ACTOR="$actor" TRACE_SLUG="$slug" \
     record_trace "knowledge_extraction" "$file"
 }
+
+trace_reflexion_diagnosis() {
+  local what_failed="$1" hypothesis="$2" approach="${3:-}" confidence="${4:-medium}" slug="${5:-}"
+  local ctx
+  if [ "$HAS_JQ" = true ]; then
+    ctx=$(jq -nc --arg w "$what_failed" --arg h "$hypothesis" --arg a "$approach" --arg c "$confidence" \
+      '{what_failed:$w,root_cause_hypothesis:$h,revised_approach:$a,confidence:$c}')
+  else
+    ctx="what_failed=${what_failed}|root_cause_hypothesis=${hypothesis}|revised_approach=${approach}|confidence=${confidence}"
+  fi
+  TRACE_CONTEXT="$ctx" TRACE_OUTCOME="fail" TRACE_ACTOR="agent_inferred" \
+    TRACE_SLUG="$slug" TRACE_AGENT="blake" \
+    record_trace "reflexion_diagnosis"
+}

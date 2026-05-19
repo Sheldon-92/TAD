@@ -126,9 +126,18 @@ state_schema:
   last_completed_layer: null  # "layer1" or "layer2"
   last_error_category: null
   consecutive_same_error: 0
+  reflection_count: 0         # total reflections this task
+  last_reflection_summary: "" # 1-line summary of last reflection
+  escalation_assessment: ""   # design_issue | environment_issue | unknown
 
 recovery:
-  on_resume: "continue_from_last_checkpoint"
+  on_resume: |
+    continue_from_last_checkpoint
+    If reflection_count > 0:
+      Reload reflection history from trace JSONL:
+        grep 'reflexion_diagnosis' .tad/evidence/traces/*.jsonl | \
+          jq -r 'select(.slug == "{current_slug}") | .context'
+      Inject recovered reflections as conversation context before resuming retry.
   stale_threshold: 30  # minutes
 ```
 
@@ -949,9 +958,21 @@ ralph_loop_execution:
     action: "escalate_to_human"
     message: |
       ⚠️ CIRCUIT BREAKER TRIGGERED
+
       Same error occurred {count} times.
       Error category: {category}
       Last error: {message}
+
+      ⚡ Reflexion History:
+      {for each reflection in reflection_history:}
+        Attempt {N}: {what_failed}
+          Hypothesis: {root_cause_hypothesis}
+          Tried: {revised_approach}
+          Confidence: {confidence}
+          Result: Still failing
+
+      Blake assessment: {design_issue | environment_issue | unknown}
+      Recommendation: {escalate to Alex for redesign | human fix environment | need more context}
       Human intervention required.
 
   # Escalation Logic
@@ -1269,9 +1290,56 @@ execution_checklist:
 
     layer1_self_check:
       - "按 task_type_branching 执行对应检查"
-      - "全部 PASS 才进 Layer 2 — 一项 FAIL 就修复重跑"
+      - "全部 PASS 才进 Layer 2"
+      - "一项 FAIL → 执行 reflexion_step（见下方），不直接修复"
       # ⚠️ ANTI-RATIONALIZATION: "只有 lint warning 不是 error，可以跳过"
       # → Layer 1 标准是全部 PASS。Warning 也要修。
+
+    reflexion_step:
+      trigger: "Layer 1 整轮迭代 FAIL（收集所有失败后触发一次，不是每个检查项单独触发）"
+      action: |
+        BEFORE attempting any fix, pause and produce a structured diagnosis:
+
+        1. Read the error output carefully
+        2. Fill the reflection template (.tad/templates/reflexion-prompt.md):
+           - what_failed: "{check_name}: {error_summary}"
+           - root_cause_hypothesis: "{why this happened — not the error message, the CAUSE}"
+           - revised_approach: "{what to do differently — not just 'fix the error'}"
+           - confidence: "low | medium | high"
+        3. Write reflexion_diagnosis trace event:
+           source .tad/hooks/lib/trace-writer.sh
+           trace_reflexion_diagnosis "{what_failed}" "{root_cause_hypothesis}" \
+             "{revised_approach}" "{confidence}" "{slug}"
+        4. Append diagnosis to conversation context (reflection_history accumulates)
+        5. NOW proceed with fix, guided by revised_approach
+
+      on_success_path: "Skip entirely — no reflection when Layer 1 passes"
+
+      circuit_breaker_enhancement: |
+        When circuit breaker fires (consecutive_same_error >= 3):
+        Instead of generic "same error 3 times" message, include:
+
+        ────────────────────────────
+        ⚡ Circuit Breaker — Reflexion History
+
+        Attempt 1: {what_failed}
+          Hypothesis: {root_cause_hypothesis_1}
+          Tried: {revised_approach_1}
+          Result: Still failing
+
+        Attempt 2: {what_failed}
+          Hypothesis: {root_cause_hypothesis_2}
+          Tried: {revised_approach_2}
+          Result: Still failing
+
+        Attempt 3: {what_failed}
+          Hypothesis: {root_cause_hypothesis_3}
+          Tried: {revised_approach_3}
+          Result: Still failing
+
+        Blake assessment: {design_issue | environment_issue | unknown}
+        Recommendation: {escalate to Alex for redesign | human fix environment | need more context}
+        ────────────────────────────
 
     layer2_expert_review:
       bullets:
