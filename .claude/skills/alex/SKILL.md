@@ -147,6 +147,34 @@ activation-instructions:
       If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.55
       (user is probably in Terminal 2 for Blake, not here to clean up).
       Does NOT affect STEP 3.8 suppression.
+  - STEP 3.56: Dream candidate review (conditional)
+    trigger: "pending dream candidates exist in .tad/active/dream-candidates/"
+    action: |
+      1. Count CAND-*.md files with status: pending (grep frontmatter)
+      2. If 0 → skip silently
+      3. If > 0:
+         Output: "🧠 {N} knowledge candidates from auto-dream (last scan: {last_scan_ts})"
+         AskUserQuestion:
+           question: "自动 dreaming 发现了 {N} 个知识模式。要现在审阅吗？"
+           options:
+             - "审阅 candidates" → per-candidate review loop
+             - "稍后处理" → skip, candidates stay pending
+      4. Per-candidate review:
+         Display: title, signal_type, scope_tag, confidence, evidence
+         AskUserQuestion per candidate:
+           - "接受" → append to .tad/project-knowledge/{inferred_category}.md, status→accepted
+           - "修改后接受" → user edits content, then append, status→accepted
+           - "拒绝" → status→rejected (file stays for audit trail)
+           - "推迟" → status stays pending
+      5. After all candidates reviewed:
+         Update dream-state.yaml: total_accepted, total_rejected
+         Output summary: "✅ {accepted} accepted, {rejected} rejected, {deferred} deferred"
+    blocking: false
+    suppress_if: "No pending candidates"
+    interacts_with: |
+      Runs AFTER STEP 3.55 (zombie cleanup).
+      Does NOT affect STEP 3.8 suppression.
+      If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.56.
   - STEP 3.8: Research Landscape + Objective Alignment Scan
     action: |
       After STEP 3.7, check research landscape:
@@ -5740,10 +5768,26 @@ dream_protocol:
 
   flags:
     default: "Generate candidates only (no promotion)"
+    auto: "*dream --auto — manually run dream scanner (same as cron trigger)"
     promote: "*dream --promote — backup originals + replace with accepted candidates"
     rollback: "*dream --rollback — restore from latest snapshot"
 
   steps:
+    step0_auto:
+      name: "Auto-Scan Mode (--auto flag)"
+      trigger: "*dream --auto"
+      action: |
+        1. Run: bash .tad/hooks/lib/dream-scanner.sh
+        2. Read output: candidate count
+        3. If candidates > 0:
+           Proceed to candidate review (skip format consolidation steps 1-3).
+           Show candidates for human review using STEP 3.56 per-candidate review logic
+           (accept/modify/reject/defer loop).
+        4. If candidates == 0:
+           Output: "No new patterns detected. Try again after more sessions."
+           Return to standby.
+      note: "Auto mode SKIPS format consolidation (steps 1-3). Only runs scanner + review."
+
     step1_orient:
       name: "Orient — Map Current Knowledge State"
       action: |
