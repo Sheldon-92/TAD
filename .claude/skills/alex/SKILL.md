@@ -4806,9 +4806,9 @@ accept_command:
 
     💡 If .tad/evidence/traces/ has data: "Trace data available. Run *optimize to analyze execution history and propose improvements."
 
-# *optimize command — Trace Analysis & Domain Pack Improvement (TAD v2.8)
+# *optimize command — Trace Analysis & Improvement Proposals (TAD v2.17)
 optimize_protocol:
-  description: "Analyze execution traces and propose Domain Pack improvements"
+  description: "Analyze execution traces + dream candidates → lifecycle health + v2 pattern analysis → project-level proposals"
   trigger: "User types *optimize"
   minimum_traces: 3
 
@@ -4824,6 +4824,12 @@ optimize_protocol:
            Continue using TAD to accumulate more execution history, then try again."
            → Return to standby (do not proceed to step2)
         5. If total >= 3: proceed with analysis
+        6. Also read .tad/archive/traces/*.jsonl (rotation-safe)
+        7. Separate v1 events (no schema_version field) from v2 events (schema_version="2.0")
+        8. Output: "Found {N_v1} v1 events + {N_v2} v2 events across {F} trace files"
+        9. If v2 count == 0: WARN "No v2 trace data found. V2 metrics will show N/A.
+           Run a full TAD cycle (handoff → implement → gate) to generate v2 events."
+           Proceed with v1-only analysis (existing 5 metrics).
 
     step2_aggregate:
       name: "Lifecycle Health Analysis"
@@ -4866,7 +4872,39 @@ optimize_protocol:
            - Output: bar chart (text-based) showing weekly activity
            - Identify inactive periods (>2 weeks gap)
 
-        6. Output summary table to user
+        # --- V2 Metrics (require schema_version="2.0" events) ---
+        # Skip this section entirely if v2 count == 0 (per step1 line 9)
+
+        6. Gate pass rate (from gate_result events):
+           - Group by gate number (extract from context field, e.g., "Gate 3:")
+           - Per gate: pass_count / total_count
+           - Output: "Gate pass rates: Gate 2: {N}%, Gate 3: {N}%, Gate 4: {N}%"
+           - Flag: any gate < 80% → "⚠️ Gate {N} pass rate is {rate}% — review criteria"
+
+        7. Reflexion efficiency (from reflexion_diagnosis events):
+           - Total reflexion events
+           - Validated: reflexion with confidence=high AND same slug has subsequent gate_result pass
+             (requires double-parse: jq '.context | fromjson | .confidence')
+           - Efficiency = validated / total
+           - Minimum sample size: N≥10 before displaying percentage
+             If N<10: output raw counts only: "Reflexion: {validated}/{total} validated (too few for %)"
+           - If N≥10: output "Reflexion efficiency: {rate}% ({validated}/{total} hypotheses validated)"
+           - Baseline (when N≥10): >50% is healthy, <30% suggests Blake's hypotheses are often wrong
+
+        8. Decision pattern (from decision_point events):
+           - Group by decision field (via double-parse of context)
+           - Count per decision, sort descending
+           - For each decision: count actor_tag=human_overridden / total
+           - Output: top 5 decisions with override rate
+           - Flag: override rate >30% → "⚠️ Agent's default for '{decision}' is overridden {rate}% of the time"
+
+        9. Expert review density (from expert_review_finding events):
+           - Group by slug
+           - Count P0 findings per slug (outcome=P0 in context)
+           - Output: "Expert P0 density: median {N}, max {N} per handoff"
+           - Flag: any slug with >5 P0s → "⚠️ {slug} had {N} P0s — design quality concern"
+
+        10. Output summary table to user
 
     step2b_project_knowledge:
       name: "Identify Project-Specific Learnings"
@@ -4875,6 +4913,13 @@ optimize_protocol:
         1. Repeated search term modifications (user keeps changing search scope → default scope wrong for this project)
         2. Repeated tool replacements (user keeps switching tools → recommended tool doesn't fit this project)
         3. Project-specific failure patterns (only appear in this project, not cross-project)
+
+        4. Check .tad/active/dream-candidates/CAND-*.md for files with:
+           - status: pending
+           - scope_tag: project
+        5. If any found: include them in step4 display under "📚 Dream Candidates (project-scope)"
+           These are SEPARATE from trace-derived proposals — they come from Phase 3 scanner
+        6. User approves/rejects in same step4 flow as trace-derived proposals
 
         For each finding, generate a project-knowledge proposal:
         {
@@ -4898,6 +4943,7 @@ optimize_protocol:
         proposal_id: "PROPOSAL-{date}-{NNN}"
         created: "{ISO 8601 timestamp}"
         status: "pending"  # pending | accepted | rejected | modified | deferred | blocked | stale
+        scope: "project"  # project | framework
 
         target:
           file: ".tad/project-knowledge/{category}.md"  # or ".claude/skills/{skill}/SKILL.md"
@@ -4933,7 +4979,13 @@ optimize_protocol:
         ```
 
         4. If safety check flags unsafe → set safe: false, blocked_reason, status: "blocked"
-        5. If no issues found:
+        5. Classify proposal scope (3-tier heuristic):
+           If target.file matches '.claude/skills/*' or '.tad/hooks/*' → scope: framework
+           If target.file is empty/generic: check slug — if slug contains "capability-pack" or SKILL reference → scope: framework
+           Default: scope: project
+        6. If scope == framework:
+           Also copy proposal to .tad/evidence/proposals/framework/{proposal_id}.yaml
+        7. If no issues found:
            Output: "✅ No improvement proposals — execution traces look healthy.
            Stats: {summary}"
            → Return to standby
@@ -4967,9 +5019,10 @@ optimize_protocol:
     step4_human_approval:
       name: "Human Approval (4-option)"
       action: |
-        Group proposals by type before display:
-          📦 Domain Pack 修改: proposals where target.file matches .tad/domains/*.yaml
-          📚 项目知识更新: proposals where target.file matches .tad/project-knowledge/*.md
+        Group proposals by scope before display:
+          🔧 Framework proposals: proposals where scope == "framework"
+          📚 Project knowledge: proposals where scope == "project"
+          🧠 Dream candidates: dream candidates from step2b (if any)
         Display each group under its heading, then process proposals one-by-one.
 
         For each proposal with safety.safe == true and status == "pending":
@@ -5006,7 +5059,7 @@ optimize_protocol:
         Authorization: Handoff HANDOFF-20260402-tad-v28-approval-workflow.md Section 3.3 explicitly assigns
         this Edit responsibility to Alex ("Alex 执行应用").
         For each accepted/modified proposal:
-        1. Read the target domain.yaml file
+        1. Read the target file
            If file not found: WARN "Target {file} not found — skipping", update PROPOSAL status→"rejected", continue
         2. Locate the target section (capability → section)
         3. Staleness check: verify that change.current still matches the actual file content.
@@ -5015,7 +5068,7 @@ optimize_protocol:
            → Skip this proposal, update PROPOSAL status→"stale"
         4. Use Edit tool to replace current → proposed
         5. Update PROPOSAL YAML: status→"accepted", review.reviewed_at→now, review.reviewer→"human"
-        6. Git commit with message: "optimize({domain}): {change_type} — {brief description}"
+        6. Git commit with message: "optimize({target}): {change_type} — {brief description}"
         7. Output per proposal: "✅ Applied: {proposal_id} → {target.file}"
 
         After all proposals processed:
@@ -5025,14 +5078,14 @@ optimize_protocol:
 
 # *evolve command — Cross-Project Trace Aggregation & Framework Improvement (TAD v2.8)
 evolve_protocol:
-  description: "Cross-project trace aggregation — analyze all projects and propose TAD framework improvements"
+  description: "Cross-project v2 trace aggregation + framework dream candidates → framework-level proposals → *sync"
   trigger: "User types *evolve"
   minimum_traces: 10
   prerequisite: ".tad/sync-registry.yaml must exist (TAD main project only)"
 
   distinction: |
-    *optimize = single project, optimizes Domain Pack quality_criteria
-    *evolve = cross-project, optimizes TAD framework itself (SKILL.md, Hooks, Gates, Domain Packs)
+    *optimize = single project, lifecycle health + v2 pattern analysis → project-level proposals
+    *evolve = cross-project, v2 event aggregation + framework dream candidates → framework-level proposals → *sync
 
   steps:
     step1_collect:
@@ -5060,22 +5113,42 @@ evolve_protocol:
            {per_project_table: name | traces | date_range}"
 
     step2_analyze:
-      name: "Cross-Project Pattern Analysis"
+      name: "Cross-Project V2 Pattern Analysis"
       action: |
-        From aggregated traces, identify:
-        1. Cross-project common failures:
-           Same Domain Pack step with status=failed in 2+ projects
-           → "{step} failed in {project_list}" pattern
-        2. Framework-level gaps:
-           a. Projects with task_completed but no subsequent evidence_created → Gate may be skipped
-           b. Projects with handoff_created but no task_completed → Implementation stalled
-           c. Step starts without matching ends across projects → common crash points
-        3. Domain Pack usage heatmap:
-           Per-pack usage count across all projects (from domain_pack_step traces)
-           Rank: most used → least used, flag packs with 0 usage
-        4. Quality criteria effectiveness:
-           Compare pass/fail rates for same capability across projects
-           High variance → criteria may be too project-specific
+        From aggregated traces, identify cross-project patterns using v2 events:
+
+        1. Cross-project reflexion patterns:
+           - For each project's reflexion_diagnosis events:
+             Extract what_failed via double-parse (jq '.context | fromjson | .what_failed')
+           - Group by what_failed across ALL projects
+           - Patterns appearing in 2+ projects → framework-level issue
+           - Output: "Cross-project failure patterns:"
+             | Pattern | Projects | Count | Suggestion |
+
+        2. Cross-project gate failure correlation:
+           - For each project's gate_result events with outcome=fail:
+             Group by gate number
+           - Compare per-gate fail rates across projects
+           - Gates with >20% fail rate in 3+ projects → framework criteria issue
+           - Output: "Gate failure correlation:"
+             | Gate | Projects Affected | Avg Fail Rate |
+
+        3. Framework dream candidate aggregation:
+           - For each project: read {validated_path}/.tad/active/dream-candidates/CAND-*.md
+             (using project paths from step1_collect — dream candidate paths
+              MUST go through the same realpath + $HOME security validation as trace paths)
+           - Filter: scope_tag=framework AND status=pending
+           - Group by signal_type
+           - Output: "Framework candidates from {N} projects:"
+             | Signal Type | Count | Top Pattern |
+
+        4. Lifecycle health comparison:
+           - Run *optimize step2 metrics (1-5) per project
+           - Compare: zombie rate, cycle time, evidence rate across projects
+           - Flag outlier projects (>2σ from mean on any metric)
+           - Output: "Project health comparison:"
+             | Project | Zombie% | Cycle(h) | Evidence/HO | Status |
+
         5. Output analysis summary table to user
 
     step3_propose:
@@ -5086,7 +5159,7 @@ evolve_protocol:
         proposal_id: "EVOLVE-{YYYYMMDD}-{NNN}"
         scope: "framework"
         target:
-          file: "{SKILL.md | hook script | gate config | domain.yaml}"
+          file: "{SKILL.md | hook script | gate config | project-knowledge/*.md}"
           section: "{specific section to modify}"
         change_type: "{tighten_criteria | add_step | fix_step | add_enforcement | add_capability}"
         change:
@@ -5172,11 +5245,26 @@ evolve_protocol:
         3. Update PROPOSAL YAML: status → "accepted"
         4. Git commit: "evolve({target}): {change_type} — {brief description}"
 
+        5. Write accepted framework proposals to manifest:
+           mkdir -p .tad/evidence/proposals/framework
+           Write .tad/evidence/proposals/framework/MANIFEST.yaml:
+           ```yaml
+           last_updated: "{ISO date}"
+           accepted_proposals:
+             - id: "{proposal_id}"
+               target: "{file}"
+               change_type: "{type}"
+               applied_at: "{date}"
+               source_project: "{project_name}"
+               proposal_file: ".tad/evidence/proposals/framework/{proposal_id}.yaml"
+           ```
+
         After all proposals processed:
           Output: |
             Applied {count} framework improvements.
-            ⚠️ 这些修改仅在 TAD 主项目生效。
-            运行 *sync 推送到所有 {N} 个下游项目。
+            ⚠️ {framework_count} framework proposals staged in .tad/evidence/proposals/framework/
+            MANIFEST.yaml updated. Run *sync to push to all {N} downstream projects.
+            Note: *sync integration is a future task — proposals are applied locally only.
         If no proposals accepted:
           Output: "No changes applied."
 
