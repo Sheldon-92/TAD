@@ -863,15 +863,19 @@ discuss_path_protocol:
         2. 判断当前话题是否匹配某个 pack 的 capability
            匹配条件：话题关键词与 capability 名称或描述有语义相关性
         3. 如果匹配：
-           a. Read 对应的 .tad/domains/{pack-name}.yaml
-           b. 输出: "🔧 Loaded Domain Pack: {pack-name} — using {capability} framework"
-           c. 用 pack 的质量标准和反模式指导后续讨论
+           # Priority order for pack loading:
+           # 1. Capability Pack: .claude/skills/{name}/SKILL.md (preferred — research-driven rules)
+           # 2. Domain Pack YAML: .tad/domains/{name}.yaml (fallback for hw/mobile/supply-chain only)
+           a. Check if .claude/skills/{pack-name}/SKILL.md exists → Read SKILL.md (preferred)
+           b. If no SKILL.md: Read .tad/domains/{pack-name}.yaml (YAML fallback)
+           c. 输出: "🔧 Loaded Pack: {pack-name} — using {capability} framework"
+           d. 用 pack 的质量标准和反模式指导后续讨论
         4. 如果不匹配：正常讨论，不加载
       fallback: |
-        如果 SessionStart additionalContext 中没有 Domain Pack 信息
-        （hook 未运行、项目无 .tad/domains/、或 context 被压缩）：
+        如果 SessionStart additionalContext 中没有 pack 信息
+        （hook 未运行、项目无 packs、或 context 被压缩）：
         → 静默跳过，不报错，正常进入 *discuss
-        不要尝试手动扫描 .tad/domains/ 目录作为 fallback — 那是 hook 的职责
+        不要尝试手动扫描目录作为 fallback — 那是 hook 的职责
       note: |
         这不是流程要求 — 是知识质量保证。
         没有 pack 的分析 = 没有专业框架支撑的泛泛建议。
@@ -2091,12 +2095,10 @@ experiment_path_protocol:
       Alex MUST NOT bypass *analyze and route directly to *experiment without user explicit input.
 
   domain_pack_auto_load:
-    rule: "experiment_path_protocol step1 MUST Read .tad/domains/ai-evaluation.yaml at start of drafting"
+    rule: "experiment_path_protocol step1 MUST Read .claude/skills/ai-evaluation/SKILL.md at start of drafting"
     rationale: |
-      *experiment is a router mode, not a UserPromptSubmit keyword pattern; the existing
-      Domain Pack loader (keywords.yaml) does not auto-fire on protocol routing. Without
-      this explicit Read, *experiment users get workflow without tools — exactly what
-      the protocol is meant to prevent.
+      *experiment is a router mode — the Capability Pack must be explicitly loaded.
+      Without this explicit Read, *experiment users get workflow without quality rules.
     fallback: |
       If ai-evaluation.yaml missing → emit WARN
       "ai-evaluation pack not found; experiment_path_protocol will use default workflow only"
@@ -2113,7 +2115,7 @@ experiment_path_protocol:
     - "Socratic Inquiry Protocol (3-5 rounds) — DO follow"
     - "step0_5 Risk Translation (cognitive firewall) — DO follow"
     - "step1 draft creation (handoff scaffold + frontmatter)"
-    - "step1 explicit Read of .tad/domains/ai-evaluation.yaml (per domain_pack_auto_load)"
+    - "step1 explicit Read of .claude/skills/ai-evaluation/SKILL.md (per domain_pack_auto_load)"
     - "step1 §6 may be 'Experiment Setup' (rubric / fixture / generator-judge config) instead of 'Files to Modify'"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
@@ -2165,7 +2167,7 @@ experiment_path_protocol:
 
   domain_pack_integration:
     pack: "ai-evaluation"
-    pack_path: ".tad/domains/ai-evaluation.yaml"
+    pack_path: ".claude/skills/ai-evaluation/SKILL.md"
     relationship: |
       Pack is tool/framework recommendations (promptfoo / DSPy / trulens).
       experiment_path_protocol is the workflow + Gate semantics.
@@ -2702,9 +2704,9 @@ design_protocol:
            (e.g., "React frontend" → web-frontend, "REST API" → web-backend,
             "AI agent" → ai-agent-architecture, "dependency audit" → supply-chain-security)
 
-        2. Match keywords against Domain Pack capabilities from session start context.
-           Session start injects all pack names + capabilities into additionalContext.
-           Use this list for matching — do NOT scan .tad/domains/ directory manually.
+        2. Match keywords against pack capabilities from session start context.
+           Session start injects remaining Domain Pack names + capabilities.
+           Capability Packs are loaded via .claude/skills/ — do NOT scan directories manually.
 
         3. Confirm with user via AskUserQuestion:
            "Based on requirements, I identified these relevant Domain Packs:
@@ -2720,8 +2722,9 @@ design_protocol:
         "🔧 Loaded Domain Packs: {pack1}, {pack2}"
         step1a will check for this marker to know which packs to inject into handoff.
 
-        4. For each confirmed pack, Read the YAML file:
-           `.tad/domains/{pack-name}.yaml`
+        4. For each confirmed pack, load in priority order:
+           a. .claude/skills/{pack-name}/SKILL.md (preferred — Capability Pack)
+           b. .tad/domains/{pack-name}.yaml (fallback — hw/mobile/supply-chain only)
            Extract and note:
            - capabilities (names + step sequences)
            - quality_criteria (per capability)
@@ -3100,16 +3103,16 @@ handoff_creation_protocol:
 
         1. Add a new section to the handoff draft after "📚 Project Knowledge":
 
-           ## 🔧 Domain Pack References (Blake 必读)
+           ## 🔧 Pack References (Blake 必读)
 
            **Loaded Packs:**
            | Pack | File | Matched Capabilities |
            |------|------|---------------------|
-           | {pack1} | .tad/domains/{pack1}.yaml | {cap1, cap2} |
-           | {pack2} | .tad/domains/{pack2}.yaml | {cap3, cap4} |
+           | {pack1} | .claude/skills/{pack1}/SKILL.md or .tad/domains/{pack1}.yaml | {cap1, cap2} |
+           | {pack2} | .claude/skills/{pack2}/SKILL.md or .tad/domains/{pack2}.yaml | {cap3, cap4} |
 
-           **⚠️ Blake 必须在开始实现前 Read 上述 YAML 文件。**
-           Pack 内容包含：工作流步骤、工具推荐、质量标准、反模式。
+           **⚠️ Blake 必须在开始实现前 Read 上述 pack 文件。**
+           SKILL.md packs 包含研究驱动的判断规则；YAML packs 包含工作流步骤和工具推荐。
 
         2. Merge pack quality_criteria into "## 9. Acceptance Criteria":
            For each matched capability's quality_criteria:
@@ -3760,8 +3763,8 @@ yolo_execution_protocol:
         Conductor reads the handoff produced by Y3 and runs validation checks
         that sub-agents cannot run (they lack the right tool access or context):
         1. Frontmatter validation: verify task_type, e2e_required, research_required are filled
-        2. Domain Pack injection: check .tad/domains/*.yaml for matching packs,
-           inject quality criteria into handoff ACs (same as step1a in manual mode)
+        2. Pack injection: check .claude/skills/*/SKILL.md (preferred) or .tad/domains/*.yaml (fallback)
+           for matching packs, inject quality criteria into handoff ACs (same as step1a in manual mode)
         3. Grounding verification: for each file in handoff Files to Modify section,
            Read head 50 lines and verify file exists + path is correct.
            Append "Grounded Against" line to handoff.

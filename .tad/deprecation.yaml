@@ -73,3 +73,32 @@ deprecations:
       - .tad/hooks/userprompt-domain-router.sh: additionalContext injection removed (passive mode)
       Downstream projects: just re-sync to get the updated files. Linear MCP connection (claude.ai) remains usable manually.
     date: "2026-04-27"
+
+  "2.17.0":
+    description: "Domain Pack Freeze — archive overlapping YAML packs, remove keyword router ecosystem"
+    files:
+      - .tad/hooks/userprompt-domain-router.sh
+      - .tad/hooks/keywords.yaml
+      - .tad/hooks/keywords.yaml.draft
+      - .tad/hooks/generate-keywords.sh
+      - .tad/hooks/.router.log
+      - .tad/hooks/run-phase2b-tests.sh
+      - .tad/domains/ai-agent-architecture.yaml
+      - .tad/domains/ai-evaluation.yaml
+      - .tad/domains/ai-prompt-engineering.yaml
+      - .tad/domains/ai-tool-integration.yaml
+      - .tad/domains/code-security.yaml
+      - .tad/domains/web-backend.yaml
+      - .tad/domains/web-deployment.yaml
+      - .tad/domains/web-frontend.yaml
+      - .tad/domains/web-testing.yaml
+      - .tad/domains/web-ui-design.yaml
+      - .tad/domains/product-definition.yaml
+      - .tad/domains/tools-registry.yaml
+    note: |
+      12 YAML Domain Packs replaced by Capability Pack SKILL.md equivalents (research-driven, higher quality).
+      9 YAML packs REMAIN: hw-circuit-design, hw-enclosure, hw-firmware, hw-testing,
+      mobile-development, mobile-release, mobile-testing, mobile-ui-design, supply-chain-security.
+      Keyword router fully removed — replaced by Capability Pack auto-awareness (Alex step4_5).
+      settings.json: UserPromptSubmit section removed (router hook was the only consumer).
+    date: "2026-05-20"

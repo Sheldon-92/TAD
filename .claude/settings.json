@@ -64,17 +64,6 @@
           }
         ]
       }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .tad/hooks/userprompt-domain-router.sh"
-          }
-        ]
-      }
     ]
   }
 }

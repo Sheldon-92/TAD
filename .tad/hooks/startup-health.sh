@@ -56,6 +56,8 @@ if [ -e "${DOMAIN_FILES[0]}" ] 2>/dev/null; then
     [ "$base" = "tools-registry" ] && continue
     # Skip frozen/deprecated packs (replaced by Capability Packs)
     head -1 "$domain_file" | grep -q '^# DEPRECATED' && continue
+    # Skip YAML packs that have Capability Pack SKILL.md equivalents
+    [ -f ".claude/skills/${base}/SKILL.md" ] && continue
 
     # Extract description
     desc=$(grep -m1 '^description:' "$domain_file" 2>/dev/null | sed 's/^description:[[:space:]]*//;s/"//g' || echo "")

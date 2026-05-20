@@ -209,7 +209,7 @@ sync_project() {
   echo "───────────────────────────────────────────────────────────────"
   log "  Phase 7 verify:"
 
-  local v_mismatch=false v_hook_missing=false v_keywords_bad=false v_settings_hook_bad=false v_smoke_fail=false v_dep_remain=false
+  local v_mismatch=false v_dep_remain=false
 
   # 7.1 Version match
   local target_ver=$(cat "$proj_path/.tad/version.txt" 2>/dev/null | tr -d '[:space:]')
@@ -220,38 +220,9 @@ sync_project() {
     v_mismatch=true
   fi
 
-  # 7.2 Hook executable
-  if [ -x "$proj_path/.tad/hooks/userprompt-domain-router.sh" ]; then
-    ok "    Hook executable ✓"
-  elif [ -f "$proj_path/.tad/hooks/userprompt-domain-router.sh" ]; then
-    warn "    Hook present but not executable — chmod"
-    run "chmod +x \"$proj_path/.tad/hooks/userprompt-domain-router.sh\""
-  else
-    err "    Hook MISSING"
-    v_hook_missing=true
-  fi
-
-  # 7.3 keywords.yaml pack count
-  local pack_count=$(yq '.packs | length' "$proj_path/.tad/hooks/keywords.yaml" 2>/dev/null)
-  if [ "$pack_count" = "20" ]; then
-    ok "    keywords.yaml: 20 packs ✓"
-  else
-    warn "    keywords.yaml pack count: $pack_count (expected 20)"
-    v_keywords_bad=true
-  fi
-
-  # 7.4 settings.json UserPromptSubmit hook type
-  if [ -f "$proj_path/.claude/settings.json" ]; then
-    local hook_type=$(jq -r '.hooks.UserPromptSubmit[0].hooks[0].type // "missing"' "$proj_path/.claude/settings.json" 2>/dev/null)
-    if [ "$hook_type" = "command" ]; then
-      ok "    settings.json UserPromptSubmit hook type: command ✓"
-    else
-      err "    settings.json hook type: $hook_type (expected command)"
-      v_settings_hook_bad=true
-    fi
-  else
-    warn "    settings.json missing"
-  fi
+  # 7.2-7.4: Router ecosystem checks removed (Domain Pack keyword router deprecated v2.17)
+  # Router files (.tad/hooks/userprompt-domain-router.sh, keywords.yaml) are now in deprecation.yaml
+  # for downstream cleanup via *sync. Capability Packs (.claude/skills/) replaced this functionality.
 
   # 7.5 No deprecated files (post-cleanup)
   while IFS= read -r dep_file; do
@@ -262,31 +233,7 @@ sync_project() {
   done <<< "$DEPRECATED_FILES"
   $v_dep_remain || ok "    No deprecated files remain ✓"
 
-  # 7.6 Live smoke test — passive mode (post-2.8.4 reads .router.log instead of stdout)
-  if [ -x "$proj_path/.tad/hooks/userprompt-domain-router.sh" ]; then
-    if ! $DRY_RUN; then
-      local pre_log_lines=$(wc -l < "$proj_path/.tad/hooks/.router.log" 2>/dev/null | tr -d ' ' || echo 0)
-      pre_log_lines="${pre_log_lines:-0}"
-      echo '{"prompt":"做一个 React button 组件","session_id":"","transcript_path":"","cwd":"","permission_mode":"","hook_event_name":"UserPromptSubmit"}' \
-        | bash "$proj_path/.tad/hooks/userprompt-domain-router.sh" >/dev/null 2>&1
-      local post_log_lines=$(wc -l < "$proj_path/.tad/hooks/.router.log" 2>/dev/null | tr -d ' ' || echo 0)
-      post_log_lines="${post_log_lines:-0}"
-      if [ "$post_log_lines" -gt "$pre_log_lines" ]; then
-        local last_line=$(tail -1 "$proj_path/.tad/hooks/.router.log" 2>/dev/null)
-        if echo "$last_line" | grep -q "web-frontend"; then
-          ok "    Smoke test: hook scored web-frontend ✓ (passive mode reads .router.log)"
-        else
-          warn "    Smoke test: hook ran but didn't score web-frontend (last log: $last_line)"
-          v_smoke_fail=true
-        fi
-      else
-        err "    Smoke test: hook didn't write to .router.log"
-        v_smoke_fail=true
-      fi
-    else
-      log "    [DRY] Smoke test skipped"
-    fi
-  fi
+  # 7.6: Router smoke test removed (Domain Pack keyword router deprecated v2.17)
 
   # Summary
   echo "───────────────────────────────────────────────────────────────"
