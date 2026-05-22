@@ -2,17 +2,27 @@
 
 ## In Progress
 
+- [x] **TAD Lifecycle Health Improvements** — Gate 4 PASS + ARCHIVED 2026-05-19
+  - *accept --quick, YOLO auto-archive, zombie detection (STEP 3.5+3.55), *optimize redesign
+  - Commit: 816449f
+
+- [x] **EPIC: Auto-Evolve** — 4/4 Phases COMPLETE ✅ (archived 2026-05-20)
+  - Epic: `.tad/archive/epics/EPIC-20260518-auto-evolve.md`
+  - Phase 1: Trace v2 schema + writer (4740def)
+  - Phase 2: Blake Reflexion mode (f5489e4)
+  - Phase 3: Dream scanner + auto-trigger (9b51e1b)
+  - Phase 4: Optimize/Evolve v2 (b904c9c)
+
 - [x] **Capability Pack Auto-Awareness + Sync Install** — Gate 4 PASS + ARCHIVED 2026-05-14
   - *sync step b2 installs all 8 packs to downstream projects
   - Alex step4_5 pack awareness scan across 6 modes
   - Blake 1_5a auto-detection in *develop
   - Commit: baf5618 + e28acbf
 
-- [ ] **Domain Pack Freeze + Rebuild** (TAD Depth-First Phase 2)
-  - Remove 13 frozen packs from keywords.yaml (keep 8 active)
-  - Archive tools-registry.yaml
-  - Rebuild strategy: on-demand SKILL.md, not upfront YAML
-  - Key insight: SKILL.md (action-ready) > YAML (informational)
+- [x] **Domain Pack Freeze + Cleanup** — Gate 4 PASS + ARCHIVED 2026-05-20
+  - Archived 12 YAML, kept 9 (hw/mobile/supply-chain), deleted 6 router ecosystem files
+  - startup-health.sh SKILL.md-first guard, Alex 10 refs updated, deprecation.yaml v2.17.0
+  - Commit: 27a0bc6
 
 - [ ] **EPIC: Agent Capability Packs** — 6/9 Phases Done
   - Epic: `.tad/active/epics/EPIC-20260507-agent-capability-packs.md`

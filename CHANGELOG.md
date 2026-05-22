@@ -5,6 +5,27 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.17.0] - 2026-05-22
+
+### New Features — Auto-Evolve + Domain Pack Freeze
+
+- **Auto-Evolve Epic (4 phases)**: TAD now has a self-improvement pipeline
+  - Phase 1: Decision-level trace schema v2 — 11 event types, env-var convention, sampling/compression, 180-day rotation
+  - Phase 2: Blake Reflexion — structured failure diagnosis in Ralph Loop Layer 1 (per-iteration, not per-check)
+  - Phase 3: Dream scanner — 4-pass pattern detection (grep/jq), SessionStart candidate display (STEP 3.56), `*dream --auto`, daily cron support
+  - Phase 4: *optimize v2 (9 lifecycle health metrics) + *evolve v2 (cross-project v2 analysis, framework proposal staging)
+- **Lifecycle Health Improvements**: `*accept --quick` (3-step lightweight archive), YOLO auto-archive safety net, startup zombie detection (STEP 3.5 + 3.55), *optimize lifecycle health metrics
+
+### Breaking Changes
+
+- **Domain Pack keyword router removed**: `userprompt-domain-router.sh`, `keywords.yaml`, and 4 supporting files deleted. Replaced by Capability Pack auto-awareness (Alex step4_5 + SessionStart context)
+- **12 Domain Pack YAML files archived**: overlapping packs moved to `.tad/archive/domains/`. 9 YAML packs remain (hw×4, mobile×4, supply-chain-security). `startup-health.sh` now skips YAML packs that have Capability Pack SKILL.md equivalents
+- **settings.json**: `UserPromptSubmit` hook section removed (keyword router was the only consumer)
+
+### Documentation
+
+- CHANGELOG, README, INSTALLATION_GUIDE version bumped to 2.17.0
+
 ## [2.16.0] - 2026-05-15
 
 ### New Features — Capability Pack Expansion (8→13 packs)
