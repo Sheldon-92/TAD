@@ -46,6 +46,7 @@ Detect the user's request type and load the appropriate reference file(s).
 | voiceover / narration / TTS / text-to-speech / generate voice | `references/ai-asset-generation.md` §TTS Voiceover Rules |
 | voice clone / brand voice / clone voice / custom voice | `references/ai-asset-generation.md` §Voice Cloning Rules |
 | sound effect / SFX / generate sound / ambient / foley | `references/ai-asset-generation.md` §AI Sound Effects Rules |
+| Seedance / image-to-video / first-last frame / 照片转视频 / photo-to-video / AI video clip / multi-shot scene | `references/vimax-patterns.md` |
 
 **Multi-signal**: Load all matched references. Cross-reference sections are linked within files.
 
@@ -115,6 +116,12 @@ One-line summary per rule with reference pointer. **Do not inline rules here** �
 - **Voice-First Timing Rule**: Generate TTS voiceover BEFORE composing video scenes — voiceover duration drives scene timing → §Voice Pipeline Integration
 - **Clone Minimum**: Fish Audio 10–15s sample; ElevenLabs 30–60s (IVC) or 30min (PVC) → §Voice Cloning Rules
 - **SFX Source Rule**: Diegetic/scene-tied → Seedance native audio; specific/imaginative/looping → ElevenLabs SFX API → §AI Sound Effects Rules
+
+### ViMax Patterns (`references/vimax-patterns.md`)
+- **Visual Decomposition Rule**: AI image-to-video → decompose into first_frame + last_frame + motion, never single description → §Pattern 1
+- **Intent Router Rule**: every new video task → classify narrative/motion/montage FIRST → §Pattern 2
+- **View-Specific Reference Rule**: character in ≥2 shots → generate front/side/back sheet → feed angle-matched view per shot → §Pattern 3
+- **Camera Tree Rule**: multi-shot in same scene → child shot prompt MUST cite parent shot's spatial elements → §Pattern 4
 
 ---
 
