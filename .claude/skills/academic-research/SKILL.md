@@ -106,6 +106,7 @@ Load the cluster references that match the research topic. Multiple clusters may
 | Experiment design, ethics, reproducibility | references/experiment-design.md |
 | Image analysis, visual evidence, multimodal | references/multimodal-research.md |
 | Ornamental patterns, motifs, cross-cultural visual comparison | references/pattern-extraction.md |
+| Quantitative image measurement, CV tools, similarity scoring, frequency analysis | references/quantitative-analysis.md |
 
 Read the loaded reference files and apply their rules during research execution.
 
@@ -196,6 +197,7 @@ Research findings persist across sessions via TAD's existing memory stack — no
 | [experiment-design.md](references/experiment-design.md) | RCT design, sample size, GRADE, Cochrane RoB, reproducibility, IRB, peer review | Experiment planning |
 | [multimodal-research.md](references/multimodal-research.md) | Image analysis protocol, observation-before-interpretation, measurement fallbacks, image citation, cross-image comparison | Image-based research tasks |
 | [pattern-extraction.md](references/pattern-extraction.md) | Motif identification, line abstraction (3 levels), cross-cultural feature matrix, ornamental vocabulary (guilloche, arabesque, etc.) | Visual pattern / ornament studies |
+| [quantitative-analysis.md](references/quantitative-analysis.md) | image-analysis.py decision matrix, similarity/frequency thresholds, output interpretation, qualitative-quantitative integration | When using CV tools for measurement |
 
 ---
 
@@ -210,6 +212,20 @@ academic-search.sh <database> "<query>" [--limit N]
 ```
 
 Supported databases: `semantic-scholar`, `openalex`, `pubmed`, `arxiv`, `europeana` (requires EUROPEANA_API_KEY), `usda-food` (DEMO_KEY or USDA_API_KEY).
+
+### `scripts/image-analysis.py` — Quantitative Image Analysis
+
+Python toolkit for CV-based image measurement. Requires setup: `bash scripts/setup-cv.sh`
+
+```bash
+~/.academic-research-cv-venv/bin/python3 scripts/image-analysis.py edges input.jpg --output edges.svg
+~/.academic-research-cv-venv/bin/python3 scripts/image-analysis.py colors input.jpg --output colors.json
+~/.academic-research-cv-venv/bin/python3 scripts/image-analysis.py match img1.jpg img2.jpg --output result.json
+~/.academic-research-cv-venv/bin/python3 scripts/image-analysis.py frequency input.jpg --output freq.json
+~/.academic-research-cv-venv/bin/python3 scripts/image-analysis.py features input.jpg --output features.json
+```
+
+See [quantitative-analysis.md](references/quantitative-analysis.md) for decision matrix and output interpretation.
 
 Use this script during research Phase 1 (Discovery) and Phase 4 (Database Cross-Verification) instead of writing raw curl commands.
 
