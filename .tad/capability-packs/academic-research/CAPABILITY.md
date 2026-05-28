@@ -169,9 +169,25 @@ If any item is unchecked, **continue working instead of concluding**.
 
 ---
 
+## Available Tools
+
+### `scripts/academic-search.sh` — Database Query Helper
+
+Reusable bash script for querying academic databases with rate limiting and structured output.
+
+```bash
+academic-search.sh <database> "<query>" [--limit N]
+```
+
+Supported databases: `semantic-scholar`, `openalex`, `pubmed`, `arxiv`, `europeana` (requires EUROPEANA_API_KEY), `usda-food` (DEMO_KEY or USDA_API_KEY).
+
+Use this script during research Phase 1 (Discovery) and Phase 4 (Database Cross-Verification) instead of writing raw curl commands.
+
+---
+
 ## Notes
 
-- **Phase 4 will add**: MCP server integrations for complex database queries, multimodal image analysis (Phase 5)
+- **Phase 5 will add**: Multimodal image analysis, memory integration
 - **Skill evolution**: This pack improves via TAD's existing *optimize → proposal → human approval → handoff cycle (not runtime generation). See tad-mapping-blueprint.md Decision 4
 - **Memory**: Uses TAD's file-based project-knowledge + optional NotebookLM notebooks. No additional memory infrastructure needed
 - **Source coverage**: 86 unique ScienceClaw skills cited across 15 reference files (consolidated from 150 P1+P2 skills)

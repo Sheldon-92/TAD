@@ -81,6 +81,17 @@ install_claude_code() {
     echo "✅  references/${filename}"
   done
 
+  if [[ -d "${SCRIPT_DIR}/scripts" ]]; then
+    mkdir -p "${TARGET_DIR}/scripts"
+    for script_file in "${SCRIPT_DIR}/scripts/"*; do
+      [[ -f "$script_file" ]] || continue
+      filename="$(basename "$script_file")"
+      cp "$script_file" "${TARGET_DIR}/scripts/${filename}"
+      chmod +x "${TARGET_DIR}/scripts/${filename}" 2>/dev/null || true
+      echo "✅  scripts/${filename}"
+    done
+  fi
+
   echo ""
   echo "✅ ${PACK_NAME} v${PACK_VERSION} installed to: ${TARGET_DIR}"
   echo ""

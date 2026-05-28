@@ -256,3 +256,23 @@ curl -s "https://dblp.org/search/publ/api?q=graph+neural+network&format=json&h=2
 | S2 paper `externalIds` | DOI, PMID, arXiv | Parse `externalIds` field from S2 response |
 
 **Recommended discovery chain:** Semantic Scholar (broad search) -> DOI -> CrossRef (metadata) -> OpenAlex (OA links, institution data).
+
+---
+
+## Europeana — Cultural Heritage Database
+
+50M+ digital objects from European museums, libraries, and archives. Useful for cultural artifact research, art history, and pattern analysis.
+
+**Base URL**: `https://api.europeana.eu/record/v2/search.json`
+**Auth**: API key required (free: https://pro.europeana.eu/page/get-api). No demo key available.
+**Rate Limit**: 100 req/min with key.
+
+```bash
+curl -s "https://api.europeana.eu/record/v2/search.json?wskey=${EUROPEANA_API_KEY}&query=$(printf '%s' 'ornamental pattern' | jq -sRr @uri)&rows=10"
+```
+
+**Key response fields**: `items[].title`, `items[].dcCreator`, `items[].year`, `items[].dataProvider`, `items[].guid` (permalink), `items[].edmPreview` (thumbnail URL).
+
+**Use for**: art/design pattern research, cultural heritage analysis, historical artifact discovery.
+
+> Source: Europeana Search API documentation (https://pro.europeana.eu/page/search)

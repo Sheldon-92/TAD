@@ -374,3 +374,25 @@ curl -s -X POST https://api.platform.opentargets.org/api/v4/graphql \
 - **Variant interpretation:** Gene -> NCBI Entrez (SNPs) -> ClinVar (pathogenicity) -> Ensembl VEP (functional prediction)
 - **Pathway analysis:** Gene list -> KEGG/Reactome (pathway mapping) -> STRING (PPI network + enrichment)
 - **Structure-function:** Gene -> UniProt (protein) -> PDB (3D structure) -> ChEMBL (binding data)
+
+---
+
+## USDA FoodData Central — Food Composition Database
+
+400K+ food items with nutrient data. Covers branded, survey (FNDDS), foundation, and SR Legacy foods.
+
+**Base URL**: `https://api.nal.usda.gov/fdc/v1/foods/search`
+**Auth**: API key required. `DEMO_KEY` works for testing (30 req/hr). Free registered key: 3,600 req/hr.
+**Rate Limit**: 30 req/hr (DEMO_KEY) / 3,600 req/hr (registered).
+
+```bash
+curl -s "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY:-DEMO_KEY}&query=$(printf '%s' 'sesame paste' | jq -sRr @uri)&pageSize=10"
+```
+
+**Key response fields**: `foods[].description`, `foods[].fdcId`, `foods[].dataType`, `foods[].brandOwner`, `foods[].foodNutrients[]` (nutrientName, value, unitName).
+
+**Data types**: `Foundation` (research-grade), `SR Legacy` (USDA standard reference), `Survey (FNDDS)` (dietary survey), `Branded` (commercial products).
+
+**Use for**: food science research, nutritional analysis, dietary survey data, food composition comparison.
+
+> Source: USDA FoodData Central API documentation (https://fdc.nal.usda.gov/api-guide.html)
