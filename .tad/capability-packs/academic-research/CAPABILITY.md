@@ -44,6 +44,7 @@ Classify the user's request into one of four tiers. Each tier has a mandatory mi
 | **Literature survey** | "review literature", "survey papers", "what does the research say", "文献综述" | 1-5 | 20-40 | 1-2 sessions with handoff |
 | **Comprehensive review** | "comprehensive review", "analyze the field", "综合分析", "学术综合分析" | 1-6 | 40-80 | Epic: 2-3 phases |
 | **Systematic review** | "systematic review", "meta-analysis", "PRISMA", "系统性综述", "元分析" | 1-6 (iterated) | 80+ | Epic: 4-6 phases (PRISMA pipeline) |
+| **Multimodal research** | user uploads image, "pattern analysis", "visual comparison", "artifact image", "图像分析", "纹样" | 1-5 | 20-40 | 1-2 sessions; load multimodal-research.md + pattern-extraction.md |
 
 **Example inputs per tier:**
 
@@ -66,6 +67,11 @@ Systematic review:
 - "Conduct a systematic review of CBT interventions for anxiety"
 - "PRISMA-compliant meta-analysis of statin efficacy in primary prevention"
 - "Systematic review of AI diagnostic accuracy in radiology"
+
+Multimodal research:
+- "Analyze this image of a ceramic bowl — describe the ornamental pattern and classify the motif types"
+- "Compare the palmette designs across these three artifacts from different cultures"
+- "Extract the visual features from this food plating photograph for sensory evaluation research"
 
 > Source: Adapted from SCIENCE.md lines 111-121, adjusted per tad-mapping-blueprint.md Decision 6
 
@@ -98,6 +104,8 @@ Load the cluster references that match the research topic. Multiple clusters may
 | Physical / computational science | references/domain-physical.md |
 | Social science / economics | references/domain-social.md |
 | Experiment design, ethics, reproducibility | references/experiment-design.md |
+| Image analysis, visual evidence, multimodal | references/multimodal-research.md |
+| Ornamental patterns, motifs, cross-cultural visual comparison | references/pattern-extraction.md |
 
 Read the loaded reference files and apply their rules during research execution.
 
@@ -140,6 +148,26 @@ If any item is unchecked, **continue working instead of concluding**.
 
 ---
 
+## Step 6: Research Memory & Persistence
+
+Research findings persist across sessions via TAD's existing memory stack — no additional infrastructure required.
+
+| Memory Need | TAD Solution | How It Works |
+|------------|-------------|-------------|
+| Cross-session findings | `.tad/project-knowledge/*.md` | Knowledge Assessment (Gate 3/4) writes reusable discoveries to category files. Blake or Alex reads them on next session via `@import` in CLAUDE.md. |
+| Semantic recall across sources | NotebookLM via `*research-notebook ask` | Multi-source notebooks (30-50 sources each) enable cross-source synthesis. Query returns grounded answers with source attribution. |
+| Per-topic evidence archive | `.tad/evidence/research/{topic}/` | Subdirectories per research topic store raw findings, analysis files, and search logs. Persists across handoffs within an Epic. |
+| Self-evaluation patterns | Completion report Knowledge Assessment | Reflexion Cycle (reflexion-cycle.md) captures what worked and what failed. Written to completion report, promoted to project-knowledge if reusable. |
+| Research notebook portfolio | `.tad/research-notebooks/REGISTRY.yaml` | Index of all NotebookLM notebooks with topic, source count, and status. Alex creates and curates; Blake queries during implementation. |
+
+**Integration rules:**
+- Findings that apply beyond a single handoff → write to `.tad/project-knowledge/` via Knowledge Assessment
+- Findings specific to one research question → keep in `.tad/evidence/research/{topic}/`
+- Findings worth cross-source synthesis → ingest into NotebookLM via `*research-notebook ingest`
+- Do NOT duplicate: choose one persistence path per finding
+
+---
+
 ## Quick Rule Index
 
 ### Protocol References (Phase 2)
@@ -166,6 +194,8 @@ If any item is unchecked, **continue working instead of concluding**.
 | [domain-physical.md](references/domain-physical.md) | Molecular dynamics, materials screening, signal processing, computational chemistry | Physical/computational science |
 | [domain-social.md](references/domain-social.md) | Econometrics (DiD, RDD, IV), survey methods, psychometrics, education research | Social science research |
 | [experiment-design.md](references/experiment-design.md) | RCT design, sample size, GRADE, Cochrane RoB, reproducibility, IRB, peer review | Experiment planning |
+| [multimodal-research.md](references/multimodal-research.md) | Image analysis protocol, observation-before-interpretation, measurement fallbacks, image citation, cross-image comparison | Image-based research tasks |
+| [pattern-extraction.md](references/pattern-extraction.md) | Motif identification, line abstraction (3 levels), cross-cultural feature matrix, ornamental vocabulary (guilloche, arabesque, etc.) | Visual pattern / ornament studies |
 
 ---
 
@@ -187,7 +217,6 @@ Use this script during research Phase 1 (Discovery) and Phase 4 (Database Cross-
 
 ## Notes
 
-- **Phase 5 will add**: Multimodal image analysis, memory integration
 - **Skill evolution**: This pack improves via TAD's existing *optimize → proposal → human approval → handoff cycle (not runtime generation). See tad-mapping-blueprint.md Decision 4
-- **Memory**: Uses TAD's file-based project-knowledge + optional NotebookLM notebooks. No additional memory infrastructure needed
+- **Memory**: Uses TAD's file-based project-knowledge + optional NotebookLM notebooks. See Step 6 for the full memory integration mapping
 - **Source coverage**: 86 unique ScienceClaw skills cited across 15 reference files (consolidated from 150 P1+P2 skills)
