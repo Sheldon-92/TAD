@@ -98,3 +98,10 @@ packs:
     produces: "DESIGN.md + design tokens + visual spec + accessibility audit results"
     keywords: ["UI", "UX", "design", "frontend", "interface", "visual design", "设计", "界面", "布局", "色彩", "设计系统", "wireframe", "accessibility"]
     type: "reference-based"
+  - name: "academic-research"
+    description: "Academic research methodology pack — systematic literature review, citation integrity, quality evaluation. Derived from ScienceClaw SCIENCE.md + ScholarEval + VOYAGER Reflexion Cycle."
+    path: ".tad/capability-packs/academic-research/"
+    consumes: "Research question + optional domain constraints (field, date range, databases)"
+    produces: "Evidence-grounded research report + methodology section + citation audit trail"
+    keywords: ["学术", "academic", "论文", "paper", "文献", "literature", "meta-analysis", "元分析", "PRISMA", "systematic review", "系统性综述", "PubMed", "文献综述", "学术研究", "科研"]
+    type: "reference-based"
