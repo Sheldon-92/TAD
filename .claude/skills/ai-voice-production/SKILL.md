@@ -49,6 +49,7 @@ Verify: `python3 --version && ffmpeg -version`
 - Blog/video narration (single voice, <30 min) → load `narration-dubbing.md`
 - Podcast (multi-episode, consistent voice) → load `narration-dubbing.md`
 - Video dubbing (emotion matching, multilingual) → load `narration-dubbing.md`
+- Chinese narration with emotion control or dialogue → load `chattts-workflow.md`
 - Quick TTS (one-off, any tool) → load `tool-landscape.md`
 
 **Q2 — What hardware?**

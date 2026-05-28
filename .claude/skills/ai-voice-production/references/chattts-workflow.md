@@ -328,7 +328,7 @@ project/
 
 ### 跨项目复用
 
-`.pt` 文件是模型无关的 PyTorch tensor。只要使用相同版本的 ChatTTS，在任何机器上加载都是同一个声音。
+`.pt` 文件是 PyTorch tensor，与 ChatTTS 模型架构耦合。**同版本 ChatTTS** 在任何机器上加载都是同一个声音。升级 ChatTTS 版本时，embedding 维度可能变化——建议保留生成该 `.pt` 的 ChatTTS 版本号（`pip show chattts | grep Version`）。
 
 ---
 
