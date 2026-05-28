@@ -73,12 +73,31 @@ Systematic review:
 
 ## Step 2: Load References by Task Type
 
-| Tier | Load These References |
+### Protocol References (always applicable)
+
+| Tier | Protocol References |
 |------|----------------------|
 | Quick factual | zero-hallucination.md only |
 | Literature survey | research-protocol.md + zero-hallucination.md + fallback-chains.md |
-| Comprehensive review | ALL references |
-| Systematic review | ALL references |
+| Comprehensive review | ALL protocol references + relevant cluster references |
+| Systematic review | ALL protocol + ALL cluster references |
+
+### Cluster References (load by research domain)
+
+Load the cluster references that match the research topic. Multiple clusters may apply.
+
+| Research Domain Signal | Load These Cluster References |
+|----------------------|------------------------------|
+| Literature search, citation analysis | references/literature-search.md |
+| Academic database queries (general) | references/database-apis-general.md |
+| Life science databases (protein, gene, drug) | references/database-apis-life-sciences.md |
+| Statistical analysis, meta-analysis | references/statistics.md |
+| Paper/grant/report writing | references/writing.md |
+| Figures, plots, charts | references/visualization.md |
+| Biomedical / life science domain | references/domain-biomedical.md |
+| Physical / computational science | references/domain-physical.md |
+| Social science / economics | references/domain-social.md |
+| Experiment design, ethics, reproducibility | references/experiment-design.md |
 
 Read the loaded reference files and apply their rules during research execution.
 
@@ -123,6 +142,8 @@ If any item is unchecked, **continue working instead of concluding**.
 
 ## Quick Rule Index
 
+### Protocol References (Phase 2)
+
 | Reference | What It Covers | When to Read |
 |-----------|---------------|-------------|
 | [research-protocol.md](references/research-protocol.md) | 6 mandatory phases, depth enforcement, mandatory search protocol | Every non-trivial research task |
@@ -131,10 +152,26 @@ If any item is unchecked, **continue working instead of concluding**.
 | [reflexion-cycle.md](references/reflexion-cycle.md) | 5-dimension post-task self-evaluation | After completing a research task |
 | [fallback-chains.md](references/fallback-chains.md) | Source failure recovery, 3-strike rule, fallback tables | When a search/API fails |
 
+### Cluster References (Phase 3) — Domain-Specific Judgment Rules
+
+| Reference | What It Covers | When to Read |
+|-----------|---------------|-------------|
+| [literature-search.md](references/literature-search.md) | Multi-database search, PRISMA pipeline, citation networks, bibliography management | Literature reviews, systematic reviews |
+| [database-apis-general.md](references/database-apis-general.md) | Semantic Scholar, OpenAlex, PubMed, arXiv, World Bank, CrossRef API templates | Any database query task |
+| [database-apis-life-sciences.md](references/database-apis-life-sciences.md) | UniProt, ChEMBL, NCBI, PDB, ClinicalTrials, KEGG, STRING API templates | Life science research |
+| [statistics.md](references/statistics.md) | Test selection, meta-analysis (DerSimonian-Laird, I²), effect sizes, power analysis, APA reporting | Any quantitative analysis |
+| [writing.md](references/writing.md) | IMRaD structure, grant writing (NIH/NSF), LaTeX, citation styles, journal page limits | Writing research outputs |
+| [visualization.md](references/visualization.md) | Publication figures (300+ DPI), journal palettes, chart selection, statistical plots | Creating figures |
+| [domain-biomedical.md](references/domain-biomedical.md) | Bioinformatics (FDR<0.05), clinical trials, CONSORT, drug discovery, protein analysis | Biomedical research |
+| [domain-physical.md](references/domain-physical.md) | Molecular dynamics, materials screening, signal processing, computational chemistry | Physical/computational science |
+| [domain-social.md](references/domain-social.md) | Econometrics (DiD, RDD, IV), survey methods, psychometrics, education research | Social science research |
+| [experiment-design.md](references/experiment-design.md) | RCT design, sample size, GRADE, Cochrane RoB, reproducibility, IRB, peer review | Experiment planning |
+
 ---
 
 ## Notes
 
-- **Phase 3-4 will add**: Domain-specific database API templates (PubMed, Semantic Scholar, UniProt, ChEMBL, etc.), database-specific search skills, and multimodal analysis capabilities
+- **Phase 4 will add**: MCP server integrations for complex database queries, multimodal image analysis (Phase 5)
 - **Skill evolution**: This pack improves via TAD's existing *optimize → proposal → human approval → handoff cycle (not runtime generation). See tad-mapping-blueprint.md Decision 4
 - **Memory**: Uses TAD's file-based project-knowledge + optional NotebookLM notebooks. No additional memory infrastructure needed
+- **Source coverage**: 86 unique ScienceClaw skills cited across 15 reference files (consolidated from 150 P1+P2 skills)
