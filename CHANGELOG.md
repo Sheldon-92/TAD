@@ -5,6 +5,33 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.18.0] - 2026-05-28
+
+### New Features — Academic Research + Voice Production Packs
+
+- **Academic Research Capability Pack** (7-phase Epic, 19 reference files, 4700+ lines)
+  - Phase 1: ScienceClaw deep source study (285 skills analyzed, architecture-analysis.md)
+  - Phase 2: Core pack build (research-protocol, literature-search, scholar-eval, zero-hallucination, statistics, writing, experiment-design, reflexion-cycle, fallback-chains)
+  - Phase 3: Extract 86 ScienceClaw skills into 10 cluster references (domain-biomedical, domain-physical, domain-social, database-apis, multimodal-research, pattern-extraction, quantitative-analysis, visualization)
+  - Phase 4-7: Database integration, multimodal image analysis, Python CV toolkit, pilot test (food science)
+  - Includes: academic-search.sh CLI tool, image-analysis.py with OpenCV, setup-cv.sh
+
+- **AI Voice Production Capability Pack** (8 reference files, 1317 lines)
+  - Tool landscape: 13 TTS tools compared (9 Tier A with benchmarks, 4 Tier B)
+  - Apple Silicon deployment rules (16GB/32GB memory budgets, MPS workarounds)
+  - Voice cloning quality rules (zero-shot/fine-tuned/voice design, SIM/WER/MOS thresholds)
+  - Audiobook pipeline (5-step workflow, ACX specs, ffmpeg mastering commands)
+  - ChatTTS end-to-end workflow (344 lines, from real dogfood test)
+  - Licensing safety (GREEN/YELLOW/RED classification for all tools)
+
+- **Video-Creation Pack Upgrade**: ViMax agentic pipeline patterns (decomposition/intent/view/camera-tree) + behavioral examples framework with dogfood fixtures
+
+### Documentation
+
+- CHANGELOG, README, INSTALLATION_GUIDE, tad-help version bumped to 2.18.0
+- pack-registry.yaml updated (13 → 15 packs)
+- 48 new architecture knowledge entries from 7-phase Epic execution
+
 ## [2.17.0] - 2026-05-22
 
 ### New Features — Auto-Evolve + Domain Pack Freeze

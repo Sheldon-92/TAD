@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.17.0 - Capability Pack Expansion**
+**Version 2.18.0 - Academic Research + Voice Production Packs**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -131,7 +131,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.17.0 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.18.0 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -449,6 +449,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.17.0 - Capability Pack Expansion
+**Welcome to TAD v2.18.0 - Academic Research + Voice Production Packs
 
 *AI does the work. Humans guard the value.*

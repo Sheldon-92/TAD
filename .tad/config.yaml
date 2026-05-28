@@ -1,8 +1,8 @@
-# TAD Configuration v2.17.0 - Capability Pack Expansion
+# TAD Configuration v2.18.0 - Academic Research + Voice Production Packs
 method: TAD
-version: 2.17.0
-description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 13 Capability Packs + Cross-Platform Portable
-last_updated: 2026-05-22
+version: 2.18.0
+description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 15 Capability Packs + Cross-Platform Portable
+last_updated: 2026-05-28
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
