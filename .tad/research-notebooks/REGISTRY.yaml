@@ -2,7 +2,7 @@
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
 version: 1.0.0
-last_updated: 2026-05-08
+last_updated: 2026-05-27
 
 # Currently active notebook (used when no --notebook flag specified)
 active_notebook: "tad-evolution-research"
@@ -374,3 +374,146 @@ notebooks:
         type: mixed
         added: "2026-05-08"
         title: "13 additional T1/T2 sources"
+
+  - id: "video-creation-vimax-research"
+    notebook_id: "79b4c4a9-f1b2-49cf-962f-3188b52426d5"
+    topic: "Video Creation Pack Evolution — ViMax Agentic Pipeline vs TAD Motion Graphics Pack"
+    created: "2026-05-27"
+    status: active
+    last_queried: "2026-05-27"
+    source_count: 38
+    notes: "Cross-source analysis: TAD video-creation pack (9 files: SKILL + CAPABILITY + 7 references) vs HKUDS/ViMax (29 files: readme + 13 agents + 3 pipelines + 9 interfaces + tools/protocols.py + 2 configs). Goal: identify ViMax patterns to borrow for our pack."
+    sources_summary:
+      tad_pack: 9
+      vimax_readme: 1
+      vimax_agents: 13
+      vimax_pipelines: 3
+      vimax_interfaces: 9
+      vimax_tools: 1
+      vimax_configs: 2
+
+  - id: "ai-agent-tutorials"
+    notebook_id: "037c8e7d-df51-4c63-93a6-12bf44015fee"
+    topic: "AI Agent Tutorials & Educational Resources"
+    created: "2026-05-27"
+    status: active
+    last_queried: "2026-05-27"
+    source_count: 1
+    notes: "Started with datawhalechina/hello-agents (54K stars, 《从零开始构建智能体》 Chinese tutorial). README+ToC level imported; chapter bodies not yet loaded. 2 ask rounds completed. Baseline report: .tad/evidence/research/hello-agents/2026-05-27-baseline-report.md. Intended as ongoing notebook for additional tutorial projects."
+    sources:
+      - url: "https://github.com/datawhalechina/hello-agents"
+        type: web
+        added: "2026-05-27"
+        title: "datawhalechina/hello-agents (《从零开始构建智能体》Datawhale community tutorial)"
+
+  - id: "html-anything-research"
+    notebook_id: "d7022a6e-8de5-4e52-8f7c-1518cd4f6d76"
+    topic: "html-anything — Agentic HTML Editor Architecture & Patterns"
+    created: "2026-05-27"
+    status: active
+    last_queried: "2026-05-27"
+    source_count: 19
+    notes: "Deep research on nexu-io/html-anything (5.2K stars). 19 sources (README + AGENTS.md + CONTRIBUTING.md + 6 agent adapter files + 6 skill system files + 3 API routes + export component + PROGRESS.md + marketplace). 4 ask rounds: agent pipeline, skill system, export system, architecture analysis. Findings: .tad/evidence/research/html-anything/2026-05-27-deep-ask-findings.md"
+    sources:
+      - url: "https://github.com/nexu-io/html-anything"
+        type: web
+        added: "2026-05-27"
+        title: "nexu-io/html-anything README (5.2K stars)"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/AGENTS.md"
+        type: web
+        added: "2026-05-27"
+        title: "AGENTS.md — workspace structure + commands"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/next/src/lib/agents/detect.ts"
+        type: web
+        added: "2026-05-27"
+        title: "Agent detection — 17 agent adapters + PATH scanning"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/next/src/lib/agents/invoke.ts"
+        type: web
+        added: "2026-05-27"
+        title: "Agent invocation — spawn + SSE streaming + error handling"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/next/src/lib/agents/argv.ts"
+        type: web
+        added: "2026-05-27"
+        title: "Agent argv construction — per-agent CLI flags + parseLine"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/next/src/lib/skills/registry.ts"
+        type: web
+        added: "2026-05-27"
+        title: "Skill registry — discovery + InstalledPackage type"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/next/src/lib/skills/install.ts"
+        type: web
+        added: "2026-05-27"
+        title: "Marketplace install — tarball preflight + atomic swap"
+      - url: "https://github.com/nexu-io/html-anything/blob/main/next/src/lib/templates/loader.ts"
+        type: web
+        added: "2026-05-27"
+        title: "Template loader — frontmatter parse + prompt assembly"
+
+  - id: "scienceclaw-architecture"
+    notebook_id: "7779d639-9813-48cf-89b8-1055da040bb9"
+    topic: "ScienceClaw — Self-Evolving AI Research Agent Architecture Analysis"
+    created: "2026-05-27"
+    status: active
+    last_queried: "2026-05-27"
+    source_count: 19
+    notes: "Deep research on beita6969/ScienceClaw (823 stars). 19 sources (README + SCIENCE.md + 7 skill dirs + 2 memory extensions + 2 MCP servers + copilot instructions + 5 research skills). 7 ask rounds: skill evolution, SKILL.md format, memory architecture, zero-hallucination enforcement, OpenClaw relationship, unique innovations, TAD comparison. Findings: .tad/evidence/research/scienceclaw/2026-05-27-deep-research-findings.md"
+    sources:
+      - url: "https://github.com/beita6969/ScienceClaw"
+        type: web
+        added: "2026-05-27"
+        title: "ScienceClaw README (823 stars, 285 skills, zero hallucination)"
+      - url: "https://github.com/beita6969/ScienceClaw/blob/main/SCIENCE.md"
+        type: web
+        added: "2026-05-27"
+        title: "SCIENCE.md — 629-line master research protocol"
+      - url: "(17 additional sources: skill-evolution, skill-creator, memory-core, memory-lancedb, deep-research, scholar-evaluation, academic-deep-research, systematic-review, meta-analysis, convergence-study, data-extractor, arxiv-latex-mcp, chembl-mcp, scientific-problem-selection, find-skills, session-logs, copilot.instructions.md)"
+        type: mixed
+        added: "2026-05-27"
+        title: "17 additional architecture and skill sources"
+
+  - id: "google-skills-deep-analysis"
+    notebook_id: "6669167a-15ff-4b1f-8676-8876bc676445"
+    topic: "google/skills — Repository Deep Analysis (Agent Skills for Google Cloud)"
+    created: "2026-05-27"
+    status: active
+    last_queried: "2026-05-27"
+    source_count: 50
+    notes: "Deep research on google/skills (10,785 stars, Apache 2.0, Copybara-synced from internal Google3). 50 sources: README + CONTRIBUTING + all 11 deviation SKILL.md (only-SKILL pattern) + alloydb-basics complete (1 SKILL + 6 references) + agent-platform-skill-registry complete + 11 comparative basics SKILL.md + 3 iam-security.md + 4 mcp-usage.md + 3 scripts + recipe-onboarding singular reference. Methodology: full *research-plan flow with all 3 challenge layers (Phase 0c plan + Phase 4c findings 2 rounds + Phase 5b actions). 4 seeds executed (3 original + 1 adaptive). Final report: .tad/evidence/research/google-skills/2026-05-27-final-report.md. Key finding: low-coverage patterns (Tier R/M/D 17%, Phase 0 17%, Decision Trees 13%) are agent-platform-* cluster conventions, NOT repo-wide standards. Only AC1 (minimum name+description frontmatter, 100% coverage) survived adversarial review as STRONG; 6 ACs WEAK, 6 UNSUPPORTED."
+    sources:
+      - url: "https://github.com/google/skills"
+        type: web
+        added: "2026-05-27"
+        title: "google/skills README (10,785 stars, Agent Skills for Google products)"
+      - url: "https://github.com/google/skills/blob/main/CONTRIBUTING.md"
+        type: web
+        added: "2026-05-27"
+        title: "CONTRIBUTING.md — external PRs not accepted, internal Agent Skills Program"
+      - url: "(48 additional sources: 11 deviation SKILL.md + alloydb-basics complete + agent-platform-skill-registry complete + 11 comparative basics + cross-cutting iam-security/mcp-usage/scripts + recipe-onboarding)"
+        type: mixed
+        added: "2026-05-27"
+        title: "48 additional curated sources covering 24 skills"
+
+  - id: "ai-voice-production"
+    notebook_id: "e2f862c7-d984-401c-b3c9-11c8c735668f"
+    topic: "AI Voice Production — TTS, Voice Cloning, Voice Design, Content Pipeline"
+    created: "2026-05-28"
+    status: active
+    last_queried: "2026-05-28"
+    source_count: 26
+    notes: "Capability pack research. 26 sources: 12 TTS tool repos (VoxCPM2, Bark, Kokoro, F5-TTS, Parler-TTS, Piper, Coqui, Fish Speech, ChatTTS, MeloTTS, OpenVoice, GPT-SoVITS) + MLX-Audio + Chatterbox-TTS-Server + Qwen3-TTS Mac report + ebook2audiobook + 5 comparison articles. 5 ask rounds: Apple Silicon compat, long-form production, quality metrics, tool selection decision tree, failure modes. Pack built: .claude/skills/ai-voice-production/"
+    sources:
+      - url: "https://github.com/OpenBMB/VoxCPM"
+        type: web
+        added: "2026-05-28"
+        title: "VoxCPM2 (20.1K stars, Apache-2.0, 2B params, 30 languages)"
+      - url: "https://github.com/Blaizzy/mlx-audio"
+        type: web
+        added: "2026-05-28"
+        title: "MLX-Audio (Apple Silicon native TTS/STT/STS)"
+      - url: "https://github.com/devnen/Chatterbox-TTS-Server"
+        type: web
+        added: "2026-05-28"
+        title: "Chatterbox-TTS-Server (beat ElevenLabs 65.3%, audiobook pipeline)"
+      - url: "(23 additional sources: Bark, Kokoro, F5-TTS, Parler-TTS, Piper, Coqui TTS, Fish Speech, ChatTTS, MeloTTS, OpenVoice, GPT-SoVITS, ebook2audiobook, ffmpeg-python, Qwen3-TTS Mac report, Fish Audio blog, lilting.ch comparison, dev.to guide, BentoML survey, VoxCPM arxiv paper)"
+        type: mixed
+        added: "2026-05-28"
+        title: "23 additional tool repos + comparison articles"

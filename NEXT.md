@@ -2,6 +2,14 @@
 
 ## In Progress
 
+- [x] **video-creation Pack ViMax Upgrade** — Gate 4 PASS + ARCHIVED 2026-05-27
+  - 4 ViMax patterns + Photo-to-Beat-Sync (309 lines, ≤400 cap)
+  - Pre/post behavioral comparison: AI correctly applies montage intent + first/last frame decomposition
+  - Research notebook `79b4c4a9` (38 sources)
+  - Commit: 0cc4d8b
+  - gate4_delta: 3 entries (AC grep-count + verification cmd bug + Layer 2 reviewer naming drift)
+  - Alex architecture knowledge: 2 new entries (AC cmd bug pattern, Layer 2 reviewer convention)
+
 - [x] **TAD Lifecycle Health Improvements** — Gate 4 PASS + ARCHIVED 2026-05-19
   - *accept --quick, YOLO auto-archive, zombie detection (STEP 3.5+3.55), *optimize redesign
   - Commit: 816449f
@@ -51,7 +59,7 @@
 - [ ] Test Agent Teams on next Full or Standard TAD task
 - [ ] Add Bash command deny patterns to PreToolUse hook (rm -rf, DROP TABLE etc.)
 
-## Ideas (11 active — 8 archived 2026-05-14)
+## Ideas (16 active — 8 archived 2026-05-14)
 
 Domain Pack related (input for Freeze + Rebuild):
 - [ ] IDEA-20260508-deprecate-domain-pack-yaml: Deprecate YAML format entirely
@@ -70,7 +78,33 @@ Skill ecosystem:
 - [ ] IDEA-20260407-local-skill-capture: Local skill capture mechanism
 - [ ] IDEA-20260407-cross-project-skill-harvest: Cross-project skill promotion
 
+From ECC research (2026-05-27):
+- [ ] IDEA-20260527-dream-auto-scope: Dream scanner auto-scope via git remote hash + 2-project promotion
+- [ ] IDEA-20260527-codex-adapter-yaml: Capability pack Codex YAML adapter (6-line openai.yaml)
+- [ ] IDEA-20260527-tad-methodology-skeleton: TAD universal methodology skeleton (domain-agnostic process)
+
+From OpenCode research (2026-05-28):
+- [ ] IDEA-20260528-declarative-agent-constraints: Declarative agent constraints — separate config from judgment (OpenCode pattern)
+
+From html-anything research (2026-05-27):
+- [x] IDEA-20260527-pack-behavioral-examples: Promoted → Handoff 2026-05-27
+- [ ] IDEA-20260527-agent-adapter-pattern: Unified agent detection + invocation protocol (TAD 跨 agent 运行基础设施)
+- [x] **Pack Behavioral Examples Framework** — Gate 4 PASS + ARCHIVED 2026-05-27
+  - Fixture format spec + install.sh examples/ copy + 2 video-creation dogfood fixtures
+  - Dogfood: Fixture A 9/4 markers, Fixture B 8/3 markers (raw-TSV recompute matched)
+  - Commit: 9993ce7
+
 ## Recently Completed
+
+- [x] **AI Voice Production Capability Pack** — Gate 4 PASS + ARCHIVED 2026-05-28
+  - 7 files, 966 lines (SKILL.md router + 6 references), 13 TTS tools covered
+  - Research: NotebookLM e2f862c7 (26 sources, 5 ask rounds)
+  - Expert review: 2 pre-handoff (code-reviewer + backend-architect, 6 P0 fixed) + 3 post-impl (Blake Layer 2)
+  - Commit: c119d1f
+  - Reference-based pack: SKILL.md + 6 references (966 lines total)
+  - 13 TTS tools (9 Tier A benchmarked + 7 Tier B notable), 26 NotebookLM sources
+  - 3 P0 fixed (fabricated durations, non-research terminology, missing research tools)
+  - Awaiting Alex Gate 4
 
 - [x] **Research Adversarial Challenge Layer** — Gate 4 PASS 2026-05-14, commit 8ea1eed
   - 3 challenge points (0c plan / 4c findings / 5b actions) with Codex+Gemini dual-model review
