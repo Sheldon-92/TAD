@@ -155,6 +155,22 @@ install_claude_code() {
     echo "✅  references/${filename}"
   done
 
+  # Copy all examples (behavioral eval fixtures)
+  if [[ -d "${SCRIPT_DIR}/examples" ]]; then
+    mkdir -p "${TARGET_DIR}/examples"
+    local found_examples=0
+    for ex_file in "${SCRIPT_DIR}/examples/"*.md; do
+      [[ -f "$ex_file" ]] || continue
+      filename="$(basename "$ex_file")"
+      cp "$ex_file" "${TARGET_DIR}/examples/${filename}"
+      echo "✅  examples/${filename}"
+      found_examples=1
+    done
+    if [[ "$found_examples" -eq 0 ]]; then
+      echo "ℹ️   examples/: directory exists but contains no .md files"
+    fi
+  fi
+
   echo ""
   echo "✅ ${PACK_NAME} v${PACK_VERSION} installed to: ${TARGET_DIR}"
   echo ""
