@@ -35,6 +35,7 @@ Verify: `python3 --version && ffmpeg -version`
 | clone voice, reference audio, sound like, voice design | `references/voice-cloning.md` |
 | audiobook, long-form, chapter, ACX, Audible, 有声书 | `references/audiobook-pipeline.md` |
 | narration, dubbing, podcast, blog voice, 配音, short-form | `references/narration-dubbing.md` |
+| ChatTTS, 自然语音, emotion control, 情绪, 对话, dialogue, speaker | `references/chattts-workflow.md` |
 | license, commercial, legal, watermark, open source | `references/licensing-safety.md` |
 
 **Multi-signal**: Load all matched references. Cross-reference links are provided within files.
@@ -90,6 +91,11 @@ Read matched reference(s) and apply rules directly. Rules are concrete parameter
 - **Blog Narration**: single voice, quick turnaround → §Blog Narration
 - **Video Dubbing**: emotion matching, multilingual → §Video Dubbing
 - **Mixed Language**: Chinese/English strategy → §Mixed Language Strategy
+
+### ChatTTS Workflow (`references/chattts-workflow.md`)
+- **Voice Persistence**: save/load `.pt` files for cross-session consistency → §创建并保存声音身份
+- **Emotion Control**: oral/laugh/break parameters + scene presets → §情绪参数体系
+- **Dual Speaker**: two `.pt` files + shared seed for dialogue → §双人对话工作流
 
 ### Licensing & Safety (`references/licensing-safety.md`)
 - **GREEN/YELLOW/RED**: per-tool commercial safety classification → §License Tiers
