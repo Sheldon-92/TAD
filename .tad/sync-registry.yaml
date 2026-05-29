@@ -80,3 +80,8 @@ projects:
     claude_md_strategy: "overwrite"
     last_synced_version: "2.18.0"
     last_synced_date: "2026-05-28"
+  - path: "/Users/sheldonzhao/Downloads/Colin声音项目"
+    name: "Colin声音项目"
+    claude_md_strategy: "overwrite"
+    last_synced_version: "2.18.0"
+    last_synced_date: "2026-05-28"
