@@ -2475,6 +2475,7 @@ socratic_inquiry_protocol:
         - "有什么技术限制需要考虑？"
         - "需要兼容什么现有系统？"
         - "性能要求是什么？"
+        - "如果本地硬件不够（GPU/内存/存储），是否考虑过云计算资源（Colab/Kaggle 免费 GPU，RunPod/Vast.ai 付费 GPU）？"
 
   # 执行流程
   execution:

@@ -56,6 +56,7 @@ Verify: `python3 --version && ffmpeg -version`
 - Apple Silicon Mac → ALSO load `apple-silicon.md`
 - NVIDIA GPU → proceed with tool default configs
 - CPU only → check MeloTTS or Piper in `tool-landscape.md`
+- No local GPU / insufficient VRAM → suggest cloud GPU (Colab free T4 / Kaggle free P100 / RunPod paid). Primary use case: training and fine-tuning; inference can often stay local.
 
 **Q3 — Commercial use?**
 - Yes → ALSO load `licensing-safety.md`
