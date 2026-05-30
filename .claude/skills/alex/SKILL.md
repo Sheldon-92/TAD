@@ -5702,11 +5702,14 @@ sync_protocol:
         b. Framework files — copy from TAD source (mirror tad.sh copy_framework_files):
            Top-level .tad/ config & metadata:
            - .tad/*.yaml, .tad/*.md, .tad/*.txt (all top-level files)
+           # SYNC-MIRROR: must match tad.sh copy_framework_files() dir list (line 115)
            Framework subdirectories (full recursive copy):
            - .tad/agents/
            - .tad/data/
+           - .tad/domains/
            - .tad/gates/
            - .tad/guides/
+           - .tad/hooks/
            - .tad/ralph-config/
            - .tad/references/
            - .tad/schemas/
