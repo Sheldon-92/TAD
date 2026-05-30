@@ -1,0 +1,36 @@
+proposal_id: "PROPOSAL-20260527-002"
+created: "2026-05-27T20:55:00Z"
+status: "deferred"
+scope: "project"
+
+target:
+  file: ".tad/project-knowledge/architecture.md"
+  section: "Accumulated Learnings"
+
+change:
+  type: "add_knowledge"
+  current: "(no entry about trace coverage and zombie metric semantics)"
+  proposed: |
+    ### Trace Coverage Gap: Archive Events Not Emitted - 2026-05-27
+    - **Context**: First *optimize run after the v2.17 schema upgrade. Trace dataset = 1472 events / 28 days.
+    - **Discovery**: *optimize zombie-rate metric (handoff_created without completion event) reported 43.1%. Cross-checking against filesystem revealed 0 true zombies in active/, 38 events lost to "archived without trace emission", 6 orphans (deleted/renamed without *cancel). The 43% number is overwhelmingly trace-coverage gap, not real abandonment.
+    - **Action**: (1) When interpreting *optimize zombie rate, always cross-check against filesystem state (.tad/active/handoffs/ vs .tad/archive/handoffs/) before drawing conclusions. (2) PROPOSAL-20260527-001 (framework) will add handoff_archived/handoff_cancelled trace events so future *optimize runs get the real signal. (3) Zombie rate is a noisy metric until proposal 001 lands — use raw active/handoffs/ count instead.
+    - **Grounded in**: .tad/evidence/traces/, .tad/archive/handoffs/, .tad/evidence/proposals/PROPOSAL-20260527-001.yaml
+
+evidence:
+  trace_count: 1472
+  failure_pattern: "zombie metric semantic mismatch with reality"
+  trace_refs:
+    - "28 trace files 2026-04-03 to 2026-05-27"
+  confidence: 0.98
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

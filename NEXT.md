@@ -2,6 +2,23 @@
 
 ## In Progress
 
+- [x] **Fix v2 Trace Instrumentation** — Gate 4 PASS + ARCHIVED 2026-05-30
+  - Gate 4: raw-recompute verified AC8 (real gate_result event), Layer 2 audit 3 reviewers, dream-scanner exit 0
+  - gate4_delta: 1 (expert_finding parser self-triggered on review prose → false P0); Alex KA: dead-code-audit=validation-theater
+  - Observational emission: hook parses HANDOFF §11 / COMPLETION gate3_verdict marker / Reflexion blocks / review files
+  - FR1-6 + NFR1-4 + P1 fix (detail=full); hook never fail-closed (fault-injection verified)
+  - Layer 2: code-reviewer + backend-architect (P1 resolved) + test-runner (PASS)
+  - **AC8 dogfood**: first non-synthetic gate_result event emitted into real trace
+  - Commit: b0e1c78
+  - ⏭️ After Gate 4: run *evolve — it now has real decision-level data for the first time
+  - Follow-up (out-of-scope): tighten expert_finding count to heading-only; dream-scanner try/catch hardening
+
+- [x] **Fix *sync Directory List** — Gate 3 PASS 2026-05-30 (awaiting Alex Gate 4)
+  - Added .tad/domains/ + .tad/hooks/ to alex/SKILL.md sync list (12 → 14 entries, mirrors tad.sh:115)
+  - SYNC-MIRROR drift-prevention comment added
+  - Commit: d94e956
+  - ⏭️ After Gate 4: Alex runs *sync to push V2 trace hooks to 16 projects (6 stuck on V1)
+
 - [x] **video-creation Pack ViMax Upgrade** — Gate 4 PASS + ARCHIVED 2026-05-27
   - 4 ViMax patterns + Photo-to-Beat-Sync (309 lines, ≤400 cap)
   - Pre/post behavioral comparison: AI correctly applies montage intent + first/last frame decomposition

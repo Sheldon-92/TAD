@@ -1,0 +1,47 @@
+proposal_id: "PROPOSAL-20260527-001"
+created: "2026-05-27T20:55:00Z"
+status: "deferred"
+scope: "framework"
+
+target:
+  file: ".claude/skills/alex/SKILL.md"
+  capability: "accept_command"
+  section: "steps.step1 + steps.step2 (archive moves) + step4 (NEXT.md update)"
+
+change:
+  type: "add_step"
+  current: |
+    *accept 当前 step1+step2 仅 `mv` 文件到 archive 但不发 trace 事件。
+    *cancel step4 同样仅 mv 不发 trace。
+    结果：trace 数据中 0 个 handoff_archived/handoff_accepted 事件（n=0）。
+    *optimize 把 38 个真实归档的 handoff 误识为 zombie（zombie rate 从真实 0% 虚高到 43%）。
+  proposed: |
+    在 *accept step2 之后（archive 移动成功后）emit 一个 trace 事件：
+      bash .tad/hooks/lib/trace-step.sh emit handoff_archived <slug> "alex_accept"
+    在 *cancel step4 之后 emit:
+      bash .tad/hooks/lib/trace-step.sh emit handoff_cancelled <slug> "<cancel_reason>"
+    这两个事件 + 现有 task_completed 共同构成完成信号集。
+    *optimize step2.2 zombie rate 改为：handoff_slugs - (completed_slugs ∪ archived_slugs ∪ cancelled_slugs)
+  diff: |
+    - 0 handoff_archived events in trace data
+    + emit handoff_archived after each *accept step2
+    + emit handoff_cancelled after each *cancel step4
+    + update *optimize zombie rate computation to include all 3 completion signals
+
+evidence:
+  trace_count: 44
+  failure_pattern: "44 handoff_created slugs lack any 'completion' trace event despite 38 being physically archived. 0 handoff_archived events emitted across 56 days of trace data."
+  trace_refs:
+    - ".tad/evidence/traces/2026-04-03 to 2026-05-27 (all 28 files)"
+  confidence: 0.95
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

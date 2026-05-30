@@ -1,0 +1,39 @@
+proposal_id: "PROPOSAL-20260527-003"
+created: "2026-05-27T20:55:00Z"
+status: "deferred"
+scope: "project"
+
+target:
+  file: ".tad/project-knowledge/code-quality.md"
+  section: "Recurring failure: tsc missing type"
+
+change:
+  type: "tighten_criteria"
+  current: |
+    ### Recurring failure: tsc missing type — 2026-05-19
+    - **Context**: Detected by dream-scanner from v2 trace analysis. Pattern 'tsc: missing type' appeared in ≥2 reflexion_diagnosis events across TAD handoff cycles.
+  proposed: |
+    ### Recurring failure: tsc missing type — 2026-05-19
+    - **Context**: Detected by dream-scanner from v2 trace analysis. Pattern 'tsc: missing type' appeared in ≥2 reflexion_diagnosis events across TAD handoff cycles.
+    - **Revalidated**: 2026-05-27 (confirmed by 3 reflexion_diagnosis events: 1× "tsc: 3 errors", 2× "tsc: missing type", all from Blake Layer 1 failures)
+  diff: |
+    + **Revalidated**: 2026-05-27 (confirmed by 3 reflexion_diagnosis events: 1× "tsc: 3 errors", 2× "tsc: missing type", all from Blake Layer 1 failures)
+
+evidence:
+  trace_count: 3
+  failure_pattern: "All 3 reflexion_diagnosis events in trace data are tsc-related — validates existing knowledge entry"
+  trace_refs:
+    - ".tad/evidence/traces/2026-05-19.jsonl (2 events)"
+    - ".tad/evidence/traces/ earlier date (1 event)"
+  confidence: 0.99
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

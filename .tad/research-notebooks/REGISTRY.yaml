@@ -517,3 +517,12 @@ notebooks:
         type: mixed
         added: "2026-05-28"
         title: "23 additional tool repos + comparison articles"
+
+  - id: "ml-training-research"
+    notebook_id: "36711adf-3587-48ed-bfe6-98b2555dbe30"
+    topic: "ML Training on Cloud GPU — LoRA Fine-Tune + Platform Selection + Human-AI Collaboration"
+    created: "2026-05-29"
+    status: active
+    last_queried: "2026-05-29"
+    source_count: 14
+    notes: "Phase 1 research for EPIC-20260529-ml-training-pack. 14 curated sources (6 GitHub repos + 4 platform docs + 4 research articles). 4 rounds deep ask completed. Covers: platform gotchas, tool benchmarks, voice vs LLM fine-tune differences, decision framework, cost estimation."
