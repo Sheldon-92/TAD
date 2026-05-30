@@ -1,3 +1,11 @@
+---
+# gate3_verdict: filled by Blake as a Gate 3 POST-STEP (value ∈ pass|fail|partial).
+# ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 runs.
+# Empty / placeholder / any other value → post-write-sync.sh skips emission (FR2b timing).
+# See blake SKILL completion_protocol.step4b_gate3_verdict_marker.
+gate3_verdict:
+---
+
 # Implementation Completion Report
 
 **From:** Blake (Agent B - Execution Master)
@@ -57,6 +65,26 @@
 **如果 PARTIAL PASS 或 FAIL，说明**:
 - [未完成项1]
 - [未完成项2]
+
+---
+
+## Reflexion History
+
+<!-- FR5: post-write-sync.sh parses each block below into a reflexion_diagnosis trace event
+     (deduped per slug + what_failed). Keep the four field names EXACT. If Layer 1 passed on
+     the first iteration with no failures, state that explicitly and leave no field lines. -->
+
+无 reflexion（Layer 1 一次通过）。
+
+<!-- If reflexions occurred, replace the line above with one block per reflexion. Each block
+     is four lines using these exact colon-terminated labels (in this order): the failed check,
+     the root cause hypothesis, the revised approach, and the confidence (low / medium / high).
+     The parser skips this comment, so the literal field names are documented in blake SKILL
+     completion_protocol.step5b_reflexion_history rather than shown here (to avoid the parser
+     ever reading an example as a real block). -->
+<!-- EXAMPLE (not parsed — inside this comment):
+       Failed-check line, then root-cause line, then revised-approach line, then confidence line. -->
+
 
 ---
 

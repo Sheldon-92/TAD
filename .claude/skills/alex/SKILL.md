@@ -4879,11 +4879,16 @@ optimize_protocol:
         # --- V2 Metrics (require schema_version="2.0" events) ---
         # Skip this section entirely if v2 count == 0 (per step1 line 9)
 
-        6. Gate pass rate (from gate_result events):
+        6. Gate pass rate (from gate_result events; outcome read from TOP-LEVEL .outcome field):
            - Group by gate number (extract from context field, e.g., "Gate 3:")
            - Per gate: pass_count / total_count
-           - Output: "Gate pass rates: Gate 2: {N}%, Gate 3: {N}%, Gate 4: {N}%"
-           - Flag: any gate < 80% → "⚠️ Gate {N} pass rate is {rate}% — review criteria"
+           - ⚠️ N=0 skip guard (FR6): SKIP any gate whose total_count == 0 — do NOT print it
+             and do NOT flag it. The observational instrumentation MVP emits ONLY Gate 3, so
+             Gate 2 / Gate 4 legitimately have zero events; printing "Gate 2 pass rate 0% ⚠️"
+             would be a false alarm, not a real failure.
+           - Output ONLY gates with total_count > 0, e.g.: "Gate pass rates: Gate 3: {N}%"
+           - Append the note: "(gate pass rate currently reflects Gate 3 only — Gate 2/4 not yet instrumented)"
+           - Flag: any gate with total_count > 0 AND < 80% → "⚠️ Gate {N} pass rate is {rate}% — review criteria"
 
         7. Reflexion efficiency (from reflexion_diagnosis events):
            - Total reflexion events
@@ -4904,7 +4909,12 @@ optimize_protocol:
 
         9. Expert review density (from expert_review_finding events):
            - Group by slug
-           - Count P0 findings per slug (outcome=P0 in context)
+           - Emission contract (FR3/FR6): each event carries the priority in the TOP-LEVEL
+             .outcome field (e.g., outcome="P0") and the finding count in .context
+             (e.g., "2 P0 findings"). To total P0s per slug, select events with .outcome=="P0"
+             and sum the leading integer parsed from .context (`grep -oE '^[0-9]+'`-style),
+             NOT a per-event count of 1. (Earlier wording conflated the two fields — the
+             priority lives at top-level .outcome; only the numeric count lives in .context.)
            - Output: "Expert P0 density: median {N}, max {N} per handoff"
            - Flag: any slug with >5 P0s → "⚠️ {slug} had {N} P0s — design quality concern"
 

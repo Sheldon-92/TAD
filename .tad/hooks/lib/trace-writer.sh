@@ -29,7 +29,11 @@ trace_decision_point() {
   else
     ctx="decision=${decision}|chosen=${chosen}|rationale=${rationale}"
   fi
-  TRACE_CONTEXT="$ctx" TRACE_OUTCOME="$chosen" TRACE_ACTOR="$actor" \
+  # TRACE_DETAIL=full: context is a JSON object; outcome (=chosen) is NOT fail/error so
+  # record_trace would NOT auto-escalate, leaving the 200-char summary budget. That can
+  # slice the JSON mid-string → fromjson errors in dream-scanner Pass C / analyzer step8.
+  # full gives the 2048 budget; callers cap each field ≤200 so assembled JSON stays well under.
+  TRACE_CONTEXT="$ctx" TRACE_OUTCOME="$chosen" TRACE_ACTOR="$actor" TRACE_DETAIL="full" \
     TRACE_SLUG="$slug" \
     record_trace "decision_point"
 }
@@ -62,7 +66,9 @@ trace_reflexion_diagnosis() {
   else
     ctx="what_failed=${what_failed}|root_cause_hypothesis=${hypothesis}|revised_approach=${approach}|confidence=${confidence}"
   fi
-  TRACE_CONTEXT="$ctx" TRACE_OUTCOME="fail" TRACE_ACTOR="agent_inferred" \
+  # outcome=fail already auto-escalates record_trace to full/2048; TRACE_DETAIL=full is set
+  # explicitly so the JSON-context 2048 budget survives even if outcome ever changes.
+  TRACE_CONTEXT="$ctx" TRACE_OUTCOME="fail" TRACE_ACTOR="agent_inferred" TRACE_DETAIL="full" \
     TRACE_SLUG="$slug" TRACE_AGENT="blake" \
     record_trace "reflexion_diagnosis"
 }

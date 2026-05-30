@@ -1306,12 +1306,13 @@ execution_checklist:
            - root_cause_hypothesis: "{why this happened — not the error message, the CAUSE}"
            - revised_approach: "{what to do differently — not just 'fix the error'}"
            - confidence: "low | medium | high"
-        3. Write reflexion_diagnosis trace event:
-           source .tad/hooks/lib/trace-writer.sh
-           trace_reflexion_diagnosis "{what_failed}" "{root_cause_hypothesis}" \
-             "{revised_approach}" "{confidence}" "{slug}"
-        4. Append diagnosis to conversation context (reflection_history accumulates)
-        5. NOW proceed with fix, guided by revised_approach
+        3. Record the diagnosis in conversation context (reflection_history accumulates).
+           ⚠️ Do NOT call any trace helper directly here. Imperative emission is unreliable
+           (historically fired once in 328 events). The diagnosis is emitted OBSERVATIONALLY:
+           at completion time you write each reflection as a block under the COMPLETION
+           report's `## Reflexion History` section, and post-write-sync.sh parses those
+           blocks into reflexion_diagnosis trace events (deduped per slug + what_failed).
+        4. NOW proceed with fix, guided by revised_approach
 
       on_success_path: "Skip entirely — no reflection when Layer 1 passes"
 
@@ -1505,7 +1506,38 @@ completion_protocol:
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
   step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01) + Slug Contract (layer2-audit 2026-04-15): BEFORE git add, run `ls -la` on every path listed in handoff's Required Evidence Manifest §1.4 — if any required file is missing, ABORT commit and escalate. **SLUG CONTRACT (MANDATORY)**: Blake MUST write reviewer artifacts to `.tad/evidence/reviews/blake/<slug-from-handoff-filename>/` where `<slug-from-handoff-filename>` is the EXACT string captured by regex `^(HANDOFF|COMPLETION)-\\d{8}-(.+)\\.md$` group $2 — no abbreviation, no case change, no suffix. Alex `acceptance_protocol.step4c` runs layer2-audit.sh against this exact slug; a mismatch → 红字警告 in verdict. Then: git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
-  step5: "创建 completion-report.md"
+  step4b_gate3_verdict_marker:
+    name: "Write gate3_verdict frontmatter marker (Gate 3 POST-STEP — observational trace)"
+    blocking: false
+    trigger: "AFTER Gate 3 produces its verdict (PASS/PARTIAL/FAIL) — NOT at initial COMPLETION write"
+    action: |
+      ⚠️ TIMING CONTRACT (FR2b): *complete writes the COMPLETION report BEFORE /gate 3 runs,
+      so the verdict does not exist yet at creation time. Blake MUST therefore Edit the
+      COMPLETION-*.md frontmatter as a Gate 3 POST-STEP (after the verdict is known) to set:
+          gate3_verdict: <pass|fail|partial>
+      Map Gate 3 v2 result → marker value: ✅ PASS→pass, ⚠️ PARTIAL→partial, ❌ FAIL→fail.
+      Do NOT guess-fill at creation (an unverified placeholder would emit a false event).
+      This Edit re-triggers post-write-sync.sh's COMPLETION arm, which parses the marker and
+      emits the gate_result trace event (timing correct: verdict already known). The hook
+      dedups task_completed (already emitted at creation) and emits gate_result once per
+      (slug, day), updating only if the verdict value changes.
+    note: "This is the agent-written stable marker the hook consumes. The hook NEVER parses COMPLETION prose for gate verdicts (prose is fragile + collides with template menu lines)."
+  step5: "创建 completion-report.md（必须含 `## Reflexion History` 小节 + frontmatter `gate3_verdict:` 占位字段）"
+  step5b_reflexion_history:
+    name: "Write ## Reflexion History section (FR5 — observational reflexion emission)"
+    blocking: false
+    action: |
+      The COMPLETION report MUST contain a `## Reflexion History` section.
+      - If Layer 1 passed with zero failed iterations → write the section with an explicit
+        "无 reflexion（Layer 1 一次通过）" note (no field lines → hook emits nothing).
+      - For EACH Layer 1 reflexion that occurred during this handoff, write one block with
+        these four field lines (the hook parses these literally — keep the field names exact):
+            - what_failed: <check>: <error summary>
+            - root_cause_hypothesis: <cause, not the error text>
+            - revised_approach: <what you did differently>
+            - confidence: <low|medium|high>
+      post-write-sync.sh parses each block into a reflexion_diagnosis trace event, deduped
+      per (slug, what_failed, day). This REPLACES the deleted imperative trace call (FR5).
   step_session_state_complete:
     name: "Update session-state.md Status to COMPLETE"
     action: |
