@@ -23,6 +23,16 @@ DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 BACKUP_PATH=""
 DETECTED_PLATFORMS=""
 
+# Argument parsing — --yes/-y skips the interactive confirmation prompt (non-TTY:
+# Claude Code Bash, CI, curl|bash). "$@" is set -u-safe even with zero args.
+AUTO_YES=0
+for arg in "$@"; do
+  case "$arg" in
+    --yes|-y)  AUTO_YES=1 ;;
+    --help|-h) echo "Usage: tad.sh [--yes|-y]  (--yes skips the interactive confirmation prompt)"; exit 0 ;;
+  esac
+done
+
 # ============================================
 # Logging Functions
 # ============================================
@@ -423,10 +433,18 @@ main() {
     esac
 
     echo ""
-    read -p "Continue? (y/n): " -n 1 -r < /dev/tty
-    echo ""
+    if [ "$AUTO_YES" = "1" ]; then
+        REPLY="y"
+        echo "Continue? (y/n): y  [--yes]"
+    else
+        # EOF guard: a non-TTY run WITHOUT --yes degrades to clean "Cancelled."
+        # instead of a set -e opaque abort when /dev/tty is unavailable.
+        read -p "Continue? (y/n): " -n 1 -r < /dev/tty || REPLY=""
+        echo ""
+    fi
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    # ${REPLY:-} is set -u-safe on BOTH paths regardless of branch assignment.
+    if [[ ! ${REPLY:-} =~ ^[Yy]$ ]]; then
         echo "Cancelled."
         exit 0
     fi

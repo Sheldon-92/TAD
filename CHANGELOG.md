@@ -5,6 +5,12 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.19.1] - 2026-05-30
+
+### Bug Fixes
+
+- **`tad.sh --yes` / `-y` non-interactive flag** — `tad.sh` had an interactive `read -p "Continue? (y/n)" < /dev/tty` (line 426) that blocked in non-TTY contexts (Claude Code Bash, CI, `curl … | bash`), making non-interactive `*sync` and `curl | bash` installs impossible. Added `--yes`/`-y` argument parsing that skips the confirmation prompt. Also hardened the cancel check to be `set -u`-safe on all paths (`${REPLY:-}`) and added an EOF guard (`read … || REPLY=""`) so a non-TTY run *without* `--yes` degrades to a clean "Cancelled." instead of an opaque `set -e` abort. Resolves the project-knowledge "Never Hand-Write What An Existing Tool Already Does" recommendation — non-interactive installs now run via `curl … | bash -s -- --yes`.
+
 ## [2.19.0] - 2026-05-30
 
 ### New Features — Observational Trace Instrumentation + ML Pack

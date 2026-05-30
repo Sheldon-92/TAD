@@ -1,6 +1,6 @@
-# TAD Configuration v2.19.0 - Observational Trace Instrumentation + ML Pack
+# TAD Configuration v2.19.1 - Observational Trace Instrumentation + ML Pack
 method: TAD
-version: 2.19.0
+version: 2.19.1
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 15 Capability Packs + Cross-Platform Portable
 last_updated: 2026-05-30
 
