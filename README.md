@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.18.0 - Academic Research + Voice Production Packs**
+**Version 2.19.0 - Observational Trace Instrumentation + ML Pack**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -131,7 +131,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.18.0 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.19.0 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -351,6 +351,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.19.0** | **Observational Trace Instrumentation + ML Pack — (1) v2 observational trace emission: gate_result/expert_review_finding/decision_point/reflexion_diagnosis now fire by PARSING agent-written artifacts (COMPLETION gate3_verdict marker, HANDOFF §11 decision table, review files) instead of unreliable imperative helper calls (1/328 fire rate); handoff_created 6x over-fire fixed; analyzer schema fix + N=0 gate skip guard — self-evolution data layer now functional. (2) *sync directory-list fix: added .tad/domains/ + .tad/hooks/ to sync list (mirrors tad.sh). (3) ML Training capability pack (reference-based, cloud-GPU training judgment). (4) Cloud compute resource awareness in Socratic inquiry. Hooks never fail-closed; no trace schema change.** |
 | **v2.14.1** | **Research Adversarial Challenge — Codex+Gemini 双模型 adversarial review 内置研究 pipeline (3 挑战点: Phase 0c 计划/4c 结论/5b 行动); 5 维度挑战 (证据充分性/角度完整性/假设可靠性/因果推理/决策支撑力); 双模型 ADEQUATE+ 通过条件; max 2 轮循环; CHALLENGE_INSTRUCTION 对称常量; fail-closed rating extraction; 清理 1 Epic + 8 Ideas** |
 | **v2.14.0** | **YOLO Mode + LSP Code Understanding — (1) YOLO Mode: Alex 可自动驱动 Blake sub-agent 执行多 Phase Epic (step7_execution_mode + yolo_execution_protocol Y1-Y8); 增强 Epic 模板 (Phase Detail Block: Scope/Input/Output/AC/Files); audit-yolo.sh 4-dimension 审计 (产物链/内容真实性/代码验证/时序); dogfood 验证 39/39 PASS. (2) LSP Code Understanding: Claude Code 原生 LSP tool 集成; Alex step1c_lsp + Blake 1_5d_lsp_blast_radius; 12-language auto-provision** |
 | **v2.13.0** | **STORM + Elicit + Auto Source + Adaptive Seed — 4 research methodology upgrades: STORM multi-perspective questioning (strategy #4 in step3_5, OBJECTIVES.md-derived stakeholder perspectives); Elicit structured paper extraction (Phase 4.5, academic sources only); Auto Source Discovery (WebSearch + quality-probed add when internal gap enrichment fails, max 3 URLs); Adaptive Research Plan (dynamic seed generation, max 2 user-confirmed seeds); bilibili-handler 4-phase fallback (CC→B站API→yt-dlp→Jina)** |
@@ -449,6 +450,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.18.0 - Academic Research + Voice Production Packs
+**Welcome to TAD v2.19.0 - Observational Trace Instrumentation + ML Pack
 
 *AI does the work. Humans guard the value.*

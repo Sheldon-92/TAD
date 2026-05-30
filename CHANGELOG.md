@@ -5,6 +5,30 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.19.0] - 2026-05-30
+
+### New Features — Observational Trace Instrumentation + ML Pack
+
+- **v2 Observational Trace Instrumentation** — the self-evolution data layer is now functional.
+  - Decision-level trace events (`gate_result`, `expert_review_finding`, `decision_point`, `reflexion_diagnosis`) now fire **observationally** — the `post-write-sync.sh` hook parses agent-written artifacts (COMPLETION `gate3_verdict:` frontmatter marker, HANDOFF §11 Decision Summary table, `## Reflexion History` blocks, `reviews/blake/<slug>/*.md` files) — instead of relying on imperative helper calls (which fired only 1 time in 328 events).
+  - Fixed `handoff_created` 6× over-fire via per-(slug, day) dedup; `gate_result` re-emits only on verdict change.
+  - Analyzer fixes: `*optimize`/`*evolve` expert-density schema correction (priority at top-level `.outcome`, count in `.context`) + N=0 gate-pass-rate skip guard (prevents false "Gate 2 0%" alarms when only Gate 3 is instrumented).
+  - Removed the unreliable imperative `trace_reflexion_diagnosis` call from Blake's reflexion step; reflexions are now emitted from the COMPLETION report.
+  - Hook **never fail-closed** (all parse paths tolerate malformed input); no trace schema change; JSON-object contexts use full detail to avoid truncation.
+
+### Bug Fixes
+
+- **`*sync` directory-list drift** — added `.tad/domains/` and `.tad/hooks/` to the `sync_protocol` Framework-subdirectories list in `alex/SKILL.md` (12 → 14 entries, now mirrors `tad.sh:115`). Fixes downstream projects retaining V1 trace hooks. Added a `SYNC-MIRROR` drift-prevention comment.
+- **`tad.sh` version drift** — `TARGET_VERSION` was stale at `2.15` (3 minor versions behind); bumped to `2.19`.
+
+### New Capability Pack
+
+- **ML Training capability pack** (reference-based) — cloud-GPU training judgment rules, companion to the AI voice production pack.
+
+### Documentation
+
+- **Cloud compute resource awareness** embedded into Socratic inquiry and 2 other files — "hardware limitation ≠ infeasibility"; free/paid cloud GPU tiers as a resource-allocation option for ML-adjacent tasks.
+
 ## [2.18.0] - 2026-05-28
 
 ### New Features — Academic Research + Voice Production Packs
