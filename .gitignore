@@ -9,6 +9,13 @@
 # Local settings
 .claude/settings.local.json
 
+# Claude Code local session/memory + sub-agent worktree artifacts (not source)
+.claude/projects/
+.claude/worktrees/
+
+# Timestamped backup snapshots (local only — not source)
+.tad.backup.*/
+
 # Dependencies
 node_modules/
 
