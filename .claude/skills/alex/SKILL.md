@@ -2736,7 +2736,8 @@ research_decision_protocol:
       # Session-memory set (conversation-scoped, lives for this *discuss→*analyze session):
       #   declined_research_domains = {}   # domains the user already declined to research
       # This set is SHARED with STEP 3.8 and research_notebook_awareness (both append on
-      # decline), so the four nudge sites never double-prompt the same domain in one session.
+      # decline); the gate reads it. So the three nudge writers never double-prompt the same
+      # domain in one *discuss→*analyze session via the backed declined-list.
 
       For EACH identified decision, apply the DEFAULT-SAFE decidability test:
         Q: "Is this decision decidable from the repo + requirements alone?"
@@ -2751,14 +2752,17 @@ research_decision_protocol:
 
       For each ELIGIBLE decision, before suggesting research, run the de-dup check:
         1. Is this decision's domain already in `declined_research_domains`? → if yes, skip (stay silent).
-        2. Did STEP 3.8 (objective-alignment scan) or research_notebook_awareness already
-           surface a notebook-gap for this domain THIS session? → if yes, skip (do not re-nag).
-        3. Does a relevant notebook already exist? REUSE step2_5_notebook_check's REGISTRY
-           lookup result (do NOT run a second independent REGISTRY scan) → if a matching
-           active notebook exists, skip (research already available).
+           (This is the backed dedup: STEP 3.8 + research_notebook_awareness both append to this
+           same set on decline, so a domain the user already passed on this session is not re-asked.)
+        2. Does a relevant notebook already exist? Run a lightweight REGISTRY existence read here
+           (gate runs at step1-tail, BEFORE step2_5_notebook_check, so step2_5's result does not
+           exist yet — do the cheap read now, using the SAME semantic-match criterion step2_5 uses
+           so the two stay consistent). If a matching active notebook exists → skip (research already
+           available). NOTE: step2_5 will re-confirm later with the identical criterion; the two are
+           intentionally consistent, not divergent scans.
 
-      If a decision is ELIGIBLE AND not de-duped (no declined-domain match, no prior
-      same-session surface, no existing notebook) → AskUserQuestion (suggestion only):
+      If a decision is ELIGIBLE AND not de-duped (no declined-domain match, no existing
+      notebook) → AskUserQuestion (suggestion only):
         "决策 '{decision}' 依赖外部信息，当前没有相关 notebook。要先研究吗？"
         Options:
           - "创建 notebook + *research-plan (Recommended)" → enter research_plan_protocol / *research-notebook create
