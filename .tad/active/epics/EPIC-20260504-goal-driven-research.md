@@ -38,7 +38,7 @@
 | 3 | Research-Decision Loop | ⬚ Planned | — | 研究→决策追踪 + 决策→行动→结果反哺 + `--caller` flag |
 | 4 | Wire Engine + Lifecycle + Dogfood | ✅ Done | HANDOFF-20260531-research-engine-wire-phase4.md | effort-scaling 触发 + dormant hook + 空壳归档 + dogfood: seed_origin 0→2 + 对抗 challenge 自动触发(DR-20260531) — 引擎插电成功 (commit 92bbfc3+merge 4c84b09) |
 | 5 | Breadth + Quality Gate | ✅ Done | — | persona 视角种子化 + 5 维 LLM-judge 鲁棒(复用 Codex+Gemini, advisory) |
-| 6 | Adoption + Sync Rollout | ⬚ Planned | — | 强化 *analyze research-gate(对的时刻触发) + *sync 推 14 下游项目 |
+| 6 | Adoption + Sync Rollout | 🔄 Active | — | 强化 *analyze research-gate(对的时刻触发) + *sync 推 14 下游项目 |
 
 ### Phase Dependencies
 Phase 0 独立（解决基础设施问题）。Phase 1→2→3 顺序依赖。
