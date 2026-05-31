@@ -2,12 +2,12 @@
 
 ## In Progress
 
-- [ ] **Debt Bundle 1/2: Release Hygiene + Conventions** — Handoff ready for Blake (Gate 2 PASS 2026-05-31)
-  - HANDOFF-20260531-release-hygiene-conventions.md: doc-drift→2.19.1 (preserve history) + tad.sh 3-part + `*)` arm + runbook codex-greeting rows + express-slug convention
-  - Expert review: code-reviewer + backend-architect; P0 fixed (version-scheme rationale was wrong consumer → detect_state line 303; +line 171 + detect_state AC)
-- [ ] **Debt Bundle 2/2: Hook Code Hardening** — Handoff ready for Blake (Gate 2 PASS 2026-05-31)
-  - HANDOFF-20260531-hook-hardening.md: dream-scanner fromjson guard(a) + classify_scope(b) + expert_finding heading-only(d)
-  - Expert review caught bug(c) dedup probe = validation theater (0/31 real values match) → DROPPED, deferred to proper semantic design
+- [x] **Debt Bundle 1/2: Release Hygiene + Conventions** — YOLO Gate 4 PASS + ARCHIVED 2026-05-31 (commit ae387ef)
+  - doc-drift→2.19.1 (README:354 history preserved) + tad.sh 3-part + `*)` arm + line 171 fallback + runbook codex-greeting rows 17/18 + express-slug convention (alex/blake SKILL)
+  - Design review: code-reviewer + backend-architect (P0: version-scheme rationale wrong consumer → detect_state line 303; fixed). Impl review (YOLO Y6): both PASS 0 P0. Gate 4 raw-recompute: AC1/AC3/AC9 verified.
+- [x] **Debt Bundle 2/2: Hook Code Hardening** — YOLO Gate 4 PASS + ARCHIVED 2026-05-31 (commit b37d41b)
+  - dream-scanner fromjson try-guard(a) + classify_scope TAD-keywords(b) + expert_finding heading-only(d). bug(c) dedup DROPPED (validation theater, 0/31 real match).
+  - Impl review: code-reviewer PASS 0 P0; backend-architect CONDITIONAL PASS 0 P0 + 1 P1 (slug substring over-classify). Gate 4: malformed→0 junk, sync→project, heading-only=1 verified.
 
 - [x] **Research Engine Upgrade (Epic goal-driven-research Phase 4+5+6A)** — Gate 4 PASS 2026-05-31
   - Triggered by *discuss audit: NotebookLM advanced flow "built-not-wired" (seed_origin 0 uses, challenge 2/25; 3/14 adoption)
@@ -35,6 +35,8 @@
   - Codex Phase 7 smoke test PASS before sync push
 
 ## Deferred (surfaced 2026-05-31 debt-bundle expert review)
+- [ ] **classify_scope word-boundary slug matching** (H2 impl review P1, backend-architect): unbounded substring globs `*hook*`/`*trace*`/`*registry*` false-classify project slugs as framework (`webhook-handler`→framework, `registry-of-products`→framework). Framework candidates fan out cross-project in *evolve. Fix = bracket-class word-boundary per architecture.md 2026-04-24 (NOT `\b`). Low risk (human_override rare + human-reviewed). decision_text guard already correct.
+- [ ] **tad.sh:165 stale comment** (H1 impl review): comment still says "MAJOR.MINOR" after 3-part switch — cosmetic, fold into next tad.sh touch.
 - [ ] **Semantic dedup for dream-scanner candidates** — grep-on-`.decision`/`.chosen` is inert (0/31 real values match; backend-architect). Needs title/discovery match or embedding-based semantic dedup. bug(c) dropped from hook-hardening handoff pending this design.
 - [ ] **detect_state glob-arm hazard (next version bump)** — tad.sh `2.1*`/`2.2*` arms (~305-313) will misclassify 3-part `2.19.x` as `v2.0` once `TARGET_VERSION` moves past 2.19.1. Next-release handoff MUST address before bumping.
 - [ ] **Express tier: durable frontmatter marker** — slug-naming convention (this cycle's fix) still false-WARNs any express handoff that forgets the name. Durable fix = `express: true` frontmatter consumed by layer2-audit (vs slug-as-proxy). backend-architect P2-1.
