@@ -17,6 +17,15 @@
 - [ ] 研究→决策追踪：每个决策可追溯到哪个 notebook/report 提供了依据
 - [ ] research-notebook SKILL 支持 `--caller` flag 实现工具层能力围栏
 
+### Phase 4-6 Success Criteria (Research Execution Quality — added 2026-05-31)
+- [ ] `*research-plan` 按复杂度自适应触发动态种子/对抗 challenge（effort-scaling 阶梯,不再默认跳过）
+- [ ] notebook 超期自动 → 💤 dormant（非阻塞状态 hook）；`ai-agent-tutorials`(1 源空壳)归档
+- [ ] dogfood 证据: 重跑 tad-evolution-research，trace 显示动态种子真触发（`seed_origin` ≥1）+ 对抗 challenge 跑了
+- [ ] persona 视角种子化: 种子问题前生成 3-4 stakeholder 视角，每视角出子问题
+- [ ] 5 维 LLM-judge 质量鲁棒（复用 Codex+Gemini）跑在 findings 上，低分警告（advisory 不阻塞）
+- [ ] *analyze research-gate 强化: "决策依赖外部信息"时主动建议研究（对的时刻触发）
+- [ ] Phase 4-6 改动经 dogfood 验证后 *sync 到 14 下游项目
+
 ---
 
 ## Phase Map
@@ -27,9 +36,15 @@
 | 1 | Business Objective Definition | ✅ Done | HANDOFF-20260504-goal-driven-phase1 | OBJECTIVES.md OKR template + Alex STEP 3.8 gap analysis + 内容副业 REGISTRY 11 notebooks + OBJECTIVES O1/O2 |
 | 2 | Autonomous Research Strategy | ✅ Done | HANDOFF-20260504-autonomous-research-phase2 | *research-plan command (5-step protocol: read→plan→confirm→execute→update OBJECTIVES). Validated: menu-snap research-plan-2026-05-04.md + 4 notebooks generated + OBJECTIVES KR research status tracked. |
 | 3 | Research-Decision Loop | ⬚ Planned | — | 研究→决策追踪 + 决策→行动→结果反哺 + `--caller` flag |
+| 4 | Wire Engine + Lifecycle + Dogfood | 🔄 Active | HANDOFF-20260531-research-engine-wire-phase4.md | 复杂度自适应触发阶梯(effort-scaling) + 非阻塞 dormant 状态 hook + 清空壳 + dogfood 重跑 tad-evolution |
+| 5 | Breadth + Quality Gate | ⬚ Planned | — | persona 视角种子化 + 5 维 LLM-judge 鲁棒(复用 Codex+Gemini, advisory) |
+| 6 | Adoption + Sync Rollout | ⬚ Planned | — | 强化 *analyze research-gate(对的时刻触发) + *sync 推 14 下游项目 |
 
 ### Phase Dependencies
 Phase 0 独立（解决基础设施问题）。Phase 1→2→3 顺序依赖。
+Phase 4→5→6 顺序依赖（先插电触发，再加广度+打分，最后推广采用）。
+Phase 4-6 与 Phase 3 无依赖（Phase 3 是 director/决策层，Phase 4-6 是 execution-quality 层）—— 可独立推进。
+执行根因（2026-05-31 *discuss 调查）: 动态种子 0 次使用、对抗 challenge 2/25 使用 —— 高级流程"造了不插电"(同 trace-instrumentation-fix paper-machine 模式)。
 
 ---
 
@@ -75,3 +90,51 @@ Phase 0 独立（解决基础设施问题）。Phase 1→2→3 顺序依赖。
 - 前置完成：EPIC-20260504-notebooklm-research-director (4/4 phases) 提供了全部工具基础
 - 本 Epic 是"战略层"，前一个 Epic 是"工具层"
 - E2E 发现的 `source list --json` 必要性、language artifact-only 限制等已记入 architecture.md
+- Phase 4-6 (2026-05-31) 来自 *discuss 研究能力评估：内部审计 + 14 项目普查 + 开源 landscape 对标。
+  外部对标证据 — TAD 已领先：持久 notebook / 跨模型对抗验证 / 源质量分层 / findings→AC。
+  TAD 缺：视角多样化(STORM persona) / effort-scaling(Anthropic) / 质量打分鲁棒(Anthropic) / CRAG 条带过滤(推后)。
+
+---
+
+## Phase Details (Phase 4-6)
+
+### Phase 4: Wire Engine + Lifecycle + Dogfood
+**Status**: 🔄 Active
+**Scope**: 让已存在但从未触发的高级研究流程真正运行。`*research-plan` 当前用 opt-in + 默认跳过门控制动态种子/对抗 challenge，导致动态种子 0 次、对抗 2/25 次使用。改为**复杂度自适应触发阶梯**（effort-scaling，借 Anthropic）：简单事实→浅单遍 / 对比性→动态种子 / 复杂 landscape→种子+对抗。同时加**非阻塞状态 hook** 让超期 notebook 自动 →💤 dormant（只改状态，不阻塞任何操作，不碰"机械强制拒用"红线），归档 `ai-agent-tutorials` 空壳。NOT in scope: persona 种子化、质量打分门（Phase 5）。
+**Input**: 现 `*research-plan` 协议（alex/SKILL.md）+ research-notebook lifecycle 规则
+**Output**: 自适应触发的 `*research-plan` + dormant hook + dogfood 证据文件
+**AC**:
+- [ ] AC4.1: `*research-plan` 含 effort-scaling 阶梯，按任务复杂度决定是否跑动态种子/对抗（不再默认跳过门）
+- [ ] AC4.2: 非阻塞 hook 把 `last_queried` 超 `dormant_after_days` 的 notebook status→dormant；REGISTRY 验证体现
+- [ ] AC4.3: `ai-agent-tutorials`(source_count 1) 归档
+- [ ] AC4.4: **dogfood** 重跑 tad-evolution-research 全流程；trace 中 `seed_origin` ≥1（动态种子真触发）+ 对抗 challenge 产物存在；产出与 2026-05-05 旧 findings 对比有提升
+**Files Likely Affected**: `.claude/skills/alex/SKILL.md`(research_plan_protocol) CREATE/MODIFY; `.claude/skills/research-notebook/SKILL.md`(lifecycle) MODIFY; `.tad/hooks/` dormant hook CREATE; `.tad/research-notebooks/REGISTRY.yaml` MODIFY
+**Dependencies**: 独立于 Phase 3；是 Phase 5 的前置
+**Execution**: pending（手动 handoff）
+
+### Phase 5: Breadth + Quality Gate
+**Status**: ⬚ Planned
+**Scope**: 在已插电的引擎上补两个真实 gap。(1) **persona 视角种子化**(借 STORM)：种子问题前生成 3-4 个 stakeholder persona（如用户/实现者/怀疑者/运维），每视角派生子问题，攻克"单一角度问题树"。(2) **5 维 LLM-judge 质量鲁棒**(借 Anthropic)：findings 产出后跑事实/引用/完整性/源质量/效率 5 维 0-1 打分，**复用现有 Codex+Gemini 对抗基建**，低分**警告不阻塞**。NOT in scope: CRAG 条带过滤、独立引用 pass、mind-map（推后）。
+**Input**: Phase 4 的自适应触发引擎
+**Output**: persona 种子化逻辑 + 5 维鲁棒打分步骤（写入 research_plan_protocol）
+**AC**:
+- [ ] AC5.1: 种子生成前产出 3-4 persona，每 persona ≥1 子问题，写入 question tree
+- [ ] AC5.2: findings 后跑 5 维鲁棒（复用 challenge 基建），输出 0-1 分 + 维度明细
+- [ ] AC5.3: 低分 advisory 警告，不阻塞 findings 进入下一步（符合单用户 CLI anti-机械强制）
+- [ ] AC5.4: 鲁棒在 ~20 个固定案例上校准（防 LLM-judge 漂移）
+**Files Likely Affected**: `.claude/skills/alex/SKILL.md`(research_plan_protocol persona + rubric) MODIFY
+**Dependencies**: 依赖 Phase 4
+**Execution**: pending
+
+### Phase 6: Adoption + Sync Rollout
+**Status**: ⬚ Planned
+**Scope**: 解决"9/14 装了不用"。验收目标是**对的时刻触发**而非使用率数字——强化 `*analyze` Socratic 阶段的 research-gate：检测到"决策依赖外部信息"时主动建议建 notebook/研究（该用的项目被提醒，不该用的不打扰）。验证后用 `*sync` 把 Phase 4-6 全部改动推到 14 下游项目。
+**Input**: Phase 4+5 验证过的引擎
+**Output**: 强化的 research-gate（alex SKILL）+ sync 完成报告（14 项目）
+**AC**:
+- [ ] AC6.1: `*analyze` Socratic/STEP 3.8 在"决策依赖外部信息"信号下主动建议研究（含明确触发条件文本）
+- [ ] AC6.2: 不该研究的任务类型（如纯配置/下载插件）不触发建议（负向测试）
+- [ ] AC6.3: `*sync` 把 research_plan_protocol + research-notebook lifecycle + dormant hook 推到 14 项目，post-flight 验证版本/文件
+**Files Likely Affected**: `.claude/skills/alex/SKILL.md`(research-gate) MODIFY; sync 机制（已存在）
+**Dependencies**: 依赖 Phase 4+5
+**Execution**: pending
