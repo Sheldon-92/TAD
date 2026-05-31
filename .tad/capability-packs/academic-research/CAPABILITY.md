@@ -10,8 +10,8 @@ keywords: ["学术", "academic", "论文", "paper", "文献", "literature", "met
 
 > Teaches AI agents HOW to do academic research — depth enforcement, citation integrity, quality scoring, and self-evaluation. Derived from ScienceClaw's 629-line SCIENCE.md protocol + ScholarEval rubric + VOYAGER-inspired Reflexion Cycle.
 >
-> **CONSUMES**: Research question + optional domain constraints (field, date range, databases).
-> **PRODUCES**: Evidence-grounded research report + methodology section + citation audit trail + Reflexion Cycle self-evaluation (for non-trivial tasks).
+**CONSUMES**: Research question + optional domain constraints (field, date range, databases).
+**PRODUCES**: Evidence-grounded research report + methodology section + citation audit trail + Reflexion Cycle self-evaluation (for non-trivial tasks).
 
 ---
 

@@ -1,0 +1,119 @@
+---
+name: ai-voice-production
+description: "AI voice production judgment for coding agents — TTS tool selection, voice cloning, audiobook/podcast/dubbing pipelines, Apple Silicon optimization, licensing safety"
+version: 0.1.0
+type: reference-based
+keywords: ["TTS", "text-to-speech", "语音合成", "voice cloning", "声音克隆", "voice design", "音色设计", "audiobook", "有声书", "podcast", "播客", "dubbing", "配音", "narration", "旁白", "audio production", "音频制作", "voice acting", "语音", "朗读", "prosody"]
+---
+
+# AI Voice Production Capability Pack
+
+> Cross-agent portable judgment for AI-assisted voice production. Covers TTS tool selection, voice cloning, long-form audiobook pipelines, narration/dubbing workflows, Apple Silicon optimization, and licensing safety.
+
+**CONSUMES**: Text manuscripts, reference audio samples (optional), brand voice guidelines (optional).
+**PRODUCES**: Production-ready audio files (WAV 48kHz preferred, 44.1kHz for ACX). Naming: `{project}/{chapter|segment}-{NNN}.wav`.
+
+> **INTERFACE**: video-creation pack defers to this pack for voice/TTS tool selection and audio quality thresholds. This pack defers to video-creation for video-specific timing (audio-to-video sync, pacing). If both packs load, this pack takes precedence for tool selection; video-creation takes precedence for visual pacing. ml-training pack provides platform selection and cost estimation for cloud GPU training. This pack defers cloud platform details to ml-training's platform-selection.md. ml-training defers voice-specific tool selection to this pack. When both packs load for voice training: ml-training takes precedence for platform/cost decisions; ai-voice-production takes precedence for tool selection and audio quality thresholds.
+
+---
+
+## Step 0: Pack Prerequisites
+
+- **Python 3.10+** — most TTS tools require it
+- **FFmpeg** — audio post-processing and mastering
+- **pip or uv** — package installation in virtual environment
+- VRAM-dependent: check `references/apple-silicon.md` for Mac users
+
+Verify: `python3 --version && ffmpeg -version`
+
+---
+
+## Step 1: Context Detection
+
+| User Signal | Load Reference |
+|---|---|
+| tool comparison, which TTS, choose engine, benchmark | `references/tool-landscape.md` |
+| Mac, Apple Silicon, MPS, M-series, VRAM, 16GB, 32GB | `references/apple-silicon.md` |
+| clone voice, reference audio, sound like, voice design | `references/voice-cloning.md` |
+| audiobook, long-form, chapter, ACX, Audible, 有声书 | `references/audiobook-pipeline.md` |
+| narration, dubbing, podcast, blog voice, 配音, short-form | `references/narration-dubbing.md` |
+| ChatTTS, 自然语音, emotion control, 情绪, 对话, dialogue, speaker | `references/chattts-workflow.md` |
+| license, commercial, legal, watermark, open source | `references/licensing-safety.md` |
+
+**Multi-signal**: Load all matched references. Cross-reference links are provided within files.
+
+---
+
+## Step 2: Decision Entry Point
+
+**Q1 — What is the use case?**
+- Audiobook (100K+ words, multi-chapter) → load `references/audiobook-pipeline.md` + `references/voice-cloning.md`
+- Blog/video narration (single voice, <30 min) → load `references/narration-dubbing.md`
+- Podcast (multi-episode, consistent voice) → load `references/narration-dubbing.md`
+- Video dubbing (emotion matching, multilingual) → load `references/narration-dubbing.md`
+- Chinese narration with emotion control or dialogue → load `references/chattts-workflow.md`
+- Quick TTS (one-off, any tool) → load `references/tool-landscape.md`
+
+**Q2 — What hardware?**
+- Apple Silicon Mac → ALSO load `references/apple-silicon.md`
+- NVIDIA GPU → proceed with tool default configs
+- CPU only → check MeloTTS or Piper in `references/tool-landscape.md`
+- No local GPU / insufficient VRAM → load ml-training pack's `references/platform-selection.md` for cloud GPU selection. Primary use case: training and fine-tuning; inference can often stay local.
+
+**Q3 — Commercial use?**
+- Yes → ALSO load `references/licensing-safety.md`
+
+---
+
+## Step 3: Apply Rules
+
+Read matched reference(s) and apply rules directly. Rules are concrete parameters — not guidelines.
+
+---
+
+## Quick Rule Index
+
+### Tool Landscape (`references/tool-landscape.md`)
+- **Tier A/B Split**: 9 researched tools with benchmarks vs 4 notable tools with key strengths → §Tier A / §Tier B
+- **4 Selection Rules**: by language, hardware, use case, commercial license → §Quick Selection Rules
+
+### Apple Silicon (`references/apple-silicon.md`)
+- **16GB Budget Table**: 6 tools with VRAM data, MPS configs → §16GB Memory Budget
+- **MPS Workarounds**: float32, s3tokenizer patch, PYTORCH_ENABLE_MPS_FALLBACK → §MPS Configuration
+
+### Voice Cloning (`references/voice-cloning.md`)
+- **3 Methods**: zero-shot, fine-tuned, voice design → §Cloning Methods
+- **Minimum Reference Duration**: 3s to 15s per tool → §Reference Duration Table
+- **Failure Modes**: noise leakage, accent bleeding, emotional flatness → §Failure Modes
+
+### Audiobook Pipeline (`references/audiobook-pipeline.md`)
+- **4 Non-Negotiables**: consistency, emotion, chapter control, multi-character → §Non-Negotiable Requirements
+- **5-Step Pipeline**: prep → voice setup → generation → QC → post-processing → §Production Pipeline
+- **ACX Specs**: MP3 192kbps, 44.1kHz, RMS -23 to -18 dB → §ACX/Audible Specifications
+
+### Narration & Dubbing (`references/narration-dubbing.md`)
+- **Blog Narration**: single voice, quick turnaround → §Blog Narration
+- **Video Dubbing**: emotion matching, multilingual → §Video Dubbing
+- **Mixed Language**: Chinese/English strategy → §Mixed Language Strategy
+
+### ChatTTS Workflow (`references/chattts-workflow.md`)
+- **Voice Persistence**: save/load `.pt` files for cross-session consistency → §创建并保存声音身份
+- **Emotion Control**: oral/laugh/break parameters + scene presets → §情绪参数体系
+- **Dual Speaker**: two `.pt` files + shared seed for dialogue → §双人对话工作流
+
+### Licensing & Safety (`references/licensing-safety.md`)
+- **GREEN/YELLOW/RED**: per-tool commercial safety classification → §License Tiers
+- **Watermarking Traps**: hidden markers in generated audio → §Watermarking
+- **Quality Sabotage**: intentional degradation patterns → §Anti-Patterns
+
+---
+
+## Anti-Skip Table
+
+| Shortcut Attempt | Required Action |
+|---|---|
+| "I'll pick an appropriate TTS tool" | MUST use `references/tool-landscape.md` decision rules — tool choice depends on use case + hardware + license |
+| "Short reference audio is fine" | MUST check minimum duration per tool in `references/voice-cloning.md` — ranges from 3s to 15s |
+| "This tool is open source" | MUST check license tier in `references/licensing-safety.md` — open weights ≠ commercial use |
+| "I'll master the audio later" | MUST apply ACX/podcast specs DURING pipeline in `references/audiobook-pipeline.md`, not after |
+| "Any voice will work for now" | MUST set up voice identity BEFORE generation in `references/voice-cloning.md` — retrofitting means re-generating all audio |

@@ -9,8 +9,8 @@ keywords: ["fine-tune", "微调", "LoRA", "QLoRA", "train model", "训练模型"
 # ML Training Capability Pack
 
 > Cross-agent portable judgment for ML model training on cloud GPU. Covers platform selection, LoRA/QLoRA fine-tuning for LLM and voice models, data preparation, cost estimation, and human-AI collaboration workflows.
-> **CONSUMES**: Training data (JSONL/ShareGPT/audio+transcript pairs), base model name, hardware constraints, budget.
-> **PRODUCES**: Platform recommendation, tool selection, training configuration, cost estimate.
+**CONSUMES**: Training data (JSONL/ShareGPT/audio+transcript pairs), base model name, hardware constraints, budget.
+**PRODUCES**: Platform recommendation, tool selection, training configuration, cost estimate.
 > **INTERFACE**: ai-voice-production pack defers voice training platform selection to this pack's `platform-selection.md`. This pack defers voice-specific tool selection (GPT-SoVITS, VoxCPM2 configs, audio quality thresholds) to ai-voice-production pack. When both packs load for voice training: this pack takes precedence for platform/cost decisions; ai-voice-production takes precedence for tool selection and audio quality.
 
 ---

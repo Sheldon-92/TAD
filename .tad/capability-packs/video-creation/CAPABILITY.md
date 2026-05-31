@@ -9,7 +9,7 @@ keywords: ["video", "animation", "motion design", "HyperFrames", "Remotion", "่ง
 # Video Creation Capability Pack
 
 > Cross-agent portable judgment for AI-produced video. Covers storytelling, motion design, audio, tool selection, and quality.
-> **CONSUMES**: Brand/design artifacts (optional). **PRODUCES**: Professional-quality video compositions.
+**CONSUMES**: Brand/design artifacts (optional). **PRODUCES**: Professional-quality video compositions.
 
 ---
 

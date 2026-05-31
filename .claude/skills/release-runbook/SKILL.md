@@ -55,6 +55,7 @@ This guard is also enforced in `alex/SKILL.md` `publish_protocol.prerequisite.ta
 - [ ] New version decided (patch/minor/major per semver)
 - [ ] `.tad/sync-registry.yaml` exists and lists all downstream projects
 - [ ] `.tad/deprecation.yaml` is valid YAML (try `yq . .tad/deprecation.yaml`)
+- [ ] Pack registry drift-check run (advisory): `bash .tad/hooks/lib/pack-registry-driftcheck.sh` — exit 1 = registry/pack desync to review (run `bash .tad/scripts/scan-packs.sh` to regenerate), NOT a release blocker.
 
 ### Decide the version bump
 
