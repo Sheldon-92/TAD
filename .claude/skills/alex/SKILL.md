@@ -2924,6 +2924,16 @@ handoff_creation_protocol:
            - AC-X-z: ✅ post-impl-verifiable, syntax-validated, deferred to Gate 3
            - AC-X-w: ⚠️ pre-impl-verifiable, output mismatch — Verification Method revised
            ```
+        9. **Advisory tail — §9.1 AC-command linter (P4, 2026-05-31)**:
+           Run `bash .tad/hooks/lib/verify-ac-commands.sh <this-handoff>`; surface any
+           WARN/INFO findings to the author and reconcile them with the step1d dry-run
+           above (e.g. a Rule A `grep -c … | sort -u | wc -l` WARN → switch to
+           `grep -oE … | sort -u | wc -l`; a Rule B `\|`-in-ERE WARN → confirm whether
+           it is a real literal-pipe bug or mere markdown-cell escaping).
+           This is ADVISORY (warn, continue) — it NEVER blocks step1d or the handoff,
+           and its exit code is always 0. It complements (does NOT replace) the manual
+           dry-run; treat it as a smoke alarm that mechanically catches the lintable
+           subset of the recurring AC-verification-drift class.
       exemption_doc_only: |
         Skip step1d for handoffs with task_type=doc-only AND empty §9.1.
       exemption_pre_phase6: |
@@ -2942,6 +2952,7 @@ handoff_creation_protocol:
         - "MUST NOT return deny exit code from any wrapping script"
         - "MUST NOT block ANY tool call (Write/Edit/Read)"
         - "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
+        - "MUST NOT turn verify-ac-commands.sh (the step1d advisory tail linter) into a blocking gate: it MUST NOT be registered as a PreToolUse / UserPromptSubmit / SessionStart hook, MUST NOT be added to .claude/settings.json, MUST NOT return a deny/blocking exit, and a WARN/INFO from it MUST NOT block the handoff (advisory smoke alarm only — single-user-CLI mechanical-enforcement-rejected lesson 2026-04-15)."
 
     step2:
       name: "Expert Selection"
