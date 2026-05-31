@@ -37,7 +37,7 @@
 | 2 | Autonomous Research Strategy | ✅ Done | HANDOFF-20260504-autonomous-research-phase2 | *research-plan command (5-step protocol: read→plan→confirm→execute→update OBJECTIVES). Validated: menu-snap research-plan-2026-05-04.md + 4 notebooks generated + OBJECTIVES KR research status tracked. |
 | 3 | Research-Decision Loop | ⬚ Planned | — | 研究→决策追踪 + 决策→行动→结果反哺 + `--caller` flag |
 | 4 | Wire Engine + Lifecycle + Dogfood | ✅ Done | HANDOFF-20260531-research-engine-wire-phase4.md | effort-scaling 触发 + dormant hook + 空壳归档 + dogfood: seed_origin 0→2 + 对抗 challenge 自动触发(DR-20260531) — 引擎插电成功 (commit 92bbfc3+merge 4c84b09) |
-| 5 | Breadth + Quality Gate | 🔄 Active | — | persona 视角种子化 + 5 维 LLM-judge 鲁棒(复用 Codex+Gemini, advisory) |
+| 5 | Breadth + Quality Gate | ✅ Done | — | persona 视角种子化 + 5 维 LLM-judge 鲁棒(复用 Codex+Gemini, advisory) |
 | 6 | Adoption + Sync Rollout | ⬚ Planned | — | 强化 *analyze research-gate(对的时刻触发) + *sync 推 14 下游项目 |
 
 ### Phase Dependencies
@@ -115,7 +115,8 @@ Phase 4-6 与 Phase 3 无依赖（Phase 3 是 director/决策层，Phase 4-6 是
 **Execution**: pending（手动 handoff）
 
 ### Phase 5: Breadth + Quality Gate
-**Status**: ⬚ Planned
+**Status**: ✅ Done (Gate 4 PASS 2026-05-31)
+**Notes**: Impl commit 5456afb → calibration fix 0dd595c → merged 09de56c. 2-round expert review: code-reviewer PASS (no-new-invocation verified — rubric rides existing 4c, codex/gemini call sites stay 3/3); ux-expert-reviewer (methodology) round1 found 2 P0 (factual/citation non-orthogonality, efficiency unscoreable) → resolved (3-way decision tree, efficiency demoted to advisory, hybrid floor aggregation); round2 NEW-P1 (degraded-hypothetical calibration not rater-reproducible) → resolved (observable/hypothetical case split + labels). No SAFETY edit (carve-out untouched). Rubric file: .tad/templates/research-quality-rubric.md (4 scored dims + efficiency advisory, 22 calibration cases 6/7/9 distribution).
 **Scope**: 在已插电的引擎上补两个真实 gap。(1) **persona 视角种子化**(借 STORM)：种子问题前生成 3-4 个 stakeholder persona（如用户/实现者/怀疑者/运维），每视角派生子问题，攻克"单一角度问题树"。(2) **5 维 LLM-judge 质量鲁棒**(借 Anthropic)：findings 产出后跑事实/引用/完整性/源质量/效率 5 维 0-1 打分，**复用现有 Codex+Gemini 对抗基建**，低分**警告不阻塞**。NOT in scope: CRAG 条带过滤、独立引用 pass、mind-map（推后）。
 **Input**: Phase 4 的自适应触发引擎
 **Output**: persona 种子化逻辑 + 5 维鲁棒打分步骤（写入 research_plan_protocol）
