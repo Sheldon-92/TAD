@@ -209,6 +209,9 @@ activation-instructions:
          If ANY gap detected:
          → "💡 建议: 运行 *research-plan 来生成目标导向的研究计划并执行"
          (不自动发起 — 只提示)
+      6. De-dup cross-reference: if the user declines research for a surfaced gap-domain
+         here, append that domain to `declined_research_domains` (honored by
+         research_decision_protocol research-gate, so it won't re-prompt the same domain).
     blocking: false
     suppress_if: "(REGISTRY.yaml not found OR 0 active + 0 dormant notebooks) AND OBJECTIVES.md not found"
     interacts_with: |
@@ -915,6 +918,10 @@ discuss_path_protocol:
                 - "创建 notebook (manual sources)" → *research-notebook create
                 - "生成 *research-plan 并执行 (针对 {gap_kr})" → enter research_plan_protocol step1 with pre-filled context  [only shown if gap_kr found]
                 - "用 WebSearch 就够了" → skip  [shown only when gap_kr not found]
+           c. De-dup cross-reference: on decline (user picks "用 WebSearch 就够了" or
+              otherwise skips), append this topic's domain to `declined_research_domains`
+              (honored by research_decision_protocol research-gate — no re-prompt for the
+              same domain this session).
 
         5. If multiple matching notebooks found (>2 on same topic):
            → Trigger notebook_consolidation_suggestion protocol (see below)
@@ -2719,6 +2726,56 @@ research_decision_protocol:
       Use AskUserQuestion to confirm identified decisions:
         "Based on our discussion, I've identified these technical decisions to research:"
         Options: each decision listed + "Add more" + "These are correct, proceed"
+
+      <!-- research-gate:BEGIN -->
+      # Research-gate (right-moment research nudge — suggestion only, NEVER stops the flow).
+      # Runs at the TAIL of decision-identification, before step2_research.
+      # Goal: nudge research ONLY when a decision provably turns on external info the
+      # agent doesn't have — NOT to maximize any usage count.
+
+      # Session-memory set (conversation-scoped, lives for this *discuss→*analyze session):
+      #   declined_research_domains = {}   # domains the user already declined to research
+      # This set is SHARED with STEP 3.8 and research_notebook_awareness (both append on
+      # decline); the gate reads it. So the three nudge writers never double-prompt the same
+      # domain in one *discuss→*analyze session via the backed declined-list.
+
+      For EACH identified decision, apply the DEFAULT-SAFE decidability test:
+        Q: "Is this decision decidable from the repo + requirements alone?"
+        - YES, or AMBIGUOUS → stay silent (NO gate). This is the default and covers
+          config values, naming, code style, refactor mechanics, pure preference,
+          and anything where the answer lives in the codebase or the stated requirements.
+          Ambiguity always defaults to NO-gate (mirrors Phase 4 effort-scaling
+          "default to the lower tier").
+        - NO — it provably depends on a fact ABSENT from repo+requirements (which
+          library/vendor to pick, what production systems do for X, the current best
+          approach, competitive/market/domain landscape) → this decision is ELIGIBLE.
+
+      For each ELIGIBLE decision, before suggesting research, run the de-dup check:
+        1. Is this decision's domain already in `declined_research_domains`? → if yes, skip (stay silent).
+           (This is the backed dedup: STEP 3.8 + research_notebook_awareness both append to this
+           same set on decline, so a domain the user already passed on this session is not re-asked.)
+        2. Does a relevant notebook already exist? Run a lightweight REGISTRY existence read here
+           (gate runs at step1-tail, BEFORE step2_5_notebook_check, so step2_5's result does not
+           exist yet — do the cheap read now, using the SAME semantic-match criterion step2_5 uses
+           so the two stay consistent). If a matching active notebook exists → skip (research already
+           available). NOTE: step2_5 will re-confirm later with the identical criterion; the two are
+           intentionally consistent, not divergent scans.
+
+      If a decision is ELIGIBLE AND not de-duped (no declined-domain match, no existing
+      notebook) → AskUserQuestion (suggestion only):
+        "决策 '{decision}' 依赖外部信息，当前没有相关 notebook。要先研究吗？"
+        Options:
+          - "创建 notebook + *research-plan (Recommended)" → enter research_plan_protocol / *research-notebook create
+          - "WebSearch 够了" → proceed; append this decision's domain to `declined_research_domains`
+          - "我已了解，直接设计" → proceed; append this decision's domain to `declined_research_domains`
+
+      Both non-create options ("WebSearch 够了" AND "我已了解，直接设计") count as a
+      notebook-decline for this domain and write it to `declined_research_domains`, so a
+      WebSearch choice does not re-prompt the same domain later this session.
+
+      This is a suggestion only — Alex suggests, the human decides. Declining proceeds
+      straight to design / step2_research; the gate stays silent and never stops the flow.
+      <!-- research-gate:END -->
 
   # Step 2: Research each decision
   step2_research:
