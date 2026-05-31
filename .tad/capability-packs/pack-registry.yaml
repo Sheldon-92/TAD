@@ -80,8 +80,8 @@ packs:
   - name: "video-creation"
     description: "Professional video production judgment for AI coding agents — storytelling, motion design, audio, tools (HyperFrames/Remotion)"
     path: ".tad/capability-packs/video-creation/"
-    consumes: "Brand/design artifacts (optional). **PRODUCES**: Professional-quality video compositions."
-    produces: "Not specified"
+    consumes: "Brand/design artifacts (optional)."
+    produces: "Professional-quality video compositions."
     keywords: ["video", "animation", "motion design", "HyperFrames", "Remotion", "视频", "动画", "剪辑", "音频"]
     type: "reference-based"
   - name: "web-backend"
