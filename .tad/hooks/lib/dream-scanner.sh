@@ -182,12 +182,27 @@ if [ "$HAS_JQ" = true ]; then
     file=$(echo "$event_json" | jq -r '.file // ""')
     decision=$(echo "$event_json" | jq -r '(.context | fromjson | .decision) // "unknown"')
     [ "$decision" = "unknown" ] && continue
+    chosen=$(echo "$event_json" | jq -r '((.context | fromjson | .chosen) // "") | gsub("\n";" ")' 2>/dev/null)
+    rationale=$(echo "$event_json" | jq -r '((.context | fromjson | .rationale) // "") | gsub("\n";" ")' 2>/dev/null)
     scope=$(classify_scope "$file" "$slug")
+
+    if [ -n "$chosen" ]; then
+      disc="On '$decision', human chose: $chosen"
+      [ -n "$rationale" ] && disc="$disc. Rationale: $rationale"
+    else
+      disc="Human explicitly overrode agent suggestion for '$decision'"
+    fi
+    if [ -n "$rationale" ]; then
+      act="Captured rationale present — verify it is reflected in project-knowledge; reject if already documented"
+    else
+      act="Document the override rationale for future reference"
+    fi
+
     generate_candidate \
       "human_override" \
-      "Human override: $decision" \
-      "Human explicitly overrode agent suggestion for '$decision'" \
-      "Document the override rationale for future reference" \
+      "Human override: $decision → ${chosen:-?}" \
+      "$disc" \
+      "$act" \
       "decision_point human_overridden slug=$slug" \
       "$scope" \
       "high"
