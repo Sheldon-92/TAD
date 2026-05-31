@@ -1,4 +1,4 @@
-<!-- Extracted from alex/SKILL.md P3 progressive disclosure 2026-05-31. Byte-identical to the original block. -->
+<!-- Extracted from alex/SKILL.md P3 progressive disclosure 2026-05-31. Byte-identical to the original block. Cross-referenced protocols (notebook_consolidation_suggestion / adaptive_complexity_protocol / research_plan_protocol) remain INLINE in alex/SKILL.md and resolve in-session via the router. -->
 
 idea_path_protocol:
   description: "Lightweight idea capture — discuss briefly, store for later"
