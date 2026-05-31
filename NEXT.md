@@ -2,6 +2,24 @@
 
 ## In Progress
 
+- [ ] **Debt Bundle 1/2: Release Hygiene + Conventions** — Handoff ready for Blake (Gate 2 PASS 2026-05-31)
+  - HANDOFF-20260531-release-hygiene-conventions.md: doc-drift→2.19.1 (preserve history) + tad.sh 3-part + `*)` arm + runbook codex-greeting rows + express-slug convention
+  - Expert review: code-reviewer + backend-architect; P0 fixed (version-scheme rationale was wrong consumer → detect_state line 303; +line 171 + detect_state AC)
+- [ ] **Debt Bundle 2/2: Hook Code Hardening** — Handoff ready for Blake (Gate 2 PASS 2026-05-31)
+  - HANDOFF-20260531-hook-hardening.md: dream-scanner fromjson guard(a) + classify_scope(b) + expert_finding heading-only(d)
+  - Expert review caught bug(c) dedup probe = validation theater (0/31 real values match) → DROPPED, deferred to proper semantic design
+
+- [x] **Research Engine Upgrade (Epic goal-driven-research Phase 4+5+6A)** — Gate 4 PASS 2026-05-31
+  - Triggered by *discuss audit: NotebookLM advanced flow "built-not-wired" (seed_origin 0 uses, challenge 2/25; 3/14 adoption)
+  - **P4** effort-scaling + dormant hook + AR-001 carve-out (DR-20260531) + dogfood seed_origin 0→2: 92bbfc3→4c84b09→58c9cac
+  - **P5** persona-seeding + 5-dim rubric (rides existing 4c, no new invocation): 5456afb→09de56c. ux-expert 3 methodology P0→resolved
+  - **P6A** research-gate (right-moment nudge + declined-domains dedup): 7d41768→7c08f37. backend-architect 2 dedup P1→resolved
+  - All 3 phases: worktree Blake impl + 2-round expert review + Gate 4 raw-recompute. SAFETY guards held throughout (DR=9, codex/gemini 3/3)
+  - ⏭️ **P6 AC6.3 *sync to 14 projects DEFERRED** — pending explicit authorization (outward-facing)
+  - ⏭️ **P3 Research-Decision Loop** still ⬚ Planned (director-layer)
+  - 💡 AKU governance-as-code (14.5% of 2303 agent files) → capability-pack gap candidate; optional full tad-evolution refresh
+  - 💡 Optional: full tad-evolution landscape refresh (dogfood was bounded to prove wiring)
+
 - [x] **Bugfix: dream-scanner Pass C weaves override chosen/rationale** — Gate 4 PASS + ARCHIVED 2026-05-31
   - Pass C now extracts .chosen/.rationale (newline-flattened in jq, stderr-quiet) → content-rich candidates; fallback intact
   - Layer 2 code-reviewer PASS (raised P0 heredoc-injection → empirically refuted → withdrawn); test-runner PASS
@@ -15,6 +33,11 @@
   - merge projects (toy/my-openclaw-agents/内存管理): CLAUDE.md backed-up + restored (toy marker preserved)
   - tad.sh --yes flag (commit 4767901) unblocked non-TTY sync; registry → 2.19.1 (commit e6ca251)
   - Codex Phase 7 smoke test PASS before sync push
+
+## Deferred (surfaced 2026-05-31 debt-bundle expert review)
+- [ ] **Semantic dedup for dream-scanner candidates** — grep-on-`.decision`/`.chosen` is inert (0/31 real values match; backend-architect). Needs title/discovery match or embedding-based semantic dedup. bug(c) dropped from hook-hardening handoff pending this design.
+- [ ] **detect_state glob-arm hazard (next version bump)** — tad.sh `2.1*`/`2.2*` arms (~305-313) will misclassify 3-part `2.19.x` as `v2.0` once `TARGET_VERSION` moves past 2.19.1. Next-release handoff MUST address before bumping.
+- [ ] **Express tier: durable frontmatter marker** — slug-naming convention (this cycle's fix) still false-WARNs any express handoff that forgets the name. Durable fix = `express: true` frontmatter consumed by layer2-audit (vs slug-as-proxy). backend-architect P2-1.
 
 ## Follow-ups (from this release cycle)
 - [ ] **Doc-drift sweep to 2.19.1**: README/INSTALL/tad-help/codex skills still say 2.19.0 (cosmetic; fold into next minor)
