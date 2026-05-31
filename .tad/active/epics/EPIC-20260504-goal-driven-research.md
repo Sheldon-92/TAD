@@ -36,7 +36,7 @@
 | 1 | Business Objective Definition | ✅ Done | HANDOFF-20260504-goal-driven-phase1 | OBJECTIVES.md OKR template + Alex STEP 3.8 gap analysis + 内容副业 REGISTRY 11 notebooks + OBJECTIVES O1/O2 |
 | 2 | Autonomous Research Strategy | ✅ Done | HANDOFF-20260504-autonomous-research-phase2 | *research-plan command (5-step protocol: read→plan→confirm→execute→update OBJECTIVES). Validated: menu-snap research-plan-2026-05-04.md + 4 notebooks generated + OBJECTIVES KR research status tracked. |
 | 3 | Research-Decision Loop | ⬚ Planned | — | 研究→决策追踪 + 决策→行动→结果反哺 + `--caller` flag |
-| 4 | Wire Engine + Lifecycle + Dogfood | 🔄 Active | HANDOFF-20260531-research-engine-wire-phase4.md | 复杂度自适应触发阶梯(effort-scaling) + 非阻塞 dormant 状态 hook + 清空壳 + dogfood 重跑 tad-evolution |
+| 4 | Wire Engine + Lifecycle + Dogfood | ✅ Done | HANDOFF-20260531-research-engine-wire-phase4.md | effort-scaling 触发 + dormant hook + 空壳归档 + dogfood: seed_origin 0→2 + 对抗 challenge 自动触发(DR-20260531) — 引擎插电成功 (commit 92bbfc3+merge 4c84b09) |
 | 5 | Breadth + Quality Gate | ⬚ Planned | — | persona 视角种子化 + 5 维 LLM-judge 鲁棒(复用 Codex+Gemini, advisory) |
 | 6 | Adoption + Sync Rollout | ⬚ Planned | — | 强化 *analyze research-gate(对的时刻触发) + *sync 推 14 下游项目 |
 
@@ -99,7 +99,9 @@ Phase 4-6 与 Phase 3 无依赖（Phase 3 是 director/决策层，Phase 4-6 是
 ## Phase Details (Phase 4-6)
 
 ### Phase 4: Wire Engine + Lifecycle + Dogfood
-**Status**: 🔄 Active
+**Status**: ✅ Done (Gate 4 PASS 2026-05-31 — mechanism proven; dogfood bounded, full tad-evolution refresh = optional follow-up)
+**Notes**: Impl commit 92bbfc3, merged 4c84b09. 2-round expert review (code-reviewer + backend-architect) round1 found 4 P0 incl. AR-001 SAFETY conflict → human chose Option B (DR-20260531 carve-out) → round2 all RESOLVED, impl review 0 P0. Dogfood: seed_origin 0→2 (incl. 1 dynamic), Codex+Gemini challenge auto-fired (no keystroke, carve-out working), both correctly rated bounded findings INSUFFICIENT. Surfaced AKU governance-as-code (only 14.5% of 2303 agent context files specify governance) as a TAD capability-pack gap → Phase 6 / future research candidate.
+**Context for Phase 5**: Engine now fires. Phase 5 (persona-seeding + 5-dim rubric) reads the persisted `research_complexity` key. The Phase 4c challenge already returned structured INSUFFICIENT/ADEQUATE/STRONG verdicts — Phase 5's 5-dim rubric extends this into a scored gate. dormant hook live (SessionStart); will recompute on next sessions as notebooks cross 30d.
 **Scope**: 让已存在但从未触发的高级研究流程真正运行。`*research-plan` 当前用 opt-in + 默认跳过门控制动态种子/对抗 challenge，导致动态种子 0 次、对抗 2/25 次使用。改为**复杂度自适应触发阶梯**（effort-scaling，借 Anthropic）：简单事实→浅单遍 / 对比性→动态种子 / 复杂 landscape→种子+对抗。同时加**非阻塞状态 hook** 让超期 notebook 自动 →💤 dormant（只改状态，不阻塞任何操作，不碰"机械强制拒用"红线），归档 `ai-agent-tutorials` 空壳。NOT in scope: persona 种子化、质量打分门（Phase 5）。
 **Input**: 现 `*research-plan` 协议（alex/SKILL.md）+ research-notebook lifecycle 规则
 **Output**: 自适应触发的 `*research-plan` + dormant hook + dogfood 证据文件
