@@ -2,6 +2,36 @@
 
 ## In Progress
 
+- [x] **Bugfix: dream-scanner Pass C weaves override chosen/rationale** — Gate 3 PASS 2026-05-31 (awaiting Alex Gate 4)
+  - Pass C now extracts .chosen/.rationale (newline-flattened in jq, stderr-quiet) → content-rich candidates; fallback intact
+  - Layer 2 code-reviewer PASS (raised P0 heredoc-injection → empirically refuted → withdrawn); test-runner PASS
+  - Commit ecf912e; KA → code-quality "Heredoc injection depends on the SINK"
+  - ⏭️ Alex: Gate 4 raw-recompute + *accept → archive
+
+- [x] **Release v2.19.0 + v2.19.1 PUBLISHED + SYNCED to 14 projects** — DONE 2026-05-30
+  - *publish: pushed main + tags v2.19.0 (87665e0) & v2.19.1 (40989f2); rebased through remote dream-state churn
+  - *sync: all 14 projects got V2 trace hooks (6 emit fns each, verified); 6 V1-stuck projects upgraded
+  - merge projects (toy/my-openclaw-agents/内存管理): CLAUDE.md backed-up + restored (toy marker preserved)
+  - tad.sh --yes flag (commit 4767901) unblocked non-TTY sync; registry → 2.19.1 (commit e6ca251)
+  - Codex Phase 7 smoke test PASS before sync push
+
+## Follow-ups (from this release cycle)
+- [ ] **Doc-drift sweep to 2.19.1**: README/INSTALL/tad-help/codex skills still say 2.19.0 (cosmetic; fold into next minor)
+- [ ] **Version-scheme inconsistency**: tad.sh stamps downstream version.txt = "2.19" (MAJOR.MINOR via TARGET_VERSION:537) while source = 3-part "2.19.1". Decide unified scheme.
+- [ ] **runbook gap**: add codex greeting lines (855/632) to release-runbook Phase 2 version table
+- [ ] **expert_finding parser**: tighten count to heading-form-only (prose "P0" self-trigger — trace-fix follow-up)
+- [ ] tad.sh `*)` default arm for unknown flags (code-reviewer P2, non-blocking)
+- [ ] **dream-scanner Pass C dedup + scope**: (a) dedup override candidates vs existing project-knowledge; (b) classify_scope mis-tags framework overrides as `project` (file=null on decision_point); (c) line 183 `(.context|fromjson|.decision)//"unknown"` doesn't catch fromjson *errors* → malformed context yields junk candidate. Bundle into one Pass C follow-up handoff.
+- [ ] **express slug convention**: express handoffs should encode "express" in the slug so layer2-audit detects the Tier (bugfix-... slug + task_type=code → false ≥2-reviewer WARN)
+
+- [x] **Release TAD v2.19.0** — Gate 3 PASS 2026-05-30 (awaiting Alex *publish)
+  - Bumped 18 version strings (7 files) + fixed tad.sh TARGET_VERSION drift (2.15→2.19)
+  - CHANGELOG [2.19.0]: trace v2 / sync-fix / ML pack / cloud compute
+  - Commits: 7e1bd86 (release) + dfb9740 (framework state + lifecycle + evidence)
+  - Blake STOPPED before push/tag — ⏭️ Alex: *publish (push+tag v2.19.0) → *sync (14 projects)
+  - ⚠️ Alex: run Codex adapter smoke test (runbook Phase 7) before sync push
+  - 📝 Runbook gap: add codex greeting lines (855/632) to Phase 2 table
+
 - [x] **Fix v2 Trace Instrumentation** — Gate 4 PASS + ARCHIVED 2026-05-30
   - Gate 4: raw-recompute verified AC8 (real gate_result event), Layer 2 audit 3 reviewers, dream-scanner exit 0
   - gate4_delta: 1 (expert_finding parser self-triggered on review prose → false P0); Alex KA: dead-code-audit=validation-theater
