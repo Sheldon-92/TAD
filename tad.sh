@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Version
-TARGET_VERSION="2.19"
+TARGET_VERSION="2.19.1"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
@@ -30,6 +30,7 @@ for arg in "$@"; do
   case "$arg" in
     --yes|-y)  AUTO_YES=1 ;;
     --help|-h) echo "Usage: tad.sh [--yes|-y]  (--yes skips the interactive confirmation prompt)"; exit 0 ;;
+    *) echo "tad.sh: unknown option '$arg' (use --help)" >&2; exit 1 ;;
   esac
 done
 
@@ -168,7 +169,7 @@ apply_deprecations() {
     elif [ -f "$src/.tad/version.txt" ]; then
         current_version=$(head -1 "$src/.tad/version.txt" | tr -d '[:space:]')
     else
-        current_version="${TARGET_VERSION}.0"
+        current_version="${TARGET_VERSION}"
     fi
 
     log_info "  → Applying deprecations for versions ≤ $current_version..."

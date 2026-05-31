@@ -2198,6 +2198,25 @@ express_path_protocol:
     - "Security-adjacent changes (auth/token/encrypt → Standard TAD with security review)"
     - "Performance-adjacent changes (optimization → use *experiment instead)"
 
+  # slug_convention (2026-05-31, doc-only): *express handoff slug MUST contain the
+  # word `express`. layer2-audit.sh is_express_slug() already detects express via
+  # word-boundary slug match; this convention is what lets that detection fire so an
+  # *express bugfix doesn't trip a false Tier-1 (≥2 reviewer) WARN.
+  # NOTE: this is a NAMING rule only — it does NOT relax required_steps above
+  # (expert review + code-reviewer 必选 remains hard). No audit code change.
+  slug_convention:
+    rule: |
+      When drafting an *express handoff, the slug in
+      HANDOFF-YYYYMMDD-<slug>.md MUST contain the token `express`
+      (e.g. `express-fix-foo`, `bugfix-foo-express`, or `express`).
+    rationale: |
+      layer2-audit.sh is_express_slug() matches express|*-express|*-express-*|express-*
+      on a word boundary. A `*express` handoff named `bugfix-foo` with task_type=code
+      would NOT match → audit treats it as Standard Tier-1 and WARNs on <2 reviewers,
+      even though *express legitimately keeps only ≥1 code-reviewer. Putting `express`
+      in the slug makes the detection fire correctly. Doc-only fix — audit logic is
+      already correct and MUST NOT be changed.
+
 # *experiment Path Protocol (Phase 3 P3.2, 2026-04-24)
 # OPRO / A-B test / benchmark / prompt tuning / eval-loop tasks.
 # Gates ADD experiment-validity checks; original Gate 3/4 still applies to harness code.

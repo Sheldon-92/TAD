@@ -1389,6 +1389,15 @@ execution_checklist:
             not in task_type enum {code|yaml|research|e2e|mixed|doc-only}).
             CR-P0-6 fix: word-boundary defends against expression/compress/espresso
             false-positives.
+          slug_convention: |
+            (2026-05-31, mirrors alex/SKILL.md express_path_protocol.slug_convention)
+            An *express handoff slug MUST contain the token `express` so the
+            word-boundary detection above fires. If Alex names an *express handoff
+            without `express` in the slug (e.g. `bugfix-foo` + task_type=code),
+            is_express_slug() returns false → audit treats it as Standard Tier-1
+            and emits a FALSE ≥2-reviewer WARN, even though *express legitimately
+            keeps only ≥1 code-reviewer. Convention is doc-only — audit logic is
+            already correct and MUST NOT be changed.
 
         forbidden:
           - "self-review.md does NOT count as Layer 2 reviewer (Blake reviewing Blake = no second perspective)"

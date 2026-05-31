@@ -92,6 +92,8 @@ Must update ALL of these in a single atomic commit:
 | 14 | `.claude/skills/tad-help/SKILL.md` highlights | `## TAD vX.Y.Z Highlights` |
 | 15 | `.tad/codex/codex-blake-skill.md` line 3 | `TAD vX.Y.Z` in header comment |
 | 16 | `.tad/codex/codex-alex-skill.md` line 3 | `TAD vX.Y.Z` in header comment |
+| 17 | `.tad/codex/codex-alex-skill.md` line 855 | `TAD vX.Y.Z` in Alex greeting line (`I'm Alex, your Solution Lead (TAD vX.Y.Z — Codex Edition).`) |
+| 18 | `.tad/codex/codex-blake-skill.md` line 632 | `TAD vX.Y.Z` in Blake greeting line (`I'm Blake, your Execution Master (TAD vX.Y.Z — Codex Edition).`) |
 
 ### Quick grep to find stragglers
 
