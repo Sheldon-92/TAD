@@ -484,8 +484,8 @@ cross_model_awareness:
   forbidden_implementations:
     - "MUST NOT register PreToolUse / UserPromptSubmit hook to auto-invoke codex/gemini"
     - "MUST NOT add codex/gemini wrapper to .claude/settings.json"
-    - "MUST NOT auto-invoke codex/gemini from any Alex protocol step (Socratic, design, handoff_creation)"
-    - "MUST NOT use AskUserQuestion to suggest codex/gemini as a default Recommended option"
+    - "MUST NOT auto-invoke codex/gemini from any Alex protocol step (Socratic, design, handoff_creation) — EXCEPT the narrow DR-20260531 carve-out: the *research-plan Phase 0c/4c/5b adversarial-challenge step MAY auto-run codex/gemini ONLY when the complexity classification and the resulting decision are displayed to the user and remain overridable before execution (display+overridable replaces the per-gate keystroke for this one sanctioned path; every other protocol step stays forbidden)"
+    - "MUST NOT use AskUserQuestion to suggest codex/gemini as a default Recommended option — EXCEPT the DR-20260531 carve-out: inside *research-plan the complexity ladder MAY default the adversarial-challenge decision to run-for-complex, shown and overridable; suggesting codex/gemini as a general default Recommended task tool anywhere else stays forbidden"
     - "MUST NOT couple cross-model invocation with skip_knowledge_assessment or *express path"
     - "MUST NOT use cross-model delegation to bypass Socratic Inquiry — any handoff delegating implementation to external CLI must complete Socratic rounds first"
 
@@ -1171,19 +1171,62 @@ research_plan_protocol:
              "After this research, I should be able to decide: {specific decision}"
            → Display plan to user for confirmation before proceeding
 
+        a0_class. PHASE 0class — Effort-Scaling Classification (NEW — Phase 4 wiring, runs per research item, BEFORE Phase 0c):
+           ⚠️ This is the effort-scaling ladder that REPLACES the old opt-in/skip default.
+           Default is complexity-derived, NOT "skip". Alex SUGGESTS; the human can override (adaptive_complexity philosophy + DR-20260531 condition).
+
+           → Step 1: Classify THIS research item into exactly ONE complexity tier.
+             Mutually exclusive + ORDERED — classify as the LOWEST tier whose EXPLICIT trigger is met.
+             Default to `comparison` when ambiguous (NOT complex) — per backend-architect P1-1, vague signals must NOT collapse everything to complex.
+
+             | Complexity | EXPLICIT trigger (must match to qualify) | run_dynamic_seeds | run_adversarial_challenge |
+             |------------|-------------------------------------------|-------------------|----------------------------|
+             | simple     | single fact / narrow API or syntax lookup / 1 KR, answer is a lookup not a judgment | off | off |
+             | comparison (DEFAULT when ambiguous) | research question explicitly compares-and-recommends across ≥2 named options/tools | on | off |
+             | complex    | spans ≥3 distinct KRs that are themselves ⬚ incomplete, OR explicit landscape/survey scope | on | on |
+
+             Set the two booleans from the chosen row:
+               run_dynamic_seeds      = on for comparison|complex, off for simple
+               run_adversarial_challenge = on for complex only, off for simple|comparison
+             (These two booleans are cached for the whole *research-plan execution of THIS item.)
+
+           → Step 2: DISPLAY + OVERRIDE (DR-20260531 safety condition — REQUIRED, replaces the per-gate keystroke):
+             Show the user:
+               "🎚️ Effort classification: {tier}
+                  → dynamic adaptive seeds: {run_dynamic_seeds on/off}
+                  → adversarial challenge (Codex+Gemini): {run_adversarial_challenge on/off}"
+             → AskUserQuestion: "采用这个 effort 等级吗？（可手动覆盖）"
+               Options:
+                 - "采用 (Recommended)" → keep classification
+                 - "改为 simple" → run_dynamic_seeds=off, run_adversarial_challenge=off
+                 - "改为 comparison" → run_dynamic_seeds=on, run_adversarial_challenge=off
+                 - "改为 complex" → run_dynamic_seeds=on, run_adversarial_challenge=on
+             ⚠️ The classification is a SUGGESTION, not a lock. The user MUST be able to turn the adversarial
+                challenge off before it executes (DR-20260531 overridable condition). This display+override pair
+                is the human-confirmation mechanism that REPLACES the old per-gate "执行/跳过" keystroke.
+
+           → Step 3: Persist for Phase 5 (backend-architect P1-4 forward-compat):
+             Record the final (possibly-overridden) tier so Phase 4 Step 3 writes it into the findings file
+             frontmatter under the stable key `research_complexity: simple|comparison|complex`.
+             Phase 5's persona-seeding + rubric read this key instead of re-deriving complexity.
+
         a0_c. PHASE 0c — Adversarial Challenge: Research Plan:
            Trigger: After Phase 0 plan confirmed by user, before Phase 1 sourcing.
            CHALLENGE_INSTRUCTION: "Review the research input below. Follow the output format exactly. Be adversarial — challenge quality, do not agree."
            (Symmetric instruction — BOTH Codex and Gemini receive this identical string. Per architecture.md prompt symmetry rule.)
 
-           → Step 1: AskUserQuestion gate (NOT_via_alex_auto constraint):
-             question: "运行 Codex+Gemini adversarial challenge 审视研究计划？"
-             Options: "执行 challenge (Recommended)" / "跳过，直接进入 Phase 1"
-             If user picks "跳过" → skip to Phase 1 (step a).
-           → Step 2: Preflight (run ONCE per *research-plan execution, cache result):
+           → Step 1: Effort-scaling gate (NOT_via_alex_auto constraint, now satisfied via DR-20260531 carve-out):
+             The challenge runs iff `run_adversarial_challenge` (set + displayed + overridable in Phase 0class).
+             ⚠️ Preflight (Step 2) runs REGARDLESS so the cached vars exist for Phase 4c/5b even if this
+                Phase 0c challenge is gated off (backend-architect P0-2 preflight-ordering fix).
+             → Run Step 2 preflight FIRST (always), THEN:
+               If run_adversarial_challenge == off → skip the challenge invocation; go to Phase 1 (step a).
+               (No keystroke here — the run/skip decision was already displayed + made overridable in Phase 0class.)
+           → Step 2: Preflight (run ONCE per *research-plan execution, ALWAYS — cache result regardless of run_adversarial_challenge):
              codex_available=$(command -v codex >/dev/null 2>&1 && echo 1 || echo 0)
              gemini_available=$(command -v gemini >/dev/null 2>&1 && echo 1 || echo 0)
-             If both == 0 → WARN "adversarial review unavailable — both Codex and Gemini missing" → skip to Phase 1
+             (Cache codex_available / gemini_available now even when run_adversarial_challenge==off, so 4c/5b never read an unset var.)
+             If run_adversarial_challenge == on AND both == 0 → WARN "adversarial review unavailable — both Codex and Gemini missing" → skip to Phase 1
            → Step 3: Assemble challenge payload:
              Collect all Phase 0 research questions into a temp file:
              rm -f /tmp/tad-challenge-plan.md
@@ -1314,9 +1357,15 @@ research_plan_protocol:
 
         e. PHASE 4 — Seed Questions + Dynamic Ask (depth-first):
            → Step 1: Generate 2-3 seed questions from OBJECTIVES.md KRs
+             ⚠️ EFFORT-SCALING DISAMBIGUATION (backend-architect P0-2): this Step 1 baseline seed question tree
+                is the CORE deliverable and runs for ALL tiers (simple|comparison|complex). It is NOT gated by
+                `run_dynamic_seeds`. Gating it off would degenerate simple-tier research to just the Phase 3 report.
              Note: each seed question triggers dynamic_ask_protocol (step3_5 in *research-notebook ask)
-             automatically — depth-first instead of breadth-first. Alex may generate 4-5 seeds
-             with written justification if KR count is unusually high.
+             ONLY IF `run_dynamic_seeds` (on for comparison|complex, off for simple — set in Phase 0class).
+             When run_dynamic_seeds == off (simple tier): run each baseline seed as a SINGLE ask (no step3_5
+             depth chain) — the baseline tree still executes, just without per-seed dynamic deepening.
+             When run_dynamic_seeds == on: depth-first via step3_5 dynamic_ask_protocol as before.
+             Alex may generate 4-5 seeds with written justification if KR count is unusually high.
              Latency note: 2-3 seeds × max_depth 4 = 8-12 NotebookLM calls (~23-43s each)
              → ~4-8 min per research item. Inform user before starting Phase 4.
              → If OBJECTIVES.md not found in project root:
@@ -1442,6 +1491,10 @@ research_plan_protocol:
              When no gap signal: skip PHASE 4b entirely, proceed normally
 
            → Step 2.5: Adaptive Seed Generation (after each seed's chain + Phase 4b completes)
+             ⚠️ EFFORT-SCALING GATE (Phase 4 wiring): Step 2.5 runs iff `run_dynamic_seeds`
+                (on for comparison|complex, off for simple — set in Phase 0class). This is INTERNAL NotebookLM
+                only (no external CLI, no AR-001 constraint) → fully auto by complexity, no keystroke.
+                If run_dynamic_seeds == off → skip Step 2.5 entirely, proceed to Step 3 (Save findings).
              MAX_DYNAMIC_SEEDS: 2  # hard cap — total across all seeds, prevents unbounded growth
              TRACK: dynamic_seeds_added = 0 (initialized at Phase 4 entry)
              Compact recovery: dynamic_seeds_added is recoverable from chain frontmatter:
@@ -1480,6 +1533,12 @@ research_plan_protocol:
            → Step 3: Save findings
              → Write all ask results to .tad/evidence/research/{slug}/{date}-ask-findings.md
              → Format: per-question sections with KR reference, answer summary, source citations
+             → ⚠️ PERSIST EFFORT CLASSIFICATION (backend-architect P1-4 forward-compat): write a YAML
+               frontmatter block at the TOP of the findings file with the stable key:
+                 ---
+                 research_complexity: {simple|comparison|complex}   # final tier from Phase 0class (after any user override)
+                 ---
+               Phase 5 (persona-seeding + 5-dim rubric) reads `research_complexity` instead of re-deriving it.
 
         e_c. PHASE 4c — Adversarial Challenge: Research Findings (CORE):
            Trigger: After Phase 4 Step 3 (findings saved to file), before Phase 4.5.
@@ -1488,10 +1547,12 @@ research_plan_protocol:
            TRACK: challenge_round = 0
            Uses CHALLENGE_INSTRUCTION from Phase 0c (symmetric prompt for both models).
 
-           → Step 1: AskUserQuestion gate (NOT_via_alex_auto constraint):
-             question: "运行 Codex+Gemini adversarial challenge 审视研究发现？"
-             Options: "执行 challenge (Recommended)" / "跳过，直接进入 Phase 4.5"
-             If user picks "跳过" → skip to Phase 4.5 (e_5).
+           → Step 1: Effort-scaling gate (NOT_via_alex_auto constraint, now satisfied via DR-20260531 carve-out):
+             The challenge runs iff `run_adversarial_challenge` (set + displayed + overridable in Phase 0class).
+             If run_adversarial_challenge == off → skip to Phase 4.5 (e_5).
+             (No keystroke — the run/skip decision was displayed + made overridable in Phase 0class.)
+             ⚠️ Uses cached codex_available / gemini_available from Phase 0c Step 2 (always run, so safe even
+                when Phase 0c challenge itself was gated off — backend-architect P0-2).
 
            → Step 2: Assemble challenge payload (loop entry point for re-challenge):
              challenge_round += 1
@@ -1587,10 +1648,12 @@ research_plan_protocol:
              are labeled and shown to user, not re-researched. User decides what to do with weak ACs.
              Uses CHALLENGE_INSTRUCTION from Phase 0c (symmetric prompt for both models).
 
-             → Gate: AskUserQuestion (NOT_via_alex_auto constraint):
-               question: "运行 Codex+Gemini adversarial challenge 审视行动建议？"
-               Options: "执行 challenge (Recommended)" / "跳过，直接展示 AC"
-               If user picks "跳过" → skip to Step 2 (display ACs as-is, no labels).
+             → Gate: Effort-scaling gate (NOT_via_alex_auto constraint, now satisfied via DR-20260531 carve-out):
+               The challenge runs iff `run_adversarial_challenge` (set + displayed + overridable in Phase 0class).
+               If run_adversarial_challenge == off → skip to Step 2 (display ACs as-is, no labels).
+               (No keystroke — the run/skip decision was displayed + made overridable in Phase 0class.)
+               ⚠️ Uses cached codex_available / gemini_available from Phase 0c Step 2 (always run — safe even
+                  when Phase 0c challenge was gated off — backend-architect P0-2).
 
              → Assemble payload:
                rm -f /tmp/tad-challenge-actions.md
@@ -6182,7 +6245,7 @@ anti_rationalization_registry:
     - "marking a handoff 'express'"
     - "defaulting to 'no new knowledge' in Gate 4"
     - "accepting Blake's PARTIAL without raw-TSV recompute"
-    - "auto-invoking external CLI (codex/gemini) without user confirmation (NOT_via_alex_auto)"
+    - "auto-invoking external CLI (codex/gemini) without user confirmation (NOT_via_alex_auto) — EXCEPT the DR-20260531 *research-plan carve-out (display+overridable)"
   patterns:
     - id: "AR-001"
       label: "express = review-exempt"

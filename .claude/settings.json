@@ -10,6 +10,10 @@
           {
             "type": "command",
             "command": "bash .tad/hooks/startup-health.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/notebook-dormant-sync.sh"
           }
         ]
       }
