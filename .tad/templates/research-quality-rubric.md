@@ -132,8 +132,11 @@ The threshold **0.6** is fixed (not illustrative).
 > rubric above — they are illustrative rater targets, NOT claims about research numbers.
 > Cases tagged **[degraded-hypothetical]** describe a deliberately weakened variant of a real
 > file's content to populate the low-score buckets HONESTLY (the cited real file is NOT itself
-> low-quality; the row scores the described degradation). Cases tagged **[as-is]** score the
-> real file's actual observable shape.
+> low-quality; the row scores the described degradation). ⚠️ These are WORKED SCORING EXAMPLES,
+> NOT rater-reproducible references — a rater opening the cited file will NOT see these scores
+> (the degradation exists only in the row's description). Use them to learn the anchors/branch
+> logic, not to reconcile against the file. Only cases tagged **[as-is]** score the real file's
+> actual observable shape and are independently verifiable.
 >
 > Distribution (mandated): ≥5 below 0.5 · ≥5 in 0.5-0.65 · rest ≥0.7.
 
@@ -173,9 +176,13 @@ Distribution check: Bucket A (overall <0.5) = cases 1-6 (6 ≥ 5 ✓; failing dr
 
 ```yaml
 last_calibrated: 2026-05-31
-cases_count: 22
+cases_count: 22                  # 13 [degraded-hypothetical] worked-examples + 9 [as-is] observable
+cases_observable: 9              # [as-is] — independently re-verifiable against the cited file
+cases_hypothetical: 13           # [degraded-hypothetical] — scores reflect the DESCRIBED degradation, NOT reproducible by reading the real file
 review_trigger: >
   Re-calibrate when (a) the scored-dimension set changes, (b) the tier table is revised,
   (c) >= 6 months elapse (training-corpus drift moves the anti-slop bar), or
-  (d) two raters diverge by >= 1 anchor on the same findings in real use.
+  (d) two raters diverge by >= 1 anchor on the same findings in real use — this divergence
+  signal applies ONLY to [as-is] observable cases (hypothetical cases are worked examples,
+  not rater-reproducible from the cited file, so divergence on them is expected and not a trigger).
 ```
