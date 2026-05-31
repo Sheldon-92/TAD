@@ -323,3 +323,32 @@ $ grep -c 'grep -P' verify-ac-commands.sh
 ## 7. Gate 3 Verdict
 
 gate3_verdict: pass — all 9 ACs (AC4.1–AC4.7 incl. 4.1b/4.2b) PASS with raw evidence above. Advisory-only contract honored (exit always 0, SAFETY header, no set -e, no grep -P, wired non-blocking at step1d).
+
+## 8. Post-Gate Calibration (2026-05-31, after Layer 2 review)
+
+Layer 2 review found the linter shipped precise WARN rules but noisy / mis-framed
+INFO rules. Three calibration fixes applied (script + step1d advisory):
+
+1. **Rule B message reframed** — was "verify whether it's markdown-cell escaping"
+   (implying usually benign). Reality: a `\|` in an ERE pattern is a LITERAL pipe,
+   so an intended alternation is BROKEN when the command runs. New message tells the
+   author the command is broken-as-written and the *runnable* form must use bare `|`
+   even if a renderer forced the `\|`. The step1d advisory text in alex/SKILL.md was
+   reframed identically ("LIKELY REAL broken-when-run bug; do NOT dismiss as benign
+   escaping"). Recurrence citation preserved.
+2. **Rule C removed entirely** — the single-file `grep -n`/`grep -c` output-shape
+   INFO fired 218× across the 189-handoff archive (every single-file grep), was
+   non-actionable, duplicated step1d's manual dry-run, and buried Rule A/B. Detection
+   block + INFO emission + tally contribution deleted. (Rules A, B, D kept.)
+3. **Rule D double-emit fixed** — candidate tokens are now deduped by their BARE value
+   (quotes stripped, `awk '!seen[$0]++'`) before the membership check, so a sentinel
+   quoted twice on one line (or as both `'foo'` and `"foo"`) warns at most once.
+
+**Before/after noise (sample handoff `HANDOFF-20260527-vimax-pattern-upgrade-video-creation.md`):**
+- BEFORE (committed eb53ee7): `7 warnings, 8 info`
+- AFTER (calibrated): `7 warnings, 0 info`
+
+**Archive-wide Rule C INFO lines:** 218 → 0 (rule removed). Re-verified: Rule A still
+fires on AC15; Rule B still fires on `grep -nE 'x\|y'` and still does NOT fire on the
+correct form `grep -nE 'a\[3\]|c=a\[5\]' f`; `bash -n` clean; no `set -e`; SAFETY
+header intact; exit always 0. gate3_verdict remains: pass.

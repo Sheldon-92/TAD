@@ -2928,8 +2928,11 @@ handoff_creation_protocol:
            Run `bash .tad/hooks/lib/verify-ac-commands.sh <this-handoff>`; surface any
            WARN/INFO findings to the author and reconcile them with the step1d dry-run
            above (e.g. a Rule A `grep -c … | sort -u | wc -l` WARN → switch to
-           `grep -oE … | sort -u | wc -l`; a Rule B `\|`-in-ERE WARN → confirm whether
-           it is a real literal-pipe bug or mere markdown-cell escaping).
+           `grep -oE … | sort -u | wc -l`; a Rule B `\|`-in-ERE WARN → treat as a LIKELY
+           REAL broken-when-run bug: in ERE `\|` is a literal pipe, so an intended OR is
+           broken — confirm the *runnable* form uses a bare `|` (even if a markdown
+           renderer forced the `\|` in the table cell, the command you actually run must
+           use bare `|`); do NOT dismiss it as "probably benign escaping").
            This is ADVISORY (warn, continue) — it NEVER blocks step1d or the handoff,
            and its exit code is always 0. It complements (does NOT replace) the manual
            dry-run; treat it as a smoke alarm that mechanically catches the lintable

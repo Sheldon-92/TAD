@@ -6,7 +6,7 @@
 # dangerous AC-verification command patterns, and WARNs/INFOs. Never blocks.
 #   Rule A (WARN) — grep with `c` flag piped to `sort -u` ... `wc -l`
 #   Rule B (WARN) — grep -E/-nE/egrep quoted pattern with a literal `\|`
-#   Rule C (INFO) — single-file grep -n/-c output-shape ambiguity
+#                   (a literal pipe — broken-when-run if alternation was meant)
 #   Rule D (INFO) — sentinel/marker self-leak (token also in nearby doc prose)
 # Usage: verify-ac-commands.sh <handoff.md>
 #
@@ -116,19 +116,8 @@ while IFS= read -r entry; do
     # spans, then test those spans for a literal backslash-pipe.
     qspans="$(printf '%s' "$c" | grep -oE "'[^']*'" 2>/dev/null; printf '%s' "$c" | grep -oE '"[^"]*"' 2>/dev/null)"
     if printf '%s' "$qspans" | grep -q '\\|'; then
-      echo "RULE B [WARN] line $n: $snippet → in ERE \\| matches a LITERAL pipe, not alternation. For OR use a bare pipe: grep -nE 'a|b'. Keep \\[ \\] bracket escapes. (recurrence: Epic P1+P2 AC1.1 (2×))"
+      echo "RULE B [WARN] line $n: $snippet → \\| in an ERE pattern is a LITERAL pipe, not alternation — if you meant OR, this command is BROKEN as written (use bare |). If a markdown renderer forced the \\|, the *runnable* form must still use bare |. (recurrence: Epic P1+P2 AC1.1 (2×))"
       W=$((W + 1))
-    fi
-  fi
-
-  # ----- Rule C: single-file grep -n/-c output-shape (LOW-confidence INFO) -----
-  # recurrence: AC Verification Drift Pattern sub-pattern 2 (output-shape
-  # single-vs-multi-file). Heuristic only → INFO, never WARN, to avoid noise.
-  # Skip if Rule A already fired on this line (the -c case is covered there).
-  if [ "${ruleA_flagc}${ruleA_tail}" != "11" ]; then
-    if printf '%s' "$c" | grep -Eq 'grep[[:space:]]+-[A-Za-z]*[nc][A-Za-z]*'; then
-      echo "RULE C [INFO] line $n: $snippet → verify single-file grep output shape (count vs match-lines) on a real artifact before relying on the value (recurrence: AC Verification Drift Pattern)"
-      I=$((I + 1))
     fi
   fi
 
@@ -139,9 +128,12 @@ while IFS= read -r entry; do
   # "no occurrence of X" can self-leak from the doc's own text. INFO only.
   if printf '%s' "$c" | grep -q 'grep'; then
     tokens="$(printf '%s' "$c" | grep -oE "'[^']*'" 2>/dev/null; printf '%s' "$c" | grep -oE '"[^"]*"' 2>/dev/null)"
-    printf '%s\n' "$tokens" | while IFS= read -r tok; do
-      [ -n "$tok" ] || continue
-      bare="$(printf '%s' "$tok" | sed "s/^['\"]//; s/['\"]$//")"
+    # Dedup candidate tokens by their BARE value (quotes stripped) so the same
+    # sentinel warns at most ONCE per line — e.g. a token quoted both 'foo' and
+    # "foo", or repeated across grep args, must not double-emit (count inflation).
+    bares="$(printf '%s\n' "$tokens" | sed "s/^['\"]//; s/['\"]\$//" | awk 'length>0 && !seen[$0]++')"
+    printf '%s\n' "$bares" | while IFS= read -r bare; do
+      [ -n "$bare" ] || continue
       # Only meaningful for plain word-ish sentinels (avoid regex metacharacters).
       case "$bare" in
         ""|*'|'*|*'\'*|*'['*|*']'*|*'('*|*')'*|*'.'*|*'*'*|*'^'*|*'$'*|*'+'*|*'?'*) continue ;;
