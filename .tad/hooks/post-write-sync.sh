@@ -157,9 +157,10 @@ emit_expert_findings() {
   [ -n "$reviewer" ] || return 0
   local n count re
   for n in 0 1 2; do
-    # Count finding-LABEL lines (heading `### P0...` or table cell `| P0 |`), not bare
-    # "no P0 issues" prose. grep -cE counts LINES (not -o matches). BSD-safe.
-    re="(^#+[[:space:]]*P${n}([^0-9]|$)|\|[[:space:]]*P${n}([^0-9]|$))"
+    # Count numbered-heading findings only (a heading like P-zero-dash-one with a
+    # finding-id suffix), NOT table cells or prose mentions — prose/verdict-cells
+    # self-trigger the parser and inflate priority counts. grep -cE counts LINES. BSD-safe.
+    re="^#+[[:space:]]*P${n}-[0-9]"
     count=$(grep -cE "$re" "$file" 2>/dev/null)
     [[ "$count" =~ ^[0-9]+$ ]] || count=0
     if [ "$count" -gt 0 ]; then

@@ -107,7 +107,7 @@ CAND_EOF
 }
 
 classify_scope() {
-  local file_field="$1" slug_field="$2"
+  local file_field="$1" slug_field="$2" decision_text="${3:-}"
   if [ -n "$file_field" ]; then
     case "$file_field" in
       *.claude/skills/*|*.tad/hooks/*) echo "framework"; return ;;
@@ -115,7 +115,14 @@ classify_scope() {
   fi
   if [ -n "$slug_field" ]; then
     case "$slug_field" in
-      *capability-pack*|*skill*) echo "framework"; return ;;
+      *capability-pack*|*skill*|*hook*|*trace*|*evolve*|*dream*|*registry*) echo "framework"; return ;;
+    esac
+  fi
+  if [ -n "$decision_text" ]; then
+    # TAD-specific framework signals ONLY — generic words (sync/schema) over-classify
+    # to framework, which fans out cross-project in *evolve (backend-architect P1-2).
+    case "$decision_text" in
+      *"trace schema"*|*emission*|*观测式*|*发射机制*) echo "framework"; return ;;
     esac
   fi
   echo "project"
@@ -180,11 +187,11 @@ if [ "$HAS_JQ" = true ]; then
     [ -z "$event_json" ] && continue
     slug=$(echo "$event_json" | jq -r '.slug // ""')
     file=$(echo "$event_json" | jq -r '.file // ""')
-    decision=$(echo "$event_json" | jq -r '(.context | fromjson | .decision) // "unknown"')
-    [ "$decision" = "unknown" ] && continue
-    chosen=$(echo "$event_json" | jq -r '((.context | fromjson | .chosen) // "") | gsub("\n";" ")' 2>/dev/null)
-    rationale=$(echo "$event_json" | jq -r '((.context | fromjson | .rationale) // "") | gsub("\n";" ")' 2>/dev/null)
-    scope=$(classify_scope "$file" "$slug")
+    decision=$(echo "$event_json" | jq -r '(.context | (try fromjson catch null) | .decision?) // "unknown"' 2>/dev/null)
+    [ "$decision" = "unknown" ] || [ -z "$decision" ] && continue
+    chosen=$(echo "$event_json" | jq -r '((.context | (try fromjson catch null) | .chosen?) // "") | gsub("\n";" ")' 2>/dev/null)
+    rationale=$(echo "$event_json" | jq -r '((.context | (try fromjson catch null) | .rationale?) // "") | gsub("\n";" ")' 2>/dev/null)
+    scope=$(classify_scope "$file" "$slug" "$decision")
 
     if [ -n "$chosen" ]; then
       disc="On '$decision', human chose: $chosen"
@@ -219,10 +226,10 @@ if [ "$HAS_JQ" = true ]; then
     [ -z "$event_json" ] && continue
     slug=$(echo "$event_json" | jq -r '.slug // ""')
     [ -z "$slug" ] && continue
-    confidence=$(echo "$event_json" | jq -r '(.context | fromjson | .confidence) // "low"')
+    confidence=$(echo "$event_json" | jq -r '(.context | (try fromjson catch null) | .confidence?) // "low"' 2>/dev/null)
     [ "$confidence" != "high" ] && continue
     if echo "$GATE_PASS_SLUGS" | grep -qxF "$slug"; then
-      approach=$(echo "$event_json" | jq -r '(.context | fromjson | .revised_approach) // "unknown"')
+      approach=$(echo "$event_json" | jq -r '(.context | (try fromjson catch null) | .revised_approach?) // "unknown"' 2>/dev/null)
       match_file=$(echo "$event_json" | jq -r '.file // ""')
       scope=$(classify_scope "$match_file" "$slug")
       generate_candidate \
