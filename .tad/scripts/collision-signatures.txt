@@ -1,0 +1,39 @@
+# collision-signatures.txt — curated opposing-directive signatures for scan-collisions.sh
+#
+# Format (one signature per line, fields delimited by `@@@`):
+#   topic@@@A-side -E regex@@@B-side -E regex
+#
+# The field delimiter is `@@@` (NOT `|`) so that `|` remains available as -E regex
+# alternation WITHIN either side (e.g. an A-side `family=Inter|Inter.*next/font`).
+#
+# Each signature pairs a topic with two opposing BSD-safe extended (-E) regexes.
+# The scanner runs each signature in BOTH orientations against every pack PAIR that
+# shares >=1 keyword (the keyword overlap is the PRE-FILTER — it keeps the candidate
+# set small and false-positive-prone matching local to genuinely related packs).
+#
+# ⚠️ Anchor SPECIFICALLY. Bare tokens over-match (e.g. bare `Inter` hits
+#    "INP (Interaction to Next Paint)"). Each regex below was dry-run against live
+#    .claude/skills/ files and confirmed to hit ONLY the intended contradiction line(s).
+#
+# ⚠️ Parser self-trigger (architecture.md 2026-05-30): these literal patterns live in
+#    .tad/scripts/ (NOT under a scanned pack dir) so describing them here does not
+#    self-trigger the scanner. Do NOT move this file under .claude/skills/.
+#
+# BSD-safe only: no \d, no .*?, no grep -P constructs.
+
+# inter-font: STYLE ban (anti-AI-slop) vs PERFORMANCE endorse (next/font optimization).
+#   A hits web-ui-design/SKILL.md:93 ("NEVER use Inter, Roboto, Arial...").
+#   B hits web-frontend/references/performance.md:215 (`import { Inter } from 'next/font/google'`)
+#     and :207 (`family=Inter`). Anchored so it does NOT match "INP (Interaction...)".
+inter-font@@@NEVER use Inter@@@Inter.*next/font|family=Inter
+
+# contrast-standard: A11Y vs A11Y — APCA (LC scale) vs WCAG (4.5:1 ratio). Same category → escalate.
+#   A (APCA side) hits web-ui-design/SKILL.md:454 ("Validate contrast with APCA") / :476 ("APCA LC ...").
+#   B (WCAG side) hits web-frontend/references/accessibility.md:45 ("Minimum 4.5:1 ...").
+#   A is an alternation of the two APCA phrasings; B is the bare WCAG ratio.
+contrast-standard@@@Validate contrast with APCA|APCA LC@@@4\.5:1
+
+# testing-pyramid: TESTING vs TESTING — frontend says cut E2E >20% vs testing says MORE E2E for UI-heavy. Same category → escalate.
+#   A (cut side) hits web-frontend/references/testing.md:19 ("If E2E tests make up >20% ... cut").
+#   B (more side) hits web-testing/references/test-strategy-rules.md:31 ("UI-heavy app ... More E2E tests").
+testing-pyramid@@@E2E tests make up >20%@@@More E2E tests
