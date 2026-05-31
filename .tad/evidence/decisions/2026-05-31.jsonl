@@ -1,0 +1,2 @@
+{"ts":"2026-05-31T15:28:03Z","session_id":"69bbc663-5b05-446d-a503-a90ce62b2b63","slug":null,"question":"自动 dreaming 在 2026-05-30 发现了 6 个知识模式候选。要现在审阅吗？","options":["审阅 candidates","稍后处理"],"selection":"审阅 candidates","is_other":false,"multi_select":false}
+{"ts":"2026-05-31T15:29:32Z","session_id":"69bbc663-5b05-446d-a503-a90ce62b2b63","slug":null,"question":"6 个 candidates 都是同一 override 信号的空壳，且内容已被 architecture.md 现有条目覆盖。怎么处理？","options":["全部拒绝 (Recommended)","合并为 1 条","逐个看","修复 scanner"],"selection":"<other>","is_other":true,"multi_select":false}

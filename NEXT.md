@@ -2,11 +2,12 @@
 
 ## In Progress
 
-- [x] **Bugfix: dream-scanner Pass C weaves override chosen/rationale** — Gate 3 PASS 2026-05-31 (awaiting Alex Gate 4)
+- [x] **Bugfix: dream-scanner Pass C weaves override chosen/rationale** — Gate 4 PASS + ARCHIVED 2026-05-31
   - Pass C now extracts .chosen/.rationale (newline-flattened in jq, stderr-quiet) → content-rich candidates; fallback intact
   - Layer 2 code-reviewer PASS (raised P0 heredoc-injection → empirically refuted → withdrawn); test-runner PASS
-  - Commit ecf912e; KA → code-quality "Heredoc injection depends on the SINK"
-  - ⏭️ Alex: Gate 4 raw-recompute + *accept → archive
+  - Commit ecf912e + 7e1e54b (Gate 3 artifacts); KA(Blake) → code-quality "Heredoc injection depends on the SINK"
+  - Gate 4: Alex raw-recompute AC2/AC3/AC4 from real trace events (✅); Layer2 audit 2 reviewers tier MET; KA(Alex) → architecture "Parser feeding review queue must propagate VALUE not just key"
+  - Trigger: 6 empty `human_override` dream candidates (2026-05-30) all rejected → root cause = Pass C dropped captured rationale
 
 - [x] **Release v2.19.0 + v2.19.1 PUBLISHED + SYNCED to 14 projects** — DONE 2026-05-30
   - *publish: pushed main + tags v2.19.0 (87665e0) & v2.19.1 (40989f2); rebased through remote dream-state churn
@@ -20,6 +21,7 @@
 - [ ] **Version-scheme inconsistency**: tad.sh stamps downstream version.txt = "2.19" (MAJOR.MINOR via TARGET_VERSION:537) while source = 3-part "2.19.1". Decide unified scheme.
 - [ ] **runbook gap**: add codex greeting lines (855/632) to release-runbook Phase 2 version table
 - [ ] **expert_finding parser**: tighten count to heading-form-only (prose "P0" self-trigger — trace-fix follow-up)
+- [ ] **dream-scanner Pass C dedup + scope** (deferred from bugfix-dream-scanner-override-content): (a) dedup new candidates against existing project-knowledge before emit; (b) `file=null` → override candidates mis-classify as `project` even when framework-scoped; (c) line ~183 `fromjson`-error on malformed context → `""` not `"unknown"` → guard leaks junk candidate. Bundle into one Pass C hardening handoff.
 - [ ] tad.sh `*)` default arm for unknown flags (code-reviewer P2, non-blocking)
 - [ ] **dream-scanner Pass C dedup + scope**: (a) dedup override candidates vs existing project-knowledge; (b) classify_scope mis-tags framework overrides as `project` (file=null on decision_point); (c) line 183 `(.context|fromjson|.decision)//"unknown"` doesn't catch fromjson *errors* → malformed context yields junk candidate. Bundle into one Pass C follow-up handoff.
 - [ ] **express slug convention**: express handoffs should encode "express" in the slug so layer2-audit detects the Tier (bugfix-... slug + task_type=code → false ≥2-reviewer WARN)
