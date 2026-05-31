@@ -1,0 +1,11 @@
+=== AC1.4b: malformed Decision Summary (header lacks Chosen) → graceful skip ===
+--- input /tmp/malformed.md ---
+## 11. Decision Summary
+
+| # | Decision | Reasoning |
+|---|----------|-----------|
+| 1 | Some decision | because reasons |
+| 2 | Another decision | more reasons |
+--- output ---
+[stdout begin][stdout end]
+exit code: 0

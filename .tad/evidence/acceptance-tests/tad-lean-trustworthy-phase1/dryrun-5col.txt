@@ -1,0 +1,35 @@
+=== AC1.2b: 5-col (trace-instrumentation-fix) — NEW awk, no regression ===
+发射机制<<SEP>>观测式为主<<SEP>>用户选;reflexion 唯一命令式调用只触发 1 次,证明命令式不可靠
+gate/reflexion 信号源<<SEP>>结构化标记(Blake 写)<<SEP>>两位审查员:散文脆弱;gate3-verdict.md 仅 2/76;`.router.log` 教训=被消费产物要稳定契约
+Schema 不一致<<SEP>>改分析器兼容(且更正:分析器本来基本对)<<SEP>>用户选;避免 breaking change;真实 bug 只在 4907 行
+Gate 观测范围<<SEP>>MVP 仅 Gate 3 + N=0 skip guard<<SEP>>用户选;Gate 3 标记可靠;guard 防 *evolve 误报 Gate 2/4 0%
+reflexion 可观测<<SEP>>Blake 写块→解析,**删命令式**<<SEP>>用户选;删命令式避免双发污染 dream-scanner
+降级策略<<SEP>>静默跳过<<SEP>>用户选;不造假事件
+去重粒度<<SEP>>每 slug 每天一次<<SEP>>用户选;PostToolUse 难分 create/edit;TOCTOU 接受
+
+=== AC1.2d: multi-table §11 (phase5-evolve-data-capture) — NEW awk, zero Decision/Chosen junk header rows ===
+P5.1 schema format<<SEP>>**YAML inline frontmatter list-of-objects**<<SEP>>(originally labeled "JSON 嵌入 frontmatter" — semantically equivalent: frontmatter IS YAML; BA-P2-3 clarification)
+P5.2 privacy boundary<<SEP>>**options + selection (no Other free-text)**<<SEP>>平衡 PII 风险 vs *evolve 数据效用
+P5.3 cancel taxonomy<<SEP>>**4 类**<<SEP>>覆盖 toy 实例 + 简单 mechanical 检查
+P5.4 trace-digest scope<<SEP>>**per-handoff**<<SEP>>layer2-audit.sh 同模式（per-slug CLI）
+P5.7 demote 处理<<SEP>>**完全删 + 迁移到 project-knowledge**<<SEP>>cleanest, 跟 ROI 分析结论一致
+P5.8 meta-rule 位置<<SEP>>**README.md**<<SEP>>canonical 位置
+**P5.4 slug 来源 (BA-P0-2 fix)**<<SEP>>**active handoff filename via cwd scan**<<SEP>>env var 不跨 Claude Code subprocess 边界（BA review 证据）；filename scan 是 single source of truth + zero env state leakage + backward compat (degrades to date-only when 0 active)
+**P5.5 YAML 形式 (CR-P0-4 + BA-P0-5 fix)**<<SEP>>**string-form trailing annotation**<<SEP>>dict 会破坏 8 个 Pack 的 quality_criteria 同构 schema (确认 0 consumers 处理 dict)；string annotation 同语义 + zero blast radius
+P5.2 hook 出错策略<<SEP>>**soft fail**<<SEP>>Anti-Epic-1; PostToolUse 永远不阻塞工具
+P5.7 frontend-design.md initial structure<<SEP>>**+ foundational + accumulated split**<<SEP>>mirror security.md pattern (foundational + accumulated learnings sections)
+**P5.3 cancel forbidden_implementations (BA-P0-3 fix)**<<SEP>>**5 items symmetric**<<SEP>>Path Layering 2026-04-24 教训：每个新 path-like command 都需 symmetric defense to prevent AR-001 drift
+**P5.7 order invariant enforcement (CR-P0-5 + BA-P1-4 fix)**<<SEP>>**single-sequential agent**<<SEP>>order invariant 不能由 prose 强制；structural 解法是 sequential execution
+**P5.2 envelope verification (CR-P0-1 fix)**<<SEP>>**§0 spike step**<<SEP>>Phase 2a 教训：envelope 字段路径不能假设
+Item<<SEP>>Notes<<SEP>>
+gate4_delta frontmatter<<SEP>>implemented + dogfooded (gate4_delta: [] in this handoff frontmatter)<<SEP>>
+AskUserQuestion capture hook<<SEP>>implemented post §0 envelope spike<<SEP>>
+*cancel command + reason taxonomy + forbidden_implementations<<SEP>>implemented<<SEP>>
+per-handoff trace + trace-digest (slug from filename)<<SEP>>implemented; env var dropped<<SEP>>
+UUID Pub/Sub annotation (string form)<<SEP>>implemented (string-form, not dict)<<SEP>>
+Design Iteration ADR re-anchor<<SEP>>implemented<<SEP>>
+Warm Palette demote<<SEP>>implemented (delete + migrate, sequential order)<<SEP>>
+Domain Pack vs project-knowledge meta-rule<<SEP>>implemented<<SEP>>
+
+=== AC1.2d guard check: rows where col1=='Decision' or col2=='Chosen' (expect none) ===
+OK: zero junk header rows

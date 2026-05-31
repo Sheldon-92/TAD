@@ -170,7 +170,11 @@ emit_expert_findings() {
 }
 
 # FR4: parse §11 Decision Summary table → decision_point per row (override-aware).
-# Column contract: | # | Decision | Options | Chosen | Rationale | → $3 / $5 / $6.
+# Column-NAME-aware since 2026-05-31: the header row is scanned for the Decision/Chosen/
+# Rationale column names and awk indices di/ci/ri are bound by name (was hardcoded
+# a[3]/a[5]/a[6] — those positions are correct only for the 5-col layout; 4-col tables
+# written before this date are column-shifted in the historical trace, NOT repaired,
+# append-only).
 emit_decision_points() {
   local file="$1" slug="$2"
   [ -n "$slug" ] || return 0
@@ -180,16 +184,31 @@ emit_decision_points() {
     { if (incomment) { if ($0 ~ /-->/) incomment=0; next }
       if ($0 !~ /^##/ && $0 ~ /<!--/ && $0 ~ /-->/) next
       if ($0 !~ /^##/ && $0 ~ /<!--/) { incomment=1; next } }
-    /^##[[:space:]]/ { insec = ($0 ~ /Decision Summary/) ? 1 : 0; next }
+    /^##[[:space:]]/ { insec = ($0 ~ /Decision Summary/) ? 1 : 0;
+                       havehdr=0; di=0; ci=0; ri=0; next }   # reset header binding per section
     !insec { next }
     /^\|/ {
       if ($0 ~ /^\|[-: |]+\|[[:space:]]*$/) next   # separator row
-      n=split($0, a, "|")
-      d=a[3]; c=a[5]; r=a[6]
+      if (havehdr==0) {                            # header row: bind di/ci/ri by column name
+        n=split($0, a, "|")
+        for (i=1; i<=n; i++) {
+          t=a[i]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); lt=tolower(t)
+          if (lt=="decision")  di=i
+          if (lt=="chosen")    ci=i
+          if (lt=="rationale") ri=i
+        }
+        if (di>0 && ci>0) havehdr=1
+        next                                       # header / pre-header rows emit nothing
+      }
+      n=split($0, a, "|")                          # data row: read by bound indices
+      d=a[di]; c=a[ci]; r=(ri>0 ? a[ri] : "")
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", d)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", r)
-      if (d=="" || c=="" || d=="Decision" || c=="Chosen") next   # header / empty
+      # KEEP guard: case-insensitive header guard catches a second tables header arriving
+      # as a data row (multi-table §11 — havehdr locked on first table, not re-bound) and
+      # blank/separator residue. Removing it emits junk + triggers parser self-trigger.
+      if (d=="" || c=="" || (tolower(d)=="decision" && tolower(c)=="chosen")) next
       printf "%s%s%s%s%s\n", d, SEP, c, SEP, r
     }
   ' "$file" 2>/dev/null)

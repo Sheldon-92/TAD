@@ -1,0 +1,21 @@
+=== AC1.2a: 4-col (research-engine-wire-phase4) — NEW header-aware awk ===
+Triggering mechanism<<SEP>>Complexity-adaptive effort-scaling<<SEP>>Fixes 0/2 usage AND delivers Anthropic effort-scaling in one change
+Quality gate (Phase 5)<<SEP>>Reuse Codex+Gemini, advisory<<SEP>>(Phase 5) reuse existing challenge infra; non-blocking per single-user CLI
+Perspective (Phase 5)<<SEP>>Generate personas<<SEP>>Lightweight, no external corpus needed
+Lifecycle mechanism<<SEP>>Non-blocking SessionStart hook<<SEP>>Only updates derived state; doesn't violate anti-mechanical-enforcement
+Adoption (Phase 6)<<SEP>>Right-moment trigger, not usage-count<<SEP>>Some projects legitimately don't need research
+Scope/rollout<<SEP>>TAD-main first + dogfood, then *sync<<SEP>>Don't push unvalidated changes to 14 projects
+Dogfood target<<SEP>>Re-run stale tad-evolution-research<<SEP>>Validates + refreshes the 26-day-stale meta notebook
+Deferred mechanisms<<SEP>>CRAG / citation pass / mind-map → future phase<<SEP>>Validate first 3 buckets before adding more
+Challenge auto-run vs AR-001 SAFETY<<SEP>>**Option B — carve-out via DR-20260531** (human-authorized)<<SEP>>Dynamic seeds auto-fire (internal); challenge auto-runs only inside *research-plan with displayed+overridable classification
+
+=== AC1.2c: 4-col — OLD buggy awk (positional a[3]/a[5]/a[6]) — before/after contrast ===
+Triggering mechanism<<SEP>>Fixes 0/2 usage AND delivers Anthropic effort-scaling in one change<<SEP>>
+Quality gate (Phase 5)<<SEP>>(Phase 5) reuse existing challenge infra; non-blocking per single-user CLI<<SEP>>
+Perspective (Phase 5)<<SEP>>Lightweight, no external corpus needed<<SEP>>
+Lifecycle mechanism<<SEP>>Only updates derived state; doesn't violate anti-mechanical-enforcement<<SEP>>
+Adoption (Phase 6)<<SEP>>Some projects legitimately don't need research<<SEP>>
+Scope/rollout<<SEP>>Don't push unvalidated changes to 14 projects<<SEP>>
+Dogfood target<<SEP>>Validates + refreshes the 26-day-stale meta notebook<<SEP>>
+Deferred mechanisms<<SEP>>Validate first 3 buckets before adding more<<SEP>>
+Challenge auto-run vs AR-001 SAFETY<<SEP>>Dynamic seeds auto-fire (internal); challenge auto-runs only inside *research-plan with displayed+overridable classification<<SEP>>
