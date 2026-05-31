@@ -74,6 +74,16 @@ STRONG
 
 ## 需要补充研究的问题（仅 INSUFFICIENT 时填写）
 - Q1: [具体问题 + 搜索方向]
+
+## Quality Rubric (5-dim — ALWAYS fill, on every verdict)
+为以下 4 个 SCORED 维度各给一个 0.0 / 0.5 / 1.0 的分数（只能取这三档），再给 efficiency 一句话定性（不打分）。
+每行严格用 `dim_name: SCORE` 格式，方便机器解析。
+- citation_accuracy: [0.0|0.5|1.0]  # 引用机制：引用是否存在、来源是否真实、被引文本是否真的支持该结论（无需领域知识即可核验）
+- factual_accuracy: [0.0|0.5|1.0]  # 结论真伪：即使引用正确，结论本身是否正确（需领域判断；引用对但解读错 → 这一维低分，citation 不扣）
+- completeness: [0.0|0.5|1.0]  # 覆盖比 = 已被 Tier-1/Tier-2 来源支撑的目标 KR 数 / 目标 KR 总数（0.5≈一半，1.0=全部）
+- source_quality: [0.0|0.5|1.0]  # 来源层级混合：Tier-1 一手/官方/同行评审；Tier-2 可信二手/厂商文档；Tier-3 一般网页/博客。一手占比越高分越高
+- efficiency: [信号密度的一句话定性，不计入数值]  # ADVISORY ONLY — 不打分
+正交规则（避免重复扣分）：完全没有引用 → 只扣 citation_accuracy；引用歪曲来源 → citation 与 factual 都扣；引用正确但结论错 → 只扣 factual_accuracy。
 <!-- END findings -->
 
 <!-- BEGIN actions -->

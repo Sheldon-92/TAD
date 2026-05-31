@@ -1372,6 +1372,32 @@ research_plan_protocol:
                → Display: "No OBJECTIVES.md found — skipping Question Tree + AC Bridge (Phase 4-5)."
                → SKIP Phase 4 and Phase 5 entirely. Phase 3 report is the final deliverable.
                → Proceed to step5 (OBJECTIVES coverage update — which no-ops when OBJECTIVES.md is absent)
+             → PERSONA PASS (FR1 — STORM-style breadth-at-question-time; runs ALL tiers, BEFORE KR seeds):
+               Generate stakeholder persona perspectives from the research TOPIC, then seed one
+               specificity-anchored sub-question per persona. This attacks the single-angle bias of a
+               KR-only tree (the question tree otherwise only reflects the author's framing).
+               Persona pool (pick by topic relevance): end-user, implementer/builder, skeptic/critic,
+               operator/maintainer, domain-expert, cost-owner.
+               → Scale stakeholder persona count by the persisted `research_complexity` (READ from the
+                 Phase 0class frontmatter — persisted above at :1539; do NOT re-derive the tier):
+                 | research_complexity | stakeholder persona count |
+                 | simple              | 0 or 1 (DEFAULT 0 — do NOT inflate the simple-tier single-ask path) |
+                 | comparison          | 3 |
+                 | complex             | 4 |
+                 (Greppable scaling row: simple 0|1 · comparison 3 · complex 4.)
+               → Each stakeholder persona generates ≥1 sub-question that OBEYS the SAME Question format
+                 rules below (specificity anchor MANDATORY; reject "best practices for X" — rephrase).
+               → MERGE persona sub-questions INTO the baseline seed tree — they do NOT replace KR-derived
+                 seeds. ⚠️ SHARED BUDGET: persona sub-questions + KR-derived seeds TOGETHER count against
+                 the existing 2-3 Step 1 cap (4-5 only with the written justification the cap rule already
+                 allows). Personas do NOT silently bypass the cap. Allocation order: fill persona seeds
+                 first (capped by the scaling table), then KR-derived seeds up to the REMAINING budget; if
+                 the combined set would exceed the cap, prioritize the highest-uncertainty KRs and the
+                 most topic-relevant personas, dropping the rest.
+               → Display the persona set to the user inside the Question Tree (add a Persona column),
+                 consistent with the existing display+override ethos (user may edit/drop personas).
+               ⚠️ This persona pass AUGMENTS Step 1 (the all-tiers baseline) — it does NOT re-gate Step 1
+                  on `run_dynamic_seeds` (preserves the Phase 4 effort-scaling disambiguation above).
              → Read OBJECTIVES.md KRs aligned with this research item
              → For each KR with status ⬚/🔄, generate 1 seed question (max 2-3 total across all KRs):
                (KRs with status ✅ → skip. Prioritize KRs with highest uncertainty.)
@@ -1383,9 +1409,10 @@ research_plan_protocol:
              ❌ REJECT "What are best practices for X?" — rephrase to "What do [companies] actually use for X?"
              ❌ REJECT "How should we approach X?" — rephrase to "What specific tools/patterns exist for X?"
              If a generated question matches a ❌ pattern, Alex MUST rephrase before adding to tree.
-             → Display Question Tree to user:
-               "📋 Question Tree (based on {N} KRs):"
-               | # | KR | Question | Priority |
+             → Display Question Tree to user (include Persona column for FR1 persona seeds; KR-derived
+               seeds leave Persona blank or "—"):
+               "📋 Question Tree (based on {N} KRs + {P} stakeholder persona seeds):"
+               | # | KR | Persona | Question | Priority |
              → AskUserQuestion: "这些问题对吗？"
                Options: "确认执行" / "我要调整" / "加自定义问题" / "跳过 ask"
            → Step 2: Execute ask loops (sequential, with 1s delay between asks)
@@ -1576,6 +1603,39 @@ research_plan_protocol:
              Single-model degradation (inlined): if one model UNAVAILABLE + other ADEQUATE+ → PASS.
              Both UNAVAILABLE → auto-PASS with WARN.
 
+           → Step 4b: Quality Rubric scoring (FR2 — SAME invocation, no new call site):
+             The Step 3 Codex+Gemini reports ALSO contain a `## Quality Rubric (5-dim ...)` block
+             (added to the `findings` variant of research-challenge-prompt.md — extracted in Step 2).
+             ⚠️ This rides the EXISTING challenge invocation — it is NOT a new auto-invoke / external-CLI
+                call. (If 4c text is ever too signal-poor to score 4 dims, do NOT add a second targeted
+                scoring call — that needs a DR amendment. STOP + escalate instead.)
+             → For each model, parse its 4 SCORED sub-scores (each ∈ {0.0, 0.5, 1.0}):
+               citation_accuracy (citation mechanics), factual_accuracy (claim truth),
+               completeness (KR coverage ratio), source_quality (tier mix);
+               plus efficiency (ADVISORY note — NOT scored, never in the aggregate).
+               If a model is UNAVAILABLE → use the other model's scores; if both UNAVAILABLE → skip rubric
+               (note "rubric unavailable" in findings) and proceed.
+             → Combine the two models per scored dim by AVERAGING their sub-scores (mean of Codex+Gemini).
+             → Aggregate via the HYBRID FLOOR RULE (NOT a plain mean):
+               IF factual_accuracy < 0.5 OR citation_accuracy < 0.5
+                 → overall = min(factual_accuracy, citation_accuracy)   # floor: highest-consequence failure wins
+               ELSE
+                 → overall = mean(citation_accuracy, factual_accuracy, completeness, source_quality)  # 4 scored dims
+               (Rationale: a plain mean lets fabrication — factual=0.0 — hide behind 3 good scores; the
+                floor surfaces it. See .tad/templates/research-quality-rubric.md for anchors + decision tree.)
+             → Append to findings file a "## Quality Rubric (Phase 4c)" section with: the 4 scored sub-scores,
+               the efficiency advisory note, and the overall (with which aggregation branch fired).
+             → Advisory verdict (overall < 0.6 → WARN; NEVER blocks — single-user CLI principle):
+               IF overall < 0.6:
+                 Report a WARN line + per-dim severity labels (advisory only, research still PROCEEDS):
+                 - factual_accuracy or citation_accuracy low → "accuracy concern — verify before citing"
+                 - completeness low → "coverage gap — consider re-ask"
+                 - source_quality low → "weak sources — add primary"
+                 The WARN is informational: findings PROCEED to Phase 4.5 regardless (it does NOT halt the flow).
+               ELSE: note "Quality Rubric overall {score} — OK" and PROCEED.
+             (This rubric step runs whenever 4c exits toward Phase 4.5 — on both the PASS path below and the
+              FAIL-max-rounds exit. It never changes the PASS/FAIL gate; it only annotates + WARNs.)
+
            → Step 5: Pass/fail decision:
              Both ADEQUATE or STRONG → PASS
              Any INSUFFICIENT → FAIL
@@ -1585,7 +1645,8 @@ research_plan_protocol:
                Read dimension-level findings from both reports even on PASS:
                Append to findings file: "## Advisory (Phase 4c Challenge Round {challenge_round})"
                For each model, append: "### {Model} flagged:\n{dimension findings summary}"
-               → Log to challenge-log.md (Step 6) → Proceed to Phase 4.5 (e_5)
+               → Run Step 4b Quality Rubric (if not already emitted this round) → Log to challenge-log.md
+                 (Step 6) → Proceed to Phase 4.5 (e_5)
 
              On FAIL:
                Report: "⚠️ Phase 4c challenge round {challenge_round} FAILED"
@@ -1594,7 +1655,8 @@ research_plan_protocol:
                  → WARN user: "2 轮 challenge 后仍有未解决弱点："
                  → Display unresolved weaknesses from latest INSUFFICIENT report
                  → Append "## Unresolved Weaknesses (Phase 4c)" section to findings file
-                 → Proceed to Phase 4.5 (e_5) — do NOT block
+                 → Run Step 4b Quality Rubric on the latest reports (annotate + advisory WARN only)
+                 → Proceed to Phase 4.5 (e_5) — do NOT halt
                Else (challenge_round < MAX_CHALLENGE_ROUNDS):
                  → Extract "需要补充研究的问题" sections from ALL INSUFFICIENT model reports
                  → Merge + deduplicate gap questions across models
