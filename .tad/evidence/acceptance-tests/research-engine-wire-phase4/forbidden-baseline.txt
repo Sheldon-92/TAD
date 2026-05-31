@@ -1,0 +1,77 @@
+284:    When Alex is active, the following global/user-level skills MUST NOT be invoked
+482:  NOT_via_alex_auto: true  # Alex NEVER auto-invokes external CLI — suggest or delegate only
+484:  forbidden_implementations:
+485:    - "MUST NOT register PreToolUse / UserPromptSubmit hook to auto-invoke codex/gemini"
+486:    - "MUST NOT add codex/gemini wrapper to .claude/settings.json"
+487:    - "MUST NOT auto-invoke codex/gemini from any Alex protocol step (Socratic, design, handoff_creation)"
+488:    - "MUST NOT use AskUserQuestion to suggest codex/gemini as a default Recommended option"
+489:    - "MUST NOT couple cross-model invocation with skip_knowledge_assessment or *express path"
+490:    - "MUST NOT use cross-model delegation to bypass Socratic Inquiry — any handoff delegating implementation to external CLI must complete Socratic rounds first"
+550:              *express MUST NOT appear as Option 1 (Recommended) even if signal-word
+1179:           → Step 1: AskUserQuestion gate (NOT_via_alex_auto constraint):
+1491:           → Step 1: AskUserQuestion gate (NOT_via_alex_auto constraint):
+1590:             → Gate: AskUserQuestion (NOT_via_alex_auto constraint):
+2008:      Alex MUST NOT proactively recommend *express. Specifically:
+2009:      (a) MUST NOT add *express to adaptive_complexity_protocol step2 AskUserQuestion options
+2010:      (b) MUST NOT pre-select *express as Recommended (Option 1) in intent_router_protocol step3
+2013:      (c) MUST NOT use AskUserQuestion to suggest *express in any other workflow step
+2050:  forbidden_implementations:
+2051:    - "MUST NOT register PreToolUse / UserPromptSubmit hook to gate *express"
+2052:    - "MUST NOT add to .claude/settings.json"
+2053:    - "MUST NOT return deny exit code from any wrapping script"
+2055:    - "MUST NOT auto-downgrade Standard TAD handoff to *express via any mechanism"
+2095:      Alex MUST NOT bypass *analyze and route directly to *experiment without user explicit input.
+2177:  forbidden_implementations:
+2178:    - "MUST NOT register hooks to gate *experiment"
+2179:    - "MUST NOT add to settings.json"
+2180:    - "MUST NOT return deny exit code from gate replacement scripts"
+2181:    - "MUST NOT replace Gate 3/4 silently — semantics is AUGMENT (additive), original criteria still apply"
+2182:    - "MUST NOT bypass *analyze Socratic for *experiment — all Standard TAD steps DO run"
+3031:                and proceed. Handoff drafting MUST NOT be blocked by this advisory tool.
+3195:      forbidden_implementations:
+3196:        - "MUST NOT register as PreToolUse hook in .claude/settings.json"
+3197:        - "MUST NOT register as UserPromptSubmit hook in .claude/settings.json"
+3198:        - "MUST NOT add to .tad/hooks/*.sh as auto-fired script"
+3199:        - "MUST NOT return deny exit code from any wrapping script"
+3200:        - "MUST NOT block ANY tool call (Write/Edit/Read)"
+3286:      forbidden_implementations:
+3287:        - "MUST NOT register as PreToolUse hook in .claude/settings.json"
+3288:        - "MUST NOT register as UserPromptSubmit hook in .claude/settings.json"
+3289:        - "MUST NOT add to .tad/hooks/*.sh as auto-fired script"
+3290:        - "MUST NOT return deny exit code from any wrapping script"
+3291:        - "MUST NOT block ANY tool call (Write/Edit/Read)"
+3352:      forbidden_implementations:
+3354:        # All items start with "MUST NOT" for AC-P6A-1-b grep compatibility.
+3355:        - "MUST NOT register as PreToolUse / UserPromptSubmit hook in .claude/settings.json"
+3356:        - "MUST NOT add to .tad/hooks/*.sh as auto-fired script"
+3357:        - "MUST NOT return deny exit code from any wrapping script"
+3358:        - "MUST NOT block ANY tool call (Write/Edit/Read)"
+3359:        - "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
+4343:    # P3.3 forbidden_implementations (Anti-Epic-1 parity with P3.1 / P3.2)
+4344:    forbidden_implementations:
+4345:      - "MUST NOT register PreToolUse / PostToolUse / UserPromptSubmit hook to read frontmatter and skip step7 mechanically"
+4346:      - "MUST NOT add to .claude/settings.json"
+4347:      - "MUST NOT return deny exit code from any wrapping script that reads skip_knowledge_assessment"
+4348:      - "MUST NOT auto-inject override marker via hook — Blake writes it manually based on judgment"
+4349:      - "MUST NOT couple skip_KA logic to Layer 2 audit (step4c) — they are orthogonal"
+4388:      surface. Alex MUST NOT fabricate gaps to fill the field — empty is
+4392:    forbidden_implementations:
+4393:      - "MUST NOT register PreToolUse / PostToolUse hook to mechanically diff Alex prediction vs Gate 4 reality"
+4394:      - "MUST NOT add to .claude/settings.json"
+4395:      - "MUST NOT auto-populate gate4_delta entries via any hook or script — Alex writes them based on judgment"
+4396:      - "MUST NOT block *accept on gate4_delta presence/absence — empty is semantically valid"
+4397:      - "MUST NOT couple gate4_delta to skip_knowledge_assessment — orthogonal concerns"
+4443:# Symmetric forbidden_implementations 5-item block per Path Layering 2026-04-24.
+4452:      Alex MUST NOT proactively recommend *cancel. Specifically:
+4453:      (a) MUST NOT add *cancel to adaptive_complexity_protocol step2 AskUserQuestion options
+4454:      (b) MUST NOT pre-select *cancel as Recommended in any AskUserQuestion
+4455:      (c) MUST NOT signal-word-detect "abandon" / "scrap" / "give up" → *cancel
+4545:  # P5.3 BA-P0-3: symmetric forbidden_implementations 5-item block
+4548:  forbidden_implementations:
+4549:    - "MUST NOT register PreToolUse / PostToolUse / UserPromptSubmit hook to auto-trigger *cancel"
+4550:    - "MUST NOT add to .claude/settings.json"
+4551:    - "MUST NOT couple *cancel to skip_knowledge_assessment (cancelled handoffs bypass Gate 4 by design but MUST still write cancel_reason + cancel_rationale)"
+4553:    - "MUST NOT auto-downgrade Standard TAD handoff to *cancel via any mechanism (no Alex AskUserQuestion suggestion, no signal-word auto-detection)"
+5928:           Everything ABOVE this line is Foundational and MUST NOT be modified.
+6185:    - "auto-invoking external CLI (codex/gemini) without user confirmation (NOT_via_alex_auto)"
+6195:      rule: "Express may justify skipping e2e test, MUST NOT skip expert review (min 1 expert)"

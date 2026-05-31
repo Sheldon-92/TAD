@@ -1114,9 +1114,16 @@ lifecycle_rules:
     AND persisted by *ask and *topics (both set status=active on success)
     RESOLUTION: *list always recomputes active/dormant from last_queried when status != "archived"
     This means a persisted "dormant" that gets queried → *ask/*topics sets it to "active" immediately
+    PASSIVE RECOMPUTE (Phase 4 wiring): the SessionStart hook .tad/hooks/notebook-dormant-sync.sh
+    also recomputes active/dormant on every session start (no command run required), via the
+    library function recompute_notebook_dormancy() in .tad/hooks/lib/notebook-lifecycle.sh.
+    It reads dormant_after_days from config-workflow.yaml, edits ONLY changed non-archived entries
+    via yq (atomic temp+mv, per-entry targeting), and is strictly NON-BLOCKING (derived state only —
+    never blocks session start, no-ops if yq is absent). This prevents persisted status from going
+    stale between *list runs. Archived entries are never touched.
 
   state_transitions:
-    active_to_dormant: "Computed at *list time when last_queried > dormant_after_days"
+    active_to_dormant: "Computed at *list time AND passively at SessionStart (notebook-dormant-sync.sh) when last_queried > dormant_after_days"
     dormant_to_active: "*ask or *topics success → REGISTRY.yaml status = active"
     active_to_archived: "*archive command only"
     dormant_to_archived: "*archive command only"
