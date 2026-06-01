@@ -55,6 +55,34 @@ When generating a Codex-edition SKILL from a Claude Code SKILL, apply these rule
 - Acceptance protocol (Alex)
 - All `path_transitions` / `forbidden` rules
 
+### Strip Whole Protocol → Omit from Codex Edition
+
+Some source protocols are Conductor/automation-only (require Claude Code Agent tool, hook
+orchestration, or multi-agent parallel spawning that Codex cannot replicate). These are
+stripped entirely from the Codex edition — not adapted, not stubbed, just absent.
+
+### Expected-Absent-in-Codex Allowlist
+
+The following source `*_protocol:` blocks are **legitimately absent** from the Codex edition.
+A parity check MUST NOT flag these as drift. Any source protocol NOT on this list that is
+missing from the Codex edition IS drift and MUST be flagged.
+
+| Protocol Key | Reason for Absence |
+|---|---|
+| `yolo_execution_protocol` | Conductor orchestration — requires Agent tool for multi-phase parallel sub-agent spawning |
+| `optimize_protocol` | Auto-optimize — Conductor-side autonomous loop |
+| `evolve_protocol` | Auto-evolve — Conductor-side knowledge extraction |
+| `dream_protocol` | Auto-dream — Conductor-side trace scanning |
+| `publish_protocol` | Release automation — hooks + Agent parallel reviewers + registry scripts |
+| `sync_protocol` | Multi-project sync — Agent + hooks + registry automation |
+| `sync_add_protocol` | Sub-protocol of sync — registry manipulation |
+| `sync_list_protocol` | Sub-protocol of sync — registry query |
+| `lsp_provision_protocol` | LSP tool is Claude Code-only — no Codex equivalent |
+
+**Nested/inline protocol references** (not standalone blocks — always ignored by parity check):
+`per_phase_protocol`, `blocking_in_alex_protocol`, `fallback_protocol`, `honest_partial_protocol`
+(these are inline YAML fields or sub-sections, not top-level protocol units).
+
 ### Size Targets
 
 - Codex-edition Blake SKILL: ≤40KB (≤40,960 bytes)
