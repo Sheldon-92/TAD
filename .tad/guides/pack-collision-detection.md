@@ -73,7 +73,7 @@ Ordered categories (highest precedence → lowest):
 | # | Category | Notes |
 |---|----------|-------|
 | 1 | `security / safety / compliance / data-integrity` | non-overridable |
-| 2 | `correctness` | (the `testing` directives sit in this band) |
+| 2 | `correctness` | `testing` is a `subdomain` of this band — record `category: correctness` + `subdomain: testing`, NOT a bare `category: testing` (testing is not a rankable precedence member) |
 | 3 | `accessibility (a11y)` | |
 | 4 | `performance` | |
 | 5 | `style / aesthetic` | |
@@ -212,7 +212,7 @@ unique-match COUNT use `grep -oE | sort -u | wc -l`, **never** `grep -c | sort -
 |-------|--------|--------|-----------|-----------|------------|
 | inter-font | web-ui-design | web-frontend | style | performance | **auto** (performance>style → web-frontend wins) |
 | contrast-standard | web-ui-design | web-frontend | a11y | a11y | **escalate** (same-category) |
-| testing-pyramid | web-frontend | web-testing | testing | testing | **escalate** (same-category) |
+| testing-pyramid | web-frontend | web-testing | correctness (subdomain: testing) | correctness (subdomain: testing) | **escalate** (same-category) |
 
 See `.tad/capability-packs/pack-collisions.yaml` for full rows and
 `.tad/evidence/fixtures/pack-collisions/{inter,contrast,pyramid}.md` for the acceptance

@@ -77,14 +77,28 @@ procedure (see .tad/guides/pack-collision-detection.md), NOT part of this script
 NOT a registered hook — do not add to .claude/settings.json.
 ```
 
-### Scanner run — emitted candidates (5 candidates across the 3 target topics + 1 bonus)
+### Scanner run — emitted candidates (post-hardening: 4 deduped candidates, 0 false positives)
 
 ```
 inter-font:        web-ui-design × web-frontend   (SKILL.md:93 ↔ CONVENTIONS.md:195)
 testing-pyramid:   web-frontend  × web-testing    (testing.md:19 ↔ test-strategy-rules.md:31)
 contrast-standard: web-ui-design × web-frontend   (checklists/accessibility.md:23 ↔ references/accessibility.md:45)
-contrast-standard: web-ui-design × video-creation (checklists/accessibility.md:23 ↔ quality.md:103)  [bonus, genuine]
+contrast-standard: web-ui-design × web-testing    (checklists/accessibility.md:23 ↔ accessibility-testing-rules.md:12)  [3rd-pack WCAG co-instance of Collision 2]
 ```
+
+> **CORRECTION (P1 followup, 2026-05-31)**: an earlier pre-hardening run also emitted a
+> `web-ui-design × video-creation` contrast candidate that this report originally labeled
+> a "bonus, genuine" collision. That was an **overstatement** — it was a **FALSE POSITIVE**
+> admitted by the CJK `comm` collation bug (CR P1-1): the keyword pre-filter ran `comm -12`
+> under the ambient `en_US.UTF-8` locale while `comm` requires byte (C-locale) ordering, so
+> `设计` collated as a phantom shared keyword even though video-creation's keyword set does
+> NOT contain it (the two packs share **zero** keywords). With the `LC_ALL=C` fix the
+> intersection is correctly empty and `web-ui-design × video-creation` is **no longer
+> scanned at all** — it is gone from the candidate set. The confirmed `pack-collisions.yaml`
+> registry was always correct in excluding it (Stage-2 manual confirm dropped it); only this
+> report's prose mislabeled it, now corrected. The surviving 4th candidate
+> (`web-ui-design × web-testing` contrast) is a LEGITIMATE 3rd-pack WCAG co-instance — those
+> two packs genuinely share a11y keywords — folded into Collision 2's multi-pack note.
 
 All 3 REQUIRED topics covered (inter-font, contrast-standard, testing-pyramid). The
 first-match anchoring landed contrast on `checklists/accessibility.md:23` (alphabetically

@@ -77,12 +77,14 @@ collisions:
     a_says:
       ref: ".claude/skills/web-frontend/references/testing.md:15"
       quote: "Unit (most) ~60%; E2E (fewest) ~10%; if E2E >20% of the suite — cut (testing.md:19)"
-      category: testing
+      category: correctness     # testing directives sit in the correctness band (P1-A: rankable member of the 5-band list)
+      subdomain: testing
     b_says:
       ref: ".claude/skills/web-testing/references/test-strategy-rules.md:25"
       quote: "Unit tests (base) ~70% of test count; UI-heavy app: More E2E tests (test-strategy-rules.md:31)"
-      category: testing
+      category: correctness     # same band as a_says → tie → escalate (verdict unchanged)
+      subdomain: testing
     resolution: escalate
-    reason: same-category      # testing vs testing (correctness band): 60% vs 70% base + opposing E2E conditional — soft divergence, human picks
+    reason: same-category      # correctness vs correctness (testing subdomain): 60% vs 70% base + opposing E2E conditional — soft divergence, human picks
     logged: true
     confirmed_by: "opened web-frontend/references/testing.md:15+:19 (cut E2E >20%) + web-testing/references/test-strategy-rules.md:25+:31 (more E2E for UI-heavy) — opposing test-distribution directives"
