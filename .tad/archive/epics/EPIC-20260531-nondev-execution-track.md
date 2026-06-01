@@ -25,8 +25,8 @@ Give TAD a first-class NON-CODE delivery lane: a `task_type: deliverable` route 
 |---|-------|--------|---------|-----------------|
 | 1 | Spike: Architecture Contract | ✅ Done | phase1-architecture-contract.md (v2.1) | Design contract: 4 touchpoints, additive-sibling Gate 3+4 branches, judge≠producer, pack→rubric side-file. Gate PASS. |
 | 2 | Templates + Gate 3 **+ Gate 4** branch + producer routing | ✅ Done | 23339a9 + 897bed9 | Lane machinery built byte-safe; 2-reviewer review + fixes; Gate 3+4 PASS |
-| 3 | Wire academic-research + real dogfood | 🔄 Active | (YOLO) | academic-research wired; real small research deliverable scored by judge sub-agent; verification report |
-| 4 | Generalize + Gate 4 + document | ⬚ Planned | — | voice/video/content registered (dogfood-pending); Alex Gate-4 non-dev acceptance semantics; track guide + KA |
+| 3 | Wire academic-research + real dogfood | ✅ Done | dogfood (9986de8) | Real brief → judge-A 0.737 PARTIAL → revise → fresh judge-B 0.7725 PASS. 5/5 ACs. Lane proven not-theater. |
+| 4 | Generalize + Gate 4 + document | ✅ Done | 179556d | track guide + registry enrichment + KA; 5/5 success criteria PASS |
 
 ### Phase Dependencies
 All phases sequential. P2 depends on P1's contract. P3 depends on P2's machinery. P4 depends on P3's proven lane.
@@ -122,8 +122,9 @@ SCOPE EXPANDED per Phase-1 gate4_delta: Gate 4 deliverable carve-out + alex Touc
 
 ### Phase 3: Wire academic-research + real dogfood
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done (Gate PASS 2026-05-31)
+**Execution:** YOLO full-auto
+**Completed:** real PARTIAL→PASS loop (3 distinct agents); 5/5 ACs; phase3-dogfood-report.md; committed 9986de8.
 
 #### Scope
 Prove the lane works end-to-end with ONE pack. Wire academic-research into the track (declare its rubric=scholar-eval.md, threshold 0.75), then run a SMALL REAL research deliverable through the full lane (deliverable handoff → produce → judge-scored Gate 3). The judge sub-agent must be distinct from the producer. NOT in scope: voice/video (no hardware), or generalizing to other packs (Phase 4).
@@ -158,8 +159,9 @@ This is the validation-theater-killer: a real deliverable, scored by an independ
 
 ### Phase 4: Generalize + Gate 4 + document
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done (Gate PASS 2026-05-31) — EPIC COMPLETE
+**Execution:** YOLO full-auto
+**Completed:** track guide + rubrics registry interim_rubric_source + KA (architecture.md). All 5 Epic success criteria PASS. EPIC-COMPLETION.md written. Commit 179556d.
 
 #### Scope
 Extend the track to the remaining non-dev packs and close it out: register ai-voice-production / video-creation / product-thinking(content) against the track with their rubric refs + thresholds (marked dogfood-pending where hardware is required); define Alex's Gate-4 non-dev business-acceptance semantics; write the track guide; capture Knowledge Assessment. NOT in scope: real dogfood of voice/video (no hardware).
