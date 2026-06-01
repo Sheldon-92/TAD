@@ -51,7 +51,34 @@ Remove the following protocol blocks entirely (per the Expected-Absent-in-Codex 
 - `sync_list_protocol`
 - `lsp_provision_protocol`
 
-### Step D: Preserve all NEVER-Delete categories
+### Step D: Post-emit per-owner SAFETY self-verify (P2 — bounded)
+
+After Step C strips whole protocols and Step B applies transforms, run the upgraded
+`parity-check.sh` to verify SAFETY category preservation at the per-owner-body level.
+
+**Procedure (max 2 re-emit rounds):**
+
+1. Run `bash .tad/evidence/spikes/codex-parity/parity-check.sh <source> <scratch-output>`.
+2. If exit 0 (all 3 layers PASS) → proceed to Step E.
+3. If exit 1 AND Layer 2 names specific `(category, owner)` failures:
+   a. For each failing (category, owner): re-read the source body for that owner section,
+      re-emit it **verbatim from source** with ONLY the CC-tool lines stripped
+      (never condense constraint lines — strip-not-summarize).
+   b. Re-run parity-check.sh on the patched output.
+   c. If PASS → proceed to Step E.
+   d. If STILL FAIL after round 2 → **honest_partial** + pause for human review.
+      (Mirrors Ralph-Loop circuit breaker — the P1 LLM condensed despite the instruction,
+      so the loop must be bounded, not "until the LLM gives up".)
+
+**Round limit:** 2 re-emit rounds maximum. After round 2, any remaining SAFETY failure
+triggers honest_partial with the specific failing (category, owner) pairs listed.
+
+**What this catches:** Step B's strip/replace can accidentally condense SAFETY blocks
+(P1 observed: `forbidden_implementations` 12→6, `anti_rationalization_registry` 6→3
+despite "strip-not-summarize" instruction). The per-owner check detects which specific
+section lost content, and the re-emit fixes it by copying verbatim from source.
+
+### Step D.2: Preserve all NEVER-Delete categories (checklist)
 
 Verify the output preserves (byte-exact where noted):
 - All lines containing: `MUST`, `MANDATORY`, `VIOLATION`, `forbidden`, `BLOCKING`
