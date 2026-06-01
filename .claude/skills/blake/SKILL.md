@@ -1292,6 +1292,17 @@ execution_checklist:
       research: "WebSearch 全部执行 + ≥3 来源 + 产出研究文件到指定路径"
       e2e: "测试脚本执行 + evidence 文件产出到 .tad/evidence/"
       mixed: "按子任务分别适用上述检查"
+      deliverable: |
+        Deliverable execution lane (contract §B.6, §C) — Blake's generic code "implement"
+        lane does NOT apply. Blake neither produces NOR scores research/content deliverables:
+          - PRODUCER = a Conductor-spawned producer sub-agent (or the Conductor itself) using
+            research/content tools. NotebookLM/WebSearch are Conductor-side and CANNOT run inside
+            a Blake sub-agent (architecture.md "Research must be Conductor-side").
+          - JUDGE = a SEPARATE fresh sub-agent spawned by the gate/Conductor, scoring the artifact
+            against the rubric (judge ≠ producer; self-scoring = VIOLATION, ~10-15% bias).
+          - Blake does not run Layer 1 build/test/lint for task_type: deliverable.
+        If a handoff arrives at Blake with task_type: deliverable → it was mis-routed; return to
+        Alex / Conductor. Blake only implements code-shaped handoffs.
       # ⚠️ ANTI-RATIONALIZATION: "这个任务虽然标了 research 但我已经知道答案了"
       # → task_type 是 Alex 设计时决策。Blake 执行时不判断。标了 research 就必须搜索。
 

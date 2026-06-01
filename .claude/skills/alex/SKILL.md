@@ -2650,6 +2650,31 @@ handoff_creation_protocol:
         3. If no relevant notebook → skip (existing research_decision_protocol handles WebSearch)
       blocking: false
 
+    step0_6_deliverable_classification:
+      name: "Deliverable Classification — Touchpoint 0 (PRODUCER touchpoint)"
+      trigger: "After step0_5b research-asset check, BEFORE step1 draft creation (must precede template selection)"
+      additive: true  # ⚠️ Does NOT change intent_router signal detection or the default analyze→code template path.
+      action: |
+        Classify the unit of work BEFORE selecting a handoff template:
+
+        Rule of thumb (contract §A.4): if the unit of work is a **pack-produced content
+        artifact** — the artifact IS the product (a research report / audiobook / video cut /
+        PRD), judged by a pack-specific rubric rather than build/test/lint — then this is a
+        DELIVERABLE, not a code handoff.
+          - if the artifact IS the product → task_type: deliverable
+          - if the artifact informs a downstream build → task_type: research (unchanged path)
+
+        IF deliverable:
+          1. Set frontmatter `task_type: deliverable`.
+          2. Select `.tad/templates/deliverable-handoff.md` (instead of handoff-a-to-b.md).
+          3. Fill the deliverable frontmatter keys: `pack`, `rubric_ref`, `pass_threshold`,
+             `deliverable_paths: []` (rubric_ref/pass_threshold precedence per contract §A.2 —
+             frontmatter overrides .tad/capability-packs/deliverable-rubrics.yaml; both absent → Gate 3 BLOCKS).
+          4. Producer is Conductor-side (contract §B.6) — NOT Blake; the gate spawns an independent judge (judge ≠ producer).
+        ELSE (code/yaml/research/e2e/mixed):
+          → Continue to step1 with the existing default template selection (handoff-a-to-b.md). No change.
+      note: "This is the PRODUCER touchpoint: nothing else sets task_type: deliverable or selects the deliverable template. Additive — existing routing untouched."
+
     step1:
       name: "Draft Creation"
       action: "创建 handoff 初稿（框架+核心内容）"
@@ -2739,7 +2764,7 @@ handoff_creation_protocol:
       name: "Frontmatter Validation"
       action: "验证 handoff 草稿的 YAML frontmatter 三个字段都已填写且值合法"
       validation:
-        task_type: "must be one of: code, yaml, research, e2e, mixed"
+        task_type: "must be one of: code, yaml, research, e2e, mixed, deliverable"
         e2e_required: "must be yes or no"
         research_required: "must be yes or no"
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"

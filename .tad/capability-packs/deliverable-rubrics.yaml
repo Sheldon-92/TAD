@@ -1,0 +1,45 @@
+# .tad/capability-packs/deliverable-rubrics.yaml
+# Name-keyed registry: capability pack -> deliverable rubric + thresholds.
+# Side-file (NOT pack-registry.yaml) — scan-packs.sh regen would clobber a registry field
+# (code-quality.md "Auto-Generated Registry -> Persisted Decision State Belongs in a Side-File").
+#
+# Resolution precedence (contract §A.2): per-handoff frontmatter rubric_ref/pass_threshold
+# OVERRIDES this registry; this registry is the fallback; BOTH absent -> Gate 3 BLOCKS.
+#
+# verdict_shape (contract §D BA P1-3 open risk): the §B.5 weighted-0-1 ladder fits
+# scholar-eval; other packs' interim sources are categorical/checklist. Phase 4 must
+# either convert each to a genuine weighted-0-1 rubric OR honor a second verdict_shape.
+#   weighted    = Σ(score_i × weight_i), ladder pass/partial/fail (default)
+#   categorical = e.g. BUILD/PIVOT/KILL band membership
+#   checklist   = export-spec pass/fail items
+version: 1.0.0
+last_updated: "2026-05-31"
+packs:
+  academic-research:
+    rubric_ref: ".claude/skills/academic-research/references/scholar-eval.md"
+    pass_threshold: 0.75
+    partial_threshold: 0.60
+    verdict_shape: weighted
+    dogfood_capable: yes
+    status: active            # active | rubric-tbd
+  ai-voice-production:
+    rubric_ref: null          # TBD Phase 4; interim: audiobook-pipeline.md ACX specs (RMS -23 to -18 dB)
+    pass_threshold: null
+    partial_threshold: null
+    verdict_shape: checklist  # categorical pass/fail dB/format specs — not a 0-1 score (Phase 4 to formalize)
+    dogfood_capable: no       # hardware (TTS compute)
+    status: rubric-tbd
+  video-creation:
+    rubric_ref: null          # TBD Phase 4; interim: quality.md export specs
+    pass_threshold: null
+    partial_threshold: null
+    verdict_shape: checklist  # export-spec checklist (Phase 4 to formalize)
+    dogfood_capable: no       # hardware (render)
+    status: rubric-tbd
+  product-thinking:
+    rubric_ref: null          # TBD Phase 4; interim: checklists/fatal-flaws.md + per-type-validation.md
+    pass_threshold: null
+    partial_threshold: null
+    verdict_shape: categorical  # BUILD/PIVOT/KILL verdict (Phase 4 to formalize)
+    dogfood_capable: yes      # no hardware barrier; rubric authoring pending
+    status: rubric-tbd

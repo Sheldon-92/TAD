@@ -92,6 +92,7 @@ Output Format:
 ```
 
 ## Gate 3: Implementation Quality (Blake) - **MANDATORY** 🔴
+> IF the active handoff is `task_type: deliverable` → SKIP this block; use `## Gate 3 — Deliverable Branch` below.
 ```yaml
 When: After implementation (BLOCKING)
 Owner: Agent B (Blake)
@@ -337,7 +338,131 @@ Post_Pass_Actions:
     format: "English only"
 ```
 
+## Gate 3 — Deliverable Branch
+> Additive sibling section (contract §B). Execute this INSTEAD of the Gate 3 block above
+> ONLY when the active handoff frontmatter is `task_type: deliverable`. For every other
+> task_type the original Gate 3 block runs byte-unchanged.
+```yaml
+When: After deliverable production (BLOCKING), only if task_type == deliverable
+Owner: Gate/Conductor executes (spawns the judge); Producer (§B.6) revises on PARTIAL/FAIL
+
+# Routing
+Applies_When: "active handoff frontmatter task_type == deliverable"
+Else: "use the original '## Gate 3: Implementation Quality' block above (byte-unchanged)"
+
+# ⚠️ PREREQUISITE CHECK (BLOCKING) — KEPT from code path
+Prerequisite:
+  check: "Deliverable Completion Report 是否存在？"
+  location: ".tad/active/handoffs/COMPLETION-*.md (deliverable-completion variant)"
+  if_missing:
+    action: "BLOCK Gate 3"
+    message: |
+      ⚠️ Gate 3 无法执行 - 缺少 Deliverable Completion Report
+      请用 deliverable-completion.md 模板创建报告，然后重新执行 Gate 3。
+    result: "BLOCKED - 等待 Completion Report"
+  if_exists:
+    action: "继续执行 Gate 3 deliverable 检查项"
+
+# ⚠️ RUBRIC + THRESHOLD RESOLUTION (BLOCKING) — contract §A.2 precedence
+Rubric_Resolution:
+  description: "Resolve rubric_ref + pass_threshold before spawning the judge"
+  precedence:
+    step1: "If handoff frontmatter sets rubric_ref and/or pass_threshold → frontmatter values WIN (per-handoff override)"
+    step2: "Else fall back to .tad/capability-packs/deliverable-rubrics.yaml row keyed by frontmatter `pack`"
+    step3: "If BOTH absent (no frontmatter value AND no registry row / null) → BLOCK Gate 3"
+  if_unresolved:
+    action: "BLOCK Gate 3"
+    message: "deliverable handoff has no resolvable rubric_ref + pass_threshold (set in frontmatter or register the pack in deliverable-rubrics.yaml). No silent default."
+  partial_threshold: "from deliverable-rubrics.yaml row (default 0.60 if omitted)"
+
+# ⚠️ REQUIRED SUBAGENT CALL (BLOCKING) — REPLACES test-runner with an independent JUDGE
+Required_Subagent:
+  subagent: "judge (a FRESH independent sub-agent — NOT the producer)"
+  action: "MUST spawn an independent judge sub-agent before Gate 3 can pass"
+  # contract §B.3 — judge prompt is constructed from FILE PATHS ONLY:
+  judge_inputs:
+    - "deliverable_paths — artifact file path(s) to evaluate (judge reads them)"
+    - "rubric_ref — rubric file path (judge reads + applies it)"
+    - "pass_threshold — numeric threshold (resolved per Rubric_Resolution)"
+  judge_prompt_constraint: |
+    Blue-team framing: "You are an independent reviewer. Score the artifact at {deliverable_paths}
+    against the rubric at {rubric_ref}. Report dimension scores + weighted average + verdict."
+    The judge prompt MUST NOT include the producer's reasoning, chat transcript, persona,
+    identity, or any "this is good because…" framing.
+  output_to: ".tad/evidence/reviews/{date}-rubric-eval-{task}.md"
+  output_format:           # contract §B.4
+    - "Scores table: | # | Dimension | Weight | Score (0-1) | Notes | (one row per rubric dimension)"
+    - "weighted_score = Σ(score_i × weight_i) shown with the arithmetic"
+    - "verdict line (see Verdict_Mapping)"
+    - "Top-3 strengths / top-3 weaknesses (actionable)"
+    - "MUST state: 'Judge: independent sub-agent; producer identity not provided.'"
+  output_format_constraint: |
+    ⚠️ The rubric-eval file's weaknesses MUST NOT use the ^#+ *P[0-9]- heading form
+    (e.g. NOT '### P0-1', '## P1-2'). post-write-sync.sh expert_review_finding counts
+    heading-form P<n>- labels → a P-label heading here self-triggers false P0/P1 telemetry
+    (the documented "Parser Self-Trigger" failure). Use plain prose ("Weakness 1: …") or a
+    | # | Weakness | Severity | table cell — never a P-label heading.
+  if_not_called:
+    action: "BLOCK Gate 3"
+    message: |
+      ⚠️ Gate 3 无法通过 - 缺少独立 judge 的 rubric-eval 审查
+      必须 spawn 一个 fresh 独立 judge sub-agent，输出到
+      .tad/evidence/reviews/{date}-rubric-eval-{task}.md，然后重新执行 Gate 3。
+
+# ⚠️ judge ≠ producer (BLOCKING) — contract §C
+Judge_Not_Producer:
+  hard_rule: |
+    The deliverable is produced by ONE agent (a Conductor-spawned producer sub-agent /
+    the Conductor). The rubric score is computed by a SEPARATE judge sub-agent, spawned
+    fresh by the gate/Conductor, whose prompt references ONLY {deliverable_paths} +
+    {rubric_ref} + {pass_threshold}. judge ≠ producer is defined relative to THIS producer
+    (if the Conductor itself produced, the judge MUST be a distinct sub-agent).
+  why: "self-enhancement bias ~10-15% inflation when an agent scores its own output (ai-evaluation: Judge ≠ Optimizer/Producer). A self-scored rubric is validation theater."
+  forbidden:
+    - "VIOLATION: the producing agent (or same session/persona) computes the rubric score for its own deliverable."
+    - "VIOLATION: passing the producer's reasoning / 'why this is good' notes into the judge prompt."
+    - "VIOLATION: reusing the producer sub-agent (or its conversation) as the judge."
+    - "VIOLATION (artifact-channel): the judge crediting self-assessment / quality-claim prose embedded INSIDE the artifact (self-praise, a producer-written self-scored rubric table). The judge scores on RUBRIC EVIDENCE it independently derives from the artifact's substance — NOT on the artifact's own claims about its quality. Self-praise in the artifact is ignored, not credited."
+    - "VIOLATION: 'the producer already self-scored, so skip the judge' rationalization (the 'Express → exempt' anti-pattern applied to scoring)."
+
+# ⚠️ VERDICT MAPPING — contract §B.5
+Verdict_Mapping:
+  rule: |
+    IF weighted_score ≥ pass_threshold           → PASS
+    ELSE IF weighted_score ≥ partial_threshold    → PARTIAL   (default partial_threshold = 0.60)
+    ELSE                                          → FAIL
+  on_pass: "Gate 3 proceeds (KA + git checks)."
+  on_partial_or_fail: "BLOCK Gate 3; the producer (§B.6) revises and re-runs — a FRESH judge re-scores the revised artifact (each re-score is a new judge spawn)."
+
+# ⚠️ ACCEPTANCE VERIFICATION CHECK — KEPT (ACs about the artifact)
+Acceptance_Verification:
+  check: "关于工件的 AC 是否全部满足？(e.g. '报告含 ≥12 条可验证引用')"
+  on_mismatch:
+    action: "BLOCK Gate 3"
+    message: "工件 AC 验证未全部通过或有遗漏标准"
+
+# ⚠️ GIT COMMIT VERIFICATION CHECK (BLOCKING) — KEPT (artifacts get committed too)
+Git_Commit_Verification:
+  check: "Deliverable artifacts committed to git? (deliverable_paths must appear in git)"
+  on_invalid: "BLOCK - artifact paths not found in git history"
+
+# Gate 3 Deliverable 检查项
+Critical Check (4 items):
+  - [ ] Deliverable complete (all `deliverable_paths` present)
+  - [ ] Rubric weighted score ≥ pass_threshold (scored by independent judge)
+  - [ ] Rubric-eval evidence exists (.tad/evidence/reviews/*-rubric-eval-*.md, verdict PASS)
+  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
+Evidence: Record in deliverable-completion report + rubric-eval evidence file
+
+# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING) — KEPT, unchanged from code path
+Knowledge_Assessment:
+  blocking: true
+  description: "Gate 3 无法 PASS 除非 Knowledge Assessment 表格已填写（与 code path 相同规则）"
+  violation: "Gate 3 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
+```
+
 ## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴
+> IF the active handoff is `task_type: deliverable` → use `## Gate 4 — Deliverable Branch` below.
 ```yaml
 When: Before delivery (BLOCKING)
 Owner: Agent B (Blake) executes, Agent A (Alex) verifies with subagents
@@ -607,6 +732,69 @@ Post_Pass_Actions:
       - 归档 handoff 和 completion report
       - 更新 PROJECT_CONTEXT.md
       - 确认 NEXT.md 状态
+```
+
+## Gate 4 — Deliverable Branch
+> Additive sibling section (contract §B.7). Execute this INSTEAD of the Gate 4 block above
+> ONLY when the active handoff frontmatter is `task_type: deliverable`. For every other
+> task_type the original Gate 4 block runs byte-unchanged (its `*-testing-review-*` glob and
+> the 3 BLOCKING code subagents are untouched).
+```yaml
+When: Before delivery (BLOCKING), only if task_type == deliverable
+Owner: Alex verifies business acceptance (no code subagents)
+
+# Routing
+Applies_When: "active handoff frontmatter task_type == deliverable"
+Else: "use the original '## Gate 4: Integration Verification' block above (byte-unchanged)"
+
+# Evidence File Naming (deliverable) — rubric-eval is a DISTINCT type (contract §B.4)
+# Registered here in the sibling (NOT folded into the original Gate 4 block's `types:` enum,
+# which stays byte-identical) — rubric-eval MUST NOT be aliased to testing-review/code-review.
+Evidence_Naming_Deliverable:
+  pattern: ".tad/evidence/reviews/{YYYY-MM-DD}-{type}-{brief-description}.md"
+  types: [rubric-eval]   # DISTINCT evidence type for deliverable Gate 3/4 (own glob *-rubric-eval-*)
+  example: "2026-05-31-rubric-eval-soy-sauce-report.md"
+
+# ⚠️ PREREQUISITE CHECK (BLOCKING) — replaces the testing-review glob
+Prerequisite:
+  check: "Gate 3 是否已通过（deliverable）？"
+  evidence: ".tad/evidence/reviews/*-rubric-eval-*.md exists with verdict: PASS"
+  if_missing:
+    action: "BLOCK Gate 4"
+    message: |
+      ⚠️ Gate 4 无法执行 - Gate 3 (deliverable) 未通过
+      必须先有 rubric-eval 证据且 verdict: PASS。
+    result: "BLOCKED - 等待 Gate 3 (deliverable) PASS"
+
+# ⚠️ CODE SUBAGENTS — CONDITIONAL on task_type != deliverable (contract §B.7)
+Conditional_Code_Subagents:
+  rule: "security-auditor / performance-optimizer / code-reviewer are required ONLY when task_type != deliverable"
+  for_deliverable: |
+    NOT required — they review code; a report/audio/video artifact has no code surface.
+    ux-expert-reviewer stays conditional ('if UI involved') and is N/A for these packs.
+  note: "The original Gate 4 block's 3 BLOCKING code subagents apply to code task_types only and are left byte-unchanged above."
+
+# Deliverable Gate 4 = business acceptance (contract §B.7)
+Business_Acceptance:
+  conditions:
+    a: "the Gate-3 rubric verdict is PASS (.tad/evidence/reviews/*-rubric-eval-*.md)"
+    b: "the artifact 'meets the brief' (the handoff's ACs about the artifact are satisfied — Alex's judgment)"
+    c: "explicit human approval"
+  no_code_subagents: true
+
+# Gate 4 Deliverable 检查项
+Critical Check (4 items):
+  - [ ] Gate 3 (deliverable) rubric verdict PASS (rubric-eval evidence exists)
+  - [ ] Meets the brief (artifact ACs satisfied — Alex judgment)
+  - [ ] Explicit human approval
+  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
+Evidence: Record in NEXT.md or completion report + rubric-eval evidence file
+
+# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING) — KEPT, unchanged from code path
+Knowledge_Assessment_Gate4:
+  blocking: true
+  description: "Gate 4 无法 PASS 除非 Knowledge Assessment 表格已填写（与 code path 相同规则）"
+  violation: "Gate 4 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
 ```
 
 ## Interactive Gate Execution
