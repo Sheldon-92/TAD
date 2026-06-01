@@ -1,0 +1,527 @@
+=== Deep research collection started 23:42:52 ===
+--- waiting: rag-retrieval ---
+✓ Research completed: RAG retrieval engineering: chunking strategies, embedding 
+model selection (OpenAI text-embedding-3, Cohere embed v3, BGE, Voyage), vector 
+databases (pgvector, Qdrant, Weaviate, Milvus, Pinecone, Chroma), reranking 
+(Cohere rerank, bge-reranker, ColBERT), hybrid search BM25+dense, retrieval 
+evaluation metrics (recall@k, MRR, nDCG, Ragas), GraphRAG
+Found 45 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Deep Architectural Engineering   │ Report │                                  │
+│ of Enterprise Retri              │        │                                  │
+│ Best Chunking Strategies for RAG │ Web    │ https://www.firecrawl.dev/blog/… │
+│ (and LLMs) in 202                │        │                                  │
+│ Hybrid Search: BM25, Vector &    │ Web    │ https://www.digitalapplied.com/… │
+│ Reranking Reference              │        │                                  │
+│ RAG Evaluation Metrics 2026: The │ Web    │ https://futureagi.com/blog/rag-… │
+│ Complete Guide -                 │        │                                  │
+│ Best Embedding Models 2026: Our  │ Web    │ https://pecollective.com/tools/… │
+│ Picks After Testin               │        │                                  │
+│ GraphRAG Architecture:           │ Web    │ https://www.puppygraph.com/blog… │
+│ Components, Workflow & Impl      │        │                                  │
+│ Top 7 Rerankers for RAG -        │ Web    │ https://www.analyticsvidhya.com… │
+│ Analytics Vidhya                 │        │                                  │
+│ Best Vector Databases in 2026: A │ Web    │ https://www.firecrawl.dev/blog/… │
+│ Complete Comparis                │        │                                  │
+│ Chunking Strategies for RAG:     │ Web    │ https://matheusjerico.medium.co… │
+│ Fixed, Recursive, Sem            │        │                                  │
+│ Best Chunking Strategies for RAG │ Web    │ https://redis.io/blog/chunking-… │
+│ Pipelines - Redis                │        │                                  │
+│ ... and 35 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Deep Architectural Engineering of Enterprise Retrieval-Augmented Generation: 
+From Chunking Taxonomy to Relational Knowledge Graphs
+
+## Document Parsing, Chunking Taxonomy, and Structural Boundary Engineering
+
+In retrieval-augmented generation (RAG) systems, document ingestion is the 
+primary stage that determines the semantic richness and structural integrity of 
+the retrieved data.[1, 2] Segmentation strategies require balancing a 
+fundamental engineering trade-off: larger chunks preserve high-level thematic 
+context and semantic relationships but dilute localized details within the 
+vector representation, while smaller chunks maximize semantic precision for 
+factoid retrieval at the cost of losing surrounding contextual information.[1, 
+2, 3] 
+
+```
+
+Chunk Size ──► Large (e.g., 1024 tokens) ──► Preserves relational context [1, 3]
+                                         ──► Dilutes specific semantic signals 
+[1, 2]
+Chunk Size ──► Small (e.g., 64 tokens)   ──► Optimizes precise fact retrieva
+... (truncated, use --json for full report)
+23:46:39 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.417s: 
+23:46:39 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 5.0s (attempt 2, 30.6s elapsed)
+Import timed out; retrying in 5s (attempt 2)
+23:47:15 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.130s: 
+23:47:15 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 10.0s (attempt 3, 65.8s elapsed)
+Import timed out; retrying in 10s (attempt 3)
+23:47:55 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.191s: 
+23:47:55 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 20.0s (attempt 4, 106.0s elapsed)
+Import timed out; retrying in 20s (attempt 4)
+23:48:45 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.369s: 
+23:48:45 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 40.0s (attempt 5, 156.4s elapsed)
+Import timed out; retrying in 40s (attempt 5)
+23:49:56 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.386s: 
+23:49:56 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 60.0s (attempt 6, 226.8s elapsed)
+Import timed out; retrying in 60s (attempt 6)
+23:51:26 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.173s: 
+23:51:26 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 60.0s (attempt 7, 317.0s elapsed)
+Import timed out; retrying in 60s (attempt 7)
+23:52:56 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.506s: 
+23:52:56 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd; retrying in 60.0s (attempt 8, 407.7s elapsed)
+Import timed out; retrying in 60s (attempt 8)
+rag-retrieval: import done, total sources = 4
+--- waiting: agent-memory ---
+✓ Research completed: AI agent memory architectures: working vs episodic vs 
+semantic vs procedural memory, context window management, conversation 
+compaction and summarization, MemGPT/Letta, mem0, LangGraph checkpointers, 
+vector memory stores, session state persistence, Anthropic context engineering
+Found 42 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Cognitive Memory Architectures   │ Report │                                  │
+│ in Autonomous Artif              │        │                                  │
+│ Types of AI Agent Memory:        │ Web    │ https://atlan.com/know/types-of… │
+│ Episodic, Semantic, Proc         │        │                                  │
+│ Semantic Memory for AI Agents -  │ Web    │ https://mem0.ai/blog/semantic-m… │
+│ Mem0                             │        │                                  │
+│ Mem0 vs Letta (MemGPT): AI Agent │ Web    │ https://vectorize.io/articles/m… │
+│ Memory Compared (                │        │                                  │
+│ MemGPT: Towards LLMs as          │ Web    │ https://www.leoniemonigatti.com… │
+│ Operating Systems – Leonie       │        │                                  │
+│ State Management in LangGraph:   │ Web    │ https://rajatpandit.com/agentic… │
+│ Checkpointing and T              │        │                                  │
+│ Memory for agents - LangChain    │ Web    │ https://www.langchain.com/blog/… │
+│ Prompt caching - Claude API Docs │ Web    │ https://platform.claude.com/doc… │
+│ - Claude Console                 │        │                                  │
+│ What Is AI Agent Memory? | IBM   │ Web    │ https://www.ibm.com/think/topic… │
+│ Agentic AI Memory vs Vector      │ Web    │ https://atlan.com/know/agentic-… │
+│ Database: Architecture           │        │                                  │
+│ ... and 32 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Cognitive Memory Architectures in Autonomous Artificial Intelligence Agents: 
+From Neuromorphic Theory to Production Orchestration
+
+## Theoretical Foundations and the CoALA Framework
+
+The development of stateful artificial intelligence systems is rooted in 
+cognitive science, which adapts models of human memory into computational 
+execution paths.[1] Endel Tulving’s 1972 taxonomy, which split long-term memory 
+into episodic memory (the record of time-bound personal experiences) and 
+semantic memory (the structured, durable storage of general world knowledge), 
+serves as a core blueprint for agent persistence.[1, 2] This is supported by 
+Alan Baddeley and Graham Hitch’s 1974 working memory model, which describes a 
+volatile, active workspace for real-time processing, and Larry Squire’s 1987 
+taxonomy, which defines procedural memory as the cognitive substrate for 
+executing skills and routines.[1] 
+
+The Cognitive Architectures for Language Agents (CoALA) framework (Princeton, 
+arXiv:2309.02427) 
+... (truncated, use --json for full report)
+Imported 39 sources
+agent-memory: import done, total sources = 4
+--- waiting: llm-observability ---
+✓ Research completed: LLM observability and LLMOps in production: distributed 
+tracing (Langfuse, LangSmith, Arize Phoenix, Helicone), token and cost 
+monitoring, online evaluation, prompt versioning in production, latency and TTFT
+monitoring, OpenTelemetry GenAI semantic conventions, hallucination and drift 
+detection
+Found 35 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Production-Grade LLM             │ Report │                                  │
+│ Observability and LLMOps: Dis    │        │                                  │
+│ Agent Observability: LangSmith,  │ Web    │ https://www.digitalapplied.com/… │
+│ Langfuse, Arize 20               │        │                                  │
+│ What is LLM monitoring?          │ Web    │ https://www.braintrust.dev/arti… │
+│ (Quality, cost, latency, a       │        │                                  │
+│ Observing vLLM with              │ Web    │ https://www.dash0.com/blog/obse… │
+│ OpenTelemetry and Dash0 · Dash   │        │                                  │
+│ LLM Cost Attribution at Scale:   │ Web    │ https://www.truefoundry.com/blo… │
+│ Metadata Tagging, T              │        │                                  │
+│ LLM-as-a-Judge Evaluation for    │ Web    │ https://mlflow.org/llm-as-a-jud… │
+│ LLMs & Agents - MLfl             │        │                                  │
+│ LLM Agent Cost Attribution:      │ Web    │ https://www.digitalapplied.com/… │
+│ Complete Production 20           │        │                                  │
+│ What is prompt management?       │ Web    │ https://www.braintrust.dev/arti… │
+│ Versioning, collaborati          │        │                                  │
+│ Detecting drift in production    │ Web    │ https://docs.aws.amazon.com/pre… │
+│ applications - AWS P             │        │                                  │
+│ LLM as a Judge - Primer and      │ Web    │ https://arize.com/llm-as-a-judg… │
+│ Pre-Built Evaluators -           │        │                                  │
+│ ... and 25 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Production-Grade LLM Observability and LLMOps: Distributed Tracing, Cost 
+Governance, and Reliability Engineering
+
+The transition from classical Application Performance Monitoring (APM) to 
+Generative AI observability is driven by the non-deterministic, multi-step 
+nature of agentic workflows.[1, 2] A single user interaction with an autonomous 
+agent can trigger an entire tree of nested model calls, vector database 
+retrievals, and external tool executions.[1, 2] Standard HTTP logging captures 
+end-to-end latency but fails to map this internal execution graph.[3, 4] 
+Production platforms must reconstruct these hierarchies as structured trace 
+trees, establishing clear parent-child span relationships.[2, 3] This report 
+provides an exhaustive, technical analysis of distributed tracing, cost 
+governance, latency profiling, prompt registry infrastructure, and automated 
+evaluation frameworks necessary for operating large-scale language model systems
+in production.
+
+---
+
+## Distributed Tracing Agen
+... (truncated, use --json for full report)
+Imported 35 sources
+llm-observability: import done, total sources = 4
+--- waiting: ai-guardrails ---
+✓ Research completed: LLM input/output security and guardrails: prompt injection
+defense (OWASP LLM01), jailbreak detection, PII detection and redaction 
+(Microsoft Presidio), content moderation (OpenAI moderation, Llama Guard), NeMo 
+Guardrails, Guardrails AI, Rebuff, Lakera, input/output schema validation
+Found 75 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Architectural Blueprint for      │ Report │                                  │
+│ Enterprise-Scale Large           │        │                                  │
+│ LLM01:2025 Prompt Injection -    │ Web    │ https://genai.owasp.org/llmrisk… │
+│ OWASP Gen AI Securit             │        │                                  │
+│ Best AI Guardrails in 2026:      │ Web    │ https://generalanalysis.com/gui… │
+│ Tools, Architecture, a           │        │                                  │
+│ LLM Prompt Injection Prevention  │ Web    │ https://cheatsheetseries.owasp.… │
+│ - OWASP Cheat Shee               │        │                                  │
+│ hve-core/.github/skills/securit… │ Web    │ https://github.com/microsoft/hv… │
+│ anmolksachan/AI-ML-Free-Resourc… │ Web    │ https://github.com/anmolksachan… │
+│ AI Security Best Practices: A    │ Web    │ https://www.stackhawk.com/blog/… │
+│ Developer's Guide to             │        │                                  │
+│ LLM01:2025 Prompt Injection :    │ Web    │ https://www.indusface.com/learn… │
+│ Risks & Mitigation -             │        │                                  │
+│ Presidio by Microsoft: A         │ Web    │ https://medium.com/@nkbvikram/p… │
+│ Practical Guide to Detect        │        │                                  │
+│ GitHub - NVIDIA-NeMo/Guardrails: │ Web    │ https://github.com/NVIDIA-NeMo/… │
+│ NeMo Guardrails i                │        │                                  │
+│ ... and 65 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Architectural Blueprint for Enterprise-Scale Large Language Model Security: 
+Input and Output Guardrailing, Threat Mitigation, and Schema Validation
+
+The rapid integration of Large Language Models (LLMs) and autonomous agents into
+production workflows has shifted the software security landscape.[1, 2] 
+Traditional systems maintain a clear distinction between untrusted data and 
+executable code.[1, 2] In contrast, generative AI architectures process 
+instructions and untrusted user data within a shared, natural language context 
+window.[1, 2] This architectural design introduces several unique 
+vulnerabilities, primarily prompt injection and downstream exploit vectors, 
+which must be addressed through robust, multi-layered security controls.[1, 3, 
+4]
+
+---
+
+## Large Language Model System Vulnerabilities and Attack Runtimes
+
+The top position in the OWASP security ranking for language models is held by 
+Prompt Injection (OWASP LL01), which serves as a primary exploit vector that can
+compromise d
+... (truncated, use --json for full report)
+23:55:49 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.030s: 
+23:55:49 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook e59ecd7e-9d90-464f-bf3e-c38b2291c68d; retrying in 5.0s (attempt 2, 30.0s elapsed)
+Import timed out; retrying in 5s (attempt 2)
+23:56:25 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.504s: 
+23:56:25 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook e59ecd7e-9d90-464f-bf3e-c38b2291c68d; retrying in 10.0s (attempt 3, 65.7s elapsed)
+Import timed out; retrying in 10s (attempt 3)
+23:57:06 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.609s: 
+23:57:06 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook e59ecd7e-9d90-464f-bf3e-c38b2291c68d; retrying in 20.0s (attempt 4, 106.6s elapsed)
+Import timed out; retrying in 20s (attempt 4)
+23:58:00 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 31.946s: 
+23:58:00 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook e59ecd7e-9d90-464f-bf3e-c38b2291c68d; retrying in 40.0s (attempt 5, 160.6s elapsed)
+Import timed out; retrying in 40s (attempt 5)
+Imported 8 sources
+ai-guardrails: import done, total sources = 4
+--- waiting: data-engineering ---
+✓ Research completed: Data engineering for AI applications: ETL vs ELT, dbt 
+transformations, orchestration (Airflow, Dagster, Prefect), data quality testing
+(Great Expectations, Soda), data warehouse modeling (star schema, slowly 
+changing dimensions), DuckDB, Polars, dlt, streaming pipelines
+Found 51 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Architectural Paradigms in Data  │ Report │                                  │
+│ Engineering for En               │        │                                  │
+│ An Example ETL Pipeline with dlt │ Web    │ https://aetperf.github.io/data%… │
+│ + SQLMesh + DuckD                │        │                                  │
+│ Metadata filtering in Vector     │ Web    │ https://medium.com/@kandaanusha… │
+│ databases | by Kandaa            │        │                                  │
+│ The Best Data Pipeline Tools in  │ Web    │ https://getbruin.com/blog/best-… │
+│ 2026: Airflow vs M               │        │                                  │
+│ Types of data transformations    │ Web    │ https://www.getdbt.com/blog/dat… │
+│ for machine learning             │        │                                  │
+│ Great Expectations Deep Dive —   │ Web    │ https://blog.pebblous.ai/report… │
+│ The First Line of D              │        │                                  │
+│ Airflow vs Dagster vs Prefect    │ Web    │ https://www.getorchestra.io/blo… │
+│ Comparison 2026 - Or             │        │                                  │
+│ AI & Kafka: 3 Integration        │ Web    │ https://www.confluent.io/blog/a… │
+│ Patterns & Best Practice         │        │                                  │
+│ Online Feature Store for AI and  │ Web    │ https://www.kai-waehner.de/blog… │
+│ Machine Learning w               │        │                                  │
+│ Top 10 Python Libraries for Data │ Web    │ https://www.kdnuggets.com/top-1… │
+│ Engineering in 20                │        │                                  │
+│ ... and 41 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Architectural Paradigms in Data Engineering for Enterprise Artificial 
+Intelligence: Processing, Orchestration, Validation, and Storage
+
+The operational success of enterprise artificial intelligence depends on the 
+structural integrity, latency, and scalability of underlying data pipelines. 
+Modern artificial intelligence applications—ranging from large-scale machine 
+learning modeling to real-time retrieval-augmented generation (RAG) and 
+autonomous agent workflows—require a fundamental shift in how data is ingested, 
+transformed, validated, and modeled. This report presents a technical evaluation
+of the architectural paradigms shaping contemporary data engineering for 
+artificial intelligence applications.
+
+---
+
+## The Ingestion Paradigm: Comparative Analysis of ETL and ELT in AI Workflows
+
+The foundational sequence of moving and shaping data has undergone a critical 
+shift with the rise of cloud-native computing. The choice between Extract, 
+Transform, Load (ETL) and Extract, Load, Transfo
+... (truncated, use --json for full report)
+23:59:32 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.102s: 
+23:59:33 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 5.0s (attempt 2, 30.1s elapsed)
+Import timed out; retrying in 5s (attempt 2)
+00:00:08 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.657s: 
+00:00:08 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 10.0s (attempt 3, 65.9s elapsed)
+Import timed out; retrying in 10s (attempt 3)
+00:00:49 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.270s: 
+00:00:49 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 20.0s (attempt 4, 106.2s elapsed)
+Import timed out; retrying in 20s (attempt 4)
+00:01:39 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.239s: 
+00:01:39 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 40.0s (attempt 5, 156.5s elapsed)
+Import timed out; retrying in 40s (attempt 5)
+00:02:49 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.181s: 
+00:02:49 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 60.0s (attempt 6, 226.7s elapsed)
+Import timed out; retrying in 60s (attempt 6)
+00:04:19 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.299s: 
+00:04:19 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 60.0s (attempt 7, 317.1s elapsed)
+Import timed out; retrying in 60s (attempt 7)
+00:05:50 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.263s: 
+00:05:50 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 4282afc6-db83-4ff2-8d87-4512ed369645; retrying in 60.0s (attempt 8, 407.3s elapsed)
+Import timed out; retrying in 60s (attempt 8)
+Imported 2 sources
+data-engineering: import done, total sources = 4
+--- waiting: agent-orchestration ---
+✓ Research completed: AI agent orchestration frameworks: LangGraph, CrewAI, 
+AutoGen, OpenAI Agents SDK, Claude Agent SDK, Temporal durable execution, 
+multi-agent patterns (supervisor, swarm, handoff), state machines, 
+human-in-the-loop, checkpointing and resumption
+Found 38 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ State-Machine Orchestration,     │ Report │                                  │
+│ Event-Driven Actor Mo            │        │                                  │
+│ Building AI agents that overcome │ Web    │ https://temporal.io/blog/buildi… │
+│ the complexity cl                │        │                                  │
+│ What Is LangGraph? State, Agents │ Web    │ https://atlan.com/know/ai-agent… │
+│ & Production Use                 │        │                                  │
+│ Human-in-the-loop - Docs by      │ Web    │ https://docs.langchain.com/oss/… │
+│ LangChain                        │        │                                  │
+│ Flows - CrewAI                   │ Web    │ https://docs.crewai.com/en/conc… │
+│ Agents SDK | OpenAI API          │ Web    │ https://developers.openai.com/a… │
+│ LangGraph vs AutoGen State       │ Web    │ https://eastondev.com/blog/en/p… │
+│ Tracking: Checkpoint Me          │        │                                  │
+│ Checkpointing - CrewAI           │ Web    │ https://docs.crewai.com/en/conc… │
+│ AutoGen v0.4: Reimagining the    │ Web    │ https://www.microsoft.com/en-us… │
+│ foundation of agenti             │        │                                  │
+│ Introducing Temporal and agentic │ Web    │ https://temporal.io/blog/introd… │
+│ sandboxes: The Op                │        │                                  │
+│ ... and 28 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# State-Machine Orchestration, Event-Driven Actor Models, and Durable Execution 
+in Multi-Agent AI Architectures
+
+## The Agentic Infrastructure Landscape and the Complexity Cliff
+
+The implementation of artificial intelligence within enterprise software 
+architectures is undergoing a structural transition. Single-turn interfaces and 
+stateless pipeline chains are being replaced by autonomous, stateful multi-agent
+systems designed to perform complex, multi-step operations over extended time 
+horizons.[1, 2] This shift reveals critical limitations in traditional software 
+engineering patterns. In a production environment, AI agents act as distributed 
+systems, executing non-deterministic loops, invoking external application 
+programming interfaces (APIs), managing filesystem states, and collaborating 
+with other specialized agents.[3] 
+
+As these workflows grow in duration, step count, and tool variety, they 
+encounter what infrastructure engineers term the "complexity cliff".[2] 
+Traditional softwa
+... (truncated, use --json for full report)
+00:07:41 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.010s: 
+00:07:41 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 652134d1-d09f-4d3c-881f-b4b86ec4058b; retrying in 5.0s (attempt 2, 30.0s elapsed)
+Import timed out; retrying in 5s (attempt 2)
+00:08:17 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.932s: 
+00:08:17 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 652134d1-d09f-4d3c-881f-b4b86ec4058b; retrying in 10.0s (attempt 3, 66.0s elapsed)
+Import timed out; retrying in 10s (attempt 3)
+Imported 35 sources
+agent-orchestration: import done, total sources = 4
+--- waiting: synthetic-data ---
+✓ Research completed: Synthetic data generation and fine-tune dataset curation: 
+distilabel, self-instruct and evol-instruct, DPO and RLHF preference data, 
+dataset deduplication (MinHash), quality filtering and scoring, data 
+contamination checks, instruction-tuning dataset formats
+Found 53 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Engineering High-Capability      │ Report │                                  │
+│ Large Language Models:           │        │                                  │
+│ Aman's AI Journal • Primers •    │ Web    │ https://aman.ai/primers/ai/data… │
+│ Data Filtering                   │        │                                  │
+│ Self-Instruct Framework,         │ Web    │ https://towardsdatascience.com/… │
+│ Explained | Towards Data         │        │                                  │
+│ Data Deduplication at Trillion   │ Web    │ https://zilliz.com/blog/data-de… │
+│ Scale: How to Solve              │        │                                  │
+│ How to Train Data-Efficient LLMs │ Web    │ https://arxiv.org/html/2402.096… │
+│ - arXiv                          │        │                                  │
+│ Topic 46: RLHF variations: DPO,  │ Web    │ https://www.turingpost.com/p/rl… │
+│ RRHF, RLAIF - Turi               │        │                                  │
+│ An Open-Source Data              │ Web    │ https://aclanthology.org/2024.f… │
+│ Contamination Report for Large   │        │                                  │
+│ Create a Mathematical Preference │ Web    │ https://docs.mistral.ai/resourc… │
+│ Dataset with dist                │        │                                  │
+│ Customizing Chat Templates in    │ Web    │ https://huggingface.co/blog/Fri… │
+│ LLMs - Hugging Face              │        │                                  │
+│ LSHBloom: Internet-Scale Text    │ Web    │ https://arxiv.org/html/2411.042… │
+│ Deduplication - arXi             │        │                                  │
+│ ... and 43 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Engineering High-Capability Large Language Models: A Comprehensive Analysis of
+Data Curation, Synthetic Generation, Preference Alignment, and Benchmark 
+Integrity
+
+Data quality represents the primary determinant of downstream model performance,
+often eclipsing both raw parameter scale and compute budgets.[1] In an era where
+web-scraped corpora and synthetic generation dominate pretraining and 
+post-training data pipelines, the systematic elimination of noise, redundancy, 
+and benchmark contamination is critical.[1, 2] This report provides an in-depth 
+analysis of state-of-the-art methodologies for pretraining data curation, 
+document-level deduplication, synthetic dataset evolution, post-training 
+preference alignment, and the detection of evaluation dataset contamination.
+
+---
+
+## Pretraining Data Curation and Quality Filtering
+
+Pretraining pipelines rely on multi-stage filtering protocols to transform raw, 
+noisy web crawls into clean, informative training corpora.[1] The early stages 
+of 
+... (truncated, use --json for full report)
+00:09:34 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.012s: 
+00:09:34 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook ee69b5ff-f240-4efe-8e52-3481d6891c59; retrying in 5.0s (attempt 2, 30.0s elapsed)
+Import timed out; retrying in 5s (attempt 2)
+00:10:10 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.792s: 
+00:10:10 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook ee69b5ff-f240-4efe-8e52-3481d6891c59; retrying in 10.0s (attempt 3, 65.8s elapsed)
+Import timed out; retrying in 10s (attempt 3)
+00:10:50 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.215s: 
+00:10:50 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook ee69b5ff-f240-4efe-8e52-3481d6891c59; retrying in 20.0s (attempt 4, 106.0s elapsed)
+Import timed out; retrying in 20s (attempt 4)
+00:11:40 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.331s: 
+00:11:40 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook ee69b5ff-f240-4efe-8e52-3481d6891c59; retrying in 40.0s (attempt 5, 156.4s elapsed)
+Import timed out; retrying in 40s (attempt 5)
+00:12:51 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.211s: 
+00:12:51 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook ee69b5ff-f240-4efe-8e52-3481d6891c59; retrying in 60.0s (attempt 6, 226.6s elapsed)
+Import timed out; retrying in 60s (attempt 6)
+00:14:21 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.236s: 
+00:14:21 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook ee69b5ff-f240-4efe-8e52-3481d6891c59; retrying in 60.0s (attempt 7, 316.8s elapsed)
+Import timed out; retrying in 60s (attempt 7)
+Imported 11 sources
+synthetic-data: import done, total sources = 4
+--- waiting: knowledge-graph ---
+✓ Research completed: Knowledge graph construction and GraphRAG: LLM-based 
+entity and relation extraction, ontology design, graph databases (Neo4j, 
+Memgraph), Microsoft GraphRAG, LightRAG, Cypher queries, entity resolution, 
+triple stores
+Found 62 sources
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Title                            ┃ Type   ┃ URL                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Paradigms of Graph-Enhanced      │ Report │                                  │
+│ Retrieval-Augmented Ge           │        │                                  │
+│ How Microsoft GraphRAG Works     │ Web    │ https://tech.bertelsmann.com/en… │
+│ Step-By-Step (Part 1/            │        │                                  │
+│ Integrating Microsoft GraphRAG   │ Web    │ https://neo4j.com/blog/develope… │
+│ Into Neo4j                       │        │                                  │
+│ What is LightRAG?. LightRAG vs   │ Web    │ https://medium.com/data-science… │
+│ RAG vs GraphRAG | b              │        │                                  │
+│ Global Community Summary         │ Web    │ https://graphrag.com/reference/… │
+│ Retriever - GraphRAG             │        │                                  │
+│ Cypher-RAG: Graph Retrieval      │ Web    │ https://www.emergentmind.com/to… │
+│ Augmentation - Emergen           │        │                                  │
+│ What is LazyGraphRAG?            │ Web    │ https://www.articsledge.com/pos… │
+│ Microsoft's Cost-Effective A     │        │                                  │
+│ LightRAG: Graph-Enhanced Text    │ Web    │ https://promptengineering.org/l… │
+│ Indexing and Dual-Le             │        │                                  │
+│ Entity Resolution and            │ Web    │ https://neo4j.com/labs/agent-me… │
+│ Deduplication - Neo4j Agent      │        │                                  │
+│ GraphRAG Architecture:           │ Web    │ https://www.puppygraph.com/blog… │
+│ Components, Workflow & Impl      │        │                                  │
+│ ... and 52 more                  │        │                                  │
+└──────────────────────────────────┴────────┴──────────────────────────────────┘
+
+Report:
+# Paradigms of Graph-Enhanced Retrieval-Augmented Generation: Architectures, 
+Ontologies, and Database Optimization
+
+## The Evolution of Context-Aware Information Retrieval
+
+Traditional retrieval-augmented generation architectures operate predominantly 
+over flat, unstructured document stores, utilizing vector similarity to retrieve
+relevant text segments which are subsequently passed to a large language model 
+for generation.[1, 2] While highly effective for localized factual queries, 
+these standard architectures face severe limitations when executing operations 
+over complex, distributed, or highly interconnected datasets.[1, 3] Standard 
+vector similarity models prioritize semantic proximity over explicit 
+relationships, resulting in a systemic blindness to cross-document links, 
+structural dependencies, and multi-hop paths.[1, 4] This fragmentation 
+frequently manifests as incomplete context retrieval, redundant textual inputs, 
+or a failure to answer macroscopic, relational questions.[4, 5
+... (truncated, use --json for full report)
+00:16:05 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.010s: 
+00:16:05 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e; retrying in 5.0s (attempt 2, 30.0s elapsed)
+Import timed out; retrying in 5s (attempt 2)
+00:16:41 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.106s: 
+00:16:41 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e; retrying in 10.0s (attempt 3, 65.1s elapsed)
+Import timed out; retrying in 10s (attempt 3)
+00:17:21 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.141s: 
+00:17:21 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e; retrying in 20.0s (attempt 4, 105.3s elapsed)
+Import timed out; retrying in 20s (attempt 4)
+00:18:11 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.110s: 
+00:18:11 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e; retrying in 40.0s (attempt 5, 155.4s elapsed)
+Import timed out; retrying in 40s (attempt 5)
+00:19:21 ERROR [notebooklm._core] RPC IMPORT_RESEARCH failed after 30.162s: 
+00:19:21 WARNING [notebooklm.cli.helpers] IMPORT_RESEARCH timed out for notebook 5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e; retrying in 60.0s (attempt 6, 225.6s elapsed)
+Import timed out; retrying in 60s (attempt 6)
+Imported 17 sources
+knowledge-graph: import done, total sources = 4
+=== ALL COLLECTED 00:20:49 ===

@@ -24,7 +24,7 @@
 # ---------------------------------------------------------------------------
 
 version: 1.0.0
-last_updated: "2026-05-31"
+last_updated: "2026-06-01"
 runner: ".tad/scripts/pack-eval-runner.sh"
 
 packs:
@@ -44,3 +44,11 @@ packs:
   web-frontend:           pending      # fixture: design-token-consumption
   web-testing:            pending      # fixture: test-pyramid-strategy
   web-ui-design:          pending      # fixture: anti-slop-landing-design
+  rag-retrieval:          verified     # REAL spot-eval 2026-06-01: WITH disc 13/4 PASS, CONTROL disc 2/4 FAIL — clean delta
+  agent-memory:           verified     # REAL spot-eval 2026-06-01: WITH disc 9/3 PASS, CONTROL disc 1/3 FAIL — clean delta
+  llm-observability:      verified     # REAL spot-eval 2026-06-01: WITH disc 4/3 PASS, CONTROL disc 0/3 FAIL — fixture-theater fix holds on real output
+  ai-guardrails:          verified     # REAL spot-eval 2026-06-01: WITH disc 9/4 PASS, CONTROL disc 2/4 FAIL — clean delta
+  data-engineering:       pending      # REAL spot-eval 2026-06-01: WITH disc 10/4 PASS but CONTROL disc 5/4 ALSO PASS — no clean delta. Markers (train-serve skew/RRF/SCD2/pre-filter) are common senior-DE knowledge → not discriminative. FOLLOW-UP: tighten discriminative_pattern to pack-unique rule IDs/numbers (same as web-backend).
+  agent-orchestration:    verified     # REAL spot-eval 2026-06-01: WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta
+  synthetic-data:         verified     # REAL spot-eval 2026-06-01: WITH disc 9/4 PASS, CONTROL disc 0/4 FAIL — fixture-theater fix holds on real output
+  knowledge-graph:        verified     # REAL spot-eval 2026-06-01: WITH disc 10/4 PASS, CONTROL disc 2/4 FAIL — clean delta

@@ -1,0 +1,9 @@
+# pack-slug | notebook_id | research_task_id (deep research, kicked off 2026-05-31)
+rag-retrieval|88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd|1f54dae2-f394-46a4-a179-16450a8d3910
+agent-memory|db77e119-dac3-47b1-96aa-48d94b72e62f|42dbc601-ef44-4db8-9ec9-0a21f8e75c48
+llm-observability|b607b649-f645-4fff-a7be-0c938165c419|e8e7fb58-4993-436a-b003-fb51f8f2e870
+ai-guardrails|e59ecd7e-9d90-464f-bf3e-c38b2291c68d|e0078f0f-599e-499d-bba7-54bc375a4515
+data-engineering|4282afc6-db83-4ff2-8d87-4512ed369645|a4c5529d-2785-4393-91e0-5a21f9a6a1c5
+agent-orchestration|652134d1-d09f-4d3c-881f-b4b86ec4058b|0574f109-4a08-479d-b512-14cd8b207f6d
+synthetic-data|ee69b5ff-f240-4efe-8e52-3481d6891c59|4691e31c-a9d1-4915-9967-6143fcc2a4cc
+knowledge-graph|5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e|aa2354e9-c8dc-4f67-b16a-1ba14967e372

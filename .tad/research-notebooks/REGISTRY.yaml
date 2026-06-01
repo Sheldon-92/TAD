@@ -507,3 +507,59 @@ notebooks:
     last_queried: "2026-05-29"
     source_count: 14
     notes: "Phase 1 research for EPIC-20260529-ml-training-pack. 14 curated sources (6 GitHub repos + 4 platform docs + 4 research articles). 4 rounds deep ask completed. Covers: platform gotchas, tool benchmarks, voice vs LLM fine-tune differences, decision framework, cost estimation."
+  - id: "rag-retrieval-pack"
+    notebook_id: "88157875-b4c4-48b8-a9f7-fa7e2ba8b4cd"
+    topic: "RAG & Retrieval Engineering — Chunking, Embeddings, Vector DBs, Reranking, Eval"
+    created: "2026-05-31"
+    status: active
+    source_count: 45
+    notes: "EPIC-20260531-agent-adjacent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/rag-retrieval/findings.md"
+  - id: "agent-memory-pack"
+    notebook_id: "db77e119-dac3-47b1-96aa-48d94b72e62f"
+    topic: "Agent Memory & Context Engineering — CoALA, Compaction, MemGPT/Letta/mem0, Checkpointing"
+    created: "2026-05-31"
+    status: active
+    source_count: 42
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/agent-memory/findings.md"
+  - id: "llm-observability-pack"
+    notebook_id: "b607b649-f645-4fff-a7be-0c938165c419"
+    topic: "LLM Observability & LLMOps — Tracing, Cost, OTEL GenAI, Online Eval, Drift"
+    created: "2026-05-31"
+    status: active
+    source_count: 35
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/llm-observability/findings.md"
+  - id: "ai-guardrails-pack"
+    notebook_id: "e59ecd7e-9d90-464f-bf3e-c38b2291c68d"
+    topic: "AI Guardrails & LLM I/O Security — Prompt Injection, PII, Moderation, NeMo/Presidio"
+    created: "2026-05-31"
+    status: active
+    source_count: 75
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/ai-guardrails/findings.md"
+  - id: "data-engineering-pack"
+    notebook_id: "4282afc6-db83-4ff2-8d87-4512ed369645"
+    topic: "Data Engineering for AI — ETL/ELT, dbt, Airflow/Dagster, Data Quality, DuckDB/Polars"
+    created: "2026-05-31"
+    status: active
+    source_count: 51
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/data-engineering/findings.md"
+  - id: "agent-orchestration-pack"
+    notebook_id: "652134d1-d09f-4d3c-881f-b4b86ec4058b"
+    topic: "Agent Orchestration — LangGraph/CrewAI/AutoGen/Agents-SDK, Durable Execution, Multi-Agent"
+    created: "2026-05-31"
+    status: active
+    source_count: 38
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/agent-orchestration/findings.md"
+  - id: "synthetic-data-pack"
+    notebook_id: "ee69b5ff-f240-4efe-8e52-3481d6891c59"
+    topic: "Synthetic Data & Fine-Tune Dataset Curation — distilabel, Evol-Instruct, DPO, Dedup, Contamination"
+    created: "2026-05-31"
+    status: active
+    source_count: 53
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/synthetic-data/findings.md"
+  - id: "knowledge-graph-pack"
+    notebook_id: "5223fac8-b5d5-4e26-bf8f-9897c2f1ec6e"
+    topic: "Knowledge Graphs & GraphRAG — Entity Extraction, Neo4j/Memgraph, Microsoft GraphRAG/LightRAG, Cypher"
+    created: "2026-05-31"
+    status: active
+    source_count: 62
+    notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/knowledge-graph/findings.md"
