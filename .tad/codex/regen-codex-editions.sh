@@ -82,12 +82,16 @@ if [ $ALEX_OK -eq 1 ] && [ $BLAKE_OK -eq 1 ]; then
   echo "========================================="
   exit 0
 else
+  DEBUG_ALEX="$REPO_ROOT/.tad/codex/.regen-debug-alex"
+  DEBUG_BLAKE="$REPO_ROOT/.tad/codex/.regen-debug-blake"
+  cp "$SCRATCH_ALEX" "$DEBUG_ALEX" 2>/dev/null || true
+  cp "$SCRATCH_BLAKE" "$DEBUG_BLAKE" 2>/dev/null || true
   echo "========================================="
   echo "REGEN FAILED — live editions UNTOUCHED."
-  [ $ALEX_OK -eq 0 ] && echo "  alex:  FAIL (run parity-check manually for details)"
-  [ $BLAKE_OK -eq 0 ] && echo "  blake: FAIL (run parity-check manually for details)"
+  [ $ALEX_OK -eq 0 ] && echo "  alex:  FAIL — debug: bash $PARITY_CHECK $ALEX_SOURCE $DEBUG_ALEX"
+  [ $BLAKE_OK -eq 0 ] && echo "  blake: FAIL — debug: bash $PARITY_CHECK $BLAKE_SOURCE $DEBUG_BLAKE"
   echo ""
-  echo "Debug: bash $PARITY_CHECK $ALEX_SOURCE $SCRATCH_ALEX"
+  echo "Scratch copies saved for debugging (rm manually after)."
   echo "========================================="
   exit 1
 fi

@@ -84,7 +84,7 @@ A mismatch means the section parser is broken — gate ERRORs, do not trust the 
 
 **Alex source (`.claude/skills/alex/SKILL.md`):**
 - forbidden_implementations: 6 owners (cross_model_awareness:1, express_path_protocol:1, experiment_path_protocol:1, handoff_creation_protocol:3, acceptance_protocol:4, cancel_protocol:2) = 12
-- anti_rationalization_registry: 4 owners (anti_rationalization_registry:2, handoff_creation_protocol:1, intent_router_protocol:1, on_start:2) = 6
+- anti_rationalization_registry: 4 owners (anti_rationalization_registry:1, handoff_creation_protocol:1, intent_router_protocol:1, on_start:2) = 5 (P3: header self-count removed)
 - NOT_via_alex_auto: 3 owners (anti_rationalization_registry:1, cross_model_awareness:1, research_plan_protocol:3) = 5
 - honest_partial: 0 (all 4 occurrences in yolo_execution_protocol = allowlisted)
 
@@ -97,7 +97,7 @@ A mismatch means the section parser is broken — gate ERRORs, do not trust the 
 - forbidden_implementations: 4 owners (completion_knowledge_override:1, cross_model_invocation:1, execution_checklist:3, ralph_loop_execution:1) = 6
 - anti_rationalization_registry: 0 (Alex-only)
 - NOT_via_alex_auto: 0 (Alex-only)
-- honest_partial: 2 owners (honest_partial_protocol:2, on_start:2) = 4
+- honest_partial: 2 owners (honest_partial_protocol:1, on_start:2) = 3 (P3: header self-count removed)
 
 <!-- PIN:blake|forbidden_implementations|6 -->
 <!-- PIN:blake|anti_rationalization_registry|0 -->

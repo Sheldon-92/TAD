@@ -257,9 +257,9 @@ else
 fi
 
 # Secondary signal: global constraint floor (WARN only, not FAIL)
-source_constraint_count=$(grep -coE 'MUST|MANDATORY|VIOLATION' "$CLAUDE_SKILL" 2>/dev/null) || true
+source_constraint_count=$(grep -oE 'MUST|MANDATORY|VIOLATION' "$CLAUDE_SKILL" 2>/dev/null | wc -l | tr -d ' ') || true
 source_constraint_count=${source_constraint_count:-0}
-codex_constraint_count=$(grep -coE 'MUST|MANDATORY|VIOLATION' "$CODEX_EDITION" 2>/dev/null) || true
+codex_constraint_count=$(grep -oE 'MUST|MANDATORY|VIOLATION' "$CODEX_EDITION" 2>/dev/null | wc -l | tr -d ' ') || true
 codex_constraint_count=${codex_constraint_count:-0}
 floor=$((source_constraint_count / 10))
 if [ "$floor" -lt 10 ]; then floor=10; fi
