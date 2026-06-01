@@ -43,8 +43,8 @@ The recurring failure is **episodic recall confusion**: temporary events get sto
 
 > Source: findings.md "Decoupled Semantic Memory and Continuous Extraction Engines" — episodic recall confusion [2]
 
-**Performance grounding**: systematic episodic memory improves customer-satisfaction scores by **43%** in automated support; procedural memory registers reduce task-completion time by **58%** in enterprise automation.
-> Source: findings.md "Theoretical Foundations" [4]
+**Performance grounding**: systematic episodic memory improves customer-satisfaction in automated support, and procedural-memory registers reduce task-completion time in enterprise automation — the magnitude depends entirely on domain, baseline, and metric definition, so measure it on your own workload rather than assuming a fixed lift.
+> Source: findings.md "Theoretical Foundations" [4] (direction of effect only — the cited secondary source does not specify study design, sample, or baseline, so no portable percentage is claimed)
 
 **determinismLevel**: deterministic.
 

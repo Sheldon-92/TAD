@@ -98,12 +98,17 @@ Match the inline defense layer to the goal:
 | Low-latency inline screening | **Lakera Guard** | model-agnostic API (`POST /v2/guard`), **sub-50ms**, threat feed updated daily with 100k+ new adversarial patterns; integrates as a Kong reverse-proxy plugin scanning SSE frames |
 | Stateful programmable dialog | **NeMo Guardrails** | Colang DSL; five rail types — Input / Dialog / Retrieval / Execution / Output |
 
-Rebuff canary usage:
+Rebuff (self-hosted SDK) usage — the published package exposes `RebuffSdk`, constructed with OpenAI + Pinecone credentials (NOT a single `api_token`):
 ```python
-from rebuff import Rebuff
-rb = Rebuff(api_token="REBUFF_API_KEY")
-detection_metrics, is_injection = rb.detect_injection(user_input)
-if is_injection:
+from rebuff import RebuffSdk
+rb = RebuffSdk(
+    openai_apikey="...",
+    pinecone_apikey="...",
+    pinecone_index="...",
+    openai_model="gpt-4o-mini",  # optional
+)
+result = rb.detect_injection(user_input)
+if result.injection_detected:
     pass  # trigger defense logic
 ```
 

@@ -50,10 +50,10 @@ SCD **Type 1** overwrites old values directly with updated attributes. While spa
 
 ### DIM4: Always Filter Type 2 Queries with `is_current = true`
 
-SCD Type 2 tables grow continuously. The concrete failure: a customer dimension of **10 million** distinct records with **three updates per entity annually** adds **30 million** new rows each year. Over **five years**, only **10 million** of **150 million** total records remain active. **Rule**: any analytical query that omits a strict `is_current = true` filter is forced to scan the entire 150-million-row dataset, causing severe performance degradation. Always filter to current rows unless you explicitly need history.
+SCD Type 2 tables grow continuously. The concrete failure: a customer dimension of **10 million** distinct entities with **three updates per entity annually** adds **30 million** new rows each year. After **five years** the table holds roughly **160 million** rows (the initial 10M plus 30M × 5), of which only the **10 million** current versions remain active. **Rule**: any current-state analytical query that omits a strict `is_current = true` filter is forced to scan the entire ~160-million-row dataset, causing severe performance degradation. Always filter to current rows unless you explicitly need history.
 
 **determinismLevel**: deterministic — the filter is mandatory for current-state queries.
-> Source: findings.md "Table Bloat" — the 10M / 30M-per-year / 150M-over-5-years example and the `is_current = true` filter requirement [33].
+> Source: findings.md "Table Bloat" — the 10M-entity / 30M-per-year / five-year example and the `is_current = true` filter requirement [33] (totals recomputed: 10M initial + 30M × 5 = 160M).
 
 ### DIM5: Make Surrogate-Key Generation Idempotent
 

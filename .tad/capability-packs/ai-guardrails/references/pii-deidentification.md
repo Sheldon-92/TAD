@@ -7,7 +7,7 @@
 |---|------|-----------------|
 | PII1 | Two-engine architecture: AnalyzerEngine (detect) → AnonymizerEngine (transform) | deterministic |
 | PII2 | Choose the anonymizer operator by downstream need — replace/redact/hash/mask/encrypt | deterministic |
-| PII3 | Use Encrypt + DeanonymizerEngine for round-trip (anonymize before send, restore the response) | deterministic |
+| PII3 | Use Encrypt + DeanonymizeEngine for round-trip (anonymize before send, restore the response) | deterministic |
 | PII4 | Prioritize recall over precision — use the F2 score (β=2), a false negative is a compliance breach | deterministic |
 | PII5 | Run heavy transformer NER in an isolated GPU container via RemoteRecognizer to keep the loop fast | deterministic |
 
@@ -53,25 +53,25 @@ anonymized = anonymizer.anonymize(
 |----------|----------|-------------|
 | **Replace** | Swaps the value for a placeholder / entity tag (`"Jane Doe"` → `"<PERSON>"`) | Default; human-readable redaction |
 | **Redact** | Erases the detected character range entirely | When even the entity type must not appear |
-| **Hash** | Deterministic SHA-256 / SHA-512 of the value | Preserve join keys across tables (consistent IDs) |
+| **Hash** | Salted SHA-256 / SHA-512 of the value — Presidio uses a **random salt by default** (since 2.2.361), so supply and securely manage a **consistent salt** for stable output | Preserve join keys across tables (consistent IDs) — only with a fixed salt |
 | **Mask** | Replaces N characters with a masking char (e.g. `*`) | Partial reveal (last 4 of a card) |
 | **Encrypt** | Symmetric encryption with a key; reversible | Round-trip — see PII3 |
 | **Faker synthetic** | Realistic fake identities preserving format | ML training data needing valid-looking values |
 | **AHDS surrogate** | Medically-appropriate PHI placeholders (Azure Health Data Services) | Clinical data preserving utility |
 
-**Rule**: Don't reach for Replace by default everywhere. If downstream systems join on the value, use Hash (deterministic). If you need ML-shaped data, use Faker. If you must restore the original, use Encrypt.
+**Rule**: Don't reach for Replace by default everywhere. If downstream systems join on the value, use Hash **with a fixed, securely-managed salt** (Presidio's default salt is random, so the same value will not hash consistently across runs without one). If you need ML-shaped data, use Faker. If you must restore the original, use Encrypt.
 
 > Source: findings.md AnonymizerEngine operators list [39, 43, 44, 45]
 
 **determinismLevel**: deterministic.
 
-### PII3: Encrypt + DeanonymizerEngine for Round-Trip
+### PII3: Encrypt + DeanonymizeEngine for Round-Trip
 
-The **Encrypt** operator replaces PII with a symmetrically-encrypted string that the **DeanonymizerEngine** can reverse.
+The **Encrypt** operator replaces PII with a symmetrically-encrypted string that the **DeanonymizeEngine** can reverse.
 
 **Rule**: When the workflow must anonymize before sending to an external model AND restore real values in the model's response, use Encrypt (not Replace/Redact — those are lossy and irreversible). This is the only operator pairing that gives anonymize-out / decrypt-back.
 
-> Source: findings.md Encrypt operator + DeanonymizerEngine [40, 43, 44]
+> Source: findings.md Encrypt operator + DeanonymizeEngine [40, 43, 44]
 
 **determinismLevel**: deterministic.
 
@@ -83,7 +83,7 @@ Detection/redaction performance is evaluated with precision, recall, and the F_�
 - Recall = TP / (TP + FN)
 - F_β = (1+β²) · (Precision·Recall) / (β²·Precision + Recall)
 
-Because missing a sensitive entity is a compliance/regulatory risk, the security model **prioritizes recall over precision** and uses the **F2 score (β=2)**, weighting recall twice as heavily as precision to minimize false negatives.
+Because missing a sensitive entity is a compliance/regulatory risk, the security model **prioritizes recall over precision** and uses the **F2 score (β=2)** to minimize false negatives. Note the weighting: β=2 means recall is treated as β times as *important* as precision, but the squared β² term gives recall **4× the mathematical weight** of precision in the score, not 2×.
 
 **Rule**: Do not tune a PII detector on F1 (which weights precision and recall equally). For safety-critical redaction, optimize and report F2 (β=2). A missed entity (false negative) is worse than an over-redaction (false positive).
 
@@ -107,6 +107,6 @@ Transformer NER models are slow. Presidio supports running them in an isolated, 
 
 - **Skipping redaction for "internal" agents**: sending raw names/emails/cards to any external model is a breach.
 - **Tuning on F1**: equal precision/recall weighting under-protects against false negatives; use F2.
-- **Lossy operator when you need restore**: Replace/Redact cannot round-trip; only Encrypt + DeanonymizerEngine can.
+- **Lossy operator when you need restore**: Replace/Redact cannot round-trip; only Encrypt + DeanonymizeEngine can.
 - **Inline transformer NER**: blocks the latency budget — offload to RemoteRecognizer.
 - **Hashing when you need joins but using Replace**: Replace breaks referential joins; Hash is deterministic and preserves them.

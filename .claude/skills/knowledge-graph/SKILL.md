@@ -117,7 +117,7 @@ Produce a structured graph-architecture report:
 |------------------|------|-------------|
 | Microsoft GraphRAG | Indexing + search | Leiden communities, Global/Local/Drift search over static/batch corpora |
 | LazyGraphRAG | Cost-optimized GraphRAG | Lazy query-time evaluation; ~0.1% indexing cost; 700x cheaper global queries |
-| LightRAG | Incremental GraphRAG | Dual-level KV retrieval, <100 tokens/query, incremental updates |
+| LightRAG | Incremental GraphRAG | Dual-level KV retrieval, <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; total query cost adds retrieved context + generation), incremental updates |
 | Neo4j | LPG database | Large historical graphs; index-free adjacency; Causal Clustering (N=2F+1) |
 | Memgraph | In-memory LPG | Sub-ms latency; native Kafka/Redpanda/Pulsar streaming connectors |
 | FalkorDB | Matrix-based LPG | Compressed sparse matrices on Redis; high QPS, low memory footprint |

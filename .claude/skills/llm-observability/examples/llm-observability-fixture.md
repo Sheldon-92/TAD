@@ -61,7 +61,7 @@ engineer does NOT emit them unprompted:
 - ✅ "versioned pricing matrix" (the pack's named rule for WHY raw counters beat a stored dollar cost)
 - ✅ "z-score kill switch" (the pack's 7-day rolling spend z>4 runaway-loop pause)
 - ✅ "Wasserstein drift" (the pack's PCA-reduced embedding drift metric vs ineffective K-S test)
-- ✅ "four-layer token accounting (prompt/tool/memory/response)" (the pack's cost-decomposition with response tokens at 4-5x)
+- ✅ "four-layer token accounting (prompt/tool/memory/response)" (the pack's cost-decomposition; output tokens are materially pricier than input, with the exact multiplier computed per provider/model)
 - ✅ "X-TFY-METADATA tag propagation" (the pack's specific attribution mechanism)
 - ✅ "OTEL_SEMCONV_STABILITY_OPT_IN" (the pack's specific opt-in env var for latest GenAI semconv)
 

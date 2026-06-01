@@ -5,7 +5,7 @@
 
 | # | Rule | stage |
 |---|------|-------|
-| CON1 | Contamination is a spectrum, not binary — up to 90% of SQuADv2/DROP is contaminated | eval |
+| CON1 | Contamination is a spectrum, not binary — one study flagged a large fraction of SQuADv2/DROP | eval |
 | CON2 | Quantify inflation: GSM1k −13%, SWE-bench Verified→Pro −35pp | eval |
 | CON3 | ConTAM token-level metrics: TOKEN-MATCH, NGRAM-MATCH, TOKEN-EXTEND, LONGEST-MATCH | eval |
 | CON4 | ConTAM optimal config: mincount 1, skip_budget 0, n < 8 | eval |
@@ -18,11 +18,11 @@
 
 ### CON1: Contamination Is a Spectrum, Not Binary
 
-Public evaluation benchmarks leak into pretraining corpora and artificially inflate scores. Contamination exists on a **spectrum** that severely distorts leaderboard comparisons. Up to **90% of examples in datasets like SQuADv2 and DROP have been flagged as contaminated**, leading to rapid metric saturation.
+Public evaluation benchmarks leak into pretraining corpora and artificially inflate scores. Contamination exists on a **spectrum** that severely distorts leaderboard comparisons. In one contamination study, a large fraction (reported as **up to ~90%** under that study's overlap definition) of examples in datasets like SQuADv2 and DROP were flagged as contaminated, leading to rapid metric saturation. Treat this figure as study/definition-specific, not a universal contamination rate for those benchmarks.
 
-**Rule**: Never treat a benchmark as "clean" or "dirty." Estimate a contamination RATE and report it alongside the score. A high score on a 90%-contaminated benchmark measures memorization, not generalization.
+**Rule**: Never treat a benchmark as "clean" or "dirty." Estimate a contamination RATE under a stated overlap definition and report it alongside the score. A high score on a heavily-contaminated benchmark measures memorization, not generalization.
 
-> Source: findings.md "Data Leakage and Saturation Spectrum" [37,39,40] — spectrum not binary; up to 90% of SQuADv2/DROP flagged contaminated.
+> Source: findings.md "Data Leakage and Saturation Spectrum" [37,39,40] — spectrum not binary; up to ~90% of SQuADv2/DROP flagged contaminated under that source's overlap definition (single-source figure — verify the paper/tool/split before quoting the number).
 
 **stage**: eval.
 
@@ -31,9 +31,9 @@ Public evaluation benchmarks leak into pretraining corpora and artificially infl
 Contamination's impact is measurable by comparing contaminated vs uncontaminated versions of the same task:
 
 - **GSM1k study**: popular families (Phi, Mistral) suffered downstream accuracy drops of **up to 13%** on new, uncontaminated math problems.
-- **SWE-bench**: Claude Opus 4.5 scored **80.9% on SWE-bench Verified** (high contamination risk — gold patches recoverable from task IDs) but dropped **35 percentage points to 45.9% on SWE-bench Pro** (contamination-resistant, multi-language).
+- **SWE-bench**: Claude Opus 4.5 scored **80.9% on SWE-bench Verified** vs the harder, contamination-resistant **SWE-bench Pro** (a *different, harder suite* — not a decontaminated Verified). The public Scale board reports ~45.9% on Pro; Anthropic's own system card reports ~52% under its harness. ⚠️ The Verified→Pro gap is therefore NOT pure contamination inflation — it conflates contamination, suite difficulty, and harness/eval differences. Always report the exact evaluator/harness/date.
 
-**Rule**: When you report a benchmark number, report what it drops to on the contamination-resistant variant. A 35pp gap is the difference between a real and an imagined capability.
+**Rule**: When you report a benchmark number, also report it on a harder contamination-resistant variant AND name the harness — but do NOT attribute the whole delta to contamination (suite difficulty + harness differ too).
 
 > Source: findings.md "Data Leakage and Saturation Spectrum" [39,40] — GSM1k −13%; SWE-bench Verified 80.9% → Pro 45.9% (−35pp).
 
@@ -41,7 +41,7 @@ Contamination's impact is measurable by comparing contaminated vs uncontaminated
 
 ### CON3: ConTAM Token-Level Metrics
 
-To detect leaked data without access to the training corpus, use post-hoc statistical analysis. ConTAM defines four overlap metrics:
+ConTAM's overlap metrics are **corpus-overlap** methods: they compare the eval set against the training/pretraining corpus (or a documented proxy corpus), so they **require access to that corpus**. When the training corpus is unavailable, fall back to **behavioral** detectors such as CoDeC (CON5), which need only model access. ConTAM defines four overlap metrics:
 
 | Metric | Diagnostic Focus |
 |--------|------------------|

@@ -6,7 +6,7 @@
 | # | Rule | determinismLevel |
 |---|------|-----------------|
 | CM1 | Moderate BOTH input and output — response classification is more robust than prompt classification | deterministic |
-| CM2 | Tool selection: OpenAI Moderation (8 fixed categories) vs Llama Guard (13+ customizable) | deterministic |
+| CM2 | Tool selection: OpenAI Moderation (closed provider-defined taxonomy, ~13 categories) vs Llama Guard (13+ customizable) | deterministic |
 | CM3 | Measure FPR before trusting a single classifier — closed APIs struggle with context-dependent toxicity | semi-deterministic |
 | CM4 | Multimodal inputs need a vision safety classifier — text filters miss image-embedded instructions | deterministic |
 | CM5 | Llama Guard taxonomy is customizable via zero/few-shot prompting — no retraining | deterministic |
@@ -41,7 +41,7 @@ Llama Guard 3 Vision vs baselines (internal safety benchmark):
 | Dimension | OpenAI Moderation API | Meta Llama Guard |
 |-----------|----------------------|------------------|
 | Type | Hosted closed classifier | Open-weight instruction-tuned (Llama 3 8B / 3.1 11B-12B) |
-| Taxonomy | **8 fixed categories** (sexual, hate, violence, harassment, self-harm, sexual/minors, hate/threatening, violence/graphic) | **13+ customizable categories** (S1 Violent Crimes … S14 Code Interpreter Abuse) |
+| Taxonomy | **Closed, provider-defined taxonomy** — `omni-moderation-latest` currently exposes ~13 categories (sexual, sexual/minors, harassment, harassment/threatening, hate, hate/threatening, illicit, illicit/violent, self-harm, self-harm/intent, self-harm/instructions, violence, violence/graphic) with partial image-input support. Verify the current list against OpenAI docs — it has grown over time and is not user-extensible. | **13+ customizable categories** (S1 Violent Crimes … S14 Code Interpreter Abuse) |
 | Customization | Closed — limited | Adaptable via zero/few-shot prompting, no retraining |
 | Best for | Simple out-of-the-box chat pipelines | Granular enterprise rules, customizable taxonomy, multimodal |
 
@@ -75,7 +75,7 @@ Attackers embed instructions inside images — invisible text overlays or advers
 
 Because Llama Guard is instruction-tuned, developers adapt its taxonomy for enterprise rules using zero-shot or few-shot prompting — no retraining of core weights. Categories S6–S13 are explicitly customizable.
 
-**Rule**: When the user's policy needs categories outside OpenAI's fixed 8 (e.g. competitor mentions, domain-specific harms, code-interpreter abuse S14), extend Llama Guard's taxonomy via prompting rather than building a bespoke classifier.
+**Rule**: When the user's policy needs categories outside OpenAI Moderation's closed, provider-defined taxonomy (e.g. competitor mentions, domain-specific harms, code-interpreter abuse S14), extend Llama Guard's taxonomy via prompting rather than building a bespoke classifier.
 
 > Source: findings.md Llama Guard instruction-tuned customization [34, 36, 37]; category taxonomy S1–S14
 
@@ -88,4 +88,4 @@ Because Llama Guard is instruction-tuned, developers adapt its taxonomy for ente
 - **Input-only moderation**: response classification is more robust (FPR 0.016 vs 0.052 for Llama Guard 3 Vision) and catches image-injection at output.
 - **Single unmeasured classifier**: deploying a moderation API without measuring FPR on your own content distribution.
 - **Text-only filter on a multimodal pipeline**: image-embedded instructions bypass it.
-- **Defaulting to a closed 8-category API for a custom threat model**: you cannot extend OpenAI Moderation's taxonomy.
+- **Defaulting to a closed-taxonomy API for a custom threat model**: you cannot extend OpenAI Moderation's provider-defined categories.

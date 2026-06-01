@@ -33,15 +33,17 @@ In MemGPT/Letta the model is NOT a passive recipient of context; it pages data i
 
 | Sub-block | Tier | Write/Edit Tool | Read/Retrieval Tool |
 |-----------|------|-----------------|---------------------|
-| Persona | Main Context | `core_memory_replace` | direct context access |
-| Human | Main Context | `core_memory_append` | direct context access |
+| Persona | Main Context | `memory_replace` / `memory_rethink` | direct context access |
+| Human | Main Context | `memory_insert` / `memory_replace` | direct context access |
 | Conversation Queue | Main Context | automatic platform push | direct context access |
 | Recall Storage | External | automatic DB logging | `conversation_search` |
 | Archival Storage | External | `archival_memory_insert` | `archival_memory_search` |
 
-> Source: findings.md "Operating System Metaphors" — MemGPT memory hierarchy table [5, 10]
+> Source: Letta core-memory tool docs (https://docs.letta.com/guides/ade/core-memory/) — current memory-editing tools; findings.md "Operating System Metaphors" — MemGPT memory hierarchy [5, 10]
 
-**Rule**: A persona/identity edit uses `core_memory_replace` (overwrite); an appended user fact uses `core_memory_append`. Searching old turns is `conversation_search` (Recall), searching uploaded knowledge is `archival_memory_search` (Archival) — they are different stores.
+**Rule**: Edit in-context (core) memory with the current Letta tools — `memory_insert` (add content to a block), `memory_replace` (overwrite content in a block), `memory_rethink` (reorganize a block), and `memory_finish_edits` (finalize). Searching old turns is `conversation_search` (Recall), searching uploaded knowledge is `archival_memory_search` (Archival) — they are different stores.
+
+**Compatibility note**: The legacy MemGPT tool names `core_memory_replace` (overwrite) and `core_memory_append` (append) are **deprecated** in current Letta and replaced by `memory_replace` / `memory_insert`. Use the new names for new projects; the old names may still appear in legacy MemGPT agents.
 
 **determinismLevel**: deterministic.
 
@@ -106,7 +108,7 @@ On the **LongMemEval** benchmark (temporal, multi-hop, knowledge-update long-ter
 
 ## Anti-Patterns
 
-- **Wrong self-editing tool**: using `core_memory_append` to overwrite a persona (should be `core_memory_replace`), or searching Archival when you meant Recall.
+- **Wrong self-editing tool**: using `memory_insert` (append) to overwrite a persona (should be `memory_replace`), or searching Archival when you meant Recall.
 - **No heartbeat loop**: expecting a stateless API to chain tool calls without an execution-engine trigger.
 - **Append-only "memory"**: no DELETE/NOOP means stale, contradictory, duplicate facts accumulate.
 - **Monolithic instruction files**: inflate tokens and cause prompt drift — query a semantic layer for only the relevant facts.

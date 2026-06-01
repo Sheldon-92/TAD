@@ -46,10 +46,10 @@ To improve precision, combine **dense vector search** (semantic intent) with **s
 
 `RRF_Score(d) = Σ over retrieval models m of  1 / (k + r_m(d))`
 
-where `r_m(d)` is the rank of document d in model m, and **k is a smoothing constant typically set to 60**. **Rule**: for production RAG, do not rely on dense-only retrieval; fuse dense + sparse via RRF with k = 60.
+where `r_m(d)` is the rank of document d in model m, and **k is a smoothing constant — 60 is the widely-used default** (from the original RRF paper / Elasticsearch & OpenSearch defaults), not a corpus-independent optimum. **Rule**: for production RAG, do not rely on dense-only retrieval; fuse dense + sparse via RRF starting at k = 60, then tune k on retrieval metrics (recall@k / MRR) for your corpus.
 
-**determinismLevel**: deterministic — RRF with k=60 is the recommended fusion.
-> Source: findings.md "production RAG pipelines combine dense vector search... with sparse keyword search... merged using Reciprocal Rank Fusion (RRF)... k is a smoothing constant (typically set to 60)" [36, 37].
+**determinismLevel**: semi-deterministic — RRF fusion is the recommended pattern; k = 60 is a default starting point to tune per corpus.
+> Source: findings.md "production RAG pipelines combine dense vector search... with sparse keyword search... merged using Reciprocal Rank Fusion (RRF)... k is a smoothing constant (typically set to 60)" [36, 37]. k = 60 is the conventional default (Cormack et al. RRF paper; Elasticsearch/OpenSearch RRF default), not a deterministic production constant — tune on retrieval metrics.
 
 ### VEC4: Inline Filtering — Watch for Graph Islanding
 

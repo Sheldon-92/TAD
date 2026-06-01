@@ -21,7 +21,7 @@ When choosing an LLM tracing platform, the architecture — not the brand — dr
 
 | Platform | Architecture | License & Model | Setup Effort | Best For |
 |----------|--------------|-----------------|--------------|----------|
-| LangSmith | SDK-based framework integration | Closed source, cloud-only (VPC for enterprise), $39/seat + usage | ~15 min (auto-enabled for LangChain) | Teams embedded in LangChain / LangGraph |
+| LangSmith | SDK-based framework integration | Closed source SaaS by default; self-hosted / hybrid available as an Enterprise add-on, $39/seat + usage | ~15 min (auto-enabled for LangChain) | Teams embedded in LangChain / LangGraph |
 | Langfuse | SDK-based AND OpenTelemetry-compliant | MIT licensed open-source, self-host or cloud; Cloud from $59/seat | ~30 min cloud / ~60 min self-host | Privacy / self-hosting teams |
 | Arize Phoenix | OpenTelemetry-based, local Jupyter → cloud | Elastic License 2.0 open-source, enterprise cloud | ~30 min | ML engineers needing embedding/RAG validation rigor |
 | Helicone | Proxy / gateway HTTP interception | Open-source proxy gateway, SaaS | ~5 min (proxy URL redirection) | Early-stage / small teams needing fast setup |
@@ -56,9 +56,9 @@ When self-hosting is a requirement (data sovereignty, air-gapped), verify the li
 
 - **Langfuse**: MIT licensed — fully self-hostable. Dual Postgres + ClickHouse storage architecture designed to handle billions of spans while maintaining complete data control.
 - **Arize Phoenix**: Elastic License 2.0 — open-source, self-hostable, with enterprise cloud option.
-- **LangSmith**: Closed source, cloud-only (VPC available only at enterprise tier) — NOT self-hostable on the standard plan.
+- **LangSmith**: Closed source SaaS by default — NOT self-hostable on the standard/Plus plan. Self-hosted (run components + data stores in your own cloud/VPC or on-prem) and hybrid (managed control plane + self-hosted data plane) ARE available as an Enterprise add-on requiring a license.
 
-> Source: findings.md tracing comparison table; "Langfuse... dual Postgres and ClickHouse storage architecture designed to handle billions of spans" [3, 5, 7]
+> Source: findings.md tracing comparison table; "Langfuse... dual Postgres and ClickHouse storage architecture designed to handle billions of spans" [3, 5, 7]; LangSmith self-hosted/hybrid Enterprise add-on per LangChain docs.
 
 **determinismLevel**: deterministic — license is a fixed fact.
 
@@ -86,4 +86,4 @@ Match the platform's native framework support to your stack before committing:
 - **Flat HTTP logging for agents**: Captures end-to-end latency but cannot map the nested execution graph of a multi-step agent.
 - **Proxy-only for in-app debugging**: A proxy gateway cannot see steps that never leave the application process.
 - **Brand-first selection**: Picking a platform by popularity rather than by architecture (SDK vs proxy vs OTel) and framework match.
-- **Ignoring license before self-host**: LangSmith's closed-source cloud-only model blocks self-hosting that Langfuse (MIT) and Phoenix (Elastic 2.0) permit.
+- **Ignoring license/plan before self-host**: LangSmith's standard/Plus SaaS plan blocks self-hosting (self-hosted/hybrid is an Enterprise add-on), whereas Langfuse (MIT) and Phoenix (Elastic 2.0) permit it openly.

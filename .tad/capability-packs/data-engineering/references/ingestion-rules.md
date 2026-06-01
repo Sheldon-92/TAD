@@ -10,7 +10,7 @@
 | ING3 | Use ETL (schema-on-write) only when pre-storage masking/governance is required (HIPAA/PCI) or for IoT protocol conversion | deterministic |
 | ING4 | Use dlt for connector-free ingestion with automatic schema inference + evolution | deterministic |
 | ING5 | Audit dlt ingestion via the `_dlt_loads` metadata table — verify `status` per `load_id` | semi-deterministic |
-| ING6 | Declare explicit column data-type hints on dlt resources; rely on incremental load for mutated/appended records only | semi-deterministic |
+| ING6 | Declare explicit column data-type hints; configure incremental load with a cursor field so only mutated/appended records load | semi-deterministic |
 
 ---
 
@@ -62,7 +62,8 @@ Define a resource with explicit column hints:
 ```python
 @dlt.resource(
     table_name="eod_prices_raw",
-    write_disposition="replace",
+    write_disposition="append",  # raw landing preserves history; never "replace" (it destroys the prior raw table each run, violating ING2)
+    primary_key=("ticker", "date"),
     columns={
         "ticker": {"data_type": "text"},
         "date": {"data_type": "date"},
@@ -71,6 +72,7 @@ Define a resource with explicit column hints:
     },
 )
 def yfinance_eod_prices(tickers, start_date, end_date):
+    # Pair with dlt.sources.incremental("date") for cursor-based incremental load (see ING6)
     yield [...]
 
 pipeline = dlt.pipeline(
@@ -100,12 +102,19 @@ Check that the latest `load_id` shows a successful `status`. Inspect physical ta
 **determinismLevel**: semi-deterministic — the audit query is fixed; the load contents vary per run.
 > Source: findings.md DuckDB metadata-auditing SQL queries against `raw._dlt_loads` and `information_schema.tables` [16].
 
-### ING6: Incremental Load Mutated/Appended Records Only
+### ING6: Configure Incremental Load with a Cursor
 
-dlt loads only mutated or appended records through metadata tracking — it does not re-scan the full source each run. **Rule**: rely on incremental load (not full-refresh) for high-volume sources, and declare explicit `data_type` hints so schema inference does not silently widen a column type on a single anomalous row.
+dlt loads only mutated or appended records **when incremental loading is explicitly configured** — it is not automatic. You must choose a cursor field (e.g., `updated_at`/`date`) via `dlt.sources.incremental(...)` and pair it with an appropriate `write_disposition` (`append` or `merge`); without this, the resource re-scans the full source each run. **Rule**: for high-volume sources, configure cursor-based incremental load rather than full-refresh, and declare explicit `data_type` hints so schema inference does not silently widen a column type on a single anomalous row.
 
-**determinismLevel**: semi-deterministic — incremental behavior depends on source mutation state.
-> Source: findings.md "handles incremental loading through systematic metadata tracking... loading only mutated or appended records" [13, 16, 17].
+```python
+@dlt.resource(write_disposition="merge", primary_key="id")
+def events(cursor=dlt.sources.incremental("updated_at")):
+    # dlt tracks the last cursor value and skips records older than it on the next run
+    yield from fetch_since(cursor.last_value)
+```
+
+**determinismLevel**: semi-deterministic — incremental behavior depends on cursor configuration and source mutation state.
+> Source: findings.md "handles incremental loading through systematic metadata tracking... loading only mutated or appended records" [13, 16, 17]; dlt incremental loading requires a configured cursor field — https://dlthub.com/docs/general-usage/incremental/cursor
 
 ---
 

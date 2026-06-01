@@ -44,9 +44,9 @@ Raw nodes
   → canonical representative + alias mapping (Wikidata-style)
 ```
 
-Specific numbers from research: **k-means cluster size = 128**, **fused-retrieval top K = 16**. These bound the comparison cost so resolution stays computationally feasible on large graphs.
+Starting hyperparameters from the source pipeline (findings.md [32]): **cluster target ≈ 128 entities per cluster**, **fused-retrieval top K = 16 candidates per entity**. These are that pipeline's reported defaults, NOT universal constants — they bound comparison cost, but tune both on your own precision/recall and reviewer workload before committing. (Note: standard k-means is parameterized by the *number* of clusters `k`, not a fixed cluster size; pick `k ≈ n/128` to target ~128 entities per cluster, then validate.)
 
-> Source: findings.md §1 "Two-Stage Semantic Resolution" — lowercase + S-BERT + k-means(128) + fused BM25/vector top-K(16) + LLM consolidation [32].
+> Source: findings.md §1 "Two-Stage Semantic Resolution" — lowercase + S-BERT + k-means + fused BM25/vector top-K + LLM consolidation; the ≈128-per-cluster and top-K=16 values are that source pipeline's reported defaults, to be validated per dataset [32].
 
 **determinismLevel**: semi-deterministic — pipeline + numbers fixed; LLM merge calls vary.
 

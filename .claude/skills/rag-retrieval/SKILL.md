@@ -104,7 +104,7 @@ Produce a structured retrieval review:
 |--------|---------|
 | "Semantic chunking is more advanced, let's use it" | Under equal context budget on academic docs it scored **< 55%** vs recursive-512's **69%** [4]. Complexity ≠ accuracy. Use recursive-512 as the baseline. |
 | "We'll just add BM25 and vector scores together" | BM25 is unbounded; cosine is in [-1,1]. The sum is mathematically invalid and BM25 dominates [23]. Use RRF (k=60) on ranks. |
-| "Rerank the top 200 for best accuracy" | Reranking top-50 captures ~90% of the accuracy gain of top-200 while staying under the 120ms P95 budget [30]. |
+| "Rerank the top 200 for best accuracy" | In the source benchmark, reranking top-50 captured ~90% of the accuracy gain of top-200 [30]. Treat top-50 as the starting point and plot quality vs latency for your own reranker/hardware (the cited ~120ms P95 is benchmark-specific, not a portable constant). |
 | "We need a dedicated vector DB at our scale" | For < 100M vectors, pgvector + pgvectorscale hit **471 QPS @ 99% recall** — **11.4× Qdrant's 41 QPS** under identical conditions [11]. Don't add a second datastore prematurely. |
 | "Our RAG eval passes, ship it" | What score? Faithfulness below **1.0** means hallucination [35]. And a single blended score hides whether retrieval or generation failed. |
 | "More dimensions = better embeddings" | text-embedding-3-large truncates 3072→512 with a Wilcoxon test showing no significant quality loss [7,8] — cutting DB storage. Dimensions are a storage knob, not a quality knob here. |

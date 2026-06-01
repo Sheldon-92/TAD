@@ -43,9 +43,9 @@ Perplexity `PPL(x) = exp(-1/n Σ log p_θ(xᵢ | x_<i))` over a small auxiliary 
 2. **Nonsense repetition** — documents with endless phrase repetition get a LOW perplexity (the repeating combinations stay highly probable), so they survive filtering.
 3. **Penalization of niche knowledge** — well-structured long-tail/specialized documents are discarded because their uncommon-but-valid word combinations surprise the scoring model → artificially high PPL.
 
-**Rule**: Perplexity filters select data that mirrors the scoring model's own training corpus, not the optimal training distribution. If you must use perplexity, note that model-free token-frequency statistics (corpus-level token priors) match its quality while running up to **1000× faster**.
+**Rule**: Perplexity filters select data that mirrors the scoring model's own training corpus, not the optimal training distribution. If you must use perplexity, consider model-free token-frequency statistics (corpus-level token priors) as a much cheaper alternative — one study [3] reported them matching PPL's downstream quality at up to **~1000× lower compute** under its setup. Treat that figure as setup-specific and run a local ablation before replacing PPL.
 
-> Source: findings.md "Perplexity-Based Curation and Its Biases" [1,3,5,6] — three failure modes; model-free token-frequency alternative up to 1000× faster [3].
+> Source: findings.md "Perplexity-Based Curation and Its Biases" [1,3,5,6] — three failure modes; model-free token-frequency alternative reported up to ~1000× cheaper under one study's setup [3] (single-source figure — ablate locally before relying on it).
 
 **stage**: pretraining.
 

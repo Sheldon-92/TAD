@@ -6,7 +6,7 @@ tests_rules:
   - "Cross-Cutting Rule: Train-Serve Skew (single dbt source feeds training + serving)"
   - "VEC1: pre-filtering for tenant isolation vs post-filter recall collapse"
   - "VEC3: hybrid dense+sparse merged with RRF, k=60"
-  - "DIM4: SCD Type 2 queries must filter is_current = true (150M-row bloat)"
+  - "DIM4: SCD Type 2 queries must filter is_current = true (~160M-row bloat)"
   - "P0/P1/P2 finding output format"
 min_marker_count: 4
 # DISCRIMINATIVE gate: ONLY pack-specific markers (named rules + specific numbers from findings).
@@ -53,7 +53,7 @@ These markers are pack-specific (would NOT appear without the pack):
 - ✅ "train-serve skew → single dbt source / Feature View" (the pack's named failure mode + the single-source fix, not generic "keep consistent")
 - ✅ "recall collapse → use pre-filtering for tenant isolation" (the pack's specific consequence of post-filtering; a no-pack agent says "filter by tenant" without naming the zero-result risk)
 - ✅ "Reciprocal Rank Fusion (RRF), k = 60" (the pack's specific named algorithm + the specific smoothing constant)
-- ✅ "SCD Type 2 with is_current = true" (the pack's named dimensional pattern + the specific filter that prevents the 150M-row bloat scan)
+- ✅ "SCD Type 2 with is_current = true" (the pack's named dimensional pattern + the specific filter that prevents the ~160M-row bloat scan)
 - ✅ "missing-field trap / graph islanding" (the pack's named vector-store failure modes)
 - ❌ "add metadata filtering" (generic — any agent suggests filtering without naming pre-filter/recall-collapse)
 - ❌ "store the history" (generic — does not name SCD Type 2 / is_current)

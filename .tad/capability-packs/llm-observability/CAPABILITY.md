@@ -105,7 +105,7 @@ Produce a structured observability review:
 |--------|---------|
 | "We log latency, that's monitoring" | End-to-end latency is the wrong SLO for streaming. A 500ms TTFT with 10s total feels instant; a 4s TTFT with 5s total feels frozen. Measure TTFT + ITL. |
 | "We store the cost per call, simpler" | Pre-computed cost is wrong the moment list prices change and is un-reconcilable for historical traces. Store raw counters + a versioned pricing matrix. |
-| "We track total tokens" | Total tokens hides where spend originates. Split into the 4 layers (prompt/tool/memory/response) — tool-schema re-injection is silent bloat, and response tokens cost 4-5x input. |
+| "We track total tokens" | Total tokens hides where spend originates. Split into the 4 layers (prompt/tool/memory/response) — tool-schema re-injection is silent bloat, and output tokens are materially more expensive than input (compute the exact multiplier from the provider/model pricing table). |
 | "A proxy gateway gives us tracing" | A proxy only intercepts external API calls; it cannot reconstruct nested in-app agent steps unless context headers are explicitly passed. Use an SDK/OTel tracer for the span tree. |
 | "Prompts live in the codebase" | Hardcoded prompts couple every template tweak to a redeploy. Use a registry; query the @production alias, not a pinned version number. |
 | "We run a KS test for drift" | Kolmogorov–Smirnov is univariate and blind to high-dimensional embedding shift. Use Wasserstein distance on PCA-reduced (95% variance) vectors, then a judge LLM to classify the driver. |

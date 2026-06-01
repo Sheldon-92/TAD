@@ -48,7 +48,7 @@ To resume a paused LangGraph thread, re-invoke the graph with a `Command` object
 |----------|--------|
 | `approve` | The proposed tool call executes exactly as the model generated it |
 | `edit` | The proposed tool arguments are modified by the human before execution (e.g. change a DB update payload) |
-| `reject` | Execution is blocked; the reviewer's feedback is appended to message history as a system message, guiding self-correction |
+| `reject` | Execution is blocked; the rejected call synthesizes a tool/rejection message (a `ToolMessage`) carrying the reviewer's feedback into the conversation, guiding self-correction |
 | `respond` | Tool execution is skipped entirely; the reviewer's text is returned to the model as the direct tool result (useful for mocks/placeholders) |
 
 **Rule**: Choose the decision type by intent — `reject` to redirect the model, `respond` to substitute a result without running the tool, `edit` to fix the payload, `approve` to pass through. Do not collapse all four into a binary approve/deny.

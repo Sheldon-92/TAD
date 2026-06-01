@@ -22,7 +22,7 @@ In LangGraph, multi-actor workflows pass a shared state object (a Blackboard) no
 
 > Source: findings.md "State Persistence, Checkpoint-Based Replay, and Time Travel" [7, 8, 24]
 
-Checkpointing also serves as an **audit flight-recorder** — for regulated domains (credit underwriting, medical triage, security ops) immutable checkpoint logging of intermediary node states is the technical mitigation for discrimination-lawsuit and regulatory-fine exposure.
+Checkpointing also serves as an **audit flight-recorder** — for regulated domains (credit underwriting, medical triage, security ops) immutable checkpoint logging of intermediary node states *supports* audit and incident reconstruction. It does NOT by itself satisfy regulatory requirements or mitigate lawsuit/fine exposure: regulated deployments still need domain-specific retention, privacy, access-control, explainability, and legal review.
 
 > Source: findings.md "State Persistence" — Risk Category table [27]
 

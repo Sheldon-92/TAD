@@ -8,8 +8,8 @@
 | DEDUP1 | Exact-match (SHA-256) is the first, cheapest pass — but normalize Unicode first | pretraining |
 | DEDUP2 | NFC-normalize before hashing or you miss encoding-only duplicates | pretraining |
 | DEDUP3 | Add a near-duplicate pass (MinHashLSH) — exact match misses copyedits | pretraining |
-| DEDUP4 | Use uint32 / binary vectors for MinHash buckets — float32 corrupts at scale | pretraining |
-| DEDUP5 | At trillion scale, migrate MinHashLSH → LSHBloom (270% faster, 18–54× less disk) | pretraining |
+| DEDUP4 | Store MinHash signatures as BINARY_VECTOR (not float32) — float32 corrupts at scale | pretraining |
+| DEDUP5 | At trillion scale, migrate MinHashLSH → LSHBloom (≈270% faster, 18–54× less disk) | pretraining |
 | DEDUP6 | Deduplication is not optional — redundancy accelerates memorization | pretraining |
 
 ---
@@ -50,13 +50,13 @@ Exact match cannot catch documents that differ subtly from formatting, copyediti
 
 **stage**: pretraining.
 
-### DEDUP4: Use uint32 / Binary Vectors for MinHash Buckets
+### DEDUP4: Store MinHash Signatures as BINARY_VECTOR (Not float32)
 
 Standard vector systems use 32-bit floats (`float32`), which represent unsigned integers exactly only up to **16,777,216**. Any MinHash value above this threshold loses precision in its least-significant bits under `float32`, **corrupting bucket collisions** across trillion-token corpora.
 
-**Rule**: Store MinHash signatures in systems that natively support binary vectors and unsigned 32-bit integers (`uint32`) — e.g. Milvus / Zilliz Cloud — to prevent silent dedup degradation.
+**Rule**: Store MinHash signatures as a **`BINARY_VECTOR`** in a system with a dedicated MinHash LSH index — e.g. Milvus / Zilliz Cloud, whose `MINHASH_LSH` index expects a `BINARY_VECTOR` field with `mh_element_bit_width` set to the per-element width (commonly 32 or 64 bits) — not as `float32`. Milvus has **no native `uint32`-vector type**; the integer width is a parameter of the MinHash function/index over the binary vector, not a separate vector dtype.
 
-> Source: findings.md "numeric precision representation" [11] — float32 exact only to 16,777,216; use uint32 / binary vectors (Milvus / Zilliz).
+> Source: Milvus MINHASH_LSH docs (milvus.io/docs/minhash-lsh.md) — MinHash signatures stored as `BINARY_VECTOR`, `MINHASH_LSH`/`MHJACCARD` with configurable per-element bit width; float32 exact only to 16,777,216 (findings.md "numeric precision representation" [11]).
 
 **stage**: pretraining.
 
@@ -64,8 +64,8 @@ Standard vector systems use 32-bit floats (`float32`), which represent unsigned 
 
 Traditional MinHashLSH is bottlenecked by space. On the **peS2o dataset (39 million documents)** it takes **14–35 hours on a 32-core node** and consumes **200–300 GB of disk**. LSHBloom replaces LSH prefix-tree structures with Bloom filters mapping signature bands into bit arrays:
 
-- **12× faster (≈270% runtime improvement)** on peS2o, using **18× less disk**.
-- At several-billion-document scale: **54× space advantage** and **250% speedup**.
+- **≈270% faster** (≈3.7× throughput) on peS2o, using **18× less disk**.
+- At several-billion-document scale: **54× space advantage** and **≈250% speedup**.
 - False-positive rate as low as **10⁻⁵** (marginally higher than MinHashLSH, still near-zero).
 
 **Rule**: For large-scale pretraining dedup, transition from MinHashLSH to LSHBloom — it eliminates the storage bottleneck while preserving near-zero false positives.
@@ -90,6 +90,6 @@ Excessive redundancy **accelerates memorization**, inflates compute/training cos
 
 - **Exact-only dedup**: misses copyedited / reformatted / versioned near-duplicates (DEDUP3).
 - **Hashing before NFC normalization**: leaves encoding-only duplicates uncaught (DEDUP2).
-- **float32 MinHash buckets at scale**: silent precision loss corrupts collisions above 16.7M (DEDUP4).
+- **float32 MinHash signatures at scale**: silent precision loss corrupts collisions above 16.7M — store as BINARY_VECTOR (DEDUP4).
 - **MinHashLSH at billions of docs**: 200–300 GB+ disk bottleneck — use LSHBloom (DEDUP5).
 - **Skipping dedup**: directly accelerates memorization and inflates benchmark scores (DEDUP6).

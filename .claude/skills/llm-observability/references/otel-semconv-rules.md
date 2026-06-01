@@ -9,7 +9,7 @@
 | OT2 | Required span attributes: gen_ai.operation.name + gen_ai.provider.name | deterministic |
 | OT3 | Use the standard gen_ai.usage.* token attributes (incl. cache + reasoning) | deterministic |
 | OT4 | gen_ai.input.messages / output.messages are Opt-In — gate on PII policy | deterministic |
-| OT5 | Use standard metrics (token.usage Counter, *.duration Histogram) for portability | deterministic |
+| OT5 | Use standard metrics (token.usage Histogram, *.duration Histogram) for portability | deterministic |
 | OT6 | provider.name supersedes legacy gen_ai.system — read new first, fall back | deterministic |
 
 ---
@@ -87,15 +87,15 @@ Emit the standard GenAI metrics rather than bespoke ones so any OTel-compatible 
 
 | Metric | Instrument | Unit | Key Attributes |
 |--------|-----------|------|----------------|
-| `gen_ai.client.token.usage` | Counter | tokens | `gen_ai.token.type`, `gen_ai.request.model`, `gen_ai.provider.name` |
+| `gen_ai.client.token.usage` | Histogram | tokens | `gen_ai.token.type`, `gen_ai.request.model`, `gen_ai.provider.name` |
 | `gen_ai.client.operation.duration` | Histogram | seconds | `gen_ai.operation.name`, `gen_ai.request.model` |
 | `gen_ai.client.operation.time_to_first_chunk` | Histogram | seconds | `gen_ai.request.model`, `gen_ai.provider.name` |
 | `gen_ai.server.request.duration` | Histogram | seconds | `gen_ai.request.model`, `server.address` |
 | `gen_ai.server.time_to_first_token` | Histogram | seconds | `gen_ai.response.model`, `server.address` |
 
-**Rule**: Token usage is a Counter; durations and TTFT are Histograms (so you can compute p50/p95/p99). Using a gauge for token usage or a counter for latency breaks downstream aggregation.
+**Rule**: All of these are Histograms in the OTel GenAI semconv — `gen_ai.client.token.usage` is the spec-defined token-usage histogram (split by `gen_ai.token.type` for input vs output), and durations/TTFT are histograms too (so you can compute p50/p95/p99). Use the OTel-defined histogram with `gen_ai.token.type`; do not substitute a Counter or gauge, which breaks downstream percentile/distribution aggregation.
 
-> Source: findings.md "Client-Side and Server-Side Metrics" table [17]
+> Source: OpenTelemetry GenAI semantic conventions, "Generative AI metrics" — `gen_ai.client.token.usage` is a Histogram filtered by `gen_ai.token.type`; durations are Histograms [17]
 
 **determinismLevel**: deterministic — instrument types are schema-defined.
 
@@ -117,4 +117,4 @@ When parsing spans for the provider, read the standard tag first and fall back f
 - **Custom token field names**: Reinventing `gen_ai.usage.*` breaks billing/APM interoperability.
 - **Capturing messages by default**: `input.messages`/`output.messages` are Opt-In for privacy reasons — enabling them writes PII into traces.
 - **Single provider-tag parsing**: Reading only `gen_ai.system` OR only `gen_ai.provider.name` drops spans from the other SDK generation.
-- **Wrong instrument types**: Token usage as a gauge, or latency as a counter, breaks p95/p99 aggregation.
+- **Wrong instrument types**: Substituting a Counter or gauge for the spec-defined `gen_ai.client.token.usage` Histogram, or a counter for latency, breaks p95/p99 distribution aggregation.

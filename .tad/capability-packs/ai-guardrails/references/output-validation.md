@@ -88,10 +88,10 @@ class CriticalVulnerability(BaseModel):
             raise ValueError("CVSS score out of allowed bounds")
         return v
 
-vuln_agent = Agent('openai:gpt-4o', result_type=CriticalVulnerability)
+vuln_agent = Agent('openai:gpt-4o', output_type=CriticalVulnerability)
 ```
 
-**Rule**: Constrain the agent's `result_type` to a validated schema with `field_validator` range checks — don't accept free-form output and validate later.
+**Rule**: Constrain the agent's `output_type` to a validated schema with `field_validator` range checks — don't accept free-form output and validate later. (Pydantic AI renamed `result_type`→`output_type` on the path to v1.0; `result_type` is removed in current versions.)
 
 > Source: findings.md "Type Safety via Pydantic AI" + code [47, 48, 49]
 
@@ -116,7 +116,7 @@ from typing import Union
 class UnableToAssess(BaseModel):
     justification: str = Field(description="why the context is insufficient")
 
-Agent('openai:gpt-4', result_type=Union[list[CriticalVulnerability], UnableToAssess])
+Agent('openai:gpt-4', output_type=Union[list[CriticalVulnerability], UnableToAssess])
 ```
 
 **Rule**: For high-stakes structured extraction, add a `Union[Result, UnableToAssess]` refusal class so the agent can decline instead of fabricating, while staying programmatically compatible.

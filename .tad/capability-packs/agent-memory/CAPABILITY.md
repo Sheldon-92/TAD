@@ -100,10 +100,10 @@ Produce a structured memory/context review:
 
 | Excuse | Counter |
 |--------|---------|
-| "We'll just put everything in a vector DB" | An append-only vector store is not memory — it drifts and dilutes. You need consolidation + scoring + temporal tracking. Mem0 scored only 49.0% on LongMemEval; raw RAG-as-memory scores worse. |
+| "We'll just put everything in a vector DB" | An append-only vector store is not memory — it drifts and dilutes. You need consolidation + scoring + temporal tracking. Mem0 scored 49.0% on one LongMemEval run (harness/version-dependent — re-eval on your data); plain RAG-as-memory is generally weaker but the exact gap varies by benchmark. |
 | "Bigger context window solves history" | Attention is O(N²) in sequence length. Raw uncompacted history recalculates KV tensors every step — compounding cost and latency. Compact, don't inflate. |
 | "We'll summarize when it gets long" | "When it gets long" is not a trigger. Lossy summarization fires at a token threshold (~70% capacity) and is prone to drift/hallucination — pair it with a sliding window and staged compaction. |
-| "Persistence is a later concern" | Without a checkpointer, one API timeout restarts a multi-step workflow from the beginning. Checkpoints also serve as the audit flight-recorder regulated domains legally require. |
+| "Persistence is a later concern" | Without a checkpointer, one API timeout restarts a multi-step workflow from the beginning. Checkpoints also support the audit trail regulated domains expect (necessary, not sufficient — pair with retention/privacy/legal controls). |
 | "Caching is automatic" | Anthropic caching is prefix-based and developer-controlled. One dynamic variable left of a breakpoint causes a full cache miss. You lose the 0.1× read rate and 41–80% cost reduction. |
 
 ---

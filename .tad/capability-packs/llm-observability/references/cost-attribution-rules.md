@@ -6,12 +6,12 @@
 | # | Rule | determinismLevel |
 |---|------|-----------------|
 | CA1 | Account tokens across 4 layers: prompt, tool, memory, response | deterministic |
-| CA2 | Response tokens cost 4-5x input tokens — the Response Layer dominates spend | deterministic |
+| CA2 | Output tokens are materially pricier than input — Response Layer dominates spend (compute the exact multiplier per provider/model) | deterministic |
 | CA3 | Propagate metadata tags (X-TFY-METADATA) down the whole execution tree | deterministic |
 | CA4 | Budget enforcement: soft alert at 80%, HTTP 429 block at 100%, route-down at >90% | deterministic |
 | CA5 | Margin caps: daily ∈ [1.5,3.0]× contracted; rate limit ∈ [2.0,3.0]× expected peak | semi-deterministic |
 | CA6 | Runaway kill switch: rolling spend z-score > 4 over a 7-day window | non-deterministic |
-| CA7 | AWS Bedrock: cache STS AssumeRole with 1-hour TTL (500 calls/sec limit) | deterministic |
+| CA7 | AWS Bedrock: cache STS AssumeRole with 1-hour TTL (shares the 600 RPS/account/Region STS quota) | deterministic |
 
 ---
 
@@ -26,7 +26,7 @@ Standard provider interfaces aggregate cost globally by API key, creating a visi
 | **Prompt Layer** | System instructions, user inputs, hardcoded/static examples | Baseline cost; highly receptive to semantic prompt caching |
 | **Tool Layer** | Injected JSON tool schemas + raw execution payloads returned by functions | Schemas re-injected every agent step → frequent source of silent token bloat |
 | **Memory Layer** | RAG context, long-term memory records, conversational history buffer | Scales cumulatively as session length increases |
-| **Response Layer** | Completion output tokens INCLUDING hidden reasoning / chain-of-thought | Most expensive component (see CA2) |
+| **Response Layer** | Completion output tokens INCLUDING reasoning / extended-thinking tokens when reported by the provider | Most expensive component (see CA2) |
 
 **Rule**: Tracking only "total tokens" hides where spend originates. Tag spans into these four layers (e.g., custom namespace `digitalapplied.*`) so you can detect tool-schema bloat and target caching at the Prompt Layer.
 
@@ -34,15 +34,15 @@ Standard provider interfaces aggregate cost globally by API key, creating a visi
 
 **determinismLevel**: deterministic — layer classification is a design decision.
 
-### CA2: Response Tokens Cost 4-5x Input Tokens
+### CA2: Output Tokens Are Materially Pricier Than Input — Compute the Multiplier
 
-Across premium models, **response tokens are priced four to five times higher than input tokens**, making the Response Layer (CA1) the most expensive component of system operations — and hidden reasoning / chain-of-thought tokens count toward it.
+Across providers, **output tokens are priced materially higher than input tokens** (the multiplier varies by provider/model/version — e.g. roughly 4-5x on some frontier models, up to ~8x on others such as the OpenAI GPT-5 family), making the Response Layer (CA1) the most expensive component of system operations — and reasoning / extended-thinking tokens count toward it where the provider reports them.
 
-**Rule**: When optimizing cost, prioritize reducing output/reasoning tokens before input tokens. A 4-5x price multiplier means a 100-token output reduction saves more than a 400-token prompt reduction. Track `gen_ai.usage.reasoning.output_tokens` separately so reasoning spend is visible.
+**Rule**: When optimizing cost, prioritize reducing output/reasoning tokens before input tokens, and compute the exact output:input multiplier from the provider/model/version pricing table rather than assuming a fixed ratio. Because output is several times more expensive than input on most models, a small output-token reduction often saves more than a much larger prompt reduction. Track `gen_ai.usage.reasoning.output_tokens` separately so reasoning spend is visible.
 
-> Source: findings.md "response tokens are priced four to five times higher than input tokens, making the Response Layer the most expensive component" [10]
+> Source: findings.md "response tokens are priced [several times] higher than input tokens, making the Response Layer the most expensive component" [10]; exact multiplier is provider/model/version-specific (verify against the live pricing table — e.g. OpenAI GPT-5 family lists output at up to ~8x input).
 
-**determinismLevel**: deterministic — a documented pricing relationship.
+**determinismLevel**: deterministic — output > input is a documented pricing relationship; the exact multiplier is provider/model-specific.
 
 ### CA3: Emit Raw Token Counters + Propagate Metadata Tags
 
@@ -106,9 +106,9 @@ where `x` = rolling **10-minute** spend, `μ` = historical 7-day mean, `σ` = st
 
 For AWS Bedrock granular cost attribution, calls via developer API keys map to IAM identities via `line_item_iam_principal` and cost allocation tags, integrating with Cost Explorer and Cost and Usage Reports (CUR 2.0).
 
-**Rule**: Calling STS `AssumeRole` per request introduces latency and hits rate limits (typically **500 calls/second**). Implement an in-memory session cache with a **1-hour TTL** so STS is queried only once per user per hour. Per-request AssumeRole will throttle at scale.
+**Rule**: Calling STS `AssumeRole` per request introduces latency and consumes the shared STS request quota — **600 requests/second per account per Region by default, shared across STS APIs** (`AssumeRole`, `GetCallerIdentity`, etc.); check Service Quotas for your account/Region. Implement an in-memory session cache with a **1-hour TTL** so STS is queried only once per user per hour. Per-request AssumeRole will throttle at scale.
 
-> Source: findings.md "calling the Secure Token Service (STS) AssumeRole per request... is subject to rate limits (typically 500 calls/second), systems implement an in-memory session cache with a 1-hour time-to-live (TTL)" [13]
+> Source: AWS IAM/STS quotas documentation — "600 requests per second, per account, per Region" shared across STS operations (findings.md [13] cited 500/sec; corrected to the AWS-documented 600 RPS default).
 
 **determinismLevel**: deterministic — a fixed mitigation pattern.
 
@@ -120,4 +120,4 @@ For AWS Bedrock granular cost attribution, calls via developer API keys map to I
 - **Storing pre-computed costs**: Breaks the moment provider list prices change; store raw counters + versioned pricing matrix instead.
 - **Per-call tag injection**: Tags must propagate at the gateway so fallbacks/tool calls inherit them — per-call app-code tagging drops on fallback.
 - **Binary 100% cutoff**: Causes user-facing outages; use the 80%/90%/100% tiered chain.
-- **Per-request STS AssumeRole on Bedrock**: Throttles at the 500 calls/sec limit; cache with 1-hour TTL.
+- **Per-request STS AssumeRole on Bedrock**: Consumes the shared 600 RPS/account/Region STS quota and throttles at scale; cache with 1-hour TTL.

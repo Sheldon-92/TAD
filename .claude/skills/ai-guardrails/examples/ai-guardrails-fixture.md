@@ -12,9 +12,9 @@ min_marker_count: 4
 # Excludes generic security nouns (sanitize, validate, secure, attack), severity tags,
 # and words from the input scenario. These are the markers a WITH-pack agent emits but
 # a no-pack agent does NOT — the Rule-of-Two name, the A/B/C condition count, the exact
-# tools (sqlglot AST / Presidio / DeanonymizerEngine), the F2 (β=2) recall rule, and the
+# tools (sqlglot AST / Presidio / DeanonymizeEngine), the F2 (β=2) recall rule, and the
 # OWASP LLM05/LLM06 codes.
-discriminative_pattern: "Rule of Two|A/B/C|sqlglot|Presidio|DeanonymizerEngine|F2 ?\\(?β ?= ?2\\)?|β ?= ?2|LLM05|LLM06|decode.?then.?validate|canary token"
+discriminative_pattern: "Rule of Two|A/B/C|sqlglot|Presidio|DeanonymizeEngine|F2 ?\\(?β ?= ?2\\)?|β ?= ?2|LLM05|LLM06|decode.?then.?validate|canary token"
 min_discriminative: 4
 ---
 
@@ -34,7 +34,7 @@ the output MUST contain these markers:
 2. **Tool-call AST gating** [structural]: rejects "model returns JSON, we trust it" with the structured≠validated rule and the three-layer gate, naming sqlglot AST to allow read-only SELECT
    grep pattern: `sqlglot|AST|read-only SELECT|structured ≠ validated|three-layer`
 3. **Presidio PII de-identification**: requires Analyzer→Anonymizer on the raw PII before it reaches the model, with the recall-first F2 score
-   grep pattern: `Presidio|AnonymizerEngine|DeanonymizerEngine|F2|β ?= ?2|recall over precision`
+   grep pattern: `Presidio|AnonymizerEngine|DeanonymizeEngine|F2|β ?= ?2|recall over precision`
 4. **OWASP LLM-risk mapping**: maps findings to specific OWASP LLM codes
    grep pattern: `LLM01|LLM05|LLM06|excessive agency|improper output`
 
@@ -43,7 +43,7 @@ At least one marker MUST be [structural] — distinguishes "applied the rule" fr
 ## Verification Command
 
 ```bash
-grep -oE 'Rule of Two|A/B/C|all three|human.?in.?the.?loop|sqlglot|AST|read-only SELECT|structured ≠ validated|three-layer|Presidio|AnonymizerEngine|DeanonymizerEngine|F2|β ?= ?2|recall over precision|LLM01|LLM05|LLM06|excessive agency|decode.?then.?validate|canary token' ai-guardrails-fixture-output.md | sort -u | wc -l | tr -d ' '
+grep -oE 'Rule of Two|A/B/C|all three|human.?in.?the.?loop|sqlglot|AST|read-only SELECT|structured ≠ validated|three-layer|Presidio|AnonymizerEngine|DeanonymizeEngine|F2|β ?= ?2|recall over precision|LLM01|LLM05|LLM06|excessive agency|decode.?then.?validate|canary token' ai-guardrails-fixture-output.md | sort -u | wc -l | tr -d ' '
 # Expected: ≥ 4
 ```
 
@@ -52,7 +52,7 @@ grep -oE 'Rule of Two|A/B/C|all three|human.?in.?the.?loop|sqlglot|AST|read-only
 These markers are pack-specific (would NOT appear without the pack):
 - ✅ "Agentic Rule of Two — A/B/C all three satisfied" (the pack's named cross-cutting rule + its exact condition triad)
 - ✅ "sqlglot AST → read-only SELECT only" (the pack's specific Layer-2 tool-gating mechanism, not generic "parameterize SQL")
-- ✅ "Presidio AnalyzerEngine→AnonymizerEngine / DeanonymizerEngine" (the pack's named PII tooling + round-trip operator)
+- ✅ "Presidio AnalyzerEngine→AnonymizerEngine / DeanonymizeEngine" (the pack's named PII tooling + round-trip operator)
 - ✅ "F2 score (β=2), recall over precision" (the pack's specific PII scoring rule — an LLM defaults to F1)
 - ✅ "structured ≠ validated" and "LLM05 / LLM06" (the pack's named principle + OWASP codes)
 - ❌ "sanitize the input" (generic — any agent says this without the decode-then-validate or Rule-of-Two specifics)

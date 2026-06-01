@@ -9,7 +9,7 @@
 | FS2 | LangGraph for strict determinism + transaction safety; centralized immutable StateGraph | deterministic |
 | FS3 | CrewAI for rapid prototyping, role metaphors, and human-revision Flows with checkpoint-fork | deterministic |
 | FS4 | AutoGen v0.4+ for decoupled event-driven actors, horizontal/multi-process scale, Python+.NET | deterministic |
-| FS5 | OpenAI Agents SDK for containerized sandbox + filesystem persistence + hosted OpenAI tools | deterministic |
+| FS5 | OpenAI Agents SDK for sandbox/workspace execution (containerized only with Docker/hosted) + filesystem persistence + hosted OpenAI tools | deterministic |
 | FS6 | Claude Agent SDK for local in-process codebase work with system-level Read/Write/Edit/Monitor | deterministic |
 | FS7 | Default-persistence trap: never SQLite under heavy parallel writes — locks and stalls | semi-deterministic |
 
@@ -42,9 +42,9 @@ Choose LangGraph when the workflow demands strict determinism, transaction safet
 - The core construct is a `StateGraph` initialized with a `TypedDict` schema; all nodes read/modify a shared state object.
 - Nodes are plain Python functions; edges are direct sequences or conditional branches.
 - The trade-off is rigid structure in exchange for absolute determinism.
-- LangGraph is a stable ecosystem: `sdk==0.3.15` released **2026-05-22**.
+- LangGraph is a stable ecosystem. Note the package split: `langgraph` is the framework (the 1.x release line) and `langgraph-sdk` is the separate API-client package (`langgraph-sdk==0.3.15` released **2026-05-22**) — do not treat the SDK client version as the framework version.
 
-> Source: findings.md "LangGraph (by LangChain Inc.)" [4,5,17]
+> Source: findings.md "LangGraph (by LangChain Inc.)" [4,5,17]; PyPI langgraph / langgraph-sdk (retrieved 2026-06-01)
 
 **determinismLevel**: deterministic.
 
@@ -74,10 +74,10 @@ Choose AutoGen v0.4+ for highly decoupled, event-driven multi-agent systems that
 
 ### FS5: OpenAI Agents SDK — Sandbox + Filesystem Persistence
 
-Choose the OpenAI Agents SDK when agents need containerized workspaces, deep filesystem access, and direct integration with hosted OpenAI tools — autonomous workspace assistants, automated code patchers, developer tools.
+Choose the OpenAI Agents SDK when agents need sandboxed workspaces (Unix-local, Docker, or hosted backend), deep filesystem access, and direct integration with hosted OpenAI tools — autonomous workspace assistants, automated code patchers, developer tools.
 
-- Provider-agnostic: works across OpenAI models and 100+ other LLMs.
-- Core capability is the **Sandbox Agent**, first introduced in **version 0.14.0**: pairs the model with a managed file workspace + container sandbox to inspect files, run shell commands, and persist filesystem state over long horizons.
+- The Agents SDK in general is provider-flexible (OpenAI models plus 100+ others via LiteLLM), but the **Sandbox Agent specifically targets OpenAI models via the Responses API** — do not assume sandbox-agent parity for non-OpenAI providers.
+- Core capability is the **Sandbox Agent**, first introduced in **version 0.14.0**: pairs the model with a managed file workspace + sandbox client (Unix-local, Docker, or a hosted provider such as E2B/Cloudflare) to inspect files, run shell commands, and persist filesystem state over long horizons. It is containerized only when using the Docker or a hosted-container backend — Unix-local is workspace isolation, not a container.
 - Tool schemas are built by parsing function signatures with Python `inspect` (dynamic Pydantic models); docstrings parsed via `griffe` (Google/Sphinx/NumPy formats).
 
 > Source: findings.md "OpenAI Agents SDK" [1,8,9,21]

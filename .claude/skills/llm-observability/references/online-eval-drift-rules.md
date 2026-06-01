@@ -50,7 +50,7 @@ The score ranges **0.0 to 1.0**. If it falls below a predefined threshold, flag 
 
 Semantic drift (shifts in data distribution / user behavior) is masked in high-dimensional embeddings. Traditional univariate tests (Kolmogorov–Smirnov) are **ineffective** for high-dimensional vectors. Instead:
 
-1. **PCA**: reduce high-dimensional embeddings (e.g., 4096-dim) to a lower space retaining **95% of variance** (≈ two standard deviations).
+1. **PCA**: reduce high-dimensional embeddings (e.g., 4096-dim) to a lower space retaining a chosen explained-variance target — commonly **90-99%** (e.g. 95%), calibrated on validation drift cases. (Explained variance is dimensional variance retention; it is NOT a normal-distribution σ band.)
 2. Compute **Wasserstein distance** between live-production and reference embedding distributions.
 3. If the distance exceeds a predefined threshold → trigger a statistical drift alert (Layer 1).
 

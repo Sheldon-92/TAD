@@ -28,7 +28,7 @@ This pack embeds the judgment rules that orchestration engineers apply automatic
 
 ## Cross-Cutting Rule: The Complexity Cliff — Reliability Decays Exponentially with Step Count
 
-> **Cumulative agent reliability is `P(fail) = 1 - (1 - p)^s`, where `p` is per-step failure probability and `s` is the number of sequential steps.** A 99% per-step success rate (`p = 0.01`) gives a **63.4% cumulative failure probability at 100 steps** and **99.3% at 500 steps**. Over 60% of production agent incidents trace to state-management failures (lost context, repeated expensive steps, crash with no recovery path).
+> **Cumulative agent reliability is `P(fail) = 1 - (1 - p)^s`, where `p` is per-step failure probability and `s` is the number of sequential steps.** A 99% per-step success rate (`p = 0.01`) gives a **63.4% cumulative failure probability at 100 steps** and **99.3% at 500 steps**. State-management failures (lost context, repeated expensive steps, crash with no recovery path) are a leading, often-dominant source of production agent incidents.
 > **Therefore: once cumulative failure becomes material, decouple the orchestration/state layer from the agent reasoning loop** — via durable checkpointing or event-sourced execution. As a derived heuristic from the cited figures (NOT a research-reported threshold): at `p = 0.01`, `P(fail)` crosses ~40% by ~50 steps (`1 - 0.99^50 ≈ 0.395`), ~63% at 100 steps, and ~99% at 500 steps — so treat workflows of a few tens of sequential steps and up as candidates for durable execution, and compute `P(fail)` against your own per-step `p`. Bare retry scripts are a fragile pattern above the cliff: they do not preserve the execution stack and re-run side-effecting steps on restart.
 
 This rule applies to: framework selection, topology choice, durability design, and every "we'll just add retries" decision. It is surfaced here because burying it in one reference file causes agents to under-build durability and then ship agents that fail statistically.
@@ -67,7 +67,7 @@ After loading the relevant reference file(s):
 
 Output format per finding:
 ```
-[P0] Rule SUP3 (orchestration-patterns): 10-agent fully-connected swarm = 45 failure pathways (n(n-1)/2), untestable.
+[P0] Rule SUP3 (orchestration-patterns): 10-agent fully-connected swarm = 90 directed handoff pathways (n(n-1)), untestable.
 → Switch to a Supervisor topology or constrain handoff edges; do not ship a peer-to-peer swarm above ~5 agents.
 
 [P1] Rule DUR1 (durable-execution): 300-step workflow on a bare retry loop — P(fail) ≈ 95% at p=0.01.
@@ -107,11 +107,11 @@ Produce a structured orchestration review:
 | Excuse | Counter |
 |--------|---------|
 | "It's only a few steps, retries are fine" | Compute P(fail) = 1 - (1-p)^s. At 100 steps and p=0.01 that is 63.4% failure. "A few steps" is rarely a few in agent loops. |
-| "Swarm is simpler — no coordinator" | A fully-connected swarm's failure surface scales O(n²): 4 agents = 6 pathways, 10 agents = 45. Beyond ~5 agents it is untestable and drifts after 8-10 turns. |
+| "Swarm is simpler — no coordinator" | A fully-connected swarm's directed handoff surface scales O(n²): n(n-1) directed pathways — 4 agents = 12, 10 agents = 90. Beyond ~5 agents it is untestable and drifts after 8-10 turns. |
 | "Supervisor handles everything cleanly" | Supervisors cost a 20-40% token premium and saturate context after 8-12 round trips — routing accuracy degrades from historical noise. |
 | "We'll add a human approval step later" | High-risk tools (DB writes, outbound email, shell) need an interrupt BEFORE execution. Retrofitting HITL after side effects ship is too late. |
 | "Checkpointing to SQLite is good enough" | LangGraph SqliteSaver under parallel writes locks connections and stalls. Production needs AsyncPostgresSaver, or event sourcing (Temporal). |
-| "Auto-approve all tools, it's faster" | Claude Agent SDK has 3 permission layers (allow/disallow/mode) for a reason. A `Bash`/`Edit` allowlist without a permissionMode fallback is an arbitrary-command hole. |
+| "Auto-approve all tools, it's faster" | Claude Agent SDK has 3 permission layers (allow/disallow/mode) for a reason. An allowlist with no explicit `permissionMode` lets the mode decide unmatched tools and invites drift to a permissive mode — set `dontAsk` for a locked-down boundary; never `bypassPermissions`. |
 
 ---
 
@@ -119,9 +119,9 @@ Produce a structured orchestration review:
 
 | Framework | Install / Entry | Primary Use |
 |-----------|-----------------|-------------|
-| LangGraph | `pip install langgraph` (`sdk==0.3.15`, 2026-05-22) | Deterministic StateGraph, transaction-safe checkpointing, native interrupt HITL |
+| LangGraph | `pip install langgraph` (framework, 1.x line); `langgraph-sdk==0.3.15` (2026-05-22) is the separate API-client package | Deterministic StateGraph, transaction-safe checkpointing, native interrupt HITL |
 | CrewAI | `pip install crewai` | Role-metaphor crews + event-driven Flows, checkpoint-fork CLI (`crewai checkpoint`) |
 | AutoGen v0.4+ | `pip install autogen-agentchat` | Actor-model async message passing, cross-language (Python/.NET), AutoGen Studio |
-| OpenAI Agents SDK | `pip install openai-agents` (Sandbox Agents v0.14.0) | Containerized sandbox + filesystem persistence, 5 tool categories, handoffs |
+| OpenAI Agents SDK | `pip install openai-agents` (Sandbox Agents v0.14.0) | Sandbox/workspace execution (Unix-local, Docker, or hosted backend — containerized only with Docker/hosted) + filesystem persistence, 5 tool categories, handoffs |
 | Claude Agent SDK | `pip install claude-agent-sdk` | In-process local agent loop, 3-layer permissions, subagent spawning |
 | Temporal | `pip install temporalio` | Durable execution via event-sourced replay, zero-cost idle, crash recovery |

@@ -7,8 +7,8 @@
 |---|------|-----------------|
 | DUR1 | Above the complexity cliff (compute P(fail); materially high by the low tens of steps at p=0.01), event sourcing beats application-level checkpointing | deterministic |
 | DUR2 | Temporal replay: wrap every external call as an Activity; crashes resume from the event log, not step 1 | deterministic |
-| DUR3 | Temporal sandbox: pass system libs through `workflow.unsafe.imports_passed_through()` | deterministic |
-| DUR4 | OpenAI Agents SDK + Temporal: `temporal_sandbox_client()` + `OpenAIAgentsPlugin` + `activity_as_tool` | deterministic |
+| DUR3 | Temporal: do network/IO in Activities; only pass DETERMINISTIC imports through `workflow.unsafe.imports_passed_through()` | deterministic |
+| DUR4 | OpenAI Agents SDK + Temporal: `SandboxRunConfig(client=temporal_sandbox_client(...))` + `OpenAIAgentsPlugin(sandbox_clients=[...])` + `activity_as_tool` | deterministic |
 | DUR5 | Zero-cost idle: `workflow.wait_condition` consumes zero compute while awaiting human input | semi-deterministic |
 | DUR6 | CrewAI checkpoint cadence: default `task_completed`; high-frequency triggers degrade perf + disk I/O | semi-deterministic |
 | DUR7 | Observability: with Temporal set `wrap_openai(AsyncOpenAI(max_retries=0))` — delegate retries to the Activity layer | deterministic |
@@ -42,21 +42,22 @@ Temporal replaces application-level checkpointing with event sourcing:
 
 **determinismLevel**: deterministic.
 
-### DUR3: Temporal Sandbox Import Pass-Through
+### DUR3: Temporal Workflows Are Deterministic — Network/IO Goes in Activities, Not Pass-Through Imports
 
-To run safely inside the Temporal sandbox, custom tool-calling loops must pass system libraries through an explicit unsafe block, or the sandboxed workflow loop throws import violations on external HTTP wrappers:
+Temporal `Workflow` code must be deterministic and must NOT perform network/file/DB I/O. All HTTP calls, LLM calls, and other side effects belong in **Activities**, not in the workflow body. `workflow.unsafe.imports_passed_through()` is for importing **deterministic, side-effect-free** modules whose import-time code the sandbox would otherwise re-validate (e.g. Pydantic models, type/dataclass definitions, activity definitions) — it is NOT a license to run an HTTP client inside the workflow:
 
 ```python
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
-    import httpx
-    import pydantic
+    import pydantic            # deterministic model/type definitions — OK to pass through
+    from .activities import call_api   # activity definition import — OK
+# An HTTP client (httpx/requests) is USED inside an Activity, not the Workflow.
 ```
 
-**Rule**: Any external library used inside a Temporal `Workflow` (HTTP clients, validators) must be imported via `workflow.unsafe.imports_passed_through()`.
+**Rule**: Pass through deterministic third-party imports (Pydantic models, type/activity definitions). Put HTTP/network/file/DB calls in Activities — never perform I/O directly in workflow code, even if the import is passed through.
 
-> Source: findings.md "Event Sourcing Replay Model" code block [30]
+> Source: findings.md "Event Sourcing Replay Model" code block [30]; Temporal Python SDK workflow-sandbox / determinism docs (retrieved 2026-06-01)
 
 **determinismLevel**: deterministic.
 
@@ -64,11 +65,11 @@ with workflow.unsafe.imports_passed_through():
 
 To make the OpenAI Agents SDK durable, use Temporal's native integration:
 
-- Establish the connection with a single call: configure the `SandboxAgent`'s `RunConfig` with `client=temporal_sandbox_client(self._backend.value)`. This wraps all core sandbox operations (LLM API calls, shell commands, file ops, sandbox lifecycle) as **Temporal activities** — fully durable and retryable, with no change to agent logic.
-- Use the `OpenAIAgentsPlugin` plugin and the `activity_as_tool` helper, which auto-generates OpenAI-compatible tool schemas from Temporal activity signatures and provides them to the `Agent`.
+- Establish the connection by setting the sandbox client in `SandboxRunConfig`: `SandboxRunConfig(client=temporal_sandbox_client(self._backend.value))` (the sandbox client lives in `SandboxRunConfig`, not the generic `RunConfig`). This wraps all core sandbox operations (LLM API calls, shell commands, file ops, sandbox lifecycle) as **Temporal activities** — fully durable and retryable, with no change to agent logic.
+- Register the backends with `OpenAIAgentsPlugin(sandbox_clients=[SandboxClientProvider(...)])` on the Temporal Client (one provider per backend: local/docker/daytona/e2b), and use the `activity_as_tool` helper, which auto-generates OpenAI-compatible tool schemas from Temporal activity signatures and provides them to the `Agent`.
 - Three architectural components: **AgentWorkflow** (long-lived durable workflow wrapping the agent), **SessionManagerWorkflow** (durably orchestrates session start/stop/list/rename/fork instead of a DB-backed server), and a **TUI** that talks to the workflows via Temporal signals/queries/updates.
 
-> Source: findings.md "OpenAI Agents SDK Temporal Integration" [18,32]
+> Source: findings.md "OpenAI Agents SDK Temporal Integration" [18,32]; OpenAI Agents SDK sandbox-clients docs + Temporal `temporalio.contrib.openai_agents` (retrieved 2026-06-01)
 
 **determinismLevel**: deterministic.
 
@@ -132,7 +133,8 @@ client = wrap_openai(AsyncOpenAI(max_retries=0))
 ## Anti-Patterns
 
 - **Bare retry loop above the cliff**: a 300-step agent on `try/except + retry` re-runs side effects (emails, DB writes) on restart. Use event sourcing.
-- **Forgetting import pass-through**: external libs imported normally inside a Temporal Workflow throw sandbox import violations.
+- **I/O inside a workflow**: running an HTTP client / DB call directly in workflow code (even with the import passed through) breaks determinism — move it to an Activity.
+- **Forgetting import pass-through**: deterministic libs imported normally inside a Temporal Workflow throw sandbox import violations — pass them through.
 - **Double retries**: client-level `max_retries > 0` plus Activity-level retry = duplicate API calls and duplicate side effects.
 - **Keeping containers alive for human waits**: paying for thousands of idle sandboxes instead of using `workflow.wait_condition` zero-cost idle.
 - **Checkpointing on every event**: wildcard `["*"]` cadence degrades performance with disk I/O.

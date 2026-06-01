@@ -6,7 +6,7 @@
 | # | Rule | determinismLevel |
 |---|------|-----------------|
 | TP1 | Claude Agent SDK: 3 permission layers (allowedTools / disallowedTools / permissionMode) — evaluate in order | deterministic |
-| TP2 | A tool allowlist WITHOUT a permissionMode fallback is an arbitrary-command hole | deterministic |
+| TP2 | A tool allowlist WITHOUT an explicit permissionMode lets the mode decide unmatched tools — use `dontAsk` for a locked-down boundary, never `acceptEdits` as "restrictive" | deterministic |
 | TP3 | Subagents: add `"Agent"` to allowedTools; trace nesting via `parent_tool_use_id` | deterministic |
 | TP4 | Lifecycle hooks: PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / UserPromptSubmit for audit | deterministic |
 | TP5 | OpenAI Agents SDK: 5 tool categories — agents-as-tools ≠ handoff | deterministic |
@@ -22,7 +22,7 @@ Tool execution permissions are managed via `ClaudeAgentOptions`. Proposed tool c
 
 1. **Allowed Tools** (`allowedTools` / `allowed_tools`) — auto-approval allowlist; listed tools execute without prompting.
 2. **Disallowed Tools** (`disallowedTools` / `disallowed_tools`) — blocklist; listed tools are completely blocked from execution.
-3. **Permission Mode** (`permissionMode` / `permission_mode`) — fallback behavior for tools not on the allowlist. E.g. `'acceptEdits'` auto-approves filesystem changes but still prompts for arbitrary shell commands.
+3. **Permission Mode** (`permissionMode` / `permission_mode`) — fallback behavior for tools not on the allowlist. E.g. `'dontAsk'` denies anything outside the allowlist (locked-down boundary); `'acceptEdits'` auto-approves file edits AND basic filesystem operations (not a restrictive choice for write-capable agents).
 
 **Rule**: Design all three layers together. The mode is the fallback that governs everything not explicitly allow/disallow-listed.
 
@@ -30,13 +30,13 @@ Tool execution permissions are managed via `ClaudeAgentOptions`. Proposed tool c
 
 **determinismLevel**: deterministic — the policy is a fixed configuration.
 
-### TP2: An Allowlist Without a Mode Fallback Is a Hole
+### TP2: An Allowlist Without an Explicit Mode Lets the Mode Decide
 
-If you set `allowedTools` (e.g. `Bash`, `Edit`) but leave the `permissionMode` fallback unconsidered, any tool not on the allowlist falls through to whatever the default mode permits — potentially auto-running arbitrary commands.
+`allowedTools` only governs auto-approval; a tool NOT on the allowlist does not get blocked by its absence — it falls through to whatever `permissionMode` is in effect. The default mode does not silently auto-run unmatched commands (it routes them to the `canUseTool`/approval path), but leaving the mode unset invites config drift toward a permissive mode (`acceptEdits`, `bypassPermissions`) where non-allowlisted file/shell operations run unprompted.
 
-**Rule**: Never ship an allowlist without an explicit `permissionMode`. Use a restrictive mode like `'acceptEdits'` (auto-approve file edits, prompt for shell) so non-allowlisted high-risk tools are gated, not silently permitted.
+**Rule**: Never ship an allowlist without an explicit `permissionMode`. For an allowlist-as-boundary (locked-down agent), use `permissionMode: 'dontAsk'` so anything outside the allowlist is denied outright rather than prompted. Do NOT use `'acceptEdits'` as the "restrictive" choice — it auto-approves file edits AND basic filesystem operations (including `rm`/`mv`), so it is only appropriate when filesystem mutation is intentionally trusted. Never use `'bypassPermissions'`.
 
-> Source: findings.md "Claude Agent SDK" — three-layer evaluation + `acceptEdits` example [12]
+> Source: findings.md "Claude Agent SDK" — three-layer evaluation [12]; Claude Agent SDK permissions docs (`dontAsk` for locked-down allowlists; `acceptEdits` approves file ops) (retrieved 2026-06-01)
 
 **determinismLevel**: deterministic.
 
@@ -58,7 +58,7 @@ Hook into the agent lifecycle by registering callbacks. Available hooks: `PreToo
 
 - Example: register a `PostToolUse` callback to write file-modification details to an external audit file (`./audit.log`) whenever the model invokes `Edit` or `Write`.
 
-**Rule**: Use `PreToolUse` for gating/validation and `PostToolUse` for audit trails on side-effecting tools (`Edit`/`Write`/`Bash`). An agent that writes files with no `PostToolUse` audit hook has no tamper-evident record.
+**Rule**: Use `PreToolUse` for gating/validation and `PostToolUse` for audit trails on side-effecting tools (`Edit`/`Write`/`Bash`). An agent that writes files with no `PostToolUse` audit hook has no audit record at all. Note that a `PostToolUse` hook writing a local `./audit.log` is NOT tamper-evident — the same agent/process can edit or delete it; for tamper evidence use append-only/write-once external storage, signed entries, or off-host log shipping.
 
 > Source: findings.md "Claude Agent SDK" lifecycle hooks [10]
 
@@ -99,9 +99,9 @@ Configure tool execution timeouts via `timeout_behavior`:
 
 ## Anti-Patterns
 
-- **Allowlist with no mode**: non-allowlisted tools fall through to a permissive default — an arbitrary-command hole (TP2).
+- **Allowlist with no explicit mode**: non-allowlisted tools fall through to whatever `permissionMode` is set; an unset mode invites drift to a permissive mode. Set `dontAsk` for a locked-down boundary (TP2).
 - **Granting `Agent` by default**: subagent spawning should be deliberate; ungated delegation multiplies tool surface.
 - **Flattened subagent logs**: dropping `parent_tool_use_id` makes nested failures undebuggable.
-- **No PostToolUse audit on writes**: side-effecting tools with no audit hook leave no record.
+- **No PostToolUse audit on writes**: side-effecting tools with no audit hook leave no record. (And a local `./audit.log` alone is not tamper-evident — use append-only/external storage for that.)
 - **Confusing agents-as-tools with handoff**: a handoff transfers control; agents-as-tools returns a value. Picking the wrong one changes who owns the conversation.
 - **`raise_exception` everywhere**: a single recoverable tool timeout should not always kill the whole run — default to `error_as_result`.

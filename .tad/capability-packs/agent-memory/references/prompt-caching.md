@@ -56,7 +56,7 @@ Total input cost: `T_total = T_read + T_write + T_active` (cached reads + new ca
 
 Because caching requires prefix alignment, placing a dynamic variable (timestamp, fluctuating tool output, user message) in the MIDDLE of a cached block invalidates the breakpoint → cache miss. Specific constraints:
 
-- **Mid-conversation system messages**: do NOT modify the top-level `system` field mid-conversation — it invalidates the entire cache prefix. Instead append a `{"role": "system"}` block to the active messages list, keeping the cached system instructions intact.
+- **Mid-conversation system messages**: do NOT modify the top-level `system` field mid-conversation — it invalidates the entire cache prefix. The Anthropic Messages API rejects `{"role": "system"}` inside the `messages` array (only `user`/`assistant` roles are accepted there; system content belongs in the top-level `system` field). Instead append the dynamic guidance as a `user` message/content block AFTER the cached prefix, keeping the cached system instructions intact.
 - **Key serialization ordering**: Swift/Go can randomize JSON key order, changing the compiled prompt hash on consecutive calls. Enforce deterministic key ordering.
 - **Cross-provider isolation**: caches are provider-specific and workspace-isolated. Identical prompts split across Anthropic Direct, AWS Bedrock, and Google Vertex AI do NOT share cache entries.
 
@@ -85,11 +85,11 @@ To avoid latency on the first request of the day, pre-warm: send an empty warmup
 
 ### PC6: Structure Context with Nested XML — Documents First, Query Last
 
-Claude models are trained to parse XML-style tags (`<task>`, `<context>`, `<instructions>`, `<document>`) as unambiguous boundaries between instructions and data. Internal evaluations: structured XML formatting improves response consistency by **20% to 40%** and accuracy on complex reasoning by **30% to 40%** vs unstructured plain text.
+Claude models are trained to parse XML-style tags (`<task>`, `<context>`, `<instructions>`, `<document>`) as unambiguous boundaries between instructions and data. Structured XML formatting improves response consistency and accuracy on complex reasoning vs unstructured plain text; the cited source does not specify a model version, task set, or reproducible eval, so treat any specific lift as unverified — measure on your own task set.
 
 Layout rules:
 - Use nested XML for multi-document inputs (`<documents><document index="1"><source>…</source><document_content>…</document_content></document></documents>`).
-- Place long documents at the TOP of the prompt and the query at the END — improves response quality by up to **30%** on complex multi-document tasks.
+- Place long documents at the TOP of the prompt and the query at the END — improves response quality on complex multi-document tasks (lift is task-dependent; the cited source gives no reproducible eval, so validate on your own data).
 - To reduce hallucination, instruct the model to locate and extract exact quotes from the XML documents BEFORE synthesizing its answer.
 
 > Source: findings.md "Anthropic Context Engineering" — XML structuring [37, 38]
@@ -103,8 +103,8 @@ Layout rules:
 ## Anti-Patterns
 
 - **Dynamic variable in the cached prefix**: a timestamp at the top of the system prompt destroys every cache hit.
-- **Mutating the top-level `system` field mid-conversation**: invalidates the whole prefix — append a system-role message block instead.
+- **Mutating the top-level `system` field mid-conversation**: invalidates the whole prefix — append a `user` message/content block after the cached prefix instead (the API does NOT accept a `system`-role message in the `messages` array).
 - **Caching one-shot content**: a write costs 1.25×/2.0×; it only pays off when read back at 0.1×.
 - **Ignoring the 20-block lookback**: long conversations push the breakpoint out of the lookback window → silent full miss.
-- **Plain-text mega-prompts**: forgoing XML structure loses the 20–40% consistency / 30–40% accuracy gains.
+- **Plain-text mega-prompts**: forgoing XML structure loses the consistency and accuracy gains from explicit instruction/data boundaries.
 - **Assuming cross-provider cache reuse**: Bedrock/Vertex/Direct caches are isolated.

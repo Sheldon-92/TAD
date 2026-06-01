@@ -28,7 +28,7 @@ This pack embeds the judgment rules that data-curation engineers apply automatic
 
 ## Cross-Cutting Rule: Decontaminate Before You Trust the Score
 
-> **Before reporting ANY benchmark number for a model trained on web-scraped or synthetic data, run contamination detection against the eval set.** Public benchmarks leak into training corpora at extreme rates — up to 90% of examples in datasets like SQuADv2 and DROP are flagged as contaminated. Contamination is not binary; it is a spectrum that silently inflates leaderboard scores. The GSM1k study showed accuracy drops of up to 13% on uncontaminated math problems, and Claude Opus 4.5 dropped 35 percentage points (80.9% → 45.9%) from SWE-bench Verified to the contamination-resistant SWE-bench Pro.
+> **Before reporting ANY benchmark number for a model trained on web-scraped or synthetic data, run contamination detection against the eval set.** Public benchmarks leak into training corpora at high rates — one study flagged up to ~90% of examples in datasets like SQuADv2 and DROP as contaminated (a single-source, definition-specific figure, not a universal rate). Contamination is not binary; it is a spectrum that silently inflates leaderboard scores. The GSM1k study showed accuracy drops of up to 13% on uncontaminated math problems, and Claude Opus 4.5 dropped 35 percentage points (80.9% → 45.9%) from SWE-bench Verified to the contamination-resistant SWE-bench Pro.
 
 This rule applies to: synthetic generation (your generated set may regurgitate benchmark items), preference curation, and every "our fine-tune scores X%" claim. It is surfaced here because a clean number on a contaminated benchmark is the most expensive silent failure in the whole pipeline.
 
@@ -93,7 +93,7 @@ Produce a structured curation report:
 [table: filter → dedup → generate → align → decontaminate, with status per stage]
 
 ### Tool Recommendation
-[distilabel / Axolotl / Unsloth / Milvus-uint32 / fastText based on user context]
+[distilabel / Axolotl / Unsloth / Milvus-BINARY_VECTOR / fastText based on user context]
 ```
 
 ---
@@ -105,7 +105,7 @@ Produce a structured curation report:
 | "Exact dedup is enough" | Exact SHA-256 only catches verbatim copies. Copyediting, reformatting, and versioning produce near-duplicates that inflate memorization — you need MinHashLSH or LSHBloom. |
 | "We'll just prompt the model to generate a lot of instructions" | Without ROUGE-L > 0.7 rejection and the Self-Instruct 6-human/2-machine sampling mix, your set collapses into near-duplicates. Flat Self-Instruct also underperforms Evol-Instruct evolution. |
 | "Perplexity filtering picks the good data" | Perplexity has in-distribution bias: it discards niche/long-tail documents (high PPL) and keeps repetitive boilerplate (low PPL). Ask-LLM has near-zero ranking correlation with perplexity for a reason. |
-| "Our fine-tune scores 80% on the benchmark" | Did you decontaminate first? Up to 90% of SQuADv2/DROP is contaminated. GSM1k dropped 13%, SWE-bench dropped 35pp once contamination was removed. |
+| "Our fine-tune scores 80% on the benchmark" | Did you decontaminate first? One study flagged up to ~90% of SQuADv2/DROP as contaminated (single-source figure). GSM1k dropped 13%, and SWE-bench Verified→Pro is a 35pp gap on a harder contamination-resistant suite. |
 | "DPO is all we need" | DPO is structurally pairwise and lacks exploration. For >2 candidates use RRHF ranking loss; for verifiable math/logic use GRPO. And map your chat template, or you train on pad tokens. |
 
 ---
@@ -118,4 +118,4 @@ Produce a structured curation report:
 | Axolotl | `pip install axolotl` | SFT/preference fine-tuning; `roles_to_train`, `train_on_eos`, `eot_tokens` config |
 | Unsloth | `pip install unsloth` | Fast fine-tuning; `standardize_sharegpt`, `map_eos_token` |
 | fastText | `pip install fasttext` | Language identification filtering in the heuristic gate |
-| Milvus / Zilliz | `pip install pymilvus` | Native `uint32` / binary-vector MinHash buckets (avoids float32 precision loss) |
+| Milvus / Zilliz | `pip install pymilvus` | `MINHASH_LSH` index over a `BINARY_VECTOR` MinHash field (avoids float32 precision loss) |

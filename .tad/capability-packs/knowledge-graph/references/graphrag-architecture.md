@@ -24,9 +24,9 @@ When choosing a GraphRAG architecture, decide on data volatility and budget — 
 |--------|------|---------------------|
 | **Microsoft GraphRAG** (Leiden) | Static/batch corpus, broad global "synthesize the themes" queries, high-performance offline indexing | Deep semantic synthesis but extremely high upfront LLM pre-summarization cost. Best on Neo4j for large historical graphs. |
 | **LazyGraphRAG** | Large or volatile corpus, cost-sensitive, dynamic communities at query time | Replaces LLM pre-summarization with lightweight NLP (noun-phrase + co-occurrence). Reduces upfront indexing cost by up to **99.9%**. Matches full GraphRAG global-search quality at **700x lower query cost**; outperforms vector RAG on local queries at comparable cost. |
-| **LightRAG** | Frequently-updated corpus, ultra-low query token budget | Dual-level KV index; **<100 tokens per standard query**; incremental updates touch only affected nodes/relationships (no full rebuild). |
+| **LightRAG** | Frequently-updated corpus, low retrieval-overhead budget | Dual-level KV index; **<100 tokens for the retrieval keyword-generation step in the LightRAG-reported setup** (total per-query cost still includes retrieved context + answer generation); incremental updates touch only affected nodes/relationships (no full rebuild). |
 
-> Source: findings.md §"Alternative Architectures" + §"Strategic Syntheses" — LazyGraphRAG 99.9% indexing reduction & 700x cheaper global queries [19, 21]; LightRAG <100 tokens/query & incremental updates [18, 23, 24].
+> Source: findings.md §"Alternative Architectures" + §"Strategic Syntheses" — LazyGraphRAG 99.9% indexing reduction & 700x cheaper global queries [19, 21]; LightRAG <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; NOT total per-query cost) & incremental updates [18, 23, 24].
 
 **determinismLevel**: deterministic — architecture is an upfront design decision.
 
@@ -41,8 +41,10 @@ create_base_text_units (1200-token chunks)
   → finalize_graph (NetworkX; node degrees + edge weights)
   → create_communities (Leiden clustering)
   → create_community_reports (hierarchical substitution / trimming)
-  → generate_embeddings (text units, entity descriptions, community reports)
+  → generate_text_embeddings (text units, entity descriptions, community reports)
 ```
+
+Workflow step names are version-specific (current Microsoft GraphRAG uses `generate_text_embeddings` for the embedding stage); pin the GraphRAG version and verify exact workflow names against the installed version before hardcoding them into configs.
 
 The `extract_graph` module records the **exact occurrence frequency** of each entity across the corpus; raw occurrences are consolidated into a single representation downstream (this is why entity resolution matters — see entity-resolution.md).
 

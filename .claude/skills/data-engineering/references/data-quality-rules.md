@@ -29,13 +29,13 @@ Match the validation engine to who writes and maintains the checks:
 
 | Engine | Version | Interface | Best Author / Deployment |
 |---|---|---|---|
-| Great Expectations (GX) | v1.0 GA | Code-first **Python Fluent API** (legacy YAML eliminated in v1.0) | Engineers; source-ingestion gating + MLOps preprocessing |
+| Great Expectations (GX) | v1.0 GA | Code-first **Python Fluent API** (GX 1.x is Python-first; YAML still backs persistent File Data Contexts via `great_expectations.yml`) | Engineers; source-ingestion gating + MLOps preprocessing |
 | Soda Core | v4 | Declarative **SodaCL** (human-readable YAML) | Non-engineering stakeholders (PMs, risk analysts); continuous monitoring |
 
 GX compiles validation results into visual, interactive HTML reports — **Data Docs** — a self-updating, auditable data dictionary hostable on cloud storage to meet compliance requirements. Trade-off: GX has high development/maintenance overhead and can degrade performance on broad expectation checks over large Spark datasets.
 
 **determinismLevel**: deterministic — author persona selects the engine.
-> Source: findings.md "Great Expectations (v1.0 GA)" Fluent API + Data Docs, and "Soda Core (v4)" SodaCL [24, 25, 26].
+> Source: findings.md "Great Expectations (v1.0 GA)" Fluent API + Data Docs, and "Soda Core (v4)" SodaCL [24, 25, 26]. GX 1.x is Python-first but retains YAML for persistent File Data Contexts — https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context/
 
 ### DQ3: Soda v4 Data Contracts Halt Drift at the Boundary
 

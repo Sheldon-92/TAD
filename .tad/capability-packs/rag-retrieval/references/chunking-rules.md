@@ -10,7 +10,7 @@
 | CH3 | Paginated docs with tables → Page-Level chunking (NVIDIA-2024 winner, 0.648 acc, lowest variance) | deterministic |
 | CH4 | Do NOT default to Semantic chunking — < 55% under equal context budget | deterministic |
 | CH5 | Semantic chunking thresholds: 95th percentile / 3σ / IQR | semi-deterministic |
-| CH6 | Late Chunking for multi-page co-dependent text — embed whole doc first, then split | deterministic |
+| CH6 | Late Chunking for multi-page co-dependent text — needs a token-embedding endpoint; else use contextual headers/parent-doc | deterministic |
 | CH7 | GraphRAG ingestion chunks = 500–1000 tokens overlapping | deterministic |
 
 ---
@@ -87,9 +87,9 @@ If Semantic chunking is justified (per CH4), select one of the three split-thres
 
 ### CH6: Late Chunking for Co-Dependent Multi-Page Text
 
-When chunks are highly co-dependent across page boundaries (the answer needs context that spans chunks), use **Late Chunking**: run the **entire unsegmented document** through a long-context embedding model FIRST to produce token-level vectors with bidirectional attention across the whole document, THEN split along structural boundaries and **mean-pool** token embeddings into final chunk vectors.
+When chunks are highly co-dependent across page boundaries (the answer needs context that spans chunks), use **Late Chunking**: run the **entire unsegmented document** through a long-context embedding model FIRST to produce **token-level** vectors with bidirectional attention across the whole document, THEN split along structural boundaries and **mean-pool** the token embeddings into final chunk vectors.
 
-**Rule**: Standard chunking splits before embedding, which severs the transformer's attention across boundaries. Late chunking preserves global context inside localized chunk vectors.
+**Rule**: Standard chunking splits before embedding, which severs the transformer's attention across boundaries. Late chunking preserves global context inside localized chunk vectors. **Implementation caveat**: standard embedding APIs (OpenAI, Voyage, Cohere) return ONE pooled vector per input, not token-level vectors — late chunking requires a local model / endpoint that exposes per-token hidden states (e.g., jina-embeddings late-chunking, or a self-hosted encoder). If you only have a pooled-vector API, use **contextual chunk headers, parent-document retrieval, or overlapping windows** instead.
 
 > Source: findings.md "Late Chunking" [1]
 

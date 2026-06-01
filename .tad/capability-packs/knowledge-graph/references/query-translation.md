@@ -71,6 +71,7 @@ This prevents sending every query down the expensive graph path when vector retr
 When the store is RDF and the query targets relationship-level metadata (confidence, timestamp on an edge), use **SPARQL-Star** embedded-triple patterns rather than reification joins:
 
 ```sparql
+# Legacy SPARQL-star syntax (RDF-star CG spec) — may fail on RDF/SPARQL 1.2 engines; verify target-store support
 PREFIX ex: <http://example.org/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?person ?age ?certainty WHERE {
@@ -78,9 +79,9 @@ SELECT ?person ?age ?certainty WHERE {
 }
 ```
 
-The `<< ... >>` quoted triple lets you bind a property asserted ON a triple in one pattern.
+The `<< ... >>` quoted triple lets you bind a property asserted ON a triple in one pattern. ⚠️ This is **legacy SPARQL-star** (RDF-star Community Group spec); RDF/SPARQL 1.2 revised the triple-term model, so confirm whether your engine implements legacy RDF-star or RDF 1.2 and use the matching syntax.
 
-> Source: findings.md §1 "Labeled Property Graphs versus RDF Star" — SPARQL-Star edge-metadata query over embedded triples [39, 40].
+> Source: findings.md §1 "Labeled Property Graphs versus RDF Star" — SPARQL-Star edge-metadata query over embedded triples [39, 40]. NOTE: cited syntax is legacy SPARQL-star; RDF/SPARQL 1.2 differs — verify engine support.
 
 **determinismLevel**: deterministic — a query-syntax rule.
 

@@ -18,7 +18,7 @@ type: reference-based
 
 ## What This Pack Does
 
-AI agents build data pipelines by reaching for the first tool they remember. They default to Pandas where Polars would parallelize for free. They enforce rigid schemas on raw JSON before storage, discarding the raw history that model retraining needs. They write feature transformations once in a training notebook and again in a serving path — silently introducing train-serve skew. They pick Airflow for a lightweight agentic workflow that Prefect handles better. They run a global vector search and post-filter, then wonder why RAG returns zero results for a tenant. They build SCD Type 2 tables that scan 150M rows because a query forgot `is_current = true`.
+AI agents build data pipelines by reaching for the first tool they remember. They default to Pandas where Polars would parallelize for free. They enforce rigid schemas on raw JSON before storage, discarding the raw history that model retraining needs. They write feature transformations once in a training notebook and again in a serving path — silently introducing train-serve skew. They pick Airflow for a lightweight agentic workflow that Prefect handles better. They run a global vector search and post-filter, then wonder why RAG returns zero results for a tenant. They build SCD Type 2 tables that scan ~160M rows because a query forgot `is_current = true`.
 
 This pack embeds the judgment rules that data engineers apply automatically — rules grounded in 2026 tooling research (dlt, DuckDB, Polars, dbt, Airflow 3.2, Dagster 1.13, Prefect 3.7, Great Expectations v1.0 GA, Soda Core v4, Kafka/Flink) with source citations on every number.
 

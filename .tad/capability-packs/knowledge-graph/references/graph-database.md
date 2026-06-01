@@ -52,16 +52,20 @@ Rule: pick LPG for application-centric, traversal-heavy GraphRAG; pick RDF when 
 
 ### GDB3: Edge Metadata via RDF-Star (Not Reification)
 
-When you need properties ON an edge (timestamp, confidence score on a relationship) in an RDF store, historically RDF required **reification**, which significantly increases graph size and query complexity. Use **RDF-Star** instead — embedded triples in double angle brackets:
+When you need properties ON an edge (timestamp, confidence score on a relationship) in an RDF store, historically RDF required **reification**, which significantly increases graph size and query complexity. The **legacy RDF-Star / Turtle-star** approach embeds triples in double angle brackets:
 
 ```turtle
+# Legacy RDF-star / Turtle-star (RDF-star CG spec) — verify target-store support
 <<:bob :age 23>> :certainty 0.9 .
 <<:man :hasSpouse :woman>> :startDate "2020-02-11"^^xsd:date .
 ```
 
-Query relationship-level metadata directly with **SPARQL-Star**:
+> ⚠️ This `<< ... >>` embedded-triple notation is **legacy RDF-star/Turtle-star** (RDF-star Community Group spec), NOT current RDF 1.2. RDF 1.2 substantially revised this area — it introduces **triple terms** and `rdf:reifies`-based reification with new syntax (e.g. `<<( ... )>>` triple terms and reifiedTriple shorthand) and changed semantics. Triplestore support varies widely. Before adopting, confirm whether your target store implements legacy RDF-star or RDF 1.2, and use the matching syntax.
+
+Query relationship-level metadata directly with **SPARQL-Star** (legacy; the RDF 1.2 equivalent differs):
 
 ```sparql
+# Legacy SPARQL-star — may fail on RDF/SPARQL 1.2-compliant engines
 PREFIX ex: <http://example.org/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?person ?age ?certainty WHERE {
@@ -71,7 +75,7 @@ SELECT ?person ?age ?certainty WHERE {
 
 This bridges RDF's semantic interoperability with LPG-style expressive edge metadata.
 
-> Source: findings.md §1 — RDF-Star embedded triples + SPARQL-Star query, reification size/complexity penalty [38, 39, 40].
+> Source: findings.md §1 — RDF-Star embedded triples + SPARQL-Star query, reification size/complexity penalty [38, 39, 40]. NOTE: the cited syntax is legacy RDF-star/SPARQL-star; RDF 1.2 (W3C rdf12-turtle) changed the model — check target-store support.
 
 **determinismLevel**: deterministic — a syntax/modeling decision.
 

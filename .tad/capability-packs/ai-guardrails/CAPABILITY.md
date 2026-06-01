@@ -108,7 +108,7 @@ Produce a structured guardrail review:
 | "We only test single-turn injections" | Multi-turn jailbreaks and payload splitting recombine across the attention window. Each input passes alone; the attack assembles in context. Use stateful dialogue tracking (NeMo/Colang). |
 | "It's just an internal agent, skip PII redaction" | Sending raw names/emails/card numbers to an external model is a compliance breach. Run Presidio AnalyzerEngine→AnonymizerEngine; use Encrypt operator if you must restore values from the response. |
 | "Our agent has all the tools it needs" | Untrusted input + sensitive data + external state-change = all three legs of the Rule of Two. That is a single injection from RCE. Drop one leg or add a human approval gate. |
-| "One moderation API is enough" | OpenAI Moderation is an 8-category closed classifier that struggles with context-dependent toxicity; Llama Guard's 13+ customizable categories and lower FPR (0.016 response-classification) catch what it misses. Measure FPR before trusting one. |
+| "One moderation API is enough" | OpenAI Moderation is a closed, provider-defined classifier (omni-moderation-latest exposes ~13 non-extensible categories) that struggles with context-dependent toxicity; Llama Guard's 13+ customizable categories let you cover threat-model-specific harms. Llama Guard 3 Vision's low FPR (0.016) is a *Meta internal response-classification benchmark*, not a head-to-head guarantee — measure FPR/recall on your own content before trusting either. |
 
 ---
 
@@ -118,9 +118,9 @@ Produce a structured guardrail review:
 |------|--------------------|-------------|
 | Microsoft Presidio | `pip install presidio-analyzer presidio-anonymizer` | PII detection (AnalyzerEngine) + de-identification (AnonymizerEngine: replace/redact/hash/mask/encrypt) |
 | Meta Llama Guard 3/4 | Purple Llama (open-weight, e.g. Llama 3.1 11B/12B) | Input+output safety classification, 13+ customizable categories, multimodal (Vision) |
-| OpenAI Moderation API | hosted classifier | Fast 8-category text moderation, out-of-the-box |
+| OpenAI Moderation API | hosted classifier | Fast text+image moderation over a closed, provider-defined taxonomy (omni-moderation-latest, ~13 categories), out-of-the-box |
 | NVIDIA NeMo Guardrails | `pip install nemoguardrails` (Colang) | Stateful dialog/input/output/retrieval/execution rails |
 | Lakera Guard | `POST /v2/guard` (SaaS or self-hosted) | Inline prompt-injection/jailbreak/PII detection, sub-50ms |
-| Rebuff | `from rebuff import Rebuff` | Heuristic + LLM-judge + vector-DB + canary-token injection detection |
+| Rebuff | `from rebuff import RebuffSdk` (needs OpenAI + Pinecone creds) | Heuristic + LLM-judge + vector-DB + canary-token injection detection |
 | Pydantic AI / pydantic-ai-guardrails | `pip install pydantic-ai` | Typed output schema validation + structured-feedback retry loop |
 | sqlglot | `pip install sqlglot` | SQL AST parsing to gate read-only SELECT before DB execution |

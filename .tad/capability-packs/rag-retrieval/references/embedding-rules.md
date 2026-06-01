@@ -8,9 +8,9 @@
 | EM1 | Model-by-use-case selection matrix (Voyage 3.5 / Cohere embed-v4 / OpenAI 3-large / BGE-M3) | deterministic |
 | EM2 | Matryoshka truncation: 3072→512 with no significant quality loss (Wilcoxon) | deterministic |
 | EM3 | Cohere embed-v4 quantization: 32× compression, ~90% storage cut, ~3% accuracy loss | deterministic |
-| EM4 | Asymmetric models need query:/passage: prefixes; symmetric models must NOT | deterministic |
+| EM4 | Asymmetric models distinguish query/doc (Voyage via `input_type=`, E5 via textual prefix); symmetric models must NOT | deterministic |
 | EM5 | Voyage produces ~1.6% more tokens than OpenAI for identical text | deterministic |
-| EM6 | BGE-M3 / embed-v4 unify dense+sparse+multi-vector — single model for hybrid | deterministic |
+| EM6 | BGE-M3 unifies dense+sparse+multi-vector in one model — single model for hybrid | deterministic |
 
 ---
 
@@ -22,9 +22,9 @@ When selecting an embedding model, match the use case to the grounded pick:
 
 | Use Case | Model | Dims | Context | Cost /1M tokens |
 |----------|-------|------|---------|-----------------|
-| General-purpose retrieval champion | **voyage-3.5** | Low (3–8× shorter) | 32,000 | $0.060 |
-| Codebases / technical docs | **voyage-3-large** | Low (3–8× shorter) | 32,000 | $0.180 |
-| Legal contracts / regulatory | **voyage-law-2** | Low (3–8× shorter) | 16,000 | $0.120 |
+| General-purpose retrieval champion | **voyage-3.5** | 1,024 default (256/512/1,024/2,048) | 32,000 | $0.060 |
+| Codebases / technical docs | **voyage-3-large** | 1,024 default (256/512/1,024/2,048) | 32,000 | $0.180 |
+| Legal contracts / regulatory | **voyage-law-2** | 1,024 | 16,000 | $0.120 |
 | Storage-truncatable (elastic) | **text-embedding-3-large** | 3,072 (truncatable) | 8,000 | $0.130 |
 | Low-latency / cost-optimized | **text-embedding-3-small** | 1,536 (truncatable) | 8,000 | $0.020 |
 | Global multilingual RAG | **Cohere embed-v4** | 1,024 | 128,000 | $0.120 |
@@ -59,12 +59,12 @@ When using Cohere `embed-v4` and storage/cost is a constraint, enable its native
 
 When wiring up the embedder, respect its training symmetry:
 
-- **Asymmetric models** (Voyage AI, E5): MUST prepend prefixes — `query:` to queries and `passage:` to documents — to optimize retrieval.
+- **Asymmetric models** (Voyage AI, E5): distinguish queries from documents. For **Voyage**, do this through the API — set `input_type="query"` or `input_type="document"` and Voyage automatically prepends its own retrieval prompt (do NOT hand-prepend `query:`/`passage:`, which double-encodes). For **E5-style open models**, use the model-documented textual prefixes (e.g., `query:` / `passage:`).
 - **Symmetric models** (OpenAI `text-embedding-3` series, Qwen3): MUST NOT add prefixes. Adding classic search instructions to symmetric models can **degrade** performance on specialized legal/technical datasets.
 
-**Rule**: A mismatched prefix convention silently lowers recall. Check the model's symmetry before adding any `query:`/`passage:` wrapper.
+**Rule**: A mismatched query/document convention silently lowers recall. Check the model's symmetry AND its mechanism (API `input_type` param vs documented textual prefix) before wiring it.
 
-> Source: findings.md "Asymmetric vs. Symmetric Execution" [12]
+> Source: findings.md "Asymmetric vs. Symmetric Execution" [12]; Voyage embeddings API docs (`input_type`)
 
 **determinismLevel**: deterministic.
 
@@ -78,9 +78,9 @@ When estimating token cost or comparing models, note the tokenizer differs: Open
 
 ### EM6: Unified Hybrid Models Eliminate a Second Model
 
-When the goal is hybrid (dense + sparse) retrieval, prefer a model that unifies them: **BGE-M3** and **Cohere embed-v4** produce dense, multi-vector, AND sparse retrieval in a single model execution. This **eliminates running and maintaining two separate models** to achieve hybrid search.
+When the goal is hybrid (dense + sparse) retrieval, prefer a model that unifies them: **BGE-M3** produces dense, sparse (lexical), AND multi-vector (ColBERT-style) representations in a single model execution. This **eliminates running and maintaining two separate models** to achieve hybrid search. (Note: **Cohere embed-v4** is a multimodal dense embedder with quantized output types — float/int8/uint8/binary/ubinary — NOT a native sparse/multi-vector model; do not rely on it for one-pass hybrid.)
 
-> Source: findings.md "Multilingual and Hybrid Capabilities" [10, 17]
+> Source: findings.md "Multilingual and Hybrid Capabilities" [10, 17]; Cohere Embed v4 API docs (embedding output types)
 
 **determinismLevel**: deterministic.
 
@@ -89,6 +89,6 @@ When the goal is hybrid (dense + sparse) retrieval, prefer a model that unifies 
 ## Anti-Patterns
 
 - **More dimensions = better**: On text-embedding-3-large, 1536→512 truncation shows no significant Wilcoxon difference. Dimensions trade storage, not quality (on Matryoshka models).
-- **Prefix everything**: Adding `query:`/`passage:` to a symmetric model (OpenAI/Qwen3) degrades specialized-domain retrieval. Only asymmetric models (Voyage/E5) need prefixes.
+- **Prefix everything**: Adding `query:`/`passage:` to a symmetric model (OpenAI/Qwen3) degrades specialized-domain retrieval. Only asymmetric models distinguish query/doc — and Voyage does it via the `input_type=` API param (auto-prepends its prompt), not a hand-written prefix; only E5-style open models take a literal textual prefix.
 - **Ignoring context ceilings**: BGE-large-en-v1.5 caps at 512 tokens, embed-multilingual-v3.0 at 1,000 — feeding longer chunks silently truncates content.
-- **Running two models for hybrid**: BGE-M3 / embed-v4 give dense+sparse in one pass — no need to maintain a separate sparse model.
+- **Running two models for hybrid**: BGE-M3 gives dense+sparse+multi-vector in one pass — no need to maintain a separate sparse model. (Cohere embed-v4 does NOT — it is dense-only with quantized output types.)

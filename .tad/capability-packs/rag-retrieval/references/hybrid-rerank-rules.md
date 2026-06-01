@@ -11,7 +11,7 @@
 | HR4 | Over-retrieve then dedup: 30 sparse + 30 dense → k=10 | deterministic |
 | HR5 | Reranker selection matrix (latency vs accuracy) | deterministic |
 | HR6 | Restrict candidate pool to ≤ 50 to hold 120ms P95; top-50 ≈ 90% of top-200 gain | deterministic |
-| HR7 | Sequence-classification rerankers are fast; causal-LM rerankers add latency | deterministic |
+| HR7 | Seq-classification rerankers are fast; decoder-LM rerankers add latency (larger model + longer pair prompt, not extra passes) | deterministic |
 
 ---
 
@@ -87,7 +87,7 @@ When selecting a reranker, balance precision against the latency budget:
 | Reranker | Architecture | Params | Notes |
 |----------|--------------|--------|-------|
 | **Cohere Rerank v4.0-pro** | Proprietary cross-encoder | Proprietary | High multilingual accuracy; "Nimble" fast variant; API cost + network latency |
-| **Qwen3-Reranker-4B** | Causal LM | 4B | Top MTEB accuracy; autoregressive decoding latency |
+| **Qwen3-Reranker-4B** | Decoder-LM (prompt-based) | 4B | Top MTEB accuracy; higher latency from 4B model size + pair prompt |
 | **nv-rerankqa-mistral-4b-v3** | QA cross-encoder | 4B | Benchmark QA champion; high GPU need |
 | **Jina Reranker v3** | Listwise | Proprietary | 131k tokens / 64 docs together; handles relative ordering |
 | **bge-reranker-v2-m3** | Cross-encoder | < 600M | Lightweight, runs on consumer hardware |
@@ -107,7 +107,7 @@ When latency matters, **cap the first-stage candidate pool at ≤ 50 documents**
 
 **Rule**: Reranking the top-200 pays linear latency for ~10% of the marginal accuracy. Cap at 50 unless an eval proves the extra candidates matter.
 
-> Source: findings.md "Production Latency Mitigation Strategies" [30]
+> Source: findings.md "Production Latency Mitigation Strategies" [30]. The **top-50 ≈ 90%-of-top-200** result and the **~120ms P95** figure are from that specific benchmark (reranker/hardware/corpus-dependent) — use them as a starting point, not portable constants; plot quality vs latency on your own stack.
 
 **determinismLevel**: deterministic.
 
@@ -116,9 +116,9 @@ When latency matters, **cap the first-stage candidate pool at ≤ 50 documents**
 When a reranker's latency is the concern, prefer the architecture, not just the size:
 
 - **Sequence classification** (e.g., `gte-reranker-modernbert-base`): a classification head on a **single forward pass** maps the query-doc pair to a probability — fast even on light hardware.
-- **Causal language modeling** (e.g., `Qwen3-Reranker-4B`): **autoregressive decoding** (scoring the logit of "yes"/"no") needs multiple sequential passes — substantially higher latency.
+- **Decoder-only / prompt-based** (e.g., `Qwen3-Reranker-4B`): scores relevance by reading the logit of a "yes"/"no" token, which is typically **one forward pass** (or one generated token) — NOT inherently "multiple sequential passes." The latency penalty comes from the **larger generative model and the longer pair prompt**, not from repeated decoding. Measure batch latency against a seq-classification cross-encoder rather than assuming the architecture alone is slower.
 
-**Rule**: A small seq-classification model can beat a large causal-LM reranker on latency at comparable accuracy. Check the architecture, not just the parameter count.
+**Rule**: A small seq-classification model often beats a large decoder-LM reranker on latency at comparable accuracy — but confirm with a batch-latency measurement. Check the architecture AND model/prompt size, not just the parameter count.
 
 > Source: findings.md "Latency Profiles and Structural Execution Trade-offs" [29, 31]
 

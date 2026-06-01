@@ -74,12 +74,12 @@ To avoid per-request registry lookups under high throughput, MLflow uses a **dua
 For environment staging, assign mutable references (aliases) like `@staging` or `@production`. Application code queries the stable alias by URI while background pipelines update the underlying version:
 
 ```
-URI Target = "prompts:/qa-assistant/production"
+URI Target = "prompts:/qa-assistant@production"
 ```
 
-**Rule**: Application code should target `prompts:/<name>/production`, NOT `prompts:/<name>/v12`. Pinning a version number in app code reintroduces the redeploy-to-change coupling that PR1 removed. Promote by repointing the alias; the 60-second alias TTL (PR4) propagates it.
+**Rule**: Application code should target the alias form `prompts:/<name>@production`, NOT the version form `prompts:/<name>/12`. In MLflow, the `@alias` suffix resolves an alias (e.g. `@production`, `@staging`, reserved `@latest`) while the `/<n>` slash suffix pins an immutable version number. Pinning a version number in app code reintroduces the redeploy-to-change coupling that PR1 removed. Promote by repointing the alias; the 60-second alias TTL (PR4) propagates it.
 
-> Source: findings.md "versions are assigned mutable references (aliases) like @staging or @production... URI Target = 'prompts:/qa-assistant/production'" [23]
+> Source: findings.md "versions are assigned mutable references (aliases) like @staging or @production" [23]; MLflow URI syntax — alias form is `prompts:/<name>@<alias>`, version form is `prompts:/<name>/<n>` (corrected from the slash-alias form `prompts:/qa-assistant/production`).
 
 **determinismLevel**: deterministic — a query-pattern rule.
 

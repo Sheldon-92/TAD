@@ -46,7 +46,7 @@ RRHF (Rank Responses to align Human Feedback) handles `k` candidates:
 
 This ranking loss is combined with standard SFT cross-entropy on the top-ranked response to stabilize convergence.
 
-**Rule**: Use **length-normalized** log-probs (the `1/|yᵢ|` term) — without normalization, RRHF biases toward longer responses. Combine with SFT CE on the top response.
+**Rule**: Use **length-normalized** log-probs (the `1/|yᵢ|` term) — without normalization, summed log-probs (which are negative and accumulate over tokens) are length-confounded and typically favor **shorter** responses. Use the average log-prob `1/|yᵢ|` (or another explicit length normalization). Combine with SFT CE on the top response.
 
 > Source: findings.md "RRHF" [31] — length-normalized log-prob pᵢ, ranking loss with margin, combined with SFT CE.
 
@@ -109,7 +109,7 @@ Reward-model (RM) training is computationally intensive and prone to **reward ha
 ## Anti-Patterns
 
 - **DPO for everything**: pairwise-only — use RRHF (>2 candidates) or GRPO (verifiable) (PA1).
-- **Un-normalized RRHF scores**: biases toward longer responses (PA2).
+- **Un-normalized RRHF scores**: length-confounded, typically favors shorter responses (PA2).
 - **Alpaca format for multi-turn**: flattens dialogue, loses role boundaries (PA3).
 - **Hand-formatting chat markers**: mis-mapped control tokens cause role confusion (PA4).
 - **Ignoring roles_to_train / map_eos_token**: trains on user turns and pad tokens (PA5).

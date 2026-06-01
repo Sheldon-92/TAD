@@ -7,7 +7,7 @@
 |---|------|-----------------|
 | SUP1 | Supervisor for centralized validation + controlled error propagation (O(n) failure scale) | deterministic |
 | SUP2 | Supervisor costs a 20-40% token premium and saturates context after 8-12 round trips | semi-deterministic |
-| SUP3 | Swarm failure surface scales O(n²) = n(n-1)/2 — untestable beyond ~5 agents | deterministic |
+| SUP3 | Swarm directed-handoff failure surface scales O(n²) = n(n-1) — untestable beyond ~5 agents | deterministic |
 | SUP4 | Swarm drifts after 8-10 sequential agent turns; semantic drift compounds | non-deterministic |
 | SUP5 | Swarm for read-heavy exploratory work (triage, content gen, debate); Supervisor for quality gating | deterministic |
 
@@ -42,18 +42,18 @@ When choosing Supervisor, budget for its costs:
 
 **determinismLevel**: semi-deterministic — saturation depends on runtime turn count.
 
-### SUP3: Swarm Failure Surface is Quadratic — n(n-1)/2
+### SUP3: Swarm Failure Surface is Quadratic — n(n-1)
 
 The decentralized Swarm (handoff) pattern distributes routing across the agent pool; each agent owns its instructions, tools, and explicit handoff definitions, transferring control via a handoff tool call while sharing conversation history.
 
-A fully-connected peer-to-peer swarm's failure surface scales **quadratically, O(n²)**:
+Handoffs are **directional** (agent A→B is a different transition than B→A), so a fully-connected peer-to-peer swarm's handoff-pathway count scales **quadratically, O(n²)**:
 
 ```
-Failure Pathways = n(n - 1) / 2
+Directed handoff pathways = n(n - 1)
 ```
 
-- 4 agents → **6** potential failure pathways
-- 10 agents → **45** distinct interactive states — exhaustive state-space testing is unfeasible
+- 4 agents → **12** directed handoff pathways
+- 10 agents → **90** directed handoff pathways — exhaustive state-space testing is unfeasible (the count of *undirected* agent pairs is n(n-1)/2 = 45, but each pair carries two directed handoffs)
 
 **Rule**: Do not ship a fully-connected swarm above ~5 agents. Beyond that, either constrain the handoff graph (not every agent can hand off to every other) or switch to a Supervisor with O(n) scaling.
 
@@ -89,7 +89,7 @@ Each handoff is a probabilistic event. Because no single entity holds a global v
 
 ## Anti-Patterns
 
-- **Unbounded swarm**: a 10-agent fully-connected swarm has 45 failure pathways and is untestable — a P0.
+- **Unbounded swarm**: a 10-agent fully-connected swarm has 90 directed handoff pathways and is untestable — a P0.
 - **Single supervisor for huge fan-out**: synchronous hub-and-spoke is a throughput bottleneck; the supervisor also saturates after 8-12 turns.
 - **No re-grounding in long swarms**: past 8-10 turns the agent forgets the original intent.
 - **Choosing topology on aesthetics**: "swarms feel modern" — but the O(n²) failure surface is a real testing-cost explosion.
