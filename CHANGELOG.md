@@ -5,6 +5,28 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.21.0] - 2026-06-01
+
+### Added
+- **Codex-Edition Parity Mechanism** — TAD's Codex-CLI editions (Alex+Blake) now stay in sync with the
+  Claude source on every release, automatically.
+  - `*publish` runs a **detect-only** parity gate (`codex-parity-check.sh`) on both Codex editions:
+    per-must-cover-owner-body SAFETY-constraint presence (compensation-resistant), fail-CLOSED. Drift on a
+    minor+ release is a **HARD BLOCK**; advisory on patch. The gate is READ-ONLY — it never modifies editions.
+  - `regen-codex-editions.sh` — a separate, human-invoked, atomic regeneration command (regen both via
+    `codex exec` → parity-check → batch-replace only if both pass → human reviews `git diff` + commits).
+    Keeps unreviewed LLM-generated content out of tagged releases.
+  - Codex editions regenerated to current parity (they had drifted, frozen at 2026-05-04 — the deliverable
+    track, research-engine, and pack-collision wiring were missing).
+- `.tad/hooks/lib/codex-parity-check.sh` + `parity-criterion.md` (graduated to a stable path).
+
+### Fixed
+- `layer2-audit.sh` now recognizes the `spec-compliance` reviewer name (recurring false "1 reviewer" WARN).
+- `tad.sh` `TARGET_VERSION` was stale at 2.19.1 (missed in the v2.20.0 release) — now bumped with the rest.
+
+### Decision Records
+- DR-20260601: Codex-Edition Parity Architecture (automated regeneration + decoupled release gate).
+
 ## [2.20.0] - 2026-06-01
 
 ### New Features
