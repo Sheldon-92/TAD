@@ -2,6 +2,16 @@
 
 ## In Progress
 
+- [ ] **EPIC: Lean & Trustworthy TAD (5 phases, full-auto YOLO)** — Epic: `.tad/active/epics/EPIC-20260531-tad-lean-trustworthy.md`
+  - P1 ✅ Done (85fe0a9): trace §11 parser header-aware (4-col column-shift fixed) + 6 dead dream candidates purged. Gate 3+4 PASS; 2+2 reviewers raw-recomputed.
+  - P2 ✅ Done (b95a577 + 35b5a60): ai-voice-production full source-dir-ification (now Tier1+Tier2 sync-portable) + registry 14→16 + advisory type-probe drift-check (`.tad/hooks/lib/pack-registry-driftcheck.sh`, no allowlist rot) + all 16 packs now have real consumes/produces. Gate 3+4 PASS; 2+2 reviewers.
+  - P3 ✅ Done (7c5a59f + 1216bac): OPTION A progressive disclosure — 9 token-free path protocols → `.claude/skills/alex/references/`, 6441→5825 (~9.6%), constraint count 131 UNCHANGED (byte-identity SAFETY held). honest_partial correctly surfaced AC3.1(≤3500)×AC3.2(byte-identity) conflict → user chose safe Option A. 2 impl reviewers raw-recomputed all 9 diffs.
+  - P4 ✅ Done (eb53ee7 + fd6e1a5): advisory §9.1 AC-command linter (`.tad/hooks/lib/verify-ac-commands.sh`) wired at step1d, never blocks. Rule A 100% precision; Rule B surfaced **34 latent literal-pipe-in-ERE bugs across already-shipped handoffs**; calibration removed Rule C 218-hit noise. 2 impl reviewers ran it on 14+ handoffs.
+  - ⏭️ P5 (pack behavioral eval runner + 16 fixtures) — running.
+  - P4 follow-ups: sweep the 34 Rule-B latent bugs in shipped handoffs; KA "advisory INFO rules need real-volume calibration (a rule firing 218× on correct commands trains the user to ignore all output)".
+  - P3 follow-ups: (a) stub↔reference drift-check (advisory, mirror pack-registry-driftcheck.sh); (b) dogfood-monitor that direct `*bug`-typed entry triggers the reference Read (load_when reliability); (c) OPTION B (reframe AC3.2 to moved-not-deleted + inline router constraint summary) available for a deeper progressive-disclosure pass on research_plan(724)/express/experiment — needs SAFETY-AC sign-off; would reach the original ~45% target.
+  - P2 follow-ups: add `type:` to product-thinking/research-methodology installed SKILLs (drift-check type-probe symmetry); drift-check SKILLS_DIR layout note + optional SessionStart wiring; pack-build checklist must require `.tad/capability-packs/{name}/` source dir from the start (ai-voice was built skipping it).
+
 - [x] **Debt Bundle 1/2: Release Hygiene + Conventions** — YOLO Gate 4 PASS + ARCHIVED 2026-05-31 (commit ae387ef)
   - doc-drift→2.19.1 (README:354 history preserved) + tad.sh 3-part + `*)` arm + line 171 fallback + runbook codex-greeting rows 17/18 + express-slug convention (alex/blake SKILL)
   - Design review: code-reviewer + backend-architect (P0: version-scheme rationale wrong consumer → detect_state line 303; fixed). Impl review (YOLO Y6): both PASS 0 P0. Gate 4 raw-recompute: AC1/AC3/AC9 verified.
@@ -35,6 +45,7 @@
   - Codex Phase 7 smoke test PASS before sync push
 
 ## Deferred (surfaced 2026-05-31 debt-bundle expert review)
+- [ ] **Multi-table §11 decision parser re-bind** (Epic P1 Y6 reviewers, 2026-05-31): `emit_decision_points` locks `havehdr` on the FIRST Decision Summary table and never re-binds → 2nd+ decision tables in one §11 silently dropped, and a trailing non-Decision table (§11.3 disposition) over-emits with stale indices. Pre-existing (NOT a regression from the header-aware fix), append-only. Fix = re-bind havehdr whenever a fresh row's cells are `decision`+`chosen`. Also closes a contrived spurious-bind (non-decision table whose data row literally reads `| Decision | Chosen |`). Low priority (multi-table §11 rare).
 - [ ] **classify_scope word-boundary slug matching** (H2 impl review P1, backend-architect): unbounded substring globs `*hook*`/`*trace*`/`*registry*` false-classify project slugs as framework (`webhook-handler`→framework, `registry-of-products`→framework). Framework candidates fan out cross-project in *evolve. Fix = bracket-class word-boundary per architecture.md 2026-04-24 (NOT `\b`). Low risk (human_override rare + human-reviewed). decision_text guard already correct.
 - [ ] **tad.sh:165 stale comment** (H1 impl review): comment still says "MAJOR.MINOR" after 3-part switch — cosmetic, fold into next tad.sh touch.
 - [ ] **Semantic dedup for dream-scanner candidates** — grep-on-`.decision`/`.chosen` is inert (0/31 real values match; backend-architect). Needs title/discovery match or embedding-based semantic dedup. bug(c) dropped from hook-hardening handoff pending this design.
