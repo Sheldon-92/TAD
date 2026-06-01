@@ -673,7 +673,11 @@ handoff_creation_protocol:
       name: "Frontmatter Validation"
       validation:
         task_type: "code | yaml | research | e2e | mixed | deliverable"
-        # task_type: deliverable routes to non-dev execution lane (Blake returns to Alex)
+        deliverable_contract: "deliverable tasks require deliverable evidence, deliverable acceptance notes, and deliverable archival metadata"
+        deliverable_evidence: "deliverable evidence manifest required"
+        deliverable_acceptance: "deliverable acceptance notes required"
+        deliverable_archive: "deliverable archival metadata required"
+        deliverable_review: "deliverable review scope must be explicit"
         e2e_required: "yes | no"
         research_required: "yes | no"
       violation: "frontmatter missing or invalid = VIOLATION"
