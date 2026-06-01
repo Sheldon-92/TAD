@@ -251,7 +251,8 @@ if [ -f "$PIN_FILE" ]; then
     exit 1
   fi
 else
-  echo "  WARN: pin file not found at $PIN_FILE (skip pin validation)"
+  echo "  ERROR: pin file not found at $PIN_FILE (required for LIVE gate)" >&2
+  exit 1
 fi
 
 # Secondary signal: global constraint floor (WARN only, not FAIL)
