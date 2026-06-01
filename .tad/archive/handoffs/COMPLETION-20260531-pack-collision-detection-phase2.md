@@ -84,5 +84,8 @@ Matches the expected Inter line. Logic confirmed. (Collision 2 contrast-standard
 - `.claude/skills/alex/SKILL.md` (step4_5 only, +7 lines)
 - `.claude/skills/blake/SKILL.md` (1_5a_pack_detection only, +7 lines)
 
+## Commit
+Scoped commit `5d41c20` — `git commit -m "feat(TAD): wire pack-collision surfacing into Alex step4_5 + Blake 1_5a [pack-collision P2]"`. 4 files changed, 144 insertions(+), 0 deletions. `git add` was scoped to the four files (NOT `-A`).
+
 ## Verdict
 All 8 ACs PASS. Constraint counts held (132 / 49). Purely additive, zero deletions. Gate 3: PASS.

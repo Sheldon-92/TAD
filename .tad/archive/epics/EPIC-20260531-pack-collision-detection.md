@@ -22,14 +22,14 @@ Give TAD the ability to detect when two co-loaded capability packs issue *contra
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Collision detector engine + data + fixtures (no SKILL edits) | ✅ Done | HANDOFF-20260531-pack-collision-detection-phase1.md (d296374 + 1b714f4) | scan-collisions.sh + LLM-confirm contract + pack-collisions.yaml + 3 fixtures + reference doc |
-| 2 | Wire surfacing into Alex step4_5 + Blake 1_5a | ⬚ Planned | — | Consumers read pack-collisions.yaml and surface resolution one-liner |
+| 2 | Wire surfacing into Alex step4_5 + Blake 1_5a | ✅ Done | HANDOFF-20260531-pack-collision-detection-phase2.md (5d41c20) | Consumers read pack-collisions.yaml and surface resolution one-liner (additive, counts held 132/49) |
 
 ### Phase Dependencies
 P2 depends on P1 (needs pack-collisions.yaml schema + the surfacing one-liner format). P2 ALSO gated on the OTHER Alex finishing lean-trustworthy P4/P5 (both edit alex/SKILL.md) → P2 starts only after that file is free, to avoid a 5825-line merge conflict.
 
 ### Derived Status
-- **Status**: In Progress (P1 🔄)
-- **Progress**: 0/2
+- **Status**: ✅ Complete (P1 + P2 both ✅ Done)
+- **Progress**: 2/2
 
 ---
 
@@ -83,8 +83,9 @@ None (can execute independently; reads pack-registry.yaml + pack files only).
 
 ### Phase 2: Wire surfacing into Alex step4_5 + Blake 1_5a
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done (5d41c20) — additive 5b (alex) + 2.5 (blake); constraint counts held 132/49; 0 deletions; code-reviewer PASS (AR-002 concern not realized)
+**Execution:** YOLO full-auto
+**SAFETY baselines (held):** alex 132→132, blake 49→49. Purely additive.
 
 #### Scope
 Wire the P1 collision registry into the two pack-loading consumers: Alex `step4_5` (Pack Awareness Scan) and Blake `1_5a` (independent pack re-detection). When ≥2 packs load, the consumer reads `pack-collisions.yaml`, finds rows where both pack_a and pack_b are in the loaded set, and surfaces the P1 one-liner (auto-resolved or escalated). NOT in scope: changing P1 detection/resolution logic.
