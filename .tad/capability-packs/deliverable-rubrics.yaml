@@ -12,8 +12,13 @@
 #   weighted    = Σ(score_i × weight_i), ladder pass/partial/fail (default)
 #   categorical = e.g. BUILD/PIVOT/KILL band membership
 #   checklist   = export-spec pass/fail items
-version: 1.0.0
+version: 1.1.0
 last_updated: "2026-05-31"
+# interim_rubric_source: a real on-disk reference that anchors Phase-4 rubric authoring
+# for a rubric-tbd pack. It is NOT a finished rubric (rubric_ref stays null + status
+# rubric-tbd) — only a citation anchor (provenance rule: thresholds cited to source,
+# never interpolated). The Gate 3 verdict_shape_guard still BLOCKs these packs until a
+# real weighted rubric (or a second verdict_shape implementation) exists.
 packs:
   academic-research:
     rubric_ref: ".claude/skills/academic-research/references/scholar-eval.md"
@@ -24,6 +29,7 @@ packs:
     status: active            # active | rubric-tbd
   ai-voice-production:
     rubric_ref: null          # TBD Phase 4; interim: audiobook-pipeline.md ACX specs (RMS -23 to -18 dB)
+    interim_rubric_source: ".claude/skills/ai-voice-production/references/audiobook-pipeline.md"
     pass_threshold: null
     partial_threshold: null
     verdict_shape: checklist  # categorical pass/fail dB/format specs — not a 0-1 score (Phase 4 to formalize)
@@ -31,6 +37,7 @@ packs:
     status: rubric-tbd
   video-creation:
     rubric_ref: null          # TBD Phase 4; interim: quality.md export specs
+    interim_rubric_source: ".claude/skills/video-creation/references/quality.md"
     pass_threshold: null
     partial_threshold: null
     verdict_shape: checklist  # export-spec checklist (Phase 4 to formalize)
@@ -38,6 +45,7 @@ packs:
     status: rubric-tbd
   product-thinking:
     rubric_ref: null          # TBD Phase 4; interim: checklists/fatal-flaws.md + per-type-validation.md
+    interim_rubric_source: ".claude/skills/product-thinking/checklists/fatal-flaws.md"
     pass_threshold: null
     partial_threshold: null
     verdict_shape: categorical  # BUILD/PIVOT/KILL verdict (Phase 4 to formalize)
