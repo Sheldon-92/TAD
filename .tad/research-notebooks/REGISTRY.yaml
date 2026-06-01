@@ -11,7 +11,7 @@ notebooks:
     topic: "TAD Evolution — AI Agent Framework Landscape 2025-2026"
     created: "2026-05-05"
     status: active
-    last_queried: "2026-05-05"
+    last_queried: "2026-05-31"
     source_count: 45
     notes: "Persistent research KB for TAD upgrade directions. 45 curated sources (deep research + manual adds). 3 rounds of deep ask completed. Covers: competitive landscape, failure modes, evaluation, memory, cost, observability."
     sources:
