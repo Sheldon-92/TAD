@@ -71,9 +71,38 @@ When in doubt, ask the user.
 
 ⚠️ **Version number is duplicated in 6 places**. Miss any one = stale release. This is the #1 source of release bugs.
 
+### Derive + Verify (authoritative — self-deriving, replaces the hardcoded table)
+
+> The hardcoded 18-item table below went stale repeatedly (config.yaml stuck at 2.8.0). The
+> AUTHORITATIVE procedure is **grep-derivation + a zero-stale verification gate**, not a hand-typed list.
+
+```bash
+OLD="$(cat .tad/version.txt | tr -d '[:space:]')"   # or the prior released version
+NEW="X.Y.Z"
+
+# 1. ENUMERATE every ref to bump (derived, not from a list):
+grep -rlF "$OLD" . --exclude-dir=.git
+
+# 2. Bump all of them to $NEW.
+
+# 3. VERIFY zero non-historical stragglers (the gate — must print PASS / exit 0):
+bash .tad/hooks/lib/release-verify.sh version "$PWD" "$NEW" "$OLD"
+```
+
+`release-verify.sh version` greps the repo (minus `.git` minus the zero-touch dirs it reads from
+`derive-sync-set.sh --zero-touch` — NOT a second hardcoded list) and reports any stale `$OLD` ref as
+`file:line`. **Version Exclusion Contract**: a `$OLD` hit is ignored ONLY IF it is BOTH (a) in a file whose
+basename ∈ `{README.md, INSTALLATION_GUIDE.md, CHANGELOG.md}` AND (b) the line is a markdown history-table
+ROW (`^[[:space:]]*\|.*v?[0-9]+\.[0-9]+\.[0-9]+.*\|`). A `$OLD` in any other file, or in a non-table/prose
+line of those three files, is ALWAYS reported (this is exactly the `tad.sh` / `config.yaml` live-assignment
+class that historically went stale). Exit 0 = clean, exit 1 = stale (named), exit 2 = usage (fail-CLOSED).
+
 ### Full list of files containing version references
 
-Must update ALL of these in a single atomic commit:
+> ⚠️ **DERIVED — illustrative only / non-authoritative.** Authoritative source:
+> `grep -rlF "$OLD"` enumeration + `release-verify.sh version` (above). Do NOT hand-maintain this table —
+> it is a snapshot for orientation only and WILL drift as the doc structure evolves (which is the disease
+> this Phase exists to kill). The gate, not this list, is the guarantee.
 
 | # | File | What to look for |
 |---|------|------------------|
@@ -182,7 +211,51 @@ git push origin vX.Y.Z
 
 ## Phase 5 — Sync Script (Build the Per-Project Operation)
 
+### Derive + Verify (authoritative — self-deriving sync set + structural gate)
+
+> The framework-dir list below went stale repeatedly (`codex` frozen a month). The AUTHORITATIVE sync
+> set is **DERIVED** from the live `.tad/` tree minus a single hand-maintained DENY_LIST, then **VERIFIED**
+> structurally. A new framework dir is auto-included with ZERO list edits (bias-to-sync); an omitted dir
+> HARD-BLOCKS the release.
+
+```bash
+# 1. DERIVE the SYNC dir set (single source of truth = derive-sync-set.sh DENY_LIST):
+bash .tad/hooks/lib/derive-sync-set.sh --dirs        # one basename per line (consumed format)
+bash .tad/hooks/lib/derive-sync-set.sh --report      # the 3-category audit view (REPORT each run)
+
+# 2. GENERATE the per-release one-shot script FROM the derived set (not a hand-typed list).
+#    Write it under .tad/evidence/releases/ (zero-touch ⇒ NOT itself synced; keeps scripts/ framework-clean):
+#      .tad/evidence/releases/sync-vX.Y.Z.sh   ← cp -R each derived dir + capability-packs/pack-registry.yaml
+
+# 3. After the verbatim cp -R copy into each target, VERIFY structurally (the omission-catcher):
+bash .tad/hooks/lib/release-verify.sh structural "$TAD_SRC" "$target"   # exit 0 = no omission; exit 1 = named drift
+```
+
+**Special cases (handled by `derive-sync-set.sh`, READ — never re-hardcode):**
+- `capability-packs/` → sync/diff ONLY `pack-registry.yaml` (the registry index), never the pack tree.
+  Exposed once via `derive-sync-set.sh --registry-only`; `release-verify.sh structural` + the generator READ it.
+- The version-scope zero-touch exclusion comes from `derive-sync-set.sh --zero-touch` (same DENY_LIST source).
+- Per-release one-shot scripts → `.tad/evidence/releases/`, NOT `scripts/`.
+
+**Three-gate composition (publish-side intra-repo consistency — no source-consistency hole):** At `*publish`
+there is NO target tree to diff, so `structural` is **sync-only by design**. Publish-side source-consistency
+= **step3b (codex parity)** + **step3c (version zero-stale, `release-verify.sh version`)** + **scan-packs
+registry regen** — these cover the cross-vendor / version / registry-vs-tree axes respectively. `structural`
+(source-vs-target byte-identity) runs sync-only, AFTER the verbatim `cp -R`. There is NO publish-time
+source-consistency hole.
+
+**First-real-release cutover note (`TAD_RELEASE_GATE=warn`):** This gate has minor+ HARD-BLOCK authority but
+has never run against a real installed downstream. For the FIRST real minor+ `*publish`/`*sync` after this
+change, run with `TAD_RELEASE_GATE=warn` (downgrades block→warn: report the verdict + named paths, but
+proceed), compare the gate's verdict against a manual check, then **UNSET it** (flip back to hard-block) for
+all subsequent releases. This is ship-the-detector-in-shadow-mode-before-it-gates.
+
 ### The mixed strategy (codified from past experience)
+
+> ⚠️ **DERIVED — illustrative only / non-authoritative.** The framework-dir rows below are a SNAPSHOT.
+> Authoritative source: `derive-sync-set.sh --dirs` (live-derived from `.tad/` minus DENY_LIST) +
+> `release-verify.sh structural`. Do NOT hand-maintain this table — a hardcoded dir list is precisely the
+> stale-list disease (codex was frozen for a month). The gate, not this table, is the guarantee.
 
 For each downstream project, apply these operations in order. **Do not deviate — each category has a reason.**
 
@@ -238,6 +311,11 @@ Pre-2.8.2, `tad.sh::copy_framework_files()` **did not read `.tad/deprecation.yam
 Pre-2.8.2 `copy_framework_files()` list was missing `hooks/` and `domains/`. Always check the current state of that list before assuming tad.sh will sync what you need.
 
 Current (2.8.2+) full list:
+
+> ⚠️ **DERIVED — illustrative only / non-authoritative.** This 14-dir snapshot is NOT the source of truth —
+> run `bash .tad/hooks/lib/derive-sync-set.sh --dirs` for the live framework set (20 on today's tree, incl.
+> `codex cross-model context tests scripts capability-packs` which this stale snapshot omits). Do NOT
+> hand-maintain.
 
 ```
 agents data domains gates guides hooks ralph-config references schemas skills sub-agents tasks templates workflows

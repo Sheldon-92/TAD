@@ -5250,6 +5250,35 @@ publish_protocol:
       blocking: true
       detect_only: true  # MUST NOT modify editions — reads only
 
+    step3c:
+      name: "Self-Deriving Release Verification Gate (version — BLOCKING on minor+)"
+      # NOT a settings.json hook — release-time only (single-user-CLI, architecture.md 2026-04-15)
+      action: |
+        Publish-side source-consistency = step3b (codex parity) + THIS step3c (version zero-stale)
+        + scan-packs registry regen. structural is sync-only by design (no target exists at publish) —
+        there is NO publish-time source-consistency hole.
+
+        FIRST, unconditionally emit the derived synced-set REPORT (AC8 — every run, not only on failure,
+        so a newly-included framework dir is auditable at gate time per bias-to-sync):
+          bash .tad/hooks/lib/derive-sync-set.sh --report
+
+        THEN run the version zero-stale gate (at publish there is NO target ⇒ version mode only):
+          bash .tad/hooks/lib/release-verify.sh version "$PWD" "$NEW" "$OLD"
+
+        Branch on exit code:
+        - exit 0 → proceed to step4.
+        - exit 1 or 2 AND release_type in {minor, major}:
+          → If env TAD_RELEASE_GATE=warn is set → downgrade to WARN + proceed (first-cutover shadow mode;
+            report the verdict + named file:line, but do NOT block).
+          → Else → HARD BLOCK. Do not proceed to Confirm & Execute. Fix the stale ref(s) and re-run *publish.
+        - exit 1 or 2 AND release_type == patch → advisory WARN, proceed to step4.
+        On any non-zero, echo: GATE: release-verify version exit=<n>
+        (so a fail-CLOSED usage error (exit 2) is distinguishable from a true stale-ref drift (exit 1) —
+        both block on minor+, but the operator must tell a wiring bug from a real omission).
+        Fail-CLOSED: exit 2 is treated as FAIL at this gate.
+      blocking: true
+      detect_only: true  # reads only — never edits version refs
+
     step4:
       name: "Confirm & Execute"
       action: |
@@ -5421,6 +5450,29 @@ sync_protocol:
            - Check version.txt in target matches current TAD version
            - Check CLAUDE.md exists and is readable
            - If merge: verify project-specific content still present (check marker exists)
+
+        d2. Self-Deriving Release Verification Gate (structural — BLOCKING on minor+):
+           # NOT a settings.json hook — release-time only (single-user-CLI, architecture.md 2026-04-15)
+           This runs AFTER the verbatim cp -R copy above ⇒ source==target byte-identity is the correct
+           equality test (install.sh edition transforms are a P2/tad.sh concern, out of this gate's scope).
+
+           FIRST, unconditionally emit the derived synced-set REPORT (AC8 — every run, so a newly-included
+           framework dir is auditable):
+             bash {TAD_SOURCE}/.tad/hooks/lib/derive-sync-set.sh --report {TAD_SOURCE}
+
+           THEN run the structural source-vs-target gate for this project:
+             bash {TAD_SOURCE}/.tad/hooks/lib/release-verify.sh structural "{TAD_SOURCE}" "{target_project_path}"
+
+           Branch on exit code:
+           - exit 0 → mark project synced, continue.
+           - exit 1 or 2 AND release_type in {minor, major}:
+             → If env TAD_RELEASE_GATE=warn is set → WARN + proceed (first-cutover shadow mode; report the
+               named differing/missing paths, but do NOT block).
+             → Else → HARD BLOCK this project. Do NOT mark it synced. Report the named omitted/differing path.
+           - exit 1 or 2 AND release_type == patch → advisory WARN, proceed.
+           On any non-zero, echo: GATE: release-verify structural exit=<n>
+           (distinguish exit 1 real omission from exit 2 usage/wiring error — both block on minor+).
+           Fail-CLOSED: exit 2 is treated as FAIL.
 
         e. Update registry:
            - Set last_synced_version and last_synced_date
