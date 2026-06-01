@@ -5265,16 +5265,20 @@ publish_protocol:
         THEN run the version zero-stale gate (at publish there is NO target ⇒ version mode only):
           bash .tad/hooks/lib/release-verify.sh version "$PWD" "$NEW" "$OLD"
 
-        Branch on exit code:
+        Branch on exit code — exit 1 (DRIFT) and exit 2 (WIRING) are handled SEPARATELY
+        (cr-P1-3 / arch-P1-2 fix; TAD_RELEASE_GATE=warn downgrades ONLY drift, never a wiring bug):
         - exit 0 → proceed to step4.
-        - exit 1 or 2 AND release_type in {minor, major}:
+        - exit 2 (usage/wiring/parse error) → ALWAYS HARD BLOCK, regardless of TAD_RELEASE_GATE and
+          release_type. A wiring bug is NOT drift; warn must not mask it (the shadow run is exactly
+          when the wiring is least battle-tested). Fix the invocation and re-run *publish.
+        - exit 1 (real stale-ref drift) AND release_type in {minor, major}:
           → If env TAD_RELEASE_GATE=warn is set → downgrade to WARN + proceed (first-cutover shadow mode;
             report the verdict + named file:line, but do NOT block).
           → Else → HARD BLOCK. Do not proceed to Confirm & Execute. Fix the stale ref(s) and re-run *publish.
-        - exit 1 or 2 AND release_type == patch → advisory WARN, proceed to step4.
+        - exit 1 (real drift) AND release_type == patch → advisory WARN, proceed to step4.
         On any non-zero, echo: GATE: release-verify version exit=<n>
         (so a fail-CLOSED usage error (exit 2) is distinguishable from a true stale-ref drift (exit 1) —
-        both block on minor+, but the operator must tell a wiring bug from a real omission).
+        exit 2 ALWAYS blocks; the warn branch keys off exit 1 only, never the combined `1 or 2`).
         Fail-CLOSED: exit 2 is treated as FAIL at this gate.
       blocking: true
       detect_only: true  # reads only — never edits version refs
@@ -5463,15 +5467,20 @@ sync_protocol:
            THEN run the structural source-vs-target gate for this project:
              bash {TAD_SOURCE}/.tad/hooks/lib/release-verify.sh structural "{TAD_SOURCE}" "{target_project_path}"
 
-           Branch on exit code:
+           Branch on exit code — exit 1 (DRIFT) and exit 2 (WIRING) are handled SEPARATELY
+           (cr-P1-3 / arch-P1-2 fix; TAD_RELEASE_GATE=warn downgrades ONLY drift, never a wiring bug):
            - exit 0 → mark project synced, continue.
-           - exit 1 or 2 AND release_type in {minor, major}:
+           - exit 2 (usage/wiring/parse error) → ALWAYS HARD BLOCK this project, regardless of
+             TAD_RELEASE_GATE and release_type. A wiring bug is NOT drift; warn must not mask it. Do NOT
+             mark synced. Fix the invocation and re-run.
+           - exit 1 (real omission/drift) AND release_type in {minor, major}:
              → If env TAD_RELEASE_GATE=warn is set → WARN + proceed (first-cutover shadow mode; report the
                named differing/missing paths, but do NOT block).
              → Else → HARD BLOCK this project. Do NOT mark it synced. Report the named omitted/differing path.
-           - exit 1 or 2 AND release_type == patch → advisory WARN, proceed.
+           - exit 1 (real drift) AND release_type == patch → advisory WARN, proceed.
            On any non-zero, echo: GATE: release-verify structural exit=<n>
-           (distinguish exit 1 real omission from exit 2 usage/wiring error — both block on minor+).
+           (distinguish exit 1 real omission from exit 2 usage/wiring error — exit 2 ALWAYS blocks; the warn
+           branch keys off exit 1 only, never the combined `1 or 2`).
            Fail-CLOSED: exit 2 is treated as FAIL.
 
         e. Update registry:

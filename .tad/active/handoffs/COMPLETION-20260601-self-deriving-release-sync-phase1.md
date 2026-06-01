@@ -189,4 +189,71 @@ independent SC10 both prove SET-EQUALITY. Recommend Conductor use `ls -d ./.tad/
 
 ---
 
+## P1-Fix Log (2026-06-01 — both impl reviews, cr + arch)
+
+Edited in place: `.tad/hooks/lib/release-verify.sh` (version mode) + `.claude/skills/alex/SKILL.md`
+(both gate-step branches). No sub-agents used. `bash -n` clean.
+
+### Survivor count (real `version . 2.21.0 2.19.0` dry run)
+
+| | Survivors | Breakdown |
+|---|---|---|
+| **BEFORE** | **62** | ~88% noise: `.claude/worktrees/agent-*/` (~40), `.tad.backup.*/`, `codex-tad-bundle/`, `tad-help/SKILL.md` copies, codex skill copies — all gitignored ephemera + duplicated historical prose. |
+| **AFTER**  | **5** | ALL genuine `NEXT.md` historical-prose lines (sub-bullets + a no-status-marker "Release TAD v2.19.0 … awaiting *publish" line). Zero worktree/backup/codex-bundle noise; zero self-trigger. |
+
+The 5 residual survivors are intentional FALSE-POSITIVES (historical sub-bullets without a
+PUBLISHED/SYNCED/DONE marker) — kept by the "prefer false-positive over false-negative" contract
+rather than widening the marker set and risking a live-ref miss.
+
+### Fix 1 — version-grep scope (both P1-1, MANDATORY)
+- In a git work tree, scope to **`git -C <repo> ls-files`** (NUL-delimited → `xargs -0 grep -InF`),
+  then filter zero-touch dirs out of the tracked set by path-prefix `(^|/)\.tad/(<zero-touch>)/`
+  (zero-touch list still READ from `derive-sync-set.sh --zero-touch` — single source of truth).
+- Non-git fallback keeps the FS-walk but now also `--exclude-dir`s `.tad.backup.*`, `worktrees`,
+  `codex-tad-bundle`, `node_modules` alongside `.git` + the zero-touch basenames.
+- Result: 62 → 5 (the ~57 dropped are exactly the gitignored worktree/backup/codex copies).
+
+### Fix 2 — exit-2 vs warn split (cr-P1-3 / arch-P1-2)
+- The lib already returns the right codes (exit 2 on usage/wiring, exit 1 on drift, 0 on clean) —
+  unchanged. The bug was in the **SKILL gate branch**: it warn-downgraded the combined `exit 1 or 2`.
+- Split both gate steps (publish version + sync structural): **`exit 2` → ALWAYS HARD BLOCK**
+  (warn does NOT apply; a wiring bug is not drift and the shadow run is when wiring is least tested);
+  **`exit 1` (drift)** is the only thing `TAD_RELEASE_GATE=warn` downgrades on minor+. The combined
+  `1 or 2 AND release_type` predicate is fully removed (`grep -c` = 0).
+- Verified: with `TAD_RELEASE_GATE=warn` set, all four usage-error forms (bad mode / missing args /
+  bad repo dir / too-many-args) still return **exit 2**; drift = exit 1; no-op = exit 0.
+
+### Fix 3 — historical-prose exclusion broadened + table-cell false-NEGATIVE closed (cr-P1-2 + arch-P1-1)
+- Exclusion file allow-list broadened to {README, INSTALLATION_GUIDE, CHANGELOG, **NEXT,
+  PROJECT_CONTEXT, HISTORY**}.md. A hit there is excluded ONLY IF the line is a provable historical form:
+  (a) **VERSION-LABEL table row** — semver is the LEADING cell
+  (`^\s*\|\s*\*{0,2}v?[0-9.]+...\|`); (b) **CHANGELOG `## [X.Y.Z]` heading**; (c) **historical-status
+  prose marker** (`PUBLISHED|SYNCED|RELEASED|DONE|retired|archived|deprecated`, case-insensitive).
+- **False-negative closed (P1-2):** the OLD table-row regex `^\s*\|.*semver.*\|` excluded ANY semver-
+  bearing row in an allowlist file → a live `| Install | pip install tad==9.9.9 |` was silently dropped.
+  The new LEADING-cell regex matches only version-history rows; an install snippet (non-semver first
+  cell) is NOT excluded → still CAUGHT. Dogfood: planted `| Install | pip install tad==9.9.9 |` in a
+  README table → **REPORTED**; `| **v9.9.9** | retired |` → **IGNORED**. ✅
+- Contract documented precisely in the lib header (Version Exclusion Contract); residual over-report
+  explicitly ACCEPTED. Also genericized the lib's own header example version strings (`vX.Y.Z`) so the
+  script no longer self-triggers on its own documentation (Parser Self-Trigger pattern, 2026-05-30).
+
+### Fix 4 — forward note only (arch P1-3, NOT implemented)
+Added a P2 FORWARD NOTE to the lib header: when `tad.sh` inlines a 2nd copy of `derive-sync-set.sh`'s
+DENY_LIST, P2 MUST add a release-time assertion that `tad.sh`'s inlined deny-list == the lib's
+DENY_LIST, so the "no stale list" thesis is not reintroduced at the installer layer.
+
+### Re-verification ledger
+| Check | Result |
+|---|---|
+| `bash -n release-verify.sh` | clean |
+| real `version . 2.21.0 2.19.0` | 62 → **5** survivors, all genuine NEXT.md prose |
+| AC2 discrimination (tracked straggler CAUGHT + CHANGELOG history-row IGNORED) | PASS (exit 1) |
+| P1-2 install-snippet table row CAUGHT | PASS |
+| exit 2 under `TAD_RELEASE_GATE=warn` (4 usage forms) | all **exit 2** (blocks) |
+| structural self==self | exit 0 (untouched) |
+| SKILL: combined `1 or 2 AND release_type` removed | `grep -c` = 0; exit-2-always-block in both steps |
+
+---
+
 **gate3_verdict: pass**
