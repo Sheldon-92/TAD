@@ -538,6 +538,13 @@ ralph_loop_execution:
                 → If available: Read SKILL.md/CAPABILITY.md
                 → Output: "🎯 Pack loaded: {name} — applying quality rules during implementation"
           
+          2.5 Collision check (only if ≥2 packs loaded above):
+             → Read .tad/capability-packs/pack-collisions.yaml (if absent or parse error → skip silently)
+             → For each row where BOTH pack_a AND pack_b are loaded:
+               - resolution: auto → "⚙️ resolved: {winner} over {loser} ({rule}) — {topic}"
+               - resolution: escalate → "⚠️ unresolved: {pack_a} vs {pack_b} — human decides ({topic})"
+             → Advisory only; does NOT block implementation.
+          
           3. If no pack matches: skip silently
           
           → Proceed to 1_5b_notebook_check

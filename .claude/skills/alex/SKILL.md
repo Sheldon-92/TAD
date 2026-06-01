@@ -625,6 +625,13 @@ intent_router_protocol:
            → Output: "🎯 Pack loaded: {name} — {one-line description}"
            → Pack content is now in context for the entire path execution
         
+        5b. Collision check (only if ≥2 packs were loaded in step 5):
+           → Read .tad/capability-packs/pack-collisions.yaml (if absent or parse error → skip silently)
+           → For each collision row where BOTH pack_a AND pack_b are in the loaded set:
+             - resolution: auto → "⚙️ resolved: {winner} over {loser} ({rule}) — {topic}. loser said: \"{loser quote}\" (verify it isn't independently violated)"
+             - resolution: escalate → "⚠️ unresolved: {pack_a} vs {pack_b} — human decides ({topic}); full quotes in pack-collisions.yaml"
+           → Advisory surfacing ONLY — does NOT block, does NOT auto-edit packs, does NOT change which packs loaded.
+        
         6. If no match: skip silently (no output)
       
       applies_to: "All user-task modes: *analyze, *express, *bug, *discuss, *learn, *experiment"
