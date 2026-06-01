@@ -2648,6 +2648,7 @@ handoff_creation_protocol:
                 - "生成 briefing report" → *research-notebook report "...related to handoff scope"
                 - "跳过，不影响 handoff" → continue
         3. If no relevant notebook → skip (existing research_decision_protocol handles WebSearch)
+        → ALWAYS continue to step0_6_deliverable_classification (MUST run before step1 — every branch above falls through here, never jump straight to step1).
       blocking: false
 
     step0_6_deliverable_classification:
@@ -2671,6 +2672,7 @@ handoff_creation_protocol:
              `deliverable_paths: []` (rubric_ref/pass_threshold precedence per contract §A.2 —
              frontmatter overrides .tad/capability-packs/deliverable-rubrics.yaml; both absent → Gate 3 BLOCKS).
           4. Producer is Conductor-side (contract §B.6) — NOT Blake; the gate spawns an independent judge (judge ≠ producer).
+          → Continue to step1 (Draft Creation) using the SELECTED deliverable-handoff.md template.
         ELSE (code/yaml/research/e2e/mixed):
           → Continue to step1 with the existing default template selection (handoff-a-to-b.md). No change.
       note: "This is the PRODUCER touchpoint: nothing else sets task_type: deliverable or selects the deliverable template. Additive — existing routing untouched."

@@ -1,8 +1,11 @@
 ---
-# gate3_verdict: filled by Blake as a Gate 3 POST-STEP (value ∈ pass|fail|partial).
-# ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 runs.
+# gate3_verdict: filled by the CONDUCTOR (the Gate 3 judge-orchestrator for the deliverable
+#   lane) as a Gate 3 POST-STEP (value ∈ pass|fail|partial). NOT Blake — Blake is excluded from
+#   the deliverable lane (blake task_type_branching.deliverable). After the judge verdict is
+#   computed, the Conductor Edits this to the judge verdict lowercased.
+# ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 (deliverable) runs.
 # Empty / placeholder / any other value → post-write-sync.sh skips emission (FR2b timing).
-# See blake SKILL completion_protocol.step4b_gate3_verdict_marker.
+# See gate SKILL "Gate 3 — Deliverable Branch" Gate3_Verdict_Marker (mirrors blake step4b, Conductor-performed).
 gate3_verdict:
 ---
 
@@ -40,6 +43,10 @@ gate3_verdict:
 - **Weighted score**: Σ(score × weight) = [value] (show the arithmetic)
 - **Pass threshold**: [pass_threshold] · **Partial threshold**: [partial_threshold or 0.60]
 - **Verdict**: ✅ PASS / ⚠️ PARTIAL / ❌ FAIL
+
+<!-- Machine-readable verdict (own line, lowercase key, uppercase value, NO bold/emoji) — mirrors
+     the rubric-eval file's token. Replace with exactly ONE of the three forms below. -->
+verdict: PASS
 
 ### Judge (independent)
 

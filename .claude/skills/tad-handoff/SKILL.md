@@ -31,6 +31,12 @@ Generating comprehensive handoff with 10 mandatory sections:
 [Loading template from .tad/tasks/handoff-creation.md]
 ```
 
+### Template Selection (task_type-aware — additive)
+
+Select the handoff template by `task_type` (set during alex handoff_creation_protocol step0_6_deliverable_classification):
+- `task_type: deliverable` → `.tad/templates/deliverable-handoff.md` (rubric-graded non-dev artifact; "Deliverables to Produce" + rubric_ref/pass_threshold/deliverable_paths/pack frontmatter)
+- all other task_types (`code | yaml | research | e2e | mixed`) → `.tad/templates/handoff-a-to-b.md` (default — unchanged)
+
 ### Handoff Creation Checklist
 ```
 ✅ Mandatory Sections Check:

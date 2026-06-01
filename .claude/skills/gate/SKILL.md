@@ -365,15 +365,23 @@ Prerequisite:
 
 # ⚠️ RUBRIC + THRESHOLD RESOLUTION (BLOCKING) — contract §A.2 precedence
 Rubric_Resolution:
-  description: "Resolve rubric_ref + pass_threshold before spawning the judge"
+  description: "Resolve rubric_ref + pass_threshold + partial_threshold + verdict_shape before spawning the judge"
   precedence:
     step1: "If handoff frontmatter sets rubric_ref and/or pass_threshold → frontmatter values WIN (per-handoff override)"
     step2: "Else fall back to .tad/capability-packs/deliverable-rubrics.yaml row keyed by frontmatter `pack`"
     step3: "If BOTH absent (no frontmatter value AND no registry row / null) → BLOCK Gate 3"
+  registry_read: |
+    Read the registry row for the handoff's `pack` (when falling back per step2):
+      yq '.packs.<pack>' .tad/capability-packs/deliverable-rubrics.yaml
+    Resolve from that row: rubric_ref, pass_threshold, partial_threshold, verdict_shape.
+    (Frontmatter values, when present, override the corresponding registry fields per step1.)
   if_unresolved:
     action: "BLOCK Gate 3"
     message: "deliverable handoff has no resolvable rubric_ref + pass_threshold (set in frontmatter or register the pack in deliverable-rubrics.yaml). No silent default."
   partial_threshold: "from deliverable-rubrics.yaml row (default 0.60 if omitted)"
+  verdict_shape_guard:
+    rule: "If the resolved verdict_shape != weighted → BLOCK Gate 3"
+    message: "Phase-4 categorical/checklist verdict shapes unimplemented — the weighted-0-1 ladder (Verdict_Mapping) must NOT silently mis-score a non-weighted pack. Only verdict_shape: weighted is supported in Phase 2/3."
 
 # ⚠️ REQUIRED SUBAGENT CALL (BLOCKING) — REPLACES test-runner with an independent JUDGE
 Required_Subagent:
@@ -393,7 +401,7 @@ Required_Subagent:
   output_format:           # contract §B.4
     - "Scores table: | # | Dimension | Weight | Score (0-1) | Notes | (one row per rubric dimension)"
     - "weighted_score = Σ(score_i × weight_i) shown with the arithmetic"
-    - "verdict line (see Verdict_Mapping)"
+    - "MUST contain an EXACT machine-readable verdict line (own line, lowercase key, uppercase value, NO bold/emoji): `verdict: PASS` | `verdict: PARTIAL` | `verdict: FAIL` — this is the token Gate 4 greps (^verdict: ). The human-readable verdict prose may appear separately."
     - "Top-3 strengths / top-3 weaknesses (actionable)"
     - "MUST state: 'Judge: independent sub-agent; producer identity not provided.'"
   output_format_constraint: |
@@ -433,6 +441,19 @@ Verdict_Mapping:
     ELSE                                          → FAIL
   on_pass: "Gate 3 proceeds (KA + git checks)."
   on_partial_or_fail: "BLOCK Gate 3; the producer (§B.6) revises and re-runs — a FRESH judge re-scores the revised artifact (each re-score is a new judge spawn)."
+
+# ⚠️ GATE 3 POST-STEP — gate3_verdict marker (Conductor-performed for the deliverable lane)
+Gate3_Verdict_Marker:
+  who: "the CONDUCTOR (the Gate 3 judge-orchestrator for the deliverable lane) — NOT Blake (Blake is excluded from this lane per blake task_type_branching.deliverable)."
+  when: "AFTER the judge verdict is computed (Verdict_Mapping), as a Gate 3 post-step."
+  action: |
+    Edit the deliverable-completion report's `gate3_verdict:` frontmatter to the judge verdict
+    LOWERCASED — one of pass | fail | partial (PARTIAL→partial). Mirrors blake
+    completion_protocol.step4b_gate3_verdict_marker, but Conductor-performed for this lane.
+    Without this, emit_gate_result hits the empty-skip → ZERO gate_result telemetry for
+    deliverables (the paper-machine failure).
+  allowlist: "pass | fail | partial (post-write-sync.sh emits gate_result only for these exact lowercase values)."
+  timing_note: "The completion report is written BEFORE the judge runs, so gate3_verdict is empty at creation; the Conductor writes it as this post-step Edit, which re-triggers post-write-sync.sh to emit the gate_result event."
 
 # ⚠️ ACCEPTANCE VERIFICATION CHECK — KEPT (ACs about the artifact)
 Acceptance_Verification:
@@ -758,12 +779,14 @@ Evidence_Naming_Deliverable:
 # ⚠️ PREREQUISITE CHECK (BLOCKING) — replaces the testing-review glob
 Prerequisite:
   check: "Gate 3 是否已通过（deliverable）？"
-  evidence: ".tad/evidence/reviews/*-rubric-eval-*.md exists with verdict: PASS"
+  evidence: ".tad/evidence/reviews/*-rubric-eval-*.md exists with the exact machine-readable line `verdict: PASS`"
+  verify_command: "grep -E '^verdict: PASS' .tad/evidence/reviews/*-rubric-eval-*.md"
+  verify_note: "Greps the EXACT lowercase-key/uppercase-value token the judge writes (Gate 3 Required_Subagent.output_format). The bold/emoji human form `**Verdict**: ✅ PASS` is NOT matched by this anchor — the machine-readable line is required."
   if_missing:
     action: "BLOCK Gate 4"
     message: |
       ⚠️ Gate 4 无法执行 - Gate 3 (deliverable) 未通过
-      必须先有 rubric-eval 证据且 verdict: PASS。
+      必须先有 rubric-eval 证据且含 machine-readable 行 `verdict: PASS`。
     result: "BLOCKED - 等待 Gate 3 (deliverable) PASS"
 
 # ⚠️ CODE SUBAGENTS — CONDITIONAL on task_type != deliverable (contract §B.7)

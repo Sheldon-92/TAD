@@ -29,6 +29,10 @@ If any unchecked, STOP and complete them first.
 
 ## Mandatory Handoff Structure
 
+> **Template selection (task_type-aware):** if `task_type: deliverable` → use
+> `.tad/templates/deliverable-handoff.md` (rubric-graded non-dev artifact) instead of the
+> default below. All other task_types use the default `.tad/templates/handoff-a-to-b.md`.
+
 ### Document Template
 
 ```markdown

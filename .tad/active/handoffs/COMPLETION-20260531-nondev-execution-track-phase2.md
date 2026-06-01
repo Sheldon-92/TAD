@@ -72,7 +72,7 @@ Output: **empty** → **PASS**. (First run showed the single `types:` enum appen
 | §F.3(b) | `## Gate 3 — Deliverable Branch` sibling (judge replaces test-runner; §A.2 precedence; rubric-eval output; verdict ladder §B.5; pipeline §B.6; judge≠producer + artifact-channel VIOLATION §C) | ✅ Done | gate/SKILL.md:341 — Rubric_Resolution precedence, Required_Subagent=judge, judge_inputs file-paths-only, Judge_Not_Producer 5 VIOLATIONs incl. artifact-channel, Verdict_Mapping, output_format_constraint (no P-headings) |
 | §F.3(c) | Gate 4 guard line + `## Gate 4 — Deliverable Branch` sibling (prereq=rubric-eval PASS; code subagents conditional on task_type != deliverable; acceptance=rubric PASS+meets-brief+human approval; KA unchanged) | ✅ Done | gate/SKILL.md:465 guard, :737 sibling — Prerequisite=`*-rubric-eval-*` verdict PASS, Conditional_Code_Subagents, Business_Acceptance(a/b/c), Knowledge_Assessment_Gate4 |
 | §F.3(d) | `rubric-eval` DISTINCT entry in types: enum (not aliased) | ✅ Done | registered as DISTINCT type in Gate 4 sibling `Evidence_Naming_Deliverable.types: [rubric-eval]` (see Note 1) — NOT folded into original `types:` enum, not aliased to testing-review |
-| §F.7 | alex Touchpoint-0 additive classification (pack-produced content artifact → task_type: deliverable, select deliverable-handoff.md; additive only) | ✅ Done | alex/SKILL.md step0_6_deliverable_classification; `additive: true`; ELSE branch preserves default analyze→code path |
+| §F.7 | alex Touchpoint-0 additive classification + tad-handoff template selection wiring (pack-produced content artifact → task_type: deliverable, select deliverable-handoff.md; additive only) | ✅ Done (both sub-items) | (1) alex/SKILL.md step0_6_deliverable_classification; `additive: true`; ELSE branch preserves default analyze→code path. (2) tad-handoff template selection: `.claude/skills/tad-handoff/SKILL.md` "Template Selection (task_type-aware)" + `.tad/tasks/handoff-creation.md` template-selection note. ⚠️ The tad-handoff sub-item was MISSED in commit 23339a9 (claimed Done but `grep -rn deliverable .claude/skills/tad-handoff/` = 0) — fixed in the review-fix commit (P1-1). |
 | §F.4 | blake Deliverable execution lane note (Blake doesn't produce/score; producer Conductor-side; generic lane N/A) | ✅ Done | blake/SKILL.md task_type_branching `deliverable:` lane |
 | §E item 1 | Gate 3 code-path byte-unchanged | ✅ Done | SV1 empty |
 | §E item 2 | Gate 4 code-path byte-unchanged | ✅ Done | SV2 empty |
@@ -96,6 +96,32 @@ The strict §F.7 task list specified the Touchpoint-0 classification rule only. 
 
 ---
 
+---
+
+## 7. Review Fixes (CONDITIONAL PASS → fix round; commit 2)
+
+Two reviewers flagged 1 P0 + 4 P1 on commit `23339a9`. All fixed additively/surgically; original
+Gate 3/Gate 4 fenced blocks remain byte-identical and constraint-token counts stayed ≥ baseline.
+
+| # | Finding | Fix | Files |
+|---|---------|-----|-------|
+| **P0-1** | gate3_verdict telemetry dead-on-arrival (completion said Blake/step4b writes it, but Blake is excluded from this lane → emit_gate_result empty-skip → zero deliverable telemetry) | (a) Added `Gate3_Verdict_Marker` POST-STEP to the Gate 3 — Deliverable Branch: after the judge verdict, the CONDUCTOR Edits `gate3_verdict:` to the lowercased verdict (pass\|fail\|partial), mirroring blake step4b but Conductor-performed (re-triggers post-write-sync.sh emission). (b) Rewrote deliverable-completion.md frontmatter comment to name "the Conductor (Gate 3 judge-orchestrator for the deliverable lane)" as writer, NOT Blake/step4b. The `gate3_verdict:` KEY itself kept verbatim. | gate/SKILL.md (Gate 3 sibling), deliverable-completion.md |
+| **P1-1** | tad-handoff selection not wired (claimed Done but `grep -rn deliverable .claude/skills/tad-handoff/` = 0 — unflagged deviation) | Added additive "Template Selection (task_type-aware)" rule: `task_type: deliverable` → deliverable-handoff.md; all others → handoff-a-to-b.md (default). Also a one-line note in the handoff-creation task. Corrected §F.7 row above to honestly reflect both sub-items + the original miss. | tad-handoff/SKILL.md, .tad/tasks/handoff-creation.md |
+| **P1-2** | verdict token contract (Gate 4 grep `verdict: PASS` would miss the bold/emoji `**Verdict**: ✅ PASS` form → false-BLOCK Phase 3) | Pinned an EXACT machine-readable line `verdict: PASS\|PARTIAL\|FAIL` (own line, lowercase key, no bold/emoji) in the Gate 3 judge output_format; made the Gate 4 prereq grep that exact token (`grep -E '^verdict: PASS' …`); added the same machine line to deliverable-completion.md alongside the human `**Verdict**:`. DRY-RUN below. | gate/SKILL.md (Gate 3 + Gate 4 siblings), deliverable-completion.md |
+| **P1-3** | Touchpoint-0 ordering / silent-bypass risk | FOUND: step0_5b's exit had no explicit arrow into step0_6 (only relied on `trigger` prose); the agent could jump step0_5b → step1, skipping classification. FIXED: added explicit "→ ALWAYS continue to step0_6_deliverable_classification (every branch falls through here, never jump straight to step1)" at step0_5b's end, and "→ Continue to step1 using the SELECTED deliverable-handoff.md template" at step0_6's IF-deliverable branch end. step0_5 has no direct →step1 arrow (verified), so the chain step0_5 → step0_5b → step0_6 → step1 is now explicit. | alex/SKILL.md |
+| **P1-4** | rubrics side-file read mechanism unspecified | Added explicit `yq '.packs.<pack>' .tad/capability-packs/deliverable-rubrics.yaml` read to Rubric_Resolution (resolve rubric_ref/pass_threshold/partial_threshold/verdict_shape); added `verdict_shape_guard`: if resolved `verdict_shape != weighted` → BLOCK ("Phase-4 categorical/checklist verdict shapes unimplemented") so a non-weighted pack can't be silently mis-scored by the weighted ladder. | gate/SKILL.md (Gate 3 sibling) |
+| P2 | gate3_verdict comment | Covered by P0-1(b). Judge-persona/rubric-eval-format-template asymmetry left as-is (by design). | — |
+
+### Re-run Self-Verify (commit 2 — all PASS)
+
+1. **Gate 3 byte-identity**: original fenced block byte-identical to commit 23339a9. Note: the original offset-aware `sed 95,338 vs 96,339` was authored against the PRE-Phase-2 HEAD; since 23339a9 already contains the guard line, the correct check vs current HEAD is the shift-independent content-anchored awk fence-body diff `awk '/^## Gate 3: /{g=1} g&&/^```yaml$/&&!s{s=1;next} s&&/^```$/{exit} s'` → **empty PASS** (also `sed 96,339 vs 96,339` empty). All my additions went to the SIBLING below the original fence. → **PASS**
+2. **Gate 4 content-anchored fence-body** diff (HEAD vs current) → **empty** → **PASS**
+3. **Constraint counts**: gate **47** ≥23 · alex **127** ≥127 (canonical 4-token set held at baseline) · blake **50** ≥49 → **PASS**
+4. **Gate 4 verdict grep dry-run**: sample file with `verdict: PASS` + `**Verdict**: ✅ PASS` + `verdict: FAIL`; `grep -E '^verdict: PASS'` returned exactly `verdict: PASS` (matched machine line, ignored bold/emoji form) → **PASS**
+5. **deliverable-rubrics.yaml** parses clean (`/usr/bin/python3` PyYAML → "YAML OK") → **PASS**
+
+---
+
 **Report Created By**: Blake (Agent B)
 **Date**: 2026-05-31
-**Version**: 2.0
+**Version**: 2.1 (review fixes)
