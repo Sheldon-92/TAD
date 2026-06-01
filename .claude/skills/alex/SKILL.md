@@ -5231,6 +5231,25 @@ publish_protocol:
         - Current branch?
         If uncommitted changes → warn and ask user to commit first.
 
+    step3b:
+      name: "Codex Edition Parity Gate (detect-only — BLOCKING on minor+)"
+      action: |
+        Run the parity check on BOTH live Codex editions (READ-ONLY — never writes):
+          bash .tad/hooks/lib/codex-parity-check.sh .claude/skills/alex/SKILL.md .tad/codex/codex-alex-skill.md
+          bash .tad/hooks/lib/codex-parity-check.sh .claude/skills/blake/SKILL.md .tad/codex/codex-blake-skill.md
+
+        If BOTH exit 0 → proceed to step4.
+        If either exits non-zero AND release_type in {minor, major}:
+          → HARD BLOCK. Do not proceed to Confirm & Execute.
+          → Message: "Codex editions drifted. Run:
+               bash .tad/codex/regen-codex-editions.sh
+             then review git diff .tad/codex/, commit, and re-run *publish."
+        If either exits non-zero AND release_type == patch:
+          → Advisory WARN, proceed to step4.
+        If check errors (exit 2) → treat as FAIL (fail-CLOSED at release).
+      blocking: true
+      detect_only: true  # MUST NOT modify editions — reads only
+
     step4:
       name: "Confirm & Execute"
       action: |

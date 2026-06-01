@@ -370,6 +370,41 @@ bash .tad/portable-extract.sh --dry-run > /dev/null && echo "portable-extract dr
 Failure on minor+ release → **BLOCK release** (fix adapter first — SKILL drift breaks user workflows).
 Failure on patch release → **WARN only** (adapter drift acceptable for hotfixes).
 
+### Codex Edition Parity Gate (detect-only — minor+ = HARD block; patch = advisory)
+
+⚠️ **This gate READS live editions only — it NEVER modifies them.** Run AFTER the smoke test above.
+
+```bash
+# Run the 3-layer parity check on BOTH editions
+PARITY_CHECK=.tad/hooks/lib/codex-parity-check.sh
+
+bash "$PARITY_CHECK" .claude/skills/alex/SKILL.md .tad/codex/codex-alex-skill.md
+ALEX_EXIT=$?
+
+bash "$PARITY_CHECK" .claude/skills/blake/SKILL.md .tad/codex/codex-blake-skill.md
+BLAKE_EXIT=$?
+
+if [ $ALEX_EXIT -eq 0 ] && [ $BLAKE_EXIT -eq 0 ]; then
+  echo "Codex parity: ✅ PASS (both editions current)"
+else
+  echo "Codex parity: ❌ DRIFT DETECTED"
+  [ $ALEX_EXIT -ne 0 ] && echo "  alex: DRIFT (run check manually for details)"
+  [ $BLAKE_EXIT -ne 0 ] && echo "  blake: DRIFT (run check manually for details)"
+fi
+```
+
+**On drift (minor+ release):** HARD BLOCK. Do not push. Remediation:
+1. Run `bash .tad/codex/regen-codex-editions.sh` (requires `codex` CLI — uses `codex exec --full-auto`, NOT `claude -p` which fails on large inputs)
+2. Review: `git diff .tad/codex/`
+3. Commit the regenerated editions
+4. Re-run `*publish`
+
+**On drift (patch release):** Advisory WARN — proceed with the patch (adapter drift acceptable for hotfixes).
+
+**If codex CLI unavailable:** The regen command requires `codex`. Install it (`npm install -g @openai/codex`), OR hand-port the editions per `.tad/portable-rules.md` (apply Strip→Replace manually). The *publish gate still blocks on drift either way.
+
+**Residual manual touch-points:** The regen is human-invoked + human-reviewed. The `*publish` gate only DETECTS drift. This keeps unreviewed LLM-generated content out of tagged releases (14 downstream projects receive these files via sync).
+
 ---
 
 ## 🛡️ Top 10 Gotchas (read before every release)

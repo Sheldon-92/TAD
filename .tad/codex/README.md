@@ -86,13 +86,33 @@ Use `codex exec resume --last` to continue in the same session.
 **Model selection**
 Default model is gpt-5.5. Do NOT specify `-m o4-mini` — ChatGPT accounts may not support it.
 
-## Updating Codex-Edition SKILLs
+## Updating Codex-Edition SKILLs (Standing Mechanism)
 
-When `.claude/skills/blake/SKILL.md` or `.claude/skills/alex/SKILL.md` changes:
-1. Review the changes
-2. Update `codex-blake-skill.md` or `codex-alex-skill.md` following rules in `.tad/portable-rules.md`
-3. Verify: `grep -c AskUserQuestion .tad/codex/codex-blake-skill.md` must equal 0
-4. Verify: `grep -c 'MUST\|MANDATORY\|VIOLATION' .tad/codex/codex-blake-skill.md` must be ≥ 10
+Codex editions are **derived artifacts** — regenerated from Claude source SKILLs, reviewed by human, then committed. The `*publish` release process runs a detect-only parity gate that blocks (minor+) on drift.
+
+**Automated path (requires codex CLI):**
+```bash
+bash .tad/codex/regen-codex-editions.sh   # regens both → scratch → parity-check → atomic mv
+git diff .tad/codex/                       # review the regenerated content
+git add .tad/codex/ && git commit -m "chore: regen codex editions to vX.Y.Z"
+```
+
+**Manual path (codex CLI unavailable):**
+1. Review changes in `.claude/skills/alex/SKILL.md` and `blake/SKILL.md`
+2. Apply transforms from `.tad/portable-rules.md` (Strip→Replace table)
+3. Update `codex-alex-skill.md` and `codex-blake-skill.md`
+4. Verify: `bash .tad/hooks/lib/codex-parity-check.sh <source> <edition>` exits 0
+
+**Parity verification:**
+```bash
+bash .tad/hooks/lib/codex-parity-check.sh .claude/skills/alex/SKILL.md .tad/codex/codex-alex-skill.md
+bash .tad/hooks/lib/codex-parity-check.sh .claude/skills/blake/SKILL.md .tad/codex/codex-blake-skill.md
+```
+
+**Residual manual touch-points:**
+- `regen-codex-editions.sh` is human-invoked (not auto-triggered)
+- Human reviews `git diff` before committing (unreviewed LLM content does not enter tagged releases)
+- `*publish` detect-only gate never writes editions — only reads and blocks on drift
 
 ## Related Files
 

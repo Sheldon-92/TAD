@@ -58,7 +58,7 @@ After Step C strips whole protocols and Step B applies transforms, run the upgra
 
 **Procedure (max 2 re-emit rounds):**
 
-1. Run `bash .tad/evidence/spikes/codex-parity/parity-check.sh <source> <scratch-output>`.
+1. Run `bash .tad/hooks/lib/codex-parity-check.sh <source> <scratch-output>`.
 2. If exit 0 (all 3 layers PASS) → proceed to Step E.
 3. If exit 1 AND Layer 2 names specific `(category, owner)` failures:
    a. For each failing (category, owner): re-read the source body for that owner section,

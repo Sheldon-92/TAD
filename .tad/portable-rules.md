@@ -89,3 +89,14 @@ missing from the Codex edition IS drift and MUST be flagged.
 - Codex-edition Alex SKILL: ≤100KB (≤102,400 bytes)
 
 When source SKILL files are updated, regenerate Codex-edition files using these rules.
+
+### Release-Time Parity Gate
+
+`*publish` runs a detect-only parity check (`bash .tad/hooks/lib/codex-parity-check.sh`) on both
+live Codex editions before allowing a minor+ release. The gate NEVER writes editions — it only reads.
+On drift: HARD BLOCK (minor+) with message pointing to `bash .tad/codex/regen-codex-editions.sh`.
+On patch: advisory WARN only. The regen command uses `codex exec --full-auto` (NOT `claude -p`
+which fails on large 300KB+ inputs) and is human-invoked + human-reviewed before commit.
+
+**Codex CLI unavailable escape valve:** install codex (`npm install -g @openai/codex`), OR hand-port
+per the Strip→Replace table above. The `*publish` gate still blocks on drift either way.
