@@ -30,16 +30,16 @@ runner: ".tad/scripts/pack-eval-runner.sh"
 packs:
   academic-research:      pending      # fixture: systematic-review-depth
   ai-agent-architecture:  pending      # fixture: multi-agent-design-decisions
-  ai-evaluation:          pending      # fixture: llm-judge-ab-eval
+  ai-evaluation:          verified     # discriminative gate (2311f9e): WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta, pack-driven behavior proven (2026-05-31)
   ai-prompt-engineering:  pending      # fixture: hallucination-diagnosis
   ai-tool-integration:    pending      # fixture: cli-vs-mcp-decision
   ai-voice-production:    pending      # fixture: audiobook-tool-selection
-  code-security:          pending      # fixture: sast-dast-triage-pipeline
+  code-security:          verified     # discriminative gate: WITH disc 6/3 PASS, CONTROL disc 2/3 FAIL — clean delta (2026-05-31)
   ml-training:            no-fixture   # registered in capability-packs/, not installed as a skill
   product-thinking:       pending      # fixture: pressure-test-verdict
   research-methodology:   pending      # fixture: five-phase-pipeline
   video-creation:         pending      # fixtures: photo-to-beat-sync, single-clip-narration (pre-Phase-5)
-  web-backend:            pending      # fixture: api-pagination-review
+  web-backend:            pending      # WITH disc 4/3 PASS but CONTROL disc 3/3 ALSO PASS — no clean delta. Fixture's discriminative markers (keyset/cursor/preStop/SIGTERM) are now common senior-backend knowledge → not discriminative enough. FOLLOW-UP: tighten discriminative_pattern to genuinely pack-unique terms (e.g. the pack's specific rule IDs / numeric thresholds) before re-verifying.
   web-deployment:         pending      # fixture: cicd-sha-pin-oidc
   web-frontend:           pending      # fixture: design-token-consumption
   web-testing:            pending      # fixture: test-pyramid-strategy
