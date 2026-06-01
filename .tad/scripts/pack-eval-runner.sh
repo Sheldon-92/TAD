@@ -10,9 +10,18 @@
 #     a batch run). Missing files / unparseable fixtures degrade to a
 #     skip/0-count, never a non-zero abort.
 #   - Division of labour: this script ASSERTS (greps a captured agent
-#     output for fixture markers, checks min_marker_count). The CONDUCTOR
+#     output for fixture markers, checks min_discriminative). The CONDUCTOR
 #     drives sub-agent spawning to PRODUCE those outputs — a bash script
 #     cannot spawn Claude agents. That separation is intentional.
+#   - PRIMARY GATE = DISCRIMINATIVE markers only (pack-specific named rules /
+#     numbers / pack-introduced terms). The combined `## Verification Command`
+#     pattern MIXES pack-specific + generic markers, so a no-pack agent can
+#     pass on generic markers alone (proven: the ai-evaluation CONTROL scored
+#     3/3 combined but 0 discriminative). PASS/FAIL is driven by the
+#     discriminative_pattern + min_discriminative frontmatter fields. The
+#     combined count is reported as a SECONDARY context number ONLY.
+#   - Backward compat: a fixture with NO discriminative_pattern falls back to
+#     the old combined gate and prints a WARN. New fixtures MUST set it.
 #   - Portability: BSD/macOS-safe. No `grep -P`. The runner's OWN match
 #     uses `grep -oE <pattern> | sort -u | wc -l` (NOT `grep -c`, which
 #     counts lines, not distinct matches — that is the P4 lint Rule A bug).
@@ -110,8 +119,74 @@ parse_pattern() {
 }
 
 # ---------------------------------------------------------------------------
+# parse_disc_pattern <fixture.md> → prints the discriminative_pattern value
+# from frontmatter (the grep -oE alternation of ONLY pack-specific markers).
+# Returns "" if absent (→ fallback to combined gate). Reads frontmatter only.
+# Handles optional surrounding single/double quotes; un-escapes YAML \\ → \.
+# ---------------------------------------------------------------------------
+parse_disc_pattern() {
+  fixture="$1"
+  [ -f "$fixture" ] || { printf ''; return 0; }
+  awk '
+    /^---[[:space:]]*$/ { fence++; next }
+    fence==1 && /^discriminative_pattern:/ {
+      v=$0
+      sub(/^discriminative_pattern:[[:space:]]*/, "", v)
+      # Strip a single pair of surrounding quotes (double or single) if present.
+      if (v ~ /^".*"$/)      { v=substr(v,2,length(v)-2) }
+      else if (v ~ /^'"'"'.*'"'"'$/) { v=substr(v,2,length(v)-2) }
+      # YAML double-quoted strings escape backslash as \\ — collapse to a single \.
+      gsub(/\\\\/, "\\", v)
+      print v
+      exit
+    }
+    fence>=2 { exit }
+  ' "$fixture"
+}
+
+# ---------------------------------------------------------------------------
+# parse_min_disc <fixture.md> → prints min_discriminative (default 3).
+# ---------------------------------------------------------------------------
+parse_min_disc() {
+  fixture="$1"
+  [ -f "$fixture" ] || { echo 3; return 0; }
+  awk '
+    /^---[[:space:]]*$/ { fence++; next }
+    fence==1 && /^min_discriminative:/ {
+      v=$0
+      sub(/^min_discriminative:[[:space:]]*/, "", v)
+      gsub(/[^0-9]/, "", v)
+      if (v != "") { print v; found=1; exit }
+    }
+    fence>=2 { exit }
+    END { if (!found) print 3 }
+  ' "$fixture"
+}
+
+# ---------------------------------------------------------------------------
+# count_matches <pattern> <output-file> → distinct-match count via
+# grep -oE | sort -u | wc -l (NOT grep -c). Never aborts; 0 on any miss.
+# ---------------------------------------------------------------------------
+count_matches() {
+  _pat="$1"; _out="$2"
+  [ -n "$_pat" ] || { printf '0'; return 0; }
+  [ -f "$_out" ] || { printf '0'; return 0; }
+  _n=$(grep -oE "$_pat" "$_out" 2>/dev/null | sort -u | wc -l | tr -d ' ')
+  [ -z "$_n" ] && _n=0
+  printf '%s' "$_n"
+}
+
+# ---------------------------------------------------------------------------
 # assert_one <fixture.md> <output-file> → prints verdict line, returns 0 PASS
 # / 1 FAIL / 2 skipped (no output). NEVER aborts the caller.
+#
+# PRIMARY GATE = DISCRIMINATIVE (pack-specific) markers. PASS iff
+#   disc_count >= min_discriminative.
+# The combined `## Verification Command` count is reported as a SECONDARY
+# context number only (it mixes pack-specific + generic markers, so it does
+# NOT discriminate a with-pack agent from a no-pack one).
+# BACKWARD COMPAT: if the fixture has no discriminative_pattern, fall back to
+# the old combined gate and print a WARN.
 # ---------------------------------------------------------------------------
 assert_one() {
   fixture="$1"
@@ -120,6 +195,8 @@ assert_one() {
   name=$(parse_name "$fixture")
   min=$(parse_min_count "$fixture")
   pattern=$(parse_pattern "$fixture")
+  disc_pattern=$(parse_disc_pattern "$fixture")
+  min_disc=$(parse_min_disc "$fixture")
 
   if [ -z "$pattern" ]; then
     printf 'PACK %s FIXTURE %s: no verification pattern → SKIP (bad fixture)\n' "$pack" "$name"
@@ -130,15 +207,28 @@ assert_one() {
     return 2
   fi
 
-  # The runner's OWN match: grep -oE ... | sort -u | wc -l (NOT grep -c).
-  actual=$(grep -oE "$pattern" "$output" 2>/dev/null | sort -u | wc -l | tr -d ' ')
-  [ -z "$actual" ] && actual=0
+  # SECONDARY (context only): combined count over the mixed pattern.
+  combined=$(count_matches "$pattern" "$output")
 
-  if [ "$actual" -ge "$min" ] 2>/dev/null; then
-    printf 'PACK %s FIXTURE %s: %s/%s → PASS\n' "$pack" "$name" "$actual" "$min"
+  # ---- BACKWARD-COMPAT path: no discriminative_pattern → old combined gate.
+  if [ -z "$disc_pattern" ]; then
+    if [ "$combined" -ge "$min" ] 2>/dev/null; then
+      printf 'PACK %s FIXTURE %s: combined %s/%s → PASS  [WARN: no discriminative_pattern — using combined (non-discriminative) gate]\n' "$pack" "$name" "$combined" "$min"
+      return 0
+    else
+      printf 'PACK %s FIXTURE %s: combined %s/%s → FAIL  [WARN: no discriminative_pattern — using combined (non-discriminative) gate]\n' "$pack" "$name" "$combined" "$min"
+      return 1
+    fi
+  fi
+
+  # ---- PRIMARY path: discriminative gate.
+  disc=$(count_matches "$disc_pattern" "$output")
+
+  if [ "$disc" -ge "$min_disc" ] 2>/dev/null; then
+    printf 'PACK %s FIXTURE %s: disc %s/%s [combined %s/%s] → PASS\n' "$pack" "$name" "$disc" "$min_disc" "$combined" "$min"
     return 0
   else
-    printf 'PACK %s FIXTURE %s: %s/%s → FAIL\n' "$pack" "$name" "$actual" "$min"
+    printf 'PACK %s FIXTURE %s: disc %s/%s [combined %s/%s] → FAIL\n' "$pack" "$name" "$disc" "$min_disc" "$combined" "$min"
     return 1
   fi
 }
@@ -189,7 +279,10 @@ pack-eval-runner.sh — capability pack behavioral eval ASSERTION engine (adviso
 Usage:
   pack-eval-runner.sh <fixture.md> <agent-output-file>
       Assert one captured output against one fixture.
-      Prints: PACK <pack> FIXTURE <name>: <actual>/<min> → PASS|FAIL
+      PRIMARY gate = DISCRIMINATIVE (pack-specific) markers.
+      Prints: PACK <pack> FIXTURE <name>: disc <d>/<min_disc> [combined <c>/<min>] → PASS|FAIL
+      (PASS/FAIL is driven by the DISCRIMINATIVE count; combined is context only.)
+      Fixtures lacking discriminative_pattern fall back to the combined gate with a WARN.
 
   pack-eval-runner.sh --all <outputs-dir>
       Iterate every .claude/skills/*/examples/*.md fixture, match a captured

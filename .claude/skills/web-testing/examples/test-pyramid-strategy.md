@@ -9,6 +9,12 @@ tests_rules:
   - "accessibility-testing-rules.md: automated catches 30-50% (n=550), top-5 failures"
   - "Mutation testing (Stryker) over line coverage"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "testing pyramid"/"add more
+# tests"/"use Playwright". The ice-cream-cone anti-pattern, per-module coverage targets
+# (auth 90 / logic 80 / UI 60), the 30-50% / n=550 / 57% a11y research stats, and mutation
+# testing / Stryker are pack-introduced specifics a no-pack agent does not produce.
+discriminative_pattern: "[Ii]ce.?cream.?cone|auth 90|logic 80|UI 60|30.?50%|n=550|57%|[Mm]utation testing|[Ss]tryker"
+min_discriminative: 3
 ---
 
 # Fixture: Test Strategy / Pyramid Review

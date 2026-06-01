@@ -8,6 +8,13 @@ tests_rules:
   - "scholar-eval.md 8-dimension rubric"
   - "zero-hallucination.md 4-point citation check"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic PRISMA / "literature
+# review" / "meta-analysis" (any senior researcher emits these). ScholarEval and
+# DerSimonian-Laird are named pack introductions; the tool-call depth contract is the
+# pack's tier enforcement. min_discriminative=2 (genuinely thin once PRISMA is excluded —
+# only 2-3 strongly pack-unique terms remain; tighter is safer than a false PASS).
+discriminative_pattern: "ScholarEval|DerSimonian.?Laird|min(imum)? tool calls|tool.?call (budget|minimum|floor|contract)|depth tier"
+min_discriminative: 2
 ---
 
 # Fixture: Systematic Review Depth Enforcement

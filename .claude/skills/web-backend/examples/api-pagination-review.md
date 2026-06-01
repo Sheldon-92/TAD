@@ -9,6 +9,12 @@ tests_rules:
   - "infrastructure.md Rule 7: graceful shutdown / preStop"
   - "P0/P1/P2 severity classification"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes severity tags [P0]/[P1]/[P2],
+# generic "offset pagination"/"cursor"/"idempotent" (any senior backend eng emits these).
+# keyset/seek-method pagination, preStop/SIGTERM/graceful-shutdown drain, and secret-manager
+# are the pack's specific rule names a no-pack agent ("add an index") does not produce.
+discriminative_pattern: "keyset|seek method|preStop|SIGTERM|[Gg]raceful [Ss]hutdown|secret manager"
+min_discriminative: 3
 ---
 
 # Fixture: Backend API Pagination + Side-Effect Review

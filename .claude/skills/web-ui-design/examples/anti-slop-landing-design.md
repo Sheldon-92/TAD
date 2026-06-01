@@ -9,6 +9,12 @@ tests_rules:
   - "C3 Visual Design: 60-30-10 color + 3-level token architecture"
   - "C7 Usability: APCA contrast + automated-25-40% boundary"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "clean and modern"/"make it
+# look good"/"purple gradient" (input). Named aesthetic directions (brutalist/art-deco/...),
+# font+gradient prohibitions, 60-30-10 token architecture, APCA contrast, and the 25-40%
+# automation boundary are pack anti-slop rules a no-pack agent does not produce.
+discriminative_pattern: "[Bb]rutalist|retro.?futuristic|[Aa]rt [Dd]eco|maximalist|aesthetic direction|gradient prohibition|60.?30.?10|APCA|25.?40%"
+min_discriminative: 3
 ---
 
 # Fixture: Anti-Slop Landing Page Design

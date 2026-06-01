@@ -8,6 +8,12 @@ tests_rules:
   - "Container queries for component responsiveness (not just media queries)"
   - "component-architecture.md: RSC / server-component boundary"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "build a React component"/
+# "make it responsive"/"use CSS". DESIGN.md+tokens.json consume-not-create contract,
+# container-type/@container responsive rule, RSC/use-client boundary, and the defer-to-web-ui-design
+# interface are pack-introduced (a no-pack agent hardcodes hex + uses media queries).
+discriminative_pattern: "DESIGN\\.md|tokens\\.json|container-type|@container|RSC|use client|defer to web.?ui.?design"
+min_discriminative: 3
 ---
 
 # Fixture: React Build Consuming Design Tokens

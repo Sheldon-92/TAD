@@ -8,6 +8,11 @@ tests_rules:
   - "ChatTTS/Voice Persistence — save .pt voice identity"
   - "Apple Silicon §16GB Memory Budget + MPS workarounds"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "TTS"/"audiobook". The exact
+# ACX/Audible mastering spec (RMS dB / 44.1kHz / 192kbps), .pt speaker-embedding + seed-reset
+# voice-consistency primitive, and MPS/float32 Apple-Silicon rules are pack-introduced specifics.
+discriminative_pattern: "ACX|44\\.1kHz|192kbps|RMS|speaker embedding|seed reset|MPS|float32"
+min_discriminative: 3
 ---
 
 # Fixture: Audiobook Tool Selection on 16GB Mac

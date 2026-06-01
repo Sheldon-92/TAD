@@ -7,6 +7,12 @@ tests_rules:
   - "BUILD / PIVOT / KILL verdict"
   - "Product Type Adapter detection (software/hardware/marketplace/…)"
 min_marker_count: 2
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "it's a good idea"/"do
+# market research" and input nouns. The /pressure-test protocol, terminal BUILD/PIVOT/KILL
+# verdict, product-type adapter, and FACT/ASSUMPTION evidence recording are pack-named.
+# min_discriminative=2 (thin pack — mmc was already 2; verdict + protocol name suffice).
+discriminative_pattern: "/pressure-test|PIVOT|KILL|product.?type adapter|ASSUMPTION"
+min_discriminative: 2
 ---
 
 # Fixture: Idea Pressure-Test Verdict

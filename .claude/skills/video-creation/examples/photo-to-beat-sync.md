@@ -8,6 +8,12 @@ tests_rules:
   - "View-Specific Reference Rule"
   - "Camera Tree Rule"
 min_marker_count: 4
+# DISCRIMINATIVE gate: ALL markers here are already pack-specific (no severity tags / generic
+# nouns to strip). first_frame/last_frame (ViMax Pattern 1 fields), montage (Pattern 2 intent),
+# camera_tree (Pattern 4) are pack-introduced terms. This fixture exercises all 4 ViMax patterns,
+# so min_discriminative=4 mirrors the design intent (a no-pack agent emits none of these fields).
+discriminative_pattern: "first_frame|last_frame|montage|camera_tree"
+min_discriminative: 4
 ---
 
 # Fixture: Photo-to-Beat-Sync

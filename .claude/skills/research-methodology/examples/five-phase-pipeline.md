@@ -9,6 +9,11 @@ tests_rules:
   - "Saturation detection (SATURATED/DIMINISHING/CONTINUE)"
   - "QCE-structured output + extracted ACs"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "search the web"/"summarize
+# findings". The named Plan→Source→Curate→Analyze→Output machine, GitHub-First sourcing,
+# T1/T2/T3 tier ratio, SATURATED/DIMINISHING states, and QCE output are pack introductions.
+discriminative_pattern: "GitHub-First|SATURATED|DIMINISHING|QCE|Plan→Source|T1/T2/T3"
+min_discriminative: 3
 ---
 
 # Fixture: Five-Phase Research Pipeline

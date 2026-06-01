@@ -8,6 +8,12 @@ tests_rules:
   - "determinismLevel sampling rule"
   - "P0/P1/P2 finding output format"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers (named rules, pack-introduced terms).
+# Excludes severity tags [P0]/[P1]/[P2], generic stats (n=20, confidence interval),
+# and generic nouns any senior practitioner emits. These are the markers a WITH-pack
+# agent produces but a no-pack agent does NOT (proven: CONTROL scored 0 here).
+discriminative_pattern: "self.?enhancement bias|Judge ≠ Optimizer|cross.?family|determinismLevel|Spearman"
+min_discriminative: 3
 ---
 
 # Fixture: LLM-as-Judge A/B Evaluation Review

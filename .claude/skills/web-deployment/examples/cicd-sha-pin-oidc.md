@@ -8,6 +8,11 @@ tests_rules:
   - "environment-config-rules.md: scoped environment secrets"
   - "rollback-rules.md: blue-green / canary / atomic / Docker SHA"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "set up CI/CD"/"use env
+# vars"/"rollback" (bare). SHA-pinning actions, OIDC over stored secrets, immutable-deploy/
+# Docker-image-SHA, and named blue-green/canary/atomic strategies are pack hardening rules.
+discriminative_pattern: "SHA.?pin|OIDC|[Ii]mmutable [Dd]eploy|blue.?green|canary|atomic deploy|Docker image SHA"
+min_discriminative: 3
 ---
 
 # Fixture: CI/CD Supply-Chain + Auth Review

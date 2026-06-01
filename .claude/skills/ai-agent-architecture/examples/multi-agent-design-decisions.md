@@ -8,6 +8,11 @@ tests_rules:
   - "D10 — production disasters / incident mapping"
   - "Architecture Decision Document output"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "multi-agent"/"scalable"
+# (input/buzzword). D1-D10 navigator IDs, the Architecture Decision Document artifact,
+# numbered Incident # disaster mapping, and dual-agent are pack-unique scaffolds.
+discriminative_pattern: "D(10|[1-9])([^0-9]|$)|Architecture Decision Document|Incident #|dual-agent"
+min_discriminative: 3
 ---
 
 # Fixture: Multi-Agent System Design Decisions

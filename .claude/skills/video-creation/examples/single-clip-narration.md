@@ -7,6 +7,12 @@ tests_rules:
   - "Voice-First Timing Rule"
   - "Volume Mix"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "voiceover"/"subtitle"
+# (input). narrative (explicit Intent Router classification), voice_first (TTS-before-assembly
+# field), volume_mix (audio-design field) are pack-introduced. min_discriminative=2 (thin —
+# this fixture deliberately suppresses ViMax patterns 3/4, so the discriminative set is narrow).
+discriminative_pattern: "narrative|voice_first|volume_mix"
+min_discriminative: 2
 ---
 
 # Fixture: Single-Clip Narration

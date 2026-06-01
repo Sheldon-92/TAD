@@ -8,6 +8,12 @@ tests_rules:
   - "Vulnerability triage: CVSS vs reachability"
   - "Tool exit codes (TruffleHog 183, Semgrep 1)"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "CVSS"/"scan for
+# vulnerabilities". Fastest-fail-first Four-Gate ordering, TruffleHog exit 183, the
+# Detection-is-NOT-Remediation theater rule (72% stat), and reachability-over-CVSS triage
+# are pack-named introductions a no-pack agent does not produce.
+discriminative_pattern: "[Ff]astest.?[Ff]ail.?[Ff]irst|[Ff]our.?[Gg]ate|exit 183|183 = verified|[Rr]eachability|Detection is NOT Remediation|72%"
+min_discriminative: 3
 ---
 
 # Fixture: SAST/DAST Triage Pipeline Review

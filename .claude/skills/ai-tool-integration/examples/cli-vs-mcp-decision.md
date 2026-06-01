@@ -8,6 +8,11 @@ tests_rules:
   - "10-32x token cost of MCP wrapping"
   - "Tool annotations: readOnlyHint / destructiveHint / idempotentHint"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "idempotent" (bare),
+# "build an MCP server", "use the API". Inner/Outer Loop test, the 10-32x cost ratio, and the
+# camelCase MCP annotation Hints are pack-introduced terms a no-pack agent does not name.
+discriminative_pattern: "Inner Loop|Outer Loop|10.?32x|readOnlyHint|destructiveHint|idempotentHint"
+min_discriminative: 3
 ---
 
 # Fixture: CLI-vs-MCP Wrapping Decision

@@ -8,6 +8,11 @@ tests_rules:
   - "Phase 1.4 U-shaped attention / cache_control"
   - "Phase 4.2 model version pinning"
 min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "hallucination"/"improve
+# the prompt". FM-codes, U-shaped attention, cache_control, and the 46/25/29 failure-taxonomy
+# split are the pack's named catalog + specific research numbers a no-pack agent does not emit.
+discriminative_pattern: "FM-[1-6]|U-shaped|cache_control|46%|25%|29%"
+min_discriminative: 3
 ---
 
 # Fixture: Prompt Hallucination Diagnosis

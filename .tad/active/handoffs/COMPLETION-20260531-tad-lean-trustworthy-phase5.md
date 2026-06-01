@@ -204,3 +204,24 @@ See `.tad/scripts/pack-eval-runner.sh` (committed). Key contract:
 ## Note for Conductor (AC5.6, Y6)
 
 To complete behavioral verification: for each pack, spawn a pack-loaded sub-agent on its fixture's Input Scenario, capture the agent's reply to `<outputs-dir>/{fixture-basename}.md`, run `pack-eval-runner.sh --all <outputs-dir>`, and for each PASS flip that pack `pending → verified` in `behavioral-eval-status.yaml`. Never hand-set `verified` — only a passing runner result justifies it (count ≠ signal).
+
+---
+
+## Follow-up: Discriminative-Gate Fix (Gate 3 Layer 2 finding) — 2026-05-31
+
+**Validation-theater flaw found at Gate 3 Layer 2:** the runner gated PASS on `min_marker_count` over the `## Verification Command` pattern, which MIXES pack-specific markers with **generic** ones (severity tags `[P0]/[P1]/[P2]`, generic stats like `n=20` / `confidence interval`, and nouns any senior practitioner emits). A no-pack agent can clear that gate on the generic markers alone — so the gate did not actually prove the pack changed behavior. Proven on the committed ai-evaluation CONTROL (a no-pack-loaded review): it scored **3/3 PASS** on the combined gate.
+
+**Fix (this follow-up):**
+1. **All 16 marker fixtures** now declare a `discriminative_pattern:` (a `grep -oE` alternation of ONLY pack-specific markers — named rules, pack-introduced terms, specific research numbers) plus `min_discriminative:` (3, or 2 for genuinely thin packs / 4 for the all-4-ViMax-patterns photo fixture — each justified in an inline comment). Severity tags, generic stats, and generic practitioner nouns are EXCLUDED from these patterns. The 2 documentation-walkthrough fixtures (`system-prompt-template`, `pressure-test-example`) have no markers and correctly SKIP.
+2. **`pack-eval-runner.sh`** now gates on the **discriminative** count as PRIMARY: `disc = grep -oE "$discriminative_pattern" "$output" | sort -u | wc -l`; **PASS iff `disc ≥ min_discriminative`**. The combined count is reported as a SECONDARY context number only. Output: `PACK {pack} FIXTURE {name}: disc {d}/{min_disc} [combined {c}/{min}] → PASS|FAIL`. Backward compat: a fixture with no `discriminative_pattern` falls back to the old combined gate with a `WARN`. Still advisory / never fail-closed / BSD-safe / no `grep -c`; `bash -n` clean.
+
+**KEY PROOF — the gate now discriminates** (single-fixture mode, `llm-judge-ab-eval.md`):
+
+```
+ai-evaluation-WITH    → PACK ai-evaluation FIXTURE llm-judge-ab-eval: disc 5/3 [combined 13/3] → PASS
+ai-evaluation-CONTROL → PACK ai-evaluation FIXTURE llm-judge-ab-eval: disc 0/3 [combined  3/3] → FAIL
+```
+
+The CONTROL would have PASSED under the old gate (combined 3/3) but now correctly **FAILS** discriminative (**0/3** — it contained zero pack-specific markers: only generic `confidence interval` / `n ≥ 100` / `n=20`). The WITH output PASSES (disc 5/3: self-enhancement bias, Judge ≠ Optimizer, cross-family, determinismLevel, Spearman). Sanity-checked on the other two committed WITH outputs: code-security `disc 6/3 → PASS`, web-backend `disc 4/3 → PASS` — real with-pack outputs reach the discriminative threshold. Synthetic ai-evaluation discriminative output → `disc 5/3 → PASS`; backward-compat legacy fixture → `combined 3/2 → PASS [WARN: no discriminative_pattern]`.
+
+`gate3_verdict: pass` remains consistent — the Layer 2 finding is now remediated; the gate measures behavioral discrimination, not generic-marker presence.
