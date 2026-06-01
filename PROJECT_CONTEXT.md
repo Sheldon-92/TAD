@@ -1,21 +1,23 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.15.1 (Capability Pack Auto-Awareness)
-- **Last Updated**: 2026-05-27
-- **Framework**: TAD v2.15.1 + Self-Evolving + Domain Packs + Capability Packs + Codex CLI + NotebookLM Research + Compact Recovery
+- **Version**: 2.19.1 (16 capability packs + V2 trace layer + research engine wired)
+- **Last Updated**: 2026-06-01
+- **Framework**: TAD v2.19.1 + Self-Evolving (trace V2 + observational emission) + 16 Capability Packs + Pack Collision Detection + Codex/Gemini Cross-Model + NotebookLM Research Engine + Compact Recovery
 
-## Active Work
-- **EPIC: Agent Capability Packs** — 6/9 Phases Done
-  - 8 packs built; Phase 2-4 remaining (real project validation, cross-agent, template)
-- **EPIC: Goal-Driven Research Director** — 3/4 Phases Done
-  - Phase 3: Research-Decision Loop (--caller flag)
-- **EPIC: Security Domain Pack Chain** — 2/5 Phases (paused)
-  - Needs real-project security audit to validate value
-- **Domain Pack Freeze + Rebuild** — in progress
-  - Rebuild 13 frozen YAML packs as SKILL.md capability packs
+## Active Work (parked epics — open phases, not zombies)
+- **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
+- **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)
+- **EPIC: ml-training Pack** (20260529) — parked
+- 16 capability packs active; behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending, 13 packs' eval is a follow-up
 
 ## Recently Completed
+
+- **EPIC: Pack Collision Detection** (2026-05-31, 2/2 phases) — detects when 2 co-loaded packs issue contradicting directives; cross-category auto-resolve by precedence (security>correctness>a11y>performance>style) + visible log, same-category escalate. `scan-collisions.sh` + `pack-collisions.yaml` + guide + 3 fixtures + Alex step4_5/Blake 1_5a surfacing. 3 real collisions found (Inter font / APCA-vs-WCAG / testing-pyramid). Anti-theater spot-check caught its own CJK-comm false positive. Commits d296374→532b200.
+
+- **EPIC: Lean & Trustworthy TAD** (2026-05-31, 5/5 phases) — trace §11 parser fix · pack registry desync + drift-check (registry 14→16) · progressive disclosure (9 protocols→references, constraint count 131 held) · advisory AC-command linter (surfaced 34 latent ERE-pipe bugs) · pack behavioral eval (discriminative gate). Commits 85fe0a9→8448c7d.
+
+- **Release v2.19.0 + v2.19.1 PUBLISHED + SYNCED to 14 projects** (2026-05-30) — V2 trace hooks (6 emit fns) to all 14; tad.sh --yes flag unblocked non-TTY sync.
 
 - **video-creation Pack ViMax Upgrade** (2026-05-27)
   - 4 ViMax patterns + Photo-to-Beat-Sync integration (309 lines, 77% of 400 cap)
@@ -44,6 +46,8 @@
 - **EPIC: Cross-Model Orchestration — ALL 4/4 PHASES** (archived 2026-05-14)
 
 ## Recent Decisions
+- Parallel dual-Alex Epics in one repo: two YOLO Conductors can run concurrently with zero conflict via scoped `git add <explicit paths>` (never `-A`) + file-disjoint work (new-files-only or additive-only); verify no shared-file sweep at every commit. Beats worktree when files don't overlap (2026-05-31)
+- Pack conflict resolution: precedence resolves CROSS-category collisions (security>correctness>a11y>performance>style, lower band wins) with a VISIBLE log; SAME-category collisions ESCALATE (no silent pick). Apply the anti-theater hand-re-derivation to the detector's OWN bonus findings — those are the likeliest false positives (2026-05-31)
 - Capability Pack Reference Files: Patterns borrowed from external repos must be grounded by NotebookLM source verification (38 sources for ViMax) not WebFetch README skimming — README-only analysis missed 3 of 4 key patterns (2026-05-27)
 - Pack rule bloat control: 400-line hard cap per new reference file; narrow Context Detection signals (no "motion"/"animation" overlap with existing GSAP rules); negative routing test mandatory (2026-05-27)
 - Capability Pack Auto-Awareness: All 8 packs installed to all projects (no smart matching); TAD flow only, not ambient Claude Code; max 2 packs per session (2026-05-14)
@@ -53,11 +57,11 @@
 ## Known Issues
 - Agent Teams: Experimental, requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 - Security Domain Pack Chain: paused — needs real-project validation
-- 10 active research notebooks — some may be dormant (run *research-review)
+- ~17 active research notebooks (registry; 1 archived, 16 have notebook_id) — run *research-review to consolidate
 
 ## Next Direction
-- Run *sync to install packs across 14 projects, then validate pack awareness in real tasks
-- Capability Packs Phase 2: real project validation (menu-snap)
-- Run *optimize on menu-snap (14 trace files)
-- Run *evolve cross-project (50+ traces)
-- Domain Pack Freeze + Rebuild (13 packs → SKILL.md)
+- **PUSH decision**: 41 commits ahead of origin (both Alexes' work) — outward-facing, confirm before pushing
+- Scout-identified optimization directions (evidence-backed, non-colliding): (B) fix self-evolution loop 0% close-rate — add knowledge-dedup pass to dream-scanner; (C) architecture.md leanness — consolidate May surge via Supersedes: pattern (~5-7K tokens/session saved); (D/E/F) safety bundle — Blake distinct-reviewer false-PASS + research-source provenance + trace TRACE_DETAIL truncation bug
+- Behavioral eval remaining 13 capability packs (lean-trustworthy P5 follow-up)
+- Goal-Driven Research P3 (Research-Decision Loop) + P6.3 *sync (deferred)
+- Pack collision follow-up: escalate-form one-liner should also carry loser quote; new packs may add licensing/cost collision categories
