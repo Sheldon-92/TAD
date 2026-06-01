@@ -2,6 +2,11 @@
 
 ## In Progress
 
+- [ ] **EPIC: Pack Collision Detection (2 phases, full-auto YOLO)** — Epic: `.tad/active/epics/EPIC-20260531-pack-collision-detection.md` *(parallel Alex — does NOT touch lean-trustworthy files)*
+  - P1 ✅ Done (d296374 + 1b714f4): cross-pack collision detector. `scan-collisions.sh` (grep-seed over `.claude/skills/` canonical tree, 2.2s, LC_ALL=C CJK-safe pre-filter, atomic write) + `collision-signatures.txt` + `pack-collisions.yaml` (3 confirmed: Inter→auto perf>style, APCA-vs-WCAG→escalate a11y, pyramid→escalate correctness) + `pack-collision-detection.md` guide (precedence engine + LLM-confirm contract + anti-theater rule) + 3 fixtures. Gate 3+4 PASS; 4 reviewers (2 design+2 impl) 0 P0; all 6 collision refs hand-re-derived live. Anti-theater spot-check caught its OWN false positive (video-creation CJK comm bug → fixed).
+  - ⏭️ P2 (READY — other Alex's lean-trustworthy Epic now archived, alex/SKILL.md free): wire `pack-collisions.yaml` into Alex `step4_5` + Blake `1_5a` (additive, byte-careful; constraint-token counts must hold).
+  - P2 carry-forward: surfacing one-liner should also carry the loser's quote (architect P2-B) for the human spot-check.
+
 - [ ] **EPIC: Lean & Trustworthy TAD (5 phases, full-auto YOLO)** — Epic: `.tad/active/epics/EPIC-20260531-tad-lean-trustworthy.md`
   - P1 ✅ Done (85fe0a9): trace §11 parser header-aware (4-col column-shift fixed) + 6 dead dream candidates purged. Gate 3+4 PASS; 2+2 reviewers raw-recomputed.
   - P2 ✅ Done (b95a577 + 35b5a60): ai-voice-production full source-dir-ification (now Tier1+Tier2 sync-portable) + registry 14→16 + advisory type-probe drift-check (`.tad/hooks/lib/pack-registry-driftcheck.sh`, no allowlist rot) + all 16 packs now have real consumes/produces. Gate 3+4 PASS; 2+2 reviewers.
