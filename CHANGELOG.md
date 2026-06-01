@@ -5,6 +5,24 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.20.0] - 2026-06-01
+
+### New Features
+
+- **8 new agent-adjacent capability packs (16 → 24 total)** — `rag-retrieval`, `agent-memory`, `llm-observability`, `ai-guardrails`, `data-engineering`, `agent-orchestration`, `synthetic-data`, `knowledge-graph`. Each is a reference-based pack giving an agent senior-engineer judgment in that domain (named rules + specific thresholds + tool selection + anti-patterns). Auto-activate via the existing pack-awareness scan (Alex `step4_5`/`step1_5b`, Blake `1_5a`) on Chinese + English keyword match, and as native Claude Code skills. Registered in `pack-registry.yaml` with `consumes`/`produces` chain metadata.
+- **Pack factory methodology (proven, reusable)** — NotebookLM deep research (Conductor-sequential, ~401 cited sources across 8 notebooks) → parallel build workflow (one agent per pack, grounded in research findings) → adversarial 2-reviewer + fix loop → real discriminative behavioral eval (WITH-pack vs knowledgeable-no-pack CONTROL).
+
+### Quality / Validation
+
+- **Cross-model adversarial review (Codex)** caught + fixed ~44 factual/API errors the same-model (Claude) build+review loop missed (wrong class names, deprecated APIs, OTel metric types, F2 math, etc.). 3 Codex claims were verified-and-skipped as Codex's own errors (GraphRAG Leiden levels, LangChain HITL decision count) — primary-source verified.
+- **Behavioral eval status (honest)**: 7/8 packs verified via clean WITH»CONTROL discriminative delta; `data-engineering` left `pending` (CONTROL also passed — markers are common senior-DE knowledge, fixture needs tightening).
+- **Measured findings** (recorded in `.tad/project-knowledge/architecture.md`): pack value is cross-vendor (Codex Δ6-9, Gemini Δ6-12) and **non-monotonic in model strength — peaks at Sonnet-tier** (strong enough to apply the full pack, weak enough to need the specifics); content-rich packs underperform on the weakest models that can't operationalize them.
+
+### Notes
+
+- All packs ship with `SKILL.md == CAPABILITY.md` byte-identical (installed-skill + source copies) and an `install.sh` (`--agent` portability path).
+- No breaking changes. No trace schema change.
+
 ## [2.19.1] - 2026-05-30
 
 ### Bug Fixes

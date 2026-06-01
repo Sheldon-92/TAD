@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.19.1 | Generated: [timestamp]
+ Version: v2.20.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -218,7 +218,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.19.1 Highlights
+## TAD v2.20.0 Highlights
 - **STORM Multi-Perspective**: step3_5 strategy #4 — OBJECTIVES.md-derived stakeholder viewpoints break tunnel vision
 - **Elicit Paper Extraction**: Phase 4.5 structured extraction from academic sources (arxiv, scholar, ACM, IEEE)
 - **Auto Source Discovery**: WebSearch fallback in Phase 4b when internal gap enrichment fails (max 3 URLs, quality-probed)
