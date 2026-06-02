@@ -1158,3 +1158,22 @@ See `docs/MIGRATION-v2.md` for detailed migration instructions.
 - Three-layer knowledge model: Registry (discovery) → Notebook (understanding) → Domain Pack (standards)
 - Cross-registry sync contract: github-registry ↔ research-notebooks REGISTRY consistency
 - Single-writer principle: scan routine only writes scan-log, REGISTRY updated only on consumption
+
+## v2.22.1 — Knowledge Lifecycle System + Code Intelligence (2026-06-02)
+
+### New Features
+- **Knowledge Lifecycle System** (TAD's 4th core subsystem) — 3-phase Epic:
+  - Sense: Alex STEP 3.5 detects knowledge health (flat structure, bloated files)
+  - Organize: 116 entries migrated to principles(13)/patterns(75)/incidents(25)
+  - Maintain: Gate 4 KA auto-classify + *dream graduation(≥2) + 90-day expiration + L1 Epic protection
+- **codebase-memory-mcp integration** — persistent code graph as graph→LSP→grep three-tier fallback
+- **knowledge-blame.sh** — in-session rule provenance tool (git blame wrapper for project-knowledge)
+
+### Improvements
+- CLAUDE.md @import now loads principles.md (~3KB) instead of architecture.md (~40KB) — ~90% token reduction
+- Blake 1_5_context_refresh uses patterns/_index.md matching (on-demand loading)
+- tad.sh prints install hint for codebase-memory-mcp (v0.7.0, non-executing)
+
+### Ideas Captured
+- GitAgent Protocol (GAP) export for cross-platform portability
+- DiffMem git-blame tool (promoted + delivered as knowledge-blame.sh)
