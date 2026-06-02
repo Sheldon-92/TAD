@@ -517,6 +517,34 @@ ralph_loop_execution:
           → Proceed to 1_5a_pack_detection
         purpose: "Ensure handoff context is fresh before coding, not just at activation"
 
+      1_5_knowledge_provenance:
+        description: "On-demand knowledge rule provenance query (DiffMem-inspired)"
+        trigger: |
+          Blake uses this when:
+          a. A .tad/project-knowledge/ rule seems inapplicable to the current task
+          b. Layer 1 retry was caused by following a knowledge rule that produced an error
+          c. Blake wants to understand WHY a constraint exists before deciding to follow or adapt it
+        action: |
+          1. Identify the specific rule line in the knowledge file
+          2. Run: bash .tad/hooks/lib/knowledge-blame.sh <file> --search "<rule text snippet>"
+             Or: bash .tad/hooks/lib/knowledge-blame.sh <file> --line <N>
+          3. Read the COMMIT/DATE/MESSAGE output
+          4. Use provenance to make an informed decision:
+             - MESSAGE references a specific handoff → check if that handoff's context matches current task
+             - DATE is recent (< 30 days) → rule is likely still relevant
+             - DATE is old (> 90 days) → consider whether the codebase has changed since
+             - AUTHOR is "Sheldon" → human-authored rule, higher weight
+             - AUTHOR is agent → machine-derived rule, verify against current state
+          5. Document the decision in completion report:
+             "Knowledge rule '{rule}' from {date} ({message}): followed / adapted / flagged because {reason}"
+        scope: ".tad/project-knowledge/*.md, .claude/skills/*/SKILL.md, and .tad/hooks/lib/*.sh"
+        blocking: false
+        advisory: true
+        relationship_to_stale_check: |
+          stale-knowledge-check.sh (Alex step0_5) scans ALL entries for staleness at handoff creation.
+          knowledge-blame.sh (this protocol) queries ONE specific rule during implementation.
+          They are complementary — Alex catches breadth, Blake investigates depth.
+
       1_5a_pack_detection:
         description: "Auto-detect and load relevant capability packs based on handoff content"
         action: |
@@ -874,6 +902,7 @@ ralph_loop_execution:
           - "Increment layer1_retries"
           - "Check circuit breaker (same error 3x → escalate)"
           - "Fix error and retry"
+          - "Advisory: if this retry was caused by following a .tad/project-knowledge/ rule, consider running knowledge-blame.sh to check the rule's provenance before the next attempt (see 1_5_knowledge_provenance)"
         on_success:
           - "Checkpoint state"
           - "Proceed to Layer 2"

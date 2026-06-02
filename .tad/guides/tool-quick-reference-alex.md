@@ -67,6 +67,17 @@
 - **Known limitation:** Shell script call-chain detection is limited (CALLS edges sparse for bash). TypeScript/Python/Go have full type-aware resolution.
 - **Integration guide:** `.tad/guides/codebase-memory-integration.md`
 
+### Knowledge-Blame (Rule Provenance Query)
+- **Path:** `.tad/hooks/lib/knowledge-blame.sh`
+- **Used by:** Blake (during implementation), Alex (during knowledge review)
+- **Key commands:**
+  - Blame a specific line: `bash .tad/hooks/lib/knowledge-blame.sh .tad/project-knowledge/architecture.md --line 42`
+  - Search and blame: `bash .tad/hooks/lib/knowledge-blame.sh .tad/project-knowledge/code-quality.md --search "tsc missing type"`
+  - File summary: `bash .tad/hooks/lib/knowledge-blame.sh .tad/project-knowledge/architecture.md`
+- **Output:** Structured RULE/COMMIT/DATE/AUTHOR/MESSAGE fields
+- **Scope:** `.tad/project-knowledge/*.md`, `.claude/skills/*/SKILL.md`, and `.tad/hooks/lib/*.sh`
+- **Relationship:** Complements stale-knowledge-check.sh (Alex scans breadth, Blake queries depth)
+
 ## Claude Code Native Tools
 
 ### LSP (Code Intelligence — Claude Code Native)

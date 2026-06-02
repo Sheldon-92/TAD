@@ -179,3 +179,10 @@ alex/SKILL.md) automatically. Each downstream project still needs:
 The `expert_prompt_template` in alex/SKILL.md includes an advisory paragraph
 informing reviewers that graph tools may be available. Reviewers decide whether
 to use graph tools or read files directly — this is purely advisory.
+
+## Related Tools
+
+- **knowledge-blame.sh** — Query provenance of knowledge rules via git blame.
+  Complements this tool: codebase-memory-mcp handles CODE structure (call graphs,
+  blast radius), knowledge-blame handles KNOWLEDGE provenance (why a rule exists,
+  who added it, when). See tool-quick-reference-alex.md for usage.
