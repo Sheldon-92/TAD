@@ -2823,7 +2823,35 @@ handoff_creation_protocol:
     # LSP Auto-Provision Protocol (shared by Alex + Blake)
     # ──────────────────────────────────────────────────────────
     lsp_provision_protocol:
-      description: "Detect → try → install → fallback. Zero user interaction."
+      description: "Graph → Detect → try → install → fallback. Zero user interaction."
+
+      step0_graph:
+        name: "Graph Intelligence Check"
+        action: |
+          Before LSP detection, check if codebase-memory-mcp is available:
+          1. Bash: command -v codebase-memory-mcp >/dev/null 2>&1
+          2. If found: Bash: codebase-memory-mcp cli list_projects '{}' 2>/dev/null
+             Parse output via jq for project matching current working directory
+          3. Staleness check: extract last_indexed timestamp from list_projects output.
+             If index is older than 7 days → treat as unavailable (stale index = wrong blast radius)
+          4. If project found AND indexed AND fresh (≤7 days):
+             → Set graph_available=true, graph_project=<project_name>
+             → ⚠️ Do NOT skip step1_detect through step4_install — LSP provisioning
+               still runs (other SKILL features may use LSP directly; if graph crashes
+               mid-session there is no LSP fallback if provisioning was skipped)
+             → Graph mode only replaces the QUERY step inside step1c_lsp, not the
+               PROVISIONING steps
+          5. If binary not found OR project not indexed OR stale:
+             → Set graph_available=false
+             → Continue to existing step1_detect (LSP path, unchanged)
+        time_budget: "<500ms (CLI probe is ~30ms)"
+        skip_if:
+          - "§6 is empty or all files are new (create, not modify)"
+          - "task_type is doc-only, yaml, or research"
+        forbidden_implementations:
+          - "MUST NOT auto-index the repository (TAD never triggers indexing)"
+          - "MUST NOT modify .claude/settings.json MCP configuration"
+          - "MUST NOT block or slow down if graph probe fails (strict <500ms budget)"
 
       step1_detect:
         action: "Extract primary file extensions from §6 Files to Modify"
@@ -2865,10 +2893,29 @@ handoff_creation_protocol:
     step1c_lsp:
       name: "LSP Impact Analysis — scope gap detection"
       trigger: "After step1c grounding pass, before step1d AC Dry-Run pass"
-      prerequisite: "lsp_provision_protocol completed (step3 or step4 succeeded)"
+      prerequisite: "lsp_provision_protocol completed (step0_graph succeeded OR step3/step4 succeeded)"
       enforcement: "prompt-level-only"
 
       action: |
+        # ── Graph-first path (if graph_available from lsp_provision_protocol.step0_graph) ──
+        If graph_available:
+          1. Run: codebase-memory-mcp cli detect_changes "$(jq -nc --arg p "$graph_project" '{project: $p}')"
+             → Parse changed_files + impacted_symbols + downstream_dependents
+             → If detect_changes returns empty (clean working tree — no git diff yet during design):
+               Fall through to LSP path below instead of returning DONE with empty results.
+               Empty graph results are WORSE than LSP analysis of §6 files.
+          2. For each impacted symbol with label Function/Method/Class:
+             Validate symbol_name: [[ "$symbol_name" =~ ^[A-Za-z0-9_.\-]+$ ]] || skip
+             Run: codebase-memory-mcp cli query_graph "$(jq -nc --arg p "$graph_project" --arg s "$symbol_name" \
+               '{query: "MATCH (caller)-[:CALLS]->(fn {name: \"\($s)\"}) RETURN caller.name AS caller, caller.file_path AS file, caller.start_line AS line", project: $p}')"
+             ⚠️ Two-layer injection defense: jq --arg prevents shell/JSON injection; the regex validation prevents Cypher injection — both are required
+          3. Collect all caller file paths into graph_callers set
+          4. Compare graph_callers against §6 file list (same logic as LSP path step 5)
+          5. Append to Grounded Against:
+             "Graph impact: {N} symbols checked via codebase-memory-mcp, {M} callers found, {G} scope gaps added"
+          6. DONE — skip the LSP QUERY path below (but LSP provisioning already ran in step1-4)
+
+        # ── LSP path (existing, unchanged — runs when graph_available=false) ──
         For each EXISTING file in §6 that handoff proposes to MODIFY (not create):
 
         1. Run LSP documentSymbol (line=1, character=1 — required by tool schema but not
@@ -3287,6 +3334,13 @@ handoff_creation_protocol:
 
     EXPLICIT BLAST-RADIUS CHECKS (only run these greps if listed):
     {blast_radius_grep_patterns}
+
+    OPTIONAL TOOLS (if codebase-memory-mcp is available via MCP):
+    - search_graph: Find symbol definitions by name → returns file:line
+    - query_graph: Cypher queries for caller/callee chains, imports, usage
+    - detect_changes: Git diff → impacted symbols + blast radius
+    These return structured data (~200 tokens) instead of full file reads (~5000 tokens).
+    Use when you need structural answers. Fall back to file reads for content analysis.
 
     NOT ALLOWED:
     - Free-explore wider codebase outside REQUIRED + OPTIONAL + listed grep patterns

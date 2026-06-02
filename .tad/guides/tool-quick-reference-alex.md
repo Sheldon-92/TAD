@@ -51,6 +51,22 @@
   - Repo contents: `gh api repos/{owner}/{repo}/contents/` (root only — use git/trees for full)
 - **Full workflow:** `.claude/skills/research-github/SKILL.md`
 
+### Codebase-Memory-MCP (Code Knowledge Graph)
+- **Path:** `codebase-memory-mcp` (user local bin)
+- **Preflight:** `command -v codebase-memory-mcp >/dev/null 2>&1`
+- **Install:** `curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/v0.7.0/install.sh | bash`
+- **Key commands:**
+  - Index project: `codebase-memory-mcp cli index_repository '{"repo_path":"<abs_path>"}'`
+  - List projects: `codebase-memory-mcp cli list_projects '{}'`
+  - Search symbol: `codebase-memory-mcp cli search_graph '{"query":"<name>","project":"<proj>"}'`
+  - Blast radius: `codebase-memory-mcp cli detect_changes '{"project":"<proj>"}'`
+  - Caller chain: `codebase-memory-mcp cli query_graph "$(jq -nc --arg p '<proj>' --arg s '<fn>' '{query: "MATCH (c)-[:CALLS]->(f {name: \"\($s)\"}) RETURN c.name, c.file_path", project: $p}')"`
+  - Architecture: `codebase-memory-mcp cli get_architecture '{"project":"<proj>","aspects":["all"]}'`
+- **Project naming:** Directory path with slashes replaced by dashes (e.g., `Users-sheldonzhao-01-on progress programs-menu-snap`)
+- **Graph DB:** `~/.cache/codebase-memory-mcp/` (SQLite, auto-managed)
+- **Known limitation:** Shell script call-chain detection is limited (CALLS edges sparse for bash). TypeScript/Python/Go have full type-aware resolution.
+- **Integration guide:** `.tad/guides/codebase-memory-integration.md`
+
 ## Claude Code Native Tools
 
 ### LSP (Code Intelligence — Claude Code Native)

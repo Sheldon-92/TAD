@@ -782,6 +782,13 @@ CTXEOF
 NEXTEOF
             fi
 
+            # Hint: codebase-memory-mcp for code intelligence (opt-in, user installs manually)
+            if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
+                printf "  [TIP] Optional: install codebase-memory-mcp for code graph intelligence:\n"
+                printf "     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/v0.7.0/install.sh | bash\n"
+                printf "     (see .tad/guides/codebase-memory-integration.md for details)\n"
+            fi
+
             # Set version
             echo "$TARGET_VERSION" > .tad/version.txt
             ;;
@@ -826,6 +833,13 @@ NEXTEOF
 
             # Update project-knowledge README
             cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+
+            # Hint: codebase-memory-mcp for code intelligence (opt-in, user installs manually)
+            if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
+                printf "  [TIP] Optional: install codebase-memory-mcp for code graph intelligence:\n"
+                printf "     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/v0.7.0/install.sh | bash\n"
+                printf "     (see .tad/guides/codebase-memory-integration.md for details)\n"
+            fi
 
             # Set version
             echo "$TARGET_VERSION" > .tad/version.txt
@@ -935,6 +949,13 @@ CTXEOF
 ---
 *Managed by TAD Framework*
 NEXTEOF
+            fi
+
+            # Hint: codebase-memory-mcp for code intelligence (opt-in, user installs manually)
+            if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
+                printf "  [TIP] Optional: install codebase-memory-mcp for code graph intelligence:\n"
+                printf "     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/v0.7.0/install.sh | bash\n"
+                printf "     (see .tad/guides/codebase-memory-integration.md for details)\n"
             fi
 
             # Set version
