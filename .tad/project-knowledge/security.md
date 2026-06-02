@@ -29,22 +29,8 @@ Project-specific security learnings accumulated through TAD workflow.
 
 ## Accumulated Learnings
 
-### Security Packs Use Cross-Cutting Review Pattern - 2026-04-04
-- **Context**: Building supply-chain-security.yaml and code-security.yaml
-- **Discovery**: A single top-level review persona (Security Engineer) is more appropriate than per-capability reviewers for security packs, because the same security engineer reviews all capabilities in one audit pass
-- **Action**: Future security packs should use one top-level review section, not per-capability reviewers
-
-### Nested output_structure Enhancement - 2026-04-04
-- **Context**: Defining output directory structure in security Domain Packs
-- **Discovery**: The `description + tree` nested format is richer than the flat string format in earlier packs
-- **Action**: Future packs should adopt nested output_structure as the standard format
-
-### Compliance CLI vs SaaS Boundary - 2026-04-03
-- **Context**: Phase 0 research on compliance domain tools
-- **Discovery**: CLI tools cover ~60% of SOC2 technical controls. Organizational processes (auditor portal, vendor risk, HR compliance) require SaaS platforms (Drata/Vanta). A compliance Domain Pack must declare this boundary explicitly.
-- **Action**: If compliance pack is built, declare "CLI covers technical proof only" in description
-
-### Cross-Domain Tool Overlap is Intentional - 2026-04-03
-- **Context**: nuclei, checkov, syft appear in multiple domain packs
-- **Discovery**: Same tool serves different purposes per domain (e.g., nuclei = DAST in code-security, network scanning in monitoring; checkov = IaC lint in code-security, compliance proof in compliance)
-- **Action**: Don't deduplicate tools across packs — document the different usage context per pack
+> ⚠️ Migrated to three-layer knowledge structure (2026-06-02, Knowledge Lifecycle Epic Phase 2).
+> - Principles: `.tad/project-knowledge/principles.md`
+> - Patterns: `.tad/project-knowledge/patterns/`
+> - Incidents: `.tad/project-knowledge/incidents/`
+> See `.tad/project-knowledge/README.md` for the Knowledge Lifecycle System documentation.

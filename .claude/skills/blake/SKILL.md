@@ -507,8 +507,11 @@ ralph_loop_execution:
 
           1. Re-read the selected handoff document (full content)
           2. Read the handoff's "📚 Project Knowledge" section to identify relevant files
-          3. Read matched .tad/project-knowledge/*.md files
-          4. If handoff has no Project Knowledge section, read architecture.md + code-quality.md as defaults
+          3. Read .tad/project-knowledge/principles.md (always — L1 methodology rules)
+          4. Read .tad/project-knowledge/patterns/_index.md → match task keywords against index entries
+          5. For each matched pattern file (max 3): Read .tad/project-knowledge/patterns/{matched}.md
+          6. L3 incidents are NOT loaded — use knowledge-blame.sh on demand (see 1_5_knowledge_provenance)
+          7. If handoff has no Project Knowledge section, the above L1+L2 loading is sufficient as default
           5. Read handoff YAML frontmatter (task_type, e2e_required, research_required)
           6. Announce: "Frontmatter: task_type={value}, e2e_required={value}, research_required={value}"
           7. Store these values — execution_checklist.during_development.task_type_branching will reference them

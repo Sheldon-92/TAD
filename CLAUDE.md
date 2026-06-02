@@ -75,9 +75,8 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 
 @import 自动加载，不存在的文件静默跳过。超 30KB 时整合。
 
-@.tad/project-knowledge/architecture.md
-@.tad/project-knowledge/code-quality.md
-@.tad/project-knowledge/security.md
+@.tad/project-knowledge/principles.md
+@.tad/project-knowledge/patterns/_index.md
 @.tad/project-knowledge/testing.md
 @.tad/project-knowledge/ux.md
 @.tad/project-knowledge/performance.md

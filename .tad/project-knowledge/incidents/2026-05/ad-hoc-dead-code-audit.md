@@ -1,0 +1,12 @@
+# Ad-hoc Dead Code Audit Tools Are Themselves Validation Theater
+
+**Date:** 2026-05-30
+**Linked to:** L1 "YOLO Epic Execution: Cross-Model Audit Findings" (validation theater); L2 gate-design
+
+---
+
+### Ad-hoc "Dead Code" Audit Tools Are Themselves Validation Theater - 2026-05-30
+- **Context**: Alex, pursuing a "built-but-not-wired" audit (the same theme the trace fix addressed), wrote a quick Python scanner to flag shell lib functions defined but never called. It confidently labeled ~20 functions `DEAD` — including the very emit_* functions Blake was mid-implementing AND a batch of `_`-prefixed helpers in layer2-audit.sh / stale-knowledge-check.sh / drift-check.sh. Spot-verification (grep within each function's own file) showed every checked one was actually called (definition + ≥1 call site). The scanner's counting was broken (mis-handled argument-form calls `fn "$x"` vs definition `fn()`, and in-file call sites).
+- **Discovery**: (1) A grep/regex-based dead-code scanner is itself prone to the exact validation-theater failure it hunts for — it emits confident binary verdicts (`DEAD`) that are mostly false positives. NEVER trust bulk dead-code output without per-item spot-verification. (2) A dead-code scan run DURING an active implementation will flag in-progress work as dead — Alex's scan caught Blake's uncommitted working-tree changes and nearly misjudged a faithful in-flight implementation as "duplicate/abandoned". Check `git status` for active work before interpreting a static scan. (3) The deeper irony: the cure for "built-but-not-wired" cannot itself be an unvalidated tool — proper detection needs static analysis or per-function verification, not a 5-minute script. (4) This is also why the recommended next step after the trace fix is to re-run *evolve on REAL data, not to trust a hand-rolled scanner — let the now-trustworthy instrumentation surface gaps.
+- **Action**: When auditing for unused/unwired code: (a) spot-verify every flagged item with an in-file grep before reporting it, (b) check `git status` to exclude active working-tree work, (c) prefer the project's own trustworthy telemetry (post-fix *evolve) over ad-hoc scanners, (d) treat any tool that emits confident binary verdicts as suspect until calibrated against known-good cases.
+- **Grounded in**: this session's dead-code scan vs ground-truth grep of post-write-sync.sh:262/282/284/327 + layer2-audit.sh in-file calls

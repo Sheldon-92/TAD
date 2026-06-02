@@ -2609,15 +2609,16 @@ handoff_creation_protocol:
 
         1. **Identify task keywords** from current Socratic Inquiry results / *discuss
            context (topics, technologies, file paths, domain). Output: keyword list.
-        2. **Read .tad/project-knowledge/README.md** (always, ~5KB cheap) — contains
-           category index + Domain Pack vs Project-Knowledge Decision Rule.
-        3. **Match keywords against category list** in README. Identify relevant
-           category files (typically 1-3 of: architecture, code-quality, security,
-           ux, performance, testing, api-integration, mobile-platform,
-           frontend-design). Default include: architecture.md (most entries land
-           there).
-        4. **Read ONLY matching category files**. Files NOT matched are skipped
-           (token savings — typically 30-50K tokens vs full reload).
+        2. **Read .tad/project-knowledge/principles.md** (always — L1 methodology rules).
+        3. **Read .tad/project-knowledge/patterns/_index.md** — match task keywords
+           against index entries to identify relevant pattern files (typically 1-3 of:
+           gate-design, handoff-design, shell-portability, ac-verification,
+           hook-contracts, pack-build-rules, pack-evaluation, research-methodology,
+           memory-and-learning).
+        4. **Read ONLY matched pattern files** (max 3): .tad/project-knowledge/patterns/{matched}.md.
+           L3 incidents are NOT pre-loaded — queried on demand via knowledge-blame.sh.
+           Legacy category files (ux, performance, testing, etc.) still loaded if they
+           have content and match keywords.
         5. Read handoff_creation_protocol key rules from THIS file:
            - expert_selection_rules (which experts to call)
            - minimum_experts: 2 (or 1 per L1 tier rule — see Blake SKILL hard_requirement_distinct_reviewers)
