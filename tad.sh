@@ -14,10 +14,27 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Version
+# Version — fallback only. The AUTHORITATIVE value is derived from the source
+# repo's .tad/version.txt at download time (see derive_target_version), so this
+# literal can never go stale (fixes the 2.19.1-class hand-edit straggler).
+# It is used ONLY before the source is fetched (banner) and as a last-resort
+# fallback if the source version.txt is unreadable.
 TARGET_VERSION="2.21.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
+
+# derive_target_version <src> — set TARGET_VERSION from the source tree's
+# .tad/version.txt (authoritative). Keeps the hardcoded literal as fallback.
+derive_target_version() {
+    local src="$1"
+    if [ -f "$src/.tad/version.txt" ]; then
+        local v
+        v=$(head -1 "$src/.tad/version.txt" | tr -d '[:space:]')
+        if [ -n "$v" ]; then
+            TARGET_VERSION="$v"
+        fi
+    fi
+}
 
 # Global variables
 BACKUP_PATH=""
@@ -26,10 +43,12 @@ DETECTED_PLATFORMS=""
 # Argument parsing — --yes/-y skips the interactive confirmation prompt (non-TTY:
 # Claude Code Bash, CI, curl|bash). "$@" is set -u-safe even with zero args.
 AUTO_YES=0
+VERIFY_DENYLIST=0
 for arg in "$@"; do
   case "$arg" in
     --yes|-y)  AUTO_YES=1 ;;
-    --help|-h) echo "Usage: tad.sh [--yes|-y]  (--yes skips the interactive confirmation prompt)"; exit 0 ;;
+    --verify-denylist) VERIFY_DENYLIST=1 ;;
+    --help|-h) echo "Usage: tad.sh [--yes|-y] [--verify-denylist]"; echo "  --yes              skip the interactive confirmation prompt"; echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"; exit 0 ;;
     *) echo "tad.sh: unknown option '$arg' (use --help)" >&2; exit 1 ;;
   esac
 done
@@ -104,31 +123,148 @@ detect_installed_tools() {
 }
 
 # ============================================
+# Deny-list derivation — INLINED copy of derive-sync-set.sh
+# ============================================
+# tad.sh runs via `curl | bash` on a FRESH machine where .tad/hooks/lib/ does
+# NOT yet exist, so it CANNOT `source` derive-sync-set.sh. The derivation is
+# therefore EMBEDDED here verbatim (per the lib's "P2 embeddability" note).
+#
+# ⚠️ MUST stay == derive-sync-set.sh DENY_LIST — drift-checked at release
+#    (P2 AC: `bash tad.sh --verify-denylist`, run from the TAD repo, NOT at
+#    install time). If you edit DENY_LIST in either file, edit BOTH or the
+#    drift-check FAILS the release.
+#
+# SYNC_DIRS = { ls -d .tad/*/ } - DENY_LIST  → a new framework dir auto-copies.
+# ─────────────────────────────────────────────────────────────────────────────
+# Category A — zero-touch (preserve each target's own copy; NEVER sync):
+TAD_ZERO_TOUCH="project-knowledge
+active
+archive
+evidence
+pair-testing
+decisions
+github-registry
+research-notebooks"
+# Category C — transient / main-only (do NOT sync; not part of framework surface):
+TAD_TRANSIENT="working
+spike-v3
+reports
+checklists"
+# DENY_LIST = A ∪ C (the full set excluded from SYNC).
+TAD_DENY_LIST="$TAD_ZERO_TOUCH
+$TAD_TRANSIENT"
+# Top-level deny (a FILE, not a dir):
+TAD_TOP_DENY="sync-registry.yaml"
+# The ONE dir with a sub-path rule: sync ONLY its registry index, never the tree.
+TAD_REGISTRY_ONLY="capability-packs"
+TAD_REGISTRY_FILE="pack-registry.yaml"
+
+# derive_framework_dirs <src> — emit one SYNC dir basename per line
+# (live .tad/ dirs MINUS the deny-list), LC_ALL=C sorted. Mirrors
+# derive-sync-set.sh emit_dirs() exactly.
+derive_framework_dirs() {
+    local src="$1"
+    local deny_re
+    deny_re="$(printf '%s' "$TAD_DENY_LIST" | LC_ALL=C sort -u | paste -sd '|' -)"
+    ls -d "$src"/.tad/*/ 2>/dev/null \
+        | sed 's|.*/\.tad/||;s|/$||' \
+        | grep -vxE "$deny_re" \
+        | LC_ALL=C sort
+}
+
+# verify_denylist_drift — release-time drift check (run from the TAD repo via
+# `bash tad.sh --verify-denylist`). Asserts tad.sh's INLINED DENY_LIST is
+# byte-identical (as a sorted set) to derive-sync-set.sh's authoritative one.
+# Prevents the two copies from silently diverging (the stale-list disease at the
+# installer). Exit 0 == in sync; exit 1 == DRIFT (fail the release). This is NOT
+# run on a fresh install — only when the lib is present (TAD repo / dev tree).
+verify_denylist_drift() {
+    local lib=".tad/hooks/lib/derive-sync-set.sh"
+    if [ ! -f "$lib" ]; then
+        # Try alongside this script (when run from a checkout root).
+        local self_dir
+        self_dir="$(cd "$(dirname "$0")" && pwd)"
+        lib="$self_dir/.tad/hooks/lib/derive-sync-set.sh"
+    fi
+    if [ ! -f "$lib" ]; then
+        log_error "--verify-denylist: derive-sync-set.sh not found (run from the TAD repo root)"
+        return 2
+    fi
+
+    # tad.sh's inlined DENY_LIST as a sorted set.
+    local here_set lib_set
+    here_set="$(printf '%s' "$TAD_DENY_LIST" | LC_ALL=C sort -u)"
+    # The lib's DENY_LIST = --zero-touch ∪ (transient). We reconstruct the lib's
+    # full DENY set by sourcing it in a subshell and printing ZERO_TOUCH+TRANSIENT.
+    lib_set="$(
+        # shellcheck disable=SC1090
+        ( set +euo pipefail
+          # Source only the constant block by extracting it — but sourcing the
+          # whole file would run its case dispatch, so we run it isolated with a
+          # no-op MODE that just defines vars. Simpler: grep the two heredoc-free
+          # constant lists out of the lib and union them.
+          true ) >/dev/null 2>&1
+        # Extract ZERO_TOUCH + TRANSIENT block contents from the lib (the lines
+        # between the opening quote and closing quote of each assignment).
+        awk '
+          /^ZERO_TOUCH="/  {grab=1; sub(/^ZERO_TOUCH="/,""); if ($0 ~ /"$/){sub(/"$/,""); print; grab=0; next} print; next}
+          /^TRANSIENT="/   {grab=1; sub(/^TRANSIENT="/,"");  if ($0 ~ /"$/){sub(/"$/,""); print; grab=0; next} print; next}
+          grab==1 { if ($0 ~ /"$/){sub(/"$/,""); print; grab=0} else print }
+        ' "$lib" | LC_ALL=C sort -u
+    )"
+
+    if [ "$here_set" = "$lib_set" ]; then
+        log_success "--verify-denylist: tad.sh inlined DENY_LIST == derive-sync-set.sh ($(printf '%s\n' "$here_set" | grep -c . ) entries)"
+        return 0
+    else
+        log_error "--verify-denylist: DRIFT detected between tad.sh and derive-sync-set.sh"
+        echo "  --- only in tad.sh ---"  >&2
+        LC_ALL=C comm -23 <(printf '%s\n' "$here_set") <(printf '%s\n' "$lib_set") | sed 's/^/    /' >&2
+        echo "  --- only in derive-sync-set.sh ---" >&2
+        LC_ALL=C comm -13 <(printf '%s\n' "$here_set") <(printf '%s\n' "$lib_set") | sed 's/^/    /' >&2
+        return 1
+    fi
+}
+
+# ============================================
 # Phase 4: Copy ALL Framework Files
 # ============================================
 # Replaces manual file-by-file copy with comprehensive sync.
 # Project-specific data (active/, archive/, evidence/, project-knowledge/,
-# pair-testing/) is never overwritten.
+# pair-testing/, …) — the deny-list — is never overwritten.
 copy_framework_files() {
     local src="$1"
     log_info "  → Syncing framework files from source..."
 
     # --- .tad/ framework files (copy everything except project data) ---
 
-    # Top-level config & metadata files
+    # Top-level config & metadata files (except the deny-listed sync-registry).
     for f in "$src"/.tad/*.yaml "$src"/.tad/*.md "$src"/.tad/*.txt; do
-        [ -f "$f" ] && cp "$f" .tad/ 2>/dev/null || true
+        [ -f "$f" ] || continue
+        [ "$(basename "$f")" = "$TAD_TOP_DENY" ] && continue
+        cp "$f" .tad/ 2>/dev/null || true
     done
 
-    # Framework subdirectories (full sync)
-    # NOTE (v2.8.2): domains/ and hooks/ added — were omitted from previous
-    # versions, caused downstream projects to miss Domain Packs + router hook.
-    for dir in agents data domains gates guides hooks ralph-config references schemas skills sub-agents tasks templates workflows; do
+    # Framework subdirectories — DERIVED (deny-list), not hardcoded.
+    # A new framework dir (e.g. codex, capability-packs, cross-model) is
+    # auto-included with ZERO edits here — fixes the omission disease that
+    # the old 14-dir allow-list caused.
+    local dir
+    while IFS= read -r dir; do
+        [ -n "$dir" ] || continue
+        # registry-only special case: copy ONLY the registry index file, not the tree.
+        if [ "$dir" = "$TAD_REGISTRY_ONLY" ]; then
+            mkdir -p ".tad/$dir"
+            cp "$src/.tad/$dir/$TAD_REGISTRY_FILE" ".tad/$dir/" 2>/dev/null || true
+            continue
+        fi
         if [ -d "$src/.tad/$dir" ]; then
             mkdir -p ".tad/$dir"
-            cp -r "$src/.tad/$dir/"* ".tad/$dir/" 2>/dev/null || true
+            # Trailing "/." copies the dir CONTENTS including dotfiles (.gitkeep),
+            # which a bare "/*" glob misses (BSD/macOS-safe, no shopt dotglob).
+            cp -R "$src/.tad/$dir/." ".tad/$dir/" 2>/dev/null || true
         fi
-    done
+    done <<< "$(derive_framework_dirs "$src")"
 
     # --- .claude/ framework files ---
     mkdir -p .claude/skills
@@ -144,10 +280,57 @@ copy_framework_files() {
     # which caused 2.8.1 command file cleanup to never execute on downstream projects.
     apply_deprecations "$src"
 
-    # Count installed files for verification
+    # Count installed files for verification (exclude the zero-touch deny-list dirs).
     local count
-    count=$(find .tad -type f -not -path ".tad/active/*" -not -path ".tad/archive/*" -not -path ".tad/evidence/*" -not -path ".tad/project-knowledge/*" -not -path ".tad/pair-testing/*" | wc -l | tr -d ' ')
+    count=$(find .tad -type f \
+        -not -path ".tad/active/*" -not -path ".tad/archive/*" \
+        -not -path ".tad/evidence/*" -not -path ".tad/project-knowledge/*" \
+        -not -path ".tad/pair-testing/*" | wc -l | tr -d ' ')
     log_success "  → Synced $count framework files to .tad/"
+
+    # --- AC3: post-install completeness self-check ---
+    verify_install_complete "$src"
+}
+
+# ============================================
+# Phase 4c: Post-install completeness self-check (P2 AC3)
+# ============================================
+# For each DERIVED framework dir, assert it exists + is non-empty in the target.
+# Reuses the SAME deny-list derivation so it checks exactly what was meant to be
+# copied — a new framework dir is auto-verified, an omission is caught.
+# Non-fatal: warns + records a count; the ERR trap is NOT triggered (we want the
+# install to report a clear self-check verdict rather than silently rollback).
+verify_install_complete() {
+    local src="$1"
+    log_info "  → Post-install self-check (derived completeness)..."
+
+    local missing=0 checked=0 dir
+    while IFS= read -r dir; do
+        [ -n "$dir" ] || continue
+        checked=$((checked + 1))
+        if [ "$dir" = "$TAD_REGISTRY_ONLY" ]; then
+            # registry-only: only the index file must exist.
+            if [ ! -f ".tad/$dir/$TAD_REGISTRY_FILE" ]; then
+                log_warn "    ✗ MISSING: .tad/$dir/$TAD_REGISTRY_FILE (registry index)"
+                missing=$((missing + 1))
+            fi
+            continue
+        fi
+        # The source must have had the dir for us to expect it in the target.
+        [ -d "$src/.tad/$dir" ] || continue
+        if [ ! -d ".tad/$dir" ] || [ -z "$(ls -A ".tad/$dir" 2>/dev/null)" ]; then
+            log_warn "    ✗ MISSING or EMPTY: .tad/$dir/"
+            missing=$((missing + 1))
+        fi
+    done <<< "$(derive_framework_dirs "$src")"
+
+    if [ "$missing" -eq 0 ]; then
+        log_success "    ✓ Self-check passed: all $checked derived framework dirs present + non-empty"
+    else
+        log_error "    ✗ Self-check FAILED: $missing of $checked derived framework dir(s) missing/empty"
+        log_error "      The install is INCOMPLETE — re-run the installer or report this."
+        return 1
+    fi
 }
 
 # ============================================
@@ -289,6 +472,13 @@ rollback_on_failure() {
     log_error "Rollback complete. Please check logs."
     exit 1
 }
+
+# --verify-denylist: release-time drift check. Runs BEFORE the rollback trap is
+# set (it must never trigger rollback) and exits immediately — it never installs.
+if [ "$VERIFY_DENYLIST" = "1" ]; then
+    verify_denylist_drift
+    exit $?
+fi
 
 # Set trap for automatic rollback
 trap 'rollback_on_failure' ERR
@@ -456,6 +646,11 @@ main() {
     # Download
     curl -sSL "$DOWNLOAD_URL" | tar -xz
     TAD_SRC="TAD-main"
+
+    # AC2: derive the authoritative version from the freshly-downloaded source's
+    # .tad/version.txt — so TARGET_VERSION can never go stale vs the literal above.
+    derive_target_version "$TAD_SRC"
+    log_info "  → Source version: v${TARGET_VERSION}"
 
     # Execute based on action
     case $ACTION in

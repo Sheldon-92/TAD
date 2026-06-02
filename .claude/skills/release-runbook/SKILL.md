@@ -56,6 +56,7 @@ This guard is also enforced in `alex/SKILL.md` `publish_protocol.prerequisite.ta
 - [ ] `.tad/sync-registry.yaml` exists and lists all downstream projects
 - [ ] `.tad/deprecation.yaml` is valid YAML (try `yq . .tad/deprecation.yaml`)
 - [ ] Pack registry drift-check run (advisory): `bash .tad/hooks/lib/pack-registry-driftcheck.sh` — exit 1 = registry/pack desync to review (run `bash .tad/scripts/scan-packs.sh` to regenerate), NOT a release blocker.
+- [ ] **If this release touches `tad.sh` or `derive-sync-set.sh`:** installer deny-list drift-check passes: `bash tad.sh --verify-denylist` (exit 0 = in sync; exit 1 = DRIFT → fix BOTH copies before tagging). HARD BLOCK.
 
 ### Decide the version bump
 
@@ -306,20 +307,42 @@ Pre-2.8.2, `tad.sh::copy_framework_files()` **did not read `.tad/deprecation.yam
 - When manually sync'ing from Alex (as Phase 6 below), **the sync script must also apply deprecations explicitly**
 - Do not trust that "the framework handles it" — always include the delete loop in your sync script
 
-### Critical gotcha: tad.sh historically missed directories
+### Critical gotcha: tad.sh historically missed directories — FIXED in 2.21.0+ (self-deriving)
 
-Pre-2.8.2 `copy_framework_files()` list was missing `hooks/` and `domains/`. Always check the current state of that list before assuming tad.sh will sync what you need.
+Pre-2.8.2 `copy_framework_files()` had a hardcoded 14-dir allow-list missing `hooks/` and `domains/`.
+By 2.21.0 it had silently drifted to omit `codex cross-model context tests scripts capability-packs` — the
+same omission disease as the sync allow-list.
 
-Current (2.8.2+) full list:
+**2.21.0 fix (Epic self-deriving-release-sync P2):** `tad.sh::copy_framework_files()` now **DERIVES** the
+copy-set from a deny-list — `{ ls -d .tad/*/ } − DENY_LIST` — exactly mirroring
+`.tad/hooks/lib/derive-sync-set.sh`. A new framework dir auto-copies with **zero list edits**. Three new pieces:
 
-> ⚠️ **DERIVED — illustrative only / non-authoritative.** This 14-dir snapshot is NOT the source of truth —
-> run `bash .tad/hooks/lib/derive-sync-set.sh --dirs` for the live framework set (20 on today's tree, incl.
-> `codex cross-model context tests scripts capability-packs` which this stale snapshot omits). Do NOT
-> hand-maintain.
+1. **Inlined deny-list** (`TAD_DENY_LIST` in tad.sh). tad.sh runs via `curl | bash` on a fresh machine where
+   `.tad/hooks/lib/` does NOT exist yet, so it CANNOT `source` the lib — the DENY_LIST is **embedded verbatim**.
+2. **`TARGET_VERSION` from source** (`derive_target_version`) — read from the downloaded `.tad/version.txt`
+   at install time, not the hand-edited literal (kills the 2.19.1-class straggler). Literal kept as fallback.
+3. **Post-install self-check** (`verify_install_complete`) — after copy, asserts every derived framework dir
+   exists + is non-empty in the target; **fails the install** (non-zero → rollback trap) on any omission.
+
+> ⚠️ **DERIVED — illustrative only / non-authoritative.** The list below is a stale snapshot, NOT the source
+> of truth. Run `bash .tad/hooks/lib/derive-sync-set.sh --dirs` for the live framework set. Do NOT hand-maintain.
 
 ```
 agents data domains gates guides hooks ralph-config references schemas skills sub-agents tasks templates workflows
 ```
+
+#### Release-time drift check (MANDATORY before publishing tad.sh changes)
+
+Because the DENY_LIST now exists in **two places** (the lib + tad.sh's inlined copy), they can silently drift.
+A release-time guard asserts they stay identical — run from the TAD repo root:
+
+```bash
+bash tad.sh --verify-denylist     # exit 0 == in sync; exit 1 == DRIFT (names both sides); fail the release
+```
+
+This is a **repo-only** check (it reads `.tad/hooks/lib/derive-sync-set.sh`), NOT run at install time on a
+fresh machine. Add it to the Phase 1 pre-flight whenever a release touches `tad.sh` or `derive-sync-set.sh`.
+If you edit DENY_LIST in either file, edit **both** or this check FAILS.
 
 ---
 
