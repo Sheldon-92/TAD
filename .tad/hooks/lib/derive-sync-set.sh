@@ -8,7 +8,7 @@
 # and a main-only dir is excluded by adding it to the ONE DENY_LIST constant below.
 #
 # ============================ CONTRACT (consumed API) ============================
-# Usage: derive-sync-set.sh [--dirs|--report|--zero-touch|--registry-only] [<root=.>]
+# Usage: derive-sync-set.sh [--dirs|--report|--zero-touch|--transient|--registry-only] [<root=.>]
 #   --dirs          (default) one SYNC dir basename per line, LC_ALL=C sorted.
 #                   CONSUMED FORMAT (breaking change if altered): one ASCII basename
 #                   per line, NO trailing slash, NO path prefix, LC_ALL=C sort order.
@@ -16,6 +16,11 @@
 #   --zero-touch    the 8 category-A "preserve target's own" dir names, LC_ALL=C sorted.
 #                   Read by: release-verify.sh version (the version-scope exclusion set).
 #                   This is the ONE authoritative zero-touch source — NOT re-hardcoded.
+#   --transient     the category-C transient / main-only dir names, LC_ALL=C sorted.
+#                   Together with --zero-touch this is the PUBLIC interface to the full
+#                   DENY_LIST (zero-touch ∪ transient). Read by: tad.sh --verify-denylist
+#                   (drift-check compares its inline DENY_LIST against these two flags —
+#                   NO awk-scraping of internal variable names).
 #   --registry-only the single sub-path rule line: capability-packs/pack-registry.yaml
 #                   Read by: release-verify.sh structural + the per-release generator
 #                   (they diff/sync ONLY this file for that dir, never the dir tree).
@@ -98,6 +103,9 @@ case "$MODE" in
   --zero-touch)
     printf '%s\n' "$ZERO_TOUCH" | LC_ALL=C sort
     ;;
+  --transient)
+    printf '%s\n' "$TRANSIENT" | LC_ALL=C sort
+    ;;
   --registry-only)
     printf '%s/%s\n' "$REGISTRY_ONLY" "$REGISTRY_FILE"
     ;;
@@ -119,7 +127,7 @@ case "$MODE" in
     echo "  * per-release one-shot scripts → write to .tad/evidence/releases/ (zero-touch ⇒ not in the synced set)."
     ;;
   *)
-    echo "Usage: derive-sync-set.sh [--dirs|--report|--zero-touch|--registry-only] [<root=.>]" >&2
+    echo "Usage: derive-sync-set.sh [--dirs|--report|--zero-touch|--transient|--registry-only] [<root=.>]" >&2
     exit 2
     ;;
 esac

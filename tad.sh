@@ -162,14 +162,34 @@ TAD_REGISTRY_FILE="pack-registry.yaml"
 # derive_framework_dirs <src> — emit one SYNC dir basename per line
 # (live .tad/ dirs MINUS the deny-list), LC_ALL=C sorted. Mirrors
 # derive-sync-set.sh emit_dirs() exactly.
+# (`|| true` keeps the pipeline rc=0 even when the grep -vxE filter matches
+#  nothing — a source with only deny-listed dirs would otherwise return 1
+#  under pipefail; harmless in the here-string loops but unsafe in if/pipe.)
 derive_framework_dirs() {
     local src="$1"
     local deny_re
     deny_re="$(printf '%s' "$TAD_DENY_LIST" | LC_ALL=C sort -u | paste -sd '|' -)"
     ls -d "$src"/.tad/*/ 2>/dev/null \
         | sed 's|.*/\.tad/||;s|/$||' \
-        | grep -vxE "$deny_re" \
+        | { grep -vxE "$deny_re" || true; } \
         | LC_ALL=C sort
+}
+
+# derive_framework_top_files <src> — emit one top-level .tad/ FILE basename per
+# line (every regular file directly under $src/.tad/ MINUS the top-level deny-set),
+# LC_ALL=C sorted. DENY-LIST derived, NOT an extension allow-list — a new top-level
+# framework file of ANY extension (.sh/.json/.yaml/.md/…) is auto-copied. This
+# kills the 2nd surviving hardcoded list (the old `*.yaml *.md *.txt` glob that
+# silently dropped .tad/portable-extract.sh). TAD_TOP_DENY = the only excluded file.
+derive_framework_top_files() {
+    local src="$1"
+    local f bn
+    for f in "$src"/.tad/*; do
+        [ -f "$f" ] || continue
+        bn="$(basename "$f")"
+        [ "$bn" = "$TAD_TOP_DENY" ] && continue
+        printf '%s\n' "$bn"
+    done | LC_ALL=C sort
 }
 
 # verify_denylist_drift — release-time drift check (run from the TAD repo via
@@ -194,23 +214,17 @@ verify_denylist_drift() {
     # tad.sh's inlined DENY_LIST as a sorted set.
     local here_set lib_set
     here_set="$(printf '%s' "$TAD_DENY_LIST" | LC_ALL=C sort -u)"
-    # The lib's DENY_LIST = --zero-touch ∪ (transient). We reconstruct the lib's
-    # full DENY set by sourcing it in a subshell and printing ZERO_TOUCH+TRANSIENT.
+    # The lib's DENY_LIST = --zero-touch ∪ --transient. Reconstruct it off the lib's
+    # PUBLIC FLAG INTERFACE (cr-P1-1) rather than awk-scraping internal variable
+    # names — a benign lib refactor (rename ZERO_TOUCH/TRANSIENT, fold lists, switch
+    # quoting) no longer silently breaks the drift-check. The lib runs from its own
+    # checkout dir; pass that as the root so its `.tad` existence guard is satisfied.
+    local lib_root
+    lib_root="$(cd "$(dirname "$lib")/../../.." && pwd)"
     lib_set="$(
-        # shellcheck disable=SC1090
-        ( set +euo pipefail
-          # Source only the constant block by extracting it — but sourcing the
-          # whole file would run its case dispatch, so we run it isolated with a
-          # no-op MODE that just defines vars. Simpler: grep the two heredoc-free
-          # constant lists out of the lib and union them.
-          true ) >/dev/null 2>&1
-        # Extract ZERO_TOUCH + TRANSIENT block contents from the lib (the lines
-        # between the opening quote and closing quote of each assignment).
-        awk '
-          /^ZERO_TOUCH="/  {grab=1; sub(/^ZERO_TOUCH="/,""); if ($0 ~ /"$/){sub(/"$/,""); print; grab=0; next} print; next}
-          /^TRANSIENT="/   {grab=1; sub(/^TRANSIENT="/,"");  if ($0 ~ /"$/){sub(/"$/,""); print; grab=0; next} print; next}
-          grab==1 { if ($0 ~ /"$/){sub(/"$/,""); print; grab=0} else print }
-        ' "$lib" | LC_ALL=C sort -u
+        { bash "$lib" --zero-touch "$lib_root"
+          bash "$lib" --transient "$lib_root"
+        } | LC_ALL=C sort -u
     )"
 
     if [ "$here_set" = "$lib_set" ]; then
@@ -238,12 +252,15 @@ copy_framework_files() {
 
     # --- .tad/ framework files (copy everything except project data) ---
 
-    # Top-level config & metadata files (except the deny-listed sync-registry).
-    for f in "$src"/.tad/*.yaml "$src"/.tad/*.md "$src"/.tad/*.txt; do
-        [ -f "$f" ] || continue
-        [ "$(basename "$f")" = "$TAD_TOP_DENY" ] && continue
-        cp "$f" .tad/ 2>/dev/null || true
-    done
+    # Top-level config & metadata files — DENY-LIST derived (every regular file
+    # under $src/.tad/ EXCEPT TAD_TOP_DENY), NOT a fixed extension allow-list.
+    # A new top-level framework file (.sh/.json/…) auto-copies — this is what
+    # makes .tad/portable-extract.sh land on a fresh machine.
+    local tf
+    while IFS= read -r tf; do
+        [ -n "$tf" ] || continue
+        cp "$src/.tad/$tf" .tad/ 2>/dev/null || true
+    done <<< "$(derive_framework_top_files "$src")"
 
     # Framework subdirectories — DERIVED (deny-list), not hardcoded.
     # A new framework dir (e.g. codex, capability-packs, cross-model) is
@@ -295,23 +312,39 @@ copy_framework_files() {
 # ============================================
 # Phase 4c: Post-install completeness self-check (P2 AC3)
 # ============================================
-# For each DERIVED framework dir, assert it exists + is non-empty in the target.
-# Reuses the SAME deny-list derivation so it checks exactly what was meant to be
-# copied — a new framework dir is auto-verified, an omission is caught.
-# Non-fatal: warns + records a count; the ERR trap is NOT triggered (we want the
-# install to report a clear self-check verdict rather than silently rollback).
+# For each DERIVED framework dir AND each DERIVED top-level file, assert it landed
+# in the target. Reuses the SAME deny-list derivations so it checks exactly what was
+# meant to be copied — a new framework dir/file is auto-verified, an omission is caught.
+#
+# Dirs are verified by `diff -rq "$src/.tad/$dir" ".tad/$dir"` (the source tree is
+# LOCAL at install time): this catches PARTIAL copies (1-of-50 files), not just an
+# empty dir. The presence + non-empty check is kept as a fallback when diff is
+# unavailable or the dir is missing entirely.
+#
+# Top-level files (P1: portable-extract.sh class) are verified by `cmp -s` against
+# the source — so a future top-level framework file omission is now CAUGHT here,
+# closing the gap where the dir-only self-check (and P1 release-verify.sh structural)
+# were blind to top-level files.
+#
+# FATAL under main: `return 1` propagates to set -e + the ERR trap → rollback_on_failure.
+# This is the desired behavior — a broken/partial source must fail the install rather
+# than leave a silently-incomplete tree.
 verify_install_complete() {
     local src="$1"
-    log_info "  → Post-install self-check (derived completeness)..."
+    log_info "  → Post-install self-check (derived completeness + content diff)..."
 
     local missing=0 checked=0 dir
     while IFS= read -r dir; do
         [ -n "$dir" ] || continue
         checked=$((checked + 1))
         if [ "$dir" = "$TAD_REGISTRY_ONLY" ]; then
-            # registry-only: only the index file must exist.
+            # registry-only: only the index file must exist + match source.
             if [ ! -f ".tad/$dir/$TAD_REGISTRY_FILE" ]; then
                 log_warn "    ✗ MISSING: .tad/$dir/$TAD_REGISTRY_FILE (registry index)"
+                missing=$((missing + 1))
+            elif [ -f "$src/.tad/$dir/$TAD_REGISTRY_FILE" ] \
+                 && ! cmp -s "$src/.tad/$dir/$TAD_REGISTRY_FILE" ".tad/$dir/$TAD_REGISTRY_FILE"; then
+                log_warn "    ✗ MISMATCH: .tad/$dir/$TAD_REGISTRY_FILE differs from source"
                 missing=$((missing + 1))
             fi
             continue
@@ -321,13 +354,33 @@ verify_install_complete() {
         if [ ! -d ".tad/$dir" ] || [ -z "$(ls -A ".tad/$dir" 2>/dev/null)" ]; then
             log_warn "    ✗ MISSING or EMPTY: .tad/$dir/"
             missing=$((missing + 1))
+        elif command -v diff >/dev/null 2>&1 \
+             && ! diff -rq "$src/.tad/$dir" ".tad/$dir" >/dev/null 2>&1; then
+            # Present + non-empty but content does NOT match source → partial copy.
+            log_warn "    ✗ PARTIAL/STALE: .tad/$dir/ differs from source (diff -rq)"
+            missing=$((missing + 1))
         fi
     done <<< "$(derive_framework_dirs "$src")"
 
+    # Top-level framework files (DENY-LIST derived, any extension) — closes the
+    # portable-extract.sh gap. A source top-level file missing from the target FAILS.
+    local tf top_checked=0
+    while IFS= read -r tf; do
+        [ -n "$tf" ] || continue
+        top_checked=$((top_checked + 1))
+        if [ ! -f ".tad/$tf" ]; then
+            log_warn "    ✗ MISSING top-level file: .tad/$tf"
+            missing=$((missing + 1))
+        elif ! cmp -s "$src/.tad/$tf" ".tad/$tf"; then
+            log_warn "    ✗ MISMATCH top-level file: .tad/$tf differs from source"
+            missing=$((missing + 1))
+        fi
+    done <<< "$(derive_framework_top_files "$src")"
+
     if [ "$missing" -eq 0 ]; then
-        log_success "    ✓ Self-check passed: all $checked derived framework dirs present + non-empty"
+        log_success "    ✓ Self-check passed: $checked derived dirs (diff-clean) + $top_checked top-level files present"
     else
-        log_error "    ✗ Self-check FAILED: $missing of $checked derived framework dir(s) missing/empty"
+        log_error "    ✗ Self-check FAILED: $missing missing/partial/mismatched derived path(s)"
         log_error "      The install is INCOMPLETE — re-run the installer or report this."
         return 1
     fi
