@@ -88,9 +88,36 @@ activation-instructions:
          Append to health summary output: "⚠️ {zombie_count} 个 handoff 超过 14 天未归档"
       10. If zombie_count == 0: no additional output
       This is READ-ONLY - do not modify any files.
+      # --- Knowledge Health Scan (Knowledge Lifecycle System Phase 1) ---
+      11. Scan knowledge health:
+          a. Count total entries: total=$(grep -c '^### ' .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '{s+=$2}END{print s}')
+          b. Check layered structure: has_layers=$(test -d .tad/project-knowledge/patterns && echo 1 || echo 0)
+          c. Find max file: max_file=$(grep -rc '^### ' .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1)
+             max_count=$(echo "$max_file" | cut -d: -f2)
+             max_name=$(echo "$max_file" | cut -d: -f1 | xargs basename)
+          d. Compute verdict:
+             if has_layers == 1 AND max_count <= 50 → verdict=OK
+             if has_layers == 0 → verdict=NEEDS_ORGANIZE
+             if max_count > 50 → verdict=NEEDS_CLEANUP
+      12. Output based on verdict:
+          - OK → append to health summary: "📚 Knowledge: {total} entries, layered ✅"
+          - NEEDS_ORGANIZE → "📚 Knowledge: {total} entries in flat structure — *knowledge-organize 可用后将自动提示分层整理 (Knowledge Lifecycle Epic Phase 2)"
+            ⚠️ ARCH P0-3 + CR P1-1 fix: NO AskUserQuestion here — Phase 2 not built yet.
+            Log-and-continue is more honest than a false choice. Continue to STEP 3.6.
+          - NEEDS_CLEANUP → "📚 Knowledge: {max_name} has {max_count} entries (>50) — 建议运行 *dream 整合"
+      13. This is READ-ONLY — do not modify any knowledge files.
+      # Step 11a grep MUST exclude principles.md (empty template, not a content file yet):
+      total=$(grep -c '^### ' .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '{s+=$2}END{print s}')
+      # ⚠️ Use explicit file list, NOT *.md glob — glob picks up principles.md (empty template) and future pattern/incident files
     output: "Display health summary before greeting"
     blocking: false
-    suppress_if: "No issues found AND zombie_count == 0 - show one-line: 'TAD Health: OK'"
+    suppress_if: "No issues found AND zombie_count == 0 AND knowledge_verdict == OK - show one-line: 'TAD Health: OK'"
+    interacts_with: |
+      Knowledge health scan runs AFTER zombie detection (items 4-10) and BEFORE suppress_if evaluation.
+      The knowledge scan's log output does NOT suppress STEP 3.55 (zombie cleanup) or STEP 3.56 (dream candidates).
+      All three sub-scans (zombie + knowledge + pair test) are independent — each produces its own output line.
+      knowledge_verdict is a JUDGMENT variable in Alex's conversation context (not a mechanical YAML key).
+      After knowledge scan completes, execution continues to STEP 3.6 regardless of verdict.
   - STEP 3.6: Pair test report detection
     action: |
       1. Read .tad/pair-testing/SESSIONS.yaml (if exists)

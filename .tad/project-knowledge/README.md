@@ -278,3 +278,61 @@ When starting implementation that matches a category:
 - Missing a few entries (impact-based criteria means we capture important ones)
 - Exact format compliance (intent matters more than format)
 - Entry length limits (guidelines, not rules)
+
+## Knowledge Lifecycle System (TAD v2.23+)
+
+### Three-Layer Model
+
+| Layer | Name | What It Contains | Loading Strategy | Lifecycle |
+|-------|------|-----------------|-----------------|-----------|
+| L1 | Principles | Permanent methodology rules (≤15). Transcend any codebase. | Always loaded via CLAUDE.md @import | Only modified via Epic-level TAD flow |
+| L2 | Patterns | Reusable patterns learned from experience. May become stale. | On-demand: _index.md matched at session start, full file loaded when matched | Graduated from L3 when ≥2 incidents share a pattern. Stale-checked. |
+| L3 | Incidents | One-time evidence. Supports L1/L2 entries. | Never pre-loaded. Queried via knowledge-blame.sh | Auto-archived after 90 days when linked L2 pattern is stable |
+
+### Classification Criteria (Prediction-Error Heuristic)
+
+When writing a new knowledge entry (Gate 4 KA), apply this decision tree:
+
+1. **Does this rule transcend any specific codebase?** → YES → L1 Principle
+2. **Is this a reusable pattern for a class of problems?** → YES → L2 Pattern
+3. **Is this evidence of a specific event?** → YES → L3 Incident
+4. **None of the above** → DISCARD or rephrase
+
+Shortcut: "Would a senior TAD user already know this?" → YES = L3 or discard. NO = L2. "Does this fundamentally change how TAD works?" → YES = L1 candidate.
+
+### 5 Lifecycle Rules
+
+1. **Classify at write**: Gate 4 KA auto-classifies new entries (L1-candidate/L2/L3)
+2. **Graduate at threshold**: *dream detects ≥2 L3 incidents with shared pattern → proposes L2 graduation
+3. **Expire at 90 days**: L3 incidents >90 days + linked L2 stable (no new incident in 60 days) → auto-archive
+4. **Protect L1**: principles.md modification requires Epic-level TAD flow (not just a handoff)
+5. **Load per layer**: L1 always, L2 index-match, L3 blame-on-demand
+
+### File Structure
+
+```
+.tad/project-knowledge/
+├── principles.md              # L1: always loaded (~3KB)
+├── patterns/                  # L2: loaded on-demand
+│   ├── _index.md              # title + summary per file
+│   ├── shell-portability.md
+│   ├── gate-design.md
+│   └── ...
+├── incidents/                  # L3: never pre-loaded
+│   ├── _index.md              # title + date + linked pattern
+│   └── 2026-MM/
+│       └── specific-event.md
+├── architecture.md            # Legacy (migrated entries have pointers)
+├── code-quality.md            # Legacy
+├── security.md                # Legacy
+└── README.md                  # This file
+```
+
+### Legacy Rules Reconciliation
+
+The "Quantity Limits & Consolidation" section above predates the Knowledge Lifecycle System.
+Where they overlap, the Lifecycle Rules supersede:
+- Old "~15-20 entries per file" soft limit → superseded by L1 ≤15 cap + L2/L3 separation
+- Old ">6 months old" consolidation trigger → superseded by L3 90-day auto-archive
+- Old "3+ entries cover similar topics" → superseded by L2 theme grouping
+The old rules remain as fallback guidance for projects that haven't adopted the three-layer model.
