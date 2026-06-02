@@ -5,6 +5,29 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.22.0] - 2026-06-01
+
+### Added
+- **Self-Deriving + Self-Verifying Release/Sync** — publish, sync, and install now DERIVE their file sets
+  from the repo structure (deny-list) instead of hardcoded lists that silently go stale when the structure
+  evolves. Replaces the recurring "release/sync missed a file" failures (e.g. `.tad/codex/` was frozen for
+  a month; `tad.sh` stuck at an old version).
+  - `.tad/hooks/lib/derive-sync-set.sh` — deny-list derivation, the single source of truth (a new framework
+    dir is auto-included; zero-touch project data is never synced).
+  - `.tad/hooks/lib/release-verify.sh` — structure-agnostic verification: `structural` (diff source==target)
+    + `version` (grep for stale version refs, scoped to git-tracked files). Exit 0/1/2; `TAD_RELEASE_GATE=warn`
+    shadow mode for first cutover.
+  - Release-time HARD-BLOCK gate wired into `*publish` (version) + `*sync` (structural) — minor+ blocks on
+    a detected omission/mismatch; advisory on patch. NOT a settings.json hook (release-time only).
+  - `tad.sh` installer self-derives its copy-set (incl. previously-omitted dirs + top-level files of any
+    extension), derives the version from source, runs a post-install `diff` self-check, and `--verify-denylist`
+    drift-checks its inlined deny-list against the lib.
+  - `release-runbook` SKILL upgraded to the derive+verify procedure; the old hardcoded 18-item version table
+    and 14-dir sync list demoted to non-authoritative ("DERIVED — illustrative only").
+
+### Notes
+- This is the first release that USES the new mechanism (grep-derived version bump + shadow-mode gate).
+
 ## [2.21.0] - 2026-06-01
 
 ### Added
