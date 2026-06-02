@@ -2743,6 +2743,16 @@ handoff_creation_protocol:
         4. Verify: no other phase is already 🔄 Active (concurrent control)
            - If another phase is Active → BLOCK, do not create handoff
         If no active Epic → omit the Epic field (normal handoff)
+      # principles.md protection check (Knowledge Lifecycle System)
+      principles_protection: |
+        If any file in §6 "Files to Modify" targets .tad/project-knowledge/principles.md:
+          Check: does the current handoff have an Epic field?
+          → If yes (Epic context active) → allow modification, log: "principles.md edit authorized by Epic {slug}"
+          → If no (standalone handoff) → WARN:
+            "⚠️ principles.md contains L1 methodology rules. Modifying it requires an
+            Epic-level TAD flow. Either create an Epic first, or reclassify this change
+            as an L2 pattern edit (patterns/*.md) if it's not truly a methodology change."
+            Use AskUserQuestion: "Override?" / "Create Epic first" / "Change target to patterns/"
 
     step1a:
       name: "Domain Pack Injection"
@@ -4048,8 +4058,24 @@ acceptance_protocol:
     C_alex_own_discoveries:
       action: |
         1. Evaluate: did this acceptance reveal business/architecture insights?
-        2. If Yes → write directly to .tad/project-knowledge/{category}.md
-        3. Fill Gate 4 Knowledge Assessment table with file path + entry title
+        2. If Yes → classify the discovery using prediction-error heuristic:
+           a. "Does this fundamentally change how TAD works?" → L1-CANDIDATE
+              → Write to .tad/project-knowledge/principles.md ONLY IF an active Epic
+                references a principles-modification task. Otherwise:
+              → "⚠️ L1 CANDIDATE detected: '{title}'. Promoting to principles.md requires
+                an Epic-level TAD flow. Recording as L2 pattern for now."
+              → Write to appropriate patterns/{theme}.md instead
+              → Append to patterns/_index.md
+           b. "Is this a reusable pattern for a class of problems?" → L2
+              → Write to .tad/project-knowledge/patterns/{matched_theme}.md
+              → Append one-line entry to patterns/_index.md
+              → Match theme via keyword similarity to existing pattern file names
+                (if no match, create a new theme file)
+           c. "Is this evidence of a specific event?" → L3
+              → Write to .tad/project-knowledge/incidents/{YYYY-MM}/{slug}.md
+              → Append to incidents/_index.md with linked L1/L2 reference
+           d. "Would a senior TAD user already know this?" → YES → skip writing
+        3. Fill Gate 4 Knowledge Assessment table with: layer, file path, entry title
 
     separation_of_concerns: |
       - Blake writes implementation knowledge (Gate 3): tool behaviors, code patterns, workarounds
@@ -5728,6 +5754,29 @@ dream_protocol:
             - {N} AMENDED pairs ready to merge
             - {N} topic overlap groups
             - Foundational section: lines 1-{M} (protected)"
+
+        6. **Graduation candidates**: Scan incidents/_index.md for entries with the same
+           "linked" L2 pattern. If ≥2 incidents link to the same L2 pattern:
+           → Propose graduation: "Pattern '{pattern}' has {N} supporting incidents.
+             Consider promoting the common finding to a stronger pattern entry."
+           → In step4 review, show these as "🎓 Graduation candidate" with option to:
+             - "Accept graduation" → merge incident findings into the L2 pattern entry,
+               archive the incidents
+             - "Keep separate" → incidents stay, no merge
+
+        7. **Expired incidents**: For each incident in incidents/_index.md:
+           a. Extract date from the entry (YYYY-MM-DD format in title or _index.md)
+           b. Compute age_days = today - date
+           c. If age_days > 90:
+              Check: has the linked L2 pattern had a NEW incident in the last 60 days?
+              → If no new incident (pattern is stable) → propose archival:
+                "Incident '{title}' is {age_days} days old and its linked pattern
+                '{pattern}' has been stable for 60+ days. Archive?"
+              → If yes (pattern still active) → keep incident (still relevant evidence)
+           d. In step4 review, show these as "🗄️ Expiration candidate" with options:
+              - "Archive" → mv incident file to .tad/archive/knowledge/{YYYY-MM}/
+              - "Keep" → incident stays (resets the 90-day clock via Revalidated date)
+              - "Revalidate" → add Revalidated: {today} date, keep for another 90 days
 
     step3_consolidate:
       name: "Consolidate — Produce Candidate Files"

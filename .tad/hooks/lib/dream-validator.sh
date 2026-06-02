@@ -26,6 +26,15 @@ fi
 
 ERRORS=0
 
+# Layer validation (Knowledge Lifecycle System)
+# Check L1 cap: principles.md should have ≤15 entries
+if [ -f .tad/project-knowledge/principles.md ]; then
+  l1_count=$(grep -c '^### ' .tad/project-knowledge/principles.md 2>/dev/null || true)
+  if [ "$l1_count" -gt 15 ]; then
+    echo "WARN: principles.md has $l1_count entries (cap: 15)"
+  fi
+fi
+
 # Check 1: Safety keyword count — counts LINES containing any keyword (grep -cE)
 ORIG_KEYWORDS=$(grep -cE 'MUST|MANDATORY|VIOLATION|BLOCKING' "$ORIGINAL" || true)
 CAND_KEYWORDS=$(grep -cE 'MUST|MANDATORY|VIOLATION|BLOCKING' "$CANDIDATE" || true)
