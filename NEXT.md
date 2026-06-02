@@ -152,6 +152,26 @@
   - startup-health.sh SKILL.md-first guard, Alex 10 refs updated, deprecation.yaml v2.17.0
   - Commit: 27a0bc6
 
+- [x] **EPIC: Knowledge Lifecycle System (3 phases, YOLO) — ✅ COMPLETE + ARCHIVED 2026-06-02** — Epic: `.tad/archive/epics/EPIC-20260602-knowledge-layering.md`
+  - TAD's 4th core subsystem (alongside Gates, Ralph Loop, Trace+Optimize)
+  - P1: Sense engine in STEP 3.5 + three-layer schema + 116 entries classified (6491d73)
+  - P2: Organize — 116 entries migrated to principles(13)/patterns(75,9 files)/incidents(25). CLAUDE.md @import rewired (be0cb9b)
+  - P3: Maintain — Gate 4 KA auto-classify + *dream graduation(≥2) + 90-day expiration + L1 Epic protection + blame scope fix (e6bc342)
+  - Token savings: CLAUDE.md now loads principles.md (~3KB) + patterns index (~1KB) instead of architecture.md (~40KB)
+
+- [x] **knowledge-blame.sh In-Session Provenance Tool** — Gate 4 PASS + ARCHIVED 2026-06-02
+  - Git-blame wrapper for querying knowledge rule provenance during implementation
+  - Blake SKILL protocol (1_5_knowledge_provenance) + Layer 1 retry hint
+  - Scope: project-knowledge + SKILL.md + hooks/lib (3 allowed path patterns)
+  - 5 P0s fixed (pipefail crash, out-of-range, zero hash, path traversal, absolute path)
+  - Commits: 9363ca6 (impl) + 5936ee3 (gate3 verdict)
+
+- [x] **codebase-memory-mcp Integration** — Gate 4 PASS + ARCHIVED 2026-06-02
+  - Persistent code knowledge graph as graph→LSP→grep three-tier fallback
+  - step0_graph + step1c_lsp graph branch + expert_prompt_template hint + tad.sh install hint + integration guide
+  - 5 Blake P0s fixed (unsafe examples, missing migrate path, injection defense, projects[0] assumption)
+  - Commits: 11952f6 (impl) + 7a09b65 (gate3 verdict)
+
 - [ ] **EPIC: Agent Capability Packs** — 6/9 Phases Done
   - Epic: `.tad/active/epics/EPIC-20260507-agent-capability-packs.md`
   - 8 packs built (web-ui-design, product-thinking, web-backend, ai-agent-arch, web-frontend, video-creation, ai-prompt-eng, research-methodology)
