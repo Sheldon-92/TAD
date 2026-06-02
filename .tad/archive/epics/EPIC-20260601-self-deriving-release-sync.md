@@ -47,8 +47,8 @@ installer code path. P2 isolated (tad.sh is a separate code path — its own ris
 
 ### Phase 1: Core — Derive-Rules + Verification Lib + Runbook Upgrade + Release Gate
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done
+**Execution:** YOLO 2026-06-01; Gate 3+4 PASS (Conductor-verified)
 
 #### Scope
 Build the stable, structure-agnostic verification primitives (`.tad/hooks/lib/`); convert the sync from a
@@ -94,8 +94,8 @@ None (entry phase).
 
 ### Phase 2: tad.sh Installer Self-Derivation + Post-Install Self-Check
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done
+**Execution:** YOLO 2026-06-01; Gate 3+4 PASS (Conductor-verified)
 
 #### Scope
 Apply the same derive+verify principle to the `tad.sh` installer (the curl-install path Codex friends use):
