@@ -535,6 +535,7 @@ commands:
   # Core workflow commands
   analyze: Start requirement elicitation (3-5 rounds mandatory)
   design: Create technical design from requirements
+  tournament: "Run tournament design exploration — N agents compete, judge selects, synthesizer merges best ideas"
   # playground: Now a standalone command (/playground). See .claude/skills/playground/SKILL.md
   handoff: Generate handoff with expert review (see handoff_creation_protocol)
   review: Review Blake's completion report (MANDATORY before archiving)
@@ -2692,6 +2693,33 @@ design_protocol:
         - "No matching pack found for this task"
         - "User chose 'None — skip packs'"
         - "Light TAD process depth"
+
+    step1_5c:
+      name: "Tournament Option (competitive design exploration)"
+      trigger: "After pack loading (step1_5b), for Full or Standard TAD depth"
+      action: |
+        If user chose Full TAD or Standard TAD depth:
+        Use AskUserQuestion to offer tournament exploration:
+          "This design has multiple valid approaches. Want to explore them via tournament?"
+          Options:
+            - "Tournament — 2 competing designs + judge + merge (~200-220K tokens) (Recommended for ambiguous decisions)"
+            - "Deep tournament — 3 competitors + pairwise judges (~320K tokens, for high-stakes architecture)"
+            - "Skip — single-agent design (faster, sufficient for clear requirements)"
+
+        If user picks tournament or deep tournament:
+          1. Collect prior_art: Ask user for 2-3 prior art sources (URLs, file paths, or descriptions).
+             prior_art is REQUIRED — each competitor gets one source to base their design on.
+             This forces divergent starting points (mitigates single-model convergence).
+          2. Optionally collect custom rubric dimensions (or use defaults: feasibility, elegance, extensibility, principle_alignment)
+          3. Invoke: Workflow({name: 'tournament-design', args: {task: <design_task>, prior_art: <sources>, mode: 'standard'|'deep'}})
+          4. Use the merged_design from the workflow result as input for the rest of *design
+
+        If user picks skip: continue normal *design flow (step2 onwards)
+
+      skip_conditions:
+        - "Light TAD process depth"
+        - "User chose 'Skip TAD' in adaptive complexity"
+        - "*express or *experiment paths (tournament not applicable)"
 
     step2:
       name: "Frontend Detection & Playground Reference"
@@ -5709,6 +5737,7 @@ sync_protocol:
            - .claude/skills/**/SKILL.md
            - .claude/settings.json
            - .claude/skills/doc-organization.md
+           - .claude/workflows/*.workflow.js
            Root-level files:
            - tad.sh
            - docs/MULTI-PLATFORM.md
@@ -5802,7 +5831,7 @@ sync_protocol:
               .tad/skills/ .tad/sub-agents/ .tad/tasks/ \
               .tad/templates/ .tad/workflows/ \
               .tad/capability-packs/pack-registry.yaml \
-              .claude/skills/ .claude/settings.json \
+              .claude/skills/ .claude/settings.json .claude/workflows/ \
               CLAUDE.md tad.sh README.md INSTALLATION_GUIDE.md CHANGELOG.md \
               docs/MULTI-PLATFORM.md 2>/dev/null
             git commit -m "chore: sync TAD v{version} to {project_name}"
