@@ -257,6 +257,13 @@ if (runReview) {
 
   result.design_reviews = validReviews
   result.design_review_p0_count = totalP0
+
+  if (totalP0 > 0) {
+    log('Y4: STOPPING — ' + totalP0 + ' P0(s) found in design review. Conductor must fix before proceeding.')
+    result.stopped_at = 'review'
+    result.stop_reason = 'design review found ' + totalP0 + ' P0(s)'
+    return result
+  }
 }
 
 // ── Phase: Implement (Y5) ────────────────────────────────────────
