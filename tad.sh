@@ -291,6 +291,11 @@ copy_framework_files() {
         cp -r "$src"/.claude/skills/* .claude/skills/
     fi
     cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
+    # Copy workflow scripts (dynamic workflow integration, EPIC-20260603)
+    if [ -d "$src/.claude/workflows" ]; then
+        mkdir -p .claude/workflows
+        cp -r "$src"/.claude/workflows/* .claude/workflows/ 2>/dev/null || true
+    fi
 
     # --- Deprecation cleanup (v2.8.2) ---
     # Read .tad/deprecation.yaml and delete files listed for deprecation

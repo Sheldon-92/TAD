@@ -1,5 +1,5 @@
 ---
-gate3_verdict:
+gate3_verdict: pass
 ---
 
 # Completion Report: YOLO Workflow P3

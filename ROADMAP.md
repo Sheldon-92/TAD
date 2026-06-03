@@ -40,6 +40,20 @@
 | Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
 | Iterate on Playground based on user feedback | Idea | Pending | — |
 
+### Dynamic Workflow Integration
+**Status:** Active (2026-06-03)
+**Description:** Adopt Claude Code dynamic workflow patterns to evolve TAD from static prompt-based orchestration to deterministic JS-based orchestration. Judgment rules stay in SKILL.md, orchestration logic moves to workflow scripts. Validated by 3 experiments (23 agents, ~1.2M tokens) on 2026-06-03.
+**Source:** [Thariq article](./.tad/evidence/research/2026-06-03-dynamic-workflows-thariq.md) + [measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md)
+
+| Item | Type | Status | Reference |
+|------|------|--------|-----------|
+| Tournament for *design + pack builds | Direction | Validated — experiment proved ~30% richer output vs single-agent | [Tournament result](./.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md) |
+| Rule Adherence (per-AC verifier + skeptic) | Direction | Measured — 2 real false-negative incidents found | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
+| Declarative Constraints schema v0.1 | Deliverable | Schema designed (tournament output), ready for *analyze | [Schema](./.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md) |
+| Dual-Platform Orchestration Adapter | Direction | Researched — Codex has subagents (2026-03 GA), needs adapter layer | [Idea](./.tad/active/ideas/IDEA-20260603-dual-platform-orchestration-adapter.md) |
+| Token Budget observability for YOLO | Direction | Blind spot confirmed — 0 token data in traces | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
+| Quarantine (reader/actor isolation) | Idea | Documented for future non-dev use, not urgent now | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
+
 ---
 
 ## Archive

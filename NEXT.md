@@ -2,6 +2,12 @@
 
 ## In Progress
 
+- [x] **Tournament Design Workflow (Epic P2/5) — COMPLETE 2026-06-03** (commit 2292e04) — Reusable tournament-design.workflow.js: N competitors + pairwise judges + synthesizer merge. Integrated as Alex *design step1_5c + standalone *tournament. Standard (4 agents, ~200K) and deep (7 agents, ~320K) modes. Experiment: `.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md`
+
+- [x] **Declarative Constraints v0.1 — COMPLETE 2026-06-03** (commit df006b5) — Migrated 11 forbidden_implementations blocks from alex/SKILL.md body into structured YAML frontmatter constraints block. Mechanical deny deduped (22→2 lines), judgment items stay in body. SAFETY grep 19→20. Idea: `.tad/active/ideas/IDEA-20260528-declarative-agent-constraints.md`
+
+- [x] **Skillify at Knowledge Assessment — ✅ COMPLETE 2026-06-03** (commit 7aa92c0) — Blake KA now evaluates reusable working patterns (4-gate: Reusable/Non-trivial/Verified/Not-duplicate) + Alex *skillify command + STEP 3.57 candidate detection at startup. Inspired by Garry Tan "Stop building Foxconn factories" article + GBrain/Hermes/Claudeception research. Idea: `.tad/active/ideas/IDEA-20260603-skillify-at-knowledge-assessment.md`
+
 - [x] **EPIC: Self-Deriving + Self-Verifying Release/Sync (2 phases, YOLO) — ✅ COMPLETE + ARCHIVED 2026-06-01** — Epic: `.tad/archive/epics/EPIC-20260601-self-deriving-release-sync.md` · DR: `.tad/decisions/DR-20260601-self-deriving-release-sync.md`
   - **Why**: publish/sync/install kept silently missing files (codex frozen a month, tad.sh stuck at 2.19.1) — root cause: hardcoded lists go stale when structure evolves. User: "make it a standard operation that checks itself, not a stale reused script."
   - **Solution (skill upgrade, not a pack)**: replaced hardcoded lists with **structure-derived rules + structure-agnostic verification gates**. `.tad/hooks/lib/derive-sync-set.sh` (deny-list, single source of truth) + `release-verify.sh` (`structural` diff-r / `version` grep-stale scoped to `git ls-files`, exit 0/1/2, `TAD_RELEASE_GATE=warn` shadow). Release-time HARD-BLOCK gate wired into `*publish`/`*sync` (NOT settings.json). Runbook tables demoted to non-authoritative. **P2**: tad.sh installer self-derives (deny-list copy-set incl. top-level files, version-from-source, diff self-check, `--verify-denylist` drift check).
@@ -225,6 +231,9 @@ From ECC research (2026-05-27):
 
 From OpenCode research (2026-05-28):
 - [ ] IDEA-20260528-declarative-agent-constraints: Declarative agent constraints — separate config from judgment (OpenCode pattern)
+
+From Perplexity SaC research (2026-06-02):
+- [ ] IDEA-20260602-sac-thin-protocol-thick-tools: Thin protocol + thick tools evolution — revisit when SaC SDK/benchmarks open-source
 
 From html-anything research (2026-05-27):
 - [x] IDEA-20260527-pack-behavioral-examples: Promoted → Handoff 2026-05-27

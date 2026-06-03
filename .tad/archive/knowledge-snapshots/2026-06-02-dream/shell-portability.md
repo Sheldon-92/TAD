@@ -16,12 +16,6 @@
 - **Discovery**: (1) `set -e` propagates non-zero exits through `case` arms. (2) Portable timeout: `gtimeout` → `timeout` → no-op fallback. (3) Set-difference for newly-added item ID (`comm -13`), not positional index. (4) UTM normalization: per-param split by `&`, not bulk regex. (5) Fast-fail phases before slow-fail in fallback chains (1-2s API check before 5-10s yt-dlp). (6) Phase-specific `method:` field in frontmatter is zero-cost audit trail.
 - **Action**: Single awk process for classification. Per-param split for URL query manipulation. Fast-fail first.
 
-### mikefarah yq -i Normalizes Whole File on First Write - 2026-05-31
-- **Discovery**: mikefarah yq v4 reformats the WHOLE file on its first `-i` write (strips blank lines, normalizes comment spacing, re-folds multiline strings), then is byte-stable on subsequent edits. No reliable preservation flag exists. A "byte-identical untouched entries" AC is only satisfiable relative to an already-yq-normalized file.
-- **Action**: When mandating `yq -i` for recurring edits AND requiring byte-identity of untouched entries: (1) expect a one-time normalization, (2) trigger it via an early mandated edit, (3) prove idempotency with normalize→snapshot→edit→diff, (4) run byte-identity checks against the NORMALIZED file. Never reach for line-based sed to dodge the reformat.
-- Graduated from: incidents/2026-05/yq-normalizes-once-idempotent.md
-- **Grounded in**: .tad/hooks/lib/notebook-lifecycle.sh
-
 ### Shell Env-Var Convention for Backward-Compatible Function Extension - 2026-05-19
 - **Context**: Extending `record_trace()` from 3 positional params to 10+ fields for v2 trace schema. Expert review (code-reviewer + backend-architect) independently flagged positional params as P0: "10-positional-param record_trace() is maintenance hazard — silent data corruption when callers swap arg order."
 - **Discovery**: Env-var convention (`TRACE_*` variables set before call, function reads with `${TRACE_VAR:-default}`, `unset` after call) is the correct pattern for extending shell functions beyond ~3 positional args. Advantages: (1) Backward compat — existing callers unchanged, (2) Self-documenting at call site (`TRACE_OUTCOME="fail"` vs positional arg 7), (3) No silent corruption from arg order mistakes, (4) Inline assignment (`VAR=val command`) scopes to single call without export. The `unset` after call prevents bleed between sequential calls in the same script.

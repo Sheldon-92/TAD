@@ -22,7 +22,7 @@
 - [Ad-hoc Dead Code Audit](2026-05/ad-hoc-dead-code-audit.md) — 2026-05-30, linked: L1 "YOLO Epic Execution" / gate-design
 - [Progressive Disclosure Extract](2026-05/progressive-disclosure-extract.md) — 2026-05-31, linked: L1 "Judgment-Only Skill Files"
 - [Pack Collision Detection](2026-05/pack-collision-detection.md) — 2026-05-31, linked: pack-evaluation "Anti-AI-Slop as Cross-Pack Quality Bar"
-- [yq Normalizes Once Idempotent](2026-05/yq-normalizes-once-idempotent.md) — 2026-05-31, linked: shell-portability "Hook Shell Portability Rules"
+- ~~[yq Normalizes Once Idempotent](2026-05/yq-normalizes-once-idempotent.md)~~ — 2026-05-31, **GRADUATED** to L2 shell-portability "mikefarah yq -i Normalizes Whole File on First Write" (2026-06-02 *dream)
 - [Line-Anchored blockquote sed](2026-05/line-anchored-blockquote-sed.md) — 2026-05-31, linked: shell-portability "Shell Dispatcher Patterns"
 - [Section 9.1 Region Marker](2026-05/section-9-1-region-marker.md) — 2026-05-31, linked: ac-verification "AC Verification Drift Pattern"
 - [Pack Value Non-Monotonic](2026-06/pack-value-non-monotonic.md) — 2026-06-01, linked: pack-evaluation "Capability Pack Quality Bar: Anti-Slop Metrics"

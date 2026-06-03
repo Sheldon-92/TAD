@@ -155,6 +155,18 @@ case "$MODE" in
       fails=$((fails + 1))
     fi
 
+    # .claude/workflows — dynamic workflow scripts (EPIC-20260603).
+    if [ -d "$SRC/.claude/workflows" ]; then
+      wout="$(diff -rq "$SRC/.claude/workflows" "$TGT/.claude/workflows" 2>&1)" || true
+      if [ -z "$wout" ]; then
+        echo "  ✅ .claude/workflows identical"
+      else
+        echo "  ❌ .claude/workflows DIFF:"
+        printf '%s\n' "$wout" | sed 's/^/      /' | head -4
+        fails=$((fails + 1))
+      fi
+    fi
+
     echo "-----------------------------------------"
     if [ "$fails" -eq 0 ]; then
       echo "VERDICT: structural PASS (exit 0)"

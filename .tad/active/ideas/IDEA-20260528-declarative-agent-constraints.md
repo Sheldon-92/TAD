@@ -2,7 +2,7 @@
 
 **ID:** IDEA-20260528-declarative-agent-constraints
 **Date:** 2026-05-28
-**Status:** captured
+**Status:** promoted
 **Scope:** large
 
 ---
