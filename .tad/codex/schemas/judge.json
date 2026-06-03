@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "winner": { "type": "string", "description": "Label of the winning design: A or B" },
+    "loser": { "type": "string", "description": "Label of the losing design: A or B" },
+    "winner_name": { "type": "string", "description": "Full approach_name of the winning design" },
+    "loser_name": { "type": "string", "description": "Full approach_name of the losing design" },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "design_a": { "type": "object", "description": "Scores for Design A", "additionalProperties": { "type": "number" } },
+        "design_b": { "type": "object", "description": "Scores for Design B", "additionalProperties": { "type": "number" } }
+      },
+      "required": ["design_a", "design_b"],
+      "additionalProperties": false
+    },
+    "decisive_factor": { "type": "string", "description": "What tipped the decision" },
+    "what_loser_did_better": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Specific sub-ideas from the loser worth preserving in a merge"
+    }
+  },
+  "required": ["winner", "loser", "winner_name", "loser_name", "scores", "decisive_factor", "what_loser_did_better"],
+  "additionalProperties": false
+}

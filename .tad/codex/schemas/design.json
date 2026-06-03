@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "approach_name": { "type": "string", "description": "Name of this design approach" },
+    "prior_art_reference": { "type": "string", "description": "Which prior art source this was based on" },
+    "design_content": { "type": "string", "description": "The actual design (markdown)" },
+    "tradeoffs": { "type": "array", "items": { "type": "string" }, "description": "Key tradeoffs of this approach" },
+    "key_innovation": { "type": "string", "description": "What makes this approach unique vs others" }
+  },
+  "required": ["approach_name", "prior_art_reference", "design_content", "tradeoffs", "key_innovation"],
+  "additionalProperties": false
+}

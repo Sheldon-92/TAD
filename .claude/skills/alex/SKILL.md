@@ -2711,8 +2711,14 @@ design_protocol:
              prior_art is REQUIRED — each competitor gets one source to base their design on.
              This forces divergent starting points (mitigates single-model convergence).
           2. Optionally collect custom rubric dimensions (or use defaults: feasibility, elegance, extensibility, principle_alignment)
-          3. Invoke: Workflow({name: 'tournament-design', args: {task: <design_task>, prior_art: <sources>, mode: 'standard'|'deep'}})
-          4. Use the merged_design from the workflow result as input for the rest of *design
+          3. Detect platform and route:
+             platform=$(bash .tad/hooks/lib/detect-platform.sh)
+             If "workflow" → Invoke: Workflow({name: 'tournament-design', args: {task: <design_task>, prior_art: <sources>, mode: 'standard'|'deep'}})
+             If "codex"    → Write task + prior_art to temp files, invoke: bash .tad/codex/tournament-codex.sh --task <file> --prior-art <f1> <f2> --output <result.json>
+                             (Codex: standard mode only, deep not supported. Warn user if they chose deep.)
+             If "none"     → Announce: "No multi-agent backend available. Running single-agent design (no tournament)."
+                             Continue with normal *design flow (step2 onwards) using single-agent.
+          4. Use the merged_design from the result as input for the rest of *design
 
         If user picks skip: continue normal *design flow (step2 onwards)
 

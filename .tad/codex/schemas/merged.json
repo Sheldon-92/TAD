@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "tournament_winner": { "type": "string", "description": "Name of the base winner design" },
+    "win_record": { "type": "string", "description": "Win-loss record summary" },
+    "best_ideas_from_losers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Specific ideas grafted from losing designs"
+    },
+    "merged_design": { "type": "string", "description": "The final merged design (markdown)" },
+    "ideas_grafted_from_losers_count": {
+      "type": "number",
+      "description": "How many sub-ideas from losers survived into the merge"
+    }
+  },
+  "required": ["tournament_winner", "win_record", "best_ideas_from_losers", "merged_design", "ideas_grafted_from_losers_count"],
+  "additionalProperties": false
+}
