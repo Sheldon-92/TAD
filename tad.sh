@@ -19,7 +19,7 @@ NC='\033[0m'
 # literal can never go stale (fixes the 2.19.1-class hand-edit straggler).
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="2.22.1"
+TARGET_VERSION="2.23.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 

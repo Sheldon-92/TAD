@@ -1,8 +1,8 @@
-# TAD Configuration v2.22.1 - Self-Deriving Release/Sync
+# TAD Configuration v2.23.0 - Self-Deriving Release/Sync
 method: TAD
-version: 2.22.1
+version: 2.23.0
 description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 24 Capability Packs + Cross-Platform Portable
-last_updated: 2026-06-01
+last_updated: 2026-06-03
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

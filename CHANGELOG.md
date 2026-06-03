@@ -5,6 +5,38 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.23.0] - 2026-06-03
+
+### Added
+- **Dynamic Workflow System**: 5 reusable `.claude/workflows/` scripts for deterministic multi-agent orchestration
+  - `epic-audit.workflow.js` — fan-out + adversarial verification + synthesis for Epic status review
+  - `gate-review.workflow.js` — per-AC verifier agents + skeptic filter (replaces single-context serial review)
+  - `tournament-design.workflow.js` — N competing designers + pairwise judges + merged design (30% richer than single-agent)
+  - `yolo-epic.workflow.js` — hybrid Conductor + workflow execution with budget reporting
+  - `loop-discover.workflow.js` — loop-until-done discovery with dedup and dry-round stop condition
+- **Cross-Platform Adapter**: `detect-platform.sh` + `tournament-codex.sh` for running tournament on Codex CLI
+  - Runtime detection: TAD_PLATFORM override + workflow>codex file-based priority
+  - Codex tournament uses `--output-schema` for mechanical JSON validation
+  - JSON schemas in `.tad/codex/schemas/` (design, judge, merged)
+- **ROADMAP**: "Dynamic Workflow Integration" theme with 6 completed phases
+- **tad.sh + release-verify.sh**: `.claude/workflows/` added to sync and verification scope
+
+### Changed
+- **YOLO execution**: 240-line prose protocol replaced by 30-line invocation stub + `yolo-epic.workflow.js`
+  - 4 constraint rules preserved in stub (file-as-truth, Conductor-spawned review, persistence, Blake Layer 1 only)
+  - Original prose archived to `.tad/archive/protocols/yolo-execution-v1-prose.md`
+- **alex/SKILL.md**: -211 lines net reduction. Added `step1_5c` (tournament option in *design), `*tournament` command, `loop_discover_option` in *optimize/*dream
+
+### Fixed
+- **YOLO stop-on-P0**: Added deterministic gate between Y4 design review and Y5 implementation — blocks implement when P0 found (Codex audit finding, Safety 2/5 → 4/5)
+- **YOLO Y6 fail-closed**: All-null implementation reviewers now trigger early return instead of reporting 0 P0s
+- **Tournament deep mode**: `judgePairs` undeclared variable fixed (would throw ReferenceError in ES module mode)
+- **Budget label**: "budget-aware" corrected to "budget-reporting" (observation, not enforcement)
+
+### Security
+- Codex cross-model audit: 3 rounds (12/25 → 16/25 → 18/25). All P0 safety issues resolved.
+- 7-experiment safety validation executed with pass/fail evidence
+
 ## [2.22.0] - 2026-06-01
 
 ### Added
@@ -1159,7 +1191,7 @@ See `docs/MIGRATION-v2.md` for detailed migration instructions.
 - Cross-registry sync contract: github-registry ↔ research-notebooks REGISTRY consistency
 - Single-writer principle: scan routine only writes scan-log, REGISTRY updated only on consumption
 
-## v2.22.1 — Knowledge Lifecycle System + Code Intelligence (2026-06-02)
+## v2.23.0 — Knowledge Lifecycle System + Code Intelligence (2026-06-02)
 
 ### New Features
 - **Knowledge Lifecycle System** (TAD's 4th core subsystem) — 3-phase Epic:
