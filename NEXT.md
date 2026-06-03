@@ -1,5 +1,9 @@
 # Next Steps
 
+## Priority (Next Session)
+
+- [ ] **Triple-Question KA Evolution — HIGH PRIORITY** — Gate KA 从 2 问扩展为 3 问（knowledge + skill + workflow）。统一 Alex 和 Blake 的触发点。Skillify 加第 5 步判断"判断型 vs 编排型"。闭环：用→发现→三问→改进→再用。用户要求在干净 Alex context 中优先执行。详细设计 + 来龙去脉：`.tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md`
+
 ## In Progress
 
 - [x] **Tournament Design Workflow (Epic P2/5) — COMPLETE 2026-06-03** (commit 2292e04) — Reusable tournament-design.workflow.js: N competitors + pairwise judges + synthesizer merge. Integrated as Alex *design step1_5c + standalone *tournament. Standard (4 agents, ~200K) and deep (7 agents, ~320K) modes. Experiment: `.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md`
