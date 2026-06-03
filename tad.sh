@@ -144,7 +144,8 @@ evidence
 pair-testing
 decisions
 github-registry
-research-notebooks"
+research-notebooks
+skillify-candidates"
 # Category C — transient / main-only (do NOT sync; not part of framework surface):
 TAD_TRANSIENT="working
 spike-v3

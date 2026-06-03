@@ -53,6 +53,7 @@ gate3_verdict:
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
 | ⚠️ New Discoveries Documented | ✅/❌ | [Yes/No + 类别 — 留空 = Gate 无效] |
+| ⚠️ Skillify Candidate | ✅/❌ | [Yes: SCAND-{slug} / No: {failed gate}] |
 
 ### Git
 

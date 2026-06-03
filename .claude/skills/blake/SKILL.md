@@ -1798,6 +1798,38 @@ completion_protocol:
 
     violation: "Gate 结果表格缺少 Knowledge Assessment = Gate 无效 = VIOLATION"
 
+    # Skillify candidate evaluation (after KA must_answer is filled)
+    skillify_evaluation:
+      trigger: "After knowledge_assessment must_answer is filled"
+      action: |
+        Evaluate whether the WORKING PATTERN (not individual lesson) from this
+        implementation is reusable as a skill:
+        1. Check 4 quality gates:
+           - Reusable — pattern expected to recur (≥2 future use scenarios imaginable)
+           - Non-trivial — multi-step workflow (≥3 steps), not a single rule
+           - Verified — current task passed Gate 3 (pattern confirmed to work)
+           - Not-already-captured — no overlap with existing .claude/skills/ or capability packs
+        2. If all 4 pass → write SCAND-{date}-{slug}.md to .tad/active/skillify-candidates/
+           using template .tad/templates/skillify-candidate-template.md
+        3. Note in completion report Skillify Candidate row:
+           "Yes: SCAND-{date}-{slug} (4/4 gates passed)"
+        4. If any gate fails → fill completion report Skillify Candidate row:
+           "No: {failed_gate_name}" (audit trail, no user interaction)
+      blocking: false
+      note: "This is a SUGGESTION — candidate goes to human review via Alex STEP 3.57, not auto-created skill"
+      candidate_path: ".tad/active/skillify-candidates/SCAND-{YYYY-MM-DD}-{slug}.md"
+      interacts_with_override: |
+        skillify_evaluation runs AFTER knowledge_assessment must_answer is filled,
+        regardless of whether KA was original or completion_knowledge_override-triggered.
+        If skip_knowledge_assessment: yes AND no override marker → skillify_evaluation ALSO skips
+        (no KA context = no pattern to evaluate).
+      forbidden_implementations:
+        - "MUST NOT auto-accept candidates without human review — the entire value proposition is human-in-the-loop"
+        - "MUST NOT create .claude/skills/{slug}/SKILL.md from Blake — Blake writes candidates, Alex/human creates skills"
+        - "MUST NOT make skillify_evaluation blocking — it is explicitly blocking: false"
+        - "MUST NOT register hooks for skillify enforcement (per 2026-04-15 mechanical enforcement rejected principle)"
+        - "MUST NOT auto-invoke *skillify without user explicit command (Alex side) — Blake's path is KA-only"
+
   violation: "完成实现但不创建 completion report = 绕过验收 = VIOLATION"
 
 # ⚠️ P3.3 (2026-04-24): Blake override unskip protocol

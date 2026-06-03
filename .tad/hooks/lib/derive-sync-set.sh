@@ -13,7 +13,7 @@
 #                   CONSUMED FORMAT (breaking change if altered): one ASCII basename
 #                   per line, NO trailing slash, NO path prefix, LC_ALL=C sort order.
 #                   Read by: release-verify.sh structural + the per-release generator.
-#   --zero-touch    the 8 category-A "preserve target's own" dir names, LC_ALL=C sorted.
+#   --zero-touch    the 9 category-A "preserve target's own" dir names, LC_ALL=C sorted.
 #                   Read by: release-verify.sh version (the version-scope exclusion set).
 #                   This is the ONE authoritative zero-touch source — NOT re-hardcoded.
 #   --transient     the category-C transient / main-only dir names, LC_ALL=C sorted.
@@ -49,7 +49,7 @@ set -euo pipefail
 # A dir NOT in this list defaults to SYNC (framework) — the bias-to-sync escape from the
 # omission disease. To make a new dir main-only, ADD its basename here (the user's escape hatch).
 #
-# Category A — zero-touch (preserve each target's own copy; NEVER sync):
+# Category A — zero-touch (preserve each target's own copy; NEVER sync, 9 dirs):
 ZERO_TOUCH="project-knowledge
 active
 archive
@@ -57,7 +57,8 @@ evidence
 pair-testing
 decisions
 github-registry
-research-notebooks"
+research-notebooks
+skillify-candidates"
 # Category C — transient / main-only (do NOT sync; not part of the framework surface):
 TRANSIENT="working
 spike-v3

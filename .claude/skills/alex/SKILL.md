@@ -202,6 +202,31 @@ activation-instructions:
       Runs AFTER STEP 3.55 (zombie cleanup).
       Does NOT affect STEP 3.8 suppression.
       If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.56.
+  - STEP 3.57: Skillify candidate review (conditional)
+    trigger: "pending skillify candidates exist in .tad/active/skillify-candidates/"
+    action: |
+      1. Scan SCAND-*.md files with status: pending (grep frontmatter)
+      2. Filter out status: rejected files
+      3. For pending candidates older than 30 days: flag with "⏰ 30+ days pending"
+      4. If 0 pending → skip silently
+      5. If > 0:
+         Output: "🔧 {N} skillify candidates detected"
+         Per-candidate review:
+           Display: name, trigger_conditions, steps summary, source
+           AskUserQuestion per candidate:
+             - "接受 → 生成 project skill" → create .claude/skills/{slug}/SKILL.md from candidate outline
+             - "修改后接受" → user edits, then create
+             - "拒绝" → update candidate status→rejected
+             - "推迟" → status stays pending
+      6. On accept: generate .claude/skills/{slug}/SKILL.md from candidate's Proposed Skill Outline
+    blocking: false
+    suppress_if: "No pending candidates"
+    interacts_with: |
+      Runs AFTER STEP 3.56 (dream candidate review), BEFORE STEP 3.8 (research landscape).
+      If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.57
+      (user is in Terminal 2 for Blake, not here to review candidates).
+      Does NOT affect STEP 3.8 suppression.
+      Does NOT affect STEP 4 suppression.
   - STEP 3.8: Research Landscape + Objective Alignment Scan
     action: |
       After STEP 3.7, check research landscape:
@@ -399,6 +424,7 @@ commands:
   optimize: "Analyze execution traces and propose Domain Pack improvements"
   evolve: "Cross-project trace aggregation — analyze all projects and propose TAD framework improvements"
   dream: "Consolidate project-knowledge files — dedup, merge, prune stale refs, reduce bloat (candidates only, originals untouched)"
+  skillify: "Extract current session's working pattern as a reusable skill candidate"
 
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
@@ -4174,6 +4200,41 @@ acceptance_protocol:
   violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"
   violation2: "Gate 3 v2 未通过就执行 Gate 4 v2 = VIOLATION"
   violation3: "验收通过后不执行 *accept 归档 = VIOLATION"
+
+# ═══════════════════════════════════════
+# *skillify — Extract working pattern as reusable skill candidate (Alex-only)
+# Bottom-up skill capture from current session context.
+# Blake's path is KA-only (skillify_evaluation in knowledge_assessment).
+# ═══════════════════════════════════════
+skillify_command_protocol:
+  trigger: "User types *skillify"
+  action: |
+    1. Analyze current session context — what pattern was the user working on?
+    2. If no clear pattern detected:
+       Output: "当前 session 没有检测到可提取的工作模式。能描述一下你想 skillify 的模式吗？"
+       Wait for user input, then re-analyze.
+    3. If pattern detected → run 4 quality gates:
+       - Reusable — pattern expected to recur (≥2 future use scenarios imaginable)
+       - Non-trivial — multi-step workflow (≥3 steps), not a single rule
+       - Verified — pattern was applied in this session and result was correct
+         (no revert, no user correction, no retry). Weaker than Gate 3 PASS but
+         has a concrete anchor: the session outcome.
+       - Not-already-captured — no overlap with existing .claude/skills/ or capability packs
+    4. If any gate fails → report which gate failed and why. Offer to proceed anyway
+       with user override.
+    5. If gates pass → draft candidate using .tad/templates/skillify-candidate-template.md,
+       show to user for confirmation (display name, steps, trigger conditions).
+    6. On confirm → write SCAND-{date}-{slug}.md to .tad/active/skillify-candidates/
+       with status: pending and source: "session-explicit"
+    7. Output: "✅ Skillify candidate '{slug}' saved. Alex 下次启动时会在 STEP 3.57 提示审批。"
+       Or if Alex is currently active: immediately offer to generate the skill
+       via the same accept flow as STEP 3.57.
+  forbidden_implementations:
+    - "MUST NOT auto-accept candidates without human review"
+    - "MUST NOT create .claude/skills/{slug}/SKILL.md directly — go through candidate→review→accept"
+    - "MUST NOT register hooks for skillify enforcement (per 2026-04-15 principle)"
+    - "MUST NOT be callable from Blake terminal (Terminal Isolation)"
+    - "MUST NOT auto-invoke without explicit user *skillify command"
 
 # ═══════════════════════════════════════
 # *cancel command (P5.3, 2026-04-25)
