@@ -225,3 +225,17 @@ DRY violations are real but manageable at 5 workflows. At 10+ workflows, the mai
 - 2 claims correct but by-design/measurement (Experiments 2, 7)
 
 **Revised safety assessment: 4/5** — The only real safety bug (stop-on-P0) is now fixed. Remaining items are documented limitations, not safety holes.
+
+---
+
+## Follow-Up: Test Harness
+
+The following 5 test cases should be implemented in a deterministic test harness (separate handoff):
+
+1. **Review P0 stops implement** — Feed `p0_count=1` into Y4 result; verify workflow returns with `stopped_at='review'` before Y5 agent spawns.
+2. **Reviewer-null fails closed** — Mock all Y6 reviewers returning null; verify workflow returns with `stop_reason='all_reviewers_failed'` (not `p0_count=0`).
+3. **Implementation failure skips review** — Mock Y5 returning `completion_written=false`; verify Y6 is skipped with `impl_review_skipped=true`.
+4. **Budget-low stops** — Set `budget.remaining()` to return 20000 (below 30000 threshold) in loop-discover; verify the loop breaks before spawning the next finder.
+5. **Deep tournament mode runs without ReferenceError** — Execute tournament-design.workflow.js with `mode='deep'` and 3 prior_art entries; verify no `ReferenceError: judgePairs is not defined`.
+
+These tests require a workflow test harness that can mock `agent()` return values and `budget` API — not currently available in Claude Code's workflow runtime.

@@ -193,7 +193,7 @@ if (mode === 'standard') {
   if (result) judgeResultsRaw.push({ result: result, pair: [0, 1] })
 } else {
   var deepPairs = [[0, 1], [1, 2], [0, 2]]
-  judgePairs = deepPairs
+  var judgePairs = deepPairs
   var pairLabels = ['AvB', 'BvC', 'AvC']
 
   var rawResults = await parallel(deepPairs.map(function(pair, idx) {

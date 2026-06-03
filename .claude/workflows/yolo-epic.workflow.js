@@ -1,6 +1,6 @@
 export const meta = {
   name: 'yolo-epic',
-  description: 'YOLO Epic phase execution: design + review + implement + impl-review with budget observation',
+  description: 'YOLO Epic phase execution: design + review + implement + impl-review with budget reporting',
   whenToUse: 'When executing a YOLO or semi-auto Epic phase. Called twice per phase: once for design, once for review+implement+impl_review.',
   phases: [
     { title: 'Design', detail: 'Spawn Alex design agent to write HANDOFF.md' },
@@ -379,10 +379,12 @@ if (runImplReview && !implSucceeded && runImplement) {
   var validImplReviews = implReviewResults.filter(Boolean)
 
   if (validImplReviews.length === 0) {
-    log('Y6: Circuit breaker — all impl reviewers failed/returned null')
+    log('Y6: STOPPING — all impl reviewers failed/returned null (fail-closed)')
     result.impl_reviews = []
-    result.impl_review_p0_count = 0
-    result.impl_review_error = 'all reviewers failed'
+    result.impl_review_p0_count = -1
+    result.stopped_at = 'impl_review'
+    result.stop_reason = 'all_reviewers_failed'
+    return result
   } else {
     var implTotalP0 = 0
     for (var iri = 0; iri < validImplReviews.length; iri++) {
@@ -397,6 +399,7 @@ if (runImplReview && !implSucceeded && runImplement) {
 }
 
 // ── Budget Report ────────────────────────────────────────────────
+// Budget REPORTING only — human decides at checkpoint. NOT enforcement.
 
 phase('Budget')
 

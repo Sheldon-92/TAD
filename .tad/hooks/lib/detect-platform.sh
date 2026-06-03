@@ -1,26 +1,34 @@
 #!/bin/bash
 # detect-platform.sh — Runtime detection of available orchestration backend
 # Returns: "workflow" | "codex" | "none"
+# Known limitation: cannot reliably distinguish Claude Code from Codex
+# when BOTH are available. Defaults to "workflow" (higher quality).
+# User can override by setting TAD_PLATFORM=codex (or workflow/none).
 
-# Tier 1a: Claude Code with Workflow tool (capability check, not file-system)
-if [ -n "${CLAUDE_CODE_SESSION:-}" ] || [ -n "${CC_SESSION:-}" ]; then
-  echo "workflow"
-  exit 0
-fi
-# Heuristic fallback: check if parent process is claude (exact match)
-if ps -o comm= -p "$PPID" 2>/dev/null | grep -qix "claude"; then
-  echo "workflow"
+# Override: user explicitly sets platform
+if [ -n "${TAD_PLATFORM:-}" ]; then
+  echo "$TAD_PLATFORM"
   exit 0
 fi
 
-# Tier 1b: Codex CLI available
+# Check Codex CLI availability
+CODEX_AVAILABLE=0
 if command -v codex >/dev/null 2>&1; then
-  if codex --version >/dev/null 2>&1; then
-    echo "codex"
-    exit 0
-  fi
+  CODEX_AVAILABLE=1
 fi
 
-# Tier 3: No orchestration available
-echo "none"
-exit 0
+# Check workflow files exist (proxy for Claude Code project with workflows)
+WORKFLOW_AVAILABLE=0
+if ls .claude/workflows/*.workflow.js >/dev/null 2>&1; then
+  WORKFLOW_AVAILABLE=1
+fi
+
+# Priority: workflow > codex > none
+# (workflow = Claude Code Workflow tool, higher quality than sequential codex exec)
+if [ "$WORKFLOW_AVAILABLE" -eq 1 ]; then
+  echo "workflow"
+elif [ "$CODEX_AVAILABLE" -eq 1 ]; then
+  echo "codex"
+else
+  echo "none"
+fi
