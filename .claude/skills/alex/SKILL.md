@@ -4556,6 +4556,14 @@ optimize_protocol:
   description: "Analyze execution traces + dream candidates → lifecycle health + v2 pattern analysis → project-level proposals"
   trigger: "User types *optimize"
   minimum_traces: 3
+  loop_discover_option: |
+    If Workflow tool available, *optimize can use loop-discover for open-ended proposal finding:
+    Workflow({name: 'loop-discover', args: {
+      finder_prompt: "Find improvement proposals from TAD execution traces in .tad/evidence/traces/. Look for recurring failures, slow patterns, skipped steps.",
+      schema: {type: "object", properties: {proposal_id: {type: "string"}, category: {type: "string"}, description: {type: "string"}, evidence: {type: "string"}}, required: ["proposal_id", "category", "description"]},
+      dedup_key: "proposal_id", dry_rounds_to_stop: 2,
+      context_files: [".tad/evidence/traces/"]
+    }})
 
   steps:
     step1_read_traces:
@@ -5692,6 +5700,14 @@ dream_protocol:
   description: "Consolidate project-knowledge files: dedup, merge, prune stale refs, reduce bloat"
   trigger: "User types *dream"
   safety_principle: "NEVER modify originals directly — produce candidates for human review"
+  loop_discover_option: |
+    If Workflow tool available, *dream can use loop-discover for open-ended knowledge gap finding:
+    Workflow({name: 'loop-discover', args: {
+      finder_prompt: "Scan .tad/project-knowledge/ files for stale entries, duplicates, missing cross-references, and entries that should be merged.",
+      schema: {type: "object", properties: {file_path: {type: "string"}, entry_title: {type: "string"}, issue_type: {type: "string"}, description: {type: "string"}}, required: ["file_path", "entry_title", "issue_type"]},
+      dedup_key: ["file_path", "entry_title"], dry_rounds_to_stop: 2,
+      context_files: [".tad/project-knowledge/"]
+    }})
 
   flags:
     default: "Generate candidates only (no promotion)"
