@@ -54,6 +54,7 @@ gate3_verdict:
 |--------|------|------|
 | ⚠️ New Discoveries Documented | ✅/❌ | [Yes/No + 类别 — 留空 = Gate 无效] |
 | ⚠️ Skillify Candidate | ✅/❌ | [Yes: SCAND-{slug} / No: {failed gate}] |
+| ⚠️ Workflow Pattern Discovered | ✅/❌ | [Yes: new pattern / defect in {name} / No: none observed] |
 
 ### Git
 

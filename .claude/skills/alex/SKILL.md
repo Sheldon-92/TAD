@@ -4044,6 +4044,10 @@ acceptance_protocol:
               → Write to .tad/project-knowledge/incidents/{YYYY-MM}/{slug}.md
               → Append to incidents/_index.md with linked L1/L2 reference
            d. "Would a senior TAD user already know this?" → YES → skip writing
+           e. "Is this an orchestration pattern that recurred?" → WORKFLOW-CANDIDATE
+              → Same Skillify 4-gate + Step 5 as Blake side
+              → If type: orchestration → Alex writes .workflow.js directly (per carve-out)
+              → If type: judgment → write SCAND candidate (existing path)
         3. Fill Gate 4 Knowledge Assessment table with: layer, file path, entry title
 
     separation_of_concerns: |
@@ -4142,6 +4146,35 @@ acceptance_protocol:
   violation3: "验收通过后不执行 *accept 归档 = VIOLATION"
 
 # ═══════════════════════════════════════
+# Workflow Completion Trigger (Triple-Question KA, 2026-06-03)
+# Lightweight three-question assessment after significant workflow execution.
+# ═══════════════════════════════════════
+workflow_completion_trigger:
+  description: "Lightweight three-question assessment after significant workflow execution"
+  trigger: "Workflow tool returns result with usage.agent_count >= 3"
+  blocking: false
+  action: |
+    After a Workflow tool call completes with agent_count >= 3:
+    1. Q1 (knowledge): "Did this workflow execution reveal something new?"
+       → If yes: record to .tad/project-knowledge/ (same as Gate 4 C)
+    2. Q2 (skill): "Did the workflow expose a reusable judgment pattern?"
+       → If yes: Skillify 4-gate + Step 5 (same path)
+    3. Q3 (workflow): "Should this workflow be improved based on what just happened?"
+       → If yes (defect): record for future bugfix handoff
+       → If yes (new pattern): write SCAND candidate with type: orchestration
+    
+    Lightweight = 1 AskUserQuestion with 3 sub-questions, not 3 separate interactions.
+    Skip if workflow was a TAD framework management task (*publish, *sync).
+  threshold_rationale: |
+    agent_count >= 3 filters out trivial 2-agent workflows (e.g., simple parallel search).
+    All 5 current production workflows use >= 3 agents — threshold validated against existing corpus.
+  agent_count_source: |
+    agent_count comes from the Workflow tool's TASK-NOTIFICATION envelope
+    (<usage><agent_count>N</agent_count></usage>), NOT from the workflow
+    script's return value. The runtime provides this automatically for every
+    workflow run. Alex reads it from the notification, not from the .workflow.js.
+
+# ═══════════════════════════════════════
 # *skillify — Extract working pattern as reusable skill candidate (Alex-only)
 # Bottom-up skill capture from current session context.
 # Blake's path is KA-only (skillify_evaluation in knowledge_assessment).
@@ -4162,11 +4195,28 @@ skillify_command_protocol:
        - Not-already-captured — no overlap with existing .claude/skills/ or capability packs
     4. If any gate fails → report which gate failed and why. Offer to proceed anyway
        with user override.
-    5. If gates pass → draft candidate using .tad/templates/skillify-candidate-template.md,
+    5. Step 5 — Pattern Type Routing (after gates pass):
+       Classify the detected pattern:
+       - Does executing this pattern require >1 agent coordinating?
+         Yes → type: orchestration → candidate targets .workflow.js
+         No  → type: judgment → candidate targets SKILL.md (existing path)
+       
+       Signal table:
+       | Signal | Type | Target |
+       |--------|------|--------|
+       | "Evaluating X requires checking Y and Z" | judgment | SKILL.md |
+       | "Per-AC verifier + skeptic each time" | orchestration | .workflow.js |
+       | "N agents compete, judge selects, merge" | orchestration | .workflow.js |
+       | "When rubric score is abnormal, check inter-rater reliability" | judgment | SKILL.md |
+       | "Loop finding bugs until K dry rounds" | orchestration | .workflow.js |
+       
+       Write `type` field in SCAND frontmatter. Announce:
+       "Pattern classified as {type}. Target: {SKILL.md | .workflow.js}"
+    6. If gates pass → draft candidate using .tad/templates/skillify-candidate-template.md,
        show to user for confirmation (display name, steps, trigger conditions).
-    6. On confirm → write SCAND-{date}-{slug}.md to .tad/active/skillify-candidates/
+    7. On confirm → write SCAND-{date}-{slug}.md to .tad/active/skillify-candidates/
        with status: pending and source: "session-explicit"
-    7. Output: "✅ Skillify candidate '{slug}' saved. Alex 下次启动时会在 STEP 3.57 提示审批。"
+    8. Output: "✅ Skillify candidate '{slug}' saved. Alex 下次启动时会在 STEP 3.57 提示审批。"
        Or if Alex is currently active: immediately offer to generate the skill
        via the same accept flow as STEP 3.57.
   # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.skillify
@@ -5914,6 +5964,20 @@ forbidden:
   - Sending handoff to Blake without expert review (min 2 experts)
   - Ignoring P0 blocking issues from expert review
   - Using EnterPlanMode (TAD has its own planning workflow: *analyze → *design → *handoff)
+
+# Workflow Authoring Carve-Out (Triple-Question KA, 2026-06-03)
+# Similar to the existing *publish exception for git push/tag (~line 5412).
+workflow_authoring_exception:
+  description: |
+    EXCEPTION TO "Writing implementation code":
+    Workflow scripts (.workflow.js) are orchestration design artifacts,
+    not implementation code. Alex may author workflow scripts directly.
+  forbidden_implementations:
+    - "MUST NOT extend .workflow.js exception to .sh files (shell scripts are implementation, not orchestration design)"
+    - "MUST NOT extend .workflow.js exception to .json/.yaml config files"
+    - "MUST NOT write .workflow.js without human confirmation via AskUserQuestion"
+    - "MUST NOT auto-invoke the carve-out — user must explicitly trigger via *skillify or *accept"
+    - "MUST NOT use this exception to write application code, build scripts, hook implementations, or test scripts"
 
 # Interaction rules
 interaction:

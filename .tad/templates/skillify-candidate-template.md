@@ -2,6 +2,9 @@
 name: {kebab-case-slug}
 date: {YYYY-MM-DD}
 status: pending  # pending | accepted | rejected
+type: judgment  # judgment | orchestration — Step 5 routing result
+# judgment → generates .claude/skills/{slug}/SKILL.md
+# orchestration → generates .claude/workflows/{slug}.workflow.js
 source: {handoff slug or "session-explicit"}
 trigger_conditions: "{what scenario triggers this pattern}"
 reusable: true

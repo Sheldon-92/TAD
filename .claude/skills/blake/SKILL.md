@@ -1792,9 +1792,9 @@ completion_protocol:
     location: ".tad/project-knowledge/{category}.md"
 
     must_answer:
-      - "是否有新发现？(Yes/No)"
-      - "如果有，属于哪个类别？"
-      - "一句话总结（即使无新发现也要写明原因）"
+      - "Q1: 是否有新发现？(Yes/No) — 如果有，属于哪个类别？一句话总结。"
+      - "Q2: 是否有可复用的工作模式？(Yes/No) — Skillify 4-gate + Step 5 路由。"
+      - "Q3: 是否发现 workflow 模式？(Yes/No) — 信号：执行中是否手动做了多 agent 编排（并行、竞争、循环），或现有 workflow 有缺陷？"
 
     violation: "Gate 结果表格缺少 Knowledge Assessment = Gate 无效 = VIOLATION"
 
@@ -1811,6 +1811,20 @@ completion_protocol:
            - Not-already-captured — no overlap with existing .claude/skills/ or capability packs
         2. If all 4 pass → write SCAND-{date}-{slug}.md to .tad/active/skillify-candidates/
            using template .tad/templates/skillify-candidate-template.md
+        2b. Step 5 — Pattern Type Routing (after 4-gate pass):
+            Classify the pattern: does executing it require >1 agent coordinating?
+            Yes → set `type: orchestration` in SCAND frontmatter → targets .workflow.js
+            No  → set `type: judgment` in SCAND frontmatter → targets SKILL.md (existing path)
+            Signal table:
+            | Signal | Type | Target |
+            |--------|------|--------|
+            | "Evaluating X requires checking Y and Z" | judgment | SKILL.md |
+            | "Per-AC verifier + skeptic each time" | orchestration | .workflow.js |
+            | "N agents compete, judge selects, merge" | orchestration | .workflow.js |
+            | "When rubric score is abnormal, check inter-rater reliability" | judgment | SKILL.md |
+            | "Loop finding bugs until K dry rounds" | orchestration | .workflow.js |
+            If type: orchestration, also note in "Proposed Skill Outline":
+              "Target: .workflow.js (orchestration pattern, not SKILL.md)"
         3. Note in completion report Skillify Candidate row:
            "Yes: SCAND-{date}-{slug} (4/4 gates passed)"
         4. If any gate fails → fill completion report Skillify Candidate row:
@@ -1829,6 +1843,38 @@ completion_protocol:
         - "MUST NOT make skillify_evaluation blocking — it is explicitly blocking: false"
         - "MUST NOT register hooks for skillify enforcement (per 2026-04-15 mechanical enforcement rejected principle)"
         - "MUST NOT auto-invoke *skillify without user explicit command (Alex side) — Blake's path is KA-only"
+
+    workflow_evaluation:
+      trigger: "After skillify_evaluation completes (regardless of skillify gate result)"
+      action: |
+        Q3 signal detection — scan the implementation process for:
+        Signal words: "parallel agents", "fan-out", "tournament", "loop until",
+        "competing approaches", "adversarial verify", "pairwise judge"
+        
+        Two sub-paths:
+        a. "I manually orchestrated multi-agent coordination that worked well"
+           → New workflow candidate: write SCAND-{date}-{slug}.md with type: orchestration
+        b. "An existing workflow had a defect (bad prompt, too loose judgment, missing dimension)"
+           → Record in completion report Q3 row: "Defect in {workflow_name}: {description}"
+           → Alex creates bugfix handoff during *accept
+        
+        If no signal detected → Q3 row: "No: no workflow patterns observed"
+      blocking: false
+      interacts_with_skillify: |
+        Skip ONLY if skillify_evaluation Step 5 explicitly routed a pattern to
+        type: orchestration. If skillify gates 1-4 rejected the pattern (Step 5
+        never ran), workflow_evaluation MUST still perform its own signal detection.
+        Q3 serves as a safety net for orchestration patterns that don't pass
+        skillify's quality gates.
+      interacts_with_override: |
+        Follows the same skip/override chain as skillify_evaluation:
+        If skip_knowledge_assessment: yes AND no override marker → workflow_evaluation ALSO skips.
+        If skip_knowledge_assessment: yes AND override marker present → workflow_evaluation runs.
+      forbidden_implementations:
+        - "MUST NOT write .workflow.js from Blake — workflow_evaluation writes SCAND candidates only, Alex authors workflows"
+        - "MUST NOT make workflow_evaluation a blocking gate — it is explicitly non-blocking"
+        - "MUST NOT auto-create bugfix handoffs from sub-path (b) — record the defect, Alex creates handoff during *accept"
+        - "MUST NOT register hooks for workflow_evaluation enforcement (per 2026-04-15 mechanical enforcement rejected principle)"
 
   violation: "完成实现但不创建 completion report = 绕过验收 = VIOLATION"
 
