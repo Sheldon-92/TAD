@@ -1871,7 +1871,7 @@ completion_protocol:
         If skip_knowledge_assessment: yes AND no override marker → workflow_evaluation ALSO skips.
         If skip_knowledge_assessment: yes AND override marker present → workflow_evaluation runs.
       forbidden_implementations:
-        - "MUST NOT write .workflow.js from Blake — workflow_evaluation writes SCAND candidates only, Alex authors workflows"
+        - "MUST NOT write production .workflow.js directly — write SCAND draft candidates only, human confirms adoption"
         - "MUST NOT make workflow_evaluation a blocking gate — it is explicitly non-blocking"
         - "MUST NOT auto-create bugfix handoffs from sub-path (b) — record the defect, Alex creates handoff during *accept"
         - "MUST NOT register hooks for workflow_evaluation enforcement (per 2026-04-15 mechanical enforcement rejected principle)"

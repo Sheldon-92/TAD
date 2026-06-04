@@ -4046,8 +4046,8 @@ acceptance_protocol:
            d. "Would a senior TAD user already know this?" → YES → skip writing
            e. "Is this an orchestration pattern that recurred?" → WORKFLOW-CANDIDATE
               → Same Skillify 4-gate + Step 5 as Blake side
-              → If type: orchestration → Alex writes .workflow.js directly (per carve-out)
-              → If type: judgment → write SCAND candidate (existing path)
+              → Write SCAND candidate with appropriate type (judgment or orchestration)
+              → Human confirms adoption via STEP 3.57 or *skillify accept
         3. Fill Gate 4 Knowledge Assessment table with: layer, file path, entry title
 
     separation_of_concerns: |
@@ -5965,19 +5965,21 @@ forbidden:
   - Ignoring P0 blocking issues from expert review
   - Using EnterPlanMode (TAD has its own planning workflow: *analyze → *design → *handoff)
 
-# Workflow Authoring Carve-Out (Triple-Question KA, 2026-06-03)
-# Similar to the existing *publish exception for git push/tag (~line 5412).
-workflow_authoring_exception:
+# Triple-Question KA: Draft-then-Confirm Rule (2026-06-03)
+# Replaces the original workflow_authoring_exception carve-out.
+# Simplified: discoverer writes draft candidate, human confirms adoption.
+triple_question_draft_rule:
   description: |
-    EXCEPTION TO "Writing implementation code":
-    Workflow scripts (.workflow.js) are orchestration design artifacts,
-    not implementation code. Alex may author workflow scripts directly.
-  forbidden_implementations:
-    - "MUST NOT extend .workflow.js exception to .sh files (shell scripts are implementation, not orchestration design)"
-    - "MUST NOT extend .workflow.js exception to .json/.yaml config files"
-    - "MUST NOT write .workflow.js without human confirmation via AskUserQuestion"
-    - "MUST NOT auto-invoke the carve-out — user must explicitly trigger via *skillify or *accept"
-    - "MUST NOT use this exception to write application code, build scripts, hook implementations, or test scripts"
+    When the three-question KA (Q1 knowledge / Q2 skill / Q3 workflow) identifies
+    a pattern worth saving, the DISCOVERER (Blake or Alex) writes a draft candidate.
+    Human reviews and confirms before it becomes a formal skill or workflow.
+    No carve-out needed — drafts are not production artifacts until human says so.
+  applies_to: "Both Blake (Gate 3 KA) and Alex (*accept KA / workflow completion trigger)"
+  draft_outputs:
+    skill_candidate: ".tad/active/skillify-candidates/SCAND-{date}-{slug}.md (type: judgment)"
+    workflow_candidate: ".tad/active/skillify-candidates/SCAND-{date}-{slug}.md (type: orchestration)"
+  human_confirmation: "Alex STEP 3.57 (startup candidate review) or explicit *skillify accept"
+  note: "Draft candidate ≠ production artifact. No 'Alex doesn't code' tension because drafts are proposals, not deployments."
 
 # Interaction rules
 interaction:
