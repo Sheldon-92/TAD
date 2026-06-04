@@ -2,7 +2,7 @@
 
 **ID:** IDEA-20260603-triple-question-ka-evolution
 **Date:** 2026-06-03
-**Status:** captured
+**Status:** promoted
 **Scope:** medium
 **Priority:** HIGH — 用户明确要求在干净 context 的 Alex session 中优先执行
 

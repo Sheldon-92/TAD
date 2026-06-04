@@ -2,7 +2,7 @@
 
 ## Priority (Next Session)
 
-- [ ] **Triple-Question KA Evolution — HIGH PRIORITY** — Gate KA 从 2 问扩展为 3 问（knowledge + skill + workflow）。统一 Alex 和 Blake 的触发点。Skillify 加第 5 步判断"判断型 vs 编排型"。闭环：用→发现→三问→改进→再用。用户要求在干净 Alex context 中优先执行。详细设计 + 来龙去脉：`.tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md`
+- [x] **Triple-Question KA Evolution — ✅ COMPLETE 2026-06-03** (commit b6911a7) — Gate KA expanded from 2Q to 3Q (knowledge + skill + workflow). Blake Gate 3 + Alex *accept triggers. Skillify Step 5 routes judgment→SKILL.md / orchestration→.workflow.js. Alex .workflow.js authoring carve-out added. Idea: `.tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md`
 
 ## In Progress
 

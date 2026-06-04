@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.23.0 - Self-Deriving Release/Sync**
+**Version 2.23.1 - Triple-Question KA**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -131,7 +131,7 @@ This smart script automatically:
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.23.0 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.23.1 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -351,6 +351,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.23.1** | **Triple-Question KA — Knowledge Assessment expanded from 2 to 3 questions (knowledge + skill + workflow). Skillify Step 5 routes patterns to SKILL.md (judgment) or .workflow.js (orchestration). Alex .workflow.js authoring carve-out. Workflow completion trigger (agent_count ≥ 3).** |
 | **v2.23.0** | **Self-Deriving Release/Sync — publish, sync, and install now DERIVE their file sets from the repo structure (deny-list) instead of hardcoded lists. Includes derive-sync-set.sh (deny-list single source of truth), release-verify.sh (structure-agnostic version+structural gates), tad.sh self-derivation, and release-runbook SKILL upgrade to derive+verify procedure.** |
 | **v2.21.0** | **Agent-Adjacent Pack Factory — 8 new research-grounded capability packs (16→24 total): rag-retrieval, agent-memory, llm-observability, ai-guardrails, data-engineering, agent-orchestration, synthetic-data, knowledge-graph. Built via NotebookLM deep research (~401 sources) → parallel build workflow → adversarial review → cross-model (Codex) review (caught + fixed ~44 factual/API errors the same-model loop missed) → real discriminative behavioral eval (WITH-pack vs no-pack CONTROL). Measured: pack value is cross-vendor (Codex/Gemini) and non-monotonic in model strength (peaks at Sonnet-tier). Honest status: 7/8 behaviorally verified, 1 (data-engineering) pending — CONTROL also passed.** |
 | **v2.19.0** | **Observational Trace Instrumentation + ML Pack — (1) v2 observational trace emission: gate_result/expert_review_finding/decision_point/reflexion_diagnosis now fire by PARSING agent-written artifacts (COMPLETION gate3_verdict marker, HANDOFF §11 decision table, review files) instead of unreliable imperative helper calls (1/328 fire rate); handoff_created 6x over-fire fixed; analyzer schema fix + N=0 gate skip guard — self-evolution data layer now functional. (2) *sync directory-list fix: added .tad/domains/ + .tad/hooks/ to sync list (mirrors tad.sh). (3) ML Training capability pack (reference-based, cloud-GPU training judgment). (4) Cloud compute resource awareness in Socratic inquiry. Hooks never fail-closed; no trace schema change.** |
@@ -452,6 +453,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.23.0 - Self-Deriving Release/Sync
+**Welcome to TAD v2.23.1 - Triple-Question KA
 
 *AI does the work. Humans guard the value.*

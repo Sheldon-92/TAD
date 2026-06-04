@@ -5,6 +5,17 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.23.1] - 2026-06-03
+
+### Added
+- **Triple-Question KA**: Knowledge Assessment expanded from 2Q to 3Q (knowledge + skill + workflow pattern)
+- **Skillify Step 5 — Pattern Type Routing**: after 4-gate pass, routes patterns to SKILL.md (judgment) or .workflow.js (orchestration)
+- **Workflow Evaluation**: Blake KA detects workflow patterns via signal-word scanning (non-blocking, with skip_KA chain support)
+- **Workflow Completion Trigger**: Alex lightweight 3Q assessment fires when Workflow tool returns agent_count ≥ 3
+- **Alex .workflow.js Authoring Carve-out**: formal exception to "Alex doesn't code" for orchestration design artifacts (5-item forbidden_implementations guard)
+- **Skillify Candidate `type` field**: `judgment | orchestration` routing in SCAND template frontmatter
+- **Completion Report Q3 row**: Workflow Pattern Discovered row in Knowledge Assessment table
+
 ## [2.23.0] - 2026-06-03
 
 ### Added
