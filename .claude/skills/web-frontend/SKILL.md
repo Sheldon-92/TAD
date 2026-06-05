@@ -1,7 +1,7 @@
 ---
 name: web-frontend
-description: Web frontend engineering judgment for React — component architecture, state management, design token consumption, styling, performance, accessibility, and testing. Loads DESIGN.md when present and turns design artifacts into production-grade code.
-keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG"]
+description: Web frontend engineering judgment for React — component architecture, state management, design token consumption, styling, performance, accessibility, testing, and visual-code bridge. Loads DESIGN.md when present and turns design artifacts into production-grade code.
+keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG", "visual edit", "browser edit", "UI polish", "visual bridge"]
 type: reference-based
 ---
 
@@ -56,6 +56,7 @@ Read the user's request and route to the correct reference file:
 | "slow / performance / bundle / lighthouse / CWV / vitals / LCP / INP" | [`references/performance.md`](references/performance.md) |
 | "accessible / a11y / screen reader / aria / wcag / axe / keyboard" | [`references/accessibility.md`](references/accessibility.md) |
 | "test / coverage / storybook / playwright / vitest / testing library" | [`references/testing.md`](references/testing.md) |
+| "visual edit / browser edit / fix this element / UI polish / visual bridge / 看到的 / 这个元素 / 改这里" | [`references/visual-code-bridge.md`](references/visual-code-bridge.md) |
 | "new project / scaffold / setup / conventions" | Load [`CONVENTIONS.md`](CONVENTIONS.md) + all references |
 | "review / audit / quality check / checklist" | Load [`checklists/frontend-quality.md`](checklists/frontend-quality.md) |
 
