@@ -33,14 +33,14 @@ product-thinking end-to-end with three distinct agents.
 |---|-------|--------|---------|-----------------|
 | 1 | Gate verdict_shape implementation | ✅ Done | HANDOFF-20260606-nondev-verdict-shapes-p1.md | Gate 3+4 deliverable branches support categorical + checklist (additive, weighted byte-unchanged) |
 | 2 | product-thinking categorical rubric | ✅ Done | HANDOFF-20260606-nondev-verdict-shapes-p2.md | pressure-test-rubric.md (rigor bands) + deliverable-rubrics.yaml registration |
-| 3 | Dogfood + guide | ⬚ Planned | — | Real end-to-end product-thinking run (3 distinct agents, discrimination proof) + guide update |
+| 3 | Dogfood + guide | ✅ Done | HANDOFF-20260606-nondev-verdict-shapes-p3.md | Real end-to-end product-thinking run (4 distinct agents, discrimination + decoupling proof) + checklist fixture + guide update |
 
 ### Phase Dependencies
 All phases sequential. Phase 2 needs Phase 1's categorical semantics fixed. Phase 3 needs both.
 
 ### Derived Status
-- **Status**: In Progress (Phase 1 active)
-- **Progress**: 0/3
+- **Status**: ✅ COMPLETE (all 3 phases Done)
+- **Progress**: 3/3
 
 ---
 
@@ -178,7 +178,10 @@ Phase 1, Phase 2
 {updated after each phase accept}
 
 ### Completed Work Summary
-- (none yet)
+- Phase 1 (864e64e): gate/SKILL.md Gate 3/4 deliverable branches support categorical + checklist (weighted byte-unchanged). 4 reviewers 0 P0.
+- Phase 2 (cd065ee): product-thinking categorical rubric authored + registered active; citations source-traced. 2 reviewers 0 P0.
+- Phase 3 (this branch): dogfood PROVED discrimination + decoupling (rigorous KILL→PASS, superficial BUILD→FAIL, 4 distinct agents) + checklist synthetic fixture (PASS+FAIL) + guide updated. KA → patterns/gate-design.md.
+- Epic COMPLETE. Evidence: .tad/evidence/yolo/nondev-verdict-shapes/EPIC-COMPLETION.md
 
 ### Decisions Made So Far
 - D1: categorical Gate judges RIGOR, not the BUILD/PIVOT/KILL conclusion (user decision 2026-06-06). A rigorously-argued KILL PASSes.

@@ -89,6 +89,42 @@ This is the load-bearing finding: **the gate discriminated** — round 1 landed 
 the methodology/ethics/reproducibility fixes that were actually made (novelty stayed
 0.55). A fresh judge each round prevents anchoring on the prior score.
 
+### Worked example — categorical (rigor band, product-thinking)
+
+From the 2026-06-06 dogfood (Epic `nondev-verdict-shapes` Phase 3), a real categorical-shape
+run pressure-tested a product idea: **"PalateBox"** (an AI-curated hot-sauce subscription box).
+Two artifacts were produced and judged by **four distinct agents** (2 producers + 2 fresh
+judges, with **judge ≠ producer** held on both):
+
+| Artifact | Producer did | content_verdict | Judge band | verdict |
+|----------|-------------|-----------------|------------|---------|
+| Rigorous pressure-test | 8 WebSearches, 6 forcing rounds, 3 fatal flaws (F13/F3/F2), FACT/ASSUMPTION tagging, ecommerce adapter | **KILL** | **rigorous** | **PASS** |
+| Thin sycophantic control | no searches, no fatal-flaw scan, no adapter, vague verdict | **BUILD** | **superficial** | **FAIL** |
+
+THE LOAD-BEARING FINDING: a rigorously-argued **KILL PASSed** while a superficial **BUILD
+FAILed** — the **exact inverse** of a naive "BUILD→PASS / KILL→FAIL" mapping. This proves the
+categorical gate judges **ANALYSIS RIGOR, not the BUILD/PIVOT/KILL conclusion**. Both judges'
+swap test confirmed the band was rigor-driven, not conclusion-driven.
+
+Evidence: `.tad/evidence/reviews/2026-06-06-rubric-eval-palatebox-rigorous.md` and
+`…-palatebox-thin.md`; rubric `.claude/skills/product-thinking/references/pressure-test-rubric.md`.
+
+### Worked example — checklist (export-spec)
+
+A synthetic fixture (no voice/video hardware needed) exercised the checklist shape against an
+audio export-spec rubric — required items: format, integrated loudness (−23..−18 dB),
+duration ≥60s; optional: sample rate.
+
+| Artifact | Values | Required items | verdict |
+|----------|--------|----------------|---------|
+| artifact-pass | mp3, −20.5 dB, 742s, 48kHz | all required pass | **PASS** |
+| artifact-fail | mp3, −30.2 dB, 705s | loudness fails (−30.2 below −23) | **FAIL** |
+
+The gate logic discriminated on a required-item failure (loudness out of band) even though
+format and duration passed — a checklist verdict is FAIL if **any** required item fails.
+
+Evidence: `.tad/evidence/yolo/nondev-verdict-shapes/checklist-fixture/`
+
 ---
 
 ## 3. judge ≠ producer (the load-bearing rule)
@@ -206,28 +242,31 @@ block):
 **`verdict_shape` field** declares how the verdict is computed:
 `weighted` (Σ score×weight, ladder pass/partial/fail) · `categorical` (e.g.
 BUILD/PIVOT/KILL band membership) · `checklist` (export-spec pass/fail items).
-**Only `weighted` is implemented** — the Gate 3 `verdict_shape_guard` BLOCKs any
-non-weighted shape so the weighted ladder cannot silently mis-score a categorical or
-checklist pack.
+**All three shapes are now implemented** (Epic `nondev-verdict-shapes`, 2026-06-06):
+`categorical` is dogfood-verified (product-thinking PalateBox) and `checklist` is
+gate-logic-verified via a synthetic fixture (voice/video real-content dogfood pending
+hardware). The Gate 3 `verdict_shape_guard` routes each shape to its own scorer so a
+categorical or checklist pack is never silently mis-scored by the weighted ladder.
 
 ### Current status (honest)
 
 | pack | status | rubric | verdict_shape | dogfood |
 |------|--------|--------|---------------|---------|
 | **academic-research** | **active** | `scholar-eval.md`, 0.75 / 0.60 | **weighted** (implemented) | **proven** (Phase-3 dogfood) |
-| ai-voice-production | **rubric-tbd** | null — `interim_rubric_source` → `audiobook-pipeline.md` (ACX RMS −23 to −18 dB) | checklist (NOT yet implemented) | no — needs TTS hardware |
-| video-creation | **rubric-tbd** | null — `interim_rubric_source` → `quality.md` (export specs) | checklist (NOT yet implemented) | no — needs render hardware |
-| product-thinking | **rubric-tbd** | null — `interim_rubric_source` → `checklists/fatal-flaws.md` + `per-type-validation.md` | categorical / BUILD-PIVOT-KILL (NOT yet implemented) | no — rubric authoring pending (no hardware barrier) |
+| ai-voice-production | **rubric-tbd** | null — `interim_rubric_source` → `audiobook-pipeline.md` (ACX RMS −23 to −18 dB) | checklist — **gate logic VERIFIED via synthetic fixture; real-content dogfood PENDING (needs TTS hardware)** per DR-20260606 | synthetic-fixture only — real run needs TTS hardware |
+| video-creation | **rubric-tbd** | null — `interim_rubric_source` → `quality.md` (export specs) | checklist — **gate logic VERIFIED via synthetic fixture; real-content dogfood PENDING (needs render hardware)** per DR-20260606 | synthetic-fixture only — real run needs render hardware |
+| product-thinking | **rubric-tbd** | `pressure-test-rubric.md` (band: superficial / adequate / rigorous) | categorical — **rubric authored, dogfood verified** (PalateBox run) | **proven** (2026-06-06 PalateBox dogfood) |
 
 - **academic-research** is the only pack that is `active` / weighted / dogfood-proven:
   it has a real 8-dim 0-1 rubric with a threshold ladder, and ran end-to-end in Phase 3.
 - The other three are **registered but `rubric-tbd`**: they carry an
   `interim_rubric_source` pointer to a real on-disk reference (a source anchor for
   Phase-4 rubric authoring), but their `rubric_ref` / `pass_threshold` stay `null`.
-  Their declared `verdict_shape` (categorical / checklist) is **a documented follow-up,
-  not yet implemented** — the Gate 3 `verdict_shape_guard` deliberately BLOCKs them until
-  a real weighted rubric (or a second verdict-shape implementation) exists. They are NOT
-  usable as deliverable packs today.
+  Their declared `verdict_shape` (categorical / checklist) is **now implemented** (Epic
+  `nondev-verdict-shapes`, 2026-06-06) — the Gate 3 `verdict_shape_guard` routes each to
+  its own scorer. product-thinking (categorical) is dogfood-verified; voice/video
+  (checklist) are gate-logic-verified via synthetic fixture, with real-content dogfood
+  still pending TTS/render hardware.
 
 Phase-4 rubric authoring must follow the project's provenance rule (*"Per-Tool Numeric
 Thresholds Require Research Provenance, Not Interpolation"*) — thresholds cited to their
@@ -238,16 +277,16 @@ anchors, not finished rubrics.
 
 ## 7. Known limitations / follow-ups
 
-- **verdict_shape generalization is NOT done.** Only `weighted` (the scholar-eval 0-1
-  ladder) is implemented. `categorical` (BUILD/PIVOT/KILL) and `checklist` (export-spec
-  pass/fail) shapes are declared in the registry but **BLOCKED** by the Gate 3
-  `verdict_shape_guard`. A second verdict-shape implementation (or converting each pack
-  to a genuine weighted 0-1 rubric with research provenance) is the Phase-4 work.
+- **verdict_shape generalization is DONE** (Epic `nondev-verdict-shapes`, 2026-06-06). All
+  three shapes are implemented: `weighted` (scholar-eval 0-1 ladder), `categorical`
+  (BUILD/PIVOT/KILL band — dogfood-verified via product-thinking PalateBox), and `checklist`
+  (export-spec pass/fail — gate-logic-verified via synthetic fixture). The remaining
+  follow-up is real-content dogfood of the checklist packs once TTS/render hardware exists.
 - **ai-voice-production and video-creation cannot be dogfooded without hardware** —
   TTS compute (16GB-Mac batch-mode limits, per architecture.md) and render hardware
   respectively. Their rubrics remain TBD until a real dogfood is possible.
-- **product-thinking has no hardware barrier** but its checklist/categorical validation
-  is not yet a scored rubric — rubric authoring is the only blocker.
+- **product-thinking has a categorical rubric authored + dogfood-verified** (PalateBox run,
+  2026-06-06) — the `pressure-test-rubric.md` band scorer is implemented and proven.
 - **The producer is Conductor-side, not Blake.** Research tools (NotebookLM is
   stateful/sequential, WebSearch) cannot run inside a Blake sub-agent, so research/content
   deliverables are produced by a Conductor-spawned producer sub-agent (or the Conductor),

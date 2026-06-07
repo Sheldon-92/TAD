@@ -6,6 +6,13 @@
 
 ## In Progress
 
+- [x] **EPIC: Non-Dev verdict_shapes (categorical + checklist) — ✅ COMPLETE 2026-06-06 (YOLO, branch `epic/nondev-verdict-shapes`)** — Made the non-dev deliverable lane runnable for non-`weighted` packs. Epic: `.tad/archive/epics/EPIC-20260606-nondev-verdict-shapes.md` · report: `.tad/evidence/yolo/nondev-verdict-shapes/EPIC-COMPLETION.md` · DR: `.tad/decisions/DR-20260606-checklist-shape-dogfood-deferral.md`
+  - **Why**: `verdict_shape_guard` HARD-BLOCKed all non-weighted packs → product-thinking/voice/video had registered rubric slots but couldn't pass a gate. User-picked highest-value generative direction ("make non-dev packs runnable").
+  - **P1 (864e64e)**: gate/SKILL.md Gate 3/4 deliverable branches support categorical (rigor band, decoupled from BUILD/PIVOT/KILL via order-of-emission firewall + swap test) + checklist (required/optional, ≥1-required guard). weighted byte-unchanged (62/4, all sanctioned). 2 design + 2 impl reviewers 0 P0.
+  - **P2 (cd065ee)**: product-thinking categorical rubric (5 rigor dims, per-type differentiator table for D5 self-containment) authored + registered active; citations verbatim-traced. 2 reviewers 0 P0.
+  - **P3**: dogfood PROVED it — PalateBox, 4 distinct agents (judge≠producer): rigorous→`KILL`→**PASS**, thin control→`BUILD`→**FAIL** (inverse of naive mapping = decoupling proven). Checklist synthetic fixture PASS+FAIL (no hardware). Guide updated. KA → patterns/gate-design.md.
+  - **Residual**: voice/video checklist real-content dogfood pending hardware (DR-20260606). Branch NOT merged — awaiting human merge decision.
+
 - [x] **Tournament Design Workflow (Epic P2/5) — COMPLETE 2026-06-03** (commit 2292e04) — Reusable tournament-design.workflow.js: N competitors + pairwise judges + synthesizer merge. Integrated as Alex *design step1_5c + standalone *tournament. Standard (4 agents, ~200K) and deep (7 agents, ~320K) modes. Experiment: `.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md`
 
 - [x] **Declarative Constraints v0.1 — COMPLETE 2026-06-03** (commit df006b5) — Migrated 11 forbidden_implementations blocks from alex/SKILL.md body into structured YAML frontmatter constraints block. Mechanical deny deduped (22→2 lines), judgment items stay in body. SAFETY grep 19→20. Idea: `.tad/active/ideas/IDEA-20260528-declarative-agent-constraints.md`
