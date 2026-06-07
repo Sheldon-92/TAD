@@ -380,8 +380,9 @@ Rubric_Resolution:
     message: "deliverable handoff has no resolvable rubric_ref + pass_threshold (set in frontmatter or register the pack in deliverable-rubrics.yaml). No silent default."
   partial_threshold: "from deliverable-rubrics.yaml row (default 0.60 if omitted)"
   verdict_shape_guard:
-    rule: "If the resolved verdict_shape != weighted → BLOCK Gate 3"
-    message: "Phase-4 categorical/checklist verdict shapes unimplemented — the weighted-0-1 ladder (Verdict_Mapping) must NOT silently mis-score a non-weighted pack. Only verdict_shape: weighted is supported in Phase 2/3."
+    rule: "If the resolved verdict_shape NOT IN {weighted, categorical, checklist} → BLOCK Gate 3"
+    supported: [weighted, categorical, checklist]
+    message: "Unknown verdict_shape — supported: weighted (0-1 ladder), categorical (rigor band), checklist (export-spec pass/fail). An unrecognized shape must NOT be silently mis-scored."
 
 # ⚠️ REQUIRED SUBAGENT CALL (BLOCKING) — REPLACES test-runner with an independent JUDGE
 Required_Subagent:
@@ -394,13 +395,23 @@ Required_Subagent:
     - "pass_threshold — numeric threshold (resolved per Rubric_Resolution)"
   judge_prompt_constraint: |
     Blue-team framing: "You are an independent reviewer. Score the artifact at {deliverable_paths}
-    against the rubric at {rubric_ref}. Report dimension scores + weighted average + verdict."
+    against the rubric at {rubric_ref}. Report per the resolved verdict_shape (see judge_prompt_by_shape) + the machine-readable verdict line."
     The judge prompt MUST NOT include the producer's reasoning, chat transcript, persona,
     identity, or any "this is good because…" framing.
+  judge_prompt_by_shape: |
+    weighted   → "Report dimension scores + weighted average + verdict." (existing)
+    categorical→ "Assign a RIGOR band (rigorous|partial|superficial) per the rubric, then map
+                  to verdict. Score the RIGOR of the analysis ONLY — a rigorously-argued KILL
+                  is rigorous; do NOT reward/punish the BUILD/PIVOT/KILL conclusion. Emit
+                  `band:`, `content_verdict:` (recorded, not gate-determining), and `verdict:`."
+    checklist  → "Evaluate each required/optional export-spec item pass/fail per the rubric,
+                  then map to verdict. Emit the item table and `verdict:`."
+    All shapes keep judge≠producer + file-paths-only (no producer reasoning/persona/identity).
   output_to: ".tad/evidence/reviews/{date}-rubric-eval-{task}.md"
   output_format:           # contract §B.4
     - "Scores table: | # | Dimension | Weight | Score (0-1) | Notes | (one row per rubric dimension)"
     - "weighted_score = Σ(score_i × weight_i) shown with the arithmetic"
+    - "For verdict_shape categorical/checklist the weighted_score arithmetic bullet is replaced by the band line / item table respectively; the `verdict:` machine-readable line is REQUIRED for ALL shapes (shape-agnostic Gate 4 token)."
     - "MUST contain an EXACT machine-readable verdict line (own line, lowercase key, uppercase value, NO bold/emoji): `verdict: PASS` | `verdict: PARTIAL` | `verdict: FAIL` — this is the token Gate 4 greps (^verdict: ). The human-readable verdict prose may appear separately."
     - "Top-3 strengths / top-3 weaknesses (actionable)"
     - "MUST state: 'Judge: independent sub-agent; producer identity not provided.'"
@@ -439,6 +450,52 @@ Verdict_Mapping:
     IF weighted_score ≥ pass_threshold           → PASS
     ELSE IF weighted_score ≥ partial_threshold    → PARTIAL   (default partial_threshold = 0.60)
     ELSE                                          → FAIL
+  # ── verdict_shape: categorical (e.g. product-thinking BUILD/PIVOT/KILL) ──
+  categorical:
+    rule: |
+      The judge assigns a RIGOR band from the rubric: rigorous | partial | superficial.
+      rigorous → PASS · partial → PARTIAL · superficial → FAIL
+    rigor_independence: |
+      ⚠️ The band scores the RIGOR of the analysis, NOT its content conclusion. For
+      BUILD/PIVOT/KILL packs: a rigorously-argued KILL is `rigorous` (PASS); a hand-wavy
+      BUILD is `superficial` (FAIL). The judge MUST NOT raise or lower the band based on
+      whether the artifact concluded BUILD vs PIVOT vs KILL.
+    decoupling_firewall: |
+      (P1-1 hardening — structural, not just prose:)
+      1. ORDER OF EMISSION: the judge MUST write `band:` WITH its per-dimension rigor
+         justification BEFORE it states `content_verdict:`. The band is committed before the
+         conclusion is named, so the conclusion cannot anchor the band.
+      2. CONCLUSION-NEUTRAL CRITERIA: the rubric's band criteria (Phase 2) MUST be phrased
+         about rigor (evidence depth, fatal-flaw coverage, FACT/ASSUMPTION discipline,
+         adapter use) — NEVER "concludes BUILD" / "is optimistic".
+      3. SWAP TEST (stated in the judge prompt): "If you flipped this artifact's final
+         BUILD/PIVOT/KILL word and changed nothing else, would the band change? If yes, you
+         are scoring the conclusion — re-score on rigor only."
+    extra_output: |
+      The rubric-eval ALSO emits (own lines, for traceability — NOT gate-determining):
+        band: rigorous|partial|superficial
+        content_verdict: BUILD|PIVOT|KILL   (the artifact's own conclusion; recorded, never maps to gate verdict)
+      The machine-readable `verdict: PASS|PARTIAL|FAIL` line (derived from band) remains the Gate 4 token.
+      ⚠️ `band:` (with justification) MUST appear ABOVE `content_verdict:` in the file (order firewall).
+  # ── verdict_shape: checklist (e.g. ai-voice / video-creation export specs) ──
+  checklist:
+    malformed_guard: |
+      (P1-2 guard:) the rubric MUST define ≥1 REQUIRED item. A checklist rubric with zero
+      required items → BLOCK Gate 3 ("malformed checklist rubric — cannot ever FAIL, define
+      ≥1 required item"). This prevents an all-optional rubric from becoming a gate that
+      always PASSes.
+    rule: |
+      The rubric lists REQUIRED items + OPTIONAL items (export-spec pass/fail: dB / format / duration).
+      ALL required pass                     → PASS
+      ALL required pass, ≥1 optional fail   → PARTIAL
+      ANY required fail                     → FAIL
+    evidence_independence: |
+      (P1-2 artifact-channel guard:) the judge derives each item's pass/fail from the
+      artifact's substance / measurable specs it independently checks — NEVER from the
+      artifact's own claim that it passed (same Judge_Not_Producer artifact-channel rule).
+    extra_output: |
+      The rubric-eval emits a per-item | item | required? | pass/fail | table; the
+      `verdict:` line is derived per the rule above.
   on_pass: "Gate 3 proceeds (KA + git checks)."
   on_partial_or_fail: "BLOCK Gate 3; the producer (§B.6) revises and re-runs — a FRESH judge re-scores the revised artifact (each re-score is a new judge spawn)."
 
@@ -470,7 +527,7 @@ Git_Commit_Verification:
 # Gate 3 Deliverable 检查项
 Critical Check (4 items):
   - [ ] Deliverable complete (all `deliverable_paths` present)
-  - [ ] Rubric weighted score ≥ pass_threshold (scored by independent judge)
+  - [ ] Rubric verdict PASS per resolved verdict_shape — weighted: score ≥ pass_threshold · categorical: band = rigorous · checklist: all required items pass (scored by independent judge)
   - [ ] Rubric-eval evidence exists (.tad/evidence/reviews/*-rubric-eval-*.md, verdict PASS)
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
 Evidence: Record in deliverable-completion report + rubric-eval evidence file
@@ -782,6 +839,7 @@ Prerequisite:
   evidence: ".tad/evidence/reviews/*-rubric-eval-*.md exists with the exact machine-readable line `verdict: PASS`"
   verify_command: "grep -E '^verdict: PASS' .tad/evidence/reviews/*-rubric-eval-*.md"
   verify_note: "Greps the EXACT lowercase-key/uppercase-value token the judge writes (Gate 3 Required_Subagent.output_format). The bold/emoji human form `**Verdict**: ✅ PASS` is NOT matched by this anchor — the machine-readable line is required."
+  shape_agnostic_note: "The `^verdict: PASS` token is shape-agnostic — weighted/categorical/checklist all emit it. Gate 4 needs no per-shape branch."
   if_missing:
     action: "BLOCK Gate 4"
     message: |
