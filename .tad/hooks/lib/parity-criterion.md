@@ -83,23 +83,24 @@ A mismatch means the section parser is broken — gate ERRORs, do not trust the 
 **Format:** `<!-- PIN:source_id|category|total_must_cover_count -->`
 
 **Alex source (`.claude/skills/alex/SKILL.md`):**
-- forbidden_implementations: 6 owners (cross_model_awareness:1, express_path_protocol:1, experiment_path_protocol:1, handoff_creation_protocol:3, acceptance_protocol:4, cancel_protocol:2) = 12
+- forbidden_implementations: 7 owners (cross_model_awareness:1, express_path_protocol:1, experiment_path_protocol:1, handoff_creation_protocol:4, acceptance_protocol:3, skillify_command_protocol:1, cancel_protocol:3) = 14 (+2 vs prior 12 = the P3.3 symmetric-block doc-comment lines at source 4057/4235/4337; the 11 `forbidden_implementations:` blocks at 685,1770,1914,3051,3085,3186,3262,4059,4105,4223,4341 + those 3 doc-comment mentions)
 - anti_rationalization_registry: 4 owners (anti_rationalization_registry:1, handoff_creation_protocol:1, intent_router_protocol:1, on_start:2) = 5 (P3: header self-count removed)
 - NOT_via_alex_auto: 4 owners (anti_rationalization_registry:1, cross_model_awareness:1, research_plan_protocol:3, constraints_frontmatter:1) = 6
 - honest_partial: 0 (all 4 occurrences in yolo_execution_protocol = allowlisted)
 
-<!-- PIN:alex|forbidden_implementations|12 -->
+# Re-pinned 2026-06-07: forbidden_implementations alex 12→14, blake 6→8 — recent features (cancel P5.3 / P3.3 / declarative-constraints v0.1 / blake symmetric block) added blocks+doc-comment lines; owner-coverage layer unchanged (per-owner must-cover still enforced).
+<!-- PIN:alex|forbidden_implementations|14 -->
 <!-- PIN:alex|anti_rationalization_registry|5 -->
 <!-- PIN:alex|NOT_via_alex_auto|6 -->
 <!-- PIN:alex|honest_partial|0 -->
 
 **Blake source (`.claude/skills/blake/SKILL.md`):**
-- forbidden_implementations: 4 owners (completion_knowledge_override:1, cross_model_invocation:1, execution_checklist:3, ralph_loop_execution:1) = 6
+- forbidden_implementations: 5 owners (cross_model_invocation:1, ralph_loop_execution:1, execution_checklist:3, completion_protocol:2, completion_knowledge_override:1) = 8 (+2 vs prior 6 = the completion_protocol blocks at source 1840/1873; execution_checklist:3 = block 1460 + its doc-comment 1461 + block 1503; source lines 347,753,1460,1503,1840,1873,1935 = 7 `forbidden_implementations:` blocks + 1 doc-comment at 1461)
 - anti_rationalization_registry: 0 (Alex-only)
 - NOT_via_alex_auto: 0 (Alex-only)
 - honest_partial: 2 owners (honest_partial_protocol:1, on_start:2) = 3 (P3: header self-count removed)
 
-<!-- PIN:blake|forbidden_implementations|6 -->
+<!-- PIN:blake|forbidden_implementations|8 -->
 <!-- PIN:blake|anti_rationalization_registry|0 -->
 <!-- PIN:blake|NOT_via_alex_auto|0 -->
 <!-- PIN:blake|honest_partial|3 -->

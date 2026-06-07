@@ -5,6 +5,16 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.24.0] - 2026-06-07
+
+### Added
+- **Non-dev deliverable lane — categorical + checklist verdict_shapes**: Gate 3/4 deliverable branches now support `categorical` (rigor band, decoupled from the artifact's BUILD/PIVOT/KILL conclusion via an order-of-emission firewall + swap test) and `checklist` (export-spec pass/fail with a ≥1-required guard), in addition to `weighted`. product-thinking gains a dogfood-verified categorical rubric (a rigorously-argued KILL PASSes; a superficial BUILD FAILs). voice/video checklist gate-logic verified via synthetic fixture (real-content dogfood pending hardware).
+- **visual-code-bridge capability** (web-frontend): React fiber source locator.
+- **ai-podcast-production capability pack**: script writing with Codex review, large-chunk TTS, dual-BGM envelope-follower arrangement, show notes. Registry → 25 packs.
+
+### Changed
+- **Triple-Question KA simplified**: draft-then-confirm replaces the carve-out mechanism.
+
 ## [2.23.1] - 2026-06-03
 
 ### Added
