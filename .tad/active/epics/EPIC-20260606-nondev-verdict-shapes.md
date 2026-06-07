@@ -32,7 +32,7 @@ product-thinking end-to-end with three distinct agents.
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Gate verdict_shape implementation | ✅ Done | HANDOFF-20260606-nondev-verdict-shapes-p1.md | Gate 3+4 deliverable branches support categorical + checklist (additive, weighted byte-unchanged) |
-| 2 | product-thinking categorical rubric | ⬚ Planned | — | pressure-test-rubric.md (rigor bands) + deliverable-rubrics.yaml registration |
+| 2 | product-thinking categorical rubric | ✅ Done | HANDOFF-20260606-nondev-verdict-shapes-p2.md | pressure-test-rubric.md (rigor bands) + deliverable-rubrics.yaml registration |
 | 3 | Dogfood + guide | ⬚ Planned | — | Real end-to-end product-thinking run (3 distinct agents, discrimination proof) + guide update |
 
 ### Phase Dependencies

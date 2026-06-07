@@ -44,10 +44,17 @@ packs:
     dogfood_capable: no       # hardware (render)
     status: rubric-tbd
   product-thinking:
-    rubric_ref: null          # TBD Phase 4; interim: checklists/fatal-flaws.md + per-type-validation.md
-    interim_rubric_source: ".claude/skills/product-thinking/checklists/fatal-flaws.md"
-    pass_threshold: null
+    rubric_ref: ".claude/skills/product-thinking/references/pressure-test-rubric.md"
+    interim_rubric_source: ".claude/skills/product-thinking/checklists/fatal-flaws.md"  # provenance anchor — folded into the active rubric's D3 citation
+    pass_threshold: null        # categorical uses RIGOR bands, not a numeric threshold
     partial_threshold: null
-    verdict_shape: categorical  # BUILD/PIVOT/KILL verdict (Phase 4 to formalize)
-    dogfood_capable: yes      # no hardware barrier; rubric authoring pending
-    status: rubric-tbd
+    verdict_shape: categorical  # rigor band (rigorous→PASS|partial→PARTIAL|superficial→FAIL); scores rigor, not BUILD/PIVOT/KILL
+    dogfood_capable: yes      # no hardware barrier
+    status: active            # Phase 2: categorical rigor rubric authored
+  ai-podcast-production:
+    rubric_ref: ".tad/capability-packs/ai-podcast-production/podcast-quality-rubric.md"
+    pass_threshold: 0.75
+    partial_threshold: 0.60
+    verdict_shape: weighted
+    dogfood_capable: no       # hardware (TTS compute on Colab)
+    status: active
