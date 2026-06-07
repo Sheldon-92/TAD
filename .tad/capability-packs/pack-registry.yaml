@@ -175,3 +175,10 @@ packs:
     produces: "DESIGN.md + design tokens + visual spec + accessibility audit results"
     keywords: ["UI", "UX", "design", "frontend", "interface", "visual design", "设计", "界面", "布局", "色彩", "设计系统", "wireframe", "accessibility"]
     type: "reference-based"
+  - name: "ai-podcast-production"
+    description: "AI podcast production — script writing with Codex review, large-chunk TTS, dual-BGM envelope-follower arrangement, show notes"
+    path: ".tad/capability-packs/ai-podcast-production/"
+    consumes: "Research topic or raw content + optional brand voice guidelines"
+    produces: "Production-ready podcast episode (script + audio + show notes)"
+    keywords: ["podcast", "播客", "podcast production", "播客制作", "TTS", "text-to-speech", "语音合成", "music arrangement", "编曲", "BGM", "ducking", "show notes"]
+    type: "reference-based"
