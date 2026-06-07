@@ -2,6 +2,11 @@
 
 ## Priority (Next Session)
 
+- [ ] **v2.24.0 sync follow-ups (from 2026-06-07 release+sync)** — non-blocking, but needed before flipping the structural gate to hard-block:
+  - (a) **Structural gate reconciliation** — `release-verify.sh structural` flags 3 pack SKILL.md (academic-research / ai-voice-production / video-creation) on every project: their `install.sh` overwrites the synced SKILL.md with `CAPABILITY.md` content (install-transform), so target != source by byte. Before unsetting `TAD_RELEASE_GATE=warn` (hard-block) for the NEXT release, either align each pack's CAPABILITY.md==SKILL.md or exclude pack-owned skill files from the byte-identity check.
+  - (b) **2 installers reject `--force`** (academic-research, research-methodology) — sync script patched to detect+fallback to no-arg form (25/0 everywhere), but add a `--force` no-op to those 2 install.sh.
+  - (c) **3 merge-strategy projects lack the marker** (my-openclaw-agents / toy / 内存管理) — CLAUDE.md head NOT synced (left untouched, documented warn). Add `<!-- TAD:PROJECT-CONTENT-BELOW -->` or switch to `overwrite` if their TAD head should track releases.
+
 - [x] **Triple-Question KA Evolution — ✅ COMPLETE 2026-06-03** (commit b6911a7) — Gate KA expanded from 2Q to 3Q (knowledge + skill + workflow). Blake Gate 3 + Alex *accept triggers. Skillify Step 5 routes judgment→SKILL.md / orchestration→.workflow.js. Alex .workflow.js authoring carve-out added. Idea: `.tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md`
 
 ## In Progress
