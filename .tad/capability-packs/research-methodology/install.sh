@@ -62,32 +62,19 @@ fi
 
 # ─── Phase 3 stubs (not yet implemented) ───────────────────────────────────
 case "$AGENT" in
-  codex)
-    echo "Error: --agent=codex is not yet implemented." >&2
-    echo "Phase 3 Codex installation will:" >&2
-    echo "  - Copy CAPABILITY.md to ~/.codex/skills/${PACK_NAME}/SKILL.md" >&2
-    echo "  - Copy references/ to ~/.codex/skills/${PACK_NAME}/references/" >&2
-    echo "  - Register in ~/.codex/AGENTS.md" >&2
-    exit 2
+  claude-code|codex)
+    : # both install to .claude/skills/ — handled below
     ;;
   cursor)
     echo "Error: --agent=cursor is not yet implemented." >&2
-    echo "Phase 3 Cursor installation will:" >&2
-    echo "  - Copy CAPABILITY.md to .cursor/skills/${PACK_NAME}/SKILL.md" >&2
-    echo "  - Register in .cursor/mcp.json" >&2
     exit 2
     ;;
   gemini)
     echo "Error: --agent=gemini is not yet implemented." >&2
-    echo "Phase 3 Gemini installation will:" >&2
-    echo "  - Copy CAPABILITY.md to ~/.gemini/skills/${PACK_NAME}/SKILL.md" >&2
     exit 2
     ;;
-  claude-code)
-    : # handled below
-    ;;
   *)
-    echo "Error: Unknown agent '${AGENT}'. Supported: claude-code, codex (stub), cursor (stub), gemini (stub)" >&2
+    echo "Error: Unknown agent '${AGENT}'. Supported: claude-code, codex" >&2
     exit 1
     ;;
 esac

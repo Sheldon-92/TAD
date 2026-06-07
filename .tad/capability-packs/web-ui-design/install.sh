@@ -45,14 +45,13 @@ echo ""
 
 # --- Phase 3 interface stub (not yet implemented) ---
 case "$AGENT" in
-  claude)
+  claude|codex)
     # Phase 1 — implemented below
     ;;
-  codex|cursor|gemini)
+  cursor|gemini)
     echo "⚠️  Phase 3 ($AGENT) is not yet implemented." >&2
     echo "   Phase 3 will install to:" >&2
     case "$AGENT" in
-      codex)  echo "   AGENTS.md (project root, appended reference)" >&2 ;;
       cursor) echo "   .cursor/rules/web-ui-design.md" >&2 ;;
       gemini) echo "   CAPABILITY.md (project root, passed via -p flag)" >&2 ;;
     esac

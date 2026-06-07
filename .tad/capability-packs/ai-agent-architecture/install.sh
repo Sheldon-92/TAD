@@ -108,14 +108,8 @@ install_claude_code() {
 
 # Route by agent type
 case "$AGENT" in
-  claude-code)
+  claude-code|codex)
     install_claude_code
-    ;;
-  codex)
-    echo "Phase 3 stub: Codex installation not yet implemented."
-    echo "Expected target: ~/.codex/skills/ai-agent-architecture/"
-    echo "Expected install: copy CAPABILITY.md + references/ to codex skills dir"
-    exit 2
     ;;
   cursor)
     echo "Phase 3 stub: Cursor installation not yet implemented."

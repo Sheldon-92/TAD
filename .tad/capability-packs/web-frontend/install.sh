@@ -148,43 +148,21 @@ install_claude_code() {
 
 # Dispatch
 case "$AGENT" in
-  claude-code)
+  claude-code|codex)
     install_claude_code
     ;;
-  codex)
-    echo "INFO: Codex CLI support is planned for Phase 3 and is not yet implemented."
-    echo ""
-    echo "Phase 3 will install to: ~/.codex/skills/web-frontend/"
-    echo "This includes: CAPABILITY.md adapted for Codex AGENTS.md routing"
-    echo ""
-    echo "For now, use: bash install.sh --agent=claude-code"
-    exit 2
-    ;;
   cursor)
-    echo "INFO: Cursor IDE support is planned for Phase 3 and is not yet implemented."
-    echo ""
-    echo "Phase 3 will install to: .cursor/rules/ as .cursorrules file"
-    echo "This includes: rules condensed into Cursor-compatible format"
-    echo ""
+    echo "INFO: Cursor IDE support is planned for Phase 3."
     echo "For now, use: bash install.sh --agent=claude-code"
     exit 2
     ;;
   gemini)
-    echo "INFO: Gemini CLI support is planned for Phase 3 and is not yet implemented."
-    echo ""
-    echo "Phase 3 will install to: ~/.gemini/skills/web-frontend/"
-    echo "This includes: CAPABILITY.md adapted for Gemini -p invocation"
-    echo ""
+    echo "INFO: Gemini CLI support is planned for Phase 3."
     echo "For now, use: bash install.sh --agent=claude-code"
     exit 2
     ;;
   *)
-    echo "ERROR: Unknown agent: $AGENT"
-    echo ""
-    echo "Supported agents: claude-code"
-    echo "Planned (Phase 3): codex, cursor, gemini"
-    echo ""
-    echo "Run 'bash install.sh --help' for usage."
+    echo "ERROR: Unknown agent: $AGENT. Supported: claude-code, codex"
     exit 1
     ;;
 esac

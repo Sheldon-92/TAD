@@ -40,16 +40,31 @@ derive_target_version() {
 BACKUP_PATH=""
 DETECTED_PLATFORMS=""
 
-# Argument parsing — --yes/-y skips the interactive confirmation prompt (non-TTY:
-# Claude Code Bash, CI, curl|bash). "$@" is set -u-safe even with zero args.
+# Argument parsing — while-loop + shift (supports --key value two-token args).
+# --yes/-y skips the interactive confirmation prompt (non-TTY: Claude Code Bash,
+# CI, curl|bash). "$@" is set -u-safe even with zero args.
 AUTO_YES=0
 VERIFY_DENYLIST=0
-for arg in "$@"; do
-  case "$arg" in
-    --yes|-y)  AUTO_YES=1 ;;
-    --verify-denylist) VERIFY_DENYLIST=1 ;;
-    --help|-h) echo "Usage: tad.sh [--yes|-y] [--verify-denylist]"; echo "  --yes              skip the interactive confirmation prompt"; echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"; exit 0 ;;
-    *) echo "tad.sh: unknown option '$arg' (use --help)" >&2; exit 1 ;;
+PLATFORM=""
+PACKS=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --yes|-y)  AUTO_YES=1; shift ;;
+    --verify-denylist) VERIFY_DENYLIST=1; shift ;;
+    --platform)
+      [ -z "${2:-}" ] && echo "tad.sh: --platform requires a value" >&2 && exit 1
+      PLATFORM="$2"; shift 2 ;;
+    --packs)
+      [ -z "${2:-}" ] && echo "tad.sh: --packs requires a value" >&2 && exit 1
+      PACKS="$2"; shift 2 ;;
+    --help|-h)
+      echo "Usage: tad.sh [--yes|-y] [--platform <name>] [--packs <list>] [--verify-denylist]"
+      echo "  --yes              skip the interactive confirmation prompt"
+      echo "  --platform <name>  target platform (claude-code, codex). Default: claude-code"
+      echo "  --packs <list>     comma-separated pack names to install (default: all)"
+      echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
+      exit 0 ;;
+    *) echo "tad.sh: unknown option '$1' (use --help)" >&2; exit 1 ;;
   esac
 done
 
@@ -109,17 +124,40 @@ backup_existing() {
 }
 
 # ============================================
-# Phase 3: Platform Detection
+# Phase 3: Platform Detection & Validation
 # ============================================
-detect_installed_tools() {
-    # Claude Code is the only supported platform
-    if command -v claude &> /dev/null || [ -d "$HOME/.claude" ]; then
-        log_info "Detected: Claude Code"
-    else
-        log_warn "Claude Code not detected. Installing configs anyway."
-    fi
+# Valid platforms are read from platform-codes.yaml AFTER download. At parse time
+# (before source exists), we validate only against a static known set. This avoids
+# the ordering problem (detect runs before download on a fresh machine).
+# ⚠️ DRIFT: must match platforms: keys in .tad/platform-codes.yaml. Adding a new
+# platform requires updating BOTH this list AND platform-codes.yaml.
+# Future: release-verify.sh could add a --verify-platforms check.
+KNOWN_PLATFORMS="claude-code codex"
 
-    echo "claude"
+validate_platform() {
+    local p="$1"
+    local found=0
+    for known in $KNOWN_PLATFORMS; do
+        [ "$known" = "$p" ] && found=1 && break
+    done
+    if [ "$found" = "0" ]; then
+        log_error "Unknown platform: '$p'. Valid platforms: $KNOWN_PLATFORMS"
+        exit 1
+    fi
+}
+
+resolve_platform() {
+    if [ -n "$PLATFORM" ]; then
+        validate_platform "$PLATFORM"
+        log_info "Platform (explicit): $PLATFORM"
+    else
+        PLATFORM="claude-code"
+        if command -v claude &> /dev/null || [ -d "$HOME/.claude" ]; then
+            log_info "Detected: Claude Code (default platform)"
+        else
+            log_warn "Claude Code not detected. Using default platform: claude-code"
+        fi
+    fi
 }
 
 # ============================================
@@ -191,6 +229,104 @@ derive_framework_top_files() {
         [ "$bn" = "$TAD_TOP_DENY" ] && continue
         printf '%s\n' "$bn"
     done | LC_ALL=C sort
+}
+
+# ============================================
+# Platform-aware helpers (simple YAML parsing — no yq dependency)
+# ============================================
+
+# parse_platform_extra_deny <yaml_file> <platform> — emit extra_deny paths, one per line
+parse_platform_extra_deny() {
+    local yaml="$1" plat="$2"
+    local in_platform=0 in_deny=0
+    while IFS= read -r line; do
+        if printf '%s' "$line" | grep -qE "^  ${plat}:"; then
+            in_platform=1; in_deny=0; continue
+        fi
+        if [ "$in_platform" = "1" ] && printf '%s' "$line" | grep -qE '^  [a-z]'; then
+            in_platform=0; in_deny=0; continue
+        fi
+        if [ "$in_platform" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+extra_deny:'; then
+            if printf '%s' "$line" | grep -qE '\[\]'; then
+                in_deny=0; continue
+            fi
+            in_deny=1; continue
+        fi
+        if [ "$in_platform" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+extra_root_files:'; then
+            in_deny=0; continue
+        fi
+        if [ "$in_platform" = "1" ] && [ "$in_deny" = "1" ]; then
+            if printf '%s' "$line" | grep -qE '^[[:space:]]+-[[:space:]]+'; then
+                printf '%s\n' "$line" | sed -E 's/^[[:space:]]+-[[:space:]]+"?//;s/"?[[:space:]]*$//'
+            fi
+        fi
+    done < "$yaml"
+}
+
+# parse_platform_root_files <yaml_file> <platform> — emit extra_root_files, one per line
+parse_platform_root_files() {
+    local yaml="$1" plat="$2"
+    local in_platform=0 in_root=0
+    while IFS= read -r line; do
+        if printf '%s' "$line" | grep -qE "^  ${plat}:"; then
+            in_platform=1; in_root=0; continue
+        fi
+        if [ "$in_platform" = "1" ] && printf '%s' "$line" | grep -qE '^  [a-z]'; then
+            in_platform=0; in_root=0; continue
+        fi
+        if [ "$in_platform" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+extra_root_files:'; then
+            if printf '%s' "$line" | grep -qE '\[\]'; then
+                in_root=0; continue
+            fi
+            in_root=1; continue
+        fi
+        if [ "$in_platform" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+extra_deny:'; then
+            in_root=0; continue
+        fi
+        if [ "$in_platform" = "1" ] && [ "$in_root" = "1" ]; then
+            if printf '%s' "$line" | grep -qE '^[[:space:]]+-[[:space:]]+'; then
+                printf '%s\n' "$line" | sed -E 's/^[[:space:]]+-[[:space:]]+"?//;s/"?[[:space:]]*$//'
+            fi
+        fi
+    done < "$yaml"
+}
+
+# is_denied <path> <deny_list_newline_separated> — return 0 if path matches any deny entry
+is_denied() {
+    local path="$1" deny_list="$2"
+    [ -z "$deny_list" ] && return 1
+    local entry
+    while IFS= read -r entry; do
+        [ -z "$entry" ] && continue
+        # Exact match or directory-boundary prefix match (prevents .../alex matching .../alex-utils)
+        if [ "$path" = "$entry" ] || [ "${path#"${entry}/"}" != "$path" ]; then
+            return 0
+        fi
+    done <<< "$deny_list"
+    return 1
+}
+
+# is_pack_skill <skill_name> <src> — return 0 if this skill comes from a capability pack
+is_pack_skill() {
+    local name="$1" src="$2"
+    # A skill is a "pack skill" if it has a matching entry in pack-registry.yaml
+    # Uses grep -F (fixed string) to avoid regex injection from directory names
+    if [ -f "$src/.tad/capability-packs/pack-registry.yaml" ]; then
+        grep -qF "name: \"${name}\"" "$src/.tad/capability-packs/pack-registry.yaml" 2>/dev/null
+        return $?
+    fi
+    return 1
+}
+
+# is_selected_pack <name> — return 0 if name is in the comma-separated PACKS list
+is_selected_pack() {
+    local name="$1"
+    local IFS=','
+    local p
+    for p in $PACKS; do
+        [ "$p" = "$name" ] && return 0
+    done
+    return 1
 }
 
 # verify_denylist_drift — release-time drift check (run from the TAD repo via
@@ -284,17 +420,44 @@ copy_framework_files() {
         fi
     done <<< "$(derive_framework_dirs "$src")"
 
-    # --- .claude/ framework files ---
-    mkdir -p .claude/skills
-    # Copy all skill directories (each skill is a directory with SKILL.md)
-    if [ -d "$src/.claude/skills" ]; then
-        cp -r "$src"/.claude/skills/* .claude/skills/
+    # --- .claude/ framework files (platform-scoped) ---
+    # Read extra_deny from platform-codes.yaml (file exists in $src at this point).
+    local platform_deny=""
+    if [ -f "$src/.tad/platform-codes.yaml" ]; then
+        platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
     fi
-    cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
-    # Copy workflow scripts (dynamic workflow integration, EPIC-20260603)
-    if [ -d "$src/.claude/workflows" ]; then
-        mkdir -p .claude/workflows
-        cp -r "$src"/.claude/workflows/* .claude/workflows/ 2>/dev/null || true
+
+    mkdir -p .claude/skills
+    # Copy skill directories — respecting platform deny + pack selection
+    if [ -d "$src/.claude/skills" ]; then
+        local skill_dir
+        for skill_dir in "$src"/.claude/skills/*/; do
+            [ -d "$skill_dir" ] || continue
+            local skill_name
+            skill_name="$(basename "$skill_dir")"
+            # Platform deny check (e.g., codex excludes alex/blake)
+            if is_denied ".claude/skills/$skill_name" "$platform_deny"; then
+                continue
+            fi
+            # Pack selection check (if --packs specified, only copy selected packs + non-pack skills)
+            if [ -n "$PACKS" ] && is_pack_skill "$skill_name" "$src"; then
+                if ! is_selected_pack "$skill_name"; then
+                    continue
+                fi
+            fi
+            cp -r "$skill_dir" ".claude/skills/$skill_name"
+        done
+    fi
+    # settings.json — platform deny check
+    if ! is_denied ".claude/settings.json" "$platform_deny"; then
+        cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
+    fi
+    # Workflow scripts — platform deny check
+    if ! is_denied ".claude/workflows" "$platform_deny"; then
+        if [ -d "$src/.claude/workflows" ]; then
+            mkdir -p .claude/workflows
+            cp -r "$src"/.claude/workflows/* .claude/workflows/ 2>/dev/null || true
+        fi
     fi
 
     # --- Deprecation cleanup (v2.8.2) ---
@@ -302,6 +465,23 @@ copy_framework_files() {
     # versions ≤ current TARGET_VERSION. Previously no deprecation processing,
     # which caused 2.8.1 command file cleanup to never execute on downstream projects.
     apply_deprecations "$src"
+
+    # --- Root files from platform extra_root_files ---
+    # Placed AFTER apply_deprecations because deprecation.yaml v2.3.0 removes
+    # AGENTS.md (old full-runtime cleanup). For codex platform, we re-install it.
+    local root_files=""
+    if [ -f "$src/.tad/platform-codes.yaml" ]; then
+        root_files="$(parse_platform_root_files "$src/.tad/platform-codes.yaml" "$PLATFORM")"
+    fi
+    if [ -n "$root_files" ]; then
+        local rf
+        while IFS= read -r rf; do
+            [ -n "$rf" ] || continue
+            if [ -f "$src/$rf" ]; then
+                cp "$src/$rf" ./ 2>/dev/null || true
+            fi
+        done <<< "$root_files"
+    fi
 
     # Count installed files for verification (exclude the zero-touch deny-list dirs).
     local count
@@ -338,6 +518,12 @@ copy_framework_files() {
 verify_install_complete() {
     local src="$1"
     log_info "  → Post-install self-check (derived completeness + content diff)..."
+
+    # Platform deny for .claude/ verification scope
+    local platform_deny=""
+    if [ -f "$src/.tad/platform-codes.yaml" ]; then
+        platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
+    fi
 
     local missing=0 checked=0 dir
     while IFS= read -r dir; do
@@ -383,8 +569,32 @@ verify_install_complete() {
         fi
     done <<< "$(derive_framework_top_files "$src")"
 
+    # Verify .claude/skills — only check skills that SHOULD be present given platform + packs
+    if [ -d "$src/.claude/skills" ]; then
+        local skill_dir skill_name
+        for skill_dir in "$src"/.claude/skills/*/; do
+            [ -d "$skill_dir" ] || continue
+            skill_name="$(basename "$skill_dir")"
+            # Skip if denied by platform
+            if is_denied ".claude/skills/$skill_name" "$platform_deny"; then
+                continue
+            fi
+            # Skip if not a selected pack (when --packs is specified)
+            if [ -n "$PACKS" ] && is_pack_skill "$skill_name" "$src"; then
+                if ! is_selected_pack "$skill_name"; then
+                    continue
+                fi
+            fi
+            checked=$((checked + 1))
+            if [ ! -d ".claude/skills/$skill_name" ]; then
+                log_warn "    ✗ MISSING skill: .claude/skills/$skill_name/"
+                missing=$((missing + 1))
+            fi
+        done
+    fi
+
     if [ "$missing" -eq 0 ]; then
-        log_success "    ✓ Self-check passed: $checked derived dirs (diff-clean) + $top_checked top-level files present"
+        log_success "    ✓ Self-check passed: $checked derived paths (diff-clean) + $top_checked top-level files present (platform: $PLATFORM)"
     else
         log_error "    ✗ Self-check FAILED: $missing missing/partial/mismatched derived path(s)"
         log_error "      The install is INCOMPLETE — re-run the installer or report this."
@@ -586,9 +796,8 @@ main() {
     validate_environment
     backup_existing
 
-    # Detect Claude Code
-    log_info "Detecting Claude Code..."
-    detect_installed_tools
+    # Resolve platform (from --platform flag or auto-detect)
+    resolve_platform
     echo ""
 
     STATE=$(detect_state)

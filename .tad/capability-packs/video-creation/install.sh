@@ -230,11 +230,8 @@ check_prerequisites || true  # warn but don't block install
 echo ""
 
 case "$AGENT" in
-  claude-code)
+  claude-code|codex)
     install_claude_code
-    ;;
-  codex)
-    install_codex
     ;;
   cursor)
     install_cursor

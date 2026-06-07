@@ -102,7 +102,7 @@ install_claude_code() {
 }
 
 case "$AGENT" in
-  claude-code)
+  claude-code|codex)
     install_claude_code
     ;;
   *)

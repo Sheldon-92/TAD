@@ -44,13 +44,8 @@ echo ""
 
 # ── Phase 3 stubs ────────────────────────────────────────────────────────────
 case "$AGENT" in
-  claude-code|claude)
+  claude-code|claude|codex)
     # Phase 1 — implemented below
-    ;;
-  codex)
-    echo "⚠️  Phase 3 (codex) is not yet implemented." >&2
-    echo "   For now, install with --agent=claude-code and adapt manually." >&2
-    exit 2
     ;;
   cursor)
     echo "⚠️  Phase 3 (cursor) is not yet implemented." >&2

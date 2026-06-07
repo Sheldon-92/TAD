@@ -1,0 +1,20 @@
+# Platform configuration for TAD installer
+# Deny-delta model: shared core is deny-derived (same for all platforms).
+# Platform differences are expressed as SMALL deltas on top of the shared core.
+# ⚠️ NEVER use per-platform install_dirs allow-list (2026-06-01 principle).
+
+platforms:
+  claude-code:
+    label: "Claude Code"
+    extra_deny: []
+    extra_root_files: []
+
+  codex:
+    label: "Codex CLI"
+    extra_deny:
+      - ".claude/settings.json"
+      - ".claude/workflows"
+      - ".claude/skills/alex"
+      - ".claude/skills/blake"
+    extra_root_files:
+      - "AGENTS.md"

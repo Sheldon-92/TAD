@@ -1,18 +1,19 @@
 {
   "name": "tad-framework",
-  "version": "1.0.0",
+  "version": "2.24.0",
   "description": "Triangle Agent Development - Simplified human-AI collaboration framework for Claude Code",
-  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "tad-install": "bin/tad-install.mjs"
+  },
   "scripts": {
-    "install": "node scripts/install.js",
-    "test": "echo \"No tests yet\"",
-    "version": "git add -A",
-    "postversion": "git push && git push --tags"
+    "test": "echo \"No tests yet\""
   },
   "keywords": [
     "tad",
     "claude",
     "claude-code",
+    "codex",
     "ai",
     "development",
     "framework",
@@ -32,8 +33,11 @@
   "files": [
     ".tad/",
     ".claude/",
+    "bin/",
+    "tad.sh",
+    "AGENTS.md",
+    "CLAUDE.md",
     "*.md",
-    "install.sh",
     "scripts/"
   ],
   "engines": {

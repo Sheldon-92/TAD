@@ -41,7 +41,7 @@ done
 
 # ── Agent routing ────────────────────────────────────────────────────────────
 case "$AGENT" in
-  claude-code)
+  claude-code|codex)
     if [ -z "$TARGET_DIR" ]; then
       TARGET_DIR=".claude/skills/$PACK_NAME"
     fi
