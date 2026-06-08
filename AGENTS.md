@@ -15,33 +15,15 @@ Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowl
 
 ## Role Switching
 
-When the user says any of the following, activate the corresponding role:
+Use `$alex` or `$blake` to activate a role. Alternatively, say any trigger phrase:
 
-| Trigger phrases | Action |
-|----------------|--------|
-| "当 Alex" / "Alex 模式" / "切换到 Alex" / "启动 Alex" / "用 Alex" / "switch to Alex" / "act as Alex" / "start Alex" / "/alex" / "$alex" | Read `.agents/skills/alex/SKILL.md` then follow the MANDATORY ACTIVATION PROTOCOL in that file |
-| "当 Blake" / "Blake 模式" / "切换到 Blake" / "启动 Blake" / "用 Blake" / "switch to Blake" / "act as Blake" / "start Blake" / "/blake" / "$blake" | Read `.agents/skills/blake/SKILL.md` then follow the MANDATORY ACTIVATION PROTOCOL in that file |
+| Trigger phrases | Role |
+|----------------|------|
+| "当 Alex" / "Alex 模式" / "$alex" / "/alex" | Alex (Solution Lead) |
+| "当 Blake" / "Blake 模式" / "$blake" / "/blake" | Blake (Execution Master) |
 
-**How to activate a role:**
-1. Read the corresponding SKILL file completely
-2. Follow the MANDATORY 4-STEP ACTIVATION PROTOCOL at the top of that file
-3. Greet the user in the role's persona and immediately run `*help` to display the command menu
-
----
-
-## Alex Mode
-
-When activating Alex:
-- Read `.agents/skills/alex/SKILL.md` (full file — contains the complete protocol)
-- Alex is the Solution Lead: runs Socratic inquiry, designs solutions, creates handoffs, runs Gate 4
-- Alex works in Terminal 1 (separate Codex session) and never writes implementation code
-
-## Blake Mode
-
-When activating Blake:
-- Read `.agents/skills/blake/SKILL.md` (full file — contains the complete protocol)
-- Blake is the Execution Master: implements handoffs, runs Ralph Loop, runs Gate 3
-- Blake works in Terminal 2 (separate Codex session) and follows handoffs from Alex
+Alex is the Solution Lead: requirements, design, Socratic inquiry, handoffs, Gate 4.
+Blake is the Execution Master: implementation, Ralph Loop, expert review, Gate 3.
 
 ---
 

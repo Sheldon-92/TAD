@@ -132,7 +132,7 @@ backup_existing() {
 # ⚠️ DRIFT: must match platforms: keys in .tad/platform-codes.yaml. Adding a new
 # platform requires updating BOTH this list AND platform-codes.yaml.
 # Future: release-verify.sh could add a --verify-platforms check.
-KNOWN_PLATFORMS="claude-code codex"
+KNOWN_PLATFORMS="claude-code codex both"
 
 validate_platform() {
     local p="$1"
@@ -490,8 +490,28 @@ copy_framework_files() {
         done <<< "$root_files"
     fi
 
+    # --- "both" platform: secondary Codex copy ---
+    if [ "$PLATFORM" = "both" ]; then
+        mkdir -p .agents/skills
+        if [ -d "$src/.claude/skills" ]; then
+            local skill_dir_b
+            for skill_dir_b in "$src"/.claude/skills/*/; do
+                [ -d "$skill_dir_b" ] || continue
+                local skill_name_b
+                skill_name_b="$(basename "$skill_dir_b")"
+                if [ -n "$PACKS" ] && is_pack_skill "$skill_name_b" "$src"; then
+                    if ! is_selected_pack "$skill_name_b"; then
+                        continue
+                    fi
+                fi
+                cp -r "$skill_dir_b" ".agents/skills/$skill_name_b"
+            done
+        fi
+        log_info "  → Copied skills to .agents/skills/ (Codex secondary path)"
+    fi
+
     # --- Codex hooks.json generation ---
-    if [ "$PLATFORM" = "codex" ]; then
+    if [ "$PLATFORM" = "codex" ] || [ "$PLATFORM" = "both" ]; then
         mkdir -p .codex
         cat > .codex/hooks.json << 'HOOKS_EOF'
 {
@@ -628,6 +648,11 @@ verify_install_complete() {
             checked=$((checked + 1))
             if [ ! -d "$TARGET_SKILL_DIR/$skill_name" ]; then
                 log_warn "    ✗ MISSING skill: $TARGET_SKILL_DIR/$skill_name/"
+                missing=$((missing + 1))
+            fi
+            # "both" platform: also verify .agents/skills/ secondary path
+            if [ "$PLATFORM" = "both" ] && [ ! -d ".agents/skills/$skill_name" ]; then
+                log_warn "    ✗ MISSING skill (codex secondary): .agents/skills/$skill_name/"
                 missing=$((missing + 1))
             fi
         done
@@ -840,6 +865,7 @@ main() {
     resolve_platform
 
     # Set platform-aware skill directory (used by copy, verify, and main)
+    # "both" uses .claude/skills as primary + .agents/skills as secondary
     if [ "$PLATFORM" = "codex" ]; then
         TARGET_SKILL_DIR=".agents/skills"
     else

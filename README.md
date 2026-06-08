@@ -48,16 +48,17 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 ---
 
-## 🔄 Codex CLI Support (v2.9.1)
+## 🔄 Codex CLI Support (v2.26.0)
 
-Run TAD workflows on OpenAI Codex CLI (same SKILL files, unified install):
+TAD runs on Codex CLI with the same SKILL files. Use `$alex` or `$blake` to activate roles:
 
 ```bash
-bash tad.sh --platform codex --yes  # Install TAD for Codex
-# Then in Codex: say "当 Alex" or "当 Blake" (AGENTS.md auto-loads)
+bash tad.sh --platform both --yes   # Dual-platform (recommended)
+bash tad.sh --platform codex --yes  # Codex only
+# In Codex: $alex or $blake (auto-discovered via .agents/skills/)
 ```
 
-See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for full setup instructions.
+See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details.
 
 ---
 

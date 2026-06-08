@@ -16,3 +16,9 @@ platforms:
       - ".claude/workflows"
     extra_root_files:
       - "AGENTS.md"
+
+  both:
+    label: "Claude Code + Codex"
+    extra_deny: []
+    extra_root_files:
+      - "AGENTS.md"

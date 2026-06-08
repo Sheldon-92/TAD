@@ -95,19 +95,30 @@ TAD 包含 25 个 capability packs，每个提供特定领域的判断规则：
 
 ## Codex CLI
 
-当 Claude Code 额度用完时，用 Codex CLI 继续 TAD 工作流：
+TAD 完整支持 Codex CLI（v0.130+），使用同一套 SKILL.md 文件：
 
 ```bash
 # 前提：已安装 codex CLI + 配置 OpenAI 认证
 codex --version
 
-# 安装（与 Claude Code 相同的 SKILL.md，路径自动适配 .agents/skills/）
+# 仅 Codex（skills 安装到 .agents/skills/）
 bash tad.sh --platform codex --yes
 
-# 使用：在 Codex 中说 "当 Alex" 或 "当 Blake"（AGENTS.md 自动触发）
+# 双平台（同时安装 .claude/skills/ + .agents/skills/，推荐）
+bash tad.sh --platform both --yes
+
+# 使用：在 Codex 中输入 $alex 或 $blake 激活角色
 ```
 
-已知限制：Codex hooks 不支持 `type: prompt`（LLM 安全检查）。详见 `.tad/guides/hooks-platform-mapping.md`。
+**安装内容**：
+- `.agents/skills/` — 完整 SKILL.md + 24 capability packs
+- `.codex/hooks.json` — 自动生成的 Codex lifecycle hooks
+- `AGENTS.md` — 角色触发词和 capability pack 表
+
+**已知限制**：
+- Codex hooks 不支持 `type: prompt`（LLM 内联安全检查），详见 `.tad/guides/hooks-platform-mapping.md`
+- Codex 无等价的 Skill matcher，`pre-accept-check.sh` 和 `pre-gate-check.sh` 需手动运行
+- 激活时间 ~65 秒（SKILL.md 350KB，Codex 需一次性加载）
 
 ## 常见问题
 

@@ -1,6 +1,6 @@
 ---
 name: web-ui-design
-description: Web UI design capability pack. Guides AI agents through a Vision → Execution → Validation pipeline across 9 design capabilities: information architecture, wireframing, visual design with anti-slop token system, interaction design, design system selection, responsive design, usability review, design system documentation, and design iteration decisions. Includes 14 verified CLI tools, anti-AI-slop rules (based on Anthropic frontend-design SKILL, Apache 2.0), and a bash+jq token compiler (no npm required). Use for any UI build, refactor, or accessibility audit task.
+description: "Web UI design capability pack. Guides AI agents through a Vision → Execution → Validation pipeline across 9 design capabilities: information architecture, wireframing, visual design with anti-slop token system, interaction design, design system selection, responsive design, usability review, design system documentation, and design iteration decisions. Includes 14 verified CLI tools, anti-AI-slop rules (based on Anthropic frontend-design SKILL, Apache 2.0), and a bash+jq token compiler (no npm required). Use for any UI build, refactor, or accessibility audit task."
 keywords: ["UI", "UX", "design", "frontend", "interface", "visual design", "设计", "界面", "布局", "色彩", "设计系统", "wireframe", "accessibility"]
 type: reference-based
 ---

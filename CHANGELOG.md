@@ -5,6 +5,30 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.26.0] - 2026-06-08
+
+### New Features
+- **Cross-Platform Unified SKILL**: Codex CLI now receives the same full SKILL.md files as Claude Code, installed to `.agents/skills/` via `tad.sh --platform codex`. Eliminates the compressed "Codex edition" dual-maintenance burden.
+- **`--platform both`**: New install option writes to both `.claude/skills/` and `.agents/skills/` simultaneously, enabling dual-platform development in a single project.
+- **Codex hooks.json**: `tad.sh --platform codex|both` auto-generates `.codex/hooks.json` with 4 lifecycle handlers (SessionStart, PostToolUse).
+- **Sync multi-platform**: `sync-registry.yaml` now has a `platform` field per project. *sync routes skills to the correct platform path.
+- **Platform annotations**: Alex and Blake SKILL.md contain HTML comment annotations mapping Claude Code tool names to Codex equivalents (e.g., `AskUserQuestion` → `ask_user_question`).
+
+### Removed
+- **Compressed Codex editions**: `.tad/codex/codex-alex-skill.md` and `codex-blake-skill.md` deleted (replaced by unified SKILL routing).
+- **Codex launcher scripts**: `.tad/codex/codex-tad-alex.sh` and `codex-tad-blake.sh` removed (use `$alex` / `$blake` in Codex).
+- **Parity infrastructure**: `codex-parity-check.sh`, `regen-codex-editions.sh`, tournament adapter, and all Codex adapter guides removed.
+- **Publish parity gate**: `*publish` step3b (Codex Edition Parity Gate) removed from Alex SKILL and release-runbook.
+
+### Fixed
+- YAML frontmatter in `ai-agent-architecture` and `web-ui-design` SKILL.md now properly quotes `description` fields containing colons.
+
+### Documentation
+- `AGENTS.md` simplified: trigger-phrase table only, `$alex`/`$blake` as primary activation method.
+- `INSTALLATION_GUIDE.md` Codex section rewritten with `--platform both` instructions.
+- `.tad/guides/hooks-platform-mapping.md` created: documents all hook conversion rules and known limitations.
+- `.tad/deprecation.yaml` v2.26.0 entry added (12 files for downstream auto-cleanup on sync).
+
 ## [2.25.0] - 2026-06-07
 
 ### New Features
