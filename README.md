@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.24.1 - Triple-Question KA**
+**Version 2.25.0 - Universal AC-Driven Gate**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -156,7 +156,7 @@ npx github:Sheldon-92/TAD --platform codex --packs web-frontend,web-backend
 ```
 your-project/
 ├── .tad/
-│   ├── config.yaml              # v2.24.1 configuration (modular: 6 config files)
+│   ├── config.yaml              # v2.25.0 configuration (modular: 6 config files)
 │   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
 │   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
 │   ├── skills/                  # Platform-agnostic skills (9 skills)
@@ -376,6 +376,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.25.0** | **Universal AC-Driven Gate: §9.1 becomes primary verification source for Gate 3/4. Hardcoded tsc/test/lint replaced by task-scoped ACs (Alex auto-generates for dev projects). Rubric Evaluation Protocol extracted as universal Gate section. deliverable-handoff.md deprecated.** |
 | **v2.24.1** | **npx cross-platform installer (`bin/tad-install.mjs`): `npx github:Sheldon-92/TAD` offers interactive platform selection (Claude Code / Codex CLI) + capability-pack selection with one-line descriptions. Codex users get a slimmed install (excludes the 86K Claude-edition alex/blake SKILLs + hooks via deny-delta). `tad.sh --platform <claude-code\|codex>` + `--packs <list>` config-driven routing via `.tad/platform-codes.yaml`. README + INSTALLATION_GUIDE npx docs.** |
 | **v2.24.0** | **Non-dev deliverable lane — Gate 3/4 deliverable branches add `categorical` (rigor band, decoupled from BUILD/PIVOT/KILL via order-of-emission firewall + swap test) and `checklist` (export-spec pass/fail with ≥1-required guard) verdict_shapes alongside `weighted`. product-thinking gains a dogfood-verified categorical rubric; voice/video checklist gate-logic verified via synthetic fixture. visual-code-bridge (React fiber source locator) + ai-podcast-production pack (registry → 25 packs). Triple-Question KA simplified to draft-then-confirm.** |
 | **v2.23.1** | **Triple-Question KA — Knowledge Assessment expanded from 2 to 3 questions (knowledge + skill + workflow). Skillify Step 5 routes patterns to SKILL.md (judgment) or .workflow.js (orchestration). Alex .workflow.js authoring carve-out. Workflow completion trigger (agent_count ≥ 3).** |
@@ -480,6 +481,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.24.1 - Triple-Question KA
+**Welcome to TAD v2.25.0 - Universal AC-Driven Gate
 
 *AI does the work. Humans guard the value.*

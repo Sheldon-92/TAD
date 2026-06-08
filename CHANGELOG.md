@@ -5,6 +5,21 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.25.0] - 2026-06-07
+
+### New Features
+- **Universal AC-Driven Gate**: Gate 3/4 now executes handoff §9.1 Spec Compliance Checklist row-by-row as the PRIMARY verification source, replacing hardcoded tsc/test/lint checks. Any project type (dev, podcast, content, e-commerce) gets meaningful quality gates through task-specific ACs.
+- **Alex step1_ac_generation**: Alex auto-generates baseline ACs (tsc/test/lint) for dev projects based on task-scoped file detection. Non-dev projects get domain-specific ACs from Socratic Inquiry.
+- **Rubric Evaluation Protocol**: Judge≠producer SAFETY machinery (5 VIOLATIONs, 3 verdict_shapes, decoupling firewall) extracted from the deleted deliverable branch into a universal Gate section, activated when §9.1 ACs reference rubric/judge evaluation.
+- **Gate3_Verdict_Marker universal**: Telemetry marker now emitted for ALL task_types (was deliverable-only).
+- **§9.1 empty guard**: Gate 3 BLOCKS if §9.1 is missing or empty (prevents silent zero-verification pass).
+- **Dev-floor WARN**: Advisory warning when a code/mixed handoff touching buildable files has no compile/test AC.
+
+### Breaking Changes
+- `deliverable-handoff.md` template DEPRECATED — all task_types now use `handoff-a-to-b.md` with §9.1.
+- `## Gate 3 — Deliverable Branch` and `## Gate 4 — Deliverable Branch` removed from gate/SKILL.md (logic migrated to Rubric Evaluation Protocol).
+- `task_type: deliverable` frontmatter value preserved but now signals "§9.1 contains rubric ACs" instead of routing to a separate Gate branch.
+
 ## [2.24.1] - 2026-06-07
 
 ### New Features

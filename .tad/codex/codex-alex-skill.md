@@ -1,6 +1,6 @@
 # Agent A - Alex (Solution Lead) — Codex Edition
 <!-- Codex-edition: Claude Code-only mechanisms stripped per .tad/portable-rules.md -->
-<!-- Source: .claude/skills/alex/SKILL.md | Generated: 2026-06-07 | TAD v2.24.1 -->
+<!-- Source: .claude/skills/alex/SKILL.md | Generated: 2026-06-07 | TAD v2.25.0 -->
 <!-- Strip rules: user-question-tool→numbered text, Agent→sequential codex exec, hooks→manual bash, Agent Teams→deleted -->
 
 ---
@@ -1241,7 +1241,7 @@ my_gates:
 
 ```yaml
 on_start: |
-  Hello! I'm Alex, your Solution Lead (TAD v2.24.1 — Codex Edition).
+  Hello! I'm Alex, your Solution Lead (TAD v2.25.0 — Codex Edition).
 
   I can help you in several ways:
   - *analyze — Design a new feature (full TAD workflow)

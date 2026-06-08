@@ -11,6 +11,10 @@
 
 ## In Progress
 
+- [x] **TAD Universal Gate (AC-Driven Verification) — ✅ COMPLETE 2026-06-07** (commit 210f34b, Gate 4 PASS + archived) — Gate 3/4 从硬编码 tsc/test/lint 改为执行 handoff §9.1 逐行验证；2 个 task_type:deliverable 路由分支移除，judge≠producer SAFETY 机器 byte-exact 迁移到通用 Rubric Evaluation Protocol。Alex 新增 step1_ac_generation（task-scoped AC 自动生成）。16/16 AC pass; raw-recompute all match; Layer 2 三审 PASS。KA: `patterns/gate-design.md`
+  - **Residual**: 无 dogfood — 真实非 dev handoff（Colin声音播客）端到端未跑。建议下次在 Colin 项目做第一个非 dev Handoff 时验证 Gate 新行为。
+
+
 - [x] **npx 跨平台安装器 — ✅ COMPLETE 2026-06-07** (commit 18a7e80) — `npx github:Sheldon-92/TAD` selects platform (Codex/Claude) + packs with descriptions. Codex gets 13K slimmed install (no 86K alex/blake SKILL). 13/13 AC pass. Gate 3 PASS. Expert review: 2 P0 fixed (regex injection), 2 P1 fixed (prefix boundary + POSIX ERE). KA: shell-portability → copy-after-deprecation ordering.
   - Residual: `IDEA-20260607-tad-unified-auth-layer.md` (auth persistence); B context progressive loading (separate direction); Codex adapter validated `.tad/evidence/codex-validation/REPORT-2026-06-07.md`.
 
