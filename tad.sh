@@ -713,9 +713,9 @@ validate_generated_configs() {
         ((errors++))
     fi
 
-    # Check commands directory
-    if [ ! -d ".claude/commands" ]; then
-        log_error "Missing .claude/commands directory"
+    # Check skills directory (commands migrated to skills in v2.8.1)
+    if [ ! -d ".claude/skills" ]; then
+        log_error "Missing .claude/skills directory"
         ((errors++))
     fi
 
