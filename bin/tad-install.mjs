@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { createInterface } from 'node:readline';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -82,55 +81,6 @@ function validatePacks(packList) {
   }
 }
 
-async function prompt(rl, question) {
-  return new Promise(resolve => rl.question(question, resolve));
-}
-
-async function selectPlatform(rl) {
-  const platforms = parsePlatformCodes();
-  console.log('\n📦 TAD Framework Installer\n');
-  console.log('Select your AI coding platform:\n');
-  platforms.forEach((p, i) => {
-    console.log(`  ${i + 1}. ${p.label} (${p.id})`);
-  });
-  console.log('');
-  const answer = await prompt(rl, `Choice [1-${platforms.length}]: `);
-  const idx = parseInt(answer, 10) - 1;
-  if (idx < 0 || idx >= platforms.length) {
-    console.error('Invalid choice.');
-    process.exit(1);
-  }
-  return platforms[idx].id;
-}
-
-async function selectPacks(rl) {
-  const packs = parsePackRegistry();
-  console.log('\nSelect capability packs to install (comma-separated numbers, or "all"):\n');
-  packs.forEach((p, i) => {
-    console.log(`  ${String(i + 1).padStart(2)}. ${p.name}`);
-    if (p.description) {
-      console.log(`      ${p.description}`);
-    }
-  });
-  console.log('');
-  const answer = await prompt(rl, `Choice [1-${packs.length}, all]: `);
-  if (answer.trim().toLowerCase() === 'all' || answer.trim() === '') {
-    return '';
-  }
-  const indices = answer.split(',').map(s => parseInt(s.trim(), 10) - 1);
-  const selected = [];
-  for (const idx of indices) {
-    if (idx >= 0 && idx < packs.length) {
-      selected.push(packs[idx].name);
-    }
-  }
-  if (selected.length === 0) {
-    console.error('No valid packs selected.');
-    process.exit(1);
-  }
-  return selected.join(',');
-}
-
 function runInstall(platform, packs) {
   const args = [TAD_SH_PATH, '--platform', platform, '--yes'];
   if (packs) {
@@ -191,26 +141,9 @@ async function main() {
     validatePacks(argPacks.split(','));
   }
 
-  if (argPlatform) {
-    runInstall(argPlatform, argPacks);
-    return;
-  }
-
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    const platform = await selectPlatform(rl);
-    const packs = await selectPacks(rl);
-    rl.close();
-    runInstall(platform, packs);
-  } catch (err) {
-    rl.close();
-    if (err.message && err.message.includes('readline was closed')) {
-      console.error('\nInterrupted.');
-    } else {
-      console.error(`\nError: ${err.message}`);
-    }
-    process.exit(1);
-  }
+  // Default: full install (claude-code + all packs), no questions asked
+  const platform = argPlatform || 'claude-code';
+  runInstall(platform, argPacks);
 }
 
 main();
