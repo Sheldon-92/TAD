@@ -1,8 +1,10 @@
 # TAD Installation & Usage Guide
 
-**Version 2.24.0 - Agent-Adjacent Pack Factory**
+**Version 2.24.1 - Agent-Adjacent Pack Factory**
 
 ## 方式1：一键安装（推荐）
+
+### Option A: curl (default, Claude Code)
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
@@ -13,6 +15,22 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 - **升级**：检测当前版本并原地升级
 - **保留数据**：你的 handoffs、learnings、evidence 不会被覆盖
 - **失败回滚**：出错时自动恢复备份
+
+### Option B: npx (interactive — choose platform + packs)
+
+```bash
+npx github:Sheldon-92/TAD
+```
+
+Interactively pick your platform (**Claude Code** or **Codex CLI**) and which capability
+packs to install — each shown with a one-line description. Codex users get a slimmed
+install (excludes the large Claude-edition SKILLs + hooks) for a much lighter context
+footprint.
+
+Non-interactive:
+```bash
+npx github:Sheldon-92/TAD --platform codex --packs web-frontend,web-backend
+```
 
 ## 方式2：Git安装
 
@@ -80,7 +98,7 @@ You are Agent B. Read .tad/agents/agent-b-executor.md
     └── code-review/    # Code review checklist
 ```
 
-### `.tad文件夹结构 (v2.24.0)
+### `.tad文件夹结构 (v2.24.1)
 ```
 .tad/
 ├── config.yaml           # TAD核心配置 (master index)
@@ -234,7 +252,7 @@ TAD/
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到 v2.24.0
+# 从任何旧版本升级到 v2.24.1
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 
 # 脚本会自动：
@@ -333,7 +351,7 @@ codex exec resume --last "Proceed to create handoff."
 
 ## 总结
 
-TAD v2.24.0 核心特性：
+TAD v2.24.1 核心特性：
 1. **Codex CLI Support** - 限额撞顶时切换 Codex 继续 TAD 工作流（一行命令启动）
 2. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
 3. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）

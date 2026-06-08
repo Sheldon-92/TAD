@@ -2,7 +2,7 @@
 
 ## Priority (Next Session)
 
-- [ ] **v2.24.0 sync follow-ups (from 2026-06-07 release+sync)** — non-blocking, but needed before flipping the structural gate to hard-block:
+- [ ] **v2.24.0 RELEASED — sync follow-ups (from 2026-06-07 release+sync)** — non-blocking, but needed before flipping the structural gate to hard-block:
   - (a) **Structural gate reconciliation** — `release-verify.sh structural` flags 3 pack SKILL.md (academic-research / ai-voice-production / video-creation) on every project: their `install.sh` overwrites the synced SKILL.md with `CAPABILITY.md` content (install-transform), so target != source by byte. Before unsetting `TAD_RELEASE_GATE=warn` (hard-block) for the NEXT release, either align each pack's CAPABILITY.md==SKILL.md or exclude pack-owned skill files from the byte-identity check.
   - (b) **2 installers reject `--force`** (academic-research, research-methodology) — sync script patched to detect+fallback to no-arg form (25/0 everywhere), but add a `--force` no-op to those 2 install.sh.
   - (c) **3 merge-strategy projects lack the marker** (my-openclaw-agents / toy / 内存管理) — CLAUDE.md head NOT synced (left untouched, documented warn). Add `<!-- TAD:PROJECT-CONTENT-BELOW -->` or switch to `overwrite` if their TAD head should track releases.
@@ -10,6 +10,9 @@
 - [x] **Triple-Question KA Evolution — ✅ COMPLETE 2026-06-03** (commit b6911a7) — Gate KA expanded from 2Q to 3Q (knowledge + skill + workflow). Blake Gate 3 + Alex *accept triggers. Skillify Step 5 routes judgment→SKILL.md / orchestration→.workflow.js. Alex .workflow.js authoring carve-out added. Idea: `.tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md`
 
 ## In Progress
+
+- [x] **npx 跨平台安装器 — ✅ COMPLETE 2026-06-07** (commit 18a7e80) — `npx github:Sheldon-92/TAD` selects platform (Codex/Claude) + packs with descriptions. Codex gets 13K slimmed install (no 86K alex/blake SKILL). 13/13 AC pass. Gate 3 PASS. Expert review: 2 P0 fixed (regex injection), 2 P1 fixed (prefix boundary + POSIX ERE). KA: shell-portability → copy-after-deprecation ordering.
+  - Residual: `IDEA-20260607-tad-unified-auth-layer.md` (auth persistence); B context progressive loading (separate direction); Codex adapter validated `.tad/evidence/codex-validation/REPORT-2026-06-07.md`.
 
 - [x] **EPIC: Non-Dev verdict_shapes (categorical + checklist) — ✅ COMPLETE 2026-06-06 (YOLO, branch `epic/nondev-verdict-shapes`)** — Made the non-dev deliverable lane runnable for non-`weighted` packs. Epic: `.tad/archive/epics/EPIC-20260606-nondev-verdict-shapes.md` · report: `.tad/evidence/yolo/nondev-verdict-shapes/EPIC-COMPLETION.md` · DR: `.tad/decisions/DR-20260606-checklist-shape-dogfood-deferral.md`
   - **Why**: `verdict_shape_guard` HARD-BLOCKed all non-weighted packs → product-thinking/voice/video had registered rubric slots but couldn't pass a gate. User-picked highest-value generative direction ("make non-dev packs runnable").

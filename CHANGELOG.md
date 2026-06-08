@@ -5,6 +5,19 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.24.1] - 2026-06-07
+
+### New Features
+- **npx cross-platform installer** (`bin/tad-install.mjs`): `npx github:Sheldon-92/TAD` offers interactive platform selection (Claude Code / Codex CLI) + capability-pack selection with one-line descriptions. Codex users get a slimmed install (excludes the 86K Claude-edition alex/blake SKILLs + hooks via deny-delta) → significantly lower context/quota footprint.
+- **`tad.sh --platform <claude-code|codex>` + `--packs <list>`**: config-driven platform routing via `.tad/platform-codes.yaml` (deny-delta model, not allow-list). Backward compatible — no flag defaults to claude-code.
+
+### Documentation
+- README + INSTALLATION_GUIDE: added npx installation method (platform + pack selection).
+
+### Notes
+- Distribution: `npx github:Sheldon-92/TAD#v2.24.1` (pin recommended).
+- Codex adapter validated end-to-end (13 capabilities) — see `.tad/evidence/codex-validation/`.
+
 ## [2.24.0] - 2026-06-07
 
 ### Added
