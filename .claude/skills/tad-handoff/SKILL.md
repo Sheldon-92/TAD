@@ -31,11 +31,12 @@ Generating comprehensive handoff with 10 mandatory sections:
 [Loading template from .tad/tasks/handoff-creation.md]
 ```
 
-### Template Selection (task_type-aware — additive)
+### Template Selection (UNIVERSAL — TAD v3.1)
 
-Select the handoff template by `task_type` (set during alex handoff_creation_protocol step0_6_deliverable_classification):
-- `task_type: deliverable` → `.tad/templates/deliverable-handoff.md` (rubric-graded non-dev artifact; "Deliverables to Produce" + rubric_ref/pass_threshold/deliverable_paths/pack frontmatter)
-- all other task_types (`code | yaml | research | e2e | mixed`) → `.tad/templates/handoff-a-to-b.md` (default — unchanged)
+ALL task_types use the single universal template `.tad/templates/handoff-a-to-b.md`:
+- `code | yaml | research | e2e | mixed | deliverable` → `.tad/templates/handoff-a-to-b.md`
+- `task_type: deliverable` keeps its frontmatter keys (rubric_ref / pass_threshold / deliverable_paths / pack) AND writes rubric/judge ACs in the universal §9.1 Spec Compliance Checklist (Verification Method: "spawn independent judge per Rubric Evaluation Protocol → verdict: PASS"). The gate's `## Rubric Evaluation Protocol` activates automatically.
+- The former deliverable-specific template (`.tad/templates/deliverable-*.md`) is DEPRECATED — no task_type routes to it.
 
 ### Handoff Creation Checklist
 ```

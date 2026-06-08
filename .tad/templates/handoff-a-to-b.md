@@ -486,7 +486,33 @@ Blake的实现被认为完成，当且仅当：
 
 ---
 
-## 9.1 Spec Compliance Checklist (for automated verification)
+## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
+
+> **⚠️ 主验证源 (TAD v3.1)**: §9.1 是 Gate 3 的 PRIMARY VERIFICATION SOURCE。Gate 3 会
+> **真正执行**每一行的 `Verification Method`，对比 `Expected Evidence`，逐行判断 pass/fail。
+> 任何一行 FAIL → Gate 3 BLOCK。**§9.1 为空 → Gate 3 BLOCK**（不是 silent pass）。
+> 因此 Alex 必须把每行的 Verification Method 写成可直接运行的命令（grep / 测试 / 脚本）。
+> Gate 3 不再硬编码 tsc/test/lint —— 对 dev 项目，这些是 Alex 在此自动生成的 AC 行
+> (alex step1_ac_generation)；对非 dev 项目，这些是域特定命令。
+>
+> **AC 行示例（按项目类型）**：
+>
+> ```
+> # dev 项目（Alex 按 §6 文件类型自动生成）：
+> | AC1 | TypeScript compiles | `npx tsc --noEmit` | exit 0, no errors |
+> | AC2 | Unit tests pass     | `npm test`         | all pass |
+> | AC3 | Lint clean          | `eslint .`         | 0 errors |
+> | AC4 | Python tests pass   | `pytest`           | all pass |
+> | AC5 | Change scope        | `git diff --stat`  | only §6 files |
+>
+> # 非 dev 项目（播客/内容/电商 —— Socratic 确定的域标准）：
+> | AC1 | Pitch consistency   | `python scripts/measure_consistency.py EP04 \| grep overall` | > 70 |
+> | AC2 | Eval build passes   | `python scripts/build_podcast_eval.py EP04 --check`         | exit 0 |
+> | AC3 | Final audio exists  | `ls podcasts/EP04-colin/final/*.wav \| wc -l`               | >= 1 |
+>
+> # rubric/judge 类 AC（task_type: deliverable）：
+> | AC1 | Report passes rubric | spawn independent judge per Rubric Evaluation Protocol against {rubric_ref} | verdict: PASS |
+> ```
 
 Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 
@@ -506,9 +532,9 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|
 | 1 | {same as AC above} | pre-impl-verifiable / post-impl-verifiable | {how to verify: file check, grep, test run} | {what the reviewer should find} | {Alex paste raw output, OR "(post-impl)" for post-impl rows} |
 
-> This section is OPTIONAL. If omitted, the spec-compliance-reviewer will use
-> the § Acceptance Criteria section directly. This section adds verification
-> guidance for more precise automated checking.
+> ⚠️ This section is now MANDATORY (TAD v3.1) — it is the PRIMARY VERIFICATION SOURCE Gate 3
+> executes row-by-row. An empty/missing §9.1 → Gate 3 BLOCKS. Every row's Verification Method
+> must be a runnable command. (Previously optional; the AC-driven Gate makes it load-bearing.)
 
 ---
 

@@ -1318,23 +1318,27 @@ execution_checklist:
 
   during_development:
     task_type_branching:
-      description: "根据 handoff frontmatter 的 task_type 字段选择 Layer 1 检查方式"
-      code: "build + lint + tsc + test（全部 PASS 才继续）"
-      yaml: "python3 -c 'import yaml; yaml.safe_load(open(f))' + 结构验证 + 编造=FAIL 检查"
-      research: "WebSearch 全部执行 + ≥3 来源 + 产出研究文件到指定路径"
-      e2e: "测试脚本执行 + evidence 文件产出到 .tad/evidence/"
-      mixed: "按子任务分别适用上述检查"
-      deliverable: |
-        Deliverable execution lane (contract §B.6, §C) — Blake's generic code "implement"
-        lane does NOT apply. Blake neither produces NOR scores research/content deliverables:
-          - PRODUCER = a Conductor-spawned producer sub-agent (or the Conductor itself) using
-            research/content tools. NotebookLM/WebSearch are Conductor-side and CANNOT run inside
-            a Blake sub-agent (architecture.md "Research must be Conductor-side").
-          - JUDGE = a SEPARATE fresh sub-agent spawned by the gate/Conductor, scoring the artifact
-            against the rubric (judge ≠ producer; self-scoring = VIOLATION, ~10-15% bias).
-          - Blake does not run Layer 1 build/test/lint for task_type: deliverable.
-        If a handoff arrives at Blake with task_type: deliverable → it was mis-routed; return to
-        Alex / Conductor. Blake only implements code-shaped handoffs.
+      description: |
+        UNIFIED §9.1-driven verification (TAD v3.1): Blake verifies EVERY task_type against the
+        handoff's §9.1 Spec Compliance Checklist — each row's Verification Method is the actual
+        check Blake runs. The per-type hints below are how Alex typically POPULATES §9.1; Blake
+        executes whatever §9.1 declares (no hardcoded branch).
+      code: "§9.1 typically has build + lint + tsc + test rows (Alex step1_ac_generation) — run each, all PASS to continue"
+      yaml: "§9.1 typically has `python3 -c 'import yaml; yaml.safe_load(open(f))'` + 结构验证 + 编造=FAIL rows"
+      research: "§9.1 typically has WebSearch 全部执行 + ≥3 来源 + 研究文件产出 rows"
+      e2e: "§9.1 typically has 测试脚本执行 + evidence 文件产出到 .tad/evidence/ rows"
+      mixed: "§9.1 mixes the above row types — run each row's Verification Method"
+      rubric_or_judge_ac: |
+        When a §9.1 AC is rubric/judge-based (task_type: deliverable, or any handoff whose §9.1
+        references rubric scoring), Blake does NOT verify it with a plain grep and does NOT score
+        it himself — he follows gate/SKILL.md's `## Rubric Evaluation Protocol`:
+          - PRODUCER of research/content artifacts = Conductor-side (NotebookLM/WebSearch CANNOT
+            run inside a Blake sub-agent — architecture.md "Research must be Conductor-side").
+          - JUDGE = a SEPARATE fresh sub-agent (judge ≠ producer; self-scoring = VIOLATION, ~10-15% bias).
+          - The §9.1 rubric row passes IFF the judge emits `verdict: PASS`.
+        If a handoff is a PURE content/research production task (Blake has no code-shaped work to
+        implement) → it was mis-routed; return to Alex / Conductor. Blake implements code-shaped
+        handoffs and verifies §9.1 rows; he does not produce or self-score rubric artifacts.
       # ⚠️ ANTI-RATIONALIZATION: "这个任务虽然标了 research 但我已经知道答案了"
       # → task_type 是 Alex 设计时决策。Blake 执行时不判断。标了 research 就必须搜索。
 
@@ -1750,6 +1754,13 @@ completion_protocol:
     blocking: true
     trigger: "Ralph Loop Layer 2 通过后（即 step3 完成后）"
     guide: ".tad/templates/acceptance-verification-guide.md"
+    relation_to_gate3_ac_driven: |
+      TAD v3.1 note: Gate 3 itself now executes the handoff §9.1 Spec Compliance Checklist
+      row-by-row (gate/SKILL.md Spec_Compliance_Verification) — that is the Gate-3-consumed
+      verification source. This step3b (per-AC script + acceptance-verification-report.md) is
+      SUPPLEMENTARY independent coverage; it is NOT a separate Gate 3 prerequisite gate. When
+      §9.1 already encodes each AC's runnable Verification Method, step3b may simply RUN those
+      same §9.1 commands and collect results — do not invent a second, divergent AC set.
 
     violations:
       - "跳过验收验证直接进 Gate 3 = VIOLATION"

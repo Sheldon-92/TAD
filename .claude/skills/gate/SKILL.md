@@ -92,7 +92,10 @@ Output Format:
 ```
 
 ## Gate 3: Implementation Quality (Blake) - **MANDATORY** 🔴
-> IF the active handoff is `task_type: deliverable` → SKIP this block; use `## Gate 3 — Deliverable Branch` below.
+> Gate 3 is UNIVERSAL across all task_types. Its checks come from the active handoff's
+> §9.1 Spec Compliance Checklist (the PRIMARY VERIFICATION SOURCE), not from hardcoded
+> tsc/test/lint. When any §9.1 AC references rubric scoring or an independent judge, the
+> `## Rubric Evaluation Protocol` section below ACTIVATES.
 ```yaml
 When: After implementation (BLOCKING)
 Owner: Agent B (Blake)
@@ -120,51 +123,65 @@ Prerequisite:
   if_exists:
     action: "继续执行 Gate 3 检查项"
 
-# ⚠️ REQUIRED SUBAGENT CALL (BLOCKING)
-Required_Subagent:
-  subagent: "test-runner"
-  action: "MUST call test-runner subagent before Gate 3 can pass"
-  template: ".tad/templates/output-formats/testing-review-format.md"
-  output_to: ".tad/evidence/reviews/{date}-testing-review-{task}.md"
+# ⚠️ §9.1 SPEC COMPLIANCE VERIFICATION (BLOCKING) — PRIMARY VERIFICATION SOURCE
+# This REPLACES the former hardcoded test-runner + Acceptance_Verification blocks.
+# Gate 3 no longer hardcodes tsc/test/lint — those become Alex-generated §9.1 AC rows
+# for dev projects (Backward Compatibility §10.3). The Gate executes whatever §9.1 declares.
+Spec_Compliance_Verification:
+  description: "Gate 3 的主验证源是 Handoff 的 §9.1 Spec Compliance Checklist 表格。逐行执行 Verification Method，对比 Expected Evidence，判断 pass/fail。"
+  source: "active handoff 的 §9.1 Spec Compliance Checklist（每行：AC 编号 + Verification Method + Expected Evidence）"
+  process:
+    step1: "读取 active handoff 的 §9.1 表格"
+    step2: "对每一行，实际执行其 Verification Method（grep/命令/脚本）"
+    step3: "对比执行结果与 Expected Evidence → 标记该行 pass / fail"
+    step4_decision: |
+      IF 任何一行 FAIL → BLOCK Gate 3（不是 silent pass）。
+      IF §9.1 含 test 类 AC（如 npm test / pytest）→ 运行该命令；可选调用 test-runner subagent 补充覆盖率视角。
+      IF 所有行 pass → 继续 Gate 3 后续检查项。
+  rubric_ac_trigger: |
+    激活下方 ## Rubric Evaluation Protocol section，当满足以下任一（fail-safe — 强信号强制激活）：
+      (a) §9.1 中存在引用 rubric 评分 / 独立 judge 的 AC（如 'spawn independent judge per Rubric Evaluation Protocol'）；OR
+      (b) FRONTMATTER BACKSTOP: handoff frontmatter 是 `task_type: deliverable` 或有非空 `rubric_ref`。
+    ⚠️ backstop 防止一个 rubric handoff 因为 Alex 没写触发短语就 bypass Judge_Not_Producer —— 强信号
+    (task_type: deliverable / rubric_ref) 无条件激活 protocol，不依赖 §9.1 措辞是否精确。
+  note: |
+    dev 项目：Alex 在 §9.1 自动生成 npm test / npx tsc --noEmit / eslint / git diff --stat 等 AC 行（Alex step1_ac_generation）。
+    非 dev 项目（播客/内容/电商）：§9.1 是域特定 AC（如 'python scripts/measure_consistency.py EP04 | grep overall' → > 70）。
+    无论哪种，Gate 3 都逐行执行 §9.1 的 Verification Method —— 验证逻辑不再硬编码在 Gate 里。
+  violations:
+    - "VIOLATION: marking a §9.1 row 'pass' without actually executing its Verification Method (paper acceptance — the AC-driven gate's core anti-pattern)."
+    - "VIOLATION: skipping a §9.1 row because it 'looks obviously true' — every row's Verification Method MUST run."
 
-  if_not_called:
+# ⚠️ §9.1 EMPTY GUARD (BLOCKING) — FR7 safety net for AC-driven switch
+Spec_Compliance_Empty_Guard:
+  check: "active handoff 的 §9.1 Spec Compliance Checklist 表格是否为空或缺失？"
+  if_empty_or_missing:
     action: "BLOCK Gate 3"
     message: |
-      ⚠️ Gate 3 无法通过 - 缺少 test-runner 审查
+      ⚠️ No verification criteria found in §9.1. Alex must populate the Spec Compliance Checklist.
 
-      必须调用 test-runner subagent 并生成审查报告。
-      报告输出位置：.tad/evidence/reviews/{date}-testing-review-{task}.md
+      从 hardcoded 切换到 AC-driven 后，空 §9.1 不能 silent pass —— 否则 Gate 失去全部检查内容。
+      Alex 必须在 §9.1 填写至少一行可执行的 Verification Method，然后重新执行 Gate 3。
+    rationale: "empty §9.1 → BLOCK 是 AC-driven 架构的必需安全网（VIOLATION：空 §9.1 当作 pass = Gate 形同虚设）。"
 
-      执行步骤：
-      1. 调用 test-runner subagent
-      2. 使用 testing-review-format 模板输出
-      3. 保存到 .tad/evidence/reviews/ 目录
-      4. 重新执行 Gate 3
-
-# ⚠️ ACCEPTANCE VERIFICATION CHECK (BLOCKING)
-Acceptance_Verification:
-  check: "验收验证报告是否存在且全部 PASS？"
-  location: ".tad/evidence/acceptance-tests/{task_id}/acceptance-verification-report.md"
-
+# ⚠️ DEV REGRESSION FLOOR (smoke alarm, WARN-not-BLOCK) — FR6 zero-regression backstop
+# The empty guard only catches a FULLY empty §9.1. It does NOT catch a present-but-thin §9.1
+# that omits the tsc/test/lint rows Alex was supposed to auto-generate (alex step1_ac_generation).
+# Without this, a code handoff could PASS Gate 3 with tsc/test NEVER run — the old hardcoded
+# test-runner floor's exact failure mode. Soft reminder per "Mechanical Enforcement Rejected on
+# Single-User CLI" (smoke alarm, not a hook). Aligns with the project principle that a global/
+# presence check is blind to must-cover loss when stripping also satisfies it.
+Spec_Compliance_Dev_Floor:
+  applies_when: "active handoff frontmatter task_type IN {code, mixed} AND §6 Files to Modify touches buildable files (.ts/.tsx/.js/.jsx/.py or a project with package.json/tsconfig/pyproject.toml)"
+  check: "Does §9.1 contain at least one compile/test row? (a Verification Method with a tsc / test / pytest / build / lint token)"
   if_missing:
-    action: "BLOCK Gate 3"
+    action: "WARN (not BLOCK) — surface to human, do not silently pass"
     message: |
-      ⚠️ Gate 3 无法通过 - 缺少验收验证报告
-
-      Blake 必须：
-      1. 读取 Handoff 的 Acceptance Criteria
-      2. 为每条标准生成验证脚本
-      3. 执行所有验证
-      4. 生成 acceptance-verification-report.md
-      5. 全部 PASS 后重新执行 Gate 3
-
-  if_exists:
-    checks:
-      - "报告中 FAIL 数量 = 0"
-      - "报告中标准数量 = Handoff 中 Acceptance Criteria 数量（不遗漏）"
-    on_mismatch:
-      action: "BLOCK Gate 3"
-      message: "验收验证未全部通过或有遗漏标准"
+      ⚠️ task_type={code|mixed} handoff touches buildable files but §9.1 has no tsc/test/lint row.
+      The AC-driven Gate cannot regression-check what §9.1 never declared. Confirm this is
+      intentional (e.g. a pure-config edit) or ask Alex to add the missing dev-floor ACs
+      (alex step1_ac_generation) before accepting Gate 3.
+    not_blocking_rationale: "WARN not BLOCK — a legitimate pure-config/doc code-handoff may have no compile row. Human confirms; the gate must not hard-fail on a false positive (smoke alarm, not fire suppressor)."
 
 # ⚠️ RISK TRANSLATION CHECK (Cognitive Firewall - Pillar 3)
 Risk_Translation:
@@ -219,12 +236,12 @@ Git_Commit_Verification:
     on_valid: "PASS"
     on_invalid: "BLOCK - commit hash not found in git history or doc-only claim invalid"
 
-# Gate 3 检查项（Prerequisite, Subagent, Acceptance Verification 要求通过后执行）
+# Gate 3 检查项（Prerequisite, §9.1 Spec Compliance, Empty Guard 要求通过后执行）
 Critical Check (5 items):
-  - [ ] Code complete (all handoff tasks done)
-  - [ ] Tests pass (no failing tests)
-  - [ ] Standards met (linting, formatting)
-  - [ ] Evidence file exists (.tad/evidence/reviews/*-testing-review-*.md)
+  - [ ] Code/deliverable complete (all handoff tasks done)
+  - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
+  - [ ] Evidence files exist per the handoff's Required Evidence Manifest
+  - [ ] Git commit done (commit hash recorded, or NONE for doc-only)
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
 Evidence: Record in completion report + evidence file
 Output Format:
@@ -235,17 +252,11 @@ Output Format:
   |-------|--------|
   | Completion Report | ✅ 存在 |
 
-  #### Subagent Evidence Check
-  | Subagent | Called | Evidence File | Status |
-  |----------|--------|---------------|--------|
-  | test-runner | ✅ Yes | {date}-testing-review-{task}.md | ✅ Exists |
-
-  #### Acceptance Verification
-  | Check | Status |
-  |-------|--------|
-  | Report exists | ✅ / ❌ |
-  | All criteria covered | {N}/{N} |
-  | All PASS | {P} PASS, {F} FAIL |
+  #### §9.1 Spec Compliance (PRIMARY VERIFICATION SOURCE)
+  | AC# | Verification Method | Expected | Actual | Status |
+  |-----|---------------------|----------|--------|--------|
+  | AC1 | {command from §9.1} | {expected} | {actual} | ✅ Pass / ❌ Fail |
+  | ... | (one row per §9.1 AC — empty §9.1 → BLOCK) | | | |
 
   #### Git Commit Verification
   | Check | Status | Detail |
@@ -255,10 +266,9 @@ Output Format:
   #### Quality Checks
   | Item | Status | Note |
   |------|--------|------|
-  | Code Complete | ✅ Pass | ... |
-  | Tests Pass | ✅ Pass | ... |
-  | Standards | ✅ Pass | ... |
-  | Evidence | ✅ Pass | File exists |
+  | Code/Deliverable Complete | ✅ Pass | ... |
+  | §9.1 all rows pass | ✅ Pass | {P} pass, {F} fail (any fail → BLOCK) |
+  | Evidence | ✅ Pass | Files exist per Required Evidence Manifest |
 
   #### Knowledge Assessment (MANDATORY - must answer)
   | Question | Answer | Evidence |
@@ -325,6 +335,29 @@ Knowledge_Assessment:
 
   violation: "Gate 3 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
 
+# ⚠️ GATE 3 POST-STEP — gate3_verdict marker (UNIVERSAL — all task_types)
+# Promoted from the former deliverable-only marker to a universal post-step (P1 step 7).
+# This runs for EVERY task_type (code / yaml / research / e2e / mixed / doc-only), not just rubric ACs.
+Gate3_Verdict_Marker:
+  who: |
+    Whoever RAN Gate 3 writes the marker. Concretely:
+      - code-shaped handoff (normal Blake path) → Blake writes it.
+      - rubric AC inside a normal Blake-path handoff (no Conductor present) → Blake spawns the
+        independent judge (judge ≠ Blake still holds — Blake does NOT self-score) and Blake writes
+        the marker from the judge's verdict.
+      - rubric AC under a Conductor/Epic lane → the Conductor/judge-orchestrator writes it.
+    Single rule: the Gate 3 executor owns the marker; the judge is always a distinct sub-agent."
+  when: "AFTER the Gate 3 verdict is computed, as a Gate 3 post-step (all task_types)."
+  action: |
+    Edit the completion report's `gate3_verdict:` frontmatter to the Gate 3 verdict
+    LOWERCASED — one of pass | fail | partial (PARTIAL→partial). Mirrors blake
+    completion_protocol.step4b_gate3_verdict_marker. For rubric/judge §9.1 ACs the value
+    derives from the Rubric Evaluation Protocol's Verdict_Mapping output.
+    Without this, emit_gate_result hits the empty-skip → ZERO gate_result telemetry
+    (the paper-machine failure) for ANY task_type, not only deliverables.
+  allowlist: "pass | fail | partial (post-write-sync.sh emits gate_result only for these exact lowercase values)."
+  timing_note: "The completion report is written BEFORE the verdict exists, so gate3_verdict is empty at creation; the Gate 3 executor writes it as this post-step Edit, which re-triggers post-write-sync.sh to emit the gate_result event."
+
 # ⚠️ POST-PASS ACTIONS
 Post_Pass_Actions:
   trigger: "Gate 3 所有检查项 PASS（包括 Knowledge Assessment）"
@@ -338,30 +371,32 @@ Post_Pass_Actions:
     format: "English only"
 ```
 
-## Gate 3 — Deliverable Branch
-> Additive sibling section (contract §B). Execute this INSTEAD of the Gate 3 block above
-> ONLY when the active handoff frontmatter is `task_type: deliverable`. For every other
-> task_type the original Gate 3 block runs byte-unchanged.
+## Rubric Evaluation Protocol
+> UNIVERSAL Gate section (not deliverable-only). ACTIVATES when any §9.1 AC references rubric
+> scoring or an independent judge (e.g. a §9.1 AC whose Verification Method is "spawn independent
+> judge per Rubric Evaluation Protocol against rubric X → verdict: PASS"). Applies to ANY task_type
+> whose §9.1 contains such an AC — not just `task_type: deliverable`. When no §9.1 AC references a
+> rubric/judge, this section is inert (skipped). The SAFETY logic below is migrated byte-exact from
+> the former Gate 3 deliverable branch — it is the anti-self-scoring backbone for rubric-based ACs.
 ```yaml
-When: After deliverable production (BLOCKING), only if task_type == deliverable
-Owner: Gate/Conductor executes (spawns the judge); Producer (§B.6) revises on PARTIAL/FAIL
+Activation: "Triggered from Gate 3 Spec_Compliance_Verification.rubric_ac_trigger — a §9.1 AC references rubric scoring / independent judge. Otherwise inert (no rubric AC → skip)."
+Owner: "Gate/Conductor executes (spawns the judge); the producing agent revises on PARTIAL/FAIL"
 
-# Routing
-Applies_When: "active handoff frontmatter task_type == deliverable"
-Else: "use the original '## Gate 3: Implementation Quality' block above (byte-unchanged)"
-
-# ⚠️ PREREQUISITE CHECK (BLOCKING) — KEPT from code path
-Prerequisite:
-  check: "Deliverable Completion Report 是否存在？"
-  location: ".tad/active/handoffs/COMPLETION-*.md (deliverable-completion variant)"
-  if_missing:
-    action: "BLOCK Gate 3"
-    message: |
-      ⚠️ Gate 3 无法执行 - 缺少 Deliverable Completion Report
-      请用 deliverable-completion.md 模板创建报告，然后重新执行 Gate 3。
-    result: "BLOCKED - 等待 Completion Report"
-  if_exists:
-    action: "继续执行 Gate 3 deliverable 检查项"
+# ⚠️ judge ≠ producer (BLOCKING) — contract §C — anti-self-scoring backbone (migrated byte-exact)
+Judge_Not_Producer:
+  hard_rule: |
+    The deliverable is produced by ONE agent (a Conductor-spawned producer sub-agent /
+    the Conductor). The rubric score is computed by a SEPARATE judge sub-agent, spawned
+    fresh by the gate/Conductor, whose prompt references ONLY {deliverable_paths} +
+    {rubric_ref} + {pass_threshold}. judge ≠ producer is defined relative to THIS producer
+    (if the Conductor itself produced, the judge MUST be a distinct sub-agent).
+  why: "self-enhancement bias ~10-15% inflation when an agent scores its own output (ai-evaluation: Judge ≠ Optimizer/Producer). A self-scored rubric is validation theater."
+  forbidden:
+    - "VIOLATION: the producing agent (or same session/persona) computes the rubric score for its own deliverable."
+    - "VIOLATION: passing the producer's reasoning / 'why this is good' notes into the judge prompt."
+    - "VIOLATION: reusing the producer sub-agent (or its conversation) as the judge."
+    - "VIOLATION (artifact-channel): the judge crediting self-assessment / quality-claim prose embedded INSIDE the artifact (self-praise, a producer-written self-scored rubric table). The judge scores on RUBRIC EVIDENCE it independently derives from the artifact's substance — NOT on the artifact's own claims about its quality. Self-praise in the artifact is ignored, not credited."
+    - "VIOLATION: 'the producer already self-scored, so skip the judge' rationalization (the 'Express → exempt' anti-pattern applied to scoring)."
 
 # ⚠️ RUBRIC + THRESHOLD RESOLUTION (BLOCKING) — contract §A.2 precedence
 Rubric_Resolution:
@@ -379,15 +414,17 @@ Rubric_Resolution:
     action: "BLOCK Gate 3"
     message: "deliverable handoff has no resolvable rubric_ref + pass_threshold (set in frontmatter or register the pack in deliverable-rubrics.yaml). No silent default."
   partial_threshold: "from deliverable-rubrics.yaml row (default 0.60 if omitted)"
+  # ⚠️ VERDICT SHAPE GUARD (BLOCKING) — unknown shape must never be silently mis-scored
   verdict_shape_guard:
     rule: "If the resolved verdict_shape NOT IN {weighted, categorical, checklist} → BLOCK Gate 3"
     supported: [weighted, categorical, checklist]
     message: "Unknown verdict_shape — supported: weighted (0-1 ladder), categorical (rigor band), checklist (export-spec pass/fail). An unrecognized shape must NOT be silently mis-scored."
+    violation: "VIOLATION: silently scoring an unrecognized verdict_shape instead of BLOCKING — an unknown shape has no defined pass semantics."
 
-# ⚠️ REQUIRED SUBAGENT CALL (BLOCKING) — REPLACES test-runner with an independent JUDGE
-Required_Subagent:
+# ⚠️ REQUIRED JUDGE SUBAGENT (BLOCKING) — independent judge for rubric/judge §9.1 ACs
+Required_Judge:
   subagent: "judge (a FRESH independent sub-agent — NOT the producer)"
-  action: "MUST spawn an independent judge sub-agent before Gate 3 can pass"
+  action: "MUST spawn an independent judge sub-agent before a rubric/judge §9.1 AC can pass"
   # contract §B.3 — judge prompt is constructed from FILE PATHS ONLY:
   judge_inputs:
     - "deliverable_paths — artifact file path(s) to evaluate (judge reads them)"
@@ -427,22 +464,6 @@ Required_Subagent:
       ⚠️ Gate 3 无法通过 - 缺少独立 judge 的 rubric-eval 审查
       必须 spawn 一个 fresh 独立 judge sub-agent，输出到
       .tad/evidence/reviews/{date}-rubric-eval-{task}.md，然后重新执行 Gate 3。
-
-# ⚠️ judge ≠ producer (BLOCKING) — contract §C
-Judge_Not_Producer:
-  hard_rule: |
-    The deliverable is produced by ONE agent (a Conductor-spawned producer sub-agent /
-    the Conductor). The rubric score is computed by a SEPARATE judge sub-agent, spawned
-    fresh by the gate/Conductor, whose prompt references ONLY {deliverable_paths} +
-    {rubric_ref} + {pass_threshold}. judge ≠ producer is defined relative to THIS producer
-    (if the Conductor itself produced, the judge MUST be a distinct sub-agent).
-  why: "self-enhancement bias ~10-15% inflation when an agent scores its own output (ai-evaluation: Judge ≠ Optimizer/Producer). A self-scored rubric is validation theater."
-  forbidden:
-    - "VIOLATION: the producing agent (or same session/persona) computes the rubric score for its own deliverable."
-    - "VIOLATION: passing the producer's reasoning / 'why this is good' notes into the judge prompt."
-    - "VIOLATION: reusing the producer sub-agent (or its conversation) as the judge."
-    - "VIOLATION (artifact-channel): the judge crediting self-assessment / quality-claim prose embedded INSIDE the artifact (self-praise, a producer-written self-scored rubric table). The judge scores on RUBRIC EVIDENCE it independently derives from the artifact's substance — NOT on the artifact's own claims about its quality. Self-praise in the artifact is ignored, not credited."
-    - "VIOLATION: 'the producer already self-scored, so skip the judge' rationalization (the 'Express → exempt' anti-pattern applied to scoring)."
 
 # ⚠️ VERDICT MAPPING — contract §B.5
 Verdict_Mapping:
@@ -499,48 +520,27 @@ Verdict_Mapping:
   on_pass: "Gate 3 proceeds (KA + git checks)."
   on_partial_or_fail: "BLOCK Gate 3; the producer (§B.6) revises and re-runs — a FRESH judge re-scores the revised artifact (each re-score is a new judge spawn)."
 
-# ⚠️ GATE 3 POST-STEP — gate3_verdict marker (Conductor-performed for the deliverable lane)
-Gate3_Verdict_Marker:
-  who: "the CONDUCTOR (the Gate 3 judge-orchestrator for the deliverable lane) — NOT Blake (Blake is excluded from this lane per blake task_type_branching.deliverable)."
-  when: "AFTER the judge verdict is computed (Verdict_Mapping), as a Gate 3 post-step."
-  action: |
-    Edit the deliverable-completion report's `gate3_verdict:` frontmatter to the judge verdict
-    LOWERCASED — one of pass | fail | partial (PARTIAL→partial). Mirrors blake
-    completion_protocol.step4b_gate3_verdict_marker, but Conductor-performed for this lane.
-    Without this, emit_gate_result hits the empty-skip → ZERO gate_result telemetry for
-    deliverables (the paper-machine failure).
-  allowlist: "pass | fail | partial (post-write-sync.sh emits gate_result only for these exact lowercase values)."
-  timing_note: "The completion report is written BEFORE the judge runs, so gate3_verdict is empty at creation; the Conductor writes it as this post-step Edit, which re-triggers post-write-sync.sh to emit the gate_result event."
-
-# ⚠️ ACCEPTANCE VERIFICATION CHECK — KEPT (ACs about the artifact)
-Acceptance_Verification:
-  check: "关于工件的 AC 是否全部满足？(e.g. '报告含 ≥12 条可验证引用')"
-  on_mismatch:
-    action: "BLOCK Gate 3"
-    message: "工件 AC 验证未全部通过或有遗漏标准"
-
-# ⚠️ GIT COMMIT VERIFICATION CHECK (BLOCKING) — KEPT (artifacts get committed too)
-Git_Commit_Verification:
-  check: "Deliverable artifacts committed to git? (deliverable_paths must appear in git)"
-  on_invalid: "BLOCK - artifact paths not found in git history"
-
-# Gate 3 Deliverable 检查项
-Critical Check (4 items):
-  - [ ] Deliverable complete (all `deliverable_paths` present)
-  - [ ] Rubric verdict PASS per resolved verdict_shape — weighted: score ≥ pass_threshold · categorical: band = rigorous · checklist: all required items pass (scored by independent judge)
-  - [ ] Rubric-eval evidence exists (.tad/evidence/reviews/*-rubric-eval-*.md, verdict PASS)
-  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
-Evidence: Record in deliverable-completion report + rubric-eval evidence file
-
-# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING) — KEPT, unchanged from code path
-Knowledge_Assessment:
-  blocking: true
-  description: "Gate 3 无法 PASS 除非 Knowledge Assessment 表格已填写（与 code path 相同规则）"
-  violation: "Gate 3 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
+# Rubric AC integration (how a rubric/judge §9.1 AC resolves)
+Rubric_AC_Integration:
+  description: "When a §9.1 AC references a rubric/judge, its row pass/fail is decided by this protocol, not by a plain grep."
+  flow: |
+    1. Resolve rubric_ref + threshold + verdict_shape (Rubric_Resolution).
+    2. Spawn the independent judge (Required_Judge) — judge ≠ producer (Judge_Not_Producer).
+    3. Map judge output → verdict (Verdict_Mapping).
+    4. The §9.1 AC passes IFF the judge's machine-readable line is `verdict: PASS`; PARTIAL/FAIL → that §9.1 row FAILs → BLOCK Gate 3.
+  rubric_eval_evidence: ".tad/evidence/reviews/{date}-rubric-eval-{task}.md (verdict PASS) — listed in the handoff's Required Evidence Manifest."
+  gate3_verdict: "The overall Gate 3 verdict is recorded via the universal Gate3_Verdict_Marker (Gate 3 code path post-step). The rubric judge verdict feeds that marker when the §9.1 ACs are rubric-based."
+  note: "Prerequisite / Git Commit / Knowledge Assessment are NOT re-declared here — the universal Gate 3 block already enforces them for ALL task_types (no deliverable-only duplication)."
 ```
 
 ## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴
-> IF the active handoff is `task_type: deliverable` → use `## Gate 4 — Deliverable Branch` below.
+> Gate 4 is HYBRID and UNIVERSAL across all task_types (FR5): the structural subagent
+> requirements (security-auditor / performance-optimizer / code-reviewer) are PRESERVED as
+> BLOCKING role-enforcement for `task_type: code` and `task_type: mixed` — they are NOT
+> AC-driven and cannot be skipped by omitting an AC. The business-acceptance checks are read
+> from the handoff's §9 Acceptance Criteria. When the §9.1 ACs are rubric-based, the Gate 3
+> rubric-eval `verdict: PASS` is the prerequisite (see Rubric Evaluation Protocol) and code
+> subagents are not applicable (a report/audio/video artifact has no code surface).
 ```yaml
 When: Before delivery (BLOCKING)
 Owner: Agent B (Blake) executes, Agent A (Alex) verifies with subagents
@@ -548,17 +548,26 @@ Owner: Agent B (Blake) executes, Agent A (Alex) verifies with subagents
 # ⚠️ PREREQUISITE CHECK (BLOCKING)
 Prerequisite:
   check: "Gate 3 是否已通过？"
-  evidence: ".tad/evidence/reviews/*-testing-review-*.md exists"
+  evidence: |
+    Gate 3 PASS evidence exists. For code/mixed handoffs this is the §9.1-driven Gate 3
+    result + any test/review evidence the §9.1 ACs declared. For rubric-based handoffs it is
+    .tad/evidence/reviews/*-rubric-eval-*.md with the machine-readable line `verdict: PASS`.
 
   if_missing:
     action: "BLOCK Gate 4"
     message: |
       ⚠️ Gate 4 无法执行 - Gate 3 未完成
 
-      必须先完成 Gate 3 并生成测试审查证据。
+      必须先完成 Gate 3（§9.1 全行 pass，rubric AC 须 verdict: PASS）。
     result: "BLOCKED - 等待 Gate 3 完成"
 
-# ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING)
+# ⚠️ TASK-TYPE CONDITIONALITY (BLOCKING for code/mixed) — structural role enforcement, NOT AC-driven
+Structural_Subagent_Conditionality:
+  rule: "security-auditor / performance-optimizer / code-reviewer are BLOCKING-required when task_type IN {code, mixed}. They review a code surface — role separation, NOT derivable from §9 ACs."
+  for_rubric_based: "When the handoff's §9.1 ACs are rubric-based (report/audio/video artifacts, no code surface), code subagents are NOT applicable; the Gate 3 rubric-eval verdict: PASS is the structural prerequisite instead. ux-expert-reviewer stays conditional ('if UI involved')."
+  anti_skip: "VIOLATION: making the structural subagents AC-driven so Alex could skip security review by not writing an AC. They are role enforcement and MUST NOT be omittable via AC authoring."
+
+# ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING) — for task_type IN {code, mixed}
 Required_Subagents:
   - subagent: "security-auditor"
     required: true
@@ -634,13 +643,14 @@ Decision_Compliance:
 
 # Gate 4 检查项（Prerequisite 和 Subagent 要求通过后执行）
 Critical Check (6 items):
-  - [ ] Integration works (system-level test)
+  - [ ] Business acceptance: the handoff's §9 Acceptance Criteria are met (read from §9, not hardcoded)
   - [ ] Ready for user (no known blockers)
-  - [ ] Security review evidence exists
-  - [ ] Performance review evidence exists
+  - [ ] Security review evidence exists (task_type code/mixed — structural, BLOCKING)
+  - [ ] Performance review evidence exists (task_type code/mixed — structural, BLOCKING)
   - [ ] All subagent feedback addressed
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
 Evidence: Record in NEXT.md or completion report + evidence files
+Business_Acceptance_Source: "The business-acceptance items above are read from the handoff §9 Acceptance Criteria. The structural security/performance/code review requirements are NOT from §9 — they are role enforcement for code/mixed (Structural_Subagent_Conditionality)."
 Output Format:
   ### Gate 4 Result
 
@@ -648,7 +658,7 @@ Output Format:
   | Check | Status |
   |-------|--------|
   | Gate 3 Passed | ✅ Yes |
-  | Testing Evidence | ✅ Exists |
+  | Gate 3 Evidence | ✅ Exists (§9.1-driven result for code/mixed, or rubric-eval verdict: PASS) |
 
   #### Subagent Evidence Check (BLOCKING)
   | Subagent | Required | Called | Evidence File | Status |
@@ -812,70 +822,38 @@ Post_Pass_Actions:
       - 确认 NEXT.md 状态
 ```
 
-## Gate 4 — Deliverable Branch
-> Additive sibling section (contract §B.7). Execute this INSTEAD of the Gate 4 block above
-> ONLY when the active handoff frontmatter is `task_type: deliverable`. For every other
-> task_type the original Gate 4 block runs byte-unchanged (its `*-testing-review-*` glob and
-> the 3 BLOCKING code subagents are untouched).
+## Gate 4 — Rubric-Based Handoffs (universal, no separate branch)
+> NOT a separate routing branch — the universal Gate 4 above is HYBRID and handles all
+> task_types. This section only documents the rubric-lane SPECIFICS that the hybrid Gate 4
+> applies when the handoff's §9.1 ACs are rubric-based (report/audio/video artifacts).
 ```yaml
-When: Before delivery (BLOCKING), only if task_type == deliverable
-Owner: Alex verifies business acceptance (no code subagents)
-
-# Routing
-Applies_When: "active handoff frontmatter task_type == deliverable"
-Else: "use the original '## Gate 4: Integration Verification' block above (byte-unchanged)"
-
-# Evidence File Naming (deliverable) — rubric-eval is a DISTINCT type (contract §B.4)
-# Registered here in the sibling (NOT folded into the original Gate 4 block's `types:` enum,
-# which stays byte-identical) — rubric-eval MUST NOT be aliased to testing-review/code-review.
-Evidence_Naming_Deliverable:
-  pattern: ".tad/evidence/reviews/{YYYY-MM-DD}-{type}-{brief-description}.md"
-  types: [rubric-eval]   # DISTINCT evidence type for deliverable Gate 3/4 (own glob *-rubric-eval-*)
-  example: "2026-05-31-rubric-eval-soy-sauce-report.md"
-
-# ⚠️ PREREQUISITE CHECK (BLOCKING) — replaces the testing-review glob
-Prerequisite:
-  check: "Gate 3 是否已通过（deliverable）？"
+# ⚠️ RUBRIC-LANE PREREQUISITE (BLOCKING) — when §9.1 ACs are rubric-based
+Rubric_Gate4_Prerequisite:
+  check: "Gate 3 rubric verdict 是否 PASS？"
   evidence: ".tad/evidence/reviews/*-rubric-eval-*.md exists with the exact machine-readable line `verdict: PASS`"
   verify_command: "grep -E '^verdict: PASS' .tad/evidence/reviews/*-rubric-eval-*.md"
-  verify_note: "Greps the EXACT lowercase-key/uppercase-value token the judge writes (Gate 3 Required_Subagent.output_format). The bold/emoji human form `**Verdict**: ✅ PASS` is NOT matched by this anchor — the machine-readable line is required."
+  verify_note: "Greps the EXACT lowercase-key/uppercase-value token the judge writes (Rubric Evaluation Protocol Required_Judge.output_format). The bold/emoji human form `**Verdict**: ✅ PASS` is NOT matched by this anchor — the machine-readable line is required."
   shape_agnostic_note: "The `^verdict: PASS` token is shape-agnostic — weighted/categorical/checklist all emit it. Gate 4 needs no per-shape branch."
   if_missing:
     action: "BLOCK Gate 4"
     message: |
-      ⚠️ Gate 4 无法执行 - Gate 3 (deliverable) 未通过
+      ⚠️ Gate 4 无法执行 - 一个 rubric-based §9.1 AC 的 Gate 3 未通过
       必须先有 rubric-eval 证据且含 machine-readable 行 `verdict: PASS`。
-    result: "BLOCKED - 等待 Gate 3 (deliverable) PASS"
+    result: "BLOCKED - 等待 rubric AC 的 Gate 3 PASS"
 
-# ⚠️ CODE SUBAGENTS — CONDITIONAL on task_type != deliverable (contract §B.7)
-Conditional_Code_Subagents:
-  rule: "security-auditor / performance-optimizer / code-reviewer are required ONLY when task_type != deliverable"
-  for_deliverable: |
-    NOT required — they review code; a report/audio/video artifact has no code surface.
-    ux-expert-reviewer stays conditional ('if UI involved') and is N/A for these packs.
-  note: "The original Gate 4 block's 3 BLOCKING code subagents apply to code task_types only and are left byte-unchanged above."
+# Evidence File Naming (rubric-eval) — rubric-eval is a DISTINCT type (own glob *-rubric-eval-*)
+Evidence_Naming_RubricEval:
+  pattern: ".tad/evidence/reviews/{YYYY-MM-DD}-{type}-{brief-description}.md"
+  types: [rubric-eval]   # DISTINCT evidence type — MUST NOT be aliased to testing-review/code-review
+  example: "2026-05-31-rubric-eval-soy-sauce-report.md"
 
-# Deliverable Gate 4 = business acceptance (contract §B.7)
-Business_Acceptance:
-  conditions:
-    a: "the Gate-3 rubric verdict is PASS (.tad/evidence/reviews/*-rubric-eval-*.md)"
-    b: "the artifact 'meets the brief' (the handoff's ACs about the artifact are satisfied — Alex's judgment)"
-    c: "explicit human approval"
-  no_code_subagents: true
+# Code subagents N/A for rubric artifacts (handled by Structural_Subagent_Conditionality above)
+Rubric_No_Code_Subagents:
+  rule: "When §9.1 ACs are rubric-based (no code surface) the security/performance/code subagents are N/A; the rubric-eval verdict: PASS is the structural prerequisite. ux-expert-reviewer stays conditional ('if UI involved')."
 
-# Gate 4 Deliverable 检查项
-Critical Check (4 items):
-  - [ ] Gate 3 (deliverable) rubric verdict PASS (rubric-eval evidence exists)
-  - [ ] Meets the brief (artifact ACs satisfied — Alex judgment)
-  - [ ] Explicit human approval
-  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
-Evidence: Record in NEXT.md or completion report + rubric-eval evidence file
-
-# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING) — KEPT, unchanged from code path
-Knowledge_Assessment_Gate4:
-  blocking: true
-  description: "Gate 4 无法 PASS 除非 Knowledge Assessment 表格已填写（与 code path 相同规则）"
-  violation: "Gate 4 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
+# Business acceptance + Knowledge Assessment are the UNIVERSAL Gate 4 blocks above — not re-declared here.
+# (The hybrid Gate 4 Knowledge_Assessment_Gate4 BLOCKING/VIOLATION rule applies to ALL task_types,
+#  including rubric-based ones — no deliverable-only duplication.)
 ```
 
 ## Interactive Gate Execution

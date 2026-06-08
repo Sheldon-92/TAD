@@ -2892,16 +2892,21 @@ handoff_creation_protocol:
           - if the artifact informs a downstream build → task_type: research (unchanged path)
 
         IF deliverable:
-          1. Set frontmatter `task_type: deliverable`.
-          2. Select `.tad/templates/deliverable-handoff.md` (instead of handoff-a-to-b.md).
-          3. Fill the deliverable frontmatter keys: `pack`, `rubric_ref`, `pass_threshold`,
+          1. Set frontmatter `task_type: deliverable`. (The enum value is PRESERVED — it signals
+             "this handoff's §9.1 contains rubric/judge ACs" and triggers gate's Rubric Evaluation Protocol.)
+          2. Select the UNIVERSAL `.tad/templates/handoff-a-to-b.md` template (NOT a separate
+             deliverable template — that template is DEPRECATED). The rubric ACs are written in
+             the universal §9.1 Spec Compliance Checklist like any other AC.
+          3. Fill the rubric frontmatter keys: `pack`, `rubric_ref`, `pass_threshold`,
              `deliverable_paths: []` (rubric_ref/pass_threshold precedence per contract §A.2 —
              frontmatter overrides .tad/capability-packs/deliverable-rubrics.yaml; both absent → Gate 3 BLOCKS).
-          4. Producer is Conductor-side (contract §B.6) — NOT Blake; the gate spawns an independent judge (judge ≠ producer).
-          → Continue to step1 (Draft Creation) using the SELECTED deliverable-handoff.md template.
+          4. In §9.1, write at least one rubric AC whose Verification Method is "spawn independent
+             judge per Rubric Evaluation Protocol against {rubric_ref} → verdict: PASS" (step1_ac_generation.non_dev_and_rubric).
+          5. Producer is Conductor-side (contract §B.6) — NOT Blake; the gate spawns an independent judge (judge ≠ producer).
+          → Continue to step1 (Draft Creation) using the universal handoff-a-to-b.md template.
         ELSE (code/yaml/research/e2e/mixed):
           → Continue to step1 with the existing default template selection (handoff-a-to-b.md). No change.
-      note: "This is the PRODUCER touchpoint: nothing else sets task_type: deliverable or selects the deliverable template. Additive — existing routing untouched."
+      note: "This is the PRODUCER touchpoint: it sets task_type: deliverable and fills rubric frontmatter. Template routing is now UNIVERSAL (handoff-a-to-b.md for all task_types) — deliverable-handoff.md is deprecated. Additive — existing code routing untouched."
 
     step1:
       name: "Draft Creation"
@@ -2951,6 +2956,41 @@ handoff_creation_protocol:
             Epic-level TAD flow. Either create an Epic first, or reclassify this change
             as an L2 pattern edit (patterns/*.md) if it's not truly a methodology change."
             Use AskUserQuestion: "Override?" / "Create Epic first" / "Change target to patterns/"
+
+    step1_ac_generation:
+      name: "§9.1 Acceptance Criteria Auto-Generation (task-scoped)"
+      trigger: "After step1 draft creation, before step1a — populates the §9.1 Spec Compliance Checklist"
+      why: |
+        Gate 3 is now AC-driven: it executes each §9.1 row's Verification Method (gate/SKILL.md
+        Spec_Compliance_Verification). An empty §9.1 → Gate 3 BLOCKS (empty guard). So Alex MUST
+        populate §9.1 with executable Verification Methods. For dev projects these are the
+        tsc/test/lint checks that USED to be hardcoded in Gate 3; for non-dev projects they are
+        domain-specific commands.
+      detection: |
+        Detection is TASK-SCOPED (based on THIS task's §6 Files to Modify + Socratic result),
+        NOT purely project-scoped (ARCH-P1-1 fix). Inspect the files THIS handoff touches:
+          - §6 has .ts/.tsx files → generate `npx tsc --noEmit` AC (if a tsconfig.json exists in the project)
+          - §6 has .py files → detect pytest/unittest → generate `pytest` (or `python -m pytest`) AC
+          - §6 has .js/.jsx files + a package.json with a test script → generate `npm test` AC
+          - project has a linter config (.eslintrc*, pyproject.toml [tool.ruff], etc.) AND §6 touches lintable files → generate the lint AC (`npm run lint` / `eslint .` / `ruff check`)
+          - ALWAYS generate `git diff --stat` AC (confirm change scope) for code/mixed handoffs
+          - task is pure doc/audio/video/content (no code surface) → generate NO dev AC; write domain-specific Verification Methods instead
+      generated_rows: |
+        Write each generated check as a §9.1 row with a real, runnable Verification Method:
+          | AC# | Description | Verification Method | Expected Evidence |
+          | ACn | TypeScript compiles | `npx tsc --noEmit` | exit 0, no errors |
+          | ACn | Tests pass | `npm test` (or `pytest`) | all pass |
+          | ACn | Lint clean | `npm run lint` (or `ruff check`) | 0 errors |
+          | ACn | Change scope as planned | `git diff --stat` | only §6 files changed |
+        These are DEFAULTS — Alex adjusts per task (e.g. a pure-doc change skips tsc; a podcast
+        handoff writes `python scripts/measure_consistency.py EP04 | grep overall` → > 70).
+      non_dev_and_rubric: |
+        - Non-dev project (Colin声音/播客, Sober Creator/content, 买卖/electronics): §9.1 ACs come
+          entirely from the Socratic-determined quality standards (domain-specific commands).
+        - When task_type: deliverable (rubric/judge ACs): write a §9.1 row whose Verification
+          Method is "spawn independent judge per Rubric Evaluation Protocol against {rubric_ref}
+          → verdict: PASS" so Gate 3's Rubric Evaluation Protocol activates.
+      empty_guard_reminder: "NEVER leave §9.1 empty — Gate 3 BLOCKS on an empty §9.1 (gate/SKILL.md Spec_Compliance_Empty_Guard)."
 
     step1a:
       name: "Domain Pack Injection"

@@ -1,8 +1,13 @@
 ---
+# ⚠️ DEPRECATED (TAD v3.1, 2026-06-07) — DO NOT USE THIS TEMPLATE.
+# Use the universal template `.tad/templates/handoff-a-to-b.md` for ALL task_types,
+# including task_type: deliverable. Rubric/judge ACs are now written in the universal
+# §9.1 Spec Compliance Checklist (Verification Method: "spawn independent judge per
+# Rubric Evaluation Protocol → verdict: PASS"). The gate's `## Rubric Evaluation Protocol`
+# section activates automatically. This deprecated file is kept only for historical reference.
+#
 # Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3)
-# ⚠️ DELIVERABLE TRACK — this template is selected when the unit of work is a
-# pack-produced content artifact (a research report / audiobook / video cut / PRD)
-# whose quality is judged by a pack-specific rubric, NOT by build/test/lint.
+# (historical) DELIVERABLE TRACK — pack-produced content artifact judged by a rubric.
 # Rule of thumb: if the artifact IS the product → task_type: deliverable.
 #                if the artifact informs a downstream build → task_type: research.
 task_type: deliverable   # code | yaml | research | e2e | mixed | deliverable

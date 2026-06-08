@@ -29,9 +29,11 @@ If any unchecked, STOP and complete them first.
 
 ## Mandatory Handoff Structure
 
-> **Template selection (task_type-aware):** if `task_type: deliverable` → use
-> `.tad/templates/deliverable-handoff.md` (rubric-graded non-dev artifact) instead of the
-> default below. All other task_types use the default `.tad/templates/handoff-a-to-b.md`.
+> **Template selection (UNIVERSAL, TAD v3.1):** ALL task_types — including `task_type:
+> deliverable` — use the default `.tad/templates/handoff-a-to-b.md`. Rubric/judge ACs are
+> written in the universal §9.1 Spec Compliance Checklist (Verification Method: "spawn
+> independent judge per Rubric Evaluation Protocol → verdict: PASS"). The former
+> deliverable-specific template is DEPRECATED.
 
 ### Document Template
 
