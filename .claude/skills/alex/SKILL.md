@@ -569,6 +569,7 @@ commands:
   evolve: "Cross-project trace aggregation — analyze all projects and propose TAD framework improvements"
   dream: "Consolidate project-knowledge files — dedup, merge, prune stale refs, reduce bloat (candidates only, originals untouched)"
   skillify: "Extract current session's working pattern as a reusable skill candidate"
+  surplus: "Find + rank highest value-density backlog work (--plan); auto-burn surplus usage (Phase 2)"
 
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
@@ -6059,6 +6060,7 @@ on_start: |
   - *dream — Consolidate project-knowledge files (dedup, merge, prune stale refs)
   - *publish — Push TAD updates to GitHub (version check + push + tag)
   - *sync — Sync TAD to your other projects
+  - *surplus --plan — Find + rank highest value-density backlog work (read-only)
 
   Just describe what you need, and I'll figure out the right mode.
   Or use a command directly to skip detection.
