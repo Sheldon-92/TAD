@@ -11,6 +11,10 @@
 
 ## In Progress
 
+- [x] **EPIC: Surplus Burn Mode — Phase 1 ✅ COMPLETE 2026-06-08** (commits d3dbc32, 6776d85; YOLO Conductor) — `*surplus --plan` scans backlog + OBJECTIVES generator → value-first ranked plan + JSON sidecar. Epic: `.tad/active/epics/EPIC-20260607-surplus-burn-mode.md`. Live run: **53 ranked candidates** (24 auto-eligible / 19 needs-human / 0 vacuous) → `.tad/active/SURPLUS-PLAN-2026-06-08.md` + `.json`. 2 design + 2 impl reviewers; live run caught 2 real bugs review missed (top-level-array schema 400; stale `{name:}` workflow copy). KA → `patterns/ac-verification.md`.
+  - **Phase 1.1 (quick-fix, before Phase 2)**: `undated` filename bug — `date`/`output_path` args didn't propagate; robust fix = SKILL owns output filename. Also AC1 `node --check` verifier invalid for all workflows (+ epic-audit.workflow.js:80 latent top-level-array schema).
+  - **Phase 2 (pending)**: budget-loop auto-execution + safety routing + dogfood. JSON sidecar contract ready.
+
 - [x] **TAD Universal Gate (AC-Driven Verification) — ✅ COMPLETE 2026-06-07** (commit 210f34b, Gate 4 PASS + archived) — Gate 3/4 从硬编码 tsc/test/lint 改为执行 handoff §9.1 逐行验证；2 个 task_type:deliverable 路由分支移除，judge≠producer SAFETY 机器 byte-exact 迁移到通用 Rubric Evaluation Protocol。Alex 新增 step1_ac_generation（task-scoped AC 自动生成）。16/16 AC pass; raw-recompute all match; Layer 2 三审 PASS。KA: `patterns/gate-design.md`
   - **Residual**: 无 dogfood — 真实非 dev handoff（Colin声音播客）端到端未跑。建议下次在 Colin 项目做第一个非 dev Handoff 时验证 Gate 新行为。
 
