@@ -32,6 +32,7 @@ bug_path_protocol:
     step3:
       name: "Propose Action"
       action: |
+        <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
         Use AskUserQuestion:
         "I've diagnosed the issue. How would you like to proceed?"
         Options:

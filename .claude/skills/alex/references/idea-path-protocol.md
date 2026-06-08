@@ -44,6 +44,7 @@ idea_path_protocol:
     step4:
       name: "Next"
       action: |
+        <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
         Use AskUserQuestion:
         "Idea captured. What's next?"
         Options:

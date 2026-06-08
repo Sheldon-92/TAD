@@ -427,7 +427,14 @@ copy_framework_files() {
         platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
     fi
 
-    mkdir -p .claude/skills
+    # Platform switch detection — warn about remnants from the other platform
+    if [ "$PLATFORM" = "codex" ] && [ -d ".claude/skills/alex" ]; then
+        log_warn "Detected Claude Code skills from previous install. Codex skills will be installed to .agents/skills/. Old .claude/skills/ left intact — remove manually if no longer needed."
+    elif [ "$PLATFORM" = "claude-code" ] && [ -d ".agents/skills/alex" ]; then
+        log_warn "Detected Codex skills from previous install. Claude Code skills will be installed to .claude/skills/. Old .agents/skills/ left intact — remove manually if no longer needed."
+    fi
+
+    mkdir -p "$TARGET_SKILL_DIR"
     # Copy skill directories — respecting platform deny + pack selection
     if [ -d "$src/.claude/skills" ]; then
         local skill_dir
@@ -435,7 +442,7 @@ copy_framework_files() {
             [ -d "$skill_dir" ] || continue
             local skill_name
             skill_name="$(basename "$skill_dir")"
-            # Platform deny check (e.g., codex excludes alex/blake)
+            # Platform deny check — uses SOURCE path (.claude/skills/) to match deny-list entries
             if is_denied ".claude/skills/$skill_name" "$platform_deny"; then
                 continue
             fi
@@ -445,7 +452,7 @@ copy_framework_files() {
                     continue
                 fi
             fi
-            cp -r "$skill_dir" ".claude/skills/$skill_name"
+            cp -r "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
         done
     fi
     # settings.json — platform deny check
@@ -569,13 +576,13 @@ verify_install_complete() {
         fi
     done <<< "$(derive_framework_top_files "$src")"
 
-    # Verify .claude/skills — only check skills that SHOULD be present given platform + packs
+    # Verify skills — check TARGET path (platform-aware), deny with SOURCE path
     if [ -d "$src/.claude/skills" ]; then
         local skill_dir skill_name
         for skill_dir in "$src"/.claude/skills/*/; do
             [ -d "$skill_dir" ] || continue
             skill_name="$(basename "$skill_dir")"
-            # Skip if denied by platform
+            # Skip if denied by platform — uses SOURCE path for deny-list matching
             if is_denied ".claude/skills/$skill_name" "$platform_deny"; then
                 continue
             fi
@@ -586,8 +593,8 @@ verify_install_complete() {
                 fi
             fi
             checked=$((checked + 1))
-            if [ ! -d ".claude/skills/$skill_name" ]; then
-                log_warn "    ✗ MISSING skill: .claude/skills/$skill_name/"
+            if [ ! -d "$TARGET_SKILL_DIR/$skill_name" ]; then
+                log_warn "    ✗ MISSING skill: $TARGET_SKILL_DIR/$skill_name/"
                 missing=$((missing + 1))
             fi
         done
@@ -714,8 +721,8 @@ validate_generated_configs() {
     fi
 
     # Check skills directory (commands migrated to skills in v2.8.1)
-    if [ ! -d ".claude/skills" ]; then
-        log_error "Missing .claude/skills directory"
+    if [ ! -d "$TARGET_SKILL_DIR" ]; then
+        log_error "Missing $TARGET_SKILL_DIR directory"
         ((errors++))
     fi
 
@@ -798,6 +805,29 @@ main() {
 
     # Resolve platform (from --platform flag or auto-detect)
     resolve_platform
+
+    # Set platform-aware skill directory (used by copy, verify, and main)
+    if [ "$PLATFORM" = "codex" ]; then
+        TARGET_SKILL_DIR=".agents/skills"
+    else
+        TARGET_SKILL_DIR=".claude/skills"
+    fi
+
+    # Codex CLI version detection (non-blocking)
+    if [ "$PLATFORM" = "codex" ]; then
+        if command -v codex >/dev/null 2>&1; then
+            local codex_version
+            codex_version=$(codex --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+            codex_version="${codex_version:-unknown}"
+            log_info "Codex CLI detected: $codex_version"
+            if ! codex --help 2>/dev/null </dev/null | grep -q 'skills\|\.agents'; then
+                log_warn "Codex CLI may not support skills system. TAD skills will be installed but may not auto-load. Consider upgrading Codex CLI."
+            fi
+        else
+            log_warn "Codex CLI not found. Installing TAD files for Codex layout, but codex command unavailable."
+        fi
+    fi
+
     echo ""
 
     STATE=$(detect_state)
@@ -871,11 +901,11 @@ main() {
         "install")
             echo "  1. Create .tad/ directory structure"
             echo "  2. Create .tad/skills/ with 8 P0 skills (NEW)"
-            echo "  3. Create .claude/skills/ with TAD skill files"
+            echo "  3. Create $TARGET_SKILL_DIR/ with TAD skill files"
             echo "  4. Create CLAUDE.md project rules"
             ;;
         "upgrade")
-            echo "  1. Update .claude/skills/"
+            echo "  1. Update $TARGET_SKILL_DIR/"
             echo "  2. Install .tad/skills/ (8 P0 skills) (NEW)"
             echo "  3. Update .tad/config.yaml and templates/"
             echo ""
@@ -943,7 +973,7 @@ main() {
             mkdir -p .tad/project-knowledge
             mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
-            mkdir -p .claude/skills
+            mkdir -p "$TARGET_SKILL_DIR"
 
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
@@ -1088,7 +1118,9 @@ NEXTEOF
             mkdir -p .tad/project-knowledge
             mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
-            mkdir -p .claude/skills/_archived
+            if [ -d ".claude/skills" ]; then
+                mkdir -p .claude/skills/_archived
+            fi
 
             # Migrate user data from backup (old directory layouts)
             log_info "  → Migrating user data..."

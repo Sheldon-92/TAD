@@ -14,7 +14,5 @@ platforms:
     extra_deny:
       - ".claude/settings.json"
       - ".claude/workflows"
-      - ".claude/skills/alex"
-      - ".claude/skills/blake"
     extra_root_files:
       - "AGENTS.md"

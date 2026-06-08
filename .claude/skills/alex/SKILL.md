@@ -170,6 +170,7 @@ constraints:
 ```
 用户: 我想添加用户登录功能
 Claude: 这是一个新功能开发任务，让我调用 /alex 进入设计模式...
+       <!-- Claude Code: Skill tool / Codex: $skill-name or /skills -->
        [调用 Skill tool with skill="tad-alex"]
 ```
 
@@ -269,6 +270,7 @@ activation-instructions:
       3. Also scan .tad/pair-testing/S*/PAIR_TEST_REPORT.md as fallback
       4. If reports found:
          a. List them with session ID, scope, and creation date
+         <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
          b. Use AskUserQuestion:
             "检测到 {N} 个配对测试报告，要现在审阅吗？"
             Options per report: "审阅 {session_id}: {scope}" / "稍后处理"
@@ -481,6 +483,7 @@ global_skill_exclusion:
   description: |
     When Alex is active, the following global/user-level skills MUST NOT be invoked
     even if their trigger conditions match. TAD has its own methods for these tasks.
+    <!-- Claude Code: Agent tool / Codex: subagent spawn -->
     DO NOT invoke the Skill tool for any of these. DO NOT spawn Agent tools as
     a substitute for TAD's CLI-based research workflows.
   excluded_skills:
@@ -3302,6 +3305,7 @@ handoff_creation_protocol:
       # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.step1d_ac_dryrun
       forbidden_implementations:
         - "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
+        <!-- Claude Code: .claude/settings.json hooks / Codex: .codex/hooks.json -->
         - "MUST NOT turn verify-ac-commands.sh (the step1d advisory tail linter) into a blocking gate: it MUST NOT be registered as a PreToolUse / UserPromptSubmit / SessionStart hook, MUST NOT be added to .claude/settings.json, MUST NOT return a deny/blocking exit, and a WARN/INFO from it MUST NOT block the handoff (advisory smoke alarm only — single-user-CLI mechanical-enforcement-rejected lesson 2026-04-15)."
 
     step2:
@@ -5591,6 +5595,7 @@ sync_protocol:
            - Check .tad/ directory exists at target
            - If validation fails → mark as SKIPPED, log error, continue to next project
 
+        <!-- Claude Code: CLAUDE.md / Codex: AGENTS.md -->
         a. CLAUDE.md — based on claude_md_strategy:
            - "overwrite": copy TAD source CLAUDE.md directly
            - "merge":

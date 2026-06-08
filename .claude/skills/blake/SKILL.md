@@ -33,6 +33,7 @@ description: TAD Execution Master (Agent B). Use when there is an active handoff
 情况 1: 发现 handoff 文件
 Claude: 检测到 .tad/active/handoffs/user-auth.md
        让我调用 /blake 进入执行模式...
+       <!-- Claude Code: Skill tool / Codex: $skill-name or /skills -->
        [调用 Skill tool with skill="tad-blake"]
 
 情况 2: Alex 完成设计
@@ -187,6 +188,7 @@ activation-instructions:
       After health check, scan `.tad/active/handoffs/` for HANDOFF-*.md files.
       If active handoffs exist:
         1. List them with index number, title (from first H1/H2), and creation date (from filename).
+        <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
         2. Use AskUserQuestion to ask:
            "检测到 {N} 个待执行的 handoff，要执行哪个？"
            Options: each handoff as an option + "暂不执行，先看看" (skip)
@@ -751,6 +753,7 @@ ralph_loop_execution:
         compact_recovery: "Step produces no persistent state. Safe to skip after compact."
 
         forbidden_implementations:
+          <!-- Claude Code: .claude/settings.json hooks / Codex: .codex/hooks.json -->
           - "MUST NOT register as PreToolUse hook in .claude/settings.json"
           - "MUST NOT block implementation based on blast radius findings"
           - "MUST NOT auto-expand handoff §6 (informational only — Alex owns scope)"
