@@ -1,372 +1,128 @@
-# TAD Installation & Usage Guide
+# TAD Installation Guide
 
-**Version 2.25.0 - Agent-Adjacent Pack Factory**
+**Version 2.25.0 — Universal AC-Driven Gate**
 
-## 方式1：一键安装（推荐）
+## 安装方式
 
-### Option A: curl (default, Claude Code)
-
-```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
-```
-
-这个脚本会自动：
-- **全新安装**：创建完整 TAD 结构（`.tad/`, `.claude/`, `CLAUDE.md`）
-- **升级**：检测当前版本并原地升级
-- **保留数据**：你的 handoffs、learnings、evidence 不会被覆盖
-- **失败回滚**：出错时自动恢复备份
-
-**选平台 / packs —— 不需要 Node.js。** 在 `bash -s --` 后加参数：
-```bash
-# Codex 瘦版（不含 86K Claude SKILL + hooks）+ 指定 packs:
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
-```
-不加参数 = Claude Code 全套（上面的默认命令）。`--platform` 可选 `claude-code` 或 `codex`。
-
-> 💡 **用 Codex 但没装 Node.js？** 用这个 curl 方法 —— 只需 `bash` + `curl`。下面的 npx 方法需要 Node.js。
-
-### Option B: npx (interactive — choose platform + packs, requires Node.js)
+### 方式 1: npx（推荐，交互式）
 
 ```bash
 npx github:Sheldon-92/TAD
 ```
 
-Interactively pick your platform (**Claude Code** or **Codex CLI**) and which capability
-packs to install — each shown with a one-line description. Codex users get a slimmed
-install (excludes the large Claude-edition SKILLs + hooks) for a much lighter context
-footprint.
+交互式选择平台（Claude Code / Codex CLI）和 capability packs。每个 pack 附一句话说明。
 
-Non-interactive:
+非交互模式：
 ```bash
-npx github:Sheldon-92/TAD --platform codex --packs web-frontend,web-backend
+npx github:Sheldon-92/TAD --platform claude-code --packs web-frontend,web-backend
 ```
 
-## 方式2：Git安装
+> 需要 Node.js 14+。没有 Node.js？用下面的 curl 方式。
 
-### Step 1: 在新项目中克隆TAD
+### 方式 2: curl（无依赖）
+
 ```bash
-# 在你的新项目根目录
-git clone https://github.com/Sheldon-92/TAD.git .tad-temp
-
-# 复制必要文件
-cp -r .tad-temp/.tad ./
-cp -r .tad-temp/.claude ./
-cp .tad-temp/CLAUDE.md ./
-
-# 清理临时文件
-rm -rf .tad-temp
-
-# 添加到.gitignore（避免提交工作文件）
-echo ".tad/active/" >> .gitignore
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
-### Step 2: 用Claude Code打开项目
+在终端运行时会交互选择平台。非交互模式加参数：
 ```bash
-# 在项目目录
-claude .
-# 或使用 Claude Code UI 打开文件夹
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
 ```
 
-### Step 3: Claude Code自动识别TAD
-当Claude Code检测到`.claude/settings.json`，会：
-1. 自动加载TAD配置
-2. 显示TAD可用提示
-3. 提供TAD命令（如/tad-init）
-
-### Step 4: 激活TAD Agents
-```markdown
-# 在Claude Code中开两个对话
-
-# 对话1 - Agent A
-You are Agent A. Read .tad/agents/agent-a-architect.md
-
-# 对话2 - Agent B
-You are Agent B. Read .tad/agents/agent-b-executor.md
-```
-
-## 方式3：直接下载
-
-### 从GitHub下载TAD压缩包
-1. 访问 https://github.com/Sheldon-92/TAD
-2. Download ZIP
-3. 解压到项目目录
-4. 确保`.claude`和`.tad`文件夹在项目根目录
-
-## Claude Code配置说明
-
-### `.claude`文件夹结构
-```
-.claude/
-├── settings.json       # TAD框架识别配置
-├── commands/           # TAD命令定义
-│   ├── tad-alex.md     # /alex - Solution Lead
-│   ├── tad-blake.md    # /blake - Execution Master (with Ralph Loop)
-│   ├── tad-gate.md     # /gate - Quality gates v2
-│   └── ...
-└── skills/             # Agent skills
-    └── code-review/    # Code review checklist
-```
-
-### `.tad文件夹结构 (v2.25.0)
-```
-.tad/
-├── config.yaml           # TAD核心配置 (master index)
-├── config-agents.yaml    # Agent 定义 + 交互协议
-├── config-quality.yaml   # 质量门控 + evidence 验证
-├── config-workflow.yaml   # 文档管理 + 工作流
-├── config-execution.yaml  # Ralph Loop + 发布管理
-├── config-platform.yaml   # MCP 工具 + Linear 集成
-├── version.txt           # 版本号 (2.8)
-├── skills/               # 平台无关技能 (9 skills)
-├── domains/              # Domain Packs (20 packs: Web/Mobile/AI/HW/Security)
-├── hooks/                # Hook 脚本 (pre-gate, post-write, trace)
-│   ├── pre-gate-check.sh     # Gate 3 综合 evidence 检查 (BLOCK)
-│   ├── pre-accept-check.sh   # Gate 4 前置检查 (BLOCK)
-│   ├── post-write-sync.sh    # 文件写入检测 + workflow 提醒
-│   ├── trace-step.sh         # Domain Pack step trace 记录
-│   └── lib/common.sh         # 共享 helper 函数
-├── ralph-config/         # Ralph Loop 配置
-│   ├── loop-config.yaml
-│   └── expert-criteria.yaml
-├── templates/            # 文档模板 (handoff, completion, epic, test-brief)
-├── active/               # 当前活跃文件
-│   ├── handoffs/         # 待执行的 handoff
-│   ├── epics/            # 多阶段任务追踪
-│   └── ideas/            # 捕获的想法
-├── archive/              # 已完成归档
-├── evidence/             # Gate 证据文件
-│   ├── reviews/          # Expert review 报告
-│   ├── ralph-loops/      # Ralph Loop state + summary
-│   ├── acceptance-tests/ # AC 验证脚本 + 报告
-│   └── traces/           # 执行 trace (JSONL)
-└── project-knowledge/    # 项目特定知识 (架构/安全/测试...)
-```
-
-### 关键配置文件
-
-#### `.tad/config.yaml`
-- TAD核心配置
-- Gate 3/4 v2定义
-- 专家subagent配置
-
-#### `.tad/ralph-config/loop-config.yaml`
-- Layer 1自检配置（build/test/lint/tsc）
-- Layer 2专家审查配置
-- 断路器和升级阈值
-- 状态持久化设置
-
-## 工作流程
-
-### 1. 新项目启动
+全量安装，零交互（CI / 脚本化场景）：
 ```bash
-# 创建新项目
-mkdir my-new-project
-cd my-new-project
-
-# 安装TAD（选择上述任一方式）
-# ...
-
-# 用Claude Code打开
-claude .
-
-# Claude会自动识别TAD并提示：
-# "TAD framework detected. Use '/tad-init' to initialize."
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-### 2. 初始化TAD
-```markdown
-# 在Claude Code中运行
-/tad-init
+> 只需 bash + curl，无需 Node.js。`--yes` 跳过所有交互，默认 Claude Code + 全部 packs。
 
-# 系统会：
-- 创建项目结构
-- 复制必要文件
-- 生成初始文档
-```
+### 方式 3: Git clone
 
-### 3. 开始开发
-```markdown
-# 激活Agents（两个终端/对话）
-# 陈述需求
-# 自动进入对应场景工作流
-```
-
-## 验证安装
-
-### 检查清单
-- [ ] `.claude/settings.json` 存在
-- [ ] `.tad/config.yaml` 存在
-- [ ] `.tad/version.txt` 显示 2.8
-- [ ] `.tad/skills/` 包含技能目录
-- [ ] `.tad/hooks/` 包含 hook 脚本
-- [ ] `.claude/skills/tad-maintain/SKILL.md` 存在
-
-### 测试命令
 ```bash
-# 检查版本
-cat .tad/version.txt
-# 应该返回: 2.8
-
-# 验证技能系统
-ls .tad/skills/
-# 应该返回: api-design  architecture  code-review  debugging  performance  security-audit  testing  ux-review
-
-# 验证 /tad-maintain 命令
-cat .claude/skills/tad-maintain/SKILL.md | head -5
-# 应该返回: frontmatter + TAD Maintain Command
-
-# 验证Ralph Loop配置
-ls .tad/ralph-config/
-# 应该返回: expert-criteria.yaml  loop-config.yaml
+git clone https://github.com/Sheldon-92/TAD.git .tad-source
+cd .tad-source && bash tad.sh
+cd .. && rm -rf .tad-source
 ```
 
-## 常见问题
+## 安装后
 
-### Q: Claude Code没有识别TAD？
-A: 检查`.claude/settings.json`是否存在且格式正确
+```bash
+# 验证安装
+cat .tad/version.txt          # 应显示 2.25.0
+ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
-### Q: 命令不可用？
-A: 确保`.claude/skills/`目录包含技能定义文件（每个技能一个目录，内含 SKILL.md）
+# 使用 Claude Code
+claude .                       # 打开项目
 
-### Q: Sub-agents调用失败？
-A: 验证使用的是真实的Claude Code sub-agents，参考`CLAUDE_CODE_SUBAGENTS.md`
+# Terminal 1: 设计与规划
+/alex
 
-### Q: 如何更新TAD版本？
-A: 从GitHub拉取最新版本，覆盖`.tad/`和`.claude/`目录
-
-## GitHub Repository Structure
-
-```
-TAD/
-├── .claude/               # Claude Code配置
-│   ├── settings.json      # 框架识别
-│   ├── commands/          # 命令定义 (/alex, /blake, /gate...)
-│   └── skills/            # Claude增强技能
-├── .tad/                  # TAD核心文件
-│   ├── config.yaml        # 主配置
-│   ├── skills/            # 平台无关技能 (9 skills)
-│   ├── ralph-config/      # Ralph Loop配置
-│   ├── templates/         # 文档模板
-│   └── project-knowledge/ # 项目知识
-├── docs/
-│   ├── MULTI-PLATFORM.md  # Specialized Tools Guide
-│   ├── RALPH-LOOP.md      # Ralph Loop文档
-│   └── MIGRATION-v2.md    # 迁移指南
-├── README.md              # TAD介绍
-├── INSTALLATION_GUIDE.md  # 本文档
-├── CHANGELOG.md           # 版本历史
-└── tad.sh                 # 一键安装/升级脚本
+# Terminal 2: 实现与执行
+/blake
 ```
 
 ## 升级现有项目
 
 ```bash
-# 从任何旧版本升级到 v2.25.0
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
-
-# 脚本会自动：
-# - 检测当前版本
-# - 保留你的 handoffs、learnings、evidence
-# - 安装最新框架文件 + Domain Pack 自动加载 hook
-# - 清理已废弃的文件（per .tad/deprecation.yaml）
+# 任选其一：
+npx github:Sheldon-92/TAD                            # npx（推荐）
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash  # curl
 ```
 
-## 快速开始
+脚本自动检测现有安装，保留你的 handoffs、evidence、project-knowledge，只更新框架文件。
+
+## 平台说明
+
+| 平台 | 说明 | 安装大小 |
+|------|------|----------|
+| Claude Code | 完整安装，含全部 SKILL + hooks | ~200KB |
+| Codex CLI | 瘦版，不含 86K alex/blake SKILL + hooks | ~120KB |
+
+Codex 用户可以用更少的 context 跑 TAD 工作流。详见 [Codex CLI 指南](#codex-cli)。
+
+## Capability Packs
+
+TAD 包含 25 个 capability packs，每个提供特定领域的判断规则：
+
+| 类别 | Packs |
+|------|-------|
+| Web 开发 | web-frontend, web-backend, web-ui-design, web-testing, web-deployment |
+| AI/Agent | ai-agent-architecture, ai-prompt-engineering, ai-evaluation, ai-tool-integration, ai-guardrails, agent-memory, agent-orchestration |
+| 内容制作 | ai-voice-production, ai-podcast-production, video-creation |
+| 数据/检索 | data-engineering, rag-retrieval, knowledge-graph, synthetic-data |
+| 安全 | code-security |
+| 可观测性 | llm-observability |
+| 产品/研究 | product-thinking, research-methodology, academic-research |
+| 机器学习 | ml-training |
+
+安装时选择需要的 packs（npx 方式有交互选择）。不选 = 全部安装。
+
+## Codex CLI
+
+当 Claude Code 额度用完时，用 Codex CLI 继续 TAD 工作流：
 
 ```bash
-# 1. 安装TAD
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+# 前提：已安装 codex CLI + 配置 OpenAI 认证
+codex --version
 
-# 2. 使用 Claude Code 命令：
-# Terminal 1: /alex (设计与规划)
-# Terminal 2: /blake (实现与Ralph Loop)
-
-# 3. 开始协作
-# Alex: 创建handoff
-# Blake: *develop 自动进入质量循环
+# 启动
+bash .tad/codex/codex-tad-alex.sh    # Alex
+bash .tad/codex/codex-tad-blake.sh   # Blake
 ```
 
----
+已知限制：无 AskUserQuestion 工具、无并行 reviewer、无 auto-hooks。详见 `.tad/codex/` 目录。
 
-## Codex CLI Setup (v2.9.1+)
+## 常见问题
 
-When Claude Code quota is exhausted (weekly limit), use OpenAI Codex CLI to continue TAD workflows.
+**Q: Claude Code 没有识别 TAD？**
+A: 检查 `.claude/skills/` 目录是否存在且包含 SKILL.md 文件。重启 Claude Code。
 
-### Prerequisites
+**Q: /alex 命令不可用？**
+A: 确认 `.claude/skills/alex/SKILL.md` 存在。如果缺失，重新运行安装命令。
 
-```bash
-# Codex CLI must be installed
-codex --version   # should show 0.125.0 or later
+**Q: 如何只安装特定 packs？**
+A: `npx tad-framework --packs web-frontend,web-backend` 或 `bash tad.sh --packs web-frontend,web-backend`
 
-# OpenAI auth must be configured (ChatGPT account or API key)
-# ChatGPT: visit chatgpt.com/codex → authorize → codex will use your account
-# API key: export OPENAI_API_KEY="sk-..."
-```
-
-### Quick Start
-
-```bash
-# From your TAD project root:
-
-# Start Alex (design/planning session)
-bash .tad/codex/codex-tad-alex.sh
-
-# Start Blake (implementation session)
-bash .tad/codex/codex-tad-blake.sh
-
-# Verify without launching (check SKILL file path + size)
-bash .tad/codex/codex-tad-blake.sh --dry-run
-bash .tad/codex/codex-tad-alex.sh --dry-run
-```
-
-### When to Use Codex vs Claude Code
-
-| Situation | Use |
-|-----------|-----|
-| Normal work | Claude Code (primary — better tool integration) |
-| Claude Code weekly quota exhausted | Codex CLI (fallback) |
-| Quick design question | Codex Alex session |
-| Implementation with file writes | Codex Blake session |
-
-### Known Limitations
-
-- **No AskUserQuestion tool**: Alex/Blake present options as numbered text. See `.tad/codex/socratic-fallback.md`.
-- **No parallel reviewers**: Layer 2 expert review runs sequentially. See `.tad/codex/sequential-review.md`.
-- **No auto-hooks**: Gate scripts must be run manually. See `.tad/codex/manual-gates.md`.
-- **Token budget**: ~48-52K tokens per TAD session step; budget 100K per full workflow session.
-
-### Multi-Turn Sessions
-
-```bash
-# Turn 1: Start Alex
-cat .tad/codex/codex-alex-skill.md | codex exec --full-auto "You are Alex. *analyze: [task]"
-
-# Turn 2+: Continue in same session
-codex exec resume --last "My answers: 1. [answer]. Continue to Round 2."
-
-# Turn N: Complete
-codex exec resume --last "Proceed to create handoff."
-```
-
-### Troubleshooting
-
-**Skill load warnings** (`failed to load skill: missing field description`): Non-blocking. Clean up old spike files: `rm -rf ~/.codex/skills/tad/`
-
-**Blake writes fail on sandbox**: Use interactive mode: `cat .tad/codex/codex-blake-skill.md | codex "You are Blake..."` (remove `exec --full-auto`)
-
-**Context lost mid-workflow**: Use `codex exec resume --last` to restore context.
-
----
-
-## 总结
-
-TAD v2.25.0 核心特性：
-1. **Codex CLI Support** - 限额撞顶时切换 Codex 继续 TAD 工作流（一行命令启动）
-2. **Domain Pack 自动加载** - UserPromptSubmit hook + 20 packs 关键词路由（100% acc / 81ms，不调 LLM）
-3. **Beneficial Friction** - AI 做执行，人类守护价值（三个关键摩擦点）
-4. **配对测试协议** - 跨工具 E2E 测试（4D Protocol）
-5. **自适应复杂度** - 根据任务规模自动建议流程深度
-6. **Ralph Loop** - 自动质量循环直到专家批准
-7. **Self-Evolving Framework** - 20 Domain Packs + 执行 trace + `*optimize` / `*evolve` 改进建议
-
-任何新项目只要安装TAD，Claude Code 都能立即识别并使用TAD方法论。
+**Q: npm 和 curl 有什么区别？**
+A: npm 有完整的交互式 pack 选择（每个 pack 附说明）；curl 只选平台，packs 通过参数指定。功能完全相同。

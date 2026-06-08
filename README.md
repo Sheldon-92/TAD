@@ -114,84 +114,27 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for full se
 
 ## 🚀 Installation & Upgrade
 
-### Option A: curl (default, Claude Code)
+```bash
+npx github:Sheldon-92/TAD      # 交互式选平台 + packs（需要 Node.js）
+```
+
+或不用 Node.js：
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
-This smart script automatically:
-- **Fresh install**: Creates complete TAD structure for Claude Code
-- **Upgrade**: Detects current version and upgrades in place
-- **Preserves data**: Your handoffs, learnings, and evidence are never overwritten
-- **Rollback on failure**: Automatic backup and restore if anything goes wrong
+两种方式都支持 Claude Code + Codex CLI 平台选择。升级现有项目也用同一命令。
 
-**Choose platform / packs — no Node.js required.** Pass flags after `bash -s --`:
-```bash
-# Codex edition (slim — excludes the 86K Claude SKILLs + hooks) + specific packs:
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
-```
-No flags = Claude Code, full install (the default above). `--platform` accepts `claude-code` or `codex`.
-
-> 💡 **Using Codex but don't have Node.js?** This curl method is your path — it needs only `bash` + `curl`. The npx option below requires Node.js.
-
-### Option B: npx (interactive — choose platform + packs, requires Node.js)
-
-```bash
-npx github:Sheldon-92/TAD
-```
-
-Interactively pick your platform (**Claude Code** or **Codex CLI**) and which capability
-packs to install — each shown with a one-line description. Codex users get a slimmed
-install (excludes the large Claude-edition SKILLs + hooks) for a much lighter context
-footprint.
-
-Non-interactive:
-```bash
-npx github:Sheldon-92/TAD --platform codex --packs web-frontend,web-backend
-```
-
-### What Gets Installed
-
-```
-your-project/
-├── .tad/
-│   ├── config.yaml              # v2.25.0 configuration (modular: 6 config files)
-│   ├── domains/                 # Domain Packs (20 YAML packs + tools-registry)
-│   ├── hooks/                   # Shell hooks (startup, trace, gate, sync, domain-pack router)
-│   ├── skills/                  # Platform-agnostic skills (9 skills)
-│   ├── ralph-config/            # Ralph Loop configuration
-│   ├── templates/               # Handoff, completion, output format templates
-│   ├── active/handoffs/         # Active handoff documents
-│   ├── archive/handoffs/        # Completed handoffs
-│   ├── project-knowledge/       # Project-specific learnings
-│   └── evidence/                # Gate evidence (reviews/, ralph-loops/, traces/)
-├── .claude/                     # Claude Code configuration
-│   ├── commands/                # Slash commands (/alex, /blake, /gate, etc.)
-│   ├── skills/                  # Claude-enhanced skills (alex, blake)
-│   └── settings.json            # Hook-native architecture (SessionStart, PostToolUse, PreToolUse)
-├── CLAUDE.md                    # Project rules for Claude Code (router pattern)
-```
-
-### Manual Installation
-
-```bash
-git clone https://github.com/Sheldon-92/TAD.git .tad-temp
-cp -r .tad-temp/.tad ./
-cp -r .tad-temp/.claude ./
-cp .tad-temp/CLAUDE.md ./
-rm -rf .tad-temp
-```
+> 详细指南、平台说明、Capability Packs 列表、Codex CLI 配置：见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 
 ### Verify Installation
 
 ```bash
-# Check version
 cat .tad/version.txt
-# Should show: 2.8
+# Should show: 2.25.0
 
-# Check skills
-ls .tad/skills/
+ls .claude/skills/ | wc -l
 # Should show: 9 skill directories
 
 # Check domain packs
