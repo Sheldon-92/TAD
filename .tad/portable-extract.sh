@@ -49,7 +49,7 @@ PORTABLE_FILES=(
   # Domains (Portable)
   ".tad/domains/"
 
-  # Codex adapters (pre-adapted SKILL files and guides)
+  # Codex migration readme
   ".tad/codex/"
 )
 
@@ -94,6 +94,6 @@ if [ "$DRY_RUN" = false ]; then
   echo ""
   echo "Quick start on Codex:"
   echo "  cd <project-root>"
-  echo "  bash .tad/codex/codex-tad-blake.sh    # Start Blake session"
-  echo "  bash .tad/codex/codex-tad-alex.sh     # Start Alex session"
+  echo "  bash tad.sh --platform codex --yes    # Install for Codex"
+  echo "  # Then say '当 Alex' or '当 Blake' in Codex (AGENTS.md auto-loads)"
 fi

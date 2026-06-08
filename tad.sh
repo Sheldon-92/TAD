@@ -490,6 +490,39 @@ copy_framework_files() {
         done <<< "$root_files"
     fi
 
+    # --- Codex hooks.json generation ---
+    if [ "$PLATFORM" = "codex" ]; then
+        mkdir -p .codex
+        cat > .codex/hooks.json << 'HOOKS_EOF'
+{
+  "SessionStart": [
+    {
+      "matcher": "startup|resume",
+      "hooks": [
+        { "type": "command", "command": "bash .tad/hooks/startup-health.sh", "timeout": 30 },
+        { "type": "command", "command": "bash .tad/hooks/notebook-dormant-sync.sh", "timeout": 30 }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "^apply_patch$",
+      "hooks": [
+        { "type": "command", "command": "bash .tad/hooks/post-write-sync.sh", "timeout": 10 }
+      ]
+    },
+    {
+      "matcher": "^ask_user_question$",
+      "hooks": [
+        { "type": "command", "command": "bash .tad/hooks/lib/askuser-capture.sh", "timeout": 10 }
+      ]
+    }
+  ]
+}
+HOOKS_EOF
+        log_info "  → Generated .codex/hooks.json (Codex lifecycle hooks)"
+    fi
+
     # Count installed files for verification (exclude the zero-touch deny-list dirs).
     local count
     count=$(find .tad -type f \

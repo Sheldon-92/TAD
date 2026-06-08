@@ -101,12 +101,13 @@ TAD 包含 25 个 capability packs，每个提供特定领域的判断规则：
 # 前提：已安装 codex CLI + 配置 OpenAI 认证
 codex --version
 
-# 启动
-bash .tad/codex/codex-tad-alex.sh    # Alex
-bash .tad/codex/codex-tad-blake.sh   # Blake
+# 安装（与 Claude Code 相同的 SKILL.md，路径自动适配 .agents/skills/）
+bash tad.sh --platform codex --yes
+
+# 使用：在 Codex 中说 "当 Alex" 或 "当 Blake"（AGENTS.md 自动触发）
 ```
 
-已知限制：无 AskUserQuestion 工具、无并行 reviewer、无 auto-hooks。详见 `.tad/codex/` 目录。
+已知限制：Codex hooks 不支持 `type: prompt`（LLM 安全检查）。详见 `.tad/guides/hooks-platform-mapping.md`。
 
 ## 常见问题
 

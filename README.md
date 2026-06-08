@@ -50,11 +50,11 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 ## 🔄 Codex CLI Support (v2.9.1)
 
-Run TAD workflows on OpenAI Codex CLI when Claude Code quota is reached:
+Run TAD workflows on OpenAI Codex CLI (same SKILL files, unified install):
 
 ```bash
-bash .tad/codex/codex-tad-alex.sh   # Start Alex (design) session
-bash .tad/codex/codex-tad-blake.sh  # Start Blake (execution) session
+bash tad.sh --platform codex --yes  # Install TAD for Codex
+# Then in Codex: say "当 Alex" or "当 Blake" (AGENTS.md auto-loads)
 ```
 
 See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for full setup instructions.

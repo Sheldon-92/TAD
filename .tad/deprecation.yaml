@@ -102,3 +102,20 @@ deprecations:
       Keyword router fully removed — replaced by Capability Pack auto-awareness (Alex step4_5).
       settings.json: UserPromptSubmit section removed (router hook was the only consumer).
     date: "2026-05-20"
+
+  "2.26.0":
+    description: "Cross-platform unification — remove compressed Codex SKILL editions and parity infrastructure. Codex now uses unified SKILL.md via .agents/skills/ routing."
+    files:
+      - ".tad/codex/codex-alex-skill.md"
+      - ".tad/codex/codex-blake-skill.md"
+      - ".tad/codex/codex-tad-alex.sh"
+      - ".tad/codex/codex-tad-blake.sh"
+      - ".tad/codex/expert-review-sequential.md"
+      - ".tad/codex/manual-gates.md"
+      - ".tad/codex/sequential-review.md"
+      - ".tad/codex/socratic-fallback.md"
+      - ".tad/codex/regen-codex-editions.sh"
+      - ".tad/codex/tournament-codex.sh"
+      - ".tad/codex/schemas/"
+      - ".tad/hooks/lib/codex-parity-check.sh"
+    date: "2026-06-08"

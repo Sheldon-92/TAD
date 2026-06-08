@@ -5442,30 +5442,11 @@ publish_protocol:
         - Current branch?
         If uncommitted changes → warn and ask user to commit first.
 
-    step3b:
-      name: "Codex Edition Parity Gate (detect-only — BLOCKING on minor+)"
-      action: |
-        Run the parity check on BOTH live Codex editions (READ-ONLY — never writes):
-          bash .tad/hooks/lib/codex-parity-check.sh .claude/skills/alex/SKILL.md .tad/codex/codex-alex-skill.md
-          bash .tad/hooks/lib/codex-parity-check.sh .claude/skills/blake/SKILL.md .tad/codex/codex-blake-skill.md
-
-        If BOTH exit 0 → proceed to step4.
-        If either exits non-zero AND release_type in {minor, major}:
-          → HARD BLOCK. Do not proceed to Confirm & Execute.
-          → Message: "Codex editions drifted. Run:
-               bash .tad/codex/regen-codex-editions.sh
-             then review git diff .tad/codex/, commit, and re-run *publish."
-        If either exits non-zero AND release_type == patch:
-          → Advisory WARN, proceed to step4.
-        If check errors (exit 2) → treat as FAIL (fail-CLOSED at release).
-      blocking: true
-      detect_only: true  # MUST NOT modify editions — reads only
-
     step3c:
       name: "Self-Deriving Release Verification Gate (version — BLOCKING on minor+)"
       # NOT a settings.json hook — release-time only (single-user-CLI, architecture.md 2026-04-15)
       action: |
-        Publish-side source-consistency = step3b (codex parity) + THIS step3c (version zero-stale)
+        Publish-side source-consistency = THIS step3c (version zero-stale)
         + scan-packs registry regen. structural is sync-only by design (no target exists at publish) —
         there is NO publish-time source-consistency hole.
 
@@ -5625,11 +5606,18 @@ sync_protocol:
            - .tad/tasks/
            - .tad/templates/
            - .tad/workflows/
-           .claude/ framework files:
-           - .claude/skills/**/SKILL.md
-           - .claude/settings.json
-           - .claude/skills/doc-organization.md
-           - .claude/workflows/*.workflow.js
+           .claude/ framework files (platform-aware):
+           - Read target project's platform from sync-registry.yaml entry
+           - If platform == "codex":
+               Copy skills to .agents/skills/ (not .claude/skills/)
+               Skip .claude/settings.json (use hooks.json instead)
+               Skip .claude/workflows/
+           - If platform == "claude-code" (default):
+               Copy skills to .claude/skills/ (unchanged)
+               Copy .claude/settings.json
+               Copy .claude/workflows/*.workflow.js
+           - .claude/skills/**/SKILL.md (target: $skill_dir per platform)
+           - .claude/skills/doc-organization.md (target: $skill_dir per platform)
            Root-level files:
            - tad.sh
            - docs/MULTI-PLATFORM.md

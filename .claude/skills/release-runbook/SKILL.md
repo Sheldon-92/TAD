@@ -121,10 +121,6 @@ class that historically went stale). Exit 0 = clean, exit 1 = stale (named), exi
 | 12 | `INSTALLATION_GUIDE.md` summary | `TAD vX.Y.Z 核心特性：` |
 | 13 | `.claude/skills/tad-help/SKILL.md` template | `Version: vX.Y.Z` |
 | 14 | `.claude/skills/tad-help/SKILL.md` highlights | `## TAD vX.Y.Z Highlights` |
-| 15 | `.tad/codex/codex-blake-skill.md` line 3 | `TAD vX.Y.Z` in header comment |
-| 16 | `.tad/codex/codex-alex-skill.md` line 3 | `TAD vX.Y.Z` in header comment |
-| 17 | `.tad/codex/codex-alex-skill.md` line 855 | `TAD vX.Y.Z` in Alex greeting line (`I'm Alex, your Solution Lead (TAD vX.Y.Z — Codex Edition).`) |
-| 18 | `.tad/codex/codex-blake-skill.md` line 632 | `TAD vX.Y.Z` in Blake greeting line (`I'm Blake, your Execution Master (TAD vX.Y.Z — Codex Edition).`) |
 
 ### Quick grep to find stragglers
 
@@ -134,7 +130,7 @@ After bumping, run this to confirm no stale refs:
 grep -rnE "v?[0-9]+\.[0-9]+\.[0-9]+" \
   .tad/version.txt .tad/config.yaml README.md INSTALLATION_GUIDE.md \
   .claude/skills/tad-help/SKILL.md \
-  .tad/codex/codex-blake-skill.md .tad/codex/codex-alex-skill.md 2>/dev/null \
+  2>/dev/null \
   | grep -vE "^[^:]*:[0-9]+:# " \
   | grep -v "/2.8.1\|/2.8.0\|/2.7.0\|/2.6.0\|/2.5.0\|/2.4.0\|/2.3.0\|/2.2\|/2.1\|/2.0\|/1.8"
 ```
@@ -432,79 +428,6 @@ git add .tad/sync-registry.yaml
 git commit -m "chore: sync vX.Y.Z to all N registered projects"
 git push origin main
 ```
-
-### Codex Adapter Smoke Test (minor+ = HARD block; patch = advisory)
-
-⚠️ **Run BEFORE the sync-registry update below** — if adapter is broken, do not push the sync commit.
-
-Run this in the TAD source repo to verify the Codex adapter is healthy before shipping:
-
-```bash
-# 1. Verify adapter files exist
-test -f .tad/codex/codex-tad-blake.sh && test -f .tad/codex/codex-tad-alex.sh \
-  && echo "launchers: ✅" || echo "launchers: ❌ MISSING"
-
-test -f .tad/codex/codex-blake-skill.md && test -f .tad/codex/codex-alex-skill.md \
-  && echo "SKILL files: ✅" || echo "SKILL files: ❌ MISSING"
-
-test -f .tad/portable-rules.md && test -f .tad/portable-extract.sh \
-  && echo "portable files: ✅" || echo "portable files: ❌ MISSING"
-
-# 2. Verify launcher --dry-run exits 0
-bash .tad/codex/codex-tad-blake.sh --dry-run && echo "blake dry-run: ✅" || echo "blake dry-run: ❌"
-bash .tad/codex/codex-tad-alex.sh --dry-run && echo "alex dry-run: ✅" || echo "alex dry-run: ❌"
-
-# 3. Verify SKILL constraint preservation
-BLAKE_CONSTRAINTS=$(grep -c 'MUST\|MANDATORY\|VIOLATION' .tad/codex/codex-blake-skill.md)
-[ "$BLAKE_CONSTRAINTS" -ge 10 ] && echo "blake constraints ($BLAKE_CONSTRAINTS): ✅" \
-  || echo "blake constraints ($BLAKE_CONSTRAINTS < 10): ❌ DRIFT DETECTED"
-
-# 4. Verify no AskUserQuestion in Blake SKILL
-AUQ=$(grep -c AskUserQuestion .tad/codex/codex-blake-skill.md 2>/dev/null || echo 0)
-[ "$AUQ" -eq 0 ] && echo "blake AskUserQuestion=0: ✅" || echo "blake AskUserQuestion=$AUQ: ❌"
-
-# 5. Verify portable-extract works (dry-run)
-bash .tad/portable-extract.sh --dry-run > /dev/null && echo "portable-extract dry-run: ✅" \
-  || echo "portable-extract dry-run: ❌"
-```
-
-Failure on minor+ release → **BLOCK release** (fix adapter first — SKILL drift breaks user workflows).
-Failure on patch release → **WARN only** (adapter drift acceptable for hotfixes).
-
-### Codex Edition Parity Gate (detect-only — minor+ = HARD block; patch = advisory)
-
-⚠️ **This gate READS live editions only — it NEVER modifies them.** Run AFTER the smoke test above.
-
-```bash
-# Run the 3-layer parity check on BOTH editions
-PARITY_CHECK=.tad/hooks/lib/codex-parity-check.sh
-
-bash "$PARITY_CHECK" .claude/skills/alex/SKILL.md .tad/codex/codex-alex-skill.md
-ALEX_EXIT=$?
-
-bash "$PARITY_CHECK" .claude/skills/blake/SKILL.md .tad/codex/codex-blake-skill.md
-BLAKE_EXIT=$?
-
-if [ $ALEX_EXIT -eq 0 ] && [ $BLAKE_EXIT -eq 0 ]; then
-  echo "Codex parity: ✅ PASS (both editions current)"
-else
-  echo "Codex parity: ❌ DRIFT DETECTED"
-  [ $ALEX_EXIT -ne 0 ] && echo "  alex: DRIFT (run check manually for details)"
-  [ $BLAKE_EXIT -ne 0 ] && echo "  blake: DRIFT (run check manually for details)"
-fi
-```
-
-**On drift (minor+ release):** HARD BLOCK. Do not push. Remediation:
-1. Run `bash .tad/codex/regen-codex-editions.sh` (requires `codex` CLI — uses `codex exec --full-auto`, NOT `claude -p` which fails on large inputs)
-2. Review: `git diff .tad/codex/`
-3. Commit the regenerated editions
-4. Re-run `*publish`
-
-**On drift (patch release):** Advisory WARN — proceed with the patch (adapter drift acceptable for hotfixes).
-
-**If codex CLI unavailable:** The regen command requires `codex`. Install it (`npm install -g @openai/codex`), OR hand-port the editions per `.tad/portable-rules.md` (apply Strip→Replace manually). The *publish gate still blocks on drift either way.
-
-**Residual manual touch-points:** The regen is human-invoked + human-reviewed. The `*publish` gate only DETECTS drift. This keeps unreviewed LLM-generated content out of tagged releases (14 downstream projects receive these files via sync).
 
 ---
 
