@@ -115,18 +115,14 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for full se
 ## 🚀 Installation & Upgrade
 
 ```bash
-npx github:Sheldon-92/TAD      # 交互式选平台 + packs（需要 Node.js）
-```
-
-或不用 Node.js：
-
-```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
-两种方式都支持 Claude Code + Codex CLI 平台选择。升级现有项目也用同一命令。
+一行命令，全量安装 Claude Code + 全部 25 个 capability packs。升级也用同一命令。
 
-> 详细指南、平台说明、Capability Packs 列表、Codex CLI 配置：见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
+Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+
+> 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 
 ### Verify Installation
 

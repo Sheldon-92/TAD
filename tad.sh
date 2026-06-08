@@ -150,21 +150,6 @@ resolve_platform() {
     if [ -n "$PLATFORM" ]; then
         validate_platform "$PLATFORM"
         log_info "Platform (explicit): $PLATFORM"
-    elif [ "$AUTO_YES" != "1" ] && { [ -t 0 ] || [ -e /dev/tty ]; }; then
-        # Interactive mode: ask user to choose platform (skipped by --yes)
-        echo ""
-        echo "Select your AI coding platform:"
-        echo ""
-        echo "  1. Claude Code (full install — recommended)"
-        echo "  2. Codex CLI (slimmed — no 86K Claude SKILL + hooks)"
-        echo ""
-        local choice=""
-        read -p "Choice [1-2, default=1]: " -r choice < /dev/tty 2>/dev/null || choice=""
-        case "${choice:-1}" in
-            1|"") PLATFORM="claude-code"; log_info "Platform: claude-code" ;;
-            2)    PLATFORM="codex"; log_info "Platform: codex" ;;
-            *)    log_warn "Invalid choice '$choice'. Using default: claude-code"; PLATFORM="claude-code" ;;
-        esac
     else
         PLATFORM="claude-code"
         if command -v claude &> /dev/null || [ -d "$HOME/.claude" ]; then
@@ -926,8 +911,9 @@ main() {
     echo ""
     log_info "Downloading TAD Framework v${TARGET_VERSION}..."
 
-    # Download
-    curl -sSL "$DOWNLOAD_URL" | tar -xz
+    # Download (--http1.1 fallback for GitHub HTTP2 framing errors)
+    curl -sSL "$DOWNLOAD_URL" | tar -xz 2>/dev/null || \
+    curl -sSL --http1.1 "$DOWNLOAD_URL" | tar -xz
     TAD_SRC="TAD-main"
 
     # AC2: derive the authoritative version from the freshly-downloaded source's

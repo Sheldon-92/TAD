@@ -4,38 +4,33 @@
 
 ## 安装方式
 
-### 方式 1: npx（推荐，交互式）
-
-```bash
-npx github:Sheldon-92/TAD
-```
-
-交互式选择平台（Claude Code / Codex CLI）和 capability packs。每个 pack 附一句话说明。
-
-非交互模式：
-```bash
-npx github:Sheldon-92/TAD --platform claude-code --packs web-frontend,web-backend
-```
-
-> 需要 Node.js 14+。没有 Node.js？用下面的 curl 方式。
-
-### 方式 2: curl（无依赖）
+### 方式 1: curl（推荐，一行全量安装）
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ```
 
-在终端运行时会交互选择平台。非交互模式加参数：
+默认 Claude Code 全套 + 全部 25 个 packs。无需 Node.js，只需 bash + curl。
+
+Codex 用户或选择特定 packs：
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
 ```
 
-全量安装，零交互（CI / 脚本化场景）：
+CI / 脚本化（跳过确认提示）：
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-> 只需 bash + curl，无需 Node.js。`--yes` 跳过所有交互，默认 Claude Code + 全部 packs。
+### 方式 2: npx（交互式，需要 Node.js）
+
+```bash
+npx github:Sheldon-92/TAD
+```
+
+交互式选择平台（Claude Code / Codex CLI）和 capability packs，每个 pack 附一句话说明。
+
+> 需要 Node.js 14+。不想装 Node.js 就用上面的 curl。
 
 ### 方式 3: Git clone
 
