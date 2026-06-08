@@ -16,7 +16,16 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 - **保留数据**：你的 handoffs、learnings、evidence 不会被覆盖
 - **失败回滚**：出错时自动恢复备份
 
-### Option B: npx (interactive — choose platform + packs)
+**选平台 / packs —— 不需要 Node.js。** 在 `bash -s --` 后加参数：
+```bash
+# Codex 瘦版（不含 86K Claude SKILL + hooks）+ 指定 packs:
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
+```
+不加参数 = Claude Code 全套（上面的默认命令）。`--platform` 可选 `claude-code` 或 `codex`。
+
+> 💡 **用 Codex 但没装 Node.js？** 用这个 curl 方法 —— 只需 `bash` + `curl`。下面的 npx 方法需要 Node.js。
+
+### Option B: npx (interactive — choose platform + packs, requires Node.js)
 
 ```bash
 npx github:Sheldon-92/TAD

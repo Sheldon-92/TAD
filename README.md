@@ -126,7 +126,16 @@ This smart script automatically:
 - **Preserves data**: Your handoffs, learnings, and evidence are never overwritten
 - **Rollback on failure**: Automatic backup and restore if anything goes wrong
 
-### Option B: npx (interactive — choose platform + packs)
+**Choose platform / packs — no Node.js required.** Pass flags after `bash -s --`:
+```bash
+# Codex edition (slim — excludes the 86K Claude SKILLs + hooks) + specific packs:
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
+```
+No flags = Claude Code, full install (the default above). `--platform` accepts `claude-code` or `codex`.
+
+> 💡 **Using Codex but don't have Node.js?** This curl method is your path — it needs only `bash` + `curl`. The npx option below requires Node.js.
+
+### Option B: npx (interactive — choose platform + packs, requires Node.js)
 
 ```bash
 npx github:Sheldon-92/TAD
