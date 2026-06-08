@@ -72,6 +72,11 @@ var CANDIDATE_SCHEMA = {
   required: ['id', 'title', 'source', 'value', 'confidence', 'token_cost', 'deliverable', 'risk_tag']
 }
 
+// StructuredOutput tool requires a top-level type:'object' schema — a top-level
+// array schema is rejected by the Anthropic API (400 input_schema.type). Wrap
+// the candidate array under a "candidates" key.
+var CANDIDATES_SCHEMA = { type: 'object', properties: { candidates: { type: 'array', items: CANDIDATE_SCHEMA } }, required: ['candidates'] }
+
 // token_cost anchors — embedded IN every reader prompt (P0-2):
 var COST_ANCHORS =
   'token_cost rubric (assign exactly one):\n' +
@@ -106,15 +111,15 @@ var scanResults = await parallel(sources.map(function(src) {
       'Skip any item whose file content shows status: archived | completed | promoted (it is no longer actionable).\n\n' +
       SCORING_GUIDE + '\n' + COST_ANCHORS + '\n' +
       'Set source to "' + src.kind + '". id = a short slug derived from the item (e.g. file basename).\n' +
-      'Return a JSON array of candidate objects. Empty array if nothing actionable.',
-      { label: 'scan-' + src.kind, phase: 'Scan', schema: { type: 'array', items: CANDIDATE_SCHEMA }, model: 'sonnet' }
+      'Return a JSON object {"candidates": [...]} — an array of candidate objects under the "candidates" key. Use {"candidates": []} if nothing actionable.',
+      { label: 'scan-' + src.kind, phase: 'Scan', schema: CANDIDATES_SCHEMA, model: 'sonnet' }
     )
   }
 }))
 
 var scanned = []
 for (var s = 0; s < scanResults.length; s++) {
-  var arr = Array.isArray(scanResults[s]) ? scanResults[s] : []
+  var r = scanResults[s]; var arr = (r && Array.isArray(r.candidates)) ? r.candidates : []
   if (!arr.length) {
     log('  source "' + sources[s].kind + '" (' + sources[s].path + '): 0 candidates (missing/empty/skipped)')
   } else {
@@ -144,11 +149,11 @@ var generated = await agent(
   SCORING_GUIDE + '\n' + COST_ANCHORS + '\n' +
   'Set source to "generated" for every item. Put the cited KR in value_rationale.\n' +
   priorText + '\n\n' +
-  'Return a JSON array (<=5) of candidate objects, or [] if no genuinely new KR-linked direction exists.',
-  { label: 'generate', phase: 'Generate', schema: { type: 'array', items: CANDIDATE_SCHEMA }, model: 'sonnet' }
+  'Return a JSON object {"candidates": [...]} — an array (<=5) of candidate objects under the "candidates" key, or {"candidates": []} if no genuinely new KR-linked direction exists.',
+  { label: 'generate', phase: 'Generate', schema: CANDIDATES_SCHEMA, model: 'sonnet' }
 )
 
-var genItems = Array.isArray(generated) ? generated : []
+var genItems = (generated && Array.isArray(generated.candidates)) ? generated.candidates : []
 // Enforce source tag + KR-linkage (P2-1) + cap (defensive).
 var genClean = []
 for (var g = 0; g < genItems.length && genClean.length < 5; g++) {
