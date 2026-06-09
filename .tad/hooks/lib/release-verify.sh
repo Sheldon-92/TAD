@@ -89,6 +89,7 @@ usage() {
   echo "Usage:" >&2
   echo "  release-verify.sh structural <src_root> <target_root>" >&2
   echo "  release-verify.sh version <repo_root> <expected_version> [<old_version>]" >&2
+  echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -283,6 +284,14 @@ EOF
       echo "VERDICT: version FAIL — $survivors stale ref(s) (exit 1)"
       exit 1
     fi
+    ;;
+
+  # ───────────────────────────── freshness ─────────────────────────────
+  freshness)
+    if [ $# -lt 2 ]; then usage; exit 2; fi
+    FRESH_REPO="$2"
+    FRESH_TODAY="${3:-}"
+    bash "$SCRIPT_DIR/runtime-freshness-verify.sh" "$FRESH_REPO" $FRESH_TODAY
     ;;
 
   *)
