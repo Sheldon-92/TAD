@@ -1,5 +1,5 @@
 ---
-gate3_verdict:
+gate3_verdict: pass
 ---
 
 # Implementation Completion Report
@@ -165,6 +165,35 @@ Blake confirms:
 - [x] Existing release-verify modes preserved
 
 **Blake statement**: Phase 4 Runtime Freshness Loop complete and ready for Gate 4.
+
+---
+
+## Alex Gate 4 Acceptance
+
+**Date:** 2026-06-09
+**Result:** PASS
+
+### Acceptance Notes
+
+- R1 code review found P1=2: Linux date compatibility and counter double-counting.
+- R2 evidence verified both original P1 fixes, but revealed semantic invalid dates returned exit 2 without printing the required `GATE:` marker.
+- R3 fixed the date parsing exit propagation and added evidence. Alex reproduced the remaining marker gap, applied a minimal call-site fix, and re-ran the relevant gate tests.
+
+### Final Verification
+
+| Check | Result |
+|-------|--------|
+| Current ledgers | PASS, 21/21 entries, exit 0 |
+| `release-verify.sh freshness . 2026-06-09` | PASS, exit 0 |
+| `release-verify.sh version . 2.26.0` | PASS, exit 0 |
+| Stale high-volatility fixture | BLOCK, exit 1, `GATE: runtime-freshness exit=1` present |
+| Malformed `last_verified=BADDATE` fixture | BLOCK, exit 2, `GATE: runtime-freshness exit=2` present |
+| Semantic invalid `last_verified=2026-13-45` fixture | BLOCK, exit 2, `GATE: runtime-freshness exit=2` present |
+| Semantic invalid `TODAY=2026-13-45` fixture | BLOCK, exit 2, `GATE: runtime-freshness exit=2` present |
+
+### Knowledge Assessment
+
+New discovery recorded: `.tad/project-knowledge/patterns/shell-portability.md` → `Command Substitution Swallows Gate Markers - 2026-06-09`.
 
 ---
 

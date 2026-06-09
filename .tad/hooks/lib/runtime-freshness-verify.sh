@@ -46,8 +46,8 @@ date_to_epoch() {
 days_between() {
   local d1="$1" d2="$2"
   local s1 s2
-  s1=$(date_to_epoch "$d1") || { echo "ERROR: cannot parse date '$d1'" >&2; echo "GATE: runtime-freshness exit=2"; exit 2; }
-  s2=$(date_to_epoch "$d2") || { echo "ERROR: cannot parse date '$d2'" >&2; echo "GATE: runtime-freshness exit=2"; exit 2; }
+  s1=$(date_to_epoch "$d1") || { echo "ERROR: cannot parse date '$d1'" >&2; return 1; }
+  s2=$(date_to_epoch "$d2") || { echo "ERROR: cannot parse date '$d2'" >&2; return 1; }
   echo $(( (s2 - s1) / 86400 ))
 }
 
@@ -103,7 +103,7 @@ check_ledger() {
     fi
 
     local age entry_result="pass"
-    age=$(days_between "$last_ver" "$TODAY")
+    age=$(days_between "$last_ver" "$TODAY") || { echo "GATE: runtime-freshness exit=2"; exit 2; }
 
     case "$vol" in
       high)
@@ -133,7 +133,7 @@ check_ledger() {
 
     if [ -n "$next_rev" ] && echo "$next_rev" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
       local review_age
-      review_age=$(days_between "$next_rev" "$TODAY")
+      review_age=$(days_between "$next_rev" "$TODAY") || { echo "GATE: runtime-freshness exit=2"; exit 2; }
       if [ "$review_age" -gt 0 ]; then
         case "$vol" in
           high)
