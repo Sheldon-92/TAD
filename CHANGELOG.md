@@ -5,6 +5,24 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.27.0] - 2026-06-09
+
+### Fixed
+- Blake SKILL: inlined 3 circular-trigger references (ralph-loop, execution-checklist, completion-protocol) back into body — fixes Codex dogfood where Blake skipped Layer 2 / Gate 3 / completion report
+- Agent message + 人话版 forgetting: added compact-resistant final output checklist to both SKILL bodies
+- 人话版 quality: replaced structural compliance rules with reader-value test (3 questions + 2-3 paragraph limit)
+
+### Added
+- `skill-body-verify.sh`: body-integrity checker with 6 markers + safety floor + mirror sync + negative presence for deleted refs
+- principles.md: "Circular Trigger Test" principle (14/15)
+- Dual-platform native runtime architecture: Codex/Claude Code compatibility ledgers, runtime freshness verifier, drift-check release gate
+- `.codex/config.toml` native policy + `.codex/agents/` evaluation framework
+
+### Architecture
+- Blake SKILL.md: 737 → 2005 lines (3 refs inlined, 2 ref-ok remain)
+- Alex SKILL.md: minor additions (收尾 checklist + 人话版 rules)
+- Dual-platform: both runtimes treated as first-class with independent compatibility tracking
+
 ## [2.26.0] - 2026-06-08
 
 ### New Features

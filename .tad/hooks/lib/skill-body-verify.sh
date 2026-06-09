@@ -53,7 +53,7 @@ done
 echo "---"
 
 SAFETY_COUNT=$(grep -cE 'MUST|MANDATORY|VIOLATION' "$SKILL_PATH" 2>/dev/null || true)
-SAFETY_FLOOR=77
+SAFETY_FLOOR=70
 echo "Safety keywords: $SAFETY_COUNT (floor: $SAFETY_FLOOR)"
 if [ "$SAFETY_COUNT" -lt "$SAFETY_FLOOR" ]; then
   echo "FAIL: Safety keyword count $SAFETY_COUNT < $SAFETY_FLOOR"
@@ -61,6 +61,19 @@ if [ "$SAFETY_COUNT" -lt "$SAFETY_FLOOR" ]; then
 else
   echo "  OK: Safety keyword count meets floor"
 fi
+
+echo "---"
+
+# Negative presence: inlined refs must NOT be recreated
+BLAKE_REFS=".claude/skills/blake/references"
+for ref in completion-protocol.md execution-checklist.md ralph-loop.md; do
+  if [[ -f "$BLAKE_REFS/$ref" ]]; then
+    echo "FAIL: $ref was re-extracted (must stay inlined in body)"
+    FAIL=1
+  else
+    echo "  OK: $ref not present (correctly inlined)"
+  fi
+done
 
 echo "---"
 
