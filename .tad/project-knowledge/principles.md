@@ -81,3 +81,10 @@
 - **Action**: When converting an allow-list to a deny-list, sweep ALL sibling copy paths at every granularity (dirs, top-level files, nested globs) — fix them symmetrically or the disease relocates. For every copy granularity add a matching verifier granularity. Use `diff -rq source target` (not presence-only) for content-completeness when the source is local. Expose lib internals as FLAGS for any cross-file drift check rather than scraping variable names. Keep self-check fatality comments accurate to the actual `set -e`/trap behavior.
 - ⚠️ SAFETY ENTRY — requires human review for any modification
 - **Grounded in**: tad.sh (copy_framework_files derive_framework_top_files, verify_install_complete diff -rq + cmp), .tad/hooks/lib/derive-sync-set.sh (--transient flag), .tad/evidence/yolo/self-deriving-release-sync/phase2-impl-review-arch.md (P1-1/P1-2), phase2-impl-review-cr.md (P1-1/P1-3), COMPLETION-20260601-self-deriving-release-sync-phase2.md (P1-Fix Log)
+
+### Execution Discipline Content Must Stay in SKILL Body — Circular Trigger Test - 2026-06-09
+- **Context**: SKILL Progressive Loading (v2.26.0) extracted 36 protocols to references/. Codex dogfood: Blake skipped Layer 2, Gate 3, completion report. Phase 1 audit classified 3 must-body, 33 reference-ok.
+- **Discovery**: Must-body content has "circular triggers" — the `load_when` references a step defined inside the reference itself. Without the reference, the agent doesn't know the step exists, so the trigger never fires. Non-circular triggers (explicit *command, workflow chain) work because the agent knows the triggering event independently.
+- **Action**: Before extracting any protocol to references/, verify the `load_when` trigger is non-circular. If the trigger references a concept defined inside the reference, keep it in body. Automated check: `skill-body-verify.sh` runs at release time.
+- ⚠️ SAFETY ENTRY — requires human review for any modification
+- **Grounded in**: .tad/evidence/designs/skill-body-reference-audit.md, EPIC-20260609-skill-body-reference-boundary.md
