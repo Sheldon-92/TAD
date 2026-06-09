@@ -4,6 +4,12 @@
 
 ---
 
+### Platform Capability Assumptions Decay Fast — Re-research Before Architecture - 2026-06-08
+- **Context**: 2026-04-27 Codex Adaptation Epic built a compressed dual-edition system (85% content loss) based on "Codex lacks hooks/skills/subagents." 6 weeks later, deep research revealed Codex had gained all those capabilities (hooks 10 events, .agents/skills/, subagent GA, ask_user_question). The entire compression architecture was unnecessary waste.
+- **Discovery**: Platform capability assumptions (especially for fast-evolving CLI tools) become stale within weeks. The cost of re-research (~30 min web search + doc fetch) is trivial compared to maintaining a wrong architecture (dual editions, regen scripts, parity checks, 72-85% information loss). Always re-verify platform capabilities before designing cross-platform adaptations.
+- **Action**: Before any cross-platform architectural decision, do a fresh capability audit of the target platform's current state (official docs + changelog). Never rely on assumptions older than 2 months for fast-evolving CLI tools.
+- **Grounded in**: EPIC-20260608-cross-platform-unification.md, Codex CLI docs (developers.openai.com/codex/)
+
 ### Cognitive Firewall: Embed Into Existing Flows - 2026-02-06
 - **Discovery**: Cross-cutting concerns are most effective embedded into existing mandatory flows (Gates, Alex design phase, Blake execution) rather than standalone commands. Insert, don't create. Escalation over automation.
 - **Action**: Embed quality/safety concerns as mandatory steps in existing flows rather than separate commands.

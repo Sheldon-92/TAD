@@ -2,9 +2,9 @@
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
 version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-06-04
 # Currently active notebook (used when no --notebook flag specified)
-active_notebook: "tad-evolution-research"
+active_notebook: "litellm-agent-platform"
 notebooks:
   - id: "tad-evolution-research"
     notebook_id: "37cfefa5-52b3-4a8a-a8e3-a83f32150759"
@@ -70,7 +70,7 @@ notebooks:
   - id: "ai-agent-security-phase0b"
     topic: "AI Agent Security"
     created: "2026-05-03"
-    status: active # active / dormant / archived
+    status: dormant # active / dormant / archived
     last_queried: "2026-05-03"
     source_count: 9
     notes: "Phase 0b spike notebook — 6 video-exclusive attack techniques found absent from all written docs"
@@ -117,7 +117,7 @@ notebooks:
     notebook_id: "fd4f9117-a869-4d4e-ade9-6eea34d031b2"
     topic: "Web UI Design — Best Practices, Design Systems, and Tools 2025-2026"
     created: "2026-05-07"
-    status: active
+    status: dormant
     last_queried: "2026-05-07"
     source_count: 73
     notes: "Domain Pack rebuild research. 73 sources (deep research + 20 GitHub awesome-lists/tool repos). 9 capability questions answered. Findings: .tad/evidence/research/web-ui-design-rebuild/2026-05-07-research-findings.md"
@@ -150,7 +150,7 @@ notebooks:
     notebook_id: "a8f77481-802c-42f5-bf29-5f66fac7c888"
     topic: "Product Management & Innovation — Capability Pack Research 2026"
     created: "2026-05-07"
-    status: active
+    status: dormant
     last_queried: "2026-05-07"
     source_count: 52
     notes: "Product thinking capability pack research. 52 sources: pm-skills (Triple Diamond, 40 skills), GStack (office-hours, design-shotgun, CEO-review), startup-pressure-test, last30days-skill, aso-skills, Amazon seller tools, ecommerce resources. Key finding: 3 deep skills > 40 thin templates. Adapter pattern for 6 product types."
@@ -175,7 +175,7 @@ notebooks:
     notebook_id: "8da09b3b-b325-44e9-8905-b4e3bc2c42dc"
     topic: "AI Agent Architecture — Design Judgment Rules for Reliable Agent Systems"
     created: "2026-05-07"
-    status: active
+    status: dormant
     last_queried: "2026-05-07"
     source_count: 31
     notes: "Capability pack research. 31 sources (frameworks, production failures, MCP security, memory architecture, anti-patterns). 5 deep ask rounds + cross-query with tad-evolution notebook (45 sources). Covers: 10 failure modes, 24 decision rules, 7 production disaster causal chains, 5 memory patterns, 7 MCP security rules, 5-category tool mapping."
@@ -200,7 +200,7 @@ notebooks:
     notebook_id: "20c498da-7a87-442e-88ed-1b1b57571908"
     topic: "Web Backend Capability Pack — API Design, Data Modeling, Production Readiness"
     created: "2026-05-07"
-    status: active
+    status: dormant
     last_queried: "2026-05-07"
     source_count: 41
     notes: "Capability pack research. 30 manual GitHub sources + 11 deep research imports. 4 rounds of deep ask. Covers: 5 backend quality problem areas with CLI tools, complete PRR checklist (46 items), 5 architecture pattern decision criteria, AI agent-specific backend weaknesses."
@@ -247,7 +247,7 @@ notebooks:
     notebook_id: "430044a7-d808-4a70-9969-24e00c92da8d"
     topic: "Web Frontend Engineering Judgment — Component Architecture, State Management, Design Tokens, Performance, Accessibility"
     created: "2026-05-08"
-    status: active
+    status: dormant
     last_queried: "2026-05-08"
     source_count: 299
     notes: "Capability pack research. 299 sources (14 manual GitHub + 52 deep research + auto-import). 4 rounds of deep ask (8 questions). Covers: 3 composition patterns, state selection matrix, DTCG token workflow, CWV thresholds, top a11y failures, testing strategy. Findings: .tad/evidence/research/web-frontend-capability-pack/2026-05-08-research-findings.md"
@@ -292,7 +292,7 @@ notebooks:
     notebook_id: "a62f253b-c31a-448e-abcc-10e98c3755bf"
     topic: "Programmatic Video Creation — AI Agent Video Production Skills"
     created: "2026-05-08"
-    status: active
+    status: dormant
     last_queried: "2026-05-08"
     source_count: 27
     notes: "Capability pack research. 27 sources: 3 awesome-lists + HyperFrames/Remotion repos + design principles + AI video workflows + audio/social specs. 5 layers × 5 deep ask rounds. Covers: HyperFrames vs Remotion architecture, codifiable pacing rules, motion design principles, AI agent failure modes, video type templates. Findings: .tad/evidence/research/video-creation-capability-pack/2026-05-08-ask-findings.md"
@@ -325,7 +325,7 @@ notebooks:
     notebook_id: "26012e7b-7a2c-465c-8778-68afe3f84c5b"
     topic: "AI Prompt Engineering — Production Lifecycle"
     created: "2026-05-07"
-    status: active
+    status: dormant
     last_queried: "2026-05-07"
     source_count: 24
     notes: "Capability pack research. 24 sources: 6 awesome-lists + 4 tool repos (promptfoo, DSPy, Anthropic) + 4 Anthropic docs + 10 articles (Lakera, Braintrust, production failures, evaluation tools). Q1-Q6 answered."
@@ -333,7 +333,7 @@ notebooks:
     notebook_id: "7e9c2c57-3cf4-4cb7-b669-fae9fb1a8f9a"
     topic: "AI Asset Generation for Video Pipeline — Seedance 2.0 + Codex Image Generation"
     created: "2026-05-08"
-    status: active
+    status: dormant
     last_queried: "2026-05-08"
     source_count: 18
     notes: "Video-creation pack upgrade research. 18 healthy sources (Seedance 2.0 official + fal.ai endpoints + Codex $imagegen + Runway API + Kling docs + HyperFrames + Remotion). 7 ask rounds: endpoint specs, async API patterns, pipeline integration, competitive comparison, prompt consistency rules, cost control. QCE report: .research/sessions/RS-20260508-001/report.md"
@@ -563,3 +563,65 @@ notebooks:
     status: active
     source_count: 62
     notes: "agent-pack-factory deep research. Findings: .tad/evidence/research/agent-pack-factory/knowledge-graph/findings.md"
+  - id: "litellm-agent-platform"
+    notebook_id: "7804448b-3489-494c-a6c9-4efde9634ef2"
+    topic: "LiteLLM Agent Platform — Self-hosted Multi-Harness Agent Infrastructure"
+    created: "2026-06-04"
+    status: active
+    last_queried: "2026-06-04"
+    source_count: 13
+    notes: "Deep research on BerriAI's self-hosted K8s agent platform. 13 sources (repo docs, SDK protocol, K8s sandbox, blog posts, analysis articles). 5 deep ask rounds. Key findings: vault proxy credential isolation, NDJSON multi-harness protocol, agent-sandbox CRD warm pool. Report: .tad/evidence/research/litellm-agent-platform/2026-06-04-deep-research.md"
+    sources:
+      - url: "https://github.com/LiteLLM-Labs/litellm-agent-platform"
+        type: web
+        added: "2026-06-04"
+        title: "GitHub repo main page"
+      - url: "https://github.com/LiteLLM-Labs/litellm-agent-platform/blob/main/src/lite-harness-sdk/PROTOCOL.md"
+        type: web
+        added: "2026-06-04"
+        title: "SDK Protocol Specification"
+      - url: "https://github.com/LiteLLM-Labs/litellm-agent-platform/blob/main/src/lite-harness-sdk/README.md"
+        type: web
+        added: "2026-06-04"
+        title: "lite-harness SDK Overview"
+      - url: "https://docs.litellm.ai/blog/agent-platform-alpha"
+        type: web
+        added: "2026-06-04"
+        title: "Alpha Public Preview Announcement"
+      - url: "https://docs.litellm-agent-platform.ai/introduction"
+        type: web
+        added: "2026-06-04"
+        title: "Official Documentation"
+      - url: "https://github.com/kubernetes-sigs/agent-sandbox"
+        type: web
+        added: "2026-06-04"
+        title: "kubernetes-sigs/agent-sandbox CRD"
+      - url: "https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox/"
+        type: web
+        added: "2026-06-04"
+        title: "K8s Blog: Running Agents on Kubernetes"
+      - url: "(5 additional sources: MarkTechPost analysis, DEVELOPER.md, Integrations docs, managed-agents README, Northflank production guide)"
+        type: mixed
+        added: "2026-06-04"
+        title: "5 additional analysis and documentation sources"
+  - id: "agent-framework-installers"
+    notebook_id: "31445e5a-77ad-4d71-bba8-2939cdcefaa1"
+    topic: "AI Agent Framework Installers — Platform Selection, Selective & Progressive Install Landscape 2026"
+    created: "2026-06-07"
+    status: active
+    last_queried: "2026-06-07"
+    source_count: 3
+    notes: "TAD npx installer 对标. 3 sources (awesome-cli-coding-agents, BMAD-METHOD, awesome-ai-agents-2026). 2 ask rounds. Key: config-driven platform selection (BMAD platform-codes.yaml + Crab Code layered config); module description UX (BMAD web bundles cards + bmad-help + OpenClaw onboarding wizard); context minimization (QwenPaw hot-load / GitClaw modular-files-anti-monolith / Letta paged retrieval / BMAD web bundles / agent-lsp 5-34x token savings). Findings: .tad/evidence/research/npx-installer-benchmark/2026-06-07-landscape-findings.md + 2026-06-07-findings.md (BMAD deep-dive)."
+    sources:
+      - url: "https://github.com/bradAGI/awesome-cli-coding-agents"
+        type: web
+        added: "2026-06-07"
+        title: "awesome-cli-coding-agents"
+      - url: "https://github.com/bmad-code-org/BMAD-METHOD"
+        type: web
+        added: "2026-06-07"
+        title: "BMAD-METHOD"
+      - url: "https://github.com/Zijian-Ni/awesome-ai-agents-2026"
+        type: web
+        added: "2026-06-07"
+        title: "awesome-ai-agents-2026"
