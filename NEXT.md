@@ -232,7 +232,10 @@
 - [ ] Test Agent Teams on next Full or Standard TAD task
 - [ ] Add Bash command deny patterns to PreToolUse hook (rm -rf, DROP TABLE etc.)
 
-## Ideas (16 active — 8 archived 2026-05-14)
+## Ideas (17 active — 8 archived 2026-05-14)
+
+Positioning & strategy:
+- [ ] IDEA-20260609-repositioning-capability-acquisition: TAD repositioning — capability acquisition methodology, not a dev framework (podcast 3d→1h anchor case; README/OBJECTIVES rewrite candidate)
 
 Domain Pack related (input for Freeze + Rebuild):
 - [ ] IDEA-20260508-deprecate-domain-pack-yaml: Deprecate YAML format entirely
