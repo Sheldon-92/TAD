@@ -1,0 +1,55 @@
+# DRAFT ONLY — not active Codex runtime config
+# Source: HANDOFF-20260609-codex-native-runtime-policy.md (Phase 2/5)
+# Activation: requires Human approval per Phase 2 Activation Criteria
+# Copy to .codex/config.toml only after Phase 3 acceptance + Phase 5 regression
+
+# ─── Model Defaults ───
+# TAD recommends the strongest available model for design/review quality.
+# Users may override with ~/.codex/config.toml per personal preference.
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+# ─── Sandbox / Approval ───
+# workspace-write allows TAD to write evidence, completion reports, and code.
+# "on-request" balances safety with TAD workflow continuity.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+
+# ─── Web Search ───
+web_search = "cached"
+
+# ─── Features ───
+[features]
+hooks = true
+multi_agent = true
+memories = false
+# undo = false  # opt-in; not needed for TAD workflow
+
+# ─── Agents ───
+[agents]
+max_threads = 6
+max_depth = 1
+
+# ─── Skills Config ───
+# Ensure TAD alex/blake skills are not disabled.
+# No explicit enable needed — .agents/skills/ auto-discovered.
+# Uncomment to disable a specific skill if conflicting:
+# [[skills.config]]
+# path = ".agents/skills/some-conflicting-skill/SKILL.md"
+# enabled = false
+
+# ─── MCP Servers (project-scoped) ───
+# Only define servers that don't require user credentials.
+# Servers needing API keys: configure in ~/.codex/config.toml instead.
+
+# Example: Context7 (no auth required)
+# [mcp_servers.context7]
+# command = "npx"
+# args = ["-y", "@upstash/context7-mcp"]
+
+# ─── DO NOT ADD ───
+# - API keys, OAuth tokens, bearer tokens
+# - Personal machine paths (~/..., /Users/...)
+# - Account IDs, email addresses
+# - Cloud environment secrets
+# These belong in ~/.codex/config.toml or environment variables.
