@@ -1,0 +1,25 @@
+schema_version: 1
+from: "2.26.0"
+to: "2.27.0"
+generated_by: "manual"
+delete:
+  - path: ".claude/skills/blake/references/completion-protocol.md"
+    type: "file"
+    reason: "v2.27.0 SKILL progressive loading restructure — completion protocol inlined to SKILL.md body (EPIC-20260609-skill-body-reference-boundary Phase 1 audit: circular trigger, must-body)"
+  - path: ".claude/skills/blake/references/execution-checklist.md"
+    type: "file"
+    reason: "v2.27.0 SKILL progressive loading restructure — execution checklist inlined to SKILL.md body (circular trigger, must-body)"
+  - path: ".claude/skills/blake/references/ralph-loop.md"
+    type: "file"
+    reason: "v2.27.0 SKILL progressive loading restructure — Ralph Loop protocol inlined to SKILL.md body (circular trigger, must-body)"
+rename: []
+merge: []
+verify:
+  - type: "absent"
+    path: ".claude/skills/blake/references/completion-protocol.md"
+  - type: "absent"
+    path: ".claude/skills/blake/references/execution-checklist.md"
+  - type: "absent"
+    path: ".claude/skills/blake/references/ralph-loop.md"
+  - type: "present"
+    path: ".claude/skills/blake/SKILL.md"
