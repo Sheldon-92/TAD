@@ -40,16 +40,14 @@ date_to_epoch() {
   # macOS/BSD: date -j -f; Linux/GNU: date -d
   date -j -f "%Y-%m-%d" "$d" "+%s" 2>/dev/null && return 0
   date -d "$d" "+%s" 2>/dev/null && return 0
-  echo "ERROR: cannot parse date '$d'" >&2
-  echo "GATE: runtime-freshness exit=2"
-  exit 2
+  return 1
 }
 
 days_between() {
   local d1="$1" d2="$2"
   local s1 s2
-  s1=$(date_to_epoch "$d1")
-  s2=$(date_to_epoch "$d2")
+  s1=$(date_to_epoch "$d1") || { echo "ERROR: cannot parse date '$d1'" >&2; echo "GATE: runtime-freshness exit=2"; exit 2; }
+  s2=$(date_to_epoch "$d2") || { echo "ERROR: cannot parse date '$d2'" >&2; echo "GATE: runtime-freshness exit=2"; exit 2; }
   echo $(( (s2 - s1) / 86400 ))
 }
 
