@@ -1,0 +1,47 @@
+
+=== Migration: 2.19.0 → 2.19.1 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.19.1 → 2.20.0 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.20.0 → 2.21.0 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.21.0 → 2.22.0 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.22.0 → 2.22.1 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.22.1 → 2.23.0 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.23.0 → 2.23.1 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.23.1 → 2.24.0 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.24.0 → 2.24.1 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.24.1 → 2.25.0 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+=== Migration: 2.25.0 → 2.26.0 ===
+oracle	already-applied	-	all verify assertions pass, skipping
+Already applied: 2.25.0 → 2.26.0
+
+=== Migration: 2.26.0 → 2.27.0 ===
+delete	already-absent	.claude/skills/blake/references/completion-protocol.md	not found
+delete	already-absent	.claude/skills/blake/references/execution-checklist.md	not found
+delete	already-absent	.claude/skills/blake/references/ralph-loop.md	not found
+verify	would-verify	.claude/skills/blake/references/completion-protocol.md	type=absent
+verify	would-verify	.claude/skills/blake/references/execution-checklist.md	type=absent
+verify	would-verify	.claude/skills/blake/references/ralph-loop.md	type=absent
+verify	would-verify	.claude/skills/blake/SKILL.md	type=present
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+Migration complete: 2.19.0 → 2.27.0
+exit=0

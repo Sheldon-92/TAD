@@ -1,0 +1,20 @@
+=== Gate Interception Exercise ===
+  Source: /Users/sheldonzhao/01-on progress programs/TAD
+  Temp dir: /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.Jf0gDjWUR8
+
+Running: release-verify.sh migration "/var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.Jf0gDjWUR8" "0.2.0"
+
+--- Gate Output ---
+=========================================
+MIGRATION VERIFY (unmanifested D/R check)
+  REPO: /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.Jf0gDjWUR8
+  PREV_TAG: v0.1.0
+  EXPECTED: 0.2.0
+=========================================
+  UNMANIFESTED DELETE: .claude/skills/test-file.md [checked: /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.Jf0gDjWUR8/.tad/migrations/0.1.0-to-0.2.0.yaml]
+VERDICT: migration FAIL — 1 unmanifested removal(s) (exit 1)
+--- End Gate Output (exit code: 1) ---
+
+PASS: Migration gate correctly blocked unmanifested delete (exit 1)
+  Gate detected: UNMANIFESTED DELETE of .claude/skills/test-file.md
+  Proof: gate exit code = 1, output contains "UNMANIFESTED DELETE"
