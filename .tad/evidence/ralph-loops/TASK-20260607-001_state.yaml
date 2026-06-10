@@ -1,0 +1,11 @@
+task_id: TASK-20260607-001
+slug: universal-gate-ac-driven
+handoff: .tad/active/handoffs/HANDOFF-20260607-universal-gate-ac-driven.md
+current_iteration: 0
+layer1_retries: 0  # passed first try
+layer2_rounds: 0
+last_completed_layer: layer1
+last_error_category: null
+consecutive_same_error: 0
+reflection_count: 0
+safety_baseline_gate: 44

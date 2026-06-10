@@ -1,0 +1,3 @@
+$ git add .tad/evidence/codex-regression/sandbox
+fatal: Unable to create '/Users/sheldonzhao/01-on progress programs/TAD/.git/index.lock': Operation not permitted
+exit=128

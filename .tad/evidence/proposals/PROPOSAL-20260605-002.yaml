@@ -1,0 +1,34 @@
+proposal_id: "PROPOSAL-20260605-002"
+created: "2026-06-05T10:00:00Z"
+status: "deferred"
+scope: "framework"
+
+target:
+  file: ".claude/skills/blake/SKILL.md"
+  section: "trace_emission_expert_review"
+
+change:
+  type: "fix_step"
+  current: "expert_review_finding events emitted with null .file field — cannot aggregate P0 density per handoff"
+  proposed: "Blake trace emission for expert_review_finding MUST populate .file with the handoff path being reviewed. Template: {file: handoff_path, type: 'expert_review_finding', outcome: priority, context: finding_summary}"
+  diff: |
+    - expert_review_finding events may have null .file
+    + expert_review_finding events MUST have .file = handoff_path (non-null)
+
+evidence:
+  trace_count: 51
+  failure_pattern: "51 expert_review_finding events, 13+ have null file field — P0 density metric unusable"
+  trace_refs:
+    - ".tad/evidence/traces/2026-05-31.jsonl"
+  confidence: 0.9
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

@@ -1,0 +1,35 @@
+proposal_id: "PROPOSAL-20260605-003"
+created: "2026-06-05T10:00:00Z"
+status: "rejected"
+scope: "framework"
+
+target:
+  file: ".claude/skills/blake/SKILL.md"
+  section: "trace_emission_decision_point"
+
+change:
+  type: "fix_step"
+  current: "decision_point events have actor_tag always 'unknown' — override rate metric blind"
+  proposed: "Blake trace emission for decision_point MUST populate context.actor_tag with 'agent_default' or 'human_overridden' based on whether user chose the Recommended option or picked a different one"
+  diff: |
+    - decision_point context.actor_tag = unknown (or absent)
+    + decision_point context.actor_tag = agent_default | human_overridden
+
+evidence:
+  trace_count: 97
+  failure_pattern: "97 decision_point events, 100% have actor_tag=unknown — override rate metric provides zero signal"
+  trace_refs:
+    - ".tad/evidence/traces/2026-05-04.jsonl"
+    - ".tad/evidence/traces/2026-05-14.jsonl"
+  confidence: 0.85
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

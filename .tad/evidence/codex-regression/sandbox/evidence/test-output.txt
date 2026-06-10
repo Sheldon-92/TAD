@@ -1,0 +1,9 @@
+$ bash .tad/evidence/codex-regression/sandbox/test_to_upper.sh
+PASS hello-world
+PASS mixed-case
+PASS punctuation-digits
+PASS multiline
+PASS empty-output
+PASS empty-status
+PASS all
+exit=0

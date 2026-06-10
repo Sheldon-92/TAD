@@ -1,0 +1,5 @@
+$ bash -n .tad/evidence/codex-regression/sandbox/to_upper.sh
+exit=0
+
+$ bash -n .tad/evidence/codex-regression/sandbox/test_to_upper.sh
+exit=0

@@ -1,0 +1,35 @@
+proposal_id: "PROPOSAL-20260605-004"
+created: "2026-06-05T10:00:00Z"
+status: "rejected"
+scope: "framework"
+
+target:
+  file: ".claude/skills/gate/SKILL.md"
+  section: "gate2_gate4_trace_emission"
+
+change:
+  type: "add_step"
+  current: "Only Gate 3 emits gate_result trace events (40 events). Gate 2 and Gate 4 have zero trace events."
+  proposed: "Add trace emission to Gate 2 (Alex design completeness check) and Gate 4 (Alex acceptance). Same schema: {type: gate_result, schema_version: '2.0', outcome: pass|fail, context: 'Gate N: summary'}"
+  diff: |
+    - Gate 2 and Gate 4 do not emit trace events
+    + Gate 2 emits gate_result on handoff_creation_protocol step5
+    + Gate 4 emits gate_result on acceptance_protocol step6
+
+evidence:
+  trace_count: 40
+  failure_pattern: "Gate pass rate metric only reflects Gate 3 — Gate 2/4 have 0 events, making lifecycle coverage incomplete"
+  trace_refs:
+    - ".tad/evidence/traces/2026-05-31.jsonl"
+  confidence: 0.8
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

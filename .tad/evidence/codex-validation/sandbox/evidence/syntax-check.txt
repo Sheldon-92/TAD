@@ -1,0 +1,6 @@
+$ bash -n .tad/evidence/codex-validation/sandbox/slugify.sh
+exit 0
+$ bash -n .tad/evidence/codex-validation/sandbox/test_slugify.sh
+exit 0
+$ bash -c 'source .tad/evidence/codex-validation/sandbox/slugify.sh'
+exit 0

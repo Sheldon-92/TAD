@@ -1,6 +1,13 @@
 # Next Steps
 
+## In Progress
+
+- [x] **EPIC: Upgrade Lifecycle System — Phase 1/6 ✅ ACCEPTED 2026-06-09** (commit eab1fd8, Gate 3 PASS + Gate 4 PASS 15/15 AC, gate4_delta empty) — Migration Manifest Schema v1 + 3 DRs (backfill v2.19.0, always-backup detection, deprecation absorb) + example manifest 2.26.0-to-2.27.0.yaml + research evidence. Code review: 2 P0 fixed (validator backslash + grep -P), 7 P1 fixed. KA: ac-verification.md (shell case-glob backslash). Handoff archived. Epic: `.tad/active/epics/EPIC-20260609-upgrade-lifecycle-system.md`
+- [x] **EPIC: Upgrade Lifecycle System — Phase 2/6 ✅ ACCEPTED 2026-06-10** (commits fe11b95 + 7e2a945, Gate 4 PASS 19/19 AC) — migration-engine.sh (~450 lines) + 14-fixture harness. Code review: 1 P0 + 6 P1 fixed. KA: shell-portability.md (APFS pwd -P). Phase 3 carry-forwards: `.tad-backup/` sync exclusion; tad.sh:721 comment. Archived.
+
 ## Priority (Next Session)
+
+- [ ] **⚠️ P0: SKILL Body vs Reference 边界重新审视** — v2.26.0 SKILL 瘦身后 Codex 真实测试暴露根本问题：Blake 跳过 Layer 2 / completion report，因为这些规则在 references/ 里没被加载。核心洞察："如果 agent 不主动读 reference，会不会不知不觉违反流程？会 → 必须留 body。" 需要对 36 个 reference 文件逐个判断，把"执行纪律类"（Gate 3 checklist、Layer 2 要求、completion 格式）inline 回 body。两个平台都验证。详见：`.tad/active/ideas/IDEA-20260609-skill-body-reference-boundary.md`。预计 +200-300 行回 body，不影响 references/ 里的"显式触发类"协议。
 
 - [ ] **v2.24.0 RELEASED — sync follow-ups (from 2026-06-07 release+sync)** — non-blocking, but needed before flipping the structural gate to hard-block:
   - (a) **Structural gate reconciliation** — `release-verify.sh structural` flags 3 pack SKILL.md (academic-research / ai-voice-production / video-creation) on every project: their `install.sh` overwrites the synced SKILL.md with `CAPABILITY.md` content (install-transform), so target != source by byte. Before unsetting `TAD_RELEASE_GATE=warn` (hard-block) for the NEXT release, either align each pack's CAPABILITY.md==SKILL.md or exclude pack-owned skill files from the byte-identity check.
@@ -8,6 +15,18 @@
   - (c) **3 merge-strategy projects lack the marker** (my-openclaw-agents / toy / 内存管理) — CLAUDE.md head NOT synced (left untouched, documented warn). Add `<!-- TAD:PROJECT-CONTENT-BELOW -->` or switch to `overwrite` if their TAD head should track releases.
 
 - [x] **Triple-Question KA Evolution — ✅ COMPLETE 2026-06-03** (commit b6911a7) — Gate KA expanded from 2Q to 3Q (knowledge + skill + workflow). Blake Gate 3 + Alex *accept triggers. Skillify Step 5 routes judgment→SKILL.md / orchestration→.workflow.js. Alex .workflow.js authoring carve-out added. Idea: `.tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md`
+
+## Recently Completed
+
+- [x] **EPIC Phase 1: Dual-Platform Native Runtime Architecture — ✅ COMPLETE 2026-06-09** (commit 892ace6, Gate 3 PASS) — Architecture decision document with 14-surface capability matrix, 10 decisions (D1-D10), Runtime Freshness Loop design, 20 Codex claims verified against codex-cli 0.137.0. Awaiting Alex Gate 4. Epic: `.tad/active/epics/EPIC-20260609-dual-platform-native-runtime-architecture.md`
+
+- [x] **EPIC Phase 2: Codex Native Runtime Policy — ✅ COMPLETE 2026-06-09** (commit 4f03d7e, Gate 3 PASS) — Policy doc (15 sections) + config.toml.draft + 3 agent TOML drafts. 8 role decisions (3 migrate_draft, 3 defer, 2 keep_skill_only). 6-point activation criteria. No active runtime files created. Awaiting Alex Gate 4. Epic: `.tad/active/epics/EPIC-20260609-dual-platform-native-runtime-architecture.md`
+
+- [x] **EPIC Phase 3: Dual-Platform Adapter & Docs Upgrade — ✅ COMPLETE 2026-06-09** (commit 862bf1e, Gate 3 PASS) — Rewrote docs/MULTI-PLATFORM.md (58→204 lines), expanded .tad/codex/README.md (28→95 lines), updated AGENTS.md. Removed all "specialized executor" framing. Documented shared protocol / adapters / draft-only config / activation criteria / runtime freshness / limitations. Awaiting Alex Gate 4. Epic: `.tad/active/epics/EPIC-20260609-dual-platform-native-runtime-architecture.md`
+
+- [x] **EPIC Phase 4: Runtime Freshness Loop — ✅ COMPLETE 2026-06-09** (commit 23f4604, Gate 3 PASS) — Codex ledger (12 surfaces) + Claude Code ledger (9 surfaces) + runtime-freshness-verify.sh + release-verify.sh freshness mode. Fixture-tested: stale→exit 1, malformed→exit 2, current→exit 0. ask_user_question_hook = accepted_limitation. Gate 4 PASS. Epic: `.tad/active/epics/EPIC-20260609-dual-platform-native-runtime-architecture.md`
+
+- [x] **EPIC Phase 5: Regression & Acceptance — ✅ COMPLETE 2026-06-09, Gate 4 CONDITIONAL_GO** — T1 Codex full-cycle PASS (v0.138.0, to_upper carrier). T2 Claude Code compat PASS (6 surfaces + 2 behavioral spot-checks). T3 carry-forward PASS (CF1 ask_user_question = adapter_bug, CF6 model_provider = accepted_limitation). T4 freshness PASS (21/21). 8/8 AC independent recompute match. CONDITIONAL_GO: ask_user_question adapter gap open. **Epic COMPLETE — archived to `.tad/archive/epics/`**
 
 ## In Progress
 
@@ -31,7 +50,7 @@
 
 - [x] **Tournament Design Workflow (Epic P2/5) — COMPLETE 2026-06-03** (commit 2292e04) — Reusable tournament-design.workflow.js: N competitors + pairwise judges + synthesizer merge. Integrated as Alex *design step1_5c + standalone *tournament. Standard (4 agents, ~200K) and deep (7 agents, ~320K) modes. Experiment: `.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md`
 
-- [x] **Declarative Constraints v0.1 — COMPLETE 2026-06-03** (commit df006b5) — Migrated 11 forbidden_implementations blocks from alex/SKILL.md body into structured YAML frontmatter constraints block. Mechanical deny deduped (22→2 lines), judgment items stay in body. SAFETY grep 19→20. Idea: `.tad/active/ideas/IDEA-20260528-declarative-agent-constraints.md`
+- [x] **Declarative Constraints v0.1 — COMPLETE 2026-06-03, Gate 4 PASS + archived 2026-06-10** (commit df006b5) — Migrated 11 forbidden_implementations blocks from alex/SKILL.md body into structured YAML frontmatter constraints block. Mechanical deny deduped (22→2 lines), judgment items stay in body. SAFETY grep 19→20 at df006b5 (HEAD now 5 — legit dilution by progressive-loading Epic, load-bearing items survive). AC5/NFR3 manual-test gap closed by 6 days of live /alex usage. Idea: `.tad/active/ideas/IDEA-20260528-declarative-agent-constraints.md`
 
 - [x] **Skillify at Knowledge Assessment — ✅ COMPLETE 2026-06-03** (commit 7aa92c0) — Blake KA now evaluates reusable working patterns (4-gate: Reusable/Non-trivial/Verified/Not-duplicate) + Alex *skillify command + STEP 3.57 candidate detection at startup. Inspired by Garry Tan "Stop building Foxconn factories" article + GBrain/Hermes/Claudeception research. Idea: `.tad/active/ideas/IDEA-20260603-skillify-at-knowledge-assessment.md`
 

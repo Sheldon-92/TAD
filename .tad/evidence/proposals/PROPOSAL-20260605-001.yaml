@@ -1,0 +1,36 @@
+proposal_id: "PROPOSAL-20260605-001"
+created: "2026-06-05T10:00:00Z"
+status: "deferred"
+scope: "project"
+
+target:
+  file: ".tad/project-knowledge/patterns/handoff-design.md"
+  section: "zombie_prevention"
+
+change:
+  type: "add_knowledge"
+  current: "No zombie prevention knowledge entry exists"
+  proposed: |
+    ### Zombie Prevention: Cancel or Complete Before Pivot — 2026-06-05
+    - **Context**: *optimize scan found 21% zombie rate (33/151 handoffs created but never completed), mostly from 2026-04 era experiments.
+    - **Discovery**: Root cause is directional pivots without formal cancellation. Pre-v2.15 TAD had no *cancel mechanism, so abandoned spikes accumulated silently. 18 of 33 zombies are superseded-by-later-work type — the work happened under a different slug.
+    - **Action**: When pivoting away from an in-progress handoff, always run *cancel with reason=superseded or reason=pivoted. For legacy zombies, batch-archive via *accept --quick.
+
+evidence:
+  trace_count: 2053
+  failure_pattern: "21% zombie rate from early experimental spikes abandoned without cancellation"
+  trace_refs:
+    - ".tad/evidence/traces/2026-04-03.jsonl"
+    - ".tad/evidence/traces/2026-04-14.jsonl"
+  confidence: 0.85
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

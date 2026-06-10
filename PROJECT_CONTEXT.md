@@ -1,11 +1,12 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.19.1 (16 capability packs + V2 trace layer + research engine wired)
-- **Last Updated**: 2026-06-01
-- **Framework**: TAD v2.19.1 + Self-Evolving (trace V2 + observational emission) + 16 Capability Packs + Pack Collision Detection + Codex/Gemini Cross-Model + NotebookLM Research Engine + Compact Recovery
+- **Version**: 2.27.0 (24 capability packs + dual-platform native runtime + SKILL progressive loading)
+- **Last Updated**: 2026-06-09
+- **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
+- **EPIC: Upgrade Lifecycle System** (20260609) — **Phase 1/6 ✅ accepted 2026-06-09** (Migration Manifest Schema v1 + 3 DRs + example manifest, commit eab1fd8, Gate 4 15/15). Phase 2 next: migration-engine.sh + fixture harness. Goal: 远程升级无垃圾、不误删、深入骨髓.
 - **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
 - **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)
 - **EPIC: ml-training Pack** (20260529) — parked
@@ -46,13 +47,12 @@
 - **EPIC: Cross-Model Orchestration — ALL 4/4 PHASES** (archived 2026-05-14)
 
 ## Recent Decisions
+- Migration schema v1: path safety = allow-list (destructive ops fail-closed) while sync sets stay deny-list — opposite tools for opposite problems. User-modified files: Always Backup before delete (DR-2). deprecation.yaml absorbed by migration manifests, frozen at v2.26.0 (DR-3). Backfill from v2.19.0 (DR-1) (2026-06-09)
 - Parallel dual-Alex Epics in one repo: two YOLO Conductors can run concurrently with zero conflict via scoped `git add <explicit paths>` (never `-A`) + file-disjoint work (new-files-only or additive-only); verify no shared-file sweep at every commit. Beats worktree when files don't overlap (2026-05-31)
 - Pack conflict resolution: precedence resolves CROSS-category collisions (security>correctness>a11y>performance>style, lower band wins) with a VISIBLE log; SAME-category collisions ESCALATE (no silent pick). Apply the anti-theater hand-re-derivation to the detector's OWN bonus findings — those are the likeliest false positives (2026-05-31)
 - Capability Pack Reference Files: Patterns borrowed from external repos must be grounded by NotebookLM source verification (38 sources for ViMax) not WebFetch README skimming — README-only analysis missed 3 of 4 key patterns (2026-05-27)
 - Pack rule bloat control: 400-line hard cap per new reference file; narrow Context Detection signals (no "motion"/"animation" overlap with existing GSAP rules); negative routing test mandatory (2026-05-27)
-- Capability Pack Auto-Awareness: All 8 packs installed to all projects (no smart matching); TAD flow only, not ambient Claude Code; max 2 packs per session (2026-05-14)
-- *dream as offline batch consolidation, not runtime memory (Gemini pivot, 2026-05-14)
-- Mechanical Enforcement Rejected: soft SKILL reminders over hooks for single-user CLI (2026-04-15)
+- (older decisions archived to docs/DECISIONS.md)
 
 ## Known Issues
 - Agent Teams: Experimental, requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1

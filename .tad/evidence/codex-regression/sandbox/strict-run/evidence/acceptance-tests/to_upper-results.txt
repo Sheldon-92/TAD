@@ -1,0 +1,14 @@
+== syntax ==
+== ac1 ==
+ABC
+== ac2-bytes ==
+       0
+== ac2-exit ==
+0
+== ac3 ==
+ABC 123 !?
+== ac4 ==
+HELLO
+WORLD
+== ac5 ==
+PASS

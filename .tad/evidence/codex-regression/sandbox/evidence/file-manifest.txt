@@ -1,0 +1,12 @@
+.tad/evidence/codex-regression/sandbox/evidence/code-review.md
+.tad/evidence/codex-regression/sandbox/evidence/completion-report.md
+.tad/evidence/codex-regression/sandbox/evidence/file-manifest.txt
+.tad/evidence/codex-regression/sandbox/evidence/git-tracked-check.txt
+.tad/evidence/codex-regression/sandbox/evidence/source-check.txt
+.tad/evidence/codex-regression/sandbox/evidence/spec-compliance-review.md
+.tad/evidence/codex-regression/sandbox/evidence/syntax-check.txt
+.tad/evidence/codex-regression/sandbox/evidence/test-output.txt
+.tad/evidence/codex-regression/sandbox/evidence/test-review.md
+.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md
+.tad/evidence/codex-regression/sandbox/test_to_upper.sh
+.tad/evidence/codex-regression/sandbox/to_upper.sh

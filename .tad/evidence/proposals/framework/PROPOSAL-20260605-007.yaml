@@ -1,0 +1,41 @@
+proposal_id: "EVOLVE-20260605-007"
+created: "2026-06-05T10:30:00Z"
+status: "rejected"
+scope: "framework"
+
+target:
+  file: ".claude/skills/blake/SKILL.md"
+  section: "gate_criteria_nondev"
+
+change:
+  type: "add_knowledge"
+  current: "Gate 3 criteria assumes code-type tasks (build/test/lint/tsc). Non-dev tasks (voice production, trading) fail at 50% rate."
+  proposed: |
+    Gate 3 criteria should branch on task_type:
+    - task_type=code/mixed: existing Layer 1 (build/test/lint/tsc) + Layer 2 expert review
+    - task_type=deliverable: skip build/test/lint, run pack-specific rubric (deliverable-rubrics.yaml) + expert review
+    - task_type=research: skip build/test/lint, verify research artifacts exist + expert review
+    Gate 3 50% failure rate on 买卖+Colin声音项目 is caused by applying code-oriented Layer 1 checks to non-code deliverables.
+  diff: |
+    - Gate 3 Layer 1 always runs build/test/lint/tsc
+    + Gate 3 Layer 1 branches on task_type: code→build/test/lint; deliverable→rubric; research→artifact check
+
+evidence:
+  projects_affected: ["买卖", "Colin声音项目"]
+  trace_count: 217
+  pattern: "50% gate failure rate on non-dev projects (买卖, Colin声音项目) vs 0-10% on code projects (menu-snap, TAD)"
+  trace_refs:
+    - "买卖/.tad/evidence/traces/"
+    - "Colin声音项目/.tad/evidence/traces/"
+  confidence: 0.7
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

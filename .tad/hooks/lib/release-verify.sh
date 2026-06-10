@@ -429,10 +429,10 @@ MIG_DIFF_EOF
         is_possible_rename=0
         if [ -n "$ADDED" ]; then
           d_base="$(basename "$d_path")"
+          # Build basenames of added files and grep for match (avoids pipe|while subshell bug)
           if printf '%s\n' "$ADDED" | while IFS= read -r a_path; do
-            [ -n "$a_path" ] || continue
-            if [ "$(basename "$a_path")" = "$d_base" ]; then exit 0; fi
-          done; then
+            [ -n "$a_path" ] || continue; basename "$a_path"
+          done | grep -qxF "$d_base"; then
             is_possible_rename=1
           fi
         fi

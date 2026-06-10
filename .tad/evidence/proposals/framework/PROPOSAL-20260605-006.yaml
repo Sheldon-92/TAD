@@ -1,0 +1,36 @@
+proposal_id: "EVOLVE-20260605-006"
+created: "2026-06-05T10:30:00Z"
+status: "rejected"
+scope: "framework"
+
+target:
+  file: ".tad/project-knowledge/patterns/handoff-design.md"
+  section: "zombie_prevention_framework"
+
+change:
+  type: "add_knowledge"
+  current: "No cross-project zombie analysis exists"
+  proposed: |
+    ### Cross-Project Zombie Pattern: Framework-Level *cancel Adoption — 2026-06-05
+    - **Context**: *evolve cross-project scan (10 projects, 3919 traces). TAD 21% zombie rate is the BEST — all downstream projects are worse (36-100%).
+    - **Discovery**: *cancel was introduced in v2.15 but only the TAD main project has used it. Downstream projects accumulate zombie handoffs without a structured closure mechanism. The zombie pattern is framework-endemic, not project-specific. Root cause: *cancel is a behavioral workflow, not a mechanical tool — agents don't use it unless explicitly trained.
+    - **Action**: (1) Add *cancel awareness to Blake's startup health check (mirror Alex STEP 3.55 zombie detection). (2) Consider adding a zombie count warning to SessionStart hook output so users see it every session. (3) Batch-archive legacy zombies in downstream projects during next *sync.
+
+evidence:
+  projects_affected: ["TAD", "toy", "menu-snap", "my-openclaw-agents", "Next Guest", "合规ai", "Sober Creator", "Monica-website", "买卖", "Colin声音项目"]
+  trace_count: 3919
+  pattern: "Zombie rate 21-100% across all 10 projects with traces. *cancel introduced v2.15 but only TAD project uses it."
+  trace_refs:
+    - ".tad/evidence/traces/2026-06-05-evolve-analysis"
+  confidence: 0.9
+
+safety:
+  checked: true
+  safe: true
+  blocked_reason: null
+
+review:
+  reviewed_at: null
+  reviewer: null
+  decision: null
+  notes: null

@@ -1,0 +1,91 @@
+Reading additional input from stdin...
+OpenAI Codex v0.130.0
+--------
+workdir: /Users/sheldonzhao/01-on progress programs/TAD
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019ea2fa-0b19-7b32-9fcd-a7050c397173
+--------
+user
+You are a senior code reviewer reviewing a DESIGN specification (not code).
+
+Read this handoff draft:
+---
+---
+task_type: code
+e2e_required: no
+research_required: no
+---
+
+# HANDOFF-20260607-slugify-maxlen
+
+## 1. Executive Summary
+Add a `max_length` parameter to the existing `slugify` function so callers can cap slug length, cutting at the last hyphen before the limit.
+
+## 6. Implementation Steps
+1. Modify `slugify()` in slugify.sh to accept an optional second arg `max_length`.
+2. When the slug exceeds max_length, truncate at the last hyphen before the limit.
+3. Return the truncated slug.
+
+## 7. Files to Modify
+- `.tad/evidence/codex-validation/sandbox/slugify.sh`
+
+## 9. Acceptance Criteria
+- AC1: `slugify "hello world foo bar" 11` returns `hello-world`.
+  Verification: `slugify "hello world foo bar" 11 | grep -P '^[a-z\-]+$'`
+- AC2: `max_length` defaults to 50 when the caller omits the second argument.
+  Verification: `slugify "a very long string here"` truncates to 50 chars.
+- AC5: When no `max_length` argument is given, the slug is returned in full with NO truncation.
+  Verification: `slugify "a very long string here"` returns the full slug.
+---
+
+Review for:
+1. AC completeness — are all acceptance criteria specific and verifiable?
+2. Implementation steps — are §6 steps actionable?
+3. File scope — are all files to be modified listed in §7?
+4. AC verification commands — mentally run each command, will it actually verify what it claims, AND is it portable (this project requires macOS/BSD compatibility, no GNU-only flags)?
+
+Report findings as P0 (blocking) / P1 (important) / P2 (advisory), with section references.
+codex
+**Findings**
+
+P0: §9 AC2 and AC5 directly contradict each other. AC2 says omitted `max_length` defaults to 50 and truncates; AC5 says omitted `max_length` returns the full slug with no truncation. The design must choose one behavior.
+
+P1: §1/§6 wording conflicts with AC1. “Cutting at the last hyphen before the limit” for `hello-world-foo-bar` with limit `11` would cut at the hyphen after `hello`, producing `hello`, because `hello-world` has no hyphen before char 11. If the intended behavior is “return the longest whole-word slug whose length is <= max_length,” say that explicitly.
+
+P1: §9 AC1 verification does not verify AC1.  
+`slugify "hello world foo bar" 11 | grep -P '^[a-z\-]+$'` only checks lowercase/hyphen shape. `hello-world-foo-bar` would pass, so it does not verify truncation or exact output. Also `grep -P` is GNU-only and not portable to macOS/BSD.
+
+P1: §9 AC2 verification is not specific or executable. “truncates to 50 chars” is prose, not a command, and the sample input likely slugifies to fewer than 50 chars anyway, so it cannot prove default truncation.
+
+P1: §9 AC5 verification is also prose, not a command, and conflicts with AC2. It needs a precise expected output after the default behavior is resolved.
+
+P2: §9 AC coverage is incomplete for edge behavior. Missing cases include: slug length already <= limit, no hyphen before/within the limit, exact boundary length, invalid/non-numeric/zero `max_length`, and whether truncation may return an empty slug.
+
+P2: §6 implementation steps are directionally actionable but underspecified. They should define argument parsing, default behavior, boundary rules, and exact truncation algorithm.
+
+P2: §7 lists only `slugify.sh`. If tests or validation scripts exist for this sandbox, they should be listed too; otherwise the handoff should explicitly say no test files are modified.
+tokens used
+11,031
+**Findings**
+
+P0: §9 AC2 and AC5 directly contradict each other. AC2 says omitted `max_length` defaults to 50 and truncates; AC5 says omitted `max_length` returns the full slug with no truncation. The design must choose one behavior.
+
+P1: §1/§6 wording conflicts with AC1. “Cutting at the last hyphen before the limit” for `hello-world-foo-bar` with limit `11` would cut at the hyphen after `hello`, producing `hello`, because `hello-world` has no hyphen before char 11. If the intended behavior is “return the longest whole-word slug whose length is <= max_length,” say that explicitly.
+
+P1: §9 AC1 verification does not verify AC1.  
+`slugify "hello world foo bar" 11 | grep -P '^[a-z\-]+$'` only checks lowercase/hyphen shape. `hello-world-foo-bar` would pass, so it does not verify truncation or exact output. Also `grep -P` is GNU-only and not portable to macOS/BSD.
+
+P1: §9 AC2 verification is not specific or executable. “truncates to 50 chars” is prose, not a command, and the sample input likely slugifies to fewer than 50 chars anyway, so it cannot prove default truncation.
+
+P1: §9 AC5 verification is also prose, not a command, and conflicts with AC2. It needs a precise expected output after the default behavior is resolved.
+
+P2: §9 AC coverage is incomplete for edge behavior. Missing cases include: slug length already <= limit, no hyphen before/within the limit, exact boundary length, invalid/non-numeric/zero `max_length`, and whether truncation may return an empty slug.
+
+P2: §6 implementation steps are directionally actionable but underspecified. They should define argument parsing, default behavior, boundary rules, and exact truncation algorithm.
+
+P2: §7 lists only `slugify.sh`. If tests or validation scripts exist for this sandbox, they should be listed too; otherwise the handoff should explicitly say no test files are modified.

@@ -1,0 +1,246 @@
+OpenAI Codex v0.130.0
+--------
+workdir: /Users/sheldonzhao/01-on progress programs/TAD
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/sheldonzhao/.codex/memories]
+reasoning effort: high
+reasoning summaries: none
+session id: 019ea2ea-97fd-7e02-87ec-be30f7b1e976
+--------
+user
+My answers to your Round 1 questions:
+1. Filename: truncate_slug.sh
+2. If no hyphen before max length: hard-cut anyway at max length.
+3. Yes, exclude the trailing hyphen when truncating.
+4. Edge cases: empty slug -> empty; max length 0 -> empty; non-numeric max -> print error to stderr and return non-zero; slug already within limit -> return unchanged.
+
+Now continue the session: briefly confirm you remember the task and my answers, then produce the handoff document inline (design-only, do not write files).
+codex
+I remember the task: add `truncate_slug` as a Bash function in `.tad/evidence/codex-validation/sandbox/truncate_slug.sh`. Your answers define the key behavior: hard truncate if no hyphen exists before the limit, remove any trailing hyphen from hyphen-based truncation, return empty for empty input or max `0`, error to stderr for non-numeric max, and return unchanged when already within limit.
+
+```md
+# HANDOFF: Add truncate_slug Bash Function
+
+---
+task_type: code
+e2e_required: no
+research_required: no
+status: draft-inline-only
+---
+
+## 1. Executive Summary
+
+Add a Bash function named `truncate_slug` to:
+
+`.tad/evidence/codex-validation/sandbox/truncate_slug.sh`
+
+The function accepts two arguments:
+
+1. `slug`
+2. `max_length`
+
+It prints a slug truncated to at most `max_length`, preferring the last hyphen before the limit so words are not split. If no such hyphen exists, it hard-truncates at `max_length`.
+
+## 2. Requirements
+
+- Function name: `truncate_slug`
+- File path: `.tad/evidence/codex-validation/sandbox/truncate_slug.sh`
+- Input: `truncate_slug "<slug>" "<max_length>"`
+- Output: result printed to stdout
+- Invalid max length:
+  - Print an error to stderr
+  - Return non-zero
+- Do not execute behavior on source unless intentionally invoked by caller.
+
+## 3. Behavior Rules
+
+- If `slug` length is `<= max_length`, return unchanged.
+- If `max_length` is `0`, return empty.
+- If `slug` is empty, return empty.
+- If `max_length` is non-numeric, print error to stderr and return non-zero.
+- If truncation is needed:
+  - Inspect the prefix of `slug` up to `max_length`.
+  - If that prefix contains a hyphen, truncate at the last hyphen before or at the limit.
+  - Exclude the trailing hyphen from the returned value.
+  - If no hyphen exists before the limit, hard-truncate to exactly `max_length`.
+
+## 4. Files To Modify
+
+- `.tad/evidence/codex-validation/sandbox/truncate_slug.sh`
+
+## 5. Implementation Notes
+
+- Use Bash-compatible string handling.
+- Avoid external dependencies where practical.
+- Keep the function sourceable by tests or other scripts.
+- Recommended structure:
+  - shebang
+  - function definition
+  - argument validation
+  - length checks
+  - truncation logic
+  - return/output behavior
+
+## 6. Acceptance Criteria
+
+| AC | Requirement | Verification |
+|---|---|---|
+| AC1 | Defines `truncate_slug` function | Source file and call function |
+| AC2 | Already-short slug returns unchanged | `truncate_slug "hello-world" 20` -> `hello-world` |
+| AC3 | Hyphen truncation avoids splitting words | `truncate_slug "hello-world-test" 12` -> `hello-world` |
+| AC4 | Hyphen is excluded from output | `truncate_slug "hello-world" 6` -> `hello` |
+| AC5 | No hyphen before limit hard-truncates | `truncate_slug "helloworld" 5` -> `hello` |
+| AC6 | Empty slug returns empty | `truncate_slug "" 5` -> empty |
+| AC7 | Max length 0 returns empty | `truncate_slug "hello-world" 0` -> empty |
+| AC8 | Non-numeric max prints stderr error and returns non-zero | `truncate_slug "hello" abc` fails |
+
+## 7. Suggested Verification Commands
+
+```bash
+bash -n .tad/evidence/codex-validation/sandbox/truncate_slug.sh
+```
+
+```bash
+source .tad/evidence/codex-validation/sandbox/truncate_slug.sh
+truncate_slug "hello-world-test" 12
+truncate_slug "helloworld" 5
+truncate_slug "hello-world" 6
+truncate_slug "" 5
+truncate_slug "hello-world" 0
+truncate_slug "hello" abc
+```
+
+## 8. Required Evidence Manifest
+
+```yaml
+required_evidence:
+  syntax_check:
+    path: .tad/evidence/codex-validation/sandbox/truncate_slug.syntax.txt
+    command: bash -n .tad/evidence/codex-validation/sandbox/truncate_slug.sh
+  behavior_tests:
+    path: .tad/evidence/codex-validation/sandbox/truncate_slug.tests.txt
+    description: Captured stdout/stderr and exit codes for acceptance criteria AC2-AC8
+```
+
+## 9. Important Notes
+
+- The function should not silently accept invalid `max_length`.
+- Do not preserve a trailing hyphen after hyphen-based truncation.
+- The fallback hard-truncate behavior is intentional when no hyphen exists before the limit.
+```
+tokens used
+58,903
+I remember the task: add `truncate_slug` as a Bash function in `.tad/evidence/codex-validation/sandbox/truncate_slug.sh`. Your answers define the key behavior: hard truncate if no hyphen exists before the limit, remove any trailing hyphen from hyphen-based truncation, return empty for empty input or max `0`, error to stderr for non-numeric max, and return unchanged when already within limit.
+
+```md
+# HANDOFF: Add truncate_slug Bash Function
+
+---
+task_type: code
+e2e_required: no
+research_required: no
+status: draft-inline-only
+---
+
+## 1. Executive Summary
+
+Add a Bash function named `truncate_slug` to:
+
+`.tad/evidence/codex-validation/sandbox/truncate_slug.sh`
+
+The function accepts two arguments:
+
+1. `slug`
+2. `max_length`
+
+It prints a slug truncated to at most `max_length`, preferring the last hyphen before the limit so words are not split. If no such hyphen exists, it hard-truncates at `max_length`.
+
+## 2. Requirements
+
+- Function name: `truncate_slug`
+- File path: `.tad/evidence/codex-validation/sandbox/truncate_slug.sh`
+- Input: `truncate_slug "<slug>" "<max_length>"`
+- Output: result printed to stdout
+- Invalid max length:
+  - Print an error to stderr
+  - Return non-zero
+- Do not execute behavior on source unless intentionally invoked by caller.
+
+## 3. Behavior Rules
+
+- If `slug` length is `<= max_length`, return unchanged.
+- If `max_length` is `0`, return empty.
+- If `slug` is empty, return empty.
+- If `max_length` is non-numeric, print error to stderr and return non-zero.
+- If truncation is needed:
+  - Inspect the prefix of `slug` up to `max_length`.
+  - If that prefix contains a hyphen, truncate at the last hyphen before or at the limit.
+  - Exclude the trailing hyphen from the returned value.
+  - If no hyphen exists before the limit, hard-truncate to exactly `max_length`.
+
+## 4. Files To Modify
+
+- `.tad/evidence/codex-validation/sandbox/truncate_slug.sh`
+
+## 5. Implementation Notes
+
+- Use Bash-compatible string handling.
+- Avoid external dependencies where practical.
+- Keep the function sourceable by tests or other scripts.
+- Recommended structure:
+  - shebang
+  - function definition
+  - argument validation
+  - length checks
+  - truncation logic
+  - return/output behavior
+
+## 6. Acceptance Criteria
+
+| AC | Requirement | Verification |
+|---|---|---|
+| AC1 | Defines `truncate_slug` function | Source file and call function |
+| AC2 | Already-short slug returns unchanged | `truncate_slug "hello-world" 20` -> `hello-world` |
+| AC3 | Hyphen truncation avoids splitting words | `truncate_slug "hello-world-test" 12` -> `hello-world` |
+| AC4 | Hyphen is excluded from output | `truncate_slug "hello-world" 6` -> `hello` |
+| AC5 | No hyphen before limit hard-truncates | `truncate_slug "helloworld" 5` -> `hello` |
+| AC6 | Empty slug returns empty | `truncate_slug "" 5` -> empty |
+| AC7 | Max length 0 returns empty | `truncate_slug "hello-world" 0` -> empty |
+| AC8 | Non-numeric max prints stderr error and returns non-zero | `truncate_slug "hello" abc` fails |
+
+## 7. Suggested Verification Commands
+
+```bash
+bash -n .tad/evidence/codex-validation/sandbox/truncate_slug.sh
+```
+
+```bash
+source .tad/evidence/codex-validation/sandbox/truncate_slug.sh
+truncate_slug "hello-world-test" 12
+truncate_slug "helloworld" 5
+truncate_slug "hello-world" 6
+truncate_slug "" 5
+truncate_slug "hello-world" 0
+truncate_slug "hello" abc
+```
+
+## 8. Required Evidence Manifest
+
+```yaml
+required_evidence:
+  syntax_check:
+    path: .tad/evidence/codex-validation/sandbox/truncate_slug.syntax.txt
+    command: bash -n .tad/evidence/codex-validation/sandbox/truncate_slug.sh
+  behavior_tests:
+    path: .tad/evidence/codex-validation/sandbox/truncate_slug.tests.txt
+    description: Captured stdout/stderr and exit codes for acceptance criteria AC2-AC8
+```
+
+## 9. Important Notes
+
+- The function should not silently accept invalid `max_length`.
+- Do not preserve a trailing hyphen after hyphen-based truncation.
+- The fallback hard-truncate behavior is intentional when no hyphen exists before the limit.
+```

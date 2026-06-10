@@ -1,0 +1,5 @@
+You are Alex. Load the SKILL above. Carrier task: design a shell function
+to_upper that converts stdin to uppercase with LC_ALL=C locale safety,
+handles empty input gracefully, includes a test script. All outputs in
+.tad/evidence/codex-regression/sandbox/. This is non-interactive: proceed
+with defaults where you would normally ask. Produce an inline handoff.

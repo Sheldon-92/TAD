@@ -1,6 +1,6 @@
 # DR-20260609: User-Modified File Detection Method
 
-**Status**: Accepted
+**Status**: Accepted — AMENDED 2026-06-09 (see Amendment below; supersedes the original Decision section)
 **Date**: 2026-06-09
 **Epic**: EPIC-20260609-upgrade-lifecycle-system.md (Phase 1/6)
 **Decided by**: Alex (via Socratic Inquiry) + Blake evidence gathering
@@ -92,3 +92,36 @@ Post-migration:
   Note: .tad-backup/ lives at repo root (not inside .tad/). Phase 3 should add it to
         derive-sync-set.sh TRANSIENT list to prevent accidental sync to other projects.
 ```
+
+---
+
+## Amendment 2026-06-09 — Human Override at Phase 2 Design (supersedes Decision above)
+
+**Trigger**: Gate 4 acceptance of Phase 1 surfaced a conflict that the original DR missed:
+the Epic decision record (Socratic round 2, 2026-06-09) states user-modified files →
+**"跳过 + 报告（不删、不备份删）"** — in-place preservation. Option D (Always Backup
+then delete) removes the file from its original location, which contradicts that
+explicit human decision. Alex flagged the conflict at Phase 2 Socratic; human ruled.
+
+**Amended Decision: Hybrid B + D with conservative degradation**
+
+For each `delete`/`rename.from` path:
+1. **Detect** via Option B (`git show v{from}:{path}` content comparison)
+2. **Modified by user** (content differs) → **SKIP + REPORT** (in-place preservation,
+   honors the original Epic decision)
+3. **Unmodified** (content identical to `from` release) → **backup to
+   `.tad-backup/{from}-to-{to}/` then delete** (Option D as second safety net)
+4. **Detection unavailable** (no git repo / missing tag / shallow clone — common for
+   remote tad.sh installs) → degrade to **SKIP + REPORT** for that path
+   (fail-safe to the MOST conservative behavior: 宁漏删，绝不误删)
+
+**Net effect**: a file is only ever deleted when it is PROVABLY identical to the
+shipped release — and even then a backup is taken. Every other case leaves the
+file in place and tells the user.
+
+**Cost note**: remote tad.sh installs typically lack the framework git repo, so the
+degradation path (skip-all + report) will be the common case there until Phase 3
+ships a release-hash sidecar or equivalent. This is accepted: stale files + a report
+beat any risk of deleting user work.
+
+**Decided by**: Human (AskUserQuestion at Phase 2 design, 2026-06-09); Alex proposed the hybrid.

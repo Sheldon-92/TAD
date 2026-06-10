@@ -1,0 +1,13 @@
+$ bash .tad/evidence/codex-validation/sandbox/test_slugify.sh
+PASS: Hello\ World -> hello-world
+PASS: \ \ Hello\ \ \ World\ \  -> hello-world
+PASS: Hello\,\ World\! -> hello-world
+PASS: Already--Sluggy -> already-sluggy
+PASS: C++\ Guide:\ Intro -> c-guide-intro
+PASS: rock\ \&\ roll -> rock-roll
+PASS: Version\ 2.0\ Release -> version-2-0-release
+PASS: $'Line One\nLine Two' -> line-one-line-two
+PASS: ___ -> ''
+PASS: '' -> ''
+all assertions pass
+exit 0

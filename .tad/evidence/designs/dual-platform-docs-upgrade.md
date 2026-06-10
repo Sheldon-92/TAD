@@ -6,7 +6,7 @@ Phase 3 documentation upgrade for the dual-platform native runtime architecture.
 
 | File | Action | Summary |
 |------|--------|---------|
-| `docs/MULTI-PLATFORM.md` | Rewritten | v2.8.0 "Specialized Tools Guide" → v2.27 "Multi-Platform Runtime Guide" with 12 sections |
+| `docs/MULTI-PLATFORM.md` | Rewritten | v2.8.0 "Specialized Tools Guide" → v2.26 Phase 3 "Multi-Platform Runtime Guide" with 12 sections |
 | `.tad/codex/README.md` | Expanded | Migration-only notice → Codex adapter guide with 8 sections |
 | `AGENTS.md` | Minimal update | L9-12 Codex note updated; L66-71 Codex-specific notes updated |
 
@@ -15,7 +15,7 @@ Phase 3 documentation upgrade for the dual-platform native runtime architecture.
 | Old Claim | Location | Replacement |
 |-----------|----------|------------|
 | "TAD Specialized Tools Guide" | MULTI-PLATFORM.md L1 | "TAD Multi-Platform Runtime Guide" |
-| "Version 2.8.0" | MULTI-PLATFORM.md L3 | "Version 2.27.0" |
+| "Version 2.8.0" | MULTI-PLATFORM.md L3 | "Version 2.26.0 (Phase 3 — Dual-Platform Architecture)" |
 | "Codex CLI = Specialized Executor" | MULTI-PLATFORM.md L13-17 | First-class runtime status table |
 | "Claude Code primary" | MULTI-PLATFORM.md L5-7 | Both platforms listed as first-class |
 | "human copies handoff to tool" | MULTI-PLATFORM.md L26-32 | Native SKILL loading workflow |

@@ -1,0 +1,26 @@
+ M .tad/evidence/decisions/2026-06-03.jsonl
+ M .tad/research-notebooks/REGISTRY.yaml
+?? .claude/scheduled_tasks.lock
+?? .tad/archive/epics/EPIC-20260605-nondev-experience-backport.md
+?? .tad/archive/handoffs/HANDOFF-20260605-nondev-pack-knowledge.md
+?? .tad/archive/handoffs/HANDOFF-20260605-podcast-rubric-entry.md
+?? .tad/archive/handoffs/HANDOFF-20260605-visual-code-bridge.md
+?? .tad/codex/.regen-debug-alex
+?? .tad/codex/.regen-debug-blake
+?? .tad/evidence/codex-validation/
+?? .tad/evidence/decisions/2026-06-04.jsonl
+?? .tad/evidence/decisions/2026-06-05.jsonl
+?? .tad/evidence/decisions/2026-06-06.jsonl
+?? .tad/evidence/decisions/2026-06-07.jsonl
+?? .tad/evidence/proposals/PROPOSAL-20260605-001.yaml
+?? .tad/evidence/proposals/PROPOSAL-20260605-002.yaml
+?? .tad/evidence/proposals/PROPOSAL-20260605-003.yaml
+?? .tad/evidence/proposals/PROPOSAL-20260605-004.yaml
+?? .tad/evidence/proposals/PROPOSAL-20260605-005.yaml
+?? .tad/evidence/proposals/framework/PROPOSAL-20260605-006.yaml
+?? .tad/evidence/proposals/framework/PROPOSAL-20260605-007.yaml
+?? .tad/evidence/research/litellm-agent-platform/
+?? .tad/evidence/traces/2026-06-04.jsonl
+?? .tad/evidence/traces/2026-06-05.jsonl
+?? .tad/evidence/traces/2026-06-06.jsonl
+?? .tad/evidence/traces/2026-06-07.jsonl

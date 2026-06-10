@@ -1,0 +1,429 @@
+Reading prompt from stdin...
+OpenAI Codex v0.138.0
+--------
+workdir: /Users/sheldonzhao/01-on progress programs/TAD
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 019ead78-a17b-7b02-a2cb-94ed9af798ae
+--------
+user
+You are an independent spec-compliance reviewer.
+Review whether the following evidence satisfies the handoff acceptance criteria. Output a concise report with a plain text line verdict: PASS or verdict: FAIL, then list any NOT_SATISFIED or PARTIALLY_SATISFIED items.
+
+# Handoff acceptance section
+Compile evidence from current session and Phase 1-4 artifacts. Verify each surface. Write T2 report.
+
+### Step 4: T3 — Carry-Forward
+Test each item. Document findings as works / accepted limitation / needs fix. Write T3 report.
+
+### Step 5: T4 — Freshness
+Run verifier script. Record output. Write T4 report.
+
+### Step 6: Compile Acceptance Summary
+Create `ACCEPTANCE-SUMMARY.md` with:
+- Pass/fail matrix (all 4 tests)
+- Gap classification table
+- n=3 waiver statement
+- Linked evidence paths
+- Release readiness recommendation
+
+---
+
+## 8. Constraints
+
+- All Codex exec must be sandboxed to evidence directories
+- Do not modify any TAD protocol files, SKILLs, or runtime config
+- Do NOT copy `.toml.draft` files to `.codex/agents/` — activation requires Phase 5 PASS first (see T3 CF2 accepted_limitation)
+- Codex version must be recorded in evidence (output of `codex --version`)
+- If Codex auth fails or API is unavailable, document as environment blocker and produce T2/T3/T4 without T1
+- If T1 fails partway (crash, timeout, invalid output), preserve partial output for diagnosis and write T1 report with `verdict: FAIL` + gap analysis
+- Expected time per `codex exec` call: 2-5 minutes. If no response after 10 minutes, terminate and document as timeout
+
+---
+
+## 9. Acceptance Criteria
+
+### 9.1 Verification Commands
+
+| AC | Description | Verification | Verified Output |
+|----|-------------|-------------|-----------------|
+| AC1 | Codex full-cycle regression passes | `test -f .tad/evidence/codex-regression/T1-full-cycle-v0.137.0.md && grep -ci 'verdict:.*PASS' .tad/evidence/codex-regression/T1-full-cycle-v0.137.0.md` | ≥1 |
+| AC2 | n=3 waiver documented | `grep -ci 'n=3.*waiver\|waiver.*n=3\|stability.*waiver' .tad/evidence/dual-platform-regression/ACCEPTANCE-SUMMARY.md` | ≥1 |
+| AC3 | Claude Code compat check passes | `test -f .tad/evidence/dual-platform-regression/T2-claude-code-compat.md && grep -ci 'verdict:.*PASS' .tad/evidence/dual-platform-regression/T2-claude-code-compat.md` | ≥1 |
+| AC4 | Runtime freshness ledger current | `bash .tad/hooks/lib/runtime-freshness-verify.sh 2>&1; echo "exit=$?"` | exit=0 or documented accepted_limitation in T4 report |
+| AC5 | Trace/evidence artifacts linked | `find .tad/evidence/codex-regression .tad/evidence/dual-platform-regression -name '*.md' \| wc -l` | ≥5 |
+| AC6 | Platform gaps classified | `grep -ciE 'protocol_bug\|adapter_bug\|documentation_bug\|accepted_limitation\|process_blemish\|deferred' .tad/evidence/dual-platform-regression/ACCEPTANCE-SUMMARY.md` | ≥1 (from real gap findings, not from the n=3 waiver) |
+| AC7 | Acceptance summary with release recommendation | `grep -ci 'release_readiness:' .tad/evidence/dual-platform-regression/ACCEPTANCE-SUMMARY.md` | ≥1 |
+| AC8 | Layer 2 review evidence exists | `find .tad/evidence/codex-regression .tad/evidence/dual-platform-regression -name '*review*' -o -name '*layer2*' \| wc -l` | ≥1 |
+
+### 9.2 Dry-Run Notes
+
+- AC1/AC3: Reports MUST include plain-text `verdict: PASS` or `verdict: FAIL` lines (format specified in T1 and T2 sections). Grep uses `-ci` for case-insensitive matching.
+- AC4: If `runtime-freshness-verify.sh` returns exit=1 (BLOCK), Blake must record the exact BLOCK lines from stderr and classify whether the block is a genuine limitation or a ledger maintenance gap. A ledger gap is a Phase 4 bug, not an accepted limitation.
+- AC6: Uses the exact gap classification vocabulary defined in T3 (underscore-separated). The n=3 waiver is tracked under `waiver:` key in ACCEPTANCE-SUMMARY, not as a gap classification — AC6 must be satisfied by real findings.
+- AC8: Layer 2 review is a Gate 3 requirement (§10). Blake must produce at least one review file for the regression evidence.
+
+---
+
+## 10. Required Evidence Manifest
+
+| Evidence | Type | Gate |
+|----------|------|------|
+| T1 full-cycle report | E2E regression | Gate 3 |
+| T2 Claude Code compat report | Verification | Gate 3 |
+| T3 carry-forward report | Verification | Gate 3 |
+| T4 freshness check report | Verification | Gate 3 |
+| Acceptance summary | Synthesis | Gate 4 |
+| Layer 2 review evidence | Expert review | Gate 3 |
+
+---
+
+## 11. Decision Summary
+
+| # | Decision | Rationale | Alternatives Considered |
+|---|----------|-----------|------------------------|
+| D1 | n=1 fresh + n=3 waiver | Existing n=1 (06-07, v0.130.0) + fresh n=1 (v0.137.0) = 2 runs across 2 versions. Cost of n=3 full-cycle Codex exec outweighs marginal confidence gain. Waiver rationale: version diff is minor (0.130.0→0.137.0), carrier tasks exercise same protocol surfaces, and Phase 1-4 design was architecture-only (no code changes to regress). **Adversarial surface note**: The 06-07 report validated adversarial paths (planted-bug detection, gate failure + Ralph Loop) on v0.130.0. This Phase 5 runs happy-path only on v0.137.0. The 7-minor-version gap is insufficient to regress adversarial behavior — accepted as waiver scope. | n=3 full (expensive), n=1+differential (middle ground) |
+| D2 | Claude Code verified from session artifacts + behavioral spot-checks | This Epic's 4 phases all ran on Claude Code — rerunning a full cycle would be redundant. Spot-check compilation + 2 behavioral verifications (Alex design-only constraint, Gate 3 independent re-run) bridges the gap between "session ran" and "protocol preserved." | Separate full-cycle re-run (waste), session-only (too weak per expert review P1-2) |
+| D3 | `to_upper` carrier task | Different from 06-07 slugify (adds variety), still small enough for sandbox, exercises locale/testing patterns. | Reuse slugify (less variety), larger task (more risk in sandbox) |
+| D4 | Phase 2 P2 items: verify 4, defer 4 | 8 P2 review items from Phase 2 acceptance were flagged for Phase 4/5. CF5-CF8 in T3 cover the 4 most actionable (skills.config, model_provider, output constraints, agent runtime quality). The remaining 4 are doc-level nits already addressed by Phase 3 docs upgrade — Blake confirms by spot-checking `docs/MULTI-PLATFORM.md`. | Verify all 8 individually (more thorough but diminishing returns on doc-level nits) |
+
+---
+
+## 12. Audit Trail
+
+### Expert Review Record
+
+**Expert 1: code-reviewer** (2026-06-09)
+- Findings: 2 P0, 6 P1, 6 P2
+- P0-1: Missing Phase 4 carry-forward + 8 P2 items from Phase 2 → **FIXED**: T3 expanded to 8 carry-forward items (CF1-CF8), D4 added
+- P0-2: Epic missing "Phase 4 Accepted" section → **NOTED**: Epic housekeeping item, non-blocking for handoff
+- P1-1: AC1 grep pattern won't match Markdown format → **FIXED**: case-insensitive + explicit format requirement in T1
+- P1-2: AC3 doesn't check for PASS → **FIXED**: changed to `verdict:.*PASS`
+- P1-3: AC6 grep too specific → **FIXED**: case-insensitive + extended regex + exact vocabulary in T3
+- P1-4: `codex exec` stdin blocking + deprecated flag → **FIXED**: full command templates in §7 Step 2
+- P1-5: No command templates → **FIXED**: copy-paste templates with heredoc in §7 Step 2
+- P1-6: Layer 2 evidence has no AC → **FIXED**: AC8 added
+
+**Expert 2: test-runner** (2026-06-09)
+- Findings: 3 P0, 5 P1, 4 P2
+- P0-1: Expert review record empty → **FIXED**: this section (review was in-flight)
+- P0-2: `codex exec` invocation insufficient → **FIXED**: same as CR P1-4/P1-5
+- P0-3: AC3 passes on `verdict: FAIL` → **FIXED**: same as CR P1-2
+- P1-1: AC1 format mismatch → **FIXED**: same as CR P1-1
+- P1-2: T2 session-artifact method too weak → **FIXED**: added 2 behavioral spot-checks to T2
+- P1-3: T3 toml.draft test circular dependency → **FIXED**: reframed as structural validation + accepted_limitation
+- P1-4: T2 glob includes unrelated Epic handoffs → **FIXED**: replaced with exact 4 filenames
+- P1-5: Happy-path only, no adversarial regression → **FIXED**: acknowledged in D1 waiver rationale
+
+**All P0 resolved. All P1 resolved.**
+
+---
+
+## Message to Blake
+
+Blake，这是 Dual-Platform Native Runtime Architecture Epic 的最后一个 Phase — 回归测试验证。
+
+**核心任务**: 4 项测试 + 8 项 carry-forward 验证，最后编写验收总结报告。
+
+**为什么重要**: Phase 1-4 做了完整的双平台架构设计，但纸上设计≠实际可用。这个 Phase 用真实执行证明它 work。
+
+**关键要点**:
+1. **T1（Codex 全周期）是最重要的测试** — 用 `to_upper` 载体任务在 Codex v0.137.0 上跑完整 Alex→Blake 链路。§7 Step 2 有完整的 `codex exec` 命令模板（注意 stdin redirect 和 `--sandbox workspace-write`）。如果 Codex auth 不可用就记录为环境阻塞，其他测试照做
+2. **T2 不只是编译会话记录** — 除了 6 个 surface 确认，还有 2 个行为 spot-check（Alex design-only + Gate 3 独立重跑）
+3. **T3 有 8 项 carry-forward**（CF1-CF8）— 注意 CF2 toml.draft 测试只做结构验证（TOML 合法性），不要复制到 `.codex/agents/`（循环依赖，归为 accepted_limitation）
+4. **所有报告必须包含 `verdict: PASS` 或 `verdict: FAIL` 纯文本行**（不要 Markdown 加粗），AC grep 验证依赖此格式
+5. **gap 分类必须使用精确词汇**: `protocol_bug` / `adapter_bug` / `documentation_bug` / `accepted_limitation` / `process_blemish` / `deferred`
+
+# Evidence reports
+
+## FILE: .tad/evidence/codex-regression/T1-full-cycle-v0.137.0.md
+# T1 Codex Full-Cycle Regression
+
+requested_codex_version: 0.137.0
+actual_codex_version: 0.138.0
+verdict: PASS
+
+## Summary
+
+This run exercised the full Alex -> Blake carrier-task chain on the local Codex CLI with all created artifacts confined to `.tad/evidence/codex-regression/sandbox/`.
+
+- Alex was invoked through `codex exec` and produced an inline handoff plus a saved sandbox handoff file.
+- Blake was invoked through `codex exec` with that handoff and produced the implementation, tests, and Gate 3 style evidence.
+- Independent verification outside Codex passed: syntax checks, source-safe load, and the test script all succeeded.
+
+## Runtime Facts
+
+- Requested in handoff: `codex-cli 0.137.0`
+- Actual local runtime: `codex-cli 0.138.0`
+- Sandbox mode used for both runs: `workspace-write`
+- Auth status: available
+
+## Evidence Paths
+
+- Alex transcript: `.tad/evidence/codex-regression/T1-alex-output.txt`
+- Alex prompt: `.tad/evidence/codex-regression/T1-alex-prompt.txt`
+- Blake transcript: `.tad/evidence/codex-regression/T1-blake-output.txt`
+- Inline handoff produced by Alex: `.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md`
+- Carrier implementation: `.tad/evidence/codex-regression/sandbox/to_upper.sh`
+- Carrier tests: `.tad/evidence/codex-regression/sandbox/test_to_upper.sh`
+- Carrier evidence dir: `.tad/evidence/codex-regression/sandbox/evidence/`
+
+## Result Matrix
+
+| Check | Result | Notes |
+|------|--------|-------|
+| Alex produced structured handoff | PASS | Inline handoff saved under sandbox and bounded to sandbox paths only |
+| Blake implemented carrier task | PASS | `to_upper.sh` and `test_to_upper.sh` created under sandbox |
+| Blake produced review evidence | PASS | `spec-compliance-review.md`, `code-review.md`, `test-review.md`, `completion-report.md` present |
+| Independent test rerun | PASS | `bash .tad/evidence/codex-regression/sandbox/test_to_upper.sh` returned all PASS |
+| Boundary discipline | PASS | All task-created files stayed under `.tad/evidence/codex-regression/sandbox/` |
+| Protocol separation | PASS | Alex stayed design-only; Blake performed the implementation |
+
+## Independent Verification
+
+The following checks were rerun outside Codex after the Blake pass:
+
+- `bash -n .tad/evidence/codex-regression/sandbox/to_upper.sh` -> PASS
+- `bash -n .tad/evidence/codex-regression/sandbox/test_to_upper.sh` -> PASS
+- `bash -c 'source .tad/evidence/codex-regression/sandbox/to_upper.sh'` -> PASS
+- `bash .tad/evidence/codex-regression/sandbox/test_to_upper.sh` -> PASS
+
+## Gaps
+
+| gap_classification | Finding | Impact | Evidence |
+|--------------------|---------|--------|----------|
+| process_blemish | The handoff expected `codex-cli 0.137.0`, but the actual runtime was `0.138.0`. | The run validated the newer local runtime instead of the pinned minor version. No behavioral failure was observed. | `codex --version` preflight |
+| accepted_limitation | Git-backed Gate 3 actions inside the carrier sandbox were blocked by `.git/index.lock` permission failure. | The carrier task still produced implementation, tests, and review artifacts, but it did not claim a full git-backed Gate 3 pass. | `.tad/evidence/codex-regression/sandbox/evidence/git-tracked-check.txt` |
+
+## Conclusion
+
+T1 passed the intended full-cycle regression goal: Codex executed the Alex design step, the Blake implementation step, and the independent post-run verification successfully. The observed gaps were environmental or bookkeeping limits, not carrier-task failures.
+
+## FILE: .tad/evidence/dual-platform-regression/T2-claude-code-compat.md
+# T2 Claude Code Compatibility Check
+
+verdict: PASS
+
+## Surface 1: Role activation
+verdict: PASS
+
+Evidence:
+- `AGENTS.md` still routes `Alex` and `Blake` roles and states Codex/Claude share the same protocol.
+- Archived Phase 1-4 handoffs and completions were all produced under the Alex/Blake role model.
+
+## Surface 2: Handoff flow
+verdict: PASS
+
+Evidence:
+- Phase artifacts exist for the exact four Claude Code phases named in the handoff:
+  - `.tad/archive/handoffs/HANDOFF-20260609-dual-platform-runtime-architecture-phase1.md`
+  - `.tad/archive/handoffs/HANDOFF-20260609-codex-native-runtime-policy.md`
+  - `.tad/archive/handoffs/HANDOFF-20260609-dual-platform-docs-upgrade.md`
+  - `.tad/archive/handoffs/HANDOFF-20260609-runtime-freshness-loop.md`
+
+## Surface 3: Gate 3 semantics
+verdict: PASS
+
+Evidence:
+- `.tad/archive/handoffs/COMPLETION-20260609-runtime-freshness-loop.md` contains `gate3_verdict: pass`.
+- The same completion report records Layer 2 evidence files under `.tad/evidence/reviews/blake/runtime-freshness-loop/`.
+
+## Surface 4: Gate 4 semantics
+verdict: PASS
+
+Evidence:
+- `.tad/archive/handoffs/COMPLETION-20260609-runtime-freshness-loop.md` includes an explicit Alex Gate 4 acceptance section with final PASS.
+- `NEXT.md` records Phases 1-4 as completed.
+
+## Surface 5: Compact recovery
+verdict: PASS
+
+Evidence:
+- `.tad/active/session-state.md` exists and remains the cross-platform recovery artifact.
+- `docs/MULTI-PLATFORM.md` documents `session-state.md` recovery on Claude Code and platform-specific compact mechanics.
+
+## Surface 6: Skill progressive loading
+verdict: PASS
+
+Evidence:
+- `docs/MULTI-PLATFORM.md` documents Codex progressive disclosure and the shared SKILL protocol boundary.
+- Phase 1 architecture evidence records the progressive-loading boundary explicitly and treats it as a verified adapter distinction, not a Claude Code regression.
+
+## Behavioral Spot-Check 1: Alex design-only constraint
+verdict: PASS
+
+Method:
+- `git show --stat --name-only 892ace6`
+
+Result:
+- The Phase 1 commit `892ace6` lists the handoff/completion/evidence files only.
+- No production source files were added or modified in that phase commit.
+
+## Behavioral Spot-Check 2: Gate 3 independent re-run
+verdict: PASS
+
+Method:
+- Re-ran `bash .tad/hooks/lib/runtime-freshness-verify.sh`
+
+Result:
+- The verifier returned `Total: 21 entries | PASS: 21 | WARN: 0 | BLOCK: 0`
+- Exit status remained `0`, matching the Phase 4 completion claim.
+
+## Conclusion
+
+Claude Code compatibility still holds for the shared TAD protocol surfaces that this Epic depends on. The behavioral checks also confirm that Phase 1 respected Alex's design-only boundary and that a Phase 4 Gate 3 claim survives independent rerun.
+
+## FILE: .tad/evidence/dual-platform-regression/T3-carry-forward.md
+# T3 Carry-Forward Verification
+
+verdict: PASS
+
+## Carry-Forward Results
+
+| Item | Status | gap_classification | Notes | Evidence |
+|------|--------|--------------------|-------|----------|
+| CF1 `ask_user_question` hook on Codex | needs_fix | adapter_bug | `.codex/hooks.json` wires a PostToolUse matcher for `ask_user_question`, but an actual Codex probe returned `request_user_input is unavailable in Default mode` and ended with `TOOL_UNAVAILABLE`. The hook path is configured but not exercised in this runtime mode. | `.codex/hooks.json`, `CF1-ask-user-question-run.txt`, `CF1-ask-user-question-last.txt` |
+| CF2 custom agent structural validity | structurally_valid | accepted_limitation | All three `.toml.draft` agent files parse as valid TOML. They were intentionally not copied to `.codex/agents/` because activation still depends on Phase 5 acceptance. | TOML parse check output, draft files under `.tad/evidence/designs/codex-runtime-candidates/agents/` |
+| CF3 draft `config.toml` structural validity | valid | none | `config.toml.draft` parses as valid TOML. | TOML parse check output, `.tad/evidence/designs/codex-runtime-candidates/config.toml.draft` |
+| CF4 Layer 2 evidence completeness | present | none | Phase 4 review evidence exists: `spec-compliance-review.md`, `code-review.md`, `code-review-r2.md`, `code-review-r3.md`. | `.tad/evidence/reviews/blake/runtime-freshness-loop/` |
+| CF5 `skills.config` schema | supported | none | Current Codex manual documents `[[skills.config]]` in config and also lists `skills.config` as a valid inherited key for custom agents. | Local Codex manual outline and config sections |
+| CF6 `model_provider` field | supported_user_only | accepted_limitation | Current Codex manual supports `model_provider` in user config, but project-local `.codex/config.toml` explicitly ignores `model_provider`. For TAD's draft project config, this key cannot be activated at project scope. | Local Codex manual project-config restrictions + provider section |
+| CF7 agent output constraints | not_supported | deferred | Current custom-agent schema documents required fields plus inherited config keys, but no per-agent output-constraint field. The CLI supports `--output-schema` at invocation time, not in agent TOML. | Local Codex manual custom-agent schema + `codex exec --help` |
+| CF8 agent runtime quality | quality_acceptable | none | T1 produced a structured handoff, bounded implementation, review artifacts, and a passing independent rerun. The quality chain is usable even though git-backed completion inside the carrier sandbox was partial. | `T1-full-cycle-v0.137.0.md`, carrier evidence dir |
+
+## Phase 2 P2 Doc-Level Spot-Check
+
+Spot-checked `docs/MULTI-PLATFORM.md` for the doc-level follow-through items that Phase 3 was supposed to resolve.
+
+- First-class dual-runtime positioning: present
+- Draft-only activation boundary: present
+- Activation criteria: present
+- Runtime freshness layer: present
+- `ask_user_question` unknown gap: present
+
+Result: PASS
+
+## Conclusion
+
+The carry-forward set passed with two real caveats:
+
+1. `ask_user_question` remains an adapter bug in current Codex exec behavior.
+2. `model_provider` is not activatable from project-local `.codex/config.toml`, so the draft config must keep provider selection at user scope.
+
+## FILE: .tad/evidence/dual-platform-regression/T4-freshness-check.md
+# T4 Runtime Freshness Check
+
+verdict: PASS
+
+## Command
+
+`bash .tad/hooks/lib/runtime-freshness-verify.sh`
+
+## Output Summary
+
+- Total entries checked: 21
+- PASS: 21
+- WARN: 0
+- BLOCK: 0
+- Exit status: 0
+
+## Raw Output
+
+```text
+=========================================
+RUNTIME FRESHNESS VERIFY
+  Repo:  .
+  Today: 2026-06-09
+=========================================
+-----------------------------------------
+Total: 21 entries | PASS: 21 | WARN: 0 | BLOCK: 0
+VERDICT: runtime freshness PASS
+```
+
+## Conclusion
+
+Both runtime ledgers are current on 2026-06-09 and the freshness gate passes without waiver.
+
+## FILE: .tad/evidence/dual-platform-regression/ACCEPTANCE-SUMMARY.md
+# Dual-Platform Regression Acceptance Summary
+
+verdict: PASS
+release_readiness: CONDITIONAL_GO
+waiver: n=3 stability waiver accepted; fresh n=1 run completed on 2026-06-09 and prior n=1 evidence exists in `.tad/evidence/codex-validation/REPORT-2026-06-07.md`
+
+## Test Matrix
+
+| Test | Verdict | Notes |
+|------|---------|-------|
+| T1 Codex full-cycle regression | PASS | Full Alex -> Blake carrier flow succeeded on local `codex-cli 0.138.0`; independent rerun passed |
+| T2 Claude Code compatibility | PASS | Six protocol surfaces confirmed plus two behavioral spot-checks |
+| T3 Carry-forward verification | PASS | Eight items checked; two real gaps documented and classified |
+| T4 Runtime freshness check | PASS | 21/21 freshness entries PASS, exit 0 |
+
+## Gaps
+
+| gap_classification | Area | Finding | Disposition |
+|--------------------|------|---------|-------------|
+| adapter_bug | CF1 | Codex probe could not use `ask_user_question`; runtime reported `request_user_input is unavailable in Default mode` and returned `TOOL_UNAVAILABLE`. | Keep Phase 5 as PASS, but do not claim decision-capture parity on Codex yet. |
+| accepted_limitation | T1 carrier Gate 3 | Carrier sandbox could not complete git-backed Gate 3 bookkeeping because `.git/index.lock` creation was denied. | Accept for this regression because implementation, review artifacts, and independent rerun all passed. |
+| accepted_limitation | CF6 | `model_provider` is supported only in user config, not project-local `.codex/config.toml`. | Keep provider selection out of project activation plans. |
+| deferred | CF7 | No documented per-agent output-constraint field exists in custom agent TOML. | Revisit only if TAD needs schema-constrained subagent output after custom-agent activation. |
+| process_blemish | T1 runtime pin | Handoff expected `0.137.0`, but the machine had `0.138.0`. | Recorded actual runtime and validated that version instead of treating the pin as silently satisfied. |
+
+## n=3 Waiver
+
+The handoff's Decision D1 explicitly waived a fresh `n=3` rerun. This phase therefore used:
+
+- prior n=1 Codex validation on 2026-06-07
+- one fresh n=1 full-cycle run on 2026-06-09
+
+That combination is sufficient for this Epic because the architecture work in Phases 1-4 was design-only and the new regression confirmed the live adapter path again on a newer Codex CLI build.
+
+## Evidence Index
+
+- `.tad/evidence/codex-regression/T1-full-cycle-v0.137.0.md`
+- `.tad/evidence/dual-platform-regression/T2-claude-code-compat.md`
+- `.tad/evidence/dual-platform-regression/T3-carry-forward.md`
+- `.tad/evidence/dual-platform-regression/T4-freshness-check.md`
+- `.tad/evidence/codex-validation/REPORT-2026-06-07.md`
+- `.tad/evidence/codex-regression/sandbox/evidence/completion-report.md`
+
+## Recommendation
+
+The dual-platform native runtime architecture is ready to move forward with one explicit caveat: release confidence is strong for Alex/Blake full-cycle execution, but Codex-side decision-capture parity is still incomplete until the `ask_user_question` path is replaced or verified in a supported mode.
+
+codex
+verdict: FAIL
+
+PARTIALLY_SATISFIED
+- Constraint: `All Codex exec must be sandboxed to evidence directories`
+  Evidence in `T1-full-cycle-v0.137.0.md` says the runs used `workspace-write`, while only the created artifacts were confined to `.tad/evidence/.../sandbox/`. That shows path discipline, but not directory-scoped sandboxing. The constraint is stricter than the evidence provided.
+
+- T1 requested-version alignment
+  `requested_codex_version: 0.137.0` but `actual_codex_version: 0.138.0`. The version was correctly recorded, so the recording constraint is satisfied, but the named regression target was not executed on the pinned version.
+
+NOT_SATISFIED
+- None beyond the sandboxing-compliance gap above. The remaining acceptance surfaces appear satisfied:
+  AC1, AC2, AC3, AC5, AC6, AC7, and AC8 are covered by the provided artifacts.
+  T3 and T4 reports exist with `verdict: PASS`.
+  `ACCEPTANCE-SUMMARY.md` contains the required matrix, gap classifications, n=3 waiver, evidence links, and release recommendation.
+tokens used
+21,078
+verdict: FAIL
+
+PARTIALLY_SATISFIED
+- Constraint: `All Codex exec must be sandboxed to evidence directories`
+  Evidence in `T1-full-cycle-v0.137.0.md` says the runs used `workspace-write`, while only the created artifacts were confined to `.tad/evidence/.../sandbox/`. That shows path discipline, but not directory-scoped sandboxing. The constraint is stricter than the evidence provided.
+
+- T1 requested-version alignment
+  `requested_codex_version: 0.137.0` but `actual_codex_version: 0.138.0`. The version was correctly recorded, so the recording constraint is satisfied, but the named regression target was not executed on the pinned version.
+
+NOT_SATISFIED
+- None beyond the sandboxing-compliance gap above. The remaining acceptance surfaces appear satisfied:
+  AC1, AC2, AC3, AC5, AC6, AC7, and AC8 are covered by the provided artifacts.
+  T3 and T4 reports exist with `verdict: PASS`.
+  `ACCEPTANCE-SUMMARY.md` contains the required matrix, gap classifications, n=3 waiver, evidence links, and release recommendation.
