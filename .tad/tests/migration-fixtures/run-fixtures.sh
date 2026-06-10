@@ -8,7 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 ENGINE="$(cd "$SCRIPT_DIR/../../hooks/lib" && pwd -P)/migration-engine.sh"
 
-PASS_COUNT=0 FAIL_COUNT=0 TOTAL=14
+PASS_COUNT=0 FAIL_COUNT=0 TOTAL=19
 FAILURES=""
 
 # Colors (if terminal supports)
@@ -515,7 +515,7 @@ MFEOF
 }
 
 # ══════════════════════════════════════════════════════════════
-# F8: dry-run + merge
+# F8: unknown-strategy → manual-required
 # ══════════════════════════════════════════════════════════════
 test_f8() {
     local tmp; tmp="$(mktemp -d)"
@@ -535,7 +535,7 @@ delete:
     reason: "removed"
 merge:
   - path: "CLAUDE.md"
-    strategy: "tad-head-marker"
+    strategy: "unknown-future-strategy"
     marker: "<!-- TAD:PROJECT-CONTENT-BELOW -->"
     on_missing_marker: "skip_and_report"
 verify:
@@ -549,21 +549,19 @@ BODY
     printf 'old' > "$tgt/.claude/skills/old.md"
     printf 'framework head\nuser content' > "$tgt/CLAUDE.md"
 
-    cp -a "$tgt" "$tmp/snapshot"
+    cp -a "$tgt/CLAUDE.md" "$tmp/claude_snap"
 
     local out rc=0
-    out="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" --dry-run 2>&1)" || rc=$?
-    if [ "$rc" -ne 0 ]; then report_fail "F8" "dry-run exit $rc"; rm -rf "$tmp"; return; fi
+    out="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" 2>&1)" || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "F8" "exit $rc (expected 0)"; rm -rf "$tmp"; return; fi
 
-    # Zero writes
-    local d8; d8="$({ diff -rq "$tgt" "$tmp/snapshot" 2>/dev/null || true; } | wc -l | tr -d ' ')"
-    if [ "$d8" -ne 0 ]; then report_fail "F8" "dry-run modified target ($d8 diffs)"; rm -rf "$tmp"; return; fi
-    if [ -d "$tgt/.tad-backup" ]; then report_fail "F8" "dry-run created backup dir"; rm -rf "$tmp"; return; fi
-
-    # Merge reported as manual-required
+    # Merge reported as manual-required (unknown strategy)
     if ! printf '%s' "$out" | grep -q 'manual-required'; then report_fail "F8" "no manual-required"; rm -rf "$tmp"; return; fi
 
-    report_pass "F8 dry-run+merge"
+    # CLAUDE.md must be untouched (unknown strategy doesn't write)
+    if ! cmp -s "$tgt/CLAUDE.md" "$tmp/claude_snap"; then report_fail "F8" "CLAUDE.md modified by unknown strategy"; rm -rf "$tmp"; return; fi
+
+    report_pass "F8 unknown-strategy"
     rm -rf "$tmp"
 }
 
@@ -837,6 +835,242 @@ BODY
 }
 
 # ══════════════════════════════════════════════════════════════
+# F16: merge-marker-present (head replaced, user content preserved)
+# ══════════════════════════════════════════════════════════════
+test_f16() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source" tgt="$tmp/target"
+
+    local marker="<!-- TAD:PROJECT-CONTENT-BELOW -->"
+
+    create_source "$src"
+    # Source v0.1.0: old CLAUDE.md with marker
+    add_version "$src" "0.1.0" \
+        "CLAUDE.md" "# TAD Framework v2.27
+Old content.
+
+$marker
+
+Source user area (ignored in v0.1.0)
+"
+    # Source v0.2.0: new CLAUDE.md with marker (new head content)
+    cd "$src"
+    printf '# TAD Framework v2.28\n\nNew content here.\n\n%s\n\nSource user area (ignored)\n' "$marker" > "CLAUDE.md"
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<BODY
+merge:
+  - path: "CLAUDE.md"
+    strategy: "tad-head-marker"
+    marker: "$marker"
+    on_missing_marker: "skip_and_report"
+BODY
+)"
+
+    create_target "$tgt"
+    # Target has old head + user content below marker
+    printf '# TAD Framework v2.27\n\nOld content.\n\n%s\n\n## My Project\n\nUser notes here.\n' "$marker" > "$tgt/CLAUDE.md"
+
+    # Save user content for byte-identity check
+    tail -n +"$(grep -nF "$marker" "$tgt/CLAUDE.md" | head -1 | cut -d: -f1)" "$tgt/CLAUDE.md" > "$tmp/user_tail_before"
+
+    local out rc=0
+    out="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" 2>&1)" || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "F16" "exit $rc (expected 0)"; rm -rf "$tmp"; return; fi
+
+    # TSV contains merge done
+    if ! printf '%s' "$out" | grep -q 'merge.*done'; then report_fail "F16" "no merge done in output"; rm -rf "$tmp"; return; fi
+
+    # New head from source present
+    if ! grep -q '# TAD Framework v2.28' "$tgt/CLAUDE.md"; then report_fail "F16" "new head not present"; rm -rf "$tmp"; return; fi
+    if ! grep -q 'New content here.' "$tgt/CLAUDE.md"; then report_fail "F16" "new source content not present"; rm -rf "$tmp"; return; fi
+
+    # Old head gone
+    if grep -q 'Old content.' "$tgt/CLAUDE.md"; then report_fail "F16" "old head still present"; rm -rf "$tmp"; return; fi
+
+    # User content preserved (byte-identity)
+    tail -n +"$(grep -nF "$marker" "$tgt/CLAUDE.md" | head -1 | cut -d: -f1)" "$tgt/CLAUDE.md" > "$tmp/user_tail_after"
+    if ! cmp -s "$tmp/user_tail_before" "$tmp/user_tail_after"; then report_fail "F16" "user content not byte-identical"; rm -rf "$tmp"; return; fi
+
+    # User content still has project data
+    if ! grep -q '## My Project' "$tgt/CLAUDE.md"; then report_fail "F16" "user project content missing"; rm -rf "$tmp"; return; fi
+    if ! grep -q 'User notes here.' "$tgt/CLAUDE.md"; then report_fail "F16" "user notes missing"; rm -rf "$tmp"; return; fi
+
+    # Backup created
+    if [ ! -f "$tgt/.tad-backup/0.1.0-to-0.2.0/CLAUDE.md" ]; then report_fail "F16" "backup missing"; rm -rf "$tmp"; return; fi
+
+    report_pass "F16 merge-marker-present"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
+# F17: merge-marker-absent (skip, file untouched)
+# ══════════════════════════════════════════════════════════════
+test_f17() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source" tgt="$tmp/target"
+
+    local marker="<!-- TAD:PROJECT-CONTENT-BELOW -->"
+
+    create_source "$src"
+    # Source has marker
+    add_version "$src" "0.1.0" \
+        "CLAUDE.md" "# TAD v2.27
+
+$marker
+
+Source content.
+"
+    cd "$src"
+    printf '# TAD v2.28\n\n%s\n\nSource content.\n' "$marker" > "CLAUDE.md"
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<BODY
+merge:
+  - path: "CLAUDE.md"
+    strategy: "tad-head-marker"
+    marker: "$marker"
+    on_missing_marker: "skip_and_report"
+BODY
+)"
+
+    create_target "$tgt"
+    # Target has NO marker — all user content
+    printf '# My Project\n\nAll user content, no marker.\n' > "$tgt/CLAUDE.md"
+
+    # Snapshot for comparison
+    cp "$tgt/CLAUDE.md" "$tmp/claude_snap"
+
+    local out rc=0
+    out="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" 2>&1)" || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "F17" "exit $rc (expected 0)"; rm -rf "$tmp"; return; fi
+
+    # TSV shows skipped-no-marker
+    if ! printf '%s' "$out" | grep -q 'skipped-no-marker'; then report_fail "F17" "no skipped-no-marker in output"; rm -rf "$tmp"; return; fi
+
+    # File untouched
+    if ! cmp -s "$tgt/CLAUDE.md" "$tmp/claude_snap"; then report_fail "F17" "CLAUDE.md modified despite no marker"; rm -rf "$tmp"; return; fi
+
+    report_pass "F17 merge-marker-absent"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
+# F18: merge-idempotent (second run reports already-current)
+# ══════════════════════════════════════════════════════════════
+test_f18() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source" tgt="$tmp/target"
+
+    local marker="<!-- TAD:PROJECT-CONTENT-BELOW -->"
+
+    create_source "$src"
+    add_version "$src" "0.1.0" \
+        "CLAUDE.md" "# TAD v2.27
+
+$marker
+
+Source.
+"
+    cd "$src"
+    printf '# TAD v2.28\n\nNew head.\n\n%s\n\nSource.\n' "$marker" > "CLAUDE.md"
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<BODY
+merge:
+  - path: "CLAUDE.md"
+    strategy: "tad-head-marker"
+    marker: "$marker"
+    on_missing_marker: "skip_and_report"
+BODY
+)"
+
+    create_target "$tgt"
+    printf '# TAD v2.27\n\nOld head.\n\n%s\n\n## My Project\n\nUser stuff.\n' "$marker" > "$tgt/CLAUDE.md"
+
+    # First run: should merge
+    local out1 rc1=0
+    out1="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" 2>&1)" || rc1=$?
+    if [ "$rc1" -ne 0 ]; then report_fail "F18" "first run exit $rc1"; rm -rf "$tmp"; return; fi
+    if ! printf '%s' "$out1" | grep -q 'merge.*done'; then report_fail "F18" "first run: no merge done"; rm -rf "$tmp"; return; fi
+
+    # Snapshot after first merge
+    cp "$tgt/CLAUDE.md" "$tmp/after_first"
+
+    # Remove backup to allow second run (backup-collision would block)
+    rm -rf "$tgt/.tad-backup"
+
+    # Second run: should report already-current
+    local out2 rc2=0
+    out2="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" 2>&1)" || rc2=$?
+    if [ "$rc2" -ne 0 ]; then report_fail "F18" "second run exit $rc2"; rm -rf "$tmp"; return; fi
+    if ! printf '%s' "$out2" | grep -q 'already-current'; then report_fail "F18" "no already-current in second run"; rm -rf "$tmp"; return; fi
+
+    # File unchanged between runs
+    if ! cmp -s "$tgt/CLAUDE.md" "$tmp/after_first"; then report_fail "F18" "file changed on second run"; rm -rf "$tmp"; return; fi
+
+    report_pass "F18 merge-idempotent"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
+# F19: merge-dry-run (would-merge, no write)
+# ══════════════════════════════════════════════════════════════
+test_f19() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source" tgt="$tmp/target"
+
+    local marker="<!-- TAD:PROJECT-CONTENT-BELOW -->"
+
+    create_source "$src"
+    add_version "$src" "0.1.0" \
+        "CLAUDE.md" "# TAD v2.27
+
+$marker
+
+Source.
+"
+    cd "$src"
+    printf '# TAD v2.28\n\nNew head.\n\n%s\n\nSource.\n' "$marker" > "CLAUDE.md"
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<BODY
+merge:
+  - path: "CLAUDE.md"
+    strategy: "tad-head-marker"
+    marker: "$marker"
+    on_missing_marker: "skip_and_report"
+BODY
+)"
+
+    create_target "$tgt"
+    printf '# TAD v2.27\n\nOld head.\n\n%s\n\n## My Project\n\nUser stuff.\n' "$marker" > "$tgt/CLAUDE.md"
+
+    # Snapshot before
+    cp "$tgt/CLAUDE.md" "$tmp/claude_snap"
+
+    local out rc=0
+    out="$(bash "$ENGINE" --from 0.1.0 --to 0.2.0 --target "$tgt" --source "$src" --dry-run 2>&1)" || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "F19" "dry-run exit $rc"; rm -rf "$tmp"; return; fi
+
+    # Output shows would-merge
+    if ! printf '%s' "$out" | grep -q 'would-merge'; then report_fail "F19" "no would-merge in output"; rm -rf "$tmp"; return; fi
+
+    # File untouched
+    if ! cmp -s "$tgt/CLAUDE.md" "$tmp/claude_snap"; then report_fail "F19" "CLAUDE.md modified in dry-run"; rm -rf "$tmp"; return; fi
+
+    # No backup dir created
+    if [ -d "$tgt/.tad-backup" ]; then report_fail "F19" "backup dir created in dry-run"; rm -rf "$tmp"; return; fi
+
+    report_pass "F19 merge-dry-run"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
 # Inline test: min_engine_version (AC17)
 # ══════════════════════════════════════════════════════════════
 test_ac17() {
@@ -893,10 +1127,14 @@ test_f11
 test_f12
 test_f13
 test_f14
+test_f16
+test_f17
+test_f18
+test_f19
 test_ac17
 
 printf '\n=== Results ===\n'
-printf 'Passed: %d / %d (14 fixtures + 1 inline AC17)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
+printf 'Passed: %d / %d (18 fixtures + 1 inline AC17)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
     printf '\nFailures:\n'
@@ -905,5 +1143,5 @@ if [ "$FAIL_COUNT" -gt 0 ]; then
     exit 1
 fi
 
-printf '\nALL FIXTURES PASS (14/14)\n'
+printf '\nALL FIXTURES PASS (19/19)\n'
 exit 0

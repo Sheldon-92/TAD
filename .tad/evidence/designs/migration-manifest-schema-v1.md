@@ -192,6 +192,53 @@ merge:
     marker: "<!-- TAD:PROJECT-CONTENT-BELOW -->"
 ```
 
+### Marker Convention
+
+The standard TAD content boundary marker is:
+
+```
+<!-- TAD:PROJECT-CONTENT-BELOW -->
+```
+
+**Semantics**:
+- Everything ABOVE the marker = TAD framework-managed content. Updated automatically during upgrades.
+- The marker line = immutable boundary. Never modified by any operation.
+- Everything BELOW the marker = user/project content. Never touched by TAD (byte-identity guarantee).
+
+**Requirements for CLAUDE.md files using merge strategy**:
+- The marker MUST appear exactly once in the file
+- The marker MUST be on its own line (no leading/trailing content on same line)
+- The marker MUST appear in both the source template AND the target file for merge to execute
+- The marker string MUST be at least 10 characters (engine rejects shorter markers as unsafe)
+
+**Adding the marker to existing projects**:
+If a project's CLAUDE.md was created before the marker convention, add the marker between
+the TAD-managed header and the project-specific content:
+1. Identify where TAD framework content ends and project content begins
+2. Insert `<!-- TAD:PROJECT-CONTENT-BELOW -->` on its own line at that boundary
+3. Run *sync to verify merge works (will report `done` instead of skip)
+
+### Legacy Projects Requiring Marker Addition
+
+The following 3 registered projects have CLAUDE.md files without the marker.
+*sync currently skips them with a warning. After adding the marker, *sync's
+merge (and the migration engine) will work correctly.
+
+| Project | Action Required |
+|---------|----------------|
+| my-openclaw-agents | Add `<!-- TAD:PROJECT-CONTENT-BELOW -->` between TAD header and project content |
+| toy | Add `<!-- TAD:PROJECT-CONTENT-BELOW -->` between TAD header and project content |
+| 内存管理 | Add `<!-- TAD:PROJECT-CONTENT-BELOW -->` between TAD header and project content |
+
+**Fix procedure** (run via *sync or manual edit):
+1. Open the project's CLAUDE.md
+2. Find the end of the TAD framework section (typically after `@.tad/project-knowledge/...` imports)
+3. Insert a blank line + the marker + a blank line
+4. Run *sync against the project to verify: should report `merge done` (not `skipped`)
+
+**NOTE**: This is a *sync operation performed on each target project, NOT an engine operation.
+The engine processes manifests; adding markers is project setup.
+
 ---
 
 ## Section: verify

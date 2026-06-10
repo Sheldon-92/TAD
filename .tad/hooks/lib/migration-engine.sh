@@ -7,7 +7,7 @@
 # Exit codes: 0=success, 1=execution failure (fail-fast), 2=refused (manifest invalid/env error, zero writes)
 set -euo pipefail
 
-ENGINE_VERSION="2.28.0"
+ENGINE_VERSION="2.29.0"
 
 # ══════════════════════════════════════════════════════════════
 # Argument parsing (FR1)
@@ -711,6 +711,114 @@ resolve_chain() {
 }
 
 # ══════════════════════════════════════════════════════════════
+# Merge execution: tad-head-marker strategy (Phase 4)
+# Returns: 0=done (content changed), 1=fatal error, 2=skipped or already-current
+# ══════════════════════════════════════════════════════════════
+execute_merge_entry() {
+    local m_path="$1" m_marker="$2" target_base="$3" source_base="$4" dry_run="$5"
+    local target_file="$target_base/$m_path"
+    local source_file="$source_base/$m_path"
+    local backup_base="$target_base/.tad-backup/${M_FROM}-to-${M_TO}"
+
+    # P1-3: Reject markers shorter than 10 characters (empty marker = grep matches everything)
+    if [ ${#m_marker} -lt 10 ]; then
+        report_line "merge" "error" "$m_path" "marker too short (${#m_marker} chars, min 10)"
+        return 1
+    fi
+
+    # 1. Source must exist
+    if [ ! -f "$source_file" ]; then
+        report_line "merge" "error" "$m_path" "source file not found: $source_file"
+        return 1
+    fi
+
+    # 2. Target must exist (no target = no marker = skip)
+    if [ ! -f "$target_file" ]; then
+        report_line "merge" "skipped-no-marker" "$m_path" "target file not found"
+        return 2
+    fi
+
+    # 3. Find marker in target (grep -F = fixed string, no regex)
+    local marker_line_num=""
+    marker_line_num="$(grep -nF "$m_marker" "$target_file" | head -1 | cut -d: -f1)" || true
+    if [ -z "$marker_line_num" ]; then
+        report_line "merge" "skipped-no-marker" "$m_path" "marker not found in target"
+        return 2
+    fi
+
+    # 4. Find marker in source (must exist for merge to work)
+    local source_marker_line=""
+    source_marker_line="$(grep -nF "$m_marker" "$source_file" | head -1 | cut -d: -f1)" || true
+    if [ -z "$source_marker_line" ]; then
+        report_line "merge" "error" "$m_path" "marker not found in source file"
+        return 1
+    fi
+
+    # 5. Idempotency check: compare current head with source head
+    #    Variable capture is acceptable here — both sides extracted the same way
+    #    (stripping is symmetric, not going to disk)
+    local source_head="" current_head=""
+    if [ "$source_marker_line" -gt 1 ]; then
+        source_head="$(head -n $((source_marker_line - 1)) "$source_file")"
+    fi
+    if [ "$marker_line_num" -gt 1 ]; then
+        current_head="$(head -n $((marker_line_num - 1)) "$target_file")"
+    fi
+    if [ "$current_head" = "$source_head" ]; then
+        report_line "merge" "already-current" "$m_path" "head content matches source"
+        return 2
+    fi
+
+    # 6. Dry-run: report but don't write
+    if [ "$dry_run" -eq 1 ]; then
+        report_line "merge" "would-merge" "$m_path" "would replace head ($((source_marker_line - 1)) lines from source)"
+        return 2
+    fi
+
+    # 7. Backup before write
+    do_backup "$m_path" "$backup_base" || return 1
+
+    # 8. Assemble via temp file to preserve exact bytes (no variable capture for disk content)
+    #    P1-2: Use mktemp for temp file instead of predictable .merge-tmp path
+    local tmp_file=""
+    tmp_file="$(mktemp "${target_file}.merge-XXXXXX")" || {
+        report_line "merge" "error" "$m_path" "failed to create temp file"
+        return 1
+    }
+
+    # P1-1: Guard temp file cleanup on pipeline failure
+    # cleanup_merge_tmp: single helper for temp file removal (distinct from guarded_remove which handles user files)
+    cleanup_merge_tmp() { [ -n "${1:-}" ] && [ -f "$1" ] && rm -f -- "$1"; }
+
+    {
+        if [ "$source_marker_line" -gt 1 ]; then
+            head -n $((source_marker_line - 1)) "$source_file"
+        fi
+        tail -n +"${marker_line_num}" "$target_file"
+    } > "$tmp_file" || {
+        cleanup_merge_tmp "$tmp_file"
+        report_line "merge" "error" "$m_path" "failed to assemble merged content"
+        return 1
+    }
+
+    # P1-1: Non-empty check before mv (safety: don't replace with empty file)
+    if [ ! -s "$tmp_file" ]; then
+        cleanup_merge_tmp "$tmp_file"
+        report_line "merge" "error" "$m_path" "assembled file is empty, aborting"
+        return 1
+    fi
+
+    mv -- "$tmp_file" "$target_file" || {
+        cleanup_merge_tmp "$tmp_file"
+        report_line "merge" "error" "$m_path" "failed to move temp file to target"
+        return 1
+    }
+
+    report_line "merge" "done" "$m_path" "head replaced from source"
+    return 0
+}
+
+# ══════════════════════════════════════════════════════════════
 # Execute one manifest (FR5, FR6)
 # ══════════════════════════════════════════════════════════════
 execute_manifest() {
@@ -805,10 +913,24 @@ execute_manifest() {
         esac
     done
 
-    # MERGE (not executed, only reported)
+    # MERGE
+    local merged=0
     for ((i=0; i<${#MERGE_PATHS[@]}; i++)); do
-        report_line "merge" "manual-required" "${MERGE_PATHS[$i]}" "strategy=${MERGE_STRATEGIES[$i]}"
-        manual=$((manual + 1))
+        local m_path="${MERGE_PATHS[$i]}" m_strategy="${MERGE_STRATEGIES[$i]}"
+        local m_marker="${MERGE_MARKERS[$i]}"
+
+        if [ "$m_strategy" != "tad-head-marker" ]; then
+            report_line "merge" "manual-required" "$m_path" "unknown strategy=$m_strategy"
+            manual=$((manual + 1))
+            continue
+        fi
+
+        # Return convention: 0=done, 2=skipped/already-current, 1=fatal
+        local merge_rc=0
+        execute_merge_entry "$m_path" "$m_marker" "$TARGET" "$SOURCE" "$DRY_RUN" || merge_rc=$?
+        if [ "$merge_rc" -eq 1 ]; then return 1; fi  # fatal → fail-fast
+        if [ "$merge_rc" -eq 0 ]; then merged=$((merged + 1)); fi
+        # merge_rc=2 → skipped/already-current, don't count as merged
     done
 
     # VERIFY (skip in dry-run — files haven't been modified)
@@ -838,7 +960,7 @@ execute_manifest() {
         done
     fi
 
-    report_line "summary" "ok" "-" "deleted=$deleted skipped=$skipped manual=$manual"
+    report_line "summary" "ok" "-" "deleted=$deleted skipped=$skipped merged=$merged manual=$manual"
     return 0
 }
 
