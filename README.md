@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.25.0 - Universal AC-Driven Gate**
+**Version 2.28.0 - Upgrade Lifecycle System**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -62,54 +62,36 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
-## 🎯 What's New in v2.8
+## 🎯 What's New in v2.28
 
-### Self-Evolving Framework (v2.8)
-- **Execution Traces**: PostToolUse hook auto-records file events (JSONL) + step-level trace recording
-- **`*optimize`**: Analyze project traces → propose Domain Pack + Project Knowledge improvements
-- **`*evolve`**: Cross-project trace aggregation → propose TAD framework improvements
-- **Human Approval Workflow**: PROPOSAL YAML schema + AskUserQuestion approval + safety constraints
+### Upgrade Lifecycle System (v2.28) — Zero-Garbage Upgrades
+Every version upgrade is now driven by a **declarative migration manifest** (`delete/rename/merge/verify`), executed by a shared engine with a 5-step path safety pipeline:
 
-### Domain Packs (v2.8) — 20 Packs, 78 Tools
-- **5 Domain Chains**: Web (6 packs), Mobile (4), AI (4), Hardware (4), Security (2)
-- Each pack includes: capabilities, workflow steps, quality criteria, anti-patterns, tool references
-- `tools-registry.yaml`: 78 CLI/MCP tools across all packs
-- **Workflow Integration**: Packs actively loaded during `*design` and injected into handoffs
-- Pack creation template + HOW-TO guide for custom domain packs
+- **Migration Engine** (`migration-engine.sh`): Single `rm` choke point with TOCTOU re-validation, user-modified file detection via `git show`, fail-closed on malicious paths
+- **CLAUDE.md Merge**: `<!-- TAD:PROJECT-CONTENT-BELOW -->` marker splits framework head (auto-updated) from user content (preserved byte-identical)
+- **Publish Gate**: `release-verify.sh migration` mode — delete a file without writing a manifest and the release is blocked
+- **12 Historical Manifests**: v2.19.0 → v2.27.0 complete chain, so upgrades from any version work
+- **22 E2E Fixtures**: Normal/idempotent/user-modified/malicious-injection/merge/gate scenarios
+- **tad.sh + \*sync Integration**: Both paths use the same engine (zero dual-implementation)
 
-### Quality Gate Hooks (v2.8)
-- `pre-accept-check.sh`: BLOCK `*accept` without COMPLETION report
-- `pre-gate-check.sh`: BLOCK Gate 3 without evidence (cold-start safe)
-- `post-write-sync.sh`: Workflow reminders for handoffs, completions, Ralph Loop
+```bash
+# What happens now when you upgrade:
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+# 1. Downloads new version
+# 2. Copies framework files
+# 3. ⭐ Runs migration engine: cleans old files, renames moved files, merges CLAUDE.md
+# 4. Verifies install completeness
+# Result: new files in, old files gone, your content untouched
+```
 
-### Knowledge Assessment Pipeline (v2.8)
-- Gate 3/4 tables require evidence (file path + entry title) — "Yes" without proof = FAIL
-- Alex verifies Blake's Gate 3 knowledge entries exist before accepting
-- Handoff creation scans all knowledge entries for keyword-relevant history
-
-### Hook-Native Architecture (v2.7)
-- **5-layer architecture**: CLAUDE.md router → settings.json hooks → .tad/hooks/ scripts → Skills (judgment-only) → Config YAML
-- SessionStart health check, PostToolUse workflow reminders, PreToolUse intelligent gating
-- Skill files reduced ~76% (judgment-only residual) — hooks handle automation
-- Total context footprint reduced ~76% (59K → 14K tokens)
-
-### 4D Protocol Pair Testing (v2.6)
-- **Discover → Discuss → Decide → Deliver** — decisions made at discovery time, not deferred
-- Leverages 1M context window for in-session decision-making
-
-### Autoresearch Optimization Mode (v2.6)
-- Ralph Loop Layer 0.5: autonomous optimization loop for numeric targets
-- Git commit/reset as state management, safety anchor tags, circuit breaker
-
-### Linear Kanban Integration (v2.6)
-- Cross-project human dashboard via Linear MCP
-- NEXT.md → Linear one-way auto-sync on Alex startup
-
-### Earlier Releases (v2.2–v2.5)
-- **v2.5**: Spec Compliance Reviewer, Anti-Rationalization Tables, TDD Skill, Git Worktree
-- **v2.4**: `*publish` + `*sync`, Context Refresh, Git Commit Verification
-- **v2.3**: Intent Router, `*learn`, `*idea`, `*status`, ROADMAP.md
-- **v2.2**: Bidirectional Messages, Adaptive Complexity, Modular Config, `/tad-maintain`
+### Earlier Highlights
+- **v2.27.0**: SKILL progressive loading, circular-trigger body-integrity checker
+- **v2.26.0**: Codex CLI support, dual-platform runtime architecture
+- **v2.25.0**: Universal AC-driven Gate (§9.1 primary verification)
+- **v2.24.0**: Non-dev deliverable lane, categorical/checklist verdict shapes
+- **v2.23.0**: Self-deriving release/sync (deny-list derivation)
+- **v2.21.0**: 24 capability packs via NotebookLM pack factory
+- **v2.8.0**: Self-evolving framework, 20 domain packs, execution traces
 
 ---
 
@@ -129,14 +111,14 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.25.0
+# Should show: 2.28.0
 
-ls .claude/skills/ | wc -l
-# Should show: 9 skill directories
+# Check migration engine installed
+test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
 
-# Check domain packs
-ls .tad/domains/*.yaml | wc -l
-# Should show: 21 (20 packs + tools-registry)
+# Check historical manifests
+ls .tad/migrations/*.yaml | wc -l
+# Should show: 12+ manifests
 ```
 
 ---
@@ -316,7 +298,10 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
-| **v2.25.0** | **Universal AC-Driven Gate: §9.1 becomes primary verification source for Gate 3/4. Hardcoded tsc/test/lint replaced by task-scoped ACs (Alex auto-generates for dev projects). Rubric Evaluation Protocol extracted as universal Gate section. deliverable-handoff.md deprecated.** |
+| **v2.28.0** | **Upgrade Lifecycle System: migration engine (5-step safety pipeline, single rm choke point, TOCTOU re-validation) + tad.sh/\*sync integration + CLAUDE.md merge execution + publish gate (hard-block on unmanifested deletions) + 12 historical manifests (v2.19.0→v2.27.0) + 22 E2E fixtures + acceptance tooling** |
+| **v2.27.0** | **SKILL progressive loading (36 protocols → references/), circular-trigger body-integrity checker, dual-platform runtime freshness verifier** |
+| **v2.26.0** | **Codex CLI support — dual-platform native runtime, compatibility ledgers, `.codex/` policy framework** |
+| **v2.25.0** | **Universal AC-Driven Gate: §9.1 becomes primary verification source for Gate 3/4. Hardcoded tsc/test/lint replaced by task-scoped ACs.** |
 | **v2.24.1** | **npx cross-platform installer (`bin/tad-install.mjs`): `npx github:Sheldon-92/TAD` offers interactive platform selection (Claude Code / Codex CLI) + capability-pack selection with one-line descriptions. Codex users get a slimmed install (excludes the 86K Claude-edition alex/blake SKILLs + hooks via deny-delta). `tad.sh --platform <claude-code\|codex>` + `--packs <list>` config-driven routing via `.tad/platform-codes.yaml`. README + INSTALLATION_GUIDE npx docs.** |
 | **v2.24.0** | **Non-dev deliverable lane — Gate 3/4 deliverable branches add `categorical` (rigor band, decoupled from BUILD/PIVOT/KILL via order-of-emission firewall + swap test) and `checklist` (export-spec pass/fail with ≥1-required guard) verdict_shapes alongside `weighted`. product-thinking gains a dogfood-verified categorical rubric; voice/video checklist gate-logic verified via synthetic fixture. visual-code-bridge (React fiber source locator) + ai-podcast-production pack (registry → 25 packs). Triple-Question KA simplified to draft-then-confirm.** |
 | **v2.23.1** | **Triple-Question KA — Knowledge Assessment expanded from 2 to 3 questions (knowledge + skill + workflow). Skillify Step 5 routes patterns to SKILL.md (judgment) or .workflow.js (orchestration). Alex .workflow.js authoring carve-out. Workflow completion trigger (agent_count ≥ 3).** |
@@ -421,6 +406,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.25.0 - Universal AC-Driven Gate
+**Welcome to TAD v2.28.0 - Upgrade Lifecycle System**
 
 *AI does the work. Humans guard the value.*
