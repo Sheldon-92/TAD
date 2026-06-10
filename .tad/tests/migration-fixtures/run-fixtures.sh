@@ -8,7 +8,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 ENGINE="$(cd "$SCRIPT_DIR/../../hooks/lib" && pwd -P)/migration-engine.sh"
 
-PASS_COUNT=0 FAIL_COUNT=0 TOTAL=19
+VERIFIER="$(cd "$SCRIPT_DIR/../../hooks/lib" && pwd -P)/release-verify.sh"
+
+PASS_COUNT=0 FAIL_COUNT=0 TOTAL=22
 FAILURES=""
 
 # Colors (if terminal supports)
@@ -1109,6 +1111,109 @@ MFEOF
 ENGINE_VERSION="$(grep -m1 'ENGINE_VERSION=' "$ENGINE" | sed 's/.*="//' | sed 's/"//')"
 
 # ══════════════════════════════════════════════════════════════
+# MG1: migration-gate: unmanifested-delete-detected
+# Tests release-verify.sh migration mode: delete without manifest → exit 1,
+# then add manifest → exit 0.
+# ══════════════════════════════════════════════════════════════
+test_mg1() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source"
+
+    create_source "$src"
+    add_version "$src" "0.1.0" \
+        ".claude/skills/old-ref.md" "old content" \
+        ".claude/skills/blake/SKILL.md" "blake skill"
+
+    # v0.2.0: remove old-ref.md (no manifest yet)
+    cd "$src"
+    rm -f .claude/skills/old-ref.md
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    # Run migration gate — should detect unmanifested delete → exit 1
+    local out rc=0
+    out="$(bash "$VERIFIER" migration "$src" "0.2.0" 2>&1)" || rc=$?
+    if [ "$rc" -ne 1 ]; then report_fail "MG1a" "exit $rc (expected 1 for unmanifested delete)"; rm -rf "$tmp"; return; fi
+    if ! printf '%s' "$out" | grep -q 'UNMANIFESTED DELETE'; then report_fail "MG1a" "no UNMANIFESTED DELETE in output"; rm -rf "$tmp"; return; fi
+
+    # Now create the manifest
+    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<'BODY'
+delete:
+  - path: ".claude/skills/old-ref.md"
+    type: "file"
+    reason: "removed in v0.2.0"
+verify:
+  - type: "absent"
+    path: ".claude/skills/old-ref.md"
+BODY
+)"
+
+    # Re-run migration gate — should pass now → exit 0
+    rc=0
+    out="$(bash "$VERIFIER" migration "$src" "0.2.0" 2>&1)" || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "MG1b" "exit $rc (expected 0 after manifest added)"; rm -rf "$tmp"; return; fi
+
+    report_pass "MG1 unmanifested-delete-detected"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
+# MG2: migration-gate: zero-touch-excluded
+# Deleting a file inside a ZERO_TOUCH dir should NOT trigger a finding.
+# ══════════════════════════════════════════════════════════════
+test_mg2() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source"
+
+    create_source "$src"
+    add_version "$src" "0.1.0" \
+        ".tad/active/handoffs/test-handoff.md" "handoff content" \
+        ".claude/skills/blake/SKILL.md" "blake skill"
+
+    # v0.2.0: remove file inside active/ (which is ZERO_TOUCH)
+    cd "$src"
+    rm -f .tad/active/handoffs/test-handoff.md
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    # No manifest — but active/ is ZERO_TOUCH, so migration gate should pass
+    local rc=0
+    bash "$VERIFIER" migration "$src" "0.2.0" >/dev/null 2>&1 || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "MG2" "exit $rc (expected 0 — ZERO_TOUCH excluded)"; rm -rf "$tmp"; return; fi
+
+    report_pass "MG2 zero-touch-excluded"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
+# MG3: migration-gate: rename-detected
+# Rename a file between tags, run without rename in manifest → exit 1.
+# ══════════════════════════════════════════════════════════════
+test_mg3() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source"
+
+    create_source "$src"
+    add_version "$src" "0.1.0" \
+        ".claude/skills/old-name.md" "skill content"
+
+    # v0.2.0: rename the file (git -M should detect it)
+    cd "$src"
+    git mv .claude/skills/old-name.md .claude/skills/new-name.md
+    printf '0.2.0\n' > .tad/version.txt
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    # No manifest — should detect unmanifested rename → exit 1
+    local out rc=0
+    out="$(bash "$VERIFIER" migration "$src" "0.2.0" 2>&1)" || rc=$?
+    if [ "$rc" -ne 1 ]; then report_fail "MG3" "exit $rc (expected 1 for unmanifested rename)"; rm -rf "$tmp"; return; fi
+    if ! printf '%s' "$out" | grep -qiE 'UNMANIFESTED RENAME|POSSIBLE RENAME'; then report_fail "MG3" "no rename finding in output"; rm -rf "$tmp"; return; fi
+
+    report_pass "MG3 rename-detected"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
 # Run all fixtures
 # ══════════════════════════════════════════════════════════════
 printf '=== TAD Migration Engine Fixture Harness ===\n\n'
@@ -1132,9 +1237,12 @@ test_f17
 test_f18
 test_f19
 test_ac17
+test_mg1
+test_mg2
+test_mg3
 
 printf '\n=== Results ===\n'
-printf 'Passed: %d / %d (18 fixtures + 1 inline AC17)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
+printf 'Passed: %d / %d (18 fixtures + 1 inline AC17 + 3 migration gate)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
     printf '\nFailures:\n'
@@ -1143,5 +1251,5 @@ if [ "$FAIL_COUNT" -gt 0 ]; then
     exit 1
 fi
 
-printf '\nALL FIXTURES PASS (19/19)\n'
+printf '\nALL FIXTURES PASS (22/22)\n'
 exit 0

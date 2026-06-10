@@ -62,6 +62,18 @@
 #       inlined deny-list == derive-sync-set.sh's DENY_LIST, so the "no stale list" thesis is
 #       not reintroduced at the installer layer.
 #
+#   migration <repo_root> [<expected_version>]
+#       Detect D (deleted) and R (renamed) files between the previous git tag and HEAD,
+#       scoped to framework-managed paths (.tad/, .claude/, .codex/, .agents/, root files).
+#       Cross-reference against manifest in .tad/migrations/{prev_ver}-to-{exp_ver}.yaml.
+#       ZERO_TOUCH directories (from derive-sync-set.sh --zero-touch) are excluded.
+#       Secondary rename detection: for each D without manifest coverage, flag if any A
+#       entry shares the same basename (POSSIBLE RENAME — prefer false-positive).
+#       Manifest cross-reference uses grep -F (smoke alarm, not YAML parser — see 4.2.1).
+#       Exit 0 = all D/R covered (or no D/R entries); exit 1 = unmanifested removals;
+#       exit 2 = usage/wiring error. The script always exits honestly — the caller
+#       (publish-protocol step3d) handles warn/block downgrade via TAD_RELEASE_GATE.
+#
 # Gate rule (in both protocols) — exit 1 (DRIFT) and exit 2 (WIRING) are handled SEPARATELY
 # (cr-P1-3 / arch-P1-2 fix). `TAD_RELEASE_GATE=warn` (shadow cutover) downgrades ONLY drift:
 #   exit 0                                  → proceed.
@@ -90,6 +102,7 @@ usage() {
   echo "  release-verify.sh structural <src_root> <target_root>" >&2
   echo "  release-verify.sh version <repo_root> <expected_version> [<old_version>]" >&2
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
+  echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -292,6 +305,175 @@ EOF
     FRESH_REPO="$2"
     FRESH_TODAY="${3:-}"
     bash "$SCRIPT_DIR/runtime-freshness-verify.sh" "$FRESH_REPO" $FRESH_TODAY
+    ;;
+
+  # ───────────────────────────── migration ─────────────────────────────
+  migration)
+    if [ $# -lt 2 ]; then usage; exit 2; fi
+    REPO="$2"
+    EXP_VER="${3:-}"
+    if [ ! -d "$REPO" ]; then echo "ERROR: repo_root not a dir: $REPO" >&2; exit 2; fi
+    if [ ! -d "$REPO/.tad" ]; then echo "ERROR: no .tad/ under repo: $REPO" >&2; exit 2; fi
+
+    echo "========================================="
+    echo "MIGRATION VERIFY (unmanifested D/R check)"
+    echo "  REPO: $REPO"
+
+    # Detect previous tag
+    PREV_TAG=""
+    PREV_TAG="$(git -C "$REPO" describe --tags --abbrev=0 HEAD^ 2>/dev/null)" || true
+    if [ -z "$PREV_TAG" ]; then
+      echo "  (no previous tag found — nothing to check; PASS)"
+      echo "VERDICT: migration PASS (exit 0)"
+      exit 0
+    fi
+    echo "  PREV_TAG: $PREV_TAG"
+
+    # Extract prev version (strip leading 'v', normalize to 3-segment)
+    PREV_VER="${PREV_TAG#v}"
+    case "$PREV_VER" in
+      *.*.*) ;; # already 3 segments
+      *.*) PREV_VER="${PREV_VER}.0" ;;
+    esac
+
+    # Read expected version from arg or version.txt
+    if [ -z "$EXP_VER" ]; then
+      if [ -f "$REPO/.tad/version.txt" ]; then
+        EXP_VER="$(head -1 "$REPO/.tad/version.txt" | tr -d '[:space:]')"
+      fi
+    fi
+    if [ -z "$EXP_VER" ]; then
+      echo "ERROR: cannot determine expected version (no arg and no .tad/version.txt)" >&2
+      exit 2
+    fi
+    # Normalize to 3-segment
+    case "$EXP_VER" in
+      *.*.*) ;; # already 3 segments
+      *.*) EXP_VER="${EXP_VER}.0" ;;
+    esac
+    echo "  EXPECTED: $EXP_VER"
+    echo "========================================="
+
+    # Manifest path
+    MANIFEST="$REPO/.tad/migrations/${PREV_VER}-to-${EXP_VER}.yaml"
+
+    # Collect ZERO_TOUCH dirs (reuse pattern from version mode)
+    ZT_DIRS=()
+    while IFS= read -r zt; do
+      [ -n "$zt" ] || continue
+      ZT_DIRS+=("$zt")
+    done < <(bash "$DERIVE" --zero-touch "$REPO")
+
+    # Build ZERO_TOUCH filter regex
+    ZT_RE=""
+    if [ "${#ZT_DIRS[@]}" -gt 0 ]; then
+      ZT_ALT="$(IFS='|'; printf '%s' "${ZT_DIRS[*]}")"
+      ZT_RE="^\.tad/($ZT_ALT)/"
+    fi
+
+    # Compute framework-scoped diff (D, R, A entries)
+    DIFF_OUTPUT="$(git -C "$REPO" diff --name-status -M "$PREV_TAG"..HEAD -- .tad/ .claude/ .codex/ .agents/ CLAUDE.md AGENTS.md tad.sh 2>/dev/null)" || true
+
+    # Classify entries, filtering ZERO_TOUCH
+    DELETES=""
+    RENAMES=""
+    ADDED=""
+    while IFS= read -r line; do
+      [ -n "$line" ] || continue
+      status="$(printf '%s' "$line" | cut -f1)"
+      case "$status" in
+        D)
+          path="$(printf '%s' "$line" | cut -f2)"
+          if [ -n "$ZT_RE" ] && printf '%s\n' "$path" | LC_ALL=C grep -qE "$ZT_RE"; then continue; fi
+          DELETES="${DELETES}${path}"$'\n'
+          ;;
+        R*)
+          from_path="$(printf '%s' "$line" | cut -f2)"
+          to_path="$(printf '%s' "$line" | cut -f3)"
+          if [ -n "$ZT_RE" ]; then
+            if printf '%s\n' "$from_path" | LC_ALL=C grep -qE "$ZT_RE"; then continue; fi
+            if printf '%s\n' "$to_path" | LC_ALL=C grep -qE "$ZT_RE"; then continue; fi
+          fi
+          RENAMES="${RENAMES}${from_path}	${to_path}"$'\n'
+          ;;
+        A)
+          path="$(printf '%s' "$line" | cut -f2)"
+          if [ -n "$ZT_RE" ] && printf '%s\n' "$path" | LC_ALL=C grep -qE "$ZT_RE"; then continue; fi
+          ADDED="${ADDED}${path}"$'\n'
+          ;;
+      esac
+    done <<MIG_DIFF_EOF
+$DIFF_OUTPUT
+MIG_DIFF_EOF
+
+    # If no D/R entries, nothing to check
+    if [ -z "$DELETES" ] && [ -z "$RENAMES" ]; then
+      echo "  No D/R entries in framework-scoped diff — nothing to check."
+      echo "VERDICT: migration PASS (exit 0)"
+      exit 0
+    fi
+
+    # Cross-reference against manifest
+    findings=0
+    findings_list=""
+
+    # Check each D entry
+    while IFS= read -r d_path; do
+      [ -n "$d_path" ] || continue
+      covered=0
+      if [ -f "$MANIFEST" ] && grep -qF "$d_path" "$MANIFEST" 2>/dev/null; then
+        covered=1
+      fi
+      if [ "$covered" -eq 0 ]; then
+        # Secondary rename detection: check if any A entry shares basename (prefer false-positive)
+        is_possible_rename=0
+        if [ -n "$ADDED" ]; then
+          d_base="$(basename "$d_path")"
+          if printf '%s\n' "$ADDED" | while IFS= read -r a_path; do
+            [ -n "$a_path" ] || continue
+            if [ "$(basename "$a_path")" = "$d_base" ]; then exit 0; fi
+          done; then
+            is_possible_rename=1
+          fi
+        fi
+
+        if [ "$is_possible_rename" -eq 1 ]; then
+          findings=$((findings + 1))
+          findings_list="${findings_list}  POSSIBLE RENAME: ${d_path} (basename match in added files) [checked: ${MANIFEST}]"$'\n'
+        else
+          findings=$((findings + 1))
+          findings_list="${findings_list}  UNMANIFESTED DELETE: ${d_path} [checked: ${MANIFEST}]"$'\n'
+        fi
+      fi
+    done <<MIG_DEL_EOF
+$DELETES
+MIG_DEL_EOF
+
+    # Check each R entry
+    while IFS= read -r r_line; do
+      [ -n "$r_line" ] || continue
+      r_from="$(printf '%s' "$r_line" | cut -f1)"
+      covered=0
+      if [ -f "$MANIFEST" ] && grep -qF "$r_from" "$MANIFEST" 2>/dev/null; then
+        covered=1
+      fi
+      if [ "$covered" -eq 0 ]; then
+        findings=$((findings + 1))
+        findings_list="${findings_list}  UNMANIFESTED RENAME: ${r_from} [checked: ${MANIFEST}]"$'\n'
+      fi
+    done <<MIG_REN_EOF
+$RENAMES
+MIG_REN_EOF
+
+    if [ "$findings" -eq 0 ]; then
+      echo "  All D/R entries covered by manifest."
+      echo "VERDICT: migration PASS (exit 0)"
+      exit 0
+    else
+      printf '%s' "$findings_list"
+      echo "VERDICT: migration FAIL — $findings unmanifested removal(s) (exit 1)"
+      exit 1
+    fi
     ;;
 
   *)
