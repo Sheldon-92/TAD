@@ -268,8 +268,11 @@ pair_testing:
 # ==================== Frontend Design Playground v2 ====================
 playground:
   enabled: true
+  deprecated: true
+  deprecated_since: "2.28.0"
+  migration: "Use Feedback Collector (handoff §8.5 feedback_required: true). Blake generates overlay feedback HTML."
   version: "2.0"
-  description: "Independent /playground command — generates complete Landing Pages for visual direction exploration"
+  description: "DEPRECATED — Independent /playground command — replaced by Feedback Collector (v2.28.0)"
   ownership: "Independent Design Explorer agent. Alex references outputs, Blake implements from spec."
 
   # Command definition

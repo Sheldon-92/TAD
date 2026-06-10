@@ -1,9 +1,15 @@
 ---
 name: playground
-description: Design Playground v2 — Design Explorer Agent for visual/UI design exploration and prototyping.
+description: "DEPRECATED (v2.28.0) — replaced by Feedback Collector. Use Blake's feedback_collector_protocol instead."
 ---
 
-# /playground Command — Design Playground v2
+# /playground Command — DEPRECATED
+
+> **DEPRECATED since TAD v2.28.0.** The Design Playground has been replaced by the
+> Feedback Collector pattern (Blake's `feedback_collector_protocol`). Instead of running
+> `/playground`, set `feedback_required: true` in handoff §8.5 and Blake will generate
+> an overlay feedback HTML alongside the artifact. See: `.claude/skills/blake/SKILL.md`
+> section `feedback_collector_protocol`.
 
 When this command is used, adopt the following agent persona:
 

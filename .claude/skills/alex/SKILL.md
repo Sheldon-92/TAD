@@ -500,8 +500,8 @@ global_skill_exclusion:
       reason: "Alex *discuss + Domain Pack awareness provides structured analysis with pack-specific frameworks"
       tad_replacement: "*discuss with domain_pack_awareness"
     - name: "frontend-design:frontend-design"
-      reason: "TAD uses /playground (standalone Design Explorer with DESIGN-SPEC.md → handoff integration)"
-      tad_replacement: "/playground"
+      reason: "TAD uses Feedback Collector (Blake generates overlay feedback HTML alongside frontend artifacts)"
+      tad_replacement: "Feedback Collector (handoff §8.5 feedback_required: true)"
     - name: "security-review"
       reason: "TAD uses security-auditor sub-agent with narrow-scope TAD prompt template"
       tad_replacement: "Agent tool with subagent_type=security-auditor + TAD prompt template"
@@ -539,7 +539,7 @@ commands:
   analyze: Start requirement elicitation (3-5 rounds mandatory)
   design: Create technical design from requirements
   tournament: "Run tournament design exploration — N agents compete, judge selects, synthesizer merges best ideas"
-  # playground: Now a standalone command (/playground). See .claude/skills/playground/SKILL.md
+  # playground: DEPRECATED (v2.28.0) — replaced by Feedback Collector (Blake's feedback_collector_protocol)
   handoff: Generate handoff with expert review (see handoff_creation_protocol)
   review: Review Blake's completion report (MANDATORY before archiving)
   accept: Accept Blake's implementation and archive handoff
@@ -655,7 +655,7 @@ subagent_shortcuts:
 my_tasks:
   - requirement-elicitation.md (3-5 rounds mandatory)
   - design-creation.md
-  # playground: now standalone /playground command (see .claude/skills/playground/SKILL.md)
+  # playground: DEPRECATED (v2.28.0) — replaced by Feedback Collector
   - handoff-creation.md (Blake's only info source)
   - gate-execution.md (quality gates)
   - evidence-collection.md
@@ -834,30 +834,26 @@ design_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/alex/references/design-protocol.md"
   load_when: "When *design workflow is entered, Read the reference and follow it verbatim."
-# ⚠️ Playground — Now Standalone Command
-# The Design Playground has been moved to an independent /playground command.
-# See: .claude/skills/playground/SKILL.md
-# Alex references playground outputs but does not execute the playground workflow.
-playground_reference:
-  command: "/playground"
-  command_file: ".claude/skills/playground/SKILL.md"
-  outputs_location: ".tad/active/playground/"
-  design_spec: "DESIGN-SPEC.md"
+# ⚠️ Feedback Collector Reference (replaced /playground in v2.28.0)
+# For frontend/design tasks, use Feedback Collector instead of /playground.
+# Blake generates overlay feedback HTML alongside the artifact when §8.5 feedback_required: true.
+feedback_collector_reference:
+  protocol_location: ".claude/skills/blake/SKILL.md → feedback_collector_protocol"
+  json_schema: ".tad/templates/feedback-json-schema.md"
+  config: ".tad/config-workflow.yaml → feedback_collector"
 
-  # How Alex uses playground outputs
   integration:
-    in_design: "Reference DESIGN-SPEC.md and prototype HTML in design discussions"
-    in_handoff: "Include playground output paths in handoff's UI Requirements section"
-    on_accept: "Archive playground directory with handoff"
+    in_design: "If task produces non-code artifacts, set feedback_required: true in handoff §8.5"
+    in_handoff: "Include artifact_type and suggested_dimensions in §8.5"
+    on_accept: "Check for feedback JSON via read_feedback_protocol (acceptance-protocol step4e_feedback)"
 
-  # Frontend detection (simplified — suggest /playground instead of running it)
   frontend_suggestion:
     trigger: "Task involves frontend/UI work"
     action: |
       If frontend/UI task detected during *design:
-      Suggest: "This task involves frontend work. Consider running /playground
-      first to explore visual directions, then come back to *design."
-      This is a SUGGESTION, not blocking.
+      Set handoff §8.5 feedback_required: true, artifact_type: frontend_page.
+      Blake will generate overlay feedback HTML alongside the artifact.
+      This replaces the former /playground suggestion.
 
 # ⚠️ MANDATORY: Handoff Creation Protocol (Expert Review)
 handoff_creation_protocol:
@@ -1444,8 +1440,8 @@ success_patterns:
   - ALWAYS run expert review on handoff drafts (min 2 experts)
   - Call experts in PARALLEL for efficiency
   - Integrate ALL P0 issues before marking ready
-  - Suggest /playground for frontend/UI design tasks (standalone command)
-  - Reference playground outputs (DESIGN-SPEC.md) in handoffs when available
+  - For frontend/UI tasks, set feedback_required: true in handoff §8.5 (Feedback Collector replaces /playground)
+  - Blake generates overlay feedback HTML alongside frontend artifacts
   - ALWAYS research existing solutions before designing custom ones
   - Present 2+ options for every significant technical decision
   - Include "build custom" as explicit comparison option
@@ -1495,8 +1491,8 @@ on_start: |
 - `*status` - Panoramic project view (Roadmap, Epics, Handoffs, Ideas)
 - `*learn` - Socratic teaching — understand concepts through guided questions
 - `*analyze` - Start requirement gathering (mandatory 3-5 rounds)
-- `*design` - Create technical design (suggests /playground for frontend tasks)
-- `/playground` - Standalone Design Playground (run separately, outputs referenced by Alex)
+- `*design` - Create technical design (sets feedback_required for frontend tasks)
+- `/playground` - DEPRECATED — use Feedback Collector (handoff §8.5 feedback_required: true)
 - `*product` - Quick access to product-expert
 - `*architect` - Quick access to backend-architect
 - `*handoff` - Create handoff with expert review (6-step protocol)

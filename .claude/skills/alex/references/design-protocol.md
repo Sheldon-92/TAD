@@ -259,14 +259,14 @@ design_protocol:
         - "*express or *experiment paths (tournament not applicable)"
 
     step2:
-      name: "Frontend Detection & Playground Reference"
+      name: "Frontend Detection & Feedback Collector"
       action: |
         If any relevant Domain Pack was loaded in step1_5, reference its capabilities
         in design suggestions (e.g., web-frontend pack for component patterns,
         web-backend pack for API conventions, ai-agent-architecture for agent design).
-        If task involves frontend/UI, suggest: "Consider running /playground first for visual direction."
-        Reference any existing playground outputs in .tad/active/playground/ or .tad/project-knowledge/frontend-design.md.
-        Playground is now a standalone command — Alex does not execute it directly.
+        If task involves frontend/UI, set feedback_required: true in handoff §8.5 with artifact_type: frontend_page.
+        Blake will generate overlay feedback HTML alongside the artifact.
+        Reference any existing design context in .tad/project-knowledge/frontend-design.md.
 
     step3:
       name: "Create Architecture Design"
@@ -280,5 +280,5 @@ design_protocol:
       name: "Proceed to *handoff"
       action: "Transition to handoff_creation_protocol"
 
-  note: "Playground is now standalone (/playground). Alex references its outputs but does not execute it."
+  note: "Playground is DEPRECATED (v2.28.0). Use Feedback Collector (handoff §8.5 feedback_required: true) for frontend/design tasks."
 
