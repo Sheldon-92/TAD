@@ -792,3 +792,35 @@ research_notebook:
     code_review:
       primary: claude_code_reviewer
 
+# ==================== Feedback Collector Configuration ====================
+# TAD v2.28.0 — Structured human feedback for non-code AI artifacts.
+# Phase 1: protocol + schema + config. Phase 2: Alex JSON reader. Phase 3: Playground integration.
+feedback_collector:
+  enabled: true
+  version: "1.0"
+  description: "Structured human feedback for non-code AI artifacts"
+
+  artifact_types:
+    - frontend_page
+    - audio
+    - video
+    - design
+    - brand
+    - generic
+
+  default_dimensions:
+    frontend_page: ["text_content", "images", "buttons", "sections", "layout", "colors", "typography"]
+    audio: ["segments", "tone", "pacing", "volume", "transitions"]
+    video: ["timeline_slices", "subtitles", "effects", "transitions", "music"]
+    design: ["components", "colors", "typography", "layout", "imagery", "spacing"]
+    brand: ["name", "tagline", "color_palette", "typography", "voice_tone", "logo"]
+    generic: []
+
+  html_guidelines:
+    self_contained: true
+    max_embedded_media_kb: 500
+    link_media_above: true
+    naming: "{artifact_name}-feedback.html"
+
+  json_schema_ref: ".tad/templates/feedback-json-schema.md"
+

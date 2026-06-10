@@ -1501,6 +1501,79 @@ domain_pack_trace_protocol:
     - tool: Primary tool used (e.g., WebSearch, Write, Bash, Agent)
   note: "Layer 1 (Hook) records file events automatically. This is Layer 2 (Agent) for step events."
 
+# Feedback Collector Protocol (TAD v2.28.0 — Phase 1)
+# ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:
+# Blake must know this protocol exists to check handoff §8.5; if it's in
+# references/, Blake never loads it because the trigger is defined inside it.
+feedback_collector_protocol:
+  description: "Generate structured feedback HTML alongside non-code artifacts"
+  trigger: "Handoff §8.5 has feedback_required: true"
+  skip_condition: "If feedback_required: false, §8.5 absent, or §8.5 is 'N/A', skip this protocol entirely — no action needed"
+
+  when_to_run: |
+    After completing the main artifact (frontend page, audio, video, design, brand),
+    BEFORE writing the completion report. This is part of the deliverable, not a review step.
+
+  core_principle: |
+    见机行事 — generate the feedback HTML contextually based on the actual artifact.
+    There is NO fixed template. Each artifact type gets a different decomposition.
+    The HTML is disposable and zero-cost to regenerate.
+
+  steps:
+    1_complete_artifact: "Build the main deliverable as specified in the handoff"
+    2_determine_dimensions: |
+      Read §8.5 artifact_type and suggested_dimensions.
+      If suggested_dimensions is empty, use default heuristics by artifact_type
+      (names match config-workflow.yaml default_dimensions — config is canonical source):
+        frontend_page: text_content, images, buttons, sections, layout, colors, typography
+        audio: segments, tone, pacing, volume, transitions
+        video: timeline_slices, subtitles, effects, transitions, music
+        design: components, colors, typography, layout, imagery, spacing
+        brand: name, tagline, color_palette, typography, voice_tone, logo
+        generic: determine dimensions from the artifact structure using LLM judgment
+    3_generate_html: "Create self-contained feedback HTML in the same directory as the artifact"
+    4_report: "Note in completion report: 'Feedback HTML generated at {path}'"
+
+  html_generation_guidelines:
+    structure:
+      - "Self-contained single file: inline CSS, inline JS, no external dependencies"
+      - "Usable on mobile viewports (min-width 320px); all interactive elements have visible labels"
+      - "Card-based layout: one card per reviewable element"
+    card_requirements:
+      - "Preview of the element (text snippet, image thumbnail, audio player, or description)"
+      - "AI analysis: what the element is and why it was generated this way"
+      - "Structured verdict: ok / modify / delete / replace (buttons or radio; display labels may be title-case but exported values MUST be lowercase)"
+      - "Free-text input field for specific instructions"
+      - "Optional: priority selector (high/medium/low)"
+    page_requirements:
+      - "Export JSON button at bottom — generates and downloads feedback JSON"
+      - "Visual state: cards change border/background on feedback (green=OK, yellow=modify, red=delete)"
+      - "Link to media files rather than base64-embed (avoid 10-50MB HTMLs)"
+    naming: "{artifact_name}-feedback.html"
+
+  json_export_contract:
+    description: "Export JSON button MUST produce output conforming to .tad/templates/feedback-json-schema.md"
+    field_name_rule: "Per-element field names must match schema verbatim: id, label, element_type, selector_type, selector_value, reviewed, verdict, structured_feedback, free_text, priority. Top-level fields (version, artifact_type, artifact_path, feedback_html_path, timestamp, elements_total, elements, global_notes, meta) are derived from context."
+    element_ids: "Semantically meaningful and stable across regenerations (e.g., hero-title, nav-btn-about, segment-0015-0030), NOT sequential (elem-001)"
+    iteration_tracking: "Read data-iteration attribute from page root element (set by Blake at generation time)"
+    reviewed_flag: "per-element reviewed = true only if user interacted with that card"
+
+  phase1_guard: |
+    ⚠️ Phase 1 only: Alex cannot yet consume the exported JSON (Phase 2 implements the reader).
+    Blake's completion message MUST include:
+    "Note: Alex feedback processing is not yet implemented (Phase 2). Save the exported
+    JSON for when Phase 2 is complete, or describe the feedback verbally to Alex as a stopgap."
+
+  source_of_truth: |
+    Dimension heuristics above are the runtime source of truth.
+    Config-workflow.yaml default_dimensions is the canonical reference these were derived from.
+    To update dimensions: update config first, then sync this section.
+
+  forbidden_implementations:
+    - "MUST NOT create a fixed HTML template file — generation is contextual"
+    - "MUST NOT move this protocol to references/ — circular trigger risk"
+    - "MUST NOT base64-embed large media (link instead)"
+
 # Completion protocol (TAD v2.0 - Ralph Loop integrated)
 completion_protocol:
   # ⚠️ ANTI-RATIONALIZATION: "代码写完且通过测试了，Completion Report 只是文书工作"

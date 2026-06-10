@@ -483,7 +483,27 @@ path/to/existing.ts  # Changes
 **Status Enum** (use exactly these values in Friction Status table at completion):
 `READY` / `BLOCKED` / `DEGRADED_WITH_APPROVAL` / `EQUIVALENT_SUBSTITUTE` / `NOT_APPLICABLE_WITH_REASON`
 
-### 8.5 🆕 Test Evidence Required
+## 8.5 Feedback Collection (Non-Code Artifacts)
+
+<!-- Optional: omit this entire section for code-only tasks. -->
+<!-- Phase 1: feedback_required MUST be false until Alex read_feedback_protocol
+     is implemented (Phase 2). Setting true before Phase 2 creates feedback HTML
+     that nobody can process yet. -->
+
+> Fill this section when the task produces non-code artifacts that require human
+> judgment for quality assessment. If the task is code-only, write "N/A".
+
+```yaml
+feedback_required: true|false
+artifact_type: frontend_page|audio|video|design|brand|generic
+suggested_dimensions:
+  - "text content"
+  - "layout"
+  - "color palette"
+notes: "Any specific feedback focus areas for Blake"
+```
+
+## 8.6 🆕 Test Evidence Required
 Blake必须提供：
 - [ ] 测试运行截图（所有测试通过）
 - [ ] 覆盖率报告（目标：>80%）
