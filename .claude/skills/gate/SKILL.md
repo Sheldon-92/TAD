@@ -140,6 +140,12 @@ Friction_Status_Check:
         describes the replacement, why it is equivalent, and an evidence path. If missing → WARN.
       - READY and NOT_APPLICABLE_WITH_REASON rows pass without further check.
   blocking_rule: "Unresolved BLOCKED row = BLOCK Gate 3. Other statuses are advisory warnings. Missing Friction Status section = WARN only (backward compat for pre-Friction-Protocol handoffs)."
+  optional_advisory_checker: |
+    Optional advisory smoke alarm (Phase 2):
+      bash .tad/hooks/lib/friction-status-check.sh <completion-report.md>
+    Reports missing/malformed Friction Status evidence, blocked-as-pass, and
+    verdict/prose/checklist mismatches. Advisory only — exit 0 clean, exit 1 warnings.
+    This script must not be registered as a hook or added to settings.
 
 # ⚠️ §9.1 SPEC COMPLIANCE VERIFICATION (BLOCKING) — PRIMARY VERIFICATION SOURCE
 # This REPLACES the former hardcoded test-runner + Acceptance_Verification blocks.
@@ -594,6 +600,10 @@ Gate4_Friction_Review:
         evidence path. Self-review as substitute for expert review → REJECT.
       - READY / NOT_APPLICABLE_WITH_REASON → accepted.
   note: "Alex does NOT re-perform Gate 3 technical validation. This is business-acceptance review of friction handling evidence."
+  optional_advisory_checker: |
+    Optional advisory smoke alarm (Phase 2):
+      bash .tad/hooks/lib/friction-status-check.sh <completion-report.md>
+    Same tool as Gate 3 advisory. Alex may run it before Gate 4 acceptance to catch report drift.
 
 # ⚠️ TASK-TYPE CONDITIONALITY (BLOCKING for code/mixed) — structural role enforcement, NOT AC-driven
 Structural_Subagent_Conditionality:
