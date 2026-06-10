@@ -1548,7 +1548,24 @@ feedback_collector_protocol:
       CARD mode (audio, video, brand, generic):
         Use card-based generation (existing guidelines below)
 
-    4_report: "Note in completion report: 'Feedback HTML generated at {path}'"
+    4_report:
+      action: |
+        After generating feedback HTML:
+        1. Open the feedback HTML in browser (use `open` command on macOS)
+        2. Tell the user:
+           "📋 反馈界面已生成并在浏览器中打开。
+
+            使用方法：
+            - 浏览页面，点击你想评价的元素
+            - 在弹出面板中选择 OK/修改/删除/替换，写备注
+            - 如果觉得界面不合适（输入框太小、拆法不对、想要不同的维度），
+              直接告诉我，我会重新生成一个更合适的版本
+
+            完成后：
+            1. 点底部的 Export JSON 按钮，保存文件
+            2. 把 JSON 文件路径告诉 Alex（Terminal 1）
+            3. Alex 会根据你的反馈生成针对性的修改指令"
+        3. Note in completion report: 'Feedback HTML generated and opened at {path}'
 
   overlay_generation_guidelines:
     description: "For frontend_page and design artifact types — user annotates ON the actual page"
