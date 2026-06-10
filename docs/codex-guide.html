@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAD 使用指南 — Codex CLI Edition</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --orange: #f0883e;
+    --cyan: #39d353;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.7; max-width: 900px; margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+  h1 { font-size: 2.2em; margin-bottom: 8px; }
+  h2 {
+    font-size: 1.5em; margin-top: 56px; margin-bottom: 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 { font-size: 1.15em; margin-top: 28px; margin-bottom: 10px; color: var(--purple); }
+  p { margin-bottom: 14px; }
+  .subtitle { color: var(--text-muted); font-size: 0.95em; margin-bottom: 32px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 4px; font-size: 0.9em;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 20px; overflow-x: auto;
+    font-size: 0.88em; margin: 12px 0 20px;
+    font-family: 'SF Mono', 'Fira Code', monospace; line-height: 1.6;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin: 16px 0;
+  }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .card-green { border-left: 3px solid var(--green); }
+  .card-yellow { border-left: 3px solid var(--yellow); }
+  .card-purple { border-left: 3px solid var(--purple); }
+  .card-orange { border-left: 3px solid var(--orange); }
+  .big-idea {
+    font-size: 1.2em; text-align: center; padding: 32px 24px;
+    background: linear-gradient(135deg, #161b2280, #1a1f2a80);
+    border-radius: 12px; margin: 24px 0;
+    border: 1px solid var(--border);
+  }
+  .big-idea strong { color: var(--accent); }
+
+  /* Triangle diagram */
+  .triangle-wrap { text-align: center; margin: 24px 0; }
+  .triangle-svg { max-width: 400px; width: 100%; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .flow-step {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; font-size: 0.88em;
+    white-space: nowrap;
+  }
+  .flow-step.active { border-color: var(--accent); color: var(--accent); }
+  .flow-arrow { color: var(--text-muted); font-size: 1.2em; }
+
+  /* Gate bar */
+  .gate-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; margin: 16px 0;
+  }
+  .gate-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 12px; text-align: center;
+    font-size: 0.88em;
+  }
+  .gate-item .gate-num {
+    font-size: 1.4em; font-weight: bold; display: block; margin-bottom: 4px;
+  }
+  .gate-item .gate-owner {
+    font-size: 0.78em; color: var(--text-muted); display: block; margin-top: 4px;
+  }
+  .gate-item.alex { border-top: 3px solid var(--accent); }
+  .gate-item.blake { border-top: 3px solid var(--green); }
+
+  /* Command table */
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0 20px;
+    font-size: 0.92em;
+  }
+  th {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 2px solid var(--border); color: var(--text-muted);
+    font-weight: 600; font-size: 0.85em; text-transform: uppercase;
+  }
+  td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code { border: none; background: transparent; padding: 0; color: var(--cyan); }
+
+  /* Pack grid */
+  .pack-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin: 16px 0;
+  }
+  .pack-tag {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px; font-size: 0.85em;
+  }
+  .pack-tag .pack-name { color: var(--cyan); font-weight: 600; }
+  .pack-tag .pack-desc { color: var(--text-muted); font-size: 0.88em; }
+
+  /* Layer diagram */
+  .layer-stack { margin: 16px 0; }
+  .layer-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; border-left: 3px solid var(--border);
+    margin-left: 20px;
+  }
+  .layer-row:first-child { border-left-color: var(--green); }
+  .layer-row:last-child { border-left-color: var(--accent); }
+  .layer-label {
+    font-weight: 600; min-width: 80px; font-size: 0.9em;
+  }
+
+  /* Tip list */
+  .tip {
+    background: var(--surface); border-radius: 8px;
+    padding: 16px 20px; margin: 10px 0;
+    border: 1px solid var(--border);
+  }
+  .tip-title { font-weight: 600; color: var(--yellow); margin-bottom: 6px; }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.78em; font-weight: 600;
+  }
+  .badge-blue { background: #1f6feb33; color: var(--accent); }
+  .badge-green { background: #23883233; color: var(--green); }
+  .badge-purple { background: #8957e533; color: var(--purple); }
+  .badge-orange { background: #9e6a0333; color: var(--orange); }
+
+  .toc { margin: 24px 0; }
+  .toc a { display: block; padding: 4px 0; color: var(--text-muted); font-size: 0.92em; }
+  .toc a:hover { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .gate-bar { grid-template-columns: repeat(2, 1fr); }
+    .pack-grid { grid-template-columns: 1fr; }
+    .flow { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<h1>TAD 使用指南</h1>
+<p class="subtitle">Codex CLI Edition &middot; v2.28.0 &middot; 全中文 &middot; 所有机制一页讲清</p>
+
+<nav class="toc card">
+  <strong>目录</strong>
+  <a href="#what">1. 一句话理解 TAD</a>
+  <a href="#triangle">2. 三角模型：谁做什么</a>
+  <a href="#install">3. 安装（一行命令）</a>
+  <a href="#workflow">4. 核心工作流</a>
+  <a href="#gates">5. 四道质量门</a>
+  <a href="#ralph">6. Ralph Loop：Blake 的迭代引擎</a>
+  <a href="#commands">7. 命令速查表</a>
+  <a href="#packs">8. 25 个能力包</a>
+  <a href="#knowledge">9. 项目知识系统</a>
+  <a href="#epic">10. Epic：大型项目管理</a>
+  <a href="#migration">11. Migration 引擎</a>
+  <a href="#handoff">12. Handoff：信息传递的唯一通道</a>
+  <a href="#diff">13. Codex vs Claude Code</a>
+  <a href="#tips">14. 十个实用技巧</a>
+  <a href="#files">15. 文件结构</a>
+  <a href="#faq">16. 常见问题</a>
+</nav>
+
+<!-- ============================================ -->
+<h2 id="what">1. 一句话理解 TAD</h2>
+
+<div class="big-idea">
+  AI 做所有体力活（设计、写代码、测试、审查）。<br>
+  人类只在 <strong>三个关键点</strong> 把关：需求对不对？优先级对不对？最终结果对不对？<br>
+  <span style="color:var(--text-muted)">这三个点是 80/20 法则的人类端——用 20% 的人工介入避免 80% 的返工。</span>
+</div>
+
+<p>为什么不让 AI 全自动？因为 AI 越强，跑偏时方向越错、速度越快。三个检查站就是刹车。</p>
+
+<!-- ============================================ -->
+<h2 id="triangle">2. 三角模型：谁做什么</h2>
+
+<div class="triangle-wrap">
+<svg class="triangle-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="200,30 50,260 350,260" fill="none" stroke="#30363d" stroke-width="2"/>
+  <circle cx="200" cy="30" r="24" fill="#161b22" stroke="#d29922" stroke-width="2"/>
+  <text x="200" y="36" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">Human</text>
+  <circle cx="50" cy="260" r="24" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="50" y="266" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">Alex</text>
+  <circle cx="350" cy="260" r="24" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+  <text x="350" y="266" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="bold">Blake</text>
+  <text x="200" y="72" text-anchor="middle" fill="#8b949e" font-size="11">价值守护者</text>
+  <text x="50" y="294" text-anchor="middle" fill="#8b949e" font-size="11">方案负责人</text>
+  <text x="350" y="294" text-anchor="middle" fill="#8b949e" font-size="11">执行负责人</text>
+  <text x="115" y="155" text-anchor="middle" fill="#8b949e" font-size="10">需求 &amp; 验收</text>
+  <text x="285" y="155" text-anchor="middle" fill="#8b949e" font-size="10">传递 &amp; 确认</text>
+  <text x="200" y="275" text-anchor="middle" fill="#8b949e" font-size="10">Handoff 文档</text>
+</svg>
+</div>
+
+<div class="card card-yellow">
+  <strong>Human（你）</strong> — 价值守护者<br>
+  不用写代码，只做三件事：确认需求 → 定优先级 → 验收结果。<br>
+  你是 Alex 和 Blake 之间的唯一信息桥梁。
+</div>
+<div class="card card-accent">
+  <strong>Alex</strong> — 方案负责人 <span class="badge badge-blue">$alex</span><br>
+  接收你的需求 → 提问澄清 → 设计方案 → 写 Handoff 文档 → 最终验收。<br>
+  <em>Alex 只设计，不写代码。</em>
+</div>
+<div class="card card-green">
+  <strong>Blake</strong> — 执行负责人 <span class="badge badge-green">$blake</span><br>
+  读取 Handoff → 写代码 → 跑测试 → 调 AI 专家审查 → 交完工报告。<br>
+  <em>Blake 只执行，不做设计决策。</em>
+</div>
+
+<!-- ============================================ -->
+<h2 id="install">3. 安装</h2>
+
+<h3>Codex 专用</h3>
+<pre>curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes</pre>
+
+<h3>双平台（Claude Code + Codex）</h3>
+<pre>curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform both --yes</pre>
+
+<h3>交互式（可选能力包）</h3>
+<pre>npx github:Sheldon-92/TAD</pre>
+
+<h3>验证</h3>
+<pre>cat .tad/version.txt                    # → 2.28.0
+ls .agents/skills/ | head -5            # → alex/ blake/ ...
+test -f .tad/hooks/lib/migration-engine.sh && echo OK</pre>
+
+<p><strong>升级</strong>：同一条 curl 命令。v2.28.0 起自动通过 migration 引擎清理旧文件。</p>
+
+<!-- ============================================ -->
+<h2 id="workflow">4. 核心工作流</h2>
+
+<p>一个功能从想法到上线的完整路径：</p>
+
+<div class="flow">
+  <span class="flow-step active">$alex</span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*analyze<br><small>需求提问 3-5 轮</small></span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*design<br><small>技术方案</small></span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*handoff<br><small>交接文档 + 专家审查</small></span>
+</div>
+<div class="flow">
+  <span class="flow-step active" style="border-color:var(--green);color:var(--green)">$blake</span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*develop<br><small>Ralph Loop 实现</small></span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*gate 3<br><small>技术质量门</small></span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*complete<br><small>完工报告</small></span>
+</div>
+<div class="flow">
+  <span class="flow-step active">$alex</span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step">*accept<br><small>业务验收 + 归档</small></span>
+  <span class="flow-arrow">&rarr;</span>
+  <span class="flow-step" style="border-color:var(--green);color:var(--green)">Done!</span>
+</div>
+
+<div class="card">
+  <strong>什么时候用 TAD？</strong>
+  <p>新功能（3+ 文件）、架构变更、多模块重构 → 用 TAD</p>
+  <p>单文件 bug、改配置、文档更新、紧急修复 → 直接让 Codex 干</p>
+</div>
+
+<!-- ============================================ -->
+<h2 id="gates">5. 四道质量门</h2>
+
+<p>每道门都是强制检查站。不通过就不能往下走。</p>
+
+<div class="gate-bar">
+  <div class="gate-item alex">
+    <span class="gate-num">G1</span>
+    需求清晰
+    <span class="gate-owner">Alex 负责</span>
+  </div>
+  <div class="gate-item alex">
+    <span class="gate-num">G2</span>
+    设计完整
+    <span class="gate-owner">Alex + 专家</span>
+  </div>
+  <div class="gate-item blake">
+    <span class="gate-num">G3</span>
+    代码质量
+    <span class="gate-owner">Blake + 专家</span>
+  </div>
+  <div class="gate-item alex">
+    <span class="gate-num">G4</span>
+    业务验收
+    <span class="gate-owner">Alex + 人类</span>
+  </div>
+</div>
+
+<div class="card card-green">
+  <strong>Gate 3 详解（最复杂的一道）</strong>
+  <div class="layer-stack">
+    <div class="layer-row" style="border-left-color:var(--green)">
+      <span class="layer-label" style="color:var(--green)">Layer 1</span>
+      <span>Blake 自检：build → test → lint（最多重试 15 次）</span>
+    </div>
+    <div class="layer-row" style="border-left-color:var(--accent)">
+      <span class="layer-label" style="color:var(--accent)">Layer 2</span>
+      <span>AI 专家审查：spec-compliance → code-reviewer → security-auditor</span>
+    </div>
+  </div>
+  <p style="color:var(--text-muted);font-size:0.88em">Layer 1 全过了才进 Layer 2。Layer 2 发现 P0 问题必须修复再重跑。</p>
+</div>
+
+<!-- ============================================ -->
+<h2 id="ralph">6. Ralph Loop：Blake 的迭代引擎</h2>
+
+<p>Blake 不是写完代码就交差。<code>*develop</code> 启动一个自动迭代循环：</p>
+
+<pre>
+Ralph Loop:
+  ┌─ 实现代码
+  │
+  ├─ Layer 1: build + test + lint
+  │   └─ 失败？自动修 → 重跑（最多 15 次）
+  │
+  ├─ Layer 2: 调 AI 专家审查
+  │   └─ 有 P0？修复 → 回到 Layer 1
+  │
+  └─ 全过？→ 生成完工报告 → Gate 3
+</pre>
+
+<p><strong>Circuit Breaker</strong>：Layer 1 连续 3 次同一个错误 → 自动停止，上报 Alex，不做无效重试。</p>
+
+<!-- ============================================ -->
+<h2 id="commands">7. 命令速查表</h2>
+
+<h3>Alex 命令 <span class="badge badge-blue">$alex 后输入</span></h3>
+<table>
+  <tr><th>命令</th><th>做什么</th><th>什么时候用</th></tr>
+  <tr><td><code>*analyze</code></td><td>需求分析（Socratic 提问 3-5 轮）</td><td>开始新功能</td></tr>
+  <tr><td><code>*design</code></td><td>技术设计（自动加载相关能力包）</td><td>需求确认后</td></tr>
+  <tr><td><code>*handoff</code></td><td>生成交接文档（含 2+ 专家审查）</td><td>设计完成后</td></tr>
+  <tr><td><code>*accept</code></td><td>验收 + 归档</td><td>Blake 交完工报告后</td></tr>
+  <tr><td><code>*bug</code></td><td>快速 bug 诊断 → express handoff</td><td>发现 bug</td></tr>
+  <tr><td><code>*discuss</code></td><td>自由讨论（不产出文档）</td><td>聊方向 / 策略</td></tr>
+  <tr><td><code>*idea</code></td><td>记录灵感到 ideas 库</td><td>想到好点子</td></tr>
+  <tr><td><code>*idea-list</code></td><td>浏览所有存档的想法</td><td>回顾灵感</td></tr>
+  <tr><td><code>*idea-promote</code></td><td>把想法升级为正式任务</td><td>决定做某个想法</td></tr>
+  <tr><td><code>*learn</code></td><td>苏格拉底式教学</td><td>学新概念</td></tr>
+  <tr><td><code>*status</code></td><td>全景视图（Epic + Handoff + Idea）</td><td>看项目全貌</td></tr>
+  <tr><td><code>*research-plan</code></td><td>目标驱动的研究计划</td><td>需要深入调研</td></tr>
+  <tr><td><code>*dream</code></td><td>整合项目知识（去重 + 合并）</td><td>知识条目 50+ 时</td></tr>
+  <tr><td><code>*optimize</code></td><td>分析执行轨迹，提出改进</td><td>想优化工作流</td></tr>
+  <tr><td><code>*publish</code></td><td>推送 TAD 更新到 GitHub</td><td>发版</td></tr>
+  <tr><td><code>*sync</code></td><td>同步 TAD 到注册项目</td><td>发版后分发</td></tr>
+</table>
+
+<h3>Blake 命令 <span class="badge badge-green">$blake 后输入</span></h3>
+<table>
+  <tr><th>命令</th><th>做什么</th><th>什么时候用</th></tr>
+  <tr><td><code>*develop</code></td><td>启动 Ralph Loop（全自动迭代）</td><td>收到 handoff 后</td></tr>
+  <tr><td><code>*layer1</code></td><td>只跑 build / test / lint</td><td>快速自检</td></tr>
+  <tr><td><code>*layer2</code></td><td>只跑专家审查</td><td>要代码审查</td></tr>
+  <tr><td><code>*gate 3</code></td><td>执行 Gate 3 技术质量门</td><td>实现完后</td></tr>
+  <tr><td><code>*complete</code></td><td>生成完工报告</td><td>Gate 3 通过后</td></tr>
+  <tr><td><code>*ralph-status</code></td><td>查看 Ralph Loop 进度</td><td>想看状态</td></tr>
+</table>
+
+<!-- ============================================ -->
+<h2 id="packs">8. 25 个能力包</h2>
+
+<p>能力包 = 某个领域的专家知识（决策规则 + 工具推荐 + 反模式清单）。Alex 设计时根据任务关键词自动加载。</p>
+
+<h3>Web 开发 <span class="badge badge-blue">6 个</span></h3>
+<div class="pack-grid">
+  <div class="pack-tag"><span class="pack-name">web-frontend</span><br><span class="pack-desc">React 组件、状态管理、性能</span></div>
+  <div class="pack-tag"><span class="pack-name">web-backend</span><br><span class="pack-desc">API 设计、数据库、43 条决策规则</span></div>
+  <div class="pack-tag"><span class="pack-name">web-ui-design</span><br><span class="pack-desc">UI 设计 + anti-slop 规则</span></div>
+  <div class="pack-tag"><span class="pack-name">web-testing</span><br><span class="pack-desc">单元 / E2E / 性能 / 可访问性</span></div>
+  <div class="pack-tag"><span class="pack-name">web-deployment</span><br><span class="pack-desc">CI/CD、Docker、监控</span></div>
+  <div class="pack-tag"><span class="pack-name">web-frontend (design)</span><br><span class="pack-desc">design token、anti-AI-slop</span></div>
+</div>
+
+<h3>AI / ML <span class="badge badge-purple">7 个</span></h3>
+<div class="pack-grid">
+  <div class="pack-tag"><span class="pack-name">ai-prompt-engineering</span><br><span class="pack-desc">提示词全生命周期</span></div>
+  <div class="pack-tag"><span class="pack-name">ai-evaluation</span><br><span class="pack-desc">LLM 评测 + 红队</span></div>
+  <div class="pack-tag"><span class="pack-name">ai-guardrails</span><br><span class="pack-desc">注入防御 + PII 脱敏</span></div>
+  <div class="pack-tag"><span class="pack-name">ai-agent-architecture</span><br><span class="pack-desc">Agent 系统 10 大决策</span></div>
+  <div class="pack-tag"><span class="pack-name">ai-tool-integration</span><br><span class="pack-desc">MCP 服务器开发</span></div>
+  <div class="pack-tag"><span class="pack-name">agent-orchestration</span><br><span class="pack-desc">多 Agent 编排</span></div>
+  <div class="pack-tag"><span class="pack-name">agent-memory</span><br><span class="pack-desc">Agent 记忆架构</span></div>
+</div>
+
+<h3>移动端 <span class="badge badge-orange">4 个</span></h3>
+<div class="pack-grid">
+  <div class="pack-tag"><span class="pack-name">mobile-development</span><br><span class="pack-desc">React Native / Swift</span></div>
+  <div class="pack-tag"><span class="pack-name">mobile-ui-design</span><br><span class="pack-desc">iOS HIG / Material 3</span></div>
+  <div class="pack-tag"><span class="pack-name">mobile-testing</span><br><span class="pack-desc">设备兼容 + 性能</span></div>
+  <div class="pack-tag"><span class="pack-name">mobile-release</span><br><span class="pack-desc">App Store 上架</span></div>
+</div>
+
+<h3>硬件 <span class="badge badge-green">4 个</span></h3>
+<div class="pack-grid">
+  <div class="pack-tag"><span class="pack-name">hw-circuit-design</span><br><span class="pack-desc">PCB 原理图 + BOM</span></div>
+  <div class="pack-tag"><span class="pack-name">hw-firmware</span><br><span class="pack-desc">ESP32 固件开发</span></div>
+  <div class="pack-tag"><span class="pack-name">hw-enclosure</span><br><span class="pack-desc">外壳 3D 建模</span></div>
+  <div class="pack-tag"><span class="pack-name">hw-testing</span><br><span class="pack-desc">上电到量产验证</span></div>
+</div>
+
+<h3>研究 / 安全 / 数据 <span class="badge badge-purple">4 个</span></h3>
+<div class="pack-grid">
+  <div class="pack-tag"><span class="pack-name">research-methodology</span><br><span class="pack-desc">5 阶段研究流程</span></div>
+  <div class="pack-tag"><span class="pack-name">academic-research</span><br><span class="pack-desc">文献综述 + PRISMA</span></div>
+  <div class="pack-tag"><span class="pack-name">code-security</span><br><span class="pack-desc">SAST / DAST / Secret</span></div>
+  <div class="pack-tag"><span class="pack-name">supply-chain-security</span><br><span class="pack-desc">依赖审计 + 投毒检测</span></div>
+</div>
+
+<!-- ============================================ -->
+<h2 id="knowledge">9. 项目知识系统</h2>
+
+<div class="card card-purple">
+  <strong>核心思路</strong>：每次 Gate 通过后，agent 自问"这次有什么值得记住的？"有就存下来，下次自动读取。
+</div>
+
+<h3>三层结构</h3>
+<table>
+  <tr><th>层</th><th>内容</th><th>例子</th></tr>
+  <tr><td><strong>L1 原则</strong></td><td>TAD 方法论规则（很少改）</td><td>"deny-list 比 allow-list 安全"</td></tr>
+  <tr><td><strong>L2 模式</strong></td><td>可复用经验（按主题分文件）</td><td>"macOS pwd -P 不规范化大小写"</td></tr>
+  <tr><td><strong>L3 事件</strong></td><td>一次性事件记录</td><td>"2026-03-24 litellm 投毒事件"</td></tr>
+</table>
+
+<h3>自动行为</h3>
+<ul style="margin:12px 0 12px 20px;">
+  <li>Gate 3 通过 → Blake 评估是否有新发现 → 写入 L2</li>
+  <li>Gate 4 通过 → Alex 评估业务层发现 → 写入 L2</li>
+  <li><code>*design</code> 时 → Alex 自动读取相关历史经验</li>
+  <li><code>*dream</code> → 去重 + 合并 + 清理过时条目</li>
+</ul>
+
+<!-- ============================================ -->
+<h2 id="epic">10. Epic：大型项目管理</h2>
+
+<p>改 3 个文件是一个 Handoff。改 30 个文件跨 5 个模块？拆成 <strong>Epic</strong>。</p>
+
+<div class="card">
+  <strong>Epic = 多个 Phase，每个 Phase 一个 Handoff</strong>
+  <pre style="margin-top:12px">
+Epic: 用户认证系统
+├── Phase 1: 数据库 schema 设计        ← Handoff → Blake → Gate 3 → Gate 4 ✅
+├── Phase 2: API 接口实现              ← Handoff → Blake → Gate 3 → Gate 4 ✅
+├── Phase 3: 前端登录页面              ← 🔄 进行中
+├── Phase 4: OAuth 集成                ← ⬚ 计划中
+└── Phase 5: 安全审计 + 验收           ← ⬚ 计划中</pre>
+</div>
+
+<h3>关键规则</h3>
+<ul style="margin:12px 0 12px 20px;">
+  <li>同时只能有 1 个 Active Phase（避免混乱）</li>
+  <li>每个 Phase 完成后更新 Epic 的 Phase Map</li>
+  <li>所有 Phase 完成 → Epic 归档到 <code>.tad/archive/epics/</code></li>
+</ul>
+
+<h3>YOLO 模式</h3>
+<p>明确知道要做什么？<strong>YOLO 模式</strong>让 Alex 自动驱动所有 Phase：设计 → 审查 → 调 Blake 实现 → 审查 → Gate → 下一个 Phase。人类只在开头和结尾介入。</p>
+
+<!-- ============================================ -->
+<h2 id="migration">11. Migration 引擎</h2>
+
+<p>v2.28.0 新增。解决一个老问题：<strong>升级 TAD 后旧文件留垃圾</strong>。</p>
+
+<div class="card card-accent">
+  <strong>原理</strong>
+  <p>每个版本附带一个 manifest（<code>.tad/migrations/2.26.0-to-2.27.0.yaml</code>），声明该版本"删了什么、改名了什么、合并了什么"。升级时引擎读取 manifest 链并执行。</p>
+</div>
+
+<h3>五步安全流水线</h3>
+<p>每个文件操作（删除/重命名/合并）都过这五步检查：</p>
+<table>
+  <tr><th>步骤</th><th>检查什么</th><th>不过怎么办</th></tr>
+  <tr><td>1. 路径规范化</td><td>去掉 <code>..</code>、多余斜杠</td><td>拒绝</td></tr>
+  <tr><td>2. 禁止字符</td><td>反斜杠、控制字符、冒号</td><td>拒绝</td></tr>
+  <tr><td>3. 前缀白名单</td><td>只允许 <code>.tad/</code> <code>.claude/</code> 等</td><td>拒绝</td></tr>
+  <tr><td>4. 物理路径验证</td><td>cd + pwd -P，防 symlink 逃逸</td><td>拒绝</td></tr>
+  <tr><td>5. ZERO_TOUCH 检查</td><td>不碰用户数据目录</td><td>拒绝</td></tr>
+</table>
+
+<h3>其他安全机制</h3>
+<ul style="margin:12px 0 12px 20px;">
+  <li><strong>单一删除咽喉点</strong>：整个引擎只有一处 <code>rm</code>（guarded_remove），删前现场重验</li>
+  <li><strong>用户修改保护</strong>：你改过的框架文件不会被删，跳过 + 报告</li>
+  <li><strong>备份</strong>：删除前先备份到 <code>.tad-backup/{from}-to-{to}/</code></li>
+  <li><strong>幂等</strong>：跑两次效果和一次一样</li>
+  <li><strong>发版门禁</strong>：删了文件但忘写 manifest → 发版自动阻断</li>
+</ul>
+
+<!-- ============================================ -->
+<h2 id="handoff">12. Handoff：信息传递的唯一通道</h2>
+
+<p>Handoff = Alex 写给 Blake 的交接文档。这是 Blake 获取任务信息的<strong>唯一来源</strong>。</p>
+
+<div class="card">
+  <strong>Handoff 包含什么</strong>
+  <table style="margin-top:8px">
+    <tr><td>§1 任务概述</td><td>做什么、为什么做、意图声明</td></tr>
+    <tr><td>§2 背景</td><td>已有代码、依赖、之前的工作</td></tr>
+    <tr><td>§3 需求</td><td>功能需求 + 非功能需求</td></tr>
+    <tr><td>§4 技术设计</td><td>架构图、组件规格、数据模型</td></tr>
+    <tr><td>§5 强制问题</td><td>历史搜索、函数验证、数据流</td></tr>
+    <tr><td>§6 实现步骤</td><td>Blake 的具体任务清单</td></tr>
+    <tr><td>§7 文件结构</td><td>要创建/修改的文件列表</td></tr>
+    <tr><td>§8 测试要求</td><td>需要什么测试、怎么验证</td></tr>
+    <tr><td>§9 验收标准</td><td>逐条可验证的 AC + bash 命令</td></tr>
+  </table>
+</div>
+
+<p><strong>关键规则</strong>：Handoff 创建前必须经过 2+ 位 AI 专家审查。P0 问题必须修复才能发给 Blake。</p>
+
+<!-- ============================================ -->
+<h2 id="diff">13. Codex vs Claude Code</h2>
+
+<table>
+  <tr><th>方面</th><th>Claude Code</th><th>Codex CLI</th></tr>
+  <tr><td>角色激活</td><td><code>/alex</code> <code>/blake</code></td><td><code>$alex</code> <code>$blake</code></td></tr>
+  <tr><td>Skill 目录</td><td><code>.claude/skills/</code></td><td><code>.agents/skills/</code></td></tr>
+  <tr><td>Workflow</td><td><code>.claude/workflows/*.js</code></td><td>不支持</td></tr>
+  <tr><td>MCP</td><td>settings.json 配置</td><td>config.toml（待激活）</td></tr>
+  <tr><td>上下文压缩</td><td>自动 + session-state.md</td><td>自动 + <code>/compact</code></td></tr>
+  <tr><td>子 agent</td><td>Agent tool + subagent_type</td><td>内置 default/worker/explorer</td></tr>
+</table>
+
+<div class="card card-green">
+  <strong>完全共享的</strong>：Gates 1-4、Handoff 协议、Layer 2 审查标准、Ralph Loop、Knowledge Assessment、Completion Report 格式。你在一个平台积累的项目知识，另一个平台也能用。
+</div>
+
+<!-- ============================================ -->
+<h2 id="tips">14. 十个实用技巧</h2>
+
+<div class="tip">
+  <div class="tip-title">1. *discuss 当产品顾问</div>
+  不写代码也能用 TAD。<code>*discuss</code> 可以做产品方向讨论、技术选型、竞品分析。结束时不产出 handoff。
+</div>
+<div class="tip">
+  <div class="tip-title">2. *idea 攒灵感</div>
+  想到好点子不想现在做？<code>*idea</code> 存档。以后 <code>*idea-list</code> 回顾，<code>*idea-promote</code> 升级为正式任务。
+</div>
+<div class="tip">
+  <div class="tip-title">3. *learn 学新技术</div>
+  不理解某个概念？<code>*learn</code> 走苏格拉底式教学——通过提问引导你理解，比直接告诉答案学得深。
+</div>
+<div class="tip">
+  <div class="tip-title">4. *bug 快速修 bug</div>
+  不用走完整流程。<code>*bug</code> 快速诊断 → express handoff → Blake 修。适合范围明确的 bug。
+</div>
+<div class="tip">
+  <div class="tip-title">5. *status 看全景</div>
+  一个命令看到所有进行中的 Epic、待处理的 Handoff、存档的 Idea、Roadmap 主题。
+</div>
+<div class="tip">
+  <div class="tip-title">6. 能力包自动加载</div>
+  讨论 API 设计 → 自动加载 web-backend（43 条规则）。做 React → 自动加载 web-frontend。也可以手动指定。
+</div>
+<div class="tip">
+  <div class="tip-title">7. YOLO 模式跑大任务</div>
+  大型 Epic 可以用 YOLO 模式：Alex 自动设计 → 审查 → 调 Blake → 审查 → Gate → 下一 Phase。人类只在开头和结尾介入。
+</div>
+<div class="tip">
+  <div class="tip-title">8. 知识自动积累</div>
+  Gate 通过后 agent 自动评估学到了什么，存入项目知识库。下次做类似任务自动读取，不用手动管理。
+</div>
+<div class="tip">
+  <div class="tip-title">9. CLAUDE.md marker 保护内容</div>
+  在 CLAUDE.md 里加 <code>&lt;!-- TAD:PROJECT-CONTENT-BELOW --&gt;</code>，升级时你写在下面的内容不会被覆盖。
+</div>
+<div class="tip">
+  <div class="tip-title">10. *dream 清理知识库</div>
+  知识积累到 50+ 条后，<code>*dream</code> 自动去重、合并、清理过时条目。只生成候选等你确认，不直接改原文件。
+</div>
+
+<!-- ============================================ -->
+<h2 id="files">15. 文件结构</h2>
+
+<pre>
+你的项目/
+├── .agents/skills/              ← Codex skill 目录
+│   ├── alex/SKILL.md            ← Alex 角色定义
+│   ├── blake/SKILL.md           ← Blake 角色定义
+│   └── {pack}/SKILL.md          ← 能力包
+├── .codex/hooks.json            ← Codex 生命周期钩子
+├── .tad/
+│   ├── config.yaml              ← TAD 主配置
+│   ├── version.txt              ← 当前版本号
+│   ├── active/                  ← 进行中的工作
+│   │   ├── handoffs/            ←   活跃 Handoff
+│   │   ├── epics/               ←   活跃 Epic
+│   │   └── ideas/               ←   灵感库
+│   ├── archive/                 ← 已完成的工作
+│   ├── evidence/                ← 审查证据 + 测试报告
+│   ├── project-knowledge/       ← 项目知识库（自动）
+│   │   ├── principles.md        ←   L1 原则
+│   │   └── patterns/            ←   L2 模式
+│   ├── hooks/lib/               ← 框架脚本
+│   │   ├── migration-engine.sh  ←   升级引擎
+│   │   ├── release-verify.sh    ←   发版门禁
+│   │   └── derive-sync-set.sh   ←   同步集推导
+│   ├── migrations/              ← 版本迁移 manifest
+│   ├── templates/               ← 文档模板
+│   └── decisions/               ← 决策记录 (DR)
+├── AGENTS.md                    ← 角色路由（Codex 读）
+├── CLAUDE.md                    ← 框架规则（Claude Code 读）
+└── tad.sh                       ← 安装 / 升级脚本
+</pre>
+
+<!-- ============================================ -->
+<h2 id="faq">16. 常见问题</h2>
+
+<div class="card">
+  <strong>Q: $alex 没反应？</strong><br>
+  检查 <code>.agents/skills/alex/SKILL.md</code> 是否存在。不存在就重装：<br>
+  <code>curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes</code>
+</div>
+<div class="card">
+  <strong>Q: Gate 3 失败说没有 evidence？</strong><br>
+  Blake 必须调 AI 子 agent 做审查。检查 <code>.tad/evidence/reviews/</code> 目录是否有审查文件。
+</div>
+<div class="card">
+  <strong>Q: Blake 看不到 Alex 写的 Handoff？</strong><br>
+  TAD 设计上 Alex 和 Blake 在不同终端。你是两者之间的桥梁——需要手动把 Handoff 路径告诉 Blake。
+</div>
+<div class="card">
+  <strong>Q: 升级后旧文件还在？</strong><br>
+  v2.28.0 之前没有 migration 引擎。首次升级到 2.28.0+ 后，后续升级自动处理。手动清理：<br>
+  <code>bash .tad/hooks/lib/migration-engine.sh --from &lt;旧版本&gt; --to 2.28.0 --target . --source &lt;tad源目录&gt;</code>
+</div>
+<div class="card">
+  <strong>Q: 能力包没加载？</strong><br>
+  Packs 按需加载。在 <code>*design</code> 时说"请加载 ai-guardrails pack"即可手动指定。
+</div>
+<div class="card">
+  <strong>Q: TAD 占多少 context？</strong><br>
+  CLAUDE.md 路由层 ~2K tokens。SKILL 文件按需加载（progressive loading），只在激活角色时加载。能力包按关键词匹配动态加载。
+</div>
+
+<footer style="margin-top:64px;padding-top:24px;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.85em;text-align:center;">
+  TAD v2.28.0 &middot; <a href="https://github.com/Sheldon-92/TAD">GitHub</a> &middot; MIT License
+</footer>
+
+</body>
+</html>
