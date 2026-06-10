@@ -160,6 +160,24 @@ acceptance_protocol:
       enforcement Epic 1 was rejected for (per architecture.md
       "Mechanical Enforcement Rejected on Single-User CLI - 2026-04-15").
 
+  step4e_feedback:
+    name: "Feedback Collection Check (soft/advisory — Phase 2)"
+    blocking: false
+    action: |
+      If handoff §8.5 feedback_required: true:
+        1. Check Blake's completion report for feedback HTML path
+        2. If feedback HTML exists → check for exported JSON at {artifact_path}-feedback.json
+           or ask human: "Did you export feedback JSON? Provide path or skip."
+        3. If JSON found → run read_feedback_protocol from SKILL.md body
+           (load, summarize, group by verdict, generate modification handoff draft)
+        4. If JSON NOT found AND human says "no feedback" → continue (soft check, no block)
+      If handoff §8.5 absent or feedback_required: false:
+        Skip entirely.
+    rationale: |
+      Phase 2 of Feedback Collector. Bridges the acceptance flow to the
+      read_feedback_protocol in Alex SKILL.md body. SOFT check — warns but
+      does not block Gate 4. Blocking enforcement deferred to Phase 3.
+
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7:

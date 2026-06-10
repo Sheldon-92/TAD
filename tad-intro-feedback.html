@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" data-iteration="1">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback: TAD Introduction Page</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --ok: #16a34a;
+    --ok-bg: #f0fdf4;
+    --modify: #d97706;
+    --modify-bg: #fffbeb;
+    --delete: #dc2626;
+    --delete-bg: #fef2f2;
+    --replace: #7c3aed;
+    --replace-bg: #f5f3ff;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 24px;
+  }
+  .header {
+    max-width: 720px;
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .header .meta { color: var(--muted); font-size: 0.85rem; }
+
+  .cards { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  .card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .card[data-verdict="ok"] { border-color: var(--ok); background: var(--ok-bg); }
+  .card[data-verdict="modify"] { border-color: var(--modify); background: var(--modify-bg); }
+  .card[data-verdict="delete"] { border-color: var(--delete); background: var(--delete-bg); }
+  .card[data-verdict="replace"] { border-color: var(--replace); background: var(--replace-bg); }
+
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .card-header h3 { font-size: 1rem; font-weight: 600; }
+  .card-header .element-type {
+    font-size: 0.75rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+
+  .preview {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+  }
+  .preview .label { font-weight: 600; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+
+  .ai-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 3px solid var(--border);
+  }
+
+  .verdict-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .verdict-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .verdict-btn:hover { border-color: var(--muted); }
+  .verdict-btn.active[data-v="ok"] { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+  .verdict-btn.active[data-v="modify"] { border-color: var(--modify); background: var(--modify-bg); color: var(--modify); }
+  .verdict-btn.active[data-v="delete"] { border-color: var(--delete); background: var(--delete-bg); color: var(--delete); }
+  .verdict-btn.active[data-v="replace"] { border-color: var(--replace); background: var(--replace-bg); color: var(--replace); }
+
+  .feedback-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .feedback-input:focus { outline: none; border-color: var(--accent); }
+
+  .priority-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .priority-row label { font-size: 0.85rem; color: var(--muted); }
+  .priority-row select {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: var(--surface);
+  }
+
+  .global-section {
+    max-width: 720px;
+    margin: 32px auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .global-section h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+
+  .export-section {
+    max-width: 720px;
+    margin: 32px auto;
+    text-align: center;
+  }
+  .export-btn {
+    padding: 14px 32px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .export-btn:hover { background: #1d4ed8; }
+
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .verdict-buttons { gap: 6px; }
+    .verdict-btn { padding: 6px 12px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Feedback: TAD Introduction Page</h1>
+  <p class="meta">Artifact: tad-intro.html &middot; Type: frontend_page &middot; Iteration: 1</p>
+</div>
+
+<div class="cards">
+
+  <!-- Card 1: Hero Title -->
+  <div class="card" id="card-hero-title" data-element-id="hero-title" data-element-type="heading" data-selector-type="css" data-selector-value="header.hero h1">
+    <div class="card-header">
+      <h3>Hero Title</h3>
+      <span class="element-type">heading</span>
+    </div>
+    <div class="preview">
+      <div class="label">Current content</div>
+      Triangle <strong style="color:#2563eb">Agent</strong> Development
+    </div>
+    <div class="ai-note">The title uses the full framework name with "Agent" highlighted in blue to draw attention to the AI-agent nature of the methodology. The word order mirrors the TAD acronym.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions (e.g., 'Make it shorter', 'Change wording to...')"></textarea>
+    <div class="priority-row">
+      <label for="priority-hero-title">Priority:</label>
+      <select id="priority-hero-title"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+  <!-- Card 2: Subtitle -->
+  <div class="card" id="card-hero-subtitle" data-element-id="hero-subtitle" data-element-type="text" data-selector-type="css" data-selector-value="p.subtitle">
+    <div class="card-header">
+      <h3>Hero Subtitle</h3>
+      <span class="element-type">text</span>
+    </div>
+    <div class="preview">
+      <div class="label">Current content</div>
+      A methodology for building software with AI agents — two agents, four quality gates, and a human in the loop.
+    </div>
+    <div class="ai-note">One-sentence summary covering the three pillars (agents, gates, human). Positioned as a "methodology" rather than a "tool" to set expectations correctly.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions..."></textarea>
+    <div class="priority-row">
+      <label for="priority-hero-subtitle">Priority:</label>
+      <select id="priority-hero-subtitle"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+  <!-- Card 3: What is TAD section -->
+  <div class="card" id="card-what-is-tad" data-element-id="what-is-tad" data-element-type="section" data-selector-type="css" data-selector-value="section.what-is">
+    <div class="card-header">
+      <h3>What is TAD? Section</h3>
+      <span class="element-type">section</span>
+    </div>
+    <div class="preview">
+      <div class="label">Current content (2 paragraphs)</div>
+      <p style="margin-bottom:8px">TAD is a structured methodology for software development where two specialized AI agents collaborate under human supervision. Alex designs solutions... Blake implements them...</p>
+      <p>The framework enforces quality through four mandatory gates, evidence-based verification, and terminal isolation between agents.</p>
+    </div>
+    <div class="ai-note">Two short paragraphs: first explains the agent model, second explains quality enforcement. Kept concise to avoid information overload on an intro page.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions..."></textarea>
+    <div class="priority-row">
+      <label for="priority-what-is-tad">Priority:</label>
+      <select id="priority-what-is-tad"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+  <!-- Card 4: Feature Cards -->
+  <div class="card" id="card-features-grid" data-element-id="features-grid" data-element-type="section" data-selector-type="css" data-selector-value="div.features-grid">
+    <div class="card-header">
+      <h3>Key Features (4 cards)</h3>
+      <span class="element-type">layout</span>
+    </div>
+    <div class="preview">
+      <div class="label">Features presented</div>
+      <ol style="padding-left:20px;font-size:0.9rem">
+        <li><strong>Two-Agent System</strong> — Alex designs, Blake implements</li>
+        <li><strong>Four Quality Gates</strong> — Requirements, Design, Implementation, Acceptance</li>
+        <li><strong>Ralph Loop</strong> — Iterative quality cycle with sub-agent reviews</li>
+        <li><strong>Structured Feedback</strong> — Element-level feedback HTML for non-code artifacts</li>
+      </ol>
+    </div>
+    <div class="ai-note">Four features chosen as the most distinctive TAD differentiators. 2x2 grid layout on desktop, single column on mobile. Icons use Unicode characters for zero-dependency rendering.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions (e.g., 'Add a 5th feature about...', 'Change the order')"></textarea>
+    <div class="priority-row">
+      <label for="priority-features-grid">Priority:</label>
+      <select id="priority-features-grid"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+  <!-- Card 5: How It Works Flow -->
+  <div class="card" id="card-how-it-works" data-element-id="how-it-works" data-element-type="section" data-selector-type="css" data-selector-value="div.flow-steps">
+    <div class="card-header">
+      <h3>How It Works (4 steps)</h3>
+      <span class="element-type">section</span>
+    </div>
+    <div class="preview">
+      <div class="label">Steps presented</div>
+      <ol style="padding-left:20px;font-size:0.9rem">
+        <li><strong>Describe your goal</strong> — Tell Alex what you want</li>
+        <li><strong>Alex creates a handoff</strong> — Detailed design document</li>
+        <li><strong>Blake implements</strong> — Through the Ralph Loop</li>
+        <li><strong>You accept the result</strong> — Gate 4 business acceptance</li>
+      </ol>
+    </div>
+    <div class="ai-note">Four steps matching the four gates. Numbered blue circles provide visual progression. Language addresses the user directly ("you") to make the flow feel personal.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions..."></textarea>
+    <div class="priority-row">
+      <label for="priority-how-it-works">Priority:</label>
+      <select id="priority-how-it-works"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+  <!-- Card 6: CTA Section -->
+  <div class="card" id="card-cta" data-element-id="cta-section" data-element-type="section" data-selector-type="css" data-selector-value="div.cta">
+    <div class="card-header">
+      <h3>Get Started (CTA)</h3>
+      <span class="element-type">call-to-action</span>
+    </div>
+    <div class="preview">
+      <div class="label">Current content</div>
+      <p style="font-size:0.9rem"><strong>Get Started</strong></p>
+      <p style="font-size:0.9rem;color:#64748b">Install TAD in any project with a single command.</p>
+      <code style="background:#1e293b;color:#e2e8f0;padding:4px 12px;border-radius:4px;font-size:0.85rem">npx github:Sheldon-92/TAD</code>
+    </div>
+    <div class="ai-note">Single install command in a dark code block for visual contrast. The CTA is contained in a bordered card to separate it from content sections.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions..."></textarea>
+    <div class="priority-row">
+      <label for="priority-cta">Priority:</label>
+      <select id="priority-cta"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+  <!-- Card 7: Overall Design -->
+  <div class="card" id="card-visual-design" data-element-id="visual-design" data-element-type="design" data-selector-type="semantic" data-selector-value="overall page visual design: colors, typography, spacing">
+    <div class="card-header">
+      <h3>Visual Design</h3>
+      <span class="element-type">design</span>
+    </div>
+    <div class="preview">
+      <div class="label">Design choices</div>
+      <ul style="padding-left:20px;font-size:0.9rem">
+        <li>Color palette: warm stone background (#fafaf9), blue accent (#2563eb), neutral text</li>
+        <li>Typography: system font stack (-apple-system, etc.), clean sans-serif</li>
+        <li>Layout: centered single column (800px max), 12px rounded corners</li>
+        <li>Spacing: generous whitespace between sections (48px padding)</li>
+      </ul>
+    </div>
+    <div class="ai-note">Minimalist design with warm neutral background per project knowledge warm-palette rule. Blue accent for TAD branding. No external font dependencies for self-contained rendering.</div>
+    <div class="verdict-buttons">
+      <button class="verdict-btn" data-v="ok" aria-label="OK">OK</button>
+      <button class="verdict-btn" data-v="modify" aria-label="Modify">Modify</button>
+      <button class="verdict-btn" data-v="delete" aria-label="Delete">Delete</button>
+      <button class="verdict-btn" data-v="replace" aria-label="Replace">Replace</button>
+    </div>
+    <textarea class="feedback-input" placeholder="Specific instructions (e.g., 'Use darker background', 'Larger font size')"></textarea>
+    <div class="priority-row">
+      <label for="priority-visual-design">Priority:</label>
+      <select id="priority-visual-design"><option value="">--</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    </div>
+  </div>
+
+</div>
+
+<!-- Global Notes -->
+<div class="global-section">
+  <h3>Overall Notes</h3>
+  <textarea class="feedback-input" id="global-notes" placeholder="Any overall feedback about the page as a whole..." style="min-height:80px"></textarea>
+</div>
+
+<!-- Export -->
+<div class="export-section">
+  <button class="export-btn" onclick="exportJSON()">Export JSON</button>
+</div>
+
+<script>
+(function() {
+  // Verdict button interaction
+  document.querySelectorAll('.card').forEach(card => {
+    card.querySelectorAll('.verdict-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        card.querySelectorAll('.verdict-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        card.setAttribute('data-verdict', this.getAttribute('data-v'));
+      });
+    });
+  });
+})();
+
+function exportJSON() {
+  var iteration = parseInt(document.documentElement.getAttribute('data-iteration')) || 1;
+  var cards = document.querySelectorAll('.card');
+  var elements = [];
+
+  cards.forEach(function(card) {
+    var activeBtn = card.querySelector('.verdict-btn.active');
+    var textarea = card.querySelector('.feedback-input');
+    var prioritySel = card.querySelector('select');
+    var reviewed = !!activeBtn;
+    var verdict = reviewed ? activeBtn.getAttribute('data-v') : null;
+
+    elements.push({
+      id: card.getAttribute('data-element-id'),
+      label: card.querySelector('.card-header h3').textContent.trim(),
+      element_type: card.getAttribute('data-element-type'),
+      selector_type: card.getAttribute('data-selector-type'),
+      selector_value: card.getAttribute('data-selector-value'),
+      reviewed: reviewed,
+      verdict: verdict,
+      structured_feedback: verdict && verdict !== 'ok' ? {
+        text: textarea.value || null,
+        style: null,
+        position: null
+      } : null,
+      free_text: textarea.value || null,
+      priority: prioritySel.value || null
+    });
+  });
+
+  var feedback = {
+    version: '1.0',
+    artifact_type: 'frontend_page',
+    artifact_path: 'tad-intro.html',
+    feedback_html_path: 'tad-intro-feedback.html',
+    timestamp: new Date().toISOString(),
+    elements_total: elements.length,
+    elements: elements,
+    global_notes: document.getElementById('global-notes').value || '',
+    meta: {
+      iteration: iteration,
+      prev_feedback: null
+    }
+  };
+
+  var blob = new Blob([JSON.stringify(feedback, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'tad-intro-feedback.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>

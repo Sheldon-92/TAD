@@ -611,6 +611,29 @@ Structural_Subagent_Conditionality:
   for_rubric_based: "When the handoff's §9.1 ACs are rubric-based (report/audio/video artifacts, no code surface), code subagents are NOT applicable; the Gate 3 rubric-eval verdict: PASS is the structural prerequisite instead. ux-expert-reviewer stays conditional ('if UI involved')."
   anti_skip: "VIOLATION: making the structural subagents AC-driven so Alex could skip security review by not writing an AC. They are role enforcement and MUST NOT be omittable via AC authoring."
 
+# Feedback Collection Check (SOFT/advisory — Phase 2, TAD v2.28.0)
+# Conditional: only applies when handoff §8.5 feedback_required: true.
+# Phase 2 = warn only. Phase 3 will tighten to blocking after dogfood validates.
+Gate4_Feedback_Check:
+  description: "Verify feedback collection for non-code artifacts"
+  trigger: "Handoff §8.5 feedback_required: true"
+  skip_if: "§8.5 absent, feedback_required: false, or N/A"
+  blocking: false
+
+  checks:
+    - "Feedback HTML was generated (path exists in completion report)"
+    - "If human filled out feedback: JSON was exported and processed by Alex"
+    - "If human did NOT fill out feedback: explicit human approval to skip"
+
+  on_warn: |
+    If feedback_required was true but feedback was not collected:
+    "⚠️ FEEDBACK CHECK WARN: Handoff marked feedback_required: true but no feedback
+    was collected. Human accepter: confirm this is intentional."
+
+  note: |
+    SOFT check in Phase 2. Warns but does NOT block Gate 4 acceptance.
+    Blocking enforcement deferred to Phase 3 after E2E dogfood validates the flow.
+
 # ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING) — for task_type IN {code, mixed}
 Required_Subagents:
   - subagent: "security-auditor"

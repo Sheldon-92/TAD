@@ -1029,6 +1029,69 @@ acceptance_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/alex/references/acceptance-protocol.md"
   load_when: "When *review or *accept is invoked, Read the reference and follow it verbatim."
+
+# Feedback JSON Reader Protocol (TAD v2.28.0 — Phase 2)
+# ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:
+# Alex must know this protocol exists to check for feedback JSON during *accept;
+# if it's in references/, Alex never loads it because the trigger is defined inside it.
+read_feedback_protocol:
+  description: "Read feedback JSON exported from a Feedback Collector HTML, generate targeted modification handoff"
+  trigger: "Human provides feedback JSON path, or *accept detects feedback_required handoff"
+  skip_condition: "If no feedback JSON exists and human has no feedback, skip entirely"
+
+  steps:
+    1_load_json:
+      action: "Read the JSON file. Validate version field matches 1.x"
+      error: "If file missing or invalid JSON → ask human for correct path"
+
+    2_summarize:
+      action: |
+        Display feedback summary to human:
+        - Total elements: {elements_total}
+        - Reviewed: {count where reviewed=true}
+        - Verdicts: {count per verdict type}
+        - High priority items: {list}
+        Output: "📋 Feedback summary: {reviewed}/{total} elements reviewed. {modify} to modify, {delete} to delete, {replace} to replace."
+
+    3_group_by_verdict:
+      action: |
+        Group elements by verdict:
+        - ok: no modification task, BUT if free_text is non-empty, surface as informational note
+          in the summary (user typed feedback even though they approved — don't silently discard)
+        - modify: extract element ID, label, structured_feedback, free_text
+        - delete: extract element ID, label, free_text (reason)
+        - replace: extract element ID, label, structured_feedback, free_text
+        Skip elements where reviewed=false (user didn't interact)
+
+    4_generate_handoff:
+      action: |
+        Create a targeted modification handoff for Blake:
+        - Add `supersedes: HANDOFF-{date}-{slug}.md` to frontmatter
+        - Order tasks by priority: high > medium > low > unset
+        - For each non-ok element: create a specific modification task with priority tag
+        - Distinguish verdicts: modify = adjust in-place; replace = remove and recreate; delete = remove entirely
+        - Use element IDs (not descriptions) so Blake can locate exactly what to change
+        - Include iteration number from meta.iteration (increment by 1)
+        - Set feedback_required: true again in §8.5 (iterative feedback loop)
+        - Set §8.5 artifact_type to match the original
+        - ⚠️ Element ID stability: instruct Blake to preserve element IDs for elements that still exist.
+          New elements get new IDs. Deleted elements' IDs are retired.
+      zero_changes: "If all elements are 'ok' or unreviewed → report 'No changes requested' and skip handoff generation"
+
+    5_confirm:
+      action: "Present handoff draft to human for confirmation before sending to Blake"
+
+  global_notes_handling: |
+    If feedback JSON has global_notes (non-empty), include as a top-level
+    direction note in the modification handoff §1.3 Intent Statement.
+
+  max_iteration_advisory: |
+    When meta.iteration >= 5, explicitly ask the human:
+    "This is feedback round {N}. Continue iterating or accept current state?"
+    Advisory, not blocking — human can always override.
+
+  json_schema_ref: ".tad/templates/feedback-json-schema.md"
+
 # ═══════════════════════════════════════
 # Workflow Completion Trigger (Triple-Question KA, 2026-06-03)
 # Lightweight three-question assessment after significant workflow execution.
