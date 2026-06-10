@@ -668,6 +668,54 @@ verify_install_complete() {
 }
 
 # ============================================
+# Phase 4a: Migration Engine (v2.28.0+)
+# ============================================
+# Calls migration-engine.sh to apply version-specific migrations (delete/rename).
+# Engine is the SOLE executor of migration logic — no inline delete/rename here.
+# Exit codes: 0=success, 1=execution error (warn), 2=manifest invalid (warn).
+# Uses || to suppress ERR trap (bash 3.2: set +e does NOT suppress armed trap).
+call_migration_engine() {
+    local src="$1"
+    local old_ver="$2"
+    local new_ver="$3"
+
+    # Skip if no old version (fresh install) or same version
+    if [ "$old_ver" = "none" ] || [ "$old_ver" = "$new_ver" ]; then
+        return 0
+    fi
+
+    local engine="$src/.tad/hooks/lib/migration-engine.sh"
+    if [ ! -f "$engine" ]; then
+        log_warn "  → Migration engine not found in source; skipping migration"
+        return 0
+    fi
+
+    log_info "  → Running migration engine ($old_ver → $new_ver)..."
+
+    # ERR trap bypass: || engine_rc=$? is POSIX-guaranteed to suppress
+    # the ERR trap in bash 3.2 (set +e does NOT suppress an armed trap).
+    local engine_rc=0
+    bash "$engine" --from "$old_ver" --to "$new_ver" --target . --source "$src" || engine_rc=$?
+
+    case $engine_rc in
+        0)
+            log_success "  → Migration completed successfully"
+            ;;
+        2)
+            log_warn "  → Migration skipped: manifest invalid or chain gap (exit 2)"
+            log_warn "    If upgrading from a very old version, consider a clean reinstall"
+            ;;
+        1)
+            log_warn "  → Migration had execution errors (exit 1)"
+            log_warn "    Backup exists in .tad-backup/ for recovery"
+            ;;
+        *)
+            log_warn "  → Migration returned unexpected exit code: $engine_rc"
+            ;;
+    esac
+}
+
+# ============================================
 # Phase 4b: Apply Deprecations (v2.8.2+)
 # ============================================
 # Reads .tad/deprecation.yaml and removes files listed for versions
@@ -718,7 +766,7 @@ apply_deprecations() {
         fi
         # File list item: e.g.       - ".claude/commands/foo.md"
         if [ "$in_files" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+-[[:space:]]+'; then
-            # Only process if dep_version ≤ current_version (lexicographic is fine for semver with fixed digits)
+            # Only process if dep_version ≤ current_version (version_le uses sort -V)
             if version_le "$current_dep_version" "$current_version"; then
                 local target
                 target=$(printf '%s' "$line" | sed -E 's/^[[:space:]]+-[[:space:]]+//' | tr -d '"')
@@ -1132,6 +1180,9 @@ NEXTEOF
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
 
+            # Run migration engine (after copy makes engine available; before version.txt update)
+            call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
+
             # Update CLAUDE.md
             log_info "  → Updating CLAUDE.md..."
             cp "$TAD_SRC"/CLAUDE.md ./
@@ -1153,12 +1204,12 @@ NEXTEOF
         "migrate")
             log_info "Migrating and upgrading to v${TARGET_VERSION}..."
 
-            # Backup
-            log_info "  → Creating backup..."
-            if [ -d ".tad-backup" ]; then
-                rm -rf .tad-backup
+            # Structural backup for v1.x→v2.x migration (separate from engine's .tad-backup/)
+            log_info "  → Creating migration backup..."
+            if [ -d ".tad-migrate-backup" ]; then
+                rm -rf .tad-migrate-backup
             fi
-            cp -r .tad .tad-backup
+            cp -r .tad .tad-migrate-backup
 
             # Create project-specific directories
             mkdir -p .tad/active/handoffs
@@ -1183,17 +1234,17 @@ NEXTEOF
 
             # Migrate user data from backup (old directory layouts)
             log_info "  → Migrating user data..."
-            if [ -d ".tad-backup/handoffs" ]; then
-                cp -r .tad-backup/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
+            if [ -d ".tad-migrate-backup/handoffs" ]; then
+                cp -r .tad-migrate-backup/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
             fi
-            if [ -d ".tad-backup/active/handoffs" ]; then
-                cp -r .tad-backup/active/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
+            if [ -d ".tad-migrate-backup/active/handoffs" ]; then
+                cp -r .tad-migrate-backup/active/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
             fi
-            if [ -d ".tad-backup/working" ]; then
-                cp -r .tad-backup/working/* .tad/active/ 2>/dev/null || true
+            if [ -d ".tad-migrate-backup/working" ]; then
+                cp -r .tad-migrate-backup/working/* .tad/active/ 2>/dev/null || true
             fi
-            if [ -d ".tad-backup/context" ]; then
-                cp -r .tad-backup/context/* .tad/active/ 2>/dev/null || true
+            if [ -d ".tad-migrate-backup/context" ]; then
+                cp -r .tad-migrate-backup/context/* .tad/active/ 2>/dev/null || true
             fi
 
             # Archive old skills if needed
@@ -1207,6 +1258,9 @@ NEXTEOF
 
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
+
+            # Run migration engine (after copy makes engine available; before version.txt update)
+            call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
 
             # Copy root files
             cp "$TAD_SRC"/CLAUDE.md ./
@@ -1269,7 +1323,7 @@ NEXTEOF
             echo "$TARGET_VERSION" > .tad/version.txt
 
             echo ""
-            log_success "Backup saved to .tad-backup/"
+            log_success "Backup saved to .tad-migrate-backup/"
             ;;
     esac
 
