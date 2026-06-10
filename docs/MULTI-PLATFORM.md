@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 2.26.0 (Phase 3 — Dual-Platform Architecture)
+**Version**: 2.28.0 (Dual-Platform Architecture — Runtime Freshness Active, Regression PASS)
 
 TAD runs on **two first-class runtimes**: Claude Code and Codex. Both platforms receive the same SKILL.md files and follow the same shared TAD protocol. Each platform also has its own native adapter layer for hooks, config, subagents, and tooling.
 
@@ -39,10 +39,10 @@ Claude Code Adapter                    Codex Adapter
 ├── MCP (settings.json)                ├── MCP (.codex/config.toml)
 └── Compact (auto, session-state.md)   └── Compact (auto, /compact)
 
-Runtime Freshness Layer (Phase 4 — pending)
-├── .tad/runtime-compat/codex.md       (planned)
-├── .tad/runtime-compat/claude-code.md (planned)
-└── Release/sync freshness gate        (planned)
+Runtime Freshness Layer (Active — 21/21 PASS)
+├── .tad/runtime-compat/codex.md       (active)
+├── .tad/runtime-compat/claude-code.md (active)
+└── Release/sync freshness gate        (active)
 ```
 
 ---
@@ -128,9 +128,9 @@ Phase 2 produced a Codex runtime policy and draft candidate files. These are **n
 
 Before copying any draft to active `.codex/` location, ALL must be true:
 
-1. Phase 3 documentation updated (this document)
-2. Phase 4 runtime freshness ledger created
-3. Phase 5 full-cycle regression passes on Codex
+1. ~~Phase 3 documentation updated (this document)~~ ✅ Completed
+2. ~~Phase 4 runtime freshness ledger created~~ ✅ Active (21/21 PASS)
+3. ~~Phase 5 full-cycle regression passes on Codex~~ ✅ PASS (CONDITIONAL_GO)
 4. Human explicitly approves activation
 5. No P0 quality-chain failures from activated config
 6. Final secrets audit passes
@@ -141,10 +141,10 @@ Before copying any draft to active `.codex/` location, ALL must be true:
 
 Platform capabilities change over time. Codex is high-volatility; Claude Code is lower-volatility but not exempt.
 
-**Phase 4** (pending) will create:
+Runtime freshness ledgers are **active**:
 - `.tad/runtime-compat/codex.md` — compatibility ledger with `last_verified`, volatility, recheck triggers
 - `.tad/runtime-compat/claude-code.md` — same format, lower update frequency
-- Release/sync freshness gate: stale entries block TAD releases
+- Release/sync freshness gate: `runtime-freshness-verify.sh` (21/21 PASS as of 2026-06-09)
 
 **Current policy**: Before any cross-platform architectural decision, do a fresh capability audit of the target platform's current state. Never rely on assumptions older than 2 months for fast-evolving CLI tools.
 
@@ -172,7 +172,7 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 | Gate pre-checks | hooks auto-fire | `pre-accept-check.sh` / `pre-gate-check.sh` run manually | Codex hooks require trust review |
 | Workflows | `.claude/workflows/*.workflow.js` | No equivalent; use prompt-driven subagent orchestration | Gap: Codex has no workflow script runtime |
 | Release/sync | `*publish` / `*sync` from Claude Code | Codex is a sync target, not a sync source | Release always runs from Claude Code |
-| Evidence capture | Hook-driven (post-write-sync.sh) | Hook-driven (same scripts via `.codex/hooks.json`) | `ask_user_question` hook: unknown on Codex (Phase 5) |
+| Evidence capture | Hook-driven (post-write-sync.sh) | Hook-driven (same scripts via `.codex/hooks.json`) | `ask_user_question`: accepted limitation — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
 
 ---
 
@@ -180,12 +180,10 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 | Limitation | Impact | Resolution |
 |-----------|--------|------------|
-| `.codex/config.toml` not active | Codex uses default model/sandbox, not TAD-optimized | Activate after Phase 5 regression |
-| `.codex/agents/` not active | Layer 2 review uses prompt-driven spawning, not dedicated reviewer agents | Activate after Phase 5 regression |
-| `ask_user_question` hook unknown on Codex | Decision provenance may be lost (evidence-completeness gap) | Phase 5 must verify and resolve |
+| `.codex/config.toml` not active | Codex uses default model/sandbox, not TAD-optimized | Activate after human approval + final secrets audit |
+| `.codex/agents/` not active | Layer 2 review uses prompt-driven spawning, not dedicated reviewer agents | Activate after human approval + final secrets audit |
+| `ask_user_question` in `codex exec` batch mode | `request_user_input` unavailable in batch mode (by design — no interactive user); interactive Codex can ask via text normally | Accepted limitation — text-based fallback is documented pattern |
 | No workflow script runtime on Codex | Complex orchestration (YOLO Conductor, parallel workflows) is Claude Code-only | Use prompt-driven subagent spawning on Codex |
-| Runtime freshness ledger not created | No formal drift detection between releases | Phase 4 creates ledgers |
-| Full-cycle regression not yet run | No empirical proof Codex quality chain matches Claude Code | Phase 5 runs n≥1 regression |
 
 ---
 
@@ -201,4 +199,4 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
-*TAD v2.26 — Claude Code + Codex dual-runtime, shared protocol, platform adapters, runtime freshness pending.*
+*TAD v2.28.0 — Claude Code + Codex dual-runtime, shared protocol, platform adapters, runtime freshness active (21/21 PASS), full-cycle regression PASS (CONDITIONAL_GO).*

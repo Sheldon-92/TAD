@@ -144,6 +144,25 @@ sync_protocol:
             Note: --force ensures packs are updated on each sync (idempotent).
             Note: Each install.sh runs in its own Bash call to prevent set -euo pipefail propagation.
 
+        b3. Migration engine (post-copy, per-project):
+            Pre-condition: old_version captured from step 1 (target's version.txt BEFORE copy).
+
+            Call: bash {TAD_SOURCE}/.tad/hooks/lib/migration-engine.sh \
+              --from {old_version} --to {current_version} \
+              --target {target_project_path} --source {TAD_SOURCE}
+
+            Exit code handling (same as tad.sh):
+            - exit 0 → migration applied (or no manifests for this version range); continue
+            - exit 2 → WARN "Migration skipped for {project_name}: manifest invalid or chain gap"
+                       Do NOT block sync — the copy already landed. Continue to step c.
+            - exit 1 → WARN "Migration had execution errors for {project_name}"
+                       Backup exists at {target}/.tad-backup/; continue to step c.
+
+            Note: The engine is the SOLE executor of migration logic. Alex MUST NOT
+            inline any delete/rename operations for migration — that is FR5 (zero
+            dual-implementation). If the engine lacks a needed capability, file it
+            as a Phase 4+ enhancement, don't work around it in sync-protocol.
+
         c. Deprecation cleanup:
            Read .tad/deprecation.yaml (if missing → skip silently, no deprecations to apply).
            Version comparison rules (semver):
@@ -177,9 +196,8 @@ sync_protocol:
              TAD_RELEASE_GATE and release_type. A wiring bug is NOT drift; warn must not mask it. Do NOT
              mark synced. Fix the invocation and re-run.
            - exit 1 (real omission/drift) AND release_type in {minor, major}:
-             → If env TAD_RELEASE_GATE=warn is set → WARN + proceed (first-cutover shadow mode; report the
-               named differing/missing paths, but do NOT block).
-             → Else → HARD BLOCK this project. Do NOT mark it synced. Report the named omitted/differing path.
+             → HARD BLOCK this project. Do NOT mark it synced. Report the named omitted/differing path.
+               (Shadow cutover graduated 2026-06-10: 14/14 projects validated. TAD_RELEASE_GATE=warn no longer used.)
            - exit 1 (real drift) AND release_type == patch → advisory WARN, proceed.
            On any non-zero, echo: GATE: release-verify structural exit=<n>
            (distinguish exit 1 real omission from exit 2 usage/wiring error — exit 2 ALWAYS blocks; the warn
@@ -197,6 +215,7 @@ sync_protocol:
         - .tad/pair-testing/
         - .tad/decisions/
         - .tad/capability-packs/ (source dirs NOT synced — packs installed via step b2's install.sh during *sync)
+        - .tad-backup/ (migration engine backups — per-version, target-side only)
         - PROJECT_CONTEXT.md, NEXT.md
 
     step3_commit:

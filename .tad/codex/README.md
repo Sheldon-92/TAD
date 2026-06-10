@@ -13,7 +13,7 @@ Codex is a **first-class TAD runtime** (since v2.25.0). Both Claude Code and Cod
 | Config | **Not active** — draft at `.tad/evidence/designs/codex-runtime-candidates/config.toml.draft` |
 | Custom agents | **Not active** — drafts at `.tad/evidence/designs/codex-runtime-candidates/agents/` |
 | MCP | Not configured at project level |
-| Runtime freshness | Pending Phase 4 |
+| Runtime freshness | Active — 21/21 PASS (`runtime-freshness-verify.sh`, 2026-06-09) |
 
 ---
 
@@ -41,11 +41,11 @@ These files exist as Phase 2 policy artifacts but are **not active Codex runtime
 | `test-runner.toml.draft` | `.tad/evidence/designs/codex-runtime-candidates/agents/` | Layer 2 Group 2 test runner |
 
 **Do NOT copy these to `.codex/`** until all activation criteria are met:
-1. Phase 3 documentation updated
-2. Phase 4 runtime freshness ledger created
-3. Phase 5 full-cycle regression passes
-4. Human explicitly approves
-5. No quality-chain failures
+1. ~~Phase 3 documentation updated~~ ✅ Completed
+2. ~~Phase 4 runtime freshness ledger created~~ ✅ Active (21/21 PASS)
+3. ~~Phase 5 full-cycle regression passes~~ ✅ PASS (CONDITIONAL_GO)
+4. Human explicitly approves activation
+5. No quality-chain failures from activated config
 6. Final secrets audit passes
 
 ---
@@ -80,12 +80,12 @@ Codex adapter handles **platform mechanics only**: how hooks fire, how skills lo
 
 ## Known Gaps Before Activation
 
-| Gap | Impact | Resolution Phase |
-|-----|--------|-----------------|
-| `ask_user_question` hook matcher unknown | Decision provenance lost (evidence-completeness gap) | Phase 5 |
-| Custom-agent review quality untested | Unknown whether TOML agents match Claude Code Agent tool quality | Phase 5 |
-| Runtime freshness ledger missing | No formal drift detection | Phase 4 |
-| Full-cycle regression not run | No empirical proof of Codex quality-chain parity | Phase 5 |
+| Gap | Impact | Status |
+|-----|--------|--------|
+| `ask_user_question` in `codex exec` batch mode | `request_user_input` unavailable (by design — no interactive user); interactive Codex works normally | Accepted limitation — text-based fallback documented |
+| Custom-agent review quality untested | Unknown whether TOML agents match Claude Code Agent tool quality | Pending — activate after human approval |
+| Runtime freshness | Ledgers active at `.tad/runtime-compat/`; `runtime-freshness-verify.sh` 21/21 PASS | Completed |
+| Full-cycle regression | PASS (verdict: PASS, release_readiness: CONDITIONAL_GO, 2026-06-09) | Completed |
 
 ---
 

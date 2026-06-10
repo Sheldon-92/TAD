@@ -103,9 +103,8 @@ publish_protocol:
           release_type. A wiring bug is NOT drift; warn must not mask it (the shadow run is exactly
           when the wiring is least battle-tested). Fix the invocation and re-run *publish.
         - exit 1 (real stale-ref drift) AND release_type in {minor, major}:
-          → If env TAD_RELEASE_GATE=warn is set → downgrade to WARN + proceed (first-cutover shadow mode;
-            report the verdict + named file:line, but do NOT block).
-          → Else → HARD BLOCK. Do not proceed to Confirm & Execute. Fix the stale ref(s) and re-run *publish.
+          → HARD BLOCK. Do not proceed to Confirm & Execute. Fix the stale ref(s) and re-run *publish.
+            (Shadow cutover graduated 2026-06-10: 14/14 projects validated. TAD_RELEASE_GATE=warn no longer used.)
         - exit 1 (real drift) AND release_type == patch → advisory WARN, proceed to step4.
         On any non-zero, echo: GATE: release-verify version exit=<n>
         (so a fail-CLOSED usage error (exit 2) is distinguishable from a true stale-ref drift (exit 1) —
@@ -113,6 +112,27 @@ publish_protocol:
         Fail-CLOSED: exit 2 is treated as FAIL at this gate.
       blocking: true
       detect_only: true  # reads only — never edits version refs
+
+    step3d:
+      name: "Migration Manifest Gate (BLOCKING on minor+)"
+      action: |
+        Run the migration gate to detect unmanifested file deletions/renames between
+        the previous tag and HEAD:
+          bash .tad/hooks/lib/release-verify.sh migration "$PWD"
+
+        Branch on exit code — same pattern as step3c (exit 1 vs exit 2 handled separately):
+        - exit 0 → proceed to step4.
+        - exit 2 (usage/wiring/parse error) → ALWAYS HARD BLOCK, regardless of TAD_RELEASE_GATE.
+          Fix the invocation and re-run *publish.
+          Echo: GATE: release-verify migration exit=2
+        - exit 1 (unmanifested D/R drift) AND release_type in {minor, major}:
+          → HARD BLOCK. Create the missing manifest(s) and re-run *publish.
+            (Shadow cutover graduated 2026-06-10: 14/14 projects validated. TAD_RELEASE_GATE=warn no longer used.)
+          Echo: GATE: release-verify migration exit=1
+        - exit 1 AND release_type == patch → advisory WARN, proceed to step4.
+        Fail-CLOSED: exit 2 is treated as FAIL at this gate.
+      blocking: true
+      detect_only: true  # reads only — never edits manifests
 
     step4:
       name: "Confirm & Execute"
