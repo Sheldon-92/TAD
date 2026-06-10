@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "artifact_type": "frontend_page",
+  "artifact_path": "tad-intro.html",
+  "feedback_html_path": "tad-intro-feedback.html",
+  "timestamp": "2026-06-10T23:22:41.194Z",
+  "elements_total": 1,
+  "elements": [
+    {
+      "id": "h1:nth-of-type(1)",
+      "label": "Triangle Agent Development",
+      "element_type": "heading",
+      "selector_type": "css",
+      "selector_value": "div.container > header.hero > h1",
+      "reviewed": true,
+      "verdict": "ok",
+      "structured_feedback": null,
+      "free_text": "很好",
+      "priority": "medium"
+    }
+  ],
+  "global_notes": "",
+  "meta": {
+    "iteration": 1,
+    "prev_feedback": null
+  }
+}

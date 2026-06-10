@@ -32,3 +32,4 @@
 - [Anchorless .tad/ sed](2026-06/anchorless-tad-sed.md) — 2026-06-01, linked: shell-portability "Shell Dispatcher Patterns"
 - [Derived Copy-Set Dotfiles](2026-06/derived-copy-set-dotfiles.md) — 2026-06-01, linked: L1 "Deny-List Every Copy Granularity"
 - [Embedded-Copy Drift Check](2026-06/embedded-copy-drift-check.md) — 2026-06-01, linked: L1 "Deny-List Beats Allow-List"
+- [Alex Role Decay → Direct Destructive Execution](2026-06/alex-role-decay-direct-execution.md) — 2026-06-10, linked: L1 "Mechanical Enforcement Rejected on Single-User CLI" / alex SKILL forbidden list

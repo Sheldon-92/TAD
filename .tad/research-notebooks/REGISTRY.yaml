@@ -2,10 +2,20 @@
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
 version: 1.0.0
-last_updated: 2026-06-04
+last_updated: 2026-06-10
 # Currently active notebook (used when no --notebook flag specified)
-active_notebook: "litellm-agent-platform"
+active_notebook: "structured-feedback-creative-ai"
 notebooks:
+  - id: "structured-feedback-creative-ai"
+    notebook_id: "8c456e11-9ef3-4d28-8b06-6efd2cbf0639"
+    topic: "Structured Feedback in AI Creative Tools — element-level feedback, review interfaces, human-AI iteration loops"
+    created: "2026-06-10"
+    status: active
+    last_queried: "2026-06-10"
+    source_count: 66
+    notes: "Deep research on how AI creative tools handle structured human feedback. 66 sources covering UI builders (v0, Lovable, Bolt, Dualite, Frontman), video (Runway, Kling, Pika, CapCut), audio (ElevenLabs), design (Figma Weave, Midjourney), and academic research on human-AI co-creation. 3 cross-source ask rounds completed."
+    sources: []  # 66 auto-imported via add-research --mode deep
+
   - id: "tad-evolution-research"
     notebook_id: "37cfefa5-52b3-4a8a-a8e3-a83f32150759"
     topic: "TAD Evolution — AI Agent Framework Landscape 2025-2026"
