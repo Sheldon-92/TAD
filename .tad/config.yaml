@@ -1,8 +1,8 @@
-# TAD Configuration v2.27.0 - Triple-Question KA
+# TAD Configuration v2.28.0 - Upgrade Lifecycle System
 method: TAD
-version: 2.27.0
-description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 24 Capability Packs + Cross-Platform Portable
-last_updated: 2026-06-09
+version: 2.28.0
+description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 24 Capability Packs + Cross-Platform Portable + Migration Engine
+last_updated: 2026-06-10
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

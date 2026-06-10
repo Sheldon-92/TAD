@@ -5,6 +5,29 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.28.0] - 2026-06-10
+
+### Added
+- **Migration Engine** (`migration-engine.sh`, ~1000L): 5-step path safety pipeline for declarative upgrade operations (delete/rename/merge/verify). Single `rm` choke point with TOCTOU re-validation. User-modified file detection via `git show` + graceful degradation.
+- **Merge execution**: `execute_merge_entry()` with `<!-- TAD:PROJECT-CONTENT-BELOW -->` marker-based content merge. grep -F (no regex injection), mktemp temp files, 0/1/2 return convention.
+- **tad.sh integration**: `call_migration_engine()` in upgrade + migrate paths. `|| engine_rc=$?` ERR-trap bypass (bash 3.2 safe). Migrate backup renamed to `.tad-migrate-backup` (no collision with engine's `.tad-backup/`).
+- **\*sync integration**: step3.b3 migration engine call, `.tad-backup/` in PRESERVE list.
+- **Publish gate**: `release-verify.sh migration` mode detects unmanifested file deletions/renames between tags. Hard-block on minor/major releases.
+- **`migration-draft.sh`**: Generate draft manifests from `git diff --name-status` between adjacent tags.
+- **12 historical manifests**: v2.19.0 → v2.27.0 complete chain (`.tad/migrations/`).
+- **22 E2E fixtures**: 14 engine + 4 merge + 3 migration gate + AC17 inline.
+- **Acceptance tooling**: `upgrade-acceptance.sh` (post-sync per-project verifier), `gate-exercise.sh` (real git state interception exercise).
+
+### Changed
+- Release gate graduated from shadow mode (TAD_RELEASE_GATE=warn) to hard-block after 14/14 project validation.
+- tad.sh:721 comment fix ("lexicographic" → "version_le uses sort -V").
+- Removed stale `.tad.backup.*` directories (superseded by engine's per-version backup mechanism).
+
+### Architecture
+- Migration manifest schema v1 frozen (`.tad/evidence/designs/migration-manifest-schema-v1.md`): 4 sections (delete/rename/merge/verify), path safety pipeline, consumer semantics contract.
+- 3 Decision Records: DR-1 (backfill v2.19.0), DR-2 (user-modified detection hybrid), DR-3 (deprecation.yaml absorb).
+- KA: APFS `pwd -P` case preservation (patterns/shell-portability.md).
+
 ## [2.27.0] - 2026-06-09
 
 ### Fixed

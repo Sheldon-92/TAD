@@ -19,7 +19,7 @@ NC='\033[0m'
 # literal can never go stale (fixes the 2.19.1-class hand-edit straggler).
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="2.27.0"
+TARGET_VERSION="2.28.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
@@ -1019,7 +1019,7 @@ main() {
             echo -e "  ${GREEN}✓ Preserved:${NC} handoffs, evidence, project-knowledge"
             ;;
         "migrate")
-            echo "  1. Backup existing .tad/ to .tad-backup/"
+            echo "  1. Backup existing .tad/ to .tad-migrate-backup/"
             echo "  2. Create new v2.1 directory structure"
             echo "  3. Migrate your handoffs and evidence"
             echo "  4. Install skills"
