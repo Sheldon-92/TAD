@@ -1,5 +1,0 @@
-# Domain Pack Feedback — collected during design when research contradicts Pack criteria.
-# Read by *evolve to determine Domain Pack upgrade direction.
-# Format: append-only log. Alex appends, *evolve reads + clears after processing.
-version: 1.0.0
-feedback: []

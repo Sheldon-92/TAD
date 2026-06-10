@@ -14,10 +14,41 @@ yolo_execution_protocol:
     For each ⬚ Planned Phase (TWO workflow calls per phase):
     1. Y1: Activate phase (Conductor)
     2. Y2: Grounding (Conductor reads code, writes grounding file)
-    3. Call 1: Workflow({name: 'yolo-epic', args: {steps: ['design'], ...}})
+    3. Call 1 — design:
+       Workflow({
+         name: 'yolo-epic',
+         args: {
+           epic_path: ".tad/active/epics/EPIC-{date}-{slug}.md",
+           epic_slug: "{slug}",
+           phase_number: {N},
+           phase_name: "{phase title from Epic}",
+           handoff_path: ".tad/active/handoffs/HANDOFF-{date}-{slug}-phase{N}.md",
+           completion_path: ".tad/evidence/yolo/{slug}/phase{N}-completion.md",
+           grounding_path: ".tad/evidence/yolo/{slug}/phase{N}-grounding.md",
+           reviewer_count: 2,
+           steps: ["design"]
+         }
+       })
        → Y3 design sub-agent writes HANDOFF.md → Returns {handoff_path}
+       ⚠️ args MUST be a JSON object, NOT a stringified JSON string.
+       ⚠️ ALL 7 fields above are REQUIRED (except grounding_path and reviewer_count).
+          Missing any → workflow returns immediately with error (0s completion).
     4. Y3b: Validate handoff (Conductor — frontmatter, grounding, AC dry-run)
-    5. Call 2: Workflow({name: 'yolo-epic', args: {steps: ['review','implement','impl_review'], ...}})
+    5. Call 2 — review + implement + impl_review:
+       Workflow({
+         name: 'yolo-epic',
+         args: {
+           epic_path: "{same as Call 1}",
+           epic_slug: "{same as Call 1}",
+           phase_number: {N},
+           phase_name: "{same as Call 1}",
+           handoff_path: "{same as Call 1 — must exist and be > 50 lines}",
+           completion_path: "{same as Call 1}",
+           grounding_path: "{same as Call 1}",
+           reviewer_count: 2,
+           steps: ["review", "implement", "impl_review"]
+         }
+       })
        → Y4 reviewers → Y5 Blake implements → Y6 impl reviewers → Returns budget_report
        Precondition: handoff must exist and be > 50 lines
     6. Y7: Gate judgment (Conductor reads all evidence files from disk)

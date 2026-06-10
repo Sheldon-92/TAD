@@ -1,1 +1,0 @@
-<task-notification>Subagent researched MCP server patterns — see Anthropic SDK + tool-integration docs. Next step: implement the schema contract for the agent's tool registry.</task-notification>

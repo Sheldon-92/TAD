@@ -1,1 +1,0 @@
-{"tool_name":"Write","tool_input":{"file_path":"docs/example.md","content":"# Example doc\n\nThis is a benign content payload exercising normalization + sentinel scan hot path. No match, should emit allow after full normalize. Some extra text to make processing non-trivial: lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."}}

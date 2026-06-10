@@ -1,1 +1,0 @@
-<function_results>Database query returned 42 rows. Schema validation passed. ORM migration complete.</function_results>

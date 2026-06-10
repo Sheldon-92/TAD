@@ -1,5 +1,0 @@
-ID: 8c97894e-9500-4508-b532-980326e9509e
-Title: Spike Finding
-Content:
-从 spike 测试发现：generate report 能力可用
-note_get_exit=0

@@ -1,9 +1,0 @@
-id: "tc-004"
-polarity: "negative"
-target_hook: "hardened-pretool-interceptor"
-expected_decision: "deny"
-severity: "P0"
-diversity_tag: "check-use-race-traversal"
-evasion_mechanism: "Path ../ traversal to .tad/active/handoffs/"
-input: |
-  {"session_id":"s-toctou-004","transcript_path":"/tmp/t.jsonl","cwd":"/repo","permission_mode":"default","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":".tad/evidence/reviews/alex/EPIC/../../../../active/handoffs/injected.md","content":"forged handoff"}}
