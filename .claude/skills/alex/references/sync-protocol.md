@@ -196,9 +196,8 @@ sync_protocol:
              TAD_RELEASE_GATE and release_type. A wiring bug is NOT drift; warn must not mask it. Do NOT
              mark synced. Fix the invocation and re-run.
            - exit 1 (real omission/drift) AND release_type in {minor, major}:
-             → If env TAD_RELEASE_GATE=warn is set → WARN + proceed (first-cutover shadow mode; report the
-               named differing/missing paths, but do NOT block).
-             → Else → HARD BLOCK this project. Do NOT mark it synced. Report the named omitted/differing path.
+             → HARD BLOCK this project. Do NOT mark it synced. Report the named omitted/differing path.
+               (Shadow cutover graduated 2026-06-10: 14/14 projects validated. TAD_RELEASE_GATE=warn no longer used.)
            - exit 1 (real drift) AND release_type == patch → advisory WARN, proceed.
            On any non-zero, echo: GATE: release-verify structural exit=<n>
            (distinguish exit 1 real omission from exit 2 usage/wiring error — exit 2 ALWAYS blocks; the warn
