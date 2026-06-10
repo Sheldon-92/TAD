@@ -467,7 +467,23 @@ path/to/existing.ts  # Changes
 ### 8.3 Edge Cases
 - [Edge case 1]: [How to handle]
 
-### 8.4 🆕 Test Evidence Required
+## 8.4 Friction Preflight
+
+> Alex must fill this section before sending the handoff to Blake. List every
+> prerequisite that may create friction during implementation. If none, state
+> "No friction-sensitive prerequisites identified."
+
+| Friction Point | Required Step | Expected Fix Path | Allowed Substitute | Gate Impact |
+|----------------|---------------|-------------------|--------------------|-------------|
+| *Example: reviewer unavailable* | *Expert review (Layer 2)* | *Invoke required reviewer* | *Independent reviewer with equivalent scope/expertise (self-review is NEVER equivalent)* | *Missing or non-equivalent review prevents Gate 3 PASS* |
+| *Example: dependency install required* | *Install package/tool* | *Request install via user/sandbox approval* | *DEGRADED_WITH_APPROVAL with approval source, date/context, accepted risk, rationale* | *Unresolved BLOCKED prevents Gate 3 PASS* |
+| *Example: auth/approval required* | *Obtain auth token or approval* | *Request auth renewal or approval from user/admin* | *DEGRADED_WITH_APPROVAL if user accepts risk* | *Unresolved BLOCKED prevents Gate 3 PASS* |
+| *Example: platform sandbox/network restriction* | *Network access for external API* | *Request sandbox approval (Codex) or permission (Claude Code)* | *Offline fallback if equivalent and documented* | *Unresolved BLOCKED prevents Gate 3 PASS* |
+
+**Status Enum** (use exactly these values in Friction Status table at completion):
+`READY` / `BLOCKED` / `DEGRADED_WITH_APPROVAL` / `EQUIVALENT_SUBSTITUTE` / `NOT_APPLICABLE_WITH_REASON`
+
+### 8.5 🆕 Test Evidence Required
 Blake必须提供：
 - [ ] 测试运行截图（所有测试通过）
 - [ ] 覆盖率报告（目标：>80%）

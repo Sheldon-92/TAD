@@ -299,6 +299,53 @@ cross_model_invocation:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/blake/references/cross-model-invocation.md"
   load_when: "When cross-model CLI (Codex/Gemini) is needed for review or research, Read the reference and follow it verbatim."
+# ⚠️ TAD Friction Protocol — Blake Execution Rules (v2.28.0 — Phase 1)
+# Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.
+# When friction appears: request the correct fix first. If unresolved → BLOCKED.
+tad_friction_protocol:
+  description: |
+    Blake must face friction head-on during Ralph Loop execution. Missing tools,
+    expired auth, sandbox restrictions, unavailable reviewers, or required approvals
+    are friction — NOT reasons to skip, downgrade, or self-substitute.
+
+  status_enum:
+    READY: "Prerequisite/tool/reviewer is available or completed."
+    BLOCKED: "Required step cannot proceed; Gate PASS is forbidden until resolved."
+    DEGRADED_WITH_APPROVAL: "User explicitly approved a weaker path; risk/rationale recorded. Evidence must include approval source, date/context, accepted risk, and rationale."
+    EQUIVALENT_SUBSTITUTE: "Original mechanism unavailable, but replacement has equivalent duty and evidence. For expert review, substitute must preserve independence, scope, and expertise. Self-review is NEVER equivalent."
+    NOT_APPLICABLE_WITH_REASON: "Genuinely out of scope, with concrete reason tied to task type/scope."
+
+  blake_execution_rules:
+    - "Missing dependency/tool/auth/approval/reviewer is never a reason to skip a required step."
+    - "Blake must request the needed install/auth/approval first (escalate to user if necessary)."
+    - "Reviewer unavailable cannot become self-review. Use BLOCKED, DEGRADED_WITH_APPROVAL, or EQUIVALENT_SUBSTITUTE with an independent replacement."
+    - "Self-review, feedback-integration notes, or a Gate verdict written by Blake are NEVER equivalent substitutes for required expert review."
+    - "EQUIVALENT_SUBSTITUTE for expert review must preserve independence, scope, and expertise."
+    - "Unresolved BLOCKED rows prevent Gate 3 PASS — do not attempt to pass Gate 3 with any BLOCKED friction."
+    - "Completion report MUST include Friction Status table (see completion template)."
+    - "Codex friction: sandbox approval, network restriction, auth expiry, dependency install escalation, subagent/tool availability."
+    - "Claude Code friction: tool permission prompts, plugin/hook availability, subagent quota/refusal."
+
+  anti_rationalization:
+    - "'The tool is hard to install, I can work around it' → friction, not a skip reason."
+    - "'I already passed Layer 1, the reviewer subagent is redundant' → Layer 1 and Layer 2 have different purposes."
+    - "'The reviewer is unavailable so I reviewed it myself' → self-review is NEVER equivalent."
+    - "'This is an express handoff so we can skip review' → express is NOT review-exempt."
+
+  completion_report_requirement: |
+    Every completion report MUST include a ## Friction Status table.
+    Any unresolved BLOCKED row means Gate 3 cannot PASS.
+    DEGRADED_WITH_APPROVAL requires approval source, date/context, accepted risk, rationale.
+    EQUIVALENT_SUBSTITUTE requires replacement description, why equivalent, evidence path.
+
+  phase2_deferred: "Phase 2 will create an advisory checker. Do NOT implement checker/hook/settings in Phase 1."
+
+  forbidden_implementations:
+    - "MUST NOT register hooks for friction enforcement in Phase 1"
+    - "MUST NOT modify .claude/settings.json for friction enforcement in Phase 1"
+    - "MUST NOT place friction protocol only in references — it must be in body"
+    - "MUST NOT allow self-review to count as equivalent substitute for required expert review"
+
 # Ralph Loop Execution Logic (TAD v2.0)
 ralph_loop_execution:
   # Agent Team Implementation Mode (TAD v2.3)

@@ -186,6 +186,25 @@ path/to/new-file2.ts  # [用途说明]
 
 ---
 
+## ⚠️ Friction Status (MANDATORY — Gate 3 BLOCKING)
+
+> Blake must fill this table for every friction point identified in handoff §8.4
+> Friction Preflight, plus any friction encountered during implementation.
+> Any unresolved BLOCKED row means Gate 3 cannot PASS.
+
+| Friction Point | Status | Action Taken | Approval / Substitute Evidence | Gate Impact |
+|----------------|--------|--------------|-------------------------------|-------------|
+| [friction point from §8.4 or discovered during impl] | READY / BLOCKED / DEGRADED_WITH_APPROVAL / EQUIVALENT_SUBSTITUTE / NOT_APPLICABLE_WITH_REASON | [what Blake did to address it] | [for DEGRADED: approval source, date/context, accepted risk, rationale] [for EQUIVALENT: replacement, why equivalent, evidence path] | [blocking / non-blocking / resolved] |
+
+**Rules:**
+- Any unresolved BLOCKED row means Gate 3 cannot PASS.
+- DEGRADED_WITH_APPROVAL requires: approval source, date/context, accepted risk, rationale.
+- EQUIVALENT_SUBSTITUTE requires: replacement description, why equivalent, evidence path.
+- Self-review is NEVER an equivalent substitute for required expert review.
+- If no friction was encountered, write one row: "No friction encountered | READY | N/A | N/A | N/A"
+
+---
+
 ## 📂 Evidence Checklist (MANDATORY)
 
 ### Ralph Loop Evidence

@@ -2,6 +2,8 @@
 
 ## In Progress
 
+- [ ] **EPIC: TAD Friction Protocol — Phase 1/2 🔄 HANDOFF READY 2026-06-10** — Core protocol + templates to stop Alex/Blake from skipping TAD steps when dependencies, approvals, auth, reviewer availability, or setup create friction. Epic: `.tad/active/epics/EPIC-20260610-friction-protocol.md`. Handoff: `.tad/active/handoffs/HANDOFF-20260610-friction-protocol-phase1.md`. Expert review integrated: backend-architect 1 P0 + 3 P1 resolved; code-reviewer 4 P1 resolved. Ready for Blake.
+  - **Phase 2 carry-forward**: after Phase 1 acceptance, create advisory checker for missing Friction Status / blocked-as-pass reports (smoke alarm only; no hook/settings hard block).
 - [x] **EPIC: Upgrade Lifecycle System — Phase 1/6 ✅ ACCEPTED 2026-06-09** (commit eab1fd8, Gate 3 PASS + Gate 4 PASS 15/15 AC, gate4_delta empty) — Migration Manifest Schema v1 + 3 DRs (backfill v2.19.0, always-backup detection, deprecation absorb) + example manifest 2.26.0-to-2.27.0.yaml + research evidence. Code review: 2 P0 fixed (validator backslash + grep -P), 7 P1 fixed. KA: ac-verification.md (shell case-glob backslash). Handoff archived. Epic: `.tad/active/epics/EPIC-20260609-upgrade-lifecycle-system.md`
 - [x] **EPIC: Upgrade Lifecycle System — Phase 2/6 ✅ ACCEPTED 2026-06-10** (commits fe11b95 + 7e2a945, Gate 4 PASS 19/19 AC) — migration-engine.sh (~450 lines) + 14-fixture harness. Code review: 1 P0 + 6 P1 fixed. KA: shell-portability.md (APFS pwd -P). Phase 3 carry-forwards: `.tad-backup/` sync exclusion; tad.sh:721 comment. Archived.
 

@@ -692,6 +692,50 @@ cross_model_awareness:
     - "MUST NOT couple cross-model invocation with skip_knowledge_assessment or *express path"
     - "MUST NOT use cross-model delegation to bypass Socratic Inquiry — any handoff delegating implementation to external CLI must complete Socratic rounds first"
 
+# ⚠️ TAD Friction Protocol (v2.28.0 — Phase 1)
+# Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.
+# When friction appears, request the correct fix first. If unresolved, mark BLOCKED.
+tad_friction_protocol:
+  description: |
+    Prevents required TAD steps from being skipped when prerequisites create friction.
+    Applies to both Codex (sandbox approval, network restriction, auth expiry, dependency
+    install escalation, subagent/tool availability) and Claude Code (tool permission prompts,
+    plugin/hook availability, subagent quota/refusal).
+
+  status_enum:
+    READY: "Prerequisite/tool/reviewer is available or completed."
+    BLOCKED: "Required step cannot proceed; Gate PASS is forbidden until resolved."
+    DEGRADED_WITH_APPROVAL: "User explicitly approved a weaker path; risk/rationale recorded. Evidence must include approval source, date/context, accepted risk, and rationale."
+    EQUIVALENT_SUBSTITUTE: "Original mechanism unavailable, but replacement has equivalent duty and evidence. For expert review, substitute must preserve independence, scope, and expertise. Self-review is NEVER equivalent."
+    NOT_APPLICABLE_WITH_REASON: "Genuinely out of scope, with concrete reason tied to task type/scope."
+
+  default_action_ladder:
+    step1: "Identify the missing prerequisite."
+    step2: "Request the correct fix: install, auth, network approval, sandbox approval, dependency setup, or reviewer invocation."
+    step3: "If fix succeeds → READY."
+    step4: "If user explicitly approves weaker path → DEGRADED_WITH_APPROVAL with approval source, date/context, accepted risk, rationale."
+    step5: "If a true equivalent exists → EQUIVALENT_SUBSTITUTE with why equivalent."
+    step6: "Otherwise → BLOCKED. Stop before PASS."
+
+  alex_gate2_obligations:
+    - "Every handoff must declare friction-sensitive prerequisites in §8.4 Friction Preflight, or explicitly state none."
+    - "Alex must not write NOT_APPLICABLE_WITH_REASON without a concrete reason tied to task type/scope."
+    - "If a handoff requires dependencies/tools/reviewers that may be absent, §8.4 must list them with expected fix paths."
+    - "Cross-platform note: Codex sandbox/approval/auth and Claude Code permission/tool availability are friction, not skip reasons."
+
+  anti_rationalization:
+    - "'This step is too complicated to set up' → friction, not a skip reason."
+    - "'The reviewer is unavailable, I can review it myself' → self-review is NEVER an equivalent substitute for required expert review."
+    - "'This dependency is optional anyway' → if the handoff lists it as required, it is required."
+    - "'I already know the answer without searching' → if research_required: yes, search anyway."
+
+  phase2_deferred: "Phase 2 will create an advisory checker once table names and enum strings are accepted. Do NOT implement checker/hook/settings in Phase 1."
+
+  forbidden_implementations:
+    - "MUST NOT register hooks for friction enforcement in Phase 1"
+    - "MUST NOT modify .claude/settings.json for friction enforcement in Phase 1"
+    - "MUST NOT place friction protocol only in references — it must be in body"
+
 # ⚠️ MANDATORY: Intent Router Protocol (First Contact)
 intent_router_protocol:
   description: "Detect user intent and route to appropriate path before any other processing"

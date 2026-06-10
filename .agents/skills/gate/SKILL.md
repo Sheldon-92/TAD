@@ -123,6 +123,24 @@ Prerequisite:
   if_exists:
     action: "继续执行 Gate 3 检查项"
 
+# ⚠️ FRICTION STATUS VERIFICATION (BLOCKING) — TAD Friction Protocol v2.28.0
+Friction_Status_Check:
+  description: "Verify completion report contains Friction Status table and no unresolved BLOCKED rows."
+  process:
+    step1: "Read completion report and locate '## Friction Status' or '## ⚠️ Friction Status' section."
+    step2: "If section is missing → WARN but do not BLOCK Gate 3 (backward compat for pre-Friction-Protocol handoffs that lack the section)."
+    step3: "If section exists, scan each row's Status column:"
+    step4_decision: |
+      - Any row with Status = BLOCKED → BLOCK Gate 3. Message:
+        "⚠️ Gate 3 cannot PASS — unresolved BLOCKED friction: {friction_point}. Resolve or escalate before re-running Gate 3."
+      - Any row with Status = DEGRADED_WITH_APPROVAL → verify the 'Approval / Substitute Evidence' cell
+        contains approval source, date/context, accepted risk, and rationale. If evidence is missing or
+        vague → WARN (advisory, not blocking — human judges adequacy at Gate 4).
+      - Any row with Status = EQUIVALENT_SUBSTITUTE → verify the 'Approval / Substitute Evidence' cell
+        describes the replacement, why it is equivalent, and an evidence path. If missing → WARN.
+      - READY and NOT_APPLICABLE_WITH_REASON rows pass without further check.
+  blocking_rule: "Unresolved BLOCKED row = BLOCK Gate 3. Other statuses are advisory warnings. Missing Friction Status section = WARN only (backward compat for pre-Friction-Protocol handoffs)."
+
 # ⚠️ §9.1 SPEC COMPLIANCE VERIFICATION (BLOCKING) — PRIMARY VERIFICATION SOURCE
 # This REPLACES the former hardcoded test-runner + Acceptance_Verification blocks.
 # Gate 3 no longer hardcodes tsc/test/lint — those become Alex-generated §9.1 AC rows
@@ -560,6 +578,22 @@ Prerequisite:
 
       必须先完成 Gate 3（§9.1 全行 pass，rubric AC 须 verdict: PASS）。
     result: "BLOCKED - 等待 Gate 3 完成"
+
+# ⚠️ FRICTION STATUS REVIEW — Gate 4 (TAD Friction Protocol v2.28.0)
+Gate4_Friction_Review:
+  description: "Alex reviews Blake's Friction Status table for business acceptance blockers and evidence completeness."
+  process:
+    step1: "Read completion report Friction Status table."
+    step2: "If table is missing → WARN (backward compat for pre-Friction-Protocol handoffs)."
+    step3: |
+      For each row:
+      - BLOCKED → Gate 4 cannot accept. Alex must resolve or return to Blake.
+      - DEGRADED_WITH_APPROVAL → verify approval source, date/context, accepted risk, rationale
+        are present and substantiated. Unsubstantiated degradation prevents acceptance.
+      - EQUIVALENT_SUBSTITUTE → verify replacement description, equivalence reasoning, and
+        evidence path. Self-review as substitute for expert review → REJECT.
+      - READY / NOT_APPLICABLE_WITH_REASON → accepted.
+  note: "Alex does NOT re-perform Gate 3 technical validation. This is business-acceptance review of friction handling evidence."
 
 # ⚠️ TASK-TYPE CONDITIONALITY (BLOCKING for code/mixed) — structural role enforcement, NOT AC-driven
 Structural_Subagent_Conditionality:
