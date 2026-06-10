@@ -88,13 +88,16 @@ check_containment() {
     local parent
     parent="$(dirname "$full")"
 
-    # Per-component symlink check (including leaf)
+    # Per-component symlink check (including leaf) — no set/IFS to avoid glob expansion
     local check_path="$base"
-    local IFS_OLD="$IFS"
-    IFS='/'
-    set -- $p
-    IFS="$IFS_OLD"
-    for component; do
+    local remaining="$p"
+    while [ -n "$remaining" ]; do
+        local component="${remaining%%/*}"
+        if [ "$component" = "$remaining" ]; then
+            remaining=""
+        else
+            remaining="${remaining#*/}"
+        fi
         [ -z "$component" ] && continue
         check_path="$check_path/$component"
         if [ -L "$check_path" ]; then
@@ -145,9 +148,9 @@ check_zero_touch() {
     local base="$1" p="$2"
     local full="$base/$p"
 
-    # .tad-backup protection
+    # .tad-backup protection (segment-anchored)
     case "$p" in
-        *.tad-backup*) printf 'REJECT: path targets backup dir: %s\n' "$p" >&2; return 1 ;;
+        .tad-backup/*|*/.tad-backup|*/.tad-backup/*) printf 'REJECT: path targets backup dir: %s\n' "$p" >&2; return 1 ;;
     esac
 
     # Physical-resolve comparison for ZERO_TOUCH dirs
@@ -185,9 +188,12 @@ check_zero_touch() {
                 esac
             fi
         fi
-        # Textual segment-anchored fallback for non-existent dirs
-        case "$p" in
-            .tad/"$zt_dir"|.tad/"$zt_dir"/*) printf 'REJECT: ZERO_TOUCH: %s\n' "$p" >&2; return 1 ;;
+        # Case-insensitive textual fallback (covers targets where zt dir doesn't exist yet)
+        local p_lower zt_pat_lower
+        p_lower="$(printf '%s' "$p" | tr '[:upper:]' '[:lower:]')"
+        zt_pat_lower=".tad/$(printf '%s' "$zt_dir" | tr '[:upper:]' '[:lower:]')"
+        case "$p_lower" in
+            "$zt_pat_lower"|"$zt_pat_lower"/*) printf 'REJECT: ZERO_TOUCH: %s\n' "$p" >&2; return 1 ;;
         esac
     done <<EOF
 $ZT_LIST
@@ -476,43 +482,61 @@ validate_manifest() {
     # Cross-section conflict detection (FR1.5c, FR3)
     local d r_f r_t m v_p v_t
 
-    # Within-section duplicate check
+    # Within-section duplicate check (bash 3.2 safe: guard empty arrays)
     local seen_path
-    seen_path="$(printf '%s\n' "${all_delete_paths[@]}" 2>/dev/null | LC_ALL=C sort | uniq -d)"
-    [ -n "$seen_path" ] && { printf 'REJECT: duplicate path in delete: %s\n' "$seen_path" >&2; return 1; }
+    if [ ${#all_delete_paths[@]} -gt 0 ]; then
+        seen_path="$(printf '%s\n' "${all_delete_paths[@]}" | LC_ALL=C sort | uniq -d)"
+        [ -n "$seen_path" ] && { printf 'REJECT: duplicate path in delete: %s\n' "$seen_path" >&2; return 1; }
+    fi
 
-    seen_path="$(printf '%s\n' "${all_rename_froms[@]}" 2>/dev/null | LC_ALL=C sort | uniq -d)"
-    [ -n "$seen_path" ] && { printf 'REJECT: duplicate from in rename: %s\n' "$seen_path" >&2; return 1; }
+    if [ ${#all_rename_froms[@]} -gt 0 ]; then
+        seen_path="$(printf '%s\n' "${all_rename_froms[@]}" | LC_ALL=C sort | uniq -d)"
+        [ -n "$seen_path" ] && { printf 'REJECT: duplicate from in rename: %s\n' "$seen_path" >&2; return 1; }
 
-    seen_path="$(printf '%s\n' "${all_rename_tos[@]}" 2>/dev/null | LC_ALL=C sort | uniq -d)"
-    [ -n "$seen_path" ] && { printf 'REJECT: duplicate to in rename: %s\n' "$seen_path" >&2; return 1; }
+        seen_path="$(printf '%s\n' "${all_rename_tos[@]}" | LC_ALL=C sort | uniq -d)"
+        [ -n "$seen_path" ] && { printf 'REJECT: duplicate to in rename: %s\n' "$seen_path" >&2; return 1; }
+    fi
 
-    # Cross-section conflicts
-    for d in "${all_delete_paths[@]}"; do
-        for r_f in "${all_rename_froms[@]}"; do
-            [ "$d" = "$r_f" ] && { printf 'REJECT: conflict delete+rename.from: %s\n' "$d" >&2; return 1; }
-        done
-        for r_t in "${all_rename_tos[@]}"; do
-            [ "$d" = "$r_t" ] && { printf 'REJECT: conflict delete+rename.to: %s\n' "$d" >&2; return 1; }
-        done
-        for m in "${all_merge_paths[@]}"; do
-            [ "$d" = "$m" ] && { printf 'REJECT: conflict delete+merge: %s\n' "$d" >&2; return 1; }
-        done
-        for ((i=0; i<${#all_verify_paths[@]}; i++)); do
-            v_p="${all_verify_paths[$i]}"; v_t="${all_verify_types[$i]}"
-            if [ "$d" = "$v_p" ] && [ "$v_t" = "present" ]; then
-                printf 'REJECT: conflict delete+verify.present: %s\n' "$d" >&2; return 1
+    # Cross-section conflicts (bash 3.2 safe: guard empty arrays)
+    if [ ${#all_delete_paths[@]} -gt 0 ]; then
+        for d in "${all_delete_paths[@]}"; do
+            if [ ${#all_rename_froms[@]} -gt 0 ]; then
+                for r_f in "${all_rename_froms[@]}"; do
+                    [ "$d" = "$r_f" ] && { printf 'REJECT: conflict delete+rename.from: %s\n' "$d" >&2; return 1; }
+                done
+            fi
+            if [ ${#all_rename_tos[@]} -gt 0 ]; then
+                for r_t in "${all_rename_tos[@]}"; do
+                    [ "$d" = "$r_t" ] && { printf 'REJECT: conflict delete+rename.to: %s\n' "$d" >&2; return 1; }
+                done
+            fi
+            if [ ${#all_merge_paths[@]} -gt 0 ]; then
+                for m in "${all_merge_paths[@]}"; do
+                    [ "$d" = "$m" ] && { printf 'REJECT: conflict delete+merge: %s\n' "$d" >&2; return 1; }
+                done
+            fi
+            if [ ${#all_verify_paths[@]} -gt 0 ]; then
+                for ((i=0; i<${#all_verify_paths[@]}; i++)); do
+                    v_p="${all_verify_paths[$i]}"; v_t="${all_verify_types[$i]}"
+                    if [ "$d" = "$v_p" ] && [ "$v_t" = "present" ]; then
+                        printf 'REJECT: conflict delete+verify.present: %s\n' "$d" >&2; return 1
+                    fi
+                done
             fi
         done
-    done
+    fi
 
-    for ((i=0; i<${#all_rename_froms[@]}; i++)); do
-        r_f="${all_rename_froms[$i]}"; r_t="${all_rename_tos[$i]}"
-        [ "$r_f" = "$r_t" ] && { printf 'REJECT: rename from=to: %s\n' "$r_f" >&2; return 1; }
-        for m in "${all_merge_paths[@]}"; do
-            [ "$r_f" = "$m" ] && { printf 'REJECT: conflict rename.from+merge: %s\n' "$r_f" >&2; return 1; }
+    if [ ${#all_rename_froms[@]} -gt 0 ]; then
+        for ((i=0; i<${#all_rename_froms[@]}; i++)); do
+            r_f="${all_rename_froms[$i]}"; r_t="${all_rename_tos[$i]}"
+            [ "$r_f" = "$r_t" ] && { printf 'REJECT: rename from=to: %s\n' "$r_f" >&2; return 1; }
+            if [ ${#all_merge_paths[@]} -gt 0 ]; then
+                for m in "${all_merge_paths[@]}"; do
+                    [ "$r_f" = "$m" ] && { printf 'REJECT: conflict rename.from+merge: %s\n' "$r_f" >&2; return 1; }
+                done
+            fi
         done
-    done
+    fi
 
     return 0
 }
@@ -668,6 +692,10 @@ resolve_chain() {
             local mf_from="${bn%-to-*}"
             local mf_to="${bn#*-to-}"; mf_to="${mf_to%.yaml}"
             if [ "$mf_from" = "$current" ]; then
+                if ! version_le "$mf_from" "$mf_to" || [ "$mf_from" = "$mf_to" ]; then
+                    printf 'REJECT: backward/self hop in chain: %s → %s\n' "$mf_from" "$mf_to" >&2
+                    return 1
+                fi
                 CHAIN_MANIFESTS+=("$mf")
                 current="$mf_to"
                 found=1

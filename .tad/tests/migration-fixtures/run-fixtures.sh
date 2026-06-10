@@ -234,19 +234,16 @@ test_f4() {
     cd "$src"; rm -f .claude/skills/file.md; printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 
+    # No verify section — avoids verify-absent failing when delete is skipped
     write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<'BODY'
 delete:
   - path: ".claude/skills/file.md"
     type: "file"
     reason: "removed"
-verify:
-  - type: "absent"
-    path: ".claude/skills/file.md"
 BODY
 )"
 
     create_target "$tgt"
-    mkdir -p "$tgt/.claude/skills"
     printf 'content' > "$tgt/.claude/skills/file.md"
 
     # Snapshot before
@@ -899,7 +896,7 @@ test_f14
 test_ac17
 
 printf '\n=== Results ===\n'
-printf 'Passed: %d / %d\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
+printf 'Passed: %d / %d (14 fixtures + 1 inline AC17)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
     printf '\nFailures:\n'
