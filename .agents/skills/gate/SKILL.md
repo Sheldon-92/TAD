@@ -611,6 +611,30 @@ Structural_Subagent_Conditionality:
   for_rubric_based: "When the handoff's §9.1 ACs are rubric-based (report/audio/video artifacts, no code surface), code subagents are NOT applicable; the Gate 3 rubric-eval verdict: PASS is the structural prerequisite instead. ux-expert-reviewer stays conditional ('if UI involved')."
   anti_skip: "VIOLATION: making the structural subagents AC-driven so Alex could skip security review by not writing an AC. They are role enforcement and MUST NOT be omittable via AC authoring."
 
+# Feedback Collection Check (BLOCKING — Phase 3, TAD v2.28.0)
+# Conditional: only applies when handoff §8.5 feedback_required: true.
+# Upgraded from SOFT (Phase 2) to BLOCKING (Phase 3) after E2E dogfood validated the flow.
+Gate4_Feedback_Check:
+  description: "Verify feedback collection for non-code artifacts"
+  trigger: "Handoff §8.5 feedback_required: true"
+  skip_if: "§8.5 absent, feedback_required: false, or N/A"
+  blocking: true
+
+  checks:
+    - "Feedback HTML was generated (path exists in completion report)"
+    - "If human filled out feedback: JSON was exported and processed by Alex"
+    - "If human did NOT fill out feedback: explicit human approval to skip (escape valve — human can always override)"
+
+  on_fail: |
+    If feedback_required was true but feedback was not collected AND human did NOT approve skip:
+    "❌ FEEDBACK CHECK FAIL: Handoff marked feedback_required: true but no feedback
+    was collected. Gate 4 BLOCKED. Either: (a) collect feedback, or (b) explicitly approve skip."
+
+  escape_valve: |
+    Human can always say "skip feedback for this handoff" — record the approval in
+    Gate 4 report as "Feedback skipped: human approved at [timestamp]" and proceed.
+    The blocking check prevents SILENT skipping, not intentional skipping.
+
 # ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING) — for task_type IN {code, mixed}
 Required_Subagents:
   - subagent: "security-auditor"

@@ -1531,10 +1531,65 @@ feedback_collector_protocol:
         design: components, colors, typography, layout, imagery, spacing
         brand: name, tagline, color_palette, typography, voice_tone, logo
         generic: determine dimensions from the artifact structure using LLM judgment
-    3_generate_html: "Create self-contained feedback HTML in the same directory as the artifact"
-    4_report: "Note in completion report: 'Feedback HTML generated at {path}'"
+    3_generate_html: |
+      Route by artifact_type from handoff §8.5:
 
-  html_generation_guidelines:
+      OVERLAY mode (frontend_page, design):
+        Generate feedback HTML that:
+        - INLINES the artifact's <body> content + <style> blocks (NOT iframe — file:// cross-origin breaks it)
+        - Wraps inlined content in a container div, injects overlay JS
+        - Hover → element highlights (outline); click → floating annotation panel
+        - Annotation panel: verdict (ok/modify/delete/replace), comment textarea, priority selector
+        - Auto-detects CSS selector + element type + label from clicked element
+        - Sidebar: annotation list + coverage nudge from suggested_dimensions
+        - Export JSON button (same schema as card mode)
+        Naming: {artifact_name}-feedback.html (same as before)
+
+      CARD mode (audio, video, brand, generic):
+        Use card-based generation (existing guidelines below)
+
+    4_report:
+      action: |
+        After generating feedback HTML:
+        1. Open the feedback HTML in browser (use `open` command on macOS)
+        2. Tell the user:
+           "📋 反馈界面已生成并在浏览器中打开。
+
+            使用方法：
+            - 浏览页面，点击你想评价的元素
+            - 在弹出面板中选择 OK/修改/删除/替换，写备注
+            - 如果觉得界面不合适（输入框太小、拆法不对、想要不同的维度），
+              直接告诉我，我会重新生成一个更合适的版本
+
+            完成后：
+            1. 点底部的 Export JSON 按钮，保存文件
+            2. 把 JSON 文件路径告诉 Alex（Terminal 1）
+            3. Alex 会根据你的反馈生成针对性的修改指令"
+        3. Note in completion report: 'Feedback HTML generated and opened at {path}'
+
+  overlay_generation_guidelines:
+    description: "For frontend_page and design artifact types — user annotates ON the actual page"
+    structure:
+      - "Self-contained single file: inline CSS, inline JS, no external dependencies"
+      - "INLINE artifact content: copy artifact <body> + <style> into feedback HTML (NOT iframe)"
+      - "Wrap inlined content in a scrollable container div"
+    overlay_interaction:
+      - "Hover → element highlights with visible outline (e.g., 2px dashed blue)"
+      - "Click → floating annotation panel appears near the clicked element"
+      - "Panel: verdict buttons (ok/modify/delete/replace), comment textarea, priority selector, Save Note button"
+      - "After saving: element gets a colored dot/badge indicating the verdict"
+      - "Click annotated element again → edit the existing annotation"
+    sidebar:
+      - "Fixed sidebar (right side) showing list of all annotations made so far"
+      - "Each annotation entry: element label, verdict badge, truncated comment"
+      - "Coverage nudge: display suggested_dimensions as a checklist prompt (not forced)"
+    page_requirements:
+      - "Export JSON button in sidebar — generates and downloads feedback JSON"
+      - "Same JSON schema as card mode (version, elements[], meta)"
+      - "Element IDs auto-generated from clicked element's id/class/tag (semantically meaningful)"
+
+  card_generation_guidelines:
+    description: "For audio, video, brand, generic artifact types — pre-decomposed cards"
     structure:
       - "Self-contained single file: inline CSS, inline JS, no external dependencies"
       - "Usable on mobile viewports (min-width 320px); all interactive elements have visible labels"
@@ -1557,12 +1612,6 @@ feedback_collector_protocol:
     element_ids: "Semantically meaningful and stable across regenerations (e.g., hero-title, nav-btn-about, segment-0015-0030), NOT sequential (elem-001)"
     iteration_tracking: "Read data-iteration attribute from page root element (set by Blake at generation time)"
     reviewed_flag: "per-element reviewed = true only if user interacted with that card"
-
-  phase1_guard: |
-    ⚠️ Phase 1 only: Alex cannot yet consume the exported JSON (Phase 2 implements the reader).
-    Blake's completion message MUST include:
-    "Note: Alex feedback processing is not yet implemented (Phase 2). Save the exported
-    JSON for when Phase 2 is complete, or describe the feedback verbally to Alex as a stopgap."
 
   source_of_truth: |
     Dimension heuristics above are the runtime source of truth.
