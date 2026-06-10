@@ -399,6 +399,80 @@ Packs 按需加载 — 只有当任务关键词匹配时才会激活。可以在
 
 ---
 
+## 实用技巧
+
+### 1. 用 `*discuss` 当产品顾问
+
+不一定要写代码才用 TAD。`$alex` → `*discuss` 可以做：
+- 产品方向讨论
+- 技术选型对比
+- 竞品分析（会调用 product-expert 子 agent）
+- 架构方案评估
+
+结束时不会产出 handoff，纯讨论。
+
+### 2. 用 `*idea` 攒灵感
+
+想到什么好点子但现在不想做？`*idea` 会记录到 `.tad/active/ideas/`，下次 `*idea-list` 可以看所有存档的想法，`*idea-promote` 把一个想法升级为正式任务。
+
+### 3. 用 `*learn` 学新东西
+
+不理解一个技术概念？`*learn` 走苏格拉底式教学——不是直接告诉你答案，而是通过一系列提问引导你理解。比直接问 "什么是 X" 学得深。
+
+### 4. 用 `*bug` 快速修 bug
+
+不需要走完整 TAD 流程。`*bug` 会快速诊断问题 → 生成一个 express 迷你 handoff → Blake 修复。适合已知范围的 bug。
+
+### 5. 用 `*status` 看全景
+
+`*status` 一次性展示：
+- 活跃的 Epic（正在进行的大项目）
+- 待处理的 Handoff
+- 存档的 Ideas
+- Roadmap 主题
+
+比自己翻文件夹快。
+
+### 6. 利用 Capability Packs 获得专业知识
+
+当你的任务涉及特定领域时，Alex 会自动加载对应的 capability pack。比如：
+- 讨论 API 设计 → 自动加载 `web-backend` pack（含 43 条决策规则）
+- 做 React 组件 → 自动加载 `web-frontend` pack
+- 写固件 → 自动加载 `hw-firmware` pack
+
+你也可以在 `*design` 时手动指定："请加载 ai-guardrails pack"。
+
+### 7. YOLO 模式跑大任务
+
+大型 Epic（5+ 个 Phase）可以用 YOLO 模式自动驱动：Alex 自己设计 → 审查 → 调 Blake 实现 → 审查 → Gate → 下一个 Phase。人类只需要在开始和结束时介入。
+
+适合你明确知道要做什么、不想每个 Phase 都手动传话的情况。
+
+### 8. 项目知识会自动积累
+
+每次 Gate 通过后，agent 会评估这次学到了什么。比如：
+- "macOS 的 `pwd -P` 不会规范化大小写" → 记入 shell-portability
+- "这个 API 的 rate limit 是 100/min" → 记入 api-integration
+
+下次做相似任务时，Alex 会自动读取相关历史经验，避免重复踩坑。你不需要手动管理。
+
+### 9. CLAUDE.md marker 保护你的内容
+
+如果你在 `CLAUDE.md` 里写了项目特定的规则，加一行 marker：
+
+```
+<!-- TAD:PROJECT-CONTENT-BELOW -->
+你的项目特定规则写在这里...
+```
+
+这样 TAD 升级时只更新 marker 上方的框架部分，你写的内容不会被覆盖。
+
+### 10. 用 `*dream` 清理知识库
+
+项目知识积累多了之后（50+ 条），运行 `*dream` 自动去重、合并、删除过时条目。它只生成 candidates 等你审核，不会直接修改原文件。
+
+---
+
 ## 更多资源
 
 - [README](../README.md) — 项目总览
