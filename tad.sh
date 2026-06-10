@@ -183,6 +183,7 @@ pair-testing
 decisions
 github-registry
 research-notebooks
+skill-library
 skillify-candidates"
 # Category C — transient / main-only (do NOT sync; not part of framework surface):
 TAD_TRANSIENT="working

@@ -1,7 +1,8 @@
 ---
 name: {kebab-case-slug}
 date: {YYYY-MM-DD}
-status: pending  # pending | accepted | rejected
+status: draft  # draft | accepted | rejected
+# CONSTRAINT: discoverer MUST NOT set status beyond draft. accepted is set ONLY during the in-session human confirmation (T1 ceremony, Phase 2) — see triple_question_draft_rule.
 type: judgment  # judgment | orchestration — Step 5 routing result
 # judgment → generates .claude/skills/{slug}/SKILL.md
 # orchestration → generates .claude/workflows/{slug}.workflow.js
