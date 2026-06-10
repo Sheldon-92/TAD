@@ -1,0 +1,66 @@
+Different notebook specified, starting new conversation...
+Continuing conversation d7a16d4d...
+Answer:
+**The empirical boundary between task automation and complex problem solving 
+lies at the transition from isolated, well-scoped tasks with verifiable criteria
+to long-horizon, stateful workflows that require sustained planning and 
+mid-execution judgment.** While current agents excel at executing single-step 
+objectives or rote procedures, their reliability degrades mathematically and 
+operationally when tasks cross into prolonged ambiguity.
+
+**Benchmark Evidence of the Capability Cliff**
+Current AI agents present an illusion of near-mastery on bounded automation 
+tasks, but collapse on complex, multi-file evolution scenarios.
+*   **SWE-bench vs. SWE-EVO:** On SWE-bench Verified, which tests isolated bug 
+fixes and single-issue resolutions, models like GPT-5.2 achieve a 72.80% success
+rate [1]. However, on SWE-EVO—a benchmark measuring long-horizon software 
+evolution that requires agents to interpret high-level release notes, coordinate
+changes across an average of 21 files, and pass ~874 validation tests—the 
+strongest model (GPT-5.4 with OpenHands) collapses to just a 25% resolution rate
+[1], [2].
+*   **Terminal-Bench and the ~70% Illusion:** Organizations frequently report 
+that agents can successfully handle 50% to 70% of routine commits or achieve 70%
+automation on targeted processes within a year [3], [4]. Correspondingly, on 
+Terminal-Bench 2.0 (testing end-to-end computer operation via terminal), top 
+models boast scores up to 82.7% [5], [6]. Yet, researchers have shown that high 
+benchmark scores often reflect "reward hacking" (such as using binary wrapper 
+trojans to fake success) rather than true reasoning, masking the fact that 
+agents fundamentally lack complex problem-solving capabilities when safeguards 
+are removed or tasks enter uncharted territory [7], [8], [9].
+
+**The Hidden Cost of Agentic Failures**
+When agents cross into complex problem solving without explicit fault tolerance,
+they become "probabilistic pipelines" where uncertainty silently compounds [10],
+[11]. According to Lusser's Law, even if an individual agent has a 98% success 
+rate on a single task, chaining 10 sequential agent hops without validation 
+boundaries degrades overall system accuracy to 81.7% (an 18.3% error rate) [12],
+[13]. The economic cost of these compounding failures is severe; a compromised 
+or runaway agent can execute unintended actions at machine speed, leading to 
+shadow AI breaches that cost an average of $4.63 million per incident—$670,000 
+more than traditional data breaches [14].
+
+**Where and Why Agents Collapse**
+Current agents plateau and break down primarily due to three specific factors:
+*   **Ambiguity and Instruction Following:** Fully autonomous models are highly 
+effective for defined tasks but become a severe liability when requirements are 
+loose and require judgment calls mid-execution [15]. Trajectory analysis in 
+SWE-EVO reveals that the most advanced models fail not from syntax or tool 
+errors, but from "Instruction Following"—fundamentally misinterpreting nuanced, 
+complex release notes because they cannot deduce unstated organizational 
+constraints [16], [17].
+*   **Horizon Length and Context Rot:** As the execution horizon extends across 
+dozens of work sessions or API calls, models struggle with composition [18]. A 
+task requiring nested sequential tool calls (e.g., retrieving data, parsing it, 
+and feeding it into a subsequent tool) sees full sequence match accuracy plummet
+to just 28% for frontier models [18]. As failures accumulate over a long 
+horizon, the agent's finite context window fills with error logs and failed 
+attempts, triggering a fatal "context rot" that actively degrades its reasoning 
+capacity [19], [20].
+*   **Number of Constraints and Lack of a World Model:** Complex problem solving
+requires understanding how actions permanently alter system states [21]. Agents 
+often lack a predictive "world model," meaning they fail to foresee that taking 
+a destructive action (like deleting a database record) will alter the 
+constraints of subsequent queries, leading to cascading, unrecoverable failures 
+during state-heavy, multi-constraint workflows [21], [22].
+
+Resumed conversation: d7a16d4d-9e9b-40d3-a2d1-060d2d9fa02b

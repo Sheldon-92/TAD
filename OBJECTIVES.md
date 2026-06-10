@@ -53,3 +53,5 @@
 <!-- Research notebook: tad-evolution-research (37cfefa5-52b3-4a8a-a8e3-a83f32150759) — CREATED 2026-05-05, 45 sources, 3 deep-ask rounds -->
 <!-- Findings: .tad/evidence/research/2026-05-05-tad-evolution-deep-ask-findings.md -->
 <!-- KR2/KR3: .tad/evidence/research/2026-05-14-kr2-kr3-ask-findings.md -->
+<!-- 2026-06-09 repositioning stress-test (O1 KR2 differentiators CHALLENGED): .tad/evidence/research/repositioning-3-walls/2026-06-09-ask-findings.md -->
+<!-- Verdict: all 3 repositioning walls falsified as stated; persistent doc-layer is 2026 baseline (9 tools); surviving positioning = "displaced-expert operating system" NOT "outsider learns insider"; differentiator stays rhetorical without code-enforced gates (re-open 2026-04-15 mechanical-enforcement decision). 2 new gaps: gate-ROI unproven, residue Staleness Trap. -->

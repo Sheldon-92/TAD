@@ -1,0 +1,127 @@
+Different notebook specified, starting new conversation...
+Continuing conversation d7a16d4d...
+Answer:
+Here are the 9 mechanisms from the 2026 landscape that provide persistent, 
+cross-session knowledge to AI agents, broken down by how they accumulate 
+information, their structure, version control, and task residue patterns.
+
+**1. CLAUDE.md**
+*   **How knowledge accumulates:** It acts as a static narrative file placed in 
+the repository root, injecting project context (conventions, preferences, rules)
+into the agent's prompt at the start of every session [1, 2].
+*   **Version-controlled:** Yes, it is committed directly to the repository as a
+standard file [3].
+*   **Structured:** No, it relies entirely on unstructured prose and narrative 
+Markdown [1, 3].
+*   **Agent residue:** No, it does not force residue. It requires manual human 
+editing to stay current and suffers from "silent staleness" if the human fails 
+to update it [3, 4]. 
+
+**2. Cursor .rules (Cursor Memories)**
+*   **How knowledge accumulates:** Context is loaded automatically via a 
+proprietary cloud-based indexing system that pulls in context on every relevant 
+query [3].
+*   **Version-controlled:** No, it is a proprietary cloud-native memory system 
+[3, 5].
+*   **Structured:** No, the contents remain undocumented and rely on prose 
+rather than strict schema [3].
+*   **Agent residue:** No, it operates primarily as a closed index within the 
+IDE and does not explicitly force the agent to leave a transparent trace or 
+persistent learning artifact after completing a task [3].
+
+**3. Continue.dev**
+*   **How knowledge accumulates:** It indexes the codebase by breaking top-level
+functions and classes into tree-sitter text chunks and storing them in a local 
+LanceDB [3]. It only accumulates new knowledge when a manual re-index occurs [3,
+6].
+*   **Version-controlled:** No, it relies on a local LanceDB database [3].
+*   **Structured:** Partially structured (relies on tree-sitter chunking, but 
+still stores text chunks) [3].
+*   **Agent residue:** No, it updates via codebase indexing rather than forcing 
+the agent to capture workflow learnings or post-task residue [3, 6].
+
+**4. Memory MCP Servers**
+*   **How knowledge accumulates:** The reference implementation of an MCP memory
+server accumulates context dynamically as JSON objects (storing substrings and 
+full bodies) that the agent can read [3]. 
+*   **Version-controlled:** No [3, 6].
+*   **Structured:** Yes, it stores data strictly as JSON [3].
+*   **Agent residue:** No, while the agent can use MCP tools to update it, it 
+does not architecturally *force* the agent to leave a residue after a task 
+completes [3].
+
+**5. Mem0**
+*   **How knowledge accumulates:** Mem0 uses a single-pass "ADD-only" extraction
+algorithm where memories accumulate without being overwritten [7]. It supports 
+multi-signal retrieval (fusing semantic, BM25 keyword, and entity matching via a
+graph memory variant, Mem0g) and organizes memory strictly by scopes like 
+`user_id`, `session_id`, `agent_id`, and `org_id` [7-9].
+*   **Version-controlled:** No, it uses self-hosted vector/graph databases (like
+Neo4j, Kuzu, or Qdrant) or managed cloud platforms [10-12].
+*   **Structured:** Yes, it categorizes facts into semantic, episodic, and 
+procedural memory, and extracts entities and structured metadata for filtering 
+[13, 14].
+*   **Agent residue:** Yes, the system uses **"Actor-Aware Memory"**, which tags
+stored facts with their source actor. Agent-generated facts and intermediate 
+inferences are explicitly captured as first-class residue alongside human 
+statements, allowing future agents to distinguish between user ground-truth and 
+prior agent inferences [7, 15].
+
+**6. Letta (MemGPT)**
+*   **How knowledge accumulates:** The agent actively manages a persistent 
+memory tier by making explicit LLM tool calls to read from or write to its 
+memory bank on every turn [3].
+*   **Version-controlled:** No [3, 6].
+*   **Structured:** No, the memory is stored as unstructured text [3].
+*   **Agent residue:** Yes, because the architecture treats the memory bank as 
+an OS-like system, the agent is forced to continually leave residue via 
+tool-calls to update its running context [3].
+
+**7. ArgosBrain**
+*   **How knowledge accumulates:** A background watcher triggers on file saves 
+to parse the codebase into a persistent SQLite knowledge graph using Tree-Sitter
+and a Hybrid LSP layer [16, 17]. It tracks symbol definitions, call chains, 
+cross-service routes, and infrastructure-as-code nodes [17, 18].
+*   **Version-controlled:** Yes, developers can commit a zstd-compressed graph 
+snapshot (`.codebase-memory/graph.db.zst`) directly to Git for team sharing. 
+When a file changes, the system uses XXH3 hashes to incrementally sync the diff 
+automatically [19, 20]. 
+*   **Structured:** Highly structured. It operates natively as a relational 
+knowledge graph, skipping raw prose [21].
+*   **Agent residue:** Generally no, as it primarily indexes the code rather 
+than agent thoughts. However, it does have a multi-modal feature where an 
+agent's interpretations (e.g., analyzing a UI mockup) can be explicitly linked 
+and stored against code nodes for cross-session recall [22].
+
+**8. DiffMem**
+*   **How knowledge accumulates:** DiffMem uses a background "Writer Agent" that
+analyzes conversation transcripts, extracts entities, and stages them into 
+Markdown files within strict, per-user orphan Git branches (`user/{user_id}`) 
+[23-25].
+*   **Version-controlled:** Yes, entirely Git-native. It uses "Differential 
+Intelligence", meaning the flat Markdown files represent the "current surface", 
+while the agent uses sandboxed shell commands (`git log`, `git blame`, `git 
+diff`) to query the historical depth of how a fact evolved [23, 24, 26].
+*   **Structured:** Semi-structured. Relies on flat human-readable Markdown 
+files backed by structured Git commit graphs [23, 26].
+*   **Agent residue:** Yes, the architecture automatically triggers a background
+API layer (e.g., `process-and-commit`) to distill the session transcript and 
+commit the residue after every conversation [24, 27].
+
+**9. GitAgent**
+*   **How knowledge accumulates:** The agent itself *is* a Git repository. It 
+boots from static files (`agent.yaml`, `RULES.md`, `SOUL.md`) and accumulates 
+state by writing live execution context into a dedicated `memory/runtime/` 
+folder [28, 29]. It builds a persistent "LLM Wiki" by extracting concepts into 
+an index [30].
+*   **Version-controlled:** Yes, 100% Git-native. Agents can be forked, branded,
+and merged [31, 32].
+*   **Structured:** Yes, relies on declarative YAML tools, Markdown files, and a
+hierarchical knowledge tree [28, 32].
+*   **Agent residue:** Yes. Agents operate in stateless compute but use Git as 
+their state. Every significant action—bootstrapping, executing, checkpointing, 
+and teardown—is forcefully committed to an ephemeral `runtime/<date>/<job-id>` 
+branch. Agents are required to leave residue in the form of `dailylog.md` and 
+`key-decisions.md` before shutting down [29, 33].
+
+Resumed conversation: d7a16d4d-9e9b-40d3-a2d1-060d2d9fa02b
