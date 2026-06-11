@@ -29,7 +29,7 @@ fi
 # Blake SKILL `gate3_v2.layer2_expert_review.hard_requirement_distinct_reviewers`
 # references THIS array via prose, does NOT enumerate. Add new sub-agent types
 # here when first used as Layer 2 reviewer; SKILL automatically inherits.
-KNOWN_REVIEWERS_LIST="code-reviewer backend-architect security-auditor performance-optimizer ux-expert-reviewer api-designer data-analyst bug-hunter test-runner spec-compliance-reviewer spec-compliance refactor-specialist devops-engineer database-expert frontend-specialist docs-writer"
+KNOWN_REVIEWERS_LIST="code-reviewer code-review backend-architect security-auditor performance-optimizer ux-expert-reviewer api-designer data-analyst bug-hunter test-runner spec-compliance-reviewer spec-compliance refactor-specialist devops-engineer database-expert frontend-specialist docs-writer config-manager config-manager-review"
 
 # SUBSTITUTION_HEURISTICS: filenames that look reviewer-ish but are NOT
 # external sub-agent invocations. self-review = Blake reviewing Blake (no

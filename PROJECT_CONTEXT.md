@@ -6,6 +6,7 @@
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
+- **EPIC: Self-Evolution Pruning** (20260610) — **Phase 1/3 ✅ accepted 2026-06-10** (dream scripts retired + negative-result archived + `.tad/skill-library/` T2 shelf + dual deny-list 14 entries + SCAND template draft-default, commit 89b20b0, Gate 4 16/16). Phase 2 next: Blake-side T1 confirm-and-materialize ceremony + harvest lib. Phase 3 (alex/gate SKILL surgery + trace-digest removal) needs skills-parity check first.
 - **EPIC: Upgrade Lifecycle System** (20260609) — **Phase 1/6 ✅ accepted 2026-06-09** (Migration Manifest Schema v1 + 3 DRs + example manifest, commit eab1fd8, Gate 4 15/15). Phase 2 next: migration-engine.sh + fixture harness. Goal: 远程升级无垃圾、不误删、深入骨髓.
 - **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
 - **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)
@@ -47,11 +48,11 @@
 - **EPIC: Cross-Model Orchestration — ALL 4/4 PHASES** (archived 2026-05-14)
 
 ## Recent Decisions
+- Self-evolution loops retired by measurement: dream/optimize/evolve yielded 1 accepted from 18 machine proposals (5.6%) while every effective upgrade was human-pain-driven — automated value-DISCOVERY contradicts TAD's own thesis (humans guard value); KA-gate capture (skillify) kept but rebuilt as 3-tier formalization: T1 project-local default / T2 skill-library reference shelf (never distributed) / T3 ≥2-project promotion (2026-06-10)
 - Migration schema v1: path safety = allow-list (destructive ops fail-closed) while sync sets stay deny-list — opposite tools for opposite problems. User-modified files: Always Backup before delete (DR-2). deprecation.yaml absorbed by migration manifests, frozen at v2.26.0 (DR-3). Backfill from v2.19.0 (DR-1) (2026-06-09)
 - Parallel dual-Alex Epics in one repo: two YOLO Conductors can run concurrently with zero conflict via scoped `git add <explicit paths>` (never `-A`) + file-disjoint work (new-files-only or additive-only); verify no shared-file sweep at every commit. Beats worktree when files don't overlap (2026-05-31)
 - Pack conflict resolution: precedence resolves CROSS-category collisions (security>correctness>a11y>performance>style, lower band wins) with a VISIBLE log; SAME-category collisions ESCALATE (no silent pick). Apply the anti-theater hand-re-derivation to the detector's OWN bonus findings — those are the likeliest false positives (2026-05-31)
 - Capability Pack Reference Files: Patterns borrowed from external repos must be grounded by NotebookLM source verification (38 sources for ViMax) not WebFetch README skimming — README-only analysis missed 3 of 4 key patterns (2026-05-27)
-- Pack rule bloat control: 400-line hard cap per new reference file; narrow Context Detection signals (no "motion"/"animation" overlap with existing GSAP rules); negative routing test mandatory (2026-05-27)
 - (older decisions archived to docs/DECISIONS.md)
 
 ## Known Issues
@@ -61,7 +62,7 @@
 
 ## Next Direction
 - **PUSH decision**: 41 commits ahead of origin (both Alexes' work) — outward-facing, confirm before pushing
-- Scout-identified optimization directions (evidence-backed, non-colliding): (B) fix self-evolution loop 0% close-rate — add knowledge-dedup pass to dream-scanner; (C) architecture.md leanness — consolidate May surge via Supersedes: pattern (~5-7K tokens/session saved); (D/E/F) safety bundle — Blake distinct-reviewer false-PASS + research-source provenance + trace TRACE_DETAIL truncation bug
+- Scout-identified optimization directions (evidence-backed, non-colliding): ~~(B) fix self-evolution loop 0% close-rate~~ → RESOLVED differently 2026-06-10: loops retired by EPIC self-evolution-pruning (measured-yield decision), not fixed; (C) architecture.md leanness — consolidate May surge via Supersedes: pattern (~5-7K tokens/session saved); (D/E/F) safety bundle — Blake distinct-reviewer false-PASS + research-source provenance + trace TRACE_DETAIL truncation bug
 - Behavioral eval remaining 13 capability packs (lean-trustworthy P5 follow-up)
 - Goal-Driven Research P3 (Research-Decision Loop) + P6.3 *sync (deferred)
 - Pack collision follow-up: escalate-form one-liner should also carry loser quote; new packs may add licensing/cost collision categories
