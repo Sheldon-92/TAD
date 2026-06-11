@@ -31,8 +31,8 @@ Measured basis (2026-06-10): dream 10 candidates → 1 accepted; optimize/evolve
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Disjoint Retirement + T2 Shelf | ✅ Done | HANDOFF-20260610-sep-phase1.md (archived) | Scripts retired, artifacts archived, skill-library created + deny-listed, SCAND template hardened |
-| 2 | T1 Local Formalization (Blake-side) | ⬚ Planned | — | blake SKILL skillify_evaluation → confirm-and-materialize flow + artifact AC + harvest scan lib |
-| 3 | Alex/Gate SKILL Surgery + *harvest | ⬚ Blocked | — | Remove *dream/*evolve/*optimize/*skillify commands+protocols+STEPs 3.56/3.57, add *harvest, mirror .agents |
+| 2 | T1 Local Formalization (Blake-side) | ✅ Done | HANDOFF-20260610-sep-phase2.md (archived) | blake SKILL skillify_evaluation → confirm-and-materialize flow + artifact AC + harvest scan lib + release-verify local-skill tolerance + Colin dogfood |
+| 3 | Alex/Gate SKILL Surgery + *harvest | ⬚ Planned (UNBLOCKED 2026-06-10 — parity verified 0) | — | Remove *dream/*evolve/*optimize/*skillify commands+protocols+STEPs 3.56/3.57, add *harvest, trace-digest removal, mirror .agents |
 
 ### Phase Dependencies
 - Phase 1: independent (touches ONLY .tad/hooks/lib, .tad/templates, .tad/skill-library, tad.sh, archive moves — zero .claude/skills files)
@@ -90,6 +90,7 @@ ALSO (moved from Phase 1): delete `.tad/hooks/lib/trace-digest.sh` + remove its 
 {Alex updates after each *accept}
 
 ### Completed Work Summary
+- Phase 2 (2026-06-10, Gate 4 PASS 21 checks, commit 4a779fa): T1 in-session ceremony live in blake SKILL (step 5 + UNATTENDED carve-out w/ anti-rationalization clause, AR-002 documented); harvest-scan.sh (read-only, registry-derived); release-verify FR7 (target-extra local skills = INFO); template tier field; Colin dogfood REAL: smart-interval materialized as Colin project skill (T1), eval-page-generator + colab-drive-deploy on T2 shelf, all 3 SCANDs truthful (tier/materialized_at/reference_at). Gate 4 PARTIAL once (Layer 2 artifacts missing → supplied; rider: layer2-audit fail-open → FAIL exit 1, closes "distinct-reviewer false-PASS" backlog item). KA: NEW L2 pattern "Claims Need Carriers" (gate-design.md).
 - Phase 1 (2026-06-10, Gate 4 PASS 16/16 AC, commit 89b20b0): dream-scanner/validator deleted; 11 PROPOSALs + 6 CANDs + dream-state archived with NEGATIVE-RESULT.md; `.tad/skill-library/` created + dual deny-list (14 entries, --verify-denylist PASS); SCAND template `status: draft` + discoverer-must-not-accept constraint. Rider: layer2-audit.sh KNOWN_REVIEWERS += code-review/config-manager/config-manager-review (fixes recurrence of 2026-05-27 reviewer-name-drift incident).
 
 ### Decisions Made So Far
@@ -102,7 +103,7 @@ ALSO (moved from Phase 1): delete `.tad/hooks/lib/trace-digest.sh` + remove its 
 - Phase 3 gate precondition: verify `diff -qr .claude/skills .agents/skills` exits 0 (Feedback Collector epic landed; f84c8fb was its parity sync)
 
 ### Next Phase Scope
-Phase 2: T1 Local Formalization (Blake-side) — blake SKILL skillify_evaluation → confirm-and-materialize flow + artifact AC; harvest scan lib; sync-safety verification; dogfood on one Colin SCAND
+Phase 3: Alex/Gate SKILL Surgery + *harvest (UNBLOCKED — parity 0) — remove *dream/*evolve/*optimize/*skillify commands + protocol sections + references files + STEPs 3.56/3.57; delete trace-digest.sh + step4d wiring (acceptance-protocol.md / accept-command.md / cancel-protocol.md); fix stale refs (STEP 3.56 paths, surplus SKILL evidence/proposals source, knowledge-health *dream message); add *harvest command wrapping harvest-scan.sh; gate SKILL KA Q2/Q3 wording → T1 flow; full .agents mirror; consider promoting "Claims Need Carriers" discipline into completion-report template text
 
 ---
 

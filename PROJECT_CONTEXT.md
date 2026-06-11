@@ -6,7 +6,7 @@
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
-- **EPIC: Self-Evolution Pruning** (20260610) — **Phase 1/3 ✅ accepted 2026-06-10** (dream scripts retired + negative-result archived + `.tad/skill-library/` T2 shelf + dual deny-list 14 entries + SCAND template draft-default, commit 89b20b0, Gate 4 16/16). Phase 2 next: Blake-side T1 confirm-and-materialize ceremony + harvest lib. Phase 3 (alex/gate SKILL surgery + trace-digest removal) needs skills-parity check first.
+- **EPIC: Self-Evolution Pruning** (20260610) — **Phase 1+2/3 ✅ accepted 2026-06-10** (P1: scripts retired + skill-library shelf + deny-list, 89b20b0. P2: T1 in-session ceremony live in blake SKILL + harvest-scan + release-verify local-skill tolerance + Colin dogfood materialized smart-interval as first real T1 skill, 4a779fa). Phase 3 UNBLOCKED (parity 0): alex/gate SKILL surgery + *harvest command + trace-digest removal. New L2 pattern: "Claims Need Carriers" (gate-design.md).
 - **EPIC: Upgrade Lifecycle System** (20260609) — **Phase 1/6 ✅ accepted 2026-06-09** (Migration Manifest Schema v1 + 3 DRs + example manifest, commit eab1fd8, Gate 4 15/15). Phase 2 next: migration-engine.sh + fixture harness. Goal: 远程升级无垃圾、不误删、深入骨髓.
 - **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
 - **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)

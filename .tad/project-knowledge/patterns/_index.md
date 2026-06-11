@@ -6,7 +6,7 @@
 
 ---
 
-- [Gate Design](gate-design.md) — Gate responsibility, honest_partial, verification integrity, expert review, YOLO mode, rubric gates
+- [Gate Design](gate-design.md) — Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates
 - [Handoff Design](handoff-design.md) — Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state
 - [Shell Portability](shell-portability.md) — macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention
 - [AC Verification](ac-verification.md) — AC design rules, dry-run discipline, self-leak prevention, tsc type checks, fixture discrimination

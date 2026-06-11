@@ -216,10 +216,11 @@ if [ "$qualified" -ge 1 ]; then
     printf 'WARN_REVIEWER_COUNT=0_SUBSTITUTIONS_ONLY\n'
     exit 1
   fi
-  # Distinct=0 AND substitutions=0 — preserve legacy artifacts-found message
-  # (this happens when all .md files are unknown — already WARNed to stderr).
-  printf 'Layer 2 audit PASS: %d reviewer artifacts found (size-check is smoke-alarm heuristic; no canonical reviewer names matched)\n' "$qualified"
-  exit 0
+  # Distinct=0 AND substitutions=0 — all .md files are unknown names.
+  # This is fail-open: no recognized reviewer ran. FAIL, not PASS.
+  _err "Layer 2 audit FAIL: 0 distinct reviewers found — $qualified artifact(s) present but none match KNOWN_REVIEWERS (add legitimate names to the list, or invoke recognized sub-agents)"
+  printf 'WARN_REVIEWER_COUNT=0_UNKNOWN_ONLY\n'
+  exit 1
 fi
 
 # FAIL paths (order matters for precise error)
