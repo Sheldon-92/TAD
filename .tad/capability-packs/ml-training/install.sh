@@ -44,37 +44,36 @@ echo ""
 
 # ── Phase 3 stubs ────────────────────────────────────────────────────────────
 case "$AGENT" in
-  claude-code|claude|codex)
-    # Phase 1 — implemented below
+  claude-code|claude)
     ;;
-  cursor)
-    echo "⚠️  Phase 3 (cursor) is not yet implemented." >&2
-    echo "   For now, install with --agent=claude-code and adapt manually." >&2
-    exit 2
+  codex)
     ;;
-  gemini)
-    echo "⚠️  Phase 3 (gemini) is not yet implemented." >&2
+  cursor|gemini)
+    echo "⚠️  Phase 3 ($AGENT) is not yet implemented." >&2
     echo "   For now, install with --agent=claude-code and adapt manually." >&2
     exit 2
     ;;
   *)
-    echo "Unknown agent: $AGENT. Supported: claude-code (others in Phase 3)" >&2
+    echo "Unknown agent: $AGENT. Supported: claude-code, codex (others in Phase 3)" >&2
     exit 1
     ;;
 esac
 
-# ── Claude Code: detect install target ──────────────────────────────────────
-CLAUDE_DIR=""
-if [ -d ".claude" ]; then
-  CLAUDE_DIR=".claude"
+# ── Detect install target ──────────────────────────────────────────────────
+SKILLS_ROOT=""
+if [ "$AGENT" = "codex" ]; then
+  SKILLS_ROOT=".agents"
+  echo "✓ Codex install — target .agents/skills/"
+elif [ -d ".claude" ]; then
+  SKILLS_ROOT=".claude"
   echo "✓ .claude/ detected — Claude Code project install"
 elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.claude" ]; then
-  CLAUDE_DIR="$HOME/.claude"
+  SKILLS_ROOT="$HOME/.claude"
   echo "✓ ~/.claude/ detected — Claude Code global install (--global flag set)"
 elif [ -d "$HOME/.claude" ]; then
   if [ "$DRY_RUN" = true ]; then
     echo "ℹ No .claude/ in current directory. Found ~/.claude/ — showing global install preview:"
-    CLAUDE_DIR="$HOME/.claude"
+    SKILLS_ROOT="$HOME/.claude"
   else
     echo "✗ No .claude/ in current directory." >&2
     echo "  Found ~/.claude/ — use --global to install globally, or cd to your project first." >&2
@@ -85,13 +84,13 @@ else
   exit 1
 fi
 
-TARGET_DIR="${CLAUDE_DIR}/skills/ml-training"
+TARGET_DIR="${SKILLS_ROOT}/skills/ml-training"
 echo "Target: ${TARGET_DIR}/"
 echo ""
 
 # ── Copy plan ────────────────────────────────────────────────────────────────
 declare -a COPY_PAIRS=(
-  "CAPABILITY.md:${TARGET_DIR}/SKILL.md"
+  "SKILL.md:${TARGET_DIR}/SKILL.md"
   "references/platform-selection.md:${TARGET_DIR}/references/platform-selection.md"
   "references/lora-finetune.md:${TARGET_DIR}/references/lora-finetune.md"
   "references/data-preparation.md:${TARGET_DIR}/references/data-preparation.md"

@@ -47,19 +47,20 @@ for arg in "$@"; do
   esac
 done
 
-install_claude_code() {
-  # Canonical project-local / global pattern (matches ai-prompt-engineering)
-  if [[ -d ".claude" ]]; then
-    CLAUDE_DIR=".claude"
+install_pack() {
+  local PLATFORM="${1:-claude-code}"
+  if [[ "$PLATFORM" = "codex" ]]; then
+    TARGET_DIR=".agents/skills/ai-agent-architecture"
+  elif [[ -d ".claude" ]]; then
+    TARGET_DIR=".claude/skills/ai-agent-architecture"
   elif [[ "$ALLOW_GLOBAL" = true ]] && [[ -d "$HOME/.claude" ]]; then
-    CLAUDE_DIR="$HOME/.claude"
+    TARGET_DIR="$HOME/.claude/skills/ai-agent-architecture"
   elif [[ -d "$HOME/.config/claude" ]]; then
-    CLAUDE_DIR="$HOME/.config/claude"
+    TARGET_DIR="$HOME/.config/claude/skills/ai-agent-architecture"
   else
     echo "✗ Claude Code not found. Run from your project root, or use --global." >&2
     exit 1
   fi
-  TARGET_DIR="${CLAUDE_DIR}/skills/ai-agent-architecture"
 
   echo "Agent:      claude-code"
   echo "Source:     $PACK_DIR"
@@ -67,16 +68,10 @@ install_claude_code() {
   echo "Dry run:    $DRY_RUN"
   echo ""
 
-  # Validate CAPABILITY.md has YAML frontmatter
-  if ! head -1 "$PACK_DIR/CAPABILITY.md" | grep -q '^---'; then
-    echo "ERROR: CAPABILITY.md missing YAML frontmatter (required for Claude Code skill loader)"
-    exit 1
-  fi
-
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "DRY RUN — would install:"
     echo "  mkdir -p $TARGET_DIR/references"
-    echo "  cp $PACK_DIR/CAPABILITY.md -> $TARGET_DIR/SKILL.md"
+    echo "  cp $PACK_DIR/SKILL.md -> $TARGET_DIR/SKILL.md"
     for f in "$PACK_DIR"/references/*.md; do
       echo "  cp $f -> $TARGET_DIR/references/$(basename "$f")"
     done
@@ -89,7 +84,7 @@ install_claude_code() {
 
   # Install
   mkdir -p "$TARGET_DIR/references"
-  cp "$PACK_DIR/CAPABILITY.md" "$TARGET_DIR/SKILL.md"
+  cp "$PACK_DIR/SKILL.md" "$TARGET_DIR/SKILL.md"
   cp "$PACK_DIR"/references/*.md "$TARGET_DIR/references/"
   cp "$PACK_DIR/LICENSE" "$TARGET_DIR/LICENSE"
   cp "$PACK_DIR/LICENSE-ATTRIBUTION.md" "$TARGET_DIR/LICENSE-ATTRIBUTION.md"
@@ -108,8 +103,11 @@ install_claude_code() {
 
 # Route by agent type
 case "$AGENT" in
-  claude-code|codex)
-    install_claude_code
+  claude-code)
+    install_pack "claude-code"
+    ;;
+  codex)
+    install_pack "codex"
     ;;
   cursor)
     echo "Phase 3 stub: Cursor installation not yet implemented."

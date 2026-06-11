@@ -45,33 +45,32 @@ echo ""
 
 # --- Phase 3 interface stub (not yet implemented) ---
 case "$AGENT" in
-  claude|codex)
-    # Phase 1 — implemented below
+  claude|claude-code)
+    ;;
+  codex)
     ;;
   cursor|gemini)
     echo "⚠️  Phase 3 ($AGENT) is not yet implemented." >&2
-    echo "   Phase 3 will install to:" >&2
-    case "$AGENT" in
-      cursor) echo "   .cursor/rules/web-ui-design.md" >&2 ;;
-      gemini) echo "   CAPABILITY.md (project root, passed via -p flag)" >&2 ;;
-    esac
     echo "   For now, install with --agent=claude and adapt manually." >&2
     exit 2
     ;;
   *)
-    echo "Unknown agent: $AGENT. Supported: claude (others in Phase 3)" >&2
+    echo "Unknown agent: $AGENT. Supported: claude, codex (others in Phase 3)" >&2
     exit 1
     ;;
 esac
 
-# --- Claude Code: detect install target ---
+# --- Detect install target ---
 
-CLAUDE_DIR=""
-if [ -d ".claude" ]; then
-  CLAUDE_DIR=".claude"
+SKILLS_ROOT=""
+if [ "$AGENT" = "codex" ]; then
+  SKILLS_ROOT=".agents"
+  echo "✓ Codex install — target .agents/skills/"
+elif [ -d ".claude" ]; then
+  SKILLS_ROOT=".claude"
   echo "✓ .claude/ detected — Claude Code project install"
 elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.claude" ]; then
-  CLAUDE_DIR="$HOME/.claude"
+  SKILLS_ROOT="$HOME/.claude"
   echo "✓ ~/.claude/ detected — Claude Code global install (--global flag set)"
 elif [ -d "$HOME/.claude" ]; then
   echo "✗ No .claude/ in current directory." >&2
@@ -83,14 +82,14 @@ else
   exit 1
 fi
 
-SKILL_DIR="${CLAUDE_DIR}/skills/web-ui-design"
+SKILL_DIR="${SKILLS_ROOT}/skills/web-ui-design"
 echo "Target: ${SKILL_DIR}/"
 echo ""
 
 # --- Copy plan ---
 
 declare -a COPY_PAIRS=(
-  "CAPABILITY.md:${SKILL_DIR}/SKILL.md"
+  "SKILL.md:${SKILL_DIR}/SKILL.md"
   "DESIGN-TEMPLATE.md:${SKILL_DIR}/DESIGN-TEMPLATE.md"
   "LICENSE:${SKILL_DIR}/LICENSE"
   "LICENSE-ATTRIBUTION.md:${SKILL_DIR}/LICENSE-ATTRIBUTION.md"

@@ -44,6 +44,9 @@ for arg in "$@"; do
     --dry-run)
       DRY_RUN=true
       ;;
+    --force)
+      # accepted as no-op (installer always overwrites)
+      ;;
     --help|-h)
       usage
       ;;

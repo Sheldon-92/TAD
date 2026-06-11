@@ -58,13 +58,16 @@ for arg in "$@"; do
   esac
 done
 
-install_claude_code() {
-  # Canonical project-local / global pattern (matches ai-prompt-engineering)
-  if [[ -d ".claude" ]]; then
-    CLAUDE_DIR=".claude"
+install_pack() {
+  local PLATFORM="${1:-claude-code}"
+  if [[ "$PLATFORM" = "codex" ]]; then
+    SKILLS_ROOT=".agents"
+    echo "✓ Codex install — target .agents/skills/"
+  elif [[ -d ".claude" ]]; then
+    SKILLS_ROOT=".claude"
     echo "✓ .claude/ detected — Claude Code project install"
   elif [[ "$ALLOW_GLOBAL" = true ]] && [[ -d "${HOME}/.claude" ]]; then
-    CLAUDE_DIR="${HOME}/.claude"
+    SKILLS_ROOT="${HOME}/.claude"
     echo "✓ ~/.claude/ detected — Claude Code global install (--global flag set)"
   elif [[ -d "${HOME}/.claude" ]]; then
     echo "ℹ No .claude/ in current directory. Found ~/.claude/ — use --global to install globally, or cd to your project first." >&2
@@ -73,7 +76,7 @@ install_claude_code() {
     echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
     exit 1
   fi
-  TARGET_DIR="${CLAUDE_DIR}/skills/web-frontend"
+  TARGET_DIR="${SKILLS_ROOT}/skills/web-frontend"
 
   echo "Web Frontend Capability Pack — Installing for Claude Code"
   echo ""
@@ -113,7 +116,7 @@ install_claude_code() {
   echo "Installing files..."
 
   # Main files
-  cp "$PACK_DIR/CAPABILITY.md" "$TARGET_DIR/SKILL.md"
+  cp "$PACK_DIR/SKILL.md" "$TARGET_DIR/SKILL.md"
   cp "$PACK_DIR/CONVENTIONS.md" "$TARGET_DIR/CONVENTIONS.md"
   cp "$PACK_DIR/README.md" "$TARGET_DIR/README.md"
   cp "$PACK_DIR/LICENSE" "$TARGET_DIR/LICENSE"
@@ -148,8 +151,11 @@ install_claude_code() {
 
 # Dispatch
 case "$AGENT" in
-  claude-code|codex)
-    install_claude_code
+  claude-code)
+    install_pack "claude-code"
+    ;;
+  codex)
+    install_pack "codex"
     ;;
   cursor)
     echo "INFO: Cursor IDE support is planned for Phase 3."

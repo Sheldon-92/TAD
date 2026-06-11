@@ -13,23 +13,34 @@ usage() {
 Usage: bash install.sh [OPTIONS]
 
 Options:
-  --agent <name>    Target agent runtime (default: claude-code)
-                    Supported: claude-code
+  --agent=<name>    Target agent runtime (default: claude-code)
+                    Supported: claude-code, codex
+  --agent <name>    Same (space-separated form)
   --target <path>   Override install target directory
+  --dry-run         Show what would be installed without copying files
+  --force           Overwrite existing installation
   --help            Show this message
 
 Examples:
   bash install.sh                          # Install for Claude Code (default)
-  bash install.sh --agent claude-code      # Explicit Claude Code
+  bash install.sh --agent=claude-code      # Explicit Claude Code
+  bash install.sh --agent=codex            # Install for Codex (.agents/skills/)
+  bash install.sh --dry-run                # Preview without writing
 EOF
   exit "${1:-0}"
 }
 
 AGENT="claude-code"
 CUSTOM_TARGET=""
+DRY_RUN=false
+FORCE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --agent=*)
+      AGENT="${1#--agent=}"
+      shift
+      ;;
     --agent)
       [[ -z "${2:-}" ]] && echo "Missing value for --agent" && exit 1
       AGENT="$2"
@@ -39,6 +50,14 @@ while [[ $# -gt 0 ]]; do
       [[ -z "${2:-}" ]] && echo "Missing value for --target" && exit 1
       CUSTOM_TARGET="$2"
       shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --force)
+      FORCE=true
+      shift
       ;;
     --help|-h)
       usage 0
@@ -50,9 +69,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-install_claude_code() {
+install_pack() {
+  local PLATFORM="$1"
   if [[ -n "$CUSTOM_TARGET" ]]; then
     TARGET_DIR="$CUSTOM_TARGET"
+  elif [[ "$PLATFORM" = "codex" ]]; then
+    TARGET_DIR=".agents/skills/${PACK_NAME}"
   else
     PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
     if [[ -d "${PROJECT_ROOT}/.claude" ]]; then
@@ -65,13 +87,25 @@ install_claude_code() {
     fi
   fi
 
-  echo "=== Installing ${PACK_NAME} v${PACK_VERSION} for Claude Code ==="
+  echo "=== Installing ${PACK_NAME} v${PACK_VERSION} for ${PLATFORM} ==="
   echo "Target: ${TARGET_DIR}"
   echo ""
 
+  if [[ "$DRY_RUN" = true ]]; then
+    echo "DRY RUN — No files will be copied."
+    echo "Would install SKILL.md + references/ to: ${TARGET_DIR}"
+    return 0
+  fi
+
+  if [[ -d "$TARGET_DIR" ]] && [[ "$FORCE" = false ]]; then
+    echo "⚠️  Existing installation found at $TARGET_DIR"
+    echo "   Use --force to overwrite."
+    exit 0
+  fi
+
   mkdir -p "${TARGET_DIR}/references"
 
-  cp "${SCRIPT_DIR}/CAPABILITY.md" "${TARGET_DIR}/SKILL.md"
+  cp "${SCRIPT_DIR}/SKILL.md" "${TARGET_DIR}/SKILL.md"
   grep -q '^name:' "${TARGET_DIR}/SKILL.md" || { echo "ERROR: SKILL.md missing 'name:' frontmatter" >&2; exit 1; }
   echo "✅  SKILL.md (frontmatter verified)"
 
@@ -102,12 +136,15 @@ install_claude_code() {
 }
 
 case "$AGENT" in
-  claude-code|codex)
-    install_claude_code
+  claude-code)
+    install_pack "claude-code"
+    ;;
+  codex)
+    install_pack "codex"
     ;;
   *)
     echo "Unknown agent: ${AGENT}"
-    echo "Supported: claude-code"
+    echo "Supported: claude-code, codex"
     exit 1
     ;;
 esac

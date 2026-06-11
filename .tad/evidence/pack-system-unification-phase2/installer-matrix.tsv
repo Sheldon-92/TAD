@@ -1,0 +1,9 @@
+pack	source_skill	claude_match	agents_match	claude_installer	codex_installer	dry_run	force	flag_fix
+academic-research	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	added --force/--dry-run/--agent=
+ai-agent-architecture	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	changed CAPABILITY->SKILL + codex path
+ai-voice-production	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	added --dry-run/--agent= + codex path
+video-creation	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	added --dry-run/--agent= + codex path
+web-frontend	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	changed CAPABILITY->SKILL + codex path
+web-ui-design	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	changed CAPABILITY->SKILL + codex path
+ml-training	EXISTS	MATCH	MATCH	PASS	PASS	PASS	PASS	changed CAPABILITY->SKILL + codex path
+research-methodology	N/A	N/A	N/A	N/A	N/A	PASS	PASS	added --force no-op

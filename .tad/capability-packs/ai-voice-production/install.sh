@@ -32,9 +32,14 @@ EOF
 AGENT="claude-code"
 CUSTOM_TARGET=""
 CHECK_ONLY=false
+DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --agent=*)
+      AGENT="${1#--agent=}"
+      shift
+      ;;
     --agent)
       AGENT="${2:-}"
       shift 2
@@ -48,6 +53,10 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --force)
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
       shift
       ;;
     --help|-h)
@@ -124,10 +133,12 @@ check_prerequisites() {
   fi
 }
 
-# Install for Claude Code
-install_claude_code() {
+install_pack() {
+  local PLATFORM="${1:-claude-code}"
   if [[ -n "$CUSTOM_TARGET" ]]; then
     TARGET_DIR="$CUSTOM_TARGET"
+  elif [[ "$PLATFORM" = "codex" ]]; then
+    TARGET_DIR=".agents/skills/${PACK_NAME}"
   elif [[ -d ".claude" ]]; then
     TARGET_DIR=".claude/skills/${PACK_NAME}"
   elif [[ -d "${HOME}/.claude" ]]; then
@@ -137,14 +148,20 @@ install_claude_code() {
     exit 1
   fi
 
-  echo "=== Installing ${PACK_NAME} v${PACK_VERSION} for Claude Code ==="
+  echo "=== Installing ${PACK_NAME} v${PACK_VERSION} for ${PLATFORM} ==="
   echo "Target: ${TARGET_DIR}"
   echo ""
 
+  if [[ "$DRY_RUN" = true ]]; then
+    echo "DRY RUN — No files will be copied."
+    echo "Would install SKILL.md + references/ to: ${TARGET_DIR}"
+    return 0
+  fi
+
   mkdir -p "${TARGET_DIR}/references"
 
-  # Copy CAPABILITY.md
-  cp "${SCRIPT_DIR}/CAPABILITY.md" "${TARGET_DIR}/SKILL.md"
+  # Copy prebuilt SKILL.md
+  cp "${SCRIPT_DIR}/SKILL.md" "${TARGET_DIR}/SKILL.md"
   echo "✅  SKILL.md"
 
   # Copy all references
@@ -179,19 +196,6 @@ install_claude_code() {
   echo "  3. Use CAPABILITY.md Step 1 to detect context → load the right reference"
 }
 
-# Phase 2 stub: Codex
-install_codex() {
-  echo "ℹ️  Codex installation is planned for Phase 2."
-  echo ""
-  echo "What Phase 2 Codex install will do:"
-  echo "  - Copy CAPABILITY.md to ~/.codex/skills/${PACK_NAME}/"
-  echo "  - Register in AGENTS.md with role-switch trigger"
-  echo "  - Create codex-${PACK_NAME}-skill.md (stripped version)"
-  echo ""
-  echo "For now, copy files manually:"
-  echo "  cp -r ${SCRIPT_DIR}/ ~/.codex/skills/${PACK_NAME}/"
-  exit 2
-}
 
 # Phase 2 stub: Cursor
 install_cursor() {
@@ -229,8 +233,11 @@ check_prerequisites || true  # warn but don't block install
 echo ""
 
 case "$AGENT" in
-  claude-code|codex)
-    install_claude_code
+  claude-code)
+    install_pack "claude-code"
+    ;;
+  codex)
+    install_pack "codex"
     ;;
   cursor)
     install_cursor

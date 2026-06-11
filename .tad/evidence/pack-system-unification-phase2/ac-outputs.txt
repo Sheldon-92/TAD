@@ -1,0 +1,62 @@
+AC1-AC9 Results — Pack System Unification Phase 2
+Date: 2026-06-11
+
+=== AC1: source SKILL.md exists ===
+PASS academic-research
+PASS ai-agent-architecture
+PASS ai-voice-production
+PASS video-creation
+PASS web-frontend
+PASS web-ui-design
+PASS ml-training
+
+=== AC2: .claude/.agents byte-identical to source ===
+PASS academic-research
+PASS ai-agent-architecture
+PASS ai-voice-production
+PASS video-creation
+PASS web-frontend
+PASS web-ui-design
+PASS ml-training
+
+=== AC3: claude installer byte-match ===
+PASS academic-research
+PASS ai-agent-architecture
+PASS ai-voice-production
+PASS video-creation
+PASS web-frontend
+PASS web-ui-design
+PASS ml-training
+
+=== AC4: codex installer byte-match ===
+PASS academic-research
+PASS ai-agent-architecture
+PASS ai-voice-production
+PASS video-creation
+PASS web-frontend
+PASS web-ui-design
+PASS ml-training
+
+=== AC5: dry-run no-write ===
+PASS academic-research
+PASS ai-agent-architecture
+PASS ai-voice-production
+PASS video-creation
+PASS web-frontend
+PASS web-ui-design
+PASS ml-training
+PASS research-methodology
+
+=== AC6: no CAPABILITY->SKILL in target installers ===
+PASS
+
+=== AC7: research-methodology accepts --force ===
+PASS
+
+=== AC8: YAML frontmatter valid (manual check — PyYAML unavailable) ===
+PASS (21/21 files)
+
+=== AC9: Domain Pack surfaces unchanged ===
+PASS
+
+=== AC10: pending (completion report not yet written) ===
