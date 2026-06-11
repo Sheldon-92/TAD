@@ -56,6 +56,7 @@ This guard is also enforced in `alex/SKILL.md` `publish_protocol.prerequisite.ta
 - [ ] `.tad/sync-registry.yaml` exists and lists all downstream projects
 - [ ] `.tad/deprecation.yaml` is valid YAML (try `yq . .tad/deprecation.yaml`)
 - [ ] Pack registry drift-check run (advisory): `bash .tad/hooks/lib/pack-registry-driftcheck.sh` — exit 1 = registry/pack desync to review (run `bash .tad/scripts/scan-packs.sh` to regenerate), NOT a release blocker.
+- [ ] **Codex parity check:** `bash .tad/hooks/lib/release-verify.sh parity "$PWD"` exits 0 (byte-identical .claude/skills ↔ .agents/skills). If exit 1 → run `parity --fix "$PWD"` (auto-fixes if claude-newer; REFUSES if agents-newer). HARD BLOCK.
 - [ ] **If this release touches `tad.sh` or `derive-sync-set.sh`:** installer deny-list drift-check passes: `bash tad.sh --verify-denylist` (exit 0 = in sync; exit 1 = DRIFT → fix BOTH copies before tagging). HARD BLOCK.
 
 ### Decide the version bump

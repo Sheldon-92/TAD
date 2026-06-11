@@ -101,10 +101,12 @@ publish_protocol:
              (NEVER git add -A — scoped commit to avoid pulling unrelated changes)
              git commit -m "chore(TAD): sync .agents/skills from .claude/skills (step3b parity)"
              Re-run step3 (git status) before proceeding.
-          3. If --fix exits 1 (REFUSED — agents-newer):
-             STOP. Ask the human: "Someone edited .agents/skills directly. The auto-fix
-             refuses to overwrite. Please investigate and resolve manually."
-             Do NOT proceed to step3c.
+          3. If --fix exits 1 — two possible causes (check VERDICT line):
+             a. FIX-REFUSED (agents-newer): someone edited .agents/skills directly.
+                STOP. Ask the human to investigate and resolve manually.
+             b. FIX-FAIL (rsync succeeded but re-verify still shows drift):
+                STOP. The fix itself failed — investigate, do not publish.
+             In either case: do NOT proceed to step3c.
 
     step3c:
       name: "Self-Deriving Release Verification Gate (version — BLOCKING on minor+)"

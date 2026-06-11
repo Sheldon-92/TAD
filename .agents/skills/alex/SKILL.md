@@ -1122,16 +1122,6 @@ accept_command:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/alex/references/accept-command.md"
   load_when: "When *accept is invoked (accept_command provides the execution flow), Read the reference and follow it verbatim."
-# *optimize command — Trace Analysis & Improvement Proposals (TAD v2.17)
-optimize_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/optimize-protocol.md"
-  load_when: "When *optimize is invoked, Read the reference and follow it verbatim."
-# *evolve command — Cross-Project Trace Aggregation & Framework Improvement (TAD v2.8)
-evolve_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/evolve-protocol.md"
-  load_when: "When *evolve is invoked, Read the reference and follow it verbatim."
 # PROJECT_CONTEXT 更新规则 (在 *accept 时执行)
 project_context_update:
   trigger: "*accept 命令执行时"
@@ -1388,11 +1378,6 @@ sync_list_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/alex/references/sync-list-protocol.md"
   load_when: "When *sync-list is invoked, Read the reference and follow it verbatim."
-# *dream command — Knowledge Consolidation (TAD v2.15.0)
-dream_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/dream-protocol.md"
-  load_when: "When *dream is invoked, Read the reference and follow it verbatim."
 # Forbidden actions (will trigger VIOLATION)
 # ⚠️ ANTI-RATIONALIZATION: "Blake 的修复很简单，只改一行，我帮他改了省得切 terminal"
 # → 一行修改也需通过 Ralph Loop。Alex 改了就跳过了 Layer 1 + Layer 2。
@@ -1420,7 +1405,7 @@ triple_question_draft_rule:
   draft_outputs:
     skill_candidate: ".tad/active/skillify-candidates/SCAND-{date}-{slug}.md (type: judgment)"
     workflow_candidate: ".tad/active/skillify-candidates/SCAND-{date}-{slug}.md (type: orchestration)"
-  human_confirmation: "Alex STEP 3.57 (startup candidate review) or explicit *skillify accept"
+  human_confirmation: "Blake T1 in-session ceremony (skillify_evaluation step 5) or master *harvest review"
   note: "Draft candidate ≠ production artifact. No 'Alex doesn't code' tension because drafts are proposals, not deployments."
 
 # Interaction rules

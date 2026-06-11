@@ -514,7 +514,7 @@ MIG_REN_EOF
     FIX_MODE=false
     if [ "${2:-}" = "--fix" ]; then FIX_MODE=true; shift; fi
     if [ $# -ne 2 ]; then usage; exit 2; fi
-    REPO="$2"
+    REPO="$(cd "$2" && pwd -P)" || { echo "ERROR: cannot resolve repo path: $2" >&2; exit 2; }
     CLAUDE_SKILLS="$REPO/.claude/skills"
     AGENTS_SKILLS="$REPO/.agents/skills"
     if [ ! -d "$CLAUDE_SKILLS" ]; then echo "ERROR: no .claude/skills under repo: $REPO" >&2; exit 2; fi
@@ -535,42 +535,98 @@ MIG_REN_EOF
 
     printf '%s\n' "$pout" | sed 's/^/  ❌ /'
 
-    # DIRECTION heuristic (biased to STOP = agents-newer)
-    DIRECTION="claude-newer"
-    while IFS= read -r line; do
-      # Extract the path that differs on the .agents side
-      apath=""
-      case "$line" in
-        "Only in $AGENTS_SKILLS"*) apath="${line#Only in }"; apath="${apath%:*}/${line##*: }" ;;
-        "Files "*"differ") apath="$(printf '%s\n' "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")" ;; # [^ ]* assumes no spaces in skill filenames (convention-enforced)
-      esac
-      [ -z "$apath" ] && continue
+    # DIRECTION heuristic — DEFAULT STOP, promote to claude-newer only when proven safe.
+    # FR2: "When the heuristic cannot decide → agents-newer (STOP) (false-positive preferred)."
+    # Non-git repo, parse failure, ambiguous commit history → all stay at default STOP.
+    DIRECTION="agents-newer (STOP)"
+    is_git=false
+    if cd "$REPO" && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then is_git=true; fi
 
-      # Check if .agents path is working-tree-modified or untracked
-      relpath="${apath#$REPO/}"
-      gstatus="$(cd "$REPO" && git status --porcelain -- "$relpath" 2>/dev/null)" || true
-      if [ -n "$gstatus" ]; then
-        DIRECTION="agents-newer (STOP)"
-        echo "  ⚠️  $relpath has uncommitted changes on .agents side"
-        break
-      fi
+    if $is_git; then
+      # Try to PROVE claude-newer: every differing path must pass ALL checks.
+      # Any single path that fails → stays at default STOP (break immediately).
+      all_claude_newer=true
+      while IFS= read -r line; do
+        apath=""
+        case "$line" in
+          "Only in $AGENTS_SKILLS"*)
+            # Orphan on .agents side → agents-newer
+            all_claude_newer=false
+            echo "  ⚠️  orphan on .agents side: ${line#Only in }"
+            break
+            ;;
+          "Only in $CLAUDE_SKILLS"*)
+            # Orphan on .claude side → this path is claude-newer, continue checking others
+            continue
+            ;;
+          "Files "*"differ")
+            apath="$(printf '%s\n' "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")"
+            ;; # [^ ]* assumes no spaces in skill filenames (convention-enforced)
+        esac
+        [ -z "$apath" ] && continue
 
-      # Check if last commit touches ONLY the .agents side (not .claude)
-      cpath="${apath/$AGENTS_SKILLS/$CLAUDE_SKILLS}"
-      crelpath="${cpath#$REPO/}"
-      alast="$(cd "$REPO" && git log -1 --format=%H -- "$relpath" 2>/dev/null)" || true
-      clast="$(cd "$REPO" && git log -1 --format=%H -- "$crelpath" 2>/dev/null)" || true
-      if [ -n "$alast" ] && [ "$alast" != "$clast" ]; then
+        relpath="${apath#$REPO/}"
+
+        # Check 1: .agents path has uncommitted changes → agents-newer
+        gstatus="$(cd "$REPO" && git status --porcelain -- "$relpath" 2>/dev/null)" || true
+        if [ -n "$gstatus" ]; then
+          # Also check .claude counterpart — if .claude has uncommitted changes
+          # but .agents does NOT, that's claude-newer
+          cpath="${apath/$AGENTS_SKILLS/$CLAUDE_SKILLS}"
+          crelpath="${cpath#$REPO/}"
+          cstatus="$(cd "$REPO" && git status --porcelain -- "$crelpath" 2>/dev/null)" || true
+          if [ -n "$cstatus" ] && [ -z "$gstatus" ]; then
+            continue  # .claude dirty, .agents clean → this path is claude-newer
+          fi
+          if [ -n "$gstatus" ] && [ -z "$cstatus" ]; then
+            all_claude_newer=false
+            echo "  ⚠️  $relpath has uncommitted changes on .agents side"
+            break
+          fi
+          # Both dirty or unable to determine → STOP
+          all_claude_newer=false
+          echo "  ⚠️  $relpath: both sides have uncommitted changes — cannot determine direction"
+          break
+        fi
+
+        # Check 2: .claude counterpart has uncommitted changes → claude-newer (positive proof)
+        cpath="${apath/$AGENTS_SKILLS/$CLAUDE_SKILLS}"
+        crelpath="${cpath#$REPO/}"
+        cstatus="$(cd "$REPO" && git status --porcelain -- "$crelpath" 2>/dev/null)" || true
+        if [ -n "$cstatus" ]; then
+          continue  # .claude is dirty, .agents is clean → this path is claude-newer
+        fi
+
+        # Check 3: last commit analysis — only promote if .agents commit == .claude commit
+        # (same mirror commit) or .claude commit is strictly newer
+        alast="$(cd "$REPO" && git log -1 --format=%H -- "$relpath" 2>/dev/null)" || true
+        clast="$(cd "$REPO" && git log -1 --format=%H -- "$crelpath" 2>/dev/null)" || true
+        if [ -z "$alast" ] || [ -z "$clast" ]; then
+          all_claude_newer=false
+          echo "  ⚠️  $relpath: no git history for one side — cannot determine direction"
+          break
+        fi
+        if [ "$alast" = "$clast" ]; then
+          continue  # same last commit → likely imperfect sync, .claude is SOT
+        fi
+        # Different commits — check if .agents commit touches only .agents (independent edit)
         afiles="$(cd "$REPO" && git diff-tree --no-commit-id --name-only -r "$alast" 2>/dev/null)" || true
         if printf '%s\n' "$afiles" | grep -q -- "^\.agents/" && ! printf '%s\n' "$afiles" | grep -q -- "^\.claude/"; then
-          DIRECTION="agents-newer (STOP)"
+          all_claude_newer=false
           echo "  ⚠️  $relpath last commit ($alast) touches only .agents side"
           break
         fi
-      fi
-    done <<PARITY_EOF
+        # .agents commit also touches .claude → likely a bulk sync, treat as claude-newer
+      done <<PARITY_EOF
 $pout
 PARITY_EOF
+
+      if $all_claude_newer; then
+        DIRECTION="claude-newer"
+      fi
+    else
+      echo "  ⚠️  not a git repository — cannot determine direction (default: STOP)"
+    fi
 
     echo "DIRECTION: $DIRECTION"
 
