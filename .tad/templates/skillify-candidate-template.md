@@ -6,6 +6,7 @@ status: draft  # draft | accepted | rejected
 type: judgment  # judgment | orchestration — Step 5 routing result
 # judgment → generates .claude/skills/{slug}/SKILL.md
 # orchestration → generates .claude/workflows/{slug}.workflow.js
+tier: ~  # T1 | T2 | T3 — set ONLY during the T1 ceremony or harvest routing, NEVER by the discoverer
 source: {handoff slug or "session-explicit"}
 trigger_conditions: "{what scenario triggers this pattern}"
 reusable: true

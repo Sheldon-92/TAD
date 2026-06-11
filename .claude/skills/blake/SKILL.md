@@ -1866,6 +1866,21 @@ completion_protocol:
            "Yes: SCAND-{date}-{slug} (4/4 gates passed)"
         4. If any gate fails → fill completion report Skillify Candidate row:
            "No: {failed_gate_name}" (audit trail, no user interaction)
+        5. T1 materialization ceremony (2026-06-10 decision — in-session human confirmation):
+           trigger: "Steps 1-2b produced a SCAND with 4/4 gates AND the human is present in-session"
+           a. AskUserQuestion: "Pattern {slug} passed 4/4 gates. Materialize now?"
+              options: "Materialize as project skill (T1)" / "Keep as draft candidate" / "Discard"
+           b. On Materialize:
+              - type judgment → create .claude/skills/{slug}/SKILL.md from the SCAND's
+                Proposed Skill Outline (project-local; NOT TAD-master unless working in TAD repo)
+              - type orchestration → create .claude/workflows/{slug}.workflow.js skeleton
+              - Update SCAND frontmatter: status: accepted, tier: T1, materialized_at: {path}
+              - Completion report MUST add row: "Skill materialized: {path}" with
+                verification `test -f {path}` — acceptance = action with artifact AC
+           c. On Keep draft: SCAND stays status: draft (visible to master *harvest)
+           d. On Discard: status: rejected (audit trail)
+           e. If human NOT present (autonomous/YOLO session): skip ceremony, SCAND stays
+              draft — unattended materialization is FORBIDDEN
       blocking: false
       note: "This is a SUGGESTION — candidate goes to human review via Alex STEP 3.57, not auto-created skill"
       candidate_path: ".tad/active/skillify-candidates/SCAND-{YYYY-MM-DD}-{slug}.md"
@@ -1876,7 +1891,7 @@ completion_protocol:
         (no KA context = no pattern to evaluate).
       forbidden_implementations:
         - "MUST NOT auto-accept candidates without human review — the entire value proposition is human-in-the-loop"
-        - "MUST NOT create .claude/skills/{slug}/SKILL.md from Blake — Blake writes candidates, Alex/human creates skills"
+        - "MUST NOT create .claude/skills/{slug}/SKILL.md from Blake UNATTENDED — the T1 in-session ceremony (2026-06-10 decision) is the ONLY sanctioned path: human explicitly approves via AskUserQuestion in the same session, SCAND records tier+materialized_at, completion report carries an artifact-existence AC. MUST NOT treat handoff pre-approval as satisfying the AskUserQuestion requirement — the in-session interactive question is mandatory even when a handoff pre-routes the outcome. Outside that ceremony, Blake writes candidates only; auto/unattended materialization stays forbidden"
         - "MUST NOT make skillify_evaluation blocking — it is explicitly blocking: false"
         - "MUST NOT register hooks for skillify enforcement (per 2026-04-15 mechanical enforcement rejected principle)"
         - "MUST NOT auto-invoke *skillify without user explicit command (Alex side) — Blake's path is KA-only"

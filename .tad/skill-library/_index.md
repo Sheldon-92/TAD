@@ -4,4 +4,5 @@
 
 ---
 
-(No entries yet — T2 shelf created 2026-06-10 as part of self-evolution pruning Phase 1.)
+- [eval-page-generator](colin--eval-page-generator.md) — Colin声音项目, 2026-06-06, batch evaluation page generation (superseded by Feedback Collector)
+- [colab-drive-deploy](colin--colab-drive-deploy.md) — Colin声音项目, 2026-06-03, Drive-first Colab training deploy pattern (T3 candidate when 2nd project corroborates)
