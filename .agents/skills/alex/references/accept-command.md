@@ -47,7 +47,6 @@ accept_command:
       - "step4 (AC line-by-line)"
       - "step4b (evidence completeness)"
       - "step4c (Layer 2 audit)"
-      - "step4d (trace-digest)"
       - "step7 (Knowledge Assessment)"
       - "step_pair_testing_assessment"
       - "step3 (PROJECT_CONTEXT.md update)"

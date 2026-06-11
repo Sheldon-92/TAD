@@ -58,8 +58,8 @@ argument is accepted but ignored in Phase 1 — there is no execution path to bu
 
 - **No execution.** This mode never picks up a ranked item and works on it. It only
   scans, ranks, and reports.
-- **No mutation** of backlog sources (`.tad/active/ideas/`, `dream-candidates/`,
-  `epics/`, `.tad/evidence/proposals/`, `NEXT.md`, `OBJECTIVES.md`). Read-only.
+- **No mutation** of backlog sources (`.tad/active/ideas/`,
+  `epics/`, `NEXT.md`, `OBJECTIVES.md`). Read-only.
 - **Exactly two writes:** the plan `.md` and its `.json` sidecar, both under
   `.tad/active/` at the `SURPLUS-PLAN-<stamp>` stem. Any other write is a violation.
 - **auto_eligible is advisory only** in Phase 1 — it flags what *would* be safe to

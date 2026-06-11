@@ -1882,7 +1882,7 @@ completion_protocol:
            e. If human NOT present (autonomous/YOLO session): skip ceremony, SCAND stays
               draft — unattended materialization is FORBIDDEN
       blocking: false
-      note: "This is a SUGGESTION — candidate goes to human review via Alex STEP 3.57, not auto-created skill"
+      note: "This is a SUGGESTION — candidate goes to human review via the T1 in-session ceremony (step 5) or master *harvest, not auto-created skill"
       candidate_path: ".tad/active/skillify-candidates/SCAND-{YYYY-MM-DD}-{slug}.md"
       interacts_with_override: |
         skillify_evaluation runs AFTER knowledge_assessment must_answer is filled,

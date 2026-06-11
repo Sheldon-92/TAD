@@ -87,7 +87,7 @@ cancel_protocol:
       name: "Skip Gate 4 ceremony — by design"
       action: |
         Do NOT execute *accept ceremony. Do NOT add `## Gate 4` section to handoff.
-        Do NOT call layer2-audit.sh. Do NOT call trace-digest.sh.
+        Do NOT call layer2-audit.sh.
         Cancelled work has no acceptance — only archival. This is the explicit
         contract that makes cancellation distinct from completion.
       verification: |
@@ -115,7 +115,7 @@ cancel_protocol:
     Phase 5 P5.3 formalizes what was previously the "silent abandoned handoff"
     failure mode (toy 2026-04-11 example: handoff sat in active/ for weeks,
     never accepted, never deleted, eventually disappeared without record).
-    Structured cancellation gives future *evolve a way to distinguish "Alex
+    Structured cancellation gives future cross-project audits a way to distinguish "Alex
     over-scoped" from "external pivot" from "supersede chain" — all of which
     look like missing-completion to a naive aggregator.
 

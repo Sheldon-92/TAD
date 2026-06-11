@@ -106,60 +106,6 @@ acceptance_protocol:
       dogfood paradox risk + trivial recovery if script itself breaks.
     blocking: false
 
-  step4d:
-    name: "trace-digest.sh advisory check (P5.4 2026-04-25 — smoke-alarm for skipped Domain Pack steps)"
-    helper_script: ".tad/hooks/lib/trace-digest.sh <slug>"
-    blocking: false  # advisory; mirrors step4c
-    action: |
-      Phase 5 P5.4 introduced per-handoff trace subdirectory at
-      `.tad/evidence/traces/per-handoff/{slug}/{date}.jsonl`. Blake invokes
-      trace-step.sh during Domain Pack capability execution and the hook
-      records step_start / step_end events to both date-keyed and per-handoff
-      paths. step4d reads the per-handoff trace and surfaces obvious anomalies
-      (orphaned starts = step skipped mid-execution, all-failed step_ends =
-      capability never recovered, etc.) BEFORE Alex declares Gate 4 acceptance.
-
-      1. Extract handoff slug from current filename (same regex as step4c):
-           ^(HANDOFF|COMPLETION)-\d{8}-([a-zA-Z0-9_][a-zA-Z0-9_-]*[a-zA-Z0-9_])\.md$
-         Capture group $2 is the slug.
-
-      2. If slug extraction fails: acceptance report records
-         "trace-digest N/A: non-standard handoff filename — manual review required"
-         and proceed to step5. Do NOT block.
-
-      3. If slug valid: run
-           bash .tad/hooks/lib/trace-digest.sh <slug>
-         capturing exit code + stdout + stderr.
-
-      4. Interpret:
-         - exit 0 (PASS) → acceptance report inserts trace summary:
-             "✅ Trace digest: <step_start_count> step events captured;
-              <orphan_count> orphans; <failed_count> failed. (trace-digest is
-              smoke-alarm only — manual review for any orphan/failed > 0)"
-         - exit 1 (FAIL — orphan/failed counts non-zero) → acceptance report
-           inserts at VISIBLE position (before Gate 4 checklist):
-             ```
-             ⚠️ TRACE DIGEST WARN
-             Per-handoff trace shows skipped/failed Domain Pack steps:
-             <stderr from trace-digest.sh>
-             Human accepter: confirm whether Blake actually completed all
-             Domain Pack steps. If skipped legitimately, document exception
-             in completion report.
-             ```
-         - exit 2 (advisory — trace dir missing OR slug invalid) → acceptance
-           report records "trace-digest N/A: <reason from stderr>" and proceed.
-
-      5. Continue to step5 regardless of exit code. Acceptance is NOT blocked
-         by this check — smoke alarm only, mirrors step4c. Human accepter has
-         final call.
-
-      Rationale: trace-digest.sh is the Blake-side analog of step4c
-      (Layer 2 reviewer artifacts). step4c verifies "Blake claimed expert
-      review" — step4d verifies "Blake claimed Domain Pack execution".
-      Together they provide a smoke-alarm replacement for the mechanical
-      enforcement Epic 1 was rejected for (per architecture.md
-      "Mechanical Enforcement Rejected on Single-User CLI - 2026-04-15").
-
   step4e_feedback:
     name: "Feedback Collection Check (soft/advisory — Phase 2)"
     blocking: false
@@ -305,7 +251,7 @@ acceptance_protocol:
            e. "Is this an orchestration pattern that recurred?" → WORKFLOW-CANDIDATE
               → Same Skillify 4-gate + Step 5 as Blake side
               → Write SCAND candidate with appropriate type (judgment or orchestration)
-              → Human confirms adoption via STEP 3.57 or *skillify accept
+              → Human confirms adoption via Blake T1 in-session ceremony or master *harvest review
         3. Fill Gate 4 Knowledge Assessment table with: layer, file path, entry title
 
     separation_of_concerns: |
@@ -332,7 +278,7 @@ acceptance_protocol:
         - Alex said "scope = 8 files", Gate 4 review revealed 11 files actually
           touched (handoff §6 estimate inaccurate)
       These are NOT failures — they're "Alex 提议 vs Gate 4 reality" gaps that
-      future *evolve queries can use to detect Alex-side estimation drift.
+      future cross-project audits can use to detect Alex-side estimation drift.
 
     action: |
       IF Alex during step7 (raw-TSV recompute / AC alignment / business
@@ -366,11 +312,11 @@ acceptance_protocol:
       - "MUST NOT couple gate4_delta to skip_knowledge_assessment — orthogonal concerns"
 
     rationale: |
-      Phase 5 P5.1 builds the data-capture substrate for future *evolve cross-
-      project drift detection. Without structured gate4_delta records, *evolve
+      Phase 5 P5.1 builds the data-capture substrate for future cross-project
+      audit drift detection. Without structured gate4_delta records, audits
       cannot tell "Alex over-promised on perf" from "tests genuinely flaky" —
       both look like AC failures in retrospect. The 4-key structure (field,
-      alex_said, actual, caught_by) is the minimum *evolve needs to attribute
+      alex_said, actual, caught_by) is the minimum an audit needs to attribute
       drift to a source.
 
   step7b: "【配对测试评估】评估是否建议配对 E2E 测试（UI/用户流变更时建议，人类决定）"

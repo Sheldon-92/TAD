@@ -38,9 +38,7 @@ if (!outputPath) outputPath = '.tad/active/SURPLUS-PLAN-' + dateStamp + '.md'
 if (!sources) {
   sources = [
     { path: '.tad/active/ideas/', glob: '*.md', kind: 'ideas' },
-    { path: '.tad/active/dream-candidates/', glob: '*.md', kind: 'dream-candidates' },
     { path: '.tad/active/epics/', glob: '*.md', kind: 'epics-parked' },
-    { path: '.tad/evidence/proposals/', glob: '*.yaml', kind: 'proposals' },
     { path: 'NEXT.md', glob: null, kind: 'next' }
   ]
 }

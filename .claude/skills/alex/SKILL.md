@@ -319,59 +319,6 @@ activation-instructions:
       If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.55
       (user is probably in Terminal 2 for Blake, not here to clean up).
       Does NOT affect STEP 3.8 suppression.
-  - STEP 3.56: Dream candidate review (conditional)
-    trigger: "pending dream candidates exist in .tad/active/dream-candidates/"
-    action: |
-      1. Count CAND-*.md files with status: pending (grep frontmatter)
-      2. If 0 → skip silently
-      3. If > 0:
-         Output: "🧠 {N} knowledge candidates from auto-dream (last scan: {last_scan_ts})"
-         AskUserQuestion:
-           question: "自动 dreaming 发现了 {N} 个知识模式。要现在审阅吗？"
-           options:
-             - "审阅 candidates" → per-candidate review loop
-             - "稍后处理" → skip, candidates stay pending
-      4. Per-candidate review:
-         Display: title, signal_type, scope_tag, confidence, evidence
-         AskUserQuestion per candidate:
-           - "接受" → append to .tad/project-knowledge/{inferred_category}.md, status→accepted
-           - "修改后接受" → user edits content, then append, status→accepted
-           - "拒绝" → status→rejected (file stays for audit trail)
-           - "推迟" → status stays pending
-      5. After all candidates reviewed:
-         Update dream-state.yaml: total_accepted, total_rejected
-         Output summary: "✅ {accepted} accepted, {rejected} rejected, {deferred} deferred"
-    blocking: false
-    suppress_if: "No pending candidates"
-    interacts_with: |
-      Runs AFTER STEP 3.55 (zombie cleanup).
-      Does NOT affect STEP 3.8 suppression.
-      If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.56.
-  - STEP 3.57: Skillify candidate review (conditional)
-    trigger: "pending skillify candidates exist in .tad/active/skillify-candidates/"
-    action: |
-      1. Scan SCAND-*.md files with status: pending (grep frontmatter)
-      2. Filter out status: rejected files
-      3. For pending candidates older than 30 days: flag with "⏰ 30+ days pending"
-      4. If 0 pending → skip silently
-      5. If > 0:
-         Output: "🔧 {N} skillify candidates detected"
-         Per-candidate review:
-           Display: name, trigger_conditions, steps summary, source
-           AskUserQuestion per candidate:
-             - "接受 → 生成 project skill" → create .claude/skills/{slug}/SKILL.md from candidate outline
-             - "修改后接受" → user edits, then create
-             - "拒绝" → update candidate status→rejected
-             - "推迟" → status stays pending
-      6. On accept: generate .claude/skills/{slug}/SKILL.md from candidate's Proposed Skill Outline
-    blocking: false
-    suppress_if: "No pending candidates"
-    interacts_with: |
-      Runs AFTER STEP 3.56 (dream candidate review), BEFORE STEP 3.8 (research landscape).
-      If STEP 3.7 announces Blake resume (case 3): suppress STEP 3.57
-      (user is in Terminal 2 for Blake, not here to review candidates).
-      Does NOT affect STEP 3.8 suppression.
-      Does NOT affect STEP 4 suppression.
   - STEP 3.8: Research Landscape + Objective Alignment Scan
     action: |
       After STEP 3.7, check research landscape:
@@ -567,11 +514,8 @@ commands:
   research-review: "Research portfolio review — classify all notebooks by goal alignment + action plan"
   research-plan: "基于 OBJECTIVES.md gap analysis，提出研究计划并执行"
 
-  # Self-evolution commands (TAD v2.8+)
-  optimize: "Analyze execution traces and propose Domain Pack improvements"
-  evolve: "Cross-project trace aggregation — analyze all projects and propose TAD framework improvements"
-  dream: "Consolidate project-knowledge files — dedup, merge, prune stale refs, reduce bloat (candidates only, originals untouched)"
-  skillify: "Extract current session's working pattern as a reusable skill candidate"
+  # Cross-project & skill management
+  harvest: "Review skillify candidates across all projects — T1/T2/T3 routing (explicit command only)"
   surplus: "Find + rank highest value-density backlog work (--plan); auto-burn surplus usage (Phase 2)"
 
   # Pair testing commands
@@ -1451,7 +1395,7 @@ on_start: |
   - *discuss — Free-form product/tech discussion
   - *idea — Capture an idea for later
   - *learn — Understand a technical concept (Socratic teaching)
-  - *dream — Consolidate project-knowledge files (dedup, merge, prune stale refs)
+  - *harvest — Review skillify candidates across projects (T1/T2/T3 routing)
   - *publish — Push TAD updates to GitHub (version check + push + tag)
   - *sync — Sync TAD to your other projects
   - *surplus --plan — Find + rank highest value-density backlog work (read-only)
@@ -1496,7 +1440,7 @@ on_start: |
 - `*sync` - Sync TAD framework to registered projects
 - `*sync-add` - Register a new project for sync
 - `*sync-list` - List registered sync projects
-- `*dream` - Consolidate project-knowledge (dedup + merge + prune stale refs)
+- `*harvest` - Review skillify candidates across projects (T1/T2/T3 routing)
 
 ### Gate Ownership (since v2.0)
 ```

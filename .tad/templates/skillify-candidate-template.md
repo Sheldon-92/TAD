@@ -7,6 +7,8 @@ type: judgment  # judgment | orchestration — Step 5 routing result
 # judgment → generates .claude/skills/{slug}/SKILL.md
 # orchestration → generates .claude/workflows/{slug}.workflow.js
 tier: ~  # T1 | T2 | T3 — set ONLY during the T1 ceremony or harvest routing, NEVER by the discoverer
+materialized_at: ~  # T1 only: project-local skill path (set during ceremony)
+reference_at: ~  # T2 only: .tad/skill-library/ path (set during harvest routing)
 source: {handoff slug or "session-explicit"}
 trigger_conditions: "{what scenario triggers this pattern}"
 reusable: true

@@ -205,6 +205,8 @@ path/to/new-file2.ts  # [用途说明]
 
 ---
 
+Every claim in this report must have an on-disk carrier file (claims-need-carriers — patterns/gate-design.md).
+
 ## 📂 Evidence Checklist (MANDATORY)
 
 ### Ralph Loop Evidence
