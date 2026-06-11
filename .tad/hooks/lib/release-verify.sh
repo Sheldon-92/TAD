@@ -706,13 +706,24 @@ PARITY_EOF
     # Source precondition: source .claude and .agents must be symmetric
     src_fails=0
     for skill in $fw_skills; do
-      if [ -d "$SRC/.claude/skills/$skill" ] && [ -d "$SRC/.agents/skills/$skill" ]; then
+      has_claude=false
+      has_agents=false
+      [ -d "$SRC/.claude/skills/$skill" ] && has_claude=true
+      [ -d "$SRC/.agents/skills/$skill" ] && has_agents=true
+
+      if [ "$has_claude" = true ] && [ "$has_agents" = true ]; then
         sout="$(diff -rq "$SRC/.claude/skills/$skill" "$SRC/.agents/skills/$skill" 2>&1)" || true
         if [ -n "$sout" ]; then
           echo "  ❌ SOURCE PRECONDITION: $skill differs between .claude and .agents in source"
           printf '%s\n' "$sout" | sed 's/^/      /' | head -4
           src_fails=$((src_fails + 1))
         fi
+      elif [ "$has_claude" = true ] && [ "$has_agents" = false ]; then
+        echo "  ❌ SOURCE PRECONDITION: $skill exists in source .claude but missing from .agents"
+        src_fails=$((src_fails + 1))
+      elif [ "$has_claude" = false ] && [ "$has_agents" = true ]; then
+        echo "  ❌ SOURCE PRECONDITION: $skill exists in source .agents but missing from .claude"
+        src_fails=$((src_fails + 1))
       fi
     done
     if [ "$src_fails" -gt 0 ]; then
