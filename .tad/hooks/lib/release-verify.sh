@@ -122,6 +122,7 @@ usage() {
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
   echo "  release-verify.sh parity [--fix] <repo_root>" >&2
+  echo "  release-verify.sh platform-skills <source_root> <target_root>" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -657,6 +658,142 @@ PARITY_EOF
     echo "VERDICT: parity FAIL — Codex mirror drift (exit 1)"
     echo "  FIX: run 'release-verify.sh parity --fix \"$REPO\"' if direction is claude-newer"
     exit 1
+    ;;
+
+  # ───────────────────────── platform-skills ─────────────────────────
+  # Post-sync/install verifier: framework-owned skills must be byte-symmetric
+  # between .claude/skills and .agents/skills in the TARGET project.
+  # Framework-owned = skill dir present in SOURCE .claude/skills/ or .agents/skills/.
+  # Target-only extras = local-skill INFO (FR7).
+  # Exit 0 = symmetric; exit 1 = drift/missing; exit 2 = usage.
+  platform-skills)
+    if [ $# -ne 3 ]; then usage; exit 2; fi
+    SRC="$2"
+    TGT="$3"
+
+    echo "========================================="
+    echo "PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)"
+    echo "  SOURCE: $SRC"
+    echo "  TARGET: $TGT"
+    echo "========================================="
+
+    # Derive framework-owned skill set from source (union of .claude + .agents basenames)
+    fw_skills=""
+    if [ -d "$SRC/.claude/skills" ]; then
+      for d in "$SRC/.claude/skills"/*/; do
+        [ -d "$d" ] || continue
+        name="$(basename "$d")"
+        fw_skills="$fw_skills $name"
+      done
+    fi
+    if [ -d "$SRC/.agents/skills" ]; then
+      for d in "$SRC/.agents/skills"/*/; do
+        [ -d "$d" ] || continue
+        name="$(basename "$d")"
+        case " $fw_skills " in
+          *" $name "*) ;; # already in set
+          *) fw_skills="$fw_skills $name" ;;
+        esac
+      done
+    fi
+
+    if [ -z "$fw_skills" ]; then
+      echo "WARNING: no framework-owned skills found in source"
+      echo "VERDICT: platform-skills PASS (nothing to verify, exit 0)"
+      exit 0
+    fi
+
+    # Source precondition: source .claude and .agents must be symmetric
+    src_fails=0
+    for skill in $fw_skills; do
+      if [ -d "$SRC/.claude/skills/$skill" ] && [ -d "$SRC/.agents/skills/$skill" ]; then
+        sout="$(diff -rq "$SRC/.claude/skills/$skill" "$SRC/.agents/skills/$skill" 2>&1)" || true
+        if [ -n "$sout" ]; then
+          echo "  ❌ SOURCE PRECONDITION: $skill differs between .claude and .agents in source"
+          printf '%s\n' "$sout" | sed 's/^/      /' | head -4
+          src_fails=$((src_fails + 1))
+        fi
+      fi
+    done
+    if [ "$src_fails" -gt 0 ]; then
+      echo "VERDICT: platform-skills FAIL — $src_fails source precondition error(s) (exit 1)"
+      exit 1
+    fi
+
+    fails=0
+    infos=0
+    checked=0
+
+    # Collect target-side skill basenames for local-skill detection
+    tgt_skills=""
+    for platform in .claude .agents; do
+      if [ -d "$TGT/$platform/skills" ]; then
+        for d in "$TGT/$platform/skills"/*/; do
+          [ -d "$d" ] || continue
+          name="$(basename "$d")"
+          case " $tgt_skills " in
+            *" $name "*) ;;
+            *) tgt_skills="$tgt_skills $name" ;;
+          esac
+        done
+      fi
+    done
+
+    # Check framework-owned skills in target
+    for skill in $fw_skills; do
+      checked=$((checked + 1))
+      claude_dir="$TGT/.claude/skills/$skill"
+      agents_dir="$TGT/.agents/skills/$skill"
+
+      if [ ! -d "$claude_dir" ] && [ ! -d "$agents_dir" ]; then
+        echo "  ❌ MISSING: $skill — absent from both .claude and .agents in target"
+        fails=$((fails + 1))
+        continue
+      fi
+      if [ ! -d "$claude_dir" ]; then
+        echo "  ❌ MISSING: $skill — absent from .claude/skills in target"
+        fails=$((fails + 1))
+        continue
+      fi
+      if [ ! -d "$agents_dir" ]; then
+        echo "  ❌ MISSING: $skill — absent from .agents/skills in target"
+        fails=$((fails + 1))
+        continue
+      fi
+
+      out="$(diff -rq "$claude_dir" "$agents_dir" 2>&1)" || true
+      if [ -z "$out" ]; then
+        echo "  ✅ $skill symmetric"
+      else
+        echo "  ❌ DRIFT: $skill — .claude and .agents differ in target"
+        printf '%s\n' "$out" | sed 's/^/      /' | head -4
+        fails=$((fails + 1))
+      fi
+    done
+
+    # Report target-only local skills as INFO
+    for skill in $tgt_skills; do
+      case " $fw_skills " in
+        *" $skill "*) ;; # framework-owned, already checked
+        *)
+          echo "  ℹ️  local-skill: $skill (target-only, not framework-owned)"
+          infos=$((infos + 1))
+          ;;
+      esac
+    done
+
+    echo "-----------------------------------------"
+    echo "Checked: $checked framework-owned skills"
+    if [ "$infos" -gt 0 ]; then
+      echo "Local-only: $infos (INFO, not blocking)"
+    fi
+    if [ "$fails" -eq 0 ]; then
+      echo "VERDICT: platform-skills PASS (exit 0)"
+      exit 0
+    else
+      echo "VERDICT: platform-skills FAIL — $fails missing/drifted skill(s) (exit 1)"
+      exit 1
+    fi
     ;;
 
   *)

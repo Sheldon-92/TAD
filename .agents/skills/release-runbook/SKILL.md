@@ -404,6 +404,18 @@ menu-snap              2.8.2      0 TAD        ✅          ✅          ✅
 
 Anything not green → **do not close the release**. Investigate and re-sync.
 
+### Post-sync platform-skills check (MANDATORY after capability pack install/sync)
+
+After all projects are synced and packs installed, verify Claude/Codex skill symmetry:
+
+```bash
+for project in "${SYNC_PROJECTS[@]}"; do
+  bash .tad/hooks/lib/release-verify.sh platform-skills "$SOURCE_ROOT" "$project"
+done
+```
+
+Exit 0 = framework-owned skills are byte-symmetric. Exit 1 = drift/missing (names the skill). Local-only project skills are INFO, not FAIL.
+
 ### Final step: update sync-registry.yaml
 
 ```bash

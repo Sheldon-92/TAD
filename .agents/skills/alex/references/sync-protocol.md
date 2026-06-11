@@ -203,7 +203,13 @@ sync_protocol:
            branch keys off exit 1 only, never the combined `1 or 2`).
            Fail-CLOSED: exit 2 is treated as FAIL.
 
-        e. Update registry:
+        e. Platform-skills parity check (after all skill copy/install writes):
+           bash .tad/hooks/lib/release-verify.sh platform-skills "$SOURCE_ROOT" "$project"
+           Same exit-code handling as structural: exit 0 = proceed; exit 1 = FAIL (drift/missing);
+           exit 2 = ALWAYS HARD BLOCK. This verifies .claude/skills and .agents/skills are
+           byte-symmetric for all framework-owned skills. Local-only skills are INFO.
+
+        f. Update registry:
            - Set last_synced_version and last_synced_date
 
         PRESERVE (never touch):

@@ -24,8 +24,10 @@ These files are committed and active in the TAD project:
 - `.codex/hooks.json` — TAD lifecycle hooks (SessionStart, PostToolUse)
 - `.agents/skills/alex/SKILL.md` — Alex role (same content as `.claude/skills/alex/SKILL.md`)
 - `.agents/skills/blake/SKILL.md` — Blake role (same content as `.claude/skills/blake/SKILL.md`)
-- `.agents/skills/{pack}/SKILL.md` — Capability packs
+- `.agents/skills/{pack}/SKILL.md` — Capability packs (byte-identical to `.claude/skills/{pack}/SKILL.md`)
 - `AGENTS.md` — Role routing, capability pack keywords, Codex-specific notes
+
+SKILL.md Capability Packs are the only active pack system for both Claude Code and Codex. YAML Domain Packs were retired in v2.30.0 and archived to `.tad/archive/domains/`.
 
 ---
 

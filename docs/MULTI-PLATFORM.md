@@ -64,6 +64,19 @@ These elements are **invariant** across both platforms. They live in SKILL.md bo
 
 ---
 
+## Active Pack System
+
+SKILL.md Capability Packs are the only active pack system for both Claude Code and Codex.
+
+- **Source of truth**: `.tad/capability-packs/{pack}/SKILL.md` (prebuilt, framework-owned)
+- **Claude Code**: installed to `.claude/skills/{pack}/SKILL.md`
+- **Codex**: installed to `.agents/skills/{pack}/SKILL.md`
+- **Symmetry**: framework-owned skills must be byte-identical across both platforms
+- **Local skills**: project-only skills may exist on one or both platforms and are reported as INFO by the verifier (`release-verify.sh platform-skills`)
+- **YAML Domain Packs**: retired 2026-06-11, archived to `.tad/archive/domains/`
+
+---
+
 ## Claude Code Adapter
 
 Claude Code has the deepest current TAD integration.
