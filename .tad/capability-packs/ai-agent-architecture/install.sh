@@ -62,7 +62,7 @@ install_pack() {
     exit 1
   fi
 
-  echo "Agent:      claude-code"
+  echo "Agent:      $PLATFORM"
   echo "Source:     $PACK_DIR"
   echo "Target:     $TARGET_DIR"
   echo "Dry run:    $DRY_RUN"

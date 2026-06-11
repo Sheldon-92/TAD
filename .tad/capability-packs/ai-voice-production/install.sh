@@ -193,7 +193,7 @@ install_pack() {
   echo "Next steps:"
   echo "  1. Restart Claude Code (or reload the session)"
   echo "  2. The pack activates automatically when you work on voice/TTS tasks"
-  echo "  3. Use CAPABILITY.md Step 1 to detect context → load the right reference"
+  echo "  3. Use SKILL.md Step 1 to detect context → load the right reference"
 }
 
 

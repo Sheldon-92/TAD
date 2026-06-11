@@ -141,7 +141,7 @@ install_pack() {
   echo "performance, accessibility, or testing."
   echo ""
   echo "Verify installation:"
-  echo "  head -5 $TARGET_DIR/CAPABILITY.md"
+  echo "  head -5 $TARGET_DIR/SKILL.md"
   echo ""
   echo "Run validation scripts (requires running app):"
   echo "  bash $TARGET_DIR/scripts/lighthouse-check.sh http://localhost:3000"
