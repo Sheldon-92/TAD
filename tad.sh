@@ -19,7 +19,7 @@ NC='\033[0m'
 # literal can never go stale (fixes the 2.19.1-class hand-edit straggler).
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="2.28.0"
+TARGET_VERSION="2.29.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
@@ -669,7 +669,7 @@ verify_install_complete() {
 }
 
 # ============================================
-# Phase 4a: Migration Engine (v2.28.0+)
+# Phase 4a: Migration Engine
 # ============================================
 # Calls migration-engine.sh to apply version-specific migrations (delete/rename).
 # Engine is the SOLE executor of migration logic — no inline delete/rename here.

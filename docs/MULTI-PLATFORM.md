@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 2.28.0 (Dual-Platform Architecture — Runtime Freshness Active, Regression PASS)
+**Version**: 2.29.0 (Dual-Platform Architecture — Runtime Freshness Active, Regression PASS)
 
 TAD runs on **two first-class runtimes**: Claude Code and Codex. Both platforms receive the same SKILL.md files and follow the same shared TAD protocol. Each platform also has its own native adapter layer for hooks, config, subagents, and tooling.
 
@@ -199,4 +199,4 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
-*TAD v2.28.0 — Claude Code + Codex dual-runtime, shared protocol, platform adapters, runtime freshness active (21/21 PASS), full-cycle regression PASS (CONDITIONAL_GO).*
+*TAD v2.29.0 — Claude Code + Codex dual-runtime, shared protocol, platform adapters, runtime freshness active (21/21 PASS), full-cycle regression PASS (CONDITIONAL_GO).*

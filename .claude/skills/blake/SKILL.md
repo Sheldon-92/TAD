@@ -299,7 +299,7 @@ cross_model_invocation:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/blake/references/cross-model-invocation.md"
   load_when: "When cross-model CLI (Codex/Gemini) is needed for review or research, Read the reference and follow it verbatim."
-# ⚠️ TAD Friction Protocol — Blake Execution Rules (v2.28.0 — Phase 1)
+# ⚠️ TAD Friction Protocol — Blake Execution Rules (2026-06-10 — Phase 1)
 # Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.
 # When friction appears: request the correct fix first. If unresolved → BLOCKED.
 tad_friction_protocol:
@@ -1501,7 +1501,7 @@ domain_pack_trace_protocol:
     - tool: Primary tool used (e.g., WebSearch, Write, Bash, Agent)
   note: "Layer 1 (Hook) records file events automatically. This is Layer 2 (Agent) for step events."
 
-# Feedback Collector Protocol (TAD v2.28.0 — Phase 1)
+# Feedback Collector Protocol (2026-06-10 — Phase 1)
 # ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:
 # Blake must know this protocol exists to check handoff §8.5; if it's in
 # references/, Blake never loads it because the trigger is defined inside it.

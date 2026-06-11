@@ -1,6 +1,6 @@
 # TAD Codex CLI 使用指南
 
-**适用版本**: TAD v2.28.0+ | Codex CLI 0.137+
+**适用版本**: TAD v2.29.0+ | Codex CLI 0.137+
 
 ---
 
@@ -56,7 +56,7 @@ npx github:Sheldon-92/TAD
 ### 验证安装
 
 ```bash
-cat .tad/version.txt                    # 应显示 2.28.0
+cat .tad/version.txt                    # 应显示 2.29.0
 ls .agents/skills/ | head -5            # 应看到 alex/ blake/ 等目录
 test -f .codex/hooks.json && echo OK    # 应显示 OK
 test -f .tad/hooks/lib/migration-engine.sh && echo OK  # Migration 引擎
@@ -391,7 +391,7 @@ TAD 要求两个终端（或两次对话）：Terminal 1 = Alex，Terminal 2 = B
 ### "升级后旧文件还在"
 v2.28.0 之前的升级不会自动清理旧文件。首次升级到 2.28.0+ 后，后续升级会自动通过 migration 引擎处理。如果仍有残留，运行：
 ```bash
-bash .tad/hooks/lib/migration-engine.sh --from <旧版本> --to 2.28.0 --target . --source <tad源目录>
+bash .tad/hooks/lib/migration-engine.sh --from <旧版本> --to <新版本> --target . --source <tad源目录>
 ```
 
 ### "Capability pack 没加载"

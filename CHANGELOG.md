@@ -5,6 +5,27 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.29.0] - 2026-06-10
+
+### New Features
+- **Self-Evolution Pruning (3 phases)**: retired the near-zero-yield automated loops (*dream incl. manual, *evolve, *optimize, skillify auto-detection, dream-scanner, trace-digest mining) based on measured yield: 18 machine proposals → 1 accepted (5.6%). Negative-result evidence preserved at `.tad/archive/proposals/NEGATIVE-RESULT.md`. Trace EMISSION kept for forensics.
+- **3-Tier Skill Formalization** (replaces the broken skillify last mile): T1 — Blake materializes project-local skills via in-session human confirmation (AskUserQuestion mandatory; unattended forbidden); T2 — `.tad/skill-library/` master reference shelf (zero-touch deny-listed, never distributed); T3 — promotion to capability packs requires ≥2-project evidence, detected via `*harvest` cross-project slug collisions. Dogfooded on Colin声音项目 (smart-interval materialized as first real T1 skill).
+- **`*harvest` command**: master-side, explicit-only review of skillify candidates across all registered projects; replaces the removed Alex startup review steps (3.56/3.57).
+- **Feedback Collector (3 phases, parallel line)**: Blake generates self-contained feedback HTML alongside non-code artifacts; humans export structured JSON; Alex `read_feedback_protocol` turns it into targeted modification handoffs; Gate 4 feedback check; overlay model for spatial artifacts. `/playground` DEPRECATED.
+- **TAD Friction Protocol (2 phases)**: missing dependency/auth/approval/reviewer friction is never a skip reason — status enum (READY/BLOCKED/DEGRADED_WITH_APPROVAL/EQUIVALENT_SUBSTITUTE/N_A), handoff §8.4 Friction Preflight, Gate 3/4 checks, advisory checker.
+- **Codex parity gate v2 (step3b)**: DIRECTION signal + `release-verify.sh parity --fix` subcommand; dual-platform skills byte-parity now release-gated.
+
+### Bug Fixes
+- layer2-audit fail-open fixed: 0 distinct reviewers now FAIL + exit 1 (was PASS) — closes the distinct-reviewer false-PASS backlog item
+- release-verify structural: target-side extra `.claude/skills` dirs (project-local skills) report as INFO, no longer fail the gate — required by the T1 local-skill model
+- surplus SKILL + surplus-scan.workflow.js no longer scan retired dirs (dream-candidates, evidence/proposals)
+- Downstream contamination cleanup: 25,312 stale pre-deny-list synced archive/evidence copies (~290MB) quarantined from all 14 registered projects, with per-project manifests
+
+### Knowledge & Process
+- New L2 pattern "Claims Need Carriers": every completion claim must name an on-disk carrier file with an existence AC; smoke alarms fail closed
+- Incident recorded: alex-role-decay-direct-execution (cross-project destructive ops are Blake-class by definition)
+- SCAND template: status defaults to draft (discoverer must not self-accept), tier/materialized_at/reference_at contract fields
+
 ## [2.28.0] - 2026-06-10
 
 ### Added

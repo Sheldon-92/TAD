@@ -272,7 +272,7 @@ playground:
   deprecated_since: "2.28.0"
   migration: "Use Feedback Collector (handoff §8.5 feedback_required: true). Blake generates overlay feedback HTML."
   version: "2.0"
-  description: "DEPRECATED — Independent /playground command — replaced by Feedback Collector (v2.28.0)"
+  description: "DEPRECATED — Independent /playground command — replaced by Feedback Collector (2026-06-10)"
   ownership: "Independent Design Explorer agent. Alex references outputs, Blake implements from spec."
 
   # Command definition
@@ -796,7 +796,7 @@ research_notebook:
       primary: claude_code_reviewer
 
 # ==================== Feedback Collector Configuration ====================
-# TAD v2.28.0 — Structured human feedback for non-code AI artifacts.
+# 2026-06-10 — Structured human feedback for non-code AI artifacts.
 # Phase 1: protocol + schema + config. Phase 2: Alex JSON reader. Phase 3: Playground integration.
 feedback_collector:
   enabled: true

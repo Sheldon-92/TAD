@@ -1,7 +1,7 @@
-# TAD Configuration v2.28.0 - Upgrade Lifecycle System
+# TAD Configuration v2.29.0 - Self-Evolution Pruning & Feedback Collector
 method: TAD
-version: 2.28.0
-description: Triangle Agent Development - Self-Evolving Framework + Cross-Model Orchestration + NotebookLM Research + 24 Capability Packs + Cross-Platform Portable + Migration Engine
+version: 2.29.0
+description: Triangle Agent Development - Measured-Evolution Framework + Cross-Model Orchestration + NotebookLM Research + 24 Capability Packs + Cross-Platform Portable + Migration Engine
 last_updated: 2026-06-10
 
 # ==================== Modular Config Index ====================
@@ -291,6 +291,17 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v2.29.0:
+    date: "2026-06-10"
+    changes:
+      - "Self-Evolution Pruning: *dream/*evolve/*optimize/skillify-auto retired by measurement (18 proposals → 1 accepted); NEGATIVE-RESULT evidence archived"
+      - "3-tier skill formalization: T1 Blake in-session materialization ceremony + T2 .tad/skill-library/ reference shelf (deny-listed) + T3 ≥2-project promotion via *harvest collision detection"
+      - "*harvest command (master-side, explicit-only) replaces Alex startup review taxes (STEPs 3.56/3.57 removed)"
+      - "Feedback Collector complete (3 phases): Blake feedback HTML protocol + JSON schema + Alex read_feedback_protocol + Gate 4 check + overlay model; /playground DEPRECATED"
+      - "TAD Friction Protocol (2 phases): friction is never a skip reason; status enum + Gate checks + advisory checker"
+      - "Codex parity gate v2 (step3b): DIRECTION signal + release-verify parity --fix; dual-platform parity restored and gated"
+      - "layer2-audit fail-closed (0 distinct reviewers → FAIL); release-verify tolerates downstream local skills (Only-in-target = INFO)"
+      - "New L2 pattern: Claims Need Carriers; downstream contamination cleanup (25,312 stale synced files quarantined)"
   v2.8.0:
     date: "2026-04-03"
     changes:

@@ -280,5 +280,5 @@ design_protocol:
       name: "Proceed to *handoff"
       action: "Transition to handoff_creation_protocol"
 
-  note: "Playground is DEPRECATED (v2.28.0). Use Feedback Collector (handoff §8.5 feedback_required: true) for frontend/design tasks."
+  note: "Playground is DEPRECATED (2026-06-10). Use Feedback Collector (handoff §8.5 feedback_required: true) for frontend/design tasks."
 

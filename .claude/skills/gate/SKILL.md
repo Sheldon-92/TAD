@@ -123,7 +123,7 @@ Prerequisite:
   if_exists:
     action: "继续执行 Gate 3 检查项"
 
-# ⚠️ FRICTION STATUS VERIFICATION (BLOCKING) — TAD Friction Protocol v2.28.0
+# ⚠️ FRICTION STATUS VERIFICATION (BLOCKING) — TAD Friction Protocol (2026-06-10)
 Friction_Status_Check:
   description: "Verify completion report contains Friction Status table and no unresolved BLOCKED rows."
   process:
@@ -585,7 +585,7 @@ Prerequisite:
       必须先完成 Gate 3（§9.1 全行 pass，rubric AC 须 verdict: PASS）。
     result: "BLOCKED - 等待 Gate 3 完成"
 
-# ⚠️ FRICTION STATUS REVIEW — Gate 4 (TAD Friction Protocol v2.28.0)
+# ⚠️ FRICTION STATUS REVIEW — Gate 4 (TAD Friction Protocol (2026-06-10))
 Gate4_Friction_Review:
   description: "Alex reviews Blake's Friction Status table for business acceptance blockers and evidence completeness."
   process:
@@ -611,7 +611,7 @@ Structural_Subagent_Conditionality:
   for_rubric_based: "When the handoff's §9.1 ACs are rubric-based (report/audio/video artifacts, no code surface), code subagents are NOT applicable; the Gate 3 rubric-eval verdict: PASS is the structural prerequisite instead. ux-expert-reviewer stays conditional ('if UI involved')."
   anti_skip: "VIOLATION: making the structural subagents AC-driven so Alex could skip security review by not writing an AC. They are role enforcement and MUST NOT be omittable via AC authoring."
 
-# Feedback Collection Check (BLOCKING — Phase 3, TAD v2.28.0)
+# Feedback Collection Check (BLOCKING — Phase 3, 2026-06-10)
 # Conditional: only applies when handoff §8.5 feedback_required: true.
 # Upgraded from SOFT (Phase 2) to BLOCKING (Phase 3) after E2E dogfood validated the flow.
 Gate4_Feedback_Check:

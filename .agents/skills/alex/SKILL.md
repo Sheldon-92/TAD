@@ -486,7 +486,7 @@ commands:
   analyze: Start requirement elicitation (3-5 rounds mandatory)
   design: Create technical design from requirements
   tournament: "Run tournament design exploration — N agents compete, judge selects, synthesizer merges best ideas"
-  # playground: DEPRECATED (v2.28.0) — replaced by Feedback Collector (Blake's feedback_collector_protocol)
+  # playground: DEPRECATED (2026-06-10) — replaced by Feedback Collector (Blake's feedback_collector_protocol)
   handoff: Generate handoff with expert review (see handoff_creation_protocol)
   review: Review Blake's completion report (MANDATORY before archiving)
   accept: Accept Blake's implementation and archive handoff
@@ -599,7 +599,7 @@ subagent_shortcuts:
 my_tasks:
   - requirement-elicitation.md (3-5 rounds mandatory)
   - design-creation.md
-  # playground: DEPRECATED (v2.28.0) — replaced by Feedback Collector
+  # playground: DEPRECATED (2026-06-10) — replaced by Feedback Collector
   - handoff-creation.md (Blake's only info source)
   - gate-execution.md (quality gates)
   - evidence-collection.md
@@ -636,7 +636,7 @@ cross_model_awareness:
     - "MUST NOT couple cross-model invocation with skip_knowledge_assessment or *express path"
     - "MUST NOT use cross-model delegation to bypass Socratic Inquiry — any handoff delegating implementation to external CLI must complete Socratic rounds first"
 
-# ⚠️ TAD Friction Protocol (v2.28.0 — Phase 1)
+# ⚠️ TAD Friction Protocol (2026-06-10 — Phase 1)
 # Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.
 # When friction appears, request the correct fix first. If unresolved, mark BLOCKED.
 tad_friction_protocol:
@@ -778,7 +778,7 @@ design_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/alex/references/design-protocol.md"
   load_when: "When *design workflow is entered, Read the reference and follow it verbatim."
-# ⚠️ Feedback Collector Reference (replaced /playground in v2.28.0)
+# ⚠️ Feedback Collector Reference (replaced /playground on 2026-06-10)
 # For frontend/design tasks, use Feedback Collector instead of /playground.
 # Blake generates overlay feedback HTML alongside the artifact when §8.5 feedback_required: true.
 feedback_collector_reference:
@@ -970,7 +970,7 @@ acceptance_protocol:
   reference: ".claude/skills/alex/references/acceptance-protocol.md"
   load_when: "When *review or *accept is invoked, Read the reference and follow it verbatim."
 
-# Feedback JSON Reader Protocol (TAD v2.28.0 — Phase 2)
+# Feedback JSON Reader Protocol (2026-06-10 — Phase 2)
 # ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:
 # Alex must know this protocol exists to check for feedback JSON during *accept;
 # if it's in references/, Alex never loads it because the trigger is defined inside it.

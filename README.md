@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.28.0 - Upgrade Lifecycle System**
+**Version 2.29.0 - Self-Evolution Pruning & Feedback Collector**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -111,7 +111,7 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.28.0
+# Should show: 2.29.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -298,6 +298,7 @@ Run periodically to check knowledge health:
 
 | Version | Key Features |
 |---------|--------------|
+| **v2.29.0** | **Self-Evolution Pruning & Feedback Collector: retired near-zero-yield loops (*dream/*evolve/*optimize, 18→1 measured yield) replaced by 3-tier skill formalization (T1 in-session ceremony + T2 skill-library + T3 *harvest cross-project promotion); Feedback Collector complete (structured human feedback for non-code artifacts, overlay model, /playground deprecated); TAD Friction Protocol (friction is never a skip reason); codex parity gate v2 (DIRECTION signal + --fix); layer2-audit fail-closed** |
 | **v2.28.0** | **Upgrade Lifecycle System: migration engine (5-step safety pipeline, single rm choke point, TOCTOU re-validation) + tad.sh/\*sync integration + CLAUDE.md merge execution + publish gate (hard-block on unmanifested deletions) + 12 historical manifests (v2.19.0→v2.27.0) + 22 E2E fixtures + acceptance tooling** |
 | **v2.27.0** | **SKILL progressive loading (36 protocols → references/), circular-trigger body-integrity checker, dual-platform runtime freshness verifier** |
 | **v2.26.0** | **Codex CLI support — dual-platform native runtime, compatibility ledgers, `.codex/` policy framework** |
@@ -406,6 +407,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.28.0 - Upgrade Lifecycle System**
+**Welcome to TAD v2.29.0 - Self-Evolution Pruning & Feedback Collector**
 
 *AI does the work. Humans guard the value.*
