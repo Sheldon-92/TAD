@@ -12,11 +12,13 @@ Retire the near-zero-yield automated self-evolution loops (*dream incl. manual, 
 
 Measured basis (2026-06-10): dream 10 candidates → 1 accepted; optimize/evolve 8 PROPOSALs → 0 accepted; Colin 3 SCANDs marked accepted with ZERO artifacts materialized. Every effective TAD upgrade to date was human-pain-driven.
 
-## Success Criteria
-- [ ] Noise generators fully retired: commands, protocol references, lib scripts, Alex startup review taxes (STEP 3.56/3.57) all gone; trace EMISSION preserved (forensics only)
-- [ ] T1 loop demonstrated once on a real candidate (one of Colin's 3 stuck SCANDs materialized end-to-end with artifact AC)
-- [ ] T2 shelf exists (.tad/skill-library/, deny-listed in BOTH derive-sync-set.sh and tad.sh) with ≥1 harvested reference
-- [ ] Negative-result evidence archived (PROPOSALs, dream candidates, yield measurements) — the data that justified retirement is itself preserved
+## Success Criteria — ALL MET (2026-06-10)
+- [x] Noise generators fully retired: commands, protocol references, lib scripts, Alex startup review taxes (STEP 3.56/3.57) all gone; trace EMISSION preserved (forensics only) — Phase 1+3, commits 89b20b0/260041d
+- [x] T1 loop demonstrated once on a real candidate — smart-interval materialized into Colin/.claude/skills/ with artifact AC, in-session human confirmation (Phase 2, 4a779fa)
+- [x] T2 shelf exists, dual deny-listed, with 2 harvested references (colin--eval-page-generator, colin--colab-drive-deploy)
+- [x] Negative-result evidence archived: .tad/archive/proposals/NEGATIVE-RESULT.md (yield 18→1, 5.6%) + dream candidates + measurements
+
+**EPIC COMPLETE 2026-06-10 — 3/3 phases, Gate 4 PASS ×3 (2 PARTIAL rounds, both resolved same-day). Archived.**
 
 ## Human Decisions (2026-06-10, binding)
 - *dream: FULL retirement (manual version too)
@@ -32,7 +34,7 @@ Measured basis (2026-06-10): dream 10 candidates → 1 accepted; optimize/evolve
 |---|-------|--------|---------|-----------------|
 | 1 | Disjoint Retirement + T2 Shelf | ✅ Done | HANDOFF-20260610-sep-phase1.md (archived) | Scripts retired, artifacts archived, skill-library created + deny-listed, SCAND template hardened |
 | 2 | T1 Local Formalization (Blake-side) | ✅ Done | HANDOFF-20260610-sep-phase2.md (archived) | blake SKILL skillify_evaluation → confirm-and-materialize flow + artifact AC + harvest scan lib + release-verify local-skill tolerance + Colin dogfood |
-| 3 | Alex/Gate SKILL Surgery + *harvest | ⬚ Planned (UNBLOCKED 2026-06-10 — parity verified 0) | — | Remove *dream/*evolve/*optimize/*skillify commands+protocols+STEPs 3.56/3.57, add *harvest, trace-digest removal, mirror .agents |
+| 3 | Alex SKILL Surgery + *harvest (gate SKILL dropped from scope — zero anchors found) | ✅ Done | HANDOFF-20260610-sep-phase3.md (archived) | Remove *dream/*evolve/*optimize/*skillify commands+protocols+STEPs 3.56/3.57, add *harvest, trace-digest removal, surplus workflow cleanup, mirror .agents |
 
 ### Phase Dependencies
 - Phase 1: independent (touches ONLY .tad/hooks/lib, .tad/templates, .tad/skill-library, tad.sh, archive moves — zero .claude/skills files)
