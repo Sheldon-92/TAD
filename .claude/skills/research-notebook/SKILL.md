@@ -21,7 +21,7 @@ Use for research-intensive topics requiring cross-source synthesis (YouTube + PD
 When invoked via CLAUDE.md research routing (without /alex active):
 - Run preflight check (same as below)
 - Use the same CLI commands (create / ask / source add-research)
-- Skip Alex-specific protocols (Socratic, handoff, Gate, domain_pack_awareness)
+- Skip Alex-specific protocols (Socratic, handoff, Gate, capability_pack_awareness)
 - After research completes → soft suggestion of next steps (see below)
 - When /alex IS active, Alex's own research protocols (research_notebook_awareness, research_plan_protocol) take precedence
 

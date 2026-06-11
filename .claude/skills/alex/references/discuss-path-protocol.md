@@ -47,7 +47,7 @@ discuss_path_protocol:
       # (trigger + action + note + fallback sub-fields).
       # Do NOT touch the forbidden: list or note_on_research_protocol: block below.
       action: |
-        ⚠️ 以下步骤在 domain_pack_awareness 之后、首次回答之前执行。
+        ⚠️ 以下步骤在 capability_pack_awareness 之后、首次回答之前执行。
 
         1. Read .tad/research-notebooks/REGISTRY.yaml
            → If not found → skip silently (同现有 fallback)

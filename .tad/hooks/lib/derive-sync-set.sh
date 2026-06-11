@@ -45,7 +45,7 @@
 set -euo pipefail
 
 # ───────────────────── SINGLE SOURCE OF TRUTH (hand-maintained) ─────────────────────
-# DENY_LIST = category-A (zero-touch, 10) + category-C (transient/main-only, 4) = 14 dirs.
+# DENY_LIST = category-A (zero-touch, 10) + category-C (transient/main-only, 5) = 15 dirs.
 # A dir NOT in this list defaults to SYNC (framework) — the bias-to-sync escape from the
 # omission disease. To make a new dir main-only, ADD its basename here (the user's escape hatch).
 #

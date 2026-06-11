@@ -48,7 +48,7 @@ experiment_path_protocol:
     - "Socratic Inquiry Protocol (3-5 rounds) — DO follow"
     - "step0_5 Risk Translation (cognitive firewall) — DO follow"
     - "step1 draft creation (handoff scaffold + frontmatter)"
-    - "step1 explicit Read of .claude/skills/ai-evaluation/SKILL.md (per domain_pack_auto_load)"
+    - "step1 explicit Read of .claude/skills/ai-evaluation/SKILL.md (per capability_pack_auto_load)"
     - "step1 §6 may be 'Experiment Setup' (rubric / fixture / generator-judge config) instead of 'Files to Modify'"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
@@ -104,7 +104,7 @@ experiment_path_protocol:
     relationship: |
       Pack is tool/framework recommendations (promptfoo / DSPy / trulens).
       experiment_path_protocol is the workflow + Gate semantics.
-      Loaded explicitly via domain_pack_auto_load (above) at protocol entry.
+      Loaded explicitly via capability_pack_auto_load (above) at protocol entry.
 
   enforcement: "prompt-level-only"  # See constraints.enforcement (global)
   # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.experiment_path
