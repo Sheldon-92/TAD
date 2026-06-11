@@ -2,7 +2,7 @@
 
 **ID:** IDEA-20260610-pack-system-unification
 **Date:** 2026-06-10
-**Status:** captured
+**Status:** promoted
 **Scope:** large (multi-phase Epic)
 
 ---
@@ -51,4 +51,4 @@ TAD currently runs TWO pack systems and TWO distribution behaviors, both measure
 ---
 
 **Status Values**: captured → evaluated → promoted → archived
-**Promoted To**: (filled by *idea promote)
+**Promoted To**: `.tad/active/epics/EPIC-20260611-pack-system-unification.md` (via *analyze - 2026-06-11)

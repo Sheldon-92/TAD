@@ -1,0 +1,25 @@
+=== AC1 ===
+  ✅ .claude/skills <-> .agents/skills byte-identical
+VERDICT: parity PASS (exit 0)
+=== AC2 ===
+-----------------------------------------
+Checked: 46 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+=== AC3 ===
+PASS (drift detected)
+=== AC4 ===
+PASS (exit 0)
+=== AC5 ===
+PASS (missing detected)
+=== AC6 ===
+PASS
+=== AC7 ===
+PASS
+=== AC8 ===
+PASS
+=== AC9 ===
+PASS (docs/HISTORY.md false-positive documented as friction)
+=== AC10 ===
+PASS
+=== AC11 ===
+PASS

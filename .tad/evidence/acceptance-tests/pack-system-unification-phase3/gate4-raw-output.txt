@@ -1,0 +1,37 @@
+GATE4 AC1 existing parity
+=========================================
+PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
+  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+=========================================
+  ✅ .claude/skills <-> .agents/skills byte-identical
+VERDICT: parity PASS (exit 0)
+GATE4 AC2 platform-skills source pass
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 46 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+GATE4 AC3 injected framework-owned drift fails
+  ❌ DRIFT: alex — .claude and .agents differ in target
+      Files /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.LCiEDcMbyf/.claude/skills/alex/SKILL.md and /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.LCiEDcMbyf/.agents/skills/alex/SKILL.md differ
+GATE4 AC4 local-only target skill is INFO and pass
+  ℹ️  local-skill: local-only-demo (target-only, not framework-owned)
+GATE4 AC5 missing framework-owned target skill fails
+  ❌ MISSING: blake — absent from .agents/skills in target
+GATE4 AC6 sync protocol counterparts
+           bash .tad/hooks/lib/release-verify.sh platform-skills "$SOURCE_ROOT" "$project"
+GATE4 AC7 release runbook counterparts
+### Post-sync platform-skills check (MANDATORY after capability pack install/sync)
+  bash .tad/hooks/lib/release-verify.sh platform-skills "$SOURCE_ROOT" "$project"
+GATE4 AC8 docs active pack system
+docs/MULTI-PLATFORM.md:SKILL.md Capability Packs are the only active pack system for both Claude Code and Codex.
+.tad/codex/README.md:SKILL.md Capability Packs are the only active pack system for both Claude Code and Codex. YAML Domain Packs were retired in v2.30.0 and archived to `.tad/archive/domains/`.
+GATE4 AC9 active runtime surfaces clean
+docs/HISTORY.md:20:  - Production hook LIVE: userprompt-domain-router.sh + 20 curated packs in keywords.yaml
+AC9 had matches; checking only documented HISTORY false-positive is allowed
+GATE4 AC10 evidence and completion
+| AC10: evidence + completion | ✅ | All evidence files present, research-methodology disposition documented |
+**research-methodology disposition**: Not a single-sourcing target (flag-only in Phase 2). The `platform-skills` verifier covers it as a framework-owned skill because it exists in both `.claude/skills/` and `.agents/skills/`. Current source content is symmetric on both platforms (parity pass). No Phase 3 action needed.
+GATE4 AC11 layer2 reviews
+GATE4 additional checks
+verify-ac-commands: 0 warnings, 0 info — ADVISORY, never blocks

@@ -1,0 +1,54 @@
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.bnUsn3jEr2
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ❌ MISSING: blake — absent from .agents/skills in target
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 46 framework-owned skills
+VERDICT: platform-skills FAIL — 1 missing/drifted skill(s) (exit 1)

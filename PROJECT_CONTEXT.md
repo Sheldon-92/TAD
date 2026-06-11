@@ -2,11 +2,12 @@
 
 ## Current State
 - **Version**: 2.27.0 (24 capability packs + dual-platform native runtime + SKILL progressive loading)
-- **Last Updated**: 2026-06-09
+- **Last Updated**: 2026-06-11
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
 - ~~EPIC: Self-Evolution Pruning~~ — **COMPLETE + ARCHIVED 2026-06-10** (3/3 phases same-day). dream/evolve/optimize/skillify retired by measurement; 3-tier skill formalization live (T1 ceremony dogfooded in Colin, T2 skill-library ×2 refs, T3 via *harvest collisions); Alex SKILL -1872 lines; layer2-audit fail-closed. L2: "Claims Need Carriers".
+- ~~EPIC: Pack System Unification~~ — **COMPLETE + ARCHIVED 2026-06-11** (3/3 phases same-day). Domain Packs retired as active runtime/sync mechanism; installers single-sourced from prebuilt `SKILL.md`; `release-verify.sh platform-skills` now verifies framework-owned `.claude/skills` ↔ `.agents/skills` symmetry with FR7 local-skill INFO exceptions.
 - **EPIC: Upgrade Lifecycle System** (20260609) — **Phase 1/6 ✅ accepted 2026-06-09** (Migration Manifest Schema v1 + 3 DRs + example manifest, commit eab1fd8, Gate 4 15/15). Phase 2 next: migration-engine.sh + fixture harness. Goal: 远程升级无垃圾、不误删、深入骨髓.
 - **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
 - **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)
@@ -14,6 +15,12 @@
 - 16 capability packs active; behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending, 13 packs' eval is a follow-up
 
 ## Recently Completed
+
+- **EPIC: Pack System Unification — Phase 1** (2026-06-11) — retired YAML Domain Packs as an active runtime/sync mechanism. Archived 9 YAML packs + 2 guides; removed SessionStart injection, domain router/runtime references, and post-write-sync handling; added T2 archive references for hardware and supply-chain-security; accepted `.tad/deprecation.yaml` v2.30.0 as downstream cleanup carrier. Gate 4 PASS.
+
+- **EPIC: Pack System Unification — Phase 2** (2026-06-11) — installer single-sourcing for seven target packs. Added prebuilt source `SKILL.md` files, made Claude/Codex installed SKILL outputs byte-identical to source, fixed Codex `.agents/skills` installer paths, and added first installed `ml-training` SKILL files. Gate 4 PASS.
+
+- **EPIC: Pack System Unification — Phase 3** (2026-06-11) — platform symmetry verifier. Added `release-verify.sh platform-skills <source_root> <target_root>`, source precondition, drift/missing failures, local-only INFO handling, sync/runbook wiring, and docs declaring SKILL.md Capability Packs as the only active pack system. Gate 4 PASS; Epic complete.
 
 - **EPIC: Pack Collision Detection** (2026-05-31, 2/2 phases) — detects when 2 co-loaded packs issue contradicting directives; cross-category auto-resolve by precedence (security>correctness>a11y>performance>style) + visible log, same-category escalate. `scan-collisions.sh` + `pack-collisions.yaml` + guide + 3 fixtures + Alex step4_5/Blake 1_5a surfacing. 3 real collisions found (Inter font / APCA-vs-WCAG / testing-pyramid). Anti-theater spot-check caught its own CJK-comm false positive. Commits d296374→532b200.
 
