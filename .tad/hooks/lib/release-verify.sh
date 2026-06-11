@@ -74,6 +74,24 @@
 #       exit 2 = usage/wiring error. The script always exits honestly — the caller
 #       (publish-protocol step3d) handles warn/block downgrade via TAD_RELEASE_GATE.
 #
+#   parity [--fix] <repo_root>
+#       Claude↔Codex dual-platform skills parity: diff -rq <repo>/.claude/skills vs
+#       <repo>/.agents/skills (the Codex mirror). The invariant is FULL BYTE-PARITY with
+#       .claude/skills as the SOLE source of truth (direction FIXED Claude→Codex per f428d70 AC1).
+#       On exit 1 (drift), computes and prints DIRECTION:
+#         claude-newer  = safe to mirror (.claude was edited, .agents is stale)
+#         agents-newer (STOP) = someone edited the mirror directly — DO NOT auto-fix
+#       Direction heuristic (biased to STOP): a differing/orphan .agents path that is
+#       working-tree-modified, untracked, or whose last commit touches ONLY the .agents side
+#       → agents-newer. When the heuristic cannot decide → agents-newer (false-positive preferred).
+#       --fix: if claude-newer → rsync -a --delete Claude→Codex, re-verify to exit 0.
+#              if agents-newer → REFUSE (exit 1, names offending paths, changes nothing).
+#       Exit 0 = byte-identical; exit 1 = drift (each path NAMED, DIRECTION printed);
+#       exit 2 = usage / missing dir.
+#       NO PATCH-RELEASE DOWNGRADE: parity drift is fixed unconditionally regardless of
+#       release_type — a stale mirror is never acceptable to ship. This is asymmetric vs
+#       step3c/step3d which allow warn-mode on patch releases.
+#
 # Gate rule (in both protocols) — exit 1 (DRIFT) and exit 2 (WIRING) are handled SEPARATELY
 # (cr-P1-3 / arch-P1-2 fix). `TAD_RELEASE_GATE=warn` (shadow cutover) downgrades ONLY drift:
 #   exit 0                                  → proceed.
@@ -103,6 +121,7 @@ usage() {
   echo "  release-verify.sh version <repo_root> <expected_version> [<old_version>]" >&2
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
+  echo "  release-verify.sh parity [--fix] <repo_root>" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -160,13 +179,27 @@ case "$MODE" in
     done < <(bash "$DERIVE" --dirs "$SRC")
 
     # .claude/skills — verbatim-synced framework skills path.
+    # FR7 (2026-06-10): target-side extras (T1 local skills) are INFO, not fail.
+    # The structural gate catches INCOMPLETE copies (omissions); target-side extras
+    # are the T1 local-skill model working as designed.
     sout="$(diff -rq "$SRC/.claude/skills" "$TGT/.claude/skills" 2>&1)" || true
     if [ -z "$sout" ]; then
       echo "  ✅ .claude/skills identical"
     else
-      echo "  ❌ .claude/skills DIFF:"
-      printf '%s\n' "$sout" | sed 's/^/      /' | head -4
-      fails=$((fails + 1))
+      local_skills="$(printf '%s\n' "$sout" | grep "^Only in $TGT" || true)"
+      real_diffs="$(printf '%s\n' "$sout" | grep -v "^Only in $TGT" || true)"
+      if [ -n "$local_skills" ]; then
+        printf '%s\n' "$local_skills" | while IFS= read -r line; do
+          echo "  ℹ️  local-skill: $line"
+        done
+      fi
+      if [ -z "$real_diffs" ]; then
+        echo "  ✅ .claude/skills identical (local-skill extras ignored)"
+      else
+        echo "  ❌ .claude/skills DIFF:"
+        printf '%s\n' "$real_diffs" | sed 's/^/      /' | head -4
+        fails=$((fails + 1))
+      fi
     fi
 
     # .claude/workflows — dynamic workflow scripts (EPIC-20260603).
@@ -474,6 +507,100 @@ MIG_REN_EOF
       echo "VERDICT: migration FAIL — $findings unmanifested removal(s) (exit 1)"
       exit 1
     fi
+    ;;
+
+  # ───────────────────────────── parity ─────────────────────────────
+  parity)
+    FIX_MODE=false
+    if [ "${2:-}" = "--fix" ]; then FIX_MODE=true; shift; fi
+    if [ $# -ne 2 ]; then usage; exit 2; fi
+    REPO="$2"
+    CLAUDE_SKILLS="$REPO/.claude/skills"
+    AGENTS_SKILLS="$REPO/.agents/skills"
+    if [ ! -d "$CLAUDE_SKILLS" ]; then echo "ERROR: no .claude/skills under repo: $REPO" >&2; exit 2; fi
+    if [ ! -d "$AGENTS_SKILLS" ]; then echo "ERROR: no .agents/skills under repo: $REPO (Codex mirror missing)" >&2; exit 2; fi
+
+    echo "========================================="
+    echo "PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)"
+    echo "  REPO: $REPO"
+    if $FIX_MODE; then echo "  MODE: --fix (will attempt auto-fix if claude-newer)"; fi
+    echo "========================================="
+
+    pout="$(diff -rq "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
+    if [ -z "$pout" ]; then
+      echo "  ✅ .claude/skills <-> .agents/skills byte-identical"
+      echo "VERDICT: parity PASS (exit 0)"
+      exit 0
+    fi
+
+    printf '%s\n' "$pout" | sed 's/^/  ❌ /'
+
+    # DIRECTION heuristic (biased to STOP = agents-newer)
+    DIRECTION="claude-newer"
+    while IFS= read -r line; do
+      # Extract the path that differs on the .agents side
+      apath=""
+      case "$line" in
+        "Only in $AGENTS_SKILLS"*) apath="${line#Only in }"; apath="${apath%:*}/${line##*: }" ;;
+        "Files "*"differ") apath="$(echo "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")" ;;
+      esac
+      [ -z "$apath" ] && continue
+
+      # Check if .agents path is working-tree-modified or untracked
+      relpath="${apath#$REPO/}"
+      gstatus="$(cd "$REPO" && git status --porcelain -- "$relpath" 2>/dev/null)" || true
+      if [ -n "$gstatus" ]; then
+        DIRECTION="agents-newer (STOP)"
+        echo "  ⚠️  $relpath has uncommitted changes on .agents side"
+        break
+      fi
+
+      # Check if last commit touches ONLY the .agents side (not .claude)
+      cpath="${apath/$AGENTS_SKILLS/$CLAUDE_SKILLS}"
+      crelpath="${cpath#$REPO/}"
+      alast="$(cd "$REPO" && git log -1 --format=%H -- "$relpath" 2>/dev/null)" || true
+      clast="$(cd "$REPO" && git log -1 --format=%H -- "$crelpath" 2>/dev/null)" || true
+      if [ -n "$alast" ] && [ "$alast" != "$clast" ]; then
+        afiles="$(cd "$REPO" && git diff-tree --no-commit-id --name-only -r "$alast" 2>/dev/null)" || true
+        if echo "$afiles" | grep -q "^\.agents/" && ! echo "$afiles" | grep -q "^\.claude/"; then
+          DIRECTION="agents-newer (STOP)"
+          echo "  ⚠️  $relpath last commit ($alast) touches only .agents side"
+          break
+        fi
+      fi
+    done <<PARITY_EOF
+$pout
+PARITY_EOF
+
+    echo "DIRECTION: $DIRECTION"
+
+    if $FIX_MODE; then
+      if [ "$DIRECTION" = "claude-newer" ]; then
+        echo "  🔧 Auto-fixing: rsync Claude→Codex..."
+        rsync -a --delete "$CLAUDE_SKILLS/" "$AGENTS_SKILLS/"
+        # Re-verify
+        reverify="$(diff -rq "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
+        if [ -z "$reverify" ]; then
+          echo "  ✅ Fix successful — .agents/skills now matches .claude/skills"
+          echo "VERDICT: parity FIX-PASS (exit 0)"
+          exit 0
+        else
+          echo "  ❌ Fix FAILED — still divergent after rsync" >&2
+          printf '%s\n' "$reverify" | sed 's/^/  /'
+          echo "VERDICT: parity FIX-FAIL (exit 1)"
+          exit 1
+        fi
+      else
+        echo "  🛑 REFUSED: direction is $DIRECTION — cannot auto-fix."
+        echo "  Someone edited .agents/skills directly. Investigate before mirroring."
+        echo "VERDICT: parity FIX-REFUSED (exit 1)"
+        exit 1
+      fi
+    fi
+
+    echo "VERDICT: parity FAIL — Codex mirror drift (exit 1)"
+    echo "  FIX: run 'release-verify.sh parity --fix \"$REPO\"' if direction is claude-newer"
+    exit 1
     ;;
 
   *)

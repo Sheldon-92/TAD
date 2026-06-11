@@ -236,7 +236,7 @@ bash .tad/hooks/lib/release-verify.sh structural "$TAD_SRC" "$target"   # exit 0
 
 **Three-gate composition (publish-side intra-repo consistency — no source-consistency hole):** At `*publish`
 there is NO target tree to diff, so `structural` is **sync-only by design**. Publish-side source-consistency
-= **step3b (codex parity)** + **step3c (version zero-stale, `release-verify.sh version`)** + **scan-packs
+= **step3b (codex parity, `release-verify.sh parity [--fix]`)** + **step3c (version zero-stale, `release-verify.sh version`)** + **scan-packs
 registry regen** — these cover the cross-vendor / version / registry-vs-tree axes respectively. `structural`
 (source-vs-target byte-identity) runs sync-only, AFTER the verbatim `cp -R`. There is NO publish-time
 source-consistency hole.

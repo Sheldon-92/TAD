@@ -81,6 +81,31 @@ publish_protocol:
         - Current branch?
         If uncommitted changes → warn and ask user to commit first.
 
+    step3b:
+      name: "Codex Parity Gate (.claude/skills ↔ .agents/skills — BLOCKING, auto-fix via --fix)"
+      action: |
+        Run the Codex-mirror parity gate (.claude/skills is the SOLE source of truth;
+        direction is FIXED Claude→Codex, full byte-parity invariant per f428d70 AC1):
+          bash .tad/hooks/lib/release-verify.sh parity "$PWD"
+
+        Branch on exit code — exit 1 (DRIFT) and exit 2 (WIRING) handled SEPARATELY
+        (same pattern as step3c/step3d):
+        - exit 0 → proceed to step3c.
+        - exit 2 (skills dir missing / usage) → ALWAYS HARD BLOCK, regardless of release_type.
+          A stale mirror is never acceptable to ship — no patch-release downgrade.
+        - exit 1 (drift detected) → check DIRECTION printed by the script:
+          1. Run: bash .tad/hooks/lib/release-verify.sh parity --fix "$PWD"
+             --fix checks DIRECTION internally: claude-newer → rsync mirror; agents-newer → REFUSE.
+          2. If --fix exits 0 (fixed):
+             Commit ONLY the mirror: git add .agents/skills
+             (NEVER git add -A — scoped commit to avoid pulling unrelated changes)
+             git commit -m "chore(TAD): sync .agents/skills from .claude/skills (step3b parity)"
+             Re-run step3 (git status) before proceeding.
+          3. If --fix exits 1 (REFUSED — agents-newer):
+             STOP. Ask the human: "Someone edited .agents/skills directly. The auto-fix
+             refuses to overwrite. Please investigate and resolve manually."
+             Do NOT proceed to step3c.
+
     step3c:
       name: "Self-Deriving Release Verification Gate (version — BLOCKING on minor+)"
       # NOT a settings.json hook — release-time only (single-user-CLI, architecture.md 2026-04-15)
