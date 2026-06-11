@@ -1097,20 +1097,28 @@ workflow_completion_trigger:
   reference: ".claude/skills/alex/references/workflow-completion-trigger.md"
   load_when: "When Workflow tool returns with agent_count >= 3, Read the reference and follow it verbatim."
 # ═══════════════════════════════════════
-# *skillify — Extract working pattern as reusable skill candidate (Alex-only)
-# Bottom-up skill capture from current session context.
-# Blake's path is KA-only (skillify_evaluation in knowledge_assessment).
+# *harvest — Review skillify candidates across projects (2026-06-10)
 # ═══════════════════════════════════════
-skillify_command_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/skillify-command-protocol.md"
-  load_when: "When *skillify is invoked, Read the reference and follow it verbatim."
+harvest_protocol:
+  description: "Master-side review of skillify candidates across ALL projects (registry + this repo)"
+  trigger: "*harvest (explicit command ONLY — no startup auto-scan)"
+  steps:
+    1_scan: "bash .tad/hooks/lib/harvest-scan.sh → display table + COLLISIONS section. ALSO list this repo's own .tad/active/skillify-candidates/ (scanner covers registry projects only)."
+    2_route_per_candidate (AskUserQuestion each, human decides):
+      - "T2 → copy pattern summary to .tad/skill-library/{project}--{slug}.md + _index entry. MASTER-SIDE FILES ONLY — the source project's SCAND frontmatter (tier: T2, reference_at — Phase 2 FR4b fields) is updated by THAT project's next session; *harvest output includes a per-project 'pending frontmatter updates' note"
+      - "T1-remote → note: materialization happens in THAT project's next Blake session via the T1 ceremony — Alex does NOT write into downstream projects from here"
+      - "skip → SCAND stays draft"
+    3_collisions: "Same slug in ≥2 projects = T3 graduation signal → suggest pack-promotion *analyze (≥2-project Domain Pack rule). Suggestion only."
+  forbidden_implementations:
+    - "MUST NOT auto-run harvest at Alex startup (explicit command only — the startup review tax was retired 2026-06-10)"
+    - "MUST NOT materialize T1 skills into downstream projects from master *harvest — T1 runs in-situ via Blake's ceremony"
+    - "MUST NOT accept candidates without per-candidate human AskUserQuestion"
 # ═══════════════════════════════════════
 # *cancel command (P5.3, 2026-04-25)
 # Formalizes "abandoned handoff" workflow with 4-reason taxonomy + rationale.
 # Bypasses Gate 4 ceremony BY DESIGN — cancelled work doesn't need acceptance,
-# but DOES need structured archival so future *evolve can detect cancellation
-# patterns (Alex over-promising, scope-shift drift, supersede chain integrity).
+# but DOES need structured archival so future cross-project audits can detect
+# cancellation patterns (Alex over-promising, scope-shift drift, supersede chain integrity).
 # Symmetric forbidden_implementations 5-item block per Path Layering 2026-04-24.
 # ═══════════════════════════════════════
 cancel_protocol:
