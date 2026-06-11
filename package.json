@@ -1,6 +1,6 @@
 {
   "name": "tad-framework",
-  "version": "2.25.0",
+  "version": "2.29.1",
   "description": "Triangle Agent Development - Simplified human-AI collaboration framework for Claude Code",
   "type": "module",
   "bin": {
