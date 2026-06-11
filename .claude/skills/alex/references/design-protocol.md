@@ -12,106 +12,14 @@ design_protocol:
       action: "Confirm all requirements are clarified from Socratic Inquiry"
 
     step1_5:
-      name: "Domain Pack Loading"
+      name: "Capability Pack Loading"
       action: |
-        Based on Socratic Inquiry results, identify relevant Domain Packs:
-
-        1. Extract task keywords: technologies, product type, domains involved
-           (e.g., "React frontend" → web-frontend, "REST API" → web-backend,
-            "AI agent" → ai-agent-architecture, "dependency audit" → supply-chain-security)
-
-        2. Match keywords against pack capabilities from session start context.
-           Session start injects remaining Domain Pack names + capabilities.
-           Capability Packs are loaded via .claude/skills/ — do NOT scan directories manually.
-
-        3. Confirm with user via AskUserQuestion:
-           "Based on requirements, I identified these relevant Domain Packs:
-            - {pack1}: {matched capabilities}
-            - {pack2}: {matched capabilities}
-            Confirm, adjust, or skip?"
-           Options:
-           - "Confirmed" → proceed to step 4
-           - "Add/remove packs" → user specifies, then proceed
-           - "Skip Domain Packs" → proceed to step2 without pack loading
-
-        State persistence: After loading, record matched packs in conversation as:
-        "🔧 Loaded Domain Packs: {pack1}, {pack2}"
-        step1a will check for this marker to know which packs to inject into handoff.
-
-        4. For each confirmed pack, load in priority order:
-           a. .claude/skills/{pack-name}/SKILL.md (preferred — Capability Pack)
-           b. .tad/domains/{pack-name}.yaml (fallback — hw/mobile/supply-chain only)
-           Extract and note:
-           - capabilities (names + step sequences)
-           - quality_criteria (per capability)
-           - anti_patterns (per capability)
-           - review persona + checklist
-
-        5. Use loaded pack content in subsequent *design steps:
-           - Reference capabilities when designing architecture (step3)
-           - Reference quality_criteria when defining acceptance standards
-           - Reference anti_patterns when identifying risks
-           - Output: "Loaded Domain Packs: {list}" as confirmation line
-
-      note: |
-        This step is INFORMING design, not CONSTRAINING it.
-        Alex uses pack content as expert reference, not as rigid template.
-        If the pack's recommended approach conflicts with user's specific needs,
-        user's needs take priority.
-
-      skip_conditions:
-        - "User chose 'Skip Domain Packs' in step1_5 confirmation above"
-        - "No matching Domain Pack found (e.g., novel domain not covered)"
-        - "Light TAD process depth (keep lightweight)"
-
-      research_priority_rule:
-        scope: "design_protocol.step1_5 ONLY — does NOT apply to *discuss domain_pack_awareness"
-        trigger: "Domain Pack loaded AND same domain has a refreshed Research Notebook"
-
-        conflict_definition: |
-          "Conflict" means: Research finding EXPLICITLY recommends an approach that
-          Domain Pack criteria EXPLICITLY prohibits or contradicts.
-          ⚠️ Silence from research is NOT conflict. If research doesn't mention a topic,
-          Domain Pack criteria applies by default.
-
-        non_overridable_criteria: |
-          The following Domain Pack criteria types are NON-OVERRIDABLE regardless of research:
-          - Security (auth, encryption, input validation, XSS/SQLi prevention)
-          - Data integrity (backup, transaction, consistency)
-          - Compliance (privacy, GDPR, licensing)
-          - Safety (rate limiting, circuit breakers, fail-safe defaults)
-          Even if research shows "nobody does this" — these standards hold.
-
-        feedback_entry_schema: |
-          Exact YAML structure for each feedback entry:
-          - date: "YYYY-MM-DD"
-            domain_pack: "<pack-name>"        # e.g., "web-frontend"
-            criteria: "<verbatim quality_criteria text from pack>"
-            research_finding: "<concise summary of what research recommends instead>"
-            source_notebook: "<notebook_id from research-notebooks/REGISTRY.yaml>"
-            conflict_type: "explicit_recommendation"  # one of: explicit_recommendation, alternative_approach, deprecated_practice
-            handoff_ref: "HANDOFF-YYYYMMDD-{slug}.md"
-
-        action: |
-          When citing Domain Pack quality_criteria in design:
-          1. Check if there's a refreshed Research Notebook for same domain
-          2. If yes AND explicit conflict found (per conflict_definition above):
-             a. Check: is the conflicting criterion in non_overridable_criteria?
-                → YES: follow Domain Pack, ignore research on this point
-                → NO: follow research (latest practice wins)
-             b. Append entry to .tad/github-registry/domain-pack-feedback.yaml
-                using feedback_entry_schema above. Use yq if available:
-                  yq -i '.feedback += [{date: "YYYY-MM-DD", domain_pack: "...", ...}]' \
-                    .tad/github-registry/domain-pack-feedback.yaml
-                If yq unavailable, line-by-line append (NEVER read-modify-rewrite the whole file):
-                  echo "  - date: \"$(date -u +%Y-%m-%d)\"" >> .tad/github-registry/domain-pack-feedback.yaml
-                  echo "    domain_pack: \"...\"" >> ...
-             c. Note in handoff §11 Decision Summary: "Research overrides Domain Pack: {details}"
-          3. If no conflict: Domain Pack criteria apply normally
+        Merged into step1_5b below. This step is now a no-op placeholder for backward
+        compatibility with existing handoff references. Proceed directly to step1_5b.
 
     step1_5b:
       name: "Capability Pack Loading (from registry)"
-      trigger: "After existing Domain Pack matching (step1_5)"
+      trigger: "After Socratic Inquiry (step1)"
       action: |
         1. Read .tad/capability-packs/pack-registry.yaml
            If not found → skip this step entirely (no error)
@@ -121,17 +29,7 @@ design_protocol:
            - Consider both Chinese and English keywords in the pack entry
            - A pack matches if it serves the user's stated task
 
-        3. Dedup annotation (soft-warn, not auto-skip):
-           Check the "🔧 Loaded Domain Packs: ..." marker from step1_5.
-           For each matched Capability Pack, if its name matches an already-loaded
-           Domain Pack, add a "(⚡ Domain Pack also loaded)" annotation to that
-           option. DO NOT auto-skip — user decides.
-           Note in the question: "Packs marked ⚡ overlap with a loaded Domain Pack
-           — loading both adds execution rules on top of quality standards (OK for
-           deep design); skip if you want to avoid duplicate coverage."
-           Rationale: Domain Packs (YAML quality standards) and Capability Packs
-           (SKILL.md execution modules) serve different purposes even for the same
-           domain; auto-skip would remove user choice.
+        3. Dedup: if ≥2 matched packs share a domain, note the overlap but let user decide.
 
         4. If ≥1 match found — 3-tier pack lookup (AC2):
            For EACH matched pack, determine availability:
@@ -179,7 +77,6 @@ design_protocol:
                - {pack.name} [{type}] {if Tier 2: '(installed as skill)'} {if Tier 3: '(not installed)'}:
                  {pack.description (first 80 chars)}
                  (CONSUMES: {pack.consumes} → PRODUCES: {pack.produces})
-                 {if overlaps Domain Pack: '(⚡ Domain Pack also loaded)'}
                Confirm which packs to use?"
               Options: up to 4 packs as options + "None — skip packs"
            b. On confirmation, load confirmed pack CAPABILITY.md (Tier 1) or SKILL.md (Tier 2)
@@ -212,12 +109,9 @@ design_protocol:
            - Reference pack anti-patterns when identifying risks
 
       note: |
-        Capability Packs (SKILL.md based) and Domain Packs (YAML based) serve
-        different purposes. Domain Packs = TAD project quality standards (YAML).
-        Capability Packs = portable agent skill modules (SKILL.md based).
-        5 Capability Packs share names with Domain Packs (web-frontend, web-backend,
-        web-ui-design, ai-agent-architecture, ai-prompt-engineering) — step 3 dedup
-        prevents double-loading when both exist.
+        Capability Packs (SKILL.md based) are the only active pack format.
+        YAML Domain Packs have been retired (2026-06-11) and archived to
+        .tad/archive/domains/.
 
       skip_conditions:
         - "pack-registry.yaml not found (packs not installed)"
@@ -261,7 +155,7 @@ design_protocol:
     step2:
       name: "Frontend Detection & Feedback Collector"
       action: |
-        If any relevant Domain Pack was loaded in step1_5, reference its capabilities
+        If any relevant Capability Pack was loaded in step1_5b, reference its rules
         in design suggestions (e.g., web-frontend pack for component patterns,
         web-backend pack for API conventions, ai-agent-architecture for agent design).
         If task involves frontend/UI, set feedback_required: true in handoff §8.5 with artifact_type: frontend_page.

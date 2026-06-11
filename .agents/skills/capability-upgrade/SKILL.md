@@ -1,11 +1,11 @@
 ---
 name: capability-upgrade
-description: Domain Pack → Capability Pack 升级流程。从评估到研究到构建的完整方法论，基于 2026-05-07 web-ui-design 升级实战经验。
+description: Capability Pack 构建/升级流程。从评估到研究到构建的完整方法论，基于 2026-05-07 web-ui-design 升级实战经验。YAML Domain Packs retired 2026-06-11; archived source available at .tad/archive/domains/.
 ---
 
-# /capability-upgrade — Domain → Capability Pack 升级流程
+# /capability-upgrade — Capability Pack 构建流程
 
-将一个 YAML Domain Pack（食材清单）升级为 action-ready Capability Pack（菜谱）。
+构建 action-ready Capability Pack（菜谱）。YAML Domain Pack 源已归档至 `.tad/archive/domains/`。
 基于 web-ui-design 升级的完整实战经验（119 源、3 轮研究、9 个 P0 修复）。
 
 ---
@@ -58,8 +58,8 @@ Stage 5: 验证（1 hour）
 ### Step 1.1: 读取现有 YAML
 
 ```bash
-wc -l .tad/domains/{domain}.yaml
-grep "^  [a-z_]*:$" .tad/domains/{domain}.yaml  # list capabilities
+wc -l .tad/archive/domains/2026-06-11-domain-pack-retirement/{domain}.yaml  # archived source
+grep "^  [a-z_]*:$" .tad/archive/domains/2026-06-11-domain-pack-retirement/{domain}.yaml
 ```
 
 记录：有几个 capability？有多少行？有具体 CLI 命令还是只有描述？
@@ -287,7 +287,7 @@ Phase 3 的回答会暴露知识空白。此时：
 ⚠️ 全部来自实战教训：
 
 **原则 1: 每个 section 必须有 CLI 命令**
-> 没有命令的 section = 理论 = 和 YAML Domain Pack 一样没用。删掉。
+> 没有命令的 section = 理论 = 没用。删掉。
 
 **原则 2: 框架无关优先**
 > 先列通用工具（CSS-only、multi-framework），再列 "If React:" 分支。

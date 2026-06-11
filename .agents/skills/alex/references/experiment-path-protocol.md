@@ -21,24 +21,24 @@ experiment_path_protocol:
   alex_evaluation_signals:
     when_to_suggest_task_type_experiment:
       - "Socratic answers mention 'iteratively', 'rubric', 'A vs B', 'optimize prompt', 'eval against baseline'"
-      - "Domain Pack ai-evaluation or ai-prompt-engineering matches"
+      - "Capability Pack ai-evaluation or ai-prompt-engineering matches"
       - "Output measured by score not by 'feature works'"
     note: |
       Alex MAY set task_type=experiment in frontmatter during *analyze drafting.
       Alex MUST NOT bypass *analyze and route directly to *experiment without user explicit input.
 
-  domain_pack_auto_load:
+  capability_pack_auto_load:
     rule: "experiment_path_protocol step1 MUST Read .claude/skills/ai-evaluation/SKILL.md at start of drafting"
     rationale: |
       *experiment is a router mode — the Capability Pack must be explicitly loaded.
       Without this explicit Read, *experiment users get workflow without quality rules.
     fallback: |
-      If ai-evaluation.yaml missing → emit WARN
+      If ai-evaluation SKILL.md missing → emit WARN
       "ai-evaluation pack not found; experiment_path_protocol will use default workflow only"
       and continue (do not block).
     on_load_announcement: |
-      Alex MUST output the literal string "Loaded Domain Pack: ai-evaluation"
-      (or "ai-evaluation pack not found" on fallback) so AC-P3.2-i fixture
+      Alex MUST output the literal string "Loaded Capability Pack: ai-evaluation"
+      (or "ai-evaluation pack not found" on fallback) so AC fixture
       can grep the announcement.
 
   required_steps:

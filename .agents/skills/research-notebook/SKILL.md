@@ -426,8 +426,8 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
             Extract stakeholder roles implied by KR descriptions
             e.g. KR about "user retention" → perspective_role="PM", perspective_focus="retention, onboarding, churn signals"
             e.g. KR about "cold-start latency <2s" → perspective_role="SRE", perspective_focus="latency, reliability, observability"
-          Tier 2 — Elif .tad/domains/ has loaded packs:
-            Use reviewer persona from the most relevant Domain Pack
+          Tier 2 — Elif Capability Packs are loaded (.claude/skills/*/SKILL.md):
+            Use reviewer persona from the most relevant Capability Pack
           Tier 3 — Else use 3 generic perspectives:
             - engineer → perspective_focus="implementation feasibility, technical debt, performance"
             - end-user → perspective_focus="usability, onboarding friction, error recovery"

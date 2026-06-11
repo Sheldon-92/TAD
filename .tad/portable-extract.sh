@@ -46,9 +46,6 @@ PORTABLE_FILES=(
   ".tad/hooks/lib/stale-knowledge-check.sh"
   ".tad/hooks/lib/common.sh"
 
-  # Domains (Portable)
-  ".tad/domains/"
-
   # Codex migration readme
   ".tad/codex/"
 )

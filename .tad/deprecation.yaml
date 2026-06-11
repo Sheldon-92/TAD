@@ -130,3 +130,25 @@ deprecations:
       Files updated (not removed): .claude/skills/playground/SKILL.md, .claude/skills/alex/SKILL.md,
       .claude/skills/alex/references/design-protocol.md, .tad/config-workflow.yaml.
     date: "2026-06-10"
+
+  "2.30.0":
+    description: "domain-pack-retirement — archive remaining 9 YAML packs + guide docs, remove .tad/domains/ from active framework surface"
+    files:
+      - .tad/domains/hw-circuit-design.yaml
+      - .tad/domains/hw-enclosure.yaml
+      - .tad/domains/hw-firmware.yaml
+      - .tad/domains/hw-testing.yaml
+      - .tad/domains/mobile-development.yaml
+      - .tad/domains/mobile-release.yaml
+      - .tad/domains/mobile-testing.yaml
+      - .tad/domains/mobile-ui-design.yaml
+      - .tad/domains/supply-chain-security.yaml
+      - .tad/domains/DOMAIN-PACK-ROADMAP.md
+      - .tad/domains/HOW-TO-CREATE-DOMAIN-PACK.md
+      - .tad/templates/domain-pack-handoff-template.md
+      - .tad/tests/test-domain-pack.md
+    note: |
+      Downstream projects should remove .tad/domains/ entirely (all content archived in source).
+      Capability Packs (SKILL.md in .claude/skills/ or .agents/skills/) are the only active pack format.
+      T2 references in .tad/skill-library/ preserve hw and supply-chain learnings for migrate-on-demand.
+    date: "2026-06-11"

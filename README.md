@@ -247,7 +247,7 @@ Alex: [Reviews with subagents, accepts or requests changes]
 
 ### Alex Commands (use `*` prefix)
 - `*analyze` - Start requirement elicitation
-- `*design` - Create technical design (with Domain Pack loading)
+- `*design` - Create technical design (with Capability Pack loading)
 - `*handoff` - Generate handoff with expert review
 - `*review` - Review Blake's completion
 - `*accept` - Accept and archive handoff

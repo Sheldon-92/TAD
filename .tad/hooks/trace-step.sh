@@ -1,9 +1,7 @@
 #!/bin/bash
-# trace-step.sh — Record Domain Pack step-level trace
-# Layer 2 trace: called by Blake during Domain Pack execution
-# Usage:
-#   trace-step.sh start <domain> <capability> <step>
-#   trace-step.sh end <domain> <capability> <step> <status> [tool]
+# trace-step.sh — Record capability step-level trace
+# Layer 2 trace: called by Blake during Capability Pack execution
+# Usage: bash trace-step.sh <start|end> <domain> <capability> <step> [status] [tool]
 #
 # Phase 5 P5.4 (2026-04-25): dual-write to date-keyed AND per-handoff trace dirs.
 # Slug derived from active handoff filename (BA-P0-2: NOT env var).
@@ -21,7 +19,7 @@ TOOL="${6:-}"
 
 # Validate required args
 if [ -z "$ACTION" ] || [ -z "$DOMAIN" ] || [ -z "$CAPABILITY" ] || [ -z "$STEP" ]; then
-  echo "Usage: trace-step.sh start|end <domain> <capability> <step> [status] [tool]" >&2
+  echo "Usage: trace-step.sh <start|end> <domain> <capability> <step> [status] [tool]" >&2
   exit 1
 fi
 
@@ -96,7 +94,7 @@ elif [ "$ACTION" = "end" ]; then
     LINE="{\"ts\":\"$TS\",\"type\":\"step_end\",\"project\":\"$(_escape "$PROJECT")\",\"domain\":\"$(_escape "$DOMAIN")\",\"capability\":\"$(_escape "$CAPABILITY")\",\"step\":\"$(_escape "$STEP")\",\"status\":\"$(_escape "$STATUS")\",\"tool\":\"$(_escape "$TOOL")\"}"
   fi
 else
-  echo "Usage: trace-step.sh start|end <domain> <capability> <step> [status] [tool]" >&2
+  echo "Usage: trace-step.sh <start|end> <domain> <capability> <step> [status] [tool]" >&2
   exit 1
 fi
 

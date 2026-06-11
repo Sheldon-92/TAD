@@ -23,31 +23,22 @@ discuss_path_protocol:
       - "Invoking research subagent (Explore) for deep investigation"
       - "Proposing updates to ROADMAP.md (with user confirmation)"
 
-    domain_pack_awareness:
-      trigger: "话题内容匹配 Domain Pack capability 时"
+    capability_pack_awareness:
+      trigger: "话题内容匹配 Capability Pack 时"
       action: |
         在首次回答 *discuss 话题之前：
-        1. 从 SessionStart additionalContext 中读取所有 Domain Pack 的 capabilities 列表
-        2. 判断当前话题是否匹配某个 pack 的 capability
-           匹配条件：话题关键词与 capability 名称或描述有语义相关性
-        3. 如果匹配：
-           # Priority order for pack loading:
-           # 1. Capability Pack: .claude/skills/{name}/SKILL.md (preferred — research-driven rules)
-           # 2. Domain Pack YAML: .tad/domains/{name}.yaml (fallback for hw/mobile/supply-chain only)
-           a. Check if .claude/skills/{pack-name}/SKILL.md exists → Read SKILL.md (preferred)
-           b. If no SKILL.md: Read .tad/domains/{pack-name}.yaml (YAML fallback)
-           c. 输出: "🔧 Loaded Pack: {pack-name} — using {capability} framework"
-           d. 用 pack 的质量标准和反模式指导后续讨论
-        4. 如果不匹配：正常讨论，不加载
+        1. 判断当前话题是否匹配某个 Capability Pack
+           匹配条件：话题关键词与 pack 名称或描述有语义相关性
+        2. 如果匹配：
+           a. Check if .claude/skills/{pack-name}/SKILL.md exists → Read SKILL.md
+           b. 输出: "🔧 Loaded Pack: {pack-name} — using {capability} framework"
+           c. 用 pack 的质量标准和反模式指导后续讨论
+        3. 如果不匹配：正常讨论，不加载
       fallback: |
-        如果 SessionStart additionalContext 中没有 pack 信息
-        （hook 未运行、项目无 packs、或 context 被压缩）：
-        → 静默跳过，不报错，正常进入 *discuss
-        不要尝试手动扫描目录作为 fallback — 那是 hook 的职责
+        如果无 Capability Pack 可用 → 静默跳过，正常进入 *discuss
       note: |
         这不是流程要求 — 是知识质量保证。
-        没有 pack 的分析 = 没有专业框架支撑的泛泛建议。
-        *discuss 不需要走 AskUserQuestion 确认（不同于 *design 的 step1_5）
+        *discuss 不需要走 AskUserQuestion 确认（不同于 *design 的 step1_5b）
         匹配是 LLM 语义判断，不是精确字符串匹配。
 
     research_notebook_awareness:

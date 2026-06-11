@@ -260,7 +260,7 @@ For each downstream project, apply these operations in order. **Do not deviate �
 | Operation | Files / Paths | Reason |
 |-----------|---------------|--------|
 | **Incremental copy** (new files) | `.tad/hooks/*.sh`, `.tad/hooks/*.yaml` | New files added this release |
-| **Full refresh** (overwrite whole dir) | `.tad/agents/`, `.tad/data/`, `.tad/domains/`, `.tad/gates/`, `.tad/guides/`, `.tad/hooks/`, `.tad/ralph-config/`, `.tad/references/`, `.tad/schemas/`, `.tad/skills/`, `.tad/sub-agents/`, `.tad/tasks/`, `.tad/templates/`, `.tad/workflows/` | Framework dirs — always replace from source |
+| **Full refresh** (overwrite whole dir) | `.tad/agents/`, `.tad/data/`, `.tad/gates/`, `.tad/guides/`, `.tad/hooks/`, `.tad/ralph-config/`, `.tad/references/`, `.tad/schemas/`, `.tad/skills/`, `.tad/sub-agents/`, `.tad/tasks/`, `.tad/templates/`, `.tad/workflows/` | Framework dirs — always replace from source |
 | **Full refresh** (`.claude/`) | `.claude/skills/*` | Skill files always replaced |
 | **JSON merge** | `.claude/settings.json` | Must preserve project-specific hooks (PreToolUse/PostToolUse/SessionStart custom). Only add/update TAD-owned hooks (UserPromptSubmit, etc.) |
 | **Strict delete** | Files listed in `.tad/deprecation.yaml` for versions ≤ current | Retroactive cleanup of renamed/removed files |
@@ -306,7 +306,7 @@ Pre-2.8.2, `tad.sh::copy_framework_files()` **did not read `.tad/deprecation.yam
 
 ### Critical gotcha: tad.sh historically missed directories — FIXED in 2.21.0+ (self-deriving)
 
-Pre-2.8.2 `copy_framework_files()` had a hardcoded 14-dir allow-list missing `hooks/` and `domains/`.
+Pre-2.8.2 `copy_framework_files()` had a hardcoded 14-dir allow-list missing `hooks/`.
 By 2.21.0 it had silently drifted to omit `codex cross-model context tests scripts capability-packs` — the
 same omission disease as the sync allow-list.
 
@@ -325,7 +325,7 @@ copy-set from a deny-list — `{ ls -d .tad/*/ } − DENY_LIST` — exactly mirr
 > of truth. Run `bash .tad/hooks/lib/derive-sync-set.sh --dirs` for the live framework set. Do NOT hand-maintain.
 
 ```
-agents data domains gates guides hooks ralph-config references schemas skills sub-agents tasks templates workflows
+agents data gates guides hooks ralph-config references schemas skills sub-agents tasks templates workflows
 ```
 
 #### Release-time drift check (MANDATORY before publishing tad.sh changes)
@@ -384,25 +384,13 @@ For each project in the registry, verify:
 # 1. Version matches source
 [ "$(cat "$project/.tad/version.txt" | tr -d '[:space:]')" = "$NEW_VERSION" ]
 
-# 2. New hooks present and executable
-[ -x "$project/.tad/hooks/userprompt-domain-router.sh" ]
-
-# 3. Keywords database exists with expected pack count
-[ "$(yq '.packs | length' "$project/.tad/hooks/keywords.yaml")" = "20" ]
-
-# 4. UserPromptSubmit hook in settings.json
-[ "$(jq -r '.hooks.UserPromptSubmit[0].hooks[0].type' "$project/.claude/settings.json")" = "command" ]
-
-# 5. No deprecated files
+# 2. No deprecated files
 for dep_file in $(yq ".deprecations.\"$NEW_VERSION\".files[]" .tad/deprecation.yaml); do
   [ ! -e "$project/$dep_file" ] || FAIL
 done
 
-# 6. Live smoke test — hook actually works
-# passive mode (2.8.4): hook does NOT emit stdout context. Smoke target is the .router.log line written by the keyword scoring path.
-echo '{"prompt":"做一个 React button 组件","session_id":"","transcript_path":"","cwd":"","permission_mode":"","hook_event_name":"UserPromptSubmit"}' \
-  | bash "$project/.tad/hooks/userprompt-domain-router.sh" >/dev/null
-tail -1 "$project/.tad/hooks/.router.log" 2>/dev/null | grep -q "web-frontend"
+# 3. Capability Packs installed
+[ "$(ls "$project/.claude/skills/" 2>/dev/null | wc -l)" -gt 0 ]
 ```
 
 ### Summary table format (print to user)
@@ -454,7 +442,7 @@ git push origin main
 - Any time you run `*publish` or `*sync`
 - When bumping version for any reason
 - When fixing a release-gone-wrong (e.g., downstream projects missing files)
-- After adding new Domain Packs, new hooks, or new framework files that need distribution
+- After adding new Capability Packs, new hooks, or new framework files that need distribution
 
 ### Nice to use
 

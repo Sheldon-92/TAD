@@ -156,7 +156,7 @@ intent_router_protocol:
       
       does_NOT_write_to_handoff: |
         step4_5 loads pack into conversation context only — it does NOT inject
-        the "🔧 Domain Pack References" section into the handoff. That remains
+        the "🔧 Capability Pack References" section into the handoff. That remains
         step1_5b's responsibility during *design. Blake's 1_5a independently
         re-detects packs, so Alex and Blake may load different packs for the
         same task. This is intentional — Blake catches what Alex missed.

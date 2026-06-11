@@ -306,12 +306,12 @@ version_history:
     date: "2026-04-03"
     changes:
       - "Self-Evolving Framework: Execution trace recording (PostToolUse JSONL + trace-step.sh)"
-      - "*optimize command: Trace analysis → Domain Pack + Project Knowledge improvement proposals"
+      - "*optimize command: Trace analysis → Project Knowledge improvement proposals"
       - "Human Approval Workflow: PROPOSAL YAML schema + 4-option AskUserQuestion + safety constraints"
       - "Quality Gate Hooks: pre-accept-check.sh, pre-gate-check.sh (BLOCK enforcement)"
-      - "Domain Packs: 14 packs across Web/Mobile/AI (35+ tools in registry)"
+      - "Domain Packs: 14 packs across Web/Mobile/AI (35+ tools in registry) [RETIRED 2026-06-11 — archived to .tad/archive/domains/]"
       - "AI Agent Self-Improvement: 6-step design process + 6-environment reference table"
-      - "Architecture Knowledge: Domain Pack Step Model, Hook path matching, enforcement priority"
+      - "Architecture Knowledge: Hook path matching, enforcement priority"
 
   v2.7.0:
     date: "2026-03-31"

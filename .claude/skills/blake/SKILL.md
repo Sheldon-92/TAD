@@ -547,7 +547,7 @@ ralph_loop_execution:
         description: "Auto-detect and load relevant capability packs based on handoff content"
         action: |
           1. Check handoff for explicit pack references:
-             a. Look for "🔧 Domain Pack References" section in handoff
+             a. Look for "🔧 Capability Pack References" section in handoff
              b. If found: read referenced pack files directly → announce + skip auto-detection
           
           2. If no explicit references (Alex didn't include pack section):
@@ -581,7 +581,7 @@ ralph_loop_execution:
           This is INDEPENDENT of Alex's handoff. Even if Alex loaded a pack,
           Blake re-checks because: (a) Alex may have used *express which skips
           step1_5b entirely, (b) Alex's keyword matching may have missed a relevant pack.
-          If the same pack was already loaded via handoff's Domain Pack References (step 1),
+          If the same pack was already loaded via handoff's Capability Pack References (step 1),
           don't re-read it.
 
       1_5b_notebook_check:
@@ -1238,7 +1238,6 @@ mandatory:
   acceptance_verification: "MUST generate and execute acceptance verification for every criterion before Gate 3"
   after_completion: "MUST create completion report"
   decision_escalation: "MUST escalate significant implementation decisions not covered by handoff to human"
-  domain_pack_trace: "MUST call trace-step.sh start/end when executing Domain Pack capability steps"
   frontmatter_compliance: "MUST read and obey handoff YAML frontmatter (task_type, e2e_required, research_required) — these are Alex's design-time decisions, not Blake's runtime judgment"
 
 # ═══════════════════════════════════════
@@ -1483,23 +1482,6 @@ execution_checklist:
     - "❌ 不能编造 GitHub URL 或仓库名"
     - "❌ 不能忽略 handoff frontmatter 的 task_type / e2e_required / research_required"
 
-# Domain Pack Step Trace Recording (TAD v2.8)
-domain_pack_trace_protocol:
-  description: "When executing Domain Pack capabilities, record step-level traces"
-  when: "Blake is executing a Domain Pack workflow (any capability with defined steps)"
-  how: |
-    For each step in a Domain Pack capability:
-    1. Before step execution:
-       bash .tad/hooks/trace-step.sh start {domain} {capability} {step}
-    2. After step completion:
-       bash .tad/hooks/trace-step.sh end {domain} {capability} {step} {status} {tool}
-    Parameters:
-    - domain: Domain Pack name (e.g., product-definition, web-testing)
-    - capability: Capability name (e.g., competitive_analysis, test_strategy)
-    - step: Step name from the capability workflow (e.g., deep_analyze, generate)
-    - status: completed | failed | skipped
-    - tool: Primary tool used (e.g., WebSearch, Write, Bash, Agent)
-  note: "Layer 1 (Hook) records file events automatically. This is Layer 2 (Agent) for step events."
 
 # Feedback Collector Protocol (2026-06-10 — Phase 1)
 # ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:

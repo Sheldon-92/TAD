@@ -1,0 +1,45 @@
+file	match	classification	action	rationale	ac_covered
+.tad/domains/*.yaml	Active YAML Domain Packs (9 remaining)	active-runtime	archive to .tad/archive/domains/2026-06-11-domain-pack-retirement/	Measured dead routing; archive preserves provenance	AC1
+.tad/domains/DOMAIN-PACK-ROADMAP.md	Docs for creating Domain Packs	active-guidance	archive to .tad/archive/domains/2026-06-11-domain-pack-retirement/	No longer active creation path	AC1
+.tad/domains/HOW-TO-CREATE-DOMAIN-PACK.md	Domain Pack creation guide	active-guidance	archive to .tad/archive/domains/2026-06-11-domain-pack-retirement/	No longer active creation path	AC1
+.tad/hooks/startup-health.sh:49-96	DOMAIN_DETAIL injection block	active-runtime	remove Domain Pack scan/injection block	Dead runtime injection into SessionStart	AC2
+.tad/hooks/userprompt-domain-router.sh	Old keyword router hook	already-deleted	no action (deleted in v2.17.0)	Already deprecated and deleted	AC3
+.tad/hooks/keywords.yaml	Old keyword database	already-deleted	no action (deleted in v2.17.0)	Already deprecated and deleted	AC3
+.tad/hooks/keywords.yaml.draft	Old keyword draft	already-deleted	no action (deleted in v2.17.0)	Already deprecated and deleted	AC3
+.tad/hooks/generate-keywords.sh	Old keyword generator	already-deleted	no action (deleted in v2.17.0)	Already deprecated and deleted	AC3
+.tad/hooks/trace-step.sh	Domain Pack step-level trace	active-runtime	rewrite comments to mark historical; keep script for trace compatibility	Script itself is functional for any step trace; remove Domain Pack branding	AC5
+.tad/hooks/post-write-sync.sh:330-345	Domain Pack creation/update handler	active-runtime	remove *.tad/domains/*.yaml case branch	Dead sync handler for domain pack writes	AC5
+.tad/hooks/lib/derive-sync-set.sh	Sync set derivation	active-runtime	no change needed — domains already NOT in SYNC dirs	domains is in zero-touch category A	AC4
+.tad/portable-extract.sh:50	.tad/domains/ in portable list	active-bundle	remove .tad/domains/ from PORTABLE_FILES array	No longer portable — archived	AC4
+.tad/portable-rules.md:14	Domains classified as Portable	active-guidance	rewrite row to mark archived/retired	No longer portable	AC4
+codex-tad-bundle/.tad/domains/*	Bundle copies of domain packs	active-bundle	delete entire codex-tad-bundle/.tad/domains/ directory	Bundle should not carry archived content	AC4
+.claude/skills/blake/SKILL.md:550,584	Domain Pack References section in handoff	active-protocol	rewrite to Capability Pack only	YAML fallback language removal	AC5
+.claude/skills/blake/SKILL.md:1241	domain_pack_trace mandatory rule	active-protocol	remove rule	Dead protocol reference	AC5
+.claude/skills/blake/SKILL.md:1486-1497	domain_pack_trace_protocol block	active-protocol	remove entire block	Dead protocol	AC5
+.agents/skills/blake/SKILL.md	Same as .claude counterpart	active-protocol	mirror all .claude/skills/blake changes	Parity requirement	AC5,AC9
+.claude/skills/alex/SKILL.md:447	Domain Pack awareness consulting	active-protocol	rewrite to Capability Pack	YAML reference removal	AC5
+.claude/skills/alex/SKILL.md:1055	Domain Pack rule in harvest	active-protocol	rewrite to Capability Pack rule	YAML reference removal	AC5
+.agents/skills/alex/SKILL.md	Same as .claude counterpart	active-protocol	mirror all .claude/skills/alex changes	Parity requirement	AC5,AC9
+.claude/skills/alex/references/design-protocol.md	Domain Pack Loading step1_5	active-protocol	rewrite step1_5 to Capability Pack only	Major rewrite — remove YAML fallback	AC5
+.claude/skills/alex/references/discuss-path-protocol.md	Domain Pack capability matching	active-protocol	rewrite to Capability Pack only	Remove YAML fallback	AC5
+.claude/skills/alex/references/handoff-creation-protocol.md	Domain Pack Injection step	active-protocol	rewrite to Capability Pack only	Remove YAML source	AC5
+.claude/skills/alex/references/sync-protocol.md:99,230	.tad/domains/ in sync list	active-protocol	remove .tad/domains/ from sync dirs	No longer synced	AC4,AC5
+.claude/skills/alex/references/experiment-path-protocol.md:24,40	Domain Pack ai-evaluation	active-protocol	rewrite to Capability Pack	YAML reference removal	AC5
+.claude/skills/alex/references/intent-router-protocol.md:159	Domain Pack References in handoff	active-protocol	rewrite to Capability Pack	Reference update	AC5
+.agents/skills/alex/references/*	Same as .claude counterparts	active-protocol	mirror all .claude changes	Parity requirement	AC5,AC9
+.claude/skills/release-runbook/SKILL.md:263,309,328,388,391,404,457	Domain Pack refs in runbook	active-guidance	rewrite to remove Domain Pack verification/sync	Dead verification steps	AC5
+.agents/skills/release-runbook/SKILL.md	Same as .claude counterpart	active-guidance	mirror changes	Parity requirement	AC5,AC9
+.claude/skills/capability-upgrade/SKILL.md	Domain Pack upgrade path	active-guidance	rewrite: YAML domain packs are archived, upgrade from archive	Historical reference to archived source	AC5
+.agents/skills/capability-upgrade/SKILL.md	Same as .claude counterpart	active-guidance	mirror changes	Parity requirement	AC5,AC9
+.claude/skills/research-notebook/SKILL.md:429-430	Domain Pack reviewer persona	active-protocol	remove YAML fallback tier	Capability Pack only	AC5
+.agents/skills/research-notebook/SKILL.md	Same as .claude counterpart	active-protocol	mirror changes	Parity requirement	AC5,AC9
+codex-tad-bundle/.tad/codex/codex-alex-skill.md	Codex skill with Domain Pack refs	active-guidance	rewrite Domain Pack references	Bundle doc update	AC5
+.tad/config.yaml:309,312,314	Domain Pack descriptions	active-guidance	rewrite to Capability Pack only	Config metadata update	AC5
+README.md:250,311-327	Domain Pack in release history and *design	active-guidance	rewrite *design; mark-historical release notes	Active guidance vs historical	AC5
+.tad/project-knowledge/README.md:127-156	Domain Pack vs Project-Knowledge rule	active-guidance	rewrite to Capability Pack / skill-library route	Active decision rule update	AC5
+.tad/templates/domain-pack-handoff-template.md	Domain Pack creation template	active-guidance	archive (move to archive dir)	Dead creation path	AC5
+.tad/tests/test-domain-pack.md	Domain Pack loading test	active-guidance	archive (move to archive dir)	Dead test for dead system	AC5
+.tad/skill-library/_index.md	T2 index	active-guidance	add hw-archive + supply-chain entries	New T2 references	AC6
+.tad/deprecation.yaml	Deprecation registry	active-guidance	add new entry for full domain retirement	Downstream cleanup metadata	AC7
+.tad/templates/github-registry-entry.yaml:6,88	domains list references	historical	mark-historical — template references domain list structure	Not active runtime	AC5
+.tad/hooks/lib/derive-sync-set.sh	Deny-list source	active-runtime	no change — domains correctly excluded	Already correct	AC4

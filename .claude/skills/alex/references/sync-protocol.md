@@ -96,7 +96,6 @@ sync_protocol:
            Framework subdirectories (full recursive copy):
            - .tad/agents/
            - .tad/data/
-           - .tad/domains/
            - .tad/gates/
            - .tad/guides/
            - .tad/hooks/
@@ -227,7 +226,7 @@ sync_protocol:
         Options:
         - "Commit all" → for each synced project with .git directory:
             git add -- .tad/*.yaml .tad/*.md .tad/*.txt \
-              .tad/agents/ .tad/data/ .tad/domains/ .tad/gates/ .tad/guides/ \
+              .tad/agents/ .tad/data/ .tad/gates/ .tad/guides/ \
               .tad/hooks/ .tad/ralph-config/ .tad/references/ .tad/schemas/ \
               .tad/skills/ .tad/sub-agents/ .tad/tasks/ \
               .tad/templates/ .tad/workflows/ \

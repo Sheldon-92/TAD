@@ -11,7 +11,7 @@ Defines which TAD files are portable to Codex CLI vs Claude Code-only.
 | Templates | `.tad/templates/*.md` | Portable | Markdown templates, no tool dependency |
 | Hooks lib | `.tad/hooks/lib/*.sh` | Portable | Bash scripts — run manually on Codex, auto-triggered on Claude Code |
 | Hooks root | `.tad/hooks/*.sh` (root-level) | CC-only | Auto-triggered by Claude Code `settings.json` — Codex users run manually |
-| Domains | `.tad/domains/*.yaml` | Portable | Domain Pack knowledge files, no tool dependency |
+| ~~Domains~~ | ~~YAML packs~~ | RETIRED (2026-06-11) | Archived; Capability Packs replace YAML packs |
 | Evidence | `.tad/evidence/` | Portable | File structure, no tool dependency — create manually on Codex |
 | Settings | `.claude/settings.json` | CC-only | Claude Code hook registration, no Codex equivalent |
 | Codex adapters | `.tad/codex/` | DEPRECATED (v2.26.0) | Unified SKILL routing replaced compressed editions. Only README.md remains. |

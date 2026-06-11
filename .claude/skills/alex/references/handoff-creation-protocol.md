@@ -146,7 +146,7 @@ handoff_creation_protocol:
         - Testing checklist
         - "Micro-Tasks (optional — include for Full/Standard TAD when task has 5+ files)"
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
-        - "Domain Pack References (if packs loaded in *design step1_5)"
+        - "Capability Pack References (if packs loaded in *design step1_5b)"
         - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
         - "Write .tad/active/session-state.md: Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
       epic_linkage: |
@@ -218,22 +218,21 @@ handoff_creation_protocol:
       empty_guard_reminder: "NEVER leave §9.1 empty — Gate 3 BLOCKS on an empty §9.1 (gate/SKILL.md Spec_Compliance_Empty_Guard)."
 
     step1a:
-      name: "Domain Pack Injection"
+      name: "Capability Pack Injection"
       action: |
-        If Domain Packs were loaded during *design step1_5:
+        If Capability Packs were loaded during *design step1_5b:
 
         1. Add a new section to the handoff draft after "📚 Project Knowledge":
 
-           ## 🔧 Pack References (Blake 必读)
+           ## 🔧 Capability Pack References (Blake 必读)
 
            **Loaded Packs:**
            | Pack | File | Matched Capabilities |
            |------|------|---------------------|
-           | {pack1} | .claude/skills/{pack1}/SKILL.md or .tad/domains/{pack1}.yaml | {cap1, cap2} |
-           | {pack2} | .claude/skills/{pack2}/SKILL.md or .tad/domains/{pack2}.yaml | {cap3, cap4} |
+           | {pack1} | .claude/skills/{pack1}/SKILL.md | {cap1, cap2} |
+           | {pack2} | .claude/skills/{pack2}/SKILL.md | {cap3, cap4} |
 
            **⚠️ Blake 必须在开始实现前 Read 上述 pack 文件。**
-           SKILL.md packs 包含研究驱动的判断规则；YAML packs 包含工作流步骤和工具推荐。
 
         2. Merge pack quality_criteria into "## 9. Acceptance Criteria":
            For each matched capability's quality_criteria:
@@ -241,16 +240,10 @@ handoff_creation_protocol:
            - Tag each with source: `[from: {pack-name} → {capability}]`
            - These are ADVISORY, not mandatory — Blake uses judgment on applicability
 
-           Example:
-           ```
-           - [ ] AC11: [from: web-frontend → component_development] Component has error boundary
-           - [ ] AC12: [from: web-backend → api_design] API follows RESTful naming conventions
-           ```
-
         3. Merge pack anti_patterns into "## 10. Important Notes":
            Append under a sub-heading:
            ```
-           ### 10.4 Domain Pack Anti-Patterns
+           ### 10.4 Pack Anti-Patterns
            - ⚠️ [web-frontend] Don't use inline styles for layout — use design tokens
            - ⚠️ [web-backend] Don't expose internal IDs in API responses
            ```
@@ -258,9 +251,9 @@ handoff_creation_protocol:
         4. Merge pack tool recommendations into "## 10.3 Sub-Agent 使用建议":
            If pack has tool_ref that maps to CLI tools, suggest Blake use them.
 
-        If no Domain Packs were loaded: skip this step entirely.
+        If no Capability Packs were loaded: skip this step entirely.
       skip_conditions:
-        - "No Domain Packs loaded during *design"
+        - "No Capability Packs loaded during *design"
         - "Light TAD (skip for lightweight process)"
 
     step1b:

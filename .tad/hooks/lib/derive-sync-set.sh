@@ -64,7 +64,8 @@ skillify-candidates"
 TRANSIENT="working
 spike-v3
 reports
-checklists"
+checklists
+domains"
 
 # DENY_LIST = A ∪ C (the full set excluded from SYNC).
 DENY_LIST="$ZERO_TOUCH

@@ -46,55 +46,8 @@ if [ -f ".tad/config.yaml" ]; then
   fi
 fi
 
-# Domain Pack detection — extract capabilities summary for additionalContext
-DOMAIN_DETAIL=""
-# shellcheck disable=SC2206
-DOMAIN_FILES=( .tad/domains/*.yaml )
-if [ -e "${DOMAIN_FILES[0]}" ] 2>/dev/null; then
-  for domain_file in "${DOMAIN_FILES[@]}"; do
-    base=$(basename "$domain_file" .yaml)
-    [ "$base" = "tools-registry" ] && continue
-    # Skip frozen/deprecated packs (replaced by Capability Packs)
-    head -1 "$domain_file" | grep -q '^# DEPRECATED' && continue
-    # Skip YAML packs that have Capability Pack SKILL.md equivalents
-    [ -f ".claude/skills/${base}/SKILL.md" ] && continue
-
-    # Extract description
-    desc=$(grep -m1 '^description:' "$domain_file" 2>/dev/null | sed 's/^description:[[:space:]]*//;s/"//g' || echo "")
-
-    # Extract capability names (lines matching "^  word:" under capabilities:)
-    caps=""
-    in_caps=false
-    while IFS= read -r line; do
-      case "$line" in
-        "capabilities:") in_caps=true ;;
-        "  "*)
-          if [ "$in_caps" = true ]; then
-            cap_name=$(echo "$line" | grep -o '^  [a-z_]*:' | sed 's/://;s/ //g' || echo "")
-            if [ -n "$cap_name" ]; then
-              caps="${caps}${cap_name}, "
-            fi
-          fi
-          ;;
-        [a-z]*) [ "$in_caps" = true ] && in_caps=false ;;
-      esac
-    done < "$domain_file"
-
-    # Guard: warn if no capabilities found
-    if [ -z "$caps" ]; then
-      DOMAIN_DETAIL="${DOMAIN_DETAIL} | WARNING: Domain Pack [${base}] has no capabilities"
-    else
-      caps="${caps%, }"
-      DOMAIN_DETAIL="${DOMAIN_DETAIL} --- Domain Pack [${base}]: ${desc}. Capabilities: ${caps}. To use: read .tad/domains/${base}.yaml for full workflow, tools, and quality criteria. When user task matches a capability, load the domain pack and follow its steps."
-    fi
-  done
-fi
-
 # Build summary
 SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED} | Hooks: active"
-if [ -n "$DOMAIN_DETAIL" ]; then
-  SUMMARY="${SUMMARY}${DOMAIN_DETAIL}"
-fi
 
 output_response "SessionStart" "$SUMMARY"
 exit 0
