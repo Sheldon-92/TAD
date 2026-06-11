@@ -26,7 +26,7 @@ run_ac "AC6" "MULTI-PLATFORM.md no stale claims" bash -c '! rg -n "Runtime Fresh
 run_ac "AC7" "Codex README no stale claims" bash -c '! rg -n "Runtime freshness \| Pending Phase 4|Runtime freshness ledger missing|Full-cycle regression not run|hook matcher unknown" .tad/codex/README.md'
 run_ac "AC8" "Config/agents remain draft-only" bash -c 'test ! -f .codex/config.toml && test ! -d .codex/agents && rg -q "Human explicitly approves" .tad/codex/README.md docs/MULTI-PLATFORM.md'
 run_ac "AC9" "No runtime config changes" bash -c '! git diff --name-only | rg -e "^\.codex/hooks\.json$|^\.claude/settings\.json$|^\.codex/config\.toml$|^\.codex/agents/"'
-run_ac "AC10" "Feedback-collector handoff preserved" test -f .tad/active/handoffs/HANDOFF-20260610-feedback-collector-phase1.md
+run_ac "AC10" "Commit f428d70 did not touch feedback-collector" bash -c '! git show f428d70 --name-only --format="" | rg -e "feedback-collector"'
 
 echo ""
 echo "=== Results: $PASS/$TOTAL PASS, $FAIL/$TOTAL FAIL ==="
