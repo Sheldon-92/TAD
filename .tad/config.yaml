@@ -1,8 +1,8 @@
-# TAD Configuration v2.29.0 - Self-Evolution Pruning & Feedback Collector
+# TAD Configuration v2.29.1 - Pack System Unification
 method: TAD
-version: 2.29.0
+version: 2.29.1
 description: Triangle Agent Development - Measured-Evolution Framework + Cross-Model Orchestration + NotebookLM Research + 24 Capability Packs + Cross-Platform Portable + Migration Engine
-last_updated: 2026-06-10
+last_updated: 2026-06-11
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

@@ -5,6 +5,15 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.29.1] - 2026-06-11
+
+### New Features
+- **Pack System Unification (3 phases)**: retired YAML Domain Packs as active runtime/sync mechanism; installer single-sourcing for 7 target packs (prebuilt SKILL.md, byte-identical Claude/Codex output); `release-verify.sh platform-skills` verifier for framework-owned skill symmetry with FR7 local-skill INFO exceptions
+
+### Documentation
+- Fixed INSTALLATION_GUIDE.md and tad-help/SKILL.md version references (stuck at 2.25.0 since v2.26.0)
+- Updated docs/MULTI-PLATFORM.md and docs/CODEX-USER-GUIDE.md: SKILL.md Capability Packs declared as sole active pack system
+
 ## [2.29.0] - 2026-06-10
 
 ### New Features

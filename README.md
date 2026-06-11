@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.29.0 - Self-Evolution Pruning & Feedback Collector**
+**Version 2.29.1 - Pack System Unification**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -111,7 +111,7 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.29.0
+# Should show: 2.29.1
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -407,6 +407,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.29.0 - Self-Evolution Pruning & Feedback Collector**
+**Welcome to TAD v2.29.1 - Pack System Unification**
 
 *AI does the work. Humans guard the value.*

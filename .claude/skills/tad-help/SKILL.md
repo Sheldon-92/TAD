@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.25.0 | Generated: [timestamp]
+ Version: v2.29.1 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -218,12 +218,12 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.25.0 Highlights
-- **STORM Multi-Perspective**: step3_5 strategy #4 — OBJECTIVES.md-derived stakeholder viewpoints break tunnel vision
-- **Elicit Paper Extraction**: Phase 4.5 structured extraction from academic sources (arxiv, scholar, ACM, IEEE)
-- **Auto Source Discovery**: WebSearch fallback in Phase 4b when internal gap enrichment fails (max 3 URLs, quality-probed)
-- **Adaptive Seed**: Dynamic research plan expansion — max 2 user-confirmed seeds based on chain findings
-- **Bilibili 4-Phase Fallback**: CC subs → B站 API → yt-dlp metadata → Jina reader
+## TAD v2.29.1 Highlights
+- **Pack System Unification**: YAML Domain Packs retired; Capability Packs are the sole active pack system
+- **Installer Single-Sourcing**: 7 pack installers now copy prebuilt SKILL.md (byte-identical Claude/Codex)
+- **Platform-Skills Verifier**: `release-verify.sh platform-skills` checks framework skill symmetry at release
+- **Self-Evolution Pruning**: dream/evolve/optimize retired by measurement; 3-tier skill formalization live
+- **Feedback Collector**: structured human feedback for non-code artifacts (overlay model, /playground deprecated)
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues

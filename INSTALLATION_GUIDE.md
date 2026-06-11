@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.25.0 — Universal AC-Driven Gate**
+**Version 2.29.1 — Pack System Unification**
 
 ## 安装方式
 
@@ -44,7 +44,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.25.0
+cat .tad/version.txt          # 应显示 2.29.1
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code
