@@ -563,7 +563,7 @@ MIG_REN_EOF
             apath="$(printf '%s\n' "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")"
             ;; # [^ ]* assumes no spaces in skill filenames (convention-enforced)
         esac
-        [ -z "$apath" ] && continue
+        if [ -z "$apath" ]; then all_claude_newer=false; echo "  ⚠️  unparseable diff line — cannot prove direction"; break; fi
 
         relpath="${apath#$REPO/}"
 
