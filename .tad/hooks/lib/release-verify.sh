@@ -179,7 +179,7 @@ case "$MODE" in
     done < <(bash "$DERIVE" --dirs "$SRC")
 
     # .claude/skills — verbatim-synced framework skills path.
-    # FR7 (2026-06-10): target-side extras (T1 local skills) are INFO, not fail.
+    # FR7 (2026-06-10): "Only in target" extras are local-skill INFO, not fail.
     # The structural gate catches INCOMPLETE copies (omissions); target-side extras
     # are the T1 local-skill model working as designed.
     sout="$(diff -rq "$SRC/.claude/skills" "$TGT/.claude/skills" 2>&1)" || true
@@ -542,7 +542,7 @@ MIG_REN_EOF
       apath=""
       case "$line" in
         "Only in $AGENTS_SKILLS"*) apath="${line#Only in }"; apath="${apath%:*}/${line##*: }" ;;
-        "Files "*"differ") apath="$(echo "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")" ;;
+        "Files "*"differ") apath="$(printf '%s\n' "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")" ;; # [^ ]* assumes no spaces in skill filenames (convention-enforced)
       esac
       [ -z "$apath" ] && continue
 
@@ -562,7 +562,7 @@ MIG_REN_EOF
       clast="$(cd "$REPO" && git log -1 --format=%H -- "$crelpath" 2>/dev/null)" || true
       if [ -n "$alast" ] && [ "$alast" != "$clast" ]; then
         afiles="$(cd "$REPO" && git diff-tree --no-commit-id --name-only -r "$alast" 2>/dev/null)" || true
-        if echo "$afiles" | grep -q "^\.agents/" && ! echo "$afiles" | grep -q "^\.claude/"; then
+        if printf '%s\n' "$afiles" | grep -q -- "^\.agents/" && ! printf '%s\n' "$afiles" | grep -q -- "^\.claude/"; then
           DIRECTION="agents-newer (STOP)"
           echo "  ⚠️  $relpath last commit ($alast) touches only .agents side"
           break
