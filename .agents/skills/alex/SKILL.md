@@ -248,7 +248,7 @@ activation-instructions:
           - NEEDS_ORGANIZE → "📚 Knowledge: {total} entries in flat structure — *knowledge-organize 可用后将自动提示分层整理 (Knowledge Lifecycle Epic Phase 2)"
             ⚠️ ARCH P0-3 + CR P1-1 fix: NO AskUserQuestion here — Phase 2 not built yet.
             Log-and-continue is more honest than a false choice. Continue to STEP 3.6.
-          - NEEDS_CLEANUP → "📚 Knowledge: {max_name} has {max_count} entries (>50) — 建议运行 *dream 整合"
+          - NEEDS_CLEANUP → "📚 Knowledge: {max_name} has {max_count} entries (>50) — 建议手动整合（合并重复条目、修剪过时引用）"
       13. This is READ-ONLY — do not modify any knowledge files.
       # Step 11a grep MUST exclude principles.md (empty template, not a content file yet):
       total=$(grep -c '^### ' .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '{s+=$2}END{print s}')
@@ -258,7 +258,7 @@ activation-instructions:
     suppress_if: "No issues found AND zombie_count == 0 AND knowledge_verdict == OK - show one-line: 'TAD Health: OK'"
     interacts_with: |
       Knowledge health scan runs AFTER zombie detection (items 4-10) and BEFORE suppress_if evaluation.
-      The knowledge scan's log output does NOT suppress STEP 3.55 (zombie cleanup) or STEP 3.56 (dream candidates).
+      The knowledge scan's log output does NOT suppress STEP 3.55 (zombie cleanup).
       All three sub-scans (zombie + knowledge + pair test) are independent — each produces its own output line.
       knowledge_verdict is a JUDGMENT variable in Alex's conversation context (not a mechanical YAML key).
       After knowledge scan completes, execution continues to STEP 3.6 regardless of verdict.
