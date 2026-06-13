@@ -35,7 +35,9 @@ When translating NL → Cypher (Text2Cypher / Cypher-RAG), do NOT execute the fi
 - A representative Cypher-RAG system uses **seven specialized agents** for: NL→Cypher generation, **syntactic verification**, **schema matching**, feedback collection, and answer synthesis.
 - Verify syntax AND schema-match the generated query against the live schema **before** execution.
 
-> Source: findings.md §2 "Cypher-RAG Agentic Query Translation" — seven-agent orchestration (generation, syntactic verification, schema matching, feedback, synthesis) [2].
+**Calibrate your success expectation — "generate then execute" without verification is a near-coin-flip-down failure.** On the Neo4j **Text2Cypher (2024)** dataset (4 fine-tuned models + 10 base models evaluated), top systems (OpenAI **GPT-4o** and the fine-tuned **tomasonjo_text2cypher**) reached only **~30% execution-based match rate**. That is the empirical ceiling for blind generation — which is exactly why QT2's **syntactic verification + schema matching** and QT3's **self-correction loop** are non-optional, not nice-to-haves. Design the pipeline assuming ~70% of first-shot generations need repair or rejection.
+
+> Source: findings.md §2 "Cypher-RAG Agentic Query Translation" — seven-agent orchestration (generation, syntactic verification, schema matching, feedback, synthesis) [2]. Execution-match calibration (refreshed): Neo4j — Benchmarking the Neo4j Text2Cypher (2024) dataset — https://neo4j.com/blog/developer/benchmarking-neo4j-text2cypher-dataset/ (retrieved 2026-06-13): GPT-4o / tomasonjo_text2cypher ~30% execution-based match. New grounded eval anchor: IBM "Mind the Query" (EMNLP 2025), 27,529 NL→Cypher pairs across 11 real graph DBs, each with an executable Neo4j graph for grounded validation — https://research.ibm.com/publications/mind-the-query-a-benchmark-dataset-towards-text2cypher-task (retrieved 2026-06-13).
 
 **determinismLevel**: semi-deterministic — pipeline fixed; generated queries vary.
 
@@ -48,9 +50,9 @@ When a generated Cypher query fails at execution:
 3. The agent **reconstructs the query** from the error + schema.
 4. Retry — execute **up to 4 refinement iterations** to maximize success, then stop.
 
-Hard-cap at 4 iterations; an uncapped retry loop burns tokens on unfixable queries.
+Hard-cap at 4 iterations; an uncapped retry loop burns tokens on unfixable queries. This loop is load-bearing precisely because blind first-shot generation only executes-matches **~30%** of the time (see QT2 calibration) — the 4 iterations are where most of the remaining successes are recovered, but the cap stops the unfixable ~tail from burning unbounded tokens.
 
-> Source: findings.md §2 — self-correcting execution loop, error-log + schema feedback, up to 4 refinement iterations [2, 42].
+> Source: findings.md §2 — self-correcting execution loop, error-log + schema feedback, up to 4 refinement iterations [2, 42]. Calibration cross-ref: Neo4j Text2Cypher ~30% blind execution-match — https://neo4j.com/blog/developer/benchmarking-neo4j-text2cypher-dataset/ (retrieved 2026-06-13).
 
 **determinismLevel**: non-deterministic — outcome depends on the model's repair of each error.
 

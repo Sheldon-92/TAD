@@ -1,7 +1,7 @@
 ---
 name: agent-orchestration
 description: Agent orchestration capability pack. Gives AI agents the judgment rules for building reliable multi-agent systems — framework selection (LangGraph / CrewAI / AutoGen v0.4+ / OpenAI Agents SDK / Claude Agent SDK), Supervisor vs Swarm topology, durable execution with Temporal event sourcing, human-in-the-loop interrupt/resume patterns, and tool-permission models. Research-grounded rules from framework docs, Temporal durable-execution patterns, and production complexity-cliff analysis. Use for any multi-agent architecture, orchestration framework choice, checkpoint/recovery design, HITL gating, or agent tool-permission task.
-keywords: ["agent orchestration", "智能体编排", "multi-agent", "多智能体", "LangGraph", "CrewAI", "AutoGen", "OpenAI Agents SDK", "Claude Agent SDK", "Temporal", "durable execution", "持久化执行", "supervisor", "swarm", "checkpoint", "检查点", "human-in-the-loop", "状态机", "agent 框架"]
+keywords: ["agent orchestration", "智能体编排", "multi-agent", "多智能体", "LangGraph", "CrewAI", "AutoGen", "Microsoft Agent Framework", "OpenAI Agents SDK", "Claude Agent SDK", "Temporal", "durable execution", "持久化执行", "supervisor", "swarm", "orchestrator-worker", "fan-out", "checkpoint", "检查点", "human-in-the-loop", "failure mode", "MAST", "失败模式", "状态机", "agent 框架"]
 type: reference-based
 ---
 
@@ -44,7 +44,8 @@ When the user mentions orchestration / multi-agent work, detect the context and 
 | User Signal | Reference to Load |
 |-------------|-------------------|
 | "which framework", "LangGraph vs", "CrewAI", "AutoGen", "OpenAI Agents SDK", "Claude Agent SDK", "state model", "选框架" | `references/framework-selection.md` |
-| "supervisor", "swarm", "handoff", "topology", "routing", "how many agents", "token overhead", "编排模式" | `references/orchestration-patterns.md` |
+| "supervisor", "swarm", "handoff", "topology", "routing", "how many agents", "token overhead", "orchestrator-worker", "fan-out", "编排模式" | `references/orchestration-patterns.md` |
+| "why do agents fail", "failure mode", "MAST", "context collapse", "task misinterpretation", "coordination breakdown", "失败模式" | `references/failure-modes.md` |
 | "durable", "Temporal", "crash recovery", "long-running", "checkpoint", "event sourcing", "resume", "持久化" | `references/durable-execution.md` |
 | "human in the loop", "HITL", "approval", "interrupt", "review gate", "human feedback", "人工审核" | `references/human-in-the-loop.md` |
 | "tool permission", "allowed tools", "subagent", "sandbox", "permission mode", "tool schema", "工具权限" | `references/tool-permissions.md` |
@@ -59,7 +60,7 @@ After loading the relevant reference file(s):
 1. **Read the reference completely** — do not skim
 2. **Apply each rule as a judgment check** against the user's architecture, framework choice, or workflow description
 3. **For each violated rule**: state the violation clearly, then give the specific fix
-4. **Enforce the Complexity Cliff cross-cutting rule** — compute `P(fail)` for the user's stated step count and decide whether durable execution is mandatory
+4. **Enforce the Complexity Cliff cross-cutting rule** — compute `P(fail)` for the user's stated step count and decide whether durable execution is mandatory. Delegate the arithmetic to the validation script instead of doing it by hand: `bash scripts/pfail-calc.sh pfail <steps> [p]` (cumulative failure), `bash scripts/pfail-calc.sh swarm <agents>` (n(n-1) directed-handoff surface, SUP3), `bash scripts/pfail-calc.sh trigger <steps> [p]` (durability-band verdict). Run `bash scripts/pfail-calc.sh selftest` to confirm the anchor numbers (63.4%@100, 99.3%@500, swarm 10 = 90)
 5. **Check determinismLevel annotations** — they tell you how reproducible the decision is:
    - `deterministic`: architectural decision, byte-stable (framework choice, topology, permission policy)
    - `semi-deterministic`: config is fixed but runtime behavior varies (checkpoint cadence, interrupt placement)
@@ -121,7 +122,8 @@ Produce a structured orchestration review:
 |-----------|-----------------|-------------|
 | LangGraph | `pip install langgraph` (framework, 1.x line); `langgraph-sdk==0.3.15` (2026-05-22) is the separate API-client package | Deterministic StateGraph, transaction-safe checkpointing, native interrupt HITL |
 | CrewAI | `pip install crewai` | Role-metaphor crews + event-driven Flows, checkpoint-fork CLI (`crewai checkpoint`) |
-| AutoGen v0.4+ | `pip install autogen-agentchat` | Actor-model async message passing, cross-language (Python/.NET), AutoGen Studio |
+| Microsoft Agent Framework | `pip install agent-framework` (Python) / `dotnet add package Microsoft.Agents.AI.Foundry` (.NET) — **1.0 GA 2026-04-03**, successor to AutoGen+Semantic Kernel | Graph workflows + type-safe routing + checkpointing + HITL; **default for new .NET/cross-stack builds** |
+| AutoGen v0.4+ (legacy) | `pip install autogen-agentchat` | Actor-model async message passing, cross-language (Python/.NET), AutoGen Studio — superseded by Agent Framework for new builds (FS4) |
 | OpenAI Agents SDK | `pip install openai-agents` (Sandbox Agents v0.14.0) | Sandbox/workspace execution (Unix-local, Docker, or hosted backend — containerized only with Docker/hosted) + filesystem persistence, 5 tool categories, handoffs |
 | Claude Agent SDK | `pip install claude-agent-sdk` | In-process local agent loop, 3-layer permissions, subagent spawning |
 | Temporal | `pip install temporalio` | Durable execution via event-sourced replay, zero-cost idle, crash recovery |

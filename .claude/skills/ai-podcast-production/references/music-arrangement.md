@@ -52,6 +52,18 @@ def envelope_follower(signal, sr, attack_ms=5, release_ms=2000):
 
 **Why release=2000ms**: When voice pauses, BGM rises slowly over 2 seconds. This creates the "breathing" effect — music gently fills the space rather than snapping up.
 
+### Divergence from conventional DAW sidechain ducking (read before tuning)
+
+Conventional voice-over sidechain ducking in a DAW uses **fast attack (1-5 ms)**, **release 50-200 ms**, and **3-6 dB of gain reduction** for a subtle, clean duck. The pack's offline variant is **deliberately more aggressive**:
+
+| Parameter | DAW sidechain norm | This pack | Why the pack diverges |
+|---|---|---|---|
+| attack | 1-5 ms | 5 ms | within norm |
+| release | 50-200 ms | 2000 ms | offline breathing bed, not live mix — long release fills gaps musically |
+| gain reduction | 3-6 dB | BGM 0.5%→3.5% ≈ **~17 dB swing** | BGM is a near-inaudible bed (MA5), not a co-equal music layer; a 3-6 dB duck would leave it competing with voice |
+
+**When the conventional 3-6 dB range applies instead**: if the BGM is meant to be an *audible* music element (e.g., a musical interlude or a track the listener should notice), use the DAW norm (release 50-200 ms, 3-6 dB reduction). The pack's house values apply specifically to the **continuous near-inaudible bed** use case.
+
 ---
 
 ## MA2: Per-Sample vs Downsampled Computation
@@ -198,17 +210,32 @@ During gaps, BGM rises to BGM_MAX (3.5%) per the envelope follower's natural rel
 
 ---
 
-## MA8: Anti-Clipping Normalization
+## MA8: Anti-Clipping — Sample-Peak Ceiling at -1 dBFS (true-peak needs an external tool)
 
-**Rule**: After mixing voice + BGM, normalize to prevent clipping.
+**Rule**: After mixing voice + BGM, lower the **sample peak to -1 dBFS** (≈ 0.891 linear) via `pyln.normalize.peak(final_mix, -1.0)`, instead of the old clamp at 0.95. The -1 dBFS reserve is a *conservative headroom margin* against the inter-sample (true-peak) overs that lossy MP3/AAC encoders can introduce — but understand the tool's limits below.
+
+**What `pyln.normalize.peak` actually does**: it is a **sample-peak** normalizer. Its source computes `current_peak = np.max(np.abs(data))` (a plain sample max, NO oversampling/interpolation) and scales the signal so that peak hits the target dBFS. It does **NOT** measure ITU-R BS.1770 true-peak (dBTP) — pyloudnorm exposes no true-peak metering at all. So the `-1.0` argument is **-1 dBFS sample-peak**, not a measured -1 dBTP.
+
+**Why -1 dBFS sample-peak instead of 0.95**:
+1. **Better level**: 0.95 linear ≈ **-0.45 dBFS**, which leaves only ~0.45 dB of headroom — too little for lossy encoders. -1 dBFS reserves a full 1 dB.
+2. **The reserve is a margin, not a measurement**: a -1 dBFS sample-peak ceiling is a *defensive lower bound* — it cannot detect or remove inter-sample overs, it only leaves headroom so that the true-peak overs an encoder adds are less likely to clip. If you need an actual true-peak (dBTP) guarantee per ITU-R BS.1770, you MUST use an oversampling true-peak meter (e.g. `ffmpeg -af ebur128=peak=true`, `loudness-scanner`, or 4× upsample then sample-peak) — pyloudnorm alone cannot give you that.
 
 ```python
-peak = np.max(np.abs(final_mix))
-if peak > 0.95:
-    final_mix = final_mix / peak * 0.95
+import pyloudnorm as pyln
+
+# Reserve -1 dBFS sample-peak headroom (pyloudnorm normalize.peak = sample-peak scaler)
+final_mix = pyln.normalize.peak(final_mix, -1.0)  # -1 dBFS ceiling (NOT measured dBTP)
+
+# OLD (do NOT use): clamp at 0.95 ≈ -0.45 dBFS — too little headroom for lossy encoders
+# peak = np.max(np.abs(final_mix))
+# if peak > 0.95:
+#     final_mix = final_mix / peak * 0.95
+
+# OPTIONAL true-peak (dBTP) guarantee — pyloudnorm cannot do this; use ffmpeg:
+#   ffmpeg -i final_mix.wav -af ebur128=peak=true -f null -   # reads "Peak: ... dBFS" true-peak
 ```
 
-Peak cap at 0.95 (not 1.0) to leave headroom for format conversion.
+`pyln.normalize.peak(audio, -1.0)` is the same call used at the TTS-segment stage (tts-production.md TP4). Run it AFTER any loudness step, since loudness scaling can push transients above the ceiling.
 
 ---
 
@@ -305,10 +332,8 @@ apply_tail_fade(bgm_arranged, sr, solo=15, fade=10)
 # 9. Mix
 final = voice + bgm_arranged
 
-# 10. Anti-clipping
-peak = np.max(np.abs(final))
-if peak > 0.95:
-    final = final / peak * 0.95
+# 10. Anti-clipping — sample-peak ceiling at -1 dBFS (MA8), reserving headroom vs old 0.95
+final = pyln.normalize.peak(final, -1.0)  # -1 dBFS sample-peak (NOT measured dBTP)
 
 # 11. Export
 sf.write("podcast_final.wav", final, sr)
@@ -332,7 +357,7 @@ Is voice audio already generated?
     │       │   ├── Map to BGM volume (MA5)
     │       │   ├── Apply dual-track switching (MA10)
     │       │   ├── Apply head/tail fades (MA6)
-    │       │   ├── Mix + anti-clip (MA8)
+    │       │   ├── Mix + anti-clip: -1 dBFS sample-peak (MA8)
     │       │   └── Export
     │       └── Arrangement parameter tweak
     │           ├── Volume too loud/quiet → Adjust BGM_MIN/BGM_MAX (MA5)
@@ -340,3 +365,12 @@ Is voice audio already generated?
     │           ├── Music appears too late → Increase look_ahead (MA3)
     │           └── Fades too short/long → Adjust head/tail params (MA6)
 ```
+
+---
+
+## Sources
+
+- Conventional sidechain ducking: fast attack 1-5 ms, release 50-200 ms, 3-6 dB gain reduction (MA1 divergence note): https://strongmocha.com/creator-sound-design/sidechain-ducking/ (retrieved 2026-06-13)
+- Apple -1 dBTP true-peak target + sample-peak vs inter-sample overs + lossy-encoder headroom rationale (MA8 — the -1 dBFS sample-peak reserve is our conservative approximation of this target): https://podcasters.apple.com/support/893-audio-requirements (retrieved 2026-06-13)
+- pyloudnorm `normalize.peak()` is a SAMPLE-peak scaler (`np.max(np.abs(data))`, no oversampling); the library implements ITU-R BS.1770-4 integrated loudness and exposes NO true-peak meter (MA8): https://github.com/csteinmetz1/pyloudnorm/blob/master/pyloudnorm/normalize.py (retrieved 2026-06-13)
+- True-peak (dBTP) requires an oversampling meter such as ffmpeg `ebur128=peak=true` (MA8 optional path): https://ffmpeg.org/ffmpeg-filters.html#ebur128 (retrieved 2026-06-13)

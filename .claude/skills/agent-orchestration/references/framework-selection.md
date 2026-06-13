@@ -8,7 +8,7 @@
 | FS1 | Match the task's state ceiling to the framework's core state model — do not default to popularity | deterministic |
 | FS2 | LangGraph for strict determinism + transaction safety; centralized immutable StateGraph | deterministic |
 | FS3 | CrewAI for rapid prototyping, role metaphors, and human-revision Flows with checkpoint-fork | deterministic |
-| FS4 | AutoGen v0.4+ for decoupled event-driven actors, horizontal/multi-process scale, Python+.NET | deterministic |
+| FS4 | Microsoft Agent Framework (1.0 GA 2026-04-03, successor to AutoGen+Semantic Kernel) for new .NET/cross-stack multi-agent; AutoGen v0.4+ is now the legacy entry | deterministic |
 | FS5 | OpenAI Agents SDK for sandbox/workspace execution (containerized only with Docker/hosted) + filesystem persistence + hosted OpenAI tools | deterministic |
 | FS6 | Claude Agent SDK for local in-process codebase work with system-level Read/Write/Edit/Monitor | deterministic |
 | FS7 | Default-persistence trap: never SQLite under heavy parallel writes — locks and stalls | semi-deterministic |
@@ -60,15 +60,15 @@ Choose CrewAI for rapid prototyping, human-centric role metaphors (Researchers, 
 
 **determinismLevel**: deterministic.
 
-### FS4: AutoGen v0.4+ — Decoupled Event-Driven Actors
+### FS4: Microsoft Agent Framework — the 2026 Successor to AutoGen + Semantic Kernel
 
-Choose AutoGen v0.4+ for highly decoupled, event-driven multi-agent systems that scale horizontally across processes or need cross-language interoperability (Python and .NET).
+⚠️ **Tool-freshness (2026-06-13)**: For new .NET / cross-stack multi-agent builds, **AutoGen v0.4+ is now the legacy entry.** Microsoft shipped **Agent Framework 1.0 GA on 2026-04-03**, the direct successor that **merges AutoGen** (simple agent / multi-agent abstractions) **+ Semantic Kernel** (session state, type safety, telemetry) and adds **graph-based workflows with type-safe routing, checkpointing, and human-in-the-loop**. AutoGen and Semantic Kernel remain supported, but Microsoft's investment has moved to Agent Framework.
 
-- v0.4 is a full redesign onto an Actor Model: agents are independent actors communicating only via async message passing, decoupling delivery from computation.
-- AgentChat API gives declarative serializability — serialize an entire team (e.g. `RoundRobinGroupChat`) and `FunctionTools` to JSON; persist live state with `save_state` / `load_state` to pause, hot-swap team composition, and resume.
-- AutoGen Studio adds real-time updates, mid-execution control (pause, redirect, alter prompts), and message-flow visualization.
+- Install — Python: **`pip install agent-framework`** (NOT `autogen-agentchat` for new builds). .NET: **`dotnet add package Microsoft.Agents.AI.Foundry`**.
+- Choose it for highly decoupled, event-driven multi-agent systems that scale across processes or need cross-language interoperability (Python and .NET), with built-in graph workflows + checkpointing + HITL.
+- **Legacy path (AutoGen v0.4+)**: still works for existing actor-model systems — v0.4 was a full redesign onto an Actor Model (independent actors, async message passing); AgentChat gave declarative serializability (serialize a `RoundRobinGroupChat` + `FunctionTools` to JSON; `save_state` / `load_state` to pause/hot-swap/resume); AutoGen Studio added mid-execution control. For NEW builds, prefer Agent Framework — do not start new projects on `autogen-agentchat`.
 
-> Source: findings.md "AutoGen (v0.4+)" [7,11,15]
+> Source: Microsoft — Agent Framework overview, https://learn.microsoft.com/en-us/agent-framework/overview/ (retrieved 2026-06-13): 1.0 GA 2026-04-03, AutoGen+Semantic Kernel successor, `pip install agent-framework` / `Microsoft.Agents.AI.Foundry`, graph workflows + checkpointing + HITL. Legacy detail: findings.md "AutoGen (v0.4+)" [7,11,15].
 
 **determinismLevel**: deterministic.
 
@@ -113,6 +113,7 @@ When configuring default persistence, do NOT rely on file-based SQLite under hea
 ## Anti-Patterns
 
 - **Popularity-driven selection**: picking LangGraph for a loosely-coupled conversational workload, or AutoGen for a workflow that needs strict deterministic branching.
-- **Ignoring language constraints**: AutoGen is the only researched framework with .NET; CrewAI is Python-only. Do not promise cross-language on a Python-only stack.
+- **Ignoring language constraints**: Microsoft Agent Framework / AutoGen are the .NET-capable options (CrewAI is Python-only). Do not promise cross-language on a Python-only stack.
+- **Starting new builds on `autogen-agentchat`**: AutoGen v0.4+ is the legacy entry as of 2026; new .NET/cross-stack work should default to Microsoft Agent Framework (`pip install agent-framework`) per FS4.
 - **SQLite in production**: file-SQLite checkpointing under parallel writes is a known stall.
 - **One framework for everything**: sandbox/filesystem work → OpenAI Agents SDK; local system work → Claude Agent SDK; deterministic state machine → LangGraph. They are not interchangeable.

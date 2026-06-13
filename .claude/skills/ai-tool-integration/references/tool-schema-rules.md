@@ -11,7 +11,7 @@
 | S4 | Namespace prefix: mcp__plugin_<plugin>_<server>__<tool> for collision avoidance | naming |
 | S5 | Zero-param tools: explicit { type: object, additionalProperties: false } | edge case |
 | S6 | Error format: isError:true + content array, structured JSON inside | error design |
-| S7 | outputSchema: optional but recommended for structured parsing guidance | output design |
+| S7 | outputSchema: if provided, server MUST return conforming structuredContent (spec 2025-06-18) | output design |
 | S8 | Zod .strict() on all object schemas to reject extra properties | validation |
 | S9 | Every parameter: type + constraint + description + example | completeness |
 | S10 | maxResultSizeChars: hard limit on output to protect agent context | output safety |
@@ -114,11 +114,14 @@ This is the format Claude Code uses internally. For single-server setups, simple
 Tools that take no input still need an explicit empty schema:
 
 ```typescript
-// CORRECT
-server.tool(
+// CORRECT (registerTool, SDK v1.29.0)
+server.registerTool(
   "get_server_status",
-  "Get current server health status",
-  {},  // Zod empty object = { type: object, additionalProperties: false }
+  {
+    title: "Get Server Status",
+    description: "Get current server health status",
+    inputSchema: {},  // Zod empty object = { type: object, additionalProperties: false }
+  },
   async () => { /* ... */ }
 );
 ```
@@ -167,31 +170,33 @@ return {
 
 **NEVER** include: stack traces (security leak), raw HTTP response bodies (unstructured), or generic "an error occurred" (agent cannot self-correct).
 
-### S7: outputSchema -- Response Validation
+### S7: outputSchema + structuredContent -- Response Contract (spec 2025-06-18)
 
-outputSchema is optional in MCP but recommended for:
-- Guiding LLM parsing of tool responses
-- Enabling client-side validation
-- Documenting the response contract
+Per the MCP 2025-06-18 spec, `outputSchema` is not merely "nice to have": **if a tool declares an `outputSchema`, the server MUST return `structuredContent` that conforms to it, and clients SHOULD validate the structured result against that schema.** For backwards-compat, a tool returning `structuredContent` SHOULD also serialize the same JSON into a `TextContent` block so clients that do not understand `structuredContent` still get the data. (Protocol version date: 2025-06-18; source: modelcontextprotocol.io/specification/2025-06-18/server/tools.)
+
+Declare it whenever the response has a stable shape:
 
 ```typescript
-server.tool(
+server.registerTool(
   "get_inventory",
-  "Get inventory level for a SKU",
-  { sku: z.string() },
-  async ({ sku }) => { /* ... */ },
   {
+    title: "Get Inventory",
+    description: "Get inventory level for a SKU",
+    inputSchema: { sku: z.string() },
     annotations: { readOnlyHint: true },
-    outputSchema: {
-      type: "object",
-      properties: {
-        sku: { type: "string" },
-        quantity: { type: "integer" },
-        warehouse: { type: "string" },
-        last_updated: { type: "string", format: "date-time" },
-      },
-      required: ["sku", "quantity"],
+    outputSchema: {                       // SDK accepts a Zod shape here
+      sku: z.string(),
+      quantity: z.number().int(),
+      warehouse: z.string(),
+      last_updated: z.string(),           // ISO date-time
     },
+  },
+  async ({ sku }) => {
+    const data = await apiClient.getInventory(sku);
+    return {
+      structuredContent: data,                                    // MUST conform to outputSchema
+      content: [{ type: "text", text: JSON.stringify(data) }],    // backwards-compat TextContent
+    };
   }
 );
 ```

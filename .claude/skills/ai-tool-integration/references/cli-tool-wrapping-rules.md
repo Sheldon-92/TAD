@@ -6,7 +6,7 @@
 | # | Rule | Scope |
 |---|------|-------|
 | C1 | Inner loop = CLI, outer loop = MCP -- apply the loop test | decision |
-| C2 | Token cost: MCP wrapping costs 10-32x more than raw CLI | cost |
+| C2 | Token cost: 150K->2K (98.7%) code-exec vs MCP; 17x more tokens/call (agent-search benchmark) | cost |
 | C3 | CLI-first when LLM knows the tool from training data | decision |
 | C4 | Evaluation matrix: install, CLI mode, output format, free tier, security | assessment |
 | C5 | Registry entry format: description, install, verify, usage, example, output_format | implementation |
@@ -29,7 +29,7 @@ Before wrapping any CLI tool, apply this decision framework:
 | State | Ephemeral | Persistent sessions |
 | Auth | Local credentials | OAuth / managed |
 | Context | LLM knows the tool | LLM does not know the tool |
-| Token cost | ~100% reliability, near-zero overhead | 10-32x token overhead for schema |
+| Token cost | near-zero static overhead | up to 17x more tokens/call; defs loaded upfront |
 
 **Decision**: If 3+ factors fall in the Inner Loop column, use direct CLI. If 3+ factors fall in the Outer Loop column, wrap as MCP.
 
@@ -39,15 +39,14 @@ Before wrapping any CLI tool, apply this decision framework:
 
 ### C2: Token Cost of MCP Wrapping
 
-MCP tool registration adds tokens to every conversation turn:
-- Tool name + description: ~100-300 tokens
-- Input schema (Zod/JSON Schema): ~200-800 tokens per tool
-- Output schema (if defined): ~100-400 tokens per tool
-- Total per tool: ~700-1500 tokens
+MCP tool definitions are loaded into context before the conversation even starts, and the cost is measured:
+- Anthropic measured a **Drive-to-Salesforce workflow drop from 150,000 -> 2,000 tokens (98.7% reduction)** when tools were called as code instead of loaded as MCP definitions.
+- An independent **agent-search benchmark measured 17x more tokens per call** (MCP vs CLI), with CLI winning **60-90% on cost**.
+- Concrete definition sizes: **58 tools ~= 55K tokens**, one internal agent's definitions **134K tokens**, **Jira MCP alone ~17K tokens** (M6).
 
-For 20 MCP-wrapped CLI tools: ~14K-30K tokens of static context before the first user message. The same 20 CLI tools invoked directly via Bash: 0 tokens of static context.
+So 20+ MCP-wrapped CLI tools cost tens of thousands of tokens of static context before the first user message; the same tools invoked directly via Bash cost ~0 tokens of static context.
 
-**Rule**: Do not wrap a tool as MCP purely for "cleanliness." The token cost must be justified by structured input validation, managed auth, or multi-user state that CLI cannot provide.
+**Rule**: Do not wrap a tool as MCP purely for "cleanliness." The token cost must be justified by structured input validation, managed auth, or multi-user state that CLI cannot provide. At 10+ tools / >10K token defs, prefer the Tool Search Tool (mcp-server-dev M11) over wrapping. Sources: anthropic.com/engineering/code-execution-with-mcp, earezki.com agent-search benchmark, anthropic.com/engineering/advanced-tool-use (all retrieved 2026-06-13).
 
 ### C3: CLI-First for Training-Known Tools
 
@@ -165,4 +164,4 @@ When wrapping tools that produce images (screenshots, charts, diagrams):
 - **No verify command**: Cannot confirm installation succeeded. Always include `<tool> --version` or equivalent.
 - **Wrapping GUI-only tools**: The agent cannot interact with graphical interfaces. CLI mode is mandatory.
 - **No example**: The agent encounters this tool for the first time. Without a complete input-to-output example, it guesses the format.
-- **Wrapping everything as MCP**: 10-32x token overhead for tools the LLM already knows. Apply the loop test first.
+- **Wrapping everything as MCP**: up to 17x more tokens per call (150K->2K, 98.7%, in Anthropic's code-exec measurement) for tools the LLM already knows. Apply the loop test first.

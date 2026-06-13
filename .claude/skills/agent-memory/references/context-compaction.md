@@ -8,8 +8,9 @@
 | CC1 | Compact, don't inflate — attention is O(N²) in sequence length | deterministic |
 | CC2 | Select the compaction strategy by horizon and payload — 4 named strategies | deterministic |
 | CC3 | Lossy summarization fires at a token threshold (~70%), not "when it feels long" | semi-deterministic |
-| CC4 | Use a low-cost model (gpt-4o-mini) for the summarizer subtask | deterministic |
+| CC4 | Route the summarizer subtask to a low-cost model (Haiku-class / gpt-4o-mini-class) | deterministic |
 | CC5 | Compaction applies only to self-managed history, not service-managed context | deterministic |
+| CC6 | Prefer native server-side context editing/compaction over hand-rolled (see context-editing-memory-tool.md) | deterministic |
 
 ---
 
@@ -53,13 +54,13 @@ Lossy summarization is NOT triggered by vibe. It fires at a defined token thresh
 
 **determinismLevel**: semi-deterministic — the threshold is fixed; summary content varies.
 
-### CC4: Use a Low-Cost Model for the Summarizer Subtask
+### CC4: Route the Summarizer Subtask to a Low-Cost Model
 
-In incremental lossy summarization, the summarizing subtask should be handled by a highly-optimized, low-cost model such as **`gpt-4o-mini`** — not the primary reasoning model. The summarizer permanently removes redundant tool outputs and intermediate step logs.
+When you hand-roll incremental lossy summarization, the summarizing subtask should run on a highly-optimized, **low-cost summarizer model** — a Haiku-class / `gpt-4o-mini`-class model — not the primary reasoning model. (Model names deprecate; the rule is the COST TIER, not a specific SKU. As of 2026, picking a current cheap small model from your provider matters more than the literal name.) The summarizer permanently removes redundant tool outputs and intermediate step logs.
 
 > Source: findings.md "Context Window Dynamics and Compaction Mechanics" [14]
 
-**Rule**: Do not burn the primary model on summarization. Route `Φ` to a cheap model.
+**Rule**: Do not burn the primary model on summarization. Route `Φ` to a current low-cost model. But first ask whether you even need a separate summarizer: native server-side compaction (`compact_20260112`, CC6) summarizes with no separate model call at all.
 
 **determinismLevel**: deterministic.
 
@@ -73,12 +74,28 @@ Compaction applies ONLY to agents that manage their own conversation history in 
 
 **determinismLevel**: deterministic.
 
+### CC6: Prefer Native Server-Side Context Editing/Compaction When Available
+
+On Anthropic models you usually should NOT hand-roll the summarization/pruning loop at all. Two native, server-side primitives exist (full detail in `context-editing-memory-tool.md`):
+
+- **Context editing** (`anthropic-beta: context-management-2025-06-27`): `clear_tool_uses_20250919` PRUNES old tool results (default trigger **100,000 input_tokens**, keep **3** tool_uses); `clear_thinking_20251015` prunes old thinking blocks.
+- **Server-side compaction** (`anthropic-beta: compact-2026-01-12`, edit type `compact_20260112`): SUMMARIZES the long tail at a default **150,000-token** trigger.
+
+Measured impact: memory tool + context editing gave **84% token savings** and **39% performance improvement** on a 100-turn web-search agent; context management cuts effective context **50–70%** on later calls.
+
+> Source: context-editing docs + token-saving-updates (retrieved 2026-06-13); see `context-editing-memory-tool.md`
+
+**Rule**: The four hand-rolled strategies in CC2 are the right model when you control history on a non-Anthropic stack OR need a custom retention policy. On Anthropic, reach for native context editing (prune) + compaction (summarize) first — and remember the #1 bug: append the FULL `response.content` (compaction block included), not just `.text`.
+
+**determinismLevel**: deterministic.
+
 ---
 
 ## Anti-Patterns
 
 - **"Just use a bigger window"**: ignores O(N²) attention cost; raw history recalculates KV tensors every step.
 - **Threshold-less summarization**: "summarize when long" is undefined — name the token-percentage trigger.
-- **Primary model as summarizer**: wastes the expensive model on a `gpt-4o-mini` job.
+- **Primary model as summarizer**: wastes the expensive model on a job a Haiku-class / gpt-4o-mini-class model should do.
 - **Compaction over service-managed context**: redundant when the backend already aggregates history.
 - **Summarization-only on large payloads**: staged compaction (offload tool output first) preserves more than blind summarization.
+- **Hand-rolling on Anthropic**: ignoring native `clear_tool_uses_20250919` (prune) + `compact_20260112` (summarize) and writing your own loop — and the #1 native-compaction bug: appending only `response.text`, which drops the compaction block.

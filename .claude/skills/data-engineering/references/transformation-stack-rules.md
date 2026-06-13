@@ -33,10 +33,12 @@ Do not default to a distributed Spark cluster for medium-scale transforms. **Duc
 - Operates within the host process, eliminating network serialization latency.
 - Queries millions of rows in local Parquet/CSV/JSON directly from a Python runtime.
 
-It can speed data pipelines **10x and more** versus heavier stacks, deferring or eliminating the need to scale to an expensive cloud warehouse.
+**Out-of-core ceiling (the "is it big enough for Spark yet?" answer)**: DuckDB **v1.4-LTS** completed all 22 TPC-H queries at **SF-100,000** (100,000GB CSV → a ~27TB DuckDB database), with **median query 1.19h / geomean 1.13h**, spilling **~7TB to disk**, on a single `i8g.48xlarge` node (1.5TB RAM, 192 cores). This replaces the vague "10x and more" with a concrete single-node ceiling: most "medium-to-large" workloads fit comfortably below this, so Spark's cluster overhead is unjustified until you exceed out-of-core single-node limits. Adoption signal: ~25M monthly PyPI downloads; 20+ Fortune-100 users.
 
-**determinismLevel**: deterministic — for medium-scale local data, DuckDB is the correct engine choice.
-> Source: findings.md "DuckDB acts as an in-process, serverless analytical database... vectorized execution" [13, 14, 16] and "Speed Up Your Data Pipelines 10x and More" [14].
+**Rule**: do not reach for a Spark cluster until you have evidence a single DuckDB node cannot spill-to-disk the workload — for the vast majority of AI feature pipelines (GB–low-TB), it can.
+
+**determinismLevel**: deterministic — for medium-to-large local data, DuckDB is the correct engine choice.
+> Source: DuckDB v1.4-LTS TPC-H SF-100,000 benchmark — https://duckdb.org/2025/10/09/benchmark-results-14-lts (retrieved 2026-06-13); cheap-hardware corroboration https://duckdb.org/2026/03/11/big-data-on-the-cheapest-macbook (retrieved 2026-06-13). Originally findings.md [13, 14, 16].
 
 ### TRN3: Polars LazyFrame with Pushdown over Pandas
 
@@ -47,8 +49,10 @@ It can speed data pipelines **10x and more** versus heavier stacks, deferring or
 
 This minimizes memory footprint and CPU overhead versus sequential in-memory execution.
 
-**determinismLevel**: deterministic — lazy evaluation with pushdown is the recommended pattern.
-> Source: findings.md "Polars is a high-performance DataFrame library written in Rust... lazy evaluation via the `LazyFrame` API... predicate pushdown... projection pushdown" [12, 13].
+**Auditable thresholds (PDS-H / TPC-H, replaces "parallelizes for free")**: at **SF-10** on an AWS `c7a.24xlarge` (96 vCPU / 192GB), Polars **streaming** = **3.89s** vs **Pandas = 365.71s (~94x slower)**; DuckDB = 5.87s on the same query set. At **SF-100, Pandas is excluded entirely** — single-threaded with no query optimizer, it OOMs. Polars' **streaming engine runs up to 3–7x faster than its own in-memory engine** on larger-than-RAM data. **Rule**: for any transform over more than a few GB, do not use Pandas; use Polars `LazyFrame` (`.lazy()...collect(streaming=True)` for larger-than-memory) — the ~94x gap is not a micro-optimization.
+
+**determinismLevel**: deterministic — lazy evaluation with pushdown (streaming for larger-than-RAM) is the recommended pattern.
+> Source: Polars PDS-H/TPC-H benchmarks (SF-10 3.89s vs Pandas 365.71s; SF-100 Pandas excluded; streaming 3–7x) — https://pola.rs/posts/benchmarks/ (retrieved 2026-06-13). Originally findings.md [12, 13].
 
 ### TRN4: Pick the Correct Scaling Transform
 
@@ -84,6 +88,16 @@ High-frequency transactional data (e.g., user clickstreams) must be condensed in
 
 - **Two copies of feature logic** (notebook for training, service code for serving): the canonical train-serve skew failure (TRN1).
 - **Spark by reflex** for data that fits a single machine: DuckDB/Polars eliminate cluster latency and cost (TRN2, TRN3).
-- **Pandas for large transforms**: single-threaded, eager, no pushdown — Polars LazyFrame parallelizes for free (TRN3).
+- **Pandas for large transforms**: single-threaded, eager, no pushdown — ~94x slower than Polars streaming at SF-10 and OOMs at SF-100 (TRN3).
 - **Min-Max on a Gaussian-assuming model**: mismatched scaling distorts convergence — match the transform to the assumption (TRN4).
 - **Skipping outlier handling before scaling**: extreme values distort Min-Max ranges and model training (TRN4).
+
+---
+
+## Sources (URL + retrieval date)
+
+| Ref | Source | URL | Retrieved |
+|-----|--------|-----|-----------|
+| TRN2 | DuckDB v1.4-LTS TPC-H SF-100,000 benchmark | https://duckdb.org/2025/10/09/benchmark-results-14-lts | 2026-06-13 |
+| TRN2 | DuckDB big data on a cheap MacBook | https://duckdb.org/2026/03/11/big-data-on-the-cheapest-macbook | 2026-06-13 |
+| TRN3 | Polars PDS-H / TPC-H benchmarks | https://pola.rs/posts/benchmarks/ | 2026-06-13 |

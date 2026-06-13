@@ -12,6 +12,8 @@
 | DUR5 | Zero-cost idle: `workflow.wait_condition` consumes zero compute while awaiting human input | semi-deterministic |
 | DUR6 | CrewAI checkpoint cadence: default `task_completed`; high-frequency triggers degrade perf + disk I/O | semi-deterministic |
 | DUR7 | Observability: with Temporal set `wrap_openai(AsyncOpenAI(max_retries=0))` — delegate retries to the Activity layer | deterministic |
+| DUR8 | LangGraph durability MODE knob: `durability='exit'`/`'async'`/`'sync'` — pick by recovery requirement, not default | semi-deterministic |
+| DUR9 | Selective checkpoint cadence: >75% of agent turns produce no recovery-relevant state — gate writes to side-effecting steps | semi-deterministic |
 
 ---
 
@@ -128,6 +130,32 @@ client = wrap_openai(AsyncOpenAI(max_retries=0))
 
 **determinismLevel**: deterministic.
 
+### DUR8: LangGraph Durability MODE — `exit` / `async` / `sync`
+
+FS7 picks the checkpointer *backend* (SQLite vs Postgres); DUR8 is the orthogonal **durability-vs-performance mode knob** that decides *when* LangGraph persists. There are three modes:
+
+| Mode | When it checkpoints | Crash recovery | Performance |
+|------|---------------------|----------------|-------------|
+| `durability='exit'` | only at graph exit | **NO mid-run crash recovery** | fastest |
+| `'async'` | persists asynchronously while the next step runs | good — small risk of one missed checkpoint if the process crashes mid-write | balanced |
+| `'sync'` | persists synchronously **before each step** | highest durability | performance cost |
+
+**Rule**: Pick the mode by **recovery requirement, not by default**. Use `'sync'` for side-effecting / irreversible steps (you cannot afford to replay them); `'async'` for typical production (the balance point); `'exit'` only for cheap, fully-replayable runs where a mid-run crash just restarts harmlessly. Pair with the FS7 backend choice (Postgres in production) — mode and backend are independent decisions.
+
+> Source: LangGraph — Durable execution, https://docs.langchain.com/oss/python/langgraph/durable-execution (retrieved 2026-06-13): three modes exit/async/sync and their crash-recovery vs performance trade-offs.
+
+**determinismLevel**: semi-deterministic — the missed-checkpoint window in `'async'` depends on runtime crash timing.
+
+### DUR9: Selective Checkpoint Cadence — >75% of Turns Carry No Recovery-Relevant State
+
+The 2026 Crab checkpoint/restore agent study found that **over 75% of agent turns produce NO recovery-relevant state** — so a blanket "checkpoint every superstep" cadence is mostly wasted I/O. This quantifies WHY the wildcard `["*"]` cadence (DUR6) is an anti-pattern, and complements the DUR8 mode knob.
+
+**Rule**: Gate checkpoint writes to **recovery-relevant supersteps** — post side-effect, post external state mutation — rather than every node. Combine with DUR6 (CrewAI: default `task_completed`, go finer only when justified) and DUR8 (LangGraph mode): the goal is to persist exactly the steps whose loss you cannot replay, not every step. "Checkpoint everything" pays full I/O cost for state that, >75% of the time, you would never need to recover.
+
+> Source: Crab checkpoint/restore study via https://effloow.com/articles/temporal-ai-agents-durable-execution-guide-2026 (retrieved 2026-06-13): >75% of agent turns produce no recovery-relevant state.
+
+**determinismLevel**: semi-deterministic — which turns are recovery-relevant depends on runtime side effects.
+
 ---
 
 ## Anti-Patterns
@@ -137,4 +165,5 @@ client = wrap_openai(AsyncOpenAI(max_retries=0))
 - **Forgetting import pass-through**: deterministic libs imported normally inside a Temporal Workflow throw sandbox import violations — pass them through.
 - **Double retries**: client-level `max_retries > 0` plus Activity-level retry = duplicate API calls and duplicate side effects.
 - **Keeping containers alive for human waits**: paying for thousands of idle sandboxes instead of using `workflow.wait_condition` zero-cost idle.
-- **Checkpointing on every event**: wildcard `["*"]` cadence degrades performance with disk I/O.
+- **Checkpointing on every event**: wildcard `["*"]` cadence degrades performance with disk I/O — and >75% of those writes carry no recovery-relevant state (DUR9).
+- **Defaulting the durability mode**: shipping `durability='exit'` (or whatever the default is) for a side-effecting workflow — a mid-run crash has no recovery point; use `'sync'`/`'async'` per DUR8.

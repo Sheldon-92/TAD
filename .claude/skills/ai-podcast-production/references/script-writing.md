@@ -141,7 +141,7 @@ This preparation makes Codex review more efficient — give Codex the checklist 
 
 ## SS9: Codex Adversarial Review — MANDATORY
 
-**Rule**: Submit the complete draft to Codex (OpenAI o3/o4-mini) for independent adversarial review. This is NOT proofreading — it is structural and factual review that catches errors the original AI-human collaborative draft misses due to collaborative blind spots.
+**Rule**: Submit the complete draft to Codex (OpenAI Codex CLI/API, current default model — GPT-5.5-class as of 2026-06; use whatever the installed CLI ships) for independent adversarial review. This is NOT proofreading — it is structural and factual review that catches errors the original AI-human collaborative draft misses due to collaborative blind spots.
 
 **Process**:
 1. Raw article analysis → first draft (v1/v2)

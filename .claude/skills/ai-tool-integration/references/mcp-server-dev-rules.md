@@ -8,13 +8,14 @@
 | M1 | Use McpServer class from @modelcontextprotocol/sdk | project setup |
 | M2 | Modular structure: src/index.ts (registration) + src/tools/*.ts (logic) | project structure |
 | M3 | STDIO servers: console.log() is FORBIDDEN -- stdout is JSON-RPC | transport |
-| M4 | Tool registration: server.tool(name, description, schema, handler) | API |
+| M4 | Tool registration: server.registerTool(name, config, handler) -- SDK v1.29.0 (4-arg server.tool is deprecated) | API |
 | M5 | Resources: URI-based, ResourceTemplate for dynamic, resources/list + resources/read | API |
-| M6 | Tool count: target 15 or fewer per server | architecture |
+| M6 | Tool count: merge tools; real evidence = 58 tools ~55K tokens, one agent 134K tokens of defs, Jira MCP ~17K | architecture |
 | M7 | Output size: 25K token hard limit with truncation strategy | output |
 | M8 | Error responses: isError:true + content array, not generic messages | error handling |
-| M9 | Tool annotations: readOnlyHint, destructiveHint, idempotentHint on every tool | metadata |
+| M9 | Tool annotations: 4 hints + spec defaults; MUST treat as untrusted unless server is trusted | metadata |
 | M10 | Shared infrastructure: extract utils/ for API client, pagination, error handler | code quality |
+| M11 | Tool Search Tool + Programmatic Tool Calling: enable >10K token defs OR 10+ tools (85% token cut) | scaling |
 
 ---
 
@@ -85,29 +86,40 @@ STDIO MCP servers use stdout as the JSON-RPC channel. Any `console.log()` call c
 
 **Verification**: `grep -rn "console\.log" src/ | grep -v "console\.error\|console\.warn" | grep -v "\.test\."` should return zero lines.
 
-### M4: Tool Registration API
+### M4: Tool Registration API -- `registerTool` (SDK v1.29.0)
 
-Register tools using the 4-argument pattern:
+The 4-arg `server.tool(name, description, schema, handler)` form is **deprecated**. The current MCP TypeScript SDK (v1.29.0, retrieved 2026-06-13) documents `server.registerTool(name, config, handler)`, where `config` is a single object carrying `title`, `description`, `inputSchema`, `outputSchema`, and `annotations`:
 
 ```typescript
-server.tool(
-  "get_inventory",                          // name (see schema rules for naming)
-  "Get current inventory level for a SKU",  // description (see doc rules)
+server.registerTool(
+  "get_inventory",
   {
-    sku: z.string().describe("Product SKU, e.g. 'WIDGET-001'"),
-    warehouse: z.enum(["us-east", "us-west", "eu"]).describe("Warehouse region"),
+    title: "Get Inventory",
+    description: "Get current inventory level for a SKU",   // see doc rules
+    inputSchema: {
+      sku: z.string().describe("Product SKU, e.g. 'WIDGET-001'"),
+      warehouse: z.enum(["us-east", "us-west", "eu"]).describe("Warehouse region"),
+    },
+    outputSchema: {                                          // see S7 -- if present, server MUST return conforming structuredContent
+      sku: z.string(),
+      quantity: z.number().int(),
+      warehouse: z.string(),
+    },
+    annotations: { readOnlyHint: true },                     // see M9
   },
   async ({ sku, warehouse }) => {
-    // handler implementation
     const result = await apiClient.getInventory(sku, warehouse);
+    // Return BOTH for backwards-compat: structuredContent (validated against outputSchema)
+    // AND a TextContent block serializing the same JSON (clients without outputSchema support).
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result,
     };
   }
 );
 ```
 
-The Zod schema passed as the third argument IS the inputSchema. Use `.strict()` on complex objects to reject extra properties.
+The Zod object passed as `inputSchema` IS the JSON Schema the client sees. Use `.strict()` on complex objects to reject extra properties (S8). Source: github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/server.md (retrieved 2026-06-13).
 
 ### M5: Resources -- URI-Based Access
 
@@ -133,15 +145,17 @@ server.resource(
 
 Clients discover resources via `resources/list` and read via `resources/read`. Use resources for reference data; use tools for actions.
 
-### M6: Tool Count -- Target 15 or Fewer
+### M6: Tool Count -- Merge to Cut Context Bloat
 
-Each tool adds ~700-1500 tokens to the agent's context (name + description + schema). 35 tools (like GitHub MCP) consume ~26K tokens before the first task.
+Tool definitions are loaded before the conversation even starts, and the cost is measured, not theoretical. Anthropic's tool-use research (retrieved 2026-06-13) reports: **58 tools = ~55K tokens** of definitions before the conversation begins; an internal agent where **tool definitions consumed 134K tokens** before optimization; and **Jira's MCP server alone uses ~17K tokens**. That is the real "why merge tools" evidence.
 
 **Strategy**: Merge related API endpoints into workflow-oriented tools:
 - `create_issue` + `set_labels` + `assign_user` --> `create_configured_issue`
 - `search_code` + `get_file` --> `find_and_read_code`
 
-**Exception**: If operations are genuinely independent and users need them separately, keep them separate. Merge for workflows, not to hit an arbitrary number.
+**Better than ad-hoc merging at scale**: when definitions exceed ~10K tokens or you have 10+ tools, prefer the Tool Search Tool + Programmatic Tool Calling (M11) over lossy hand-merging — it keeps the full library loadable on demand while cutting ~85% of the token cost.
+
+**Exception**: If operations are genuinely independent and users need them separately, keep them separate. Merge for workflows, not to hit an arbitrary number. Source: anthropic.com/engineering/advanced-tool-use.
 
 ### M7: Output Size -- 25K Token Hard Limit
 
@@ -191,26 +205,33 @@ Protocol errors (malformed request, transport failure) use JSON-RPC error codes 
 Every tool MUST declare its behavioral hints:
 
 ```typescript
-server.tool(
+server.registerTool(
   "delete_record",
-  "Permanently delete a record by ID",
-  { id: z.string() },
-  async ({ id }) => { /* ... */ },
   {
-    readOnlyHint: false,
-    destructiveHint: true,
-    idempotentHint: true,     // deleting same ID twice = same result
-    openWorldHint: false,     // operates only on known records
-  }
+    title: "Delete Record",
+    description: "Permanently delete a record by ID",
+    inputSchema: { id: z.string() },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,     // deleting same ID twice = same result
+      openWorldHint: false,     // operates only on known records
+    },
+  },
+  async ({ id }) => { /* ... */ }
 );
 ```
 
-| Annotation | Effect on Agent |
-|------------|----------------|
-| `readOnlyHint: true` | Auto-approve, cancel on interrupt |
-| `destructiveHint: true` | Require human confirmation |
-| `idempotentHint: true` | Safe to retry on failure |
-| `openWorldHint: true` | May interact with external world |
+| Annotation | Spec default (2025-06-18) | Effect on Agent |
+|------------|---------------------------|----------------|
+| `readOnlyHint` | `false` | `true` -> auto-approve, cancel on interrupt |
+| `destructiveHint` | `true` | `true` -> require human confirmation |
+| `idempotentHint` | `false` | `true` -> safe to retry on failure |
+| `openWorldHint` | `true` | `true` -> may interact with external world |
+
+**Defaults matter**: an unset `destructiveHint` defaults to `true` and an unset `readOnlyHint` defaults to `false` — i.e. the spec assumes a tool is destructive and not read-only until you say otherwise. Set hints explicitly; do not rely on the agent inferring them.
+
+**⚠️ Annotations are NOT a security boundary.** The MCP 2025-06-18 spec MANDATES that clients **MUST consider tool annotations untrusted unless they come from a trusted server**. A malicious server can lie (`destructiveHint: false` on a `drop_table`). Annotations drive UX, not authorization — enforce real isolation via read/write server separation (P1) and IAM scope. Source: modelcontextprotocol.io/specification/2025-06-18/server/tools.
 
 ### M10: Shared Infrastructure
 
@@ -222,11 +243,27 @@ Extract repeated patterns to utils/:
 
 Do NOT duplicate auth logic, pagination, or error formatting across tool files.
 
+### M11: Tool Search Tool + Programmatic Tool Calling
+
+When tool definitions get large, the spec-blessed alternative to hand-merging tools (M6) is the **Tool Search Tool** (load tool schemas on demand instead of all upfront) and **Programmatic Tool Calling** (the model writes code that calls tools, rather than emitting one tool-call per turn).
+
+**Operationalized enable thresholds** (Anthropic, retrieved 2026-06-13):
+- Enable the Tool Search Tool when **tool definitions consume >10K tokens** OR **10+ tools are available**.
+- Less beneficial with **<10 tools** (the search overhead is not repaid).
+
+**Measured impact**:
+- Tool Search Tool: **85% token reduction** while keeping the full tool library available.
+- MCP eval accuracy: **Opus 4.5 79.5% -> 88.1%**; **Opus 4 49% -> 74%**.
+- Programmatic Tool Calling: average usage **43,588 -> 27,297 tokens (37% reduction)**.
+- Adding tool-use examples to definitions: accuracy **72% -> 90%**.
+
+**Rule**: For a server crossing the 10-tool / 10K-token line, evaluate Tool Search + Programmatic Tool Calling before lossy manual merging. Source: anthropic.com/engineering/advanced-tool-use.
+
 ---
 
 ## Anti-Patterns
 
-- **God Server**: 35+ tools on one server. Context cost = 26K+ tokens. Split into domain-specific servers.
+- **God Server**: 58 tools on one server = ~55K tokens of definitions before the first task (Jira MCP alone ~17K). Split into domain-specific servers or adopt the Tool Search Tool (M11).
 - **console.log() in STDIO**: Corrupts the JSON-RPC stream. Use console.error() or server.sendLoggingMessage().
 - **Raw API passthrough**: Returning unfiltered API responses wastes context. Extract only the fields the agent needs.
 - **Sync I/O**: All tool handlers MUST be async. Sync I/O blocks the event loop and stalls the transport.

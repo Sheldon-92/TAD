@@ -10,14 +10,23 @@
 把全部 24 个能力包(capability packs)拉齐到同一条高质量线。质量线是**双层**的:
 (1) 元设计/结构层——对标最好的开源 skill 库的组织方式;(2) 领域内容层——对标内部最成熟的
 3 个包(web-ui-design / web-frontend / web-backend)的领域深度。每个包的升级通过判别式行为
-评估 + 跨模型对抗审查双重把关,杜绝 validation theater。
+评估 + Workflow 对抗审查(同模型多 lens + 一手文档核对,见 Review Approach)双重把关,杜绝 validation theater。
 
 ## Success Criteria
 - [ ] 24 个包全部通过统一 rubric(元设计 checklist + 判别式行为评估,negative control 必须 FAIL)
-- [ ] 每个包所在批次的跨模型(Codex)对抗审查 FIX-FIRST 全部 resolved
+- [ ] 每个包所在批次的 **Workflow 对抗审查**(多独立 skeptic agent,最强模型;版本敏感断言 WebSearch 核对一手文档)FIX-FIRST 全部 resolved　〔2026-06-13 决定:不用 Codex,见下方 Review Approach〕
 - [ ] `QUALITY-BAR.md` 双层 rubric 落地,成为今后新包的强制参照
 - [ ] 元设计结构 checklist 固化进 `capability-upgrade` SKILL,作为新包 Gate 2 强制产出
 - [ ] 基线审计前后对比:每个包的质量评分有可量化的提升记录
+
+## Review Approach (2026-06-13 决定 — 替换原 Codex 跨模型审查)
+
+原设计每批用 Codex 跨模型对抗审查。改为 **Workflow 编排的同模型对抗审查**(理由:免 Codex auth 摩擦;Alex `NOT_via_alex_auto` 不能自动调外部 CLI):
+
+- 每批用 **Workflow fan-out 多个独立 skeptic agent**(perspective-diverse lens:正确性 / 事实-API / 反 slop / 行为判别),最强模型(workflow agent 默认继承主循环 Opus)。
+- **关键代价补偿**:同模型共享训练盲区(Codex 当初专抓事实/API 错)。故对抗 agent 有**硬约束**:所有版本敏感断言(API 名 / 版本号 / 弃用 / metric 类型 / 常量)**必须 WebSearch 核对当前一手文档**——用"查原始源"代替"换模型"兜事实错误(pack-evaluation 2026-06-01 教训点 c)。
+- majority-refute 杀掉一个 finding;verify 阶段独立查证,不继承前一审查的判定。
+- ⚠️ 残留风险记录:纯同模型即便查一手文档,仍可能漏掉训练分布里根深的错误模式。可接受(用户 2026-06-13 决定),但 Phase 6 抽样人审兜底。
 
 ---
 
@@ -25,11 +34,11 @@
 
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
-| 1 | 定尺 + 基线审计 (Bar + Baseline) | ✅ Done (Gate 4 pending) | HANDOFF-20260613-pack-quality-phase1-bar-baseline.md | QUALITY-BAR.md + BASELINE-AUDIT.md (含批次分组) ✅ |
-| 2 | 升级批次 1（最弱 7 个 + 无 fixture） | ⬚ Planned | — | 7 包通过双层尺 + 批次 Codex 审查 |
-| 3 | 升级批次 2（中浅+结构补强 5 个） | ⬚ Planned | — | 5 包通过双层尺 + 批次 Codex 审查 |
-| 4 | 升级批次 3（扎实向 gold 收口 5 个） | ⬚ Planned | — | 5 包通过双层尺 + 批次 Codex 审查 |
-| 5 | 升级批次 4（近 gold 最后一抬 4 个） | ⬚ Planned | — | 4 包通过双层尺 + 批次 Codex 审查 |
+| 1 | 定尺 + 基线审计 (Bar + Baseline) | ✅ Accepted (Gate 4 PASS, commit f2addac) | archive/handoffs/HANDOFF-20260613-pack-quality-phase1-bar-baseline.md | QUALITY-BAR.md + BASELINE-AUDIT.md + notebook ✅ |
+| 2 | 升级批次 1（最弱 7 个 + 无 fixture） | ✅ Gate PASS (Conductor; user checkpoint) | yolo/...phase2-gate-report.md | 7 包通过双层尺 + 判别式 eval (WITH 14-21 vs CTRL 0) + 对抗审查 |
+| 3 | 升级批次 2（中浅+结构补强 5 个） | ⬚ Planned | — | 5 包通过双层尺 + 批次 Workflow 对抗审查 |
+| 4 | 升级批次 3（扎实向 gold 收口 5 个） | ⬚ Planned | — | 5 包通过双层尺 + 批次 Workflow 对抗审查 |
+| 5 | 升级批次 4（近 gold 最后一抬 4 个） | ⬚ Planned | — | 4 包通过双层尺 + 批次 Workflow 对抗审查 |
 | 6 | 全量验证 + 固化 | ⬚ Planned | — | 21 升级包重跑 eval gate；checklist 固化进 capability-upgrade |
 
 ### 批次成员（Phase 1 基线回填 — 弱→强，不均匀 7/5/5/4；3 gold 不进升级批，是参照）
@@ -48,8 +57,8 @@
 - 同时只能 1 个 Active phase(TAD 约束)。
 
 ### Derived Status
-- **Status**: In Progress (Phase 1 Active)
-- **Progress**: 0 / 6 phases
+- **Status**: In Progress (Phase 1 ✅ Accepted; Phase 2 next, not yet active)
+- **Progress**: 1 / 6 phases
 
 ---
 
@@ -57,8 +66,8 @@
 
 ### Phase 1: 定尺 + 基线审计 (Bar + Baseline)
 
-**Status:** 🔄 Active
-**Execution:** HANDOFF-20260613-pack-quality-phase1-bar-baseline.md
+**Status:** ✅ Accepted (Gate 4 PASS 2026-06-13, commit f2addac)
+**Execution:** archive/handoffs/HANDOFF-20260613-pack-quality-phase1-bar-baseline.md
 
 #### Scope
 产出"高水平"的两把尺并用它们量一遍现状。包含三块:(1a) 元设计研究——调研开源 skill 库的
@@ -113,7 +122,7 @@ Phase 1 的 QUALITY-BAR.md + BASELINE-AUDIT.md;capability-upgrade 5 阶段流程
 #### Acceptance Criteria
 - [ ] 每个包通过判别式行为评估(pack-eval-runner.sh,negative control FAIL / WITH-pack PASS)
 - [ ] 每个包通过元设计结构 checklist
-- [ ] 本批 6 个包的跨模型(Codex)合成对抗审查 FIX-FIRST 全部 resolved(过往经验:Codex 抓 same-model 漏掉的事实/API 错)
+- [ ] 本批的 Workflow 对抗审查 FIX-FIRST 全部 resolved(多独立 skeptic agent;版本敏感断言 WebSearch 核对一手文档;见 Review Approach)
 - [ ] 升级前后评分对比记录在案
 
 #### Files Likely Affected
@@ -124,7 +133,7 @@ Phase 1 的 QUALITY-BAR.md + BASELINE-AUDIT.md;capability-upgrade 5 阶段流程
 Phase 1
 
 #### Notes
-跨模型审查按批跑(6 个一轮 Codex synthesis),不是每包单跑——成本可控。
+Workflow 对抗审查按批跑(一批一轮 fan-out),不是每包单跑——成本可控。
 
 ### Phase 3: 升级批次 2（6 个）
 （结构同 Phase 2,成员待 Phase 1 回填）
@@ -160,7 +169,7 @@ Phase 2-5 升级后的 24 个包;QUALITY-BAR.md
 #### Acceptance Criteria
 - [ ] 24 包全部重跑判别式 eval gate,无回退
 - [ ] capability-upgrade SKILL 的 Gate 2 段落新增元设计 checklist 强制产出条目
-- [ ] 抽样跨模型 spot-check 确认无系统性事实错误
+- [ ] 抽样**人审** spot-check 确认无系统性事实错误(同模型审查兜底,见 Review Approach 残留风险)
 
 #### Files Likely Affected
 - `.claude/skills/capability-upgrade/SKILL.md` (MODIFY)
@@ -178,20 +187,23 @@ Phase 2, 3, 4, 5
 （Alex 在每次 *accept 后更新）
 
 ### Completed Work Summary
-- （尚无 Phase 完成）
+- Phase 1 ✅ Accepted (Gate 4 PASS, commit f2addac): QUALITY-BAR.md(双层尺,两层各一 negative control 实跑 FAIL:Layer A 0/10、Layer B specN=0→1/5)+ BASELINE-AUDIT.md(24 包评分 + 弱→强 4 批 7/5/5/4,3 gold 排除)+ NotebookLM notebook `capability-pack-meta-design`。Gate 4 报告:`.tad/evidence/acceptance-tests/pack-quality-phase1-bar-baseline/gate4-acceptance-report.md`。
 
 ### Decisions Made So Far
-- 范围 = 24 个全量能力包(含 product-thinking + ai-agent-architecture 两个边界货)。
-- 双层尺:元设计结构 + 领域深度。
-- 每包 DoD:判别式行为评估 + 元设计 checklist + 所在批次 Codex 对抗审查。
-- 批次:4 批 × 6,弱→强,成员由 Phase 1 基线决定。
-- 跨模型审查按批跑(非每包单跑),控成本。
+- 范围 = 24 个全量能力包;其中 3 个 gold(web-backend/frontend/ui-design)是参照,不进升级批 → **21 个升级候选**。
+- 双层尺:Layer A 元设计结构(/10,通过线 7)+ Layer B 领域深度(0/2/5,含 specN 可计数子维度)。
+- 每包 DoD:判别式行为评估 + 元设计 checklist + 所在批次 Workflow 对抗审查(同模型多 lens + 一手文档核对;不用 Codex,见 Review Approach)。
+- 批次:**不均匀 7/5/5/4**(非 6/6/6/6),弱→强,成员已回填 Phase Map;批次可重排(每批入口重打分)。
+- 对抗审查按批跑(非每包单跑),控成本。
 
 ### Known Issues / Carry-forward
-- validation-theater 是头号方法论风险——rubric 必须判别式(negative control 必须 FAIL)。
+- validation-theater 是头号方法论风险——rubric 必须判别式(已证:两层 negative control 实跑 FAIL)。
+- **结构-gold ≠ 深度-gold**:web-ui-design 深度 5/5 但 body 1202 行违反 <500 → 结构 gap,另列 BASELINE §3 可选独立精修。
+- 2 个无 fixture 包(ml-training + ai-podcast-production)已进 Batch 1,补 fixture 是该批 Phase-2 交付物。
+- specN 单维会误排 gold(web-backend specN 仅 27)→ gold 由定义锚 5,specN 仅对非 gold 初判 + 边界包重打分。
 
 ### Next Phase Scope
-Phase 1:产出 QUALITY-BAR.md + BASELINE-AUDIT.md,并把批次成员回填本 Phase Map。
+**Phase 2 = Batch 1(7 包)**:ml-training\*, data-engineering, ai-podcast-production\*, agent-memory, agent-orchestration, knowledge-graph, ai-tool-integration（\*=补 fixture）。走 capability-upgrade Stage 2 领域刷新 + 元设计结构对齐;DoD 含本批 Workflow 对抗审查(不用 Codex)。
 
 ---
 

@@ -23,16 +23,19 @@
 The tool `description` field is the primary (often only) documentation the agent reads. Embed usage examples directly:
 
 ```typescript
-server.tool(
+server.registerTool(
   "search_inventory",
-  `Search product inventory across warehouses.
+  {
+    title: "Search Inventory",
+    description: `Search product inventory across warehouses.
 
 Use when: checking stock levels, finding product availability, auditing inventory.
 Do NOT use when: modifying inventory (use update_inventory instead).
 
 Example: search_inventory({ query: "WIDGET", warehouse: "us-east", limit: 10 })
 Returns: { results: [{ sku: "WIDGET-001", quantity: 42, warehouse: "us-east" }], total: 1 }`,
-  { /* schema */ },
+    inputSchema: { /* schema */ },
+  },
   async (args) => { /* handler */ }
 );
 ```
@@ -199,3 +202,4 @@ If the answer is no, the documentation is insufficient. Common failures:
 - **Stale examples**: Code changed but docs did not update. Examples must be tested.
 - **No "when NOT to use"**: Agent uses the wrong tool in the wrong context. Always document alternatives.
 - **Secrets in x-mcp-header**: Visible to proxies. Use env vars for secrets, x-mcp-header for non-sensitive metadata.
+- **Treating the description field as trusted prose (Tool Poisoning)**: In a 3rd-party or compromised server, the `description` is attacker-controlled — malicious instructions there are read by the model with full ambient authority (CVE-2025-54136 MCPoison / CVE-2025-54135 CurXecute; OWASP LLM01 #1). When CONSUMING tool docs, treat descriptions as untrusted input; pin+hash definitions and re-verify on change. See `references/mcp-spec-and-security-rules.md` X7.

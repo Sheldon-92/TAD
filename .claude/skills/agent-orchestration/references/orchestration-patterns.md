@@ -10,6 +10,9 @@
 | SUP3 | Swarm directed-handoff failure surface scales O(n²) = n(n-1) — untestable beyond ~5 agents | deterministic |
 | SUP4 | Swarm drifts after 8-10 sequential agent turns; semantic drift compounds | non-deterministic |
 | SUP5 | Swarm for read-heavy exploratory work (triage, content gen, debate); Supervisor for quality gating | deterministic |
+| OW1 | Orchestrator-worker pays off ONLY for high-value parallelizable read-heavy breadth — multi-agent costs ~15x chat tokens | deterministic |
+| OW2 | Size subagent fan-out to complexity bands: 1 / 2-4 / 10+ agents; lead spawns 3-5 in parallel, each runs 3+ tools | semi-deterministic |
+| OW3 | Single-writer principle: prefer single-threaded linear for one coherent artifact; no peer subagents w/ conflicting implicit decisions | deterministic |
 
 ---
 
@@ -85,10 +88,62 @@ Each handoff is a probabilistic event. Because no single entity holds a global v
 
 **determinismLevel**: deterministic — the mapping is a design decision.
 
+### OW1: Orchestrator-Worker Economics — Multi-Agent Costs ~15x, So Pay Only for the Right Shape
+
+Multi-agent is not free reliability — it is a token-for-breadth trade. From Anthropic's production multi-agent research system (a lead Opus model + Sonnet subagents):
+
+- The multi-agent system **beat single-agent Opus 4 by 90.2%** on Anthropic's internal research eval.
+- It cost **~15x the tokens of a normal chat interaction** (agents *alone*, even single-agent, already run ~4x chat tokens).
+- **Token usage alone explains ~80% of the performance variance** on the BrowseComp eval; **three factors — token use, tool-call count, and model choice — explain ~95%**.
+
+**Rule**: Reach for orchestrator-worker (multi-agent) ONLY for **high-value, parallelizable, read-heavy breadth** tasks where the ~15x token multiplier is absorbable — e.g. broad research, large-corpus triage. Do NOT use it for cheap Q&A or for any task that must produce a single coherent artifact (those want a single-threaded agent, OW3). "Swarm is token-efficient" is only true *relative to a supervisor's coordinator tax* — in absolute terms multi-agent is expensive; justify it by value and parallelism, not by reflex.
+
+> Source: Anthropic — Building a multi-agent research system, https://www.anthropic.com/engineering/multi-agent-research-system (retrieved 2026-06-13): 90.2% improvement, ~15x token multiplier, ~4x agent multiplier, 80%/95% variance explained.
+
+**determinismLevel**: deterministic — the cost/benefit threshold is a design decision driven by reported figures.
+
+### OW2: Size the Fan-Out to Complexity Bands — Don't Over- or Under-Spawn
+
+Scale subagent effort to query complexity using Anthropic's measured bands:
+
+| Query shape | Subagents | Tool calls each |
+|-------------|-----------|-----------------|
+| Simple fact-finding | **1 agent** | 3-10 |
+| Direct comparisons | **2-4 subagents** | 10-15 |
+| Complex research | **10+ subagents** | clearly divided responsibilities |
+
+- Standard parallelization: the lead **spawns 3-5 subagents in parallel**, and **each subagent runs 3+ tools in parallel**.
+- Teaching the lead to write **detailed subagent task descriptions cut task-completion time ~40%** (this is also MAST's 42% spec-failure lever — see failure-modes FM2).
+- These parallelization changes **cut research time up to 90%** on complex queries.
+
+**Rule**: Match fan-out to the band. Over-spawning burns the ~15x multiplier (OW1) for no gain; under-spawning serializes work and adds latency. Always pair fan-out with detailed per-subagent task specs — the description quality is worth ~40% of completion time.
+
+> Source: Anthropic — Building a multi-agent research system, https://www.anthropic.com/engineering/multi-agent-research-system (retrieved 2026-06-13): 1 / 2-4 / 10+ bands, 3-5 parallel subagents, 3+ parallel tools, 40% description-tuning time cut, 90% research-time cut.
+
+**determinismLevel**: semi-deterministic — the band is a guideline; actual count depends on runtime query shape.
+
+### OW3: The Single-Writer Principle — Why Peer Swarms Drift (SUP3/SUP4 root cause)
+
+Cognition's two production principles name WHY parallel peer subagents fail (the mechanism behind SUP3's O(n²) surface and SUP4's 8-10-turn drift):
+
+1. **Share context, and share full agent traces — not just individual messages.** Agents that see only each other's final messages, not the reasoning that produced them, cannot integrate work coherently.
+2. **Actions carry implicit decisions, and conflicting decisions carry bad results.** Two parallel agents each make implicit choices that silently contradict.
+
+Concrete failure: a Flappy-Bird clone split across two parallel subagents **without shared context** produced a Super-Mario-style background plus a non-game-like bird — two locally-reasonable outputs that **could not be combined** into a coherent game.
+
+**Rule**: For any task needing **one coherent artifact**, prefer a **single-threaded linear agent with continuous context**. Use orchestrator-worker only for parallelizable breadth, and structure it as **one context owner + isolated workers that return summary strings** — NO peer-to-peer channel, NO shared mutable state. Never run peer subagents that make conflicting implicit decisions without sharing full traces.
+
+> Source: Cognition — Don't Build Multi-Agents, https://cognition.ai/blog/dont-build-multi-agents (retrieved 2026-06-13): two single-writer/shared-context principles, Flappy-Bird conflicting-subagent failure, single-threaded-linear recommendation.
+
+**determinismLevel**: deterministic — the topology constraint is a design decision.
+
 ---
 
 ## Anti-Patterns
 
+- **Multi-agent for the wrong shape**: spinning up subagents for cheap Q&A or for a single coherent artifact — pays the ~15x token multiplier (OW1) with no breadth payoff.
+- **Over- / under-spawning**: ignoring the 1 / 2-4 / 10+ complexity bands (OW2) — burns tokens or serializes latency.
+- **Peer subagents without shared traces**: the Flappy-Bird failure — conflicting implicit decisions produce un-combinable outputs (OW3).
 - **Unbounded swarm**: a 10-agent fully-connected swarm has 90 directed handoff pathways and is untestable — a P0.
 - **Single supervisor for huge fan-out**: synchronous hub-and-spoke is a throughput bottleneck; the supervisor also saturates after 8-12 turns.
 - **No re-grounding in long swarms**: past 8-10 turns the agent forgets the original intent.

@@ -54,9 +54,9 @@ This is the pack's cross-cutting rule, applied at architecture level. To transit
 
 1. **Consolidation** — actively deduplicate, merge, and synthesize overlapping experiences. Without it, duplicate entity representations pollute retrieval.
 2. **Scoring** — apply importance weights and temporal-decay models so low-value or rarely-accessed memories fade over time, preventing context clutter.
-3. **Temporal Tracking** — index *when* facts change (e.g. Zep's Graphiti engine), distinguishing historical state ("used to code in Python") from current state ("now codes in Rust").
+3. **Temporal Tracking** — index *when* facts change, distinguishing historical state ("used to code in Python") from current state ("now codes in Rust"). The citable engine: **Zep's Graphiti** non-lossily indexes the **validity intervals** of facts. Head-to-head, Zep beats MemGPT on Deep Memory Retrieval **94.8% vs 93.4%** and improves LongMemEval accuracy **up to +18.5%** while cutting response latency **~90%** vs baseline (arXiv:2501.13956). Cite that number, not vague "Zep is more production-ready" prose.
 
-> Source: findings.md "Vector Storage vs. Stateful Memory Layers" — three core cognitive processes [9]
+> Source: findings.md "Vector Storage vs. Stateful Memory Layers" — three core cognitive processes [9]; arXiv:2501.13956 (Zep/Graphiti DMR 94.8%, retrieved 2026-06-13)
 
 **determinismLevel**: deterministic.
 

@@ -7,14 +7,15 @@
 |---|------|-------|
 | P1 | Read/write separation: separate MCP servers with separate IAM roles | architecture |
 | P2 | Four-level permission pipeline: deny > hooks > allow > prompt | enforcement |
-| P3 | OAuth 2.1 + PKCE mandatory for remote MCP servers | auth |
-| P4 | Resource Indicators (RFC 8707) for multi-resource auth | auth |
+| P3 | OAuth 2.1 + PKCE mandatory for remote MCP servers; MCP-Protocol-Version header MUST be sent | auth |
+| P4 | Resource Indicators (RFC 8707) -- clients MUST send `resource` param (spec 2025-06-18 upgraded SHOULD->MUST) | auth |
 | P5 | Session-scoped auth: time-limited, expires with session | lifecycle |
 | P6 | Human-in-the-loop mandatory for destructive/irreversible operations | safety |
-| P7 | Protected Resource Metadata (PRM): 401 + pointer for auth discovery | protocol |
-| P8 | Tool annotations drive permission classification | metadata |
+| P7 | Server is an OAuth 2.0 Resource Server; MUST publish PRM per RFC 9728 | protocol |
+| P8 | Tool annotations drive permission classification -- but MUST be treated as untrusted | metadata |
 | P9 | Audit logging: timestamp + tool + action + decision + reason | compliance |
 | P10 | Interrupt behavior: cancel for read-only, block for write | reliability |
+| P11 | Elicitation (elicitation/create): accept/decline/cancel, primitive types only, no secrets | HITL |
 
 ---
 
@@ -81,7 +82,9 @@ Authorization flow:
 
 **PKCE is MANDATORY** (not optional): Without it, authorization codes can be intercepted by malicious apps. OAuth 2.1 deprecates the implicit flow entirely.
 
-**Local STDIO servers**: PKCE is not needed (communication is over process pipes, not network).
+**Protocol-version header (spec 2025-06-18)**: Every HTTP request from the client to the server **MUST** carry the `MCP-Protocol-Version` header. Servers reject an invalid value with **HTTP 400**; if the header is absent, servers default to `2025-03-26` for backwards-compat. **JSON-RPC batching was REMOVED** in 2025-06-18 (breaking change) — do not send batched requests.
+
+**Local STDIO servers**: PKCE is not needed (communication is over process pipes, not network). Source: forgecode.dev/blog/mcp-spec-updates (retrieved 2026-06-13).
 
 ### P4: Resource Indicators (RFC 8707)
 
@@ -97,7 +100,7 @@ POST /token
 
 The issued token is scoped to ONLY the indicated resource. An agent with an inventory token cannot use it to access the billing API, even if both are behind the same auth server.
 
-**Rule**: Each MCP server that accesses a distinct backend resource SHOULD request a resource-scoped token. Broad-scope tokens violate least-privilege.
+**Rule (spec 2025-06-18)**: clients **MUST** include the `resource` parameter (Resource Indicators, RFC 8707) to bind the token to a specific MCP server — the spec upgraded this from SHOULD to **MUST**. This prevents token reuse/confused-deputy across servers. Broad-scope tokens violate least-privilege. Source: forgecode.dev/blog/mcp-spec-updates (retrieved 2026-06-13).
 
 ### P5: Session-Scoped Auth
 
@@ -155,9 +158,9 @@ if (DESTRUCTIVE_TOOLS.includes(toolName)) {
 
 **The agent MUST NOT bypass confirmation** through prompt engineering, multi-step decomposition, or parameter manipulation.
 
-### P7: Protected Resource Metadata (PRM)
+### P7: MCP Server = OAuth 2.0 Resource Server (PRM, RFC 9728)
 
-When an MCP client receives a 401 from a server, the server MUST include a PRM pointer:
+The MCP 2025-06-18 spec formally classifies MCP servers as **OAuth 2.0 Resource Servers**. They **MUST** publish **Protected Resource Metadata per RFC 9728** so clients can discover the authorization server. When an MCP client receives a 401 from a server, the server MUST include a PRM pointer:
 
 ```http
 HTTP/1.1 401 Unauthorized
@@ -171,7 +174,7 @@ The client follows the PRM link to discover:
 - Supported scopes
 - PKCE requirement
 
-**Rule**: MCP servers MUST implement PRM for auth discovery. Clients MUST NOT hardcode auth endpoints -- always discover via PRM.
+**Rule**: MCP servers MUST implement PRM (RFC 9728) for auth discovery. Clients MUST NOT hardcode auth endpoints -- always discover via PRM. Source: forgecode.dev/blog/mcp-spec-updates (retrieved 2026-06-13).
 
 ### P8: Tool Annotations Drive Permission Classification
 
@@ -184,7 +187,9 @@ Tool annotations determine automatic permission classification:
 | `destructiveHint: true` | prompt (human confirmation) | block (avoid partial execution) |
 | `idempotentHint: true` | safe to retry | cancel (can re-execute) |
 
-**Every tool MUST have annotations**. Missing annotations default to the most restrictive classification (destructiveHint: true).
+**Every tool MUST have annotations**. Per spec, unset hints default to the most restrictive classification: `destructiveHint` defaults to `true`, `readOnlyHint` to `false`, `idempotentHint` to `false`, `openWorldHint` to `true`.
+
+**⚠️ Annotations are advisory, not a security boundary.** The MCP 2025-06-18 spec MANDATES that clients **MUST consider tool annotations untrusted unless they come from a trusted server**. A malicious server can claim `destructiveHint: false` on a `drop_table`. Use annotations for UX/approval defaults only; enforce real isolation through read/write server separation (P1) and scoped IAM roles. Source: modelcontextprotocol.io/specification/2025-06-18/server/tools.
 
 ### P9: Audit Logging
 
@@ -223,6 +228,28 @@ Set `interruptBehavior` to match the tool's annotation:
 - `destructiveHint: true` --> block
 - `idempotentHint: true` + write --> cancel (safe to re-execute)
 
+### P11: Elicitation -- Spec-Blessed Mid-Session Input (2025-06-18)
+
+The MCP 2025-06-18 spec adds **`elicitation/create`**: a server can request user input mid-session (e.g. ask for a missing parameter or a confirmation) instead of failing or guessing. This is the spec-native complement to the HITL confirmation in P6.
+
+**Contract**:
+- **Three-action client response model**: the user can **accept**, **decline**, or **cancel** the request — the server MUST handle all three (decline != cancel; cancel means the user dismissed without answering).
+- **Primitive types only**: the requested schema is restricted to primitive JSON-schema types — `string`, `number`, `boolean` (no nested objects/arrays). Keep requests atomic.
+- **No sensitive data**: servers **MUST NOT** use elicitation to request sensitive information (passwords, API keys, tokens). Route secrets through the OAuth flow (P3-P7), never an elicitation prompt.
+
+```jsonc
+// Server -> client
+{ "method": "elicitation/create",
+  "params": {
+    "message": "Which warehouse should I deploy to?",
+    "requestedSchema": { "type": "object",
+      "properties": { "warehouse": { "type": "string", "enum": ["us-east","us-west","eu"] } },
+      "required": ["warehouse"] } } }
+// Client -> server: { "action": "accept" | "decline" | "cancel", "content": { "warehouse": "us-east" } }
+```
+
+Source: github.com/modelcontextprotocol/modelcontextprotocol .../2025-06-18/client/elicitation.mdx (retrieved 2026-06-13).
+
 ---
 
 ## Anti-Patterns
@@ -232,4 +259,6 @@ Set `interruptBehavior` to match the tool's annotation:
 - **No confirmation for delete**: Every delete, send, or deploy without HITL is one bad LLM judgment away from data loss.
 - **No audit trail**: Post-incident investigation impossible without logs. Log every invocation.
 - **Persistent credentials**: Access tokens saved to disk outlive the session. Use session-scoped tokens.
-- **Broad-scope tokens**: One token for all resources violates least-privilege. Use Resource Indicators.
+- **Broad-scope tokens**: One token for all resources violates least-privilege. Use Resource Indicators (RFC 8707), now a MUST.
+- **Trusting tool annotations as a security boundary**: A malicious server lies (`destructiveHint: false` on `drop_table`). Spec says annotations MUST be treated as untrusted. Isolate via P1, do not trust hints.
+- **Approve-on-install with no re-verification (rug-pull)**: A tool benign on Day-1 mutates Day-7 to exfiltrate keys. Pin+hash definitions, re-verify on change. See `references/mcp-spec-and-security-rules.md` X7.

@@ -11,6 +11,8 @@
 | SP4 | Subgraph time-travel depends on the checkpointer compile flag | semi-deterministic |
 | SP5 | HITL interrupts gate high-risk actions via interrupt_before / interrupt_after | deterministic |
 | SP6 | Tune production checkpointers: compression, TTL pruning, S3 offload | semi-deterministic |
+| SP7 | Cross-thread memory = the Store API (put/get/search), NOT the per-thread checkpointer | deterministic |
+| SP8 | Store TTL surface: default_ttl (minutes), refresh_on_read (default true), sweep_interval_minutes | deterministic |
 
 ---
 
@@ -102,6 +104,41 @@ checkpointer = DynamoDBSaver(
 
 **determinismLevel**: semi-deterministic — values are deployment-specific.
 
+### SP7: Cross-Thread Memory Is the Store API, NOT the Checkpointer
+
+Checkpointers (SP1–SP6) persist state **per-thread** (per `thread_id`) — they are session-bound and do NOT share state across conversations. For **durable, cross-session/cross-thread** memory, LangGraph has a separate **Store API**, a different architecture decision the checkpointer cannot fill:
+
+```python
+store.put(namespace, key, value)   # namespace is a TUPLE, e.g. (user_id, "memories")
+store.get(namespace, key)
+store.search(namespace, query="...")   # semantic search when an index is configured
+```
+
+- **`namespace`** is a tuple (e.g. `[user_id, "memories"]`) — this is how you scope memory per-user/per-team across threads.
+- **Semantic search index config**: `dims=1536` (for `text-embedding-3-small`) + an `embeddings` function + the `fields` to embed. With an index, `search(query=...)` does vector retrieval; without it, it's a key/prefix lookup.
+
+> Source: https://docs.langchain.com/oss/javascript/langgraph/add-memory (retrieved 2026-06-13) — Store put/get/search, tuple namespace, dims=1536 index config
+
+**Rule**: Decide explicitly between two layers — per-thread **checkpointers** (resume one conversation after a crash) and the cross-thread **Store** (durable user memory across all sessions). Map this to CoALA (`memory-architecture.md`): checkpointer ≈ working/episodic session state; Store ≈ semantic memory. Putting durable user preferences in a checkpointer is the SP-layer version of the MA2 "working-memory persistence" anti-pattern.
+
+**determinismLevel**: deterministic — the API surface is fixed.
+
+### SP8: Store TTL Field Surface
+
+The Store exposes a `TTLConfig` so cross-thread memory expires on a schedule (the durable analog of SP6's checkpointer TTL):
+
+| Field | Default | Meaning |
+|-------|---------|---------|
+| `default_ttl` | none | Item lifespan in **minutes** (e.g. `10080` = 7 days) |
+| `refresh_on_read` | `true` | A `get`/`search` resets the item's expiry clock |
+| `sweep_interval_minutes` | none | How often expired items are swept; **omit = no sweeping** |
+
+> Source: https://langchain-ai.github.io/langgraph/how-tos/ttl/configure_ttl/ (retrieved 2026-06-13) — TTLConfig fields
+
+**Rule**: TTL is in **minutes**, not seconds (contrast SP6's `ttl_seconds`). If you omit `sweep_interval_minutes`, expired items are NOT swept — they linger until read. `refresh_on_read=true` (the default) means actively-used memories never expire, which is usually what you want for a user-preference store but wrong for a "purge after N days regardless" compliance retention policy — set it `false` there. Together SP6 (checkpointer TTL) + SP8 (Store TTL) give a complete retention story for both per-thread and cross-thread state.
+
+**determinismLevel**: deterministic.
+
 ---
 
 ## Anti-Patterns
@@ -112,3 +149,5 @@ checkpointer = DynamoDBSaver(
 - **Default subgraph checkpointing when you need node-level rollback**: forces whole-subgraph re-execution.
 - **Autonomous high-risk nodes**: irreversible actions with no `interrupt_before` gate.
 - **Untuned production checkpointer**: no compression/TTL/offload → multi-MB writes cause I/O failures.
+- **Durable memory in the checkpointer**: per-thread checkpointers don't share across sessions — cross-thread user memory belongs in the Store API (`put`/`get`/`search`, tuple namespace).
+- **Store TTL in seconds**: `default_ttl` is in MINUTES (`10080` = 7 days), and omitting `sweep_interval_minutes` means expired items are never swept.

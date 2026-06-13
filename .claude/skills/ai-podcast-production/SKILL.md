@@ -23,7 +23,7 @@ keywords: ["podcast", "播客", "podcast production", "播客制作", "podcast s
 - **Python 3.10+** with: `voxcpm`, `soundfile`, `numpy`, `noisereduce`, `pyloudnorm`, `tqdm`, `huggingface_hub`
 - **yt-dlp** — BGM download in Colab
 - **Google Drive** — storage for all artifacts (checkpoints, audio, notebooks)
-- **Codex CLI or API access** — adversarial script review (o3/o4-mini)
+- **Codex CLI or API access** — adversarial script review (current Codex default; as of 2026-06 that is GPT-5.5-class — use whatever the installed CLI defaults to)
 - **Chrome + Claude MCP extension** — browser-automated Colab workflows (optional)
 
 Verify (in Colab): `!python --version && !pip show voxcpm soundfile noisereduce pyloudnorm`
@@ -41,6 +41,7 @@ Verify (in Colab): `!python --version && !pip show voxcpm soundfile noisereduce 
 | show notes, 节目笔记, timestamps, golden quotes, 金句, episode description | `references/show-notes.md` |
 | Colab, notebook, deploy, upload, Drive, session, GPU, 部署 | `references/colab-deployment.md` |
 | full episode, end-to-end, complete pipeline, 完整流程 | Load **all references** sequentially |
+| verify loudness, true-peak, LRA, lint chunks, validate audio | Run `scripts/loudness-check.sh` / `scripts/chunk-lint.sh` (see Validation Scripts) |
 
 **Multi-signal**: Load all matched references. Cross-reference links are provided within files.
 
@@ -104,7 +105,8 @@ This rule applies to TTS production and any audio post-processing. It is surface
 - **Merged Processing Loop**: generate → denoise → normalize in one iteration → TP4
 - **Colin Model Gotchas**: base_model hardcode, weight file rename → TP5
 - **Partial Regeneration**: single-chunk mini notebook for edits → TP6
-- **Post-Cut Silence Detection**: threshold=0.015, min 8s segments → TP7
+- **Validated Params + Per-Platform Loudness**: -16/-19 Apple, -14 Spotify/YouTube; platform true-peak target -1 dBTP (Apple cites ITU-R BS.1770-5), reserved via -1 dBFS sample-peak (pyloudnorm has no dBTP meter); LRA 5-15 LU → TP7/TP7a-d
+- **VoxCPM2 Facts + Voice-Model Escape Hatches**: Apache-2.0, v2.0.3, cfg_value=2.0; Kokoro/XTTS-v2 alt, F5-TTS non-commercial → TP8a
 
 ### Music Selection (`references/music-selection.md`)
 - **Atmosphere Over Melody**: sparse notes, no competing melody → MS1
@@ -117,8 +119,9 @@ This rule applies to TTS production and any audio post-processing. It is surface
 - **Logarithmic Fade Curves**: log10(1+9*t) matching human hearing → MA4
 - **BGM Volume Sweet Spot**: 0.5% during voice, 3.5% during silence → MA5
 - **Head/Tail Fades**: 8s+6s opening, 15s+10s ending → MA6
+- **Envelope vs DAW Norm**: pack's ~17 dB swing vs conventional 3-6 dB / 50-200ms release → MA1
 - **Inter-Segment Gaps**: 1.5s intra-chunk, 2.5s inter-chapter → MA7
-- **Memory Trap Avoidance**: downsample before smoothing, never convolve at 48kHz → MA8
+- **Anti-Clipping = -1 dBFS Sample-Peak Reserve**: `pyln.normalize.peak(mix, -1.0)` (sample-peak, not measured dBTP) replaces the old 0.95 clamp; for a real dBTP guarantee use `ffmpeg ebur128=peak=true` → MA8
 
 ### Show Notes (`references/show-notes.md`)
 - **9-Section Structure**: header → hook → timestamps → books → authors → quotes → extensions → credits → audience → SN1-SN9
@@ -132,6 +135,15 @@ This rule applies to TTS production and any audio post-processing. It is surface
 
 ---
 
+### Validation Scripts (`scripts/`)
+- **`loudness-check.sh <final.wav> [platform]`** — asserts integrated LUFS within ±1 LU of the per-platform target (TP7a, measured BS.1770-4), LRA in 5-15 LU (EBU Tech 3342, measured), and peak ≤ -1 dBFS — true-peak (dBTP) when ffmpeg is present, else a sample-peak proxy (honestly labeled). LRA that cannot be measured FAILS (no silent pass). Exit 0 = PASS. Deterministic check, not "punt to Claude".
+- **`chunk-lint.sh <chunks.txt | seg-dir/>`** — text mode: every chunk 200-350 chars (TP1); audio mode: no post-cut segment < 8s (TP3). Exit 1 on violation.
+
+### Fixtures (`examples/`)
+- **`full-episode-production.md`** — discriminative eval fixture (`discriminative_pattern` + `min_discriminative=4`) for the end-to-end pipeline; markers are pack-specific numbers/APIs (200-350 chunks, -1 dBTP, envelope 5ms/2000ms, 0.5%/3.5%, per-platform LUFS, Codex review).
+
+---
+
 ## Anti-Skip Table
 
 | Shortcut Attempt | Required Action |
@@ -141,8 +153,12 @@ This rule applies to TTS production and any audio post-processing. It is surface
 | "Any BGM track will work" | MUST audition 3 candidates x 30s each, select 2 for dual-track (MS2-MS3) — single melodic track causes listener fatigue |
 | "I'll use linear volume fades" | MUST use log10(1+9*t) fade curves (MA4) — linear linspace sounds unnatural to human ears (Weber-Fechner law) |
 | "BGM at 8% should be subtle enough" | MUST use 0.5%/3.5% sweet spot (MA5) — 8% is too loud, validated across 10+ iterations |
-| "I'll add a soft limiter on the voice track" | MUST NOT over-process voice (PP-001) — only denoise + loudness normalize; tail decay compression introduces artifacts |
+| "I'll add a soft limiter on the voice track" | MUST NOT over-process voice (MA11) — only denoise + loudness normalize; tail decay compression introduces artifacts |
 | "The script is good enough without Codex review" | MUST run adversarial Codex review (SS9) — single pass catches 25+ factual/logical/colloquial errors that AI-human collaborative draft misses |
 | "I'll just paste the fix into the notebook cell" | MUST upload a complete new notebook (CD2) — pasting caused 3 errors: cell overwrite, undefined vars, param mismatch |
 | "np.convolve with a 2-second window should be fine" | MUST downsample first (MA8) — 48kHz x 13min = 39M samples with large window hangs or crashes Colab |
 | "I'll skip the head/tail fade to save time" | MUST add opening (8s+6s) and ending (15s+10s) fades (MA6) — without them the show sounds like a switch being flipped |
+| "I'll just normalize everything to -16 LUFS" | MUST use per-platform targets (TP7a): -16 Apple-stereo / -19 Apple-mono / -14 Spotify·YouTube·Amazon·Google. -16 is too quiet for Spotify/YouTube; default to -14 when platform unknown |
+| "Clamp the sample peak at 0.95 to avoid clipping" | MUST reserve -1 dBFS via `pyln.normalize.peak(mix, -1.0)` (MA8) — 0.95≈-0.45 dBFS leaves too little headroom; -1 dBFS is a conservative margin for the inter-sample overs lossy encoders add. NOTE: this is sample-peak, not a measured dBTP; for a true-peak guarantee run `ffmpeg ebur128=peak=true` |
+| "F5-TTS sounds great, I'll use it for this show" | MUST check license first (TP8a) — F5-TTS is CC-BY-NC 4.0 (non-commercial); shipping it in a monetized podcast is a license violation. XTTS-v2 is ALSO non-commercial (Coqui CPML, no commercial path post-shutdown). For a monetized show use VoxCPM2 or Kokoro (both Apache-2.0) |
+| "I'll verify loudness by listening" | MUST run `scripts/loudness-check.sh` (TP7d) — integrated loudness (BS.1770-4) and LRA (EBU Tech 3342) are measured by pyloudnorm; true-peak is measured by ffmpeg ebur128 when present, else reported as a -1 dBFS sample-peak proxy. Not subjective |

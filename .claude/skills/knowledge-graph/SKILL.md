@@ -43,9 +43,12 @@ When the user mentions knowledge-graph or GraphRAG work, detect the context and 
 | "GraphRAG", "global search", "local search", "drift", "community", "Leiden", "LightRAG", "LazyGraphRAG", "图检索" | `references/graphrag-architecture.md` |
 | "build a knowledge graph", "extract entities", "ontology", "schema", "triples", "extraction prompt", "本体", "三元组" | `references/kg-construction.md` |
 | "deduplicate", "entity resolution", "merge entities", "canonical", "same entity", "实体消歧" | `references/entity-resolution.md` |
-| "which graph database", "Neo4j", "Memgraph", "FalkorDB", "RDF", "LPG", "triple store", "图数据库" | `references/graph-database.md` |
+| "which graph database", "Neo4j", "Memgraph", "FalkorDB", "RDF", "LPG", "triple store", "Kuzu", "RedisGraph", "图数据库" | `references/graph-database.md` (incl. deprecated-engine isolation block) |
 | "Text2Cypher", "natural language to Cypher", "SPARQL", "query translation", "Cypher-RAG", "查询翻译" | `references/query-translation.md` |
+| "should I even use a graph", "graph vs vector", "is GraphRAG worth it", "single fact", "summary recall" | `references/graphrag-architecture.md` → **ARC7 (graph-vs-flat threshold)** |
 | "full GraphRAG build", "design the whole pipeline", "end to end" | Load **all references** sequentially |
+
+**Determinism check:** run `bash scripts/graph-arch-lint.sh` for a deterministic structural lint (fixture gate parseable, references one-level-deep, every rule annotated with determinismLevel, no deprecated DB recommended outside the isolation block). Use it as a pre-flight before shipping pack edits.
 
 ---
 
@@ -108,6 +111,8 @@ Produce a structured graph-architecture report:
 | "Neo4j is the graph database" | Neo4j pre-allocates 4-5 GB JVM heap and has slow cold starts. For 16k nodes Memgraph used 415 MB vs Neo4j's 2,668 MB. Match the engine to the workload. |
 | "Auto-merge all the duplicates" | Auto-merge above a high threshold only. Moderate-confidence pairs get a temporary SAME_AS link routed to a human; auto-merging everything destroys auditability in legal/clinical graphs. |
 | "Skip the ontology, let the LLM figure it out" | Bottom-up-only extraction drifts. Use top-down OWL guidance for competency questions + bottom-up LLM refinement; classify each entity against the schema BEFORE storing it. |
+| "Just use GraphRAG, the task mentions a knowledge graph" | GraphRAG's edge is multi-hop aggregation (HippoRAG 87.9–90.9% L2–L3 evidence recall). For single-fact lookup, a reranked flat RAG wins (Novel fact best 60.92%) at near-zero index cost. Classify the query shape first (ARC7) — only build graph when it's multi-hop. |
+| "Kuzu embedded is a lightweight option" / "use RedisGraph" | Stale knowledge. Kuzu's repo was archived after the 2025-10 Apple acquisition (abandonment risk); RedisGraph hit EOL 2025-01 → migrate to FalkorDB (its direct successor). Neither belongs in a new long-term build. |
 
 ---
 
@@ -120,4 +125,6 @@ Produce a structured graph-architecture report:
 | LightRAG | Incremental GraphRAG | Dual-level KV retrieval, <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; total query cost adds retrieved context + generation), incremental updates |
 | Neo4j | LPG database | Large historical graphs; index-free adjacency; Causal Clustering (N=2F+1) |
 | Memgraph | In-memory LPG | Sub-ms latency; native Kafka/Redpanda/Pulsar streaming connectors |
-| FalkorDB | Matrix-based LPG | Compressed sparse matrices on Redis; high QPS, low memory footprint |
+| FalkorDB | Matrix-based LPG | Compressed sparse matrices on Redis; high QPS, bounded p99 (136 ms vs Neo4j 46,924 ms on Pokec); bulk-import throughput (22,784 rows/s @ batch 5k); successor to EOL'd RedisGraph |
+| ~~Kuzu (embedded)~~ | ⚠️ DEPRECATED | Repo archived after 2025-10 Apple acquisition — do NOT pick for new long-term builds; no first-party successor (re-match via GDB1) |
+| ~~RedisGraph~~ | ⚠️ DEPRECATED (EOL 2025-01) | Migrate to FalkorDB (direct, drop-in successor) |
