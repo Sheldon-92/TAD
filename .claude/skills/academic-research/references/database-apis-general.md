@@ -4,13 +4,13 @@
 ## Quick Reference
 | Database | Base URL | Auth | Rate Limit | Source Skill |
 |----------|---------|------|-----------|-------------|
-| Semantic Scholar | `api.semanticscholar.org/graph/v1` | Optional API key (free) | 100 req/5min (no key); 1/s sustained, 10/s burst (key) | semantic-scholar |
-| OpenAlex | `api.openalex.org` | None (email for polite pool) | 1 req/s default; 10 req/s with mailto | openalex-database |
+| Semantic Scholar | `api.semanticscholar.org/graph/v1` | Optional API key (free) | No key = shared throttled pool (one common key across all unauthenticated callers, throttled under load); individual key = **1 req/s across ALL endpoints** | semantic-scholar |
+| OpenAlex | `api.openalex.org` | **Free API key REQUIRED** (`api_key` header/param) | Credit quota: free tier ≈ $1/day ≈ 100,000 credits/day; max 100 req/s. Per-call credit cost: singleton=1, list=10, content/vector=100-1000 | openalex-database |
 | PubMed | `eutils.ncbi.nlm.nih.gov/entrez/eutils/` | Optional NCBI API key | 3 req/s (no key); 10 req/s (key) | pubmed-search |
 | arXiv | `export.arxiv.org/api/` | None | ~1 req/3s recommended | arxiv-search |
 | World Bank | `api.worldbank.org/v2/` | None | No official limit | world-bank-data |
 | CrossRef | `api.crossref.org` | None (email for polite pool) | 1 req/s default; 50 req/s with mailto | crossref-search |
-| OpenAlex (search) | `api.openalex.org` | None | 10 req/s (no mailto) to 100 req/s (mailto) | openalex-search |
+| OpenAlex (search) | `api.openalex.org` | **Free API key REQUIRED** | Credit-budgeted (list endpoint = 10 credits/call); max 100 req/s | openalex-search |
 | SSRN/RePEc | HTML scraping / CrossRef API | None | Varies | ssrn-econpapers |
 | CourtListener | `courtlistener.com/api/rest/v4/` | None (register for higher) | Not specified | legal-search |
 | DBLP | `dblp.org/search/` | None | No official limit | dblp-search |
@@ -47,14 +47,22 @@ curl -s "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/ARXI
 **Key params:** `query=`, `limit=` (max 100), `offset=`, `fields=`, `year=` (e.g. `2020-2024`), `fieldsOfStudy=`, `minCitationCount=`.
 **Key fields:** `paperId`, `title`, `abstract`, `year`, `citationCount`, `influentialCitationCount`, `isOpenAccess`, `openAccessPdf`, `tldr`, `externalIds`.
 **Auth:** `curl -s -H "x-api-key: ${S2_API_KEY}" ...` -- Register free at semanticscholar.org.
-> Source: skills/semantic-scholar/SKILL.md
+**Rate limit (retrieved 2026-06-13, https://www.semanticscholar.org/product/api/tutorial):** an individual API key gives **1 request/second across ALL endpoints** (there is NO 10/s "burst" tier). Unauthenticated callers do NOT get a private per-IP allowance — they share **one common key/pool** that is throttled under heavy load, so an unkeyed crawl can stall when others are active. Get a free key to guarantee the 1 req/s lane.
+> Source: skills/semantic-scholar/SKILL.md; rate-limit correction per S2 API tutorial (2026-06-13)
 
 ### OpenAlex
-**240M+ works, completely open, no API key.**
+**240M+ works. As of 2026, a FREE API key is REQUIRED + a credit-based quota applies.**
+
+> ⚠️ **API model changed (retrieved 2026-06-13, https://developers.openalex.org/).** OpenAlex now requires a free `api_key` on every request and meters usage with a credit budget instead of a flat req/s pool:
+> - Free tier ≈ **$1/day of credits ≈ 100,000 credits/day**; hard cap **100 requests/second**.
+> - **Per-call credit cost varies by endpoint**: singleton (`/works/{id}`) = **1 credit**; list/search (`/works?...`) = **10 credits**; content/vector endpoints = **100-1000 credits**. Budget accordingly — a single broad list-and-paginate sweep burns 10 credits per page, so a 1,000-page cursor crawl ≈ 10,000 credits (~10% of the daily free budget).
+> - Pass the key as a header `-H "Authorization: Bearer ${OPENALEX_API_KEY}"` (or the `api_key=` query param). Register free at https://openalex.org/.
+>
+> **Old pattern (being phased out — do NOT rely on it):** the `mailto=` "polite pool" (1 req/s default, 10 req/s with mailto, no key). Per the OpenAlex team this was "never secure and could not scale; keys only from here on." Treat any remaining `mailto`-only examples below as legacy — keep `mailto` for attribution but ADD the API key.
 
 ```bash
-# Search works
-curl -s "https://api.openalex.org/works?search=CRISPR+gene+editing&per_page=5&mailto=user@example.com"
+# Search works (key REQUIRED; mailto kept for attribution only)
+curl -s -H "Authorization: Bearer ${OPENALEX_API_KEY}" "https://api.openalex.org/works?search=CRISPR+gene+editing&per_page=5&mailto=user@example.com"
 
 # Filter by year + open access + citations
 curl -s "https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_count:>100,open_access.is_oa:true&sort=cited_by_count:desc&per_page=10"

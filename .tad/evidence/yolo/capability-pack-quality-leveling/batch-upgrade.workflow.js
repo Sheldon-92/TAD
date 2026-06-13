@@ -14,14 +14,13 @@ const BA = '.tad/evidence/pack-quality/BASELINE-AUDIT.md'
 const EV = '.tad/evidence/yolo/capability-pack-quality-leveling'
 
 // ⚠️ args global not injected in scriptPath mode — hardcode current batch here, edit between batches.
-const BATCH = 3
+const BATCH = 4
 const PHASE = BATCH + 1            // Batch 1 = Phase 2, etc.
 const PACKS = [
-  { name: 'ai-agent-architecture', needs_fixture: false },
-  { name: 'ai-evaluation', needs_fixture: false },
-  { name: 'ai-guardrails', needs_fixture: false },
-  { name: 'ai-voice-production', needs_fixture: false },
-  { name: 'ai-prompt-engineering', needs_fixture: false },
+  { name: 'rag-retrieval', needs_fixture: false },
+  { name: 'web-deployment', needs_fixture: false },
+  { name: 'academic-research', needs_fixture: false },
+  { name: 'video-creation', needs_fixture: false },
 ]
 
 if (!PACKS.length) {

@@ -18,13 +18,14 @@ keywords: ["video", "animation", "motion design", "HyperFrames", "Remotion", "�
 This pack requires:
 - **FFmpeg** — encoding and audio mixing
 - **Node.js ≥22** — HyperFrames or Remotion runtime
-- **HyperFrames CLI** (`npx hyperframes`) OR **Remotion** (`npx remotion`)
+- **HyperFrames CLI** (`npx hyperframes`, pinned v0.6.97 / 2026-06-13) OR **Remotion** (`npx remotion`, pinned v4.0.447 / 2026-06-08)
 - **fal.ai API key** (`FAL_KEY`) — for Seedance 2.0 video generation (optional, only if using AI asset generation)
 - **Codex CLI** — for gpt-image-2 image generation (optional, only if using AI asset generation)
 - **ElevenLabs API key** (`ELEVENLABS_API_KEY`) — for TTS, voice cloning, and AI SFX (optional)
 - **Fish Audio API key** (`FISH_API_KEY`) — for cross-lingual TTS and voice cloning (optional, alternative to ElevenLabs)
 
 Verify: `ffmpeg -version && node --version && npx hyperframes --version`
+Or run the deterministic preflight: `bash scripts/verify-prereqs.sh` (exit 0 = ready; 1 = ffmpeg missing; 2 = node < v22; 3 = composition CLI missing). Add `--remotion` to check Remotion instead.
 
 ---
 
@@ -105,7 +106,9 @@ One-line summary per rule with reference pointer. **Do not inline rules here** �
 - **CRF 18-23**: Quality range (18=high, 23=standard) → §Export Settings
 
 ### AI Asset Generation (`references/ai-asset-generation.md`)
-- **Seedance Default Rule**: Video clips → Seedance 2.0; 4K needed → Kling; existing Runway → Runway Gen-4 → §Decision Tree
+- **Seedance Default Rule**: Video clips → Seedance 2.0; 4K needed → Kling 3.0; existing Runway → Runway Gen-4 → §Decision Tree
+- **Multi-Shot Planner Rule**: 4K + multi-shot → Kling 3.0 AI-Director (≤6 shots/15s native); else Seedance manual "Shot N:" → §Multi-Shot: Kling AI-Director vs Seedance
+- **gpt-image Model Guard**: Pin gpt-image-2 for ALL work; gpt-image-1.5/1-mini/chatgpt-image-latest all shut down 2026-12-01, DALL·E shut down 2026-05-12 — do NOT route cheap drafts to 1-mini, use gpt-image-2 quality="low" → §Model Lineup
 - **Endpoint Selection Rule**: text-only → text-to-video; have image → image-to-video; multi-ref → reference-to-video → §Seedance Endpoint Selection
 - **Submit-Then-Poll Rule**: Never subscribe(), always submit-then-poll with 5s/10s/120s schedule → §Async API Pattern
 - **Tiered Generation Rule**: Draft 480p/Fast → approval → Final 1080p/Standard → §Cost Control
@@ -116,6 +119,10 @@ One-line summary per rule with reference pointer. **Do not inline rules here** �
 - **Voice-First Timing Rule**: Generate TTS voiceover BEFORE composing video scenes — voiceover duration drives scene timing → §Voice Pipeline Integration
 - **Clone Minimum**: Fish Audio 10–15s sample; ElevenLabs 30–60s (IVC) or 30min (PVC) → §Voice Cloning Rules
 - **SFX Source Rule**: Diegetic/scene-tied → Seedance native audio; specific/imaginative/looping → ElevenLabs SFX API → §AI Sound Effects Rules
+
+### Validation Scripts (`scripts/`)
+- **failure-mode-precheck.sh**: Deterministic linter — greps a composition for the 6 banned timeline anti-patterns (Date.now/Math.random/setInterval, repeat:-1, async-await, visibility, inline opacity:0); exits 1 on hit → `scripts/failure-mode-precheck.sh <file|dir>`
+- **verify-prereqs.sh**: Step-0 preflight — ffmpeg + node≥22 + HyperFrames v0.6.97 (or `--remotion` v4.0.447) with explicit exit codes 1/2/3 → `scripts/verify-prereqs.sh`
 
 ### ViMax Patterns (`references/vimax-patterns.md`)
 - **Visual Decomposition Rule**: AI image-to-video → decompose into first_frame + last_frame + motion, never single description → §Pattern 1
@@ -180,3 +187,5 @@ Produce findings in this structure:
 - [ ] autoAlpha not visibility
 - [ ] No inline opacity:0
 ```
+
+**Run the executable gate, do not eyeball it:** `bash scripts/failure-mode-precheck.sh <composition-file-or-dir>` greps the composition for all 6 banned anti-patterns above and exits non-zero on any hit — block the render until it exits 0.

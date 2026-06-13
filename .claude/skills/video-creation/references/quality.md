@@ -56,11 +56,43 @@ ffmpeg -i input.mp4 -vf "scale=1080:1920" -crf 22 -preset fast \
   -movflags +faststart -c:a aac -b:a 128k output_mobile.mp4
 ```
 
+### Remotion `renderMedia()` Tuning Knobs
+
+> Source: remotion.dev/docs/renderer/render-media + /docs/performance, retrieved 2026-06-13 (Remotion v4.0.447, 2026-04-08). These knobs are NOT covered by the generic "CRF 18–23" rule above — they govern render speed and file size.
+
+| Knob | Default | Tune to | Effect |
+|------|---------|---------|--------|
+| `--concurrency` | 1 browser tab (1 Lambda) | number of CPU threads | More tabs render frames in parallel — set to physical thread count for fastest local render |
+| `--jpeg-quality` | frame format = `jpeg` (lossy intermediate) | 0–100 | Default JPEG frames render faster; switch frame format to PNG only when you need transparency (PNG is slower) |
+| `--crf` | 18 (H.264) | 18–23 | **+6 CRF ≈ half the bitrate/filesize; −6 CRF ≈ double it** (exponential). Use this doubling heuristic to hit a target file size without trial-and-error |
+
+**CRF doubling rule (Remotion):** moving CRF from 18→24 roughly halves output size; 24→18 roughly doubles it. Pair with the platform table above — e.g. start at CRF 18 master, step to 23 (≈⅓ the size) for a web cut.
+
 ### Resolution Guidance
 - **Primary production resolution**: 1920×1080 (16:9) or 1080×1920 (9:16)
 - **Minimum acceptable**: 1280×720 for 16:9, 720×1280 for 9:16
 - **High-end target**: 2560×1440 (1440p) for YouTube premium content
 - **Rendering recommendation**: Render at 1440p, export downscaled to 1080p — better quality than rendering at 1080p
+
+---
+
+### GIF Export (HyperFrames native, v0.6.97+)
+
+> Source: heygen-com/hyperframes releases, retrieved 2026-06-13 (GIF export added 2026-06-11).
+
+HyperFrames v0.6.97 ships **native animated-GIF export** using **two-pass palette encoding** (generate an optimal 256-color palette in pass 1, apply it in pass 2 — avoids the muddy default-palette dithering). It also accepts animated-GIF *input* via VP9 transcode.
+
+When the deliverable is a short looping GIF (e.g. a docs hero, a Slack/Discord reaction, a README demo), prefer HyperFrames' two-pass GIF export over a hand-rolled FFmpeg one-pass `gif` filter. The equivalent manual FFmpeg two-pass (use only if not on HyperFrames):
+
+```bash
+# Pass 1 — generate palette
+ffmpeg -i input.mp4 -vf "fps=15,scale=480:-1:flags=lanczos,palettegen" palette.png
+# Pass 2 — encode using palette (much cleaner than single-pass)
+ffmpeg -i input.mp4 -i palette.png \
+  -lavfi "fps=15,scale=480:-1:flags=lanczos[x];[x][1:v]paletteuse" output.gif
+```
+
+GIFs have no audio and balloon in size — cap at ~15fps and ≤480px wide for shareable assets.
 
 ---
 

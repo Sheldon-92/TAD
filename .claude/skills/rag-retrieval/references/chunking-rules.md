@@ -10,8 +10,9 @@
 | CH3 | Paginated docs with tables → Page-Level chunking (NVIDIA-2024 winner, 0.648 acc, lowest variance) | deterministic |
 | CH4 | Do NOT default to Semantic chunking — < 55% under equal context budget | deterministic |
 | CH5 | Semantic chunking thresholds: 95th percentile / 3σ / IQR | semi-deterministic |
-| CH6 | Late Chunking for multi-page co-dependent text — needs a token-embedding endpoint; else use contextual headers/parent-doc | deterministic |
+| CH6 | Late Chunking for multi-page co-dependent text — needs a token-embedding endpoint; nDCG@10 gain scales with doc length, no retraining | deterministic |
 | CH7 | GraphRAG ingestion chunks = 500–1000 tokens overlapping | deterministic |
+| CH8 | Contextual Retrieval: prepend 50–100 token LLM-generated context before embedding AND BM25 — cuts top-20 failure rate 35–67% | deterministic |
 
 ---
 
@@ -91,7 +92,9 @@ When chunks are highly co-dependent across page boundaries (the answer needs con
 
 **Rule**: Standard chunking splits before embedding, which severs the transformer's attention across boundaries. Late chunking preserves global context inside localized chunk vectors. **Implementation caveat**: standard embedding APIs (OpenAI, Voyage, Cohere) return ONE pooled vector per input, not token-level vectors — late chunking requires a local model / endpoint that exposes per-token hidden states (e.g., jina-embeddings late-chunking, or a self-hosted encoder). If you only have a pooled-vector API, use **contextual chunk headers, parent-document retrieval, or overlapping windows** instead.
 
-> Source: findings.md "Late Chunking" [1]
+**Grounded benchmark**: the peer-reviewed late-chunking evaluation (arXiv:2409.04701, updated Jul 2025) shows late chunking improves **nDCG@10 over naive chunking across ALL tested embedding models and datasets**, with the improvement **correlating with document length** (longer docs → larger gain) and requiring **no retraining** of the embedding model. This is a measured retrieval-quality lift, not just a mechanism — but it depends on a token-level-output encoder (see caveat above).
+
+> Source: findings.md "Late Chunking" [1]; Günther et al., "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models," arXiv:2409.04701 (updated Jul 2025), https://arxiv.org/pdf/2409.04701 (retrieved 2026-06-13)
 
 **determinismLevel**: deterministic.
 
@@ -103,6 +106,27 @@ When the downstream architecture is GraphRAG (entity extraction), parse document
 
 **determinismLevel**: deterministic.
 
+### CH8: Contextual Retrieval — Prepend Generated Context Before Embedding AND BM25
+
+When a chunk loses meaning once it is severed from its source document ("The company's revenue grew 3% over the previous quarter" — *which* company? *which* quarter?), apply **Contextual Retrieval**: use an LLM to generate a **chunk-specific 50–100 token explanatory context** that situates each chunk within the whole document, then **prepend that context to the chunk BEFORE you embed it AND before you build the BM25 index**. Both the dense vector and the sparse lexical index then carry the document-level disambiguation.
+
+**Grounded numbers** (Anthropic, "Introducing Contextual Retrieval," 2026-06-13):
+
+| Technique | Top-20 retrieval failure rate | Reduction vs naive |
+|-----------|-------------------------------|--------------------|
+| Naive (chunk only) | 5.7% | baseline |
+| Contextual Embeddings | 3.7% | **−35%** |
+| Contextual Embeddings + Contextual BM25 | 2.9% | **−49%** |
+| + Reranking on top | 1.9% | **−67%** |
+
+The one-time context-generation cost is **~$1.02 per million document tokens** when using **prompt caching** (caching the full document once, then generating per-chunk context against the cache cuts cost by up to **~90%**). Chunks stay a few hundred tokens; the prepended context adds 50–100 tokens each.
+
+**Rule**: For any corpus where chunks are not self-contained (financial reports, legal contracts, technical docs with cross-references), prepend LLM-generated context to BOTH the embedding input AND the BM25 document **before indexing** — not at query time. Use prompt caching so the cost stays ~$1.02/M tokens. Stack reranking on top to reach the 67% failure-rate reduction. This is an indexing-time decision, so it must be made before the corpus is embedded.
+
+> Source: Anthropic, "Introducing Contextual Retrieval," https://www.anthropic.com/news/contextual-retrieval (retrieved 2026-06-13)
+
+**determinismLevel**: deterministic — strategy + threshold are fixed; the generated context text varies per chunk.
+
 ---
 
 ## Anti-Patterns
@@ -111,3 +135,5 @@ When the downstream architecture is GraphRAG (entity extraction), parse document
 - **Fixed-size with no overlap**: Splits sentences/tables/code mid-expression, degrading embedding quality. Recursive-512 with 10–20% overlap is the safer baseline.
 - **Ignoring document structure**: Markdown headers, HTML tags, and code class/function boundaries are free structural separators — use structure-aware splitting for code/technical docs.
 - **One chunk size for all formats**: Paginated tables → Page-Level; code → structure-aware recursive; co-dependent multi-page → Late Chunking.
+- **Non-self-contained chunks shipped raw**: A chunk like "revenue grew 3% over the previous quarter" is ambiguous out of context and retrieves poorly. Apply Contextual Retrieval (CH8) — prepend 50–100 token LLM context before embedding AND BM25 — to cut top-20 failure rate 35–67%.
+- **Adding context at query time instead of index time**: Contextual Retrieval prepends context BEFORE embedding/indexing; generating it per query defeats prompt caching (~$1.02/M token saving) and the BM25 lift.

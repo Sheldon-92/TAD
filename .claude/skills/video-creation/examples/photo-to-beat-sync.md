@@ -14,6 +14,8 @@ min_marker_count: 4
 # so min_discriminative=4 mirrors the design intent (a no-pack agent emits none of these fields).
 discriminative_pattern: "first_frame|last_frame|montage|camera_tree"
 min_discriminative: 4
+# Revalidated 2026-06-13: all 4 markers stay pack-specific (ViMax Pattern 1/2/4 fields a no-pack
+# agent never emits). Discriminative gate unchanged.
 ---
 
 # Fixture: Photo-to-Beat-Sync

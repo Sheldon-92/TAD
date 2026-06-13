@@ -1,7 +1,7 @@
 # AI Asset Generation Reference
 
-> Pricing last verified: 2026-05-08
-> Sources: RS-20260508-001 (7e9c2c57, 25 sources — images/video) + RS-20260508-002 (65359194, 21 sources — voice/SFX)
+> Pricing & model claims last verified: 2026-06-13 (all Seedance/Kling/gpt-image/ElevenLabs price + model-name claims re-verified current against vendor pages — see §Source Re-Verification 2026-06-13).
+> Sources: RS-20260508-001 (7e9c2c57, 25 sources — images/video) + RS-20260508-002 (65359194, 21 sources — voice/SFX).
 > Remotion/FFmpeg patterns supplemented from existing video-creation pack knowledge (not notebook sources).
 
 ---
@@ -20,7 +20,13 @@ Need to GENERATE visual assets? →
   Need a video clip?
 
     Is 4K resolution mandatory?
-      YES → Kling 3.0 (native 4K@60fps — highest raw fidelity)
+      YES → Kling 3.0 (launched 2026-02-04; NATIVE 4K 3840×2160 @60fps,
+            15s max, not upscaled — highest raw fidelity)
+            ↳ Kling 3.0 "AI Director" mode does native multi-shot:
+              up to 6 shots per 15s clip in ONE generation. When 4K +
+              multi-shot are BOTH needed, this beats the manual "Shot N:"
+              decomposition the pack teaches for Seedance (which has no
+              native shot planner). See §Multi-Shot: Kling AI-Director vs Seedance.
       NO  ↓
 
     Is the existing toolchain Runway-native?
@@ -89,7 +95,7 @@ Choose the endpoint based on what inputs you have:
 | **Duration** | 4–15 seconds | 4–15 seconds | 4–15 seconds |
 | **Aspect Ratios** | auto, 21:9, 16:9, 4:3, 1:1, 3:4, 9:16 | Same + auto from image | Same |
 | **Audio** | Native sync (SFX, lip-sync, ambient) — free | Native sync — free | Native + reference audio for lip-sync |
-| **Cost (fal.ai)** | Standard $0.30/s, Fast $0.24/s | Standard $0.30/s, Fast $0.24/s | Standard $0.30/s, Fast $0.24/s ($0.18/s with video input) |
+| **Cost (fal.ai)** | Std $0.3024/s, Fast $0.2419/s | Std $0.3024/s, Fast $0.2419/s | Std $0.3024/s, Fast $0.2419/s ($0.18/s with video input) |
 | **Cost (Atlas Cloud)** | Standard $0.10/s, Fast $0.08/s | Standard $0.10/s, Fast $0.08/s | Standard $0.10/s, Fast $0.08/s |
 
 **Input constraints:**
@@ -110,20 +116,23 @@ import fal_client
 import hashlib, json, time
 
 # 1. Hash the request before submission (deduplication)
+# Seedance 2.0 endpoint IDs (fal): "bytedance/seedance-2.0/<route>" — Standard tier;
+# Fast tier is a SEPARATE endpoint path: "bytedance/seedance-2.0/fast/<route>".
+# NOT "fal-ai/seedance-1-*" (that is the older Seedance 1.x). No -lite/-pro suffix on 2.0.
+ENDPOINT = "bytedance/seedance-2.0/text-to-video"  # Standard; use ".../fast/..." for Fast tier
 params = {
-    "model_id": "fal-ai/seedance-1-lite",  # or seedance-1-pro
-    "route": "text-to-video",
     "prompt": "A hero walks through a neon city at night, Shot 1: wide establishing shot",
-    "resolution": "720p",
+    "resolution": "720p",   # text-to-video supports "480p" | "720p" (720p is the max here)
     "duration": 5,
+    "generate_audio": True,
 }
 request_hash = hashlib.sha256(
-    json.dumps(params, sort_keys=True).encode()
+    json.dumps({"endpoint": ENDPOINT, **params}, sort_keys=True).encode()
 ).hexdigest()
 
 # 2. Submit (async — returns immediately)
 result = fal_client.submit(
-    "fal-ai/seedance-1-lite/text-to-video",
+    ENDPOINT,
     arguments=params,
 )
 task_id = result.request_id  # Save this with request_hash
@@ -136,7 +145,7 @@ MAX_TIMEOUT = 120    # seconds total
 time.sleep(INITIAL_DELAY)
 elapsed = INITIAL_DELAY
 while elapsed < MAX_TIMEOUT:
-    status = fal_client.status("fal-ai/seedance-1-lite/text-to-video", task_id)
+    status = fal_client.status(ENDPOINT, task_id)
     # States: queued → running → succeeded / failed / expired
     if status.status == "succeeded":
         video_url = status.response["video"]["url"]
@@ -168,7 +177,7 @@ For agents with a reachable HTTP endpoint, use webhooks as the primary notificat
 
 ```python
 result = fal_client.submit(
-    "fal-ai/seedance-1-lite/text-to-video",
+    "bytedance/seedance-2.0/text-to-video",  # or ".../fast/text-to-video" for Fast tier
     arguments=params,
     webhook_url="https://your-agent-endpoint/seedance-callback",
 )
@@ -187,11 +196,12 @@ result = fal_client.submit(
 Hash every request BEFORE the API call to prevent duplicate paid generations.
 
 ```python
-# Hash composition: model_id + route + prompt + media_urls + settings
-def compute_request_hash(model_id, route, prompt, media_urls=None, settings=None):
+# Hash composition: endpoint (e.g. "bytedance/seedance-2.0/text-to-video" or its
+# "/fast/" variant — the Fast/Standard tier lives in the endpoint path, NOT a param) +
+# prompt + media_urls + settings (resolution, duration, etc.)
+def compute_request_hash(endpoint, prompt, media_urls=None, settings=None):
     payload = {
-        "model_id": model_id,
-        "route": route,
+        "endpoint": endpoint,
         "prompt": prompt,
         "media_urls": sorted(media_urls or []),
         "settings": settings or {},
@@ -296,6 +306,16 @@ def handle_429(response):
 
 > [Claim 6: RS-20260508-001]
 
+### Multi-Shot: Kling AI-Director vs Seedance "Shot N:" (re-verified 2026-06-13)
+
+| Need | Use | Why |
+|------|-----|-----|
+| Multi-shot scene AND native 4K@60fps | **Kling 3.0 AI Director** | One generation plans up to **6 shots per 15s** clip natively — no manual per-shot decomposition, no clip-stitching |
+| Multi-shot scene at 480p/720p/1080p, agent workflow, native audio | **Seedance 2.0 + explicit "Shot N:" labels** | Seedance has no native shot planner; you decompose manually (min 3–5s/shot) and it returns one clip |
+| Single continuous shot | Either (pick by resolution: ≥4K→Kling, else Seedance) | No shot-planning advantage applies |
+
+> Kling 3.0's AI-Director shot count (≤6/15s) is the discriminative threshold: above ~3 shots in a 15s 4K clip, Kling's native planner beats stitching Seedance clips. [Source: vo3ai.com Kling 3.0 launch coverage, retrieved 2026-06-13]
+
 ---
 
 ## Codex gpt-image-2 Rules
@@ -315,6 +335,26 @@ Use gpt-image-2 to generate static images for video compositions:
 | Infographics & diagrams | Data visualization overlays |
 
 > [Claim 2: RS-20260508-001] Asset types from 4 official OpenAI sources.
+
+### Model Lineup (re-verified 2026-06-13)
+
+`gpt-image-2` is OpenAI's CURRENT flagship image model. The lineup, newest→oldest:
+
+| Model | Status | Use for |
+|-------|--------|---------|
+| **gpt-image-2** | Flagship (current) | All new production work — the ONLY image model not on a 2026 shutdown schedule |
+| gpt-image-1.5 | ⚠️ **SHUTS DOWN 2026-12-01** (→ gpt-image-2) | Do NOT start new work; migrate existing pipelines to gpt-image-2 |
+| gpt-image-1-mini | ⚠️ **SHUTS DOWN 2026-12-01** (→ gpt-image-2) | Do NOT use — being retired with the rest |
+| chatgpt-image-latest | ⚠️ **SHUTS DOWN 2026-12-01** (→ gpt-image-2) | Do NOT use |
+| gpt-image-1 / DALL·E 2 / DALL·E 3 | ⚠️ DALL·E **shut down 2026-05-12** | Already retired — do NOT use |
+
+> ⚠️ **Hard-date anti-pattern**: OpenAI is consolidating ALL image generation onto `gpt-image-2`.
+> `gpt-image-1-mini`, `gpt-image-1.5`, and `chatgpt-image-latest` all **shut down 2026-12-01**
+> (migrate to `gpt-image-2`); DALL·E 2/3 shut down 2026-05-12. Pin `model="gpt-image-2"` for ALL
+> work — do NOT route "cheap drafts" to `gpt-image-1-mini`, it is itself being retired. Use
+> gpt-image-2 `quality="low"` for drafts instead. [Source: developers.openai.com/api/docs/deprecations, retrieved 2026-06-13]
+
+Resolutions confirmed current: **1024×1024, 1024×1536, 1536×1024**; quality tiers **Low / Medium / High**.
 
 ### Output Specifications
 
@@ -523,23 +563,39 @@ ffmpeg -i video.mp4 -i seedance_audio.wav -i bgm.mp3 \
 
 **Tier selection rule:**
 
-| Tier | Purpose | Resolution | Quality |
-|------|---------|-----------|---------|
-| Fast | Drafts, style approval, iteration | 480p | Low cost |
-| Standard | Production, final delivery | 1080p | Full fidelity |
+The Fast vs Standard tier is selected by the **endpoint path** (`.../fast/...` vs the plain
+endpoint), NOT by a request parameter. There is no `quality` field. Resolution is a request
+parameter but its ceiling is **endpoint-conditioned**:
 
-**Never use production quality for drafts.** Always tier:
+| Endpoint | Max resolution | Resolution param options |
+|----------|----------------|--------------------------|
+| `text-to-video` | **720p** | `"480p"` \| `"720p"` |
+| `image-to-video` | 1080p | `"480p"` \| `"720p"` \| `"1080p"` |
+| `reference-to-video` | 1080p | `"480p"` \| `"720p"` \| `"1080p"` |
 
-1. **Draft** → 480p / Fast tier → confirm style and motion
+| Tier | Endpoint path | Purpose |
+|------|---------------|---------|
+| Fast | `bytedance/seedance-2.0/fast/<route>` | Drafts, style approval, iteration — lower cost/latency |
+| Standard | `bytedance/seedance-2.0/<route>` | Production, final delivery — max quality |
+
+**Never use the Standard tier for drafts.** Always tier:
+
+1. **Draft** → Fast endpoint + lowest resolution (`480p`) → confirm style and motion
 2. **Approval** → show draft to user for explicit go-ahead
-3. **Final** → 1080p / Standard tier → production asset
+3. **Final** → Standard endpoint + the endpoint's max resolution → production asset
+   - `text-to-video` final caps at **720p** (1080p is NOT available on this route)
+   - `image-to-video` / `reference-to-video` final → `1080p`
 
 ```python
-# Draft submission
-draft_params = {**params, "resolution": "480p", "quality": "Fast"}
+# Draft: Fast tier = "/fast/" endpoint path; lowest resolution. No "quality" param exists.
+draft_endpoint = "bytedance/seedance-2.0/fast/text-to-video"
+draft_params   = {**params, "resolution": "480p"}
 
-# Final submission (only after approval)
-final_params = {**params, "resolution": "1080p", "quality": "Standard"}
+# Final (only after approval): Standard tier = plain endpoint path.
+# Resolution ceiling is endpoint-conditioned — text-to-video tops out at 720p, NOT 1080p.
+final_endpoint = "bytedance/seedance-2.0/text-to-video"
+final_res      = "1080p" if "text-to-video" not in final_endpoint else "720p"
+final_params   = {**params, "resolution": final_res}
 ```
 
 ### Duration Caps
@@ -552,18 +608,22 @@ final_params = {**params, "resolution": "1080p", "quality": "Standard"}
 
 Using video inputs in `reference-to-video` triggers a **0.6x price multiplier**:
 
-- Standard rate: $0.30/s (fal.ai) or $0.10/s (Atlas Cloud)
+- Standard rate: $0.3024/s (fal.ai) or $0.10/s (Atlas Cloud)
 - With video input: $0.18/s (fal.ai) or $0.06/s (Atlas Cloud)
 
 ### Cost Table
 
+Precise fal.ai per-second rates (re-verified 2026-06-13 against the official Seedance 2.0 model page); rounded values in parentheses for quick mental math.
+
 | Provider | Tier | Rate | 5s clip | 10s clip | 15s clip |
 |----------|------|------|---------|---------|---------|
-| fal.ai | Standard | $0.30/s | $1.50 | $3.00 | $4.50 |
-| fal.ai | Fast | $0.24/s | $1.20 | $2.40 | $3.60 |
+| fal.ai | Standard | $0.3024/s (~$0.30) | $1.51 | $3.03 | $4.54 |
+| fal.ai | Fast | $0.2419/s (~$0.24) | $1.21 | $2.42 | $3.63 |
 | fal.ai | Standard + video ref | $0.18/s | $0.90 | $1.80 | $2.70 |
 | Atlas Cloud | Standard | $0.10/s | $0.50 | $1.00 | $1.50 |
 | Atlas Cloud | Fast | $0.08/s | $0.40 | $0.80 | $1.20 |
+
+**Discriminative anchor**: a 10s clip costs **~$2.42 Fast vs ~$3.03 Standard** on fal.ai — the ~$0.61 delta per 10s is the number to weigh when deciding Fast-for-draft vs Standard-for-final.
 
 **gpt-image-2 cost estimate:**
 - 4 images at high quality: ~$0.84
@@ -633,7 +693,7 @@ Before accepting a clip as production-ready:
 |-------------|-------------|-----|
 | ❌ Use `fal_client.subscribe()` | Blocks agent thread | Use submit-then-poll |
 | ❌ No request hashing before retry | Duplicate paid generation | Hash before every call |
-| ❌ Start with 1080p/Standard drafts | 3x unnecessary cost | Draft at 480p/Fast |
+| ❌ Draft on the Standard endpoint | ~25% unnecessary cost per second | Draft on the `/fast/` endpoint at 480p |
 | ❌ Use "fast" in Seedance prompt | Visual jitter | Remove — describe speed via context |
 | ❌ Request many shots in short clips | Compressed/skipped frames | Min 3–5s per shot |
 | ❌ Regenerate for identity preservation | Identity drift | Use edit endpoint + reference |
@@ -673,10 +733,10 @@ task_id = client.text_to_speech.submit(text="Hello")  # This does not exist
 |---------|-----------|-----------|-----------|
 | **Models** | v3 (expressive), Multilingual v2 (stable), Flash v2.5 (~75ms) | tts-1 (fast), tts-1-hd (quality), gpt-4o-mini-tts (newest) | S1 (fast), S2 Pro (flagship 5B param) |
 | **Languages** | 70+ | 50+ | 80+ |
-| **Emotion control** | Natural language cues in text | None | 15,000+ inline tags + `(happy)`/`(sad)` syntax |
+| **Emotion control** | Bracketed audio tags in text: `[excited]`/`[whispers]`/`[sighs]` (eleven_v3) | None | 15,000+ inline tags + `(happy)`/`(sad)` syntax |
 | **Output formats** | MP3, PCM, WAV, Opus, μ-law | MP3, Opus, AAC, FLAC, WAV, PCM | MP3, Opus, WAV, PCM |
 | **Built-in voices** | 3,000–10,000+ | 6 | 2,000,000+ community |
-| **Pricing** | Subscription $5+/mo | $15/1M chars (tts-1), $30/1M (tts-1-hd) | $15/1M UTF-8 bytes |
+| **Pricing** | API ~$0.10/1k chars; subs Free 10k / $5 / $11 / $99 (Pro) / $330 / $1320 per mo | $15/1M chars (tts-1), $30/1M (tts-1-hd) | $15/1M UTF-8 bytes |
 | **Cloning min** | 30-60s (IVC) | None | 10–15s |
 
 > [Claim 1: RS-20260508-002]
@@ -701,7 +761,7 @@ task_id = client.text_to_speech.submit(text="Hello")  # This does not exist
 
 | Platform | Mechanism | Example |
 |---------|----------|---------|
-| ElevenLabs | Natural language cues embedded in text | "...said with a trembling voice. [pause] She looked up." |
+| ElevenLabs | Bracketed **audio tags** in the text (eleven_v3): emotions `[excited]`/`[nervous]`/`[sorrowful]`, delivery `[whispers]`/`[shouts]`, reactions `[sighs]`/`[laughs]`/`[gasps]`. Tags can be layered, e.g. `[nervous][whispers]`. | `[whispers] I don't think we're alone. [gasps] Did you hear that?` |
 | Fish Audio | 15,000+ inline tags + `(emotion)` syntax | `(happy) Great news! (serious) But there are risks.` |
 | OpenAI | None — voice selection only | N/A |
 
@@ -1013,7 +1073,8 @@ Fish Audio's streaming API returns word-level timestamps for subtitle generation
 
 | Platform | Model | Cost | Notes |
 |---------|-------|------|-------|
-| ElevenLabs | Subscription | $5+/month | Includes character credits; credit pricing varies by plan |
+| ElevenLabs | API (eleven_v3) | ~$0.10/1,000 chars (1 credit/char) | Hosted endpoint rate; 70+ languages |
+| ElevenLabs | Subscription tiers | Free 10k credits / Starter $5 / Creator $11 / Pro $99 (500k credits + 44.1kHz PCM via API) / Scale $330 / Business $1320 (per month) | Credits = characters; Pro+ unlocks 44.1kHz PCM API output |
 | ElevenLabs SFX | Per second | 40 credits/sec | Credit-to-dollar ratio depends on plan tier |
 | OpenAI | tts-1 | $15/1M chars | ~180K English words per $15 |
 | OpenAI | tts-1-hd | $30/1M chars | Higher quality, 2× price |
@@ -1032,3 +1093,19 @@ export FISH_API_KEY=...
 ```
 
 Use API keys for all batch work. ElevenLabs and Fish Audio do not have a "plan consumption" issue (unlike Codex), but batch operations without API keys may hit session limits on some tiers.
+
+---
+
+## Source Re-Verification 2026-06-13
+
+All version- and price-sensitive claims in this file were re-checked against vendor pages on 2026-06-13 (per QUALITY-BAR §6: verify version-sensitive assertions against current docs before trusting). Cite the vendor pages below, NOT third-party blogs.
+
+| Claim | Verdict | Source (authoritative) | Retrieved |
+|-------|---------|------------------------|-----------|
+| Seedance 2.0 fal Fast $0.2419/s, Std $0.3024/s | ✓ accurate (was rounded $0.24/$0.30) | https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video | 2026-06-13 |
+| Seedance 2.0 launched 2026-04-09, 480p/720p, 4–15s, 3 endpoints (Std+Fast) | ✓ confirms Endpoint Spec Table | https://fal.ai/seedance-2.0 | 2026-06-13 |
+| Kling 3.0 native 4K@60fps, 15s, AI-Director ≤6 shots/15s | ✓ re-verifies 4K decision branch | https://www.vo3ai.com/blog/kling-30-just-launched-native-4k-video3-ways-it-changes-ai-filmmaking-2026-04-24 | 2026-06-13 |
+| gpt-image-2 = current flagship; gpt-image-1.5/1-mini/chatgpt-image-latest shut down **2026-12-01** (→ gpt-image-2); DALL·E 2/3 shut down 2026-05-12 | ✓ corrected — prior "2026-10-23" was from a third-party aggregator and is NOT supported by OpenAI; re-sourced to the authoritative deprecations page | https://developers.openai.com/api/docs/deprecations | 2026-06-13 |
+| ElevenLabs eleven_v3 ~$0.10/1k chars; tiers Free/$5/$11/$99/$330/$1320 | ✓ closes per-char asymmetry | https://elevenlabs.io/pricing/api | 2026-06-13 |
+
+> A secondary blog claimed Seedance 2.0 was "not yet on any third-party API" and that the numbers were v1.5 Pro — fal.ai's own model + product pages contradict this and are authoritative. Cite fal directly.

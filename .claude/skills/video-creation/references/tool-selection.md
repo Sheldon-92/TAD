@@ -56,15 +56,20 @@ Need to produce a video? →
 - Team is already in a React ecosystem with shared component libraries
 - Need Remotion-specific features (Player, Studio, Lambda renderer)
 
-**Key characteristics**:
-- Authoring: HTML + CSS + GSAP data-attributes
+**Key characteristics** (re-verified 2026-06-13 — heygen-com/hyperframes, v0.6.97, ~21.9k stars):
+- Authoring: HTML-native — `index.html` with `data-start` / `data-duration` attributes; HTML-passthrough (paste arbitrary HTML/CSS)
 - Build step: None — HTML plays as-is
-- AI advantage: Pre-wired skeletons, structural validity enforced by the framework
-- Rendering: Puppeteer + FFmpeg
+- Runtimes supported: **GSAP, Lottie, Three.js, Anime.js, WAAPI**
+- AI advantage: Pre-wired skeletons + broad agent detection (Claude Code, Cursor, Windsurf, Cline, Gemini CLI, Crush)
+- Rendering: **headless Chrome seeks each frame → FFmpeg encodes → deterministic MP4** (the per-frame seek is why Date.now/Math.random/setInterval break — see references/visual-design.md §Anti-Patterns)
+- Export paths: MP4 (default); **native animated-GIF via two-pass palette encoding (v0.6.97, 2026-06-11)** — see references/quality.md §GIF Export
+- Tooling: GSAP-aware razor/blade timeline split tool for cutting clips on the timeline
+
+**Pin**: `npx hyperframes@0.6.97` (verified current 2026-06-13). Node.js ≥22 required.
 
 **Documentation**: `hyperframes.mintlify.app/quickstart`
 
-[Source: Research findings Layer 1]
+[Source: Research findings Layer 1 + heygen-com/hyperframes releases, retrieved 2026-06-13]
 
 ---
 
@@ -87,7 +92,9 @@ Need to produce a video? →
 - Authoring: React TSX components
 - Build step: Bundler required
 - Animation: Own primitives (`spring()`, `interpolate()`, `useCurrentFrame()`)
-- Rendering: Browser screenshots + compositor
+- Rendering: Browser screenshots + compositor; `renderMedia()` exposes `--concurrency` / `--jpeg-quality` / `--crf` tuning (see references/quality.md §Remotion renderMedia Tuning Knobs)
+
+**Pin**: `remotion@4.0.447` (released 2026-04-08, repo actively maintained — verified 2026-06-13). Node.js ≥22 required.
 
 **Documentation**: `remotion.dev/docs/ai/coding-agents`
 

@@ -27,7 +27,7 @@ When the project uses Next.js and needs edge performance:
 | Cold Start | ~1s serverless, ~12ms edge functions |
 | Edge Runtime | V8 Edge Runtime |
 | Databases | KV, Postgres, Blob Storage |
-| Build Minutes | 6,000/month (free) |
+| Build Resources (Hobby) | No build-minutes allotment on Hobby — capped by build machine (4 vCPU / 8 GB / 23 GB disk) + 100 deploys/day; metered build-minute billing is a Pro/Enterprise concept |
 | Deploy Command | `vercel --prod` |
 | Preview Deploys | Automatic on every PR |
 | Rollback | `vercel rollback` (instant, immutable snapshots) |
@@ -56,7 +56,7 @@ When the project is static or Jamstack and needs a commercial-friendly free tier
 | Cold Start | ~3s serverless, 10-50ms edge |
 | Edge Runtime | Deno-based Edge Functions |
 | Databases | Netlify DB, Blobs |
-| Build Minutes | 300/month (free) |
+| Build Minutes | 300/month (legacy free plans only) — accounts created after 2025-09-04 are on credit-based pricing where build minutes are not a standalone metric; verify which model your account uses |
 | Deploy Command | `netlify deploy --prod` |
 | Rollback | Immutable deploy snapshots, rollback in <10s |
 
