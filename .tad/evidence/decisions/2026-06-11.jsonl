@@ -1,0 +1,2 @@
+{"ts":"2026-06-11T16:56:37Z","session_id":"a03db72a-45c6-46b6-b9ec-11bb23fc0075","slug":null,"question":"检测到 1 个待执行的 handoff，要执行哪个？","options":["执行 Release v2.29.1","暂不执行，先看看"],"selection":"执行 Release v2.29.1","is_other":false,"multi_select":false}
+{"ts":"2026-06-11T21:11:54Z","session_id":"f4667924-6f0c-4a51-9f00-ccb15c5c8832","slug":null,"question":"Sync 哪些项目到 v2.29.1？","options":["All 14 projects (Recommended)","Select specific","Cancel"],"selection":"All 14 projects (Recommended)","is_other":false,"multi_select":false}

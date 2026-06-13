@@ -2,6 +2,8 @@
 
 ## In Progress
 
+- [ ] **EPIC: Capability Pack Quality Leveling (24 packs, 双层尺)** — Phase 1/6 Active. Handoff `HANDOFF-20260613-pack-quality-phase1-bar-baseline.md` (Gate 2 PASS, 2 experts, 2 P0 resolved). Phase 1 = QUALITY-BAR.md + BASELINE-AUDIT.md (定尺+基线+批次分组). Epic: `EPIC-20260613-capability-pack-quality-leveling.md`. Aligns O2/KR1.
+
 - [x] **EPIC: Pack System Unification — Phase 1 ✅ ACCEPTED 2026-06-11** (commits 0d965bb + 0f6a7d7, Gate 4 PASS 12/12 AC) — Retired 9 YAML Domain Packs + 2 guides to archive; removed SessionStart injection + post-write-sync handler + domain_pack_trace protocol; added domains to sync deny-list; rewrote Alex/Blake/runbook/capability-upgrade/research-notebook protocols to Capability Pack only (11 .claude/.agents counterpart pairs byte-identical); created 2 T2 skill-library references; added deprecation.yaml v2.30.0 entry. Layer 2: spec-compliance + code-reviewer PASS (4 P1 fixed). Gate 4 report: `.tad/evidence/acceptance-tests/pack-system-unification-phase1/gate4-acceptance-report.md`. Handoff archived. Epic archived: `.tad/archive/epics/EPIC-20260611-pack-system-unification.md`.
 
 - [x] **EPIC: Pack System Unification — Phase 2 ✅ ACCEPTED 2026-06-11** (commits 554aef6 + 5210d32, Gate 4 PASS 10/10 AC) — Created prebuilt SKILL.md for 7 target packs; updated 7 installers from CAPABILITY→SKILL synthesis to deterministic copy; added --agent=codex writing to .agents/skills/; added --dry-run/--force where missing; fixed research-methodology --force; ml-training first-ever installed SKILL.md. Layer 2: spec-compliance PASS; code-reviewer P0 dispositioned as documented deferral, 4 P1 fixed. Gate 4 report: `.tad/evidence/acceptance-tests/pack-system-unification-phase2/gate4-acceptance-report.md`. Handoff archived. Epic archived.
@@ -268,6 +270,8 @@
 - [ ] Add Bash command deny patterns to PreToolUse hook (rm -rf, DROP TABLE etc.)
 
 ## Ideas (16 active — 8 archived 2026-05-14)
+
+- [ ] IDEA-20260613-tad-opt-in-mode-posture: TAD as opt-in mode (CLAUDE.md posture flip) — PARKED (concern: loosening default may erode explicit-invoke strictness)
 
 Domain Pack related (input for Freeze + Rebuild):
 - [ ] IDEA-20260508-deprecate-domain-pack-yaml: Deprecate YAML format entirely

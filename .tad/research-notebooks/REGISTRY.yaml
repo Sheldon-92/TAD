@@ -635,3 +635,37 @@ notebooks:
         type: web
         added: "2026-06-07"
         title: "awesome-ai-agents-2026"
+
+  - id: "capability-pack-meta-design"
+    notebook_id: "b29b362d-2364-40d0-968b-41bf265a1225"
+    topic: "Capability Pack Meta-Design — How High-Quality Agent Skills Are Organized (Anthropic official + community awesome-skills)"
+    created: "2026-06-13"
+    status: active
+    last_queried: "2026-06-13"
+    source_count: 6
+    notes: "FR1 元设计研究持久化 (EPIC-20260613 Phase 1). 6 sources: Anthropic best-practices + skills overview + engineering blog + anthropics/skills repo + 2 community awesome-claude-skills (travisvn, ComposioHQ). 1 cross-source synthesis round. Key meta-design rules → QUALITY-BAR.md Layer A: frontmatter name≤64/desc≤1024; SKILL.md body <500 lines; 3-level progressive disclosure; references one-level-deep; ref files >100 lines need TOC; ≥3 evals before docs; test Haiku/Sonnet/Opus; no time-sensitive/voodoo-constants/Windows-paths/too-many-options. Findings anchor: .tad/evidence/pack-quality/QUALITY-BAR.md ## Sources."
+    sources:
+      - url: "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices"
+        type: web
+        added: "2026-06-13"
+        title: "Skill authoring best practices — Claude Docs"
+      - url: "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview"
+        type: web
+        added: "2026-06-13"
+        title: "Agent Skills overview — Claude API Docs"
+      - url: "https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills"
+        type: web
+        added: "2026-06-13"
+        title: "Equipping agents for the real world with Agent Skills — Anthropic Engineering"
+      - url: "https://github.com/anthropics/skills"
+        type: web
+        added: "2026-06-13"
+        title: "anthropics/skills — Public repository for Agent Skills"
+      - url: "https://github.com/travisvn/awesome-claude-skills"
+        type: web
+        added: "2026-06-13"
+        title: "travisvn/awesome-claude-skills"
+      - url: "https://github.com/ComposioHQ/awesome-claude-skills"
+        type: web
+        added: "2026-06-13"
+        title: "ComposioHQ/awesome-claude-skills"
