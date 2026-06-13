@@ -7,7 +7,7 @@
 |---|------|-------|
 | S1 | Default tool: Semgrep v1.163.0; `semgrep ci` for CI, `semgrep scan` for local, `--pro` for interfile | tool-selection |
 | S2 | Rule sets: `p/ci` for general, `p/security-audit` for deep, `p/owasp-top-ten` for compliance | config |
-| S3 | Diff-aware scanning: SEMGREP_BASELINE_REF=main on PRs (only scan changed code) | ci-pipeline |
+| S3 | Diff-aware scanning: GitHub Actions auto-diffs on `pull_request` (no env var); set SEMGREP_BASELINE_REF=main only on Jenkins/GitLab | ci-pipeline |
 | S4 | Taint mode: `mode: taint` + `--pro` interfile (cross-file) data-flow for real SQLi/SSRF flows | custom-rules |
 | S5 | SARIF output: `--sarif` for GitHub Security tab integration | output |
 | S6 | Exit code: 1 = blocking findings, 0 = clean — use in CI gate decisions | ci-pipeline |
@@ -66,10 +66,15 @@ semgrep ci
 
 ### S3: Diff-Aware Scanning on PRs
 
-On pull requests, scan only changed code to keep PR gates fast:
+On pull requests, scan only changed code to keep PR gates fast. **How you enable diff-aware depends on the CI system:**
 
 ```bash
-# In CI (GitHub Actions / GitLab CI)
+# GitHub Actions: `semgrep ci` on a `pull_request` trigger is AUTOMATICALLY
+# diff-aware. Do NOT set SEMGREP_BASELINE_REF — it does not apply to GitHub
+# Actions (per Semgrep docs) and is silently ignored.
+semgrep ci
+
+# Jenkins / GitLab CI / other systems: set the baseline ref manually
 export SEMGREP_BASELINE_REF=main
 semgrep ci
 ```
@@ -166,13 +171,22 @@ Semgrep exit codes determine CI pass/fail:
 | 1 | Blocking findings found | Fail pipeline |
 | 2+ | Scanner error (config issue, crash) | Fail pipeline (investigate) |
 
-In CI, use the exit code directly:
+In CI, use the exit code directly. **Run `semgrep ci` inside the official `semgrep/semgrep` container** — do NOT use the deprecated `semgrep/semgrep-action@v1` / `returntocorp/semgrep-action@v1` GitHub Actions (both repos are archived; Semgrep now recommends native `semgrep ci`):
 ```yaml
-# GitHub Actions
-- name: SAST Scan
-  run: semgrep ci
-  # Exit 1 automatically fails the step
+# GitHub Actions — current recommended setup
+semgrep:
+  runs-on: ubuntu-latest
+  container:
+    image: semgrep/semgrep        # official image; pin a digest/tag in prod
+  if: github.actor != 'dependabot[bot]'
+  steps:
+    - uses: actions/checkout@v4
+    - name: SAST Scan
+      run: semgrep ci             # auto diff-aware on pull_request; exit 1 fails the step
+      env:
+        SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}  # for managed policy / Supply-Chain / Pro
 ```
+If you are not using Semgrep Cloud, drop `SEMGREP_APP_TOKEN` and pass rules explicitly, e.g. `run: semgrep ci --config auto` (or `--config p/ci`).
 
 For soft-fail during adoption (existing codebase, first rollout):
 ```bash
@@ -223,7 +237,9 @@ When adopting SAST on an existing codebase, use baseline to avoid overwhelming d
 # Record current state as baseline
 semgrep scan --config auto --baseline-commit=$(git rev-parse main) .
 
-# Future scans show only NEW findings
+# Future scans show only NEW findings.
+# NOTE: SEMGREP_BASELINE_REF applies to Jenkins/GitLab/local CI only.
+# On GitHub Actions, `semgrep ci` is auto diff-aware on pull_request — omit this.
 export SEMGREP_BASELINE_REF=main
 semgrep ci
 ```

@@ -3,7 +3,11 @@
 #
 # Usage: bash scripts/loudness-check.sh <audio.wav> [platform]
 #   platform ∈ apple_stereo | apple_mono | spotify | youtube | amazon | google
-#   default platform = spotify (-14 LUFS), the multi-platform default per TP7a.
+#   default platform = apple_stereo (-16 LUFS), the single-file podcast master
+#   target per TP7a. A podcast ships ONE file; the other platforms are PLAYBACK
+#   reference levels (Spotify raises a -16 file +2 dB at playback), NOT separate
+#   masters — so passing another platform here only changes the reference number
+#   compared against, it does not mean you export a different file.
 #
 # Asserts (per references/tts-production.md TP7a/TP7c):
 #   - integrated loudness within ±1.0 LU of the per-platform target   [pyloudnorm, measured]
@@ -24,7 +28,7 @@
 set -euo pipefail
 
 AUDIO="${1:-}"
-PLATFORM="${2:-spotify}"
+PLATFORM="${2:-apple_stereo}"
 
 if [ -z "$AUDIO" ]; then
   echo "✗ usage: loudness-check.sh <audio.wav> [platform]" >&2

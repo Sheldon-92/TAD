@@ -38,8 +38,8 @@ the output MUST contain these markers (research-grounded, pack-specific):
    grep pattern: `200-350|200.?to.?350|large.?chunk|~?20 chunks`
 2. **Merged processing loop** [TP4]: generate → denoise → loudness-normalize in ONE iteration per chunk, with `cfg_value=2.0`, `inference_timesteps=10`, `prop_decrease`, `denoise=False`
    grep pattern: `merged (loop|processing)|cfg_value|inference_timesteps|prop_decrease|denoise=False`
-3. **Per-platform loudness, not a -16 constant** [TP7a]: cites distinct targets — Apple-stereo **-16 LUFS**, Apple-mono **-19 LUFS**, Spotify/YouTube **-14 LUFS** — defaulting to -14 for multi-platform
-   grep pattern: `-14 ?LUFS|-16 ?LUFS|-19 ?LUFS|per-platform|LKFS`
+3. **Single-file podcast master at -16 LUFS, platforms normalize at playback** [TP7a]: masters ONCE to **-16 LUFS** integrated and ships ONE file; does NOT export dual masters — cites the per-platform numbers (Apple-stereo **-16**, Apple-mono **-19**, Spotify/YouTube **-14 LUFS**) as PLAYBACK reference levels (Spotify raises a -16 file +2 dB), not separate export targets
+   grep pattern: `-14 ?LUFS|-16 ?LUFS|-19 ?LUFS|master once|single file|playback normaliz|per-platform|LKFS`
 4. **-1 dBFS sample-peak reserve** [MA8]: reserves headroom via `pyln.normalize.peak(audio, -1.0)` (sample-peak, approximating the platform -1 dBTP target), NOT the old 0.95 clamp; notes that a true dBTP guarantee needs `ffmpeg ebur128=peak=true`
    grep pattern: `-1 ?dBFS|-1 ?dBTP|pyln\.normalize\.peak|sample.?peak|true.?peak`
 5. **Envelope-follower ducking** [MA1]: sidechain envelope follower with **attack=5ms / release=2000ms** and 0.5s **look-ahead**
@@ -61,7 +61,7 @@ grep -oE '200-350|envelope follower|envelope-follower|attack=5|release=2000|0\.5
 These markers are pack-specific (would NOT appear without the pack):
 - ✅ "200-350 char chunks, ~20/episode" (TP1 — no-pack agent generates per-sentence or unspecified)
 - ✅ "merged generate→denoise→normalize loop, cfg_value=2.0 / prop_decrease=0.85" (TP4 — pack's exact params)
-- ✅ "per-platform LUFS: -16 Apple-stereo / -19 Apple-mono / -14 Spotify·YouTube" (TP7a — no-pack agent says "normalize loudness")
+- ✅ "master once to -16 LUFS, ship one file; platforms normalize at playback (-16 Apple / -14 Spotify are reference levels, not dual masters)" (TP7a — no-pack agent says "normalize loudness" or wrongly exports a separate master per platform)
 - ✅ "-1 dBFS sample-peak reserve via pyln.normalize.peak; real dBTP via ffmpeg ebur128" (MA8 — no-pack agent clamps at 0.95, skips it, or wrongly calls a sample-peak scaler a true-peak meter)
 - ✅ "envelope follower attack=5ms/release=2000ms + 0.5s look-ahead" (MA1 — pack's exact coefficients)
 - ✅ "BGM 0.5%/3.5% sweet spot" (MA5 — validated values, not 'lower the music')

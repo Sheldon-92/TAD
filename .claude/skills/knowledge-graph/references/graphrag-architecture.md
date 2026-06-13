@@ -106,7 +106,7 @@ When routing a query, pick the search paradigm by intent:
 
 Structural takeaway: **hierarchical / densely-connected** structures (**RAPTOR**, **HippoRAG**) are strongest overall; **community-style GraphRAG** (Microsoft GraphRAG) dominates **summarization**; **PageRank-style HippoRAG** dominates **multi-hop**. There is **no method that wins every tier** — route by tier.
 
-> Source: findings.md §"Algorithmic Traversal" + comparison table — Map-Reduce + helpfulness 0-100 + score-0 filter [12, 13], Local 1-2 hop [13, 17], Drift primer/follow-up/output with confidence pruning [16, 17]. Method-tier table (refreshed): GraphRAG-Bench — https://arxiv.org/abs/2506.05690 and https://arxiv.org/html/2506.05690 (retrieved 2026-06-13): Novel fact 60.92% (RAG+rerank), reasoning 53.38% (HippoRAG2), summarize 64.40% (MS-GraphRAG), creative 71.53% (HippoRAG); Medical LightRAG creative 78.76%, HippoRAG2 reasoning 61.98% vs base 58.64%; HippoRAG L2–L3 recall 87.9–90.9%.
+> Source: findings.md §"Algorithmic Traversal" + comparison table — Map-Reduce + helpfulness 0-100 + score-0 filter [12, 13], Local 1-2 hop [13, 17], Drift primer/follow-up/output with confidence pruning [16, 17]. Method-tier table (refreshed): "When to use Graphs in RAG" / GraphRAG-Bench — https://arxiv.org/abs/2506.05690 (retrieved 2026-06-13), **Table 2 (Generate Evaluation), Novel dataset, Fact Retrieval column**: RAG (w rerank) ACC = **60.92** (next-best HippoRAG2 60.14; GraphRAG-local 49.29) — flat reranked RAG wins single-fact. Other tiers (same paper): reasoning 53.38% (HippoRAG2), summarize 64.40% (MS-GraphRAG), creative 71.53% (HippoRAG); Medical LightRAG creative 78.76%, HippoRAG2 reasoning 61.98% vs base 58.64%; HippoRAG L2–L3 recall 87.9–90.9%.
 
 **determinismLevel**: semi-deterministic for Global/Local (fixed mechanism, LLM scoring varies); non-deterministic for Drift (agentic confidence loop).
 
@@ -128,14 +128,14 @@ When "knowledge graph" / "GraphRAG" appears, do NOT reflexively build a graph pi
 | Task shape | First choice | Why |
 |------------|--------------|-----|
 | **Multi-hop aggregation / cross-document reasoning** | **Graph methods** (HippoRAG, MS-GraphRAG) | graph clearly wins — HippoRAG **87.9–90.9% evidence recall** on L2–L3 multi-hop; flat RAG cannot chain the hops |
-| **Single-fact retrieval** | **Flat NaiveRAG / reranked RAG first** | flat stays competitive (Novel fact best = RAG+rerank **60.92%**); the graph build buys little |
+| **Single-fact retrieval** | **Flat NaiveRAG / reranked RAG first** | flat stays competitive (Novel-dataset Fact Retrieval ACC: RAG+rerank **60.92** vs best graph method HippoRAG2 60.14, GraphRAG-local 49.29 — Table 2); the graph build buys little |
 | **High-coverage / summary recall** | **Flat RAG first** | broader context coverage → higher recall; evaluate flat before paying graph indexing cost |
 
 **Rule**: before building GraphRAG, classify the dominant query shape. If it's **single-fact** or **high-coverage summary**, benchmark **flat RAG first** — only commit to graph when the workload is **multi-hop aggregation**. Pairs with the cross-cutting cost rule: graph indexing cost is only justified where graph retrieval measurably wins.
 
 **Anti-pattern**: building full GraphRAG for a single-fact lookup task — you pay extraction + Leiden + community-report cost for a job a reranked flat retriever does at **60.92%** with no graph build.
 
-> Source (refreshed): GraphRAG-Bench — https://arxiv.org/abs/2506.05690 (retrieved 2026-06-13): graph wins on multi-hop (HippoRAG L2–L3 evidence recall 87.9–90.9%); flat NaiveRAG competitive on single-fact retrieval + summary recall (broader context coverage → higher recall).
+> Source (refreshed): "When to use Graphs in RAG" / GraphRAG-Bench — https://arxiv.org/abs/2506.05690 (retrieved 2026-06-13), **Table 2, Novel dataset, Fact Retrieval column** (RAG w/rerank ACC 60.92 > all graph methods): graph wins on multi-hop (HippoRAG L2–L3 evidence recall 87.9–90.9%); flat NaiveRAG/reranked RAG competitive on single-fact retrieval + summary recall (broader context coverage → higher recall).
 
 **determinismLevel**: deterministic — a task-shape classification + threshold decision.
 
