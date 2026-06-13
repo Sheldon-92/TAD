@@ -39,7 +39,7 @@ ffmpeg -i blog-raw.wav \
 **Scenario**: Voice over video content, emotion matching, potentially multilingual.
 
 ### Integration with video-creation Pack
-Per §3.1 Interface Contract in SKILL.md:
+Per the **INTERFACE** contract in the SKILL.md top blockquote:
 - **This pack** decides: which TTS tool, voice quality thresholds, audio specs
 - **video-creation pack** decides: audio-to-video sync timing, pacing, visual alignment
 - If both load: this pack controls tool selection; video-creation controls timing
@@ -123,27 +123,45 @@ VoxCPM2 supports 30+ languages with consistent voice identity across all of them
 
 ## Podcast Specifications
 
-### Platform-Specific LUFS Targets
-| Platform | LUFS Target | Notes |
-|---|---|---|
-| Apple Podcasts | -16 LUFS | Mandatory for submission |
-| Spotify | -14 LUFS | Normalization applied if not met |
-| YouTube | -14 LUFS | Consistent with video standards |
-| General distribution | -16 LUFS | Safe default for multi-platform |
+### Platform-Specific LUFS Targets (integrated loudness)
+These are LLM-non-restatable, platform-specific thresholds — use the exact numbers:
+
+| Platform | Integrated LUFS | True Peak | Notes |
+|---|---|---|---|
+| Apple Podcasts (stereo) | **-16 LUFS** | **<= -1 dBTP** | Apple's stated target |
+| Apple Podcasts (mono) | **-19 LUFS** | **<= -1 dBTP** | Mono target differs from stereo |
+| Spotify | **-14 LUFS** | **<= -1 dBTP** | Spotify normalizes podcasts to -14 |
+| YouTube | **-14 LUFS** | **<= -1 dBTP** | Consistent with video standards |
+| Broadcast (EBU R128) | **-23 LUFS** | **<= -1 dBTP** | EBU R128 broadcast standard |
+| General distribution | -16 LUFS | <= -1 dBTP | Safe default for multi-platform |
+
+> Source: https://sone.app/blog/podcast-loudness-standards-2026-spotify-apple-youtube (retrieved 2026-06-13)
+
+**Validate**: `scripts/lufs-check.sh apple episode.wav` (also: `apple-mono | spotify | youtube | ebu`).
+Asserts integrated LUFS in band + true peak <= -1 dBTP. Re-master via two-pass loudnorm
+(see `audiobook-pipeline.md` §Two-pass loudnorm) if it fails.
 
 ### FFmpeg Podcast Mastering
+TP set to <= -1 dBTP per platform spec. For accuracy use two-pass loudnorm
+(see `audiobook-pipeline.md` §Two-pass loudnorm) — single-pass shown here for quick turnaround.
 ```bash
-# Apple Podcasts target (-16 LUFS)
+# Apple Podcasts target (-16 LUFS stereo, TP <= -1 dBTP)
 ffmpeg -i episode-raw.wav \
-  -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
+  -af "loudnorm=I=-16:TP=-1.0:LRA=11" \
   -ar 44100 -codec:a libmp3lame -b:a 128k \
   episode-apple.mp3
 
-# Spotify target (-14 LUFS)
+# Spotify target (-14 LUFS, TP <= -1 dBTP)
 ffmpeg -i episode-raw.wav \
   -af "loudnorm=I=-14:TP=-1.0:LRA=11" \
   -ar 44100 -codec:a libmp3lame -b:a 128k \
   episode-spotify.mp3
+
+# Broadcast EBU R128 target (-23 LUFS, TP <= -1 dBTP)
+ffmpeg -i episode-raw.wav \
+  -af "loudnorm=I=-23:TP=-1.0:LRA=11" \
+  -ar 44100 -codec:a libmp3lame -b:a 128k \
+  episode-ebu.mp3
 ```
 
 ### Podcast vs Audiobook Key Differences

@@ -21,7 +21,7 @@ keywords: ["TTS", "text-to-speech", "语音合成", "voice cloning", "声音克�
 - **Python 3.10+** — most TTS tools require it
 - **FFmpeg** — audio post-processing and mastering
 - **pip or uv** — package installation in virtual environment
-- VRAM-dependent: check `references/apple-silicon.md` for Mac users
+- Memory-dependent: check `references/apple-silicon.md` for Mac users (Apple Silicon uses unified memory, not discrete VRAM)
 
 Verify: `python3 --version && ffmpeg -version`
 
@@ -32,7 +32,7 @@ Verify: `python3 --version && ffmpeg -version`
 | User Signal | Load Reference |
 |---|---|
 | tool comparison, which TTS, choose engine, benchmark | `references/tool-landscape.md` |
-| Mac, Apple Silicon, MPS, M-series, VRAM, 16GB, 32GB | `references/apple-silicon.md` |
+| Mac, Apple Silicon, MPS, M-series, unified memory, VRAM, 16GB, 32GB | `references/apple-silicon.md` |
 | clone voice, reference audio, sound like, voice design | `references/voice-cloning.md` |
 | audiobook, long-form, chapter, ACX, Audible, 有声书 | `references/audiobook-pipeline.md` |
 | narration, dubbing, podcast, blog voice, 配音, short-form | `references/narration-dubbing.md` |
@@ -73,8 +73,12 @@ Read matched reference(s) and apply rules directly. Rules are concrete parameter
 ## Quick Rule Index
 
 ### Tool Landscape (`references/tool-landscape.md`)
-- **Tier A/B Split**: 9 researched tools with benchmarks vs 4 notable tools with key strengths → §Tier A / §Tier B
+- **Tier A/B Split**: 11 researched tools with benchmarks (incl. IndexTTS2 emotion control, CosyVoice2-0.5B ~150ms streaming) vs 4 notable tools → §Tier A / §Tier B
 - **4 Selection Rules**: by language, hardware, use case, commercial license → §Quick Selection Rules
+
+### Validation Scripts (`scripts/`)
+- **`scripts/acx-check.sh`**: asserts the deterministically-measurable ACX specs — MP3 192kbps, 44.1kHz, channel layout (all-mono OR all-stereo), RMS -23..-18, sample peak < -3 dBFS, noise floor < -60, head 0.5-1.0s / tail 1.0-5.0s room-tone duration — exit code drives the gate. Note: "peak" here is SAMPLE peak (dBFS, ACX's spec), NOT dBTP; the script measures silence DURATION but cannot verify the silence is room tone vs digital zero (manual check).
+- **`scripts/lufs-check.sh <platform>`**: asserts integrated LUFS in band + genuine true peak (input_tp dBTP) <= -1 dBTP (apple/apple-mono/spotify/youtube/ebu)
 
 ### Apple Silicon (`references/apple-silicon.md`)
 - **16GB Budget Table**: 6 tools with VRAM data, MPS configs → §16GB Memory Budget
@@ -88,7 +92,8 @@ Read matched reference(s) and apply rules directly. Rules are concrete parameter
 ### Audiobook Pipeline (`references/audiobook-pipeline.md`)
 - **4 Non-Negotiables**: consistency, emotion, chapter control, multi-character → §Non-Negotiable Requirements
 - **5-Step Pipeline**: prep → voice setup → generation → QC → post-processing → §Production Pipeline
-- **ACX Specs**: MP3 192kbps, 44.1kHz, RMS -23 to -18 dB → §ACX/Audible Specifications
+- **ACX 8 Hard Specs**: MP3 192kbps CBR, 44.1kHz, all-mono OR all-stereo (mixed layout rejected), RMS -23 to -18 dB, sample peak < -3 dBFS, noise floor < -60, head 0.5-1.0s / tail 1.0-5.0s room tone → §ACX/Audible Specifications (validate with `scripts/acx-check.sh`)
+- **Two-pass loudnorm**: measure (print_format=json) → apply measured values; I=-16 podcast / I=-23 EBU → §FFmpeg Mastering Commands
 
 ### Narration & Dubbing (`references/narration-dubbing.md`)
 - **Blog Narration**: single voice, quick turnaround → §Blog Narration
@@ -115,4 +120,6 @@ Read matched reference(s) and apply rules directly. Rules are concrete parameter
 | "Short reference audio is fine" | MUST check minimum duration per tool in `voice-cloning.md` — ranges from 3s to 15s |
 | "This tool is open source" | MUST check license tier in `licensing-safety.md` — open weights ≠ commercial use |
 | "I'll master the audio later" | MUST apply ACX/podcast specs DURING pipeline in `audiobook-pipeline.md`, not after |
+| "The loudness looks about right" | MUST run `scripts/acx-check.sh` / `scripts/lufs-check.sh` — ACX auto-rejects on ANY of 8 specs; eyeballing is not a gate |
+| "I'll use IndexTTS2 duration control" | MUST NOT — token-count duration control is documented but NOT yet enabled in the current release (`voice-cloning.md` §4); the API will fail |
 | "Any voice will work for now" | MUST set up voice identity BEFORE generation in `voice-cloning.md` — retrofitting means re-generating all audio |

@@ -79,6 +79,8 @@ assert:
     threshold: 0.25
 ```
 
+**ALWAYS set an explicit `threshold` on `llm-rubric`/`g-eval`.** Per the promptfoo model-graded contract: scores are normalized to **0.0–1.0**, and an assertion passes only when **BOTH `grader.pass === true` AND `score >= threshold`**. With **no `threshold`, the assertion passes on `grader.pass` alone** — so `{pass: true, score: 0}` silently passes. An un-thresholded model-graded assertion is a **no-op gate**. Concrete defaults to teach: `threshold: 0.66` = 2-of-3 majority on an assert-set; `threshold: 0.7` = common qualitative bar.
+
 **determinismLevel**: semi-deterministic — structural assertions are deterministic; qualitative assertions require ≥3 runs.
 
 ### B5: Multi-Run Variance Bounding

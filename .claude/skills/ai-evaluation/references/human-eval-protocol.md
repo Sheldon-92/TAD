@@ -6,10 +6,11 @@
 | # | Step | determinismLevel |
 |---|------|-----------------|
 | HE1 | Calibration: 2-3 experts, 100-200 samples, behaviorally anchored rubrics | non-deterministic |
-| HE2 | Inter-rater reliability: ICC(2,1) > 0.92 target | non-deterministic |
+| HE2 | Inter-rater reliability: Krippendorff α bands (0.8 / 0.667) + ICC(2,1) > 0.92 | non-deterministic |
 | HE3 | Spearman bridge: ≥0.80 correlation between automated and human scores | non-deterministic |
 | HE4 | Recalibration trigger: automated-human gap exceeds 0.05 | deterministic |
 | HE5 | Risk-adjusted oversight: dense review for high-stakes, sampling for routine | deterministic |
+| HE6 | Judge calibration-validity: report Spearman/Kendall vs ≥50-item human set; ~0.5 is SOTA ceiling for open NLG | non-deterministic |
 
 ---
 
@@ -39,9 +40,18 @@ Before starting human evaluation:
 
 After calibration, measure agreement quality:
 
+**Krippendorff's alpha (α) decision bands** — the load-bearing cut-points:
+
+| α band | Verdict | What you may do with the labels |
+|--------|---------|----------------------------------|
+| **α ≥ 0.8** | **Reliable** | Usable to train/gate — treat the consensus as ground truth |
+| **0.667 ≤ α < 0.8** | **Tentative** | Draw *tentative conclusions only*; do not gate releases on these labels |
+| **α < 0.667** | **Unreliable** | Labels are not trustworthy — **re-calibrate annotators before using** |
+
+**Prefer Krippendorff's α over Cohen's κ** when you have **>2 raters OR missing labels** (κ is limited to 2 raters with complete data; α generalizes to any number of raters and tolerates gaps).
+
 | Metric | Target | Interpretation |
 |--------|--------|---------------|
-| Krippendorff's alpha (α) | α ≥ 0.78 | Enterprise-grade reliability threshold |
 | ICC(2,1) — single evaluator | > 0.92 | A single evaluator's score is reliable |
 | ICC(2,K) — panel average | > 0.97 | Average of K evaluators is reliable |
 
@@ -49,7 +59,7 @@ After calibration, measure agreement quality:
 - 4 evaluators: sufficient for continuous monitoring
 - 8-12 evaluators: needed for periodic audits or high-stakes assessments
 
-**Rule**: If ICC(2,1) < 0.92 after calibration → rubric anchors are insufficiently discriminating. Refine anchors and recalibrate before proceeding.
+**Rule**: If α < 0.667 (or ICC(2,1) < 0.92) after calibration → rubric anchors are insufficiently discriminating. Refine anchors and recalibrate before proceeding.
 
 **Output**: ICC scores per dimension, with flagged dimensions that fall below threshold.
 
@@ -112,6 +122,21 @@ When human evaluation resources are limited, allocate by risk:
 **Rule**: Never fully automate evaluation for high-stakes outputs. The Spearman bridge (Step 3) justifies automation only for dimensions where correlation ≥ 0.80.
 
 **determinismLevel**: deterministic — risk classification and sampling rates are design decisions.
+
+→ Proceed to Step 6.
+
+### Step 6 (HE6): LLM-Judge Calibration-Validity Threshold
+
+A custom LLM-judge rubric is **only trustworthy if it correlates with human ratings**. Before trusting any judge's scores:
+
+**Rule**: Report your judge's **Spearman/Kendall correlation against a ≥50-item human-labeled calibration set** before using its scores. Treat **~0.5 as the realistic SOTA ceiling for open-ended NLG**, not 0.9+.
+
+**Anchor (the number an LLM can't restate without the source):** **G-Eval** (GPT-4 + chain-of-thought) achieves **Spearman 0.514 with humans on summarization** — SOTA at publication (arXiv:2303.16634). Removing the auto-generated CoT steps drops it to **0.500**. So:
+- If your judge reports ≥0.80 correlation on an open-ended generative task, **be suspicious** — that exceeds the published SOTA; check for label leakage or a too-easy/saturated test set.
+- HE3's ≥0.80 bridge target is achievable for *constrained, anchored* dimensions (the routing in HE3); for genuinely open NLG, ~0.5 is the honest ceiling and the dimension may not be safely automatable (route to human escalation per HE5).
+- This calibration is a precondition for the **Judge ≠ Optimizer** rule in SKILL.md: a cross-family judge with an *unvalidated* rubric is still untrustworthy.
+
+**determinismLevel**: non-deterministic — correlation depends on variable human and LLM scores.
 
 ---
 

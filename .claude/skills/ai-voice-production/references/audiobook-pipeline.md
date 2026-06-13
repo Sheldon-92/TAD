@@ -149,16 +149,29 @@ Fish S2 Pro supports 15,000+ paralinguistic tags for fine-grained emotion contro
 
 ### Step 5: Post-Processing (Mastering)
 
-#### ACX/Audible Specifications
-- **Format**: MP3 192kbps CBR (constant bit rate)
-- **Sample rate**: 44.1kHz
-- **RMS level**: -23dB to -18dB
-- **Peak amplitude**: below -3dB (no clipping)
-- **Noise floor**: below -60dB
-- **Opening**: 0.5-1.0s silence at chapter start
-- **Closing**: 1.0-5.0s silence at chapter end
+#### ACX/Audible Specifications — the 8 hard specs
 
-> Source: ask-findings-summary.md §Audiobook Production Specs (ACX/Audible)
+ACX auto-rejects any file that misses **any one** of these — "files that don't meet
+every spec get rejected, no manual overrides." Validate the full set, not a subset:
+
+1. **Format**: MP3 **192 kbps CBR** (constant bit rate — VBR is rejected even if its average is 192 kbps)
+2. **Sample rate**: **44.1 kHz**
+3. **Channels**: **all-MONO OR all-STEREO** — ACX accepts either, but every file in a title MUST share one layout; **mixed layouts are auto-rejected**. (Mono is the common convention for spoken word, but stereo is NOT auto-rejected.)
+4. **RMS level**: **-23 dBFS to -18 dBFS**
+5. **Peak**: **below -3 dBFS** — this is SAMPLE peak (dBFS), the ACX spec; it is NOT dBTP. (For genuine true-peak dBTP on the podcast/streaming path, use `lufs-check.sh`.)
+6. **Noise floor**: **below -60 dBFS**
+7. **Head silence**: **0.5-1.0 s** of **room tone** (not digital zero) at chapter start
+8. **Tail silence**: **1.0-5.0 s** of **room tone** (not digital zero) at chapter end
+
+> Source: https://help.acx.com/s/article/what-are-the-acx-audio-submission-requirements (retrieved 2026-06-13); ask-findings-summary.md §Audiobook Production Specs
+
+**Validate deterministically** — do NOT eyeball it. Run the bundled checker (asserts all 8 specs:
+format/bitrate, sample rate, channel layout + cross-file consistency, RMS, sample peak, noise
+floor, head & tail silence DURATION; exit code drives the gate). The one residual manual check:
+the head/tail silence must be **room tone, not digital zero** — the script measures duration only:
+```bash
+scripts/acx-check.sh final/ch-001.mp3 final/ch-002.mp3   # exit 0 = all specs pass; pass ALL files together so channel-layout consistency is checked
+```
 
 #### FFmpeg Mastering Commands
 
@@ -166,6 +179,25 @@ Fish S2 Pro supports 15,000+ paralinguistic tags for fine-grained emotion contro
 ```bash
 ffmpeg -i raw/ch-001.wav -af "loudnorm=I=-20:TP=-3:LRA=7" -ar 44100 mastered/ch-001.wav
 ```
+
+**Two-pass loudnorm (deterministic — the right way; backs `scripts/lufs-check.sh`)**:
+Single-pass loudnorm is a one-shot estimate and drifts. For platform-accurate loudness,
+measure first (pass 1), then feed the measured values back (pass 2):
+```bash
+# Pass 1 — MEASURE (print JSON, write nothing). Use I=-16 for podcast/streaming, I=-23 for EBU broadcast.
+ffmpeg -i raw/ch-001.wav \
+  -af "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json" -f null /dev/null
+# → records measured_I, measured_TP, measured_LRA, measured_thresh, target_offset
+
+# Pass 2 — APPLY measured values back into loudnorm at the SAME target:
+ffmpeg -i raw/ch-001.wav \
+  -af "loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=<measured_I>:measured_TP=<measured_TP>:measured_LRA=<measured_LRA>:measured_thresh=<measured_thresh>:offset=<target_offset>:linear=true" \
+  -ar 44100 mastered/ch-001.wav
+```
+- `I=-16` → podcast / streaming (Apple, Spotify-bound); `I=-23` → EBU R128 broadcast.
+- Verify the result: `scripts/lufs-check.sh apple mastered/ch-001.wav`
+
+> Source: https://github.com/slhck/ffmpeg-normalize/blob/master/README.md (retrieved 2026-06-13)
 
 **Convert to ACX-compliant MP3**:
 ```bash
@@ -179,15 +211,28 @@ ffmpeg -i mastered/ch-001.wav \
   -ar 44100 padded/ch-001.wav
 ```
 
-**Batch process all chapters**:
+**Batch process all chapters (TWO-PASS — the right way at scale)**:
+Single-pass loudnorm drifts (see §Two-pass loudnorm above), and that drift compounds across an
+8-12 hour multi-chapter book — so the batch path MUST also be two-pass, NOT a single-pass shortcut.
+Each chapter is measured (pass 1), then its OWN measured values are fed back (pass 2):
 ```bash
 for f in mastered/ch-*.wav; do
   base=$(basename "$f" .wav)
-  ffmpeg -i "$f" \
-    -af "loudnorm=I=-20:TP=-3:LRA=7" \
+  # Pass 1 — MEASURE this chapter (ACX target I=-20, TP=-3, LRA=7), capture JSON.
+  meas=$(ffmpeg -hide_banner -i "$f" \
+    -af "loudnorm=I=-20:TP=-3:LRA=7:print_format=json" -f null /dev/null 2>&1)
+  mi=$(printf '%s' "$meas"  | grep -oE '"input_i"[^,]*'      | grep -oE '[-0-9.]+' | head -1)
+  mtp=$(printf '%s' "$meas" | grep -oE '"input_tp"[^,]*'     | grep -oE '[-0-9.]+' | head -1)
+  mlra=$(printf '%s' "$meas"| grep -oE '"input_lra"[^,]*'    | grep -oE '[-0-9.]+' | head -1)
+  mth=$(printf '%s' "$meas" | grep -oE '"input_thresh"[^,]*' | grep -oE '[-0-9.]+' | head -1)
+  off=$(printf '%s' "$meas" | grep -oE '"target_offset"[^,]*'| grep -oE '[-0-9.]+' | head -1)
+  # Pass 2 — APPLY this chapter's measured values back at the same target.
+  ffmpeg -hide_banner -i "$f" \
+    -af "loudnorm=I=-20:TP=-3:LRA=7:measured_I=${mi}:measured_TP=${mtp}:measured_LRA=${mlra}:measured_thresh=${mth}:offset=${off}:linear=true" \
     -codec:a libmp3lame -b:a 192k -ar 44100 \
     "final/${base}.mp3"
 done
+# Then gate the whole batch:  scripts/acx-check.sh final/ch-*.mp3
 ```
 
 **Verify ACX compliance**:

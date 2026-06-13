@@ -1,19 +1,21 @@
 # Apple Silicon Optimization
 
-> Hardware-specific judgment rules for Mac users. All VRAM numbers from research data.
-> If a tool's VRAM is not listed here, it was not measured in the research — do not guess.
+> Hardware-specific judgment rules for Mac users. All memory numbers from research data.
+> Apple Silicon uses **unified memory** (shared CPU/GPU pool), NOT discrete VRAM — the
+> figures below are unified-memory footprint, the GPU-addressable share of total RAM.
+> If a tool's memory footprint is not listed here, it was not measured in the research — do not guess.
 
 ---
 
 ## 16GB Memory Budget
 
-The following tools have confirmed VRAM measurements on Apple Silicon:
+The following tools have confirmed unified-memory measurements on Apple Silicon:
 
-| Tool | Params | VRAM Usage | MPS Support | Config Required |
+| Tool | Params | Unified Memory Usage | MPS Support | Config Required |
 |---|---|---|---|---|
 | VoxCPM2 | 2B | ~8GB | Yes (--device auto) | None (auto-detects MPS) |
 | Qwen3-TTS Base | 1.7B | 6-8GB | Yes | `dtype=torch.float32` (MANDATORY on MPS) |
-| Chatterbox | 350M-1.2B | ~6GB | Yes | Auto float32 patch for s3tokenizer |
+| Chatterbox | 0.5B (Llama backbone) | ~6GB | Yes | Auto float32 patch for s3tokenizer |
 | Kokoro | 82M | Minimal | Yes (fallback) | `PYTORCH_ENABLE_MPS_FALLBACK=1` |
 | Bark (small) | ~300M | <4GB | Yes | `SUNO_USE_SMALL_MODELS=True` |
 | MLX-Audio | Varies | Native | Native MLX | No PyTorch needed |

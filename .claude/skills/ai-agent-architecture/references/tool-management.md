@@ -53,6 +53,26 @@ Instead of loading all tools at session start:
 
 ---
 
+## Beyond Deferred Loading: Code-Execution Tool Discovery [Source: research finding #3, https://www.anthropic.com/engineering/code-execution-with-mcp retrieved 2026-06-13]
+
+The ">5 tools → deferred loading" rule handles tens of tools. At **hundreds-to-thousands of tools across dozens of MCP servers**, even deferred-but-still-JSON loading is too expensive — the tool index itself grows large and the model still reasons over JSON schemas.
+
+**Upgrade**: expose MCP tools as **on-demand filesystem code** the agent imports and calls, instead of loading tool definitions into context at all. The agent writes code that calls a tool by path; only the tools it actually invokes ever enter context.
+
+**Measured payoff**:
+- Anthropic "code execution with MCP": a Google Drive → Salesforce workflow dropped from **150,000 tokens to 2,000 tokens — a 98.7% reduction** (quote confirmed against the primary article, 2026-06-13).
+- Cloudflare compressed **2,500 API endpoints into 2 tools** for a reported **99.9%** reduction.
+
+**Selection rule**:
+
+| Tool surface | Strategy |
+|--------------|----------|
+| ≤5 tools | Upfront loading |
+| 6–~50 tools | Deferred / search-then-load (JSON definitions on demand) |
+| Hundreds–thousands across many servers | **Code-execution / progressive tool discovery** — tools as importable code, no upfront JSON |
+
+---
+
 ## Dynamic Tool Dependency Retrieval (DTDR) [Source: research finding #5]
 
 **Problem**: the right tool for step 2 depends on step 1's outcome, which isn't known at session start.

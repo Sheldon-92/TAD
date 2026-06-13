@@ -9,9 +9,11 @@
 
 | Tool | Params | License | License Tier | WER (EN) | WER (ZH) | SIM | RTF | VRAM | Best For |
 |---|---|---|---|---|---|---|---|---|---|
-| Fish S2 Pro | 4B | Fish Research License | YELLOW | 0.99% | 0.54% | N/R | N/R | N/R | Professional audiobooks (chapter-level control, 15K+ paralinguistic tags) |
+| Fish S2 / S2-Pro | 5B (4B slow-AR + 400M fast-AR) | Fish Audio Research License | YELLOW | 0.99% | 0.54% | N/R | N/R | N/R | Professional audiobooks (chapter-level control, 15K+ paralinguistic tags). Trained 10M+ hrs / 80+ langs |
+| IndexTTS2 | Qwen3-based | Apache-2.0 (code); see model card | GREEN | N/R | beats F5-TTS by ~0.5pp, MaskGCT by ~2pp on test-zh | beats F5-TTS & MaskGCT | N/R | CUDA 12.8+, FP16 | Zero-shot TTS with disentangled emotion+speaker control (emo_audio_prompt + emo_alpha); token-count duration control (NOT yet enabled in current release) |
+| CosyVoice2-0.5B | 0.5B | Apache-2.0 | GREEN | N/R | lowest CER on Seed-TTS hard set | N/R | first-packet latency ~150ms (streaming) | low | Low-latency streaming TTS (text-in/audio-out); 9 langs + 18+ Chinese dialects; cross-lingual & code-switch zero-shot |
 | VoxCPM2 | 2B | Apache-2.0 | GREEN | N/R | N/R | 89.0 (FI) | 0.13 (w/ Nano-vLLM) | ~8GB | Multilingual diversity (30+ languages, voice design) |
-| Chatterbox | 350M | MIT | GREEN | N/R | N/R | N/R | N/R | ~6GB | Paralinguistic expression ([laugh], [cough], [sigh]) |
+| Chatterbox | 0.5B (Llama backbone) | MIT | GREEN | N/R | N/R | N/R | N/R | ~6GB | Paralinguistic expression ([laugh], [cough], [sigh]). ⚠️ Embeds Perth neural watermark on EVERY output — see `licensing-safety.md` §Watermarking |
 | Kokoro | 82M | Apache-2.0 | GREEN | N/R | N/R | N/R | N/R | minimal | Rapid/cost-effective deployment (SOTA at 82M params) |
 | F5-TTS | 300M | Open-Source | GREEN | N/R | N/R | N/R | N/R | N/R | Zero-shot similarity (diffusion-based) |
 | Bark | ~1.5B | MIT | GREEN | N/R | N/R | N/R | N/R | <4GB (small) | Generative audio (integrated SFX and music) |
@@ -25,12 +27,14 @@
 
 ### Key Benchmark Notes
 
-- **Fish S2 Pro** leads intelligibility: 0.99% WER (EN), 0.54% WER (ZH), 81.88% EmergentTTS-Eval win rate
+- **Fish S2 Pro** leads intelligibility: 0.99% WER (EN), 0.54% WER (ZH), 81.88% EmergentTTS-Eval win rate. S2-Pro = 5B total (4B slow-AR + 400M fast-AR), trained on 10M+ hrs across 80+ languages
+- **IndexTTS2** (Bilibili IndexTeam, arXiv 2506.21619): industrial zero-shot TTS with disentangled emotion + speaker control via a soft-instruction mechanism built on a fine-tuned Qwen3. Outperforms F5-TTS and MaskGCT on WER / speaker-similarity / emotional-fidelity; on **test-zh** it surpasses F5-TTS by **~0.5 percentage points** and MaskGCT by **~2 pp**. Explicit token-count duration control is documented but NOT yet enabled in the current release (see voice-cloning.md)
+- **CosyVoice2-0.5B** (FunAudioLLM): 0.5B streaming model, **first-packet synthesis latency as low as 150ms** with text-in/audio-out streaming. Reduces pronunciation errors **30%-50% vs CosyVoice1**, reaches the **lowest CER on the Seed-TTS hard test set**; MOS **5.4 → 5.53**. Covers 9 languages (ZH/EN/JP/KO/DE/ES/FR/IT/RU) + **18+ Chinese dialects** with cross-lingual & code-switch zero-shot cloning. Fills the pack's low-latency streaming gap
 - **VoxCPM2** leads cross-lingual similarity: outperformed ElevenLabs in 17/24 languages on MiniMax-MLS-test; Finnish SIM 89.0, Arabic 79.1; 1.68% average error rate across 30-language ASR
 - **RTF 0.13** is achievable with VoxCPM2 + Nano-vLLM/vLLM-Omni integration
 - **Kokoro** achieves quality comparable to 1B+ models at 82M params — the efficiency benchmark
 
-> Source: baseline-report.md §3
+> Source: baseline-report.md §3; IndexTTS2 — https://arxiv.org/abs/2506.21619 (retrieved 2026-06-13); CosyVoice2 — https://funaudiollm.github.io/cosyvoice2/ (retrieved 2026-06-13)
 
 ---
 
@@ -66,8 +70,9 @@
 **Rule 3 — By Use Case**:
 - Audiobook → Fish S2 Pro (chapter control) or VoxCPM2 (multilingual)
 - Quick narration → Kokoro (fast, minimal resources)
-- Expressive/emotional → Chatterbox (paralinguistic tags)
-- Voice cloning → OpenVoice V2 (instant) or VoxCPM2 (controllable)
+- Low-latency streaming (live / interactive, ~150ms first packet) → CosyVoice2-0.5B
+- Expressive/emotional → Chatterbox (paralinguistic tags) or IndexTTS2 (reference-audio emotion transfer via `emo_audio_prompt` + `emo_alpha`, see `voice-cloning.md`)
+- Voice cloning → OpenVoice V2 (instant) or VoxCPM2 (controllable); IndexTTS2 for disentangled emotion+speaker control
 
 **Rule 4 — By Commercial License**:
 - Must be commercial-safe → filter by GREEN tier only (see `licensing-safety.md`)

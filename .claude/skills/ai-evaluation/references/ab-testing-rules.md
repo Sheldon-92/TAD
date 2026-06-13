@@ -6,12 +6,13 @@
 | # | Rule | determinismLevel |
 |---|------|-----------------|
 | AB1 | Sample size: n≥100 for signal, n≥550 for tight bounds | deterministic |
-| AB2 | Statistical tests: paired McNemar (binary), paired t-test (continuous) | deterministic |
+| AB2 | Significance: paired McNemar (binary) + bootstrap 95% CI + effect size — never raw win-count | deterministic |
 | AB3 | Judge ≠ Optimizer: cross-model judging mandatory | non-deterministic |
 | AB4 | CollabEval multi-agent debate for bias cancellation | non-deterministic |
 | AB5 | Multiplicity correction: Benjamini-Hochberg for multiple comparisons | deterministic |
 | AB6 | Multi-dimensional comparison: quality + cost + latency | deterministic |
 | AB7 | Same test cases for both configurations | deterministic |
+| AB8 | Position SENSITIVITY > position bias: dual-pass swapped-order, win-in-both | non-deterministic |
 
 ---
 
@@ -39,18 +40,23 @@ tests:
 
 **determinismLevel**: deterministic — sample size is a design choice.
 
-### AB2: Statistical Test Selection
+### AB2: Statistical Significance — Never Declare a Winner on Raw Win-Count
 
-When analyzing A/B results, match the test to the data type:
+When analyzing A/B results, n≥100 (AB1) is necessary but NOT sufficient. **A raw win-count ("A won 58 of 100") is not a result** — you must run a paired significance test, report a confidence interval, AND report effect size. Match the test to the data type:
 
 | Data Type | Statistical Test | When to Use |
 |-----------|-----------------|-------------|
-| Binary pass/fail | Paired McNemar test | Same test cases scored pass/fail by both configs |
+| **Binary win/loss** | **Paired McNemar test with continuity correction** | Same test cases scored win/loss by both configs — the standard for paired binary outcomes |
 | Continuous scores (0-1) | Paired t-test | Same test cases scored on continuous scale |
 | Protocol violation rates | Two-proportion z-test | Comparing violation frequencies |
 | Success rates with CI | Wilson 95% confidence interval | Reporting uncertainty bounds |
 
-**Paired** tests are mandatory when both configs are evaluated on the same test cases (which they should be per AB7).
+**Required reporting trio** for any A/B decision:
+1. **Paired McNemar test (continuity-corrected)** on the discordant pairs — the standard for paired binary win/loss.
+2. **Bootstrap 95% confidence interval** on the win-rate difference (resample the paired outcomes).
+3. **Effect size** (not just p-value) — a statistically significant 1pp difference is rarely a deploy reason.
+
+**Paired** tests are mandatory when both configs are evaluated on the same test cases (which they should be per AB7). **Rule**: upgrade "use n≥100" to "use n≥100 AND a paired significance test + bootstrap CI + effect size."
 
 **determinismLevel**: deterministic — statistical computation is mechanical.
 
@@ -127,6 +133,19 @@ tests:
 ```
 
 **determinismLevel**: deterministic — experimental design is structural.
+
+### AB8: Position SENSITIVITY, Not "Beware Position Bias"
+
+The obsolete generic advice "beware position bias" is no longer the operative concern. On current-generation judge models, **raw position bias on controlled pairs is now negligible (≤0.04)** — what actually leaks is position *sensitivity*: how often the judge **reverses its verdict when A/B order is swapped**.
+
+**Dual-pass procedure (mandatory for any pairwise LLM-judge A/B):**
+1. Run the judge once with order (A, B).
+2. Run it again with order swapped (B, A).
+3. **Declare a winner only if it wins in BOTH orders.** If the two verdicts disagree, call it a **tie** — the apparent winner is a position artifact, not a quality difference.
+
+This replaces "the judge might be biased toward the first option" (un-actionable) with a concrete reversal-rate check. Report the swap-reversal rate alongside the win rate; a high reversal rate means the comparison is too close to call regardless of aggregate win-count.
+
+**determinismLevel**: non-deterministic — verdicts vary; the dual-pass procedure bounds the artifact.
 
 ---
 

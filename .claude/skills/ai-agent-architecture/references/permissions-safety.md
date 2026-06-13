@@ -125,6 +125,14 @@ SPIFFE/SPIRE identity + RBAC per tool is the enterprise-grade implementation. At
 
 Use this checklist before connecting any MCP server to a production agent.
 
+### Why this checklist is non-optional: 2026 MCP attack surface [Source: research finding #27, https://censys.com/blog/mcp-servers-on-the-internet/ retrieved 2026-06-13]
+
+The dual-agent / deny-first rules above are backed by a fast-growing, measured attack surface:
+
+- Internet-exposed MCP grew from **1,862 unauthenticated MCP servers** (July 2025 scan) to **12,520 internet-accessible MCP services across 8,758 unique IPs / 56 countries** (April 28 2026 scan) — a ~6.7x increase in ~9 months.
+- Two landmark CVEs established the dominant client-side threat: **MCPoison (CVE-2025-54136)** and **CurXecute (CVE-2025-54135)** — **tool-poisoning**: malicious instructions embedded in tool descriptions, **visible to the LLM but not the user** (exactly the Incident #2 Cursor mechanism, Checklist Item 1 below).
+- **9 of 11 MCP registries** tested accepted malicious packages **with no security review** — so registry presence is NOT a trust signal (Checklist Item 7 reputation scoring is required, not optional).
+
 ### Checklist Item 1: Display Full Tool Descriptions [Source: Incident #2 — Cursor poisoning]
 
 **Attack**: malicious MCP server embeds `<IMPORTANT>` instructions in tool descriptions. Agent reads description, executes hidden instructions, exfiltrates credentials.

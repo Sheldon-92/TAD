@@ -30,6 +30,8 @@ If YES → build the deterministic solution. If NO → define exactly what makes
 
 **The "Agent Everywhere" trap** [Source: Hermes — research finding, Expert Mistake #1]: replacing `if/else` logic with autonomous LLMs because it seems more powerful. An autonomous LLM solving a binary routing decision costs 100x more, takes 10x longer, and fails more often than a simple classifier.
 
+**Business-risk anchor** [Source: research finding #28, Gartner June 2025, https://www.zartis.com/the-compounding-errors-problem-why-multi-agent-systems-fail-and-the-architecture-that-fixes-it/ retrieved 2026-06-13]: Gartner predicts **>40% of agentic-AI projects will be canceled by end of 2027** due to escalating costs, unclear value, or inadequate risk controls. The D1 gate is the cheapest place to avoid being in that 40% — answering "no, a single LLM call suffices" here costs nothing; discovering it after a 6-month build costs the project.
+
 ---
 
 ## When to Choose Each Level
@@ -70,7 +72,15 @@ If YES → build the deterministic solution. If NO → define exactly what makes
 - Failure is recoverable and non-catastrophic
 - Performance requirements allow for higher latency and cost
 
-**Risk quantification** [Source: research finding #1]: 10-step agent chain at 98% per-step reliability = 81.7% total success. Each additional step reduces success probability multiplicatively. At 20 steps at 98%: 66.7%. At 30 steps: 54.5%. Design for the minimum number of steps.
+**Risk quantification — compounding-error math (Lusser's law)** [Source: research finding #1, https://towardsdatascience.com/the-math-thats-killing-your-ai-agent/ retrieved 2026-06-13]: reliability multiplies across sequential steps. **Real production agents run 85–90% per step, NOT the 95–98% intuition assumes.**
+
+| Per-step reliability | Steps to drop below 50% end-to-end | 20-step end-to-end success |
+|----------------------|------------------------------------|----------------------------|
+| 95% | ~14 steps (0.95^14 ≈ 0.488) | 0.95^20 ≈ **36%** |
+| 90% | ~7 steps (0.90^7 ≈ 0.478) | 0.90^20 ≈ **12%** |
+| 98% (optimistic) | ~35 steps | 0.98^20 ≈ **67%** |
+
+**Decision rule**: if a workflow needs **>~14 sequential LLM steps at 95% reliability** it drops below 50% success — **decompose into independently-checkpointed sub-workflows or insert deterministic (non-LLM) verification gates** rather than lengthening the chain. Each deterministic checkpoint resets the compounding product to 1.0 for the steps after it. Design for the minimum step count.
 
 ---
 

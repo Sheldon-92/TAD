@@ -31,9 +31,9 @@ A decision-by-decision navigator for building reliable agent systems. Each decis
 
 ## /design Mode
 
-### Phase 0 — Scoping (Ask BEFORE reading any reference file)
+## Step 0 — Scoping (Ask BEFORE reading any reference file)
 
-Ask the following 5 questions. Collect all answers before proceeding to Phase 1.
+Ask the following 5 questions. Collect all answers before proceeding to Step 1.
 
 **Q1** — Scale: Single agent or multi-agent system?
 - Single agent → D2 (coordination) is likely skipped
@@ -47,9 +47,10 @@ Ask the following 5 questions. Collect all answers before proceeding to Phase 1.
 - Trusted only → D5 (permissions) is simplified, MCP checklist optional
 - Untrusted external → D5 MCP checklist is mandatory, dual-agent architecture required
 
-**Q4** — Context budget: Small model (<128K context) or large context model (≥512K)?
-- Small → D6 (compression) is critical, D3 memory pattern selection is strict
-- Large → D6 triggers are relaxed, but still required
+**Q4** — Context budget: Small (<128K), mid (128K–512K), or large (≥512K) context window?
+- Small (<128K) → D6 (compression) is critical, D3 memory pattern selection is strict
+- Mid (128K–512K, e.g. GPT-4o 128K, Claude 200K, many 256K) → treat as Small for D6/D3 strictness: compression mandatory, memory selection strict (the dominant production band — default here when unsure)
+- Large (≥512K) → D6 triggers are relaxed, but still required
 
 **Q5** — Cost sensitivity: Hobby/prototype or production at scale (>1K sessions/day)?
 - Prototype → D7 (cost) optional, D8 (observability) minimal
@@ -61,15 +62,15 @@ Applicable decisions: D[X], D[Y], D[Z]...
 Skipped: D[A] because [user is stateless, no cross-session memory needed], D[B] because [trusted inputs only]
 ```
 
-Then proceed to Phase 1 with ONLY the applicable decisions.
+Then proceed to Step 1 with ONLY the applicable decisions.
 
 ---
 
-### Phase 1 — Walk Through Each Applicable Decision
+## Step 1 — Walk Through Each Applicable Decision
 
 For each applicable decision, in order:
 
-1. Read `references/{decision}.md`
+1. Read `references/{decision}.md` (resolve `{decision}` → filename via the **Decision Reference Index** below, e.g. D1 → `references/need-an-agent.md`)
 2. Apply the selection matrix against the user's scoping answers
 3. Recommend one specific pattern with a brief rationale
 4. Record: `Decision: [pattern name] | Rationale: [X constraint → Y pattern] | Cost impact: [Z]`
@@ -157,6 +158,23 @@ Low:    [decisions not applicable or well-implemented]
 | "We don't need permission design for internal tools" | Internal tools accessed by an agent can still cause PocketOS-style disasters. Scoped tokens and deny-first apply equally to internal APIs. | Skip only if agent is read-only (no writes, no destructive operations). |
 | "Multi-agent coordination is premature until we need it" | Adding hub-spoke state management after two agents are live requires touching both agents simultaneously. Design the state ownership model before the second agent is built. | Skip only if permanently single-agent (verify: is there a second agent planned in the next 3 months?). |
 | "We'll test it when it's done" | Agent testing requires production traces. You cannot write stochastic invariant tests without observing real behavior. Start collecting traces on day 1 even if you don't analyze them immediately. | Skip full evaluation suite for exploratory prototypes; collect basic traces always. |
+
+---
+
+## Validating the Output (Structural Smoke Alarm)
+
+The Architecture Decision Document (/design) or Audit Report (/audit) is partly structure-checkable. After producing the artifact, run the bundled checker:
+
+```bash
+bash scripts/audit-decisions.sh path/to/your-design-or-audit.md
+```
+
+It is a **smoke alarm, not a fire suppressor**: it checks for the *presence* of the required tokens, not the *quality* of the reasoning behind them. It asserts:
+- All 10 decision IDs (D1–D10) appear as token references (a proxy for "the navigator was walked").
+- The dual-agent / D5 MCP-checklist token fires when the doc declares untrusted external input (a proxy for the pack's load-bearing safety contract).
+- The pack's named artifact heading (`Architecture Decision Document` or `Architecture Audit Report`) is present.
+
+Exit code `0` = the required tokens are present; exit code `1` = missing decisions / artifact (the script prints exactly which IDs or contracts are absent). **Exit 0 proves token presence, NOT that each decision was actually reasoned through** — a doc that merely lists `D1 … D10` plus the headings will also pass. Treat a passing run as "no obvious structural omission," then still verify the *content* of each decision yourself. This is the structural counterpart to the fixture's `discriminative_pattern` (see `examples/multi-agent-design-decisions.md`); it does not replace reading the document.
 
 ---
 

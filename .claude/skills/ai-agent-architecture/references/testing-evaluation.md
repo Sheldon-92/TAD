@@ -42,7 +42,7 @@ For each Agent_N → Agent_N+1 transition:
   4. Verify the error propagates correctly (logged, not swallowed)
 ```
 
-**Probabilistic pipeline math** [Source: research finding #1]: 10-agent chain at 98% per step = 81.7% success. Each individual transition test that catches a failure mode improves this number. A transition that fails 5% of the time (95% pass rate) in isolation drops the full chain success from 81.7% to 59.9%.
+**Probabilistic pipeline math (Lusser's law)** [Source: research finding #1, https://towardsdatascience.com/the-math-thats-killing-your-ai-agent/ retrieved 2026-06-13]: reliability multiplies across sequential steps, so end-to-end success collapses faster than intuition expects. Real production agents run **85–90% per step, NOT the 95–98%** the older estimates assumed. At a generous **95% per step, a 20-step task succeeds only ~36% (0.95^20 ≈ 0.358)**, and the **>~14-step boundary is where success drops below 50% (0.95^14 ≈ 0.488)**. Each transition test you add raises the per-step rate; every transition you remove from the critical path multiplies success upward. **Decision rule for D9 test budgeting**: prioritize transition tests on the longest sequential chain first, and past ~14 sequential LLM steps insert a deterministic checkpoint rather than relying on another stochastic step. (Replaces the older undated "10-agent chain at 98% = 81.7%" statement — same multiplicative principle, now a today-retrievable threshold.)
 
 ---
 
