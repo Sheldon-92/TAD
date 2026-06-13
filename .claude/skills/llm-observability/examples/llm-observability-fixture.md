@@ -21,7 +21,7 @@ min_marker_count: 4
 # drift, four-layer prompt/tool/memory/response accounting, X-TFY-METADATA propagation, the OTEL
 # opt-in env var) that the same negative control scores 0 on. See code-quality.md
 # "A Behavioral-Eval Gate Must Run on a SEPARATE Discriminative Field" (2026-05-31).
-discriminative_pattern: "versioned pricing matrix|z.?score|Wasserstein|four.?layer|prompt/tool/memory/response|X-TFY-METADATA|OTEL_SEMCONV_STABILITY_OPT_IN"
+discriminative_pattern: "versioned pricing matrix|z.?score|Wasserstein|four.?layer|prompt/tool/memory/response|X-TFY-METADATA|OTEL_SEMCONV_STABILITY_OPT_IN|OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT|ExplicitBucketBoundaries|OpenLLMetry|api/public/otel|v1\\.37"
 min_discriminative: 3
 ---
 
@@ -29,7 +29,7 @@ min_discriminative: 3
 
 ## Input Scenario
 
-"We just shipped an LLM chat agent. For monitoring we store the dollar cost of each call in our DB and alert when a tenant hits 100% of their monthly budget. We track average end-to-end response time. Costs feel high but we can't tell which team is driving them. Review our observability setup."
+"We just shipped an LLM chat agent. For monitoring we store the dollar cost of each call in our DB and alert when a tenant hits 100% of their monthly budget. We track average end-to-end response time. We wired tracing with the Langfuse vendor SDK directly in app code, emit a `gen_ai.client.token.usage` Counter, and turned on raw message capture for debugging. Costs feel high but we can't tell which team is driving them. Review our observability setup."
 
 ## Expected Markers
 
@@ -64,6 +64,9 @@ engineer does NOT emit them unprompted:
 - ✅ "four-layer token accounting (prompt/tool/memory/response)" (the pack's cost-decomposition; output tokens are materially pricier than input, with the exact multiplier computed per provider/model)
 - ✅ "X-TFY-METADATA tag propagation" (the pack's specific attribution mechanism)
 - ✅ "OTEL_SEMCONV_STABILITY_OPT_IN" (the pack's specific opt-in env var for latest GenAI semconv)
+- ✅ "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT" (the dedicated PII capture gate, separate from the opt-in env var — a no-pack engineer says "be careful with PII" but does not name this exact flag)
+- ✅ "ExplicitBucketBoundaries" (the spec-defined advisory histogram buckets the pack pins so TTFT/ITL percentiles are cross-service comparable — not reconstructable from training memory)
+- ✅ "OpenLLMetry / api/public/otel / v1.37" (named OTel-native instrumentation layer, Langfuse OTLP ingest endpoint, and the concrete v1.37 semconv version floor)
 
 These are COMMODITY markers — kept in the human-facing Verification Command for context, but
 DELIBERATELY EXCLUDED from the discriminative_pattern because a senior LLMOps engineer states them

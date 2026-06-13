@@ -43,6 +43,7 @@ When the user mentions dataset-curation work, detect the context and load the ri
 | "data quality", "filter corpus", "perplexity filter", "Ask-LLM", "quality score", "数据清洗", "质量过滤" | `references/quality-filtering-rules.md` |
 | "deduplicate", "dedup", "MinHash", "LSH", "near-duplicate", "去重" | `references/deduplication-rules.md` |
 | "synthetic data", "Self-Instruct", "Evol-Instruct", "WizardLM", "generate instructions", "distilabel", "合成数据", "指令生成" | `references/synthetic-generation-rules.md` |
+| "Magpie", "pre-query template", "self-synthesis", "persona", "PersonaHub", "Nemotron-Personas", "no seed task", "diversity collapse", "raise temperature", "人设生成", "角色驱动" | `references/synthetic-generation-rules.md` (GEN7 Magpie / GEN8 persona-driven) |
 | "preference data", "DPO", "RRHF", "GRPO", "chat template", "ShareGPT", "Axolotl", "Unsloth", "偏好数据", "微调格式" | `references/preference-alignment-rules.md` |
 | "contamination", "benchmark leak", "data leakage", "ConTAM", "CoDeC", "污染检测", "基准泄漏" | `references/contamination-detection-rules.md` |
 | "full dataset pipeline", "build a fine-tune dataset end to end", "curate everything" | Load **all references** sequentially |
@@ -92,6 +93,16 @@ Produce a structured curation report:
 ### Pipeline Stage Audit
 [table: filter → dedup → generate → align → decontaminate, with status per stage]
 
+Run the deterministic config checker to back this table with grep-verifiable evidence
+(don't eyeball it — this is the A10 validation entry point):
+```bash
+bash scripts/validate-curation-config.sh <pipeline-config-file>
+# Asserts: near-dup pass exists (not exact-only), ROUGE-L<=0.7 reject on gen loops,
+# MinHash signatures as BINARY_VECTOR (not float32), roles_to_train + map_eos_token/
+# train_on_eos set, and decontamination precedes any benchmark-score step.
+# Exit 0 = no P0; exit 1 = at least one P0 blocking violation.
+```
+
 ### Tool Recommendation
 [distilabel / Axolotl / Unsloth / Milvus-BINARY_VECTOR / fastText based on user context]
 ```
@@ -119,3 +130,4 @@ Produce a structured curation report:
 | Unsloth | `pip install unsloth` | Fast fine-tuning; `standardize_sharegpt`, `map_eos_token` |
 | fastText | `pip install fasttext` | Language identification filtering in the heuristic gate |
 | Milvus / Zilliz | `pip install pymilvus` | `MINHASH_LSH` index over a `BINARY_VECTOR` MinHash field (avoids float32 precision loss) |
+| validate-curation-config.sh | `bash scripts/validate-curation-config.sh <config>` | Deterministic checker: near-dup pass / ROUGE-L 0.7 reject / BINARY_VECTOR / roles_to_train+map_eos_token / decontam-before-score ordering. Exit 1 on any P0. |

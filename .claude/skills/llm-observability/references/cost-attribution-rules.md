@@ -6,7 +6,7 @@
 | # | Rule | determinismLevel |
 |---|------|-----------------|
 | CA1 | Account tokens across 4 layers: prompt, tool, memory, response | deterministic |
-| CA2 | Output tokens are materially pricier than input — Response Layer dominates spend (compute the exact multiplier per provider/model) | deterministic |
+| CA2 | Output tokens 2x–6x input (GPT-5 ~6x, Claude 4.x 5x) — Response Layer dominates; compute exact multiplier from live pricing | deterministic |
 | CA3 | Propagate metadata tags (X-TFY-METADATA) down the whole execution tree | deterministic |
 | CA4 | Budget enforcement: soft alert at 80%, HTTP 429 block at 100%, route-down at >90% | deterministic |
 | CA5 | Margin caps: daily ∈ [1.5,3.0]× contracted; rate limit ∈ [2.0,3.0]× expected peak | semi-deterministic |
@@ -36,11 +36,20 @@ Standard provider interfaces aggregate cost globally by API key, creating a visi
 
 ### CA2: Output Tokens Are Materially Pricier Than Input — Compute the Multiplier
 
-Across providers, **output tokens are priced materially higher than input tokens** (the multiplier varies by provider/model/version — e.g. roughly 4-5x on some frontier models, up to ~8x on others such as the OpenAI GPT-5 family), making the Response Layer (CA1) the most expensive component of system operations — and reasoning / extended-thinking tokens count toward it where the provider reports them.
+Across providers, **output tokens are priced materially higher than input tokens** — the general band is **output costs 2x–6x input** — making the Response Layer (CA1) the most expensive component of system operations. Reasoning / extended-thinking tokens count toward it where the provider reports them. Dated, sourced anchors (as of 2026-06-13 — verify against the live pricing table before quoting):
 
-**Rule**: When optimizing cost, prioritize reducing output/reasoning tokens before input tokens, and compute the exact output:input multiplier from the provider/model/version pricing table rather than assuming a fixed ratio. Because output is several times more expensive than input on most models, a small output-token reduction often saves more than a much larger prompt reduction. Track `gen_ai.usage.reasoning.output_tokens` separately so reasoning spend is visible.
+| Model | Input ($/1M) | Output ($/1M) | Output:Input |
+|-------|-------------|---------------|--------------|
+| GPT-5.4 _(illustrative — verify against live pricing)_ | $2.50 | $15.00 | **6x** |
+| GPT-5.4 Pro _(illustrative — verify against live pricing)_ | $30.00 | $180.00 | **6x** |
+| Claude Opus 4.x | $5.00 | $25.00 | **5x** |
+| Claude Sonnet 4.x | $3.00 | $15.00 | **5x** |
 
-> Source: findings.md "response tokens are priced [several times] higher than input tokens, making the Response Layer the most expensive component" [10]; exact multiplier is provider/model/version-specific (verify against the live pricing table — e.g. OpenAI GPT-5 family lists output at up to ~8x input).
+The GPT-5 family holds a consistent ~6x multiplier across tiers; the Claude 4.x family sits at 5x.
+
+**Rule**: When optimizing cost, prioritize reducing output/reasoning tokens before input tokens, and compute the **exact** output:input multiplier from the **live** provider/model/version pricing table rather than assuming a fixed ratio — the example numbers above are dated anchors that will rot. Because output is several times more expensive than input on most models, a small output-token reduction often saves more than a much larger prompt reduction. Track `gen_ai.usage.reasoning.output_tokens` separately so reasoning spend is visible.
+
+> Source: findings.md "response tokens are priced [several times] higher than input tokens, making the Response Layer the most expensive component" [10]; current multipliers from CloudZero LLM API pricing comparison — GPT-5 family ~6x ($2.50/$15, $30/$180), Claude Opus 4.x 5x ($5/$25), Claude Sonnet 4.x 5x ($3/$15), output 2x–6x input (https://www.cloudzero.com/blog/llm-api-pricing-comparison/, retrieved 2026-06-13).
 
 **determinismLevel**: deterministic — output > input is a documented pricing relationship; the exact multiplier is provider/model-specific.
 

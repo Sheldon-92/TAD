@@ -77,8 +77,11 @@ DISC='(≥|≤|>=|<=|exit code|exit [0-9]|n ?= ?[0-9]|n ?≥|ICC|p9[0-9]|[0-9]+ 
 P=.claude/skills/<pack>
 # ⚠️ pack-anchored paths + parens (code-review P2-1 fix): bare '*/skills/*.md' over-matches the
 # whole pack tree because packs live under .claude/skills/. Anchor to "$P/..." and wrap the -o chain.
-find "$P" \( -name 'SKILL.md' -o -path "$P/references/*.md" -o -path "$P/skills/*.md" -o -path "$P/checklists/*.md" -o -path "$P/adapters/*.md" \) | xargs grep -hoE "$DISC" | sort -u | wc -l
-# specN computed 2026-06-13; ±2 drift expected from dedup/locale — bucket-stable, NOT a regression on Gate 3 re-run.
+find "$P" \( -name 'SKILL.md' -o -path "$P/references/*.md" -o -path "$P/skills/*.md" -o -path "$P/checklists/*.md" -o -path "$P/adapters/*.md" \) | xargs env LC_ALL=en_US.UTF-8 grep -hoE "$DISC" | sort -u | wc -l
+# ⚠️ LC_ALL=en_US.UTF-8 REQUIRED (Batch 2 fix 2026-06-13): DISC contains multibyte ≥ ≤ × ; under
+#    macOS default C/POSIX locale grep won't match them → specN wrongly returns 0 (bucket 1).
+#    product-thinking surfaced this: 0 under C locale → 32 under UTF-8 (bucket 3). Always set the locale.
+# specN computed 2026-06-13; ±2 drift expected from dedup — bucket-stable, NOT a regression on Gate 3 re-run.
 ```
 
 specN→Layer B 桶（gold 包直接锚 5，其余按 specN 初判后 reading 微调）：specN≥60→5｜40-59→4｜25-39→3｜15-24→2｜<15→1。

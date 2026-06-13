@@ -11,6 +11,8 @@
 | GEN4 | Evol-Instruct: In-Depth (5 mutations) + In-Breadth + Elimination Evolving | post-training |
 | GEN5 | distilabel DAG: load → expand → generate → combine → ultrafeedback → to_argilla | post-training |
 | GEN6 | Bonito for zero-shot task adaptation on private data without external APIs | post-training |
+| GEN7 | Magpie: pre-query-template self-synthesis + ArmoRM reward filter (no seed, no prompt eng) | post-training |
+| GEN8 | Persona-driven synthesis: condition on PersonaHub / Census-grounded Nemotron-Personas, don't raise temperature | post-training |
 
 ---
 
@@ -99,6 +101,33 @@ When you cannot send private/domain data to external commercial APIs, use **Boni
 
 **stage**: post-training.
 
+### GEN7: Magpie — Pre-Query-Template Self-Synthesis + ArmoRM Reward Filter
+
+To extract instruction data directly from an aligned model **without any seed task and without prompt engineering**, use the Magpie trick: prompt the model with **ONLY the pre-query chat template** — the left-side template up to the user-message slot (e.g. everything up to and including `<|start_header_id|>user<|end_header_id|>` with nothing after it). The autoregressive model, conditioned on that prefix alone, **emits a user instruction**; you then feed that instruction back to generate the response. This harvests the instruction distribution baked into the alignment, no human seed pool required.
+
+- Magpie extracted **4M instructions from Llama-3-Instruct**, distilled to a **300K high-quality SFT subset** (Magpie-Pro / Magpie-Air).
+- SFT on Magpie alone can **match Llama-3-8B-Instruct** that was trained on ~10M proprietary supervised + preference points.
+- **Filter** the raw 4M with: a reward score from **`RLHFlow/ArmoRM-Llama3-8B-v0.1`**, an **instruction-quality** label (very poor → excellent), a **difficulty** label (very easy → very hard), plus **FAISS min-neighbor-distance** near-dup removal (drop instructions whose nearest-neighbor embedding distance is below a threshold).
+
+**Rule**: When you have an aligned model but no seed pool, do not hand-write seeds — prefill the pre-query template and let the model self-synthesize, then filter with the `ArmoRM-Llama3-8B-v0.1` reward score + quality/difficulty labels + FAISS min-neighbor-distance dedup. Naming a generic "reward model" instead of the exact `ArmoRM-Llama3-8B-v0.1` id loses the reproducibility this rule exists to give.
+
+> Source: Magpie (arxiv.org/html/2406.08464v2, retrieved 2026-06-13) — pre-query-template self-synthesis, 4M→300K, match Llama-3-8B-Instruct on ~10M points, ArmoRM-Llama3-8B-v0.1 + quality/difficulty + FAISS min-neighbor-distance filters; magpie-align/magpie repo (filtering signals: quality/difficulty/task-category/safety/reward/language).
+
+**stage**: post-training.
+
+### GEN8: Persona-Driven Synthesis — Condition on a Persona Set, Don't Raise Temperature
+
+When a flat Self-Instruct / Evol loop **collapses topical coverage** (generations cluster on a few topics), the wrong fix is raising temperature (it adds noise, not coverage). The right fix is to **embed a persona into the generation prompt** so each persona acts as a distributed carrier of world knowledge, forcing perspective/topic diversity:
+
+- **PersonaHub** — **~1B personas** curated from web data (estimated to cover ~13% of the world's population), usable for math / logic / instruction / knowledge-text / NPC / tool synthesis. Use it for **web-scale breadth**.
+- **NVIDIA Nemotron-Personas** — **100K personas** instead grounded in **real U.S. Census demographic / geographic / personality statistics**. Use it when you need **distribution alignment** to a real population, not just raw breadth.
+
+**Rule**: When topical coverage collapses, condition generation on a persona set (PersonaHub for breadth, Census-grounded Nemotron-Personas for distribution alignment) — do NOT just raise temperature. Choosing between the two is a real decision: breadth (web-scale, uncontrolled distribution) vs distribution-fidelity (Census-grounded, 100K).
+
+> Source: Scaling Synthetic Data Creation with 1,000,000,000 Personas / PersonaHub (arxiv.org/abs/2406.20094, retrieved 2026-06-13) — 1B personas, ~13% world pop; NVIDIA Nemotron-Personas (huggingface.co/blog/nvidia/nemotron-personas, retrieved 2026-06-13) — 100K Census-grounded personas, distribution alignment.
+
+**stage**: post-training.
+
 ---
 
 ## Anti-Patterns
@@ -109,3 +138,5 @@ When you cannot send private/domain data to external commercial APIs, use **Boni
 - **Evolution without Elimination**: ships corrupted/unsolvable evolved tasks (GEN4).
 - **No judge step before human review**: annotators triage blind without ultrafeedback ratings (GEN5).
 - **Sending private data to commercial APIs**: avoidable with Bonito's in-house generation (GEN6).
+- **Hand-writing seed tasks when an aligned model is available**: prefill the pre-query template instead (Magpie self-synthesis), then ArmoRM-filter (GEN7).
+- **Raising temperature to fix collapsed topical coverage**: adds noise, not coverage — condition on a persona set instead (GEN8).

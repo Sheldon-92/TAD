@@ -1,19 +1,22 @@
 ---
 name: test-pyramid-strategy
-description: "Tests ice-cream-cone anti-pattern + per-module coverage targets + fastest-fail-first ordering + automated-a11y 30-50%/n=550 stat + mutation testing"
+description: "Tests ice-cream-cone anti-pattern + per-module coverage targets + fastest-fail-first ordering + automated-a11y 30-50%/n=550 stat + mutation-score thresholds (break 50/low 60/high 80)"
 pack: web-testing
 tests_rules:
   - "Cross-Cutting: Fastest-Fail-First pipeline ordering"
   - "test-strategy-rules.md: testing pyramid / ice-cream-cone anti-pattern"
   - "Per-module coverage targets (auth 90 / logic 80 / UI 60), not global 80%"
   - "accessibility-testing-rules.md: automated catches 30-50% (n=550), top-5 failures"
-  - "Mutation testing (Stryker) over line coverage"
+  - "unit-testing-rules.md U5: mutation-score thresholds break 50 / low 60 / high 80"
+  - "test-strategy-rules.md S5: flaky-test trust-erosion cost (1.28% dev time)"
 min_marker_count: 3
 # DISCRIMINATIVE gate: ONLY pack-specific markers. Excludes generic "testing pyramid"/"add more
 # tests"/"use Playwright". The ice-cream-cone anti-pattern, per-module coverage targets
-# (auth 90 / logic 80 / UI 60), the 30-50% / n=550 / 57% a11y research stats, and mutation
-# testing / Stryker are pack-introduced specifics a no-pack agent does not produce.
-discriminative_pattern: "[Ii]ce.?cream.?cone|auth 90|logic 80|UI 60|30.?50%|n=550|57%|[Mm]utation testing|[Ss]tryker"
+# (auth 90 / logic 80 / UI 60), the 30-50% / n=550 / 57% a11y research stats, the Stryker
+# mutation-score thresholds (break 50 / low 60 / high 80, detected/(detected+undetected)), and
+# the measured flaky-test cost (1.28% dev time) are pack-introduced specifics a no-pack agent
+# does not produce. Generic "mutation testing" alone is NOT scored — the THRESHOLD numbers are.
+discriminative_pattern: "[Ii]ce.?cream.?cone|auth 90|logic 80|UI 60|30.?50%|n=550|57%|break 50|low 60|high 80|detected/\\(detected|1\\.28%|[Ss]tryker"
 min_discriminative: 3
 ---
 
@@ -34,13 +37,13 @@ the output MUST contain these markers:
    grep pattern: `per.?module (coverage )?target|auth 90|logic 80|UI (components? )?60|global 80%`
 3. **Fastest-fail-first ordering + sharding**: lint→unit→integration→E2E gating, not parallel-all
    grep pattern: `fastest.?fail.?first|lint.+unit.+integration.+E2E|gate(s)? the next|shard|--shard`
-4. **Automated-a11y stat + mutation testing**: pack's specific numbers
-   grep pattern: `30.?50%|n=550|57%|axe.?core|mutation testing|Stryker|over.?mock`
+4. **Automated-a11y stat + mutation-score thresholds**: pack's specific numbers — the agent prescribes a mutation gate with the Stryker threshold values (break 50 / low 60 / high 80), not just "use mutation testing"
+   grep pattern: `30.?50%|n=550|57%|break 50|low 60|high 80|detected/\(detected|over.?mock`
 
 ## Verification Command
 
 ```bash
-grep -oE 'ice.?cream.?cone|inverted pyramid|testing pyramid|wrong level|unit test.*logic|per.?module target|auth 90|logic 80|UI 60|global 80%|fastest.?fail.?first|gate the next|shard|--shard|30.?50%|n=550|57%|mutation testing|Stryker|over.?mock' test-pyramid-strategy-output.md | sort -u | wc -l | tr -d ' '
+grep -oE 'ice.?cream.?cone|inverted pyramid|testing pyramid|wrong level|unit test.*logic|per.?module target|auth 90|logic 80|UI 60|global 80%|fastest.?fail.?first|gate the next|shard|--shard|30.?50%|n=550|57%|break 50|low 60|high 80|detected/\(detected|1\.28%|Stryker|over.?mock' test-pyramid-strategy-output.md | sort -u | wc -l | tr -d ' '
 # Expected: ≥ 3
 ```
 
@@ -50,7 +53,9 @@ These markers are pack-specific (would NOT appear without the pack):
 - ✅ "ice-cream-cone / inverted pyramid" (the pack's named anti-pattern for E2E-heavy suites)
 - ✅ "per-module coverage: auth 90 / logic 80 / UI 60 (not global 80%)" (the pack's specific coverage rule)
 - ✅ "automated a11y catches 30-50% (n=550 / 57% by volume)" (the pack's specific research stat)
-- ✅ "mutation testing (Stryker) over line coverage / over-mocking" (the pack's named quality rules)
+- ✅ "mutation gate with Stryker thresholds break 50 / low 60 / high 80, score = detected/(detected+undetected)" (the pack's specific numbers, not generic "mutation testing")
+- ✅ "flaky tests cost ~1.28% of dev time / quarantine immediately for trust erosion" (the pack's measured cost rule)
 - ❌ "add more tests" (generic — any agent says this)
 - ❌ "increase coverage" (generic without the per-module targets)
+- ❌ "use mutation testing" (generic without the threshold numbers — NOT scored alone)
 - ❌ "use Playwright" (in the input)

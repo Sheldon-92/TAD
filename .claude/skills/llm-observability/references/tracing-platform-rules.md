@@ -8,8 +8,9 @@
 | TR1 | Platform selection by architecture: SDK vs proxy-gateway vs OTel-native | deterministic |
 | TR2 | Proxy gateways (Helicone) cannot natively reconstruct nested in-app steps | deterministic |
 | TR3 | Reconstruct agentic execution as a parent-child span tree, not flat HTTP logs | deterministic |
-| TR4 | Self-host requires open license: Langfuse MIT, Phoenix Elastic License 2.0 | deterministic |
+| TR4 | Self-host requires open license: Langfuse MIT, Phoenix Elastic License 2.0 (2026 pricing inline) | deterministic |
 | TR5 | Match framework-native support to your stack before picking a platform | deterministic |
+| TR6 | Instrument with an OTel-native layer (OpenLLMetry / OpenInference / OpenLIT); emit OTLP once, fan out — don't hard-couple to one vendor SDK | deterministic |
 
 ---
 
@@ -19,14 +20,16 @@
 
 When choosing an LLM tracing platform, the architecture — not the brand — drives the decision. Standard HTTP logging captures end-to-end latency but fails to map the internal execution graph of an agent (nested model calls, vector retrievals, tool executions).
 
-| Platform | Architecture | License & Model | Setup Effort | Best For |
-|----------|--------------|-----------------|--------------|----------|
-| LangSmith | SDK-based framework integration | Closed source SaaS by default; self-hosted / hybrid available as an Enterprise add-on, $39/seat + usage | ~15 min (auto-enabled for LangChain) | Teams embedded in LangChain / LangGraph |
-| Langfuse | SDK-based AND OpenTelemetry-compliant | MIT licensed open-source, self-host or cloud; Cloud from $59/seat | ~30 min cloud / ~60 min self-host | Privacy / self-hosting teams |
-| Arize Phoenix | OpenTelemetry-based, local Jupyter → cloud | Elastic License 2.0 open-source, enterprise cloud | ~30 min | ML engineers needing embedding/RAG validation rigor |
-| Helicone | Proxy / gateway HTTP interception | Open-source proxy gateway, SaaS | ~5 min (proxy URL redirection) | Early-stage / small teams needing fast setup |
+Pricing/licensing below is dated 2026-06-13 — re-verify before quoting (these figures rot):
 
-> Source: findings.md "Distributed Tracing Agent Typology in Production" comparison table [3, 5, 6, 7]
+| Platform | Architecture | License & 2026 Pricing | Setup Effort | Best For |
+|----------|--------------|------------------------|--------------|----------|
+| LangSmith | SDK-based framework integration | Closed-source SaaS by default; **Plus $39/seat/mo** (10K base traces; overage **$2.50/1K @ 14-day** or **$5.00/1K @ 400-day** retention); self-host only on Enterprise | ~15 min (auto-enabled for LangChain) | Teams embedded in LangChain / LangGraph |
+| Langfuse | SDK-based AND OTel-native (v3 SDK ingests OTLP at `/api/public/otel`) | **MIT** self-host **free forever**; Cloud **Core $29/mo / Pro $199/mo / from $59/seat** | ~30 min cloud / ~60 min self-host | Privacy / self-hosting teams |
+| Arize Phoenix | OpenTelemetry-based, local Jupyter → cloud; **Evaluator Hub** (Jan 2026) with versioned LLM-as-judge templates (faithfulness/hallucination/relevance/tool-call) | Elastic License 2.0 open-source, enterprise cloud | ~30 min | ML engineers needing embedding/RAG validation rigor |
+| Helicone | Proxy / gateway HTTP interception | Open-source proxy gateway, SaaS; **Pro from $79/mo** | ~5 min (proxy URL redirection) | Early-stage / small teams needing fast setup |
+
+> Source: findings.md "Distributed Tracing Agent Typology in Production" comparison table [3, 5, 6, 7]; 2026 pricing/licensing from SigNoz LangSmith-alternatives (https://signoz.io/comparisons/langsmith-alternatives/, retrieved 2026-06-13); Phoenix Evaluator Hub from Confident AI 2026 tools roundup (https://www.confident-ai.com/knowledge-base/compare/10-llm-observability-tools-to-evaluate-and-monitor-ai-2026, retrieved 2026-06-13).
 
 **determinismLevel**: deterministic — platform selection is an architectural decision.
 
@@ -54,7 +57,7 @@ A single user interaction with an autonomous agent can trigger an entire tree of
 
 When self-hosting is a requirement (data sovereignty, air-gapped), verify the license permits it:
 
-- **Langfuse**: MIT licensed — fully self-hostable. Dual Postgres + ClickHouse storage architecture designed to handle billions of spans while maintaining complete data control.
+- **Langfuse**: MIT licensed — fully self-hostable, **free forever**. Dual Postgres + ClickHouse storage architecture designed to handle billions of spans while maintaining complete data control. The **v3 SDK is OTel-native** and ingests OTLP at the `/api/public/otel` endpoint, so any OTel-instrumented app can ship traces in without the Langfuse SDK.
 - **Arize Phoenix**: Elastic License 2.0 — open-source, self-hostable, with enterprise cloud option.
 - **LangSmith**: Closed source SaaS by default — NOT self-hostable on the standard/Plus plan. Self-hosted (run components + data stores in your own cloud/VPC or on-prem) and hybrid (managed control plane + self-hosted data plane) ARE available as an Enterprise add-on requiring a license.
 
@@ -79,6 +82,24 @@ Match the platform's native framework support to your stack before committing:
 
 **determinismLevel**: deterministic — a compatibility fact.
 
+### TR6: Instrument Once at the OTel-Native Layer, Then Fan Out
+
+The instrumentation library — not the backend SDK — is what produces vendor-neutral `gen_ai.*` spans that ANY backend can ingest. Three OTel-native instrumentation layers cover this:
+
+| Library | Repo / Project | Notes |
+|---------|----------------|-------|
+| **OpenLLMetry** | `traceloop/openllmetry` | Its semantic conventions were **upstreamed into OpenTelemetry**; adds **Java + Go** coverage beyond the Python/TS SDKs |
+| **OpenInference** | `Arize-ai/openinference` | Complementary OTel conventions for AI observability (feeds Arize Phoenix) |
+| **OpenLIT** | OpenLIT | OTel-native instrumentation; also extends language coverage |
+
+These emit OTLP that fans out to any backend: **Langfuse v3** ingests OTLP at `/api/public/otel`, Phoenix and Datadog consume the same `gen_ai.*` spans.
+
+**Rule**: Pick the instrumentation library by **language coverage** (OpenLLMetry / OpenLIT add Java + Go beyond the Python/TS backend SDKs), **emit OTLP once**, then fan out to backends. Do **NOT** hard-couple application code to a single vendor's SDK — that locks your spans to one backend and forces a rewrite to migrate. If you instrument with the vendor SDK directly, you cannot dual-export or switch backends without re-instrumenting.
+
+> Source: OpenLLMetry — OTel-native GenAI instrumentation, conventions upstreamed into OpenTelemetry (https://github.com/traceloop/openllmetry, retrieved 2026-06-13); OpenInference (https://github.com/Arize-ai/openinference, retrieved 2026-06-13); Langfuse v3 OTLP ingest at `/api/public/otel` (https://github.com/langfuse/langfuse, retrieved 2026-06-13).
+
+**determinismLevel**: deterministic — a fixed instrumentation-architecture rule + named repos/endpoint.
+
 ---
 
 ## Anti-Patterns
@@ -87,3 +108,4 @@ Match the platform's native framework support to your stack before committing:
 - **Proxy-only for in-app debugging**: A proxy gateway cannot see steps that never leave the application process.
 - **Brand-first selection**: Picking a platform by popularity rather than by architecture (SDK vs proxy vs OTel) and framework match.
 - **Ignoring license/plan before self-host**: LangSmith's standard/Plus SaaS plan blocks self-hosting (self-hosted/hybrid is an Enterprise add-on), whereas Langfuse (MIT) and Phoenix (Elastic 2.0) permit it openly.
+- **Hard-coupling to a vendor SDK**: Instrumenting app code with one backend's SDK locks your spans to that backend; instrument with an OTel-native layer (OpenLLMetry / OpenInference / OpenLIT), emit OTLP once, fan out.
