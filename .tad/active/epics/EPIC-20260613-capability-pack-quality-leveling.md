@@ -35,11 +35,11 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | 定尺 + 基线审计 (Bar + Baseline) | ✅ Accepted (Gate 4 PASS, commit f2addac) | archive/handoffs/HANDOFF-20260613-pack-quality-phase1-bar-baseline.md | QUALITY-BAR.md + BASELINE-AUDIT.md + notebook ✅ |
-| 2 | 升级批次 1（最弱 7 个 + 无 fixture） | ✅ Gate PASS (Conductor; user checkpoint) | yolo/...phase2-gate-report.md | 7 包通过双层尺 + 判别式 eval (WITH 14-21 vs CTRL 0) + 对抗审查 |
-| 3 | 升级批次 2（中浅+结构补强 5 个） | ⬚ Planned | — | 5 包通过双层尺 + 批次 Workflow 对抗审查 |
-| 4 | 升级批次 3（扎实向 gold 收口 5 个） | ⬚ Planned | — | 5 包通过双层尺 + 批次 Workflow 对抗审查 |
-| 5 | 升级批次 4（近 gold 最后一抬 4 个） | ⬚ Planned | — | 4 包通过双层尺 + 批次 Workflow 对抗审查 |
-| 6 | 全量验证 + 固化 | ⬚ Planned | — | 21 升级包重跑 eval gate；checklist 固化进 capability-upgrade |
+| 2 | 升级批次 1（最弱 7 个 + 无 fixture） | ✅ Done (commit b85e715, Gate PASS, user-confirmed) | yolo/...phase2-gate-report.md | 7 包通过双层尺 + 判别式 eval (WITH 14-21 vs CTRL 0) + 对抗审查 |
+| 3 | 升级批次 2（中浅+结构补强 5 个） | ✅ Done (commit d27f108, Gate PASS; Conductor fixed 1 P0 + 1 P1 + locale bug) | yolo/...phase3-gate-report.md | 5 包通过双层尺 + 判别式 eval + 对抗审查(规则改为 any-refute→fix) |
+| 4 | 升级批次 3（扎实向 gold 收口 5 个） | ✅ Done (commit f7e4efb, Gate PASS; limit-interrupted→resumed; Conductor fixed 2 P0 + 多 P1) | yolo/...phase4-gate-report.md | 5 包通过双层尺 + 判别式 eval + 对抗审查 |
+| 5 | 升级批次 4（近 gold 最后一抬 4 个） | ✅ Done (commit ba1fa9c, Gate PASS) | yolo/...phase5-gate-report.md | 4 包通过双层尺 + 判别式 eval + 对抗审查 |
+| 6 | 全量验证 + 固化 | ✅ Done | yolo/...EPIC-COMPLETION.md | 21/21 结构回归 PASS;checklist 固化进 capability-upgrade Gate 2 |
 
 ### 批次成员（Phase 1 基线回填 — 弱→强，不均匀 7/5/5/4；3 gold 不进升级批，是参照）
 
@@ -57,8 +57,8 @@
 - 同时只能 1 个 Active phase(TAD 约束)。
 
 ### Derived Status
-- **Status**: In Progress (Phase 1 ✅ Accepted; Phase 2 next, not yet active)
-- **Progress**: 1 / 6 phases
+- **Status**: ✅ COMPLETE (all 6 phases done) — awaiting final human acceptance + Epic archive
+- **Progress**: 6 / 6 phases
 
 ---
 
