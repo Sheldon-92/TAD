@@ -7,11 +7,12 @@
 |---|------|-------------|
 | MO1 | Uptime Kuma for self-hosted uptime monitoring — 1 Docker command | Any web project |
 | MO2 | Prometheus + Grafana for metrics and dashboards | Self-hosted / K8s stacks |
-| MO3 | Baseline-based alerting, not static thresholds — reduces alert fatigue | Alert configuration |
+| MO3 | Multi-window multi-burn-rate alerting (14.4x/6x/1x) — not a flat threshold | Alert configuration |
 | MO4 | SLA targets: 99.95% (standard) to 99.99% (enterprise) | SLO/SLI definition |
 | MO5 | Alert severity tiers: P0 immediate / P1 1-hour / P2 next business day | Alert routing |
 | MO6 | Four core dashboard metrics: error rate, p95 latency, uptime, deploy frequency | Dashboard design |
 | MO7 | Sentry DSN from env var, sampling rate 0.1 in production | Error monitoring setup |
+| MO8 | DORA deploy-health targets: top-tier CFR ≤5%, MTTR <1h (DORA 2025 retired the 4-tier model for 7 archetypes) | Deploy quality SLOs |
 
 ---
 
@@ -78,16 +79,31 @@ docker run -d -p 3000:3000 --name grafana grafana/grafana-oss:latest
 # Add Prometheus as data source: http://prometheus:9090
 ```
 
-### MO3: Baseline-Based Alerting (MANDATORY)
+### MO3: Multi-Window Multi-Burn-Rate Alerting (MANDATORY)
 
-When configuring alerts, use behavior-based baselines instead of static thresholds. Static thresholds cause alert fatigue — a p95 of 450ms triggers a 500ms alert during peak hours when 450ms is normal.
+When configuring SLO alerts, do NOT alert on a flat instantaneous threshold like ">5% errors for 2 minutes". A flat threshold both **fires on harmless blips** and **fails to escalate a slow burn** that is quietly draining your error budget. Use the **Google SRE multi-window, multi-burn-rate** method (SRE Workbook, "Alerting on SLOs"): the **burn rate** is how many times faster than the sustainable rate you are consuming the error budget; `1x` burn exactly exhausts a 30-day budget in 30 days.
 
-**Pattern**:
-1. Collect 2 weeks of baseline data
-2. Alert on deviation from baseline (e.g., >2 standard deviations)
-3. Separate baselines for peak vs off-peak hours
+Alert only when a **long window** AND a **short confirmation window** are BOTH over the burn-rate threshold — the short window cuts noise (auto-resolves fast when the spike ends) and prevents alerting on a single bad minute.
 
-**Static threshold (for bootstrapping when no baseline exists)**:
+| Tier | Burn rate | Long window | Short (confirm) window | Budget consumed when it fires | Page? | Meaning |
+|------|-----------|-------------|------------------------|-------------------------------|-------|---------|
+| Fast burn | **14.4x** | 1 hour | 5 minutes | **2%** of 30-day budget | P0 page | Exhausts the entire 30-day budget in **~2 days** if unchecked |
+| Medium burn | **6x** | 6 hours | 30 minutes | **5%** | P1 page | Sustained degradation |
+| Slow burn | **1x** | 3 days | 6 hours | **10%** | Ticket, not page | Chronic low-grade errors |
+
+Both the long and the short window must exceed the threshold for the alert to fire (`AND`), which is what makes it self-resolving and low-noise.
+
+```promql
+# Fast-burn (14.4x): 1h window AND 5m window both above 14.4x the SLO error ratio.
+# For a 99.9% SLO the sustainable error ratio is 0.001, so 14.4x ≈ 0.0144 (1.44%).
+(
+  job:slo_errors_per_request:ratio_rate1h{job="webapp"}  > (14.4 * 0.001)
+and
+  job:slo_errors_per_request:ratio_rate5m{job="webapp"}  > (14.4 * 0.001)
+)
+```
+
+**Static threshold (bootstrap ONLY — use until you have a measured SLO and recording rules)**:
 
 | Metric | Warning | Critical | Action |
 |--------|---------|----------|--------|
@@ -97,7 +113,7 @@ When configuring alerts, use behavior-based baselines instead of static threshol
 | CPU usage | >70% | >90% | Scale up |
 | Memory usage | >75% | >90% | Investigate leaks |
 
-**Transition**: Start with static thresholds. After 2 weeks of data, switch to baseline-based. Keep static thresholds as absolute safety nets.
+**Transition**: Start with static thresholds. Once you have ~2 weeks of data and a defined SLO, switch to the burn-rate windows above. Keep static thresholds as absolute safety nets, not as the primary alert. Source: sre.google/workbook/alerting-on-slos (retrieved 2026-06-13).
 
 ### MO4: SLA/SLO/SLI Targets
 
@@ -173,6 +189,19 @@ Sentry.init({
   npx @sentry/cli sourcemaps upload --auth-token $SENTRY_AUTH_TOKEN ./dist
   ```
 
+### MO8: DORA 2025 Deploy-Health Targets
+
+When setting deploy-quality SLOs, anchor them to the **DORA** (DevOps Research & Assessment) metrics rather than "monitor your deploys". Note a 2025 reporting change: the **2025 DORA report retired the four-tier Elite/High/Medium/Low classification** in favor of **seven team archetypes** that blend delivery performance with human factors (burnout, friction). It no longer publishes a single "Elite" bucket; the top-tier delivery targets below are the elite/top thresholds carried over from the **2024** four-tier report (the last year that named bands were published). Concrete targets for the top tier:
+
+| DORA metric | What it measures | Top-tier target (2024 elite band) | Where to source it |
+|-------------|------------------|-----------------------------|--------------------|
+| Change Failure Rate (CFR) | % of deploys causing a failure needing remediation (hotfix/rollback) | **≤ 5%** (elite band; tightened from the old 0-15% to ≤5% in the 2024 report) | failed deploys / total deploys |
+| Failed deployment recovery time (MTTR) | Time to restore service after a failed change | **< 1 hour** | incident start → resolved (Uptime Kuma / PagerDuty) |
+| Deployment frequency | How often you ship to prod | On-demand / multiple per day | CI deploy events |
+| Lead time for changes | commit → running in prod | < 1 day | CI pipeline timestamps |
+
+**Wire these into the dashboard (MO6)**: CFR and MTTR are your two **deploy-health SLOs** — a rising CFR means your CI gates (tests, attestations) are leaking defects; an MTTR over 1h usually means rollback is too slow (see rollback rules — prefer atomic/blue-green so MTTR is one command). Source: 2024 Google Cloud DORA report (elite CFR ≤5%, MTTR <1h) + 2025 DORA report (four-tier model retired for seven team archetypes), retrieved 2026-06-13.
+
 ---
 
 ## Anti-Patterns
@@ -182,4 +211,5 @@ Sentry.init({
 - **Sentry DSN hardcoded**: `Sentry.init({ dsn: "https://..." })` in source code. Use env var.
 - **`tracesSampleRate: 1.0` in production**: Full sampling on 100K requests/day = $500+/month Sentry bill. Start at 0.1.
 - **No SLO definition**: "The site should be fast" is not measurable. Define p95 <= 500ms, availability >= 99.95%.
-- **Static thresholds only**: A 500ms alert on a service that normally runs at 480ms fires constantly. Use baselines.
+- **Flat-threshold alerting (">5% for 2 min")**: fires on harmless blips and misses slow budget burns. Use multi-window multi-burn-rate (14.4x/6x/1x) gated on a short confirmation window.
+- **No deploy-health SLOs**: "monitor your deploys" is not a target. Track CFR (top-tier ≤5%) and MTTR (<1h) per the DORA elite band — a rising CFR means CI gates are leaking defects.

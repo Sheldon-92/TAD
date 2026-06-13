@@ -9,7 +9,7 @@
 | DA2 | Never connect an LLM directly to external APIs/tools — front it with an AI Gateway | deterministic |
 | DA3 | Enforce token-based rate limiting (HTTP 429), not IP-based | deterministic |
 | DA4 | Budget inline latency per layer — input ≤50ms, hardening <2ms, output 100–400ms | deterministic |
-| DA5 | Pin defenses to the OWASP risk each one mitigates so coverage gaps are visible | deterministic |
+| DA5 | Pin defenses to the OWASP 2025 risk each mitigates (incl. LLM07 prompt leakage, LLM08 vector/embedding) so gaps are visible | deterministic |
 
 ---
 
@@ -23,7 +23,7 @@ A production GenAI pipeline deploys these layers in order from untrusted prompt 
 |---|-------|--------------|------------------|----------------|
 | 1 | **Input Validation** | LLM01, LLM02 | Presidio PII sanitization, Prompt Guard, Lakera Guard | 15–50ms |
 | 2 | **Prompt-Template Hardening** | LLM01, LLM07 | role-based delimiters, Rebuff canary injection, system-instruction anchoring | <2ms |
-| 3 | **Retrieval Rail (RAG Sandbox)** | LLM01 (indirect) | NeMo Guardrails retrieval flows, semantic cosine-distance filters; scan chunks for injection + duplicates | 10–30ms |
+| 3 | **Retrieval Rail (RAG Sandbox)** | LLM01 (indirect), LLM08 | NeMo Guardrails retrieval flows, semantic cosine-distance filters; scan chunks for injection + duplicates; Spotlighting/datamarking on retrieved spans | 10–30ms |
 | 4 | **Output Filtering / Moderation** | LLM02, LLM05 | Llama Guard 4, OpenAI Moderation; PII leakage block | 100–400ms |
 | 5 | **Tool-Call Gating** | LLM06 (Excessive Agency) | Pydantic AI constraints, sqlglot AST parsing, allowlist endpoints | 5–15ms |
 | 6 | **Execution Sandbox & Human Gating** | LLM05 / RCE | gVisor isolation, human-in-the-loop manual approval for high-risk writes | variable / manual |
@@ -71,13 +71,15 @@ Each layer has a latency budget that constrains tool choice. Reference points fr
 
 **determinismLevel**: deterministic.
 
-### DA5: Pin Each Defense to Its OWASP Risk
+### DA5: Pin Each Defense to Its OWASP Risk (OWASP Top 10 for LLM Apps **2025**)
 
-Every layer in the table maps to a specific OWASP LLM risk. This mapping makes coverage gaps and redundancy visible across projects.
+Every layer in the table maps to a specific OWASP LLM risk. This mapping makes coverage gaps and redundancy visible across projects. Use the **2025** Top-10 — it added two entries directly relevant to this pack:
+- **LLM07 System Prompt Leakage** (new in 2025) — maps to PI6 canary tokens: a leaked system prompt is detected when the Rebuff canary appears in output.
+- **LLM08 Vector & Embedding Weaknesses** (new in 2025) — maps to indirect injection via poisoned RAG chunks (Layer 3 retrieval rail); embedding-store poisoning / cross-tenant leakage.
 
-**Rule**: When reviewing an architecture, label each present control with the OWASP risk it covers (LLM01 injection, LLM02 sensitive-info disclosure, LLM05 improper output, LLM06 excessive agency, LLM07 system-prompt leakage). Any OWASP risk with zero covering controls is a P0 gap.
+**Rule**: When reviewing an architecture, label each present control with the OWASP **2025** risk it covers (LLM01 prompt injection, LLM02 sensitive-info disclosure, LLM05 improper output, LLM06 excessive agency, **LLM07 system-prompt leakage**, **LLM08 vector & embedding weaknesses**). Map findings to LLM07/LLM08 where applicable. Any OWASP risk with zero covering controls is a P0 gap.
 
-> Source: findings.md implementation-parameters "Target OWASP Risk" column [8, 21]
+> Source: findings.md implementation-parameters "Target OWASP Risk" column; OWASP Top 10 for LLM Applications 2025 (LLM07 System Prompt Leakage, LLM08 Vector & Embedding Weaknesses added), https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf (retrieved 2026-06-13)
 
 **determinismLevel**: deterministic.
 

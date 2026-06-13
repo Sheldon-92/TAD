@@ -13,6 +13,7 @@
 | X6 | Keyboard navigation: Tab, Enter, Escape | Testing interactive elements |
 | X7 | Focus management for modals and dialogs | Testing dynamic UI |
 | X8 | ARIA: wrong ARIA is worse than no ARIA | Using ARIA attributes |
+| X9 | WCAG 2.2: target-size 24px (automatable) + focus-appearance (manual) | Targeting the current standard |
 
 ---
 
@@ -35,7 +36,7 @@ These five account for the majority of automated a11y failures. Fix them first.
 When setting up automated accessibility testing in E2E suites:
 
 ```bash
-npm i -D @axe-core/playwright
+npm i -D @axe-core/playwright   # axe-core current 4.12.x — first added WCAG 2.2 'target-size'
 ```
 
 ```typescript
@@ -46,14 +47,15 @@ test('homepage has no a11y violations', async ({ page }) => {
   await page.goto('/');
 
   const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa'])
+    .withTags(['wcag2a', 'wcag2aa', 'wcag22aa']) // include WCAG 2.2 AA — see X9
     .analyze();
 
   expect(results.violations).toEqual([]);
 });
 ```
 
-- **`withTags(['wcag2a', 'wcag2aa'])`**: Tests against WCAG 2.1 Level A and AA criteria
+- **`withTags([... 'wcag22aa'])`**: WCAG **2.2** is the current standard (an ISO standard for 2026). Add the `wcag22aa` tag — without it axe runs only the 2.0/2.1 ruleset and silently skips the new `target-size` rule.
+- **Pin axe-core to >= 4.12.x**: the `target-size` rule (WCAG 2.2 SC 2.5.8) landed in the 4.x line; older axe-core has no rule for it.
 - **Run after page is fully loaded**: Dynamic content must be rendered before scanning
 - **Test key states**: Empty state, loaded state, error state, modal open state
 
@@ -163,6 +165,17 @@ When using ARIA attributes:
 - `role="button"` without keyboard handler -- looks like a button but doesn't work like one
 - `aria-hidden="true"` on visible interactive elements -- hides them from screen readers while they're still visible and clickable
 
+### X9: WCAG 2.2 — What Changed and What Is Automatable
+
+WCAG **2.2** (the current standard, ISO for 2026) adds **9 new success criteria** over 2.1. Most are manual-only; know which one your automated suite can actually enforce:
+
+- **Target Size (Minimum) — SC 2.5.8 (Level AA) — AUTOMATABLE**: interactive controls must be **>= 24x24 CSS px**, OR have enough spacing that a **24px-diameter circle centered on the target does not intersect another target**. This is the one new 2.2 criterion that tools check reliably — axe-core's **`target-size`** rule (added in the 4.x line, current 4.12.x) covers exactly it.
+- **Focus Appearance — SC 2.4.13 (Level AAA) — MANUAL-ONLY**: the focus indicator must be **>= 2px thick around the perimeter** and have **>= 3:1 contrast** between the focused and unfocused states. Tools cannot reliably measure this; verify by keyboard walkthrough.
+- **REMOVED in 2.2**: SC **4.1.1 Parsing** was removed (it tested for HTML validity that modern browsers handle). Do not flag parsing failures as WCAG violations under 2.2.
+- Other 2.2 additions (Dragging Movements 2.5.7, Consistent Help 3.2.6, Redundant Entry 3.3.7, Accessible Authentication 3.3.8/3.3.9) are **manual** — design/review concerns, not axe rules.
+
+**Rule**: enable `wcag22aa` in axe (X2) to catch `target-size`; everything else in 2.2 needs the manual keyboard/screen-reader pass (X3's "other half").
+
 ---
 
 ## Anti-Patterns
@@ -175,3 +188,13 @@ When using ARIA attributes:
 | ARIA on everything | Over-ARIA confuses screen readers | Native HTML first, ARIA only when needed |
 | Homepage-only a11y test | Unique pages have unique violations | Test every page template |
 | Ignoring mobile a11y | Touch targets, zoom, reflow differ | Test at 320px width, 200% zoom |
+| Running axe with only `wcag2aa` | Skips WCAG 2.2 `target-size` silently | Add `wcag22aa` tag + axe >= 4.12 (X9) |
+| Flagging 4.1.1 Parsing under 2.2 | Criterion was removed in WCAG 2.2 | Drop parsing checks from the 2.2 gate |
+
+---
+
+## Sources
+
+- Deque — axe-core 4.5: first WCAG 2.2 support (`target-size` rule) — https://www.deque.com/blog/axe-core-4-5-first-wcag-2-2-support-and-more/ (retrieved 2026-06-13)
+- W3C — What's New in WCAG 2.2 (9 new SC, 4.1.1 removed, target-size 24px, focus-appearance) — https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/ (retrieved 2026-06-13)
+- axe-core on npm (current 4.12.x) — https://www.npmjs.com/package/axe-core (retrieved 2026-06-13)

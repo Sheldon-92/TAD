@@ -85,20 +85,28 @@ Severity mapping for pipeline gating:
 
 ### D4: Rate Limiting to Protect Infrastructure
 
-Always set rate limits to avoid overwhelming the target:
+Always set rate limits to avoid overwhelming the target. Nuclei v3 (current v3.8.0, released 2026-04-18) has **three** distinct throttling knobs — do not conflate them:
+
+| Flag | Controls | v3 default |
+|------|----------|-----------|
+| `-rate-limit` / `-rl` | Max requests per second (global) | **150 req/s** |
+| `-c` / `-concurrency` | Templates run in parallel | **10** |
+| `-bs` / `-bulk-size` | Hosts scanned in parallel **per template** | **25** |
+
+> ⚠️ **Precedence rule**: `-rate-limit` takes PRECEDENCE over `-c` and `-bs`. Actual req/s can never exceed `-rl` regardless of how high concurrency or bulk-size are set. So `-rl` is the real safety throttle; `-c`/`-bs` only tune how that budget is distributed. (Source: docs.projectdiscovery.io Nuclei running docs, retrieved 2026-06-13.)
 
 ```bash
-# Default: 150 requests/second (Nuclei default)
+# Default: 150 req/s, concurrency 10, bulk-size 25 (Nuclei v3 defaults)
 nuclei -u https://staging.example.com -rl 150
 
-# Conservative: shared staging environment
+# Conservative: shared staging environment — lower the req/s ceiling
 nuclei -u https://staging.example.com -rl 50
 
 # Aggressive: dedicated test environment
 nuclei -u https://staging.example.com -rl 300
 
-# Concurrent template limit
-nuclei -u https://staging.example.com -rl 100 -c 25
+# Tune distribution under a fixed req/s ceiling (rl still caps total throughput)
+nuclei -u https://staging.example.com -rl 100 -c 25 -bs 25
 ```
 
 Rate limit guidelines:
@@ -106,7 +114,7 @@ Rate limit guidelines:
 - **Dedicated test**: `-rl 150-300` (default is fine)
 - **External target**: `-rl 10-25` (respect third-party resources)
 
-**Anti-pattern**: Running Nuclei with unlimited rate against a shared staging server. This triggers alerts, slows down QA, and may get your CI IP blocked.
+**Anti-pattern**: Running Nuclei with unlimited rate against a shared staging server. This triggers alerts, slows down QA, and may get your CI IP blocked. Second anti-pattern: raising `-c 25` (concurrency) to "speed up" while assuming it raises throughput — it does not exceed the `-rl` ceiling; concurrency and bulk-size are not interchangeable with the req/s limit.
 
 ### D5: Template Freshness
 

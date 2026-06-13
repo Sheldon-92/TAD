@@ -25,7 +25,7 @@ Applies to: web apps, mobile apps, SaaS, APIs, developer tools, AI products, bro
 | Q1 | Evidence of real demand? | "Show me a Reddit thread, HN discussion, or GitHub issue where strangers describe exactly this problem — not similar, exactly this." |
 | Q2 | Current workaround? | "What tool, script, or manual process does your target user use today? Name the tool. Give me the pricing page URL." |
 | Q3 | Real person? | "Name a specific developer/user (first name, company, job title) who would use this in production today. What's their current stack?" |
-| Q4 | Narrowest wedge? | "**What's the smallest payable feature?** Not the product — one workflow, one integration, one script. What would someone pay $9/month for today?" |
+| Q4 | Narrowest wedge? | "**What's the smallest payable feature?** Not the product — one workflow, one integration, one script. Name a price someone would pay for it today, and prove the unit economics close (LTV:CAC ≥ 3:1 — see SaaS Unit-Economics Thresholds below). A wedge with negative unit economics is not a wedge." |
 | Q5 | Observation? | "Have you watched a developer use your intended workflow without helping? What workarounds did they invent that surprised you?" |
 | Q6 | Future-fit? | "If LLMs get 10x better in 2 years and can write code for free — does that make your product more essential or obsolete? Why?" |
 
@@ -59,6 +59,28 @@ WebSearch: "AI replacing {software category}"
 WebSearch: "{big tech company} building {tool type} 2025"
 last30days --polymarket "{domain disruption}"
 ```
+
+---
+
+## SaaS Unit-Economics Thresholds (use to challenge "will anyone pay" + pricing)
+
+Carry these numbers into Q4 (wedge), Step 7 (verdict), and the `/define` revenue-model section. They are research-grounded benchmarks a frontier LLM cannot reliably reproduce as precise rules — use them, don't paraphrase them as "good unit economics".
+
+| Metric | Healthy band | Red flag | Source |
+|--------|-------------|----------|--------|
+| **LTV:CAC ratio** | 3:1–4:1 (B2B target **4:1**, median **3.6:1**, Benchmarkit 2025) | **<1:1** = loses money per customer; **>5:1** = under-investing in growth | phoenixstrategy.group LTV:CAC SaaS benchmarks (retrieved 2026-06-13) |
+| **Rule of 40** | growth % + EBITDA margin % **≥ 40** | SaaS **median only ~12%** (Q1 2025) — 40 is demanding | phoenixstrategy.group (retrieved 2026-06-13) |
+| **CAC payback** | **<12 months** (76% of SaaS); median **6.8mo** across 14,500+ tracked SaaS (B2C **~4.2mo**, B2B **~8.6mo**) | **18+ mo** (8% of SaaS) = challenging unit economics | proven-saas.com CAC payback benchmarks (retrieved 2026-06-13) |
+| **Free-trial conversion** | opt-in (no card) **~8-18%**; opt-out (card required) **~31-49%** | a founder assuming >20% on a no-card trial is fantasizing | proven-saas.com / userpilot.com (retrieved 2026-06-13) |
+| **Freemium conversion** | broad-market tools **~1-5%**; tightly-targeted high-intent SaaS **~5-15%** | "we'll convert most free users" — challenge with the band | withdaydream.com freemium benchmark (retrieved 2026-06-13) |
+
+**How to use in /pressure-test:** when the founder states a conversion or pricing assumption, name the band ("opt-in trials convert 8-18%, not 40% — at 12% you need 8× the traffic"), and recompute whether LTV:CAC still clears 3:1. A wedge priced such that CAC payback exceeds 18 months is a F13 unit-economics flaw.
+
+Sources:
+- LTV:CAC + Rule of 40 — https://www.phoenixstrategy.group/blog/ltvcac-ratio-saas-benchmarks-and-insights (retrieved 2026-06-13)
+- CAC payback — https://proven-saas.com/benchmarks/cac-payback-benchmarks (retrieved 2026-06-13)
+- Trial conversion — https://userpilot.com/blog/saas-average-conversion-rate/ (retrieved 2026-06-13)
+- Freemium conversion — https://www.withdaydream.com/library/insights/freemium-conversion-rate (retrieved 2026-06-13)
 
 ---
 

@@ -21,6 +21,26 @@ This decision applies when you have more than one agent. A wrong topology (flat,
 
 ---
 
+## The Multi-Agent Economic Threshold [Source: research finding #25, https://www.anthropic.com/engineering/multi-agent-research-system retrieved 2026-06-13]
+
+Before choosing ANY multi-agent topology, verify the work justifies the cost multiplier:
+
+- Anthropic's orchestrator-worker Research system beat single-agent Opus 4 by **90.2%** — but burns **~15x the tokens** of normal chat.
+- **Token usage explains ~80% of performance variance** (BrowseComp eval). Multi-agent wins largely *because* it spends more tokens, not because of topology magic.
+
+**Decision rule**: multi-agent pays off ONLY for **high-value, breadth-first work whose information exceeds one context window** — legal due diligence, competitive intel, biomedical literature review. Consumer Q&A, chat, and narrow single-domain tasks **cannot absorb the 15x multiplier** → default to a single agent. If a single agent fits in one context window, the 15x spend buys nothing.
+
+## Durable Execution: Checkpoint-Based Recovery [Source: research finding #29, https://github.com/langchain-ai/langgraph retrieved 2026-06-13]
+
+Any multi-agent topology needs a recovery story when a worker crashes mid-task. The current framework primitive is **durable execution** — persist through failures and **resume from the exact checkpoint**, not from scratch.
+
+- **LangGraph 1.0** (GA October 2025): unified Router / Supervisor / Subagent primitives + durable execution; **~33,900 GitHub stars, 34.5M monthly downloads**. Use its checkpointer to make orchestrator state recoverable.
+- **CrewAI** (5K+ stars): role-based coordination, lighter-weight.
+
+**Rule**: do not hand-roll orchestrator state recovery. Pick a framework whose checkpointer persists the orchestrator's canonical state (per the hub-spoke rule below) so a worker failure resumes from the last checkpoint instead of replaying the whole session.
+
+---
+
 ## Pattern 1: Prompt Chaining
 
 One agent's output becomes the next agent's input. Fixed sequence.

@@ -69,8 +69,28 @@ Output format per finding:
 → Emit gen_ai.usage.input_tokens / output_tokens / cache_read / reasoning; compute cost downstream from a versioned pricing matrix.
 
 [P1] Rule LP1 (latency-profiling): SLO is written against end-to-end latency for a streaming chat product.
-→ Re-base the SLO on TTFT (perceived responsiveness) + ITL (streaming smoothness); capture gen_ai.response.time_to_first_chunk.
+→ Re-base the SLO on TTFT (perceived responsiveness) + ITL (streaming smoothness); capture TTFT via the gen_ai.client.operation.time_to_first_chunk histogram (client) / gen_ai.server.time_to_first_token (server) — TTFT is a metric, not a span attribute.
 ```
+
+---
+
+## Step 1.5: Run the Conformance Checker (deterministic)
+
+When the user supplies an OTLP/trace export (JSON), an SDK config, or an env file, run the
+deterministic verifier instead of eyeballing the four OTel semconv invariants:
+
+```bash
+scripts/otel-conformance-check.sh <export-or-config-file>   # or '-' for stdin
+```
+
+It checks (exit code = number of failed checks; 0 = PASS):
+- **C1** `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental` is set (OT1)
+- **C2** required span attrs `gen_ai.operation.name` + `gen_ai.provider.name` present (OT2)
+- **C3** raw `gen_ai.usage.*_tokens` counters present AND no pre-computed flat `cost` field (OT3 + cross-cutting rule)
+- **C4** `gen_ai.client.token.usage` emitted as **Histogram**, not Counter/Gauge (OT5)
+
+Fold each failed check into the Telemetry Conformance Audit (Step 2) as a P0/P1 finding. Deterministic
+ops belong in code — do not re-derive these by hand when the user gave you the actual telemetry.
 
 ---
 
@@ -119,6 +139,8 @@ Produce a structured observability review:
 | Langfuse | SDK (Python/TS) or OTel; MIT, self-hostable | Framework-agnostic tracing, prompt-to-trace, data sovereignty |
 | Arize Phoenix | OTel-based, local Jupyter → cloud; Elastic License 2.0 | Embedding/RAG validation rigor |
 | Helicone | Proxy URL redirection (~5 min setup) | Fast external-API interception, caching, failover |
-| vLLM + OTel | `pip install vllm[otel]`, `--otlp-traces-endpoint`, scrape `/metrics` every 15s | Self-hosted inference latency (prefill/decode, TTFT, time-in-queue) |
+| vLLM + OTel | OTel deps ship bundled with current vLLM (else install `opentelemetry-sdk` / `opentelemetry-api` / `opentelemetry-exporter-otlp`); start with `--otlp-traces-endpoint`, scrape `/metrics` every 15s | Self-hosted inference latency (prefill/decode, TTFT, time-in-queue) |
 | MLflow Prompt Registry | `mlflow.genai.register_prompt`, alias `@production` | Immutable versioned prompts, dual-TTL cache |
-| OpenTelemetry GenAI semconv | `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental` | Portable `gen_ai.*` spans/metrics, vendor-neutral |
+| OpenTelemetry GenAI semconv | `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`; pin SDK/Collector ≥ **v1.37** (still experimental — version-pin) | Portable `gen_ai.*` spans/metrics, vendor-neutral |
+| OTel-native instrumentation | OpenLLMetry (`traceloop`), OpenInference (Arize), OpenLIT — emit OTLP once, fan out to any backend | Vendor-neutral `gen_ai.*` spans into Langfuse/Phoenix/Datadog (Java+Go beyond Python/TS SDKs) |
+| `scripts/otel-conformance-check.sh` | `scripts/otel-conformance-check.sh <export-or-config>` (exit 0 = PASS; non-zero = #failed checks) | Deterministic OTel semconv conformance audit (C1–C4) |

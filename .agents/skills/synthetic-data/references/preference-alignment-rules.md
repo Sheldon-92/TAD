@@ -11,6 +11,7 @@
 | PA4 | Map the exact Jinja2 chat template — wrong control tokens cause role confusion | post-training |
 | PA5 | Axolotl: roles_to_train=["assistant"], train_on_eos=last, eot_tokens for Tekken | post-training |
 | PA6 | Reward-model training: diverse preference sets, avoid single-source feedback loops | post-training |
+| PA7 | Reward-model-as-judge: rank candidates with a multi-attribute RM (HelpSteer2 5-attr), keep human set tiny | post-training |
 
 ---
 
@@ -104,6 +105,23 @@ Reward-model (RM) training is computationally intensive and prone to **reward ha
 
 **stage**: post-training.
 
+### PA7: Reward-Model-as-Judge — Synthetic Preference Curation at Scale
+
+Do **not hand-pick** chosen/rejected pairs — at scale a human can't, and the labels drift. Instead, curate synthetic preferences with a **reward model as the judge**, the way NVIDIA **Nemotron-4 340B** aligned its Instruct model on **>98% synthetic data**:
+
+1. **Generate multiple candidate responses per prompt** from the policy model.
+2. **Rank/filter** them with a **regression reward model** (**Nemotron-4-340B-Reward**) that scores **5 HelpSteer2 attributes** — **Helpfulness, Correctness, Coherence, Complexity, Verbosity** — each on a **Likert 0–4 scale**.
+3. **Keep only top-attribute responses** and form **(prompt, chosen, rejected) triplets**.
+4. Train via **Reward-aware Preference Optimization (RPO)** in an **iterative weak-to-strong loop**.
+
+This pipeline **matched Llama-3-70B-Instruct quality using ~1% of the original human-annotated data**.
+
+**Rule**: Do not hand-pick chosen/rejected — rank candidates with a multi-attribute reward model (5 HelpSteer2 attributes, Likert 0–4), form triplets, and train with RPO, keeping the human set tiny (~1%). The pack-unique markers are the **5 named HelpSteer2 attributes, Likert 0–4, RPO, >98% synthetic, ~1% human** — a generic "use a reward model" loses all of them.
+
+> Source: Nemotron-4 340B synthetic data + reward-model-as-judge (developer.nvidia.com/blog/leverage-our-latest-open-models-for-synthetic-data-generation-with-nvidia-nemotron-4-340b/, retrieved 2026-06-13) — 5 HelpSteer2 attributes Likert 0–4, Nemotron-4-340B-Reward, RPO, >98% synthetic alignment data, ~1% human; corroborated by the Nemotron-4 340B Technical Report (arxiv.org/pdf/2406.11704, retrieved 2026-06-13).
+
+**stage**: post-training.
+
 ---
 
 ## Anti-Patterns
@@ -114,3 +132,4 @@ Reward-model (RM) training is computationally intensive and prone to **reward ha
 - **Hand-formatting chat markers**: mis-mapped control tokens cause role confusion (PA4).
 - **Ignoring roles_to_train / map_eos_token**: trains on user turns and pad tokens (PA5).
 - **Single-source preference data**: invites reward hacking and proxy drift (PA6).
+- **Hand-picking chosen/rejected pairs at scale**: rank candidates with a multi-attribute RM (5 HelpSteer2 attrs, Likert 0–4) + RPO, keep the human set ~1% (PA7).

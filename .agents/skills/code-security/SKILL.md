@@ -26,6 +26,24 @@ This pack embeds the judgment rules that application security engineers apply au
 
 ---
 
+## Quick Capability Index
+
+The full rule surface before you route. Each reference carries its own per-rule Quick Rule Index; this is the map across all five capabilities.
+
+| Capability | Rule-ID prefix | Reference | What it decides |
+|------------|----------------|-----------|-----------------|
+| SAST scanning | **S** (S1-S8) | `references/sast-rules.md` | Semgrep tool/ruleset/diff-aware/taint(interfile)/SARIF/exit-code |
+| DAST scanning | **D** (D1-D7) | `references/dast-rules.md` | Nuclei v3 tool select/prod-safety/severity/rate-limit precedence/templates/correlation |
+| Secret detection | **SE** (SE1-SE…) | `references/secret-detection-rules.md` | Gitleaks/TruffleHog, rotate-before-cleanup, exit 183 |
+| IaC security | **I** (I1-I…) | `references/iac-security-rules.md` | Checkov/TFLint/Trivy, policy-as-code, drift |
+| Vulnerability triage | **V** (V1-V7) | `references/vulnerability-triage-rules.md` | CVSS+EPSS+KEV+reachability, SSVC/BOD 26-04 deadlines, dedup, owner+deadline |
+
+**Validation scripts** (`scripts/`, deterministic — never punt to Claude):
+- `scripts/triage-prioritize.sh` — ingests CVSS+EPSS+KEV+reachability per finding, emits P0-P3 + BOD 26-04 remediation deadline.
+- `scripts/verify-pipeline-gates.sh` — asserts a CI config orders scans fastest-fail-first and honors the exit-code contract (Semgrep 1, TruffleHog 183, Checkov 1, Gitleaks 1).
+
+---
+
 ## Cross-Cutting Rule: Four-Gate Pipeline (Fastest-Fail-First)
 
 > **Security scans MUST be ordered by speed: pre-commit (<10s) before PR gates (~10s-1min) before full CI (minutes) before runtime (DAST sweeps).** Slow scans that block fast feedback loops cause developers to bypass security entirely. The fastest check that can catch a class of bug MUST run first.
@@ -130,13 +148,13 @@ Produce a structured security review:
 
 ## Tool Quick Reference
 
-| Tool | Install | Primary Use | Exit Code (fail) |
+| Tool | Install | Primary Use (current version) | Exit Code (fail) |
 |------|---------|-------------|-------------------|
-| semgrep | `pip install semgrep` or `brew install semgrep` | Multi-language SAST, 2000+ rules | 1 |
-| nuclei | `go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest` | Template-based DAST | 1 |
+| semgrep | `pip install semgrep` or `brew install semgrep` | Multi-language SAST; v1.163.0 (2026-05-27) `--pro` interfile taint | 1 |
+| nuclei | `go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest` | Template-based DAST; v3.8.0 (2026-04-18), default `-rate-limit 150` | 1 |
 | gitleaks | `brew install gitleaks` | Fast secret detection, pre-commit | 1 |
 | trufflehog | `brew install trufflehog` | Deep secret detection with verification | 183 |
 | checkov | `pip install checkov` | IaC security lint, 1000+ policies | 1 |
-| osv-scanner | `go install github.com/google/osv-scanner/cmd/osv-scanner@latest` | OSS vulnerability DB (Google) | 1 |
+| osv-scanner | `go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest` | OSS vuln DB (Google); v2 adds container + transitive (v2.3.5) | 1 |
 | grype | `brew install grype` | Container/SBOM vulnerability scan | 1 |
 | trivy | `brew install trivy` | All-in-one: fs, container, IaC, SBOM | 1 |

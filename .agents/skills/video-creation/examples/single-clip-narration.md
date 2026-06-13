@@ -13,6 +13,8 @@ min_marker_count: 3
 # this fixture deliberately suppresses ViMax patterns 3/4, so the discriminative set is narrow).
 discriminative_pattern: "narrative|voice_first|volume_mix"
 min_discriminative: 2
+# Revalidated 2026-06-13: discriminative_pattern remains pack-specific (narrative/voice_first/
+# volume_mix are pack-introduced fields, not generic narration vocabulary). No change needed.
 ---
 
 # Fixture: Single-Clip Narration

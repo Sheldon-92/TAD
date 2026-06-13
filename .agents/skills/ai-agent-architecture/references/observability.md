@@ -35,6 +35,8 @@ An agent without observability is a black box. When it misbehaves (and it will),
 
 **Required fields**: timestamp (ISO 8601), session_id, turn_number, event_type, tool_name (if applicable), latency_ms, tokens_in, tokens_out.
 
+**Framework-native checkpoints as observability anchors** [Source: research finding #29, https://github.com/langchain-ai/langgraph retrieved 2026-06-13]: if the orchestrator runs on a durable-execution framework, its checkpointer is also a free observability surface — each persisted checkpoint is a recoverable, inspectable state snapshot. **LangGraph 1.0** (GA October 2025, ~33,900 GitHub stars, 34.5M monthly downloads) persists through failures and **resumes from the exact checkpoint**; time-travel over checkpoints lets you replay the exact state that preceded a misbehavior instead of reconstructing it from JSONL alone. Pair JSONL event logs (what happened) with checkpoint snapshots (the state it happened in).
+
 ---
 
 ## Trace Correlation IDs Across Multi-Agent Transitions [Source: research]

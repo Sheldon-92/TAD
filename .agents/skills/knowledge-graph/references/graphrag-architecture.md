@@ -11,6 +11,7 @@
 | ARC4 | Leiden is hierarchical: Level 0 broad, higher levels specific — pick the level for query breadth | deterministic |
 | ARC5 | Search paradigm: Global (Map-Reduce), Local (1-2 hop), Drift (agentic) — match to query intent | semi-deterministic |
 | ARC6 | Community context overflow → Hierarchical Substitution then Trimming, never raw truncation | deterministic |
+| ARC7 | Graph-vs-flat decision threshold: don't reflex-pick GraphRAG — flat RAG still wins single-fact + high-coverage summary | deterministic |
 
 ---
 
@@ -26,7 +27,11 @@ When choosing a GraphRAG architecture, decide on data volatility and budget — 
 | **LazyGraphRAG** | Large or volatile corpus, cost-sensitive, dynamic communities at query time | Replaces LLM pre-summarization with lightweight NLP (noun-phrase + co-occurrence). Reduces upfront indexing cost by up to **99.9%**. Matches full GraphRAG global-search quality at **700x lower query cost**; outperforms vector RAG on local queries at comparable cost. |
 | **LightRAG** | Frequently-updated corpus, low retrieval-overhead budget | Dual-level KV index; **<100 tokens for the retrieval keyword-generation step in the LightRAG-reported setup** (total per-query cost still includes retrieved context + answer generation); incremental updates touch only affected nodes/relationships (no full rebuild). |
 
-> Source: findings.md §"Alternative Architectures" + §"Strategic Syntheses" — LazyGraphRAG 99.9% indexing reduction & 700x cheaper global queries [19, 21]; LightRAG <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; NOT total per-query cost) & incremental updates [18, 23, 24].
+**Absolute cost anchor (so the agent has a magnitude prior, not only relative multipliers):** Microsoft's full GraphRAG indexing of a **large corpus cost ~$33K in 2024**. LightRAG / LazyGraphRAG-class methods cut that by **~100x** while preserving multi-hop accuracy. **LazyGraphRAG** specifically: indexing cost on par with vanilla vector RAG (**0.1% of full GraphRAG indexing**), comparable global-query quality, and **700x lower query cost** (96/96 win rate vs alternatives, nearly all statistically significant). Use the **$33K@2024-large-corpus** figure as the order-of-magnitude alarm before greenlighting a full build.
+
+> ⚠️ **Old-patterns / version timeline (time-sensitive — isolate from the rules above):** Microsoft GraphRAG version line: first release **2024-04** → **DRIFT search 2024-10** → **GraphRAG 1.0 2024-12** → **LazyGraphRAG 2025-06**. Workflow/API names and cost ratios are version-pinned; verify against the installed version before hardcoding. These dated figures are deprecated the moment a newer release lands — re-check before quoting.
+
+> Source: findings.md §"Alternative Architectures" + §"Strategic Syntheses" — LazyGraphRAG 99.9% indexing reduction & 700x cheaper global queries [19, 21]; LightRAG <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; NOT total per-query cost) & incremental updates [18, 23, 24]. Cost anchor + timeline (refreshed): Microsoft Research — LazyGraphRAG: setting a new standard for quality and cost — https://www.microsoft.com/en-us/research/blog/lazygraphrag-setting-a-new-standard-for-quality-and-cost/ (retrieved 2026-06-13): $33K@2024 large-corpus index, ~100x reduction, 0.1% indexing / 700x query cost, 96/96 win rate.
 
 **determinismLevel**: deterministic — architecture is an upfront design decision.
 
@@ -90,7 +95,18 @@ When routing a query, pick the search paradigm by intent:
 
 **Anti-pattern**: defaulting to Global search for every query. Entity-specific questions belong in Local search at a fraction of the cost.
 
-> Source: findings.md §"Algorithmic Traversal" + comparison table — Map-Reduce + helpfulness 0-100 + score-0 filter [12, 13], Local 1-2 hop [13, 17], Drift primer/follow-up/output with confidence pruning [16, 17].
+**Method-tier selection by task type (no single method wins all tiers — GraphRAG-Bench, ICLR'26, Novel + Medical domains, 4 difficulty tiers: fact retrieval → complex reasoning → contextual summarization → creative generation).** Pick the retrieval/graph method by the *task tier*, not by which is "most advanced":
+
+| Task tier | Novel-domain best | Medical-domain signal |
+|-----------|-------------------|------------------------|
+| **Single-fact retrieval** | RAG **with rerank** — **60.92%** (flat reranked RAG, not a graph method) | base RAG competitive |
+| **Complex / multi-hop reasoning** | **HippoRAG2** — **53.38%**; HippoRAG hits **87.9–90.9%** evidence recall on L2–L3 multi-hop | **HippoRAG2 61.98%** > base RAG **58.64%** |
+| **Contextual summarization** | **MS-GraphRAG** (community summaries) — **64.40%** | community-style GraphRAG strongest at summarization |
+| **Creative generation** | **HippoRAG** faithfulness **71.53%** | **LightRAG** creative faithfulness **78.76%** |
+
+Structural takeaway: **hierarchical / densely-connected** structures (**RAPTOR**, **HippoRAG**) are strongest overall; **community-style GraphRAG** (Microsoft GraphRAG) dominates **summarization**; **PageRank-style HippoRAG** dominates **multi-hop**. There is **no method that wins every tier** — route by tier.
+
+> Source: findings.md §"Algorithmic Traversal" + comparison table — Map-Reduce + helpfulness 0-100 + score-0 filter [12, 13], Local 1-2 hop [13, 17], Drift primer/follow-up/output with confidence pruning [16, 17]. Method-tier table (refreshed): GraphRAG-Bench — https://arxiv.org/abs/2506.05690 and https://arxiv.org/html/2506.05690 (retrieved 2026-06-13): Novel fact 60.92% (RAG+rerank), reasoning 53.38% (HippoRAG2), summarize 64.40% (MS-GraphRAG), creative 71.53% (HippoRAG); Medical LightRAG creative 78.76%, HippoRAG2 reasoning 61.98% vs base 58.64%; HippoRAG L2–L3 recall 87.9–90.9%.
 
 **determinismLevel**: semi-deterministic for Global/Local (fixed mechanism, LLM scoring varies); non-deterministic for Drift (agentic confidence loop).
 
@@ -105,6 +121,24 @@ When a community's raw node/relationship lists exceed the LLM's max input token 
 
 **determinismLevel**: deterministic — the reduction order is fixed.
 
+### ARC7: Graph-vs-Flat Decision Threshold (Don't Reflex-Pick GraphRAG)
+
+When "knowledge graph" / "GraphRAG" appears, do NOT reflexively build a graph pipeline. **GraphRAG-Bench** (ICLR'26) measured graph vs flat NaiveRAG across difficulty tiers and found the advantage is **concentrated, not universal**:
+
+| Task shape | First choice | Why |
+|------------|--------------|-----|
+| **Multi-hop aggregation / cross-document reasoning** | **Graph methods** (HippoRAG, MS-GraphRAG) | graph clearly wins — HippoRAG **87.9–90.9% evidence recall** on L2–L3 multi-hop; flat RAG cannot chain the hops |
+| **Single-fact retrieval** | **Flat NaiveRAG / reranked RAG first** | flat stays competitive (Novel fact best = RAG+rerank **60.92%**); the graph build buys little |
+| **High-coverage / summary recall** | **Flat RAG first** | broader context coverage → higher recall; evaluate flat before paying graph indexing cost |
+
+**Rule**: before building GraphRAG, classify the dominant query shape. If it's **single-fact** or **high-coverage summary**, benchmark **flat RAG first** — only commit to graph when the workload is **multi-hop aggregation**. Pairs with the cross-cutting cost rule: graph indexing cost is only justified where graph retrieval measurably wins.
+
+**Anti-pattern**: building full GraphRAG for a single-fact lookup task — you pay extraction + Leiden + community-report cost for a job a reranked flat retriever does at **60.92%** with no graph build.
+
+> Source (refreshed): GraphRAG-Bench — https://arxiv.org/abs/2506.05690 (retrieved 2026-06-13): graph wins on multi-hop (HippoRAG L2–L3 evidence recall 87.9–90.9%); flat NaiveRAG competitive on single-fact retrieval + summary recall (broader context coverage → higher recall).
+
+**determinismLevel**: deterministic — a task-shape classification + threshold decision.
+
 ---
 
 ## Anti-Patterns
@@ -113,3 +147,4 @@ When a community's raw node/relationship lists exceed the LLM's max input token 
 - **Global-search-for-everything**: running Map-Reduce over whole community levels for a question one Local 1-hop traversal would answer.
 - **Raw context truncation**: chopping community text to fit the window instead of Hierarchical Substitution → Trimming, losing the highest-degree bridges.
 - **Ignoring the Leiden level knob**: querying Level 0 for a micro-topic (too broad) or a high level for a field summary (too narrow).
+- **Reflexive GraphRAG on single-fact / summary tasks**: building extraction + Leiden + community reports when a reranked flat RAG (Novel fact best 60.92%) wins at near-zero index cost — graph's edge is multi-hop aggregation (HippoRAG 87.9–90.9% recall), not single-fact lookup.

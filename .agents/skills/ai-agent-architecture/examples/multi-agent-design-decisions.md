@@ -37,10 +37,26 @@ the output MUST contain these markers:
 
 ## Verification Command
 
+Two-tier verification:
+
+**(1) Discriminative count** (drives PASS, pack-specific markers only):
+
 ```bash
 grep -oE 'D[1-9]0?[ ]*(—|-|:|\()|Decision [1-9]|dual.?agent|MCP checklist|untrusted external|Incident #[0-9]|production disaster|Architecture Decision Document|Applicable decisions|SKIPPED — |coordination topology' multi-agent-design-decisions-output.md | sort -u | wc -l | tr -d ' '
 # Expected: ≥ 3
 ```
+
+**(2) Deterministic structural checker** (no "punt to Claude" — see SKILL.md "Validating the Output"):
+
+```bash
+bash ../scripts/audit-decisions.sh multi-agent-design-decisions-output.md
+# exit 0 = all D1-D10 present + named artifact + (untrusted input ⇒ dual-agent trigger fired)
+# exit 1 = prints exactly which decision IDs / contracts are missing
+```
+
+The script is the deterministic implementation of the discriminative_pattern above: for THIS
+untrusted-external-data scenario it asserts the dual-agent / D5 MCP-checklist trigger fired, which a
+no-pack freeform answer never emits.
 
 ## Anti-Slop Check
 

@@ -13,7 +13,7 @@ Usage: $SCRIPT_NAME <database> "<query>" [--limit N]
 
 Databases:
   semantic-scholar   Semantic Scholar Graph API (free, 100 req/5min)
-  openalex           OpenAlex works search (free, unlimited with mailto)
+  openalex           OpenAlex works search (free API key now REQUIRED via OPENALEX_API_KEY; credit-budgeted)
   pubmed             PubMed/MEDLINE via NCBI E-utilities (free, 3 req/s)
   arxiv              arXiv preprints via Atom API (free, 1 req/3s)
   europeana          Europeana cultural heritage (requires EUROPEANA_API_KEY)
@@ -107,9 +107,17 @@ for i, p in enumerate(data.get('data', [])[:${LIMIT}]):
 
 search_openalex() {
   format_header "OpenAlex"
+  # As of 2026 OpenAlex requires a free API key + credit budget (see references/database-apis-general.md).
+  # Pass it via OPENALEX_API_KEY; mailto is kept for attribution only (polite pool retired).
   local url="https://api.openalex.org/works?search=${ENCODED_QUERY}&per_page=${LIMIT}&sort=relevance_score:desc&select=title,publication_year,cited_by_count,doi,authorships&mailto=tad-academic-research@openclaw.ai"
   local response
-  response="$(curl -sf --max-time 15 "$url" 2>/dev/null)" || { echo "Error: OpenAlex API request failed" >&2; return 1; }
+  if [ -n "${OPENALEX_API_KEY:-}" ]; then
+    response="$(curl -sf --max-time 15 -H "Authorization: Bearer ${OPENALEX_API_KEY}" "$url" 2>/dev/null)" \
+      || { echo "Error: OpenAlex API request failed (check OPENALEX_API_KEY / credit budget)" >&2; return 1; }
+  else
+    echo "Warning: OPENALEX_API_KEY not set. OpenAlex now requires a free key + has a credit quota; request may be rejected. Register at https://openalex.org/." >&2
+    response="$(curl -sf --max-time 15 "$url" 2>/dev/null)" || { echo "Error: OpenAlex API request failed (a free OPENALEX_API_KEY is now required)" >&2; return 1; }
+  fi
 
   echo "$response" | python3 -c "
 import json, sys

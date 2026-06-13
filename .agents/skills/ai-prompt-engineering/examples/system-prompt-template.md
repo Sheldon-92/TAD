@@ -1,8 +1,50 @@
+---
+name: system-prompt-template
+description: "Tests the Phase 1 write formula (domain+value+consumer role), capability declaration (~23% hallucination drop), injection scaffold (84%→12%), cache_control placement + model-specific min prefix, and structured-outputs-not-prefill on a write-a-system-prompt task"
+pack: ai-prompt-engineering
+tests_rules:
+  - "Phase 1.2 role formula — domain + value + consumer (not 'helpful assistant')"
+  - "Phase 1.5 capability declaration (~23% hallucination reduction) + grounding"
+  - "Phase 1.6 injection defense — delimiter isolation + reasoning scaffold (84%→12%)"
+  - "Phase 1.4 cache_control + U-shaped attention / first 30%"
+  - "claude.md Rule 2 — structured outputs (output_config.format) NOT prefill on 4.6+"
+min_marker_count: 3
+# DISCRIMINATIVE gate: ONLY pack-specific markers a no-pack agent does NOT emit when asked to
+# "write a system prompt". Excludes generic "be specific"/"give it a role". The ~23% capability-
+# declaration number, the 84%→12% injection figure, cache_control + first-30% placement, and the
+# output_config.format-not-prefill correction are the pack's named research specifics.
+discriminative_pattern: "~?23%|84%|12%|cache_control|first 30%|U.?shaped|output_config|structured output|do NOT have access"
+min_discriminative: 3
+---
+
 # Annotated System Prompt Template
 
 > An annotated skeleton showing the structure of a production-grade system prompt.
 > Copy and customize for your task. Remove annotation comments before deploying.
 > All WHY/NOTE/RULE annotations explain the design decision.
+>
+> **Eval fixture**: the frontmatter above wires this into the pack-eval-runner discriminative gate.
+> Input scenario for behavioral eval: *"Write me a production system prompt for a customer-support
+> bot that reads user messages and returns a JSON triage object."* A pack-loaded agent emits the
+> pack-specific markers below; a no-pack agent emits a generic "you are a helpful support bot."
+
+## Discriminative Markers (what a pack-loaded agent produces)
+
+A correct pack-driven answer to the input scenario contains ≥3 of these (would NOT appear without the pack):
+- ✅ role **formula** "domain + value + consumer" (not "helpful assistant")
+- ✅ **capability declaration** "You do NOT have access to…" (~**23%** hallucination reduction)
+- ✅ injection **delimiter isolation** + reasoning scaffold (**84%**→~**12%** success rate)
+- ✅ **cache_control** breakpoint at end of stable prefix + critical constraints in **first 30%** (U-shaped)
+- ✅ **structured output** via `output_config.format` — NOT assistant prefill (400s on Claude 4.6+)
+- ❌ "give it a clear role" (generic — any agent says this)
+- ❌ "test your prompt" (generic, non-discriminative)
+
+## Verification Command
+
+```bash
+grep -oE '~?23%|84%|12%|cache_control|first 30%|U.?shaped|output_config|structured output|do NOT have access' system-prompt-template-output.md | sort -u | wc -l | tr -d ' '
+# Expected: ≥ 3
+```
 
 ---
 

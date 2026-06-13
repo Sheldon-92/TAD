@@ -5,9 +5,9 @@
 
 | # | Rule | determinismLevel |
 |---|------|-----------------|
-| ADV1 | Tool selection: deepteam for OWASP-aligned, promptfoo for vulnerability scanning | deterministic |
+| ADV1 | Tool selection: deepteam v1.0.4 (50+ vulns, 14 single-turn + 5 multi-turn per docs taxonomy), promptfoo for scanning | deterministic |
 | ADV2 | Attack coverage: single-turn AND multi-turn mandatory | semi-deterministic |
-| ADV3 | Risk classification: 6 categories with P0/P1/P2 priorities | deterministic |
+| ADV3 | Risk classification: 6 categories / 50+ vulns with P0/P1/P2 priorities | deterministic |
 | ADV4 | P0 vulnerabilities: zero tolerance | deterministic |
 | ADV5 | Multi-turn attacks are harder to detect — escalation patterns | non-deterministic |
 | ADV6 | OWASP mapping: results must map to OWASP Top 10 for LLMs/Agents | deterministic |
@@ -22,9 +22,11 @@ When choosing a red-teaming tool, match to the testing goal:
 
 | Goal | Tool | CLI Command |
 |------|------|-------------|
-| OWASP-aligned red-teaming (20+ SOTA attacks) | deepteam | `deepteam redteam run --model=gpt-4o --framework=OWASPTop10` |
+| OWASP-aligned red-teaming (50+ vulns, 14 single-turn + 5 multi-turn attacks) | deepteam v1.0.4 | `pip install -U deepteam` → `deepteam redteam run --model=gpt-4o --framework=OWASPTop10` |
 | Vulnerability scanning + BOLA/BFLA auth testing | promptfoo | `npx promptfoo@latest eval --config redteam.yaml` |
 | Comprehensive red-team with plugins | promptfoo | See config below |
+
+**deepteam v1.0.4** (first stable, released 2025-11-12): **50+ vulnerability types** + research-backed attack methods. The official docs taxonomy (trydeepteam.com/docs/red-teaming-adversarial-attacks, retrieved 2026-06-13) enumerates **14 single-turn + 5 multi-turn attacks**; the GitHub README headlines "20+ single and multi-turn attack methods" (single + multi COMBINED). Framework alignment spans **OWASP Top 10 for LLMs 2025 + OWASP Top 10 for Agents 2026 + NIST AI RMF + MITRE ATLAS + BeaverTails + Aegis**.
 
 promptfoo red-team configuration:
 ```yaml
@@ -61,13 +63,13 @@ red_team(
 
 When designing adversarial test suites, cover both attack surfaces:
 
-**Single-turn attacks** (deepteam):
-- Prompt Injection, Roleplay, Leetspeak, ROT13, Base64
-- Gray Box, Math Problem, Multilingual
-- System Override, Permission Escalation, Goal Redirection
-- Context Poisoning, Embedded Instruction JSON
+**Single-turn attacks** (deepteam v1.0.4 — 14 documented methods, trydeepteam.com docs taxonomy retrieved 2026-06-13):
+- Prompt Injection, Roleplay, Leetspeak, ROT-13, Base64, Gray Box
+- Math Problem, Multilingual, Linguistic Confusion, Input Bypass
+- System Override, Permission Escalation, Context Poisoning
+- **Adversarial Poetry** (newer method — easy to miss if your suite predates v1.0.4)
 
-**Multi-turn attacks** (deepteam):
+**Multi-turn attacks** (deepteam v1.0.4 — 5 methods):
 - Linear Jailbreaking, Tree Jailbreaking
 - Crescendo (gradual escalation), Sequential Jailbreaking
 - Bad Likert Judge
@@ -80,7 +82,7 @@ When designing adversarial test suites, cover both attack surfaces:
 
 ### ADV3: Risk Classification by Category
 
-When prioritizing adversarial tests, classify by DeepTeam's 6 risk categories:
+When prioritizing adversarial tests, classify by DeepTeam's 6 risk categories (which span its **50+ concrete vulnerability types** — the categories are the taxonomy, the 50+ vulns are the instances):
 
 | Category | Risk Types | Priority |
 |----------|-----------|----------|
@@ -124,7 +126,7 @@ When reviewing adversarial results, pay special attention to multi-turn attacks:
 
 When reporting adversarial test results, map to standard frameworks:
 
-- **OWASP Top 10 for LLMs**: Prompt Injection (LLM01), Insecure Output (LLM02), Supply Chain (LLM05), Excessive Agency (LLM08)
+- **OWASP Top 10 for LLM Applications 2025**: Prompt Injection (LLM01), Sensitive Information Disclosure (LLM02), Supply Chain (LLM03), Improper Output Handling (LLM05), Excessive Agency (LLM06), Vector & Embedding Weaknesses (LLM08)
 - **OWASP Top 10 for Agents 2026**: BOLA, BFLA, Tool Misuse, Autonomous Drift
 
 Mapping enables comparison across projects and alignment with organizational security standards.

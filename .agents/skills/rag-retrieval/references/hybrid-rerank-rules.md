@@ -9,7 +9,7 @@
 | HR2 | BM25 params: k1 ∈ [1.2, 2.0], b = 0.75 | deterministic |
 | HR3 | Never sum raw BM25 + cosine — fuse by rank with RRF (k=60) | deterministic |
 | HR4 | Over-retrieve then dedup: 30 sparse + 30 dense → k=10 | deterministic |
-| HR5 | Reranker selection matrix (latency vs accuracy) | deterministic |
+| HR5 | Reranker selection matrix — Voyage rerank-2.5 (+7.94% vs Cohere v3.5, 32K ctx) / gte-modernbert (self-host) / latency vs accuracy | deterministic |
 | HR6 | Restrict candidate pool to ≤ 50 to hold 120ms P95; top-50 ≈ 90% of top-200 gain | deterministic |
 | HR7 | Seq-classification rerankers are fast; decoder-LM rerankers add latency (larger model + longer pair prompt, not extra passes) | deterministic |
 
@@ -86,8 +86,12 @@ When selecting a reranker, balance precision against the latency budget:
 
 | Reranker | Architecture | Params | Notes |
 |----------|--------------|--------|-------|
-| **Cohere Rerank v4.0-pro** | Proprietary cross-encoder | Proprietary | High multilingual accuracy; "Nimble" fast variant; API cost + network latency |
-| **Qwen3-Reranker-4B** | Decoder-LM (prompt-based) | 4B | Top MTEB accuracy; higher latency from 4B model size + pair prompt |
+| **Voyage rerank-2.5** | Instruction-following cross-encoder | Proprietary | **SOTA**: +7.94% over Cohere Rerank v3.5, +2.25% over Qwen3-Reranker-8B, +12.70% over Cohere on the MAIR benchmark; **32K-token context (8× Cohere v3.5)** at no price increase |
+| **Voyage rerank-2.5-lite** | Instruction-following cross-encoder | Proprietary | Latency-optimized; still **+7.16% over Cohere Rerank v3.5**; 32K context; pick when rerank-2.5 latency is too high but you still want to beat Cohere |
+| **Cohere Rerank 3.5** | Proprietary cross-encoder | Proprietary | ~**595–603ms avg latency/query**; multilingual; now bettered by Voyage rerank-2.5/-lite on accuracy AND context length |
+| **Cohere Rerank v4.0** | Proprietary cross-encoder | Proprietary | Ships as `rerank-v4.0-pro` (SOTA quality) and `rerank-v4.0-fast` (low-latency/high-throughput); both multilingual + JSON + 32K context; API cost + network latency |
+| **Qwen3-Reranker-4B** | Decoder-LM (prompt-based) | 4B | Top MTEB accuracy; **>1s/query (~4.5× nemotron latency for ~5.3pp less accuracy)** — accuracy-first only |
+| **Qwen3-Reranker-8B** | Decoder-LM (prompt-based) | 8B | Highest open accuracy; Voyage rerank-2.5 still edges it by +2.25%; heaviest latency |
 | **nv-rerankqa-mistral-4b-v3** | QA cross-encoder | 4B | Benchmark QA champion; high GPU need |
 | **Jina Reranker v3** | Listwise | Proprietary | 131k tokens / 64 docs together; handles relative ordering |
 | **bge-reranker-v2-m3** | Cross-encoder | < 600M | Lightweight, runs on consumer hardware |
@@ -95,9 +99,9 @@ When selecting a reranker, balance precision against the latency budget:
 | **nemotron-rerank-1b** | Autoregressive prompt-based | 1.2B | High Hit@10 / MRR@10; slower than seq-classification |
 | **FlashRank** | Lightweight cross-encoder | < 100M | Ultra-fast, CPU-only / edge; lower absolute accuracy |
 
-**Rule**: For low-latency production, default to **gte-reranker-modernbert-base (149M)** — cross-encoder precision at a fraction of the size. Reserve 4B causal-LM rerankers (Qwen3, nv-rerankqa) for accuracy-first, non-realtime RAG.
+**Rule**: For self-hosted low-latency production, default to **gte-reranker-modernbert-base (149M)** — cross-encoder precision at a fraction of the size. For a managed API where accuracy + long context matter, default to **Voyage rerank-2.5** (beats Cohere v3.5 by +7.94% with 8× the context at no price increase); drop to **rerank-2.5-lite** when its latency is too high (still +7.16% over Cohere v3.5). Reserve decoder-LM rerankers (Qwen3-Reranker-4B/8B, nv-rerankqa) for accuracy-first, non-realtime RAG — Qwen3-Reranker-4B at **>1s/query** is ~4.5× the nemotron latency for ~5.3pp less accuracy, so do not reach for it under a realtime budget.
 
-> Source: findings.md "State-of-the-Art Reranker Profiles" table [9, 28, 31]
+> Source: findings.md "State-of-the-Art Reranker Profiles" table [9, 28, 31]; Voyage AI, "rerank-2.5 and rerank-2.5-lite," https://blog.voyageai.com/2025/08/11/rerank-2-5/ (retrieved 2026-06-13); AIMultiple reranker latency benchmark, https://aimultiple.com/rerankers (retrieved 2026-06-13)
 
 **determinismLevel**: deterministic.
 
@@ -130,5 +134,6 @@ When a reranker's latency is the concern, prefer the architecture, not just the 
 
 - **Raw score fusion**: Summing unbounded BM25 with bounded cosine lets BM25 dominate. Use RRF (k=60) on ranks.
 - **Reranking the top-200**: Top-50 gives ~90% of the gain. Cap the candidate pool to hold the 120ms P95 budget.
-- **Picking a reranker by accuracy alone**: A 4B causal-LM reranker may blow the latency budget. Match architecture (seq-classification vs causal-LM) to the latency target.
+- **Picking a reranker by accuracy alone**: A 4B causal-LM reranker may blow the latency budget — Qwen3-Reranker-4B runs >1s/query (~4.5× nemotron) for ~5.3pp less accuracy. Match architecture (seq-classification vs causal-LM) to the latency target.
+- **Defaulting to an outdated API reranker**: Cohere Rerank v3.5 (~595–603ms, 4K context) is now beaten by Voyage rerank-2.5 (+7.94%) and rerank-2.5-lite (+7.16%) with 32K context at no price increase. Re-check the SOTA before pinning a managed reranker.
 - **No over-retrieve/dedup**: Retrieving exactly k from each path before fusion under-fills the candidate pool. Over-retrieve (30+30 → 10) and dedup by chunk ID.

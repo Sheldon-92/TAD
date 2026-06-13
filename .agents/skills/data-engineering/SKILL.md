@@ -20,7 +20,7 @@ type: reference-based
 
 AI agents build data pipelines by reaching for the first tool they remember. They default to Pandas where Polars would parallelize for free. They enforce rigid schemas on raw JSON before storage, discarding the raw history that model retraining needs. They write feature transformations once in a training notebook and again in a serving path — silently introducing train-serve skew. They pick Airflow for a lightweight agentic workflow that Prefect handles better. They run a global vector search and post-filter, then wonder why RAG returns zero results for a tenant. They build SCD Type 2 tables that scan ~160M rows because a query forgot `is_current = true`.
 
-This pack embeds the judgment rules that data engineers apply automatically — rules grounded in 2026 tooling research (dlt, DuckDB, Polars, dbt, Airflow 3.2, Dagster 1.13, Prefect 3.7, Great Expectations v1.0 GA, Soda Core v4, Kafka/Flink) with source citations on every number.
+This pack embeds the judgment rules that data engineers apply automatically — rules grounded in 2026 tooling research (dlt 1.27.2, DuckDB v1.4-LTS, Polars, dbt-core, Apache Airflow 3.x / 3.2.2 docs, Dagster 1.13, Prefect 3.7, Great Expectations / GX Core 1.18.1, Soda Core 4.7.0, Apache Iceberg 1.10.1 / Delta Lake 4.1.0, Kafka/Flink) with source URLs + retrieval dates on every number (see each reference file's "Sources" footer).
 
 **Pack = data-engineering judgment. Your workflow system = process constraints. No overlap.**
 
@@ -32,6 +32,19 @@ This pack embeds the judgment rules that data engineers apply automatically — 
 
 This rule applies to: feature engineering, dbt model design, feature-store registration, and any pipeline where the same feature is computed for both training and serving. It is surfaced here because burying it in one reference file is exactly how skew enters production.
 > Source: findings.md "Mitigation of Train-Serve Skew" [8] — dbt as a single version-controlled repository feeding both training tables and real-time serving.
+
+---
+
+## Reference Index
+
+| Reference | Rules | Covers |
+|-----------|-------|--------|
+| `references/ingestion-rules.md` | ING1–6 | ETL vs ELT, dlt schema evolution + contract modes, `_dlt_loads` audit, incremental cursors |
+| `references/transformation-stack-rules.md` | TRN1–6 | Train-serve skew, DuckDB vs Spark, Polars LazyFrame, scaling, Feature Views |
+| `references/orchestration-rules.md` | ORC1–5 | Airflow vs Dagster vs Prefect selection, asset-aware orchestration |
+| `references/data-quality-rules.md` | DQ1–6 | GX vs Soda, data contracts, rules-vs-AI dual defense |
+| `references/dimensional-modeling-rules.md` | DIM1–6 | SCD Type 0–6, is_current bloat, bitemporal modeling |
+| `references/vector-streaming-rules.md` | VEC1–4, STR1–4 | Pre/post/inline filtering, RRF, ACORN, Kafka/Flink, table formats |
 
 ---
 
@@ -105,24 +118,40 @@ Produce a structured data-engineering review:
 | Excuse | Counter |
 |--------|---------|
 | "We'll enforce the schema on ingest to keep it clean" | Schema-on-write discards raw history. When you change a feature next quarter you must re-extract historical state — often impossible. ELT keeps raw history for retraining (findings [1,2]). |
-| "We'll just spin up Spark" | For medium-scale data, DuckDB (vectorized, in-process) and Polars (multi-threaded, lazy) eliminate cluster sync latency and cost. DuckDB speeds pipelines 10x+ without leaving the Python process (findings [14]). |
+| "We'll just spin up Spark" | DuckDB v1.4-LTS completed all 22 TPC-H queries at SF-100,000 (~27TB DB, 7TB spilled to disk) on a single node — proving out-of-core scale long before Spark is needed. At SF-10, Polars streaming = 3.89s vs Pandas = 365.71s (~94x). For medium-to-large local data, DuckDB/Polars eliminate cluster sync latency and cost (TRN2/TRN3; pola.rs benchmarks + duckdb.org 1.4-LTS, retrieved 2026-06-13). |
 | "Same feature logic, I'll write it twice" | That IS train-serve skew. Two copies drift → silent production degradation with high offline accuracy. One version-controlled source feeding both paths (findings [8]). |
 | "Post-filter the vector search, it's faster" | Post-filtering risks recall collapse — zero results if none of the top-k global neighbors match the metadata. For tenant isolation use pre-filtering; it guarantees k results if they exist (findings [35]). |
 | "Great Expectations checks everything" | Rules-based engines have unstructured-data blind spots: they cannot detect mislabeled classes, class imbalance, or concept drift on images/audio. Pair with AI-driven diagnostics (findings [24]). |
-| "Airflow is the standard, use it" | Airflow 3.2 carries a heavy split-component footprint (web server, scheduler, metadata DB, workers, API server). For dynamic agentic workflows, Prefect 3.7's decorator runtime fits better (findings [18,19]). |
+| "Airflow is the standard, use it" | Airflow 3.x (3.2.2 docs; GA April 2025; 80,000+ orgs, 30M+ monthly downloads) adds DAG versioning, event-driven scheduling, and DAG bundles — but carries a heavy split-component footprint (web server, scheduler, metadata DB, workers, API server). For dynamic agentic workflows, Prefect 3.7's decorator runtime fits better (ORC1/ORC2; astronomer.io Airflow 3 release, retrieved 2026-06-13). |
 
 ---
 
 ## Tool Quick Reference
 
-| Tool | Install | Primary Use |
+> Versions pinned + verified 2026-06-13 (see each reference file's Sources footer for source URL + retrieval date). Pin in your lock file; do not bare-`--upgrade`.
+
+| Tool | Install (pinned) | Primary Use |
 |------|---------|-------------|
-| dlt | `pip install dlt` | Connector-free ingestion, schema inference/evolution, incremental load |
-| DuckDB | `pip install duckdb` | In-process OLAP, vectorized SQL on local Parquet/CSV/JSON |
-| Polars | `pip install polars` | Multi-threaded DataFrames, lazy `LazyFrame` with predicate/projection pushdown |
+| dlt | `pip install dlt==1.27.2` | Connector-free ingestion, schema inference/evolution (contract modes evolve/freeze/discard), incremental load |
+| DuckDB | `pip install duckdb` (v1.4-LTS) | In-process OLAP, vectorized SQL on local Parquet/CSV/JSON; out-of-core to ~27TB |
+| Polars | `pip install polars` | Multi-threaded DataFrames, lazy `LazyFrame` with predicate/projection pushdown; streaming engine |
 | dbt | `pip install dbt-core` | Version-controlled SQL/Python transforms; train-serve skew defense |
-| Apache Airflow | `pip install apache-airflow` | Multi-team batch retraining; asset-aware (v3.2) |
-| Dagster | `pip install dagster` | Software-defined assets, column-level lineage (v1.13) |
-| Prefect | `pip install prefect` | Dynamic decorator-based agentic workflows (v3.7) |
-| Great Expectations | `pip install great_expectations` | Code-first Python Fluent API validation + Data Docs |
-| Soda Core | `pip install soda-core` | Declarative SodaCL YAML checks + data contracts (v4) |
+| Apache Airflow | `pip install apache-airflow` (3.x / 3.2.2 docs) | Multi-team batch retraining; DAG versioning, event-driven scheduling, DAG bundles |
+| Dagster | `pip install dagster` (v1.13) | Software-defined assets, column-level lineage |
+| Prefect | `pip install prefect` (v3.7) | Dynamic decorator-based agentic workflows, `@materialize` |
+| Great Expectations | `pip install great-expectations==1.18.1` | Code-first Python Fluent API validation + Data Docs (Py 3.10–3.13) |
+| Soda Core | `pip install soda-core==4.7.0` | Declarative SodaCL YAML checks + data contracts |
+| Apache Iceberg | `pip install pyiceberg` (1.10.1) | Engine-agnostic table format (Spark/Flink/Trino/RisingWave) — default for streaming ingest |
+| Delta Lake | `pip install deltalake` (4.1.0) | Spark-optimized table format + declarative pipelines |
+
+---
+
+## Validation Scripts (deterministic checks — `scripts/`)
+
+Deterministic checks are code, not "punt to Claude." Run these instead of eyeballing:
+
+| Script | Checks | Usage |
+|--------|--------|-------|
+| `scripts/dlt-load-audit.sh` | ING5 — queries `_dlt_loads` and asserts the latest `load_id` per pipeline shows a successful `status` (not a non-error exit) | `bash scripts/dlt-load-audit.sh <pipeline.duckdb> [dataset]` |
+| `scripts/scd2-bloat-check.sql` | DIM4 — flags current-state queries on an SCD Type 2 table that omit the `is_current = true` filter (the ~160M-row bloat scan) | `duckdb mydw.duckdb < scripts/scd2-bloat-check.sql` (set `:dim_table`) |
+| `scripts/determinism-lint.sh` | A-soft — verifies every rule in `references/*.md` carries a `determinismLevel` annotation and every `> Source:` line carries a source (no orphan depth claims) | `bash scripts/determinism-lint.sh` |

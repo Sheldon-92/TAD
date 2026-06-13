@@ -70,12 +70,15 @@ WebSearch: "{product category} complaints" OR "frustrated with {category}"
 **If user says "I've gotten positive feedback from friends":**
 > I searched Reddit for "{product concept}" — found [N] threads in the last 90 days. Searched HN — [N] discussions. "Positive feedback from friends" is social politeness, not demand. Friends don't want to hurt your feelings.
 >
-> Show me ONE of these:
+> Apply the commitment-currency test (The Mom Test, Rob Fitzpatrick): a real signal requires the prospect to spend a currency they value — **time** (a scheduled follow-up), **reputation** (an intro to a decision-maker), or **money** (a pre-order / deposit / letter of intent). "Would you use this?" and "I like it" cost nothing → ASSUMPTION. Show me ONE of these instead:
 > - A Reddit/forum thread where strangers complain about this exact problem
-> - Someone paying money for a worse version of this
-> - A waitlist with >100 signups from people you don't know
+> - Someone paying money (deposit / pre-order) for a worse version of this
+> - A scheduled call, an intro, or a deposit — a spent currency
 >
 > Until then, this is an ASSUMPTION, not a FACT.
+
+**Named PMF gate (use when the user claims demand is validated):**
+> The benchmark for "people actually want this" is the **Sean Ellis PMF survey**: ask real users "How would you feel if you could no longer use [product]?" — **≥40% answering "very disappointed" = product-market fit** (the must-have threshold). **10-30% means the majority can take-it-or-leave-it — not yet PMF.** Have you run this, and what was the percentage? A number below 40% is a signal to iterate before scaling, not to build harder. (Source: Sean Ellis score, https://learningloop.io/glossary/sean-ellis-score — retrieved 2026-06-13.)
 
 **If user says "I know there's demand because the market is big":**
 > Market size is not demand evidence. 7 billion people need food — that doesn't validate your restaurant. What's your evidence that *your specific solution* to *this specific problem* is something people will pay for? Search results show [competitor/existing solution]. Someone is already solving this. Why isn't that enough?
@@ -265,10 +268,10 @@ Count:
 ```
 BUILD   → Confidence ≥ 7 AND no fatal flaws
 PIVOT   → Confidence 4-6, OR confidence ≥ 7 with 1 fatal flaw that a pivot could address
-KILL    → Confidence ≤ 3, OR 2+ fatal flaws (regardless of confidence), OR core assumption already proven wrong by search data
+KILL    → Confidence ≤ 3, OR 2+ fatal flaws (regardless of confidence), OR a single STRUCTURAL fatal flaw (F9 legal / F13 negative unit economics) even at high confidence, OR core assumption already proven wrong by search data
 ```
 
-Note: A fatal flaw always downgrades the verdict — confidence ≥ 7 with 1 fatal flaw = PIVOT (not BUILD).
+Note: A fatal flaw always downgrades the verdict — confidence ≥ 7 with 1 fatal flaw = PIVOT (not BUILD), unless that single flaw is structural (F9 legal / F13 negative unit economics), in which case it is KILL even at high confidence.
 
 ### Output Format
 

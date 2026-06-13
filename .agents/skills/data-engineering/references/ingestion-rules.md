@@ -8,7 +8,7 @@
 | ING1 | For AI/ML workloads, default to ELT (Extract → Load raw → Transform in-warehouse), not ETL | deterministic |
 | ING2 | Never schema-enforce-and-discard raw payloads — ELT preserves raw history for retraining | deterministic |
 | ING3 | Use ETL (schema-on-write) only when pre-storage masking/governance is required (HIPAA/PCI) or for IoT protocol conversion | deterministic |
-| ING4 | Use dlt for connector-free ingestion with automatic schema inference + evolution | deterministic |
+| ING4 | Use dlt 1.27.2 for connector-free ingestion with schema inference + contract modes (evolve/freeze/discard) | deterministic |
 | ING5 | Audit dlt ingestion via the `_dlt_loads` metadata table — verify `status` per `load_id` | semi-deterministic |
 | ING6 | Declare explicit column data-type hints; configure incremental load with a cursor field so only mutated/appended records load | semi-deterministic |
 
@@ -53,10 +53,20 @@ ETL (schema-on-write) is the right choice in exactly these cases — do not over
 
 ### ING4: Use dlt for Connector-Free Ingestion with Schema Evolution
 
-The Data Load Tool (**dlt**) is an open-source Python library for connector-free ingestion from arbitrary sources (REST APIs, SQL databases, dynamic Python generators) into analytical destinations. Use it when:
+The Data Load Tool (**dlt**, current **1.27.2**, released **2026-05-29**; Python **3.9–3.13** + experimental 3.14) is an open-source Python library for connector-free ingestion from arbitrary sources (REST APIs, SQL databases, dynamic Python generators) into analytical destinations. Use it when:
 
 - You need automatic **schema inference and evolution** — dlt dynamically adjusts downstream tables as upstream source structures shift, ensuring pipeline resilience.
 - You ingest deeply nested JSON — dlt automates normalization of nested structures.
+
+**Schema-evolution contract modes** (control how tables/columns/types are handled on ingest) — set per resource or pipeline:
+
+| Mode | Behavior |
+|---|---|
+| `evolve` (default) | Accept new tables/columns/types; downstream schema grows automatically |
+| `freeze` | Reject and raise on any schema change — use to **hard-gate** a stable contract |
+| `discard_row` / `discard_value` | Drop the offending row (or just the new value) instead of evolving the schema |
+
+**Rule**: for a raw landing zone, `evolve` is correct (resilience); for a curated table feeding a model, set `freeze` (or `discard_*`) so an upstream schema drift fails loudly instead of silently widening a feature column.
 
 Define a resource with explicit column hints:
 ```python
@@ -84,7 +94,7 @@ load_info = pipeline.run(yfinance_eod_prices(...))
 ```
 
 **determinismLevel**: deterministic — dlt is the tool selection for schema-evolving ingestion.
-> Source: findings.md "In-Process and Local-First Modern Data Stacks: dlt..." [13, 15, 16] and the dlt resource code example [16].
+> Source: PyPI dlt 1.27.2 (2026-05-29, Py 3.9–3.13 + experimental 3.14) — https://pypi.org/project/dlt/ (retrieved 2026-06-13); schema-contract modes evolve/freeze/discard https://dlthub.com/docs/general-usage/schema-contracts (retrieved 2026-06-13). Originally findings.md [13, 15, 16].
 
 ### ING5: Audit Ingestion via the `_dlt_loads` Metadata Table
 
@@ -124,3 +134,14 @@ def events(cursor=dlt.sources.incremental("updated_at")):
 - **Trusting exit code over `_dlt_loads`**: a clean process exit is not proof of a successful, complete load — query the load log.
 - **Re-extracting history to change a feature**: the symptom of having discarded raw data. ELT prevents this.
 - **Hand-writing connectors**: dlt's connector-free ingestion + schema evolution replaces brittle bespoke extractors.
+- **Leaving curated tables on `evolve`**: a curated feature table should `freeze` (or `discard_*`) so upstream drift fails loudly, not silently widen a column (ING4).
+
+---
+
+## Sources (URL + retrieval date)
+
+| Ref | Source | URL | Retrieved |
+|-----|--------|-----|-----------|
+| ING4 | PyPI — dlt 1.27.2 (2026-05-29, Py 3.9–3.13 + exp 3.14) | https://pypi.org/project/dlt/ | 2026-06-13 |
+| ING4 | dlt — schema contracts (evolve/freeze/discard) | https://dlthub.com/docs/general-usage/schema-contracts | 2026-06-13 |
+| ING6 | dlt — incremental loading cursor | https://dlthub.com/docs/general-usage/incremental/cursor | 2026-06-13 |

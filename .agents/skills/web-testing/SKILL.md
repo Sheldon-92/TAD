@@ -1,7 +1,7 @@
 ---
 name: web-testing
 description: Web testing capability pack. Gives AI agents the judgment rules for unit testing (Vitest Browser Mode), API contract testing (Pact/OpenAPI), performance auditing (Core Web Vitals/k6), accessibility compliance (axe-core/Pa11y), human-AI pair testing (4D Protocol), and test strategy design (pyramid/CI/CD pipeline). Research-grounded rules from Playwright, Vitest, k6, axe-core, MSW, and Pact documentation. Use for any web application testing, test infrastructure setup, or quality assurance task.
-keywords: ["测试", "testing", "test", "单元测试", "unit test", "E2E", "端到端", "API 测试", "api test", "性能测试", "performance", "可访问性", "accessibility", "a11y", "WCAG", "pair testing", "配对测试", "Playwright", "Vitest", "k6", "axe-core", "测试策略", "test strategy", "coverage", "覆盖率"]
+keywords: ["测试", "testing", "test", "单元测试", "unit test", "E2E", "端到端", "API 测试", "api test", "性能测试", "performance", "可访问性", "accessibility", "a11y", "WCAG", "WCAG 2.2", "target-size", "pair testing", "配对测试", "Playwright", "Test Agents", "Vitest", "k6", "axe-core", "Stryker", "mutation testing", "突变测试", "测试策略", "test strategy", "coverage", "覆盖率", "flaky", "Core Web Vitals", "INP"]
 type: reference-based
 ---
 
@@ -46,6 +46,7 @@ When the user mentions testing work, detect the context and load the right refer
 | "accessibility", "a11y", "WCAG", "axe-core", "Pa11y", "contrast", "screen reader", "可访问性" | `references/accessibility-testing-rules.md` |
 | "pair test", "4D Protocol", "exploratory", "session", "human+AI", "配对测试" | `references/pair-testing-rules.md` |
 | "test strategy", "testing pyramid", "CI/CD pipeline", "sharding", "flaky", "AI code testing", "测试策略" | `references/test-strategy-rules.md` |
+| "AI authors tests", "agent writes tests", "Test Agents", "Planner/Generator/Healer", "auto-heal tests", "generate tests", "browser.bind", "AI 写测试" | `references/agentic-testing-rules.md` |
 | "full testing", "complete test setup", "test everything" | Load **all references** sequentially |
 
 ---
@@ -114,15 +115,27 @@ Produce a structured testing review:
 
 ## Tool Quick Reference
 
-| Tool | Install | Primary Use |
+| Tool | Install (current version) | Primary Use |
 |------|---------|-------------|
-| Playwright | `npm i -D @playwright/test && npx playwright install` | E2E testing, screenshots, tracing |
-| Vitest | `npm i -D vitest @vitest/coverage-v8` | Unit + component testing |
-| Vitest Browser Mode | `npm i -D @vitest/browser-playwright` | Real-browser component tests |
+| Playwright | `npm i -D @playwright/test@^1.60 && npx playwright install` | E2E + **Test Agents** (Planner/Generator/Healer, v1.56+); `browser.bind()` + `--debug=cli` (v1.59) for agent-driven authoring/repair |
+| Vitest | `npm i -D vitest@^4.1 @vitest/coverage-v8` | Unit + component testing (4.1 current) |
+| Vitest Browser Mode | `npm i -D @vitest/browser-playwright` | Real-browser component tests — **STABLE since Vitest 4.0**, native `toMatchScreenshot()` visual regression + Playwright Trace |
 | MSW | `npm i -D msw` | Network mocking at service worker level |
-| k6 | `brew install k6` | Load/performance testing (JS scripts) |
-| axe-core + Playwright | `npm i -D @axe-core/playwright` | Automated accessibility auditing |
+| k6 | `brew install k6` | Load/performance testing — **v1.0 (2025-05), current 1.3.0**; `abortOnFail` thresholds |
+| axe-core + Playwright | `npm i -D @axe-core/playwright` | Automated a11y — **axe-core 4.12.x**, WCAG 2.2 `target-size` rule (use `wcag22aa` tag) |
 | Pa11y | `npx pa11y URL` | CLI accessibility scanning |
 | Lighthouse | `npx lighthouse URL --output=json` | Performance + a11y + SEO auditing |
 | Pact | `npm i -D @pact-foundation/pact` | Consumer-driven contract testing |
-| Stryker | `npx stryker init` | Mutation testing |
+| Stryker | `npx stryker init` | Mutation testing — score = detected/(detected+undetected); thresholds break 50 / low 60 / high 80 |
+
+---
+
+## Validation Scripts (deterministic — `scripts/`)
+
+| Script | Asserts | Exit |
+|--------|---------|------|
+| `scripts/check-test-config.sh [vitest.config.ts]` | Per-module coverage thresholds present (not global-only) | 0 pass / 1 global-only / 2 no config |
+| `scripts/cwv-budget-check.sh <lighthouse.json>` | LCP<=2500ms, INP<=200ms, CLS<=0.1 (Rule P1) | 0 pass / 1 breach / 2 bad input |
+| `scripts/mutation-gate.sh <stryker.json> [floor=60]` | Mutation score >= floor (60 existing / 80 critical) | 0 pass / 1 below floor / 2 bad input |
+
+Run these instead of eyeballing config — deterministic operations belong in code, not prose judgment.

@@ -16,6 +16,18 @@ Applies to: two-sided platforms connecting buyers and sellers, service providers
 
 **Note**: Marketplace validation is primarily about proving both sides exist and want to transact. WebSearch + community research is the right tool. No specialized APIs needed for early validation.
 
+## Take-Rate Benchmarks (use instead of the empty `[take rate: %]` placeholder)
+
+A marketplace's whole economic model hinges on the take rate, so default to a defensible range and pressure-test it — never leave it blank.
+
+| Marketplace type | Take rate | Reference points |
+|------------------|-----------|------------------|
+| Product marketplaces | **5-15%** | Amazon category commissions **8-15%** |
+| Service marketplaces | **15-30%** | Uber **~20-28%** |
+| Mixed / blended | top-100 average **~10-30%** | Airbnb **~13-15%** |
+
+**Default starting take rate: 10-20%.** If the founder proposes >30%, demand the reason supply tolerates it (services can, products usually can't). If proposed <5%, check the per-transaction revenue still pays back both-sided CAC. (Source: https://www.sharetribe.com/marketplace-glossary/commission-take-rate/ — retrieved 2026-06-13.)
+
 ---
 
 ## Question Variants

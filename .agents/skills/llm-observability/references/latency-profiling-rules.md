@@ -7,7 +7,7 @@
 |---|------|-----------------|
 | LP1 | For streaming, measure TTFT + ITL — NOT end-to-end latency | deterministic |
 | LP2 | Profile across three layers: application (OTel), kernel (PyTorch), GPU (Nsight) | deterministic |
-| LP3 | vLLM: install with pip install vllm[otel]; scrape /metrics every 15 seconds | deterministic |
+| LP3 | vLLM: OTel deps ship bundled (else install opentelemetry-sdk/api/exporter-otlp); scrape /metrics every 15 seconds | deterministic |
 | LP4 | Separate prefill vs decode spans to isolate compute vs memory bottlenecks | deterministic |
 | LP5 | Track time-in-queue as the early indicator of capacity limits | semi-deterministic |
 
@@ -33,7 +33,7 @@ User Request
 Response Complete ──► End-to-End Latency
 ```
 
-**Rule**: If an SLO is written against end-to-end latency for a streaming product, it is measuring the wrong thing. Set SLOs on TTFT (perceived responsiveness) and ITL (streaming smoothness). Capture TTFT via `gen_ai.response.time_to_first_chunk` / `gen_ai.client.operation.time_to_first_chunk`.
+**Rule**: If an SLO is written against end-to-end latency for a streaming product, it is measuring the wrong thing. Set SLOs on TTFT (perceived responsiveness) and ITL (streaming smoothness). Capture TTFT via the `gen_ai.client.operation.time_to_first_chunk` histogram (client) / `gen_ai.server.time_to_first_token` (server); TTFT is a metric, not a span attribute.
 
 > Source: findings.md "A streaming session with a 10-second end-to-end latency and a 500ms TTFT feels instantaneous, whereas a non-streaming session with a 5-second latency and a 4-second TTFT feels frozen... TTFT and Inter-Token Latency (ITL) critical metrics" [2, 18, 19, 20]
 
@@ -60,15 +60,16 @@ Analyzing performance anomalies requires deep, multi-layered instrumentation. Ea
 To monitor a self-hosted vLLM engine, integrate OTel tracing with Prometheus metric scraping.
 
 ```bash
-pip install vllm[otel]
+# OTel deps ship bundled with current vLLM; otherwise install them explicitly:
+pip install opentelemetry-sdk opentelemetry-api opentelemetry-exporter-otlp
 # start server with: --otlp-traces-endpoint <OTel-Collector>
 ```
 
 The OTel Collector combines trace spans pushed via OTLP with metrics scraped from vLLM's `/metrics` endpoint **every 15 seconds**, then exports the unified stream to a backend (Dash0 / Parseable) over a single OTLP connection.
 
-**Rule**: Use the `vllm[otel]` extra (not a hand-rolled exporter) and scrape `/metrics` on a 15-second interval. vLLM isolates scheduling/queuing/memory metrics in dedicated custom namespaces to bypass spec version conflicts — do not assume they land under the standard `gen_ai.*` namespace.
+**Rule**: Rely on vLLM's bundled OTel support (or install `opentelemetry-sdk`/`opentelemetry-api`/`opentelemetry-exporter-otlp` explicitly — there is no `vllm[otel]` extra) rather than a hand-rolled exporter, and scrape `/metrics` on a 15-second interval. vLLM isolates scheduling/queuing/memory metrics in dedicated custom namespaces to bypass spec version conflicts — do not assume they land under the standard `gen_ai.*` namespace.
 
-> Source: findings.md "Developers install vLLM's OpenTelemetry package using the following command: pip install vllm[otel]... metrics scraped from vLLM's /metrics endpoint every 15 seconds" [4, 19]
+> Source: findings.md "...metrics scraped from vLLM's /metrics endpoint every 15 seconds" [4, 19]. NOTE: the findings cited a `pip install vllm[otel]` extra — corrected 2026-06-13, no such extra exists; OTel deps ship bundled with current vLLM, else install `opentelemetry-sdk`/`opentelemetry-api`/`opentelemetry-exporter-otlp` explicitly.
 
 **determinismLevel**: deterministic — fixed install command + interval.
 
@@ -105,6 +106,6 @@ vLLM tracks scheduling delay before execution begins via `gen_ai.latency.time_in
 
 - **End-to-end SLOs for streaming**: Measures total generation, not perceived responsiveness (TTFT) or smoothness (ITL).
 - **Application-layer-only profiling**: Misses kernel (PyTorch Profiler) and GPU (Nsight) bottlenecks for self-hosted inference.
-- **Hand-rolled vLLM exporters**: Use the `vllm[otel]` extra; scrape `/metrics` every 15s.
+- **Hand-rolled vLLM exporters**: Rely on vLLM's bundled OTel support (or install `opentelemetry-sdk`/`opentelemetry-api`/`opentelemetry-exporter-otlp` — no `vllm[otel]` extra exists); scrape `/metrics` every 15s.
 - **Combined inference span**: Cannot distinguish prefill-compute from decode-memory bottlenecks — split them.
 - **Alerting only on TTFT**: By the time TTFT regresses you are already over capacity; alert on `time_in_queue` first.

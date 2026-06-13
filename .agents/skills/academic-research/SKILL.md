@@ -136,6 +136,22 @@ Before concluding ANY research task (except quick factual), apply the **10 Anti-
 
 If any item is unchecked, **continue working instead of concluding**.
 
+### Anti-Skip / Anti-Rationalization Table
+
+The agent WILL be tempted to stop early. Each rationalization below is a known failure mode; the counter cites the existing protocol that forbids it. Do NOT proceed past a row whose left column matches your current thought.
+
+| Rationalization (the excuse) | Counter (the rule it violates) |
+|------------------------------|--------------------------------|
+| "The first 3 papers agree, I can stop." | Premature saturation. research-protocol.md Rule 1 (≥2 databases) + Rule 9 (count tool calls vs the tier floor in Step 1: 20-40 survey / 80+ systematic). 3 concordant papers ≠ exhaustive search. |
+| "Tier is Quick factual, so I can skip ScholarEval / the depth floor." | Re-classify, don't downgrade. If the request says "review / survey / systematic / meta-analysis" it is NOT Quick factual — match Step 1 signal keywords honestly. ScholarEval ≥ 0.75 is the Gate 3 Accept bar for any non-trivial tier. |
+| "The API returned empty, so the topic must have no literature." | Empty result ≠ no literature. fallback-chains.md 3-strike rule: try the alternative database/query before declaring a source failed. zero-hallucination.md FORBIDS substituting training knowledge for a 0-result search. |
+| "The abstract said so, I'll cite it from memory." | zero-hallucination.md 4-point check: every citation detail (title/authors/DOI/count) MUST come from a tool result in THIS session. Reciting from memory = fabrication. |
+| "Close enough — I'll write the report now without a Methods section." | research-protocol.md Rule 4: no report without a Methods section (databases queried, result counts, filter criteria). Rule 8: do not end the turn until the report is saved to a file. |
+| "Cohen's kappa is fine; I don't need the other agreement metrics." | For systematic-review screening the include class is rare → kappa paradox. literature-search.md §2 requires Gwet's AC1 + raw % agreement alongside kappa when the positive class is rare. |
+| "PRISMA is PRISMA — the 27-item checklist covers this scoping review." | Wrong instrument. literature-search.md PRISMA decision rule: scoping review → PRISMA-ScR (20+2 items); only a focused-question systematic review uses PRISMA 2020 (27 items). |
+
+> These rows are referenced from the [Quick Rule Index](#quick-rule-index) below. The full 10 Anti-Premature-Conclusion Rules live in [research-protocol.md](references/research-protocol.md).
+
 ---
 
 ## Step 5: TAD Integration
@@ -170,6 +186,8 @@ Research findings persist across sessions via TAD's existing memory stack — no
 ---
 
 ## Quick Rule Index
+
+> Before concluding, re-read the [Anti-Skip / Anti-Rationalization Table](#anti-skip--anti-rationalization-table) in Step 4 — it maps each "stop early" excuse to the rule that forbids it.
 
 ### Protocol References (Phase 2)
 

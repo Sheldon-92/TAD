@@ -2,7 +2,7 @@
 
 **Product type**: Software
 **Date**: 2026-Q2
-**Verdict**: PIVOT (Confidence 5/10)
+**Verdict**: KILL (2 fatal flaws → KILL regardless of confidence)
 
 This is a complete walkthrough of a /pressure-test session. The founder proposes an AI tool that automatically summarizes Slack threads and meeting transcripts for developers who want to catch up on long threads.
 
@@ -45,6 +45,10 @@ WebSearch: "slack summary tool AI alternatives" → Otter.ai, Read.ai, Notta, 12
 >
 > "Developers telling you they spend too much time on Slack" is the same as saying "people don't like doing dishes." It's a real pain. It does not validate demand for YOUR solution. 12+ products exist. Why aren't developers using them?
 >
+> Apply the commitment-currency test (The Mom Test): "they told me" costs them nothing → ASSUMPTION. A scheduled call, an intro, or a deposit would be a FACT. None present yet.
+>
+> And the named PMF gate: have you run the Sean Ellis survey — "how would you feel if you could no longer use this?" ≥40% "very disappointed" = product-market fit. You have 0%; you don't have a product yet. "Positive feedback" is not the 40% threshold.
+>
 > The question is not "does this problem exist" — it does. The question is "why has no one solved it well enough that you'd know about it?" That's the real research you haven't done yet.
 >
 > **ASSUMPTION** — not FACT. Show me why existing solutions fail before assuming the market wants another one.
@@ -73,7 +77,7 @@ WebSearch: "Slack AI summarize feature" → Slack launched native AI summaries i
 >
 > Before going further: does your product solve a problem that Slack's native AI feature doesn't already solve?
 >
-> I also found: Read.ai has 10,000+ customers at $19.75/user/month. That means someone has already captured this market. That's not a tailwind for you — that's a closed door. Read.ai spent 3+ years and significant capital to get those customers. You're starting at zero, competing with:
+> I also found: Read.ai has 10,000+ customers at $19.75/user/month. That means someone has already captured this market. That's not a tailwind for you — that's a closed door. And the unit economics have to clear LTV:CAC ≥ 3:1 against an incumbent that already amortized its CAC — paying to pull a user off a working tool pushes your payback past the 18-month challenged-economics line. Read.ai spent 3+ years and significant capital to get those customers. You're starting at zero, competing with:
 > (a) Slack's native feature (zero extra cost for existing paid subscribers)
 > (b) 12+ entrenched competitors with established user bases and integrations
 >
@@ -199,39 +203,42 @@ WebSearch: "OpenAI Slack integration" → OpenAI partners with Slack, ChatGPT in
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VERDICT: PIVOT
+VERDICT: KILL
 Confidence: 5/10
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Evidence Score: 2 FACTs / 4 ASSUMPTIONs
 (Note: 1 FACT is negative — market is moving against this positioning)
 
+Why KILL (not PIVOT): 2 fatal flaws → KILL regardless of confidence.
+Two structural problems rarely have one solution. Confidence 5/10 does
+NOT rescue this — the decision rule is "2+ fatal flaws = KILL (regardless
+of confidence)." A single pivot cannot simultaneously create a wedge in a
+12+ competitor market AND remove the platform-dependency on Slack.
+
 Core Assumption (biggest unvalidated belief):
 → "Developers will pay for AI Slack summarization when Slack's own AI and
    free alternatives already exist."
-This must be disproven or the product needs to find a different angle.
+This is already contradicted by the negative-FACT search data.
 
-Fatal Flaws: 2
+Fatal Flaws: 2 → KILL
 → F3: Crowded market without a wedge — 12+ competitors including Slack's
   own native feature. "Better" is not a wedge.
 → F7: Single point of failure dependency — the product's value is
   contingent on Slack not improving its built-in AI, which they are
   actively doing.
 
-2-Week PIVOT Validation Plan:
-→ Step 1: Interview 5 developers who have tried and stopped using Read.ai,
-  Otter.ai, or Slack AI summaries. Find out exactly why. Recruit from:
-  the Read.ai negative review threads on G2/Capterra, r/devops or r/sre
-  posts complaining about tools, and cold DMs to SREs on LinkedIn who have
-  posted about incident postmortems.
-→ Step 2: Identify if there's a specific workflow or team context where
-  generic summarization fails — on-call rotations? Post-incident reviews?
-  Cross-timezone async?
-→ Step 3: Build a specific demo for ONE workflow that Slack AI can't do.
-  Test with 10 users from the incident-management community (PagerDuty
-  Slack community, incident.io Discord, on-call SRE subreddits).
-→ Success signal: 3 of 10 users in the specific workflow pre-pay or commit
-  to a paid pilot at $20/mo — verbal "I'd pay" is NOT sufficient.
+What KILL means here: stop building THIS product (general Slack/meeting
+summarization for developers). KILL is not "give up" — it's "this exact
+framing is dead; the next move is fresh problem discovery, not a patch."
+→ Do NOT spend 2 weeks validating a tweak to summarization. The two fatal
+  flaws are structural, not addressable by a scope change.
+→ Instead, run problem-discovery interviews unanchored to summarization:
+  talk to 5 developers about where they actually lose hours, with NO
+  product in hand. Recruit from r/devops / r/sre threads complaining about
+  tooling and SREs posting incident postmortems on LinkedIn.
+→ If a sharp, un-served, willing-to-pay problem emerges, that becomes a
+  NEW /pressure-test run on a NEW idea — not a pivot of this one.
 
 Evidence Collected:
 FACTs:
@@ -250,8 +257,8 @@ ASSUMPTIONs remaining:
 
 ## What Happened After This Session
 
-The founder did the PIVOT validation. During customer interviews with developers who had tried and stopped using Slack AI summaries, they discovered a specific pattern: **incident postmortem workflows**. After production incidents, on-call engineers needed to reconstruct what happened across Slack, PagerDuty, Datadog, and GitHub — and Slack's native summary only covered Slack.
+The founder accepted the KILL and shelved the summarization product entirely — no two-week patch, no attempt to bolt a wedge onto a dead framing. Instead they ran problem-discovery interviews with NO product in hand, asking developers where they actually lose hours. A specific pattern surfaced: **incident postmortem workflows**. After production incidents, on-call engineers needed to reconstruct what happened across Slack, PagerDuty, Datadog, and GitHub — and Slack's native summary only covered Slack.
 
-This led to a complete pivot: a tool specifically for incident reconstruction that aggregates across 4-5 dev tools, not general Slack summarization. That specific use case had real desperation (on-call engineers losing 3-4 hours per incident on reconstruction), clear willingness to pay (companies budget for incident tooling), and no direct competitor.
+That discovery became a **brand-new idea** — a tool specifically for incident reconstruction that aggregates across 4-5 dev tools, not general Slack summarization — and the founder ran a fresh `/pressure-test` on it. That new idea had real desperation (on-call engineers losing 3-4 hours per incident on reconstruction), clear willingness to pay (companies budget for incident tooling), and no direct competitor, so it scored very differently.
 
-The pressure test didn't kill the idea — it killed the wrong version of the idea.
+The pressure test killed the right thing. KILL didn't mean "give up" — it meant "this exact product is dead; go find a real problem." The new product was not a pivot of the old one; it was a different product that survived its own pressure test.

@@ -145,3 +145,9 @@ Each payment request includes a unique idempotency key generated at request crea
 | D7 (cost-token-economics.md) | #7 (runaway retries from budget-uncontrolled loops) |
 | D8 (observability.md) | All — disasters detected days late because no traces exist |
 | D9 (testing-evaluation.md) | All — untested failure modes ship to production |
+
+---
+
+## The Macro Consequence: Project Cancellation [Source: research finding #28, Gartner June 2025, https://www.zartis.com/the-compounding-errors-problem-why-multi-agent-systems-fail-and-the-architecture-that-fixes-it/ retrieved 2026-06-13]
+
+The 7 incidents above are the per-decision disasters. Their aggregate, organizational consequence is quantified: **Gartner predicts >40% of agentic-AI projects will be canceled by end of 2027** due to escalating costs (D7), unclear value (D1 — agent was never needed), or inadequate risk controls (D5/D8). Each skipped decision in the table above is a contributing cause; the project being in the canceled 40% is the cumulative effect. Reviewing D1, D5, D7, and D8 before launch is the cheapest insurance against being in that statistic.

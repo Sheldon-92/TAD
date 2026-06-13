@@ -315,10 +315,11 @@ Phase 3 的回答会暴露知识空白。此时：
 
 ### Step 3.3: 专家审查
 
-调 2 个专家并行审查 handoff 草稿：
+调 ≥3 个专家并行审查 handoff 草稿（≥3 lens，**含 fact-API lens** — 与 Gate 2 §2.4 一致）：
 
 - **code-reviewer**: AC 可验证性、文件结构一致性、grep 命令正确性
 - **backend-architect**: 架构合理性、跨平台兼容、范围评估、遗漏项
+- **fact-API lens**: 对版本敏感断言（API 名/版本号/弃用/metric 类型）用 WebSearch 核对当前原始文档；跨模型（Codex/Gemini）补 same-model 事实盲点。任何 refute 先独立 validate 再修。
 
 ⚠️ 常见 P0（从 web-ui-design 审查中提取）：
 - 框架绑定但声称框架无关
@@ -339,11 +340,54 @@ Blake 执行 handoff。关键注意：
 
 ---
 
+## Gate 2 — 双层质量尺（⚠️ MANDATORY build/validation deliverable）
+
+> **每个新建或升级的能力包，在 Stage 4 收尾 / Stage 5 验收前，必须通过 `.tad/evidence/pack-quality/QUALITY-BAR.md` 的双层尺。**
+> QUALITY-BAR.md 是**唯一权威基准**（canonical bar）——以下只内联强制清单摘要，完整判据/锚点/负样例口径以 QUALITY-BAR.md §1 / §2 / §4 为准，不在此重复。
+> 任一项不达标 = Gate 2 不通过 = 不得标 accepted。
+
+### 2.1 Layer A — 元设计/结构 checklist（QUALITY-BAR.md §1，满分 10，**通过线 7/10**）
+
+逐条 grep/读验证（口径见 QUALITY-BAR.md §1 的"如何验证"列）：
+
+- [ ] **A1 Frontmatter**：`name`（≤64 字符，小写/数字/连字符，禁含 "anthropic"/"claude"）+ `description`（≤1024 字符，第三人称，写明 what+when）
+- [ ] **A2 渐进披露**：metadata → SKILL.md body → 按需加载的 `references/`/`scripts/`/`assets/`（≥1 辅助文件）
+- [ ] **A3 Body 体量纪律**：SKILL.md body **< 500 行**（超出拆分到 `references/`）
+- [ ] **A4 路由/步骤结构**：Step 0/1/2 工作流 **或** signal→reference 路由表
+- [ ] **A5 接口契约**：CONSUMES/PRODUCES 或明确 scope-boundary
+- [ ] **A6 Anti-skip / 反合理化表**：列出 agent 跳步借口 + 逐条反驳
+- [ ] **A7 导航索引**：Quick Rule Index / ## Contents / Available datasets / ## Skills 表
+- [ ] **A8 Fixture 存在**：`examples/*.md` ≥ 1 个评估 fixture，含 **pack-specific `discriminative_pattern`**
+- [ ] **A9 评估接好线**：fixture 含 `discriminative_pattern` + `min_discriminative`（接 §2.3 判别式 gate）
+- [ ] **A10 验证脚本**：`scripts/` 或 `tools/` 有可执行校验器，**路径用正斜杠（无 Windows `\`）**
+
+### 2.2 Layer B — 领域深度（QUALITY-BAR.md §2，0/2/5 锚点）
+
+- [ ] 规则携带**研究落地的具体数字/阈值/退出码 + 来源**（如 `n≥550`、`exit code 183`、`p95`、`50M rows offset 翻车`），**NOT** 前沿 LLM 无研究即可复述的通用规则（"write good tests" / "secure your API"）。
+- [ ] specN（specific-threshold 去重计数，跑 QUALITY-BAR.md §2.3 的命令，注意 `LC_ALL=en_US.UTF-8`）落在目标桶；gold 锚 5，非 gold 按 specN 初判 + reading 微调。
+
+### 2.3 行为判别式评估（QUALITY-BAR.md §3，复用 `.tad/scripts/pack-eval-runner.sh`）
+
+- [ ] 跑**新鲜 WITH / CONTROL 行为评估**：**no-pack CONTROL 输出 FAIL**（`disc < min_discriminative`），**WITH-PACK 输出 PASS**（`disc ≥ min_discriminative`）。
+- [ ] 用 fixture 的 `discriminative_pattern`（仅 pack 独有 marker）断言，**不**用 combined `## Verification Command` 计数驱动 PASS（混入通用 marker = validation theater）。
+- [ ] negative control 必须 FAIL（对称证明尺能判别，见 QUALITY-BAR.md §4）。
+
+### 2.4 对抗审查（≥3 lens，含 fact-API lens — QUALITY-BAR.md §6）
+
+- [ ] ≥3 个审查 lens，**必须含一个 fact-API lens**：对版本敏感断言（API 名/版本号/弃用/metric 类型）用 **WebSearch 核对当前原始文档**（primary docs）。
+- [ ] 跨模型（Codex/Gemini）对抗审查覆盖 same-model 的事实/API 盲点。
+- [ ] **任何 refute 先独立 validate 再修**——NEVER 盲信 reviewer 的 P0（reviewer 自身约 2/N 会错）；validate 后属实才改。
+
+---
+
 ## Stage 5: 验证
 
 在真实项目中使用能力包，对比有包 vs 无包的产出质量。
 
+**⚠️ 前置门槛：Stage 5 验收前必须先过 Gate 2（双层质量尺，见上）。** Gate 2 不通过则阻塞验收。
+
 验证清单：
+- [ ] **Gate 2 通过**：Layer A ≥7/10 + Layer B 达标 + 行为判别式 CONTROL FAIL / WITH PASS + ≥3-lens 对抗审查（含 fact-API lens）
 - [ ] Agent 读了 CAPABILITY.md 后知道该跑哪几个 capability（入口协议有效）
 - [ ] Agent 产出的 UI 不是 AI slop（anti-slop 规则生效）
 - [ ] CLI 工具实际跑通了（不只是写在文档里）
@@ -358,8 +402,8 @@ Blake 执行 handoff。关键注意：
 | 评估 | 30min | 确认的 capability 列表 + AI 能力边界 | 列了 capability 但不知道 agent 能不能做 |
 | 研究 | 1-2h | NotebookLM notebook (50-120 精选源) + 研究发现文件 | 源 >200 且大部分是文章 = 比例失衡 |
 | 设计 | 1h | Handoff 草稿 + 2 个专家审查通过 | 没有入口协议 / 没有 CLI 命令 / 框架绑定 |
-| 构建 | 2-4h | 完整能力包目录 (≤5000 行) | 任何 section 没有 CLI 命令 = 和 YAML 一样 |
-| 验证 | 1h | 真实项目对比结果 | "有包 vs 无包"看不出差别 |
+| 构建 | 2-4h | 完整能力包目录 (≤5000 行) + **通过 Gate 2 双层尺** | 任何 section 没有 CLI 命令 = 和 YAML 一样；Gate 2 任一项不达标 |
+| 验证 | 1h | 真实项目对比结果（Gate 2 前置通过） | "有包 vs 无包"看不出差别；行为判别式 CONTROL 未 FAIL |
 
 ---
 

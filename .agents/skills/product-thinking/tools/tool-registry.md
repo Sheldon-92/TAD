@@ -94,14 +94,16 @@ All tools used across the Product Thinking skill pack. Skills degrade gracefully
 
 ---
 
-### tam-sam-som-calculator
+### tam-sam-som-calculator (deanpeters/Product-Manager-Skills)
 | Attribute | Value |
 |-----------|-------|
-| **Status** | NEEDS_SETUP (deanpeters/product-manager-skills must be installed) |
-| **What it does** | Structured TAM/SAM/SOM calculation with real data inputs |
-| **When to use** | Market sizing in `/define` step (software and marketplace primarily) |
+| **Status** | NEEDS_SETUP (deanpeters/Product-Manager-Skills must be installed) |
+| **Repo / version** | https://github.com/deanpeters/Product-Manager-Skills — **v0.79 (updated 2026-05-15)** |
+| **What it does** | Structured TAM/SAM/SOM calculation with real data inputs. The same repo also ships a **finance-metrics quickref (32+ SaaS metrics with formulas/benchmarks)** and **30+ frameworks** (Moore positioning, Teresa Torres opportunity mapping, Amazon working-backwards) — useful pointers for `/define` and `/shotgun`. |
+| **When to use** | Market sizing in `/define` step (software and marketplace primarily); the finance-metrics quickref as a reference when sanity-checking unit economics |
 | **Adapters** | software.md (optional), marketplace.md (optional) |
 | **WEBSEARCH_FALLBACK** | Manual WebSearch for market size data + rough calculation in `/define` output |
+| **⚠️ License** | **CC BY-NC-SA 4.0** (non-commercial, share-alike). This pack may **cite / point to** the repo as an optional tool, but **MUST NOT copy its rule text** into this pack. Treat it as an external reference only. (retrieved 2026-06-13) |
 
 ---
 
@@ -134,4 +136,4 @@ That is a valid and important output — it flags that the founder is building o
 | Helium 10 | helium10.com — web SaaS, no local install |
 | Jungle Scout | junglescout.com — web SaaS, no local install |
 | Bright Data | brightdata.com — API registration |
-| tam-calculator | deanpeters/product-manager-skills — GitHub |
+| tam-calculator | deanpeters/Product-Manager-Skills — GitHub (v0.79; CC BY-NC-SA 4.0 — cite only, do not copy text) |

@@ -9,7 +9,9 @@
 | GDB2 | Storage model: LPG (closed-world) vs RDF triple store (open-world, global URIs) | deterministic |
 | GDB3 | Edge metadata on RDF → use RDF-Star embedded triples, not reification | deterministic |
 | GDB4 | Indexing is decisive: latency drops orders of magnitude when indexed | semi-deterministic |
-| GDB5 | Neo4j HA quorum is N=2F+1; FalkorDB throughput plateaus beyond 8 threads | deterministic |
+| GDB5 | Neo4j HA quorum is N=2F+1; FalkorDB plateaus beyond 8 threads; ingestion throughput is batch-dependent (Memgraph small / FalkorDB bulk / Neo4j flat) | deterministic |
+
+> ⚠️ **Deprecated engines** (do NOT recommend for new builds): **Kuzu** embedded (archived after 2025-10 Apple acquisition) and **RedisGraph** (EOL 2025-01 → migrate to FalkorDB). See the "Deprecated / Old-Pattern Engines" section at the end of this file.
 
 ---
 
@@ -34,6 +36,17 @@ When choosing the LPG engine, match it to the workload — do not pick Neo4j by 
 | Streaming | External connectors / ETL | Native Kafka/Redpanda/Pulsar | External via Redis commands |
 
 > Source: findings.md §3 "Operational Database Profiles" + operational-metric table — QPS 738/467/837, memory 2668/415/496 MB, native streaming connectors, index-free adjacency [36, 43, 44, 45].
+
+**Refreshed latency profile (2026 vendor benchmark, FalkorDB vs Neo4j).** On the SNAP Pokec social graph, 16-CPU / 32 GB, 82% read / 18% write across 11 templated queries:
+
+| Engine | p50 | p90 | p99 | p50→p99 amplification | Cold start |
+|--------|-----|-----|-----|------------------------|-----------|
+| **FalkorDB** | 55 ms | 108 ms | **136.2 ms** | **2.5x** (tail stays bounded) | 1.1 ms (first query 0.4 ms); ~6,693 QPS |
+| **Neo4j** | 577.5 ms | 4,784.1 ms | **46,923.8 ms** | **~81x** (tail blows up) | accepts first query ~90 ms after restart; first warm-up query 274 ms; settles to ~34 ms after ~3 queries |
+
+The decision signal is the **p99 magnitude** (FalkorDB 136 ms vs Neo4j 46,924 ms) and the **tail amplification** (2.5x vs ~81x), not p50 alone — a workload with SLO on the tail cannot absorb Neo4j's p99 blow-up here. ⚠️ These are **vendor self-published** numbers on one synthetic workload; treat as a magnitude prior to confirm on your own data, not a production guarantee.
+
+> Source (refreshed): FalkorDB vs Neo4j graph-database performance benchmark — https://www.falkordb.com/blog/graph-database-performance-benchmarks-falkordb-vs-neo4j/ (retrieved 2026-06-13). p50/p90/p99 55/108/136.2 ms vs 577.5/4784.1/46923.8 ms; 6,693 QPS; cold-start 1.1 ms vs ~90/274/34 ms.
 
 **determinismLevel**: deterministic — selection from fixed architectural profiles.
 
@@ -101,7 +114,18 @@ When designing for availability/scale:
 - **FalkorDB** concurrent throughput **plateaus beyond 8 threads** (Redis single-threaded core) — do not plan for linear scaling past 8 threads.
 - **Memgraph** scales vertically (replication) and is bounded by RAM — the active graph must fit in physical memory.
 
-> Source: findings.md §3 Neo4j — Raft quorum N=2F+1 [36]; FalkorDB §3 8-thread plateau [45]; Memgraph RAM bound [36, 43].
+**Ingestion throughput depends on BATCH size — pick the engine by your write pattern, not a single "fastest" label:**
+
+| Batch size | Fastest engine | Numbers |
+|------------|----------------|---------|
+| **batch = 1** (real-time, per-event writes) | **Memgraph** | ~1,427 rows/s — leads at small batches |
+| **batch ≈ 500** (crossover) | FalkorDB overtakes Memgraph | FalkorDB rises steeply with batch size |
+| **batch = 5,000** (bulk import) | **FalkorDB** | 22,784 rows/s (**77x** its own batch-1 rate) |
+| any batch | **Neo4j plateaus** | flat at **~10,600 rows/s** regardless of batch size |
+
+Rule: small-batch / streaming inserts → **Memgraph**; large bulk imports → **FalkorDB** (its batched insert is the dominant lever); Neo4j's ingestion is batch-insensitive, so increasing your batch buys you nothing there.
+
+> Source: findings.md §3 Neo4j — Raft quorum N=2F+1 [36]; FalkorDB §3 8-thread plateau [45]; Memgraph RAM bound [36, 43]. Ingestion tiering (refreshed): AIMultiple graph-database benchmark — https://aimultiple.com/graph-databases (retrieved 2026-06-13): batch-1 Memgraph 1,427/s; crossover ~batch 500; FalkorDB batch-5,000 22,784/s; Neo4j flat ~10,600/s.
 
 **determinismLevel**: deterministic — formula + documented limits.
 
@@ -114,3 +138,18 @@ When designing for availability/scale:
 - **Planning FalkorDB past 8 threads**: throughput plateaus at the Redis single-threaded core.
 - **Blaming architecture for latency before indexing**: a missing index costs up to 1712x on Neo4j.
 - **Streaming through Neo4j ETL when Memgraph has native connectors**: adds an avoidable pipeline hop.
+
+---
+
+## ⚠️ Deprecated / Old-Pattern Engines (DO NOT recommend for new long-term builds)
+
+> This section is **deliberately isolated** so the engine-selection rules above stay free of time-sensitive failure modes. An engine listed here was once a reasonable candidate but has been **archived or end-of-lifed** — recommending it for a new project plants a future migration burden. Verify status against the source before relying on any of these.
+
+| Engine | Status | What to do instead |
+|--------|--------|--------------------|
+| **Kuzu** (embedded LPG, columnar, Cypher) | **Archived.** Kuzu was acquired by **Apple in 2025-10**; following the acquisition the GitHub repo was **archived** and most public resources were taken down. A community fork exists but carries **abandonment risk** (no guaranteed maintainer, security patches, or release cadence). | Do **not** pick Kuzu embedded as a long-term dependency for a new project. If you already depend on it, **plan a migration** (to an actively maintained embedded option or to Neo4j/Memgraph/FalkorDB per the GDB1 workload match). If you must stay on the fork, pin the version and budget for self-maintenance. |
+| **RedisGraph** (matrix-based graph module on Redis) | **EOL 2025-01.** No further releases or support. | Migrate to **FalkorDB**, its **direct successor** — same compressed-sparse-matrix / linear-algebra architecture on Redis, actively maintained. The GDB1 FalkorDB profile applies. |
+
+**Rule**: when an agent's training data surfaces Kuzu-embedded or RedisGraph as a candidate, treat that as **stale knowledge** — both are off the new-build menu as of 2026-06-13. RedisGraph → FalkorDB is a drop-in lineage; Kuzu-embedded has **no first-party successor**, so its replacement is a workload re-match via GDB1.
+
+> Source: Kuzu/Apple acquisition + repo archive — https://9to5mac.com/2026/02/11/kuzu-database-company-joins-apples-list-of-recent-acquisitions/ and https://cs.uwaterloo.ca/news/waterloo-based-graph-database-start-up-kuzu-acquired-apple (retrieved 2026-06-13). RedisGraph EOL 2025-01 / FalkorDB succession — FalkorDB benchmark + positioning, https://www.falkordb.com/blog/graph-database-performance-benchmarks-falkordb-vs-neo4j/ (retrieved 2026-06-13).

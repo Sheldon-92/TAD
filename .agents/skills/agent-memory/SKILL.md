@@ -35,6 +35,21 @@ This rule applies to: memory architecture design, semantic-memory implementation
 
 ---
 
+## Quick Rule Index (all 34 rules)
+
+One-screen map of every rule. Load the reference for full text + sources. Rule IDs are stable and citable in findings (e.g. `[P0] Rule CE2`).
+
+| Reference | Rules |
+|-----------|-------|
+| `memory-architecture.md` (CoALA) | **MA1** classify state into a CoALA layer first · **MA2** match layer to cognitive type (no episodic recall confusion) · **MA3** memory must consolidate+score+temporally-track (Zep/Graphiti DMR 94.8%) · **MA4** vector retrieval 2 phases, 256–1,024-token chunks, failure modes · **MA5** add 5th organizational-context layer for enterprise |
+| `context-compaction.md` | **CC1** compact don't inflate (O(N²) attention) · **CC2** pick strategy by horizon/payload (4 named strategies) · **CC3** lossy summarization fires at ~70% token threshold · **CC4** route summarizer to a Haiku/gpt-4o-mini-class model · **CC5** only self-managed history, not service-managed · **CC6** prefer native server-side editing/compaction |
+| `memgpt-letta-mem0.md` | **ML1** virtual context = 2 tiers · **ML2** model is active memory manager (memory_replace/insert/rethink) · **ML3** stateless APIs need heartbeats; sleep-time compute is async · **ML4** Mem0 reconciles via ADD/UPDATE/DELETE/NOOP · **ML5** Letta active vs Mem0 passive — pick by workload · **ML6** benchmark reality (Mem0 LOCOMO 66.88%, p95 1.44s, ~7K tok; Zep DMR 94.8%) · **ML7** file-as-memory can beat vector (Letta 74.0% LoCoMo) |
+| `state-persistence.md` (LangGraph) | **SP1** checkpoint every super-step · **SP2** durable backend in prod (not MemorySaver) · **SP3** Replay vs Fork · **SP4** subgraph time-travel needs the compile flag · **SP5** HITL interrupt_before/after · **SP6** tune checkpointers (compression/TTL/offload) · **SP7** cross-thread memory = Store API (put/get/search) not checkpointer · **SP8** Store TTL (minutes; refresh_on_read; sweep_interval_minutes) |
+| `prompt-caching.md` (Anthropic) | **PC1** prefix-based, Tools→System→Messages · **PC2** billing 1.25×/2.0× write, 0.1× read · **PC3** dynamic vars AFTER the last breakpoint · **PC4** ≤4 breakpoints, 20-block lookback · **PC5** pre-warm with max_tokens=0 · **PC6** nested XML, documents-first/query-last |
+| `context-editing-memory-tool.md` (native) | **CE1** one beta header `context-management-2025-06-27` · **CE2** `clear_tool_uses_20250919` (trigger 100K, keep 3) · **CE3** `clear_thinking_20251015` (model-class default) · **CE4** `compact_20260112` (header `compact-2026-01-12`, 150K) · **CE5** `memory_20250818` file-based, outside context · **CE6** 84% token savings / 39% perf on 100-turn agent |
+
+---
+
 ## Step 0: Context Detection
 
 When the user mentions memory or context-engineering work, detect the context and load the right reference:
@@ -46,6 +61,7 @@ When the user mentions memory or context-engineering work, detect the context an
 | "MemGPT", "Letta", "Mem0", "self-editing memory", "core memory", "extract facts", "user profile", "long-term memory layer" | `references/memgpt-letta-mem0.md` |
 | "checkpoint", "persistence", "resume after crash", "time travel", "replay", "human-in-the-loop", "interrupt", "LangGraph state", "检查点", "时间旅行" | `references/state-persistence.md` |
 | "prompt caching", "cache breakpoint", "cache hit", "cost reduction", "XML structure", "提示缓存", "缓存" | `references/prompt-caching.md` |
+| "context editing", "memory tool", "clear_tool_uses", "compact", "Anthropic memory", "native context management", "clear thinking", "上下文编辑", "记忆工具" | `references/context-editing-memory-tool.md` |
 | "full memory design", "design the whole memory system", "stateful agent from scratch" | Load **all references** sequentially |
 
 ---
@@ -101,8 +117,9 @@ Produce a structured memory/context review:
 | Excuse | Counter |
 |--------|---------|
 | "We'll just put everything in a vector DB" | An append-only vector store is not memory — it drifts and dilutes. You need consolidation + scoring + temporal tracking. Mem0 scored 49.0% on one LongMemEval run (harness/version-dependent — re-eval on your data); plain RAG-as-memory is generally weaker but the exact gap varies by benchmark. |
-| "Bigger context window solves history" | Attention is O(N²) in sequence length. Raw uncompacted history recalculates KV tensors every step — compounding cost and latency. Compact, don't inflate. |
-| "We'll summarize when it gets long" | "When it gets long" is not a trigger. Lossy summarization fires at a token threshold (~70% capacity) and is prone to drift/hallucination — pair it with a sliding window and staged compaction. |
+| "Bigger context window solves history" | Attention is O(N²) in sequence length. Raw uncompacted history recalculates KV tensors every step. Anthropic's measured native context management cut tokens 84% (and +39% perf) on a 100-turn agent — compact/prune, don't inflate. |
+| "We'll summarize when it gets long" | "When it gets long" is not a trigger. Lossy summarization fires at a token threshold (~70% capacity) and is prone to drift/hallucination. On Anthropic, prefer native context editing (`clear_tool_uses_20250919`, trigger 100K, keep 3) to prune + `compact_20260112` (150K) to summarize — don't hand-roll. |
+| "We'll hand-write a summarizer loop on Anthropic" | Native primitives exist: context editing (header `context-management-2025-06-27`) PRUNES tool results/thinking; compaction (`compact-2026-01-12`) SUMMARIZES. The #1 native bug is appending only `response.text` — you must append the full `response.content` or the compaction block is lost. |
 | "Persistence is a later concern" | Without a checkpointer, one API timeout restarts a multi-step workflow from the beginning. Checkpoints also support the audit trail regulated domains expect (necessary, not sufficient — pair with retention/privacy/legal controls). |
 | "Caching is automatic" | Anthropic caching is prefix-based and developer-controlled. One dynamic variable left of a breakpoint causes a full cache miss. You lose the 0.1× read rate and 41–80% cost reduction. |
 
@@ -116,4 +133,8 @@ Produce a structured memory/context review:
 | Mem0 | Decoupled continuous-learning layer | Passive extract-reconcile (ADD/UPDATE/DELETE/NOOP) user memory |
 | LangGraph checkpointers | State persistence + time travel | `PostgresSaver`/`DynamoDBSaver`, replay/fork, HITL interrupts |
 | Anthropic prompt caching | Prefix KV reuse | `cache_control: {"type":"ephemeral"}`, ≤4 breakpoints |
-| Zep (Graphiti) | Temporal knowledge graph | Indexing *when* facts change (temporal tracking) |
+| Anthropic context editing | Server-side prune | `clear_tool_uses_20250919` / `clear_thinking_20251015`, header `context-management-2025-06-27` |
+| Anthropic compaction | Server-side summarize | `compact_20260112`, header `compact-2026-01-12`, 150K trigger |
+| Anthropic memory tool | File-based durable store | `memory_20250818`, `/memories` dir, outside context window |
+| LangGraph Store | Cross-thread durable memory | `put`/`get`/`search`, tuple namespace, TTL in minutes |
+| Zep (Graphiti) | Temporal knowledge graph | Indexing *when* facts change (DMR 94.8% vs MemGPT 93.4%) |

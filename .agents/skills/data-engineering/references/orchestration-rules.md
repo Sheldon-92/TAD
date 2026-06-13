@@ -21,21 +21,21 @@ When selecting a Python orchestrator, choose by best-fit AI workload — do not 
 
 | Orchestrator | Version | Primary Philosophy | Infra Overhead | Best-Fit AI Workload |
 |---|---|---|---|---|
-| Apache Airflow | v3.2 | Task-centric + asset-aware extensions | **High** (web server, scheduler, metadata DB, workers, API server, DAG processor) | Massive, multi-team batch model retraining |
+| Apache Airflow | v3.x (3.2.2 docs; GA Apr 2025) | Task-centric + asset-aware + event-driven scheduling | **High** (web server, scheduler, metadata DB, workers, API server, DAG processor) | Massive, multi-team batch retraining; streaming-triggered AI pipelines (event-driven scheduling) |
 | Dagster | v1.13 | Asset-centric; software-defined assets as first-class citizens | **Medium** (code locations + daemon instances) | Complex dbt-heavy transforms + asset tracking |
 | Prefect | v3.7 | Dynamic, developer-first Python decorators | **Low** (dynamic runtime workers + simplified Postgres) | Flexible agentic workflows, dynamic low-latency API interactions |
 
 **determinismLevel**: deterministic — given the workload profile, the orchestrator choice follows.
-> Source: findings.md "Orchestration in the Age of Intelligent Agents" comparison table [18, 19].
+> Source: findings.md "Orchestration in the Age of Intelligent Agents" comparison table [18, 19]; Airflow 3 versions/capabilities https://www.astronomer.io/blog/introducing-apache-airflow-3-1/ (retrieved 2026-06-13).
 
 ### ORC2: Don't Default to Airflow
 
-Airflow 3.2 added an asset-aware orchestration model (native asset-aware scheduling, asset partitioning, built-in DAG versioning, secure multi-team deployments) and a **Common AI Provider** with native LLM operators, toolset schemas, and integrations with 20+ foundational model providers.
+**Airflow 3.x** (3.2.2 docs; GA **April 2025**; **80,000+ orgs**, **30M+ monthly downloads**) added **DAG versioning**, **event-driven scheduling** (assets can trigger DAGs from external events — relevant to streaming-triggered AI pipelines), **DAG bundles** (git / local / external source backends), **human-in-the-loop** operators, a **React UI**, plus a **Common AI Provider** with native LLM operators and integrations with 20+ foundational model providers.
 
-But its **split-component architecture** (web server, scheduler, metadata database, workers, dedicated API server, DAG processor) carries a heavy operational footprint, frequently requiring dedicated platform engineering resources to scale and maintain. **Rule**: reserve Airflow for massive multi-team batch pipelines where that footprint is justified — do not impose it on a lightweight or dynamic workflow.
+But its **split-component architecture** (web server, scheduler, metadata database, workers, dedicated API server, DAG processor) carries a heavy operational footprint, frequently requiring dedicated platform engineering resources to scale and maintain. **Rule**: reserve Airflow for massive multi-team batch pipelines (or event-driven streaming triggers) where that footprint is justified — do not impose it on a lightweight or dynamic single-team workflow; the version anchor moved (3.2.2 docs), but the "don't default to Airflow" rule stands.
 
 **determinismLevel**: deterministic.
-> Source: findings.md "Apache Airflow (Version 3.2)" — asset-aware model, Common AI Provider with 20+ model providers, heavy split-component footprint [19, 20, 21].
+> Source: Astronomer — Apache Airflow 3 (DAG versioning, event-driven scheduling, DAG bundles, HITL, React UI; 80,000+ orgs / 30M+ monthly downloads; GA April 2025) — https://www.astronomer.io/blog/introducing-apache-airflow-3-1/ and https://www.astronomer.io/blog/apache-airflow-3-2-release/ (retrieved 2026-06-13). Originally findings.md [19, 20, 21].
 
 ### ORC3: Dagster Software-Defined Assets for Lineage
 
@@ -70,3 +70,13 @@ Orchestration has evolved from simple cron-scheduling to managing complex depend
 - **Pure task-scheduling for AI pipelines**: without asset awareness you lose lineage, cataloging, and the agent-readable asset graph (ORC5).
 - **Rigid DAGs for agentic paths**: when the execution path adapts to LLM output, Prefect's dynamic decorators fit; a static DAG cannot (ORC4).
 - **Ignoring lineage**: for dbt-heavy work, Dagster's native column-level lineage is the differentiator (ORC3).
+- **Hand-rolling a cron poller for streaming triggers**: Airflow 3.x event-driven scheduling lets assets trigger DAGs from external events natively (ORC2).
+
+---
+
+## Sources (URL + retrieval date)
+
+| Ref | Source | URL | Retrieved |
+|-----|--------|-----|-----------|
+| ORC1/ORC2 | Astronomer — Introducing Apache Airflow 3 | https://www.astronomer.io/blog/introducing-apache-airflow-3-1/ | 2026-06-13 |
+| ORC1/ORC2 | Astronomer — Apache Airflow 3.2 release | https://www.astronomer.io/blog/apache-airflow-3-2-release/ | 2026-06-13 |

@@ -58,6 +58,27 @@ Claude Code implements compression as a waterfall — each layer activates only 
 
 ---
 
+## Server-Side Context Editing: Concrete Triggers & Payoffs [Source: research finding #26, https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents retrieved 2026-06-13]
+
+Compaction is no longer purely client-side. The Anthropic **context-editing API** (launched 2026-09-29 alongside Sonnet 4.5) **auto-clears stale tool calls/results** server-side; **Claude Opus 4.6 productized automatic compaction at the context-window limit**.
+
+Use these as concrete trigger/payoff anchors instead of qualitative "compress when context fills":
+
+| Mechanism | Measured payoff |
+|-----------|-----------------|
+| Context editing alone | **+29%** task performance |
+| Context editing + memory tool | **+39%** task performance |
+| Context editing in a 100-turn web-search eval | **−84% token consumption** |
+
+**Design rule**: for long-horizon (50–100+ turn) sessions, prefer server-side context editing (auto-clears stale tool results) as Layer 0 before hand-rolling the 5-layer pipeline below; reserve the custom pipeline for content the API cannot classify as stale (active task state, key decisions).
+
+> ⚠️ VERIFICATION FLAG (QUALITY-BAR §6): the +29% / +39% / −84% figures came from the announcement's
+> SEARCH SUMMARY, not the engineering-blog body (WebFetch confirmed the blog lacks them). Cross-model
+> verify against the primary changelog before final acceptance; the mechanism (auto-clear stale tool
+> calls, launch date) is confirmed, the percentages are pending second-source confirmation.
+
+---
+
 ## Hermes: Dual-Layer Compression with Anti-Thrashing [Source: Hermes #4-#9]
 
 Hermes uses two independent compression triggers — agent-layer and gateway-layer — so either catches overflow before it becomes critical.

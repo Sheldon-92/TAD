@@ -60,6 +60,12 @@ last30days --reddit "AI replacing {content type}"
 
 ---
 
+## Monetization Benchmark (challenge "we'll convert free audience to paid")
+
+When a content business plans a free→paid funnel (free newsletter → paid tier, free community → paid cohort, freemium tool), use the **freemium conversion band**, not a guess: broad-market free→paid converts **~1-5%**; tightly-targeted, high-intent audiences convert **~5-15%**. So a 50,000-subscriber free newsletter at the *optimistic* end converts ~2,500 paid — model the revenue at 1-5% first, treat anything above 5% as a claim that needs the "tightly-targeted high-intent" proof. (Source: https://www.withdaydream.com/library/insights/freemium-conversion-rate — retrieved 2026-06-13.)
+
+---
+
 ## MVP Definition
 
 **10 posts to measure engagement**: Publish 10 pieces of content over 2-4 weeks across your primary channel. No monetization yet. Measure: open rates (newsletter), comments/shares (YouTube/social), follower growth rate.

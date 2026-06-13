@@ -121,8 +121,9 @@ Rules with specific thresholds, method selection criteria, and numeric standards
 - kappa 0.6-0.8: substantial agreement
 - kappa 0.4-0.6: moderate agreement
 - kappa < 0.4: poor — retrain coders
+- **Rare-class caveat (kappa paradox):** these Landis-Koch bands assume roughly balanced categories. When one code is RARE (e.g. include/exclude in systematic-review screening, or a low-base-rate annotation), kappa collapses toward 0 even at high raw agreement. In that case report **Gwet's AC1** (designed for skewed marginals) **+ raw % agreement + marginal prevalence** alongside kappa, not kappa alone. (Retrieved 2026-06-13, https://mappedresearch.com/blog/inter-rater-reliability-screening.)
 
-> Source: skills/social-science-analysis/SKILL.md
+> Source: skills/social-science-analysis/SKILL.md; rare-class / Gwet's AC1 addition retrieved 2026-06-13
 
 ---
 

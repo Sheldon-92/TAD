@@ -34,6 +34,39 @@ Create a synthetic voice from natural language description — no reference audi
 
 > Source: baseline-report.md §4
 
+### 4. Disentangled Emotion + Speaker Cloning (IndexTTS2)
+Clone a speaker's timbre from one reference clip while transferring emotion from a *separate*
+emotion reference — the two are disentangled, so you can keep the speaker but swap the affect.
+
+**Tool**: IndexTTS2 (Bilibili IndexTeam, arXiv 2506.21619)
+
+**Concrete API**:
+```python
+tts.infer(
+    spk_audio_prompt='voice.wav',     # speaker timbre reference
+    text="...",
+    emo_audio_prompt='emotion.wav',   # SEPARATE emotion reference (disentangled)
+    emo_alpha=0.9,                    # emotion transfer weight
+)
+```
+
+**Emotion weight ablation band**: sweep `emo_alpha` across `0 / 0.6 / 0.9 / 1.0`
+(0 = speaker only, neutral; 1.0 = full reference-emotion transfer). Start at 0.9.
+> Documented range is **0.0–1.0, default 1.0** (index-tts/index-tts README, retrieved 2026-06-13).
+> Do NOT exceed 1.0 — values above the documented max are not a supported over-drive and are
+> not confirmed by the vendor.
+
+**Runtime requirements**:
+- Runs under **FP16 half-precision** inference (lower VRAM, small quality loss)
+- Requires **CUDA Toolkit 12.8+**
+- **uv-managed Python** environment
+
+⚠️ **NOT-YET-SHIPPED**: explicit token-count **duration control** is documented but
+"**not yet enabled in this release**." Do NOT call or promise a duration-control API —
+it will fail. Use the standard `infer()` path until the vendor ships it.
+
+> Source: https://github.com/index-tts/index-tts (retrieved 2026-06-13); arXiv 2506.21619
+
 ---
 
 ## Reference Audio Duration Table

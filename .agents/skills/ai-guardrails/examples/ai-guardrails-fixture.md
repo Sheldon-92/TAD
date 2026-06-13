@@ -11,10 +11,12 @@ min_marker_count: 4
 # DISCRIMINATIVE gate: ONLY pack-specific named rules / pack-introduced tools+thresholds.
 # Excludes generic security nouns (sanitize, validate, secure, attack), severity tags,
 # and words from the input scenario. These are the markers a WITH-pack agent emits but
-# a no-pack agent does NOT — the Rule-of-Two name, the A/B/C condition count, the exact
-# tools (sqlglot AST / Presidio / DeanonymizeEngine), the F2 (β=2) recall rule, and the
-# OWASP LLM05/LLM06 codes.
-discriminative_pattern: "Rule of Two|A/B/C|sqlglot|Presidio|DeanonymizeEngine|F2 ?\\(?β ?= ?2\\)?|β ?= ?2|LLM05|LLM06|decode.?then.?validate|canary token"
+# a no-pack agent does NOT — the Rule-of-Two name (a.k.a. lethal trifecta), the A/B/C
+# condition count, the exact tools (sqlglot AST / Presidio / DeanonymizeEngine), the
+# F2 (β=2) recall rule, the OWASP LLM05/LLM06/LLM07 codes, and the pack's research-grounded
+# markers (Spotlighting/datamarking, Llama Guard 4, AgentDojo/InjecAgent) — an LLM cannot
+# emit these unprompted.
+discriminative_pattern: "Rule of Two|lethal trifecta|A/B/C|sqlglot|Presidio|DeanonymizeEngine|F2 ?\\(?β ?= ?2\\)?|β ?= ?2|LLM05|LLM06|LLM07|system prompt leakage|decode.?then.?validate|canary token|Spotlighting|datamarking|Llama Guard 4|AgentDojo|InjecAgent"
 min_discriminative: 4
 ---
 
@@ -35,17 +37,34 @@ the output MUST contain these markers:
    grep pattern: `sqlglot|AST|read-only SELECT|structured ≠ validated|three-layer`
 3. **Presidio PII de-identification**: requires Analyzer→Anonymizer on the raw PII before it reaches the model, with the recall-first F2 score
    grep pattern: `Presidio|AnonymizerEngine|DeanonymizeEngine|F2|β ?= ?2|recall over precision`
-4. **OWASP LLM-risk mapping**: maps findings to specific OWASP LLM codes
-   grep pattern: `LLM01|LLM05|LLM06|excessive agency|improper output`
+4. **OWASP LLM-risk mapping**: maps findings to specific OWASP 2025 LLM codes
+   grep pattern: `LLM01|LLM05|LLM06|LLM07|system prompt leakage|excessive agency|improper output`
+5. **(bonus, research-grounded)** names a pack-introduced specific: lethal-trifecta synonym, Spotlighting/datamarking indirect-injection defense, the current Llama Guard 4 classifier, or an injection ASR benchmark (AgentDojo/InjecAgent)
+   grep pattern: `lethal trifecta|Spotlighting|datamarking|Llama Guard 4|AgentDojo|InjecAgent`
 
 At least one marker MUST be [structural] — distinguishes "applied the rule" from "mentioned the rule".
 
 ## Verification Command
 
 ```bash
-grep -oE 'Rule of Two|A/B/C|all three|human.?in.?the.?loop|sqlglot|AST|read-only SELECT|structured ≠ validated|three-layer|Presidio|AnonymizerEngine|DeanonymizeEngine|F2|β ?= ?2|recall over precision|LLM01|LLM05|LLM06|excessive agency|decode.?then.?validate|canary token' ai-guardrails-fixture-output.md | sort -u | wc -l | tr -d ' '
+grep -oE 'Rule of Two|lethal trifecta|A/B/C|all three|human.?in.?the.?loop|sqlglot|AST|read-only SELECT|structured ≠ validated|three-layer|Presidio|AnonymizerEngine|DeanonymizeEngine|F2|β ?= ?2|recall over precision|LLM01|LLM05|LLM06|LLM07|system prompt leakage|excessive agency|decode.?then.?validate|canary token|Spotlighting|datamarking|Llama Guard 4|AgentDojo|InjecAgent' ai-guardrails-fixture-output.md | sort -u | wc -l | tr -d ' '
 # Expected: ≥ 4
 ```
+
+## Deterministic Validator Assertion (A10 — wires the script into the eval)
+
+The machine-readable form of this scenario lives in `over-privileged-agent.config.yaml`.
+Run the pack's validator against it and assert findings are present (exit code 1):
+
+```bash
+# from .claude/skills/ai-guardrails/
+bash scripts/check-guardrail-config.sh examples/over-privileged-agent.config.yaml
+echo "exit=$?"   # Expected: exit=1 (RULE-OF-TWO + RAW-SINK + NO-PII-DEID findings)
+```
+
+This is the gold-pattern second assertion: a deterministic check (not "punt to Claude")
+that the over-privileged scenario trips the lethal-trifecta / raw-SQL-sink / no-PII-de-id
+rules. A clean config (e.g. one leg dropped + sqlglot AST + Presidio + human gate) returns exit 0.
 
 ## Anti-Slop Check
 

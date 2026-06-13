@@ -10,9 +10,10 @@ number, formula, or actionable checklist. Generic advice excluded.
 | Rule | Threshold / Number | Source Skill(s) |
 |------|-------------------|-----------------|
 | Minimum databases per search | 3 complementary databases | literature-review, literature-search |
-| PRISMA 2020 checklist items | 27 items (Page et al., BMJ 2021;372:n71) | systematic-review |
+| Reporting-guideline selection | Systematic review (focused question + quality appraisal) → PRISMA 2020 = **27 items**; Scoping review (map breadth of evidence) → PRISMA-ScR = **20 essential + 2 optional items** (Tricco et al., Ann Intern Med 2018) | systematic-review |
+| PRISMA 2020 checklist items | 27 items (Page et al., BMJ 2021;372:n71) — systematic reviews ONLY | systematic-review |
 | Screening stages | 2-stage: title/abstract then full-text | systematic-review, literature-review |
-| Inter-rater agreement metric | Cohen's kappa | systematic-review |
+| Inter-rater agreement (screening, rare-positive) | Report Cohen's kappa **+ Gwet's AC1** + raw % agreement + marginal prevalence (kappa paradox: kappa collapses when the include class is rare) | systematic-review |
 | Evidence hierarchy levels | 7 tiers (systematic reviews highest) | academic-deep-research |
 | Confidence annotations | 4 levels: HIGH / MEDIUM / LOW / SPECULATIVE | academic-deep-research |
 | Research cycles per theme | Minimum 2 full cycles | academic-deep-research |
@@ -35,8 +36,8 @@ number, formula, or actionable checklist. Generic advice excluded.
 | h5-index window | h-index of articles published in last 5 years | citation-analysis |
 | i10-index threshold | Papers with >= 10 citations | citation-analysis |
 | g-index formula | Largest g where top g papers have >= g^2 total citations | citation-analysis |
-| Semantic Scholar rate limit (no key) | 100 requests / 5 minutes | literature-search, citation-analysis |
-| OpenAlex rate limit (polite pool) | 10 req/sec with mailto; 100k/day | literature-search, citation-analysis |
+| Semantic Scholar rate limit | No key = shared throttled pool; individual key = 1 req/s across all endpoints (no 10/s burst) | literature-search, citation-analysis |
+| OpenAlex auth + quota (2026) | Free API key REQUIRED; credit budget ≈ 100k credits/day (≈$1/day), 100 req/s cap; list call = 10 credits (mailto polite-pool retired) | literature-search, citation-analysis |
 | arXiv rate limit | ~1 request / 3 seconds | literature-search |
 | CrossRef rate limit (no key) | 1 req/sec; 50 req/sec with mailto | literature-search, crossref-search |
 | CrossRef deep paging threshold | Use cursor=* for > 10,000 results | crossref-search |
@@ -102,6 +103,15 @@ CrossRef: `cursor=*` for > 10,000 results. Max `rows=1000` per request.
 
 ## 2. PRISMA Pipeline (Systematic Review)
 
+### Reporting-Guideline Decision Rule (pick the RIGHT instrument first)
+
+PRISMA is a family, not one checklist. Choose by review TYPE before drafting:
+
+- **Systematic review** (answers a focused question, appraises study quality, often pools effects) → **PRISMA 2020 = 27-item checklist** (Page et al., BMJ 2021;372:n71).
+- **Scoping review** (maps the breadth/extent of evidence, no quality appraisal or pooling) → **PRISMA-ScR = 20 essential items + 2 optional items** (Tricco et al., Ann Intern Med 2018; https://www.equator-network.org/reporting-guidelines/prisma-scr/, retrieved 2026-06-13). Do NOT force the 27-item PRISMA 2020 onto a scoping review.
+
+> Source: PRISMA 2020 (Page et al.) + PRISMA-ScR extension (Tricco et al. 2018), retrieved 2026-06-13.
+
 ### Protocol Development
 
 - Research question: **PICO** framework (Population, Intervention, Comparator, Outcome)
@@ -114,9 +124,9 @@ CrossRef: `cursor=*` for > 10,000 results. Max `rows=1000` per request.
 
 1. **Title/abstract**: Apply criteria, flag uncertain cases
 2. **Full-text**: Evaluate all criteria, document exclusion reasons
-3. Track **Cohen's kappa** for inter-rater agreement (multiple reviewers)
+3. Track inter-rater agreement (multiple reviewers). **For screening, do NOT report Cohen's kappa alone:** the include (positive) class is RARE, which triggers the **kappa paradox** — kappa becomes artificially low/unstable when one class is rare even at high raw agreement. Report **Cohen's kappa + Gwet's AC1** (AC1 is designed for the rare-class case) **+ raw percent agreement + marginal prevalence**. (Gwet's AC1 vs kappa for screening retrieved 2026-06-13, https://mappedresearch.com/blog/inter-rater-reliability-screening.)
 
-> Source: skills/systematic-review/SKILL.md
+> Source: skills/systematic-review/SKILL.md; kappa-paradox / Gwet's AC1 correction retrieved 2026-06-13
 
 ### Risk of Bias Assessment (Step 5)
 

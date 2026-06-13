@@ -7,7 +7,7 @@
 |---|------|-------------|
 | RB1 | Immutable deploys: every deploy is a snapshot, rollback = point to previous | All deployment architectures |
 | RB2 | Blue-green: two identical environments, load balancer switches instantly | Zero-downtime critical apps |
-| RB3 | Canary: 1% > 10% > 100%, halt on error spike | High-traffic gradual rollout |
+| RB3 | Canary: 1% > 10% > 50% > 100%, halt on error spike | High-traffic gradual rollout |
 | RB4 | Atomic: symlink swap for instant revert | Self-hosted / VPS deploys |
 | RB5 | Docker SHA rollback: tag every image with commit SHA | Container-based deploys |
 | RB6 | Auto-rollback trigger: error rate >5% for 2 minutes | Production safety net |
@@ -151,6 +151,8 @@ When monitoring detects a deploy has gone wrong, auto-rollback before humans not
 | Health check failure | 3 consecutive failures | 90 seconds | Auto-rollback |
 | Latency degradation | p95 >3x baseline | 5 minutes | Alert + manual decision |
 | Memory leak | >90% memory for 5 min | 5 minutes | Restart + alert |
+
+> **Not the same as MO3's SLO alert threshold.** This `>5% for 2 min` is a **coarse, fast-acting deploy-window safety net** scoped to the minutes immediately after a new release — it trades sensitivity for speed so a broken deploy auto-reverts before a human is paged. It is deliberately distinct from `monitoring-rules.md` MO3's **multi-window multi-burn-rate** method, which governs ongoing **SLO error-budget paging** (catching slow burns and suppressing harmless blips over hours/days). MO3 explicitly condemns a flat `>5% for 2 min` *as an SLO pager*; that condemnation does NOT apply to this deploy-time circuit-breaker. Use BOTH: this safety net during the deploy window, MO3 burn-rate alerts for steady-state SLO.
 
 **GitHub Actions auto-rollback**:
 ```yaml

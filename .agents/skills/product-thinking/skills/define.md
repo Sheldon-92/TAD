@@ -101,6 +101,7 @@ Once the canvas is confirmed, generate the appropriate output for the product ty
 **Pricing**: [Specific price point]
 **Model**: [Subscription / one-time / usage-based / freemium]
 **Why this pricing**: [1 sentence rationale from competitive research]
+**Unit-economics check** (from `adapters/software.md`): at this price, model LTV:CAC (target **3:1–4:1**, B2B target 4:1; **<1:1 = loses money per customer**) and CAC payback (**<12mo healthy**; median 6.8mo). If freemium, project conversion at **1-5%** (broad) / **5-15%** (tightly-targeted), NOT a guess. If a free trial, opt-in (no card) converts **8-18%**, opt-out (card) **31-49%**. State the resulting LTV:CAC — if it doesn't clear 3:1, flag it as the top risk.
 
 ## Distribution
 **Channel 1**: [Specific]
@@ -320,10 +321,11 @@ SOM: [12-month realistic target]
 **What makes supply side want to join before demand exists?**: [Answer this explicitly]
 
 ## Business Model
-**Take rate**: [% or flat fee per transaction]
+**Take rate**: [% or flat fee per transaction — default **10-20%**; product marketplaces **5-15%** (cf. Amazon 8-15%), service marketplaces **15-30%** (cf. Uber 20-28%), Airbnb ~13-15%; see `adapters/marketplace.md`]
 **Average transaction value**: $[X]
 **Revenue per transaction**: $[X × take rate]
 **Transactions needed for $10K MRR**: [Math]
+**Take-rate defensibility**: [Why supply tolerates this rate — >30% needs a reason; <5% must still pay back both-sided CAC]
 
 ## Unit Economics
 | Metric | Target |

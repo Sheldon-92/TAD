@@ -6,8 +6,8 @@
 | # | Rule | determinismLevel |
 |---|------|-----------------|
 | DQ1 | Gate raw ingestion with a quality engine — unvalidated data degrades models AND introduces security vulnerabilities | deterministic |
-| DQ2 | Choose by author: Great Expectations (code-first Python) vs Soda Core (declarative SodaCL YAML for non-engineers) | deterministic |
-| DQ3 | Use Soda Core v4 Data Contracts to halt and isolate anomalies before schema drift breaks downstream ML | deterministic |
+| DQ2 | Choose by author: Great Expectations 1.18.1 (code-first Python) vs Soda Core 4.7.0 (declarative SodaCL YAML for non-engineers) | deterministic |
+| DQ3 | Use Soda Core 4.x Data Contracts to halt and isolate anomalies before schema drift breaks downstream ML | deterministic |
 | DQ4 | Rules-based engines are blind to unstructured data, label corruption, and concept drift — pair with AI-driven diagnostics | deterministic |
 | DQ5 | Adopt the dual-defense pattern: rules-based format gate (GX/Soda) + AI-driven dataset/label/drift diagnostics | deterministic |
 | DQ6 | Use Soda Core built-in statistical anomaly detection for volumetric spikes/drops without manual thresholds | semi-deterministic |
@@ -27,19 +27,19 @@ Unvalidated data ingested into downstream AI applications degrades model perform
 
 Match the validation engine to who writes and maintains the checks:
 
-| Engine | Version | Interface | Best Author / Deployment |
+| Engine | Version (verified 2026-06-13) | Interface | Best Author / Deployment |
 |---|---|---|---|
-| Great Expectations (GX) | v1.0 GA | Code-first **Python Fluent API** (GX 1.x is Python-first; YAML still backs persistent File Data Contexts via `great_expectations.yml`) | Engineers; source-ingestion gating + MLOps preprocessing |
-| Soda Core | v4 | Declarative **SodaCL** (human-readable YAML) | Non-engineering stakeholders (PMs, risk analysts); continuous monitoring |
+| Great Expectations (GX Core) | **1.18.1** (released **2026-06-11**; Python **3.10–3.13**; Apache-2.0) | Code-first **Python Fluent API** (GX 1.x is Python-first; YAML still backs persistent File Data Contexts via `great_expectations.yml`) | Engineers; source-ingestion gating + MLOps preprocessing |
+| Soda Core | **4.7.0** (released **2026-04-17**) | Declarative **SodaCL** (human-readable YAML) | Non-engineering stakeholders (PMs, risk analysts); continuous monitoring |
 
-GX compiles validation results into visual, interactive HTML reports — **Data Docs** — a self-updating, auditable data dictionary hostable on cloud storage to meet compliance requirements. Trade-off: GX has high development/maintenance overhead and can degrade performance on broad expectation checks over large Spark datasets.
+GX compiles validation results into visual, interactive HTML reports — **Data Docs** — a self-updating, auditable data dictionary hostable on cloud storage to meet compliance requirements. Trade-off: GX has high development/maintenance overhead and can degrade performance on broad expectation checks over large Spark datasets. (Pin these exact versions in your lock file; the prior "v1.0 GA" / "v4" anchors are stale.)
 
 **determinismLevel**: deterministic — author persona selects the engine.
-> Source: findings.md "Great Expectations (v1.0 GA)" Fluent API + Data Docs, and "Soda Core (v4)" SodaCL [24, 25, 26]. GX 1.x is Python-first but retains YAML for persistent File Data Contexts — https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context/
+> Source: PyPI great-expectations 1.18.1 (2026-06-11, Py 3.10–3.13, Apache-2.0) — https://pypi.org/project/great-expectations/ (retrieved 2026-06-13); PyPI soda-core 4.7.0 (2026-04-17) — https://pypi.org/project/soda-core/ (retrieved 2026-06-13). GX 1.x retains YAML for persistent File Data Contexts — https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context/ (retrieved 2026-06-13). Originally findings.md [24, 25, 26].
 
 ### DQ3: Soda v4 Data Contracts Halt Drift at the Boundary
 
-Soda Core v4's key advancement is **Data Contracts as a first-class feature**: upstream providers and downstream consumers formalize data schemas and quality metrics as a programmatic agreement. **Rule**: when ML systems break on schema drift, install a data contract so the pipeline **halts and isolates anomalies before** the drift reaches downstream consumers — rather than discovering it from degraded model output.
+Soda Core 4.x (current **4.7.0**, 2026-04-17)'s key advancement is **Data Contracts as a first-class feature**: upstream providers and downstream consumers formalize data schemas and quality metrics as a programmatic agreement. **Rule**: when ML systems break on schema drift, install a data contract so the pipeline **halts and isolates anomalies before** the drift reaches downstream consumers — rather than discovering it from degraded model output.
 
 **determinismLevel**: deterministic.
 > Source: findings.md "The platform's key evolutionary advancement in version 4 is the integration of Data Contracts as a first-class feature... pipelines halt and isolate anomalies before schema drift breaks downstream ML systems" [23, 24].
@@ -85,3 +85,13 @@ Soda Core features **built-in statistical anomaly detection** that automatically
 - **Manual volume thresholds**: go stale; Soda's statistical anomaly detection adapts (DQ6).
 - **Single-layer quality**: rules-based OR AI-driven alone is insufficient — use the dual-defense pattern (DQ5).
 - **Choosing GX for non-engineer authors**: SodaCL's declarative YAML lets PMs/risk analysts maintain checks (DQ2).
+
+---
+
+## Sources (URL + retrieval date)
+
+| Ref | Source | URL | Retrieved |
+|-----|--------|-----|-----------|
+| DQ2 | PyPI — great-expectations 1.18.1 (2026-06-11, Py 3.10–3.13) | https://pypi.org/project/great-expectations/ | 2026-06-13 |
+| DQ2/DQ3 | PyPI — soda-core 4.7.0 (2026-04-17) | https://pypi.org/project/soda-core/ | 2026-06-13 |
+| DQ2 | GX — File Data Context (YAML persistence) | https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context/ | 2026-06-13 |

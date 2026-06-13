@@ -17,6 +17,10 @@ Applies to: physical products, IoT devices, consumer electronics, wearables, med
 
 **Note**: Hardware has fewer specialized CLI/API tools than software or ecommerce. Most research is WebSearch + YouTube + crowdfunding sites. This is expected and acceptable — see §5.6 adapter thickness guidelines.
 
+## Crowdfunding Reality (set a realistic pre-order/campaign bar, not "just launch")
+
+Hardware's 2-week validation usually leans on a crowdfunding or pre-order signal — so anchor it to real Kickstarter data, not optimism. **Overall Kickstarter project success rate is ~42% (41.98% as of Jan 2025)** — a coin-flip, not a default win. **Technology/hardware is among the highest cumulative-pledge categories (~$1.65B) but NOT the highest success rate** (high pledges ≠ high odds; tech campaigns are large and frequently fail). Creators who use structured **Open Calls** hit **~80%** — i.e. validation/curation before launch roughly doubles the odds. So set the bar accordingly: a hardware pre-order/crowdfunding wedge should target funded-vs-asked evidence and a curated audience, not "we'll launch a campaign and see." (Source: https://www.statista.com/statistics/235405/kickstarter-project-funding-success-rate/ — retrieved 2026-06-13.)
+
 ---
 
 ## Question Variants

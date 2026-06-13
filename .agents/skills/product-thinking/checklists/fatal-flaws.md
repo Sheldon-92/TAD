@@ -4,6 +4,8 @@ Universal startup killer patterns. Check these during /pressure-test Step 7 verd
 
 A fatal flaw is not a risk to manage — it's a structural problem that kills most products in this category. Two or more fatal flaws = KILL verdict regardless of other evidence.
 
+**Root-cause prior (use this to anchor F1/F2, not "most products fail").** CB Insights analyzed 431 VC-backed startup post-mortems (385 with an identifiable reason). The headline number — "ran out of capital / funding" — tops the list at **70%**, but that is the *final symptom*, not the root cause: the money ran out because nobody bought. The #1 *controllable* killer is **"no market need / poor product-market fit," cited in 43% of failures** (followed by bad timing ~29%, unsustainable unit economics ~19%). Also: **~70% of startups fail between year 2 and year 5.** So when you scan F1 (solution-in-search-of-a-problem) and F2 (interest ≠ demand), you are scanning the single most common controllable cause of death, with a real prior probability behind it — not a vague "most products fail." (Source: CB Insights, *Top Reasons Startups Fail*, https://www.cbinsights.com/research/report/startup-failure-reasons-top/ — retrieved 2026-06-13.)
+
 ---
 
 ## How to Use
@@ -29,7 +31,9 @@ During /pressure-test verdict generation:
 **Pattern**: Friends said they'd use it. Survey respondents said they'd pay. Followers liked the tweet.
 **Signal**: No pre-payment. No waitlist. No one has asked "when is this available?"
 **Brutal truth**: "I'd use that" is the polite thing to say when someone shows you their idea. It costs nothing. It means nothing.
-**Test**: Has anyone taken an action that costs them something — time, money, or vulnerability — to signal real demand?
+**The commitment-currency test (operational FACT vs ASSUMPTION rule).** From Rob Fitzpatrick's *The Mom Test*: a signal is real ONLY if the prospect spent a **currency they actually value** — one of **time** (they booked a scheduled follow-up), **reputation** (they made an intro to a decision-maker / put their name on it), or **money** (a pre-order, deposit, or signed letter of intent). "Would you use this?" / "that's a great idea" costs nothing → record as **ASSUMPTION**. A booked next meeting, an intro, or a deposit → record as **FACT**. Use this as the literal decision rule whenever you label a round's evidence in `/pressure-test`. (Source: Sachin Rekhi's summary of *The Mom Test*, https://www.sachinrekhi.com/p/the-mom-test-rob-fitzpatrick — retrieved 2026-06-13.)
+**PMF demand gate.** When the founder claims demand, the named benchmark is the **Sean Ellis PMF survey**: ask users "How would you feel if you could no longer use [product]?" — **≥40% answering "very disappointed"** is the must-have threshold. **10-30% means the majority can take-it-or-leave-it** (not yet PMF; iterate before scaling). This replaces hand-picked heuristics like ">100 waitlist signups". (Source: https://learningloop.io/glossary/sean-ellis-score — retrieved 2026-06-13.)
+**Test**: Has anyone spent a real currency — a scheduled follow-up (time), an intro (reputation), or a deposit (money) — to signal demand? If not, this flaw applies.
 
 ---
 
@@ -45,7 +49,8 @@ During /pressure-test verdict generation:
 **Pattern**: The founder chose a price without knowing what alternatives cost or what the buyer is used to paying.
 **Signal**: "We haven't decided pricing yet" or "We'll figure that out later."
 **Brutal truth**: Price is positioned against alternatives, not against cost. If the alternative is free (Excel, Google Sheets, a free tier), you need a very clear story for why someone pays you anything.
-**Test**: What does your target customer currently spend to solve this problem? How does your price compare to that?
+**Grounded unit-economics test (don't accept a price without these).** A price is only defensible if the resulting unit economics survive: target **LTV:CAC of 3:1 to 4:1** (B2B SaaS target 4:1; **median 3.6:1**, Benchmarkit 2025). **Below 1:1 = losing money on every customer**; above ~5:1 signals *under-investment* in growth (you're leaving the market to a competitor). Sanity-check growth+profit with the **Rule of 40** (revenue-growth % + EBITDA-margin % ≥ 40) — note the SaaS **median is only ~12% as of Q1 2025**, so 40 is genuinely demanding, not a floor. (Source: https://www.phoenixstrategy.group/blog/ltvcac-ratio-saas-benchmarks-and-insights — retrieved 2026-06-13.)
+**Test**: What does your target customer currently spend to solve this problem? At the proposed price, is LTV:CAC ≥ 3:1? If unit economics are unknown or <1:1, this flaw applies.
 
 ---
 
@@ -141,7 +146,8 @@ During /pressure-test verdict generation:
 **Signal**: When asked "why would supply join before there's demand?" the founder says "we'll recruit them" without specifying the incentive. When asked "why would demand join before there's supply?" same non-answer.
 **Common in**: Service marketplaces, B2B platforms, gig economy apps, peer-to-peer lending, niche product exchanges.
 **Brutal truth**: Every marketplace that succeeded solved the cold-start problem asymmetrically — they seeded one side with a specific non-monetary value proposition before charging the other side. Airbnb scraped Craigslist. OpenTable gave restaurants free scheduling software. Uber paid drivers by the hour. "We'll grow both sides simultaneously" is not a strategy.
-**Test**: Can you answer both of these: (1) Why would a supply-side participant join before you have significant demand — what do they get TODAY that justifies their effort? (2) At what specific supply-side density does the demand side get enough value to pay? If either answer is vague, this flaw applies. Also check: if you subsidize supply early, what happens when the subsidy stops? (Subsidized-side defection is the most common late-stage marketplace killer.)
+**Take-rate reality (turn the cold-start check into a numeric one).** A marketplace only works if the take rate clears CAC on BOTH sides. Real benchmarks: **product marketplaces ~5-15%**, **service marketplaces ~15-30%**; top-100-marketplace average ~10-30%. Reference points: **Airbnb ~13-15%, Uber ~20-28%, Amazon category commissions 8-15%.** Default a starting take rate of **10-20%** and pressure-test whether supply tolerates it. If the founder's `[take rate: %]` is blank, or is set above the service-marketplace ceiling (>30%) without a reason supply would accept it, the cold-start economics don't close. (Source: https://www.sharetribe.com/marketplace-glossary/commission-take-rate/ — retrieved 2026-06-13.)
+**Test**: Can you answer all of these: (1) Why would a supply-side participant join before you have significant demand — what do they get TODAY that justifies their effort? (2) At what specific supply-side density does the demand side get enough value to pay? (3) At a 10-20% take rate, do both sides' CAC pay back? If any answer is vague, this flaw applies. Also check: if you subsidize supply early, what happens when the subsidy stops? (Subsidized-side defection is the most common late-stage marketplace killer.)
 
 ---
 

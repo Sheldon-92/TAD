@@ -5,10 +5,10 @@
 
 | # | Rule | Scope |
 |---|------|-------|
-| S1 | Default tool: Semgrep with `semgrep ci` for CI, `semgrep scan` for local | tool-selection |
+| S1 | Default tool: Semgrep v1.163.0; `semgrep ci` for CI, `semgrep scan` for local, `--pro` for interfile | tool-selection |
 | S2 | Rule sets: `p/ci` for general, `p/security-audit` for deep, `p/owasp-top-ten` for compliance | config |
 | S3 | Diff-aware scanning: SEMGREP_BASELINE_REF=main on PRs (only scan changed code) | ci-pipeline |
-| S4 | Taint mode: `mode: taint` with pattern-sources/sinks/sanitizers for data-flow | custom-rules |
+| S4 | Taint mode: `mode: taint` + `--pro` interfile (cross-file) data-flow for real SQLi/SSRF flows | custom-rules |
 | S5 | SARIF output: `--sarif` for GitHub Security tab integration | output |
 | S6 | Exit code: 1 = blocking findings, 0 = clean — use in CI gate decisions | ci-pipeline |
 | S7 | Custom rules: YAML with metavariables ($X) and ellipsis (...) for pattern matching | custom-rules |
@@ -30,10 +30,11 @@ semgrep scan --config auto .
 semgrep ci
 ```
 
-Semgrep covers 30+ languages with 2000+ free community rules. It is the correct default because:
+Semgrep covers 30+ languages with 2000+ free community rules (current engine: **v1.163.0, 2026-05-27**). It is the correct default because:
 - Zero config needed (`--config auto` selects rules by detected language)
-- Fast enough for PR gates (<30s on most repos)
+- Fast enough for PR gates (<30s on most repos) — recent Community Edition releases cut scan time **~25-30%** via parallel rule parsing + prefiltering
 - SARIF output for GitHub Security tab
+- The `--pro` flag unlocks **interfile (cross-file) dataflow/taint analysis** (see S4) — the main reason cross-module SQLi/SSRF flows are caught
 
 Add language-specific tools only when Semgrep coverage is insufficient:
 - Python deep analysis: add `bandit -r ./src -ll`
@@ -111,7 +112,21 @@ Key concepts:
 - Metavariables (`$X`): capture any expression in that position
 - Ellipsis (`...`): match zero or more arguments
 
-**Anti-pattern**: Writing pattern-only rules for injection vulnerabilities. Without taint tracking, you get false positives on every SQL query, not just ones with user input flowing in.
+**Single-file vs interfile (cross-file) taint** — this is the difference between catching and missing real flows:
+
+By default, taint mode tracks data flow **within a single file**. Most real SQLi/SSRF flows cross module boundaries (request handler in `routes.py` → service in `db.py` → raw query), and single-file taint never sees them. The **`--pro` flag enables interfile dataflow/taint analysis** across **C/C++/C#/Go/Java/JS/TS/Kotlin/Python/Scala**:
+
+```bash
+# Single-file taint (default) — misses cross-module flows
+semgrep scan --config ./semgrep-rules/ .
+
+# Interfile taint — tracks source→sink ACROSS files (Pro engine)
+semgrep scan --pro --config ./semgrep-rules/ .
+```
+
+The redesigned Pro interfile engine gives **~20-40% taint-analysis perf improvement** and may shift the true/false-positive set (re-baseline after enabling). (Source: semgrep.dev release notes, retrieved 2026-06-13.)
+
+**Anti-pattern**: Writing pattern-only rules for injection vulnerabilities. Without taint tracking, you get false positives on every SQL query, not just ones with user input flowing in. Second anti-pattern: relying on default single-file taint mode and concluding "no SQLi" — the real flow crosses files and is only visible with `--pro` interfile analysis.
 
 ### S5: SARIF Output for CI Integration
 

@@ -26,7 +26,11 @@ When setting performance targets for web pages:
 - **INP (Interaction to Next Paint) <= 200ms** -- replaced FID in March 2024. Measures responsiveness to ALL user interactions, not just first input. Above 500ms is "poor".
 - **CLS (Cumulative Layout Shift) <= 0.1** -- measures visual stability. Above 0.25 is "poor".
 
-These are Google's "good" thresholds at the 75th percentile of page loads. They directly affect search ranking.
+These are Google's "good" thresholds, evaluated at the **75th percentile of CrUX field data** — a page passes a metric only when **>=75% of page views** hit "good". They directly affect search ranking.
+
+> **These numbers are UNCHANGED in 2026** (web.dev "Defining the Core Web Vitals metrics thresholds"). Reject any claim that LCP tightened to 2.0s — that surfaces from a single low-authority SEO blog and contradicts the official thresholds. The authoritative numbers remain LCP 2.5s / INP 200ms / CLS 0.1.
+
+**Field-data prioritization signal (2026 CrUX)**: only **~55.9% of origins pass all three** CWV, and **~43% fail INP** — making **INP the most-failed Core Web Vital**. When you have to pick one to fix first, fix interaction latency (INP), not LCP. The deterministic budget check is `scripts/cwv-budget-check.sh report.json`.
 
 ```bash
 # Quick audit
@@ -66,22 +70,26 @@ npx unlighthouse --site https://example.com
 
 When setting API performance gates in CI:
 
+> **Version**: k6 reached **v1.0 on 2025-05-07** (GrafanaCON); current stable is **1.3.0**. Use the v1.x CLI — pre-1.0 syntax/options differ. Verify with `k6 version` (>= 1.0.0).
+
 ```javascript
 export const options = {
   thresholds: {
-    http_req_duration: ['p(95)<500'],   // P95 response time < 500ms
-    http_req_failed: ['rate<0.01'],      // Error rate < 1%
-    http_reqs: ['rate>100'],             // Throughput > 100 req/s
+    // abortOnFail stops the run the instant a threshold is crossed (don't burn 10min once doomed)
+    http_req_duration: [{ threshold: 'p(95)<500', abortOnFail: true }], // P95 < 500ms
+    http_req_failed:   ['rate<0.01'],   // Error rate < 1%
+    http_reqs:         ['rate>100'],    // Throughput > 100 req/s
   },
 };
 ```
 
-- k6 exits non-zero when thresholds are breached -- use this to fail CI
+- k6 exits **non-zero (exit code 99)** when thresholds are breached -- use this to fail CI
+- **`abortOnFail: true`** aborts the test the moment a threshold is crossed. ⚠️ In **Grafana Cloud, thresholds evaluate every 60s**, so an abort there can lag up to 60s; locally it aborts as soon as the metric is computed.
 - **P95, not average**: averages hide tail latency. A P95 of 500ms means 95% of requests complete in under 500ms.
 - Adjust thresholds per endpoint: auth endpoints may need tighter limits than report generation.
 
 ```bash
-k6 run --out json=results.json performance.js
+k6 run --out json=results.json performance.js   # k6 1.x CLI
 # Exit code 99 = threshold breach
 ```
 
@@ -161,3 +169,14 @@ docker run --rm -v "$(pwd)/sitespeed-result:/sitespeed.io" \
 | Optimizing without baseline | Can't prove improvement | Lighthouse + k6 baseline first |
 | Stress test on every PR | Wastes CI, flaky results | Smoke per PR, stress nightly |
 | FID instead of INP | FID deprecated March 2024 | Use INP <= 200ms |
+| "LCP is now 2.0s" | Single low-authority source, contradicts web.dev | Keep LCP <= 2.5s (P1) |
+| Letting a doomed load test run full duration | Wastes CI minutes | `abortOnFail: true` on the threshold (P3) |
+
+---
+
+## Sources
+
+- web.dev — Defining the Core Web Vitals thresholds (LCP 2.5s / INP 200ms / CLS 0.1, 75th pct, unchanged 2026) — https://web.dev/articles/defining-core-web-vitals-thresholds (retrieved 2026-06-13)
+- web.dev — Interaction to Next Paint (INP) — https://web.dev/articles/inp (retrieved 2026-06-13)
+- k6 releases (v1.0 2025-05-07, current 1.3.0) — https://github.com/grafana/k6/releases (retrieved 2026-06-13)
+- k6 thresholds & abortOnFail semantics — https://grafana.com/docs/k6/latest/using-k6/thresholds/ (retrieved 2026-06-13)

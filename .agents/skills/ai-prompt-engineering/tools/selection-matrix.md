@@ -10,7 +10,7 @@
 | Tool | Best For | Install | When to Use |
 |------|----------|---------|-------------|
 | **promptfoo** | Testing + CI/CD + red teaming | `npx promptfoo@latest init` | You need automated regression testing, CI/CD gates, or adversarial scanning |
-| **DSPy** | Programmatic prompt optimization | `pip install -U dspy` | You want the compiler to optimize your prompt rather than writing it manually |
+| **DSPy** | Programmatic prompt optimization (MIPROv2 scalar-metric search, or **GEPA** reflective evolution for tiny trainset + textual feedback) | `pip install -U dspy` | You want the compiler to optimize your prompt rather than writing it manually |
 | **DeepEval** | Quality metrics + debugging | `pip install deepeval` | You need measurable scores (hallucination, faithfulness, relevancy) with explanations |
 
 **Decision flow**:
@@ -94,9 +94,30 @@ Choose the right optimizer based on your constraints:
 
 | Optimizer | When to Use | Input Required | LLM Calls | Cost |
 |-----------|-------------|----------------|-----------|------|
-| **MIPROv2** | Best quality needed; large search space; can afford compute | 5–10 examples + metric function | 200+ | High |
+| **GEPA** | Rich textual feedback (traces/errors) + tiny trainset; reflective evolution | metric + `reflection_lm` (required) + as few as 3 examples | 100–500 (`max_metric_calls`) | Medium |
+| **MIPROv2** | Best quality on pure scalar-metric search; large search space; can afford compute | 5–10 examples + metric function | 200+ | High |
 | **COPRO** | Fast iteration; coordinate ascent; moderate quality | Metric function + `depth` parameter | 50–100 | Medium |
 | **BootstrapFewShot** | Need demonstrations, not instruction tuning; few-shot focused | Teacher module + `max_demos` | Low (few-shot only) | Low |
+
+### GEPA (Genetic-Pareto reflective evolution) — tiny trainset + textual feedback
+
+```python
+import dspy
+optimizer = dspy.GEPA(
+    metric=your_metric_fn,
+    max_metric_calls=150,
+    reflection_lm="openai/gpt-4.1",  # REQUIRED — separate, usually stronger reflection model
+)
+optimized = optimizer.compile(program, trainset=train_examples)  # works with as few as 3 examples
+```
+
+**Decision rule**: choose GEPA over MIPROv2 when you have **rich textual feedback** (test traces,
+error messages) and a **tiny trainset** — GEPA reads execution traces, diagnoses failures in natural
+language, and keeps a Pareto frontier of candidates. Grounded results (ICLR 2026 oral,
+arXiv:2507.19457): **>10pp over MIPROv2** (+10pp on AIME-2025, GPT-4.1-mini 46.6%→56.6%), **~20% over
+GRPO with ~35× fewer rollouts** (100–500 evals vs 5,000–25,000+), discovered an agent architecture
+lifting ARC-AGI **32%→89%**. Source: https://github.com/gepa-ai/gepa + https://dspy.ai/api/optimizers/GEPA/overview/.
+MIPROv2 stays the right tool for pure scalar-metric search with no trace narrative.
 
 ### MIPROv2 (best quality)
 
@@ -185,22 +206,41 @@ def test_answer_quality():
 
 **Key metrics by use case**:
 
-| Use Case | Metric | Threshold |
-|----------|--------|-----------|
-| RAG accuracy | `FaithfulnessMetric` | ≥0.8 |
-| Hallucination detection | `HallucinationMetric` | ≤0.2 |
-| Answer quality | `AnswerRelevancyMetric` | ≥0.7 |
-| Context recall | `ContextualRecallMetric` | ≥0.8 |
-| Output reasoning quality | `GEval` | Custom rubric |
+| Use Case | Metric | Threshold | Notes |
+|----------|--------|-----------|-------|
+| RAG accuracy | `FaithfulnessMetric` | ≥0.8 | grounding to retrieval context |
+| Hallucination detection | `HallucinationMetric` | ≤0.2 | contradiction against context |
+| Answer quality | `AnswerRelevancyMetric` | ≥0.7 | |
+| Context recall | `ContextualRecallMetric` | ≥0.8 | |
+| Any custom criteria | `GEval` | Custom rubric | LLM-as-judge with CoT over arbitrary criteria |
+| **Reproducible pass/fail** | `DAGMetric` | deterministic | graph-based deterministic LLM-judge builder — use when a noisy 0–1 score is unacceptable and you need stable pass/fail |
+
+**Two constructs the single-turn golden-set model can't express** (add when needed):
+- **`DAG` (DagMetric)** — a decision-graph metric builder where each node is a deterministic LLM
+  judgment. Use instead of `GEval` when you need **reproducible** pass/fail rather than a score that
+  jitters between runs (e.g. CI gates that must not flake).
+- **`ConversationalTestCase`** — a sequence of `LLMTestCase` turns for chatbot / multi-turn prompts.
+  The pack's default single-turn `LLMTestCase` golden set cannot represent multi-turn behavior;
+  switch to `ConversationalTestCase` for any conversational prompt.
+
+```python
+from deepeval.test_case import ConversationalTestCase, LLMTestCase
+convo = ConversationalTestCase(turns=[
+    LLMTestCase(input="Hi", actual_output="Hello! How can I help?"),
+    LLMTestCase(input="Cancel my order", actual_output="Which order ID?"),
+])
+```
+
+Source: https://deepeval.com/docs/metrics-llm-evals (retrieved 2026-06-13).
 
 **Use for**:
-- Measuring specific quality dimensions with natural-language explanations
-- Debugging why a specific test case is failing
-- Establishing baseline metrics before optimization
+- Measuring specific quality dimensions with natural-language explanations (`GEval`)
+- Reproducible deterministic gating (`DAG`) and multi-turn prompts (`ConversationalTestCase`)
+- Debugging why a specific test case is failing; baseline metrics before optimization
 
 **Not for**:
 - CI/CD pipeline integration (promptfoo handles this better)
-- Programmatic optimization (DSPy handles this)
+- Programmatic optimization (DSPy/GEPA handle this)
 
 ---
 
