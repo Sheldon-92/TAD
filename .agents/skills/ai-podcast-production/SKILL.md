@@ -105,7 +105,7 @@ This rule applies to TTS production and any audio post-processing. It is surface
 - **Merged Processing Loop**: generate → denoise → normalize in one iteration → TP4
 - **Colin Model Gotchas**: base_model hardcode, weight file rename → TP5
 - **Partial Regeneration**: single-chunk mini notebook for edits → TP6
-- **Validated Params + Per-Platform Loudness**: -16/-19 Apple, -14 Spotify/YouTube; platform true-peak target -1 dBTP (Apple cites ITU-R BS.1770-5), reserved via -1 dBFS sample-peak (pyloudnorm has no dBTP meter); LRA 5-15 LU → TP7/TP7a-d
+- **Validated Params + Single-File Podcast Master**: master ONCE to -16 LUFS integrated and ship one file; platforms normalize at playback (Spotify -14, Apple -16/-19 mono are reference levels, NOT separate export targets); true-peak -1 dBTP (Apple cites ITU-R BS.1770-5), reserved via -1 dBFS sample-peak (pyloudnorm has no dBTP meter); LRA 5-15 LU → TP7/TP7a-d
 - **VoxCPM2 Facts + Voice-Model Escape Hatches**: Apache-2.0, v2.0.3, cfg_value=2.0; Kokoro/XTTS-v2 alt, F5-TTS non-commercial → TP8a
 
 ### Music Selection (`references/music-selection.md`)
@@ -136,7 +136,7 @@ This rule applies to TTS production and any audio post-processing. It is surface
 ---
 
 ### Validation Scripts (`scripts/`)
-- **`loudness-check.sh <final.wav> [platform]`** — asserts integrated LUFS within ±1 LU of the per-platform target (TP7a, measured BS.1770-4), LRA in 5-15 LU (EBU Tech 3342, measured), and peak ≤ -1 dBFS — true-peak (dBTP) when ffmpeg is present, else a sample-peak proxy (honestly labeled). LRA that cannot be measured FAILS (no silent pass). Exit 0 = PASS. Deterministic check, not "punt to Claude".
+- **`loudness-check.sh <final.wav> [platform]`** — asserts integrated LUFS within ±1 LU of the master target (-16 LUFS single-file podcast master, TP7a, measured BS.1770-4), LRA in 5-15 LU (EBU Tech 3342, measured), and peak ≤ -1 dBFS — true-peak (dBTP) when ffmpeg is present, else a sample-peak proxy (honestly labeled). The optional `[platform]` arg only swaps the reference LUFS compared against; it does NOT imply a per-platform export — you ship one -16 master. LRA that cannot be measured FAILS (no silent pass). Exit 0 = PASS. Deterministic check, not "punt to Claude".
 - **`chunk-lint.sh <chunks.txt | seg-dir/>`** — text mode: every chunk 200-350 chars (TP1); audio mode: no post-cut segment < 8s (TP3). Exit 1 on violation.
 
 ### Fixtures (`examples/`)
@@ -158,7 +158,7 @@ This rule applies to TTS production and any audio post-processing. It is surface
 | "I'll just paste the fix into the notebook cell" | MUST upload a complete new notebook (CD2) — pasting caused 3 errors: cell overwrite, undefined vars, param mismatch |
 | "np.convolve with a 2-second window should be fine" | MUST downsample first (MA8) — 48kHz x 13min = 39M samples with large window hangs or crashes Colab |
 | "I'll skip the head/tail fade to save time" | MUST add opening (8s+6s) and ending (15s+10s) fades (MA6) — without them the show sounds like a switch being flipped |
-| "I'll just normalize everything to -16 LUFS" | MUST use per-platform targets (TP7a): -16 Apple-stereo / -19 Apple-mono / -14 Spotify·YouTube·Amazon·Google. -16 is too quiet for Spotify/YouTube; default to -14 when platform unknown |
+| "I'll export a -14 master for Spotify and a -16 master for Apple" | MUST master ONCE to -16 LUFS integrated and ship ONE file to the RSS feed (TP7a). A podcast does NOT get dual masters — Spotify/Apple/YouTube normalize at PLAYBACK (Spotify raises a -16 file +2 dB to -14, no re-compression). The -14/-16/-19 numbers are playback reference levels, NOT separate export targets. (Mono master is the one exception: master mono to -19, which plays as loud as -16 stereo.) |
 | "Clamp the sample peak at 0.95 to avoid clipping" | MUST reserve -1 dBFS via `pyln.normalize.peak(mix, -1.0)` (MA8) — 0.95≈-0.45 dBFS leaves too little headroom; -1 dBFS is a conservative margin for the inter-sample overs lossy encoders add. NOTE: this is sample-peak, not a measured dBTP; for a true-peak guarantee run `ffmpeg ebur128=peak=true` |
 | "F5-TTS sounds great, I'll use it for this show" | MUST check license first (TP8a) — F5-TTS is CC-BY-NC 4.0 (non-commercial); shipping it in a monetized podcast is a license violation. XTTS-v2 is ALSO non-commercial (Coqui CPML, no commercial path post-shutdown). For a monetized show use VoxCPM2 or Kokoro (both Apache-2.0) |
 | "I'll verify loudness by listening" | MUST run `scripts/loudness-check.sh` (TP7d) — integrated loudness (BS.1770-4) and LRA (EBU Tech 3342) are measured by pyloudnorm; true-peak is measured by ffmpeg ebur128 when present, else reported as a -1 dBFS sample-peak proxy. Not subjective |

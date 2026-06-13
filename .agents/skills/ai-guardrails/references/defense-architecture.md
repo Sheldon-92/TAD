@@ -9,7 +9,7 @@
 | DA2 | Never connect an LLM directly to external APIs/tools — front it with an AI Gateway | deterministic |
 | DA3 | Enforce token-based rate limiting (HTTP 429), not IP-based | deterministic |
 | DA4 | Budget inline latency per layer — input ≤50ms, hardening <2ms, output 100–400ms | deterministic |
-| DA5 | Pin defenses to the OWASP 2025 risk each mitigates (incl. LLM07 prompt leakage, LLM08 vector/embedding) so gaps are visible | deterministic |
+| DA5 | Pin defenses to the OWASP 2025 risk each mitigates (incl. LLM07 prompt leakage; LLM08 vector/embedding **only for actual vector stores** — indirect injection is LLM01) so gaps are visible | deterministic |
 
 ---
 
@@ -23,8 +23,8 @@ A production GenAI pipeline deploys these layers in order from untrusted prompt 
 |---|-------|--------------|------------------|----------------|
 | 1 | **Input Validation** | LLM01, LLM02 | Presidio PII sanitization, Prompt Guard, Lakera Guard | 15–50ms |
 | 2 | **Prompt-Template Hardening** | LLM01, LLM07 | role-based delimiters, Rebuff canary injection, system-instruction anchoring | <2ms |
-| 3 | **Retrieval Rail (RAG Sandbox)** | LLM01 (indirect), LLM08 | NeMo Guardrails retrieval flows, semantic cosine-distance filters; scan chunks for injection + duplicates; Spotlighting/datamarking on retrieved spans | 10–30ms |
-| 4 | **Output Filtering / Moderation** | LLM02, LLM05 | Llama Guard 4, OpenAI Moderation; PII leakage block | 100–400ms |
+| 3 | **Retrieval Rail (RAG Sandbox)** | LLM01 (indirect injection via fetched links/pages); LLM08 **only if a vector/embedding store exists** | NeMo Guardrails retrieval flows, semantic cosine-distance filters; scan chunks for injection + duplicates; Spotlighting/datamarking on retrieved spans | 10–30ms |
+| 4 | **Output Filtering / Moderation** | LLM02 (PII-leakage block); content moderation is **cross-cutting** — see note | Llama Guard 4, OpenAI Moderation; PII leakage block | 100–400ms |
 | 5 | **Tool-Call Gating** | LLM06 (Excessive Agency) | Pydantic AI constraints, sqlglot AST parsing, allowlist endpoints | 5–15ms |
 | 6 | **Execution Sandbox & Human Gating** | LLM05 / RCE | gVisor isolation, human-in-the-loop manual approval for high-risk writes | variable / manual |
 
@@ -75,9 +75,11 @@ Each layer has a latency budget that constrains tool choice. Reference points fr
 
 Every layer in the table maps to a specific OWASP LLM risk. This mapping makes coverage gaps and redundancy visible across projects. Use the **2025** Top-10 — it added two entries directly relevant to this pack:
 - **LLM07 System Prompt Leakage** (new in 2025) — maps to PI6 canary tokens: a leaked system prompt is detected when the Rebuff canary appears in output.
-- **LLM08 Vector & Embedding Weaknesses** (new in 2025) — maps to indirect injection via poisoned RAG chunks (Layer 3 retrieval rail); embedding-store poisoning / cross-tenant leakage.
+- **LLM08 Vector & Embedding Weaknesses** (new in 2025) — scoped to **RAG/vector-store-specific** failures: embedding poisoning, similarity/inversion attacks, and unauthorized vector-DB access / cross-tenant leakage. It applies ONLY when the pipeline has an actual vector/embedding store. ⚠️ Do NOT map plain indirect injection here: **indirect prompt injection via fetched links/pages/PDFs/tool-metadata is LLM01 (Prompt Injection)** — OWASP 2025 explicitly folds indirect injection into LLM01. Reserve LLM08 for the case where the *embedding/retrieval store itself* is the attack surface. A no-vector-store pipeline that fetches web content has LLM01 exposure on Layer 3, not LLM08.
 
-**Rule**: When reviewing an architecture, label each present control with the OWASP **2025** risk it covers (LLM01 prompt injection, LLM02 sensitive-info disclosure, LLM05 improper output, LLM06 excessive agency, **LLM07 system-prompt leakage**, **LLM08 vector & embedding weaknesses**). Map findings to LLM07/LLM08 where applicable. Any OWASP risk with zero covering controls is a P0 gap.
+**Content moderation is cross-cutting, not one clean 2025 entry.** Output-stage toxicity/unsafe-content filtering (Llama Guard, OpenAI Moderation) does not map cleanly to a single OWASP LLM 2025 risk — LLM02 is *Sensitive Information Disclosure* (covers the PII-leakage block, not toxicity) and LLM05 is *Improper Output Handling* (covers unencoded output flowing downstream, not unsafe-content classification). Tag the moderation layer by the concrete failure it prevents: PII leakage → **LLM02**; jailbreak/policy-violating *inputs* that the classifier catches → **LLM01**. Pure toxic-content blocking is a cross-cutting safety control with no dedicated OWASP 2025 code — label it "content moderation (cross-cutting)" rather than forcing it into LLM05.
+
+**Rule**: When reviewing an architecture, label each present control with the OWASP **2025** risk it covers (LLM01 prompt injection — incl. indirect, LLM02 sensitive-info disclosure, LLM05 improper output handling, LLM06 excessive agency, **LLM07 system-prompt leakage**, **LLM08 vector & embedding weaknesses — RAG/embedding-store only**). Map findings to LLM07/LLM08 where applicable. Any OWASP risk with zero covering controls is a P0 gap.
 
 > Source: findings.md implementation-parameters "Target OWASP Risk" column; OWASP Top 10 for LLM Applications 2025 (LLM07 System Prompt Leakage, LLM08 Vector & Embedding Weaknesses added), https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf (retrieved 2026-06-13)
 

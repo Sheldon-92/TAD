@@ -108,7 +108,7 @@ Produce a structured testing review:
 | "We'll add tests later" | Code without tests accumulates debt at compound interest. Retrofit testing costs 3-5x more than test-first. Start with 3-5 critical flow E2E tests + unit tests on business logic. |
 | "80% coverage is enough" | Global 80% hides untested auth at 40% behind tested getters at 100%. Set per-module targets: auth 90%, business logic 80%, UI components 60%. |
 | "Mocking everything is fine" | Over-mocking tests your mocks, not your code. Mock boundaries (network via MSW, modules via vi.mock), not implementations. If you mock the database AND the API AND the auth, what are you actually testing? |
-| "Accessibility testing is optional" | Automated a11y catches 30-50% of WCAG issues (57% by volume per Deque, n=550 audits). The top 5 failures (alt text, contrast, form labels, links, ARIA) are all automatable. Zero effort for half the bugs. |
+| "Accessibility testing is optional" | Automated a11y catches 30-50% of WCAG issues (57% by volume per Deque's study of 2,000+ audits / ~13,000 pages / ~300,000 issues). The top 5 failures (alt text, contrast, form labels, links, ARIA) are all automatable. Zero effort for half the bugs. |
 | "Our tests pass so quality is fine" | Passing tests prove nothing about coverage gaps. Mutation testing (Stryker) verifies that tests actually catch bugs. AI-generated code can fool line coverage metrics while hiding logic errors. |
 
 ---
@@ -122,7 +122,7 @@ Produce a structured testing review:
 | Vitest Browser Mode | `npm i -D @vitest/browser-playwright` | Real-browser component tests — **STABLE since Vitest 4.0**, native `toMatchScreenshot()` visual regression + Playwright Trace |
 | MSW | `npm i -D msw` | Network mocking at service worker level |
 | k6 | `brew install k6` | Load/performance testing — **v1.0 (2025-05), current 1.3.0**; `abortOnFail` thresholds |
-| axe-core + Playwright | `npm i -D @axe-core/playwright` | Automated a11y — **axe-core 4.12.x**, WCAG 2.2 `target-size` rule (use `wcag22aa` tag) |
+| axe-core + Playwright | `npm i -D @axe-core/playwright` | Automated a11y — **wrapper 4.11.2 (bundles axe-core core 4.12.x)**, WCAG 2.2 `target-size` rule (use `wcag22aa` tag) |
 | Pa11y | `npx pa11y URL` | CLI accessibility scanning |
 | Lighthouse | `npx lighthouse URL --output=json` | Performance + a11y + SEO auditing |
 | Pact | `npm i -D @pact-foundation/pact` | Consumer-driven contract testing |

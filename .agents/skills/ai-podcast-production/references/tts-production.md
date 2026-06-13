@@ -79,17 +79,21 @@ import numpy as np
 
 meter = pyln.Meter(48000)  # 48kHz = VoxCPM2 native rate; pyloudnorm impl ITU-R BS.1770-4
 
-# Per-platform integrated-loudness target (LUFS). Do NOT hard-code -16 for all (TP7a).
-TARGET_LUFS = {
-    "apple_stereo": -16.0,  # Apple Podcasts spec: ~-16 dB LKFS ±1 dB (stereo)
+# Master ONCE for the podcast. Target -16 LUFS integrated (Apple Podcasts stereo
+# spec). You ship ONE file to ONE RSS feed; Spotify/Apple/YouTube each apply their
+# OWN playback normalization, so you do NOT export a louder Spotify file (TP7a).
+# The per-platform numbers below are REFERENCE values — what each platform
+# normalizes TO at playback — NOT separate export targets.
+PLAYBACK_REFERENCE_LUFS = {  # for reference only; do not master a separate file per row
+    "apple_stereo": -16.0,  # Apple Podcasts normalizes playback to ~-16 LUFS (stereo)
     "apple_mono":   -19.0,  # mono at -19 LUFS sounds as loud as stereo at -16 LUFS
-    "spotify":      -14.0,  # Spotify normalizes to -14 LUFS
-    "youtube":      -14.0,  # YouTube normalizes to -14 LUFS
-    "amazon":       -14.0,  # Amazon Music -14 LUFS
-    "google":       -14.0,  # Google -14 LUFS
+    "spotify":      -14.0,  # Spotify normalizes playback to -14 LUFS (raises a -16 file +2 dB, no re-compression)
+    "youtube":      -14.0,  # YouTube normalizes playback to -14 LUFS
+    "amazon":       -14.0,  # Amazon Music normalizes playback to -14 LUFS
+    "google":       -14.0,  # Google normalizes playback to -14 LUFS
 }
 PEAK_CEILING_DBFS = -1.0  # -1 dBFS sample-peak reserve (pyln.normalize.peak = sample-peak, NOT measured dBTP); approximates Apple's -1 dBTP target
-target_loudness = TARGET_LUFS["spotify"]  # pick per delivery target; -14 is the multi-platform default
+target_loudness = -16.0  # master once to -16 LUFS integrated (podcast single-file delivery)
 
 for i, text in enumerate(tqdm(chunks)):
     # 1. Generate
@@ -186,7 +190,7 @@ shutil.copy2("lora_weights_2000.safetensors", "lora_weights.safetensors")
 | denoise (built-in) | False | Use external noisereduce instead; init with `load_denoiser=False` |
 | noisereduce prop_decrease | 0.85 | Noise reduction proportion (1.0 = 100%; default 1.0) — conservative for clean TTS |
 | noisereduce stationary | True | Fixed-threshold spectral gating (TTS has no time-varying room noise) |
-| target_loudness | per-platform (see TP7a) | NOT a single -16 constant |
+| target_loudness | -16 LUFS integrated (see TP7a) | master ONCE; ship one file, platforms normalize at playback (NOT a per-platform export) |
 | peak_ceiling | -1.0 dBFS (sample-peak) | Conservative reserve approximating Apple's -1 dBTP target; `pyln.normalize.peak` is sample-peak, NOT a dBTP meter |
 | LRA target (spoken word) | 5-15 LU | EBU Tech 3342 loudness-range band (see TP7c) |
 | lead_in_silence | 1.0 second | Silence before first segment |
@@ -194,23 +198,34 @@ shutil.copy2("lora_weights_2000.safetensors", "lora_weights.safetensors")
 | DEFAULT_PAUSE | 0.7 second | Default inter-segment silence |
 | emotional_pause | 1.0-1.5 seconds | At mood shifts (PAUSE_MAP) |
 
-### TP7a: Per-Platform Loudness Targets — MANDATORY (do NOT hard-code -16)
+### TP7a: Master Once for Podcast (-16 LUFS), Platforms Normalize at Playback — MANDATORY
 
-Hard-coding `target_loudness = -16` is correct ONLY for Apple Podcasts stereo and is too quiet for Spotify/YouTube delivery. Encode a per-platform table:
+**CRITICAL: A podcast ships a SINGLE audio file to ONE RSS feed.** Do NOT export
+two masters (a "-14 Spotify" file and a "-16 Apple" file). Spotify, Apple Podcasts,
+YouTube, etc. each apply their OWN loudness normalization at **playback time** — e.g.
+Spotify raises a -16 LUFS file by +2 dB to its -14 playback reference with **no
+re-compression**. Mastering a separate louder file per platform is unnecessary and
+fights the platform's own normalization.
+
+**Master ONCE to -16 LUFS integrated** (Apple Podcasts stereo spec; the de-facto
+podcast delivery standard) and upload that one file. The per-platform numbers in the
+table below are **reference values** — what each platform normalizes TO at playback,
+useful for understanding why your file ends up at a given perceived loudness — NOT a
+list of separate export targets.
 
 The "Platform peak target" column is each platform's **true-peak (dBTP)** ceiling as published. Our pipeline reserves a **-1 dBFS sample-peak** margin via `pyln.normalize.peak` (a sample-peak scaler — see TP4/MA8), which approximates but does not *measure* these dBTP targets; for an actual dBTP guarantee, post-check with `ffmpeg ebur128=peak=true`.
 
-| Platform | Integrated LUFS | Platform peak target | Note |
+| Platform | Playback-normalization reference (LUFS) | Platform peak target | Note |
 |---|---|---|---|
-| Apple Podcasts (stereo) | -16 LUFS (±1 dB) | -1 dBTP | Apple spec: precondition to ~-16 dB LKFS, true-peak ≤ -1 dBFS, computed per ITU-R BS.1770-5 |
-| Apple Podcasts (mono) | -19 LUFS | -1 dBTP | -19 LUFS mono sounds as loud as -16 LUFS stereo |
-| Spotify | -14 LUFS | -1 dBTP | platform normalizes to -14 |
-| YouTube | -14 LUFS | -1 dBTP | platform normalizes to -14 |
-| Amazon Music | -14 LUFS | -1 dBTP | platform normalizes to -14 |
-| Google | -14 LUFS | -1 dBTP | platform normalizes to -14 |
+| Apple Podcasts (stereo) | -16 LUFS (±1 dB) | -1 dBTP | Apple spec: precondition to ~-16 dB LKFS, true-peak ≤ -1 dBFS, computed per ITU-R BS.1770-5. **This is the master target — ship one file at -16.** |
+| Apple Podcasts (mono) | -19 LUFS | -1 dBTP | -19 LUFS mono sounds as loud as -16 LUFS stereo (master a mono file to -19) |
+| Spotify | -14 LUFS | -1 dBTP | normalizes playback to -14 — raises your -16 file +2 dB, no re-compression |
+| YouTube | -14 LUFS | -1 dBTP | normalizes playback to -14 |
+| Amazon Music | -14 LUFS | -1 dBTP | normalizes playback to -14 |
+| Google | -14 LUFS | -1 dBTP | normalizes playback to -14 |
 | (contrast) EBU R128 broadcast | -23 LUFS | -1 dBTP | podcast platforms sit 7-9 LU louder than broadcast |
 
-**Default to -14 LUFS** when the delivery platform is unknown (matches Spotify/YouTube/Amazon/Google, only Apple-stereo wants -16). Apple states its loudness/true-peak targets are computed per **ITU-R BS.1770-5**. pyloudnorm, by contrast, implements **BS.1770-4** for `meter.integrated_loudness()` and exposes `meter.loudness_range()` (LRA) + `normalize.loudness()` / `normalize.peak()` — the last being a **sample-peak** scaler (`np.max(np.abs)`), so pyloudnorm provides neither BS.1770-5 nor any true-peak metering.
+**Master to -16 LUFS integrated and ship that one file** — there is no scenario where you export a separate, louder master per platform. The "Spotify wants -14" reference does not mean ship a -14 file: Spotify will raise your -16 file at playback for you. (For a stereo/mono choice, master mono to -19, which plays back as loud as -16 stereo.) Apple states its loudness/true-peak targets are computed per **ITU-R BS.1770-5**. pyloudnorm, by contrast, implements **BS.1770-4** for `meter.integrated_loudness()` and exposes `meter.loudness_range()` (LRA) + `normalize.loudness()` / `normalize.peak()` — the last being a **sample-peak** scaler (`np.max(np.abs)`), so pyloudnorm provides neither BS.1770-5 nor any true-peak metering.
 
 ### TP7b: noisereduce stationary vs non-stationary — choose explicitly
 
@@ -314,13 +329,14 @@ Is this a full new episode?
 
 ## TP7d: Runnable Loudness/True-Peak/LRA Verifier
 
-Do NOT punt loudness/peak/LRA judgment to the agent — run `scripts/loudness-check.sh <final.wav> [platform]`. Using pyloudnorm it asserts: integrated LUFS within ±1 LU of the per-platform target (TP7a) and LRA in the 5-15 LU band (TP7c) — both measured. For the peak ceiling it measures the **sample peak** against -1 dBFS as a conservative lower-bound proxy (pyloudnorm has no true-peak meter); the script labels this honestly and does NOT claim a measured dBTP. Exit 0 = PASS, exit 1 = out of spec. If a true dBTP guarantee is required, additionally run `ffmpeg -i <final.wav> -af ebur128=peak=true -f null -` and confirm reported true-peak ≤ -1 dBFS.
+Do NOT punt loudness/peak/LRA judgment to the agent — run `scripts/loudness-check.sh <final.wav> [platform]`. Using pyloudnorm it asserts: integrated LUFS within ±1 LU of the master target (-16 LUFS for the single-file podcast master, TP7a) and LRA in the 5-15 LU band (TP7c) — both measured. (The optional `[platform]` arg only changes which reference number the check compares against; it does NOT mean you export a different file per platform — you ship one -16 LUFS master.) For the peak ceiling it measures the **sample peak** against -1 dBFS as a conservative lower-bound proxy (pyloudnorm has no true-peak meter); the script labels this honestly and does NOT claim a measured dBTP. Exit 0 = PASS, exit 1 = out of spec. If a true dBTP guarantee is required, additionally run `ffmpeg -i <final.wav> -af ebur128=peak=true -f null -` and confirm reported true-peak ≤ -1 dBFS.
 
 ---
 
 ## Sources
 
-- Per-platform loudness targets (-16 Apple-stereo / -19 Apple-mono / -14 Spotify·YouTube·Amazon·Google): https://www.criticallisteninglab.com/en/learn/loudness/podcast (retrieved 2026-06-13)
+- Per-platform playback-normalization reference levels (-16 Apple-stereo / -19 Apple-mono / -14 Spotify·YouTube·Amazon·Google), and that platforms normalize a single delivered file at playback rather than requiring per-platform masters: https://www.criticallisteninglab.com/en/learn/loudness/podcast (retrieved 2026-06-13)
+- Podcasts ship a single file; platforms (Spotify +2 dB on a -16 file, Apple Sound Check) normalize loudness at playback time, no dual masters: https://podnews.net/article/lufs-lkfs-for-podcasters (retrieved 2026-06-13)
 - Apple ~-16 dB LKFS ±1 dB + true-peak ≤ -1 dB FS, computed per ITU-R BS.1770-5 (Apple's published targets): https://podcasters.apple.com/support/893-audio-requirements (retrieved 2026-06-13)
 - pyloudnorm: BS.1770-4 integrated loudness via `Meter.integrated_loudness()`, LRA via `Meter.loudness_range()` (EBU Tech 3342); `normalize.peak()` is a SAMPLE-peak scaler (`np.max(np.abs(data))`, no oversampling) — NO true-peak meter, NOT BS.1770-5: https://github.com/csteinmetz1/pyloudnorm/blob/master/pyloudnorm/normalize.py (retrieved 2026-06-13)
 - True-peak (dBTP) requires an oversampling meter, e.g. ffmpeg `ebur128=peak=true`: https://ffmpeg.org/ffmpeg-filters.html#ebur128 (retrieved 2026-06-13)

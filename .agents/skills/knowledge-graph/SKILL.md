@@ -111,7 +111,7 @@ Produce a structured graph-architecture report:
 | "Neo4j is the graph database" | Neo4j pre-allocates 4-5 GB JVM heap and has slow cold starts. For 16k nodes Memgraph used 415 MB vs Neo4j's 2,668 MB. Match the engine to the workload. |
 | "Auto-merge all the duplicates" | Auto-merge above a high threshold only. Moderate-confidence pairs get a temporary SAME_AS link routed to a human; auto-merging everything destroys auditability in legal/clinical graphs. |
 | "Skip the ontology, let the LLM figure it out" | Bottom-up-only extraction drifts. Use top-down OWL guidance for competency questions + bottom-up LLM refinement; classify each entity against the schema BEFORE storing it. |
-| "Just use GraphRAG, the task mentions a knowledge graph" | GraphRAG's edge is multi-hop aggregation (HippoRAG 87.9–90.9% L2–L3 evidence recall). For single-fact lookup, a reranked flat RAG wins (Novel fact best 60.92%) at near-zero index cost. Classify the query shape first (ARC7) — only build graph when it's multi-hop. |
+| "Just use GraphRAG, the task mentions a knowledge graph" | GraphRAG's edge is multi-hop aggregation (HippoRAG 87.9–90.9% L2–L3 evidence recall). For single-fact lookup, a reranked flat RAG wins (GraphRAG-Bench Novel-dataset Fact Retrieval ACC 60.92, beating every graph method — arXiv 2506.05690 Table 2) at near-zero index cost. Classify the query shape first (ARC7) — only build graph when it's multi-hop. |
 | "Kuzu embedded is a lightweight option" / "use RedisGraph" | Stale knowledge. Kuzu's repo was archived after the 2025-10 Apple acquisition (abandonment risk); RedisGraph hit EOL 2025-01 → migrate to FalkorDB (its direct successor). Neither belongs in a new long-term build. |
 
 ---

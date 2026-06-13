@@ -21,7 +21,7 @@
 
 ### X1: Top 5 WCAG Failures
 
-When prioritizing accessibility fixes, start with the five most common failures (source: WebAIM Million, Deque audits n=550):
+When prioritizing accessibility fixes, start with the five most common failures (source: WebAIM Million, Deque automated-coverage study — 2,000+ audits / ~13,000 pages / ~300,000 issues):
 
 1. **Missing alt text on images** -- screen readers announce "image" with no context
 2. **Insufficient color contrast** -- text unreadable for low-vision users (ratio < 4.5:1)
@@ -36,7 +36,7 @@ These five account for the majority of automated a11y failures. Fix them first.
 When setting up automated accessibility testing in E2E suites:
 
 ```bash
-npm i -D @axe-core/playwright   # axe-core current 4.12.x — first added WCAG 2.2 'target-size'
+npm i -D @axe-core/playwright   # wrapper current 4.11.2; bundles axe-core core 4.12.x (first added WCAG 2.2 'target-size')
 ```
 
 ```typescript
@@ -55,7 +55,7 @@ test('homepage has no a11y violations', async ({ page }) => {
 ```
 
 - **`withTags([... 'wcag22aa'])`**: WCAG **2.2** is the current standard (an ISO standard for 2026). Add the `wcag22aa` tag — without it axe runs only the 2.0/2.1 ruleset and silently skips the new `target-size` rule.
-- **Pin axe-core to >= 4.12.x**: the `target-size` rule (WCAG 2.2 SC 2.5.8) landed in the 4.x line; older axe-core has no rule for it.
+- **Pin `@axe-core/playwright` to >= 4.11.2** (the current wrapper release — its version does NOT track the core lib 1:1): it bundles **axe-core core >= 4.12.x**, where the `target-size` rule (WCAG 2.2 SC 2.5.8) landed; older axe-core has no rule for it. Verify with `npm ls axe-core` after install.
 - **Run after page is fully loaded**: Dynamic content must be rendered before scanning
 - **Test key states**: Empty state, loaded state, error state, modal open state
 
@@ -65,7 +65,7 @@ test('homepage has no a11y violations', async ({ page }) => {
 
 When relying on automated accessibility tools:
 
-- Automated tools (axe-core, Pa11y, Lighthouse a11y) catch **30-50% of WCAG issues** (57% by volume per Deque, across n=550 audits)
+- Automated tools (axe-core, Pa11y, Lighthouse a11y) catch **30-50% of WCAG issues** (57% by volume per Deque's study of 2,000+ audits / ~13,000 pages / ~300,000 issues)
 - **What automation catches**: Missing alt text, contrast ratios, missing labels, invalid ARIA, heading hierarchy, duplicate IDs
 - **What automation misses**: Keyboard navigation flow quality, screen reader announcement coherence, cognitive load, meaningful alt text content, focus order logic, touch target adequacy
 
@@ -197,4 +197,6 @@ WCAG **2.2** (the current standard, ISO for 2026) adds **9 new success criteria*
 
 - Deque — axe-core 4.5: first WCAG 2.2 support (`target-size` rule) — https://www.deque.com/blog/axe-core-4-5-first-wcag-2-2-support-and-more/ (retrieved 2026-06-13)
 - W3C — What's New in WCAG 2.2 (9 new SC, 4.1.1 removed, target-size 24px, focus-appearance) — https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/ (retrieved 2026-06-13)
-- axe-core on npm (current 4.12.x) — https://www.npmjs.com/package/axe-core (retrieved 2026-06-13)
+- axe-core core lib on npm (current 4.12.x) — https://www.npmjs.com/package/axe-core (retrieved 2026-06-13)
+- @axe-core/playwright wrapper on npm (current 4.11.2 — does NOT track core 1:1) — https://www.npmjs.com/package/@axe-core/playwright (retrieved 2026-06-13)
+- Deque — Automated Testing Identifies 57% of Digital Accessibility Issues (study: 2,000+ audits / ~13,000 pages / ~300,000 issues) — https://www.deque.com/blog/automated-testing-study-identifies-57-percent-of-digital-accessibility-issues/ (retrieved 2026-06-13)

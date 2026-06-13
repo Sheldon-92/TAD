@@ -58,7 +58,7 @@ grep -oE 'LazyGraphRAG|LightRAG|HippoRAG|MS-GraphRAG|700x|99\.9%|\$33K|k-means.{
 
 These markers are pack-specific (would NOT appear without the pack):
 - ✅ "LazyGraphRAG matches global-search quality at 700x lower query cost / 99.9% lower indexing; full GraphRAG indexed a large corpus for ~$33K@2024" (named + quantified cost rule + absolute anchor)
-- ✅ "single-fact lookups belong on flat/reranked RAG (Novel fact best 60.92%); graph's edge is multi-hop aggregation (HippoRAG 87.9–90.9% evidence recall)" (the ARC7 graph-vs-flat threshold)
+- ✅ "single-fact lookups belong on flat/reranked RAG (GraphRAG-Bench Novel-dataset Fact Retrieval ACC 60.92, arXiv 2506.05690 Table 2); graph's edge is multi-hop aggregation (HippoRAG 87.9–90.9% evidence recall)" (the ARC7 graph-vs-flat threshold)
 - ✅ "k-means cluster size 128 → fused BM25+vector top-K 16" (the entity-resolution pipeline numbers)
 - ✅ "SAME_AS edge routed to a human" (the governed-merge threshold rule)
 - ✅ "Kuzu's repo was archived after the 2025-10 Apple acquisition — don't pick it; re-select by benchmark (FalkorDB p99 136 ms vs Neo4j 46,924 ms)" (the deprecated-engine isolation rule + refreshed latency number)

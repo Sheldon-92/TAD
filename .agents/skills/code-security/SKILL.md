@@ -100,7 +100,7 @@ After loading the relevant reference file(s):
 Output format per finding:
 ```
 [P0] Rule S3 (sast): Semgrep running without diff-aware mode on PRs — scanning entire repo on every PR.
--> Set SEMGREP_BASELINE_REF=main to scan only changed files. Reduces PR scan from 3min to ~10s.
+-> On GitHub Actions, `semgrep ci` on a `pull_request` trigger is automatically diff-aware (no SEMGREP_BASELINE_REF needed). On other CI (Jenkins/GitLab), set SEMGREP_BASELINE_REF=main. Reduces PR scan from 3min to ~10s.
 
 [P1] Rule D2 (dast): Nuclei running against production URL without rate limiting.
 -> Add -rl 50 flag and switch target to staging URL. Active DAST against production causes service disruption.
