@@ -5,6 +5,7 @@
 
 | # | Rule | determinismLevel |
 |---|------|-----------------|
+| GDB0 | Precondition: confirm a graph DB is needed at all (ARC0) before selecting one — default GraphRAG is Parquet+LanceDB | deterministic |
 | GDB1 | Engine selection: Neo4j (disk/historical) vs Memgraph (in-mem/streaming) vs FalkorDB (matrix/throughput) | deterministic |
 | GDB2 | Storage model: LPG (closed-world) vs RDF triple store (open-world, global URIs) | deterministic |
 | GDB3 | Edge metadata on RDF → use RDF-Star embedded triples, not reification | deterministic |
@@ -12,6 +13,8 @@
 | GDB5 | Neo4j HA quorum is N=2F+1; FalkorDB plateaus beyond 8 threads; ingestion throughput is batch-dependent (Memgraph small / FalkorDB bulk / Neo4j flat) | deterministic |
 
 > ⚠️ **Deprecated engines** (do NOT recommend for new builds): **Kuzu** embedded (archived after 2025-10 Apple acquisition) and **RedisGraph** (EOL 2025-01 → migrate to FalkorDB). See the "Deprecated / Old-Pattern Engines" section at the end of this file.
+
+> 🛑 **GDB0 — PRECONDITION (read before any engine pick):** if the task is "build Microsoft GraphRAG", **first confirm a graph DB is even needed** — the default pipeline stores **Parquet + LanceDB and requires NO graph DB** (see graphrag-architecture.md **ARC0**). Only proceed through GDB1–GDB5 once a graph DB is justified by a concrete need: (a) graph **visualization / ad-hoc Cypher / GDS algorithms**, (b) **high-concurrency multi-user** graph serving beyond an embedded local store, or (c) you **already run** a graph DB. If none apply, the correct recommendation is **no graph DB** — skip this file. Re-selecting an engine (e.g. Kuzu→Neo4j) for a pipeline that needs none is solving the wrong problem.
 
 ---
 
@@ -47,6 +50,29 @@ When choosing the LPG engine, match it to the workload — do not pick Neo4j by 
 The decision signal is the **p99 magnitude** (FalkorDB 136 ms vs Neo4j 46,924 ms) and the **tail amplification** (2.5x vs ~81x), not p50 alone — a workload with SLO on the tail cannot absorb Neo4j's p99 blow-up here. ⚠️ These are **vendor self-published** numbers on one synthetic workload; treat as a magnitude prior to confirm on your own data, not a production guarantee.
 
 > Source (refreshed): FalkorDB vs Neo4j graph-database performance benchmark — https://www.falkordb.com/blog/graph-database-performance-benchmarks-falkordb-vs-neo4j/ (retrieved 2026-06-13). p50/p90/p99 55/108/136.2 ms vs 577.5/4784.1/46923.8 ms; 6,693 QPS; cold-start 1.1 ms vs ~90/274/34 ms.
+
+**Memgraph RAM sizing — compute it, don't guess (Memgraph is in-memory, so capacity planning is a real number):**
+
+Memgraph publishes per-object memory minimums (IN_MEMORY_TRANSACTIONAL, the default ACID mode):
+
+| Object | Minimum bytes | Composition |
+|--------|---------------|-------------|
+| **Vertex (node)** | **136 B** | 80 B base object + 56 B Delta; +4 B per extra label |
+| **Edge (relationship)** | **88 B** | 32 B base object + 56 B Delta |
+| **Delta** (MVCC version record) | **56 B** | per vertex and per edge — this is what TRANSACTIONAL mode costs you |
+| **Property** | **~2 B+** | 1 B metadata + 1 B id; values 2 B (BOOL) → 18+ B (temporal/ENUM) |
+
+**Official simplified estimator:** `RAM ≈ NumVertices × 204 B + NumEdges × 154 B` (TRANSACTIONAL). So a 10M-node / 50M-edge graph ≈ 10e6×204 + 50e6×154 ≈ **9.7 GB** before properties — confirm it fits in RAM, or you cannot use Memgraph at that size. Switch to **IN_MEMORY_ANALYTICAL** (drops MVCC Deltas → ~56 B/object saved, faster bulk import, but no automatic durability) for one-shot analytical loads, or **ON_DISK_TRANSACTIONAL** when the working set exceeds RAM.
+
+> Source (refreshed, primary): Memgraph — "Storage memory usage" — https://memgraph.com/docs/fundamentals/storage-memory-usage (retrieved 2026-06-14): vertex ≥136 B (80+56), edge ≥88 B (32+56), Delta 56 B, property ≥2 B; estimator `Vertices×204 B + Edges×154 B`; storage modes IN_MEMORY_TRANSACTIONAL / IN_MEMORY_ANALYTICAL / ON_DISK_TRANSACTIONAL.
+
+**Neo4j edition gate (a hard architectural constraint, not a perf tuning knob):** Neo4j **Community Edition is single-instance only** — **no clustering, no online backup, and only one database** (beyond `system`). **Autonomous clustering, multiple databases, composite databases, and sharded property databases are Enterprise-only.** If your design needs HA/clustering (GDB5 Raft quorum) or multi-database/sharding, you are committing to **Enterprise (commercial license)** — surface that cost before recommending Neo4j for a scale-out workload. ⚠️ Neo4j does **not** publish a current hard max-node count (the old ~34B store-format cap was pre-3.0 and is no longer authoritative) — do not quote a node-count ceiling as a guarantee.
+
+> Source (refreshed, primary): Neo4j — Operations Manual "Introduction" / edition comparison — https://neo4j.com/docs/operations-manual/current/introduction/ (retrieved 2026-06-14): Community = single-instance; clustering / online backup / multiple databases / composite databases / sharded property databases listed Enterprise-only. No current official max-node figure (historical ~34B is pre-3.0 / secondary).
+
+**FalkorDB architecture (why its throughput profile is what it is):** FalkorDB represents each graph as **sparse adjacency matrices over GraphBLAS** (a BLAS-like standard API) in **CSC (compressed sparse columns)** format — one global adjacency matrix, one matrix per relationship type, one symmetric matrix per node label. Traversals become **matrix multiplication** (friends-of-friends = F²). This is what gives the bounded p99 / high bulk-import throughput above. ⚠️ No official max-node ceiling is published (benchmarks reference >1M nodes, an empirical figure not an architectural cap); "multiple isolated graphs per instance" is a vendor/marketing claim, not a /design/-docs statement.
+
+> Source (refreshed, primary): FalkorDB — "Design" docs — https://docs.falkordb.com/design/ (retrieved 2026-06-14): sparse adjacency matrices, GraphBLAS, CSC format, matrix-multiply traversal; no stated max-node limit.
 
 **determinismLevel**: deterministic — selection from fixed architectural profiles.
 

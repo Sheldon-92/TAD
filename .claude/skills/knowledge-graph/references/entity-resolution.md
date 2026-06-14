@@ -62,7 +62,13 @@ When deciding to merge, do NOT auto-merge everything. Route by similarity thresh
 
 This is critical in legal / clinical / scholarly domains where automated merging introduces operational and audit risk.
 
-> Source: findings.md §2 "Governed Assertion Workflows" — Auto-Merge / SAME_AS-to-human / New-Node thresholds [5]; auditability rationale [34, 35].
+**⚠️ Do NOT hardcode a "magic" similarity cutoff (e.g. "auto-merge above 0.9, review 0.7–0.9"). No serious record-linkage tool publishes one — and a generalist that confidently emits "0.9" is wrong:**
+
+- **Splink** (UK Ministry of Justice, the reference open-source linker) **deliberately gives no fixed numeric threshold.** It frames the cutoff as a **precision/recall trade-off** chosen *per dataset* with a **Threshold Selection Tool over labelled ground-truth data** plus iterative spot-checking. Edges carry a **Match Weight** and a derived **Match Probability**; you pick the operating point, the tool does not prescribe it.
+- Embedding **cosine-similarity** cutoffs are dataset-, model-, and domain-dependent; sentence-transformers documents similarity scoring but publishes **no universal merge/review cutoff**. Any band you use is a **per-corpus calibration**, label it "tuned on our labelled pairs," never "the standard threshold."
+- **Operational rule**: set the two thresholds (auto-merge / review) by sweeping them against a labelled validation set to hit your target precision (high for auto-merge) and acceptable reviewer volume (the review band) — exactly the OntoDup three-band routing above, with the *boundaries derived empirically*, not copied from a blog.
+
+> Source: findings.md §2 "Governed Assertion Workflows" — Auto-Merge / SAME_AS-to-human / New-Node thresholds [5]; auditability rationale [34, 35]. No-magic-cutoff (refreshed, primary): Splink (MoJ) — "Edge metrics / evaluation" topic guide — https://moj-analytical-services.github.io/splink/topic_guides/evaluation/edge_overview.html (retrieved 2026-06-14): threshold = precision/recall trade-off selected with labelled data via the Threshold Selection Tool; Match Weight + Match Probability per edge; no prescribed numeric cutoff. Repo: https://github.com/moj-analytical-services/splink (retrieved 2026-06-14).
 
 **determinismLevel**: deterministic — threshold routing is a fixed decision rule.
 
@@ -101,3 +107,4 @@ It then selects a canonical representative for each duplicate set and maps the v
 - **Auto-merge everything**: destroys auditability; moderate-confidence pairs belong on a human-reviewed `SAME_AS` edge.
 - **Silent in-place merge**: no reified assertion → no lineage, no revert path when a merge turns out wrong.
 - **Casing-only dedup**: lowercasing catches trivial dups but misses plurals/abbreviations/tenses — the LLM stage is still required.
+- **Copy-pasting a "magic" cutoff (0.9 / 0.7)**: no record-linkage tool (Splink/MoJ) publishes a universal similarity threshold — derive auto-merge/review boundaries from a labelled validation sweep, never from a blog number.

@@ -53,12 +53,14 @@ ffmpeg -i voiceover.mp3 -i music.mp3 \
 **Audio ducking** (auto-lower music when voiceover is active):
 ```bash
 ffmpeg -i music.mp3 -i voiceover.mp3 \
-  -filter_complex "[0][1]sidechaincompress=threshold=0.1:ratio=4:attack=20:release=250[out]" \
+  -filter_complex "[0][1]sidechaincompress=threshold=0.02:ratio=10:attack=50:release=500[out]" \
   -map "[out]" output_ducked.mp3
 ```
-Note: `attack` and `release` are in **milliseconds** (not seconds). `attack=20` = 20ms attack; `release=250` = 250ms release. Values < 1 (e.g., `attack=0.2`) are interpreted as 0.2ms — effectively instant, producing harsh gain jumps not smooth ducking.
+**Recommended music-under-voice values (sourced):** `attack 50ms`, `release 500ms`, `threshold 0.02`, `ratio 10:1`. A more aggressive set is `attack 30ms`, `release 800ms`, `threshold 0.015`, `ratio 15:1`. These run **slower** than naive 20/250 guesses — the longer release lets music swell back smoothly between phrases instead of pumping. Tune attack DOWN (toward 30ms) if early syllables get clipped; tune release UP (toward 800ms) if music pumps between words.
 
-[Source: Research findings Layer 5]
+Note: `attack` and `release` are in **milliseconds** (not seconds). Values < 1 (e.g., `attack=0.2`) are interpreted as 0.2ms — effectively instant, producing harsh gain jumps not smooth ducking.
+
+[Source: Research findings Layer 5 + https://ffmpeg.org/pipermail/ffmpeg-user/2018-August/040933.html + https://cloudinary.com/guides/video-effects/ffmpeg-add-audio-to-video, retrieved 2026-06-14]
 
 ---
 
@@ -169,7 +171,17 @@ This prevents frequency masking and keeps each effect audible.
 | Twitter/X | AAC | 128kbps+ | Stereo |
 | Web (general) | AAC or WebM/Opus | 128kbps+ | Stereo |
 
-**Always normalize audio** to -14 LUFS before export (platform standard for streaming).
+> ⚠️ **TikTok / Instagram audio specs above are partial or absent at the source.** TikTok's official
+> Content Posting API lists NO audio codec/sample-rate/bitrate; Instagram's primary spec gives only
+> "AAC, 48 kHz maximum, 1–2 channels, 128 kbps". The 128 kbps+ / stereo rows for TikTok are
+> third-party convention, not first-party. [Source: deep-research §(d), TikTok Content Posting API +
+> Meta Graph API media reference, retrieved 2026-06-14]
+
+**Normalize audio before export, but there is NO single cross-platform LUFS number.** The only
+DOCUMENTED target is YouTube **-14 LUFS** (attenuate-only). TikTok and Instagram Reels publish **no
+official LUFS figure** (every online number for them is an estimate). A safe pragmatic master for
+short-form mixed speech+music is **-16 LUFS / -1 dBTP** — see `references/quality.md §Loudness
+Normalization` for the full documented-vs-estimated table.
 
 ---
 
@@ -201,7 +213,7 @@ This prevents frequency masking and keeps each effect audible.
 4. **Add music bed**: bring in at -20 to -25 dBFS (10-20% of voiceover)
 5. **Layer SFX**: add at -10 to -14 dBFS (louder than music, quieter than voice)
 6. **Sidechain compress** (optional): auto-duck music under voiceover (see FFmpeg `sidechaincompress` above)
-7. **Normalize to platform target**: -14 LUFS integrated, -1 dBTP true peak
+7. **Normalize to a pragmatic target**: -16 LUFS integrated, -1 dBTP true peak for short-form mixed speech+music (YouTube documents -14 attenuate-only; TikTok/IG publish no number — see `references/quality.md §Loudness`)
 8. **Export**: AAC 128kbps+ stereo
 
 ### FFmpeg Audio Mastering Chain
@@ -216,12 +228,14 @@ ffmpeg -i raw_voiceover.wav \
 ffmpeg -i voiceover_clean.wav -i music.mp3 \
   -filter_complex "
     [1:a]volume=0.15[music_quiet];
-    [0:a][music_quiet]sidechaincompress=threshold=0.02:ratio=4:attack=10:release=300[mixed];
-    [mixed]loudnorm=I=-14:TP=-1.5:LRA=11[out]
+    [0:a][music_quiet]sidechaincompress=threshold=0.02:ratio=10:attack=50:release=500[mixed];
+    [mixed]loudnorm=I=-16:TP=-1:LRA=11[out]
   " \
   -map "[out]" final_audio.m4a
 ```
-Note: `sidechaincompress` attack/release units are **milliseconds**. `attack=10:release=300` = 10ms attack, 300ms release. Do not use fractional values below 1 — they produce instant gain reduction, not ducking.
+Note: `sidechaincompress` attack/release units are **milliseconds**. `attack=50:release=500` = 50ms attack, 500ms release (sourced music-under-voice values). Do not use fractional values below 1 — they produce instant gain reduction, not ducking. `loudnorm` here targets **−16 LUFS / −1 dBTP** as a pragmatic short-form master (mixed speech+music). ⚠️ **There is no single cross-platform LUFS standard:** YouTube documents −14 (attenuate-only), Spotify −14 (bidirectional), Apple Music ~−16 (third-party only); **TikTok and Instagram Reels publish NO official number** — do not present any TikTok/IG LUFS as fact. Full documented-vs-estimated table: `references/quality.md §Loudness Normalization`.
+
+[Source: https://ffmpeg.org/pipermail/ffmpeg-user/2018-August/040933.html (sidechain values) + deep-research report §(a) LOUDNESS (per-platform targets), retrieved 2026-06-14]
 
 ---
 

@@ -5,10 +5,11 @@
 
 | # | Rule | determinismLevel |
 |---|------|-----------------|
+| ARC0 | Microsoft GraphRAG needs NO graph database by default — it writes Parquet + LanceDB. A graph DB is an OPTIONAL downstream add-on, not a pipeline dependency | deterministic |
 | ARC1 | Architecture selection: full GraphRAG vs LazyGraphRAG vs LightRAG by data volatility + cost | deterministic |
 | ARC2 | Indexing pipeline order is fixed: chunk → extract → finalize → Leiden → community reports → embed | deterministic |
 | ARC3 | Default chunk size is 1,200 tokens; gleanings = multi-pass extraction for recall | semi-deterministic |
-| ARC4 | Leiden is hierarchical: Level 0 broad, higher levels specific — pick the level for query breadth | deterministic |
+| ARC4 | Leiden is hierarchical (Level 0 broad → higher specific); `resolution` γ (default 1.0) controls community granularity | deterministic |
 | ARC5 | Search paradigm: Global (Map-Reduce), Local (1-2 hop), Drift (agentic) — match to query intent | semi-deterministic |
 | ARC6 | Community context overflow → Hierarchical Substitution then Trimming, never raw truncation | deterministic |
 | ARC7 | Graph-vs-flat decision threshold: don't reflex-pick GraphRAG — flat RAG still wins single-fact + high-coverage summary | deterministic |
@@ -17,6 +18,34 @@
 
 ## Rules
 
+### ARC0: Microsoft GraphRAG Requires NO Graph Database by Default (Storage Precedes Engine)
+
+**The single most common framing error: "we'll build GraphRAG, which graph database should we store it in?"** That question is a category error for the default Microsoft GraphRAG pipeline. **Resolve storage BEFORE engine selection** — most of the time there is no graph DB to select.
+
+When someone proposes "build GraphRAG and store it in [Neo4j / Kuzu / FalkorDB / any graph DB]", first establish what the pipeline actually emits:
+
+| Layer | Microsoft GraphRAG default | Config key |
+|-------|----------------------------|-----------|
+| **Knowledge artifacts** | **Parquet files on the local filesystem** (entities, relationships, communities, community reports, text units) | `output: type` — default `file` (also `memory` / `blob` / `cosmosdb`) |
+| **Vector store** | **LanceDB, embedded, written locally alongside the Parquet artifacts** | `vector_store: type` — default `lancedb` (also `azure_ai_search` / `cosmosdb`) |
+| **Graph database** | **NONE.** No graph-DB option exists anywhere in the storage or vector_store config. The standard `graphrag index` + `graphrag query` pipeline runs end-to-end with zero external graph DB. | — (no such key) |
+
+The GraphRAG 1.0 refactor consolidated embeddings into the vector store and reported **80% Parquet disk savings and 43% total disk reduction** by removing redundant embedding copies from the Parquet output. Global/Local/Drift search all run directly over the Parquet + LanceDB artifacts.
+
+**When you DO add a graph database (it is a downstream add-on, never a dependency):**
+
+- **Visualization / ad-hoc Cypher exploration / GDS algorithms** over the extracted graph. The standard path is: run the default Parquet pipeline first, then *import* the Parquet output into Neo4j (Neo4j publishes the import writeup: "These parquet files can be easily imported into the neo4j graph database for downstream analysis, visualization, and retrieval").
+- **High-concurrency / multi-user serving** of graph queries where an embedded LanceDB local store is insufficient.
+- **You already operate a graph DB** and want one storage substrate.
+
+If none of those apply, **adding a graph DB is pure operational overhead** — you stand up, secure, and pay for an engine the pipeline never asked for. The deprecated-engine debate (Kuzu vs FalkorDB, GDB1) only begins *after* ARC0 establishes that a graph DB is actually wanted; do not skip ARC0 and jump straight to "which engine."
+
+**Anti-pattern**: accepting "store GraphRAG in <graph DB X>" and merely re-selecting the engine (Kuzu→Neo4j). That perpetuates the category error. The senior move is to surface that the default pipeline is Parquet + LanceDB and make the graph DB *conditional* on a stated visualization/concurrency need.
+
+> Source (refreshed): Microsoft Research — "Moving to GraphRAG 1.0: streamlining ergonomics" — https://www.microsoft.com/en-us/research/blog/moving-to-graphrag-1-0-streamlining-ergonomics-for-developers-and-users/ (retrieved 2026-06-14), section "Streamlined vector stores": LanceDB default written locally alongside artifacts; 80% parquet / 43% total disk reduction. Config keys: GraphRAG official YAML config — https://microsoft.github.io/graphrag/config/yaml/ (retrieved 2026-06-14), "Outputs and Storage": `output.type` default `file` (file|memory|blob|cosmosdb); `vector_store.type` default `lancedb` (lancedb|azure_ai_search|cosmosdb) — no graph-DB option exists. Neo4j import path (downstream add-on): Neo4j — "Microsoft GraphRAG into Neo4j" by Tomaž Bratanič — https://neo4j.com/blog/developer/microsoft-graphrag-neo4j/ (retrieved 2026-06-14): "These parquet files can be easily imported into the neo4j graph database for downstream analysis, visualization, and retrieval." ⚠️ The former Microsoft community-contrib import notebook (`examples_notebooks/community_contrib/neo4j/graphrag_import_neo4j_cypher.ipynb`) was REMOVED from `microsoft/graphrag` main in the 2026-01 V3 refactor — cite the Neo4j blog, not a microsoft/graphrag main-branch path (it 404s).
+
+**determinismLevel**: deterministic — a fixed fact about the default pipeline's storage contract.
+
 ### ARC1: Architecture Selection by Volatility and Cost
 
 When choosing a GraphRAG architecture, decide on data volatility and budget — NOT on which is "most standard":
@@ -24,14 +53,16 @@ When choosing a GraphRAG architecture, decide on data volatility and budget — 
 | Choose | When | Why (from research) |
 |--------|------|---------------------|
 | **Microsoft GraphRAG** (Leiden) | Static/batch corpus, broad global "synthesize the themes" queries, high-performance offline indexing | Deep semantic synthesis but extremely high upfront LLM pre-summarization cost. Best on Neo4j for large historical graphs. |
-| **LazyGraphRAG** | Large or volatile corpus, cost-sensitive, dynamic communities at query time | Replaces LLM pre-summarization with lightweight NLP (noun-phrase + co-occurrence). Reduces upfront indexing cost by up to **99.9%**. Matches full GraphRAG global-search quality at **700x lower query cost**; outperforms vector RAG on local queries at comparable cost. |
+| **LazyGraphRAG** | Large or volatile corpus, cost-sensitive, dynamic communities at query time | Replaces LLM pre-summarization with lightweight NLP (noun-phrase + co-occurrence). Indexing cost is **identical to vanilla vector RAG = 0.1% of full GraphRAG indexing** (Microsoft's exact phrasing — see honesty note below). Matches full GraphRAG global-search quality at **>700x lower query cost**; and at **4% of GraphRAG global-search query cost it significantly outperforms all competing methods**. |
 | **LightRAG** | Frequently-updated corpus, low retrieval-overhead budget | Dual-level KV index; **<100 tokens for the retrieval keyword-generation step in the LightRAG-reported setup** (total per-query cost still includes retrieved context + answer generation); incremental updates touch only affected nodes/relationships (no full rebuild). |
 
-**Absolute cost anchor (so the agent has a magnitude prior, not only relative multipliers):** Microsoft's full GraphRAG indexing of a **large corpus cost ~$33K in 2024**. LightRAG / LazyGraphRAG-class methods cut that by **~100x** while preserving multi-hop accuracy. **LazyGraphRAG** specifically: indexing cost on par with vanilla vector RAG (**0.1% of full GraphRAG indexing**), comparable global-query quality, and **700x lower query cost** (96/96 win rate vs alternatives, nearly all statistically significant). Use the **$33K@2024-large-corpus** figure as the order-of-magnitude alarm before greenlighting a full build.
+**Absolute cost anchor (so the agent has a magnitude prior, not only relative multipliers):** full GraphRAG indexing of a **large corpus cost ~$33K in 2024** (≈5 GB legal-case dataset). LightRAG / LazyGraphRAG-class methods cut that by **~100x** while preserving multi-hop accuracy. **LazyGraphRAG** specifically: indexing cost identical to vanilla vector RAG (**0.1% of full GraphRAG indexing**), comparable global-query quality, **>700x lower query cost** (96/96 win rate vs alternatives, nearly all statistically significant), and at **4% of GraphRAG global-search query cost it beats all competing methods**. Use the **$33K@2024-large-corpus** figure as the order-of-magnitude alarm before greenlighting a full build.
+
+> ⚠️ **Honesty / source-fidelity notes (do not overstate):** (1) Microsoft's blog states LazyGraphRAG indexing is "**0.1% of the costs of full GraphRAG**" — it does NOT use the phrase "**99.9% reduction**" (the two are arithmetically equal, but quote the 0.1% figure, not a "99.9%" Microsoft attribution). (2) The **$33K@2024** number is a **secondary-source / practitioner** figure (Graph Praxis / Medium tracking one ~5 GB legal dataset), **not** a Microsoft-published number — present it as an order-of-magnitude prior, not a vendor guarantee.
 
 > ⚠️ **Old-patterns / version timeline (time-sensitive — isolate from the rules above):** Microsoft GraphRAG version line: first release **2024-04** → **DRIFT search 2024-10** → **GraphRAG 1.0 2024-12** → **LazyGraphRAG 2025-06**. Workflow/API names and cost ratios are version-pinned; verify against the installed version before hardcoding. These dated figures are deprecated the moment a newer release lands — re-check before quoting.
 
-> Source: findings.md §"Alternative Architectures" + §"Strategic Syntheses" — LazyGraphRAG 99.9% indexing reduction & 700x cheaper global queries [19, 21]; LightRAG <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; NOT total per-query cost) & incremental updates [18, 23, 24]. Cost anchor + timeline (refreshed): Microsoft Research — LazyGraphRAG: setting a new standard for quality and cost — https://www.microsoft.com/en-us/research/blog/lazygraphrag-setting-a-new-standard-for-quality-and-cost/ (retrieved 2026-06-13): $33K@2024 large-corpus index, ~100x reduction, 0.1% indexing / 700x query cost, 96/96 win rate.
+> Source: findings.md §"Alternative Architectures" + §"Strategic Syntheses" — LazyGraphRAG indexing 0.1% of full GraphRAG & >700x cheaper global queries [19, 21]; LightRAG <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; NOT total per-query cost) & incremental updates [18, 23, 24]. Cost ratios (refreshed, primary): Microsoft Research — "LazyGraphRAG: setting a new standard for quality and cost" — https://www.microsoft.com/en-us/research/blog/lazygraphrag-setting-a-new-standard-for-quality-and-cost/ (retrieved 2026-06-14): exact quotes "data indexing costs are identical to vector RAG and **0.1% of the costs of full GraphRAG**", "more than **700 times lower query cost**", "for **4% of the query cost** of GraphRAG global search, LazyGraphRAG significantly outperforms all competing methods", 96/96 win rate. The "**99.9%**" phrasing is NOT in this source (= 0.1% restated). The **$33K@2024** anchor is secondary-source: Graph Praxis — "The GraphRAG Cost Cliff: How $33,000 Became $33" — https://medium.com/graph-praxis/the-graphrag-cost-cliff-how-33-000-became-33-in-eighteen-months-be1b0fbe37e4 (retrieved 2026-06-14), one ~5 GB legal dataset; NOT a Microsoft figure.
 
 **determinismLevel**: deterministic — architecture is an upfront design decision.
 
@@ -59,12 +90,18 @@ The `extract_graph` module records the **exact occurrence frequency** of each en
 
 ### ARC3: Chunk Size and Gleanings
 
-When configuring extraction:
+When configuring extraction, the Microsoft GraphRAG **verified defaults** (from `defaults.py` in the repo, not invented) are:
 
-- **Default chunk size = 1,200 tokens** for `create_base_text_units`. Do not invent a different default without a measured reason.
-- **Gleanings** = a multi-pass extraction configuration to maximize factual recall. Multiple passes are token-intensive; deploy a cheaper model (e.g. `gpt-4o-mini`) for the gleaning passes to mitigate API expenditure.
+| Config key | Default | Notes |
+|------------|---------|-------|
+| `chunks.size` | **1,200 tokens** | `ChunkingDefaults.size = 1200` — do not change without a measured reason |
+| `chunks.overlap` | **100 tokens** | `ChunkingDefaults.overlap = 100` — overlap preserves cross-boundary entities/relations |
+| `extract_graph.max_gleanings` | **1** | `ExtractGraphDefaults.max_gleanings = 1` — i.e. ONE extra glean pass by default, NOT unlimited |
 
-> Source: findings.md §1 "Ingestion, Chunking, and Extraction" — 1,200-token default [14], gleaning + gpt-4o-mini cost mitigation [15].
+- **Gleanings** = additional extraction passes (default 1) to maximize factual recall by re-prompting the model to find entities/relations missed on the first pass. Each extra pass roughly re-runs extraction → token-intensive; deploy a cheaper model (e.g. a small/mini model) for the gleaning passes, and raise `max_gleanings` only on hard, dense text where recall measurably improves.
+- The default `max_gleanings = 1` is a deliberate cost/recall balance — agents that assume "gleaning runs until convergence" overbudget; it's a fixed pass count you set.
+
+> Source: findings.md §1 "Ingestion, Chunking, and Extraction" — 1,200-token default [14], gleaning cost mitigation [15]. Verified defaults (refreshed, primary): microsoft/graphrag `config/defaults.py` — https://github.com/microsoft/graphrag/blob/main/packages/graphrag/graphrag/config/defaults.py (retrieved 2026-06-14): `ChunkingDefaults.size=1200`, `ChunkingDefaults.overlap=100`, `ExtractGraphDefaults.max_gleanings=1`; key documentation at https://microsoft.github.io/graphrag/config/yaml/ (retrieved 2026-06-14), `chunks` + `extract_graph` subsections.
 
 **determinismLevel**: semi-deterministic — chunking is fixed; gleaning recall varies by pass.
 
@@ -79,7 +116,13 @@ When reasoning about which entities/edges matter:
 - Pick the Leiden **level** to match query breadth: broad "summarize the field" → low level; specific sub-topic → higher level.
 - Community reports carry a numerical **importance rank (1 to 10)** plus a rating explanation.
 
-> Source: findings.md §2-4 — Combined Degree formula [14], Level 0 vs Level 3 hierarchy [12, 14], importance rank 1-10 [14].
+**The Leiden `resolution` parameter (γ) is the knob that controls community granularity — tune it, don't accept the default blindly:**
+
+- **Default `resolution_parameter = 1.0`** (in both `leidenalg` `RBConfigurationVertexPartition` / `CPMVertexPartition` and igraph `cluster_leiden`). The original Leiden paper (Traag, Waltman & van Eck 2019) ran experiments at **γ = 1**.
+- **Directional rule (exact igraph wording):** "*Higher resolutions lead to more smaller communities, while lower resolutions lead to fewer larger communities.*" So if your community reports are too coarse (each lumps unrelated topics) → **raise** resolution; if they're too fragmented → **lower** it.
+- ⚠️ **Library-specific default**: `leidenalg` and igraph `cluster_leiden` default to **1.0**, but some wrappers differ (e.g. R's `leidenbase` defaults to **0.1**). State the library when you quote a default.
+
+> Source: findings.md §2-4 — Combined Degree formula [14], Level 0 vs Level 3 hierarchy [12, 14], importance rank 1-10 [14]. Leiden resolution (refreshed, primary): leidenalg reference — https://leidenalg.readthedocs.io/en/stable/reference.html (retrieved 2026-06-14, `resolution_parameter=1.0` default); igraph `cluster_leiden` — https://r.igraph.org/reference/cluster_leiden.html (retrieved 2026-06-14, "The default resolution parameter is 1" + the higher/lower directional quote); Traag, Waltman & van Eck 2019, "From Louvain to Leiden", Scientific Reports — https://www.nature.com/articles/s41598-019-41695-z (retrieved 2026-06-14, γ=1 experiments).
 
 **determinismLevel**: deterministic — degree math and level structure are fixed.
 
@@ -143,7 +186,8 @@ When "knowledge graph" / "GraphRAG" appears, do NOT reflexively build a graph pi
 
 ## Anti-Patterns
 
-- **Reflexive full GraphRAG**: paying complete LLM pre-summarization when LazyGraphRAG matches global quality at 700x lower query cost.
+- **"Which graph DB do we store GraphRAG in?" as the first question**: a category error — the default Microsoft GraphRAG pipeline stores Parquet + LanceDB and needs no graph DB (ARC0). Resolve storage before engine; only add a graph DB for a stated visualization/concurrency need.
+- **Reflexive full GraphRAG**: paying complete LLM pre-summarization when LazyGraphRAG matches global quality at >700x lower query cost.
 - **Global-search-for-everything**: running Map-Reduce over whole community levels for a question one Local 1-hop traversal would answer.
 - **Raw context truncation**: chopping community text to fit the window instead of Hierarchical Substitution → Trimming, losing the highest-degree bridges.
 - **Ignoring the Leiden level knob**: querying Level 0 for a micro-topic (too broad) or a high level for a field summary (too narrow).

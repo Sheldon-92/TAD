@@ -9,10 +9,10 @@
 # Usage:   bash scripts/verify-prereqs.sh            # HyperFrames default
 #          bash scripts/verify-prereqs.sh --remotion # check Remotion instead
 #
-# Pinned versions (verified 2026-06-13 — refresh on tool-freshness review):
+# Pinned versions (verified 2026-06-14 — refresh on tool-freshness review):
 #   Node.js   >= 22         (HyperFrames + Remotion runtime floor)
-#   HyperFrames CLI         v0.6.97   (heygen-com/hyperframes)
-#   Remotion                v4.0.447
+#   HyperFrames CLI         v0.6.97   (heygen-com/hyperframes, still current 2026-06-14)
+#   Remotion                v4.0.477  (latest stable 2026-06-14, supersedes 4.0.447)
 #
 # Exit codes:
 #   0  — all required prereqs present and meet the version floor
@@ -31,7 +31,7 @@ fi
 
 NODE_MIN_MAJOR=22
 HYPERFRAMES_PINNED="0.6.97"   # verified 2026-06-13
-REMOTION_PINNED="4.0.447"     # verified 2026-06-13
+REMOTION_PINNED="4.0.477"     # verified 2026-06-14 (latest stable)
 
 echo "=== Video-Creation Prereq Check (engine: $ENGINE) ==="
 

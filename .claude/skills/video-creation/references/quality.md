@@ -25,16 +25,25 @@
 
 ### Codec & Quality
 
+> **Upload masters (verified):** the safe upload codec for all three short-form platforms is
+> **H.264 High profile + AAC, MP4, faststart** — NOT AV1. YouTube/Shorts and Instagram Reels transcode
+> your upload to AV1 for *delivery* server-side, but **AV1 is not an accepted UPLOAD codec** (TikTok
+> AV1 uploads "may fail to upload"; observed decode failures). The canonical YouTube upload encode
+> (mikoim gist): `-c:v libx264 -profile:v high -preset slow -crf 18 -g 30 -bf 2 -pix_fmt yuv420p
+> -c:a aac -b:a 384k -movflags faststart`. Instagram primary spec: HEVC or H.264, AAC ≤48 kHz 1–2 ch
+> 128 kbps. [Source: deep-research §(d) — support.google.com/youtube/answer/1722171, developers.facebook.com IG media reference, mikoim gist, engineering.fb.com AV1-Reels — retrieved 2026-06-14]
+
 | Setting | Value | Notes |
 |---------|-------|-------|
-| Video codec | H.264 (MP4) | Universal compatibility |
-| Alternative codec | VP9 (WebM) | Web-optimized, smaller file size |
-| CRF range | 18–23 | 18 = visually lossless (large file); 23 = libx264 default (balanced) |
-| Use CRF 23 for web; CRF 20 for premium; CRF 18 for archival/master only | | |
-| Remotion default | CRF 18 | Remotion's H.264 default — larger files; fine for source export |
-| Preset | `fast` or `medium` | `slow` gives marginal quality gain, not worth the time |
-| Audio codec | AAC | Universal |
-| Audio bitrate | 128kbps minimum | Higher for music-heavy content (192kbps) |
+| Video codec (upload) | **H.264 High + AAC, MP4** | The safe upload codec for YouTube/TikTok/IG. AV1 = delivery only, NOT upload. |
+| Alternative codec | VP9 (WebM) | Web-self-host only; not for platform upload |
+| CRF — master | **18 (slow/veryslow)** | Visually lossless upload master (YouTube community + mikoim canonical); libx265 equiv ~20–22, SVT-AV1 ~20–25 |
+| CRF — web cut | 23 | libx264 default (balanced); +6 CRF ≈ half the file size |
+| Remotion CRF | per-codec (set explicitly) | Remotion has no single global CRF default; for H.264, 23 is a good baseline. Set `--crf` per the renderMedia knobs below |
+| Preset | master = `slow`/`veryslow`; web = `fast`/`medium` | For a one-time upload master the slow preset is worth it; for iteration it is not |
+| GOP / B-frames | `-g 30 -bf 2`, closed GOP, CABAC, 4:2:0 | YouTube-documented H.264 upload structure |
+| Audio codec | AAC | Universal; YouTube stereo 384k / mono 128k, 48 kHz |
+| Audio bitrate | 128kbps minimum | Higher for music-heavy content (192kbps+) |
 
 ### Platform-Specific Encoding
 
@@ -58,15 +67,15 @@ ffmpeg -i input.mp4 -vf "scale=1080:1920" -crf 22 -preset fast \
 
 ### Remotion `renderMedia()` Tuning Knobs
 
-> Source: remotion.dev/docs/renderer/render-media + /docs/performance, retrieved 2026-06-13 (Remotion v4.0.447, 2026-04-08). These knobs are NOT covered by the generic "CRF 18–23" rule above — they govern render speed and file size.
+> Source: remotion.dev/docs/renderer/render-media + /docs/encoding + npmjs.com/package/remotion, retrieved 2026-06-14 (Remotion v4.0.477). These knobs are NOT covered by the generic "CRF 18–23" rule above — they govern render speed and file size.
 
 | Knob | Default | Tune to | Effect |
 |------|---------|---------|--------|
-| `--concurrency` | 1 browser tab (1 Lambda) | number of CPU threads | More tabs render frames in parallel — set to physical thread count for fastest local render |
+| `--concurrency` | 1 browser tab (1 Lambda) | number of CPU threads | More tabs render frames in parallel — set to physical thread count for fastest local render. (v4.0 renamed the old `parallelism` flag to `concurrency`.) |
 | `--jpeg-quality` | frame format = `jpeg` (lossy intermediate) | 0–100 | Default JPEG frames render faster; switch frame format to PNG only when you need transparency (PNG is slower) |
-| `--crf` | 18 (H.264) | 18–23 | **+6 CRF ≈ half the bitrate/filesize; −6 CRF ≈ double it** (exponential). Use this doubling heuristic to hit a target file size without trial-and-error |
+| `--crf` | **per-codec, no single global default** | H.264: 23 is a good baseline (range ~1–51) | **+6 CRF ≈ half the bitrate/filesize; −6 CRF ≈ double it** (exponential). CRF is codec-specific — a value good for H.264 is wrong for WebM. With hardware acceleration enabled you CANNOT set CRF. |
 
-**CRF doubling rule (Remotion):** moving CRF from 18→24 roughly halves output size; 24→18 roughly doubles it. Pair with the platform table above — e.g. start at CRF 18 master, step to 23 (≈⅓ the size) for a web cut.
+**CRF doubling rule:** moving CRF from 18→24 roughly halves output size; 24→18 roughly doubles it. Pair with the platform table above — e.g. start at CRF 18 master, step to 23 (≈⅓ the size) for a web cut. ⚠️ Remotion's CRF default is **per-codec, not a fixed 18** — set it explicitly; do not assume a global default.
 
 ### Resolution Guidance
 - **Primary production resolution**: 1920×1080 (16:9) or 1080×1920 (9:16)
@@ -163,8 +172,8 @@ Do not test only on a static mockup — motion backgrounds change luminance over
 
 ### Audio Quality
 - [ ] Audio bitrate ≥ 128kbps AAC
-- [ ] No clipping (peaks below -1dB)
-- [ ] Voiceover normalized to -14 LUFS
+- [ ] No clipping (true peak ≤ -1 dBTP; use -2 dBTP for lossy/AAC delivery)
+- [ ] Audio normalized to a pragmatic target (-16 LUFS short-form mixed; YouTube documents -14, TikTok/IG publish no number — see §Loudness Normalization, do NOT hard-target an unverified TikTok/IG LUFS)
 - [ ] Background music at 10–20% relative to voiceover
 - [ ] No echo or room noise in voiceover
 
@@ -256,24 +265,41 @@ ffmpeg -i input.mp4 -vf "colorspace=bt709:iall=bt601-6-625:fast=1" \
 ## Audio Quality Guidance
 
 ### Loudness Normalization
-Normalize all audio to platform standards before export:
+
+> ⚠️ **There is NO single cross-platform LUFS number, and "-14 LUFS is the TikTok/IG/YouTube
+> standard" is FALSE.** Platforms converge near -14 LUFS only superficially — reference level AND
+> normalization behavior differ per platform, and **TikTok and Instagram Reels publish no official
+> LUFS target at all** (every number you see online for them is a third-party estimate).
+> The deep-research finding: the ONLY platform with a documented, verifiable target is **YouTube (-14
+> LUFS, attenuate-only)**. Treat everything else as estimate/convention and target conservatively.
 
 ```bash
 # Measure LUFS
 ffmpeg -i input.mp3 -filter:a loudnorm=print_format=json -f null - 2>&1
 
-# Normalize to -14 LUFS (streaming standard)
-ffmpeg -i input.mp3 -filter:a loudnorm=I=-14:TP=-1.5:LRA=11 output_normalized.mp3
+# Pragmatic master for short-form (mixed speech+music): aim -16 LUFS / -1 dBTP.
+# This sits between YouTube's documented -14 and the AES TD1008 mixed recommendation (-17),
+# and stays safely under any platform that attenuates-only (you won't get pumped down hard).
+ffmpeg -i input.mp3 -filter:a loudnorm=I=-16:TP=-1:LRA=11 output_normalized.mp3
 ```
 
-**Target LUFS by platform**:
-| Platform | Target Integrated Loudness |
-|----------|--------------------------|
-| YouTube | -14 LUFS |
-| Spotify (podcasts) | -14 LUFS |
-| Apple Podcasts | -16 LUFS |
-| Broadcast (EBU R128) | -23 LUFS |
-| Social media (general) | -14 LUFS |
+**Per-platform loudness — what is DOCUMENTED vs. ESTIMATED:**
+
+| Platform | Integrated target | True Peak | Status / behavior | Source |
+|----------|-------------------|-----------|-------------------|--------|
+| **YouTube** | **-14 LUFS** | -1 dBTP | **DOCUMENTED behavior** (empirical, verifiable in "Stats for Nerds"; NOT in official encoding-spec page). **Attenuate-only** — louder content turned down, quieter content NOT boosted. | [productionadvice](https://productionadvice.co.uk/stats-for-nerds/) , [rswaver](https://audio.rswaver.com/blog/youtube-loudness-standards) |
+| **Spotify** (music) | -14 LUFS | -1 dBTP (-2 if master >-14) | DOCUMENTED. **Bidirectional** (boosts quiet tracks, capped by headroom — a -20 LUFS track lifts only to ~-16, not -14). User-selectable Loud -11 / Normal -14 / Quiet -19. | [Spotify Artists](https://support.spotify.com/us/artists/article/loudness-normalization/) |
+| **TikTok** | **UNVERIFIED — no official number** | UNKNOWN | **In-feed normalization is DISPUTED.** Third-party estimates conflict wildly (-7 to -16 LUFS); no controlled measurement or first-party disclosure exists. Do NOT quote a TikTok LUFS as fact. | [songbrain](https://www.songbrain.ai/guides/lufs-for-spotify-and-tiktok) , [apu.software](https://apu.software/tiktok-instagram-reels-loudness/) |
+| **Instagram Reels** | **UNVERIFIED — no official number** | UNKNOWN | Meta CONFIRMS it normalizes loudness (xHE-AAC + LRAC two-pass DRC, client-side metadata) but **publishes NO LUFS figure**. | [Meta Engineering](https://engineering.fb.com/2023/04/11/video-engineering/high-quality-audio-xhe-aac-codec-meta/) |
+| **Apple Music** (Sound Check) | -16 LUFS (ESTIMATED) | -1 dBTP | Third-party reported only — **no primary Apple URL** states the -16 playback target. **Bidirectional** (peak-limited upward gain to quiet tracks — NOT attenuate-only). | [production-expert](https://www.production-expert.com/production-expert-1/apple-choose-16lufs-loudness-level-for-apple-music-heres-why) , [masteringbox](https://www.masteringbox.com/learn/mastering-for-streaming) |
+| **Apple Podcasts** | -16 LKFS (±1) | -1 dBFS | DOCUMENTED delivery spec (ITU-R BS.1770-5). | [Apple Podcasters](https://podcasters.apple.com/support/893-audio-requirements) |
+| **Amazon Music** | (estimate) | -2 dBTP | -2 dBTP ceiling is the safer general practice for lossy chains (a +0.3 dBTP file can exceed +1 dBTP after AAC encoding). | [matlefflerschulman](https://matlefflerschulman.com/mastering-articles/true-peak-vs-inter-sample-peaks) |
+| **EBU R128 broadcast** | -23 LUFS (±0.5) | -1 dBTP | DOCUMENTED delivery standard (origin of why streaming chose higher targets). | [apu.software](https://apu.software/ebu-r128-loudness-target/) |
+| **AES TD1008** (rec. TO platforms) | music -16 / speech -18 / mixed -17 | -1 dBTP | Recommendation addressed TO platforms, NOT a creator target (widely misquoted). | [productionadvice TD1008](https://productionadvice.co.uk/td1008/) |
+
+**True-peak:** -1 dBTP is the common ceiling, but **-2 dBTP is safer for lossy (AAC) delivery** — a +0.3 dBTP file can exceed +1.0 dBTP after AAC encoding. [matlefflerschulman](https://matlefflerschulman.com/mastering-articles/true-peak-vs-inter-sample-peaks)
+
+[Sources retrieved 2026-06-14, grounded in deep-research report `.tad/evidence/research/research-engine-for-ai-assisted-short-form-montage-video-productio.md` §(a) LOUDNESS]
 
 ### Clipping Prevention
 - Peak true peak: maximum -1 dBTP (leave 1 dB headroom)

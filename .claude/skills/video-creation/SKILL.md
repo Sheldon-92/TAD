@@ -18,7 +18,7 @@ keywords: ["video", "animation", "motion design", "HyperFrames", "Remotion", "�
 This pack requires:
 - **FFmpeg** — encoding and audio mixing
 - **Node.js ≥22** — HyperFrames or Remotion runtime
-- **HyperFrames CLI** (`npx hyperframes`, pinned v0.6.97 / 2026-06-13) OR **Remotion** (`npx remotion`, pinned v4.0.447 / 2026-06-08)
+- **HyperFrames CLI** (`npx hyperframes`, pinned v0.6.97 / 2026-06-14) OR **Remotion** (`npx remotion`, pinned v4.0.477 / 2026-06-14)
 - **fal.ai API key** (`FAL_KEY`) — for Seedance 2.0 video generation (optional, only if using AI asset generation)
 - **Codex CLI** — for gpt-image-2 image generation (optional, only if using AI asset generation)
 - **ElevenLabs API key** (`ELEVENLABS_API_KEY`) — for TTS, voice cloning, and AI SFX (optional)
@@ -48,8 +48,16 @@ Detect the user's request type and load the appropriate reference file(s).
 | voice clone / brand voice / clone voice / custom voice | `references/ai-asset-generation.md` §Voice Cloning Rules |
 | sound effect / SFX / generate sound / ambient / foley | `references/ai-asset-generation.md` §AI Sound Effects Rules |
 | Seedance / image-to-video / first-last frame / 照片转视频 / photo-to-video / AI video clip / multi-shot scene | `references/vimax-patterns.md` |
+| beat sync / 卡点 / montage / photos to video / slideshow / CapCut / quick clip / casual / 几张照片 / lofi clip | `references/beat-sync-montage.md` |
 
 **Multi-signal**: Load all matched references. Cross-reference sections are linked within files.
+
+> ⚠️ **Tier-0 first for any montage / beat-sync / "photos → video" request**: before picking a tool,
+> classify the **weight** of the path (casual one-off vs production pipeline) per
+> `references/beat-sync-montage.md §Tier-0`. Default casual briefs (≤8 assets, one-off, no brand/determinism
+> need) to **Tier 1 (CapCut/FFmpeg)** — do NOT auto-route to HyperFrames/Remotion. Escalate to Tier 3
+> (composition framework) ONLY when a production signal (brand system, reuse, determinism, batch) is present.
+> This prevents the over-engineering that loses casual briefs.
 
 ---
 
@@ -102,8 +110,10 @@ One-line summary per rule with reference pointer. **Do not inline rules here** �
 
 ### Quality (`references/quality.md`)
 - **Export Settings**: Per-platform (YouTube/TikTok/Instagram/Twitter) → §Platform Export Specifications
+- **Upload codec Rule**: H.264 High + AAC MP4 faststart for ALL platforms; AV1 = delivery only, NOT an upload codec → §Codec & Quality
 - **WCAG Accessibility**: ≥99% caption accuracy, 4.5:1 contrast, WebVTT → §Accessibility (WCAG)
-- **CRF 18-23**: Quality range (18=high, 23=standard) → §Export Settings
+- **CRF master vs web**: CRF 18 slow = upload master; CRF 23 = web cut (+6 CRF ≈ half file size) → §Export Settings
+- **Loudness Rule**: no single cross-platform LUFS; YouTube -14 documented, TikTok/IG unverified; -16 LUFS pragmatic master → §Loudness Normalization
 
 ### AI Asset Generation (`references/ai-asset-generation.md`)
 - **Seedance Default Rule**: Video clips → Seedance 2.0; 4K needed → Kling 3.0; existing Runway → Runway Gen-4 → §Decision Tree
@@ -122,7 +132,18 @@ One-line summary per rule with reference pointer. **Do not inline rules here** �
 
 ### Validation Scripts (`scripts/`)
 - **failure-mode-precheck.sh**: Deterministic linter — greps a composition for the 6 banned timeline anti-patterns (Date.now/Math.random/setInterval, repeat:-1, async-await, visibility, inline opacity:0); exits 1 on hit → `scripts/failure-mode-precheck.sh <file|dir>`
-- **verify-prereqs.sh**: Step-0 preflight — ffmpeg + node≥22 + HyperFrames v0.6.97 (or `--remotion` v4.0.447) with explicit exit codes 1/2/3 → `scripts/verify-prereqs.sh`
+- **verify-prereqs.sh**: Step-0 preflight — ffmpeg + node≥22 + HyperFrames v0.6.97 (or `--remotion` v4.0.477) with explicit exit codes 1/2/3 → `scripts/verify-prereqs.sh`
+
+### Beat-Sync Montage & Complexity Routing (`references/beat-sync-montage.md`)
+- **Tier-0 Weight Rule**: classify casual one-off vs production BEFORE tool choice; default casual to Tier 1, never auto-Tier-3 → §Tier-0 Decision
+- **CapCut Beat Sync**: auto beat-markers on waveform, free tier, mobile+desktop (not Web) — Tier 1 default for casual → §Tier 1
+- **FFmpeg beat-sync recipe**: `zoompan` Ken Burns (8000×4000 prescale = PARTIAL jitter fix, never-merged upstream; `zoom+0.0015`) + `xfade` (0.15s) + BPM cut interval → §Tier 2
+- **Cut-on-Downbeat Rule**: major cuts on downbeats (every 4th beat), NOT every beat (ISMIR 2021: bar-sync in only ~1/5 clips) → §Cut Placement
+- **1-2 Frame Anticipation Cut**: place the cut 1–2 frames BEFORE the beat (~42–83ms @24fps) — ⚠️ PRACTITIONER CONVENTION, not a measured psychoacoustic result → §Cut Placement
+- **Downbeat detection**: madmom returns seconds + downbeat flag; librosa returns frame indices (~20–60ms late bias) → §Cut Placement
+- **Portrait Continuity Rule**: crop/scale parity + eye-line + white-balance match across montaged stills → §Portrait-photo montage continuity
+- **9:16 Safe Zone**: per-platform px (TikTok 900×1492 / Reels 996×1400 / Shorts 984×1500); universal union = 900×1400 centered → §9:16 safe zone
+- **Loudness honesty Rule**: NO single cross-platform LUFS; only YouTube -14 is documented; TikTok/IG = UNVERIFIED; pragmatic short-form master -16 LUFS/-1 dBTP → `references/quality.md §Loudness`
 
 ### ViMax Patterns (`references/vimax-patterns.md`)
 - **Visual Decomposition Rule**: AI image-to-video → decompose into first_frame + last_frame + motion, never single description → §Pattern 1
@@ -144,6 +165,9 @@ Common agent rationalizations and why they fail:
 | "HyperFrames and Remotion both work here" | Wrong tool choice → 40% more agent errors (no-build vs build-required) |
 | "I'll fix accessibility after the video renders" | Caption timing depends on scene structure — retrofit = full redo |
 | "Date.now() is fine for timing" | Non-deterministic → frame timing breaks on render → blank frames |
+| "I'll build this in HyperFrames/Remotion" (for 3 photos + a song) | Tier-3 overshoot on a casual brief → higher activation energy, no faster, worse fit. Run Tier-0 first; casual → CapCut/FFmpeg (Tier 1) |
+| "Cut on every beat for a snappy montage" | Cutting every beat reads frantic → major cuts go on DOWNBEATS (every 4th beat); withhold cuts to make the drop land |
+| "Just crossfade between the photos" | Long crossfades blur the beat hit + ignore eye-line/crop jumps → hard cut on downbeat or ≤0.15s xfade + crop/scale parity across stills |
 
 ---
 
