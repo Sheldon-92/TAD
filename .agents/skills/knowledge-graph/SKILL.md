@@ -18,7 +18,7 @@ type: reference-based
 
 ## What This Pack Does
 
-AI agents reach for GraphRAG the moment "knowledge graph" appears, then default to full Microsoft GraphRAG — paying complete LLM pre-summarization cost when LazyGraphRAG would match global-search quality at a 700x lower query cost. They pick Global search for every query, ignoring that it runs a parallel Map-Reduce over entire community-report levels. They extract entities with a bare zero-shot prompt and skip entity resolution, splitting "Olympic Winter Games" and "winter Olympic games" into two nodes that fragment every traversal. They pick Neo4j by reflex without checking whether the workload needs sub-millisecond in-memory traversal (Memgraph) or a compressed-sparse-matrix throughput profile (FalkorDB).
+AI agents reach for GraphRAG the moment "knowledge graph" appears, then default to full Microsoft GraphRAG — paying complete LLM pre-summarization cost when LazyGraphRAG would match global-search quality at a >700x lower query cost (indexing = 0.1% of full GraphRAG). They ask "which graph database do we store it in?" — not knowing that default Microsoft GraphRAG writes **Parquet + an embedded LanceDB store and needs no graph DB at all**, so the question is a category error. They pick Global search for every query, ignoring that it runs a parallel Map-Reduce over entire community-report levels. They extract entities with a bare zero-shot prompt and skip entity resolution, splitting "Olympic Winter Games" and "winter Olympic games" into two nodes that fragment every traversal. They copy a "magic" 0.9 merge threshold no record-linkage tool actually publishes. And when a graph DB IS warranted, they pick Neo4j by reflex without checking whether the workload needs sub-millisecond in-memory traversal (Memgraph, ~136 B/node) or a compressed-sparse-matrix throughput profile (FalkorDB).
 
 This pack embeds the judgment rules a senior graph/GraphRAG engineer applies automatically — rules from Microsoft Research, Neo4j, LightRAG, OntoDup, and head-to-head graph-database benchmarks.
 
@@ -46,6 +46,7 @@ When the user mentions knowledge-graph or GraphRAG work, detect the context and 
 | "which graph database", "Neo4j", "Memgraph", "FalkorDB", "RDF", "LPG", "triple store", "Kuzu", "RedisGraph", "图数据库" | `references/graph-database.md` (incl. deprecated-engine isolation block) |
 | "Text2Cypher", "natural language to Cypher", "SPARQL", "query translation", "Cypher-RAG", "查询翻译" | `references/query-translation.md` |
 | "should I even use a graph", "graph vs vector", "is GraphRAG worth it", "single fact", "summary recall" | `references/graphrag-architecture.md` → **ARC7 (graph-vs-flat threshold)** |
+| "store GraphRAG in [Neo4j/Kuzu/any graph DB]", "which DB for GraphRAG", "where does GraphRAG save the graph" | `references/graphrag-architecture.md` → **ARC0 (GraphRAG = Parquet+LanceDB, NO graph DB by default)** before any graph-DB selection |
 | "full GraphRAG build", "design the whole pipeline", "end to end" | Load **all references** sequentially |
 
 **Determinism check:** run `bash scripts/graph-arch-lint.sh` for a deterministic structural lint (fixture gate parseable, references one-level-deep, every rule annotated with determinismLevel, no deprecated DB recommended outside the isolation block). Use it as a pre-flight before shipping pack edits.
@@ -105,7 +106,8 @@ Produce a structured graph-architecture report:
 
 | Excuse | Counter |
 |--------|---------|
-| "Just use full GraphRAG, it's the standard" | Full GraphRAG pre-summarizes every entity and community with an LLM. LazyGraphRAG matches its global-search quality at 700x lower query cost via query-time lazy evaluation. Rule it out on evidence first. |
+| "We'll build GraphRAG — which graph database should we store it in?" | Category error. Default Microsoft GraphRAG writes **Parquet files + an embedded LanceDB vector store and needs NO graph database** (`output.type=file`, `vector_store.type=lancedb`; no graph-DB config key exists). Global/Local/Drift search run directly over Parquet+LanceDB. A graph DB is an OPTIONAL downstream add-on — add it only for visualization / ad-hoc Cypher / high-concurrency serving. Resolve storage (ARC0) BEFORE picking an engine; re-selecting Kuzu→Neo4j for a pipeline that needs no DB solves the wrong problem. |
+| "Just use full GraphRAG, it's the standard" | Full GraphRAG pre-summarizes every entity and community with an LLM. LazyGraphRAG matches its global-search quality at >700x lower query cost (indexing = 0.1% of full GraphRAG) via query-time lazy evaluation. Rule it out on evidence first. |
 | "We'll extract entities and we're done" | Without entity resolution, "Olympic Winter Games" and "winter Olympic games" stay two nodes — splitting relationship paths and distorting node-degree metrics. Run the two-stage S-BERT → k-means → fused BM25 pipeline. |
 | "Global search is most thorough, use it always" | Global search runs a Map-Reduce over entire community-report levels — prohibitively expensive and blind to granular edges. Local search (1-2 hop) answers entity-specific queries far cheaper. |
 | "Neo4j is the graph database" | Neo4j pre-allocates 4-5 GB JVM heap and has slow cold starts. For 16k nodes Memgraph used 415 MB vs Neo4j's 2,668 MB. Match the engine to the workload. |
@@ -120,7 +122,7 @@ Produce a structured graph-architecture report:
 
 | Tool / Framework | Role | Primary Use |
 |------------------|------|-------------|
-| Microsoft GraphRAG | Indexing + search | Leiden communities, Global/Local/Drift search over static/batch corpora |
+| Microsoft GraphRAG | Indexing + search | Leiden communities, Global/Local/Drift search over static/batch corpora. **Default storage = Parquet files + embedded LanceDB; NO graph DB required** (`output.type=file`, `vector_store.type=lancedb`). Defaults: chunk 1,200 tok / overlap 100 / max_gleanings 1; Leiden resolution γ default 1.0 |
 | LazyGraphRAG | Cost-optimized GraphRAG | Lazy query-time evaluation; ~0.1% indexing cost; 700x cheaper global queries |
 | LightRAG | Incremental GraphRAG | Dual-level KV retrieval, <100 tokens for the retrieval keyword-generation step (LightRAG-reported setup; total query cost adds retrieved context + generation), incremental updates |
 | Neo4j | LPG database | Large historical graphs; index-free adjacency; Causal Clustering (N=2F+1) |

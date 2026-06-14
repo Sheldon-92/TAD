@@ -92,13 +92,13 @@ Need to produce a video? →
 - Authoring: React TSX components
 - Build step: Bundler required
 - Animation: Own primitives (`spring()`, `interpolate()`, `useCurrentFrame()`)
-- Rendering: Browser screenshots + compositor; `renderMedia()` exposes `--concurrency` / `--jpeg-quality` / `--crf` tuning (see references/quality.md §Remotion renderMedia Tuning Knobs)
+- Rendering: Browser screenshots + compositor; `renderMedia()` exposes `--concurrency` / `--jpeg-quality` / `--crf` tuning (see references/quality.md §Remotion renderMedia Tuning Knobs). Note: v4.0 renamed the old `parallelism` param to **`concurrency`** in both `renderMedia()` and `renderFrames()`.
 
-**Pin**: `remotion@4.0.447` (released 2026-04-08, repo actively maintained — verified 2026-06-13). Node.js ≥22 required.
+**Pin**: `remotion@4.0.477` (latest stable, verified 2026-06-14 — supersedes the earlier 4.0.447). Node.js ≥22 required.
 
 **Documentation**: `remotion.dev/docs/ai/coding-agents`
 
-[Source: Research findings Layer 1]
+[Source: Research findings Layer 1 + https://www.npmjs.com/package/remotion + https://www.remotion.dev/docs/4-0-migration, retrieved 2026-06-14]
 
 ---
 
