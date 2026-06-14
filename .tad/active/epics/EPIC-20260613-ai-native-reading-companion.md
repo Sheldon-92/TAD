@@ -30,16 +30,16 @@ first; designed to stand alone later.
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Research + Vision Spec | ✅ Done | — | DESIGN-FINDINGS.md (evidence-grounded design rules) + locked decisions |
-| 2 | Reader + Capture MVP (EPUB) | ⬚ Planned | — | EPUB → e-reader HTML + reading plan + annotation→sidecar (no live bridge) |
-| 3 | Live Co-Read Bridge | ⬚ Planned | — | localhost bridge + session open/close + select-to-discuss + Socratic AI |
+| 2 | Reader + Capture MVP (EPUB) | ✅ Done | archive/handoffs/HANDOFF-20260613-...-phase2-epub-reader.md | EPUB → e-reader HTML + reading plan + annotation→sidecar (no live bridge) |
+| 3 | Live Co-Read Bridge | 🔄 Active | HANDOFF-20260613-ai-reading-companion-phase3-live-bridge.md | localhost bridge + session open/close + select-to-discuss + Socratic AI |
 | 4 | Sinks + Multi-Format | ⬚ Planned | — | structured notes / question-list / MD export + PDF/TXT/URL adapters |
 
 ### Phase Dependencies
 Sequential. Phase 2 → 3 → 4. "Complete closed loop for one format" = Phase 2 + Phase 3.
 
 ### Derived Status
-- **Status**: In Progress (Phase 1 ✅)
-- **Progress**: 1 / 4
+- **Status**: In Progress (Phase 1 ✅, Phase 2 ✅)
+- **Progress**: 2 / 4
 
 ---
 
@@ -86,8 +86,11 @@ toggle (one-shot context per message, persists until user closes).
 
 ### Phase 2: Reader + Capture MVP (EPUB)
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done (Gate 4 ACCEPTED 2026-06-13)
+**Execution:** YOLO (Conductor fallback — Workflow named-args plumbing failed; manual impl+review)
+**Handoff:** archive/handoffs/HANDOFF-20260613-ai-reading-companion-phase2-epub-reader.md
+**Gate 3:** ✅ PASS — 11/11 §9.1 ACs + AC5b; 2 independent impl reviewers (code + ux) ran the code; 1 P0 + 6 P1 + 4 P2 found and fixed; all key fixes (P0#1 visible mark, P1#2 stale-gate, P1#3 zero-loss merge) independently re-verified by Conductor. Security: defense-in-depth PASS (malicious-EPUB XSS blocked, 3 layers). Evidence: .tad/evidence/yolo/ai-native-reading-companion/phase2-completion.md
+**Gate 4:** ✅ ACCEPTED — real-book browser test (29-ch Yvon Chouinard EPUB, 832KB, opened in Chrome): reader renders well (cream+dark, 66ch serif), drag-highlight works, theme toggle works. Found + fixed a browser-only triple-click stray-empty-mark bug (Gate 4 Fix Round), re-verified in browser: triple-click now highlights the line cleanly, 0 stray marks.
 
 #### Scope
 Turn an EPUB into an e-reader-grade HTML reading surface plus a reading/research plan,
@@ -135,8 +138,10 @@ typography from web-ui-design pack.
 
 ### Phase 3: Live Co-Read Bridge
 
-**Status:** ⬚ Planned
+**Status:** 🔄 Active (Gate 2 PASS — awaiting execution mode choice)
 **Execution:** pending
+**Handoff:** HANDOFF-20260613-ai-reading-companion-phase3-live-bridge.md
+**Gate 2:** ✅ PASS — security-auditor (FAIL→resolved) + code-reviewer (CONDITIONAL→resolved); 8 P0 (5 security + 3 concurrency) + 11 P1 integrated. Key: Host allowlist (DNS-rebind), prompt-injection isolation, header-token, CSP, path-traversal guard, queue.Queue+daemon_threads+separate-thread shutdown, behavioral security ACs.
 
 #### Scope
 Add bidirectional real-time communication between the HTML reader and terminal Claude
@@ -221,21 +226,26 @@ figure preservation). URL ingest can reuse TAD source-preprocessor patterns.
 ---
 
 ## Context for Next Phase
-Phase 2 starts next. It is the EPUB reading surface (reader + plan + annotation→sidecar),
-explicitly WITHOUT the live bridge. Ground it in DESIGN-FINDINGS.md.
+Phase 3 starts next: the live co-read bridge. Build on the Phase-2 reader + reading-state.json sidecar.
 
 ### Completed Work Summary
-- Phase 1: Evidence-grounded research (NotebookLM `ai-native-reading`, 19 sources) → DESIGN-FINDINGS.md with north-star rules, reader UX numbers, and W3C annotation-anchoring architecture.
+- Phase 1: Evidence-grounded research (NotebookLM `ai-native-reading`, 19 sources) → DESIGN-FINDINGS.md (north-star rules, reader UX numbers, W3C anchoring).
+- Phase 2: `reading-companion` skill — stdlib-only EPUB→content.json→self-contained e-reader index.html (serif/66ch/1.5/cream+dark) + plan-gen (active-reading questions) + annotation→sidecar (W3C TextQuote+prefix/suffix+refinedBy.pid+source_hash, §4.4 re-attach) + export-annotations. Gate 3 PASS (11 ACs, 2 independent reviewers, security defense-in-depth), Gate 4 ACCEPTED (real-book browser test; triple-click bug found+fixed in-browser).
 
 ### Decisions Made So Far
-- MVP format = EPUB; live transport = local bridge service; session = open/close toggle (one-shot context/message); HTML = rendered view, annotations live in sidecar (W3C TextQuote+prefix/suffix+refinedBy+content-hash); AI = Socratic/synthesis-first; independent of research-notebook; reuse quiz/flashcards + web-ui-design/web-frontend packs.
+- MVP format = EPUB; HTML = rendered view, annotations live in sidecar; AI = Socratic/synthesis-first; independent of research-notebook; reuse quiz/flashcards + web-ui-design/web-frontend packs.
+- Phase-2 persistence (interim) = read-only render + browser Blob download + `render --save` merge. Phase 3 replaces this with the live bridge.
+- stdlib-only is a hard constraint (verified holds; pyexpat broken on Homebrew py3.14 → html.parser fallback already in place).
 
 ### Known Issues / Carry-forward
-- Annotation multi-match risk (mitigate with prefix/suffix + Range fallback).
-- Phase 3 "how terminal Claude listens" is the key open design question — bounded session loop, not permanent resident.
+- **Phase 3 key open design Q: "how does terminal Claude listen?"** → bounded session-lifetime loop, NOT permanent resident (user-confirmed: one-shot context per message, session persists until user closes).
+- Bridge transport fork (SSE+POST vs WebSocket) — recommend SSE+POST (Python stdlib http.server capable, simplest).
+- Security: bind 127.0.0.1 only, token-guard the endpoint, no browser modal dialogs.
+- Deferred from Phase 2 (later phase): reading ruler, touch targets, mobile topbar overflow, help-text size, mode-button state label.
+- Reuse the existing reading-state.json `thread: []` field for the conversation log.
 
 ### Next Phase Scope
-Phase 2: EPUB → e-reader HTML + reading/research plan + sidecar annotation with stable re-attach. No bridge.
+Phase 3: localhost bridge service (SSE/POST) + 开启/结束共读 session toggle + select-to-discuss (passage as locked context) + HTML chat panel + terminal co-read mode with Socratic/synthesis-first behavior; conversation turns appended to sidecar thread.
 
 ---
 
