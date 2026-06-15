@@ -44,3 +44,9 @@ tad-work/working/*
 # Research Methodology Capability Pack session data
 .research/
 .product-thinking/
+
+# Reading Companion runtime workspaces (HTML is a regenerable view; truth = sidecar)
+.reading/
+
+__pycache__/
+*.pyc
