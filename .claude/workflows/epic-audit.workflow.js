@@ -76,10 +76,10 @@ if (args) {
 }
 if (epicPaths.length === 0) {
   const detected = await agent(
-    'List all .md files in .tad/active/epics/ (excluding .gitkeep). Return ONLY a JSON array of file paths relative to project root, e.g. [".tad/active/epics/EPIC-20260403-foo.md"]. No explanation.',
-    { label: 'detect-epics', schema: { type: 'array', items: { type: 'string' } }, model: 'haiku' }
+    'List all .md files in .tad/active/epics/ (excluding .gitkeep). Return ONLY a JSON object {"paths": [...]} whose paths array holds the file paths relative to project root, e.g. {"paths": [".tad/active/epics/EPIC-20260403-foo.md"]}. No explanation.',
+    { label: 'detect-epics', schema: { type: 'object', properties: { paths: { type: 'array', items: { type: 'string' } } }, required: ['paths'] }, model: 'haiku' }
   )
-  if (detected) { for (let i = 0; i < detected.length; i++) { epicPaths.push(detected[i]) } }
+  if (detected && Array.isArray(detected.paths)) { for (let i = 0; i < detected.paths.length; i++) { epicPaths.push(detected.paths[i]) } }
 }
 
 if (epicPaths.length === 0) {

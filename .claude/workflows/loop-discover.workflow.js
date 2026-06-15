@@ -76,11 +76,12 @@ var allFindings = []
 if (previousFindingsPath) {
   log('Loading previous findings from ' + previousFindingsPath)
   var prior = await agent(
-    'Read the file at ' + previousFindingsPath + '. Parse it as a JSON array. Return the parsed array. If the file does not exist or is empty, return an empty array [].',
-    { label: 'load-prior', schema: { type: 'array', items: schema }, model: 'haiku' }
+    'Read the file at ' + previousFindingsPath + '. Return a JSON object {"items": [...]} whose items array is the parsed findings (use {"items": []} if the file is missing/empty).',
+    { label: 'load-prior', schema: { type: 'object', properties: { items: { type: 'array', items: schema } }, required: ['items'] }, model: 'haiku' }
   )
-  if (prior && prior.length) {
-    for (var pi = 0; pi < prior.length; pi++) { allFindings.push(prior[pi]) }
+  var priorArr = (prior && Array.isArray(prior.items)) ? prior.items : []
+  if (priorArr.length) {
+    for (var pi = 0; pi < priorArr.length; pi++) { allFindings.push(priorArr[pi]) }
     log('Loaded ' + allFindings.length + ' previous findings')
   }
 }
@@ -107,11 +108,11 @@ while (dryRounds < dryRoundsToStop && round < maxRounds) {
     : ''
 
   var findings = await agent(
-    finderPrompt + contextBlock + priorText,
-    { label: 'round-' + round, phase: 'Discover', schema: { type: 'array', items: schema } }
+    finderPrompt + contextBlock + priorText + ' Return your findings as a JSON object {"items": [...]}.',
+    { label: 'round-' + round, phase: 'Discover', schema: { type: 'object', properties: { items: { type: 'array', items: schema } }, required: ['items'] } }
   )
 
-  var validFindings = Array.isArray(findings) ? findings : []
+  var validFindings = (findings && Array.isArray(findings.items)) ? findings.items : []
   var newFindings = validFindings.filter(function(f) {
     var k = getKey(f, dedupKey)
     return k && k !== '' && !seen.has(k)
