@@ -6,6 +6,16 @@ last_updated: 2026-06-10
 # Currently active notebook (used when no --notebook flag specified)
 active_notebook: "structured-feedback-creative-ai"
 notebooks:
+  - id: "ai-native-reading"
+    notebook_id: "189fbf20-c432-4c75-a8d7-15674590dbbf"
+    topic: "AI-Native Reading Experience — Open-Source Readers, Reading UX & Active-Reading Design"
+    created: "2026-06-13"
+    status: active
+    last_queried: "2026-06-13"
+    source_count: 19
+    notes: "Design-grounding KB for the interactive reading-companion project (reimagining the reading experience). 9 curated GitHub readers/UX refs (Foliate, Thorium/Readium, epub.js, koodo-reader, Readest, Readium CSS, Hypothesis, Omnivore, Butterick) + 10 fast-research sources (W3C Web Annotation Data Model, CSS line-length, spaced repetition, AI-on-comprehension studies incl. 'AI summaries flatten understanding'). 3 synthesis asks saved: reader-UX patterns, AI-deepen-vs-flatten design rules, annotation anchoring architecture."
+    sources: []  # 19 mixed (curated GitHub + fast-research auto-import)
+
   - id: "structured-feedback-creative-ai"
     notebook_id: "8c456e11-9ef3-4d28-8b06-6efd2cbf0639"
     topic: "Structured Feedback in AI Creative Tools — element-level feedback, review interfaces, human-AI iteration loops"

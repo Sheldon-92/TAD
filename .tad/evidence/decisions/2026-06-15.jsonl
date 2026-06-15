@@ -1,0 +1,2 @@
+{"ts":"2026-06-15T13:07:01Z","session_id":"9f459d46-9d28-4a85-8eb7-54eab3855aa0","slug":null,"question":"要怎么处理这次发布？(当前还在 feat 分支 + 另一个 Alex 在收尾)","options":["等收尾后发 2.30.0 全量 (推荐)","现在就发，我来处理分支","只先准备发布材料，先不推","先别发"],"selection":"等收尾后发 2.30.0 全量 (推荐)","is_other":false,"multi_select":false}
+{"ts":"2026-06-15T13:10:07Z","session_id":"09bcd693-8bd4-45cc-8aec-5f8028653105","slug":null,"question":"这个「人+agent 共读共学」的理念，你现在更想先做哪件事？","options":["先把理念说透","把它变成可重复的方法","用它重新审视已建的东西","先别选，继续聊透"],"selection":"先把理念说透","is_other":false,"multi_select":false}

@@ -32,14 +32,14 @@ first; designed to stand alone later.
 | 1 | Research + Vision Spec | ✅ Done | — | DESIGN-FINDINGS.md (evidence-grounded design rules) + locked decisions |
 | 2 | Reader + Capture MVP (EPUB) | ✅ Done | archive/handoffs/HANDOFF-20260613-...-phase2-epub-reader.md | EPUB → e-reader HTML + reading plan + annotation→sidecar (no live bridge) |
 | 3 | Live Co-Read Bridge | ✅ Done | archive/handoffs/HANDOFF-20260613-...-phase3-live-bridge.md | localhost bridge + session open/close + select-to-discuss + Socratic AI |
-| 4 | Sinks + Multi-Format | ⬚ Planned | — | structured notes / question-list / MD export + PDF/TXT/URL adapters |
+| 4 | Sinks + Multi-Format | ✅ Done | archive/handoffs/HANDOFF-20260614-...-phase4-sinks-multiformat.md | structured notes / question-list / MD export + PDF/TXT/URL adapters |
 
 ### Phase Dependencies
 Sequential. Phase 2 → 3 → 4. "Complete closed loop for one format" = Phase 2 + Phase 3.
 
 ### Derived Status
-- **Status**: In Progress (Phase 1 ✅, Phase 2 ✅, Phase 3 ✅) — closed loop for EPUB complete; Gate 4 accepted 2026-06-14 (test_bridge.py 34/34 independently re-run; Gate 3 fix round resolved 9 defects incl. P0 CSP-nonce)
-- **Progress**: 3 / 4
+- **Status**: ✅ COMPLETE (4/4) — full vision shipped: any doc (EPUB/PDF/TXT/MD/URL) → e-reader HTML + plan + live AI co-read + structured sinks. Gate 4 accepted 2026-06-14.
+- **Progress**: 4 / 4
 
 ---
 
