@@ -21,10 +21,15 @@ All tools are Python **stdlib only** (no `pip install` needed). Run with `python
 
 | Tool | Purpose |
 |------|---------|
+| `tools/ingest.py <file-or-url> -o content.json` | **(Phase 4) Unified entry** — routes by extension/scheme to the right adapter: `.epub`→epub-ingest, `.pdf`→pdf-ingest, `.txt`/`.md`→text-ingest, `http(s)://`→url-ingest. Unknown input → clear non-zero error. Prefer this over calling adapters directly. |
 | `tools/epub-ingest.py <book.epub> -o content.json` | Parse EPUB → normalized `content.json` (chapters → paragraphs with stable `pid`, `source_hash`). |
+| `tools/text-ingest.py <file.txt\|file.md> -o content.json` | **(Phase 4)** TXT/Markdown → content.json. MD `#`/`##`/`###` → `tag` h1/h2/h3 (heading vs body); TXT splits on blank lines. Empty input → fail loud (no file). |
+| `tools/url-ingest.py <http(s) URL> -o content.json [--html-file F]` | **(Phase 4)** Fetch + extract main text (stdlib urllib + html.parser). Strips script/style/nav/footer/aside/header; `html` is escaped (no stored XSS). http(s)-only, SSRF guard, timeout, size cap, `Content-Type: text/html` required. Non-HTML/404/empty/internal-host → fail loud. `--html-file` ingests a local HTML file (no network). |
+| `tools/pdf-ingest.py <file.pdf> -o content.json [--pdftotext-bin PATH]` | **(Phase 4)** PDF → content.json via the system `pdftotext` (poppler; `brew install poppler`). `\f` page-split chapter ladder + best-effort ALL-CAPS→`h2` (lossy). No pdftotext **or** image-only/no-text-layer PDF → **BLOCKED** (non-zero + reason, no file) — never a silent empty book. |
 | `tools/render.py content.json -o index.html [-s reading-state.json] [--save annot.json] [--lang en] [--bridge]` | Render self-contained `index.html`. Re-attaches existing annotations (§ re-attach). `--save` merges a browser-exported annotations JSON into the sidecar first. `--bridge` marks the file bridge-capable (markup only — the token is injected by the bridge server at request time, never baked to disk). |
 | `tools/plan-gen.py content.json -o plan.md` | Generate the active-reading plan (structure map, reading path, ≥5 questions incl. ≥2 adversarial). |
 | `tools/export-annotations.py reading-state.json -o highlights.md [-c content.json]` | Export each highlight **with its paragraph context** as a blockquote (never an isolated list). Pass `-c` for full-paragraph context. |
+| `tools/export-notes.py reading-state.json -c content.json [-p plan.md] -o notes.md` | **(Phase 4)** Structured-by-chapter session notes (the durable sink): each `## {chapter}` lists its highlights+context; unanchored → `## General / 未定位`; `## Open Questions` = plan.md `## Questions` items **+** thread `role=user` turns ending in `?`/`？`; `## 对话精华` = co-read thread digest. |
 | `tools/bridge-server.py -w <workspace> [-p PORT]` | **(Phase 3)** localhost Live Co-Read Bridge. Binds 127.0.0.1, mints a per-start session token (never on disk), serves the workspace reader + `/send /poll /reply /events /close`. Prints `PORT`, `TOKEN`, `URL` on stdout. |
 | `tools/bridge-client.py {poll\|reply\|close\|append-thread} [...] --token T --port P` | **(Phase 3)** thin CLI the terminal co-read loop uses: `poll` (long-poll next message / `IDLE` / `SESSION_CLOSED`), `reply "<text>"` (push to browser via SSE), `close`, `append-thread "<text>" --role user\|assistant --state reading-state.json` (atomic thread append, FR7). |
 | `tools/test_bridge.py` | **(Phase 3)** stdlib integration test for the bridge (AC4/5/6/8/11/12). |
@@ -48,7 +53,11 @@ Runtime artifacts live under `.reading/<doc-slug>/` (gitignored):
 ```bash
 SLUG=my-book
 mkdir -p .reading/$SLUG
-python3 tools/epub-ingest.py book.epub -o .reading/$SLUG/content.json
+# Phase 4: ONE entry point ingests EPUB / PDF / TXT / Markdown / URL into the
+# SAME content.json schema — every reader/plan/bridge feature then works for free.
+python3 tools/ingest.py book.epub          -o .reading/$SLUG/content.json   # or book.pdf
+python3 tools/ingest.py notes.md           -o .reading/$SLUG/content.json   # or notes.txt
+python3 tools/ingest.py https://example.com/article -o .reading/$SLUG/content.json
 python3 tools/plan-gen.py   .reading/$SLUG/content.json -o .reading/$SLUG/plan.md
 python3 tools/render.py     .reading/$SLUG/content.json -o .reading/$SLUG/index.html
 # open .reading/$SLUG/index.html in a browser, read, highlight, add notes
@@ -56,9 +65,30 @@ python3 tools/render.py     .reading/$SLUG/content.json -o .reading/$SLUG/index.
 # move that file into the workspace, then merge + re-render:
 python3 tools/render.py     .reading/$SLUG/content.json -o .reading/$SLUG/index.html \
         --save ~/Downloads/annotations.json
+# Two export sinks: flat highlights, OR a structured by-chapter session note:
 python3 tools/export-annotations.py .reading/$SLUG/reading-state.json \
         -c .reading/$SLUG/content.json -o .reading/$SLUG/highlights.md
+python3 tools/export-notes.py .reading/$SLUG/reading-state.json \
+        -c .reading/$SLUG/content.json -p .reading/$SLUG/plan.md \
+        -o .reading/$SLUG/notes.md
 ```
+
+### Multi-format & determinism notes (Phase 4)
+
+- **One normalized content model.** All adapters emit byte-compatible `content.json`
+  (same `tag`/`href`/`title`/`pid` schema) so `render`/`plan-gen`/the bridge are
+  unchanged across formats. The shared `tools/_rc_common.py` is the single
+  enforcement point for the schema + `source_hash` determinism contract.
+- **Deterministic.** Each adapter is a pure function of input bytes — identical input →
+  byte-identical `content.json` (same `source_hash` + pid map), so Phase-2 annotation
+  re-attach holds. Re-fetching a URL later legitimately yields new bytes → new
+  `source_hash` (new document identity); old annotations simply don't re-attach (the
+  safe failure — never an in-place "update").
+- **Fail-loud, never a silent empty book.** Empty TXT, extraction-empty URL,
+  image-only / no-`pdftotext` PDF all exit non-zero with a reason and write NO
+  `content.json`.
+- **PDF needs poppler:** `brew install poppler` (macOS) / `apt-get install poppler-utils`
+  (Linux). v1 does no OCR — scanned/image-only PDFs are BLOCKED by design.
 
 ## Persistence model (Phase 2 — LOCKED)
 
