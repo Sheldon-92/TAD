@@ -7,7 +7,7 @@
 # Exit codes: 0=success, 1=execution failure (fail-fast), 2=refused (manifest invalid/env error, zero writes)
 set -euo pipefail
 
-ENGINE_VERSION="2.29.1"
+ENGINE_VERSION="2.30.0"
 
 # ══════════════════════════════════════════════════════════════
 # Argument parsing (FR1)

@@ -265,7 +265,7 @@
 
 ## Pending
 
-- [ ] **Distribute pack-quality upgrades: `*publish` (GitHub) + `*sync` (14 projects)** — DEFERRED by user 2026-06-13: wait until MORE packs upgraded before pushing. 21 upgraded packs (commits f2addac→9fd7975) + capability-upgrade Gate 2 + .agents parity are committed locally on main but NOT pushed/synced. When ready: read release-runbook first; `*publish` then `*sync`. (Also bundle the still-pending v2.29.1 release if not yet shipped.)
+- [~] **Distribute pack-quality upgrades: `*publish` (GitHub) ✅ shipped in v2.30.0 / `*sync` (14 projects) ⏳ PENDING** — v2.30.0 published to GitHub 2026-06-15 (bundles pack-quality 21-pack upgrades + AI-Native Reading Companion Epic + Tier-1 workflows + detect_state/workflow-schema fixes). The 14-project `*sync` (Phase 5-7) is still pending — read release-runbook first; run `*sync` when ready. sync-registry still shows last_synced_version 2.29.1 (honest — not yet synced).
 - [ ] Run *optimize on menu-snap (14 trace files) to analyze execution patterns
 - [ ] Run *evolve cross-project (5 projects with traces, 50+ trace files total)
 - [ ] Test Agent Teams on next Full or Standard TAD task

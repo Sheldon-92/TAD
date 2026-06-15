@@ -1,6 +1,6 @@
 # TAD Codex CLI 使用指南
 
-**适用版本**: TAD v2.29.1+ | Codex CLI 0.137+
+**适用版本**: TAD v2.30.0+ | Codex CLI 0.137+
 
 ---
 
@@ -56,7 +56,7 @@ npx github:Sheldon-92/TAD
 ### 验证安装
 
 ```bash
-cat .tad/version.txt                    # 应显示 2.29.1
+cat .tad/version.txt                    # 应显示 2.30.0
 ls .agents/skills/ | head -5            # 应看到 alex/ blake/ 等目录
 test -f .codex/hooks.json && echo OK    # 应显示 OK
 test -f .tad/hooks/lib/migration-engine.sh && echo OK  # Migration 引擎

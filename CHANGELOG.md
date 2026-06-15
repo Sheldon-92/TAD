@@ -5,6 +5,19 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.30.0] - 2026-06-15
+
+### New Features
+- **AI-Native Reading Companion (Epic, 4 phases)**: turn an EPUB/PDF/TXT/URL into an e-reader-grade, annotatable HTML reading surface with a live AI co-reader. Phase 2 reader (66 CPL, themed, pagination+scroll) + W3C TextQuote-anchored annotations persisted to a sidecar (survive HTML regeneration); Phase 3 localhost stdlib co-read bridge — select-to-discuss, session open/close, Socratic/synthesis-first AI, security-hardened (127.0.0.1 bind + per-start token + per-response CSP nonce + path-traversal guard + injection-as-DATA envelope); Phase 4 durable sinks (structured notes / question list / Markdown export) + multi-format adapters (PDF/TXT/URL). New `reading-companion` skill, stdlib-only (no external deps).
+- **Capability Pack Quality Leveling (Epic, 6 phases)**: 21 capability packs upgraded to a dual-layer quality bar — Layer A (structure <500 lines + fixture + validation script) + Layer B (research-grounded depth with cited sources). 3 gold reference packs (web-backend / web-frontend / web-ui-design). The dual-layer bar is frozen into `capability-upgrade` Gate 2. `.agents` Codex mirror brought to parity.
+- **Tier-1 Workflow Formalization**: 4 proven hand-orchestration practices canonicalized as reusable `.claude/workflows/` — handoff-review, pack-dogfood, pack-upgrade, research-engine.
+- **pack-upgrade research-grounding**: the pack-upgrade workflow's Plan stage is now deep-research-grounded (research → cited report → upgrade plan whose additions trace to sources) instead of search-as-you-edit.
+
+### Bug Fixes
+- **tad.sh `detect_state`**: replaced brittle prefix-glob version routing (the `2.2*` arm had begun swallowing all 2.20–2.29.x) with numeric semver comparison; cross-major jumps now route to the migrate path (structural backup); a newer-than-target install is a no-op (never downgrades). 12 isolated-tempdir AC fixtures added.
+- **Workflow StructuredOutput schemas**: wrapped 3 top-level-array schemas (rejected by the API) into object schemas — un-breaks `loop-discover` (its core discovery loop) and `epic-audit`; `surplus-scan` now warns loudly instead of silently stamping `undated`.
+- **Installer deny-list drift**: `tad.sh`'s inlined `TAD_TRANSIENT` was missing `domains` (retired) vs `derive-sync-set.sh` — synced (drift-check now passes).
+
 ## [2.29.1] - 2026-06-11
 
 ### New Features

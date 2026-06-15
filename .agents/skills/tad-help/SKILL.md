@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.29.1 | Generated: [timestamp]
+ Version: v2.30.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
@@ -218,7 +218,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.29.1 Highlights
+## TAD v2.30.0 Highlights
 - **Pack System Unification**: YAML Domain Packs retired; Capability Packs are the sole active pack system
 - **Installer Single-Sourcing**: 7 pack installers now copy prebuilt SKILL.md (byte-identical Claude/Codex)
 - **Platform-Skills Verifier**: `release-verify.sh platform-skills` checks framework skill symmetry at release

@@ -1,0 +1,54 @@
+{
+  "source_hash": "fixture-hash-placeholder",
+  "current": {"chapter_id": "c1", "scroll_pct": 0.0},
+  "annotations": [
+    {
+      "id": "a1",
+      "chapter_id": "c1",
+      "anchor": {
+        "type": "TextQuoteSelector",
+        "exact": "The careful reader argues with the page.",
+        "prefix": "Reading well is a skill, not a reflex. ",
+        "suffix": "",
+        "refinedBy": {"type": "paragraph", "pid": "c1-p2"}
+      },
+      "note": "the core thesis",
+      "color": "yellow",
+      "created": "2026-06-14T10:00:00Z"
+    },
+    {
+      "id": "a2",
+      "chapter_id": "c3",
+      "anchor": {
+        "type": "TextQuoteSelector",
+        "exact": "Understanding is not collection.",
+        "prefix": "",
+        "suffix": " The reader must connect",
+        "refinedBy": {"type": "paragraph", "pid": "c3-p2"}
+      },
+      "note": "synthesis over hoarding",
+      "color": "yellow",
+      "created": "2026-06-14T10:05:00Z"
+    },
+    {
+      "id": "a3",
+      "chapter_id": "c1",
+      "anchor": {
+        "type": "TextQuoteSelector",
+        "exact": "a phrase with no matching paragraph anchor",
+        "prefix": "",
+        "suffix": "",
+        "refinedBy": {"type": "paragraph", "pid": "cX-p99"}
+      },
+      "note": "this one is unanchored -> General bucket",
+      "color": "yellow",
+      "created": "2026-06-14T10:06:00Z"
+    }
+  ],
+  "thread": [
+    {"role": "user", "text": "How does attention relate to synthesis?", "ts": "2026-06-14T10:10:00Z"},
+    {"role": "assistant", "text": "What do you think the link is — does focus enable connection?", "ts": "2026-06-14T10:10:30Z"},
+    {"role": "user", "text": "I think focus is a precondition for synthesis.", "ts": "2026-06-14T10:11:00Z"},
+    {"role": "user", "text": "Is distraction ever useful for creativity？", "ts": "2026-06-14T10:12:00Z"}
+  ]
+}
