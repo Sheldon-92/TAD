@@ -1,10 +1,32 @@
+// ⚠️ cost ≈ packs × (~25 agent calls each at research_max_rounds=2); keep packs × research_max_rounds modest (e.g. ≤ ~12 round-units) per run.
+// ════════════════════════════════════════════════════════════════════════════
+// PLAN IS NOW DEEP-RESEARCH-GROUNDED (encodes the research-before-upgrade rule).
+//
+// The Plan stage no longer does a single inline WebSearch. Instead it COMPOSES the
+// research-engine workflow inline (PLAN → multi-round DEEPEN with dynamic follow-ups
+// → SATURATION → adversarial VERIFY → cited SYNTHESIS) to produce a cited report +
+// an honest UNVERIFIED/open-questions list for each pack's domain BEFORE writing the
+// upgrade plan. The plan agent then reads that report: every Layer-B addition must
+// cite a report source, and the report's UNVERIFIED items are carried forward as
+// "flag, do NOT assert."
+//
+// This encodes a flow proven manually: research-engine deep research →
+// research-grounded upgrade → clean dogfood win. (video-creation went from
+// "slight win + 1 wrong LUFS claim" to "clear win + 0 errors" purely by doing the
+// deep research first — the deep research caught the false "-14 LUFS unified
+// standard" claim that an inline single search asserted.)
+//
+// NESTING: pack-upgrade stays a TOP-LEVEL workflow; calling research-engine from it
+// is exactly ONE level (workflow() inside a child workflow throws). Cost is bounded
+// by RESEARCH_MAX_ROUNDS (default 2) — a tunable const below.
+// ════════════════════════════════════════════════════════════════════════════
 export const meta = {
   name: 'pack-upgrade',
-  description: 'Upgrade a list of capability packs to a dual-layer quality bar via a per-pack 4-stage pipeline: Plan (domain research → upgrade plan) → Upgrade (apply Layer A structure + Layer B research-grounded depth) → Eval (behavioral discriminative eval) → Review (3-lens adversarial review, fact/API WebSearch-verified, findings persisted to disk). Any-refute → validate-then-fix (a single lens refute can be a real P0; the fix agent validates each finding first and skips false positives). Generalized from the proven batch-upgrade workflow; evidence output dir + label are parameterized so it is not tied to any one epic. No Codex. Input via args={packs, evidence_dir, label, quality_bar, baseline_audit} or the top-of-file CONSTs.',
+  description: 'Upgrade a list of capability packs to a dual-layer quality bar via a per-pack 4-stage pipeline: Plan (DEEP-research-grounded: compose research-engine inline → cited report + UNVERIFIED list → upgrade plan whose Layer-B additions each cite a report source) → Upgrade (apply Layer A structure + Layer B research-grounded depth; every load-bearing specific traces to a source OR is flagged estimate/convention/UNVERIFIED) → Eval (behavioral discriminative eval) → Review (3-lens adversarial review, fact/API WebSearch-verified, findings persisted to disk). Any-refute → validate-then-fix (a single lens refute can be a real P0; the fix agent validates each finding first and skips false positives). Generalized from the proven batch-upgrade workflow; evidence output dir + label are parameterized so it is not tied to any one epic. No Codex. Input via args={packs, evidence_dir, label, quality_bar, baseline_audit} or the top-of-file CONSTs.',
   whenToUse: 'When raising one or more capability packs to a structure+depth quality bar with research-grounded specifics and adversarial review. Conductor re-reads persisted evidence + judges a gate before accepting.',
   phases: [
-    { title: 'Plan', detail: 'Per-pack GitHub-First + WebSearch research → structured upgrade plan with sourced Layer B additions' },
-    { title: 'Upgrade', detail: 'Apply the plan, editing only that pack dir (disjoint → safe concurrent)' },
+    { title: 'Plan', detail: 'Per-pack DEEP research (compose research-engine inline) → cited report + UNVERIFIED list → structured upgrade plan with each Layer-B addition citing a report source' },
+    { title: 'Upgrade', detail: 'Apply the plan, editing only that pack dir (disjoint → safe concurrent); every load-bearing specific traces to a research source or is flagged estimate/convention/UNVERIFIED' },
     { title: 'Eval', detail: 'Behavioral discriminative eval: with-pack vs control on the fixture pattern' },
     { title: 'Review', detail: '3 adversarial lenses (correctness / fact-api / anti-slop), persisted; any refute → validate-then-fix' }
   ]
@@ -52,6 +74,10 @@ const DEFAULT_BASELINE_AUDIT = '.tad/evidence/pack-quality/BASELINE-AUDIT.md'
 // Today's date for retrieval-date stamping of sourced claims (passed via args.date in
 // SKILL boundary mode; fallback string keeps the workflow runnable standalone).
 const DEFAULT_TODAY = '(today)'
+// Cost bound for the composed deep-research per pack. research-engine clamps internally
+// to [1,8]; 2 rounds = PLAN + 2 DEEPEN rounds + VERIFY + SYNTHESIZE — enough to catch
+// false "unified standard"-class claims without runaway cost. Tune up for deeper packs.
+const RESEARCH_MAX_ROUNDS = 2
 
 if (!packs) packs = DEFAULT_PACKS
 if (!evidenceDir) evidenceDir = DEFAULT_EVIDENCE_DIR
@@ -59,9 +85,13 @@ if (!label) label = DEFAULT_LABEL
 if (!qualityBar) qualityBar = DEFAULT_QUALITY_BAR
 if (baselineAudit == null) baselineAudit = DEFAULT_BASELINE_AUDIT
 let today = DEFAULT_TODAY
+let researchMaxRounds = RESEARCH_MAX_ROUNDS
 if (args) {
   const keys = Object.keys(args)
-  for (let i = 0; i < keys.length; i++) if (keys[i] === 'date') today = args[keys[i]]
+  for (let i = 0; i < keys.length; i++) {
+    if (keys[i] === 'date') today = args[keys[i]]
+    if (keys[i] === 'research_max_rounds') researchMaxRounds = Number(args[keys[i]]) || RESEARCH_MAX_ROUNDS
+  }
 }
 
 // Fail loud on missing input rather than silently no-op (KNOWN ISSUE guard).
@@ -133,24 +163,114 @@ const LENSES = [
 
 // ── Pipeline (orchestration unchanged from the proven workflow) ─────────────
 
+const RESEARCH_DIR = `${EV}/research`
+
 const results = await pipeline(
   packs,
-  (p) => agent(
-    `You are upgrading the capability pack "${p.name}" toward a dual-layer quality bar.\n\n` +
-    `READ FIRST:\n- ${QB} (Layer A meta-design structure /10, Layer B domain depth 0/2/5 with specN)\n` +
-    (BA ? `- ${BA} (find the "${p.name}" row: its Layer A / Layer B scores + listed gaps)\n` : '') +
-    `- .claude/skills/${p.name}/SKILL.md (current)\n\n` +
-    `THEN do GitHub-First + WebSearch domain research for THIS pack's domain to find the latest tools/repos and SPECIFIC research-grounded numbers/thresholds/APIs. Every Layer B addition MUST carry a source_url + retrieval date (today is ${today}). Do NOT invent numbers.\n\n` +
-    `Produce a structured upgrade plan. ${p.needs_fixture ? 'THIS PACK HAS NO FIXTURE — fixture_action MUST be author-new.' : 'Pack has a fixture — refresh-existing or none.'}`,
-    { label: `plan:${p.name}`, phase: 'Plan', schema: PLAN_SCHEMA }
-  ),
+  async (p) => {
+    // ── Plan stage, step 1: DEEP research (compose research-engine inline) ──
+    // PREFERRED implementation = composition (DRY): one level of nesting is legal
+    // (pack-upgrade is top-level; research-engine is its child). The research-engine
+    // child does its OWN fan-out via agent()/parallel() but NEVER calls workflow(),
+    // so the one-level constraint holds. The question is domain-scoped from the pack
+    // name + its BASELINE-AUDIT gaps, so the deep research chases exactly the depth
+    // the upgrade needs (not generic domain trivia). max_rounds bounds cost.
+    const researchQuestion =
+      `For the "${p.name}" capability-pack domain (it advises AI coding agents), ` +
+      `what are the EXACT, source-verified, version-sensitive specifics — numbers, thresholds, ` +
+      `current tool/API names and versions, decision rules — that a senior practitioner applies ` +
+      `but a generalist would get WRONG or assert as a false "unified standard"? ` +
+      `Prioritize the gaps listed for the "${p.name}" row in ${BA || 'the baseline audit'} ` +
+      `and the current SKILL at .claude/skills/${p.name}/SKILL.md. ` +
+      `Surface per-source disagreements explicitly; flag anything you cannot source as UNVERIFIED.`
+
+    const research = await workflow('research-engine', {
+      question: researchQuestion,
+      max_rounds: researchMaxRounds, // tunable cost bound (RESEARCH_MAX_ROUNDS / args.research_max_rounds)
+      evidence_dir: RESEARCH_DIR,
+    })
+
+    // ── Research-failure detection: research-engine has error early-returns
+    // ({error:'question required'}, {error:'plan failed'}) with NO report_path.
+    // If research is null/undefined OR produced no report_path, it FAILED — do NOT
+    // point the plan agent at a fake path (it would fail the read and may revert to
+    // UNGROUNDED training-knowledge assertion, the exact blind-upgrade failure this
+    // whole change exists to prevent). Degrade to maximally-conservative instead.
+    const researchOk = !!(research && research.report_path)
+    const reportPath = researchOk ? research.report_path : null
+    const openQs = (researchOk && research.open_questions) || []
+    const researchConfidence = (researchOk && research.confidence) || 'medium'
+    if (researchOk) {
+      log(`plan:${p.name} — deep research done: report=${reportPath}, sources=${(research && research.sources_count) || '?'}, confidence=${researchConfidence}, open_questions=${openQs.length}`)
+    } else {
+      log(`WARN plan:${p.name} — deep research FAILED (no report_path${research && research.error ? `; error="${research.error}"` : ''}). Forcing flag-everything conservative plan (no fake report path, no training-knowledge assertion).`)
+    }
+
+    // ── Plan stage, step 2: write the upgrade plan ──
+    // P2 (cheap insurance): clamp open_questions before interpolating into the prompt.
+    const openQsClamped = (openQs || []).slice(0, 20)
+    // The prompt BRANCHES on researchOk. researchOk=true → report-grounded (cite the
+    // report). researchOk=false → research FAILED → force flag-EVERYTHING conservative
+    // plan (no fake report path, no training-knowledge assertion).
+    const planPrompt = researchOk
+      ? (
+        `You are upgrading the capability pack "${p.name}" toward a dual-layer quality bar.\n\n` +
+        `A DEEP-RESEARCH report for this pack's domain has ALREADY been produced (research-engine: ` +
+        `cited, adversarially verified). Your upgrade plan MUST be grounded in it — do NOT do fresh ` +
+        `unsourced research or assert numbers from training.\n\n` +
+        `READ FIRST:\n- ${QB} (Layer A meta-design structure /10, Layer B domain depth 0/2/5 with specN)\n` +
+        (BA ? `- ${BA} (find the "${p.name}" row: its Layer A / Layer B scores + listed gaps)\n` : '') +
+        `- .claude/skills/${p.name}/SKILL.md (current)\n` +
+        `- ${reportPath} (the DEEP-RESEARCH report — cited findings + a "## Sources" list. READ IT FULLY.)\n\n` +
+        `RESEARCH RESULT META: confidence=${researchConfidence}; the report's OPEN/UNVERIFIED questions are:\n` +
+        (openQsClamped.length ? openQsClamped.map((q) => `  - ${q}`).join('\n') : '  (none reported)') + '\n\n' +
+        `RULES FOR THE PLAN (calibrated honesty > false precision):\n` +
+        `1. EACH layerB_additions entry MUST cite a source_url drawn from the research report (its findings/Sources), ` +
+        `with the retrieval date (today is ${today}). If a desired specific is NOT in the report, do NOT add it as a ` +
+        `Layer-B assertion — either drop it or mark it as an estimate/practitioner-convention to be FLAGGED, not asserted.\n` +
+        `2. CARRY FORWARD the report's UNVERIFIED / open-questions list above as "flag, do NOT assert" items: ` +
+        `the upgrade must present these as uncertain (per-source-varies / no official value / practitioner heuristic), ` +
+        `NEVER as a settled "unified standard". (This is exactly the false "-14 LUFS unified standard" failure class ` +
+        `the deep research exists to catch.)\n` +
+        `3. Do NOT invent numbers. A confident WRONG specific is worse than an honest "varies by X / unverified".\n\n` +
+        `Produce a structured upgrade plan. ${p.needs_fixture ? 'THIS PACK HAS NO FIXTURE — fixture_action MUST be author-new.' : 'Pack has a fixture — refresh-existing or none.'}`
+      )
+      : (
+        `You are upgrading the capability pack "${p.name}" toward a dual-layer quality bar.\n\n` +
+        `⚠️ NO research report was produced (deep research failed). You MUST therefore flag EVERY ` +
+        `non-trivial specific as UNVERIFIED and MUST NOT assert any number/version/threshold/cross-platform-standard ` +
+        `from training knowledge — produce a conservative plan that only proposes changes you can hedge as ` +
+        `estimate/convention. Do NOT invent grounding.\n\n` +
+        `READ FIRST:\n- ${QB} (Layer A meta-design structure /10, Layer B domain depth 0/2/5 with specN)\n` +
+        (BA ? `- ${BA} (find the "${p.name}" row: its Layer A / Layer B scores + listed gaps)\n` : '') +
+        `- .claude/skills/${p.name}/SKILL.md (current)\n` +
+        `(There is NO research report to read — do NOT attempt to read one; none exists.)\n\n` +
+        `RULES FOR THE CONSERVATIVE PLAN (flag-everything mode — MANDATORY):\n` +
+        `1. layerB_additions: every entry's source_url MUST be set to "UNVERIFIED" (no fabricated URL) and the claim ` +
+        `worded as a hedged estimate/practitioner-convention, NEVER as a settled fact. If you cannot hedge a specific ` +
+        `honestly, DROP it — do not add it.\n` +
+        `2. Do NOT assert any number, version, threshold, constant, or cross-platform/cross-tool "unified standard" ` +
+        `from training knowledge. Present any such specific as UNVERIFIED / "varies / needs verification".\n` +
+        `3. Do NOT invent numbers or grounding. A confident WRONG specific is worse than an honest "unverified".\n\n` +
+        `Produce a structured upgrade plan. ${p.needs_fixture ? 'THIS PACK HAS NO FIXTURE — fixture_action MUST be author-new.' : 'Pack has a fixture — refresh-existing or none.'}`
+      )
+    return agent(
+      planPrompt,
+      { label: `plan:${p.name}`, phase: 'Plan', schema: PLAN_SCHEMA }
+    )
+  },
   (plan, p) => agent(
     `Apply this upgrade plan to capability pack "${p.name}". Edit ONLY files under .claude/skills/${p.name}/ (disjoint from other packs — safe concurrent).\n\n` +
-    `PLAN:\n${JSON.stringify(plan, null, 2)}\n\n` +
+    `The plan was produced from a DEEP-RESEARCH report (research-engine). HONOR THE RESEARCH — this is an anti-blind-upgrade gate.\n\n` +
+    `PLAN (each layerB_additions entry carries its source_url + retrieval date):\n${JSON.stringify(plan, null, 2)}\n\n` +
     `REQUIREMENTS (read ${QB} for exact criteria):\n` +
     `- Layer A: YAML frontmatter (name+description preserved); body < 500 lines via progressive disclosure to references/*.md; routing/steps; CONSUMES/PRODUCES; anti-skip table; navigation index; fixture present; validation scripts (executable, no Windows paths).\n` +
     `- Layer B: every domain rule carries research-grounded specifics (numbers/thresholds/exact APIs) with sources — NOT generic restatable rules.\n` +
-    `- Refresh/keep the existing examples/ fixture; ensure its discriminative_pattern stays pack-specific.\n` +
+    `- Refresh/keep the existing examples/ fixture; ensure its discriminative_pattern stays pack-specific.\n\n` +
+    `RESEARCH-HONORING RULES (calibrated honesty > false precision — MANDATORY):\n` +
+    `1. EVERY load-bearing specific (number, threshold, version, API name, constant) you write MUST either (a) trace to a source in the plan / research report, OR (b) be EXPLICITLY flagged inline as an estimate / practitioner-convention / UNVERIFIED. No silent assertions from training.\n` +
+    `2. FORBIDDEN: asserting a cross-platform / cross-tool "unified standard"-type claim without per-source verification. If sources disagree or no official value exists, say so explicitly (e.g. "varies by platform: A=x, B=y; TikTok publishes none") — NEVER collapse it into one false number. This is the EXACT class of error (the false "-14 LUFS unified standard") the deep research caught and exists to prevent.\n` +
+    `3. CARRY the plan's UNVERIFIED / open-questions items into the SKILL as flagged-uncertain guidance, not as settled fact.\n` +
     `Make real, substantive edits — production pack synced to downstream projects.`,
     { label: `upgrade:${p.name}`, phase: 'Upgrade', schema: UPGRADE_SCHEMA }
   ),
