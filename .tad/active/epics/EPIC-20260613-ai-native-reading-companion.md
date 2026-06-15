@@ -31,15 +31,15 @@ first; designed to stand alone later.
 |---|-------|--------|---------|-----------------|
 | 1 | Research + Vision Spec | ✅ Done | — | DESIGN-FINDINGS.md (evidence-grounded design rules) + locked decisions |
 | 2 | Reader + Capture MVP (EPUB) | ✅ Done | archive/handoffs/HANDOFF-20260613-...-phase2-epub-reader.md | EPUB → e-reader HTML + reading plan + annotation→sidecar (no live bridge) |
-| 3 | Live Co-Read Bridge | 🔄 Active | HANDOFF-20260613-ai-reading-companion-phase3-live-bridge.md | localhost bridge + session open/close + select-to-discuss + Socratic AI |
+| 3 | Live Co-Read Bridge | ✅ Done | archive/handoffs/HANDOFF-20260613-...-phase3-live-bridge.md | localhost bridge + session open/close + select-to-discuss + Socratic AI |
 | 4 | Sinks + Multi-Format | ⬚ Planned | — | structured notes / question-list / MD export + PDF/TXT/URL adapters |
 
 ### Phase Dependencies
 Sequential. Phase 2 → 3 → 4. "Complete closed loop for one format" = Phase 2 + Phase 3.
 
 ### Derived Status
-- **Status**: In Progress (Phase 1 ✅, Phase 2 ✅)
-- **Progress**: 2 / 4
+- **Status**: In Progress (Phase 1 ✅, Phase 2 ✅, Phase 3 ✅) — closed loop for EPUB complete; Gate 4 accepted 2026-06-14 (test_bridge.py 34/34 independently re-run; Gate 3 fix round resolved 9 defects incl. P0 CSP-nonce)
+- **Progress**: 3 / 4
 
 ---
 
@@ -138,10 +138,11 @@ typography from web-ui-design pack.
 
 ### Phase 3: Live Co-Read Bridge
 
-**Status:** 🔄 Active (Gate 2 PASS — awaiting execution mode choice)
-**Execution:** pending
+**Status:** ✅ Done — Gate 4 accepted 2026-06-14 (Alex independently re-ran test_bridge.py 34/34; human approved accept & archive). Caveat carried to Phase 4 / first real use: real-browser *visual* co-read (send→reply renders, enforcing-CSP inline-script load) still UNVERIFIED — verify on first real-book session.
+**Execution:** YOLO (Conductor-manual)
 **Handoff:** HANDOFF-20260613-ai-reading-companion-phase3-live-bridge.md
-**Gate 2:** ✅ PASS — security-auditor (FAIL→resolved) + code-reviewer (CONDITIONAL→resolved); 8 P0 (5 security + 3 concurrency) + 11 P1 integrated. Key: Host allowlist (DNS-rebind), prompt-injection isolation, header-token, CSP, path-traversal guard, queue.Queue+daemon_threads+separate-thread shutdown, behavioral security ACs.
+**Gate 2:** ✅ PASS — security-auditor (FAIL→resolved) + code-reviewer (CONDITIONAL→resolved); 8 P0 (5 security + 3 concurrency) + 11 P1 integrated.
+**Gate 3:** ✅ PASS — built (bridge-server.py/bridge-client.py/test_bridge.py + reader.html bridge mode + render --bridge + SKILL co-read protocol). 2 independent reviewers ran live attacks: found 1 P0 (CSP blocked own inline script → feature dead in enforcing browser; the 15 curl ACs + agent's browser claim missed it) + 3 P1 (keep-alive framing desync, SSE no-cap, /close body) + P2 — ALL fixed. Conductor independently re-verified: test_bridge 34/34, CSP nonce per-response (3/3 inline tags nonced, 0 un-nonced, no unsafe-inline), keep-alive reject→reuse 200, Host/token/traversal/headers live, stdlib clean. NOT live-verified: real-browser visual (user denied nav) → deferred to Gate 4. Evidence: phase3-completion.md (+ Gate 3 Fix Round).
 
 #### Scope
 Add bidirectional real-time communication between the HTML reader and terminal Claude
