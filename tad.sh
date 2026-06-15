@@ -869,25 +869,44 @@ trap 'rollback_on_failure' ERR
 # ============================================
 # Detect current state
 # ============================================
+# numeric semver compare. echoes -1 if $1<$2, 0 if ==, 1 if $1>$2. Pure bash, BSD-safe.
+_tad_ver_cmp() {
+    [ "$1" = "$2" ] && { echo 0; return; }
+    local IFS=.; local -a A=($1) B=($2); local i ai bi
+    for i in 0 1 2; do
+        ai="${A[i]:-0}"; bi="${B[i]:-0}"
+        [[ "$ai" =~ ^[0-9]+$ ]] || ai=0
+        [[ "$bi" =~ ^[0-9]+$ ]] || bi=0
+        if [ "$ai" -gt "$bi" ]; then echo 1; return; fi
+        if [ "$ai" -lt "$bi" ]; then echo -1; return; fi
+    done
+    echo 0
+}
+
 detect_state() {
     if [ ! -d ".tad" ] && [ ! -d ".claude/commands" ]; then
         echo "fresh"
     elif [ -f ".tad/version.txt" ]; then
-        local ver=$(cat .tad/version.txt)
-        if [[ "$ver" == "$TARGET_VERSION" ]]; then
+        local ver; ver=$(cat .tad/version.txt)
+        ver="${ver//[$'\r\n ']/}"               # CRLF/whitespace trim (safe equality)
+        local tmaj="${TARGET_VERSION%%.*}"       # TARGET_VERSION is a trusted constant (not separately guarded by design)
+        local vmaj="${ver%%.*}"
+        if [ "$ver" = "$TARGET_VERSION" ]; then
             echo "current"
-        elif [[ "$ver" == "2.1"* ]] || [[ "$ver" == "2.2"* ]]; then
-            echo "v2.0"
-        elif [[ "$ver" == "2.0"* ]]; then
-            echo "v2.0"
-        elif [[ "$ver" == "1.8"* ]]; then
-            echo "v1.8"
-        elif [[ "$ver" == "1.6"* ]] || [[ "$ver" == "1.5"* ]]; then
-            echo "v1.6"
-        elif [[ "$ver" == "1.4"* ]]; then
-            echo "v1.4"
+        elif ! [[ "$vmaj" =~ ^[0-9]+$ ]]; then
+            echo "old"                            # unparseable → fail-safe to migrate path
+        elif [ "$(_tad_ver_cmp "$ver" "$TARGET_VERSION")" = "1" ]; then
+            echo "current"                        # installed NEWER than target → no-op (never downgrade)
+        elif [ "$vmaj" -eq "$tmaj" ]; then
+            echo "upgrade"                         # same major, older → plain upgrade
         else
-            echo "old"
+            # installed major < target major → cross-major migration territory.
+            case "$ver" in
+                1.8*)        echo "v1.8" ;;        # preserve existing v1.x granular routing
+                1.6*|1.5*)   echo "v1.6" ;;
+                1.4*)        echo "v1.4" ;;
+                *)           echo "old" ;;         # incl. v2-into-newer-major → migrate (gets .tad-migrate-backup)
+            esac
         fi
     elif [ -d ".tad" ]; then
         echo "old"
@@ -959,7 +978,7 @@ main() {
             echo "   You're on the latest version!"
             ACTION="none"
             ;;
-        "v2.0")
+        "upgrade")
             echo -e "   Status: ${YELLOW}Upgrade available${NC}"
             echo "   Current: v${CURRENT_VERSION} → Target: v${TARGET_VERSION}"
             echo "   (Framework upgrade)"
