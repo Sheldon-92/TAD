@@ -432,7 +432,7 @@ git push origin main
 
 ---
 
-## 🛡️ Top 10 Gotchas (read before every release)
+## 🛡️ Top 11 Gotchas (read before every release)
 
 1. **Version bump touches ~14 strings across 6 files** — use the exhaustive list in Phase 2, do not rely on memory
 2. **`jq --argfile` is removed in jq 1.7+** — use `--argjson` or `--slurpfile`
@@ -444,6 +444,7 @@ git push origin main
 8. **Always check `git status` after commit** — if something is still dirty, you missed staging a file
 9. **`.tad/config.yaml` has 3 version mentions** (comment line + `version:` field + `last_updated:`) — all 3 must match
 10. **Never run `tad.sh` on the TAD source repo itself** — it's designed for downstream targets, and self-application may delete source files via deprecation cleanup
+11. **Do NOT run `install.sh` during sync** — the `cp -R` mirror of `.claude/skills` + `.agents/skills` already copies the complete, authoritative skill directories. Running pack `install.sh --force` AFTER the mirror will DOWNGRADE upgraded packs because `install.sh` regenerates SKILL.md from the stale `.tad/capability-packs/` source (a second source-of-truth that pack upgrades don't touch). This caused the v2.30.0 sync to silently downgrade 21 packs in all 14 downstream projects — caught only by the `platform-skills` symmetry gate. The `tad.sh` installer (curl/npx path) never had this bug — it only does `cp -r`, no `install.sh`. See KA: `patterns/pack-build-rules.md` 2026-06-15.
 
 ---
 

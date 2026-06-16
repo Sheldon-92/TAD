@@ -113,16 +113,15 @@ for entry in "${PROJECTS[@]}"; do
   fi
   log "structural gate: $GATE"
 
-  # b2. pack installs (each isolated; --force with no-arg fallback)
-  ok=0; fail=0
-  for pk in "$SRC/.tad/capability-packs/"*/; do
-    [ -f "$pk/install.sh" ] || continue
-    pn="$(basename "$pk")"
-    if (cd "$P" && bash "$pk/install.sh" --force >/dev/null 2>&1); then ok=$((ok+1))
-    elif (cd "$P" && bash "$pk/install.sh" >/dev/null 2>&1); then ok=$((ok+1))
-    else fail=$((fail+1)); log "  pack WARN: $pn install failed"; fi
-  done
-  log "packs: $ok ok, $fail failed"
+  # b2. pack installs — REMOVED (v2.30.0 root-cause fix).
+  # The cp -R mirror of .claude/skills + .agents/skills (step b above) already copies
+  # the complete, authoritative skill directories. Running install.sh AFTER the mirror
+  # DOWNGRADES upgraded packs because install.sh regenerates SKILL.md from the stale
+  # .tad/capability-packs/ source (which pack-quality never updated). This caused the
+  # v2.30.0 sync to downgrade 21 packs' .claude in all 14 projects (detected by
+  # platform-skills gate; repaired via sync-v2.30.0-repair.sh). See KA entry
+  # patterns/pack-build-rules.md 2026-06-15.
+  log "packs: skipped (cp -R mirror is authoritative; install.sh removed — see v2.30.0 KA)"
 
   # e. platform-skills parity check (new in v2.29.1 — Pack System Unification Phase 3)
   if bash "$SRC/.tad/hooks/lib/release-verify.sh" platform-skills "$SRC" "$P" >> "$LOG" 2>&1; then
