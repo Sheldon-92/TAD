@@ -658,6 +658,17 @@ research_plan_protocol:
              → Format: "Based on {KR}, research shows: {finding} → Suggested AC: {concrete acceptance criterion}"
              → Example: "KR1 sesame recall: 担担面 → sesame paste mapping → AC: allergen-rules must contain dandan→sesame rule"
 
+           → Step 1a5 (Decision Brief — Q4 integration from Standard, runs BEFORE Step 1b):
+             Generate a 决策简报 using .tad/templates/research-decision-brief.md format:
+             - Input: Phase 4 ask findings + Step 1 extracted ACs
+             - decision question: research_decision_point (from step1b_decision_point) or research topic
+             - 四段结构：选项 → 证据 → 推荐 → 未知风险
+             - Save to .tad/evidence/research/{notebook_topic}/{date}-decision-brief-{slug}.md
+             - Display alongside AC list in Step 2
+             Note: Deep does NOT add Q5 (Phase 4c adversarial challenge is stronger) or
+             Q6 (Phase 5 step6 Research→Action Bridge covers feedback). Only Q4 format.
+             Execution order: Step 1 → Step 1a5 (brief) → Step 1b (adversarial) → Step 2 (display)
+
            → Step 1b (PHASE 5b — Adversarial Challenge: Action Recommendations):
              Trigger: After Step 1 extraction, BEFORE Step 2 display to user.
              ⚠️ User sees ACs with support_strength labels already attached — not approve-then-challenge.

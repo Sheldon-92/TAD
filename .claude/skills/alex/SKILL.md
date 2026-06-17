@@ -899,7 +899,115 @@ research_unified_protocol:
         - Q3 follow-ups are shallow (raw CLI) because inner tier already exhausted deep exploration.
         - Citation-based exit check prevents burning API calls when notebook has nothing more.
 
-      4_return: "返回结果给用户"
+      4_format_brief: |
+        Context preservation: 在生成简报前，先持久化 ask 核心结果到
+        .tad/evidence/research/{notebook_topic}/raw-ask-results-{date}.md
+        防止长对话 context compaction 导致 ask 结果被压缩。
+        (降级路径下保存 WebSearch 结果；如无结果则跳过持久化)
+
+        基于以下输入生成决策简报（Alex 在对话中直接生成，不调 notebooklm report）：
+        - research_decision_point（来自 step 0）
+        - ask 结果 + 动态追问链（来自 step 3 + 3b）
+        - topic
+
+        格式（引用模板 .tad/templates/research-decision-brief.md）：
+
+        ## 决策简报: {topic}
+        **决策问题**: {research_decision_point}
+
+        ### 选项
+        列出研究发现的所有方案/工具/方法，每个选项一行。
+        (探索型 "了解全貌" 时改为 "关键发现"，其余段落保持)
+
+        ### 证据
+        每个选项的支撑证据，带 NotebookLM 引用标记 [N]。
+        格式：- **{选项 A}**: {证据摘要} [1][3]
+
+        ### 推荐
+        基于证据的推荐及理由。证据不足时明确说明。
+
+        ### 未知风险
+        研究未覆盖的领域、证据不足的维度。
+
+        Note: 此步骤替换原 4_return。结果交付在 5_feedback_loop 结束后。
+        降级路径（NotebookLM 不可用）：简报基于 WebSearch 结果生成，格式相同。
+
+      4b_verify_claims: |
+        从简报的"证据"和"推荐"段落中提取具体 claim：
+        - 数字型：性能数据、价格、用户量
+        - 版本型：软件版本号、API 版本
+        - 名称型：工具名、公司名、项目名
+
+        提取规则：
+        - 优先选择直接支撑"推荐"结论的 claim
+        - 目标 3-5 个；少于 3 个时验证所有存在的
+        - 简报完全是定性描述（无数字/版本/名称）→ 跳过 Q5，标注"无可验证的具体 claim"
+
+        For each extracted claim:
+          WebSearch: "{claim} {current_year}"
+          Compare:
+          - 一致 → ✅ 已验证
+          - 找不到 → ⚠️ 待验证（来源不可确认）
+          - 不一致 → ❌ 与最新信息不符: {correct_value}
+            → 同时修正简报正文中的相应描述，标注"[已更正: {原值}→{新值}]"
+
+        将验证结果追加到简报的 "Claim 验证" 表格。
+
+        Note: WebSearch 验证，不依赖 NotebookLM。降级路径下 Q5 仍可执行。
+
+      5_feedback_loop: |
+        max_feedback_rounds: 2
+        feedback_round: 0
+
+        AskUserQuestion:
+          question: "这份决策简报回答了你的问题吗？"
+          options:
+            - "是的，够了" → 结束研究，保存简报
+            - "大方向对，但 {X} 部分没到位" → targeted follow-up
+            - "不对，我的问题是 {Y}" → reframe
+            - "需要更多细节" → deepen
+
+        If "是的，够了": → 保存简报，结束
+
+        If "大方向对，但 X 没到位" AND feedback_round < max_feedback_rounds:
+          → Extract gap_topic from user's answer
+          → notebooklm ask "关于 {gap_topic}，在 {research_decision_point} 的上下文中，有什么更具体的信息？" -n <id>
+            (Raw CLI — 不触发 step3_5，avoids nested dynamic follow-up)
+          → 补充到简报对应段落
+          → 如果补充含新具体 claim → 重新执行 4b_verify_claims
+          → feedback_round += 1 → LOOP back
+
+        If "不对，我的问题是 Y":
+          → 更新 research_decision_point = Y
+          → 重新执行 4_format_brief（基于已有 ask 结果重组）
+          → 重新执行 4b_verify_claims（新简报可能含不同 claim）
+          → Material sufficiency check:
+            如果重新生成的简报"选项"段落少于 2 项或明显比原简报薄：
+            → AskUserQuestion: "现有研究不太覆盖 '{Y}'。怎么处理？"
+              Options:
+                - "用当前 notebook 针对 Y 追问" → ask "{Y}" -n <id> → 重新 4_format_brief
+                - "开启新的 Standard 研究" → 回到 step 0（新 decision_point = Y）
+                - "先用现有信息" → 继续，接受简报较薄
+            如果内容充足 → 继续正常流程
+          → feedback_round += 1 → LOOP back
+
+        If "需要更多细节":
+          → AskUserQuestion: "哪个选项需要更多细节？"
+          → 对选中选项用 ask 追问 -n <id>（Raw CLI）
+          → 补充到简报
+          → feedback_round += 1 → LOOP back
+
+        If feedback_round >= max_feedback_rounds:
+          → "已完成 2 轮反馈补充。如果还需要更深入，建议运行 *research --deep。"
+          → 结束
+
+        结束后保存简报:
+          → Write to .tad/evidence/research/{notebook_topic}/{date}-decision-brief-{slug}.md
+          → Report: "📋 决策简报已保存: {path}"
+
+        降级路径（NotebookLM 不可用）：
+          Q6 反馈追问改用 WebSearch 代替 ask。简报仍可补充。
+
     note: "Standard 使用 -n <id> 指定 notebook，不使用 use <id>（避免全局状态污染）"
 
   deep_execution:
