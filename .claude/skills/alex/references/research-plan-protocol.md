@@ -30,6 +30,24 @@ research_plan_protocol:
            If no OBJECTIVES: treat the user's question as the single gap
         4. If OBJECTIVES exists and no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
 
+    step1b_decision_point:
+      name: "决策点确认 (Q1 — shared with Standard)"
+      action: |
+        If OBJECTIVES.md exists AND gap KRs identified:
+          → decision_context is derived from the highest-priority gap KR
+          → research_decision_point = "为了推进 {KR}，{topic} 的哪个方案证据最强？"
+          → Announce: "📌 Decision context (from OBJECTIVES): {research_decision_point}"
+          → No AskUserQuestion needed — OBJECTIVES provides the decision context
+
+        If OBJECTIVES.md NOT found (user's direct question):
+          → Run the same AskUserQuestion as Standard's 0_decision_point:
+            "研究 '{topic}' 之前先确认：研究完你想做什么决定？"
+          → Store research_decision_point (same format as Standard)
+
+        research_decision_point is used by:
+        - step2 question generation (all questions reference the decision)
+        - Phase 4 seed questions (specificity + decision anchor)
+
     step2:
       name: "生成研究计划"
       action: |
@@ -86,11 +104,16 @@ research_plan_protocol:
 
         a0. PHASE 0 — Research Plan (NEW — define before sourcing):
            → Step 1: Define 5-10 specific research questions from the gap analysis
-             Format rule: questions MUST include a specificity anchor:
+             Format rule 1 — specificity anchor (existing):
              ✅ "From GitHub repos: what specific CLI tools exist for X?"
              ✅ "What token structure does Shopify Polaris use in its polaris-tokens package?"
              ❌ "What are best practices for X?" (too vague — REJECT and rephrase)
              ❌ "How should we approach X?" (no specificity anchor — REJECT)
+             Format rule 2 — decision anchor (Q1 integration):
+             Every seed question MUST reference research_decision_point.
+             禁止纯清单题 — "有哪些 X" 必须改写为 "对于 {decision}，X 的哪些方案最相关"
+             ✅ "For deciding {research_decision_point}: which frameworks handle {specific aspect} best?"
+             ❌ "What are the top 10 frameworks for X?" (pure list, no decision anchor)
            → Step 2: Define source type priority for this research topic:
              | Priority | Source Type | Example |
              |----------|------------|---------|

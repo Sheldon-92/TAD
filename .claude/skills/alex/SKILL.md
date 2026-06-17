@@ -767,6 +767,31 @@ research_unified_protocol:
 
   standard_execution:
     steps:
+      0_decision_point: |
+        AskUserQuestion:
+          question: "研究 '{topic}' 之前先确认：研究完你想做什么决定？"
+          options:
+            - "我想选择：{auto-detect from topic, e.g., '选哪个框架/工具/方案'}"
+            - "我想评估：{e.g., '评估 X 是否适合我们'}"
+            - "我想了解全貌（探索型）"
+            - (Other — 用户自定义)
+
+        If user picks "了解全貌":
+          → research_decision_point = "关于 {topic}，目前有哪些主流方案，各自的适用场景和局限是什么？"
+
+        If user picks option 1/2 or custom:
+          → decision_context = user's answer
+          → research_decision_point = "基于 {decision_context}，{topic} 的哪个方案证据最强？具体比较 {维度}。"
+
+        If user answer is vague (e.g., "不知道"):
+          → Alex 追问一次 "能具体一点吗？比如你是想选工具、评估方案、还是了解全貌？"
+          → If still vague → 按"了解全貌"处理
+
+        Store in session: research_decision_point (referenced by Q3 semantic saturation)
+
+        Note: Q1 always runs for Standard/Deep. Quick is exempt (no notebook, no Q1).
+        Note: When NotebookLM preflight fails (degraded to WebSearch), Q1 still runs normally.
+
       1_find_notebook: |
         Read .tad/research-notebooks/REGISTRY.yaml
         Filter: only status == "active" notebooks participate in matching
@@ -777,13 +802,103 @@ research_unified_protocol:
         1 match → 使用该 notebook (skip to step 3)
         >1 matches → AskUserQuestion: "Found {N} matching notebooks: {list with topic + source_count}. Which to use?"
           Options: each notebook + "Create new notebook"
+
       2_create_if_needed: |
         *research-notebook create "{topic}"
         *research-notebook research --mode fast -n <new_id>
+
+      2b_source_verify: |
+        Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
+
+        source_list = notebooklm source list --json -n <id>
+        total = source count
+
+        If total == 0: skip (fast-research may have failed entirely — proceed to ask)
+
+        For each source:
+          Skip if status != "ready" (preparing/processing/error sources not yet queryable)
+
+          Relevance check (--source scoped ask — single-source content only):
+            verdict = notebooklm ask \
+              "Is this source relevant to the research question: '${research_decision_point}'? \
+               Answer ONLY with RELEVANT or IRRELEVANT." \
+              -n <id> --source "$source_id" \
+              -c 00000000-0000-0000-0000-000000000000  # fresh conversation per source — prevents cross-source context bleed
+
+            If verdict starts with "IRRELEVANT":
+              notebooklm source delete "$source_id" -n <id> --yes || log "⚠️ Delete failed, keeping source"
+              deleted_count += 1
+
+            If verdict is unexpected (neither RELEVANT nor IRRELEVANT):
+              Default: keep source (conservative — false keep > false delete)
+
+            sleep 1  # rate limit protection
+
+        Report: "🔍 Source verification: {total} checked, {deleted_count} irrelevant removed, {retained} retained"
+
+        If all sources deleted:
+          Report: "⚠️ All sources judged irrelevant. Research may have poor coverage."
+          (Continue to step 3 — ask may return limited results but don't block)
+
+        Cap advisory (Standard only):
+          remaining = notebooklm source list --json -n <id> | jq 'length'
+          if remaining > 15:
+            log "⚠️ Source count {remaining} exceeds 15 cap. Consider *research-notebook curate."
+            (Advisory only — user may have manually added sources)
+
       3_ask: |
-        *research-notebook ask "{研究问题}" -n <id>
-        (ask 自带动态追问协议, 4 轮上限, 6 策略)
+        *research-notebook ask "{research_decision_point}" -n <id>
+        (ask 自带动态追问协议, 4 轮上限, 6 策略 — step3_5 内层饱和)
         研究链文件自动保存到 .tad/evidence/research/
+
+      3b_semantic_saturation: |
+        Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
+
+        max_extra_rounds: 2
+        extra_round: 0
+        check_target = research_decision_point || topic  # fallback to raw user input if Q1 somehow unset
+
+        LOOP:
+          saturation_check = notebooklm ask \
+            "Based on all information available to you, can you fully answer this decision question: \
+             '${check_target}'? \
+             If YES: respond COMPLETE. \
+             If NO: respond INCOMPLETE followed by the specific sub-question that remains unanswered." \
+            -n <id> -c 00000000-0000-0000-0000-000000000000
+
+          If starts with "COMPLETE":
+            → "✅ Semantic saturation: research question fully answered after {extra_round} extra rounds"
+            → EXIT LOOP → proceed to step 4
+
+          If starts with "INCOMPLETE" AND extra_round < max_extra_rounds:
+            → Extract missing_sub_question
+            → "🔄 Semantic gap: '{missing_sub_question}'. Running targeted follow-up..."
+            → followup = notebooklm ask "{missing_sub_question}" -n <id>
+              (Raw CLI — NOT *research-notebook ask — avoids nested step3_5.
+               Inner tier already exhausted deep exploration; Q3 uses a different question angle.)
+            → Citation-based exit check:
+              new_citations = count unique [N] refs in followup
+              if new_citations == 0:
+                → "⚠️ Semantic gap identified but no new information in notebook. Proceeding with partial results."
+                → EXIT LOOP
+            → extra_round += 1
+            → sleep 1
+            → LOOP back
+
+          If extra_round >= max_extra_rounds:
+            → "⚠️ After {max_extra_rounds} extra rounds, question not fully answered. Proceeding with partial results."
+            → EXIT LOOP
+
+          If unexpected response (neither COMPLETE nor INCOMPLETE):
+            → "⚠️ Saturation check returned unexpected format. Proceeding with partial results."
+            → EXIT LOOP  # Default to exit with warning, not silent COMPLETE
+
+        Two-tier saturation model:
+        - Inner (step3_5): citation-based, runs INSIDE *research-notebook ask. Detects "no new information."
+        - Outer (Q3): semantic, runs AFTER ask. Detects "info found but decision question not answered."
+        - Q3 follow-ups are shallow (raw CLI) because inner tier already exhausted deep exploration.
+        - Citation-based exit check prevents burning API calls when notebook has nothing more.
+
       4_return: "返回结果给用户"
     note: "Standard 使用 -n <id> 指定 notebook，不使用 use <id>（避免全局状态污染）"
 
