@@ -5,6 +5,16 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.31.1] - 2026-06-17
+
+### Fixed
+- Installer self-check false positive on upgrade (bidirectional diff → one-directional: only flag source files missing from target)
+- CLAUDE.md silently overwritten on upgrade (added marker-based merge preserving project-specific content)
+- No way to reinstall same version (added --force flag, refuses downgrade)
+- package.json version drift (added to release-runbook version list)
+- curl|bash docs missing --yes flag for non-interactive use
+- package.json files missing .agents/ directory
+
 ## [2.31.0] - 2026-06-17
 
 ### Added
