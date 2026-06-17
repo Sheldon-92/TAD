@@ -1,152 +1,167 @@
 # Expert Review: code-reviewer
-## Handoff: HANDOFF-20260617-agent-computer-interface-pack.md
+## Handoff: HANDOFF-20260617-installer-audit-fixes.md
 
 **Reviewer**: code-reviewer
 **Date**: 2026-06-17
 **Verdict**: CONDITIONAL PASS
-**Sections Reviewed**: Full document (sections 3-8 abbreviated into single block, no standard section 6/7 separation). Focused on: section 2 (Technical Design), section 9 (Acceptance Criteria + section 9.1), section 10 (Implementation Hints), section 11 (Decision Summary). Cross-referenced with: pack-build-rules.md, pack-evaluation.md, existing ai-tool-integration pack structure, research evidence files.
+**Sections Reviewed**: §2 (Bug Details & Fix Specifications), §3 (Implementation Order), §9 (Acceptance Criteria), §10 (not present -- notes inline), §11 (Decision Summary). Cross-referenced with: tad.sh (lines 50-68 arg parsing, 679-714 call_migration_engine, 887-917 detect_state, 922-1022 main, 1084-1136 install path, 1200-1223 upgrade path, 1260-1320 migrate path), bin/tad-install.mjs, package.json, CLAUDE.md, README.md, INSTALLATION_GUIDE.md, .tad/hooks/lib/migration-engine.sh (lines 717-776 execute_merge_entry), CHANGELOG.md, existing sync scripts, .claude/skills/alex/references/.
 
 ---
 
 ## Critical Issues (P0)
 
-### P0-1: capability-detect.sh MCP detection design is a no-op -- ToolSearch is a Claude runtime API, not a shell command
+### P0-1: Marker name conflicts with established codebase convention -- will break downstream projects
 
-**Location**: Section 2.4 (capability-detect.sh design), Cross-Cutting Rule 1
+**Location**: Bug 2 fix specification (line 87 of handoff), AC3
 
-**Issue**: The capability-detect.sh design says "Tier 1: MCP servers (check by name pattern)" with comments referencing checking for `mcp__claude-in-chrome__*` tools, `mcp__playwright__*`, and `mcp__chrome-devtools__*`. However, these MCP tool names exist only inside the Claude Code runtime -- they are discoverable via ToolSearch (a Claude-internal API) but NOT from a bash script. A shell script cannot call `ToolSearch` or query what MCP servers are connected to the current Claude Code session. There is no CLI equivalent or environment variable that exposes connected MCP server names.
+**Issue**: The handoff proposes using `<!-- TAD:FRAMEWORK-END -->` as the CLAUDE.md merge marker. However, the codebase already has an established, deployed marker convention using `<!-- TAD:PROJECT-CONTENT-BELOW -->`:
 
-The script's Tier 1 is structurally impossible as designed. This is the PRIMARY value of the pack ("capability detection first") and its failure undermines Cross-Cutting Rule 1 and the entire tool selection flow.
+- `CHANGELOG.md` line 75 documents it as the merge execution marker
+- `README.md` line 71 describes it in the v2.29.0 feature description
+- `NEXT.md` line 43 lists 3 downstream projects that still need this exact marker added
+- `.tad/evidence/releases/sync-v2.24.0.sh` line 221 uses it in production sync logic
+- `.tad/evidence/releases/sync-v2.24.1.sh` line 25 uses it
+- `.tad/evidence/releases/sync-v2.29.1.sh` lines 46/48 use it with `grep -q` and `awk` for actual merge
+- `.tad/evidence/acceptance-tests/upgrade-lifecycle/README.md` lines 47/55 reference it
 
-**Impact**: AC5 requires "scripts/capability-detect.sh executable, outputs JSON, detects >= 3 tool types." If Tier 1 (MCP) is a no-op, the script can only detect Tier 2 (CLI tools via `command -v`) and Tier 3 (extension via `ps aux` grep). Detecting exactly 2 tiers means AC5 ">=3 tool types" becomes borderline -- it depends on whether "tool types" means tiers or individual tools. More critically, the pack's marquee use case ("agent detects Claude in Chrome is available and uses it directly") cannot work through this script since Claude in Chrome is an MCP server, not a CLI tool.
+Downstream projects that already have `<!-- TAD:PROJECT-CONTENT-BELOW -->` installed will NOT be recognized by the new `merge_claude_md()` function because it greps for a different marker string. Those projects will fall through to the "No marker (legacy)" branch, get their CLAUDE.md backed up and overwritten -- exactly the data loss Bug 2 is supposed to prevent.
 
-**Fix**: Split capability detection into two mechanisms: (1) a shell script for CLI/process detection (Tier 2 + Tier 3), and (2) SKILL.md instructions telling the agent to use ToolSearch directly for MCP server detection (Tier 1). The SKILL.md Step 0 should say: "For MCP detection, use ToolSearch with query 'select:mcp__claude-in-chrome__navigate' etc. to probe availability. For CLI/extension detection, run `bash scripts/capability-detect.sh`." This matches how existing packs work -- they instruct the agent to use ToolSearch in SKILL.md prose, not in shell scripts.
+**Fix**: Replace `<!-- TAD:FRAMEWORK-END -->` with `<!-- TAD:PROJECT-CONTENT-BELOW -->` throughout the handoff. This is a string substitution in the marker definition, the `merge_claude_md()` function, AC3, and any documentation.
 
-### P0-2: install.sh is specified to exist BUT existing packs in .claude/skills/ have NO install.sh -- the install.sh pattern lives in .tad/capability-packs/
+### P0-2: Handoff proposes new merge function while a battle-tested `execute_merge_entry()` already exists in migration-engine.sh
 
-**Location**: Section 2.1 (directory structure), AC8, FR6
+**Location**: Bug 2 fix specification (lines 92-118 of handoff)
 
-**Issue**: The handoff specifies `install.sh` in `.claude/skills/agent-computer-interface/`. However, inspecting the actual codebase: ZERO of the 24+ existing packs in `.claude/skills/` have an install.sh file. The install.sh files live in `.tad/capability-packs/{pack}/install.sh` (e.g., `.tad/capability-packs/ai-tool-integration/install.sh`). Furthermore, per the pack-build-rules.md pattern "Sync That Mirrors Skills THEN Runs install.sh Can Silently Downgrade Them" (2026-06-15), install.sh regenerating from `.tad/capability-packs/` was identified as a BUG that causes downgrades. The current *sync workflow mirrors `.claude/skills/` directly and does NOT rely on install.sh.
+**Issue**: `.tad/hooks/lib/migration-engine.sh` lines 717-776 already implements `execute_merge_entry()` with:
+- `grep -F` for marker detection (fixed string, no regex injection risk)
+- Idempotency checking (compares head content before writing, skips if already current)
+- Proper handling of missing marker, missing source, missing target
+- `mktemp` for atomic writes (not writing directly to the target)
+- Dry-run support
+- Proper 3-value exit codes (0=success, 1=error, 2=skip)
+- Minimum marker length validation (rejects markers < 10 chars)
 
-AC8 says install.sh should use "single-source copy from .claude/skills/, NOT regenerate from .tad/capability-packs/". This is contradictory -- if the pack is already IN `.claude/skills/`, what would install.sh copy FROM and TO? The install.sh pattern is for external distribution (from `.tad/capability-packs/` into `.claude/skills/`), not for inclusion inside the skills directory itself.
+The proposed `merge_claude_md()` function:
+- Uses `sed -n "/${marker}/,\$p"` which has BSD/GNU portability concerns (the `\$` in double quotes, the regex delimiter `/` if marker ever contains `/`)
+- Has NO idempotency checking -- runs the full merge even if CLAUDE.md is already up to date
+- Writes directly to CLAUDE.md with no atomic write -- a crash mid-write loses both old and new content
+- Has no dry-run support
+- Has no marker length validation
 
-**Impact**: Blake will create an install.sh inside `.claude/skills/agent-computer-interface/` that serves no purpose (the files are already where they need to be) or that introduces the exact downgrade bug that the 2026-06-15 principle warns against. This also breaks the established structural pattern of the other 24 packs.
+The migration engine is already called on upgrade (tad.sh line 1205) and migrate (line 1284) paths. CLAUDE.md merge could be added to the v2.31.0+ migration manifest as a `merge` entry. This would be zero new code in tad.sh.
 
-**Fix**: Remove install.sh from the `.claude/skills/` directory structure. If an install.sh is needed for external distribution, it belongs in `.tad/capability-packs/agent-computer-interface/install.sh` following the existing pattern. Update AC8 to instead verify that the pack structure follows the standard pattern (no install.sh in skills dir).
+This violates the project principle "Never Hand-Write What an Existing Tool Already Does" (principles.md, 2026-05-28).
+
+**Fix**: Either (a) add a CLAUDE.md merge entry to the migration manifest for the relevant version transition, leveraging `execute_merge_entry()` automatically, or (b) if a standalone function is truly needed (e.g., for fresh-to-upgrade transitions not covered by the manifest chain), extract the merge logic from `execute_merge_entry()` rather than writing new, inferior code.
+
+### P0-3: `--force` does not distinguish "same version" from "installed newer" -- enables silent downgrade
+
+**Location**: Bug 3 fix specification (lines 150-161 of handoff)
+
+**Issue**: `detect_state()` returns `"current"` in TWO cases (tad.sh lines 895-900):
+1. `"$ver" = "$TARGET_VERSION"` -- same version (line 895-896)
+2. `_tad_ver_cmp "$ver" "$TARGET_VERSION" == 1` -- installed is NEWER (line 899-900, comment: "never downgrade")
+
+Both cases set `ACTION="none"`. The handoff's `--force` fix blindly converts `ACTION="none"` to `ACTION="upgrade"`. When the installed version is NEWER than target (e.g., user has v2.32.0, runs an older tad.sh that targets v2.31.0), `--force` will downgrade the installation. The `ACTION="none"` at line 900 exists specifically to prevent this ("never downgrade" comment), but `--force` bypasses it without checking.
+
+**Fix**: In the `--force` block, add version comparison to refuse or explicitly warn about downgrade:
+```bash
+if [ "$FORCE" = "1" ]; then
+    if [ -f ".tad/version.txt" ] && [ "$(_tad_ver_cmp "$(cat .tad/version.txt)" "$TARGET_VERSION")" = "1" ]; then
+        log_warn "Installed version is NEWER than target. Use upgrade to v${TARGET_VERSION}? This is a DOWNGRADE."
+        # Either refuse or require explicit --downgrade flag
+    else
+        log_info "Force reinstall requested (same version)"
+        ACTION="upgrade"
+    fi
+fi
+```
 
 ---
 
 ## Recommendations (P1)
 
-### P1-1: Missing CONSUMES/PRODUCES interface contract
+### P1-1: Bug 4 scope is incomplete -- curl commands in skill references are not listed
 
-**Location**: Section 2.2 (SKILL.md design)
+**Location**: Bug 4 fix specification, AC9
 
-**Issue**: Per pack-build-rules.md "Design and Build Rules" (2026-05-07), every capability pack MUST declare CONSUMES/PRODUCES interface contracts. The ai-tool-integration gold reference pack has these on lines 8-9 of its SKILL.md. The handoff's SKILL.md design (section 2.2) shows frontmatter and cross-cutting rules but does NOT include CONSUMES/PRODUCES. `grep -c "CONSUMES\|PRODUCES"` on the handoff returns 0.
+**Issue**: The handoff lists "README.md, INSTALLATION_GUIDE.md, tad-help skill" for curl --yes fixes. Actual grep reveals additional locations:
+- `.claude/skills/alex/references/sync-protocol.md` line 32: `curl -sSL ... | bash` (no --yes)
+- `.claude/skills/alex/references/publish-protocol.md` line 31: `curl -sSL ... | bash` (no --yes)
+- `INSTALLATION_GUIDE.md` already has partial coverage: line 22 has `--yes`, but lines 10, 17, 65 do NOT
+- `README.md` lines 79, 101, 130 all lack `--yes`
 
-**Fix**: Add CONSUMES/PRODUCES to the SKILL.md design template. Suggested:
-```
-CONSUMES: User browser/computer control task + target URL/application description + optional existing MCP server connections
-PRODUCES: Applied tool selection judgment + capability detection results + fallback chain recommendations + configuration guidance
-```
+Blake needs the complete list to satisfy AC9 ("all documents").
 
-### P1-2: No explicit section 6 (Implementation Steps) -- "3-8 abbreviated" loses critical ordering information
+**Fix**: Add the alex/references/ files to the explicit scope. Note that INSTALLATION_GUIDE.md needs targeted fixes (not blanket), since line 22 already demonstrates the correct pattern.
 
-**Location**: Sections 3-8 (abbreviated block)
+### P1-2: Missing AC for marker name consistency with existing codebase convention
 
-**Issue**: The handoff collapses sections 3-8 into a single block with only FR table and friction preflight. Standard handoff section 6 contains ordered implementation steps with explicit sequencing. The "Implementation Hints" in section 10 are unordered bullet points. Key dependency: reference files must be written before SKILL.md's Quick Rule Index can reference them, and capability-detect.sh design must be finalized (with P0-1 fix) before SKILL.md's Cross-Cutting Rule 1 can accurately describe its usage.
+**Location**: §9 (Acceptance Criteria)
 
-**Fix**: Add an explicit implementation sequence in section 10 or restore section 6:
-1. Read research sources (decision-brief.md + raw-ask-results.md)
-2. Create 6 reference files (references/*.md) with judgment rules from research
-3. Create scripts/capability-detect.sh (CLI + extension tiers only, per P0-1 fix)
-4. Create scripts/tool-health-check.sh
-5. Create SKILL.md (frontmatter + cross-cutting rules + context router referencing created files)
-6. Create examples/fixture-browser-task.md
-7. Sync to .agents/skills/
+**Issue**: Even after fixing P0-1, there is no AC that verifies the chosen marker is consistent with existing usage across the codebase. A new AC should confirm the marker string matches what sync scripts, README, CHANGELOG, and downstream projects already use.
 
-### P1-3: capability-detect.sh uses `ps aux | grep` for extension detection -- fragile and potentially false-positive
+**Fix**: Add AC13: `grep -rF '<!-- TAD:PROJECT-CONTENT-BELOW -->' CLAUDE.md tad.sh | wc -l >= 2` (marker present in both the source CLAUDE.md and the tad.sh merge function).
 
-**Location**: Section 2.4 (Tier 3 detection)
+### P1-3: `call_migration_engine` silently skips on same-version `--force` reinstall
 
-**Issue**: The script detects Claude in Chrome via `ps aux | grep -q "[c]laude.*--chrome"`. This pattern:
-- May not match if the process name or flag changes in future Claude Code releases
-- Could false-positive on any process containing "claude" followed by "chrome" (e.g., a user script named claude-chrome-test.sh)
-- The `[c]laude` bracket trick only avoids matching the grep process itself -- it does not ensure the match is a Claude Code process specifically
-- Whether `--chrome` is even a real Claude Code flag is not verified in the research sources
+**Location**: tad.sh lines 684-687, interaction with Bug 3 fix
 
-**Fix**: Document this detection as "heuristic, may produce false positives" in SKILL.md's Step 0. Consider adding `pgrep -f` as an alternative pattern. More importantly, since MCP detection via ToolSearch (P0-1 fix) will be the primary mechanism for Claude in Chrome detection, demote this to a secondary fallback signal.
+**Issue**: When `--force` triggers a reinstall of the same version, `call_migration_engine` checks `old_ver == new_ver` and returns 0 (skip). This means `--force` reinstall will NOT run any migration logic (including any CLAUDE.md merge if P0-2 is resolved via manifest). `copy_framework_files` still runs, so framework files are refreshed -- but the merge behavior depends on the approach chosen for P0-2.
 
-### P1-4: Fixture discriminative_pattern contains potentially generic terms
+**Fix**: Document this as expected behavior in the handoff, OR modify `call_migration_engine` to accept a `--force` flag that bypasses the version equality check.
 
-**Location**: Section 2.6 (Behavioral Eval Fixture)
+### P1-4: Bug 2 code uses `printf '\n%s\n'` which adds extra blank lines
 
-**Issue**: Per pack-evaluation.md "Behavioral-Eval Gate Must Run on SEPARATE Discriminative Field" (2026-05-31), discriminative patterns must contain ONLY pack-specific markers. The proposed pattern: `"capability.detect|Layer.Match|fallback.chain|Claude.in.Chrome|Playwright.MCP|token.cost"`.
+**Location**: Bug 2 code snippet, line 109 of handoff
 
-Potential generics:
-- `token.cost` -- any cost-aware LLM discussion mentions this
-- `fallback.chain` -- common resilience pattern terminology
-- `Layer.Match` -- could appear in networking/OSI discussions
+**Issue**: `printf '\n%s\n' "$project_content" >> CLAUDE.md` prepends a newline before the project content. If the source CLAUDE.md already ends with a newline (which it will, since the marker line ends with newline), this creates a double blank line before the project content. Minor cosmetic issue but accumulates on repeated upgrades (each upgrade adds one more blank line).
 
-With `min_discriminative: 3`, a CONTROL agent discussing browser automation could plausibly hit `fallback.chain` + `token.cost` + `Claude.in.Chrome` (if Claude in Chrome is mentioned in the conversation context), reaching 3 without the pack.
-
-**Fix**: Either tighten the pattern to truly pack-specific terms (e.g., `"capability.detect.sh|L[1-5].Engine|five.layer.selection|MCP.tier.scan|context.tax.13k|Stagehand.act.extract"`) or raise `min_discriminative` to 4+.
+**Fix**: Use `printf '%s\n' "$project_content"` (without leading `\n`), or better yet, use the migration engine's approach which handles whitespace correctly.
 
 ---
 
 ## Suggestions (P2)
 
-### P2-1: Missing LICENSE file in pack directory
+### P2-1: README.md version verification string is stale
 
-**Location**: Section 2.1 (directory structure)
+**Location**: README.md line 114
 
-**Issue**: The gold-standard ai-tool-integration pack includes a LICENSE file. The proposed directory structure does not include one. While not blocking, maintaining structural consistency with existing packs reduces maintenance burden during *sync operations.
+**Issue**: `# Should show: 2.30.0` but version.txt is already `2.31.0`. Since Bug 4 already touches README.md for curl --yes fixes, this could be updated in the same pass. Not in the handoff scope but a trivial fix while in the file.
 
-### P2-2: Missing Version/Compatibility header in SKILL.md design
+### P2-2: `parseArgs` switch in tad-install.mjs -- `default` falls through due to eslint-disable comment
 
-**Location**: Section 2.2
+**Location**: bin/tad-install.mjs line 125
 
-**Issue**: The ai-tool-integration pack includes `Version: 0.1.0` and `Compatibility: Claude Code (Phase 1); Codex / Cursor / Gemini in Phase 3` headers. The proposed SKILL.md design does not include these. Adding them improves traceability and aligns with the established pattern.
+**Issue**: The existing code has `default: // eslint-disable-line no-fallthrough` which is misleading -- it does NOT actually fall through (it calls `process.exit(1)`). The comment is about ESLint, not about actual fallthrough. When adding `case '--force': force = true; break;`, ensure it is placed BEFORE the `default` case. The handoff's code snippet is correct but does not specify the exact insertion point in the switch statement.
 
-### P2-3: tool-health-check.sh 90-day threshold is arbitrary and ungrounded
+### P2-3: Consider adding `--force` to tad-install.mjs `--help` output
 
-**Location**: Section 2.5
+**Location**: bin/tad-install.mjs lines 118-123
 
-**Issue**: The 90-day staleness threshold for `last_verified` dates is stated without research grounding. Given the handoff notes the domain "changes extremely fast" (section 11, D3 rationale), 90 days may be too generous. Consider documenting the rationale or making the threshold configurable (e.g., `STALE_DAYS=${STALE_DAYS:-90}`).
-
-### P2-4: AC4 "each rule cites research source" needs verification method
-
-**Location**: AC4
-
-**Issue**: AC4 says "6 reference files exist, each with >=5 judgment rules, each rule cites research source." But there is no specified verification method (grep pattern, manual review). Consider adding a verification command like `grep -c 'Source:' references/*.md` to check each file has at least 5 source citations.
-
-### P2-5: Consider specifying LC_ALL for capability-detect.sh
-
-**Location**: Section 2.4
-
-**Issue**: Per shell-portability pattern in pack-build-rules.md, macOS scripts that process potentially Unicode text should set `LC_ALL=en_US.UTF-8`. While capability-detect.sh primarily handles ASCII tool names, the fallback notification messages contain CJK characters (the "warn" format uses Chinese characters). Setting LC_ALL at the script top prevents silent encoding issues.
+**Issue**: The handoff specifies adding `--force` to tad.sh's `--help` output (Bug 3, item 2) but does not mention updating tad-install.mjs's `--help` output (lines 118-123), which currently does not mention `--force`. Blake may miss this.
 
 ---
 
 ## Positive Confirmations
 
-- The five-layer architecture model (L1 Engine through L5 Desktop) is well-grounded in the research evidence (decision-brief.md confirms the taxonomy with star counts and benchmark numbers).
-- The 3 cross-cutting rules are well-chosen and genuinely cross-reference (capability detection, layer match, fallback chain) -- each applies regardless of which reference is loaded.
-- The reference-based architecture correctly follows the Pack Architecture Spectrum pattern for judgment-rules packs.
-- AC9 (.agents/skills parity via byte-identical check) follows established practice.
-- AC10 (numeric claims verified against research) directly addresses the Research Provenance Rules pattern.
-- The YAML frontmatter design includes both Chinese and English keywords, following the Domain Pack Keyword Curation pattern.
-- The token cost comparison table (section 2.2, Cross-Cutting Rule 3) provides genuinely discriminative specific numbers (13.6k tokens, 4x cost ratio) that satisfy the anti-slop quality bar.
-- Research sources are well-documented with notebook ID and verified claims table.
+- Bug 1 (package.json version drift) is a clear 1-line fix, correctly identified and trivially verifiable
+- Bug 5 (package.json files missing .agents/) is correct -- confirmed `.agents/` exists in codebase but not in `files` array
+- Implementation order (Bug 1 -> Bug 5 -> Bug 4 -> Bug 3 -> Bug 2) correctly sequences from simplest to most complex
+- AC12 (end-to-end verification: fresh install -> add content -> upgrade -> verify preservation) is well-designed
+- Decision D2 (legacy backup + warn) is the right call for files without markers
+- The handoff correctly identifies all 3 locations of bare `cp` in tad.sh (lines 1113, 1209, 1287)
 
 ---
 
 ## Overall Assessment: CONDITIONAL PASS
 
-The handoff demonstrates strong research grounding and a sound five-layer architecture design. The two P0 issues must be fixed before Blake starts:
+The handoff correctly identifies 5 real bugs and proposes a sound overall approach. However, the CLAUDE.md merge implementation (Bug 2 -- the most complex and highest-risk fix) has two critical issues:
 
-1. **P0-1** (capability-detect.sh MCP detection is structurally impossible from a shell script) undermines the pack's core value proposition. The fix is straightforward: split detection into shell script (CLI/process) + SKILL.md prose (ToolSearch for MCP).
+1. **P0-1**: The proposed marker name `<!-- TAD:FRAMEWORK-END -->` conflicts with the established `<!-- TAD:PROJECT-CONTENT-BELOW -->` used throughout the codebase and in downstream projects. Using the wrong marker will cause the exact data loss this fix is supposed to prevent.
 
-2. **P0-2** (install.sh in the wrong location, contradicting the established 24-pack pattern and the 2026-06-15 principle) will create structural inconsistency. Remove it from .claude/skills/ or clarify its actual purpose.
+2. **P0-2**: A battle-tested merge engine already exists (`execute_merge_entry()` in migration-engine.sh) with atomic writes, idempotency, and proper error handling. The proposed hand-written `merge_claude_md()` is inferior on every dimension.
 
-With P0s fixed and P1s addressed, this handoff provides Blake with a clear, research-backed design for the 25th capability pack.
+3. **P0-3**: The `--force` flag does not guard against downgrade -- it blindly converts "installed newer" into upgrade, overriding the existing "never downgrade" safety.
+
+With P0s fixed and P1s addressed, this handoff provides Blake with clear, actionable fix specifications for all 5 bugs.
