@@ -892,7 +892,7 @@ merge_claude_md() {
     cp "CLAUDE.md" "CLAUDE.md.bak"
 
     local marker_line
-    marker_line=$(grep -nF "$marker" "CLAUDE.md" | head -1 | cut -d: -f1)
+    marker_line=$(grep -nF "$marker" "CLAUDE.md" | head -1 | cut -d: -f1 || true)
 
     if [ -n "$marker_line" ]; then
         local content_start=$((marker_line + 1))
