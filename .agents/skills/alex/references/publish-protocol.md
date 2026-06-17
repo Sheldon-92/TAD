@@ -28,7 +28,7 @@ publish_protocol:
           - Potentially corrupt your project's release history
 
           To update the TAD framework installed in this project:
-            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 
           To release your own project, use your project's own release workflow —
           not *publish.

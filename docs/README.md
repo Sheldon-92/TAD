@@ -28,9 +28,9 @@
 
 | From | To | Command |
 |------|----|---------|
-| Fresh | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
-| v2.x | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
-| v1.x | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash` |
+| Fresh | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash -s -- --yes` |
+| v2.x | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash -s -- --yes` |
+| v1.x | v2.3.0 | `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh \| bash -s -- --yes` |
 
 All upgrades preserve your data (handoffs, learnings, evidence).
 

@@ -29,7 +29,7 @@ sync_protocol:
           - This can silently corrupt OTHER projects with files from this one
 
           To update the TAD framework installed in this project:
-            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+            curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 
           To sync TAD updates to all your registered projects, switch to the
           TAD source repo first, then run *sync there.

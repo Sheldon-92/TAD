@@ -71,7 +71,7 @@ When in doubt, ask the user.
 
 ## Phase 2 — Version Bump (CRITICAL)
 
-⚠️ **Version number is duplicated in 6 places**. Miss any one = stale release. This is the #1 source of release bugs.
+⚠️ **Version number is duplicated in 7 places** (incl. package.json). Miss any one = stale release. This is the #1 source of release bugs.
 
 ### Derive + Verify (authoritative — self-deriving, replaces the hardcoded table)
 
@@ -122,6 +122,7 @@ class that historically went stale). Exit 0 = clean, exit 1 = stale (named), exi
 | 12 | `INSTALLATION_GUIDE.md` summary | `TAD vX.Y.Z 核心特性：` |
 | 13 | `.claude/skills/tad-help/SKILL.md` template | `Version: vX.Y.Z` |
 | 14 | `.claude/skills/tad-help/SKILL.md` highlights | `## TAD vX.Y.Z Highlights` |
+| 15 | `package.json` line 3 | `"version": "X.Y.Z"` |
 
 ### Quick grep to find stragglers
 
@@ -130,7 +131,7 @@ After bumping, run this to confirm no stale refs:
 ```bash
 grep -rnE "v?[0-9]+\.[0-9]+\.[0-9]+" \
   .tad/version.txt .tad/config.yaml README.md INSTALLATION_GUIDE.md \
-  .claude/skills/tad-help/SKILL.md \
+  .claude/skills/tad-help/SKILL.md package.json \
   2>/dev/null \
   | grep -vE "^[^:]*:[0-9]+:# " \
   | grep -v "/2.8.1\|/2.8.0\|/2.7.0\|/2.6.0\|/2.5.0\|/2.4.0\|/2.3.0\|/2.2\|/2.1\|/2.0\|/1.8"

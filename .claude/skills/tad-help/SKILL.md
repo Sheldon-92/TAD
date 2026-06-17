@@ -17,7 +17,7 @@ TAD Framework Help Guide
  Version: v2.30.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
-- [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash
+- [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 - [ ] Initialize: /tad-init
 - [ ] Verify: /tad-status
 - [ ] Choose scenario: /tad-scenario [name]
@@ -53,7 +53,7 @@ Terminal 2: Use /blake command to activate Agent B
 # TAD Framework Help
 
 ## Quick Start
-1. **Install TAD**: `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/install.sh | bash`
+1. **Install TAD**: `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes`
 2. **Initialize project**: `/tad-init`
 3. **Check status**: `/tad-status`
 4. **Start scenario**: `/tad-scenario [name]`

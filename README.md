@@ -76,7 +76,7 @@ Every version upgrade is now driven by a **declarative migration manifest** (`de
 
 ```bash
 # What happens now when you upgrade:
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 # 1. Downloads new version
 # 2. Copies framework files
 # 3. ⭐ Runs migration engine: cleans old files, renames moved files, merges CLAUDE.md
@@ -98,7 +98,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
 ## 🚀 Installation & Upgrade
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
 一行命令，全量安装 Claude Code + 全部 25 个 capability packs。升级也用同一命令。
@@ -127,7 +127,7 @@ ls .tad/migrations/*.yaml | wc -l
 
 ### 1. Install TAD
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
 ### 2. Open Two Terminals

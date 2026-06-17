@@ -83,3 +83,5 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 @.tad/project-knowledge/api-integration.md
 @.tad/project-knowledge/mobile-platform.md
 @.tad/project-knowledge/frontend-design.md
+
+<!-- TAD:PROJECT-CONTENT-BELOW -->

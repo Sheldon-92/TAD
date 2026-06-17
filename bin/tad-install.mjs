@@ -81,8 +81,11 @@ function validatePacks(packList) {
   }
 }
 
-function runInstall(platform, packs) {
+function runInstall(platform, packs, force) {
   const args = [TAD_SH_PATH, '--platform', platform, '--yes'];
+  if (force) {
+    args.push('--force');
+  }
   if (packs) {
     args.push('--packs', packs);
   }
@@ -104,6 +107,7 @@ function parseArgs() {
   const args = process.argv.slice(2);
   let platform = '';
   let packs = '';
+  let force = false;
   let i = 0;
   while (i < args.length) {
     switch (args[i]) {
@@ -113,13 +117,17 @@ function parseArgs() {
       case '--packs':
         packs = args[++i] || '';
         break;
+      case '--force':
+        force = true;
+        break;
       case '--help':
       case '-h':
-        console.log('Usage: npx tad-framework [--platform <name>] [--packs <list>]');
+        console.log('Usage: npx tad-framework [--platform <name>] [--packs <list>] [--force]');
         console.log('');
         console.log('Options:');
         console.log('  --platform <name>  Target platform (claude-code, codex)');
         console.log('  --packs <list>     Comma-separated pack names to install');
+        console.log('  --force            Reinstall even if already on the same version');
         console.log('  --help             Show this message');
         process.exit(0);
       default: // eslint-disable-line no-fallthrough
@@ -128,11 +136,11 @@ function parseArgs() {
     }
     i++;
   }
-  return { platform, packs };
+  return { platform, packs, force };
 }
 
 async function main() {
-  const { platform: argPlatform, packs: argPacks } = parseArgs();
+  const { platform: argPlatform, packs: argPacks, force: argForce } = parseArgs();
 
   if (argPlatform) {
     validatePlatform(argPlatform);
@@ -143,7 +151,7 @@ async function main() {
 
   // Default: full install (claude-code + all packs), no questions asked
   const platform = argPlatform || 'claude-code';
-  runInstall(platform, argPacks);
+  runInstall(platform, argPacks, argForce);
 }
 
 main();

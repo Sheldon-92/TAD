@@ -7,14 +7,14 @@
 ### 方式 1: curl（推荐，一行全量安装）
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
 默认 Claude Code 全套 + 全部 25 个 packs。无需 Node.js，只需 bash + curl。
 
 Codex 用户或选择特定 packs：
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --packs web-frontend,web-backend
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform codex --packs web-frontend,web-backend
 ```
 
 CI / 脚本化（跳过确认提示）：
@@ -62,7 +62,7 @@ claude .                       # 打开项目
 ```bash
 # 任选其一：
 npx github:Sheldon-92/TAD                            # npx（推荐）
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash  # curl
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes  # curl
 ```
 
 脚本自动检测现有安装，保留你的 handoffs、evidence、project-knowledge，只更新框架文件。

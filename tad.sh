@@ -45,11 +45,13 @@ DETECTED_PLATFORMS=""
 # CI, curl|bash). "$@" is set -u-safe even with zero args.
 AUTO_YES=0
 VERIFY_DENYLIST=0
+FORCE=0
 PLATFORM=""
 PACKS=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --yes|-y)  AUTO_YES=1; shift ;;
+    --force)   FORCE=1; shift ;;
     --verify-denylist) VERIFY_DENYLIST=1; shift ;;
     --platform)
       [ -z "${2:-}" ] && echo "tad.sh: --platform requires a value" >&2 && exit 1
@@ -58,8 +60,9 @@ while [ $# -gt 0 ]; do
       [ -z "${2:-}" ] && echo "tad.sh: --packs requires a value" >&2 && exit 1
       PACKS="$2"; shift 2 ;;
     --help|-h)
-      echo "Usage: tad.sh [--yes|-y] [--platform <name>] [--packs <list>] [--verify-denylist]"
+      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--verify-denylist]"
       echo "  --yes              skip the interactive confirmation prompt"
+      echo "  --force            reinstall even if already on the same version"
       echo "  --platform <name>  target platform (claude-code, codex). Default: claude-code"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
       echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
@@ -868,6 +871,52 @@ fi
 trap 'rollback_on_failure' ERR
 
 # ============================================
+# CLAUDE.md Merge (marker-based)
+# ============================================
+merge_claude_md() {
+    local src="$1"
+    local marker="<!-- TAD:PROJECT-CONTENT-BELOW -->"
+
+    if [ ! -f "$src/CLAUDE.md" ]; then
+        log_error "Source CLAUDE.md not found: $src/CLAUDE.md"
+        return 1
+    fi
+
+    if [ ! -f "CLAUDE.md" ]; then
+        cp "$src/CLAUDE.md" ./
+        return
+    fi
+
+    # Always backup first
+    cp "CLAUDE.md" "CLAUDE.md.bak"
+
+    local marker_line
+    marker_line=$(grep -nF "$marker" "CLAUDE.md" | head -1 | cut -d: -f1)
+
+    if [ -n "$marker_line" ]; then
+        local content_start=$((marker_line + 1))
+
+        local tmpfile
+        tmpfile=$(mktemp "CLAUDE.md.merge.XXXXXX")
+
+        # Invariant: source CLAUDE.md MUST end with the marker as its last line.
+        # The full source (including marker) is written, then project content appended.
+        cat "$src/CLAUDE.md" > "$tmpfile" || { rm -f "$tmpfile"; return 1; }
+
+        # tail -n +N on a file shorter than N lines outputs nothing (safe no-op)
+        tail -n +"$content_start" "CLAUDE.md" >> "$tmpfile" || { rm -f "$tmpfile"; return 1; }
+
+        mv "$tmpfile" "CLAUDE.md" || { rm -f "$tmpfile"; return 1; }
+        log_success "  → CLAUDE.md merged (project content preserved below marker)"
+        rm -f "CLAUDE.md.bak"
+    else
+        cp "$src/CLAUDE.md" ./
+        log_warn "CLAUDE.md backed up to CLAUDE.md.bak (no merge marker found)"
+        log_warn "If you had project-specific rules, restore them from the backup"
+    fi
+}
+
+# ============================================
 # Detect current state
 # ============================================
 # numeric semver compare. echoes -1 if $1<$2, 0 if ==, 1 if $1>$2. Pure bash, BSD-safe.
@@ -1009,16 +1058,28 @@ main() {
 
     echo ""
 
-    # If already current, exit
+    # If already current, check --force
     if [ "$ACTION" == "none" ]; then
-        echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
-        echo ""
-        echo "Available commands:"
-        echo "  /alex  - Start Agent A (Solution Lead)"
-        echo "  /blake - Start Agent B (Execution Master)"
-        echo "  /gate  - Run quality gate"
-        echo ""
-        exit 0
+        if [ "$FORCE" = "1" ]; then
+            local cmp_result
+            cmp_result="$(_tad_ver_cmp "$CURRENT_VERSION" "$TARGET_VERSION")"
+            if [ "$cmp_result" = "0" ]; then
+                log_info "Force reinstall requested (same version: $CURRENT_VERSION)"
+                ACTION="upgrade"
+            else
+                log_warn "Installed v${CURRENT_VERSION} is NEWER than target v${TARGET_VERSION}. --force does not downgrade."
+                exit 0
+            fi
+        else
+            echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
+            echo ""
+            echo "Available commands:"
+            echo "  /alex  - Start Agent A (Solution Lead)"
+            echo "  /blake - Start Agent B (Execution Master)"
+            echo "  /gate  - Run quality gate"
+            echo ""
+            exit 0
+        fi
     fi
 
     # Show what will happen
@@ -1204,9 +1265,9 @@ NEXTEOF
             # Run migration engine (after copy makes engine available; before version.txt update)
             call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
 
-            # Update CLAUDE.md
+            # Update CLAUDE.md (merge: preserve project content below marker)
             log_info "  → Updating CLAUDE.md..."
-            cp "$TAD_SRC"/CLAUDE.md ./
+            merge_claude_md "$TAD_SRC"
 
             # Update project-knowledge README
             cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
@@ -1283,8 +1344,8 @@ NEXTEOF
             # Run migration engine (after copy makes engine available; before version.txt update)
             call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
 
-            # Copy root files
-            cp "$TAD_SRC"/CLAUDE.md ./
+            # Merge CLAUDE.md (preserve project content below marker)
+            merge_claude_md "$TAD_SRC"
 
             # Copy project-knowledge README
             cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
