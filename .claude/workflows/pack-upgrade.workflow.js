@@ -1,31 +1,24 @@
-// ⚠️ cost ≈ packs × (~25 agent calls each at research_max_rounds=2); keep packs × research_max_rounds modest (e.g. ≤ ~12 round-units) per run.
+// ⚠️ cost ≈ packs × (~25 agent calls each); keep pack count modest per run.
 // ════════════════════════════════════════════════════════════════════════════
-// PLAN IS NOW DEEP-RESEARCH-GROUNDED (encodes the research-before-upgrade rule).
+// PLAN IS RESEARCH-GROUNDED (encodes the research-before-upgrade rule).
 //
-// The Plan stage no longer does a single inline WebSearch. Instead it COMPOSES the
-// research-engine workflow inline (PLAN → multi-round DEEPEN with dynamic follow-ups
-// → SATURATION → adversarial VERIFY → cited SYNTHESIS) to produce a cited report +
-// an honest UNVERIFIED/open-questions list for each pack's domain BEFORE writing the
-// upgrade plan. The plan agent then reads that report: every Layer-B addition must
-// cite a report source, and the report's UNVERIFIED items are carried forward as
-// "flag, do NOT assert."
+// The Plan stage uses a per-pack research agent that calls NotebookLM CLI
+// (preflight → find/create notebook → research fast → ask → verify claims →
+// write report to disk) to produce a cited report + UNVERIFIED list BEFORE
+// writing the upgrade plan. If NotebookLM is unavailable, the agent falls
+// back to WebSearch. The plan agent reads that report: every Layer-B addition
+// must cite a report source, and the report's UNVERIFIED items are carried
+// forward as "flag, do NOT assert."
 //
-// This encodes a flow proven manually: research-engine deep research →
-// research-grounded upgrade → clean dogfood win. (video-creation went from
-// "slight win + 1 wrong LUFS claim" to "clear win + 0 errors" purely by doing the
-// deep research first — the deep research caught the false "-14 LUFS unified
-// standard" claim that an inline single search asserted.)
-//
-// NESTING: pack-upgrade stays a TOP-LEVEL workflow; calling research-engine from it
-// is exactly ONE level (workflow() inside a child workflow throws). Cost is bounded
-// by RESEARCH_MAX_ROUNDS (default 2) — a tunable const below.
+// Migrated from nested workflow call to agent() + NotebookLM CLI in
+// EPIC-20260616-research-system-consolidation Phase 4.
 // ════════════════════════════════════════════════════════════════════════════
 export const meta = {
   name: 'pack-upgrade',
-  description: 'Upgrade a list of capability packs to a dual-layer quality bar via a per-pack 4-stage pipeline: Plan (DEEP-research-grounded: compose research-engine inline → cited report + UNVERIFIED list → upgrade plan whose Layer-B additions each cite a report source) → Upgrade (apply Layer A structure + Layer B research-grounded depth; every load-bearing specific traces to a source OR is flagged estimate/convention/UNVERIFIED) → Eval (behavioral discriminative eval) → Review (3-lens adversarial review, fact/API WebSearch-verified, findings persisted to disk). Any-refute → validate-then-fix (a single lens refute can be a real P0; the fix agent validates each finding first and skips false positives). Generalized from the proven batch-upgrade workflow; evidence output dir + label are parameterized so it is not tied to any one epic. No Codex. Input via args={packs, evidence_dir, label, quality_bar, baseline_audit} or the top-of-file CONSTs.',
+  description: 'Upgrade a list of capability packs to a dual-layer quality bar via a per-pack 4-stage pipeline: Plan (NotebookLM research → cited report + UNVERIFIED list → upgrade plan whose Layer-B additions each cite a report source) → Upgrade (apply Layer A structure + Layer B research-grounded depth; every load-bearing specific traces to a source OR is flagged estimate/convention/UNVERIFIED) → Eval (behavioral discriminative eval) → Review (3-lens adversarial review, fact/API WebSearch-verified, findings persisted to disk). Any-refute → validate-then-fix (a single lens refute can be a real P0; the fix agent validates each finding first and skips false positives). Generalized from the proven batch-upgrade workflow; evidence output dir + label are parameterized so it is not tied to any one epic. No Codex. Input via args={packs, evidence_dir, label, quality_bar, baseline_audit} or the top-of-file CONSTs.',
   whenToUse: 'When raising one or more capability packs to a structure+depth quality bar with research-grounded specifics and adversarial review. Conductor re-reads persisted evidence + judges a gate before accepting.',
   phases: [
-    { title: 'Plan', detail: 'Per-pack DEEP research (compose research-engine inline) → cited report + UNVERIFIED list → structured upgrade plan with each Layer-B addition citing a report source' },
+    { title: 'Plan', detail: 'Per-pack NotebookLM research (agent + CLI) → cited report + UNVERIFIED list → structured upgrade plan with each Layer-B addition citing a report source' },
     { title: 'Upgrade', detail: 'Apply the plan, editing only that pack dir (disjoint → safe concurrent); every load-bearing specific traces to a research source or is flagged estimate/convention/UNVERIFIED' },
     { title: 'Eval', detail: 'Behavioral discriminative eval: with-pack vs control on the fixture pattern' },
     { title: 'Review', detail: '3 adversarial lenses (correctness / fact-api / anti-slop), persisted; any refute → validate-then-fix' }
@@ -74,10 +67,7 @@ const DEFAULT_BASELINE_AUDIT = '.tad/evidence/pack-quality/BASELINE-AUDIT.md'
 // Today's date for retrieval-date stamping of sourced claims (passed via args.date in
 // SKILL boundary mode; fallback string keeps the workflow runnable standalone).
 const DEFAULT_TODAY = '(today)'
-// Cost bound for the composed deep-research per pack. research-engine clamps internally
-// to [1,8]; 2 rounds = PLAN + 2 DEEPEN rounds + VERIFY + SYNTHESIZE — enough to catch
-// false "unified standard"-class claims without runaway cost. Tune up for deeper packs.
-const RESEARCH_MAX_ROUNDS = 2
+// (research cost constants removed — now bounded by single agent() call per pack)
 
 if (!packs) packs = DEFAULT_PACKS
 if (!evidenceDir) evidenceDir = DEFAULT_EVIDENCE_DIR
@@ -85,12 +75,10 @@ if (!label) label = DEFAULT_LABEL
 if (!qualityBar) qualityBar = DEFAULT_QUALITY_BAR
 if (baselineAudit == null) baselineAudit = DEFAULT_BASELINE_AUDIT
 let today = DEFAULT_TODAY
-let researchMaxRounds = RESEARCH_MAX_ROUNDS
 if (args) {
   const keys = Object.keys(args)
   for (let i = 0; i < keys.length; i++) {
     if (keys[i] === 'date') today = args[keys[i]]
-    if (keys[i] === 'research_max_rounds') researchMaxRounds = Number(args[keys[i]]) || RESEARCH_MAX_ROUNDS
   }
 }
 
@@ -121,6 +109,30 @@ const PLAN_SCHEMA = {
     sources: { type: 'array', items: { type: 'string' } },
   },
 }
+const RESEARCH_SCHEMA = {
+  type: 'object',
+  required: ['report_path', 'findings', 'sources_count', 'confidence'],
+  properties: {
+    report_path: { type: 'string', description: 'Path to the markdown report file written to disk' },
+    findings: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['claim', 'source_ref'],
+        properties: {
+          claim: { type: 'string' },
+          source_ref: { type: 'string', description: 'NotebookLM citation [N] or WebSearch URL' },
+          confidence: { type: 'string', enum: ['high', 'medium', 'low'] }
+        }
+      }
+    },
+    sources_count: { type: 'number' },
+    open_questions: { type: 'array', items: { type: 'string' }, description: 'Unanswered questions or gaps' },
+    confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+    notebook_id: { type: 'string', description: 'NotebookLM notebook ID if used, null if WebSearch fallback' }
+  }
+}
+
 const UPGRADE_SCHEMA = {
   type: 'object',
   required: ['pack', 'files_changed', 'body_lines_after', 'fixture_written', 'summary', 'edit_list'],
@@ -171,14 +183,11 @@ const RESEARCH_DIR = `${EV}/research`
 const results = await pipeline(
   packs,
   async (p) => {
-    // ── Plan stage, step 1: DEEP research (compose research-engine inline) ──
-    // PREFERRED implementation = composition (DRY): one level of nesting is legal
-    // (pack-upgrade is top-level; research-engine is its child). The research-engine
-    // child does its OWN fan-out via agent()/parallel() but NEVER calls workflow(),
-    // so the one-level constraint holds. The question is domain-scoped from the pack
-    // name + its BASELINE-AUDIT gaps, so the deep research chases exactly the depth
-    // the upgrade needs (not generic domain trivia). max_rounds bounds cost.
-    const researchQuestion =
+    // ── Plan stage, step 1: research via NotebookLM agent ──
+    // Agent uses Bash to call notebooklm CLI: preflight → find/create notebook →
+    // research fast → ask → verify claims → write report to disk → return structured.
+    // Falls back to WebSearch if NotebookLM CLI unavailable.
+    const researchQ =
       `For the "${p.name}" capability-pack domain (it advises AI coding agents), ` +
       `what are the EXACT, source-verified, version-sensitive specifics — numbers, thresholds, ` +
       `current tool/API names and versions, decision rules — that a senior practitioner applies ` +
@@ -187,18 +196,45 @@ const results = await pipeline(
       `and the current SKILL at .claude/skills/${p.name}/SKILL.md. ` +
       `Surface per-source disagreements explicitly; flag anything you cannot source as UNVERIFIED.`
 
-    const research = await workflow('research-engine', {
-      question: researchQuestion,
-      max_rounds: researchMaxRounds, // tunable cost bound (RESEARCH_MAX_ROUNDS / args.research_max_rounds)
-      evidence_dir: RESEARCH_DIR,
-    })
+    const research = await agent(
+      'You are a research agent. Research this domain using NotebookLM CLI.\n\n' +
+      'DOMAIN: ' + p.name + '\n' +
+      'RESEARCH QUESTION: ' + researchQ + '\n\n' +
+      'STEPS (execute via Bash tool):\n' +
+      '1. PREFLIGHT: test -x ~/.tad-notebooklm-venv/bin/notebooklm\n' +
+      '   If FAIL: fall back to WebSearch (3+ queries + WebFetch). Skip NotebookLM steps.\n' +
+      '2. CHECK REGISTRY: Read .tad/research-notebooks/REGISTRY.yaml\n' +
+      '   Find notebook matching "' + p.name + '" domain (semantic match on topic field).\n' +
+      '   If found (active): use it (-n <id>). If not found: create new notebook:\n' +
+      '   ~/.tad-notebooklm-venv/bin/notebooklm create "' + p.name + ' capability research"\n' +
+      '3. RESEARCH: ~/.tad-notebooklm-venv/bin/notebooklm source add-research "' + p.name + '" --mode fast --import-all -n <id>\n' +
+      '4. ASK 2-3 domain-specific questions:\n' +
+      '   ~/.tad-notebooklm-venv/bin/notebooklm ask "<question>" -n <id>\n' +
+      '   Questions should cover: current best practices, common tools/frameworks, version-sensitive specifics.\n' +
+      '5. VERIFY (adversarial fact-check): For each finding with a version-sensitive specific\n' +
+      '   (number, threshold, API name, version), WebSearch the primary documentation to verify currency.\n' +
+      '   Mark any refuted claim as REFUTED with the correct value. Drop refuted claims from findings.\n' +
+      '6. WRITE REPORT: mkdir -p ' + RESEARCH_DIR + ' then write all verified findings to a markdown report file at\n' +
+      '   ' + RESEARCH_DIR + '/research-' + p.name + '.md with sections:\n' +
+      '   # Research: ' + p.name + '\n' +
+      '   ## Summary (3-5 bullet findings)\n' +
+      '   ## Findings (grouped by question, each with source citation)\n' +
+      '   ## Contradictions / Open Questions\n' +
+      '   ## Sources (deduped list)\n' +
+      '   Return the report_path so the Plan agent can READ it.\n\n' +
+      'ANTI-HALLUCINATION: every finding MUST carry a source reference from NotebookLM citations [N].\n' +
+      'If NotebookLM is unavailable (step 1 failed), use WebSearch source URLs instead.\n' +
+      'Return report_path, findings[], sources_count, open_questions[], and confidence (high/medium/low).',
+      {
+        label: 'research-' + p.name,
+        phase: 'Plan',
+        schema: RESEARCH_SCHEMA,
+        model: 'sonnet'
+      }
+    )
 
-    // ── Research-failure detection: research-engine has error early-returns
-    // ({error:'question required'}, {error:'plan failed'}) with NO report_path.
-    // If research is null/undefined OR produced no report_path, it FAILED — do NOT
-    // point the plan agent at a fake path (it would fail the read and may revert to
-    // UNGROUNDED training-knowledge assertion, the exact blind-upgrade failure this
-    // whole change exists to prevent). Degrade to maximally-conservative instead.
+    // ── Research-failure detection: agent returns null on failure, or may
+    // produce no report_path. Degrade to maximally-conservative plan.
     const researchOk = !!(research && research.report_path)
     const reportPath = researchOk ? research.report_path : null
     const openQs = (researchOk && research.open_questions) || []
@@ -206,7 +242,7 @@ const results = await pipeline(
     if (researchOk) {
       log(`plan:${p.name} — deep research done: report=${reportPath}, sources=${(research && research.sources_count) || '?'}, confidence=${researchConfidence}, open_questions=${openQs.length}`)
     } else {
-      log(`WARN plan:${p.name} — deep research FAILED (no report_path${research && research.error ? `; error="${research.error}"` : ''}). Forcing flag-everything conservative plan (no fake report path, no training-knowledge assertion).`)
+      log(`WARN plan:${p.name} — deep research FAILED (no report_path; raw=${JSON.stringify(research)}). Forcing flag-everything conservative plan.`)
     }
 
     // ── Plan stage, step 2: write the upgrade plan ──
@@ -218,7 +254,7 @@ const results = await pipeline(
     const planPrompt = researchOk
       ? (
         `You are upgrading the capability pack "${p.name}" toward a dual-layer quality bar.\n\n` +
-        `A DEEP-RESEARCH report for this pack's domain has ALREADY been produced (research-engine: ` +
+        `A DEEP-RESEARCH report for this pack's domain has ALREADY been produced (NotebookLM research: ` +
         `cited, adversarially verified). Your upgrade plan MUST be grounded in it — do NOT do fresh ` +
         `unsourced research or assert numbers from training.\n\n` +
         `READ FIRST:\n- ${QB} (Layer A meta-design structure /10, Layer B domain depth 0/2/5 with specN)\n` +
@@ -276,7 +312,7 @@ const results = await pipeline(
     `EXCEPTION: If the plan's layerA_gaps include structural reorganization (restructure/` +
     `reorganize/split/merge), full rewrite is acceptable for the affected files. State this ` +
     `explicitly in your summary and set edit_list to [].\n\n` +
-    `The plan was produced from a DEEP-RESEARCH report (research-engine). HONOR THE RESEARCH — this is an anti-blind-upgrade gate.\n\n` +
+    `The plan was produced from a DEEP-RESEARCH report (NotebookLM research). HONOR THE RESEARCH — this is an anti-blind-upgrade gate.\n\n` +
     `PLAN (each layerB_additions entry carries its source_url + retrieval date):\n${JSON.stringify(plan, null, 2)}\n\n` +
     `REQUIREMENTS (read ${QB} for exact criteria):\n` +
     `- Layer A: YAML frontmatter (name+description preserved); body < 500 lines via progressive disclosure to references/*.md; routing/steps; CONSUMES/PRODUCES; anti-skip table; navigation index; fixture present; validation scripts (executable, no Windows paths).\n` +

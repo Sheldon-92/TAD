@@ -53,6 +53,7 @@
 | Dual-Platform Orchestration Adapter | Direction | Researched — Codex has subagents (2026-03 GA), needs adapter layer | [Idea](./.tad/active/ideas/IDEA-20260603-dual-platform-orchestration-adapter.md) |
 | Token Budget observability for YOLO | Direction | Blind spot confirmed — 0 token data in traces | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
 | Quarantine (reader/actor isolation) | Idea | Documented for future non-dev use, not urgent now | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
+| Research System Consolidation | Epic | Complete | [Epic](./.tad/active/epics/EPIC-20260616-research-system-consolidation.md) |
 
 ---
 
