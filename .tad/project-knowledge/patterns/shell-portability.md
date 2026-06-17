@@ -62,6 +62,12 @@
 - **Action**: All SKILL.md `description` fields containing colons, parentheses, or other YAML-special characters must be double-quoted. When creating new capability packs, validate frontmatter with `python3 -c "import yaml; yaml.safe_load(open('SKILL.md').read().split('---')[1])"` or equivalent.
 - **Grounded in**: .tad/evidence/dogfood/codex-unification-dogfood.md Finding 2, .claude/skills/ai-agent-architecture/SKILL.md, .claude/skills/web-ui-design/SKILL.md
 
+### grep No-Match in Command Substitution Under set -e Triggers ERR Trap - 2026-06-17
+- **Context**: `merge_claude_md()` in tad.sh uses `marker_line=$(grep -nF "$marker" "CLAUDE.md" | head -1 | cut -d: -f1)` to find the marker line. When upgrading a legacy CLAUDE.md without the marker, `grep` returns exit 1 (no match). Under `set -e` + `trap ERR`, this triggers `rollback_on_failure` before the `if [ -n "$marker_line" ]` branch can route to the legacy fallback.
+- **Discovery**: `grep` returning non-zero is a VALID outcome in conditional search patterns, but `set -e` treats it as a fatal error when it occurs inside `$(...)` at the assignment level. The fix is `|| true` at the end of the pipeline: `marker_line=$(grep -nF ... | head -1 | cut -d: -f1 || true)`. This is a sibling of the "Command Substitution Swallows Gate Markers" pattern — both are `set -e` interacting with `$(...)`, but this one is simpler: the grep no-match exit code itself is the problem, not a nested `exit`.
+- **Action**: When using grep in `$()` where "not found" is a valid outcome (not an error), always append `|| true`. Applies to any search-based command substitution under `set -e`.
+- **Grounded in**: tad.sh merge_claude_md, COMPLETION-20260617-hotfix-v2.31.1.md
+
 ### Command Substitution Swallows Gate Markers - 2026-06-09
 - **Context**: Phase 4 runtime-freshness gate used `age=$(days_between ...)`. The helper printed `GATE: runtime-freshness exit=2` and exited inside the command substitution when semantic date parsing failed (`2026-13-45`).
 - **Discovery**: `exit` inside `$(...)` terminates the subshell, not the parent function. With `set -e`, the parent may still exit with the right code, but stdout from the helper is captured into the assignment instead of reaching the operator or machine parser. For release gates, this can preserve the exit code while silently losing the required `GATE:` marker.
