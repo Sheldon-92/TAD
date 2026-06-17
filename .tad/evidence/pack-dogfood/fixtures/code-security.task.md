@@ -1,0 +1,1 @@
+We run Semgrep and Nuclei in our pipeline, dump all CRITICAL CVSS findings to the dev channel, and fix them top-down by severity. For anything in the CISA KEV catalog we apply a flat 14-day patch deadline. Set up secret scanning too. Review the security pipeline.

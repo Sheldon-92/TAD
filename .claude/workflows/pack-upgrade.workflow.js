@@ -123,7 +123,7 @@ const PLAN_SCHEMA = {
 }
 const UPGRADE_SCHEMA = {
   type: 'object',
-  required: ['pack', 'files_changed', 'body_lines_after', 'fixture_written', 'summary'],
+  required: ['pack', 'files_changed', 'body_lines_after', 'fixture_written', 'summary', 'edit_list'],
   properties: {
     pack: { type: 'string' },
     files_changed: { type: 'array', items: { type: 'string' } },
@@ -131,6 +131,9 @@ const UPGRADE_SCHEMA = {
     body_lines_after: { type: 'number' },
     fixture_written: { type: 'boolean' },
     summary: { type: 'string' },
+    edit_list: { type: 'array', items: { type: 'object', required: ['op', 'file', 'content'],
+      properties: { op: { type: 'string' }, file: { type: 'string' }, rule_id: { type: 'string' },
+      content: { type: 'string' }, rationale: { type: 'string' } } } },
   },
 }
 const EVAL_SCHEMA = {
@@ -260,7 +263,19 @@ const results = await pipeline(
     )
   },
   (plan, p) => agent(
-    `Apply this upgrade plan to capability pack "${p.name}". Edit ONLY files under .claude/skills/${p.name}/ (disjoint from other packs — safe concurrent).\n\n` +
+    `Apply this upgrade plan to capability pack "${p.name}" using BOUNDED EDIT mode.\n\n` +
+    `STEP 1: Read the CURRENT .claude/skills/${p.name}/SKILL.md and all references/*.md files.\n` +
+    `STEP 2: For each change in the plan, generate a structured edit:\n` +
+    `  - add_rule: add a new rule to the specified reference file\n` +
+    `  - modify_rule: change an existing rule's content (cite the old rule_id)\n` +
+    `  - delete_rule: remove an outdated/wrong rule\n` +
+    `STEP 3: Apply each edit to the corresponding file. Edit ONLY files under .claude/skills/${p.name}/ (disjoint from other packs — safe concurrent). Do NOT rewrite files that have no edits.\n` +
+    `STEP 4: Report the edit_list in your structured output.\n\n` +
+    `⚠️ BOUNDED EDIT RULE: Do NOT rewrite rules that the plan does not mention. Preserve all ` +
+    `unchanged rules VERBATIM. Read each file, locate the specific rules, make ONLY those changes.\n\n` +
+    `EXCEPTION: If the plan's layerA_gaps include structural reorganization (restructure/` +
+    `reorganize/split/merge), full rewrite is acceptable for the affected files. State this ` +
+    `explicitly in your summary and set edit_list to [].\n\n` +
     `The plan was produced from a DEEP-RESEARCH report (research-engine). HONOR THE RESEARCH — this is an anti-blind-upgrade gate.\n\n` +
     `PLAN (each layerB_additions entry carries its source_url + retrieval date):\n${JSON.stringify(plan, null, 2)}\n\n` +
     `REQUIREMENTS (read ${QB} for exact criteria):\n` +

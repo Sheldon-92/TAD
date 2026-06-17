@@ -3,9 +3,11 @@ export const meta = {
   description: 'Blind A/B dogfood across a list of capability packs. Per pack: extract the fixture scenario as the task → generate a CONTROL answer (task text only, never touches the pack dir) + a WITH-PACK answer → an independent BLIND judge scores both on a quality rubric, WebSearch-verifies specific claims, and flags any specific-but-wrong claim. Blind order is set by index parity so the judge cannot infer which answer used the pack. Tests real answer quality, not just discrimination. Generalized from the proven dogfood-all workflow; evidence dir is parameterized. Input via args={packs, evidence_dir} or the top-of-file CONSTs. Resumable.',
   whenToUse: 'When validating that upgraded packs produce genuinely better answers than a strong generalist control — winner on CORRECT specifics is real quality; CONTROL/TIE or wrong_claims is a real gap to fix.',
   phases: [
-    { title: 'Task', detail: 'Extract the user-facing scenario from each pack fixture (task text only)' },
-    { title: 'Answers', detail: 'Control (no pack) + with-pack answers in parallel; blind order by index parity' },
-    { title: 'Judge', detail: 'Blind rubric scoring + WebSearch fact-check of specific claims; persisted per pack' }
+    { title: 'Snapshot', detail: 'Copy existing dogfood baselines to .prev.md for regression comparison' },
+    { title: 'Task', detail: 'Extract user-facing scenario from each pack fixture' },
+    { title: 'Answers', detail: 'Control + with-pack answers; blind order by index parity' },
+    { title: 'Judge', detail: 'Blind rubric scoring + WebSearch fact-check' },
+    { title: 'Regression', detail: 'Compare current-pack vs previous-baseline; detect lost knowledge' }
   ]
 }
 
@@ -68,6 +70,27 @@ const JUDGE_SCHEMA = {
     rationale: { type: 'string' },
   },
 }
+const REGRESSION_SCHEMA = {
+  type: 'object',
+  required: ['regression_found', 'lost_knowledge'],
+  properties: {
+    regression_found: { type: 'boolean', description: 'true if any correct knowledge from the previous baseline was lost in the current version' },
+    lost_knowledge: { type: 'array', items: { type: 'string' }, description: 'list of specific knowledge/rules/thresholds that the previous version had correctly but the current version lost or weakened' },
+    analysis: { type: 'string', description: 'brief explanation of the regression comparison methodology and findings' },
+  },
+}
+
+// ── Snapshot: copy existing baselines for regression comparison ──────────────
+
+phase('Snapshot')
+for (let i = 0; i < packs.length; i++) {
+  const p = typeof packs[i] === 'string' ? packs[i] : packs[i].name
+  await agent(
+    `If the file ${EV}/dogfood-${p}.md exists, copy it to ${EV}/dogfood-${p}.prev.md (overwrite if exists). ` +
+    `If it does not exist, do nothing. Report what you did.`,
+    { label: `snapshot:${p}`, phase: 'Snapshot' }
+  )
+}
 
 // ── Pipeline (orchestration unchanged from the proven workflow) ─────────────
 
@@ -78,7 +101,16 @@ const results = await pipeline(
     `Read the fixture under .claude/skills/${pack}/examples/ (the *.md file(s)). Extract ONLY the scenario/task prompt — the realistic question or request a user would pose in this pack's domain. Return it verbatim (or lightly cleaned) as "task". Do NOT include any expected answer, rubric, or the pack's own rules — only the user-facing task.`,
     { label: `task:${pack}`, phase: 'Task', schema: TASK_SCHEMA }
   ).then((t) => (t && t.task) ? t.task : `Give expert, concrete guidance for a realistic ${pack} task.`),
-  // Stage 2: control + with-pack answers (blind order by index parity)
+  // Stage 2: persist fixture for future regression baselines
+  async (task, pack) => {
+    await agent(
+      `Write the following task text to ${EV}/fixtures/${pack}.task.md (create dir if needed, ` +
+      `overwrite if exists):\n\n${task}`,
+      { label: `persist:${pack}`, phase: 'Task' }
+    )
+    return task
+  },
+  // Stage 3: control + with-pack answers (blind order by index parity)
   (task, pack, idx) => parallel([
     () => agent(
       `You are a competent senior generalist. Answer this WITHOUT loading any specialized skill — use only your own knowledge. Do NOT read any file under .claude/skills/. Task:\n\n${task}\n\nGive your best concrete answer.`,
@@ -99,14 +131,37 @@ const results = await pipeline(
       pack_is: packFirst ? '1' : '2',
     }
   }),
-  // Stage 3: blind judge with WebSearch fact-check
+  // Stage 4: blind judge with WebSearch fact-check
   (b, pack) => agent(
     `You are a strict independent technical judge. Two answers respond to the SAME task. ONE used a specialized domain skill, the OTHER did not — you do NOT know which. Judge PURELY on merit. A confident WRONG specific is worse than an honest general statement — do not reward verbosity or unverified specificity.\n\n` +
     `TASK:\n${b.task}\n\n=== ANSWER 1 ===\n${b.answer1}\n\n=== ANSWER 2 ===\n${b.answer2}\n\n` +
     `Score each 1-5 on correctness, actionability, specificity, completeness. ⚠️ WebSearch-verify the key specific claims (numbers, tool/model names, versions, thresholds, APIs) in BOTH answers against current primary docs; list EVERY specific-but-wrong claim (which answer + correct value). A wrong specific tanks that answer's correctness. Then pick winner (1/2/tie) + margin + rationale (did the winner win on CORRECT specifics or just verbosity?).\n` +
     `Write full judgment to ${EV}/dogfood-${pack}.md`,
     { label: `judge:${pack}`, phase: 'Judge', schema: JUDGE_SCHEMA }
-  ).then((j) => ({ pack, pack_is: b.pack_is, verdict: j || { winner: 'tie', wrong_claims: ['judge failed'] } }))
+  ).then((j) => ({ pack, pack_is: b.pack_is, task: b.task, verdict: j || { winner: 'tie', wrong_claims: ['judge failed'] } })),
+  // Stage 5: regression check (uses .prev.md baseline from snapshot)
+  (judged, pack) => agent(
+    `REGRESSION CHECK for capability pack "${pack}".\n\n` +
+    `1. Check if ${EV}/dogfood-${pack}.prev.md exists. If NOT → return regression_found=false\n` +
+    `   (no previous baseline — this is the first run or first run after adding regression).\n` +
+    `2. Read ${EV}/dogfood-${pack}.prev.md — this is the PREVIOUS run's judgment (baseline).\n` +
+    `3. Read the task from: ${EV}/fixtures/${pack}.task.md (persisted by the current run).\n` +
+    `   Fallback: use this task text: "${judged.task || '(unavailable)'}"\n` +
+    `4. Read .claude/skills/${pack}/SKILL.md and references/ (the CURRENT version).\n` +
+    `5. Answer the task using the CURRENT pack rules.\n` +
+    `6. Compare your answer against the PREVIOUS judgment's winning answer.\n` +
+    `7. Identify any knowledge/rules/specifics that the PREVIOUS answer had correctly\n` +
+    `   but the CURRENT answer LOST.\n\n` +
+    `regression_found = true if any correct knowledge was lost.\n` +
+    `Write analysis to ${EV}/regression-${pack}.md`,
+    { label: `regression:${pack}`, phase: 'Regression', schema: REGRESSION_SCHEMA }
+  ).then((reg) => ({
+    pack: judged.pack || pack,
+    pack_is: judged.pack_is,
+    task: judged.task,
+    verdict: judged.verdict,
+    regression: reg || { regression_found: false, lost_knowledge: [] },
+  }))
 )
 
 const clean = results.filter(Boolean)
@@ -121,6 +176,7 @@ const rows = clean.map((r) => {
     margin: v.margin || '',
     pack_score: packScore,
     wrong_claims: v.wrong_claims || [],
+    regression: r.regression || {},
   }
 })
 return {
@@ -130,6 +186,7 @@ return {
   ties: rows.filter((r) => r.result === 'TIE').length,
   control_wins: rows.filter((r) => r.result === 'CONTROL').length,
   packs_with_wrong_claims: rows.filter((r) => r.wrong_claims.length > 0).map((r) => r.pack),
+  packs_with_regression: rows.filter((r) => r.regression && r.regression.regression_found).map((r) => r.pack),
   rows,
-  note: 'WITH-PACK wins on correct specifics = real quality. CONTROL/TIE or wrong_claims = a real gap to fix. Conductor must read dogfood-*.md before judging.',
+  note: 'WITH-PACK wins on correct specifics = real quality. CONTROL/TIE or wrong_claims = a real gap to fix. regression_found = knowledge lost in upgrade. Conductor must read dogfood-*.md before judging.',
 }
