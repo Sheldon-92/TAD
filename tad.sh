@@ -612,9 +612,10 @@ verify_install_complete() {
             log_warn "    ✗ MISSING or EMPTY: .tad/$dir/"
             missing=$((missing + 1))
         elif command -v diff >/dev/null 2>&1 \
-             && ! diff -rq "$src/.tad/$dir" ".tad/$dir" >/dev/null 2>&1; then
-            # Present + non-empty but content does NOT match source → partial copy.
-            log_warn "    ✗ PARTIAL/STALE: .tad/$dir/ differs from source (diff -rq)"
+             && diff -rq "$src/.tad/$dir" ".tad/$dir" 2>/dev/null | grep -q "^Only in $src"; then
+            # One-directional: only flag files MISSING from target (source has but target doesn't).
+            # Target-only files (project-local additions) are expected on upgrades — not an error.
+            log_warn "    ✗ PARTIAL: .tad/$dir/ missing source files (one-directional diff)"
             missing=$((missing + 1))
         fi
     done <<< "$(derive_framework_dirs "$src")"
