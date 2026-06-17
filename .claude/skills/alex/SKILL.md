@@ -351,7 +351,7 @@ activation-instructions:
          - O2: {title} — ✅ / ⚠️
          ```
          If ANY gap detected:
-         → "💡 建议: 运行 *research-plan 来生成目标导向的研究计划并执行"
+         → "💡 建议: 运行 *research --deep 来执行深度研究"
          (不自动发起 — 只提示)
       6. De-dup cross-reference: if the user declines research for a surfaced gap-domain
          here, append that domain to `declined_research_domains` (honored by
@@ -434,9 +434,9 @@ global_skill_exclusion:
     DO NOT invoke the Skill tool for any of these. DO NOT spawn Agent tools as
     a substitute for TAD's CLI-based research workflows.
   excluded_skills:
-    - name: "deep-research / research"
-      reason: "TAD uses *research-notebook research --mode deep (NotebookLM CLI), not WebSearch multi-phase"
-      tad_replacement: "*research-notebook research / *research-plan"
+    - name: "deep-research"
+      reason: "TAD uses *research (unified — Quick/Standard/Deep), not WebSearch multi-phase"
+      tad_replacement: "*research (unified — Quick/Standard/Deep, defaults to NotebookLM)"
     - name: "code-review"
       reason: "TAD uses code-reviewer sub-agent with narrow-scope prompt template (expert_prompt_template)"
       tad_replacement: "Agent tool with subagent_type=code-reviewer + TAD prompt template"
@@ -467,8 +467,8 @@ global_skill_exclusion:
   enforcement: |
     If you catch yourself about to invoke any excluded skill or spawn a generic
     Agent for research: STOP. Read the tad_replacement path instead.
-    For research specifically: Read .claude/skills/research-notebook/SKILL.md
-    and follow the CLI steps using Bash tool. Sequential, not parallel.
+    For research specifically: use *research (unified research command) which
+    auto-routes to Quick/Standard/Deep. Sequential, not parallel.
 
 # All commands require * prefix (e.g., *help)
 commands:
@@ -503,16 +503,16 @@ commands:
   architect: Call backend-architect for design
   api: Call api-designer for API design
   ux: Call ux-expert-reviewer for UX review
-  research: Research technical options and present comparison (part of design flow)
+  research-options: Research technical options and present comparison (part of design flow)
   reviewer: Call code-reviewer for design review
 
   # Document commands
   doc-out: Output complete document
   doc-list: List all project documents
 
-  # Research management commands
-  research-review: "Research portfolio review — classify all notebooks by goal alignment + action plan"
-  research-plan: "基于 OBJECTIVES.md gap analysis，提出研究计划并执行"
+  # Research commands
+  research: "Unified research — Quick/Standard/Deep, defaults to NotebookLM Standard"
+  research status: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
   # Cross-project & skill management
   harvest: "Review skillify candidates across all projects — T1/T2/T3 routing (explicit command only)"
@@ -687,7 +687,7 @@ intent_router_protocol:
   blocking: true
 
   # Core routing — explicit commands bypass detection
-  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*analyze"]
+  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze"]
   idle_patterns_zh: ["谢谢", "ok", "好的", "收到", "明白了"]
   idle_patterns_en: ["thanks", "ok", "got it", "sure", "noted"]
 
@@ -722,15 +722,86 @@ status_panoramic_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/status-panoramic-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *status command), Read the reference and follow it verbatim."
-research_plan_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/research-plan-protocol.md"
-  load_when: "When *research-plan is invoked, Read the reference and follow it verbatim."
-# *research-review Protocol (A6)
+# ═══════════════════════════════════════════════════════════
+# Unified Research Protocol (*research)
+# ⚠️ MUST stay in SKILL body — circular trigger: routing table
+# defines the levels that trigger reference loading. If moved to
+# references/, agent won't know levels exist → trigger never fires.
+# ═══════════════════════════════════════════════════════════
+research_unified_protocol:
+  description: "Unified research entry — Quick/Standard/Deep, defaults to Standard (NotebookLM)"
+  trigger: "User types *research OR Alex auto-routes from intent detection (研究/research/调研/对比/了解)"
+
+  routing_table:
+    quick:
+      signals: ["单一事实", "语法查询", "是什么", "怎么用", "API 怎么调", "什么意思", "--quick"]
+      execution: "WebSearch 直接回答，不建 notebook"
+      output: "直接在对话中给出答案"
+    standard:
+      signals: ["研究一下", "了解", "对比", "有哪些", "default when ambiguous", "--standard"]
+      execution: "NotebookLM: 找匹配 notebook → ask（含动态追问）；无匹配 → 新建 notebook + research fast + ask"
+      output: "notebook 研究结果 + 动态追问链"
+    deep:
+      signals: ["深入研究", "建知识库", "landscape", "全面调研", "--deep"]
+      execution: "Full research-plan Phase 0-5 (→ references/research-plan-protocol.md)"
+      output: "完整研究报告 + 多轮知识积累"
+
+  tie_breaking: |
+    Quick vs Standard → default to Standard（更高覆盖，不冒遗漏风险）
+    Standard vs Deep → default to Standard（让用户按需升级）
+    用户可随时用 *research --quick / --standard / --deep 显式指定
+
+  preflight:
+    check: "test -x ~/.tad-notebooklm-venv/bin/notebooklm"
+    on_fail: |
+      Standard/Deep 降级为 WebSearch:
+      "⚠️ NotebookLM CLI 不可用。降级为 WebSearch 研究。
+       安装: bash .tad/cross-model/setup-notebooklm.sh"
+      Quick 不受影响（本身用 WebSearch）
+
+  quick_execution:
+    steps:
+      - "执行 2-3 个 WebSearch 查询"
+      - "直接在对话中给出答案"
+      - "不建 notebook，不保存研究链"
+
+  standard_execution:
+    steps:
+      1_find_notebook: |
+        Read .tad/research-notebooks/REGISTRY.yaml
+        Filter: only status == "active" notebooks participate in matching
+        - dormant: AskUserQuestion "Found dormant notebook '{topic}' (last queried {date}). Reactivate or create fresh?"
+        - archived: skip entirely
+        LLM 语义匹配用户研究话题 vs notebook.topic
+        0 matches → 新建 notebook (step 2)
+        1 match → 使用该 notebook (skip to step 3)
+        >1 matches → AskUserQuestion: "Found {N} matching notebooks: {list with topic + source_count}. Which to use?"
+          Options: each notebook + "Create new notebook"
+      2_create_if_needed: |
+        *research-notebook create "{topic}"
+        *research-notebook research --mode fast -n <new_id>
+      3_ask: |
+        *research-notebook ask "{研究问题}" -n <id>
+        (ask 自带动态追问协议, 4 轮上限, 6 策略)
+        研究链文件自动保存到 .tad/evidence/research/
+      4_return: "返回结果给用户"
+    note: "Standard 使用 -n <id> 指定 notebook，不使用 use <id>（避免全局状态污染）"
+
+  deep_execution:
+    reference: ".claude/skills/alex/references/research-plan-protocol.md"
+    load_when: "When *research --deep is invoked, Read the reference and follow it verbatim."
+    note: "Deep 是完整的 Phase 0-5 研究流程（原 *research-plan），已去除 OBJECTIVES.md 硬依赖"
+
+  backward_compat: |
+    旧命令处理:
+    - *research-plan → 已合并为 *research --deep。用户输入时提示: "已合并为 *research --deep"
+    - *research-review → 已改名为 *research status
+
+# *research status Protocol (formerly *research-review)
 research_review_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/research-review-protocol.md"
-  load_when: "When this protocol is entered (see intent_router_protocol step4 / the *research-review command), Read the reference and follow it verbatim."
+  load_when: "When *research status is invoked, Read the reference and follow it verbatim."
 idea_path_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/idea-path-protocol.md"

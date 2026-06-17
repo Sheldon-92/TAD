@@ -621,7 +621,7 @@ ralph_loop_execution:
         purpose: "Surface existing research findings before Blake starts coding — avoid re-searching what's already known"
 
       1_5c_research_task_detection:
-        description: "Detect if this handoff's primary deliverable is research, and execute research-methodology pack pipeline"
+        description: "Detect if this handoff's primary deliverable is research, and execute research pipeline"
         action: |
           1. Read handoff frontmatter `task_type` field (already stored from 1_5_context_refresh)
 
@@ -632,31 +632,29 @@ ralph_loop_execution:
              for detection purposes. Only task_type: research triggers this path.
 
           3. If research task detected:
-             a. Announce: "🔬 This is a research task. Loading research-methodology capability pack.
+             a. Announce: "🔬 This is a research task.
                            Entering research-task mode — expanded notebook access active."
-             b. Read .tad/capability-packs/research-methodology/CAPABILITY.md
-                If NOT found → go to step 5 (fallback)
-             c. Execute the pack's 5-phase pipeline (Plan→Source→Curate→Analyze→Output)
-                as the PRIMARY implementation workflow — INSTEAD of normal code implementation.
+             b. Execute the *research unified pipeline (alex/SKILL.md research_unified_protocol):
+                Use Deep level (*research --deep, Phase 0-5) as the PRIMARY workflow.
+                If NotebookLM CLI not available → fallback to WebSearch-based research.
                 Pack outputs are the deliverables:
                 - .research/report.md (QCE-structured research report)
                 - .research/acs.md (extracted ACs from research)
-             d. H3 gate quality checks (CR-P0-2 fix — BEFORE presenting to user):
+             c. H3 gate quality checks (CR-P0-2 fix — BEFORE presenting to user):
                 - Citation count: ≥3 unique sources cited per Claim
                 - T1 source ratio: ≥30% of cited sources are T1 (official/academic)
                 - Contradictory evidence: every Claim has non-empty contradictory evidence section
                 - Extracted ACs: ≥1 concrete AC per research question in the question tree
                 If any check fails → note gap and present to user with warning (not blocking)
-             e. After pipeline completes, announce:
+             d. After pipeline completes, announce:
                 "Exiting research-task mode — notebook access reverted to read-only."
 
           4. If NOT a research task → skip this step entirely, proceed to 1_5d_lsp_blast_radius
 
-          5. Fallback (CAPABILITY.md missing — CR-P1-4 fix):
-             Warn: "⚠️ research-methodology pack not installed at .tad/capability-packs/research-methodology/.
-                    Falling back to WebSearch-based research."
-             Execute WebSearch-based research inline, following the research-methodology
-             degraded mode: Plan question tree → Search ≥3 sources per question →
+          5. Fallback (NotebookLM CLI not available):
+             Warn: "⚠️ NotebookLM CLI not available. Falling back to WebSearch-based research."
+             Execute WebSearch-based research inline:
+             Plan question tree → Search ≥3 sources per question →
              Curate findings → QCE structure output → Reference .research/report.md
 
         blocking: true
@@ -666,10 +664,10 @@ ralph_loop_execution:
           description: "CR-P0-1 fix: temporarily expands allowed notebook commands during pack execution only"
           rationale: |
             notebooklm_access.forbidden was designed for Blake-as-code-implementer.
-            When Blake executes research-methodology pack as primary task, the pack
-            requires source management operations (add, research, curate) that are
+            When Blake executes a research pipeline as primary task (task_type=research),
+            it requires source management operations (add, research, curate) that are
             normally Alex-only. The override is STRICTLY SCOPED: active only during
-            step 3c pipeline execution, reverts to normal forbidden list after pipeline.
+            step 3b pipeline execution, reverts to normal forbidden list after pipeline.
           semantics: |
             P0-1 delta formulation (avoids snapshot-drift): During 1_5c pipeline execution,
             the effective allowed set is: base.allowed ∪ pack_required_commands.

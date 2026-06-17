@@ -67,12 +67,12 @@ discuss_path_protocol:
         4. If no matching notebook AND topic needs deep research:
            a. Check if topic matches a ⬚ KR gap in OBJECTIVES.md (LLM semantic match, if OBJECTIVES.md exists)
               → gap_kr: first matching KR description (highest priority: O1>O2, KR1>KR2), or null if no match / OBJECTIVES.md absent
-             (if multiple KRs match, pick highest-priority and append "(+N more — see *research-plan)")
+             (if multiple KRs match, pick highest-priority and append "(+N more — see *research --deep)")
            b. AskUserQuestion: "这个话题可能需要深度研究。要创建一个 research notebook 吗？"
-              Options (if gap_kr found, replace "用 WebSearch 就够了" with research-plan; ≤4 hard cap):
+              Options (if gap_kr found, replace "用 WebSearch 就够了" with *research --deep; ≤4 hard cap):
                 - "创建 notebook + Deep Research" → *research-notebook create + *research-notebook research --mode deep
                 - "创建 notebook (manual sources)" → *research-notebook create
-                - "生成 *research-plan 并执行 (针对 {gap_kr})" → enter research_plan_protocol step1 with pre-filled context  [only shown if gap_kr found]
+                - "执行 *research --deep (针对 {gap_kr})" → enter research_unified_protocol deep_execution with pre-filled context  [only shown if gap_kr found]
                 - "用 WebSearch 就够了" → skip  [shown only when gap_kr not found]
            c. De-dup cross-reference: on decline (user picks "用 WebSearch 就够了" or
               otherwise skips), append this topic's domain to `declined_research_domains`

@@ -39,7 +39,7 @@
 
 ### Research-Methodology Pack as Capability Pack Factory - 2026-05-08
 - **Discovery**: Plan→Source→Curate→Analyze→Output pipeline produces higher-quality rules than ad-hoc WebSearch. Persistent notebook enables cross-source synthesis with citations. Eliminates "rules from training data intuition" failure mode.
-- **Action**: Run research-methodology as Phase 0 for capability packs involving external APIs or cross-vendor comparisons.
+- **Action**: Run *research (Standard or Deep) as Phase 0 for capability packs involving external APIs or cross-vendor comparisons.
 
 ### Research Provenance Rules for Pack Builds - 2026-05-29
 - **Discovery**: Three escalating failures: (1) **Citation gap**: when a TAD mapping blueprint adjusts raw source values, citing only the original source (not the adaptation doc) creates false provenance. (2) **Interpolation fabrication**: a general range (e.g., "10-30 seconds for zero-shot cloning") is NOT valid to split into per-tool specific values — those become false-provenance entries. Only individually measured values are Category A; method-level ranges annotate the method, not unlisted tools. (3) **Reading ≠ following**: citing a provenance rule in the handoff is necessary but NOT sufficient — the builder still interpolates from LLM training data when research has a gap. Active per-number cross-referencing during writing is needed, not just reading the rule beforehand.

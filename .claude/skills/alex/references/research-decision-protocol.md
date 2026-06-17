@@ -63,7 +63,7 @@ research_decision_protocol:
       notebook) → AskUserQuestion (suggestion only):
         "决策 '{decision}' 依赖外部信息，当前没有相关 notebook。要先研究吗？"
         Options:
-          - "创建 notebook + *research-plan (Recommended)" → enter research_plan_protocol / *research-notebook create
+          - "创建 notebook + *research (Recommended)" → enter research_unified_protocol (Standard level auto-creates notebook)
           - "WebSearch 够了" → proceed; append this decision's domain to `declined_research_domains`
           - "我已了解，直接设计" → proceed; append this decision's domain to `declined_research_domains`
 

@@ -1,28 +1,34 @@
-# Research Plan Protocol (extracted from SKILL.md for progressive loading)
-# Source: .claude/skills/alex/SKILL.md
+# Research Plan Protocol — Deep Level of *research
+# Called by: research_unified_protocol.deep_execution (alex/SKILL.md)
+# Original source: .claude/skills/alex/SKILL.md
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
+# Updated: 2026-06-17 (EPIC-20260616-research-system-consolidation Phase 1 — remove OBJECTIVES hard dep)
 
 research_plan_protocol:
-  description: "Alex 主动提出目标导向的研究计划，用户确认后执行"
+  description: "Deep research — full Phase 0-5 pipeline. Called via *research --deep"
   trigger: |
-    手动: 用户输入 *research-plan
-    自动建议: STEP 3.8 检测到 gap 时输出 "💡 运行 *research-plan 来生成目标导向的研究计划并执行"
+    Called from: research_unified_protocol when level == Deep
+    Also: STEP 3.8 gap detection suggests "💡 运行 *research --deep 来执行深度研究"
 
   execution:
     step1:
       name: "读取目标 + 现有研究"
       action: |
         0. Preflight:
+           → If OBJECTIVES.md found:
+             → Read it → use Objectives + Key Results for gap-driven research planning
            → If OBJECTIVES.md not found:
-             → "⚠️ *research-plan requires OBJECTIVES.md. Run *analyze first to define project objectives, or use *research-notebook research directly for ad-hoc research."
-             → standby
+             → Skip gap analysis; use the user's research question directly as the research topic
+             → Proceed normally (OBJECTIVES is optional context, not a hard requirement)
            → If REGISTRY.yaml not found:
-             → Treat as "all KRs are gaps" (no existing research) — proceed normally
+             → Treat as "no existing research" — proceed normally
 
-        1. Read OBJECTIVES.md → extract all Objectives + Key Results with status ⬚/🔄
+        1. If OBJECTIVES.md exists: Read → extract all Objectives + Key Results with status ⬚/🔄
+           If not: use user's research question from *research --deep invocation
         2. Read REGISTRY.yaml → list all active notebooks with topics (empty if absent)
         3. Identify gaps: which ⬚/🔄 KRs have NO aligned notebook research? (LLM semantic match)
-        4. If no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
+           If no OBJECTIVES: treat the user's question as the single gap
+        4. If OBJECTIVES exists and no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
 
     step2:
       name: "生成研究计划"

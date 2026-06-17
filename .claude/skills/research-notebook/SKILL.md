@@ -378,7 +378,7 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
     2. contradiction (cross-source conflict resolution)
     3. follow_thread (chase surprising findings)
     4. perspective_shift (break tunnel vision — NEW)
-    5. gap_enrichment (standalone only, NOT inside *research-plan)
+    5. gap_enrichment (standalone only, NOT inside *research --deep)
     6. so_what (budget-forced close, TERMINAL)
 
     # 1. Hard stop — checked FIRST (evidence-based: nothing new to find)
@@ -443,15 +443,15 @@ Step 3.5: Dynamic Follow-up Protocol (skip entirely if dynamic_follow == false)
       → Append "perspective_shift" to strategies_used
       → sleep 1; increment current_depth; append round to chain .md; loop back to step 3.5.
 
-    # 5. Gap enrichment — standalone only (NOT inside *research-plan Phase 4)
-    ELIF gap detected AND NOT inside_research_plan:
+    # 5. Gap enrichment — standalone only (NOT inside *research --deep Phase 4)
+    ELIF gap detected AND NOT inside_research_deep:
       → strategy = "gap_enrichment"
-      → inside_research_plan detection (two conditions BOTH required):
+      → inside_research_deep detection (two conditions BOTH required):
           (a) .research/research-state.yaml exists AND phase field == "ask"
           (b) the current notebook_id appears in research-state.yaml's notebook_ids list
-        If either condition false → inside_research_plan = false (standalone ask context)
+        If either condition false → inside_research_deep = false (standalone ask context)
       → Trigger Phase 4b CRAG Judge Loop (source add-research fast → re-ask)
-      → (gap_enrichment DISABLED inside *research-plan — Phase 4b already handles gaps; would double-loop)
+      → (gap_enrichment DISABLED inside *research --deep — Phase 4b already handles gaps; would double-loop)
 
     # 6. Budget-based forced close — checked AFTER saturation
     ELIF current_depth >= max_depth:

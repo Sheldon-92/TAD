@@ -1,8 +1,8 @@
-<!-- Extracted from alex/SKILL.md P3 progressive disclosure 2026-05-31. Byte-identical to the original block. Cross-referenced protocols (notebook_consolidation_suggestion / adaptive_complexity_protocol / research_plan_protocol) remain INLINE in alex/SKILL.md and resolve in-session via the router. -->
+<!-- Extracted from alex/SKILL.md P3 progressive disclosure 2026-05-31. Updated 2026-06-17: renamed from *research-review to *research status. Cross-referenced protocols (notebook_consolidation_suggestion / adaptive_complexity_protocol / research_unified_protocol) remain INLINE in alex/SKILL.md and resolve in-session via the router. -->
 
 research_review_protocol:
   description: "Research portfolio review — classify all notebooks by goal alignment + produce action plan"
-  trigger: "User types *research-review OR Alex proactively suggests it in *discuss when research is scattered"
+  trigger: "User types *research status OR Alex proactively suggests it in *discuss when research is scattered"
 
   execution:
     step1:
