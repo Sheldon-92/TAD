@@ -2,10 +2,20 @@
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
 version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-06-17
 # Currently active notebook (used when no --notebook flag specified)
-active_notebook: "structured-feedback-creative-ai"
+active_notebook: "agent-computer-control"
 notebooks:
+  - id: "agent-computer-control"
+    notebook_id: "c0143736-a6f1-4ff3-aa61-95ebee84c812"
+    topic: "Agent Computer & Browser Control Tools — 2026 landscape of browser automation, web scraping, computer use, GUI control, and MCP servers for AI agents"
+    created: "2026-06-17"
+    status: active
+    last_queried: "2026-06-17"
+    source_count: 14
+    notes: "Capability pack scoping research. 14 curated sources covering 5-layer tool architecture (engine→data→hybrid→agent→desktop). Key findings: Browser Use 99k stars (L4 agent), Stagehand v3 CDP-native 44% faster (L3 hybrid), Playwright MCP 13.6k context tax (L1 MCP), Claude in Chrome zero-config but beta (L1 MCP). Decision brief recommends wide-scope Agent-Computer Interface Pack."
+    sources: []
+
   - id: "ai-native-reading"
     notebook_id: "189fbf20-c432-4c75-a8d7-15674590dbbf"
     topic: "AI-Native Reading Experience — Open-Source Readers, Reading UX & Active-Reading Design"

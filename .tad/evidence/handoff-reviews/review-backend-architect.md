@@ -1,56 +1,87 @@
-# Backend-Architect Review — HANDOFF-20260613-pack-quality-phase1-bar-baseline
+# Backend Architect Review: HANDOFF-20260617-agent-skill-evolution-pack
 
-**Reviewer lens:** data flow, type/set extensions, storage patterns, contracts, system architecture, state management
-**Scope read:** §6, §9 + §9.1, §10, §7 listed files (pack-eval-runner.sh, EPIC, 24 SKILL.md set, evidence dir). §2.1/§3/§4 read as OPTIONAL to disambiguate findings.
-**Date:** 2026-06-13
-**Note:** This handoff is already in `.tad/archive/`; BASELINE-AUDIT.md / QUALITY-BAR.md / negative-controls already produced. I reviewed the DRAFT design for Gate-2 architectural correctness and cross-checked against the produced state.
+**Reviewer lens:** data flow, type extensions, storage patterns, API contracts, system architecture, state management
+**Scope read:** SS3 (ACs), SS4 (Technical Design), SS6 (Risks), SS7 (Scope), SS10 (Files to Create), SS11 (Decisions). IDEA file for rule content verification.
+**Date:** 2026-06-17
 
 ---
 
 ## Critical Issues (P0)
 
-### P0-1 — The input premise that drives §4.2 / §4.3 / AC8 is a HARDCODED COUNT of a DERIVED SET, and the count is WRONG
-- **§2.1** asserts: "26 个 fixtures 跨 23 个包 …即 **1 个包没有 fixture**". §4.2 then encodes the singular: "无 fixture 的**那个**包 … 自动进最弱批". §4.3 mirrors "无 fixture 的包". AC8 verifies a single LOW marker.
-- **Ground truth (scoped to the 24-pack target set):** Blake's MQ1 re-scan found **2** no-fixture packs (`ml-training` + `ai-podcast-production`); the "23" miscounted by folding the non-target pack `research-methodology` into the denominator. The frontmatter `gate4_delta` already records this exact divergence.
-- **Now even more divergent:** a live re-scan today shows fixtures were added to BOTH `ml-training` (`examples/lora-config-decision.md`, created 12:46) and `ai-podcast-production` (`examples/full-episode-production.md`, created 19:01). At this moment **0 of 24** target packs lack a fixture, and every fixture carries a `discriminative_pattern`.
-- **Architectural defect (the real one):** the design hardcodes the cardinality of a set (`{packs without fixture}`) that is DERIVED from the filesystem and CHANGES over time. This is precisely the anti-pattern in this project's own L1 principle *"Never pin an absolute count — assert set-equality live"* and *"diff -r is the universal omission catcher."* The audit's "auto-into-Batch-1" routing rule must consume `derive {p : no fixture(p)}` at runtime, not a literal "1" / "the one pack."
-- **Fix:** Rewrite §2.1/§4.2/§4.3/AC8 to (a) DERIVE the no-fixture set at audit time (`for p in <24-list>: test -d examples && ls examples/*.md`), (b) state the rule for **0..N** packs (plural, set-valued), (c) make AC8 conditional: *if* the derived set is non-empty, every member must be LOW-tagged AND in Batch 1; *if* empty, AC8 is N/A (and the audit must say so explicitly rather than fabricate a LOW row). The handoff as drafted is unbuildable-as-written against current reality (no "that pack" exists).
+### P0-1: Rule Count Arithmetic Inconsistency -- Multiple Locations Contradict
 
-### P0-2 — §7.2 file-to-modify (`EPIC-…leveling.md`) does not exist at the stated path; the Phase's required write target is mis-grounded
-- **§7.2 / FR3 / Step 3** mandate "回填 Epic Phase Map" into `.tad/active/epics/EPIC-20260613-capability-pack-quality-leveling.md`.
-- **Ground truth:** that path does NOT exist. The file lives at `.tad/archive/epics/EPIC-20260613-capability-pack-quality-leveling.md` (already archived). `ls .tad/active/epics/` shows only surplus-burn / reading-companion / tier1-workflow.
-- **Why this is P0 for an architect:** the handoff §7.3 claims everything is "Grounded Against" reality and Gate-2 ticks "Functions Verified ✅" — but the single mutable write target of the whole Phase was never grounded. A Phase whose terminal data-flow sink (write batch grouping back into the Phase Map) points at a nonexistent/archived file has an incomplete write contract. Blake would either fail the write or silently create a stray file.
-- **Fix:** correct the path to the real EPIC location and confirm it is writable/active; if the Epic is already archived, define explicitly where the Phase-2-5 batch assignment is persisted (the audit's "回填动作" sink must resolve to a real, intended file).
+The handoff states "22 rules" in multiple places but the actual enumerated rules total **26** across the 6 base references:
+- AD: 4 + TL: 4 + ES: 4 + VG: 4 + OC: 7 + MT: 3 = **26** (not 22)
+- With the 7th reference (SI1-SI3): **29 total**
+
+Affected locations with the wrong "22" count:
+- SS4.1 SKILL.md body template: "Quick Rule Index (all 22+3 rules)" -- should be "26+3" or "all 29 rules"
+- AC5: "Quick Rule Index 表列出全部 22 条规则 (AD1-4, TL1-4, ES1-4, VG1-4, OC1-7, MT1-3)" -- the parenthetical enumerates 26 items, not 22
+- IDEA file header: "Rule Summary (22 rules across 6 references)" -- enumerates 26
+- FR1: "Quick Rule Index (22 rules)" -- should be 26 (or 29 if SI included in index)
+
+**Impact:** Blake will either (a) implement only 22 rules and leave 4 undiscoverable missing ones, or (b) implement the parenthetical enumeration (all 29) and fail AC5's explicit count assertion of "22". The AC is internally contradictory -- the numerical literal disagrees with the exhaustive rule-ID enumeration in the same sentence. This is the kind of spec ambiguity that causes rework.
+
+**Fix:** Correct all "22" references to "26" (6 base references) or "29" (all 7 references including SI). Align AC5 count expectation with the actual rule IDs listed in the parenthetical. Decide whether SI1-SI3 belong in the Quick Rule Index or not, and state it unambiguously.
 
 ---
 
 ## Recommendations (P1)
 
-### P1-1 — AC8's grep is a substring sieve that fires on bare `LOW`, decoupled from the routing semantics it claims to verify
-- AC8: `grep -iE 'LOW|低置信|无 ?fixture|missing fixture'`. Dry-run: `echo "confidence LOW here" | grep -iE 'LOW…'` → matches. Any prose containing the substring `LOW` (e.g. "follow", "below", "flow", "allow") satisfies it. The criterion's stated intent — "the no-fixture pack is LOW-confidence AND routed to Batch 1" — is a TWO-part relational claim (per-pack confidence + batch membership), but the verifier checks neither relationally; it just proves the token exists somewhere. This is the validation-theater shape §10.1 warns against, reappearing in the gate that polices it. **Fix:** verify the conjunction on the SAME row: for each derived no-fixture pack, assert its table row carries LOW *and* that pack appears in the Batch-1 grouping (a 2-column row-scoped check, mirroring how AC2 was already hardened to "name + score on the same row").
+### P1-1: .agents/ Sync Scope Understated -- Only SKILL.md Listed, Full Mirror Required
 
-### P1-2 — Double-counting guard (§4.1 分层归属规则) is asserted as prose but has no verifier
-- §4.1 correctly identifies the contract: each criterion belongs to exactly one layer; `CONSUMES/PRODUCES`→Layer A only; fixture-existence is a Layer-A structural item whose *discriminative result* is a separate behavioral sub-score; "审计表里的列只是展示 flag (同一事实不得灌 3 个数)." This is the right architecture (separation of structure / depth / behavior axes). **But no AC checks it.** Nothing prevents the produced audit from feeding fixture-presence into Layer-A score AND Layer-B score AND a behavior column as three independent positive signals — the exact failure mode §4.1 names. **Fix:** add an AC that the综合分 formula is stated and that fixture-presence contributes to exactly one additive term (the produced BASELINE already does `compA + 2*B` with disc as a separate non-additive flag — good — but that invariant should be gate-checked, not left to Blake's discipline).
+SS10 (Files to Create) lists only `.agents/skills/agent-skill-evolution/SKILL.md` with action "Sync" for Codex parity. However, verified via `diff -rq` of rag-retrieval and agent-memory: the established project pattern is a **full directory mirror** -- `.agents/skills/{pack}/` is byte-identical to `.claude/skills/{pack}/` across all subdirectories (references/, examples/, scripts/, LICENSE).
 
-### P1-3 — Confidence is a first-class data field but its domain/derivation rule is under-specified
-- The audit introduces a `置信度 ∈ {LOW, MED, HIGH}` column that materially drives ranking trust. §4.2 only defines LOW (no fixture). HIGH (gold anchors) and MED (single-reviewer specN-informed) are used in the produced table but NOT defined anywhere in the handoff design. For a field that gates how much weight the human puts on each batch assignment, the state machine (what makes a pack MED vs HIGH) must be in the rubric, not invented at execution. **Fix:** define the full confidence enum + derivation predicate in QUALITY-BAR.md so the column is reproducible/auditable (NFR2 spirit).
+AC14 says ".agents/skills/agent-skill-evolution/SKILL.md 与 .claude/ 版本一致" -- this only checks SKILL.md, missing the 7 reference files, 1 fixture, and 1 script that the Codex edition also needs.
+
+**Impact:** Blake will sync only SKILL.md. The `platform-skills` byte-symmetry gate (documented in pack-build-rules.md "Sync That Mirrors Skills" entry, known to have caught the v2.30.0 21-pack downgrade) will FAIL on the next release sync for this pack.
+
+**Fix:** Change SS10 `.agents/` entry from "Sync" (single file) to "Sync (full directory mirror: cp -R)". Update AC14 verification to `diff -rq .claude/skills/agent-skill-evolution/ .agents/skills/agent-skill-evolution/`.
+
+### P1-2: AC11 Threshold of >=10 Specifics Is Low for 29 Rules
+
+AC11 requires ">= 10 specific numbers/thresholds" across all references. With 29 rules across 7 reference files (~100-150 lines each), that is ~0.34 specifics per rule -- well below the anti-slop quality bar established in pack-evaluation patterns ("specific threshold from research > generic principle from training data"). For context:
+- rag-retrieval (6 refs, 20 rules): carries ~20+ specific numbers
+- The handoff's own FR2 table lists 12 specific values as "Layer B depth" examples in just the summary
+
+**Fix:** Raise AC11 floor to >= 20, or add a per-reference minimum (e.g., each reference file must contain >= 2 specific numbers from the research source).
+
+### P1-3: IDEA File Rule Count Diverges from Handoff
+
+The IDEA file's "Pack Structure" section (lines 47-59) shows only 6 references (no skillopt-sleep-integration.md). The IDEA's "Rule Summary" header says "22 rules across 6 references." The handoff adds a 7th reference (SI1-SI3) in SS4.2 but doesn't note the IDEA is superseded on structure.
+
+**Impact:** Blake may reference the IDEA for rule content and only build 6 references, requiring rework when AC9 (`ls references/ | wc -l` expecting 7) fails.
+
+**Fix:** Either update the IDEA file to reflect 7 references + 29 rules, or add a clear note in the handoff that the IDEA's structure section is superseded.
 
 ---
 
 ## Suggestions (P2)
 
-### P2-1 — `disc` column conflates "eval-harness wired" with "behavioral result"
-- The produced table uses `disc = fixtures-with-discriminative-pattern / total fixtures` and explicitly footnotes "N/A=无 fixture (非新鲜行为评估——那是 Phase 2-5 DoD)." That is the correct scoping, but the handoff §4.3 calls it "取 discriminative 结果作为客观分量," which reads as if a real PASS/FAIL behavioral verdict is produced in Phase 1. Tighten §4.3 wording to "wiring-readiness flag, not a behavioral verdict" to prevent a future reader treating the column as an objective quality score.
+### P2-1: LICENSE File Not Listed in SS10
 
-### P2-2 — `git_tracked_dirs: []` in frontmatter vs artifacts under `.tad/evidence/`
-- Frontmatter declares no git-tracked dirs, yet the Phase writes `QUALITY-BAR.md` / `BASELINE-AUDIT.md` into `.tad/evidence/pack-quality/` and modifies an EPIC. If these are intended to be committed (they are durable rubrics, not transient evidence), the empty `git_tracked_dirs` may misroute the release/sync deny-list logic. Worth a one-line confirmation that pack-quality rubrics are intentionally evidence-tier (untracked) vs methodology-tier (tracked).
+Gold-standard packs (rag-retrieval, web-backend, agent-memory, agent-orchestration, etc.) include a LICENSE file (Apache 2.0). SS10 does not list creating one. Not blocking, but inconsistent with the established 11/24 pack artifact set.
+
+### P2-2: Fixture Naming Convention
+
+SS10 lists the fixture as `examples/self-improving-agent.md`. Some existing packs use `{pack-name}-fixture.md` (agent-memory-fixture.md, agent-orchestration-fixture.md). Consider `agent-skill-evolution-fixture.md` for grep discoverability, though this is not enforced.
+
+### P2-3: gate-check.sh Exit Code Semantics
+
+SS4.4 specifies PASS/PARTIAL/FAIL return values but does not define numeric exit codes. The gold-standard `rag-config-lint.sh` uses: exit 0 (PASS), exit 1 (P0 FAIL), exit 2 (P1 only). Recommend aligning exit codes for script interoperability (CI/CD, pack-eval-runner.sh).
+
+### P2-4: No SKILL.md Version Field in Frontmatter Design
+
+The SS4.1 frontmatter template shows `name`, `description`, `keywords`, `type` but no `version`. Gold-standard packs include `**Version**: 0.1.0` in the body. Minor -- Blake will likely include from template.
 
 ---
 
-## Overall Assessment: **CONDITIONAL PASS**
+## Overall Assessment: CONDITIONAL PASS
 
-The two-layer rubric architecture is genuinely sound: Layer A (structure) / Layer B (depth, 0/2/5 operationalized) / discriminative behavior are correctly separated onto distinct axes (§4.1), both layers carry symmetric negative controls (NFR1 + NFR4), and the "never pin 6/6/6/6" + re-rankable-batches design (§4.2) respects the project's count-pinning principle for the *batch* dimension.
+The handoff demonstrates strong architectural judgment: reference-based pack type correctly chosen, coherent rule taxonomy with zero keyword overlap against 7 existing agent packs (verified via grep), proper CONSUMES/PRODUCES interface contract, discriminative fixture with `discriminative_pattern`/`min_discriminative` frontmatter, and a deterministic gate-check.sh script design. The decision to create a standalone pack rather than scatter rules across 6 existing packs is well-justified by the rag-retrieval analogy.
 
-The blocker is that the SAME count-pinning anti-pattern leaks into the **fixture-set** dimension: §2.1's "1 pack without fixture" is a hardcoded, derived, and factually-wrong cardinality that propagates into §4.2/§4.3/AC8 (P0-1), and the Phase's terminal write target is mis-grounded (P0-2). Both are pure data-flow / contract defects an architect must block on. Notably, Blake's execution already self-corrected P0-1 at runtime (gate4_delta records 1→2), which is evidence the design *underspecified* the set rather than the executor failing — i.e. the handoff should have shipped the derive-the-set rule, not a literal "the one pack."
+**One P0 blocks:** the rule count arithmetic is internally contradictory (says "22" everywhere but enumerates 26+3=29), which will cause AC5 verification failure regardless of how Blake interprets it. This is a documentation error, not an architectural flaw -- easy to fix.
 
-Resolve P0-1 (set-valued, runtime-derived no-fixture routing + conditional AC8) and P0-2 (correct EPIC write path), and this passes.
+The `.agents/` sync scope understatement (P1-1) is the most architecturally significant recommendation, as it creates a guaranteed platform-skills symmetry gate failure on the next release cycle.
+
+**Verdict: CONDITIONAL PASS** -- fix P0-1 (rule count arithmetic) before handing to Blake. P1-1 (.agents full mirror) and P1-2 (AC11 threshold) should also be addressed.

@@ -1,16 +1,16 @@
 # Pack-Evolve Spike Report
 
-**Scan**: 48 trace files, 2534 lines, 0 parse errors
+**Scan**: 48 trace files, 2539 lines, 0 parse errors
 
-## Signal Summary (386 relevant events)
+## Signal Summary (389 relevant events)
 
 ### Event Type Distribution
 
 | Event Type | Count | Category |
 |-----------|-------|----------|
 | task_completed | 155 | outcome |
+| expert_review_finding | 69 | feedback |
 | gate_result | 66 | outcome |
-| expert_review_finding | 66 | feedback |
 | domain_pack_step | 46 | pack |
 | domain_pack_created | 41 | pack |
 | reflexion_diagnosis | 11 | feedback |
@@ -32,7 +32,7 @@
 ### Temporal Co-occurrence
 
 - Days with pack events: 3
-- Days with outcome/feedback events: 37
+- Days with outcome/feedback events: 38
 - Days with BOTH (co-occurrence): 2
 
 ## Feasibility Assessment

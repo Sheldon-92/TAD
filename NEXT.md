@@ -23,6 +23,15 @@
 - [x] **EPIC: Upgrade Lifecycle System — Phase 1/6 ✅ ACCEPTED 2026-06-09** (commit eab1fd8, Gate 3 PASS + Gate 4 PASS 15/15 AC, gate4_delta empty) — Migration Manifest Schema v1 + 3 DRs (backfill v2.19.0, always-backup detection, deprecation absorb) + example manifest 2.26.0-to-2.27.0.yaml + research evidence. Code review: 2 P0 fixed (validator backslash + grep -P), 7 P1 fixed. KA: ac-verification.md (shell case-glob backslash). Handoff archived. Epic: `.tad/active/epics/EPIC-20260609-upgrade-lifecycle-system.md`
 - [x] **EPIC: Upgrade Lifecycle System — Phase 2/6 ✅ ACCEPTED 2026-06-10** (commits fe11b95 + 7e2a945, Gate 4 PASS 19/19 AC) — migration-engine.sh (~450 lines) + 14-fixture harness. Code review: 1 P0 + 6 P1 fixed. KA: shell-portability.md (APFS pwd -P). Phase 3 carry-forwards: `.tad-backup/` sync exclusion; tad.sh:721 comment. Archived.
 
+## Ideas (from SkillOpt deep research 2026-06-16)
+
+- [x] IDEA-20260616-skillopt-tad-methodology-impact: SkillOpt-informed TAD methodology improvements (promoted → handoff → ✅ ACCEPTED 2026-06-17, commit c4fbeb2)
+- [x] IDEA-20260616-agent-skill-evolution-pack: New capability pack — agent-skill-evolution (promoted → handoff → ✅ ACCEPTED 2026-06-17, commit f232261)
+
+## Recently Completed (2026-06-17)
+
+- [x] **Agent-Computer Interface Capability Pack (TAD #25) ✅ ACCEPTED 2026-06-17** (commit ff8de66, Gate 4 PASS) — New capability pack teaching AI agents systematic tool detection and selection across 5 layers (engine/data/hybrid/agent/desktop). SKILL.md (3 cross-cutting rules: two-tier capability detection + layer match + security-aware fallback) + 6 reference files (35+ judgment rules) + capability-detect.sh (CLI+process scan, JSON output) + tool-health-check.sh (90d freshness + 24h cache) + behavioral fixture (10 discriminative markers). Expert review: 4 P0 fixed (ToolSearch/shell split, install.sh path, pgrep user-scoping, L5 security rules) + 13 P1 fixed. Research: NotebookLM notebook c0143736 (14 sources). Handoff archived. Born from user-observed pain point: Claude spent 10+ min failing to find Claude in Chrome.
+
 ## Priority (Next Session)
 
 - [ ] **⚠️ P0: SKILL Body vs Reference 边界重新审视** — v2.26.0 SKILL 瘦身后 Codex 真实测试暴露根本问题：Blake 跳过 Layer 2 / completion report，因为这些规则在 references/ 里没被加载。核心洞察："如果 agent 不主动读 reference，会不会不知不觉违反流程？会 → 必须留 body。" 需要对 36 个 reference 文件逐个判断，把"执行纪律类"（Gate 3 checklist、Layer 2 要求、completion 格式）inline 回 body。两个平台都验证。详见：`.tad/active/ideas/IDEA-20260609-skill-body-reference-boundary.md`。预计 +200-300 行回 body，不影响 references/ 里的"显式触发类"协议。

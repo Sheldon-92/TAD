@@ -5,6 +5,26 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.31.0] - 2026-06-17
+
+### Added
+- **agent-computer-interface capability pack (#26)** — 5-layer tool selection model (engine/data/hybrid/agent/desktop), two-tier capability detection (ToolSearch + shell), security-aware fallback chains. 6 references, 35+ judgment rules, 2 executable scripts
+- **agent-skill-evolution capability pack (#25)** — SkillOpt-based self-improving agent judgment rules. 7 references + gate-check.sh
+- **Unified *research command** — 9 separate research entries consolidated into Quick/Standard/Deep routing (default: Standard via NotebookLM)
+- **6 research quality improvements** — Q1 decision point, Q2 source verification, Q3 semantic saturation, Q4 decision brief template, Q5 claim verification, Q6 feedback loop
+- **SkillOpt methodology integration** — TAD methodology updated with SkillOpt research insights
+- **Research decision brief template** — .tad/templates/research-decision-brief.md
+
+### Changed
+- pack-upgrade workflow migrated from research-engine to NotebookLM-based agent
+- pack-dogfood workflow enhanced with regression stage
+
+### Removed
+- research-engine.workflow.js (405 lines) — replaced by Standard *research flow
+
+### Fixed
+- Sync install.sh ordering bug that silently downgraded 21 packs in v2.30.0
+
 ## [2.30.0] - 2026-06-15
 
 ### New Features
