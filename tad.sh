@@ -48,6 +48,7 @@ VERIFY_DENYLIST=0
 FORCE=0
 PLATFORM=""
 PACKS=""
+RESOLVE_STRATEGY=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --yes|-y)  AUTO_YES=1; shift ;;
@@ -59,17 +60,28 @@ while [ $# -gt 0 ]; do
     --packs)
       [ -z "${2:-}" ] && echo "tad.sh: --packs requires a value" >&2 && exit 1
       PACKS="$2"; shift 2 ;;
+    --resolve=*) RESOLVE_STRATEGY="${1#--resolve=}"; shift ;;
     --help|-h)
-      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--verify-denylist]"
+      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist]"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
       echo "  --platform <name>  target platform (claude-code, codex). Default: claude-code"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
+      echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
+      echo "                     default: ask, or local with --yes"
       echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
       exit 0 ;;
     *) echo "tad.sh: unknown option '$1' (use --help)" >&2; exit 1 ;;
   esac
 done
+
+# Validate --resolve parameter
+if [ -n "$RESOLVE_STRATEGY" ]; then
+    case "$RESOLVE_STRATEGY" in
+        local|upstream|ask) ;;
+        *) echo "tad.sh: --resolve must be local, upstream, or ask" >&2; exit 1 ;;
+    esac
+fi
 
 # ============================================
 # Logging Functions
@@ -372,6 +384,66 @@ generate_pack_meta() {
     } > "$meta_file"
 }
 
+# resolve_conflict <skill_name> <rel> <tgt_file> <src_file> — handle three-way conflict
+# Modifies caller's local: modified, updated. Requires PACK_STATS_CONFLICTS in outer scope.
+resolve_conflict() {
+    local skill_name="$1" rel="$2" tgt_file="$3" src_file="$4"
+    PACK_STATS_CONFLICTS=$((PACK_STATS_CONFLICTS + 1))
+
+    local strategy="$RESOLVE_STRATEGY"
+    if [ -z "$strategy" ] && [ "$AUTO_YES" = "1" ]; then
+        strategy="local"
+    fi
+
+    case "$strategy" in
+        local)
+            log_warn "    $skill_name/$rel: CONFLICT (both changed, local preserved)"
+            modified=$((modified + 1))
+            ;;
+        upstream)
+            cp "$tgt_file" "$tgt_file.tad-conflict-backup" 2>/dev/null || true
+            log_warn "    $skill_name/$rel: CONFLICT (both changed, upstream applied; backup: ${rel}.tad-conflict-backup)"
+            cp "$src_file" "$tgt_file"
+            updated=$((updated + 1))
+            ;;
+        *)
+            log_warn "    $skill_name/$rel: CONFLICT — both local and upstream changed"
+            echo "    --- diff (first 30 lines) ---"
+            diff -u --label "LOCAL: $skill_name/$rel" --label "UPSTREAM: $skill_name/$rel" \
+                "$tgt_file" "$src_file" 2>/dev/null | head -30 || true
+            echo "    ---"
+            local choice=""
+            read -p "    Keep YOUR version (l) / Use NEW upstream (u) / Full diff (d)? [l]: " choice </dev/tty 2>/dev/null || { choice="l"; log_warn "    (non-TTY: defaulting to local)"; }
+            case "$choice" in
+                u|U)
+                    cp "$tgt_file" "$tgt_file.tad-conflict-backup" 2>/dev/null || true
+                    cp "$src_file" "$tgt_file"
+                    updated=$((updated + 1))
+                    log_info "    (backup saved: ${rel}.tad-conflict-backup)"
+                    ;;
+                d|D)
+                    diff -u --label "LOCAL: $skill_name/$rel" --label "UPSTREAM: $skill_name/$rel" \
+                        "$tgt_file" "$src_file" 2>/dev/null || true
+                    echo "    File: $skill_name/$rel"
+                    local choice2=""
+                    read -p "    Keep YOUR version (l) / Use NEW upstream (u)? [l]: " choice2 </dev/tty 2>/dev/null || { choice2="l"; log_warn "    (non-TTY: defaulting to local)"; }
+                    if [ "$choice2" = "u" ] || [ "$choice2" = "U" ]; then
+                        cp "$tgt_file" "$tgt_file.tad-conflict-backup" 2>/dev/null || true
+                        cp "$src_file" "$tgt_file"
+                        updated=$((updated + 1))
+                        log_info "    (backup saved: ${rel}.tad-conflict-backup)"
+                    else
+                        modified=$((modified + 1))
+                    fi
+                    ;;
+                *)
+                    modified=$((modified + 1))
+                    ;;
+            esac
+            ;;
+    esac
+}
+
 # copy_pack_skill_smart <src_dir> <tgt_dir> — smart copy: compare hashes, skip customized files
 # Requires PACK_STATS_* counters declared as local in the caller (bash dynamic scoping).
 copy_pack_skill_smart() {
@@ -466,9 +538,18 @@ copy_pack_skill_smart() {
             cp "$src_file" "$tgt_dir/$rel"
             updated=$((updated + 1))
         else
-            # Customized → preserve + warn
-            modified=$((modified + 1))
-            log_warn "    $skill_name/$rel: customized (preserved)"
+            # Local was modified. Check if upstream also changed.
+            local source_hash
+            source_hash="$($sha_cmd "$src_file" 2>/dev/null | cut -d' ' -f1)" || { log_warn "    $skill_name/$rel: hash failed, preserving local"; modified=$((modified + 1)); continue; }
+
+            if [ "$source_hash" = "$installed_hash" ]; then
+                # Only local changed → preserve (Phase 2 behavior)
+                modified=$((modified + 1))
+                log_warn "    $skill_name/$rel: customized (preserved)"
+            else
+                # CONFLICT: both local AND upstream changed
+                resolve_conflict "$skill_name" "$rel" "$tgt_dir/$rel" "$src_file"
+            fi
         fi
     done <<< "$(find "$src_dir" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*')"
 
@@ -551,7 +632,7 @@ copy_framework_files() {
     # Pack smart-copy counters (visible to copy_pack_skill_smart via bash dynamic scoping
     # — do NOT call that function from a subshell/pipeline)
     local PACK_STATS_UPDATED=0 PACK_STATS_CUSTOMIZED=0 PACK_STATS_NEW=0
-    local PACK_STATS_FORKED=0 PACK_STATS_MIGRATED=0
+    local PACK_STATS_FORKED=0 PACK_STATS_MIGRATED=0 PACK_STATS_CONFLICTS=0
 
     # --- .tad/ framework files (copy everything except project data) ---
 
@@ -706,7 +787,17 @@ copy_framework_files() {
     # --- Pack status summary ---
     local pack_total=$((PACK_STATS_UPDATED + PACK_STATS_CUSTOMIZED + PACK_STATS_NEW + PACK_STATS_FORKED + PACK_STATS_MIGRATED))
     if [ "$pack_total" -gt 0 ]; then
-        log_info "  → Pack status: $PACK_STATS_UPDATED updated, $PACK_STATS_CUSTOMIZED customized (preserved), $PACK_STATS_NEW new, $PACK_STATS_FORKED forked, $PACK_STATS_MIGRATED migrated (preserved)"
+        log_info "  → Pack status: $PACK_STATS_UPDATED updated, $PACK_STATS_CUSTOMIZED customized (preserved), $PACK_STATS_NEW new, $PACK_STATS_FORKED forked, $PACK_STATS_MIGRATED migrated"
+    fi
+    if [ "$PACK_STATS_CONFLICTS" -gt 0 ]; then
+        local effective_strategy="${RESOLVE_STRATEGY:-local}"
+        if [ "$AUTO_YES" = "1" ] && [ "$effective_strategy" = "local" ]; then
+            log_warn "  ⚠ $PACK_STATS_CONFLICTS file-level conflict(s) auto-preserved (local kept). Run 'tad.sh --resolve=ask' to review."
+        elif [ "$effective_strategy" = "upstream" ]; then
+            log_warn "  ⚠ $PACK_STATS_CONFLICTS file-level conflict(s) resolved to upstream. Backups saved as .tad-conflict-backup."
+        else
+            log_warn "  ⚠ $PACK_STATS_CONFLICTS file-level conflict(s) detected."
+        fi
     fi
 
     # --- Codex hooks.json generation ---
