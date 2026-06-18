@@ -5,6 +5,23 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.31.2] - 2026-06-18
+
+### Added
+- **Pack Content Protection System** — 4-phase Epic: hash manifest → smart copy → conflict resolution → fork support
+  - `generate_pack_meta()` — SHA-256 hash manifest per pack (`.tad-pack-meta.yaml`)
+  - `copy_pack_skill_smart()` — per-file hash comparison, customized files preserved on install
+  - `resolve_conflict()` — three-way conflict detection with interactive diff resolution
+  - `--fork-pack <name>` / `--unfork-pack <name>` — permanently fork/unfork individual packs
+  - `--list-packs` — table view of all pack statuses (policy/baseline/files)
+  - `--resolve=local|upstream|ask` — conflict resolution strategy parameter
+  - `.tad-conflict-backup` — automatic backup before overwrite on conflict
+  - Non-TTY fallback for `curl | bash` environments
+
+### Fixed
+- sync-protocol.md: removed dangerous `rm -rf` + `install.sh --force` references (root cause of v2.30.0 pack downgrade)
+- release-verify.sh: filtered `.tad-pack-meta.yaml` from structural diff to avoid noise
+
 ## [2.31.1] - 2026-06-17
 
 ### Fixed
