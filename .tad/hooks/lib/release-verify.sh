@@ -183,7 +183,9 @@ case "$MODE" in
     # FR7 (2026-06-10): "Only in target" extras are local-skill INFO, not fail.
     # The structural gate catches INCOMPLETE copies (omissions); target-side extras
     # are the T1 local-skill model working as designed.
-    sout="$(diff -rq "$SRC/.claude/skills" "$TGT/.claude/skills" 2>&1)" || true
+    # Phase 1 (2026-06-17): filter out .tad-pack-meta.yaml from diff output —
+    # these are generated at install time in the target and expected to differ.
+    sout="$(diff -rq "$SRC/.claude/skills" "$TGT/.claude/skills" 2>&1 | grep -v '\.tad-pack-meta\.yaml')" || true
     if [ -z "$sout" ]; then
       echo "  ✅ .claude/skills identical"
     else
