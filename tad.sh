@@ -49,6 +49,9 @@ FORCE=0
 PLATFORM=""
 PACKS=""
 RESOLVE_STRATEGY=""
+FORK_PACK=""
+UNFORK_PACK=""
+LIST_PACKS=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --yes|-y)  AUTO_YES=1; shift ;;
@@ -61,14 +64,25 @@ while [ $# -gt 0 ]; do
       [ -z "${2:-}" ] && echo "tad.sh: --packs requires a value" >&2 && exit 1
       PACKS="$2"; shift 2 ;;
     --resolve=*) RESOLVE_STRATEGY="${1#--resolve=}"; shift ;;
+    --fork-pack)
+      [ -z "${2:-}" ] && echo "tad.sh: --fork-pack requires a pack name" >&2 && exit 1
+      FORK_PACK="$2"; shift 2 ;;
+    --unfork-pack)
+      [ -z "${2:-}" ] && echo "tad.sh: --unfork-pack requires a pack name" >&2 && exit 1
+      UNFORK_PACK="$2"; shift 2 ;;
+    --list-packs) LIST_PACKS=1; shift ;;
     --help|-h)
       echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist]"
+      echo "       tad.sh --fork-pack <name> | --unfork-pack <name> | --list-packs"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
       echo "  --platform <name>  target platform (claude-code, codex). Default: claude-code"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
       echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
       echo "                     default: ask, or local with --yes"
+      echo "  --fork-pack <name> mark a pack as forked (skipped on future installs)"
+      echo "  --unfork-pack <name> unmark a forked pack (follows upstream again)"
+      echo "  --list-packs       show all installed packs with sync status"
       echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
       exit 0 ;;
     *) echo "tad.sh: unknown option '$1' (use --help)" >&2; exit 1 ;;
@@ -442,6 +456,108 @@ resolve_conflict() {
             esac
             ;;
     esac
+}
+
+# resolve_pack_dir <name> — find the skill dir across both platforms
+resolve_pack_dir() {
+    local name="$1"
+    if [ -d ".claude/skills/$name" ]; then echo ".claude/skills/$name"
+    elif [ -d ".agents/skills/$name" ]; then echo ".agents/skills/$name"
+    else return 1
+    fi
+}
+
+# fork_pack <name> — mark a pack as forked (skipped on future installs)
+fork_pack() {
+    local name="$1"
+    case "$name" in */*|..|.) echo "tad.sh: invalid pack name '$name'" >&2; exit 1 ;; esac
+
+    local skill_dir
+    skill_dir="$(resolve_pack_dir "$name")" || {
+        echo "tad.sh: pack '$name' not found in .claude/skills/ or .agents/skills/" >&2; exit 1
+    }
+    local meta_file="$skill_dir/.tad-pack-meta.yaml"
+
+    if [ ! -f "$meta_file" ]; then
+        echo "tad.sh: no meta file for '$name'. Run 'tad.sh --yes' first to generate baseline." >&2; exit 1
+    fi
+
+    local current
+    current="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+    if [ "$current" = "forked" ]; then
+        echo "'$name' is already forked"; exit 0
+    fi
+
+    sed -i.bak "s/^sync_policy:.*/sync_policy: forked/" "$meta_file" && rm -f "$meta_file.bak"
+    echo "✓ '$name' forked — will be skipped on future installs"
+}
+
+# unfork_pack <name> — restore a forked pack to upstream
+unfork_pack() {
+    local name="$1"
+    case "$name" in */*|..|.) echo "tad.sh: invalid pack name '$name'" >&2; exit 1 ;; esac
+
+    local skill_dir
+    skill_dir="$(resolve_pack_dir "$name")" || {
+        echo "tad.sh: pack '$name' not found in .claude/skills/ or .agents/skills/" >&2; exit 1
+    }
+    local meta_file="$skill_dir/.tad-pack-meta.yaml"
+
+    if [ ! -f "$meta_file" ]; then
+        echo "tad.sh: no meta file for '$name'." >&2; exit 1
+    fi
+
+    local current
+    current="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+    if [ "$current" != "forked" ]; then
+        echo "'$name' is not forked (current: ${current:-upstream})"; exit 0
+    fi
+
+    sed -i.bak "s/^sync_policy:.*/sync_policy: upstream/" "$meta_file" && rm -f "$meta_file.bak"
+    echo "✓ '$name' unforked — will follow upstream on next install"
+}
+
+# list_packs — show all installed packs with sync status
+list_packs() {
+    local skill_base=".claude/skills"
+    [ ! -d "$skill_base" ] && skill_base=".agents/skills"
+    [ ! -d "$skill_base" ] && echo "No .claude/skills/ or .agents/skills/ directory found" >&2 && exit 1
+
+    printf '%-24s %-11s %-15s %s\n' "Pack" "Policy" "Baseline" "Files"
+    printf '%.0s─' {1..60}; echo
+
+    local total=0 forked_count=0
+    local sd
+    for sd in "$skill_base"/*/; do
+        [ -d "$sd" ] || continue
+        local name
+        name="$(basename "$sd")"
+        local meta="$sd/.tad-pack-meta.yaml"
+        [ ! -f "$meta" ] && [ ! -f ".tad/capability-packs/pack-registry.yaml" ] && continue
+        if [ -f ".tad/capability-packs/pack-registry.yaml" ]; then
+            grep -qF "name: \"${name}\"" ".tad/capability-packs/pack-registry.yaml" 2>/dev/null || continue
+        elif [ ! -f "$meta" ]; then
+            continue
+        fi
+
+        total=$((total + 1))
+        local policy="—" baseline="—" file_count="—"
+        if [ -f "$meta" ]; then
+            policy="$(grep '^sync_policy:' "$meta" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+            [ -z "$policy" ] && policy="upstream"
+            baseline="$(grep '^baseline_source:' "$meta" 2>/dev/null | sed 's/baseline_source:[[:space:]]*//' | tr -d '[:space:]"')"
+            [ -z "$baseline" ] && baseline="—"
+            file_count="$(grep -c '^  - path:' "$meta" 2>/dev/null)" || file_count=0
+            [ "$policy" = "forked" ] && forked_count=$((forked_count + 1))
+        else
+            policy="no meta"
+        fi
+        printf '%-24s %-11s %-15s %s\n' "$name" "$policy" "$baseline" "$file_count"
+    done
+
+    printf '%.0s─' {1..60}; echo
+    local upstream_count=$((total - forked_count))
+    echo "$total packs ($upstream_count upstream, $forked_count forked)"
 }
 
 # copy_pack_skill_smart <src_dir> <tgt_dir> — smart copy: compare hashes, skip customized files
@@ -1152,6 +1268,11 @@ if [ "$VERIFY_DENYLIST" = "1" ]; then
     verify_denylist_drift
     exit $?
 fi
+
+# Standalone pack management commands — exit before install flow
+if [ -n "$FORK_PACK" ]; then fork_pack "$FORK_PACK"; exit 0; fi
+if [ -n "$UNFORK_PACK" ]; then unfork_pack "$UNFORK_PACK"; exit 0; fi
+if [ "$LIST_PACKS" = "1" ]; then list_packs; exit 0; fi
 
 # Set trap for automatic rollback
 trap 'rollback_on_failure' ERR
