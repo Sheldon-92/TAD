@@ -323,10 +323,15 @@ is_pack_skill() {
     return 1
 }
 
-# generate_pack_meta <skill_dir> — write .tad-pack-meta.yaml with SHA-256 hashes
+# generate_pack_meta <tgt_dir> [<src_dir>] — write .tad-pack-meta.yaml with SHA-256 hashes
+# When src_dir is provided, list and hash files from src_dir (upstream) instead of tgt_dir.
+# This ensures the meta records upstream content hashes, so customized target files are
+# correctly detected as modified on subsequent installs.
 generate_pack_meta() {
     local skill_dir="$1"
+    local hash_dir="${2:-$skill_dir}"
     skill_dir="${skill_dir%/}"
+    hash_dir="${hash_dir%/}"
     local meta_file="$skill_dir/.tad-pack-meta.yaml"
     local version="$TARGET_VERSION"
     local today
@@ -356,15 +361,122 @@ generate_pack_meta() {
         printf 'sync_policy: %s\n' "$existing_policy"
         printf 'baseline_source: %s\n' "$existing_baseline"
         printf 'files:\n'
-        find "$skill_dir" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*' | sort | while read -r f; do
+        find "$hash_dir" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*' | sort | while read -r f; do
             local rel
-            rel="${f#"$skill_dir"/}"
+            rel="${f#"$hash_dir"/}"
             local hash
             hash="$($sha_cmd "$f" 2>/dev/null | cut -d' ' -f1)" || continue
             printf '  - path: "%s"\n' "$rel"
             printf '    sha256: "%s"\n' "$hash"
         done
     } > "$meta_file"
+}
+
+# copy_pack_skill_smart <src_dir> <tgt_dir> — smart copy: compare hashes, skip customized files
+# Requires PACK_STATS_* counters declared as local in the caller (bash dynamic scoping).
+copy_pack_skill_smart() {
+    local src_dir="$1" tgt_dir="$2"
+    src_dir="${src_dir%/}"
+    local skill_name
+    skill_name="$(basename "$src_dir")"
+    local meta_file="$tgt_dir/.tad-pack-meta.yaml"
+
+    # Case 1a: No target dir → first install
+    if [ ! -d "$tgt_dir" ]; then
+        cp -r "$src_dir" "$tgt_dir"
+        PACK_STATS_NEW=$((PACK_STATS_NEW + 1))
+        return 0
+    fi
+    # Case 1b: Target exists but no meta → pre-Phase-1 install, content copy
+    if [ ! -f "$meta_file" ]; then
+        cp -R "$src_dir/." "$tgt_dir/"
+        PACK_STATS_NEW=$((PACK_STATS_NEW + 1))
+        return 0
+    fi
+
+    local policy baseline
+    policy="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+    baseline="$(grep '^baseline_source:' "$meta_file" 2>/dev/null | sed 's/baseline_source:[[:space:]]*//' | tr -d '[:space:]"')"
+
+    # Case 2: Forked → skip entirely
+    if [ "$policy" = "forked" ]; then
+        PACK_STATS_FORKED=$((PACK_STATS_FORKED + 1))
+        log_info "    $skill_name: forked (skipped)"
+        return 0
+    fi
+
+    # Case 3: Migrated → only add new files, never overwrite
+    if [ "$baseline" = "migrated" ]; then
+        local src_file
+        while IFS= read -r src_file; do
+            [ -n "$src_file" ] || continue
+            local rel
+            rel="${src_file#"$src_dir"/}"
+            if [ ! -f "$tgt_dir/$rel" ]; then
+                mkdir -p "$(dirname "$tgt_dir/$rel")"
+                cp "$src_file" "$tgt_dir/$rel"
+            fi
+        done <<< "$(find "$src_dir" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*')"
+        PACK_STATS_MIGRATED=$((PACK_STATS_MIGRATED + 1))
+        return 0
+    fi
+
+    # Case 4: fresh_install → per-file hash comparison
+    local sha_cmd
+    if command -v shasum >/dev/null 2>&1; then
+        sha_cmd="shasum -a 256"
+    else
+        sha_cmd="sha256sum"
+    fi
+
+    local modified=0 updated=0
+    local src_file
+    while IFS= read -r src_file; do
+        [ -n "$src_file" ] || continue
+        local rel
+        rel="${src_file#"$src_dir"/}"
+
+        # New upstream file (not in target) → install
+        if [ ! -f "$tgt_dir/$rel" ]; then
+            mkdir -p "$(dirname "$tgt_dir/$rel")"
+            cp "$src_file" "$tgt_dir/$rel"
+            updated=$((updated + 1))
+            continue
+        fi
+
+        # Look up installed hash from meta
+        local installed_hash
+        installed_hash="$(awk -v p="$rel" '
+            index($0, "path: \""p"\"") > 0 {found=1; next}
+            found && /sha256:/ {gsub(/.*sha256:[[:space:]]*"|"/, ""); print; exit}
+        ' "$meta_file")"
+
+        # No hash in meta → treat as customized (unknown state)
+        if [ -z "$installed_hash" ]; then
+            modified=$((modified + 1))
+            continue
+        fi
+
+        # Compare current target hash with meta's recorded hash
+        local current_hash
+        current_hash="$($sha_cmd "$tgt_dir/$rel" 2>/dev/null | cut -d' ' -f1)" || continue
+
+        if [ "$current_hash" = "$installed_hash" ]; then
+            # Pristine → safe to overwrite
+            cp "$src_file" "$tgt_dir/$rel"
+            updated=$((updated + 1))
+        else
+            # Customized → preserve + warn
+            modified=$((modified + 1))
+            log_warn "    $skill_name/$rel: customized (preserved)"
+        fi
+    done <<< "$(find "$src_dir" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*')"
+
+    if [ "$modified" -gt 0 ]; then
+        PACK_STATS_CUSTOMIZED=$((PACK_STATS_CUSTOMIZED + 1))
+    else
+        PACK_STATS_UPDATED=$((PACK_STATS_UPDATED + 1))
+    fi
 }
 
 # is_selected_pack <name> — return 0 if name is in the comma-separated PACKS list
@@ -436,6 +548,11 @@ copy_framework_files() {
     local src="$1"
     log_info "  → Syncing framework files from source..."
 
+    # Pack smart-copy counters (visible to copy_pack_skill_smart via bash dynamic scoping
+    # — do NOT call that function from a subshell/pipeline)
+    local PACK_STATS_UPDATED=0 PACK_STATS_CUSTOMIZED=0 PACK_STATS_NEW=0
+    local PACK_STATS_FORKED=0 PACK_STATS_MIGRATED=0
+
     # --- .tad/ framework files (copy everything except project data) ---
 
     # Top-level config & metadata files — DENY-LIST derived (every regular file
@@ -501,7 +618,11 @@ copy_framework_files() {
                     continue
                 fi
             fi
-            cp -r "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
+            if is_pack_skill "$skill_name" "$src"; then
+                copy_pack_skill_smart "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
+            else
+                cp -r "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
+            fi
         done
     fi
     # settings.json — platform deny check
@@ -514,24 +635,6 @@ copy_framework_files() {
             mkdir -p .claude/workflows
             cp -r "$src"/.claude/workflows/* .claude/workflows/ 2>/dev/null || true
         fi
-    fi
-
-    # --- Pack meta generation (Phase 1: hash manifest) ---
-    if [ -f "$src/.tad/capability-packs/pack-registry.yaml" ]; then
-        local meta_targets="$TARGET_SKILL_DIR"
-        [ "$PLATFORM" = "both" ] && meta_targets="$TARGET_SKILL_DIR .agents/skills"
-        local mt
-        for mt in $meta_targets; do
-            [ -d "$mt" ] || continue
-            local skill_dir_m
-            for skill_dir_m in "$mt"/*/; do
-                [ -d "$skill_dir_m" ] || continue
-                local sn
-                sn="$(basename "$skill_dir_m")"
-                is_pack_skill "$sn" "$src" || continue
-                generate_pack_meta "$skill_dir_m" || log_warn "Meta generation failed for $sn, skipping"
-            done
-        done
     fi
 
     # --- Deprecation cleanup (v2.8.2) ---
@@ -571,10 +674,39 @@ copy_framework_files() {
                         continue
                     fi
                 fi
-                cp -r "$skill_dir_b" ".agents/skills/$skill_name_b"
+                if is_pack_skill "$skill_name_b" "$src"; then
+                    copy_pack_skill_smart "$skill_dir_b" ".agents/skills/$skill_name_b"
+                else
+                    cp -r "$skill_dir_b" ".agents/skills/$skill_name_b"
+                fi
             done
         fi
         log_info "  → Copied skills to .agents/skills/ (Codex secondary path)"
+    fi
+
+    # --- Pack meta generation (Phase 1: hash manifest) ---
+    # Runs AFTER both primary and secondary copy loops so smart copy reads OLD meta.
+    if [ -f "$src/.tad/capability-packs/pack-registry.yaml" ]; then
+        local meta_targets="$TARGET_SKILL_DIR"
+        [ "$PLATFORM" = "both" ] && meta_targets="$TARGET_SKILL_DIR .agents/skills"
+        local mt
+        for mt in $meta_targets; do
+            [ -d "$mt" ] || continue
+            local skill_dir_m
+            for skill_dir_m in "$mt"/*/; do
+                [ -d "$skill_dir_m" ] || continue
+                local sn
+                sn="$(basename "$skill_dir_m")"
+                is_pack_skill "$sn" "$src" || continue
+                generate_pack_meta "$skill_dir_m" "$src/.claude/skills/$sn" || log_warn "Meta generation failed for $sn, skipping"
+            done
+        done
+    fi
+
+    # --- Pack status summary ---
+    local pack_total=$((PACK_STATS_UPDATED + PACK_STATS_CUSTOMIZED + PACK_STATS_NEW + PACK_STATS_FORKED + PACK_STATS_MIGRATED))
+    if [ "$pack_total" -gt 0 ]; then
+        log_info "  → Pack status: $PACK_STATS_UPDATED updated, $PACK_STATS_CUSTOMIZED customized (preserved), $PACK_STATS_NEW new, $PACK_STATS_FORKED forked, $PACK_STATS_MIGRATED migrated (preserved)"
     fi
 
     # --- Codex hooks.json generation ---
