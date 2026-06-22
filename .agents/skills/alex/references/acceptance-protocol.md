@@ -124,6 +124,16 @@ acceptance_protocol:
       read_feedback_protocol in Alex SKILL.md body. SOFT check — warns but
       does not block Gate 4. Blocking enforcement deferred to Phase 3.
 
+  step4f_distillation:
+    name: "Knowledge Distillation Loop (journal→playbook)"
+    blocking: false
+    action: |
+      Execute distillation_loop (see SKILL body trigger → load reference).
+      This is the JOURNAL-to-PLAYBOOK distillation path.
+      ⚠️ This does NOT replace step7.C (C_alex_own_discoveries) — step7.C is Alex's
+      OWN-observation path (blocking: true, writes directly), which remains unchanged
+      and ensures Gate 4 KA is still blocking overall even if the user skips step4f.
+
   step5: "【业务检查】确认用户面向的行为正确"
   step6: "【人类确认】演示/走查功能，获得用户确认"
   step7:

@@ -89,7 +89,7 @@ design_protocol:
               pack-A must run before pack-B. Check string overlap, not just LLM judgment.
               (e.g., web-ui-design.produces "DESIGN.md" matches web-frontend.consumes "DESIGN.md")
            b. Propose serial execution order based on data flow
-              (e.g., research-methodology → product-thinking → web-backend)
+              (e.g., web-ui-design → product-thinking → web-backend)
            c. AskUserQuestion:
               "建议按此顺序使用 {N} 个 pack:
                {pack1} → {pack2} (→ {pack3})

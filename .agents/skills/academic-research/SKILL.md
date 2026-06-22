@@ -25,7 +25,7 @@ This pack covers **academic and scientific research methodology**.
 - Tasks mentioning PRISMA, PubMed, citation analysis, ScholarEval
 - Evaluating research quality or scholarly writing
 
-**NOT this pack — defer to `research-methodology` when:**
+**NOT this pack — defer to `*research` when:**
 - Market analysis, technology trend analysis, competitive analysis
 - General non-academic "research X" tasks without scientific context
 - Business strategy investigation, product analysis

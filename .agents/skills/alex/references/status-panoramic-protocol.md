@@ -72,4 +72,4 @@ status_panoramic_protocol:
         After displaying, return to standby.
         No AskUserQuestion needed — *status is a read-only command.
 
-# *research-plan Protocol (A7)
+# *research --deep Protocol (formerly *research-plan, now part of *research unified)

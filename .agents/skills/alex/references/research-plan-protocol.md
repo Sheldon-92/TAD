@@ -1,28 +1,52 @@
-# Research Plan Protocol (extracted from SKILL.md for progressive loading)
-# Source: .claude/skills/alex/SKILL.md
+# Research Plan Protocol — Deep Level of *research
+# Called by: research_unified_protocol.deep_execution (alex/SKILL.md)
+# Original source: .claude/skills/alex/SKILL.md
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
+# Updated: 2026-06-17 (EPIC-20260616-research-system-consolidation Phase 1 — remove OBJECTIVES hard dep)
 
 research_plan_protocol:
-  description: "Alex 主动提出目标导向的研究计划，用户确认后执行"
+  description: "Deep research — full Phase 0-5 pipeline. Called via *research --deep"
   trigger: |
-    手动: 用户输入 *research-plan
-    自动建议: STEP 3.8 检测到 gap 时输出 "💡 运行 *research-plan 来生成目标导向的研究计划并执行"
+    Called from: research_unified_protocol when level == Deep
+    Also: STEP 3.8 gap detection suggests "💡 运行 *research --deep 来执行深度研究"
 
   execution:
     step1:
       name: "读取目标 + 现有研究"
       action: |
         0. Preflight:
+           → If OBJECTIVES.md found:
+             → Read it → use Objectives + Key Results for gap-driven research planning
            → If OBJECTIVES.md not found:
-             → "⚠️ *research-plan requires OBJECTIVES.md. Run *analyze first to define project objectives, or use *research-notebook research directly for ad-hoc research."
-             → standby
+             → Skip gap analysis; use the user's research question directly as the research topic
+             → Proceed normally (OBJECTIVES is optional context, not a hard requirement)
            → If REGISTRY.yaml not found:
-             → Treat as "all KRs are gaps" (no existing research) — proceed normally
+             → Treat as "no existing research" — proceed normally
 
-        1. Read OBJECTIVES.md → extract all Objectives + Key Results with status ⬚/🔄
+        1. If OBJECTIVES.md exists: Read → extract all Objectives + Key Results with status ⬚/🔄
+           If not: use user's research question from *research --deep invocation
         2. Read REGISTRY.yaml → list all active notebooks with topics (empty if absent)
         3. Identify gaps: which ⬚/🔄 KRs have NO aligned notebook research? (LLM semantic match)
-        4. If no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
+           If no OBJECTIVES: treat the user's question as the single gap
+        4. If OBJECTIVES exists and no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
+
+    step1b_decision_point:
+      name: "决策点确认 (Q1 — shared with Standard)"
+      action: |
+        If OBJECTIVES.md exists AND gap KRs identified:
+          → decision_context is derived from the highest-priority gap KR
+          → research_decision_point = "为了推进 {KR}，{topic} 的哪个方案证据最强？"
+          → Announce: "📌 Decision context (from OBJECTIVES): {research_decision_point}"
+          → No AskUserQuestion needed — OBJECTIVES provides the decision context
+
+        If OBJECTIVES.md NOT found (user's direct question):
+          → Run the same AskUserQuestion as Standard's 0_decision_point:
+            "研究 '{topic}' 之前先确认：研究完你想做什么决定？"
+          → Store research_decision_point (same format as Standard)
+
+        research_decision_point is used by:
+        - step2 question generation (all questions reference the decision)
+        - Phase 4 seed questions (specificity + decision anchor)
 
     step2:
       name: "生成研究计划"
@@ -80,11 +104,16 @@ research_plan_protocol:
 
         a0. PHASE 0 — Research Plan (NEW — define before sourcing):
            → Step 1: Define 5-10 specific research questions from the gap analysis
-             Format rule: questions MUST include a specificity anchor:
+             Format rule 1 — specificity anchor (existing):
              ✅ "From GitHub repos: what specific CLI tools exist for X?"
              ✅ "What token structure does Shopify Polaris use in its polaris-tokens package?"
              ❌ "What are best practices for X?" (too vague — REJECT and rephrase)
              ❌ "How should we approach X?" (no specificity anchor — REJECT)
+             Format rule 2 — decision anchor (Q1 integration):
+             Every seed question MUST reference research_decision_point.
+             禁止纯清单题 — "有哪些 X" 必须改写为 "对于 {decision}，X 的哪些方案最相关"
+             ✅ "For deciding {research_decision_point}: which frameworks handle {specific aspect} best?"
+             ❌ "What are the top 10 frameworks for X?" (pure list, no decision anchor)
            → Step 2: Define source type priority for this research topic:
              | Priority | Source Type | Example |
              |----------|------------|---------|
@@ -628,6 +657,17 @@ research_plan_protocol:
            → Step 1: From all ask answers, extract engineering-actionable items
              → Format: "Based on {KR}, research shows: {finding} → Suggested AC: {concrete acceptance criterion}"
              → Example: "KR1 sesame recall: 担担面 → sesame paste mapping → AC: allergen-rules must contain dandan→sesame rule"
+
+           → Step 1a5 (Decision Brief — Q4 integration from Standard, runs BEFORE Step 1b):
+             Generate a 决策简报 using .tad/templates/research-decision-brief.md format:
+             - Input: Phase 4 ask findings + Step 1 extracted ACs
+             - decision question: research_decision_point (from step1b_decision_point) or research topic
+             - 四段结构：选项 → 证据 → 推荐 → 未知风险
+             - Save to .tad/evidence/research/{notebook_topic}/{date}-decision-brief-{slug}.md
+             - Display alongside AC list in Step 2
+             Note: Deep does NOT add Q5 (Phase 4c adversarial challenge is stronger) or
+             Q6 (Phase 5 step6 Research→Action Bridge covers feedback). Only Q4 format.
+             Execution order: Step 1 → Step 1a5 (brief) → Step 1b (adversarial) → Step 2 (display)
 
            → Step 1b (PHASE 5b — Adversarial Challenge: Action Recommendations):
              Trigger: After Step 1 extraction, BEFORE Step 2 display to user.

@@ -12,7 +12,7 @@ intent_router_protocol:
     step1:
       name: "Check Explicit Command"
       action: |
-        If user input starts with *bug, *discuss, *idea, *learn, *express, *experiment, or *analyze:
+        If user input starts with *bug, *discuss, *idea, *learn, *express, *experiment, *research, or *analyze:
           → Skip detection, go directly to the corresponding path
           → For *analyze: proceed to adaptive_complexity_protocol (existing flow)
           → For *express: enter express_path_protocol (Phase 3 P3.1)
@@ -105,6 +105,7 @@ intent_router_protocol:
         - learn → Enter learn_path_protocol
         - express → Enter express_path_protocol (Phase 3 P3.1)
         - experiment → Enter experiment_path_protocol (Phase 3 P3.2)
+        - research → Enter research_unified_protocol (Quick/Standard/Deep routing)
         - analyze → Enter adaptive_complexity_protocol (existing, unchanged)
         
         NOTE: Entering any *_path_protocol whose body is a `reference:` stub (P3 progressive disclosure)
@@ -147,7 +148,7 @@ intent_router_protocol:
       skip_if:
         - "pack-registry.yaml not found or YAML parse error (WARN + skip)"
         - "No available packs (all Tier 3)"
-        - "Framework management commands: *publish, *sync, *sync-add, *sync-list, *status, *dream, *optimize, *evolve, *idea-list, *idea-promote, *research-review, *research-plan, *test-review, *cancel"
+        - "Framework management commands: *publish, *sync, *sync-add, *sync-list, *status, *dream, *optimize, *evolve, *idea-list, *idea-promote, *research status, *research --deep, *test-review, *cancel"
       
       max_packs: 2  # Load at most 2 packs per session (context budget)
       ranking_when_over_limit: |
@@ -188,9 +189,9 @@ intent_router_protocol:
       - "After *idea-promote step2: user selects 'Cancel' → Enter standby"
       - "After *idea-promote step1: no promotable ideas → Enter standby"
       - "After *status step3 completes → Enter standby"
-      - "After *research-review step3 completes (user selects 'only look, no action') → Enter standby"
-      - "After *research-review step4 operations complete → Enter standby"
-      - "After *research-plan step5 completes → Enter standby"
+      - "After *research status step3 completes (user selects 'only look, no action') → Enter standby"
+      - "After *research status step4 operations complete → Enter standby"
+      - "After *research completes (any level — Quick/Standard/Deep) → Enter standby"
       - "After *publish step5 completes → Enter standby"
       - "After *sync step4 completes → Enter standby"
       - "After *sync-add step3 completes → Enter standby"

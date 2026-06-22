@@ -351,7 +351,7 @@ activation-instructions:
          - O2: {title} — ✅ / ⚠️
          ```
          If ANY gap detected:
-         → "💡 建议: 运行 *research-plan 来生成目标导向的研究计划并执行"
+         → "💡 建议: 运行 *research --deep 来执行深度研究"
          (不自动发起 — 只提示)
       6. De-dup cross-reference: if the user declines research for a surfaced gap-domain
          here, append that domain to `declined_research_domains` (honored by
@@ -434,9 +434,9 @@ global_skill_exclusion:
     DO NOT invoke the Skill tool for any of these. DO NOT spawn Agent tools as
     a substitute for TAD's CLI-based research workflows.
   excluded_skills:
-    - name: "deep-research / research"
-      reason: "TAD uses *research-notebook research --mode deep (NotebookLM CLI), not WebSearch multi-phase"
-      tad_replacement: "*research-notebook research / *research-plan"
+    - name: "deep-research"
+      reason: "TAD uses *research (unified — Quick/Standard/Deep), not WebSearch multi-phase"
+      tad_replacement: "*research (unified — Quick/Standard/Deep, defaults to NotebookLM)"
     - name: "code-review"
       reason: "TAD uses code-reviewer sub-agent with narrow-scope prompt template (expert_prompt_template)"
       tad_replacement: "Agent tool with subagent_type=code-reviewer + TAD prompt template"
@@ -467,8 +467,8 @@ global_skill_exclusion:
   enforcement: |
     If you catch yourself about to invoke any excluded skill or spawn a generic
     Agent for research: STOP. Read the tad_replacement path instead.
-    For research specifically: Read .claude/skills/research-notebook/SKILL.md
-    and follow the CLI steps using Bash tool. Sequential, not parallel.
+    For research specifically: use *research (unified research command) which
+    auto-routes to Quick/Standard/Deep. Sequential, not parallel.
 
 # All commands require * prefix (e.g., *help)
 commands:
@@ -492,6 +492,9 @@ commands:
   accept: Accept Blake's implementation and archive handoff
   cancel: Cancel an active handoff (P5.3 — 4-reason taxonomy + rationale + move to cancelled/ archive; bypasses Gate 4)
 
+  # Knowledge management
+  knowledge-maintain: "Run knowledge maintenance — hash-dedup, reconcile against existing, lint, usage-retire signal"
+
   # Task execution
   task: Execute specific task from .tad/tasks/
   checklist: Run quality checklist
@@ -503,16 +506,16 @@ commands:
   architect: Call backend-architect for design
   api: Call api-designer for API design
   ux: Call ux-expert-reviewer for UX review
-  research: Research technical options and present comparison (part of design flow)
+  research-options: Research technical options and present comparison (part of design flow)
   reviewer: Call code-reviewer for design review
 
   # Document commands
   doc-out: Output complete document
   doc-list: List all project documents
 
-  # Research management commands
-  research-review: "Research portfolio review — classify all notebooks by goal alignment + action plan"
-  research-plan: "基于 OBJECTIVES.md gap analysis，提出研究计划并执行"
+  # Research commands
+  research: "Unified research — Quick/Standard/Deep, defaults to NotebookLM Standard"
+  research status: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
   # Cross-project & skill management
   harvest: "Review skillify candidates across all projects — T1/T2/T3 routing (explicit command only)"
@@ -687,7 +690,7 @@ intent_router_protocol:
   blocking: true
 
   # Core routing — explicit commands bypass detection
-  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*analyze"]
+  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze"]
   idle_patterns_zh: ["谢谢", "ok", "好的", "收到", "明白了"]
   idle_patterns_en: ["thanks", "ok", "got it", "sure", "noted"]
 
@@ -722,15 +725,309 @@ status_panoramic_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/status-panoramic-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *status command), Read the reference and follow it verbatim."
-research_plan_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/research-plan-protocol.md"
-  load_when: "When *research-plan is invoked, Read the reference and follow it verbatim."
-# *research-review Protocol (A6)
+# ═══════════════════════════════════════════════════════════
+# Unified Research Protocol (*research)
+# ⚠️ MUST stay in SKILL body — circular trigger: routing table
+# defines the levels that trigger reference loading. If moved to
+# references/, agent won't know levels exist → trigger never fires.
+# ═══════════════════════════════════════════════════════════
+research_unified_protocol:
+  description: "Unified research entry — Quick/Standard/Deep, defaults to Standard (NotebookLM)"
+  trigger: "User types *research OR Alex auto-routes from intent detection (研究/research/调研/对比/了解)"
+
+  routing_table:
+    quick:
+      signals: ["单一事实", "语法查询", "是什么", "怎么用", "API 怎么调", "什么意思", "--quick"]
+      execution: "WebSearch 直接回答，不建 notebook"
+      output: "直接在对话中给出答案"
+    standard:
+      signals: ["研究一下", "了解", "对比", "有哪些", "default when ambiguous", "--standard"]
+      execution: "NotebookLM: 找匹配 notebook → ask（含动态追问）；无匹配 → 新建 notebook + research fast + ask"
+      output: "notebook 研究结果 + 动态追问链"
+    deep:
+      signals: ["深入研究", "建知识库", "landscape", "全面调研", "--deep"]
+      execution: "Full research-plan Phase 0-5 (→ references/research-plan-protocol.md)"
+      output: "完整研究报告 + 多轮知识积累"
+
+  tie_breaking: |
+    Quick vs Standard → default to Standard（更高覆盖，不冒遗漏风险）
+    Standard vs Deep → default to Standard（让用户按需升级）
+    用户可随时用 *research --quick / --standard / --deep 显式指定
+
+  preflight:
+    check: "test -x ~/.tad-notebooklm-venv/bin/notebooklm"
+    on_fail: |
+      Standard/Deep 降级为 WebSearch:
+      "⚠️ NotebookLM CLI 不可用。降级为 WebSearch 研究。
+       安装: bash .tad/cross-model/setup-notebooklm.sh"
+      Quick 不受影响（本身用 WebSearch）
+
+  quick_execution:
+    steps:
+      - "执行 2-3 个 WebSearch 查询"
+      - "直接在对话中给出答案"
+      - "不建 notebook，不保存研究链"
+
+  standard_execution:
+    steps:
+      0_decision_point: |
+        AskUserQuestion:
+          question: "研究 '{topic}' 之前先确认：研究完你想做什么决定？"
+          options:
+            - "我想选择：{auto-detect from topic, e.g., '选哪个框架/工具/方案'}"
+            - "我想评估：{e.g., '评估 X 是否适合我们'}"
+            - "我想了解全貌（探索型）"
+            - (Other — 用户自定义)
+
+        If user picks "了解全貌":
+          → research_decision_point = "关于 {topic}，目前有哪些主流方案，各自的适用场景和局限是什么？"
+
+        If user picks option 1/2 or custom:
+          → decision_context = user's answer
+          → research_decision_point = "基于 {decision_context}，{topic} 的哪个方案证据最强？具体比较 {维度}。"
+
+        If user answer is vague (e.g., "不知道"):
+          → Alex 追问一次 "能具体一点吗？比如你是想选工具、评估方案、还是了解全貌？"
+          → If still vague → 按"了解全貌"处理
+
+        Store in session: research_decision_point (referenced by Q3 semantic saturation)
+
+        Note: Q1 always runs for Standard/Deep. Quick is exempt (no notebook, no Q1).
+        Note: When NotebookLM preflight fails (degraded to WebSearch), Q1 still runs normally.
+
+      1_find_notebook: |
+        Read .tad/research-notebooks/REGISTRY.yaml
+        Filter: only status == "active" notebooks participate in matching
+        - dormant: AskUserQuestion "Found dormant notebook '{topic}' (last queried {date}). Reactivate or create fresh?"
+        - archived: skip entirely
+        LLM 语义匹配用户研究话题 vs notebook.topic
+        0 matches → 新建 notebook (step 2)
+        1 match → 使用该 notebook (skip to step 3)
+        >1 matches → AskUserQuestion: "Found {N} matching notebooks: {list with topic + source_count}. Which to use?"
+          Options: each notebook + "Create new notebook"
+
+      2_create_if_needed: |
+        *research-notebook create "{topic}"
+        *research-notebook research --mode fast -n <new_id>
+
+      2b_source_verify: |
+        Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
+
+        source_list = notebooklm source list --json -n <id>
+        total = source count
+
+        If total == 0: skip (fast-research may have failed entirely — proceed to ask)
+
+        For each source:
+          Skip if status != "ready" (preparing/processing/error sources not yet queryable)
+
+          Relevance check (--source scoped ask — single-source content only):
+            verdict = notebooklm ask \
+              "Is this source relevant to the research question: '${research_decision_point}'? \
+               Answer ONLY with RELEVANT or IRRELEVANT." \
+              -n <id> --source "$source_id" \
+              -c 00000000-0000-0000-0000-000000000000  # fresh conversation per source — prevents cross-source context bleed
+
+            If verdict starts with "IRRELEVANT":
+              notebooklm source delete "$source_id" -n <id> --yes || log "⚠️ Delete failed, keeping source"
+              deleted_count += 1
+
+            If verdict is unexpected (neither RELEVANT nor IRRELEVANT):
+              Default: keep source (conservative — false keep > false delete)
+
+            sleep 1  # rate limit protection
+
+        Report: "🔍 Source verification: {total} checked, {deleted_count} irrelevant removed, {retained} retained"
+
+        If all sources deleted:
+          Report: "⚠️ All sources judged irrelevant. Research may have poor coverage."
+          (Continue to step 3 — ask may return limited results but don't block)
+
+        Cap advisory (Standard only):
+          remaining = notebooklm source list --json -n <id> | jq 'length'
+          if remaining > 15:
+            log "⚠️ Source count {remaining} exceeds 15 cap. Consider *research-notebook curate."
+            (Advisory only — user may have manually added sources)
+
+      3_ask: |
+        *research-notebook ask "{research_decision_point}" -n <id>
+        (ask 自带动态追问协议, 4 轮上限, 6 策略 — step3_5 内层饱和)
+        研究链文件自动保存到 .tad/evidence/research/
+
+      3b_semantic_saturation: |
+        Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
+
+        max_extra_rounds: 2
+        extra_round: 0
+        check_target = research_decision_point || topic  # fallback to raw user input if Q1 somehow unset
+
+        LOOP:
+          saturation_check = notebooklm ask \
+            "Based on all information available to you, can you fully answer this decision question: \
+             '${check_target}'? \
+             If YES: respond COMPLETE. \
+             If NO: respond INCOMPLETE followed by the specific sub-question that remains unanswered." \
+            -n <id> -c 00000000-0000-0000-0000-000000000000
+
+          If starts with "COMPLETE":
+            → "✅ Semantic saturation: research question fully answered after {extra_round} extra rounds"
+            → EXIT LOOP → proceed to step 4
+
+          If starts with "INCOMPLETE" AND extra_round < max_extra_rounds:
+            → Extract missing_sub_question
+            → "🔄 Semantic gap: '{missing_sub_question}'. Running targeted follow-up..."
+            → followup = notebooklm ask "{missing_sub_question}" -n <id>
+              (Raw CLI — NOT *research-notebook ask — avoids nested step3_5.
+               Inner tier already exhausted deep exploration; Q3 uses a different question angle.)
+            → Citation-based exit check:
+              new_citations = count unique [N] refs in followup
+              if new_citations == 0:
+                → "⚠️ Semantic gap identified but no new information in notebook. Proceeding with partial results."
+                → EXIT LOOP
+            → extra_round += 1
+            → sleep 1
+            → LOOP back
+
+          If extra_round >= max_extra_rounds:
+            → "⚠️ After {max_extra_rounds} extra rounds, question not fully answered. Proceeding with partial results."
+            → EXIT LOOP
+
+          If unexpected response (neither COMPLETE nor INCOMPLETE):
+            → "⚠️ Saturation check returned unexpected format. Proceeding with partial results."
+            → EXIT LOOP  # Default to exit with warning, not silent COMPLETE
+
+        Two-tier saturation model:
+        - Inner (step3_5): citation-based, runs INSIDE *research-notebook ask. Detects "no new information."
+        - Outer (Q3): semantic, runs AFTER ask. Detects "info found but decision question not answered."
+        - Q3 follow-ups are shallow (raw CLI) because inner tier already exhausted deep exploration.
+        - Citation-based exit check prevents burning API calls when notebook has nothing more.
+
+      4_format_brief: |
+        Context preservation: 在生成简报前，先持久化 ask 核心结果到
+        .tad/evidence/research/{notebook_topic}/raw-ask-results-{date}.md
+        防止长对话 context compaction 导致 ask 结果被压缩。
+        (降级路径下保存 WebSearch 结果；如无结果则跳过持久化)
+
+        基于以下输入生成决策简报（Alex 在对话中直接生成，不调 notebooklm report）：
+        - research_decision_point（来自 step 0）
+        - ask 结果 + 动态追问链（来自 step 3 + 3b）
+        - topic
+
+        格式（引用模板 .tad/templates/research-decision-brief.md）：
+
+        ## 决策简报: {topic}
+        **决策问题**: {research_decision_point}
+
+        ### 选项
+        列出研究发现的所有方案/工具/方法，每个选项一行。
+        (探索型 "了解全貌" 时改为 "关键发现"，其余段落保持)
+
+        ### 证据
+        每个选项的支撑证据，带 NotebookLM 引用标记 [N]。
+        格式：- **{选项 A}**: {证据摘要} [1][3]
+
+        ### 推荐
+        基于证据的推荐及理由。证据不足时明确说明。
+
+        ### 未知风险
+        研究未覆盖的领域、证据不足的维度。
+
+        Note: 此步骤替换原 4_return。结果交付在 5_feedback_loop 结束后。
+        降级路径（NotebookLM 不可用）：简报基于 WebSearch 结果生成，格式相同。
+
+      4b_verify_claims: |
+        从简报的"证据"和"推荐"段落中提取具体 claim：
+        - 数字型：性能数据、价格、用户量
+        - 版本型：软件版本号、API 版本
+        - 名称型：工具名、公司名、项目名
+
+        提取规则：
+        - 优先选择直接支撑"推荐"结论的 claim
+        - 目标 3-5 个；少于 3 个时验证所有存在的
+        - 简报完全是定性描述（无数字/版本/名称）→ 跳过 Q5，标注"无可验证的具体 claim"
+
+        For each extracted claim:
+          WebSearch: "{claim} {current_year}"
+          Compare:
+          - 一致 → ✅ 已验证
+          - 找不到 → ⚠️ 待验证（来源不可确认）
+          - 不一致 → ❌ 与最新信息不符: {correct_value}
+            → 同时修正简报正文中的相应描述，标注"[已更正: {原值}→{新值}]"
+
+        将验证结果追加到简报的 "Claim 验证" 表格。
+
+        Note: WebSearch 验证，不依赖 NotebookLM。降级路径下 Q5 仍可执行。
+
+      5_feedback_loop: |
+        max_feedback_rounds: 2
+        feedback_round: 0
+
+        AskUserQuestion:
+          question: "这份决策简报回答了你的问题吗？"
+          options:
+            - "是的，够了" → 结束研究，保存简报
+            - "大方向对，但 {X} 部分没到位" → targeted follow-up
+            - "不对，我的问题是 {Y}" → reframe
+            - "需要更多细节" → deepen
+
+        If "是的，够了": → 保存简报，结束
+
+        If "大方向对，但 X 没到位" AND feedback_round < max_feedback_rounds:
+          → Extract gap_topic from user's answer
+          → notebooklm ask "关于 {gap_topic}，在 {research_decision_point} 的上下文中，有什么更具体的信息？" -n <id>
+            (Raw CLI — 不触发 step3_5，avoids nested dynamic follow-up)
+          → 补充到简报对应段落
+          → 如果补充含新具体 claim → 重新执行 4b_verify_claims
+          → feedback_round += 1 → LOOP back
+
+        If "不对，我的问题是 Y":
+          → 更新 research_decision_point = Y
+          → 重新执行 4_format_brief（基于已有 ask 结果重组）
+          → 重新执行 4b_verify_claims（新简报可能含不同 claim）
+          → Material sufficiency check:
+            如果重新生成的简报"选项"段落少于 2 项或明显比原简报薄：
+            → AskUserQuestion: "现有研究不太覆盖 '{Y}'。怎么处理？"
+              Options:
+                - "用当前 notebook 针对 Y 追问" → ask "{Y}" -n <id> → 重新 4_format_brief
+                - "开启新的 Standard 研究" → 回到 step 0（新 decision_point = Y）
+                - "先用现有信息" → 继续，接受简报较薄
+            如果内容充足 → 继续正常流程
+          → feedback_round += 1 → LOOP back
+
+        If "需要更多细节":
+          → AskUserQuestion: "哪个选项需要更多细节？"
+          → 对选中选项用 ask 追问 -n <id>（Raw CLI）
+          → 补充到简报
+          → feedback_round += 1 → LOOP back
+
+        If feedback_round >= max_feedback_rounds:
+          → "已完成 2 轮反馈补充。如果还需要更深入，建议运行 *research --deep。"
+          → 结束
+
+        结束后保存简报:
+          → Write to .tad/evidence/research/{notebook_topic}/{date}-decision-brief-{slug}.md
+          → Report: "📋 决策简报已保存: {path}"
+
+        降级路径（NotebookLM 不可用）：
+          Q6 反馈追问改用 WebSearch 代替 ask。简报仍可补充。
+
+    note: "Standard 使用 -n <id> 指定 notebook，不使用 use <id>（避免全局状态污染）"
+
+  deep_execution:
+    reference: ".claude/skills/alex/references/research-plan-protocol.md"
+    load_when: "When *research --deep is invoked, Read the reference and follow it verbatim."
+    note: "Deep 是完整的 Phase 0-5 研究流程（原 *research-plan），已去除 OBJECTIVES.md 硬依赖"
+
+  backward_compat: |
+    旧命令处理:
+    - *research-plan → 已合并为 *research --deep。用户输入时提示: "已合并为 *research --deep"
+    - *research-review → 已改名为 *research status
+
+# *research status Protocol (formerly *research-review)
 research_review_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/research-review-protocol.md"
-  load_when: "When this protocol is entered (see intent_router_protocol step4 / the *research-review command), Read the reference and follow it verbatim."
+  load_when: "When *research status is invoked, Read the reference and follow it verbatim."
 idea_path_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/idea-path-protocol.md"
@@ -1262,53 +1559,46 @@ mandatory_review:
 
     **最终结论**: ✅ 验收通过 / ⚠️ 条件通过 / ❌ 打回
 
-  # ⚠️ POST-REVIEW: Knowledge Capture (MANDATORY)
-  post_review_knowledge:
-    trigger: "验收完成后（无论通过与否）"
-    action: "评估审查过程中是否有值得记录的发现"
+  # ⚠️ MANDATORY: Knowledge Distillation Loop (replaces post_review_knowledge in SKILL body)
+  # ⚠️ 触发规则和 loop 入口 MUST stay in SKILL body (circular-trigger safety).
+  # ⚠️ This is the JOURNAL-distillation path. It does NOT replace acceptance-protocol step7.C
+  #    (C_alex_own_discoveries) — that remains unchanged and blocking as Alex's OWN-observation path.
+  # 详细步骤可放 reference.
+  distillation_loop:
+    trigger: "验收完成后（无论通过与否），作为 Gate 4 KA 的执行方式"
+    blocking: false
+    
+    high_level_flow: |
+      Blake 写了 journal → Alex 当陌生人读它 → 尝试提炼为 typed entry →
+      填不出的字段 = 问题 → 给用户让用户传给 Blake → Blake 答 → Alex 定稿。
+      变量化测试不通过 → 留在 journal,不提炼。无 journal → skip。
+    
+    note_blocking_taxonomy: |
+      ⚠️ 三层 blocking 分清:
+      1. Blake Gate 3 Q1 (must_answer): blocking: true — 必须答 Yes/No,日记或不日记
+      2. Alex distillation_loop (本节): blocking: false — 用户可跳过提炼
+      3. Alex acceptance-protocol step7.C (C_alex_own_discoveries): blocking: true (unchanged) —
+         Alex 基于自身审查发现直接写知识的路径,始终保持 blocking,这是 Gate 4 KA 仍然
+         blocking 的安全网。即使 distillation_loop 被跳过,step7.C 仍然执行。
+    
+    reference: ".claude/skills/alex/references/distillation-loop-protocol.md"
+    load_when: "When executing Gate 4 Knowledge Assessment, Read the reference for detailed steps."
 
-    evaluation_criteria:
-      record_if_any:
-        - "发现了重复出现的代码质量问题"
-        - "发现了新的安全/性能风险模式"
-        - "做出了影响项目的架构决策"
-        - "审查中发现的最佳实践或反模式"
+  # DEPRECATED by distillation_loop (P2, 2026-06-22) — see distillation_loop above.
+  # 如果遇到此段,请忽略并转到 distillation_loop。不删除是为了 P4 迁移时清理。
+  # ⚠️ 注意：post_review_knowledge (SKILL body) ≠ step7.C (acceptance-protocol.md)。
+  # step7.C 是 NOT deprecated,仍然 blocking。
+  # post_review_knowledge:
+  #   trigger: "验收完成后（无论通过与否）"
+  #   action: "评估审查过程中是否有值得记录的发现"
+  #   (Original implementation removed — distillation_loop is the replacement)
 
-      skip_if:
-        - "常规审查，无特殊发现"
-        - "已有类似记录存在"
-        # ⚠️ ANTI-RATIONALIZATION: "常规 CRUD，没有新发现，Knowledge Assessment 是浪费"
-        # → 即使无新发现也必须显式写 "No"。跳过 = 表格不完整 = Gate 无效。
-
-    if_worth_recording:
-      step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
-      step2: "确定分类（或选择创建新类别）"
-      step3: "写入对应的 .tad/project-knowledge/{category}.md"
-      step4: "使用标准格式"
-
-    category_discovery: |
-      Available categories (read from directory):
-      - code-quality, security, ux, architecture
-      - performance, testing, api-integration, mobile-platform
-      - [Any other .md files in the directory]
-      - [Create new category...] (if none fit)
-
-    new_category_criteria:
-      - 当前发现明显不属于任何现有类别
-      - 预计该主题会产生 3+ 条相关记录
-      - 参考 .tad/project-knowledge/README.md 的 Dynamic Category Creation
-
-    entry_format: |
-      ### [简短标题] - [YYYY-MM-DD]
-      - **Context**: 在审查什么任务
-      - **Discovery**: 发现了什么模式/问题
-      - **Action**: 建议未来设计/实现时如何避免
-
-    example: |
-      ### Missing Error Boundaries - 2026-01-20
-      - **Context**: Reviewing user authentication feature
-      - **Discovery**: React components lack error boundaries, causing full-page crashes
-      - **Action**: Always require error boundaries in feature handoffs for React components
+  # ⚠️ Knowledge Maintenance Protocol (trigger in body, details in reference)
+  knowledge_maintain_protocol:
+    trigger: "*knowledge-maintain 或 distillation_loop step6 完成后自动触发"
+    blocking: false
+    reference: ".claude/skills/alex/references/knowledge-maintain-protocol.md"
+    load_when: "When *knowledge-maintain is invoked or after distillation_loop step6 completes"
 
 # *publish protocol (GitHub Publish Workflow)
 publish_protocol:
