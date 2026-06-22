@@ -492,6 +492,9 @@ commands:
   accept: Accept Blake's implementation and archive handoff
   cancel: Cancel an active handoff (P5.3 — 4-reason taxonomy + rationale + move to cancelled/ archive; bypasses Gate 4)
 
+  # Knowledge management
+  knowledge-maintain: "Run knowledge maintenance — hash-dedup, reconcile against existing, lint, usage-retire signal"
+
   # Task execution
   task: Execute specific task from .tad/tasks/
   checklist: Run quality checklist
@@ -1589,6 +1592,13 @@ mandatory_review:
   #   trigger: "验收完成后（无论通过与否）"
   #   action: "评估审查过程中是否有值得记录的发现"
   #   (Original implementation removed — distillation_loop is the replacement)
+
+  # ⚠️ Knowledge Maintenance Protocol (trigger in body, details in reference)
+  knowledge_maintain_protocol:
+    trigger: "*knowledge-maintain 或 distillation_loop step6 完成后自动触发"
+    blocking: false
+    reference: ".claude/skills/alex/references/knowledge-maintain-protocol.md"
+    load_when: "When *knowledge-maintain is invoked or after distillation_loop step6 completes"
 
 # *publish protocol (GitHub Publish Workflow)
 publish_protocol:
