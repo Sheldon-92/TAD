@@ -88,3 +88,21 @@
 - **Action**: Before extracting any protocol to references/, verify the `load_when` trigger is non-circular. If the trigger references a concept defined inside the reference, keep it in body. Automated check: `skill-body-verify.sh` runs at release time.
 - ⚠️ SAFETY ENTRY — requires human review for any modification
 - **Grounded in**: .tad/evidence/designs/skill-body-reference-audit.md, EPIC-20260609-skill-body-reference-boundary.md
+
+### Knowledge Is Forged at Distill, Not Captured - 2026-06-22
+- **Discovery**: The doer who just did the work cannot write reusable knowledge — the curse of
+  knowledge makes them omit everything that is obvious to them in the moment, producing a session
+  diary no zero-context reader can use (voice-studio 12-iteration audio knowledge + 14 downstream
+  projects, all empirically). Every SOTA agent-memory system (Mem0, Letta, AWM, Anthropic Skills)
+  separates CAPTURE (doer writes raw journal) from DISTILL (a structural stranger forges the entry)
+  from MAINTAIN (cheap rule-driven). TAD's terminal isolation is an ASSET here: Alex lacks Blake's
+  execution context by construction, which makes Alex a genuine stranger — the distiller who can see
+  the gaps the doer cannot. The typed entry's required `failure_mode` field is the gap detector: any
+  field the stranger cannot fill from the journal becomes a specific question routed back to the doer.
+- **Action**: Do NOT let the doer write finished knowledge at task end. Blake writes a raw journal
+  (what happened). A structural stranger (Alex by default; Codex for high-stakes) distills it into a
+  typed entry; unfillable fields become questions handed back across the human bridge. Knowledge that
+  passes the variabilize test enters the playbook; one-off material stays journal. Reusability is a
+  mechanical test (can you variabilize the episode-specific values?), not the author's judgment.
+- ⚠️ SAFETY ENTRY — requires human review for any modification
+- **Grounded in**: .tad/evidence/research/agent-knowledge-systems/2026-06-22-findings.md, EPIC-20260622-knowledge-recording-redesign.md
