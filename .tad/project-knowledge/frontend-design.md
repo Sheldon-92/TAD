@@ -35,6 +35,7 @@ when frontend design pivots happen.
 - **Source detail**: Originally `.tad/domains/web-ui-design.yaml` lines 828-839 `warm_palette_interpretation` step (deleted 2026-04-25 by Phase 5 P5.7 demote). Cross-reference: Phase 5 handoff §3 FR7 + README "Domain Pack vs Project-Knowledge Decision Rule" section.
 
 - **Revalidated**: 2026-04-25
+- **failure_mode**: Naive default: interpret "warm palette" literally as all-warm hues (red/orange/amber only, zero cool accent). Why wrong: pure-warm palettes read as oppressive/ad-like in ~80% of cases, measurably reducing time-on-page — a small cool accent (5-15% teal/blue) is needed to break the effect.
 
 ---
 

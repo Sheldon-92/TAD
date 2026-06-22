@@ -1,0 +1,15 @@
+# Journal: Knowledge Recording Redesign Epic (P1-P4)
+
+Blake, 2026-06-22
+
+---
+
+Started with P1 which was straightforward — create 3 template files and append one L1 principle. The AC verification commands had two design issues: AC1's grep pattern didn't match the `knowledge-writing-rules.md` filename (it searched for "playbook-entry" but that file doesn't have that substring), and AC8 used `-A6` which wasn't enough lines to reach the SAFETY marker in a multi-line principle entry. Both were false-fails from the AC design, not from the implementation. The code-reviewer caught a real P1 though — the before/after exemplar in writing-rules didn't show a character budget in the value field, which contradicted the schema's "bounded" requirement. Added `[char budget: 500]` to fix.
+
+P2 was the riskiest — modifying 4 SKILL files simultaneously to rewire how Knowledge Assessment works. The key discovery was that gate/SKILL.md has TWO separate Knowledge Assessment sections (one for Gate 3 around L310, one for Gate 4 around L817), and the handoff only explicitly targeted the Gate 3 section. The code-reviewer caught that the Gate 3 template table (L297-306) and the Gate 4 verification question (L820) still referenced project-knowledge when they should reference evidence/journal. Fixed both. Also learned that when you mark something DEPRECATED, you need to be very explicit about what is NOT deprecated — step7.C (C_alex_own_discoveries) has a completely different function from post_review_knowledge, and conflating them would break the safety net.
+
+P3 had a bash bug that wasted a retry — `grep -c` returns exit code 1 when count is 0, and `|| echo 0` then produces "0\n0" which breaks integer comparison in `[ ]`. The fix was `|| true` instead of `|| echo 0`. Also the `\b` word boundary thing on macOS — the handoff already called this out but it's a pattern I keep seeing. BSD grep just doesn't support `\b`.
+
+P4 (this phase) — the batch migration of 110 entries is the first time we actually felt the lint's file-level granularity limitation. The lint reports at file level ("this file has N entries but 0 failure_mode mentions") so it passed 4 files that actually had most entries missing failure_mode, because one or two lines in the prose happened to contain the substring "failure mode". This is a known limitation documented in P3's expert review (P1-1: "failure_mode grep is file-level not per-entry"), and now we've seen it in the wild.
+
+The biggest meta-learning from the whole Epic: the distillation loop's value isn't the typed entry format — it's the `failure_mode` field specifically. When I was batch-adding failure_mode to 110 entries, about 70% of the time I could infer the naive default from the Discovery/Action text. But for the remaining ~30%, the entry just said "do X" without explaining what a person would do WITHOUT this knowledge. Those are the entries where the distillation gap-handback would have caught the missing information at creation time instead of leaving it for a P4 bulk migration to mark as UNRESOLVABLE.

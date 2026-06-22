@@ -11,16 +11,19 @@
 ### Two-Agent System - inception
 - **Alex (Solution Lead)**: Design, planning, requirements, business acceptance
 - **Blake (Execution Master)**: Implementation, testing, technical quality
+- **failure_mode**: Naive default: one agent does everything (design + implement + review). Why wrong: self-review has no second perspective — the designer cannot objectively evaluate their own design, leading to blind spots (the 4 P0s found on the 2026-04-14 express edit are an instance).
 
 ### Four-Gate Quality System - inception
 - Gate 1: Requirements Clarity
 - Gate 2: Design Completeness
 - Gate 3: Implementation Quality (v2.0: expanded)
 - Gate 4: Integration/Acceptance (v2.0: simplified)
+- **failure_mode**: Naive default: ship after implementation passes tests, skipping design review and business acceptance. Why wrong: tests verify code correctness but not requirement alignment or design completeness — bugs caught at Gate 3/4 cost 2-10x more to fix than at Gate 1/2.
 
 ### Measure Before Optimizing - 2026-03-23
 - **Discovery**: TAD's context loading is already well-optimized (~8.5% session start overhead). @import zero-cost for non-existent files. Hooks supplement, don't replace. Spike-driven pivot with explicit threshold (10% rule) enables early course correction.
 - **Action**: Always measure actual baseline before designing optimization systems. Include pivot thresholds in spike ACs.
+- **failure_mode**: Naive default: design an optimization system based on assumed bottleneck without measuring actual baseline. Why wrong: the assumed bottleneck may not exist (~8.5% overhead was already optimized), wasting an entire Epic on a non-problem.
 
 ### Judgment-Only Skill Files: Constraint Rules Are NOT Mechanical — AMENDED 2026-04-04
 - **Discovery**: v2.7 slim skills removed constraint rules alongside mechanical logic → quality chain failure. Constraint rules (MUST/MANDATORY/VIOLATION) cannot be removed. Only truly mechanical logic (file I/O, config duplication) is safe to extract. Resolution (v2.8.1): commands consolidated into skills, single source of truth restored.
