@@ -298,12 +298,12 @@ Output Format:
   | Question | Answer | Evidence |
   |----------|--------|----------|
   | New discoveries? | ✅ Yes / ❌ No | — |
-  | If Yes: written to | .tad/project-knowledge/{category}.md | Entry title: "### {title} - {date}" |
+  | If Yes: written to | evidence/journal/{handoff-slug}-{date}.md | Journal entry path |
   | If No: reason | {why no new discovery} | — |
 
-  ⚠️ "Yes" without a file path + entry title = Gate 3 FAIL.
-  Blake must write directly to project-knowledge, NOT to completion report.
-  Completion report references the entry, it does not contain the entry.
+  ⚠️ "Yes" without a journal file path = Gate 3 FAIL.
+  Blake writes to evidence/journal/ (raw journal). Distillation to project-knowledge/ is Alex's Gate 4 task.
+  Completion report references the journal entry, it does not contain the entry.
 
 # ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 3)
 # 必须在 Gate 结果表格中显式回答，不可跳过
@@ -340,22 +340,20 @@ Knowledge_Assessment:
       - "已有完全相同的记录"
 
   if_new_discovery:
-    step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
-    step2: "确定分类（或选择创建新类别）"
-    step3: "写入对应的 .tad/project-knowledge/{category}.md"
-    step4: "使用标准格式"
-    step5_verify: "在 Gate 3 表格的 Evidence 列填写：文件路径 + 条目标题。无此信息 = Gate FAIL"
+    step1: "确定 journal 路径: evidence/journal/{handoff-slug}-{date}.md"
+    step2: "追加到 journal(创建或 append)。格式自由——要点列表、散文、关键数值皆可。"
+    step3: "Blake 写入 evidence/journal/,不直接写 project-knowledge/(成品提炼是 Alex Gate 4 的工作)"
+    step4: "使用自由格式(journal)"
+    step5_verify: "在 Gate 3 表格的 Evidence 列填写：evidence/journal/ 文件路径。无此信息 = Gate FAIL"
 
   completion_report_rule: |
     Completion report 的 Knowledge Assessment 节只写引用：
-    "New discovery recorded: .tad/project-knowledge/{category}.md → '### {title}'"
-    完整内容在 project-knowledge 文件中，不在 completion report 中重复。
+    "Journal entry added: evidence/journal/{slug}-{date}.md"
+    成品提炼在 Alex Gate 4 distillation loop 中完成，不在 Gate 3。
 
   entry_format: |
-    ### [简短标题] - [YYYY-MM-DD]
-    - **Context**: 在做什么任务
-    - **Discovery**: 发现了什么
-    - **Action**: 建议未来如何处理
+    自由格式(journal)——要点列表、散文、关键数值皆可。
+    无 schema 约束。append-only。
 
   violation: "Gate 3 结果表格中没有 Knowledge Assessment 部分 = VIOLATION = Gate 无效"
 
@@ -819,11 +817,11 @@ Knowledge_Assessment_Gate4:
   description: "Gate 4 无法 PASS 除非 Knowledge Assessment 表格已填写"
 
   mandatory_questions:
-    - question: "Blake Gate 3 知识是否已验证？（project-knowledge 文件中条目存在）"
+    - question: "Blake Gate 3 journal 是否已验证？（evidence/journal/ 文件存在）"
       must_answer: true
       options:
-        - "✅ Yes - 已验证条目存在"
-        - "⚠️ Blake said Yes but entry missing - BLOCK"
+        - "✅ Yes - 已验证 journal 条目存在"
+        - "⚠️ Blake said Yes but journal missing - BLOCK"
         - "N/A - Blake said No (no discovery)"
 
     - question: "本次审查是否有新发现？"

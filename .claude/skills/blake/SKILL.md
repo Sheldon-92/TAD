@@ -1806,12 +1806,18 @@ completion_protocol:
     blocking: true
     when: "Gate 3 v2 和 Gate 4 v2 执行时"
     requirement: "必须在 Gate 结果表格中填写 Knowledge Assessment 部分"
-    location: ".tad/project-knowledge/{category}.md"
+    location: "evidence/journal/"
 
     must_answer:
-      - "Q1: 是否有新发现？(Yes/No) — 如果有，属于哪个类别？一句话总结。"
+      - "Q1: 本次实现有什么值得追溯的发现、踩坑、或关键决策？(Yes → 追加到 journal / No → 写 'No discoveries')"
       - "Q2: 是否有可复用的工作模式？(Yes/No) — Skillify 4-gate + Step 5 路由。"
       - "Q3: 是否发现 workflow 模式？(Yes/No) — 信号：执行中是否手动做了多 agent 编排（并行、竞争、循环），或现有 workflow 有缺陷？"
+
+    if_q1_yes:
+      step1: "确定 journal 路径: evidence/journal/{handoff-slug}-{date}.md"
+      step2: "追加到 journal(创建或 append)。格式自由——要点列表、散文、关键数值皆可。"
+      step3: "在 completion report Knowledge Assessment 行写: 'Journal entry added: evidence/journal/{slug}-{date}.md'"
+      note: "Blake 不写 project-knowledge/ 下的成品条目。那是 Alex 在 Gate 4 提炼回环里做的。"
 
     violation: "Gate 结果表格缺少 Knowledge Assessment = Gate 无效 = VIOLATION"
 

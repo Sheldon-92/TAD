@@ -1556,53 +1556,39 @@ mandatory_review:
 
     **最终结论**: ✅ 验收通过 / ⚠️ 条件通过 / ❌ 打回
 
-  # ⚠️ POST-REVIEW: Knowledge Capture (MANDATORY)
-  post_review_knowledge:
-    trigger: "验收完成后（无论通过与否）"
-    action: "评估审查过程中是否有值得记录的发现"
+  # ⚠️ MANDATORY: Knowledge Distillation Loop (replaces post_review_knowledge in SKILL body)
+  # ⚠️ 触发规则和 loop 入口 MUST stay in SKILL body (circular-trigger safety).
+  # ⚠️ This is the JOURNAL-distillation path. It does NOT replace acceptance-protocol step7.C
+  #    (C_alex_own_discoveries) — that remains unchanged and blocking as Alex's OWN-observation path.
+  # 详细步骤可放 reference.
+  distillation_loop:
+    trigger: "验收完成后（无论通过与否），作为 Gate 4 KA 的执行方式"
+    blocking: false
+    
+    high_level_flow: |
+      Blake 写了 journal → Alex 当陌生人读它 → 尝试提炼为 typed entry →
+      填不出的字段 = 问题 → 给用户让用户传给 Blake → Blake 答 → Alex 定稿。
+      变量化测试不通过 → 留在 journal,不提炼。无 journal → skip。
+    
+    note_blocking_taxonomy: |
+      ⚠️ 三层 blocking 分清:
+      1. Blake Gate 3 Q1 (must_answer): blocking: true — 必须答 Yes/No,日记或不日记
+      2. Alex distillation_loop (本节): blocking: false — 用户可跳过提炼
+      3. Alex acceptance-protocol step7.C (C_alex_own_discoveries): blocking: true (unchanged) —
+         Alex 基于自身审查发现直接写知识的路径,始终保持 blocking,这是 Gate 4 KA 仍然
+         blocking 的安全网。即使 distillation_loop 被跳过,step7.C 仍然执行。
+    
+    reference: ".claude/skills/alex/references/distillation-loop-protocol.md"
+    load_when: "When executing Gate 4 Knowledge Assessment, Read the reference for detailed steps."
 
-    evaluation_criteria:
-      record_if_any:
-        - "发现了重复出现的代码质量问题"
-        - "发现了新的安全/性能风险模式"
-        - "做出了影响项目的架构决策"
-        - "审查中发现的最佳实践或反模式"
-
-      skip_if:
-        - "常规审查，无特殊发现"
-        - "已有类似记录存在"
-        # ⚠️ ANTI-RATIONALIZATION: "常规 CRUD，没有新发现，Knowledge Assessment 是浪费"
-        # → 即使无新发现也必须显式写 "No"。跳过 = 表格不完整 = Gate 无效。
-
-    if_worth_recording:
-      step1: "读取 .tad/project-knowledge/ 目录，列出所有可用类别"
-      step2: "确定分类（或选择创建新类别）"
-      step3: "写入对应的 .tad/project-knowledge/{category}.md"
-      step4: "使用标准格式"
-
-    category_discovery: |
-      Available categories (read from directory):
-      - code-quality, security, ux, architecture
-      - performance, testing, api-integration, mobile-platform
-      - [Any other .md files in the directory]
-      - [Create new category...] (if none fit)
-
-    new_category_criteria:
-      - 当前发现明显不属于任何现有类别
-      - 预计该主题会产生 3+ 条相关记录
-      - 参考 .tad/project-knowledge/README.md 的 Dynamic Category Creation
-
-    entry_format: |
-      ### [简短标题] - [YYYY-MM-DD]
-      - **Context**: 在审查什么任务
-      - **Discovery**: 发现了什么模式/问题
-      - **Action**: 建议未来设计/实现时如何避免
-
-    example: |
-      ### Missing Error Boundaries - 2026-01-20
-      - **Context**: Reviewing user authentication feature
-      - **Discovery**: React components lack error boundaries, causing full-page crashes
-      - **Action**: Always require error boundaries in feature handoffs for React components
+  # DEPRECATED by distillation_loop (P2, 2026-06-22) — see distillation_loop above.
+  # 如果遇到此段,请忽略并转到 distillation_loop。不删除是为了 P4 迁移时清理。
+  # ⚠️ 注意：post_review_knowledge (SKILL body) ≠ step7.C (acceptance-protocol.md)。
+  # step7.C 是 NOT deprecated,仍然 blocking。
+  # post_review_knowledge:
+  #   trigger: "验收完成后（无论通过与否）"
+  #   action: "评估审查过程中是否有值得记录的发现"
+  #   (Original implementation removed — distillation_loop is the replacement)
 
 # *publish protocol (GitHub Publish Workflow)
 publish_protocol:
