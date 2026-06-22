@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.31.2 - Reading Companion + Pack Quality**
+**Version 2.32.0 - Reading Companion + Pack Quality**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 

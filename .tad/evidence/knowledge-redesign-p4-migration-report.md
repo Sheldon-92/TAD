@@ -44,9 +44,19 @@ AC2 verification: git diff principles.md | grep '^[+-]' | grep -v '^[+-][+-][+-]
 
 ## End-to-End Loop Validation
 
-**Status**: Blake wrote journal (evidence/journal/knowledge-redesign-p4-2026-06-22.md). Steps 2-7 (distill → gap → hand-back → finalize → lint → reconcile) to be executed by Alex during Gate 4 acceptance.
+**Status**: ✅ COMPLETE — full loop executed live during Gate 4 acceptance.
 
-{Alex fills sections 2-7 results here after Gate 4 execution}
+- **Step 1 (Capture)**: Blake wrote journal — raw time-narrative, no schema alignment
+- **Step 2 (Distill)**: Alex read journal as stranger, drafted typed entry. `failure_mode` field **could not be filled** from journal alone.
+- **Step 3 (Gap question)**: "If a person doesn't know the 70/30 ratio, what error would they make during batch migration?"
+- **Step 4 (Hand-back)**: Blake answered via human bridge: "Naive default = assume 100% inferable, fabricate vague failure_mode when stuck. Why wrong: fabrication is worse than UNRESOLVABLE — looks complete but is invented content readers trust as authoritative."
+- **Step 5 (Finalize)**: Entry written to `patterns/memory-and-learning.md` with Blake's answer as failure_mode. Variabilize test PASS, leak check PASS.
+- **Step 6 (Lint)**: 0 WARN
+- **Step 7 (Reconcile)**: ADD (no overlap with existing top-5 candidates)
+
+**Key validation**: The gap-handback mechanism worked exactly as designed — `failure_mode` was the field that surfaced the gap, Blake's answer was precise and non-obvious ("fabrication > omission" is not something Alex could have guessed), and the human bridge carried the question and answer cleanly.
+
+Full evidence: `evidence/knowledge-redesign-p4-e2e-validation.md`
 
 ## Schema Gaps Found
 

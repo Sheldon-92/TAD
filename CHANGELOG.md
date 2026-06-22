@@ -5,7 +5,21 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.31.2] - 2026-06-18
+## [2.32.0] - 2026-06-22
+
+### Added
+- **Knowledge Recording Redesign** — 4-phase Epic: Capture/Distill/Maintain
+  - New L1 principle: "Knowledge Is Forged at Distill, Not Captured"
+  - Typed playbook-entry schema (6 fields, `failure_mode` REQUIRED)
+  - Knowledge writing rules (variabilize test + 5 rules + before/after exemplar)
+  - Gate 3 KA → raw journal (evidence/journal/); Gate 4 KA → distillation loop
+  - `*knowledge-maintain` command: hash-dedup + 4-way reconcile + usage-retire + soft lint
+  - `knowledge-lint.sh` — soft lint (exit 0 always, 3 checks, BSD-compatible)
+  - 110 existing entries migrated to new schema (0 UNRESOLVABLE)
+  - E2E distillation loop validated live (gap-handback mechanism confirmed working)
+- Research: Mem0/Letta/AWM/Anthropic Skills source-level study
+
+## [2.32.0] - 2026-06-18
 
 ### Added
 - **Pack Content Protection System** — 4-phase Epic: hash manifest → smart copy → conflict resolution → fork support
