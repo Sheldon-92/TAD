@@ -1,5 +1,9 @@
 # TAD Quality Gates - Manual Verification Checklists
 
+> ⚠️ **SUPERSEDED** — This file is superseded by `.tad/gates/gate-canonical-checklist.md` (SSOT).
+> The canonical file is the authoritative source for Gate 1-4 checklist items.
+> This file is retained for historical reference only. Do NOT edit gate items here.
+
 ## 🎯 Purpose
 These manual checklists provide quality control when automated testing isn't available. Each gate requires explicit verification before proceeding to the next phase.
 

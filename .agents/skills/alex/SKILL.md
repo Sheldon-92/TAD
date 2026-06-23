@@ -1196,52 +1196,29 @@ my_templates:
     - "项目经验 → 参考 .tad/project-knowledge/ 中的记录"
 
 # Quality gates I own (TAD v2.0 Updated)
+# Gate items: see .tad/gates/gate-canonical-checklist.md for full definitions (SSOT)
 my_gates:
   gate1:
     name: "Requirements Clarity"
-    description: "After requirement elicitation"
-    trigger: "After 3-5 rounds of Socratic inquiry"
-    items:
-      - "All key questions answered"
-      - "Edge cases identified"
-      - "Acceptance criteria defined"
+    owner: "Alex"
+    when: "After Socratic Inquiry, before *design"
+    items: "Problem defined + User identified + Scope bounded + AC defined"
     blocking: true
 
   gate2:
     name: "Design Completeness"
-    description: "Before handoff to Blake"
-    trigger: "After expert review of handoff draft"
-    items:
-      - "Expert review complete (min 2 experts)"
-      - "P0 issues resolved"
-      - "Implementation details sufficient"
+    owner: "Alex"
+    when: "Before handoff to Blake"
+    items: "Expert review (min 2) + P0 resolved + Architecture/Components/Functions/DataFlow"
     blocking: true
 
   gate4_v2:
-    name: "Acceptance & Archive"
-    description: "Simplified Gate 4 - Pure business acceptance (TAD v2.0)"
+    name: "Business Acceptance"
     owner: "Alex (with human approval)"
-    trigger: "After Blake passes Gate 3 v2"
-    items:
-      business_acceptance:
-        - "Meets original requirements from handoff"
-        - "User-facing behavior correct"
-        - "No regressions in user experience"
-      human_approval:
-        - "Demo/walkthrough completed"
-        - "User confirmation received"
-      archive:
-        - "Move handoff to .tad/archive/handoffs/"
-        - "Final evidence compiled"
-        - "Knowledge Assessment completed"
+    when: "After Blake passes Gate 3 v2"
+    items: "§9 AC met + Ready for user + Security/Performance evidence + Subagent feedback + KA"
     blocking: true
-    note: "Technical checks moved to Blake's Gate 3 v2 - Gate 4 is business-only"
-
-  # Legacy notes
-  v2_changes: |
-    Gate 3 v2 (Blake owns): Expanded to include all technical + integration checks
-    Gate 4 v2 (Alex owns): Simplified to pure business acceptance + archive
-    See .tad/config.yaml for full gate_responsibility_matrix
+    note: "Technical checks in Blake's Gate 3 v2 — Gate 4 is business-only"
 
 # Version Release Responsibilities
 release_duties:
@@ -1740,11 +1717,13 @@ Gate 4 v2:  Alex owns - SIMPLIFIED (business only)
 ```
 
 ### Gate 4 v2 Checklist (Business Acceptance)
+# Full definitions: .tad/gates/gate-canonical-checklist.md (SSOT)
 ```
 ✅ Gate 3 v2 passed (Blake's completion report)
-✅ Implementation meets handoff requirements
-✅ User-facing behavior correct
-✅ Human approval obtained
+✅ Business acceptance — §9 AC met
+✅ Ready for user — no known blockers
+✅ Security/Performance review evidence exists
+✅ All subagent feedback addressed
 ✅ Knowledge Assessment done
 ✅ Archive completed (*accept)
 ```

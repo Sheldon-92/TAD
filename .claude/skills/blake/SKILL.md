@@ -1077,20 +1077,15 @@ my_tasks:
   - release-execution.md (version releases per RELEASE.md SOP)
 
 # Quality gates I own (TAD v2.0 Updated)
+# Gate items: see .tad/gates/gate-canonical-checklist.md for full definitions (SSOT)
 my_gates:
   gate3_v2:
     name: "Implementation & Integration Quality"
     description: "Expanded Gate 3 - All technical quality checks"
     owner: "Blake"
     trigger: "After Ralph Loop completes (Layer 1 + Layer 2 pass)"
-    items:
-      layer1_verification:
-        - "Build passes without errors"
-        - "All tests pass (100% pass rate)"
-        - "Linting passes"
-        - "TypeScript compiles without errors"
-        - "git_tracked_dirs assertion (if handoff frontmatter declares it) — see git_tracked_dirs_verification below"
-      git_tracked_dirs_verification:
+    items: "Code/deliverable complete + §9.1 Spec Compliance + Evidence + Git commit + KA (see canonical)"
+    git_tracked_dirs_verification:
         description: |
           Phase 1 P1.1 (2026-04-24) — smoke alarm for "code exists but never committed".
           Precedent: toy 2026-04-22 — 38 production files accumulated for weeks without `git add`,
@@ -1136,48 +1131,15 @@ my_gates:
           - `git ls-files <dir>` works without a clean working tree; no need for `git status --porcelain`.
           - `git check-ignore` exit 0 = path IS ignored; exit 1 = NOT ignored; exit 128 = error.
           - Warn path (a) and (b) are deliberately non-blocking — smoke alarm, not mechanical lock.
-      layer2_verification:
-        - "spec-compliance-reviewer: all ACs satisfied or partially satisfied (NOT_SATISFIED=0)"
-        - "code-reviewer: P0=0, P1=0"
-        - "test-runner: coverage >= threshold"
-        - "security-auditor: no critical/high (if triggered)"
-        - "performance-optimizer: no blocking patterns (if triggered)"
-      evidence_verification:
-        - "All expert evidence files exist in .tad/evidence/reviews/"
-        - "Ralph Loop summary created"
-      knowledge_assessment:
-        - "New discoveries documented? (Yes/No)"
-        - "Category identified (if Yes)"
-        - "Brief summary provided"
-      git_commit_verification:
-        - "Implementation changes committed to git (or NONE for doc-only)"
-        - "Commit hash recorded in completion report"
     blocking: true
 
   gate4_v2:
     name: "Acceptance & Archive"
-    description: "Simplified Gate 4 - Pure business acceptance"
     owner: "Alex (with human approval)"
     trigger: "After Gate 3 v2 passes"
-    items:
-      business_acceptance:
-        - "Meets original requirements from handoff"
-        - "User-facing behavior correct"
-        - "No regressions in user experience"
-      human_approval:
-        - "Demo/walkthrough completed"
-        - "User confirmation received"
-      archive:
-        - "Move handoff to .tad/archive/handoffs/"
-        - "Final evidence compiled"
-        - "Knowledge Assessment completed"
+    items: "§9 AC met + Ready for user + Security/Performance evidence + Subagent feedback + KA (see canonical)"
     blocking: true
-    note: "Technical checks moved to Gate 3 v2 - Gate 4 is business-only"
-
-  # Legacy gate names (for backward compatibility)
-  legacy_mapping:
-    "Gate 3": "gate3_v2 (expanded)"
-    "Gate 4": "gate4_v2 (simplified)"
+    note: "Technical checks in Gate 3 v2 — Gate 4 is business-only"
 
 # Version Release Responsibilities
 release_duties:

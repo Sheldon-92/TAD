@@ -61,24 +61,33 @@ Which gate to execute? (1-4):
 ```
 
 ## Gate 1: Requirements Clarity (Alex) - Optional Quick Check
+# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+# Canonical source: .tad/gates/gate-canonical-checklist.md
+# Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 ```yaml
-When: After requirement elicitation
+When: After Socratic Inquiry, before *design
 Owner: Agent A (Alex)
-Quick Check (3 items):
-  - [ ] User confirmed understanding
-  - [ ] Success criteria defined
-  - [ ] Requirements documented
+Quick Check (4 items):
+  - [ ] Problem defined — 问题定义清晰
+  - [ ] User identified — ICP 或目标用户已定义
+  - [ ] Scope bounded — 范围和排除项明确
+  - [ ] Acceptance criteria defined — AC 可验证
 Output: Quick summary, no formal evidence required
 ```
 
 ## Gate 2: Design Completeness (Alex) - **MANDATORY** 🔴
+# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+# Canonical source: .tad/gates/gate-canonical-checklist.md
+# Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 ```yaml
 When: Before creating handoff (BLOCKING)
 Owner: Agent A (Alex)
-Critical Check (4 items):
-  - [ ] Architecture complete
+Critical Check (6 items):
+  - [ ] Expert review complete — min 2 experts
+  - [ ] All P0 resolved — blocking issues fixed
+  - [ ] Architecture complete — 组件、数据流、API 都有
   - [ ] Components specified
-  - [ ] Functions verified (exist in codebase)
+  - [ ] Functions verified — 引用的函数/文件存在
   - [ ] Data flow mapped
 Evidence: Record in handoff header
 Output Format:
@@ -261,6 +270,9 @@ Git_Commit_Verification:
     on_invalid: "BLOCK - commit hash not found in git history or doc-only claim invalid"
 
 # Gate 3 检查项（Prerequisite, §9.1 Spec Compliance, Empty Guard 要求通过后执行）
+# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+# Canonical source: .tad/gates/gate-canonical-checklist.md
+# Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (5 items):
   - [ ] Code/deliverable complete (all handoff tasks done)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
@@ -708,6 +720,9 @@ Decision_Compliance:
       | 1 | {decision title} | {does code match decision?} | ✅/❌ |
 
 # Gate 4 检查项（Prerequisite 和 Subagent 要求通过后执行）
+# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+# Canonical source: .tad/gates/gate-canonical-checklist.md
+# Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (6 items):
   - [ ] Business acceptance: the handoff's §9 Acceptance Criteria are met (read from §9, not hardcoded)
   - [ ] Ready for user (no known blockers)

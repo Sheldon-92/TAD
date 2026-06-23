@@ -52,25 +52,34 @@ subagents_enforcement:
     prevention: "阻止继续执行直到调用"
 
 # ==================== 质量门控（Quality Gates） ====================
+# Canonical checklist source: .tad/gates/gate-canonical-checklist.md (SSOT)
+# Edit canonical FIRST, then align checks values here. YAML structure preserved for script consumers.
+gate_checklist_source: ".tad/gates/gate-canonical-checklist.md"
+
 quality_gates:
   # Agent A 质量门控
   agent_a_gates:
     gate1_requirement:
       name: "需求完整性"
       checks:
-        - "用户价值明确"
-        - "验收标准清晰"
-        - "至少3轮确认"
+        - "Problem defined — 问题定义清晰"
+        - "User identified — ICP 或目标用户已定义"
+        - "Scope bounded — 范围和排除项明确"
+        - "Acceptance criteria defined — AC 可验证"
       violation_action: "阻止进入设计阶段"
 
     gate2_design:
       name: "设计完整性"
       checks:
-        - "所有组件都有设计"
-        - "数据流完整"
-        - "错误处理明确"
+        - "Expert review complete — min 2 experts"
+        - "All P0 resolved"
+        - "Architecture complete"
+        - "Components specified"
+        - "Functions verified"
+        - "Data flow mapped"
       violation_action: "返回补充设计"
 
+    # v1 legacy: per-agent operational sub-gates (not part of canonical Gate 1-4 taxonomy)
     gate3_handoff:
       name: "交接完整性"
       checks:
@@ -81,6 +90,7 @@ quality_gates:
 
   # Agent B 质量门控
   agent_b_gates:
+    # v1 legacy: per-agent operational sub-gates (not part of canonical Gate 1-4 taxonomy)
     gate1_prereq:
       name: "前置条件"
       checks:
@@ -100,9 +110,11 @@ quality_gates:
     gate3_verification:
       name: "验证完整性"
       checks:
-        - "测试全部通过"
-        - "覆盖率达标"
-        - "性能符合要求"
+        - "Code/deliverable complete"
+        - "§9.1 Spec Compliance — every row verified"
+        - "Evidence files exist"
+        - "Git commit done"
+        - "Knowledge Assessment complete"
       violation_action: "禁止交付"
 
   # ==================== TAD v2.0 Gate Redefinition ====================

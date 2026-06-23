@@ -5,6 +5,7 @@
 acceptance_protocol:
   # ⚠️ TAD v2.0 变更：技术审查已移至 Blake 的 Gate 3 v2
   # Alex 的 Gate 4 v2 只负责业务验收
+  # Gate 4 checklist items: see .tad/gates/gate-canonical-checklist.md (SSOT)
   v2_note: |
     Gate 3 v2 (Blake): 所有技术检查 - build, test, lint, tsc + 专家审查
     Gate 4 v2 (Alex): 业务验收 - 需求符合度 + 用户确认 + 归档
