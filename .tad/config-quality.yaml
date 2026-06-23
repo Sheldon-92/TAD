@@ -218,12 +218,13 @@ quality_gates:
       - "Gate 3 v2 passed"
       - "Blake's completion report received"
 
-    # Business Acceptance (Focus)
+    # Business Acceptance (aligned with canonical — MECE 4 items)
     acceptance:
       checks:
-        - "Business value delivered matches handoff intent"
-        - "User requirements satisfied"
-        - "No unexpected side effects on user experience"
+        - "Functional acceptance — §9 AC met AND no post-impl blockers"
+        - "Quality evidence complete — code/security/perf/ux review evidence exists"
+        - "Subagent issues resolved — all P0/P1 addressed"
+        - "Knowledge Assessment complete — distillation or no discovery"
 
       # Review evidence only - no re-run needed
       evidence_review:

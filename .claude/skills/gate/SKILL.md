@@ -68,10 +68,10 @@ Which gate to execute? (1-4):
 When: After Socratic Inquiry, before *design
 Owner: Agent A (Alex)
 Quick Check (4 items):
-  - [ ] Problem defined — 问题定义清晰
-  - [ ] User identified — ICP 或目标用户已定义
-  - [ ] Scope bounded — 范围和排除项明确
-  - [ ] Acceptance criteria defined — AC 可验证
+  - [ ] Problem defined — 问题定义清晰（Socratic Q2）
+  - [ ] User identified — ICP 或目标用户已定义（Socratic Q1）
+  - [ ] Scope bounded (including edge cases) — 范围、排除项、边界条件明确
+  - [ ] Acceptance criteria verifiable — 每个 AC 有可运行的验证方法
 Output: Quick summary, no formal evidence required
 ```
 
@@ -83,11 +83,11 @@ Output: Quick summary, no formal evidence required
 When: Before creating handoff (BLOCKING)
 Owner: Agent A (Alex)
 Critical Check (6 items):
-  - [ ] Expert review complete — min 2 experts
-  - [ ] All P0 resolved — blocking issues fixed
-  - [ ] Architecture complete — 组件、数据流、API 都有
+  - [ ] Expert review complete (min 2)
+  - [ ] All P0 resolved
+  - [ ] Architecture complete
   - [ ] Components specified
-  - [ ] Functions verified — 引用的函数/文件存在
+  - [ ] Functions verified
   - [ ] Data flow mapped
 Evidence: Record in handoff header
 Output Format:
@@ -273,6 +273,7 @@ Git_Commit_Verification:
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
+# MECE: verified 2026-06-23 — 5 items check 5 distinct artifacts
 Critical Check (5 items):
   - [ ] Code/deliverable complete (all handoff tasks done)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
@@ -723,15 +724,18 @@ Decision_Compliance:
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
-Critical Check (6 items):
-  - [ ] Business acceptance: the handoff's §9 Acceptance Criteria are met (read from §9, not hardcoded)
-  - [ ] Ready for user (no known blockers)
-  - [ ] Security review evidence exists (task_type code/mixed — structural, BLOCKING)
-  - [ ] Performance review evidence exists (task_type code/mixed — structural, BLOCKING)
-  - [ ] All subagent feedback addressed
-  - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
+Critical Check (4 items):
+  - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any)
+  - [ ] Quality evidence complete (BLOCKING per Structural_Subagent_Conditionality):
+    - [ ] Code review evidence exists
+    - [ ] Security review evidence exists (code/mixed only)
+    - [ ] Performance review evidence exists (code/mixed only)
+    - [ ] UX review evidence exists (if UI involved)
+    FAIL must enumerate which evidence is missing.
+  - [ ] Subagent issues resolved — all P0/P1 from subagent feedback addressed
+  - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
+# Note: Functional acceptance reads from handoff §9 (not hardcoded). Quality evidence is structural role enforcement (see Structural_Subagent_Conditionality).
 Evidence: Record in NEXT.md or completion report + evidence files
-Business_Acceptance_Source: "The business-acceptance items above are read from the handoff §9 Acceptance Criteria. The structural security/performance/code review requirements are NOT from §9 — they are role enforcement for code/mixed (Structural_Subagent_Conditionality)."
 Output Format:
   ### Gate 4 Result
 
@@ -741,22 +745,21 @@ Output Format:
   | Gate 3 Passed | ✅ Yes |
   | Gate 3 Evidence | ✅ Exists (§9.1-driven result for code/mixed, or rubric-eval verdict: PASS) |
 
-  #### Subagent Evidence Check (BLOCKING)
-  | Subagent | Required | Called | Evidence File | Status |
-  |----------|----------|--------|---------------|--------|
-  | security-auditor | ✅ Yes | ✅ Yes | {date}-security-review-{task}.md | ✅ Exists |
-  | performance-optimizer | ✅ Yes | ✅ Yes | {date}-performance-review-{task}.md | ✅ Exists |
-  | code-reviewer | ✅ Yes | ✅ Yes | {date}-code-review-{task}.md | ✅ Exists |
-  | ux-expert-reviewer | Conditional | ... | ... | ... |
+  #### Quality Evidence (BLOCKING)
+  | Evidence Type | Required | Exists | File | Status |
+  |---------------|----------|--------|------|--------|
+  | Code review | ✅ Yes | ✅ Yes | {file} | ✅ |
+  | Security review | code/mixed | ✅ Yes | {file} | ✅ |
+  | Performance review | code/mixed | ✅ Yes | {file} | ✅ |
+  | UX review | if UI | ... | ... | ... |
 
-  #### Quality Checks
+  #### Acceptance Checks
   | Item | Status | Note |
   |------|--------|------|
-  | Integration | ✅ Pass | ... |
-  | User Ready | ✅ Pass | ... |
-  | Security Evidence | ✅ Pass | File exists |
-  | Performance Evidence | ✅ Pass | File exists |
-  | Feedback Addressed | ✅ Pass | ... |
+  | Functional acceptance | ✅ Pass | §9 AC met, no open blockers |
+  | Quality evidence complete | ✅ Pass | All required evidence exists |
+  | Subagent issues resolved | ✅ Pass | All P0/P1 addressed |
+  | Knowledge Assessment | ✅ Pass | ... |
 
   #### Knowledge Assessment (MANDATORY - must answer)
   | Question | Answer | Evidence |

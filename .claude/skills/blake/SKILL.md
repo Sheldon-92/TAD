@@ -1084,7 +1084,7 @@ my_gates:
     description: "Expanded Gate 3 - All technical quality checks"
     owner: "Blake"
     trigger: "After Ralph Loop completes (Layer 1 + Layer 2 pass)"
-    items: "Code/deliverable complete + §9.1 Spec Compliance + Evidence + Git commit + KA (see canonical)"
+    items: "Code/deliverable complete + §9.1 Spec Compliance + Evidence + Git commit + KA (see canonical; MECE verified)"
     git_tracked_dirs_verification:
         description: |
           Phase 1 P1.1 (2026-04-24) — smoke alarm for "code exists but never committed".
@@ -1137,7 +1137,7 @@ my_gates:
     name: "Acceptance & Archive"
     owner: "Alex (with human approval)"
     trigger: "After Gate 3 v2 passes"
-    items: "§9 AC met + Ready for user + Security/Performance evidence + Subagent feedback + KA (see canonical)"
+    items: "Functional acceptance + Quality evidence + Subagent issues resolved + KA (see canonical)"
     blocking: true
     note: "Technical checks in Gate 3 v2 — Gate 4 is business-only"
 

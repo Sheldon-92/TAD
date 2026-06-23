@@ -1202,7 +1202,7 @@ my_gates:
     name: "Requirements Clarity"
     owner: "Alex"
     when: "After Socratic Inquiry, before *design"
-    items: "Problem defined + User identified + Scope bounded + AC defined"
+    items: "Problem defined + User identified + Scope bounded (incl edge cases) + AC verifiable"
     blocking: true
 
   gate2:
@@ -1216,7 +1216,7 @@ my_gates:
     name: "Business Acceptance"
     owner: "Alex (with human approval)"
     when: "After Blake passes Gate 3 v2"
-    items: "§9 AC met + Ready for user + Security/Performance evidence + Subagent feedback + KA"
+    items: "Functional acceptance + Quality evidence + Subagent issues resolved + KA"
     blocking: true
     note: "Technical checks in Blake's Gate 3 v2 — Gate 4 is business-only"
 
@@ -1719,13 +1719,11 @@ Gate 4 v2:  Alex owns - SIMPLIFIED (business only)
 ### Gate 4 v2 Checklist (Business Acceptance)
 # Full definitions: .tad/gates/gate-canonical-checklist.md (SSOT)
 ```
-✅ Gate 3 v2 passed (Blake's completion report)
-✅ Business acceptance — §9 AC met
-✅ Ready for user — no known blockers
-✅ Security/Performance review evidence exists
-✅ All subagent feedback addressed
+Prerequisite: Gate 3 v2 passed (Blake's completion report)
+✅ Functional acceptance — §9 AC met + no post-impl blockers
+✅ Quality evidence complete — code/security/perf/ux review evidence
+✅ Subagent issues resolved — all P0/P1 addressed
 ✅ Knowledge Assessment done
-✅ Archive completed (*accept)
 ```
 
 ### Remember
