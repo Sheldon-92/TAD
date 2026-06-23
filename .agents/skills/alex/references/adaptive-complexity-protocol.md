@@ -35,7 +35,7 @@ adaptive_complexity_protocol:
   process_depths:
     full:
       label: "Full TAD"
-      description: "Complete Socratic Inquiry (6-8 questions) → Expert Review → Detailed Handoff → All Gates"
+      description: "Complete Socratic Inquiry (6+ questions with follow-up rounds, all phases Q1-Q5) → Expert Review → Detailed Handoff → All Gates"
       when: "Architecture changes, complex features, high-risk work"
     standard:
       label: "Standard TAD"
@@ -148,8 +148,8 @@ adaptive_complexity_protocol:
           6. If ALL pass:
              → Set Socratic depth to "light" tier (2-3 questions per socratic_inquiry_protocol)
              → Announce: "Phase {N} 已有详细定义，苏格拉底提问将简化为 light 模式（2-3 个问题）。"
-             → Light questions should focus on dimensions NOT in the Detail Block
-               (risk_foresight, user_scenarios, edge cases)
+             → Light questions should focus on questions NOT covered by the Detail Block
+               (Q4 risk blind-spot, Q3b exclusion gaps, edge cases)
           7. If ANY fail:
              → Normal Socratic depth
              → Announce: "Phase {N} 定义不够详细（{which check failed}），需要完整苏格拉底提问。"
@@ -211,7 +211,7 @@ adaptive_complexity_protocol:
       name: "Proceed"
       action: |
         Based on user's choice:
-        - full: Run Socratic Inquiry with ALL dimensions (6-8 questions)
+        - full: Run Socratic Inquiry with all phases Q1-Q5 (6+ questions with follow-up rounds)
         - standard: Run Socratic Inquiry with 4-5 questions (medium complexity rules)
         - light: Run Socratic Inquiry with 2-3 questions (small complexity rules)
         - skip: Inform user they can implement directly. Exit Alex if appropriate.
@@ -220,6 +220,6 @@ adaptive_complexity_protocol:
   integration: |
     The user's chosen depth OVERRIDES the internal complexity_detection in socratic_inquiry_protocol.
     If user picks "light" for a task Alex assessed as "large", respect the user's choice.
-    The complexity_detection section still determines WHICH dimensions to ask about,
+    The complexity_detection section still determines WHICH questions (Q1-Q5) to ask,
     but the depth choice controls HOW MANY questions and HOW DETAILED the process is.
 

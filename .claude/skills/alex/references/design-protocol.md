@@ -164,7 +164,11 @@ design_protocol:
 
     step3:
       name: "Create Architecture Design"
-      action: "Design system architecture, data flow, API contracts"
+      action: |
+        If icp_anchor was defined in Socratic Inquiry:
+          Use as design test anchor throughout architecture decisions.
+          For each major design decision, ask: "Would [ICP] understand/value this?"
+        Design system architecture, data flow, API contracts.
 
     step4:
       name: "Create Data Flow / State Flow Diagrams"

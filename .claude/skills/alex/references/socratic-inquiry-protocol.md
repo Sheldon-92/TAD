@@ -18,62 +18,130 @@ socratic_inquiry_protocol:
     - "验证需求的完整性"
     - "帮助用户做出更好的决策"
 
-  # 复杂度判断规则
+  # 复杂度判断规则（映射到新的 Q1-Q5）
   complexity_detection:
     small:
       criteria: "单文件修改、配置调整、简单 UI 变更"
       question_count: "2-3 个问题"
+      which_questions: "Q2(problem) + Q3a(scope 快速确认)"
+      skip: "Q1(ICP — auto-skip per task_type_skip) + Q3b(exclusion) + Q4(risk) + Q5(AC) — Alex 内部处理不问用户"
+      output_summary: "Q4/Q5 行显示 'Alex 内部处理' 或省略"
     medium:
       criteria: "多文件修改、新功能、API 变更"
       question_count: "4-5 个问题"
+      which_questions: "Q1 + Q2 + Q3a + Q3b + Q4(两步) + Q5(确认)"
     large:
       criteria: "架构变更、复杂功能、跨模块重构"
-      question_count: "6-8 个问题"
+      question_count: "6+ (Q2 有追问轮)"
+      which_questions: "全部，Q2 问题定义可能需要 2-3 轮精炼"
 
-  # 提问维度（根据复杂度选择）
-  question_dimensions:
-    value_validation:
-      name: "价值验证"
+  # 三阶段共同定义模型（Co-Definition Model）
+  co_definition_model:
+    phase1_understand:
+      name: "理解"
+      leader: "user + Alex 共创"
       questions:
-        - "这个功能解决了什么具体问题？"
-        - "如果不做这个功能，会有什么影响？"
-        - "目标用户是谁？他们真正需要的是什么？"
+        q1_icp:
+          dimension: "用户画像锚定"
+          format: "AskUserQuestion (4 options)"
+          question: "这个设计/功能是给谁用的？"
+          options:
+            - "我来定义：用户提供 ICP，统一格式：[角色]在[场景]中需要[能力]，最关心[关注点]"
+            - "TAD 内部：未来零上下文的我：自动填充为 'Solo developer returning after 3+ months with no session context. Cares about: understanding what this does and why without reading commit history.'"
+            - "帮我推断：Alex 从已有上下文推断，输出同一 ICP 格式，用户确认"
+            - "跳过 ICP：skip，合法无惩罚"
+          stored_as: "icp_anchor — 存储在 Socratic 输出摘要的 ICP 行中，通过对话上下文传递到 design phase，无需文件持久化"
+          icp_format: "[角色]在[场景]中需要[能力]，最关心[关注点]"
+          downstream: "设计阶段用作检验锚点（design-protocol step3 检查对话上下文中是否有 icp_anchor）"
+          task_type_skip: |
+            如果 adaptive_complexity 检测到任务属于 bug_fix / refactor / doc_update 类型，
+            Q1 自动跳过或自动填充为"开发者本人"。不问用户。
+            判断依据：intent_router 已识别的 route（*bug → skip, *analyze → ask）。
 
-    boundary_clarification:
-      name: "边界澄清"
-      questions:
-        - "MVP 必须包含哪些功能？哪些可以以后再做？"
-        - "有什么是明确不做的？"
-        - "这个功能的边界在哪里？"
+        q2_problem:
+          dimension: "问题共同定义"
+          format: "开放问题 + 条件追问精炼"
+          question: "你想解决什么问题？描述一个具体场景。"
+          goal: "从模糊的'我想做 X'精炼为'当[场景]时，[ICP]需要[能力]，但现在[障碍]'"
+          note: "参考 product-thinking /define 的结构化问题定义方法——协作式，不是审问式"
+          vague_detection:
+            description: "判断用户回答是否需要追问的两个触发条件"
+            trigger_1: "回答只描述意图/想法，没有具体场景（缺'当X时'的情境描述）"
+            trigger_2: "回答描述了场景但没有障碍/痛点（缺'但现在Y'的问题描述）"
+            action_if_triggered: |
+              追问："能描述一个具体的场景吗？比如你在做 X 的时候遇到了什么困难？"
+              如果二次回答仍触发任一条件：记录当前答案并继续（不再追问，max 1 次追问）
+            action_if_not_triggered: "回答包含场景+障碍 → 直接进入 Q3"
 
-    risk_foresight:
-      name: "风险预见"
+    phase2_scope:
+      name: "范围"
+      leader: "Alex 提议，user 确认"
       questions:
-        - "如果这个方案失败了，最可能是什么原因？"
-        - "你假设了什么是成立的？这些假设可靠吗？"
-        - "这个功能依赖什么外部条件？"
+        q3a_scope:
+          dimension: "正向范围确认"
+          format: "AskUserQuestion"
+          action: "Alex 基于 Q1+Q2 分析后提出核心范围"
+          question: "基于你的描述，我理解的核心范围是 [X]。对吗？"
+          options:
+            - "对，就是这样"
+            - "范围需要调整：Alex 追问哪里要调"
+            - "还缺少东西：用户补充"
+        q3b_exclusion:
+          dimension: "排除项确认"
+          format: "AskUserQuestion"
+          action: "确认正向范围后，单独确认排除项（防止锚定效应掩盖遗漏）"
+          question: "我理解以下不在本次范围内：[Y]。有什么我列为排除但你实际需要的吗？"
+          options:
+            - "确认，这些不做"
+            - "其中 [Z] 其实需要：移回范围"
+            - "都需要做：调整范围"
 
-    acceptance_criteria:
-      name: "验收标准"
+    phase3_validate:
+      name: "验证"
+      leader: "Alex 主导分析，user 确认"
       questions:
-        - "怎么知道这个功能做完了？"
-        - "用户会如何验证这个功能是否正确？"
-        - "成功的标准是什么？"
+        q4_risk:
+          dimension: "风险分析（两步防锚定）"
+          format: "用户先答 + Alex 呈现 + AskUserQuestion 确认"
+          step_1_blind_spot:
+            action: "在 Alex 分析之前，先捕获用户自己看到的风险"
+            question: "在我分析之前——你最担心的是什么？用一句话描述。"
+            format: "开放问题（不给选项，防止锚定）"
+            if_no_concern: "'没什么特别担心的' 也是有价值的信号，记录后继续"
+          step_2_present:
+            action: "Alex 内部分析风险，呈现时整合用户在 step_1 提到的担忧"
+            presentation: "我识别到的风险：1. [risk A] 2. [risk B]。其中 [你提到的 C] 我也确认了。"
+            question: "还有我遗漏的吗？"
+            options:
+              - "没有了"
+              - "还有一个：用户补充"
+          note: "两步顺序不可颠倒——用户必须在看到 Alex 分析前独立思考，防止 anchoring 屏蔽真实盲点"
 
-    user_scenarios:
-      name: "用户场景"
-      questions:
-        - "典型用户会怎么使用这个功能？"
-        - "有什么边界情况或异常场景需要处理？"
-        - "用户可能会误用这个功能吗？"
+        q5_ac:
+          dimension: "验收标准"
+          format: "Alex 起草 + AskUserQuestion 确认"
+          action: "Alex 基于 Q1-Q4 起草验收标准"
+          presentation: "我建议的验收标准：1. [AC1] 2. [AC2] 3. [AC3]。"
+          question: "这些标准对吗？"
+          options:
+            - "确认"
+            - "需要修改某条：用户指定哪条怎么改"
+            - "还缺少一条：用户补充"
 
-    technical_constraints:
-      name: "技术约束"
-      questions:
-        - "有什么技术限制需要考虑？"
-        - "需要兼容什么现有系统？"
-        - "性能要求是什么？"
-        - "如果本地硬件不够（GPU/内存/存储），是否考虑过云计算资源（Colab/Kaggle 免费 GPU，RunPod/Vast.ai 付费 GPU）？"
+      removed:
+        technical_constraints: # removed as independent dimension
+          reason: "用户不管技术问题——Alex 内部调研，结果直接写入 design/handoff"
+          migration: "移到 design-protocol step3 作为 Alex 的内部步骤"
+        user_scenarios: # removed as independent dimension
+          reason: "吸收进 Q2（问题定义含具体场景）和 Q4（风险分析含边界/误用场景）"
+          migration: "Q2 的 vague_detection 确保场景被捕获；Q4 的风险分析覆盖边界情况"
+
+  # 格式选择规则（指导 Alex 在执行中遇到边界情况时的判断依据）
+  format_selection_rules:
+    options: "答案集合可穷举且≤4个 → AskUserQuestion 选项"
+    open: "答案需要用户提供具体信息（场景、内容、描述） → 开放问题"
+    present_confirm: "Alex 已做分析，用户只需接受/修正 → 呈现+确认"
+    hybrid: "Q4 风险的两步模式——先开放（捕获盲点），再呈现+确认（补充分析）"
 
   # 执行流程
   execution:
@@ -83,89 +151,43 @@ socratic_inquiry_protocol:
       note: "If adaptive_complexity_protocol already ran, use the user's chosen depth instead of re-assessing"
 
     step2:
-      name: "Dimension Selection"
-      action: "根据复杂度（或用户选择的 depth）选择提问维度"
-      small: ["value_validation", "acceptance_criteria"]
-      medium: ["value_validation", "boundary_clarification", "acceptance_criteria", "risk_foresight"]
-      large: "all dimensions"
+      name: "Phase 1 — Understand"
+      action: |
+        根据复杂度执行：
+        - small: Q2 only (Q1 auto-skip per task_type_skip)
+        - medium/large: Q1 → Q2 (large 时 Q2 可追问)
 
     step3:
-      name: "Socratic Inquiry"
-      action: "使用 AskUserQuestion 工具提问"
-      format: |
-        必须调用 AskUserQuestion 工具，格式：
-        - questions: 2-4 个问题（AskUserQuestion 限制）
-        - 每个问题提供 2-4 个选项 + 用户可选择 Other 自由输入
-        - multiSelect: 根据问题类型决定
-
-      example: |
-        AskUserQuestion({
-          questions: [
-            {
-              question: "这个功能解决了什么具体问题？",
-              header: "价值验证",
-              options: [
-                {label: "提升用户体验", description: "改善现有功能的易用性"},
-                {label: "新增能力", description: "提供之前没有的功能"},
-                {label: "修复问题", description: "解决已知的 bug 或缺陷"},
-                {label: "技术优化", description: "提升性能或代码质量"}
-              ],
-              multiSelect: false
-            },
-            {
-              question: "MVP 必须包含哪些功能？",
-              header: "边界澄清",
-              options: [
-                {label: "核心功能 A", description: "..."},
-                {label: "核心功能 B", description: "..."},
-                {label: "增强功能 C", description: "可以后续迭代"}
-              ],
-              multiSelect: true
-            }
-          ]
-        })
+      name: "Phase 2 — Scope"
+      action: |
+        - small: Q3a 快速确认 (skip Q3b)
+        - medium/large: Q3a → Q3b
 
     step4:
-      name: "Follow-up Discussion"
-      action: "根据用户回答，用自由对话补充细节"
-      note: "如果用户回答揭示了新的问题，可以再次调用 AskUserQuestion"
+      name: "Phase 3 — Validate"
+      action: |
+        - small: skip (Alex 内部处理 risk + AC)
+        - medium/large: Q4 两步 (user blind spot → Alex analysis) → Q5
 
     step5:
-      name: "Final Confirmation"
-      action: "用 AskUserQuestion 做最终确认"
-      format: |
-        AskUserQuestion({
-          questions: [{
-            question: "基于以上讨论，需求理解是否完整？可以开始写 Handoff 了吗？",
-            header: "最终确认",
-            options: [
-              {label: "✅ 确认，开始写 Handoff", description: "需求已清晰，可以进入设计"},
-              {label: "🔄 还需要澄清", description: "有些地方还不清楚"},
-              {label: "📝 需要调整方向", description: "讨论中发现需要改变思路"}
-            ],
-            multiSelect: false
-          }]
-        })
+      name: "Output Summary + Confirmation"
+      action: "生成 output_summary 表格，确认用户满意后进入 *design"
 
   # 输出摘要
   output_summary:
     action: "在写 handoff 前，输出苏格拉底提问的摘要"
     format: |
-      ## 📋 需求澄清摘要 (Socratic Inquiry Summary)
+      ## Socratic Inquiry Summary (Co-Definition)
 
-      **任务复杂度**: {small/medium/large}
-      **提问轮数**: {N} 轮
+      | 阶段 | 问题 | 结果 |
+      |------|------|------|
+      | Phase 1 | Q1 ICP | {icp_anchor 或 "skipped" 或 "auto: 开发者本人"} |
+      | Phase 1 | Q2 Problem | {精炼后的问题定义} |
+      | Phase 2 | Q3a Scope | {确认的范围} |
+      | Phase 2 | Q3b Exclusion | {确认的排除项} |
+      | Phase 3 | Q4 Risk (user) | {用户的担忧 或 "无特别担心"} |
+      | Phase 3 | Q4 Risk (Alex) | {Alex 分析的风险} |
+      | Phase 3 | Q5 AC | {确认的验收标准} |
 
-      ### 关键确认
-      | 维度 | 问题 | 用户回答 |
-      |------|------|----------|
-      | 价值验证 | ... | ... |
-      | 边界澄清 | ... | ... |
-      | ... | ... | ... |
-
-      ### 发现的盲点/调整
-      - {如果提问过程中发现了用户最初没考虑到的问题，列在这里}
-
-      ### 最终确认
-      ✅ 用户确认需求完整，可以开始写 Handoff
-
+      **ICP Anchor**: {icp_anchor 全文，或 "N/A"}
+    note: "small 任务跳过的行显示 'Alex 内部处理' 或省略。icp_anchor 通过此摘要在对话上下文中传递到 design phase。"
