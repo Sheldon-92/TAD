@@ -5,6 +5,31 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.32.1] - 2026-06-23
+
+### Changed
+- **Socratic Inquiry Redesign** — 6-dimension Q&A → 3-phase co-definition model
+  - Phase 1 Understand: ICP anchor (Q1) + problem co-definition (Q2 with vague detection triggers)
+  - Phase 2 Scope: Alex proposes, user validates (Q3a scope + Q3b exclusions, anti-anchoring split)
+  - Phase 3 Validate: Alex-led risk (Q4 two-step anti-anchoring) + AC draft (Q5)
+  - Technical constraints removed as user question (Alex handles internally)
+  - Format selection rules: options / open / present-confirm / hybrid
+- **Gate Checklist MECE Restructure** — Gate 4: 6→4 items with sub-bullets
+  - Functional acceptance (AC met + post-impl blockers)
+  - Quality evidence (code/security/perf/ux sub-bullets, BLOCKING annotation preserved)
+  - Subagent issues resolved (split from merged "feedback addressed")
+  - Gate 1: edge cases folded into Scope bounded; Gate 2: Why ME annotations
+- **Gate Definition SSOT** — Single source of truth for Gate 1-4 checklists
+  - New canonical file: `.tad/gates/gate-canonical-checklist.md`
+  - Architecture: canonical = maintenance source, gate/SKILL.md = inline derived copy
+  - 6+ files consolidated (alex/blake/gate SKILL.md, config-quality.yaml, quality-gate-checklist.md)
+  - `quality-gate-checklist.md` marked SUPERSEDED
+
+### Added
+- L2 pattern: Skill-MCP complementarity boundary (judgment vs capability, 5-rule framework)
+- 26 capability pack audit (14 judgment / 10 mixed / 2 tool-wrapping)
+- Research: AI Tinkerers #32 agent orchestration patterns (SPEAR, Gryter, Inhabited-design, Maestro)
+
 ## [2.32.0] - 2026-06-22
 
 ### Added
