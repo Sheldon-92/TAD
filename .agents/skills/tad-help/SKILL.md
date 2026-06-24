@@ -73,8 +73,8 @@ Terminal 2: Use /blake command to activate Agent B
 
 ## Adaptive Complexity
 When you describe a task to Alex, he'll assess complexity and suggest one of:
-- **Full TAD**: 6-8 questions, expert review, detailed handoff (architecture/complex features)
-- **Standard TAD**: 4-5 questions, handoff, gates (new features, API changes)
+- **Full TAD**: 6+ questions (co-definition with follow-up rounds), expert review, detailed handoff (architecture/complex features)
+- **Standard TAD**: 4-5 questions (co-definition model), handoff, gates (new features, API changes)
 - **Light TAD**: 2-3 questions, quick handoff (small changes, configs)
 - **Skip TAD**: Direct implementation (trivial fixes, user opts out)
 Alex suggests, **you decide** the process depth.
