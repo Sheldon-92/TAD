@@ -1,6 +1,7 @@
 ---
 gate3_verdict: pass
 # Gate 3 executed 2026-07-02, 13/14 AC pass + 1 minor deviation (AC2 46<50 lines, non-blocking)
+# Gate 4 rework 2026-07-02: Library-scoped supplemental round + Layer 2 evidence persisted
 ---
 
 # Completion Report: LDR POC Phase 1
