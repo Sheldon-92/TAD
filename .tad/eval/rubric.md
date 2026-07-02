@@ -22,6 +22,7 @@
 ### D2: Verification Rigor
 > Grounding: gate-canonical-checklist.md Gate 3 "Evidence files exist — per handoff manifest" + Gate 4 "Quality evidence complete"
 > Data source: .tad/evidence/reviews/blake/{slug}/ files (existence + content depth) + .tad/evidence/acceptance-tests/{slug}/ + trace events (gate_result, expert_review_finding types) + completion report verification claims
+> ⚠️ Scoring basis (Gate 4 clarification 2026-07-02, from blind-eval divergence on GS-09): score the executor's OWN verification conduct as of FIRST gate submission. Evidence repaired only after an external gate bounce does NOT lift the score above 3 — anchor 5's "discrepancy reconciled in evidence" means self-produced reconciliation, not externally-forced remediation.
 
 - **1**: Zero carrier files for verification claims; review may have happened in conversation but left no on-disk artifact; no acceptance tests or trace events
 - **2**: ≤1 review file exists but contains generic/boilerplate content (no specific P0/P1 findings); or review file exists but is self-review only (no independent perspective)

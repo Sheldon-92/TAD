@@ -34,6 +34,18 @@
 
 ## Human Confirmation Status
 
-human_confirmed: false
-blind_label_divergences: (pending Gate 4)
-human_modifications: (pending Gate 4)
+human_confirmed: true
+blind_label_divergences: 3 (GS-09.D2 rater-vs-draft 3v5; GS-07.D1 3v5; GS-07.D4 3v5)
+human_modifications: 2 (GS-07.D1 3→4; GS-07.D4 3→5)
+
+> Confirmation basis (DEGRADED_WITH_APPROVAL, 2026-07-02): the original protocol
+> (human blind-scores 3 trajectories) was found infeasible at Gate 4 — the human
+> maintainer lacks the trajectory-forensics context to produce independent 1-5 labels
+> (their exact words: 判断不了). User-approved substitution: 2 independent blind
+> subagent raters (fresh context, paths-only prompts, forbidden from reading GS drafts
+> or the P1 completion report) + Alex adjudication of ≥2 divergences. Accepted risk:
+> raters share the executor's model family — weaker independence than human or
+> cross-model rating. Anchoring defense preserved (raters never saw draft scores;
+> non-zero modifications recorded). Within-1 divergences (GS-09.D5 2v3, GS-07.D3 2v3)
+> retained with borderline flags per protocol threshold.
+> Rubric change triggered: D2 scoring-basis clarification (first-submission conduct).

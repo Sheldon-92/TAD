@@ -2,10 +2,28 @@
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.
 version: 1.0.0
-last_updated: 2026-06-17
+last_updated: 2026-07-01
 # Currently active notebook (used when no --notebook flag specified)
 active_notebook: "agent-computer-control"
 notebooks:
+  - id: "automated-content-pipelines"
+    notebook_id: "3599f4cb-3677-402d-b905-7b73242dfa8f"
+    topic: "Automated Content Production Pipelines — AI-Content-Studio & the topic-to-published-video automation landscape 2026"
+    created: "2026-07-01"
+    status: active
+    last_queried: "2026-07-01"
+    source_count: 10
+    notes: "Triggered by user sharing naqashafzal/AI-Content-Studio (515 stars). 10 sources (ACS repo+README, ShortGPT, MoneyPrinterTurbo, ViMax, MuseTalk, faceless-stack/YT-agents articles, YouTube API pricing). 2 ask rounds + saturation COMPLETE. Covers: 4-system pipeline architecture comparison, borrowable patterns (EML markup, dual-track captions, VLM consistency check, grounded fact-check, OAuth direct publish), failure-prone stages, 2026 YouTube policy/quota changes, HITL 5-gate design. Raw results: .tad/evidence/research/automated-content-pipelines/raw-ask-results-2026-07-01.md"
+    sources: []
+  - id: "open-notebook-evaluation"
+    notebook_id: "d46515cf-2f48-4f43-a09c-2f9f7d04e947"
+    topic: "Open Notebook (lfnovo) vs Google NotebookLM — self-hosted research stack evaluation"
+    created: "2026-07-01"
+    status: active
+    last_queried: "2026-07-01"
+    source_count: 21
+    notes: "Evaluating open-notebook (34.4k stars, MIT) as replacement/complement for TAD's NotebookLM CLI research backend. 13 sources imported (3 pruned as irrelevant). Key findings: three-tier async arch (Next.js 15 / FastAPI 5055 / SurrealDB native vectors), LangGraph workflows, Esperanto multi-provider routing, full REST API + Swagger (no native CLI, Docker required), citation grounding weaker than NotebookLM (highlighting under rebuild as of 2026-06), answer quality = whatever LLM you pay for. PIVOT 2026-07-01: Google now ships an OFFICIAL NotebookLM Enterprise API (Discovery Engine v1alpha, gcloud-native auth, ~$9/mo seat, 14-day trial) — verified reachable from this machine (403 SERVICE_DISABLED, not 404). Route D (official API) now preferred over open-notebook for fixing CLI instability; open-notebook demoted to fallback. Decision brief saved to evidence. ROUND 2 2026-07-01: LearningCircuit/local-deep-research (LDR, 8.6k stars MIT) folded in as candidate E — dual role (autonomous LangGraph deep-research engine + encrypted source-grounded library with cited ask), built-in MCP server (ldr-mcp) = near-zero glue for Claude Code. Fills open-notebook's discover-sources gap AND has MCP; open-notebook demoted to 3rd. Layered verdict: D (official API) for notebook layer, E (LDR) preferred for deep-research/discovery layer. POC gate: cited-ask citation quality vs NotebookLM (info gap) + MCP live run. 21 sources (5 LDR added, 4 dupes/junk pruned). POC OUTCOME 2026-07-02: LDR FAIL (Library-scoped citation-resolution 16.7% < 80%; NotebookLM baseline 0% same rubric; Epic ldr-research-backend CLOSED with NEGATIVE-RESULT + narrow reopen conditions). Deep-research layer decision: keep status quo (WebSearch path); notebook layer: Route D (official API) still preferred exploration."
+    sources: []
   - id: "agent-computer-control"
     notebook_id: "c0143736-a6f1-4ff3-aa61-95ebee84c812"
     topic: "Agent Computer & Browser Control Tools — 2026 landscape of browser automation, web scraping, computer use, GUI control, and MCP servers for AI agents"
@@ -15,7 +33,6 @@ notebooks:
     source_count: 14
     notes: "Capability pack scoping research. 14 curated sources covering 5-layer tool architecture (engine→data→hybrid→agent→desktop). Key findings: Browser Use 99k stars (L4 agent), Stagehand v3 CDP-native 44% faster (L3 hybrid), Playwright MCP 13.6k context tax (L1 MCP), Claude in Chrome zero-config but beta (L1 MCP). Decision brief recommends wide-scope Agent-Computer Interface Pack."
     sources: []
-
   - id: "ai-native-reading"
     notebook_id: "189fbf20-c432-4c75-a8d7-15674590dbbf"
     topic: "AI-Native Reading Experience — Open-Source Readers, Reading UX & Active-Reading Design"
@@ -24,8 +41,7 @@ notebooks:
     last_queried: "2026-06-13"
     source_count: 19
     notes: "Design-grounding KB for the interactive reading-companion project (reimagining the reading experience). 9 curated GitHub readers/UX refs (Foliate, Thorium/Readium, epub.js, koodo-reader, Readest, Readium CSS, Hypothesis, Omnivore, Butterick) + 10 fast-research sources (W3C Web Annotation Data Model, CSS line-length, spaced repetition, AI-on-comprehension studies incl. 'AI summaries flatten understanding'). 3 synthesis asks saved: reader-UX patterns, AI-deepen-vs-flatten design rules, annotation anchoring architecture."
-    sources: []  # 19 mixed (curated GitHub + fast-research auto-import)
-
+    sources: [] # 19 mixed (curated GitHub + fast-research auto-import)
   - id: "structured-feedback-creative-ai"
     notebook_id: "8c456e11-9ef3-4d28-8b06-6efd2cbf0639"
     topic: "Structured Feedback in AI Creative Tools — element-level feedback, review interfaces, human-AI iteration loops"
@@ -34,13 +50,12 @@ notebooks:
     last_queried: "2026-06-10"
     source_count: 66
     notes: "Deep research on how AI creative tools handle structured human feedback. 66 sources covering UI builders (v0, Lovable, Bolt, Dualite, Frontman), video (Runway, Kling, Pika, CapCut), audio (ElevenLabs), design (Figma Weave, Midjourney), and academic research on human-AI co-creation. 3 cross-source ask rounds completed."
-    sources: []  # 66 auto-imported via add-research --mode deep
-
+    sources: [] # 66 auto-imported via add-research --mode deep
   - id: "tad-evolution-research"
     notebook_id: "37cfefa5-52b3-4a8a-a8e3-a83f32150759"
     topic: "TAD Evolution — AI Agent Framework Landscape 2025-2026"
     created: "2026-05-05"
-    status: active
+    status: dormant
     last_queried: "2026-05-31"
     source_count: 45
     notes: "Persistent research KB for TAD upgrade directions. 45 curated sources (deep research + manual adds). 3 rounds of deep ask completed. Covers: competitive landscape, failure modes, evaluation, memory, cost, observability."
@@ -396,7 +411,7 @@ notebooks:
     notebook_id: "79b4c4a9-f1b2-49cf-962f-3188b52426d5"
     topic: "Video Creation Pack Evolution — ViMax Agentic Pipeline vs TAD Motion Graphics Pack"
     created: "2026-05-27"
-    status: active
+    status: dormant
     last_queried: "2026-05-27"
     source_count: 38
     notes: "Cross-source analysis: TAD video-creation pack (9 files: SKILL + CAPABILITY + 7 references) vs HKUDS/ViMax (29 files: readme + 13 agents + 3 pipelines + 9 interfaces + tools/protocols.py + 2 configs). Goal: identify ViMax patterns to borrow for our pack."
@@ -425,7 +440,7 @@ notebooks:
     notebook_id: "d7022a6e-8de5-4e52-8f7c-1518cd4f6d76"
     topic: "html-anything — Agentic HTML Editor Architecture & Patterns"
     created: "2026-05-27"
-    status: active
+    status: dormant
     last_queried: "2026-05-27"
     source_count: 19
     notes: "Deep research on nexu-io/html-anything (5.2K stars). 19 sources (README + AGENTS.md + CONTRIBUTING.md + 6 agent adapter files + 6 skill system files + 3 API routes + export component + PROGRESS.md + marketplace). 4 ask rounds: agent pipeline, skill system, export system, architecture analysis. Findings: .tad/evidence/research/html-anything/2026-05-27-deep-ask-findings.md"
@@ -466,7 +481,7 @@ notebooks:
     notebook_id: "7779d639-9813-48cf-89b8-1055da040bb9"
     topic: "ScienceClaw — Self-Evolving AI Research Agent Architecture Analysis"
     created: "2026-05-27"
-    status: active
+    status: dormant
     last_queried: "2026-05-27"
     source_count: 19
     notes: "Deep research on beita6969/ScienceClaw (823 stars). 19 sources (README + SCIENCE.md + 7 skill dirs + 2 memory extensions + 2 MCP servers + copilot instructions + 5 research skills). 7 ask rounds: skill evolution, SKILL.md format, memory architecture, zero-hallucination enforcement, OpenClaw relationship, unique innovations, TAD comparison. Findings: .tad/evidence/research/scienceclaw/2026-05-27-deep-research-findings.md"
@@ -487,7 +502,7 @@ notebooks:
     notebook_id: "6669167a-15ff-4b1f-8676-8876bc676445"
     topic: "google/skills — Repository Deep Analysis (Agent Skills for Google Cloud)"
     created: "2026-05-27"
-    status: active
+    status: dormant
     last_queried: "2026-05-27"
     source_count: 50
     notes: "Deep research on google/skills (10,785 stars, Apache 2.0, Copybara-synced from internal Google3). 50 sources: README + CONTRIBUTING + all 11 deviation SKILL.md (only-SKILL pattern) + alloydb-basics complete (1 SKILL + 6 references) + agent-platform-skill-registry complete + 11 comparative basics SKILL.md + 3 iam-security.md + 4 mcp-usage.md + 3 scripts + recipe-onboarding singular reference. Methodology: full *research-plan flow with all 3 challenge layers (Phase 0c plan + Phase 4c findings 2 rounds + Phase 5b actions). 4 seeds executed (3 original + 1 adaptive). Final report: .tad/evidence/research/google-skills/2026-05-27-final-report.md. Key finding: low-coverage patterns (Tier R/M/D 17%, Phase 0 17%, Decision Trees 13%) are agent-platform-* cluster conventions, NOT repo-wide standards. Only AC1 (minimum name+description frontmatter, 100% coverage) survived adversarial review as STRONG; 6 ACs WEAK, 6 UNSUPPORTED."
@@ -508,7 +523,7 @@ notebooks:
     notebook_id: "e2f862c7-d984-401c-b3c9-11c8c735668f"
     topic: "AI Voice Production — TTS, Voice Cloning, Voice Design, Content Pipeline"
     created: "2026-05-28"
-    status: active
+    status: dormant
     last_queried: "2026-05-28"
     source_count: 26
     notes: "Capability pack research. 26 sources: 12 TTS tool repos (VoxCPM2, Bark, Kokoro, F5-TTS, Parler-TTS, Piper, Coqui, Fish Speech, ChatTTS, MeloTTS, OpenVoice, GPT-SoVITS) + MLX-Audio + Chatterbox-TTS-Server + Qwen3-TTS Mac report + ebook2audiobook + 5 comparison articles. 5 ask rounds: Apple Silicon compat, long-form production, quality metrics, tool selection decision tree, failure modes. Pack built: .claude/skills/ai-voice-production/"
@@ -533,7 +548,7 @@ notebooks:
     notebook_id: "36711adf-3587-48ed-bfe6-98b2555dbe30"
     topic: "ML Training on Cloud GPU — LoRA Fine-Tune + Platform Selection + Human-AI Collaboration"
     created: "2026-05-29"
-    status: active
+    status: dormant
     last_queried: "2026-05-29"
     source_count: 14
     notes: "Phase 1 research for EPIC-20260529-ml-training-pack. 14 curated sources (6 GitHub repos + 4 platform docs + 4 research articles). 4 rounds deep ask completed. Covers: platform gotchas, tool benchmarks, voice vs LLM fine-tune differences, decision framework, cost estimation."
@@ -655,7 +670,6 @@ notebooks:
         type: web
         added: "2026-06-07"
         title: "awesome-ai-agents-2026"
-
   - id: "capability-pack-meta-design"
     notebook_id: "b29b362d-2364-40d0-968b-41bf265a1225"
     topic: "Capability Pack Meta-Design — How High-Quality Agent Skills Are Organized (Anthropic official + community awesome-skills)"
