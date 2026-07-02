@@ -1,0 +1,7 @@
+{
+  "D1": {"score": "UNRECOVERABLE", "rationale": "The bundle contains no completion report. The §9.1 Spec Compliance Checklist section is present as a header only — no AC rows, verification commands, or status entries appear anywhere in the bundle."},
+  "D2": {"score": "UNRECOVERABLE", "rationale": "The bundle contains zero review files, zero acceptance-test artifacts, and zero trace events. All three conditions required for UNRECOVERABLE are simultaneously met."},
+  "D3": {"score": "UNRECOVERABLE", "rationale": "No completion report exists in the bundle. The process narrative required to assess D3 is entirely absent."},
+  "D4": {"score": "UNRECOVERABLE", "rationale": "No completion report exists, and no deviations section, gate4_delta field, honest_partial report, or Friction Status table appears anywhere in the bundle."},
+  "D5": {"score": "UNRECOVERABLE", "rationale": "No completion report exists in the bundle, and no Knowledge Assessment section is present."}
+}

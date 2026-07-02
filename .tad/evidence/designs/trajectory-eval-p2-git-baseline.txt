@@ -1,0 +1,25 @@
+ D .tad/active/epics/EPIC-20260622-knowledge-recording-redesign.md
+ D .tad/active/handoffs/COMPLETION-20260702-trajectory-eval-p1.md
+ M .tad/eval/golden-set/GS-07-codex-spike-phase0.md
+ M .tad/eval/golden-set/GS-09-sep-phase2.md
+ M .tad/eval/golden-set/INDEX.md
+ M .tad/eval/rubric.md
+ M .tad/project-knowledge/patterns/gate-design.md
+ M .tad/research-notebooks/REGISTRY.yaml
+ M NEXT.md
+?? .tad/active/epics/EPIC-20260701-ldr-research-backend.md
+?? .tad/active/epics/EPIC-20260701-trajectory-eval-harness.md
+?? .tad/active/handoffs/HANDOFF-20260701-ldr-poc-phase1.md
+?? .tad/active/handoffs/HANDOFF-20260702-trajectory-eval-p2.md
+?? .tad/archive/handoffs/COMPLETION-20260702-trajectory-eval-p1.md
+?? .tad/archive/handoffs/HANDOFF-20260702-trajectory-eval-p1.md
+?? .tad/evidence/acceptance-tests/trajectory-eval-p1/
+?? .tad/evidence/decisions/2026-07-01.jsonl
+?? .tad/evidence/decisions/2026-07-02.jsonl
+?? .tad/evidence/designs/trajectory-eval-p2-git-baseline.txt
+?? .tad/evidence/research/automated-content-pipelines/
+?? .tad/evidence/research/open-notebook-vs-notebooklm/
+?? .tad/evidence/reviews/alex/trajectory-eval-p1/
+?? .tad/evidence/reviews/alex/trajectory-eval-p2/
+?? .tad/evidence/traces/2026-07-01.jsonl
+?? .tad/evidence/traces/2026-07-02.jsonl
