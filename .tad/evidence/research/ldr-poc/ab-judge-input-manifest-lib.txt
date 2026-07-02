@@ -1,0 +1,23 @@
+# Judge Input Manifest — Library-scoped supplemental round
+
+## Questions (3, identical to first round)
+Q1: What transport mechanisms does MCP support, and how do they differ?
+Q2: How does MCP define the lifecycle of a tool call, from discovery to invocation?
+Q3: What are the security considerations MCP documentation raises for server implementers?
+
+## Anonymized Answers (6 files)
+ab-answers/lib-q1-systemA.md
+ab-answers/lib-q1-systemB.md
+ab-answers/lib-q2-systemA.md
+ab-answers/lib-q2-systemB.md
+ab-answers/lib-q3-systemA.md
+ab-answers/lib-q3-systemB.md
+
+## Ground Truth Sources (5 files, same as first round)
+ab-sources/source-1.md
+ab-sources/source-2.md
+ab-sources/source-3.md
+ab-sources/source-4.md
+ab-sources/source-5.md
+
+## End of whitelist
