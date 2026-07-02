@@ -1,0 +1,19 @@
+/Users/sheldonzhao/.tad-ldr-venv/lib/python3.12/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.4.3)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+Found 14 known vulnerabilities in 5 packages
+Name     Version ID                  Fix Versions
+-------- ------- ------------------- ------------
+lxml     5.4.0   PYSEC-2026-87       6.1.0
+lxml     5.4.0   PYSEC-2026-87       6.1.0
+nltk     3.9.4   PYSEC-2026-597
+pypdf    6.10.2  CVE-2026-48156      6.12.0
+pypdf    6.10.2  CVE-2026-48155      6.12.0
+pypdf    6.10.2  CVE-2026-48735      6.12.1
+pypdf    6.10.2  CVE-2026-49461      6.12.2
+pypdf    6.10.2  CVE-2026-49460      6.12.2
+pypdf    6.10.2  CVE-2026-54531      6.13.0
+pypdf    6.10.2  CVE-2026-54530      6.13.0
+pypdf    6.10.2  GHSA-jm82-fx9c-mx94 6.13.3
+requests 2.32.5  CVE-2026-25645      2.33.0
+torch    2.10.0  PYSEC-2026-139
+torch    2.10.0  CVE-2025-3000

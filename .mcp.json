@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ldr-mcp": {
+      "command": "/Users/sheldonzhao/.tad-ldr-venv/bin/ldr-mcp",
+      "env": {
+        "LDR_DATA_DIR": "/Users/sheldonzhao/.tad-ldr-data",
+        "LDR_LLM_PROVIDER": "openai_endpoint",
+        "LDR_LLM_OPENAI_ENDPOINT_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "LDR_LLM_OPENAI_ENDPOINT_API_KEY": "${LDR_API_KEY}",
+        "LDR_LLM_MODEL": "qwen3.7-max",
+        "LDR_LLM_TEMPERATURE": "0.3",
+        "LDR_WEB_HOST": "127.0.0.1"
+      }
+    }
+  }
+}

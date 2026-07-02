@@ -1,0 +1,27 @@
+# Judge Input Manifest (whitelist — ONLY these files are judge input)
+
+## Questions (3)
+Q1: What transport mechanisms does MCP support, and how do they differ?
+Q2: How does MCP define the lifecycle of a tool call, from discovery to invocation?
+Q3: What are the security considerations MCP documentation raises for server implementers?
+
+## Anonymized Answers (6 files)
+ab-answers/q1-systemA.md
+ab-answers/q1-systemB.md
+ab-answers/q2-systemA.md
+ab-answers/q2-systemB.md
+ab-answers/q3-systemA.md
+ab-answers/q3-systemB.md
+
+## Ground Truth Sources (5 files)
+ab-sources/source-1.md
+ab-sources/source-2.md
+ab-sources/source-3.md
+ab-sources/source-4.md
+ab-sources/source-5.md
+
+## EXCLUDED (must NOT be in judge input)
+ab-mapping.md — EXCLUDED
+ab-answers/*-raw.md — EXCLUDED
+headless-run/ — EXCLUDED
+mcp-transcript.md — EXCLUDED
