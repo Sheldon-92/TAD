@@ -25,11 +25,16 @@ const EPIC_SYNTH_SCHEMA = {
 var sidecarRows = null
 var stamp = 'undated'
 
-if (args) {
-  var argKeys = Object.keys(args)
+var parsedArgs = args
+if (typeof args === 'string') {
+  parsedArgs = JSON.parse(args)
+}
+
+if (parsedArgs) {
+  var argKeys = Object.keys(parsedArgs)
   for (var i = 0; i < argKeys.length; i++) {
-    if (argKeys[i] === 'sidecar_rows') sidecarRows = args[argKeys[i]]
-    if (argKeys[i] === 'date') stamp = args[argKeys[i]]
+    if (argKeys[i] === 'sidecar_rows') sidecarRows = parsedArgs[argKeys[i]]
+    if (argKeys[i] === 'date') stamp = parsedArgs[argKeys[i]]
   }
 }
 

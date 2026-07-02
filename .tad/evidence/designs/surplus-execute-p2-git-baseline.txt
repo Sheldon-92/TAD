@@ -1,0 +1,5 @@
+ .tad/active/epics/EPIC-20260607-surplus-burn-mode.md | 2 +-
+ .tad/evidence/decisions/2026-07-02.jsonl             | 1 +
+ .tad/evidence/traces/2026-07-02.jsonl                | 3 +++
+ 3 files changed, 5 insertions(+), 1 deletion(-)
+8badb1d feat(TAD): trajectory-eval Epic P3 accepted + hygiene cleanup + surplus P1.1 fix
