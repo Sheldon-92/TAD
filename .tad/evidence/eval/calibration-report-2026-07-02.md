@@ -90,6 +90,16 @@ Judge-prompt.md D2 section — added "D2 Evidence Scope Rule":
 
 **R2 result**: All 3 D2 divergences resolved (judge=1 matching golden=1). GS-07 D3 (diff=2) persists — rubric boundary case, not prompt-fixable. New: GS-10 D5 (diff=2) from fresh-spawn variance (R1 was within-1).
 
+## ⚠️ Contrast Pair D4 Inclusion Question (P1-1, for Gate 4 resolution)
+
+Two interpretations exist:
+- **D4-excluded** (used here): Phase 1 prestatement says "data-poor 不参与止损判定" → D4 excluded from all gate metrics → contrast = 1.75 (D1,D2,D3,D5 only) → PASS
+- **D4-included**: §4.4 均分口径 says "该轨迹上 golden 与 judge 双方均为数值的维度" without explicit D4 exclusion → contrast = 1.40 (D1-D5) → FAIL
+
+Both GS-11 and GS-03 have D4 numeric scores. Including D4: GS-11 mean = 4.40, GS-03 mean = 3.00, diff = 1.40 < 1.5.
+
+Blake's interpretation: Phase 1 prestatement takes precedence (established as a constraint before Phase 2 design). Gate 4 must confirm.
+
 ## Spearman (Directional Reference)
 
 **Caveat**: n=12, CI ±~0.28. Golden class means are inverted (known-good 2.94 < known-bad 3.30). Spearman is directional reference only, not a gate metric.
