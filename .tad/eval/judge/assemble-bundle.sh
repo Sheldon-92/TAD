@@ -14,12 +14,18 @@ append() { cat >> "$OUT"; }
 hr() { echo -e "\n---\n" >> "$OUT"; }
 section() { echo -e "\n# $1\n" >> "$OUT"; }
 
-# Find handoff
-HF=$(ls "$ROOT/archive/handoffs/HANDOFF-"*"-${SLUG}.md" 2>/dev/null | head -1)
+# Find handoff (active-first, archive fallback)
+HF=$(ls "$ROOT/active/handoffs/HANDOFF-"*"-${SLUG}.md" 2>/dev/null | head -1 || true)
+if [ -z "$HF" ]; then
+  HF=$(ls "$ROOT/archive/handoffs/HANDOFF-"*"-${SLUG}.md" 2>/dev/null | head -1 || true)
+fi
 if [ -z "$HF" ]; then echo "ERROR: no handoff for slug '$SLUG'" >&2; exit 1; fi
 
-# Find completion (may not exist — graceful)
-CF=$(ls "$ROOT/archive/handoffs/COMPLETION-"*"-${SLUG}.md" 2>/dev/null | head -1 || true)
+# Find completion (active-first, archive fallback; may not exist — graceful)
+CF=$(ls "$ROOT/active/handoffs/COMPLETION-"*"-${SLUG}.md" 2>/dev/null | head -1 || true)
+if [ -z "$CF" ]; then
+  CF=$(ls "$ROOT/archive/handoffs/COMPLETION-"*"-${SLUG}.md" 2>/dev/null | head -1 || true)
+fi
 
 # --- Handoff excerpt (frontmatter + §9.1 + §6 head) ---
 section "HANDOFF: ${SLUG}"

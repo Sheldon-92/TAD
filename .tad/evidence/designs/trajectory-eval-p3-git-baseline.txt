@@ -1,0 +1,6 @@
+ .tad/active/epics/EPIC-20260701-trajectory-eval-harness.md | 4 ++--
+ .tad/evidence/decisions/2026-07-02.jsonl                   | 2 ++
+ .tad/evidence/traces/2026-07-02.jsonl                      | 3 +++
+ NEXT.md                                                    | 1 +
+ 4 files changed, 8 insertions(+), 2 deletions(-)
+3a9c82e chore(TAD): session artifacts — LDR POC closed (NEGATIVE-RESULT) + trajectory-eval P1/P2 archives

@@ -107,6 +107,46 @@ acceptance_protocol:
       dogfood paradox risk + trivial recovery if script itself breaks.
     blocking: false
 
+  step4d_trajectory_judge:
+    name: "Trajectory Judge Evaluation (advisory — auto-run, skip via --no-judge)"
+    blocking: false
+    action: |
+      Advisory — judge 分数不影响验收结论。judge-prompt.md 为校准冻结产物，本步骤禁止修改（改动 = 校准失效）。
+
+      1. Skip check: if user passed --no-judge to *accept, skip this step entirely.
+
+      2. Run prepare:
+           BUNDLE_PATH=$(bash .tad/eval/judge/step4d-run.sh prepare {slug})
+         If exit 0 AND output contains "judge: skipped" → log the skip reason, continue to step4e.
+         If exit 0 AND output is a file path → proceed to step 3.
+
+      3. Spawn fresh Sonnet judge subagent (paths-only — NEVER provide golden set,
+         prior judge results, or this acceptance's verdict):
+           Agent prompt: "You are a trajectory quality judge. Read the judge prompt
+           at {judge-prompt-path} and the trajectory bundle at {bundle-path}.
+           Score the trajectory on all 5 dimensions. Output valid JSON with keys
+           D1-D5, each having 'score' (1-5 or 'UNRECOVERABLE') and 'rationale'."
+         The subagent receives ONLY:
+           - .tad/eval/judge/judge-prompt.md (frozen, read-only)
+           - {bundle-path} from step 2
+         Save raw JSON output to a temp file.
+
+      4. Run finalize:
+           bash .tad/eval/judge/step4d-run.sh finalize {slug} {temp-json-path}
+         If output contains "judge: skipped" → log, continue.
+         If output contains "judge: finalized" → record evidence path.
+
+      5. Append 1-line summary to acceptance report (advisory tag):
+           "📊 Trajectory judge (advisory): D1={s1} D2={s2} D3={s3} D4={s4} D5={s5} avg={avg}"
+         If judge was skipped at any point, append:
+           "📊 Trajectory judge: skipped ({reason})"
+
+      Continue to step4e regardless of judge outcome.
+    rationale: |
+      The judge is calibrated (Phase 2: within-1 94.1%, contrast 1.75) but advisory.
+      Auto-run ensures data accumulates without depending on memory (traces 无人消费
+      教训: imperative 命中率 1/328). --no-judge escape hatch for cost-sensitive runs.
+
   step4e_feedback:
     name: "Feedback Collection Check (soft/advisory — Phase 2)"
     blocking: false
