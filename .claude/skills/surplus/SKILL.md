@@ -1,6 +1,6 @@
 ---
 name: surplus
-description: "Surplus Burn Mode — find + rank the highest value-density backlog work to consume unused Claude usage productively. Phase 1 (--plan) is a READ-ONLY scan: it surfaces a ranked plan + JSON sidecar and executes NOTHING. Auto-burn execution is Phase 2 (not yet wired)."
+description: "Surplus Burn Mode — find + rank the highest value-density backlog work to consume unused Claude usage productively. Phase 1 (--plan) scans and ranks. Phase 2 (+<budget>) auto-executes ranked tasks within a budget envelope (SAFETY tasks routed to needs-you list)."
 trigger: "*surplus, *surplus --plan, *surplus +<budget> (e.g. +2M), or user asks to surface highest-value backlog work to use up surplus usage."
 ---
 
@@ -45,14 +45,35 @@ executing it) is **Phase 2** — see below.
 4. **Display** the ranked plan table + the totals summary (total / dropped / stale /
    auto-eligible / needs-human) and point the user at the `🔒 Needs You` section.
 
-### `*surplus +<budget>`  (e.g. `*surplus +2M`)
+### `*surplus +<budget>`  (e.g. `*surplus +500K`, `*surplus +2M`)
 
-Print exactly:
+**Phase 2: Auto-execute ranked surplus tasks within a budget.**
 
-> ⏳ Auto-execution is Phase 2 — not yet wired. Showing ranked plan only.
-
-…then run the **same scan path** as `*surplus --plan` (steps 1–4 above). The budget
-argument is accepted but ignored in Phase 1 — there is no execution path to budget yet.
+1. **Parse budget.** Extract the numeric value: `+500K` → 500000, `+2M` → 2000000.
+   If the format is unrecognized, print an error and stop.
+2. **Read the latest sidecar:**
+   ```
+   ls -t .tad/active/SURPLUS-PLAN-*.json | head -1
+   ```
+   Parse the JSON. If no sidecar exists, tell the user to run `*surplus --plan` first.
+3. **Stamp the date.** Same `YYYY-MM-DD` stamping as `--plan`.
+4. **Invoke the execution workflow:**
+   ```
+   Workflow({
+     scriptPath: '.claude/workflows/surplus-execute.workflow.js',
+     args: {
+       sidecar_rows: <parsed JSON .rows array>,
+       date: '<stamp>'
+     }
+   })
+   ```
+5. **Persist the report.** Write `result.report_markdown` to `result.report_path`
+   (`.tad/active/SURPLUS-REPORT-<stamp>.md`).
+6. **Display summary:**
+   - Executed: N tasks (tokens spent)
+   - Failed: N tasks (skipped)
+   - Needs You: N SAFETY tasks
+   - Point user to the full report path.
 
 ## Hard boundaries (Phase 1)
 
@@ -65,8 +86,15 @@ argument is accepted but ignored in Phase 1 — there is no execution path to bu
 - **auto_eligible is advisory only** in Phase 1 — it flags what *would* be safe to
   auto-run later. Phase 1 runs nothing regardless of the flag.
 
-## Phase 2 (not in this SKILL)
+## Phase 2 — Budget-Loop Auto-Execution
 
-Auto-burn execution — reading the `.json` sidecar, selecting auto-eligible rows within a
-budget, and running them through the TAD pipeline — is **Phase 2** and is **not yet
-wired**. Until then, any budget argument only prints the Phase-2 notice above.
+Phase 2 is **wired** via `*surplus +<budget>`. It reads the JSON sidecar, filters
+auto-eligible rows (SAFETY tasks routed to "needs-you"), synthesizes ephemeral
+Epics, and runs each through yolo-epic within the budget envelope.
+
+Key safety properties:
+- **SAFETY zero-execution**: `safety_flag === true` tasks are never executed (strict equality)
+- **Sidecar validation**: fail-closed (throw on malformed rows, not silent skip)
+- **Circuit breaker**: 3 consecutive failures → stop loop
+- **Budget guard**: stops when `budget.remaining() < 250K` reserve
+- **yolo-epic contract**: 7 explicit keys, result.error/stop_reason for failures (no try/catch)
