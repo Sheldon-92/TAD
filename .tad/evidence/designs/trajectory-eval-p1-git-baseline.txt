@@ -1,0 +1,14 @@
+ D .tad/active/epics/EPIC-20260622-knowledge-recording-redesign.md
+ M .tad/research-notebooks/REGISTRY.yaml
+ M NEXT.md
+?? .tad/active/epics/EPIC-20260701-ldr-research-backend.md
+?? .tad/active/epics/EPIC-20260701-trajectory-eval-harness.md
+?? .tad/active/handoffs/
+?? .tad/evidence/decisions/2026-07-01.jsonl
+?? .tad/evidence/decisions/2026-07-02.jsonl
+?? .tad/evidence/designs/trajectory-eval-p1-git-baseline.txt
+?? .tad/evidence/research/automated-content-pipelines/
+?? .tad/evidence/research/open-notebook-vs-notebooklm/
+?? .tad/evidence/reviews/alex/trajectory-eval-p1/
+?? .tad/evidence/traces/2026-07-01.jsonl
+?? .tad/evidence/traces/2026-07-02.jsonl
