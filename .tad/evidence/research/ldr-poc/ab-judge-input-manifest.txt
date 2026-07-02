@@ -20,8 +20,5 @@ ab-sources/source-3.md
 ab-sources/source-4.md
 ab-sources/source-5.md
 
-## EXCLUDED (must NOT be in judge input)
-ab-mapping.md — EXCLUDED
-ab-answers/*-raw.md — EXCLUDED
-headless-run/ — EXCLUDED
-mcp-transcript.md — EXCLUDED
+## End of whitelist
+# Exclusion notes moved to ab-corpus.md §Sanitization Applied
