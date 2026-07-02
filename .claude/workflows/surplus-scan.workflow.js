@@ -29,7 +29,7 @@ if (args) {
 // ── Defaults (P0-4 / P2-4 corrected paths; date comes from SKILL boundary) ──
 // NOTE: zero time/random primitives anywhere — dateStamp is passed in via args.
 
-if (!dateStamp) { dateStamp = 'undated'; log('⚠️ surplus-scan: no date arg received → output stamped "undated" and the sandboxed workflow writes NO files. Invoke via the *surplus SKILL (it stamps the date AND writes the two artifacts); a direct workflow invocation only returns content.') }
+if (!dateStamp) { throw new Error('surplus-scan: no date arg received. Invoke via the *surplus SKILL (it stamps the date). Direct invocation must pass args: {date: "YYYY-MM-DD"}.') }
 if (!objectivesPath) objectivesPath = 'OBJECTIVES.md'
 if (!outputPath) outputPath = '.tad/active/SURPLUS-PLAN-' + dateStamp + '.md'
 

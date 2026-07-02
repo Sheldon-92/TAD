@@ -55,7 +55,7 @@ model training, graph memory.
 |---|-------|--------|---------|-----------------|
 | 1 | Data Sufficiency Audit + Rubric + Golden Set | ✅ Done | HANDOFF-20260702-trajectory-eval-p1.md (archived; Gate 4 PASS 2026-07-02) | audit report + rubric.md + labeled golden set |
 | 2 | Judge Harness Spike + Calibration (pivot gate) | ✅ Done | HANDOFF-20260702-trajectory-eval-p2.md (archived; Gate 4 PASS 2026-07-02; calibration_verdict: PASS) | judge harness + calibration report vs golden set |
-| 3 | Integration: Gate 4 evidence + Gate-ROI report | ⬚ Planned | — | acceptance hook-in + 30-day ROI report command |
+| 3 | Integration: Gate 4 evidence + Gate-ROI report | ✅ Done | HANDOFF-20260702-trajectory-eval-p3.md (archived; Gate 4 PASS 2026-07-02) | acceptance hook-in + 30-day ROI report command |
 
 ### Phase Dependencies
 All phases sequential. Phase 3 is CONDITIONAL on Phase 2 calibration passing the pivot threshold.
@@ -150,8 +150,8 @@ early course correction). Judge prompt iterations capped at 2 to prevent overfit
 
 ### Phase 3: Integration — Gate 4 Evidence + Gate-ROI Report
 
-**Status:** ⬚ Planned (CONDITIONAL on Phase 2 calibration PASS)
-**Execution:** pending
+**Status:** ✅ Done (Gate 4 PASS 2026-07-02 — Epic COMPLETE)
+**Execution:** manual (Blake Terminal 2)
 
 #### Scope
 Wire the calibrated judge into (a) Alex's Gate 4 acceptance as an optional one-step independent

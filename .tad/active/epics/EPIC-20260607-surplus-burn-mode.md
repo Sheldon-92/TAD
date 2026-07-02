@@ -52,7 +52,7 @@ Generation source: `OBJECTIVES.md` (esp. O2) + completed-asset awareness (capabi
 | Phase | Name | Status | Handoff |
 |-------|------|--------|---------|
 | 1 | Scan + Value-Score + Ranked Plan (`*surplus --plan`) | ✅ Done | HANDOFF-20260607-surplus-scan-phase1.md (commits d3dbc32, 6776d85) |
-| 1.1 | Fix `undated` filename (SKILL owns output path) + AC1 verifier note | ⬚ Planned | (quick-fix — see Context) |
+| 1.1 | Fix `undated` filename (SKILL owns output path) + AC1 verifier note | ✅ Done | (express fix 2026-07-02: workflow fallback changed from silent 'undated' to throw; top-level array bug already fixed in prior session; SKILL already owns date stamp) |
 | 2 | Budget-Loop Auto-Execution + Safety Routing + Report + Dogfood | ⬚ Planned | (TBD after Phase 1.1) |
 
 ---

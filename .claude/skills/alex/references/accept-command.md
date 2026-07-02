@@ -248,5 +248,5 @@ accept_command:
 
     Active handoffs: {count}/3
 
-    💡 If .tad/evidence/traces/ has data: "Trace data available. Run *optimize to analyze execution history and propose improvements."
+    💡 If .tad/evidence/eval/gate-roi-*.md exists: "Gate ROI data available. Run `bash .tad/eval/judge/gate-roi-report.sh --days 30` to generate a fresh report."
 

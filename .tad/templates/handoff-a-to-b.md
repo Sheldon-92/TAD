@@ -21,7 +21,7 @@ skip_knowledge_assessment: no  # yes | no
 # (Phase 5 P5.1, 2026-04-25). Empty list is the default and means handoff
 # predictions held up. Alex MAY append entries with 4 keys (field/alex_said/
 # actual/caught_by) when raw-TSV recompute or AC alignment shows a gap.
-# Future *evolve queries use this for cross-project drift detection.
+# Future gate-roi-report.sh uses this for cross-project drift detection.
 # Cancelled handoffs do NOT use this field — they use cancel_reason instead.
 gate4_delta: []
 ---

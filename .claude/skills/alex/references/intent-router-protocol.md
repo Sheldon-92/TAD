@@ -148,7 +148,7 @@ intent_router_protocol:
       skip_if:
         - "pack-registry.yaml not found or YAML parse error (WARN + skip)"
         - "No available packs (all Tier 3)"
-        - "Framework management commands: *publish, *sync, *sync-add, *sync-list, *status, *dream, *optimize, *evolve, *idea-list, *idea-promote, *research status, *research --deep, *test-review, *cancel"
+        - "Framework management commands: *publish, *sync, *sync-add, *sync-list, *status, *harvest, *surplus, *idea-list, *idea-promote, *research status, *research --deep, *test-review, *cancel"
       
       max_packs: 2  # Load at most 2 packs per session (context budget)
       ranking_when_over_limit: |
@@ -196,7 +196,7 @@ intent_router_protocol:
       - "After *sync step4 completes → Enter standby"
       - "After *sync-add step3 completes → Enter standby"
       - "After *sync-list step1 completes → Enter standby"
-      - "After *dream completes (promote/skip) → Enter standby"
+      - "After *harvest completes → Enter standby"
 
     on_new_input_in_standby: |
       When user sends a new message while Alex is in standby:
