@@ -120,15 +120,16 @@ intent_router_protocol:
         1. Check if .tad/capability-packs/pack-registry.yaml exists
            → If not: skip silently (no packs registered)
         
-        2. Read pack-registry.yaml → extract all pack entries with keywords
+        2. Read pack-registry.yaml → extract all pack entries with descriptions
         
         3. For each pack, determine availability (same 3-tier as step1_5b):
            Tier 1: .tad/capability-packs/{name}/CAPABILITY.md exists → available
            Tier 2: .claude/skills/{name}/SKILL.md exists → available
            Tier 3: neither → not installed, skip (don't offer install here — not the right moment)
         
-        4. Match user input keywords against available packs' keywords lists
-           (LLM semantic match, same mechanism as step1_5b)
+        4. Match user input against available packs' description fields
+           (LLM semantic match — compare task description against each pack's
+            description to find the most relevant packs)
         
         5. If ≥1 pack matches:
            → Read matched pack(s) SKILL.md (Tier 2) or CAPABILITY.md (Tier 1)
@@ -152,7 +153,10 @@ intent_router_protocol:
       
       max_packs: 2  # Load at most 2 packs per session (context budget)
       ranking_when_over_limit: |
-        If >2 packs match, select 2 with highest keyword overlap count.
+        If >2 packs match, select 2 whose descriptions have the highest topical
+        overlap with the user's stated task (prefer packs where the description's
+        core domain directly addresses the user's request over packs with
+        incidental term overlap).
         Break ties by pack order in pack-registry.yaml (earlier = higher priority).
       
       does_NOT_write_to_handoff: |
@@ -162,9 +166,10 @@ intent_router_protocol:
         re-detects packs, so Alex and Blake may load different packs for the
         same task. This is intentional — Blake catches what Alex missed.
       note: |
+        step4_5 matches on pack descriptions only; step1_5b matches on keywords+descriptions
+        (different mechanism, intentional). step4_5 is lightweight and silent — no user interaction.
         This does NOT replace step1_5b in *design — step1_5b has the full
         confirmation flow (AskUserQuestion, CONSUMES/PRODUCES chain, install offer).
-        step4_5 is lightweight and silent — no user interaction.
         If step4_5 already loaded a pack, step1_5b should detect it and skip re-loading.
 
   # Standby State Definition (P1 fix from Phase 1)
