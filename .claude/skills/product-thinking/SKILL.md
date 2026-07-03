@@ -1,6 +1,6 @@
 ---
 name: product-thinking
-description: "Three deep skills that turn any AI agent into a product decision partner. Covers adversarial idea validation (/pressure-test), business model generation (/shotgun), and executable product definition (/define) across 6 product types."
+description: "Three deep skills that turn any AI agent into a product decision partner. Covers adversarial idea validation, business model generation, and executable product definition across 6 product types. Use for any product strategy, idea validation, business model design, or product definition task."
 ---
 
 # Product Thinking Capability Pack

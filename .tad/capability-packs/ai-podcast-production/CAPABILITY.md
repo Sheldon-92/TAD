@@ -1,6 +1,6 @@
 ---
 name: ai-podcast-production
-description: "AI podcast production judgment for coding agents — script writing with Codex review, large-chunk TTS generation, dual-BGM music arrangement with envelope follower ducking, show notes, Colab deployment"
+description: "AI podcast production judgment for coding agents. Covers script writing, large-chunk TTS generation, dual-BGM music arrangement with envelope follower ducking, show notes, and Colab deployment. Use for any AI-assisted podcast or audio content production task."
 version: 0.1.0
 type: reference-based
 keywords: ["podcast", "播客", "podcast production", "播客制作", "podcast script", "播客文案", "TTS", "text-to-speech", "语音合成", "music arrangement", "编曲", "混音", "BGM", "背景音乐", "ducking", "sidechain", "envelope follower", "show notes", "节目笔记", "Colab", "VoxCPM2", "voice cloning", "声音克隆", "audio production", "音频制作", "noisereduce", "loudness normalization", "podcast workflow", "播客流程"]

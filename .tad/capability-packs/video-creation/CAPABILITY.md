@@ -1,6 +1,6 @@
 ---
 name: video-creation
-description: "Professional video production judgment for AI coding agents — storytelling, motion design, audio, tools (HyperFrames/Remotion)"
+description: "Professional video production judgment for AI coding agents. Covers storytelling, motion design, audio integration, and tools like HyperFrames and Remotion. Use for any AI-assisted video production, motion graphics, or multimedia content creation task."
 version: 0.1.0
 type: reference-based
 keywords: ["video", "animation", "motion design", "HyperFrames", "Remotion", "视频", "动画", "剪辑", "音频"]

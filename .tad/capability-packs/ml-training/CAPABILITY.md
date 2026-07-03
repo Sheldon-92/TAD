@@ -1,6 +1,6 @@
 ---
 name: ml-training
-description: "ML model training on cloud GPU — platform selection, LoRA/QLoRA fine-tuning, cost estimation, human-AI collaboration via browser MCP"
+description: "ML model training on cloud GPU capability pack. Covers platform selection, LoRA and QLoRA fine-tuning, cost estimation, and human-AI collaboration via browser MCP. Use for any ML model fine-tuning, cloud GPU training, or model adaptation task."
 version: 0.1.0
 type: reference-based
 keywords: ["fine-tune", "微调", "LoRA", "QLoRA", "train model", "训练模型", "Colab", "Kaggle", "RunPod", "cloud GPU", "云GPU", "云训练", "training data", "训练数据", "GPU hours", "model training", "模型训练", "personality clone", "个性克隆"]

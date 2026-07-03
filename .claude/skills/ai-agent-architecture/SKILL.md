@@ -1,6 +1,6 @@
 ---
 name: ai-agent-architecture
-description: "Decision navigator for designing reliable agent systems. Guides any AI agent through 10 architectural decisions derived from 3 production systems (Claude Code, OpenClaw, Hermes) and 7 real production disasters. Two modes: /design (new system) and /audit (existing system)."
+description: "Decision navigator for designing reliable agent systems. Guides AI agents through 10 architectural decisions derived from 3 production systems and 7 real production disasters, with /design and /audit modes. Use for any agent architecture design, system audit, or production reliability planning task."
 keywords: ["agent", "AI agent", "multi-agent", "MCP", "tool use", "architecture", "智能体", "代理", "agent 设计", "工具调用", "架构"]
 type: reference-based
 ---

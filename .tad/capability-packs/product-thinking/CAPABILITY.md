@@ -1,6 +1,6 @@
 ---
 name: product-thinking
-description: Three deep skills that turn any AI agent into a product decision partner. Not templates — a thinking engine that searches real data, challenges assumptions, and forces decisions. Covers adversarial idea validation, business model generation, and PRD definition across 6 product types (software, hardware, ecommerce, service, content, marketplace). Use for product idea evaluation, pivot decisions, business model comparison, or converting an idea into an executable spec.
+description: "Three deep skills that turn any AI agent into a product decision partner. Covers adversarial idea validation, business model generation, and executable product definition across 6 product types. Use for any product strategy, idea validation, business model design, or product definition task."
 keywords: ["product", "strategy", "business", "PMF", "pivot", "产品", "商业", "市场", "idea", "PRD", "business model", "压力测试", "商业模式"]
 type: deep-skill
 ---

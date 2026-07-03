@@ -1,6 +1,6 @@
 ---
 name: ai-voice-production
-description: "AI voice production judgment for coding agents — TTS tool selection, voice cloning, audiobook/podcast/dubbing pipelines, Apple Silicon optimization, licensing safety"
+description: "AI voice production judgment for coding agents. Covers TTS tool selection, voice cloning, audiobook, podcast, and dubbing pipelines, Apple Silicon optimization, and licensing safety. Use for any AI voice synthesis, voice cloning, audiobook production, or TTS pipeline task."
 version: 0.1.0
 type: reference-based
 keywords: ["TTS", "text-to-speech", "语音合成", "voice cloning", "声音克隆", "voice design", "音色设计", "audiobook", "有声书", "podcast", "播客", "dubbing", "配音", "narration", "旁白", "audio production", "音频制作", "voice acting", "语音", "朗读", "prosody"]

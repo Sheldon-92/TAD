@@ -1,6 +1,6 @@
 ---
 name: academic-research
-description: "Academic research methodology pack — systematic literature review, citation integrity, quality evaluation. Activates on: 学术, academic, 论文, paper, 文献, literature, meta-analysis, 元分析, PRISMA, systematic review, 系统性综述, PubMed, 文献综述, 学术研究, 科研"
+description: "Academic research methodology pack for systematic literature review, citation integrity, and quality evaluation. Covers PRISMA systematic reviews, meta-analysis, PubMed search, literature surveys, and academic writing standards. Use for any academic research, literature review, citation analysis, paper evaluation, or systematic review task."
 version: 0.1.0
 type: reference-based
 keywords: ["学术", "academic", "论文", "paper", "文献", "literature", "meta-analysis", "元分析", "PRISMA", "systematic review", "系统性综述", "PubMed", "文献综述", "学术研究", "科研"]

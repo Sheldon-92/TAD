@@ -1,6 +1,6 @@
 ---
 name: web-frontend
-description: Web frontend engineering judgment for React — component architecture, state management, design token consumption, styling, performance, accessibility, and testing. Loads DESIGN.md when present and turns design artifacts into production-grade code.
+description: "Web frontend engineering judgment for React. Covers component architecture, state management, design token consumption, styling, performance, accessibility, testing, and visual-code bridge. Loads DESIGN.md when present and turns design artifacts into production-grade code. Use for any React frontend development, component design, or UI implementation task."
 keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG"]
 type: reference-based
 ---
