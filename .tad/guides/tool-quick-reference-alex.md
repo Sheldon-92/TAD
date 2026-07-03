@@ -19,6 +19,13 @@
 - **Registry:** `.tad/research-notebooks/REGISTRY.yaml` (update after every create/add/research)
 - **Full workflow:** `.claude/skills/research-notebook/SKILL.md`
 
+### TAD Brain (knowledge search)
+- **Index:** `.tad/brain-index.md` (auto-generated)
+- **Rebuild:** `bash .tad/hooks/lib/brain-index-gen.sh`
+- **Search:** `Agent({ description: "tad-brain search", prompt: "Read .tad/brain-index.md ... For the query '{query}': ..." })`
+- **Agent type:** general-purpose (do NOT specify subagent_type)
+- **Full protocol:** `alex/SKILL.md → tad_brain_protocol`
+
 ### Codex CLI
 - **Path:** `codex` (Homebrew global)
 - **Preflight:** `command -v codex >/dev/null 2>&1`

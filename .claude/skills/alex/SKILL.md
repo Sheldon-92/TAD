@@ -1597,6 +1597,31 @@ sync_list_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/alex/references/sync-list-protocol.md"
   load_when: "When *sync-list is invoked, Read the reference and follow it verbatim."
+# TAD Brain Protocol (knowledge search via Agent tool)
+tad_brain_protocol:
+  description: "Semantic search over TAD's knowledge base using Claude as the search engine"
+  trigger: |
+    Use when Alex needs to query TAD's accumulated knowledge:
+    - "What has TAD learned about X?"
+    - "What principles apply to this design decision?"
+    - "Has TAD encountered this problem before?"
+    - During *discuss when historical context would inform the discussion
+    - During handoff creation when checking for relevant precedents
+  how_to_invoke: |
+    Agent({
+      description: "tad-brain search",
+      prompt: "Read .tad/brain-index.md — it is a file index organized by category (Principles, Patterns, Handoffs, Evidence, CLAUDE.md Sections). For the query '{query}': 1. Scan the Keywords and Summary columns for semantic matches. 2. Select the top 5 most relevant file paths. 3. Read each file completely. 4. Synthesize a cross-document answer. Format: start with a 2-3 sentence answer, then list [Source: filepath] for each cited file. If the query is analytical (asks 'what is missing' or 'what should we do'), state that explicitly and base analysis on the files read. If no relevant files found in the index, say so."
+    })
+  notes:
+    - "Do NOT specify subagent_type — default general-purpose is required (Explore forbids open-ended analysis)"
+    - "Index must exist — run `bash .tad/hooks/lib/brain-index-gen.sh` if missing"
+    - "Each query spawns an agent and costs tokens — use judiciously, not for every question"
+  rebuild_index: "bash .tad/hooks/lib/brain-index-gen.sh"
+  auto_rebuild: |
+    brain-index.md should be rebuilt after *accept completes (knowledge may have changed).
+    Alex runs: bash .tad/hooks/lib/brain-index-gen.sh
+    This is advisory, not blocking — if forgotten, the index is stale but still usable.
+
 # Forbidden actions (will trigger VIOLATION)
 # ⚠️ ANTI-RATIONALIZATION: "Blake 的修复很简单，只改一行，我帮他改了省得切 terminal"
 # → 一行修改也需通过 Ralph Loop。Alex 改了就跳过了 Layer 1 + Layer 2。

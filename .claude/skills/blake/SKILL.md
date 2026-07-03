@@ -1065,6 +1065,11 @@ notebooklm_access:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/blake/references/notebooklm-access.md"
   load_when: "When Blake needs to query or add sources to a NotebookLM notebook, Read the reference and follow it verbatim."
+# TAD Brain (knowledge search — same protocol as Alex, see alex/SKILL.md tad_brain_protocol)
+# Blake can use tad-brain during implementation to check for relevant precedents.
+# Invoke: Agent({ description: "tad-brain search", prompt: "Read .tad/brain-index.md ... {query}" })
+# Do NOT specify subagent_type (general-purpose required).
+
 # Core tasks I execute
 my_tasks:
   - develop-task.md (Ralph Loop integrated)
