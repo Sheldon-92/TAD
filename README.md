@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.32.1 - Reading Companion + Pack Quality**
+**Version 2.33.0 - Claude Science + Brain Native + AI/Human Domain Awareness**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 

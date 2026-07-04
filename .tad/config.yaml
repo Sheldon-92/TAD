@@ -1,8 +1,8 @@
-# TAD Configuration v2.30.0 - Reading Companion + Pack Quality
+# TAD Configuration v2.33.0 - Claude Science + Brain Native + AI/Human Domain Awareness
 method: TAD
-version: 2.32.1
-description: Triangle Agent Development - Measured-Evolution Framework + Cross-Model Orchestration + NotebookLM Research + 25 Capability Packs + Cross-Platform Portable + Migration Engine
-last_updated: 2026-06-23
+version: 2.33.0
+description: Triangle Agent Development - Two-Agent Quality Framework + Knowledge Search (brain-native) + 25 Capability Packs + Cross-Platform + Research Engine
+last_updated: 2026-07-03
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

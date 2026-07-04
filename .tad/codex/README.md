@@ -1,6 +1,6 @@
 # TAD Codex Adapter
 
-Codex is a **first-class TAD runtime** (since v2.25.0). Both Claude Code and Codex receive the same SKILL.md files and follow the same shared TAD protocol.
+Codex is a **first-class TAD runtime** (since v2.25.0, current v2.33.0). Both Claude Code and Codex receive the same SKILL.md files and follow the same shared TAD protocol.
 
 ---
 

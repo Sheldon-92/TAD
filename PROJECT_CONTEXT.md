@@ -1,8 +1,8 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.27.0 (24 capability packs + dual-platform native runtime + SKILL progressive loading)
-- **Last Updated**: 2026-06-11
+- **Version**: 2.33.0 (25 capability packs + brain-native knowledge search + Claude Science skill architecture)
+- **Last Updated**: 2026-07-03
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
