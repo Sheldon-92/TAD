@@ -1065,6 +1065,11 @@ notebooklm_access:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/blake/references/notebooklm-access.md"
   load_when: "When Blake needs to query or add sources to a NotebookLM notebook, Read the reference and follow it verbatim."
+# TAD Brain (knowledge search — same protocol as Alex, see alex/SKILL.md tad_brain_protocol)
+# Blake can use tad-brain during implementation to check for relevant precedents.
+# Invoke: Agent({ description: "tad-brain search", prompt: "Read .tad/brain-index.md ... {query}" })
+# Do NOT specify subagent_type (general-purpose required).
+
 # Core tasks I execute
 my_tasks:
   - develop-task.md (Ralph Loop integrated)
@@ -1574,6 +1579,17 @@ completion_protocol:
   step3: "通过 Layer 2 专家审查（spec-compliance → code-reviewer → parallel experts）"
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
   step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01) + Slug Contract (layer2-audit 2026-04-15): BEFORE git add, run `ls -la` on every path listed in handoff's Required Evidence Manifest §1.4 — if any required file is missing, ABORT commit and escalate. **SLUG CONTRACT (MANDATORY)**: Blake MUST write reviewer artifacts to `.tad/evidence/reviews/blake/<slug-from-handoff-filename>/` where `<slug-from-handoff-filename>` is the EXACT string captured by regex `^(HANDOFF|COMPLETION)-\\d{8}-(.+)\\.md$` group $2 — no abbreviation, no case change, no suffix. Alex `acceptance_protocol.step4c` runs layer2-audit.sh against this exact slug; a mismatch → 红字警告 in verdict. Then: git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
+  step3d_provenance:
+    name: "Fill Provenance table in completion report"
+    trigger: "When writing completion report (completion_protocol)"
+    action: |
+      For each file in the File Manifest (CREATE or MODIFY):
+      1. Record what command/tool/script generated or modified it
+      2. Record which sub-agent was involved (or "direct")
+      3. Add any reproduction notes (version, config, env)
+      Fill the Provenance table in the completion report template.
+    blocking: false
+    skip_if: "File is a trivial copy (parity), git operation, or template fill"
   step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
   step4b_gate3_verdict_marker:
     name: "Write gate3_verdict frontmatter marker (Gate 3 POST-STEP — observational trace)"
