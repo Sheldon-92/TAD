@@ -109,3 +109,10 @@
   mechanical test (can you variabilize the episode-specific values?), not the author's judgment.
 - ⚠️ SAFETY ENTRY — requires human review for any modification
 - **Grounded in**: .tad/evidence/research/agent-knowledge-systems/2026-06-22-findings.md, EPIC-20260622-knowledge-recording-redesign.md
+
+### AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 - 2026-07-03
+- **Context**: Voice Studio 播客制作中反复验证：切点精度（人 — 听觉感知）vs 语义分析（AI — 文本理解）；配乐品味（人 — 从 shortlist 挑）vs 情绪/能量/速度匹配（AI — 可计算）。学术佐证：HitL LLM Judges (Laura Dietz, UNH TREC) 发现 Rubber Stamp Effect（人验证 AI 判断会盲目同意）和 Preview Anchoring（先看 AI 结论会锚定人的判断）。
+- **Discovery**: AI 活在文本/数据世界，人活在感知/品味/方向世界。两个世界有交集但不重合。Agent 需要一根持续的弦：这个判断属于哪个域？不是规则（"第 N 步问人"），而是持续的自我觉察。在 AI 域（逻辑/代码/AC 对照/数据匹配），agent 自己判或让其他 AI 互审。在人域（方向对不对/体验好不好/品味选择/感知精度），给人**选择题**（shortlist + 理由），不给人**验证题**（"对不对？"→ 橡皮图章）。
+- **Action**: Agent 做判断前自问：这是文本/数据/逻辑层面的（AI 自判或 AI 互审）还是感知/品味/方向层面的（交给人，且是选择题不是验证题）。Gate 4 应只问人"只有人能答的问题"，技术验证由 Gate 3 subagent 完成。设计 agent 时显式识别该 agent 的"人域"边界（Voice Studio = 切点/品味；代码项目 = 产品方向；TCG AI = 卡组审美）。
+- **failure_mode**: Naive default A: 把所有判断都交给人确认 → 人橡皮图章，安全网是假的。Naive default B: 把所有判断都自己做 → 在感知域出错还不自知（切点偏 200ms、方向跑偏用户不想要）。正确平衡需要 agent 有域归属意识。
+- **Grounded in**: Voice Studio docs/text-music-matching-guide.md (维度×谁判 表格), Voice Studio PROJECT_CONTEXT.md (切点精度瓶颈 56%≤200ms), AI Tinkerers #33 HitL LLM Judges (Laura Dietz UNH, TREC auto-judge, Rubber Stamp Effect + Preview Anchoring), IDEA-20260703-rubber-stamp-effect-human-ai.md

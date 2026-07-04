@@ -32,6 +32,22 @@
 - [x] IDEA-20260616-skillopt-tad-methodology-impact: SkillOpt-informed TAD methodology improvements (promoted → handoff → ✅ ACCEPTED 2026-06-17, commit c4fbeb2)
 - [x] IDEA-20260616-agent-skill-evolution-pack: New capability pack — agent-skill-evolution (promoted → handoff → ✅ ACCEPTED 2026-06-17, commit f232261)
 
+## Ideas (from AI Tinkerers #33 research 2026-07-03)
+
+- [ ] IDEA-20260703-single-loop-agent-no-framework: PostHog — single-loop agent rejects LangChain, direct API + switch-mode tool
+- [ ] IDEA-20260703-traces-hour-practice: PostHog — weekly team trace review > eval datasets
+- [x] IDEA-20260703-saveable-skills-from-conversation: Linear — ✅ 已有等价实现 (P2 description matching + P3 Pipeline Capture + Gate 4 KA triple-question)
+- [ ] IDEA-20260703-rubber-stamp-effect-human-ai: HitL Judges — rubber stamp effect in human-AI review, separate annotation from judgment
+- [x] IDEA-20260703-cheap-loop-expensive-llm: petri — ❌ 已是直觉实践，无额外价值
+- [x] IDEA-20260703-deterministic-rules-over-llm: Daria's Desk — ❌ 暂无意义
+- [x] IDEA-20260703-claude-code-reverse-engineering: Originlab — ❌ 与我们方向无直接关联
+- [x] IDEA-20260703-crdt-agent-realtime-collab: Jam — ❌ TAD Gate 已是安全切换点，CRDT 无需求
+- [ ] IDEA-20260703-jax-extreme-parallelism: Jaxpot — JAX vmap extreme parallelism on consumer GPU
+- [x] IDEA-20260703-self-critique-generation-pipeline: Voice Tutor — ❌ 暂无帮助
+- [x] IDEA-20260703-state-machine-multistream-sync: Simer — 📌 存档备查（暂不行动）
+- [x] IDEA-20260703-webrtc-agent-transport: WebRTC Agents — 📌 存档备查（暂不行动）
+- [x] IDEA-20260703-imitation-learning-domain-bridge: LeRobot — ✅ 已在 Pokémon 项目实践（search + BC/AWR）
+
 ## Recently Completed (2026-06-17)
 
 - [x] **Agent-Computer Interface Capability Pack (TAD #25) ✅ ACCEPTED 2026-06-17** (commit ff8de66, Gate 4 PASS) — New capability pack teaching AI agents systematic tool detection and selection across 5 layers (engine/data/hybrid/agent/desktop). SKILL.md (3 cross-cutting rules: two-tier capability detection + layer match + security-aware fallback) + 6 reference files (35+ judgment rules) + capability-detect.sh (CLI+process scan, JSON output) + tool-health-check.sh (90d freshness + 24h cache) + behavioral fixture (10 discriminative markers). Expert review: 4 P0 fixed (ToolSearch/shell split, install.sh path, pgrep user-scoping, L5 security rules) + 13 P1 fixed. Research: NotebookLM notebook c0143736 (14 sources). Handoff archived. Born from user-observed pain point: Claude spent 10+ min failing to find Claude in Chrome.
