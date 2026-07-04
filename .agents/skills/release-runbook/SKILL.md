@@ -99,6 +99,20 @@ ROW (`^[[:space:]]*\|.*v?[0-9]+\.[0-9]+\.[0-9]+.*\|`). A `$OLD` in any other fil
 line of those three files, is ALWAYS reported (this is exactly the `tad.sh` / `config.yaml` live-assignment
 class that historically went stale). Exit 0 = clean, exit 1 = stale (named), exit 2 = usage (fail-CLOSED).
 
+### Version Sweep (full-repo drift detection)
+
+After the `version` gate (which only checks `$OLD` → `$NEW`), run the **version-sweep** to catch files that fell behind ANY number of versions ago:
+
+```bash
+bash .tad/hooks/lib/release-verify.sh version-sweep "$PWD" "$NEW"
+```
+
+**Dual-layer architecture:**
+- **Layer 1 (Must-Version Registry)**: Positive-asserts that ~12 identity-marker files contain `$NEW`. ALWAYS blocking — exit 1 if any marker is stale.
+- **Layer 2 (Narrow Drift Sweep)**: Greps tracked files for `2.X.Y` patterns ≠ `$NEW`, excluding historical paths (archive/, evidence/, CHANGELOG tables, etc.). Advisory only — printed for awareness, never blocks.
+
+This catches the "fell behind N versions ago" class that `version` mode cannot detect (it only sees `$OLD` residue).
+
 ### Full list of files containing version references
 
 > ⚠️ **DERIVED — illustrative only / non-authoritative.** Authoritative source:

@@ -62,6 +62,16 @@
 #       inlined deny-list == derive-sync-set.sh's DENY_LIST, so the "no stale list" thesis is
 #       not reintroduced at the installer layer.
 #
+#   version-sweep <repo_root> <expected_version>
+#       Dual-layer full-repo version drift detection.
+#       Layer 1 (Must-Version Registry): positive-assert that ~12 identity-marker files
+#         contain the expected version. ALWAYS blocking.
+#       Layer 2 (Narrow Drift Sweep): grep for 2.X.Y patterns ≠ expected, excluding
+#         known historical paths (archive/, evidence/, migrations/, skills/*/references/,
+#         _archived/, .tad/active/ideas/, CHANGELOG table rows, metadata annotations,
+#         IP addresses). ADVISORY only — never affects exit code.
+#       Exit 0 = Layer 1 all PASS; exit 1 = ≥1 Layer 1 pattern missing; exit 2 = usage.
+#
 #   migration <repo_root> [<expected_version>]
 #       Detect D (deleted) and R (renamed) files between the previous git tag and HEAD,
 #       scoped to framework-managed paths (.tad/, .claude/, .codex/, .agents/, root files).
@@ -119,6 +129,7 @@ usage() {
   echo "Usage:" >&2
   echo "  release-verify.sh structural <src_root> <target_root>" >&2
   echo "  release-verify.sh version <repo_root> <expected_version> [<old_version>]" >&2
+  echo "  release-verify.sh version-sweep <repo_root> <expected_version>" >&2
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
   echo "  release-verify.sh parity [--fix] <repo_root>" >&2
@@ -660,6 +671,167 @@ PARITY_EOF
     echo "VERDICT: parity FAIL — Codex mirror drift (exit 1)"
     echo "  FIX: run 'release-verify.sh parity --fix \"$REPO\"' if direction is claude-newer"
     exit 1
+    ;;
+
+  # ───────────────────────── version-sweep ─────────────────────────
+  # Full-repo version drift detection. Dual-layer:
+  #   Layer 1 (Must-Version Registry): positive-assert that specific files contain the
+  #     expected version string. ALWAYS blocking. Exit 1 = stale identity marker.
+  #   Layer 2 (Narrow Drift Sweep): grep for 2.X.Y patterns not equal to expected,
+  #     excluding known historical paths. ADVISORY only — never affects exit code.
+  # Exit 0 = Layer 1 all PASS (regardless of Layer 2 hits).
+  # Exit 1 = ≥1 Layer 1 pattern missing.
+  # Exit 2 = usage/wiring error.
+  version-sweep)
+    if [ $# -ne 3 ]; then
+      echo "Usage: release-verify.sh version-sweep <repo_root> <expected_version>" >&2
+      exit 2
+    fi
+    REPO="$2"
+    VER="$3"
+    if [ ! -d "$REPO" ]; then echo "ERROR: repo_root not a dir: $REPO" >&2; exit 2; fi
+    if ! printf '%s' "$VER" | LC_ALL=C grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+      echo "ERROR: expected_version must be semver (got: '$VER')" >&2
+      exit 2
+    fi
+    # Escape dots for ERE patterns (P0 fix: 2.33.0 → 2\.33\.0)
+    VER_RE="${VER//./\\.}"
+
+    echo "========================================="
+    echo "VERSION-SWEEP (dual-layer version drift detection)"
+    echo "  REPO:     $REPO"
+    echo "  EXPECTED: $VER"
+    echo "========================================="
+
+    # ── Layer 1: Must-Version Registry ──────────────────────────────────────────
+    echo ""
+    echo "  ── Layer 1: Must-Version Registry ──"
+
+    MUST_VERSION_PATTERNS=(
+      ".tad/version.txt|^${VER_RE}$"
+      ".tad/config.yaml|version: ${VER_RE}"
+      ".tad/config.yaml|# TAD Configuration v${VER_RE}"
+      "README.md|Version ${VER_RE}"
+      "INSTALLATION_GUIDE.md|Version ${VER_RE}"
+      ".claude/skills/tad-help/SKILL.md|Version: v${VER_RE}"
+      ".claude/skills/alex/SKILL.md|<!-- TAD v${VER_RE} Framework -->"
+      ".claude/skills/blake/SKILL.md|<!-- TAD v${VER_RE} Framework -->"
+      "tad.sh|TARGET_VERSION=\"${VER_RE}\""
+      "package.json|\"version\": \"${VER_RE}\""
+      "PROJECT_CONTEXT.md|Version.*: ${VER_RE}"
+      "docs/MULTI-PLATFORM.md|Version.*: ${VER_RE}"
+    )
+
+    l1_fails=0
+    l1_pass=0
+    l1_warn=0
+    for entry in "${MUST_VERSION_PATTERNS[@]}"; do
+      file="${entry%%|*}"
+      pattern="${entry#*|}"
+      filepath="$REPO/$file"
+      if [ ! -f "$filepath" ]; then
+        printf '  ⚠️  %-45s FILE MISSING\n' "$file"
+        l1_warn=$((l1_warn + 1))
+      elif grep -qE "$pattern" "$filepath" 2>/dev/null; then
+        printf '  ✅ %-45s %s\n' "$file" "$VER"
+        l1_pass=$((l1_pass + 1))
+      else
+        printf '  ❌ %-45s MISSING "%s"  [BLOCKING]\n' "$file" "$pattern"
+        l1_fails=$((l1_fails + 1))
+      fi
+    done
+
+    if [ "$l1_fails" -eq 0 ]; then
+      echo "  Layer 1 verdict: PASS ($l1_pass verified, $l1_warn warnings)"
+    else
+      echo "  Layer 1 verdict: FAIL ($l1_fails stale, $l1_pass passed, $l1_warn warnings)"
+    fi
+
+    # ── Layer 2: Narrow Drift Sweep (advisory) ─────────────────────────────────
+    echo ""
+    echo "  ── Layer 2: Drift Sweep (advisory) ──"
+
+    l2_hits=0
+    l2_output=""
+
+    if git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      # Get all tracked text files, grep for 2.X.Y patterns (left-anchored: non-digit before 2)
+      raw_hits="$(git -C "$REPO" ls-files -z 2>/dev/null \
+        | (cd "$REPO" && LC_ALL=C xargs -0 grep -InE '(^|[^0-9])2\.[0-9]+\.[0-9]+' 2>/dev/null))" || true
+
+      if [ -n "$raw_hits" ]; then
+        while IFS= read -r hit; do
+          [ -n "$hit" ] || continue
+          file="${hit%%:*}"
+          rest="${hit#*:}"
+          lineno="${rest%%:*}"
+          content="${rest#*:}"
+
+          # Exclusion (a): path-based deny list
+          case "$file" in
+            archive/*|*/archive/*|evidence/*|*/evidence/*|migrations/*|*/migrations/*) continue ;;
+            node_modules/*|*/node_modules/*) continue ;;
+            package-lock.json) continue ;;
+            */skills/*/references/*) continue ;;
+            *_archived/*|_archived/*) continue ;;
+            .tad/active/ideas/*) continue ;;
+          esac
+
+          # Exclusion (b): CHANGELOG table rows
+          case "$file" in
+            CHANGELOG.md|*/CHANGELOG.md)
+              if printf '%s' "$content" | LC_ALL=C grep -qE '^\s*\|'; then continue; fi
+              ;;
+          esac
+
+          # Exclusion (c): metadata version annotations
+          if printf '%s' "$content" | LC_ALL=C grep -qE '(added_in|deprecated_in|since_version):'; then
+            continue
+          fi
+
+          # Exclusion (d): IP address filtering (digit or dot adjacent to match)
+          if printf '%s' "$content" | LC_ALL=C grep -qE '[0-9]\.2\.[0-9]+\.[0-9]+|2\.[0-9]+\.[0-9]+\.[0-9]'; then
+            continue
+          fi
+
+          # Exclusion (e): lines that contain the EXPECTED version are not drift
+          if printf '%s' "$content" | grep -qF "$VER"; then
+            continue
+          fi
+
+          # This is a Layer 2 hit (cap output at 20 for bounded memory)
+          l2_hits=$((l2_hits + 1))
+          if [ "$l2_hits" -le 20 ]; then
+            l2_output="${l2_output}  ⚠️  ${file}:${lineno}: $(printf '%s' "$content" | head -c 100)"$'\n'
+          fi
+        done <<VERSION_SWEEP_EOF
+$raw_hits
+VERSION_SWEEP_EOF
+      fi
+    else
+      echo "  (not a git repo — Layer 2 skipped)"
+    fi
+
+    if [ "$l2_hits" -eq 0 ]; then
+      echo "  Layer 2 hits: 0 (clean)"
+    else
+      printf '%s' "$l2_output"
+      if [ "$l2_hits" -gt 20 ]; then
+        echo "  ... and $((l2_hits - 20)) more (truncated)"
+      fi
+      echo "  Layer 2 hits: $l2_hits (advisory only, not blocking)"
+    fi
+
+    # ── Final verdict ──────────────────────────────────────────────────────────
+    echo ""
+    echo "-----------------------------------------"
+    if [ "$l1_fails" -eq 0 ]; then
+      echo "VERDICT: version-sweep PASS (exit 0)"
+      exit 0
+    else
+      echo "VERDICT: version-sweep FAIL — $l1_fails Layer 1 stale ref(s) (exit 1)"
+      exit 1
+    fi
     ;;
 
   # ───────────────────────── platform-skills ─────────────────────────

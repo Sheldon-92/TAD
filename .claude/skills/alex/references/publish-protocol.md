@@ -140,6 +140,26 @@ publish_protocol:
       blocking: true
       detect_only: true  # reads only — never edits version refs
 
+    step3c2:
+      name: "Version Sweep Gate (ALWAYS blocking)"
+      action: |
+        Run the full-repo version-sweep to detect stale identity markers and drift:
+          bash .tad/hooks/lib/release-verify.sh version-sweep "$PWD" "$NEW"
+
+        Branch on exit code:
+        - exit 0 → proceed to step3d.
+        - exit 2 (usage/wiring) → ALWAYS HARD BLOCK. Fix invocation and re-run *publish.
+        - exit 1 (Layer 1 stale identity markers) → ALWAYS HARD BLOCK regardless of
+          release_type (patch/minor/major). These are identity files that must never be stale.
+          Fix the stale ref(s) and re-run *publish.
+          Echo: GATE: release-verify version-sweep exit=<n>
+
+        Note: Layer 2 hits (advisory drift) are printed for operator awareness but
+        NEVER block. They are informational only — potential drift to investigate
+        after the release, not a gate.
+      blocking: true
+      detect_only: true  # reads only — never edits files
+
     step3d:
       name: "Migration Manifest Gate (BLOCKING on minor+)"
       action: |
