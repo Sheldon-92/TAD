@@ -62,38 +62,20 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
-## 🎯 What's New in v2.28
+## 🎯 What's New in v2.33
 
-### Upgrade Lifecycle System (v2.28) — Zero-Garbage Upgrades
-Every version upgrade is now driven by a **declarative migration manifest** (`delete/rename/merge/verify`), executed by a shared engine with a 5-step path safety pipeline:
+### v2.33.0 — Claude Science + Brain Native + AI/Human Domain Awareness
+- **Claude Science Skill Architecture** (4-phase Epic): Anthropic open standard frontmatter + description-based semantic pack discovery + auto-SCAND pipeline capture + provenance tracking
+- **TAD-brain native knowledge search**: 250-line index + general-purpose agent = zero-dependency semantic search over TAD's knowledge base (Claude IS the search engine)
+- **New L1 Principle**: AI/Human Judgment Domain Awareness — agents self-assess whether a judgment belongs to AI domain (logic/data) or human domain (perception/taste/direction)
 
-- **Migration Engine** (`migration-engine.sh`): Single `rm` choke point with TOCTOU re-validation, user-modified file detection via `git show`, fail-closed on malicious paths
-- **CLAUDE.md Merge**: `<!-- TAD:PROJECT-CONTENT-BELOW -->` marker splits framework head (auto-updated) from user content (preserved byte-identical)
-- **Publish Gate**: `release-verify.sh migration` mode — delete a file without writing a manifest and the release is blocked
-- **12 Historical Manifests**: v2.19.0 → v2.27.0 complete chain, so upgrades from any version work
-- **22 E2E Fixtures**: Normal/idempotent/user-modified/malicious-injection/merge/gate scenarios
-- **tad.sh + \*sync Integration**: Both paths use the same engine (zero dual-implementation)
-
-```bash
-# What happens now when you upgrade:
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
-# 1. Downloads new version
-# 2. Copies framework files
-# 3. ⭐ Runs migration engine: cleans old files, renames moved files, merges CLAUDE.md
-# 4. Verifies install completeness
-# Result: new files in, old files gone, your content untouched
-```
-
-### Earlier Highlights
-- **v2.27.0**: SKILL progressive loading, circular-trigger body-integrity checker
-- **v2.26.0**: Codex CLI support, dual-platform runtime architecture
-- **v2.25.0**: Universal AC-driven Gate (§9.1 primary verification)
-- **v2.24.0**: Non-dev deliverable lane, categorical/checklist verdict shapes
-- **v2.23.0**: Self-deriving release/sync (deny-list derivation)
-- **v2.21.0**: 24 capability packs via NotebookLM pack factory
-- **v2.8.0**: Self-evolving framework, 20 domain packs, execution traces
-
----
+### Recent Highlights
+- **v2.32.0**: Trajectory evaluation harness (5-dim rubric + calibrated judge + gate-ROI report)
+- **v2.31.0**: Surplus Burn Mode (auto-execute ranked backlog within budget envelope)
+- **v2.30.0**: Research system consolidation (9 entry points → unified `*research`)
+- **v2.29.0**: Self-Evolution Pruning (retired near-zero-yield loops, 3-tier skill formalization)
+- **v2.28.0**: Upgrade Lifecycle System (migration engine + zero-garbage upgrades)
+- **v2.27.0**: SKILL progressive loading, 25 capability packs
 
 ## 🚀 Installation & Upgrade
 
@@ -111,7 +93,7 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.30.0
+# Should show: 2.33.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -251,8 +233,6 @@ Alex: [Reviews with subagents, accepts or requests changes]
 - `*handoff` - Generate handoff with expert review
 - `*review` - Review Blake's completion
 - `*accept` - Accept and archive handoff
-- `*optimize` - Analyze traces → propose improvements
-- `*evolve` - Cross-project framework evolution
 - `*status` - Panoramic project status view
 
 ### Blake Commands (use `*` prefix)
@@ -407,6 +387,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.30.0 - Reading Companion + Pack Quality**
+**Welcome to TAD v2.33.0 - Claude Science + Brain Native + AI/Human Domain Awareness**
 
 *AI does the work. Humans guard the value.*
