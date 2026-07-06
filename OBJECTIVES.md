@@ -5,9 +5,10 @@
 
 ---
 
-## O1: Understand TAD's position in the AI Agent framework competitive landscape
+## O1: Sharpen TAD's positioning as a capability acquisition methodology <!-- repositioned 2026-07-05 -->
 
-**Why:** TAD has evolved to v2.10.4 through 13 Epics and 185 handoffs, but has never systematically benchmarked itself against the broader ecosystem. Understanding where TAD stands — unique strengths and capability gaps — is essential for prioritizing the next wave of development.
+**Why:** TAD's mission is capability acquisition — one human + AI agents + persistent documents compounding capability across domains — not competing head-on with autonomous coding agents or orchestration frameworks. The ecosystem scan below is still needed, but as a *contrast map* (what TAD deliberately is not) and a gap detector, not as a "framework vs framework" benchmark. TAD has evolved through 13+ Epics and 185+ handoffs without systematically mapping that contrast. <!-- repositioned 2026-07-05: reframed from "AI Agent framework competitive landscape" to capability-acquisition positioning; see docs/value-proposition.md -->
+
 **Timeline:** 2026 Q2
 
 | # | Key Result | Current | Target | Status |
