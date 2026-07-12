@@ -48,6 +48,27 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 ---
 
+## 🧭 What TAD Is: Capability Acquisition
+
+TAD is a **capability acquisition methodology**. It is a repeatable way for one
+human, working with AI agents and a set of persistent documents (handoffs,
+project-knowledge, capability packs, research notebooks), to acquire and compound
+working capability over time — the documents carry what was learned from each
+task into the next, so capability accumulates instead of resetting every session.
+
+**What TAD is not:** TAD does not compete with autonomous coding agents like
+**Devin** or orchestration frameworks like **LangGraph**. Those products ship
+runtimes that do the work for you; TAD ships a method that makes a human + AI
+pair progressively more capable, with human judgment kept at the checkpoints
+where it matters.
+
+The evidence is cross-domain, not just software: 14 registered downstream
+projects use TAD, spanning voice and podcast production, a reading companion,
+academic research methodology, and a 24-pack capability library — every claim
+cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposition.md)**.
+
+---
+
 ## 🔄 Codex CLI Support (v2.26.0)
 
 TAD runs on Codex CLI with the same SKILL files. Use `$alex` or `$blake` to activate roles:
@@ -319,17 +340,23 @@ Run periodically to check knowledge health:
 
 ## 🤔 When to Use TAD
 
+TAD applies to any substantial capability-building work — software is the most
+exercised path, but the same loop runs for content production, research, and
+other domains (see [docs/value-proposition.md](docs/value-proposition.md)).
+
 ### Use TAD When:
 - New feature (>3 files or >1 day work)
 - Architecture changes
 - Complex multi-step requirements
 - Cross-module refactoring
+- Multi-phase work in a non-code domain (production pipelines, research projects, methodology design)
 
 ### Skip TAD When:
 - Single-file bug fix
 - Config changes (.env, versions)
 - Documentation updates
 - Emergency hotfix
+- Any small task where process overhead exceeds the task itself
 
 ---
 
