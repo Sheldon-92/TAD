@@ -9,6 +9,9 @@
 # Local settings
 .claude/settings.local.json
 
+# Local skills (*save-skill output — project-local, never distributed)
+.claude/skills/local/
+
 # Claude Code local session/memory + sub-agent worktree artifacts (not source)
 .claude/projects/
 .claude/worktrees/
