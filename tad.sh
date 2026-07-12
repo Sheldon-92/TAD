@@ -1358,11 +1358,13 @@ detect_state() {
             echo "upgrade"                         # same major, older → plain upgrade
         else
             # installed major < target major → cross-major migration territory.
+            # GLOB SAFETY: use dot-bounded patterns (1.8|1.8.*), NOT prefix globs (1.8*).
+            # Prefix globs match across minor boundaries (1.8* matches 1.80.0).
             case "$ver" in
-                1.8*)        echo "v1.8" ;;        # preserve existing v1.x granular routing
-                1.6*|1.5*)   echo "v1.6" ;;
-                1.4*)        echo "v1.4" ;;
-                *)           echo "old" ;;         # incl. v2-into-newer-major → migrate (gets .tad-migrate-backup)
+                1.8|1.8.*)          echo "v1.8" ;;  # preserve existing v1.x granular routing
+                1.6|1.6.*|1.5|1.5.*) echo "v1.6" ;;
+                1.4|1.4.*)          echo "v1.4" ;;
+                *)                  echo "old" ;;   # incl. v2-into-newer-major → migrate (gets .tad-migrate-backup)
             esac
         fi
     elif [ -d ".tad" ]; then
