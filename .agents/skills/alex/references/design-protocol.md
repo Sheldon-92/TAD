@@ -144,6 +144,11 @@ design_protocol:
              If "none"     → Announce: "No multi-agent backend available. Running single-agent design (no tournament)."
                              Continue with normal *design flow (step2 onwards) using single-agent.
           4. Use the merged_design from the result as input for the rest of *design
+             Present merged_design to the human for acceptance: when it is a textual
+             artifact, use a preview-enabled single-select AskUserQuestion
+             (options: "Accept merged design" / "Adjust before continuing", each
+             option carrying a merged_design excerpt as its preview — see
+             preview_usage_rule below).
 
         If user picks skip: continue normal *design flow (step2 onwards)
 
@@ -151,6 +156,45 @@ design_protocol:
         - "Light TAD process depth"
         - "User chose 'Skip TAD' in adaptive complexity"
         - "*express or *experiment paths (tournament not applicable)"
+
+    preview_usage_rule:
+      name: "AskUserQuestion preview field — usage guidance block (NOT a step)"
+      context: |
+        Native fact (harness-verified): AskUserQuestion options accept an OPTIONAL
+        per-option `preview` field. The preview markdown renders in a monospace box,
+        side-by-side with the option list (options left, preview right).
+        Single-select questions ONLY — multiSelect does not support preview.
+      use_when: |
+        Attach `preview` when presenting a CONCRETE TEXTUAL ARTIFACT comparison
+        on a single-select question. IS use-cases:
+        - code variants (two implementations of the same function)
+        - config alternatives (two YAML/JSON blocks side by side)
+        - design excerpts (competing architecture sketches, API contract drafts)
+        - 2-up palette markup (frontend-design.md warm-palette 2-up confirm —
+          pure-warm vs warm + cool accent, each option carrying its palette block)
+        - tournament merged_design excerpt at step1_5c step 4 (accept / adjust)
+      never_when: |
+        - preference questions — options are names/labels, not artifacts.
+          Named negative example: step1_5b pack selection (4a) and pack ordering
+          confirmation (5c) are preference questions → NO preview.
+        - multiSelect questions (preview not supported by the harness)
+        - non-textual artifacts (screenshots / image paths cannot render —
+          textual artifacts only)
+      example: |
+        Scripted 2-up preview call (warm-palette comparison, single-select):
+          AskUserQuestion:
+            question: "Warm palette direction — which variant?"
+            options:
+              - label: "Pure warm"
+                preview: |
+                  --primary: #E2725B;  --surface: #F5E6DA;
+                  --accent:  #D9803F;  /* no cool accent */
+              - label: "Warm + cool accent (Recommended)"
+                preview: |
+                  --primary: #E2725B;  --surface: #F5E6DA;
+                  --accent:  #2A9D8F;  /* teal accent, 5-15% coverage */
+        (each option's preview renders in the monospace box, side-by-side with
+        the options — human compares artifacts, then selects)
 
     step2:
       name: "Frontend Detection & Feedback Collector"

@@ -1,0 +1,49 @@
+# C1 line-set diff — design-protocol.md (Phase 4, 2026-07-13)
+# Method: LC_ALL=C comm on sorted unique non-empty text lines, BEFORE vs AFTER
+
+## FORWARD-missing (lines in BEFORE, absent in AFTER) — expected EMPTY (additions only):
+## (end FORWARD-missing)
+
+## REVERSE-added (lines in AFTER, absent in BEFORE) — expected: only preview_usage_rule block + step1_5c step 4 extension lines:
+                  --accent:  #2A9D8F;  /* teal accent, 5-15% coverage */
+                  --accent:  #D9803F;  /* no cool accent */
+                  --primary: #E2725B;  --surface: #F5E6DA;
+                preview: |
+              - label: "Pure warm"
+              - label: "Warm + cool accent (Recommended)"
+             (options: "Accept merged design" / "Adjust before continuing", each
+             Present merged_design to the human for acceptance: when it is a textual
+             artifact, use a preview-enabled single-select AskUserQuestion
+             option carrying a merged_design excerpt as its preview — see
+             preview_usage_rule below).
+            options:
+            question: "Warm palette direction — which variant?"
+          AskUserQuestion:
+          Named negative example: step1_5b pack selection (4a) and pack ordering
+          confirmation (5c) are preference questions → NO preview.
+          pure-warm vs warm + cool accent, each option carrying its palette block)
+          textual artifacts only)
+        (each option's preview renders in the monospace box, side-by-side with
+        - 2-up palette markup (frontend-design.md warm-palette 2-up confirm —
+        - code variants (two implementations of the same function)
+        - config alternatives (two YAML/JSON blocks side by side)
+        - design excerpts (competing architecture sketches, API contract drafts)
+        - multiSelect questions (preview not supported by the harness)
+        - non-textual artifacts (screenshots / image paths cannot render —
+        - preference questions — options are names/labels, not artifacts.
+        - tournament merged_design excerpt at step1_5c step 4 (accept / adjust)
+        Attach `preview` when presenting a CONCRETE TEXTUAL ARTIFACT comparison
+        Native fact (harness-verified): AskUserQuestion options accept an OPTIONAL
+        Scripted 2-up preview call (warm-palette comparison, single-select):
+        Single-select questions ONLY — multiSelect does not support preview.
+        on a single-select question. IS use-cases:
+        per-option `preview` field. The preview markdown renders in a monospace box,
+        side-by-side with the option list (options left, preview right).
+        the options — human compares artifacts, then selects)
+      context: |
+      example: |
+      name: "AskUserQuestion preview field — usage guidance block (NOT a step)"
+      never_when: |
+      use_when: |
+    preview_usage_rule:
+## (end REVERSE-added)
