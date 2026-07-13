@@ -37,6 +37,13 @@ KNOWN_REVIEWERS_LIST="code-reviewer code-review backend-architect security-audit
 # gate3-verdict = Blake's own gate verdict, not external review.
 SUBSTITUTION_HEURISTICS_LIST="self-review feedback-integration gate3-verdict"
 
+# Two-tier express detection (backend-architect P2-1, 2026-07-12):
+#   1. PRIMARY  — is_express_frontmatter(): durable `express: true` YAML
+#      frontmatter marker in the handoff file (first frontmatter block only).
+#   2. FALLBACK — is_express_slug(): word-boundary slug token detection
+#      (legacy naming convention, kept for back-compat with older handoffs).
+# Express exception fires when EITHER marker is present.
+#
 # CR-P0-6 fix: word-boundary express slug detection (NOT substring).
 # Defends against false-positives: "expression" / "compress" / "espresso".
 # Patterns:
@@ -50,6 +57,53 @@ is_express_slug() {
     express|*-express|*-express-*|express-*) return 0 ;;
     *) return 1 ;;
   esac
+}
+
+# P2-1 (2026-07-12): durable express marker — `express: true` in the handoff's
+# YAML frontmatter. Locates the handoff file for the slug under
+# ${LAYER2_AUDIT_HANDOFF_ROOT:-.tad}/{active,archive}/handoffs/ (env seam
+# mirrors LAYER2_AUDIT_REVIEW_ROOT; default is CWD-relative .tad).
+# Match is ANCHORED (review P1-1 spoof guard): the glob HANDOFF-[0-9]*-<slug>.md
+# narrows candidates, then each candidate's filename slug segment (text after
+# the leading all-digit date segment) must EXACTLY equal the requested slug —
+# a glob alone is insufficient because `*` can swallow `0260101-auto`, letting
+# slug `deploy` match HANDOFF-20260101-auto-deploy.md. All handoffs on disk
+# are dated (HANDOFF-YYYYMMDD-…); no dateless pattern needed. If MORE than one
+# file survives the exact-slug filter, warns on stderr and returns 1
+# (ambiguity fails toward the stricter non-express path; the slug-token
+# fallback may still fire independently). With exactly one match,
+# extracts ONLY the first frontmatter block (file must open with `---` on
+# line 1; block ends at the next `---` line) and greps for an `express: true`
+# line. `express: true` in body prose or a later code block does NOT match.
+# Returns 1 when no handoff file is found.
+is_express_frontmatter() {
+  local s="$1" f hf="" match_count=0 matches="" name rest fdate fslug
+  local handoff_root="${LAYER2_AUDIT_HANDOFF_ROOT:-.tad}"
+  for f in "${handoff_root}/active/handoffs/HANDOFF-"[0-9]*"-${s}.md" \
+           "${handoff_root}/archive/handoffs/HANDOFF-"[0-9]*"-${s}.md"; do
+    [ -f "$f" ] || continue
+    # Exact-slug anchor: filename must be HANDOFF-<all-digit-date>-<slug>.md
+    # with <slug> EXACTLY equal to $s (blocks substring spoof, e.g. auto-deploy).
+    name="${f##*/}"; name="${name%.md}"
+    rest="${name#HANDOFF-}"
+    fdate="${rest%%-*}"
+    fslug="${rest#*-}"
+    case "$fdate" in *[!0-9]*|'') continue ;; esac
+    [ "$fslug" = "$s" ] || continue
+    matches="${matches} ${f}"
+    match_count=$((match_count + 1))
+    hf="$f"
+  done
+  if [ "$match_count" -gt 1 ]; then
+    printf "Layer 2 audit WARN: ambiguous handoff match for slug '%s' — frontmatter marker NOT applied (resolve duplicates):%s\n" \
+      "$s" "$matches" >&2
+    return 1
+  fi
+  [ -n "$hf" ] || return 1
+  awk 'NR==1 { if ($0 !~ /^---[[:space:]]*$/) exit; next }
+       /^---[[:space:]]*$/ { exit }
+       { print }' "$hf" 2>/dev/null \
+    | grep -qE '^express:[[:space:]]*true[[:space:]]*$'
 }
 
 # CR-P0-4 fix: detect distinct reviewer agent NAMES via find -print0 + read -d ''
@@ -195,16 +249,25 @@ if [ "$qualified" -ge 1 ]; then
 
   # Verdict logic:
   #   ≥2 distinct      → PASS
-  #   =1 distinct + express slug → PASS_EXPRESS (advisory PASS, exit 0)
+  #   =1 distinct + express marker (frontmatter primary, slug fallback) → PASS_EXPRESS (advisory PASS, exit 0)
   #   =1 distinct, non-express   → WARN (advisory, exit 0; structured WARN_REVIEWER_COUNT=1)
   #   =0 distinct + substitutions only → FAIL (existing path, structured WARN_REVIEWER_COUNT=0_SUBSTITUTIONS_ONLY)
   #   =0 distinct + 0 substitutions    → fall through to legacy total_found path
+  express_marker=""
+  if [ "${distinct_count:-0}" -eq 1 ]; then
+    if is_express_frontmatter "$slug"; then
+      express_marker="frontmatter"
+    elif is_express_slug "$slug"; then
+      express_marker="slug"
+    fi
+  fi
   if [ "${distinct_count:-0}" -ge 2 ]; then
     printf 'Layer 2 audit PASS: %d reviewer artifacts found (size-check); %d distinct reviewers found: %s\n' \
       "$qualified" "$distinct_count" "$distinct_list"
     exit 0
-  elif [ "${distinct_count:-0}" -eq 1 ] && is_express_slug "$slug"; then
-    printf 'Layer 2 audit PASS: 1 distinct reviewer (express path exception): %s\n' "$distinct_list"
+  elif [ "${distinct_count:-0}" -eq 1 ] && [ -n "$express_marker" ]; then
+    printf 'Layer 2 audit PASS: 1 distinct reviewer (express path exception via %s marker): %s\n' \
+      "$express_marker" "$distinct_list"
     printf 'WARN_REVIEWER_COUNT=1_EXPRESS_OK\n'
     exit 0
   elif [ "${distinct_count:-0}" -eq 1 ]; then

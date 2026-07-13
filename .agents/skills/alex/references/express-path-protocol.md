@@ -34,7 +34,7 @@ express_path_protocol:
     # ⚠️ AR-001 hard guarantee: cannot be skipped (text grep'd by AC-P3.1-h).
     # The literal phrase "expert review" + "code-reviewer" must remain on consecutive
     # tokens within ~30 lines following `express_path_protocol:` header.
-    - "step1 draft creation (handoff scaffold + frontmatter)"
+    - "step1 draft creation (handoff scaffold + frontmatter — MUST set `express: true` in YAML frontmatter; this is the durable marker layer2-audit.sh is_express_frontmatter() consumes)"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
     - "step2 expert review with ≥1 expert (code-reviewer 必选; ≥1 expert; 视场景可加第 2 个)"
@@ -68,22 +68,28 @@ express_path_protocol:
     - "Security-adjacent changes (auth/token/encrypt → Standard TAD with security review)"
     - "Performance-adjacent changes (optimization → use *experiment instead)"
 
-  # slug_convention (2026-05-31, doc-only): *express handoff slug MUST contain the
-  # word `express`. layer2-audit.sh is_express_slug() already detects express via
-  # word-boundary slug match; this convention is what lets that detection fire so an
-  # *express bugfix doesn't trip a false Tier-1 (≥2 reviewer) WARN.
-  # NOTE: this is a NAMING rule only — it does NOT relax required_steps above
-  # (expert review + code-reviewer 必选 remains hard). No audit code change.
+  # slug_convention (2026-05-31; AMENDED 2026-07-12 P2-1): the LOAD-BEARING express
+  # marker is now `express: true` in the handoff's YAML frontmatter (set at step1),
+  # consumed by layer2-audit.sh is_express_frontmatter(). The `express` slug token
+  # is RECOMMENDED as a human-readable convention + legacy fallback (is_express_slug()
+  # word-boundary match), no longer the primary detection.
+  # NOTE: neither marker relaxes required_steps above
+  # (expert review + code-reviewer 必选 remains hard).
   slug_convention:
     rule: |
-      When drafting an *express handoff, the slug in
-      HANDOFF-YYYYMMDD-<slug>.md MUST contain the token `express`
-      (e.g. `express-fix-foo`, `bugfix-foo-express`, or `express`).
+      When drafting an *express handoff, set `express: true` in the YAML
+      frontmatter of HANDOFF-YYYYMMDD-<slug>.md (MANDATORY — durable marker).
+      Additionally, the slug SHOULD contain the token `express`
+      (e.g. `express-fix-foo`, `bugfix-foo-express`, or `express`) —
+      RECOMMENDED for human readability and as legacy fallback detection.
     rationale: |
-      layer2-audit.sh is_express_slug() matches express|*-express|*-express-*|express-*
-      on a word boundary. A `*express` handoff named `bugfix-foo` with task_type=code
-      would NOT match → audit treats it as Standard Tier-1 and WARNs on <2 reviewers,
-      even though *express legitimately keeps only ≥1 code-reviewer. Putting `express`
-      in the slug makes the detection fire correctly. Doc-only fix — audit logic is
-      already correct and MUST NOT be changed.
+      layer2-audit.sh detects express two-tier: is_express_frontmatter() reads
+      `express: true` from the handoff's first frontmatter block (primary,
+      durable — survives any slug naming); is_express_slug() matches
+      express|*-express|*-express-*|express-* on a word boundary (fallback,
+      back-compat for pre-marker handoffs). Before the frontmatter marker,
+      a `*express` handoff named `bugfix-foo` would NOT match → audit treated
+      it as Standard Tier-1 and WARNed on <2 reviewers, even though *express
+      legitimately keeps only ≥1 code-reviewer. The frontmatter marker closes
+      that false-WARN gap regardless of slug wording.
 
