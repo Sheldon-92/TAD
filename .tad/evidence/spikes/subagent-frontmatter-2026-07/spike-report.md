@@ -143,3 +143,45 @@ Prompt asked for review framework + whether system prompt contains 'three-pass a
 - VERDICT-skills: **PASS (provisional)** — with tools banned, agent quoted 3 rules verbatim-authentic to `.claude/skills/code-security/SKILL.md` (grep-verified: "72% of organizations" ×1, "exit 183" ×2) and reported the pack arrived as a command block in its context at spawn. Same probe on 2.1.172 returned NO-PRELOADED-SKILLS. Residual confound: probe ran via nested `claude -p` wrapper (agent registry needed a fresh process — project-level defs are NOT hot-registered mid-session, live-tested today); confirm once via direct Agent-tool spawn in a session where the def was present at startup.
 - Side-effects: REGISTRY.yaml diff clean this run; spike def restored to fixtures/ (not left in .claude/agents/).
 - Unlock: P2 FR5 static pairing (security-auditor ← code-security via `skills:` field) is now implementable — queue as small handoff, do NOT ad-hoc.
+
+---
+
+## DELIVERY-ATTEMPT ADDENDUM #2 — 2026-07-13 PM (FR5 delivery BLOCKED; re-spike PASS refuted)
+
+Attempted delivery per HANDOFF-20260713-skills-preload-delivery.md (Gate 2 passed, YOLO).
+Outcome: **AC1a headless preload probe FAIL 5/5** (implementer agent, worktree) **+ 1/1 FAIL on
+Conductor's independent main-repo probe** with the staged def present. Full raw evidence:
+`fr5-delivery-evidence.md` (same dir).
+
+### VERDICT-skills: downgraded PASS(provisional) → **FAIL (confound identified)**
+
+Two independent mechanism findings explain the morning's false PASS:
+
+1. **The `Skill` tool was never in the ban list.** The Conductor's confirmation probe agent
+   stated plainly: only the one-line router description of `code-security` is in context; the
+   rule bodies would require an explicit `Skill(code-security)` call — a tool the morning
+   re-spike probe left available. An agent that loads the pack on demand and quotes it is
+   indistinguishable from preload under that probe design.
+2. **`--disallowedTools` is variadic on 2.1.207 and comma-joined form mis-parses**: a comma-
+   joined single arg plus trailing prompt makes the CLI treat every prompt word as a deny rule
+   ("Permission deny rule 'Is' matches no known tool") and error out — or, in other orderings,
+   leaves bans ineffective. The working form is space-separated tool names + prompt via stdin.
+   Reproduced independently by implementer (worktree) and Conductor (main).
+
+Additional diagnostics (implementer, all FAIL → field inert): def persona confirmed active
+(body IS the system prompt — only `skills:` inert); exact re-spike fixture def; env-stripped
+spawn; full re-spike replication from main root.
+
+### State after this attempt
+
+- Def NOT committed (§5 AC1a row honored — no false capability claim in repo). Assembled def
+  **staged UNTRACKED** at `.claude/agents/security-auditor.md` solely to enable AC1b.
+- **AC1b (next fresh interactive session, direct Agent-tool spawn) is now the DECISIVE test**,
+  not a confirmation: headless `claude -p` and the interactive harness are different spawn
+  paths; the harness path is the one TAD actually uses. If AC1b also FAIL → remove the staged
+  def's `skills:` key (or drop the def), keep VERDICT-skills: FAIL, return the idea to
+  BLOCKED-UNTIL-CLI-support. If AC1b PASS → headless-vs-harness divergence is the new ground
+  truth; commit def per handoff.
+- Probe-design lesson (for any future capability spike): **ban the `Skill` tool (and
+  ToolSearch-loadable equivalents) in preload probes**, and verify ban efficacy in-band
+  (AC1a-guard pattern) before trusting a quote-based verdict.
