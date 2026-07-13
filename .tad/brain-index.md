@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-07-12 19:00
+Generated: 2026-07-12 22:38
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -33,6 +33,7 @@ Generated: 2026-07-12 19:00
 | Pack Evaluation | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check |
 | Research Methodology | NotebookLM, Codex/Gemini CLI, cross-model orchestration, source quality, cloud compute | NotebookLM, Codex/Gemini CLI, cross-model orchestration, source quality, cloud compute, deep research, *research, web search |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
+| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync |
 
 ## Project Knowledge
 | File | Keywords | Summary |
@@ -54,13 +55,12 @@ Generated: 2026-07-12 19:00
 | 5. 违规处理 | 5  | 违规 → 立即停止 → 调用正确 agent → 从头执行。 |
 | 6. 协议位置 | 6  | \| 协议 \| 位置 \| |
 | 7. Project Knowledge (Auto-loaded) | 7 project knowledge auto-loaded  | @import 自动加载，不存在的文件静默跳过。超 30KB 时整合。 |
+| 7.5 Memory Capture Layer | 7 5 memory capture layer | 原生 auto-memory 已重定向至 `.tad/memory/`(via settings.local.json,DR-20260712)。 |
 
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
 | HANDOFF-surplus-codex-adapter-yaml.md | code       # bash installer extension + spec doc + generated YAML artifact | Zero-cost Codex CLI compatibility for capability packs, proven on one demo pack: |
-| HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed      # markdown pack authoring + structural verification (no runtime code) | Convert the 9 remaining archived Domain Pack YAMLs into Capability Pack format: |
-| HANDOFF-surplus-detect-state-glob-arm-hazard.md | code       # code | yaml | research | e2e | mixed | A standalone bash regression fixture `.tad/tests/detect-state-fixture.sh` that exercises tad.sh's `detect_state()` again |
 | HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed      # bash script (code) + fixture docs (md) + gate doc edit | Three deliverables, closing the "validation theater" P0 from the cross-model YOLO audit: |
 | HANDOFF-surplus-tad-methodology-skeleton.md | doc-only   # code | yaml | research | e2e | mixed | doc-only | A single new standalone document, `docs/tad-methodology.md`, that extracts the TAD |
 
@@ -77,3 +77,6 @@ Generated: 2026-07-12 19:00
 | HANDOFF-surplus-local-skill-capture.md | mixed | Identity (carried over from surplus-scan stub — replaced in place by Alex design step) |
 | HANDOFF-surplus-gate-roi-measurement.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
+| HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260712-memory-redirect-capture-layer.md | mixed | Handoff Document for Agent B (Blake) |

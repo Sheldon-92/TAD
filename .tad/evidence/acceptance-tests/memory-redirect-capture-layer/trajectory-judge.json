@@ -1,0 +1,7 @@
+{
+  "D1": {"score": 5, "rationale": "All 10 ACs individually verified with recorded output; deviations documented (AC6 PARTIAL w/ cause + pre-publish obligation; AC8 Gate-4 human by design; AC9 pathspec riders)."},
+  "D2": {"score": 5, "rationale": "3 distinct reviewers with non-boilerplate file:line findings; spec reviewer re-ran all AC scripts live; T2-before-T3 proven via mtime chain; discrepancies self-reconciled pre-commit."},
+  "D3": {"score": 5, "rationale": "Full loop: Gate 2 expert review preceded execution; Layer 1 first-pass green documented; Layer 2 3 reviewers; pre-commit action items executed; pathspec commit before Gate 3 pass."},
+  "D4": {"score": 5, "rationale": "6 in-execution decisions in structured table; Friction table accurate (EQUIVALENT_SUBSTITUTE w/ evidence); AC6 honestly PARTIAL; all 6 Gate-4 items pre-declared."},
+  "D5": {"score": 4, "rationale": "KA complete + task-specific: 7 journal findings, specific Q2/Q3 reasoning incl concrete tool defect. Short of 5: journal content not in bundle so failure_mode/commit-refs unconfirmable."}
+}
