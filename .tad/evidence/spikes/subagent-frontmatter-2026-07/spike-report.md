@@ -1,0 +1,136 @@
+# T1 Spike Report: Subagent Frontmatter `memory` / `skills` / Shadowing Semantics
+
+- **Date**: 2026-07-13
+- **CLI**: 2.1.172 (Claude Code) — verified via `claude --version`
+- **Handoff**: HANDOFF-20260713-native-capability-adoption-phase2.md (FR1)
+- **Spawn method**: headless CLI spawn from repo root — `claude -p --agent <name> "<prompt>"` (project-level `.claude/agents/` resolved from cwd; each invocation is an independent fresh session, no shared conversation state)
+- **Spike agent**: `tad-spike-memory-agent.md` (now preserved at `fixtures/tad-spike-memory-agent.md`)
+
+---
+
+## Verdicts
+
+VERDICT-memory: FAIL
+VERDICT-skills: FAIL
+VERDICT-shadowing: PASS
+
+---
+
+## 1. `memory` field — FAIL (silently ignored, both value forms)
+
+### Attempt 1: boolean form (`memory: true`)
+
+Frontmatter used:
+
+```yaml
+---
+name: tad-spike-memory-agent
+description: T1 spike agent ...
+model: sonnet
+memory: true
+skills:
+  - code-security
+---
+```
+
+- Field was **accepted without error or warning** (agent spawned normally, replied `SPIKE-ALIVE` to connectivity probe).
+- Probe: "Does your system prompt or configuration mention a persistent memory directory assigned to you?"
+- First answer was a false positive: the agent cited `/Users/sheldonzhao/01-on progress programs/TAD/.tad/memory/` — that is the **project auto-memory** (CLAUDE.md §7.5 redirect, loaded for every session), NOT an agent-specific memory. Discriminating re-probe (quote system-prompt memory sentences verbatim) returned:
+
+> Here are every line from my system prompt ... that contains the word "memory":
+> [quotes ONLY the spike agent's own body instructions]
+> No concrete path or memory directory is specified anywhere in my system prompt.
+> Therefore ... **NO-MEMORY-DIRECTORY**.
+
+The only "memory" text in the agent's system prompt was the spike def's own body. The field injected nothing.
+
+### Attempt 2: path form (`memory: ".claude/agent-memory/tad-spike-memory-agent"`)
+
+Probe: "Does your system prompt assign you a persistent memory directory or mention any path containing 'agent-memory'?"
+
+Raw output:
+
+```
+NO-AGENT-MEMORY-IN-SYSTEM-PROMPT
+```
+
+### Filesystem evidence (no memory landing point exists)
+
+```
+$ ls ~/.claude/agent-memory
+ls: /Users/sheldonzhao/.claude/agent-memory: No such file or directory
+$ ls <repo>/.claude/agent-memory
+ls: ... No such file or directory
+```
+
+`claude --help` contains no agent-memory flag (only auto-memory in `--bare` description).
+
+**Memory landing point: NONE (field inert)** → FR4 gitignore entry is NOT_APPLICABLE_WITH_REASON (no memory files are created anywhere, in-repo or out).
+
+---
+
+## 2. `skills` field — FAIL (not preloaded, not attached)
+
+Frontmatter carried `skills:\n  - code-security` (list form per handoff §4.3) throughout all probes. Accepted without error or warning.
+
+### Preload probe (tools banned via `--disallowedTools "Read,Bash,Grep,Glob,WebFetch,WebSearch"`)
+
+Prompt: "Is the content of a skill or capability pack named 'code-security' already present in your context right now? If yes, quote 3 specific concrete rules from it verbatim ... If NOT, reply exactly: NO-PRELOADED-SKILLS"
+
+Raw output:
+
+```
+NO-PRELOADED-SKILLS
+```
+
+(The pack's real content — Four-Gate fastest-fail-first pipeline, TruffleHog exit 183, Semgrep exit 1, S1-S8/D1-D7/V1-V7 rule indices — is distinctive; a preloaded agent could have quoted any of it. It quoted none.)
+
+### Availability nuance probe
+
+Prompt: "List the names of any skills your configuration says are available or attached to you specifically — or reply NO-ATTACHED-SKILLS."
+
+Raw output (excerpt):
+
+> **NO-ATTACHED-SKILLS**
+> My system prompt contains no list of skills assigned or attached to me. The large skill list visible in the `<system-reminder>` block is the project-level registry (available to the harness), not declared as part of my agent's own configuration.
+
+So the field is fully inert on 2.1.172: neither preload (AC6 semantics) nor attach/availability semantics.
+
+---
+
+## 3. Project-level shadowing of same-name user-level agent — PASS
+
+Temp project-level `code-reviewer.md` (unique marker `SHADOW-MARKER-TAD-QX93Z`, body reply `PROJECT-LEVEL-BODY-ACTIVE`, `model: sonnet`) created while user-level `~/.claude/agents/code-reviewer.md` (model: opus, "senior code review specialist", "three-pass analysis") remained untouched.
+
+### Probe 1 — whose body is active?
+
+```
+(1) My marker phrase is: **SHADOW-MARKER-TAD-QX93Z**
+(2) I do not have a specific model ID string configured in my system prompt. **UNKNOWN-MODEL**
+```
+
+### Probe 2 — replace vs merge?
+
+Prompt asked for review framework + whether system prompt contains 'three-pass analysis' or 'a senior code review specialist' (both present verbatim in the user-level body).
+
+```
+(1) **PROJECT-LEVEL-BODY-ACTIVE**
+(2) **NO-DOES-NOT-CONTAIN**
+```
+
+**Conclusion**: project-level def **completely replaces** the user-level same-name def (body replaced, zero merge/leak of user-level content). Caveat: model replacement could not be introspected from inside the session (agents don't see their own model id); body-replacement — the load-bearing semantics for def precision — is confirmed clean. Temp def moved to `fixtures/code-reviewer.md` immediately after the test (`.claude/agents/` left with no spike residue).
+
+---
+
+## Degradation matrix branch selected (§4.1)
+
+`memory FAIL + skills FAIL + shadowing PASS` → combined rows 1+2:
+
+- FR2 shadow defs with `memory` field: **NOT delivered** (field inert — a dead `memory:` key would be config theater; also keeps AC3 in its sanctioned VACUOUS-PASS branch).
+- FR5 `skills` preload on security-auditor: **NOT delivered** — handoff transcription status quo (Blake SKILL 1_5a) retained, zero changes to Blake SKILL (AC9).
+- FR3/FR4: NOT_APPLICABLE_WITH_REASON (no memory-enabled defs / no memory landing point).
+- FR6 behavioral evidence: SKILLS-PRELOAD honestly recorded FAIL (test WAS executed, during spike); memory RUN0/RUN1/RUN2 not runnable (mechanism absent) — see phase2-behavioral-evidence.md.
+- **Still delivered (unconditional per AC8)**: `spec-compliance-reviewer.md` project-level registration (no same-name conflict; shadowing PASS confirms project-level defs resolve). Carries dormant Memory Protocol boundary section (documented as dormant; no `memory:` frontmatter key).
+- All FAIL branches escalated in completion report §Escalations (NFR2 — never silently drop).
+
+## Phase status: DEGRADED (honest partial), not Done-as-designed.
