@@ -5,6 +5,15 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **9 archived Domain Pack YAMLs migrated to Capability Packs** (surplus burn 2026-07-05, TASK-20260705-001): `hw-circuit-design`, `hw-enclosure`, `hw-firmware`, `hw-testing`, `mobile-development`, `mobile-release`, `mobile-testing`, `mobile-ui-design`, `supply-chain-security` — each as `.claude/skills/{pack}/SKILL.md` (distilled judgment rules, ≤250 lines, all source anti-pattern entries preserved) + `references/` (step-level depth content), byte-identical mirrors in `.agents/skills/{pack}/`. Source: `.tad/archive/domains/2026-06-11-domain-pack-retirement/` (7,132 YAML lines; archived sources untouched as audit trail).
+
+### Changed
+- **YAML Domain Pack mechanism fully retired** — the last "migrate on demand" IOU from the 2026-06-11 retirement (EPIC-20260611-pack-system-unification) is now closed; `.tad/domains/README-retired.md` updated to point at the 9 new pack paths.
+- **domain-router hook decommission confirmed**: verified no `domain-router` hook exists in `.tad/hooks/` (the `userprompt-domain-router.sh` router was already deleted in v2.17.0; this migration confirms the domain-router decommission is complete with zero remaining runtime consumers of Domain Pack YAML).
+
 ## [2.32.1] - 2026-06-23
 
 ### Changed
