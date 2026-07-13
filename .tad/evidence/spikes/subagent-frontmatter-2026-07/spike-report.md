@@ -134,3 +134,12 @@ Prompt asked for review framework + whether system prompt contains 'three-pass a
 - All FAIL branches escalated in completion report §Escalations (NFR2 — never silently drop).
 
 ## Phase status: DEGRADED (honest partial), not Done-as-designed.
+
+---
+
+## RE-SPIKE ADDENDUM — CLI 2.1.207 (2026-07-13, post-upgrade; Conductor-run via nested headless session)
+
+- VERDICT-memory: **FAIL (still inert)** — frontmatter `memory: ".claude/agent-memory/tad-spike-memory-agent"` did NOT create/inject its own directory; agent reproduced the documented false-positive (reported project auto-memory `.tad/memory/` from CLAUDE.md §7.5 instead; marker written there was spike pollution, removed). BLOCKED-UNTIL remains for reviewer persistent memory.
+- VERDICT-skills: **PASS (provisional)** — with tools banned, agent quoted 3 rules verbatim-authentic to `.claude/skills/code-security/SKILL.md` (grep-verified: "72% of organizations" ×1, "exit 183" ×2) and reported the pack arrived as a command block in its context at spawn. Same probe on 2.1.172 returned NO-PRELOADED-SKILLS. Residual confound: probe ran via nested `claude -p` wrapper (agent registry needed a fresh process — project-level defs are NOT hot-registered mid-session, live-tested today); confirm once via direct Agent-tool spawn in a session where the def was present at startup.
+- Side-effects: REGISTRY.yaml diff clean this run; spike def restored to fixtures/ (not left in .claude/agents/).
+- Unlock: P2 FR5 static pairing (security-auditor ← code-security via `skills:` field) is now implementable — queue as small handoff, do NOT ad-hoc.
