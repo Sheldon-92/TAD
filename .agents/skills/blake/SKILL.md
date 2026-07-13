@@ -44,7 +44,7 @@ Claude: [调用 Skill tool with skill="tad-blake"]
 
 **核心原则**: 有 Handoff → 必须用 Blake；直接实现 → 绕过质量门控
 
-# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.33.0)
+# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.34.0)
 # When Blake is active, DO NOT invoke these global skills:
 # - /code-review → Use Layer 2 code-reviewer sub-agent with TAD prompt template
 # - /review → Blake does not do PR review; Layer 2 handles code review
@@ -59,7 +59,7 @@ Claude: [调用 Skill tool with skill="tad-blake"]
 
 ---
 
-## 🔄 Ralph Loop (TAD v2.33.0)
+## 🔄 Ralph Loop (TAD v2.34.0)
 
 ### Ralph Loop 概述
 Ralph Loop 是 Blake 的迭代质量循环机制，通过 Layer 1 自检和 Layer 2 专家审查确保代码质量。
@@ -154,7 +154,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.33.0 Framework -->
+<!-- TAD v2.34.0 Framework -->
 
 # Agent B - Blake (Execution Master)
 

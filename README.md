@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.33.0 - Claude Science + Brain Native + AI/Human Domain Awareness**
+**Version 2.34.0 - Native Capability Adoption + Session Continuity**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -83,6 +83,20 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
+## 🎯 What's New in v2.34
+
+### v2.34.0 — Native Capability Adoption + Session Continuity
+- **PreCompact session snapshot hook** (Layer 0 post-compact recovery): every context compaction auto-writes a mechanical snapshot (`.tad/active/precompact/`, newest-wins, keep-5) + post-compact reminder injection — live-fire verified on a real /compact
+- **Subagent skills preload**: `security-auditor` project-level def statically preloads the `code-security` pack via `skills:` frontmatter (harness-path capability, negative-controlled; headless `claude -p` path remains inert)
+- **`.claude/rules` path-scoped pilot**: shell-portability constraints auto-load when touching `.tad/hooks/**` (READ-triggered)
+- **Headless weekly GitHub scan capability**: non-interactive `*research-github scan` variant + cron prompt (session-bound scheduling; STEP 3.9 staleness watchdog as fallback)
+- **`*save-skill` / `*save-workflow`**: capture conversation patterns into gitignored machine-local skills (`.claude/skills/local/`)
+- **Express frontmatter marker**: `express: true` durable marker consumed by layer2-audit two-tier detection
+- **Gate-ROI measurement**: net-positive verdict (27-sample catch-agnostic frame) — Layer 2 review chain confirmed GO
+- **Memory redirect capture layer**: native auto-memory → `.tad/memory/` (Capture layer feeding the distillation loop)
+- **9 archived Domain Pack YAMLs migrated to Capability Packs** (hw-*×4, mobile-*×4, supply-chain-security)
+- **Release tooling**: parity gate now excludes machine-local `local/`; version-sweep dual-layer drift detection
+
 ## 🎯 What's New in v2.33
 
 ### v2.33.0 — Claude Science + Brain Native + AI/Human Domain Awareness
@@ -114,7 +128,7 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.33.0
+# Should show: 2.34.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -414,6 +428,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.33.0 - Claude Science + Brain Native + AI/Human Domain Awareness**
+**Welcome to TAD v2.34.0 - Native Capability Adoption + Session Continuity**
 
 *AI does the work. Humans guard the value.*

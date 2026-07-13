@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 2.33.0 (Dual-Platform Architecture — Runtime Freshness Active)
+**Version**: 2.34.0 (Dual-Platform Architecture — Runtime Freshness Active)
 
 TAD runs on **two first-class runtimes**: Claude Code and Codex. Both platforms receive the same SKILL.md files and follow the same shared TAD protocol. Each platform also has its own native adapter layer for hooks, config, subagents, and tooling.
 

@@ -696,7 +696,7 @@ PARITY_EOF
       echo "ERROR: expected_version must be semver (got: '$VER')" >&2
       exit 2
     fi
-    # Escape dots for ERE patterns (P0 fix: 2.33.0 → 2\.33\.0)
+    # Escape dots for ERE patterns (P0 fix: 2.34.0 → 2\.33\.0)
     VER_RE="${VER//./\\.}"
 
     echo "========================================="

@@ -30,6 +30,6 @@
 |----------|-------|-----------|
 | P0 | Unescaped regex dots in `$VER` | Fixed: `VER_RE="${VER//./\\.}"` used in patterns |
 | P1 | No format validation on `$VER` | Fixed: semver regex check, exit 2 on bad input |
-| P1 | Layer 2 grep lacks left-anchor | Fixed: `(^|[^0-9])2\.` prevents `12.33.0` match |
+| P1 | Layer 2 grep lacks left-anchor | Fixed: `(^|[^0-9])2\.` prevents `12.0.0` match |
 | P1 | Unbounded `$l2_output` memory | Fixed: cap accumulation at 20 entries |
 | P2 | Unicode typo in comment | Fixed |

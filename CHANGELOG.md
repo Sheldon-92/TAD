@@ -7,12 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.34.0] - 2026-07-13
+
 ### Added
-- **9 archived Domain Pack YAMLs migrated to Capability Packs** (surplus burn 2026-07-05, TASK-20260705-001): `hw-circuit-design`, `hw-enclosure`, `hw-firmware`, `hw-testing`, `mobile-development`, `mobile-release`, `mobile-testing`, `mobile-ui-design`, `supply-chain-security` — each as `.claude/skills/{pack}/SKILL.md` (distilled judgment rules, ≤250 lines, all source anti-pattern entries preserved) + `references/` (step-level depth content), byte-identical mirrors in `.agents/skills/{pack}/`. Source: `.tad/archive/domains/2026-06-11-domain-pack-retirement/` (7,132 YAML lines; archived sources untouched as audit trail).
+- **PreCompact session snapshot hook** (Layer 0 post-compact recovery): `.tad/hooks/precompact-session-snapshot.sh` writes a mechanical snapshot (`.tad/active/precompact/snapshot-*.md`, newest-wins, keep-5, fail-open) before every context compaction; `startup-health.sh` gains a compact branch injecting a post-compact recovery reminder. Live-fire verified on a real `/compact` (stdin field spellings confirmed, session_id stable across the boundary).
+- **Subagent skills preload (static pairing)**: project-level `.claude/agents/security-auditor.md` def with `skills: [code-security]` — the pack arrives as a command block at spawn. Verified via direct Agent-tool spawn with a no-skills negative control. Ground truth: harness-path-only on CLI 2.1.207 (headless `claude -p --agent` path inert; probe design must ban the `Skill` tool).
+- **Project-level reviewer defs**: `spec-compliance-reviewer` (TAD Layer 2 Group 0 blocking reviewer, first production run passed Gate 3 9/9) + `security-auditor` shadow def (frozen byte-copy of user-level source with md5 provenance).
+- **`.claude/rules` path-scoped pilot**: `shell-portability.md` with `paths: [".tad/hooks/**"]` — constraints auto-load at edit-time when touching hook files (READ-triggered; GH issue #17204 claim did not reproduce).
+- **Headless weekly GitHub scan capability**: non-interactive today-guard branch in `*research-github scan` + delegating cron prompt (`.tad/evidence/spikes/cron-github-scan-2026-07/cron-prompt.md`). CronCreate verified firing but session-bound (7-day expiry even with durable:true) — STEP 3.9 staleness warning is the standing fallback.
+- **AskUserQuestion preview protocol** in `*design`: 2-up artifact comparisons and tournament finals use the native preview field (single-select artifact comparisons only).
+- **`*save-skill` / `*save-workflow` commands**: capture validated conversation patterns/workflows into machine-local skills under gitignored `.claude/skills/local/`.
+- **Express frontmatter marker**: `express: true` in handoff YAML frontmatter — durable marker consumed by `layer2-audit.sh` two-tier detection (slug token demoted to fallback).
+- **Gate-ROI measurement**: 27-sample catch-agnostic study → net-positive/GO for the Layer 2 review chain (NC%=63% vs 25% bar; dual-blind spot-check 9/10).
+- **Memory redirect capture layer**: native auto-memory redirected to `.tad/memory/` (Capture layer; distillation loop forges entries into project-knowledge; sensitive memories gitignored). Downstream opt-in via `memory-redirect.sh --enable`.
+- **9 archived Domain Pack YAMLs migrated to Capability Packs**: `hw-circuit-design`, `hw-enclosure`, `hw-firmware`, `hw-testing`, `mobile-development`, `mobile-release`, `mobile-testing`, `mobile-ui-design`, `supply-chain-security` — each as `.claude/skills/{pack}/SKILL.md` + `references/`, byte-identical `.agents` mirrors.
+- **`release-verify.sh version-sweep` mode**: dual-layer full-repo version drift detection (must-version registry + narrow advisory sweep).
+- **`skill-body-verify.sh` alex coverage** + circular-trigger re-audit (0 regressions across 31 refs).
+
+### Fixed
+- **Parity gate excludes machine-local skills**: `release-verify.sh parity` (compare + `--fix` rsync + re-verify) now excludes `local/` — machine-local skills are never mirrored to `.agents/skills` and no longer false-block `*publish`.
+- **yolo-epic worktree visibility**: impl reviewers now inspect the implement worktree (closes 3× false-FAIL class).
+- **tad.sh detect_state glob arms**: dot-bounded cross-major matching (07-02 dogfood fix merged).
 
 ### Changed
-- **YAML Domain Pack mechanism fully retired** — the last "migrate on demand" IOU from the 2026-06-11 retirement (EPIC-20260611-pack-system-unification) is now closed; `.tad/domains/README-retired.md` updated to point at the 9 new pack paths.
-- **domain-router hook decommission confirmed**: verified no `domain-router` hook exists in `.tad/hooks/` (the `userprompt-domain-router.sh` router was already deleted in v2.17.0; this migration confirms the domain-router decommission is complete with zero remaining runtime consumers of Domain Pack YAML).
+- **YAML Domain Pack mechanism fully retired** — the last "migrate on demand" IOU from the 2026-06-11 retirement is closed; `.tad/domains/README-retired.md` points at the 9 new pack paths; domain-router decommission confirmed (zero runtime YAML consumers).
+- **Repositioning docs**: README/OBJECTIVES/value-proposition updated (capability-acquisition framing).
+- **Distribution policy**: `.claude/agents/` and `.claude/rules/` are main-repo-only (invisible to derive-sync-set and tad.sh copy paths by decision, not omission — revisit when the pilots mature).
+
+### Knowledge
+- 3 new L2 patterns: AC live-host dry-run discipline; doc-level native-capability research is hypothesis (spike is ground truth); native-capability verdicts must pin (version, spawn path) — same field, opposite results by path.
+- 6 version-pinned native-runtime ground truths established (memory/skills frontmatter, project-agent shadowing, rules path-scoping, cron durability, PreCompact support, headless sub-session hook side-effects).
+
 
 ## [2.32.1] - 2026-06-23
 
