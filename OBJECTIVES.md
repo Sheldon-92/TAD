@@ -18,6 +18,7 @@
 | KR3 | Capability gaps identified with severity assessment | 5+ found (Round 2-3) | ≥5 gaps with impact rating | 🔄 |
 
 **Research needed:** Competitive landscape (Devin, OpenHands, Cursor, Jules, Amazon Q, Windsurf); multi-agent frameworks (LangGraph, CrewAI, MetaGPT); Anthropic ecosystem (Agent SDK, Managed Agents, Agent Teams); academic research on multi-agent software dev.
+**Anthropic ecosystem: ✅ Covered 2026-07-12** — notebook 'claude-native-capabilities' (b07a6598, 23 sources), overlap matrix `.tad/evidence/research/claude-native-capabilities/2026-07-12-overlap-matrix.md` (TAD × native factual mapping, verdicts deliberately deferred).
 
 ---
 
@@ -45,13 +46,14 @@
 |---|-----------|---------|--------|--------|
 | KR1 | High-quality sources in NotebookLM notebook | 45 sources | ≥30 sources (papers + reports + docs + videos) | ✅ |
 | KR2 | Persistent queryable asset, not one-shot report | notebook active (37cfefa5) | notebook active + REGISTRY tracked | ✅ |
-| KR3 | Cross-source synthesis findings documented | 3 rounds saved | ≥5 deep-ask findings saved | 🔄 |
+| KR3 | Cross-source synthesis findings documented | 5 rounds saved (r4 staleness-trap + r5 human-skill-growth, 2026-07-05) | ≥5 deep-ask findings saved | ✅ |
 
 **Research needed:** This objective IS the research infrastructure — it supports O1 and O2 by providing a curated, queryable knowledge base.
 
 ---
 
-<!-- Research notebook: tad-evolution-research (37cfefa5-52b3-4a8a-a8e3-a83f32150759) — CREATED 2026-05-05, 45 sources, 3 deep-ask rounds -->
+<!-- Research notebook: tad-evolution-research (37cfefa5-52b3-4a8a-a8e3-a83f32150759) — CREATED 2026-05-05, 45 sources, 5 deep-ask rounds -->
+<!-- Rounds 4+5 (2026-07-05): .tad/evidence/research/2026-07-staleness-trap-findings.md + 2026-07-human-skill-growth-findings.md -->
 <!-- Findings: .tad/evidence/research/2026-05-05-tad-evolution-deep-ask-findings.md -->
 <!-- KR2/KR3: .tad/evidence/research/2026-05-14-kr2-kr3-ask-findings.md -->
 <!-- 2026-06-09 repositioning stress-test (O1 KR2 differentiators CHALLENGED): .tad/evidence/research/repositioning-3-walls/2026-06-09-ask-findings.md -->

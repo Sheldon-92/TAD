@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-07-03 16:10
+Generated: 2026-07-12 19:00
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -19,6 +19,7 @@ Generated: 2026-07-03 16:10
 | Deny-List Must Be Applied at EVERY Copy Granularity, and Verifiers Must Match Each Granularity | deny-list must be applied at every copy granularity and verifiers must match each granularity | P2 of the self-deriving-release-sync Epic killed the hardcoded 14-DIR allow-list in tad.sh (deny-list derivation). But a |
 | Execution Discipline Content Must Stay in SKILL Body — Circular Trigger Test | execution discipline content must stay in skill body circular trigger test | SKILL Progressive Loading (v2.26.0) extracted 36 protocols to references/. Codex dogfood: Blake skipped Layer 2, Gate 3, |
 | Knowledge Is Forged at Distill, Not Captured | knowledge is forged at distill not captured | The doer who just did the work cannot write reusable knowledge — the curse of |
+| AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 | ai human judgment domain awareness agent  | Voice Studio 播客制作中反复验证：切点精度（人 — 听觉感知）vs 语义分析（AI — 文本理解）；配乐品味（人 — 从 shortlist 挑）vs 情绪/能量/速度匹配（AI — 可计算）。学术佐证：HitL LLM Jud |
 
 ## Patterns
 | File | Keywords | Summary |
@@ -57,183 +58,22 @@ Generated: 2026-07-03 16:10
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-20260703-gbrain-poc.md | mixed | 安装 gbrain（开源知识图谱 + 语义搜索工具），导入 TAD 的 .tad/ 目录作为知识库，通过 CLI 直接调用测试 5 个预设查询的搜索效果。这是 POC — 证明 gbrain 的搜索核心对 TAD 知识是否有价值。验证通过后 |
-| HANDOFF-20260703-tad-brain-native.md | mixed | TAD-native 知识搜索工具 `tad-brain`：一个 bash 脚本生成索引 + 一个 skill/wrapper 调用 Explore agent 做语义搜索。零外部依赖，用 Claude 本身的语义理解能力代替 embedd |
+| HANDOFF-surplus-codex-adapter-yaml.md | code       # bash installer extension + spec doc + generated YAML artifact | Zero-cost Codex CLI compatibility for capability packs, proven on one demo pack: |
+| HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed      # markdown pack authoring + structural verification (no runtime code) | Convert the 9 remaining archived Domain Pack YAMLs into Capability Pack format: |
+| HANDOFF-surplus-detect-state-glob-arm-hazard.md | code       # code | yaml | research | e2e | mixed | A standalone bash regression fixture `.tad/tests/detect-state-fixture.sh` that exercises tad.sh's `detect_state()` again |
+| HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed      # bash script (code) + fixture docs (md) + gate doc edit | Three deliverables, closing the "validation theater" P0 from the cross-model YOLO audit: |
+| HANDOFF-surplus-tad-methodology-skeleton.md | doc-only   # code | yaml | research | e2e | mixed | doc-only | A single new standalone document, `docs/tad-methodology.md`, that extracts the TAD |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
-| EPIC-20260703-claude-science-skill-architecture.md | **Epic ID**: EPIC-20260703-claude-science-skill-architecture |
-| EPIC-20260703-gbrain-tad-integration.md | **Epic ID**: EPIC-20260703-gbrain-tad-integration |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
 |------|-----------|---------|
+| HANDOFF-surplus-saveable-skills-from-conversation.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-repositioning-capability-acquisition.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-o3-kr3-deep-ask-rounds-4-5.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-local-skill-capture.md | mixed | Identity (carried over from surplus-scan stub — replaced in place by Alex design step) |
+| HANDOFF-surplus-gate-roi-measurement.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260703-claude-science-p1-standard-alignment.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260702-trajectory-eval-p3.md | mixed | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260702-trajectory-eval-p2.md | mixed | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260702-trajectory-eval-p1.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260702-surplus-execute-p2.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260701-ldr-poc-phase1.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260623-socratic-redesign-p1.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260623-mece-gate-p2.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260623-gate-ssot-p1.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260622-knowledge-redesign-p4-dogfood.md | mixed | Handoff: Knowledge Recording Redesign — P4 Dogfood + Reference Migration |
-| HANDOFF-20260622-knowledge-redesign-p3-maintain.md | mixed | Handoff: Knowledge Recording Redesign — P3 Maintain (dedup/retire/reconcile + lint) |
-| HANDOFF-20260622-knowledge-redesign-p2-distill-loop.md | mixed | Handoff: Knowledge Recording Redesign — P2 Capture/Distill Cross-Bridge Loop |
-| HANDOFF-20260622-knowledge-redesign-p1-foundation.md | mixed | Handoff: Knowledge Recording Redesign — P1 Foundation (schema + writing rules + L1 principle) |
-| HANDOFF-20260618-pack-content-protection-p4.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260618-pack-content-protection-p3.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-research-output-quality.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-research-input-quality.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-research-ecosystem-cleanup.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-release-v2.31.0.md | mixed | Handoff: Release v2.31.0 |
-| HANDOFF-20260617-pack-content-protection-p2.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-pack-content-protection-p1.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-installer-audit-fixes.md | code | Handoff: Installer Audit Fixes (5 bugs) |
-| HANDOFF-20260617-hotfix-v2.31.1.md | code | Handoff: Hotfix v2.31.1 |
-| HANDOFF-20260617-agent-skill-evolution-pack.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260617-agent-computer-interface-pack.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260616-skillopt-tad-methodology.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260616-research-unified-entry.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260614-fix-workflow-toplevel-array-schemas.md | code | Handoff: Fix top-level-array StructuredOutput schemas in workflows + surplus undated WARN |
-| HANDOFF-20260614-fix-detect-state-semver.md | code | Handoff: Fix tad.sh detect_state glob-arm hazard (numeric semver routing) |
-| HANDOFF-20260614-ai-reading-companion-phase4-sinks-multiformat.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260613-pack-quality-phase1-bar-baseline.md | research | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260613-ai-reading-companion-phase3-live-bridge.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260613-ai-reading-companion-phase2-epub-reader.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260611-release-v2.29.1.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260611-pack-system-unification-phase3.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260611-pack-system-unification-phase2.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260611-pack-system-unification-phase1.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-sep-phase3.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-sep-phase2.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-sep-phase1.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-publish-gate-phase5.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-merge-capability-phase4.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-friction-protocol-phase2.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-friction-protocol-phase1.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-feedback-collector-phase3.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-feedback-collector-phase2.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-feedback-collector-phase1.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-dual-platform-parity-fix.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260610-dual-caller-integration-phase3.md | code | Handoff Document for Agent B (Blake) |
-
-## Evidence Directories
-| Directory | Files | Topic |
-|-----------|-------|-------|
-| evidence/acceptance-tests/ | 57 | acceptance-tests |
-| evidence/codex-regression/ | 10 | codex-regression |
-| evidence/codex-validation/ | 4 | codex-validation |
-| evidence/completions/ | 71 | completions |
-| evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 8 | designs |
-| evidence/dogfood/ | 3 | dogfood |
-| evidence/dual-platform-regression/ | 4 | dual-platform-regression |
-| evidence/e2e/ | 3 | e2e |
-| evidence/eval/ | 2 | eval |
-| evidence/failures/ | 0 | failures |
-| evidence/fixtures/ | 9 | fixtures |
-| evidence/gates/ | 0 | gates |
-| evidence/handoff-reviews/ | 4 | handoff-reviews |
-| evidence/handoffs/ | 5 | handoffs |
-| evidence/journal/ | 4 | journal |
-| evidence/knowledge-migration/ | 2 | knowledge-migration |
-| evidence/learnings/ | 3 | learnings |
-| evidence/maintenance/ | 1 | maintenance |
-| evidence/metrics/ | 1 | metrics |
-| evidence/overrides/ | 0 | overrides |
-| evidence/pack-dogfood/ | 11 | pack-dogfood |
-| evidence/pack-eval/ | 56 | pack-eval |
-| evidence/pack-quality/ | 4 | pack-quality |
-| evidence/pack-system-unification-phase1/ | 0 | pack-system-unification-phase1 |
-| evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
-| evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
-| evidence/pair-tests/ | 0 | pair-tests |
-| evidence/patterns/ | 2 | patterns |
-| evidence/poc/ | 6 | poc |
-| evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 5 | ralph-loops |
-| evidence/releases/ | 2 | releases |
-| evidence/research/ | 142 | research |
-| evidence/reviews/ | 403 | reviews |
-| evidence/spikes/ | 47 | spikes |
-| evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 197 | yolo |
-
-## Decision Records
-| File | Summary |
-|------|---------|
-| DR-20260531-ar001-research-challenge-carveout.md | DR-20260531: AR-001 Carve-Out for Auto-Running Adversarial Challenge Inside *research-plan |
-| DR-20260601-codex-edition-parity-architecture.md | DR-20260601: Codex-Edition Parity Architecture — Automated Regeneration (B) |
-| DR-20260601-self-deriving-release-sync.md | DR-20260601-B: Self-Deriving + Self-Verifying Release/Sync (kill the hardcoded-list disease) |
-| DR-20260606-checklist-shape-dogfood-deferral.md | DR-20260606: checklist verdict_shape ships gate-logic-only (real dogfood deferred) |
-| DR-20260609-deprecation-yaml-disposition.md | DR-20260609: deprecation.yaml Disposition — Relationship to Migration Manifest |
-| DR-20260609-migration-backfill-depth.md | DR-20260609: Migration Manifest Backfill Depth |
-| DR-20260609-user-modified-detection.md | DR-20260609: User-Modified File Detection Method |
-
-## Config Files
-| File | Contains |
-|------|---------|
-| config-agents.yaml | "跳过任何步骤 → 警告并重新激活",    - "身份混淆 → 立即纠正",    - "未显示help → 自动补充",        - "需求分析 → 苏格拉底式提问 → 设计 → 写 handoff",        - "输出: |
-| config-cognitive.yaml | "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)",      - "Architecture pattern choice (e.g., mo |
-| config-execution.yaml | Layer 1: Self-Check (build, test, lint, tsc),    - Layer 2: Expert Review (spec-compliance-reviewer, code-reviewer, test |
-| config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
-| config-quality.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-agent完成工作",        - "Proble |
-| config-workflow.yaml | tasks         # 任务追踪,      - designs       # 设计文档,      - handoffs      # 交接文档,      - epics         # Epic 多阶段任务追踪,     |
-| config.yaml | activation_protocol,      - triangle (terminal_isolation, agent_a, agent_b, human),      - interaction_protocol,      -  |
-
-## Skills
-| Skill | Summary |
-|-------|---------|
-| academic-research | name: academic-research |
-| agent-computer-interface | name: agent-computer-interface |
-| agent-memory | name: agent-memory |
-| agent-orchestration | name: agent-orchestration |
-| agent-skill-evolution | name: agent-skill-evolution |
-| ai-agent-architecture | name: ai-agent-architecture |
-| ai-evaluation | name: ai-evaluation |
-| ai-guardrails | name: ai-guardrails |
-| ai-podcast-production | name: ai-podcast-production |
-| ai-prompt-engineering | name: ai-prompt-engineering |
-| ai-tool-integration | name: ai-tool-integration |
-| ai-voice-production | name: ai-voice-production |
-| alex | name: alex |
-| blake | name: blake |
-| capability-upgrade | name: capability-upgrade |
-| code-security | name: code-security |
-| data-engineering | name: data-engineering |
-| gate | name: gate |
-| knowledge-audit | name: knowledge-audit |
-| knowledge-graph | name: knowledge-graph |
-| llm-observability | name: llm-observability |
-| ml-training | name: ml-training |
-| playground | name: playground |
-| product-thinking | name: product-thinking |
-| rag-retrieval | name: rag-retrieval |
-| reading-companion | name: reading-companion |
-| release-runbook | name: release-runbook |
-| research-github | name: research-github |
-| research-notebook | name: research-notebook |
-| surplus | name: surplus |
-| synthetic-data | name: synthetic-data |
-| tad-elicit | name: tad-elicit |
-| tad-handoff | name: tad-handoff |
-| tad-help | name: tad-help |
-| tad-init | name: tad-init |
-| tad-maintain | name: tad-maintain |
-| tad-parallel | name: tad-parallel |
-| tad-scenario | name: tad-scenario |
-| tad-status | name: tad-status |
-| tad-test-brief | name: tad-test-brief |
-| tad | name: tad |
-| video-creation | name: video-creation |
-| web-backend | name: web-backend |
-| web-deployment | name: web-deployment |
-| web-frontend | name: web-frontend |
-| web-testing | name: web-testing |
-| web-ui-design | name: web-ui-design |
-
----
-Total indexed entries: (see above tables)
