@@ -13,6 +13,15 @@ read_stdin_json
 
 # Check source field — only run on "startup" (or if field missing, run anyway)
 SOURCE=$(get_json_field ".source" || echo "")
+
+# Post-compact reminder (FR4, HANDOFF-20260712-precompact-session-state-hook):
+# after a compaction, point the agent at the agent-written session state plus the
+# newest mechanical PreCompact snapshot. Must run BEFORE the non-startup early exit.
+if [ "$SOURCE" = "compact" ]; then
+  output_response "SessionStart" "Post-compact: read .tad/active/session-state.md + newest .tad/active/precompact/snapshot-*.md before continuing."
+  exit 0
+fi
+
 if [ -n "$SOURCE" ] && [ "$SOURCE" != "null" ] && [ "$SOURCE" != "startup" ]; then
   output_empty
   exit 0

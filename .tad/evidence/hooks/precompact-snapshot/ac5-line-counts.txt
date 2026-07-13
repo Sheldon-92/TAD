@@ -1,0 +1,1 @@
+.tad/active/precompact/snapshot-20260713-001338-abc12345.md: 8 lines

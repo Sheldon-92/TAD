@@ -1,0 +1,6 @@
+**Layer 0（机械快照，自动）**：每次压缩前 PreCompact hook 写 `.tad/active/precompact/snapshot-*.md`
+**每次回复前自检（Layer 1 自检，强制）：**
+1. Read `.tad/active/session-state.md`（如果存在）+ 最新 `.tad/active/precompact/snapshot-*.md`（Layer 0 机械快照）
+三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手动触发。
+压缩后 SessionStart(source==compact) 自动注入提醒行。
+（newest-wins，保留最新 5 个；字段：When/Trigger/Session/Git HEAD/Git/Active handoffs/Active epics）；

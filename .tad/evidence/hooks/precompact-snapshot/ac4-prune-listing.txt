@@ -1,0 +1,5 @@
+.tad/active/precompact/snapshot-20260713-001314-run30000.md
+.tad/active/precompact/snapshot-20260713-001316-run40000.md
+.tad/active/precompact/snapshot-20260713-001318-run50000.md
+.tad/active/precompact/snapshot-20260713-001319-run60000.md
+.tad/active/precompact/snapshot-20260713-001322-run70000.md

@@ -1,0 +1,2 @@
+**每次回复前自检（强制）：**
+1. Read `.tad/active/session-state.md`（如果存在）

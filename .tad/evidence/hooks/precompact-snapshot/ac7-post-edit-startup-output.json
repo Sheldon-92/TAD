@@ -1,0 +1,6 @@
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "TAD v2.33.0 | 0 handoffs | 0 epics | 54 ideas | has blocked items | Hooks: active"
+  }
+}

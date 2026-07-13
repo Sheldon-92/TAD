@@ -66,3 +66,8 @@ __pycache__/
 .tad/memory/project_tad-evolution-directions.md
 .tad/memory/project_tad-universal-method.md
 .tad/memory/reference_claude-code-source.md
+
+# PreCompact mechanical session snapshots (transient hook output — CLAUDE.md §4.5 Layer 0; not source)
+.tad/active/precompact/
+# Raw stdin tee from real compacts (live session metadata — impl-review P2-2)
+.tad/evidence/hooks/precompact-snapshot/last-stdin.json

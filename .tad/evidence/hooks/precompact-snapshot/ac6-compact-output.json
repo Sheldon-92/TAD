@@ -1,0 +1,6 @@
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "Post-compact: read .tad/active/session-state.md + newest .tad/active/precompact/snapshot-*.md before continuing."
+  }
+}

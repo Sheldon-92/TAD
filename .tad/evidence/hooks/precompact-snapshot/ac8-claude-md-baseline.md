@@ -46,18 +46,12 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 
 ## 4.5 Post-Compact Recovery ⚠️
 
-三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手动触发。
-
-**Layer 0（机械快照，自动）**：每次压缩前 PreCompact hook 写 `.tad/active/precompact/snapshot-*.md`
-（newest-wins，保留最新 5 个；字段：When/Trigger/Session/Git HEAD/Git/Active handoffs/Active epics）；
-压缩后 SessionStart(source==compact) 自动注入提醒行。
-
-**每次回复前自检（Layer 1 自检，强制）：**
+**每次回复前自检（强制）：**
 - **Blake**：我知道当前 handoff 的完整文件路径吗？
 - **Alex**：我知道当前工作模式 + 正在处理的 handoff/草稿吗？
 
 **如果答案是 NO（或不确定）：**
-1. Read `.tad/active/session-state.md`（如果存在）+ 最新 `.tad/active/precompact/snapshot-*.md`（Layer 0 机械快照）
+1. Read `.tad/active/session-state.md`（如果存在）
 2. 重新运行 `/blake` 或 `/alex` 重载完整协议
 3. 从 session-state.md 的 `Current Position` 继续
 
@@ -89,12 +83,5 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 @.tad/project-knowledge/api-integration.md
 @.tad/project-knowledge/mobile-platform.md
 @.tad/project-knowledge/frontend-design.md
-
-## 7.5 Memory Capture Layer
-
-原生 auto-memory 已重定向至 `.tad/memory/`(via settings.local.json,DR-20260712)。
-memory = Capture 层(native 自由写);*accept 蒸馏循环将其与 Blake journal 一起锻造进 project-knowledge。
-`.tad/memory/` 归 native 管辖:TAD 侧只读。user 型/敏感 memory 已 gitignore(public repo)。
-下游项目 opt-in:`bash .tad/hooks/lib/memory-redirect.sh --enable`。
 
 <!-- TAD:PROJECT-CONTENT-BELOW -->

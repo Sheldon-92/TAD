@@ -28,3 +28,7 @@ Last File Written: <none>                  <!-- Updated by post-write-sync.sh ho
 **Why Now**: {one-sentence user pain or strategic driver — from handoff §1 problem description}
 **Key Constraint**: {most important constraint from handoff §10}
 **Success When**: {completion criteria summary — copy from handoff ACs}
+
+<!-- Mechanical facts (git HEAD, branch, handoff/epic lists) are auto-snapshotted before every
+     compaction to .tad/active/precompact/snapshot-*.md (newest-wins) by the PreCompact hook.
+     This file stays 100% agent-written — the hook never touches it. See CLAUDE.md §4.5 Layer 0. -->

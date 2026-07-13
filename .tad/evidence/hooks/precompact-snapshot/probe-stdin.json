@@ -1,0 +1,10 @@
+{
+  "_synthetic": true,
+  "_note": "SYNTHETIC fixture (fields per Claude Code docs; real capture PENDING-REAL-EVENT). The shipped hook tees every real PreCompact stdin to last-stdin.json in this directory, so the first real /compact auto-produces the authoritative capture.",
+  "session_id": "abc12345-6789-4def-9012-3456789abcde",
+  "transcript_path": "/Users/sheldonzhao/.claude/projects/-Users-sheldonzhao-01-on-progress-programs-TAD/abc12345.jsonl",
+  "cwd": "/Users/sheldonzhao/01-on progress programs/TAD",
+  "hook_event_name": "PreCompact",
+  "trigger": "manual",
+  "custom_instructions": ""
+}
