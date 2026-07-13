@@ -1,0 +1,16 @@
+# detect-state-fixture run evidence — 2026-07-05 22:18:14
+# cmd: bash .tad/tests/detect-state-fixture.sh
+detect-state-fixture: TAD_SH=/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_35a6e2d1-e8a-5/tad.sh TARGET_VERSION=2.33.0
+  PASS: 2.19.1 -> upgrade
+  PASS: 2.19.1 hazard-check: not v1.8/v1.6/v1.4
+  PASS: 2.20.0 -> upgrade
+  PASS: 2.20.0 hazard-check: not v1.8/v1.6/v1.4
+  PASS: 2.33.0 -> current
+  PASS: 2.33.0 hazard-check: not v1.8/v1.6/v1.4
+  PASS: 9.9.9 -> current
+  PASS: abc -> old
+  PASS: FRESH -> fresh
+  PASS: PARTIAL -> partial
+
+Summary: 10 passed, 0 failed
+exit=0

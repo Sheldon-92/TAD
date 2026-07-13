@@ -1,73 +1,82 @@
-# Phase 1 Design Review — Backend Architecture
+# Phase 1 Design Review — Backend/Infra Architecture Lens
 
-**Handoff**: HANDOFF-surplus-detect-state-glob-arm-hazard.md
-**Reviewer**: Backend Architecture Expert
-**Date**: 2026-07-02
-**Verdict**: PASS (0 P0, 0 P1, 2 P2)
-
----
-
-## Scope Assessment
-
-The handoff modifies a single function (`detect_state()`) in `tad.sh` (1853 lines), replacing three prefix-glob case arms with dot-bounded patterns. Files to modify: `tad.sh` only. This is a shell script installer -- the review domain is backend/infrastructure (shell scripting, version routing logic). No frontend, no API, no database.
+**Handoff:** HANDOFF-surplus-detect-state-glob-arm-hazard.md (full-template v3.1.0, 2026-07-05)
+**Reviewer:** backend-architect (installer routing / shell regression fixture)
+**Domain auto-detect:** Files to Modify = `.tad/tests/detect-state-fixture.sh` (bash) + tad.sh (installer routing, read-only). No frontend, no auth. → **backend/infra architecture review**.
+**Date:** 2026-07-05
+**Supersedes:** the 2026-07-02 content previously at this path (that reviewed the now-abandoned dot-bounded-glob fix; the live task is fixture-creation with zero tad.sh change).
+**Verdict:** CONDITIONAL PASS — 0 P0, 2 P1, 3 P2. Design is sound and low-blast-radius (tad.sh zero-change, extraction approach correct, all 6 case expectations trace correctly against live code). But the fixture as specified does **not** exercise the code region the task exists to protect.
 
 ---
 
-## Findings
+## Verification performed
 
-### P2-1: AC1 verification command has a regex escaping subtlety that could mislead
+1. Read tad.sh L1320-1480: `_tad_ver_cmp` (L1330-1341), `detect_state` (L1343-1373), `case $STATE` consumer (L1427-1464), `TARGET_VERSION="2.33.0"` (L22).
+2. Re-ran AC1: `grep -cE '^[[:space:]]*2\.[0-9]+\*\)' tad.sh` → **0**. FR1 ground truth holds; tad.sh zero-change is correct.
+3. Reproduced the FR3 matrix against live bodies — all 6 expectations correct (2.19.1/2.20.0→upgrade, 2.33.0→current, 9.9.9→current, abc→old, fresh→fresh).
+4. **Instrumented `detect_state` to record which branch each case takes.** Result drives P1-1:
 
-**Location**: Section 9.1, AC1 verification method
-
-**Issue**: The AC1 grep command `grep -cE '1\.8\*|1\.6\*|1\.5\*|1\.4\*' tad.sh` uses `-E` (extended regex), where `\*` means a literal asterisk -- this is correct. However, the handoff's "pipe-escape note" in Section 9.1 says to un-escape `|` when extracting to bash, which would change the command to `grep -cE '1\.8*|1\.6*|1\.5*|1\.4*' tad.sh`. Under ERE, unescaped `*` is a quantifier (zero-or-more of the previous char), not a literal. `1\.8*` in ERE matches `1.` followed by zero or more `8`s -- it would match `1.` alone, `1.8`, `1.88`, etc. The command would still return >0 on the OLD code (matching the literal `1.8*` substring) and 0 on the NEW code (no `1.8*` substring), so it happens to produce the correct PASS/FAIL. But the regex semantics are wrong -- it is testing for the right thing by accident, not by design.
-
-**Impact**: Low. The verification produces the correct result in practice. But a future maintainer copying this pattern for a different grep check could be bitten by the ERE `*` quantifier vs glob `*` confusion.
-
-**Recommendation**: Use `grep -cF '1.8*' tad.sh` (fixed-string mode) OR `grep -cP '1\.8\*' tad.sh` (PCRE, where `\*` is unambiguously literal). Fixed-string mode is the simplest since we are looking for the literal substring `1.8*`. Alternatively, keep `-E` but note that the pipe-escape un-escaping instruction should NOT apply to the `\*` inside the regex -- the backslash-star is the regex literal, not a markdown escape.
-
----
-
-### P2-2: Missing coverage for the `1.5` bare-version edge case in test matrix
-
-**Location**: Section 8.3, Edge Cases table
-
-**Issue**: The edge-case test matrix covers `1.8`, `1.8.3`, `1.80.0`, `1.4.12`, and `2.19.1`. It does not cover `1.5` or `1.5.x` versions. The `1.5` series is grouped with `1.6` in the same case arm (`1.6|1.6.*|1.5|1.5.*)`), and while the pattern is structurally identical to the `1.8` arm (which IS tested), the `1.5` arm is the second alternative in a compound pattern. A test confirming `1.5.2` matches and produces `v1.6` would verify that the compound `|`-separated pattern works as intended when the match occurs on a later alternative.
-
-**Impact**: Very low. The bash case-statement `|` operator is well-established and the pattern is structurally identical to the tested `1.8` arm. But completeness of the test matrix for the compound arm is worth noting.
-
-**Recommendation**: Add one row to the edge-case table: `1.5.2` input, expected MATCH on the `1.6|1.6.*|1.5|1.5.*` arm, outputting `v1.6`.
+```
+2.19.1  -> upgrade[samemaj]        <- numeric path, glob block NOT reached
+2.20.0  -> upgrade[samemaj]        <- numeric path, glob block NOT reached
+2.33.0  -> current[eq]             <- exact match, glob block NOT reached
+9.9.9   -> current[newer]          <- ver-cmp path, glob block NOT reached
+abc     -> old[unparse]            <- fail-safe, glob block NOT reached
+1.9.0   -> CROSSMAJOR-BLOCK-REACHED:old   <- only vmaj<tmaj reaches the glob block
+1.8.0   -> CROSSMAJOR-BLOCK-REACHED:v1.8
+```
 
 ---
 
-## Positive Observations
+## P0 — Blocking
 
-1. **Blast radius is minimal and well-bounded.** The change touches exactly 3 case-arm patterns + adds 1 comment. No control flow change, no new functions, no data model change. The `_tad_ver_cmp` function and the same-major path are explicitly out of scope. The downstream STATE consumer (L1427 case block) is unchanged. This is a textbook minimal-risk fix.
-
-2. **The hazard is real and independently verified.** I confirmed that the old pattern `1.8*` matches `1.80.0` and `1.89.1` (false positives), while the new pattern `1.8|1.8.*` correctly rejects both. The fix is semantically correct.
-
-3. **Shell compatibility is sound.** The proposed patterns use only POSIX case-glob syntax (`|` alternation + `*` wildcard). No `extglob`, no `[[ ]]` in the case arms, no bash 4+ features. Compatible with macOS's bash 3.2.
-
-4. **Design alternatives are well-analyzed.** Section 11.1 considers four approaches (dot-bounded, `_tad_ver_cmp` restructuring, extglob, regex) and selects the one with the smallest blast radius. The rationale is sound.
-
-5. **The handoff correctly identifies that `_tad_ver_cmp` is NOT the problem.** The numeric comparison function is already correct; the issue is specifically in the case-statement pattern matching that routes to the granular v1.x state labels. The fix targets the right layer.
+**None.** Core design decisions are correct: zero tad.sh intrusion, runtime sed-extraction over copied bodies (single source of truth, MQ5), bash-enforcement guard (NFR2), `|| true` on assertion greps (lesson 1), fail-safe `abc→old` case (lesson 2). All case expectations are empirically correct. Nothing blocks implementation on correctness grounds.
 
 ---
 
-## Architecture Assessment
+## P1 — Should fix before acceptance
 
-| Dimension | Rating | Notes |
-|-----------|--------|-------|
-| Blast radius | Excellent | 3 lines changed in 1 file, no behavioral change for existing valid inputs |
-| Design completeness | Good | All components specified, function locations verified, edge cases enumerated |
-| Backward compatibility | Excellent | No existing valid version string changes behavior |
-| Shell portability | Excellent | POSIX case-glob only, bash 3.2 safe |
-| Testing coverage | Good | 5 edge cases; P2-2 notes one gap |
-| Verification commands | Good | AC commands work; P2-1 notes a cosmetic regex issue |
+### P1-1 — The runtime fixture never reaches the glob-case block it claims to lock (validation-theater risk)
+
+The task's stated value (§1.2, §1.3, §6 "Human審查問題") is: *"any future edit that reverts `detect_state` to order-sensitive glob would be caught red by the fixture."* My branch-trace proves this is **false under the current major-2 target**. All six matrix inputs resolve on the exact-match / numeric-compare / fail-safe paths **before** the cross-major `case "$ver"` block (tad.sh L1359-1367) — the exact region where a reintroduced `2.1*)`/`2.2*)` arm would live. That block is only reachable when `vmaj < tmaj`, which no 2.x input can satisfy while the target is 2.x.
+
+Consequence: the runtime fixture's protection against the *glob hazard specifically* is **zero**. The only artifact that actually guards the hazard is the **AC1 grep** (`grep -cE '^[[:space:]]*2\.[0-9]+\*\)' == 0`) — a structural check, not the behavioral fixture. This is precisely the project's own **"Validation Theater"** failure mode (principles.md, YOLO Epic audit 2026-05-15): a green fixture confirms the numeric path works but does not prove the anti-hazard property the task exists to establish.
+
+Two holes this creates:
+- AC1's grep matches only the *literal* `2.<digits>*)` at line start. A reintroduced arm written as `2.1[0-9]*)`, `2.19*|2.2*)`, or a structural revert that drops the `_tad_ver_cmp` guard entirely would evade **both** the grep (pattern miss) **and** the fixture (block unreached). No layer catches it.
+- A future maintainer could delete the AC1 grep believing "the fixture covers the glob behavior" — the fixture's framing invites that mistake.
+
+**Recommendation (do at least one; ideally a+b):**
+- (a) Add ≥1 cross-major case that actually executes the glob block so it is live-tested, not dead-tested — e.g. `1.9.0 → old` (falls to `*)`) and `1.8.0 → v1.8`. This does NOT reopen out-of-scope v1.x *routing* work; it just gives the fixture a live assertion inside the block so a broken/injected arm turns it red. The FR4 negative assertion only has teeth once a case reaches that block.
+- (b) Reframe the fixture's stated purpose honestly in the completion report: it locks the **numeric-routing behavior of the refactor**; the **anti-2.x-glob property** is guarded by AC1's grep. Record the split so nobody removes the grep.
+- (c) Strengthen AC1 to also assert the structural invariant that the `_tad_ver_cmp` numeric guard precedes any `case "$ver"` glob, so a guard-removal revert is caught.
+
+### P1-2 — Extraction-integrity preflight (FR5) verifies text, not that the functions are actually defined
+
+FR5/§4.1 preflight asserts the sed output is non-empty and *contains both function names* (a text grep). That does not prove extraction produced **callable** functions. The extraction contract is fragile by design (§11.1 admits it depends on "function ends with a column-0 `}`"). If someone reformats `detect_state` to introduce a column-0 `}` mid-body (nested heredoc terminator, a reflowed brace), the sed range `/^detect_state() {/,/^}/` truncates at the first column-0 `}` — yielding text that still *contains the name* (passes the grep preflight) but is a broken partial body. Sourcing may then error (caught by `set -e`) **or**, depending on truncation point, define a wrong-behaving function that passes silently.
+
+**Recommendation:** After sourcing the extracted file, assert both functions are actually defined before running any case:
+`declare -F _tad_ver_cmp >/dev/null && declare -F detect_state >/dev/null || { echo "FAIL: extraction did not yield callable functions"; exit 1; }`
+This is a stronger and cheaper integrity gate than a text grep and is the true "extraction is the integration test between fixture and tad.sh" contract §8.2 claims.
 
 ---
 
-## Summary
+## P2 — Note explicitly
 
-This is a clean, well-scoped, low-risk fix to a real (if latent) version-detection hazard. The design is complete, the alternatives analysis is thorough, and the blast radius is minimal. No P0 or P1 issues found. Two P2 observations on test coverage and verification command semantics, neither of which blocks implementation.
+### P2-1 — Business-value chain is only half-covered (string asserted; string→ACTION mapping is not)
+§1.2's risk is *"wrong migration path → wrong upgrade action for every downstream project."* The fixture asserts the `detect_state` **string**, but the string→`ACTION` mapping in `main()`'s `case $STATE` (L1427-1464) — the half that actually selects install/upgrade/migrate/none — is verified only on paper (MQ3 table). If someone remapped e.g. `upgrade → ACTION=migrate`, the fixture stays green. Legitimate scope boundary (fixture targets `detect_state`), but state it as a **known coverage limit** in the completion report so "installer routing is protected" isn't over-read.
 
-**Verdict: PASS**
+### P2-2 — `elif [ -d ".tad" ] → old` branch (L1368) untested
+Two distinct routes to `old`: unparseable major (tested via `abc`) and `.tad` dir present but no `version.txt` (L1368, untested — a real interrupted/legacy install state). Cheap 7th case (sandbox with empty `.tad/`, no `version.txt` → `old`) exercises a different branch than `abc`. Optional per §10.2, but worth noting.
+
+### P2-3 — Cleanup-trap robustness under `set -eu`
+`trap 'rm -rf "$WORK"' EXIT` (§4.2): if `mktemp -d` fails, `set -e` exits before `$WORK` is assigned; the EXIT trap then dereferences an unbound `$WORK` under `set -u`, masking the real mktemp failure with a confusing unbound-variable error. Initialize `WORK=""` at top and guard: `trap '[ -n "$WORK" ] && rm -rf "$WORK"' EXIT`. Never a data-loss risk (`rm -rf ""` is a no-op) — purely diagnostic clarity.
+
+---
+
+## Blast radius assessment
+
+**Minimal and well-bounded.** New file only; tad.sh untouched (AC1/AC8 confirm). All execution inside `mktemp -d` sandboxes with an EXIT-trap cleanup; no network, no shared state, no global installs. The one coupling to production code — the sed extraction contract — is the correct trade (single source of truth over a drifting copy, per MQ5); its only failure mode is a loud fixture break, further hardened by P1-2. FR6's evergreen expectation (`upgrade` iff tmaj==2 else `old`) correctly anticipates a future major bump — I verified `1.9.0→old` under a hypothetical 3.x target matches the formula.
+
+## Bottom line
+Solid, low-risk, honest handoff (it self-documents the extraction fragility and the major-bump degradation). The single material gap is P1-1: the behavioral fixture and the structural grep protect **different** things, yet the handoff frames the fixture as protecting the glob hazard when only the grep does. Add a cross-major live case + record the guard split (P1-1), tighten the preflight to `declare -F` (P1-2), and this is a clean Gate.

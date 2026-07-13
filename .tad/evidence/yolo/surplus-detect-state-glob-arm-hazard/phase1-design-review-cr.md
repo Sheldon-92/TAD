@@ -1,121 +1,77 @@
-# Design Review: surplus-detect-state-glob-arm-hazard
+# Phase 1 Design Review — code-reviewer lens
 
-**Reviewer**: code-reviewer
-**Date**: 2026-07-02
-**Handoff**: `.tad/active/handoffs/HANDOFF-surplus-detect-state-glob-arm-hazard.md`
-**Verdict**: CONDITIONAL PASS (1 P1 must be resolved before implementation)
+**Handoff:** `.tad/active/handoffs/HANDOFF-surplus-detect-state-glob-arm-hazard.md`
+**Reviewer:** code-reviewer (bash quoting / `set -e` / BSD-portability / AC verifiability)
+**Date:** 2026-07-05
+**Verdict:** CONDITIONAL — 1 P1 must be fixed before Gate 3; design is otherwise sound and ground-truth-accurate.
 
----
-
-## Summary
-
-The handoff is well-structured, focused, and grounded. Line numbers for `_tad_ver_cmp()` (L1330), `detect_state()` (L1343), and `verify_denylist_drift()` (L696) all verified against the live source. The proposed dot-bounded patterns (`1.8|1.8.*`) are correct POSIX case-glob syntax, bash 3.2 safe, and correctly reject cross-minor collisions (`1.80.0` returns NO-MATCH) while accepting valid versions (`1.8`, `1.8.3` both return MATCH). File list is complete (only `tad.sh` needs changes). Downstream consumers at L1444/1449/1454 consume state strings (`"v1.8"`, `"v1.6"`, `"v1.4"`) that are unchanged by this edit.
-
-One P1 found: AC1's verification grep conflicts with the safety comment required by FR4.
+> Note: this file previously held the 2026-07-02 review of the superseded dot-bounded-glob design. That approach was replaced by the `_tad_ver_cmp` refactor now live in main; this review targets the current fixture-only handoff.
 
 ---
 
-## Findings
+## Ground-Truth Verification (I re-ran the handoff's own evidence)
 
-### P1-1: AC1 grep conflicts with FR4 safety comment (MUST FIX)
+| Claim | Command | Result | Match |
+|---|---|---|---|
+| 0 order-sensitive 2.x glob arms | `grep -cE '^[[:space:]]*2\.[0-9]+\*\)' tad.sh` | `0` | ✅ |
+| `TARGET_VERSION="2.33.0"` | `grep -m1 '^TARGET_VERSION='` | `2.33.0` | ✅ |
+| Function line numbers | `grep -nE '^_tad_ver_cmp\(\)|^detect_state\(\)'` | 1330 / 1343 | ✅ |
+| tad.sh syntax valid | `bash -n tad.sh` | OK | ✅ |
+| Extraction range safe (single col-0 `}` per func) | `sed -n '1330,1373p' \| grep -nE '^\}'` | braces only at 1341 & 1373 | ✅ |
 
-**Location**: Section 9.1 AC1 vs Section 6 step 4
-
-**Problem**: AC1 verification command (after markdown un-escape):
-```
-grep -cE '1\.8\*|1\.6\*|1\.5\*|1\.4\*' tad.sh
-```
-expects result `0` (no ambiguous prefix globs remain).
-
-But the safety comment proposed in FR4 / step 4:
-```bash
-# GLOB SAFETY: use dot-bounded patterns (1.8|1.8.*), NOT prefix globs (1.8*).
-# Prefix globs match across minor boundaries (1.8* matches 1.80.0).
-```
-contains the literal text `1.8*` in both lines. The grep ERE pattern `1\.8\*` matches literal `1.8*`, so it would match both comment lines, returning 2 instead of 0.
-
-**Evidence** (verified live):
-```
-$ echo '# ...NOT prefix globs (1.8*).' | grep -cE '1\.8\*|...'
-1
-$ echo '# ...boundaries (1.8* matches 1.80.0).' | grep -cE '1\.8\*|...'
-1
-```
-
-**Impact**: AC1 will FAIL at Gate 3 even with a correct implementation. Blake either (a) omits the comment to pass AC1 (violating FR4/AC5), or (b) adds the comment and AC1 fails. No way to satisfy both simultaneously as written.
-
-**Fix options** (pick one):
-
-Option A -- Scope the grep to the case block only:
-```
-AC1 verification: sed -n '/case "\$ver"/,/esac/p' tad.sh | grep -cE '1\.8\*|1\.6\*|1\.5\*|1\.4\*'
-```
-This restricts the match to case-arm lines, excluding comments.
-
-Option B -- Reword the safety comment to avoid the literal old patterns:
-```bash
-# GLOB SAFETY: use dot-bounded patterns (X|X.*), NOT prefix globs (X*).
-# Prefix globs match across minor boundaries (e.g. 1-dot-8-star matches 1.80.0).
-```
-Less natural but avoids the collision.
-
-Option C -- Use a non-ERE grep that matches only the case-arm syntax:
-```
-grep -cE '^\s+1\.[0-9]+\*\)' tad.sh
-```
-This matches lines where the glob is part of a case arm (ending with `)`), not in a comment.
-
-**Recommended**: Option A or C. Option A is simplest and most explicit.
+The `detect_state` logic matches §2.2 exactly: same-major-older returns `upgrade` **before** the cross-major `case`, so a 2.x input structurally cannot reach the v1.x arms under the current code. The redesign genuinely eliminated the hazard class; the task is correctly scoped as "pin behavior," not "fix." Frontmatter (`task_type: code`, `e2e_required: no`, `research_required: no`, `git_tracked_dirs: [".tad/tests"]`, `skip_knowledge_assessment: no`) is all correct for this task shape.
 
 ---
 
-### P2-1: Edge case table covers only v1.8 series
+## P0 (Blocking) — none
 
-**Location**: Section 8.3
+---
 
-**Observation**: All 5 edge cases test the `1.8|1.8.*` pattern. The multi-alternative arm `1.6|1.6.*|1.5|1.5.*` is not tested. While the glob logic is identical, a typo in the `|`-joined alternatives would not be caught by the current edge case table.
+## P1 (Should fix before Gate 3)
 
-**Suggestion**: Add one test for the v1.6/1.5 arm, e.g.:
+### P1-1 — AC8 second sub-check produces a false FAIL in the real repo state
+AC8 (§9.1) verifies scope discipline with:
 ```
-| v1.5 patch version | 1.5.2 | MATCH on 1.6|1.6.*|1.5|1.5.*) | bash -c 'case "1.5.2" in 1.6|1.6.*|1.5|1.5.*) echo MATCH;; *) echo NO;; esac' |
+git status --porcelain | grep -v 'detect-state-fixture.sh\|phase1-fixture-run.txt\|HANDOFF-surplus\|COMPLETION' | wc -l   # expected 0
 ```
+I ran this **now, before any implementation**, and it returns **9**, because the working tree already contains unrelated untracked/modified paths the grep filter does not exclude:
+`SURPLUS-PLAN-2026-07-05.{md,json}`, `EPHEMERAL-surplus-*.md` (×2), `.tad/active/handoffs/`, `.tad/evidence/traces/2026-07-0{4,5}.jsonl`, `.tad/evidence/decisions/2026-07-05.jsonl`, and ` M .tad/research-notebooks/REGISTRY.yaml`. In addition, this review and the other Conductor design-review artifacts land in `.tad/evidence/yolo/surplus-detect-state-glob-arm-hazard/`, which the filter also does not exclude.
+
+Consequence: Gate 3 reports AC8 FAIL regardless of Blake's correctness — exactly the "false-red trains the operator to ignore the gate" failure mode the project's own principles warn against. The FIRST sub-check of AC8 (`git diff --stat -- tad.sh | wc -l` == 0) already fully proves the load-bearing "tad.sh untouched" claim.
+
+**Fix (pick one):**
+- Drop the brittle `git status --porcelain` sub-check; keep only `git diff --stat -- tad.sh` (sufficient for tad.sh-untouched); or
+- Restrict the scope check to **tracked** production files only, ignoring untracked evidence/plan/trace artifacts that are legitimately present and outside Blake's control (e.g. `git diff --name-only | grep -vxc 'tad.sh'` == 0 for the tracked surface), and stop diffing `git status --porcelain` wholesale.
 
 ---
 
-### P2-2: Micro-task grep commands (section 6.1) lack pipe-escape note
+## P2 (Nice to have)
 
-**Location**: Section 6.1
+### P2-1 — AC3 is a compound row and drops the handoff's own `|| true` discipline
+AC3 chains four independent assertions (exit code, PASS count, hazard-case count, `current` count) in one command, none carrying `|| true`. Lesson 1 (📚) and sibling ACs (AC1/AC4/AC5/AC6 all append `|| true`) establish the convention; AC3 is inconsistent. `grep -c 'current'` returns exit 1 on zero matches — if the Gate 3 runner executes the row under `set -e`, a legitimately-zero intermediate grep aborts the row, and a single FAIL is hard to attribute to a specific sub-check. Split AC3 into AC3a–AC3d, or at minimum append `|| true` to each grep as the rest of the table does.
 
-**Observation**: Section 9.1 has the critical pipe-escape note ("un-escape `\|` to `|` when running in bash"). Section 6.1 micro-tasks contain grep commands with pipes but do not include this note. If Blake copy-pastes verification commands from section 6.1 without un-escaping, the grep will look for literal backslash-pipe and return 0 (false pass).
+### P2-2 — The negative self-check (discriminative power) is required evidence but not an AC
+The fixture's entire value is that it goes RED on regression. That is captured as a Phase-1 「完成证据」 item and a Human审查问题 (§6.1 step 2, §8.6), but no numbered AC pins it, so a mechanical gate cannot confirm it happened. Given the project's explicit "structural PASS ≠ behavioral quality" stance, consider an AC that greps the completion report for the recorded red→green flip (expected-vs-actual FAIL line + exit 1), making the discriminative-power proof first-class rather than prose-only.
 
-**Suggestion**: Add the same pipe-escape note at the top of section 6.1, or convert the micro-task verification commands to use a form that doesn't need escaping (e.g., use `-F` fixed string grep).
+### P2-3 — `.tad/tests/detect-state-fixture.sh` git-tracking requires an explicit `git add`
+AC2 (`git ls-files ... | wc -l` == 1) only passes once the new file is staged, but no micro-task tells Blake to `git add` it (a fresh untracked file returns 0 from `git ls-files`). Add an explicit "stage the fixture" step so AC2 isn't a surprise FAIL.
 
----
+### P2-4 — §7.1 "Files to Create" omits the completion report referenced by AC8
+AC8's exclusion filter names `COMPLETION`, implying a completion-report artifact, but §7.1/§7.2 don't list it. Minor doc-completeness gap; list it so the produced-file set is exhaustive.
 
-## Frontmatter Check
-
-| Field | Value | Correct? |
-|-------|-------|----------|
-| task_type | code | YES -- single-file code edit |
-| e2e_required | no | YES -- shell pattern replacement, no integration surface |
-| research_required | no | YES -- no external research needed |
-| skip_knowledge_assessment | yes | YES -- no new learnable knowledge from this fix |
-| gate4_delta | [] | YES -- no knowledge entries expected |
+### P2-5 — `eval "$(grep -m1 '^TARGET_VERSION=' tad.sh)"` is acceptable but avoidable
+`eval` on a grepped line from a trusted repo file is safe here, and `-m1` is BSD/macOS-portable (satisfies NFR1). A non-eval parse (`... | sed 's/.*="\([^"]*\)".*/\1/'`) removes the eval surface at no cost. Optional hardening.
 
 ---
 
-## File List Completeness
-
-Only `tad.sh` is listed. Verified: the prefix globs appear only in `detect_state()` at L1362-1364. No other files reference these patterns. The downstream `case $STATE in` block (L1427) consumes string values that are not changed. File list is complete.
-
----
-
-## Design Coherence
-
-Requirements (FR1-FR4, NFR1-NFR2) align with the technical design (pattern replacement table in section 4.2). The chosen approach (dot-bounded case patterns) is the minimal-risk fix. The alternatives analysis (section 11.1) is reasonable -- extglob and regex alternatives correctly rejected for compatibility/restructuring reasons.
+## What is solid (keep as-is)
+- **No-source / sed-extraction decision** correctly avoids the unguarded `main` at EOF; extraction range verified to terminate at the right col-0 `}` for both functions.
+- **NFR2 bash guard** (`[ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"`) is the right defense for the empirically-found zsh `local -a A=($1)` word-split hazard (lesson 4); AC5 verifies its presence.
+- **FR6 evergreen expectation** (`upgrade` iff `tmaj==2` else `old`) matches the code's cross-major fall-through and survives a future 3.x bump — I traced 2.19.1 under hypothetical target-major 3 → `*) old`, consistent with FR6.
+- **Fail-safe undecidable input** (`abc → old`, lesson 2) and never-downgrade (`9.9.9 → current`) both trace correctly through the live body.
+- Full FR3 case matrix reproduces against the current `detect_state`. File list (fixture + run evidence) is complete for the production surface.
 
 ---
 
-## Verdict
-
-**CONDITIONAL PASS** -- P1-1 must be resolved (either change the AC1 grep scope or reword the comment) before Blake begins implementation. P2s are optional improvements.
+## Recommendation
+CONDITIONAL PASS. Fix **P1-1** (mandatory — it false-FAILs today). Fold in P2-1 and P2-2 given the project's anti-validation-theater posture. Remaining P2s are polish. No tad.sh change warranted; FR1 pre-verification holds (0 arms).

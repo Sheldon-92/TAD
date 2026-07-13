@@ -175,6 +175,15 @@ emit_expert_findings() {
 # a[3]/a[5]/a[6] — those positions are correct only for the 5-col layout; 4-col tables
 # written before this date are column-shifted in the historical trace, NOT repaired,
 # append-only).
+# Multi-table-aware since 2026-07-12: a table BOUNDARY is any non-pipe line inside the
+# section; the FIRST pipe row of each new table is treated as its header. A header whose
+# cells include Decision+Chosen (case-insensitive) re-binds di/ci/ri and enables emission
+# for that table; any other header DISABLES emission for the whole table (fixes the
+# trailing non-decision table over-emitting rows via stale indices, e.g. a disposition
+# table). Because headers are only recognized at table start, a mid-table data row that
+# literally reads "| Decision | Chosen |" can never spuriously re-bind. Limitation
+# (documented, invalid markdown edge): two tables NOT separated by any non-pipe line are
+# treated as one table. Append-only trace behavior unchanged.
 emit_decision_points() {
   local file="$1" slug="$2"
   [ -n "$slug" ] || return 0
@@ -185,29 +194,32 @@ emit_decision_points() {
       if ($0 !~ /^##/ && $0 ~ /<!--/ && $0 ~ /-->/) next
       if ($0 !~ /^##/ && $0 ~ /<!--/) { incomment=1; next } }
     /^##[[:space:]]/ { insec = ($0 ~ /Decision Summary/) ? 1 : 0;
-                       havehdr=0; di=0; ci=0; ri=0; next }   # reset header binding per section
+                       intable=0; emitting=0; di=0; ci=0; ri=0; next }  # reset per section
     !insec { next }
-    /^\|/ {
-      if ($0 ~ /^\|[-: |]+\|[[:space:]]*$/) next   # separator row
-      if (havehdr==0) {                            # header row: bind di/ci/ri by column name
-        n=split($0, a, "|")
-        for (i=1; i<=n; i++) {
-          t=a[i]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); lt=tolower(t)
-          if (lt=="decision")  di=i
-          if (lt=="chosen")    ci=i
-          if (lt=="rationale") ri=i
-        }
-        if (di>0 && ci>0) havehdr=1
-        next                                       # header / pre-header rows emit nothing
+    !/^\|/ { intable=0; next }                     # non-pipe line = table boundary
+    /^\|[-: |]+\|[[:space:]]*$/ { next }           # separator row
+    intable==0 {                                   # FIRST pipe row of a new table = header
+      intable=1; emitting=0; di=0; ci=0; ri=0      # re-bind indices per table
+      n=split($0, a, "|")
+      for (i=1; i<=n; i++) {
+        t=a[i]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); lt=tolower(t)
+        if (lt=="decision")  di=i
+        if (lt=="chosen")    ci=i
+        if (lt=="rationale") ri=i
       }
+      if (di>0 && ci>0) emitting=1                 # non-decision header → table suppressed
+      next                                         # header rows emit nothing
+    }
+    emitting==0 { next }                           # rows of a non-decision table: no emit
+    {
       n=split($0, a, "|")                          # data row: read by bound indices
       d=a[di]; c=a[ci]; r=(ri>0 ? a[ri] : "")
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", d)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", r)
-      # KEEP guard: case-insensitive header guard catches a second tables header arriving
-      # as a data row (multi-table §11 — havehdr locked on first table, not re-bound) and
-      # blank/separator residue. Removing it emits junk + triggers parser self-trigger.
+      # KEEP guard: catches blank/separator residue plus a literal header-lookalike data
+      # row ("| Decision | Chosen |") inside a decision table — skipped WITHOUT re-binding.
+      # Removing it emits junk + triggers parser self-trigger.
       if (d=="" || c=="" || (tolower(d)=="decision" && tolower(c)=="chosen")) next
       printf "%s%s%s%s%s\n", d, SEP, c, SEP, r
     }
