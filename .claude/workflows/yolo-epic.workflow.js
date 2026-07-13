@@ -6,7 +6,7 @@ export const meta = {
     { title: 'Design', detail: 'Spawn Alex design agent to write HANDOFF.md' },
     { title: 'Review', detail: 'Parallel reviewers evaluate design' },
     { title: 'Implement', detail: 'Blake agent implements in worktree isolation' },
-    { title: 'ImplReview', detail: 'Parallel reviewers evaluate implementation' },
+    { title: 'ImplReview', detail: 'Parallel reviewers evaluate implementation IN THE IMPLEMENT WORKTREE (implRoot-aware)' },
     { title: 'Budget', detail: 'Report budget consumption for human checkpoint' }
   ]
 }
@@ -43,6 +43,7 @@ const IMPL_RESULT_SCHEMA = {
   properties: {
     completion_written: { type: 'boolean' },
     completion_path: { type: 'string' },
+    worktree_path: { type: 'string' },
     files_changed: { type: 'array', items: { type: 'string' } },
     commit_message: { type: 'string' },
     layer1_passed: { type: 'boolean' },
@@ -62,6 +63,7 @@ let completionPath = null
 let groundingPath = null
 let reviewerCount = 2
 let steps = null
+let worktreePathArg = null
 
 if (args) {
   const keys = Object.keys(args)
@@ -75,6 +77,7 @@ if (args) {
     if (keys[i] === 'grounding_path') groundingPath = args[keys[i]]
     if (keys[i] === 'reviewer_count') reviewerCount = args[keys[i]]
     if (keys[i] === 'steps') steps = args[keys[i]]
+    if (keys[i] === 'worktree_path') worktreePathArg = args[keys[i]]
   }
 }
 
@@ -283,7 +286,9 @@ if (runImplement) {
     '   - npm run lint (if available)\n' +
     '4. Write a completion report to: ' + completionPath + '\n' +
     '   Include: files changed, tsc result, test result, AC verification table\n' +
-    '5. Git commit with message: "feat(' + epicSlug + '): ' + phaseName + ' [YOLO Phase ' + phaseNumber + ']"\n\n' +
+    '5. Git commit with message: "feat(' + epicSlug + '): ' + phaseName + ' [YOLO Phase ' + phaseNumber + ']"\n' +
+    '6. Determine your repo root: run `git rev-parse --show-toplevel` and report the result as worktree_path in your structured output\n' +
+    '   Note: if you are running in an isolated worktree, all your paths are relative to THAT root and reviewers will be pointed there.\n\n' +
     'LIMITS:\n' +
     '- Max 3 Layer 1 retry attempts. If same error 3 times → write progress to completion and exit\n' +
     '- Only modify files within the current project root\n' +
@@ -306,9 +311,10 @@ if (runImplement) {
     result.implementation = { error: 'no completion report', raw: implResult }
     result.impl_skipped_reason = 'implementation failed — no completion to review'
   } else {
-    log('Y5: Implementation complete, Layer 1 ' + (implResult.layer1_passed ? 'PASSED' : 'FAILED'))
+    log('Y5: Implementation complete, Layer 1 ' + (implResult.layer1_passed ? 'PASSED' : 'FAILED') + ', worktree_path=' + (implResult.worktree_path || 'unreported'))
     result.completion_path = implResult.completion_path || completionPath
     result.implementation = implResult
+    result.worktree_path = implResult.worktree_path || null
   }
 }
 
@@ -324,6 +330,31 @@ if (runImplReview && !implSucceeded && runImplement) {
   phase('ImplReview')
   log('Y6: Spawning ' + reviewerCount + ' implementation reviewer(s)')
 
+  // Resolve where the implementation actually lives (worktree-visibility fix).
+  var implRoot = null
+  if (result.implementation && result.implementation.worktree_path) implRoot = result.implementation.worktree_path
+  if (!implRoot && worktreePathArg) implRoot = worktreePathArg
+
+  var implCompletionRef = completionPath
+  if (implRoot) {
+    implCompletionRef = completionPath.charAt(0) === '/' ? completionPath : implRoot + '/' + completionPath
+  }
+
+  var implLocationNote = ''
+  if (implRoot) {
+    implLocationNote =
+      'The implementation lives in an isolated git worktree at: ' + implRoot + '\n' +
+      'Read the completion report at: ' + implCompletionRef + '\n' +
+      'Inspect changed files under: ' + implRoot + '\n' +
+      'Use `git -C "' + implRoot + '" log -1 --stat` and `git -C "' + implRoot + '" diff HEAD~1` to see the implementation commit.\n' +
+      'Your evidence review file is still written to the MAIN repo path given below.\n'
+  } else {
+    implLocationNote =
+      'Read the completion report: ' + completionPath + '\n' +
+      'Check the git diff for recent changes.\n' +
+      'If the diff/files appear absent, the implementation may live in an unreported worktree — classify as UNVERIFIABLE (P0 with reason \'worktree path unreported\'), never as \'implementation absent\'.\n'
+  }
+
   var implReviewPrompts = []
 
   // code-reviewer (mandatory)
@@ -331,9 +362,8 @@ if (runImplReview && !implSucceeded && runImplement) {
   implReviewPrompts.push(function() {
     return agent(
       'You are a code-reviewer for YOLO Epic Phase ' + phaseNumber + ' implementation review.\n\n' +
-      'Read the completion report: ' + completionPath + '\n' +
-      'Read the original handoff: ' + handoffPath + '\n' +
-      'Check the git diff for recent changes.\n\n' +
+      implLocationNote +
+      'Read the original handoff: ' + handoffPath + '\n\n' +
       'Focus on:\n' +
       '- Are all ACs from the handoff met?\n' +
       '- Code quality: no obvious bugs, security issues, or regressions\n' +
@@ -356,9 +386,8 @@ if (runImplReview && !implSucceeded && runImplement) {
     implReviewPrompts.push(function() {
       return agent(
         'You are a domain expert reviewing YOLO Epic Phase ' + phaseNumber + ' implementation.\n\n' +
-        'Read the completion report: ' + completionPath + '\n' +
-        'Read the original handoff: ' + handoffPath + '\n' +
-        'Check the git diff for recent changes.\n\n' +
+        implLocationNote +
+        'Read the original handoff: ' + handoffPath + '\n\n' +
         'Focus on architecture quality, blast radius, and implementation completeness.\n' +
         'First run: mkdir -p ' + evidenceBase + '\n' +
         'Write your review to: ' + implDomainPath + '\n' +
