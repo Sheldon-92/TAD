@@ -4,7 +4,47 @@
 # Single-writer principle: this file is the ONLY output of the routine.
 # REGISTRY.yaml last_checked is updated separately (by *research-github refresh or Alex consuming scan-log).
 version: 1.0.0
-last_scan: null
+last_scan: 2026-07-13
 scan_results:
-  updates: []
-  new_candidates: []
+  updates:
+    - repo: "Shubhamsaboo/awesome-llm-apps"
+      domain: "ai-agents"
+      last_commit: 2026-07-11
+      previous_checked: 2026-05-04
+    - repo: "e2b-dev/awesome-ai-agents"
+      domain: "ai-agents"
+      last_commit: 2026-07-09
+      previous_checked: 2026-05-04
+    - repo: "aishwaryanr/awesome-generative-ai-guide"
+      domain: "ai-agents"
+      last_commit: 2026-06-24
+      previous_checked: 2026-05-04
+    - repo: "f/awesome-chatgpt-prompts"
+      domain: "ai-agents"
+      last_commit: 2026-07-13
+      previous_checked: 2026-05-04
+  new_candidates:
+    - repo: "jim-schwoebel/awesome_ai_agents"
+      domain: "ai-agents"
+      stars: 1884
+      description: "🤖 A comprehensive list of 1,500+ resources and tools related to AI agents."
+      status: pending
+      first_seen: 2026-07-13
+    - repo: "slavakurilyak/awesome-ai-agents"
+      domain: "ai-agents"
+      stars: 1829
+      description: "Awesome list of 300+ agentic AI resources"
+      status: pending
+      first_seen: 2026-07-13
+    - repo: "caramaschiHG/awesome-ai-agents-2026"
+      domain: "ai-agents"
+      stars: 1437
+      description: "🤖 The most comprehensive list of AI agents, frameworks & tools in 2026. 300+ resources · 20+ categories · Updated monthly."
+      status: pending
+      first_seen: 2026-07-13
+    - repo: "Jenqyang/Awesome-AI-Agents"
+      domain: "ai-agents"
+      stars: 1185
+      description: "A collection of autonomous agents 🤖️ powered by LLM."
+      status: pending
+      first_seen: 2026-07-13

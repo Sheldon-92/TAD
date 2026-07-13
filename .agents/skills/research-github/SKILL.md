@@ -340,9 +340,14 @@ Step 1: Determine scope:
 
 Step 1b: Today-guard (avoid duplicate scan):
   → Read scan-log.yaml: if last_scan == today YYYY-MM-DD:
-    AskUserQuestion: "Already scanned today ({last_scan}). Re-scan?"
-    Options: "Yes, re-scan" / "Show last results → *research-github scan-log"
-    → "Show last results": redirect to *research-github scan-log + EXIT
+    → If running in non-interactive/scheduled context (the invoking prompt declares
+      "non-interactive mode" — e.g., the weekly cron routine):
+      Output one line: "Already scanned today ({last_scan}) — non-interactive mode, exiting without changes."
+      → EXIT. NEVER call AskUserQuestion in non-interactive context.
+    → Else (interactive/manual invocation — unchanged behavior):
+      AskUserQuestion: "Already scanned today ({last_scan}). Re-scan?"
+      Options: "Yes, re-scan" / "Show last results → *research-github scan-log"
+      → "Show last results": redirect to *research-github scan-log + EXIT
 
 Step 2: Freshness check (Behavior A — already-registered lists)
   For each awesome_list in scope:
@@ -459,40 +464,41 @@ Step 5: Display archived entries (if any):
 
 ## Setup: Scheduled Routine
 
-To enable weekly automatic scanning, create a Claude Code scheduled routine via `/schedule`.
+Weekly automatic scanning runs as a Claude Code scheduled routine (registered by the
+Conductor / main session via CronCreate, or manually via `/schedule`).
 
-### Routine prompt (copy-paste to `/schedule`):
+The routine prompt DELEGATES to this SKILL's scan protocol — it deliberately contains
+NO inline scan logic. A duplicated copy of the scan steps drifts from the protocol
+(the previous inline version full-overwrote scan-log.yaml, violating Step 4 merge-write
+and destroying user accept/reject decisions). Single source of truth: the scan protocol above.
+
+### Routine prompt (canonical standalone copy: `.tad/evidence/spikes/cron-github-scan-2026-07/cron-prompt.md`):
 
 ```
-Read .tad/github-registry/REGISTRY.yaml.
+Non-interactive mode. You are a scheduled weekly GitHub registry scan session.
 
-For each domain in .domains:
-  For each awesome_list in domain.awesome_lists:
-    last_commit = run: gh api "repos/{awesome_list.repo}/commits?per_page=1" --jq '.[0].commit.committer.date'
-    If last_commit > awesome_list.last_checked: record {repo, domain.slug, last_commit, awesome_list.last_checked} as "updated".
-
-  search_results = run: gh search repos "awesome {domain.slug}" --sort stars --limit 5 --json fullName,stargazersCount,description
-  For each result with fullName NOT in domain.awesome_lists and stargazersCount > 500:
-    Record {fullName, domain.slug, stargazersCount, description, status: pending} as "new_candidate".
-
-Write results to .tad/github-registry/scan-log.yaml:
-  version: 1.0.0
-  last_scan: {today YYYY-MM-DD}
-  scan_results:
-    updates: [{repo, domain, last_commit, previous_checked}]
-    new_candidates: [{repo, domain, stars, description, status: pending}]
-
-Do NOT modify REGISTRY.yaml last_checked. Do NOT add candidates to REGISTRY.yaml.
-Single-writer principle: scan-log.yaml is the only output of this routine.
+1. Read .claude/skills/research-github/SKILL.md.
+2. Execute the `*research-github scan` protocol in full (Step 1 through Step 5,
+   including the Step 4 merge-write), in non-interactive mode:
+   - Today-guard (Step 1b): if last_scan == today, print the one-line log and exit.
+     Never prompt — this session has no human attached.
+   - Step 4 MERGE-write semantics are mandatory: NEVER full-overwrite scan-log.yaml;
+     preserve existing accepted/rejected candidate statuses and first_seen fields.
+3. Write ONLY .tad/github-registry/scan-log.yaml. Do NOT modify REGISTRY.yaml or any
+   other file. Single-writer principle: scan-log.yaml is the only output of this routine.
+4. If any prerequisite or step fails (gh CLI not authenticated, unrecoverable API errors
+   beyond the protocol's built-in wait-60s-retry-once rule): print one error line and
+   exit quietly. Do not retry, do not loop.
+5. Do nothing else.
 ```
 
-### Schedule: Weekly (Sunday 23:00 or Monday 00:00)
+### Schedule: Weekly (Sunday 23:00)
 
-### Setup steps:
-1. Type `/schedule` in Claude Code
-2. Paste the routine prompt above
-3. Set schedule: weekly (Sunday night)
-4. Confirm creation
+### Setup steps (Conductor / main session — sub-agents cannot use CronCreate):
+1. Register via CronCreate (or `/schedule`): weekly, Sunday 23:00, prompt = the text
+   above (take verbatim from cron-prompt.md)
+2. Optional first-run verification: a one-shot cron (+5 min) with the same prompt proves
+   cron-fires-at-all before waiting a week
 
 ### Verification:
 - After first run: `*research-github scan-log` shows last_scan date
