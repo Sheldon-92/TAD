@@ -84,4 +84,11 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 @.tad/project-knowledge/mobile-platform.md
 @.tad/project-knowledge/frontend-design.md
 
+## 7.5 Memory Capture Layer
+
+原生 auto-memory 已重定向至 `.tad/memory/`(via settings.local.json,DR-20260712)。
+memory = Capture 层(native 自由写);*accept 蒸馏循环将其与 Blake journal 一起锻造进 project-knowledge。
+`.tad/memory/` 归 native 管辖:TAD 侧只读。user 型/敏感 memory 已 gitignore(public repo)。
+下游项目 opt-in:`bash .tad/hooks/lib/memory-redirect.sh --enable`。
+
 <!-- TAD:PROJECT-CONTENT-BELOW -->

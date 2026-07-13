@@ -460,6 +460,7 @@ git push origin main
 9. **`.tad/config.yaml` has 3 version mentions** (comment line + `version:` field + `last_updated:`) — all 3 must match
 10. **Never run `tad.sh` on the TAD source repo itself** — it's designed for downstream targets, and self-application may delete source files via deprecation cleanup
 11. **Do NOT run `install.sh` during sync** — the `cp -R` mirror of `.claude/skills` + `.agents/skills` already copies the complete, authoritative skill directories. Running pack `install.sh --force` AFTER the mirror will DOWNGRADE upgraded packs because `install.sh` regenerates SKILL.md from the stale `.tad/capability-packs/` source (a second source-of-truth that pack upgrades don't touch). This caused the v2.30.0 sync to silently downgrade 21 packs in all 14 downstream projects — caught only by the `platform-skills` symmetry gate. The `tad.sh` installer (curl/npx path) never had this bug — it only does `cp -r`, no `install.sh`. See KA: `patterns/pack-build-rules.md` 2026-06-15.
+12. **memory is in the zero-touch deny-list (lib + tad.sh DOUBLE list, since 2026-07-12)** — `bash tad.sh --verify-denylist` must exit 0 before release (edit BOTH lists or the drift-check FAILS); before *publish, re-scan any NEW `.tad/memory/` files appearing in `git status` for sensitivity (public repo — see .tad/evidence/memory-migration-sensitivity-report.md rules); downstream projects need manual `bash .tad/hooks/lib/memory-redirect.sh --enable` after upgrade (opt-in, never auto)
 
 ---
 

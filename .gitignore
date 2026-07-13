@@ -11,6 +11,9 @@
 
 # Local skills (*save-skill output — project-local, never distributed)
 .claude/skills/local/
+# Mirror rule: parity --fix rsyncs .claude/skills → .agents/skills wholesale and can
+# re-copy local/ into the tracked .agents tree — never commit it (public repo)
+.agents/skills/local/
 
 # Claude Code local session/memory + sub-agent worktree artifacts (not source)
 .claude/projects/
@@ -53,3 +56,13 @@ tad-work/working/*
 
 __pycache__/
 *.pyc
+
+# TAD memory capture layer — sensitive memories never committed (public repo; SEC P0-1)
+# Per-file entries from .tad/evidence/memory-migration-sensitivity-report.md (Gate 4 reviewed)
+.tad/memory/user_*
+.tad/memory/MEMORY.md
+.tad/memory/feedback_share-mode-and-deflation.md
+.tad/memory/project_co-thinking-workshop-seed.md
+.tad/memory/project_tad-evolution-directions.md
+.tad/memory/project_tad-universal-method.md
+.tad/memory/reference_claude-code-source.md

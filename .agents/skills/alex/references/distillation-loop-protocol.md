@@ -69,6 +69,26 @@ Execution: spawn Codex CLI, give it only this one entry + "attempt to execute a 
 this entry; list every point of uncertainty." Codex's questions = a stricter stranger test
 (different model prior).
 
+## Second Capture Source: .tad/memory/ (DR-20260712)
+
+At the same *accept trigger, ALSO scan the native auto-memory capture layer:
+
+1. Cursor: .tad/evidence/memory-distill-cursor stores the last-distill timestamp.
+2. Scan (cursor-aware — first run has no cursor):
+   if [ -f .tad/evidence/memory-distill-cursor ]; then
+     find .tad/memory -name '*.md' ! -name 'MEMORY.md' -newer .tad/evidence/memory-distill-cursor
+   else
+     find .tad/memory -name '*.md' ! -name 'MEMORY.md'   # first run: full sweep (migrated backlog)
+   fi
+3. Each new/changed memory file = raw capture material. Same pipeline as journal:
+   variabilize test (Step 2) → typed entry draft (Step 3) → gap detection (Step 4).
+   Gap questions route to the USER (memory author is the model — no Blake round-trip).
+4. READ-ONLY contract: never edit/delete files in .tad/memory/ — the native runtime owns
+   that directory and its MEMORY.md ledger. Graduated entries live in project-knowledge;
+   the memory original stays (user prunes via /memory if desired).
+5. After the scan (regardless of graduation count): touch .tad/evidence/memory-distill-cursor
+6. No memory dir / empty scan → skip silently (Codex-edition projects have no auto-memory).
+
 ## Anti-Theater
 - If user decides to skip distillation → legitimate (soft, not blocking); KA writes "User skipped distillation"
 - If Blake wrote no journal (Q1=No) → legitimate; KA writes "No discoveries"
