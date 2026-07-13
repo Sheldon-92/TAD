@@ -175,3 +175,5 @@ now observable by Alex STEP 3.9 (staleness base date set for the first time ever
 ---
 
 Verdict: PASS
+
+CRON-FIRE-VERIFY: PASS — one-shot cron 3cea3b55 fired at 2026-07-13T10:40:29-0400, today-guard exited clean (no write).

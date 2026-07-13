@@ -1,0 +1,2 @@
+{"ts":"2026-07-06T02:00:41Z","session_id":"ed898006-452a-4c16-92b2-a234ed71b7fe","slug":null,"question":"这次 surplus burn 给多大的 token 预算？","options":["+2M（推荐）","+1M","+500K","不设上限"],"selection":"不设上限","is_other":false,"multi_select":false}
+{"ts":"2026-07-06T03:50:33Z","session_id":"ed898006-452a-4c16-92b2-a234ed71b7fe","slug":null,"question":"除了已在队列的任务，这四个批次烧哪些？（可多选）","options":["全部烧（推荐）","B 小修清扫","C 修复重跑 P0 任务","D 研究（O1 格局刷新）"],"selection":"全部烧（推荐）","is_other":false,"multi_select":true}
