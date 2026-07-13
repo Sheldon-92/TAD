@@ -52,3 +52,35 @@
 - **Action**: (1) Treat every native-capability research finding as a hypothesis carrying a version pin; the first micro-task of any adoption phase is a local spike whose FAIL branch is pre-designed (degradation matrix), never a blocker. (2) Record verdicts as VERDICT-<topic>: PASS/FAIL lines with raw transcripts so reviewers can re-adjudicate. (3) When a spike contradicts research (or a GitHub issue), write the falsification back to the research evidence AND the decision record — the version-pinned correction is itself the reusable asset (re-spike triggers on CLI upgrade).
 - **failure_mode**: Naive default: design integrations directly on top of documented/community-reported platform capabilities because the research phase was thorough. Why wrong: 3 of 6 capabilities behaved differently on the actual installed CLI than every doc-level source suggested — integrations built without spikes would have shipped inert config (validation theater) or silently-dying automation.
 - **Grounded in**: .tad/evidence/spikes/subagent-frontmatter-2026-07/spike-report.md, .tad/evidence/spikes/cron-github-scan-2026-07/spike-evidence.md (incl CRON-FIRE-VERIFY), .tad/evidence/yolo/native-capability-adoption/phase4-rules-spike.md (GH #17204 adjudication), EPIC-COMPLETION.md "Native-Runtime Ground Truth"
+
+### A Native-Capability Verdict Without a Spawn-Path Dimension Is Underspecified — Same CLI, Same Field, Opposite Results by Path - 2026-07-13
+
+- **Context**: skills-preload delivery (FR5). The `skills:` subagent-frontmatter field on the
+  SAME Claude Code 2.1.207 produced: 6/6 FAIL via headless `claude -p --agent` spawns, then a
+  clean PASS via interactive-harness Agent-tool spawn (discriminative pair with a no-`skills:`
+  negative-control agent — the pack arrives as a command block at spawn, attributable to the
+  frontmatter key as the only variable). One version, one field, opposite verdicts by spawn path.
+- **Discovery**: (1) "Does capability X work on version V" is an incomplete question — the
+  execution PATH (interactive harness / headless CLI / nested wrapper) is an independent axis,
+  and the path a spike happens to use may not be the path production uses. TAD's production
+  path for reviewers is the Agent tool; the earlier all-FAIL evidence was gathered exclusively
+  on a path TAD doesn't ship on, and nearly closed a capability that works. (2) Preload-probe
+  design has two mandatory guards, both learned the hard way the same day: (a) ban the `Skill`
+  tool (and ToolSearch equivalents) — an agent that can load-on-demand and quote is
+  indistinguishable from preload (the morning false-PASS mechanism); (b) verify ban efficacy
+  IN-BAND before trusting a quote-based verdict — `--disallowedTools` is variadic on 2.1.207
+  and a comma-joined single arg mis-parses (swallows the trailing prompt as deny rules); the
+  working form is space-separated names + prompt via stdin. (3) The airtight closer is a
+  same-session discriminative pair: identical spawn path and probe, the tested key as the only
+  variable, negative control MUST come back clean.
+- **Action**: Every native-capability verdict must be pinned to (version, spawn path) — never
+  version alone; test on the path production actually uses before declaring FAIL/PASS. For any
+  preload/context probe: ban Skill+ToolSearch, prove the ban held in-band, and close with a
+  key-present vs key-absent pair on the production path.
+- **failure_mode**: Naive default: spike a capability on whatever spawn path is scriptable
+  (headless CLI), pin the verdict to the CLI version, and ship the conclusion. Why wrong: path
+  behavior diverges — today that default produced 6/6 FAIL evidence on the non-production path
+  for a capability that works on the production one; the reverse error (headless-only PASS,
+  harness FAIL) would ship a dead config key with a false claim.
+- **Grounded in**: .tad/evidence/spikes/subagent-frontmatter-2026-07/spike-report.md (ADDENDUM
+  #2+#3), fr5-delivery-evidence.md (AC1b discriminative pair), COMPLETION-20260713-skills-preload-delivery.md

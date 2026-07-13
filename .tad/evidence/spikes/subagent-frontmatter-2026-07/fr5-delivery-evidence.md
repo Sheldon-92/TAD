@@ -321,3 +321,53 @@ STATUS UPDATE GIVEN AC1a FAIL: AC1b is now the DECISIVE experiment, not a confir
 
 §5 row 1: **AC1a FAIL → BLOCKED — do not merge.** Def and this evidence file left
 UNCOMMITTED in worktree `agent-a4604956fa3f7f4c9` for escalation review. No commit made.
+
+---
+
+## AC1b — DECISIVE DIRECT-SPAWN TEST (2026-07-13, fresh session post-restart)
+
+### Probe 1: security-auditor (project def WITH `skills: [code-security]`), Agent tool spawn, 0 tool uses
+
+- **DEF-IDENTITY: `DEF: PROJECT`** — agent quoted its own body: heading `## Preloaded Pack Budget (TAD)`
+  and the `shadowed-from:` provenance comment. Project-level def confirmed active (registered at
+  session start; staged-untracked file picked up).
+- **PRELOAD: rule bodies PRESENT.** Three verbatim quotes, each grep-F-verifiable in
+  `.claude/skills/code-security/SKILL.md`:
+  1. "Security scans MUST be ordered by speed: pre-commit (<10s) before PR gates (~10s-1min) before full CI (minutes) before runtime (DAST sweeps)."
+  2. "Scanning without a fix workflow is security theater."
+  3. "Placing a 5-minute full scan in pre-commit is a violation."
+- **Delivery mechanism observed**: content arrived as a `<command-message>code-security</command-message>`
+  command block WITH `<skill-format>true</skill-format>` present AT SPAWN. The probe agent itself
+  flagged it could not distinguish static-preload from a same-turn Skill invocation — but the spawn
+  had **0 tool uses**, the prompt banned all tools, and the Conductor invoked no Skill. The only
+  possible source is harness materialization of the def's `skills:` frontmatter.
+
+### Probe 2 (negative control): spec-compliance-reviewer (project def with NO `skills:` key), same session
+
+- **CODE-SECURITY-BLOCK: ABSENT** — no full-skill command block of any kind (`NO-SKILL-BLOCKS`);
+  packs visible only as one-line catalog entries.
+- **FRONTMATTER-AWARENESS: NO** — no skills list in its def.
+
+### Attribution & verdict
+
+Same session, same spawn path, same probe design; the ONLY variable is the `skills:` frontmatter
+key → command-block injection present iff the key is present.
+
+**SKILLS-PRELOAD-DIRECT: PASS**
+
+### Ground truth (supersedes the interim FAIL interpretation in ADDENDUM #2)
+
+`skills:` subagent frontmatter on Claude Code 2.1.207 is a **harness-path capability**:
+- Interactive-harness Agent-tool spawn: **WORKS** (pack injected as command block at spawn).
+- Headless `claude -p --agent` spawn: **INERT** (6/6 FAIL today — 5 implementer + 1 Conductor).
+- ≤2.1.172: INERT on both paths.
+The production path TAD actually uses (Agent tool, Layer 2 reviewers) is the working one.
+The morning re-spike's nested-headless "PASS" remains anomalous/unexplained (its false-positive
+mechanism — Skill tool not banned — still stands as the likely explanation for THAT run);
+today's harness-path PASS rests on the clean discriminative pair above, not on the morning run.
+
+### FR1 wording amendment
+
+Def's "Preloaded Pack Budget (TAD)" paragraph updated to match this evidence (harness-path-only,
+negative-controlled, headless-inert note). AC3 unaffected (change is inside the appended section,
+outside the copied-body comparison region). Handoff §5 AC1b-PASS branch: **resume merge**.

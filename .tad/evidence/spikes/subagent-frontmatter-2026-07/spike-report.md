@@ -185,3 +185,26 @@ spawn; full re-spike replication from main root.
 - Probe-design lesson (for any future capability spike): **ban the `Skill` tool (and
   ToolSearch-loadable equivalents) in preload probes**, and verify ban efficacy in-band
   (AC1a-guard pattern) before trusting a quote-based verdict.
+
+---
+
+## ADDENDUM #3 — 2026-07-13, AC1b decisive test: VERDICT-skills FINAL = PASS(harness-path) / FAIL(headless-path)
+
+Fresh interactive session (staged def registered at startup). Discriminative pair, both spawns
+via Agent tool, 0 tool uses each, all-tools-banned prompts:
+
+1. security-auditor (def WITH `skills: [code-security]`): DEF: PROJECT confirmed via body markers;
+   3 verbatim rules quoted (grep-F-authentic); pack present as command block AT SPAWN.
+2. spec-compliance-reviewer (def WITHOUT `skills:`): CODE-SECURITY-BLOCK: ABSENT, NO-SKILL-BLOCKS.
+
+Only variable = the `skills:` key → **SKILLS-PRELOAD-DIRECT: PASS**. Full raw outputs:
+fr5-delivery-evidence.md §AC1b.
+
+**Final ground truth (2.1.207)**: `skills:` frontmatter works ONLY on the interactive-harness
+Agent-tool spawn path (pack injected as command block at spawn); INERT on headless
+`claude -p --agent` (6/6 FAIL, ADDENDUM #2) and on ≤2.1.172 (original spike). ADDENDUM #2's
+"FAIL (confound identified)" verdict is superseded for the harness path; its probe-design
+lesson (ban the Skill tool in preload probes) and the headless findings stand.
+
+Consequence: HANDOFF-20260713-skills-preload-delivery §5 AC1b-PASS branch → def merged.
+Reviewer-persistent-memory (`memory:` field) remains FAIL/BLOCKED — unchanged.
