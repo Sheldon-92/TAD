@@ -38,6 +38,14 @@
 
 - 不关闭 auto-memory;不整体迁移 Layer 2 到 /code-review;不迁移 agent teams;不现在重开 2026-04-15 机械 enforcement 决定。
 
+## 第二轮裁决(2026-07-12 晚,矩阵剩余重叠面)
+
+- **A1 session-state / §4.5 双层恢复**: 保留。原生压缩恢复只覆盖同会话;session-state 的跨会话/跨终端价值无替代。先跑 PreCompact hook 试点(IDEA-20260712-precompact-hook-session-state),hook 稳定后再议 §4.5 瘦身。
+- **A2 /advisor 纳入对抗审查降级档**: 采纳。优先级 Codex/Gemini(跨厂商)> /advisor(同族)> auto-PASS。需修改 research 协议 UNAVAILABLE 路径(research-plan-protocol.md Phase 0c/4c/5b 的双缺分支)——今天 Phase 4c 裸奔的场景以后先降 /advisor。实施:小 handoff。
+- **A3 /verify 试点**: 采纳。下个有可运行 artifact 的 handoff,Blake 验证环节加 /verify 作为补充途径之一,evidence 照落。与 /code-review 试点同批观察。
+- **A4 原生任务系统 vs NEXT.md**: 零动作。分工已自然形成(会话内=原生 tasks,跨会话=NEXT.md),不写规则不加协议。
+- **B 组 6 个机会**已捕获为 ideas(.tad/active/ideas/IDEA-20260712-*.md):审查员持久记忆、PreCompact hook、skills 预载、.claude/rules 试点、cron 复活周扫描、AskUserQuestion preview。执行未开始,按 *idea-promote 流程逐个来。
+
 ## 后续动作登记(见 NEXT.md)
 
 1. Handoff:memory-redirect-capture-layer(裁决 1 实施)— 需过完整 TAD 流程
