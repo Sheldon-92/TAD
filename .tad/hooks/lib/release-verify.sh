@@ -540,7 +540,8 @@ MIG_REN_EOF
     if $FIX_MODE; then echo "  MODE: --fix (will attempt auto-fix if claude-newer)"; fi
     echo "========================================="
 
-    pout="$(diff -rq "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
+    # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
+    pout="$(diff -rq -x local "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
     if [ -z "$pout" ]; then
       echo "  ✅ .claude/skills <-> .agents/skills byte-identical"
       echo "VERDICT: parity PASS (exit 0)"
@@ -647,9 +648,10 @@ PARITY_EOF
     if $FIX_MODE; then
       if [ "$DIRECTION" = "claude-newer" ]; then
         echo "  🔧 Auto-fixing: rsync Claude→Codex..."
-        rsync -a --delete "$CLAUDE_SKILLS/" "$AGENTS_SKILLS/"
+        # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
+        rsync -a --delete --exclude=/local/ "$CLAUDE_SKILLS/" "$AGENTS_SKILLS/"
         # Re-verify
-        reverify="$(diff -rq "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
+        reverify="$(diff -rq -x local "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
         if [ -z "$reverify" ]; then
           echo "  ✅ Fix successful — .agents/skills now matches .claude/skills"
           echo "VERDICT: parity FIX-PASS (exit 0)"
