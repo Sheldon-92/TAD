@@ -1,6 +1,7 @@
 # T1 Spike — Four Questions (HANDOFF-20260712-precompact-session-state-hook §4.2)
 
-Status: **honest_partial — PENDING-REAL-EVENT** (per Conductor grounding, phase1-grounding.md).
+Status: **CLOSED — REAL-EVENT VERIFIED 2026-07-13 11:50** (see closure addendum at bottom).
+Original status at ship time: honest_partial — PENDING-REAL-EVENT (per Conductor grounding, phase1-grounding.md).
 A sub-agent cannot trigger an interactive /compact of a live session, and a newly registered
 PreCompact hook may not fire in already-running sessions. The probe is BUILT INTO the shipped
 hook: every run tees raw stdin to `last-stdin.json` (overwrite) in this directory, so the first
@@ -45,3 +46,39 @@ real compact by the human (Terminal 1) auto-produces the authoritative answers w
 - **PENDING-REAL-EVENT** — cannot be proven from a sub-agent. Registration is inert if
   unsupported (hook simply never fires; nothing breaks). If the first real /compact produces
   no `last-stdin.json` and no snapshot, treat as BLOCKED per §8.4 and report the version.
+
+---
+
+## REAL-EVENT CLOSURE ADDENDUM — 2026-07-13 11:50 (manual /compact by human, CLI 2.1.207)
+
+Event: user ran `/compact` in session bdae3dff (Terminal 1). Hook fired
+(`PreCompact [bash .tad/hooks/precompact-session-snapshot.sh] completed successfully` shown
+in CLI output). Note: hook was REGISTERED under 2.1.172; this fire is under 2.1.207.
+
+### (i) stdin field spellings — ✅ CONFIRMED (all expected spellings correct)
+`last-stdin.json` (real, non-synthetic):
+`session_id`, `transcript_path`, `cwd`, `prompt_id` (bonus field, not in docs guess),
+`hook_event_name: "PreCompact"`, `trigger: "manual"`, `custom_instructions: null`.
+Zero `(unavailable: ...)` degradations needed.
+
+### (ii) session_id stability across compaction — ✅ STABLE
+Pre-compact stdin `session_id` = `bdae3dff-...`; post-compact the SAME session continues under
+`bdae3dff-...` (scratchpad path + transcript path unchanged). Diagnostic-only design stands.
+
+### (iii) auto-compact firing — STILL untestable-on-demand (unchanged)
+This event was `trigger: "manual"`. Matcher `""` covers auto by construction; residual unknown
+remains open per §8.4 pre-authorization. (An earlier snapshot `snapshot-20260713-092738-mainspot.md`
+also landed at 09:27 with `Trigger: manual` — a second independent firing; its non-UUID session
+value "mainspot" is diagnostic-only per design.)
+
+### (iv) SessionStart source=compact end-to-end — ✅ VERIFIED LIVE
+Post-compact context in the SAME session received the reminder line:
+"Post-compact: read .tad/active/session-state.md + newest .tad/active/precompact/snapshot-*.md
+before continuing." → startup-health.sh compact branch fires on real compact, full chain proven.
+
+### Friction Preflight (PreCompact supported at all?) — ✅ YES on 2.1.207
+Snapshot `snapshot-20260713-115028-bdae3dff.md` written with true fields (When/Trigger/Git HEAD
+6848246/Git counts/0 active handoffs/0 active epics — all match live repo state at fire time).
+Newest-wins reader has 2 snapshots to discriminate; prune-keep-5 not yet exercised (only 2 files).
+
+**AC2a + T1: PASS. No PENDING-REAL-EVENT items remain for Phase 1.**

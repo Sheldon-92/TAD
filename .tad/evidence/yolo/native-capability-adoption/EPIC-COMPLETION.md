@@ -10,7 +10,7 @@
 
 | Phase | Outcome | Merge | Behavioral evidence | Reviews (design / impl) |
 |-------|---------|-------|--------------------|-----------------------|
-| P1 PreCompact snapshot hook | ✅ SHIPPED | abca584 | AC3/4/5/6/7/8 live-proven; AC2a/T1 stdin = PENDING-REAL-EVENT (auto-tee at next real /compact) | 0 P0 re-validation / 0 P0 0 P1 |
+| P1 PreCompact snapshot hook | ✅ SHIPPED | abca584 | AC3/4/5/6/7/8 live-proven; AC2a/T1 **CLOSED 2026-07-13 11:50** — real /compact fired hook on 2.1.207, stdin spellings confirmed, session_id stable, post-compact reminder delivered (T1-answers.md closure addendum) | 0 P0 re-validation / 0 P0 0 P1 |
 | P2 reviewer memory + skills preload | ✅ NEGATIVE-RESULT | bf51be4 | Spike: `memory`+`skills` INERT on 2.1.172; shadowing PASS → spec-compliance-reviewer live (confirmed as available agent type same session) | 2 P0 (fixed) / 0 P0 0 P1 |
 | P3 weekly GitHub scan | ✅ SPIKE PASS, partial automation | 0f14d18 | last_scan null→2026-07-13 real flip; merge-write fixture-proven; CRON-FIRE-VERIFY PASS (one-shot 3cea3b55 fired 10:40, guard clean-exit) | 0 P0 4 P1 (implemented) / 0 P0 0 P1 |
 | P4 preview rule + rules pilot | ✅ SHIPPED | 0b947a5 | Rules spike LOADED (6/6 discriminative probes, @import confound defeated); preview protocol = observe-on-next-*design | 2 P0 (fixed) / 0 P0 0 P1 |
@@ -46,8 +46,9 @@ scan-log real data, rules file + mirror IDENTICAL.
 
 ## Escalations Requiring HUMAN Decision (carried to NEXT.md)
 
-1. **AC2a real-compact evidence**: fire a real /compact in any NEW session (hooks snapshot at
-   session start — this session predates registration); evidence auto-lands.
+1. ~~**AC2a real-compact evidence**~~ ✅ CLOSED 2026-07-13 11:50 — real manual /compact fired the
+   hook (2.1.207); snapshot + last-stdin.json + post-compact reminder all verified.
+   T1 four questions answered: see T1-answers.md REAL-EVENT CLOSURE ADDENDUM.
 2. ***publish 前分发裁决**: `.claude/agents/` 与 `.claude/rules/` 均对两条分发路径不可见
    (derive-sync-set 只走 .tad/*/; tad.sh .claude 拷贝是硬编码 allow-list)。推荐 main-repo-only,
    若要分发必须加显式拷贝路径 + 同粒度 verifier (principles 2026-06-01)。
