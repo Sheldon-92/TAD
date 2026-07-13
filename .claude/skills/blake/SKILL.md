@@ -1065,6 +1065,8 @@ notebooklm_access:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: ".claude/skills/blake/references/notebooklm-access.md"
   load_when: "When Blake needs to query or add sources to a NotebookLM notebook, Read the reference and follow it verbatim."
+  deny_default_summary: "Read-only commands (ask/fulltext/guide/topics/list/language) are allowed; default rule is DENY."
+  # Create/delete/mutating commands (create, research, report, configure, consolidate, curate, archive, add, sync, use) are Alex-domain — full allowed/forbidden list in the reference.
 # TAD Brain (knowledge search — same protocol as Alex, see alex/SKILL.md tad_brain_protocol)
 # Blake can use tad-brain during implementation to check for relevant precedents.
 # Invoke: Agent({ description: "tad-brain search", prompt: "Read .tad/brain-index.md ... {query}" })

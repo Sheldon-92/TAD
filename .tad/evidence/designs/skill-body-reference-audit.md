@@ -3,19 +3,20 @@
 **Auditor:** Blake
 **Date:** 2026-06-09
 **Epic:** EPIC-20260609-skill-body-reference-boundary (Phase 1/3)
+**Re-audit:** 2026-07-12 — verdict: **0 CIRCULAR-RISK / 0 DISCIPLINE-LEAK** across the current 31 reference files (29 alex + 2 blake). The 3 must-body items (completion-protocol, execution-checklist, ralph-loop) confirmed still inlined in blake/SKILL.md body; their reference files remain deleted. Retired refs (dream/evolve/optimize/skillify) removed from inventory; distillation-loop-protocol.md + knowledge-maintain-protocol.md added (both reference-ok). Verifier extended with an alex section in `.tad/hooks/lib/skill-body-verify.sh`.
 **Criterion:** Two-part test: (1) "If agent doesn't proactively read this, will it unknowingly **skip** a mandatory step?" (2) "If agent doesn't proactively read this, will it **execute** a step but **miss critical constraints/protection**?"
 
 ## Summary
-- Total references audited: 36
-- Must-body: 3
-- Reference-ok: 33
+- Total reference files in inventory (2026-07-12): 31 (29 alex + 2 blake)
+- Must-body: 3 (all Blake — inlined into SKILL body in Phase 2; reference files deleted)
+- Reference-ok: 31
 - Partial-body: 0
 
-**Key finding:** All 3 must-body files are Blake references with **circular trigger patterns** — the `load_when` stub refers to a step that the reference itself defines (e.g., "Read ralph-loop when entering Ralph Loop" but Ralph Loop IS defined in ralph-loop.md). Without the reference, Blake doesn't know the step exists. All 31 Alex references and 2 remaining Blake references have **non-circular triggers** — the agent knows the triggering event independently of the reference content.
+**Key finding:** All 3 must-body files are Blake references with **circular trigger patterns** — the `load_when` stub refers to a step that the reference itself defines (e.g., "Read ralph-loop when entering Ralph Loop" but Ralph Loop IS defined in ralph-loop.md). Without the reference, Blake doesn't know the step exists. All 29 Alex references and 2 remaining Blake references have **non-circular triggers** — the agent knows the triggering event independently of the reference content.
 
 ---
 
-## Alex References (31)
+## Alex References (29)
 
 ### accept-command.md
 - **Classification:** reference-ok
@@ -87,25 +88,14 @@
 - **Rationale:** Triggered by *discuss. Contains discussion behavior rules, domain pack awareness, research notebook awareness, forbidden actions (no handoff creation). Agent knows it's in discuss mode. Without reading, agent might create a handoff during discussion (violating the forbidden list), but the SKILL body's command separation (discuss ≠ analyze) provides a natural barrier.
 - **Key content summary:** Free-form discussion mode: consultant persona, domain pack + research notebook awareness, forbidden actions (no handoff/gate/code), soft checkpoint at 6+ exchanges, exit protocol with ROADMAP option.
 
-### dream-protocol.md
-- **Classification:** reference-ok
-- **Line count:** 209 lines
-- **Trigger mechanism:** *dream command
+### distillation-loop-protocol.md
+- **Classification:** reference-ok (added 2026-07-12 re-audit)
+- **Line count:** 95 lines
+- **Trigger mechanism:** Gate 4 Knowledge Assessment execution (distillation_loop trigger defined in SKILL body)
 - **load_when assessment:** truly_conditional
-- **Contains MUST/MANDATORY/VIOLATION:** yes (4)
+- **Contains MUST/MANDATORY/VIOLATION:** no (0)
 - **Contains forbidden_implementations:** no
-- **Rationale:** Triggered by *dream. Contains knowledge file consolidation workflow (orient → gather signal → consolidate → validate → promote/rollback). All constraints apply within the *dream execution context. Without reading, agent wouldn't execute *dream at all (no silent violation).
-- **Key content summary:** Knowledge consolidation: scan entries, detect stale refs + AMENDED pairs + topic overlap, produce candidates, human review, promote/rollback with snapshots.
-
-### evolve-protocol.md
-- **Classification:** reference-ok
-- **Line count:** 195 lines
-- **Trigger mechanism:** *evolve command
-- **load_when assessment:** truly_conditional
-- **Contains MUST/MANDATORY/VIOLATION:** yes (4)
-- **Contains forbidden_implementations:** no
-- **Rationale:** Triggered by *evolve. Contains cross-project trace aggregation + framework-level proposals. TAD-main-only prerequisite (sync-registry.yaml check). All constraints are within the *evolve execution context.
-- **Key content summary:** Cross-project trace aggregation, v2 pattern analysis, framework dream candidate collection, lifecycle health comparison, framework-level proposals with safety constraints.
+- **Rationale:** Non-circular: the distillation_loop trigger, blocking:false status, high_level_flow, AND the 3-layer note_blocking_taxonomy all live in the SKILL body — the reference only holds detailed execution steps, so skipping it degrades quality but cannot silently skip the KA step.
 
 ### experiment-path-protocol.md
 - **Classification:** reference-ok
@@ -177,6 +167,15 @@
 - **Rationale:** Triggered when user input is ambiguous — a frequent event, but the agent knows it's routing (the user said something, agent needs to figure out intent). The SKILL body has the commands list and the flow structure, so even without reading, the agent would do SOME form of intent matching. The reference adds: idle detection (step1_5), signal word analysis (step2), *express-never-Recommended rule (step3), Pack Awareness Scan (step4_5), standby state definition, and path transition rules (allowed/forbidden). Test 2 concern: without reading, agent might recommend *express as Option 1 (violating AR-001 constraint). However, this constraint is ALSO enforced in express-path-protocol itself (NOT_via_alex_suggestion) — the three independent defenses (per principles.md "Path Layering") ensure the constraint survives even if one layer is unread. The forbidden path transitions (analyze→express/experiment) are defense-in-depth against mid-flight scope downgrade. Without reading, the agent would still route based on explicit commands (the SKILL body has the command list), and the degradation would be in AskUserQuestion refinement for ambiguous cases.
 - **Key content summary:** Intent routing: idle detection, 7-mode signal detection, *express-never-Recommended (AR-001), user confirmation with 4-option strategy, Pack Awareness Scan, standby state definition, path transition matrix (allowed/forbidden).
 
+### knowledge-maintain-protocol.md
+- **Classification:** reference-ok (added 2026-07-12 re-audit)
+- **Line count:** 110 lines
+- **Trigger mechanism:** *knowledge-maintain command or distillation_loop step6 completion
+- **load_when assessment:** truly_conditional
+- **Contains MUST/MANDATORY/VIOLATION:** no (0)
+- **Contains forbidden_implementations:** no
+- **Rationale:** Non-circular: triggered by an explicit *knowledge-maintain command (user-typed) or a chained event from distillation_loop whose trigger lives in the SKILL body; blocking:false — skipping loses a maintenance pass, never a mandatory step.
+
 ### learn-path-protocol.md
 - **Classification:** reference-ok
 - **Line count:** 100 lines
@@ -186,16 +185,6 @@
 - **Contains forbidden_implementations:** no
 - **Rationale:** Triggered by *learn. Socratic teaching mode. No constraints that could be silently violated.
 - **Key content summary:** Socratic teaching: identify topic, assess understanding, teach via Q&A loop, optional quiz/flashcard generation, wrap up.
-
-### optimize-protocol.md
-- **Classification:** reference-ok
-- **Line count:** 291 lines
-- **Trigger mechanism:** *optimize command
-- **load_when assessment:** truly_conditional
-- **Contains MUST/MANDATORY/VIOLATION:** yes (2)
-- **Contains forbidden_implementations:** no
-- **Rationale:** Triggered by *optimize. Contains trace analysis and proposal generation with safety constraints. All constraints apply within the *optimize context.
-- **Key content summary:** Execution trace analysis: lifecycle health metrics (zombie rate, cycle time, evidence rate), v2 pattern analysis (reflexion, gate failures, domain pack steps), proposal generation with safety constraints, human approval, apply + reminder.
 
 ### publish-protocol.md
 - **Classification:** reference-ok
@@ -236,16 +225,6 @@
 - **Contains forbidden_implementations:** no
 - **Rationale:** Triggered by *research-review. Research portfolio review and classification. No mandatory constraints.
 - **Key content summary:** Research portfolio review: scan all notebooks, classify (strengthen/maintain/pivot/close) by goal alignment, OBJECTIVES alignment check, execute per category.
-
-### skillify-command-protocol.md
-- **Classification:** reference-ok
-- **Line count:** 51 lines
-- **Trigger mechanism:** *skillify command
-- **load_when assessment:** truly_conditional
-- **Contains MUST/MANDATORY/VIOLATION:** yes (4)
-- **Contains forbidden_implementations:** yes (1 block)
-- **Rationale:** Triggered by *skillify. Contains 4 quality gates (Reusable, Non-trivial, Verified, Not-duplicate), pattern type routing (judgment → SKILL.md, orchestration → .workflow.js), and forbidden_implementations (no auto-accept, no direct skill creation, no Blake access, no auto-invoke). All constraints apply within the *skillify context.
-- **Key content summary:** Skillify workflow: session pattern detection, 4-gate quality check, pattern type routing (judgment vs orchestration), candidate draft, save to .tad/active/skillify-candidates/.
 
 ### socratic-inquiry-protocol.md
 - **Classification:** reference-ok
@@ -329,10 +308,14 @@
 
 ---
 
-## Blake References (5)
+## Blake References (2 files + 3 must-body inlined)
+
+> 2026-07-12 note: the 3 must-body files below were inlined into blake/SKILL.md body in Phase 2
+> and their reference files deleted. Entries retained for classification rationale.
+> `.tad/hooks/lib/skill-body-verify.sh` enforces both the body markers and the negative presence.
 
 ### completion-protocol.md
-- **Classification:** must-body (locked)
+- **Classification:** must-body (locked — inlined into body, file deleted)
 - **Line count:** 333 lines
 - **Trigger mechanism:** none (always needed when Blake completes implementation)
 - **load_when assessment:** always_needed — **CIRCULAR TRIGGER**: the stub says "When Blake completes implementation and writes completion report" but this reference DEFINES what the completion report IS and that Blake must write one. Without it, Blake doesn't know to create a completion report at all.
@@ -352,7 +335,7 @@
 - **Key content summary:** Cross-model CLI invocation: preflight checks (command -v), Codex review/implement scenarios, Gemini research scenario, error handling + timeout, forbidden (no auto-invoke, no substitute for Layer 2 reviewer, no auto-commit).
 
 ### execution-checklist.md
-- **Classification:** must-body (locked)
+- **Classification:** must-body (locked — inlined into body, file deleted)
 - **Line count:** 240 lines
 - **Trigger mechanism:** none (always needed when Blake executes any handoff)
 - **load_when assessment:** always_needed — **CIRCULAR TRIGGER**: the stub says "When Blake starts executing a handoff task (after reading handoff)" but this reference DEFINES the execution checklist Blake must follow. Without it, Blake doesn't know about task_type_branching, Layer 1 self-check requirements, reflexion step, Layer 2 expert review requirements, or the absolute_forbidden list.
@@ -372,7 +355,7 @@
 - **Key content summary:** NotebookLM access rules: allowed commands (ask, fulltext, guide, topics, list, language), forbidden commands (create, research, report, configure, consolidate, curate, archive, add, sync, use, language set), default deny rule, ingest mutation scope with confirmation gate.
 
 ### ralph-loop.md
-- **Classification:** must-body (locked)
+- **Classification:** must-body (locked — inlined into body, file deleted)
 - **Line count:** 719 lines
 - **Trigger mechanism:** none (always needed when Blake enters the Ralph Loop execution cycle)
 - **load_when assessment:** always_needed — **CIRCULAR TRIGGER**: the stub says "When Blake enters the Ralph Loop execution cycle for a task" but this reference DEFINES the Ralph Loop. Without it, Blake doesn't know about the Layer 1 → Layer 2 → Gate 3 flow, Agent Team implementation mode, circuit breaker mechanics, escalation thresholds, or state persistence. The Ralph Loop IS Blake's core execution mechanism.
@@ -400,12 +383,16 @@
 
 ---
 
-## Machine-Parseable Summary (for Phase 2 automation)
+## Machine-Parseable Summary (refreshed 2026-07-12 — current 31 reference files: 29 alex + 2 blake)
 
 ```yaml
+# Re-audit 2026-07-12: 0 CIRCULAR-RISK / 0 DISCIPLINE-LEAK.
+# Retired refs removed: dream-protocol.md, evolve-protocol.md, optimize-protocol.md,
+#   skillify-command-protocol.md (commands retired by Self-Evolution Pruning / v2.8+ consolidation).
+# Added: distillation-loop-protocol.md, knowledge-maintain-protocol.md (both reference-ok).
 must_body:
   alex: []
-  blake:
+  blake:  # inlined into blake/SKILL.md body (Phase 2) — reference files deleted; still must-body
     - completion-protocol.md
     - execution-checklist.md
     - ralph-loop.md
@@ -418,8 +405,7 @@ reference_ok:
     - cancel-protocol.md
     - design-protocol.md
     - discuss-path-protocol.md
-    - dream-protocol.md
-    - evolve-protocol.md
+    - distillation-loop-protocol.md
     - experiment-path-protocol.md
     - express-path-protocol.md
     - handoff-creation-protocol.md
@@ -427,13 +413,12 @@ reference_ok:
     - idea-path-protocol.md
     - idea-promote-protocol.md
     - intent-router-protocol.md
+    - knowledge-maintain-protocol.md
     - learn-path-protocol.md
-    - optimize-protocol.md
     - publish-protocol.md
     - research-decision-protocol.md
     - research-plan-protocol.md
     - research-review-protocol.md
-    - skillify-command-protocol.md
     - socratic-inquiry-protocol.md
     - status-panoramic-protocol.md
     - sync-add-protocol.md
