@@ -1,0 +1,32 @@
+# Dependency Evolution Registry — created by *deps init
+# Rich fields enable Phase 2 upstream scanning and Phase 3 limitation resolution detection.
+# See: EPIC-20260714-dependency-evolution-awareness.md
+version: 1.0.0
+last_updated: YYYY-MM-DD
+project: "<project name>"
+
+dependencies: []
+# Example entry (uncomment and fill):
+#  - name: "example-dep"
+#    type: platform          # platform | framework | api | tool | library
+#    safety_tier: L2         # L1 (7d) | L2 (14d) | L3 (30d)
+#    current_version: "1.0.0"
+#    version_pinned_at: YYYY-MM-DD
+#    status: active          # active | deprecated | evaluating
+#    upstream:
+#      repo: "owner/repo"
+#      registry: "npm"       # npm | pypi | github_releases | homebrew | cargo | null
+#      changelog_url: "https://github.com/owner/repo/releases"
+#    usage:
+#      capabilities_used:
+#        - "Specific API or capability used"
+#      files_depending:
+#        - "src/path/to/file.ts"
+#      integration_context: "One-line description of this dependency's role"
+#    known_limitations:
+#      - id: "DEP-001"
+#        description: "Known limitation"
+#        workaround: "Current workaround"
+#        resolved_by_upstream: false
+#    last_checked: YYYY-MM-DD
+#    notes: ""

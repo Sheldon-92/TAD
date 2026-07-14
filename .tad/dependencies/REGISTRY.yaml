@@ -1,0 +1,207 @@
+version: 1.0.0
+last_updated: 2026-07-14
+project: "TAD Framework"
+
+dependencies:
+  - name: "notebooklm-cli"
+    type: platform
+    safety_tier: L2
+    current_version: "0.5.x"
+    version_pinned_at: 2026-06-01
+    status: active
+
+    upstream:
+      repo: null
+      registry: null
+      changelog_url: null
+
+    usage:
+      capabilities_used:
+        - "Multi-source notebook creation and management"
+        - "Source ingestion (URLs, PDFs, text)"
+        - "Natural language Q&A over ingested sources"
+        - "Audio overview generation"
+      files_depending:
+        - ".claude/skills/alex/references/research-plan-protocol.md"
+        - ".claude/skills/blake/references/notebooklm-access.md"
+        - ".tad/research-notebooks/REGISTRY.yaml"
+        - ".tad/hooks/lib/notebook-lifecycle.sh"
+      integration_context: "Backend for TAD's *research system — Standard/Deep research routes through NotebookLM for persistent, multi-source knowledge accumulation."
+
+    known_limitations:
+      - id: "DEP-001"
+        description: "23-43s latency per query due to cloud processing"
+        workaround: "Accepted as non-blocking; step is async in Blake's workflow"
+        resolved_by_upstream: false
+      - id: "DEP-002"
+        description: "No offline mode — requires network access"
+        workaround: "WebSearch-based fallback when CLI unavailable"
+        resolved_by_upstream: false
+
+    last_checked: 2026-07-14
+    notes: "Wrapped via ~/.tad-notebooklm-venv/bin/notebooklm. Access is role-gated: Alex owns lifecycle, Blake has read-only + controlled ingest."
+
+  - name: "gh"
+    type: tool
+    safety_tier: L1
+    current_version: "2.79.0"
+    version_pinned_at: 2026-07-14
+    status: active
+
+    upstream:
+      repo: "cli/cli"
+      registry: homebrew
+      changelog_url: "https://github.com/cli/cli/releases"
+
+    usage:
+      capabilities_used:
+        - "GitHub API access (repos, issues, PRs, releases)"
+        - "Release creation and tag management (*publish)"
+        - "PR creation and review"
+        - "Repository metadata queries"
+      files_depending:
+        - ".claude/skills/alex/references/publish-protocol.md"
+        - ".tad/hooks/lib/layer2-audit.sh"
+        - ".tad/hooks/lib/verify-ac-commands.sh"
+        - ".tad/github-registry/REGISTRY.yaml"
+      integration_context: "Primary GitHub interface for TAD's *publish, *sync-add, and GitHub Registry scan workflows."
+
+    known_limitations: []
+
+    last_checked: 2026-07-14
+    notes: "Installed via Homebrew. Used in publish, sync-add, and github-registry scan."
+
+  - name: "yq"
+    type: tool
+    safety_tier: L1
+    current_version: "4.47.2"
+    version_pinned_at: 2026-07-14
+    status: active
+
+    upstream:
+      repo: "mikefarah/yq"
+      registry: homebrew
+      changelog_url: "https://github.com/mikefarah/yq/releases"
+
+    usage:
+      capabilities_used:
+        - "YAML parsing and querying in shell scripts"
+        - "In-place YAML editing (yq -i)"
+        - "YAML validation"
+      files_depending:
+        - "tad.sh"
+        - ".tad/hooks/lib/drift-check.sh"
+        - ".tad/hooks/lib/gate3-git-tracked-check.sh"
+        - ".tad/hooks/lib/harvest-scan.sh"
+        - ".tad/hooks/lib/notebook-lifecycle.sh"
+      integration_context: "YAML processing backbone for TAD's shell-based tooling — config parsing, registry management, handoff frontmatter extraction."
+
+    known_limitations:
+      - id: "DEP-003"
+        description: "yq -i normalizes whole file on first write (strips blank lines, re-folds strings)"
+        workaround: "Use Edit tool for initial creation; yq only for subsequent modifications. Expect one-time normalization."
+        resolved_by_upstream: false
+
+    last_checked: 2026-07-14
+    notes: "mikefarah/yq v4 (Go). See shell-portability.md pattern for normalization gotcha."
+
+  - name: "jq"
+    type: tool
+    safety_tier: L1
+    current_version: "1.7.1"
+    version_pinned_at: 2026-07-14
+    status: active
+
+    upstream:
+      repo: "jqlang/jq"
+      registry: homebrew
+      changelog_url: "https://github.com/jqlang/jq/releases"
+
+    usage:
+      capabilities_used:
+        - "JSON parsing and querying in shell scripts"
+        - "JSONL trace event construction"
+        - "Structured data extraction from tool output"
+      files_depending:
+        - ".tad/hooks/lib/common.sh"
+        - ".tad/hooks/lib/post-write-sync.sh"
+        - ".tad/hooks/lib/drift-check.sh"
+        - ".tad/hooks/lib/release-verify.sh"
+      integration_context: "JSON processing for TAD's trace/evidence system — constructs JSONL events, parses hook output, extracts structured data."
+
+    known_limitations: []
+
+    last_checked: 2026-07-14
+    notes: "Apple-bundled jq-1.7.1. Also available via Homebrew. Used with env-var convention (TRACE_* variables) per shell-portability patterns."
+
+  - name: "rsync"
+    type: tool
+    safety_tier: L1
+    current_version: "openrsync protocol 29"
+    version_pinned_at: 2026-07-14
+    status: active
+
+    upstream:
+      repo: null
+      registry: null
+      changelog_url: null
+
+    usage:
+      capabilities_used:
+        - "Directory tree synchronization with exclusion patterns"
+        - "Incremental file copy for *sync operations"
+        - "Parity verification (release-verify.sh)"
+      files_depending:
+        - ".tad/hooks/lib/release-verify.sh"
+        - ".tad/hooks/lib/drift-check.sh"
+      integration_context: "File synchronization engine for TAD's *sync and release-verify workflows — syncs framework files to downstream projects with deny-list exclusions."
+
+    known_limitations:
+      - id: "DEP-004"
+        description: "macOS ships openrsync (not GNU rsync) — some flags differ"
+        workaround: "Use only portable flags; avoid GNU-specific options like --info"
+        resolved_by_upstream: false
+
+    last_checked: 2026-07-14
+    notes: "macOS built-in openrsync. Used in *sync (tad.sh) and release-verify.sh parity checks."
+
+  - name: "claude-code-cli"
+    type: platform
+    safety_tier: L2
+    current_version: "2.1.x"
+    version_pinned_at: 2026-07-14
+    status: active
+
+    upstream:
+      repo: null
+      registry: null
+      changelog_url: null
+
+    usage:
+      capabilities_used:
+        - "Agent execution (Alex/Blake personas via SKILL.md)"
+        - "Hook system (PreToolUse, PostToolUse, SessionStart, PreCompact)"
+        - "Sub-agent orchestration (Agent tool with subagent_type)"
+        - "Workflow execution (.workflow.js scripts)"
+        - "LSP integration for code intelligence"
+        - "MCP server connectivity"
+      files_depending:
+        - ".claude/settings.json"
+        - ".claude/settings.local.json"
+        - ".claude/skills/"
+        - ".claude/workflows/"
+        - ".tad/hooks/"
+      integration_context: "Runtime platform for TAD — all agent behavior, hook enforcement, sub-agent orchestration, and tool access flows through Claude Code's harness."
+
+    known_limitations:
+      - id: "DEP-005"
+        description: "Hooks run as shell commands — no structured data passing between hook and agent"
+        workaround: "Hooks write to files; agents read files. JSONL as interchange format."
+        resolved_by_upstream: false
+      - id: "DEP-006"
+        description: "Context compaction can lose agent state mid-task"
+        workaround: "3-layer compact recovery: PreCompact hook snapshot (L0), agent self-check (L1), manual user trigger (L2)"
+        resolved_by_upstream: false
+
+    last_checked: 2026-07-14
+    notes: "TAD's execution substrate. Version tracked loosely — capabilities evolve with each release."

@@ -524,6 +524,11 @@ commands:
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
 
+  # Dependency awareness commands
+  deps: Show dependency registry — readable table of key project dependencies
+  deps-init: Initialize dependency registry from project scan — semi-auto with enrichment
+  deps-add: Register a new dependency — manual add with guided enrichment
+
   # Framework management commands
   publish: GitHub publish workflow — version check, changelog, push, tag
   sync: Sync TAD to registered projects — framework files, cleanup, verify
@@ -690,7 +695,7 @@ intent_router_protocol:
   blocking: true
 
   # Core routing — explicit commands bypass detection
-  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze"]
+  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze", "*deps", "*deps-init", "*deps-add"]
   idle_patterns_zh: ["谢谢", "ok", "好的", "收到", "明白了"]
   idle_patterns_en: ["thanks", "ok", "got it", "sure", "noted"]
 
@@ -702,6 +707,9 @@ intent_router_protocol:
     express: express_path_protocol
     experiment: experiment_path_protocol
     analyze: adaptive_complexity_protocol
+    deps: deps_show_protocol
+    deps-init: deps_init_protocol
+    deps-add: deps_add_protocol
 
   # Full detection logic (step2 signal analysis, step3 user confirmation, step4_5 pack scan)
   # in the reference file below.
@@ -725,6 +733,16 @@ status_panoramic_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/status-panoramic-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *status command), Read the reference and follow it verbatim."
+# Dependency Registry Protocols (*deps, *deps init, *deps add)
+deps_show_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps command is invoked, Read the reference and follow deps_show_protocol."
+deps_init_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps init command is invoked, Read the reference and follow deps_init_protocol."
+deps_add_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps add command is invoked, Read the reference and follow deps_add_protocol."
 # ═══════════════════════════════════════════════════════════
 # Unified Research Protocol (*research)
 # ⚠️ MUST stay in SKILL body — circular trigger: routing table
