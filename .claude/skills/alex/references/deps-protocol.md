@@ -132,3 +132,45 @@ Run upstream dependency scan and display results.
 - Dependencies with `registry: null` are skipped (expected for notebooklm-cli, rsync, claude-code-cli)
 - Security advisory checks are best-effort (GitHub GraphQL API)
 - For scheduled scans, see cron prompt at `.tad/evidence/spikes/cron-deps-scan/cron-prompt.md`
+
+## deps_update_protocol
+
+Record that a dependency has been upgraded and confirm limitation resolutions.
+
+### Steps
+1. **Parse command**: `*deps-update <name>` — extract dependency name
+   - If name not provided: ask via conversation
+
+2. **Verify dependency exists** in `.tad/dependencies/REGISTRY.yaml`
+   - If not found: "Dependency '{name}' not in registry. Run *deps or *deps-add."
+
+3. **Ask for new version**: "What version did you upgrade {name} to?"
+
+4. **Update REGISTRY.yaml** using Edit tool (NOT yq -i — avoids whole-file normalization):
+   - `current_version` → new value from user
+   - `version_pinned_at` → today's date (YYYY-MM-DD)
+   - `last_checked` → today's date (YYYY-MM-DD)
+
+5. **Check limitation resolution** (if applicable):
+   - Read `known_limitations` for this dependency from REGISTRY.yaml
+   - For each limitation where `resolved_by_upstream: false`:
+     - Check if STEP 3.5b previously flagged it as `potentially_resolved`
+       (look at the current session's dependency evolution check output)
+     - If flagged (or if the changelog suggests resolution):
+       Use AskUserQuestion:
+       ```
+       question: "Limitation {id} was flagged as potentially resolved: '{description}'.
+                  Has this been resolved in {new_version}?"
+       options:
+         - "Yes — resolved, remove workaround"
+         - "No — still needed"
+       ```
+     - If user confirms resolved → Edit REGISTRY.yaml: set `resolved_by_upstream: true`
+     - If not confirmed → keep `resolved_by_upstream: false`
+
+6. **Output**: "✅ {name} updated to {version}. {N} limitations confirmed resolved."
+
+### Constraints
+- Use Edit tool for all REGISTRY.yaml modifications (yq -i normalizes whole file)
+- Only update the specific dependency entry (preserve other entries byte-identical)
+- If user is unsure about a limitation: default to keeping `resolved_by_upstream: false` (conservative)
