@@ -28,23 +28,23 @@ scan_results:
       domain: "ai-agents"
       stars: 1884
       description: "🤖 A comprehensive list of 1,500+ resources and tools related to AI agents."
-      status: pending
+      status: accepted
       first_seen: 2026-07-13
     - repo: "slavakurilyak/awesome-ai-agents"
       domain: "ai-agents"
       stars: 1829
       description: "Awesome list of 300+ agentic AI resources"
-      status: pending
+      status: accepted
       first_seen: 2026-07-13
     - repo: "caramaschiHG/awesome-ai-agents-2026"
       domain: "ai-agents"
       stars: 1437
       description: "🤖 The most comprehensive list of AI agents, frameworks & tools in 2026. 300+ resources · 20+ categories · Updated monthly."
-      status: pending
+      status: accepted
       first_seen: 2026-07-13
     - repo: "Jenqyang/Awesome-AI-Agents"
       domain: "ai-agents"
       stars: 1185
       description: "A collection of autonomous agents 🤖️ powered by LLM."
-      status: pending
+      status: accepted
       first_seen: 2026-07-13

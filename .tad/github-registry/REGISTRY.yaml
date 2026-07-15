@@ -35,6 +35,26 @@ domains:
         url: "https://github.com/f/awesome-chatgpt-prompts"
         last_checked: 2026-05-04
         description: "ChatGPT prompt engineering collection"
+      - repo: "jim-schwoebel/awesome_ai_agents"
+        stars: 1884
+        url: "https://github.com/jim-schwoebel/awesome_ai_agents"
+        last_checked: 2026-07-14
+        description: "A comprehensive list of 1,500+ resources and tools related to AI agents"
+      - repo: "slavakurilyak/awesome-ai-agents"
+        stars: 1829
+        url: "https://github.com/slavakurilyak/awesome-ai-agents"
+        last_checked: 2026-07-14
+        description: "Awesome list of 300+ agentic AI resources"
+      - repo: "caramaschiHG/awesome-ai-agents-2026"
+        stars: 1437
+        url: "https://github.com/caramaschiHG/awesome-ai-agents-2026"
+        last_checked: 2026-07-14
+        description: "The most comprehensive list of AI agents, frameworks and tools in 2026"
+      - repo: "Jenqyang/Awesome-AI-Agents"
+        stars: 1185
+        url: "https://github.com/Jenqyang/Awesome-AI-Agents"
+        last_checked: 2026-07-14
+        description: "A collection of autonomous agents powered by LLM"
     notebook_id: null
     last_researched: null
 
