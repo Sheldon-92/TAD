@@ -1,0 +1,65 @@
+version: 1.0.0
+last_scan: "2026-07-14"
+scan_duration_seconds: 5
+scanner_version: 1.0.0
+results:
+  - dependency: notebooklm-cli
+    scan_status: skipped
+    error_message: no upstream registry configured
+    upstream_latest: null
+    released: null
+    days_since_release: 0
+    changelog_text: null
+    security_advisories: []
+    current_version: 0.5.x
+    version_changed: false
+  - dependency: gh
+    scan_status: success
+    error_message: null
+    upstream_latest: 2.96.0
+    released: "2026-07-02"
+    days_since_release: 12
+    changelog_text: "## Security\r\n\r\nA security vulnerability has been identified, and fixed, that could allow command execution on a user's computer when connecting to a malicious Codespace via `gh codespace jupyter`.\r\n\r\nUsers of `gh codespace jupyter` are advised to update gh to version v2.96.0 as soon as possible.\r\n\r\nFor more information see: https://github.com/cli/cli/security/advisories/GHSA-8cg3-r6g9-fpg2\r\n\r\n## Download release assets without authentication\r\n\r\n`gh release download` now works against public repositories without authentication, matching `gh extension install`. A token is still used when one is present:\r\n\r\n```shell\r\n# Download assets from a public repository, no login required\r\ngh release download v2.96.0 --repo cli/cli\r\n```\r\n\r\n## What's Changed\r\n\r\n### ✨ Features\r\n\r\n* Allow `gh release download` without authentication on public repositories by @BagToad in [#13723](https://github.com/cli/cli/pull/13723)\r\n* Detect additional third-party coding agents by @BagToad in [#13722](https://github.com/cli/cli/pull/13722)\r\n* Support `antigravity-cli` and `antigravity2.0` in `gh skill` by @BagToad in [#13784](https://github.com/cli/cli/pull/13784)\r\n\r\n### \U0001F41B Fixes\r\n\r\n* fix: show checks summary when all checks were cancelled by @s3onghyun in [#13679](https://github.com/cli/cli/pull/13679)\r\n* fix(skills): install universal agent to `~/.agents/skills` by @toller892 in [#13681](https://github.com/cli/cli/pull/13681)\r\n* fix(skills): honor `--dir` without agent prompt by @happysnaker in [#13766](https://github.com/cli/cli/pull/13766)\r\n* Fix concurrent map writes in codespace port forwarding by @williammartin in [#13313](https://github.com/cli/cli/pull/13313)\r\n* Use `int64` for GitHub database IDs by @williammartin in [#13403](https://github.com/cli/cli/pull/13403)\r\n\r\n### \U0001F4DA Docs & Chores\r\n\r\n* Pin reusable triage workflows to a commit SHA by @BagToad in [#13705](https://github.com/cli/cli/pull/13705)\r\n* Add security disclosure guidance to `AGENTS.md` by @BagToad in [#13720](https://github.c\n[... truncated, full text at https://github.com/cli/cli/releases]"
+    security_advisories: []
+    current_version: 2.79.0
+    version_changed: true
+  - dependency: yq
+    scan_status: success
+    error_message: null
+    upstream_latest: 4.53.3
+    released: "2026-06-06"
+    days_since_release: 38
+    changelog_text: " - Add `--ini-preserve-quotes` flag for INI round-trip quote preservation (#2728) Thanks @toller892!\r\n- Fix: reset INI decoder state on init (#2719) Thanks @xieby1!\r\n- Fix: decode properties array bracket paths (#2693) Thanks @cyphercodes!\r\n- Fix: preserve floats with trailing zero when encoding YAML to JSON (#2701) Thanks @ChrisJr404!\r\n- Fix: JSON to TOML root scope and null handling (#2689) Thanks @LovesAsuna!\r\n- Fix: reset TOML decoder finished flag on Init for multi-doc evaluation (#2704) Thanks @terminalchai!\r\n- Fix: reset TOML decoder between files when evaluating all at once (#2685) Thanks @terminalchai!\r\n- Fix: preserve TOML inline table array scope (#2694) Thanks @cyphercodes!\r\n- Fix: preserve empty TOML arrays in tables (#2686) Thanks @cyphercodes!\r\n- Fix: TOML encoder uses inline tables for YAML FlowStyle mappings (#2687)\r\n- Fix nested inline YAML merge explode (#2699) Thanks @cyphercodes!\r\n- Fix repeatString overflow test on 32-bit platforms (#2680) Thanks @jandubois!\r\n- Bumped dependencies"
+    security_advisories: []
+    current_version: 4.47.2
+    version_changed: true
+  - dependency: jq
+    scan_status: success
+    error_message: null
+    upstream_latest: 1.8.2
+    released: "2026-06-20"
+    days_since_release: 24
+    changelog_text: "This is a patch release with security fixes and bug fixes since 1.8.1, along with new builds for Windows arm64 and Docker arm/v7.\r\nFull commit log can be found at <https://github.com/jqlang/jq/compare/jq-1.8.1...jq-1.8.2>.\r\n\r\n## Security fixes\r\n\r\n- CVE-2026-32316: Fix heap buffer overflow in `jvp_string_append` and `jvp_string_copy_replace_bad`. @itchyny e47e56d226519635768e6aab2f38f0ab037c09e5\r\n- CVE-2026-33947: Limit path depth to prevent stack overflow in `jv_setpath`, `jv_getpath`, `jv_delpaths`. @itchyny fb59f1491058d58bdc3e8dd28f1773d1ac690a1f\r\n- CVE-2026-33948: Fix NUL truncation in the JSON parser. @itchyny 6374ae0bcdfe33a18eb0ae6db28493b1f34a0a5b\r\n- CVE-2026-39956: Fix `_strindices` missing runtime type checks. @tlsbollei fdf8ef0f0810e3d365cdd5160de43db46f57ed03\r\n- CVE-2026-39979: Fix out-of-bounds read in `jv_parse_sized()`. @wader 2f09060afab23fe9390cce7cb860b10416e1bf5f\r\n- CVE-2026-40164: Randomize hash seed to mitigate hash collision DoS attacks. @AsafMeizner @itchyny 0c7d133c3c7e37c00b6d46b658a02244fdd3c784\r\n- CVE-2026-40612: Limit containment check depth to prevent stack overflow in `contains`. @itchyny d1a12569d91641135976a8536776a4a329c02cc2\r\n- CVE-2026-41256: Fix NUL truncation in program files loaded with `-f`. @itchyny 5a015deae35d19e3ebbc65db6c157a80e76df738\r\n- CVE-2026-41257: Fix signed-int overflow in `stack_reallocate`. @itchyny 01b3cded76daacbfddb7f8763700b0803bcb5c6f\r\n- CVE-2026-43894: Reject numeric literals longer than `DEC_MAX_DIGITS` (999999999). @itchyny 9761ceb7d6cc48c16b25f0ab1baaef0e701927e4\r\n- CVE-2026-43895: Reject embedded NUL bytes in module import paths. @itchyny 9d223f153c3632a207fa071caaa6292da33ae361\r\n- CVE-2026-43896: Limit recursive object merge depth to prevent stack overflow. @itchyny 532ccea6080ed6758f39fe9f6208a44b665023d2\r\n- CVE-2026-44777: Detect circular module imports to prevent stack overflow. @itchyny f58787c41835d9b17795730cb04925fdba25c71c\r\n- CVE-2026-47770: Guard deep structural equality and comparison recursi\n[... truncated, full text at https://github.com/jqlang/jq/releases]"
+    security_advisories: []
+    current_version: 1.7.1
+    version_changed: true
+  - dependency: rsync
+    scan_status: skipped
+    error_message: no upstream registry configured
+    upstream_latest: null
+    released: null
+    days_since_release: 0
+    changelog_text: null
+    security_advisories: []
+    current_version: openrsync protocol 29
+    version_changed: false
+  - dependency: claude-code-cli
+    scan_status: skipped
+    error_message: no upstream registry configured
+    upstream_latest: null
+    released: null
+    days_since_release: 0
+    changelog_text: null
+    security_advisories: []
+    current_version: 2.1.x
+    version_changed: false

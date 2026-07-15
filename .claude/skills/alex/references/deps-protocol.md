@@ -1,6 +1,6 @@
 # Dependency Registry Protocols
 
-> Progressive-loaded reference for *deps, *deps init, *deps add commands.
+> Progressive-loaded reference for *deps, *deps init, *deps add, *deps check commands.
 > Loaded when: Alex receives a *deps* command or user asks about dependency tracking.
 
 ## deps_show_protocol
@@ -97,3 +97,38 @@ Manually register a single new dependency to an existing registry.
 ### Constraints
 - Must not overwrite existing entries with the same name
 - If dependency already exists: ask user if they want to update instead
+
+## deps_check_protocol
+
+Run upstream dependency scan and display results.
+
+### Steps
+1. **Run scan script**: `bash .tad/hooks/lib/deps-scan.sh`
+   - This queries upstream registries (GitHub/npm/PyPI/Homebrew) for each registered dependency
+   - Results are cached to `.tad/dependencies/scan-results.yaml`
+   - Script handles errors per-dependency (won't crash on individual failures)
+
+2. **Read results**: Parse `.tad/dependencies/scan-results.yaml`
+
+3. **Display summary table**:
+   ```
+   📦 Upstream Scan Results ({N} dependencies, {last_scan})
+
+   | Dependency | Current | Latest | Released | Days | Changed | Security |
+   |-----------|---------|--------|----------|------|---------|----------|
+   | {name} | {current_version} | {upstream_latest} | {released} | {days_since_release} | ✅ Yes / — | {count} advisories / None |
+   ```
+
+4. **Highlight issues**:
+   - Security advisories: display with severity level and summary
+   - Version changes: flag dependencies where upstream_latest differs from current_version
+   - Errors/skips: note which dependencies couldn't be scanned and why
+
+5. **Follow-up offer**: "要看某个依赖的 changelog 吗？"
+   - If user says yes: display the `changelog_text` for that dependency from scan-results.yaml
+
+### Notes
+- Scan takes ~15-30s for TAD's 6 dependencies (sequential API calls)
+- Dependencies with `registry: null` are skipped (expected for notebooklm-cli, rsync, claude-code-cli)
+- Security advisory checks are best-effort (GitHub GraphQL API)
+- For scheduled scans, see cron prompt at `.tad/evidence/spikes/cron-deps-scan/cron-prompt.md`

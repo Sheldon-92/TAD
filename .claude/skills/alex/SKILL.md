@@ -528,6 +528,7 @@ commands:
   deps: Show dependency registry — readable table of key project dependencies
   deps-init: Initialize dependency registry from project scan — semi-auto with enrichment
   deps-add: Register a new dependency — manual add with guided enrichment
+  deps-check: Run upstream scan immediately and display results — version changes, security advisories
 
   # Framework management commands
   publish: GitHub publish workflow — version check, changelog, push, tag
@@ -695,7 +696,7 @@ intent_router_protocol:
   blocking: true
 
   # Core routing — explicit commands bypass detection
-  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze", "*deps", "*deps-init", "*deps-add"]
+  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze", "*deps", "*deps-init", "*deps-add", "*deps-check"]
   idle_patterns_zh: ["谢谢", "ok", "好的", "收到", "明白了"]
   idle_patterns_en: ["thanks", "ok", "got it", "sure", "noted"]
 
@@ -710,6 +711,7 @@ intent_router_protocol:
     deps: deps_show_protocol
     deps-init: deps_init_protocol
     deps-add: deps_add_protocol
+    deps-check: deps_check_protocol
 
   # Full detection logic (step2 signal analysis, step3 user confirmation, step4_5 pack scan)
   # in the reference file below.
@@ -743,6 +745,9 @@ deps_init_protocol:
 deps_add_protocol:
   reference: ".claude/skills/alex/references/deps-protocol.md"
   load_when: "When *deps add command is invoked, Read the reference and follow deps_add_protocol."
+deps_check_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps check command is invoked, Read the reference and follow deps_check_protocol."
 # ═══════════════════════════════════════════════════════════
 # Unified Research Protocol (*research)
 # ⚠️ MUST stay in SKILL body — circular trigger: routing table
