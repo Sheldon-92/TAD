@@ -1,5 +1,5 @@
 version: 1.0.0
-last_updated: 2026-07-14
+last_updated: 2026-07-15
 project: "TAD Framework"
 
 dependencies:
@@ -44,8 +44,8 @@ dependencies:
   - name: "gh"
     type: tool
     safety_tier: L1
-    current_version: "2.79.0"
-    version_pinned_at: 2026-07-14
+    current_version: "2.96.0"
+    version_pinned_at: 2026-07-15
     status: active
 
     upstream:
@@ -74,8 +74,8 @@ dependencies:
   - name: "yq"
     type: tool
     safety_tier: L1
-    current_version: "4.47.2"
-    version_pinned_at: 2026-07-14
+    current_version: "4.53.3"
+    version_pinned_at: 2026-07-15
     status: active
 
     upstream:
@@ -108,8 +108,8 @@ dependencies:
   - name: "jq"
     type: tool
     safety_tier: L1
-    current_version: "1.7.1"
-    version_pinned_at: 2026-07-14
+    current_version: "1.8.2"
+    version_pinned_at: 2026-07-15
     status: active
 
     upstream:
@@ -132,7 +132,7 @@ dependencies:
     known_limitations: []
 
     last_checked: 2026-07-14
-    notes: "Apple-bundled jq-1.7.1. Also available via Homebrew. Used with env-var convention (TRACE_* variables) per shell-portability patterns."
+    notes: "Homebrew jq-1.8.2 (upgraded 2026-07-15 from Apple-bundled 1.7.1 — 14 CVE security fixes). Used with env-var convention (TRACE_* variables) per shell-portability patterns."
 
   - name: "rsync"
     type: tool
