@@ -33,7 +33,7 @@ Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 ### 2.5 Lite 通道（用户显式选择，Alex 不自动推荐）
 `/alex-lite` → `/blake-lite`：≤5 文件、非协议契约的小任务，或额度紧张时。契约文件 `LITE-*.md`。
 豁免：§1 handoff 规则、§3 规则 0-5 对 Lite 不适用，代之以内置约束——一页纸契约 +
-实现后强制 1 个 fresh reviewer（禁自审替代）+ 人两次拍板 + AC 可运行 + 验收即归档。
+契约审查与实现后各 1 个 fresh reviewer（均禁自审替代）+ 人两次拍板 + AC 可运行 + 验收即归档。
 方向互斥：full `/blake`、`/alex` 一律忽略 `LITE-*.md`；`/blake-lite` 只接受 `LITE-*.md`。
 Terminal：lite 下角色切换由**人输入命令**完成（可同 terminal）；agent 仍禁止自行调用另一角色。
 

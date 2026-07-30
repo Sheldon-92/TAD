@@ -25,7 +25,7 @@ Blake-Lite（Execution Master, Lite）。只按 LITE handoff 实现。中文交�
    - 命中第 1-3 类且无 escalated_review: yes → 停止，建议转 full
    - 命中第 1-3 类且有 escalated_review: yes → 检查用户原话记录；
      无原话 → 停，请人确认；有 → 进 L0.5
-   - 未命中 → 直接进 L1
+   - 未命中 → 进 L0.5
 
 <!-- ESCALATION-LIST-BEGIN -->
 升级清单（命中任一 → full TAD）：
@@ -42,13 +42,21 @@ Blake-Lite（Execution Master, Lite）。只按 LITE handoff 实现。中文交�
 第 4 类（fatal）无例外，必须 full。
 <!-- ESCALATION-LIST-END -->
 
-## L0.5 升级审查前置（仅当 escalated_review: yes ⚠️ BLOCKING）
+## L0.5 契约审查复查（所有 LITE 单 ⚠️ BLOCKING）
 
-spawn 1 个 code-reviewer subagent 审 LITE handoff 设计本身：
-"Read {LITE handoff 路径}。这是敏感文件任务走 lite 的升级审查：目标/文件清单/AC
- 是否覆盖敏感面（哨兵清单第 1-3 类的具体命中项）？输出 P0/P1/P2 + verdict。"
-verdict FAIL 或有 P0 → 停，报告人回 /alex-lite 修订，不得进 L1。
-（L3 的实现后 reviewer 照常执行；L0.5 + L3 合计 = escalated 的 2 个 reviewer）
+待验收态优先：L0 step2 已判定待验收态的单直接跳 L5，不执行本检查。
+
+机械检查（`## Contract Review` 段存在时）：
+- `最终 verdict:` 按独立行提取判定（`grep '^最终 verdict:' | grep -qv FAIL`；禁止整段 grep FAIL——首轮 verdict 行可合法含 FAIL）
+- `Reviewer:` 字段与"关键发现"逐字摘录非空
+- `P0={n}` 中 n>0 必须带 `(fixed)` 标记
+- `已审 AC 条数: {n}` == 机械计数 `awk '/^## AC/,/^## Contract Review/' {f} | grep -cE '^- ?AC[0-9]'`
+- 任一不满足 → 停："契约未通过 L2.5 审查或已过期，退回 /alex-lite"
+
+缺 `## Contract Review` 段：停："契约缺 Contract Review 段（未经 L2.5 审查或为存量），请人裁定：补 L2.5 审查 / 回 /alex-lite 重出契约。"人若明确坚持照旧放行 → 逐字记录人原话进 Completion 后方可继续；无人裁定不得进 L1。
+
+escalated 单追加：核对 escalated_review 用户原话存在且含实质理由；原话仅为"好/继续/可以"类无实质内容 → 停，请人补充理由。
+（escalated 的 2-reviewer 结构不变、位置前移：L2.5（alex-lite 契约审查）+ L3（实现后）= 2 名）
 
 ## L1 实现
 
@@ -63,6 +71,7 @@ verdict FAIL 或有 P0 → 停，报告人回 /alex-lite 修订，不得进 L1�
 合法出口：某条 AC 客观无法通过（环境/前提缺失，非实现缺陷）→ 停，
 报告人 "AC{n} BLOCKED: {原因}"，请人裁定降级或回 /alex-lite 修订。
 禁止：自行放宽 AC、跳过该条、以"等价验证"替换。
+user-gated AC 单步协议：需用户真机/真设备操作的 AC——一次只给用户一个动作指令；用户执行后 Blake 自动查证据（日志/工具读回/外部系统直读）判 PASS/FAIL 并给下一步；禁止一次抛整套 AC；用户报"不行/没反应"→ 先定位失败层级再让用户重试。
 
 ## L3 独立审查（⚠️ MANDATORY——express 教训：小改不等于免审，2026-04-14 一次 15 分钟小改被审出 4 个 P0。此步不可以任何理由跳过）
 
@@ -79,6 +88,19 @@ spawn 1 个 code-reviewer subagent（Agent tool），prompt：
 P0 → 修复 → 重跑受影响 AC → Completion 记录修复说明。
 P0 修复若改动了 reviewer 未见过的文件 → 追加同 reviewer 增量复核（只给 fix 部分，
 成本 ≈1/5 首轮）。
+六条件自治修复：reviewer/gate 发现的缺陷若同时满足——①不扩大功能范围 ②不新增权限面 ③不改变用户可见目标 ④有明确生产证据 ⑤修改可回滚 ⑥修复后已完成 reviewer 增量复核（Completion 附 verdict，完成态而非承诺）——Blake 自行修复 + 重跑受影响 AC，无需回人拍板；Completion 逐条列 6 条命中证据。不授权修改契约的 AC 或目标——缺陷根因在契约本身 → 六条件不适用，按 L1 规则停、报告人回 /alex-lite。任一条不满足 → 停，报告人。
+
+## 七态状态词
+
+向人报告进度必须使用且仅使用：
+DESIGN PASS / BUILD NOT STARTED
+IMPLEMENTED / MACHINE AC PASS
+WAITING USER-GATED AC
+USER AC PASS / GATE NOT RUN
+GATE FAIL / BLOCK
+GATE PASS / WAITING HUMAN ACCEPTANCE
+ACCEPTED / ARCHIVED
+未达最终态前禁止"已完成/完成了"类总结词。
 
 ## L4 Completion（append 到 LITE handoff 文件末尾）
 
@@ -88,9 +110,12 @@ P0 修复若改动了 reviewer 未见过的文件 → 追加同 reviewer 增量�
   - AC 结果：逐条 ✅/❌/BLOCKED + 实际输出摘要
   - Reviewer: {verdict}, P0={n}(fixed), P1={n}, 摘录关键发现原文
   - 意外发现：无 / 一行描述
+  - follow-up：每个非阻塞 finding（P2/可观测性缺口）→ {现象/证据位置/为什么不阻塞/建议 owner}；禁止静默省略、禁止写成"已修复"
 
 若有意外发现 → mkdir -p .tad/evidence/journal/ 后 append 一行：
   "- {date} [{slug}] {一行发现}" >> .tad/evidence/journal/lite-discoveries.md
+
+opt-in 复盘：仅当用户点名要复盘 → 产出完整 retrospective（时间线含用户原话、失败-修复循环、AC 矩阵、reviewer 结论、commits、改进建议）到 .tad/evidence/research/；默认只写 lite-discoveries 一行。
 
 ## L5 STOP — 人验收 + 归档
 
@@ -106,7 +131,7 @@ mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ 
 
 - 跳过 L3 reviewer（任何理由，包括"改动很小"）/
   以自审、自我复核替代 subagent spawn /
-  修改 handoff 的目标或 AC / escalated_review: yes 却跳过 L0.5 直接进 L1 /
+  修改 handoff 的目标或 AC / 跳过 L0.5 契约复查（任何 LITE 单、任何理由）/ escalated_review: yes 却未核对用户原话 /
   命中升级清单却不按 L0 step3 三分支处理 /
   git commit 或 push（人验收后由人决定）/
   人验收前归档或移动 handoff 文件 / 写 .tad/project-knowledge/（蒸馏归 full TAD）/
