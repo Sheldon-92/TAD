@@ -261,7 +261,59 @@ activation-instructions:
       The knowledge scan's log output does NOT suppress STEP 3.55 (zombie cleanup).
       All three sub-scans (zombie + knowledge + pair test) are independent — each produces its own output line.
       knowledge_verdict is a JUDGMENT variable in Alex's conversation context (not a mechanical YAML key).
-      After knowledge scan completes, execution continues to STEP 3.6 regardless of verdict.
+      After knowledge scan completes, execution continues to STEP 3.5b regardless of verdict.
+  - STEP 3.5b: Dependency Evolution Check
+    trigger: "After STEP 3.5 document health check completes"
+    blocking: false
+    suppress_if: ".tad/dependencies/scan-results.yaml not found"
+    action: |
+      1. Read .tad/dependencies/scan-results.yaml
+         → If not found: skip silently (project has no scan data yet)
+         → If last_scan older than 30 days: append "⚠️ Dependency scan is {N} days old. Run *deps-check to refresh."
+      2. Read .tad/dependencies/REGISTRY.yaml
+         → If not found: skip (inconsistent state)
+      3. For each result where version_changed == true AND scan_status == "success":
+         a. SAFETY BUFFER:
+            Look up safety_tier from REGISTRY (match by dependency name).
+            Buffer days:
+              L1 → 7 days (tools, APIs)
+              L2 → 14 days (platforms)
+              L3 → 30 days (major frameworks)
+            If days_since_release >= buffer_days → buffer_status = "evaluable"
+            If days_since_release < buffer_days → buffer_status = "observing"
+            urgent_security (dual-path, either triggers):
+              Path 1: security_advisories is non-empty
+              Path 2: changelog_text matches CVE pattern (regex: /CVE-\d{4}-\d+/)
+            If either → buffer_status = "urgent_security" (overrides tier — always show)
+         b. LLM RELEVANCE ASSESSMENT (inline, no sub-agent):
+            Read capabilities_used from REGISTRY for this dependency.
+            Read changelog_text from scan-results.
+            Judge: does changelog mention changes relevant to capabilities_used?
+            Assign relevance = HIGH | MEDIUM | LOW
+            - HIGH: changelog directly mentions a used capability
+            - MEDIUM: same domain/module but not a specific capability
+            - LOW: unrelated to user's usage
+         c. LIMITATION RESOLUTION detection:
+            For each known_limitation with resolved_by_upstream == false:
+              Judge: does changelog_text suggest this limitation is now resolved?
+              Err toward false positives — surface candidates as "potentially_resolved"
+              even if uncertain. Confirmation via *deps-update AskUserQuestion.
+      4. NOISE FILTER:
+         Show only where: (evaluable AND relevance >= MEDIUM) OR urgent_security.
+         Suppress "observing" unless urgent_security.
+      5. OUTPUT:
+         If 0 pass filter: "📦 Dependencies: {N} updated, all within safety buffer or low relevance"
+         If deps pass filter:
+           "📦 {name} {current} → {latest} ({days}d ago, past {tier} buffer): {1-line relevance}"
+         If potentially_resolved limitation:
+           "  💡 Limitation {id} may be resolved: {description}"
+         If urgent_security:
+           "🔴 {name}: security advisory — evaluate immediately. {summary}"
+      6. STALENESS: If last_scan > 30 days → "⚠️ Scan data is {N} days old"
+    interacts_with: |
+      Independent of STEP 3.5 (health), STEP 3.55 (zombie), STEP 3.6 (pair test).
+      Does NOT suppress any other step. STEP 3.7 runs after this.
+    output: "Brief dependency status line, or silent if nothing actionable"
   - STEP 3.6: Pair test report detection
     action: |
       1. Read .tad/pair-testing/SESSIONS.yaml (if exists)
@@ -524,6 +576,13 @@ commands:
   # Pair testing commands
   test-review: Review PAIR_TEST_REPORT and create fix handoffs
 
+  # Dependency awareness commands
+  deps: Show dependency registry — readable table of key project dependencies
+  deps-init: Initialize dependency registry from project scan — semi-auto with enrichment
+  deps-add: Register a new dependency — manual add with guided enrichment
+  deps-check: Run upstream scan immediately and display results — version changes, security advisories
+  deps-update: Record a dependency upgrade — update version, confirm limitation resolutions
+
   # Framework management commands
   publish: GitHub publish workflow — version check, changelog, push, tag
   sync: Sync TAD to registered projects — framework files, cleanup, verify
@@ -690,7 +749,7 @@ intent_router_protocol:
   blocking: true
 
   # Core routing — explicit commands bypass detection
-  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze"]
+  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze", "*deps", "*deps-init", "*deps-add", "*deps-check", "*deps-update"]
   idle_patterns_zh: ["谢谢", "ok", "好的", "收到", "明白了"]
   idle_patterns_en: ["thanks", "ok", "got it", "sure", "noted"]
 
@@ -702,6 +761,11 @@ intent_router_protocol:
     express: express_path_protocol
     experiment: experiment_path_protocol
     analyze: adaptive_complexity_protocol
+    deps: deps_show_protocol
+    deps-init: deps_init_protocol
+    deps-add: deps_add_protocol
+    deps-check: deps_check_protocol
+    deps-update: deps_update_protocol
 
   # Full detection logic (step2 signal analysis, step3 user confirmation, step4_5 pack scan)
   # in the reference file below.
@@ -725,6 +789,22 @@ status_panoramic_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: ".claude/skills/alex/references/status-panoramic-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *status command), Read the reference and follow it verbatim."
+# Dependency Registry Protocols (*deps, *deps init, *deps add)
+deps_show_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps command is invoked, Read the reference and follow deps_show_protocol."
+deps_init_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps init command is invoked, Read the reference and follow deps_init_protocol."
+deps_add_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps add command is invoked, Read the reference and follow deps_add_protocol."
+deps_check_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps check command is invoked, Read the reference and follow deps_check_protocol."
+deps_update_protocol:
+  reference: ".claude/skills/alex/references/deps-protocol.md"
+  load_when: "When *deps update command is invoked, Read the reference and follow deps_update_protocol."
 # ═══════════════════════════════════════════════════════════
 # Unified Research Protocol (*research)
 # ⚠️ MUST stay in SKILL body — circular trigger: routing table
