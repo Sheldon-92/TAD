@@ -7,6 +7,7 @@
 读取 `.tad/active/handoffs/` → 必须调用 /blake → 必须过 Gate 3 + Gate 4。
 禁止：读取后直接实现、跳过 Gate、不通过 Blake 改代码。
 豁免：`/tad-maintain` CHECK/SYNC 模式。
+豁免 2：`LITE-*.md`（TAD Lite 通道，见 §2.5）→ 本节规则不适用，含"跳过 Gate/不通过 Blake"禁令。
 
 ## 2. 使用场景
 
@@ -29,6 +30,13 @@ Adaptive Complexity：Alex 评估建议，**人类做最终决策**。
 Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 NotebookLM 持久知识库）。
 
+### 2.5 Lite 通道（用户显式选择，Alex 不自动推荐）
+`/alex-lite` → `/blake-lite`：≤5 文件、非协议契约的小任务，或额度紧张时。契约文件 `LITE-*.md`。
+豁免：§1 handoff 规则、§3 规则 0-5 对 Lite 不适用，代之以内置约束——一页纸契约 +
+实现后强制 1 个 fresh reviewer（禁自审替代）+ 人两次拍板 + AC 可运行 + 验收即归档。
+方向互斥：full `/blake`、`/alex` 一律忽略 `LITE-*.md`；`/blake-lite` 只接受 `LITE-*.md`。
+Terminal：lite 下角色切换由**人输入命令**完成（可同 terminal）；agent 仍禁止自行调用另一角色。
+
 ## 3. Quality Gates
 
 - 规则 0: Handoff 前必须苏格拉底提问 (⚠️ BLOCKING)
@@ -37,6 +45,8 @@ Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 - 规则 4: Gate 不通过 → 阻塞 | 规则 5: Gate 必须含 Knowledge Assessment (⚠️ BLOCKING)
 
 Gate 是强制检查点。禁止纸面验收 — 必须 subagent 实际验证。
+
+规则 0-5 适用于 full 通道；Lite 通道的等价约束见 §2.5 与 lite skills 内置条款。
 
 ## 4. Terminal 隔离 ⚠️ CRITICAL
 

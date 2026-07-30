@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-07-12 22:38
+Generated: 2026-07-30 10:44
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -51,7 +51,7 @@ Generated: 2026-07-12 22:38
 | 2. 使用场景 | 2  | \| 命令 \| 触发条件 \| |
 | 3. Quality Gates | 3 quality gates | - 规则 0: Handoff 前必须苏格拉底提问 (⚠️ BLOCKING) |
 | 4. Terminal 隔离 ⚠️ CRITICAL | 4 terminal critical | Alex = Terminal 1, Blake = Terminal 2。**人类是唯一信息桥梁。** |
-| 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | **每次回复前自检（强制）：** |
+| 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | 三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手动触发。 |
 | 5. 违规处理 | 5  | 违规 → 立即停止 → 调用正确 agent → 从头执行。 |
 | 6. 协议位置 | 6  | \| 协议 \| 位置 \| |
 | 7. Project Knowledge (Auto-loaded) | 7 project knowledge auto-loaded  | @import 自动加载，不存在的文件静默跳过。超 30KB 时整合。 |
@@ -60,9 +60,6 @@ Generated: 2026-07-12 22:38
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-surplus-codex-adapter-yaml.md | code       # bash installer extension + spec doc + generated YAML artifact | Zero-cost Codex CLI compatibility for capability packs, proven on one demo pack: |
-| HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed      # bash script (code) + fixture docs (md) + gate doc edit | Three deliverables, closing the "validation theater" P0 from the cross-model YOLO audit: |
-| HANDOFF-surplus-tad-methodology-skeleton.md | doc-only   # code | yaml | research | e2e | mixed | doc-only | A single new standalone document, `docs/tad-methodology.md`, that extracts the TAD |
 
 ## Active Epics
 | File | Summary |
@@ -79,4 +76,7 @@ Generated: 2026-07-12 22:38
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260712-memory-redirect-capture-layer.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260730-tad-lite-channel.md | mixed | Quality Chain Metadata (Alex 必填) |
+| HANDOFF-20260714-deps-upstream-scan.md | code | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260714-deps-registry-init.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260714-deps-alex-integration.md | yaml | Handoff Document for Agent B (Blake) |

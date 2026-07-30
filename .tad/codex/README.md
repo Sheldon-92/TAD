@@ -104,3 +104,51 @@ The separate "compressed" Codex SKILL editions (`codex-alex-skill.md`, `codex-bl
 - `tournament-codex.sh` / `schemas/` (tournament adapter)
 - `expert-review-sequential.md` / `sequential-review.md` / `manual-gates.md` / `socratic-fallback.md` (adapter guides)
 - `.tad/hooks/lib/codex-parity-check.sh` (parity enforcement)
+
+---
+
+## Lite Skills 调用方式 (2026-07-30)
+
+alex-lite 和 blake-lite SKILL.md 已安装到 `.agents/skills/{alex-lite,blake-lite}/SKILL.md`（byte-identical 镜像自 `.claude/skills/`）。
+
+### Smoke Test (codex-cli 0.145.0, gpt-5.6-sol)
+
+**命令**:
+```
+codex exec "Read .agents/skills/alex-lite/SKILL.md and tell me the skill name from the frontmatter. Reply in exactly one line."
+```
+
+**原始输出 (verbatim transcript)**:
+```
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/sheldonzhao/01-on progress programs/TAD
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 019fb359-0a75-7222-a6ba-66529ae3de74
+--------
+user
+Read .agents/skills/alex-lite/SKILL.md and tell me the skill name from the frontmatter. Reply in exactly one line.
+warning: failed to parse hooks config .codex/hooks.json: unknown field `SessionStart`, expected `description` or `hooks` at line 2 column 16
+exec
+/bin/zsh -lc "sed -n '1,240p' .agents/skills/alex-lite/SKILL.md" in /Users/sheldonzhao/01-on progress programs/TAD
+ succeeded in 0ms:
+[full SKILL.md content output — 81 lines]
+codex
+alex-lite
+tokens used
+23,020
+```
+
+**结果**: PASS — exit code 0, 23020 tokens。Codex 读取文件、识别 frontmatter name 字段并返回 `alex-lite`。
+
+**已知 warning**: `.codex/hooks.json` 格式与 codex v0.145.0 不兼容（`unknown field SessionStart`）——这是 full hooks 的已知问题，不影响 lite skills 的 SKILL.md 读取路径。
+
+**可用调用方式**:
+- `codex exec "Read .agents/skills/alex-lite/SKILL.md 然后按其中的协议执行"` — 确认可用
+- `$alex-lite` 前缀调用 — 依赖 AGENTS.md 路由，未注册（lite 是 skill 而非 agent role），需手动 Read
+- Fallback: `cat .agents/skills/alex-lite/SKILL.md | codex exec "按以下协议执行: $(cat)"` — 管道注入
