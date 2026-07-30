@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.34.0 - Native Capability Adoption + Session Continuity**
+**Version 2.35.0 - TAD Lite Channel**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -83,7 +83,13 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
-## 🎯 What's New in v2.34
+## 🎯 What's New in v2.35
+
+### v2.35.0 — TAD Lite Channel
+- **`/alex-lite` + `/blake-lite`**: self-contained lightweight skills (81+115 lines, zero config loads) for small tasks (≤5 files, non-protocol) or when quota is tight — measured **~23K tokens/cycle vs full TAD's 300K-1M**
+- **Four essences preserved**: one-page LITE contract, mandatory fresh-context reviewer post-implementation (no self-review), two human decision points, runnable ACs
+- **Escalation valve**: SAFETY/protocol-contract/fatal-operation tasks are refused with a fail-closed catch-all — lite never touches what full TAD must own; sensitive files need explicit user insistence + 2 reviewers (L0.5 design pre-check + L3)
+- **Lifecycle = location**: `LITE-*.md` in `active/` = pending, moved to `archive/` on human acceptance; Codex-portable by construction (byte-identical `.agents` mirrors, smoke-tested on codex-cli 0.145.0)
 
 ### v2.34.0 — Native Capability Adoption + Session Continuity
 - **PreCompact session snapshot hook** (Layer 0 post-compact recovery): every context compaction auto-writes a mechanical snapshot (`.tad/active/precompact/`, newest-wins, keep-5) + post-compact reminder injection — live-fire verified on a real /compact
@@ -128,7 +134,7 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.34.0
+# Should show: 2.35.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -428,6 +434,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.34.0 - Native Capability Adoption + Session Continuity**
+**Welcome to TAD v2.35.0 - TAD Lite Channel**
 
 *AI does the work. Humans guard the value.*

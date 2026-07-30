@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.35.0] - 2026-07-30
+
+### New Features
+- **TAD Lite Channel** — a low-cost path for small tasks (≤5 files, non-protocol-contract) or when subscription quota is tight:
+  - `/alex-lite`: design side — one-page LITE handoff (goal / non-goals / file list / runnable ACs / risks), at most one clarification round
+  - `/blake-lite`: implementation side — whitelist admission (`LITE-*.md` only), AC self-verification, one mandatory fresh-context reviewer (self-review substitution forbidden), completion appended to the same contract file, archive on human acceptance
+  - Both skills are fully self-contained (81 + 115 lines, no config/reference loading) and byte-mirrored to `.agents/skills/` for Codex (smoke-tested on codex-cli 0.145.0)
+  - Escalation valve with fail-closed catch-all: SAFETY entries, protocol contract files, >5-file scope, and fatal operations are refused and routed to full TAD; sensitive files require explicit user insistence (verbatim quote recorded) + escalated 2-reviewer mode
+  - Measured cost: ~23K tokens per dogfood cycle vs full TAD's 300K-1M (~90% reduction); cost claim gated by a falsification threshold, not asserted
+- CLAUDE.md routing: new §2.5 Lite channel block + §1 exemption + §3 scope line (+10 lines); full `/blake`/`/alex` ignore `LITE-*.md`, `/blake-lite` accepts only `LITE-*.md`
+
+### Documentation
+- New L2 pattern (gate-design): "Independent Perspective Lives in Clean Context, Not Terminal Boundaries"
+- `.tad/codex/README.md`: Lite skills invocation section with verbatim smoke-test transcript
+
+### Upgrade Notes
+- Non-breaking. Downstream projects get the lite skills via the standard update command:
+  `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes`
+- Known follow-ups: `*accept` distillation wiring for `lite-discoveries.md` journal; full `$alex`/`$blake` Codex invocation degradation diagnosis (separate task)
+
 ## [2.34.0] - 2026-07-13
 
 ### Added

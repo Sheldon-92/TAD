@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.34.0 | Generated: [timestamp]
+ Version: v2.35.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,12 +218,12 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.34.0 Highlights
-- **Pack System Unification**: YAML Domain Packs retired; Capability Packs are the sole active pack system
-- **Installer Single-Sourcing**: 7 pack installers now copy prebuilt SKILL.md (byte-identical Claude/Codex)
-- **Platform-Skills Verifier**: `release-verify.sh platform-skills` checks framework skill symmetry at release
-- **Self-Evolution Pruning**: dream/evolve/optimize retired by measurement; 3-tier skill formalization live
-- **Feedback Collector**: structured human feedback for non-code artifacts (overlay model, /playground deprecated)
+## TAD v2.35.0 Highlights
+- **TAD Lite Channel**: `/alex-lite` + `/blake-lite` self-contained lightweight skills — ~23K tokens/cycle (vs full 300K-1M) for small tasks or tight quota
+- **Four essences preserved in lite**: one-page contract, mandatory fresh-context reviewer, human decision points, runnable ACs
+- **Escalation valve**: protocol-contract/SAFETY/fatal tasks auto-route back to full TAD (fail-closed catch-all)
+- **Lifecycle = location**: LITE-*.md active/=pending → archive/=done on human acceptance
+- **Codex-portable**: byte-identical `.agents` mirrors, smoke-tested on codex-cli 0.145.0
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues

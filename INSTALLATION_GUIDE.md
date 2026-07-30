@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.34.0 — Native Capability Adoption + Session Continuity**
+**Version 2.35.0 — TAD Lite Channel**
 
 ## 安装方式
 
@@ -44,7 +44,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.34.0
+cat .tad/version.txt          # 应显示 2.35.0
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code
