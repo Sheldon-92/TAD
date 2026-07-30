@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.35.0 - TAD Lite Channel**
+**Version 2.36.0 - TAD Lite v1.1**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -83,7 +83,14 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
-## 🎯 What's New in v2.35
+## 🎯 What's New in v2.36
+
+### v2.36.0 — TAD Lite v1.1 (Quality Amendments)
+- **Symmetric dual reviewers**: every lite task now gets a design-side contract reviewer (alex-lite L2.5, with an AC-executability matrix: real principal? production path? runs verbatim?) plus the implementation-side reviewer (blake-lite L3) — blake L0.5 mechanically verifies the contract carries a real review (fail-closed, no self-review substitution)
+- **Why**: the first real-world lite run shipped a contract whose ACs specified a wrong execution principal; it survived self-review all the way to the last gate. Full quality study: `.tad/evidence/research/2026-07-30-lite-vs-full-quality-comparison.md`
+- **Design-side depth**: mandatory goal-anchor question (≤2 rounds) + pre-write solution sketch; restricted quota-exit wording (informing, never suggesting)
+- **Execution ergonomics**: single-step user-gated AC protocol (one action at a time, agent checks logs/readbacks), 7-state status vocabulary, 6-condition autonomous fix (implementation code only), mandatory follow-up entries for non-blocking findings, opt-in retrospective
+- **Cost**: ~35K tokens/cycle estimated with dual reviewers (v1.0 measured 23K) — still ~1/10 of full TAD
 
 ### v2.35.0 — TAD Lite Channel
 - **`/alex-lite` + `/blake-lite`**: self-contained lightweight skills (81+115 lines, zero config loads) for small tasks (≤5 files, non-protocol) or when quota is tight — measured **~23K tokens/cycle vs full TAD's 300K-1M**
@@ -134,7 +141,7 @@ Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-bac
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.35.0
+# Should show: 2.36.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -434,6 +441,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.35.0 - TAD Lite Channel**
+**Welcome to TAD v2.36.0 - TAD Lite v1.1**
 
 *AI does the work. Humans guard the value.*

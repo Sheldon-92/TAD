@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.35.0 — TAD Lite Channel**
+**Version 2.36.0 — TAD Lite v1.1**
 
 ## 安装方式
 
@@ -44,7 +44,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.35.0
+cat .tad/version.txt          # 应显示 2.36.0
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code

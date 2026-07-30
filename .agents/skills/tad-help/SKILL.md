@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.35.0 | Generated: [timestamp]
+ Version: v2.36.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,12 +218,12 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.35.0 Highlights
-- **TAD Lite Channel**: `/alex-lite` + `/blake-lite` self-contained lightweight skills — ~23K tokens/cycle (vs full 300K-1M) for small tasks or tight quota
-- **Four essences preserved in lite**: one-page contract, mandatory fresh-context reviewer, human decision points, runnable ACs
-- **Escalation valve**: protocol-contract/SAFETY/fatal tasks auto-route back to full TAD (fail-closed catch-all)
-- **Lifecycle = location**: LITE-*.md active/=pending → archive/=done on human acceptance
-- **Codex-portable**: byte-identical `.agents` mirrors, smoke-tested on codex-cli 0.145.0
+## TAD v2.36.0 Highlights
+- **TAD Lite v1.1**: symmetric dual reviewers — alex-lite L2.5 contract review (every task, AC-executability matrix) + blake-lite L3 impl review; blake L0.5 mechanically verifies the contract WAS reviewed (fail-closed)
+- **Driven by first real-world use**: a design-time AC-principal defect survived self-review to the last gate → design-time review restored as a real spawn (no self-review substitution, behavioral-dogfood verified)
+- **Design-side depth**: L1 goal-anchor question + pre-write solution sketch; single-step user-gated AC protocol; 7-state status vocabulary; 6-condition autonomous fix (impl code only)
+- **Cost**: ~35K tokens/cycle estimated with dual reviewers (v1.0 measured 23K; still ~1/10 of full TAD's 300K-1M)
+- **Lite channel basics (since v2.35)**: one-page LITE contract, escalation valve (SAFETY/protocol/fatal → full TAD, fail-closed), lifecycle = location, byte-identical Codex `.agents` mirrors
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues

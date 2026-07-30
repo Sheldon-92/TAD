@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.36.0] - 2026-07-30
+
+### New Features
+- **TAD Lite v1.1 — symmetric dual reviewers** (driven by the channel's first real-world run, where a design-time AC-principal contract defect survived self-review to the last gate):
+  - `alex-lite` **L2.5 contract review** (MANDATORY, every task): a fresh-context reviewer is spawned on the one-page contract before the human sign-off — AC-executability matrix (real, authorized principal? production path? runs verbatim? at least one claim field-verified read-only, `UNVERIFIED` tags otherwise), scope sanity, escalated-coverage check. FAIL contracts are never handed to Blake; L3-stage substantive edits trigger an incremental re-review (staleness carrier: reviewed-AC count)
+  - `blake-lite` **L0.5 rewired to mechanical verification on ALL lite tasks** (was: escalated-only self-side review): contract must carry a real review (`最终 verdict` line-extracted, reviewer excerpt non-empty, P0s fixed, AC count matches) — missing/failed → hard stop, human ruling required; no silent grandfathering
+  - Design-side depth: goal-anchor question (≤2 rounds) + pre-write solution sketch; restricted quota-exit wording (informing only — never suggesting escalated_review; AskUserQuestion-izing it is forbidden)
+  - Execution ergonomics: single-step user-gated AC protocol (one device action at a time, agent checks logs/readbacks), 7-state status vocabulary (no premature "done"), 6-condition autonomous fix (implementation code only, never the contract), mandatory follow-up entries for non-blocking findings, opt-in retrospective, Series in-file anchor for multi-step lite work, `express` naming disambiguation
+- CLAUDE.md §2.5: lite built-in constraints now "contract review + post-impl review, one fresh reviewer each (self-review substitution forbidden for both)"
+
+### Quality Process
+- Handoff survived 3 independent review rounds (R1: 2 experts, 10 P0 / 19 P1; R2 verifier: 3 fix-introduced P0s caught — third confirmation of the round-2 pattern); Gate 4 recomputed all 16 mechanical ACs from scratch plus a behavioral dogfood that proved the L2.5 spawn is real (it caught a genuine P1 in a toy contract) and the negative control hard-stops
+- Full quality study published: `.tad/evidence/research/2026-07-30-lite-vs-full-quality-comparison.md` (which full-TAD mechanisms lite dropped, what leaked in the first real run, and why each amendment maps to a measured weakness)
+- `gate-design.md` pattern AMENDED: design-time review is a safety line for contract defects, not merely cheap-rework insurance (refuted by evidence same-day)
+
+### Upgrade Notes
+- Non-breaking for full TAD. Lite contracts created by the previous release (v2.35) that are still pending will hard-stop at blake-lite L0.5 (missing Contract Review section) and ask for a human ruling — re-run `/alex-lite` to add the review, or explicitly grandfather them (your verbatim ruling gets recorded)
+- Cost: ~35K tokens/cycle estimated with dual reviewers (v1.0 measured 23K); still ~1/10 of full TAD
+- Update command: `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes`
+
 ## [2.35.0] - 2026-07-30
 
 ### New Features
