@@ -125,7 +125,7 @@ function parseArgs() {
         console.log('Usage: npx tad-framework [--platform <name>] [--packs <list>] [--force]');
         console.log('');
         console.log('Options:');
-        console.log('  --platform <name>  Target platform (claude-code, codex)');
+        console.log('  --platform <name>  Target platform (claude-code, codex, both). Default: both');
         console.log('  --packs <list>     Comma-separated pack names to install');
         console.log('  --force            Reinstall even if already on the same version');
         console.log('  --help             Show this message');
@@ -149,8 +149,8 @@ async function main() {
     validatePacks(argPacks.split(','));
   }
 
-  // Default: full install (claude-code + all packs), no questions asked
-  const platform = argPlatform || 'claude-code';
+  // Default: full install for both platforms (claude-code + codex, all packs), no questions asked
+  const platform = argPlatform || 'both';
   runInstall(platform, argPacks, argForce);
 }
 

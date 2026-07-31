@@ -76,7 +76,7 @@ while [ $# -gt 0 ]; do
       echo "       tad.sh --fork-pack <name> | --unfork-pack <name> | --list-packs"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
-      echo "  --platform <name>  target platform (claude-code, codex). Default: claude-code"
+      echo "  --platform <name>  target platform (claude-code, codex, both). Default: both"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
       echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
       echo "                     default: ask, or local with --yes"
@@ -180,12 +180,8 @@ resolve_platform() {
         validate_platform "$PLATFORM"
         log_info "Platform (explicit): $PLATFORM"
     else
-        PLATFORM="claude-code"
-        if command -v claude &> /dev/null || [ -d "$HOME/.claude" ]; then
-            log_info "Detected: Claude Code (default platform)"
-        else
-            log_warn "Claude Code not detected. Using default platform: claude-code"
-        fi
+        PLATFORM="both"
+        log_info "No platform specified. Using default platform: both (Claude Code + Codex)"
     fi
 }
 

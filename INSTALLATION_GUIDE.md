@@ -10,10 +10,14 @@
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-默认 Claude Code 全套 + 全部 25 个 packs。无需 Node.js，只需 bash + curl。
+默认双平台安装（Claude Code + Codex）+ 全部 25 个 packs。无需 Node.js，只需 bash + curl。首次安装与后续升级在不传 `--platform` 时均为双平台；只有 Claude Code 的旧项目升级后自动补齐 Codex 文件，项目数据（handoffs、evidence、project-knowledge）保持不变。
 
-Codex 用户或选择特定 packs：
+只要单平台（显式覆盖默认值）：
 ```bash
+# 仅 Claude Code
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform claude-code
+
+# 仅 Codex，或选择特定 packs
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform codex --packs web-frontend,web-backend
 ```
 

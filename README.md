@@ -131,9 +131,9 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-一行命令，全量安装 Claude Code + 全部 25 个 capability packs。升级也用同一命令。
+一行命令，默认双平台安装（Claude Code + Codex）+ 全部 25 个 capability packs。首次安装与升级用同一命令；只有 Claude Code 的旧项目升级后会自动补齐 Codex 文件，项目数据不变。
 
-Codex 用户或想选 packs：加 `--platform codex --packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+只要单平台：加 `--platform claude-code`（仅 Claude Code）或 `--platform codex`（仅 Codex），也可显式 `--platform both`；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
 
 > 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 

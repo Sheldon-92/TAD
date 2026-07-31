@@ -1,0 +1,1 @@
+- 2026-07-30 [default-both-platform] migration engine 对 2.35.0 报 chain gap（无 manifest），升级时迁移被跳过但数据保留与文件补齐正常——既有迁移链覆盖缺口，非本次默认值改动引入
