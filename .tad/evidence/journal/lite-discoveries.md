@@ -1,1 +1,2 @@
 - 2026-07-30 [default-both-platform] migration engine 对 2.35.0 报 chain gap（无 manifest），升级时迁移被跳过但数据保留与文件补齐正常——既有迁移链覆盖缺口，非本次默认值改动引入
+- 2026-07-31 [express-lite-capability-complete] 负向 regex AC 同时约束"禁令的措辞"——禁令句里含被禁子串会自踩 AC；写法上把触发词与被禁子串拆到不同行/换词，落盘前先对候选措辞空跑该 regex

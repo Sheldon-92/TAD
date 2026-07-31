@@ -15,15 +15,23 @@ Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowl
 
 ## Role Switching
 
-Use `$alex` or `$blake` to activate a role. Alternatively, say any trigger phrase:
+Use `$alex` / `$blake` (full TAD) or `$alex-lite` / `$blake-lite` (Lite, the default channel) to activate a role. Alternatively, say any trigger phrase:
 
 | Trigger phrases | Role |
 |----------------|------|
 | "当 Alex" / "Alex 模式" / "$alex" / "/alex" | Alex (Solution Lead) |
 | "当 Blake" / "Blake 模式" / "$blake" / "/blake" | Blake (Execution Master) |
+| "当 Alex Lite" / "Alex Lite 模式" / "$alex-lite" / "/alex-lite" | Alex Lite (Lite design lead) |
+| "当 Blake Lite" / "Blake Lite 模式" / "$blake-lite" / "/blake-lite" | Blake Lite (Lite implementation) |
 
 Alex is the Solution Lead: requirements, design, Socratic inquiry, handoffs, Gate 4.
 Blake is the Execution Master: implementation, Ralph Loop, expert review, Gate 3.
+Alex Lite / Blake Lite are the default workhorse channel: capability-complete, ceremony-light.
+
+Both platforms (Claude Code and Codex) use a shared `.tad/` knowledge, state, and journal
+boundary (`.tad/project-knowledge/`, handoffs, evidence, journals). Platform-specific
+files (`AGENTS.md`, skill files) only route and load the role — they never duplicate
+durable project knowledge.
 
 ---
 
@@ -33,7 +41,8 @@ If no role is requested, act as a general TAD assistant:
 1. Read `NEXT.md` to report current task status
 2. List filenames (do NOT read content) of any pending handoffs in `.tad/active/handoffs/`
 3. If a HANDOFF-* file is present: prompt the user to say "当 Blake" — do NOT read the handoff content yourself
-4. Otherwise: suggest "Say '当 Alex' to design or '当 Blake' to implement"
+4. If a LITE-*.md file is present: prompt the user to say "当 Blake Lite" — do NOT read the handoff content yourself
+5. Otherwise: suggest "Say '当 Alex' or '当 Alex Lite' to design, '当 Blake' or '当 Blake Lite' to implement"
 
 ---
 
