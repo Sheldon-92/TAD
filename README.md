@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.36.0 - TAD Lite v1.1**
+**Version 2.37.0 - Default Dual-Platform Installation**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -83,6 +83,13 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
+## 🎯 What's New in v2.37
+
+### v2.37.0 — Default Dual-Platform Installation
+- Fresh installs and upgrades without `--platform` now install both Claude Code and Codex entry points.
+- Existing Claude-only projects gain the Codex files during upgrade while project data remains untouched.
+- Explicit `--platform claude-code`, `codex`, and `both` overrides remain available.
+
 ## 🎯 What's New in v2.36
 
 ### v2.36.0 — TAD Lite v1.1 (Quality Amendments)
@@ -141,7 +148,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.36.0
+# Should show: 2.37.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -441,6 +448,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.36.0 - TAD Lite v1.1**
+**Welcome to TAD v2.37.0 - Default Dual-Platform Installation**
 
 *AI does the work. Humans guard the value.*

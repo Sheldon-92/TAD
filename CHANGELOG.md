@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.37.0] - 2026-07-30
+
+### New Features
+- **Default dual-platform installation and upgrade**: when `--platform` is omitted, both Claude Code and Codex entry points are installed for fresh installs and upgrades.
+- Claude-only legacy projects are upgraded with Codex files while existing project data is preserved.
+- Explicit `--platform claude-code`, `codex`, and `both` overrides remain supported.
+
+### Documentation
+- Documented the dual-platform default and explicit platform overrides in the README and installation guide.
+
 ## [2.36.0] - 2026-07-30
 
 ### New Features
