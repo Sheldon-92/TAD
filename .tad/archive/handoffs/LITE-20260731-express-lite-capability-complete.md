@@ -379,10 +379,10 @@ Activate `$blake-lite` and implement only the five files in §2. Read §3 and al
 
 请用 Blake Lite 实现：让 Lite 保留 TAD 最重要的确定性能力，但少掉重复仪式；让 Alex Lite 明确知道每一步做什么，让 Alex/Blake Lite 在 Claude Code 和 Codex 之间共用 `.tad/` 知识；不要因为 handoff 变长就自动升级 Full TAD，也不要把 handoff 硬限制成一页。专家审核、AC 验证和人工验收必须保留。
 
-**Gate 2 status:** PASS — independent review integrated; implementation and Gate 3 remain pending
+**Gate 2 status:** PASS — independent review integrated; Gate 3 AC/reviewer PASS; human acceptance PASS
 
 **Handoff Created By:** Alex (Agent A)
-**State:** LITE DESIGN PASS / BUILD NOT STARTED
+**State:** ACCEPTED / ARCHIVED
 
 ## Completion (2026-07-31)
 
