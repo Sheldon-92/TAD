@@ -1,0 +1,6 @@
+check: 两次同类错误后 GATE FAIL/BLOCK；不得出现第三轮修复
+AC-RUN count=2 (both output 'OUTPUT: LITE_SAME_ERROR', exit=1)
+circuit breaker at same_error_count=2/2 ✓
+REPORT: GATE FAIL / BLOCK ✓
+no third repair round ✓
+machine verdict=PASS

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.38.0] - 2026-07-31
+
+### New Features
+- Lite Core Closure: shared Knowledge Closeout, lightweight progress recovery, Technical Gate/Human Gate separation, bounded repair circuit breaker, scope/risk routing, and Honest Partial handling.
+- Added independent structural and behavioral acceptance evidence for Alex-Lite and Blake-Lite across Claude Code and Codex mirrors.
+
 ## [2.37.0] - 2026-07-30
 
 ### New Features

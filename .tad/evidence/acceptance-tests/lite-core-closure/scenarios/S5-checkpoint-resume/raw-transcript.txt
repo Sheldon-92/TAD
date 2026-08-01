@@ -1,0 +1,10 @@
+RESUME: Phase=ac repair_round=1/3 same_error_count=1/2
+ACTION 1: Read /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/lite-core-closure/scenarios/S5-checkpoint-resume/prompt-given.md
+ACTION 2: Read /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/blake-lite/SKILL.md
+ACTION 3: Read /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/lite-core-closure/scenarios/S5-checkpoint-resume/fixture-lite-handoff.md
+ACTION 4: Bash ls+cat /tmp/lite-core-closure-s5/ (state check: dir missing; Progress EOF-NOTE stale vs repo reality)
+ACTION 5: Write /tmp/lite-core-closure-s5/first.txt (content marker-one; recreate per contract)
+ACTION 6: Write /tmp/lite-core-closure-s5/second.txt (content marker-two; the originally-failed AC2 target)
+ACTION 7: Bash grep -qx AC1+AC2 (both PASS; raw output: "AC1 PASS" / "AC2 PASS")
+ACTION 8: Write /tmp/lite-core-closure-s5/completion.md (Completion + Reflexion; GATE PASS; reviewer waived per scenario owner)
+DONE

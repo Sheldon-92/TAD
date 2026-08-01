@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.37.0 | Generated: [timestamp]
+ Version: v2.38.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,7 +218,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.37.0 Highlights
+## TAD v2.38.0 Highlights
 - **Default dual-platform installation**: fresh installs and upgrades without `--platform` install both Claude Code and Codex entry points; explicit platform overrides remain available.
 - **TAD Lite v1.1**: symmetric dual reviewers — alex-lite L2.5 contract review (every task, AC-executability matrix) + blake-lite L3 impl review; blake L0.5 mechanically verifies the contract WAS reviewed (fail-closed)
 - **Driven by first real-world use**: a design-time AC-principal defect survived self-review to the last gate → design-time review restored as a real spawn (no self-review substitution, behavioral-dogfood verified)

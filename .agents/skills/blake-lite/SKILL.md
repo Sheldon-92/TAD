@@ -101,6 +101,38 @@ escalated 单追加：核对 escalated_review 用户原话存在且含实质理�
 
 仓库现状与旧知识冲突 → 以现状为准，在 Completion 记录冲突，不静默遵循旧知识。
 
+## Lite Progress（轻量恢复检查点）
+
+在 LITE handoff 内追加 `## Lite Progress` 段，只在阶段边界更新：
+admission（准入后）、implement（实现后）、ac（AC 自验后）、
+review（独立审查后）、technical-gate（技术门后）、human-gate（人工门后）。
+每个边界先追加 Progress，再进入下一阶段。
+
+字段枚举固定（逐行）：
+
+  Phase=admission|implement|ac|review|technical-gate|human-gate
+  repair_round=0/3..3/3
+  same_error_count=0/2..2/2
+  verdict=RUNNING|GATE PASS|GATE FAIL/BLOCK|PARTIAL-GO
+  Evidence=<path>
+  Next Action=<one line>
+
+每条边界记录一行：当前阶段、已改文件、最后一个 AC、下一动作、
+阻塞/错误类别、两个计数、最近 verdict、证据路径。
+
+恢复：压缩/中断后先读该段，从记录的阶段与计数继续——不得重置计数逃避熔断。
+边界：不写完整 session-state.md，不引入 Ralph state 文件。
+Completion 是最终状态；归档后不再写 Progress。
+
+## Scope / Risk Router（影响范围与风险）
+
+- 不按文件数评估风险。改动涉及共享 API、协议、hook、配置、权限、数据结构
+  或被多处消费的符号时 → 实现前做有界 caller/consumer 检查
+  （grep 消费方，≤3 处采样确认），结果记进 Progress 与 Completion。
+- 发现 handoff 未覆盖的重大实现决策、权限面变化或安全/性能风险 → 停，
+  报告人；不得用"等价实现"静默扩大目标。
+- fatal 操作仍按升级清单第 4 类处理；普通局部修改继续留在 Lite。
+
 ## L1 实现
 
 按文件清单实现。纪律：
@@ -134,6 +166,53 @@ P0 修复若改动了 reviewer 未见过的文件 → 追加同 reviewer 增量�
 成本 ≈1/5 首轮）。
 六条件自治修复：reviewer/gate 发现的缺陷若同时满足——①不扩大功能范围 ②不新增权限面 ③不改变用户可见目标 ④有明确生产证据 ⑤修改可回滚 ⑥修复后已完成 reviewer 增量复核（Completion 附 verdict，完成态而非承诺）——Blake 自行修复 + 重跑受影响 AC，无需回人拍板；Completion 逐条列 6 条命中证据。不授权修改契约的 AC 或目标——缺陷根因在契约本身 → 六条件不适用，按 L1 规则停、报告人回 /alex-lite。任一条不满足 → 停，报告人。
 
+## L3.5 Lite Technical Gate（⚠️ BLOCKING）
+
+L3 reviewer 之后、L4 之前逐项确认：
+1. AC/evidence：每条 AC 有原始输出与证据路径——没有证据不得声称 PASS；
+2. reviewer verdict 与 P0/P1 状态；
+3. friction：必需工具/权限/环境状态——BLOCKED 未解不得进入 PASS；
+4. scope/risk：改动限于契约清单；触发时的 caller/consumer 检查已记录；
+5. Knowledge Assessment 三态已标记。
+
+结果只能是三种：
+- `GATE PASS`：无冲突且全项满足 → 进 L4/L5。
+- `GATE FAIL/BLOCK`：实现/AC/reviewer 失败且超出修复边界，或必需证据/
+  环境/权限缺失且没有允许的用户选择或安全替代。不伪造 PASS。
+- `PARTIAL-GO`：见 Honest Partial——仅 AC 互相冲突或存在明确的人/外部
+  系统选择导致剩余 AC 本轮无法完成，且至少一条 AC 已通过。
+
+状态转移固定：实现/AC/reviewer 失败且可在原范围修复 → Repair Loop；
+修复后重跑受影响 AC 与 reviewer，再回本 Gate。
+人域分工：本 Gate 判技术真假；L5 只问业务方向、体验、品味或其他人域判断——
+不让人重复验证机器可验证的技术 AC。
+
+## Lite Repair Loop（有限修复与熔断）
+
+- 实现、AC 或 reviewer 发现问题 → 最多 3 轮有边界修复（repair_round 每轮递增）。
+- 每轮在 Progress 与 Completion 的 `## Reflexion` 记录一行：
+  失败、假设、动作、结果。
+- 同类错误以错误类别 + 稳定摘要判定；连续 2 次仍未改变结果
+  （same_error_count=2/2）→ 停止，报告 `GATE FAIL/BLOCK`。
+- 恢复时沿用 Lite Progress 中的计数，不得重置计数逃避熔断。
+- 根因路由：契约问题 → 停，回 /alex-lite；环境/权限/工具问题 → 停，报告人；
+  实现问题 → 才允许在原范围内修复。
+
+## Honest Partial（诚实部分完成）
+
+`PARTIAL-GO` 仅当同时满足：至少一条 AC 已通过；且 AC 互相冲突，
+或存在明确的人/外部系统选择，导致剩余 AC/证据在本轮无法完成。
+不用于：普通实现失败、缺证据、缺权限、reviewer 不可用——那些是 `GATE FAIL/BLOCK`。
+
+必填报告：冲突 AC 列表、已通过 AC 与证据、剩余项无法完成的原因、
+给人/Alex 的三个选项：
+1. 接受部分交付：人确认后记录 `partial-accepted` → `ACCEPTED / ARCHIVED`；
+2. 回 /alex-lite 修订契约：保持 active 不归档，重走契约审查/AC/reviewer/Technical Gate；
+3. 延期：保持 active，记录原因。
+
+禁止：把冲突 AC 静默改写成 PASS；用环境缺失掩盖实现缺陷；
+未经人选择直接归档 PARTIAL-GO 单。
+
 ## 七态状态词
 
 向人报告进度必须使用且仅使用：
@@ -143,6 +222,7 @@ WAITING USER-GATED AC
 USER AC PASS / GATE NOT RUN
 GATE FAIL / BLOCK
 GATE PASS / WAITING HUMAN ACCEPTANCE
+PARTIAL-GO / WAITING HUMAN DECISION
 ACCEPTED / ARCHIVED
 未达最终态前禁止"已完成/完成了"类总结词。
 
@@ -154,10 +234,14 @@ ACCEPTED / ARCHIVED
   - 改动文件：{列表，清单外标 [清单外]}
   - AC 结果：逐条 ✅/❌/BLOCKED + 实际输出摘要与证据路径
   - Reviewer: {verdict}, P0={n}(fixed), P1={n}, 摘录关键发现原文
+  - Technical Gate: {GATE PASS | GATE FAIL/BLOCK | PARTIAL-GO}（逐项确认摘要）
   - Knowledge Assessment: none | journal captured | candidate for distillation
     （journal captured 时附 journal 路径）
   - 意外发现：无 / 一行描述
   - follow-up：每个非阻塞 finding（P2/可观测性缺口）→ {现象/证据位置/为什么不阻塞/建议 owner}；禁止静默省略、禁止写成"已修复"
+
+  ## Reflexion
+  每次修复一行：失败 / 假设 / 动作 / 结果。无修复则写"无"。
 
 学习捕获纪律：本角色只写原始 journal 材料（lite-discoveries.md 或 handoff 指定的
 journal 路径）；project-knowledge/ 成品条目的蒸馏由后续 Alex-Lite / 验收知识闭环
@@ -170,12 +254,16 @@ opt-in 复盘：仅当用户点名要复盘 → 产出完整 retrospective（时
 
 ## L5 STOP — 人验收 + 归档
 
-输出 Completion 摘要，等人验收。
+输出 Completion 摘要，等人验收。L5 只问人域问题（业务方向、体验、品味）；
+机器可验证的技术 AC 已在 Lite Technical Gate 判完，不让人重复验证。
+`PARTIAL-GO` 单 → 按 Honest Partial 三选项由人决定；接受部分交付须先记录
+`partial-accepted` 才归档。
 人验收通过后：mkdir -p .tad/archive/handoffs/ 并
 mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ = done）。
 是否 git commit 由人决定——blake-lite 不主动 commit。
 
-压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md + 重跑 /blake-lite；
+压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md + 其 `## Lite Progress` 段
+（从记录的阶段与计数继续，不得重置 repair_round / same_error_count）+ 重跑 /blake-lite；
 不要运行 /alex 或 /blake。
 
 ## Forbidden
@@ -192,4 +280,9 @@ mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ 
   无界加载 TAD 协议、配置或知识文件（`.tad/config*.yaml`、hooks、其它 SKILL 及其
   references/）——有界上下文刷新（handoff 引用路径、索引、≤3 个匹配 pattern）
   与 lite-discoveries journal 除外 /
-  把页数、文件数或细节多少当作升级理由
+  把页数、文件数或细节多少当作升级理由 /
+  无证据声称 GATE PASS /
+  重置 repair_round / same_error_count 逃避熔断 /
+  把冲突 AC 静默改写为 PASS、用环境缺失掩盖实现缺陷 /
+  把 PARTIAL-GO 用于普通实现失败、缺证据、缺权限或 reviewer 不可用 /
+  未经人选择直接归档 PARTIAL-GO 单

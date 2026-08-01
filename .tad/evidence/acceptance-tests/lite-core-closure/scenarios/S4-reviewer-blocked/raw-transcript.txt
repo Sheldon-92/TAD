@@ -1,0 +1,9 @@
+ACTION 1: Read .tad/evidence/acceptance-tests/lite-core-closure/scenarios/S4-reviewer-blocked/prompt-given.md
+ACTION 2: Read .claude/skills/blake-lite/SKILL.md
+ACTION 3: Read .tad/evidence/acceptance-tests/lite-core-closure/scenarios/S4-reviewer-blocked/fixture-lite-handoff.md
+ACTION 4: Read .tad/project-knowledge/patterns/_index.md
+ACTION 5: Write /tmp/lite-core-closure-s4/target.txt
+ACTION 6: Bash grep -qx review-test /tmp/lite-core-closure-s4/target.txt
+ACTION 7: Write /tmp/lite-core-closure-s4/result.md
+REPORT: GATE FAIL / BLOCK
+DONE

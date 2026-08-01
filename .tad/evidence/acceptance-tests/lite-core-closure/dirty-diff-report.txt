@@ -1,0 +1,7 @@
+== baseline vs after: path set diff ==
+--- only in AFTER (added by this task):
+.agents/skills/alex-lite/SKILL.md
+.agents/skills/blake-lite/SKILL.md
+.claude/skills/alex-lite/SKILL.md
+.claude/skills/blake-lite/SKILL.md
+--- only in BASELINE (removed):

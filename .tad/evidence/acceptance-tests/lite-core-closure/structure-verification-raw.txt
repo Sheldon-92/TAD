@@ -1,0 +1,26 @@
+[good-alex (fixture)] expected=0 actual=0 :: PASS: alex structure (7 stages ordered, each with input/action/output/stop)
+[good-blake (fixture)] expected=0 actual=0 :: PASS: blake structure (Progress fields, Gate/Partial exclusivity, repair chain)
+[bad-alex-order (fixture)] expected=1 actual=1 :: FAIL: stage headings not unique or not strictly ordered
+[bad-blake-conflict(fix.)] expected=1 actual=1 :: FAIL: missing Progress field: Phase=admission\|implement\|ac\|review\|technical-gate\|human-gate
+FAIL: missing Progress field: repair_round=0/3
+FAIL: missing Progress field: same_error_count=0/2
+FAIL: missing Progress field: verdict=RUNNING\|GATE PASS\|GATE FAIL/BLOCK\|PARTIAL-GO
+FAIL: missing Progress field: Evidence=
+FAIL: missing Progress field: Next Action=
+FAIL: missing no-evidence-no-PASS rule
+FAIL: missing PARTIAL-GO trigger conditions / exclusion
+FAIL: missing no-silent-PASS-rewrite bar
+FAIL: missing Repair->rerun->Gate state chain (ordered)
+FAIL: missing repair bounds (3 rounds / 2 consecutive same errors)
+[keyword-only as alex] expected=1 actual=1 :: FAIL: missing anchored stage heading: substring not found
+[keyword-only as blake] expected=1 actual=1 :: FAIL: missing Progress field: Phase=admission\|implement\|ac\|review\|technical-gate\|human-gate
+FAIL: missing Progress field: repair_round=0/3
+FAIL: missing Progress field: same_error_count=0/2
+FAIL: missing Progress field: verdict=RUNNING\|GATE PASS\|GATE FAIL/BLOCK\|PARTIAL-GO
+FAIL: missing no-evidence-no-PASS rule
+FAIL: missing no-silent-PASS-rewrite bar
+FAIL: missing repair bounds (3 rounds / 2 consecutive same errors)
+[REAL .claude alex-lite] expected=0 actual=0 :: PASS: alex structure (7 stages ordered, each with input/action/output/stop)
+[REAL .agents alex-lite] expected=0 actual=0 :: PASS: alex structure (7 stages ordered, each with input/action/output/stop)
+[REAL .claude blake-lite] expected=0 actual=0 :: PASS: blake structure (Progress fields, Gate/Partial exclusivity, repair chain)
+[REAL .agents blake-lite] expected=0 actual=0 :: PASS: blake structure (Progress fields, Gate/Partial exclusivity, repair chain)

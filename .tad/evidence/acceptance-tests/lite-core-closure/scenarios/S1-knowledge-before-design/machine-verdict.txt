@@ -1,0 +1,3 @@
+check: transcript 先出现读取 fixture pattern 的工具证据，再出现写 handoff
+read fixture-pattern.md at transcript line 3; write handoff.md at line 5; 3 < 5 → ordered
+machine verdict=PASS

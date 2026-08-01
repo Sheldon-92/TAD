@@ -172,7 +172,53 @@ escalated_review 授权规则：
 
 Series 锚点：多步任务不写 .tad/active/epics/（升级清单第 2 类）。锚点 = LITE 文件 header 追加 Series 行。Series 为文档性锚点，blake-lite 不消费。用户要求"Epic"→ 解释 lite 用 Series 行；用户仍坚持写正式 Epic → 即命中第 2 类，按升级清单/escalated 规则处理。
 
-压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md。文件存在但无 `## Contract Review` 段 → 从 AC 空跑检查续（AC 空跑 → 独立契约审查；不重写文件，不触发"文件名已存在"分支）；已有该段 → 从人工拍板续。不要运行 /alex 或 /blake。
+压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md；该文件有 `## Lite Progress` 段时先读它（最近阶段/计数/verdict）。文件存在但无 `## Contract Review` 段 → 从 AC 空跑检查续（AC 空跑 → 独立契约审查；不重写文件，不触发"文件名已存在"分支）；已有该段 → 从人工拍板续。不要运行 /alex 或 /blake。
+
+## Lite Progress（轻量恢复检查点）
+
+Blake-Lite 在 LITE handoff 内追加 `## Lite Progress` 段，只在阶段边界更新：
+admission（准入后）、implement（实现后）、ac（AC 自验后）、
+review（独立审查后）、technical-gate（技术门后）、human-gate（人工门后）。
+每个边界先追加 Progress，再进入下一阶段。
+
+字段枚举固定（逐行）：
+
+  Phase=admission|implement|ac|review|technical-gate|human-gate
+  repair_round=0/3..3/3
+  same_error_count=0/2..2/2
+  verdict=RUNNING|GATE PASS|GATE FAIL/BLOCK|PARTIAL-GO
+  Evidence=<path>
+  Next Action=<one line>
+
+每条边界记录一行：当前阶段、已改文件、最后一个 AC、下一动作、
+阻塞/错误类别、两个计数、最近 verdict、证据路径。
+
+恢复：压缩/中断后先读该段，从记录的阶段与计数继续——不得重置计数逃避熔断。
+边界：不写完整 session-state.md，不引入 Ralph state 文件。
+Completion 是最终状态；归档后不再写 Progress。
+
+## Scope / Risk Router（影响范围与风险）
+
+- 不按文件数评估风险。契约涉及共享 API、协议、hook、配置、权限、数据结构
+  或被多处消费的符号时 → 设计期做有界 caller/consumer 检查
+  （grep 消费方，≤3 处采样确认），结果写进 handoff"风险与注意"。
+- 发现任务包含契约未覆盖的重大决策、权限面变化或安全/性能风险 → 停，
+  报告人；不得用"等价设计"静默扩大目标。
+- fatal 操作仍按升级清单第 4 类处理；普通局部修改继续留在 Lite。
+
+## Knowledge Closeout（验收后知识闭环）
+
+触发：人工验收通过且 Completion 标记 `Knowledge Assessment: candidate for distillation`。
+这是成品知识写入 `.tad/project-knowledge/` 的唯一入口——Blake-Lite 只捕获 raw journal。
+
+1. 有界读取：只读该单的 Completion 与其引用的 journal 路径，不翻旧账。
+2. Variabilize 检查：发现中的 episode 特定值（路径、日期、项目名）能否参数化？
+   不能 → 不可复用，留 journal，不蒸馏。
+3. Provenance 检查：每条 claim 必须有文件/路径载体；缺载体 → 不是知识。
+4. 字段完整（context/discovery/action/failure_mode）→ 写成品条目并更新相应 index；
+   字段不足 → 写成具体 gap/follow-up 交还执行者补全，禁止编造内容填充。
+5. Closeout 不阻塞普通验收。候选未蒸馏 → 必须显式记录
+   `DISTILLATION DEFERRED: {原因}`（journal 或 follow-up），禁止静默丢弃。
 
 ## 精髓（不可妥协的四条）
 
@@ -193,4 +239,7 @@ Series 锚点：多步任务不写 .tad/active/epics/（升级清单第 2 类）
   在无用户明示坚持时设置 escalated_review: yes /
   把额度出口句用于推荐/暗示 escalated（含 AskUserQuestion 选项化、"要不要走 escalated"、"建议你说一声"）/ 在用户未表达继续意愿或成本顾虑时主动抛出该句 /
   修改 LITE 契约之外的任何文件 /
-  把页数、文件数或细节多少当作升级理由
+  把页数、文件数或细节多少当作升级理由 /
+  未验收即蒸馏、对 candidate 静默丢弃（必须蒸馏或显式记 `DISTILLATION DEFERRED`）、
+  为凑字段编造 gap 内容 /
+  未做 caller/consumer 检查却声称"无下游影响"

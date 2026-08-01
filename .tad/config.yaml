@@ -1,8 +1,8 @@
-# TAD Configuration v2.37.0 - Default Dual-Platform Installation
+# TAD Configuration v2.38.0 - Lite Core Closure
 method: TAD
-version: 2.37.0
+version: 2.38.0
 description: Triangle Agent Development - Two-Agent Quality Framework + Knowledge Search (brain-native) + 25 Capability Packs + Cross-Platform + Research Engine
-last_updated: 2026-07-30
+last_updated: 2026-07-31
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.
