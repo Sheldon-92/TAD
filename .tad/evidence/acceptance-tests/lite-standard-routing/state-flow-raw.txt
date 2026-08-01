@@ -1,0 +1,17 @@
+=== State Flow Verification ===
+  OK: approval_pending -> approve -> execution_ready transition present
+  OK: reject -> approval_rejected -> revise -> design_ready present
+  OK: stale/lower write rejects to blocked_stale_revision
+  OK: append-only field ownership enforced
+  OK: resume_from_latest_valid_revision present
+  OK: F2 escalated_review mapped to standard, cannot lower F0/F1
+  OK: .claude/skills/alex-lite/SKILL.md contains no-lower anchor
+  OK: .claude/skills/blake-lite/SKILL.md contains no-lower anchor
+  OK: .claude/skills/alex-lite/SKILL.md contains honest-partial element 已完成
+  OK: .claude/skills/alex-lite/SKILL.md contains honest-partial element 阻塞原因
+  OK: .claude/skills/alex-lite/SKILL.md contains honest-partial element 下一步
+  OK: .claude/skills/blake-lite/SKILL.md contains honest-partial element 已完成
+  OK: .claude/skills/blake-lite/SKILL.md contains honest-partial element 阻塞原因
+  OK: .claude/skills/blake-lite/SKILL.md contains honest-partial element 下一步
+---
+RESULT: PASS (state-flow)

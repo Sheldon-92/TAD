@@ -1,0 +1,13 @@
+=== Final evidence snapshot Sat Aug  1 13:52:00 EDT 2026 ===
+--- AC9 (after anchor fix) ---
+PASS
+--- AC10 (mirrors + body) ---
+PASS
+--- AC12 (behavior 11/11) ---
+PASS
+--- AC13 (scope 6) ---
+PASS
+--- AC16 (state flow) ---
+PASS
+--- route-schema ---
+PASS

@@ -1,0 +1,6 @@
+.agents/skills/alex-lite/SKILL.md
+.agents/skills/blake-lite/SKILL.md
+.claude/skills/alex-lite/SKILL.md
+.claude/skills/blake-lite/SKILL.md
+.tad/routing-contract.yaml
+AGENTS.md

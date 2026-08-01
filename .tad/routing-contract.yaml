@@ -1,0 +1,109 @@
+# TAD Route Contract — Shared SSOT for Lite / Standard / Full routing
+# ---------------------------------------------------------------
+# Authority: policy for route decisions across Alex-Lite and Blake-Lite.
+# Machine-readable contract; handoff/Completion carry only revisioned
+# task decision snapshots. Missing/unreadable SSOT => fail-closed
+# (blocked_missing_contract), never guess Lite.
+# Do NOT store project knowledge or conversation history here.
+
+contract_id: TAD-ROUTING-2026-08
+schema_version: 1
+levels: [lite, standard, full]
+
+precedence:
+  - F0_FATAL
+  - F1_GOVERNANCE_CRITICAL
+  - explicit_full
+  - route_contract
+  - role_raise
+  - user_request
+  - default_lite
+
+invariants:
+  user_can_lower: false
+  missing_contract: fail_closed
+  route_level:
+    full_if_any_depth: full
+    standard_if_any_depth: standard
+    otherwise: lite
+
+risk_classes:
+  F0_FATAL:
+    match_any: [destructive, auth_payment, production, dependency_pin, release_publish_sync, destructive_vcs]
+    result: {route_level: full, design_depth: full, execution_depth: full, override_allowed: false}
+  F1_GOVERNANCE_CRITICAL:
+    match_any: [routing_contract, safety_stop, gate_ac_reviewer, shared_memory_authority, protocol_state]
+    result: {route_level: full, design_depth: full, execution_depth: full, override_allowed: false}
+  F2_UNCERTAIN:
+    match_any: [material_tradeoff, cross_consumer, integration_risk, nontrivial_verification]
+    result: {route_level: standard, affected_side_only: true, affected_side: required, override_allowed: true}
+  F3_ROUTINE:
+    match_any: [bounded_reversible_verifiable]
+    result: {route_level: lite, design_depth: lite, execution_depth: lite, override_allowed: true}
+
+state_machine:
+  states: [routed, design_ready, approval_pending, approval_rejected, execution_ready, escalated_full, blocked_missing_contract, blocked_stale_revision, completed, accepted, archived]
+  transitions:
+    - {from: routed, event: alex_route, to: design_ready}
+    - {from: design_ready, event: human_approval_required, to: approval_pending}
+    - {from: approval_pending, event: approve, to: execution_ready}
+    - {from: approval_pending, event: reject, to: approval_rejected}
+    - {from: approval_rejected, event: revise, to: design_ready}
+    - {from: execution_ready, event: blake_route, to: execution_ready}
+    - {from: [routed, design_ready, approval_pending, execution_ready], event: f0_or_f1_found, to: escalated_full}
+    - {from: [routed, design_ready, approval_pending, execution_ready], event: contract_missing, to: blocked_missing_contract}
+    - {from: [design_ready, approval_pending, execution_ready], event: stale_revision, to: blocked_stale_revision}
+    - {from: [escalated_full, blocked_missing_contract, blocked_stale_revision], event: resume_from_latest_valid_revision, to: routed}
+    - {from: execution_ready, event: completion, to: completed}
+    - {from: completed, event: human_accept, to: accepted}
+    - {from: accepted, event: archive, to: archived}
+
+decision_record:
+  required: [route_id, revision, base_revision, contract_id, route_level, design_depth, execution_depth,
+             risk_class, affected_side, escalated_review, reason, authority, writer, override_allowed, evidence, state]
+
+revision_rules:
+  first_revision: 0
+  next_revision: previous_revision + 1
+  base_revision_must_equal: latest_valid_revision
+  stale_or_lower_write: reject_to_blocked_stale_revision
+  alex_may_write: [design_depth, risk_class, affected_side, escalated_review, reason, evidence]
+  blake_may_write: [execution_depth, risk_class, affected_side, escalated_review, reason, evidence]
+  neither_role_may_write: [policy_contract, other_role_depth, approval_record]
+
+# --- Independent depth routing (FR3, NFR2) ---
+# design_depth and execution_depth are chosen independently by the active
+# side; route_level is DERIVED, never independently selected:
+#   any full depth -> full; else any standard depth -> standard; else lite.
+# Supported asymmetric combinations:
+#   Lite/Lite, Standard/Lite, Lite/Standard, Standard/Standard
+# A user may RAISE depth but may NOT lower F0/F1 (invariants.user_can_lower).
+# Standard must never be used to bypass Full (precedence order).
+
+depth_combinations:
+  - "Lite/Lite"
+  - "Standard/Lite"
+  - "Lite/Standard"
+  - "Standard/Standard"
+
+# --- Profile contracts (FR7) ---
+# Standard is a profile (depth configuration), NOT a separate agent identity.
+# No alex-medium / blake-medium skill paths may be created.
+# 停止条件: stop_conditions 字段（输出完成 / 证据齐全 / 预算耗尽即停止）
+# 升级 Full: escalation_conditions 字段（发现 F0/F1、SSOT 缺失、契约不足即 raise to Full）
+
+profiles:
+  Alex Standard:
+    inputs: [user goal, current repository state, RouteDecision, brain/pattern index, Lite knowledge preflight result]
+    outputs: [decision comparison, bounded consumer/dependency scan, risk matrix, expanded AC/failure matrix, design_profile_completion]
+    stop_conditions: [outputs complete, all decisions have evidence, review budget exhausted]
+    escalation_conditions: [F0/F1, missing SSOT, unresolved authority conflict, no evidence for a material decision, profile contract insufficient]
+    evidence_carrier: .tad/evidence/acceptance-tests/lite-standard-routing/design-profile.json
+    bounded_budget: "max 5 matched pattern files + 1 bounded consumer/dependency scan (≤3 sampled consumers)"
+  Blake Standard:
+    inputs: [approved handoff, RouteDecision snapshot, current worktree, Alex profile outputs, relevant knowledge entries]
+    outputs: [phase checkpoints, boundary scenario matrix, integration verification, bounded repair log, execution_profile_completion]
+    stop_conditions: [implementation scope complete, all required scenarios run, repair budget exhausted, evidence written]
+    escalation_conditions: [F0/F1 discovered, handoff/SSOT conflict, missing evidence carrier, repair budget exhausted without passing AC]
+    evidence_carrier: .tad/evidence/acceptance-tests/lite-standard-routing/execution-profile.json
+    bounded_budget: "2 repair cycles per failing scenario"

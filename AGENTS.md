@@ -35,6 +35,27 @@ durable project knowledge.
 
 ---
 
+## Lite / Standard / Full Routing（用户可读说明）
+
+直接描述目标即可开始——系统默认走 **Lite**（default Lite）。只有遇到三种情况之一时，
+路由层级会自动加深，并给你一句话原因：
+
+| 建议层级 | 何时出现 | 你通常要做什么 |
+|---------|---------|---------------|
+| **Lite（默认）** | 目标清晰、局部、可验证的普通任务 | 直接描述目标即可 |
+| **Standard** | 方案取舍复杂、跨模块影响或验证负担重（如依赖多个组件） | 接受额外的分析和验证步骤，其余照常 |
+| **Full** | 涉及安全、协议/路由契约、发布、认证、生产配置或其它高风险操作 | 流程更重、检查更多，且不能降级 |
+
+规则：
+- Standard 是深度配置（profile），不是新的 Agent 身份——没有 "Alex Medium / Blake Medium"。
+- Full 是治理边界，不可用 Standard 或"我用 Lite"绕过；一旦命中必须走 Full。
+- 你不会被要求从 "Alex×Blake 组合菜单" 中选择；角色根据同一份路由契约
+  （`.tad/routing-contract.yaml`，`contract_id: TAD-ROUTING-2026-08`）各自决定深度。
+- 页数、文件数、上下文长度不会自动触发升级；只有风险信号才会。
+- 如果某次被提高层级，你会看到：`当前建议: Lite|Standard|Full` + 原因 + 下一步。
+
+---
+
 ## Default Behavior (no role specified)
 
 If no role is requested, act as a general TAD assistant:

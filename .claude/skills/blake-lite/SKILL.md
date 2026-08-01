@@ -38,6 +38,59 @@ Blake-Lite（Execution Master, Lite）。只按 LITE handoff 实现。中文交�
 - 仓库现状与旧知识条目冲突时以现状为准；记录冲突/陈旧，不静默遵循旧知识。
 - 每个重要知识 claim 必须有文件/路径载体；只存在于对话中的 claim 不算已记录知识。
 
+## Route Contract（Lite / Standard / Full 三层路由）
+
+路由权威 = `.tad/routing-contract.yaml`（`contract_id: TAD-ROUTING-2026-08`，schema_version 1）。
+SSOT 是 policy；本角色只消费带 revision 的 task decision snapshot，绝不改写 policy。
+**Standard is a profile, not a separate agent**：Standard 是 Lite 的增强深度配置，
+不是新 Agent 身份，不创建 alex-medium / blake-medium 技能路径。
+
+### R0 — Route preflight（⚠️ BLOCKING）
+
+1. 读 `.tad/routing-contract.yaml` 与 handoff 携带的 RouteDecision snapshot。
+   SSOT 缺失/不可读 → `blocked_missing_contract`，停止，不猜测路由、不执行任何有副作用动作。
+2. 保留 handoff 中 Alex 的 `design_depth`，独立选择 `execution_depth`（lite|standard|full）；
+   `route_level` 由 SSOT 单调推导（任一 full → full；任一 standard → standard；否则 lite）。
+   不得静默改写 Alex 设计深度，不得降级既有深度。
+3. **F0/F1 cannot be lowered**：发现 F0_FATAL / F1_GOVERNANCE_CRITICAL →
+   双侧 full、`override_allowed: false`；在任何有副作用动作前停止，写 escalation state 转 Full。
+4. 输出/追加 RouteDecision（revision 追加）：route_id、base_revision=最新合法 revision、
+   risk_class、affected_side、escalated_review、reason、authority、evidence、state。
+   陈旧/降级写入 → blocked_stale_revision。只写 Blake 可写字段
+   （execution_depth / risk_class / affected_side / escalated_review / reason / evidence），
+   不得编辑 design_depth、approval 或 policy。
+5. 用户可见解释：`当前建议: Lite|Standard|Full` + 一句话原因 + 是否可提升 +
+   下一步动作；不暴露设计/执行组合菜单。
+
+### R1 — Blake Standard profile
+
+| 输入 | 输出 | 停止条件 | 升级条件 | 证据载体 |
+|---|---|---|---|---|
+| 已批准 handoff、RouteDecision snapshot、当前 worktree、Alex profile 输出、相关知识条目 | 分阶段检查点、边界场景矩阵、集成验证、有界修复日志、`execution_profile_completion` | 实现范围完成、必需场景跑完、修复预算耗尽、证据写入 | F0/F1 发现、handoff/SSOT 冲突、证据载体缺失、修复预算耗尽仍未过 AC | Completion 段 + `.tad/evidence/acceptance-tests/lite-standard-routing/execution-profile.json` |
+
+预算：每个失败场景 2 轮修复。预算耗尽 = 停止（升级 Full 或 honest partial），
+不是静默退回 Lite。Standard 保留 handoff-only、AC 自验、独立 reviewer 与 completion 约束。
+Standard 不能绕过 Full：命中 F0/F1 时不得以 Standard 名义继续，必须转 Full。
+Quality core retained in every profile: role separation, AC verification,
+fresh-context independent reviewer, human gates, safety stop, repair loop, honest partial.
+
+### R2 — 状态生命周期与恢复
+
+- 状态机：routed → design_ready → approval_pending → approval_rejected / execution_ready；
+  f0_or_f1_found → escalated_full；contract_missing → blocked_missing_contract；
+  stale_revision → blocked_stale_revision；completion → completed → accepted → archived。
+- approval_record（status: approved / actor / timestamp / route_revision / evidence）
+  是执行唯一许可；无 approval 不得开始实现（execution_ready）。
+- 恢复：resume_from_latest_valid_revision 只读最新合法 revision，
+  绝不从对话或 native memory 重建路由。
+- escalated_review 是 F2 非致命兼容标记（映射 standard），不是第四层，
+  不能覆盖 F0/F1、不能改变 `override_allowed: false`。
+
+### R3 — 路由失败输出（honest partial 四要素）
+
+阻塞/升级时输出：已完成（completed）、阻塞原因（blocker）、证据路径、下一步（next action）。
+禁止无证据声称 PASS；禁止用环境缺失掩盖实现缺陷。
+
 ## L0 读契约 + 准入（⚠️ BLOCKING）
 
 1. 定位：用户指定路径，或 .tad/active/handoffs/ 中 basename 匹配 LITE-*.md、

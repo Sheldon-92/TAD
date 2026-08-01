@@ -1,0 +1,5 @@
+=== AC6 negative control (Standard + fatal → Full, no bypass) Sat Aug  1 13:32:55 EDT 2026 ===
+OK: .claude/skills/alex-lite/SKILL.md
+OK: .agents/skills/alex-lite/SKILL.md
+OK: .claude/skills/blake-lite/SKILL.md
+OK: .agents/skills/blake-lite/SKILL.md
