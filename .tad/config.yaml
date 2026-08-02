@@ -1,8 +1,8 @@
-# TAD Configuration v2.38.0 - Lite Core Closure
+# TAD Configuration v2.39.0 - Lite / Standard / Full Routing Profiles
 method: TAD
-version: 2.38.0
+version: 2.39.0
 description: Triangle Agent Development - Two-Agent Quality Framework + Knowledge Search (brain-native) + 25 Capability Packs + Cross-Platform + Research Engine
-last_updated: 2026-07-31
+last_updated: 2026-08-02
 
 # ==================== Modular Config Index ====================
 # config.yaml has been split into focused modules for maintainability.

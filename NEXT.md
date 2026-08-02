@@ -402,3 +402,5 @@ From html-anything research (2026-05-27):
 
 > 8 Ideas archived 2026-05-14: linear-auto-sync, linear-kanban, domain-pack-framework, tad-universal-method (promoted), cross-model-orchestration (promoted), goal-driven-research-director (promoted), research-methodology-upgrade (done), epic-auto-conductor (done as YOLO)
 > Archived history: see [docs/HISTORY.md](docs/HISTORY.md)
+
+- [x] **Lite / Standard / Full Routing ✅ GATE 4 PASS + PUBLISHED v2.39.0 2026-08-02 (commits c26a5ad→b60fc4a→278bf9c; acceptance evidence 2026-08-02)** — Gate 4 blockers fully resolved: current-SSOT hash rebound, approval_record/revision assertions, independent route enforcement (15/15), single-state friction evidence, mixed security/performance/code reviews, and Completion route/profile/approval record. Gate 4 recheck PASS; AC1-16 PASS; 11 fresh-invocation scenarios PASS; residual 3 P2 retained as maintenance follow-ups. P2 follow-ups remain owned by `/tad-maintain`.

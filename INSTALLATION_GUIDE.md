@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.38.0 — Lite Core Closure**
+**Version 2.39.0 — Lite / Standard / Full Routing Profiles**
 
 ## 安装方式
 
@@ -48,7 +48,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.38.0
+cat .tad/version.txt          # 应显示 2.39.0
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code
@@ -70,6 +70,10 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 ```
 
 脚本自动检测现有安装，保留你的 handoffs、evidence、project-knowledge，只更新框架文件。
+
+## Lite / Standard / Full 路由
+
+默认使用 Lite 路径完成大多数工作；需要更深设计或执行时，可分别选择 Standard；涉及安全、协议契约或致命操作时进入 Full。路由由共享的 `.tad/routing-contract.yaml` 决定，Claude Code 与 Codex 共用同一份知识和状态边界。
 
 ## 平台说明
 

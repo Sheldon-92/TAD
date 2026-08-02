@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.38.0 | Generated: [timestamp]
+ Version: v2.39.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,7 +218,11 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.38.0 Highlights
+## TAD v2.39.0 Highlights
+- **Lite / Standard / Full routing profiles**: Lite is the default workhorse; Standard adds depth when needed; Full owns safety, protocol-contract, and fatal-operation boundaries.
+- **Shared route contract**: Claude Code and Codex use `.tad/routing-contract.yaml` for route preflight, approval/revision state, and enforcement.
+- **No automatic ceremony escalation**: task length, file count, or detail alone does not force an upgrade; risk and explicit routing rules do.
+- **Independent depth selection**: design and execution can use different profiles while preserving the shared knowledge and evidence contract.
 - **Default dual-platform installation**: fresh installs and upgrades without `--platform` install both Claude Code and Codex entry points; explicit platform overrides remain available.
 - **TAD Lite v1.1**: symmetric dual reviewers — alex-lite L2.5 contract review (every task, AC-executability matrix) + blake-lite L3 impl review; blake L0.5 mechanically verifies the contract WAS reviewed (fail-closed)
 - **Driven by first real-world use**: a design-time AC-principal defect survived self-review to the last gate → design-time review restored as a real spawn (no self-review substitution, behavioral-dogfood verified)

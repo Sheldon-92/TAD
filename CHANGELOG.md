@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.39.0] - 2026-08-02
+
+### New Features
+- **Lite / Standard / Full Routing Profiles** — Lite is the default workhorse, Standard adds depth when needed, and Full owns safety, protocol-contract, and fatal-operation boundaries.
+- Added the shared `.tad/routing-contract.yaml` as the source of truth for route preflight, approval/revision state, independent design/execution depth, and fail-closed routing.
+- Claude Code and Codex now share the same Lite route contracts, knowledge/state boundaries, route enforcement checks, and 11 behavior scenarios.
+
+### Documentation
+- Added user-facing routing guidance and clarified that task length, file count, or detail alone does not trigger automatic escalation.
+
 ## [2.38.0] - 2026-07-31
 
 ### New Features

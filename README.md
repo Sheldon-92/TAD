@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.38.0 - Lite Core Closure**
+**Version 2.39.0 - Lite / Standard / Full Routing Profiles**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -83,6 +83,14 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
+## 🎯 What's New in v2.39
+
+### v2.39.0 — Lite / Standard / Full Routing Profiles
+- **Lite is capability-complete by default**: shared knowledge, route preflight, approval/revision records, technical gates, honest partials, and completion closeout remain available without full-TAD ceremony.
+- **Standard and Full are routing profiles, not separate agents**: Alex and Blake can be selected independently by design/execution depth, with `.tad/routing-contract.yaml` as the shared source of truth.
+- **Fail-closed boundaries remain**: safety, protocol-contract, and fatal-operation work routes to Full; Lite does not auto-upgrade because a task is long, detailed, or spans many files.
+- **Claude Code and Codex share the same route contract and knowledge/state boundaries**, including independent route enforcement and 11 behavior scenarios.
+
 ## 🎯 What's New in v2.37
 
 ### v2.38.0 — Lite Core Closure
@@ -151,7 +159,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.38.0
+# Should show: 2.39.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -451,6 +459,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.38.0 - Lite Core Closure**
+**Welcome to TAD v2.39.0 - Lite / Standard / Full Routing Profiles**
 
 *AI does the work. Humans guard the value.*

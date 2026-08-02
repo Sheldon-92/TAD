@@ -1,11 +1,12 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.38.0 (Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
-- **Last Updated**: 2026-07-03
+- **Version**: 2.39.0 (Lite / Standard / Full routing profiles + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
+- **Last Updated**: 2026-08-02
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
+- **No active handoff** — Lite / Standard / Full Routing was accepted at Gate 4 and archived 2026-08-02. Publish remains a separate follow-up.
 - **EPIC: AI-Native Reading Companion** (20260613) — **3/4 phases done** (Phase 3 Live Co-Read Bridge ✅ Gate 4 accepted 2026-06-14; closed loop for EPUB complete). Reader+capture (P2) + localhost stdlib co-read bridge (P3, `reading-companion` skill) live; **Phase 4 ⬚ Planned**: structured-notes/question-list/MD-export sinks + PDF/TXT/URL adapters. ⚠️ Deliverable code is UNCOMMITTED (untracked `.claude/skills/reading-companion/`); real-browser visual co-read UNVERIFIED (carry to first real-book use).
 - ~~EPIC: Self-Evolution Pruning~~ — **COMPLETE + ARCHIVED 2026-06-10** (3/3 phases same-day). dream/evolve/optimize/skillify retired by measurement; 3-tier skill formalization live (T1 ceremony dogfooded in Colin, T2 skill-library ×2 refs, T3 via *harvest collisions); Alex SKILL -1872 lines; layer2-audit fail-closed. L2: "Claims Need Carriers".
 - ~~EPIC: Pack System Unification~~ — **COMPLETE + ARCHIVED 2026-06-11** (3/3 phases same-day). Domain Packs retired as active runtime/sync mechanism; installers single-sourced from prebuilt `SKILL.md`; `release-verify.sh platform-skills` now verifies framework-owned `.claude/skills` ↔ `.agents/skills` symmetry with FR7 local-skill INFO exceptions.
@@ -16,6 +17,8 @@
 - 16 capability packs active; behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending, 13 packs' eval is a follow-up
 
 ## Recently Completed
+
+- **Lite / Standard / Full Routing Profiles** (2026-08-02) — Gate 4 PASS and archived. Added the shared `.tad/routing-contract.yaml`, Lite route/profile contracts across Claude/Codex mirrors, independent design/execution depth routing, Full safety boundary, 11 behavior scenarios, route enforcement, and approval/revision evidence. Residual P2 follow-ups: stronger fixture/hash assertions and maintenance of the existing SIGPIPE hook race.
 
 - **EPIC: Pack System Unification — Phase 1** (2026-06-11) — retired YAML Domain Packs as an active runtime/sync mechanism. Archived 9 YAML packs + 2 guides; removed SessionStart injection, domain router/runtime references, and post-write-sync handling; added T2 archive references for hardware and supply-chain-security; accepted `.tad/deprecation.yaml` v2.30.0 as downstream cleanup carrier. Gate 4 PASS.
 
@@ -69,6 +72,7 @@
 - ~17 active research notebooks (registry; 1 archived, 16 have notebook_id) — run *research-review to consolidate
 
 ## Next Direction
+- **Post-release follow-up** — measure real Lite/Standard routing cost and strengthen the three remaining P2 verifier/evidence hygiene items when usage data warrants it.
 - **PUSH decision**: 41 commits ahead of origin (both Alexes' work) — outward-facing, confirm before pushing
 - Scout-identified optimization directions (evidence-backed, non-colliding): ~~(B) fix self-evolution loop 0% close-rate~~ → RESOLVED differently 2026-06-10: loops retired by EPIC self-evolution-pruning (measured-yield decision), not fixed; (C) architecture.md leanness — consolidate May surge via Supersedes: pattern (~5-7K tokens/session saved); (D/E/F) safety bundle — Blake distinct-reviewer false-PASS + research-source provenance + trace TRACE_DETAIL truncation bug
 - Behavioral eval remaining 13 capability packs (lean-trustworthy P5 follow-up)
