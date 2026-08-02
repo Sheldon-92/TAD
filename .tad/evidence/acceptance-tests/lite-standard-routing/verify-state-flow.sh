@@ -19,6 +19,35 @@ else
   FAIL=1
 fi
 
+# --- approval_record five-field schema (G4-2): status/actor/timestamp/route_revision/evidence ---
+approval_fields=("status: approved" "actor" "timestamp" "route_revision" "evidence")
+approval_ok=1
+for af in "${approval_fields[@]}"; do
+  if rg -q "$af" .claude/skills/alex-lite/SKILL.md .claude/skills/blake-lite/SKILL.md "$CONTRACT"; then
+    echo "  OK: approval_record field '$af' present"
+  else
+    echo "FAIL: approval_record missing field '$af'"
+    approval_ok=0
+  fi
+done
+if [ "$approval_ok" -ne 1 ]; then FAIL=1; fi
+
+# --- decision_record required-field completeness (G4-2) ---
+# The required list spans two YAML lines; match each field independently within
+# the decision_record block (not requiring same-line as 'required:').
+required_fields="route_id revision base_revision contract_id route_level design_depth execution_depth risk_class affected_side escalated_review reason authority writer override_allowed evidence state"
+dr_ok=1
+DR_BLOCK=$(awk '/^decision_record:/,/^revision_rules:/' "$CONTRACT")
+for rf in $required_fields; do
+  if printf '%s\n' "$DR_BLOCK" | rg -q "\b$rf\b"; then
+    echo "  OK: decision_record field '$rf' required"
+  else
+    echo "FAIL: decision_record missing required field '$rf'"
+    dr_ok=0
+  fi
+done
+if [ "$dr_ok" -ne 1 ]; then FAIL=1; fi
+
 # --- reject -> revise retry loop (AC16) ---
 if rg -q 'from: approval_pending, event: reject, to: approval_rejected' "$CONTRACT" \
    && rg -q 'from: approval_rejected, event: revise, to: design_ready' "$CONTRACT"; then

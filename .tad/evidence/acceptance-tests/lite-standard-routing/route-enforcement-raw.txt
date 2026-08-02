@@ -1,0 +1,19 @@
+=== Independent Route Enforcement Verification (G4-3) ===
+Contract: .tad/routing-contract.yaml (sha256: 927d253435db4be12a860bcff9c55bfa8a867ab72d8195e88312e9cd1ebb1b7a)
+  OK: F0_FATAL result block forces full/full/full + override_allowed: false
+  OK: F1_GOVERNANCE_CRITICAL result block forces full/full/full + override_allowed: false
+  OK: F0 (6 keywords) and F1 (5 keywords) match_any fully present
+  OK: precedence order strictly increasing (F0 → default_lite)
+  OK: derive(full,lite) → full (invariant present)
+  OK: derive(lite,full) → full (invariant present)
+  OK: derive(full,standard) → full (invariant present)
+  OK: derive(standard,full) → full (invariant present)
+  OK: derive(full,full) → full (invariant present)
+  OK: derive(standard,lite) → standard (invariant present)
+  OK: derive(lite,standard) → standard (invariant present)
+  OK: derive(standard,standard) → standard (invariant present)
+  OK: derive(lite,lite) → lite (invariant present)
+  OK: F2 is affected-side-only with required affected_side
+  OK: missing SSOT → fail_closed (blocked_missing_contract), no Lite guessing
+---
+RESULT: PASS (route-enforcement — independently executable)
