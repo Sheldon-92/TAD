@@ -919,29 +919,32 @@ copy_framework_files() {
         mkdir -p .codex
         cat > .codex/hooks.json << 'HOOKS_EOF'
 {
-  "SessionStart": [
-    {
-      "matcher": "startup|resume",
-      "hooks": [
-        { "type": "command", "command": "bash .tad/hooks/startup-health.sh", "timeout": 30 },
-        { "type": "command", "command": "bash .tad/hooks/notebook-dormant-sync.sh", "timeout": 30 }
-      ]
-    }
-  ],
-  "PostToolUse": [
-    {
-      "matcher": "^apply_patch$",
-      "hooks": [
-        { "type": "command", "command": "bash .tad/hooks/post-write-sync.sh", "timeout": 10 }
-      ]
-    },
-    {
-      "matcher": "^ask_user_question$",
-      "hooks": [
-        { "type": "command", "command": "bash .tad/hooks/lib/askuser-capture.sh", "timeout": 10 }
-      ]
-    }
-  ]
+  "description": "TAD lifecycle hooks",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          { "type": "command", "command": "bash .tad/hooks/startup-health.sh", "timeout": 30 },
+          { "type": "command", "command": "bash .tad/hooks/notebook-dormant-sync.sh", "timeout": 30 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          { "type": "command", "command": "bash .tad/hooks/post-write-sync.sh", "timeout": 10 }
+        ]
+      },
+      {
+        "matcher": "^ask_user_question$",
+        "hooks": [
+          { "type": "command", "command": "bash .tad/hooks/lib/askuser-capture.sh", "timeout": 10 }
+        ]
+      }
+    ]
+  }
 }
 HOOKS_EOF
         log_info "  → Generated .codex/hooks.json (Codex lifecycle hooks)"

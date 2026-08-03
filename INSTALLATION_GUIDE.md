@@ -80,7 +80,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 | 平台 | 说明 | 安装大小 |
 |------|------|----------|
 | Claude Code | 完整安装，含全部 SKILL + hooks | ~200KB |
-| Codex CLI | 瘦版，不含 86K alex/blake SKILL + hooks | ~120KB |
+| Codex CLI | 完整安装，含 alex/blake SKILL + hooks | ~120KB |
 
 Codex 用户可以用更少的 context 跑 TAD 工作流。详见 [Codex CLI 指南](#codex-cli)。
 
@@ -120,13 +120,13 @@ bash tad.sh --platform both --yes
 
 **安装内容**：
 - `.agents/skills/` — 完整 SKILL.md + 24 capability packs
-- `.codex/hooks.json` — 自动生成的 Codex lifecycle hooks
+- `.codex/hooks.json` — 按 Codex CLI 0.146+ schema 自动生成的 lifecycle hooks
 - `AGENTS.md` — 角色触发词和 capability pack 表
 
 **已知限制**：
 - Codex hooks 不支持 `type: prompt`（LLM 内联安全检查），详见 `.tad/guides/hooks-platform-mapping.md`
 - Codex 无等价的 Skill matcher，`pre-accept-check.sh` 和 `pre-gate-check.sh` 需手动运行
-- 激活时间 ~65 秒（SKILL.md 350KB，Codex 需一次性加载）
+- skill 引用按各自 `.agents/skills/<skill>/` 基目录解析；激活时间约 65 秒
 
 ## 常见问题
 

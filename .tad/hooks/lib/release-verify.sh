@@ -540,9 +540,38 @@ MIG_REN_EOF
     if $FIX_MODE; then echo "  MODE: --fix (will attempt auto-fix if claude-newer)"; fi
     echo "========================================="
 
+    check_platform_coupled_references() {
+      local ref_file ref_hits ref_line relpath line_no
+      local violations=0
+      while IFS= read -r -d '' ref_file; do
+        ref_hits="$(grep -nE '^[[:space:]]*reference:.*\.claude/' "$ref_file" 2>/dev/null || true)"
+        while IFS= read -r ref_line; do
+          [ -n "$ref_line" ] || continue
+          relpath="${ref_file#$REPO/}"
+          line_no="${ref_line%%:*}"
+          echo "parity FAIL: platform-coupled reference path in ${relpath}:${line_no}" >&2
+          violations=$((violations + 1))
+        done <<< "$ref_hits"
+      done < <(find "$AGENTS_SKILLS" -type f -name '*.md' -print0)
+      if [ "$violations" -gt 0 ]; then
+        echo "VERDICT: parity FAIL — platform-coupled reference paths (exit 1)" >&2
+        return 1
+      fi
+      return 0
+    }
+
+    # Reference declarations must be platform-neutral before the byte-parity early exit.
+    # --fix defers this check until after the mirror rsync to avoid a fix deadlock.
+    if [ "$FIX_MODE" = false ] && ! check_platform_coupled_references; then
+      exit 1
+    fi
+
     # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
     pout="$(diff -rq -x local "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
     if [ -z "$pout" ]; then
+      if [ "$FIX_MODE" = true ] && ! check_platform_coupled_references; then
+        exit 1
+      fi
       echo "  ✅ .claude/skills <-> .agents/skills byte-identical"
       echo "VERDICT: parity PASS (exit 0)"
       exit 0
@@ -650,6 +679,10 @@ PARITY_EOF
         echo "  🔧 Auto-fixing: rsync Claude→Codex..."
         # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
         rsync -a --delete --exclude=/local/ "$CLAUDE_SKILLS/" "$AGENTS_SKILLS/"
+        if ! check_platform_coupled_references; then
+          echo "VERDICT: parity FIX-FAIL — platform-coupled reference paths remain (exit 1)" >&2
+          exit 1
+        fi
         # Re-verify
         reverify="$(diff -rq -x local "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
         if [ -z "$reverify" ]; then

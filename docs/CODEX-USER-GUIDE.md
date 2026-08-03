@@ -1,6 +1,6 @@
 # TAD Codex CLI 使用指南
 
-**适用版本**: TAD v2.30.0+ | Codex CLI 0.137+
+**适用版本**: TAD v2.30.0+ | Codex CLI 0.146+
 
 ---
 

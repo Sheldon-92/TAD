@@ -297,7 +297,8 @@ subagent_shortcuts:
 # Cross-Model Invocation (On-Demand Only)
 cross_model_invocation:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/blake/references/cross-model-invocation.md"
+# reference 相对路径以本 skill 基目录解析（两平台激活均提供该目录）——维护者注记，勿改回 .claude/skills 绝对形式
+  reference: "references/cross-model-invocation.md"
   load_when: "When cross-model CLI (Codex/Gemini) is needed for review or research, Read the reference and follow it verbatim."
 # ⚠️ TAD Friction Protocol — Blake Execution Rules (2026-06-10 — Phase 1)
 # Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.
@@ -1063,7 +1064,7 @@ ralph_loop_execution:
 # NotebookLM Access (Blake read-only + controlled ingest channel)
 notebooklm_access:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/blake/references/notebooklm-access.md"
+  reference: "references/notebooklm-access.md"
   load_when: "When Blake needs to query or add sources to a NotebookLM notebook, Read the reference and follow it verbatim."
   deny_default_summary: "Read-only commands (ask/fulltext/guide/topics/list/language) are allowed; default rule is DENY."
   # Create/delete/mutating commands (create, research, report, configure, consolidate, curate, archive, add, sync, use) are Alex-domain — full allowed/forbidden list in the reference.

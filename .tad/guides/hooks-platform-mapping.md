@@ -4,6 +4,25 @@
 > This document defines the hook conversion rules between Claude Code (.claude/settings.json)
 > and Codex (.codex/hooks.json). Used by tad.sh when generating hooks.json for --platform codex.
 
+## Codex hooks.json schema
+
+Verified with codex-cli 0.146.0 on 2026-08-03. Codex requires a descriptive top-level
+object whose lifecycle event map is nested under `hooks`:
+
+```json
+{
+  "description": "TAD lifecycle hooks",
+  "hooks": {
+    "SessionStart": [],
+    "PostToolUse": []
+  }
+}
+```
+
+The event names and matcher/command entries below remain the semantic mapping. A
+legacy top-level `SessionStart` or `PostToolUse` key is rejected by current Codex
+parsing and must not be regenerated.
+
 ## Event Mapping
 
 | Claude Code Event | Codex Event | Notes |

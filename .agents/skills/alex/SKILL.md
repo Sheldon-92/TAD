@@ -670,6 +670,7 @@ my_tasks:
 # Cross-Model Awareness (On-Demand Only)
 cross_model_awareness:
   description: "Alex knows how to recognize and delegate Codex/Gemini CLI tasks to Blake"
+# reference 相对路径以本 skill 基目录解析（两平台激活均提供该目录）——维护者注记，勿改回 .claude/skills 绝对形式
   reference: ".tad/guides/cross-model-invocation.md"
 
   recognition:
@@ -769,41 +770,41 @@ intent_router_protocol:
 
   # Full detection logic (step2 signal analysis, step3 user confirmation, step4_5 pack scan)
   # in the reference file below.
-  reference: ".claude/skills/alex/references/intent-router-protocol.md"
+  reference: "references/intent-router-protocol.md"
   load_when: "When user input is ambiguous (not an explicit command or idle pattern), Read the reference for full signal detection + AskUserQuestion confirmation flow."
 
 # *bug Path Protocol
 bug_path_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/bug-path-protocol.md"
+  reference: "references/bug-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *bug command), Read the reference and follow it verbatim."
 discuss_path_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/discuss-path-protocol.md"
+  reference: "references/discuss-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *discuss command), Read the reference and follow it verbatim."
 update_roadmap_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/update-roadmap-protocol.md"
+  reference: "references/update-roadmap-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *discuss-exit-update-roadmap command), Read the reference and follow it verbatim."
 status_panoramic_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/status-panoramic-protocol.md"
+  reference: "references/status-panoramic-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *status command), Read the reference and follow it verbatim."
 # Dependency Registry Protocols (*deps, *deps init, *deps add)
 deps_show_protocol:
-  reference: ".claude/skills/alex/references/deps-protocol.md"
+  reference: "references/deps-protocol.md"
   load_when: "When *deps command is invoked, Read the reference and follow deps_show_protocol."
 deps_init_protocol:
-  reference: ".claude/skills/alex/references/deps-protocol.md"
+  reference: "references/deps-protocol.md"
   load_when: "When *deps init command is invoked, Read the reference and follow deps_init_protocol."
 deps_add_protocol:
-  reference: ".claude/skills/alex/references/deps-protocol.md"
+  reference: "references/deps-protocol.md"
   load_when: "When *deps add command is invoked, Read the reference and follow deps_add_protocol."
 deps_check_protocol:
-  reference: ".claude/skills/alex/references/deps-protocol.md"
+  reference: "references/deps-protocol.md"
   load_when: "When *deps check command is invoked, Read the reference and follow deps_check_protocol."
 deps_update_protocol:
-  reference: ".claude/skills/alex/references/deps-protocol.md"
+  reference: "references/deps-protocol.md"
   load_when: "When *deps update command is invoked, Read the reference and follow deps_update_protocol."
 # ═══════════════════════════════════════════════════════════
 # Unified Research Protocol (*research)
@@ -1094,7 +1095,7 @@ research_unified_protocol:
     note: "Standard 使用 -n <id> 指定 notebook，不使用 use <id>（避免全局状态污染）"
 
   deep_execution:
-    reference: ".claude/skills/alex/references/research-plan-protocol.md"
+    reference: "references/research-plan-protocol.md"
     load_when: "When *research --deep is invoked, Read the reference and follow it verbatim."
     note: "Deep 是完整的 Phase 0-5 研究流程（原 *research-plan），已去除 OBJECTIVES.md 硬依赖"
 
@@ -1106,54 +1107,54 @@ research_unified_protocol:
 # *research status Protocol (formerly *research-review)
 research_review_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/research-review-protocol.md"
+  reference: "references/research-review-protocol.md"
   load_when: "When *research status is invoked, Read the reference and follow it verbatim."
 idea_path_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/idea-path-protocol.md"
+  reference: "references/idea-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *idea command), Read the reference and follow it verbatim."
 idea_list_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/idea-list-protocol.md"
+  reference: "references/idea-list-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *idea-list command), Read the reference and follow it verbatim."
 idea_promote_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/idea-promote-protocol.md"
+  reference: "references/idea-promote-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *idea-promote command), Read the reference and follow it verbatim."
 learn_path_protocol:
   # Extracted P3 progressive disclosure — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/learn-path-protocol.md"
+  reference: "references/learn-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *learn command), Read the reference and follow it verbatim."
 express_path_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/express-path-protocol.md"
+  reference: "references/express-path-protocol.md"
   load_when: "When *express is entered via intent_router step4, Read the reference and follow it verbatim."
 # *experiment Path Protocol (Phase 3 P3.2, 2026-04-24)
 # OPRO / A-B test / benchmark / prompt tuning / eval-loop tasks.
 # Gates ADD experiment-validity checks; original Gate 3/4 still applies to harness code.
 experiment_path_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/experiment-path-protocol.md"
+  reference: "references/experiment-path-protocol.md"
   load_when: "When *experiment is entered via intent_router step4, Read the reference and follow it verbatim."
 # ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)
 adaptive_complexity_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/adaptive-complexity-protocol.md"
+  reference: "references/adaptive-complexity-protocol.md"
   load_when: "When User describes a task and adaptive complexity assessment begins, Read the reference and follow it verbatim."
 # ⚠️ MANDATORY: Socratic Inquiry Protocol (Before Handoff)
 socratic_inquiry_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/socratic-inquiry-protocol.md"
+  reference: "references/socratic-inquiry-protocol.md"
   load_when: "When Socratic Inquiry begins after adaptive_complexity assessment, Read the reference and follow it verbatim."
 # ⚠️ MANDATORY: Research & Decision Protocol (Cognitive Firewall - Pillar 1 & 2)
 research_decision_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/research-decision-protocol.md"
+  reference: "references/research-decision-protocol.md"
   load_when: "When Research and Decision Protocol begins after Socratic Inquiry, Read the reference and follow it verbatim."
 # ⚠️ Design Protocol (*design workflow)
 design_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/design-protocol.md"
+  reference: "references/design-protocol.md"
   load_when: "When *design workflow is entered, Read the reference and follow it verbatim."
 # ⚠️ Feedback Collector Reference (replaced /playground on 2026-06-10)
 # For frontend/design tasks, use Feedback Collector instead of /playground.
@@ -1179,7 +1180,7 @@ feedback_collector_reference:
 # ⚠️ MANDATORY: Handoff Creation Protocol (Expert Review)
 handoff_creation_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/handoff-creation-protocol.md"
+  reference: "references/handoff-creation-protocol.md"
   load_when: "When *handoff is invoked or handoff_creation_protocol is entered, Read the reference and follow it verbatim."
 
   # ⚠️ FINAL OUTPUT CHECKLIST (compact-resistant — stays in context after long sessions)
@@ -1211,7 +1212,7 @@ handoff_creation_protocol:
 
 yolo_execution_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/yolo-execution-protocol.md"
+  reference: "references/yolo-execution-protocol.md"
   load_when: "When YOLO or semi-auto mode is selected in step7_execution_mode, Read the reference and follow it verbatim."
 # Research Citation in Handoff (A5)
 research_citation_in_handoff:
@@ -1321,7 +1322,7 @@ release_duties:
 # Acceptance protocol (TAD v2.0 - Simplified Gate 4)
 acceptance_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/acceptance-protocol.md"
+  reference: "references/acceptance-protocol.md"
   load_when: "When *review or *accept is invoked, Read the reference and follow it verbatim."
 
 # Feedback JSON Reader Protocol (2026-06-10 — Phase 2)
@@ -1392,7 +1393,7 @@ read_feedback_protocol:
 # ═══════════════════════════════════════
 workflow_completion_trigger:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/workflow-completion-trigger.md"
+  reference: "references/workflow-completion-trigger.md"
   load_when: "When Workflow tool returns with agent_count >= 3, Read the reference and follow it verbatim."
 # ═══════════════════════════════════════
 # *harvest — Review skillify candidates across projects (2026-06-10)
@@ -1421,12 +1422,12 @@ harvest_protocol:
 # ═══════════════════════════════════════
 cancel_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/cancel-protocol.md"
+  reference: "references/cancel-protocol.md"
   load_when: "When *cancel is invoked, Read the reference and follow it verbatim."
 # *accept 命令流程 (BLOCKING - 必须完成才能开始新任务)
 accept_command:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/accept-command.md"
+  reference: "references/accept-command.md"
   load_when: "When *accept is invoked (accept_command provides the execution flow), Read the reference and follow it verbatim."
 # PROJECT_CONTEXT 更新规则 (在 *accept 时执行)
 project_context_update:
@@ -1638,7 +1639,7 @@ mandatory_review:
          Alex 基于自身审查发现直接写知识的路径,始终保持 blocking,这是 Gate 4 KA 仍然
          blocking 的安全网。即使 distillation_loop 被跳过,step7.C 仍然执行。
     
-    reference: ".claude/skills/alex/references/distillation-loop-protocol.md"
+    reference: "references/distillation-loop-protocol.md"
     load_when: "When executing Gate 4 Knowledge Assessment, Read the reference for detailed steps."
 
   # DEPRECATED by distillation_loop (P2, 2026-06-22) — see distillation_loop above.
@@ -1654,28 +1655,28 @@ mandatory_review:
   knowledge_maintain_protocol:
     trigger: "*knowledge-maintain 或 distillation_loop step6 完成后自动触发"
     blocking: false
-    reference: ".claude/skills/alex/references/knowledge-maintain-protocol.md"
+    reference: "references/knowledge-maintain-protocol.md"
     load_when: "When *knowledge-maintain is invoked or after distillation_loop step6 completes"
 
 # *publish protocol (GitHub Publish Workflow)
 publish_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/publish-protocol.md"
+  reference: "references/publish-protocol.md"
   load_when: "When *publish is invoked, Read the reference and follow it verbatim."
 # *sync protocol (Cross-Project Sync)
 sync_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/sync-protocol.md"
+  reference: "references/sync-protocol.md"
   load_when: "When *sync is invoked, Read the reference and follow it verbatim."
 # *sync-add protocol (Register Project)
 sync_add_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/sync-add-protocol.md"
+  reference: "references/sync-add-protocol.md"
   load_when: "When *sync-add is invoked, Read the reference and follow it verbatim."
 # *sync-list protocol (List Registered Projects)
 sync_list_protocol:
   # Extracted for progressive loading — full protocol in the reference below.
-  reference: ".claude/skills/alex/references/sync-list-protocol.md"
+  reference: "references/sync-list-protocol.md"
   load_when: "When *sync-list is invoked, Read the reference and follow it verbatim."
 # TAD Brain Protocol (knowledge search via Agent tool)
 tad_brain_protocol:
