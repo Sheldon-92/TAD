@@ -1,5 +1,5 @@
 # Notebooklm Access (extracted from blake/SKILL.md for progressive loading)
-# Source: .claude/skills/blake/SKILL.md
+# Source: skills/blake/SKILL.md (platform tree)
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 3)
 
 notebooklm_access:

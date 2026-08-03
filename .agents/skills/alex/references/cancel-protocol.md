@@ -1,5 +1,5 @@
 # Cancel Protocol (extracted from SKILL.md for progressive loading)
-# Source: .claude/skills/alex/SKILL.md
+# Source: skills/alex/SKILL.md (platform tree)
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
 
 cancel_protocol:

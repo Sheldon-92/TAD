@@ -17,17 +17,16 @@
 # Exit code: always 0.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/hook-envelope.sh
+source "${SCRIPT_DIR}/lib/hook-envelope.sh"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck source=lib/notebook-lifecycle.sh
 source "${SCRIPT_DIR}/lib/notebook-lifecycle.sh"
 
-# Read stdin JSON from Claude Code.
-read_stdin_json
-
 # Only act on real session starts. If source is present and is something else
 # (e.g. resume/compact), no-op. Missing/null source → run anyway.
-SOURCE=$(get_json_field ".source" || echo "")
+SOURCE="${HOOK_SOURCE:-}"
 if [ -n "$SOURCE" ] && [ "$SOURCE" != "null" ] && [ "$SOURCE" != "startup" ]; then
   output_empty
   exit 0

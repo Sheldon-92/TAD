@@ -1576,11 +1576,14 @@ mandatory_review:
     description: "正常情况下不需要，Gate 3 v2 已覆盖技术审查"
     subagents:
       - agent: code-reviewer
-        skill_path: ".claude/skills/code-review/SKILL.md"
+        # resolve under .claude/skills/ or .agents/skills/ per platform
+        skill_path: "skills/code-review/SKILL.md"
       - agent: ux-expert-reviewer
-        skill_path: ".claude/skills/ux-review.md"
+        # resolve under .claude/skills/ or .agents/skills/ per platform
+        skill_path: "skills/ux-review.md"
       - agent: security-auditor
-        skill_path: ".claude/skills/security-checklist.md"
+        # resolve under .claude/skills/ or .agents/skills/ per platform
+        skill_path: "skills/security-checklist.md"
 
   minimum_requirement: "Gate 4 v2 不强制要求技术专家审查（已在 Gate 3 v2 完成）"
 
@@ -1592,7 +1595,7 @@ mandatory_review:
 
     ✅ 正确流程：
     Alex: 让我先读取 code-review Skill 获取审查标准
-    [调用 Read tool 读取 .claude/skills/code-review/SKILL.md]
+    [调用 Read tool 读取 code-review skill（从 .claude/skills/ 或 .agents/skills/ 解析）]
     Alex: 根据 Skill 中的 checklist，现在调用 code-reviewer
     [调用 Task tool with code-reviewer，prompt 中包含 Skill 的 checklist]
 
@@ -1850,7 +1853,7 @@ Prerequisite: Gate 3 v2 passed (Blake's completion report)
 
 > **Extraction contract**: the YAML between the markers below is byte-identical to
 > `.tad/evidence/designs/extracts/v2-section-4.1.1-anti-rationalization.yaml`.
-> Extract via `awk '/^<!-- anti_rationalization_registry:BEGIN -->$/{f=1;next}/^<!-- anti_rationalization_registry:END -->$/{f=0}f' .claude/skills/alex/SKILL.md | sed -n '/^```yaml$/,/^```$/p' | sed '1d;$d'`
+> Extract via `for f in .claude/skills/alex/SKILL.md .agents/skills/alex/SKILL.md; do [ -f "$f" ] && { awk '/^<!-- anti_rationalization_registry:BEGIN -->$/{f=1;next}/^<!-- anti_rationalization_registry:END -->$/{f=0}f' "$f" | sed -n '/^```yaml$/,/^```$/p' | sed '1d;$d'; break; }; done`
 > then diff against the extract file (AC4 fixture).
 
 <!-- anti_rationalization_registry:BEGIN -->

@@ -1,5 +1,5 @@
 # Handoff Creation Protocol (extracted from SKILL.md for progressive loading)
-# Source: .claude/skills/alex/SKILL.md lines 2784-3629
+# Source: skills/alex/SKILL.md (platform tree)
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 1)
 
 handoff_creation_protocol:

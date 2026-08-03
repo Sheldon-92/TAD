@@ -7,19 +7,41 @@
 # Must complete in <500ms (no network calls).
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/hook-envelope.sh
+source "${SCRIPT_DIR}/lib/hook-envelope.sh"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
-# Read stdin JSON from Claude Code
-read_stdin_json
-
-# Extract tool name and skill details
-TOOL_NAME=$(get_json_field ".tool_name" || echo "")
-SKILL_NAME=$(get_json_field ".tool_input.skill" || echo "")
-SKILL_ARGS=$(get_json_field ".tool_input.args" || echo "")
+# Hook calls carry JSON; manual calls carry the gate number as argv. A bare
+# manual call is an error, never an empty gate that silently returns `{}`.
+MANUAL_MODE=0
+if [ "$HOOK_ENVELOPE_HAS_INPUT" -eq 0 ]; then
+  MANUAL_MODE=1
+  if [ -z "${1:-}" ]; then
+    echo "Usage: bash $0 {3|4} (or provide a hook JSON envelope on stdin)" >&2
+    exit 1
+  fi
+  case "$1" in
+    3|4) GATE_NUM="$1" ;;
+    *)
+      echo "Invalid gate number: $1" >&2
+      echo "Usage: bash $0 {3|4} (or provide a hook JSON envelope on stdin)" >&2
+      exit 1
+      ;;
+  esac
+  TOOL_NAME=""
+  SKILL_NAME=""
+  SKILL_ARGS="$GATE_NUM"
+else
+  TOOL_NAME="${HOOK_TOOL_NAME:-}"
+  SKILL_NAME="${HOOK_SKILL:-}"
+  SKILL_ARGS="${HOOK_SKILL_ARGS:-}"
+  # Extract gate number from args (first digit found) for hook mode.
+  GATE_NUM=$(printf '%s' "$SKILL_ARGS" | grep -oE '^[0-9]+' | head -1)
+fi
 
 # Only check when invoking Skill tool with "gate" in skill name
-if [ "$TOOL_NAME" != "Skill" ] || [[ "$SKILL_NAME" != *"gate"* ]]; then
+if [ "$MANUAL_MODE" -eq 0 ] && { [ "$TOOL_NAME" != "Skill" ] || [[ "$SKILL_NAME" != *"gate"* ]]; }; then
   output_empty
   exit 0
 fi
@@ -141,8 +163,10 @@ if [ "$GATE_NUM" = "3" ]; then
   if [ -n "$COMPLETION_FILE" ]; then
     KA_LINE=$(grep '是否有新发现\|New discoveries' "$COMPLETION_FILE" 2>/dev/null | head -1)
     if [ -n "$KA_LINE" ]; then
-      HAS_YES=$(echo "$KA_LINE" | grep -c 'Yes' || echo "0")
-      HAS_NO=$(echo "$KA_LINE" | grep -c 'No' || echo "0")
+      HAS_YES=$(printf '%s\n' "$KA_LINE" | grep -c 'Yes' 2>/dev/null || true)
+      HAS_NO=$(printf '%s\n' "$KA_LINE" | grep -c 'No' 2>/dev/null || true)
+      [ -n "$HAS_YES" ] || HAS_YES=0
+      [ -n "$HAS_NO" ] || HAS_NO=0
       if [ "$HAS_YES" -gt 0 ] && [ "$HAS_NO" -gt 0 ]; then
         WARNINGS="${WARNINGS}"$'\n'"WARNING: Knowledge Assessment appears unfilled (template default detected). Gate 3 requires choosing Yes or No."
       fi
@@ -153,8 +177,10 @@ if [ "$GATE_NUM" = "3" ]; then
 
   # Check 7: Evidence Checklist has checked items (not all [ ])
   if [ -n "$COMPLETION_FILE" ]; then
-    CHECKED=$(grep -c '\[x\]' "$COMPLETION_FILE" 2>/dev/null || echo "0")
-    UNCHECKED=$(grep -c '\[ \]' "$COMPLETION_FILE" 2>/dev/null || echo "0")
+    CHECKED=$(grep -c '\[x\]' "$COMPLETION_FILE" 2>/dev/null || true)
+    UNCHECKED=$(grep -c '\[ \]' "$COMPLETION_FILE" 2>/dev/null || true)
+    [ -n "$CHECKED" ] || CHECKED=0
+    [ -n "$UNCHECKED" ] || UNCHECKED=0
     TOTAL=$((CHECKED + UNCHECKED))
     if [ "$TOTAL" -gt 0 ] && [ "$CHECKED" = "0" ]; then
       WARNINGS="${WARNINGS}"$'\n'"WARNING: Evidence Checklist has ${UNCHECKED} unchecked items and 0 checked items. Did you complete the checklist?"

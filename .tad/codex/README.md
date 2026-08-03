@@ -13,7 +13,7 @@ Codex is a **first-class TAD runtime** (since v2.25.0, current v2.39.0). Both Cl
 | Config | **Not active** — draft at `.tad/evidence/designs/codex-runtime-candidates/config.toml.draft` |
 | Custom agents | **Not active** — drafts at `.tad/evidence/designs/codex-runtime-candidates/agents/` |
 | MCP | Not configured at project level |
-| Runtime freshness | Active — 21/21 PASS (`runtime-freshness-verify.sh`, 2026-06-09) |
+| Runtime freshness | Active — 21/21 PASS (`runtime-freshness-verify.sh`, 2026-08-03) |
 
 ---
 
@@ -21,7 +21,8 @@ Codex is a **first-class TAD runtime** (since v2.25.0, current v2.39.0). Both Cl
 
 These files are committed and active in the TAD project:
 
-- `.codex/hooks.json` — TAD lifecycle hooks (SessionStart, PostToolUse)
+- `.codex/hooks.json` — TAD lifecycle hooks (SessionStart startup/resume/compact, PostToolUse)
+- `.tad/hooks/lib/hook-envelope.sh` — shared stdin/field normalization with empty-input and TTY guards
 - `.agents/skills/alex/SKILL.md` — Alex role (same content as `.claude/skills/alex/SKILL.md`)
 - `.agents/skills/blake/SKILL.md` — Blake role (same content as `.claude/skills/blake/SKILL.md`)
 - `.agents/skills/{pack}/SKILL.md` — Capability packs (byte-identical to `.claude/skills/{pack}/SKILL.md`)
@@ -88,6 +89,7 @@ Codex adapter handles **platform mechanics only**: how hooks fire, how skills lo
 | Custom-agent review quality untested | Unknown whether TOML agents match Claude Code Agent tool quality | Pending — activate after human approval |
 | Runtime freshness | Ledgers active at `.tad/runtime-compat/`; `runtime-freshness-verify.sh` 21/21 PASS | Completed |
 | Full-cycle regression | PASS (verdict: PASS, release_readiness: CONDITIONAL_GO, 2026-06-09) | Completed |
+| Codex PreCompact delivery | Spike D reached no authenticated turn; no PreCompact hook is wired; session-state fallback remains | Honest limitation — re-probe required |
 
 ---
 
@@ -133,7 +135,7 @@ session id: 019fb359-0a75-7222-a6ba-66529ae3de74
 --------
 user
 Read .agents/skills/alex-lite/SKILL.md and tell me the skill name from the frontmatter. Reply in exactly one line.
-warning: failed to parse hooks config .codex/hooks.json: unknown field `SessionStart`, expected `description` or `hooks` at line 2 column 16
+historical warning: a pre-schema Codex build rejected the then-current hooks fixture; current v0.146.0 schema is nested under `description` + `hooks`
 exec
 /bin/zsh -lc "sed -n '1,240p' .agents/skills/alex-lite/SKILL.md" in /Users/sheldonzhao/01-on progress programs/TAD
  succeeded in 0ms:
@@ -146,7 +148,7 @@ tokens used
 
 **结果**: PASS — exit code 0, 23020 tokens。Codex 读取文件、识别 frontmatter name 字段并返回 `alex-lite`。
 
-**已知 warning**: `.codex/hooks.json` 格式与 codex v0.145.0 不兼容（`unknown field SessionStart`）——这是 full hooks 的已知问题，不影响 lite skills 的 SKILL.md 读取路径。
+**历史记录说明**: the warning above is retained as a historical v0.145.0 transcript, not a current runtime claim. The active `.codex/hooks.json` uses the current nested schema. Spike C/D separately record that today's isolated v0.146.0 probes did not reach hook delivery because authentication failed.
 
 **可用调用方式**:
 - `codex exec "Read .agents/skills/alex-lite/SKILL.md 然后按其中的协议执行"` — 确认可用

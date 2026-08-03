@@ -6,18 +6,33 @@
 # Must complete in <500ms (no network calls).
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/hook-envelope.sh
+source "${SCRIPT_DIR}/lib/hook-envelope.sh"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
-# Read stdin JSON from Claude Code
-read_stdin_json
-
-# Extract tool name and skill name
-TOOL_NAME=$(get_json_field ".tool_name" || echo "")
-SKILL_NAME=$(get_json_field ".tool_input.skill" || echo "")
+# Hook calls carry JSON; manual calls use gate 4 as an explicit argument.
+MANUAL_MODE=0
+if [ "$HOOK_ENVELOPE_HAS_INPUT" -eq 0 ]; then
+  MANUAL_MODE=1
+  if [ -z "${1:-}" ]; then
+    echo "Usage: bash $0 4 (or provide a hook JSON envelope on stdin)" >&2
+    exit 1
+  fi
+  if [ "$1" != "4" ]; then
+    echo "Invalid gate number: $1" >&2
+    echo "Usage: bash $0 4 (or provide a hook JSON envelope on stdin)" >&2
+    exit 1
+  fi
+  TOOL_NAME=""
+  SKILL_NAME=""
+else
+  TOOL_NAME="${HOOK_TOOL_NAME:-}"
+  SKILL_NAME="${HOOK_SKILL:-}"
+fi
 
 # Only check when invoking Skill tool with "accept" in skill name
-if [ "$TOOL_NAME" != "Skill" ] || [[ "$SKILL_NAME" != *"accept"* ]]; then
+if [ "$MANUAL_MODE" -eq 0 ] && { [ "$TOOL_NAME" != "Skill" ] || [[ "$SKILL_NAME" != *"accept"* ]]; }; then
   output_empty
   exit 0
 fi

@@ -14,11 +14,13 @@
 set -u   # NOT set -e — we tolerate missing fields, never block
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=hook-envelope.sh
+source "$SCRIPT_DIR/hook-envelope.sh"
 # shellcheck source=common.sh
 source "$SCRIPT_DIR/common.sh"
 
 # ── Read stdin envelope ─────────────────────────────────────────────────
-read_stdin_json
+STDIN_JSON="${HOOK_STDIN_JSON:-}"
 
 # Empty stdin → exit 0 silently (no JSONL write)
 if [ -z "${STDIN_JSON:-}" ]; then
@@ -97,6 +99,10 @@ fi
 # Split via IFS=\x1E (RS)
 IFS=$'\x1e' read -r SESSION_ID ENV_CWD QUESTION MULTI_SELECT OPTIONS_JSON SELECTION IS_OTHER <<< "$PARSED"
 OPTIONS_JSON="${OPTIONS_JSON:-[]}"
+# Flat envelope fields are normalized centrally; question/answer arrays remain
+# in this one local jq pass for the established performance/privacy contract.
+SESSION_ID="${HOOK_SESSION_ID:-$SESSION_ID}"
+ENV_CWD="${HOOK_CWD:-$ENV_CWD}"
 
 # Privacy boundary (NFR3): when is_other=true, REPLACE selection with the literal
 # string "<other>" so the JSONL line carries the boolean signal but NOT the

@@ -234,8 +234,14 @@ echo ""
 # ═══════════════════════════════════════
 # §11 Skills (SKILL.md files)
 # ═══════════════════════════════════════
-SKILLS_DIR="$TAD_ROOT/.claude/skills"
-if [ -d "$SKILLS_DIR" ]; then
+if [ -d "$TAD_ROOT/.claude/skills" ]; then
+  SKILLS_DIR="$TAD_ROOT/.claude/skills"
+elif [ -d "$TAD_ROOT/.agents/skills" ]; then
+  SKILLS_DIR="$TAD_ROOT/.agents/skills"
+else
+  SKILLS_DIR=""
+fi
+if [ -n "$SKILLS_DIR" ]; then
   echo "## Skills"
   echo "| Skill | Summary |"
   echo "|-------|---------|"
@@ -245,7 +251,11 @@ if [ -d "$SKILLS_DIR" ]; then
       summary=$(grep -m1 '^[^#>|!-]' "$file" 2>/dev/null | head -1 | cut -c1-80 | escape_pipe)
       echo "| $skill_name | $summary |"
       file_count=$((file_count + 1))
-    done
+  done
+  echo ""
+else
+  echo "## Skills"
+  echo "(no skills tree found)"
   echo ""
 fi
 

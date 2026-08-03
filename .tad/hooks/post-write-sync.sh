@@ -11,6 +11,8 @@
 #    compact no-space (`"type":"x"`) — all membership greps use that format (NFR3).
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/hook-envelope.sh
+source "${SCRIPT_DIR}/lib/hook-envelope.sh"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck source=lib/trace-writer.sh
@@ -273,11 +275,8 @@ emit_reflexions() {
   done
 }
 
-# Read stdin JSON from Claude Code
-read_stdin_json
-
-# Extract file_path from tool_input
-FILE_PATH=$(get_json_field ".tool_input.file_path" || echo "")
+# Extract normalized file_path from the hook envelope.
+FILE_PATH="${HOOK_FILE_PATH:-}"
 
 # If file_path extraction failed, exit silently
 if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then

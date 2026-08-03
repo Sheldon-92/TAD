@@ -5,14 +5,14 @@
 # Exit code: always 0 (never block session startup).
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/hook-envelope.sh
+source "${SCRIPT_DIR}/lib/hook-envelope.sh"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
-# Read stdin JSON from Claude Code
-read_stdin_json
-
-# Check source field — only run on "startup" (or if field missing, run anyway)
-SOURCE=$(get_json_field ".source" || echo "")
+# Check normalized source — only run on "startup" (or if field missing, run anyway).
+# HOOK_SOURCE is intentionally empty when Codex has no equivalent field.
+SOURCE="${HOOK_SOURCE:-}"
 
 # Post-compact reminder (FR4, HANDOFF-20260712-precompact-session-state-hook):
 # after a compaction, point the agent at the agent-written session state plus the

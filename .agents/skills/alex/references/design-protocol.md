@@ -1,5 +1,5 @@
 # Design Protocol (extracted from SKILL.md for progressive loading)
-# Source: .claude/skills/alex/SKILL.md
+# Source: skills/alex/SKILL.md (platform tree)
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
 
 design_protocol:
@@ -139,6 +139,7 @@ design_protocol:
           3. Detect platform and route:
              platform=$(bash .tad/hooks/lib/detect-platform.sh)
              If "workflow" → Invoke: Workflow({name: 'tournament-design', args: {task: <design_task>, prior_art: <sources>, mode: 'standard'|'deep'}})
+                             (Workflow is invocable only from a Claude harness; sub-agents and Codex use the explicit Codex/none path.)
              If "codex"    → Write task + prior_art to temp files, invoke: bash .tad/codex/tournament-codex.sh --task <file> --prior-art <f1> <f2> --output <result.json>
                              (Codex: standard mode only, deep not supported. Warn user if they chose deep.)
              If "none"     → Announce: "No multi-agent backend available. Running single-agent design (no tournament)."

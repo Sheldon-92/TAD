@@ -536,7 +536,8 @@ ralph_loop_execution:
              - AUTHOR is agent → machine-derived rule, verify against current state
           5. Document the decision in completion report:
              "Knowledge rule '{rule}' from {date} ({message}): followed / adapted / flagged because {reason}"
-        scope: ".tad/project-knowledge/*.md, .claude/skills/*/SKILL.md, and .tad/hooks/lib/*.sh"
+        # resolve skills/*/SKILL.md under .claude/skills/ or .agents/skills/ per platform
+        scope: ".tad/project-knowledge/*.md, skills/*/SKILL.md, and .tad/hooks/lib/*.sh"
         blocking: false
         advisory: true
         relationship_to_stale_check: |
@@ -557,12 +558,12 @@ ralph_loop_execution:
                 - .ts/.js (in api/, routes/, server/, services/) → keywords: ["backend", "API"]
                 - .py → keywords: ["backend", "agent"]
                 - .md (DESIGN.md, design tokens) → keywords: ["UI", "design"]
-             b. Read .tad/capability-packs/pack-registry.yaml (or scan .claude/skills/)
+             b. Read .tad/capability-packs/pack-registry.yaml (or scan the platform skill tree)
                 If not found or YAML parse error → skip silently
              c. Match extracted keywords against pack keyword lists
              d. For each matched pack (max 2):
-                → Check availability: .claude/skills/{name}/SKILL.md or .tad/capability-packs/{name}/CAPABILITY.md
-                → If available: Read SKILL.md/CAPABILITY.md
+                → Check availability: for f in .claude/skills/{name}/SKILL.md .agents/skills/{name}/SKILL.md; do [ -f "$f" ] && { available_path="$f"; break; }; done; or use .tad/capability-packs/{name}/CAPABILITY.md
+                → If available: Read "$available_path" (or CAPABILITY.md)
                 → Output: "🎯 Pack loaded: {name} — applying quality rules during implementation"
           
           2.5 Collision check (only if ≥2 packs loaded above):
@@ -1838,8 +1839,10 @@ completion_protocol:
            a. AskUserQuestion: "Pattern {slug} passed 4/4 gates. Materialize now?"
               options: "Materialize as project skill (T1)" / "Keep as draft candidate" / "Discard"
            b. On Materialize:
-              - type judgment → create .claude/skills/{slug}/SKILL.md from the SCAND's
-                Proposed Skill Outline (project-local; NOT TAD-master unless working in TAD repo)
+              - type judgment → create in the authority skill tree (`.claude/skills/` if it
+                exists, otherwise `.agents/skills/`) from the SCAND's Proposed Skill Outline
+                (project-local; NOT TAD-master unless working in TAD repo), then mirror with
+                `parity --fix` when both trees exist
               - type orchestration → create .claude/workflows/{slug}.workflow.js skeleton
               - Update SCAND frontmatter: status: accepted, tier: T1, materialized_at: {path}
               - Completion report MUST add row: "Skill materialized: {path}" with
@@ -2088,7 +2091,7 @@ Group 2 (Parallel, after Group 1):
 
 > **Extraction contract**: the YAML between the markers below is byte-identical to
 > `.tad/evidence/designs/extracts/v2-section-4.2.1-honest-partial.yaml`.
-> Extract via `awk '/^<!-- honest_partial_protocol:BEGIN -->$/{f=1;next}/^<!-- honest_partial_protocol:END -->$/{f=0}f' .claude/skills/blake/SKILL.md | sed -n '/^```yaml$/,/^```$/p' | sed '1d;$d'`
+> Extract via `for f in .claude/skills/blake/SKILL.md .agents/skills/blake/SKILL.md; do [ -f "$f" ] && { awk '/^<!-- honest_partial_protocol:BEGIN -->$/{f=1;next}/^<!-- honest_partial_protocol:END -->$/{f=0}f' "$f" | sed -n '/^```yaml$/,/^```$/p' | sed '1d;$d'; break; }; done`
 > then diff against the extract file (AC5 fixture).
 
 <!-- honest_partial_protocol:BEGIN -->
