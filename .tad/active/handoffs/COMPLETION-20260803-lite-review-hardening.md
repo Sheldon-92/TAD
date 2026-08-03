@@ -1,5 +1,5 @@
 ---
-gate3_verdict:
+gate3_verdict: pass
 ---
 
 # Implementation Completion Report
@@ -13,7 +13,7 @@ gate3_verdict:
 
 ## 🔴 Gate 3 v2: Implementation & Integration Quality
 
-**执行时间**: 2026-08-03（completion report created before Gate 3 verdict）
+**执行时间**: 2026-08-03（Gate 3 post-step after implementation commit `48e3112`）
 
 ### Layer 1 (Self-Check)
 
@@ -53,7 +53,22 @@ gate3_verdict:
 
 ### Gate 3 Result
 
-**Gate 3 v2 结果**: pending execution of the mandatory Gate 3 check.
+**Gate 3 v2 结果**: ✅ PASS
+
+Gate 3 verification used this express handoff's normative `## 4. AC` list
+(AC1–AC9); the handoff does not contain a separate `§9.1` section. Every
+declared AC command was executed against the final tree and passed. No rubric
+AC was present. The tracked-directory helper emitted a false negative because
+its `set -o pipefail` + `grep -q` pipeline treats the expected `git ls-files`
+SIGPIPE as failure; the same property was verified without short-circuiting by
+counting tracked paths (543, 543, and 225 respectively), recorded below.
+
+### Git
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| Changes Committed | ✅ | `48e3112 feat(TAD): implement lite-review-hardening [Gate 3 pending]` |
+| Implementation scope | ✅ | Five product files; evidence artifacts committed separately from the pre-existing untracked handoff/trace |
 
 ## Reflexion History
 
@@ -102,6 +117,7 @@ confidence: high
 | `AC-01`–`AC-09` scripts | `apply_patch` from handoff §4; executable permission set | direct | Section-scoped checks; AC7 scratch mutation; AC8 report validation |
 | `ac8-probe-report.md` | Independent scratch reviewer output, persisted verbatim then minimally normalized for finding label | Ampere (`019fc7c5-ab06-7541-93ab-c2cc667f5a51`) | Initial git commit `c7b19bf`; raw `NOT_READY` evidence |
 | `acceptance-verification-report.md` | Observed final AC batch output and product metrics | direct | AC1–AC9 final pass |
+| `gate3-preflight.md` | Captured helper output plus non-short-circuiting tracked-path counts | direct | Documents existing helper false negative without changing the hook |
 | `code-reviewer.md` | Independent Layer 2 reviewer output | Sagan (`019fc7cc-afb5-7703-95f4-787813ebf040`) | PASS |
 | `test-runner.md` | Independent Layer 2 reviewer output | Banach (`019fc7cc-ae98-73d3-8367-bfc24b1aa64a`) | PASS |
 | `spec-compliance-reviewer.md` | Independent first-round output plus targeted incremental output | Mill (`019fc7cc-b14c-79a2-be24-ce3fa2f70bca`) | Initial P1 fixed; incremental PASS |
@@ -144,7 +160,8 @@ AC8 evidence: `ac8-probe-report.md` starts with `model=codex/gpt-5/native`, cont
 |----------------|--------|--------------|--------------------------------|------------|
 | AC8 evidence extractor initially misread its own section | READY | Corrected stateful awk boundary and reran the complete AC batch | `acceptance-verification-report.md`; AC8 final PASS | resolved, non-blocking |
 | Reviewer identified missing L3 placement of completion-label rule | READY | Added exact sentence to both Blake mirrors and ran incremental spec review | `spec-compliance-reviewer.md`; incremental PASS | resolved, non-blocking |
-| No unresolved environment/auth/approval friction | READY | No degraded path used | N/A | non-blocking |
+| Gate tracked-directory helper false negative | EQUIVALENT_SUBSTITUTE | Retained the existing hook unchanged due to the five-file product scope; verified each declared directory with non-short-circuiting `git ls-files` counts | `gate3-preflight.md`: `.claude/skills=543`, `.agents/skills=543`, `.tad/evidence/acceptance-tests=225`; helper output preserved | resolved, non-blocking |
+| No unresolved environment/auth/approval friction | READY | No degraded reviewer/model path used | N/A | non-blocking |
 
 ## ⚠️ 遗留问题
 
@@ -167,8 +184,9 @@ AC8 evidence: `ac8-probe-report.md` starts with `model=codex/gpt-5/native`, cont
 - [x] Testing review: `.tad/evidence/reviews/blake/lite-review-hardening/test-runner.md`
 - [x] Spec review: `.tad/evidence/reviews/blake/lite-review-hardening/spec-compliance-reviewer.md`
 - [x] Acceptance report: `.tad/evidence/acceptance-tests/lite-review-hardening/acceptance-verification-report.md`
+- [x] Gate 3 preflight: `.tad/evidence/acceptance-tests/lite-review-hardening/gate3-preflight.md`
 - [x] AC scripts: `.tad/evidence/acceptance-tests/lite-review-hardening/AC-01` through `AC-09`
-- [ ] Gate 3 verdict marker: filled by Gate 3 post-step
-- [ ] Git commit hash: filled after implementation commit
+- [x] Gate 3 verdict marker: `gate3_verdict: pass`
+- [x] Git commit hash: `48e3112`
 - [x] E2E evidence: `.tad/evidence/acceptance-tests/lite-review-hardening/ac8-probe-report.md`
 - [x] Research required: no
