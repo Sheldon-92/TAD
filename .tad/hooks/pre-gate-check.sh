@@ -204,7 +204,8 @@ if [ "$GATE_NUM" = "3" ]; then
 
   # Check 9: AC count vs verification script count
   if [ -n "$HANDOFF_FILE" ]; then
-    AC_COUNT=$(sed -n '/## .*Acceptance Criteria/,/^## /p' "$HANDOFF_FILE" 2>/dev/null | grep -c '^\- \[' || echo "0")
+    AC_COUNT=$(sed -n '/## .*Acceptance Criteria/,/^## /p' "$HANDOFF_FILE" 2>/dev/null | grep -c '^\- \[' || true)
+    [ -n "$AC_COUNT" ] || AC_COUNT=0
     SCRIPT_COUNT=$(find .tad/evidence/acceptance-tests -name "AC-*" 2>/dev/null | wc -l | tr -d ' ')
     if [ "$AC_COUNT" -gt 0 ] && [ "$SCRIPT_COUNT" -gt 0 ] && [ "$SCRIPT_COUNT" -lt "$AC_COUNT" ]; then
       WARNINGS="${WARNINGS}"$'\n'"WARNING: Handoff has ${AC_COUNT} acceptance criteria but only ${SCRIPT_COUNT} verification scripts found. Some ACs may not have been verified."
