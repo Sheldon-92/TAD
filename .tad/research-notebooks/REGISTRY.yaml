@@ -19,7 +19,7 @@ notebooks:
     notebook_id: "3599f4cb-3677-402d-b905-7b73242dfa8f"
     topic: "Automated Content Production Pipelines — AI-Content-Studio & the topic-to-published-video automation landscape 2026"
     created: "2026-07-01"
-    status: active
+    status: dormant
     last_queried: "2026-07-01"
     source_count: 10
     notes: "Triggered by user sharing naqashafzal/AI-Content-Studio (515 stars). 10 sources (ACS repo+README, ShortGPT, MoneyPrinterTurbo, ViMax, MuseTalk, faceless-stack/YT-agents articles, YouTube API pricing). 2 ask rounds + saturation COMPLETE. Covers: 4-system pipeline architecture comparison, borrowable patterns (EML markup, dual-track captions, VLM consistency check, grounded fact-check, OAuth direct publish), failure-prone stages, 2026 YouTube policy/quota changes, HITL 5-gate design. Raw results: .tad/evidence/research/automated-content-pipelines/raw-ask-results-2026-07-01.md"
@@ -28,7 +28,7 @@ notebooks:
     notebook_id: "d46515cf-2f48-4f43-a09c-2f9f7d04e947"
     topic: "Open Notebook (lfnovo) vs Google NotebookLM — self-hosted research stack evaluation"
     created: "2026-07-01"
-    status: active
+    status: dormant
     last_queried: "2026-07-01"
     source_count: 21
     notes: "Evaluating open-notebook (34.4k stars, MIT) as replacement/complement for TAD's NotebookLM CLI research backend. 13 sources imported (3 pruned as irrelevant). Key findings: three-tier async arch (Next.js 15 / FastAPI 5055 / SurrealDB native vectors), LangGraph workflows, Esperanto multi-provider routing, full REST API + Swagger (no native CLI, Docker required), citation grounding weaker than NotebookLM (highlighting under rebuild as of 2026-06), answer quality = whatever LLM you pay for. PIVOT 2026-07-01: Google now ships an OFFICIAL NotebookLM Enterprise API (Discovery Engine v1alpha, gcloud-native auth, ~$9/mo seat, 14-day trial) — verified reachable from this machine (403 SERVICE_DISABLED, not 404). Route D (official API) now preferred over open-notebook for fixing CLI instability; open-notebook demoted to fallback. Decision brief saved to evidence. ROUND 2 2026-07-01: LearningCircuit/local-deep-research (LDR, 8.6k stars MIT) folded in as candidate E — dual role (autonomous LangGraph deep-research engine + encrypted source-grounded library with cited ask), built-in MCP server (ldr-mcp) = near-zero glue for Claude Code. Fills open-notebook's discover-sources gap AND has MCP; open-notebook demoted to 3rd. Layered verdict: D (official API) for notebook layer, E (LDR) preferred for deep-research/discovery layer. POC gate: cited-ask citation quality vs NotebookLM (info gap) + MCP live run. 21 sources (5 LDR added, 4 dupes/junk pruned). POC OUTCOME 2026-07-02: LDR FAIL (Library-scoped citation-resolution 16.7% < 80%; NotebookLM baseline 0% same rubric; Epic ldr-research-backend CLOSED with NEGATIVE-RESULT + narrow reopen conditions). Deep-research layer decision: keep status quo (WebSearch path); notebook layer: Route D (official API) still preferred exploration."
@@ -37,7 +37,7 @@ notebooks:
     notebook_id: "c0143736-a6f1-4ff3-aa61-95ebee84c812"
     topic: "Agent Computer & Browser Control Tools — 2026 landscape of browser automation, web scraping, computer use, GUI control, and MCP servers for AI agents"
     created: "2026-06-17"
-    status: active
+    status: dormant
     last_queried: "2026-06-17"
     source_count: 14
     notes: "Capability pack scoping research. 14 curated sources covering 5-layer tool architecture (engine→data→hybrid→agent→desktop). Key findings: Browser Use 99k stars (L4 agent), Stagehand v3 CDP-native 44% faster (L3 hybrid), Playwright MCP 13.6k context tax (L1 MCP), Claude in Chrome zero-config but beta (L1 MCP). Decision brief recommends wide-scope Agent-Computer Interface Pack."
@@ -46,7 +46,7 @@ notebooks:
     notebook_id: "189fbf20-c432-4c75-a8d7-15674590dbbf"
     topic: "AI-Native Reading Experience — Open-Source Readers, Reading UX & Active-Reading Design"
     created: "2026-06-13"
-    status: active
+    status: dormant
     last_queried: "2026-06-13"
     source_count: 19
     notes: "Design-grounding KB for the interactive reading-companion project (reimagining the reading experience). 9 curated GitHub readers/UX refs (Foliate, Thorium/Readium, epub.js, koodo-reader, Readest, Readium CSS, Hypothesis, Omnivore, Butterick) + 10 fast-research sources (W3C Web Annotation Data Model, CSS line-length, spaced repetition, AI-on-comprehension studies incl. 'AI summaries flatten understanding'). 3 synthesis asks saved: reader-UX patterns, AI-deepen-vs-flatten design rules, annotation anchoring architecture."
@@ -683,7 +683,7 @@ notebooks:
     notebook_id: "b29b362d-2364-40d0-968b-41bf265a1225"
     topic: "Capability Pack Meta-Design — How High-Quality Agent Skills Are Organized (Anthropic official + community awesome-skills)"
     created: "2026-06-13"
-    status: active
+    status: dormant
     last_queried: "2026-06-13"
     source_count: 6
     notes: "FR1 元设计研究持久化 (EPIC-20260613 Phase 1). 6 sources: Anthropic best-practices + skills overview + engineering blog + anthropics/skills repo + 2 community awesome-claude-skills (travisvn, ComposioHQ). 1 cross-source synthesis round. Key meta-design rules → QUALITY-BAR.md Layer A: frontmatter name≤64/desc≤1024; SKILL.md body <500 lines; 3-level progressive disclosure; references one-level-deep; ref files >100 lines need TOC; ≥3 evals before docs; test Haiku/Sonnet/Opus; no time-sensitive/voodoo-constants/Windows-paths/too-many-options. Findings anchor: .tad/evidence/pack-quality/QUALITY-BAR.md ## Sources."
