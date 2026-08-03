@@ -62,10 +62,16 @@ SSOT 是 policy；本角色只写带 revision 的 task decision snapshot，绝�
 4. **F0/F1 cannot be lowered**：命中 F0_FATAL / F1_GOVERNANCE_CRITICAL →
    双侧 full、`override_allowed: false`；用户请求、escalated_review、Standard 均不能降级。
 5. 输出 RouteDecision（revision 追加）：route_id、base_revision=最新合法 revision、
-   risk_class、affected_side、escalated_review、reason、authority、evidence、state。
+   risk_class、affected_side、escalated_review、reason、authority、evidence、state、model。
    陈旧/降级写入 → blocked_stale_revision。只写 Alex 可写字段
-   （design_depth / risk_class / affected_side / escalated_review / reason / evidence），
+   （design_depth / risk_class / affected_side / escalated_review / reason / evidence / model），
    不得编辑 execution_depth 或 policy。
+   （model 自 2026-08-02 起必填；更早的 revision 缺该字段仍为合法 snapshot，不得据此判 stale。
+   model 值格式与 Blake 侧一致：harness={claude-code|codex} | model={运行时自报 ID} |
+   route={ANTHROPIC_BASE_URL 的 host，未设置则 native}；机械捕获：
+   `env | grep -E '^ANTHROPIC_(BASE_URL|MODEL|SMALL_FAST_MODEL)='` +
+   `jq -r '.model // "unset"' ~/.claude/settings.json .claude/settings.json 2>/dev/null`；
+   聚合中转只解 route 不解底层模型，标 `(alias-mapped)`，不得当 ground truth）
 6. 用户可见解释：`当前建议: Lite|Standard|Full` + 一句话原因 + 是否可提升 +
    下一步动作；不暴露设计/执行组合菜单（Lite/Lite、Standard/Lite、Lite/Standard、
    Standard/Standard 是内部实现细节，普通用户无需选择）。

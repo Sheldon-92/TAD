@@ -1,0 +1,4 @@
+.claude/skills/alex-lite/SKILL.md md5=4c55bcb6563f24dc78449fb19ff76067 begin_count=1
+.agents/skills/alex-lite/SKILL.md md5=4c55bcb6563f24dc78449fb19ff76067 begin_count=1
+.claude/skills/blake-lite/SKILL.md md5=4c55bcb6563f24dc78449fb19ff76067 begin_count=1
+.agents/skills/blake-lite/SKILL.md md5=4c55bcb6563f24dc78449fb19ff76067 begin_count=1

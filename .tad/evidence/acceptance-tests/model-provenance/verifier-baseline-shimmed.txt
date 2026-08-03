@@ -1,0 +1,38 @@
+=== State Flow Verification ===
+  OK: approval_pending -> approve -> execution_ready transition present
+  OK: approval_record field 'status: approved' present
+  OK: approval_record field 'actor' present
+  OK: approval_record field 'timestamp' present
+  OK: approval_record field 'route_revision' present
+  OK: approval_record field 'evidence' present
+  OK: decision_record field 'route_id' required
+  OK: decision_record field 'revision' required
+  OK: decision_record field 'base_revision' required
+  OK: decision_record field 'contract_id' required
+  OK: decision_record field 'route_level' required
+  OK: decision_record field 'design_depth' required
+  OK: decision_record field 'execution_depth' required
+  OK: decision_record field 'risk_class' required
+  OK: decision_record field 'affected_side' required
+  OK: decision_record field 'escalated_review' required
+  OK: decision_record field 'reason' required
+  OK: decision_record field 'authority' required
+  OK: decision_record field 'writer' required
+  OK: decision_record field 'override_allowed' required
+  OK: decision_record field 'evidence' required
+  OK: decision_record field 'state' required
+  OK: reject -> approval_rejected -> revise -> design_ready present
+  OK: stale/lower write rejects to blocked_stale_revision
+  OK: append-only field ownership enforced
+  OK: resume_from_latest_valid_revision present
+  OK: F2 escalated_review mapped to standard, cannot lower F0/F1
+  OK: .claude/skills/alex-lite/SKILL.md contains no-lower anchor
+  OK: .claude/skills/blake-lite/SKILL.md contains no-lower anchor
+  OK: .claude/skills/alex-lite/SKILL.md contains honest-partial element 已完成
+  OK: .claude/skills/alex-lite/SKILL.md contains honest-partial element 阻塞原因
+  OK: .claude/skills/alex-lite/SKILL.md contains honest-partial element 下一步
+  OK: .claude/skills/blake-lite/SKILL.md contains honest-partial element 已完成
+  OK: .claude/skills/blake-lite/SKILL.md contains honest-partial element 阻塞原因
+  OK: .claude/skills/blake-lite/SKILL.md contains honest-partial element 下一步
+---
+RESULT: PASS (state-flow)

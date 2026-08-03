@@ -55,10 +55,11 @@ SSOT 是 policy；本角色只消费带 revision 的 task decision snapshot，�
 3. **F0/F1 cannot be lowered**：发现 F0_FATAL / F1_GOVERNANCE_CRITICAL →
    双侧 full、`override_allowed: false`；在任何有副作用动作前停止，写 escalation state 转 Full。
 4. 输出/追加 RouteDecision（revision 追加）：route_id、base_revision=最新合法 revision、
-   risk_class、affected_side、escalated_review、reason、authority、evidence、state。
+   risk_class、affected_side、escalated_review、reason、authority、evidence、state、model。
    陈旧/降级写入 → blocked_stale_revision。只写 Blake 可写字段
-   （execution_depth / risk_class / affected_side / escalated_review / reason / evidence），
+   （execution_depth / risk_class / affected_side / escalated_review / reason / evidence / model），
    不得编辑 design_depth、approval 或 policy。
+   （model 自 2026-08-02 起必填；更早的 revision 缺该字段仍为合法 snapshot，不得据此判 stale）
 5. 用户可见解释：`当前建议: Lite|Standard|Full` + 一句话原因 + 是否可提升 +
    下一步动作；不暴露设计/执行组合菜单。
 
@@ -283,6 +284,7 @@ ACCEPTED / ARCHIVED
 
   ## Completion ({date})
   **Commit**: {hash 或 uncommitted}
+  **Model**: harness={claude-code|codex} | model={运行时自报模型 ID} | route={ANTHROPIC_BASE_URL 的 host，未设置则 native}
   - 上下文刷新：{已读知识路径} | 关键约束：{一行} | 成功条件：{一行}
   - 改动文件：{列表，清单外标 [清单外]}
   - AC 结果：逐条 ✅/❌/BLOCKED + 实际输出摘要与证据路径
@@ -295,6 +297,18 @@ ACCEPTED / ARCHIVED
 
   ## Reflexion
   每次修复一行：失败 / 假设 / 动作 / 结果。无修复则写"无"。
+
+Model 行捕获纪律（writer=角色身份 alex|blake，model=执行模型/harness 身份，两者不冗余）：
+1. route 与 model 机械捕获（env 无输出 = native 直连；settings 两层都查）：
+   `env | grep -E '^ANTHROPIC_(BASE_URL|MODEL|SMALL_FAST_MODEL)='`；
+   `jq -r '.model // "unset"' ~/.claude/settings.json 2>/dev/null`；
+   `jq -r '.model // "unset"' .claude/settings.json 2>/dev/null`。
+   会话内 `/model` 运行时覆盖优先级最高，用户切过必须逐字记录。
+2. 自报模型 ID 与 route 冲突（如自报 claude-* 但 route 指向 api.deepseek.com）→
+   两者都记录，以 route 为准并标注 `(alias-mapped)`。聚合中转（route=聚合器 host）时
+   底层模型仍未知——该行防静默丢失，不解决聚合器归因，不得当 ground truth。
+3. 本单跨越 compaction 或中途换过 harness/模型 → Model 行按发生顺序逐个列出，
+   不得只记最后一个。
 
 学习捕获纪律：本角色只写原始 journal 材料（lite-discoveries.md 或 handoff 指定的
 journal 路径）；project-knowledge/ 成品条目的蒸馏由后续 Alex-Lite / 验收知识闭环

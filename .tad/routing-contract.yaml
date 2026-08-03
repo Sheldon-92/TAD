@@ -58,17 +58,28 @@ state_machine:
     - {from: completed, event: human_accept, to: accepted}
     - {from: accepted, event: archive, to: archived}
 
+# -- provenance amendment 2026-08-02 (kept OUTSIDE the decision_record awk range:
+#    comment words must not false-satisfy verify-state-flow.sh's per-field presence checks) --
+# The last required field is mandatory for revisions written on/after 2026-08-02; earlier
+# snapshots without it remain valid (backward tolerance). No code path validates snapshot
+# field-completeness today; if such validation is ever added, introduce a structural
+# required_since marker instead of relying on this comment.
+# Role-identity field = which role wrote the revision (alex|blake); the new field = executing
+# model/harness identity — not redundant with each other.
+# schema_version stays 1: (a) backward tolerance; (b) verify-route-schema.sh pins
+# '^schema_version: 1$' — bumping needs a coordinated verifier change, out of scope here.
 decision_record:
   required: [route_id, revision, base_revision, contract_id, route_level, design_depth, execution_depth,
-             risk_class, affected_side, escalated_review, reason, authority, writer, override_allowed, evidence, state]
+             risk_class, affected_side, escalated_review, reason, authority, writer, override_allowed, evidence, state, model]
 
 revision_rules:
+  # the may_write additions of 2026-08-02 share the backward tolerance documented above
   first_revision: 0
   next_revision: previous_revision + 1
   base_revision_must_equal: latest_valid_revision
   stale_or_lower_write: reject_to_blocked_stale_revision
-  alex_may_write: [design_depth, risk_class, affected_side, escalated_review, reason, evidence]
-  blake_may_write: [execution_depth, risk_class, affected_side, escalated_review, reason, evidence]
+  alex_may_write: [design_depth, risk_class, affected_side, escalated_review, reason, evidence, model]
+  blake_may_write: [execution_depth, risk_class, affected_side, escalated_review, reason, evidence, model]
   neither_role_may_write: [policy_contract, other_role_depth, approval_record]
 
 # --- Independent depth routing (FR3, NFR2) ---

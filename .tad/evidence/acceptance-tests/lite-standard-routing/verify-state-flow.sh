@@ -37,7 +37,7 @@ if [ "$approval_ok" -ne 1 ]; then FAIL=1; fi
 # the decision_record block (not requiring same-line as 'required:').
 required_fields="route_id revision base_revision contract_id route_level design_depth execution_depth risk_class affected_side escalated_review reason authority writer override_allowed evidence state"
 dr_ok=1
-DR_BLOCK=$(awk '/^decision_record:/,/^revision_rules:/' "$CONTRACT")
+DR_BLOCK=$(awk '/^decision_record:/,/^revision_rules:/' "$CONTRACT" | grep -v '^[[:space:]]*#')
 for rf in $required_fields; do
   if printf '%s\n' "$DR_BLOCK" | rg -q "\b$rf\b"; then
     echo "  OK: decision_record field '$rf' required"
@@ -67,8 +67,8 @@ else
 fi
 
 # --- append-only ownership (AC16): Alex may not write execution_depth, Blake may not write design_depth ---
-if rg -q 'alex_may_write: \[design_depth, risk_class, affected_side, escalated_review, reason, evidence\]' "$CONTRACT" \
-   && rg -q 'blake_may_write: \[execution_depth, risk_class, affected_side, escalated_review, reason, evidence\]' "$CONTRACT" \
+if rg -q 'alex_may_write: \[design_depth, risk_class, affected_side, escalated_review, reason, evidence, model\]' "$CONTRACT" \
+   && rg -q 'blake_may_write: \[execution_depth, risk_class, affected_side, escalated_review, reason, evidence, model\]' "$CONTRACT" \
    && rg -q 'neither_role_may_write: \[policy_contract, other_role_depth, approval_record\]' "$CONTRACT"; then
   echo "  OK: append-only field ownership enforced"
 else
