@@ -214,11 +214,40 @@ spawn 1 个 code-reviewer subagent（Agent tool），prompt：
    改动集以 handoff §文件清单为准；与本任务无关的仓库既有未提交项忽略，
    不计 scope-violation。
    对照 handoff 检查：(1) spec 符合性 (2) 代码质量（bug/边界/安全）。
+   (3) 执行验证义务：凡可运行处必须以执行验证，不得以读代验——
+       逐条重跑 AC 命令；对每个拟报 P0/P1 缺陷，在 scratch 副本上构造
+       最小探针（突变/压力/边界输入）复现或证伪后再定级。
+       仓库只读；探针写操作仅限 scratch/临时目录。
+       客观无法执行处（无运行环境/需真机）→ 该 finding 标
+       UNVERIFIED-BY-EXECUTION: {原因}，不得静默降为已验。
+       报告首行自报你的 model 身份（harness/model/route，机械捕获同 Model 行纪律）。
+       每条 finding 标注“执行实证”或“阅读推断”。
+   报告末尾附 `## 执行证据` 段，逐条列实际运行的命令与其原始输出（前 10 行）。
    输出 P0（必修）/P1（应修）/P2（建议）+ verdict PASS/CONDITIONAL/FAIL"
+Completion 摘录 reviewer 结论时保留“执行实证/阅读推断”标注。
 P0 → 修复 → 重跑受影响 AC → Completion 记录修复说明。
 P0 修复若改动了 reviewer 未见过的文件 → 追加同 reviewer 增量复核（只给 fix 部分，
 成本 ≈1/5 首轮）。
 六条件自治修复：reviewer/gate 发现的缺陷若同时满足——①不扩大功能范围 ②不新增权限面 ③不改变用户可见目标 ④有明确生产证据 ⑤修改可回滚 ⑥修复后已完成 reviewer 增量复核（Completion 附 verdict，完成态而非承诺）——Blake 自行修复 + 重跑受影响 AC，无需回人拍板；Completion 逐条列 6 条命中证据。不授权修改契约的 AC 或目标——缺陷根因在契约本身 → 六条件不适用，按 L1 规则停、报告人回 /alex-lite。任一条不满足 → 停，报告人。
+
+### Reviewer 档位规则
+
+Reviewer 模型档位规则（依据 2026-08-02 flash-审-flash 盲区实测）：
+- 判定“生产关键”：执行 scope 触及生产服务/物理动作/外部副作用，或
+  RouteDecision `route_level` ∈ {standard, full}
+  （`route_level` 由 SSOT 单调推导，设计期与执行期均可读；
+   不依赖执行期深度字段——alex-lite 侧该字段尚未产生）
+- 强档定义：opus / fable 级（经 Agent tool `model` 参数显式指定）；
+  haiku / 小型 flash 类不构成强档
+- 生产关键单的 reviewer 须强档。route=native → spawn 时显式指定强档 model；
+  route 为 alias-mapped（如 DeepSeek 中转，会话内 spawn 无法产生异模型 reviewer）
+  → 三选一并记录：
+  (a) 人切换到 native 强档会话跑审查（人桥，推荐）
+  (b) 用户逐字授权同模型审查 → 按跨角色请求消歧节逐字记录格式标
+      REVIEWER-TIER-DEGRADED (用户原话: "...")
+  (c) 停，报告人
+- Reviewer 行必须记录 reviewer 自报的 model 身份，使档位可事后审计
+- 非生产关键单：档位不限（执行探针义务仍适用）
 
 ## L3.5 Lite Technical Gate（⚠️ BLOCKING）
 
@@ -288,7 +317,7 @@ ACCEPTED / ARCHIVED
   - 上下文刷新：{已读知识路径} | 关键约束：{一行} | 成功条件：{一行}
   - 改动文件：{列表，清单外标 [清单外]}
   - AC 结果：逐条 ✅/❌/BLOCKED + 实际输出摘要与证据路径
-  - Reviewer: {verdict}, P0={n}(fixed), P1={n}, 摘录关键发现原文
+  - Reviewer: {verdict} | model={reviewer 自报} , P0={n}(fixed), P1={n}, 摘录关键发现原文（保留“执行实证/阅读推断”标注）
   - Technical Gate: {GATE PASS | GATE FAIL/BLOCK | PARTIAL-GO}（逐项确认摘要）
   - Knowledge Assessment: none | journal captured | candidate for distillation
     （journal captured 时附 journal 路径）
@@ -332,6 +361,22 @@ mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ 
 压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md + 其 `## Lite Progress` 段
 （从记录的阶段与计数继续，不得重置 repair_round / same_error_count）+ 重跑 /blake-lite；
 不要运行 /alex 或 /blake。
+
+## 跨角色请求消歧
+
+用户在摩擦点说"你直接做/你自己干"类话语时：
+1. 触发消歧（仅此时，NOT_via_suggestion：禁止主动提供、建议或默认"打破角色"选项）：
+   必须先问一次："是让我把这单备好、你输一条命令切角色继续（保持角色分离），
+   还是要求我打破角色分离直接实现？"
+2. 前者 → 正常流转（handoff 备好 + 告知切换命令），到此为止。
+3. 后者 → 逐字记录 + 拒绝执行：
+   cross_role_request: recorded (用户原话: "{逐字}")
+   载体（R6）：写入当前 handoff；摩擦时刻早于契约创建 → 落入随后创建的
+   LITE 契约 header；无契约产生 → lite-discoveries journal 追加一行。
+   不得只留在对话里。并回复：角色分离是不可妥协条款
+   （2026-08-02 违规已记 violations.log，用户裁定下不为例）；
+   如要更改此规则本身，走 full 通道修订 CLAUDE.md §4 与本 skill。
+4. 模糊、情绪化表述永不构成授权；未经消歧问句不得推断意图（2026-08-02 教训）。
 
 ## Forbidden
 

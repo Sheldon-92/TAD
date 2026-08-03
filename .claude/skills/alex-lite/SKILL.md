@@ -181,7 +181,7 @@ escalated_review 授权规则：
   ## AC（每条以 `- AC{n}:` 开头；禁止"功能正常"类不可验证表述）
   ## 知识引用（{路径} — {一行 implication}，逐条）
   ## Contract Review ({date})
-  Reviewer: {待填}
+  Reviewer: {待填} | model={reviewer 自报，格式同 Model 行}
   首轮 verdict: {待填}
   最终 verdict: {待填}
   P0={n}(fixed), P1={n}, P2={n}; 已审 AC 条数: {n}
@@ -202,7 +202,7 @@ escalated_review 授权规则：
 - Action: spawn 1 个独立上下文 reviewer 审 LITE 契约：Claude Code 用 Agent tool
   （subagent_type: code-reviewer）；Codex 等其它 stack 用该 stack 的 sub-agent
   或独立进程。当前 stack 无任何独立上下文机制 → 停，报告人；不得以自审替代。
-  Reviewer 允许 Read + 只读 Bash 核验（禁止写操作）。检查项：
+  Reviewer 允许 Read + 只读 Bash 核验（禁止写操作）。报告首行自报 model 身份（harness/model/route，机械捕获同 Model 行纪律）。检查项：
   - AC 可执行性矩阵：逐条——principal/身份存在且已授权？命令走生产真实路径？
     按原文逐字可运行？前置状态可获得？至少 1 条实地只读核验；
     无法核验的标 `UNVERIFIED: {原因}`
@@ -216,6 +216,25 @@ escalated_review 授权规则：
   或 P0 修复扩大范围/命中升级清单 → 停，报告人；不得把 FAIL 契约交给 blake-lite。
   同一契约 2 轮仍 FAIL → 停："任务可能超出 lite 适用范围"。
   CONDITIONAL → 可进人工拍板，未修 P1 写进"风险与注意"作已知取舍。
+
+### Reviewer 档位规则
+
+Reviewer 模型档位规则（依据 2026-08-02 flash-审-flash 盲区实测）：
+- 判定“生产关键”：执行 scope 触及生产服务/物理动作/外部副作用，或
+  RouteDecision `route_level` ∈ {standard, full}
+  （`route_level` 由 SSOT 单调推导，设计期与执行期均可读；
+   不依赖执行期深度字段——alex-lite 侧该字段尚未产生）
+- 强档定义：opus / fable 级（经 Agent tool `model` 参数显式指定）；
+  haiku / 小型 flash 类不构成强档
+- 生产关键单的 reviewer 须强档。route=native → spawn 时显式指定强档 model；
+  route 为 alias-mapped（如 DeepSeek 中转，会话内 spawn 无法产生异模型 reviewer）
+  → 三选一并记录：
+  (a) 人切换到 native 强档会话跑审查（人桥，推荐）
+  (b) 用户逐字授权同模型审查 → 按跨角色请求消歧节逐字记录格式标
+      REVIEWER-TIER-DEGRADED (用户原话: "...")
+  (c) 停，报告人
+- Reviewer 行必须记录 reviewer 自报的 model 身份，使档位可事后审计
+- 非生产关键单：档位不限（执行探针义务仍适用）
 
 人工拍板后变更回流：用户对契约的实质修改（AC 增/删/改、文件清单、目标）→ 回
 独立契约审查做增量复核（只给 diff），Contract Review 段 append
@@ -287,6 +306,22 @@ Completion 是最终状态；归档后不再写 Progress。
 2. 契约：没有 LITE handoff 文件就没有实现
 3. 独立审查：设计期契约 reviewer 与 blake-lite 实现后 reviewer 均不可跳过、不可自审替代
 4. AC 真验证：不可运行的 AC 不许写；验证结果必须有证据（evidence）载体
+
+## 跨角色请求消歧
+
+用户在摩擦点说"你直接做/你自己干"类话语时：
+1. 触发消歧（仅此时，NOT_via_suggestion：禁止主动提供、建议或默认"打破角色"选项）：
+   必须先问一次："是让我把这单备好、你输一条命令切角色继续（保持角色分离），
+   还是要求我打破角色分离直接实现？"
+2. 前者 → 正常流转（handoff 备好 + 告知切换命令），到此为止。
+3. 后者 → 逐字记录 + 拒绝执行：
+   cross_role_request: recorded (用户原话: "{逐字}")
+   载体（R6）：写入当前 handoff；摩擦时刻早于契约创建 → 落入随后创建的
+   LITE 契约 header；无契约产生 → lite-discoveries journal 追加一行。
+   不得只留在对话里。并回复：角色分离是不可妥协条款
+   （2026-08-02 违规已记 violations.log，用户裁定下不为例）；
+   如要更改此规则本身，走 full 通道修订 CLAUDE.md §4 与本 skill。
+4. 模糊、情绪化表述永不构成授权；未经消歧问句不得推断意图（2026-08-02 教训）。
 
 ## Forbidden
 

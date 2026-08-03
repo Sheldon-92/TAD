@@ -35,7 +35,7 @@ if [ "$approval_ok" -ne 1 ]; then FAIL=1; fi
 # --- decision_record required-field completeness (G4-2) ---
 # The required list spans two YAML lines; match each field independently within
 # the decision_record block (not requiring same-line as 'required:').
-required_fields="route_id revision base_revision contract_id route_level design_depth execution_depth risk_class affected_side escalated_review reason authority writer override_allowed evidence state"
+required_fields="route_id revision base_revision contract_id route_level design_depth execution_depth risk_class affected_side escalated_review reason authority writer override_allowed evidence state model"
 dr_ok=1
 DR_BLOCK=$(awk '/^decision_record:/,/^revision_rules:/' "$CONTRACT" | grep -v '^[[:space:]]*#')
 for rf in $required_fields; do
