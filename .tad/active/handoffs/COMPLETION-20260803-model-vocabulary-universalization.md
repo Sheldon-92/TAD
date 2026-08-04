@@ -161,6 +161,7 @@ Raw carriers:
 ## ⚠️ 遗留问题
 
 - The untouched workflow module retains a pre-existing top-level `return` that makes whole-file `node --check` reject it; the changed wrapped body passed the independent syntax check and no new workflow schema was introduced. This is outside this handoff's registered product change and is not a Gate 3 blocker.
+- The generic `pre-gate-check.sh 3` emitted its advisory “No recent evidence” warning because its `find .tad/evidence -maxdepth 2` does not reach this task's nested acceptance/review carriers; direct Layer 2, AC, friction, and evidence checks all passed.
 - No unresolved P0/P1/P2 reviewer finding remains.
 
 ## 📖 Knowledge Assessment
