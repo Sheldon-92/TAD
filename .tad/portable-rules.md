@@ -24,7 +24,7 @@ When generating a Codex-edition SKILL from a Claude Code SKILL, apply these rule
 
 | Pattern (section/key) | Replace With |
 |-----------------------|--------------|
-| `AskUserQuestion` tool calls | "List options as numbered text (1. ... / 2. ... / 3. ...). User types number or free text to respond." |
+| `AskUserQuestion` tool calls | "List options as numbered text (1. ... / 2. ... / 3. ...). User types number or free text to respond."（运行时权威见各角色 SKILL「平台绑定交互决策」条款） |
 | `Agent` tool / sub-agent parallel spawning | "Start a new `codex exec` session with the reviewer persona prompt. Run sessions sequentially." |
 | `Skill` tool / `/command` syntax | "Read the relevant file and follow its protocol." |
 | `ToolSearch` references | Remove |

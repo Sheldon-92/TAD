@@ -146,6 +146,16 @@ constraints:
       cancel_protocol: { old_line: 4350 }
 ---
 
+平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有
+AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 harness 有该工具
+（Claude Code）→ 直接调用；无该工具（Codex 等）→ 以编号纯文本列出全部选项
+（1. … / 2. … / 3. …）并**停止等待用户输入**，用户以编号或自由文本作答；
+禁止代答、禁止把选项折叠成默认值继续执行。SAFETY 门控的调用点（人工审批 /
+归档确认 / 权限升级确认类）无论何种 harness 都必须获得真人作答后才能继续。
+非交互执行模式（如 codex exec）→ 视为无人可答，按 blocked 停止并上报，
+不得自选默认值；已按 YOLO/预授权模式运行且该决策点有书面预授权记录 →
+按其协议处理，不适用本条 blocked 分支。
+
 # /alex Command (Agent A - Solution Lead)
 
 ## 🎯 自动触发条件
@@ -322,7 +332,7 @@ activation-instructions:
       3. Also scan .tad/pair-testing/S*/PAIR_TEST_REPORT.md as fallback
       4. If reports found:
          a. List them with session ID, scope, and creation date
-         <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
+         <!-- Claude Code: AskUserQuestion / Codex: numbered-options text（见平台绑定交互决策条款） -->
          b. Use AskUserQuestion:
             "检测到 {N} 个配对测试报告，要现在审阅吗？"
             Options per report: "审阅 {session_id}: {scope}" / "稍后处理"

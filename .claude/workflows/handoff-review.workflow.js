@@ -207,7 +207,7 @@ log('Selected ' + experts.length + ' experts: ' + experts.join(', ') + '  (task_
 
 // ════════════════════════════════════════════════════════════════════════════
 // STAGE 2 — REVIEW (handoff_creation_protocol step3: Parallel Expert Review)
-// NARROW-SCOPE prompt = expert_prompt_template verbatim (INV-4).
+// NARROW-SCOPE prompt = semantic port of expert_prompt_template (narrow-scope parity; INV-4).
 // ════════════════════════════════════════════════════════════════════════════
 phase('Review')
 log('Stage 2: fanning out ' + experts.length + ' experts in PARALLEL (narrow-scope)')
@@ -232,6 +232,14 @@ const reviews = await parallel(experts.map(function (expertName) {
       '  - Free-exploring the wider codebase outside REQUIRED + OPTIONAL + any blast-radius grep you justify\n' +
       '  - Reading the full handoff if §6 + §9 + §10 + listed files is sufficient\n' +
       '  - Writing/editing the handoff or any implementation code (this is a REVIEW only)\n\n' +
+      'REQUIRED OUTPUT (first line of every reviewer report):\n' +
+      '  Model: harness={claude-code|codex|other} | model={runtime self-reported ID} | route={host|native|unknown}\n' +
+      '  Capture by harness: claude-code → ANTHROPIC_* env plus both settings.json model queries;\n' +
+      '  codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key), CFG="${CODEX_HOME:-$HOME/.codex}", then config.toml model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys;\n' +
+      '  per-agent CFG/agents/*.toml model/model_reasoning_effort overrides; resolve route from the selected [model_providers.<id>] base_url, with manual section ownership ([agents]/[projects] same-key entries do not count);\n' +
+      '  other → self-reported model + route=unknown. Missing env/file/key is native fail-soft; route=unknown is alias-mapped conservative handling;\n' +
+      '  a runtime /model override takes precedence. Persist this line as the first line of review-<expert>.md.\n' +
+      '  Missing first-line provenance → mark the persisted review provenance-incomplete and bind the reason into the Gate 2 Audit Trail; this does not override the existing verdict.\n\n' +
       'OUTPUT FORMAT:\n' +
       '  1. Critical Issues (P0 — must fix before implementation)\n' +
       '  2. Recommendations (P1 — should address)\n' +

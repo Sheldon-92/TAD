@@ -120,7 +120,9 @@ acceptance_protocol:
          If exit 0 AND output contains "judge: skipped" → log the skip reason, continue to step4e.
          If exit 0 AND output is a file path → proceed to step 3.
 
-      3. Spawn fresh Sonnet judge subagent (paths-only — NEVER provide golden set,
+      3. Spawn fresh mid-tier judge subagent（judge 校准基线为 Anthropic Sonnet，
+         2026-07-02；非 Anthropic harness 用同档模型并在报告标注 uncalibrated-judge，
+         分数仅 advisory）（paths-only — NEVER provide golden set,
          prior judge results, or this acceptance's verdict):
            Agent prompt: "You are a trajectory quality judge. Read the judge prompt
            at {judge-prompt-path} and the trajectory bundle at {bundle-path}.
@@ -399,4 +401,3 @@ acceptance_protocol:
   violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"
   violation2: "Gate 3 v2 未通过就执行 Gate 4 v2 = VIOLATION"
   violation3: "验收通过后不执行 *accept 归档 = VIOLATION"
-

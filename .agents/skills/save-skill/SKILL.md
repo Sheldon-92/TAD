@@ -14,6 +14,16 @@ pattern, `*save-skill` turns it into a persistent, discoverable local skill file
 Knowledge Assessment / distill loop (framework-level knowledge); it does not replace it.
 Local skills are project-local tactical patterns, isolated from the TAD distribution chain.
 
+平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有
+AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 harness 有该工具
+（Claude Code）→ 直接调用；无该工具（Codex 等）→ 以编号纯文本列出全部选项
+（1. … / 2. … / 3. …）并**停止等待用户输入**，用户以编号或自由文本作答；
+禁止代答、禁止把选项折叠成默认值继续执行。SAFETY 门控的调用点（人工审批 /
+归档确认 / 权限升级确认类）无论何种 harness 都必须获得真人作答后才能继续。
+非交互执行模式（如 codex exec）→ 视为无人可答，按 blocked 停止并上报，
+不得自选默认值；已按 YOLO/预授权模式运行且该决策点有书面预授权记录 →
+按其协议处理，不适用本条 blocked 分支。
+
 ## Flow
 
 Execute these steps in order. Steps 3 and 4 are BLOCKING — never skip them.

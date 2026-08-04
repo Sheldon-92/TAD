@@ -1,0 +1,32 @@
+AC9 section-ownership fixture PASS: nested provider keys ignored; exact provider section resolved
+== published codex capture fail-soft probe ==
+OPENAI_BASE_URL unset (native/degraded)
+config.toml unavailable (native/degraded)
+agents directory unavailable (no per-agent overrides)
+OPENAI_BASE_URL unset (native/degraded)
+model = "fixture-model"
+agents directory unavailable (no per-agent overrides)
+AC9 fail-soft capture probe PASS: unset env, missing config, and no-agents directory are native/degraded without nonzero exit
+AC9 redaction fixture PASS: only relay.example.invalid emitted
+== codex --version ==
+codex-cli 0.146.0
+== CFG ==
+/Users/sheldonzhao/.codex
+== OPENAI_BASE_URL host ==
+OPENAI_BASE_URL unset
+== selected model_provider ==
+selected model_provider=unset
+== config model keys (section annotated) ==
+<top-level>: model = "gpt-5.6-sol"
+<top-level>: model_reasoning_effort = "medium"
+[agents]: default_subagent_model = "gpt-5.6-terra"
+== config base_url hosts (section annotated) ==
+selected route=native
+== per-agent model keys ==
+/Users/sheldonzhao/.codex/agents/terra-worker.toml:model = "gpt-5.6-terra"
+/Users/sheldonzhao/.codex/agents/terra-worker.toml:model_reasoning_effort = "medium"
+/Users/sheldonzhao/.codex/agents/terra-reviewer.toml:model = "gpt-5.6-terra"
+/Users/sheldonzhao/.codex/agents/terra-reviewer.toml:model_reasoning_effort = "high"
+/Users/sheldonzhao/.codex/agents/luna-scout.toml:model = "gpt-5.6-luna"
+/Users/sheldonzhao/.codex/agents/luna-scout.toml:model_reasoning_effort = "low"
+AC9 PASS: codex version and all four harness capture probes were re-run with host-only URL evidence

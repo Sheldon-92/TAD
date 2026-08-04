@@ -237,8 +237,17 @@ Reviewer 模型档位规则（依据 2026-08-02 flash-审-flash 盲区实测）�
   RouteDecision `route_level` ∈ {standard, full}
   （`route_level` 由 SSOT 单调推导，设计期与执行期均可读；
    不依赖执行期深度字段——alex-lite 侧该字段尚未产生）
-- 强档定义：opus / fable 级（经 Agent tool `model` 参数显式指定）；
-  haiku / 小型 flash 类不构成强档
+- 强档定义：按能力档位判定，不按 SKU——强档 = 所在 provider 的旗舰推理档
+  （示例：Anthropic opus/fable 级；OpenAI gpt-5 高推理档；DeepSeek v4-pro 级）；
+  小型/经济档不构成强档（示例：haiku、gpt-*-mini、v4-flash 类）。
+  示例名随版本演进，判定标准是档位而非具体 SKU。
+  推理档参数化的 SKU（阶梯 minimal < low < medium < high）：强档要求旗舰 SKU 且
+  推理档 ≥ high；档位判定不确定 → 按非强档保守处理，走三选一。
+  指定方式：经当前 harness 的 sub-agent 显式 model 指定
+  （Claude Code = Agent tool `model` 参数；Codex = `[agents]`
+   `default_subagent_model` 及 per-agent `agents/*.toml` 配置）；
+  route=unknown 按 alias-mapped 保守处理（走三选一），
+  不得按 native 分支自行 spawn 强档 reviewer。
 - 生产关键单的 reviewer 须强档。route=native → spawn 时显式指定强档 model；
   route 为 alias-mapped（如 DeepSeek 中转，会话内 spawn 无法产生异模型 reviewer）
   → 三选一并记录：
@@ -313,7 +322,7 @@ ACCEPTED / ARCHIVED
 
   ## Completion ({date})
   **Commit**: {hash 或 uncommitted}
-  **Model**: harness={claude-code|codex} | model={运行时自报模型 ID} | route={ANTHROPIC_BASE_URL 的 host，未设置则 native}
+  **Model**: harness={claude-code|codex|other} | model={运行时自报模型 ID} | route={当前 harness 的 base-URL host，未设置则 native；无法判定则 unknown}
   - 上下文刷新：{已读知识路径} | 关键约束：{一行} | 成功条件：{一行}
   - 改动文件：{列表，清单外标 [清单外]}
   - AC 结果：逐条 ✅/❌/BLOCKED + 实际输出摘要与证据路径
@@ -328,11 +337,25 @@ ACCEPTED / ARCHIVED
   每次修复一行：失败 / 假设 / 动作 / 结果。无修复则写"无"。
 
 Model 行捕获纪律（writer=角色身份 alex|blake，model=执行模型/harness 身份，两者不冗余）：
-1. route 与 model 机械捕获（env 无输出 = native 直连；settings 两层都查）：
-   `env | grep -E '^ANTHROPIC_(BASE_URL|MODEL|SMALL_FAST_MODEL)='`；
-   `jq -r '.model // "unset"' ~/.claude/settings.json 2>/dev/null`；
-   `jq -r '.model // "unset"' .claude/settings.json 2>/dev/null`。
-   会话内 `/model` 运行时覆盖优先级最高，用户切过必须逐字记录。
+1. route 与 model 按 harness 分支捕获（机械命令 + 一处 section 归属人工核对；
+   env 无输出/文件或键缺失 = native 直连，fail-soft，不得因缺失报错）：
+   - claude-code 分支（现行不变）：
+     `env | grep -E '^ANTHROPIC_(BASE_URL|MODEL|SMALL_FAST_MODEL)='`；
+     `jq -r '.model // "unset"' ~/.claude/settings.json 2>/dev/null`；
+     `jq -r '.model // "unset"' .claude/settings.json 2>/dev/null`。
+   - codex 分支：CFG="${CODEX_HOME:-$HOME/.codex}"；
+     `env | grep -E '^OPENAI_BASE_URL=' | sed -E -e 's|^[^=]+=([A-Za-z][A-Za-z0-9+.-]*://)?([^/@[:space:]]+@)?([^/?#[:space:]]+).*|OPENAI_BASE_URL host=\3|' -e '/^OPENAI_BASE_URL host=/!s|.*|OPENAI_BASE_URL host=unknown|' || true`（只记录 host，去除 userinfo/query/fragment，不落 key；无法解析则 unknown）；
+     `if [ -f "$CFG/config.toml" ]; then grep -E '^(model|model_provider|model_reasoning_effort|default_subagent_model)[[:space:]]*=' "$CFG/config.toml" 2>/dev/null || true; else echo 'config.toml unavailable (native/degraded)'; fi`；
+     `if [ -f "$CFG/config.toml" ]; then grep -nE '^[[:space:]]*base_url[[:space:]]*=' "$CFG/config.toml" 2>/dev/null | sed -E -e 's|^[0-9]+:[[:space:]]*base_url[[:space:]]*=[[:space:]]*"?([A-Za-z][A-Za-z0-9+.-]*://)?([^/@[:space:]]+@)?([^/?#[:space:]]+).*|base_url host=\3|' -e '/^base_url host=/!s|.*|base_url host=unknown|' || true; else echo 'base_url unavailable (native/degraded)'; fi`（只记录 host，去除 userinfo/query/fragment，不落 key；无法解析则 unknown）；
+     `if [ -d "$CFG/agents" ]; then find "$CFG/agents" -type f -name '*.toml' -exec grep -E '^(model|model_reasoning_effort)[[:space:]]*=' {} + 2>/dev/null || true; else echo 'agents directory unavailable (no per-agent overrides)'; fi`
+     （reviewer 实际档位在 per-agent 文件，可覆盖 default_subagent_*；[agents] 的 default_subagent_model
+      需与 section 归属一起记录）。
+     route = 顶层 `model_provider = "<id>"` 所选 `[model_providers.<id>]` 表的
+     base_url host；无 model_provider/base_url 且无 OPENAI_BASE_URL → native。
+     表内匹配需人工核对 section 归属（[agents]/[projects] 表内同名键不作数）。
+   - other/未知 harness 分支：model 自报 + route=unknown 显式标注，不得伪造；
+     unknown 在档位规则中按 alias-mapped 保守处理。
+   会话内 /model 运行时覆盖优先级最高，用户切过必须逐字记录。
 2. 自报模型 ID 与 route 冲突（如自报 claude-* 但 route 指向 api.deepseek.com）→
    两者都记录，以 route 为准并标注 `(alias-mapped)`。聚合中转（route=聚合器 host）时
    底层模型仍未知——该行防静默丢失，不解决聚合器归因，不得当 ground truth。

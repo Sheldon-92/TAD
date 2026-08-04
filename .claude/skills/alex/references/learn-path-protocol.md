@@ -34,7 +34,7 @@ learn_path_protocol:
         If no specific topic:
           → Check recent context (current session, last handoff, project-knowledge)
           → Suggest 2-3 relevant topics from recent work
-          <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
+          <!-- Claude Code: AskUserQuestion / Codex: numbered-options text（见平台绑定交互决策条款） -->
           → Use AskUserQuestion:
             "What would you like to learn about?"
             Options: [recent topic 1, recent topic 2, "Something else (type your topic)"]

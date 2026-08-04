@@ -76,6 +76,14 @@ durable project knowledge.
 - `.tad/memory/` is Claude's native capture layer; Codex roles read it but never treat it
   as authoritative. Shared knowledge authority is `.tad/project-knowledge/`.
 
+### Interaction decisions
+
+All `AskUserQuestion` references in TAD skills are interaction-decision
+contracts, not a literal tool: on harnesses without it, list numbered options
+as plain text and STOP for the user's typed answer. SAFETY-gated decision
+points (approvals, archive confirmations, permission escalations) always
+require a real human answer (see 平台绑定交互决策 clause in each role SKILL).
+
 ---
 
 ## Lite / Standard / Full Routing（用户可读说明）

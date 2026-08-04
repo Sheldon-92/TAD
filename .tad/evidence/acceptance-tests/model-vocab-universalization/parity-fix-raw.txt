@@ -1,0 +1,12 @@
+=========================================
+PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
+  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  MODE: --fix (will attempt auto-fix if claude-newer)
+=========================================
+  ❌ Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/references/handoff-creation-protocol.md and /Users/sheldonzhao/01-on progress programs/TAD/.agents/skills/alex/references/handoff-creation-protocol.md differ
+  ❌ Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/blake/SKILL.md and /Users/sheldonzhao/01-on progress programs/TAD/.agents/skills/blake/SKILL.md differ
+  ❌ Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/blake-lite/SKILL.md and /Users/sheldonzhao/01-on progress programs/TAD/.agents/skills/blake-lite/SKILL.md differ
+DIRECTION: claude-newer
+  🔧 Auto-fixing: rsync Claude→Codex...
+  ✅ Fix successful — .agents/skills now matches .claude/skills
+VERDICT: parity FIX-PASS (exit 0)

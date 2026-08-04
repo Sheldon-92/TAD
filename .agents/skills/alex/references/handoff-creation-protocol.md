@@ -785,6 +785,19 @@ handoff_creation_protocol:
     - Free-explore wider codebase outside REQUIRED + OPTIONAL + listed grep patterns
     - Reading full handoff if §6 + §9 + §10 + listed files is sufficient
 
+    REQUIRED OUTPUT (first line of every reviewer report):
+    Model: harness={claude-code|codex|other} | model={运行时自报 ID} | route={host|native|unknown}
+    Capture by harness: claude-code → ANTHROPIC_* env plus both settings.json model queries;
+    codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
+    CFG="${CODEX_HOME:-$HOME/.codex}" config.toml
+    model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys plus selected
+    [model_providers.<id>] route base_url (manual section ownership) plus agents/*.toml
+    model/model_reasoning_effort overrides; other → self-reported model and route=unknown.
+    Missing env/file/key is native fail-soft; route=unknown is alias-mapped conservative
+    handling. A runtime /model override takes precedence.
+    缺此行的专家审查记录在 Gate 2 证据中视为 provenance-incomplete，handoff Audit Trail
+    必须补记原因；该标记不覆盖既有 verdict。
+
     OUTPUT FORMAT:
     1. Critical Issues (P0 - must fix before implementation)
     2. Recommendations (P1 - should address)
@@ -795,4 +808,3 @@ handoff_creation_protocol:
   violations:
     - "不经过专家审查直接发送 handoff 给 Blake = VIOLATION"
     - "忽略专家发现的 P0 问题不修复 = VIOLATION"
-

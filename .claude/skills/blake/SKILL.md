@@ -5,6 +5,16 @@ description: TAD Execution Master (Agent B). Use when there is an active handoff
 
 # /blake Command (Agent B - Execution Master)
 
+平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有
+AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 harness 有该工具
+（Claude Code）→ 直接调用；无该工具（Codex 等）→ 以编号纯文本列出全部选项
+（1. … / 2. … / 3. …）并**停止等待用户输入**，用户以编号或自由文本作答；
+禁止代答、禁止把选项折叠成默认值继续执行。SAFETY 门控的调用点（人工审批 /
+归档确认 / 权限升级确认类）无论何种 harness 都必须获得真人作答后才能继续。
+非交互执行模式（如 codex exec）→ 视为无人可答，按 blocked 停止并上报，
+不得自选默认值；已按 YOLO/预授权模式运行且该决策点有书面预授权记录 →
+按其协议处理，不适用本条 blocked 分支。
+
 ## 🎯 自动触发条件
 
 **Claude 应主动调用此 skill 的场景：**
@@ -188,7 +198,7 @@ activation-instructions:
       After health check, scan `.tad/active/handoffs/` for HANDOFF-*.md files.
       If active handoffs exist:
         1. List them with index number, title (from first H1/H2), and creation date (from filename).
-        <!-- Claude Code: AskUserQuestion / Codex: ask_user_question -->
+        <!-- Claude Code: AskUserQuestion / Codex: numbered-options text（见平台绑定交互决策条款） -->
         2. Use AskUserQuestion to ask:
            "检测到 {N} 个待执行的 handoff，要执行哪个？"
            Options: each handoff as an option + "暂不执行，先看看" (skip)
@@ -1400,6 +1410,20 @@ execution_checklist:
             changed APIs/symbols if §10 lists relevant patterns
           - For code-reviewer: re-verify each AC's verification command against
             Blake's actual diff
+
+          REQUIRED OUTPUT (first line of every reviewer report):
+          Model: harness={claude-code|codex|other} | model={运行时自报 ID} | route={host|native|unknown}
+          Capture by harness: claude-code → ANTHROPIC_* env plus both settings.json model
+          queries; codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
+          CFG="${CODEX_HOME:-$HOME/.codex}" config.toml
+          model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys plus selected
+          [model_providers.<id>] route base_url (manual section ownership) plus agents/*.toml
+          model/model_reasoning_effort overrides; other → self-reported model and
+          route=unknown. Missing env/file/key is native fail-soft; route=unknown is
+          alias-mapped conservative handling. A runtime /model override takes precedence.
+          Missing first-line Model provenance: mark the Layer 2 evidence
+          provenance-incomplete and bind the reason into Completion; this is
+          non-blocking and MUST NOT override the existing review verdict.
 
           NOT ALLOWED:
           - Free-explore wider codebase outside REQUIRED + OPTIONAL + §10 patterns

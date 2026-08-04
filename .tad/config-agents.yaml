@@ -323,7 +323,7 @@ agent_teams:
 
   # Cost control
   cost:
-    teammate_model: "sonnet"       # Teammates use Sonnet
+    teammate_model: "sonnet"       # Claude-Code 值；其他 harness 取同档（capability-tier: mid）
     lead_model: "inherit"          # Lead uses active model
     max_teammates: 4
 
