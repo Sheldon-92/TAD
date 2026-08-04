@@ -129,3 +129,29 @@
 - **Action**: When designing spikes that need runtime state isolation: enumerate what the isolation strips (auth, trust, caches, budget) and either provision it deliberately or pre-register the couldn't-measure branch with its own terminal states (distinct from measured-absence). Keep an oracle that binds implementation inputs to measured evidence (set-equality) so unmeasured candidates cannot be promoted. Queue the authenticated re-probe as an explicit follow-up, not a silent loss.
 - **failure_mode**: Naive default: treat probe failure as equivalent to "feature not supported" and take the honest-absence branch, or quietly fall back to documentation values so the feature can ship "complete". Why wrong: the first fabricates a measurement that never happened (the ledger then reports verified-absent on zero evidence); the second is exactly the doc-evidence-as-verified failure the ledger discipline exists to block.
 - **Grounded in**: .tad/evidence/acceptance-tests/codex-knowledge-ingress/spike-{c,d,e}.md, .tad/evidence/journal/codex-knowledge-ingress-2026-08-03.md, .tad/runtime-compat/codex.md (context_compaction verified_partial), .tad/archive/handoffs/HANDOFF-20260803-codex-knowledge-ingress.md AC5/AC6
+
+### Text-Anchor ACs Are Blind to Parser-Level Regressions — Structured-Header Files Need an Active-Parse Guard, and Published Commands Must Be Tested as Literal Text - 2026-08-03
+
+- **Context**: model-vocabulary-universalization inserted an identical clause paragraph into 11 SKILL.md
+  bodies. All grep-anchor ACs (`grep -cF '平台绑定交互决策'` ≥1) went green — but Layer 2 code review
+  found the alex-side clause had landed INSIDE the YAML front matter (before the closing `---`), a real
+  parser regression that would corrupt frontmatter-driven loading. Separately, the security reviewer
+  found the AC scripts validated a happy-path WRAPPER reimplementation of the contract's published
+  Codex capture commands, not the literal command text, and compared SAFETY blocks as a file-global
+  bag instead of per-block.
+- **Discovery**: (1) A substring-presence AC cannot distinguish "clause in the body" from "clause in
+  the front matter" — the anchor matches either way, so structural validity is invisible to every
+  text-level check. The fix class is an ACTIVE PARSE: run the format's real parser (Ruby
+  `YAML.safe_load` on the frontmatter of every edited SKILL, both trees) as an AC guard. (2) When a
+  contract publishes literal capture/probe commands, an AC that reimplements them "equivalently"
+  proves the wrapper, not the contract — fail-soft and redaction must be probed against the PUBLISHED
+  text (missing file, unset env, unmatched glob fixtures). (3) Per-block comparison needs ordinal
+  ownership prefixes, or block reordering/relocation across sections is invisible to a sorted bag.
+- **Action**: When an AC suite verifies text insertions into files with structured headers
+  (frontmatter, TOML sections, shebang blocks), add an active-parse guard for the header format on
+  every edited file in addition to text anchors. When the contract publishes literal commands, execute
+  those literal commands against absence fixtures (file/key/env/glob missing) instead of a wrapper.
+  Prefix extracted SAFETY blocks with section-ordinal ownership before sorted comparison.
+- **Grounded in**: .tad/evidence/journal/2026-08-03/model-vocabulary-universalization.md (Layer 2
+  reflexion + Final validator reflexion), .tad/evidence/reviews/blake/model-vocabulary-universalization/
+  security-auditor.md, AC-06/AC-09 post-remediation scripts
