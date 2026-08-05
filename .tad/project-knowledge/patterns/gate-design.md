@@ -120,3 +120,50 @@
 - **Action**: Any review/verification step in a multi-agent pipeline must receive the working-tree PATH the implementer used (the worktree dir), never assume repo root. The Conductor must read the review VERDICT (P0 count), not the runner's exit status, before counting a task done. Merge worktree deliverables to main before dispatching follow-on tasks that assume main-tree state. Re-review fixes with the same independence as the original implementation.
 - **failure_mode**: Naive default: dispatch impl reviewers with repo root as cwd and treat "workflow completed without error" as task success. Why wrong: worktree-isolated implementations are invisible at repo root, so reviewers report "implementation absent" (false FAIL — 3 occurrences in one session), and error-free execution can carry unresolved P0s — both misclassify the task's true state and either burn re-runs or ship unreviewed work.
 - **Grounded in**: project_surplus-burn-mode.md (2026-07-05/06 findings 1-2), .tad/active/session-state.md QUEUE, .tad/evidence/surplus-burn-20260705/scripts/
+
+### On an Aggregator-Routed Harness the `model` Parameter Is a Request, Not Provenance — Read the Reviewer's Self-Report - 2026-08-04
+
+- **Context**: evidence-replayability-check Gate 3, run on a Claude Code session routed through a
+  DeepSeek aggregator (alias-mapped). The reviewer-tier rule requires a flagship-tier reviewer for
+  production-critical/`route_level: full` work, and offers three branches when the route is
+  alias-mapped (human bridge to a native session / user-authorized same-model review recorded as
+  REVIEWER-TIER-DEGRADED / stop). Blake correctly chose the user-authorized branch — and then ALSO
+  passed `model: opus` to the Agent tool "为尽力贴近强档".
+- **Discovery**: (1) The override was inert: both spawned reviewers self-reported
+  `harness=claude-code | model=deepseek-v4-flash | route=api.deepseek.com alias-mapped`. On an
+  aggregator the `model` parameter is a routing hint the provider may remap at will, so it produces
+  no tier guarantee while leaving a flagship-looking SKU name in the audit trail — worse than not
+  asking. (2) It is also self-contradictory: the degraded branch exists precisely BECAUSE an in-session
+  spawn cannot produce a different model; requesting a stronger one denies the premise of the branch
+  just chosen. (3) The naming of a specific SKU is itself the regression the model-vocabulary work
+  eliminated — the rule is capability-tier, not SKU, and the example names in it ("opus/fable 級",
+  "gpt-5 高推理档") are illustrations that go stale, not values to copy.
+- **Action**: On any alias-mapped/unknown route, do NOT pass a model override; pick a branch and stay
+  inside it. Record tier provenance from what the reviewer **actually self-reports** (harness/model/
+  route first line), never from what was requested. Treat a specific SKU string appearing in a spawn
+  call as a smell: the tier rule is satisfied by capability class, and a SKU that survives into
+  evidence will be read as ground truth by someone later.
+- **failure_mode**: Naive default: belt-and-suspenders — take the degraded branch AND request a
+  flagship SKU, on the theory that asking costs nothing. Why wrong: on an aggregator it costs the
+  audit trail its accuracy (a request that was silently remapped now looks like a satisfied tier
+  requirement), and it re-introduces the SKU hardcoding that cross-model portability work removed.
+- **Note (gap found, queued not fixed)**: the entire Reviewer-tier rule lives only in the lite
+  channel — `blake-lite`/`alex-lite` 8 hits each, `blake`/`alex` **0**. Full-channel Blake had no rule
+  at all and improvised. Queued in NEXT.md as item ②; framework itself is clean (0 SKU hardcodes).
+- **Grounded in**: .tad/evidence/journal/evidence-replayability-check-2026-08-04.md (reviewer-tier),
+  .tad/evidence/reviews/blake/evidence-replayability-check/{code-reviewer,spec-compliance}.md Model lines,
+  .claude/skills/blake-lite/SKILL.md Reviewer 档位规则
+
+### When Implementation Is Byte-Correct and the SPEC Is Wrong, the Executor Must Escalate — and Conditional Release Turns on Whether the Defect's Trigger Surface Exists Yet - 2026-08-05
+- **Context**: P1a of the lite-as-TAD-body Epic. Blake's implementation matched the contract's §4.1 spec block byte-for-byte (verified by the spec-compliance reviewer's byte diff — the only delta a trailing blank line, not a protected literal), and all 8 ACs passed. The independent code-reviewer nonetheless returned CONDITIONAL with two P1s: the spec's own overdue-scan command matched whole lines rather than the status column, so (a) an append-only ledger's superseded PROVISIONAL row stays flagged forever and (b) any row whose summary cell merely *mentions* a date is a false positive. Alex reproduced both from a synthetic ledger at Gate 4.
+- **Discovery**: A green AC set proves conformance to the spec, never correctness of the spec — and the executor holds no authority over the contract, so "fix it while I'm here" is a role violation dressed as diligence. The correct path is stop, report, and close via a revision single. What makes conditional release legitimate here is not the defect's severity but a structural fact: **the deliverable creates zero instances of the data the defect operates on** (the ledger ships empty; the first PROVISIONAL rows appear one phase later), so the trigger surface does not yet exist. That gives a precise, checkable release criterion — and a precise blocker: the revision must land before the phase that creates the first triggering instance. Root cause worth noting separately: both defects came from two of the author's own decisions colliding (append-only retention × whole-line matching), a class of defect that only surfaces when someone executes the spec rather than reads it.
+- **Action**: When a reviewer finds a defect whose root cause is in the contract, the executor records it and stops — never silently amends the spec, even when the fix is one line. To justify conditional release, state the trigger surface explicitly and show it is empty in this deliverable; then register the revision as a hard blocker on the first phase that populates it. The revision's ACs must include synthetic probes for each defect (must fire before, must be silent after), because the defect was invisible to the original ACs by construction.
+- **failure_mode**: Naive default: treat a green AC set plus a byte-identical spec diff as acceptance, and wave the reviewer's P1s through as "already conformant." Why wrong: conformance and correctness are different claims; shipping a spec defect into a protocol file propagates it to every future execution, and the ACs that certified the implementation are structurally incapable of catching it.
+- **Grounded in**: .tad/evidence/journal/lite-pricing-gate-protocol-2026-08-05.md (finding 3), .tad/evidence/reviews/blake/lite-pricing-gate-protocol/code-reviewer.md (P1-1 sub-defects A/B), EPIC-20260804-lite-as-tad-body.md Phase 1a-fix, Gate 4 synthetic-ledger reproduction (2026-08-05)
+
+### A Fence Whose Baseline Is Captured by the Verified Party Is Defeatable by Timing — Anchor to an Immovable Commit Instead - 2026-08-05
+- **Context**: Four successive contract versions in the same Epic phase used the shape "snapshot before implementation → snapshot after → diff → allow-list filter" as the scope fence. Each version fixed the previous version's mechanical defect (one-way `comm -13`, reversed `sed`, block-sorting, undefined function). An adversarial reviewer then ignored the mechanics entirely and attacked the *timing*.
+- **Discovery**: The contract contained nothing tying the baseline to "before implementation" — no timestamp, no HEAD sha, no third-party witness. The baseline file was written **by the party being verified, into their own `/tmp`**. So the attack is: do the authorized change, cause arbitrary collateral damage, *then* take the "baseline", then take the after-snapshot — all three ACs green. Demonstrated in a sandbox by deleting a tracked script, corrupting session state, and rewriting `.git/hooks/pre-commit`, all while the fence reported PASS. Adding a baseline fingerprint (guarding against later tampering) does not help: the baseline was never tampered with, it was merely captured late. The fix is to remove the tamperable artifact entirely — compare the working tree against a **pinned commit sha** (`git diff --name-only <sha>`), with a companion assertion that HEAD has not moved (blocking `git reset` + late capture) and that no `assume-unchanged`/`skip-worktree` bits are set (those remove a file from `git status` *and* `git ls-files -m` simultaneously).
+- **Action**: Never let the verified party produce the baseline a fence depends on. Anchor fences to an immovable reference the contract pins at authoring time — a commit sha plus, for untracked files that matter, their content hashes. Assert the anchor is unmoved as part of the fence. If a fence must use a captured baseline, the capture belongs to the verifier's side of the human bridge, not the executor's.
+- **failure_mode**: Naive default: harden a before/after fence by fixing whichever mechanical defect the last reviewer found. Why wrong: every such fix leaves the structural flaw untouched — the executor still decides when "before" is — so the fence is bypassable regardless of how correct its diff logic becomes, and each round of hardening buys confidence without buying coverage.
+- **Grounded in**: HANDOFF-20260805-lite-inventory-pricing-audit.md §4 AC3 (v4 rewrite, HEAD-anchored), Gate 2 v4 adversarial report (sandbox bypass with collateral damage), Gate 4 independent recompute 2026-08-05

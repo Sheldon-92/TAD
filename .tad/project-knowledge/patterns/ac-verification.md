@@ -155,3 +155,82 @@
 - **Grounded in**: .tad/evidence/journal/2026-08-03/model-vocabulary-universalization.md (Layer 2
   reflexion + Final validator reflexion), .tad/evidence/reviews/blake/model-vocabulary-universalization/
   security-auditor.md, AC-06/AC-09 post-remediation scripts
+
+### An AC Keyed on Commit Contents Is Coupled to `git add` Hygiene AND Freezes at That Commit - 2026-08-04
+
+- **Context**: evidence-replayability-check. Gate 3 has a BLOCKING `Git_Commit_Verification`, so a
+  handoff cannot end uncommitted; but the contract also needed to assert "exactly these 3 tracked
+  files were modified". Using `git status --porcelain` for that is unsatisfiable by construction
+  (after the mandatory commit the M set is empty), so the AC was rewritten to read the commit's own
+  diff: `git show --name-status --format='' HEAD | awk '$1=="M"{print $2}'`.
+- **Discovery**: Switching an AC's judgment source from working-tree state to COMMIT CONTENTS buys
+  satisfiability but creates two new couplings that are invisible in the AC text. (1) **`git add -A`
+  breaks it**: any file a concurrent process touched (here NEXT.md, being used as a queue bookmark in
+  the other terminal) rides into the commit and inflates the M set. The commit must pin explicit
+  paths. (2) **The AC freezes at that commit**: evidence generated AFTER the commit cannot be
+  committed later, because a follow-up commit becomes the new HEAD with an empty-or-different M set,
+  so recomputing the AC at Gate 4 FAILs. Post-commit evidence has to stay in the working tree as its
+  carrier (`A` additions don't disturb an `M`-only predicate, but a second commit does).
+- **Action**: When an AC's predicate reads `HEAD`, write both couplings into the contract: pin
+  explicit paths in `git add` (never `-A`), and state that no further commit may be made after the
+  evidence-generating run. Prefer an `M`-only predicate so later `A` files stay harmless. At Gate 4,
+  recompute from `git show` rather than trusting the reported file list.
+- **failure_mode**: Naive default: use `git status --porcelain` for a "which files changed" AC, or
+  `git add -A` for convenience, or tidy up by committing the evidence afterward. Why wrong: the first
+  is unsatisfiable once Gate 3 mandates a commit; the second silently absorbs concurrent edits from
+  the other terminal; the third invalidates the very AC it was meant to document — and all three fail
+  at Gate 4 recompute, after the implementer has already declared PASS.
+- **Grounded in**: .tad/evidence/journal/evidence-replayability-check-2026-08-04.md (commit-blood-path),
+  HANDOFF-20260804-evidence-replayability-check.md AC6, commit 31a96aa
+
+### A Count-Based AC Constrains the Total, Not the Location — Pin the Siblings - 2026-08-04
+
+- **Context**: Same single. `Critical Check (6 items):` already existed in the Gate 2 block of
+  `gate/SKILL.md`, so a bare `grep -Fq` would PASS before any implementation (zero discriminative
+  power). The AC was written as `grep -cF ... -eq 2` (1 pre-existing + 1 new).
+- **Discovery**: `-c == N` fixes the total but says nothing about WHERE the new occurrence landed. A
+  Gate 2 reviewer built the falsifying variant and ran it: put the new `(6 items):` in the Gate 4
+  block (L727) and leave the Gate 3 block at `(5 items)` — total is still 2, the AC PASSes, the
+  implementation is wrong. The cheap fix is not section-scoped extraction (fragile boundary logic)
+  but **complement assertions on the sibling values**: `(5 items) == 0` (the old header must be gone)
+  plus `(4 items) == 1` (an untouched block's invariant). Measured: BASE FAIL / HALF FAIL / WRONG FAIL
+  / FULL PASS.
+- **Action**: Whenever an AC counts occurrences of a string that also exists elsewhere in the file,
+  add (a) a zero-assertion on the value being replaced and (b) a fixed-count assertion on at least one
+  sibling that must NOT change. Then construct the "right count, wrong place" variant and prove the
+  hardened AC kills it — a count AC that has not been shown to fail on a misplacement is unverified.
+- **failure_mode**: Naive default: after discovering a bare `-Fq` is non-discriminative, upgrade it to
+  `-c == N` and consider the problem solved. Why wrong: it closes the "did nothing" hole and leaves
+  the "did it in the wrong block" hole wide open, and the second one is worse — it ships a broken edit
+  under a green gate.
+- **Grounded in**: .tad/evidence/journal/evidence-replayability-check-2026-08-04.md (ac-design),
+  .tad/evidence/reviews/blake/evidence-replayability-check/code-reviewer.md, HANDOFF §9.1 AC2/AC3
+
+### A Snapshot-Diff Scope Fence Is Valid Only Inside a Window Bounded on BOTH Sides by Framework Artifact Production - 2026-08-05
+- **Context**: P1a of the lite-as-TAD-body Epic. The repo carries 3 pre-existing dirty tracked files and 850+ untracked files, so an absolute-list scope fence (`git status` must contain only authorized paths) false-FAILs by construction. The fence was therefore built as a snapshot diff: capture the tracked/untracked sets before work, `comm -13` after, and flag additions outside an allowlist. It fired three times, none of them on an actual violation.
+- **Discovery**: A snapshot-diff fence measures *set additions between two instants*, so its correctness depends entirely on where those instants sit relative to the framework's own file production. Three distinct failures, all timing, none logic: (a) the before-snapshot was taken before the protocol's own init step wrote a state file, so a framework artifact looked like an unauthorized addition; (b) `git add` **migrates a path from the untracked set to the tracked set**, so an authorized deliverable staged per the contract's own commit instructions appears as a *new* tracked entry — an allowlist that isn't shared by both fences flags legitimate work; (c) the after-snapshot is taken before the protocol mandates writing its completion report and before a PostToolUse hook appends its decision log, so re-running the fence at gate time always reports artifacts the contract never authorized because they did not exist when it was written. The unifying root cause: **the allowlist and the snapshot instants were written against the repo's state at authoring time, not its state at AC-run time.**
+- **Action**: (1) Take the before-snapshot *after* every framework step that precedes implementation. (2) Define the allowlist **once** and have every fence read it — separate copies diverge exactly at the tracked/untracked boundary that `git add` crosses. (3) Absorb known post-implementation framework paths (completion reports, hook-written logs) into the allowlist, or pin the fence's evaluation moment to the window "implementation artifacts complete, process paperwork not yet written" and treat later re-runs as smoke only. (4) State the residual honestly: `comm -13` reports additions only, so every file already in the before-set is exempt from further modification — close the tracked side with a content hash (cheap, few files) and record the untracked side as a named blind spot rather than implying coverage.
+- **AMENDED 2026-08-05 (next single, tracked side)**: the window is bounded not only by *framework* artifacts but by **any actor other than this task**. The follow-up single's tracked fence flagged `.tad/research-notebooks/REGISTRY.yaml` — a pre-existing tracked file modified by the user in another terminal 40 minutes after the snapshot (`status: active → dormant`, one line). Nothing in the fence can distinguish that from a scope violation. So the fence's real precondition is "only this task touches the repo between the two snapshots", which is false whenever a second terminal, a background sync, or a hook is live. **Attribution is therefore a mandatory step, not an optional courtesy**: for every flagged path, check whether it appears in this task's commit, diff its content, and check its timestamp before judging. The correct disposition for an externally-caused hit is *documented attribution + substantive PASS*, never "re-take the baseline" (that hides the timing) and never "widen the allowlist" (that permanently blinds the fence).
+- **failure_mode**: Naive default: snapshot at the top of the script, diff at the bottom, and treat any unexpected path as a scope violation. Why wrong: the framework itself creates files on both sides of the window, and other actors touch the repo during it, so the fence reports its own host protocol — or the user — as the intruder; an operator who sees the fence cry wolf three times will start waving through the one time it is right.
+- **Grounded in**: .tad/evidence/journal/lite-pricing-gate-protocol-2026-08-05.md (findings 1 and 5), .tad/evidence/journal/pricing-gate-scan-fix-2026-08-05.md (finding 2, tracked-side external modification), .tad/evidence/reviews/2026-08-05-gate2-audit-lite-pricing-gate.md (R3 P0-1/P0-3), HANDOFF-20260805-lite-pricing-gate-protocol.md §5.0 + AC5/AC5b/AC6
+
+### A Fence Needs a Positive Control Too, and the Probe Must Be Visible to the Specific Fence Being Tested - 2026-08-05
+- **Context**: Same single. The scope fence was validated by planting a file in a forbidden directory and confirming it was caught. That negative control passed, and two P0s still shipped into the contract — both of the form "the fence blocks legitimate work."
+- **Discovery**: Testing a gate only with a violation proves it *can* fail; it says nothing about whether it *passes the work it is supposed to pass*. Both defects were in that untested direction: the authorized ledger, once `git add`ed, and the protocol-mandated completion report both tripped the fence. Adding the positive control — create the sanctioned deliverables, stage them, confirm the fence stays silent — reproduces both in seconds. Second, complementary finding: a probe only exercises the fence whose **mechanism** can see it. A `touch`ed file is invisible to a `git diff --name-only` fence by construction, so a single probe validated only the untracked fence while appearing to validate "the fence"; testing the tracked fence requires `git add`ing a forbidden path.
+- **Action**: For every gate, run both controls and record both outputs as evidence: negative (a violation must be caught) and positive (the sanctioned deliverable set, produced exactly as the contract instructs, must pass silently). When a check is implemented as multiple fences, construct one probe per fence matched to that fence's detection mechanism — and verify each probe actually reaches its target rather than assuming one probe covers all.
+- **failure_mode**: Naive default: prove a scope fence works by planting one forbidden file and watching it get flagged. Why wrong: it validates only the reject path of one fence, leaving the accept path untested — so the fence ships blocking the very deliverables the contract requires, and the failure surfaces during implementation as an unexplainable FAIL on correct work.
+- **Grounded in**: .tad/evidence/journal/lite-pricing-gate-protocol-2026-08-05.md (finding 2), .tad/evidence/reviews/2026-08-05-gate2-audit-lite-pricing-gate.md (lesson 2), HANDOFF-20260805-lite-pricing-gate-protocol.md §6.5b
+
+### Discriminative Power Can Live in the SEMANTICS of the Hits, Not Their Count — a Count-Only Before/After Comparison Can Read as "No Change" While the Fix Worked - 2026-08-05
+- **Context**: Phase 1a-fix of the lite-as-TAD-body Epic replaced a ledger-scanning command that had one false-positive class and four silent false-negative classes. The AC proving the fix worked ran the same synthetic probe through the old and the new command and compared results.
+- **Discovery**: Both commands reported **8 hits**. A naive before/after check — `[ "$old_count" -ne "$new_count" ]` — would conclude the fix changed nothing and either fail the AC on a correct implementation or, worse, pass a no-op. The actual difference was entirely in **which rows and under which label**: the old command silently mis-classified a summary-column false positive and three malformed rows (full-width colon, missing colon, wrong case) as ordinary OVERDUE; the new one excluded the false positive and re-labelled the malformed rows as MALFORMED for human handling. Same cardinality, inverted meaning. The generalizable point: when a fix changes *classification* rather than *detection volume*, the discriminating signal is the labelled hit-set, and an AC that compares only counts is blind to exactly the property being fixed.
+- **Action**: When proving a fix via old-vs-new comparison, compare the **full labelled output** (`[ "$out" = "$exp" ]` against a verbatim expected block, or a sorted set diff), never just `wc -l`. Build the probe so each scenario is identifiable in the output (a short stable key per row) and state the expected label per scenario. If the counts happen to match, say so explicitly in the evidence — it is the strongest demonstration that the AC measures semantics rather than volume.
+- **failure_mode**: Naive default: prove a scan/filter fix by showing the hit count changed. Why wrong: reclassification fixes preserve cardinality, so the count is unchanged and the AC either false-FAILs correct work or certifies a no-op — and the defect it was meant to catch is precisely a mis-labelling.
+- **Grounded in**: .tad/evidence/journal/pricing-gate-scan-fix-2026-08-05.md (finding 3), HANDOFF-20260805-pricing-gate-scan-fix.md AC4a (verbatim `exp` block, `=`-separated keys), .tad/evidence/acceptance-tests/pricing-gate-scan-fix/old-new-cmd-ac4a.txt
+
+### Verification Strength Is Bounded by the Deliverable's Determinacy — Shrink the Scope Before Hardening the Checks - 2026-08-05
+- **Context**: One Epic phase, four contract versions, seven independent reviewers. v1 (9 ACs, executor makes evidence judgements), v2 (5 ACs, judgement delegated to an adversarial sub-reviewer), v3 (5 ACs, judgements supplied as fixed data but 32 rows of free-form prose retained) — each was defeated by a reviewer constructing a **fully green forged delivery**, in 30, 15 and 20 minutes respectively. Forging got *cheaper* as the checks got more elaborate. v4 kept the same reviewers but cut the deliverable to 6 lines across 5 files; both reviewers then reported the delivery could not be forged.
+- **Discovery**: The bound is not the cleverness of the ACs, it is the determinacy of the deliverable. When the deliverable is a **determinate text**, byte-exact comparison (section md5 + `git diff --numstat` shape) is exhaustive and leaves no forgery surface — one reviewer's phrasing: *the regex must actually be fixed correctly to pass*. When the deliverable contains **free-form content** (prose rationales, chosen search keywords, self-reported hit counts), no AC closes the gap; each added check merely relocates the bypass and enlarges the attack surface. v3's most instructive failure: the AC published the exact `git grep` query it would run, so the executor could pipe that query's own output back as the "explanation" — 132 canned lines, 30 seconds, zero files opened. Corollary observed across all four rounds: the defect count in the *verification apparatus* exceeded the defect count in the *deliverable* by more than an order of magnitude, and every apparatus generation introduced new defects while fixing old ones.
+- **Action**: Before hardening an AC, ask whether the deliverable can be made determinate instead — split the free-form portion out of the executor's scope rather than trying to grep it. For the determinate remainder, prefer whole-artifact byte comparison (md5 of a bounded region + a change-shape assertion) over property checks; it has no entrance/exit asymmetry and nothing enumerable to target. When a Gate-2 round produces an all-green forgery, treat it as evidence about scope, not about the checks. Never let an AC publish the query whose answer it will accept.
+- **failure_mode**: Naive default: when a reviewer forges a green delivery, add or sharpen ACs to close that specific bypass. Why wrong: the bypass was a symptom of free-form deliverable content, so the next round is forged through a different opening — usually faster, because the added machinery is itself new attack surface — and the team spends its budget building verification apparatus rather than shipping the change.
+- **Grounded in**: HANDOFF-20260805-lite-inventory-pricing-audit.md §6 (v1/v2/v3 void record), Gate 2 v1–v4 reviewer reports (three forged deliveries with timings), EPIC-20260804-lite-as-tad-body.md P1b split rationale

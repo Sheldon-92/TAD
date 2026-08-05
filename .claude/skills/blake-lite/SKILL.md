@@ -423,7 +423,7 @@ mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ 
 往台账追加任何行之前，先跑一次超期扫描，有超期行先处置再追加——
 
   awk -v t="$(date +%F)" '/[Pp][Rr][Oo][Vv][Ii][Ss][Ii][Oo][Nn][Aa][Ll][:：]?/ {
-    if (match($0, /PROVISIONAL: review-by [0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]*\|?[[:space:]]*$/)) {
+    if (match($0, /PROVISIONAL: review-by [0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])[[:space:]]*\|?[[:space:]]*$/)) {
       d = substr($0, RSTART+23, 10); if (d < t) print "OVERDUE: " $0 }
     else print "MALFORMED(须人工处置): " $0 }' \
     .tad/evidence/audits/lite-constraint-ledger.md
