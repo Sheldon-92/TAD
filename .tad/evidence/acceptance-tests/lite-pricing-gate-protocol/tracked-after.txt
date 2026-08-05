@@ -1,0 +1,8 @@
+.agents/skills/alex-lite/SKILL.md
+.agents/skills/blake-lite/SKILL.md
+.claude/skills/alex-lite/SKILL.md
+.claude/skills/blake-lite/SKILL.md
+.tad/evidence/audits/lite-constraint-ledger.md
+.tad/project-knowledge/patterns/ac-verification.md
+.tad/project-knowledge/patterns/gate-design.md
+NEXT.md
