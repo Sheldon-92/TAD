@@ -1,0 +1,10 @@
+=== AC4: parity (fix + verify) + cmp ===
+=========================================
+  ✅ .claude/skills <-> .agents/skills byte-identical
+VERDICT: parity PASS (exit 0)
+--- parity verify ---
+=========================================
+  ✅ .claude/skills <-> .agents/skills byte-identical
+VERDICT: parity PASS (exit 0)
+--- cmp ---
+cmp exit 0: byte-identical

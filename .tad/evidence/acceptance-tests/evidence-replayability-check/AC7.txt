@@ -1,0 +1,2 @@
+=== AC7: config-quality.yaml 'Evidence replayable' 计数 == 0 (Non-Goal 守卫) ===
+PASS: count=0 — gate3_verification.checks 未同步（advisory 先例，drift 保留）

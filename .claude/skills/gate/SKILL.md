@@ -273,11 +273,15 @@ Git_Commit_Verification:
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
-# MECE: verified 2026-06-23 — 5 items check 5 distinct artifacts
-Critical Check (5 items):
+# MECE: verified 2026-08-04 — 6 items check 6 distinct artifacts
+Critical Check (6 items):
   - [ ] Code/deliverable complete (all handoff tasks done)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
   - [ ] Evidence files exist per the handoff's Required Evidence Manifest
+  - [ ] Evidence replayable (advisory, WARN-not-BLOCK): 证据采集命令重跑两次应 0 diff。
+        若重跑产生全量改动（随机 ID / 时间戳 / commit SHA 入了证据体）→ WARN：
+        任何改动都会触发全量重采，reviewer 无法 diff 只能重读全文，代价随轮数线性放大。
+        建议先修证据管道（把不确定性字段移出证据体或固定种子）再继续。
   - [ ] Git commit done (commit hash recorded, or NONE for doc-only)
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
 Evidence: Record in completion report + evidence file

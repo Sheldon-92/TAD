@@ -30,17 +30,20 @@ Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 
 ## Gate 3: Implementation Quality
 **Owner:** Blake | **When:** After implementation (Ralph Loop complete)
-# MECE: verified 2026-07-03 — 6 items check 6 distinct artifacts
+# MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts
 
 Checklist items:
 - [ ] Code/deliverable complete — all handoff tasks done. Why ME: 产出物完整性
 - [ ] §9.1 Spec Compliance — every row verified. Why ME: AC 逐条验证
 - [ ] Evidence files exist — per handoff manifest. Why ME: 证据存在性
+- [ ] Evidence replayable (advisory) — 证据采集命令重跑两次应 0 diff。若每次重跑都产生
+      全量改动（随机 ID / 时间戳 / commit SHA 入了证据体），则任何一处改动都触发全量重采，
+      reviewer 无法 diff 只能重读全文 → 先修证据管道再谈验收。Why ME: 证据管道确定性
 - [ ] Git commit done — hash recorded (or NONE for doc-only). Why ME: 版本控制
 - [ ] Knowledge Assessment complete — journal or "no discovery". Why ME: 知识捕获
 - [ ] Provenance non-empty (advisory) — ≥1 row per CREATE file. Why ME: 生成可追溯性
 
-Why CE: 产出 + 规格 + 证据 + 版本 + 知识 + 追溯 — 六个独立 artifact。
+Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 — 七个独立 artifact。
 
 ## Gate 4: Business Acceptance
 **Owner:** Alex | **When:** After Gate 3 passes

@@ -1,0 +1,12 @@
+# Ralph Loop state — evidence-replayability-check (2026-08-04)
+task_id: evidence-replayability-check
+handoff: .tad/active/handoffs/HANDOFF-20260804-evidence-replayability-check.md
+current_iteration: 0
+layer1_retries: 0
+layer2_rounds: 0
+last_completed_layer: null
+last_error_category: null
+consecutive_same_error: 0
+reflection_count: 0
+last_reflection_summary: ""
+escalation_assessment: ""
