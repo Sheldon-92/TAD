@@ -1,0 +1,28 @@
+========== AC1 落地命令整行逐字 ==========
+AC1 完毕
+========== AC2 节外内容与 BASE 逐字节相同 ==========
+AC2 完毕
+========== AC3 两节逐字节相同且仍在 ## Forbidden 前 ==========
+AC3 完毕
+========== AC4a 命令级八场景 ==========
+AC4a 完毕（旧命令对照见 old-cmd-ac4a.txt / new-cmd-ac4a.txt）
+========== AC4b 约定级（僵旗）：就地转终态后静默 ==========
+AC4b 完毕
+========== AC5 正向对照：真超期必须仍被抓，基线纯净 ==========
+AC5 完毕
+========== AC6 台账：0 数据行 + 前言同步 ==========
+AC6 完毕
+========== AC7 tracked 围栏 ==========
+.tad/research-notebooks/REGISTRY.yaml
+AC7 完毕（新增 tracked 经授权集过滤后：1 条命中）
+========== AC8 untracked 围栏 ==========
+AC8 完毕（新增 untracked 经授权集过滤后：0 条命中）
+========== AC9 .agents/ 镜像 ==========
+=========================================
+PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
+  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+=========================================
+  ✅ .claude/skills <-> .agents/skills byte-identical
+VERDICT: parity PASS (exit 0)
+AC9 完毕
+========== post-impl 全部 AC 执行完毕 ==========

@@ -416,21 +416,32 @@ mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ 
 - NO-CARRIER           已主动搜索确认无载体（P2/P3 砍除名单来源）
 - PROVISIONAL: review-by {YYYY-MM-DD}   载体待补，期限 = 记录日 +90 天
 - SUPERSEDED           有载体但已被更高层裁定退场（载体仍填载体路径列）
-- RETIRED              已删除该约束（追加行，不擦除原行）
+- RETIRED              已删除该约束（原行状态列就地转移为本值；处置理由另追加一行）
 - N/A: {原因}          该节无约束条目
 
 到期复查（追加台账行前的强制前置动作）：
 往台账追加任何行之前，先跑一次超期扫描，有超期行先处置再追加——
 
-  awk -v t="$(date +%F)" '/review-by/ {
-    if (match($0, /review-by [0-9-]+/)) {
-      d = substr($0, RSTART+10, 10); if (d < t) print "OVERDUE: " $0 } }' \
+  awk -v t="$(date +%F)" '/[Pp][Rr][Oo][Vv][Ii][Ss][Ii][Oo][Nn][Aa][Ll][:：]?/ {
+    if (match($0, /PROVISIONAL: review-by [0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]*\|?[[:space:]]*$/)) {
+      d = substr($0, RSTART+23, 10); if (d < t) print "OVERDUE: " $0 }
+    else print "MALFORMED(须人工处置): " $0 }' \
     .tad/evidence/audits/lite-constraint-ledger.md
 
-（此处 awk 只比较 ISO 日期，纯 ASCII，不受本机 awk 的中文比较缺陷影响——勿改成别的写法。）
+（前置过滤大小写不敏感且容忍全/半角冒号：else 逃逸检测只兜住"进了过滤器后解析失败"的行，
+被前置过滤滤掉的行根本到不了它——全角冒号在中文台账里是最可能的手滑。
+主正则只匹配半角 PROVISIONAL: 前缀：摘要列写到 review-by 字样不假阳性，转终态后自然静默。
+else 分支显式报 MALFORMED 不静默丢弃——假阴性比假阳性坏得多。
+前置过滤刻意不加 || /review-by/：那会把摘要含该字样的合法行变噪音，等于请回假阳性。
+状态列须为末列；正则容忍缺尾管道与尾随 TAB。正则须字面量内联，经 -v 传入会丢转义。
+需 awk 支持 ERE interval 量词 {n}（macOS 2021+ / gawk / mawk 均可）；不支持时全部行报
+MALFORMED——吵而不静默，方向正确但下游会误以为台账全坏。
+awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——勿改成别的写法。）
 
-扫描结果（有/无超期）随该次追加一并写进备注列或 Completion——
+扫描结果（有/无超期）随该次追加一并写进 Completion——
 否则事后无法区分"扫过、确认无超期"与"根本没扫直接追加"。
+台账列序固定：状态列恒为末列，不得在其后新增列（扫描锚点依赖此不变量；
+确需备注列须加在状态列之前）。
 
 没有后台自动机制：本框架不声称任何 hook / session 级触发。触发点只有两个——
 上述"追加前先扫"，以及各 Epic phase 起草新 handoff 前的人工扫描。
@@ -448,9 +459,17 @@ mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ 
 反合理化（复查侧）：把"这条明显还需要""有隐性证据只是没写下来""太重要不能删"
 视为跳过默认删除动作的信号，而不是保留的正当理由。保留（改判 HAS-CARRIER / SUPERSEDED）
 必须附可 grep 验证的新增载体，否则一律执行 RETIRED。
+禁止静默续期：不得就地把 review-by 改成更晚的日期——展期必须新起一行并写明理由，
+使"又拖了一次"在台账上可见。
 
 本节自身也须在台账中占一行（闸付自己的通行费）。
-台账自身的增长豁免于本节纪律——append-only 是为审计可追溯，不得以"清理台账"擦除历史行。
+台账自身的增长豁免于本节纪律。可追溯性保在两处：理由三格（每单成本 / 挡什么失败模式 /
+载体路径）一经写下不再改；处置时另追加一行并把原期限带进去
+（**只写日期，不要重复 PROVISIONAL 字样——会触发 MALFORMED 误报**）。
+状态列允许就地转移，但**仅限转为终态（HAS-CARRIER / NO-CARRIER / SUPERSEDED / RETIRED）**
+——不转移会让已处置的行永远被报超期（僵旗）；`N/A` 与再发 PROVISIONAL 均不是终态，不得由此转入。
+改判 HAS-CARRIER / SUPERSEDED 时，新载体写进追加的处置行，不改原行的载体路径格。
+不得以"清理台账"删除历史行。
 
 ## Forbidden
 
