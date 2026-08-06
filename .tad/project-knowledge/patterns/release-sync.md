@@ -9,6 +9,20 @@
 - **Action**: For every mirror/sync/parity tool, make the exclusion set include the source side's ignored-by-contract subtrees (e.g., rsync `--exclude local/`), AND add matching ignore rules on the destination side as defense-in-depth. Whenever a "never distribute" contract is attached to a path, sweep every mirror/copy loop that touches its parent tree — the same every-granularity discipline as the L1 deny-list principles (2026-06-01), extended to ignore semantics.
 - **failure_mode**: Naive default: trust that gitignored content stays private because the source path is ignored, then mirror the parent tree wholesale. Why wrong: gitignore semantics are path-specific — the mirrored copy at the destination has no ignore rule, so private-by-contract content silently becomes trackable/publishable in the destination tree, converting an isolation contract into a publication vector.
 - **Grounded in**: .tad/evidence/journal/memory-redirect-capture-layer-2026-07-12.md finding 1, .tad/hooks/lib/release-verify.sh (parity), .gitignore (`.agents/skills/local/` entry)
+- **AMENDED 2026-08-06 — the "ROOT FIX STILL OPEN" note is obsolete; both layers are now closed**:
+  verified in place on 2026-08-06 — `.gitignore:16` ignores `.agents/skills/local/` (destination-side
+  defense), and `.tad/hooks/lib/release-verify.sh:681` now runs
+  `rsync -a --delete --exclude=/local/ …` (tool-side exclusion). **The git-visibility hazard this
+  entry describes is closed.** What remains is narrower and must be stated separately: a *bare*
+  `rsync` (not via the parity tool) still materializes private `local/` content into the working
+  tree of a public repo — invisible to `git status` precisely because of the ignore rule that fixes
+  the other half. A guard against whole-tree copying must therefore test the **filesystem**
+  (`diff -rq`, `test ! -e`), never `git status`.
+  ⚠️ **Why this amendment matters beyond the fact**: on 2026-08-06 a contract cited this entry's
+  headline to justify a guard, missed the mitigation clause, and consequently built an AC against
+  the already-fixed hazard — one with zero discriminative power against the live residual risk.
+  See `ac-verification.md` §`Before Trusting a Guard, Measure Whether Its Trigger Condition Can
+  Even Occur`. Read cited entries to the end.
 
 ### Identity Early-Exits Blind Downstream Checks: Content Guards Must Run Before Byte-Parity Short-Circuits and Match All Serialization Forms - 2026-08-03
 - **Context**: codex-wiring-stopbleed. `release-verify.sh parity` exited 0 as soon as `.claude/skills` and `.agents/skills` were byte-identical — but "byte-identical" includes "identically broken": 36 platform-coupled `reference: ".claude/skills/…"` lines survived a month inside a green parity gate because both trees carried the same bad content. A naive mutation probe (inject bad line into one tree) proved nothing: it broke byte-identity, so the pre-existing diff check FAILed and masked whether the new content guard even ran. Second layer: the guard initially matched only double-quoted `reference: "…"` values; single-quoted and bare YAML forms would have passed.
