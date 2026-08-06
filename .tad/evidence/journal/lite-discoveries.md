@@ -2,3 +2,4 @@
 - 2026-07-31 [express-lite-capability-complete] 负向 regex AC 同时约束"禁令的措辞"——禁令句里含被禁子串会自踩 AC；写法上把触发词与被禁子串拆到不同行/换词，落盘前先对候选措辞空跑该 regex
 - 2026-07-31 [lite-core-closure] 行为场景 prompt 必须自带逐动作 logging 指令（写死 ACTION 格式），否则 transcript 无法机判顺序类 AC；"两对镜像都定义 X" 要先展开成 4 文件清单再实现
 - 2026-08-02 [model-provenance] Agent tool reports intermittently fail to auto-deliver to main session (idle notification arrives, report doesn't) — happened 4/4 times this session across code-reviewer/config-manager/audit agents; SendMessage retrieval request recovers the full report every time. Pattern: spawn → idle → SendMessage ask → report arrives.
+- 2026-08-05 [p4-measurements] 机械验证脚本自身三连坑（zsh 双引号内反引号被命令替换、awk 正则 `|` 未转义被当 alternation、lastnb 变量时序）——验证工具本身也要 dry-run；附录代码块提取须取第一/第二 ``` 之间（状态机 c==1 才 print）
