@@ -219,16 +219,13 @@ TAD integrates with 16 Claude Code sub-agents:
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
 ## TAD v2.39.0 Highlights
-- **Lite / Standard / Full routing profiles**: Lite is the default workhorse; Standard adds depth when needed; Full owns safety, protocol-contract, and fatal-operation boundaries.
-- **Shared route contract**: Claude Code and Codex use `.tad/routing-contract.yaml` for route preflight, approval/revision state, and enforcement.
-- **No automatic ceremony escalation**: task length, file count, or detail alone does not force an upgrade; risk and explicit routing rules do.
-- **Independent depth selection**: design and execution can use different profiles while preserving the shared knowledge and evidence contract.
+- **No automatic ceremony escalation**: task length, file count, or detail alone does not force an upgrade; risk does.
 - **Default dual-platform installation**: fresh installs and upgrades without `--platform` install both Claude Code and Codex entry points; explicit platform overrides remain available.
 - **TAD Lite v1.1**: symmetric dual reviewers — alex-lite L2.5 contract review (every task, AC-executability matrix) + blake-lite L3 impl review; blake L0.5 mechanically verifies the contract WAS reviewed (fail-closed)
 - **Driven by first real-world use**: a design-time AC-principal defect survived self-review to the last gate → design-time review restored as a real spawn (no self-review substitution, behavioral-dogfood verified)
 - **Design-side depth**: L1 goal-anchor question + pre-write solution sketch; single-step user-gated AC protocol; 7-state status vocabulary; 6-condition autonomous fix (impl code only)
 - **Cost**: ~35K tokens/cycle estimated with dual reviewers (v1.0 measured 23K; still ~1/10 of full TAD's 300K-1M)
-- **Lite channel basics (since v2.35)**: one-page LITE contract, escalation valve (SAFETY/protocol/fatal → full TAD, fail-closed), lifecycle = location, byte-identical Codex `.agents` mirrors
+- **Lite channel basics (since v2.35)**: one-page LITE contract, safety stop (irreversible ops / SAFETY surface / global registration → stop and ask), lifecycle = location, byte-identical Codex `.agents` mirrors
 
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues

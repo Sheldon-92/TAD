@@ -8,9 +8,9 @@
 
 - [ ] **②a Layer 1 硬编码 npm/node，最多重试 15 次** — `blake/SKILL.md:903–909` 的 `2_layer1_loop.commands` 逐字为 `npm run build` / `npm test` / `npm run lint` / `npx tsc --noEmit`，`description: "Self-Check Loop (max 15 retries)"`。**非 JS 项目上这四条结构性不可能成功**，循环会重试到 15 次（Python/Go/文档项目全中）。⚠️ **修法已在同仓库存在**：`gate/SKILL.md:160–162` 逐字 `Gate 3 no longer hardcodes tsc/test/lint — those become Alex-generated §9.1 AC rows. The Gate executes whatever §9.1 declares.` —— Gate 3 已改 AC 驱动，**Layer 1 被落下**。同病治了一半。**最高优先级**：反兼容 + token 浪费 + 有现成范式。
 
-- [ ] **②b 从 lite 移除档位强制** — `alex-lite`/`blake-lite` 各 7 处 `强档`（L236/245/249/251/253/259）。触发面 = `route_level ∈ {standard, full}` 即算生产关键 → alias-mapped 配置下每张 standard 以上的单都走三选一。这正是用户 2026-08-04 推翻的规则，**且活在最常用通道里**。⚠️ 与 ②c 互补但方向相反：不是把强制搬进 full，是从 lite 拿掉。
+- [x] **②b ✅ DONE 2026-08-05（EPIC P2+P3）从 lite 移除档位强制** — `alex-lite`/`blake-lite` 各 7 处 `强档`（L236/245/249/251/253/259）。触发面 = `route_level ∈ {standard, full}` 即算生产关键 → alias-mapped 配置下每张 standard 以上的单都走三选一。这正是用户 2026-08-04 推翻的规则，**且活在最常用通道里**。⚠️ 与 ②c 互补但方向相反：不是把强制搬进 full，是从 lite 拿掉。
 
-- [ ] **②c full 通道 reviewer 的 model 纪律（去档位强制版）** — 契约 v3 已写：`.tad/active/handoffs/HANDOFF-20260804-full-reviewer-tier-rule.md`。保留禁 model 覆盖（alias-mapped 上无效且污染证据）、禁 SKU 硬编码、档位以实际自报为准、经济档 advisory 留痕。**Gate 2 需重审**（v3 是重写：规则块 8 键→6 键，语义从"强制"变"纪律+advisory"）。v1/v2 的 8 个 P0 处置与继承修复见契约 §8。
+- [x] **②c ❌ 作废 2026-08-05——契约已归档 withdrawn/（lite 档位规则已删、full 待 P6 退场，三重失效）full 通道 reviewer 的 model 纪律** — 契约 v3 已写：`.tad/active/handoffs/HANDOFF-20260804-full-reviewer-tier-rule.md`。保留禁 model 覆盖（alias-mapped 上无效且污染证据）、禁 SKU 硬编码、档位以实际自报为准、经济档 advisory 留痕。**Gate 2 需重审**（v3 是重写：规则块 8 键→6 键，语义从"强制"变"纪律+advisory"）。v1/v2 的 8 个 P0 处置与继承修复见契约 §8。
 
 - [ ] **②d 依赖 pyyaml** — `blake/SKILL.md:1247` 指导 §9.1 用 `python3 -c 'import yaml; yaml.safe_load(...)'`；本机实测 `ModuleNotFoundError`（今日验证 2 次）。按该指导写的 AC 必 FAIL。改为 ruby/无依赖方案或标注可选。
 
@@ -18,7 +18,7 @@
 
 **📌 判断依据（②a/②e 共同形状）**：改一个机制时**去找它的兄弟位置**。Gate 3 改了 Layer 1 没改；reviewer 读取有界了 Blake 自己没界；lite 有护栏 full 没有（今日三次同形）。修复没横向扫干净 = 病灶原地转移。
 
-- [ ] **②（原）移植 lite 的 reviewer 档位规则到 full** — ⚠️ **前提已被用户推翻，见 ②b/②c** — 实测 `grep -c '强档\|Reviewer 档位'`：`blake-lite` 8 处 / `alex-lite` 8 处 / **`blake` 0 处 / `alex` 0 处**。full 通道完全没有「按能力档位不按 SKU」「alias-mapped 路由走三选一」「REVIEWER-TIER-DEGRADED 记录」这套规矩 → full Blake 在规则真空里即兴发挥，抓 SKU 名往上套（2026-08-04 实测事故）。⚠️ 框架本身零 SKU 硬编码（词汇通用化单成果保持），问题是 full 缺规则不是 full 有错规则。
+- [x] **②（原）❌ 作废 2026-08-05——被移植的规则本身已删除。移植 lite 的 reviewer 档位规则到 full** — ⚠️ **前提已被用户推翻，见 ②b/②c** — 实测 `grep -c '强档\|Reviewer 档位'`：`blake-lite` 8 处 / `alex-lite` 8 处 / **`blake` 0 处 / `alex` 0 处**。full 通道完全没有「按能力档位不按 SKU」「alias-mapped 路由走三选一」「REVIEWER-TIER-DEGRADED 记录」这套规矩 → full Blake 在规则真空里即兴发挥，抓 SKU 名往上套（2026-08-04 实测事故）。⚠️ 框架本身零 SKU 硬编码（词汇通用化单成果保持），问题是 full 缺规则不是 full 有错规则。
 
 - [ ] **③ 移植 lite 的无条件轮次上限到 full** — lite 有 `repair_round 3/3`（不看错是否相同）+ 跨压缩持久化 + 「重置计数逃避熔断」列入违规清单；full 只有 error-shaped 的 `consecutive_same_error>=3`，错不重样就永远归零。⚠️ **窄化做**：2026-08-04 曾按三 FR 大单设计，4 轮 Gate 2 / 8 名专家 / 26 个 P0 / 零交付，四版都栽在同一处（要计的往返发生在 TAD 协议未建模的区域）。完整分析封存于 `.tad/archive/handoffs/blocked/HANDOFF-20260804-gate-loop-circuit-breaker.md` —— 重做前先读它，关键洞察是 lite 的免疫来自 **boundary-append**（阶段边界枚举、与成败无关）而非「3 轮」这个数字。
 

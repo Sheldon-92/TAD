@@ -1,0 +1,158 @@
+===== 预实现判别力自检 2026-08-06T01:43:11Z =====
+
+--- AC1 (期望 PASS——围栏) ---
+  OK   .claude/skills/alex-lite/SKILL.md  178行(期望178) 13b0b87bb2412d81244979c47dc202a1
+  OK   .claude/skills/blake-lite/SKILL.md  251行(期望251) 0afa760c84d60bbbf5b018efd749cd5b
+AC1 PASS
+
+--- AC1b (期望 PASS——围栏) ---
+  OK   AGENTS.md 非路由节 135行(期望135) 9862c78301ed4e7d170f036a259e1462
+  OK   INSTALLATION_GUIDE.md 非路由节 140行(期望140) f9b8bd543cee31341bc041cd524159b1
+  OK   CLAUDE.md 除 §2.5 标题+首行 109行(期望109) c358c0c0c0bcd49602b43509c77f91c6
+  OK   .claude/skills/tad-help/SKILL.md 除 5 行 231行(期望231) dfd2ba7abd2c8a002132da9dc28218f1
+  OK   .agents/skills/tad-help/SKILL.md 除 5 行 231行(期望231) dfd2ba7abd2c8a002132da9dc28218f1
+AC1b PASS
+
+--- AC2 (期望 FAIL——负向锚全命中) ---
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '## Route Contract' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'R0 — Route preflight' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'RouteDecision' ×3
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'route_level' ×3
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'blocked_missing_contract' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'blocked_stale_revision' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'escalated_full' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'design_depth' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'execution_depth' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'F0_FATAL' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'F1_GOVERNANCE' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'Standard is a profile' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'routing-contract.yaml' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'escalated_review' ×12
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'escalated' ×17
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '额度出口' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '升级清单' ×7
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '转 full TAD' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '### Reviewer 档位规则' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '强档' ×7
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'REVIEWER-TIER-DEGRADED' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'Model 行捕获纪律' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'Model 行纪律' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 '格式同 Model 行' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'default_subagent_model' ×2
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'CODEX_HOME' ×1
+  AC2 FAIL [.claude/skills/alex-lite/SKILL.md] 残留 'alias-mapped' ×4
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 '## Route Contract' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'R0 — Route preflight' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'RouteDecision' ×4
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'route_level' ×3
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'blocked_missing_contract' ×2
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'blocked_stale_revision' ×2
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'escalated_full' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'design_depth' ×2
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'execution_depth' ×2
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'F0_FATAL' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'F1_GOVERNANCE' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'Standard is a profile' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'routing-contract.yaml' ×2
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'escalated_review' ×9
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'escalated' ×11
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 '升级清单' ×3
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 '转 full TAD' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 '### Reviewer 档位规则' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 '强档' ×7
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'REVIEWER-TIER-DEGRADED' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'Model 行捕获纪律' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'Model 行纪律' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'default_subagent_model' ×3
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'CODEX_HOME' ×1
+  AC2 FAIL [.claude/skills/blake-lite/SKILL.md] 残留 'alias-mapped' ×4
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '## Route Contract' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'R0 — Route preflight' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'RouteDecision' ×3
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'route_level' ×3
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'blocked_missing_contract' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'blocked_stale_revision' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'escalated_full' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'design_depth' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'execution_depth' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'F0_FATAL' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'F1_GOVERNANCE' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'Standard is a profile' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'routing-contract.yaml' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'escalated_review' ×12
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'escalated' ×17
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '额度出口' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '升级清单' ×7
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '转 full TAD' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '### Reviewer 档位规则' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '强档' ×7
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'REVIEWER-TIER-DEGRADED' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'Model 行捕获纪律' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'Model 行纪律' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 '格式同 Model 行' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'default_subagent_model' ×2
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'CODEX_HOME' ×1
+  AC2 FAIL [.agents/skills/alex-lite/SKILL.md] 残留 'alias-mapped' ×4
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 '## Route Contract' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'R0 — Route preflight' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'RouteDecision' ×4
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'route_level' ×3
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'blocked_missing_contract' ×2
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'blocked_stale_revision' ×2
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'escalated_full' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'design_depth' ×2
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'execution_depth' ×2
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'F0_FATAL' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'F1_GOVERNANCE' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'Standard is a profile' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'routing-contract.yaml' ×2
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'escalated_review' ×9
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'escalated' ×11
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 '升级清单' ×3
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 '转 full TAD' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 '### Reviewer 档位规则' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 '强档' ×7
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'REVIEWER-TIER-DEGRADED' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'Model 行捕获纪律' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'Model 行纪律' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'default_subagent_model' ×3
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'CODEX_HOME' ×1
+  AC2 FAIL [.agents/skills/blake-lite/SKILL.md] 残留 'alias-mapped' ×4
+  AC2 FAIL [AGENTS.md] 残留 'Lite / Standard / Full Routing' ×1
+  AC2 FAIL [AGENTS.md] 残留 'Standard 是深度配置' ×1
+  AC2 FAIL [AGENTS.md] 残留 '当前建议' ×1
+  AC2 FAIL [.claude/skills/tad-help/SKILL.md] 残留 'routing profiles' ×1
+  AC2 FAIL [.claude/skills/tad-help/SKILL.md] 残留 'Shared route contract' ×1
+  AC2 FAIL [.claude/skills/tad-help/SKILL.md] 残留 'escalation valve' ×1
+  AC2 FAIL [.claude/skills/tad-help/SKILL.md] 残留 'Independent depth selection' ×1
+  AC2 FAIL [.claude/skills/tad-help/SKILL.md] 残留 'different profiles' ×1
+  AC2 FAIL [.claude/skills/tad-help/SKILL.md] 残留 'explicit routing rules' ×1
+  AC2 FAIL [.agents/skills/tad-help/SKILL.md] 残留 'routing profiles' ×1
+  AC2 FAIL [.agents/skills/tad-help/SKILL.md] 残留 'Shared route contract' ×1
+  AC2 FAIL [.agents/skills/tad-help/SKILL.md] 残留 'escalation valve' ×1
+  AC2 FAIL [.agents/skills/tad-help/SKILL.md] 残留 'Independent depth selection' ×1
+  AC2 FAIL [.agents/skills/tad-help/SKILL.md] 残留 'different profiles' ×1
+  AC2 FAIL [.agents/skills/tad-help/SKILL.md] 残留 'explicit routing rules' ×1
+  AC2 FAIL [INSTALLATION_GUIDE.md] 残留 '## Lite / Standard / Full 路由' ×1
+  AC2 FAIL [INSTALLATION_GUIDE.md] 残留 '涉及安全、协议契约或致命操作时进入 Full' ×1
+  AC2 FAIL [INSTALLATION_GUIDE.md] 残留 'routing-contract.yaml' ×1
+  AC2 FAIL CLAUDE.md 旧 §2.5 残留
+  (负向计数至此；正向锚跳过——零改动仓库正向必在)
+AC2 FAIL
+
+--- AC3 (期望 FAIL) ---
+  AC3 FAIL .claude/skills/alex-lite/SKILL.md  16 行(期望7) md5=4c55bcb6563f24dc78449fb19ff76067
+  AC3 FAIL .claude/skills/blake-lite/SKILL.md  16 行(期望7) md5=4c55bcb6563f24dc78449fb19ff76067
+  AC3 FAIL .agents/skills/alex-lite/SKILL.md  16 行(期望7) md5=4c55bcb6563f24dc78449fb19ff76067
+  AC3 FAIL .agents/skills/blake-lite/SKILL.md  16 行(期望7) md5=4c55bcb6563f24dc78449fb19ff76067
+AC3 FAIL
+
+--- AC4 (期望 FAIL——未删) ---
+  .claude/skills/alex-lite/SKILL.md: 435 行 / 29685 字符
+  .claude/skills/blake-lite/SKILL.md: 493 行 / 34365 字符
+  两 skill 合计: 64050（期望 44,000–47,000）
+  AC4 FAIL 合计 > 47,000
+AC4 FAIL
+
+--- AC5 (期望 PASS——HEAD 锚) ---
+AC5 PASS

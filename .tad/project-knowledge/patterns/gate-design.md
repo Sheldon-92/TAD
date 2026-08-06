@@ -115,6 +115,14 @@
 - **Grounded in**: HANDOFF-20260730-tad-lite-channel.md §11 Decision Summary, .claude/skills/alex-lite/SKILL.md + blake-lite/SKILL.md, .tad/evidence/acceptance-tests/tad-lite-channel/dogfood/cost-evidence.md, .tad/evidence/journal/tad-lite-channel-2026-07-30.md
 - **AMENDED 2026-07-30（同日）**: 首个真实 LITE 单证伪'设计期审查仅是 cheap-rework insurance'——契约缺陷（AC principal）产自设计期、穿透实现侧自审、存活至最后一道 gate。修正 Action：lite 每单增加 1 名设计侧契约 reviewer（alex-lite L2.5），与实现侧 L3 对称。证据：HANDOFF-20260730-lite-v11-quality-amendments.md、2026-07-30-lite-vs-full-quality-comparison.md。
 
+- **AMENDED 2026-08-05**: 原 Action 里的「escalation valve (SAFETY/protocol/fatal → full TAD,
+  fail-closed)」**已随 EPIC-20260804 P2+P3 移除**——lite 不再有「转 full」分支，取而代之的是
+  **安全停清单**（不可逆操作 / SAFETY 面 / 全局注册面 → **停下来问人**，不换通道）。
+  本条其余部分（fresh-context reviewer 是承重属性、设计期 + 实现后各 1 名不可省）**未变且仍有效**——
+  它们正是砍掉路由机器之后 lite 仅存的质量内核。
+  依据：`P1b-deep-verdicts.md`（escalation valve 判 NO-CARRIER）、
+  `HANDOFF-20260805-cut-routing-machinery.md` §3.3。
+
 ### YOLO Worktree Isolation Produces False-FAIL Reviews — Reviewers Must Ground in the Tree the Implementer Wrote To - 2026-07-05
 - **Discovery**: When a yolo-epic run executes the implement agent inside a git worktree (`.claude/worktrees/wf_*-N/`) but the impl reviewers inspect the main repo, every worktree-isolated task gets judged "implementation absent" — a false FAIL hit 3 separate times in the 2026-07-05 surplus burn (~6M tokens). The deliverables existed; they lived in the worktree, not the main tree. Two sibling failures from the same session: (a) surplus-execute counted a task "executed" whenever yolo-epic returned without error, ignoring `impl_review_p0_count` — "executed" ≠ "review PASS"; (b) round-2 review of P0 fixes caught NEW defects introduced by the fixes themselves (AC13 unit mismatch, sed recipe bug) — 2 independent reviewers converging = real defect, not review inflation.
 - **Action**: Any review/verification step in a multi-agent pipeline must receive the working-tree PATH the implementer used (the worktree dir), never assume repo root. The Conductor must read the review VERDICT (P0 count), not the runner's exit status, before counting a task done. Merge worktree deliverables to main before dispatching follow-on tasks that assume main-tree state. Re-review fixes with the same independence as the original implementation.
@@ -153,6 +161,15 @@
 - **Grounded in**: .tad/evidence/journal/evidence-replayability-check-2026-08-04.md (reviewer-tier),
   .tad/evidence/reviews/blake/evidence-replayability-check/{code-reviewer,spec-compliance}.md Model lines,
   .claude/skills/blake-lite/SKILL.md Reviewer 档位规则
+
+- **AMENDED 2026-08-05**: 本条描述的「reviewer 档位规则」（强档判定 / alias-mapped 三选一 /
+  `REVIEWER-TIER-DEGRADED` / `route_level: full` 触发面）**已随 EPIC-20260804 P2+P3 整节删除**，
+  台账记 `SUPERSEDED`（有真载体，被用户 2026-08-04 裁定退场，非无依据）。
+  **核心洞察未废、且脱离该规则独立成立**：聚合中转下 `model` 参数是"请求"不是"出身证明"，
+  provenance 必须读 reviewer 的自报。现行 lite 只保留一行 Model 自报（`harness / model / route`），
+  这条洞察正是那一行存在的理由。
+  依据：`.tad/evidence/audits/lite-constraint-ledger.md` 2026-08-05 三行、
+  `HANDOFF-20260805-cut-routing-machinery.md` §3.2 + §6.2。
 
 ### When Implementation Is Byte-Correct and the SPEC Is Wrong, the Executor Must Escalate — and Conditional Release Turns on Whether the Defect's Trigger Surface Exists Yet - 2026-08-05
 - **Context**: P1a of the lite-as-TAD-body Epic. Blake's implementation matched the contract's §4.1 spec block byte-for-byte (verified by the spec-compliance reviewer's byte diff — the only delta a trailing blank line, not a protected literal), and all 8 ACs passed. The independent code-reviewer nonetheless returned CONDITIONAL with two P1s: the spec's own overdue-scan command matched whole lines rather than the status column, so (a) an append-only ledger's superseded PROVISIONAL row stays flagged forever and (b) any row whose summary cell merely *mentions* a date is a false positive. Alex reproduced both from a synthetic ledger at Gate 4.

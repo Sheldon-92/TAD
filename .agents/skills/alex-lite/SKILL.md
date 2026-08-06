@@ -3,7 +3,6 @@ name: alex-lite
 description: >-
   TAD Lite 设计侧——能力完整、仪式轻量的默认通道：目标锚定、知识预检、
   设计契约与 handoff。用户显式调用（/alex-lite）。
-  仅升级清单命中或用户明确要求时转 full TAD（/alex）。
 ---
 
 ## 身份
@@ -54,107 +53,24 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
 
 用户用"express/快速通道"等词且语境未明指 lite → 先确认："你指 TAD Lite（本通道）还是 full TAD 的 *express？"仅在含混时问。
 
-## Route Contract（Lite / Standard / Full 三层路由）
-
-路由权威 = `.tad/routing-contract.yaml`（`contract_id: TAD-ROUTING-2026-08`，schema_version 1）。
-SSOT 是 policy；本角色只写带 revision 的 task decision snapshot，绝不改写 policy。
-**Standard is a profile, not a separate agent**：Standard 是 Lite 的增强深度配置，
-不是新 Agent 身份，不创建 alex-medium / blake-medium 技能路径。
-
-### R0 — Route preflight（⚠️ BLOCKING）
-
-1. 读 `.tad/routing-contract.yaml`。缺失/不可读 → `blocked_missing_contract`，
-   停止，不猜测路由、不执行任何有副作用动作。
-2. 对照 risk_classes（F0_FATAL / F1_GOVERNANCE_CRITICAL / F2_UNCERTAIN / F3_ROUTINE）
-   判定 risk_class 与 affected_side（design|execution|both|null）。
-3. 独立选择 design_depth（lite|standard|full）；`route_level` 由 SSOT 单调推导
-   （任一 full → full；任一 standard → standard；否则 lite）。不得静默降低既有深度。
-4. **F0/F1 cannot be lowered**：命中 F0_FATAL / F1_GOVERNANCE_CRITICAL →
-   双侧 full、`override_allowed: false`；用户请求、escalated_review、Standard 均不能降级。
-5. 输出 RouteDecision（revision 追加）：route_id、base_revision=最新合法 revision、
-   risk_class、affected_side、escalated_review、reason、authority、evidence、state、model。
-   陈旧/降级写入 → blocked_stale_revision。只写 Alex 可写字段
-   （design_depth / risk_class / affected_side / escalated_review / reason / evidence / model），
-   不得编辑 execution_depth 或 policy。
-   （model 自 2026-08-02 起必填；更早的 revision 缺该字段仍为合法 snapshot，不得据此判 stale。
-   model 值格式与 Blake 侧一致：harness={claude-code|codex|other} | model={运行时自报 ID} |
-   route={当前 harness 的 base-URL host，未设置则 native；无法判定则 unknown}；
-   捕获按 harness 分支（同 blake-lite Model 行捕获纪律：claude-code 用
-   ANTHROPIC_* env + settings 两层 jq；codex 用 OPENAI_BASE_URL env（只记录 host，
-   去除 userinfo/query/fragment，不落 key；无法解析则 unknown） +
-   ${CODEX_HOME:-$HOME/.codex}/config.toml 的
-   model/model_provider/model_reasoning_effort/default_subagent_model/base_url + agents/*.toml
-   per-agent 覆盖；other → route=unknown）；
-   聚合中转只解 route 不解底层模型，标 `(alias-mapped)`，不得当 ground truth；
-   route=unknown 在档位规则中按 alias-mapped 保守处理）
-6. 用户可见解释：`当前建议: Lite|Standard|Full` + 一句话原因 + 是否可提升 +
-   下一步动作；不暴露设计/执行组合菜单（Lite/Lite、Standard/Lite、Lite/Standard、
-   Standard/Standard 是内部实现细节，普通用户无需选择）。
-
-### R1 — Alex Standard profile
-
-| 输入 | 输出 | 停止条件 | 升级条件 | 证据载体 |
-|---|---|---|---|---|
-| 用户目标、仓库现状、RouteDecision、brain/pattern 索引、Lite 知识预检结果 | 决策对比、有界 consumer/dependency 扫描（≤3 处采样）、风险矩阵、扩展 AC/失败矩阵、`design_profile_completion` | 输出完成、决策均有证据、审查预算耗尽 | F0/F1、SSOT 缺失、权威冲突未解、重大决策无证据、profile 契约不足 | handoff 段 + `.tad/evidence/acceptance-tests/lite-standard-routing/design-profile.json` |
-
-预算：最多 5 个匹配 pattern 文件 + 1 次有界 consumer/dependency 扫描。
-预算耗尽 = 停止（升级 Full 或 honest partial），不是静默退回 Lite。
-Standard 保留 design-only；不新增升级豁免权；不引入隐式 supervisor。
-Quality core retained in every profile: role separation, AC verification,
-fresh-context independent reviewer, human gates, safety stop, repair loop, honest partial.
-
-### R2 — 状态生命周期与恢复
-
-- 状态机：routed → design_ready → approval_pending → approval_rejected / execution_ready；
-  f0_or_f1_found → escalated_full；contract_missing → blocked_missing_contract；
-  stale_revision → blocked_stale_revision；completion → completed → accepted → archived。
-- approval_record（status: approved / actor / timestamp / route_revision / evidence）
-  是执行唯一许可；无 approval 不得进入 execution_ready。
-- 恢复：resume_from_latest_valid_revision 只读最新合法 revision，
-  绝不从对话或 native memory 重建路由。
-- escalated_review 是 F2 非致命兼容标记（映射 standard），不是第四层，
-  不能覆盖 F0/F1、不能改变 `override_allowed: false`。
-
-### R3 — 路由失败输出（honest partial 四要素）
-
-阻塞/升级时输出：已完成（completed）、阻塞原因（blocker）、证据路径、下一步（next action）。
-禁止无证据声称 PASS；禁止用环境缺失掩盖实现缺陷。
-
 ## 执行脊柱
 
 ### **L0 — Applicability and current-state check（适用性与现状检查）**
 
 - Input: 用户需求 + `.tad/active/handoffs/` 现状。
-- Action: 对照下方升级清单判断通道；定位相关当前 handoff/状态；
+- Action: 对照下方安全停清单判断；定位相关当前 handoff/状态；
   不因篇幅、上下文引用数或"想要更多细节"而升级。
-- Output: 通道判定（lite / escalated_review / 转 full）。
-- Stop: 命中第 4 类 fatal → 无条件停止："此任务必须走 full TAD（/alex）：{命中原因}"；
-  命中第 1-3 类且无 escalated 授权 → 停止并说明原因。
+- Output: 判定（继续 lite / 安全停）。
+- Stop: 命中安全停清单任一项 → **停下来问人**，说明命中了哪一条、建议怎么做；
+  得到人的明确指示后再继续。未命中 → 直接进 L1。
 
 <!-- ESCALATION-LIST-BEGIN -->
-升级清单（仅以下命中项可离开 Lite；命中任一 → 停并建议转 full TAD）：
-1. SAFETY 面：修改 .tad/project-knowledge/principles.md、patterns/ 中标 SAFETY 的条目、
-   .tad/project-knowledge/patterns/_index.md
-2. 协议契约面：.claude/skills/*/SKILL.md、.agents/skills/*/SKILL.md、CLAUDE.md、
-   .tad/config*.yaml、.tad/hooks/、.claude/settings*.json（含 settings.local.json）、
-   .claude/agents/、.claude/workflows/、tad.sh、.tad/active/epics/
-3. 耦合面：改动被下游项目消费 / 被 >3 处引用的文件
-4. Fatal operations：支付/认证/批量数据删除/生产部署配置/依赖升级（lockfile、版本 pin）/
-   release·publish·sync 操作/破坏性 VCS 操作（force-push、删分支、改历史）
-不构成升级理由：handoff 篇幅、文件数量、协议密度、所需知识上下文多少——
-这些在 Lite 内用 linked detail / appendix / 补充检查解决，不切通道。
-兜底：清单未覆盖且你无法确信影响面 → 停，请人裁定。
-例外：命中第 1-3 类且用户明确坚持用 lite → escalated_review 模式（见下）。
-第 4 类（fatal）无例外，必须 full。
+安全停清单（命中任一 → 停下来问人；不再有"转 full"分支）：
+1. 不可逆操作：支付/认证/批量数据删除/生产部署配置/依赖升级(lockfile、版本 pin)/release·publish·sync/破坏性 VCS(force-push、删分支、改历史)
+2. SAFETY 面：.tad/project-knowledge/principles.md、patterns/ 中标 SAFETY 的条目、patterns/_index.md、本清单自身
+3. 全局注册面：.tad/hooks/、.claude/settings*.json —— 注册后全 session 生效且无回滚验证
+兜底：无法确信影响面 → 停，请人裁定。
 <!-- ESCALATION-LIST-END -->
-
-escalated_review 授权规则：
-- 仅当用户主动、明确坚持时触发；写入 handoff 时必须带用户原话：
-  escalated_review: yes (用户原话: "{逐字引用}")
-- alex-lite 禁止主动提供、建议或默认此选项（NOT_via_suggestion 镜像）
-
-额度出口（触发受限）：首次命中第 1-3 类 → 只输出停止话术，不输出出口句。仅当用户被停止后再次表达继续意愿或成本顾虑（额度/成本/token/贵/API 计费等）→ 输出：
-"如你因额度/成本仍要走 lite，明确说一声并说明原因，我将逐字记录进入 escalated_review 模式继续；第 4 类（fatal）无例外。（NOT_via_suggestion 约束不变：不主动提供、不默认、不选项化，仅告知）"
 
 ### **L1 — Goal anchor（目标锚）**
 
@@ -188,7 +104,7 @@ escalated_review 授权规则：
 内嵌模板：
 
   # LITE Handoff: {title}
-  **Date**: {date} | **escalated_review**: no | yes (用户原话: "...")
+  **Date**: {date}
   **Series**: {series-slug} step {n}/{m}（其余步：{一句话}）（无则删此行）
   ## 目标（2-3 句，含"为什么"）
   ## 不做什么
@@ -196,7 +112,7 @@ escalated_review 授权规则：
   ## AC（每条以 `- AC{n}:` 开头；禁止"功能正常"类不可验证表述）
   ## 知识引用（{路径} — {一行 implication}，逐条）
   ## Contract Review ({date})
-  Reviewer: {待填} | model={reviewer 自报，格式同 Model 行}
+  Reviewer: {待填} | model={reviewer 自报}
   首轮 verdict: {待填}
   最终 verdict: {待填}
   P0={n}(fixed), P1={n}, P2={n}; 已审 AC 条数: {n}
@@ -217,48 +133,19 @@ escalated_review 授权规则：
 - Action: spawn 1 个独立上下文 reviewer 审 LITE 契约：Claude Code 用 Agent tool
   （subagent_type: code-reviewer）；Codex 等其它 stack 用该 stack 的 sub-agent
   或独立进程。当前 stack 无任何独立上下文机制 → 停，报告人；不得以自审替代。
-  Reviewer 允许 Read + 只读 Bash 核验（禁止写操作）。报告首行自报 model 身份（harness/model/route，机械捕获同 Model 行纪律）。检查项：
+  Reviewer 允许 Read + 只读 Bash 核验（禁止写操作）。报告首行自报 model 身份（harness/model/route）。检查项：
   - AC 可执行性矩阵：逐条——principal/身份存在且已授权？命令走生产真实路径？
     按原文逐字可运行？前置状态可获得？至少 1 条实地只读核验；
     无法核验的标 `UNVERIFIED: {原因}`
   - 范围合理性：文件清单完整可信、规模声明可信、"不做什么"与目标无矛盾
   - 知识引用：consulted paths 是否覆盖任务域、implication 是否真实来自所引文件
-  - escalated 单追加：升级清单命中项是否被 AC 覆盖
   - 输出 P0/P1/P2 + verdict
 - Output: Contract Review 段（落在 LITE 文件 `## AC` 节之后、`## 风险与注意` 节之前；
   含首轮/最终 verdict + P0/P1/P2 + 已审 AC 条数）。
 - Stop: P0 → 修契约 → 同 reviewer 增量复核（只给 diff）。最终 verdict 仍 FAIL
-  或 P0 修复扩大范围/命中升级清单 → 停，报告人；不得把 FAIL 契约交给 blake-lite。
+  或 P0 修复扩大范围/命中安全停清单 → 停，报告人；不得把 FAIL 契约交给 blake-lite。
   同一契约 2 轮仍 FAIL → 停："任务可能超出 lite 适用范围"。
   CONDITIONAL → 可进人工拍板，未修 P1 写进"风险与注意"作已知取舍。
-
-### Reviewer 档位规则
-
-Reviewer 模型档位规则（依据 2026-08-02 flash-审-flash 盲区实测）：
-- 判定“生产关键”：执行 scope 触及生产服务/物理动作/外部副作用，或
-  RouteDecision `route_level` ∈ {standard, full}
-  （`route_level` 由 SSOT 单调推导，设计期与执行期均可读；
-   不依赖执行期深度字段——alex-lite 侧该字段尚未产生）
-- 强档定义：按能力档位判定，不按 SKU——强档 = 所在 provider 的旗舰推理档
-  （示例：Anthropic opus/fable 级；OpenAI gpt-5 高推理档；DeepSeek v4-pro 级）；
-  小型/经济档不构成强档（示例：haiku、gpt-*-mini、v4-flash 类）。
-  示例名随版本演进，判定标准是档位而非具体 SKU。
-  推理档参数化的 SKU（阶梯 minimal < low < medium < high）：强档要求旗舰 SKU 且
-  推理档 ≥ high；档位判定不确定 → 按非强档保守处理，走三选一。
-  指定方式：经当前 harness 的 sub-agent 显式 model 指定
-  （Claude Code = Agent tool `model` 参数；Codex = `[agents]`
-   `default_subagent_model` 及 per-agent `agents/*.toml` 配置）；
-  route=unknown 按 alias-mapped 保守处理（走三选一），
-  不得按 native 分支自行 spawn 强档 reviewer。
-- 生产关键单的 reviewer 须强档。route=native → spawn 时显式指定强档 model；
-  route 为 alias-mapped（如 DeepSeek 中转，会话内 spawn 无法产生异模型 reviewer）
-  → 三选一并记录：
-  (a) 人切换到 native 强档会话跑审查（人桥，推荐）
-  (b) 用户逐字授权同模型审查 → 按跨角色请求消歧节逐字记录格式标
-      REVIEWER-TIER-DEGRADED (用户原话: "...")
-  (c) 停，报告人
-- Reviewer 行必须记录 reviewer 自报的 model 身份，使档位可事后审计
-- 非生产关键单：档位不限（执行探针义务仍适用）
 
 人工拍板后变更回流：用户对契约的实质修改（AC 增/删/改、文件清单、目标）→ 回
 独立契约审查做增量复核（只给 diff），Contract Review 段 append
@@ -274,7 +161,7 @@ Reviewer 模型档位规则（依据 2026-08-02 flash-审-flash 盲区实测）�
 - Stop: 未获确认不交接。Alex-Lite 保持 design-only——不实现应用改动、
   不自动调用 blake-lite。
 
-Series 锚点：多步任务不写 .tad/active/epics/（升级清单第 2 类）。锚点 = LITE 文件 header 追加 Series 行。Series 为文档性锚点，blake-lite 不消费。用户要求"Epic"→ 解释 lite 用 Series 行；用户仍坚持写正式 Epic → 即命中第 2 类，按升级清单/escalated 规则处理。
+Series 锚点：多步任务默认用 Series 行做轻量锚点（LITE 文件 header 追加，blake-lite 不消费）。确需正式 Epic → 可直接写 .tad/active/epics/（不再受清单限制）。
 
 压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md；该文件有 `## Lite Progress` 段时先读它（最近阶段/计数/verdict）。文件存在但无 `## Contract Review` 段 → 从 AC 空跑检查续（AC 空跑 → 独立契约审查；不重写文件，不触发"文件名已存在"分支）；已有该段 → 从人工拍板续。不要运行 /alex 或 /blake。
 
@@ -308,7 +195,7 @@ Completion 是最终状态；归档后不再写 Progress。
   （grep 消费方，≤3 处采样确认），结果写进 handoff"风险与注意"。
 - 发现任务包含契约未覆盖的重大决策、权限面变化或安全/性能风险 → 停，
   报告人；不得用"等价设计"静默扩大目标。
-- fatal 操作仍按升级清单第 4 类处理；普通局部修改继续留在 Lite。
+- 不可逆操作按安全停清单第 1 条处理（停下来问人）；普通局部修改继续留在 Lite。
 
 ## Knowledge Closeout（验收后知识闭环）
 
@@ -425,9 +312,6 @@ awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——�
   与读写自身 LITE 契约文件除外 /
   除设计期契约 reviewer 外不得 spawn 任何 subagent / 跳过或内化独立契约审查（任何理由——"契约很短""我刚写完自己清楚""额度紧张"均不是理由：自审与契约作者同心智模型，2026-07-30 首战 AC principal 缺陷即穿透自审存活至最后一道 gate）/ 以自审替代 reviewer spawn /
   写 session-state.md / EnterPlanMode /
-  主动建议或默认 escalated_review /
-  在无用户明示坚持时设置 escalated_review: yes /
-  把额度出口句用于推荐/暗示 escalated（含 AskUserQuestion 选项化、"要不要走 escalated"、"建议你说一声"）/ 在用户未表达继续意愿或成本顾虑时主动抛出该句 /
   修改 LITE 契约之外的任何文件 /
   把页数、文件数或细节多少当作升级理由 /
   未验收即蒸馏、对 candidate 静默丢弃（必须蒸馏或显式记 `DISTILLATION DEFERRED`）、

@@ -30,8 +30,8 @@ Adaptive Complexity：Alex 评估建议，**人类做最终决策**。
 Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 NotebookLM 持久知识库）。
 
-### 2.5 Lite 通道（用户显式选择，Alex 不自动推荐）
-`/alex-lite` → `/blake-lite`：≤5 文件、非协议契约的小任务，或额度紧张时。契约文件 `LITE-*.md`。
+### 2.5 Lite 通道（默认通道）
+`/alex-lite` → `/blake-lite`：**默认通道**。文件数、协议密度、是否触及协议契约均不构成升级理由；仅命中 lite skill 内的「安全停清单」时停下来问人。契约文件 `LITE-*.md`。
 豁免：§1 handoff 规则、§3 规则 0-5 对 Lite 不适用，代之以内置约束——一页纸契约 +
 契约审查与实现后各 1 个 fresh reviewer（均禁自审替代）+ 人两次拍板 + AC 可运行 + 验收即归档。
 方向互斥：full `/blake`、`/alex` 一律忽略 `LITE-*.md`；`/blake-lite` 只接受 `LITE-*.md`。

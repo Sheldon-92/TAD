@@ -71,10 +71,6 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 脚本自动检测现有安装，保留你的 handoffs、evidence、project-knowledge，只更新框架文件。
 
-## Lite / Standard / Full 路由
-
-默认使用 Lite 路径完成大多数工作；需要更深设计或执行时，可分别选择 Standard；涉及安全、协议契约或致命操作时进入 Full。路由由共享的 `.tad/routing-contract.yaml` 决定，Claude Code 与 Codex 共用同一份知识和状态边界。
-
 ## 平台说明
 
 | 平台 | 说明 | 安装大小 |
