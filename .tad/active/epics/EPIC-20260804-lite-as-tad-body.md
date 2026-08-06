@@ -76,7 +76,9 @@ lite 的固定费已追上它当初要逃离的量级。
 | ~~3~~ | ~~砍档位 + provenance 降级~~ | ➡️ **并入 P2** | — | 删 Route Contract 会让 `route_level` 悬空；先补后删是浪费，且整节删除比外科手术更好验 |
 | **4** | 实测 + 领地复核 | ✅ **Done** | 度量（全只读） | `.tad/evidence/audits/P4-measurements.md`（四段机械测量）。**首次真实测量本 Epic 基线**。commit `f98a295`。契约 v1 FAIL → v2 CONDITIONAL → v3 PASS（修 5 P0 + 9 P1 + 7 P2）。**走 lite 通道完成**——即 P2-AC5 的自验收 |
 | **5a** | 修 alex-lite 写权限自相矛盾 | ✅ **Done** | 减法（1 行语义） | `修改 LITE 契约之外的任何文件` → 三项例外（台账 / project-knowledge / epics）。Gate 4 PASS（md5 独立重算 `cbe9a26f…`）。**契约 v1 FAIL → v2 → v3，双专家各两轮，累计修 5 P0 + 4 P1** |
-| 5 | 补齐真缺口（其余） | ⬚ **Ready** | 加法（范围由 P4 决定） | C1/C4/C5 待办；C2/C3 已由 P5a 部分解决 |
+| **5b** | 把 full 独占的五项能力交给 lite | ✅ **Done** | 减法（2 节替换） | 读工具编排文档 / 读 registry / 自由 spawn / 写 session-state / 人授权后 commit·push。Gate 4 PASS（两 md5 独立重算 + 前缀 md5 证节外未动 + gitignore 盲区 mtime 实证）。契约 v1→v2，双专家各两轮 |
+| 5 | 补齐真缺口（其余） | ⬚ **Ready** | 加法 | **C1 已作废**（改 principles 不服务于本 Epic 目标，见下）；C4/C5 待办 |
+| **5c** | 把命令流程搬进 lite + `.agents/` 镜像同步 | ⬚ **Ready·P6 前置** | 加法 | P5b 开出的是**权限**，`*publish`/`*research`/`*deps` 的**流程**仍只在 full 侧（两个 lite skill 零命中）→ 权限已开但无消费者 |
 | **5.5** | **建机械防线**（新增） | ⬚ **Ready·建议先做** | 安全 | Gate 2 实证：`permissions.deny` 为空、`Bash(git push:*)` 预授权、Write/Edit hook 默认全 ALLOW。**当前无任何机械兜底，与 lite/full 无关** |
 | 6 | full 退场 | ⬚ Blocked(P5) | 收尾 | 清单归零 + CLAUDE.md 改写 + full skills 归档 |
 
@@ -375,7 +377,7 @@ awk -v t="$(date +%F)" '/review-by/ { if (match($0,/review-by [0-9-]+/)) {
 
 | # | 候选 | 类型 | 证据 |
 |---|------|------|------|
-| **C1** | `principles.md`（22,533 chars）走 `@import` 无条件全量加载，改为索引 + 按需 | 减法 | P4-A 实测：最大单项，占 36.2%；同类的 pattern 文件已是按需 |
+| ~~C1~~ | ~~`principles.md` 改索引 + 按需加载~~ | ❌ **2026-08-06 作废** | **跑偏**：`principles.md` 是 **full 与 lite 共享**的知识层，减它减的是两个通道的共同开销，**不服务于「lite 取代 full」**。且 SC1 已在 P4 证明定错（协议层早已达标）。真要做属独立的知识库维护单。用户识别：「我们不是要做 Alex Lite 和 Blake Lite 吗？你相当于改了 full 的流程」 |
 | **C2** | `alex-lite` Forbidden「修改 LITE 契约之外的任何文件」使 Alex 无法维护 Epic 状态 | **P6 硬障碍** | 2026-08-06 现场：P4 验收后 Alex 无法更新本 Epic，被迫启动 full 通道 |
 | **C3** | Forbidden 与安全停清单对同一动作给出相反答案 | 一致性缺陷 | T3 判「未命中」（放行），Forbidden 判「禁止」。B 段只测了前者 |
 | **C4** | 定价闸边际单价（P4-AC5 顺延） | 度量 | 下次真正新增约束时现场计量 |

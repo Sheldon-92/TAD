@@ -355,14 +355,21 @@ awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——�
   以自审、自我复核替代 subagent spawn /
   修改 handoff 的目标或 AC / 跳过 L0.5 契约复查（任何 LITE 单、任何理由）/
   命中安全停清单却不停下来问人 /
-  git commit 或 push（人验收后由人决定）/
+  **未经人明确授权即** git commit 或 push（授权须逐字记入 Completion；
+  另：`git push` 一律须先停下来问人——理由独立于安全停清单，因其第 1 条只字面枚举
+  force-push / 删分支 / 改历史，普通 push 不在其内；而 push 到 main 不可逆且直达下游）/
   人验收前归档或移动 handoff 文件 /
   写 `.tad/project-knowledge/`（成品蒸馏归 Alex-Lite / 验收知识闭环）/
-  修改 settings*.json 或注册 hook / 写 session-state.md /
+  修改 settings*.json 或注册 hook / 写 session-state.md（状态维护归 Alex-Lite 单人，
+  避免竞争写入）/
   写 .tad/memory/（native 管辖）/ EnterPlanMode /
-  无界加载 TAD 协议、配置或知识文件（`.tad/config*.yaml`、hooks、其它 SKILL 及其
-  references/）——有界上下文刷新（handoff 引用路径、索引、≤3 个匹配 pattern）
-  与 lite-discoveries journal 除外 /
+  无界加载 TAD 协议、配置或知识文件（`.tad/config*.yaml`、hooks、其它 SKILL）——
+  下列除外：有界上下文刷新（handoff 引用路径、索引、≤3 个匹配 pattern）、
+  lite-discoveries journal、**按需读取工具编排文档**（`.tad/guides/`、
+  `.tad/research-notebooks/`、`.tad/dependencies/`、`release-runbook` skill）；
+  **其中工具编排文档一项 ≤2 个文件**，且须在 Completion 的「上下文刷新」行点名具体路径
+  （不得写目录名）——**明确排除 `.claude/skills/*/references/` 与
+  `.agents/skills/*/references/`**（full 协议正文各 291K）/
   把页数、文件数或细节多少当作升级理由 /
   无证据声称 GATE PASS /
   重置 repair_round / same_error_count 逃避熔断 /
