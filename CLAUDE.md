@@ -1,15 +1,27 @@
 # TAD 框架使用规则
 
-> 路由层：什么时候做什么。执行协议在 /alex, /blake, /gate, /tad-maintain。
+> 路由层：什么时候做什么。**默认通道 = lite（§2.5）**；full（`/alex`, `/blake`, `/gate`）
+> 自 2026-08-06 起为**保留通道**，仅在 lite 无等价物时使用。执行协议在各自 skill 文件内。
 
 ## 1. Handoff 读取规则 ⚠️ CRITICAL
 
-读取 `.tad/active/handoffs/` → 必须调用 /blake → 必须过 Gate 3 + Gate 4。
+⚠️ 本节只管 full 的 `HANDOFF-*.md`。**新工作默认走 lite（§2.5），不产生 `HANDOFF-*.md`。**
+读取 `.tad/active/handoffs/` 中的 `HANDOFF-*.md` → 必须调用 /blake → 必须过 Gate 3 + Gate 4。
 禁止：读取后直接实现、跳过 Gate、不通过 Blake 改代码。
 豁免：`/tad-maintain` CHECK/SYNC 模式。
 豁免 2：`LITE-*.md`（TAD Lite 通道，见 §2.5）→ 本节规则不适用，含"跳过 Gate/不通过 Blake"禁令。
 
-## 2. 使用场景
+## 2. 使用场景（full —— 保留通道）
+
+⚠️ **默认走 lite（§2.5）**。下表为 full 通道，**仅在 lite 无等价物时使用**。
+2026-08-06 实测：`*publish` / `*sync` / `*research` 的操作知识 lite 已可按需读取
+（`release-runbook` skill、`.tad/guides/tool-quick-reference-alex.md`），用普通 LITE 单即可完成
+——但 `*publish` / `*sync` 仍受安全停清单第 1 条约束（需人授权），
+且工具编排文档单次 ≤2 个文件，不能一张单同时吃 publish + research 两套知识。
+lite **已知**无等价物：`*tournament`（竞赛式设计）、`*deps` 系列（操作协议在 full
+`references/` 内，lite 读取权限明确排除）、`*knowledge-maintain`（去重 / lint / 退役规程），
+以及 full Alex 启动时的自动扫描（依赖演进 / 研究图景 / 僵尸 handoff 提示）。
+⚠️ **本清单非穷举**：遇到未列出的 full 命令，先停下来问人。
 
 | 命令 | 触发条件 |
 |------|----------|
@@ -82,7 +94,8 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 
 | 协议 | 位置 |
 |------|------|
-| 苏格拉底、专家审查、Epic、配对测试 | `/alex` |
+| **lite 全流程（默认通道）** | **`/alex-lite`, `/blake-lite`** |
+| 苏格拉底、专家审查、Epic、配对测试 | `/alex`（保留通道） |
 | Ralph Loop、并行执行 | `/blake` |
 | Gate 检查、Knowledge Assessment | `/gate` |
 | 文档维护、Handoff 清理 | `/tad-maintain` |

@@ -1,9 +1,23 @@
 # Epic: Lite 成为 TAD 本体，full 逐步退场
 
 **Created**: 2026-08-04
+**Completed**: 2026-08-06
 **Owner**: Alex
-**Status**: 🔄 Active
+**Status**: ✅ **COMPLETE**（10 个 phase 交付，3 个作废，2 个移出）
 **Trigger**: 2026-08-03 阅读助手在 Codex 空转烧 token；审计发现 lite 五天内自身膨胀 5.2×
+
+## 结论（2026-08-06）
+
+**目标达成**：lite 是默认通道，full 降为保留通道且完全可回滚。
+**「迁移过程不重演 full 的膨胀」也达成**——两个 lite skill 从未因本 Epic 而变长：
+`alex-lite` 319 → 334 行、`blake-lite` 371 → 378 行，净增 22 行，全部是**放开权限的例外条款**，
+而同期删除的路由机器是 296 行。
+
+**最强证据**：P5c-1 与 P6 两单**全程在 lite 内完成**，含 Epic 回填与知识蒸馏——
+而这正是 P5a 之前 lite 做不到、必须启动 full（3.56× 固定读取开销）的那个动作。
+
+**代价（诚实记录）**：≈2.85M token，其中约一半是设计侧初稿缺陷导致的返工。
+详见 Known Issues 的成本结算条目——**结论是初稿质量问题，不是流程冗余**。
 
 ---
 
@@ -53,7 +67,7 @@ lite 的固定费已追上它当初要逃离的量级。
 | **SC1a** | **协议层**固定读取量回到出生量级 | 两 skill + CLAUDE.md ≤ **20K 字符**。**实测 2026-08-06：alex 侧 14,866 / blake 侧 16,964 → ✅ 已达标** |
 | **SC1b** | **知识层**固定读取量可见、可解释 | principles + brain-index + MEMORY + patterns/_index + frontend-design = **45,256 字符**。**不设硬阈值**——知识是资产；但每一项须能说清为何必须无条件加载 |
 | ~~SC1-orig~~ | ~~单位任务固定读取量 ≤ 20K 字符~~ | ❌ **已拆分**。原度量混层，且「74K」是 `wc -c` **字节**口径，与判据写的「字符」不同口径（差约 1.85 倍）。实测 chars 口径总量 = **62,220** |
-| SC2 | 端到端实测回到基线量级 | 一个真实任务实测 ≤ **35K tokens**（07-30 基线 23K；不可再减部分 = 2 次 reviewer spawn ≈16K） |
+| ~~SC2~~ | ~~端到端实测 ≤35K tokens~~ | ❌ **2026-08-06 废除**（判据本身是坏的，非未达标）。三条理由：<br>**(a) 基线不可信**——07-30 的 23K 中 15K 是「基于交互轮次的估算」（`cost-evidence.md` 原文自标），且被测对象是 823 字节的 `dogfood-throwaway` 玩具单。<br>**(b) 判据把两个优化方向相反的量混成一个数**——「通道固定开销」（该压到最低）与「验证成本」（该随风险上浮）。任何单一阈值都逼人做假权衡：要么为压数字砍审查，要么为保审查放弃指标。<br>**(c) 实测证伪**：2026-08-06 四单 reviewer 实测 `subagent_tokens` 合计 **≈1.41M**（12 轮）。最小的一单 P5c-1（实际改动 = 2 条 `cp`）花 **201,170**，为 SC2 上限的 5.7 倍——而那两轮抓到 3 个 P0。**这个数字大得对。**<br>→ 通道开销由 **SC1a** 承担（已达标）；验证成本**不设上限**，改为逐单记录（花了多少 / 抓到什么），使「贵得值不值」成为可判断的事。 |
 | SC3 | 每条留下的约束都有事故载体 | 定价台账中 NO-CARRIER 条目 = **0** |
 | SC4 | 升级清单从「4 类约 20 条」缩到保留领地 | 清单行数 ≤ **5** |
 | SC5 | 新增约束必须过定价闸 | 闸存在，且 P2 之后每次改动都有台账记录 |
@@ -77,11 +91,11 @@ lite 的固定费已追上它当初要逃离的量级。
 | **4** | 实测 + 领地复核 | ✅ **Done** | 度量（全只读） | `.tad/evidence/audits/P4-measurements.md`（四段机械测量）。**首次真实测量本 Epic 基线**。commit `f98a295`。契约 v1 FAIL → v2 CONDITIONAL → v3 PASS（修 5 P0 + 9 P1 + 7 P2）。**走 lite 通道完成**——即 P2-AC5 的自验收 |
 | **5a** | 修 alex-lite 写权限自相矛盾 | ✅ **Done** | 减法（1 行语义） | `修改 LITE 契约之外的任何文件` → 三项例外（台账 / project-knowledge / epics）。Gate 4 PASS（md5 独立重算 `cbe9a26f…`）。**契约 v1 FAIL → v2 → v3，双专家各两轮，累计修 5 P0 + 4 P1** |
 | **5b** | 把 full 独占的五项能力交给 lite | ✅ **Done** | 减法（2 节替换） | 读工具编排文档 / 读 registry / 自由 spawn / 写 session-state / 人授权后 commit·push。Gate 4 PASS（两 md5 独立重算 + 前缀 md5 证节外未动 + gitignore 盲区 mtime 实证）。契约 v1→v2，双专家各两轮 |
-| 5 | 补齐真缺口（其余） | ⬚ **Ready** | 加法 | **C1 已作废**（改 principles 不服务于本 Epic 目标，见下）；C4/C5 待办 |
+| ~~5~~ | ~~补齐真缺口（其余）~~ | ➡️ **2026-08-06 移出本 Epic** | — | C1 已作废（改 principles 是 full/lite 共享层，不服务本 Epic 目标）。**剩余 C4（闸边际单价）/ C5（领地真实穿透）是度量而非交付**，不构成 full 退场的前置。移出，需要时另立单 |
 | **5c-1** | `.agents/` 镜像补齐 P5a+P5b | ✅ **Done** | 同步（2 文件 cp） | 两平台 Forbidden 现完全一致（`cmp` 逐字节确认）。Gate 4 PASS。**全程走 lite 通道完成**——含本行的 Epic 回填，即 P5a 权限的最终验证 |
-| **5c-2** | `*deps` 知识缺口 | ⬚ **Ready** | 决策 | 调查结论：`*publish` 知识在 `release-runbook` skill（26,370 chars）、`*research` 在 `.tad/guides/tool-quick-reference-alex.md`（11,270）——**两者 P5b 已放开读，不需要搬流程**。唯 `*deps` 的知识在 full `references/deps-protocol.md`（7,497 chars，P5b 明确排除）→ 摘进 `.tad/guides/` 或放弃 lite 侧 `*deps`，二选一 |
-| **5.5** | **建机械防线**（新增） | ⬚ **Ready·建议先做** | 安全 | Gate 2 实证：`permissions.deny` 为空、`Bash(git push:*)` 预授权、Write/Edit hook 默认全 ALLOW。**当前无任何机械兜底，与 lite/full 无关** |
-| 6 | full 退场 | ⬚ Blocked(P5) | 收尾 | 清单归零 + CLAUDE.md 改写 + full skills 归档 |
+| ~~5c-2~~ | ~~`*deps` 知识缺口~~ | ❌ **2026-08-06 作废 —— 不摘，随 full 一起退场** | 决策已下 | 调查结论：`*publish` 知识在 `release-runbook` skill（26,370 chars）、`*research` 在 `.tad/guides/tool-quick-reference-alex.md`（11,270）——**两者 P5b 已放开读，不需要搬流程**。唯 `*deps` 在 full `references/deps-protocol.md`（7,497 chars，P5b 明确排除）。<br>**决策理由**：`*deps` 的价值在 **full Alex 启动时的自动扫描提示**，而 lite 没有启动扫描（那正是它轻的原因）。摘了知识 lite 也不会主动查依赖，只会在人开口时查；而人开口时一张普通 LITE 单就够。**为一个用不上的入口保留知识，正是本 Epic 一直在砍的东西。** |
+| ~~5.5~~ | ~~建机械防线~~ | ➡️ **2026-08-06 移出本 Epic** | 安全 | Gate 2 实证：`permissions.deny` 为空、`Bash(git push:*)` 预授权、Write/Edit hook 默认全 ALLOW。**但这与 lite/full 无关——full 通道下同样敞开**，不是本 Epic 造成的、也不阻塞 full 退场。移出，单独立 Epic |
+| **6** | full 退场 | ✅ **Done** | 收尾（路由层降级） | `CLAUDE.md` 110→123 行，四处纯增量：默认通道 = lite，full 降为**保留通道**。**三个 full skill 一字节未动**（兑现 AC4「归档而非删除、可回滚」，回滚 = `git checkout CLAUDE.md`）。Gate 4 PASS：md5 `3f3e7e39…` 独立重算 + change-shape 三断言（`numstat 17 4` / `-U0 hunk 4` / 123 行）+ §7 @import 链锚定未动。契约 v1→v2，双轮审查修 3 P0 + 5 P1 + 2 P2。**全程走 lite 通道完成** |
 
 ### Phase Dependencies
 
@@ -460,9 +474,21 @@ P3 照砍，但**台账必须记 SUPERSEDED 并填载体路径**——让六个�
   → **若属实，lite 的质量基础不是『仪式轻但防线在』，而是『防线可能从未起过作用』。**
   **P4 实测时验**：查历史 LITE 单 Completion 中 reviewer 行是否真有独立产出。
 
-- **本 Epic 自身成本已超支**（2026-08-05 结算）：P1a 928K + P1b 两轮 Gate 2 512K ≈ **1.44M token**，
-  而 SC2 要求单任务端到端 ≤35K。P4-C（闸的边际单价实测）必须诚实并入这笔账，
-  结论可能是 P1 回炉。**不得以「基建一次性投入」搪塞。**
+- **本 Epic 自身成本已结算**（2026-08-06 终结）：P1 阶段 ≈1.44M + 2026-08-06 四单 reviewer
+  实测 `subagent_tokens` ≈**1.41M**（12 轮），累计 **≈2.85M token**。
+
+  **结论：不是流程冗余，是初稿质量。** 同日产出 11 版契约、Gate 2 报出约 15 个 P0，
+  绝大多数是 Alex 自造的缺陷——AC 锁出口未锁入口、把路径无关的禁令改成 glob 砍掉半道防线、
+  引用知识条目只读标题不读 mitigation（同日犯两次）、自造的备份文件连续两单打挂自己的 AC、
+  AC6 的写法违反同一份契约里自己定的格式规则。**若初稿写对，验证成本低一个数量级。**
+
+  ⚠️ **因此禁止把这笔账记成「审查太贵」**——那 12 轮抓到的 P0 里至少 4 个是
+  「AC 看起来在守、实际零判别力」，**无一由自查发现**；砍掉审查，它们会原样发到 14 个下游。
+  该改进的是设计侧初稿，不是验证层。相关蒸馏见
+  `ac-verification.md` §`An Aggregate-Only Check Locks the Exit...`、
+  §`Replacing a Path-Agnostic Prohibition...`、§`Before Trusting a Guard, Measure Whether
+  Its Trigger Condition Can Even Occur...`，及 `handoff-design.md` §`A Change That Makes a
+  Dormant Defect Reachable Owns That Defect`。
 
 - **到期扫描的长尾盲区**（Gate2-R4 P1，已在 P1a 协议文本中明记为接受的残余风险）：
   两个触发点都绑在「有人动台账」或「Epic 还在跑」上。**两个时钟是独立的**——

@@ -6,3 +6,4 @@
 - 2026-08-06 [lite-takes-over-full-p5a] 首个「full 设计（Gate 2 双专家两轮）+ lite 执行」混合形态单走通，0 repair loop：HANDOFF-* 文件名 + 缺 Contract Review 段 → L0.5 escape hatch（人逐字指令放行）承接；成品 md5 单常数锚定使对抗探针全部失效——验证了 P5-C2「Alex 获 Epic 维护权」的处置路径可在 lite 内闭环，full 退场的最后一块拼图在账
 - 2026-08-06 [lite-full-parity] md5 单常数锁 + /tmp 预验证后 mv 落地 = 双文件协议替换 0 repair loop；.agents/ 镜像失同步实证（alex-lite e3d67da7≠1a6bc26c，P5c 输入）；release-runbook skill 无 references/ 目录，「≤2 文件」例外可实际使用
 - 2026-08-06 [agents-mirror-parity] Lite Progress 行不得以 '- AC' 开头——会污染全文 AC 机械计数（协议命令靠 awk 范围限定不受影响，但全文扫描会误计）；AC6 diff -rq 的 Only-in 单行信号经双向探针实证判别力真实
+- 2026-08-06 [full-standdown] git diff hunk 数必须用 -U0：默认 -U3 因 context 连锁把相邻改动合并，4 处→2 个 hunk，判别力直接减半；同理旧串检查必须 grep -Fxc 全行精确——新标题包含旧串为前缀时 -F 子串匹配恒为 1
