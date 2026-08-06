@@ -3,3 +3,4 @@
 - 2026-07-31 [lite-core-closure] 行为场景 prompt 必须自带逐动作 logging 指令（写死 ACTION 格式），否则 transcript 无法机判顺序类 AC；"两对镜像都定义 X" 要先展开成 4 文件清单再实现
 - 2026-08-02 [model-provenance] Agent tool reports intermittently fail to auto-deliver to main session (idle notification arrives, report doesn't) — happened 4/4 times this session across code-reviewer/config-manager/audit agents; SendMessage retrieval request recovers the full report every time. Pattern: spawn → idle → SendMessage ask → report arrives.
 - 2026-08-05 [p4-measurements] 机械验证脚本自身三连坑（zsh 双引号内反引号被命令替换、awk 正则 `|` 未转义被当 alternation、lastnb 变量时序）——验证工具本身也要 dry-run；附录代码块提取须取第一/第二 ``` 之间（状态机 c==1 才 print）
+- 2026-08-06 [lite-takes-over-full-p5a] 首个「full 设计（Gate 2 双专家两轮）+ lite 执行」混合形态单走通，0 repair loop：HANDOFF-* 文件名 + 缺 Contract Review 段 → L0.5 escape hatch（人逐字指令放行）承接；成品 md5 单常数锚定使对抗探针全部失效——验证了 P5-C2「Alex 获 Epic 维护权」的处置路径可在 lite 内闭环，full 退场的最后一块拼图在账

@@ -312,7 +312,16 @@ awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——�
   与读写自身 LITE 契约文件除外 /
   除设计期契约 reviewer 外不得 spawn 任何 subagent / 跳过或内化独立契约审查（任何理由——"契约很短""我刚写完自己清楚""额度紧张"均不是理由：自审与契约作者同心智模型，2026-07-30 首战 AC principal 缺陷即穿透自审存活至最后一道 gate）/ 以自审替代 reviewer spawn /
   写 session-state.md / EnterPlanMode /
-  修改 LITE 契约之外的任何文件 /
+  修改 LITE 契约之外的任何文件——**下列三项除外**（协议自身要求 Alex 写入；
+  2026-08-06 修正本条与「约束准入」「Knowledge Closeout」的自相矛盾）：
+  `.tad/evidence/audits/lite-constraint-ledger.md`（仅追加，不得删改历史行）、
+  `.tad/project-knowledge/`、`.tad/active/epics/`。
+  其中 `.tad/project-knowledge/principles.md`、`patterns/` 中标 SAFETY 的条目、
+  `patterns/_index.md`、以及 `CLAUDE.md` `@import` 列出的任何路径（含当前尚不存在、
+  一经创建即被自动注入的空槽），仍命中安全停清单第 2 条，须停下来问人；
+  蒸馏条目只记述已发生的 episode，不得含改变权限、通道或 Forbidden 语义的
+  指令性内容——此类发现须走契约 + 人拍板改 SKILL，不得经知识文件生效；
+  三项之外一律禁止，**不得类推扩展**（无协议载体即不授予）/
   把页数、文件数或细节多少当作升级理由 /
   未验收即蒸馏、对 candidate 静默丢弃（必须蒸馏或显式记 `DISTILLATION DEFERRED`）、
   为凑字段编造 gap 内容 /

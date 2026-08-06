@@ -75,7 +75,9 @@ lite 的固定费已追上它当初要逃离的量级。
 | **2+3** | 砍路由机器（**合并**） | ✅ **Done** | 减法（最大一刀） | 9 文件、**296 行删除 + 31 行新增**。Gate 4 PASS（7 digest 独立重算 + **逐行读 diff** + 零越权）。固定读取量 **84K → 57.9K 字符**。未 commit |
 | ~~3~~ | ~~砍档位 + provenance 降级~~ | ➡️ **并入 P2** | — | 删 Route Contract 会让 `route_level` 悬空；先补后删是浪费，且整节删除比外科手术更好验 |
 | **4** | 实测 + 领地复核 | ✅ **Done** | 度量（全只读） | `.tad/evidence/audits/P4-measurements.md`（四段机械测量）。**首次真实测量本 Epic 基线**。commit `f98a295`。契约 v1 FAIL → v2 CONDITIONAL → v3 PASS（修 5 P0 + 9 P1 + 7 P2）。**走 lite 通道完成**——即 P2-AC5 的自验收 |
-| 5 | 补齐真缺口 | ⬚ **Ready**（P4 已解锁） | 加法（范围由 P4 决定） | 只补 P4 证明接不住的。候选见 §Phase 5 |
+| **5a** | 修 alex-lite 写权限自相矛盾 | ✅ **Done** | 减法（1 行语义） | `修改 LITE 契约之外的任何文件` → 三项例外（台账 / project-knowledge / epics）。Gate 4 PASS（md5 独立重算 `cbe9a26f…`）。**契约 v1 FAIL → v2 → v3，双专家各两轮，累计修 5 P0 + 4 P1** |
+| 5 | 补齐真缺口（其余） | ⬚ **Ready** | 加法（范围由 P4 决定） | C1/C4/C5 待办；C2/C3 已由 P5a 部分解决 |
+| **5.5** | **建机械防线**（新增） | ⬚ **Ready·建议先做** | 安全 | Gate 2 实证：`permissions.deny` 为空、`Bash(git push:*)` 预授权、Write/Edit hook 默认全 ALLOW。**当前无任何机械兜底，与 lite/full 无关** |
 | 6 | full 退场 | ⬚ Blocked(P5) | 收尾 | 清单归零 + CLAUDE.md 改写 + full skills 归档 |
 
 ### Phase Dependencies

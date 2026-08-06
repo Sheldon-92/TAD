@@ -77,6 +77,21 @@
 - **Action**: For any growing sync/distribution set: deny-list not allow-list; make the EXCLUSION assertion the load-bearing AC. For version checks: scope to `git ls-files`; prefer false-positive; narrow historical-exclusion to leading-cell. Never pin an absolute count — assert set-equality live. Use `diff -r source==target` as the final "did the copy land completely" verification.
 - ⚠️ SAFETY ENTRY — requires human review for any modification
 - **Grounded in**: .tad/hooks/lib/derive-sync-set.sh, .tad/hooks/lib/release-verify.sh, .tad/evidence/yolo/self-deriving-release-sync/phase1-gate-report.md
+- **AMENDED 2026-08-06 — 适用前提是「有界集合」，标题里的 "for Sync Sets" 是限定不是举例**：
+  2026-08-06 一份放宽 agent 写权限的契约引用本条为依据，把「禁止修改契约外任何文件」
+  改成「只禁源码 + hooks + settings，其余默认允许」。Gate 2 的 security-auditor 指出这是误用：
+  本条论证的集合是**仓库目录树 minus 排除项**——有界、可枚举，且原文明写承重的是 EXCLUSION 断言
+  （"its safety rests entirely on the EXCLUSION path"）。而**写权限是无界集合**（整个文件系统），
+  在其上 deny-list 的 fail-open 面无限：`.md` 不是源码 → agent 可合法改写**自己的 Forbidden 节**，
+  形成第一次放开后不再需要人的自放大回路；同样落入「未列出即允许」的还有
+  `.claude/agents/`（被审查方重定义审查方）、`CLAUDE.md`、`.gitignore`（验证器自身的输入）、
+  `.tad/logs/violations.log`（自己的违规记录）。
+  **判据：集合有界且排除项可完整枚举 → deny-list；集合无界或边界会随职责增长 → 用小而有界的
+  allow-list，并要求每一项有协议载体。** 修订后的契约改用 3 项 allow-list，
+  上述全部高危路径回到「绝对禁止」侧。
+  依据：HANDOFF-20260806-lite-takes-over-full.md §7（v1 五个 P0 记录）+ §8 知识引用更正段，
+  Gate 2 security-auditor 报告 2026-08-06 §1。
+  ⚠️ 本 AMENDED 不推翻原条目——对**同步集合**这类有界集合，deny-list 仍是正确方向。
 
 ### Deny-List Must Be Applied at EVERY Copy Granularity, and Verifiers Must Match Each Granularity — 2026-06-01
 - **Context**: P2 of the self-deriving-release-sync Epic killed the hardcoded 14-DIR allow-list in tad.sh (deny-list derivation). But a SECOND hardcoded allow-list survived one layer down: the top-level FILE copy used a fixed extension glob `*.yaml *.md *.txt`, which silently dropped `.tad/portable-extract.sh` (git-tracked, runbook-referenced) and any future top-level `.sh`/`.json`. Both the installer self-check AND P1's `release-verify.sh structural` verified DIRS only → the omission was invisible to every gate. Impl-review arch-P1-1 caught it; this fix converted the file copy to deny-list (`every regular top-level file MINUS TAD_TOP_DENY`) and extended the verifier to top-level files.
