@@ -19,7 +19,7 @@ NC='\033[0m'
 # literal can never go stale (fixes the 2.19.1-class hand-edit straggler).
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="2.39.0"
+TARGET_VERSION="2.40.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 
@@ -1484,9 +1484,8 @@ main() {
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
             echo "Available commands:"
-            echo "  /alex  - Start Agent A (Solution Lead)"
-            echo "  /blake - Start Agent B (Execution Master)"
-            echo "  /gate  - Run quality gate"
+            echo "  /alex-lite, /blake-lite  - Default channel (lightweight, full capability)"
+            echo "  /alex, /blake, /gate     - Reserved channel"
             echo ""
             exit 0
         fi
@@ -1845,7 +1844,7 @@ NEXTEOF
     echo ""
     echo "Quick start:"
     echo "  1. Restart Claude Code (or open new terminal)"
-    echo -e "  2. ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC}"
+    echo -e "  2. ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (default) · ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (reserved)"
 
     echo ""
     echo "Learn more: ${BLUE}${REPO_URL}${NC}"

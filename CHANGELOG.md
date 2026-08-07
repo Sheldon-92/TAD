@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.40.0] - 2026-08-06
+
+### Breaking Changes
+
+- **Lite is now the default channel; full is a reserved channel.** `CLAUDE.md` routing layer
+  rewritten: new work defaults to `/alex-lite` → `/blake-lite`. The three full skills
+  (`/alex`, `/blake`, `/gate`) are **unchanged and fully usable** — only the recommendation
+  changed. Rollback for the routing layer is `git checkout CLAUDE.md`.
+- **Lite escalation list replaced by a 3-item safety-stop list.** File count, protocol density
+  and "touches a protocol contract" no longer force an upgrade to full. Only irreversible
+  operations / SAFETY surfaces / global registration surfaces stop for human decision.
+  Removed 296 lines of three-tier routing machinery.
+- **Lite agents gained five capabilities**: read tool-orchestration docs (`.tad/guides/`,
+  `release-runbook`, registries, ≤2 files, must name paths), spawn subagents for non-implementation
+  work, write `session-state.md`, and commit/push after explicit human authorization.
+  ⚠️ These are soft constraints, not mechanical gates — see `principles.md`
+  §`Mechanical Enforcement Rejected on Single-User CLI` for the deployment-model rationale.
+
+### New Features
+
+- **Constraint pricing gate** (`.tad/evidence/audits/lite-constraint-ledger.md`): every new
+  MUST/BLOCKING clause must first be priced — per-ticket cost, the failure mode it blocks
+  (with a verbatim grep anchor), and a real incident carrier. Default action on review is deletion.
+- **Alex-Lite write permissions**: ledger, `.tad/project-knowledge/`, `.tad/active/epics/`,
+  `session-state.md` — fixing a long-standing self-contradiction where the protocol required
+  writes that `Forbidden` prohibited.
+- `.agents/` Codex mirror brought to parity with `.claude/` for both lite skills.
+
+### Fixed
+
+- **`tad.sh` upgrade freeze**: `TARGET_VERSION` was compared against the installed version
+  *before* `derive_target_version()` runs, so a stale literal made the installer report
+  "already installed" and exit 0 without upgrading. Same failure class as the v2.19.1 incident
+  recorded in `principles.md`.
+- Ledger overdue-scan silently missed malformed dates (regex now validates month/day ranges).
+- `alex-lite` `Forbidden` contradicted its own 约束准入 and Knowledge Closeout sections.
+
+### Measured
+
+- Fixed read load per lite session: **62,220 chars** (protocol layer 16,964 + knowledge layer 45,256).
+  Full channel measures **≈221,281 chars** — 3.56×.
+- Two lite skills grew by only 22 lines net across the whole Epic (296 lines of routing machinery
+  removed), i.e. the migration did not reproduce the bloat it set out to remove.
+
+### Notes
+
+- Epic `lite-as-tad-body`: 10 phases delivered, 3 voided, 2 moved out. SC2 (end-to-end token
+  ceiling) was **retired as a broken criterion** — it conflated channel overhead with verification
+  cost, two quantities that should move in opposite directions.
+
 ## [2.39.0] - 2026-08-02
 
 ### New Features

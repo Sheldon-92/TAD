@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.39.0 - Lite / Standard / Full Routing Profiles**
+**Version 2.40.0 - Lite is the Default Channel**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -159,7 +159,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.39.0
+# Should show: 2.40.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -178,7 +178,16 @@ ls .tad/migrations/*.yaml | wc -l
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-### 2. Open Two Terminals
+### 2. Pick a Channel
+
+**Default — TAD Lite** (one terminal; the human types the command to switch roles)
+
+| Command | Role |
+|---------|------|
+| `/alex-lite` | Design & Planning |
+| `/blake-lite` | Implementation |
+
+**Reserved — full TAD** (two terminals, human is the only bridge)
 
 | Terminal 1 | Terminal 2 |
 |------------|------------|
@@ -286,9 +295,11 @@ Alex: [Reviews with subagents, accepts or requests changes]
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/alex` | - | Activate Alex (Solution Lead) |
-| `/blake` | - | Activate Blake (Execution Master) |
-| `/gate N` | Both | Execute quality gate N |
+| `/alex-lite` | - | **Default channel** — Alex Lite (design) |
+| `/blake-lite` | - | **Default channel** — Blake Lite (implementation) |
+| `/alex` | - | Reserved channel — Alex (Solution Lead) |
+| `/blake` | - | Reserved channel — Blake (Execution Master) |
+| `/gate N` | Both | Reserved channel — Execute quality gate N |
 | `/knowledge-audit` | Both | Audit project knowledge health |
 | `/tad-init` | - | Initialize TAD in new project |
 | `/tad-maintain` | - | Document health check and sync |
@@ -459,6 +470,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.39.0 - Lite / Standard / Full Routing Profiles**
+**Welcome to TAD v2.40.0 - Lite is the Default Channel**
 
 *AI does the work. Humans guard the value.*

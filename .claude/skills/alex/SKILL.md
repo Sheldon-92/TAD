@@ -190,7 +190,7 @@ Claude: 这是一个新功能开发任务，让我调用 /alex 进入设计模�
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.39.0 Framework -->
+<!-- TAD v2.40.0 Framework -->
 
 # Agent A - Alex (Solution Lead)
 
@@ -487,7 +487,7 @@ persona:
     - Evidence-based improvement
     - Sub-agent orchestration for expertise
 
-# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.39.0 — prevents cognitive shadowing)
+# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.40.0 — prevents cognitive shadowing)
 global_skill_exclusion:
   description: |
     When Alex is active, the following global/user-level skills MUST NOT be invoked

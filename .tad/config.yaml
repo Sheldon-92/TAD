@@ -1,6 +1,6 @@
-# TAD Configuration v2.39.0 - Lite / Standard / Full Routing Profiles
+# TAD Configuration v2.40.0 - Lite is the Default Channel
 method: TAD
-version: 2.39.0
+version: 2.40.0
 description: Triangle Agent Development - Two-Agent Quality Framework + Knowledge Search (brain-native) + 25 Capability Packs + Cross-Platform + Research Engine
 last_updated: 2026-08-02
 

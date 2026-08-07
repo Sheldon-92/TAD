@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.39.0 | Generated: [timestamp]
+ Version: v2.40.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,15 +218,12 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.39.0 Highlights
-- **No automatic ceremony escalation**: task length, file count, or detail alone does not force an upgrade; risk does.
-- **Default dual-platform installation**: fresh installs and upgrades without `--platform` install both Claude Code and Codex entry points; explicit platform overrides remain available.
-- **TAD Lite v1.1**: symmetric dual reviewers — alex-lite L2.5 contract review (every task, AC-executability matrix) + blake-lite L3 impl review; blake L0.5 mechanically verifies the contract WAS reviewed (fail-closed)
-- **Driven by first real-world use**: a design-time AC-principal defect survived self-review to the last gate → design-time review restored as a real spawn (no self-review substitution, behavioral-dogfood verified)
-- **Design-side depth**: L1 goal-anchor question + pre-write solution sketch; single-step user-gated AC protocol; 7-state status vocabulary; 6-condition autonomous fix (impl code only)
-- **Cost**: ~35K tokens/cycle estimated with dual reviewers (v1.0 measured 23K; still ~1/10 of full TAD's 300K-1M)
-- **Lite channel basics (since v2.35)**: one-page LITE contract, safety stop (irreversible ops / SAFETY surface / global registration → stop and ask), lifecycle = location, byte-identical Codex `.agents` mirrors
-
+## TAD v2.40.0 Highlights
+- **Lite is the default channel; full is reserved**: new work defaults to `/alex-lite` → `/blake-lite`. The three full skills are unchanged and fully usable — only the recommendation moved.
+- **Escalation list replaced by a 3-item safety-stop list**: file count, protocol density and "touches a protocol contract" no longer force an upgrade — only irreversible operations, SAFETY surfaces and global registration surfaces stop for a human. 296 lines of three-tier routing machinery removed. Lifecycle stays location-based (`active/` → `archive/`).
+- **Constraint pricing gate**: every new MUST/BLOCKING clause must first be priced in `.tad/evidence/audits/lite-constraint-ledger.md` — per-ticket cost, the failure mode it blocks (with a verbatim grep anchor), and a real incident carrier. Default action on review is deletion.
+- **Lite gained five capabilities**: read tool-orchestration docs (≤2 files, must name paths), spawn subagents for non-implementation work, write `session-state.md`, and commit/push after explicit human authorization.
+- **Measured, not assumed**: fixed read load per lite session is 62,220 chars (protocol layer 16,964 + knowledge layer 45,256); the full channel measures ≈221,281 — 3.56×.
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues
 ```

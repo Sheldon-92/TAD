@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.39.0 — Lite / Standard / Full Routing Profiles**
+**Version 2.40.0 — Lite is the Default Channel**
 
 ## 安装方式
 
@@ -48,17 +48,19 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.39.0
+cat .tad/version.txt          # 应显示 2.40.0
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code
 claude .                       # 打开项目
 
-# Terminal 1: 设计与规划
-/alex
+# 默认通道（lite —— 可同一 terminal，由人输入命令切换角色）
+/alex-lite      # 设计与规划
+/blake-lite     # 实现与执行
 
-# Terminal 2: 实现与执行
-/blake
+# 保留通道（full —— 需双 terminal）
+/alex           # Terminal 1: 设计与规划
+/blake          # Terminal 2: 实现与执行
 ```
 
 ## 升级现有项目

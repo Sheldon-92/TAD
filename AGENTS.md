@@ -15,7 +15,7 @@ Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowl
 
 ## Role Switching
 
-Use `$alex` / `$blake` (full TAD) or `$alex-lite` / `$blake-lite` (Lite, the default channel) to activate a role. Alternatively, say any trigger phrase:
+Use `$alex-lite` / `$blake-lite` (Lite — **the default channel**) or `$alex` / `$blake` (full TAD — **reserved channel** since 2026-08-06) to activate a role. Alternatively, say any trigger phrase:
 
 | Trigger phrases | Role |
 |----------------|------|
