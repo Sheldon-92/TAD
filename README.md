@@ -71,12 +71,12 @@ cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposi
 
 ## 🔄 Codex CLI Support (v2.26.0)
 
-TAD runs on Codex CLI with the same SKILL files. Use `$alex` or `$blake` to activate roles:
+TAD runs on Codex CLI with the same SKILL files. Use `$alex-lite` or `$blake-lite` to activate roles; `$alex` / `$blake` remain reserved:
 
 ```bash
 bash tad.sh --platform both --yes   # Dual-platform (recommended)
 bash tad.sh --platform codex --yes  # Codex only
-# In Codex: $alex or $blake (auto-discovered via .agents/skills/)
+# In Codex: $alex-lite or $blake-lite (auto-discovered via .agents/skills/)
 ```
 
 See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details.
