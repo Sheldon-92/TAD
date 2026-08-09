@@ -15,13 +15,18 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Version — fallback only. The AUTHORITATIVE value is derived from the source
-# repo's .tad/version.txt at download time (see derive_target_version), so this
-# literal can never go stale (fixes the 2.19.1-class hand-edit straggler).
+# repo's .tad/version.txt at download time (see derive_target_version). This
+# literal is a banner/fallback value: the state gate MUST NOT rely on it, because
+# the gate runs BEFORE the source is fetched — a stale literal here silently
+# freezes downstream upgrades (the 2.19.1-class hand-edit straggler, twice).
+# The gate's "already latest" decision is made by probe_remote_version (success)
+# or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
 TARGET_VERSION="2.40.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
+VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
 
 # derive_target_version <src> — set TARGET_VERSION from the source tree's
 # .tad/version.txt (authoritative). Keeps the hardcoded literal as fallback.
@@ -33,6 +38,21 @@ derive_target_version() {
         if [ -n "$v" ]; then
             TARGET_VERSION="$v"
         fi
+    fi
+}
+
+PROBE_OK=0
+# probe_remote_version — 在状态闸之前取得权威版本。成功 → 覆盖 TARGET_VERSION 并置
+# PROBE_OK=1；任何失败（网络/超时/非法载荷）→ 两者均不动，PROBE_OK 保持 0。
+# 这是 OPTIMIZATION 而非正确性来源：它只为保住「已是最新」的快速退出。正确性由
+# main() 里 derive_target_version 之后的权威复判保证（见 M7）。
+probe_remote_version() {
+    local v
+    v=$(curl -sSL --max-time 10 "$VERSION_URL" 2>/dev/null | head -1 | tr -d '[:space:]') || true
+    # 载荷必须先验证再采信：404 会返回一整页 HTML，不加这道正则就会把 HTML 当版本号。
+    if [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        TARGET_VERSION="$v"
+        PROBE_OK=1
     fi
 }
 
@@ -1417,10 +1437,12 @@ main() {
 
     echo ""
 
+    probe_remote_version
     STATE=$(detect_state)
     CURRENT_VERSION="none"
     if [ -f ".tad/version.txt" ]; then
         CURRENT_VERSION=$(cat .tad/version.txt)
+        CURRENT_VERSION="${CURRENT_VERSION//[$'\r\n ']/}"   # CRLF/whitespace trim (align with detect_state L1349)
     fi
 
     # Display current state
@@ -1480,6 +1502,11 @@ main() {
                 log_warn "Installed v${CURRENT_VERSION} is NEWER than target v${TARGET_VERSION}. --force does not downgrade."
                 exit 0
             fi
+        elif [ "$PROBE_OK" != "1" ]; then
+            # 目标版本未经证实（探测失败）——绝不基于猜测宣称已是最新。
+            # 继续走下去，由 M7 的权威复判定夺；最坏结果是一次多余的重装，
+            # 而不是一次静默的不升级。
+            ACTION="upgrade"
         else
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
@@ -1545,9 +1572,22 @@ main() {
     TAD_SRC="TAD-main"
 
     # AC2: derive the authoritative version from the freshly-downloaded source's
-    # .tad/version.txt — so TARGET_VERSION can never go stale vs the literal above.
+    # .tad/version.txt — this runs AFTER the download, so the derived value is
+    # fresh by construction; the state gate runs earlier and must rely on
+    # probe_remote_version / the ROOT FIX block, not the literal above.
     derive_target_version "$TAD_SRC"
     log_info "  → Source version: v${TARGET_VERSION}"
+
+    # ROOT FIX：「已是最新」的判定，要么在状态闸用探测到的实时版本完成（探测成功，
+    # 多数情况），要么推迟到这里用已下载源树的版本确认（探测失败）。两条路径都不再
+    # 依赖 L22 的字面量，因此字面量陈旧不可能再产生静默 no-op。本块是后一条路径。
+    if [ "$FORCE" != "1" ] && [ "$CURRENT_VERSION" != "none" ] \
+       && [ "$(_tad_ver_cmp "$CURRENT_VERSION" "$TARGET_VERSION")" != "-1" ]; then
+        rm -rf "$TAD_SRC"
+        echo ""
+        echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
+        exit 0
+    fi
 
     # Execute based on action
     case $ACTION in

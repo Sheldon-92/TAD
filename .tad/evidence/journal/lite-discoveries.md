@@ -8,3 +8,4 @@
 - 2026-08-06 [agents-mirror-parity] Lite Progress 行不得以 '- AC' 开头——会污染全文 AC 机械计数（协议命令靠 awk 范围限定不受影响，但全文扫描会误计）；AC6 diff -rq 的 Only-in 单行信号经双向探针实证判别力真实
 - 2026-08-06 [full-standdown] git diff hunk 数必须用 -U0：默认 -U3 因 context 连锁把相邻改动合并，4 处→2 个 hunk，判别力直接减半；同理旧串检查必须 grep -Fxc 全行精确——新标题包含旧串为前缀时 -F 子串匹配恒为 1
 - 2026-08-06 [release-doc-sync] 发布闸当判据的正面实证：29 处 STALE 人工估计四次全错（12→22→24→29），工具一次就对；L17 遗漏被 AC1 version 门抓出（2 STALE）修复后归零；tad-help 版本行是 version 判据强制要求、契约 numstat 期望值按未含它计算——工具驱动 + 判据优先级（wc -l 主判据）可容纳该差异
+- 2026-08-07 [tadsh-version-authority] 契约四轮审查 5 P0 全属『验证本身失效』（AC9 钉死绝对数/AC4 编码错误顺序/AC10 对块外变体失明/AC2 注释位置冒充逻辑位置）→ 实现 0 repair 一次通过：810k token 审查换零返工；『抽取式 harness 的自证前提』（逻辑确实在被抽的块里）由结构不变量 AC11 兜底，『注释位置≠逻辑位置』由行为性 AC12 兜底
