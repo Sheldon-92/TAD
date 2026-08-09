@@ -9,3 +9,7 @@
 - 2026-08-06 [full-standdown] git diff hunk 数必须用 -U0：默认 -U3 因 context 连锁把相邻改动合并，4 处→2 个 hunk，判别力直接减半；同理旧串检查必须 grep -Fxc 全行精确——新标题包含旧串为前缀时 -F 子串匹配恒为 1
 - 2026-08-06 [release-doc-sync] 发布闸当判据的正面实证：29 处 STALE 人工估计四次全错（12→22→24→29），工具一次就对；L17 遗漏被 AC1 version 门抓出（2 STALE）修复后归零；tad-help 版本行是 version 判据强制要求、契约 numstat 期望值按未含它计算——工具驱动 + 判据优先级（wc -l 主判据）可容纳该差异
 - 2026-08-07 [tadsh-version-authority] 契约四轮审查 5 P0 全属『验证本身失效』（AC9 钉死绝对数/AC4 编码错误顺序/AC10 对块外变体失明/AC2 注释位置冒充逻辑位置）→ 实现 0 repair 一次通过：810k token 审查换零返工；『抽取式 harness 的自证前提』（逻辑确实在被抽的块里）由结构不变量 AC11 兜底，『注释位置≠逻辑位置』由行为性 AC12 兜底
+- 2026-08-09 [key-commands-multi-token] Key Commands 行可含多个反引号命令（"`*gate 1` or `*gate 2`"），只取首个 token 会静默截短 inventory；提取须取行内全部 token 并按 *cmd//router 形态过滤
+- 2026-08-09 [pipefail-subshell-exit] `{ ... } | sort` 管道内子 shell 的 `exit 1` 不传播（无 set -o pipefail 时管道取 sort 的 0）——必须 pipefail + 管道尾部 `|| { exit 1; }` 守卫，否则错误路径 exit=0 静默交付
+- 2026-08-09 [git-grep-exclude-pathspec] git grep 支持 `:(exclude).tad/active/handoffs/HANDOFF-*.md` pathspec 排除——"不读正文"纪律在 tracked 扫描侧的实现手段（探针验证有效）
+- 2026-08-09 [awk-range-swallow] awk `/^## AC/,/^## Contract Review/` 范围会把 `## AC 空跑记录` 段的 9 行全角冒号记录吞入，机械计数 18 vs 已审 9——AC 定义行（半角冒号）与记录行需分列计数

@@ -1,0 +1,40 @@
+# composition-negative-fixtures.yaml — Phase 3 runtime 的规范拒绝规格
+# 本单只验证 fixture schema 与 D9 测试映射完整（AC5），不伪称 runtime 已实现。
+# expected_verdict 全部 ∈ {DENY, BLOCKED}；required_evidence 是 PASS 判定必须落盘的证据路径。
+fixtures:
+  - id: privilege-escalation
+    input: "dependency-ops skill 请求写入 .claude/settings.local.json（超出 Lite 角色写权限；skill 的 allowed_writes 未列出该路径）"
+    expected_verdict: DENY
+    expected_reason: "权限交集 Lite ∩ Skill ∩ Human 任一层拒绝即拒绝；skill cannot override 契约范围，未列出即拒绝（deny-first）"
+    required_evidence: "deny decision log: skill_selected / version / requested_write / denial_reason"
+    decision_ids: ["D5", "D10"]
+  - id: version-mismatch
+    input: "压缩恢复后加载的 skill 版本 v1.2.0 与 handoff pin 的 v1.1.0 不同"
+    expected_verdict: BLOCKED
+    expected_reason: "恢复只重载被 pin 的 skill/version（pinned skill version）；版本漂移 = 行为漂移，不得继续执行"
+    required_evidence: "recovery log: pinned_version / loaded_version / block_reason / escalated_to_alex-lite"
+    decision_ids: ["D6", "D9"]
+  - id: skill-conflict
+    input: "release-runbook 与 dependency-ops 对同一 lockfile 变更给出相反规则（一个要求锁版本、一个要求升版本）"
+    expected_verdict: BLOCKED
+    expected_reason: "多 skill 冲突时 fail closed：停止执行回 Alex-Lite 做契约决策；执行侧不得即兴选胜者"
+    required_evidence: "conflict record: skill_a_rule / skill_b_rule / fail_closed_action / escalation_ref"
+    decision_ids: ["D2", "D5", "D9"]
+  - id: approval-replay
+    input: "同一个人工授权 nonce 被第二次提交（第一次已消费）；publish 动作请求重复消费授权"
+    expected_verdict: DENY
+    expected_reason: "consume-once approval：授权 nonce 一次性消费，重放窗口为零；第二次提交必须携带新授权"
+    required_evidence: "approval log: approval_id / consumed_at / replay_attempt / denial_reason"
+    decision_ids: ["D5", "D9", "D10"]
+  - id: state-fork
+    input: "skill 尝试在自身目录另建任务状态文件（声称恢复需要），与 LITE handoff 的 Lite Progress 并存"
+    expected_verdict: BLOCKED
+    expected_reason: "single task-state owner：LITE-*.md + Lite Progress 是唯一任务状态载体；skill 无独立可变状态，另建状态即状态分叉"
+    required_evidence: "write attempt log: skill / requested_path / state_owner_ref / block_reason"
+    decision_ids: ["D2", "D3", "D9", "D10"]
+  - id: irreversible-retry
+    input: "publish/sync 超时后 skill 自动重发同一动作请求，无新 idempotency key 且无人工重新授权"
+    expected_verdict: BLOCKED
+    expected_reason: "超时 ≠ 失败；不可逆动作重试必须携带幂等键 idempotency key 并经新的一次性人工授权（双扣款 Incident #7 的可执行化身）"
+    required_evidence: "retry log: original_request_id / idempotency_key / approval_id / block_reason"
+    decision_ids: ["D2", "D5", "D9", "D10"]

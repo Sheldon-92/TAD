@@ -1,0 +1,635 @@
+# Full 能力 inventory 与 disposition —— Phase 1 决策底座
+# 生成依据: generate-inventory.sh fresh raw 输出 + 人对 13 个战略 ID 的处置矩阵
+# 判定纪律见契约 §B；route_consumer 映射为 Blake-Lite 实现期判断（AC2 union 闭合）
+schema_version: 1
+generated_at: "2026-08-09"
+grounded_against: "4116517"
+baseline:
+  registered: 14
+  reachable: 12
+  missing: 2
+  with_full: 12
+  with_lite: 1
+  active_full_handoffs: 37
+capabilities:
+  - id: release-ops
+    summary: "GitHub 发布与框架同步（*publish / *sync / *sync-add / *sync-list）——不可逆、人类授权、版本一致性检查后 push/tag"
+    source_files:
+      - .claude/skills/alex/references/publish-protocol.md
+      - .agents/skills/alex/references/publish-protocol.md
+      - .claude/skills/alex/references/sync-protocol.md
+      - .agents/skills/alex/references/sync-protocol.md
+      - .claude/skills/alex/references/sync-add-protocol.md
+      - .agents/skills/alex/references/sync-add-protocol.md
+      - .claude/skills/alex/references/sync-list-protocol.md
+      - .agents/skills/alex/references/sync-list-protocol.md
+    legacy_triggers: ["*publish", "*sync", "*sync-add", "*sync-list"]
+    existing_equivalents: ["release-runbook"]
+    route_consumers:
+      - INSTALLATION_GUIDE.md
+      - tad.sh
+      - .tad/hooks/lib/release-verify.sh
+      - .tad/hooks/post-write-sync.sh
+      - .tad/hooks/lib/drift-check.sh
+      - .tad/hooks/lib/skill-body-verify.sh
+      - .tad/hooks/lib/pack-registry-driftcheck.sh
+      - .tad/hooks/lib/parity-criterion.md
+      - .claude/skills/release-runbook/SKILL.md
+      - .agents/skills/release-runbook/SKILL.md
+      - CHANGELOG.md
+      - .tad/project-knowledge/patterns/release-sync.md
+    carrier_paths:
+      - .claude/skills/alex/references/publish-protocol.md
+      - .claude/skills/alex/references/sync-protocol.md
+      - .tad/hooks/lib/release-verify.sh
+    disposition: EXTEND
+    target_skill: release-runbook
+    supported_roles: ["alex-lite", "blake-lite"]
+    modes: ["plan", "execute", "verify"]
+    safety_class: human-gated
+    migration_dependency: "P3：扩展 release-runbook 后迁移（契约风险 4 已预判 EXTEND）"
+    rationale: "已有独立 skill release-runbook 承载发布操作知识，但缺 publish/sync 操作协议正文（lite 可读 release-runbook + tool-quick-reference 已实测覆盖多数操作）；EXTEND 把 protocol 知识并入现有 skill，不新建重复 skill（判定纪律：真覆盖 → EXTEND 而非新建）"
+    trigger_examples:
+      - "用户说：发一个 TAD 新版本到 GitHub（历史 *publish 等价）"
+      - "用户说：把框架同步到 14 个注册项目（历史 *sync 等价）"
+      - "用户说：发布前跑一遍 release-verify parity 校验"
+    resource_plan:
+      skill: [".claude/skills/release-runbook/SKILL.md"]
+      references: [".claude/skills/release-runbook/references/publish-ops.md", ".claude/skills/release-runbook/references/sync-ops.md"]
+      scripts: [".claude/skills/release-runbook/scripts/release-verify-wrapper.sh"]
+      assets: []
+    forward_test_prompt: "Use the release-runbook skill at .claude/skills/release-runbook to prepare a TAD v2.41.0 publish: run the pre-flight checklist, identify the version-bump file list, and report the parity check result — do NOT push or tag."
+  - id: dependencies
+    summary: "框架依赖清单/升级/校验（*deps 系列）——操作协议在 full references 内，lite 读取权限明确排除，无现役等价"
+    source_files:
+      - .claude/skills/alex/references/deps-protocol.md
+      - .agents/skills/alex/references/deps-protocol.md
+    legacy_triggers: ["*deps"]
+    existing_equivalents: []
+    route_consumers:
+      - .tad/dependencies/REGISTRY.yaml
+    carrier_paths:
+      - .claude/skills/alex/references/deps-protocol.md
+      - .tad/dependencies/REGISTRY.yaml
+    disposition: EXTRACT
+    target_skill: dependency-ops
+    supported_roles: ["alex-lite", "blake-lite"]
+    modes: ["plan", "execute", "verify"]
+    safety_class: human-gated
+    migration_dependency: "P4：新建 dependency-ops skill 后迁移（契约风险 4 已预判 EXTRACT）"
+    rationale: "lite 已知无等价物（CLAUDE.md §2 明列 *deps 系列），操作协议在 full references/ 内且 lite 读取权限明确排除；有 carrier（deps-protocol + REGISTRY.yaml 消费方）→ EXTRACT 新建 dependency-ops skill"
+    trigger_examples:
+      - "用户说：升级框架的某个依赖并更新 lockfile（历史 *deps 等价）"
+      - "用户说：审查 .tad/dependencies/REGISTRY.yaml 的依赖变更是否安全"
+      - "用户说：检查依赖清单与 lockfile 是否一致"
+    resource_plan:
+      skill: [".claude/skills/dependency-ops/SKILL.md"]
+      references: [".claude/skills/dependency-ops/references/deps-protocol.md"]
+      scripts: [".claude/skills/dependency-ops/scripts/deps-verify.sh"]
+      assets: []
+    forward_test_prompt: "Use the dependency-ops skill at .claude/skills/dependency-ops to audit whether the current dependency registry is consistent with installed versions and report any drift — do not change any dependency."
+  - id: tournament
+    summary: "竞赛式设计（*tournament）——多方案对抗评审选优；无现役独立 skill，协议在 full SKILL.md 正文"
+    source_files: []
+    legacy_triggers: ["*tournament"]
+    existing_equivalents: []
+    route_consumers: []
+    carrier_paths:
+      - .claude/skills/alex/SKILL.md
+      - .claude/skills/blake/SKILL.md
+    disposition: DECISION_REQUIRED
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P5 secondary capability decisions（tournament 提取或退休）"
+    rationale: "有价值（对抗式评审）且有 carrier（full 正文协议 + 历史使用），但无现役独立 skill 目录，lite-first 下当前价值与形态（skill vs 集成进 lite 评审）尚不清楚 → 按判定纪律不得用作者偏好伪装 EXTRACT，留 P5 决策"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: ideas
+    summary: "想法捕获/浏览/晋升（*idea / *idea-list / *idea-promote）——60 个存量 idea 在 .tad/active/ideas/，lite 无捕获机制"
+    source_files:
+      - .claude/skills/alex/references/idea-list-protocol.md
+      - .agents/skills/alex/references/idea-list-protocol.md
+      - .claude/skills/alex/references/idea-path-protocol.md
+      - .agents/skills/alex/references/idea-path-protocol.md
+      - .claude/skills/alex/references/idea-promote-protocol.md
+      - .agents/skills/alex/references/idea-promote-protocol.md
+    legacy_triggers: ["*idea", "*idea-list", "*idea-promote"]
+    existing_equivalents: []
+    route_consumers:
+      - .tad/active/ideas/IDEA-20260401-tad-self-test-agent.md
+      - .tad/active/ideas/IDEA-20260602-diffmem-git-blame-knowledge.md
+      - .tad/active/ideas/IDEA-20260603-skillify-at-knowledge-assessment.md
+      - .tad/active/ideas/IDEA-20260603-triple-question-ka-evolution.md
+      - .tad/active/ideas/IDEA-20260610-agents-skills-auto-parity.md
+      - .tad/active/ideas/IDEA-20260613-tad-opt-in-mode-posture.md
+      - .tad/active/ideas/IDEA-20260616-agent-skill-evolution-pack.md
+    carrier_paths:
+      - .claude/skills/alex/references/idea-path-protocol.md
+      - .tad/active/ideas/
+    disposition: DECISION_REQUIRED
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P5 secondary capability decisions（ideas 提取或退休）"
+    rationale: "有价值（60 个存量 idea 在维护）且 carrier 存在（idea-* 协议 + ideas 目录），但捕获形态待定：alex-lite 当前无任何 idea 机制，60 个 idea 需要一个归属（skill vs lite-native 流程）→ 形式决策留 P5，本单只记录载体"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: status-roadmap
+    summary: "全景状态与路线图（*status / *analyze / *design 产出物展示、ROADMAP/NEXT 维护）——已有独立 tad-status skill"
+    source_files:
+      - .claude/skills/alex/references/status-panoramic-protocol.md
+      - .agents/skills/alex/references/status-panoramic-protocol.md
+      - .claude/skills/alex/references/update-roadmap-protocol.md
+      - .agents/skills/alex/references/update-roadmap-protocol.md
+    legacy_triggers: ["*status"]
+    existing_equivalents: ["tad-status"]
+    route_consumers:
+      - .claude/skills/tad-status/SKILL.md
+      - .agents/skills/tad-status/SKILL.md
+      - NEXT.md
+      - ROADMAP.md
+    carrier_paths:
+      - .claude/skills/tad-status/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P5：确认 tad-status 覆盖 *status 语义后随 full 删除"
+    rationale: "已有独立 skill tad-status 真覆盖全景状态展示 → EXISTING，不新建重复 skill（判定纪律）；update-roadmap-protocol 的路线图维护语义并入 status 能力"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: research
+    summary: "深度研究（*research / research-decision / research-plan / research-review）——NotebookLM 持久知识库，独立 skill 已存在"
+    source_files:
+      - .claude/skills/alex/references/research-decision-protocol.md
+      - .agents/skills/alex/references/research-decision-protocol.md
+      - .claude/skills/alex/references/research-plan-protocol.md
+      - .agents/skills/alex/references/research-plan-protocol.md
+      - .claude/skills/alex/references/research-review-protocol.md
+      - .agents/skills/alex/references/research-review-protocol.md
+      - .claude/skills/blake/references/notebooklm-access.md
+      - .agents/skills/blake/references/notebooklm-access.md
+    legacy_triggers: ["*research", "/deep-research"]
+    existing_equivalents: ["research-notebook", "research-github"]
+    route_consumers:
+      - .claude/skills/research-notebook/SKILL.md
+      - .agents/skills/research-notebook/SKILL.md
+      - .tad/guides/cross-model-invocation.md
+      - .tad/brain-index.md
+      - .tad/hooks/lib/brain-index-gen.sh
+      - .tad/active/research/wayo-circuit-test/power-design.md
+    carrier_paths:
+      - .claude/skills/research-notebook/SKILL.md
+      - .claude/skills/research-github/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "随 full 删除无需额外迁移（skill 已独立）"
+    rationale: "research-notebook（19 子命令）与 research-github（6 命令）已真覆盖研究能力 → EXISTING；notebooklm-access 的 CLI 访问知识并入 research-notebook 或作为其 reference；/deep-research 是路由文档明示排除的入口（用 *research 统一），作为被吸收的 legacy trigger 记录"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: parallel
+    summary: "并行执行编排（*parallel）——多组件任务的 parallel-coordinator 编排；tad-parallel skill 已存在"
+    source_files: []
+    legacy_triggers: ["*parallel"]
+    existing_equivalents: ["tad-parallel"]
+    route_consumers: []
+    carrier_paths:
+      - .claude/skills/tad-parallel/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "随 full 删除无需额外迁移（skill 已独立）"
+    rationale: "tad-parallel skill 与 parallel-coordinator agent 已真覆盖并行编排 → EXISTING；full 侧无专属 canonical 文件"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: surplus-yolo
+    summary: "盈余燃尽与 YOLO 批量执行（*surplus / yolo-execution）——surplus skill + 两个 workflow 已存在"
+    source_files:
+      - .claude/skills/alex/references/yolo-execution-protocol.md
+      - .agents/skills/alex/references/yolo-execution-protocol.md
+    legacy_triggers: []
+    existing_equivalents: ["surplus"]
+    route_consumers:
+      - .claude/workflows/surplus-scan.workflow.js
+      - .claude/workflows/surplus-execute.workflow.js
+      - .tad/hooks/lib/audit-yolo.sh
+    carrier_paths:
+      - .claude/skills/surplus/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "随 full 删除无需额外迁移（skill 已独立）"
+    rationale: "surplus skill（--plan/--budget 两阶段）与 yolo-epic workflow 已真覆盖批量执行 → EXISTING；yolo-execution-protocol 的操作知识由 surplus skill 承载"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: product-architecture
+    summary: "产品与架构咨询快速通道（*product / *architect）——product-expert / backend-architect agent 直连"
+    source_files: []
+    legacy_triggers: ["*product", "*architect"]
+    existing_equivalents: ["product-thinking"]
+    route_consumers:
+      - .claude/skills/product-thinking/references/pressure-test-rubric.md
+      - .agents/skills/product-thinking/references/pressure-test-rubric.md
+      - .tad/capability-packs/product-thinking/references/pressure-test-rubric.md
+    carrier_paths:
+      - .claude/skills/product-thinking/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "随 full 删除无需额外迁移（skill 已独立）"
+    rationale: "product-thinking skill 与 product-expert/backend-architect agents 已真覆盖 → EXISTING；*product/*architect 只是路由别名，随 full 路由删除"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: lite-design-handoff
+    summary: "Lite 设计侧契约流程（alex-lite）——目标锚定、知识预检、契约审查、AC 生成、双 reviewer"
+    source_files: []
+    legacy_triggers: []
+    existing_equivalents: []
+    route_consumers:
+      - .claude/skills/alex-lite/SKILL.md
+      - .agents/skills/alex-lite/SKILL.md
+    carrier_paths:
+      - .claude/skills/alex-lite/SKILL.md
+    disposition: LITE_NATIVE
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "无（Lite 主流程即此能力）"
+    rationale: "alex-lite 主流程已覆盖设计侧契约能力（L2.5 契约审查 = full 设计期专家审查的 lite 等价）→ LITE_NATIVE；full 的设计/分析协议不再需要独立技能"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: lite-execution-gates
+    summary: "Lite 实现侧执行与门禁（blake-lite）——实现、AC 自验、独立 reviewer、技术门、归档"
+    source_files: []
+    legacy_triggers: []
+    existing_equivalents: []
+    route_consumers:
+      - .claude/skills/blake-lite/SKILL.md
+      - .agents/skills/blake-lite/SKILL.md
+    carrier_paths:
+      - .claude/skills/blake-lite/SKILL.md
+    disposition: LITE_NATIVE
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "无（Lite 主流程即此能力）"
+    rationale: "blake-lite 主流程已覆盖执行+独立 reviewer+技术门（L3/L3.5 = full Gate 3 的 lite 等价）→ LITE_NATIVE；full 的实现/门禁协议不再需要独立技能"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: full-router-startup
+    summary: "full 代理路由与启动扫描（/alex /blake 意图路由、依赖演进/研究图景/僵尸 handoff 自动提示）——随 full 退役的固定启动费"
+    source_files:
+      - .claude/skills/alex/SKILL.md
+      - .agents/skills/alex/SKILL.md
+      - .claude/skills/alex/references/intent-router-protocol.md
+      - .agents/skills/alex/references/intent-router-protocol.md
+    legacy_triggers: ["/alex", "/blake"]
+    existing_equivalents: []
+    route_consumers:
+      - CLAUDE.md
+      - AGENTS.md
+      - README.md
+      - .tad/README.md
+      - .tad/config-agents.yaml
+      - .tad/deprecation.yaml
+      - tad
+      - .tad/runtime-compat/claude-code.md
+      - .tad/hooks/startup-health.sh
+      - .tad/hooks/precompact-session-snapshot.sh
+      - .tad/hooks/lib/common.sh
+      - .tad/hooks/lib/detect-state-test.sh
+      - .tad/hooks/lib/askuser-capture.sh
+      - .tad/project-knowledge/patterns/hook-contracts.md
+      - .tad/project-knowledge/principles.md
+      - .tad/project-knowledge/patterns/shell-portability.md
+      - docs/CODEX-USER-GUIDE.md
+      - docs/MULTI-PLATFORM.md
+      - docs/codex-guide.html
+      - .tad/codex/README.md
+      - .claude/skills/tad/SKILL.md
+      - .agents/skills/tad/SKILL.md
+      - .claude/skills/tad-help/SKILL.md
+      - .agents/skills/tad-help/SKILL.md
+      - .claude/skills/tad-init/SKILL.md
+      - .agents/skills/tad-init/SKILL.md
+      - .claude/skills/tad-scenario/SKILL.md
+      - .agents/skills/tad-scenario/SKILL.md
+      - .claude/skills/tad-maintain/SKILL.md
+      - .agents/skills/tad-maintain/SKILL.md
+      - .tad/active/epics/EPIC-20260809-full-capability-extraction-retirement.md
+      - .tad/active/handoffs/LITE-20260809-1543-full-capability-inventory-contract.md
+    carrier_paths:
+      - .claude/skills/alex/SKILL.md
+      - .tad/deprecation.yaml
+    disposition: RETIRE
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P7 deprecation shim：旧命令迁移提示后随 P8 物理删除"
+    rationale: "Epic Non-Goal 明示不保留 full 激活、启动扫描或通道分类器；每 session 固定启动费在 lite-first 下无价值 → RETIRE（判定纪律：固定启动费、重复路由 → RETIRE）"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: legacy-handoff
+    summary: "旧 HANDOFF-* 契约全生命周期（*handoff 创建 / *accept 归档 / completion 报告）——只服务历史契约档案"
+    source_files:
+      - .claude/skills/alex/references/accept-command.md
+      - .agents/skills/alex/references/accept-command.md
+      - .claude/skills/alex/references/acceptance-protocol.md
+      - .agents/skills/alex/references/acceptance-protocol.md
+      - .claude/skills/alex/references/handoff-creation-protocol.md
+      - .agents/skills/alex/references/handoff-creation-protocol.md
+      - .claude/skills/alex/references/workflow-completion-trigger.md
+      - .agents/skills/alex/references/workflow-completion-trigger.md
+    legacy_triggers: ["*handoff", "*accept"]
+    existing_equivalents: []
+    route_consumers:
+      - .claude/workflows/handoff-review.workflow.js
+      - .tad/templates/completion-report.md
+      - .tad/templates/deliverable-completion.md
+      - .tad/templates/deliverable-handoff.md
+      - .tad/templates/handoff-a-to-b.md
+      - .tad/templates/session-state-template.md
+      - .tad/templates/skillify-candidate-template.md
+      - .tad/templates/test-brief-template.md
+      - .tad/project-knowledge/patterns/handoff-design.md
+      - .tad/tasks/evidence-collection.md
+    carrier_paths:
+      - .claude/skills/alex/references/handoff-creation-protocol.md
+      - .tad/templates/handoff-a-to-b.md
+    disposition: HISTORY_ONLY
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: history-only
+    migration_dependency: "P6：37 张下游 baseline handoff 处置完毕后随 full 删除"
+    rationale: "只服务旧 HANDOFF-* 契约（Epic P6 迁移输入）；lite 契约流程已接管新工作（LITE-*.md），旧契约处置完即无现役消费 → HISTORY_ONLY（判定纪律）"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: gate-protocol
+    summary: "质量门执行（*gate 1-4 / spec-compliance / rubric 评审）——gate skill 已独立存在"
+    source_files:
+      - .claude/skills/gate/SKILL.md
+      - .agents/skills/gate/SKILL.md
+    legacy_triggers: ["*gate 1", "*gate 2", "*gate 3", "*gate 4", "/gate"]
+    existing_equivalents: ["gate"]
+    route_consumers:
+      - .claude/agents/spec-compliance-reviewer.md
+      - .tad/config-quality.yaml
+      - .tad/hooks/pre-gate-check.sh
+      - .tad/hooks/pre-accept-check.sh
+      - .tad/hooks/trace-step.sh
+      - .tad/hooks/lib/layer2-audit.sh
+      - .tad/tasks/gate-execution.md
+      - .tad/tasks/evidence-collection.md
+      - .tad/eval/golden-set/BLIND-PACK.md
+      - .tad/eval/golden-set/GS-08-tad-lean-trustworthy-phase5.md
+      - .tad/eval/golden-set/GS-12-knowledge-redesign-p1-foundation.md
+      - .tad/eval/judge/assemble-bundle.sh
+      - .tad/eval/judge/gate-roi-report.sh
+      - .tad/eval/judge/judge-prompt.md
+      - .tad/eval/rubric.md
+      - .tad/eval/version-sweep-eval.md
+      - .tad/tests/detect-state-fixture.sh
+      - .tad/tests/migration-fixtures/run-fixtures.sh
+      - .tad/project-knowledge/patterns/gate-design.md
+      - .tad/project-knowledge/patterns/ac-verification.md
+      - .tad/templates/acceptance-verification-guide.md
+    carrier_paths:
+      - .claude/skills/gate/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "随 full 删除无需额外迁移（skill 已独立；lite 通道以 L3/L3.5 技术门 + 人验收为等价约束）"
+    rationale: "gate skill 已独立覆盖 Gate 1-4 与 spec-compliance 机制 → EXISTING；full 的 *gate 命令只是路由入口，随路由删除"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: capability-upgrade
+    summary: "能力包升级/构建（/capability-upgrade）——5 阶段流程独立 skill 已存在"
+    source_files: []
+    legacy_triggers: ["/capability-upgrade"]
+    existing_equivalents: ["capability-upgrade"]
+    route_consumers: []
+    carrier_paths:
+      - .claude/skills/capability-upgrade/SKILL.md
+    disposition: EXISTING
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "随 full 删除无需额外迁移（skill 已独立）"
+    rationale: "capability-upgrade skill（5 阶段流程）已真覆盖 → EXISTING"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: playground-legacy
+    summary: "旧 /playground（已 DEPRECATED 2026-06-10，Feedback Collector 取代）——占位记录待物理清理"
+    source_files: []
+    legacy_triggers: ["/playground"]
+    existing_equivalents: ["playground"]
+    route_consumers:
+      - .claude/skills/playground/SKILL.md
+      - .agents/skills/playground/SKILL.md
+    carrier_paths:
+      - .claude/skills/playground/SKILL.md
+    disposition: RETIRE
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P8 物理删除（含 playground skill 目录）"
+    rationale: "命令已官方 DEPRECATED（Key Commands 块明示 use Feedback Collector）→ 无价值入口 → RETIRE（判定纪律）"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: alex-design-inquiry
+    summary: "Alex 设计域命令族（*bug / *discuss / *learn / *analyze / *design / 自适应复杂度 / 实验 / 取消）——逐个命令的价值与形态待 P5 裁决"
+    source_files:
+      - .claude/skills/alex/references/adaptive-complexity-protocol.md
+      - .agents/skills/alex/references/adaptive-complexity-protocol.md
+      - .claude/skills/alex/references/bug-path-protocol.md
+      - .agents/skills/alex/references/bug-path-protocol.md
+      - .claude/skills/alex/references/cancel-protocol.md
+      - .agents/skills/alex/references/cancel-protocol.md
+      - .claude/skills/alex/references/design-protocol.md
+      - .agents/skills/alex/references/design-protocol.md
+      - .claude/skills/alex/references/discuss-path-protocol.md
+      - .agents/skills/alex/references/discuss-path-protocol.md
+      - .claude/skills/alex/references/experiment-path-protocol.md
+      - .agents/skills/alex/references/experiment-path-protocol.md
+      - .claude/skills/alex/references/express-path-protocol.md
+      - .agents/skills/alex/references/express-path-protocol.md
+      - .claude/skills/alex/references/learn-path-protocol.md
+      - .agents/skills/alex/references/learn-path-protocol.md
+      - .claude/skills/alex/references/socratic-inquiry-protocol.md
+      - .agents/skills/alex/references/socratic-inquiry-protocol.md
+    legacy_triggers: ["*bug", "*discuss", "*learn", "*analyze", "*design"]
+    existing_equivalents: []
+    route_consumers:
+      - .tad/project-knowledge/frontend-design.md
+    carrier_paths:
+      - .claude/skills/alex/references/design-protocol.md
+      - .claude/skills/alex/references/socratic-inquiry-protocol.md
+    disposition: DECISION_REQUIRED
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P5：逐命令裁决（bug/discuss 可能 lite-native；learn/socratic 可能需要 skill；analyze/design 已由 alex-lite 契约流程等价覆盖）"
+    rationale: "命令族内形态异质：bug 诊断由 blake-lite repair loop 覆盖、analyze/design 由 alex-lite 契约流程等价覆盖（可 LITE_NATIVE），而 learn/socratic 无现役等价（可 EXTRACT）；逐命令价值判断超出本单范围 → DECISION_REQUIRED 整体留 P5，本单记录全部 carrier"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: blake-execution-loop
+    summary: "Blake 执行循环（*develop / Ralph Loop / *layer1-2 / 跨模型调用）——迭代执行能力由 blake-lite repair loop 等价覆盖"
+    source_files:
+      - .claude/skills/blake/SKILL.md
+      - .agents/skills/blake/SKILL.md
+      - .claude/skills/blake/references/cross-model-invocation.md
+      - .agents/skills/blake/references/cross-model-invocation.md
+    legacy_triggers: ["*develop [task-id]", "*ralph-status", "*ralph-resume", "*layer1", "*layer2"]
+    existing_equivalents: []
+    route_consumers:
+      - .tad/guides/tool-quick-reference-blake.md
+    carrier_paths:
+      - .claude/skills/blake/SKILL.md
+    disposition: LITE_NATIVE
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "无（blake-lite repair loop + L3 fresh reviewer 已等价覆盖）"
+    rationale: "Ralph Loop 的迭代-熔断-恢复能力由 blake-lite Lite Repair Loop（repair_round 3/3 + same_error_count 熔断）等价覆盖；*layer1/*layer2 的独立审查由 L3 fresh reviewer 等价覆盖 → LITE_NATIVE；cross-model-invocation 为工具编排文档（.tad/guides/ 已有镜像）"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
+  - id: knowledge-maintain
+    summary: "知识维护（*harvest / *knowledge-maintain 去重 lint 退役 / skillify 路由）——lite 明确无等价物，P5/P6 裁决"
+    source_files:
+      - .claude/skills/alex/references/distillation-loop-protocol.md
+      - .agents/skills/alex/references/distillation-loop-protocol.md
+      - .claude/skills/alex/references/knowledge-maintain-protocol.md
+      - .agents/skills/alex/references/knowledge-maintain-protocol.md
+    legacy_triggers: ["*harvest", "*knowledge-maintain"]
+    existing_equivalents: []
+    route_consumers:
+      - .claude/skills/agent-skill-evolution/references/validation-gate.md
+      - .agents/skills/agent-skill-evolution/references/validation-gate.md
+      - .claude/skills/ai-evaluation/references/human-eval-protocol.md
+      - .agents/skills/ai-evaluation/references/human-eval-protocol.md
+      - .claude/skills/save-workflow/SKILL.md
+      - .agents/skills/save-workflow/SKILL.md
+      - .tad/capability-packs/ml-training/references/mcp-collaboration.md
+      - .tad/project-knowledge/patterns/memory-and-learning.md
+      - .tad/project-knowledge/patterns/pack-build-rules.md
+      - .tad/project-knowledge/patterns/pack-evaluation.md
+    carrier_paths:
+      - .claude/skills/alex/references/knowledge-maintain-protocol.md
+      - .claude/skills/alex/references/distillation-loop-protocol.md
+    disposition: DECISION_REQUIRED
+    target_skill: ""
+    supported_roles: []
+    modes: []
+    safety_class: normal
+    migration_dependency: "P5/P6：knowledge-maintain 去重/lint/退役规程与验收知识闭环的归属裁决"
+    rationale: "CLAUDE.md §2 明列 *knowledge-maintain 为 lite 已知无等价物；蒸馏循环（Capture/Distill/Maintain）在 lite 下由验收知识闭环部分承接，但去重/lint/退役规程无现役等价且有 carrier → 形态（skill vs lite-native 规程）留 P5/P6 裁决"
+    trigger_examples: []
+    resource_plan:
+      skill: []
+      references: []
+      scripts: []
+      assets: []
+    forward_test_prompt: ""
