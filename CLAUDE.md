@@ -16,8 +16,11 @@
 ⚠️ **默认走 lite（§2.5）**。下表为 full 通道，**仅在 lite 无等价物时使用**。
 2026-08-06 实测：`*publish` / `*sync` / `*research` 的操作知识 lite 已可按需读取
 （`release-runbook` skill、`.tad/guides/tool-quick-reference-alex.md`），用普通 LITE 单即可完成
-——但 `*publish` / `*sync` 仍受安全停清单第 1 条约束（需人授权），
-且工具编排文档单次 ≤2 个文件，不能一张单同时吃 publish + research 两套知识。
+——`*publish` / `*sync` 的高后果范围须写入并随 L3 一次接受的 Execution Mandate；
+运行时技术步骤不再逐项请示。release 渐进加载仅允许 entry + 一个已选 named reference；
+publish+sync 组合 transaction 可依次加载 entry、`publish-ops.md`、`sync-ops.md`，硬上限 3 个
+release 文档且不得加载无关 reference。工具编排文档仍单次 ≤2 个，不能一张单同时吃
+publish + research 两套知识。
 lite **已知**无等价物：`*tournament`（竞赛式设计）、`*deps` 系列（操作协议在 full
 `references/` 内，lite 读取权限明确排除）、`*knowledge-maintain`（去重 / lint / 退役规程），
 以及 full Alex 启动时的自动扫描（依赖演进 / 研究图景 / 僵尸 handoff 提示）。
@@ -43,9 +46,13 @@ Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 NotebookLM 持久知识库）。
 
 ### 2.5 Lite 通道（默认通道）
-`/alex-lite` → `/blake-lite`：**默认通道**。文件数、协议密度、是否触及协议契约均不构成升级理由；仅命中 lite skill 内的「安全停清单」时停下来问人。契约文件 `LITE-*.md`。
+`/alex-lite` → `/blake-lite`：**默认通道**。文件数、协议密度、是否触及协议契约均不构成升级理由；
+Lite 的有效权限是 `role ∩ skill ∩ accepted Execution Mandate`。只有 outcome/target/consequence/
+blast-radius、业务法律财务身份取舍、分叉可见恢复或新外部身份凭据的实质边界变化才重决策；
+技术失败只能有界恢复或 `GATE FAIL / BLOCK`，不得伪装成审批问题。契约文件 `LITE-*.md`。
 豁免：§1 handoff 规则、§3 规则 0-5 对 Lite 不适用，代之以内置约束——一页纸契约 +
-契约审查与实现后各 1 个 fresh reviewer（均禁自审替代）+ 人两次拍板 + AC 可运行 + 验收即归档。
+契约审查与实现后各 1 个 fresh reviewer（均禁自审替代）+ 初始 contract/mandate 决策 + 最终业务验收
++ AC 可运行。最终验收后自动归档，不另问归档确认；local commit 仅按 mandate 执行。
 方向互斥：full `/blake`、`/alex` 一律忽略 `LITE-*.md`；`/blake-lite` 只接受 `LITE-*.md`。
 Terminal：lite 下角色切换由**人输入命令**完成（可同 terminal）；agent 仍禁止自行调用另一角色。
 

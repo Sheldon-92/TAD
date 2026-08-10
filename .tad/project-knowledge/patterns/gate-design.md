@@ -200,3 +200,28 @@
 - **Action**: Never let the verified party produce the baseline a fence depends on. Anchor fences to an immovable reference the contract pins at authoring time — a commit sha plus, for untracked files that matter, their content hashes. Assert the anchor is unmoved as part of the fence. If a fence must use a captured baseline, the capture belongs to the verifier's side of the human bridge, not the executor's.
 - **failure_mode**: Naive default: harden a before/after fence by fixing whichever mechanical defect the last reviewer found. Why wrong: every such fix leaves the structural flaw untouched — the executor still decides when "before" is — so the fence is bypassable regardless of how correct its diff logic becomes, and each round of hardening buys confidence without buying coverage.
 - **Grounded in**: HANDOFF-20260805-lite-inventory-pricing-audit.md §4 AC3 (v4 rewrite, HEAD-anchored), Gate 2 v4 adversarial report (sandbox bypass with collateral damage), Gate 4 independent recompute 2026-08-05
+
+### Accepted Execution Mandate Is Lite's Permission Carrier — SAFETY Strengthens Evidence, Not Prompt Count - 2026-08-10
+
+- **Context**: Phase 3b replaced Lite's blanket/per-command stop-and-ask model. Repeated questions about
+  commands, retries, rollback, commit, push, and archive asked the human to judge technical mechanics,
+  encouraged rubber-stamping, and left transaction ownership ambiguous.
+- **Discovery**: Effective authority is `Lite role ∩ capability skill ∩ accepted Execution Mandate`.
+  The human decides an understandable outcome, exact targets/consequences, blast radius, exclusions,
+  visible recovery preference, and final business acceptance. The agent owns command order, guards,
+  verified-not-started retry, deterministic recovery, and Gate truth. SAFETY consequences therefore
+  require stronger exact bindings, recovery policy, pre/post evidence, and independent review—not an
+  automatic runtime prompt. Runtime re-decision is closed to outcome/target/consequence/blast-radius
+  change, business/legal/financial/identity trade-off, divergent visible recovery, or a new external
+  identity/credential. Technical failure blocks when it cannot be safely reconciled.
+- **Action**: Require one accepted, internally consistent mandate plus handoff-owned versioned transaction
+  state before mutation. A capability skill may narrow or refuse but never expand. Missing, pending,
+  malformed, superseded, expired, or target-mismatched mandate means no grant; an ad-hoc current answer
+  cannot repair the absent carrier. Final acceptance archives automatically, and local commit/push runs
+  only when the exact consequence and target bindings exist.
+- **failure_mode**: Naive default: treat every irreversible-looking command as a fresh human gate. Why
+  wrong: command wording is not the human's decision domain, repeated prompts become formalistic approval,
+  and replacing them without a durable mandate/CAS would instead create excessive agency.
+- **Grounded in**: `.tad/decisions/DR-20260809-lite-authority-model-v2.md`,
+  `.tad/evidence/designs/full-capability-extraction/authority-model-v2-contract.md`,
+  `HANDOFF-20260810-lite-authority-model-v2.md`.

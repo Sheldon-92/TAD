@@ -2,8 +2,8 @@
 
 Load this reference for `sync`, `sync-add`, or `sync-list` only after the entry skill's source guard has
 passed. The guard precedes reference loading and every registry/target read, including read-only planning
-and `sync-list`. Plan/execute/verify roles, effective-permission intersection, approval consumption, and
-ambiguous-result recovery apply to every write. Registered targets are never implicit write authorization.
+and `sync-list`. Plan/execute/verify roles, effective-permission intersection, accepted-mandate binding,
+transaction CAS, and ambiguous-result recovery apply to every write. Registration is never implicit authority.
 
 ## 1. Registry and read-only listing
 
@@ -25,7 +25,7 @@ Do not update stale metadata while listing.
 ## 2. Select and validate sync scope
 
 Alex-Lite `plan` records one of: all outdated projects, an explicit target set, or cancel. Cancel
-returns without writes. Before any target approval or write, Blake-Lite validates each selected entry:
+returns without writes. Before any target transaction launch or write, Blake-Lite validates each selected entry:
 
 - path is absolute, resolves canonically, exists, and is readable;
 - physical target identity differs from physical `repo_root`;
@@ -33,7 +33,7 @@ returns without writes. Before any target approval or write, Blake-Lite validate
 - platform and `claude_md_strategy` are supported;
 - current source and old target versions are captured before copying.
 
-Resolve identity before any approval claim, task-state transition, MWS copy, migration, registry change,
+Resolve identity before any transaction transition, MWS copy, migration, registry change,
 commit, or push:
 
 ```bash
@@ -89,8 +89,8 @@ Exclude the observed basename (currently `sync-registry.yaml`) from target copy 
 `capability-packs` copies only the registry-only path. Hardcoded directory tables are illustrative only.
 
 Zero-touch directories from `--zero-touch` must be captured in pre/post target manifests and remain
-unchanged. Source-registry mutations for `sync-add`/successful `last_synced_*` are separate human-gated
-source writes, never target MWS entries.
+unchanged. Source-registry mutations for `sync-add`/successful `last_synced_*` are separately named
+source actions with authorized consequence bindings, never target MWS entries.
 
 ## 4. Platform strategy and safe preparation
 
@@ -99,8 +99,8 @@ Every target receives both authoritative skill trees: canonical `.claude/skills/
 removes either skill mirror.
 
 - Back up an existing entry document before overwrite/merge.
-- For `merge`, require `<!-- TAD:PROJECT-CONTENT-BELOW -->`; if absent, stop that target and ask for a
-  new plan. Never silently overwrite.
+- For `merge`, require `<!-- TAD:PROJECT-CONTENT-BELOW -->`; if absent, stop that target. Changing the
+  visible merge/overwrite result is a boundary change; never silently overwrite.
 - Preserve project-owned settings hooks; merge only declared TAD-owned keys.
 - Do not run capability-pack `install.sh` after mirroring; it can overwrite authoritative skills from
   a stale secondary source.
@@ -110,7 +110,9 @@ All filesystem-changing tests use disposable fixture repositories, never a regis
 
 ## 5. Execute one target
 
-After a target-specific approval is atomically consumed, perform only the approved MWS operations.
+After the target action is CAS-launched, perform only its mandate-bound MWS operations.
+Copy, migration, post-copy gates, registry advancement, downstream commit, and downstream push each need
+an authorized consequence class and named target, not an action-level approval.
 Derive framework paths from the interfaces above; do not add an inline directory table or migration.
 
 Run the migration engine exactly once after the framework copy:
@@ -150,32 +152,35 @@ backup, and stop. Do not continue to later targets because the source of failure
 
 ## 7. Registry advancement and optional downstream git
 
-Updating `last_synced_version/date` is a separate source-repository mutation. Request approval only for
-the exact set of verified targets; partial, failed, missing, and skipped entries remain unchanged.
+Updating `last_synced_version/date` is a separate source action and requires an authorized source-write
+consequence bound to the exact verified targets; partial, failed, missing, and skipped entries remain unchanged.
 Use structured per-entry updates and re-read the registry; never bulk `sed` every project.
 
-Downstream commit and downstream push are two more independent human gates. Stage only paths generated
+Downstream commit and downstream push are separate technical actions, each requiring its own declared
+consequence and named target but no new prompt. Stage only paths generated
 from the Managed Write Surface and observed TOP_DENY; never `git add -A`, `.tad/`, or `docs/` broadly.
-Record the exact target, branch, path set, commit SHA, and remote ref in each approval digest. Ambiguous
-commit/push results follow the entry skill's consume-once recovery and are never blindly retried.
+Record the exact target, branch, path set, commit SHA, and remote ref in transaction evidence. Ambiguous
+commit/push results follow the entry skill's classifier and are never blindly retried.
 
 ## 8. `sync-add` registration
 
 `sync-add` begins read-only after the entry source guard passes. Validate the absolute canonical path,
 then run the §2 physical-identity check and refuse when it equals `repo_root`, including through a
-symlink. This happens before proposing or consuming a registry-write approval. Then validate `.tad/`,
+symlink. This happens before proposing or launching a registry-write action. Then validate `.tad/`,
 readable version, platform, and entry document. Detect strategy:
 
 - marker present: propose `merge` and report the preserved-content region;
 - marker absent: propose `overwrite`; choosing `merge` blocks until the marker exists.
 
-Alex-Lite records the proposed entry. Writing the source registry requires its own approval digest and
-Blake-Lite `execute` mode. Add `path`, derived `name`, `platform`, strategy, target's current version as
+Alex-Lite records the proposed entry. Writing the source registry requires an exact accepted source-write
+binding and Blake-Lite `execute` mode. Add `path`, derived `name`, `platform`, strategy, target's current version as
 `last_synced_version`, and date. Registration does not claim a sync occurred.
 
 ## 9. Summary and recovery
 
 Report every selected target as `verified`, `partial`, `failed`, `skipped`, or `not-started`, with old/new
 version, migration/gate exits, backup, registry advancement, commit, push, and recovery action. A partial
-batch is not success. Resume starts from recorded state; consumed approvals remain consumed, and any new
-write needs a new approval and scope digest.
+batch is not success. Resume starts from recorded state; completed actions remain completed, verified
+not-started actions retry in the same transaction, and any new target/consequence is a boundary change.
+Deterministic partial recovery follows the accepted policy; unresolved unknown blocks after read-only
+diagnosis. Stop the batch after a systemic partial rather than exposing later targets to the same fault.

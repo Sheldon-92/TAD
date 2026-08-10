@@ -1,0 +1,14 @@
+PASS	positive_control_fixture=PASS
+PASS	mutation_probe_broaden_binding=PASS
+PASS	mutation_probe_tool_prompt=PASS
+PASS	mutation_probe_replay_duplicate=PASS
+PASS	positive_control_source=PASS
+PASS	mutation_probe_untracked=PASS
+PASS	mutation_probe_tracked=PASS
+PASS	mutation_probe_cached_blob=PASS
+PASS	mutation_probe_ignored=PASS
+PASS	positive_control_target=PASS
+PASS	mutation_probe_registered_target=PASS
+PASS	mutation_probe_cas_loser=PASS
+PASS	positive_controls=2/2 mutation_probes=9/9
+RESULT: PASS

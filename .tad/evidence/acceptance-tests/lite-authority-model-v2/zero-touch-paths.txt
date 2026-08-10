@@ -1,0 +1,30 @@
+registered_target	/Users/sheldonzhao/01-on progress programs/ArtForge
+registered_target	/Users/sheldonzhao/01-on progress programs/Monica-website
+registered_target	/Users/sheldonzhao/01-on progress programs/Next Guest
+registered_target	/Users/sheldonzhao/01-on progress programs/OpenClaw Hack
+registered_target	/Users/sheldonzhao/01-on progress programs/Sober Creator
+registered_target	/Users/sheldonzhao/01-on progress programs/menu-snap
+registered_target	/Users/sheldonzhao/01-on progress programs/my-openclaw-agents
+registered_target	/Users/sheldonzhao/01-on progress programs/toy
+registered_target	/Users/sheldonzhao/01-on progress programs/下载md插件
+registered_target	/Users/sheldonzhao/01-on progress programs/买卖
+registered_target	/Users/sheldonzhao/01-on progress programs/内存管理
+registered_target	/Users/sheldonzhao/01-on progress programs/合规ai
+registered_target	/Users/sheldonzhao/01-on progress programs/运动打卡小助手
+registered_target	/Users/sheldonzhao/Downloads/Colin声音项目
+source_pathspec	.claude/settings*.json
+source_pathspec	.claude/settings.local.json.bak-20260806-082549
+source_pathspec	.codex/agents/**
+source_pathspec	.codex/hooks.json
+source_pathspec	.tad/archive/**
+source_pathspec	.tad/config*.yaml
+source_pathspec	.tad/gates/**
+source_pathspec	.tad/hooks/**
+source_pathspec	.tad/hooks/lib/derive-sync-set.sh
+source_pathspec	.tad/hooks/lib/migration-engine.sh
+source_pathspec	.tad/hooks/lib/release-verify.sh
+source_pathspec	.tad/sync-registry.yaml
+source_pathspec	.tad/templates/**
+source_pathspec	bin/**
+source_pathspec	package.json
+source_pathspec	tad.sh

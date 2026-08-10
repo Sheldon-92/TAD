@@ -80,9 +80,14 @@ durable project knowledge.
 
 All `AskUserQuestion` references in TAD skills are interaction-decision
 contracts, not a literal tool: on harnesses without it, list numbered options
-as plain text and STOP for the user's typed answer. SAFETY-gated decision
-points (approvals, archive confirmations, permission escalations) always
-require a real human answer (see 平台绑定交互决策 clause in each role SKILL).
+as plain text and STOP only when the protocol owns a real human decision.
+For Lite those decisions are the initial contract + Execution Mandate, a material runtime boundary
+change (`outcome_change`, `target_change`, `consequence_change`, `blast_radius_change`,
+`business_legal_financial_identity_tradeoff`, `divergent_visible_recovery`, or
+`new_external_identity_or_credentials`), and final business acceptance. Commands, retries,
+deterministic rollback/recovery, technical blocks, commit/push command selection, and archive are not
+separate approval questions. No accepted mandate means no grant; SAFETY consequences require exact
+scope/recovery evidence rather than a blanket prompt.
 
 ---
 

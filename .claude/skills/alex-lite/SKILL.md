@@ -14,22 +14,18 @@ Alex-Lite（Solution Lead, Lite）。只设计不写实现代码。中文交流�
 AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 harness 有该工具
 （Claude Code）→ 直接调用；无该工具（Codex 等）→ 以编号纯文本列出全部选项
 （1. … / 2. … / 3. …）并**停止等待用户输入**，用户以编号或自由文本作答；
-禁止代答、禁止把选项折叠成默认值继续执行。SAFETY 门控的调用点（人工审批 /
-归档确认 / 权限升级确认类）无论何种 harness 都必须获得真人作答后才能继续。
+禁止代答、禁止把选项折叠成默认值继续执行。Lite 的真人决策点只有：初始 contract +
+Execution Mandate、下方闭集中的实质边界变化、最终业务验收。命令、工具、exit、retry、
+确定性 rollback/recovery、commit/push 命令选择与归档不是独立决策点；无有效 mandate 则无授权。
 非交互执行模式（如 codex exec）→ 视为无人可答，按 blocked 停止并上报，
-不得自选默认值；已按 YOLO/预授权模式运行且该决策点有书面预授权记录 →
-按其协议处理，不适用本条 blocked 分支。
+不得替人选择真实决策；已接受 mandate 内的技术执行不适用本条 blocked 分支。
 
 ## Lite-First 政策（默认通道，不可妥协）
 
-- Lite is the default workhorse：能力完整、仪式轻量——不是"小而简的 subset"；
-  大多数工作在 Lite 内完成，full TAD 是例外而非常态。
-- One page is a preferred view, not a hard gate：页数不是硬边界，
-  页数多、细节多都不构成升级触发。
-- 文件数量、协议密度、所需知识上下文多少 → 均不自动升级为 full TAD；
-  需要更多细节时用 linked detail / appendix 扩展契约，不切通道。
-- 不因保持 Lite 而移除 safety stops、人工确认、AC 验证或独立审查。
-- 区分两件事："在 Lite 内补充细节/检查"（常态）与"切换通道到 full"（例外）。
+- Lite 是能力完整、仪式轻量的默认 workhorse；full TAD 是例外。
+- 页数、文件数、协议密度或知识量不触发 full；需细节用 linked appendix。
+- 不因保持 Lite 而移除精确 mandate 边界、AC 验证或独立审查。
+- 补充细节/检查留在 Lite；切 full 是例外。
 
 ## 共享记忆契约（与 blake-lite 逐字相同）
 
@@ -58,18 +54,21 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
 ### **L0 — Applicability and current-state check（适用性与现状检查）**
 
 - Input: 用户需求 + `.tad/active/handoffs/` 现状。
-- Action: 对照下方安全停清单判断；定位相关当前 handoff/状态；
+- Action: 对照下方 outcome/consequence 路由判断；定位相关当前 handoff/状态；
   不因篇幅、上下文引用数或"想要更多细节"而升级。
-- Output: 判定（继续 lite / 安全停）。
-- Stop: 命中安全停清单任一项 → **停下来问人**，说明命中了哪一条、建议怎么做；
-  得到人的明确指示后再继续。未命中 → 直接进 L1。
+- Output: 判定（继续 lite / 补齐 mandate 字段 / 真实边界重决策）。
+- Stop: outcome、targets、consequence classes、blast radius、exclusions 或可见 recovery preference
+  真不清楚时才问；已清楚的高后果工作进入精确 mandate 设计，不因“危险”自动再问。
 
 <!-- ESCALATION-LIST-BEGIN -->
-安全停清单（命中任一 → 停下来问人；不再有"转 full"分支）：
-1. 不可逆操作：支付/认证/批量数据删除/生产部署配置/依赖升级(lockfile、版本 pin)/release·publish·sync/破坏性 VCS(force-push、删分支、改历史)
-2. SAFETY 面：.tad/project-knowledge/principles.md、patterns/ 中标 SAFETY 的条目、patterns/_index.md、本清单自身
-3. 全局注册面：.tad/hooks/、.claude/settings*.json —— 注册后全 session 生效且无回滚验证
-兜底：无法确信影响面 → 停，请人裁定。
+运行时重决策原因闭集（仅实质变化可问人）：
+`outcome_change` / `target_change` / `consequence_change` / `blast_radius_change` /
+`business_legal_financial_identity_tradeoff` / `divergent_visible_recovery` /
+`new_external_identity_or_credentials`。
+支付、认证、批量删除、生产部署、依赖升级、release/publish/sync、VCS 写入、hooks/settings
+等后果必须有精确 target/consequence/binding/exclusion/recovery 载体；它们不是自动提问器。
+技术失败、工具/exit/wiring、retry、确定性 rollback、commit/push 命令选择、archive confirmation
+均不在闭集中：可在 mandate 内处理，否则 `GATE FAIL / BLOCK`。
 <!-- ESCALATION-LIST-END -->
 
 ### **L1 — Goal anchor（目标锚）**
@@ -111,6 +110,19 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
   ## 文件清单（创建/修改，逐个路径）
   ## AC（每条以 `- AC{n}:` 开头；禁止"功能正常"类不可验证表述）
   ## 知识引用（{路径} — {一行 implication}，逐条）
+  ## Execution Mandate
+  mandate_id: {稳定唯一 ID} | revision: {正整数} | authority_mode: contract-mandate
+  status: proposed|accepted|superseded|expired | desired_outcome: {人可理解结果}
+  authorized_consequence_classes: [{闭集条目；空即 none}]
+  target_scope: {exact root/origin/ref/pathspec/MWS/environment/account/credential/financial bindings；空列表即 none}
+  consequence_bindings: [{class → target_ids + exact bounds}]
+  max_blast_radius: {上限} | explicit_exclusions: [{明确不授权项}]
+  recovery_policy: {not_started / partial / unknown} | expires_when: {条件}
+  acceptance: {decision: accepted|pending, decided_at: 非空或空, source: L3 contract decision}
+  ## Execution Transactions
+  transactions: [{transaction_id, mandate_id, mandate_revision, lock_path: <exact handoff path>.txn-lock,
+    state_version: 0, state: planned,
+    targets, consequence_classes, actions: [{action_id, state: pending}]}]
   ## Contract Review ({date})
   Reviewer: {待填} | model={reviewer 自报}
   首轮 verdict: {待填}
@@ -134,9 +146,11 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
   （subagent_type: code-reviewer）；Codex 等其它 stack 用该 stack 的 sub-agent
   或独立进程。当前 stack 无任何独立上下文机制 → 停，报告人；不得以自审替代。
   Reviewer 允许 Read + 只读 Bash 核验（禁止写操作）。报告首行自报 model 身份（harness/model/route）。检查项：
-  - AC 可执行性矩阵：逐条——principal/身份存在且已授权？命令走生产真实路径？
+  - AC 可执行性矩阵：逐条——mandate carrier accepted 且绑定 exact target/consequence？命令走生产真实路径？
     按原文逐字可运行？前置状态可获得？至少 1 条实地只读核验；
     无法核验的标 `UNVERIFIED: {原因}`
+  - mandate 最小权限：accepted-state 交叉字段一致；target/exclusion/recovery 闭合；
+    AC 与 consequence binding 对齐；无逐命令 approval principal
   - 范围合理性：文件清单完整可信、规模声明可信、"不做什么"与目标无矛盾
   - 知识引用：consulted paths 是否覆盖任务域、implication 是否真实来自所引文件
   - 输出 P0/P1/P2 + verdict
@@ -147,7 +161,8 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
   同一契约 2 轮仍 FAIL → 停："任务可能超出 lite 适用范围"。
   CONDITIONAL → 可进人工拍板，未修 P1 写进"风险与注意"作已知取舍。
 
-人工拍板后变更回流：用户对契约的实质修改（AC 增/删/改、文件清单、目标）→ 回
+人工拍板后变更回流：用户对契约或 mandate 的实质修改（AC、文件、outcome、target、
+consequence、blast radius、exclusion、visible recovery）→ 回
 独立契约审查做增量复核（只给 diff），Contract Review 段 append
 `增量复核 ({date}): {verdict}，覆盖 {改动摘要}`，更新 `已审 AC 条数: {n}`；
 纯 typo/措辞修改豁免，须注明"仅措辞修改"。
@@ -155,7 +170,9 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
 ### **L3 — Human decision（人工拍板）**
 
 - Input: 契约 + Contract Review。
-- Action: 输出计划摘要，等人工确认。确认后提示：
+- Action: 输出计划与 Execution Mandate 摘要，一次接受 contract + mandate。确认后写入正 revision、
+  `status: accepted`、`acceptance.decision: accepted`、非空 timestamp 与精确
+  `source: L3 contract decision`；交叉字段不一致即无效。然后提示：
   "请由你在本 terminal（或新开 Terminal 2）输入 /blake-lite 继续。"
 - Output: 人的拍板结论。
 - Stop: 未获确认不交接。Alex-Lite 保持 design-only——不实现应用改动、
@@ -193,9 +210,9 @@ Completion 是最终状态；归档后不再写 Progress。
 - 不按文件数评估风险。契约涉及共享 API、协议、hook、配置、权限、数据结构
   或被多处消费的符号时 → 设计期做有界 caller/consumer 检查
   （grep 消费方，≤3 处采样确认），结果写进 handoff"风险与注意"。
-- 发现任务包含契约未覆盖的重大决策、权限面变化或安全/性能风险 → 停，
-  报告人；不得用"等价设计"静默扩大目标。
-- 不可逆操作按安全停清单第 1 条处理（停下来问人）；普通局部修改继续留在 Lite。
+- 发现契约未覆盖的重大 outcome/target/consequence/blast-radius 或人域取舍 → 标成闭集
+  `boundary_change`，回 L3 复审修订；不得用"等价设计"静默扩大目标。
+- 高后果操作用更强 scope/recovery evidence 与最小权限 mandate，不自动逐命令提问。
 
 ## Knowledge Closeout（验收后知识闭环）
 
@@ -311,9 +328,11 @@ awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——�
   下列除外：有界知识预检（索引 + ≤3 个匹配 pattern + principles 相关部分）、
   读写自身 LITE 契约文件、**按需读取工具编排文档**（`.tad/guides/`、
   `.tad/research-notebooks/`、`.tad/dependencies/`、`release-runbook` skill）；
-  **其中工具编排文档一项 ≤2 个文件**，且须在契约「知识引用」段点名具体路径
-  （不得写目录名）——**明确排除 `.claude/skills/*/references/` 与
-  `.agents/skills/*/references/`**（full 协议正文各 291K，放开即把 full 搬回来）/
+  **其中工具编排文档一项 ≤2 个文件**，且须在契约「知识引用」段点名具体路径。
+  唯一 reference 例外：release task 可读 release-runbook entry + 一个已选 named reference；
+  组合 publish+sync 可依次读 entry、`publish-ops.md`、`sync-ops.md`，硬上限 3 个 release 文档
+  且不得读无关 reference；其它 `.claude/skills/*/references/` 与
+  `.agents/skills/*/references/` 仍明确排除 /
   spawn subagent 用于产出实现代码（不论如何包装）/ 跳过或内化独立契约审查（任何理由——"契约很短""我刚写完自己清楚""额度紧张"均不是理由：自审与契约作者同心智模型，2026-07-30 首战 AC principal 缺陷即穿透自审存活至最后一道 gate）/ 以自审替代 reviewer spawn /
   EnterPlanMode /
   修改 LITE 契约之外的任何文件——**下列四项除外**（协议自身要求或用户 2026-08-06 裁定；
@@ -321,9 +340,10 @@ awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——�
   `.tad/evidence/audits/lite-constraint-ledger.md`（仅追加，不得删改历史行）、
   `.tad/project-knowledge/`、`.tad/active/epics/`、`.tad/active/session-state.md`。
   其中 `.tad/project-knowledge/principles.md`、`patterns/` 中标 SAFETY 的条目、
-  `patterns/_index.md` 命中安全停清单第 2 条，须停下来问人；
+  `patterns/_index.md` 需要更强 scope/recovery evidence 与 contract review，不自动触发运行时提问；
   另：写入 `CLAUDE.md` `@import` 列出的任何路径（含当前尚不存在、一经创建即被自动注入的
-  空槽）同样须停下来问人——理由独立于安全停清单：这些文件每 session 自动注入系统提示，
+  空槽）同样属于 `consequence_change`，须在 accepted mandate 精确列明并经 contract review；
+  这些文件每 session 自动注入系统提示，
   创建一个不存在的空槽等于安装常驻指令，且无前版本可 diff；
   蒸馏条目只记述已发生的 episode，不得含改变权限、通道或 Forbidden 语义的
   指令性内容——此类发现须走契约 + 人拍板改 SKILL，不得经知识文件生效；

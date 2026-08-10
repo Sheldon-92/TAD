@@ -1,0 +1,18 @@
+record_type	path_or_group	disposition	reason
+live	AGENTS.md	MODIFY	Codex routing owns cross-harness Lite interaction semantics.
+live	CLAUDE.md	MODIFY	Claude routing owns Lite channel and bounded release-reference loading.
+live	.claude/skills/alex-lite/SKILL.md	MODIFY_CANONICAL	Alex-Lite designs and records the accepted Execution Mandate.
+live	.agents/skills/alex-lite/SKILL.md	GENERATED_MIRROR	Byte-identical generated mirror of canonical Alex-Lite.
+live	.claude/skills/blake-lite/SKILL.md	MODIFY_CANONICAL	Blake-Lite admits mandates and owns transaction/CAS/recovery.
+live	.agents/skills/blake-lite/SKILL.md	GENERATED_MIRROR	Byte-identical generated mirror of canonical Blake-Lite.
+live	.claude/skills/release-runbook/SKILL.md	MODIFY_CANONICAL	Progressive entry narrows release authority and transaction state.
+live	.agents/skills/release-runbook/SKILL.md	GENERATED_MIRROR	Byte-identical generated mirror of canonical release entry.
+live	.claude/skills/release-runbook/references/publish-ops.md	MODIFY_CANONICAL	Publish actions share a mandate-bound release transaction.
+live	.agents/skills/release-runbook/references/publish-ops.md	GENERATED_MIRROR	Byte-identical generated publish reference.
+live	.claude/skills/release-runbook/references/sync-ops.md	MODIFY_CANONICAL	Sync actions bind named targets/consequences without action approvals.
+live	.agents/skills/release-runbook/references/sync-ops.md	GENERATED_MIRROR	Byte-identical generated sync reference.
+live	.tad/project-knowledge/patterns/gate-design.md	APPEND_AMENDMENT	Lite reads matched project knowledge, so the current gate amendment is live.
+group	FULL_ONLY_RETIRE_LATER	READ_ONLY	.tad/config-*.yaml, full handoff templates, and full Gate documents are not Lite runtime carriers.
+group	HISTORY_ONLY	READ_ONLY	Phase 2 composition contract, archive, and completed evidence preserve audit history.
+group	ZERO_TOUCH	SEALED	Hooks, settings, installers, runtime/verifiers, sync registry, registered targets, and unrelated worktree state are immutable in Phase 3b.
+boundary	PRODUCT_DOMAIN_HITL	NOT_TAD_RUNTIME_AUTHORITY	Product deployment reviewers, human physical measurements, and product guardrail HITL govern built systems or observation; they do not approve Blake's Bash/Git choices.

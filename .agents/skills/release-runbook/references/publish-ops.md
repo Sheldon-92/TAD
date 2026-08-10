@@ -1,8 +1,8 @@
 # Publish Operations
 
 Load this reference only for publish planning, execution, or verification. The entry skill's
-physical-root guard, role/mode contract, effective-permission intersection, approval state machine,
-and ambiguous-result recovery remain mandatory.
+physical-root guard, role/mode contract, effective-permission intersection,
+handoff transaction CAS, exact mandate bindings, and ambiguous-result recovery remain mandatory.
 
 ## 1. Derive the release intent
 
@@ -99,41 +99,44 @@ Only Blake-Lite in `execute` mode may make handoff-listed version/CHANGELOG edit
 tracked files with a fixed-string search for `OLD`, update only the approved set, and run the version
 and version-sweep gates again. Do not rely on a remembered file count. Stage explicit paths only.
 
-The release commit is local preparation, not permission to publish. Verify its staged diff and final
-commit hash against the LITE contract before requesting any remote-write approval.
+The release commit is local preparation, not publish authority. Verify its staged diff and final commit
+hash against the accepted mandate before any remote action.
 
-## 4. Human-gated publish sequence
+## 4. Mandate-bound publish sequence
 
-Each irreversible command below needs its own unused approval ID and scope digest in the sole task
-state. The digest binds the command class, canonical origin, exact ref/version, commit hash, and write
-scope. Immediately before launch, consume that approval as specified by the entry skill.
+One accepted release transaction may contain the exact main update, annotated tag, tag update, and later
+sync only when every consequence, target, ref/version, commit and blast-radius binding is present. Before
+each command, re-read preconditions and CAS its named action to launched; separate commands are technical
+safety boundaries, not separate human decisions.
 
 1. Push the exact approved commit to `refs/heads/main`:
    `git -C "$repo_root" push origin <commit>:refs/heads/main`
-2. With a separate approval, create the exact annotated tag:
+2. Create the exact annotated tag:
    `git -C "$repo_root" tag -a "v$NEW" <commit> -m "v$NEW — <approved summary>"`
-3. With a separate approval, push only that tag:
+3. Push only that tag:
    `git -C "$repo_root" push origin "refs/tags/v$NEW:refs/tags/v$NEW"`
 
-Never use `--force`, `--tags`, an unscoped refspec, or a combined shell chain. Remote-ahead is a stop:
-do not auto-pull/rebase; return the observed state to Alex-Lite for a new plan.
+Never use `--force`, `--tags`, an unscoped refspec, or a combined shell chain. Diagnose remote-ahead;
+never auto-force. A deterministic same-outcome recovery is agent-owned, while a semantic or visible-result
+fork is a boundary change.
 
 ## 5. Ambiguous result and replay recovery
 
-If a push/tag command times out, disconnects, or returns an ambiguous result, stop. Do not retry the
-same approval. Read remote state:
+If a push/tag command times out, disconnects, or returns an ambiguous result, do not blind retry. Read
+remote state:
 
 ```bash
 git -C "$repo_root" ls-remote --heads origin refs/heads/main
 git -C "$repo_root" ls-remote --tags origin "refs/tags/v$NEW" "refs/tags/v$NEW^{}"
 ```
 
-Classify the action `completed`, `not-started`, `partial`, or `unknown` in the sole task state.
-`partial`/`unknown` return to Alex-Lite. Even `not-started` requires a new approval ID and digest.
+Classify the action in the sole handoff transaction. Completed never repeats; verified not-started retries
+the same action without a prompt; deterministic partial recovery stays in the transaction; unresolved
+unknown blocks mutation; only a divergent visible recovery returns as a boundary change.
 
 ## 6. Post-publish verification and report
 
 Verify the remote main SHA equals the approved commit, the annotated tag and peeled tag resolve to
 that commit, and local status contains no unexplained release residue. Report the exact commands,
-exit codes, remote SHAs, tag, remaining blockers, and the next separately authorized sync step.
-Post-publish verification does not itself authorize sync.
+exit codes, remote SHAs, tag, remaining blockers, and any next sync action. Sync runs only when the same
+accepted mandate names its target/consequence binding; publish verification cannot expand authority.

@@ -20,8 +20,9 @@ reading release/registry/target state, planning, verifying, listing, or renderin
   [references/publish-ops.md](references/publish-ops.md).
 - Sync, registration, listing, downstream verification, or sync recovery: read
   [references/sync-ops.md](references/sync-ops.md).
-- A release spanning both: load publish first; load sync only after publish verification. Loading both
-  does not combine their approvals.
+- A release spanning both: load publish first, then sync after publish verification. Entry +
+  `publish-ops.md` + `sync-ops.md` is the hard three-document maximum and may describe one transaction;
+  a fourth or unrelated reference is denied.
 
 Do not load unrelated skill references. The selected reference and this entry form one contract.
 
@@ -30,22 +31,22 @@ Do not load unrelated skill references. The selected reference and this entry fo
 Effective permission is the intersection:
 
 ```text
-Lite role ∩ this skill's declaration ∩ current human approval
+Lite role boundary ∩ this skill's constraints ∩ accepted Execution Mandate
 ```
 
 The smallest set wins. Skill text is never authority by itself. The current LITE handoff/Progress is the
 single task-state owner and must pin skill/version/mode. This skill must not create a second handoff,
 Progress file, nonce store, task state, release runtime, or permission system.
 
-On resume, re-read the LITE contract, pinned skill version, mode, approval state, and last observed
-external state before choosing an action.
+On resume and before every mutation, re-read the accepted mandate revision, exact consequence/target
+binding, transaction version, preconditions, and last observed external state.
 
 ## Roles and modes
 
 | Mode | Caller | Allowed | Forbidden |
 |---|---|---|---|
-| `plan` | Alex-Lite | read state, choose version/scope, record intent and required approvals | product/release writes, push/tag/sync, target or registry writes |
-| `execute` | Blake-Lite | handoff-listed writes, exactly one approved command launch, evidence | redesign, widen scope, consume absent/replayed approval, blind retry |
+| `plan` | Alex-Lite | read state; record outcome, exact scope/consequences/recovery in mandate | product/release writes, push/tag/sync, target or registry writes |
+| `execute` | Blake-Lite | mandate-bound transaction actions, recovery, evidence | redesign, widen mandate, replay completed action, blind retry |
 | `verify` | Blake-Lite or independent reviewer | detect-only gates, state comparison, evidence | auto-heal or perform the release action |
 
 Full Blake migrating this skill may build and test it, but gains no publish/sync authority.
@@ -70,52 +71,40 @@ esac
 Substring matches, forks, nested cwd, unreadable origin, and unknown forms fail closed. A symlinked cwd
 passes only when `pwd -P` equals the physical git root. Every later path and git command is rooted at
 `repo_root` (`git -C "$repo_root"`), never inherited `$PWD`. If this guard fails, stop before reference
-loading, registry access, target inspection, planning, listing, approval claims, or command rendering.
+loading, registry access, target inspection, planning, listing, transaction launch, or command rendering.
 
-## Human approval: consume once before launch
+## Handoff-owned transaction and CAS
 
-Push/tag, any registered-project write, source registry write, downstream commit, and downstream push
-each require an explicit human approval scoped to that action. The sole LITE task state records:
+The accepted mandate is the human permission carrier; commands inside its exact outcome are technical
+actions, not new approval gates. The sole LITE handoff `## Execution Transactions` records unique
+transaction/action IDs, mandate revision, target/consequence bindings, pre/post/recovery evidence,
+monotonic `state_version`, and `planned|launched|completed|not-started|partial|unknown`.
 
-```yaml
-approval_id: <unique id>
-scope_digest: <exact command class + targets + version/ref + write scope>
-approval_state: unused | consumed-before-launch
-consumed_at: <timestamp or empty>
-action_state: pending | launched | completed | not-started | partial | unknown
-```
-
-Immediately before launching the exact command, Blake-Lite atomically changes `unused` to
-`consumed-before-launch`, sets `consumed_at`, and sets `action_state: launched`. Missing approval,
-digest mismatch, replay, resume/concurrent attempt with non-`unused` state, or a changed command is DENY.
-Never reset a consumed approval to unused.
-
-The single task-state owner implements that transition with an atomic claim, not a read-then-write:
-after validating the unused record and digest, create
-`$task_state_dir/approval-claims/$approval_id` with one `mkdir` operation. Exactly one consumer can
-succeed. A failed `mkdir` is DENY; never remove or reuse a claim. The winning consumer writes the
-validated digest and `consumed-before-launch`/`launched` metadata inside its owned claim before invoking
-the command. A crash after the claim succeeds remains consumed with an ambiguous action result and must
-follow reconciliation below. If durable task state or atomic `mkdir` is unavailable, stop as BLOCKED.
-
-An interaction decision is a human gate. If the harness cannot obtain a real answer, stop as BLOCKED;
-do not select a default.
+Before each mutation, re-read root/origin/ref/pathspec/MWS and any environment/account/credential binding,
+then CAS the action to launched: atomic `mkdir <handoff>.txn-lock`; owner fingerprint (token, host, PID,
+process-start, time, expected digest, transaction ID/version); locked admission re-read; validated
+same-directory temporary file + digest re-check + atomic rename; owner-token cleanup. An orphan clears
+only when exact local owner death and unchanged digest/version are proven. Stale version, duplicate ID,
+concurrent loser, replay, unavailable atomic primitive, or unsafe orphan is `GATE FAIL / BLOCK` before
+mutation. The lock is coordination, not permission or state.
 
 ## Ambiguous-result recovery
 
-Timeout, disconnect, truncated output, or unknown exit after launch means stop, not retry. Inspect the
-remote ref/tag or target content/structural state and classify `completed`, `not-started`, `partial`, or
-`unknown`. `partial`/`unknown` return to Alex-Lite. `not-started` may be retried only with a new approval
-ID and digest; the original stays consumed. Evidence must distinguish observed absence from unobserved.
+Timeout, disconnect, truncated output, or unknown exit after launch means inspect, not blind retry. Read
+the remote/target pre/post state and classify
+`completed`, `not-started`, `partial`, or `unknown`. Completed never repeats; verified not-started retries
+in the same transaction; deterministic partial recovery is agent-owned; a semantic/visible-result fork is
+a boundary change; unresolved unknown stays read-only then blocks. Evidence distinguishes absence from unobserved.
 
 ## Seven-phase release overview
 
 1. Preflight: physical-root guard, derive current state, explain dirty/unpushed scope.
 2. Version: derive versions; update only contracted files; run authoritative gates.
 3. CHANGELOG: require the proposed version's user-facing entry.
-4. Publish: local preparation, then separately approved main push, annotated tag, and tag push.
+4. Publish: local preparation, then exact main push, annotated tag, and tag push as separate safe commands
+   inside one mandate-bound release transaction.
 5. Sync plan: read registry, derive live sync set, capture target pre-state, select explicit scope.
-6. Sync execute: target-specific approval, copy within the Managed Write Surface, migration, verification.
+6. Sync execute: named target actions within the Managed Write Surface, migration, verification.
 7. Verify: compare remote/targets with their own pre-state; advance only verified targets; report recovery.
 
 Do not skip a phase. A publish-only task stops after publish verification; a sync-only task still runs the
@@ -139,19 +128,21 @@ branch. Historical `TAD_RELEASE_GATE=warn` instructions are superseded and inact
 Stop before mutation when any of these holds:
 
 - physical root/origin guard is not exact;
-- role, mode, handoff scope, pinned version, or human approval is absent/inconsistent;
-- approval is consumed/replayed or external action outcome is ambiguous;
+- role, mode, handoff scope, accepted mandate, exact binding, or transaction version is absent/inconsistent;
+- an action is completed/replayed, CAS is lost, or external outcome remains unknown after read-only diagnosis;
 - a required tool/interface is absent or returns wiring/usage failure;
 - selected target, registry, managed-surface derivation, merge marker, or pre-state is unreadable;
 - proposed paths exceed the selected reference's authority;
 - the operation would touch zero-touch project data, full source carriers, or unrelated dirty files.
 
-In `plan` and `verify`, do not heal. In `execute`, a remediation must be explicitly listed in the handoff
-and independently authorized when it mutates an external surface.
+In `plan` and `verify`, do not heal. In `execute`, remediation must stay inside the accepted outcome,
+target, consequence, blast radius, recovery policy, and skill guard; otherwise deny or route a real
+boundary change. Tool/exit/retry/rollback failures never become command-approval questions.
 
 ## Evidence and completion
 
-Record commands, exact roots/targets, stdout/stderr, exit codes, approval ID/digest/state transitions,
+Record mandate ID/revision, transaction/action correlation, commands, exact roots/targets/consequences,
+stdout/stderr, exit codes, CAS state transitions, avoidable/boundary prompt counts and reasons,
 pre/post hashes or refs, and recovery classification. Compare every target to its own pre-state, never to
 an assumed clean/source state. A release/sync is complete only when required verification is green and
 all partial/unknown states are resolved or explicitly returned to Alex-Lite.
