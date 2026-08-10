@@ -1,0 +1,1 @@
+capability-packs/pack-registry.yaml

@@ -1,0 +1,11 @@
+NEG-01 PASS malicious-origin-nested-cwd-symlink-root
+NEG-02 PASS missing-or-mismatched-approval
+NEG-03 PASS replay-and-concurrent-resume
+NEG-04 PASS ambiguous-timeout-no-retry
+NEG-05 PASS exit-two-hard-blocks
+NEG-06 PASS agents-newer-refuses-fix
+NEG-07 PASS migration-exit-one-partial-stop
+NEG-08 PASS migration-exit-two-partial-stop
+NEG-09 PASS dual-platform-both-mirrors-and-gates
+NEG-10 PASS registry-path-marker-and-top-deny-fail-closed
+NEGATIVE FIXTURES PASS 10/10

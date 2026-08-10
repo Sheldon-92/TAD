@@ -1,0 +1,561 @@
+Reading additional input from stdin...
+OpenAI Codex v0.147.0
+--------
+workdir: /Users/sheldonzhao/01-on progress programs/TAD
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019fe9c4-92e7-7143-90f9-a78d1a465f48
+--------
+user
+You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md
+
+Read the entry skill and only the reference it routes for this scenario. Do not read the active migration handoff, coverage TSV, test harness, other case outputs, or reviewer conclusions. Stay read-only. Never execute push, tag, publish, sync, registry writes, downstream writes, commits, or auto-healing. If a read-only command is appropriate, cite the exact command and observed result; do not claim a command ran when it did not.
+
+Scenario:
+Use $release-runbook to assess adding a project whose absolute fixture path is /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project, which has TAD installed and whose CLAUDE.md contains the merge marker. Explain the registration decision, but do not write the real registry.
+warning: Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+hook: SessionStart
+hook: SessionStart
+hook: SessionStart Completed
+hook: SessionStart Completed
+codex
+I’m using the requested `release-runbook` in read-only verification/assessment mode. I’ll read only its entry file and the routed sync/registration reference, then inspect only the fixture state needed for the registration decision; I will not read the excluded migration/testing artifacts or mutate the registry.
+exec
+/bin/zsh -lc "sed -n '1,240p' '.claude/skills/release-runbook/SKILL.md' && sed -n '1,320p' '.claude/skills/release-runbook/references/sync-ops.md'" in /Users/sheldonzhao/01-on progress programs/TAD
+ succeeded in 0ms:
+---
+name: release-runbook
+description: Progressive TAD release operations for publish, sync, sync-add, sync-list, version bumps, recovery, and read-only release verification. Use whenever Lite plans, executes, or verifies a release/distribution action.
+---
+
+# TAD Release Operations
+
+This skill carries release judgment for Lite. It does not grant permission, create task state, or replace
+the current LITE handoff/Progress. Load only this entry first, then one relevant reference.
+
+## Trigger and reference routing
+
+Use for `publish`, `sync`, `sync-add`, `sync-list`, version release preparation, release recovery, or
+questions about whether TAD is ready to release/distribute.
+
+- Publish, version bump, tag/push, or publish recovery: read
+  [references/publish-ops.md](references/publish-ops.md).
+- Sync, registration, listing, downstream verification, or sync recovery: read
+  [references/sync-ops.md](references/sync-ops.md).
+- A release spanning both: load publish first; load sync only after publish verification. Loading both
+  does not combine their approvals.
+
+Do not load unrelated skill references. The selected reference and this entry form one contract.
+
+## Effective permission and task-state owner
+
+Effective permission is the intersection:
+
+```text
+Lite role ∩ this skill's declaration ∩ current human approval
+```
+
+The smallest set wins. Skill text is never authority by itself. The current LITE handoff/Progress is the
+single task-state owner and must pin skill/version/mode. This skill must not create a second handoff,
+Progress file, nonce store, task state, release runtime, or permission system.
+
+On resume, re-read the LITE contract, pinned skill version, mode, approval state, and last observed
+external state before choosing an action.
+
+## Roles and modes
+
+| Mode | Caller | Allowed | Forbidden |
+|---|---|---|---|
+| `plan` | Alex-Lite | read state, choose version/scope, record intent and required approvals | product/release writes, push/tag/sync, target or registry writes |
+| `execute` | Blake-Lite | handoff-listed writes, exactly one approved command launch, evidence | redesign, widen scope, consume absent/replayed approval, blind retry |
+| `verify` | Blake-Lite or independent reviewer | detect-only gates, state comparison, evidence | auto-heal or perform the release action |
+
+Full Blake migrating this skill may build and test it, but gains no publish/sync authority.
+
+## Source identity guard
+
+Before rendering any publish/sync mutation command, resolve and verify the physical source root:
+
+```bash
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 1
+repo_root=$(cd "$repo_root" && pwd -P) || exit 1
+cwd_physical=$(pwd -P) || exit 1
+test "$cwd_physical" = "$repo_root" || exit 1
+origin=$(git -C "$repo_root" remote get-url origin 2>/dev/null) || exit 1
+case "$origin" in
+  https://github.com/Sheldon-92/TAD|https://github.com/Sheldon-92/TAD.git|git@github.com:Sheldon-92/TAD.git|ssh://git@github.com/Sheldon-92/TAD.git) ;;
+  *) exit 1 ;;
+esac
+```
+
+Substring matches, forks, nested cwd, unreadable origin, and unknown forms fail closed. A symlinked cwd
+passes only when `pwd -P` equals the physical git root. Every later path and git command is rooted at
+`repo_root` (`git -C "$repo_root"`), never inherited `$PWD`.
+
+## Human approval: consume once before launch
+
+Push/tag, any registered-project write, source registry write, downstream commit, and downstream push
+each require an explicit human approval scoped to that action. The sole LITE task state records:
+
+```yaml
+approval_id: <unique id>
+scope_digest: <exact command class + targets + version/ref + write scope>
+approval_state: unused | consumed-before-launch
+consumed_at: <timestamp or empty>
+action_state: pending | launched | completed | not-started | partial | unknown
+```
+
+Immediately before launching the exact command, Blake-Lite atomically changes `unused` to
+`consumed-before-launch`, sets `consumed_at`, and sets `action_state: launched`. Missing approval,
+digest mismatch, replay, resume/concurrent attempt with non-`unused` state, or a changed command is DENY.
+Never reset a consumed approval to unused.
+
+The single task-state owner implements that transition with an atomic claim, not a read-then-write:
+after validating the unused record and digest, create
+`$task_state_dir/approval-claims/$approval_id` with one `mkdir` operation. Exactly one consumer can
+succeed. A failed `mkdir` is DENY; never remove or reuse a claim. The winning consumer writes the
+validated digest and `consumed-before-launch`/`launched` metadata inside its owned claim before invoking
+the command. A crash after the claim succeeds remains consumed with an ambiguous action result and must
+follow reconciliation below. If durable task state or atomic `mkdir` is unavailable, stop as BLOCKED.
+
+An interaction decision is a human gate. If the harness cannot obtain a real answer, stop as BLOCKED;
+do not select a default.
+
+## Ambiguous-result recovery
+
+Timeout, disconnect, truncated output, or unknown exit after launch means stop, not retry. Inspect the
+remote ref/tag or target content/structural state and classify `completed`, `not-started`, `partial`, or
+`unknown`. `partial`/`unknown` return to Alex-Lite. `not-started` may be retried only with a new approval
+ID and digest; the original stays consumed. Evidence must distinguish observed absence from unobserved.
+
+## Seven-phase release overview
+
+1. Preflight: physical-root guard, derive current state, explain dirty/unpushed scope.
+2. Version: derive versions; update only contracted files; run authoritative gates.
+3. CHANGELOG: require the proposed version's user-facing entry.
+4. Publish: local preparation, then separately approved main push, annotated tag, and tag push.
+5. Sync plan: read registry, derive live sync set, capture target pre-state, select explicit scope.
+6. Sync execute: target-specific approval, copy within the Managed Write Surface, migration, verification.
+7. Verify: compare remote/targets with their own pre-state; advance only verified targets; report recovery.
+
+Do not skip a phase. A publish-only task stops after publish verification; a sync-only task still runs the
+source guard and sync preflight. Detailed gate order lives in the selected reference.
+
+## Mechanical authority and exit codes
+
+Use current public interfaces directly:
+
+- `.tad/hooks/lib/release-verify.sh`
+- `.tad/hooks/lib/derive-sync-set.sh`
+- `.tad/hooks/lib/migration-engine.sh`
+
+Do not create a wrapper, inline migration engine, hardcoded framework directory authority, hook, router,
+installer change, or new runtime. For verifier modes, `0` is pass, `1` is a named domain result handled by
+the selected reference, and `2` is usage/wiring and always hard-blocks. Never combine `1|2` into one warn
+branch. Historical `TAD_RELEASE_GATE=warn` instructions are superseded and inactive.
+
+## Global safety stops
+
+Stop before mutation when any of these holds:
+
+- physical root/origin guard is not exact;
+- role, mode, handoff scope, pinned version, or human approval is absent/inconsistent;
+- approval is consumed/replayed or external action outcome is ambiguous;
+- a required tool/interface is absent or returns wiring/usage failure;
+- selected target, registry, managed-surface derivation, merge marker, or pre-state is unreadable;
+- proposed paths exceed the selected reference's authority;
+- the operation would touch zero-touch project data, full source carriers, or unrelated dirty files.
+
+In `plan` and `verify`, do not heal. In `execute`, a remediation must be explicitly listed in the handoff
+and independently authorized when it mutates an external surface.
+
+## Evidence and completion
+
+Record commands, exact roots/targets, stdout/stderr, exit codes, approval ID/digest/state transitions,
+pre/post hashes or refs, and recovery classification. Compare every target to its own pre-state, never to
+an assumed clean/source state. A release/sync is complete only when required verification is green and
+all partial/unknown states are resolved or explicitly returned to Alex-Lite.
+# Sync, Register, and List Operations
+
+Load this reference for `sync`, `sync-add`, or `sync-list`. The entry skill's root guard,
+plan/execute/verify roles, effective-permission intersection, approval consumption, and ambiguous-result
+recovery apply to every write. Registered targets are never implicit write authorization.
+
+## 1. Registry and read-only listing
+
+Read `$repo_root/.tad/sync-registry.yaml`. If it is missing, stop and suggest `sync-add`; if `projects`
+is missing or empty, report that no projects are registered and remain read-only.
+
+`sync-list` is always read-only. For every entry report:
+
+| Field | Source |
+|---|---|
+| name, absolute path, platform, strategy | registry entry |
+| current version | readable target `.tad/version.txt`, otherwise `missing/unreadable` |
+| last-synced version/date | registry entry |
+| status | current vs source/last-synced plus reachability |
+
+Do not update stale metadata while listing.
+
+## 2. Select and validate sync scope
+
+Alex-Lite `plan` records one of: all outdated projects, an explicit target set, or cancel. Cancel
+returns without writes. Before any target approval or write, Blake-Lite validates each selected entry:
+
+- path is absolute, resolves canonically, exists, and is readable;
+- target contains `.tad/` and readable `.tad/version.txt`;
+- platform and `claude_md_strategy` are supported;
+- current source and old target versions are captured before copying.
+
+Missing/invalid targets are `skipped` with a reason during planning; never silently redirect a path.
+
+## 3. Managed Write Surface
+
+The following block is the single path authority for target planning, pre/post manifests, copying,
+and scoped downstream staging. Paths outside it are forbidden. The derivation interfaces, not a
+hand-written expansion, decide the live `.tad` members.
+
+<!-- managed-write-surface:begin -->
+```text
+.tad/*  (regular maxdepth-1 files minus the single TOP_DENY from derive-sync-set.sh --report)
+.tad/<each directory from derive-sync-set.sh --dirs, with capability-packs handled registry-only>
+.tad/<path from derive-sync-set.sh --registry-only>
+.claude/skills/**
+.agents/skills/**
+.claude/settings.json
+.claude/workflows/**
+.codex/hooks.json
+CLAUDE.md
+AGENTS.md
+CLAUDE.md.bak
+AGENTS.md.bak
+tad.sh
+README.md
+INSTALLATION_GUIDE.md
+CHANGELOG.md
+docs/MULTI-PLATFORM.md
+.tad-backup/**
+```
+<!-- managed-write-surface:end -->
+
+Run and record:
+
+```bash
+bash "$repo_root/.tad/hooks/lib/derive-sync-set.sh" --dirs "$repo_root"
+bash "$repo_root/.tad/hooks/lib/derive-sync-set.sh" --report "$repo_root"
+bash "$repo_root/.tad/hooks/lib/derive-sync-set.sh" --zero-touch "$repo_root"
+bash "$repo_root/.tad/hooks/lib/derive-sync-set.sh" --registry-only "$repo_root"
+```
+
+The report must contain exactly one `(+ top-level file: <name>)` record. Zero or multiple records block.
+Exclude the observed basename (currently `sync-registry.yaml`) from target copy and target git-add sets.
+`capability-packs` copies only the registry-only path. Hardcoded directory tables are illustrative only.
+
+Zero-touch directories from `--zero-touch` must be captured in pre/post target manifests and remain
+unchanged. Source-registry mutations for `sync-add`/successful `last_synced_*` are separate human-gated
+source writes, never target MWS entries.
+
+## 4. Platform strategy and safe preparation
+
+Every target receives both authoritative skill trees: canonical `.claude/skills/**` and generated
+`.agents/skills/**`. Platform selects settings, workflows, hooks, and entry-document strategy; it never
+removes either skill mirror.
+
+- Back up an existing entry document before overwrite/merge.
+- For `merge`, require `<!-- TAD:PROJECT-CONTENT-BELOW -->`; if absent, stop that target and ask for a
+  new plan. Never silently overwrite.
+- Preserve project-owned settings hooks; merge only declared TAD-owned keys.
+- Do not run capability-pack `install.sh` after mirroring; it can overwrite authoritative skills from
+  a stale secondary source.
+- Never run `tad.sh` against the TAD source repo.
+
+All filesystem-changing tests use disposable fixture repositories, never a registered target.
+
+## 5. Execute one target
+
+After a target-specific approval is atomically consumed, perform only the approved MWS operations.
+Derive framework paths from the interfaces above; do not add an inline directory table or migration.
+
+Run the migration engine exactly once after the framework copy:
+
+```bash
+bash "$repo_root/.tad/hooks/lib/migration-engine.sh" \
+  --from "$old_version" --to "$current_version" \
+  --target "$target" --source "$repo_root"
+```
+
+- `0`: migration applied or no manifest was needed; continue.
+- `1`: target is `partial`; preserve/report any `.tad-backup`, stop the entire batch, and forbid
+  deprecation, registry advancement, downstream commit, or push.
+- `2`: invalid manifest/chain/wiring after copy also means `partial`; same stop behavior.
+
+The migration engine is the sole migration executor. Never inline deletes/renames around it.
+
+Apply deprecations only when `old_version < deprecation_version <= current_version`, comparing full
+SemVer numerically. Ignore future entries; an absent file is idempotent, but an unexpected path outside
+the approved MWS blocks.
+
+## 6. Verify before advancement
+
+Run both gates after all target writes:
+
+```bash
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" structural "$repo_root" "$target"
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" platform-skills "$repo_root" "$target"
+```
+
+For each gate: `0` passes; `1` is named drift/missing and blocks advancement; `2` is wiring/usage and
+hard-blocks. Patch releases do not bypass target verification. Only a target with both exit codes `0`
+is `verified` and eligible for `last_synced_*` advancement.
+
+On partial/failure, compare the target with its own pre-state, report exactly what landed, preserve the
+backup, and stop. Do not continue to later targets because the source of failure may be systemic.
+
+## 7. Registry advancement and optional downstream git
+
+Updating `last_synced_version/date` is a separate source-repository mutation. Request approval only for
+the exact set of verified targets; partial, failed, missing, and skipped entries remain unchanged.
+Use structured per-entry updates and re-read the registry; never bulk `sed` every project.
+
+Downstream commit and downstream push are two more independent human gates. Stage only paths generated
+from the Managed Write Surface and observed TOP_DENY; never `git add -A`, `.tad/`, or `docs/` broadly.
+Record the exact target, branch, path set, commit SHA, and remote ref in each approval digest. Ambiguous
+commit/push results follow the entry skill's consume-once recovery and are never blindly retried.
+
+## 8. `sync-add` registration
+
+`sync-add` begins read-only: validate the absolute canonical path, `.tad/`, readable version, platform,
+and entry document. Detect strategy:
+
+- marker present: propose `merge` and report the preserved-content region;
+- marker absent: propose `overwrite`; choosing `merge` blocks until the marker exists.
+
+Alex-Lite records the proposed entry. Writing the source registry requires its own approval digest and
+Blake-Lite `execute` mode. Add `path`, derived `name`, `platform`, strategy, target's current version as
+`last_synced_version`, and date. Registration does not claim a sync occurred.
+
+## 9. Summary and recovery
+
+Report every selected target as `verified`, `partial`, `failed`, `skipped`, or `not-started`, with old/new
+version, migration/gate exits, backup, registry advancement, commit, push, and recovery action. A partial
+batch is not success. Resume starts from recorded state; consumed approvals remain consumed, and any new
+write needs a new approval and scope digest.
+
+codex
+The runbook routes this case to `sync-ops.md`. Its rule is: registration starts read-only; an absolute, canonical, readable TAD target with a readable version and entry document is eligible, and a present merge marker means the proposed strategy is `merge`. I’m now checking those predicates and whether this exact canonical path is already in the registry.
+exec
+/bin/zsh -lc 'set -u
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 1
+repo_root=$(cd "$repo_root" && pwd -P) || exit 1
+cwd_physical=$(pwd -P) || exit 1
+test "$cwd_physical" = "$repo_root" || exit 1
+origin=$(git -C "$repo_root" remote get-url origin 2>/dev/null) || exit 1
+case "$origin" in
+  https://github.com/Sheldon-92/TAD|https://github.com/Sheldon-92/TAD.git|git@github.com:Sheldon-92/TAD.git|ssh://git@github.com/Sheldon-92/TAD.git) ;;
+  *) exit 1 ;;
+esac
+fixture='"'/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'
+fixture_parent="'$(dirname "$fixture")
+fixture_base=$(basename "$fixture")
+fixture_physical=$(cd "$fixture_parent" && cd "$fixture_base" && pwd -P) || exit 1
+printf '"'repo_root=%s\\n' \""'$repo_root"
+printf '"'cwd_physical=%s\\n' \""'$cwd_physical"
+printf '"'origin=%s\\n' \""'$origin"
+printf '"'fixture_physical=%s\\n' \""'$fixture_physical"
+printf '"'absolute=%s\\n' \""'$([ "${fixture#/}" != "$fixture" ] && printf yes || printf no)"
+printf '"'canonical_exact=%s\\n' \""'$([ "$fixture_physical" = "$fixture" ] && printf yes || printf no)"
+printf '"'target_readable=%s\\n' \""'$([ -r "$fixture_physical" ] && printf yes || printf no)"
+printf '"'tad_dir=%s\\n' \""'$([ -d "$fixture_physical/.tad" ] && printf present || printf missing)"
+printf '"'version_readable=%s\\n' \""'$([ -r "$fixture_physical/.tad/version.txt" ] && printf yes || printf no)"
+printf '"'version=%s\\n' \""'$(sed -n '"'1p' \""'$fixture_physical/.tad/version.txt")"
+printf '"'claude_md_readable=%s\\n' \""'$([ -r "$fixture_physical/CLAUDE.md" ] && printf yes || printf no)"
+printf '"'agents_md_readable=%s\\n' \""'$([ -r "$fixture_physical/AGENTS.md" ] && printf yes || printf no)"
+printf '"'claude_skill_tree=%s\\n' \""'$([ -d "$fixture_physical/.claude/skills" ] && printf present || printf missing)"
+printf '"'agents_skill_tree=%s\\n' \""'$([ -d "$fixture_physical/.agents/skills" ] && printf present || printf missing)"
+printf '"'claude_marker_count=%s\\n' \""'$(grep -cF '"'<"'!-- TAD:PROJECT-CONTENT-BELOW -->'"' \""'$fixture_physical/CLAUDE.md")"
+printf '"'registry_exact_path_count=%s\\n' \""'$(grep -cF "$fixture_physical" "$repo_root/.tad/sync-registry.yaml")"' in /Users/sheldonzhao/01-on progress programs/TAD
+ succeeded in 280ms:
+repo_root=/Users/sheldonzhao/01-on progress programs/TAD
+cwd_physical=/Users/sheldonzhao/01-on progress programs/TAD
+origin=https://github.com/Sheldon-92/TAD.git
+fixture_physical=/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project
+absolute=yes
+canonical_exact=yes
+target_readable=yes
+tad_dir=present
+version_readable=yes
+version=2.39.0
+claude_md_readable=yes
+agents_md_readable=no
+claude_skill_tree=missing
+agents_skill_tree=missing
+claude_marker_count=1
+registry_exact_path_count=0
+
+exec
+/bin/zsh -lc "fixture='/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'
+printf 'fixture_top_level_entries:\\n'
+find \""'$fixture" -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort
+printf '"'fixture_tad_top_level_files:\\n'
+find \""'$fixture/.tad" -mindepth 1 -maxdepth 1 -type f -print | LC_ALL=C sort
+printf '"'marker_and_preserved_region:\\n'
+awk 'found {print NR \":\" "'$0} /<!-- TAD:PROJECT-CONTENT-BELOW -->/ {print NR ":" $0; found=1}'"' \""'$fixture/CLAUDE.md"
+printf '"'registry_platform_strategy_values:\\n'
+awk '/"'^[[:space:]]+platform:/ || /''^[[:space:]]+claude_md_strategy:/ {print}'"' '.tad/sync-registry.yaml' | LC_ALL=C sort -u" in /Users/sheldonzhao/01-on progress programs/TAD
+ succeeded in 0ms:
+fixture_top_level_entries:
+/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/.tad
+/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/CLAUDE.md
+fixture_tad_top_level_files:
+/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/.tad/version.txt
+marker_and_preserved_region:
+3:<!-- TAD:PROJECT-CONTENT-BELOW -->
+4:
+5:Project-owned content that must be preserved.
+registry_platform_strategy_values:
+    claude_md_strategy: "merge"
+    claude_md_strategy: "overwrite"
+    platform: "both"
+
+codex
+The target satisfies the read-only prerequisites so far: its path resolves exactly, `.tad/version.txt` is readable at `2.39.0`, `CLAUDE.md` is readable, the merge marker occurs once, and the preserved region begins with “Project-owned content that must be preserved.” The canonical path is not currently present in the registry. I’m checking only the registry field shape now so the proposed entry is accurate.
+exec
+/bin/zsh -lc "awk '
+  /"'^projects:/ {print; next}
+  /''^  - / {if (++entries == 1) {print; capture=1; next} else {exit}}
+  capture && /''^    [A-Za-z_]+:/ {print}
+'"' '.tad/sync-registry.yaml'" in /Users/sheldonzhao/01-on progress programs/TAD
+ succeeded in 0ms:
+projects:
+  - path: "/Users/sheldonzhao/01-on progress programs/menu-snap"
+    name: "menu-snap"
+    platform: "both"
+    claude_md_strategy: "overwrite"
+    last_synced_version: "2.30.0"
+    last_synced_date: "2026-06-11"
+
+codex
+Decision: the fixture is eligible for a proposed registration, using `merge`. The real registry was not modified.
+
+Proposed entry:
+
+```yaml
+- path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+  name: "fixture-project"
+  platform: "claude"
+  claude_md_strategy: "merge"
+  last_synced_version: "2.39.0"
+  last_synced_date: "2026-08-09"
+```
+
+`platform: "claude"` is inferred because `CLAUDE.md` is readable while `AGENTS.md` is absent. The marker identifies line 4 onward as project-owned content to preserve:
+
+```text
+Project-owned content that must be preserved.
+```
+
+Read-only evidence:
+
+- The runbook’s exact source-identity guard completed with exit code `0`:
+  - root and physical working directory: `/Users/sheldonzhao/01-on progress programs/TAD`
+  - origin: `https://github.com/Sheldon-92/TAD.git`
+- Physical-path resolution used:
+
+```bash
+fixture_parent=$(dirname "$fixture")
+fixture_base=$(basename "$fixture")
+fixture_physical=$(cd "$fixture_parent" && cd "$fixture_base" && pwd -P)
+```
+
+  Result: the physical path exactly matched the supplied absolute path.
+
+- Version check:
+
+```bash
+sed -n '1p' "$fixture_physical/.tad/version.txt"
+```
+
+  Result: `2.39.0`.
+
+- Marker check:
+
+```bash
+grep -cF '<!-- TAD:PROJECT-CONTENT-BELOW -->' "$fixture_physical/CLAUDE.md"
+```
+
+  Result: `1`.
+
+- Existing-registration check:
+
+```bash
+grep -cF "$fixture_physical" "$repo_root/.tad/sync-registry.yaml"
+```
+
+  Result: `0`, so this exact path is not registered.
+
+Registration would establish a baseline using the target’s current version; it would not mean that a sync occurred. Registry status remains `not-started`: no registry, target, commit, push, migration, or downstream write was performed.
+tokens used
+39,319
+Decision: the fixture is eligible for a proposed registration, using `merge`. The real registry was not modified.
+
+Proposed entry:
+
+```yaml
+- path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+  name: "fixture-project"
+  platform: "claude"
+  claude_md_strategy: "merge"
+  last_synced_version: "2.39.0"
+  last_synced_date: "2026-08-09"
+```
+
+`platform: "claude"` is inferred because `CLAUDE.md` is readable while `AGENTS.md` is absent. The marker identifies line 4 onward as project-owned content to preserve:
+
+```text
+Project-owned content that must be preserved.
+```
+
+Read-only evidence:
+
+- The runbook’s exact source-identity guard completed with exit code `0`:
+  - root and physical working directory: `/Users/sheldonzhao/01-on progress programs/TAD`
+  - origin: `https://github.com/Sheldon-92/TAD.git`
+- Physical-path resolution used:
+
+```bash
+fixture_parent=$(dirname "$fixture")
+fixture_base=$(basename "$fixture")
+fixture_physical=$(cd "$fixture_parent" && cd "$fixture_base" && pwd -P)
+```
+
+  Result: the physical path exactly matched the supplied absolute path.
+
+- Version check:
+
+```bash
+sed -n '1p' "$fixture_physical/.tad/version.txt"
+```
+
+  Result: `2.39.0`.
+
+- Marker check:
+
+```bash
+grep -cF '<!-- TAD:PROJECT-CONTENT-BELOW -->' "$fixture_physical/CLAUDE.md"
+```
+
+  Result: `1`.
+
+- Existing-registration check:
+
+```bash
+grep -cF "$fixture_physical" "$repo_root/.tad/sync-registry.yaml"
+```
+
+  Result: `0`, so this exact path is not registered.
+
+Registration would establish a baseline using the target’s current version; it would not mean that a sync occurred. Registry status remains `not-started`: no registry, target, commit, push, migration, or downstream write was performed.

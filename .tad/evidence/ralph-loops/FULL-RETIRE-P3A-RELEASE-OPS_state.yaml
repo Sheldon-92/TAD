@@ -1,0 +1,13 @@
+task_id: FULL-RETIRE-P3A-RELEASE-OPS
+handoff: .tad/active/handoffs/HANDOFF-20260809-release-runbook-capability-migration.md
+current_iteration: 12
+layer1_retries: 7
+layer2_rounds: 2
+last_completed_layer: layer1
+last_error_category: ac6_concurrent_registered_target_change
+consecutive_same_error: 1
+reflection_count: 12
+last_reflection_summary: "The resumed stable4 window correctly failed when the external Sober Creator workflow updated and archived its LITE handoff. Active is now missing and the archived hash is stable, so stable5 begins from the completed external state."
+escalation_assessment: "Human resumed the task after coordinating the external writer; a fresh blocked audit starts with stable4. Do not weaken or exclude the zero-touch comparison."
+status: active
+updated_at: 2026-08-10T03:36:30Z

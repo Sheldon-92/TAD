@@ -1,0 +1,12 @@
+active
+archive
+decisions
+dependencies
+evidence
+github-registry
+memory
+pair-testing
+project-knowledge
+research-notebooks
+skill-library
+skillify-candidates

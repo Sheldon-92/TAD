@@ -1,0 +1,2 @@
+fatal: bad object HEAD
+fatal: 'git status --porcelain=2' failed in submodule openclaw
