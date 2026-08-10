@@ -248,8 +248,8 @@ transactions:
     mandate_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-mandate
     mandate_revision: 1
     lock_path: .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md.txn-lock
-    state_version: 4
-    state: launched
+    state_version: 5
+    state: completed
     launched_at: "2026-08-10T12:25:09Z"
     observed_pre_state:
       repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
@@ -286,9 +286,49 @@ transactions:
         completed_at: "2026-08-10T13:05:23Z"
         observed_result: "AC1-AC12 full replay PASS; 30 fixtures, 2/2 controls, 9/9 probes; three independent reviews final P0/P1/P2=0; Gate 3 PASS."
       - action_id: scoped-local-commit-after-gate3
-        state: launched
+        state: completed
         launched_at: "2026-08-10T13:05:23Z"
+        completed_at: "2026-08-10T13:07:09Z"
+        commit_sha: 77479a0a4ada086f65930a2b1502c5713c49aad3
+        push: NOT_PERFORMED
         exact_path_policy: "Only §5.1, §5.2, and the first seven §5.3 governance artifacts; no git add -A."
+    final_evidence:
+      - .tad/evidence/acceptance-tests/lite-authority-model-v2/acceptance-verification-report.md
+      - .tad/evidence/acceptance-tests/lite-authority-model-v2/verification-results.txt
+      - .tad/evidence/reviews/blake/lite-authority-model-v2/gate3-verdict.md
+      - .tad/active/handoffs/COMPLETION-20260810-lite-authority-model-v2.md
+  - transaction_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-gate4-repair-1
+    mandate_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-mandate
+    mandate_revision: 1
+    lock_path: .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md.txn-lock
+    state_version: 3
+    state: launched
+    launched_at: "2026-08-10T16:00:16Z"
+    observed_pre_state:
+      repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
+      origin: "https://github.com/Sheldon-92/TAD.git"
+      ref: refs/heads/main
+      baseline_commit: 77479a0a4ada086f65930a2b1502c5713c49aad3
+      handoff_pre_cas_sha256: daf62c29de19e5e1efefc7b0837226f97cd98bcbd6482cbb6991039c221d5b9b
+    targets:
+      - TAD source workspace; only Gate 4 repair evidence/governance paths already bound by the accepted mandate
+    consequence_classes:
+      - workspace_write
+      - local_commit
+    actions:
+      - action_id: repair-semantic-oracle-and-ac10-evidence
+        state: completed
+        launched_at: "2026-08-10T16:00:16Z"
+        completed_at: "2026-08-10T16:06:19Z"
+        observed_result: "Independent 30-case outcome oracle exact; recomputed-digest consequence/lifecycle and prompt/replay semantic mutations fail closed; AC10 emits recorded-window persistent endpoint equality only after all four comparisons pass."
+      - action_id: rerun-ac1-ac12-and-independent-reviews
+        state: completed
+        launched_at: "2026-08-10T16:06:19Z"
+        completed_at: "2026-08-10T16:17:22Z"
+        observed_result: "AC1-AC12 PASS in 3/3 deterministic runs; strict JSONL and semantic mutation controls PASS; three fresh independent reviews final P0/P1/P2=0."
+      - action_id: scoped-local-repair-commit-after-gate3
+        state: launched
+        launched_at: "2026-08-10T16:17:22Z"
 ```
 
 This planned skeleton becomes executable only with a valid accepted mandate and exact binding. Blake
@@ -709,7 +749,7 @@ operate only in temporary fixture repositories; they must not touch this reposit
 | AC7 | Fixture and adversarial matrix | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check fixtures` | `fixtures=30 avoidable_runtime_prompt_count=0 positive_controls=2/2 mutation_probes=9/9` | post-impl; invocation syntax validated |
 | AC8 | Context cost bounded | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check budget` | Lite core ≤52200; entry ≤9500; refs ≤17400 bytes | baseline measured: `47398 / 8483 / 15050` |
 | AC9 | Ledger current and priced | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check ledger` | overdue=0; disposition=1; priced mandate carrier=1 | pre-impl overdue output empty; entries post-impl |
-| AC10 | Zero-touch and no live mutation | pre-impl + post-impl | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check zero-touch` | immutable manifest; source worktree+index+untracked+ignored and per-target pre/post equal; source/target controls pass; live_mutation_count=0 | pre-impl tracked diff exit 0; known untracked backup and ignored settings identified; Blake freezes full snapshots before edits |
+| AC10 | Zero-touch recorded-window endpoint equality | pre-impl + post-impl | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check zero-touch` | immutable manifest; source worktree+index+untracked+ignored and per-target pre/post equal; source/target controls pass; emit `recorded_window_persistent_endpoint_equality=4/4` only after all four stored comparisons pass; do not claim real-time proof that no transient external command ran | pre-impl tracked diff exit 0; known untracked backup and ignored settings identified; Blake freezes full snapshots before edits |
 | AC11 | Independent reviews clean | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check reviews` | 3 final PASS; P0/P1/P2 all 0 | post-impl; invocation syntax validated |
 | AC12 | Full replay and scoped commit | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --all` | exit 0 and final `RESULT: PASS`; report lists scoped commit and `push=NOT PERFORMED` | post-impl; invocation syntax validated |
 
@@ -775,7 +815,7 @@ required_evidence:
   perf_evidence:
     - .tad/evidence/acceptance-tests/lite-authority-model-v2/acceptance-verification-report.md
   dogfood:
-    - Phase 3c only; Phase 3b must report live_mutation_count=0
+    - Phase 3c only; Phase 3b must report recorded-window persistent endpoint equality and its execution log, without claiming continuous command monitoring
   knowledge_updates:
     - .tad/project-knowledge/patterns/gate-design.md
     - .tad/evidence/audits/lite-constraint-ledger.md
@@ -857,7 +897,7 @@ Completion must report:
 - scoped commit hash and explicit path list; `push=NOT PERFORMED`;
 - AC1–AC12 raw outputs and evidence paths;
 - all 30 fixture results, both clean positive controls, and all nine mutation probes;
-- `avoidable_runtime_prompt_count=0`, boundary prompt count/reasons, and `live_mutation_count=0`;
+- `avoidable_runtime_prompt_count=0`, boundary prompt count/reasons, and recorded-window persistent endpoint equality (`4/4`) with no continuous-monitoring claim;
 - five mirror-pair parity results and byte budgets;
 - ledger overdue scan and appended row anchors;
 - three independent reviewer final verdicts with P0/P1/P2;

@@ -1,7 +1,7 @@
 PASS	positive_control_fixture=PASS
-PASS	mutation_probe_broaden_binding=PASS
+PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
 PASS	mutation_probe_tool_prompt=PASS
-PASS	mutation_probe_replay_duplicate=PASS
+PASS	mutation_probe_completed_replay=PASS
 PASS	positive_control_source=PASS
 PASS	mutation_probe_untracked=PASS
 PASS	mutation_probe_tracked=PASS

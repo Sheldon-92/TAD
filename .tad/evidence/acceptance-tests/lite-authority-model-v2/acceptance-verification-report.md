@@ -3,7 +3,7 @@
 **Task:** FULL-RETIRE-P3B-LITE-AUTHORITY-V2  
 **Baseline:** `cabe28755c581c1bddfdfe1a490471888d9f26df`  
 **Technical verdict:** GATE PASS  
-**Scoped commit:** PENDING — authorized only after this Gate 3 verdict  
+**Scoped commit:** `77479a0a4ada086f65930a2b1502c5713c49aad3` (40 explicit paths, non-amending)
 **Push:** NOT PERFORMED
 
 ## AC1–AC12
@@ -16,15 +16,15 @@
 | AC4 | PASS | one mandate transaction, exact ref/MWS/self-target guards, CAS/replay/recovery |
 | AC5 | PASS | Claude/Codex/Lite routing aligned; release documents hard-capped at three; current gate amendment |
 | AC6 | PASS | `mirror_pairs=5` byte-identical |
-| AC7 | PASS | fixtures=30; positive_controls=2/2; mutation_probes=9/9 |
+| AC7 | PASS | strict JSONL schema plus fixture SHA/cardinality exact; 30 rows match an independent semantic outcome oracle; semantic mutation probes reject malformed JSON and recomputed-digest consequence/superseded-lifecycle/prompt/replay changes; positive_controls=2/2; mutation_probes=9/9 |
 | AC8 | PASS | Lite core 52,034≤52,200; entry 8,469≤9,500; refs 15,873≤17,400 bytes |
 | AC9 | PASS | exact overdue scan empty; supersession disposition and priced mandate carrier present |
-| AC10 | PASS | manifest immutable; source worktree/index/untracked+ignored and registered-target pre/post equal |
-| AC11 | PASS | three independent final PASS reviews; each P0=0, P1=0, P2=0 |
-| AC12 | PASS (pre-commit replay) | `verify-authority-model-v2.sh --all` exit 0, final `RESULT: PASS`; one scoped local commit remains the authorized post-Gate action |
+| AC10 | PASS | immutable manifest; recorded-window persistent endpoints equal for source worktree/index/untracked+ignored and registered targets (`4/4`) |
+| AC11 | PASS | three fresh Gate 4 repair reviews final PASS; each P0=0, P1=0, P2=0 |
+| AC12 | PASS | `verify-authority-model-v2.sh --all` passed 3/3 deterministic runs, each final `RESULT: PASS`; repair commit pending exact-path Gate 3 action; push NOT PERFORMED |
 
 Raw output carrier: `verification-results.txt` (SHA-256
-`d04ec59c79c538d724e1325dccd6ce2a6f4dd185213ae233cc70bc3947cbd786`).
+`299a3eb172a0088a4169b1385a1adba1c2302297adbcfd3065c683cd7bf0a79a`).
 
 ## Authority and interaction result
 
@@ -34,8 +34,10 @@ Raw output carrier: `verification-results.txt` (SHA-256
   `target_change`×3, `business_legal_financial_identity_tradeoff`×1,
   `divergent_visible_recovery`×1, `new_external_identity_or_credentials`×1.
 - `final-business-acceptance` is a separate business decision, not a runtime prompt.
-- `live_mutation_count=0`; no push, tag, publish, sync, registry mutation, target write, dependency
-  mutation, deploy, payment, credential mutation, destructive data change, or history rewrite occurred.
+- `recorded_window_persistent_endpoint_equality=4/4`. This is endpoint evidence for the recorded
+  window, not a real-time claim that no transient external command could ever have run. Blake's
+  execution record contains no push, tag, publish, sync, registry mutation, target write, dependency
+  mutation, deploy, payment, credential mutation, destructive data change, or history rewrite.
 
 ## Zero-touch proof
 
@@ -56,6 +58,15 @@ plus index identity and complete registered MWS content identity. No target writ
 
 ## Independent reviews and repairs
 
+- Gate 4 repair: the digest/self-declaration-only fixture check was replaced by strict `jq -e` JSONL
+  parsing plus an independent embedded semantic oracle covering all 30 expected outcomes.
+  Recomputed-digest mutations of an unlisted consequence and a superseded-mandate lifecycle denial,
+  malformed trailing JSON, and prompt/replay mutations are rejected semantically.
+- Gate 4 repair spec review: PASS, P0/P1/P2=0.
+- Gate 4 repair implementation review: initial FAIL P1=2 (wrong lifecycle test target; regex parser
+  accepted trailing invalid JSON); both reproduced, repaired, and closed by the same reviewer; final
+  PASS, P0/P1/P2=0.
+- Gate 4 repair security review: PASS, P0/P1/P2=0.
 - Spec compliance: final PASS, P0/P1/P2=0.
 - Implementation/architecture: initial FAIL P1=2; repaired the illegal `pending` lifecycle value and
   missing planned `lock_path`; same-reviewer incremental PASS, final P0/P1/P2=0.
@@ -68,3 +79,5 @@ plus index identity and complete registered MWS content identity. No target writ
   exact literal/consumer searches were used for these Markdown/protocol carriers.
 - All adversarial writes ran only in `mktemp` scratch repositories and were cleaned.
 - The adjacent transaction lock was owner-token cleaned after every CAS and is absent.
+- The non-blocking Layer 2 naming-registry P2 remains outside this handoff; the required review files
+  exist and are checked directly by this task's verifier.

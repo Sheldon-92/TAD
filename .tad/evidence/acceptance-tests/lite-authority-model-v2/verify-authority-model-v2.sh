@@ -112,12 +112,95 @@ check_mirrors() {
   [ "$count" -eq 5 ] && pass 'mirror_pairs=5' || fail "mirror_pairs=$count"
 }
 
-fixture_file_valid() {
+fixture_integrity_valid() {
   file=$1
   [ "$(sha256_file "$file")" = "$FIXTURE_SHA" ] || return 1
   [ "$(wc -l < "$file" | tr -d ' ')" -eq 30 ] || return 1
   [ "$(sed -n 's/.*"id":"\([^"]*\)".*/\1/p' "$file" | LC_ALL=C sort -u | wc -l | tr -d ' ')" -eq 30 ] || return 1
   return 0
+}
+
+write_expected_outcome_oracle() {
+  cat <<'ORACLE'
+mandate-happy-release	accepted	all release and sync consequences and exact targets are bound	ALLOW transaction	false	null	false
+mandate-happy-local	accepted	workspace_write and local_commit are bound	ALLOW	false	null	false
+verified-not-started-retry	accepted	read-only reconciliation proves no mutation started	RETRY same transaction	false	null	false
+deterministic-rollback	accepted	one verified recovery result is declared	ROLLBACK_AND_VERIFY	false	null	false
+resume-same-mandate	accepted	compaction or terminal change with unchanged contract	RESUME	false	null	false
+accepted-field-mismatch	invalid	accepted status disagrees with decision timestamp source binding or revision	INVALID before mutation	false	null	false
+duplicate-mandate-id	invalid	two non-superseded mandates claim one stable ID	INVALID before mutation	false	null	false
+superseded-mandate	superseded	transaction cites a superseded revision	RETURN_TO_ALEX_LITE	false	null	false
+expired-mandate	expired	mandate lifecycle predicate is true	RETURN_TO_ALEX_LITE	false	null	false
+concurrent-transaction-cas	accepted	two executors attempt one planned transition	Exactly one launches; loser reconciles	false	null	false
+stale-lock-proven-dead	accepted	local owner fingerprint proves exact crashed owner dead and pre-state unchanged	CLEAR, REACQUIRE, RECONCILE	false	null	false
+stale-lock-owner-unknown	accepted	owner liveness fingerprint or pre-state cannot be proven	BLOCK_NO_MUTATION	false	null	false
+post-precheck-drift	accepted	bound target changes between precheck and launch	RECONCILE_OR_BLOCK; no force	false	null	false
+completed-do-not-repeat	accepted	resume sees completed action or transaction	VERIFY_ONLY; do not repeat	false	null	false
+duplicate-transaction-or-action-id	invalid	handoff repeats a transaction or action ID	INVALID before mutation	false	null	false
+unlisted-consequence	accepted	action class is absent from mandate	BOUNDARY_CHANGE before mutation	true	consequence_change	false
+target-scope-change	accepted	repository project or environment is absent from exact binding	BOUNDARY_CHANGE before mutation	true	target_change	false
+target-alias	accepted	literal path resolves to a different identity	DENY before mutation	false	null	false
+ref-expansion	accepted	requested ref or pathspec is unlisted	BOUNDARY_CHANGE before mutation	true	target_change	false
+mws-expansion	accepted	requested project write escapes MWS	BOUNDARY_CHANGE before mutation	true	target_change	false
+financial-bound-expansion	accepted	payment changes payer payee currency or maximum amount	BOUNDARY_CHANGE before mutation	true	business_legal_financial_identity_tradeoff	false
+skill-expands-mandate	accepted	skill declaration is broader than mandate	DENY	false	null	false
+divergent-partial-recovery	accepted	two legitimate recoveries have different visible results	BOUNDARY_CHANGE	true	divergent_visible_recovery	false
+new-credential-owner	accepted	new account credential owner or identity authority is required	BOUNDARY_CHANGE	true	new_external_identity_or_credentials	false
+tool-failure-no-prompt	accepted	tool exit or wiring failure without boundary change	REPAIR_OR_BLOCK	false	null	false
+unknown-fail-closed	accepted	read-only diagnosis cannot classify external result	BLOCK_NO_MUTATION	false	null	false
+unlisted-local-commit	accepted	workspace_write is bound but local_commit is absent	LEAVE_UNCOMMITTED	false	null	false
+archive-before-acceptance	accepted	technical gate passed and final business acceptance is pending	WAIT; do not archive	false	null	false
+final-business-acceptance	accepted	technical gate passed	WAITING HUMAN ACCEPTANCE	true	null	false
+archive-after-acceptance	accepted	human accepts final business result	ARCHIVE	false	null	false
+ORACLE
+}
+
+normalize_fixture_semantics() {
+  local file line
+  file=$1
+  command -v jq >/dev/null 2>&1 || return 1
+  while IFS= read -r line; do
+    printf '%s\n' "$line" | jq -er '
+      if type != "object"
+        or (.id | type) != "string"
+        or (.mandate_state | type) != "string"
+        or (.condition | type) != "string"
+        or (.expected_result | type) != "string"
+        or (.human_prompt | type) != "boolean"
+        or ((.runtime_prompt_reason | type) != "string" and (.runtime_prompt_reason | type) != "null")
+        or (.mutation_before_verdict | type) != "boolean"
+      then error("invalid authority fixture schema")
+      else [
+        .id,
+        .mandate_state,
+        .condition,
+        .expected_result,
+        (.human_prompt | tostring),
+        (if .runtime_prompt_reason == null then "null" else .runtime_prompt_reason end),
+        (.mutation_before_verdict | tostring)
+      ] | @tsv
+      end
+    ' 2>/dev/null || return 1
+  done < "$file"
+}
+
+fixture_semantics_valid() {
+  local file oracle_tmp valid
+  file=$1
+  [ -f "$file" ] || return 1
+  oracle_tmp=$(mktemp -d "${TMPDIR:-/tmp}/authority-oracle.XXXXXX") || return 1
+  valid=0
+  if write_expected_outcome_oracle > "$oracle_tmp/expected" \
+    && normalize_fixture_semantics "$file" > "$oracle_tmp/actual" \
+    && cmp -s "$oracle_tmp/expected" "$oracle_tmp/actual"; then
+    valid=1
+  fi
+  safe_remove_tmp "$oracle_tmp" >/dev/null 2>&1 || return 1
+  [ "$valid" -eq 1 ]
+}
+
+fixture_file_valid() {
+  fixture_integrity_valid "$1" && fixture_semantics_valid "$1"
 }
 
 safe_remove_tmp() {
@@ -147,16 +230,28 @@ run_controls() {
   fixture="$EV/authority-fixtures.jsonl"
   fixture_file_valid "$fixture" && pass 'positive_control_fixture=PASS' || fail 'positive_control_fixture'
 
-  cp "$fixture" "$tmp/f1"
-  sed 's/all release and sync consequences and exact targets are bound/target and consequence broadened without expectation change/' "$tmp/f1" > "$tmp/f1.mut"
-  if fixture_file_valid "$tmp/f1.mut"; then fail 'mutation_probe_broaden_binding accepted'; else pass 'mutation_probe_broaden_binding=PASS'; fi
+  sed '/"id":"unlisted-consequence"/s/"expected_result":"BOUNDARY_CHANGE before mutation"/"expected_result":"ALLOW"/' "$fixture" > "$tmp/f1-consequence.mut"
+  sed '/"id":"superseded-mandate"/s/"expected_result":"RETURN_TO_ALEX_LITE"/"expected_result":"ALLOW"/' "$fixture" > "$tmp/f1-lifecycle.mut"
+  sed '1s/$/ INVALID_JSON/' "$fixture" > "$tmp/f1-json.mut"
+  consequence_digest=$(sha256_file "$tmp/f1-consequence.mut")
+  lifecycle_digest=$(sha256_file "$tmp/f1-lifecycle.mut")
+  json_digest=$(sha256_file "$tmp/f1-json.mut")
+  if fixture_semantics_valid "$tmp/f1-consequence.mut" \
+    || fixture_semantics_valid "$tmp/f1-lifecycle.mut" \
+    || fixture_semantics_valid "$tmp/f1-json.mut" \
+    || [ -z "$consequence_digest" ] \
+    || [ -z "$lifecycle_digest" ] \
+    || [ -z "$json_digest" ]; then
+    fail 'mutation_probe_semantic_authority_outcomes accepted'
+  else
+    pass 'mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json'
+  fi
 
-  sed 's/"tool-failure-no-prompt"/"tool-failure-no-prompt","technical_approval_prompt":true/' "$fixture" > "$tmp/f2.mut"
-  if fixture_file_valid "$tmp/f2.mut"; then fail 'mutation_probe_tool_prompt accepted'; else pass 'mutation_probe_tool_prompt=PASS'; fi
+  sed '/"id":"tool-failure-no-prompt"/s/"human_prompt":false/"human_prompt":true/' "$fixture" > "$tmp/f2.mut"
+  if fixture_semantics_valid "$tmp/f2.mut"; then fail 'mutation_probe_tool_prompt accepted'; else pass 'mutation_probe_tool_prompt=PASS'; fi
 
-  cp "$fixture" "$tmp/f3.mut"
-  grep '"completed-do-not-repeat"' "$fixture" >> "$tmp/f3.mut"
-  if fixture_file_valid "$tmp/f3.mut"; then fail 'mutation_probe_replay_duplicate accepted'; else pass 'mutation_probe_replay_duplicate=PASS'; fi
+  sed '/"id":"completed-do-not-repeat"/s/"expected_result":"VERIFY_ONLY; do not repeat"/"expected_result":"RETRY"/' "$fixture" > "$tmp/f3.mut"
+  if fixture_semantics_valid "$tmp/f3.mut"; then fail 'mutation_probe_completed_replay accepted'; else pass 'mutation_probe_completed_replay=PASS'; fi
 
   scratch="$tmp/source"
   mkdir -p "$scratch/protected"
@@ -223,7 +318,8 @@ run_controls() {
 
 check_fixtures() {
   fixture="$EV/authority-fixtures.jsonl"
-  fixture_file_valid "$fixture" && pass 'fixtures=30 exact matrix' || fail 'fixtures exact matrix'
+  fixture_integrity_valid "$fixture" && pass 'fixture integrity SHA and cardinality exact' || fail 'fixture integrity'
+  fixture_semantics_valid "$fixture" && pass 'fixtures=30 independent semantic oracle exact' || fail 'fixture semantic oracle mismatch'
   bad_false=$(awk '/"human_prompt":false/ && $0 !~ /"runtime_prompt_reason":null/{n++}END{print n+0}' "$fixture")
   bad_mut=$(awk '$0 !~ /"mutation_before_verdict":false/{n++}END{print n+0}' "$fixture")
   [ "$bad_false" -eq 0 ] && pass 'prompt-false reasons are null' || fail 'prompt-false reason mismatch'
@@ -257,19 +353,25 @@ check_zero_touch() {
   manifest_sha=$(sha256_file "$manifest")
   LC_ALL=C sort -c "$manifest" >/dev/null 2>&1 && pass 'zero-touch manifest sorted' || fail 'zero-touch manifest unsorted'
   [ "$(awk -F '\t' '$1=="registered_target"{n++}END{print n+0}' "$manifest")" -eq 14 ] && pass 'registered_targets=14' || fail 'registered target expansion drift'
+  window_ok=1
+  equal_planes=0
   for plane in tracked untracked index targets; do
     pre="$EV/zero-touch-pre-$plane.txt"; post="$EV/zero-touch-post-$plane.txt"
-    if [ ! -s "$pre" ] || [ ! -s "$post" ]; then fail "zero-touch $plane snapshot missing"; continue; fi
+    if [ ! -s "$pre" ] || [ ! -s "$post" ]; then fail "zero-touch $plane snapshot missing"; window_ok=0; continue; fi
     pre_manifest=$(awk -F '\t' '$1=="MANIFEST_SHA256"{print $2}' "$pre")
     post_manifest=$(awk -F '\t' '$1=="MANIFEST_SHA256"{print $2}' "$post")
-    [ "$pre_manifest" = "$manifest_sha" ] && [ "$post_manifest" = "$manifest_sha" ] || fail "zero-touch $plane manifest identity"
-    cmp -s "$pre" "$post" && pass "zero-touch $plane pre/post equal" || fail "zero-touch $plane pre/post drift"
+    if [ "$pre_manifest" != "$manifest_sha" ] || [ "$post_manifest" != "$manifest_sha" ]; then fail "zero-touch $plane manifest identity"; window_ok=0; fi
+    if cmp -s "$pre" "$post"; then pass "zero-touch $plane pre/post equal"; equal_planes=$((equal_planes + 1)); else fail "zero-touch $plane pre/post drift"; window_ok=0; fi
   done
   controls="$EV/zero-touch-controls.txt"
   [ -f "$controls" ] || { fail 'zero-touch controls missing'; return; }
   [ "$(grep -c '^PASS[[:space:]]*mutation_probe_' "$controls")" -eq 9 ] && pass 'mutation_probes=9/9' || fail 'mutation probe evidence count'
   grep -q 'positive_controls=2/2 mutation_probes=9/9' "$controls" && pass 'positive_controls=2/2' || fail 'positive controls evidence'
-  pass 'live_mutation_count=0'
+  if [ "$window_ok" -eq 1 ] && [ "$equal_planes" -eq 4 ]; then
+    pass 'recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed'
+  else
+    fail "recorded-window persistent endpoint equality=$equal_planes/4"
+  fi
 }
 
 check_reviews() {

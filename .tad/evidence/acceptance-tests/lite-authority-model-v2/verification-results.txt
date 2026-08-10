@@ -1,114 +1,4 @@
-AC1 inventory
-PASS	inventory_paths=13
-PASS	inventory exact live path set
-PASS	inventory disposition FULL_ONLY_RETIRE_LATER
-PASS	inventory disposition HISTORY_ONLY
-PASS	inventory disposition ZERO_TOUCH
-PASS	product/domain HITL classification boundary
-RESULT: PASS
-AC2 lite-core
-PASS	mandate schema SKILL.md
-PASS	transaction skeleton SKILL.md
-PASS	closed classifier SKILL.md
-PASS	closed classifier tail SKILL.md
-PASS	exact bindings SKILL.md
-PASS	mandate schema SKILL.md
-PASS	transaction skeleton SKILL.md
-PASS	closed classifier SKILL.md
-PASS	closed classifier tail SKILL.md
-PASS	exact bindings SKILL.md
-PASS	Alex accepted-state source invariant
-PASS	Alex lifecycle state vocabulary
-PASS	Alex consequence binding schema
-PASS	Alex planned CAS lock path
-PASS	effective authority intersection
-PASS	Blake accepted-state invariant
-PASS	Blake superseded admission
-PASS	Blake expired admission
-PASS	Blake adjacent CAS lock
-PASS	Blake atomic replacement
-PASS	Alex role separation retained
-PASS	Blake independent review retained
-PASS	Blake technical gate retained
-RESULT: PASS
-AC3 prompt-closure
-PASS	obsolete per-command approval fields absent
-PASS	blanket technical questions absent
-PASS	runtime prompt observability
-PASS	boundary prompt observability
-PASS	technical block is not approval
-RESULT: PASS
-AC4 release
-PASS	release mandate intersection
-PASS	source identity guard retained
-PASS	release CAS replacement
-PASS	release same-transaction retry
-PASS	publish transaction sequence
-PASS	exact main refspec retained
-PASS	exact tag refspec retained
-PASS	remote-ahead no-force recovery
-PASS	sync per-action binding
-PASS	sync physical self-target guard retained
-PASS	MWS authority retained
-PASS	systemic partial batch stop
-PASS	release old approval model absent
-RESULT: PASS
-AC5 routing
-PASS	Claude bounded release load
-PASS	Alex bounded release load
-PASS	Blake bounded release load
-PASS	Codex mandate routing
-PASS	current gate-design amendment
-PASS	no carrier no grant amendment
-PASS	routing blanket approval contradiction absent
-RESULT: PASS
-AC6 mirrors
-mirror_pairs=5
-AC7 fixtures
-PASS	fixtures=30 exact matrix
-PASS	prompt-false reasons are null
-PASS	all fixture verdicts precede mutation
-PASS	avoidable_runtime_prompt_count=0
-PASS	final acceptance excluded from runtime prompts
-PASS	positive_control_fixture=PASS
-PASS	mutation_probe_broaden_binding=PASS
-PASS	mutation_probe_tool_prompt=PASS
-PASS	mutation_probe_replay_duplicate=PASS
-PASS	positive_control_source=PASS
-PASS	mutation_probe_untracked=PASS
-PASS	mutation_probe_tracked=PASS
-PASS	mutation_probe_cached_blob=PASS
-PASS	mutation_probe_ignored=PASS
-PASS	positive_control_target=PASS
-PASS	mutation_probe_registered_target=PASS
-PASS	mutation_probe_cas_loser=PASS
-PASS	positive_controls=2/2 mutation_probes=9/9
-RESULT: PASS
-AC8 budget
-PASS	lite_core_bytes=52034
-PASS	release_entry_bytes=8469
-PASS	release_refs_bytes=15873
-RESULT: PASS
-AC9 ledger
-PASS	ledger_overdue=0
-PASS	ledger supersession disposition
-PASS	ledger priced mandate carrier
-RESULT: PASS
-AC10 zero-touch
-PASS	zero-touch manifest sorted
-PASS	registered_targets=14
-PASS	zero-touch tracked pre/post equal
-PASS	zero-touch untracked pre/post equal
-PASS	zero-touch index pre/post equal
-PASS	zero-touch targets pre/post equal
-PASS	mutation_probes=9/9
-PASS	positive_controls=2/2
-PASS	live_mutation_count=0
-RESULT: PASS
-AC11 reviews
-PASS	independent_reviews=3 P0/P1/P2=0
-RESULT: PASS
-AC12 full-replay-pre-commit
+RUN	1/3
 CHECK	inventory
 PASS	inventory_paths=13
 PASS	inventory exact live path set
@@ -171,15 +61,16 @@ PASS	routing blanket approval contradiction absent
 CHECK	mirrors
 PASS	mirror_pairs=5
 CHECK	fixtures
-PASS	fixtures=30 exact matrix
+PASS	fixture integrity SHA and cardinality exact
+PASS	fixtures=30 independent semantic oracle exact
 PASS	prompt-false reasons are null
 PASS	all fixture verdicts precede mutation
 PASS	avoidable_runtime_prompt_count=0
 PASS	final acceptance excluded from runtime prompts
 PASS	positive_control_fixture=PASS
-PASS	mutation_probe_broaden_binding=PASS
+PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
 PASS	mutation_probe_tool_prompt=PASS
-PASS	mutation_probe_replay_duplicate=PASS
+PASS	mutation_probe_completed_replay=PASS
 PASS	positive_control_source=PASS
 PASS	mutation_probe_untracked=PASS
 PASS	mutation_probe_tracked=PASS
@@ -206,7 +97,213 @@ PASS	zero-touch index pre/post equal
 PASS	zero-touch targets pre/post equal
 PASS	mutation_probes=9/9
 PASS	positive_controls=2/2
-PASS	live_mutation_count=0
+PASS	recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed
+CHECK	reviews
+PASS	independent_reviews=3 P0/P1/P2=0
+RESULT: PASS
+RUN	2/3
+CHECK	inventory
+PASS	inventory_paths=13
+PASS	inventory exact live path set
+PASS	inventory disposition FULL_ONLY_RETIRE_LATER
+PASS	inventory disposition HISTORY_ONLY
+PASS	inventory disposition ZERO_TOUCH
+PASS	product/domain HITL classification boundary
+CHECK	lite-core
+PASS	mandate schema SKILL.md
+PASS	transaction skeleton SKILL.md
+PASS	closed classifier SKILL.md
+PASS	closed classifier tail SKILL.md
+PASS	exact bindings SKILL.md
+PASS	mandate schema SKILL.md
+PASS	transaction skeleton SKILL.md
+PASS	closed classifier SKILL.md
+PASS	closed classifier tail SKILL.md
+PASS	exact bindings SKILL.md
+PASS	Alex accepted-state source invariant
+PASS	Alex lifecycle state vocabulary
+PASS	Alex consequence binding schema
+PASS	Alex planned CAS lock path
+PASS	effective authority intersection
+PASS	Blake accepted-state invariant
+PASS	Blake superseded admission
+PASS	Blake expired admission
+PASS	Blake adjacent CAS lock
+PASS	Blake atomic replacement
+PASS	Alex role separation retained
+PASS	Blake independent review retained
+PASS	Blake technical gate retained
+CHECK	prompt-closure
+PASS	obsolete per-command approval fields absent
+PASS	blanket technical questions absent
+PASS	runtime prompt observability
+PASS	boundary prompt observability
+PASS	technical block is not approval
+CHECK	release
+PASS	release mandate intersection
+PASS	source identity guard retained
+PASS	release CAS replacement
+PASS	release same-transaction retry
+PASS	publish transaction sequence
+PASS	exact main refspec retained
+PASS	exact tag refspec retained
+PASS	remote-ahead no-force recovery
+PASS	sync per-action binding
+PASS	sync physical self-target guard retained
+PASS	MWS authority retained
+PASS	systemic partial batch stop
+PASS	release old approval model absent
+CHECK	routing
+PASS	Claude bounded release load
+PASS	Alex bounded release load
+PASS	Blake bounded release load
+PASS	Codex mandate routing
+PASS	current gate-design amendment
+PASS	no carrier no grant amendment
+PASS	routing blanket approval contradiction absent
+CHECK	mirrors
+PASS	mirror_pairs=5
+CHECK	fixtures
+PASS	fixture integrity SHA and cardinality exact
+PASS	fixtures=30 independent semantic oracle exact
+PASS	prompt-false reasons are null
+PASS	all fixture verdicts precede mutation
+PASS	avoidable_runtime_prompt_count=0
+PASS	final acceptance excluded from runtime prompts
+PASS	positive_control_fixture=PASS
+PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
+PASS	mutation_probe_tool_prompt=PASS
+PASS	mutation_probe_completed_replay=PASS
+PASS	positive_control_source=PASS
+PASS	mutation_probe_untracked=PASS
+PASS	mutation_probe_tracked=PASS
+PASS	mutation_probe_cached_blob=PASS
+PASS	mutation_probe_ignored=PASS
+PASS	positive_control_target=PASS
+PASS	mutation_probe_registered_target=PASS
+PASS	mutation_probe_cas_loser=PASS
+PASS	positive_controls=2/2 mutation_probes=9/9
+CHECK	budget
+PASS	lite_core_bytes=52034
+PASS	release_entry_bytes=8469
+PASS	release_refs_bytes=15873
+CHECK	ledger
+PASS	ledger_overdue=0
+PASS	ledger supersession disposition
+PASS	ledger priced mandate carrier
+CHECK	zero-touch
+PASS	zero-touch manifest sorted
+PASS	registered_targets=14
+PASS	zero-touch tracked pre/post equal
+PASS	zero-touch untracked pre/post equal
+PASS	zero-touch index pre/post equal
+PASS	zero-touch targets pre/post equal
+PASS	mutation_probes=9/9
+PASS	positive_controls=2/2
+PASS	recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed
+CHECK	reviews
+PASS	independent_reviews=3 P0/P1/P2=0
+RESULT: PASS
+RUN	3/3
+CHECK	inventory
+PASS	inventory_paths=13
+PASS	inventory exact live path set
+PASS	inventory disposition FULL_ONLY_RETIRE_LATER
+PASS	inventory disposition HISTORY_ONLY
+PASS	inventory disposition ZERO_TOUCH
+PASS	product/domain HITL classification boundary
+CHECK	lite-core
+PASS	mandate schema SKILL.md
+PASS	transaction skeleton SKILL.md
+PASS	closed classifier SKILL.md
+PASS	closed classifier tail SKILL.md
+PASS	exact bindings SKILL.md
+PASS	mandate schema SKILL.md
+PASS	transaction skeleton SKILL.md
+PASS	closed classifier SKILL.md
+PASS	closed classifier tail SKILL.md
+PASS	exact bindings SKILL.md
+PASS	Alex accepted-state source invariant
+PASS	Alex lifecycle state vocabulary
+PASS	Alex consequence binding schema
+PASS	Alex planned CAS lock path
+PASS	effective authority intersection
+PASS	Blake accepted-state invariant
+PASS	Blake superseded admission
+PASS	Blake expired admission
+PASS	Blake adjacent CAS lock
+PASS	Blake atomic replacement
+PASS	Alex role separation retained
+PASS	Blake independent review retained
+PASS	Blake technical gate retained
+CHECK	prompt-closure
+PASS	obsolete per-command approval fields absent
+PASS	blanket technical questions absent
+PASS	runtime prompt observability
+PASS	boundary prompt observability
+PASS	technical block is not approval
+CHECK	release
+PASS	release mandate intersection
+PASS	source identity guard retained
+PASS	release CAS replacement
+PASS	release same-transaction retry
+PASS	publish transaction sequence
+PASS	exact main refspec retained
+PASS	exact tag refspec retained
+PASS	remote-ahead no-force recovery
+PASS	sync per-action binding
+PASS	sync physical self-target guard retained
+PASS	MWS authority retained
+PASS	systemic partial batch stop
+PASS	release old approval model absent
+CHECK	routing
+PASS	Claude bounded release load
+PASS	Alex bounded release load
+PASS	Blake bounded release load
+PASS	Codex mandate routing
+PASS	current gate-design amendment
+PASS	no carrier no grant amendment
+PASS	routing blanket approval contradiction absent
+CHECK	mirrors
+PASS	mirror_pairs=5
+CHECK	fixtures
+PASS	fixture integrity SHA and cardinality exact
+PASS	fixtures=30 independent semantic oracle exact
+PASS	prompt-false reasons are null
+PASS	all fixture verdicts precede mutation
+PASS	avoidable_runtime_prompt_count=0
+PASS	final acceptance excluded from runtime prompts
+PASS	positive_control_fixture=PASS
+PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
+PASS	mutation_probe_tool_prompt=PASS
+PASS	mutation_probe_completed_replay=PASS
+PASS	positive_control_source=PASS
+PASS	mutation_probe_untracked=PASS
+PASS	mutation_probe_tracked=PASS
+PASS	mutation_probe_cached_blob=PASS
+PASS	mutation_probe_ignored=PASS
+PASS	positive_control_target=PASS
+PASS	mutation_probe_registered_target=PASS
+PASS	mutation_probe_cas_loser=PASS
+PASS	positive_controls=2/2 mutation_probes=9/9
+CHECK	budget
+PASS	lite_core_bytes=52034
+PASS	release_entry_bytes=8469
+PASS	release_refs_bytes=15873
+CHECK	ledger
+PASS	ledger_overdue=0
+PASS	ledger supersession disposition
+PASS	ledger priced mandate carrier
+CHECK	zero-touch
+PASS	zero-touch manifest sorted
+PASS	registered_targets=14
+PASS	zero-touch tracked pre/post equal
+PASS	zero-touch untracked pre/post equal
+PASS	zero-touch index pre/post equal
+PASS	zero-touch targets pre/post equal
+PASS	mutation_probes=9/9
+PASS	positive_controls=2/2
+PASS	recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed
 CHECK	reviews
 PASS	independent_reviews=3 P0/P1/P2=0
 RESULT: PASS

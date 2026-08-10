@@ -26,8 +26,20 @@ will be rerun after same-reviewer incremental confirmation.
 The same reviewer verified the spec and implementation carriers are final-clean and that both
 architecture P1s are closed. The three report paths now exist, the initial security history is retained,
 and all 30 fixtures, 9/9 probes, CAS/replay/binding checks, fail-closed recovery, four-plane zero-touch,
-and `live_mutation_count=0` remain clean. The only interim verifier failure was this report's intentional
+and the four recorded-window persistent endpoints remain equal. The only interim verifier failure was this report's intentional
 PENDING self-carrier state; materializing this verdict closes it.
 
 **Final verdict:** PASS  
 **Final counts:** P0=0, P1=0, P2=0
+
+## Gate 4 repair adversarial re-review
+
+The independent security reviewer confirmed that changing an expected outcome and recomputing the
+fixture digest does not bypass the embedded semantic oracle. Consequence/lifecycle denial, prompt,
+completed replay, row reorder, missing field, and duplicate-ID variants fail closed. The parser never
+executes fixture content. AC10's evidence is limited to recorded-window persistent endpoint equality
+and makes no continuous-monitoring claim. Scratch mutation stayed under the temporary directory; no
+live release or target operation ran.
+
+**Gate 4 repair verdict:** PASS
+**Gate 4 repair counts:** P0=0, P1=0, P2=0
