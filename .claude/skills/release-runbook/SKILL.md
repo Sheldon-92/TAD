@@ -13,6 +13,9 @@ the current LITE handoff/Progress. Load only this entry first, then one relevant
 Use for `publish`, `sync`, `sync-add`, `sync-list`, version release preparation, release recovery, or
 questions about whether TAD is ready to release/distribute.
 
+After a trigger matches, run the source identity guard below before selecting or loading a reference,
+reading release/registry/target state, planning, verifying, listing, or rendering any command.
+
 - Publish, version bump, tag/push, or publish recovery: read
   [references/publish-ops.md](references/publish-ops.md).
 - Sync, registration, listing, downstream verification, or sync recovery: read
@@ -49,7 +52,8 @@ Full Blake migrating this skill may build and test it, but gains no publish/sync
 
 ## Source identity guard
 
-Before rendering any publish/sync mutation command, resolve and verify the physical source root:
+For every `publish`, `sync`, `sync-add`, or `sync-list` request—including plan, verify, and read-only
+listing—resolve and verify the physical source root immediately after trigger matching:
 
 ```bash
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 1
@@ -65,7 +69,8 @@ esac
 
 Substring matches, forks, nested cwd, unreadable origin, and unknown forms fail closed. A symlinked cwd
 passes only when `pwd -P` equals the physical git root. Every later path and git command is rooted at
-`repo_root` (`git -C "$repo_root"`), never inherited `$PWD`.
+`repo_root` (`git -C "$repo_root"`), never inherited `$PWD`. If this guard fails, stop before reference
+loading, registry access, target inspection, planning, listing, approval claims, or command rendering.
 
 ## Human approval: consume once before launch
 

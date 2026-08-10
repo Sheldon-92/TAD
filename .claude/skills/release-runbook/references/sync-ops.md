@@ -1,12 +1,14 @@
 # Sync, Register, and List Operations
 
-Load this reference for `sync`, `sync-add`, or `sync-list`. The entry skill's root guard,
-plan/execute/verify roles, effective-permission intersection, approval consumption, and ambiguous-result
-recovery apply to every write. Registered targets are never implicit write authorization.
+Load this reference for `sync`, `sync-add`, or `sync-list` only after the entry skill's source guard has
+passed. The guard precedes reference loading and every registry/target read, including read-only planning
+and `sync-list`. Plan/execute/verify roles, effective-permission intersection, approval consumption, and
+ambiguous-result recovery apply to every write. Registered targets are never implicit write authorization.
 
 ## 1. Registry and read-only listing
 
-Read `$repo_root/.tad/sync-registry.yaml`. If it is missing, stop and suggest `sync-add`; if `projects`
+Precondition: the entry source guard has passed for this request. Otherwise stop without reading the
+registry or target state. Then read `$repo_root/.tad/sync-registry.yaml`. If it is missing, stop and suggest `sync-add`; if `projects`
 is missing or empty, report that no projects are registered and remain read-only.
 
 `sync-list` is always read-only. For every entry report:
@@ -26,11 +28,23 @@ Alex-Lite `plan` records one of: all outdated projects, an explicit target set, 
 returns without writes. Before any target approval or write, Blake-Lite validates each selected entry:
 
 - path is absolute, resolves canonically, exists, and is readable;
+- physical target identity differs from physical `repo_root`;
 - target contains `.tad/` and readable `.tad/version.txt`;
 - platform and `claude_md_strategy` are supported;
 - current source and old target versions are captured before copying.
 
-Missing/invalid targets are `skipped` with a reason during planning; never silently redirect a path.
+Resolve identity before any approval claim, task-state transition, MWS copy, migration, registry change,
+commit, or push:
+
+```bash
+target_physical=$(cd "$target" && pwd -P) || exit 1
+test "$target_physical" != "$repo_root" || exit 1
+target=$target_physical
+```
+
+This rejects both a literal source-root target and any symlink that resolves to the source root. An
+existing sync entry that resolves to self is invalid and `skipped` with a reason; a `sync-add` self-target
+is refused. Never silently redirect a path. Every later target path and command uses `target_physical`.
 
 ## 3. Managed Write Surface
 
@@ -147,8 +161,10 @@ commit/push results follow the entry skill's consume-once recovery and are never
 
 ## 8. `sync-add` registration
 
-`sync-add` begins read-only: validate the absolute canonical path, `.tad/`, readable version, platform,
-and entry document. Detect strategy:
+`sync-add` begins read-only after the entry source guard passes. Validate the absolute canonical path,
+then run the §2 physical-identity check and refuse when it equals `repo_root`, including through a
+symlink. This happens before proposing or consuming a registry-write approval. Then validate `.tad/`,
+readable version, platform, and entry document. Detect strategy:
 
 - marker present: propose `merge` and report the preserved-content region;
 - marker absent: propose `overwrite`; choosing `merge` blocks until the marker exists.

@@ -185,7 +185,7 @@ run_ac10() {
   [[ "$(printf '%s\n' "$synthetic_forbidden" | wc -l | tr -d ' ')" -eq 3 ]] || fail AC10 forbidden-detector-negative-control
   [[ "$current_forbidden" == "$pre_forbidden" ]] || fail AC10 forbidden-runtime-status-changed
 
-  local expected actual
+  local expected actual task_base current_delta path_value
   expected=$(printf '%s\n' \
     .agents/skills/release-runbook/SKILL.md \
     .agents/skills/release-runbook/references/publish-ops.md \
@@ -193,13 +193,22 @@ run_ac10() {
     .claude/skills/release-runbook/SKILL.md \
     .claude/skills/release-runbook/references/publish-ops.md \
     .claude/skills/release-runbook/references/sync-ops.md | LC_ALL=C sort)
-  actual=$(git -C "$ROOT" status --porcelain=v1 -uall -- \
+  task_base=$(cat "$EVID_DIR/stable5-pre/source/head.txt")
+  git -C "$ROOT" cat-file -e "$task_base^{commit}" 2>/dev/null || fail AC10 missing-task-base
+  actual=$(git -C "$ROOT" diff --name-only "$task_base" -- \
+    .claude/skills/release-runbook .agents/skills/release-runbook | LC_ALL=C sort)
+  [[ "$actual" == "$expected" ]] || fail AC10 product-path-set
+
+  current_delta=$(git -C "$ROOT" status --porcelain=v1 -uall -- \
     .claude/skills/release-runbook .agents/skills/release-runbook | sed -E 's/^.. //' | LC_ALL=C sort)
-  if [[ -z "$actual" ]]; then
-    actual=$(git -C "$ROOT" diff-tree --no-commit-id --name-only -r HEAD -- \
+  if [[ -z "$current_delta" ]]; then
+    current_delta=$(git -C "$ROOT" diff-tree --no-commit-id --name-only -r HEAD -- \
       .claude/skills/release-runbook .agents/skills/release-runbook | LC_ALL=C sort)
   fi
-  [[ "$actual" == "$expected" ]] || fail AC10 product-path-set
+  [[ -n "$current_delta" ]] || fail AC10 empty-current-delta
+  while IFS= read -r path_value; do
+    printf '%s\n' "$expected" | grep -Fxq -e "$path_value" || fail AC10 "repair-path-outside-scope-$path_value"
+  done <<< "$current_delta"
   pass AC10
 }
 

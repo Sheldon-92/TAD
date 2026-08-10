@@ -61,8 +61,62 @@ gate_decision() {
   esac
 }
 
+extract_source_guard() {
+  local destination=$1
+  section_text "$SKILL" "Source identity guard" |
+    awk '/^```bash$/{on=1;next} /^```$/{if(on) exit} on' > "$destination"
+  [[ -s "$destination" ]]
+}
+
+run_guarded_readonly_request() (
+  local repo=$1 request=$2 audit=$3 guard
+  guard=$(mktemp)
+  trap 'rm -f "$guard"' EXIT
+  extract_source_guard "$guard"
+  printf 'guard-attempt\t%s\n' "$request" >> "$audit"
+  (cd "$repo" && bash "$guard") || return 1
+  printf 'reference-load\t%s\n' "$request" >> "$audit"
+  case "$request" in
+    sync|sync-add|sync-list)
+      test -r "$repo/.tad/sync-registry.yaml"
+      printf 'registry-read\t%s\n' "$request" >> "$audit"
+      ;;
+  esac
+)
+
+fixture_wrong_origin_readonly() (
+  local tmp repo audit request
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  repo="$tmp/wrong-origin"
+  git init -q "$repo"
+  git -C "$repo" remote add origin https://evil.example/Sheldon-92/TAD-backup.git
+  mkdir -p "$repo/.tad"
+  printf 'projects: []\n' > "$repo/.tad/sync-registry.yaml"
+  for request in publish sync sync-add sync-list; do
+    audit="$tmp/$request.audit"
+    if run_guarded_readonly_request "$repo" "$request" "$audit"; then return 1; fi
+    grep -Fxq -e "guard-attempt${TAB:-	}$request" "$audit" 2>/dev/null ||
+      grep -Fq -e "guard-attempt" "$audit"
+    if grep -Eq '^(reference-load|registry-read)' "$audit"; then return 1; fi
+  done
+
+  repo="$tmp/canonical-origin"
+  git init -q "$repo"
+  git -C "$repo" remote add origin https://github.com/Sheldon-92/TAD.git
+  mkdir -p "$repo/.tad"
+  printf 'projects: []\n' > "$repo/.tad/sync-registry.yaml"
+  audit="$tmp/canonical.audit"
+  run_guarded_readonly_request "$repo" sync-list "$audit"
+  grep -Eq '^reference-load[[:space:]]+sync-list$' "$audit"
+  grep -Eq '^registry-read[[:space:]]+sync-list$' "$audit"
+)
+
 fixture_root_guard() (
   require_terms "$SKILL" "Source identity guard" \
+    'For every `publish`, `sync`, `sync-add`, or `sync-list` request' \
+    'stop before reference' \
+    'registry access' \
     'test "$cwd_physical" = "$repo_root"' \
     'https://github.com/Sheldon-92/TAD.git' \
     'git@github.com:Sheldon-92/TAD.git' \
@@ -72,8 +126,7 @@ fixture_root_guard() (
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
   guard="$tmp/guard.sh"
-  section_text "$SKILL" "Source identity guard" | awk '/^```bash$/{on=1;next} /^```$/{if(on) exit} on' > "$guard"
-  [[ -s "$guard" ]] || return 1
+  extract_source_guard "$guard" || return 1
   for form in \
     https://github.com/Sheldon-92/TAD \
     https://github.com/Sheldon-92/TAD.git \
@@ -95,7 +148,64 @@ fixture_root_guard() (
   if (cd "$repo/sub" && bash "$guard"); then return 1; fi
   ln -s "$repo" "$tmp/repo-link"
   (cd "$tmp/repo-link" && bash "$guard") || return 1
+  fixture_wrong_origin_readonly || return 1
 )
+
+extract_target_identity_guard() {
+  local destination=$1
+  section_text "$SYNC" "2. Select and validate sync scope" |
+    awk '/^```bash$/{on=1;next} /^```$/{if(on) exit} on' > "$destination"
+  [[ -s "$destination" ]]
+}
+
+attempt_target_operation() {
+  local repo_root=$1 candidate=$2 operation=$3 audit=$4 guard guard_body
+  guard="$audit.guard"
+  guard_body="$audit.guard-body"
+  extract_target_identity_guard "$guard_body"
+  {
+    printf '%s\n' 'target=$1' 'repo_root=$2'
+    cat "$guard_body"
+    printf 'printf '\''approval-claim\\t%%s\\t%%s\\n'\'' %q "$target"\n' "$operation"
+  } > "$guard"
+  bash "$guard" "$candidate" "$repo_root" >> "$audit"
+}
+
+fixture_self_target_rejection() (
+  local tmp source target alias operation audit
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  source="$tmp/source"
+  target="$tmp/target"
+  mkdir -p "$source/.tad" "$target/.tad"
+  source=$(cd "$source" && pwd -P)
+  target=$(cd "$target" && pwd -P)
+  ln -s "$source" "$tmp/source-link"
+  alias="$tmp/source-link"
+
+  for operation in sync sync-add; do
+    audit="$tmp/$operation-literal.audit"
+    ! attempt_target_operation "$source" "$source" "$operation" "$audit"
+    [[ ! -s "$audit" ]]
+    audit="$tmp/$operation-symlink.audit"
+    ! attempt_target_operation "$source" "$alias" "$operation" "$audit"
+    [[ ! -s "$audit" ]]
+  done
+
+  audit="$tmp/downstream.audit"
+  attempt_target_operation "$source" "$target" sync "$audit"
+  grep -Eq '^approval-claim[[:space:]]+sync[[:space:]]+' "$audit"
+)
+
+fixture_target_identity() {
+  require_terms "$SYNC" "2. Select and validate sync scope" \
+    'target_physical=$(cd "$target" && pwd -P)' \
+    'test "$target_physical" != "$repo_root"' \
+    'before any approval claim' \
+    'literal source-root target' \
+    'symlink that resolves to the source root' || return 1
+  fixture_self_target_rejection
+}
 
 approval_decision() {
   local state=$1 expected_digest=$2 actual_digest=$3
@@ -260,7 +370,7 @@ fixture_sync_summary() {
 }
 
 fixture_registration_path() (
-  require_terms "$SYNC" '8. `sync-add` registration' 'absolute canonical path' '`.tad/`' 'readable version' || return 1
+  require_terms "$SYNC" '8. `sync-add` registration' 'absolute canonical path' 'physical-identity check' 'equals `repo_root`' 'before proposing or consuming a registry-write approval' '`.tad/`' 'readable version' || return 1
   local tmp
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
@@ -270,6 +380,7 @@ fixture_registration_path() (
   [[ ! -r "$tmp/with-tad/.tad/version.txt" ]]
   printf '2.40.0\n' > "$tmp/with-tad/.tad/version.txt"
   [[ -r "$tmp/with-tad/.tad/version.txt" ]]
+  fixture_self_target_rejection
 )
 
 fixture_registration_strategy() {

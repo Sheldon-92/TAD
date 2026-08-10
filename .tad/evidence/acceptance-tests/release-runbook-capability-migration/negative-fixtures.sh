@@ -12,7 +12,9 @@ group_pass() {
 }
 
 fixture_root_guard
-group_pass 1 malicious-origin-nested-cwd-symlink-root
+fixture_wrong_origin_readonly
+printf 'NEG-FIXTURE PASS wrong-origin-read-only-before-registry\n'
+group_pass 1 malicious-origin-nested-cwd-symlink-root-and-readonly-order
 
 [[ "$(approval_decision '' abc abc)" == DENY ]]
 [[ "$(approval_decision unused abc changed)" == DENY ]]
@@ -120,10 +122,13 @@ top_deny=$(printf '%s\n' "$report" | sed -nE 's/^  \(\+ top-level file: ([^)]+)\
 [[ "$top_deny" == sync-registry.yaml ]]
 require_terms "$SYNC" "3. Managed Write Surface" 'Zero or multiple records block.' 'Exclude the observed basename'
 require_terms "$SYNC" '8. `sync-add` registration' 'choosing `merge` blocks until the marker exists.'
+fixture_self_target_rejection
+printf 'NEG-FIXTURE PASS literal-self-target-before-approval\n'
+printf 'NEG-FIXTURE PASS symlink-self-target-before-approval\n'
 if section_text "$SYNC" "3. Managed Write Surface" | sed -n '/managed-write-surface:begin/,/managed-write-surface:end/p' | grep -q '^\.tad/sync-registry.yaml$'; then
   exit 1
 fi
-group_pass 10 registry-path-marker-and-top-deny-fail-closed
+group_pass 10 registry-path-marker-top-deny-and-self-target-fail-closed
 
 [[ "$PASS_COUNT" -eq 10 ]]
 printf 'NEGATIVE FIXTURES PASS 10/10\n'

@@ -19,3 +19,11 @@ Migration exit-code tests became meaningful only after using disposable two-targ
 ## Evidence-harness lesson
 
 Capture what the acceptance text promises: source worktree status, stdout/stderr/exit for every derivation interface, and the dynamically parsed sole TOP_DENY. Comparing two incomplete manifests can otherwise produce a false PASS.
+
+## Safety predicates include invocation order
+
+A correct source-identity predicate is insufficient when read-only routing, reference loading, or registry inspection can happen first. The executable contract must place the guard immediately after trigger matching and test wrong-origin plan/verify/list paths, not only mutation-command rendering.
+
+## Target validation must compare physical identity
+
+Path syntax and existence checks do not prevent the source repository from becoming its own sync target. Resolve both sides physically and reject equality before claiming approval or changing task state; literal and symlink aliases need separate fixtures because either can regress independently.
