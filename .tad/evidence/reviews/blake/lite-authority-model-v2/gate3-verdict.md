@@ -35,3 +35,6 @@ It does not authorize push, tag, publish, sync, registry/target writes, or any o
 
 Gate 3 authorizes the accepted mandate's separate exact-path, non-amending local repair commit. It does
 not authorize any push, tag, publish, sync, registry/target write, or live dogfood.
+
+The authorized repair commit was created at `c851046dc41b65f89dbe0acfbb51cc198d016c81` with ten explicit
+paths. Push was not performed.

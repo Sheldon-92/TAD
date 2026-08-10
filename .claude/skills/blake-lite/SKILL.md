@@ -80,11 +80,11 @@ skill 只能收窄或拒绝。准入必须机械验证恰好一个稳定唯一 `
 缺失、malformed、重复、superseded、expired 或交叉字段矛盾均在 mutation 前退回 Alex-Lite；
 Blake 的临时人工答复不能修补无效 carrier。
 
-逐项验证 desired outcome、authorized consequence classes、max blast radius、exclusions、recovery，
-以及每个 consequence→target binding。repository 必须绑定 physical root/origin/ref/pathspec；
-project 绑定 MWS；environment/account/credential/financial 后果分别绑定 exact environment、owner/
-operation、payer/payee/currency/amount。空 target 列表表示 none，禁止把 class 列表与 target 列表做
-笛卡尔积。Contract Review 必须覆盖 mandate 完整性、最小权限和 AC alignment。
+逐项验证 outcome/classes、exclusions、recovery 与 consequence→target binding；repository 绑定 exact
+root/origin/ref/pathspec，project=MWS；environment/owner/operation/amount。空 target=none，
+禁 class×target 笛卡尔积。`max_blast_radius` 只含 exact target/path/consequence/external reach/impact；
+commit/retry/reviewer/evidence 数量是 agent 域。`local_commit` 须 task-scoped append-only、闭集 purpose、
+explicit staging、完整 base→tip SHA 逐 commit 验路径、no rewrite/external reach。Review 覆盖完整性/最小权限/AC。
 
 当前 LITE handoff/Progress 是唯一状态 owner，并含 mandatory `## Execution Transactions`。
 每个 transaction/action ID 唯一，记录 mandate revision、exact binding、pre/post/recovery evidence、
@@ -295,8 +295,8 @@ opt-in 复盘：仅当用户点名要复盘 → 产出完整 retrospective（时
 `partial-accepted` 才归档。
 人验收通过后自动 archive，无第二次归档确认：mkdir -p .tad/archive/handoffs/ 并
 mv 该 LITE 文件到 .tad/archive/handoffs/（位置即状态：离开 active/ = done）。
-若 accepted mandate 含 `local_commit`，Gate PASS 后按 exact pathspec 自动创建一个非 amend 本地
-commit；未列出则 Completion 记 `uncommitted`，不另问。push 也只在 role、skill、exact mandate
+若 mandate 含 `local_commit`，按 exact pathspec/闭集 purpose 创建所需 task-scoped append-only commits，
+数量 agent-owned；未列出则记 `uncommitted`，不另问。push 也只在 role、skill、exact mandate
 consequence/target/blast radius 与 preconditions 全部允许时执行；否则拒绝或阻塞，不问命令许可。
 
 压缩后恢复：重读 active/ 中唯一 pending 的 LITE-*.md + 其 `## Lite Progress` 段

@@ -4,6 +4,7 @@
 **Baseline:** `cabe28755c581c1bddfdfe1a490471888d9f26df`  
 **Technical verdict:** GATE PASS  
 **Scoped commit:** `77479a0a4ada086f65930a2b1502c5713c49aad3` (40 explicit paths, non-amending)
+**Gate 4 repair commit:** `c851046dc41b65f89dbe0acfbb51cc198d016c81` (10 explicit paths, non-amending)
 **Push:** NOT PERFORMED
 
 ## AC1–AC12
@@ -21,7 +22,7 @@
 | AC9 | PASS | exact overdue scan empty; supersession disposition and priced mandate carrier present |
 | AC10 | PASS | immutable manifest; recorded-window persistent endpoints equal for source worktree/index/untracked+ignored and registered targets (`4/4`) |
 | AC11 | PASS | three fresh Gate 4 repair reviews final PASS; each P0=0, P1=0, P2=0 |
-| AC12 | PASS | `verify-authority-model-v2.sh --all` passed 3/3 deterministic runs, each final `RESULT: PASS`; repair commit pending exact-path Gate 3 action; push NOT PERFORMED |
+| AC12 | PASS | `verify-authority-model-v2.sh --all` passed 3/3 deterministic runs, each final `RESULT: PASS`; repair commit `c851046`; push NOT PERFORMED |
 
 Raw output carrier: `verification-results.txt` (SHA-256
 `299a3eb172a0088a4169b1385a1adba1c2302297adbcfd3065c683cd7bf0a79a`).

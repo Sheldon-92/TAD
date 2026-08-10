@@ -1,10 +1,24 @@
 # Completion: Lite Authority Model v2
 
-**Task:** FULL-RETIRE-P3B-LITE-AUTHORITY-V2  
-**Date:** 2026-08-10  
-**Commit:** `77479a0a4ada086f65930a2b1502c5713c49aad3`  
-**Push:** NOT PERFORMED  
+**Task:** FULL-RETIRE-P3B-LITE-AUTHORITY-V2
+**Date:** 2026-08-10
+**Initial implementation commit:** `77479a0a4ada086f65930a2b1502c5713c49aad3`
+**Gate 4 repair commit:** `c851046dc41b65f89dbe0acfbb51cc198d016c81`
+**Push:** NOT PERFORMED
 **Model:** harness=codex | model=GPT-5 | route=native
+
+## Alex Gate 4 Override — Current Authority
+
+**Current status:** GATE 4 FAIL / REPAIR 2 PENDING. Do not archive or treat the historical PASS claims
+below as current acceptance.
+
+Commit `c851046dc41b65f89dbe0acfbb51cc198d016c81` exceeded revision 1's already-consumed one-local-commit
+bound. It is immutable historical protocol-deviation evidence with `external_mutation_count=0`; it is
+not a scoped/authorized repair and revision 2 does not retroactively authorize it. Revision 2 and the
+planned repair-2 transaction are authoritative in the active handoff. Blake must replace this override
+with truthful repair-2 base/tip, ordered `commit_shas`, complete linear-range equality, no-merge result,
+per-commit §5.5 path checks, closed-world JSONL evidence, fresh Gate 3, and final reviewer results before
+claiming AC12 or Gate 3 PASS again. The body below is preserved as the original Gate 3/repair-1 record.
 
 ## Outcome
 
@@ -32,7 +46,8 @@ registered-target mutation ran.
 - `FULL-RETIRE-P3B-LITE-AUTHORITY-V2-implementation`, mandate revision 1, final state_version=5,
   state=completed.
 - `FULL-RETIRE-P3B-LITE-AUTHORITY-V2-gate4-repair-1`, mandate revision 1; semantic-oracle/AC10 repair
-  and AC/review replay completed; separate scoped repair commit follows Gate 3.
+  and AC/review replay completed; separate scoped repair commit
+  `c851046dc41b65f89dbe0acfbb51cc198d016c81`; push NOT PERFORMED.
 - `freeze-zero-touch-pre-state`: completed; manifest SHA
   `a330b817725fe3ed45d755afbefc0044273d2747e970555dac44aa481ad01ee7`.
 - `migrate-live-authority-carriers`: completed.
@@ -76,8 +91,8 @@ intentionally later state carriers and did not create a second commit.
   tracked/index/untracked+ignored/14-target snapshots. This does not claim real-time proof that no
   transient external command could ever have run.
 - AC11 ✅ three fresh Gate 4 repair reviews final PASS, each P0=0, P1=0, P2=0.
-- AC12 ✅ full replay 3/3, each exit 0 / `RESULT: PASS`; separate scoped repair commit authorized;
-  push NOT PERFORMED.
+- AC12 ✅ full replay 3/3, each exit 0 / `RESULT: PASS`; separate scoped repair commit
+  `c851046dc41b65f89dbe0acfbb51cc198d016c81` created; push NOT PERFORMED.
 
 Raw output: `.tad/evidence/acceptance-tests/lite-authority-model-v2/verification-results.txt`.
 

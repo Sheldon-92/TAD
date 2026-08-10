@@ -5,7 +5,7 @@ research_required: no
 git_tracked_dirs: []
 skip_knowledge_assessment: no
 gate4_delta: []
-baseline_commit: cabe28755c581c1bddfdfe1a490471888d9f26df
+baseline_commit: c851046dc41b65f89dbe0acfbb51cc198d016c81
 ---
 
 # Handoff: Lite Authority Model v2
@@ -17,10 +17,12 @@ baseline_commit: cabe28755c581c1bddfdfe1a490471888d9f26df
 **Priority:** P0  
 **Epic:** `.tad/active/epics/EPIC-20260809-full-capability-extraction-retirement.md`
 (Phase 3b/8)  
-**Status:** Expert Review Complete - Ready for Implementation  
-**Execution boundary:** one scoped local implementation commit is allowed after Gate 3; push, tag,
-publish, sync, registered-target writes, dependency mutation, deploy, payment, credential mutation,
-destructive data change, and history rewrite are prohibited.
+**Status:** Gate 2 Revision-2 Amendment PASS — Ready for Repair 2
+**Execution boundary:** revision 2 permits only §5.5 workspace writes and task-scoped append-only local
+commit(s) on the exact repository/ref/path policy after Gate 3; commit count is agent-owned technical
+cardinality, not a human authorization field. Push, tag, publish, sync, registered-target writes,
+dependency mutation, deploy, payment, credential mutation, destructive data change, and history rewrite
+are prohibited.
 
 ## 0. Human Decision Already Made
 
@@ -98,13 +100,15 @@ reconciliation. Completion summarizes this state but never becomes its first or 
 
 ### 3.3 Human/agent ownership
 
-Human owns desired outcome, target repositories/projects/environments, authorized consequence classes,
-maximum blast radius, exclusions, visible recovery preferences, business/legal/financial/identity
-trade-offs, and final business acceptance.
+Human owns desired outcome, exact target repositories/projects/environments and writable surfaces,
+authorized consequence classes, external reach, bounded ref/path/MWS/data/amount/identity impact,
+exclusions, visible recovery preferences, business/legal/financial/identity trade-offs, and final
+business acceptance.
 
 Agent owns commands, parameters, order, pre/post checks, tool/exit/wiring diagnosis,
 verified-not-started retry, deterministic rollback, idempotent recovery, reviewer repairs inside the
-contract, and technical Gate truth.
+contract, local commit/retry/reviewer/evidence cardinality inside the exact boundary, and technical Gate
+truth.
 
 ### 3.4 Legal runtime re-decision reasons
 
@@ -121,7 +125,9 @@ new_external_identity_or_credentials
 ```
 
 Technical failure, tool unavailability, exit codes, wiring errors, retry, rollback, commit/push command
-selection, and archive confirmation are not legal prompt reasons.
+selection, local commit count, reviewer/evidence count, and archive confirmation are not legal prompt
+reasons. A `blast_radius_change` means a change to exact target/surface, external reach, bounded
+ref/path/MWS/data/amount/identity impact, or visible recovery—not a change in technical work count.
 
 ### 3.5 Transaction model
 
@@ -156,7 +162,7 @@ is unavailable, fail closed. The full five-step normative procedure is design co
 ```yaml
 execution_mandate:
   mandate_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-mandate
-  revision: 1
+  revision: 2
   authority_mode: contract-mandate
   status: accepted
   desired_outcome: "Replace fake command-level Lite authorization with one outcome-level mandate while preserving bounded, fail-closed execution."
@@ -200,6 +206,15 @@ execution_mandate:
           - .tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-pre-targets.txt
           - .tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-post-targets.txt
           - .tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-controls.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-tracked.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-untracked.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-index.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-targets.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-tracked.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-untracked.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-index.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-targets.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-controls.txt
           - .tad/evidence/reviews/blake/lite-authority-model-v2/spec-compliance-reviewer.md
           - .tad/evidence/reviews/blake/lite-authority-model-v2/implementation-reviewer.md
           - .tad/evidence/reviews/blake/lite-authority-model-v2/security-reviewer.md
@@ -210,6 +225,17 @@ execution_mandate:
           - .tad/evidence/reviews/alex/lite-authority-model-v2/architecture-review.md
           - .tad/evidence/reviews/alex/lite-authority-model-v2/security-review.md
           - .tad/evidence/reviews/alex/lite-authority-model-v2/gate2-verdict.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-acceptance.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-code-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-performance-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-security-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-acceptance.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-code-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-performance-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-security-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-repair2-architecture-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-repair2-security-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate2-amendment-verdict.md
           - .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md
           - .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md.txn-lock
           - .tad/active/epics/EPIC-20260809-full-capability-extraction-retirement.md
@@ -218,11 +244,18 @@ execution_mandate:
   consequence_bindings:
     - consequence_class: workspace_write
       target_ids: [tad-source]
-      bounds: "Modify/create only §5.1 and §5.2; in §5.3 governance_artifacts Blake may update only this handoff's Execution Transactions and add final evidence references; the exact adjacent .txn-lock is ephemeral CAS coordination and must be absent at Completion."
+      bounds: "For repair 2, Blake may modify/create only the §5.5 live/evidence/Blake-review paths through gate3-verdict.md plus Completion; in this handoff only Execution Transactions and final evidence references. DR, design contract, Alex reviews, and other handoff text are immutable design inputs. The adjacent .txn-lock is ephemeral CAS coordination and must be absent at Completion. Preserve unrelated dirty-worktree state."
     - consequence_class: local_commit
       target_ids: [tad-source]
-      bounds: "One non-amending local commit on refs/heads/main containing only §5.1, §5.2, and §5.3 governance_artifacts after Gate 3 PASS."
-  max_blast_radius: "One TAD source-workspace commit; no external or downstream mutation."
+      bounds: "Append-only task-scoped local commit(s) on refs/heads/main containing only §5.5 exact paths. Closed purposes: Gate-3-passing repair delivery, recorded Gate-4/reviewer-directed repair, factual evidence reconciliation, deterministic recovery. Explicit pathspec only; no git add -A, amend, rebase, reset, squash, deletion, or history rewrite. Stop at Gate 4 PASS, mandate supersession/expiry, or technical block."
+      local_history_policy:
+        mode: append_only_task_scoped
+        authorized_purposes: [gate3_passing_delivery, recorded_gate_or_reviewer_repair, factual_evidence_reconciliation, deterministic_recovery]
+        staging: explicit_pathspec_only
+        history_rewrite: prohibited
+        external_reach: none
+        terminates_when: gate4_pass_or_mandate_superseded_expired_or_blocked
+  max_blast_radius: "One exact TAD source workspace and refs/heads/main append-only local task history over §5.5 paths; external_reach=none; no downstream, registry, dependency, deployment, payment, credential, destructive-data, or history-rewrite effect."
   explicit_exclusions:
     - "All §5.4 zero-touch paths and unrelated dirty-worktree state"
     - "Push, tag, publish, sync, downstream write, dependency mutation, deploy, payment, credential mutation, destructive data change, and history rewrite"
@@ -233,12 +266,21 @@ execution_mandate:
   expires_when: task_complete_or_contract_changed
   acceptance:
     decision: accepted
-    decided_at: "2026-08-10T05:11:00Z"
+    decided_at: "2026-08-10T17:04:37Z"
     source: "L3 contract decision"
 ```
 
-The quoted user decision in §0 plus the instruction to continue is the already-completed outcome-level
-decision. Blake must not turn this recorded mandate into another technical approval prompt.
+Revision history is evidence, not a second live carrier:
+
+| Revision | Lifecycle | Meaning |
+|---|---|---|
+| 1 | superseded prospectively at `2026-08-10T17:04:37Z` | It incorrectly encoded “one local commit” as human blast radius. Commit `77479a0` consumed that bound; repair commit `c851046` therefore exceeded revision 1. This is recorded as a protocol deviation with `external_mutation_count=0`, not retroactively authorized and not precedent. |
+| 2 | current accepted revision | The user's accepted four-step Gate 4 repair direction: human boundary is exact target/surface/consequence/external reach; technical cardinality belongs to the agent under the closed append-only policy above. |
+
+The quoted user decisions in §0 and the accepted repair plan are the completed outcome-level decision.
+Blake must not turn this recorded mandate into another Git-level approval prompt.
+Completed revision-1 transactions are immutable `VERIFY_ONLY` history and do not satisfy or block the
+revision-2 launch check. Every planned/new action must cite the current accepted revision 2.
 
 ## Execution Transactions
 
@@ -301,8 +343,10 @@ transactions:
     mandate_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-mandate
     mandate_revision: 1
     lock_path: .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md.txn-lock
-    state_version: 3
-    state: launched
+    state_version: 4
+    state: completed
+    mandate_conformance: historical_protocol_deviation
+    deviation: "Revision 1 authorized one local commit, already consumed by 77479a0; c851046 was a second local commit. external_mutation_count=0. Revision 2 is prospective and does not retroactively authorize this transaction."
     launched_at: "2026-08-10T16:00:16Z"
     observed_pre_state:
       repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
@@ -327,8 +371,63 @@ transactions:
         completed_at: "2026-08-10T16:17:22Z"
         observed_result: "AC1-AC12 PASS in 3/3 deterministic runs; strict JSONL and semantic mutation controls PASS; three fresh independent reviews final P0/P1/P2=0."
       - action_id: scoped-local-repair-commit-after-gate3
-        state: launched
+        state: completed
         launched_at: "2026-08-10T16:17:22Z"
+        completed_at: "2026-08-10T16:18:44Z"
+        commit_sha: c851046dc41b65f89dbe0acfbb51cc198d016c81
+        push: NOT_PERFORMED
+        exact_path_policy: "Ten explicit Authority v2 repair evidence/governance paths; no git add -A, no amend."
+    final_evidence:
+      - .tad/evidence/acceptance-tests/lite-authority-model-v2/acceptance-verification-report.md
+      - .tad/evidence/acceptance-tests/lite-authority-model-v2/verification-results.txt
+      - .tad/evidence/reviews/blake/lite-authority-model-v2/gate3-verdict.md
+      - .tad/active/handoffs/COMPLETION-20260810-lite-authority-model-v2.md
+  - transaction_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-gate4-repair-2
+    mandate_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-mandate
+    mandate_revision: 2
+    lock_path: .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md.txn-lock
+    state_version: 3
+    state: launched
+    launched_at: "2026-08-10T17:49:21Z"
+    commit_shas: []
+    observed_pre_state:
+      repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
+      origin: "https://github.com/Sheldon-92/TAD.git"
+      ref: refs/heads/main
+      baseline_commit: c851046dc41b65f89dbe0acfbb51cc198d016c81
+      handoff_pre_cas_sha256: 7bd9a9475dd7e19066a3a31bbedd9085b610926009cb1cfe08c4bf007f76579f
+    targets:
+      - TAD source workspace; only §5.5 exact repair-2 paths
+    consequence_classes:
+      - workspace_write
+      - local_commit
+    actions:
+      - action_id: close-jsonl-schema-and-assert-revision2-boundary
+        state: completed
+        launched_at: "2026-08-10T17:49:21Z"
+        completed_at: "2026-08-10T18:17:58Z"
+        observed_result: "Closed-world JSONL schema rejects unknown/missing/mistyped/misplaced keys; recomputed-digest unknown-key probe fails closed; Lite carriers publish revision-2 effect boundary and agent-owned append-only local-history cardinality; repair-2 zero-touch endpoints equal 4/4."
+        evidence_paths:
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-tracked.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-untracked.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-index.txt
+          - .tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-targets.txt
+        finding_refs:
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-code-review.md
+          - .tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-security-review.md
+      - action_id: rerun-ac1-ac12-three-times-and-independent-reviews
+        state: completed
+        launched_at: "2026-08-10T18:17:58Z"
+        completed_at: "2026-08-10T18:21:07Z"
+        observed_result: "AC1-AC11 and repair-2 revision/zero-touch checks pass; three independent pre-commit reviews found no implementation defect, with spec/security recording only the expected pre-commit AC12 history stop."
+        evidence_paths:
+          - .tad/evidence/reviews/blake/lite-authority-model-v2/spec-compliance-reviewer.md
+          - .tad/evidence/reviews/blake/lite-authority-model-v2/implementation-reviewer.md
+          - .tad/evidence/reviews/blake/lite-authority-model-v2/security-reviewer.md
+      - action_id: create-explicit-path-append-only-repair2-commit
+        state: launched
+        launched_at: "2026-08-10T18:21:07Z"
+        exact_path_policy: "Only §5.5 exact paths with actual task deltas; no git add -A, amend, rebase, reset, squash, deletion, or push."
 ```
 
 This planned skeleton becomes executable only with a valid accepted mandate and exact binding. Blake
@@ -385,10 +484,14 @@ Required behavior:
    skeleton; empty target lists mean none.
 3. Reuse goal/scope clarification already present. Ask only when outcome, targets, consequence classes,
    blast radius, exclusions, or visible recovery preference are genuinely unknown.
+   Define blast radius only by exact target/surface, external reach, bounded ref/path/MWS/data/amount/
+   identity effect, and visible recovery. Explicitly exclude command, local-commit, retry, reviewer,
+   evidence, and repair-round counts from the human decision domain.
 4. The existing L3 plan decision accepts contract + mandate together. After acceptance, Alex-Lite
    records a positive revision, `status: accepted`, `acceptance.decision: accepted`, a nonempty timestamp,
    and exact `source: L3 contract decision`. Any cross-field mismatch is invalid before mutation.
-5. A material mandate change returns through contract review. Typo/evidence-only edits do not.
+5. A human-domain material mandate change returns through contract review. Technical cardinality and
+   recorded gate-directed repair inside the same exact boundary do not; typo/evidence-only edits do not.
 6. Contract reviewer checks mandate completeness, least authority, target closure, exclusions, recovery,
    and AC-to-mandate alignment. Remove command-principal/approval questions.
 7. Keep design-only role separation, knowledge bounds, AC dry-run, independent contract review, and
@@ -425,8 +528,9 @@ Required behavior:
    `avoidable_runtime_prompt_count`, `boundary_change_prompt_count`, and every
    `runtime_prompt_reason`.
 7. L5 remains business acceptance only. Acceptance triggers archive automatically; there is no separate
-   archive confirmation. A local commit is automatic only when `local_commit` is in the mandate;
-   otherwise report `uncommitted` without asking a new question.
+   archive confirmation. Task-scoped append-only local commit(s) are automatic only when `local_commit`
+   and the exact local-history policy are in the mandate. Their count is agent-owned; otherwise report
+   `uncommitted` without asking a new question.
 8. Remove the blanket `git push` stop-and-ask rule. Push remains impossible unless role, skill, exact
    mandate consequence, target, blast radius, and preconditions all allow it.
 9. Delegated reviewers/workers receive `mandate_id` plus the smallest target/consequence/path excerpt.
@@ -564,18 +668,29 @@ The verifier is test-only and read-only. It must:
 2. validate all five canonical/mirror pairs with `cmp`;
 3. assert required mandate/classifier/transaction/observability anchors in live carriers;
 4. assert obsolete per-command approval fields/phrases are absent from operational Lite carriers;
-5. validate all 30 design-contract fixtures, accepted-mandate cross-field invariants, exact bindings,
-   replay/CAS behavior, lifecycle cases, and the closed prompt-reason enum;
+5. validate all 30 design-contract fixtures against a closed JSON object schema, accepted-mandate
+   cross-field invariants, exact bindings, replay/CAS behavior, lifecycle cases, and the closed
+   prompt-reason enum; unknown/missing keys, wrong types, or illegal optional fields fail even after
+   fixture digest recomputation;
 6. calculate `avoidable_runtime_prompt_count=0` across fixtures;
 7. compare pre/post tracked and untracked zero-touch snapshots, retain the pinned baseline check, and
    prove with scratch controls that clean state passes while tracked-worktree, cached/index,
    untracked, ignored, and registered-target changes fail;
 8. assert the bounded release-reference exception and reject a fourth/unrelated loaded document;
-9. emit nonzero on any failure and a final machine-readable summary.
+9. assert revision 2 blast-radius semantics, the append-only local-history policy, and the honest
+   revision 1 deviation carrier; reject any live “one commit” cardinality authorization;
+10. emit nonzero on any failure and a final machine-readable summary.
 
 Do not implement a production authorization evaluator in evidence. The verifier checks the published
 protocol, fixture mapping, and file invariants; independent reviewers test the reasoning/adversarial
 cases.
+
+Repair-2 zero-touch override: before its first live-carrier edit, reuse the existing immutable
+`zero-touch-paths.txt` and capture the four `repair2-zero-touch-pre-*` carriers from current base
+`c851046`; never overwrite or rebaseline the original window. After the repair and before Gate 3, write
+the four matching `repair2-zero-touch-post-*` carriers plus `repair2-zero-touch-controls.txt`. Current
+AC10 and `--check zero-touch` must evaluate the repair-2 files; the original files remain historical
+evidence. The same four-plane identity, registered-target, and transient-command disclaimer rules apply.
 
 ### P8 — Independent implementation review and local commit
 
@@ -588,8 +703,9 @@ After ACs pass, run three independent read-only reviews:
    concurrent/resume ambiguity, credential/financial boundary, and fail-closed behavior.
 
 Every proposed P0/P1 must have an executable scratch probe or exact text/path evidence. Resolve all
-P0/P1/P2, rerun affected ACs, and obtain final PASS with P0=P1=P2=0. Then create one explicit-path local
-commit. Do not push.
+P0/P1/P2, rerun affected ACs, and obtain final PASS with P0=P1=P2=0. Then create only the task-scoped,
+append-only, explicit-path local commit(s) needed for the transaction. Count is not a human authorization
+boundary; every commit must satisfy revision 2's closed purpose/path/history policy. Do not push.
 
 ## 5. Files
 
@@ -677,6 +793,55 @@ package.json
 all registered downstream targets
 ```
 
+### 5.5 Gate 4 repair-2 exact executable scope
+
+Only these paths may receive task-attributable deltas in repair 2. Earlier §5.1–§5.3 paths not listed
+here are historical scope, not a new grant. Blake may modify the live/evidence/Blake-review paths through
+`gate3-verdict.md` plus Completion; in this handoff Blake may modify only Execution Transactions and
+final evidence references. The DR, design contract, all Alex review files, and all other handoff text
+are immutable design inputs: Blake may include their existing deltas in an explicit-path commit but may
+not edit them.
+
+```text
+.claude/skills/alex-lite/SKILL.md
+.agents/skills/alex-lite/SKILL.md
+.claude/skills/blake-lite/SKILL.md
+.agents/skills/blake-lite/SKILL.md
+.tad/project-knowledge/patterns/gate-design.md
+.tad/evidence/acceptance-tests/lite-authority-model-v2/authority-fixtures.jsonl
+.tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh
+.tad/evidence/acceptance-tests/lite-authority-model-v2/verification-results.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/acceptance-verification-report.md
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-tracked.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-untracked.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-index.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-targets.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-tracked.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-untracked.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-index.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-targets.txt
+.tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-controls.txt
+.tad/evidence/reviews/blake/lite-authority-model-v2/spec-compliance-reviewer.md
+.tad/evidence/reviews/blake/lite-authority-model-v2/implementation-reviewer.md
+.tad/evidence/reviews/blake/lite-authority-model-v2/security-reviewer.md
+.tad/evidence/reviews/blake/lite-authority-model-v2/gate3-verdict.md
+.tad/active/handoffs/COMPLETION-20260810-lite-authority-model-v2.md
+.tad/decisions/DR-20260809-lite-authority-model-v2.md
+.tad/evidence/designs/full-capability-extraction/authority-model-v2-contract.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-acceptance.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-code-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-performance-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-security-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-acceptance.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-code-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-performance-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-rerun-security-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-repair2-architecture-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-repair2-security-review.md
+.tad/evidence/reviews/alex/lite-authority-model-v2/gate2-amendment-verdict.md
+.tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md
+```
+
 ## 6. Required Fixture Matrix
 
 Use the 30 fixture IDs and expected outcomes exactly as defined in the design contract §7. The JSONL
@@ -686,13 +851,18 @@ record for every fixture must include:
 {"id":"...","mandate_state":"...","condition":"...","expected_result":"...","human_prompt":false,"runtime_prompt_reason":null,"mutation_before_verdict":false}
 ```
 
-For prompt-true rows, `runtime_prompt_reason` must be one legal enum value. For prompt-false rows it
-must be null. `final-business-acceptance` is separately classified as a final business decision and is
-not counted as a runtime prompt.
+The seven displayed keys are required on every row and no other base key is allowed. Optional
+`control` is legal only with value `positive` on `mandate-happy-release` and `mandate-happy-local`;
+optional `decision_class` is legal only with value `final_business_acceptance` on
+`final-business-acceptance`. Every other unknown key, missing key, wrong type, or misplaced optional key
+is invalid. For prompt-true runtime rows, `runtime_prompt_reason` must be one legal enum value. For
+prompt-false rows it must be null. `final-business-acceptance` is separately classified as a final
+business decision and is not counted as a runtime prompt.
 
-Add two clean positive controls and nine mutation probes in scratch copies:
+Add two clean positive controls and ten mutation probes in scratch copies:
 
 - broaden a target or consequence without changing the fixture expectation: verifier must fail;
+- inject an unknown field into a valid row and recompute any fixture digest: verifier must fail;
 - replace `tool-failure-no-prompt` with a technical approval prompt: verifier must fail.
 - make a completed transaction/action replayable or duplicate its ID: verifier must fail;
 - create an untracked file under a scratch zero-touch path: the snapshot comparator must fail;
@@ -711,7 +881,9 @@ operate only in temporary fixture repositories; they must not touch this reposit
   excluded groups have a disposition.
 - AC2: Alex-Lite and Blake-Lite publish the same compact mandate schema, accepted-state invariant,
   exact-binding rules, boundary classifier, mandatory Execution Transactions subsection, and retain
-  role/reviewer/technical-gate protections.
+  role/reviewer/technical-gate protections. Both define human blast radius by exact effect/surface/
+  external reach and exclude technical work counts; Blake-Lite uses task-scoped append-only local
+  commit(s), never a human-authorized “one commit” limit.
 - AC3: The initial L3 decision accepts contract+mandate once; no command, retry, rollback, commit, push,
   archive, or evidence-downgrade approval question remains in the live Lite runtime path.
 - AC4: Release-runbook entry and references use one mandate-scoped business transaction, persist
@@ -721,8 +893,9 @@ operate only in temporary fixture repositories; they must not touch this reposit
   the release reference exception is bounded to entry + selected reference(s), hard maximum three for
   combined publish+sync; full-only/history/zero-touch carriers are not misrepresented as migrated.
 - AC6: Five canonical/mirror pairs are byte-identical.
-- AC7: All 30 fixtures pass; prompt reasons are closed; `avoidable_runtime_prompt_count=0`; both clean
-  controls pass and all nine adversarial mutations fail.
+- AC7: All 30 fixtures pass under an exact closed-world JSON schema; the two optional fields are legal
+  only on their named rows; unknown keys fail after recomputed digest; prompt reasons are closed;
+  `avoidable_runtime_prompt_count=0`; both clean controls pass and all ten adversarial mutations fail.
 - AC8: Always-loaded Lite cost remains bounded: canonical Alex-Lite + Blake-Lite total ≤52,200 bytes;
   release entry ≤9,500 bytes; two on-demand release references total ≤17,400 bytes; no new always-loaded
   file is added.
@@ -730,28 +903,34 @@ operate only in temporary fixture repositories; they must not touch this reposit
   real carrier.
 - AC10: The immutable zero-touch manifest has matching pre/post tracked-worktree, cached/index,
   untracked+ignored, and per-registered-target snapshots with blob/content identity; no task-attributable
-  delta from the pinned baseline; all source/target scratch controls prove detection; live external
-  mutation count is 0.
+  persistent endpoint delta in the recorded repair-2 window; all source/target scratch controls prove
+  detection. Report `recorded_window_persistent_endpoint_equality=4/4`; do not infer continuous
+  monitoring or absence of transient external commands.
 - AC11: Independent spec, architecture, and security reviews each end PASS with P0=0, P1=0, P2=0.
-- AC12: Required evidence manifest is complete, replayable, and the scoped local commit contains only
-  §5.1, §5.2, and the seven named §5.3 `governance_artifacts`; no push occurred.
+- AC12: Required evidence is complete and replayable; repair-2 local commit(s) are append-only and
+  contain only actual §5.5 deltas with explicit pathspecs; no history rewrite or push occurred. The
+  revision 1 `c851046` excess-commit deviation remains explicitly recorded and is not retroactively
+  presented as authorized. The repair-2 transaction records every commit SHA in order; that list equals
+  the complete linear Git range from `c851046` exclusive through the recorded tip, and every commit in
+  the range contains only §5.5 paths. The post-commit SHA list remains the handoff state carrier and is
+  not required to be inside the tip it names; do not create a self-referential extra commit for it.
 
 ## 8. §9.1 Spec Compliance Checklist
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---|---|---|---|---|
 | AC1 | Exact live-surface closure | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check inventory` | `inventory_paths=13`, no omission/extra | post-impl; invocation syntax validated |
-| AC2 | Lite mandate/classifier semantics | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check lite-core` | PASS; accepted-state/binding/transaction anchors present; old prompt model absent | post-impl; invocation syntax validated |
+| AC2 | Lite mandate/classifier semantics | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check lite-core` | PASS; accepted-state/binding/transaction anchors plus revision-2 blast-radius/local-history semantics present; live one-commit authority absent | post-impl; invocation syntax validated |
 | AC3 | No fake runtime approval questions | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check prompt-closure` | PASS; closed reason enum; illegal technical reasons absent | post-impl; invocation syntax validated |
 | AC4 | Release transaction/recovery model | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check release` | PASS; handoff state/CAS/replay rules present; no per-command approval fields; guards retained | post-impl; invocation syntax validated |
 | AC5 | Routing/knowledge/disposition alignment | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check routing` | PASS; current amendment present; reference max=3; fourth/unrelated reference denied; full-only excluded | post-impl; invocation syntax validated |
 | AC6 | Canonical/mirror parity | pre-impl + post-impl | `for p in alex-lite/SKILL.md blake-lite/SKILL.md release-runbook/SKILL.md release-runbook/references/publish-ops.md release-runbook/references/sync-ops.md; do cmp -s ".claude/skills/$p" ".agents/skills/$p" || exit 1; done; echo mirror_pairs=5` | `mirror_pairs=5` | pre-impl output: `mirror_pairs=5`; rerun post-impl |
-| AC7 | Fixture and adversarial matrix | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check fixtures` | `fixtures=30 avoidable_runtime_prompt_count=0 positive_controls=2/2 mutation_probes=9/9` | post-impl; invocation syntax validated |
+| AC7 | Fixture and adversarial matrix | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check fixtures` | `fixtures=30 closed_schema=PASS unknown_key_probe=PASS avoidable_runtime_prompt_count=0 positive_controls=2/2 mutation_probes=10/10` | post-impl; invocation syntax validated |
 | AC8 | Context cost bounded | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check budget` | Lite core ≤52200; entry ≤9500; refs ≤17400 bytes | baseline measured: `47398 / 8483 / 15050` |
 | AC9 | Ledger current and priced | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check ledger` | overdue=0; disposition=1; priced mandate carrier=1 | pre-impl overdue output empty; entries post-impl |
 | AC10 | Zero-touch recorded-window endpoint equality | pre-impl + post-impl | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check zero-touch` | immutable manifest; source worktree+index+untracked+ignored and per-target pre/post equal; source/target controls pass; emit `recorded_window_persistent_endpoint_equality=4/4` only after all four stored comparisons pass; do not claim real-time proof that no transient external command ran | pre-impl tracked diff exit 0; known untracked backup and ignored settings identified; Blake freezes full snapshots before edits |
 | AC11 | Independent reviews clean | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --check reviews` | 3 final PASS; P0/P1/P2 all 0 | post-impl; invocation syntax validated |
-| AC12 | Full replay and scoped commit | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --all` | exit 0 and final `RESULT: PASS`; report lists scoped commit and `push=NOT PERFORMED` | post-impl; invocation syntax validated |
+| AC12 | Full replay and scoped append-only history | post-impl-verifiable | `bash .tad/evidence/acceptance-tests/lite-authority-model-v2/verify-authority-model-v2.sh --all`; verifier compares the transaction's ordered nonempty `commit_shas` to `git rev-list --reverse c851046..<recorded-tip>`, rejects merge commits, and runs `git diff-tree --no-commit-id --name-only -r <sha>` for every listed SHA against the §5.5 allow-list | exit 0 and final `RESULT: PASS`; list equals the complete linear range; every repair-2 commit path is in §5.5; no amend/rewrite/push; historical deviation text retained | post-impl; invocation syntax dry-run requires post-commit carrier |
 
 ### AC Dry-Run Log (Alex step1d, 2026-08-10)
 
@@ -868,8 +1047,14 @@ required_evidence:
 
 ## 14. Gate 2
 
-**Status:** PASS — independent architecture/code and security reviewers final P0=0, P1=0, P2=0.  
+**Original revision-1 status:** PASS — independent architecture/code and security reviewers final
+P0=0, P1=0, P2=0.
 **Verdict:** `.tad/evidence/reviews/alex/lite-authority-model-v2/gate2-verdict.md`
+
+**Revision-2 amendment status:** PASS — independent architecture/correctness and security reviewers
+final P0=0, P1=0, P2=0.
+**Amendment verdict:**
+`.tad/evidence/reviews/alex/lite-authority-model-v2/gate2-amendment-verdict.md`
 
 ### Audit Trail
 
@@ -884,6 +1069,10 @@ required_evidence:
 | Security | P1: target bindings omitted exact ref/path/MWS/account/credential/amount | contract §2; accepted mandate; handoff P3/P4; fixtures | CLOSED; final PASS |
 | Security | P2: unlisted local commit negative missing | `unlisted-local-commit` fixture | CLOSED; final PASS |
 | Security | P2: archive-before-acceptance negative missing | `archive-before-acceptance` fixture | CLOSED; final PASS |
+| Amendment architecture | P1: tip-only AC12 could miss an earlier out-of-scope repair commit | contract §2.2; repair-2 `commit_shas`; AC12; Completion contract | CLOSED; final PASS |
+| Amendment architecture | P1: Completion still called `c851046` scoped and AC12 PASS | Completion Alex Gate 4 Override; handoff revision history | CLOSED; final PASS |
+| Amendment security | P1: stale header said ready and one commit during review | handoff header + revision-2 binding | CLOSED; final PASS |
+| Amendment security | P2: AC10 overstated continuous external-mutation evidence | AC10 recorded-window wording | CLOSED; final PASS |
 
 ### Experts Selected
 
@@ -894,9 +1083,11 @@ required_evidence:
 
 Completion must report:
 
-- scoped commit hash and explicit path list; `push=NOT PERFORMED`;
+- ordered repair-2 `commit_shas`, exact base/tip, complete-range equality, no-merge result, per-commit
+  §5.5 path-subset results, and `push=NOT PERFORMED`;
 - AC1–AC12 raw outputs and evidence paths;
-- all 30 fixture results, both clean positive controls, and all nine mutation probes;
+- all 30 fixture results, both clean positive controls, and all ten mutation probes including the
+  recomputed-digest unknown-key probe;
 - `avoidable_runtime_prompt_count=0`, boundary prompt count/reasons, and recorded-window persistent endpoint equality (`4/4`) with no continuous-monitoring claim;
 - five mirror-pair parity results and byte budgets;
 - ledger overdue scan and appended row anchors;

@@ -4,6 +4,7 @@ set -u
 ROOT=$(cd "$(dirname "$0")/../../../.." && pwd -P) || exit 2
 EV="$ROOT/.tad/evidence/acceptance-tests/lite-authority-model-v2"
 BASELINE=cabe28755c581c1bddfdfe1a490471888d9f26df
+REPAIR_BASE=c851046dc41b65f89dbe0acfbb51cc198d016c81
 FIXTURE_SHA=8bd0bcab65f2aca6f3408b15f3ef9a943755d57836de64278237d1e717f25e29
 INVENTORY_LIVE_SHA=995c9779988969517f5c348e3f6a2983d75f4d8fcad3d47b206195105adc85ea
 failures=0
@@ -161,7 +162,8 @@ normalize_fixture_semantics() {
   command -v jq >/dev/null 2>&1 || return 1
   while IFS= read -r line; do
     printf '%s\n' "$line" | jq -er '
-      if type != "object"
+      ["id","mandate_state","condition","expected_result","human_prompt","runtime_prompt_reason","mutation_before_verdict"] as $base
+      | if type != "object"
         or (.id | type) != "string"
         or (.mandate_state | type) != "string"
         or (.condition | type) != "string"
@@ -169,6 +171,12 @@ normalize_fixture_semantics() {
         or (.human_prompt | type) != "boolean"
         or ((.runtime_prompt_reason | type) != "string" and (.runtime_prompt_reason | type) != "null")
         or (.mutation_before_verdict | type) != "boolean"
+        or (if .id == "mandate-happy-release" or .id == "mandate-happy-local"
+            then ((keys | sort) != (($base + ["control"]) | sort) or .control != "positive")
+            elif .id == "final-business-acceptance"
+            then ((keys | sort) != (($base + ["decision_class"]) | sort) or .decision_class != "final_business_acceptance")
+            else (keys | sort) != ($base | sort)
+            end)
       then error("invalid authority fixture schema")
       else [
         .id,
@@ -253,6 +261,14 @@ run_controls() {
   sed '/"id":"completed-do-not-repeat"/s/"expected_result":"VERIFY_ONLY; do not repeat"/"expected_result":"RETRY"/' "$fixture" > "$tmp/f3.mut"
   if fixture_semantics_valid "$tmp/f3.mut"; then fail 'mutation_probe_completed_replay accepted'; else pass 'mutation_probe_completed_replay=PASS'; fi
 
+  jq -c 'if .id == "tool-failure-no-prompt" then . + {"technical_approval_prompt":true} else . end' "$fixture" > "$tmp/f4-unknown-key.mut"
+  unknown_key_digest=$(sha256_file "$tmp/f4-unknown-key.mut")
+  if [ -z "$unknown_key_digest" ] || fixture_semantics_valid "$tmp/f4-unknown-key.mut"; then
+    fail 'mutation_probe_unknown_key_recomputed_digest accepted'
+  else
+    pass "mutation_probe_unknown_key_recomputed_digest=PASS digest=$unknown_key_digest"
+  fi
+
   scratch="$tmp/source"
   mkdir -p "$scratch/protected"
   git -C "$scratch" init -q
@@ -313,7 +329,7 @@ run_controls() {
   if [ "$winners" -eq 1 ] && [ "$claims" -ne 1 ]; then pass 'mutation_probe_cas_loser=PASS'; else fail 'mutation_probe_cas_loser'; fi
 
   safe_remove_tmp "$tmp" || fail 'scratch cleanup'
-  pass 'positive_controls=2/2 mutation_probes=9/9'
+  pass 'positive_controls=2/2 mutation_probes=10/10'
 }
 
 check_fixtures() {
@@ -356,22 +372,57 @@ check_zero_touch() {
   window_ok=1
   equal_planes=0
   for plane in tracked untracked index targets; do
-    pre="$EV/zero-touch-pre-$plane.txt"; post="$EV/zero-touch-post-$plane.txt"
+    pre="$EV/repair2-zero-touch-pre-$plane.txt"; post="$EV/repair2-zero-touch-post-$plane.txt"
     if [ ! -s "$pre" ] || [ ! -s "$post" ]; then fail "zero-touch $plane snapshot missing"; window_ok=0; continue; fi
     pre_manifest=$(awk -F '\t' '$1=="MANIFEST_SHA256"{print $2}' "$pre")
     post_manifest=$(awk -F '\t' '$1=="MANIFEST_SHA256"{print $2}' "$post")
     if [ "$pre_manifest" != "$manifest_sha" ] || [ "$post_manifest" != "$manifest_sha" ]; then fail "zero-touch $plane manifest identity"; window_ok=0; fi
     if cmp -s "$pre" "$post"; then pass "zero-touch $plane pre/post equal"; equal_planes=$((equal_planes + 1)); else fail "zero-touch $plane pre/post drift"; window_ok=0; fi
   done
-  controls="$EV/zero-touch-controls.txt"
+  controls="$EV/repair2-zero-touch-controls.txt"
   [ -f "$controls" ] || { fail 'zero-touch controls missing'; return; }
-  [ "$(grep -c '^PASS[[:space:]]*mutation_probe_' "$controls")" -eq 9 ] && pass 'mutation_probes=9/9' || fail 'mutation probe evidence count'
-  grep -q 'positive_controls=2/2 mutation_probes=9/9' "$controls" && pass 'positive_controls=2/2' || fail 'positive controls evidence'
+  [ "$(grep -c '^PASS[[:space:]]*mutation_probe_' "$controls")" -eq 10 ] && pass 'mutation_probes=10/10' || fail 'mutation probe evidence count'
+  grep -q 'positive_controls=2/2 mutation_probes=10/10' "$controls" && pass 'positive_controls=2/2' || fail 'positive controls evidence'
   if [ "$window_ok" -eq 1 ] && [ "$equal_planes" -eq 4 ]; then
     pass 'recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed'
   else
     fail "recorded-window persistent endpoint equality=$equal_planes/4"
   fi
+}
+
+check_revision2() {
+  alex="$ROOT/.claude/skills/alex-lite/SKILL.md"
+  blake="$ROOT/.claude/skills/blake-lite/SKILL.md"
+  handoff="$ROOT/.tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md"
+  need "$alex" '技术计数非人域' 'Alex agent-owned technical cardinality'
+  need "$alex" '完整 base→tip；逐 commit scope' 'Alex complete local-history accounting'
+  need "$blake" 'commit/retry/reviewer/evidence 数量是 agent 域' 'Blake technical cardinality boundary'
+  need "$blake" '数量 agent-owned' 'Blake append-only task history'
+  need "$handoff" 'historical_protocol_deviation' 'revision-1 deviation retained honestly'
+  need "$handoff" 'mandate_revision: 2' 'repair-2 cites revision 2'
+  reject_regex 'one local commit|one non-amending local commit|一个非 amend 本地' 'live one-commit authorization absent' "$alex" "$blake"
+}
+
+check_history() {
+  handoff="$ROOT/.tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md"
+  scope_tmp=$(mktemp -d "${TMPDIR:-/tmp}/authority-history.XXXXXX") || { fail 'history scratch creation'; return; }
+  awk '/^### 5\.5 /{section=1; next} section && /^```text$/{body=1; next} body && /^```$/{exit} body{print}' "$handoff" | LC_ALL=C sort -u > "$scope_tmp/allowed"
+  awk '/transaction_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-gate4-repair-2/{txn=1} txn && /commit_shas:/{list=1; next} list && /observed_pre_state:/{exit} list && /^[[:space:]]+- [0-9a-f]{40}[[:space:]]*$/{sub(/^[[:space:]]+- /, ""); print}' "$handoff" > "$scope_tmp/recorded"
+  if [ ! -s "$scope_tmp/recorded" ]; then fail 'repair2 commit_shas nonempty'; safe_remove_tmp "$scope_tmp" >/dev/null 2>&1; return; fi
+  tip=$(tail -n 1 "$scope_tmp/recorded")
+  git rev-list --reverse "$REPAIR_BASE..$tip" > "$scope_tmp/expected" 2>/dev/null || true
+  cmp -s "$scope_tmp/recorded" "$scope_tmp/expected" && pass 'repair2 commit_shas equal complete linear range' || fail 'repair2 commit_shas range mismatch'
+  [ "$(git rev-list --merges "$REPAIR_BASE..$tip" 2>/dev/null | wc -l | tr -d ' ')" -eq 0 ] && pass 'repair2 history has no merge commits' || fail 'repair2 merge commit detected'
+  history_ok=1
+  while IFS= read -r sha; do
+    git diff-tree --no-commit-id --name-only -r "$sha" | LC_ALL=C sort -u > "$scope_tmp/paths"
+    comm -23 "$scope_tmp/paths" "$scope_tmp/allowed" > "$scope_tmp/outside"
+    if [ -s "$scope_tmp/outside" ]; then fail "repair2 commit outside §5.5 $sha"; history_ok=0; fi
+  done < "$scope_tmp/recorded"
+  [ "$history_ok" -eq 1 ] && pass 'repair2 per-commit paths subset §5.5'
+  git merge-base --is-ancestor "$REPAIR_BASE" "$tip" && pass 'repair2 append-only ancestry' || fail 'repair2 base is not ancestor of tip'
+  [ "$(git rev-parse HEAD)" = "$tip" ] && pass 'repair2 recorded tip equals HEAD' || fail 'repair2 recorded tip differs from HEAD'
+  safe_remove_tmp "$scope_tmp" >/dev/null 2>&1 || fail 'history scratch cleanup'
 }
 
 check_reviews() {
@@ -397,6 +448,8 @@ run_check() {
     budget) check_budget ;;
     ledger) check_ledger ;;
     zero-touch) check_zero_touch ;;
+    revision2) check_revision2 ;;
+    history) check_history ;;
     reviews) check_reviews ;;
     *) printf 'unknown check: %s\n' "$1" >&2; exit 2 ;;
   esac
@@ -405,12 +458,12 @@ run_check() {
 if [ "${1:-}" = '--check' ] && [ -n "${2:-}" ]; then
   run_check "$2"
 elif [ "${1:-}" = '--all' ]; then
-  for check in inventory lite-core prompt-closure release routing mirrors fixtures budget ledger zero-touch reviews; do
+  for check in inventory lite-core prompt-closure release routing mirrors fixtures budget ledger zero-touch revision2 reviews history; do
     printf 'CHECK\t%s\n' "$check"
     run_check "$check"
   done
 else
-  printf 'usage: %s --check <inventory|lite-core|prompt-closure|release|routing|mirrors|fixtures|controls|budget|ledger|zero-touch|reviews> | --all\n' "$0" >&2
+  printf 'usage: %s --check <inventory|lite-core|prompt-closure|release|routing|mirrors|fixtures|controls|budget|ledger|zero-touch|revision2|reviews|history> | --all\n' "$0" >&2
   exit 2
 fi
 

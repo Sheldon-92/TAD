@@ -116,13 +116,13 @@ Execution Mandate、下方闭集中的实质边界变化、最终业务验收。
   authorized_consequence_classes: [{闭集条目；空即 none}]
   target_scope: {exact root/origin/ref/pathspec/MWS/environment/account/credential/financial bindings；空列表即 none}
   consequence_bindings: [{class → target_ids + exact bounds}]
-  max_blast_radius: {上限} | explicit_exclusions: [{明确不授权项}]
+  max_blast_radius: {target/path/consequence/external reach/impact；技术计数非人域} | explicit_exclusions: [{明确不授权项}]
   recovery_policy: {not_started / partial / unknown} | expires_when: {条件}
   acceptance: {decision: accepted|pending, decided_at: 非空或空, source: L3 contract decision}
   ## Execution Transactions
   transactions: [{transaction_id, mandate_id, mandate_revision, lock_path: <exact handoff path>.txn-lock,
     state_version: 0, state: planned,
-    targets, consequence_classes, actions: [{action_id, state: pending}]}]
+    targets, consequence_classes, commit_shas: [{完整 base→tip；逐 commit scope}], actions: [{action_id, state: pending}]}]
   ## Contract Review ({date})
   Reviewer: {待填} | model={reviewer 自报}
   首轮 verdict: {待填}

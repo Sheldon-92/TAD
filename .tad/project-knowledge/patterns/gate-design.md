@@ -225,3 +225,19 @@
 - **Grounded in**: `.tad/decisions/DR-20260809-lite-authority-model-v2.md`,
   `.tad/evidence/designs/full-capability-extraction/authority-model-v2-contract.md`,
   `HANDOFF-20260810-lite-authority-model-v2.md`.
+
+#### Amendment — Human Blast Radius Is an Effect Boundary, Not a Technical Counter — 2026-08-10
+
+- **Discovery**: A revision-1 mandate encoded one local commit as human blast radius, so a legitimate
+  Gate-directed repair became a protocol deviation even though target, paths, consequence class and
+  external reach never changed. Commit/retry/reviewer/evidence cardinality describes implementation
+  mechanics, not a user-visible outcome.
+- **Action**: Bind human authority to exact target and writable surface, consequence class, external
+  reach, bounded ref/path/MWS/data/amount/identity impact, and visible recovery. Model `local_commit`
+  as a task-scoped append-only policy with exact pathspec, closed purposes, explicit staging, complete
+  base-to-tip SHA accounting, per-commit scope checks, and no history rewrite. The agent chooses the
+  necessary commit count inside that policy; no carrier still means no grant.
+- **failure_mode**: Naive default: put commit/retry/review counts in `max_blast_radius`. Why wrong:
+  ordinary technical repair then falsely appears to need a new human authorization, recreating the
+  formalistic approval model while adding no target or consequence safety.
+- **Grounded in**: Authority Model v2 revision 2 and Gate 2 amendment verdict, 2026-08-10.

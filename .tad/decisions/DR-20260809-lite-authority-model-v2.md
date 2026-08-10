@@ -70,13 +70,26 @@ execution_mandate:
 后果与范围，不是 Bash、Git ref 或 exit code。Mandate 由 Alex 根据已经澄清的需求起草，
 人不填写 YAML；已有对话足以确定的内容直接落盘，不得为了填字段重新制造一轮提问。
 
+### 影响半径不是技术计数器（Revision 2 clarification）
+
+人的 `max_blast_radius` 只描述：精确 target 与可写 surface、允许的 consequence class、
+external reach、ref/path/MWS/data/amount/identity 上限，以及用户可见的 recovery 结果。
+command 数、local commit 数、retry 数、reviewer/repair 轮数和证据文件数不是人域授权维度。
+
+`local_commit` 仍是真实后果类别，必须绑定 exact repository/ref/pathspec；但在同一结果边界内，
+agent 可以为初始 Gate 3 交付、已记录的 gate/reviewer 定点修复、事实证据 reconciliation 或
+确定性恢复创建所需数量的 task-scoped、non-amending、append-only 本地 commits。必须显式 pathspec，
+禁止 `git add -A`、amend/rebase/reset/squash/history rewrite；未另行授权外部后果时 external reach
+始终为 none。Gate 4 PASS、mandate superseded/expired 或技术阻塞即终止该权限。
+
 ## Decision Ownership
 
 | 判断 | Owner | 运行时行为 |
 |---|---|---|
 | 想达到什么结果、哪些外部后果可接受 | Human | 设计期写入 mandate，一次拍板 |
-| 目标 repo/project/environment 与最大影响面 | Human | 设计期写入 mandate |
+| 目标 repo/project/environment、可写 surface、external reach 与结果影响上限 | Human | 设计期写入 mandate |
 | 使用什么命令、参数、执行顺序 | Agent | mandate 内自主决定 |
+| 同一精确边界内的 local commit/retry/reviewer/evidence 数量 | Agent | 自主编排、验证并留证据 |
 | 命令失败、接线错误、verified-not-started 重试 | Agent | 自动诊断与恢复 |
 | 确定性回滚、幂等恢复、reviewer 指出的契约内缺陷 | Agent | 自动执行并留证据 |
 | 目标、对象或后果类别超出 mandate | Human | mutation 前重新做结果级决策 |
@@ -88,14 +101,16 @@ execution_mandate:
 只有出现新的**人域决策**时才允许中途询问：
 
 1. desired outcome 发生实质变化；
-2. target repo/project/environment 发生变化；
+2. target repo/project/environment、可写 surface、external reach 或有界
+   ref/path/MWS/data/amount/identity impact 发生变化；
 3. 需要 mandate 未授权的 consequence class；
 4. 出现新的业务、法律、财务或身份责任取舍；
 5. partial state 存在多个同样合法但用户可见结果不同的恢复方向；
 6. 需要新的外部身份、凭证所有权或财务权限。
 
 以下情况不是重新找人的理由：命令失败、工具不可用、exit code 不符预期、接线错误、
-已证实未开始、可确定回滚、幂等重试、契约范围内的 reviewer 缺陷。它们属于 agent 域。
+已证实未开始、可确定回滚、幂等重试、契约范围内的 reviewer 缺陷，以及同一精确边界内
+的 local commit/retry/reviewer/evidence 数量变化。它们属于 agent 域。
 
 若确实越界，问题必须用“结果 / 影响范围 / 可见后果”表述；禁止要求人判断具体命令是否
 安全。未得到新决定前 fail closed，但这叫 **boundary change**，不叫“再授权同一动作”。
@@ -138,8 +153,9 @@ consequence classes、target scope 与 recovery policy，不加载无关 full �
 
 ### D5 — Permissions and Safety
 
-权限公式改为 `Lite ∩ Skill ∩ Contract Mandate`。skill 可拒绝或收窄，不能扩权；技术步骤不再
-逐项请求人工批准。真正越界时 mutation 前 fail closed，并请求一个人域决定。
+权限公式改为 `Lite ∩ Skill ∩ Contract Mandate`。skill 可拒绝或收窄，不能扩权；技术步骤与
+工作计数不再逐项请求人工批准。真正改变 exact target/surface/consequence/external reach/
+bounded impact/visible recovery 时，mutation 前 fail closed，并请求一个人域决定。
 
 ### D6 — Lifecycle and Recovery
 
@@ -169,7 +185,10 @@ Authority Model v2 的最低验证集：
 5. deterministic rollback 自动执行并留证；
 6. partial state 只有在人域结果分岔时询问；
 7. skill 不能扩大 mandate；
-8. Gate 4 只问业务结果，不让人复核技术证据。
+8. Gate 4 只问业务结果，不让人复核技术证据；
+9. JSONL fixture schema 是闭集，重算 digest 后注入 unknown key 仍失败；
+10. 同一精确边界内 gate-directed repair 可追加 task-scoped local commit，不制造 Git-level 人工题；
+11. 历史越界如实记录，不用新 revision 追溯洗白。
 
 ### D10 — Disaster Mapping
 

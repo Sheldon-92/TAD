@@ -1,7 +1,7 @@
 # Lite Authority Model v2 — Runtime and Composition Contract
 
 **Date**: 2026-08-10  
-**Status**: GATE 2 APPROVED — implements accepted decision
+**Status**: GATE 2 AMENDMENT APPROVED — revision 2 narrows human blast-radius semantics
 `.tad/decisions/DR-20260809-lite-authority-model-v2.md`  
 **Epic**: `.tad/active/epics/EPIC-20260809-full-capability-extraction-retirement.md`
 Phase 3b  
@@ -69,6 +69,11 @@ execution_mandate:
 
 Rules:
 
+- One logical mandate may have append-only revisions under the same stable `mandate_id`; exactly one
+  revision may be current and accepted. Completed transactions retain the revision they actually used.
+  They are immutable `VERIFY_ONLY` history, not launch candidates; current admission validates the
+  current revision for every planned/new action. A later revision is prospective only: it never
+  retroactively authorizes or erases an earlier deviation.
 - Empty target lists mean no target of that type, not “all targets.”
 - Unlisted consequence classes are not authorized.
 - Every authorized consequence class has at least one binding; every binding names only declared
@@ -81,8 +86,12 @@ Rules:
   `decided_at` is non-empty, `source=L3 contract decision`, `revision` is positive, and all required
   outcome/class/target/binding/blast-radius/recovery fields are internally consistent. Any mismatch is
   INVALID and returns to Alex-Lite before mutation; a spoken ad-hoc approval cannot waive it.
-- A material change to outcome, targets, consequence classes, blast radius, exclusions, or recovery
-  outcomes supersedes the mandate and returns to Alex-Lite for a reviewed contract amendment.
+- A human-domain material change to outcome, exact target identity/surface, consequence class,
+  external reach, bounded data/amount/identity impact, exclusions, or a user-visible recovery outcome
+  supersedes the mandate and returns to Alex-Lite for a reviewed contract amendment.
+- Commands, parameters, local commit cardinality, retry count, reviewer rounds, evidence writes already
+  listed in target scope, and deterministic gate-directed repair do not supersede a mandate while the
+  human-domain boundary above remains unchanged.
 - Typo-only edits and additional technical evidence do not supersede the mandate.
 - Compaction, terminal change, command failure, and verified-not-started retry do not expire it.
 - Read-only diagnosis is allowed only when it stays inside the role/skill data-access boundary. It
@@ -95,7 +104,7 @@ Use the smallest task-relevant set. Names describe user-visible effects, not com
 | Class | Meaning |
 |---|---|
 | `workspace_write` | Change the handoff-listed files in the current workspace |
-| `local_commit` | Create a local commit containing only the contracted paths |
+| `local_commit` | Create task-scoped append-only local commit(s) containing only contracted paths |
 | `remote_branch_update` | Update an exact remote branch/ref within target scope |
 | `annotated_tag` | Create the contracted annotated release tag locally |
 | `remote_tag_update` | Publish the exact contracted tag ref |
@@ -114,6 +123,39 @@ Use the smallest task-relevant set. Names describe user-visible effects, not com
 The vocabulary is not an allow-list that grants these effects. High-consequence classes require
 precise targets, blast-radius bounds, exclusions, and recovery outcomes in the mandate.
 
+### 2.2 Human blast-radius dimensions
+
+`max_blast_radius` is an outcome boundary, not a technical work counter. It is the bounded tuple of:
+
+```text
+exact target identity and writable surface
+× authorized consequence classes
+× external reach
+× bounded ref/path/MWS/data/amount/identity impact
+× user-visible recovery outcomes
+```
+
+Do not encode raw command count, local commit count, retry count, reviewer count, evidence-file count,
+or repair-round count as a human authorization dimension. Those are agent-owned execution mechanics.
+
+When `local_commit` is authorized, its binding must declare an append-only local-history policy with:
+
+- exact repository, ref, and pathspec;
+- a closed purpose set: initial Gate-3-passing delivery, recorded gate/reviewer-directed repair,
+  factual evidence reconciliation, or deterministic recovery;
+- explicit-path staging only; no `git add -A`;
+- an ordered transaction commit-SHA list whose entries equal the complete linear range from the pinned
+  pre-transaction base to the recorded tip, with every commit's paths checked against the binding;
+- post-commit SHA reconciliation is handoff state about the tip, not content that must be inside the tip;
+  never create another commit solely to make a commit contain its own SHA;
+- no amend, rebase, reset, squash, commit deletion, or other history rewrite;
+- no remote/external reach unless a separate exact external consequence is authorized; and
+- termination at Gate 4 PASS, mandate supersession/expiry, or technical block.
+
+Within that policy, the agent decides how many non-amending local commits are technically necessary.
+A gate/reviewer repair is in-bound only when a recorded finding identifies the defect, the repair closes
+that defect, affected ACs and reviewers rerun, and no human-domain boundary above expands.
+
 ## 3. Decision Ownership and Runtime Classifier
 
 | Condition | Owner | Runtime result |
@@ -122,7 +164,8 @@ precise targets, blast-radius bounds, exclusions, and recovery outcomes in the m
 | Command/tool/wiring/exit-code failure within the same outcome | Agent | Diagnose, repair, retry, or block technically; no human decision prompt |
 | Verified `not_started` action | Agent | Retry automatically under the same transaction and mandate |
 | Deterministic rollback with one user-visible result | Agent | Roll back, verify, and record evidence |
-| Outcome, target, consequence class, or blast radius would change | Human | `boundary_change`; describe outcome/impact, then return amendment to Alex-Lite |
+| Outcome, exact target/surface, consequence class, external reach, bounded data/amount/identity impact, or visible recovery would change | Human | `boundary_change`; describe outcome/impact, then return amendment to Alex-Lite |
+| Command/commit/retry/reviewer/evidence cardinality changes inside the same exact boundary | Agent | Re-plan, execute, verify, and record; no human prompt or mandate supersession |
 | New business/legal/financial/identity trade-off | Human | `boundary_change`; present consequence choices, not commands |
 | Partial state has multiple legitimate, user-visible recovery outcomes | Human | `boundary_change`; present result choices |
 | New external identity, credential ownership, or financial authority is needed | Human | `boundary_change`; request the missing human-domain decision/action |
@@ -225,9 +268,10 @@ Recovery:
 
 Normal human interaction has two outcome-level points: the initial L3 contract/mandate decision and
 the final business acceptance. Final acceptance authorizes the already-declared archive lifecycle;
-there is no separate archive-confirmation prompt. A local commit happens automatically only when
-`local_commit` is in the accepted mandate; otherwise the result remains uncommitted without asking a
-new technical question.
+there is no separate archive-confirmation prompt. Task-scoped append-only local commits happen
+automatically only when `local_commit` plus its exact local-history binding are in the accepted mandate;
+their technical cardinality is not a human decision. Otherwise the result remains uncommitted without
+asking a new technical question.
 
 Every external mutation records:
 
@@ -290,10 +334,17 @@ Both Lite roles and `CLAUDE.md` must publish the same rule.
 Phase 3b is protocol migration, not live release execution. Fixtures and independent review must
 cover every row below; Phase 3c owns the real publish+sync dogfood.
 
+The fixture carrier is closed-world JSONL. Required keys are exactly `id`, `mandate_state`, `condition`,
+`expected_result`, `human_prompt`, `runtime_prompt_reason`, and `mutation_before_verdict`. Optional
+`control="positive"` is legal only on the two named positive controls; optional
+`decision_class="final_business_acceptance"` is legal only on `final-business-acceptance`. Unknown or
+missing keys, wrong types, or misplaced optional fields are invalid even when a file digest is
+recomputed. Acceptance includes a recomputed-digest unknown-key mutation probe.
+
 | Fixture | Input | Expected result | Human prompt? |
 |---|---|---|---|
 | `mandate-happy-release` | All release/sync classes and targets are in one accepted mandate | ALLOW transaction | No |
-| `mandate-happy-local` | Workspace write/local commit are declared | ALLOW | No |
+| `mandate-happy-local` | Workspace write/local commit plus exact append-only local-history policy are declared | ALLOW | No |
 | `verified-not-started-retry` | Read-only reconciliation proves no mutation started | RETRY same transaction | No |
 | `deterministic-rollback` | One verified recovery result is declared | ROLLBACK_AND_VERIFY | No |
 | `resume-same-mandate` | Compaction/terminal change, unchanged contract | RESUME | No |
@@ -334,7 +385,7 @@ phase.
 - No assumption that fewer prompts means broader authority; unknown or out-of-scope mutations remain
   fail-closed.
 - No human questions about Bash, Git ref syntax, exit codes, test evidence, deterministic rollback,
-  or reviewer repair details.
+  local commit count, retry/reviewer count, or reviewer repair details.
 - No rewriting history to make the old model appear never to have existed.
 - No live push, tag, publish, sync, registered-target write, dependency mutation, deploy, payment,
   credential mutation, destructive data operation, or history rewrite in Phase 3b.
