@@ -55,8 +55,8 @@ skill 覆盖的能力提取为按需加载、角色感知、权限不增的 capa
 | 1 | Full 能力 inventory + disposition | COMPLETE (`e05a135`) | 机械来源覆盖 + 能力处置表 |
 | 2 | Lite ↔ Skill composition contract | COMPLETE (`e05a135`) | D1–D10 架构、manifest、权限/恢复/测试契约 |
 | 3a | Release capability migration | COMPLETE (`cabe287`; Gate 4 PASS) | 扩展 `release-runbook`；source coverage + 无副作用 forward-test |
-| 3b | Lite Authority Model v2 | ACTIVE — Gate 2 PASS (`HANDOFF-20260810-lite-authority-model-v2.md`) | 用 Contract Mandate 取代逐命令审批；修订 Lite/skill composition 与测试 |
-| 3c | Release live dogfood | BLOCKED by 3b | Lite-only 真实 publish+sync；mandate 内零可避免运行时询问 |
+| 3b | Lite Authority Model v2 | COMPLETE (`80413f8`; Gate 4 PASS) | 用 Contract Mandate 取代逐命令审批；修订 Lite/skill composition 与测试 |
+| 3c | Release live dogfood | READY (3b COMPLETE) | Lite-only 真实 publish+sync；mandate 内零可避免运行时询问 |
 | 4 | Dependency operations | BLOCKED by 3c（顺序排在 release dogfood 后） | 新建 dependency skill，真实依赖变更 dogfood |
 | 5 | Secondary capability decisions | BLOCKED by 4 | tournament / ideas / status 等提取或退休 |
 | 6 | Legacy + downstream migration | BLOCKED by 3–5 | 37 张基线 handoff 处置；14 项目迁移与结构核验 |
@@ -133,6 +133,34 @@ P1 inventory ─► P2 composition ─► P3a migrate ─► P3b authority ─�
 - Fixture contract: 30 cases, two clean controls, nine adversarial mutations; Phase 3b still prohibits
   all live push/tag/publish/sync and downstream writes.
 - Gate 2 verdict: `.tad/evidence/reviews/alex/lite-authority-model-v2/gate2-verdict.md`.
+
+## Phase 3b Gate 4 Acceptance (2026-08-10)
+
+- Accepted at `80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e`; handoff + completion archived.
+- Two repair rounds were needed. Gate 4 round 1 reproduced an **AC7 false PASS**: fixture rows carried
+  their own `expected_result`, guarded only by a schema check plus a content digest — flipping an
+  expected outcome and re-sealing the file still passed. Repair-2 added a 30-row literal expectation
+  oracle inside the verifier, byte-compared against the normalized fixture. Alex confirmed the repair
+  with four independently authored probes (outcome flip / unknown key / misplaced optional key /
+  boolean inversion): 4/4 rejected.
+- Gate 4 round 1 also found the revision-1 mandate encoded "one local commit" as human blast radius,
+  turning a legitimate Gate-directed repair into a protocol deviation. Revision 2 redefined blast
+  radius as exact target/surface/consequence/external reach; commit/retry/reviewer cardinality is
+  agent-owned. `c851046` is retained honestly as a revision-1 deviation, not retroactively authorized.
+- Alex recomputed every quantitative AC from raw evidence (commit range, 32 paths ⊆ §5.5, byte
+  budgets, 30 fixtures, 13 inventory paths, 5 mirror pairs, 4 zero-touch planes, ledger overdue,
+  evidence SHAs) — all matched. A fresh `--all` run by Alex was byte-identical to the recorded run.
+- **Carry into 3c — AC8 headroom is 2 bytes.** Lite core is 52,198 against a 52,200 cap (baseline was
+  47,398). The next edit to either Lite SKILL breaks AC8. Human decision 2026-08-10: defer the cap
+  question until 3c actually hits it. Phase 3c must budget for this before adding Lite text.
+- Open follow-up (out of scope here): `layer2-audit.sh` `KNOWN_REVIEWERS` does not recognize
+  `implementation-reviewer` / `security-reviewer`, so the Layer 2 smoke alarm under-counts distinct
+  reviewers. Carriers were verified directly on disk.
+- No outward action performed anywhere in 3b: no push, tag, publish, sync, registry, or
+  registered-target write. Phase 3c is the first phase that mutates outward.
+- Gate 4 report: `.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-repair2-acceptance.md`.
+- Knowledge: `patterns/gate-design.md` (authority model + blast-radius amendment, Blake) and
+  `patterns/ac-verification.md` (self-certifying fixture matrix, Alex).
 
 ## Current Baseline (2026-08-09, Phase 1 measured)
 

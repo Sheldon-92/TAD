@@ -71,6 +71,7 @@ PASS	positive_control_fixture=PASS
 PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
 PASS	mutation_probe_tool_prompt=PASS
 PASS	mutation_probe_completed_replay=PASS
+PASS	mutation_probe_unknown_key_recomputed_digest=PASS digest=7976031d902bcc2caf5f9285b7beb9a34092f1b5b2559b3d961965b23220931d
 PASS	positive_control_source=PASS
 PASS	mutation_probe_untracked=PASS
 PASS	mutation_probe_tracked=PASS
@@ -79,9 +80,9 @@ PASS	mutation_probe_ignored=PASS
 PASS	positive_control_target=PASS
 PASS	mutation_probe_registered_target=PASS
 PASS	mutation_probe_cas_loser=PASS
-PASS	positive_controls=2/2 mutation_probes=9/9
+PASS	positive_controls=2/2 mutation_probes=10/10
 CHECK	budget
-PASS	lite_core_bytes=52034
+PASS	lite_core_bytes=52198
 PASS	release_entry_bytes=8469
 PASS	release_refs_bytes=15873
 CHECK	ledger
@@ -95,11 +96,25 @@ PASS	zero-touch tracked pre/post equal
 PASS	zero-touch untracked pre/post equal
 PASS	zero-touch index pre/post equal
 PASS	zero-touch targets pre/post equal
-PASS	mutation_probes=9/9
+PASS	mutation_probes=10/10
 PASS	positive_controls=2/2
 PASS	recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed
+CHECK	revision2
+PASS	Alex agent-owned technical cardinality
+PASS	Alex complete local-history accounting
+PASS	Blake technical cardinality boundary
+PASS	Blake append-only task history
+PASS	revision-1 deviation retained honestly
+PASS	repair-2 cites revision 2
+PASS	live one-commit authorization absent
 CHECK	reviews
 PASS	independent_reviews=3 P0/P1/P2=0
+CHECK	history
+PASS	repair2 commit_shas equal complete linear range
+PASS	repair2 history has no merge commits
+PASS	repair2 per-commit paths subset §5.5
+PASS	repair2 append-only ancestry
+PASS	repair2 recorded tip equals HEAD
 RESULT: PASS
 RUN	2/3
 CHECK	inventory
@@ -174,6 +189,7 @@ PASS	positive_control_fixture=PASS
 PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
 PASS	mutation_probe_tool_prompt=PASS
 PASS	mutation_probe_completed_replay=PASS
+PASS	mutation_probe_unknown_key_recomputed_digest=PASS digest=7976031d902bcc2caf5f9285b7beb9a34092f1b5b2559b3d961965b23220931d
 PASS	positive_control_source=PASS
 PASS	mutation_probe_untracked=PASS
 PASS	mutation_probe_tracked=PASS
@@ -182,9 +198,9 @@ PASS	mutation_probe_ignored=PASS
 PASS	positive_control_target=PASS
 PASS	mutation_probe_registered_target=PASS
 PASS	mutation_probe_cas_loser=PASS
-PASS	positive_controls=2/2 mutation_probes=9/9
+PASS	positive_controls=2/2 mutation_probes=10/10
 CHECK	budget
-PASS	lite_core_bytes=52034
+PASS	lite_core_bytes=52198
 PASS	release_entry_bytes=8469
 PASS	release_refs_bytes=15873
 CHECK	ledger
@@ -198,11 +214,25 @@ PASS	zero-touch tracked pre/post equal
 PASS	zero-touch untracked pre/post equal
 PASS	zero-touch index pre/post equal
 PASS	zero-touch targets pre/post equal
-PASS	mutation_probes=9/9
+PASS	mutation_probes=10/10
 PASS	positive_controls=2/2
 PASS	recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed
+CHECK	revision2
+PASS	Alex agent-owned technical cardinality
+PASS	Alex complete local-history accounting
+PASS	Blake technical cardinality boundary
+PASS	Blake append-only task history
+PASS	revision-1 deviation retained honestly
+PASS	repair-2 cites revision 2
+PASS	live one-commit authorization absent
 CHECK	reviews
 PASS	independent_reviews=3 P0/P1/P2=0
+CHECK	history
+PASS	repair2 commit_shas equal complete linear range
+PASS	repair2 history has no merge commits
+PASS	repair2 per-commit paths subset §5.5
+PASS	repair2 append-only ancestry
+PASS	repair2 recorded tip equals HEAD
 RESULT: PASS
 RUN	3/3
 CHECK	inventory
@@ -277,6 +307,7 @@ PASS	positive_control_fixture=PASS
 PASS	mutation_probe_semantic_authority_outcomes=PASS digest_recomputed strict_json
 PASS	mutation_probe_tool_prompt=PASS
 PASS	mutation_probe_completed_replay=PASS
+PASS	mutation_probe_unknown_key_recomputed_digest=PASS digest=7976031d902bcc2caf5f9285b7beb9a34092f1b5b2559b3d961965b23220931d
 PASS	positive_control_source=PASS
 PASS	mutation_probe_untracked=PASS
 PASS	mutation_probe_tracked=PASS
@@ -285,9 +316,9 @@ PASS	mutation_probe_ignored=PASS
 PASS	positive_control_target=PASS
 PASS	mutation_probe_registered_target=PASS
 PASS	mutation_probe_cas_loser=PASS
-PASS	positive_controls=2/2 mutation_probes=9/9
+PASS	positive_controls=2/2 mutation_probes=10/10
 CHECK	budget
-PASS	lite_core_bytes=52034
+PASS	lite_core_bytes=52198
 PASS	release_entry_bytes=8469
 PASS	release_refs_bytes=15873
 CHECK	ledger
@@ -301,9 +332,23 @@ PASS	zero-touch tracked pre/post equal
 PASS	zero-touch untracked pre/post equal
 PASS	zero-touch index pre/post equal
 PASS	zero-touch targets pre/post equal
-PASS	mutation_probes=9/9
+PASS	mutation_probes=10/10
 PASS	positive_controls=2/2
 PASS	recorded_window_persistent_endpoint_equality=4/4; transient command absence not claimed
+CHECK	revision2
+PASS	Alex agent-owned technical cardinality
+PASS	Alex complete local-history accounting
+PASS	Blake technical cardinality boundary
+PASS	Blake append-only task history
+PASS	revision-1 deviation retained honestly
+PASS	repair-2 cites revision 2
+PASS	live one-commit authorization absent
 CHECK	reviews
 PASS	independent_reviews=3 P0/P1/P2=0
+CHECK	history
+PASS	repair2 commit_shas equal complete linear range
+PASS	repair2 history has no merge commits
+PASS	repair2 per-commit paths subset §5.5
+PASS	repair2 append-only ancestry
+PASS	repair2 recorded tip equals HEAD
 RESULT: PASS

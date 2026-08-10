@@ -4,21 +4,25 @@
 **Date:** 2026-08-10
 **Initial implementation commit:** `77479a0a4ada086f65930a2b1502c5713c49aad3`
 **Gate 4 repair commit:** `c851046dc41b65f89dbe0acfbb51cc198d016c81`
+**Gate 4 repair-2 commit:** `80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e`
 **Push:** NOT PERFORMED
 **Model:** harness=codex | model=GPT-5 | route=native
 
-## Alex Gate 4 Override — Current Authority
+## Current status — Repair-2 complete, awaiting Alex Gate 4
 
-**Current status:** GATE 4 FAIL / REPAIR 2 PENDING. Do not archive or treat the historical PASS claims
-below as current acceptance.
+Fresh Gate 3 PASS: P0=0, P1=0, P2=0. AC1–AC12 passed 3/3 deterministic runs. The complete ordered
+repair-2 range is `c851046..80413f8`, one linear non-merge commit with 32 explicit §5.5 paths; every
+per-commit scope check passed. Closed-world JSONL, the independent 30-case oracle, recomputed-digest
+unknown-key rejection, controls `2/2`, probes `10/10`, and repair-2 zero-touch endpoint equality `4/4`
+all passed. Three post-commit independent reviews are final PASS with P0/P1/P2=0.
 
-Commit `c851046dc41b65f89dbe0acfbb51cc198d016c81` exceeded revision 1's already-consumed one-local-commit
-bound. It is immutable historical protocol-deviation evidence with `external_mutation_count=0`; it is
-not a scoped/authorized repair and revision 2 does not retroactively authorize it. Revision 2 and the
-planned repair-2 transaction are authoritative in the active handoff. Blake must replace this override
-with truthful repair-2 base/tip, ordered `commit_shas`, complete linear-range equality, no-merge result,
-per-commit §5.5 path checks, closed-world JSONL evidence, fresh Gate 3, and final reviewer results before
-claiming AC12 or Gate 3 PASS again. The body below is preserved as the original Gate 3/repair-1 record.
+Commit `c851046dc41b65f89dbe0acfbb51cc198d016c81` remains immutable revision-1 protocol-deviation
+evidence and was not retroactively authorized. Revision 2 prospectively authorized repair-2's
+task-scoped append-only history. Commit `80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e` was created locally;
+push/tag/publish/sync/registry/registered-target mutation was not performed.
+
+Do not archive yet. Return to Alex for fresh Gate 4 acceptance. The body below preserves the original
+implementation and repair-1 historical record.
 
 ## Outcome
 

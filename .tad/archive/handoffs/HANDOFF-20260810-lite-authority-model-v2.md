@@ -4,7 +4,15 @@ e2e_required: no
 research_required: no
 git_tracked_dirs: []
 skip_knowledge_assessment: no
-gate4_delta: []
+gate4_delta:
+  - field: "AC8"
+    alex_said: "Lite core cap 52,200 bytes leaves ~4,800 bytes of growth over the 47,398-byte pre-impl baseline"
+    actual: "repair-2 lands at 52,198 — 2 bytes of headroom, 99.96% of the allowance consumed; next Lite SKILL edit in Phases 3c-8 breaks AC8"
+    caught_by: "Alex raw recompute (wc -c on canonical alex-lite + blake-lite SKILL.md)"
+  - field: "COMPLETION report body"
+    alex_said: "Completion is the task's final status carrier"
+    actual: "the ## AC results / ## Zero-touch hashes / ## Commit path list (40) sections hold repair-1-era values (9/9, 52,034, c851046, original-window hashes), accurate as history and globally declared at line 24 but with no per-section superseded marker; correct current values live in acceptance-verification-report.md"
+    caught_by: "Alex Gate 4 cross-read of Completion against acceptance-verification-report.md and raw evidence"
 baseline_commit: c851046dc41b65f89dbe0acfbb51cc198d016c81
 ---
 
@@ -386,10 +394,12 @@ transactions:
     mandate_id: FULL-RETIRE-P3B-LITE-AUTHORITY-V2-mandate
     mandate_revision: 2
     lock_path: .tad/active/handoffs/HANDOFF-20260810-lite-authority-model-v2.md.txn-lock
-    state_version: 3
-    state: launched
+    state_version: 4
+    state: completed
     launched_at: "2026-08-10T17:49:21Z"
-    commit_shas: []
+    commit_shas:
+      - 80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e
+    recorded_tip: 80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e
     observed_pre_state:
       repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
       origin: "https://github.com/Sheldon-92/TAD.git"
@@ -425,9 +435,26 @@ transactions:
           - .tad/evidence/reviews/blake/lite-authority-model-v2/implementation-reviewer.md
           - .tad/evidence/reviews/blake/lite-authority-model-v2/security-reviewer.md
       - action_id: create-explicit-path-append-only-repair2-commit
-        state: launched
+        state: completed
         launched_at: "2026-08-10T18:21:07Z"
+        completed_at: "2026-08-10T18:22:49Z"
+        commit_sha: 80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e
+        push: NOT_PERFORMED
         exact_path_policy: "Only §5.5 exact paths with actual task deltas; no git add -A, amend, rebase, reset, squash, deletion, or push."
+    post_commit_reconciliation:
+      state: completed
+      recorded_at: "2026-08-10T18:29:23Z"
+      observed_result: "AC1-AC12 PASS in 3/3 deterministic runs; complete c851046..80413f8 range PASS; three post-commit independent reviews final P0/P1/P2=0; Gate 3 PASS."
+      verification_output_sha256: 95801ca6e75ae75275a458e6508ef61e9e92df48994041fa89995b5cd03520d9
+      live_external_mutation: NOT_PERFORMED
+    final_evidence:
+      - .tad/evidence/acceptance-tests/lite-authority-model-v2/acceptance-verification-report.md
+      - .tad/evidence/acceptance-tests/lite-authority-model-v2/verification-results.txt
+      - .tad/evidence/reviews/blake/lite-authority-model-v2/spec-compliance-reviewer.md
+      - .tad/evidence/reviews/blake/lite-authority-model-v2/implementation-reviewer.md
+      - .tad/evidence/reviews/blake/lite-authority-model-v2/security-reviewer.md
+      - .tad/evidence/reviews/blake/lite-authority-model-v2/gate3-verdict.md
+      - .tad/active/handoffs/COMPLETION-20260810-lite-authority-model-v2.md
 ```
 
 This planned skeleton becomes executable only with a valid accepted mandate and exact binding. Blake

@@ -2,11 +2,11 @@
 
 ## Current State
 - **Version**: 2.40.0 (Lite is the default channel + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
-- **Last Updated**: 2026-08-02
+- **Last Updated**: 2026-08-10
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
-- **No active handoff** — Lite / Standard / Full Routing was accepted at Gate 4 and archived 2026-08-02. Publish remains a separate follow-up.
+- **EPIC: Full 能力提取与硬退休** — Phases 1–3b done. Phase 3b Lite Authority Model v2 is Gate 4 accepted and archived at `80413f8` (not pushed): outcome-level Execution Mandates replace per-command approval; effective authority is `Lite role ∩ capability skill ∩ accepted mandate`; handoff-owned transaction CAS, closed boundary-change enum, four-plane zero-touch evidence. Two Gate 4 repair rounds — round 1 caught an AC7 false PASS (self-certifying fixture matrix) and a revision-1 mandate that mis-encoded "one commit" as human blast radius. **Phase 3c (live Lite-only publish+sync dogfood) is READY and is the Epic's first outward-writing phase** — 3b performed no push/tag/publish/sync/registry write at all. ⚠️ Carry: AC8 Lite-core budget has 2 bytes of headroom (52,198 / 52,200); deferred by user until 3c hits it. No active implementation handoff remains.
 - **EPIC: AI-Native Reading Companion** (20260613) — **3/4 phases done** (Phase 3 Live Co-Read Bridge ✅ Gate 4 accepted 2026-06-14; closed loop for EPUB complete). Reader+capture (P2) + localhost stdlib co-read bridge (P3, `reading-companion` skill) live; **Phase 4 ⬚ Planned**: structured-notes/question-list/MD-export sinks + PDF/TXT/URL adapters. ⚠️ Deliverable code is UNCOMMITTED (untracked `.claude/skills/reading-companion/`); real-browser visual co-read UNVERIFIED (carry to first real-book use).
 - ~~EPIC: Self-Evolution Pruning~~ — **COMPLETE + ARCHIVED 2026-06-10** (3/3 phases same-day). dream/evolve/optimize/skillify retired by measurement; 3-tier skill formalization live (T1 ceremony dogfooded in Colin, T2 skill-library ×2 refs, T3 via *harvest collisions); Alex SKILL -1872 lines; layer2-audit fail-closed. L2: "Claims Need Carriers".
 - ~~EPIC: Pack System Unification~~ — **COMPLETE + ARCHIVED 2026-06-11** (3/3 phases same-day). Domain Packs retired as active runtime/sync mechanism; installers single-sourced from prebuilt `SKILL.md`; `release-verify.sh platform-skills` now verifies framework-owned `.claude/skills` ↔ `.agents/skills` symmetry with FR7 local-skill INFO exceptions.
@@ -17,6 +17,8 @@
 - 16 capability packs active; behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending, 13 packs' eval is a follow-up
 
 ## Recently Completed
+
+- **Full retirement Phase 3a — Release capability migration** (2026-08-10) — Gate 4 PASS at `cabe287`; AC1–AC11, 27 behavior IDs, 6 forward cases, and 10/10 negative groups passed. Source-guard ordering and literal/symlink self-target rejection were independently re-reviewed at P0/P1/P2=0. Claude/Agents mirrors are byte-identical; live mutation count remained 0 across 14 sealed targets. Handoff/completion archived; no push, tag, publish, or sync performed.
 
 - **Lite / Standard / Full Routing Profiles** (2026-08-02) — Gate 4 PASS and archived. Added the shared `.tad/routing-contract.yaml`, Lite route/profile contracts across Claude/Codex mirrors, independent design/execution depth routing, Full safety boundary, 11 behavior scenarios, route enforcement, and approval/revision evidence. Residual P2 follow-ups: stronger fixture/hash assertions and maintenance of the existing SIGPIPE hook race.
 
@@ -59,6 +61,8 @@
 - **EPIC: Cross-Model Orchestration — ALL 4/4 PHASES** (archived 2026-05-14)
 
 ## Recent Decisions
+- Human authority in Lite is an **effect boundary, not a technical counter**: bind it to exact target/writable surface, consequence class, external reach, bounded impact, and visible recovery — never to commit/retry/reviewer/evidence cardinality. Encoding "one local commit" as blast radius turned a Gate-directed repair into a protocol deviation while adding zero target or consequence safety. SAFETY consequences therefore demand stronger exact bindings, recovery policy, and independent review — not an automatic runtime prompt (2026-08-10)
+- A fixture/golden gate guarded by schema + content digest verifies **integrity, not correctness** — if rows carry their own `expected_result`, flip one and re-seal and it still passes. Any such gate needs an expectation source outside the artifact under test, and the repair must be proven with probes the accepter authored, not the implementer (2026-08-10)
 - Self-evolution loops retired by measurement: dream/optimize/evolve yielded 1 accepted from 18 machine proposals (5.6%) while every effective upgrade was human-pain-driven — automated value-DISCOVERY contradicts TAD's own thesis (humans guard value); KA-gate capture (skillify) kept but rebuilt as 3-tier formalization: T1 project-local default / T2 skill-library reference shelf (never distributed) / T3 ≥2-project promotion (2026-06-10)
 - Migration schema v1: path safety = allow-list (destructive ops fail-closed) while sync sets stay deny-list — opposite tools for opposite problems. User-modified files: Always Backup before delete (DR-2). deprecation.yaml absorbed by migration manifests, frozen at v2.26.0 (DR-3). Backfill from v2.19.0 (DR-1) (2026-06-09)
 - Parallel dual-Alex Epics in one repo: two YOLO Conductors can run concurrently with zero conflict via scoped `git add <explicit paths>` (never `-A`) + file-disjoint work (new-files-only or additive-only); verify no shared-file sweep at every commit. Beats worktree when files don't overlap (2026-05-31)

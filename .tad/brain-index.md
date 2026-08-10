@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-07-30 10:44
+Generated: 2026-08-10 18:06
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -27,7 +27,7 @@ Generated: 2026-07-30 10:44
 | Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
 | Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report |
 | Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5 |
-| AC Verification | AC design rules, dry-run discipline, self-leak prevention, tsc type checks, fixture discrimination | AC design rules, dry-run discipline, self-leak prevention, tsc type checks, fixture discrimination, acceptance criteria, verification command, grep -c |
+| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
 | Pack Build Rules | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope, cross-cutting rules, quality delta, capability pack, SKILL.md install, skill-vs-MCP boundary, judgment-vs-capability |
 | Pack Evaluation | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check |
@@ -47,8 +47,8 @@ Generated: 2026-07-30 10:44
 ## CLAUDE.md Sections
 | Section | Keywords | Summary |
 |---------|----------|---------|
-| 1. Handoff 读取规则 ⚠️ CRITICAL | 1 handoff critical | 读取 `.tad/active/handoffs/` → 必须调用 /blake → 必须过 Gate 3 + Gate 4。 |
-| 2. 使用场景 | 2  | \| 命令 \| 触发条件 \| |
+| 1. Handoff 读取规则 ⚠️ CRITICAL | 1 handoff critical | ⚠️ 本节只管 full 的 `HANDOFF-*.md`。**新工作默认走 lite（§2.5），不产生 `HANDOFF-*.md`。** |
+| 2. 使用场景（full —— 保留通道） | 2 full  | ⚠️ **默认走 lite（§2.5）**。下表为 full 通道，**仅在 lite 无等价物时使用**。 |
 | 3. Quality Gates | 3 quality gates | - 规则 0: Handoff 前必须苏格拉底提问 (⚠️ BLOCKING) |
 | 4. Terminal 隔离 ⚠️ CRITICAL | 4 terminal critical | Alex = Terminal 1, Blake = Terminal 2。**人类是唯一信息桥梁。** |
 | 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | 三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手动触发。 |
@@ -64,10 +64,13 @@ Generated: 2026-07-30 10:44
 ## Active Epics
 | File | Summary |
 |------|---------|
+| EPIC-20260809-full-capability-extraction-retirement.md | **Created**: 2026-08-09 |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
 |------|-----------|---------|
+| HANDOFF-20260804-lite-pricing-gate.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260804-full-reviewer-tier-rule.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-saveable-skills-from-conversation.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-repositioning-capability-acquisition.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-o3-kr3-deep-ask-rounds-4-5.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
@@ -76,7 +79,5 @@ Generated: 2026-07-30 10:44
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260730-tad-lite-channel.md | mixed | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260714-deps-upstream-scan.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260714-deps-registry-init.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260714-deps-alex-integration.md | yaml | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260810-lite-authority-model-v2.md | mixed | Handoff: Lite Authority Model v2 |
+| HANDOFF-20260809-release-runbook-capability-migration.md | mixed | Handoff Document for Agent B (Blake) |

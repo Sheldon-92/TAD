@@ -1,40 +1,29 @@
-# Gate 3 Verdict — Lite Authority Model v2
+# Gate 3 Verdict — Lite Authority Model v2 / Gate 4 Repair-2
 
-**Task:** FULL-RETIRE-P3B-LITE-AUTHORITY-V2  
-**Date:** 2026-08-10  
-**Baseline:** `cabe28755c581c1bddfdfe1a490471888d9f26df`  
-**Verdict:** GATE PASS  
+**Task:** FULL-RETIRE-P3B-LITE-AUTHORITY-V2
+**Date:** 2026-08-10
+**Mandate:** revision 2
+**Repair range:** `c851046dc41b65f89dbe0acfbb51cc198d016c81..80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e`
+**Verdict:** GATE PASS
 **Final findings:** P0=0, P1=0, P2=0
 
 ## Gate checks
 
-- AC1–AC12 pre-commit replay: PASS; raw output in `verification-results.txt`.
-- Three independent reviews: final PASS, each P0/P1/P2=0; initial P1 history retained.
-- Five generated mirrors: byte-identical.
-- Budgets: Lite core 52,034; release entry 8,469; release refs 15,873 bytes, all bounded.
-- Zero-touch: source tracked/index/untracked+ignored and 14 registered-target snapshots match exactly;
-  positive controls=2/2, mutation probes=9/9, recorded-window persistent endpoint equality=4/4;
-  transient external-command absence is not claimed.
-- Scope: only handoff §5.1/§5.2 and permitted §5.3 governance state changed.
+- AC1–AC12 full replay: PASS in 3/3 deterministic runs; every run ends `RESULT: PASS` and has output
+  SHA-256 `95801ca6e75ae75275a458e6508ef61e9e92df48994041fa89995b5cd03520d9`.
+- AC7: 30-case independent oracle, closed-world JSONL schema, recomputed-digest unknown-key probe,
+  positive controls `2/2`, mutation probes `10/10`.
+- AC8 budgets: Lite core `52,198/52,200`, release entry `8,469/9,500`, references
+  `15,873/17,400` bytes.
+- AC10: repair-2 tracked/index/untracked+ignored/14-target persistent endpoints equal `4/4`; transient
+  command absence is not claimed.
+- AC11: three post-commit independent reviews final PASS, each P0=0, P1=0, P2=0.
+- AC12: ordered `commit_shas` equals the complete linear base-to-tip range; no merge; each commit path
+  is within §5.5; append-only ancestry and tip=HEAD pass.
+- Commit: `80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e`, 32 explicit paths, no amend/rebase/reset/squash.
+- Push/tag/publish/sync/registry/registered-target mutation: NOT PERFORMED.
 
-Gate 3 authorizes the accepted mandate's one explicit-path, non-amending local commit on `main`.
-It does not authorize push, tag, publish, sync, registry/target writes, or any other external mutation.
+## Verdict
 
-## Gate 4 repair Gate 3
-
-- AC1–AC12 full replay: PASS in 3/3 deterministic runs; each ends `RESULT: PASS`.
-- AC7: strict JSONL schema plus independent 30-case expected-outcome oracle; malformed JSON and
-  recomputed-digest consequence/superseded-lifecycle mutations fail closed; controls=2/2, probes=9/9.
-- AC10: recorded-window persistent endpoint equality=4/4; no continuous-monitoring claim.
-- Fresh independent spec, implementation, and security reviews: final PASS, each P0=0, P1=0, P2=0.
-  Implementation's two repair-round P1s are retained with reproduction and closure evidence.
-- No canonical/generated Lite implementation carrier changed during this repair.
-
-**Repair verdict:** GATE PASS
-**Repair final findings:** P0=0, P1=0, P2=0
-
-Gate 3 authorizes the accepted mandate's separate exact-path, non-amending local repair commit. It does
-not authorize any push, tag, publish, sync, registry/target write, or live dogfood.
-
-The authorized repair commit was created at `c851046dc41b65f89dbe0acfbb51cc198d016c81` with ten explicit
-paths. Push was not performed.
+Fresh Gate 3 is **PASS** with P0=P1=P2=0. Return the active handoff to Alex for Gate 4 acceptance;
+do not archive and do not perform live dogfood or any outward mutation.
