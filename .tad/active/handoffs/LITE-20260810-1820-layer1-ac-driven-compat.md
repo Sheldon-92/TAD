@@ -460,3 +460,30 @@ R1/R2/R3 全部 CLOSED。reviewer 端到端验证 AC19 的失败闭合性：删�
 - 2026-08-10 | Phase=implement | repair_round=0/3 | same_error_count=0/2 | verdict=RUNNING | Evidence=.tad/evidence/acceptance-tests/layer1-ac-driven-compat/scope-baseline.txt | Next Action=AC 自验
 - 2026-08-10 | Phase=ac | repair_round=0/3 | same_error_count=0/2 | verdict=RUNNING | Evidence=.tad/evidence/acceptance-tests/layer1-ac-driven-compat/results.txt | Next Action=L3 独立审查（AC19 IFS 修复 1 轮，verify.sh 2 处编辑）
 - 2026-08-10 | Phase=review | repair_round=0/3 | same_error_count=0/2 | verdict=RUNNING | Evidence=.tad/evidence/reviews/blake/layer1-ac-driven-compat/code-reviewer.md | Next Action=Technical Gate（reviewer 首轮 CONDITIONAL P0-1 → 修复 → 增量复核 PASS）
+- 2026-08-10 | Phase=technical-gate | repair_round=0/3 | same_error_count=0/2 | verdict=GATE PASS | Evidence=.tad/evidence/acceptance-tests/layer1-ac-driven-compat/results.txt | Next Action=Completion + scoped-local-commit（AC16 已 PASS，提交 9cfea17）
+
+## Completion (2026-08-10)
+
+**Commit**: 9cfea173de38910e48dfde7269ead00a1183013d（提交 1：实现 + 证据载体；Completion 与最终 results.txt 随提交 2 落盘）
+**Model**: harness=claude-code | model=deepseek-v4-flash | route=native
+
+- 上下文刷新：shell-portability.md（rg 主机陷阱、npx 探测、awk CJK 陷阱、comm 全局排序、grep -e 教训）、ac-verification.md（Text-Anchor/Count-Based/Design-Agent 条目）、release-sync.md（Identity Early-Exits）、principles.md（Deny-List AMENDED）| 关键约束：AC5 全文无条件断言 + AC6 不变量串存活；两棵树各自独立执行不得早退；AC14 基线差分围栏 | 成功条件：19 条 AC 全绿 + 独立 reviewer PASS + Technical Gate PASS
+- 改动文件：.claude/skills/blake/SKILL.md、.agents/skills/blake/SKILL.md、.tad/config-execution.yaml、.tad/ralph-config/loop-config.yaml、README.md、docs/RALPH-LOOP.md、.tad/project-knowledge/patterns/shell-portability.md、.tad/evidence/audits/lite-constraint-ledger.md（Alex 设计期行，随提交入库）、.tad/evidence/acceptance-tests/layer1-ac-driven-compat/{verify.sh,results.txt,scope-baseline.txt}、.tad/evidence/reviews/blake/layer1-ac-driven-compat/code-reviewer.md、本契约文件自身
+- Authority: mandate_id=LITE-20260810-1820-LAYER1-AC-DRIVEN-COMPAT revision=2; authorized consequence/target bindings=workspace_write→清单 pathspec（ledger 只读、shell-portability 仅 :72）；local_commit→本地 main append-only 显式 pathspec，无 remote/无发布
+- Transactions: LITE-20260810-1820-LAYER1-AC-DRIVEN-COMPAT-impl state_version 0→1 launched；10 actions 全部 completed：snapshot-scope-baseline（ae3485f 基线 1747 行）→ migrate-layer1-to-ac-driven → fix-anti-rationalization-command-refs → sync-docs-and-readme → replace-pyyaml-guidance → bound-context-refresh-read → regenerate-agents-mirror → build-and-run-ac-verifier → independent-review（CONDITIONAL→PASS）→ scoped-local-commit-after-gate（9cfea17）；lock 已清（owner token 归属本会话）
+- Runtime decisions: avoidable_runtime_prompt_count=0; boundary_change_prompt_count=0; runtime_prompt_reasons=[]
+- AC 结果：AC1-AC19 全部 ✅（最终 30 PASS / 0 FAIL / 0 PENDING）。原始输出与逐条断言见 .tad/evidence/acceptance-tests/layer1-ac-driven-compat/results.txt（verify.sh 全量输出 + AC17 五项 + P0 修复记录）；基线 scope-baseline.txt 1747 行
+- Reviewer: PASS（首轮 CONDITIONAL P0=1(fixed), P1=0）| model=deepseek-v4-flash（code-reviewer route，只读）——摘录关键发现原文：P0-1「`grep -F "  path1$"` 在 /usr/bin/grep（BSD 2.6.0）与 ugrep 7.5.0 上均 rc=1 无匹配——$ 在 -F 固定串模式下是字面量不是行尾锚。故 bsha 恒空 → 摘要半无条件跳过，'dirty digests unchanged' 从未被实际评估」（执行实证）→ 修复（awk index 行尾后缀 + traces 排除）→ 增量复核三场景突变探针（变异可检测 / 前缀重叠无串扰 / traces 无假 FAIL）确认 CLOSED。P2-1/P2-2 随修复闭合；P2-3 前提不成立；P2-4/P2-5 建议性留后续
+- Technical Gate: GATE PASS（逐项确认：①AC/evidence 每条有原始输出与路径 ②reviewer verdict PASS P0=0 ③friction 无 BLOCKED（ruby/bash 3.2.57/BSD grep 均系统自带）④scope/risk 双半围栏通过 + caller/consumer 检查在 handoff 风险段 ⑤Knowledge Assessment 三态已标 journal captured）
+- Knowledge Assessment: journal captured（2 条候选蒸馏：grep -F $ 字面量非锚；框架 traces 遥测使摘要型围栏 AC 按原文不可满足）——待验收归档后追加 lite-discoveries.md（内容已保存 /tmp/journal-pending.txt）
+- 意外发现：AC14 摘要半对框架遥测路径按原文不可满足（reviewer P0-1 附带发现，正确实现也会假 FAIL）
+- follow-up：
+  - P2-4（文档措辞）→ docs/RALPH-LOOP.md:41-55 命令表以「§9.1 声明的技术检查行 1/2/3/N」占位；不阻塞（AC10 合规，用户文档略显机械）；建议 owner=后续文档类单
+  - P2-5（死条件）→ .claude/skills/blake/SKILL.md 1_5_context_refresh 步骤 10「If handoff has no Project Knowledge section」在有界读取流程下不再被读取；不阻塞（AC12 合规）；建议 owner=后续协议微调单
+  - F3 具名 follow-up（契约风险段）：D2 真实行为验证在下一张非 JS 项目单；audit-yolo.sh:278,288 的 npx 执行点排队独立单；三处静态残留——由 Alex 验收时写入 EPIC 文件
+
+## Reflexion
+
+- 修复 1（L2 自验）：失败=AC19 两树 FAIL（sed 收到 "94 102,p"）；假设=IFS= 前缀 read 分词正常；动作=改显式 `IFS=' '`；结果=PASS。
+- 修复 2（L3）：失败=reviewer P0-1：AC14 摘要半恒真死代码；假设=grep -F 的 $ 是行尾锚（错——字面量）；动作=awk index()+substr 行尾后缀 + traces 排除；结果=三场景突变探针证明变异可检测，增量复核 CLOSED。
+- 修复 3（Gate 后）：失败=journal 追加使 AC14 第二半误报（lite-discoveries.md 清单外变 M）；假设=journal 是 skill 授权产物可直接留在工作区；动作=保存内容 → git checkout 回滚 → 验收归档后追加；结果=AC14 严格 PASS，journal 内容不丢失。
