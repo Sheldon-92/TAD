@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.41.0] - 2026-08-11
+
+### 行为变更
+
+- **授权模型 v2：契约 mandate 取代逐命令审批**。Lite 通道的执行授权从"每命令询问人"改为
+  「已接受的 Execution Mandate + 交易台账 + CAS」——Blake-Lite 在同一 mandate 的闭集边界内
+  自主执行，运行时零可避免询问；高后果操作（发布/同步/依赖/凭证等）仍须有精确
+  target/consequence/recovery 载体（`execution mandate` 取代逐命令审批）。
+- **Layer 1 AC-driven self-check（AC 驱动自验）成为 Lite 实现侧标准流程**：blake-lite 的
+  L2 自验升级为逐条 AC 执行 + 显式 exit code 纪律，verify.sh 载体与门序可重放。
+- **Lite-first lifecycle 正式关闭 v2.40 过渡期**：Lite 作为默认通道的过渡完成，遗留的
+  full-only 协议引用已收敛。
+- **发布操作迁入 release-runbook skill**：publish/sync 七阶段、门序（parity → derive →
+  version → version-sweep → migration → supporting）与 exit-code 语义全部由
+  `release-verify.sh` / `derive-sync-set.sh` 权威化；tad.sh 远程版本权威化修复了安装器
+  在远程版本更新后仍走 no-op 的路径。
+- **能力 inventory 与 Lite↔skill composition 契约落定**：`tad.sh` 完整能力盘点 +
+  组合契约（Phase 1-2 决策底座），installer 与运行路由以 inventory 为准。
+
+### New Features
+
+- Execution Mandate 交易台账（`## Execution Transactions` + 五步 CAS 与 txn-lock）。
+- `verify.sh` 可重放验证载体（AC 输出 + `RESULT: PASS` 末行，`--all` 幂等）。
+
+### Fixed
+
+- installer：远程版本在本地判断之前即生效（`make remote version authoritative`）。
+- release-runbook 源守卫与自目标守卫加固。
+
 ## [2.40.0] - 2026-08-06
 
 ### Breaking Changes

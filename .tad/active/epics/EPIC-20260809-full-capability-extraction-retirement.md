@@ -43,7 +43,7 @@ skill 覆盖的能力提取为按需加载、角色感知、权限不增的 capa
 | SC2 | 每个 EXTRACT/EXTEND 候选都有真实触发例、资源计划、角色模式、权限与验证契约 |
 | SC3 | 普通 Lite 任务固定读取量不因本 Epic 增长；未命中能力时专项 skill 加载数为 0 |
 | SC4 | 14 个注册项目均有明确状态；可访问项目安装 Lite；active `HANDOFF-*` 清零 |
-| SC5 | 一轮真实 publish+sync、依赖变更、全局注册面、失败恢复均由 Lite-only 完成 |
+| SC5 | 一轮真实 publish-only、依赖变更、全局注册面、失败恢复均由 Lite-only 完成 |
 | SC6 | 弃用期内新建 `HANDOFF-*` 为 0，full fallback 为 0，P0 遗留为 0 |
 | SC7 | full skill、安装复制、路由入口和专属 verifier 消费方全部删除；历史归档仍可读 |
 | SC8 | mandate 内执行的 `avoidable_runtime_prompt_count=0`；只有目标/对象/后果越界才重新请求人域决定 |
@@ -56,7 +56,7 @@ skill 覆盖的能力提取为按需加载、角色感知、权限不增的 capa
 | 2 | Lite ↔ Skill composition contract | COMPLETE (`e05a135`) | D1–D10 架构、manifest、权限/恢复/测试契约 |
 | 3a | Release capability migration | COMPLETE (`cabe287`; Gate 4 PASS) | 扩展 `release-runbook`；source coverage + 无副作用 forward-test |
 | 3b | Lite Authority Model v2 | COMPLETE (`80413f8`; Gate 4 PASS) | 用 Contract Mandate 取代逐命令审批；修订 Lite/skill composition 与测试 |
-| 3c | Release live dogfood | READY (3b COMPLETE) | Lite-only 真实 publish+sync；mandate 内零可避免运行时询问 |
+| 3c | Release live dogfood | READY (3b COMPLETE) | Lite-only 真实 publish-only（v2.41.0）；mandate 内零可避免运行时询问 |
 | 4 | Dependency operations | BLOCKED by 3c（顺序排在 release dogfood 后） | 新建 dependency skill，真实依赖变更 dogfood |
 | 5 | Secondary capability decisions | BLOCKED by 4 | tournament / ideas / status 等提取或退休 |
 | 6 | Legacy + downstream migration | BLOCKED by 3–5 | 37 张基线 handoff 处置；14 项目迁移与结构核验 |
@@ -97,8 +97,13 @@ P1 inventory ─► P2 composition ─► P3a migrate ─► P3b authority ─�
 - Phase 3a 的 capability mechanics 可完成，但其中 per-command approval 语义不得直接进入 live dogfood。
 - Phase 3b 先落实 `.tad/decisions/DR-20260809-lite-authority-model-v2.md`；当前 Phase 2
   composition contract 的 per-action approval 部分被该 DR 前瞻性取代，历史 evidence 不追写。
-- Phase 3c owns the real Lite-only publish+sync dogfood；人的授权在设计期 Contract Mandate
+- Phase 3c owns the real Lite-only publish-only dogfood；人的授权在设计期 Contract Mandate
   一次完成，mandate 内不得逐命令索取批准。
+- **sync 退场决策（2026-08-11 用户裁定，publish-only 分支）**：3c 从「publish+sync」收窄为
+  「publish only」，版本 2.41.0（minor）。依据 `feedback_no-sync-pull-based`（2026-06-11）：
+  `*sync` 命令本身保留（用户可显式调用），但 Alex 不主动推荐；推式同步已停摆（registry 记录
+  停在 2.30.0/2026-06-11），存活目标各自漂移自更新（2.30–2.38），拉取式结论成立。sync 的
+  扇出写面在后续阶段不恢复为默认动作。
 - Phase 1's provisional `release-verify-wrapper.sh` is rejected: it duplicates the existing public verifier interface and would create a second mechanical source of truth.
 
 ## Phase 3a Gate 4 Review (2026-08-10)
@@ -161,6 +166,39 @@ P1 inventory ─► P2 composition ─► P3a migrate ─► P3b authority ─�
 - Gate 4 report: `.tad/evidence/reviews/alex/lite-authority-model-v2/gate4-repair2-acceptance.md`.
 - Knowledge: `patterns/gate-design.md` (authority model + blast-radius amendment, Blake) and
   `patterns/ac-verification.md` (self-certifying fixture matrix, Alex).
+
+## Pre-3c Compatibility Cleanup — Layer 1 AC 驱动化 (2026-08-10, LITE 单，已验收归档)
+
+Blake 的 Layer 1 自检不再硬编码 JS 四件套，改由 handoff §9.1 驱动（与 Gate 3 同源，补完
+`gate/SKILL.md:159-162` 早已完成而 Layer 1 被落下的那一半）。提交 `9cfea17` + `2efe3d7`，未 push。
+**在 3c 之前做，是因为 3c 的 sync 是扇出动作**——这些缺陷现在只坑本仓库，扇出后坑 14 个下游项目。
+
+- 命令来源优先级已写进 SKILL 文本：§9.1 唯一权威 → `loop-config.yaml` 兜底 → 两者皆空则判定通过并在
+  completion report 的 Gate 3 小节留一行零命令记录（禁止静默跳过）。**优先级必须写进文本而非只在本仓库
+  成立**：下游 14 个项目会保留它们非空的 `loop-config.yaml`，不写清就等于把硬编码表在下一层复活。
+- 同批修掉两处「作者环境 ≠ 执行环境」：pyyaml 指导改 ruby `YAML.safe_load`（`ac-verification.md:108`
+  本就有本机禁用 `import yaml` 的清单，而 `shell-portability.md:72` 当时正在教它——知识层自相矛盾）；
+  Blake 全文无界重读改为与 reviewer 模板同构的有界读取（§6+§9+frontmatter），顺带修好 `1_5_context_refresh`
+  重复的步骤号 5/6/7。
+
+### 带进 Phase 3c 的三项具名 follow-up（原契约 F3，不依赖记忆）
+
+1. **D2 零命令行为的真实验证** —— 本单只做了文本断言，没有在真实非 JS 项目上跑过。安排在下一张
+   非 JS 项目的单里自然验证。
+2. **`.tad/hooks/lib/audit-yolo.sh:278,288`** —— 它**实际执行** `npx tsc --noEmit` / `npm test`，是同一
+   缺陷最严重的实例（会真触发 npx 联网解析/挂起，见 `shell-portability.md` 2026-06-11 条目）。因
+   `.tad/hooks/` 属高后果面被本单排除，**需独立单**。
+3. **三处静态残留** —— `.tad/gates/quality-gate-checklist.md:230-232`、
+   `.tad/guides/anti-rationalization-tables.md:29`（孤儿文件，仅 CHANGELOG 引用）、
+   `.tad/templates/acceptance-verification-guide.md:39`（已带 "or equivalent" 软化）。非 Layer 1 执行路径。
+
+### 残留（明记，不静默丢弃）
+
+`DISTILLATION DEFERRED: 无` —— 两条候选均已蒸馏为成品条目（`patterns/shell-portability.md` 的
+`grep -F` 锚失效条目、`patterns/ac-verification.md` 的遥测使围栏 AC 不可满足条目）。
+但 **raw journal 行未追加**：Blake 把内容存在 `/tmp/journal-pending.txt` 待归档后写入
+`.tad/evidence/journal/lite-discoveries.md`，而 alex-lite 无该路径写权限（Forbidden 的可写集只有四项）。
+成品知识已落盘，raw capture 这一层由下次 blake-lite 会话补，或视为已被成品条目取代。
 
 ## Current Baseline (2026-08-09, Phase 1 measured)
 

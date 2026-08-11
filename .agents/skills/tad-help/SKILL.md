@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.40.0 | Generated: [timestamp]
+ Version: v2.41.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,7 +218,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.40.0 Highlights
+## TAD v2.41.0 Highlights
 - **Lite is the default channel; full is reserved**: new work defaults to `/alex-lite` → `/blake-lite`. The three full skills are unchanged and fully usable — only the recommendation moved.
 - **Escalation list replaced by a 3-item safety-stop list**: file count, protocol density and "touches a protocol contract" no longer force an upgrade — only irreversible operations, SAFETY surfaces and global registration surfaces stop for a human. 296 lines of three-tier routing machinery removed. Lifecycle stays location-based (`active/` → `archive/`).
 - **Constraint pricing gate**: every new MUST/BLOCKING clause must first be priced in `.tad/evidence/audits/lite-constraint-ledger.md` — per-ticket cost, the failure mode it blocks (with a verbatim grep anchor), and a real incident carrier. Default action on review is deletion.
