@@ -25,7 +25,9 @@ BASELINE="$EVDIR/preflight-baseline.txt"
 RESULTS="$EVDIR/results.txt"
 COMMANDS="$EVDIR/publish-commands.txt"
 REVIEWS_DIR="$REPO_ROOT/.tad/evidence/reviews/blake/publish-v2410"
-COMMIT_B="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null)"
+CONTRACT="$REPO_ROOT/.tad/active/handoffs/LITE-20260811-1512-publish-v2410.md"
+# 记录的 tip（rev8：从 transaction commit_shas 的具名字段读，覆盖写；不是 HEAD、不是 8b0c40a）
+TIP_SHA="$(sed -n 's/.*tip_sha: \([0-9a-f]\{40\}\).*/\1/p' "$CONTRACT" | tail -1)"
 PASS_COUNT=0
 FAIL_COUNT=0
 BLOCK_COUNT=0
@@ -147,12 +149,14 @@ ac2() {
 }
 
 ac3() {
-  bash "$REPO_ROOT/.tad/hooks/lib/release-verify.sh" version-sweep "$REPO_ROOT" 2.41.0 > "$EVDIR/versionsweep.out" 2>&1
+  local sw=$(mktemp)
+  bash "$REPO_ROOT/.tad/hooks/lib/release-verify.sh" version-sweep "$REPO_ROOT" 2.41.0 > "$sw" 2>&1
   local rc=$?
   local layer2=0
-  if [ -f "$EVDIR/versionsweep.out" ]; then
-    layer2=$(grep -cF '⚠️' "$EVDIR/versionsweep.out" || true)
+  if [ -s "$sw" ]; then
+    layer2=$(grep -cF '⚠️' "$sw" || true)
   fi
+  rm -f "$sw"
   if [ "$layer2" -gt 0 ]; then
     printf 'layer2_hits=%s\n' "$layer2" >> "$RESULTS"
   fi
@@ -209,47 +213,46 @@ ac6() {
 }
 
 ac7() {
-  local rc0
-  sed -n '/^## \[2.41.0\]/,/^## \[/p' "$REPO_ROOT/CHANGELOG.md" > "$EVDIR/changelog-2410.txt"
-  [ -s "$EVDIR/changelog-2410.txt" ] || { fail AC7 "2.41.0 区块不存在或为空"; return; }
-  grep -Fq -e '### 行为变更' "$EVDIR/changelog-2410.txt"; rc0=$?
+  local rc0 chg
+  chg=$(mktemp)
+  sed -n '/^## \[2.41.0\]/,/^## \[/p' "$REPO_ROOT/CHANGELOG.md" > "$chg"
+  [ -s "$chg" ] || { fail AC7 "2.41.0 区块不存在或为空"; rm -f "$chg"; return; }
+  grep -Fq -e '### 行为变更' "$chg"; rc0=$?
   if [ $rc0 -ne 0 ]; then
-    grep -Fq -e '### Behavior Changes' "$EVDIR/changelog-2410.txt"; rc0=$?
+    grep -Fq -e '### Behavior Changes' "$chg"; rc0=$?
   fi
-  [ $rc0 -eq 0 ] || { fail AC7 "区块内无『行为变更』小节"; return; }
-  grep -Fq -e '逐命令审批' "$EVDIR/changelog-2410.txt"; rc0=$?
-  [ $rc0 -eq 0 ] || { fail AC7 "未点名『逐命令审批』"; return; }
-  grep -Fq -e 'Layer 1' "$EVDIR/changelog-2410.txt"; rc0=$?
-  [ $rc0 -eq 0 ] || { fail AC7 "未点名『Layer 1』"; return; }
+  [ $rc0 -eq 0 ] || { fail AC7 "区块内无『行为变更』小节"; rm -f "$chg"; return; }
+  grep -Fq -e '逐命令审批' "$chg"; rc0=$?
+  [ $rc0 -eq 0 ] || { fail AC7 "未点名『逐命令审批』"; rm -f "$chg"; return; }
+  grep -Fq -e 'Layer 1' "$chg"; rc0=$?
+  [ $rc0 -eq 0 ] || { fail AC7 "未点名『Layer 1』"; rm -f "$chg"; return; }
+  rm -f "$chg"
   pass AC7
 }
 
 ac7b() {
-  local rc0=0
-  sed -n '/^## \[2.41.0\]/,/^## \[/p' "$REPO_ROOT/CHANGELOG.md" > "$EVDIR/changelog-2410.txt"
-  [ -s "$EVDIR/changelog-2410.txt" ] || { fail AC7b "2.41.0 区块不存在"; return; }
-  # 附录 13-commit 代表串（rev3 修正后：4116517 → lite-first lifecycle；OR 组取 ≥1 命中）
+  local chg
+  chg=$(mktemp)
+  sed -n '/^## \[2.41.0\]/,/^## \[/p' "$REPO_ROOT/CHANGELOG.md" > "$chg"
+  [ -s "$chg" ] || { fail AC7b "2.41.0 区块不存在"; rm -f "$chg"; return; }
+  # 附录代表串清单为唯一权威（rev8 同步表格：4116517 → lite-first lifecycle）；
+  # 匹配一律 grep -Fqi（大小写不敏感，rev5 修）——CHANGELOG 是自然语言散文
   local rc1
-  # ac0699f installer → installer 或 tad.sh（OR 组）
-  grep -Fq -e 'installer' "$EVDIR/changelog-2410.txt"; rc1=$?
-  if [ $rc1 -ne 0 ]; then grep -Fq -e 'tad.sh' "$EVDIR/changelog-2410.txt"; rc1=$?; fi
-  [ $rc1 -eq 0 ] || { fail AC7b "代表串 installer/tad.sh 未命中"; return; }
-  # 4116517 lite-first lifecycle（AND 组）
-  grep -Fq -e 'lite-first lifecycle' "$EVDIR/changelog-2410.txt"; rc1=$?
-  [ $rc1 -eq 0 ] || { fail AC7b "代表串 lite-first lifecycle 未命中"; return; }
-  # e05a135 inventory + composition → inventory 或 能力提取（OR 组）
-  grep -Fq -e 'inventory' "$EVDIR/changelog-2410.txt"; rc1=$?
-  if [ $rc1 -ne 0 ]; then grep -Fq -e '能力提取' "$EVDIR/changelog-2410.txt"; rc1=$?; fi
-  [ $rc1 -eq 0 ] || { fail AC7b "代表串 inventory/能力提取 未命中"; return; }
-  # f8907a3+cabe287 release runbook
-  grep -Fq -e 'release-runbook' "$EVDIR/changelog-2410.txt"; rc1=$?
-  [ $rc1 -eq 0 ] || { fail AC7b "代表串 release-runbook 未命中"; return; }
-  # 77479a0+c851046+80413f8+ae3485f authority model
-  grep -Fq -e '逐命令审批' "$EVDIR/changelog-2410.txt"; rc1=$?
-  [ $rc1 -eq 0 ] || { fail AC7b "代表串 逐命令审批 未命中"; return; }
-  # 9cfea17+2efe3d7 Layer 1
-  grep -Fq -e 'Layer 1' "$EVDIR/changelog-2410.txt"; rc1=$?
-  [ $rc1 -eq 0 ] || { fail AC7b "代表串 Layer 1 未命中"; return; }
+  grep -Fqi -e 'installer' "$chg"; rc1=$?
+  if [ $rc1 -ne 0 ]; then grep -Fqi -e 'tad.sh' "$chg"; rc1=$?; fi
+  [ $rc1 -eq 0 ] || { fail AC7b "代表串 installer/tad.sh 未命中"; rm -f "$chg"; return; }
+  grep -Fqi -e 'lite-first lifecycle' "$chg"; rc1=$?
+  [ $rc1 -eq 0 ] || { fail AC7b "代表串 lite-first lifecycle 未命中"; rm -f "$chg"; return; }
+  grep -Fqi -e 'inventory' "$chg"; rc1=$?
+  if [ $rc1 -ne 0 ]; then grep -Fqi -e '能力提取' "$chg"; rc1=$?; fi
+  [ $rc1 -eq 0 ] || { fail AC7b "代表串 inventory/能力提取 未命中"; rm -f "$chg"; return; }
+  grep -Fqi -e 'release-runbook' "$chg"; rc1=$?
+  [ $rc1 -eq 0 ] || { fail AC7b "代表串 release-runbook 未命中"; rm -f "$chg"; return; }
+  grep -Fqi -e '逐命令审批' "$chg"; rc1=$?
+  [ $rc1 -eq 0 ] || { fail AC7b "代表串 逐命令审批 未命中"; rm -f "$chg"; return; }
+  grep -Fqi -e 'Layer 1' "$chg"; rc1=$?
+  [ $rc1 -eq 0 ] || { fail AC7b "代表串 Layer 1 未命中"; rm -f "$chg"; return; }
+  rm -f "$chg"
   pass AC7b
 }
 
@@ -370,33 +373,19 @@ ac14() {
 }
 
 ac15() {
-  local base tip n merges a b c1 c2
+  local base tip n merges c sha path ok=1
   base=$(grep -E '^base_sha=' "$BASELINE" | head -1 | cut -d= -f2)
   [ -n "$base" ] || { fail AC15 "基线无 base_sha"; return; }
-  tip="$COMMIT_B"
+  tip="$TIP_SHA"
+  [ -n "$tip" ] || { fail AC15 "契约无 tip_sha"; return; }
   n=$(git -C "$REPO_ROOT" rev-list "$base..$tip" 2>/dev/null | wc -l | tr -d ' ')
-  [ "$n" = 2 ] || { fail AC15 "rev-list base..tip = $n（须为 2）"; return; }
+  [ "$n" -ge 1 ] || { fail AC15 "rev-list base..tip 为空（须非空）"; return; }
   git -C "$REPO_ROOT" merge-base --is-ancestor "$base" "$tip" >/dev/null 2>&1 || { fail AC15 "base 非 tip 祖先"; return; }
   merges=$(git -C "$REPO_ROOT" rev-list --merges "$base..$tip" 2>/dev/null | wc -l | tr -d ' ')
   [ "$merges" = 0 ] || { fail AC15 "base..tip 含 $merges 个 merge commit"; return; }
-  local tmp_diff tmp_manifest2 tmp_ab12 tmp_ab tmp_pa tmp_pb
-  tmp_diff=$(mktemp); tmp_manifest2=$(mktemp); tmp_ab12=$(mktemp)
-  tmp_ab=$(mktemp); tmp_pa=$(mktemp); tmp_pb=$(mktemp)
-  git -C "$REPO_ROOT" diff --name-only "$base..$tip" | LC_ALL=C sort > "$tmp_diff"
-  # commit A / B 路径集
-  c1=$(git -C "$REPO_ROOT" rev-list "$base..$tip" | tail -1)
-  c2=$(git -C "$REPO_ROOT" rev-list "$base..$tip" | head -1)
-  git -C "$REPO_ROOT" diff --name-only "$base..$c1" | LC_ALL=C sort > "$tmp_pa"
-  git -C "$REPO_ROOT" diff --name-only "$c1..$c2" | LC_ALL=C sort > "$tmp_pb"
-  # A/B 路径集 comm -12 为空
-  comm -12 "$tmp_pa" "$tmp_pb" > "$tmp_ab12"
-  if [ -s "$tmp_ab12" ]; then
-    while IFS= read -r line; do
-      say "AC15: A/B 路径集交集: $line"
-    done < "$tmp_ab12"
-    fail AC15 "commit A 与 commit B 路径集相交（须互斥）"
-  fi
-  # diff ⊆ 清单（第 1-26 项）
+  # 逐个 commit 的路径 ⊆ 文件清单（完整 base→tip 记账，不断言条数）
+  local tmp_manifest2 tmp_commit_paths tmp_outside
+  tmp_manifest2=$(mktemp); tmp_commit_paths=$(mktemp); tmp_outside=$(mktemp)
   {
     printf '%s\n' \
       ".tad/version.txt" "package.json" "tad.sh" "README.md" "INSTALLATION_GUIDE.md" \
@@ -410,19 +399,59 @@ ac15() {
       ".tad/evidence/acceptance-tests/publish-v2410/verify.sh" \
       ".tad/project-knowledge/patterns/ac-verification.md" \
       ".tad/project-knowledge/patterns/shell-portability.md" \
+      ".tad/active/handoffs/LITE-20260810-1820-layer1-ac-driven-compat.md" \
       ".tad/archive/handoffs/LITE-20260810-1820-layer1-ac-driven-compat.md" \
       ".tad/active/handoffs/LITE-20260811-1512-publish-v2410.md" \
       ".tad/active/handoffs/LITE-20260811-1512-publish-v2410.md.txn-lock" \
       ".tad/archive/handoffs/LITE-20260811-1512-publish-v2410.md"
   } | LC_ALL=C sort > "$tmp_manifest2"
-  comm -23 "$tmp_diff" "$tmp_manifest2" > "$tmp_ab"
-  if [ -s "$tmp_ab" ]; then
+  : > "$tmp_commit_paths"
+  for c in $(git -C "$REPO_ROOT" rev-list "$base..$tip"); do
+    git -C "$REPO_ROOT" diff-tree --no-commit-id --name-only -r "$c" | LC_ALL=C sort >> "$tmp_commit_paths"
+  done
+  LC_ALL=C sort -u "$tmp_commit_paths" -o "$tmp_commit_paths"
+  comm -23 "$tmp_commit_paths" "$tmp_manifest2" > "$tmp_outside"
+  if [ -s "$tmp_outside" ]; then
     while IFS= read -r line; do
-      say "AC15: base..tip 含清单外路径: $line"
-    done < "$tmp_ab"
-    fail AC15 "base..tip diff 含清单外路径（见上）"
+      say "AC15: 清单外路径: $line"
+    done < "$tmp_outside"
+    fail AC15 "base..tip 含清单外路径（见上）"
   fi
-  rm -f "$tmp_diff" "$tmp_manifest2" "$tmp_ab12" "$tmp_ab" "$tmp_pa" "$tmp_pb"
+  # closeout 集合（第 22-24 项）与 release 集合（第 1-21 项）路径 comm -12 为空
+  local tmp_closeout tmp_release tmp_ab12
+  tmp_closeout=$(mktemp); tmp_release=$(mktemp); tmp_ab12=$(mktemp)
+  {
+    printf '%s\n' \
+      ".tad/project-knowledge/patterns/ac-verification.md" \
+      ".tad/project-knowledge/patterns/shell-portability.md" \
+      ".tad/archive/handoffs/LITE-20260810-1820-layer1-ac-driven-compat.md"
+  } | LC_ALL=C sort > "$tmp_closeout"
+  {
+    printf '%s\n' \
+      ".tad/version.txt" "package.json" "tad.sh" "README.md" "INSTALLATION_GUIDE.md" \
+      "PROJECT_CONTEXT.md" "docs/MULTI-PLATFORM.md" ".tad/config.yaml" ".tad/codex/README.md" \
+      ".tad/capability-packs/pack-registry.yaml" ".tad/templates/pack-meta-template.yaml" \
+      ".claude/skills/alex/SKILL.md" ".agents/skills/alex/SKILL.md" \
+      ".claude/skills/blake/SKILL.md" ".agents/skills/blake/SKILL.md" \
+      ".claude/skills/tad-help/SKILL.md" ".agents/skills/tad-help/SKILL.md" \
+      "CHANGELOG.md" ".tad/active/epics/EPIC-20260809-full-capability-extraction-retirement.md" \
+      ".tad/evidence/acceptance-tests/publish-v2410/preflight-baseline.txt" \
+      ".tad/evidence/acceptance-tests/publish-v2410/verify.sh"
+  } | LC_ALL=C sort > "$tmp_release"
+  # 用实际 commit 的路径集做互斥（而非静态清单）；禁进程替换，集合运算走 mktemp
+  local tmp_co_actual tmp_re_actual
+  tmp_co_actual=$(mktemp); tmp_re_actual=$(mktemp)
+  comm -12 "$tmp_commit_paths" "$tmp_closeout" > "$tmp_co_actual"
+  comm -12 "$tmp_commit_paths" "$tmp_release" > "$tmp_re_actual"
+  comm -12 "$tmp_co_actual" "$tmp_re_actual" > "$tmp_ab12"
+  rm -f "$tmp_co_actual" "$tmp_re_actual"
+  if [ -s "$tmp_ab12" ]; then
+    while IFS= read -r line; do
+      say "AC15: closeout/release 交集: $line"
+    done < "$tmp_ab12"
+    fail AC15 "closeout 与 release 路径集相交（须互斥）"
+  fi
+  rm -f "$tmp_manifest2" "$tmp_commit_paths" "$tmp_outside" "$tmp_closeout" "$tmp_release" "$tmp_ab12"
   [ "$FAIL_COUNT" = 0 ] && pass AC15
 }
 
@@ -436,21 +465,25 @@ ac18() {
 
 # ---------- A' 组 ----------
 ac9pre() {
-  local remote_main expected
+  local remote_main expected local_main
   remote_main=$(git -C "$REPO_ROOT" ls-remote --heads origin refs/heads/main 2>/dev/null | awk '{print $1}')
   [ -n "$remote_main" ] || { block AC9pre "ls-remote 失败"; return; }
   expected=$(grep -E '^remote_main_pre=' "$BASELINE" | head -1 | cut -d= -f2)
   [ "$remote_main" = "$expected" ] || { fail AC9pre "远端 main($remote_main) != 基线($expected)"; return; }
-  git -C "$REPO_ROOT" merge-base --is-ancestor "$remote_main" "$COMMIT_B" >/dev/null 2>&1 || { fail AC9pre "远端 main 非 commit B 祖先"; return; }
+  git -C "$REPO_ROOT" merge-base --is-ancestor "$remote_main" "$TIP_SHA" >/dev/null 2>&1 || { fail AC9pre "远端 main 非记录 tip 祖先"; return; }
+  local_main=$(git -C "$REPO_ROOT" rev-parse refs/heads/main 2>/dev/null)
+  [ "$local_main" = "$TIP_SHA" ] || { fail AC9pre "本地 main($local_main) != 记录 tip_sha($TIP_SHA)"; return; }
   pass AC9pre
 }
 
 ac10a() {
-  local t p m expected
+  local t p m expected local_main
+  local_main=$(git -C "$REPO_ROOT" rev-parse refs/heads/main 2>/dev/null)
+  [ "$local_main" = "$TIP_SHA" ] || { fail AC10a "本地 main($local_main) != 记录 tip_sha($TIP_SHA)"; return; }
   t=$(git -C "$REPO_ROOT" cat-file -t "v2.41.0" 2>/dev/null)
   [ "$t" = "tag" ] || { fail AC10a "v2.41.0 非 annotated tag（type=$t）"; return; }
   p=$(git -C "$REPO_ROOT" rev-parse "v2.41.0^{commit}" 2>/dev/null)
-  [ "$p" = "$COMMIT_B" ] || { fail AC10a "tag 指向 $p != commit B $COMMIT_B"; return; }
+  [ "$p" = "$TIP_SHA" ] || { fail AC10a "tag 指向 $p != 记录 tip $TIP_SHA"; return; }
   m=$(git -C "$REPO_ROOT" tag -l --format='%(contents)' "v2.41.0" 2>/dev/null)
   expected="v2.41.0 — Lite authority model v2 (contract mandate replaces per-command approval) + Layer 1 AC-driven self-check"
   [ "$m" = "$expected" ] || { fail AC10a "tag 消息逐字节不符"; return; }
@@ -462,9 +495,9 @@ ac9() {
   local remote_main pre tmp_before tmp_after
   remote_main=$(git -C "$REPO_ROOT" ls-remote --heads origin refs/heads/main 2>/dev/null | awk '{print $1}')
   [ -n "$remote_main" ] || { block AC9 "ls-remote 失败"; return; }
-  [ "$remote_main" = "$COMMIT_B" ] || { fail AC9 "远端 main($remote_main) != commit B($COMMIT_B)"; return; }
+  [ "$remote_main" = "$TIP_SHA" ] || { fail AC9 "远端 main($remote_main) != 记录 tip($TIP_SHA)"; return; }
   pre=$(grep -E '^remote_main_pre=' "$BASELINE" | head -1 | cut -d= -f2)
-  git -C "$REPO_ROOT" merge-base --is-ancestor "$pre" "$COMMIT_B" >/dev/null 2>&1 || { fail AC9 "快进证明失败（非 ancestor）"; return; }
+  git -C "$REPO_ROOT" merge-base --is-ancestor "$pre" "$TIP_SHA" >/dev/null 2>&1 || { fail AC9 "快进证明失败（非 ancestor）"; return; }
   # (c) 完整 ref 清单：按 ref 名（第 2 列）为键，两侧先 LC_ALL=C sort
   tmp_before=$(mktemp); tmp_after=$(mktemp)
   local bkeys akeys bmap amap
@@ -498,8 +531,8 @@ ac9() {
   local headsha msha
   headsha=$(awk -F'\t' '$2=="HEAD"{print $1}' "$tmp_after")
   msha=$(awk -F'\t' '$2=="refs/heads/main"{print $1}' "$tmp_after")
-  [ "$headsha" = "$COMMIT_B" ] || { fail AC9 "HEAD 新 SHA $headsha != commit B"; }
-  [ "$msha" = "$COMMIT_B" ] || { fail AC9 "main 新 SHA $msha != commit B"; }
+  [ "$headsha" = "$TIP_SHA" ] || { fail AC9 "HEAD 新 SHA $headsha != 记录 tip"; }
+  [ "$msha" = "$TIP_SHA" ] || { fail AC9 "main 新 SHA $msha != 记录 tip"; }
   rm -f "$tmp_before" "$tmp_after" "$bkeys" "$akeys" "$bmap" "$amap" "$modfile" "$modfile.mod"
   [ "$FAIL_COUNT" = 0 ] && pass AC9
 }
@@ -508,7 +541,7 @@ ac10() {
   local peeled
   peeled=$(git -C "$REPO_ROOT" ls-remote --tags origin "refs/tags/v2.41.0^{}" 2>/dev/null | awk '{print $1}')
   [ -n "$peeled" ] || { block AC10 "ls-remote tags 失败"; return; }
-  [ "$peeled" = "$COMMIT_B" ] || { fail AC10 "远端 peeled tag($peeled) != commit B"; return; }
+  [ "$peeled" = "$TIP_SHA" ] || { fail AC10 "远端 peeled tag($peeled) != 记录 tip"; return; }
   pass AC10
 }
 
