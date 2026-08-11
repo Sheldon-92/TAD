@@ -875,20 +875,20 @@ untracked .tad/6ea1c65f7846c8714aa1e5e9da6b4499a9b581d1c68d2b4f03f355944f9eb02f
 untracked .tad/953becedf0fa9577ded87090a2b8f2062d772198185dd72a0533a427552db746
 untracked .tad/f4f52b97985d15d36961dc5532448460805b4eea7129ede4afe7c9a3e089cac4
 ## targets
-target e16ed373388fd11b exists backup=absent mws=e6cf56f59e00750b96d62f1bf8d30849362ee467ee24f608b9535ddb4aeab163 git=5a351900c7ca987af61f849307d267ea672b6d07 dirty=ceac3570a7bcefd0ee5db0d6aa17455312a02f9bb9ea8535c67ea61456cd76ff missingroots=[ AGENTS.md.bak]  idx=01
-target 2075d0c104328158 exists backup=absent mws=95831d36a73c26b6b71621f28b5c8c23982df02ba450d0793d9757f713a528c1 git=0276a76ede8ea79148c4d06d9c038b8878268dab dirty=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 missingroots=[ .codex AGENTS.md CLAUDE.md.bak AGENTS.md.bak]  idx=02
-target 26ce08cfc439f785 exists backup=absent mws=93856a9681a4813e651a8e7eb6d77cb56b8e63ac57d813beae5c9ff806b19cbb git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]  idx=03
-target b54e85379749313f missing backup=absent mws=n/a git=n/a  idx=04
-target c059d96b4bcccbf3 exists backup=absent mws=9ae6aca1abd993b4c5dc4efba2c3cc6d4f5effd8a82f2e4302f0675656475e06 git=ff2fa573a1f9fb07c1878a3a800f39c1c11991ef dirty=b60b77148f0505e2614f356e2569c09a810e108edab4322060f614e13e684880 missingroots=[ AGENTS.md.bak]  idx=05
-target 5e175cd2b1e323d3 exists backup=absent mws=0b277b3a59069e1b90ec60af365e863a91c0cb9f6f6457e50febc3806b9dd67b git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]  idx=06
-target 001d7ee9669a47a8 exists backup=absent mws=f3af8944a5520a54ac77e8f0b1177d57f753440ec7a1b6aa8df86605f91e6bb7 git=856056faaddc3dd9f14951629f5775832eb36af6 dirty=c4ab78fb541dfd86518da35a3dee68894812714e307a30167309e96dfbba3af1 missingroots=[ AGENTS.md.bak]  idx=07
-target ff1625281725fc77 exists backup=absent mws=45cee8dd5a0f8ac9784e4162079885403e92d571a230ab64d465fae2377be8db git=eca72b1b5aacb84d42a548e222e3f53ebe64da3b dirty=f9a5435c0d669ebb798b80d90e4a0ce93c970224ddafe8ded74b360e088b6991 missingroots=[ AGENTS.md.bak]  idx=08
-target 7c4c9da7c162157f exists backup=absent mws=8e543cb740b7ff8966305c07ac6a1c2a6b3207f3d01c70c19fafb77620e222c0 git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]  idx=09
-target 4a74526dee88b629 exists backup=absent mws=ddf29cb453a7c18fbb0d1843fb49a28961820d8db81aa6e6e77b0eba0211acbb git=0db81c412c9a409ded4c4ef974a4625499277157 dirty=0cf1c85a628f534e0092e8998086e1a0c3c75839227decb0b1b32dfc2275404e missingroots=[ .codex AGENTS.md AGENTS.md.bak]  idx=10
-target cc322e7e5fa16f65 exists backup=absent mws=b896f8d443d6aa02600606d80a42da296a25cf48b894b11772838c1d88890b89 git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]  idx=11
-target 8f268d7702783417 exists backup=absent mws=dc1323911bb16f454688f9d096800cd261d8b32fdab908c0cbef2fd8c85ebad7 git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]  idx=12
-target f2eabb1feb81a738 exists backup=absent mws=bf33d732dce67dc9d5c11e192a21fa7b1957f58460dcbc66634edae0b6652fae git=e5194e6461a3af3b74756d9f2645d4ac1cd6e556 dirty=0b6df6427c690a8994858a8d9c185b83c065ed91517bcf508455cfaaefb462e0 missingroots=[ AGENTS.md.bak]  idx=13
-target 51bdebf218f62d0d missing backup=absent mws=n/a git=n/a  idx=14
+target e16ed373388fd11b exists backup=absent mws=e6cf56f59e00750b96d62f1bf8d30849362ee467ee24f608b9535ddb4aeab163 git=5a351900c7ca987af61f849307d267ea672b6d07 dirty=ceac3570a7bcefd0ee5db0d6aa17455312a02f9bb9ea8535c67ea61456cd76ff missingroots=[ AGENTS.md.bak]
+target 2075d0c104328158 exists backup=absent mws=95831d36a73c26b6b71621f28b5c8c23982df02ba450d0793d9757f713a528c1 git=0276a76ede8ea79148c4d06d9c038b8878268dab dirty=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 missingroots=[ .codex AGENTS.md CLAUDE.md.bak AGENTS.md.bak]
+target 26ce08cfc439f785 exists backup=absent mws=93856a9681a4813e651a8e7eb6d77cb56b8e63ac57d813beae5c9ff806b19cbb git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]
+target b54e85379749313f missing backup=absent mws=n/a git=n/a
+target c059d96b4bcccbf3 exists backup=absent mws=9ae6aca1abd993b4c5dc4efba2c3cc6d4f5effd8a82f2e4302f0675656475e06 git=ff2fa573a1f9fb07c1878a3a800f39c1c11991ef dirty=b60b77148f0505e2614f356e2569c09a810e108edab4322060f614e13e684880 missingroots=[ AGENTS.md.bak]
+target 5e175cd2b1e323d3 exists backup=absent mws=0b277b3a59069e1b90ec60af365e863a91c0cb9f6f6457e50febc3806b9dd67b git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]
+target 001d7ee9669a47a8 exists backup=absent mws=521dbdfd1bc5c4a10e0e40f898911e58e36de60fc7ea648fa9e6a439b3169c41 git=856056faaddc3dd9f14951629f5775832eb36af6 dirty=c4ab78fb541dfd86518da35a3dee68894812714e307a30167309e96dfbba3af1 missingroots=[ AGENTS.md.bak]
+target ff1625281725fc77 exists backup=absent mws=45cee8dd5a0f8ac9784e4162079885403e92d571a230ab64d465fae2377be8db git=eca72b1b5aacb84d42a548e222e3f53ebe64da3b dirty=f9a5435c0d669ebb798b80d90e4a0ce93c970224ddafe8ded74b360e088b6991 missingroots=[ AGENTS.md.bak]
+target 7c4c9da7c162157f exists backup=absent mws=8e543cb740b7ff8966305c07ac6a1c2a6b3207f3d01c70c19fafb77620e222c0 git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]
+target 4a74526dee88b629 exists backup=absent mws=ddf29cb453a7c18fbb0d1843fb49a28961820d8db81aa6e6e77b0eba0211acbb git=0db81c412c9a409ded4c4ef974a4625499277157 dirty=0cf1c85a628f534e0092e8998086e1a0c3c75839227decb0b1b32dfc2275404e missingroots=[ .codex AGENTS.md AGENTS.md.bak]
+target cc322e7e5fa16f65 exists backup=absent mws=b896f8d443d6aa02600606d80a42da296a25cf48b894b11772838c1d88890b89 git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]
+target 8f268d7702783417 exists backup=absent mws=dc1323911bb16f454688f9d096800cd261d8b32fdab908c0cbef2fd8c85ebad7 git=n/a dirty=n/a missingroots=[ AGENTS.md.bak]
+target f2eabb1feb81a738 exists backup=absent mws=bf33d732dce67dc9d5c11e192a21fa7b1957f58460dcbc66634edae0b6652fae git=e5194e6461a3af3b74756d9f2645d4ac1cd6e556 dirty=0b6df6427c690a8994858a8d9c185b83c065ed91517bcf508455cfaaefb462e0 missingroots=[ AGENTS.md.bak]
+target 51bdebf218f62d0d missing backup=absent mws=n/a git=n/a
 ## derive-sync-set-pre
 syncset | === RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
 syncset | 

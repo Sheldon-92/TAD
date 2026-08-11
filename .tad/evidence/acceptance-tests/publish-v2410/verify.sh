@@ -311,6 +311,16 @@ manifest_keys() {
       ".tad/archive/handoffs/LITE-20260811-1512-publish-v2410.md" \
       ".tad/evidence/reviews/blake/publish-v2410"
   } | LC_ALL=C sort | while IFS= read -r p; do
+    # 目录级条目（第 25/26 项）展开为目录内文件；目录不存在 → 空
+    if [ -d "$REPO_ROOT/$p" ]; then
+      find "$REPO_ROOT/$p" -type f -print0 2>/dev/null | tr '\0' '\n' | while IFS= read -r f; do
+        rel="${f#"$REPO_ROOT/"}"
+        top=$(printf '%s' "$rel" | cut -d/ -f1)
+        h=$(printf '%s' "$rel" | shasum -a 256 | awk '{print $1}')
+        printf 'untracked %s/%s\n' "$top" "$h"
+      done
+      continue
+    fi
     top=$(printf '%s' "$p" | cut -d/ -f1)
     h=$(printf '%s' "$p" | shasum -a 256 | awk '{print $1}')
     printf 'untracked %s/%s\n' "$top" "$h"
@@ -325,15 +335,10 @@ ac14() {
   tmp_manifest=$(mktemp); tmp_tracked_base=$(mktemp)
   local outside_list tmp_outside
   outside_list=$(mktemp); tmp_outside=$(mktemp)
-  # 现状未跟踪摘要键
-  git -C "$REPO_ROOT" status --porcelain=v1 -uall | grep '^??' | sed 's/^?? //' | LC_ALL=C sort | while IFS= read -r p; do
-    case "$p" in
-      .tad/evidence/traces/*|.tad/evidence/decisions/*|.tad/archive/traces/*|.tad/research-notebooks/REGISTRY.yaml|.tad/active/session-state.md|.tad/active/precompact/*) continue;;
-    esac
-    top=$(printf '%s' "$p" | cut -d/ -f1)
-    h=$(printf '%s' "$p" | shasum -a 256 | awk '{print $1}')
-    printf 'untracked %s/%s\n' "$top" "$h"
-  done | LC_ALL=C sort > "$tmp_now"
+  # 现状未跟踪摘要键（ruby 单进程批量哈希，内容摘要/清单派生豁免；排除项先过滤）
+  git -C "$REPO_ROOT" status --porcelain=v1 -uall | grep '^??' | sed 's/^?? //' | LC_ALL=C sort \
+    | ruby -rdigest -e 'ex=[/\A\.tad\/evidence\/traces\//,/\A\.tad\/evidence\/decisions\//,/\A\.tad\/archive\/traces\//,/\A\.tad\/research-notebooks\/REGISTRY\.yaml\z/,/\A\.tad\/active\/session-state\.md\z/,/\A\.tad\/active\/precompact\//]; STDIN.each_line { |l| p=l.chomp; next if ex.any? { |re| re.match?(p) }; top=p.split("/",2)[0]; puts "untracked #{top}/#{Digest::SHA256.hexdigest(p)}" }' \
+    | LC_ALL=C sort > "$tmp_now"
   # 基线摘要键
   awk '/^## untracked-hashed/{f=1;next}/^## /{f=0}f' "$BASELINE" | LC_ALL=C sort > "$tmp_base"
   manifest_keys > "$tmp_manifest"
@@ -362,7 +367,7 @@ ac14() {
     else
       h="DELETED"
     fi
-    b=$(awk -v path="$p" '$0 ~ /^tracked / && index($0, "  " path) > 0 {print $2}' "$tmp_tracked_base")
+    b=$(ruby -rdigest -e 'path=ARGV[0]; STDIN.each_line { |l| if l.start_with?("tracked ") && l.include?("  " + path) then puts l.split(" ",2)[1].split("  ")[0]; break end }' "$p" "$tmp_tracked_base" < "$tmp_tracked_base")
     if [ -n "$b" ] && [ "$b" != "$h" ]; then
       say "AC14: 清单外已脏路径摘要变化: $p"
       fail AC14 "清单外已脏路径 $p 摘要变化"
@@ -558,7 +563,7 @@ collect_targets() {
     if [ -d "$t" ]; then exists="exists"; else exists="missing"; fi
     bk="absent"; [ -e "$t/.tad-backup" ] && bk="present"
     if [ "$exists" = "missing" ]; then
-      printf 'target %s %s %s mws=n/a git=n/a dirty=n/a missingroots=[]\n' "$ph" "$exists" "backup=$bk"
+      printf 'target %s %s %s mws=n/a git=n/a\n' "$ph" "$exists" "backup=$bk"
       continue
     fi
     roots=(); missing_roots=""
