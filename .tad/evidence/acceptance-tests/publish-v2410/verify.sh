@@ -597,7 +597,7 @@ ac11() {
   local tmp_pre tmp_post reg_now reg_base np n bl line
   tmp_pre=$(mktemp); tmp_post=$(mktemp)
   awk '/^## targets/{f=1;next}/^## /{f=0}f' "$BASELINE" | LC_ALL=C sort > "$tmp_pre"
-  collect_targets > "$tmp_post" 2>/dev/null
+  collect_targets | LC_ALL=C sort > "$tmp_post" 2>/dev/null
   np=$(wc -l < "$tmp_pre" | tr -d ' ')
   [ "$np" = 14 ] || { fail AC11 "基线目标数 $np != 14"; rm -f "$tmp_pre" "$tmp_post"; return; }
   reg_now=$(shasum -a 256 "$REPO_ROOT/.tad/sync-registry.yaml" | awk '{print $1}')
