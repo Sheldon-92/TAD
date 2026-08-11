@@ -40,12 +40,14 @@ Traditional development workflows rely on developers judging their own work as "
 
 ### Commands
 
+Layer 1 executes the technical check rows declared in handoff §9.1 (Spec Compliance Checklist) — the sole authoritative source. `loop-config.yaml` 的 `layer1.commands` 仅在 §9.1 未声明任何技术检查行时兜底；两者都为空 → 零命令通过，并在 completion report 的 Gate 3 小节记录一行（禁止静默跳过）。
+
 | Command | Timeout | Required | Description |
 |---------|---------|----------|-------------|
-| `npm run build` | 2 min | Yes | Build the project |
-| `npm test` | 5 min | Yes | Run test suite |
-| `npm run lint` | 1 min | Yes | Check code style |
-| `npx tsc --noEmit` | 2 min | Yes | TypeScript type check |
+| §9.1 声明的技术检查行 1 | per §9.1 | Yes | 按 §9.1 该行的 Verification Method 执行 |
+| §9.1 声明的技术检查行 2 | per §9.1 | Yes | 按 §9.1 该行的 Verification Method 执行 |
+| §9.1 声明的技术检查行 3 | per §9.1 | Yes | 按 §9.1 该行的 Verification Method 执行 |
+| §9.1 声明的技术检查行 N | per §9.1 | Yes | 按 §9.1 该行的 Verification Method 执行 |
 
 ### Circuit Breaker
 

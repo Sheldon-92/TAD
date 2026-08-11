@@ -15,30 +15,10 @@ ralph_loop:
     name: "Self-Check"
     description: "Fast local checks before expert review"
 
-    commands:
-      - name: "build"
-        command: "npm run build"
-        timeout: 120000  # 2 minutes
-        required: true
-        description: "Build the project"
-
-      - name: "test"
-        command: "npm test"
-        timeout: 300000  # 5 minutes
-        required: true
-        description: "Run test suite"
-
-      - name: "lint"
-        command: "npm run lint"
-        timeout: 60000   # 1 minute
-        required: true
-        description: "Check code style"
-
-      - name: "typecheck"
-        command: "npx tsc --noEmit"
-        timeout: 120000  # 2 minutes
-        required: true
-        description: "TypeScript type checking"
+    # Layer 1 命令来源 = handoff §9.1（唯一权威）；本列表仅在 §9.1 未声明任何技术检查行时兜底。
+    # 本仓库 package.json 无 build/lint/tsc 脚本（test 为 echo 占位）→ 空列表（schema 无 minItems，空数组合法，D3）。
+    # 两者都为空 → 零命令通过，并在 completion report 的 Gate 3 小节记录一行（禁止静默跳过，D2）。
+    commands: []
 
     # Iteration limits (clear semantics)
     limits:

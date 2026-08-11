@@ -1,0 +1,43 @@
+AC1: PASS .claude/skills/blake/SKILL.md npm/npx=0
+AC2: PASS .claude/skills/blake/SKILL.md §9.1=1 checklist=1
+AC3: PASS .claude/skills/blake/SKILL.md 零命令=1 completion=1
+AC4: PASS .claude/skills/blake/SKILL.md loop-config=1 precedence=1
+AC5: PASS .claude/skills/blake/SKILL.md full-text=0
+AC6: PASS .claude/skills/blake/SKILL.md invariant=2
+AC11: PASS .claude/skills/blake/SKILL.md import-yaml=0
+AC12: PASS .claude/skills/blake/SKILL.md full-content=0 dup-steps=none §6=1 §9=1
+AC13: PASS .claude/skills/blake/SKILL.md frontmatter parse PASS
+AC19: PASS .claude/skills/blake/SKILL.md region=[94,102] L1=1 §9.1=2
+AC1: PASS .agents/skills/blake/SKILL.md npm/npx=0
+AC2: PASS .agents/skills/blake/SKILL.md §9.1=1 checklist=1
+AC3: PASS .agents/skills/blake/SKILL.md 零命令=1 completion=1
+AC4: PASS .agents/skills/blake/SKILL.md loop-config=1 precedence=1
+AC5: PASS .agents/skills/blake/SKILL.md full-text=0
+AC6: PASS .agents/skills/blake/SKILL.md invariant=2
+AC11: PASS .agents/skills/blake/SKILL.md import-yaml=0
+AC12: PASS .agents/skills/blake/SKILL.md full-content=0 dup-steps=none §6=1 §9=1
+AC13: PASS .agents/skills/blake/SKILL.md frontmatter parse PASS
+AC19: PASS .agents/skills/blake/SKILL.md region=[94,102] L1=1 §9.1=2
+AC15: PASS trees byte-identical
+AC7: PASS loop-config.yaml parse PASS n=0
+AC8: PASS config-execution absent=0 §9.1=1 parse=PASS
+AC9: PASS README section absent=0 §9.1=1
+AC10: PASS RALPH-LOOP section absent=0 §9.1=5
+AC11: PASS fixtures: form1 valid=0 bad!=0; form2 valid=0 bad!=0
+AC11: PASS shell-portability import-yaml=0
+AC18: PASS shell-portability :70/:71/:73/:74 verbatim
+AC14: PASS no out-of-scope paths; dirty digests unchanged
+AC16: PENDING 提交未发生（action scoped-local-commit-after-gate 在 L3 后执行；提交后重跑本脚本得 PASS）
+===== SUMMARY: PASS=29 FAIL=0 PENDING=1 =====
+
+===== AC17 卫生检查（外部执行，2026-08-10）=====
+(a) 进程替换: grep -cF -e '<(' verify.sh => 0 (rc=1, PASS)
+(b) 语法门: /bin/bash -n verify.sh => exit 0 (PASS; /bin/bash 3.2.57)
+    rg/ripgrep: grep -cE '(^|[^-[:alnum:]_])(rg|ripgrep)[[:space:]]' verify.sh => 0 (PASS)
+    python3 import yaml: grep -cE 'python3 .*import yaml' verify.sh => 0 (PASS)
+(c) GNU-only 黑名单: grep -cE 'cat -A|sed -i |grep -P|readlink -f|date -d ' verify.sh => 0 (PASS)
+
+===== AC14 P0 修复记录（L3 reviewer P0-1）=====
+- 缺陷: grep -F "  ${p}$" 中 $ 在 -F 固定串模式下是字面量非行尾锚（BSD 2.6.0 与 ugrep 均 rc=1）→ bsha 恒空 → 摘要半无条件跳过（恒真死代码）。
+- 修复: 改用 awk index() + 行尾后缀精确匹配；比对循环排除 .tad/evidence/traces/*（框架 hook 遥测自动追加，非越界编辑）。
+- 独立复算: 清单外已脏路径 864 same / 0 changed / 0 no-baseline；changed 与 no-baseline 全部落在清单内路径（in_manifest 跳过）。

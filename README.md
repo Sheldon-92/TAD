@@ -265,7 +265,7 @@ Alex: [Reviews with subagents, accepts or requests changes]
 ### Gate 3 v2 (Blake - Technical Quality)
 
 **Layer 1 (Self-Check):**
-- build, test, lint, tsc
+- Executes the technical check rows declared in handoff §9.1
 - Max 15 retries with circuit breaker
 
 **Layer 2 (Expert Review):**

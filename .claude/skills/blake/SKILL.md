@@ -93,10 +93,9 @@ ralph_loop:
      ↓
 ┌─────────────────────────────────────────────────────────┐
 │ Layer 1: Self-Check (最多 15 次重试)                      │
-│   - npm run build                                       │
-│   - npm test                                            │
-│   - npm run lint                                        │
-│   - npx tsc --noEmit                                    │
+│   命令来源 = handoff §9.1（唯一权威）                      │
+│   §9.1 未声明 → loop-config.yaml 兜底                     │
+│   两者皆空 → 零命令 PASS                                  │
 │                                                         │
 │   ⚡ Circuit Breaker:                                    │
 │   同一错误连续 3 次 → escalate_to_human                   │
@@ -509,19 +508,19 @@ ralph_loop_execution:
       1_5_context_refresh:
         description: "Context Refresh before implementation start"
         action: |
-          Before starting implementation, re-read critical context:
+          Before starting implementation, re-read critical context (bounded reads — not the full document):
 
-          1. Re-read the selected handoff document (full content)
-          2. Read the handoff's "📚 Project Knowledge" section to identify relevant files
-          3. Read .tad/project-knowledge/principles.md (always — L1 methodology rules)
-          4. Read .tad/project-knowledge/patterns/_index.md → match task keywords against index entries
-          5. For each matched pattern file (max 3): Read .tad/project-knowledge/patterns/{matched}.md
-          6. L3 incidents are NOT loaded — use knowledge-blame.sh on demand (see 1_5_knowledge_provenance)
-          7. If handoff has no Project Knowledge section, the above L1+L2 loading is sufficient as default
-          5. Read handoff YAML frontmatter (task_type, e2e_required, research_required)
-          6. Announce: "Frontmatter: task_type={value}, e2e_required={value}, research_required={value}"
-          7. Store these values — execution_checklist.during_development.task_type_branching will reference them
-          8. Brief output: "📖 Implementation context refreshed: {files read}"
+          1. Read handoff §6 (Implementation Steps) to identify the files to be changed
+          2. Read handoff §9 (Acceptance Criteria) — the checks Blake must satisfy
+          3. Read handoff YAML frontmatter (task_type, e2e_required, research_required)
+          4. Announce: "Frontmatter: task_type={value}, e2e_required={value}, research_required={value}"
+          5. Store these values — execution_checklist.during_development.task_type_branching will reference them
+          6. Read .tad/project-knowledge/principles.md (always — L1 methodology rules)
+          7. Read .tad/project-knowledge/patterns/_index.md → match task keywords against index entries
+          8. For each matched pattern file (max 3): Read .tad/project-knowledge/patterns/{matched}.md
+          9. L3 incidents are NOT loaded — use knowledge-blame.sh on demand (see 1_5_knowledge_provenance)
+          10. If handoff has no Project Knowledge section, the above L1+L2 loading is sufficient as default
+          11. Brief output: "📖 Implementation context refreshed: {files read}"
           
           → Proceed to 1_5a_pack_detection
         purpose: "Ensure handoff context is fresh before coding, not just at activation"
@@ -903,10 +902,8 @@ ralph_loop_execution:
       2_layer1_loop:
         description: "Self-Check Loop (max 15 retries)"
         commands:
-          - "npm run build"
-          - "npm test"
-          - "npm run lint"
-          - "npx tsc --noEmit"
+          - "Execute each technical check row declared in handoff §9.1 (Spec Compliance Checklist) — the sole authoritative source, and it takes precedence over loop-config.yaml's layer1.commands, which apply only when §9.1 declares no technical check rows"
+          - "If both are empty: pass with 零命令 recorded as one line in the completion report's Gate 3 section (no silent skip)"
         on_failure:
           - "Increment layer1_retries"
           - "Check circuit breaker (same error 3x → escalate)"
@@ -918,8 +915,8 @@ ralph_loop_execution:
 
       3_layer2_loop:
         description: "Expert Review Loop (max 5 rounds)"
-        # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
-        # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+        # ⚠️ ANTI-RATIONALIZATION: "已经跑过 Layer 1 检查全部通过，再调 subagent 是重复劳动"
+        # → Layer 1 的检查只验证是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
         # ⚠️ express-not-exempt rule (Phase 3 anchor B-03, per AR-001/AR-003):
         # Express handoffs, spike handoffs, and infra/tooling handoffs are NOT review-exempt.
         # They may justify skipping e2e_test, but MUST call ≥1 expert (≥2 for security-adjacent).
@@ -1244,7 +1241,7 @@ execution_checklist:
         check Blake runs. The per-type hints below are how Alex typically POPULATES §9.1; Blake
         executes whatever §9.1 declares (no hardcoded branch).
       code: "§9.1 typically has build + lint + tsc + test rows (Alex step1_ac_generation) — run each, all PASS to continue"
-      yaml: "§9.1 typically has `python3 -c 'import yaml; yaml.safe_load(open(f))'` + 结构验证 + 编造=FAIL rows"
+      yaml: "§9.1 typically has `ruby -ryaml -e 'YAML.safe_load(File.read(ARGV[0]))' \"$f\"` + 结构验证 + 编造=FAIL rows"
       research: "§9.1 typically has WebSearch 全部执行 + ≥3 来源 + 研究文件产出 rows"
       e2e: "§9.1 typically has 测试脚本执行 + evidence 文件产出到 .tad/evidence/ rows"
       mixed: "§9.1 mixes the above row types — run each row's Verification Method"
@@ -1322,8 +1319,8 @@ execution_checklist:
         - "Group 1: code-reviewer（P0=0, P1=0）"
         - "Group 2: test-runner + security-auditor + performance-optimizer（按 trigger 规则）"
         - "Expert 说 PASS 才算完成 — 不是 Blake 自己判断"
-        # ⚠️ ANTI-RATIONALIZATION: "已经跑过 npm test 全部通过，再调 subagent 是重复劳动"
-        # → Layer 1 的 npm test 只检查是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+        # ⚠️ ANTI-RATIONALIZATION: "已经跑过 Layer 1 检查全部通过，再调 subagent 是重复劳动"
+        # → Layer 1 的检查只验证是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
 
       # Phase 6-A.2 (2026-04-25): Hard requirement — Layer 2 reviewer count discipline.
       # Phase 1-5 累积 3 次 Blake 用 self-review.md 替代 backend-architect 的 drift。
