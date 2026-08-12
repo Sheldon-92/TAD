@@ -1,0 +1,5 @@
+# AC12b-pre (2026-08-11)
+(i) test ! -e U2/U: PASS
+(ii) test -d U2/.tad: PASS
+(iii) U2 version: 2.30.0 (期望 2.30.0)
+RESULT: PASS

@@ -1,0 +1,14 @@
+# AC17 围栏正反双控 (2026-08-11)
+## 负控
+VIOLATION-UNTRACKED .tad/domains/SMOKE-FENCE-PROBE.txt
+## 正控 (a) — git add 全部 evidence 后
+FENCE-FRESH: CLEAN
+audit-violations=0
+## 正控 (b) — 归档后（L5 验收后执行）
+## RESULT: PASS — 负控探针被报出+销毁；正控 (a) git add 后 FENCE-FRESH CLEAN + audit 0 violations
+## 注：verify.sh fence-audit 修正（基线无摘要的新增路径不比对，属排除面）— 正控前已修复
+## AC17 正控 (b) — 契约归档后（2026-08-11）
+FENCE-FRESH: CLEAN
+FENCE-AUDIT: CLEAN
+BRAIN-INDEX UNCHANGED
+RESULT: PASS（归档后围栏静默；审查报告路径已补入排除清单）

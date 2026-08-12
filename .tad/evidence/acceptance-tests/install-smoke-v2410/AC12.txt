@@ -1,0 +1,8 @@
+rc=0
+rc=0
+nothing-to-do=1
+preview-anchor=0
+exec-anchor=0
+migration-skip=0
+ready-banner=0
+RESULT: FAIL

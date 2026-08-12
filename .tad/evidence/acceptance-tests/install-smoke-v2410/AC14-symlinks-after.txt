@@ -1,0 +1,7 @@
+lrwxr-xr-x@ 1 sheldonzhao  wheel  20 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/nypm -> ../nypm/dist/cli.mjs
+lrwxr-xr-x@ 1 sheldonzhao  wheel  21 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/giget -> ../giget/dist/cli.mjs
+lrwxr-xr-x@ 1 sheldonzhao  wheel  23 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/node-which -> ../which/bin/node-which
+lrwxr-xr-x@ 1 sheldonzhao  wheel  24 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/jiti -> ../jiti/lib/jiti-cli.mjs
+lrwxr-xr-x@ 1 sheldonzhao  wheel  24 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/prisma -> ../prisma/build/index.js
+lrwxr-xr-x@ 1 sheldonzhao  wheel  28 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/better-result -> ../better-result/bin/cli.mjs
+lrwxr-xr-x@ 1 sheldonzhao  wheel  53 Aug 11 21:42 /private/tmp/tad-install-smoke.aLaOt9/U2/.tad/active/research/saas-billing/node_modules/.bin/pglite-server -> ../@electric-sql/pglite-socket/dist/scripts/server.js

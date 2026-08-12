@@ -1,0 +1,3 @@
+=== AC6: 无下载残留 ===
+TAD-main 不存在
+RESULT: PASS

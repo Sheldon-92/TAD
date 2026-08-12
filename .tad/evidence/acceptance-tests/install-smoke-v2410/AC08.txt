@@ -1,0 +1,12 @@
+=== AC8: 路径 B 版本与入口 ===
+2.41.0
+EXISTS  CLAUDE.md
+EXISTS  AGENTS.md
+EXISTS  .claude/skills/alex-lite/SKILL.md
+EXISTS  .claude/skills/blake-lite/SKILL.md
+EXISTS  .agents/skills/alex-lite/SKILL.md
+EXISTS  .tad/hooks
+EXISTS  .codex/hooks.json
+MISSING tad.sh（预期）
+MISSING bin/tad-install.mjs（预期）
+RESULT: PASS

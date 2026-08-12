@@ -1,0 +1,10 @@
+=== AC10b rev6 重跑 ===
+G1 skills-diff(rev6)=0
+G2 hooks-diff=0
+G3a CLAUDE.md=OK
+G3b AGENTS.md=OK
+G4 dual-write-diff=0
+G5 top20-mismatch=0
+G6a settings.json=OK
+G6b workflows-diff=0
+RESULT: PASS

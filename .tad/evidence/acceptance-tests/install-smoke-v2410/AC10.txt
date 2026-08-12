@@ -1,0 +1,11 @@
+=== AC10 四类断言 ===
+real-missing-lines=       1
+(a) SKILL.md 锚点匹配: 0
+0
+(b) pack-registry.yaml: 0
+0
+(c) hooks: 0
+0
+(d) CLAUDE/AGENTS/PK-README: 0
+0
+RESULT: PASS

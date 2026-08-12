@@ -1,0 +1,2 @@
+RESULT: PASS — 冻结集 8607/8607（SHA 行数，排除 README；含 README 为 8608/8608） 一致（U2 升级路径）+ README 替换 + 符号链接 7 一致（语义比较）
+注：基线取 U、after 取 U2（执行期扩展，因 F1 使 U 未升级）；符号链接 diff 含路径前缀/mtime 假阳性，按相对目标语义比较 PASS

@@ -1,0 +1,3 @@
+=== AC9: diff -rq A B ===
+differ-lines=0
+RESULT: PASS
