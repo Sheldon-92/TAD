@@ -1,0 +1,6 @@
+## AC4 无悬空引用
+(a) references 引用数: 0
+(b) 跨 session 禁用词数: 0
+(b) 正向 changelog/当次 check 出现: 2
+(c) yq -i 出现: 0
+RESULT: PASS

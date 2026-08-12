@@ -1,0 +1,15 @@
+## AC14 范围围栏
+开工基线: scope-baseline.txt（11 dirty tracked 三列<状态 SHA 路径> + 875 untracked，886 项）
+
+收尾重算:
+- 新增 tracked: .tad/dependencies/REGISTRY.yaml、.tad/dependencies/scan-results.yaml
+  （恰为本单授权修改，契约 AC14"授权修改"项 ✅）
+- 消失 tracked: 无
+- 既有 11 个 dirty tracked 摘要全部不变（fence-audit UNCHANGED/VIOLATION=0 ✅）
+- untracked 新增: 仅本单产物（fence-fresh 0 VIOLATION，全部 EXCLUDED ✅）
+- 框架自写路径: .tad/evidence/decisions/2026-08-12.jsonl（EXCLUDED，askuser-capture.sh 写入 ✅）
+- research-notebooks/REGISTRY.yaml: props 差异限定 notebooks.N.status ∈ {active,dormant}（REGISTRY-OK ✅）
+
+排除清单覆盖: 本单产物（skill×2 + evidence + journal + 契约 + 锁 + 归档目标）+ 授权修改（REGISTRY/scan-results）+ 框架自写（traces/decisions/logs/precompact/session-state/memory/research-notebooks/brain-index）
+
+RESULT: PASS

@@ -13,3 +13,6 @@
 - 2026-08-09 [pipefail-subshell-exit] `{ ... } | sort` 管道内子 shell 的 `exit 1` 不传播（无 set -o pipefail 时管道取 sort 的 0）——必须 pipefail + 管道尾部 `|| { exit 1; }` 守卫，否则错误路径 exit=0 静默交付
 - 2026-08-09 [git-grep-exclude-pathspec] git grep 支持 `:(exclude).tad/active/handoffs/HANDOFF-*.md` pathspec 排除——"不读正文"纪律在 tracked 扫描侧的实现手段（探针验证有效）
 - 2026-08-09 [awk-range-swallow] awk `/^## AC/,/^## Contract Review/` 范围会把 `## AC 空跑记录` 段的 9 行全角冒号记录吞入，机械计数 18 vs 已审 9——AC 定义行（半角冒号）与记录行需分列计数
+- 2026-08-11 [publish-v2410-ac11-active-target] AC11 pre/post 目标快照对活跃目标敏感：Sober Creator 的 master1-script-draft 会话在基线采集后写入 2 文件（mtime 16:10/17:29）致 mws 摘要漂移；reviewer 把 UTC 当本地时间解析 mtime 而漏判；Blake 实测定位并刷新基线 targets 段。教训：目标快照类基线应贴近发布时刻采集，且 mtime 检查必须用与采集相同的时区基准。
+- 2026-08-11 [publish-v2410-ac14-perf] AC14 对 875 个未跟踪路径逐个 fork cut+shasum+awk（71s）→ ruby 单进程批量 sha256（4.4s）；ruby 属契约豁免（内容摘要/清单派生）。大循环哈希优先单进程批量。
+- 2026-08-11 [publish-v2410-ac9pre-timing] AC9pre(i)『远端==基线』只在 push 前成立；--all（post-publish 重放）复用同一断言必然 FAIL。时序语义断言需按执行阶段参数化。

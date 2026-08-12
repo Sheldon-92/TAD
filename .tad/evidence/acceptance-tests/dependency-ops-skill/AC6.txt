@@ -1,0 +1,5 @@
+## AC6 覆盖面如实
+success=3: 3
+skipped=3: 3
+skipped 名单: notebooklm-cli rsync claude-code-cli 
+RESULT: PASS

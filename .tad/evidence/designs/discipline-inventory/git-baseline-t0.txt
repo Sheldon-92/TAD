@@ -1,0 +1,86 @@
+A  .agents/skills/dependency-ops/SKILL.md
+A  .claude/skills/dependency-ops/SKILL.md
+ M .tad/active/epics/EPIC-20260809-full-capability-extraction-retirement.md
+A  .tad/active/handoffs/LITE-20260811-2254-dependency-ops-skill.md
+ M .tad/dependencies/REGISTRY.yaml
+ M .tad/dependencies/scan-results.yaml
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC1.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC10.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC11.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC12.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC13.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC14.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC15.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC16.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC17-prompt.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC17-raw.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC17.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC18.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC19.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC2.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC3.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC4.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC5.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC6.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC7.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC8.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC9-changelog-full.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/AC9.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/TODAY.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/brew-after.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/brew-before.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/findings.md
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/reg.propsdiff
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/registry-baseline.yaml
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/registry-before.yaml
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/scope-baseline.txt
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/source-coverage.md
+A  .tad/evidence/acceptance-tests/dependency-ops-skill/verify.sh
+ M .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/AC6.txt
+ M .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/tracked-after.txt
+ M .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/untracked-after.txt
+ M .tad/evidence/acceptance-tests/publish-v2410/verify.sh
+A  .tad/evidence/journal/dependency-ops-skill.md
+ M .tad/evidence/journal/lite-discoveries.md
+ M .tad/project-knowledge/patterns/ac-verification.md
+ M .tad/project-knowledge/patterns/gate-design.md
+ M .tad/project-knowledge/patterns/handoff-design.md
+ M .tad/project-knowledge/patterns/release-sync.md
+ M .tad/research-notebooks/REGISTRY.yaml
+?? .claude/settings.local.json.bak-20260806-082549
+?? .tad/active/epics/EPIC-20260812-discipline-weight-separation.md
+?? .tad/active/handoffs/HANDOFF-20260812-discipline-inventory.md
+?? .tad/active/handoffs/LITE-20260811-2254-dependency-ops-skill.md.txn-lock/
+?? .tad/archive/handoffs/COMPLETION-20260809-release-runbook-capability-migration.md
+?? .tad/archive/handoffs/HANDOFF-20260809-release-runbook-capability-migration.md
+?? .tad/archive/handoffs/LITE-20260811-1512-publish-v2410.md
+?? .tad/evidence/acceptance-tests/codex-knowledge-ingress/spike-work/
+?? .tad/evidence/acceptance-tests/codex-wiring-stopbleed/ac9-codex-only/
+?? .tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-codex-home/
+?? .tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work/
+?? .tad/evidence/acceptance-tests/evidence-replayability-check/AC6.txt
+?? .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/g4-alex.txt
+?? .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/g4-blake.txt
+?? .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/g4-tracked-after.sha
+?? .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/g4-tracked-after.txt
+?? .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/g4-untracked-after.txt
+?? .tad/evidence/acceptance-tests/publish-v2410/publish-commands.txt
+?? .tad/evidence/acceptance-tests/publish-v2410/results.txt
+?? .tad/evidence/decisions/2026-08-04.jsonl
+?? .tad/evidence/decisions/2026-08-07.jsonl
+?? .tad/evidence/decisions/2026-08-10.jsonl
+?? .tad/evidence/decisions/2026-08-11.jsonl
+?? .tad/evidence/decisions/2026-08-12.jsonl
+?? .tad/evidence/designs/discipline-inventory/
+?? .tad/evidence/journal/evidence-replayability-check-2026-08-04.md
+?? .tad/evidence/ralph-loops/lite-inventory-pricing-audit_state.yaml
+?? .tad/evidence/ralph-loops/lite-pricing-gate-protocol_state.yaml
+?? .tad/evidence/reviews/alex/release-runbook-capability-migration/
+?? .tad/evidence/reviews/blake/publish-v2410/
+?? .tad/evidence/traces/2026-08-04.jsonl
+?? .tad/evidence/traces/2026-08-07.jsonl
+?? .tad/evidence/traces/2026-08-09.jsonl
+?? .tad/evidence/traces/2026-08-10.jsonl
+?? .tad/evidence/traces/2026-08-12.jsonl
+?? .tad/memory/feedback_cross-project-tracking-boundary.md
+6ae6e04db79e7dc1e0f1c89705eddd07c69396c7

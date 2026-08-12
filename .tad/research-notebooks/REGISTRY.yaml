@@ -10,7 +10,7 @@ notebooks:
     notebook_id: "b07a6598-db8c-4cb9-b764-8760c4e9eb2e"
     topic: "Claude Code Native Capabilities 2026 — Fable 5, auto-memory, skills, subagent/agent-teams orchestration, native review/planning/automation, vs TAD mechanism overlap (descriptive)"
     created: "2026-07-12"
-    status: active
+    status: dormant
     last_queried: "2026-07-12"
     source_count: 23
     notes: "Deep research (*research --deep, complex tier). Anchor: FACTUAL overlap mapping of Claude Code/Claude native capabilities vs TAD mechanisms (duplicate/conflict/complementary/unrelated) — retire/keep verdicts deliberately out of scope. 23 sources: 13 code.claude.com docs pages, 3 Fable5/Mythos5 announcements, anthropics/claude-code repo+CHANGELOG, awesome-claude-code, awesome-claude-skills, openai/codex, agents.md, + first-party harness introspection doc (ground truth from live Fable 5 session 2026-07-12). Companion internal audit: tad-mechanism-inventory.md (112 rows). Evidence: .tad/evidence/research/claude-native-capabilities/"
@@ -64,7 +64,7 @@ notebooks:
     notebook_id: "37cfefa5-52b3-4a8a-a8e3-a83f32150759"
     topic: "TAD Evolution — AI Agent Framework Landscape 2025-2026"
     created: "2026-05-05"
-    status: active
+    status: dormant
     last_queried: "2026-07-05"
     source_count: 45
     notes: "Persistent research KB for TAD upgrade directions. 45 curated sources (deep research + manual adds). 5 rounds of deep ask completed (r4 staleness-trap + r5 human-skill-growth merged 2026-07-05 → .tad/evidence/research/2026-07-*.md). Covers: competitive landscape, failure modes, evaluation, memory, cost, observability. O3/KR3 target met (5/5)."

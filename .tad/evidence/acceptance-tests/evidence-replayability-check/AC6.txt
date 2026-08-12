@@ -1,0 +1,6 @@
+=== AC6: commit 血径 M 集（step3c commit 之后） ===
+.agents/skills/gate/SKILL.md
+.claude/skills/gate/SKILL.md
+.tad/gates/gate-canonical-checklist.md
+---行数检查---
+3

@@ -1,0 +1,8 @@
+## AC16 缺口显式声明
+findings.md §2「覆盖缺口」逐条确认：
+(a) registry: null 结构性永远 skipped（点名 notebooklm-cli/rsync/claude-code-cli）: 命中 §2(a) ✅
+(b) limitation-resolution 分支本轮不可达（AC13）: 命中 §2(b) ✅
+(c) deps_init 未迁（Phase 5）: 命中 §2(c) ✅
+(d) Homebrew 附带升级（AC19，实测零附带）: 命中 §2(d) ✅
+(e) 新 skill 未在下游验证: 命中 §2(e) ✅
+RESULT: PASS

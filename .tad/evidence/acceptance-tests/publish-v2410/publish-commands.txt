@@ -1,0 +1,4 @@
+# publish-commands for LITE-20260811-1512-publish-v2410 (D5 三条分离命令)
+1: git push origin 9253bdd53a39651d89e6b77c124d961a84ea94f3:refs/heads/main
+2: git tag -a "v2.41.0" 9253bdd53a39651d89e6b77c124d961a84ea94f3 -m "v2.41.0 — Lite authority model v2 (contract mandate replaces per-command approval) + Layer 1 AC-driven self-check"
+3: git push origin "refs/tags/v2.41.0:refs/tags/v2.41.0"

@@ -1,0 +1,2 @@
+.tad/active/handoffs/COMPLETION-20260805-lite-pricing-gate-protocol.md
+.tad/evidence/decisions/2026-08-05.jsonl

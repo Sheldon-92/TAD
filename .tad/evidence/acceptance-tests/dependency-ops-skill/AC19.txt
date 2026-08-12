@@ -1,0 +1,8 @@
+## AC19 附带升级可见
+brew-before.txt: 188 行 exit=0（gh 2.96.0）
+brew-after.txt: 188 行 exit=0
+diff 变化行: 2
+< gh 2.96.0
+> gh 2.96.0 2.97.0
+非 gh formula 差异:        0
+RESULT: PASS

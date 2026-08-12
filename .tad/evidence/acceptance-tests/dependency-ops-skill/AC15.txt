@@ -1,0 +1,28 @@
+## AC15 围栏正反双控
+### 负控 A（未跟踪探针 → fence-fresh 报出）
+1. 创建 .tad/domains/DEPS-FENCE-PROBE.txt
+2. fence-fresh → VIOLATION-UNTRACKED .tad/domains/DEPS-FENCE-PROBE.txt ✅ 报出
+3. 删除探针 → 断言不存在 ✅
+（期间修复：基线从两列重建为三列<状态 SHA 路径>；排除清单补 .txn-lock/* 目录模式）
+
+### 负控 B（篡改 dirty tracked → fence-audit 报出 → 还原 → 摘要复原）
+对象: .tad/evidence/acceptance-tests/lite-pricing-gate-protocol/AC6.txt
+（三准则：dirty 基线集内 ✅ / 无 hook 引用 ✅ / 纯文本 evidence ✅）
+1. shasum 落盘: 30fe7470...
+2. 追加 "# DEPS-FENCE-PROBE-B" → fence-audit 报 VIOLATION-DIGEST ✅
+   base=30fe7470... now=b35ae45b...（报出即证 audit 半边可见）
+3. 删除该行 → shasum 逐字节复原 30fe7470... ✅
+4. 复原后 fence-audit → CLEAN ✅
+（期间修复：base_sha 正则适配三列基线；BRAIN-INDEX 无基线行时跳过）
+
+### 正控 (a)
+全部产物 git add 后 → fence-fresh/fence-audit 静默通过（见下步）
+
+RESULT: PASS（负控 A/B 双控通过；audit 半边缺口已补齐）
+
+### 正控 (a)（2026-08-12）
+git add 全部产物（35 文件）后：
+FENCE-FRESH: CLEAN ✅
+FENCE-AUDIT: CLEAN ✅
+FENCE-POSITIVE: CLEAN ✅
+RESULT: PASS

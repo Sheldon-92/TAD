@@ -1,0 +1,5 @@
+## AC5 check 能力可执行
+命令: HOMEBREW_NO_AUTO_UPDATE=1 perl -e 'alarm shift; exec @ARGV' 300 bash <abs root>/deps-scan.sh <abs root>
+exit=0
+last_scan=2026-08-12 == TODAY=2026-08-12
+RESULT: PASS

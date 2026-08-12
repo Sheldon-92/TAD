@@ -1,0 +1,9 @@
+## AC8 逾期检测按各自 tier
+TODAY=2026-08-12（运行时导出）
+公式: N = (今天 − last_checked) − 窗口天数（SKILL.md deps show 第3步内联）
+L1 期望 = ( − 2026-07-14) − 7 = 22
+L2 期望 = ( − 2026-07-14) − 14 = 15
+逐依赖输出: gh=22 yq=22 jq=22 rsync=22 notebooklm-cli=15 claude-code-cli=15
+断言: 全部 == 公式单一值逐位相等 ✅（非设计期快照 21/14）
+SKILL.md 定义与实际口径一致: 'N = (今天 − last_checked) − 窗口天数' ✅
+RESULT: PASS

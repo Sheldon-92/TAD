@@ -470,11 +470,17 @@ ac18() {
 
 # ---------- A' 组 ----------
 ac9pre() {
+  local mode="${1:-pre-push}"
   local remote_main expected local_main
   remote_main=$(git -C "$REPO_ROOT" ls-remote --heads origin refs/heads/main 2>/dev/null | awk '{print $1}')
   [ -n "$remote_main" ] || { block AC9pre "ls-remote 失败"; return; }
-  expected=$(grep -E '^remote_main_pre=' "$BASELINE" | head -1 | cut -d= -f2)
-  [ "$remote_main" = "$expected" ] || { fail AC9pre "远端 main($remote_main) != 基线($expected)"; return; }
+  if [ "$mode" = "pre-push" ]; then
+    expected=$(grep -E '^remote_main_pre=' "$BASELINE" | head -1 | cut -d= -f2)
+    [ "$remote_main" = "$expected" ] || { fail AC9pre "远端 main($remote_main) != 基线($expected)"; return; }
+  else
+    # post-publish（--all 可重放）：远端 main 应 == tip（已被 AC9(a) 断言），此处不再要求==基线
+    [ "$remote_main" = "$TIP_SHA" ] || { fail AC9pre "远端 main($remote_main) != 记录 tip($TIP_SHA)"; return; }
+  fi
   git -C "$REPO_ROOT" merge-base --is-ancestor "$remote_main" "$TIP_SHA" >/dev/null 2>&1 || { fail AC9pre "远端 main 非记录 tip 祖先"; return; }
   local_main=$(git -C "$REPO_ROOT" rev-parse refs/heads/main 2>/dev/null)
   [ "$local_main" = "$TIP_SHA" ] || { fail AC9pre "本地 main($local_main) != 记录 tip_sha($TIP_SHA)"; return; }
@@ -678,7 +684,7 @@ case "$mode" in
   --all)
     ac1; ac2; ac3; ac4; ac5; ac5b; ac5c; ac8
     ac6; ac7; ac7b; ac12; ac14; ac15; ac18
-    ac9pre; ac10a
+    ac9pre post-publish; ac10a
     ac9; ac10; ac11; ac13; ac16
     say "RESULT: $([ "$FAIL_COUNT" = 0 ] && [ "$BLOCK_COUNT" = 0 ] && echo PASS || echo FAIL)"
     exit $([ "$FAIL_COUNT" = 0 ] && [ "$BLOCK_COUNT" = 0 ] && echo 0 || echo 1)

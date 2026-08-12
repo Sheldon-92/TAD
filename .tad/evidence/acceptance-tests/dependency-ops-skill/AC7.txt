@@ -1,0 +1,6 @@
+## AC7 真实变更被检出
+gh: upstream=2.97.0 changed=true
+yq: upstream=4.53.3 changed=false
+jq: upstream=1.8.2 changed=false
+期望: gh=2.97.0/true, yq=false, jq=false
+RESULT: PASS

@@ -44,8 +44,8 @@ dependencies:
   - name: "gh"
     type: tool
     safety_tier: L1
-    current_version: "2.96.0"
-    version_pinned_at: 2026-07-15
+    current_version: "2.97.0"
+    version_pinned_at: 2026-08-12
     status: active
 
     upstream:
@@ -68,7 +68,7 @@ dependencies:
 
     known_limitations: []
 
-    last_checked: 2026-07-14
+    last_checked: 2026-08-12
     notes: "Installed via Homebrew. Used in publish, sync-add, and github-registry scan."
 
   - name: "yq"

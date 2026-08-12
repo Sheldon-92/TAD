@@ -1,0 +1,9 @@
+## AC17 skill 承重性（单文件复演）
+Reviewer: 独立上下文 general（opencode harness / deepseek-v4-flash / default route）
+题面来源: 契约 299-312 行，diff 为空（PROMPT-DIFF-EMPTY）
+(i) Q1-Q6 全答出且与契约登记值一致: PASS
+(ii) Q5 泛化探针（会被扫到 + 唯一拿得到 security advisories）: PASS
+(iii) 反小抄 Q1/Q2/Q3 出处均在操作指令节: PASS
+   Q3 首轮出处=说明性文字 → FAIL → 修复（deps show 第3步内联公式+tier）→ 增量复核转正
+reviewer 首轮判定 Q3 类型=说明性（口径定义）——这是首轮 FAIL 的唯一项
+RESULT: PASS

@@ -1,0 +1,5 @@
+## AC2 frontmatter 载荷
+首行: ---
+2:name: dependency-ops
+3:description: 项目依赖注册表操作（show / add / check / update）。管理 .tad/dependencies/REGISTRY.yaml 与 scan-results.yaml，执行上游版本检查、tier 安全窗口逾期检测、升级记录写入。Use when 用户要求查看、添加、检查或更新项目依赖，或涉及依赖版本、安全窗口、逾期天数、registry 条目操作。
+RESULT: PASS
