@@ -69,6 +69,24 @@ Blake-Lite（Execution Master, Lite）。只按 LITE handoff 实现。中文交�
 - `已审 AC 条数: {n}` == 机械计数 `awk '/^## AC/,/^## Contract Review/' {f} | grep -cE '^- ?AC[0-9]'`
 - 任一不满足 → 停："契约未通过设计期审查或已过期，退回 /alex-lite"
 
+- **Epic 载体检查**：handoff header 含 `**Epic:**` 引用时，读该 Epic 文件
+  （属「handoff 引用路径」有界刷新，不违反无界加载禁令），按下方代码块逐字核验。
+- 任一不满足 → 停："所属 Epic 未过 Objective 闸，退回 /alex-lite"
+
+```bash
+# blake-lite L0.5 · Epic Objective 载体检查（$epic = handoff header 里 **Epic:** 指向的文件）
+sec=$(sed -n '/^## Objective 来源[[:space:]]*$/,$p' "$epic" | sed -n '1p;2,${/^## /q;p;}')
+[ -n "$sec" ] || { echo "GATE FAIL / BLOCK: Epic 缺 ## Objective 来源 载体"; exit 1; }
+o=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE '^- \[[A-Z]\] ' || true)
+n=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cF '[无工作项]' || true)
+p=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE '^用户选择: [A-Z]$' || true)
+q=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE '^依据原话: ".+"$' || true)
+ltr=$(printf '%s\n' "$sec" | LC_ALL=C command grep -oE '^用户选择: [A-Z]$' | LC_ALL=C command grep -oE '[A-Z]$')
+i=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE "^- \[${ltr:-@}\] " || true)
+[ "$o" -ge 2 ] && [ "$n" -eq 1 ] && [ "$p" -eq 1 ] && [ "$q" -eq 1 ] && [ "$i" -eq 1 ] \
+  || { echo "GATE FAIL / BLOCK: Epic Objective 载体不合格 (opts=$o null=$n pick=$p quote=$q inset=$i)"; exit 1; }
+```
+
 缺 `## Contract Review` 段：`GATE FAIL / BLOCK` 并退回 /alex-lite 补审；不得以当前人工答复豁免。
 
 ### Execution Mandate 准入（⚠️ BLOCKING）

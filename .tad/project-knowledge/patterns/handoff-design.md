@@ -178,3 +178,10 @@
 - **Action**: 做流程档位裁定时，不要用文件数 / 行数 / 是否新增功能当信号。改问三件事：**(a) 本单新建几个判断？**（判断 ≠ 投影；投影可机械复算，判断需要独立复核）**(b) 产物会不会成为后续的判据或基线？**（是则验证成本跃升一档）**(c) 失败是否可见？**（静默失败的领域需要负控，负控本身是成本）。⚠️ 档位裁定仍由人做，agent 只提供这三个信号的评估。
 - **failure_mode**: Naive default: 看到"往已验收的表上加几列、不重判任何一行"就定轻档。Why wrong: 验证成本由"新建了多少判断"和"产物是否成为判据"决定，与改动规模正交——按规模定档会把这类单定成轻档，而本单在轻档下会漏掉全部 21 个 P0。
 - **Grounded in**: EPIC-20260812-discipline-weight-separation.md「Phase 1b 设计期记录」，HANDOFF-20260812-discipline-inventory-columns.md §12
+
+### Count the Copies Before Editing a Rule — a Rule That Lives in N Places Is Unchanged Until All N Change - 2026-08-12
+- **Context**: 准备修 lite 的路由规则（"文件数/协议密度/是否触及协议契约均不构成升级理由"）。先数副本：`CLAUDE.md#L49` **1 处**、`alex-lite/SKILL.md#L26` **1 处**、`blake-lite/SKILL.md#L15` **1 处**（后两者措辞逐字相同），再加 `.agents/` 两份镜像 → **共 5 个文件**。
+- **Discovery**: 只改 `CLAUDE.md` 会产生**规则分裂**：路由层说"要升级"，而 agent 自己的 SKILL 里仍写着"不触发 full"——agent 读的是后者。协议类规则在本仓库天然多副本（路由层 + 每个角色的 SKILL + 每个 harness 的镜像），**副本数不是 1 是默认情况**。
+- **Action**: 改任何协议/约束条款前，**先用逐字子串在全仓 grep 一次数副本**（含 `.agents/` 镜像），把完整清单写进契约的文件清单，并加一条 parity AC。⚠️ 若不同副本**措辞已经漂移**，先落盘差异再决定统一到哪一版——不要在改动中顺手统一（那会破坏"零删除"这类承重守卫）。
+- **failure_mode**: Naive default: 在最权威的那个文件（如 `CLAUDE.md`）改一次就认为规则改了。Why wrong: agent 运行时读的是自己的 SKILL 副本，不是路由层文档；只改一处会让两者矛盾，而矛盾时 agent 服从离它最近的那份。
+- **Grounded in**: `CLAUDE.md#L49`、`.claude/skills/alex-lite/SKILL.md#L26`、`.claude/skills/blake-lite/SKILL.md#L15` + `.agents/` 镜像实测

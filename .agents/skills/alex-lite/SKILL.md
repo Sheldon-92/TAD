@@ -214,6 +214,46 @@ Completion 是最终状态；归档后不再写 Progress。
   `boundary_change`，回 L3 复审修订；不得用"等价设计"静默扩大目标。
 - 高后果操作用更强 scope/recovery evidence 与最小权限 mandate，不自动逐命令提问。
 
+## Epic Objective 闸（⚠️ BLOCKING）
+
+**触发**：创建新 Epic，或对已有 Epic 的 `Objective` 做**实质改变**
+（目标指向的 outcome / 交付物类别 / 是否产生工作项发生变化；
+措辞润色、补充说明、Phase 增删**不触发**）。
+
+**动作**：在写入 Epic 文件**之前**，列出对该 Objective 的**全部**读法，
+以 AskUserQuestion（或 cross-harness 编号纯文本）呈现，由**用户选一个**。
+
+**选项规则（机械，逐条适用）**：
+1. **≥2 个选项**
+2. **每个选项的「产出」必须实质不同**（不同交付物/工作量级）；仅措辞不同不算
+3. **必须恰好有一个 `[无工作项]` 选项**——即"本 Epic 不产生工作项"的读法
+4. **不得由 Alex 自选**，不得折叠成默认值继续
+5. **不得隐藏 Alex 想到过的读法**
+
+**载体**：Epic 文件必须含 `## Objective 来源` 段（格式见下），
+**逐字**记录全部选项、用户所选、以及触发本 Epic 的**用户原话逐字引用**。
+
+`## Objective 来源` 段格式（逐字钉死）：
+
+```markdown
+## Objective 来源
+
+依据原话: "{触发本 Epic 的用户输入，逐字}"
+
+- [A] {读法 A}｜产出：{交付物}
+- [B] {读法 B}｜产出：{交付物}
+- [C] [无工作项] {读法 C}｜产出：无
+用户选择: B
+```
+
+格式约束：选项行以 `- [` + 单个大写字母 + `] ` 开头；恰好一行 `用户选择: {字母}`
+且该字母在选项集内；恰好一个 `[无工作项]`；`依据原话:` 行非空。
+
+**Stop**：用户已选 → 按所选读法写 Objective。
+⚠️ 本闸**不因"上下文已清楚"跳过**——L1 的「不问是常态」仅适用于目标锚提问，
+**不覆盖本闸**。（2026-08-12 事故：agent 判定"上下文已清楚"，
+6 个 phase 建在未确认前提上。**判定权在 agent 手里就等于没有闸。**）
+
 ## Knowledge Closeout（验收后知识闭环）
 
 触发：人工验收通过且 Completion 标记 `Knowledge Assessment: candidate for distillation`。
@@ -339,6 +379,9 @@ awk 只比较 ISO 日期，纯 ASCII；中文只经 print 不参与比较——�
   2026-08-06 修正本条与「约束准入」「Knowledge Closeout」的自相矛盾）：
   `.tad/evidence/audits/lite-constraint-ledger.md`（仅追加，不得删改历史行）、
   `.tad/project-knowledge/`、`.tad/active/epics/`、`.tad/active/session-state.md`。
+⚠️ `.tad/active/epics/` 的豁免**不含 Objective**：写或改 Epic 的 `Objective` 须先过
+「Epic Objective 闸」并留下 `## Objective 来源` 载体；其余 Epic 内容（Phase Map、
+进度、记录）仍自由写。
   其中 `.tad/project-knowledge/principles.md`、`patterns/` 中标 SAFETY 的条目、
   `patterns/_index.md` 需要更强 scope/recovery evidence 与 contract review，不自动触发运行时提问；
   另：写入 `CLAUDE.md` `@import` 列出的任何路径（含当前尚不存在、一经创建即被自动注入的

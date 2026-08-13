@@ -367,3 +367,24 @@
 - **Action**: 用「不许出现字符串 S」当判据前，先自问：**本契约里有没有任何一处必须点名 S？**（禁令、撤回说明、修复记录都会点名。）若有，改判据形态：查**提问模式**而非裸词（如 `是否.*正确\?`），或把禁令改写成不含 S 的等价表述（如「禁止做正确性审查」），并在契约里注明为何这样绕。
 - **failure_mode**: Naive default: 想禁止某种回答，就写"该词出现次数必须为 0"。Why wrong: 表达该禁令的文本自己会命中该词，检查器把守卫误判成违规——照字面执行则恒红、绕过则规则失效。
 - **Grounded in**: HANDOFF-20260812-discipline-inventory-columns.md §7 题面 / AC8 / AC6，Blake Gate 3 §13 裁定请求 1
+
+### A Replay Test Reproduces the *Moment*, Not the *Utterance* — a Fixture Built From the Correction Tests a Different Scenario Than the Accident - 2026-08-12
+- **Context**: Phase 2 造了一道「Epic Objective 闸」防 2026-08-12 的真实事故（把用户的假设当批准，推进 6 个 phase）。回放 fixture 的设计是：把用户那句原话 + **一份已存在的 Epic 摘要**（"模拟上下文动量"）喂给 fresh subagent。结果 subagent 判**不触发**，Blake 据此报告"闸覆盖不到事故"。
+- **Discovery**: fixture 错了，闸没错。核对时间线：Epic **创建于 08-09**（那句话正是它的"被误读的前提（根因）"），Objective 于 **08-12 被重述**——**两个时刻都在闸的触发条件内**。而 fixture 给的"已存在的 Epic"把场景设成了**单中途延续**，那是另一个已登记的缺口。更普遍地：事故留下的**文字记录**通常是**纠正时刻**的话（"我只是做了一个假设"是用户回头指出误读时说的），而干预要拦的是**更早那个决策时刻**。**照抄记录里的语句造 fixture，测的是纠正场景，不是事故场景。**
+- **Action**: 造回放 fixture 前先画时间线，明确回答三件事：(a) 干预要拦的是**哪一个时刻**？(b) 该时刻的**上下文状态**是什么（有无 Epic / 有无契约 / 累积了多少推进）？(c) 手上这句话是**该时刻说的**，还是**事后纠正时说的**？三者任一错位，回放的结论就不可归因。⚠️ 回放判"不触发"时，**先怀疑 fixture，再怀疑机制**。
+- **failure_mode**: Naive default: 从事故记录里摘出用户原话，配上"当时的上下文"，喂给 agent 看干预会不会触发。Why wrong: 记录里的原话多半是**纠正时刻**的，而配的上下文又常按"事故已经发生"来构造——两者合起来模拟的是事故**之后**的场景，于是必然得出"干预不触发"，把正确的机制误判成无效。
+- **Grounded in**: HANDOFF-20260812-lite-goal-gate.md §6.2 fixture 设计缺陷，EPIC-20260809-full-capability-extraction-retirement.md「二、被误读的前提（根因）」时间线
+
+### A Negative Control Keyed on a Marker the Design Itself Invented Is Trivially True - 2026-08-12
+- **Context**: rev1 的负控 A：把用户原话喂给**未修改**的规则文本，要求 agent **不得**产出 `## 目标选择` 段。该标题与 `[无工作项]` 标记都是本次设计**新造的**，实测在 T=0 文本中**各 0 次命中**。
+- **Discovery**: 负控通过率≈1，**与"改动是否真的改变了行为"完全无关**——任何没读过新规则的 agent 都不可能自发吐出一个刚被发明的标题。而它声称排除的混淆恰恰是"agent 本来就会这么做"：实测后台探针把同一句话喂给未修改规则的 fresh agent，**两次都主动列出了目标选项并拒绝代选**。**要排除的东西被判据放过了。** 一般形式：**当负控的判据是"是否出现处理组特有的形式标记"时，它测的是格式新颖度，不是行为差异。**
+- **Action**: 负控的判据必须**格式无关**——用语义指标（互斥读法的**个数**、是否出现"不产生工作项"这类**内容**、是否把某目标当既定前提直接进方案），并由**不知条件归属的第三方**盲判。另加一个 **placebo 条件**（等长但无关的新增文本）控制"文本变长"本身。若买不起这套设计（agent 调用成本），**明写"因果未证"，不要用一个恒真的负控假装证过**。
+- **failure_mode**: Naive default: 负控 = "旧版本不应产出新版本要求的那个东西"。Why wrong: "那个东西"通常是新版本发明的格式，旧版本不产出它是**定义使然**而非行为差异，于是负控恒过，实验对因果零证明力，却读起来像做过对照。
+- **Grounded in**: HANDOFF-20260812-lite-goal-gate.md rev1 §6.2 / rev2 §6.2 撤回段，Gate 2 code-reviewer P0-3
+
+### A Verification Anchor That Stores the Document and a Document That Stores the Anchor Is a Fixed Point — Exclude the Self-Referential Line - 2026-08-12
+- **Context**: 契约 §0.1 要写入 T=0 的 commit hash；而 T=0 的 commit 又必须**包含该契约**（否则契约不在 git 里、AC 的"契约未被改"没有外部锚）。回填 hash 后，`cmp <(git show $T0:契约) 契约` 立即失败。再提交一次、再回填，hash 又变——无穷回归。
+- **Discovery**: 这是标准不动点，不是失误。**逃逸方式只有一个：把自指的那一行排除在比对之外**，其余全部锁死。代价是那一行失去保护——可接受，因为它的内容（一个 hash）本身可被 `rev-parse --verify` 独立校验。
+- **Action**: 任何"文档里存锚、锚里存文档"的结构，比对时 `grep -v '^<自指前缀>'` 排除该行，并在契约里**写明为什么排除**（否则下一个人会以为是漏了）。同时对该行的**值**加独立校验（如 hash 必须是合法 commit）。
+- **failure_mode**: Naive default: 把 hash 回填进文档后，继续用"文档与锚版本逐字相同"当判据。Why wrong: 回填这个动作本身制造了差异，判据恒红；而"再提交一次"会换新 hash，形成无穷回归。
+- **Grounded in**: HANDOFF-20260812-lite-goal-gate.md §0.1 / AC10 / V8，commit a94f7a3 → 51ceeda
