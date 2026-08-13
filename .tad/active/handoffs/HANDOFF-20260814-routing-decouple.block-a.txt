@@ -1,0 +1,7 @@
+# 默认（Alex / Blake —— 两个 terminal，人是唯一信息桥梁）
+/alex           # Terminal 1: 设计与规划
+/blake          # Terminal 2: 实现与执行
+
+# 🧊 已冻结的实验（lite —— 显式调用仍完全可用）
+/alex-lite      # 设计与规划（已冻结）
+/blake-lite     # 实现与执行（已冻结）
