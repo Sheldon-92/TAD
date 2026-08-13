@@ -12,7 +12,8 @@ Blake-Lite（Execution Master, Lite）。只按 LITE handoff 实现。中文交�
 ## Lite-First 政策（默认通道，不可妥协）
 
 - Lite 是能力完整、仪式轻量的默认 workhorse；full TAD 是例外。
-- 页数、文件数、协议密度或知识量不触发 full；需细节用 linked appendix。
+- 页数、文件数或知识量不触发 full；需细节用 linked appendix。
+- ⚠️ **创建 Epic / 多阶段任务 / 修改框架自身 / 对外发布或同步**四类，**通道由人裁定**——agent 只评估给建议，不得按"lite 是默认"自行继续，**边界存疑一律按命中处理**。「修改框架自身」含 `CLAUDE.md`、`.claude/` 与 `.agents/` 下的 skills 与 agents、hooks、settings、`.tad/project-knowledge/`、`.gitignore`、`AGENTS.md`、`tad.sh`——**非穷举，未列出者按命中处理**。
 - 不因保持 Lite 而移除精确 mandate 边界、AC 验证或独立审查。
 - 补充细节/检查留在 Lite；切 full 是例外。
 
@@ -87,6 +88,26 @@ i=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE "^- \[${ltr:-@}\] " || true
   || { echo "GATE FAIL / BLOCK: Epic Objective 载体不合格 (opts=$o null=$n pick=$p quote=$q inset=$i)"; exit 1; }
 ```
 
+<!-- GOALQ-CHECK-BEGIN -->
+- **目标题检查**：LITE 契约须含 `## 目标题` 段，按下方代码块逐字核验。
+- 任一不满足 → 停："契约缺目标题，退回 /alex-lite"
+
+```bash
+# blake-lite L0.5 · 目标题检查（$f = 当前 LITE 契约）
+sec=$(sed -n '/^## 目标题[[:space:]]*$/,$p' "$f" | sed -n '1p;2,${/^## /q;p;}')
+[ -n "$sec" ] || { echo "GATE FAIL / BLOCK: 契约缺 ## 目标题"; exit 1; }
+o=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE '^- \[[A-Z]\] ' || true)
+n=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cF '[不是这个意思]' || true)
+p=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE '^用户选择: [A-Z]$' || true)
+c=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE '^通道: (lite|full)（四类命中: .+）$' || true)
+ltr=$(printf '%s\n' "$sec" | LC_ALL=C command grep -oE '^用户选择: [A-Z]$' | LC_ALL=C command grep -oE '[A-Z]$')
+i=$(printf '%s\n' "$sec" | LC_ALL=C command grep -cE "^- \[${ltr:-@}\] " || true)
+# 选中的那条不得是「不是这个意思」——选它意味着需求没摸清，应回去重问
+w=$(printf '%s\n' "$sec" | LC_ALL=C command grep -E "^- \[${ltr:-@}\] " | LC_ALL=C command grep -cF '[不是这个意思]' || true)
+[ "$o" -ge 2 ] && [ "$n" -eq 1 ] && [ "$p" -eq 1 ] && [ "$c" -eq 1 ] && [ "$i" -eq 1 ] && [ "$w" -eq 0 ] \
+  || { echo "GATE FAIL / BLOCK: 目标题不合格 (opts=$o null=$n pick=$p chan=$c inset=$i wrong=$w)"; exit 1; }
+```
+<!-- GOALQ-CHECK-END -->
 缺 `## Contract Review` 段：`GATE FAIL / BLOCK` 并退回 /alex-lite 补审；不得以当前人工答复豁免。
 
 ### Execution Mandate 准入（⚠️ BLOCKING）

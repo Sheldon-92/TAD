@@ -179,3 +179,10 @@
 - **Action**: 任何对中文枚举值做 `sort` / `uniq` / `comm` / `join` 的统计，**一律前置 `LC_ALL=C`**（两个命令都要加，`LC_ALL=C sort | uniq` 仍会错）。更稳的做法是整段改用 `/usr/bin/python3`（按码点比较，天然正确）。AC 层面加一条**判别力自证**：分类结果若只出 1 个桶，即视为本坑复发。
 - **failure_mode**: Naive default: 用 `sort | uniq -c` 统计中文枚举分布，认为它和统计英文一样可靠。Why wrong: UTF-8 locale 下 macOS 的 collation 把不同 CJK 串判为相等，产出一个**语法正确、总数正确、分类全错**的静默错误答案，AC 会照单全收。
 - **Grounded in**: HANDOFF-20260812-discipline-inventory-columns.md §0 环境约束表，2026-08-12 实测最小复现
+
+### zsh Does Not Word-Split Unquoted Variables — the Same Loop Runs N Times in bash and Once in zsh, and the "Old Text Is Gone" Check Falsely Passes - 2026-08-13
+- **Context**: 验证脚本用 `SKILLS=".../a.md .../b.md .../c.md .../d.md"` 存一组路径，然后 `for f in $SKILLS; do command grep -cF -e "$OLD" "$f"; done`。在 bash 下迭代 4 次；在 zsh（本机默认 shell）下**迭代 1 次**，`$f` 是那一整串路径 → `grep: ...: No such file or directory` → `|| true` 把 exit 吞掉 → 计数 **0**。
+- **Discovery**: 危害是**方向性的**：这类循环里最常见的判据是「旧文必须消失（计数 == 0）」，而 zsh 下的 `0` 恰好满足它——**四个文件里有三个根本没被检查，判据还绿了**。同一循环里的「新文必须出现（计数 == 1）」倒会红，所以整体表现是"红得不对地方"，人会去修那条红的、而不会怀疑循环本身。实测：`SK="a b"; for f in $SK` → zsh **1** 次 / bash **2** 次。⚠️ `git diff -- $PATHS` 同理：pathspec 不分词 → 只比对第一个路径 → `deleted` 少算（本次实测 `deleted=1`，真值 **5**）。
+- **Action**: 多路径一律用**数组**或**逐个显式列出**，不要塞进一个变量再靠分词：`for f in "$A" "$B" "$C"; do …` 或 `set -- "$A" "$B"; for f in "$@"`。若脚本必须两种 shell 都能跑，在开头显式声明并用 `#!/usr/bin/env bash` + `bash script.sh` 执行；**不要假设"这台机器的 shell"和"跑脚本的 shell"是同一个**。验证类脚本额外加一条自证：`n=0; for f in …; do n=$((n+1)); done; [ "$n" -eq <期望路径数> ] || fail`。
+- **failure_mode**: Naive default: 把一组路径存进一个变量，`for f in $VAR` 遍历——这在 bash/sh 里是标准写法。Why wrong: zsh 默认不做 word splitting，循环只跑一次且 `$f` 是拼接串；配上"计数为 0 即通过"的判据，未被检查的文件**静默算作通过**。
+- **Grounded in**: HANDOFF-20260812-requirement-first.md §8 `for f in $SKILLS`，2026-08-13 Gate 4 自查实测（zsh 1 次 / bash 2 次；`deleted` 1 vs 5）

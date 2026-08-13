@@ -46,7 +46,7 @@ Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 NotebookLM 持久知识库）。
 
 ### 2.5 Lite 通道（默认通道）
-`/alex-lite` → `/blake-lite`：**默认通道**。文件数、协议密度、是否触及协议契约均不构成升级理由；
+`/alex-lite` → `/blake-lite`：**默认通道**。页数、文件数、知识量不构成升级理由；但**创建 Epic / 多阶段任务 / 修改框架自身 / 对外发布或同步**四类，**通道由人裁定**，agent 只评估给建议，不得按"lite 是默认"自行继续，**边界存疑一律按命中处理**；
 Lite 的有效权限是 `role ∩ skill ∩ accepted Execution Mandate`。只有 outcome/target/consequence/
 blast-radius、业务法律财务身份取舍、分叉可见恢复或新外部身份凭据的实质边界变化才重决策；
 技术失败只能有界恢复或 `GATE FAIL / BLOCK`，不得伪装成审批问题。契约文件 `LITE-*.md`。
