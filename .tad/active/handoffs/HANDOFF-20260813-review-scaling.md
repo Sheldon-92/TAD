@@ -4,7 +4,7 @@
 **From**: Alex（full 通道）
 **To**: Blake
 **Created**: 2026-08-13
-**Rev**: **rev3**（Gate 2 两专家并行：授权 4 P0 + AC 5 P0；**分档依据整体重设计**，见 §7.2）
+**Rev**: **rev4**（rev3 = Gate 2 两专家并行 + 分档依据整体重设计；rev4 = Alex 闭集自查 **7 P0 + 3 P1**，其中 2 个 P0 是修复自己造的，见 §12）
 **T0**: `47918da`
 
 ---
@@ -66,6 +66,8 @@ L253  修复后重跑受影响 AC 与 reviewer，再回本 Gate     ← 循环�
 | `git show "":path` 静默读 index | 先 `rev-parse --verify` |
 | `grep` 是 ugrep 包装 | 用 `command grep` |
 | **zsh 下 `path` / `cdpath` / `manpath` / `argv` / `status` 是特殊变量** | 赋值 `path=x` **即刻毁掉 `PATH`**，此后全部外部命令 `command not found`；且 `[ "$a" = "$b" ]` 两侧同时变空 → **静默变绿**。Gate 2 实测：rev2 的 AC5 因此永真、其下游 8 条 AC 全部假红 |
+| **`$VAR` 紧跟全角字符会吞掉多字节首字节** | bash 5.3.3 实测（`set -u; LD=7; echo "$LD（"` → `LD\xef: unbound variable`）。CJK 提示语里 `=$LA 删除=$LD（` 这种写法**在最后一刻杀掉脚本**。**中文文案里的变量一律写 `${VAR}`** |
+| **脚本中止 ≠ 红** | §8 把「红」定义为 `exit ≠ 0` **且**末行 `RESULT=FAIL`；崩溃只满足前一半 → 未定义状态。故脚本装 `trap … EXIT` + `DONE=1`，保证任何中止路径都留下 `RESULT=` 末行 |
 
 ## 5. 知识引用（逐字标题，已核实命中）
 
@@ -79,16 +81,18 @@ L253  修复后重跑受影响 AC 与 reviewer，再回本 Gate     ← 循环�
 
 ## 6. 范围与写权限
 
-### 6.1 只允许写这 5 个位置（编号即全集，未列出即禁止）
+### 6.1 只允许写这 6 个位置（编号即全集，未列出即禁止）
 
 1. `.claude/skills/blake-lite/SKILL.md`
 2. `.agents/skills/blake-lite/SKILL.md`
 3. `.tad/evidence/acceptance-tests/review-scaling/`（本单新建）
 4. `.tad/archive/handoffs/COMPLETION-20260813-review-scaling.md`
 5. `.tad/evidence/journal/lite-discoveries.md`（仅追加）
-6. `.tad/evidence/audits/lite-constraint-ledger.md`（**仅追加**）——本单新增 ≥4 条 BLOCKING/不得，
-   blake-lite 自己的「约束准入」节要求**新增之前**先往该台账追加定价行（每单成本/挡什么失败模式/载体路径），
-   且追加前先跑超期扫描。⚠️ Gate 2 P1-4：rev1 未把它列进 allow-list → Blake 想付费即越权、不付费即绕闸
+6. `.tad/evidence/audits/lite-constraint-ledger.md`（**仅追加**）——blake-lite 自己的「约束准入」节要求
+   **新增 BLOCKING 约束之前**先往该台账追加定价行（每单成本/挡什么失败模式/载体路径），且追加前先跑超期扫描。
+   ⚠️ Gate 2 P1-4：rev1 未把它列进 allow-list → Blake 想付费即越权、不付费即绕闸
+   ⚠️ **定价粒度 = 每个机制一行，不是每条 MUST 一行**（rev3 自查 P1-F：§6.1 原写"≥4 条"、
+   AC15 要求"恰好 2 行"，二者对不上）。本单是 **2 个机制**：审查扇出、修复门禁 → **恰好 2 行**，AC15 据此断言
 
 **git 只允许只读子命令**：`diff` / `show` / `ls-files` / `status` / `rev-parse` / `cat-file` / `log`。
 
@@ -122,7 +126,11 @@ R4 → 替换为**恰好一行**：`修复后按「修复门禁」单轮验完�
 
 ### 7.2 审查扇出表（插入 `<!-- REVIEWER-FANOUT-BEGIN/END -->` 哨兵块）
 
-```
+⚠️ 外层用 **4 个反引号**，因为块内含一段 3 反引号的格式样例；
+用 3 个会被内层提前闭合，整段渲染断裂（本 session 第 4 次栽在"代码块被包坏"）。
+**块边界以哨兵行为准，与围栏无关**（AC6/AC14 都用 `sed` 按哨兵取）。
+
+````
 <!-- REVIEWER-FANOUT-BEGIN -->
 ### 审查扇出（按档位，机器按自报值执行）
 
@@ -147,13 +155,19 @@ R4 → 替换为**恰好一行**：`修复后按「修复门禁」单轮验完�
 | 1 | **中** | **1** |
 | 2–3 | **重** | **2** |
 
-**加派谁**（按命中的那条决定；同时命中多条按此表顺序取前 2，**加派上限 2**）：
+**加派谁**（按命中的那条决定；同时命中多条**按下表从上往下取前 2**，**加派上限 2**）：
 
-| 命中的信号 | 加派 | 该 reviewer 只答这一个问题 |
-|---|---|---|
-| 新建判断 ≥1 | `code-reviewer`（第 2 个，独立 spawn） | **这些新判断有没有被独立复算过？** 逐个重推，与契约给的值 diff |
-| 产物成为判据/基线 | `code-reviewer`（第 3 个，独立 spawn） | **哪条 AC 是永真的？** 产物不存在时命令会不会静默通过？"红"有没有机械载体？ |
-| 失败不可见 | `security-auditor` | **静默失败的路径在哪？** 负控够不够？有没有把响亮失败换成静默成功？ |
+| 顺位 | 命中的信号 | 加派（`{类型}#{维度}`） | 该 reviewer 只答这一个问题 |
+|---|---|---|---|
+| 1 | 失败不可见 | `security-auditor#invisible` | **静默失败的路径在哪？** 负控够不够？有没有把响亮失败换成静默成功？ |
+| 2 | 产物成为判据/基线 | `code-reviewer#criterion`（独立 spawn） | **哪条 AC 是永真的？** 产物不存在时命令会不会静默通过？"红"有没有机械载体？ |
+| 3 | 新建判断 ≥1 | `code-reviewer#judgment`（独立 spawn） | **这些新判断有没有被独立复算过？** 逐个重推，与契约给的值 diff |
+
+⚠️ **顺位不是随手排的，它决定三问全中时谁被上限挤掉。** 按危害排：
+失败不可见 = 做错了不会自己暴露，最需要专人找；产物成判据 = 永真 AC 也是一种静默；
+新建判断 = 判断错了在最终业务验收时人还能看出来，兜底最厚。
+⚠️ 旧顺位（判断→判据→不可见）会让 `security-auditor` 在**三问全中时永远被挤掉**
+——而本 session 四单全部"失败不可见"，恰恰是最需要它的场合。
 
 **兜底（不占加派上限，命中即强制加）**：改动集命中
 `.tad/hooks/` / `.claude/settings*` / `.claude/agents/` / `.gitignore`，
@@ -188,7 +202,7 @@ R4 → 替换为**恰好一行**：`修复后按「修复门禁」单轮验完�
 ——自报值是**落盘的书面件**，报低了会被抓，因此不是自由心证。
 
 **扇出结果必须落盘**：Completion 的 `Reviewer:` 行逐个列出
-`{类型}({维度}): {verdict} P0={n}`，其后附两行：
+`{类型}#{维度}: {verdict} P0={n}`（底座写 `code-reviewer#base`；维度后缀与上表第 3 列一致），其后附两行：
 `档位判定: 新建判断={n} 产物是判据={是|否} 失败可见={是|否} → {轻|中|重} 加派={n}`
 `兜底判定: {命中原因|未命中}`
 每个加派 reviewer 行后再追加 `问题原文: "{逐字复制自上表第 3 列，不得改写}"`
@@ -199,7 +213,7 @@ R4 → 替换为**恰好一行**：`修复后按「修复门禁」单轮验完�
 高产维度（AC 判别力 19 个 P0 / 授权边界 9 个）反而没人看。
 ⚠️ **同一 reviewer 类型被多条命中时按维度分别 spawn**，prompt 互不合并。
 <!-- REVIEWER-FANOUT-END -->
-```
+````
 
 ### 7.3 一轮，不复审
 
@@ -252,7 +266,7 @@ P0 修复后 spawn **1 个 fresh `code-reviewer`**（不复用首轮 reviewer，
 | **AC4** | 修复门禁 5 条判据逐条在文，T=0 计数须为 0 | 双向断言 |
 | **AC5** | **冻结补集**：两个文件中除 R1/R2/R3 + 续行 + 两个哨兵块以外的每一行，相对 T=0 逐字相同（**含纯增行**） | ⚠️ 没有这条，"偷加一行"不受任何约束 |
 | **AC6** | 删除行数**恰好 10**（4 旧文 + 1 续行，×2 个文件）；**且新增行数恰好等于两个哨兵块的行数 ×2** | `--numstat` 双侧断言。⚠️ rev1 只断言 `deleted`、`added` 只 echo → 哨兵块内可无限夹带 |
-| **AC7** | **判别力实测**：造 4 份 fixture 契约（`t0-light` 三问全 0 / `t1-judgment` 只新建判断 / `t1-criterion` 只产物是判据 / `t3-heavy` 三问全中），每份产出 `fanout-{x}.out`，**首行固定** `ROSTER=code-reviewer[,…]`（`LC_ALL=C` 排序去重） | 逐份 `ROSTER` 行**逐字等于**期望名单；且 `t0-light` 的名单与其余三份**两两不等**。⚠️ 只验"该加的加了"是半边，**必须验"轻档真的只有底座"**；`grep -qF '只有底座'` 这类"含某几个字"判据一律不接受（把那四个字打进文件就能过） |
+| **AC7** | **判别力实测**：造 4 份 fixture 契约，各含一段合法 `## 档位`，按 §7.2 推演名单写入 `fanout-{x}.out`，**首行固定** `ROSTER={类型}#{维度}[,…]`（`LC_ALL=C sort` 排序，**不去重**） | 见下方 AC7 期望表：4 份 `ROSTER` 行**逐字全等**期望值，且**四份两两互不相等** |
 | **AC8** | parity：两文件 `cmp -s` 逐字相同 | exit 0 |
 | **AC9** | L3.5 **五项判据与三态**未被改动（R4 那一行按 §7.1 合法替换，比对时两侧各排除对应行） | 见 §9 |
 | **AC13** | 修复门禁**载体格式**在文：`修复门禁: 执行者=` 与 `不由 Blake 自查` 两串在文，T=0 计数须为 0 | 双向断言 |
@@ -261,6 +275,23 @@ P0 修复后 spawn **1 个 fresh `code-reviewer`**（不复用首轮 reviewer，
 | **AC10** | `alex-lite` / full 通道 **零改动** | `git diff --name-only $T0 --` 对应路径 = 0 |
 | **AC11** | 围栏（增量式）：收工残留减 Step 0 基线、减 hook 自动写两条后为空 | `comm -13`，判据是**行数 0** |
 | **AC12** | 本契约相对 Step 0 冻结的 sha256 未变 | ⚠️ 本契约在 T=0 未被追踪，不能用 `git show $T0:` |
+
+### AC7 期望表（逐字，`LC_ALL=C sort` 不去重；本表即判据，脚本逐字比对）
+
+| fixture | `## 档位` 自报值 | 加派推演 | `ROSTER=` 期望值（逐字） |
+|---|---|---|---|
+| `t0-light` | 判断 0 / 判据 否 / 可见 是 | 命中 0 → 加派 0 | `code-reviewer#base` |
+| `t1-judgment` | 判断 2 / 判据 否 / 可见 是 | 命中 1（顺位 3）→ 加派 1 | `code-reviewer#base,code-reviewer#judgment` |
+| `t1-criterion` | 判断 0 / 判据 是 / 可见 是 | 命中 1（顺位 2）→ 加派 1 | `code-reviewer#base,code-reviewer#criterion` |
+| `t3-heavy` | 判断 3 / 判据 是 / 可见 否 | 命中 3 → 取顺位 1+2 | `code-reviewer#base,code-reviewer#criterion,security-auditor#invisible` |
+
+⚠️ **四份 fixture 的改动集必须都不触发兜底**（不得涉及 `.tad/hooks/` / `.claude/settings*` /
+`.claude/agents/` / `.gitignore` / `publish` / `sync` / `push` / 凭据），否则会多出
+`security-auditor#fallback`，与本表不符。fixture 只是一段带 `## 档位` 的文本，不需真改文件。
+
+⚠️ **为什么必须带 `#维度` 后缀且不去重**（rev3 自查 P0）：rev3 的 ROSTER 写作"类型名排序去重"，
+而 `t0-light` 与 `t1-judgment` 去重后**都是 `code-reviewer`** → AC7 自己要求的"两两不等"
+**在任何实现下都不可能满足**，契约永远 FAIL。带维度后缀后四份两两不等（已实测 `uniq -c` 全为 1）。
 
 ---
 
@@ -277,7 +308,19 @@ git -C "$R" rev-parse --verify --quiet "$T0^{commit}" >/dev/null || { echo "RESU
   git -C "$R" -c core.quotePath=false ls-files --others --exclude-standard; } \
   | LC_ALL=C sort -u > "$EV/fence-baseline.txt"
 [ -s "$EV/fence-baseline.txt" ] || { echo "Step 0 失败：基线为空"; exit 1; }
-echo "Step 0 OK: baseline=$(wc -l < "$EV/fence-baseline.txt") lines"
+
+# 预检：把 §9 验证脚本抽出来，机械拦「$VAR 紧跟全角字符」——该写法会在 set -u 下杀掉脚本。
+# ⚠️ 不靠自觉：rev4 自查里 Alex 刚把这条规则写进 §4，下一次编辑就自己又犯了一次。
+HH="$R/.tad/active/handoffs/HANDOFF-20260813-review-scaling.md"
+awk '/^\*\*验证脚本\*\*$/{f=1;next} f&&/^```bash$/{g=1;next} g&&/^```$/{exit} g{print}' "$HH" > "$EV/verify.sh"
+[ -s "$EV/verify.sh" ] || { echo "Step 0 失败：抽不出验证脚本"; exit 1; }
+bash -n "$EV/verify.sh" || { echo "Step 0 失败：验证脚本语法错误"; exit 1; }
+# ⚠️ 必须排除整行注释：脚本里有两行注释在**讲解**这个陷阱，本身命中模式。
+# 不排除的话预检 100% 误报 → Blake 在 Step 0 就被卡死（本轮实测，修复自己造的第二个缺陷）。
+BADVAR=$(LC_ALL=C command grep -nE '\$[A-Za-z_][A-Za-z0-9_]*(\xe2|\xe3|\xef)' "$EV/verify.sh" \
+         | command grep -vE '^[0-9]+:[[:space:]]*#' || true)
+[ -z "$BADVAR" ] || { printf '%s\n' "$BADVAR"; echo "Step 0 失败：上列 \$VAR 紧跟全角字符，须改 \${VAR}"; exit 1; }
+echo "Step 0 OK: baseline=$(wc -l < "$EV/fence-baseline.txt") lines, verify.sh 预检通过"
 ```
 
 **验证脚本**
@@ -289,6 +332,10 @@ T0=47918da
 B1="$R/.claude/skills/blake-lite/SKILL.md"; B2="$R/.agents/skills/blake-lite/SKILL.md"
 P1=".claude/skills/blake-lite/SKILL.md";    P2=".agents/skills/blake-lite/SKILL.md"
 FAIL=0; fail(){ echo "GATE FAIL: $*"; FAIL=1; }
+# ⚠️ rev3 自查 P0-E：脚本在 AC15 处因 set -u 崩溃，末行没有 RESULT= —— 而 §8 把「红」定义为
+# 「exit ≠ 0 **且** 末行 RESULT=FAIL」，崩溃两条只满足一条 → 既不算红也不算绿 = 未定义状态。
+# 该 trap 保证**任何**中止路径都留下 RESULT= 末行。DONE 在最后一行前置 1。
+trap 'rc=$?; [ "${DONE:-0}" = "1" ] || { echo "RESULT=FAIL (脚本异常中止 rc=$rc)"; exit 1; }' EXIT
 git -C "$R" rev-parse --verify --quiet "$T0^{commit}" >/dev/null || { echo "RESULT=FAIL (T0 无效)"; exit 1; }
 
 R1='spawn 1 个 code-reviewer subagent（Agent tool），prompt：'
@@ -322,12 +369,18 @@ check_new(){ # $1=活文件 $2=T0路径 $3=串
   [ "$b" -eq 0 ] || fail "判据永真（T=0 已命中 $b 次）: $3"
   [ "$(command grep -cF -e "$3" "$1" || true)" -ge 1 ] || fail "缺条款: $3"
 }
-for s in '审查扇出（机器判定，不问人）' '只审这一个维度，其他维度有别人负责' \
-         '扇出判定: F1=' '哪条 AC 是永真的' '这次授权会不会让下次不再需要人' \
+# ⚠️ 本表每一串都必须真出现在 §7.2/§7.4 哨兵块里（AC14 锁块内容逐字等于契约）。
+# rev3 自查 P0-A：此表曾遗留 5 个 rev2 串（'审查扇出（机器判定，不问人）'/'扇出判定: F1='/
+# 'F1 的路径表非穷举'/'收窄 F1 的单必然自命中 F1'/'加派上限 2 个'），rev3 块内一个都没有
+# → AC3 与 AC14 互斥，契约在任何实现下都不可能通过。已按块实际内容重列并实测全命中。
+for s in '审查扇出（按档位，机器按自报值执行）' '只审这一个维度，其他维度有别人负责' \
+         '档位判定: 新建判断=' '兜底判定:' '问题原文:' \
+         '哪条 AC 是永真的' '这次授权会不会让下次不再需要人' '静默失败的路径在哪' \
          '修复之间不互斥' '没有把响亮失败换成静默成功' '数字断言有来源' \
          '5 条全过即结束，不得追加轮次' '修复门禁: 执行者=' '不由 Blake 自查' \
-         'F1 的路径表非穷举' '收窄 F1 的单必然自命中 F1' '问题原文:' \
-         '新建判断' '产物是否成为判据' '失败是否可见' '加派上限 2 个' \
+         '新建判断: {n}' '产物是否成为判据: {是|否}' '失败是否可见: {是|否}' \
+         '加派上限 2' '非穷举，存疑按命中' '报 P0 tier-underreport' \
+         'code-reviewer#base' 'security-auditor#invisible' \
          '修复文本在位' '新命令能跑' '自报值必须被底座 reviewer 核'; do
   check_new "$B1" "$P1" "$s"
 done
@@ -351,12 +404,27 @@ WANT=$(( $(sed -n '/^<!-- REVIEWER-FANOUT-BEGIN -->$/,/^<!-- REVIEWER-FANOUT-END
        + $(sed -n '/^<!-- REPAIR-GATE-BEGIN -->$/,/^<!-- REPAIR-GATE-END -->$/p' "$HH" | wc -l) + 1 ))
 [ "$ADDED" -eq $(( WANT * 2 )) ] || fail "AC6 新增行数 $ADDED != $(( WANT * 2 ))（块外或块内有夹带）"
 
-# AC7 扇出判别力（6 fixture，Step 0 已造）
+# AC7 扇出判别力（4 fixture，ROSTER 首行逐字比对 —— ⚠️ 显式成对列出，不用 for..in $VAR）
+# rev3 自查 P0-B：此处曾是 rev2 的 6 份 f1-f6，且用了 §8 AC7 明文禁止的 grep -qF '只有底座'
+#（把那四个字打进文件就能过）。已改为逐字 ROSTER 断言。
 [ -d "$EV/fixtures" ] || fail "AC7 缺 fixtures 目录"
-for x in f1-framework f2-publish f3-manyac f4-secret f5-perf f6-none; do
-  [ -s "$EV/fanout-$x.out" ] || fail "AC7 缺 $x 判定输出"
-done
-command grep -qF '只有底座' "$EV/fanout-f6-none.out" || fail "AC7 f6（全不命中）应只有底座"
+E_t0='ROSTER=code-reviewer#base'
+E_tj='ROSTER=code-reviewer#base,code-reviewer#judgment'
+E_tc='ROSTER=code-reviewer#base,code-reviewer#criterion'
+E_th='ROSTER=code-reviewer#base,code-reviewer#criterion,security-auditor#invisible'
+chk7(){ # $1=fixture 名 $2=期望 ROSTER 行
+  f="$EV/fanout-$1.out"
+  [ -s "$f" ] || { fail "AC7 缺 $1 判定输出"; return; }
+  got=$(command sed -n '1p' "$f")
+  [ "$got" = "$2" ] || fail "AC7 $1 ROSTER 不符：期望[$2] 实际[$got]"
+}
+chk7 t0-light     "$E_t0"
+chk7 t1-judgment  "$E_tj"
+chk7 t1-criterion "$E_tc"
+chk7 t3-heavy     "$E_th"
+# 四份两两不等（防止全部塞同一行也能过）
+[ "$(printf '%s\n%s\n%s\n%s\n' "$E_t0" "$E_tj" "$E_tc" "$E_th" | LC_ALL=C sort -u | command grep -c . || true)" -eq 4 ] \
+  || fail "AC7 期望值本身不是两两不等（契约缺陷，非实现缺陷）"
 
 # AC8 parity
 cmp -s "$B1" "$B2" || fail "parity blake-lite"
@@ -385,11 +453,27 @@ done
 
 # AC15 台账恰好新增 2 行
 LED='.tad/evidence/audits/lite-constraint-ledger.md'
-read -r LA LD <<<"$(git -C "$R" diff --numstat "$T0" -- "$LED" | LC_ALL=C awk '{print $1+0,$2+0}')"
-[ "${LA:-0}" -eq 2 ] && [ "${LD:-0}" -eq 0 ] || fail "AC15 台账新增=$LA 删除=$LD（应 2/0）"
+# ⚠️ awk 必须带 END：无 numstat 行时原写法一个字都不打印 → read 只赋 LA、LD 未定义
+# → set -u 直接杀掉脚本（rev3 自查 P0-E 实测），AC11/AC12 从此不再执行。
+LA=0; LD=0
+read -r LA LD <<<"$(git -C "$R" diff --numstat "$T0" -- "$LED" | LC_ALL=C awk '{a=$1+0;d=$2+0} END{print a+0,d+0}')"
+# ⚠️ ${LD} 必须带花括号：`$LD（` 会被吞掉全角括号的首字节 → 变量名变成 LD\xef → set -u 杀脚本
+[ "${LA:-0}" -eq 2 ] && [ "${LD:-0}" -eq 0 ] || fail "AC15 台账新增=${LA} 删除=${LD}（应 2/0）"
+# 三格齐全：新增的 2 行每行至少 3 个 | 分隔（每单成本 / 挡什么失败模式 / 载体路径）
+NEW=$(git -C "$R" diff -U0 "$T0" -- "$LED" | command grep -E '^\+[^+]' || true)
+THIN=$(printf '%s\n' "$NEW" | command grep -c . || true)
+[ "$THIN" -eq 2 ] || fail "AC15 台账新增内容行=${THIN}（应 2）"
+BAD=$(printf '%s\n' "$NEW" | command grep -vE '^\+.*\|.*\|.*\|' | command grep -c . || true)
+[ "$BAD" -eq 0 ] || fail "AC15 台账有 ${BAD} 行不足三格"
+# Completion 必须记录本次超期扫描结果（AC15 文字承诺过，rev3 脚本漏验）
+CMP="$R/.tad/archive/handoffs/COMPLETION-20260813-review-scaling.md"
+{ [ -f "$CMP" ] && command grep -qF '超期扫描' "$CMP"; } || fail "AC15 Completion 未记录超期扫描结果"
 
 # AC11 围栏
-ALLOW='^\.claude/skills/blake-lite/SKILL\.md$|^\.agents/skills/blake-lite/SKILL\.md$|^\.tad/evidence/acceptance-tests/review-scaling/|^\.tad/archive/handoffs/COMPLETION-20260813-review-scaling\.md$|^\.tad/evidence/journal/lite-discoveries\.md$'
+# ⚠️ ALLOW 必须与 §6.1 的 6 项写权限逐项对应。rev3 自查 P0-C：台账被 §6.1 允许写、
+# 被 AC15 强制写，却不在本 ALLOW 内 → 台账是 tracked 且 Step 0 时未改动，
+# Blake 追加后必然出现在 comm -13 差集里 → 「围栏残留」必然 FAIL。这是 Gate 2 P1-4 同一个洞在另一处复发。
+ALLOW='^\.claude/skills/blake-lite/SKILL\.md$|^\.agents/skills/blake-lite/SKILL\.md$|^\.tad/evidence/acceptance-tests/review-scaling/|^\.tad/archive/handoffs/COMPLETION-20260813-review-scaling\.md$|^\.tad/evidence/journal/lite-discoveries\.md$|^\.tad/evidence/audits/lite-constraint-ledger\.md$'
 HOOK='^\.tad/evidence/(traces|decisions)/[0-9]{4}-[0-9]{2}-[0-9]{2}\.jsonl$'
 [ -n "$ALLOW" ] && [ -n "$HOOK" ] || fail "ALLOW/HOOK 为空"
 [ -s "$EV/fence-baseline.txt" ] || fail "AC11 基线缺失（Step 0 未跑）"
@@ -403,6 +487,7 @@ LEFT=$(LC_ALL=C comm -13 "$EV/fence-baseline.txt" "$EV/fence-now.txt" | command 
 [ -s "$EV/handoff.sha256" ] || fail "AC12 基线 sha 缺失"
 ( cd "$R" && shasum -a 256 -c "$EV/handoff.sha256" ) >/dev/null 2>&1 || fail "契约被改"
 
+DONE=1   # ⚠️ 必须在最后一行之前置 1，否则 EXIT trap 会把正常结束也判成异常中止
 [ "$FAIL" -eq 0 ] && { echo "RESULT=PASS"; exit 0; } || { echo "RESULT=FAIL"; exit 1; }
 ```
 
@@ -418,4 +503,75 @@ LEFT=$(LC_ALL=C comm -13 "$EV/fence-baseline.txt" "$EV/fence-now.txt" | command 
 3. **因果效力未证**（连续第四单）：没有实验证明"多视角比单视角在 lite 上真的抓得更多"
    ——本单的依据是 **full 通道上今天的实测**（28 个 P0 来自 lite 没有的两个维度），
    属**跨通道类比**，不是 lite 上的直接证据。**明写没买。**
-4. **AC7 的 fixture 由 Blake 自造**：判别力验证的输入来自被验方。
+4. **AC7 的 fixture 由 Blake 自造**：判别力验证的输入来自被验方。缓解：rev4 把 ROSTER
+   期望值**逐字钉进契约**（§8 AC7 期望表），Blake 只能产出名单、不能定义正确答案；
+   但"按扇出表推演"这一步仍是 Blake 手算，没有可执行的 `fanout-decide.sh` 独立复算。
+
+---
+
+## 12. rev4 自查记录（Alex 闭集门禁，2026-08-13）
+
+判据（本 session 固定的 5 条，与 §7.4 修复门禁同源）：修复文本在位 / 新命令能跑 /
+修复之间不互斥 / 没有把响亮失败换成静默成功 / 数字断言有来源。
+
+### 抓到的 7 个 P0（其中 3 个让契约在任何实现下都不可能通过，2 个是修复自己造的）
+
+| # | 缺陷 | 为什么是 P0 | 修法 |
+|---|---|---|---|
+| **P0-A** | §9 锚点表遗留 5 个 rev2 串（`审查扇出（机器判定，不问人）` / `扇出判定: F1=` / `F1 的路径表非穷举` / `收窄 F1 的单必然自命中 F1` / `加派上限 2 个`），rev3 哨兵块里一个都没有 | AC3 要这些串在文，AC14 要块内容逐字等于契约 → **两条 AC 互斥**，Blake 怎么做都红 | 按块实际内容重列 25 个锚点，**实测块内全命中且 T=0 全为 0** |
+| **P0-B** | §9 的 AC7 还是 rev2 的 6 份 `f1–f6` fixture，且用了 §8 AC7 明文**禁止**的 `grep -qF '只有底座'` | 契约的两半互相否定；且该判据"把那四个字打进文件就能过" | 改 4 份 fixture + `ROSTER` 首行逐字断言 |
+| **P0-C** | AC15 强制往台账追加 2 行，AC11 的围栏 ALLOW 却不含台账路径 | 台账是 tracked 且 Step 0 时未改动 → 追加后必然落进 `comm -13` 差集 → **围栏必然 FAIL**。这是 Gate 2 P1-4 同一个洞在另一处复发 | ALLOW 补上台账路径 |
+| **P0-D** | ROSTER 按"类型名排序**去重**" | `t0-light` 与 `t1-judgment` 去重后**都是 `code-reviewer`** → AC7 自己要求的"两两不等"不可满足 | 改 `{类型}#{维度}` 后缀、不去重；四份两两不等已实测 |
+| **P0-E** | 脚本在 AC15 处被 `set -u` 杀掉，**末行没有 `RESULT=`** | §8 把「红」定义为 `exit≠0` **且**末行 `RESULT=FAIL`；崩溃只满足一半 = 未定义状态，且 AC11/AC12 根本没执行 | `awk` 补 `END`、`${LD}` 加花括号、装 `trap … EXIT` + `DONE=1` |
+
+### 设计缺陷（P0-D 的连带）
+
+rev3 的加派顺位是「新建判断 → 产物成判据 → 失败不可见」，上限 2。
+**三问全中时 `security-auditor` 永远被挤掉**——而本 session 四单全部"失败不可见"，
+恰恰是最需要它的场合。rev4 按危害重排为「失败不可见 → 产物成判据 → 新建判断」。
+
+### 3 个 P1
+
+- **P1-F**：§6.1 写"≥4 条 BLOCKING 各需定价行"，AC15 要求"恰好 2 行" → 定价粒度改为**按机制**，本单 2 个机制 = 2 行。
+- **P1-G**：§6.1 标题写"5 个位置"、实列 6 项，而该句是「编号即全集」的承重语 → 改 6（实测 `grep -cE '^[0-9]+\. '` = 6）。
+- **P1-H**：AC15 文字承诺"三格齐全 + Completion 记录超期扫描"，rev3 脚本只验 numstat → 补齐两项检查。
+
+### 修复自己造的 2 个 P0（本 session 第 4、5 次撞上同一形状）
+
+| # | 缺陷 | 怎么发现的 |
+|---|---|---|
+| **P0-I** | 修 P0-E 时新写的 `fail "…行=$THIN（应 2）"` **又踩了同一个全角陷阱** —— 规则刚写进 §4，下一次编辑就自己违反，脚本再次崩在 AC15 | 重跑负控：`异常中止=1`、GATE FAIL 从 59 掉到 56、AC15 后三项与 AC11/AC12 全部没执行 |
+| **P0-J** | 为堵 P0-I 加的 Step 0 预检**误报 2 条注释行**（那两行正是在讲解这个陷阱），会让 Blake **在 Step 0 就被卡死** | 给预检本身跑正控：真实脚本应 0 命中，实测 2 命中 |
+
+**处置**：P0-I 不靠自觉——Step 0 加机械预检（抽出 §9 脚本 → `bash -n` → 扫 `$VAR` 紧跟全角）；
+P0-J 把整行注释排除，并给预检**自己**跑了双向负控（真实脚本 0 命中 / 插一行坏写法必被抓）。
+
+⚠️ 这两条是 §7.4 修复门禁第 3 条判据（"修复之间不互斥"）的**现场证据**：
+本轮 8 个缺陷里有 2 个是修复自己造的，占 25%。修复门禁不是形式。
+
+### 新增环境陷阱（本轮实测，已进 §4）
+
+`$VAR` 紧跟全角字符会吞掉多字节首字节。最小复现（bash 5.3.3）：
+`set -u; LD=7; echo "$LD（"` → `LD\xef: unbound variable`。
+**中文文案里的变量一律写 `${VAR}`。**
+
+### 负控结果（rev4 定稿，未实现状态运行）
+
+| 项 | 结果 |
+|---|---|
+| `bash -n` 语法 | Step 0 与验证脚本均 OK |
+| 未实现时运行 | `exit=1`，**末行恰为 `RESULT=FAIL`**（无尾巴），**61 条** GATE FAIL |
+| 异常中止 | **0**（P0-E/P0-I 修复前分别是 1） |
+| `判据永真` 告警 | **0**（25 个锚点在 T=0 全部计数 0，块内全部 ≥1） |
+| AC11 / AC12 | 确认执行到（报"基线缺失"），不再被崩溃跳过 |
+| AC15 四项 | 四条判据全部触发 |
+| `trap` 单独负控 | 人为制造中途崩溃 → 末行仍是 `RESULT=FAIL (脚本异常中止 rc=1)` |
+| Step 0 试跑 | 在临时目录整跑通过，`exit=0`，预检放行 |
+| Step 0 预检双向 | 真实脚本 **0 命中**（不卡 Blake）／插一行坏写法 **必被抓** |
+| 围栏 ALLOW 双向 | §6.1 六项**全放行**；`alex-lite` / `.tad/hooks/` / `CLAUDE.md` / `.gitignore` **全拦住** |
+
+### 仍未买到的
+
+- 因果效力（连续第四单，见 §10.3）
+- AC7 的 fixture 仍由被验方产出（见 §10.4）
+- 扇出规则本身没有第二双眼睛看过"这三问够不够"（见 §10.1）
