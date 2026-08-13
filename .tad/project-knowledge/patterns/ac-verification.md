@@ -346,3 +346,24 @@
 - **Action**: For any artifact whose shape is itself a design decision — a table, schema, taxonomy, inventory, checklist — add one acceptance step that hands the finished artifact to a fresh context and asks only what its shape cannot hold, with the correctness question explicitly forbidden in the prompt and the prompt text fixed by the contract so the executor cannot soften it. Run it before anything irreversible depends on the artifact. Treat its output as design input, not as defects to fix: the honest disposition is often "this is a valid X but cannot answer Y", which reshapes the next step rather than patching this one. A different model or harness sharpens it further, since shape blindness tends to be shared by whoever built the frame.
 - **failure_mode**: Naive default: review the artifact hard for correctness — are the entries right, are the criteria sound, do the checks run — and treat passing as evidence the artifact is fit for its purpose. Why wrong: correctness review operates inside the given structure and therefore cannot report what the structure excludes; the artifact ships with every cell verified and still unable to express the decision it exists to support, and the gap surfaces only when someone tries to use it.
 - **Grounded in**: `.tad/active/handoffs/HANDOFF-20260812-discipline-inventory.md` AC7（题面由契约钉死，含"装不下"、禁"对不对"，排在不可逆动作之前）；`.tad/evidence/designs/discipline-inventory/shape-blindspot-review.md`（十类缺口 + "有成本无收益、有判定无论证、有行无行间关系"的根因诊断，reviewer 为 opencode/deepseek-v4-pro，跨 harness）；`EPIC-20260809-full-capability-extraction-retirement.md`「Epic 终止记录」（同一形状缺陷的前三次，全部由人发现）
+
+### "Run X" Is Not a Criterion Until X's Failure Signal Is Defined — a Print-Only Verifier Gives Every AC a Green With No Red - 2026-08-12
+- **Context**: Phase 1b 契约把 6 条 AC 的判据写成「跑 `verify.py <sub>`」。该脚本既有的 9 个子命令**全部 print 完就 return**，全文唯一一处 `SystemExit(2)` 只在整列缺失时触发——实测九条全部 `exit=0`，包括 `carriers` 打印 `bad=1` 时。新子命令若照抄这个房规，报 `mismatch=15` 也是 `exit 0`。
+- **Discovery**: 这**不是"永真"，是根本没有"红"这个状态**。永真的 AC 至少还有一个可以变红的理论路径；一个只 print 不 exit 的验证器，让「通过/不通过」这个二元判断**在机器层面不存在**，只剩执行者口头声称"哪个数字算红"。审查逐条实跑后的结论：12 条验证命令里 **11 条最终没有红态**。更隐蔽的是，它会连带毁掉建在其上的**负控**——负控的判据是"注入后变红"，而红不存在，于是负控退化成自述。**承重防线和它要防的东西一起塌**。
+- **Action**: 任何以"跑某脚本"为判据的 AC，契约必须**先立退出码契约**：零违规 → 末行 `RESULT=PASS` + exit 0；有违规 → 逐条打印 + 末行 `RESULT=FAIL` + `SystemExit(1)`；标的物缺失 → `ERROR` + exit 2（不得回落成 PASS）。并把「变红 = `exit≠0` 且末行 FAIL」写成契约里的**唯一定义**。写 AC 前**读一遍被调用脚本的退出码行为**——一分钟的事。
+- **failure_mode**: Naive default: 把「跑 verify.py severity」当成一条判据写进 AC，默认脚本会用退出码表达成败。Why wrong: 该脚本的既有风格是 print-only，"失败"没有机器可读的信号，于是这条 AC 以及所有以它为基础的负控**永远只有绿**——而全绿会被读成"验证充分"。
+- **Grounded in**: HANDOFF-20260812-discipline-inventory-columns.md §8.0 退出码契约 + §12 rev2→rev3 修复 #1，Gate 2 code-reviewer 实测九子命令 exit=0
+
+### A Fix Is a Defect Source — Budget a Gate for Fix-Induced Defects, Not Only for Re-Checking the Original - 2026-08-12
+- **Context**: 同一 session 内三次观察到同一形状：Phase 4 三轮审查 9 个 P0 中 **5 个是修复自己造的**；Phase 1b rev2→rev3 修 AC9 时把扫描对象挪到完成报告，**造出"文件不存在也返回 0 = 通过"**；rev3→rev4 时为覆盖新列要求独立复核成本量级，**同时又禁止复核者读该列所在目录**——自造互斥，Blake 怎么做都错。
+- **Discovery**: 修复引入缺陷的比率高到不能当噪声处理。机制是**修复只在局部正确**：AC9 的新扫描对象是对的、`test -s` 守卫是对的，但两者组合后守卫恰好缺席；覆盖要求是对的、隔离要求是对的，但两条约束的作用域重叠处没人检查。**审查发现的是原始缺陷，门禁必须发现修复缺陷**——它们不是同一批。本单实测：闭集门禁抓到 4 个（`$TMP` 未定义 / V7 静默通过 / `nine-col` 对照物未定 / 编造的行数），但那两个修复自造的互斥是 reviewer 抓的，门禁没抓到，因为门禁只查了"原 P0 修没修"。
+- **Action**: 修复门禁的判据集里必须**独立列一条**：「本轮每个修复，是否与其他条款产生新的作用域重叠或互斥？」逐条对新增文本做一次交叉检查，而不只是核对原 P0 是否闭合。⚠️ 这条不能靠"再审一轮"解决——重审会一直找新问题不会停（用户 2026-08-12 裁定）；要的是**闭集判据**，查完就完。
+- **failure_mode**: Naive default: 修完 P0 后只验证"原来那条问题没了"。Why wrong: 修复文本本身是新写的、未经审查的内容，其缺陷密度与初稿相当；只回归原缺陷会让修复引入的缺陷 100% 逃逸。
+- **Grounded in**: COMPLETION-20260812-discipline-inventory-columns，HANDOFF-20260812-discipline-inventory-columns.md §12 两轮修复清单
+
+### A Grep-for-Forbidden-Word Checker Collides With the Instruction That Must Name That Word - 2026-08-12
+- **Context**: AC8 要求形状审查的 prompt 段内 `对不对` / `是否正确` 出现 **0** 次（防止把"这个形状装不下什么"跑偏成正确性审查）。而契约 §7 钉死的题面本身写着「**禁止回答"填得对不对"**」——**下禁令必须点名禁词**，于是忠实照抄题面必然让 AC8 变红。同一形状还有一例：AC6 要求证伪条件"无空格"，而要求逐字照抄的 4 句源句本就含 ASCII 空格——**两条约束互斥，两边都过不去**。
+- **Discovery**: 当检查器用"字符串不出现"表达"不许做某事"时，它无法区分**做那件事**与**禁止做那件事**——两者都包含该字符串。这类互斥在契约里不显眼，因为两条条款通常分处不同小节（一条在题面、一条在 AC 表），写的时候不会同屏。
+- **Action**: 用「不许出现字符串 S」当判据前，先自问：**本契约里有没有任何一处必须点名 S？**（禁令、撤回说明、修复记录都会点名。）若有，改判据形态：查**提问模式**而非裸词（如 `是否.*正确\?`），或把禁令改写成不含 S 的等价表述（如「禁止做正确性审查」），并在契约里注明为何这样绕。
+- **failure_mode**: Naive default: 想禁止某种回答，就写"该词出现次数必须为 0"。Why wrong: 表达该禁令的文本自己会命中该词，检查器把守卫误判成违规——照字面执行则恒红、绕过则规则失效。
+- **Grounded in**: HANDOFF-20260812-discipline-inventory-columns.md §7 题面 / AC8 / AC6，Blake Gate 3 §13 裁定请求 1
