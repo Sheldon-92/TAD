@@ -1,0 +1,7 @@
+.claude/settings.local.json.bak-20260806-082549
+.tad/active/handoffs/HANDOFF-20260813-review-scaling.md
+.tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work
+.tad/evidence/acceptance-tests/review-scaling/fence-baseline.txt
+.tad/evidence/acceptance-tests/review-scaling/handoff.sha256
+.tad/evidence/decisions/2026-08-13.jsonl
+.tad/evidence/traces/2026-08-13.jsonl

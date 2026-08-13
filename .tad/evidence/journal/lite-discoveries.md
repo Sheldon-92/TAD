@@ -16,3 +16,4 @@
 - 2026-08-11 [publish-v2410-ac11-active-target] AC11 pre/post 目标快照对活跃目标敏感：Sober Creator 的 master1-script-draft 会话在基线采集后写入 2 文件（mtime 16:10/17:29）致 mws 摘要漂移；reviewer 把 UTC 当本地时间解析 mtime 而漏判；Blake 实测定位并刷新基线 targets 段。教训：目标快照类基线应贴近发布时刻采集，且 mtime 检查必须用与采集相同的时区基准。
 - 2026-08-11 [publish-v2410-ac14-perf] AC14 对 875 个未跟踪路径逐个 fork cut+shasum+awk（71s）→ ruby 单进程批量 sha256（4.4s）；ruby 属契约豁免（内容摘要/清单派生）。大循环哈希优先单进程批量。
 - 2026-08-11 [publish-v2410-ac9pre-timing] AC9pre(i)『远端==基线』只在 push 前成立；--all（post-publish 重放）复用同一断言必然 FAIL。时序语义断言需按执行阶段参数化。
+- 2026-08-13 [review-scaling-replace-double-newline] python `str.replace(单行, 多行块)`：块文本自带尾部 `\n` 与旧行原换行叠加 → 每处 +1 幽灵空行，numstat added 偏离预算（111≠109），AC5 冻结补集抓出。修法：块文本 `rstrip('\n')` 后再替换，从 T0 `git show` 重建重做。多行块替换单行时先检查尾部换行归属。
