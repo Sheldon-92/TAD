@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" data-theme="cream">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{{TITLE}}</title>
+<style>
+/* ---- Design tokens (anti-AI-slop: flat, no gradients/emoji soup) ---- */
+:root{
+  /* cream theme (default) — WCAG AA: #2b2620 on #f5f0e6 ≈ 11.6:1 */
+  --bg:#f5f0e6;
+  --fg:#2b2620;
+  --bg-soft:#ece5d6;
+  --border:#d8cfba;
+  --muted:#6b6253;
+  --accent:#7a5c3e;
+  /* semantic highlight tokens, resolved per theme */
+  --hl-1:#ffe9a8;          /* yellow */
+  --hl-1-fg:#2b2620;
+  --hl-stale:#e7d3d3;
+  --hl-stale-fg:#5a2b2b;
+  --measure:66ch;
+  --fontsize:19px;         /* base ≥18px, adjustable */
+  --line:1.5;
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
+}
+[data-theme="dark"]{
+  /* dark theme — WCAG AA: #d6d3cc on #1a1a1a ≈ 11.4:1 */
+  --bg:#1a1a1a;
+  --fg:#d6d3cc;
+  --bg-soft:#242424;
+  --border:#3a3a3a;
+  --muted:#9a958c;
+  --accent:#c8a87e;
+  --hl-1:#5c4a16;
+  --hl-1-fg:#f3ecd6;
+  --hl-stale:#4a2e2e;
+  --hl-stale-fg:#e7c6c6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--serif);
+  font-size:var(--fontsize);
+  line-height:var(--line);
+  -webkit-font-smoothing:antialiased;
+  transition:background .15s ease,color .15s ease;
+}
+/* ---- Top bar ---- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:.5rem;
+  padding:.5rem .9rem;
+  background:var(--bg-soft);
+  border-bottom:1px solid var(--border);
+  font-family:system-ui,-apple-system,sans-serif;
+  font-size:14px;
+}
+.topbar .title{font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar button{
+  font:inherit;cursor:pointer;
+  background:transparent;color:var(--fg);
+  border:1px solid var(--border);border-radius:6px;
+  padding:.25rem .55rem;
+}
+.topbar button:hover{background:var(--bg);}
+.topbar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.progress{color:var(--muted);min-width:7ch;text-align:right;}
+/* ---- TOC sidebar ---- */
+.toc{
+  position:fixed;top:0;left:0;bottom:0;width:280px;z-index:30;
+  background:var(--bg-soft);border-right:1px solid var(--border);
+  transform:translateX(-100%);transition:transform .18s ease;
+  overflow-y:auto;padding:1rem;
+  font-family:system-ui,-apple-system,sans-serif;font-size:14px;
+}
+.toc.open{transform:translateX(0);}
+.toc h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:.2rem 0 .8rem;}
+.toc a{display:block;color:var(--fg);text-decoration:none;padding:.35rem .4rem;border-radius:5px;}
+.toc a:hover{background:var(--bg);}
+.toc a:focus-visible{background:var(--bg);outline:2px solid var(--accent);outline-offset:1px;}
+.scrim{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.25);display:none;}
+.scrim.show{display:block;}
+/* ---- Reading area: measure on the content element specifically ---- */
+.reader{padding:2.2rem 1.2rem 6rem;}
+article.content{
+  max-width:66ch;   /* ~66 CPL — literal measure on the content element */
+  margin:0 auto;
+  line-height:1.5;
+  hyphens:auto;
+  -webkit-hyphens:auto;
+  text-align:left;
+}
+article.content h1{font-size:1.5em;line-height:1.25;margin:2rem 0 1rem;}
+article.content h2{font-size:1.25em;line-height:1.3;margin:1.6rem 0 .8rem;}
+article.content h3{font-size:1.1em;margin:1.3rem 0 .6rem;}
+article.content p,article.content li,article.content blockquote{margin:0 0 1.05em;}
+article.content blockquote{border-left:3px solid var(--border);padding-left:1rem;color:var(--muted);}
+article.content pre{background:var(--bg-soft);padding:.8rem;border-radius:6px;overflow:auto;font-size:.9em;}
+.chapter{display:block;}
+/* paginated mode */
+body[data-mode="paginated"] .reader{height:calc(100vh - 46px);overflow:hidden;}
+body[data-mode="paginated"] .chapter{display:none;}
+body[data-mode="paginated"] .chapter.active{display:block;}
+/* ---- Highlights ---- */
+mark.hl{background:var(--hl-1);color:var(--hl-1-fg);border-radius:2px;padding:0 .05em;cursor:pointer;}
+mark.hl.stale{background:var(--hl-stale);color:var(--hl-stale-fg);outline:1px dashed var(--accent);}
+mark.hl[data-note]:not([data-note=""])::after{content:"\00a0\270e";font-size:.7em;color:var(--muted);}
+/* ---- Note popover ---- */
+.notebar{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:1rem;z-index:40;
+  background:var(--bg-soft);border:1px solid var(--border);border-radius:10px;
+  padding:.7rem;display:none;gap:.5rem;align-items:center;
+  font-family:system-ui,sans-serif;font-size:14px;box-shadow:0 4px 18px rgba(0,0,0,.15);
+}
+.notebar.show{display:flex;}
+.notebar input{font:inherit;padding:.3rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);min-width:18ch;}
+.notebar button{font:inherit;cursor:pointer;border:1px solid var(--border);border-radius:6px;padding:.3rem .6rem;background:var(--bg);color:var(--fg);}
+.help{position:fixed;right:1rem;bottom:1rem;z-index:15;font-family:system-ui,sans-serif;font-size:12px;color:var(--muted);}
+.staleflag{display:inline-block;font-size:.7em;color:var(--accent);font-family:system-ui,sans-serif;}
+/* ---- Bridge mode: co-read chat panel (hidden unless served with a token) ---- */
+.coread{
+  position:fixed;top:0;right:0;bottom:0;width:340px;z-index:35;
+  display:none;flex-direction:column;
+  background:var(--bg-soft);border-left:1px solid var(--border);
+  font-family:system-ui,-apple-system,sans-serif;font-size:14px;
+}
+body.bridge .coread{display:flex;}
+body.bridge .reader{margin-right:340px;}     /* keep reading column clear of panel */
+.coread-head{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;border-bottom:1px solid var(--border);}
+.coread-head .ttl{font-weight:600;flex:1;}
+.coread-status{font-size:12px;color:var(--muted);}
+.coread-log{flex:1;overflow-y:auto;padding:.7rem .8rem;display:flex;flex-direction:column;gap:.6rem;}
+.msg{max-width:90%;padding:.45rem .6rem;border-radius:9px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;}
+.msg.user{align-self:flex-end;background:var(--accent);color:#fff;}
+.msg.assistant{align-self:flex-start;background:var(--bg);border:1px solid var(--border);color:var(--fg);}
+.msg.meta{align-self:center;font-size:12px;color:var(--muted);background:transparent;}
+.coread-foot{display:flex;gap:.4rem;padding:.6rem .8rem;border-top:1px solid var(--border);}
+.coread-foot input{flex:1;font:inherit;padding:.4rem .55rem;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--fg);}
+.coread-foot button,.coread-head button{font:inherit;cursor:pointer;border:1px solid var(--border);border-radius:7px;padding:.4rem .6rem;background:var(--bg);color:var(--fg);}
+.coread-foot button:focus-visible,.coread-head button:focus-visible,.coread-foot input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+#btn-ask{display:none;}                        /* only shown in bridge mode */
+body.bridge #btn-ask{display:inline-block;}
+</style>
+</head>
+<body data-mode="scroll">
+<div class="topbar">
+  <button id="btn-toc" title="Table of contents (t)" aria-label="Toggle table of contents">☰ TOC</button>
+  <span class="title">{{TITLE}}</span>
+  <button id="btn-font-dec" title="Smaller text (-)" aria-label="Decrease font size">A−</button>
+  <button id="btn-font-inc" title="Larger text (+)" aria-label="Increase font size">A+</button>
+  <button id="btn-theme" title="Toggle theme (d)" aria-label="Toggle theme">◐ Theme</button>
+  <button id="btn-mode" title="Toggle paginated/scroll" aria-label="Toggle layout mode">⇄ Mode</button>
+  <button id="btn-save" title="Export annotations as a JSON file (re-merge with: render.py --save)" aria-label="Export annotations as JSON">⬇ Save</button>
+  <span class="progress" id="progress" aria-live="polite"></span>
+</div>
+
+<nav class="toc" id="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  {{TOC}}
+</nav>
+<div class="scrim" id="scrim"></div>
+
+<main class="reader" id="reader">
+  <article class="content" id="content">
+    {{CONTENT}}
+  </article>
+</main>
+
+<div class="notebar" id="notebar" role="dialog" aria-modal="true" aria-label="Add note to highlight">
+  <input id="note-input" type="text" placeholder="optional note…" aria-label="Note text"/>
+  <button id="note-save">Highlight</button>
+  <button id="btn-ask" title="Discuss this passage with Claude" aria-label="Ask Claude about this passage">问 Claude</button>
+  <button id="note-cancel">Cancel</button>
+</div>
+
+<!-- Bridge-mode co-read chat panel (shown only when served with a token) -->
+<aside class="coread" id="coread" aria-label="Co-read chat with Claude">
+  <div class="coread-head">
+    <span class="ttl">Co-read</span>
+    <span class="coread-status" id="coread-status" aria-live="polite">connecting…</span>
+    <button id="btn-close-session" title="End the co-read session" aria-label="End co-read session">结束共读</button>
+  </div>
+  <div class="coread-log" id="coread-log" role="log" aria-live="polite"></div>
+  <div class="coread-foot">
+    <input id="coread-input" type="text" placeholder="Ask or discuss…" aria-label="Message to Claude"/>
+    <button id="coread-send">Send</button>
+  </div>
+</aside>
+
+<div class="help">
+  keys: ←/→ or j/k page · t toc · d theme · −/+ size · Esc close<br/>
+  <span style="opacity:.85">Save = downloads an <code>annotations.json</code>; re-merge it with <code>render.py --save</code> (it does not save your scroll position).</span>
+</div>
+
+<script id="reading-state" type="application/json">{{STATE_JSON}}</script>
+<script>
+/* ============================================================
+   Reading companion — client runtime.
+   Persistence model (Phase 2, LOCKED): selections are captured in
+   memory; "Save" exports an annotations JSON via a Blob download.
+   The user re-runs `render.py --save <file>` to merge + re-render.
+   The browser NEVER writes local files directly (that is Phase 3).
+   Re-attach of EXISTING annotations is done server-side by render.py
+   (§4.4) and baked into the HTML as <mark> spans; this script only
+   adds NEW selections and exports them.
+   ============================================================ */
+(function(){
+  "use strict";
+  var stateEl = document.getElementById("reading-state");
+  var STATE = {};
+  try { STATE = JSON.parse(stateEl.textContent || "{}"); } catch(e){ STATE = {}; }
+  if(!STATE.annotations) STATE.annotations = [];
+  // newAnnots = annotations created in THIS browser session (for export).
+  var newAnnots = [];
+  var SOURCE_HASH = stateEl.getAttribute("data-source-hash") || STATE.source_hash || "";
+
+  var body = document.body;
+  var content = document.getElementById("content");
+
+  /* ---- Theme ---- */
+  function applyTheme(t){
+    document.documentElement.setAttribute("data-theme", t);
+    try{ localStorage.setItem("rc-theme", t); }catch(e){}
+  }
+  function toggleTheme(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    applyTheme(cur === "dark" ? "cream" : "dark");
+  }
+  /* ---- Font size ---- */
+  function setFont(px){
+    px = Math.max(14, Math.min(30, px));
+    document.documentElement.style.setProperty("--fontsize", px + "px");
+    try{ localStorage.setItem("rc-fontsize", px); }catch(e){}
+  }
+  function curFont(){
+    var v = getComputedStyle(document.documentElement).getPropertyValue("--fontsize");
+    return parseInt(v,10) || 19;
+  }
+  /* ---- TOC ---- */
+  function toggleToc(){
+    var toc = document.getElementById("toc"), scrim = document.getElementById("scrim");
+    var open = toc.classList.toggle("open");
+    scrim.classList.toggle("show", open);
+  }
+  document.getElementById("scrim").addEventListener("click", toggleToc);
+
+  /* ---- Mode + progress ---- */
+  var chapters = Array.prototype.slice.call(content.querySelectorAll(".chapter"));
+  var activeChapter = 0;
+  function setMode(m){
+    body.setAttribute("data-mode", m);
+    try{ localStorage.setItem("rc-mode", m); }catch(e){}
+    if(m === "paginated"){ showChapter(activeChapter); }
+    updateProgress();
+  }
+  function showChapter(i){
+    if(i<0) i=0; if(i>=chapters.length) i=chapters.length-1;
+    activeChapter = i;
+    chapters.forEach(function(c,idx){ c.classList.toggle("active", idx===i); });
+    window.scrollTo(0,0);
+    updateProgress();
+  }
+  function updateProgress(){
+    var p = document.getElementById("progress");
+    if(body.getAttribute("data-mode") === "paginated"){
+      p.textContent = "ch " + (activeChapter+1) + "/" + chapters.length;
+    } else {
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      var pct = max>0 ? Math.round((h.scrollTop || document.body.scrollTop)/max*100) : 0;
+      p.textContent = pct + "%";
+    }
+  }
+  window.addEventListener("scroll", function(){
+    if(body.getAttribute("data-mode") !== "paginated") updateProgress();
+  });
+  function pageNext(){ if(body.getAttribute("data-mode")==="paginated") showChapter(activeChapter+1); else window.scrollBy(0, window.innerHeight*0.9); }
+  function pagePrev(){ if(body.getAttribute("data-mode")==="paginated") showChapter(activeChapter-1); else window.scrollBy(0, -window.innerHeight*0.9); }
+
+  /* ---- TOC link clicks ---- */
+  Array.prototype.forEach.call(document.querySelectorAll(".toc a"), function(a){
+    a.addEventListener("click", function(ev){
+      ev.preventDefault();
+      var id = a.getAttribute("href").slice(1);
+      var idx = chapters.findIndex(function(c){ return c.id === id; });
+      if(body.getAttribute("data-mode")==="paginated" && idx>=0){ showChapter(idx); }
+      else { var t = document.getElementById(id); if(t) t.scrollIntoView({behavior:"smooth"}); }
+      if(document.getElementById("toc").classList.contains("open")) toggleToc();
+    });
+  });
+
+  /* ---- Selection -> highlight capture (new annotations) ---- */
+  var pending = null; // {pid, exact, prefix, suffix, range}
+  function enclosingPidEl(node){
+    var el = node && (node.nodeType===1 ? node : node.parentElement);
+    while(el && !(el.hasAttribute && el.hasAttribute("data-pid"))) el = el.parentElement;
+    return el;
+  }
+  function captureSelection(){
+    var sel = window.getSelection();
+    if(!sel || sel.isCollapsed) return null;
+    var exact = sel.toString();
+    if(!exact.trim()) return null;
+    var range0 = null;
+    try{ range0 = sel.getRangeAt(0); }catch(e){ range0 = null; }
+    // Anchor the pid to the paragraph where the selection's REAL text starts.
+    // For a triple-click on a standalone line the selection can start on a
+    // whitespace/boundary node, so prefer the first non-whitespace text segment.
+    var el = null;
+    if(range0){
+      var segs = rangeTextSegments(range0);
+      if(segs.length) el = enclosingPidEl(segs[0].node);
+    }
+    if(!el) el = enclosingPidEl(sel.anchorNode);
+    if(!el) return null;
+    var paraText = el.getAttribute("data-text") || el.textContent || "";
+    var idx = paraText.indexOf(exact);
+    // If duplicated within paragraph, anchor by the actual selection position:
+    // walk to compute offset of selection start within the paragraph text.
+    var startOffset = computeOffsetWithin(el, sel);
+    if(startOffset >= 0){ idx = startOffset; }
+    var CTX = 32;
+    var prefix = idx>=0 ? paraText.slice(Math.max(0,idx-CTX), idx) : "";
+    var suffix = idx>=0 ? paraText.slice(idx+exact.length, idx+exact.length+CTX) : "";
+    // P0#1: keep the live Range so we can wrap it in a <mark> on commit, BEFORE
+    // the selection is cleared. Cloned so later selection changes don't mutate it.
+    var range = null;
+    try{ range = sel.getRangeAt(0).cloneRange(); }catch(e){ range = null; }
+    return { pid: el.getAttribute("data-pid"), exact: exact, prefix: prefix, suffix: suffix, range: range };
+  }
+  function computeOffsetWithin(el, sel){
+    try{
+      var range = sel.getRangeAt(0);
+      var pre = range.cloneRange();
+      pre.selectNodeContents(el);
+      pre.setEnd(range.startContainer, range.startOffset);
+      return pre.toString().length;
+    }catch(e){ return -1; }
+  }
+  function newId(){
+    try{ if(window.crypto && crypto.randomUUID) return "a-" + crypto.randomUUID(); }catch(e){}
+    return "a-" + Date.now() + "-" + Math.floor(Math.random()*1e6); // fallback
+  }
+
+  var notebar = document.getElementById("notebar");
+  var noteInput = document.getElementById("note-input");
+  document.addEventListener("mouseup", function(){
+    // Ignore clicks originating inside the notebar dialog itself.
+    var cap = captureSelection();
+    if(cap){ pending = cap; noteInput.value=""; openNotebar(); }
+  });
+
+  function commitHighlight(){
+    if(!pending) return;
+    // Guard: never create an annotation for an empty/whitespace-only selection.
+    if(!pending.exact || !pending.exact.trim()){
+      closeNotebar(); pending=null; var s0=window.getSelection(); if(s0) s0.removeAllRanges();
+      return;
+    }
+    var ann = {
+      id: newId(),                                   // P2#8: crypto.randomUUID()
+      chapter_id: pending.pid.split("-")[0],
+      anchor: { type:"TextQuoteSelector", exact:pending.exact, prefix:pending.prefix, suffix:pending.suffix,
+                refinedBy:{ type:"paragraph", pid: pending.pid } },
+      note: noteInput.value || "",
+      color: "yellow",
+      created: new Date().toISOString()
+    };
+    STATE.annotations.push(ann);
+    newAnnots.push(ann);
+    paintNew(ann, pending.range);                    // P0#1: insert a visible <mark>
+    closeNotebar();
+    pending = null;
+    var s = window.getSelection(); if(s) s.removeAllRanges();
+  }
+
+  function makeMark(ann){
+    var mark = document.createElement("mark");
+    mark.className = "hl";
+    mark.setAttribute("data-annot", ann.id);
+    mark.setAttribute("data-pid", ann.anchor.refinedBy.pid);
+    if(ann.note) mark.setAttribute("data-note", ann.note);
+    return mark;
+  }
+
+  // Collect the text nodes a range intersects, in document order, with the exact
+  // [start,end] offsets the range covers within each. (Used so we can wrap text
+  // PER node and skip whitespace-only boundary segments — fixes the triple-click
+  // / whole-paragraph case where block-boundary text nodes became empty <mark>s.)
+  function rangeTextSegments(range){
+    var root = range.commonAncestorContainer;
+    if(root.nodeType === 3) root = root.parentNode;
+    var segs = [];
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var n;
+    while((n = walker.nextNode())){
+      if(!range.intersectsNode(n)) continue;
+      var s = 0, e = n.textContent.length;
+      if(n === range.startContainer) s = range.startOffset;
+      if(n === range.endContainer)   e = range.endOffset;
+      if(e <= s) continue;
+      var slice = n.textContent.slice(s, e);
+      if(slice.trim() === "") continue;          // skip whitespace-only segments
+      segs.push({ node: n, start: s, end: e });
+    }
+    return segs;
+  }
+
+  // Wrap one text node's [start,end] slice in a <mark>, returning the mark (or
+  // null if the slice is empty/whitespace). Never inserts an empty mark.
+  function wrapTextSlice(node, start, end, ann){
+    var text = node.textContent;
+    var slice = text.slice(start, end);
+    if(slice.trim() === "") return null;
+    var mark = makeMark(ann);
+    mark.appendChild(document.createTextNode(slice));
+    var parent = node.parentNode;
+    if(!parent) return null;
+    var after = node.splitText(start);           // node=[0,start), after=[start,...]
+    after.splitText(end - start);                // after=[start,end), tail=[end,...]
+    parent.replaceChild(mark, after);            // swap the [start,end) node for the mark
+    return mark;
+  }
+
+  function paintNew(ann, range){
+    // P0#1 + Gate-4 fix: wrap the selection in visible <mark class="hl"> spans,
+    // PER real-text segment, skipping whitespace-only boundary nodes so a
+    // triple-click / whole-paragraph selection never produces empty marks.
+    if(!range) return false;
+    // 1. Fast path: range entirely within a single text node.
+    if(range.startContainer === range.endContainer && range.startContainer.nodeType === 3){
+      var m = wrapTextSlice(range.startContainer, range.startOffset, range.endOffset, ann);
+      return !!m;
+    }
+    // 2. Multi-node / block selection: collect intersecting text segments first
+    //    (snapshot before mutating the DOM), drop whitespace-only ones, then wrap.
+    var segs = rangeTextSegments(range);
+    if(segs.length === 0) return false;          // nothing real selected -> paint nothing
+    var painted = 0;
+    // Wrap from last to first so earlier offsets stay valid as we split nodes.
+    for(var i = segs.length - 1; i >= 0; i--){
+      var seg = segs[i];
+      if(wrapTextSlice(seg.node, seg.start, seg.end, ann)) painted++;
+    }
+    return painted > 0;
+  }
+  document.getElementById("note-save").addEventListener("click", commitHighlight);
+  document.getElementById("note-cancel").addEventListener("click", function(){
+    closeNotebar(); pending=null; var s=window.getSelection(); if(s) s.removeAllRanges();
+  });
+
+  /* ---- Notebar open/close + focus trap (P1#5, a11y dialog) ---- */
+  var notebarPrevFocus = null;
+  function notebarFocusables(){
+    return Array.prototype.slice.call(
+      notebar.querySelectorAll('input,button,[tabindex]:not([tabindex="-1"])')
+    ).filter(function(n){
+      // P2#7: exclude disabled AND visually-hidden controls. In file:// mode the
+      // bridge-only #btn-ask is display:none; offsetParent===null catches that,
+      // so the focus trap never lands on an invisible button.
+      return !n.disabled && n.offsetParent !== null;
+    });
+  }
+  function openNotebar(){
+    notebarPrevFocus = document.activeElement;
+    notebar.classList.add("show");
+    noteInput.focus();
+  }
+  function closeNotebar(){
+    notebar.classList.remove("show");
+    // restore focus to where the reader was (a11y).
+    if(notebarPrevFocus && typeof notebarPrevFocus.focus === "function"){
+      try{ notebarPrevFocus.focus(); }catch(e){}
+    }
+    notebarPrevFocus = null;
+  }
+  function notebarIsOpen(){ return notebar.classList.contains("show"); }
+  // Trap Tab within the dialog while it is open.
+  notebar.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      e.preventDefault();
+      closeNotebar(); pending=null; var s=window.getSelection(); if(s) s.removeAllRanges();
+      return;
+    }
+    if(e.key === "Tab"){
+      var f = notebarFocusables();
+      if(!f.length) return;
+      var first = f[0], last = f[f.length-1];
+      if(e.shiftKey && document.activeElement === first){
+        e.preventDefault(); last.focus();
+      } else if(!e.shiftKey && document.activeElement === last){
+        e.preventDefault(); first.focus();
+      }
+    }
+    if(e.key === "Enter" && e.target === noteInput){
+      e.preventDefault(); commitHighlight();
+    }
+  });
+
+  /* ---- Save: export annotations as JSON via Blob download (LOCKED model) ---- */
+  function saveAnnotations(){
+    var payload = {
+      source_hash: SOURCE_HASH,
+      exported: new Date().toISOString(),
+      annotations: STATE.annotations
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "annotations.json";
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+  document.getElementById("btn-save").addEventListener("click", saveAnnotations);
+
+  /* ---- Wire buttons ---- */
+  document.getElementById("btn-toc").addEventListener("click", toggleToc);
+  document.getElementById("btn-theme").addEventListener("click", toggleTheme);
+  document.getElementById("btn-font-inc").addEventListener("click", function(){ setFont(curFont()+1); });
+  document.getElementById("btn-font-dec").addEventListener("click", function(){ setFont(curFont()-1); });
+  document.getElementById("btn-mode").addEventListener("click", function(){
+    setMode(body.getAttribute("data-mode")==="paginated" ? "scroll" : "paginated");
+  });
+
+  /* ---- Keyboard ---- */
+  document.addEventListener("keydown", function(e){
+    // Escape closes the notebar dialog from anywhere (P1#5).
+    if(e.key === "Escape" && notebarIsOpen()){
+      e.preventDefault();
+      closeNotebar(); pending=null; var s=window.getSelection(); if(s) s.removeAllRanges();
+      return;
+    }
+    // Don't hijack typing in form fields.
+    if(e.target && (e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")) return;
+    switch(e.key){
+      case "ArrowRight": case "j": pageNext(); break;
+      case "ArrowLeft":  case "k": pagePrev(); break;
+      case "t": toggleToc(); break;
+      case "d": toggleTheme(); break;
+      case "-": setFont(curFont()-1); break;
+      case "+": case "=": setFont(curFont()+1); break;
+    }
+  });
+
+  /* ============================================================
+     PHASE 3 — Live Co-Read Bridge (client)
+     Active ONLY when served over http(s) WITH a ?t=<token>. Under file://
+     (no token) the panel stays hidden and Phase-2 behavior is unchanged (AC9).
+     Security: replies/messages rendered via textContent / createTextNode ONLY
+     (never innerHTML). State-changing calls carry the token in the
+     X-Coread-Token HEADER (the page was opened with ?t=, kept in memory only).
+     ============================================================ */
+  (function setupBridge(){
+    function getToken(){
+      try{
+        var p = new URLSearchParams(window.location.search);
+        return p.get("t") || "";
+      }catch(e){ return ""; }
+    }
+    var isHttp = (window.location.protocol === "http:" || window.location.protocol === "https:");
+    var TOKEN = getToken();
+    // Bridge mode requires BOTH an http(s) origin AND a token. file:// => degrade.
+    if(!isHttp || !TOKEN){
+      return; // Phase-2 only: panel stays display:none, nothing wired.
+    }
+    document.body.classList.add("bridge");
+
+    var logEl = document.getElementById("coread-log");
+    var statusEl = document.getElementById("coread-status");
+    var inputEl = document.getElementById("coread-input");
+    var sendBtn = document.getElementById("coread-send");
+    var closeBtn = document.getElementById("btn-close-session");
+    var askBtn = document.getElementById("btn-ask");
+    var es = null;
+    var sessionOver = false;
+
+    function setStatus(t){ statusEl.textContent = t; }
+
+    // Render a message line using textContent ONLY (XSS-inert — AC7).
+    function appendMsg(role, text){
+      var div = document.createElement("div");
+      div.className = "msg " + role;
+      div.appendChild(document.createTextNode(text)); // never innerHTML
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+      return div;
+    }
+
+    function postJSON(path, obj){
+      return fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Coread-Token": TOKEN },
+        body: JSON.stringify(obj)
+      });
+    }
+
+    function sendMessage(message, anchor, passage){
+      if(sessionOver) return;
+      if(!message || !message.trim()) return;
+      appendMsg("user", message + (passage ? "\n“" + passage + "”" : ""));
+      postJSON("/send", { message: message, anchor: anchor || null, passage: passage || null })
+        .catch(function(){ appendMsg("meta", "(failed to send — bridge offline?)"); });
+    }
+
+    sendBtn.addEventListener("click", function(){
+      var v = inputEl.value;
+      if(v && v.trim()){ sendMessage(v, null, null); inputEl.value = ""; }
+    });
+    inputEl.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); sendBtn.click(); }
+    });
+
+    // 问 Claude: send the currently-pending selected passage as locked context.
+    if(askBtn){
+      askBtn.addEventListener("click", function(){
+        if(!pending || !pending.exact || !pending.exact.trim()){ closeNotebar(); return; }
+        var note = (noteInput.value || "").trim();
+        var anchor = { pid: pending.pid, exact: pending.exact };
+        var msg = note ? note : "Help me think about this passage.";
+        sendMessage(msg, anchor, pending.exact);
+        closeNotebar();
+        pending = null;
+        var s = window.getSelection(); if(s) s.removeAllRanges();
+      });
+    }
+
+    function endSession(reason){
+      if(sessionOver) return;
+      sessionOver = true;
+      if(es){ try{ es.close(); }catch(e){} es = null; } // stop reconnect storm
+      setStatus(reason || "session ended");
+      appendMsg("meta", "— co-read session ended —");
+      sendBtn.disabled = true; inputEl.disabled = true;
+    }
+
+    closeBtn.addEventListener("click", function(){
+      postJSON("/close", {}).catch(function(){});
+      endSession("结束");
+    });
+
+    // SSE: EventSource can't set headers -> token via ?t= (FR10).
+    function connectSSE(){
+      try{
+        es = new EventSource("/events?t=" + encodeURIComponent(TOKEN));
+      }catch(e){ setStatus("SSE unavailable"); return; }
+      es.onopen = function(){ setStatus("connected"); };
+      es.addEventListener("reply", function(ev){
+        var text = "";
+        try{ text = (JSON.parse(ev.data) || {}).text || ""; }catch(e){ text = ""; }
+        appendMsg("assistant", text);           // textContent path
+      });
+      es.addEventListener("closed", function(){
+        endSession("session closed");
+      });
+      es.onerror = function(){
+        if(sessionOver) return;
+        setStatus("reconnecting…");
+        // Native EventSource auto-reconnects; if the server is gone it will keep
+        // erroring. We don't force-close here (transient blips should recover),
+        // but a `closed` event or the 结束 button is the authoritative stop.
+      };
+    }
+    connectSSE();
+    window.addEventListener("beforeunload", function(){
+      // closed tab is a soft close signal; best-effort notify.
+      if(!sessionOver){ try{ navigator.sendBeacon && postJSON("/close", {}); }catch(e){} }
+    });
+  })();
+
+  /* ---- Restore prefs ---- */
+  try{
+    var st = localStorage.getItem("rc-theme"); if(st) applyTheme(st);
+    var sf = localStorage.getItem("rc-fontsize"); if(sf) setFont(parseInt(sf,10));
+    var sm = localStorage.getItem("rc-mode"); if(sm) setMode(sm);
+  }catch(e){}
+  updateProgress();
+})();
+</script>
+</body>
+</html>

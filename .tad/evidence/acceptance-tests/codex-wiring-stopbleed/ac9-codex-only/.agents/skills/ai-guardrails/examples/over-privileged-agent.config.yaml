@@ -1,0 +1,23 @@
+# Scenario config for the ai-guardrails fixture (examples/ai-guardrails-fixture.md).
+# This is the machine-readable form of the fixture's Input Scenario, so the
+# deterministic validator scripts/check-guardrail-config.sh can be run against it.
+# Expected: multiple guardrail findings present -> exit code 1.
+agent: support-agent
+description: >
+  Reads the customer's incoming free-form email and summarizes any web links
+  they send, then writes a follow-up to the orders database and emails the
+  customer back.
+inputs:
+  - incoming customer email (free-form, untrusted)
+  - summarizes external web links the customer sends (untrusted web content)
+data_access:
+  - orders database (sensitive)
+  - full customer email text passed straight to the model (names, addresses, credit-card numbers / PII)
+tools:
+  - generate_and_run_sql: cursor.execute(model_generated_sql) against the orders DB   # model-generated SQL run directly, no parsing
+  - write_followup: writes to the orders database                                          # external state change
+  - send_email: emails the customer back                                                   # external state change
+injection_defense: none   # the model returns JSON and we trust it
+pii_handling: none        # raw email text sent straight to the model
+llm: openai gpt-4o
+human_gate: none

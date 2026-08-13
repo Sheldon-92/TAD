@@ -1,0 +1,9 @@
+Plain Notes
+
+This is the first paragraph of a plain text document. It has several
+sentences across multiple lines.
+
+This is the second paragraph, separated by a blank line. Text ingest
+should split on blank lines.
+
+A third and final paragraph closes the file.
