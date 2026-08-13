@@ -28,13 +28,21 @@
 ### 0.1 T=0 锚（⚠️ Blake 开工前必须已存在，且 §8 V0 会机械核验）
 
 ```
-T0=""    # ← 填 T=0 commit hash。未填时 §8 的 `: "${T0:?}"` 会立即中止
+T0=a94f7a3    # Alex 于 2026-08-12 创建并回填；22 个文件
 ```
 
-**T=0 的验收标准（不是"提交了就行"）**：
-`{ git diff --name-only $T0 -- .; git ls-files --others --exclude-standard; } | LC_ALL=C sort -u`
-减去 hook 自动写的两条后**为空**。⚠️ **本契约自身也须被这次 commit 收进去**
-（当前未被 git 跟踪，否则它恒为围栏残留，且 AC12 无外部锚）。
+**T=0 已由 Alex 建立并验收（`a94f7a3`）**。验收方式与 §8 V5 一致——**增量法**，
+不是"并集绝对为空"：Step 0 先把当前并集冻结成 `$EV/fence-baseline.txt`，
+收工时用 `comm -13` 取**相对基线的新增**。
+
+实测 `a94f7a3` 时的基线残留（**已在 commit 中有意排除，属预存状态，不计入 Blake 的围栏**）：
+`.claude/settings.local.json.bak-20260806-082549`、
+`.tad/active/handoffs/LITE-20260811-2254-dependency-ops-skill.md.txn-lock/`、
+`.tad/evidence/acceptance-tests/codex-knowledge-ingress/spike-work/`、
+`.tad/evidence/acceptance-tests/codex-wiring-stopbleed/{ac9-codex-only,spike-codex-home,spike-work}/`
+（932 个 codex spike 中间产物）。
+**本契约自身已被 `a94f7a3` 收进 git**，故 AC10 有外部锚。
+
 ⚠️ T=0 之后、Blake 开工之前，**任何人不得改动仓库**——否则基线漂移。
 ⚠️ Blake **不得自行创建**该 commit（§3.2 禁止一切写历史 git 命令）。
 
@@ -319,7 +327,7 @@ Blake 造 **6 份 fixture Epic 文件**，逐份跑 §4.4 **原文命令**（⚠
 | **AC6** | **闭集未改**：`ESCALATION-LIST` 区间与 T=0 逐字相同（两文件） | 且**基线区间行数 ≥3**（空对空会假通过） |
 | **AC7** | **full 未被碰** | `git diff --name-only $T0 -- <full 六路径>` = 0 |
 | **AC8** | **围栏（增量式）**：收工残留减去 Step 0 基线、减去 hook 自动写两条后为空 | `comm -13`；⚠️ 判据是**行数=0**，不是 `exit=1`（空输入时 exit 也是 1） |
-| **AC10** | 本契约 md5 == T=0 版本 | `cmp <(git show $T0:<contract>) <contract>` |
+| **AC10** | 本契约相对 T=0 **除 `^T0=` 那一行外**逐字未变 | V8。⚠️ 排除自指行是必需的：契约里存 T=0 hash、而 T=0 的 commit 里存契约，是不动点；除此一行外全部锁死 |
 | **AC14** | 回放 spawn 前后 `git status --short` 逐字相同 | subagent 未写任何文件 |
 | **AC15** | §6.2 回放已跑且**已在完成报告标注"单次采样，不构成因果证据"** | 逐字 grep |
 
@@ -396,9 +404,10 @@ echo "added=$ADDED deleted=$DELETED"
 [ "$DELETED" -eq 0 ] || fail "AC9b 有删除行 ($DELETED)"
 [ "$ADDED"  -gt 0 ] || fail "AC9b added=0（根本没改）"
 
-# V8 AC10 契约未被改（外部锚）
-cmp -s <(git -C "$R" show "$T0:.tad/active/handoffs/HANDOFF-20260812-lite-goal-gate.md") \
-       "$R/.tad/active/handoffs/HANDOFF-20260812-lite-goal-gate.md" || fail "契约被改"
+# V8 AC10 契约未被改（外部锚；排除自指的 T0= 行）
+CP=".tad/active/handoffs/HANDOFF-20260812-lite-goal-gate.md"
+diff <(git -C "$R" show "$T0:$CP" | command grep -v '^T0=') \
+     <(command grep -v '^T0=' "$R/$CP") >/dev/null || fail "契约被改（T0= 行之外）"
 
 # V9 AC14 subagent 未写文件
 cmp -s "$EV/status-pre.txt" "$EV/status-post.txt" || fail "AC14 subagent 写了文件"
