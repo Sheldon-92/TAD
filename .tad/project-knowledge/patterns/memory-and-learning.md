@@ -45,3 +45,27 @@
 - **Action**: Before deleting an apparent duplicate: check `git log` dates for BOTH files; when sizes differ significantly (e.g., 570 vs 3056 lines) investigate WHY instead of assuming the smaller is "refined"; read the evolution history (handoffs/commits) for the file pair. Verify content, not names or formats.
 - **failure_mode**: Naive default: keep the file with the newer format/naming convention and delete the other as a stale duplicate. Why wrong: the newer-format copy can carry older content — format-based deletion silently reverts real fixes, and the loss surfaces only when the reverted behavior recurs.
 - **Grounded in**: feedback_verify-before-delete.md, v2.7→v2.8.1 quality-chain repair history (principles.md "Judgment-Only Skill Files" 2026-04-04)
+
+### 摘要会压掉结论，而复述摘要就是复述半句话 - 2026-08-13
+
+- **Context**: TAD 的 F1 债在归档 Epic 里的原文是两句：①「2.30–2.40 版 `tad.sh` 的升级判定
+  静默失效，25 个存量下游全部在范围内」②「唯一可用通路是 `curl … | bash`，绕过本地坏副本，
+  AC12b 已实测能正常升级」。而 `session-state.md` 里被压缩成一行：「F1 / 25 个存量下游收不到修复」。
+- **Discovery**: Alex 之后在**四份文档**里复述了这条摘要（两份 Epic 的归档记录、新 Epic 的
+  Risk Register 与一条红色 Success Criteria、以及口头汇报），**四次都只有第①句**，
+  并据此把一条不存在的阻塞写成新 Epic 的验收标准。原文就在同一个文件里，隔两行。
+  失败不在"记错了"，在**读取路径**：摘要是为压缩而写的，它必然丢掉"但是……"那一半；
+  一旦摘要进入工作记忆，就再没有触发去读原文的信号——**因为摘要读起来是完整的**。
+- **Action**: 任何要写进**判据、风险登记、验收标准或对外结论**的事实，必须回读原文，
+  不得引用自己写的摘要行。摘要行只配用于"提醒我这里有东西"，不配用于"所以结论是"。
+  写摘要时，若原文含"但是/除非/已缓解/已实测可用"，**这半句必须进摘要**，否则不如不写。
+  机械信号：摘要行里出现"收不到/做不到/阻塞/够不着"这类绝对表述而**没有伴随缓解或例外**时，
+  视为可疑，回读原文再引用。
+- **failure_mode**: 朴素默认：把自己上次写的一行摘要当作事实来源，因为它就在手边、
+  而且读起来是完整的一句话。为什么错：摘要的存在意义就是丢掉细节，而被丢掉的往往正是
+  "这事已经有解法了"——于是一条已解决的问题被反复当成阻塞传播，还会被写进新计划的验收标准里，
+  让计划从第一天起就带着一个假的红灯。
+- **Grounded in**: `.tad/archive/epics/EPIC-20260809-full-capability-extraction-retirement.md`
+  §外部依赖 F1 行 + 其下紧接的 ⚠️ 段（含 AC12b 实测结论）；
+  `EPIC-20260813-alex-blake-lightening.md` R4/SC5 的修正历史；用户 2026-08-13 原话
+  「为什么老是说更新那条路坏了，已经好几次了」
