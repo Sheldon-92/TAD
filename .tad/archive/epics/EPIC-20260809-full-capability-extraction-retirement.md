@@ -680,3 +680,29 @@ lite 现状：L0/L1 全是 Alex 自评，**无人复核**。
 | **F1 / 2.41.1** | 25 个存量下游跑本地旧 `tad.sh` 会被告知"已是最新"，收不到修复。交付物是**"如何让他们改用 curl"**，不是 patch release |
 | 残留登记 19 项 | 见上方「残留登记」节，随本 Epic 终止一并移交，不得丢失 |
 | 能力处置表 | `capability-disposition.yaml` 的 19 项判断保留为参考资料；**但不再作为任何目标的判据** |
+
+---
+
+# 🧊 冻结归档（2026-08-13，用户裁定）
+
+**状态**：FROZEN / ARCHIVED（原已于 2026-08-12 STOPPED，Phase 5–9 CANCELLED）。
+
+**归档理由**：本 Epic 的目标是「让 `Alex-Lite / Blake-Lite` 承担全部工作与职能」。
+2026-08-13 用户裁定该方向本身是弯路——引入两个新 agent 使事情更麻烦，而 full 的能力很强、不应废弃。
+**Lite 的全部尝试就此定性为一场已完成的实验**，其收获反哺回 Alex/Blake，不再继续演进 lite。
+
+**本 Epic 已交付且保留生效的**（Phase 1–4，全部 commit）：
+能力 inventory 与处置表、Lite↔Skill 组合契约、`release-runbook` 扩展、
+Lite Authority Model v2（Execution Mandate）、`dependency-ops` skill、v2.41.0 实发。
+
+**其中 Execution Mandate 是 lite 的净发明**——full 至今没有等价物（实测 full=0 / lite=5）。
+它把授权从隐含变显式（desired outcome / consequence classes / blast radius /
+exclusions / recovery / expiry）。**这是最值得反哺回 full 的一件，但必须按后果分档**
+（本机文件改动 3 个字段，触及外部服务/凭据/发布才要全套）——2026-08-13 在 dps-harness
+实测：一个注册 4 个命令的小活被要求先写 14 个字段的授权块，仪式与后果不成比例。
+
+**后继 Epic**：见 `.tad/active/epics/`（2026-08-13 创建），方向为
+「不减 Alex/Blake 的纪律，只减它们的加载与形式」。
+
+**未随本 Epic 关闭的债**：F1（25 个存量下游跑旧 `tad.sh` 收不到更新）——
+它同时阻塞后继 Epic 的下游生效路径。
