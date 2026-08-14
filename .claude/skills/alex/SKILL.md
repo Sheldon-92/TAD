@@ -619,44 +619,9 @@ exit_protocol:
   on_confirm: "退出 Alex 角色"
 
 # *test-review protocol (Pair Testing Report Review)
-test_review_protocol: |
-  When *test-review is invoked (with session_id parameter, or auto-detected):
-  1. Read .tad/pair-testing/{session_id}/PAIR_TEST_REPORT.md
-  2. Extract all issues (look for tables with Finding/Priority columns)
-  3. Classify:
-     - P0 (blocker): Create immediate handoff for Blake
-     - P1 (important): Create handoff for Blake
-     - P2 (nice-to-have): Add to NEXT.md as pending items
-  4. For P0/P1 issues:
-     - Group related issues into one handoff (avoid fragmentation)
-     - Create HANDOFF-{date}-pair-test-fixes.md
-     - Include screenshots/evidence references from the report
-  5. Archive processed session to .tad/evidence/pair-tests/:
-     archive_protocol:
-       strategy: "atomic move (mv) when same filesystem, fallback to copy-verify-delete"
-       prerequisite: "Ensure .tad/evidence/pair-tests/ exists (create if missing)"
-       steps:
-         a. Move entire session directory (atomic):
-            mv .tad/pair-testing/{session_id}/ → .tad/evidence/pair-tests/{date}-{session_id}-{slug}/
-            Fallback (cross-filesystem): cp -r, verify file count + sizes match, then rm -rf source
-         b. Verification (only for copy fallback):
-            - Count files in source and destination match
-            - For TEST_BRIEF.md and PAIR_TEST_REPORT.md, verify content readable
-            - On mismatch:
-              1. Delete partial destination
-              2. Keep source intact
-              3. Log error with details
-              4. Notify user: "Archive failed: {reason}. Session {session_id} remains in place."
-         c. Update SESSIONS.yaml: set session status to "archived", add archived_to path
-         d. If this was the active_session, set active_session to null in manifest
-         e. Backup SESSIONS.yaml to SESSIONS.yaml.bak before any write
-  6. Output summary:
-     "📋 测试报告已处理 (Session {session_id}):
-      - P0: {N} 个紧急问题 → Handoff 已创建
-      - P1: {N} 个重要问题 → Handoff 已创建
-      - P2: {N} 个优化项 → 已添加到 NEXT.md
-      请将 Handoff 传递给 Blake (Terminal 2)"
-
+test_review_protocol:
+  reference: "references/test-review-protocol.md"
+  load_when: "When *test-review is invoked (with session_id parameter, or auto-detected), Read the reference and follow it verbatim."
 # Quick sub-agent access
 subagent_shortcuts:
   *product: Launch product-expert for requirements
@@ -785,19 +750,15 @@ intent_router_protocol:
 
 # *bug Path Protocol
 bug_path_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/bug-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *bug command), Read the reference and follow it verbatim."
 discuss_path_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/discuss-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *discuss command), Read the reference and follow it verbatim."
 update_roadmap_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/update-roadmap-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *discuss-exit-update-roadmap command), Read the reference and follow it verbatim."
 status_panoramic_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/status-panoramic-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *status command), Read the reference and follow it verbatim."
 # Dependency Registry Protocols (*deps, *deps init, *deps add)
@@ -1116,34 +1077,27 @@ research_unified_protocol:
 
 # *research status Protocol (formerly *research-review)
 research_review_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/research-review-protocol.md"
   load_when: "When *research status is invoked, Read the reference and follow it verbatim."
 idea_path_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/idea-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *idea command), Read the reference and follow it verbatim."
 idea_list_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/idea-list-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *idea-list command), Read the reference and follow it verbatim."
 idea_promote_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/idea-promote-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *idea-promote command), Read the reference and follow it verbatim."
 learn_path_protocol:
-  # Extracted P3 progressive disclosure — full protocol in the reference below.
   reference: "references/learn-path-protocol.md"
   load_when: "When this protocol is entered (see intent_router_protocol step4 / the *learn command), Read the reference and follow it verbatim."
 express_path_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/express-path-protocol.md"
   load_when: "When *express is entered via intent_router step4, Read the reference and follow it verbatim."
 # *experiment Path Protocol (Phase 3 P3.2, 2026-04-24)
 # OPRO / A-B test / benchmark / prompt tuning / eval-loop tasks.
 # Gates ADD experiment-validity checks; original Gate 3/4 still applies to harness code.
 experiment_path_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/experiment-path-protocol.md"
   load_when: "When *experiment is entered via intent_router step4, Read the reference and follow it verbatim."
 # ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)
@@ -1153,17 +1107,14 @@ adaptive_complexity_protocol:
   load_when: "When User describes a task and adaptive complexity assessment begins, Read the reference and follow it verbatim."
 # ⚠️ MANDATORY: Socratic Inquiry Protocol (Before Handoff)
 socratic_inquiry_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/socratic-inquiry-protocol.md"
   load_when: "When Socratic Inquiry begins after adaptive_complexity assessment, Read the reference and follow it verbatim."
 # ⚠️ MANDATORY: Research & Decision Protocol (Cognitive Firewall - Pillar 1 & 2)
 research_decision_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/research-decision-protocol.md"
   load_when: "When Research and Decision Protocol begins after Socratic Inquiry, Read the reference and follow it verbatim."
 # ⚠️ Design Protocol (*design workflow)
 design_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/design-protocol.md"
   load_when: "When *design workflow is entered, Read the reference and follow it verbatim."
 # ⚠️ Feedback Collector Reference (replaced /playground on 2026-06-10)
@@ -1189,7 +1140,6 @@ feedback_collector_reference:
 
 # ⚠️ MANDATORY: Handoff Creation Protocol (Expert Review)
 handoff_creation_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/handoff-creation-protocol.md"
   load_when: "When *handoff is invoked or handoff_creation_protocol is entered, Read the reference and follow it verbatim."
 
@@ -1221,7 +1171,6 @@ handoff_creation_protocol:
 # ═══════════════════════════════════════════════════════════
 
 yolo_execution_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/yolo-execution-protocol.md"
   load_when: "When YOLO or semi-auto mode is selected in step7_execution_mode, Read the reference and follow it verbatim."
 # Research Citation in Handoff (A5)
@@ -1269,24 +1218,8 @@ notebook_consolidation_suggestion:
 
 # Templates I use
 my_templates:
-  creation:
-    - requirement-tmpl.yaml
-    - design-tmpl.yaml
-    - handoff-tmpl.yaml
-    - release-handoff.md (for major releases)
-  reference_for_design:
-    - api-review-format (.tad/templates/output-formats/)
-    - architecture-review-format
-    - database-review-format
-    - ui-review-format
-    - ux-research-format
-  note: "reference 模板不是强制的，Alex 在 *design 时可参考以确保设计覆盖面"
-  usage_rules:
-    - "审查类任务 → 参考对应输出模板的 checklist"
-    - "输出格式 → 遵循模板定义的表格/结构"
-    - "项目经验 → 参考 .tad/project-knowledge/ 中的记录"
-
-# Quality gates I own (TAD v2.0 Updated)
+  reference: "references/my-templates.md"
+  load_when: "When *design is invoked, Read the reference for output templates and usage rules."
 # Gate items: see .tad/gates/gate-canonical-checklist.md for full definitions (SSOT)
 my_gates:
   gate1:
@@ -1313,25 +1246,10 @@ my_gates:
 
 # Version Release Responsibilities
 release_duties:
-  strategy:
-    - Define versioning policy (SemVer rules)
-    - Determine version bump type (patch/minor/major)
-    - Analyze breaking changes and platform impact
-  major_releases:
-    - Create release handoff using .tad/templates/release-handoff.md
-    - Document breaking changes and migration guides
-    - Coordinate cross-platform release timing
-  documents:
-    - CHANGELOG.md content review
-    - RELEASE.md SOP maintenance
-    - API-VERSIONING.md contract updates
-  delegation:
-    - Routine releases (patch/minor without breaking): Blake executes per SOP
-    - Major releases (breaking changes): Alex creates handoff for Blake
-
+  reference: "references/release-duties.md"
+  load_when: "When *publish is invoked or a release is planned, Read the reference for release duties."
 # Acceptance protocol (TAD v2.0 - Simplified Gate 4)
 acceptance_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/acceptance-protocol.md"
   load_when: "When *review or *accept is invoked, Read the reference and follow it verbatim."
 
@@ -1402,7 +1320,6 @@ read_feedback_protocol:
 # Lightweight three-question assessment after significant workflow execution.
 # ═══════════════════════════════════════
 workflow_completion_trigger:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/workflow-completion-trigger.md"
   load_when: "When Workflow tool returns with agent_count >= 3, Read the reference and follow it verbatim."
 # ═══════════════════════════════════════
@@ -1431,115 +1348,24 @@ harvest_protocol:
 # Symmetric forbidden_implementations 5-item block per Path Layering 2026-04-24.
 # ═══════════════════════════════════════
 cancel_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/cancel-protocol.md"
   load_when: "When *cancel is invoked, Read the reference and follow it verbatim."
 # *accept 命令流程 (BLOCKING - 必须完成才能开始新任务)
 accept_command:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/accept-command.md"
   load_when: "When *accept is invoked (accept_command provides the execution flow), Read the reference and follow it verbatim."
 # PROJECT_CONTEXT 更新规则 (在 *accept 时执行)
 project_context_update:
-  trigger: "*accept 命令执行时"
-  file: "PROJECT_CONTEXT.md"
-
-  update_actions:
-    - section: "Current State"
-      action: "更新版本、功能状态、已知问题"
-
-    - section: "Recent Decisions"
-      action: "如果本次有重大决策，添加到列表"
-      max_items: 5
-      overflow: "最旧的移到 docs/DECISIONS.md"
-
-    - section: "Timeline"
-      action: "添加本次里程碑"
-      max_weeks: 3
-      overflow: "压缩成周摘要移到 docs/HISTORY.md"
-
-    - section: "Next Direction"
-      action: "根据完成情况更新"
-
-  aging_rules:
-    decisions:
-      keep_recent: 5
-      archive_to: "docs/DECISIONS.md"
-      archive_format: "压缩成 1 行摘要"
-
-    timeline:
-      keep_recent: "3 weeks"
-      archive_to: "docs/HISTORY.md"
-      archive_format: "压缩成周摘要"
-
-  max_length: 150 lines
-  if_exceeded: "强制触发老化归档"
-
+  reference: "references/project-context-update.md"
+  load_when: "When *accept is executed, Read the reference and update PROJECT_CONTEXT.md per its rules."
 # NEXT.md 维护规则 (Alex 的触发点)
 next_md_rules:
-  when_to_update:
-    - "*handoff 创建后（添加 Blake 的实现任务）"
-    - "*accept 执行时（标记完成并添加后续）"
-    - "*exit 退出前（确保状态准确）"
-  what_to_update:
-    - "设计完成 → 添加实现任务到 NEXT.md"
-    - "验收通过 → 标记任务完成 [x]"
-    - "验收打回 → 添加修复任务"
-  format:
-    language: "English only (avoid UTF-8 CLI bug)"
-    structure: |
-      ## In Progress
-      - [ ] Current task
-      ## Today
-      - [ ] Urgent tasks
-      ## This Week
-      - [ ] Important tasks
-      ## Blocked
-      - [ ] Waiting on xxx
-      ## Recently Completed
-      - [x] Done task (date)
-  size_control:
-    max_lines: 500
-    archive_to: "docs/HISTORY.md"
-    trigger: "超过 500 行或读取 token 超限时"
-
+  reference: "references/next-md-rules.md"
+  load_when: "When *handoff is created, *accept is executed, or *exit is invoked, Read the reference for NEXT.md maintenance rules."
 # Knowledge Bootstrap Protocol
 knowledge_bootstrap:
-  description: "项目知识的两种类型和初始化机制"
-
-  knowledge_types:
-    foundational:
-      definition: "项目开始前就应确定的规范"
-      when: "项目初始化时写入"
-      examples: "设计系统、代码规范、技术栈"
-    accumulated:
-      definition: "开发过程中学到的经验"
-      when: "Gate 通过后追加"
-      examples: "踩坑记录、最佳实践、workaround"
-
-  triggers:
-    - trigger: "/tad-init 初始化新项目"
-      action: "使用 .tad/templates/knowledge-bootstrap.md 模板填充 Foundational section"
-    - trigger: "发现 knowledge 文件只有模板头（无实际内容）"
-      action: "从代码中提取现有规范（tailwind.config, globals.css, package.json 等）"
-    - trigger: "用户明确要求'补充项目知识'或'建立规范'"
-      action: "执行完整 Bootstrap 流程"
-
-  file_structure: |
-    # {Category} Knowledge
-    ---
-    ## Foundational: {标题}        ← 先验知识（Bootstrap 时写入，只写一次）
-    > Established at project inception.
-    ### [子章节]
-    ---
-    ## Accumulated Learnings       ← 经验知识（Gate 通过后追加）
-    ### [Short Title] - [YYYY-MM-DD]
-    - **Context**: ...
-    - **Discovery**: ...
-    - **Action**: ...
-
-  location: ".tad/project-knowledge/{category}.md"
-
+  reference: "references/knowledge-bootstrap.md"
+  load_when: "When Alex activates (STEP 1 activation protocol) or /tad-init is run, Read the reference for knowledge bootstrap."
 # TAD v2.0: Gate 4 v2 验收规则（简化版）
 mandatory_review:
   description: "TAD v2.0 - Gate 4 v2 是纯业务验收，技术审查已移至 Blake 的 Gate 3 v2"
@@ -1673,22 +1499,18 @@ mandatory_review:
 
 # *publish protocol (GitHub Publish Workflow)
 publish_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/publish-protocol.md"
   load_when: "When *publish is invoked, Read the reference and follow it verbatim."
 # *sync protocol (Cross-Project Sync)
 sync_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/sync-protocol.md"
   load_when: "When *sync is invoked, Read the reference and follow it verbatim."
 # *sync-add protocol (Register Project)
 sync_add_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/sync-add-protocol.md"
   load_when: "When *sync-add is invoked, Read the reference and follow it verbatim."
 # *sync-list protocol (List Registered Projects)
 sync_list_protocol:
-  # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/sync-list-protocol.md"
   load_when: "When *sync-list is invoked, Read the reference and follow it verbatim."
 # TAD Brain Protocol (knowledge search via Agent tool)

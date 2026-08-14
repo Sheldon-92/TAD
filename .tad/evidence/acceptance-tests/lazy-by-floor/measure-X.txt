@@ -1,0 +1,15 @@
+CLAUDE.md	7794
+AGENTS.md	8788
+.claude/skills/alex/SKILL.md	98752
+.tad/config.yaml	16576
+.tad/config-agents.yaml	11298
+.tad/config-platform.yaml	7931
+.tad/config-workflow.yaml	28422
+.tad/project-knowledge/principles.md	25219
+.tad/project-knowledge/patterns/_index.md	2181
+.tad/project-knowledge/frontend-design.md	3609
+.tad/guides/tool-quick-reference-alex.md	11306
+# WARN 已暗模块(binding 有、STEP 3 不读)	config-cognitive config-quality 
+TOTAL_STATIC	221876
+CMD_OUTPUT(5/5 cmds 实跑, 随树漂移不计入 STATIC)	5859
+TOTAL	227735

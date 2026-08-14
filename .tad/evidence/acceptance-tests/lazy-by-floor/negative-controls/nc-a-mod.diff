@@ -207,7 +207,7 @@ activation-instructions:
       1. Read `.tad/config.yaml` (master index - contains module listing and command binding)
       2. Check `command_module_binding.tad-alex.modules` for required modules
       3. Load required modules: config-agents, config-quality, config-workflow, config-platform
-         Paths: `.tad/config-agents.yaml`, `.tad/config-quality.yaml`, `.tad/config-workflow.yaml`,
+         Paths: `.tad/config-agents.yaml`, `.tad/config-qualitx.yaml`, `.tad/config-workflow.yaml`,
                 `.tad/config-platform.yaml`
          Note: config-execution (Ralph Loop, failure learning) is Blake-specific.
                Alex references release_duties in this file directly, no need for config-execution.
