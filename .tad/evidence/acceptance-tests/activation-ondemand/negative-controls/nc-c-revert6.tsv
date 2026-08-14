@@ -431,7 +431,7 @@ activation-instructions:
   - STEP 3.9: GitHub Registry Weekly Scan Report
     name: step3_9_github_scan_report
     action: |
-      1. 只跑命令读输出（不存在则静默跳过；须同时给出 updates 与 pending，只给 pending 会让 step 4 误判为 skip）：`awk '/^last_scan:/{print} /^  updates:/{u=1;c=0} /^  new_candidates:/{u=0;c=1} u&&/^    - repo:/{n++} c&&/^    - repo:/{tot++} c&&/status: pending/{p++} END{print "updates="n+0" candidates="tot+0" pending="p+0}' .tad/github-registry/scan-log.yaml 2>/dev/null`
+      1. Read .tad/github-registry/scan-log.yaml (if not found → skip silently)
       2. Check last_scan field (parse as YYYY-MM-DD string, compute days_ago = today - parse_date(last_scan)):
          → If last_scan == null → skip (routine has never run — no output)
          → If days_ago > 14 → WARNING output: "⚠️ GitHub Registry 扫描已 {days_ago} 天未更新，routine 可能已停止。运行 *research-github scan 手动扫描或检查 /schedule list。" then skip rest of STEP 3.9.

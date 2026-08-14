@@ -221,7 +221,7 @@ activation-instructions:
     suppress_if: "File not found - skip silently (project may not have research tools installed)"
   - STEP 3.4: Load roadmap context
     action: |
-      只读标题行，禁止整读：`command grep -E '^#{1,3} ' ROADMAP.md 2>/dev/null | head -20`
+      Read ROADMAP.md (project root) if it exists.
       This provides strategic context for *discuss and *analyze paths.
       If file doesn't exist or is empty, skip silently (not blocking).
     blocking: false
@@ -386,7 +386,7 @@ activation-instructions:
       After STEP 3.7, check research landscape:
       1. Check if .tad/research-notebooks/REGISTRY.yaml exists
          → If not: skip silently (project has no NotebookLM integration)
-      2. If exists: 只跑命令读输出，禁止整读（须给出三态计数与**active 的** topic，实测裸 grep 会取到 dormant 的 topic 并多数一行注释模板）：`awk '/^    topic:/{t=$0} /^    status: *active/{a++;act[a]=t} /^    status: *dormant/{d++} /^    status: *archived/{r++} END{print "active="a+0" dormant="d+0" archived="r+0; for(i=1;i<=a;i++) print act[i]}' .tad/research-notebooks/REGISTRY.yaml`
+      2. If exists: Read REGISTRY.yaml
          a. Count notebooks by status (active/dormant/archived)
          b. Derive topics_summary: first 3 active notebook topic fields (comma-separated)
          c. If active_count > 5:
@@ -399,7 +399,7 @@ activation-instructions:
       # ---- 新增：目标对齐检查 (独立于 REGISTRY 检查) ----
       3. Check if OBJECTIVES.md exists (project root)
          → If not: skip sub-steps 3-5 silently (项目没定义目标)
-      4. If OBJECTIVES.md exists: 只读标题与 KR 行，禁止整读（KR 是表格行不是 checkbox）：`command grep -E '^#{1,3} |^\| KR' OBJECTIVES.md | head -40`
+      4. If OBJECTIVES.md exists: Read OBJECTIVES.md
          a. Extract all Objectives + Key Results (including KR status: ⬚/🔄/✅)
          b. Matching method: LLM semantic judgment over (notebook.topic, objective.title).
             If active_count > 8: only check top 3 Objectives (first 3 in file).
@@ -431,7 +431,7 @@ activation-instructions:
   - STEP 3.9: GitHub Registry Weekly Scan Report
     name: step3_9_github_scan_report
     action: |
-      1. 只跑命令读输出（不存在则静默跳过；须同时给出 updates 与 pending，只给 pending 会让 step 4 误判为 skip）：`awk '/^last_scan:/{print} /^  updates:/{u=1;c=0} /^  new_candidates:/{u=0;c=1} u&&/^    - repo:/{n++} c&&/^    - repo:/{tot++} c&&/status: pending/{p++} END{print "updates="n+0" candidates="tot+0" pending="p+0}' .tad/github-registry/scan-log.yaml 2>/dev/null`
+      1. Read .tad/github-registry/scan-log.yaml (if not found → skip silently)
       2. Check last_scan field (parse as YYYY-MM-DD string, compute days_ago = today - parse_date(last_scan)):
          → If last_scan == null → skip (routine has never run — no output)
          → If days_ago > 14 → WARNING output: "⚠️ GitHub Registry 扫描已 {days_ago} 天未更新，routine 可能已停止。运行 *research-github scan 手动扫描或检查 /schedule list。" then skip rest of STEP 3.9.

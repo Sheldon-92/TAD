@@ -1,0 +1,5 @@
+23c23,24
+<     security_advisories: []
+---
+>     security_advisories:
+>       - id: "GHSA-FAKE-0001"

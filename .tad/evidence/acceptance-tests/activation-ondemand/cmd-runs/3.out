@@ -1,0 +1,30 @@
+  - name: "gh"
+    type: tool
+    safety_tier: L1
+    current_version: "2.97.0"
+    version_pinned_at: 2026-08-12
+    status: active
+
+    upstream:
+      repo: "cli/cli"
+      registry: homebrew
+      changelog_url: "https://github.com/cli/cli/releases"
+
+    usage:
+      capabilities_used:
+        - "GitHub API access (repos, issues, PRs, releases)"
+        - "Release creation and tag management (*publish)"
+        - "PR creation and review"
+        - "Repository metadata queries"
+      files_depending:
+        - ".claude/skills/alex/references/publish-protocol.md"
+        - ".tad/hooks/lib/layer2-audit.sh"
+        - ".tad/hooks/lib/verify-ac-commands.sh"
+        - ".tad/github-registry/REGISTRY.yaml"
+      integration_context: "Primary GitHub interface for TAD's *publish, *sync-add, and GitHub Registry scan workflows."
+
+    known_limitations: []
+
+    last_checked: 2026-08-12
+    notes: "Installed via Homebrew. Used in publish, sync-add, and github-registry scan."
+

@@ -1,0 +1,9 @@
+active=8 dormant=25 archived=1
+    topic: "RAG & Retrieval Engineering — Chunking, Embeddings, Vector DBs, Reranking, Eval"
+    topic: "Agent Memory & Context Engineering — CoALA, Compaction, MemGPT/Letta/mem0, Checkpointing"
+    topic: "LLM Observability & LLMOps — Tracing, Cost, OTEL GenAI, Online Eval, Drift"
+    topic: "AI Guardrails & LLM I/O Security — Prompt Injection, PII, Moderation, NeMo/Presidio"
+    topic: "Data Engineering for AI — ETL/ELT, dbt, Airflow/Dagster, Data Quality, DuckDB/Polars"
+    topic: "Agent Orchestration — LangGraph/CrewAI/AutoGen/Agents-SDK, Durable Execution, Multi-Agent"
+    topic: "Synthetic Data & Fine-Tune Dataset Curation — distilabel, Evol-Instruct, DPO, Dedup, Contamination"
+    topic: "Knowledge Graphs & GraphRAG — Entity Extraction, Neo4j/Memgraph, Microsoft GraphRAG/LightRAG, Cypher"

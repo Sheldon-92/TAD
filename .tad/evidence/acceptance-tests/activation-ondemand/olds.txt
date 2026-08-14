@@ -1,0 +1,7 @@
+      Scan .tad/active/handoffs/, NEXT.md, PROJECT_CONTEXT.md.
+      1. Read .tad/dependencies/scan-results.yaml
+      2. Read .tad/dependencies/REGISTRY.yaml
+      2. If exists: Read REGISTRY.yaml
+      4. If OBJECTIVES.md exists: Read OBJECTIVES.md
+      1. Read .tad/github-registry/scan-log.yaml (if not found → skip silently)
+      Read ROADMAP.md (project root) if it exists.

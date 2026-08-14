@@ -340,7 +340,6 @@ activation-instructions:
     blocking: false
   - STEP 3.7: Session State Check
     action: |
-      Read .tad/active/session-state.md (if exists).
       Apply stale_detection (mirror Blake session_state_protocol.stale_detection):
         1. File not found → skip silently
         2. Status != ACTIVE → skip (print nothing, old completed session)

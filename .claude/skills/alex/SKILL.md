@@ -221,7 +221,7 @@ activation-instructions:
     suppress_if: "File not found - skip silently (project may not have research tools installed)"
   - STEP 3.4: Load roadmap context
     action: |
-      Read ROADMAP.md (project root) if it exists.
+      只读标题行，禁止整读：`command grep -E '^#{1,3} ' ROADMAP.md 2>/dev/null | head -20`
       This provides strategic context for *discuss and *analyze paths.
       If file doesn't exist or is empty, skip silently (not blocking).
     blocking: false
@@ -229,7 +229,7 @@ activation-instructions:
   - STEP 3.5: Document health check
     action: |
       Run document health check in CHECK mode.
-      Scan .tad/active/handoffs/, NEXT.md, PROJECT_CONTEXT.md.
+      只跑命令读其输出，禁止整读这三处（僵尸检测所需的日期/Epic/completion 三字段由第二条命令给出）：`wc -l < NEXT.md; head -12 PROJECT_CONTEXT.md; ls .tad/active/epics/ 2>/dev/null; find .tad/active/handoffs -maxdepth 1 -name 'HANDOFF-*.md' | while IFS= read -r f; do b=$(basename "$f"); dt=$(printf '%s' "$b" | command grep -oE '[0-9]{8}' | head -1); ep=$(command grep -m1 -oE 'EPIC-[0-9A-Za-z._-]+\.md' "$f" | head -1); cp=$(ls .tad/archive/handoffs/COMPLETION-* 2>/dev/null | command grep -c "${b#HANDOFF-}" || true); printf '%s|date=%s|epic=%s|completion=%s\n' "$b" "$dt" "${ep:-none}" "${cp:-0}"; done`
       Output a brief health summary (the CHECK mode report from /tad-maintain).
       # --- Zombie Handoff Detection (added 2026-05-17) — READ-ONLY scan ---
       4. Scan .tad/active/handoffs/HANDOFF-*.md files
@@ -277,10 +277,10 @@ activation-instructions:
     blocking: false
     suppress_if: ".tad/dependencies/scan-results.yaml not found"
     action: |
-      1. Read .tad/dependencies/scan-results.yaml
+      1. 只跑命令读输出，禁止整读（须给出 changelog 摘要与 GHSA/CVE 判定，否则 3b 相关性与 3c limitation 检测无输入）：`awk 'function flush(){ if(d!="" && vc=="true") printf "%s %s -> %s (%sd, %s) adv=%s cve=%s :: %s\n", d,cur,ul,ds,st,adv,cve,substr(cl,1,400) } /^last_scan:/{print} /^  - dependency:/{ flush(); d=$3; st=ul=ds=cur=adv=cve=vc=cl=""; next } /^    scan_status:/{st=$2} /^    upstream_latest:/{ul=$2} /^    days_since_release:/{ds=$2} /^    current_version:/{cur=$2} /^    version_changed:/{vc=$2} /^    security_advisories:/{ adv=($0 ~ /\[\]$/)?"none":"YES" } /^    changelog_text:/{ cl=$0; cve=($0 ~ /CVE-[0-9][0-9][0-9][0-9]-[0-9]+|GHSA-/)?"YES":"no" } END{ flush() }' .tad/dependencies/scan-results.yaml`
          → If not found: skip silently (project has no scan data yet)
          → If last_scan older than 30 days: append "⚠️ Dependency scan is {N} days old. Run *deps-check to refresh."
-      2. Read .tad/dependencies/REGISTRY.yaml
+      2. 只在上一步 version_changed 命中时，用**行首锚定**按名取该依赖整段（禁用无锚子串匹配——实测会取到别的依赖的数据）：`awk -v d="{上一步输出的依赖名}" 'BEGIN{pat="^  - name: \""d"\"$"} $0~pat{p=1;print;next} p&&/^  - name: /{exit} p{print}' .tad/dependencies/REGISTRY.yaml`
          → If not found: skip (inconsistent state)
       3. For each result where version_changed == true AND scan_status == "success":
          a. SAFETY BUFFER:
@@ -386,7 +386,7 @@ activation-instructions:
       After STEP 3.7, check research landscape:
       1. Check if .tad/research-notebooks/REGISTRY.yaml exists
          → If not: skip silently (project has no NotebookLM integration)
-      2. If exists: Read REGISTRY.yaml
+      2. If exists: 只跑命令读输出，禁止整读（须给出三态计数与**active 的** topic，实测裸 grep 会取到 dormant 的 topic 并多数一行注释模板）：`awk '/^    topic:/{t=$0} /^    status: *active/{a++;act[a]=t} /^    status: *dormant/{d++} /^    status: *archived/{r++} END{print "active="a+0" dormant="d+0" archived="r+0; for(i=1;i<=a;i++) print act[i]}' .tad/research-notebooks/REGISTRY.yaml`
          a. Count notebooks by status (active/dormant/archived)
          b. Derive topics_summary: first 3 active notebook topic fields (comma-separated)
          c. If active_count > 5:
@@ -399,7 +399,7 @@ activation-instructions:
       # ---- 新增：目标对齐检查 (独立于 REGISTRY 检查) ----
       3. Check if OBJECTIVES.md exists (project root)
          → If not: skip sub-steps 3-5 silently (项目没定义目标)
-      4. If OBJECTIVES.md exists: Read OBJECTIVES.md
+      4. If OBJECTIVES.md exists: 只读标题与 KR 行，禁止整读（KR 是表格行不是 checkbox）：`command grep -E '^#{1,3} |^\| KR' OBJECTIVES.md | head -40`
          a. Extract all Objectives + Key Results (including KR status: ⬚/🔄/✅)
          b. Matching method: LLM semantic judgment over (notebook.topic, objective.title).
             If active_count > 8: only check top 3 Objectives (first 3 in file).
@@ -431,7 +431,7 @@ activation-instructions:
   - STEP 3.9: GitHub Registry Weekly Scan Report
     name: step3_9_github_scan_report
     action: |
-      1. Read .tad/github-registry/scan-log.yaml (if not found → skip silently)
+      1. 只跑命令读输出（不存在则静默跳过；须同时给出 updates 与 pending，只给 pending 会让 step 4 误判为 skip）：`awk '/^last_scan:/{print} /^  updates:/{u=1;c=0} /^  new_candidates:/{u=0;c=1} u&&/^    - repo:/{n++} c&&/^    - repo:/{tot++} c&&/status: pending/{p++} END{print "updates="n+0" candidates="tot+0" pending="p+0}' .tad/github-registry/scan-log.yaml 2>/dev/null`
       2. Check last_scan field (parse as YYYY-MM-DD string, compute days_ago = today - parse_date(last_scan)):
          → If last_scan == null → skip (routine has never run — no output)
          → If days_ago > 14 → WARNING output: "⚠️ GitHub Registry 扫描已 {days_ago} 天未更新，routine 可能已停止。运行 *research-github scan 手动扫描或检查 /schedule list。" then skip rest of STEP 3.9.

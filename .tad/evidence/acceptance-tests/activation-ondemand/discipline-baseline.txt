@@ -1,0 +1,10 @@
+.claude/skills/alex/SKILL.md|MUST|18
+.claude/skills/alex/SKILL.md|MANDATORY|9
+.claude/skills/alex/SKILL.md|VIOLATION|3
+.claude/skills/alex/SKILL.md|forbidden|9
+.claude/skills/alex/SKILL.md|不得|1
+.agents/skills/alex/SKILL.md|MUST|18
+.agents/skills/alex/SKILL.md|MANDATORY|9
+.agents/skills/alex/SKILL.md|VIOLATION|3
+.agents/skills/alex/SKILL.md|forbidden|9
+.agents/skills/alex/SKILL.md|不得|1

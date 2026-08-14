@@ -1,0 +1,9 @@
+NEXT.md	97369
+PROJECT_CONTEXT.md	11871
+.tad/research-notebooks/REGISTRY.yaml	42684
+.tad/dependencies/scan-results.yaml	7003
+.tad/dependencies/REGISTRY.yaml	7595
+OBJECTIVES.md	5029
+.tad/github-registry/scan-log.yaml	1950
+ROADMAP.md	5055
+TOTAL	178556
