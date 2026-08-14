@@ -410,3 +410,25 @@
 - **Grounded in**: `.tad/archive/handoffs/HANDOFF-20260814-routing-decouple.pins.tsv` pin 13；
   `.tad/evidence/acceptance-tests/routing-decouple/amendment-record.md` §矛盾 + 补记 1；
   `COMPLETION-20260814-routing-decouple.md` Gate 4 §「三专家未捕获」
+
+### 每收窄一次过滤器，都要验"该留的还在"——否则会恰好滤掉目标 - 2026-08-14
+
+- **Context**: 一条 AC 需要"该协议块内的独立强制子项"清单作为期望集。首版正则不加过滤，
+  产出 1144 条（24 个块，均 48 个），逐字列举不可满足，必须收窄。
+- **Discovery**: 三轮收窄，**中间一轮恰好把要守的那个目标滤掉了**。(1) 按宽标记过滤 → 151 条；
+  (2) 按窄标记过滤 → 62 条，**但区间是按"下一个匹配行"算的，把父子当成了兄弟**：
+  `      knowledge_assessment:`(6 空格) 的区间被截在 `        blocking: true`(8 空格) 之前，
+  于是**有意义的键名被丢弃、无意义的 `blocking: true` 反被保留**——而 `knowledge_assessment`
+  正是审查员点名"会被静默吞掉"的那条纪律，AC 却恰好不再守它。(3) 改缩进感知 → 98 条，
+  但 `blocking` 这类键**自己满足自己**（键行即标记行）；要求标记出现在键行**之后** → 84 条。
+  **每一轮都是跑出来发现的，不是读出来的。**
+- **Action**: 过滤器每收窄一次，**必须用一个已知必须保留的样本做正控**（"该留的还在吗"），
+  不能只看总数从大变小就认为收窄成功。数量下降是收窄生效的证据，**不是收窄正确的证据**。
+  正控样本优先取**审查意见里点名的那个具体案例**——它是外部给的，不是自己挑的。
+  另：任何"区间/作用域"计算，先问它是否需要**层级感知**；扁平的"到下一个匹配"在任何
+  嵌套结构（YAML、markdown 标题、代码块）上都会把父子当兄弟。
+- **failure_mode**: 朴素默认：过滤条件太松就加条件，看总数从 1144 降到 62 就认为对了。
+  为什么错：收窄同时在删噪音和删信号，而**总数只反映删了多少、不反映删了什么**；
+  被删掉的恰好是目标时，AC 依然全绿、依然"有判别力"的样子，只是不再守它本来要守的东西。
+- **Grounded in**: `HANDOFF-20260815-discipline-enumeration.step0.sh`（缩进感知区间 + 键行后置要求）；
+  `.tad/evidence/acceptance-tests/discipline-enumeration/subkeys.tsv`（84 条/13 块，含两条 `knowledge_assessment`）

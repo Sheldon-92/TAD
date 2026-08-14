@@ -1,0 +1,60 @@
+.claude/skills/gate/SKILL.md	2	name: gate
+.claude/skills/gate/SKILL.md	3	description: Execute TAD Quality Gate. Gate 1 (pre-design), Gate 2 (pre-handoff), Gate 3 (post-implementation), Gate 4 (acceptance).
+.claude/skills/gate/SKILL.md	9	## 🎯 自动触发条件
+.claude/skills/gate/SKILL.md	13	### 必须执行 Gate 的时机
+.claude/skills/gate/SKILL.md	19	### ⚠️ 强制规则
+.claude/skills/gate/SKILL.md	27	### 如何激活
+.claude/skills/gate/SKILL.md	46	## Gate Detection and Execution
+.claude/skills/gate/SKILL.md	63	## Gate 1: Requirements Clarity (Alex) - Optional Quick Check
+.claude/skills/gate/SKILL.md	78	## Gate 2: Design Completeness (Alex) - **MANDATORY** 🔴
+.claude/skills/gate/SKILL.md	103	## Gate 3: Implementation Quality (Blake) - **MANDATORY** 🔴
+.claude/skills/gate/SKILL.md	413	## Rubric Evaluation Protocol
+.claude/skills/gate/SKILL.md	575	## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴
+.claude/skills/gate/SKILL.md	780	## ⚠️ Gate 4 Subagent Requirement (CRITICAL)
+.claude/skills/gate/SKILL.md	913	## Gate 4 — Rubric-Based Handoffs (universal, no separate branch)
+.claude/skills/gate/SKILL.md	947	## Interactive Gate Execution
+.claude/skills/gate/SKILL.md	974	## Violation Handling
+AGENTS.md	16	## Role Switching
+AGENTS.md	36	## Knowledge Ingress (read on activation)
+AGENTS.md	55	## Critical Rules (platform-equivalent of CLAUDE.md §1/§4/§4.5/§7.5)
+AGENTS.md	57	### Handoff and routing
+AGENTS.md	62	### Role separation
+AGENTS.md	67	### Post-compact recovery
+AGENTS.md	74	### Memory authority
+AGENTS.md	79	### Interaction decisions
+AGENTS.md	94	## Default Behavior (no role specified)
+AGENTS.md	105	## Capability Packs (Domain Expertise)
+AGENTS.md	131	## Codex-Specific Notes
+.tad/config-workflow.yaml	7	document_management:
+.tad/config-workflow.yaml	177	drift_check:
+.tad/config-workflow.yaml	200	tad_maintain:
+.tad/config-workflow.yaml	223	pair_testing:
+.tad/config-workflow.yaml	269	playground:
+.tad/config-workflow.yaml	332	requirement_elicitation:
+.tad/config-workflow.yaml	458	socratic_inquiry_protocol:
+.tad/config-workflow.yaml	606	intent_modes:
+.tad/config-workflow.yaml	710	scenarios:
+.tad/config-workflow.yaml	777	research_notebook:
+.tad/config-workflow.yaml	801	feedback_collector:
+.tad/config-quality.yaml	7	subagents_enforcement:
+.tad/config-quality.yaml	57	gate_checklist_source: ".tad/gates/gate-canonical-checklist.md"
+.tad/config-quality.yaml	59	quality_gates:
+.tad/config-quality.yaml	309	evidence_based_verification:
+.tad/config-quality.yaml	393	mandatory_questions:
+.tad/config-quality.yaml	571	progressive_validation:
+.tad/config-quality.yaml	690	template_triggers:
+.tad/config-execution.yaml	7	ralph_loop:
+.tad/config-execution.yaml	23	autoresearch:
+.tad/config-execution.yaml	52	release_management:
+.tad/config-execution.yaml	212	learning_mechanisms:
+.tad/config-execution.yaml	336	failure_learning_loop:
+.tad/config-cognitive.yaml	7	decision_transparency:
+.tad/config-cognitive.yaml	120	research_first:
+.tad/config-cognitive.yaml	181	fatal_operations:
+.tad/config-cognitive.yaml	278	integration:
+.tad/config-agents.yaml	7	activation_protocol:
+.tad/config-agents.yaml	36	triangle:
+.tad/config-agents.yaml	158	interaction_protocol:
+.tad/config-agents.yaml	291	agent_teams:
+.tad/config-platform.yaml	7	mcp_tools:
+.tad/config-platform.yaml	231	important_notes:

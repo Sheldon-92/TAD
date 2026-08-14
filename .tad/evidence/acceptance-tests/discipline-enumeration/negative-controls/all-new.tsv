@@ -1,0 +1,60 @@
+.claude/skills/gate/SKILL.md	2	name: gate	新增:伪造纪律1		name: gate	0	-
+.claude/skills/gate/SKILL.md	3	description: Execute TAD Quality Gate. Gate 1 (pre-design), Gate 2 (pre-handoff), Gate 3 (post-implementation), Gate 4 (acceptance).	新增:伪造纪律2		description: Execute TAD Quality Gate. Gate 1 (pre-design), Gate 2 (pre-handoff)	0	-
+.claude/skills/gate/SKILL.md	9	## 🎯 自动触发条件	新增:伪造纪律3		**Claude 应主动调用此 skill 的场景：**	0	-
+.claude/skills/gate/SKILL.md	13	### 必须执行 Gate 的时机	新增:伪造纪律4		### 必须执行 Gate 的时机	1	-
+.claude/skills/gate/SKILL.md	19	### ⚠️ 强制规则	新增:伪造纪律5		规则 1: Alex 创建 handoff → 必须先执行 Gate 2	5	-
+.claude/skills/gate/SKILL.md	27	### 如何激活	新增:伪造纪律6		→ 必须先调用 /gate 2	3	-
+.claude/skills/gate/SKILL.md	46	## Gate Detection and Execution	新增:伪造纪律7		## Gate Detection and Execution	0	-
+.claude/skills/gate/SKILL.md	63	## Gate 1: Requirements Clarity (Alex) - Optional Quick Check	新增:伪造纪律8		Output: Quick summary, no formal evidence required	1	-
+.claude/skills/gate/SKILL.md	78	## Gate 2: Design Completeness (Alex) - **MANDATORY** 🔴	新增:伪造纪律9		## Gate 2: Design Completeness (Alex) - **MANDATORY** 🔴	3	-
+.claude/skills/gate/SKILL.md	103	## Gate 3: Implementation Quality (Blake) - **MANDATORY** 🔴	新增:伪造纪律10		## Gate 3: Implementation Quality (Blake) - **MANDATORY** 🔴	35	if_exists,action,optional_advisory_checker,violations,if_empty_or_missing,output_format,gate3_addition,on_invalid
+.claude/skills/gate/SKILL.md	413	## Rubric Evaluation Protocol	新增:伪造纪律11		# ⚠️ judge ≠ producer (BLOCKING) — contract §C — anti-self-scoring backbone (mig	40	hard_rule,why,forbidden,partial_threshold,verdict_shape_guard,message,violation,subagent,judge_prompt_constraint,output_format,output_format_constraint,categorical,rigor_independence,decoupling_firewall,extra_output,checklist,malformed_guard
+.claude/skills/gate/SKILL.md	575	## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴	新增:伪造纪律12		## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴	33	optional_advisory_checker,for_rubric_based,anti_skip,skip_if,escape_valve,output_format,gate4_addition
+.claude/skills/gate/SKILL.md	780	## ⚠️ Gate 4 Subagent Requirement (CRITICAL)	新增:伪造纪律13		## ⚠️ Gate 4 Subagent Requirement (CRITICAL)	16	-
+.claude/skills/gate/SKILL.md	913	## Gate 4 — Rubric-Based Handoffs (universal, no separate branch)	新增:伪造纪律14		# ⚠️ RUBRIC-LANE PREREQUISITE (BLOCKING) — when §9.1 ACs are rubric-based	6	-
+.claude/skills/gate/SKILL.md	947	## Interactive Gate Execution	新增:伪造纪律15		⚠️ [Criterion]: Warning - [Concern]	1	-
+.claude/skills/gate/SKILL.md	974	## Violation Handling	新增:伪造纪律16		## Violation Handling	2	-
+AGENTS.md	16	## Role Switching	新增:伪造纪律17		files (`AGENTS.md`, skill files) only route and load the role — they never dupli	1	-
+AGENTS.md	36	## Knowledge Ingress (read on activation)	新增:伪造纪律18		## Knowledge Ingress (read on activation)	0	-
+AGENTS.md	55	## Critical Rules (platform-equivalent of CLAUDE.md §1/§4/§4.5/§7.5)	新增:伪造纪律19		## Critical Rules (platform-equivalent of CLAUDE.md §1/§4/§4.5/§7.5)	0	-
+AGENTS.md	57	### Handoff and routing	新增:伪造纪律20		### Handoff and routing	0	-
+AGENTS.md	62	### Role separation	新增:伪造纪律21		### Role separation	0	-
+AGENTS.md	67	### Post-compact recovery	新增:伪造纪律22		### Post-compact recovery	0	-
+AGENTS.md	74	### Memory authority	新增:伪造纪律23		- `.tad/memory/` is Claude's native capture layer; Codex roles read it but never	1	-
+AGENTS.md	79	### Interaction decisions	新增:伪造纪律24		### Interaction decisions	0	-
+AGENTS.md	94	## Default Behavior (no role specified)	新增:伪造纪律25		## Default Behavior (no role specified)	0	-
+AGENTS.md	105	## Capability Packs (Domain Expertise)	新增:伪造纪律26		## Capability Packs (Domain Expertise)	0	-
+AGENTS.md	131	## Codex-Specific Notes	新增:伪造纪律27		## Codex-Specific Notes	0	-
+.tad/config-workflow.yaml	7	document_management:	新增:伪造纪律28		mandatory_sections:	1	-
+.tad/config-workflow.yaml	177	drift_check:	新增:伪造纪律29		drift_check:	0	-
+.tad/config-workflow.yaml	200	tad_maintain:	新增:伪造纪律30		tad_maintain:	0	-
+.tad/config-workflow.yaml	223	pair_testing:	新增:伪造纪律31		pair_testing:	0	-
+.tad/config-workflow.yaml	269	playground:	新增:伪造纪律32		migration: "Use Feedback Collector (handoff §8.5 feedback_required: true). Blake	1	-
+.tad/config-workflow.yaml	332	requirement_elicitation:	新增:伪造纪律33		mandatory_rounds:	1	-
+.tad/config-workflow.yaml	458	socratic_inquiry_protocol:	新增:伪造纪律34		description: "写 handoff 之前必须用 AskUserQuestion 工具进行苏格拉底式提问"	6	description,blocking
+.tad/config-workflow.yaml	606	intent_modes:	新增:伪造纪律35		leads_to_handoff: "never"	4	modes,express,description
+.tad/config-workflow.yaml	710	scenarios:	新增:伪造纪律36		mandatory_subagents: ["product-expert"]	4	-
+.tad/config-workflow.yaml	777	research_notebook:	新增:伪造纪律37		research_notebook:	0	-
+.tad/config-workflow.yaml	801	feedback_collector:	新增:伪造纪律38		feedback_collector:	0	-
+.tad/config-quality.yaml	7	subagents_enforcement:	新增:伪造纪律39		mandatory_invocation_rules:	1	-
+.tad/config-quality.yaml	57	gate_checklist_source: ".tad/gates/gate-canonical-checklist.md"	新增:伪造纪律40		gate_checklist_source: ".tad/gates/gate-canonical-checklist.md"	0	-
+.tad/config-quality.yaml	59	quality_gates:	新增:伪造纪律41		violation_action: "阻止进入设计阶段"	27	gate3_v2_implementation_integration,integration_verification,checks,knowledge_assessment,required,gate4_v2_acceptance_archive,archive,actions,gate_responsibility_matrix,principles
+.tad/config-quality.yaml	309	evidence_based_verification:	新增:伪造纪律42		required_evidence_types:	1	-
+.tad/config-quality.yaml	393	mandatory_questions:	新增:伪造纪律43		mandatory_questions:	14	enabled,questions,evidence_format
+.tad/config-quality.yaml	571	progressive_validation:	新增:伪造纪律44		mandatory_checkpoint: "每个Phase完成时Blake必须提供证据，Human必须审查"	7	-
+.tad/config-quality.yaml	690	template_triggers:	新增:伪造纪律45		# MANDATORY: Subagent 必须输出，Gate 检查文件存在	7	storage,date_format,mandatory,gate_3,evidence_path,gate_4,enforcement,gate_3_check,gate_4_check
+.tad/config-execution.yaml	7	ralph_loop:	新增:伪造纪律46		enabled: true	0	-
+.tad/config-execution.yaml	23	autoresearch:	新增:伪造纪律47		autoresearch:	0	-
+.tad/config-execution.yaml	52	release_management:	新增:伪造纪律48		gates_required: ["gate3", "gate4"]	16	agent_responsibilities,alex,blake,release_checklist,pre_release,post_release
+.tad/config-execution.yaml	212	learning_mechanisms:	新增:伪造纪律49		learning_mechanisms:	0	-
+.tad/config-execution.yaml	336	failure_learning_loop:	新增:伪造纪律50		required_evidence: "[证据类型]"	1	-
+.tad/config-cognitive.yaml	7	decision_transparency:	新增:伪造纪律51		description: "Every significant technical choice must be visible, researched, an	0	-
+.tad/config-cognitive.yaml	120	research_first:	新增:伪造纪律52		description: "AI must research before designing — find best practices, open sour	5	description,violations
+.tad/config-cognitive.yaml	181	fatal_operations:	新增:伪造纪律53		⚠️ RISK DETECTED: {operation_description}	1	-
+.tad/config-cognitive.yaml	278	integration:	新增:伪造纪律54		integration:	0	-
+.tad/config-agents.yaml	7	activation_protocol:	新增:伪造纪律55		mandatory_steps:	0	-
+.tad/config-agents.yaml	36	triangle:	新增:伪造纪律56		# Terminal 隔离规则 (v1.8.0 新增) ⚠️ CRITICAL	11	terminal_isolation,enabled,violation,detection,agent_a,agent_b
+.tad/config-agents.yaml	158	interaction_protocol:	新增:伪造纪律57		required_sections:	5	violation_alerts,format
+.tad/config-agents.yaml	291	agent_teams:	新增:伪造纪律58		rule: "Agent Teams MUST NOT cross terminal boundaries"	3	-
+.tad/config-platform.yaml	7	mcp_tools:	新增:伪造纪律59		description: "MCP tools enhance TAD agents but are NOT required for core functio	10	agent_a_tools,enforcement,violation_format
+.tad/config-platform.yaml	231	important_notes:	新增:伪造纪律60		important_notes:	0	-
