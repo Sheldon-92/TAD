@@ -186,3 +186,44 @@
 - **Action**: 多路径一律用**数组**或**逐个显式列出**，不要塞进一个变量再靠分词：`for f in "$A" "$B" "$C"; do …` 或 `set -- "$A" "$B"; for f in "$@"`。若脚本必须两种 shell 都能跑，在开头显式声明并用 `#!/usr/bin/env bash` + `bash script.sh` 执行；**不要假设"这台机器的 shell"和"跑脚本的 shell"是同一个**。验证类脚本额外加一条自证：`n=0; for f in …; do n=$((n+1)); done; [ "$n" -eq <期望路径数> ] || fail`。
 - **failure_mode**: Naive default: 把一组路径存进一个变量，`for f in $VAR` 遍历——这在 bash/sh 里是标准写法。Why wrong: zsh 默认不做 word splitting，循环只跑一次且 `$f` 是拼接串；配上"计数为 0 即通过"的判据，未被检查的文件**静默算作通过**。
 - **Grounded in**: HANDOFF-20260812-requirement-first.md §8 `for f in $SKILLS`，2026-08-13 Gate 4 自查实测（zsh 1 次 / bash 2 次；`deleted` 1 vs 5）
+
+### 分隔符必须取自数据里不可能出现的字符；markdown/YAML 里 `#` `:` 空格全都会出现 - 2026-08-15
+
+- **Context**: 契约需要把「路径 + 位置 + 名称」编成一行喂给脚本消费。两次都顺手选了看起来最自然的分隔符。
+- **Discovery**: 同一天栽了两次。(1) 上一单用 `路径#锚点串` 编码载体，而真实锚点是 markdown 标题、
+  本身以 `###` 开头 → `cut -d'#' -f2` 产出**空串**，而 `command grep -Fq ""` 匹配一切 → 该判据永真绿；
+  拆首个还是末个 `#` 未定义，同一份数据两种合理解析**一绿一红**。(2) 本单用 `路径#行号#块名` 冻结块清单，
+  实测 55 行里 **25 行不是三段**——因为 markdown 块名就是 `## Role Switching`，YAML 块名是 `name: gate`
+  （含 `:`）。**`#`、`:`、空格在这两种格式里都是内容字符，不是可用的分隔符。**
+- **Action**: 结构化数据一律用 **TAB** 分隔（`printf '%s\t%s\t%s\n'` + `IFS=$'\t' read -r`），
+  并在生成处**立刻断言字段数**（`awk -F'\t' 'NF!=3{bad++} END{exit (bad+0)>0}'`）——生成时不查，
+  消费时才发现就晚了。选分隔符前先问：**这个字符会不会出现在被编码的内容里？**
+  markdown 标题 → `#`；YAML 键值 → `:`；路径与自然语言 → 空格；CSV 里的中文文案 → `,`。TAB 是唯一
+  在这些格式里都不会自然出现的。次选：用换行分隔并让每条记录占多行。
+- **failure_mode**: 朴素默认：挑一个"看起来像分隔符"的字符（`#`、`:`、`|`）拼字符串，因为读起来直观。
+  为什么错：这类字符恰恰是标记语言的语法字符，必然出现在被编码的内容里；而拼接时不会报错，
+  只在**消费端**表现为字段错位或空字段——空字段喂给 `grep -Fq` 就是永真绿，
+  于是一条本该有判别力的判据静默失效，且看起来一切正常。
+- **Grounded in**: `.tad/archive/handoffs/HANDOFF-20260814-routing-decouple.pins.tsv`（改用 TAB 后 19 条零撞车）；
+  `HANDOFF-20260815-discipline-enumeration.md` §8 的 TAB 修正与字段数断言；
+  Gate 2 审查对前一单 AC3 的三组解析实测
+
+### zsh 里 `path` / `cdpath` / `argv` / `status` 是特殊变量，赋值即毁 PATH 且失败是静默的 - 2026-08-13
+
+- **Context**: 验证脚本里用 `path` 存"待检查文件的仓库相对路径"，形如
+  `live="${pair%%|*}"; path="${pair##*|}"`，然后 `git show "$T0:$path"` 与线上文件比对。
+- **Discovery**: zsh 把 `path` 与 `PATH` **双向绑定**（`cdpath`/`manpath`/`argv`/`status` 同理）。
+  `path=.claude/skills/x.md` 立刻把 `PATH` 改写成那一个不存在的目录 → 此后**所有外部命令**
+  `command not found`。致命的是**失败方向**：`git`/`grep` 全部失联返回空串，于是
+  `[ "$base" = "$now" ]` 变成 `[ "" = "" ]` → **判据静默变绿**；而其下游 8 条依赖外部命令的 AC 全部**假红**。
+  一个错误同时制造一条假绿和八条假红，症状看起来像"下游坏了"，根因在上游一次赋值。
+- **Action**: shell 脚本里**永不使用** `path` / `cdpath` / `manpath` / `fpath` / `argv` / `status`
+  作变量名（即使脚本声明用 bash 跑——它可能被 zsh source 或被交互式 zsh 粘贴执行）。
+  用 `pth` / `relpath` / `p1`。写完 grep 一遍：`grep -nE '^\s*(path|cdpath|manpath|fpath|argv|status)='`。
+  更一般的防线：任何比较型判据都要有**非空前置断言**（`[ -n "$a" ] || fail`），
+  否则"两侧同时变空"这一类故障永远表现为通过。
+- **failure_mode**: 朴素默认：挑一个语义最贴切的变量名（存路径就叫 `path`）。为什么错：
+  该名字在 zsh 里被保留且与环境变量联动，赋值的副作用发生在**赋值那一刻**、离故障现场很远；
+  而它造成的比较失败是"两侧同时变空"，等号成立 → 判据变绿而非变红，**自查看不出来**。
+- **Grounded in**: `HANDOFF-20260813-review-scaling.md` §4 环境约束表；Gate 2 实测记录
+  （rev2 的 AC5 因此永真、其下游 8 条 AC 全部假红）
