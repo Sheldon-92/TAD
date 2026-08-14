@@ -1,0 +1,7 @@
+1	      Scan .tad/active/handoffs/, NEXT.md, PROJECT_CONTEXT.md.	      只跑命令读其输出，禁止整读这三处：`ls .tad/active/handoffs/*.md 2>/dev/null | wc -l; wc -l < NEXT.md; head -12 PROJECT_CONTEXT.md`
+2	      1. Read .tad/dependencies/scan-results.yaml	      1. 只跑命令读输出，禁止整读：`awk '/last_scan:/{print} /version_changed: true/{n++} /security_advisories:/{s++} END{print "changed="n+0" adv="s+0}' .tad/dependencies/scan-results.yaml`
+3	      2. Read .tad/dependencies/REGISTRY.yaml	      2. 只在上一步 changed>0 或 adv>0 时，按名字取该依赖那一段：`awk -v d="{name}" '$0~d,/^  - /' .tad/dependencies/REGISTRY.yaml | head -20`
+4	      2. If exists: Read REGISTRY.yaml	      2. If exists: 只跑命令读输出，禁止整读：`grep -c 'status: active' .tad/research-notebooks/REGISTRY.yaml; grep -m3 'topic:' .tad/research-notebooks/REGISTRY.yaml`
+5	      4. If OBJECTIVES.md exists: Read OBJECTIVES.md	      4. If OBJECTIVES.md exists: 只读标题行，禁止整读：`grep -E '^#{1,3} |^- \[' OBJECTIVES.md | head -20`
+6	      1. Read .tad/github-registry/scan-log.yaml (if not found → skip silently)	      1. 只跑命令读输出（不存在则静默跳过）：`awk '/last_scan:/{print} /status: pending/{n++} END{print "pending="n+0}' .tad/github-registry/scan-log.yaml 2>/dev/null`
+7	      Read ROADMAP.md (project root) if it exists.	      只读标题行，禁止整读：`grep -E '^#{1,3} ' ROADMAP.md 2>/dev/null | head -20`
