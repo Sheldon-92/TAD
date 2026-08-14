@@ -1,73 +1,86 @@
 #!/usr/bin/env bash
-# P7 measure.sh（rev3）—— 激活即付实测。常驻集**现算**，禁止硬编码（AC7）。
+# P7 measure.sh（rev5）—— 激活即付实测。常驻集**现算**，禁止硬编码（AC7）。
 #
-# rev2 缺陷（Gate 2 第三轮实测）：
-#  (1) 模块集只从 SKILL 正文 `Load required modules` 那行现算 → 措辞改两个词就取到 0 个模块，
-#      凭空省出 76,699 B 而 AC 全绿；
-#  (2) `CMD_OUTPUT` 写死 6892 B（P3 时的实测值），改了扫描命令也不会变；
-#  (3) `session-state.md` 进了分母 —— 它在会话中会变，测量不可复现。
-# rev3 修法：
-#  (1) 正文集与 binding 集**分别**现算、**分别**与 T0 比对（不取并集：binding ⊇ 正文，
-#      取并集会让"改正文里的模块名"这类攻击完全隐形）；正文集为空或少于 T0 项数 → RESULT=FAIL；
-#  (2) `CMD_OUTPUT` 从 SKILL 里现抽启动扫描命令、**实跑取 `wc -c`**；抽到 0 条 → FAIL；
-#  (3) `session-state.md` 移出分母。
+# 历轮缺陷与修法：
+#  R3 (1) 模块集只从 SKILL 正文那行现算 → 改两个词取到 0 个模块，凭空省 76,699 B 而 AC 全绿
+#      (2) `CMD_OUTPUT` 写死 6,892 B  (3) `session-state.md` 进分母 → 测量不可复现
+#  R4 P0-1 分母是**固定文件清单** → 新建一个文件放 29 条祈使句：AC1 绿、AC7 **奖励**（0 B 成本），
+#          义务全部落进 agent 读不到的地方 → 本单承重归零。**分母与常驻层必须是同一个集合。**
+#     P0-2 `grep -m1 'Load required modules'` 可被任意更早的一行含该子串的注释劫持。
+#     P1-7 从 Blake 可写的文件里抽字符串直接 `bash -c` = 被验证方控制验证器执行的代码。
+#     P2-4 `CMD_OUTPUT` 随工作树状态漂移，"严格下降"混进无关噪声。
+# rev5 修法：分母 = `resident.sh` 的输出（常驻层的唯一定义，AC1/AC7/AC8 共用）；
+#            模块行锚定唯一编号行（在 resident.sh 内，命中≠1 直接 error）；
+#            扫描命令**前缀白名单**后才执行；同时输出 TOTAL 与 TOTAL_STATIC，
+#            AC7 的"严格下降"判在 **TOTAL_STATIC**（不含随树漂移的 CMD_OUTPUT）。
 set -uo pipefail
 DONE=0; trap '[ "$DONE" = 1 ] || { echo "RESULT=FAIL (measure.sh 中途退出)"; exit 1; }' EXIT
 R="/Users/sheldonzhao/01-on progress programs/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
+HB="$R/.tad/active/handoffs/HANDOFF-20260818-lazy-by-floor"
 A1="$R/.claude/skills/alex/SKILL.md"
 STAGE="${1:-X}"; OUT="$EV/measure-${STAGE}.txt"; : > "$OUT"; TOT=0; ERR=0
 fail(){ echo "  !! $*"; ERR=$((ERR+1)); }
-add(){ local f="$1" n=0; [ -f "$R/$f" ] && n=$(LC_ALL=C wc -c < "$R/$f" | LC_ALL=C tr -d ' ')
-       printf '%s\t%s\n' "$f" "$n" >> "$OUT"; TOT=$((TOT+n)); }
 
-# 1) 常驻骨架（⚠️ 不含 session-state.md：会话中会变，进分母则测量不可复现）
-add "CLAUDE.md"; add "AGENTS.md"; add ".claude/skills/alex/SKILL.md"; add ".tad/config.yaml"
+# 1) 分母 = 常驻层闭集（唯一定义在 resident.sh；AC1/AC8 读同一个集合）
+RS=$(bash "$HB.resident.sh") || { echo "RESULT=FAIL (resident.sh 报错，见上)"; exit 1; }
+NRS=$(printf '%s\n' "$RS" | command grep -c . || true)
+[ "${NRS:-0}" -ge 5 ] || fail "常驻层只解析出 ${NRS} 个文件，疑似抽取失效"
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  n=$(LC_ALL=C wc -c < "$R/$f" | LC_ALL=C tr -d ' ')
+  printf '%s\t%s\n' "$f" "$n" >> "$OUT"; TOT=$((TOT+n))
+done <<< "$RS"
 
-# 2) 模块集：正文集（Alex 实际会读的）与 binding 集，分别现算
-LC_ALL=C command grep -m1 'Load required modules' "$A1" \
-  | LC_ALL=C tr ',' '\n' | LC_ALL=C command grep -oE 'config-[a-z]+' | LC_ALL=C sort -u > "$EV/.mods-prose"
-LC_ALL=C awk '/^command_module_binding:/{b=1} b && /^  tad-alex:/{a=1} a && /modules:/{print; exit}' "$R/.tad/config.yaml" \
-  | LC_ALL=C tr ',' '\n' | LC_ALL=C command grep -oE 'config-[a-z]+' | LC_ALL=C sort -u > "$EV/.mods-bind"
-NP=$(command grep -c . "$EV/.mods-prose" || true); NB=$(command grep -c . "$EV/.mods-bind" || true)
-[ "${NP:-0}" -ge 1 ] || fail "正文模块集取到 0 项 —— 抽取失效或模块被摘光（rev2 的假绿路径）"
-if [ -f "$EV/module-set-base.txt" ]; then
-  BP=$(LC_ALL=C awk -F'\t' '$1=="prose"' "$EV/module-set-base.txt" | command grep -c . || true)
-  BB=$(LC_ALL=C awk -F'\t' '$1=="binding"' "$EV/module-set-base.txt" | command grep -c . || true)
-  [ "${NP:-0}" -ge "${BP:-0}" ] || fail "正文模块集 ${NP} < T0 的 ${BP}（AC2：只增不减）"
-  [ "${NB:-0}" -ge "${BB:-0}" ] || fail "binding 模块集 ${NB} < T0 的 ${BB}（AC2：只增不减）"
-  LC_ALL=C awk -F'\t' '$1=="prose"{print $2}' "$EV/module-set-base.txt" | LC_ALL=C sort -u > "$EV/.bp"
-  MISS=$(LC_ALL=C comm -23 "$EV/.bp" "$EV/.mods-prose" | LC_ALL=C tr '\n' ' ')
-  [ -z "$MISS" ] || fail "正文模块集缺失：${MISS}"
-  rm -f "$EV/.bp"
+# 2) 与 T0 常驻层比对：成员**只减不增**（本单不得新增常驻层成员，见契约 §7.0）
+if [ -f "$EV/resident-set-base.txt" ]; then
+  printf '%s\n' "$RS" | LC_ALL=C sort -u > "$EV/.rs"
+  ADD=$(LC_ALL=C comm -13 "$EV/resident-set-base.txt" "$EV/.rs" | LC_ALL=C tr '\n' ' ')
+  [ -z "$ADD" ] || fail "常驻层新增成员：${ADD} —— 本单不允许，须退回 Alex 改契约"
+  rm -f "$EV/.rs"
 fi
-while IFS= read -r m; do [ -n "$m" ] && add ".tad/${m}.yaml"; done < "$EV/.mods-prose"
-# binding 有而正文没有的模块 = 纪律已暗（另开单，不计入本单分母，但每次都报出来）
-DARK=$(LC_ALL=C comm -13 "$EV/.mods-prose" "$EV/.mods-bind" | LC_ALL=C tr '\n' ' ')
+
+# 3) binding 集只作对照：binding 有而 STEP 3 正文不读的模块 = 纪律已暗（另开单，每次都报）
+LC_ALL=C awk '/^command_module_binding:/{b=1} b && /^  tad-alex:/{a=1} a && /modules:/{print; exit}' "$R/.tad/config.yaml" \
+  | LC_ALL=C tr ',' '\n' | LC_ALL=C command grep -oE 'config-[a-z]+' | LC_ALL=C sort -u > "$EV/.bind"
+printf '%s\n' "$RS" | LC_ALL=C command grep -oE 'config-[a-z]+' | LC_ALL=C sort -u > "$EV/.pros"
+DARK=$(LC_ALL=C comm -13 "$EV/.pros" "$EV/.bind" | LC_ALL=C tr '\n' ' ')
 [ -z "$DARK" ] || printf '# WARN 已暗模块(binding 有、STEP 3 不读)\t%s\n' "$DARK" >> "$OUT"
+rm -f "$EV/.bind" "$EV/.pros"
 
-# 3) CLAUDE.md 的 @import 现值（只算真实存在的）
-LC_ALL=C command grep -E '^@\.' "$R/CLAUDE.md" | LC_ALL=C sed 's/^@//' > "$EV/.imp"
-while IFS= read -r f; do [ -n "$f" ] && [ -f "$R/$f" ] && add "$f"; done < "$EV/.imp"
+TOT_STATIC=$TOT
+printf 'TOTAL_STATIC\t%s\n' "$TOT_STATIC" >> "$OUT"
 
-# 4) 工具速查（STEP 3.3，blocking:false 但当前仍读）
-add ".tad/guides/tool-quick-reference-alex.md"
-
-# 5) 启动扫描命令的输出：从 SKILL 现抽 + 实跑 wc -c（不写死）
+# 4) 启动扫描命令的输出：现抽 + **只跑 T0 冻结集里的原命令** + 实跑取 wc -c（不写死）
+#    ⚠️ P1-7：`alex/SKILL.md` 是 Blake 可写文件，未加约束地 `bash -c` = 把验证器交给被验证方。
+#    ⚠️ 这里**不做前缀/关键词白名单**：shell 语法是无界集合，deny/allow 关键词都会误判
+#       （实测：P3 那条合法命令里有个叫 `cp` 的变量，就被关键词过滤当成拷贝命令毙掉，
+#        CMD_OUTPUT 从 5,859 静默变成 3,096 —— 守卫误伤反而制造了假数字）。
+#    正确判据是**有界集合**：命令集必须与 T0 冻结的逐字相同，多一条少一条改一字都 FAIL。
 LC_ALL=C command grep -h '禁止整读' "$A1" | LC_ALL=C sed -n 's/.*：`\(.*\)`.*/\1/p' > "$EV/.scan"
 NC=$(command grep -c . "$EV/.scan" || true)
 [ "${NC:-0}" -ge 1 ] || fail "启动扫描命令抽到 0 条 —— 抽取失效"
-CO=0
+if [ -f "$EV/scan-cmds-base.txt" ]; then
+  if ! LC_ALL=C diff -q "$EV/scan-cmds-base.txt" "$EV/.scan" >/dev/null 2>&1; then
+    fail "启动扫描命令集与 T0 不一致（本单不改扫描命令；要改须退回 Alex）"
+    LC_ALL=C diff "$EV/scan-cmds-base.txt" "$EV/.scan" | LC_ALL=C head -6
+  fi
+fi
+CO=0; RUN=0
 while IFS= read -r c; do
   [ -n "$c" ] || continue
+  # 只执行 T0 冻结集里逐字存在的命令；新增/被改的命令一律不跑（上面已计 FAIL）
+  if [ -f "$EV/scan-cmds-base.txt" ] && ! LC_ALL=C command grep -qxF -e "$c" "$EV/scan-cmds-base.txt"; then
+    fail "拒绝执行不在 T0 冻结集里的扫描命令：$(printf '%s' "$c" | LC_ALL=C cut -c1-50)…"; continue
+  fi
   n=$(cd "$R" && bash -c "$c" 2>&1 | LC_ALL=C wc -c | LC_ALL=C tr -d ' ')
-  CO=$((CO+n))
+  CO=$((CO+n)); RUN=$((RUN+1))
 done < "$EV/.scan"
-printf 'CMD_OUTPUT(%s cmds, 实跑)\t%s\n' "$NC" "$CO" >> "$OUT"; TOT=$((TOT+CO))
-
+printf 'CMD_OUTPUT(%s/%s cmds 实跑, 随树漂移不计入 STATIC)\t%s\n' "$RUN" "$NC" "$CO" >> "$OUT"
+TOT=$((TOT+CO))
 printf 'TOTAL\t%s\n' "$TOT" >> "$OUT"
-rm -f "$EV/.mods-prose" "$EV/.mods-bind" "$EV/.imp" "$EV/.scan"
-echo "measure[$STAGE]: ${TOT} B ≈ $((TOT/4000))K tokens → $OUT"
+rm -f "$EV/.scan"
+echo "measure[$STAGE]: STATIC ${TOT_STATIC} B ≈ $((TOT_STATIC/4000))K tokens | TOTAL ${TOT} B → $OUT"
 DONE=1; trap - EXIT
 [ "$ERR" -eq 0 ] || { echo "RESULT=FAIL (${ERR} 项校验失败)"; exit 1; }
 echo "RESULT=PASS"

@@ -1,6 +1,7 @@
 # P7 块边界（Alex 逐项人工确认，Step 0 冻结，AC12 守其哈希）
-# 纪律\t常驻\t起锚串(exact full line)\t止锚串(exact full line, 不含; <EOF>=文件尾)
 # 常驻=否 → 载体不在 Alex 常驻层（gate/blake/blake-lite），不计入最小常驻集预算
+# 纪律\t常驻\t起锚串(exact full line)\t止锚串(exact full line, 不含; <EOF>=文件尾)\t载体(仅非地板护栏行需填)
+# rev5 追加 5 个**非地板**护栏块（Gate 2 R4）：地板表没覆盖但一旦丢失后果不可逆
 需求澄清	是	socratic_inquiry_protocol:	intent_modes:
 需求闸	否	-	-
 门禁	否	-	-
@@ -18,3 +19,8 @@ Friction反跳过	否	-	-
 压缩恢复锚点	是	### Post-compact recovery	### Memory authority
 反合理化登记	是	<!-- anti_rationalization_registry:BEGIN -->	<EOF>
 Forbidden 清单本体	是	# Forbidden actions (will trigger VIOLATION)	# Triple-Question KA: Draft-then-Confirm Rule (2026-06-03)
+STEP3模块加载	是	  - STEP 3: Load config modules	  - STEP 3.3: Load tool quick reference	.claude/skills/alex/SKILL.md
+跨模型禁令alex侧	是	  # AR-001 mechanical anchor — DO NOT remove. Audit grep targets this exact line.	# ⚠️ TAD Friction Protocol (2026-06-10 — Phase 1)	.claude/skills/alex/SKILL.md
+Friction协议本体	是	# ⚠️ TAD Friction Protocol (2026-06-10 — Phase 1)	# ⚠️ MANDATORY: Intent Router Protocol (First Contact)	.claude/skills/alex/SKILL.md
+平台绑定交互决策	是	平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有	# /alex Command (Agent A - Solution Lead)	.claude/skills/alex/SKILL.md
+致命操作识别表	是	    always_confirm:	  # Project Type Detection Integration	.tad/config-platform.yaml
