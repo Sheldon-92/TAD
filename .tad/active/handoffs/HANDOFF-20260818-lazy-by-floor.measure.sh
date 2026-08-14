@@ -46,9 +46,15 @@ if [ -f "$EV/resident-set-base.txt" ]; then
   rm -f "$EV/.rs"
 fi
 
-# 3) binding 集只作对照：binding 有而 STEP 3 正文不读的模块 = 纪律已暗（另开单，每次都报）
+# 3) binding 集：AC2 要求**两个**集合各自 comm —— 早期版本只比计数，
+#    改一个字母（config-cogniti**v**）计数不变即 PASS，正是 principles.md 2026-06-01
+#    「全局计数底线抓不到 must-cover 丢失」的同一类失败。
 LC_ALL=C awk '/^command_module_binding:/{b=1} b && /^  tad-alex:/{a=1} a && /modules:/{print; exit}' "$R/.tad/config.yaml" \
   | LC_ALL=C tr ',' '\n' | LC_ALL=C command grep -oE 'config-[a-z]+' | LC_ALL=C sort -u > "$EV/.bind"
+if [ -f "$EV/binding-set-base.txt" ]; then
+  BLOST=$(LC_ALL=C comm -23 "$EV/binding-set-base.txt" "$EV/.bind" | LC_ALL=C tr '\n' ' ')
+  [ -z "$BLOST" ] || fail "binding 模块集丢失成员：${BLOST} —— AC2 只增不减"
+fi
 printf '%s\n' "$RS" | LC_ALL=C command grep -oE 'config-[a-z]+' | LC_ALL=C sort -u > "$EV/.pros"
 DARK=$(LC_ALL=C comm -13 "$EV/.pros" "$EV/.bind" | LC_ALL=C tr '\n' ' ')
 [ -z "$DARK" ] || printf '# WARN 已暗模块(binding 有、STEP 3 不读)\t%s\n' "$DARK" >> "$OUT"
@@ -79,9 +85,17 @@ while IFS= read -r c; do
   if [ -f "$EV/scan-cmds-base.txt" ] && ! LC_ALL=C command grep -qxF -e "$c" "$EV/scan-cmds-base.txt"; then
     fail "拒绝执行不在 T0 冻结集里的扫描命令：$(printf '%s' "$c" | LC_ALL=C cut -c1-50)…"; continue
   fi
-  n=$(cd "$R" && bash -c "$c" 2>&1 | LC_ALL=C wc -c | LC_ALL=C tr -d ' ')
+  # ⚠️ `< /dev/null`：`bash -c` 会继承本循环的 stdin，任何读 stdin 的扫描命令
+  #    （哪怕只是一个裸 `cat`）会把剩下的命令全部吃掉，而标签仍写着"5 cmds 实跑"
+  #    —— 审查员实测：−4,447 B 且 RESULT=PASS，人读证据时看到的是 5 条全跑了。
+  n=$(cd "$R" && bash -c "$c" </dev/null 2>&1 | LC_ALL=C wc -c | LC_ALL=C tr -d ' ')
   CO=$((CO+n)); RUN=$((RUN+1))
 done < "$EV/.scan"
+[ "${RUN:-0}" -eq "${NC:-0}" ] || fail "扫描命令实跑 ${RUN} 条 ≠ 抽到 ${NC} 条"
+if [ -f "$EV/scan-cmds-base.txt" ]; then
+  NB=$(command grep -c . "$EV/scan-cmds-base.txt" || true)
+  [ "${RUN:-0}" -eq "${NB:-0}" ] || fail "扫描命令实跑 ${RUN} 条 ≠ T0 冻结的 ${NB} 条"
+fi
 printf 'CMD_OUTPUT(%s/%s cmds 实跑, 随树漂移不计入 STATIC)\t%s\n' "$RUN" "$NC" "$CO" >> "$OUT"
 TOT=$((TOT+CO))
 printf 'TOTAL\t%s\n' "$TOT" >> "$OUT"

@@ -1,0 +1,19 @@
+重量裁定	# ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)
+专家审查（多视角）	Gate 2 必须执行：- [ ] Expert review complete (min 2)
+配对测试	配对测试必须执行：pair_testing:
+Ralph Loop自检	## 🔄 Ralph Loop (TAD v2.41.0) 自检必须执行
+研究先行	研究先行必须执行：research_first:
+技术决策透明	重要技术决策必须透明：decision_transparency:
+平台绑定交互决策	平台绑定交互决策必须执行（无 AskUserQuestion 的 harness 激活时自知）：平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有
+六个强制问题	六个强制问题必须执行：mandatory_questions:
+subagents强制调用	subagent 强制调用必须执行：subagents_enforcement:
+产物证据链	产物证据链必须执行：step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01) + Slug Contract (layer2-audit 2026-04-15)
+激活知识预读	激活知识预读必须执行：- Every role activation reads `.tad/project-knowledge/principles.md` and
+压缩后自检恢复	压缩后自检恢复必须执行：### Post-compact recovery
+记忆权威分层	记忆权威分层必须执行：- `.tad/memory/` is Claude's native capture layer; Codex roles read it but never
+检查点证据验证	mandatory_checkpoint: "每个Phase完成时Blake必须提供证据，Human必须审查"
+渐进式分阶段验证	渐进式分阶段验证必须执行：progressive_validation:
+版本发布管理	版本发布管理必须执行：release_management:
+失败学习闭环	失败学习闭环必须执行：failure_learning_loop:
+强制激活协议	## ⚠️ MANDATORY 4-STEP ACTIVATION PROTOCOL ⚠️
+致命操作强制人审	致命操作必须人审：description: "Risk filter for operations that could cause irreversible damage"

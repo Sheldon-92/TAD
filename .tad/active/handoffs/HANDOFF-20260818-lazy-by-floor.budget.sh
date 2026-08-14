@@ -16,6 +16,16 @@ OUT="$EV/budget-computed.tsv"; : > "$OUT"; TOT=0; ERR=0
 
 fail(){ echo "  !! $*"; ERR=$((ERR+1)); }
 
+# ⚠️ 输入校验：早期版本无条件信任 floor-anchors.tsv。而 step0.sh 的 die 路径会在盘上
+#    留下一个被截断的 16 行版本 → budget.sh 照跑，"常驻 8 项 = 11,633 B、RESULT=PASS"，
+#    整整一项地板静默缺席、零报错（审查员实测）。
+NFA=$(command grep -c . "$EV/floor-anchors.tsv" 2>/dev/null || true)
+[ "${NFA:-0}" -eq 17 ] || { echo "RESULT=FAIL (floor-anchors 非 17 行，实为 ${NFA})"; exit 1; }
+while IFS=$'\t' read -r _n _c _a; do
+  LC_ALL=C awk -F'\t' -v k="$_n" '!/^#/ && $1==k{f=1} END{exit !f}' "$BLK" \
+    || { echo "RESULT=FAIL (blocks.tsv 缺 [${_n}])"; exit 1; }
+done < "$EV/floor-anchors.tsv"
+
 while IFS=$'\t' read -r name carrier anchor; do
   [ -n "${name:-}" ] || continue
   # 常驻标志与起止锚串来自冻结的 blocks.tsv，按纪律名精确匹配
@@ -33,7 +43,11 @@ while IFS=$'\t' read -r name carrier anchor; do
   s=$(LC_ALL=C command grep -nFx -e "$sa" "$R/$carrier" | LC_ALL=C cut -d: -f1)
 
   if [ "$ea" = "<EOF>" ]; then
-    e=$(( $(LC_ALL=C wc -l < "$R/$carrier" | LC_ALL=C tr -d ' ') + 1 ))
+    # ⚠️ 禁用：`<EOF>` = "块一直到文件尾"，而 AC1 要求往常驻层追加 29 条祈使句，
+    #    文件尾正是最自然的落点 → 块会把祈使句一起吞掉，预算凭空 +1,918 B；
+    #    反方向更险：删掉真正的收尾标记，块会静默缩小且零报错（审查员实测）。
+    #    每个块都必须有一个真实存在、`grep -Fx` 唯一的止锚串。
+    fail "$name: 禁止用 <EOF> 作止锚串——须给出真实存在且唯一的收尾行"; continue
   else
     ne=$(LC_ALL=C command grep -cFx -e "$ea" "$R/$carrier" || true)
     [ "$ne" = "1" ] || { fail "$name: 止锚串命中 ${ne} 次（须恰好 1）：$ea"; continue; }
@@ -52,7 +66,7 @@ done < "$EV/floor-anchors.tsv"
 
 printf 'TOTAL_RESIDENT\t-\t-\t%s\n' "$TOT" >> "$OUT"
 NR_=$(LC_ALL=C command grep -c 'NON_RESIDENT' "$OUT" || true)
-echo "budget: 常驻 $(( $(command grep -c . "$OUT" || true) - 1 - NR_ )) 项 = ${TOT} B ≈ $((TOT/4000))K tokens；非常驻 ${NR_} 项已排除"
+echo "budget: 常驻 $(( $(command grep -c . "$OUT" || true) - 1 - NR_ )) 项 = ${TOT} B ≈ $(( (TOT+2000)/4000 ))K tokens；非常驻 ${NR_} 项已排除"
 DONE=1; trap - EXIT
 [ "$ERR" -eq 0 ] || { echo "RESULT=FAIL (${ERR} 项锚点解析失败)"; exit 1; }
 echo "RESULT=PASS"

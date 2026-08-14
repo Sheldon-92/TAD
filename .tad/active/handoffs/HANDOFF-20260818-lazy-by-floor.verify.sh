@@ -101,15 +101,21 @@ ac13(){ echo "== AC13 skill-body-verify（仓库既有的 body/reference 边界�
     || { fail "skill-body-verify 未通过："; printf '%s\n' "$o" | LC_ALL=C command grep -E 'FAIL|MISSING' | LC_ALL=C head -8 | LC_ALL=C sed 's/^/     /'; }
 }
 
-acref(){ echo "== §6.2 references 强制行只增不减（rev5：此前 0 覆盖的高危写面）"
-  local bad=0
-  while IFS=$'\t' read -r f n0; do
+acref(){ echo "== §6.2 references 约束**行集**只增不减（此前 0 覆盖的高危写面）"
+  # ⚠️ 比的是行集不是计数：等量替换（删一条加一条）瞒得过计数底线
+  #    —— principles.md 2026-06-01 那条 SAFETY 的同一类失败。
+  : > "$EV/.refnow"
+  while IFS= read -r f; do
     [ -n "$f" ] || continue
-    if [ ! -f "$R/$f" ]; then fail "reference 文件被删：$f"; bad=$((bad+1)); continue; fi
-    local n1; n1=$(LC_ALL=C command grep -ciE 'MUST|MANDATORY|VIOLATION|BLOCKING|forbidden|NEVER|不得|必须|禁止' "$R/$f" || true)
-    [ "${n1:-0}" -ge "${n0:-0}" ] || { fail "$f 强制行 ${n0} → ${n1}"; bad=$((bad+1)); }
-  done < "$EV/references-constraint-base.tsv"
-  [ "$bad" -eq 0 ] && ok "references/** 强制行数无一减少"
+    LC_ALL=C command grep -hiE 'MUST|MANDATORY|VIOLATION|BLOCKING|forbidden|NEVER|不得|必须|禁止' "$f" 2>/dev/null \
+      | LC_ALL=C sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+      | LC_ALL=C awk -v p="${f#"$R/"}" 'NF{printf "%s\t%s\n", p, $0}'
+  done < <(find "$R/.claude/skills/alex/references" -type f -name '*.md' 2>/dev/null | LC_ALL=C sort) \
+    | LC_ALL=C sort -u > "$EV/.refnow"
+  local lost; lost=$(LC_ALL=C comm -23 "$EV/references-constraint-base.tsv" "$EV/.refnow" | command grep -c . || true)
+  rm -f "$EV/.refnow"
+  [ "${lost:-0}" -eq 0 ] && ok "references/** 约束行集无一丢失" \
+                         || fail "references/** 丢失 ${lost} 条约束行（只增不减）"
 }
 
 case "$WHAT" in

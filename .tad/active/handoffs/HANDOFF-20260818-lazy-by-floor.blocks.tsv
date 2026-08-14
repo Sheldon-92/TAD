@@ -2,10 +2,10 @@
 # 常驻=否 → 载体不在 Alex 常驻层（gate/blake/blake-lite），不计入最小常驻集预算
 # 纪律\t常驻\t起锚串(exact full line)\t止锚串(exact full line, 不含; <EOF>=文件尾)\t载体(仅非地板护栏行需填)
 # rev5 追加 5 个**非地板**护栏块（Gate 2 R4）：地板表没覆盖但一旦丢失后果不可逆
-需求澄清	是	socratic_inquiry_protocol:	intent_modes:
+需求澄清	是	# ==================== 苏格拉底式提问协议 (v1.8 新增) ====================	# ==================== Intent Modes (v2.4) ====================
 需求闸	否	-	-
 门禁	否	-	-
-启动扫描	是	  - STEP 3.5: Document health check	  - STEP 3.5b: Dependency Evolution Check
+启动扫描	是	  - STEP 3.5: Document health check	  - STEP 3.6: Pair test report detection
 知识评估	否	-	-
 跨模型审查	否	-	-
 角色分离	是	### Role separation	### Post-compact recovery
@@ -15,12 +15,13 @@ AC可执行性检查	否	-	-
 Friction反跳过	否	-	-
 身份与角色分离载体	是	## Role Switching	## Knowledge Ingress (read on activation)
 意图路由	是	    express:	    # Phase 3 P3.2 (2026-04-24): *experiment OPRO/A-B/benchmark path
-复杂度判定	是	adaptive_complexity_protocol:	socratic_inquiry_protocol:
+复杂度判定	是	# ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)	# ⚠️ MANDATORY: Socratic Inquiry Protocol (Before Handoff)
 压缩恢复锚点	是	### Post-compact recovery	### Memory authority
-反合理化登记	是	<!-- anti_rationalization_registry:BEGIN -->	<EOF>
+反合理化登记	是	<!-- anti_rationalization_registry:BEGIN -->	<!-- anti_rationalization_registry:END -->
 Forbidden 清单本体	是	# Forbidden actions (will trigger VIOLATION)	# Triple-Question KA: Draft-then-Confirm Rule (2026-06-03)
 STEP3模块加载	是	  - STEP 3: Load config modules	  - STEP 3.3: Load tool quick reference	.claude/skills/alex/SKILL.md
 跨模型禁令alex侧	是	  # AR-001 mechanical anchor — DO NOT remove. Audit grep targets this exact line.	# ⚠️ TAD Friction Protocol (2026-06-10 — Phase 1)	.claude/skills/alex/SKILL.md
 Friction协议本体	是	# ⚠️ TAD Friction Protocol (2026-06-10 — Phase 1)	# ⚠️ MANDATORY: Intent Router Protocol (First Contact)	.claude/skills/alex/SKILL.md
 平台绑定交互决策	是	平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有	# /alex Command (Agent A - Solution Lead)	.claude/skills/alex/SKILL.md
 致命操作识别表	是	    always_confirm:	  # Project Type Detection Integration	.tad/config-platform.yaml
+启动扫描-研究	是	  - STEP 3.8: Research Landscape + Objective Alignment Scan	  - STEP 3.9: GitHub Registry Weekly Scan Report	.claude/skills/alex/SKILL.md

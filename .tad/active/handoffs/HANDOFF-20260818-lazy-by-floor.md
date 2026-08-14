@@ -2,8 +2,9 @@
 
 **Epic**: `EPIC-20260813-alex-blake-lightening.md`（P7 / 5，**最后一刀，最高危**）
 **From**: Alex（full） **To**: Blake **Created**: 2026-08-18
-**Rev**: **rev5** —— Gate 2 四轮共 **28 个 P0**。rev3 把承重从"搬家"移到**约束语义分类**；
-rev4 修完三个脚本（块边界 / 模块集 / AC3 分母）；**rev5 给"常驻层"下定义并把判定器从 Blake 手里收回来**
+**Rev**: **rev5** —— Gate 2 四轮共 **32 个 P0**（第四轮两位审查员各自实测，两份报告独立复现了同两条攻击）。
+rev3 把承重从"搬家"移到**约束语义分类**；rev4 修完三个脚本；
+**rev5 给"常驻层"下定义、把判定器从 Blake 手里收回来、并把 Step 0 基线真正冻进 git**
 **配套**（均 commit，AC12 守其哈希）：`*.step0.sh` · `*.budget.sh` · `*.measure.sh` ·
 `*.resident.sh`（**常驻层唯一定义**）· `*.verify.sh`（**AC1/3/4/10/13 的冻结判定器**）·
 `*.obligations.tsv` · `*.blocks.tsv`（块边界，Alex 逐项人工确认）
@@ -96,6 +97,7 @@ rev2 把承重押在"**被搬走的约束行**"上。审查员实测出**一条�
 | `跨模型禁令alex侧` | `alex/SKILL.md` | `NOT_via_alex_auto: true` + 上一行 `DO NOT remove` 注释 + 4 条 `forbidden_implementations` |
 | `Friction协议本体` | `alex/SKILL.md` | 内含 `Friction反跳过`（Layer 0）的 alex 侧副本，且它自己的 `forbidden_implementations` 明写 **`MUST NOT place friction protocol only in references — it must be in body`** |
 | `平台绑定交互决策` | `alex/SKILL.md` | 「禁止代答 / 禁止把选项折叠成默认值 / SAFETY 门控无论何种 harness 都必须真人作答」——**agent 替人回答 SAFETY 门控与致命操作未经人审是同一后果类** |
+| `启动扫描-研究` | `alex/SKILL.md` | STEP 3.8（研究图景 + 目标对齐）。⚠️ `启动扫描` 的祈使句说的是**健康/依赖/研究/僵尸四类**，而 rev4 的块只框住 STEP 3.5 一段 = 健康+僵尸+知识。**依赖（3.5b）与研究（3.8）落在所有块之外**——实测把这两段换成指向不存在文件的 `reference:` 存根（正是 v2.7 的签名），`budget.sh` 仍报 `启动扫描` 完好、−10,122 B 且 PASS。现在 `启动扫描` 块扩到 STEP 3.5→3.6（含 3.5b），研究另立一块 |
 | `致命操作识别表` | `config-platform.yaml` | `always_confirm:`（`rm -rf` / `git push --force` / `filesystem delete` / `kubectl delete`…）。§1 亲口说 `config-platform` 承载 0 项地板可自由摘除——它此前**只因 AC2 保住模块集成员资格而偶然存活** |
 
 ⚠️ 另加 **AC13 = 仓库既有的 `.tad/hooks/lib/skill-body-verify.sh` 必须全绿**（见 §7）。
@@ -162,7 +164,7 @@ rev4 在结构上禁止了诚实路径。
 | # | AC | 类 | 判定器 |
 |---|---|---|---|
 | **AC1** | **义务型祈使句常驻（本单承重）**：`obligations.tsv` 中 29 条 `义务` 行的第 3 列祈使句，**逐条在 §7.0 的常驻层 `grep -F` 命中**并落盘 `文件:行号`。任一缺失 = FAIL。⚠️ 忘记义务 = 跳过 = v2.7；祈使句必须是**原文**，不是 `load_when` 指针 | 完成度 | `verify.sh AC1` |
-| **AC2** | **两个模块集各自只增不减**：`STEP 3` 正文实际加载的模块集、`command_module_binding.tad-alex.modules`，**分别**与 T0 比对，`LC_ALL=C comm -23 T0集 现集` 均须为空。⚠️ **不得取并集**——binding(5) ⊇ 正文(4)，取并集会让"改正文里的模块名"这类攻击**完全隐形**（该攻击一次编辑 −18,101 B、4 条纪律变暗、12 条 AC 全绿）。⚠️ **rev5**：正文集抽取必须锚定 `^ +[0-9]+\. Load required modules: ` 且**命中恰好 1 次**，否则报错退出——rev4 用 `grep -m1` 子串匹配，**在文件任意更早处插一行含该子串的注释即可劫持抽取**（已实跑复现：诱饵行 + 改真行 → 旧法仍报 4 个模块全绿，新法 0 命中 FAIL） | 不变量 | `resident.sh` + `measure.sh` |
+| **AC2** | **两个模块集各自只增不减**：`STEP 3` 正文实际加载的模块集、`command_module_binding.tad-alex.modules`，**分别**与 T0 比对，`LC_ALL=C comm -23 T0集 现集` 均须为空。⚠️ **两个集合都必须比成员、不能比计数**——把 binding 里的 `config-cognitive` 改成 `config-cogniti`**v** 计数不变即 PASS，正是 principles.md 2026-06-01「全局计数底线抓不到 must-cover 丢失」的同一类失败。⚠️ **不得取并集**——binding(5) ⊇ 正文(4)，取并集会让"改正文里的模块名"这类攻击**完全隐形**（该攻击一次编辑 −18,101 B、4 条纪律变暗、12 条 AC 全绿）。⚠️ **rev5**：正文集抽取必须锚定 `^ +[0-9]+\. Load required modules: ` 且**命中恰好 1 次**，否则报错退出——rev4 用 `grep -m1` 子串匹配，**在文件任意更早处插一行含该子串的注释即可劫持抽取**（已实跑复现：诱饵行 + 改真行 → 旧法仍报 4 个模块全绿，新法 0 命中 FAIL） | 不变量 | `resident.sh` + `measure.sh` |
 | **AC3** | **约束行集有分母**：`comm -23 constraint-lines-base.txt <(bash step0.sh --constraint-set)` 的**每一行**必须在 `reachability.tsv` 里出现恰好 1 次。⚠️ **rev5 两处修正**：(1) 现集口径**必须调 `step0.sh --constraint-set`**，rev4 只写"现集"不说怎么算 → Blake 把范围放宽到整个 skills 树就 `comm` 恒空、AC3 永远绿零条记录；(2) 分母正则改**大小写不敏感**并补 `NEVER\|REQUIRED\|min [0-9]` —— rev4 只匹配大写，把 `Missing dependency… is NEVER a skip reason`（Layer 0 `Friction反跳过` 的 alex 侧副本）、`Self-review is NEVER equivalent`、`Expert review (min 2)`（AC8 Q1 的本体）全漏在分母外。**分母 57 → 137 行** | **不变量** | `verify.sh AC3` |
 | **AC4** | **地板护栏（块级，不是单行 grep）**：(a) `blocks.tsv` 里 `常驻=是` 的 **14 项**（9 地板 + §4.1 的 5 个护栏块），块边界由起/止锚串给出，逐块 `LC_ALL=C comm -23 <T0块行集> <现块行集>` **零输出**——⚠️ **rev5 写死操作数顺序**：rev4 只写 `comm -13` 不给操作数，按 AC2 的自然读法方向是**反的**（变成禁止新增、允许任意删除），已实跑验证该读法会放行"`Forbidden` 块条目全删只留注释锚点"这个负控。**允许新增行**（AC1 的祈使句可以落在块内）；(b) 载体在 `gate`/`blake`/`blake-lite` 的 8 项 + `AGENTS.md` → `git diff --quiet ${T0} -- <载体>`。⚠️ 起/止锚串须 `grep -Fx` **恰好命中 1 次**且地板锚点必须落在块内，否则 `budget.sh` FAIL | 不变量 | `verify.sh AC4` |
 | **AC5** | **不可逆两段逐字未变**：`git diff --quiet ${T0} -- .tad/config-cognitive.yaml .tad/config-execution.yaml`。⚠️ `fatal_operations:` 的本体是**识别表**，外置 = 识别能力外置 | 不变量 | git |
@@ -172,7 +174,7 @@ rev4 在结构上禁止了诚实路径。
 | **AC9** | parity：`.claude/skills/alex/**` 与 `.agents/skills/alex/**` `diff -r` 零输出 | 不变量 | `diff -r` |
 | **AC10** | 围栏：`git diff --name-only ${T0}` ∪ 未跟踪 −(§6 **五项** ∪ `fence-baseline.txt` ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl`) 为空。⚠️ **rev5**：基线改成"相对 T0 commit"而非"跑 Step 0 那一刻的脏文件快照"——快照式围栏对并发写入天生脆弱（rev4 实测：Alex 在冻结后 3 分钟改了 Epic 文件，AC10 在 Blake 动工前就已经红） | 不变量 | `verify.sh AC10` |
 | **AC11** | **五份负控全红**：(a) 摘掉一个模块名 → AC2 拦 (b) 搬走一条约束不写记录 → AC3 拦 (c) 删空 `Forbidden` 块内条目但留注释锚点 → AC4(a) 拦 (d) 外置 `fatal_operations:` → AC5 拦 (e) **rev5 新增**：把 29 条祈使句写进一个新建的 `alex/OBLIGATIONS.md` → **AC1 保持红**拦（实测：新文件不在 `resident.sh` 的输出里，`grep` 根本不会去看它，29/29 仍缺失）。⚠️ 负控只测**单一 AC 的孤立行为**，测不出组合绕过——(a) 单独跑确实会红，但"诱饵行 + 改真行"的组合就绕过去了 | 完成度 | 人工 |
-| **AC12** | **契约与七个配套文件均未变**：`git diff --quiet ${T0} -- <八文件>`（`step0.sh` · `budget.sh` · `measure.sh` · `resident.sh` · `verify.sh` · `obligations.tsv` · `blocks.tsv`）。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** | 不变量 | git |
+| **AC12** | **契约 + 七个配套文件 + 十二份 Step 0 基线均未变**：`git diff --quiet ${T0} -- <契约> <7 脚本/tsv> <12 基线>`。⚠️ **rev5 把基线纳进来**：此前 Step 0 产物**既未进 git、又被 `step0.sh` 无条件重写**，而输出目录是 §6 授权 Blake 可写、AC10 显式豁免的——实测**打完降级再跑一次 `step0.sh`，分母从 57 行按已降级的树重新冻结成 54 行，AC3 当场变成永真、一条可达性记录都不用写**。现在：基线已 commit；`step0.sh` 检测到基线存在即**拒绝执行**，除非显式 `--refreeze`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** | 不变量 | git |
 | **AC13** | **仓库既有的 body/reference 边界门必须全绿**：`bash .tad/hooks/lib/skill-body-verify.sh` 输出含 `ALL CHECKS PASSED`。⚠️ **rev5 新增**：该脚本源自 principles.md 的 SAFETY 条目《Circular Trigger Test》，对 `alex/SKILL.md` 强制 7 个 body marker（`research_unified_protocol:` / `distillation_loop:` / `note_blocking_taxonomy` / `read_feedback_protocol:` / `MANDATORY: Socratic Inquiry Protocol` / `anti_rationalization_registry:` / `NOT_via_alex_auto: true`）并禁止重建 3 个 reference。**rev4 一个字都没提它，而 S2 最肥的外置目标正是其中 4 个 marker** —— 删了 12 条 AC 全绿、这个门事后才红。T0 实测已绿，加它零成本 | 不变量 | `verify.sh AC13` |
 
 ## 8. 环境约束（本机实测）
@@ -184,24 +186,33 @@ rev4 在结构上禁止了诚实路径。
 
 ## 9. Step 0
 
-运行 `*.step0.sh`，冻结：
-`resident-set-base.txt`（**§7.0 常驻层闭集**，T0 实测 12 文件 —— AC1/AC7/AC8 共用）·
-`scan-cmds-base.txt`（启动扫描命令 T0 冻结集，5 条；`measure.sh` 只跑集内逐字相同的命令）·
-`obligations.tsv` 校验（30 行 / 29 义务 / 1 禁止，名称与地板表逐字相等）·
-`blocks.tsv` 覆盖校验（地板 17 项齐全 + 常驻 14 项必有起锚串）·
-`constraint-lines-base.txt`（**AC3 的分母**，口径 = `step0.sh --constraint-set`，T0 实测 **137 行**）·
-`floor-anchors.tsv`（17）·`stub-loadwhen-base.tsv`（**键 = `reference:` 路径**，T0 实测 34）·
-`references-constraint-base.tsv`（`alex/references/**` 逐文件强制行数，§6 第 3 项的只增不减基线）·
-`readback-rubric.tsv`（**四题**，前三义务型 + 第四题只能靠本体答出）·
-`discipline-baseline.txt`（六类，烟感）·`fence-baseline.txt`（相对 T0 commit 的既有脏文件 ∪ 未跟踪）。
+运行 `bash *.step0.sh`。⚠️ **基线已存在时它会拒绝执行**——重跑会按当前（可能已降级的）树重新冻结，
+确需重冻须显式传 `--refreeze`，且这只应由 Alex 在改契约时做。**十二份基线均已 commit，AC12 守其哈希**：
+
+`resident-set-base.txt`（**§7.0 常驻层闭集**，12 文件 —— AC1/AC7/AC8 共用）·
+`binding-set-base.txt`（AC2 的另一半）·`scan-cmds-base.txt`（启动扫描命令 5 条，`measure.sh` 只跑集内逐字相同的）·
+`floor-anchors.tsv`（17，**先校验再就位**：rev5 之前是先写目标文件后校验，`die` 会留下 16 行残缺文件，
+而 `budget.sh` 不校验行数 → 整整一项地板静默缺席仍 PASS）·
+`constraint-lines-base.txt`（**AC3 分母**，口径 = `step0.sh --constraint-set`，**137 行**）·
+`stub-loadwhen-base.tsv`（**键 = 上层 YAML 键 + `reference:` 路径**，34 行 34 键 ——
+只用路径当键会得到 34 行/30 键，`references/deps-protocol.md` 被 5 个 `*deps` 存根共用，
+复用路径新建的存根对 AC6 完全隐形）·
+`references-constraint-base.tsv`（`alex/references/**` 约束**行集** 221 行，§6 第 2 项的只增不减基线；
+用行集不用计数——等量替换瞒得过计数）·`l1-triggers.tsv`（19）·`safety-entries.tsv`（12）·
+`readback-rubric.tsv`（**四题**）·`discipline-baseline.txt`（六类，烟感）·
+`fence-baseline.txt`（相对 T0 commit 的既有脏文件 ∪ 未跟踪）。
 
 ⚠️ `step0.sh --constraint-set` 是 **AC3 现集的公开接口**，AC3 必须调它、不得自写 grep
 （对齐 principles.md 2026-06-01：跨文件漂移检查挂在**公开 flag 接口**上，不是抄内部实现）。
 
 **T0 实测**（Alex 已跑通，Blake 复跑应得同值）：
-`step0.sh` PASS · `budget.sh` = 常驻 9 项 **15,935 B ≈ 4K tokens** ·
+`step0.sh --refreeze` PASS（常驻层 12 / 扫描命令 5 / 地板 17 / 护栏块 15 / 分母 137 / 存根 34 / SAFETY 12）·
+`budget.sh` = 常驻 9 项 **20,081 B ≈ 5K tokens** ·
 `measure.sh base` = `TOTAL_STATIC` **256,313 B** / `TOTAL` 262,172 B ·
-`verify.sh all` = **AC1 红（29/29 缺失，完成度类方向正确）· AC3/AC4/AC13 绿 · AC10 绿**。
+`verify.sh all` = **AC1 红（29/29 缺失，完成度类方向正确）· AC3 / AC4(a)(b) / AC10 / AC13 / references 全绿**。
+
+⚠️ 预算的 20,081 B 只统计 `floor-anchors.tsv` 那 9 项；§4.1 的 6 个护栏块**受保护但不计入预算**
+（其中 `启动扫描-研究` 约 4KB 也是真实常驻成本）——所以这个数是**下限**，不是全部。
 
 **逐条 AC 按 §7.1 类别跑方向负控**：不变量类 T0 必绿、完成度类 T0 必红，任一不符 → 停下退回 Alex。
 
@@ -222,7 +233,7 @@ rev4 在结构上禁止了诚实路径。
 5. ⚠️ **SC1 ≤15K tokens 本单达不到，且这不是本单的锅**：地板本体只占 15,935 B（≈4K tokens），
    剩下 240K B 全在"可搬但要搬得安全"的区间。S1 已砍、S2 的可搬量远小于 200K B。
    **本单交付的是"能不能安全地搬"这个能力，不是 15K 这个数**；SC1 的收口留给后续单。
-6. ⚠️ **判定器的作者问题只解决了一半**：AC1/AC3/AC4/AC10/AC13 有 Alex 写的冻结判定器
+6. ⚠️ **判定器的作者问题只解决了一半**：AC1/AC3/AC4/AC10/AC13 + references 行集有 Alex 写的冻结判定器
    （`verify.sh`，受 AC12 保护），AC2/AC7/AC9/AC12 有冻结脚本或 git 原语；
    但 **AC6/AC8/AC11 仍由 Blake 自己执行**。前三轮 23 个 P0 的共同签名是"AC 全绿纪律已死"，
    而判定器作者就是被判定方时这个签名会重现 —— 这三条的产物格式已冻结（rubric / 负控 diff），

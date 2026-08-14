@@ -1,0 +1,221 @@
+.claude/skills/alex/references/accept-command.md	b. BLOCK: "⚠️ 发现未 commit 的变更。归档前必须先 commit 代码。"
+.claude/skills/alex/references/accept-command.md	blocking: true
+.claude/skills/alex/references/accept-command.md	concurrent_active_violation: "BLOCK - 不允许激活新 phase"
+.claude/skills/alex/references/accept-command.md	if_not: "BLOCK - 必须先完成验收流程"
+.claude/skills/alex/references/accept-command.md	trigger: "必须执行"
+.claude/skills/alex/references/acceptance-protocol.md	# P3.3 forbidden_implementations (Anti-Epic-1 parity with P3.1 / P3.2)
+.claude/skills/alex/references/acceptance-protocol.md	# → "看起来符合"≠实际验证。必须输出逐条对照表。
+.claude/skills/alex/references/acceptance-protocol.md	# → 即使无新发现也必须显式写 "No" + 原因。跳过 = 表格不完整 = Gate 无效。
+.claude/skills/alex/references/acceptance-protocol.md	- "MUST NOT auto-inject override marker via hook — Blake writes it manually based on judgment"
+.claude/skills/alex/references/acceptance-protocol.md	- "MUST NOT auto-populate gate4_delta entries via any hook or script — Alex writes them based on judgment"
+.claude/skills/alex/references/acceptance-protocol.md	- "MUST NOT block *accept on gate4_delta presence/absence — empty is semantically valid"
+.claude/skills/alex/references/acceptance-protocol.md	- "MUST NOT couple gate4_delta to skip_knowledge_assessment — orthogonal concerns"
+.claude/skills/alex/references/acceptance-protocol.md	- "MUST NOT couple skip_KA logic to Layer 2 audit (step4c) — they are orthogonal"
+.claude/skills/alex/references/acceptance-protocol.md	- must be bold markdown (literal `**...**`)
+.claude/skills/alex/references/acceptance-protocol.md	Advisory — judge 分数不影响验收结论。judge-prompt.md 为校准冻结产物，本步骤禁止修改（改动 = 校准失效）。
+.claude/skills/alex/references/acceptance-protocol.md	MANDATORY per AR-005 rule (Phase 1c Gate 4 integrity lesson):
+.claude/skills/alex/references/acceptance-protocol.md	OWN-observation path (blocking: true, writes directly), which remains unchanged
+.claude/skills/alex/references/acceptance-protocol.md	and ensures Gate 4 KA is still blocking overall even if the user skips step4f.
+.claude/skills/alex/references/acceptance-protocol.md	blocking: false
+.claude/skills/alex/references/acceptance-protocol.md	blocking: false  # advisory; prompt-level reminder only
+.claude/skills/alex/references/acceptance-protocol.md	blocking: true
+.claude/skills/alex/references/acceptance-protocol.md	byte counts), Alex MUST re-derive the number from the raw evidence file
+.claude/skills/alex/references/acceptance-protocol.md	does not block Gate 4. Blocking enforcement deferred to Phase 3.
+.claude/skills/alex/references/acceptance-protocol.md	forbidden_implementations:
+.claude/skills/alex/references/acceptance-protocol.md	reconcile. Rubber-stamping Blake's summary is a VIOLATION of Gate 4 integrity.
+.claude/skills/alex/references/acceptance-protocol.md	surface. Alex MUST NOT fabricate gaps to fill the field — empty is
+.claude/skills/alex/references/acceptance-protocol.md	violation2: "Gate 3 v2 未通过就执行 Gate 4 v2 = VIOLATION"
+.claude/skills/alex/references/acceptance-protocol.md	violation3: "验收通过后不执行 *accept 归档 = VIOLATION"
+.claude/skills/alex/references/acceptance-protocol.md	violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"
+.claude/skills/alex/references/acceptance-protocol.md	分数仅 advisory）（paths-only — NEVER provide golden set,
+.claude/skills/alex/references/adaptive-complexity-protocol.md	IMPORTANT: Alex SUGGESTS, human DECIDES. Never auto-select.
+.claude/skills/alex/references/adaptive-complexity-protocol.md	blocking: true
+.claude/skills/alex/references/adaptive-complexity-protocol.md	error_blocking: false
+.claude/skills/alex/references/bug-path-protocol.md	# ⚠️ NO code exemption — Alex NEVER writes implementation code, even for bugs
+.claude/skills/alex/references/cancel-protocol.md	# P5.3 BA-P0-3: symmetric forbidden_implementations 5-item block
+.claude/skills/alex/references/cancel-protocol.md	(a) MUST NOT add *cancel to adaptive_complexity_protocol step2 AskUserQuestion options
+.claude/skills/alex/references/cancel-protocol.md	(b) MUST NOT pre-select *cancel as Recommended in any AskUserQuestion
+.claude/skills/alex/references/cancel-protocol.md	(c) MUST NOT signal-word-detect "abandon" / "scrap" / "give up" → *cancel
+.claude/skills/alex/references/cancel-protocol.md	- "Anti-AR-001: '*cancel = silent abandonment' is a forbidden interpretation — both reason taxonomy AND rationale text are mandatory"
+.claude/skills/alex/references/cancel-protocol.md	- "Both fields MANDATORY — empty rationale → block *cancel and re-prompt"
+.claude/skills/alex/references/cancel-protocol.md	- "MUST NOT auto-downgrade Standard TAD handoff to *cancel via any mechanism (no Alex AskUserQuestion suggestion, no signal-word auto-detection)"
+.claude/skills/alex/references/cancel-protocol.md	- "MUST NOT couple *cancel to skip_knowledge_assessment (cancelled handoffs bypass Gate 4 by design but MUST still write cancel_reason + cancel_rationale)"
+.claude/skills/alex/references/cancel-protocol.md	Alex MUST NOT proactively recommend *cancel. Specifically:
+.claude/skills/alex/references/cancel-protocol.md	forbidden_implementations:
+.claude/skills/alex/references/cancel-protocol.md	never accepted, never deleted, eventually disappeared without record).
+.claude/skills/alex/references/deps-protocol.md	- Each entry must have ≥1 capabilities_used and ≥1 files_depending
+.claude/skills/alex/references/deps-protocol.md	- Must not overwrite existing entries with the same name
+.claude/skills/alex/references/deps-protocol.md	- REGISTRY.yaml must be valid YAML (parseable by yq)
+.claude/skills/alex/references/design-protocol.md	never_when: |
+.claude/skills/alex/references/design-protocol.md	pack-A must run before pack-B. Check string overlap, not just LLM judgment.
+.claude/skills/alex/references/discuss-path-protocol.md	# Do NOT touch the forbidden: list or note_on_research_protocol: block below.
+.claude/skills/alex/references/discuss-path-protocol.md	This is a SOFT prompt, not blocking. If user continues the conversation, Alex follows along.
+.claude/skills/alex/references/discuss-path-protocol.md	blocking: false
+.claude/skills/alex/references/discuss-path-protocol.md	forbidden:
+.claude/skills/alex/references/distillation-loop-protocol.md	- If user decides to skip distillation → legitimate (soft, not blocking); KA writes "User skipped distillation"
+.claude/skills/alex/references/distillation-loop-protocol.md	4. READ-ONLY contract: never edit/delete files in .tad/memory/ — the native runtime owns
+.claude/skills/alex/references/experiment-path-protocol.md	*experiment is a router mode — the Capability Pack must be explicitly loaded.
+.claude/skills/alex/references/experiment-path-protocol.md	- "MUST NOT bypass *analyze Socratic for *experiment — all Standard TAD steps DO run"
+.claude/skills/alex/references/experiment-path-protocol.md	- "MUST NOT replace Gate 3/4 silently — semantics is AUGMENT (additive), original criteria still apply"
+.claude/skills/alex/references/experiment-path-protocol.md	Alex MUST NOT bypass *analyze and route directly to *experiment without user explicit input.
+.claude/skills/alex/references/experiment-path-protocol.md	Alex MUST output the literal string "Loaded Capability Pack: ai-evaluation"
+.claude/skills/alex/references/experiment-path-protocol.md	BOTH layers must PASS. A harness syntax error → Gate 3 FAIL even if all 5
+.claude/skills/alex/references/experiment-path-protocol.md	The following 4 checks are ADDITIONAL — BOTH layers must PASS.
+.claude/skills/alex/references/experiment-path-protocol.md	forbidden_implementations:
+.claude/skills/alex/references/experiment-path-protocol.md	rule: "experiment_path_protocol step1 MUST Read .claude/skills/ai-evaluation/SKILL.md at start of drafting"
+.claude/skills/alex/references/express-path-protocol.md	# The literal phrase "expert review" + "code-reviewer" must remain on consecutive
+.claude/skills/alex/references/express-path-protocol.md	(a) MUST NOT add *express to adaptive_complexity_protocol step2 AskUserQuestion options
+.claude/skills/alex/references/express-path-protocol.md	(b) MUST NOT pre-select *express as Recommended (Option 1) in intent_router_protocol step3
+.claude/skills/alex/references/express-path-protocol.md	(c) MUST NOT use AskUserQuestion to suggest *express in any other workflow step
+.claude/skills/alex/references/express-path-protocol.md	*express. User must explicitly type *express to opt in.
+.claude/skills/alex/references/express-path-protocol.md	- "Anti-AR-001: 'express = review-exempt' is a forbidden interpretation"
+.claude/skills/alex/references/express-path-protocol.md	- "MUST NOT auto-downgrade Standard TAD handoff to *express via any mechanism"
+.claude/skills/alex/references/express-path-protocol.md	- "step1 draft creation (handoff scaffold + frontmatter — MUST set `express: true` in YAML frontmatter; this is the durable marker layer2-audit.sh is_express_frontmatter() consumes)"
+.claude/skills/alex/references/express-path-protocol.md	Alex MUST NOT proactively recommend *express. Specifically:
+.claude/skills/alex/references/express-path-protocol.md	forbidden_implementations:
+.claude/skills/alex/references/express-path-protocol.md	frontmatter of HANDOFF-YYYYMMDD-<slug>.md (MANDATORY — durable marker).
+.claude/skills/alex/references/handoff-creation-protocol.md	(Phase 6-A v1 caught its OWN AC-G2 quoting wrong number due to violation
+.claude/skills/alex/references/handoff-creation-protocol.md	**⚠️ Blake 必须在开始实现前 Read 上述 pack 文件。**
+.claude/skills/alex/references/handoff-creation-protocol.md	- "MUST NOT auto-index the repository (TAD never triggers indexing)"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "MUST NOT block or slow down if graph probe fails (strict <500ms budget)"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "MUST NOT register hooks or modify settings — see constraints.deny (global)"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
+.claude/skills/alex/references/handoff-creation-protocol.md	- "MUST NOT turn verify-ac-commands.sh (the step1d advisory tail linter) into a blocking gate: it MUST NOT be registered as a PreToolUse / UserPromptSubmit / SessionStart hook, MUST NOT be added to .claude/settings.json, MUST NOT return a deny/blocking exit, and a WARN/INFO from it MUST NOT block the handoff (advisory smoke alarm only — single-user-CLI mechanical-enforcement-rejected lesson 2026-04-15)."
+.claude/skills/alex/references/handoff-creation-protocol.md	- "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
+.claude/skills/alex/references/handoff-creation-protocol.md	- "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "violation level mirrors anti_rationalization_registry: prompt-only enforcement"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "不经过专家审查直接发送 handoff 给 Blake = VIOLATION"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "忽略专家发现的 P0 问题不修复 = VIOLATION"
+.claude/skills/alex/references/handoff-creation-protocol.md	- "添加 P0 Blocking Issues（如有）"
+.claude/skills/alex/references/handoff-creation-protocol.md	- Never quote AC values from memory or another section of the same doc
+.claude/skills/alex/references/handoff-creation-protocol.md	- P0 blocking issues (must fix)
+.claude/skills/alex/references/handoff-creation-protocol.md	- These are ADVISORY, not mandatory — Blake uses judgment on applicability
+.claude/skills/alex/references/handoff-creation-protocol.md	- step7 STOP rule (must generate Blake message, must not call /blake)
+.claude/skills/alex/references/handoff-creation-protocol.md	1. Critical Issues (P0 - must fix before implementation)
+.claude/skills/alex/references/handoff-creation-protocol.md	9. When writing handoff §📚 Project Knowledge → "⚠️ Blake 必须注意的历史教训":
+.claude/skills/alex/references/handoff-creation-protocol.md	After the structured Blake message above, the response MUST also include
+.claude/skills/alex/references/handoff-creation-protocol.md	Alex MUST auto-generate the following structured message.
+.claude/skills/alex/references/handoff-creation-protocol.md	All {placeholders} must be replaced with actual values from the handoff.
+.claude/skills/alex/references/handoff-creation-protocol.md	Anti-Epic-1 reminder: stale-check is a CLI tool, NOT a hook. Never
+.claude/skills/alex/references/handoff-creation-protocol.md	Fallback is automatic — no user intervention, no blocking.
+.claude/skills/alex/references/handoff-creation-protocol.md	NEW handoffs (date >= 2026-04-25) MUST have dual columns; missing dual cols
+.claude/skills/alex/references/handoff-creation-protocol.md	PLAIN-LANGUAGE EXPLANATION (MANDATORY)
+.claude/skills/alex/references/handoff-creation-protocol.md	Resolved MUST point to the resolution section in the handoff
+.claude/skills/alex/references/handoff-creation-protocol.md	Spec_Compliance_Verification). An empty §9.1 → Gate 3 BLOCKS (empty guard). So Alex MUST
+.claude/skills/alex/references/handoff-creation-protocol.md	The response output MUST be in this exact order:
+.claude/skills/alex/references/handoff-creation-protocol.md	This is ADVISORY (warn, continue) — it NEVER blocks step1d or the handoff,
+.claude/skills/alex/references/handoff-creation-protocol.md	a. ALL entries from relevant_knowledge list MUST be included (not optional, not "Alex picks")
+.claude/skills/alex/references/handoff-creation-protocol.md	and proceed. Handoff drafting MUST NOT be blocked by this advisory tool.
+.claude/skills/alex/references/handoff-creation-protocol.md	blocking: false
+.claude/skills/alex/references/handoff-creation-protocol.md	blocking: true
+.claude/skills/alex/references/handoff-creation-protocol.md	blocking_in_alex_protocol: true
+.claude/skills/alex/references/handoff-creation-protocol.md	blocking_in_alex_protocol: true  # Alex 自身 protocol 流程内必做才能进 step2
+.claude/skills/alex/references/handoff-creation-protocol.md	codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
+.claude/skills/alex/references/handoff-creation-protocol.md	description: "创建 handoff 时必须经过专家审查，确保设计完整且可执行"
+.claude/skills/alex/references/handoff-creation-protocol.md	e2e_required: "must be yes or no"
+.claude/skills/alex/references/handoff-creation-protocol.md	empty_guard_reminder: "NEVER leave §9.1 empty — Gate 3 BLOCKS on an empty §9.1 (gate/SKILL.md Spec_Compliance_Empty_Guard)."
+.claude/skills/alex/references/handoff-creation-protocol.md	forbidden: "在同一个 terminal 调用 /blake = VIOLATION"
+.claude/skills/alex/references/handoff-creation-protocol.md	forbidden: ["writing code", "running builds", "executing tests", "file modifications"]
+.claude/skills/alex/references/handoff-creation-protocol.md	forbidden_implementations:
+.claude/skills/alex/references/handoff-creation-protocol.md	prerequisite: "必须先完成 Socratic Inquiry Protocol"
+.claude/skills/alex/references/handoff-creation-protocol.md	purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
+.claude/skills/alex/references/handoff-creation-protocol.md	registered in settings.json. Failure here MUST fall through.
+.claude/skills/alex/references/handoff-creation-protocol.md	renderer forced the `\|` in the table cell, the command you actually run must
+.claude/skills/alex/references/handoff-creation-protocol.md	research_required: "must be yes or no"
+.claude/skills/alex/references/handoff-creation-protocol.md	task_type: "must be one of: code, yaml, research, e2e, mixed, deliverable"
+.claude/skills/alex/references/handoff-creation-protocol.md	trigger: "After step0_5b research-asset check, BEFORE step1 draft creation (must precede template selection)"
+.claude/skills/alex/references/handoff-creation-protocol.md	violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
+.claude/skills/alex/references/handoff-creation-protocol.md	violation: "未完成 Socratic Inquiry 就开始写 handoff = VIOLATION"
+.claude/skills/alex/references/handoff-creation-protocol.md	violation_plain_language: "Generating Blake message without the 人话版 section in same response = VIOLATION. Wrong order (technical block before 人话版) = VIOLATION. Formulaic compliance (no task-specific content) = VIOLATION."
+.claude/skills/alex/references/handoff-creation-protocol.md	violation_self_audit: |
+.claude/skills/alex/references/handoff-creation-protocol.md	violations:
+.claude/skills/alex/references/handoff-creation-protocol.md	→ ALWAYS continue to step0_6_deliverable_classification (MUST run before step1 — every branch above falls through here, never jump straight to step1).
+.claude/skills/alex/references/handoff-creation-protocol.md	⚠️ ORDER REQUIREMENT (MANDATORY):
+.claude/skills/alex/references/handoff-creation-protocol.md	必须补记原因；该标记不覆盖既有 verdict。
+.claude/skills/alex/references/intent-router-protocol.md	# Phase 3 P3.1 (2026-04-24): explicit forbidden for analyze→express / analyze→experiment
+.claude/skills/alex/references/intent-router-protocol.md	*express MUST NOT appear as Option 1 (Recommended) even if signal-word
+.claude/skills/alex/references/intent-router-protocol.md	Same — analyze→experiment would hide a scope shift mid-flight. User must explicitly
+.claude/skills/alex/references/intent-router-protocol.md	blocking: true
+.claude/skills/alex/references/intent-router-protocol.md	forbidden:
+.claude/skills/alex/references/intent-router-protocol.md	let's downgrade'). User must explicitly *cancel current *analyze handoff and start
+.claude/skills/alex/references/intent-router-protocol.md	to *express never-Recommended rule above).
+.claude/skills/alex/references/knowledge-maintain-protocol.md	## For each candidate, judge the relationship with the new entry (must pick one):
+.claude/skills/alex/references/knowledge-maintain-protocol.md	> Rule-driven, near-zero LLM calls (except reconciliation step). Fully advisory — proposes, never auto-executes.
+.claude/skills/alex/references/knowledge-maintain-protocol.md	LOW-USAGE annotation is advisory only, never the sole basis for retirement.
+.claude/skills/alex/references/knowledge-maintain-protocol.md	See script at `.tad/hooks/lib/knowledge-lint.sh`. Results displayed to user, never blocks.
+.claude/skills/alex/references/learn-path-protocol.md	- "Never lecture for more than 3-4 sentences without checking comprehension"
+.claude/skills/alex/references/learn-path-protocol.md	blocking: false
+.claude/skills/alex/references/learn-path-protocol.md	forbidden:
+.claude/skills/alex/references/publish-protocol.md	# Guard 2: Mandatory runbook read (prevents recurring release bugs)
+.claude/skills/alex/references/publish-protocol.md	(NEVER git add -A — scoped commit to avoid pulling unrelated changes)
+.claude/skills/alex/references/publish-protocol.md	(cr-P1-3 / arch-P1-2 fix; TAD_RELEASE_GATE=warn downgrades ONLY drift, never a wiring bug):
+.claude/skills/alex/references/publish-protocol.md	A stale mirror is never acceptable to ship — no patch-release downgrade.
+.claude/skills/alex/references/publish-protocol.md	Consistency rule: extract MAJOR.MINOR from all sources; they must match.
+.claude/skills/alex/references/publish-protocol.md	NEVER block. They are informational only — potential drift to investigate
+.claude/skills/alex/references/publish-protocol.md	blocking: true
+.claude/skills/alex/references/publish-protocol.md	detect_only: true  # reads only — never edits files
+.claude/skills/alex/references/publish-protocol.md	detect_only: true  # reads only — never edits manifests
+.claude/skills/alex/references/publish-protocol.md	detect_only: true  # reads only — never edits version refs
+.claude/skills/alex/references/publish-protocol.md	exit 2 ALWAYS blocks; the warn branch keys off exit 1 only, never the combined `1 or 2`).
+.claude/skills/alex/references/publish-protocol.md	mandatory_read: ".claude/skills/release-runbook/SKILL.md"
+.claude/skills/alex/references/publish-protocol.md	name: "Codex Parity Gate (.claude/skills ↔ .agents/skills — BLOCKING, auto-fix via --fix)"
+.claude/skills/alex/references/publish-protocol.md	name: "Migration Manifest Gate (BLOCKING on minor+)"
+.claude/skills/alex/references/publish-protocol.md	name: "Self-Deriving Release Verification Gate (version — BLOCKING on minor+)"
+.claude/skills/alex/references/publish-protocol.md	name: "Version Sweep Gate (ALWAYS blocking)"
+.claude/skills/alex/references/publish-protocol.md	release_type (patch/minor/major). These are identity files that must never be stale.
+.claude/skills/alex/references/publish-protocol.md	release_type. A wiring bug is NOT drift; warn must not mask it (the shadow run is exactly
+.claude/skills/alex/references/research-decision-protocol.md	# Research-gate (right-moment research nudge — suggestion only, NEVER stops the flow).
+.claude/skills/alex/references/research-decision-protocol.md	# decline); the gate reads it. So the three nudge writers never double-prompt the same
+.claude/skills/alex/references/research-decision-protocol.md	- "Designing without researching existing solutions = VIOLATION"
+.claude/skills/alex/references/research-decision-protocol.md	- "Not presenting alternatives to human = VIOLATION"
+.claude/skills/alex/references/research-decision-protocol.md	- "Skipping research for important decisions = VIOLATION"
+.claude/skills/alex/references/research-decision-protocol.md	blocking: false
+.claude/skills/alex/references/research-decision-protocol.md	blocking: true
+.claude/skills/alex/references/research-decision-protocol.md	skip silently and proceed with WebSearch. Never block research on notebook availability.
+.claude/skills/alex/references/research-decision-protocol.md	straight to design / step2_research; the gate stays silent and never stops the flow.
+.claude/skills/alex/references/research-decision-protocol.md	violations:
+.claude/skills/alex/references/research-plan-protocol.md	(Cache codex_available / gemini_available now even when run_adversarial_challenge==off, so 4c/5b never read an unset var.)
+.claude/skills/alex/references/research-plan-protocol.md	(This rubric step runs whenever 4c exits toward Phase 4.5 — on both the PASS path below and the
+.claude/skills/alex/references/research-plan-protocol.md	Default to `comparison` when ambiguous (NOT complex) — per backend-architect P1-1, vague signals must NOT collapse everything to complex.
+.claude/skills/alex/references/research-plan-protocol.md	Every seed question MUST reference research_decision_point.
+.claude/skills/alex/references/research-plan-protocol.md	FAIL-max-rounds exit. It never changes the PASS/FAIL gate; it only annotates + WARNs.)
+.claude/skills/alex/references/research-plan-protocol.md	If a generated question matches a ❌ pattern, Alex MUST rephrase before adding to tree.
+.claude/skills/alex/references/research-plan-protocol.md	Question format rules (MANDATORY):
+.claude/skills/alex/references/research-plan-protocol.md	Trigger: ONLY inside *research-plan (never standalone *research-notebook ask)
+.claude/skills/alex/references/research-plan-protocol.md	a. Generate new seed question following format rules (specificity anchor mandatory):
+.claude/skills/alex/references/research-plan-protocol.md	it is NOT a raw CLI flag and must NOT be passed to the binary here.)
+.claude/skills/alex/references/research-plan-protocol.md	plus efficiency (ADVISORY note — NOT scored, never in the aggregate).
+.claude/skills/alex/references/research-plan-protocol.md	rules below (specificity anchor MANDATORY; reject "best practices for X" — rephrase).
+.claude/skills/alex/references/research-plan-protocol.md	| Complexity | EXPLICIT trigger (must match to qualify) | run_dynamic_seeds | run_adversarial_challenge |
+.claude/skills/alex/references/research-plan-protocol.md	→ Advisory verdict (overall < 0.6 → WARN; NEVER blocks — single-user CLI principle):
+.claude/skills/alex/references/research-plan-protocol.md	→ Example: "KR1 sesame recall: 担担面 → sesame paste mapping → AC: allergen-rules must contain dandan→sesame rule"
+.claude/skills/alex/references/research-plan-protocol.md	⚠️ The classification is a SUGGESTION, not a lock. The user MUST be able to turn the adversarial
+.claude/skills/alex/references/research-plan-protocol.md	禁止纯清单题 — "有哪些 X" 必须改写为 "对于 {decision}，X 的哪些方案最相关"
+.claude/skills/alex/references/socratic-inquiry-protocol.md	- "不调用 AskUserQuestion 直接写 handoff = VIOLATION"
+.claude/skills/alex/references/socratic-inquiry-protocol.md	- "跳过复杂度评估，问题数量与任务不匹配 = VIOLATION"
+.claude/skills/alex/references/socratic-inquiry-protocol.md	- "问完问题不等用户回答就开始写 = VIOLATION"
+.claude/skills/alex/references/socratic-inquiry-protocol.md	blocking: true
+.claude/skills/alex/references/socratic-inquiry-protocol.md	description: "写 handoff 之前必须用 AskUserQuestion 工具进行苏格拉底式提问，帮助用户发现需求盲点"
+.claude/skills/alex/references/socratic-inquiry-protocol.md	note: "两步顺序不可颠倒——用户必须在看到 Alex 分析前独立思考，防止 anchoring 屏蔽真实盲点"
+.claude/skills/alex/references/socratic-inquiry-protocol.md	violations:
+.claude/skills/alex/references/sync-protocol.md	# Guard 2: Mandatory runbook read (prevents recurring sync bugs)
+.claude/skills/alex/references/sync-protocol.md	# SYNC-MIRROR: must match tad.sh copy_framework_files() dir list (line 115)
+.claude/skills/alex/references/sync-protocol.md	(cr-P1-3 / arch-P1-2 fix; TAD_RELEASE_GATE=warn downgrades ONLY drift, never a wiring bug):
+.claude/skills/alex/references/sync-protocol.md	Note: The engine is the SOLE executor of migration logic. Alex MUST NOT
+.claude/skills/alex/references/sync-protocol.md	PRESERVE (never touch):
+.claude/skills/alex/references/sync-protocol.md	TAD_RELEASE_GATE and release_type. A wiring bug is NOT drift; warn must not mask it. Do NOT
+.claude/skills/alex/references/sync-protocol.md	blocking: true
+.claude/skills/alex/references/sync-protocol.md	branch keys off exit 1 only, never the combined `1 or 2`).
+.claude/skills/alex/references/sync-protocol.md	d2. Self-Deriving Release Verification Gate (structural — BLOCKING on minor+):
+.claude/skills/alex/references/sync-protocol.md	git add paths MUST match sync scope exactly — do NOT use broad .tad/ or docs/."
+.claude/skills/alex/references/sync-protocol.md	mandatory_read: ".claude/skills/release-runbook/SKILL.md"
+.claude/skills/alex/references/sync-protocol.md	marker handling, and mandatory post-flight verification per project.
+.claude/skills/alex/references/update-roadmap-protocol.md	- "Changes must be concise — ROADMAP stays under ~150 lines"
+.claude/skills/alex/references/workflow-completion-trigger.md	blocking: false
+.claude/skills/alex/references/workflow-completion-trigger.md	| status | draft | CONSTRAINT: discoverer MUST NOT set beyond draft |
+.claude/skills/alex/references/workflow-completion-trigger.md	| tier | ~ | CONSTRAINT: set ONLY by *harvest, NEVER by discoverer |
+.claude/skills/alex/references/yolo-execution-protocol.md	- "Review must be Conductor-spawned sub-agent — don't trust sub-agent claimed review"
+.claude/skills/alex/references/yolo-execution-protocol.md	- Conductor MUST re-read review files from disk before gate judgment
+.claude/skills/alex/references/yolo-execution-protocol.md	Precondition: handoff must exist and be > 50 lines
+.claude/skills/alex/references/yolo-execution-protocol.md	handoff_path: "{same as Call 1 — must exist and be > 50 lines}",
+.claude/skills/alex/references/yolo-execution-protocol.md	⚠️ args MUST be a JSON object, NOT a stringified JSON string.
