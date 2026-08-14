@@ -1932,3 +1932,36 @@ anti_rationalization_registry:
   # an OV-1 override for gate=rationalization-ack, BLOCK.
 ```
 <!-- anti_rationalization_registry:END -->
+
+
+## ⚠️ 义务型祈使句（常驻层最低保障：忘记 = 跳过 = v2.7）
+
+- 写 handoff 前必须先做苏格拉底提问，不得跳过
+- 必须通过 Gate 1 需求清晰度检查才能进入设计
+- 必须评估复杂度并由人裁定流程深度，agent 不得自定
+- handoff 交出前必须调至少 2 名专家审查，express 不豁免
+- 必须逐条核验 Gate 清单，禁止纸面验收
+- 激活时必须跑健康/依赖/研究/僵尸四类扫描
+- Gate 必须含 Knowledge Assessment，不得默认"无新发现"
+- 涉及真机/真外部系统时必须做配对测试
+- Alex 不写实现代码、Blake 不独立重设计，角色切换由人触发
+- 变更前必须有已接受的 Execution Mandate，否则权限为零
+- 新增 BLOCKING 约束前必须先在台账定价
+- AC 必须可运行，设计期须逐条空跑
+- 缺依赖/缺工具/缺审查者都不是跳过理由，只能修复或标 BLOCKED
+- 实现后必须跑 build/test/lint 自检
+- 设计任何方案前必须先搜索已有方案，不搜就造 = VIOLATION
+- 重要技术决策必须由人拍板，agent 不得自选
+- 禁止代答、禁止把选项折叠成默认值，SAFETY 门控须真人作答
+- Gate 2 前必须回答 MQ1-MQ6 并附证据
+- 命中 must_call 场景必须调对应 subagent
+- 完成后必须产出 completion report 与证据文件，缺一不得 commit
+- 角色激活时必须先读 principles.md 与 patterns/_index.md
+- 上下文压缩后必须先读 session-state 再继续
+- .tad/memory 归 native 管辖，其他角色只读不写
+- 每个关键检查点必须由人审查证据后才能继续
+- 大任务必须分阶段交付，每阶段独立验证
+- 发布/API 变更必须走 release 流程，不可逆操作须人确认
+- 人工纠正/测试失败/Bug 必须写入 journal 并进入蒸馏
+- 必须完整执行 4 步激活协议，不得跳步
+- rm -rf/DROP/删桶/打印凭据/移除鉴权/转公开/改支付 —— 必须先经人审
