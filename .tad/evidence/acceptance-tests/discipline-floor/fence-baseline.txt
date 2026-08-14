@@ -1,0 +1,9 @@
+.claude/settings.local.json.bak-20260806-082549
+.tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work
+.tad/evidence/acceptance-tests/discipline-floor/fence-baseline.txt
+.tad/evidence/acceptance-tests/discipline-floor/names30.txt
+.tad/evidence/acceptance-tests/discipline-floor/t0.txt
+.tad/evidence/acceptance-tests/discipline-floor/verdicts.tsv
+.tad/evidence/acceptance-tests/discipline-floor/wide-markers.txt
+.tad/evidence/traces/2026-08-14.jsonl
+.tad/active/epics/EPIC-20260813-alex-blake-lightening.md

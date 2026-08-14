@@ -1,0 +1,30 @@
+需求澄清	地板	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+需求闸	地板	full	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+重量裁定	可缩放	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+专家审查（多视角）	可缩放	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+门禁	地板	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+启动扫描	地板	full	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+知识评估	待判	both	蒸馏循环停跑导致教训流失且无记录	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+跨模型审查	待判	full	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+配对测试	待判	full	真机/真外部系统任务出现	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+角色分离	地板	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+Execution Mandate	待判	lite	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+约束准入	待判	lite	约束无限膨胀致流程重量失控（累积、难以回缩）	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+AC可执行性检查	地板	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+Friction反跳过	地板	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+Ralph Loop自检	可缩放	both	-	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+研究先行	待判	full	技术选型/架构决策出现且未先搜索	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+技术决策透明	待判	both	重要技术决策出现	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+平台绑定交互决策	待判	both	无 AskUserQuestion 工具的 harness 出现	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+六个强制问题	待判	full	MQ 触发条件命中（历史代码/函数存在性/数据流等）	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+subagents强制调用	待判	full	场景命中 must_call 清单（需求分析/架构/审查/测试）	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+产物证据链	待判	both	Gate 3/4 证据检查与完成报告书写	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+激活知识预读	待判	both	角色激活时	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+压缩后自检恢复	待判	both	上下文压缩后	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+记忆权威分层	待判	both	跨平台记忆读取时	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+检查点证据验证	待判	both	关键检查点（MQ/Phase 完成报告）	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+渐进式分阶段验证	待判	full	大任务 Phase 化交付	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+版本发布管理	待判	full	版本发布/API 变更	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+失败学习闭环	待判	both	Human 纠正/测试失败/Bug 报告	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+强制激活协议	待判	both	角色激活时	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-
+致命操作强制人审	待判	both	致命操作命中（数据丢失/泄露/财务/服务崩溃）	否	.claude/skills/gate/SKILL.md	# ⚠️ DECISION COMPLIANCE CHECK	MUST MUST MUST MUST	0	既有判定	否	-

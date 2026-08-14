@@ -1,0 +1,1 @@
+MUST|MANDATORY|BLOCKING|VIOLATION|forbidden|Forbidden|MUST NOT|NEVER|never |shall |required|Required|blocking: *true|不得|必须|禁止|严禁|一律|不可|不允许|应当|⚠️
