@@ -71,15 +71,16 @@ NEW 均未出现**（已实测）。改法一律为：把 `Read <整个文件>` 
 | # | AC |
 |---|---|
 | AC1 | pins 7 条：每条 OLD 计数 **0**、NEW **恰好 1**，两个 alex 文件各查一遍（`grep -cFx`，字面读取禁展开） |
-| AC2 | **冻结补集**：两个 alex 文件中除 7 条钉死行外的每一行相对 T0 逐字相同（**含纯增行**，用 `diff` 不用集合差） |
+| AC2 | **冻结补集**：`diff <(git show ${T0}:<path>) <path>` 后，按下述管道过滤须**残余 0 行**——⚠️ 排除必须带 `-x`，否则模式文件里的空行会匹配所有行、本条静默全绿（审查员实测）：<br>`diff … \| grep -vE '^[0-9]+(,[0-9]+)?[acd][0-9]+(,[0-9]+)?$' \| grep -vx -e '---' \| sed -e 's/^< //' -e 's/^> //' \| grep -vxF -f olds.txt \| grep -vxF -f news.txt` |
 | AC3 | `Read .tad/active/session-state.md (if exists).` 一行**逐字仍在**（压缩恢复安全网未被顺手砍掉） |
-| AC4 | **行为负控（本单最要紧的一条）**：把 `scan-results.yaml` 复制一份、注入一条伪造的 `security_advisories:` 条目，跑 pins#2 的新命令，**必须仍然报出该条**；再删掉重跑，计数须回落。原文与两次输出落盘。⚠️ 这条买的是"没把响亮失败换成静默成功"——依赖扫描是唯一有真实事故记录的启动纪律（停跑 28 天漏掉 `gh` 4 个漏洞含明文 token） |
-| AC5 | **纪律不流失**：`MUST`／`MANDATORY`／`VIOLATION`／`forbidden`／`不得` 在两个 alex 文件上**逐类**计数 == Step 0 基线 |
-| AC6 | **测量落盘**：`measure-after.txt` 存在且含实测「激活时整读字节数」；该值 < `measure-base.txt`，**且降幅 ≥ 150,000 B**（7 源合计 173,501 B，留余量） |
-| AC7 | parity：`.claude` 与 `.agents` 的 alex `cmp -s` 逐字相同 |
-| AC8 | 围栏：改动集 −(§5 四项 ∪ Step0 基线 ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl`) 为空 |
-| AC9 | **契约与两个配套文件均未变**：`git diff --quiet ${T0} -- <三文件>`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** |
-| AC10 | **三份负控全红**：(a) 只改一半 pins → AC1 拦 (b) 顺手删掉 session-state 那行 → AC3 拦 (c) 把某条 NEW 的命令改回整读该文件 → AC6 降幅门槛拦。任一为绿 → 停下退回 Alex |
+| AC4 | **行为负控**：把 `scan-results.yaml` 复制一份，把 `gh` 那条的 `security_advisories: []` 逐字替换为 `security_advisories:` + 次行 `      - id: "GHSA-FAKE-0001"`，跑 pins#2 命令 → 输出**须含 `adv=YES`**；改回 `[]` 重跑 → **须含 `adv=none`**。两次输出与注入 diff 全部落盘。⚠️ rev1 的命令数的是**键行**，而仓库现有 6 条全是 `[]` → 恒定输出 `adv=6` = **永久假警报**，且对真实告警全盲；rev1 的 AC4 只比 delta，对此完全无感 |
+| AC5 | **纪律不流失**：五类计数 == Step 0 基线。⚠️ 明记：本单 14 个 OLD/NEW 串一个五类词都不含，故本条**按构造不可能红**，判别力由 AC2 承担，此处仅作防未来漂移的冗余保险 |
+| AC6 | **逐源断言**（取代 rev1 的总量门槛）：**8 个源**（`NEXT.md` `PROJECT_CONTEXT.md` 研究 `REGISTRY.yaml` deps `scan-results.yaml` deps `REGISTRY.yaml` `OBJECTIVES.md` github `scan-log.yaml` `ROADMAP.md`）中每一个，在两个 alex 文件里 `Read <该文件>` 计数 **== 0**。⚠️ rev1 用"降幅 ≥150,000 B"，而 `measure-after.txt` **无任何生成规则、由 Blake 自己写数字**；且 23,501 B 余量使 **7 条里 5 条可整条回退仍绿**（审查员逐条实测） |
+| AC7 | **命令可跑**：把 7 条 NEW 里反引号内的命令逐条抽出实跑，落盘各自输出与 exit code。断言：全部 `exit 0`、输出非空（pins#3 用真实依赖名替换 `{上一步输出的依赖名}`）。⚠️ rev1 无此条，实测 rev1 的 pins#3 按字面跑输出 **0 行** |
+| AC8 | parity：`.claude` 与 `.agents` 的 alex `cmp -s` 逐字相同 |
+| AC9 | 围栏：改动集 −(§5 四项 ∪ Step0 基线 ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl`) 为空 |
+| AC10 | **契约与两个配套文件均未变**：`git diff --quiet ${T0} -- <三文件>`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** |
+| AC11 | **三份负控全红**：(a) 只改一半 pins → AC1 拦 (b) 顺手删掉 session-state 那行 → AC3 拦 (c) **把 pins#6 的 NEW 改回 `Read .tad/github-registry/scan-log.yaml`** → **AC6 逐源断言拦**（rev1 此处用总量门槛，该源仅 1,950 B，回退后仍绿）。任一为绿 → 停下退回 Alex |
 
 ## 7. 环境约束（本机实测）
 
@@ -98,7 +99,12 @@ NEW 均未出现**（已实测）。改法一律为：把 `Read <整个文件>` 
 
 ## 9. 已知取舍
 
-1. **替换后的命令由 Alex 写死**，未经第二双眼睛校准命令本身是否取到了原步骤需要的全部信息。
-   AC4 只覆盖依赖扫描一条（唯一有事故记录的），**其余 5 条的"信息是否够用"未验** —— 明写。
-2. **本单不碰 config / 知识 / SKILL 正文**（§2），故激活即付**不会**一次到位降到 SC1 目标；
+1. **7 条命令已由 Gate 2 第二位审查员逐条实跑校准**（原 rev1 有 4 条不够用：文档健康缺僵尸检测三字段、
+   依赖扫描缺 changelog 且 `adv` 恒假、依赖详情无锚匹配取到别的依赖、研究图景取到 dormant 的 topic 且多数一行注释）。
+   替换后实跑合计 **6,892 B**（基线 173,501 B，降幅 166,609 B）。**pins#7（ROADMAP）信息有损但有界**：
+   全仓对它只有该一处引用、无机械消费者。
+2. ⚠️ **存量 bug（非本单造成，须另开单）**：STEP 3.5b 的 Path 2 正则是 `/CVE-\d{4}-\d+/`，
+   而本单 §4 引用的那起事故（漏掉 `gh` 4 个漏洞）用的是 **GHSA 编号不是 CVE**——**原正则本来就抓不到**。
+   本单的替代命令已把 `GHSA-` 并入判定，但**原步骤正文里的那条正则未改**（不在写权限内）。
+3. **本单不碰 config / 知识 / SKILL 正文**（§2），故激活即付**不会**一次到位降到 SC1 目标；
    预期落点约 **107.7K − 43.2K ≈ 64K**，其余归 P7。

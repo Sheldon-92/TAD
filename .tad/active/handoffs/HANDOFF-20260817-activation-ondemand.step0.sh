@@ -33,12 +33,18 @@ for f in .claude/skills/alex/SKILL.md .agents/skills/alex/SKILL.md; do
   done
 done > "$EV/discipline-baseline.txt"
 
-# 激活时整读字节基线：7 个扫描源（session-state 不计——本单不动它）
+# AC2 的两个模式文件（olds/news），⚠️ 必须无空行——空模式会让 grep -vF 吞掉一切
+LC_ALL=C cut -f2 "$R/$HB.pins.tsv" | LC_ALL=C command grep -v '^$' > "$EV/olds.txt"
+LC_ALL=C cut -f3 "$R/$HB.pins.tsv" | LC_ALL=C command grep -v '^$' > "$EV/news.txt"
+{ [ "$(command grep -c . "$EV/olds.txt")" -eq 7 ] && [ "$(command grep -c . "$EV/news.txt")" -eq 7 ]; } \
+  || { echo "Step 0 失败：olds/news 非 7 行"; exit 1; }
+
+# 激活时整读字节基线（信息用；AC6 已改逐源断言，不再依赖本数）：8 个扫描源
 : > "$EV/measure-base.txt"
 TOT=0
 for f in NEXT.md PROJECT_CONTEXT.md .tad/research-notebooks/REGISTRY.yaml \
          .tad/dependencies/scan-results.yaml .tad/dependencies/REGISTRY.yaml \
-         OBJECTIVES.md .tad/github-registry/scan-log.yaml; do
+         OBJECTIVES.md .tad/github-registry/scan-log.yaml ROADMAP.md; do
   n=0; [ -f "$R/$f" ] && n=$(LC_ALL=C wc -c < "$R/$f" | LC_ALL=C tr -d ' ')
   printf '%s\t%s\n' "$f" "$n" >> "$EV/measure-base.txt"; TOT=$((TOT+n))
 done
