@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-08-10 18:06
+Generated: 2026-08-13 18:40
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -47,8 +47,8 @@ Generated: 2026-08-10 18:06
 ## CLAUDE.md Sections
 | Section | Keywords | Summary |
 |---------|----------|---------|
-| 1. Handoff 读取规则 ⚠️ CRITICAL | 1 handoff critical | ⚠️ 本节只管 full 的 `HANDOFF-*.md`。**新工作默认走 lite（§2.5），不产生 `HANDOFF-*.md`。** |
-| 2. 使用场景（full —— 保留通道） | 2 full  | ⚠️ **默认走 lite（§2.5）**。下表为 full 通道，**仅在 lite 无等价物时使用**。 |
+| 1. Handoff 读取规则 ⚠️ CRITICAL | 1 handoff critical | ⚠️ 本节管 `HANDOFF-*.md`，即**默认路径**。lite 的 `LITE-*.md` 见 §2.5（已冻结，仅在飞单）。 |
+| 2. 使用场景（默认路径） | 2  | ⚠️ **下表即默认路径。** lite 已冻结（§2.5），不再作为新工作的入口。 |
 | 3. Quality Gates | 3 quality gates | - 规则 0: Handoff 前必须苏格拉底提问 (⚠️ BLOCKING) |
 | 4. Terminal 隔离 ⚠️ CRITICAL | 4 terminal critical | Alex = Terminal 1, Blake = Terminal 2。**人类是唯一信息桥梁。** |
 | 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | 三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手动触发。 |
@@ -60,11 +60,15 @@ Generated: 2026-08-10 18:06
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
+| HANDOFF-20260812-lite-goal-gate.md | unknown | 给 **Epic 的 Objective** 加一道目标选择闸 + 机械载体： |
+| HANDOFF-20260812-requirement-first.md | unknown |  |
+| HANDOFF-20260813-review-scaling.md | unknown |  |
+| HANDOFF-20260814-routing-decouple.md | unknown |  |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
-| EPIC-20260809-full-capability-extraction-retirement.md | **Created**: 2026-08-09 |
+| EPIC-20260813-alex-blake-lightening.md | **Created**: 2026-08-13 |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -79,5 +83,4 @@ Generated: 2026-08-10 18:06
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260810-lite-authority-model-v2.md | mixed | Handoff: Lite Authority Model v2 |
-| HANDOFF-20260809-release-runbook-capability-migration.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260812-discipline-inventory.md | research | Handoff Document for Agent B (Blake) |

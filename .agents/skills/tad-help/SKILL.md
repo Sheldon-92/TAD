@@ -219,7 +219,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
 ## TAD v2.41.0 Highlights
-- **Lite is the default channel; full is reserved**: new work defaults to `/alex-lite` → `/blake-lite`. The three full skills are unchanged and fully usable — only the recommendation moved.
+- **Alex / Blake is the default; Lite is a frozen experiment (2026-08-13)**: new work goes to `/alex` → `/blake`. The two lite skills are unchanged and still fully usable when invoked explicitly — only the recommendation moved back.
 - **Escalation list replaced by a 3-item safety-stop list**: file count, protocol density and "touches a protocol contract" no longer force an upgrade — only irreversible operations, SAFETY surfaces and global registration surfaces stop for a human. 296 lines of three-tier routing machinery removed. Lifecycle stays location-based (`active/` → `archive/`).
 - **Constraint pricing gate**: every new MUST/BLOCKING clause must first be priced in `.tad/evidence/audits/lite-constraint-ledger.md` — per-ticket cost, the failure mode it blocks (with a verbatim grep anchor), and a real incident carrier. Default action on review is deletion.
 - **Lite gained five capabilities**: read tool-orchestration docs (≤2 files, must name paths), spawn subagents for non-implementation work, write `session-state.md`, and commit/push after explicit human authorization.

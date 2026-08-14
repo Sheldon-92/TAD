@@ -1,0 +1,10 @@
+.tad/archive/**
+.tad/evidence/**
+CHANGELOG.md
+.tad/active/handoffs/**
+.tad/active/epics/**
+.tad/project-knowledge/**
+README.md
+PROJECT_CONTEXT.md
+docs/MULTI-PLATFORM.md
+.tad/config.yaml

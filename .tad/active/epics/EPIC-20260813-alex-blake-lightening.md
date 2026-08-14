@@ -76,13 +76,12 @@
 
 | # | Phase | 状态 | 交付 | 释放 |
 |---|---|---|---|---|
-| **P1a** | **路由脱钩·行为侧（止血）** | **契约 rev2 已交 Blake**（Gate 2 三专家，11 P0 全修） | 11 个文件里的「默认走 lite」→ 默认 full；lite 标为**冻结实验**、保留显式调用；`version.txt` → 2.42.0；重生成 brain-index | 0（但每晚一天就多一批新工作被灌进冻结通道） |
-| **P1b** | 路由脱钩·版本横幅 | BLOCKED by P1a（随发版做） | `README.md`×9、`PROJECT_CONTEXT.md`、`docs/MULTI-PLATFORM.md`、`.tad/config.yaml` 首行的 `Version 2.41.0 - Lite is the Default Channel` | 0 |
+| **P1a** | **路由脱钩·行为侧（止血）** | ✅ **COMPLETE**（Gate 4 PASS，2026-08-14，Alex 独立重算） | 11 个文件里的「默认走 lite」→ 默认 full；lite 标为**冻结实验**、保留显式调用；`version.txt` → 2.42.0；重生成 brain-index | 0（但每晚一天就多一批新工作被灌进冻结通道） |
+| ~~P1b~~ | 路由脱钩·版本横幅 → **降为杂活**（见文末杂活清单） | — | `README.md`×9、`PROJECT_CONTEXT.md`、`docs/MULTI-PLATFORM.md`、`.tad/config.yaml` 首行的 `Version 2.41.0 - Lite is the Default Channel` | 0 |
 | **P2** | **地板表**（不动代码） | BLOCKED by P1a | 每条纪律标 Layer 0/1/2 + 是否 **fatal-不可降级**；含前 Epic 遗留 L1/L3 | 0 |
 | **P3** | 启动扫描 → **缓存判定行** | BLOCKED by P2 | 扫描保留，激活时只读一行缓存判定，不读原始数据 | −45.2K |
-| **P4** | config **按意图绑定** | BLOCKED by P2 | 改 `command_module_binding` 的绑定，不改机制 | −23.3K |
-| **P5** | 知识 `@import` 改索引 + 删 5 个死引用 | BLOCKED by P2 | 仿 `patterns/_index.md`（2.1KB 索引 10 个文件）的形状 | −9.7K |
-| **P6** | `NEXT.md` 归档 | READY（可与 P3-P5 并行） | 450 行 / 97KB → ≤500 行且 <20K | −24K |
+| **P4** | **按用途加载**（config 绑定 + 知识 `@import` 改索引，合并原 P4/P5） | BLOCKED by P2 | 改 `command_module_binding` 的绑定不改机制；知识仿 `patterns/_index.md`（2.1KB 索引 10 文件）+ 删 5 个死引用 | −33.0K |
+| ~~P6~~ | `NEXT.md` 归档 → **降为杂活**（见文末杂活清单） | — | 450 行 / 97KB → ≤500 行且 <20K | −24K |
 | **P7** | **SKILL body 外置** | BLOCKED by P3-P6 | `constraints` 464 行 + 6 个模式专属协议 → `references/` + `load_when` | −~15K |
 
 ⚠️ **P7 排最后且标最高危**：它是唯一会触碰约束文本位置的一刀。验收**必须是逐类计数不变**，
@@ -104,10 +103,10 @@
 
 | # | 判据 | 现值 |
 |---|---|---|
-| SC1 | 激活即付 ≤ 15K tokens | 107.7K |
+| SC1 | 激活即付 ≤ 15K tokens | 107.7K（P1a 不改加载量，按设计） |
 | SC2 | 5 类约束逐类计数不变 | 待 P2 建基线 |
-| SC3 | 每刀切完跑过 ≥1 个非框架真活且未回滚 | 0/8 |
-| SC4 | P1 之后无新工作被路由进 lite | — |
+| SC3 | 每刀切完跑过 ≥1 个非框架真活且未回滚 | 0/4 |
+| SC4 | P1a 之后无新工作被路由进 lite | ✅ P1a 已落地（11 文件），待观察 |
 | SC5 | 至少 1 个下游项目实测跑安装命令后拿到新版本 | 未测（**不是阻塞**，见 R4） |
 
 ## Risk Register
@@ -141,3 +140,29 @@
    2026-08-13 在 dps-harness 实测：注册 4 个命令的小活被要求先写 14 个字段的授权块。
 2. **三问旋钮搬进 full 的 `expert-criteria.yaml`**（现为关键词正则，比三问粗）
 3. **DSH 插件路线**：把角色激活与按需加载从"模型自觉"变成"运行时确定性注入"
+
+
+---
+
+## 杂活清单（做但不走 phase 那套机器）
+
+用户 2026-08-14 指出 phase 拆得过细。按今日三问对档，两件确实是杂活不是 phase
+——**零新建判断、产物非判据、失败一眼可见**：
+
+| 杂活 | 内容 | 什么时候做 |
+|---|---|---|
+| 版本横幅 | `README.md`×9、`PROJECT_CONTEXT.md`、`docs/MULTI-PLATFORM.md`、`.tad/config.yaml` 首行的 `Version 2.41.0 - Lite is the Default Channel` | 发版时顺手 |
+| `NEXT.md` 归档 | 450 行 / 97KB → ≤500 行且 <20K | 随时 |
+| brain-index 生成器 | 撞到缺 `task_type:` 的旧归档即 `set -e` 退出 → 「recent 50」段只出 11 条（缺 39）。**预存缺陷**，非本 Epic 引入 | 独立维护单 |
+
+⚠️ **这条修正本身是本 Epic 的一次自我应用**：Epic 的目的是让重量与任务相称，
+而初版给 8 个 phase 排了同一规格的机器——治病的方案里把病又犯了一遍。
+现为 **5 刀（P1a 已完成，余 P2/P3/P4/P7）+ 3 件杂活**。
+
+## P1a 留下的账（Gate 4 认定，均为 Alex 侧契约缺陷）
+
+1. **AC9 是自证的**：条文「不得改冻结基线」，唯一执行者即被约束方；pin 13 逼出必改时，
+   解法是改基线并重新冻结，AC9 仍全绿。→ 已蒸馏。
+2. **钉死表的 NEW 值含了禁词表里的词**（pin 13 的 `Default channel`），三专家未捕获。→ 已蒸馏为动工前预检。
+3. **AC3 字面读法不可满足**（必改的 description 行不在豁免区间内）。同类形状，同样实现期才暴露。
+4. **立项理由指向文档、却漏掉真正在跑的代码**（`tad.sh`）。→ 已蒸馏。

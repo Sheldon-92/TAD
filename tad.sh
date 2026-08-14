@@ -1511,8 +1511,8 @@ main() {
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
             echo "Available commands:"
-            echo "  /alex-lite, /blake-lite  - Default channel (lightweight, full capability)"
-            echo "  /alex, /blake, /gate     - Reserved channel"
+            echo "  /alex, /blake, /gate     - Default"
+            echo "  /alex-lite, /blake-lite  - Frozen experiment (still usable if invoked explicitly)"
             echo ""
             exit 0
         fi
@@ -1884,7 +1884,7 @@ NEXTEOF
     echo ""
     echo "Quick start:"
     echo "  1. Restart Claude Code (or open new terminal)"
-    echo -e "  2. ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (default) · ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (reserved)"
+    echo -e "  2. ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
 
     echo ""
     echo "Learn more: ${BLUE}${REPO_URL}${NC}"

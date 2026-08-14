@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.41.0 — Lite is the Default Channel**
+**Version 2.42.0 — Alex / Blake is the Default**
 
 ## 安装方式
 
@@ -54,13 +54,13 @@ ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 # 使用 Claude Code
 claude .                       # 打开项目
 
-# 默认通道（lite —— 可同一 terminal，由人输入命令切换角色）
-/alex-lite      # 设计与规划
-/blake-lite     # 实现与执行
-
-# 保留通道（full —— 需双 terminal）
+# 默认（Alex / Blake —— 两个 terminal，人是唯一信息桥梁）
 /alex           # Terminal 1: 设计与规划
 /blake          # Terminal 2: 实现与执行
+
+# 🧊 已冻结的实验（lite —— 显式调用仍完全可用）
+/alex-lite      # 设计与规划（已冻结）
+/blake-lite     # 实现与执行（已冻结）
 ```
 
 ## 升级现有项目

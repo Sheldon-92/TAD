@@ -1,0 +1,8 @@
+.claude/settings.local.json.bak-20260806-082549
+.tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work
+.tad/evidence/acceptance-tests/routing-decouple/fence-baseline.txt
+.tad/evidence/acceptance-tests/routing-decouple/inputs.sha256
+.tad/evidence/acceptance-tests/routing-decouple/t0.txt
+.tad/evidence/decisions/2026-08-13.jsonl
+.tad/evidence/traces/2026-08-13.jsonl
+.tad/active/handoffs/HANDOFF-20260814-routing-decouple.pins.tsv

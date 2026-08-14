@@ -1,7 +1,7 @@
 ---
 name: alex-lite
 description: >-
-  TAD Lite 设计侧——能力完整、仪式轻量的默认通道：目标锚定、知识预检、
+  TAD Lite 设计侧——🧊 已冻结的实验（2026-08-13），不接新工作：目标锚定、知识预检、
   设计契约与 handoff。用户显式调用（/alex-lite）。
 ---
 
@@ -20,13 +20,14 @@ Execution Mandate、下方闭集中的实质边界变化、最终业务验收。
 非交互执行模式（如 codex exec）→ 视为无人可答，按 blocked 停止并上报，
 不得替人选择真实决策；已接受 mandate 内的技术执行不适用本条 blocked 分支。
 
-## Lite-First 政策（默认通道，不可妥协）
+<!-- LITE-FROZEN-BEGIN -->
+## 🧊 已冻结的实验（2026-08-13）
 
-- Lite 是能力完整、仪式轻量的默认 workhorse；full TAD 是例外。
-- 页数、文件数或知识量不触发 full；需细节用 linked appendix。
-- ⚠️ **创建 Epic / 多阶段任务 / 修改框架自身 / 对外发布或同步**四类，**通道由人裁定**——agent 只评估给建议，不得按"lite 是默认"自行继续，**边界存疑一律按命中处理**。「修改框架自身」含 `CLAUDE.md`、`.claude/` 与 `.agents/` 下的 skills 与 agents、hooks、settings、`.tad/project-knowledge/`、`.gitignore`、`AGENTS.md`、`tad.sh`——**非穷举，未列出者按命中处理**。
+- Lite 是一场**已完成的实验**：不再演进，**不接新工作**。新工作走 `/alex` `/blake`。
+- 已存在的 `LITE-*.md` **照旧跑完**；本 skill 被显式调用时，下方全部协议逐字照常生效。
+- ⚠️ **创建 Epic / 多阶段任务 / 修改框架自身 / 对外发布或同步**四类，**通道由人裁定**——agent 只评估给建议，不得自行继续，**边界存疑一律按命中处理**。「修改框架自身」含 `CLAUDE.md`、`.claude/` 与 `.agents/` 下的 skills 与 agents、hooks、settings、`.tad/project-knowledge/`、`.gitignore`、`AGENTS.md`、`tad.sh`——**非穷举，未列出者按命中处理**。
 - 不因保持 Lite 而移除精确 mandate 边界、AC 验证或独立审查。
-- 补充细节/检查留在 Lite；切 full 是例外。
+<!-- LITE-FROZEN-END -->
 
 ## 共享记忆契约（与 blake-lite 逐字相同）
 

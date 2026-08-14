@@ -1,19 +1,19 @@
 # TAD 框架使用规则
 
-> 路由层：什么时候做什么。**默认通道 = lite（§2.5）**；full（`/alex`, `/blake`, `/gate`）
-> 自 2026-08-06 起为**保留通道**，仅在 lite 无等价物时使用。执行协议在各自 skill 文件内。
+> 路由层：什么时候做什么。**默认 = full（`/alex`, `/blake`, `/gate`）**。lite
+> （`/alex-lite`, `/blake-lite`）自 2026-08-13 起为**🧊 已冻结的实验**：不接新工作，仅为在飞的 `LITE-*.md` 与历史对照保留，**显式调用仍完全可用**。执行协议在各自 skill 文件内。
 
 ## 1. Handoff 读取规则 ⚠️ CRITICAL
 
-⚠️ 本节只管 full 的 `HANDOFF-*.md`。**新工作默认走 lite（§2.5），不产生 `HANDOFF-*.md`。**
+⚠️ 本节管 `HANDOFF-*.md`，即**默认路径**。lite 的 `LITE-*.md` 见 §2.5（已冻结，仅在飞单）。
 读取 `.tad/active/handoffs/` 中的 `HANDOFF-*.md` → 必须调用 /blake → 必须过 Gate 3 + Gate 4。
 禁止：读取后直接实现、跳过 Gate、不通过 Blake 改代码。
 豁免：`/tad-maintain` CHECK/SYNC 模式。
 豁免 2：`LITE-*.md`（TAD Lite 通道，见 §2.5）→ 本节规则不适用，含"跳过 Gate/不通过 Blake"禁令。
 
-## 2. 使用场景（full —— 保留通道）
+## 2. 使用场景（默认路径）
 
-⚠️ **默认走 lite（§2.5）**。下表为 full 通道，**仅在 lite 无等价物时使用**。
+⚠️ **下表即默认路径。** lite 已冻结（§2.5），不再作为新工作的入口。
 2026-08-06 实测：`*publish` / `*sync` / `*research` 的操作知识 lite 已可按需读取
 （`release-runbook` skill、`.tad/guides/tool-quick-reference-alex.md`），用普通 LITE 单即可完成
 ——`*publish` / `*sync` 的高后果范围须写入并随 L3 一次接受的 Execution Mandate；
@@ -45,8 +45,9 @@ Adaptive Complexity：Alex 评估建议，**人类做最终决策**。
 Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
 研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 NotebookLM 持久知识库）。
 
-### 2.5 Lite 通道（默认通道）
-`/alex-lite` → `/blake-lite`：**默认通道**。页数、文件数、知识量不构成升级理由；但**创建 Epic / 多阶段任务 / 修改框架自身 / 对外发布或同步**四类，**通道由人裁定**，agent 只评估给建议，不得按"lite 是默认"自行继续，**边界存疑一律按命中处理**；
+### 2.5 Lite 通道（🧊 已冻结的实验，2026-08-13）
+**lite 不接新工作**；已存在的 `LITE-*.md` 照旧跑完。下列条款仅对**在飞单**有效。
+⚠️ **创建 Epic / 多阶段任务 / 修改框架自身 / 对外发布或同步**四类，**通道由人裁定**，agent 只评估给建议，不得自行继续，**边界存疑一律按命中处理**；
 Lite 的有效权限是 `role ∩ skill ∩ accepted Execution Mandate`。只有 outcome/target/consequence/
 blast-radius、业务法律财务身份取舍、分叉可见恢复或新外部身份凭据的实质边界变化才重决策；
 技术失败只能有界恢复或 `GATE FAIL / BLOCK`，不得伪装成审批问题。契约文件 `LITE-*.md`。
@@ -101,8 +102,8 @@ TAD agents 禁止使用 EnterPlanMode（TAD 自带规划流程）。
 
 | 协议 | 位置 |
 |------|------|
-| **lite 全流程（默认通道）** | **`/alex-lite`, `/blake-lite`** |
-| 苏格拉底、专家审查、Epic、配对测试 | `/alex`（保留通道） |
+| **全流程（默认）** | **`/alex`, `/blake`, `/gate`** |
+| lite 全流程（🧊 已冻结，仅在飞单） | `/alex-lite`, `/blake-lite` |
 | Ralph Loop、并行执行 | `/blake` |
 | Gate 检查、Knowledge Assessment | `/gate` |
 | 文档维护、Handoff 清理 | `/tad-maintain` |
