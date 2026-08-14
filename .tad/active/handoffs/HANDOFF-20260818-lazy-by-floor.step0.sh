@@ -30,7 +30,7 @@ while IFS= read -r f; do
   for k in MUST MANDATORY VIOLATION forbidden 不得 BLOCKING; do
     echo "${f}|${k}|$(LC_ALL=C command grep -cF -e "$k" "$R/$f" || true)"
   done
-done < "$EV/affected.txt"
+done < "$EV/affected.txt" >> "$EV/discipline-baseline.txt"
 for d in .claude/skills/alex/references .agents/skills/alex/references; do
   for k in MUST MANDATORY VIOLATION forbidden 不得 BLOCKING; do
     n=$(cat "$R/$d"/*.md 2>/dev/null | LC_ALL=C command grep -cF -e "$k" || true)
