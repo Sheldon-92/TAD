@@ -32,11 +32,17 @@ while IFS= read -r f; do
   printf '%s\t%s\n' "$f" "$n" >> "$OUT"; TOT=$((TOT+n))
 done <<< "$RS"
 
-# 2) 与 T0 常驻层比对：成员**只减不增**（本单不得新增常驻层成员，见契约 §7.0）
+# 2) 与 T0 常驻层比对：**双向**。
+#    新增 → 违反 §7.0（不得新增常驻层成员）；
+#    减少 → 违反 AC2（模块集只增不减）——⚠️ 这一条**必须查**：
+#    实测负控，把 STEP 3 那行从 4 个模块砍到 1 个，STATIC 256,313 → 207,988（−48,325 B），
+#    若只查新增则 `RESULT=PASS`，正是第三轮那条"4 条纪律变暗、AC 全绿"的攻击原样复活。
 if [ -f "$EV/resident-set-base.txt" ]; then
   printf '%s\n' "$RS" | LC_ALL=C sort -u > "$EV/.rs"
   ADD=$(LC_ALL=C comm -13 "$EV/resident-set-base.txt" "$EV/.rs" | LC_ALL=C tr '\n' ' ')
-  [ -z "$ADD" ] || fail "常驻层新增成员：${ADD} —— 本单不允许，须退回 Alex 改契约"
+  LOST=$(LC_ALL=C comm -23 "$EV/resident-set-base.txt" "$EV/.rs" | LC_ALL=C tr '\n' ' ')
+  [ -z "$ADD" ] || fail "常驻层新增成员：${ADD} —— §7.0 不允许，须退回 Alex 改契约"
+  [ -z "$LOST" ] || fail "常驻层丢失成员：${LOST} —— AC2 只增不减；每条被弃载的纪律须逐条落盘可达性记录"
   rm -f "$EV/.rs"
 fi
 

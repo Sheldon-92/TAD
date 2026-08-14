@@ -147,7 +147,9 @@ AC7 **更绿**（新文件不在分母里，0 B 成本；放进 SKILL.md 反而 
 T0 实测 **12 个文件**：`CLAUDE.md` · `AGENTS.md` · `alex/SKILL.md` · `config.yaml` ·
 STEP 3 正文解析出的 4 个 `config-*.yaml` · `CLAUDE.md` 的 3 个 `@import` · `tool-quick-reference-alex.md`。
 
-⚠️ **本单不得新增常驻层成员**（`measure.sh` 对 `resident-set-base.txt` 做 `comm -13`，新增即 FAIL）。
+⚠️ **本单不得新增常驻层成员**，且**不得减少**：`measure.sh` 对 `resident-set-base.txt` 做**双向** `comm`
+——新增违反本节，减少违反 AC2。⚠️ 这两个方向都要查是实测出来的：只查新增时，把 STEP 3 从 4 个模块砍到 1 个
+会让 `TOTAL_STATIC` 掉 48,325 B 而 `RESULT=PASS`，正是第三轮那条"4 条纪律变暗、AC 全绿"的攻击原样复活。
 要新增须**退回 Alex 改契约**——因为 `measure.sh` 受 AC12 冻结，Blake 就算想诚实地把新文件加进分母也不被允许，
 rev4 在结构上禁止了诚实路径。
 
@@ -169,7 +171,7 @@ rev4 在结构上禁止了诚实路径。
 | **AC8** | **行为回读（义务型专项）**：每阶段 spawn fresh subagent，**只喂 `resident-set-base.txt` 列出的文件**（逐个落盘 md5），问 `readback-rubric.tsv` 四题，**每题必含键全中（AND）** 才算过。⚠️ **rev5 加第 4 题**：前三题（专家审查 min 2 / 研究先行 / 致命操作人审）在 AC1 通过后必然能答——AC1 一绿 AC8 必绿，是同义反复，测不出"本体是否还够得着"。第 4 题「列出至少 4 类致命操作的识别特征」**只能靠识别表本体答出**，一行祈使句答不出来。⚠️ 必含键均已改为可从**冻结的祈使句/识别表**推出（rev4 的 Q2 要求答出 `*research`，而该词在常驻层根本不出现 → 在 Blake 权限内不可满足） | 完成度 | 人工 + rubric |
 | **AC9** | parity：`.claude/skills/alex/**` 与 `.agents/skills/alex/**` `diff -r` 零输出 | 不变量 | `diff -r` |
 | **AC10** | 围栏：`git diff --name-only ${T0}` ∪ 未跟踪 −(§6 **五项** ∪ `fence-baseline.txt` ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl`) 为空。⚠️ **rev5**：基线改成"相对 T0 commit"而非"跑 Step 0 那一刻的脏文件快照"——快照式围栏对并发写入天生脆弱（rev4 实测：Alex 在冻结后 3 分钟改了 Epic 文件，AC10 在 Blake 动工前就已经红） | 不变量 | `verify.sh AC10` |
-| **AC11** | **五份负控全红**：(a) 摘掉一个模块名 → AC2 拦 (b) 搬走一条约束不写记录 → AC3 拦 (c) 删空 `Forbidden` 块内条目但留注释锚点 → AC4(a) 拦 (d) 外置 `fatal_operations:` → AC5 拦 (e) **rev5 新增**：把 29 条祈使句写进一个新建的 `alex/OBLIGATIONS.md` → AC7 的常驻层新增检查拦。⚠️ 负控只测**单一 AC 的孤立行为**，测不出组合绕过——(a) 单独跑确实会红，但"诱饵行 + 改真行"的组合就绕过去了 | 完成度 | 人工 |
+| **AC11** | **五份负控全红**：(a) 摘掉一个模块名 → AC2 拦 (b) 搬走一条约束不写记录 → AC3 拦 (c) 删空 `Forbidden` 块内条目但留注释锚点 → AC4(a) 拦 (d) 外置 `fatal_operations:` → AC5 拦 (e) **rev5 新增**：把 29 条祈使句写进一个新建的 `alex/OBLIGATIONS.md` → **AC1 保持红**拦（实测：新文件不在 `resident.sh` 的输出里，`grep` 根本不会去看它，29/29 仍缺失）。⚠️ 负控只测**单一 AC 的孤立行为**，测不出组合绕过——(a) 单独跑确实会红，但"诱饵行 + 改真行"的组合就绕过去了 | 完成度 | 人工 |
 | **AC12** | **契约与七个配套文件均未变**：`git diff --quiet ${T0} -- <八文件>`（`step0.sh` · `budget.sh` · `measure.sh` · `resident.sh` · `verify.sh` · `obligations.tsv` · `blocks.tsv`）。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** | 不变量 | git |
 | **AC13** | **仓库既有的 body/reference 边界门必须全绿**：`bash .tad/hooks/lib/skill-body-verify.sh` 输出含 `ALL CHECKS PASSED`。⚠️ **rev5 新增**：该脚本源自 principles.md 的 SAFETY 条目《Circular Trigger Test》，对 `alex/SKILL.md` 强制 7 个 body marker（`research_unified_protocol:` / `distillation_loop:` / `note_blocking_taxonomy` / `read_feedback_protocol:` / `MANDATORY: Socratic Inquiry Protocol` / `anti_rationalization_registry:` / `NOT_via_alex_auto: true`）并禁止重建 3 个 reference。**rev4 一个字都没提它，而 S2 最肥的外置目标正是其中 4 个 marker** —— 删了 12 条 AC 全绿、这个门事后才红。T0 实测已绿，加它零成本 | 不变量 | `verify.sh AC13` |
 
