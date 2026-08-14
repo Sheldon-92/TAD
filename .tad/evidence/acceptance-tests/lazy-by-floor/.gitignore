@@ -1,0 +1,4 @@
+.tad/evidence/acceptance-tests/lazy-by-floor/t0.txt
+.tad/evidence/acceptance-tests/lazy-by-floor/measure-*.txt
+.tad/evidence/acceptance-tests/lazy-by-floor/budget-computed.tsv
+.tad/evidence/acceptance-tests/lazy-by-floor/ac1-hits.tsv

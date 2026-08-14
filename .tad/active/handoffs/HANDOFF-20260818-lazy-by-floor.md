@@ -174,7 +174,7 @@ rev4 在结构上禁止了诚实路径。
 | **AC9** | parity：`.claude/skills/alex/**` 与 `.agents/skills/alex/**` `diff -r` 零输出 | 不变量 | `diff -r` |
 | **AC10** | 围栏：`git diff --name-only ${T0}` ∪ 未跟踪 −(§6 **五项** ∪ `fence-baseline.txt` ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl`) 为空。⚠️ **rev5**：基线改成"相对 T0 commit"而非"跑 Step 0 那一刻的脏文件快照"——快照式围栏对并发写入天生脆弱（rev4 实测：Alex 在冻结后 3 分钟改了 Epic 文件，AC10 在 Blake 动工前就已经红） | 不变量 | `verify.sh AC10` |
 | **AC11** | **五份负控全红**：(a) 摘掉一个模块名 → AC2 拦 (b) 搬走一条约束不写记录 → AC3 拦 (c) 删空 `Forbidden` 块内条目但留注释锚点 → AC4(a) 拦 (d) 外置 `fatal_operations:` → AC5 拦 (e) **rev5 新增**：把 29 条祈使句写进一个新建的 `alex/OBLIGATIONS.md` → **AC1 保持红**拦（实测：新文件不在 `resident.sh` 的输出里，`grep` 根本不会去看它，29/29 仍缺失）。⚠️ 负控只测**单一 AC 的孤立行为**，测不出组合绕过——(a) 单独跑确实会红，但"诱饵行 + 改真行"的组合就绕过去了 | 完成度 | 人工 |
-| **AC12** | **契约 + 七个配套文件 + 十二份 Step 0 基线均未变**：`git diff --quiet ${T0} -- <契约> <7 脚本/tsv> <12 基线>`。⚠️ **rev5 把基线纳进来**：此前 Step 0 产物**既未进 git、又被 `step0.sh` 无条件重写**，而输出目录是 §6 授权 Blake 可写、AC10 显式豁免的——实测**打完降级再跑一次 `step0.sh`，分母从 57 行按已降级的树重新冻结成 54 行，AC3 当场变成永真、一条可达性记录都不用写**。现在：基线已 commit；`step0.sh` 检测到基线存在即**拒绝执行**，除非显式 `--refreeze`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** | 不变量 | git |
+| **AC12** | **契约 + 七个配套文件 + 十一份 Step 0 基线均未变**：`git diff --quiet ${T0} -- <契约> <7 脚本/tsv> <11 基线>`。⚠️ **rev5 把基线纳进来**：此前 Step 0 产物**既未进 git、又被 `step0.sh` 无条件重写**，而输出目录是 §6 授权 Blake 可写、AC10 显式豁免的——实测**打完降级再跑一次 `step0.sh`，分母从 57 行按已降级的树重新冻结成 54 行，AC3 当场变成永真、一条可达性记录都不用写**。现在：基线已 commit；`step0.sh` 检测到基线存在即**拒绝执行**，除非显式 `--refreeze`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** | 不变量 | git |
 | **AC13** | **仓库既有的 body/reference 边界门必须全绿**：`bash .tad/hooks/lib/skill-body-verify.sh` 输出含 `ALL CHECKS PASSED`。⚠️ **rev5 新增**：该脚本源自 principles.md 的 SAFETY 条目《Circular Trigger Test》，对 `alex/SKILL.md` 强制 7 个 body marker（`research_unified_protocol:` / `distillation_loop:` / `note_blocking_taxonomy` / `read_feedback_protocol:` / `MANDATORY: Socratic Inquiry Protocol` / `anti_rationalization_registry:` / `NOT_via_alex_auto: true`）并禁止重建 3 个 reference。**rev4 一个字都没提它，而 S2 最肥的外置目标正是其中 4 个 marker** —— 删了 12 条 AC 全绿、这个门事后才红。T0 实测已绿，加它零成本 | 不变量 | `verify.sh AC13` |
 
 ## 8. 环境约束（本机实测）
@@ -187,7 +187,8 @@ rev4 在结构上禁止了诚实路径。
 ## 9. Step 0
 
 运行 `bash *.step0.sh`。⚠️ **基线已存在时它会拒绝执行**——重跑会按当前（可能已降级的）树重新冻结，
-确需重冻须显式传 `--refreeze`，且这只应由 Alex 在改契约时做。**十二份基线均已 commit，AC12 守其哈希**：
+确需重冻须显式传 `--refreeze`，且这只应由 Alex 在改契约时做。**十一份基线已 commit，AC12 守其哈希**
+（`t0.txt` 例外：它记的就是 T0 的 commit 哈希，无法在同一次提交里自指，由 Blake 在 Step 0 生成）：
 
 `resident-set-base.txt`（**§7.0 常驻层闭集**，12 文件 —— AC1/AC7/AC8 共用）·
 `binding-set-base.txt`（AC2 的另一半）·`scan-cmds-base.txt`（启动扫描命令 5 条，`measure.sh` 只跑集内逐字相同的）·
