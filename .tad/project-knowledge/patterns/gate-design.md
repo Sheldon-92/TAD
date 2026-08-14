@@ -276,3 +276,28 @@
   事后看来一切全绿、记录齐全，无法与"从未发生过冲突"区分。
 - **Grounded in**: `.tad/archive/handoffs/COMPLETION-20260814-routing-decouple.md` Gate 4 记录
   §「AC9 自证」；`.tad/evidence/acceptance-tests/routing-decouple/amendment-record.md`
+
+### `grep -Fq` 证明"在文件里"，不证明"agent 读得到"——超过 Read 上限的文件有一条不可达的尾巴 - 2026-08-14
+- **Context**: 一个 Epic 的承重设计是「义务型约束必须在常驻层留一行祈使句原文」，AC 判定是
+  在常驻文件里 `grep -Fq` 逐条命中。Blake 逐字合规，把 29 条写进 `alex/SKILL.md` 末尾，
+  AC **29/29 全绿**。Gate 4 才发现：该文件 **98,752 B = 38,747 tokens**，
+  而 Read 工具单次上限 **25,000 tokens** → 单次 Read 只返回 **1-981 行 / 共 1790**，
+  harness 打印 `PARTIAL view — showing lines 1-981 of 1790 total`。
+  祈使句在 1761-1789，**全部落在截断线之外**。
+- **Discovery**: 三个互不相关的零上下文 agent 各自撞到同一截断点。关键区别在**任务形态**：
+  被问纪律问题的 agent 会为了答题主动翻 3 次页（因此答得出来）；
+  而**任务驱动**的 agent 拿到需要的部分就去干活，停在 981 行，一条祈使句都没看见。
+  → **"义务"恰恰是你不知道自己需要、因此不会主动翻页去找的那类内容**，
+  它落在尾部时的不可达性是结构性的，不是概率性的。
+  移动到 L200 后同样条件下 4 次测试**全部命中**（移动前 4 次 **全部零命中**），信号从零到满。
+- **Action**: 任何"约束必须常驻"型 AC，除了 `grep -Fq` 在场，**必须再断言位置**：
+  该内容的最大行号 ≤ 本 harness 的单次读取截断行，并把该阈值作为**实测值**记录（不是拍的）。
+  若载体文件本身超过 Read 上限，正确的根治是**拆文件**或改用**自动注入的载体**
+  （如 `CLAUDE.md` 的 @import，不走 Read 因此无截断），而不是在尾部继续追加。
+- **failure_mode**: 朴素默认：约束写进了常驻文件、`grep` 命中，就认为 agent 会遵守它。
+  为什么错：常驻 ≠ 被读取。文件一旦超过工具的单次上限，尾部就是一段"在场但不可达"的内容，
+  而所有基于 `grep` 的 AC 对这段完全无感——它们全绿，纪律全暗。
+- ⚠️ SAFETY ENTRY — requires human review for any modification
+- **Grounded in**: `gate4-alex-recompute.md` §3.5（1789 行/98,752 B/38,747 tokens vs cap 25,000）；
+  `gate4-obligations-move.md` §2（移动后独立 agent 自述 `showing lines 1-981 of 1790`，
+  作答逐字引用 L205-L230）；`HANDOFF-20260814-obligations-above-cap.md`
