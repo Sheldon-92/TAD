@@ -1,7 +1,7 @@
 # HANDOFF: 激活按需化 —— 启动扫描从「整读文件」改成「跑命令读输出」
 
 **Epic**: `EPIC-20260813-alex-blake-lightening.md`（P3 / 5）
-**From**: Alex（full） **To**: Blake **Created**: 2026-08-17 **Rev**: rev1
+**From**: Alex（full） **To**: Blake **Created**: 2026-08-17 **Rev**: **rev3**
 **配套**（均 commit，AC9 守其哈希）：`*.step0.sh` · `*.pins.tsv`（7 条逐行钉死）
 
 ## 1. 目标与实测账
@@ -75,11 +75,11 @@ NEW 均未出现**（已实测）。改法一律为：把 `Read <整个文件>` 
 | AC3 | `Read .tad/active/session-state.md (if exists).` 一行**逐字仍在**（压缩恢复安全网未被顺手砍掉） |
 | AC4 | **行为负控**：把 `scan-results.yaml` 复制一份，把 `gh` 那条的 `security_advisories: []` 逐字替换为 `security_advisories:` + 次行 `      - id: "GHSA-FAKE-0001"`，跑 pins#2 命令 → 输出**须含 `adv=YES`**；改回 `[]` 重跑 → **须含 `adv=none`**。两次输出与注入 diff 全部落盘。⚠️ rev1 的命令数的是**键行**，而仓库现有 6 条全是 `[]` → 恒定输出 `adv=6` = **永久假警报**，且对真实告警全盲；rev1 的 AC4 只比 delta，对此完全无感 |
 | AC5 | **纪律不流失**：五类计数 == Step 0 基线。⚠️ 明记：本单 14 个 OLD/NEW 串一个五类词都不含，故本条**按构造不可能红**，判别力由 AC2 承担，此处仅作防未来漂移的冗余保险 |
-| AC6 | **逐源断言**（取代 rev1 的总量门槛）：**8 个源**（`NEXT.md` `PROJECT_CONTEXT.md` 研究 `REGISTRY.yaml` deps `scan-results.yaml` deps `REGISTRY.yaml` `OBJECTIVES.md` github `scan-log.yaml` `ROADMAP.md`）中每一个，在两个 alex 文件里 `Read <该文件>` 计数 **== 0**。⚠️ rev1 用"降幅 ≥150,000 B"，而 `measure-after.txt` **无任何生成规则、由 Blake 自己写数字**；且 23,501 B 余量使 **7 条里 5 条可整条回退仍绿**（审查员逐条实测） |
+| AC6 | **逐源断言，限定在激活块内**：先机械取激活块——`awk` 从 `^activation-instructions:` 起、到**下一个顶格键**前一行止（实测 L202..L469，**不得硬编码行号**）；在该切片内，**8 个源**（`NEXT.md` `PROJECT_CONTEXT.md` 研究 `REGISTRY.yaml` deps `scan-results.yaml` deps `REGISTRY.yaml` `OBJECTIVES.md` github `scan-log.yaml` `ROADMAP.md`）各自的 `Read <该文件>` 计数 **== 0**，两个 alex 文件都要查。⚠️ **rev2 写成全文件断言是错的**：`alex/SKILL.md:890` 的 `Read .tad/research-notebooks/REGISTRY.yaml` 属 `research_unified_protocol` 的 `1_find_notebook`（顶层键 L825），只在 `*research` 被显式调用时跑，**不在激活路径上**，且 T0 即存在。全文件断言使本条**对一个正确的实现必红**。⚠️ 同时补一条**反向断言**：该激活块切片的行数须 ≥200（防"把整块删掉"这种让断言空真的做法） |
 | AC7 | **命令可跑**：把 7 条 NEW 里反引号内的命令逐条抽出实跑，落盘各自输出与 exit code。断言：全部 `exit 0`、输出非空（pins#3 用真实依赖名替换 `{上一步输出的依赖名}`）。⚠️ rev1 无此条，实测 rev1 的 pins#3 按字面跑输出 **0 行** |
 | AC8 | parity：`.claude` 与 `.agents` 的 alex `cmp -s` 逐字相同 |
 | AC9 | 围栏：改动集 −(§5 四项 ∪ Step0 基线 ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl`) 为空 |
-| AC10 | **契约与两个配套文件均未变**：`git diff --quiet ${T0} -- <三文件>`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex** |
+| AC10 | **契约与两个配套文件均未变**：`git diff --quiet ${T0} -- <三文件>`。**AC 红只能改实现；判定某 AC 不可满足 → 停下退回 Alex**。⚠️ **rev3 的 T0 已变**（Alex 修 AC6 后重新 commit）——须**重跑 Step 0** 取新 T0，勿沿用 rev2 的 |
 | AC11 | **三份负控全红**：(a) 只改一半 pins → AC1 拦 (b) 顺手删掉 session-state 那行 → AC3 拦 (c) **把 pins#6 的 NEW 改回 `Read .tad/github-registry/scan-log.yaml`** → **AC6 逐源断言拦**（rev1 此处用总量门槛，该源仅 1,950 B，回退后仍绿）。任一为绿 → 停下退回 Alex |
 
 ## 7. 环境约束（本机实测）
@@ -108,3 +108,23 @@ NEW 均未出现**（已实测）。改法一律为：把 `Read <整个文件>` 
    本单的替代命令已把 `GHSA-` 并入判定，但**原步骤正文里的那条正则未改**（不在写权限内）。
 3. **本单不碰 config / 知识 / SKILL 正文**（§2），故激活即付**不会**一次到位降到 SC1 目标；
    预期落点约 **107.7K − 43.2K ≈ 64K**，其余归 P7。
+
+
+## 10. rev2 → rev3 修订记录（2026-08-17）
+
+**Blake 在 AC6 处停下退回，未自行修改——契约那条"判定某 AC 不可满足 → 停下退回 Alex"第一次生效。**
+
+**他报的属实（Alex 独立核实）**：`alex/SKILL.md:890` 的 `Read .tad/research-notebooks/REGISTRY.yaml`
+位于 `research_unified_protocol`（顶层键 L825）的 `1_find_notebook`，是 `*research` 流程、
+不在激活路径；T0 即存在，非本单造成。**激活块（L202..L469）内 8 个源命中全部为 0**
+——即 7 条 pins 已正确应用，**红的是断言范围，不是实现**。
+
+**Alex 裁定：收窄 AC6 到激活块**（机械取块，不硬编码行号），并补反向断言防空真。
+
+**未采纳的两个选项**：
+- 扩 pins 到 8 条 → 会改动研究流程，那里需要 registry 做任意用户话题的语义匹配，
+  pins#4 的 active 列表未必够，**超出本单目的且引入未验证风险**。
+- 记为已知例外 → 例外清单是东西藏起来的地方，收窄范围更真也更可查。
+
+**责任归属**：AC6 的范围写错是 **Alex 的缺陷**，两位 Gate 2 审查员均未捕获
+（他们审的是"总量门槛不可复算"，修法给的是逐源断言，**范围维度无人审**）。
