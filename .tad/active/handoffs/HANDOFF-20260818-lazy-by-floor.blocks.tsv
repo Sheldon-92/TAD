@@ -1,0 +1,20 @@
+# P7 块边界（Alex 逐项人工确认，Step 0 冻结，AC12 守其哈希）
+# 纪律\t常驻\t起锚串(exact full line)\t止锚串(exact full line, 不含; <EOF>=文件尾)
+# 常驻=否 → 载体不在 Alex 常驻层（gate/blake/blake-lite），不计入最小常驻集预算
+需求澄清	是	socratic_inquiry_protocol:	intent_modes:
+需求闸	否	-	-
+门禁	否	-	-
+启动扫描	是	  - STEP 3.5: Document health check	  - STEP 3.5b: Dependency Evolution Check
+知识评估	否	-	-
+跨模型审查	否	-	-
+角色分离	是	### Role separation	### Post-compact recovery
+Execution Mandate	否	-	-
+约束准入	否	-	-
+AC可执行性检查	否	-	-
+Friction反跳过	否	-	-
+身份与角色分离载体	是	## Role Switching	## Knowledge Ingress (read on activation)
+意图路由	是	    express:	    # Phase 3 P3.2 (2026-04-24): *experiment OPRO/A-B/benchmark path
+复杂度判定	是	adaptive_complexity_protocol:	socratic_inquiry_protocol:
+压缩恢复锚点	是	### Post-compact recovery	### Memory authority
+反合理化登记	是	<!-- anti_rationalization_registry:BEGIN -->	<EOF>
+Forbidden 清单本体	是	# Forbidden actions (will trigger VIOLATION)	# Triple-Question KA: Draft-then-Confirm Rule (2026-06-03)

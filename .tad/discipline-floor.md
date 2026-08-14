@@ -7,7 +7,7 @@
 重量裁定	可缩放	both	-	否	.claude/skills/alex/SKILL.md	# ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)	# ⚠️ MANDATORY: Adaptive Complexity Assessment (First Contact)	1	既有判定	否	按需定档既定，无解除待判需求
 专家审查（多视角）	可缩放	both	-	否	.claude/skills/gate/SKILL.md	- [ ] Expert review complete (min 2)	Gate 2 必须执行：- [ ] Expert review complete (min 2)	1	既有判定	否	按需定档既定，无解除待判需求
 门禁	地板	both	-	否	.claude/skills/gate/SKILL.md	规则 1: Alex 创建 handoff → 必须先执行 Gate 2	规则 1: Alex 创建 handoff → 必须先执行 Gate 2	0	既有判定	否	常驻既定，无解除待判需求
-启动扫描	地板	full	-	否	.claude/skills/alex/SKILL.md	Scan .tad/active/handoffs/, NEXT.md, PROJECT_CONTEXT.md.	启动扫描必须执行：Scan .tad/active/handoffs/, NEXT.md, PROJECT_CONTEXT.md.	0	既有判定	否	常驻既定，无解除待判需求
+启动扫描	地板	full	-	否	.claude/skills/alex/SKILL.md	只跑命令读其输出，禁止整读这三处	启动扫描必须执行：只跑命令读其输出，禁止整读这三处（NEXT.md / PROJECT_CONTEXT.md / active handoffs）	0	既有判定	否	常驻既定，无解除待判需求
 知识评估	待判	both	蒸馏循环停跑导致教训流失且无记录	是	.claude/skills/gate/SKILL.md	# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 4)	# ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 4)	0	待判默认	否	需要「蒸馏循环停跑」的可机械检测信号（如 Gate 3/4 的 KA 检查缺失时显式告警）方能判定非循环，否则触发事件只在本体内部知晓
 跨模型审查	待判	full	-	无法判定	.claude/skills/blake/SKILL.md	cross_model_invocation:	跨模型审查必须按需：cross_model_invocation:	0	待判默认	否	需要定义跨模型审查的具体触发场景（当前触发条件字段为空，无法判定循环性）
 配对测试	待判	full	真机/真外部系统任务出现	否	.tad/config-workflow.yaml	pair_testing:	配对测试必须执行：pair_testing:	1	循环触发实测	否	触发事件（真机/真外部系统任务出现）由任务声明自知，需 P2b 后实测其出现频率以校准 Layer
