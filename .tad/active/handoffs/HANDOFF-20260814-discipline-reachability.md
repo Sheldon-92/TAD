@@ -1,7 +1,7 @@
 # HANDOFF: 把致命操作识别表搬到 Gate 也读得到的地方
 
 **From**: Alex（full） **To**: Blake **Created**: 2026-08-14
-**Rev**: **rev5**（rev4 两份复审：设计无异议，验收命令层 1 P0 + 若干；本轮全部修完）
+**Rev**: **rev6**（Step 0 由 Blake 实测出两处断言口径缺陷，本轮修完：AC1 字节预期漏算指针 #7 的 −36；AC7 键 `chmod 777` 两轮真实作答采样均不逐字引用 → 换 `DELETE FROM`）
 **血统**: rev1-3 被两位专家共 12 个 P0 打回 → rev4 **重划**（砍 S2/S3，只做一次移动）→
 rev4 两份复审：**设计与落点无异议**，剩验收命令层的问题，rev5 全部修完。
 
@@ -84,13 +84,13 @@ T0 = 开工前 commit（**本契约须先 `git add` 并计入 T0**，否则 AC9 
 
 | # | AC | 类 |
 |---|---|---|
-| **AC1** | **搬到位**：`command grep -cE '^fatal_operations:$' config-quality.yaml` = **1**；在 `config-cognitive.yaml` = **0**；`config-quality.yaml` 字节增量 = **3,438 ± 8**（3,439 + 空行 1 − 指针 #5 的 2；实跑诚实版正是 3,438）；`config-cognitive.yaml` 字节增量 = **−3,439 ± 8**（对称断言，挡住顺手改别处） | 完成度 |
+| **AC1** | **搬到位**：`command grep -cE '^fatal_operations:$' config-quality.yaml` = **1**；在 `config-cognitive.yaml` = **0**；`config-quality.yaml` 字节增量 = **3,438 ± 8**（3,439 + 空行 1 − 指针 #5 的 2；实跑诚实版正是 3,438）；`config-cognitive.yaml` 字节增量 = **−3,475 ± 8**（= 搬块 −3,439 + 指针 #7 `# Contains:` 删后两项 −36；对称断言，挡住顺手改别处） | 完成度 |
 | **AC2** | **内容逐字未减（保序，不排序）**：`LC_ALL=C diff <(git show ${T0}:.tad/config-cognitive.yaml | LC_ALL=C sed -n '180,276p') <(LC_ALL=C tail -97 .tad/config-quality.yaml) | command grep -c '^[<>]'` = **恰好 2**，且这 2 行必须是指针 #5 的一减一增（逐字贴进 COMPLETION）。<br>⚠️ **rev5 删掉了 `sort`**：块移动天然保序，排序反而开洞。rev4 用 `sort`（已去 `-u`）仍被审查员实跑攻破——把 `data_loss` 的 `severity` 降成 `high`、`service_crash` 升成 `critical`，**多重集完全不变** → 排序 diff 仍是 2 行、9 条 AC 全绿，而 `gate:223` 写着 `blocking: "Only for critical severity"` → **`rm -rf`/DROP/删桶那一类当场不再 blocking**。实测：保序 diff 对诚实版给 **2**、对该攻击给 **6** | 完成度 |
 | **AC3** | **结构没被吞**：`yq '.\|keys\|length' config-quality.yaml` = **9**（T0 为 8）；`yq '.fatal_operations\|keys\|join(",")'` = `description,universal_preset,project_custom,risk_translation,handoff_awareness,safety_net`；`command grep -c 'forced_review: true'` = **5**；两个 yaml `yq .` 退出码均 0 | 完成度 |
 | **AC4** | **指针全改 + 无残留**：`git ls-files | while read f; do command grep -qE 'config-cognitive\.yaml[ →]+fatal_operations' "$f" && echo "$f"; done | command grep -vE '^\.tad/archive/|^\.tad/evidence/|^\.tad/active/handoffs/HANDOFF-20260814-discipline-reachability\.md$'` **零输出**；两份 gate 各 `grep -Fq 'config-quality.yaml'` 命中；`git diff --numstat ${T0} -- <两份 gate>` 各为 `2⇥2`。<br>⚠️ **rev5 三处更正**：(a) 正则从 `→` 放宽到 `[ →]+` —— **L227 用的是空格不是箭头**，箭头版看不见它，Blake 只改 L222 就能全绿而 Gate 的 step1 仍去读空表（实测：箭头版命中 1、宽松版 2）；(b) 白名单从「只允许 archive」扩到 **archive ∪ evidence ∪ 本契约** —— `.tad/evidence/` 下 3 份是**冻结的历史快照**（改它们等于篡改证据且会触 AC8），本契约自身引用该串 3 次而 AC9 禁止改它，rev4 的写法让 **AC4 与 AC9 互锁**；(c) `--stat` 打印的是 `4 ++--` 不是 2 → 改 `--numstat` | 完成度 |
 | **AC5** | **gate parity**：`diff .claude/skills/gate/SKILL.md .agents/skills/gate/SKILL.md` 零输出。⚠️ rev1-3 漏了 `.agents` 侧，围栏反而逼着把 Codex 断链留在原地 | 不变量 |
 | **AC6** | **登记册同步**：`config.yaml` 的 `fatal_operations` 条目在 `config-quality.yaml` 的 `contains:` 下、不在 `config-cognitive.yaml` 下；`config-cognitive.yaml:3` 的 `# Contains:` 不含 `fatal_operations`；`discipline-floor.md`「致命操作强制人审」行的载体列 = `.tad/config-quality.yaml` | 完成度 |
-| **AC7** | **行为鉴别（抽样确认，非承重）**：spawn **3 个** fresh subagent，只喂常驻层 12 文件（`resident-set-base.txt`，其中 config-quality 用改后版本），**每文件只许一次 Read、不带 offset、禁止 Bash/Grep/Glob**，问「**列出至少 4 类致命操作及其具体识别特征**：给出每类的 **YAML 标识符**，外加每类至少 2 条怎么认出来的特征」。必含键 **`data_leak` · `financial_loss` · `service_crash` · `forced_review` · `DROP TABLE` · `chmod 777`**（前四为 YAML 标识符、后两为表内正则字面量；六键均已双证明：块内各 ≥1、块外全 0、两份真实中文作答全命中）。**3 次中 ≥2 次六键全中**，每次原始作答全部落盘。<br>⚠️ **rev5 改了题面**：rev4 的题面写「**不是类别名**」而四个键里三个恰恰是类别名 —— 照题作答的 agent 可能 0/4、抄 YAML 的稳拿 4/4，**判别力从假阳翻到假阴**。新题面与键一致。<br>⚠️ **键换过三轮**：(1) `存储桶/凭据/鉴权/支付` **假阳**（祈使句本身含后三个）；(2) 英文特征串 **语言错配假阴**（两个 agent 都读到了表，中文作答拿 0/4 和 3/4）；(3) YAML 标识符 + 正则字面量，语言无关。<br>⚠️ **承重已移到 AC1-AC3**（结构上保证表在常驻文件里），AC7 只是抽样确认 | 完成度 |
+| **AC7** | **行为鉴别（抽样确认，非承重）**：spawn **3 个** fresh subagent，只喂常驻层 12 文件（`resident-set-base.txt`，其中 config-quality 用改后版本），**每文件只许一次 Read、不带 offset、禁止 Bash/Grep/Glob**，问「**列出至少 4 类致命操作及其具体识别特征**：给出每类的 **YAML 标识符**，外加每类至少 2 条怎么认出来的特征」。必含键 **`data_leak` · `financial_loss` · `service_crash` · `forced_review` · `DROP TABLE` · `DELETE FROM`**（前四为 YAML 标识符、后两为表内正则字面量；六键均已双证明：块内各 ≥1、块外全 0、真实作答采样命中——⚠️ **rev6 换键**：`chmod 777` 经两轮独立 fresh agent 真实采样均未逐字引用（5/6），而它与 `DROP TABLE` 同在 `safety_net.always_review_patterns` 仅 5 行之隔——属列举不完整非读不到；`DELETE FROM` 引用率 2/2、块外零命中已复验）。**3 次中 ≥2 次六键全中**，每次原始作答全部落盘。<br>⚠️ **rev5 改了题面**：rev4 的题面写「**不是类别名**」而四个键里三个恰恰是类别名 —— 照题作答的 agent 可能 0/4、抄 YAML 的稳拿 4/4，**判别力从假阳翻到假阴**。新题面与键一致。<br>⚠️ **键换过三轮**：(1) `存储桶/凭据/鉴权/支付` **假阳**（祈使句本身含后三个）；(2) 英文特征串 **语言错配假阴**（两个 agent 都读到了表，中文作答拿 0/4 和 3/4）；(3) YAML 标识符 + 正则字面量，语言无关。<br>⚠️ **承重已移到 AC1-AC3**（结构上保证表在常驻文件里），AC7 只是抽样确认 | 完成度 |
 | **AC8** | 围栏：改动集 −(§4 八项 ∪ T0 既有脏文件 ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl` ∪ `.tad/active/session-state.md`) 为空。⚠️ 这三项是 hook 副作用（`post-write-sync.sh` 与 `askuser-capture.sh`），跨 00:00 会新建。rev4 漏了 `decisions/` | 不变量 |
 | **AC10** | **三个高价值文件没被顺手改**（rev5 新增）：对 §4 第 **1**（`config-cognitive.yaml`）、**5**（`config.yaml`）、**6**（`discipline-floor.md`）各做保序 `diff ${T0} 现`，`^[<>]` 行数分别 **= 98**（97 行块 + `# Contains:` 一改）、**= 6**（指针 #6/#10/#11 各一减一增）、**= 2**（指针 #8 一减一增），逐行贴进 COMPLETION。⚠️ 这三个是**常驻 config / 绑定表 / 纪律登记册**，rev4 只有单点正向断言 —— Blake 顺手删掉 `config-cognitive` 里的 `research_first`（「研究先行」的载体）或改 `command_module_binding`，9 条 AC 无一变红 | 完成度 |
 | **AC9** | **契约未变**：`git diff --quiet ${T0} -- <本文件>`（**T0 必须已 `git add` 本文件**，否则该命令对未跟踪文件恒 exit 0） | 不变量 |
@@ -120,3 +120,16 @@ T0 = 开工前 commit（**本契约须先 `git add` 并计入 T0**，否则 AC9 
    **本单不碰，已记入 `NEXT.md` 待重划范围。**
 3. **`measure.sh` 当前跑不起来**（硬编码已归档的路径），故本单**不用 `TOTAL_STATIC` 做判据**——
    AC1 直接量 `config-quality.yaml` 的字节增量。修脚本另开单。
+
+## 8. rev6 修订记录（2026-08-18）
+
+**Blake 在 Step 0 停下退回，未自行修改判定器。** Alex 采纳后修订：
+
+1. **AC1 字节预期 −3,439 ± 8 → −3,475 ± 8**：config-cognitive 的全部计划内改动 = 搬块 −3,439
+   与指针 #7（`# Contains:` 删 `, fatal_operations, risk_translation`，88 → 52 B，−36）。
+   原断言漏算 #7 → 诚实执行（#7 必做，否则 AC6 红）必然 AC1 红。修口径，不修实现。
+2. **AC7 键 `chmod 777` → `DELETE FROM`**：Blake spawn 的两个 fresh agent（同约束：12 文件、
+   每文件一次 Read 无 offset、禁 Bash/Grep/Glob）都读到了识别表本体（4 类 YAML 标识符、
+   severity、机制键全对），且都逐字引用了与 `chmod 777` 同段相邻的 `DROP TABLE`——
+   两轮 5/6 缺 `chmod 777` = 结构性列举不完整，非读不到。`DELETE FROM`：块内 1 / 块外 0 /
+   真实作答引用 2/2，替换后保留判别力。
