@@ -615,8 +615,8 @@ Agent({
 ## Alex 的领域补充：HW Circuit Design 特定指引
 
 ### 必读项目背景
-- `/Users/sheldonzhao/01-on progress programs/toy/PROJECT_CONTEXT.md` — 用户的硬件项目（ESP32系列、OLED、E-ink、触觉反馈）
-- `/Users/sheldonzhao/01-on progress programs/toy/devices/` — 设备文档（3个Waveshare板子）
+- `/path/to/toy/PROJECT_CONTEXT.md` — 用户的硬件项目（ESP32系列、OLED、E-ink、触觉反馈）
+- `/path/to/toy/devices/` — 设备文档（3个Waveshare板子）
 
 ### 范围
 - ✅ 原理图设计（元器件选型、电路连接、模块化设计）

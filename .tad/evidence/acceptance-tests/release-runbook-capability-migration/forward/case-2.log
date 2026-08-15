@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.147.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.6-sol
 provider: openai
 approval: never
@@ -11,7 +11,7 @@ reasoning summaries: none
 session id: 019fe9c0-5827-7bf3-bf6e-7ef44ad512a4
 --------
 user
-You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md
+You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /path/to/TAD/.claude/skills/release-runbook/SKILL.md
 
 Read the entry skill and only the reference it routes for this scenario. Do not read the active migration handoff, coverage TSV, test harness, other case outputs, or reviewer conclusions. Stay read-only. Never execute push, tag, publish, sync, registry writes, downstream writes, commits, or auto-healing. If a read-only command is appropriate, cite the exact command and observed result; do not claim a command ran when it did not.
 
@@ -25,7 +25,7 @@ hook: SessionStart Completed
 codex
 I’m using the requested `release-runbook` in read-only `verify` mode. I’ll read only its entry file and the publish reference it routes to, then run detect-only checks—without opening the active handoff, coverage TSV, harness, case outputs, or reviewer conclusions.
 exec
-/bin/zsh -lc "sed -n '1,260p' .claude/skills/release-runbook/SKILL.md && sed -n '1,320p' .claude/skills/release-runbook/references/publish-ops.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .claude/skills/release-runbook/SKILL.md && sed -n '1,320p' .claude/skills/release-runbook/references/publish-ops.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: release-runbook
@@ -341,23 +341,23 @@ release_minor=${release_tail%%.*}
 release_patch=${release_old##*.}
 test "$release_old" = "$release_major.$release_minor.$release_patch" || exit 2
 release_new="$release_major.$release_minor.$((release_patch + 1))"
-printf '"'repo_root=%s\\ncwd_physical=%s\\norigin=%s\\nold=%s\\nnew=%s\\nclassification=patch\\n' \""'$release_repo_root" "$release_cwd_physical" "$release_origin" "$release_old" "$release_new"' in /Users/sheldonzhao/01-on progress programs/TAD
+printf '"'repo_root=%s\\ncwd_physical=%s\\norigin=%s\\nold=%s\\nnew=%s\\nclassification=patch\\n' \""'$release_repo_root" "$release_cwd_physical" "$release_origin" "$release_old" "$release_new"' in /path/to/TAD
  succeeded in 90ms:
-repo_root=/Users/sheldonzhao/01-on progress programs/TAD
-cwd_physical=/Users/sheldonzhao/01-on progress programs/TAD
+repo_root=/path/to/TAD
+cwd_physical=/path/to/TAD
 origin=https://github.com/Sheldon-92/TAD.git
 old=2.40.0
 new=2.40.1
 classification=patch
 
 exec
-/bin/zsh -lc "rg -n '"'^##[[:space:]]+'"\\[?2\\.40\\.1\\]?' CHANGELOG.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg -n '"'^##[[:space:]]+'"\\[?2\\.40\\.1\\]?' CHANGELOG.md" in /path/to/TAD
 exec
-/bin/zsh -lc 'git -C "$PWD" status --short' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "$PWD" status --short' in /path/to/TAD
 exec
-/bin/zsh -lc 'git -C "$PWD" diff --stat' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "$PWD" diff --stat' in /path/to/TAD
 exec
-/bin/zsh -lc 'git -C "$PWD" log --oneline origin/main..HEAD' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "$PWD" log --oneline origin/main..HEAD' in /path/to/TAD
  succeeded in 77ms:
 e05a135 chore(tad): full 能力 inventory + Lite↔skill composition 契约 (Phase 1-2 决策底座)
 4116517 chore(tad): close v2.40 lite-first lifecycle
@@ -413,10 +413,10 @@ ac0699f fix(installer): make remote version authoritative before no-op
 codex
 The identity guard passed and the candidate is `2.40.1`. Scope inspection found no `2.40.1` changelog heading, three commits ahead of the local `origin/main` tracking ref, and a broadly dirty tree. I’m treating that as the first release-readiness blocker and will not continue into parity or later gates, because the runbook requires stopping at the first blocker.
 exec
-/bin/zsh -lc "rg -n '"'^##[[:space:]]+'"\\[?2\\.40\\.1\\]?' '/Users/sheldonzhao/01-on progress programs/TAD/CHANGELOG.md'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg -n '"'^##[[:space:]]+'"\\[?2\\.40\\.1\\]?' '/path/to/TAD/CHANGELOG.md'" in /path/to/TAD
  exited 1 in 439ms:
 exec
-/bin/zsh -lc "git -C '/Users/sheldonzhao/01-on progress programs/TAD' status --short" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "git -C '/path/to/TAD' status --short" in /path/to/TAD
  succeeded in 621ms:
  M .agents/skills/release-runbook/SKILL.md
  M .claude/skills/release-runbook/SKILL.md
@@ -455,14 +455,14 @@ exec
 ?? .tad/memory/feedback_cross-project-tracking-boundary.md
 
 exec
-/bin/zsh -lc "git -C '/Users/sheldonzhao/01-on progress programs/TAD' log --oneline origin/main..HEAD" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "git -C '/path/to/TAD' log --oneline origin/main..HEAD" in /path/to/TAD
  succeeded in 311ms:
 e05a135 chore(tad): full 能力 inventory + Lite↔skill composition 契约 (Phase 1-2 决策底座)
 4116517 chore(tad): close v2.40 lite-first lifecycle
 ac0699f fix(installer): make remote version authoritative before no-op
 
 exec
-/bin/zsh -lc "git -C '/Users/sheldonzhao/01-on progress programs/TAD' diff --stat" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "git -C '/path/to/TAD' diff --stat" in /path/to/TAD
  succeeded in 153ms:
  .agents/skills/release-runbook/SKILL.md            | 554 ++++-----------------
  .claude/skills/release-runbook/SKILL.md            | 554 ++++-----------------
@@ -477,14 +477,14 @@ Not ready for a `2.40.1` patch release.
 
 Evidence:
 
-- Source guard passed: physical root is `/Users/sheldonzhao/01-on progress programs/TAD`; origin is `https://github.com/Sheldon-92/TAD.git`.
+- Source guard passed: physical root is `/path/to/TAD`; origin is `https://github.com/Sheldon-92/TAD.git`.
 - `.tad/version.txt` contains `2.40.0`, making the next patch `2.40.1`.
-- `rg -n '^##[[:space:]]+\[?2\.40\.1\]?' '/Users/sheldonzhao/01-on progress programs/TAD/CHANGELOG.md'` exited `1`: no `2.40.1` changelog entry.
-- `git -C '/Users/sheldonzhao/01-on progress programs/TAD' status --short` exited `0`, reporting 6 modified and 29 untracked paths without an explicit release scope.
-- `git -C '/Users/sheldonzhao/01-on progress programs/TAD' log --oneline origin/main..HEAD` exited `0`, reporting three commits ahead of the locally recorded `origin/main`.
-- `git -C '/Users/sheldonzhao/01-on progress programs/TAD' diff --stat` exited `0`: 6 tracked files changed, with 239 insertions and 917 deletions.
+- `rg -n '^##[[:space:]]+\[?2\.40\.1\]?' '/path/to/TAD/CHANGELOG.md'` exited `1`: no `2.40.1` changelog entry.
+- `git -C '/path/to/TAD' status --short` exited `0`, reporting 6 modified and 29 untracked paths without an explicit release scope.
+- `git -C '/path/to/TAD' log --oneline origin/main..HEAD` exited `0`, reporting three commits ahead of the locally recorded `origin/main`.
+- `git -C '/path/to/TAD' diff --stat` exited `0`: 6 tracked files changed, with 239 insertions and 917 deletions.
 
-Per [publish-ops.md](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/references/publish-ops.md), the missing changelog entry and unexplained dirty/unpushed scope are preflight blockers. I therefore stopped before parity, version, version-sweep, migration, and supporting checks.
+Per [publish-ops.md](/path/to/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/references/publish-ops.md), the missing changelog entry and unexplained dirty/unpushed scope are preflight blockers. I therefore stopped before parity, version, version-sweep, migration, and supporting checks.
 
 No prohibited files were opened, no healing was attempted, and no writes, commits, tags, pushes, publishing, or sync actions were performed.
 tokens used
@@ -493,13 +493,13 @@ Not ready for a `2.40.1` patch release.
 
 Evidence:
 
-- Source guard passed: physical root is `/Users/sheldonzhao/01-on progress programs/TAD`; origin is `https://github.com/Sheldon-92/TAD.git`.
+- Source guard passed: physical root is `/path/to/TAD`; origin is `https://github.com/Sheldon-92/TAD.git`.
 - `.tad/version.txt` contains `2.40.0`, making the next patch `2.40.1`.
-- `rg -n '^##[[:space:]]+\[?2\.40\.1\]?' '/Users/sheldonzhao/01-on progress programs/TAD/CHANGELOG.md'` exited `1`: no `2.40.1` changelog entry.
-- `git -C '/Users/sheldonzhao/01-on progress programs/TAD' status --short` exited `0`, reporting 6 modified and 29 untracked paths without an explicit release scope.
-- `git -C '/Users/sheldonzhao/01-on progress programs/TAD' log --oneline origin/main..HEAD` exited `0`, reporting three commits ahead of the locally recorded `origin/main`.
-- `git -C '/Users/sheldonzhao/01-on progress programs/TAD' diff --stat` exited `0`: 6 tracked files changed, with 239 insertions and 917 deletions.
+- `rg -n '^##[[:space:]]+\[?2\.40\.1\]?' '/path/to/TAD/CHANGELOG.md'` exited `1`: no `2.40.1` changelog entry.
+- `git -C '/path/to/TAD' status --short` exited `0`, reporting 6 modified and 29 untracked paths without an explicit release scope.
+- `git -C '/path/to/TAD' log --oneline origin/main..HEAD` exited `0`, reporting three commits ahead of the locally recorded `origin/main`.
+- `git -C '/path/to/TAD' diff --stat` exited `0`: 6 tracked files changed, with 239 insertions and 917 deletions.
 
-Per [publish-ops.md](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/references/publish-ops.md), the missing changelog entry and unexplained dirty/unpushed scope are preflight blockers. I therefore stopped before parity, version, version-sweep, migration, and supporting checks.
+Per [publish-ops.md](/path/to/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/references/publish-ops.md), the missing changelog entry and unexplained dirty/unpushed scope are preflight blockers. I therefore stopped before parity, version, version-sweep, migration, and supporting checks.
 
 No prohibited files were opened, no healing was attempted, and no writes, commits, tags, pushes, publishing, or sync actions were performed.

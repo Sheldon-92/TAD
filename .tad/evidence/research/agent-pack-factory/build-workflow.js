@@ -21,7 +21,7 @@ const PACKS = [
   { slug: 'knowledge-graph',     title: 'Knowledge Graphs & GraphRAG' },
 ]
 
-const ROOT = '/Users/sheldonzhao/01-on progress programs/TAD'
+const ROOT = '/path/to/TAD'
 const FINDINGS = (slug) => `${ROOT}/.tad/evidence/research/agent-pack-factory/${slug}/findings.md`
 const SKILL_DIR = (slug) => `${ROOT}/.claude/skills/${slug}`
 const SRC_DIR = (slug) => `${ROOT}/.tad/capability-packs/${slug}`

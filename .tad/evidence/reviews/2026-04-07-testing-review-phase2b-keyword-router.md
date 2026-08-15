@@ -132,7 +132,7 @@ Input with bytes `\xff\xfe\x00\x01` preceding "react button" produced exit 0 dur
 
 **GAP-5: settings.json uses relative path, not absolute path**
 
-The handoff §4.2 specified `bash '/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/userprompt-domain-router.sh'` (absolute path). The actual settings.json contains `bash .tad/hooks/userprompt-domain-router.sh` (relative). This is consistent with all five other hook commands in settings.json and with how Claude Code appears to resolve paths (relative to project root). The `$SCRIPT_DIR` computation in the hook script uses `$(cd "$(dirname "$0")" && pwd)` which correctly resolves to the absolute directory regardless of how the script is invoked. **No functional problem identified.** Worth noting for documentation alignment.
+The handoff §4.2 specified `bash '/path/to/TAD/.tad/hooks/userprompt-domain-router.sh'` (absolute path). The actual settings.json contains `bash .tad/hooks/userprompt-domain-router.sh` (relative). This is consistent with all five other hook commands in settings.json and with how Claude Code appears to resolve paths (relative to project root). The `$SCRIPT_DIR` computation in the hook script uses `$(cd "$(dirname "$0")" && pwd)` which correctly resolves to the absolute directory regardless of how the script is invoked. **No functional problem identified.** Worth noting for documentation alignment.
 
 **GAP-6: `perl` as timing dependency**
 

@@ -3,7 +3,7 @@
 # Red definition: exit != 0 AND last line RESULT=FAIL.
 # Frozen inputs only: T=0 (git HEAD) + pins.tsv + block-a/b/c. AC4 expected state is
 # reconstructed mechanically from frozen inputs; never derived from live files.
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/routing-decouple"
 TSV="$R/.tad/active/handoffs/HANDOFF-20260814-routing-decouple.pins.tsv"
 BLK="$R/.tad/active/handoffs/HANDOFF-20260814-routing-decouple"

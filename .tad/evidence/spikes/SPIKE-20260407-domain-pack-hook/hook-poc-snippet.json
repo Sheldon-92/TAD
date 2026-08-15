@@ -9,7 +9,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "bash '/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/spikes/SPIKE-20260407-domain-pack-hook/spike-hook.sh'"
+          "command": "bash '/path/to/TAD/.tad/evidence/spikes/SPIKE-20260407-domain-pack-hook/spike-hook.sh'"
         }
       ]
     }

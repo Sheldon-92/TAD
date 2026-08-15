@@ -114,13 +114,25 @@ When a user's task matches a capability pack's keywords, read the pack's SKILL.m
 | ai-tool-integration | MCP server, tool, CLI wrapping, API integration, 工具集成 | `.agents/skills/ai-tool-integration/SKILL.md` |
 | code-security | security, SAST, DAST, secret, vulnerability, 安全, semgrep | `.agents/skills/code-security/SKILL.md` |
 | product-thinking | product, strategy, business, PMF, 产品, 商业 | `.agents/skills/product-thinking/SKILL.md` |
-| research-methodology | 研究, research, 调研, landscape, deep research | `.agents/skills/research-methodology/SKILL.md` |
 | video-creation | video, animation, motion, HyperFrames, Remotion, 视频 | `.agents/skills/video-creation/SKILL.md` |
 | web-backend | backend, API, REST, database, 后端, 接口 | `.agents/skills/web-backend/SKILL.md` |
 | web-deployment | deploy, CI/CD, Docker, Vercel, monitoring, 部署 | `.agents/skills/web-deployment/SKILL.md` |
 | web-frontend | React, frontend, component, CSS, 前端, 组件 | `.agents/skills/web-frontend/SKILL.md` |
 | web-testing | testing, test, E2E, unit test, Playwright, 测试 | `.agents/skills/web-testing/SKILL.md` |
 | web-ui-design | UI, UX, design, wireframe, 设计, 界面 | `.agents/skills/web-ui-design/SKILL.md` |
+| academic-research | Academic research methodology pack for systematic literature review, c | `.agents/skills/academic-research/SKILL.md` |
+| agent-computer-interface | Agent computer & browser control capability pack. Gives AI agents the  | `.agents/skills/agent-computer-interface/SKILL.md` |
+| agent-memory | Agent memory and context engineering capability pack. Gives AI agents  | `.agents/skills/agent-memory/SKILL.md` |
+| agent-orchestration | Agent orchestration capability pack. Gives AI agents the judgment rule | `.agents/skills/agent-orchestration/SKILL.md` |
+| ai-guardrails | AI guardrails & LLM I/O security capability pack. Gives AI agents the  | `.agents/skills/ai-guardrails/SKILL.md` |
+| ai-podcast-production | AI podcast production judgment for coding agents. Covers script writin | `.agents/skills/ai-podcast-production/SKILL.md` |
+| ai-voice-production | AI voice production judgment for coding agents. Covers TTS tool select | `.agents/skills/ai-voice-production/SKILL.md` |
+| data-engineering | Data engineering for AI capability pack. Gives AI agents the judgment  | `.agents/skills/data-engineering/SKILL.md` |
+| knowledge-graph | Knowledge Graph & GraphRAG capability pack. Gives AI agents the judgme | `.agents/skills/knowledge-graph/SKILL.md` |
+| llm-observability | LLM observability & LLMOps capability pack. Gives AI agents the judgme | `.agents/skills/llm-observability/SKILL.md` |
+| ml-training | ML model training on cloud GPU capability pack. Covers platform select | `.agents/skills/ml-training/SKILL.md` |
+| rag-retrieval | RAG & retrieval engineering capability pack. Gives AI agents the judgm | `.agents/skills/rag-retrieval/SKILL.md` |
+| synthetic-data | Synthetic data & fine-tune dataset curation capability pack. Gives AI  | `.agents/skills/synthetic-data/SKILL.md` |
 
 **How to use:** When keywords match, read the SKILL.md file. It contains a context detection router that dispatches to `references/*.md` files with specific rules. Follow the pack's Step 0 → Step 1 → Step 2 workflow.
 

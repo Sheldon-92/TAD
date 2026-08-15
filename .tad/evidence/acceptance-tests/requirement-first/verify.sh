@@ -1,5 +1,5 @@
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/requirement-first"
 CP=".tad/active/handoffs/HANDOFF-20260812-requirement-first.md"
 T0=d225585

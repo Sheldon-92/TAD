@@ -19,4 +19,4 @@ sed -n '1,240p' '.claude/skills/release-runbook/SKILL.md'
 cat '.claude/skills/release-runbook/references/publish-ops.md'
 ```
 
-Both exited `0`. No writes or release operations were performed. ([entry skill](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/SKILL.md), [publish recovery rules](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/references/publish-ops.md))
+Both exited `0`. No writes or release operations were performed. ([entry skill](/path/to/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/SKILL.md), [publish recovery rules](/path/to/01-on%20progress%20programs/TAD/.claude/skills/release-runbook/references/publish-ops.md))

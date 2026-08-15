@@ -3,7 +3,7 @@ Decision: the fixture is eligible for a proposed registration, using `merge`. Th
 Proposed entry:
 
 ```yaml
-- path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+- path: "/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
   name: "fixture-project"
   platform: "claude"
   claude_md_strategy: "merge"
@@ -20,7 +20,7 @@ Project-owned content that must be preserved.
 Read-only evidence:
 
 - The runbook’s exact source-identity guard completed with exit code `0`:
-  - root and physical working directory: `/Users/sheldonzhao/01-on progress programs/TAD`
+  - root and physical working directory: `/path/to/TAD`
   - origin: `https://github.com/Sheldon-92/TAD.git`
 - Physical-path resolution used:
 

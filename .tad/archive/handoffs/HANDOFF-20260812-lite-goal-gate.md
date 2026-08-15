@@ -340,7 +340,7 @@ Blake 造 **6 份 fixture Epic 文件**，逐份跑 §4.4 **原文命令**（⚠
 
 ```bash
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lite-goal-gate"
 FAIL=0; fail(){ echo "GATE FAIL: $*"; FAIL=1; }
 

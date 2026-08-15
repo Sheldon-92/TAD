@@ -44,7 +44,7 @@ Epic 收尾：用 Codex adapter 跑一次真实 TAD 闭环（dogfood），然后
 ### Pre-flight: Validate `codex exec --full-auto` (5 min)
 
 ```bash
-cd "/Users/sheldonzhao/01-on progress programs/TAD"
+cd "/path/to/TAD"
 # Test 1: stdin pipe + --full-auto flag accepted
 echo "Say hello" | codex exec --full-auto "respond with exactly: HELLO_CONFIRMED"
 # Test 2: write permission (critical for Blake mode)

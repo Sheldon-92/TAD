@@ -1,1 +1,1 @@
-/Users/sheldonzhao/01-on progress programs/下载md插件
+/path/to/下载md插件

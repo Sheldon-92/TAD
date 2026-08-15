@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
@@ -1377,13 +1377,13 @@ next_md_rules:
 codex
 I’m activating Alex using the supplied TAD Codex protocol and doing the required read-only project health/context checks. I’ll keep this as design-only and produce the handoff inline instead of creating files.
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc 'find .tad/active/handoffs -maxdepth 1 -type f -print' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/active/handoffs -maxdepth 1 -type f -print' in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' NEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' NEXT.md" in /path/to/TAD
 exec
-/bin/zsh -lc "test -f ROADMAP.md && sed -n '1,180p' ROADMAP.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f ROADMAP.md && sed -n '1,180p' ROADMAP.md || true" in /path/to/TAD
  succeeded in 1ms:
 # TAD Configuration v2.24.0 - Triple-Question KA
 method: TAD
@@ -1905,7 +1905,7 @@ Codex/Gemini removed as full TAD runtimes (~1100 lines), repositioned as special
 codex
 The project health check shows two active handoff-related files already present, but this requested output is inline only, so I won’t touch that queue. I’m loading the relevant config modules, handoff template, and testing capability guidance now so the handoff matches local conventions.
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Agents & Interaction
 # Part of TAD config.yaml modular split (v2.2)
@@ -2169,7 +2169,7 @@ human_role_v13:
         - "测试通过了吗？"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -2433,7 +2433,7 @@ quality_gates:
     matrix:
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Workflow & Document Management
 # Part of TAD config.yaml modular split (v2.2)
@@ -2697,7 +2697,7 @@ pair_testing:
       P0: "Create immediate handoff"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -2921,9 +2921,9 @@ mcp_tools:
       - "MCP tools used per task"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/pair-testing/SESSIONS.yaml 2>/dev/null || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/pair-testing/SESSIONS.yaml 2>/dev/null || true" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/active/session-state.md 2>/dev/null || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/active/session-state.md 2>/dev/null || true" in /path/to/TAD
  succeeded in 0ms:
  succeeded in 0ms:
 # TAD Session State
@@ -2953,9 +2953,9 @@ Human: review branch epic/nondev-verdict-shapes → merge to main if approved. O
 codex
 The session state is Alex standby, so there’s no active Blake work to interrupt. I found no active pair-test report from the manifest path, and I’m now grounding the handoff against the template and project knowledge index.
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/templates/handoff-a-to-b.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/templates/handoff-a-to-b.md" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-cognitive.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-cognitive.yaml" in /path/to/TAD
  succeeded in 0ms:
 ---
 # Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3)
@@ -3481,7 +3481,7 @@ fatal_operations:
   # Safety net: critical paths always get human review
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/README.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/README.md" in /path/to/TAD
  succeeded in 0ms:
 # Project Knowledge
 
@@ -3705,7 +3705,7 @@ Step 2: 提供选项
   7. api-integration
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-testing/SKILL.md 2>/dev/null || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-testing/SKILL.md 2>/dev/null || true" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: web-testing
@@ -3837,7 +3837,7 @@ Produce a structured testing review:
 | Stryker | `npx stryker init` | Mutation testing |
 
 exec
-/bin/zsh -lc 'find .tad/project-knowledge -maxdepth 2 -type f -print' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/project-knowledge -maxdepth 2 -type f -print' in /path/to/TAD
  succeeded in 0ms:
 .tad/project-knowledge/code-quality.md
 .tad/project-knowledge/principles.md
@@ -3860,7 +3860,7 @@ exec
 codex
 For this task the relevant historical context is shell portability plus acceptance-command design, not frontend/web E2E. I loaded the web-testing pack because the task includes testing, but its browser/API-specific references only apply lightly here; the handoff will use the fast local test-script pattern.
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/shell-portability.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/shell-portability.md" in /path/to/TAD
  succeeded in 0ms:
 # Shell Portability Patterns (Layer 2)
 
@@ -3915,7 +3915,7 @@ exec
 - **Grounded in**: .tad/scripts/scan-collisions.sh (shared-keyword pre-filter), .tad/evidence/yolo/pack-collision-detection/phase1-impl-review-cr.md (P1-1), COMPLETION-20260531-pack-collision-detection-phase1.md
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/ac-verification.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/ac-verification.md" in /path/to/TAD
  succeeded in 0ms:
 # AC Verification Patterns (Layer 2)
 
@@ -3947,7 +3947,7 @@ exec
 - **Grounded in**: .tad/scripts/pack-eval-runner.sh, .claude/skills/*/examples/*.md (16 fixtures), .tad/templates/pack-example-fixture.md, COMPLETION-20260531-tad-lean-trustworthy-phase5.md AC5.3
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/code-quality.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/code-quality.md" in /path/to/TAD
  succeeded in 0ms:
 # Code Quality Knowledge
 
@@ -3972,7 +3972,7 @@ Project-specific code quality learnings accumulated through TAD workflow.
 > See `.tad/project-knowledge/README.md` for the Knowledge Lifecycle System documentation.
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-testing/references/test-strategy-rules.md 2>/dev/null || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-testing/references/test-strategy-rules.md 2>/dev/null || true" in /path/to/TAD
  succeeded in 0ms:
 # Test Strategy Rules
 <!-- capability: test_strategy -->
@@ -4183,7 +4183,7 @@ required_status_checks:
 | "We'll fix tests later" bypass | Permanent broken window | Zero tolerance quality gates (S8) |
 
 exec
-/bin/zsh -lc 'bash .tad/hooks/lib/stale-knowledge-check.sh --json 2>/dev/null || true' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash .tad/hooks/lib/stale-knowledge-check.sh --json 2>/dev/null || true' in /path/to/TAD
  succeeded in 247ms:
 {"file":".tad/project-knowledge/principles.md","title":"Express Handoff is NOT Review-Exemption","path":"","status":"INFO","days_delta":null,"msg":"no Grounded in declared (legacy entry, skip)"}
 {"file":".tad/project-knowledge/principles.md","title":"Mechanical Enforcement Rejected on Single-User CLI","path":"","status":"INFO","days_delta":null,"msg":"no Grounded in declared (legacy entry, skip)"}
@@ -4203,10 +4203,10 @@ I have enough context to draft the handoff. The key design choice is to make slu
 codex
 Before finalizing the handoff, I’m checking whether the target sandbox files already exist. If they do, the design needs to tell Blake to preserve or consciously replace them; if they don’t, this is a clean create-only task.
 exec
-/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -maxdepth 2 -type f -print 2>/dev/null || true' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -maxdepth 2 -type f -print 2>/dev/null || true' in /path/to/TAD
  succeeded in 0ms:
 exec
-/bin/zsh -lc 'for f in .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh; do test -f "$f" && sed -n '"'1,50p' \""'$f"; done' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'for f in .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh; do test -f "$f" && sed -n '"'1,50p' \""'$f"; done' in /path/to/TAD
  exited 1 in 0ms:
 codex
 Alex activated as Solution Lead. I’m using the standard `*analyze` path with a light handoff because this is a small, create-only Bash utility task.

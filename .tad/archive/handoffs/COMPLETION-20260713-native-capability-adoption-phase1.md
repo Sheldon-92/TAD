@@ -2,7 +2,7 @@
 
 - Handoff: `.tad/active/handoffs/HANDOFF-20260712-precompact-session-state-hook.md` (v2, read from main working dir — untracked, not visible in worktree)
 - Grounding: `.tad/evidence/yolo/native-capability-adoption/phase1-grounding.md`
-- Worktree: `/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_4d1c412a-719-3`
+- Worktree: `/path/to/TAD/.claude/worktrees/wf_4d1c412a-719-3`
 - Date: 2026-07-13
 - Evidence dir: `.tad/evidence/hooks/precompact-snapshot/`
 

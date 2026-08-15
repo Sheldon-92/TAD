@@ -91,7 +91,7 @@ post-impl-check.sh AC2 中 `b=$(grep -n '^## Forbidden' "$SK" | cut -d: -f1)` �
 
 ## 执行证据
 
-以下命令均在仓库根 `/Users/sheldonzhao/01-on progress programs/TAD` 执行（探针只写 /tmp）。
+以下命令均在仓库根 `/path/to/TAD` 执行（探针只写 /tmp）。
 
 **E1. 节定位与计数**
 ```
@@ -132,7 +132,7 @@ AC7: PASS (silent)
 $ bash .tad/hooks/lib/release-verify.sh parity .
 =========================================
 PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
-  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  REPO: /path/to/TAD
 =========================================
   ✅ .claude/skills <-> .agents/skills byte-identical
 VERDICT: parity PASS (exit 0)

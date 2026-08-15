@@ -328,7 +328,7 @@ mandate_id: `LITE-20260810-1820-LAYER1-AC-DRIVEN-COMPAT` | revision: 2 | authori
 status: accepted | desired_outcome: TAD 的 Layer 1 自检与两处环境耦合指导不再假设 JS/pyyaml 工具链，改由
 handoff §9.1 驱动且优先级明确；改动完成并在本地 main 上以任务范围的追加提交落盘，不对外发布任何内容。
 authorized_consequence_classes: [`workspace_write`, `local_commit`]
-target_scope: repo root = `/Users/sheldonzhao/01-on progress programs/TAD`；ref = `main`（本地）；
+target_scope: repo root = `/path/to/TAD`；ref = `main`（本地）；
 pathspec = 本契约「文件清单」第 1-12 项，及本契约文件自身与其 Completion；无 remote、无 registered
 target、无环境、无账户、无凭据、无财务绑定。
 consequence_bindings:

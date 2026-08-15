@@ -341,9 +341,9 @@ choices, not yes/no verification.
 
 #### 搜索证据
 ```bash
-ls "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/" | grep -i save
+ls "/path/to/TAD/.claude/skills/" | grep -i save
 # → (no output)
-ls -d "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/local"
+ls -d "/path/to/TAD/.claude/skills/local"
 # → No such file or directory
 grep -rl "local-skill-capture" .tad/active/ | head
 # → only SURPLUS-PLAN / session-state references (backlog entries, no implementation)

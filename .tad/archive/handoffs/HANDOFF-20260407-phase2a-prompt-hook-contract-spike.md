@@ -442,7 +442,7 @@ ls .tad/evidence/spikes/SPIKE-20260407-domain-pack-hook/
 **每个 probe 测试都用这个方法,不要用其他方式**:
 
 1. **打开一个新的 terminal 窗口**(不是新 tab,不是 Blake 当前的 terminal)
-2. `cd "/Users/sheldonzhao/01-on progress programs/TAD"`
+2. `cd "/path/to/TAD"`
 3. 运行 `claude`(**interactive 模式,不是 `claude -p`**)
 4. 等 prompt ready
 5. 手动输入测试消息

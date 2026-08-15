@@ -629,8 +629,8 @@ Agent({
 
 ### 必读参考
 
-- `/Users/sheldonzhao/01-on progress programs/claude-code-leaked/src/Tool.ts` — Claude Code 的 Tool 接口（isConcurrencySafe, isReadOnly, isDestructive）
-- `/Users/sheldonzhao/01-on progress programs/claude-code-leaked/src/tools.ts` — 工具注册和组装
+- `/path/to/claude-code-leaked/src/Tool.ts` — Claude Code 的 Tool 接口（isConcurrencySafe, isReadOnly, isDestructive）
+- `/path/to/claude-code-leaked/src/tools.ts` — 工具注册和组装
 - `.tad/domains/tools-registry.yaml` — 我们自己的工具清单格式（install+usage+example）
 - `.tad/spike-v3/README.md` — Hook 系统和 MCP 集成发现
 

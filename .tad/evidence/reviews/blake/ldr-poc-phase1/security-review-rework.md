@@ -37,7 +37,7 @@
 - `.tad/evidence/research/ldr-poc/mcp-transcript.md` lines 8, 25
 - `.tad/evidence/research/ldr-poc/pip-audit.txt` line 1
 
-**Description**: Five lines across 3 committed files contain absolute paths of the form `/Users/sheldonzhao/...`. Since the repo is public on GitHub, this discloses:
+**Description**: Five lines across 3 committed files contain absolute paths of the form `/path/to/...`. Since the repo is public on GitHub, this discloses:
 - macOS username: `sheldonzhao`
 - Venv location: `~/.tad-ldr-venv/`
 - Data directory: `~/.tad-ldr-data/`
@@ -92,7 +92,7 @@
 | MCP transport is STDIO only | PASS | `.mcp.json`: `command` field, no `url` key; `jq` verification in transcript |
 | No HTTP/SSE/WebSocket MCP exposure | PASS | `jq -e '[.mcpServers[] \| select(has("url"))] \| length == 0'` = true |
 | LDR web host binds to loopback | PASS | `.mcp.json` L12: `LDR_WEB_HOST=127.0.0.1` |
-| Data directory outside repo | PASS | `LDR_DATA_DIR=/Users/sheldonzhao/.tad-ldr-data` (not under repo root) |
+| Data directory outside repo | PASS | `LDR_DATA_DIR=/path/to/.tad-ldr-data` (not under repo root) |
 | A/B blind evaluation integrity | PASS | Judge verdicts contain zero system-identity terms |
 | Judge input manifest excludes mapping | PASS | `ab-judge-input-manifest-lib.txt` lists only answer + source files |
 | Venv isolated from repo | PASS | `~/.tad-ldr-venv/` is outside repo, not committed |

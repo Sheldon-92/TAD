@@ -13,33 +13,33 @@ TAD曾经从BMAD框架转换而来，但转换过程中留下了错误配置：
 
 ### 1. 了解TAD方法论核心
 ```
-/Users/sheldonzhao/programs/TAD/README.md
-/Users/sheldonzhao/programs/TAD/WORKFLOW_PLAYBOOK.md
+/path/to/programs/TAD/README.md
+/path/to/programs/TAD/WORKFLOW_PLAYBOOK.md
 ```
 理解：TAD的三角协作模型、6个工作场景
 
 ### 2. 了解真实的Sub-agents
 ```
-/Users/sheldonzhao/programs/TAD/CLAUDE_CODE_SUBAGENTS.md
+/path/to/programs/TAD/CLAUDE_CODE_SUBAGENTS.md
 ```
 理解：16个真实可调用的Claude Code sub-agents及其能力
 
 ### 3. 检查当前配置状态
 ```
-/Users/sheldonzhao/programs/TAD/.tad/config.yaml      # 当前主配置（可能有错）
-/Users/sheldonzhao/programs/TAD/.tad/config-v2.yaml   # 改进的配置模板
-/Users/sheldonzhao/programs/TAD/TAD_CONFIGURATION_DESIGN.md  # 配置设计理念
+/path/to/programs/TAD/.tad/config.yaml      # 当前主配置（可能有错）
+/path/to/programs/TAD/.tad/config-v2.yaml   # 改进的配置模板
+/path/to/programs/TAD/TAD_CONFIGURATION_DESIGN.md  # 配置设计理念
 ```
 
 ### 4. 检查Agent定义文件
 ```
-/Users/sheldonzhao/programs/TAD/.tad/agents/agent-a-architect.md
-/Users/sheldonzhao/programs/TAD/.tad/agents/agent-b-executor.md
+/path/to/programs/TAD/.tad/agents/agent-a-architect.md
+/path/to/programs/TAD/.tad/agents/agent-b-executor.md
 ```
 
 ### 5. 检查错误的sub-agents目录
 ```
-/Users/sheldonzhao/programs/TAD/.tad/sub-agents/
+/path/to/programs/TAD/.tad/sub-agents/
 ```
 这个目录可能包含BMAD的虚构agents文件，需要清理
 

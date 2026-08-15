@@ -4,7 +4,7 @@
 
 ## Scope
 
-Reviewed `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/designs/dual-platform-native-runtime-architecture.md` (390 lines) against handoff `HANDOFF-20260609-dual-platform-runtime-architecture-phase1.md` sections 6 and 9.
+Reviewed `/path/to/TAD/.tad/evidence/designs/dual-platform-native-runtime-architecture.md` (390 lines) against handoff `HANDOFF-20260609-dual-platform-runtime-architecture-phase1.md` sections 6 and 9.
 
 Cross-referenced live project files: `AGENTS.md`, `docs/MULTI-PLATFORM.md`, `.tad/codex/README.md`.
 

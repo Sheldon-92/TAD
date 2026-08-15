@@ -20,7 +20,7 @@ Three-layer model:
 
 ## Proven Pattern (Colin Voice Project)
 
-Three working implementations already exist in `/Users/sheldonzhao/Downloads/Colin声音项目/`:
+Three working implementations already exist in `/path/to/Downloads/Colin声音项目/`:
 - **Voice segment evaluate** (`evaluate_v3.html`): per-segment card, inline audio, OK/Redo + comment → `EP04_v3_eval.json`
 - **BGM annotate** (`bgm/annotate.html`): per-clip card, AI-analyzed features (energy/tone/rhythm/mood), multi-select usage tags + comment → `bgm_annotation.json`
 - **Reference library annotate** (`ref-library/annotate.html`): per-audio card with transcript, selection-based annotation

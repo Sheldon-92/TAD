@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.147.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.6-sol
 provider: openai
 approval: never
@@ -11,7 +11,7 @@ reasoning summaries: none
 session id: 019fe9c0-5827-7cb1-8bf2-41ec6c3eefff
 --------
 user
-You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md
+You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /path/to/TAD/.claude/skills/release-runbook/SKILL.md
 
 Read the entry skill and only the reference it routes for this scenario. Do not read the active migration handoff, coverage TSV, test harness, other case outputs, or reviewer conclusions. Stay read-only. Never execute push, tag, publish, sync, registry writes, downstream writes, commits, or auto-healing. If a read-only command is appropriate, cite the exact command and observed result; do not claim a command ran when it did not.
 
@@ -25,7 +25,7 @@ hook: SessionStart Completed
 codex
 I’m using the requested `release-runbook` in plan mode. I’ll read only its entry file and the sync reference it routes to, then perform only applicable read-only preflight/listing checks—without opening any handoff, coverage file, harness, prior case output, or review conclusion.
 exec
-/bin/zsh -lc "sed -n '1,260p' .claude/skills/release-runbook/SKILL.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .claude/skills/release-runbook/SKILL.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: release-runbook
@@ -183,7 +183,7 @@ all partial/unknown states are resolved or explicitly returned to Alex-Lite.
 codex
 The entry routes this scenario exclusively to `references/sync-ops.md`; I’m loading that reference now. The publish reference and all task-state/handoff materials remain unopened.
 exec
-/bin/zsh -lc "sed -n '1,420p' .claude/skills/release-runbook/references/sync-ops.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,420p' .claude/skills/release-runbook/references/sync-ops.md" in /path/to/TAD
  succeeded in 0ms:
 # Sync, Register, and List Operations
 
@@ -362,24 +362,24 @@ origin=$(git -C "$repo_root" remote get-url origin 2>/dev/null) || exit 1
 case "$origin" in
   https://github.com/Sheldon-92/TAD|https://github.com/Sheldon-92/TAD.git|git@github.com:Sheldon-92/TAD.git|ssh://git@github.com/Sheldon-92/TAD.git) ;;
   *) exit 1 ;;
-esac' in /Users/sheldonzhao/01-on progress programs/TAD
+esac' in /path/to/TAD
  succeeded in 43ms:
 exec
 /bin/zsh -lc "git rev-parse --show-toplevel
 pwd -P
 git remote get-url origin
 sed -n '1,40p' .tad/version.txt
-sed -n '1,260p' .tad/sync-registry.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+sed -n '1,260p' .tad/sync-registry.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc 'bash .tad/hooks/lib/derive-sync-set.sh --dirs "/Users/sheldonzhao/01-on progress programs/TAD"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash .tad/hooks/lib/derive-sync-set.sh --dirs "/path/to/TAD"' in /path/to/TAD
 exec
-/bin/zsh -lc 'bash .tad/hooks/lib/derive-sync-set.sh --report "/Users/sheldonzhao/01-on progress programs/TAD"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash .tad/hooks/lib/derive-sync-set.sh --report "/path/to/TAD"' in /path/to/TAD
 exec
-/bin/zsh -lc 'bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/Users/sheldonzhao/01-on progress programs/TAD"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/path/to/TAD"' in /path/to/TAD
  succeeded in 164ms:
-/Users/sheldonzhao/01-on progress programs/TAD
-/Users/sheldonzhao/01-on progress programs/TAD
+/path/to/TAD
+/path/to/TAD
 https://github.com/Sheldon-92/TAD.git
 2.40.0
 # TAD Sync Registry — Manual project registration
@@ -388,85 +388,85 @@ https://github.com/Sheldon-92/TAD.git
 registry_version: 1
 tad_source: "." # This repo is the TAD source
 projects:
-  - path: "/Users/sheldonzhao/01-on progress programs/menu-snap"
+  - path: "/path/to/menu-snap"
     name: "menu-snap"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/my-openclaw-agents"
+  - path: "/path/to/my-openclaw-agents"
     name: "my-openclaw-agents"
     platform: "both"
     claude_md_strategy: "merge"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/OpenClaw Hack"
+  - path: "/path/to/OpenClaw Hack"
     name: "OpenClaw Hack"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/运动打卡小助手"
+  - path: "/path/to/运动打卡小助手"
     name: "运动打卡小助手"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/合规ai"
+  - path: "/path/to/合规ai"
     name: "合规ai"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/ArtForge"
+  - path: "/path/to/ArtForge"
     name: "ArtForge"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/Sober Creator"
+  - path: "/path/to/Sober Creator"
     name: "Sober Creator"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/toy"
+  - path: "/path/to/toy"
     name: "toy"
     platform: "both"
     claude_md_strategy: "merge"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/内存管理"
+  - path: "/path/to/内存管理"
     name: "内存管理"
     platform: "both"
     claude_md_strategy: "merge"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/Next Guest"
+  - path: "/path/to/Next Guest"
     name: "Next Guest"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/下载md插件"
+  - path: "/path/to/下载md插件"
     name: "下载md插件"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/买卖"
+  - path: "/path/to/买卖"
     name: "买卖"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/01-on progress programs/Monica-website"
+  - path: "/path/to/Monica-website"
     name: "Monica-website"
     platform: "both"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.30.0"
     last_synced_date: "2026-06-11"
-  - path: "/Users/sheldonzhao/Downloads/Colin声音项目"
+  - path: "/path/to/Downloads/Colin声音项目"
     name: "Colin声音项目"
     platform: "both"
     claude_md_strategy: "overwrite"
@@ -514,7 +514,7 @@ skillify-candidates
 capability-packs/pack-registry.yaml
 
  succeeded in 264ms:
-=== RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
+=== RELEASE SYNC SET (derived from /path/to/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
 
 --- A. ZERO-TOUCH (preserve target's own — NEVER sync) ---
   active
@@ -616,29 +616,29 @@ registry.fetch(\"projects\", []).each do |project|
   end
   puts facts.map { |key, value| "#{key}=#{value.inspect}" }.join(" | ")
 end
-'"' " in /Users/sheldonzhao/01-on progress programs/TAD
+'"' " in /path/to/TAD
  succeeded in 1566ms:
-name="menu-snap" | path="/Users/sheldonzhao/01-on progress programs/menu-snap" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/menu-snap" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="my-openclaw-agents" | path="/Users/sheldonzhao/01-on progress programs/my-openclaw-agents" | platform="both" | strategy="merge" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/my-openclaw-agents" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.32.0" | merge_marker=true | status="outdated"
-name="OpenClaw Hack" | path="/Users/sheldonzhao/01-on progress programs/OpenClaw Hack" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/OpenClaw Hack" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="运动打卡小助手" | path="/Users/sheldonzhao/01-on progress programs/运动打卡小助手" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical=nil | directory_readable=false | error="Errno::ENOENT" | tad_directory=false | version_readable=false | current_version="missing/unreadable" | merge_marker="not-required" | status="skipped-invalid"
-name="合规ai" | path="/Users/sheldonzhao/01-on progress programs/合规ai" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/合规ai" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="ArtForge" | path="/Users/sheldonzhao/01-on progress programs/ArtForge" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/ArtForge" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="Sober Creator" | path="/Users/sheldonzhao/01-on progress programs/Sober Creator" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/Sober Creator" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.38.0" | merge_marker="not-required" | status="outdated"
-name="toy" | path="/Users/sheldonzhao/01-on progress programs/toy" | platform="both" | strategy="merge" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/toy" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker=true | status="outdated"
-name="内存管理" | path="/Users/sheldonzhao/01-on progress programs/内存管理" | platform="both" | strategy="merge" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/内存管理" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker=true | status="outdated"
-name="Next Guest" | path="/Users/sheldonzhao/01-on progress programs/Next Guest" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/Next Guest" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.33.0" | merge_marker="not-required" | status="outdated"
-name="下载md插件" | path="/Users/sheldonzhao/01-on progress programs/下载md插件" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/下载md插件" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="买卖" | path="/Users/sheldonzhao/01-on progress programs/买卖" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/买卖" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="Monica-website" | path="/Users/sheldonzhao/01-on progress programs/Monica-website" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/Users/sheldonzhao/01-on progress programs/Monica-website" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
-name="Colin声音项目" | path="/Users/sheldonzhao/Downloads/Colin声音项目" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical=nil | directory_readable=false | error="Errno::ENOENT" | tad_directory=false | version_readable=false | current_version="missing/unreadable" | merge_marker="not-required" | status="skipped-invalid"
+name="menu-snap" | path="/path/to/menu-snap" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/menu-snap" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="my-openclaw-agents" | path="/path/to/my-openclaw-agents" | platform="both" | strategy="merge" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/my-openclaw-agents" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.32.0" | merge_marker=true | status="outdated"
+name="OpenClaw Hack" | path="/path/to/OpenClaw Hack" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/OpenClaw Hack" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="运动打卡小助手" | path="/path/to/运动打卡小助手" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical=nil | directory_readable=false | error="Errno::ENOENT" | tad_directory=false | version_readable=false | current_version="missing/unreadable" | merge_marker="not-required" | status="skipped-invalid"
+name="合规ai" | path="/path/to/合规ai" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/合规ai" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="ArtForge" | path="/path/to/ArtForge" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/ArtForge" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="Sober Creator" | path="/path/to/Sober Creator" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/Sober Creator" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.38.0" | merge_marker="not-required" | status="outdated"
+name="toy" | path="/path/to/toy" | platform="both" | strategy="merge" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/toy" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker=true | status="outdated"
+name="内存管理" | path="/path/to/内存管理" | platform="both" | strategy="merge" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/内存管理" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker=true | status="outdated"
+name="Next Guest" | path="/path/to/Next Guest" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/Next Guest" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.33.0" | merge_marker="not-required" | status="outdated"
+name="下载md插件" | path="/path/to/下载md插件" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/下载md插件" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="买卖" | path="/path/to/买卖" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/买卖" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="Monica-website" | path="/path/to/Monica-website" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical="/path/to/Monica-website" | directory_readable=true | tad_directory=true | version_readable=true | current_version="2.30.0" | merge_marker="not-required" | status="outdated"
+name="Colin声音项目" | path="/path/to/Downloads/Colin声音项目" | platform="both" | strategy="overwrite" | last_synced_version="2.30.0" | last_synced_date="2026-06-11" | absolute=true | canonical=nil | directory_readable=false | error="Errno::ENOENT" | tad_directory=false | version_readable=false | current_version="missing/unreadable" | merge_marker="not-required" | status="skipped-invalid"
 
 codex
 Target validation found 12 reachable outdated projects and 2 required planning skips because their registered paths do not exist. Before finalizing the plan, I’m checking only source Git state (no file contents) to satisfy the sync preflight’s dirty/unpushed-scope requirement.
 exec
-/bin/zsh -lc 'git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --branch --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" rev-list --left-right --count HEAD...@{upstream}' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "/path/to/TAD" status --short
+git -C "/path/to/TAD" status --branch --short
+git -C "/path/to/TAD" rev-list --left-right --count HEAD...@{upstream}' in /path/to/TAD
  succeeded in 959ms:
  M .agents/skills/release-runbook/SKILL.md
  M .claude/skills/release-runbook/SKILL.md
@@ -722,25 +722,25 @@ YAML.safe_load(File.read(\".tad/sync-registry.yaml\")).fetch(\"projects\", []).e
   marker = p[\"claude_md_strategy\"] == \"merge\" ? (File.foreach(File.join(target, \"CLAUDE.md\")).any? { |line| line.include?(\"<"'!-- TAD:PROJECT-CONTENT-BELOW -->") } rescue false) : "n/a"
   puts [p["name"], canonical, p["platform"], p["claude_md_strategy"], version, p["last_synced_version"], p["last_synced_date"], marker].join("'"\\t\")
 end
-'" in /Users/sheldonzhao/01-on progress programs/TAD
+'" in /path/to/TAD
  succeeded in 2654ms:
-menu-snap	/Users/sheldonzhao/01-on progress programs/menu-snap	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
-my-openclaw-agents	/Users/sheldonzhao/01-on progress programs/my-openclaw-agents	both	merge	2.32.0	2.30.0	2026-06-11	true
-OpenClaw Hack	/Users/sheldonzhao/01-on progress programs/OpenClaw Hack	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+menu-snap	/path/to/menu-snap	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+my-openclaw-agents	/path/to/my-openclaw-agents	both	merge	2.32.0	2.30.0	2026-06-11	true
+OpenClaw Hack	/path/to/OpenClaw Hack	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
 运动打卡小助手	missing	both	overwrite	missing/unreadable	2.30.0	2026-06-11	n/a
-合规ai	/Users/sheldonzhao/01-on progress programs/合规ai	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
-ArtForge	/Users/sheldonzhao/01-on progress programs/ArtForge	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
-Sober Creator	/Users/sheldonzhao/01-on progress programs/Sober Creator	both	overwrite	2.38.0	2.30.0	2026-06-11	n/a
-toy	/Users/sheldonzhao/01-on progress programs/toy	both	merge	2.30.0	2.30.0	2026-06-11	true
-内存管理	/Users/sheldonzhao/01-on progress programs/内存管理	both	merge	2.30.0	2.30.0	2026-06-11	true
-Next Guest	/Users/sheldonzhao/01-on progress programs/Next Guest	both	overwrite	2.33.0	2.30.0	2026-06-11	n/a
-下载md插件	/Users/sheldonzhao/01-on progress programs/下载md插件	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
-买卖	/Users/sheldonzhao/01-on progress programs/买卖	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
-Monica-website	/Users/sheldonzhao/01-on progress programs/Monica-website	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+合规ai	/path/to/合规ai	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+ArtForge	/path/to/ArtForge	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+Sober Creator	/path/to/Sober Creator	both	overwrite	2.38.0	2.30.0	2026-06-11	n/a
+toy	/path/to/toy	both	merge	2.30.0	2.30.0	2026-06-11	true
+内存管理	/path/to/内存管理	both	merge	2.30.0	2.30.0	2026-06-11	true
+Next Guest	/path/to/Next Guest	both	overwrite	2.33.0	2.30.0	2026-06-11	n/a
+下载md插件	/path/to/下载md插件	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+买卖	/path/to/买卖	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
+Monica-website	/path/to/Monica-website	both	overwrite	2.30.0	2.30.0	2026-06-11	n/a
 Colin声音项目	missing	both	overwrite	missing/unreadable	2.30.0	2026-06-11	n/a
 
 codex
-Read-only planning is complete. Source TAD is `2.40.0`; 12 registered projects are reachable and outdated, while 2 must be skipped because their registered paths are missing. No project, registry, Git, or task-state writes were performed. I read only the requested [entry skill](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md>) and its routed [sync reference](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/sync-ops.md>).
+Read-only planning is complete. Source TAD is `2.40.0`; 12 registered projects are reachable and outdated, while 2 must be skipped because their registered paths are missing. No project, registry, Git, or task-state writes were performed. I read only the requested [entry skill](</path/to/TAD/.claude/skills/release-runbook/SKILL.md>) and its routed [sync reference](</path/to/TAD/.claude/skills/release-runbook/references/sync-ops.md>).
 
 ## Proposed scope
 
@@ -848,17 +848,17 @@ esac
 
 Observed identity:
 
-- Physical root: `/Users/sheldonzhao/01-on progress programs/TAD`
+- Physical root: `/path/to/TAD`
 - Physical cwd: same
 - Origin: `https://github.com/Sheldon-92/TAD.git`
 
 The four required derivations were run exactly as read-only commands:
 
 ```bash
-bash .tad/hooks/lib/derive-sync-set.sh --dirs "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --report "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/Users/sheldonzhao/01-on progress programs/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --dirs "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --report "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/path/to/TAD"
 ```
 
 All exited `0`; the report contained exactly one `(+ top-level file: sync-registry.yaml)` record.
@@ -866,15 +866,15 @@ All exited `0`; the report contained exactly one `(+ top-level file: sync-regist
 Git state was inspected with:
 
 ```bash
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --branch --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" rev-list --left-right --count HEAD...@{upstream}
+git -C "/path/to/TAD" status --short
+git -C "/path/to/TAD" status --branch --short
+git -C "/path/to/TAD" rev-list --left-right --count HEAD...@{upstream}
 ```
 
 Observed: dirty working tree, `main...origin/main [ahead 3]`, and divergence `3 0`. No listed file contents were opened.
 tokens used
 48,129
-Read-only planning is complete. Source TAD is `2.40.0`; 12 registered projects are reachable and outdated, while 2 must be skipped because their registered paths are missing. No project, registry, Git, or task-state writes were performed. I read only the requested [entry skill](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md>) and its routed [sync reference](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/sync-ops.md>).
+Read-only planning is complete. Source TAD is `2.40.0`; 12 registered projects are reachable and outdated, while 2 must be skipped because their registered paths are missing. No project, registry, Git, or task-state writes were performed. I read only the requested [entry skill](</path/to/TAD/.claude/skills/release-runbook/SKILL.md>) and its routed [sync reference](</path/to/TAD/.claude/skills/release-runbook/references/sync-ops.md>).
 
 ## Proposed scope
 
@@ -982,17 +982,17 @@ esac
 
 Observed identity:
 
-- Physical root: `/Users/sheldonzhao/01-on progress programs/TAD`
+- Physical root: `/path/to/TAD`
 - Physical cwd: same
 - Origin: `https://github.com/Sheldon-92/TAD.git`
 
 The four required derivations were run exactly as read-only commands:
 
 ```bash
-bash .tad/hooks/lib/derive-sync-set.sh --dirs "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --report "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/Users/sheldonzhao/01-on progress programs/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --dirs "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --report "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/path/to/TAD"
 ```
 
 All exited `0`; the report contained exactly one `(+ top-level file: sync-registry.yaml)` record.
@@ -1000,9 +1000,9 @@ All exited `0`; the report contained exactly one `(+ top-level file: sync-regist
 Git state was inspected with:
 
 ```bash
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --branch --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" rev-list --left-right --count HEAD...@{upstream}
+git -C "/path/to/TAD" status --short
+git -C "/path/to/TAD" status --branch --short
+git -C "/path/to/TAD" rev-list --left-right --count HEAD...@{upstream}
 ```
 
 Observed: dirty working tree, `main...origin/main [ahead 3]`, and divergence `3 0`. No listed file contents were opened.

@@ -41,7 +41,7 @@ Layer 3: 架构约束（最强 — 设计上不可能违反）
 
 ### OpenClaw（用户当前项目）
 
-**来源**: /Users/sheldonzhao/01-on progress programs/my-openclaw-agents/
+**来源**: /path/to/my-openclaw-agents/
 
 1. **架构**: Monorepo，每个 agent = workspace/（AGENTS.md + SOUL.md + HEARTBEAT.md）
 2. **哲学**: Human-in-the-loop — agent 做 80% 搜集/整理，人做 20% 判断/创意

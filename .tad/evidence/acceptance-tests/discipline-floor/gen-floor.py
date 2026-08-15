@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Generate .tad/discipline-floor.md from Blake's judgments + frozen Step 0 inputs.
 import subprocess, re, os
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 K30 = f"{R}/.tad/archive/handoffs/HANDOFF-20260816-discipline-floor.keys30.tsv"
 WIDE = open(f"{EV}/wide-markers.txt", encoding="utf-8").read().rstrip("\n")

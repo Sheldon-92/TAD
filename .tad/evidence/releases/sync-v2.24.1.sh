@@ -3,7 +3,7 @@
 # Continue-on-error: set -u (NOT set -e). One broken project must not abort the rest.
 set -u
 
-TAD_SRC="/Users/sheldonzhao/01-on progress programs/TAD"
+TAD_SRC="/path/to/TAD"
 NEW_VERSION="2.24.1"
 TODAY="$(date +%Y-%m-%d)"
 REG="$TAD_SRC/.tad/sync-registry.yaml"

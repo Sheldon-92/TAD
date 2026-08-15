@@ -74,3 +74,6 @@ __pycache__/
 
 # 本地权限配置备份 —— 含本机绝对路径与白名单，永不提交
 .claude/settings.local.json.bak-*
+
+# 下游项目登记表 —— 含本机绝对路径，仅本地使用（安装器本就 TAD_TOP_DENY 排除）
+.tad/sync-registry.yaml

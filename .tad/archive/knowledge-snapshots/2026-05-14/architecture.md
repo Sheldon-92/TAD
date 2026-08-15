@@ -805,7 +805,7 @@ Project-specific architecture learnings accumulated through TAD workflow.
   b. Alex SKILL referenced `*research-notebook` commands by name but never loaded the SKILL file containing CLI paths (execution bridge gap — fixed in v2.10.2 via tool-quick-reference-alex.md loaded at STEP 3.3)
   c. Alex wrote fake REGISTRY entries (notebook IDs that didn't exist in NotebookLM cloud) — no verification mechanism existed
 - **Action**: Upgrade `*research-plan` step4 from "create → research → report → done" to "create → research → curate → report → multi-round ask → save findings". The report is Step 3 of 5, not the final step. `*research-notebook curate` needs automated error+duplicate cleanup. Future: Question Tree methodology and research-to-handoff AC bridge.
-- **Grounded in**: /Users/sheldonzhao/01-on progress programs/menu-snap/.tad/evidence/research/2026-05-05-notebooklm-research-session-log.md (264 lines, full session transcript)
+- **Grounded in**: /path/to/menu-snap/.tad/evidence/research/2026-05-05-notebooklm-research-session-log.md (264 lines, full session transcript)
 - **Revalidated**: 2026-05-05
 
 ### NotebookLM CLI State Management: `-n` Flag vs `use` Command — 2026-05-05

@@ -1,2 +1,2 @@
-1.0G	/Users/sheldonzhao/.npm/_cacache
+1.0G	/path/to/.npm/_cacache
 RESULT: RECORD-ONLY — 前 984M 后 1.0G

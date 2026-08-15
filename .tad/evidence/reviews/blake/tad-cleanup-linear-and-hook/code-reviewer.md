@@ -1,7 +1,7 @@
 # Code Review: HANDOFF-20260427-tad-cleanup-linear-and-hook.md
 
 **Reviewer**: code-reviewer
-**Reviewed File**: `/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260427-tad-cleanup-linear-and-hook.md`
+**Reviewed File**: `/path/to/TAD/.tad/active/handoffs/HANDOFF-20260427-tad-cleanup-linear-and-hook.md`
 **Review Date**: 2026-04-27
 **Reviewer Type**: Edit correctness + shell portability + verification command validity
 

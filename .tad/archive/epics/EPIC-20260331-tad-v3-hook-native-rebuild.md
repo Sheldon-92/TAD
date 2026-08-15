@@ -99,6 +99,6 @@ Phase 4: Quality & Performance — Add PreToolUse prompt hooks for intelligent g
 ---
 
 ## Notes
-- Source reference: `/Users/sheldonzhao/01-on progress programs/claude-code-leaked/src/`
-- Discovery note: `/Users/sheldonzhao/01-on progress programs/thoughts/discoveries/2026-03-31-claude-code-source-map-leak.md`
+- Source reference: `/path/to/claude-code-leaked/src/`
+- Discovery note: `/path/to/thoughts/discoveries/2026-03-31-claude-code-source-map-leak.md`
 - This Epic supersedes Direction 1 from the initial discussion — expanded from "Hook optimization" to "complete rebuild"

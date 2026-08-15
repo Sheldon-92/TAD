@@ -2,7 +2,7 @@
 
 **Handoff**: HANDOFF-20260713-native-capability-adoption-phase3.md (FR3)
 **Probe vehicle**: `claude -p` (Claude Code 2.1.172), run from repo root
-(`/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_a4ff2d3f-9c0-3` — Phase 3 isolated worktree)
+(`/path/to/TAD/.claude/worktrees/wf_a4ff2d3f-9c0-3` — Phase 3 isolated worktree)
 **Prompt**: cron-prompt.md body (BEGIN/END PROMPT markers) + scope override line
 "execute the scan with --domain ai-agents (limit to the ai-agents domain only)"
 **Date**: 2026-07-13

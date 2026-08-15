@@ -2,7 +2,7 @@
 # Acceptance verification for TASK-20260617-006 (Pack Content Protection P1)
 set -euo pipefail
 
-SRC="/Users/sheldonzhao/01-on progress programs/TAD"
+SRC="/path/to/TAD"
 PASS=0
 FAIL=0
 

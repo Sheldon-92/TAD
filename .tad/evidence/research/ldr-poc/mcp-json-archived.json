@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "ldr-mcp": {
-      "command": "/Users/sheldonzhao/.tad-ldr-venv/bin/ldr-mcp",
+      "command": "/path/to/.tad-ldr-venv/bin/ldr-mcp",
       "env": {
-        "LDR_DATA_DIR": "/Users/sheldonzhao/.tad-ldr-data",
+        "LDR_DATA_DIR": "/path/to/.tad-ldr-data",
         "LDR_LLM_PROVIDER": "openai_endpoint",
         "LDR_LLM_OPENAI_ENDPOINT_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1",
         "LDR_LLM_OPENAI_ENDPOINT_API_KEY": "${LDR_API_KEY}",

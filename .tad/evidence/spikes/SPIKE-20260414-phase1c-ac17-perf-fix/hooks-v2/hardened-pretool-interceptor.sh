@@ -122,7 +122,7 @@ content="${rest#*${FSEP}}"
 normalize_path() {
   local p="$1"
   # Strip absolute project prefix if present
-  local project_root="/Users/sheldonzhao/01-on progress programs/TAD"
+  local project_root="/path/to/TAD"
   p="${p#$project_root/}"
   # Collapse /./ → /
   while [[ "$p" == *"/./"* ]]; do p="${p//\/.\//\/}"; done

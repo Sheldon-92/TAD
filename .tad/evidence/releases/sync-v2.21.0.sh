@@ -4,7 +4,7 @@
 # Verification centers on `diff -rq` source-vs-target per synced path → proves no omission.
 set -u
 
-SRC="/Users/sheldonzhao/01-on progress programs/TAD"
+SRC="/path/to/TAD"
 NEW_VERSION="2.21.0"
 
 # Framework dirs to FULL-REFRESH: runbook's 14 + codex (the historically-omitted dir).

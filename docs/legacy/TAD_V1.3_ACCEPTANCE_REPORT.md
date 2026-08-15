@@ -36,7 +36,7 @@
 
 ### 1.1 config.yaml验证
 
-**验证位置**: `/Users/sheldonzhao/programs/TAD/.tad/config.yaml`
+**验证位置**: `/path/to/programs/TAD/.tad/config.yaml`
 
 **已实施的v1.3增强**:
 
@@ -118,7 +118,7 @@ philosophy: "Evidence-Based Triangle Development with Continuous Learning"
 
 ### 2.1 handoff-a-to-b.md模板
 
-**验证位置**: `/Users/sheldonzhao/programs/TAD/.tad/templates/handoff-a-to-b.md`
+**验证位置**: `/path/to/programs/TAD/.tad/templates/handoff-a-to-b.md`
 
 **已实施的v1.3增强**:
 
@@ -202,7 +202,7 @@ philosophy: "Evidence-Based Triangle Development with Continuous Learning"
 
 ### 3.1 失败模式文档
 
-**验证位置**: `/Users/sheldonzhao/programs/TAD/.tad/evidence/patterns/failure-patterns.md`
+**验证位置**: `/path/to/programs/TAD/.tad/evidence/patterns/failure-patterns.md`
 
 **已包含的失败模式**:
 - ✅ Pattern 1: Agent Identity Confusion
@@ -220,7 +220,7 @@ philosophy: "Evidence-Based Triangle Development with Continuous Learning"
 
 ### 3.2 质量门控检查清单
 
-**验证位置**: `/Users/sheldonzhao/programs/TAD/.tad/gates/quality-gate-checklist.md`
+**验证位置**: `/path/to/programs/TAD/.tad/gates/quality-gate-checklist.md`
 
 **已定义的Gates**:
 - ✅ Gate 1: Requirements Clarity Gate
@@ -232,7 +232,7 @@ philosophy: "Evidence-Based Triangle Development with Continuous Learning"
 
 ### 3.3 Evidence目录结构
 
-**验证位置**: `/Users/sheldonzhao/programs/TAD/.tad/evidence/`
+**验证位置**: `/path/to/programs/TAD/.tad/evidence/`
 
 **已建立的结构**:
 ```

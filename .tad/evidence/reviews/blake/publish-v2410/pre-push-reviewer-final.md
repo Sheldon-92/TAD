@@ -42,7 +42,7 @@ harness/model/route: opencode / deepseek-v4-flash / independent-pre-push-reviewe
 
 ### P2 遗留（8 项，均不阻塞，非本单范围）
 
-- P2-1 路径泄露（基线 `derived from /Users/sheldonzhao/…`）；P2-2 run-local-acs partial；P2-3/4/6/7 文案/死代码；P2-8 目录展开 `find -type f` 未含符号链接（本轮复核未见 reviews 目录出现符号链接文件，契约受控）。
+- P2-1 路径泄露（基线 `derived from /path/to/…`）；P2-2 run-local-acs partial；P2-3/4/6/7 文案/死代码；P2-8 目录展开 `find -type f` 未含符号链接（本轮复核未见 reviews 目录出现符号链接文件，契约受控）。
 
 ---
 

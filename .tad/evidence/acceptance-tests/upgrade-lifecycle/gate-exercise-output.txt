@@ -1,5 +1,5 @@
 === Gate Interception Exercise ===
-  Source: /Users/sheldonzhao/01-on progress programs/TAD
+  Source: /path/to/TAD
   Temp dir: /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.Jf0gDjWUR8
 
 Running: release-verify.sh migration "/var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.Jf0gDjWUR8" "0.2.0"

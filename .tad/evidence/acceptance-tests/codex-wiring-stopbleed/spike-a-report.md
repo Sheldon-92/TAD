@@ -19,7 +19,7 @@ env CODEX_HOME="$scratch_home" codex exec --cd "$scratch_repo" --ephemeral --jso
 Captured Codex session transcript (combined stream, exact error payload):
 
 ```text
-{"type":"item.completed","item":{"id":"item_0","type":"error","message":"failed to parse hooks config /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work/.codex/hooks.json: unknown field `SessionStart`, expected `description` or `hooks` at line 2 column 16"}}
+{"type":"item.completed","item":{"id":"item_0","type":"error","message":"failed to parse hooks config /path/to/TAD/.tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work/.codex/hooks.json: unknown field `SessionStart`, expected `description` or `hooks` at line 2 column 16"}}
 {"type":"turn.started"}
 {"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"SPIKE_SESSION_OK"}}
 {"type":"turn.completed","usage":{"output_tokens":8,"reasoning_output_tokens":0}}

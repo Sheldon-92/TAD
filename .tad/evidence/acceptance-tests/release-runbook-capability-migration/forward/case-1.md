@@ -1,10 +1,10 @@
-TAD v2.41.0 is not publish-ready. I performed a read-only assessment using [release-runbook/SKILL.md](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md>) and only its routed [publish-ops.md](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/publish-ops.md>).
+TAD v2.41.0 is not publish-ready. I performed a read-only assessment using [release-runbook/SKILL.md](</path/to/TAD/.claude/skills/release-runbook/SKILL.md>) and only its routed [publish-ops.md](</path/to/TAD/.claude/skills/release-runbook/references/publish-ops.md>).
 
 No files were changed; no commits, pushes, tags, syncs, registry writes, or healing actions occurred.
 
 ### Preflight evidence
 
-All commands ran from `/Users/sheldonzhao/01-on progress programs/TAD`.
+All commands ran from `/path/to/TAD`.
 
 - Physical-root guard: exit `0`.
 
@@ -27,9 +27,9 @@ Observed root and physical CWD both matched the repository root; origin was `htt
 |---|---:|---|
 | `current_version=$(tr -d '\r\n' < .tad/version.txt)` plus SemVer validation | 0 | Current version `2.40.0`; requested `2.41.0` is a minor bump. |
 | `rg -n -C 2 '(^\|[^0-9])v?2\.41\.0([^0-9]\|$)' CHANGELOG.md` | 1 | No `2.41.0` CHANGELOG entry found. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short` | 0 | 6 modified and 29 untracked paths. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" log --oneline origin/main..HEAD` | 0 | Three commits ahead: `e05a135`, `4116517`, `ac0699f`. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" diff --stat` | 0 | 6 tracked files changed: 239 insertions, 917 deletions. |
+| `git -C "/path/to/TAD" status --short` | 0 | 6 modified and 29 untracked paths. |
+| `git -C "/path/to/TAD" log --oneline origin/main..HEAD` | 0 | Three commits ahead: `e05a135`, `4116517`, `ac0699f`. |
+| `git -C "/path/to/TAD" diff --stat` | 0 | 6 tracked files changed: 239 insertions, 917 deletions. |
 | `bash ".../.tad/hooks/lib/release-verify.sh" parity "$repo_root"` | 0 | Claude/Agents skill parity passed byte-identically. |
 | `bash ".../.tad/hooks/lib/derive-sync-set.sh" --report "$repo_root"` | 0 | Sync-set derivation reported successfully. |
 | `bash ".../.tad/hooks/lib/release-verify.sh" version "$repo_root" "2.41.0" "2.40.0"` | 1 | Failed with 29 stale `2.40.0` references. |

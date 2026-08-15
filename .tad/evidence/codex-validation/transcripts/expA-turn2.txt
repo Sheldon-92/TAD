@@ -1,10 +1,10 @@
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
-sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/sheldonzhao/.codex/memories]
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /path/to/.codex/memories]
 reasoning effort: high
 reasoning summaries: none
 session id: 019ea2ea-97fd-7e02-87ec-be30f7b1e976

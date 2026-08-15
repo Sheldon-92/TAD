@@ -1,7 +1,7 @@
 registry_version: 1
 tad_source: "."
 projects:
-  - path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+  - path: "/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
     name: "fixture-project"
     platform: "both"
     claude_md_strategy: "merge"

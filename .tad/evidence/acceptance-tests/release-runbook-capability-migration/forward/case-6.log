@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.147.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.6-sol
 provider: openai
 approval: never
@@ -11,12 +11,12 @@ reasoning summaries: none
 session id: 019fe9c4-92e6-7403-aee0-f79c117e05fd
 --------
 user
-You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md
+You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /path/to/TAD/.claude/skills/release-runbook/SKILL.md
 
 Read the entry skill and only the reference it routes for this scenario. Do not read the active migration handoff, coverage TSV, test harness, other case outputs, or reviewer conclusions. Stay read-only. Never execute push, tag, publish, sync, registry writes, downstream writes, commits, or auto-healing. If a read-only command is appropriate, cite the exact command and observed result; do not claim a command ran when it did not.
 
 Scenario:
-Use $release-runbook to list the fixture registry at /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml. Report name, absolute path, platform, strategy, current version, last-synced version and status; remain read-only.
+Use $release-runbook to list the fixture registry at /path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml. Report name, absolute path, platform, strategy, current version, last-synced version and status; remain read-only.
 warning: Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
 hook: SessionStart
 hook: SessionStart
@@ -25,7 +25,7 @@ hook: SessionStart Completed
 codex
 I’m using the specified release-runbook skill in read-only listing mode. I’ll read only its entry file and the sync/listing reference it routes to, then inspect the named fixture registry without touching active task state or any other evaluation artifacts.
 exec
-/bin/zsh -lc "sed -n '1,240p' '/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' '/path/to/TAD/.claude/skills/release-runbook/SKILL.md'" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: release-runbook
@@ -183,7 +183,7 @@ all partial/unknown states are resolved or explicitly returned to Alex-Lite.
 codex
 The entry routes registry listing to `references/sync-ops.md`. This is a detect-only `sync-list` action, so the skill permits reading the registry and forbids registry/target writes or auto-healing.
 exec
-/bin/zsh -lc "sed -n '1,320p' '/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/sync-ops.md'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,320p' '/path/to/TAD/.claude/skills/release-runbook/references/sync-ops.md'" in /path/to/TAD
  succeeded in 135ms:
 # Sync, Register, and List Operations
 
@@ -352,12 +352,12 @@ batch is not success. Resume starts from recorded state; consumed approvals rema
 write needs a new approval and scope digest.
 
 exec
-/bin/zsh -lc "sed -n '1,240p' '/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' '/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml'" in /path/to/TAD
  succeeded in 254ms:
 registry_version: 1
 tad_source: "."
 projects:
-  - path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+  - path: "/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
     name: "fixture-project"
     platform: "both"
     claude_md_strategy: "merge"
@@ -367,7 +367,7 @@ projects:
 codex
 The registry contains one reachable-looking absolute target entry and records `last_synced_version: 2.38.0`. I’m now checking only the target’s `.tad/version.txt` and the source repository’s `.tad/version.txt`, which are the two version reads required to classify listing status.
 exec
-/bin/zsh -lc "target='/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'; source='/Users/sheldonzhao/01-on progress programs/TAD'; if test -r \""'$target/.tad/version.txt"; then printf '"'target_reachable=readable\\ntarget_version='; tr -d '\\n' < \""'$target/.tad/version.txt"; printf '"'\\n'; else printf 'target_reachable=missing/unreadable\\ntarget_version=missing/unreadable\\n'; fi; if test -r \""'$source/.tad/version.txt"; then printf '"'source_version='; tr -d '\\n' < \""'$source/.tad/version.txt"; printf '"'\\n'; else printf 'source_version=missing/unreadable\\n'; fi" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "target='/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'; source='/path/to/TAD'; if test -r \""'$target/.tad/version.txt"; then printf '"'target_reachable=readable\\ntarget_version='; tr -d '\\n' < \""'$target/.tad/version.txt"; printf '"'\\n'; else printf 'target_reachable=missing/unreadable\\ntarget_version=missing/unreadable\\n'; fi; if test -r \""'$source/.tad/version.txt"; then printf '"'source_version='; tr -d '\\n' < \""'$source/.tad/version.txt"; printf '"'\\n'; else printf 'source_version=missing/unreadable\\n'; fi" in /path/to/TAD
  succeeded in 0ms:
 target_reachable=readable
 target_version=2.39.0
@@ -378,18 +378,18 @@ Registry listing:
 
 | Name | Absolute path | Platform | Strategy | Current version | Last-synced version | Status |
 |---|---|---|---|---|---|---|
-| fixture-project | `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project` | both | merge | 2.39.0 | 2.38.0 | **Outdated but reachable** — target is behind source 2.40.0; registry metadata is also stale because current differs from last-synced |
+| fixture-project | `/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project` | both | merge | 2.39.0 | 2.38.0 | **Outdated but reachable** — target is behind source 2.40.0; registry metadata is also stale because current differs from last-synced |
 
 Read-only commands executed:
 
 ```bash
-sed -n '1,240p' '/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml'
+sed -n '1,240p' '/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml'
 ```
 
 Result: exit `0`; one project entry found with the values above.
 
 ```bash
-target='/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'; source='/Users/sheldonzhao/01-on progress programs/TAD'; if test -r "$target/.tad/version.txt"; then printf 'target_reachable=readable\ntarget_version='; tr -d '\n' < "$target/.tad/version.txt"; printf '\n'; else printf 'target_reachable=missing/unreadable\ntarget_version=missing/unreadable\n'; fi; if test -r "$source/.tad/version.txt"; then printf 'source_version='; tr -d '\n' < "$source/.tad/version.txt"; printf '\n'; else printf 'source_version=missing/unreadable\n'; fi
+target='/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'; source='/path/to/TAD'; if test -r "$target/.tad/version.txt"; then printf 'target_reachable=readable\ntarget_version='; tr -d '\n' < "$target/.tad/version.txt"; printf '\n'; else printf 'target_reachable=missing/unreadable\ntarget_version=missing/unreadable\n'; fi; if test -r "$source/.tad/version.txt"; then printf 'source_version='; tr -d '\n' < "$source/.tad/version.txt"; printf '\n'; else printf 'source_version=missing/unreadable\n'; fi
 ```
 
 Observed: exit `0`; target readable, target version `2.39.0`, source version `2.40.0`. No writes or healing actions were performed.
@@ -399,18 +399,18 @@ Registry listing:
 
 | Name | Absolute path | Platform | Strategy | Current version | Last-synced version | Status |
 |---|---|---|---|---|---|---|
-| fixture-project | `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project` | both | merge | 2.39.0 | 2.38.0 | **Outdated but reachable** — target is behind source 2.40.0; registry metadata is also stale because current differs from last-synced |
+| fixture-project | `/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project` | both | merge | 2.39.0 | 2.38.0 | **Outdated but reachable** — target is behind source 2.40.0; registry metadata is also stale because current differs from last-synced |
 
 Read-only commands executed:
 
 ```bash
-sed -n '1,240p' '/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml'
+sed -n '1,240p' '/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-registry.yaml'
 ```
 
 Result: exit `0`; one project entry found with the values above.
 
 ```bash
-target='/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'; source='/Users/sheldonzhao/01-on progress programs/TAD'; if test -r "$target/.tad/version.txt"; then printf 'target_reachable=readable\ntarget_version='; tr -d '\n' < "$target/.tad/version.txt"; printf '\n'; else printf 'target_reachable=missing/unreadable\ntarget_version=missing/unreadable\n'; fi; if test -r "$source/.tad/version.txt"; then printf 'source_version='; tr -d '\n' < "$source/.tad/version.txt"; printf '\n'; else printf 'source_version=missing/unreadable\n'; fi
+target='/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'; source='/path/to/TAD'; if test -r "$target/.tad/version.txt"; then printf 'target_reachable=readable\ntarget_version='; tr -d '\n' < "$target/.tad/version.txt"; printf '\n'; else printf 'target_reachable=missing/unreadable\ntarget_version=missing/unreadable\n'; fi; if test -r "$source/.tad/version.txt"; then printf 'source_version='; tr -d '\n' < "$source/.tad/version.txt"; printf '\n'; else printf 'source_version=missing/unreadable\n'; fi
 ```
 
 Observed: exit `0`; target readable, target version `2.39.0`, source version `2.40.0`. No writes or healing actions were performed.

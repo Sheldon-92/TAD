@@ -18,7 +18,7 @@ Each AC has:
 3. **Actual** — the observed output at verification time
 4. **Result** — PASS or FAIL
 
-All commands were run from repo root (`/Users/sheldonzhao/01-on progress programs/TAD`).
+All commands were run from repo root (`/path/to/TAD`).
 
 ---
 

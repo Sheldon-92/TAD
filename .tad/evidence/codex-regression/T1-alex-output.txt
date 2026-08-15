@@ -1,7 +1,7 @@
 Reading prompt from stdin...
 OpenAI Codex v0.138.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.4
 provider: openai
 approval: never
@@ -1505,12 +1505,12 @@ with defaults where you would normally ask. Produce an inline handoff.
 codex
 按 Alex 模式执行。我先完成最小激活和项目健康检查，然后基于这个 carrier task 产出一个非交互式的 inline handoff，目标输出放到 `.tad/evidence/codex-regression/sandbox/`。
 exec
-/bin/zsh -lc pwd in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc pwd in /path/to/TAD
  succeeded in 0ms:
-/Users/sheldonzhao/01-on progress programs/TAD
+/path/to/TAD
 
 exec
-/bin/zsh -lc 'ls .tad/config.yaml .tad/config-agents.yaml .tad/config-quality.yaml .tad/config-workflow.yaml .tad/config-platform.yaml .tad/guides/tool-quick-reference-alex.md ROADMAP.md NEXT.md PROJECT_CONTEXT.md .tad/active/handoffs .tad/active/session-state.md .tad/pair-testing/SESSIONS.yaml .tad/research-notebooks/REGISTRY.yaml .tad/github-registry/scan-log.yaml 2>/dev/null' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'ls .tad/config.yaml .tad/config-agents.yaml .tad/config-quality.yaml .tad/config-workflow.yaml .tad/config-platform.yaml .tad/guides/tool-quick-reference-alex.md ROADMAP.md NEXT.md PROJECT_CONTEXT.md .tad/active/handoffs .tad/active/session-state.md .tad/pair-testing/SESSIONS.yaml .tad/research-notebooks/REGISTRY.yaml .tad/github-registry/scan-log.yaml 2>/dev/null' in /path/to/TAD
  exited 1 in 0ms:
 .tad/active/session-state.md
 .tad/config-agents.yaml
@@ -1535,7 +1535,7 @@ HANDOFF-20260609-verify-and-sync.md
 codex
 先补齐 Alex 激活所需上下文，包括配置、当前 handoff 状态和 sandbox 目录现状。然后我会只做设计产物，不直接实现代码。
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Configuration v2.25.0 - Triple-Question KA
 method: TAD
@@ -1759,7 +1759,7 @@ command_system:
       - "*design <feature>": "创建技术设计"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Agents & Interaction
 # Part of TAD config.yaml modular split (v2.2)
@@ -1983,7 +1983,7 @@ human_role_v13:
       tasks:
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -2207,7 +2207,7 @@ quality_gates:
           - "{task_id}_summary.md"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/guides/tool-quick-reference-alex.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/guides/tool-quick-reference-alex.md" in /path/to/TAD
  succeeded in 0ms:
 # Alex Tool Quick Reference
 > Loaded at activation. Contains invocation methods only. Full workflows in referenced SKILLs.
@@ -2390,7 +2390,7 @@ Execution: Read `.claude/skills/research-github/SKILL.md` for the sub-command.
 - **Registry:** `.tad/domains/tools-registry.yaml` for cross-pack tool index
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Workflow & Document Management
 # Part of TAD config.yaml modular split (v2.2)
@@ -2614,7 +2614,7 @@ tad_maintain:
     name_conflict_resolution: "append-timestamp-suffix"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -2838,7 +2838,7 @@ mcp_tools:
       - "MCP tools used per task"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' ROADMAP.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' ROADMAP.md" in /path/to/TAD
  succeeded in 0ms:
 # Roadmap
 
@@ -2910,13 +2910,13 @@ All 6 phases: Session Hook Spike (pivot), Spec Compliance, Anti-Rationalization,
 Codex/Gemini removed as full TAD runtimes (~1100 lines), repositioned as specialized tools. Superseded by Codex CLI Adaptation (v2.9.0).
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/active/session-state.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/active/session-state.md" in /path/to/TAD
  succeeded in 0ms:
 # TAD Session State
 <!-- Auto-maintained by TAD agents. See .tad/templates/session-state-template.md -->
 Last Updated: 2026-06-09T17:15:48Z
 Hook Last Touched: 2026-06-09T16:44:27Z
-Last File Written: /Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md
+Last File Written: /path/to/TAD/.tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md
 
 ## Active Agent
 **Role**: Blake
@@ -2948,12 +2948,12 @@ Run T1 Codex full-cycle regression and capture evidence outputs
 codex
 会话状态显示 Blake 正在另一个 handoff 上执行 Phase 5 回归；当前 carrier task 我按 Alex 独立产出设计，不碰实现代码，也不干扰现有 Blake 任务。接下来做只读健康扫描，并查 sandbox 里已有回归产物格式，保证 handoff 可直接交给 Blake。
 exec
-/bin/zsh -lc "bash -lc 'total="'$(grep -c "''^### " .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '"'{s+="'$2}END{print s+0}'"'); has_layers=0; [ -d .tad/project-knowledge/patterns ] && has_layers=1; max_file="'$(grep -rc "''^### " .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); echo "total=$total"; echo "has_layers=$has_layers"; echo "max_file=$max_file"'"'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "bash -lc 'total="'$(grep -c "''^### " .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '"'{s+="'$2}END{print s+0}'"'); has_layers=0; [ -d .tad/project-knowledge/patterns ] && has_layers=1; max_file="'$(grep -rc "''^### " .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); echo "total=$total"; echo "has_layers=$has_layers"; echo "max_file=$max_file"'"'" in /path/to/TAD
  exited 2 in 0ms:
 s+0}); has_layers=0; [ -d .tad/project-knowledge/patterns ] && has_layers=1; max_file=$(grep -rc "^### " .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); echo "total=$total"; echo "has_layers=$has_layers"; echo "max_file=$max_file": -c: line 2: unexpected EOF while looking for matching `)'
 
 exec
-/bin/zsh -lc "sed -n '1,220p' NEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' NEXT.md" in /path/to/TAD
  succeeded in 0ms:
 # Next Steps
 
@@ -3177,7 +3177,7 @@ exec
   - Commits: 11952f6 (impl) + 7a09b65 (gate3 verdict)
 
 exec
-/bin/zsh -lc "sed -n '1,220p' PROJECT_CONTEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' PROJECT_CONTEXT.md" in /path/to/TAD
  succeeded in 0ms:
 # Project Context - TAD Framework
 
@@ -3248,7 +3248,7 @@ exec
 - Pack collision follow-up: escalate-form one-liner should also carry loser quote; new packs may add licensing/cost collision categories
 
 exec
-/bin/zsh -lc "find .tad/evidence/codex-regression/sandbox -maxdepth 3 -type f | sort | sed -n '1,220p'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "find .tad/evidence/codex-regression/sandbox -maxdepth 3 -type f | sort | sed -n '1,220p'" in /path/to/TAD
  succeeded in 0ms:
 exec
 /bin/zsh -lc "bash -lc 'today="'$(date +%Y%m%d); for f in .tad/active/handoffs/HANDOFF-*.md; do [ -e "$f" ] || continue; base=$(basename "$f"); d=${base#HANDOFF-}; d=${d%%-*}; python3 - <<PY
@@ -3261,7 +3261,7 @@ try:
 except Exception:
     pass
 PY
- done'" in /Users/sheldonzhao/01-on progress programs/TAD
+ done'" in /path/to/TAD
  exited 1 in 223ms:
 Traceback (most recent call last):
   File "<stdin>", line 3, in <module>
@@ -3291,9 +3291,9 @@ mcp: codebase-memory-mcp/get_architecture (completed)
 codex
 图谱工具已确认项目已索引，但对 bash 调用链本身帮助有限；这个任务更依赖现有证据目录和 shell fixture 约定，所以我会用文件级只读扫描补足。
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md" in /path/to/TAD
 exec
-/bin/zsh -lc "bash -lc 'total="'$(grep -c "''^### " .tad/project-knowledge/architecture.md .tad/project-knowledge/code-quality.md .tad/project-knowledge/security.md .tad/project-knowledge/frontend-design.md 2>/dev/null | awk -F: '"'\"'\"'{s+="'$2} END {print s+0}'"'\"'\"'); has_layers=0; [ -d .tad/project-knowledge/patterns ] && has_layers=1; max_file="'$(grep -rc "''^### " .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); printf "total=%s'"\\nhas_layers=%s\\nmax_file=%s\\n\" \""'$total" "$has_layers" "$max_file"'"'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "bash -lc 'total="'$(grep -c "''^### " .tad/project-knowledge/architecture.md .tad/project-knowledge/code-quality.md .tad/project-knowledge/security.md .tad/project-knowledge/frontend-design.md 2>/dev/null | awk -F: '"'\"'\"'{s+="'$2} END {print s+0}'"'\"'\"'); has_layers=0; [ -d .tad/project-knowledge/patterns ] && has_layers=1; max_file="'$(grep -rc "''^### " .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); printf "total=%s'"\\nhas_layers=%s\\nmax_file=%s\\n\" \""'$total" "$has_layers" "$max_file"'"'" in /path/to/TAD
  succeeded in 0ms:
 total=6
 has_layers=1
@@ -3562,7 +3562,7 @@ cat .agents/skills/alex/SKILL.md - <<'ALEX_EOF' | codex exec --sandbox workspace
 You are Alex. Load the SKILL above. Carrier task: design a shell function
 
 exec
-/bin/zsh -lc "rg --files .tad/evidence/codex-regression .tad/evidence | rg 'sandbox|codex-regression|to_upper|carrier|regression-phase5|AC-'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg --files .tad/evidence/codex-regression .tad/evidence | rg 'sandbox|codex-regression|to_upper|carrier|regression-phase5|AC-'" in /path/to/TAD
  succeeded in 0ms:
 .tad/evidence/codex-regression/T1-alex-output.txt
 .tad/evidence/codex-regression/T1-alex-prompt.txt
@@ -3608,7 +3608,7 @@ s=os.environ[\"D\"]
 age=(datetime.now()-datetime.strptime(s,\"%Y%m%d\")).days
 print(f\"{os.environ['F']}\\t{age}\")
 PY
-done'" in /Users/sheldonzhao/01-on progress programs/TAD
+done'" in /path/to/TAD
  exited 1 in 241ms:
 Traceback (most recent call last):
   File "<stdin>", line 5, in <module>
@@ -3623,9 +3623,9 @@ NameError: name 'F' is not defined
 codex
 我已经拿到现有 Phase 5 handoff 和旧版 Codex validation sandbox 样式。下一步只抽取足够的先例格式，然后在 sandbox 目录下落一个新的 inline handoff 文档，供 Blake 直接执行。
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /path/to/TAD
  succeeded in 0ms:
 #!/usr/bin/env bash
 set -u
@@ -3688,7 +3688,7 @@ slugify() {
 }
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/evidence/completion-report.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/evidence/completion-report.md" in /path/to/TAD
  succeeded in 0ms:
 # Completion Report: HANDOFF-20260607-slugify-bash-sandbox
 
@@ -3749,7 +3749,7 @@ s=os.environ[\"D\"]
 age=(datetime.now()-datetime.strptime(s,\"%Y%m%d\")).days
 print(os.environ[\"F\"] + \"\\t\" + str(age))
 PY
-done'" in /Users/sheldonzhao/01-on progress programs/TAD
+done'" in /path/to/TAD
  succeeded in 179ms:
 HANDOFF-20260609-dual-platform-regression-phase5.md	0
 HANDOFF-20260609-verify-and-sync.md	0
@@ -3757,7 +3757,7 @@ HANDOFF-20260609-verify-and-sync.md	0
 codex
 Alex activation still needs the research and registry skim from the startup protocol. I’m doing a minimal read only pass so the handoff reflects the real session state rather than a partial activation.
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/github-registry/scan-log.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/github-registry/scan-log.yaml" in /path/to/TAD
  succeeded in 0ms:
 # GitHub Registry Scan Log — weekly automation output
 # Written by: scheduled routine + *research-github scan (manual trigger)
@@ -3771,7 +3771,7 @@ scan_results:
   new_candidates: []
 
 exec
-/bin/zsh -lc "test -f OBJECTIVES.md && sed -n '1,220p' OBJECTIVES.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f OBJECTIVES.md && sed -n '1,220p' OBJECTIVES.md || true" in /path/to/TAD
  succeeded in 0ms:
 # Project Objectives
 
@@ -3830,7 +3830,7 @@ exec
 <!-- KR2/KR3: .tad/evidence/research/2026-05-14-kr2-kr3-ask-findings.md -->
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/research-notebooks/REGISTRY.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/research-notebooks/REGISTRY.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Research Notebook Registry
 # Local index of NotebookLM notebooks known to TAD.
@@ -4054,12 +4054,12 @@ notebooks:
       - url: "https://github.com/OWASP/API-Security"
 
 exec
-/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml && sed -n '1,220p' .tad/pair-testing/SESSIONS.yaml || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml && sed -n '1,220p' .tad/pair-testing/SESSIONS.yaml || true" in /path/to/TAD
  succeeded in 0ms:
 codex
 Activation context is complete enough now: `TAD Health` is effectively OK, research notebook coverage is active for the roadmap objectives, and there are no pair-testing prompts or GitHub scan actions to handle. I’m moving to the actual deliverable: a compact Blake-ready handoff for the `to_upper` carrier task.
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-regression/T1-alex-prompt.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-regression/T1-alex-prompt.txt" in /path/to/TAD
  succeeded in 0ms:
 You are Alex. Load the SKILL above. Carrier task: design a shell function
 to_upper that converts stdin to uppercase with LC_ALL=C locale safety,
@@ -4068,12 +4068,12 @@ handles empty input gracefully, includes a test script. All outputs in
 with defaults where you would normally ask. Produce an inline handoff.
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-regression/T1-alex-output.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-regression/T1-alex-output.txt" in /path/to/TAD
  succeeded in 0ms:
 Reading prompt from stdin...
 OpenAI Codex v0.138.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.4
 provider: openai
 approval: never
@@ -4295,7 +4295,7 @@ codex
 我现在落地 handoff 文件。内容会明确 Blake 该创建哪些 shell 文件、验证哪些行为、以及这个 carrier task 的边界和 accepted limitation，避免把设计写成实现。
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md
 diff --git a/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md b/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md
 new file mode 100644
 index 0000000000000000000000000000000000000000..1f691460601a90a54c06e175a73ec0beab2f6b9d
@@ -4591,7 +4591,7 @@ index 0000000000000000000000000000000000000000..1f691460601a90a54c06e175a73ec0be
 +This is an inline sandbox handoff produced for Codex regression evidence. It is intentionally narrow and does not authorize broader repo changes.
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 task_type: code
@@ -4882,7 +4882,7 @@ index 0000000000000000000000000000000000000000..1f691460601a90a54c06e175a73ec0be
 +This is an inline sandbox handoff produced for Codex regression evidence. It is intentionally narrow and does not authorize broader repo changes.
 
 codex
-TAD Health: OK. Blake is actively executing [`HANDOFF-20260609-dual-platform-regression-phase5.md`](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md:1), so I kept this carrier task isolated as an Alex-side design artifact only. The inline handoff is saved at [`HANDOFF-inline-to_upper.md`](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md:1).
+TAD Health: OK. Blake is actively executing [`HANDOFF-20260609-dual-platform-regression-phase5.md`](/path/to/01-on%20progress%20programs/TAD/.tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md:1), so I kept this carrier task isolated as an Alex-side design artifact only. The inline handoff is saved at [`HANDOFF-inline-to_upper.md`](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md:1).
 
 ```md
 ---
@@ -5138,7 +5138,7 @@ index 0000000000000000000000000000000000000000..1f691460601a90a54c06e175a73ec0be
 
 tokens used
 83,180
-TAD Health: OK. Blake is actively executing [`HANDOFF-20260609-dual-platform-regression-phase5.md`](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md:1), so I kept this carrier task isolated as an Alex-side design artifact only. The inline handoff is saved at [`HANDOFF-inline-to_upper.md`](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md:1).
+TAD Health: OK. Blake is actively executing [`HANDOFF-20260609-dual-platform-regression-phase5.md`](/path/to/01-on%20progress%20programs/TAD/.tad/active/handoffs/HANDOFF-20260609-dual-platform-regression-phase5.md:1), so I kept this carrier task isolated as an Alex-side design artifact only. The inline handoff is saved at [`HANDOFF-inline-to_upper.md`](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-regression/sandbox/HANDOFF-inline-to_upper.md:1).
 
 ```md
 ---

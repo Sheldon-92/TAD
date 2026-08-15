@@ -9,26 +9,26 @@
 # target (NO install.sh this time), re-verify platform-skills symmetry, re-commit.
 # Only framework skills present in SOURCE are touched → project-local skills preserved.
 set -u
-SRC="/Users/sheldonzhao/01-on progress programs/TAD"
+SRC="/path/to/TAD"
 LOG="$SRC/.tad/evidence/releases/sync-v2.30.0-repair.log"
 : > "$LOG"
 log(){ printf '%s\n' "$*" | tee -a "$LOG"; }
 
 PROJECTS=(
-"/Users/sheldonzhao/01-on progress programs/menu-snap"
-"/Users/sheldonzhao/01-on progress programs/my-openclaw-agents"
-"/Users/sheldonzhao/01-on progress programs/OpenClaw Hack"
-"/Users/sheldonzhao/01-on progress programs/运动打卡小助手"
-"/Users/sheldonzhao/01-on progress programs/合规ai"
-"/Users/sheldonzhao/01-on progress programs/ArtForge"
-"/Users/sheldonzhao/01-on progress programs/Sober Creator"
-"/Users/sheldonzhao/01-on progress programs/toy"
-"/Users/sheldonzhao/01-on progress programs/内存管理"
-"/Users/sheldonzhao/01-on progress programs/Next Guest"
-"/Users/sheldonzhao/01-on progress programs/下载md插件"
-"/Users/sheldonzhao/01-on progress programs/买卖"
-"/Users/sheldonzhao/01-on progress programs/Monica-website"
-"/Users/sheldonzhao/Downloads/Colin声音项目"
+"/path/to/menu-snap"
+"/path/to/my-openclaw-agents"
+"/path/to/OpenClaw Hack"
+"/path/to/运动打卡小助手"
+"/path/to/合规ai"
+"/path/to/ArtForge"
+"/path/to/Sober Creator"
+"/path/to/toy"
+"/path/to/内存管理"
+"/path/to/Next Guest"
+"/path/to/下载md插件"
+"/path/to/买卖"
+"/path/to/Monica-website"
+"/path/to/Downloads/Colin声音项目"
 )
 
 SUMMARY=""

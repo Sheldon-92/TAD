@@ -643,10 +643,10 @@ Agent({
 **Claude Code 源码（最佳实践）**:
 - `.tad/spike-v3/README.md` — Hook 系统验证结果
 - `.tad/project-knowledge/architecture.md` — 架构知识
-- `/Users/sheldonzhao/01-on progress programs/claude-code-leaked/src/` — Tool.ts, query.ts, coordinator/, memdir/
+- `/path/to/claude-code-leaked/src/` — Tool.ts, query.ts, coordinator/, memdir/
 
 **OpenClaw Agents（用户当前项目，不是最佳实践）**:
-- `/Users/sheldonzhao/01-on progress programs/my-openclaw-agents/PROJECT_CONTEXT.md`
+- `/path/to/my-openclaw-agents/PROJECT_CONTEXT.md`
 - `.../my-openclaw-agents/rss-knowledge-companion/workspace/` — AGENTS.md, SOUL.md, HEARTBEAT.md
 - `.../my-openclaw-agents/PHILOSOPHY.md`
 

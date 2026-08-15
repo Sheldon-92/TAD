@@ -2,11 +2,11 @@ warning: `--full-auto` is deprecated; use `--sandbox workspace-write` instead.
 Reading additional input from stdin...
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
-sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/sheldonzhao/.codex/memories]
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /path/to/.codex/memories]
 reasoning effort: high
 reasoning summaries: none
 session id: 019ea2ec-c59b-73f2-9b90-398d82e35038
@@ -823,7 +823,7 @@ on_start: |
 codex
 Blake activated. I’ll start with the required failing test run, then keep the loop tightly scoped to the two sandbox files under `rework/`.
 exec
-/bin/zsh -lc 'bash .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /path/to/TAD
  exited 1 in 0ms:
 FAIL: [Hello World] expected [hello-world] got [Hello-World]
 FAIL: [a  b] expected [a-b] got [a--b]
@@ -833,7 +833,7 @@ FAIL: [Hello, World!] expected [hello-world] got [Hello,-World!]
 codex
 Iteration 1 failed in three places: casing, repeated spaces, and punctuation handling. I’m reading the local Blake/config context and the two sandbox scripts now; edits will stay inside the requested `rework/` directory.
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/codex/codex-blake-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/codex/codex-blake-skill.md" in /path/to/TAD
  succeeded in 0ms:
 # Agent B - Blake (Execution Master) — Codex Edition
 <!-- Codex-edition: Claude Code-only mechanisms stripped per .tad/portable-rules.md -->
@@ -1097,9 +1097,9 @@ develop_command:
         Ask user to type number.
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Configuration v2.24.0 - Triple-Question KA
 method: TAD
@@ -1545,7 +1545,7 @@ human_role_v13:
       tasks:
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -1769,7 +1769,7 @@ quality_gates:
           - "{task_id}_summary.md"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-execution.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-execution.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Execution & Learning
 # Part of TAD config.yaml modular split (v2.2)
@@ -1993,7 +1993,7 @@ learning_mechanisms:
   learning_dimensions:
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -2217,7 +2217,7 @@ mcp_tools:
       - "MCP tools used per task"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh" in /path/to/TAD
  succeeded in 0ms:
 #!/usr/bin/env bash
 # Intentionally buggy: missing lowercase, no collapse, no punctuation handling
@@ -2226,7 +2226,7 @@ slugify() {
 }
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh" in /path/to/TAD
  succeeded in 0ms:
 #!/usr/bin/env bash
 set -u
@@ -2242,12 +2242,12 @@ if [ "$fail" -eq 0 ]; then echo "all assertions pass"; exit 0; else echo "$fail 
 codex
 TAD Health: configs loaded; this request is a direct sandbox Ralph Loop task, so I’m not switching to unrelated active handoffs. The script currently only replaces literal spaces with hyphens, so it preserves uppercase, punctuation, and duplicate separators.
 exec
-/bin/zsh -lc "find .tad/active/handoffs -maxdepth 1 -name 'HANDOFF-*.md' -type f -print" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "find .tad/active/handoffs -maxdepth 1 -name 'HANDOFF-*.md' -type f -print" in /path/to/TAD
  succeeded in 0ms:
 .tad/active/handoffs/HANDOFF-20260603-declarative-constraints-v01.md
 
 exec
-/bin/zsh -lc "sed -n '1,160p' NEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,160p' NEXT.md" in /path/to/TAD
  succeeded in 0ms:
 # Next Steps
 
@@ -2414,7 +2414,7 @@ codex
 I’m applying the first fix: normalize to lowercase, convert every non-alphanumeric run to a single hyphen, then trim edge hyphens. This keeps it portable by using POSIX `tr` and `sed` only.
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 diff --git a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 index 1b434582559a765b731b3a01a8c6f515d9bbbc11..59b0c49d500f254445249eb426a866067edc0bac
 --- a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
@@ -2448,7 +2448,7 @@ index 1b434582559a765b731b3a01a8c6f515d9bbbc11..59b0c49d500f254445249eb426a86606
 codex
 Iteration 1 fix is in place. I’m re-running the exact test command now to verify whether the inferred normalization rules fully match the assertions.
 exec
-/bin/zsh -lc 'bash .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /path/to/TAD
  succeeded in 0ms:
 PASS: [Hello World] -> [hello-world]
 PASS: [a  b] -> [a-b]
@@ -2473,7 +2473,7 @@ index 1b434582559a765b731b3a01a8c6f515d9bbbc11..59b0c49d500f254445249eb426a86606
 codex
 Layer 1 is clean on the first repair pass: the same test now exits 0 with all three assertions passing. I’m doing a quick scoped diff check so the final report can name exactly what changed.
 exec
-/bin/zsh -lc 'git diff -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git diff -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /path/to/TAD
  succeeded in 0ms:
 diff --git a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 index 1b434582559a765b731b3a01a8c6f515d9bbbc11..59b0c49d500f254445249eb426a866067edc0bac
@@ -2493,7 +2493,7 @@ index 1b434582559a765b731b3a01a8c6f515d9bbbc11..59b0c49d500f254445249eb426a86606
 codex
 `git diff` is empty for the scoped files, which usually means this sandbox content is untracked or outside Git’s tracked set. I’m checking status without changing anything so I can be precise.
 exec
-/bin/zsh -lc 'git status --short -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git status --short -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /path/to/TAD
  succeeded in 0ms:
 ?? .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ?? .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh
@@ -2518,7 +2518,7 @@ Blake Ralph Loop complete.
 
 **Iteration 1**
 - Failed: `Hello World` kept uppercase, `a  b` produced duplicate hyphens, `Hello, World!` kept punctuation.
-- Diagnosis: [buggy_slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
+- Diagnosis: [buggy_slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
 - Fix: updated `slugify()` to lowercase via `tr`, convert non-alphanumeric runs to one hyphen, and trim leading/trailing hyphens using portable `sed`.
 - Re-run: `bash .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh` exits `0`.
 
@@ -2552,7 +2552,7 @@ Blake Ralph Loop complete.
 
 **Iteration 1**
 - Failed: `Hello World` kept uppercase, `a  b` produced duplicate hyphens, `Hello, World!` kept punctuation.
-- Diagnosis: [buggy_slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
+- Diagnosis: [buggy_slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
 - Fix: updated `slugify()` to lowercase via `tr`, convert non-alphanumeric runs to one hyphen, and trim leading/trailing hyphens using portable `sed`.
 - Re-run: `bash .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh` exits `0`.
 

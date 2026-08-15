@@ -21,7 +21,7 @@ Conductor/sub-agent tool boundary). Correct default.
 | STEP 3.9 `last_scan == null → skip`, suppress_if null clause | Read alex/SKILL.md L369-402 | ✅ accurate (L374 + L398) |
 | scan-log.yaml `last_scan: null`, schema | cat | ✅ accurate |
 | .agents mirror exists + currently byte-identical | ls + cmp | ✅ MIRROR-IDENTICAL |
-| `claude` CLI present | which claude | ✅ /Users/sheldonzhao/.local/bin/claude |
+| `claude` CLI present | which claude | ✅ /path/to/.local/bin/claude |
 
 The core architectural thesis is sound and well-grounded: **thin entry, thick protocol** —
 delegate the cron body to the SKILL scan protocol instead of maintaining a second (already-drifted)

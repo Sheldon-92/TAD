@@ -91,7 +91,7 @@ Both reviewers cleared Gate 3. See review outputs above in conversation log.
 
 ### P1 fixes applied from code review
 1. **`.tad/hooks/userprompt-domain-router.sh:230`** — changed `[ "$BEST_TOTAL" -gt 0 ]` to `[ "${BEST_TOTAL:-0}" -gt 0 ] 2>/dev/null` to guard against `set -u` arithmetic errors if awk output is malformed. Consistent with log_size guard pattern already present.
-2. **`.claude/settings.json`** — changed hook command from absolute path `/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/...` to relative `bash .tad/hooks/userprompt-domain-router.sh`. Matches convention used by all other TAD hooks (PreToolUse-Skill, PostToolUse, SessionStart) and is portable across `*sync` to other projects in Phase 3. End-to-end smoke test re-run with relative path: `INJECTION_SEEN` ✅.
+2. **`.claude/settings.json`** — changed hook command from absolute path `/path/to/TAD/.tad/hooks/...` to relative `bash .tad/hooks/userprompt-domain-router.sh`. Matches convention used by all other TAD hooks (PreToolUse-Skill, PostToolUse, SessionStart) and is portable across `*sync` to other projects in Phase 3. End-to-end smoke test re-run with relative path: `INJECTION_SEEN` ✅.
 
 ---
 

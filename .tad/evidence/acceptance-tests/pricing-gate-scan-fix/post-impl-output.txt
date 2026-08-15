@@ -20,7 +20,7 @@ AC8 完毕（新增 untracked 经授权集过滤后：0 条命中）
 ========== AC9 .agents/ 镜像 ==========
 =========================================
 PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
-  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  REPO: /path/to/TAD
 =========================================
   ✅ .claude/skills <-> .agents/skills byte-identical
 VERDICT: parity PASS (exit 0)

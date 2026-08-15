@@ -13,7 +13,7 @@ GitHub仓库：https://github.com/Sheldon-92/TAD.git
 
 1. 初始化Git（如果还没有）
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 git init
 ```
 

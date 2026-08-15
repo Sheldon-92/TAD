@@ -35,17 +35,17 @@ git ls-files .tad/memory/  → empty (nothing committed to history yet; clean sl
 ```
 
 ### Credential / email / identity sweep across all 29 SAFE files
-Pattern set: `zhaos948|newschool|@gmail|@outlook|@qq.com|api_key|secret_key|-----BEGIN|ghp_|sk-…|xox[baprs]-|password[:=]`
+Pattern set: `<redacted>|<redacted>|@gmail|@outlook|@qq.com|api_key|secret_key|-----BEGIN|ghp_|sk-…|xox[baprs]-|password[:=]`
 **Result: zero hits.** The 4 mechanical grep hits noted in the report ("token cost", "header-token" CSP term, "token-burn", "args") are confirmed false positives — all are LLM-token or design-vocabulary usages, no credentials.
 
 ### Verbatim-conversation / home-path / friend-detail sweep across all 29 SAFE files
-Pattern: `/Users/sheldonzhao|朋友|friend|co-thinking|SEED.md|leaked|泄露|newschool`
+Pattern: `/path/to|朋友|friend|co-thinking|SEED.md|leaked|泄露|<redacted>`
 **Only one hit**, in `project_pack-quality-leveling-epic.md` line 43:
 > 另：独立的"纯 skills 包给朋友"方向见 [[IDEA-20260613-tad-opt-in-mode-posture 文件内 Notes]]（未启动）
 
 This is a bare direction-label ("a pure-skills pack for friends" idea, not started) with **no personal identity, no name, no private detail about any individual**. It is a TAD-scoped roadmap cross-reference. This matches the triage's own stated rationale for file #24 ("朋友" mention is a cross-reference to an idea name, no personal identity). **Correctly SAFE.** No re-classification needed.
 
-Notably, the two SENSITIVE files that carry the actual private material — `project_co-thinking-workshop-seed.md` (contains the absolute home path `/Users/sheldonzhao/01-on progress programs/co-thinking-workshop/SEED.md` and the unpublished sibling-methodology core) and `project_tad-universal-method.md` (unpublished standalone-product strategy + "user's friends only use Codex, non-dev projects" personal context) — are both correctly gitignored, and **no SAFE file reproduces their sensitive content**. The wikilink references to them in SAFE files (`[[project_tad-universal-method]]`, `[[user_agent-builder-goals]]`) are just bracketed names; they leak the existence of a parked idea but no substance.
+Notably, the two SENSITIVE files that carry the actual private material — `project_co-thinking-workshop-seed.md` (contains the absolute home path `/path/to/co-thinking-workshop/SEED.md` and the unpublished sibling-methodology core) and `project_tad-universal-method.md` (unpublished standalone-product strategy + "user's friends only use Codex, non-dev projects" personal context) — are both correctly gitignored, and **no SAFE file reproduces their sensitive content**. The wikilink references to them in SAFE files (`[[project_tad-universal-method]]`, `[[user_agent-builder-goals]]`) are just bracketed names; they leak the existence of a parked idea but no substance.
 
 ### Per-file re-classification of the 29 SAFE files
 All 29 are TAD-framework-internal engineering records: Epic completion notes, pack build records, workflow/tooling lessons, TAD process/communication rules, and research methodology. None contain third-party private material or personal profile. Representative spot-checks:
@@ -82,12 +82,12 @@ Verified:
 
 ## Target 3 — memory-redirect.sh Injection / Quoting / Clobber Audit
 
-`bash -n` clean. Reviewed against spaces-in-path (`/Users/sheldonzhao/01-on progress programs/TAD`), jq arg handling, mktemp, and settings clobber.
+`bash -n` clean. Reviewed against spaces-in-path (`/path/to/TAD`), jq arg handling, mktemp, and settings clobber.
 
 **No injection / no quoting bug:**
 - `ROOT="$(pwd)"`, `TARGET_DIR="$ROOT/.tad/memory"`, `OLD_DIR="$HOME/.claude/projects/$SLUG/memory"` — every expansion that touches the space-containing path is double-quoted at every use site (`ls "$OLD_DIR"`, `cp -n "$OLD_DIR"/*.md "$TARGET_DIR"/`, `mkdir -p "$TARGET_DIR"`). The `*.md` glob sits outside the quotes correctly so it still expands, while the directory prefix stays quoted. Verified `cp` line handles spaces.
 - `TARGET_DIR` is passed to jq via `--arg d "$TARGET_DIR"` — jq treats `--arg` values as literal strings, so no path content (spaces, quotes, `$`, backticks) can inject jq program code. This is the correct, injection-safe pattern.
-- `SLUG` derivation `sed 's![/ ]!-!g'` verified against reality: produces `-Users-sheldonzhao-01-on-progress-programs-TAD`, and `$OLD_DIR` resolves to the real 36-file directory. The script also hard-checks `[ ! -d "$OLD_DIR" ]` and warns rather than silently proceeding (SEC P1-3 mitigation present).
+- `SLUG` derivation `sed 's![/ ]!-!g'` verified against reality: produces `-path-to-TAD`, and `$OLD_DIR` resolves to the real 36-file directory. The script also hard-checks `[ ! -d "$OLD_DIR" ]` and warns rather than silently proceeding (SEC P1-3 mitigation present).
 
 **No settings.local.json clobber:**
 - Enable path: `jq --arg d "$TARGET_DIR" '. + {autoMemoryDirectory: $d}'` — the `. + {…}` object-merge adds/overwrites ONLY the `autoMemoryDirectory` key; all sibling keys (notably the large `permissions.allow` list) are preserved untouched. Simulated the merge on the live file: `diff <(jq -S .permissions before) <(jq -S .permissions after)` → **empty (deep-equal)**. ✅ (satisfies AC1).

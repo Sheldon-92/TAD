@@ -10,7 +10,7 @@
 #   AC3 需要 Blake 落盘的可达性记录：$EV/reachability.tsv（每行首字段 = 被搬走的约束行原文）
 set -uo pipefail
 DONE=0; trap '[ "$DONE" = 1 ] || { echo "RESULT=FAIL (verify.sh 中途退出)"; exit 1; }' EXIT
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
 HB="$R/.tad/active/handoffs/HANDOFF-20260818-lazy-by-floor"
 T0=$(LC_ALL=C cat "$EV/t0.txt" 2>/dev/null || echo "")

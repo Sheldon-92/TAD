@@ -163,7 +163,7 @@ $ grep -nF 'Critical Check (4 items):' .claude/skills/gate/SKILL.md
 $ bash .tad/hooks/lib/release-verify.sh parity . 2>&1 | head -6     # AC4 只读
 =========================================
 PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
-  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  REPO: /path/to/TAD
 =========================================
   ✅ .claude/skills <-> .agents/skills byte-identical
 VERDICT: parity PASS (exit 0)

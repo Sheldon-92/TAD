@@ -12,7 +12,7 @@ const PACKS = [
   'data-engineering', 'agent-orchestration', 'synthetic-data', 'knowledge-graph',
 ]
 
-const ROOT = '/Users/sheldonzhao/01-on progress programs/TAD'
+const ROOT = '/path/to/TAD'
 const SKILL = (s) => `${ROOT}/.claude/skills/${s}`
 const SRC = (s) => `${ROOT}/.tad/capability-packs/${s}`
 const CODEX = (s) => `${ROOT}/.tad/evidence/pack-eval/2026-06-01/codex-review/${s}-codex.md`

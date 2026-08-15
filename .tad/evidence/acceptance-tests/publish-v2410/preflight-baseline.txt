@@ -890,7 +890,7 @@ target 8f268d7702783417 exists backup=absent mws=dc1323911bb16f454688f9d096800cd
 target f2eabb1feb81a738 exists backup=absent mws=bf33d732dce67dc9d5c11e192a21fa7b1957f58460dcbc66634edae0b6652fae git=e5194e6461a3af3b74756d9f2645d4ac1cd6e556 dirty=0b6df6427c690a8994858a8d9c185b83c065ed91517bcf508455cfaaefb462e0 missingroots=[ AGENTS.md.bak]
 target 51bdebf218f62d0d missing backup=absent mws=n/a git=n/a
 ## derive-sync-set-pre
-syncset | === RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
+syncset | === RELEASE SYNC SET (derived from /path/to/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
 syncset | 
 syncset | --- A. ZERO-TOUCH (preserve target's own — NEVER sync) ---
 syncset |   active

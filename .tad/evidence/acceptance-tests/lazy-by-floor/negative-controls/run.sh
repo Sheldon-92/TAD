@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # AC11 五份负控（逐条单独跑，任一绿 = 该 AC 永真 → 停下退回 Alex）
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
 HB="$R/.tad/active/handoffs/HANDOFF-20260818-lazy-by-floor"
 A1="$R/.claude/skills/alex/SKILL.md"; A2="$R/.agents/skills/alex/SKILL.md"
@@ -19,7 +19,7 @@ cp "$NC/nc-a.bak" "$A1"; cmp -s "$A1" "$NC/nc-a.bak" || { echo "FATAL: (a) 恢�
 cp "$A1" "$NC/nc-b.bak"
 python3 - <<'PY2'
 import io
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 EV = f"{R}/.tad/evidence/acceptance-tests/lazy-by-floor"
 A1 = f"{R}/.claude/skills/alex/SKILL.md"
 base = io.open(f"{EV}/constraint-lines-base.txt", encoding="utf-8").read().split("\n")
@@ -37,7 +37,7 @@ cp "$NC/nc-b.bak" "$A1"; cmp -s "$A1" "$NC/nc-b.bak" || { echo "FATAL: (b) 恢�
 cp "$A1" "$NC/nc-c.bak"
 python3 - <<'PY'
 import io
-p = "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/SKILL.md"
+p = "/path/to/TAD/.claude/skills/alex/SKILL.md"
 s = io.open(p, encoding="utf-8").read()
 start = s.index("# Forbidden actions (will trigger VIOLATION)")
 end = s.index("# Triple-Question KA: Draft-then-Confirm Rule (2026-06-03)")
@@ -54,7 +54,7 @@ cp "$NC/nc-c.bak" "$A1"; cmp -s "$A1" "$NC/nc-c.bak" || { echo "FATAL: (c) 恢�
 cp "$R/.tad/config-cognitive.yaml" "$NC/nc-d.bak"
 python3 - <<'PY'
 import io
-p = "/Users/sheldonzhao/01-on progress programs/TAD/.tad/config-cognitive.yaml"
+p = "/path/to/TAD/.tad/config-cognitive.yaml"
 s = io.open(p, encoding="utf-8").read()
 i = s.index("fatal_operations:")
 seg_end = s.index("\n", s.index("\n", i) + 40) if "\n\n" in s[i:] else len(s)
@@ -69,7 +69,7 @@ cp "$NC/nc-d.bak" "$R/.tad/config-cognitive.yaml"; git diff --quiet "$T0" -- .ta
 cp "$A1" "$NC/nc-e.bak"; cp "$A2" "$NC/nc-e.bak2"
 python3 - <<'PY'
 import io
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 ob = f"{R}/.tad/active/handoffs/HANDOFF-20260818-lazy-by-floor.obligations.tsv"
 sents = [l.rstrip("\n").split("\t")[2] for l in io.open(ob, encoding="utf-8")
          if l.strip() and not l.startswith("#") and l.split("\t")[1] == "义务"]

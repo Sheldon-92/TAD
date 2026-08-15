@@ -34,7 +34,7 @@ antidote is that Alex reads this cold).
 
 5. **Mechanical grep for credentials produced 4/4 false positives** ("token cost", "header-token"
    CSP term, "token-burn", LLM token counts). The grep is a smoke alarm for the LLM per-file pass,
-   not a verdict. Conversely the email-specific sweep (zhaos948|newschool|@gmail) was the
+   not a verdict. Conversely the email-specific sweep (<redacted>|<redacted>|@gmail) was the
    high-precision check and came back clean.
 
 6. **AC10's `git ls-files` was vacuous before staging** (empty index set → grep on nothing → PASS).
@@ -43,5 +43,5 @@ antidote is that Alex reads this cold).
    AFTER the index is populated, or they pass trivially.
 
 7. SLUG derivation rule for the native memory dir (`/` and space → `-`) confirmed empirically:
-   `-Users-sheldonzhao-01-on-progress-programs-TAD` exists. The script's OLD_DIR preflight WARN
+   `-path-to-TAD` exists. The script's OLD_DIR preflight WARN
    path was not exercised (dir existed).

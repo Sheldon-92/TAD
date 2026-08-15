@@ -52,5 +52,5 @@ plt.title('Deployment Platform Comparison\n(Score 1-5, higher is better)', size=
 ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=11)
 
 plt.tight_layout()
-plt.savefig('/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/research/todo-deploy/platform-comparison.png', dpi=150, bbox_inches='tight')
+plt.savefig('/path/to/TAD/.tad/active/research/todo-deploy/platform-comparison.png', dpi=150, bbox_inches='tight')
 print('Radar chart saved to platform-comparison.png')

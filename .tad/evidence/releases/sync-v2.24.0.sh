@@ -6,7 +6,7 @@
 set -u
 
 VERSION="2.24.0"
-SRC="/Users/sheldonzhao/01-on progress programs/TAD"
+SRC="/path/to/TAD"
 REGISTRY="$SRC/.tad/sync-registry.yaml"
 DEPRECATION="$SRC/.tad/deprecation.yaml"
 

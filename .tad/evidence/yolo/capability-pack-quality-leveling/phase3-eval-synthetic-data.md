@@ -61,5 +61,5 @@ substring hit). The pack adds genuine, reproducible signal beyond a frontier mod
 training-data baseline.
 
 ## Artifacts
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/capability-pack-quality-leveling/with-pack-output.md`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/capability-pack-quality-leveling/control-output.md`
+- `/path/to/TAD/.tad/evidence/yolo/capability-pack-quality-leveling/with-pack-output.md`
+- `/path/to/TAD/.tad/evidence/yolo/capability-pack-quality-leveling/control-output.md`

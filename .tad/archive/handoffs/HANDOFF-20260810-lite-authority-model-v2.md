@@ -180,7 +180,7 @@ execution_mandate:
   target_scope:
     repositories:
       - id: tad-source
-        physical_root: "/Users/sheldonzhao/01-on progress programs/TAD"
+        physical_root: "/path/to/TAD"
         origin: "https://github.com/Sheldon-92/TAD.git"
         refs:
           - refs/heads/main
@@ -302,7 +302,7 @@ transactions:
     state: completed
     launched_at: "2026-08-10T12:25:09Z"
     observed_pre_state:
-      repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
+      repository_root: "/path/to/TAD"
       origin: "https://github.com/Sheldon-92/TAD.git"
       ref: refs/heads/main
       baseline_commit: cabe28755c581c1bddfdfe1a490471888d9f26df
@@ -357,7 +357,7 @@ transactions:
     deviation: "Revision 1 authorized one local commit, already consumed by 77479a0; c851046 was a second local commit. external_mutation_count=0. Revision 2 is prospective and does not retroactively authorize this transaction."
     launched_at: "2026-08-10T16:00:16Z"
     observed_pre_state:
-      repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
+      repository_root: "/path/to/TAD"
       origin: "https://github.com/Sheldon-92/TAD.git"
       ref: refs/heads/main
       baseline_commit: 77479a0a4ada086f65930a2b1502c5713c49aad3
@@ -401,7 +401,7 @@ transactions:
       - 80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e
     recorded_tip: 80413f8f2c4b48d0e2e9f23d98d52e9bdc541a5e
     observed_pre_state:
-      repository_root: "/Users/sheldonzhao/01-on progress programs/TAD"
+      repository_root: "/path/to/TAD"
       origin: "https://github.com/Sheldon-92/TAD.git"
       ref: refs/heads/main
       baseline_commit: c851046dc41b65f89dbe0acfbb51cc198d016c81

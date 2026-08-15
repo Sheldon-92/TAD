@@ -2,7 +2,7 @@
 
 **Date**: 2026-07-13 | **CLI**: 2.1.172 | **Metrics predefined in handoff §3.1 FR7 / §8 before build**
 All runs: headless `claude -p --model claude-sonnet-4-5`, cwd = worktree repo root
-(`/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_0019f033-1ce-1`).
+(`/path/to/TAD/.claude/worktrees/wf_0019f033-1ce-1`).
 Discriminative probe token: `THIN EXCERPT` — verified present ONLY in
 `.claude/rules/shell-portability.md` across the whole tree
 (`grep -rl "THIN EXCERPT" .` → exactly 1 file), so probe answers cannot be satisfied by

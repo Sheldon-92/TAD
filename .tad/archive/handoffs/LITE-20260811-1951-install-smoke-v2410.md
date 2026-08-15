@@ -225,7 +225,7 @@ v2.41.0 已推到 GitHub，但**从没有人从 GitHub 装过它**。Phase 3c �
   完整输出落 `AC10b.txt`。**理由**：AC5 的 `test -f` 对 0 字节文件成立，AC10 只枚举路径，
   AC9 因两路径共用同一 `tad.sh` 会把同一 bug 在两侧同样复现 —— 若无本 AC，
   一个"文件全在、内容全错"的安装可以让 20 条 AC 全绿。
-- AC11（升级 fixture 构建，源只读）: 源 = `/Users/sheldonzhao/01-on progress programs/menu-snap`（2.30.0）。
+- AC11（升级 fixture 构建，源只读）: 源 = `/path/to/menu-snap`（2.30.0）。
   构建**前**用指定管线记录源的 `.tad/` `.claude/` `.agents/` 摘要（`<sha256>␠␠<path>`，按路径排序）
   → `AC11.txt`；`cp -R` 其 TAD 表面（`.tad/`、`.claude/`、`.agents/`、`tad.sh`、`CLAUDE.md`、
   `AGENTS.md`，存在哪个拷哪个）到 `"$WORK/U/"`。**全部操作结束后**重算同一摘要，
@@ -406,7 +406,7 @@ v2.41.0 已推到 GitHub，但**从没有人从 GitHub 装过它**。Phase 3c �
   本 AC **无 PASS/FAIL 判定**（`RECORD-ONLY`），只要求如实落盘 —— 契约明列 npm 缓存为已接受的
   界外写入，不假装"零界外写"。
 - AC19（缺口显式声明）: `findings.md` 必须含一节，内容由**执行时刻现场重算**得出，不得硬编码：
-  - 下游版本分布：遍历 `"/Users/sheldonzhao/01-on progress programs"/*/` 读 `.tad/version.txt`，
+  - 下游版本分布：遍历 `"/path/to"/*/` 读 `.tad/version.txt`，
     `LC_ALL=C sort | uniq -c`（禁用 `awk` 比较，目录名含中文）。
     ⚠️ 引号只包**不含 glob** 的部分——路径含空格，整体加引号会让 `*/` 失效，整体不加引号在
     `#!/bin/bash` 下会按空格拆成三段。
@@ -474,7 +474,7 @@ authorized_consequence_classes:
 - `network_read` —— 只读拉取 `raw.githubusercontent.com/Sheldon-92/TAD/main/*`、
   `github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz`、`github.com/Sheldon-92/TAD.git`
   （`git ls-remote`）与 npm registry
-- `local_read_external` —— 只读 `/Users/sheldonzhao/01-on progress programs/*/.tad/version.txt`
+- `local_read_external` —— 只读 `/path/to/*/.tad/version.txt`
   （AC19 现场普查）与 `menu-snap` 的 TAD 表面（AC11 fixture 源）；**零写入**
 - `local_write_scratch` —— 写入 `mktemp -d` 出的临时工作根及其全部子目录
 - `local_write_evidence` —— 写入下列**六个**路径：

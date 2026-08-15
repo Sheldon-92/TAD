@@ -1,1 +1,1 @@
-/Users/sheldonzhao/01-on progress programs/OpenClaw Hack
+/path/to/OpenClaw Hack

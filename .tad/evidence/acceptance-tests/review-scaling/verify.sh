@@ -1,5 +1,5 @@
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/review-scaling"
 T0=47918da
 B1="$R/.claude/skills/blake-lite/SKILL.md"; B2="$R/.agents/skills/blake-lite/SKILL.md"

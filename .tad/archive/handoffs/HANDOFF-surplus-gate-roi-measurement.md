@@ -435,7 +435,7 @@ Blake的实现被认为完成，当且仅当：
 
 ## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
 
-> All paths relative to repo root `/Users/sheldonzhao/01-on progress programs/TAD`.
+> All paths relative to repo root `/path/to/TAD`.
 > Set `RPT=".tad/evidence/research/gate-roi-measurement-2026-07.md"` first.
 > Pipe-escape note: un-escape `\|` when extracting commands to run in bash.
 

@@ -37,7 +37,7 @@ gate4_delta: []
 - [ ] 阅读了所有章节
 - [ ] **阅读了 Phase 1 research findings**: `.tad/evidence/research/ml-training-pack/deep-ask-findings.md`
 - [ ] **阅读了模板 pack**: `.claude/skills/ai-voice-production/SKILL.md` (结构参考，含 Anti-Skip Table + Quick Rule Index)
-- [ ] **阅读了 Colin 项目 MCP 协作 handoff**: `/Users/sheldonzhao/Downloads/Colin声音项目/.tad/active/handoffs/HANDOFF-20260529-colab-browser.md` §4.1-§4.3b (mcp-collaboration.md 的主要数据源)
+- [ ] **阅读了 Colin 项目 MCP 协作 handoff**: `/path/to/Downloads/Colin声音项目/.tad/active/handoffs/HANDOFF-20260529-colab-browser.md` §4.1-§4.3b (mcp-collaboration.md 的主要数据源)
 - [ ] 确认可以独立使用本文档完成实现
 
 ---
@@ -178,7 +178,7 @@ INTERFACE: ai-voice-production pack defers voice training platform selection to 
 - .claude/skills/ai-voice-production/SKILL.md (structure template + INTERFACE update target, read at 2026-05-29)
 - .tad/capability-packs/ai-evaluation/install.sh (install.sh template, read at 2026-05-29)
 - .tad/evidence/research/ml-training-pack/deep-ask-findings.md (research input, created 2026-05-29)
-- /Users/sheldonzhao/Downloads/Colin声音项目/.tad/active/handoffs/HANDOFF-20260529-colab-browser.md (MCP collaboration source, §4.1-§4.3b)
+- /path/to/Downloads/Colin声音项目/.tad/active/handoffs/HANDOFF-20260529-colab-browser.md (MCP collaboration source, §4.1-§4.3b)
 
 ---
 

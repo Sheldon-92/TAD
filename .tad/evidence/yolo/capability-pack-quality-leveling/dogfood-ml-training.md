@@ -22,7 +22,7 @@ Answer 1 = no-skill (general knowledge). Answer 2 = used ml-training skill (cite
 | ShareGPT JSONL schema + dataset-check.sh validation | A2 | CORRECT | Matches data-preparation.md schema + real script exists. |
 | DPO needs triples, beta=0.1, lr 5e-6 (~40x lower, do NOT reuse 2e-4) | A2 | CORRECT | Unsloth RL guide: lr 5e-6, beta 0.1 example. The "do not reuse SFT lr" warning is a genuinely high-value, correct rule A1 omitted. |
 | alpha=16 (=r) stable for tiny dataset | A2 | DEFENSIBLE, arguably better here | alpha=r is anti-overfit; for 350-sample tiny data, conservative scaling is well-reasoned. |
-| Colab quota ~22hr/wk, 12hr session, .edu→Colab Pro free for students | A2 | CORRECT/grounded | Quotas match cost-estimation.md tree; .edu detail is a nice personalized touch (user IS zhaos948@newschool.edu). |
+| Colab quota ~22hr/wk, 12hr session, .edu→Colab Pro free for students | A2 | CORRECT/grounded | Quotas match cost-estimation.md tree; .edu detail is a nice personalized touch (user IS <redacted-email>). |
 | Qwen3.5 caveat: QLoRA not recommended (use bf16 LoRA) | NEITHER | Both miss it | Unsloth now warns QLoRA degrades on Qwen3.5 specifically. Neither answer flags this — but user said Qwen-8B (=Qwen3-8B), where QLoRA is fine, so not a defect for either. |
 
 ## No specific-but-WRONG claims found in either answer

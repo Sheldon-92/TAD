@@ -300,7 +300,7 @@ Expected baseline:
 
 Required:
 - Run local manual helper if available:
-  `node /Users/sheldonzhao/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs`
+  `node /path/to/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs`
 - Record manual path, version/source, and timestamp.
 - If it fails, use official OpenAI docs fallback only.
 

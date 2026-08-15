@@ -70,9 +70,9 @@ research_required: yes
 ## 2. Background Context
 
 ### 2.1 Previous Work
-- OpenHarness 已 clone 到 `/Users/sheldonzhao/01-on progress programs/OpenHarness/`
+- OpenHarness 已 clone 到 `/path/to/OpenHarness/`
 - 10 个子系统已通过 Explore agent 完成深度研究
-- 用户研究笔记：`/Users/sheldonzhao/01-on progress programs/thoughts/discoveries/2026-04-03-openharness-final.md`
+- 用户研究笔记：`/path/to/thoughts/discoveries/2026-04-03-openharness-final.md`
 
 ### 2.2 Current State
 研究结果在用户研究笔记 + OpenHarness 源码中 → 需要持久化到 `.tad/references/`
@@ -194,8 +194,8 @@ Blake 应在文档末尾加一个 "Other Modules" 附录，一句话列出这些
 ```
 
 ### 4.3 信息来源
-- **主要来源**：直接读 OpenHarness 源码（`/Users/sheldonzhao/01-on progress programs/OpenHarness/src/openharness/`）
-- **补充来源**：用户研究笔记（`/Users/sheldonzhao/01-on progress programs/thoughts/discoveries/2026-04-03-openharness-final.md`）
+- **主要来源**：直接读 OpenHarness 源码（`/path/to/OpenHarness/src/openharness/`）
+- **补充来源**：用户研究笔记（`/path/to/thoughts/discoveries/2026-04-03-openharness-final.md`）
 - **禁止**：编造代码或 API。所有代码块必须来自实际源文件，标注文件路径。
 
 ---
@@ -223,7 +223,7 @@ Blake 应在文档末尾加一个 "Other Modules" 附录，一句话列出这些
 #### 实施步骤
 
 0. **读取用户研究笔记**作为初始输入：
-   `/Users/sheldonzhao/01-on progress programs/thoughts/discoveries/2026-04-03-openharness-final.md`
+   `/path/to/thoughts/discoveries/2026-04-03-openharness-final.md`
    优先从此提炼已有洞察，再用源码验证/补充，避免重复研究。
 
 1. **读取 OpenHarness 源码**：对每个子系统的核心文件做 Read
@@ -266,7 +266,7 @@ code_count=$(grep -c '```python' .tad/references/openharness-architecture.md)
 # 代码块真实性抽查：从文档提取第一个 Python 代码块的首行非注释代码，在源码中搜索
 first_code_line=$(sed -n '/```python/{n;/^#/d;p;q;}' .tad/references/openharness-architecture.md | head -1 | xargs)
 if [ -n "$first_code_line" ]; then
-  grep -r "$first_code_line" /Users/sheldonzhao/01-on\ progress\ programs/OpenHarness/src/ >/dev/null 2>&1 \
+  grep -r "$first_code_line" /path/to/01-on\ progress\ programs/OpenHarness/src/ >/dev/null 2>&1 \
     && echo "✅ Code block spot-check: found in source" || echo "⚠️ Code block spot-check: not found (manual verify)"
 fi
 
@@ -349,7 +349,7 @@ grep -q "^## Other Modules" .tad/references/openharness-architecture.md && echo 
 
 ### 10.1 Critical Warnings
 - ⚠️ **代码块必须来自真实源码** — 不要编造 Python 代码。Read 源文件后提取。
-- ⚠️ **OpenHarness 路径** — `/Users/sheldonzhao/01-on progress programs/OpenHarness/src/openharness/`
+- ⚠️ **OpenHarness 路径** — `/path/to/OpenHarness/src/openharness/`
 
 ### 10.2 Known Constraints
 - OpenHarness 部分模块是空文件（`memory/search.py`, `prompts/context.py`），标注为"未实现"即可

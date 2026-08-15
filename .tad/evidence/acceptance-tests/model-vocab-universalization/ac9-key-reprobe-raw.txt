@@ -11,7 +11,7 @@ AC9 redaction fixture PASS: only relay.example.invalid emitted
 == codex --version ==
 codex-cli 0.146.0
 == CFG ==
-/Users/sheldonzhao/.codex
+/path/to/.codex
 == OPENAI_BASE_URL host ==
 OPENAI_BASE_URL unset
 == selected model_provider ==
@@ -23,10 +23,10 @@ selected model_provider=unset
 == config base_url hosts (section annotated) ==
 selected route=native
 == per-agent model keys ==
-/Users/sheldonzhao/.codex/agents/terra-worker.toml:model = "gpt-5.6-terra"
-/Users/sheldonzhao/.codex/agents/terra-worker.toml:model_reasoning_effort = "medium"
-/Users/sheldonzhao/.codex/agents/terra-reviewer.toml:model = "gpt-5.6-terra"
-/Users/sheldonzhao/.codex/agents/terra-reviewer.toml:model_reasoning_effort = "high"
-/Users/sheldonzhao/.codex/agents/luna-scout.toml:model = "gpt-5.6-luna"
-/Users/sheldonzhao/.codex/agents/luna-scout.toml:model_reasoning_effort = "low"
+/path/to/.codex/agents/terra-worker.toml:model = "gpt-5.6-terra"
+/path/to/.codex/agents/terra-worker.toml:model_reasoning_effort = "medium"
+/path/to/.codex/agents/terra-reviewer.toml:model = "gpt-5.6-terra"
+/path/to/.codex/agents/terra-reviewer.toml:model_reasoning_effort = "high"
+/path/to/.codex/agents/luna-scout.toml:model = "gpt-5.6-luna"
+/path/to/.codex/agents/luna-scout.toml:model_reasoning_effort = "low"
 AC9 PASS: codex version and all four harness capture probes were re-run with host-only URL evidence

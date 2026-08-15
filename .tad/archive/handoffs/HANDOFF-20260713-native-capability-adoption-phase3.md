@@ -567,7 +567,7 @@ Blake的实现被认为完成，当且仅当：
 
 ## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
 
-> 所有命令在项目根目录 `/Users/sheldonzhao/01-on progress programs/TAD` 运行。
+> 所有命令在项目根目录 `/path/to/TAD` 运行。
 > 表内 `\|` 为 markdown 转义，提取运行时还原为 `|`（step1d Sub-rule 1）。
 > 分支条件行：未走到的分支填 `NOT_APPLICABLE_WITH_REASON: spike verdict = {PASS|FAIL}`。
 

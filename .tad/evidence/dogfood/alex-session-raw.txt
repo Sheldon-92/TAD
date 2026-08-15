@@ -1,19 +1,19 @@
 Reading additional input from stdin...
-2026-05-02T17:53:29.659243Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/ux-review/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660112Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/code-review/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660114Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/debugging/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660118Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/api-design/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660119Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/testing/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660120Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/architecture/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660122Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/security-audit/SKILL.md: missing field `description`
-2026-05-02T17:53:29.660124Z ERROR codex_core::session: failed to load skill /Users/sheldonzhao/.codex/skills/tad/performance/SKILL.md: missing field `description`
+2026-05-02T17:53:29.659243Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/ux-review/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660112Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/code-review/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660114Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/debugging/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660118Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/api-design/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660119Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/testing/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660120Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/architecture/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660122Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/security-audit/SKILL.md: missing field `description`
+2026-05-02T17:53:29.660124Z ERROR codex_core::session: failed to load skill /path/to/.codex/skills/tad/performance/SKILL.md: missing field `description`
 OpenAI Codex v0.125.0 (research preview)
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
-sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/sheldonzhao/.codex/memories]
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /path/to/.codex/memories]
 reasoning effort: medium
 reasoning summaries: none
 session id: 019de9d2-f441-7a62-81f8-15ed28a49765
@@ -995,9 +995,9 @@ next_md_rules:
 codex
 I’ll activate Alex by reading the local TAD config and current project state, then I’ll run the abbreviated inquiry and produce only the requested mini handoff scaffold.
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Agents & Interaction
 # Part of TAD config.yaml modular split (v2.2)
@@ -1443,7 +1443,7 @@ command_system:
       - "*design <feature>": "创建技术设计"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -1667,7 +1667,7 @@ quality_gates:
           - "{task_id}_summary.md"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Workflow & Document Management
 # Part of TAD config.yaml modular split (v2.2)
@@ -1891,7 +1891,7 @@ tad_maintain:
     name_conflict_resolution: "append-timestamp-suffix"
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -2115,7 +2115,7 @@ mcp_tools:
       - "MCP tools used per task"
 
 exec
-/bin/zsh -lc "test -f ROADMAP.md && sed -n '1,160p' ROADMAP.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f ROADMAP.md && sed -n '1,160p' ROADMAP.md || true" in /path/to/TAD
  succeeded in 0ms:
 # Roadmap
 
@@ -2185,15 +2185,15 @@ Completed themes move here with completion date.
 <!-- No completed themes yet -->
 
 exec
-/bin/zsh -lc "find .tad/active/handoffs -maxdepth 1 -type f -name '*.md' -print | sort | head -20" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "find .tad/active/handoffs -maxdepth 1 -type f -name '*.md' -print | sort | head -20" in /path/to/TAD
  succeeded in 0ms:
 .tad/active/handoffs/HANDOFF-20260502-codex-phase2-validate.md
 
 exec
-/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml && sed -n '1,200p' .tad/pair-testing/SESSIONS.yaml || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml && sed -n '1,200p' .tad/pair-testing/SESSIONS.yaml || true" in /path/to/TAD
  succeeded in 0ms:
 exec
-/bin/zsh -lc "test -f NEXT.md && sed -n '1,180p' NEXT.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f NEXT.md && sed -n '1,180p' NEXT.md || true" in /path/to/TAD
  succeeded in 0ms:
 # 下一步行动
 
@@ -2377,7 +2377,7 @@ exec
 
 
 exec
-/bin/zsh -lc "test -f .tad/active/session-state.md && sed -n '1,160p' .tad/active/session-state.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f .tad/active/session-state.md && sed -n '1,160p' .tad/active/session-state.md || true" in /path/to/TAD
  succeeded in 0ms:
 # TAD Session State
 <!-- Auto-maintained by TAD agents. See .tad/templates/session-state-template.md -->

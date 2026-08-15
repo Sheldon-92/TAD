@@ -861,7 +861,7 @@ evidence_requirements:
 
 #### Action 1.1：备份现有配置（15分钟）
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 
 # 创建备份目录
 mkdir -p .backup/v3.0-$(date +%Y%m%d)
@@ -1954,7 +1954,7 @@ echo "TAD v3.1 配置已安装 - $(date)" >> .tad/CHANGELOG.md
 #### 备份原模板
 
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 cp .tad/templates/handoff-a-to-b.md .tad/templates/handoff-a-to-b.md.v3.0.backup
 ```
 
@@ -2771,7 +2771,7 @@ system_evolution:
 **Phase 1验证**：
 
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 
 # 1. 配置文件验证
 echo "=== 1. 配置文件验证 ==="
@@ -2815,7 +2815,7 @@ echo -e "\n=== Phase 1验证完成 ==="
 **完整回滚到v3.0**：
 
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 
 # 1. 恢复配置文件
 cp .backup/v3.0-*/config.yaml .tad/config.yaml
@@ -2917,7 +2917,7 @@ evidence_based_verification:
 
 #### Step 1：备份（2分钟）
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 mkdir -p .backup/v3.0-$(date +%Y%m%d)
 cp .tad/config.yaml .backup/v3.0-$(date +%Y%m%d)/
 cp .tad/templates/handoff-a-to-b.md .backup/v3.0-$(date +%Y%m%d)/
@@ -3146,7 +3146,7 @@ TAD v3.1是基于**真实项目实证**的方法论升级，不是纸上谈兵�
 ### 立即开始
 
 ```bash
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 echo "准备开始TAD v3.1升级"
 echo "1. 阅读完本文档 ✅"
 echo "2. 执行第九部分'30分钟快速启动' →"

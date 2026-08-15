@@ -1,7 +1,7 @@
 Reading prompt from stdin...
 OpenAI Codex v0.138.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+workdir: /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
 model: gpt-5.4
 provider: openai
 approval: never
@@ -1505,15 +1505,15 @@ defaults where you would normally ask. Produce an inline handoff.
 codex
 Activating Alex and loading the local TAD context first. I’m checking the required config and document-health files, then I’ll produce a non-interactive inline handoff for the `to_upper` shell function and its test script.
 exec
-/bin/zsh -lc 'for f in .tad/config.yaml .tad/config-agents.yaml .tad/config-quality.yaml .tad/config-workflow.yaml .tad/config-platform.yaml .tad/guides/tool-quick-reference-alex.md ROADMAP.md NEXT.md PROJECT_CONTEXT.md .tad/active/session-state.md .tad/pair-testing/SESSIONS.yaml .tad/research-notebooks/REGISTRY.yaml OBJECTIVES.md .tad/github-registry/scan-log.yaml; do if [ -f "$f" ]; then echo "===FILE $f"; sed -n '"'1,220p' \""'$f"; fi; done' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'for f in .tad/config.yaml .tad/config-agents.yaml .tad/config-quality.yaml .tad/config-workflow.yaml .tad/config-platform.yaml .tad/guides/tool-quick-reference-alex.md ROADMAP.md NEXT.md PROJECT_CONTEXT.md .tad/active/session-state.md .tad/pair-testing/SESSIONS.yaml .tad/research-notebooks/REGISTRY.yaml OBJECTIVES.md .tad/github-registry/scan-log.yaml; do if [ -f "$f" ]; then echo "===FILE $f"; sed -n '"'1,220p' \""'$f"; fi; done' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 exec
-/bin/zsh -lc 'pwd && ls -la .tad 2>/dev/null | head -50' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'pwd && ls -la .tad 2>/dev/null | head -50' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
 
 exec
-/bin/zsh -lc "printf 'HANDOFFS\\n'; find .tad/active/handoffs -maxdepth 1 -type f 2>/dev/null | sort; printf '\\nEPICS\\n'; find .tad/active/epics -maxdepth 1 -type f 2>/dev/null | sort; printf '\\nDREAM\\n'; find .tad/active/dream-candidates -maxdepth 1 -type f 2>/dev/null | sort; printf '\\nSKILLIFY\\n'; find .tad/active/skillify-candidates -maxdepth 1 -type f 2>/dev/null | sort" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc "printf 'HANDOFFS\\n'; find .tad/active/handoffs -maxdepth 1 -type f 2>/dev/null | sort; printf '\\nEPICS\\n'; find .tad/active/epics -maxdepth 1 -type f 2>/dev/null | sort; printf '\\nDREAM\\n'; find .tad/active/dream-candidates -maxdepth 1 -type f 2>/dev/null | sort; printf '\\nSKILLIFY\\n'; find .tad/active/skillify-candidates -maxdepth 1 -type f 2>/dev/null | sort" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 HANDOFFS
 
@@ -1524,7 +1524,7 @@ DREAM
 SKILLIFY
 
 exec
-/bin/zsh -lc 'total=$(grep -c '"'"'^### '"' .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '{s+="'$2}END{print s+0}'"'); has_layers="'$(test -d .tad/project-knowledge/patterns && echo 1 || echo 0); max_file=$(grep -rc '"'"'^### '"' .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); max_count="'$(echo "$max_file" | cut -d: -f2); max_name=$(basename "$(echo "$max_file" | cut -d: -f1)"); echo "TOTAL=$total"; echo "HAS_LAYERS=$has_layers"; echo "MAX_FILE=$max_name"; echo "MAX_COUNT=${max_count:-0}"' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'total=$(grep -c '"'"'^### '"' .tad/project-knowledge/{architecture,code-quality,security,frontend-design}.md 2>/dev/null | awk -F: '{s+="'$2}END{print s+0}'"'); has_layers="'$(test -d .tad/project-knowledge/patterns && echo 1 || echo 0); max_file=$(grep -rc '"'"'^### '"' .tad/project-knowledge/*.md 2>/dev/null | grep -v README | sort -t: -k2 -rn | head -1); max_count="'$(echo "$max_file" | cut -d: -f2); max_name=$(basename "$(echo "$max_file" | cut -d: -f1)"); echo "TOTAL=$total"; echo "HAS_LAYERS=$has_layers"; echo "MAX_FILE=$max_name"; echo "MAX_COUNT=${max_count:-0}"' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 zsh:1: no matches found: .tad/project-knowledge/*.md
 TOTAL=0
@@ -1535,13 +1535,13 @@ MAX_COUNT=0
 codex
 The sandbox is minimal: no active handoffs, epics, or candidate queues, and the knowledge area is effectively empty. I’m checking the actual working tree layout now so the handoff can reference real paths and a sensible default file placement.
 exec
-/bin/zsh -lc "find . -maxdepth 3 -type d | sort | sed -n '1,200p'" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc "find . -maxdepth 3 -type d | sort | sed -n '1,200p'" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 .
 ./evidence
 
 exec
-/bin/zsh -lc 'rg --files .' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'rg --files .' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 ./T1-alex-prompt-strict.txt
 ./T1-alex-output-strict.txt

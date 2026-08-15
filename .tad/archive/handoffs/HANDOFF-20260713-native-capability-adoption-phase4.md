@@ -543,7 +543,7 @@ Blake的实现被认为完成，当且仅当：
 ## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
 
 > Pipe-escape note: `\|` in table cells → un-escape to `|` when running.
-> 所有路径相对 repo root: /Users/sheldonzhao/01-on progress programs/TAD
+> 所有路径相对 repo root: /path/to/TAD
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|

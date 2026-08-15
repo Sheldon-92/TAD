@@ -56,7 +56,7 @@ gate4_delta: []
 
 §9.1 表头定义（每行沿用）：
 ```
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 D="$R/.tad/evidence/designs/discipline-inventory"
 ```
 
@@ -253,7 +253,7 @@ Phase D  AC7 形状盲区 reviewer → shape-blindspot-review.md
 ### Step 0 —— T=0 基线（必做，30 秒）
 
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 D="$R/.tad/evidence/designs/discipline-inventory"
 mkdir -p "$D"
 git -C "$R" status --porcelain > "$D/git-baseline-t0.txt"
@@ -289,7 +289,7 @@ test -s "$D/git-baseline-t0.txt" && echo "T0-OK"
 
 5. 对**每一条**纪律，先定 3 个检索关键词，再跑**逐字模板**：
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 for kw in "<kw1>" "<kw2>" "<kw3>"; do
   for corpus in "$R/.tad/project-knowledge/principles.md" \
                 "$R/.tad/project-knowledge/patterns" \
@@ -438,7 +438,7 @@ grep: true: No such file or directory
 #### 验证命令（⚠️ 复制这里，不要复制上表）
 
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 D="$R/.tad/evidence/designs/discipline-inventory"
 
 # V1  AC1 三来源枚举

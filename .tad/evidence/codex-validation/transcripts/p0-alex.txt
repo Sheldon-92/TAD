@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
@@ -1368,7 +1368,7 @@ next_md_rules:
 codex
 Activating Alex now. I’ll load the Codex Alex skill and TAD config, then do the read-only startup checks before showing the menu.
 exec
-/bin/zsh -lc "wc -l .tad/codex/codex-alex-skill.md && sed -n '1,999p' .tad/codex/codex-alex-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "wc -l .tad/codex/codex-alex-skill.md && sed -n '1,999p' .tad/codex/codex-alex-skill.md" in /path/to/TAD
  succeeded in 0ms:
     1350 .tad/codex/codex-alex-skill.md
 # Agent A - Alex (Solution Lead) — Codex Edition
@@ -2374,7 +2374,7 @@ acceptance_protocol:
 codex
 The Alex skill is loaded through the main protocol body. I’m reading the remaining tail now, then I’ll load the project config and health files.
 exec
-/bin/zsh -lc "sed -n '1000,1400p' .tad/codex/codex-alex-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1000,1400p' .tad/codex/codex-alex-skill.md" in /path/to/TAD
  succeeded in 0ms:
         Rubber-stamping Blake's summary = VIOLATION.
 
@@ -2729,7 +2729,7 @@ next_md_rules:
 ```
 
 exec
-/bin/zsh -lc "printf 'CONFIG_FILES\\n'; ls .tad/config*.yaml 2>/dev/null; printf 'ROADMAP\\n'; test -f ROADMAP.md && printf 'ROADMAP.md exists\\n' || printf 'ROADMAP.md missing\\n'; printf 'HEALTH_FILES\\n'; test -f NEXT.md && printf 'NEXT.md exists\\n' || printf 'NEXT.md missing\\n'; test -d .tad/active/handoffs && find .tad/active/handoffs -maxdepth 1 -type f -name 'HANDOFF-*' -print | sort || true; test -f .tad/pair-testing/SESSIONS.yaml && printf '.tad/pair-testing/SESSIONS.yaml exists\\n' || printf '.tad/pair-testing/SESSIONS.yaml missing\\n'; test -f .tad/active/session-state.md && printf '.tad/active/session-state.md exists\\n' || printf '.tad/active/session-state.md missing\\n'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "printf 'CONFIG_FILES\\n'; ls .tad/config*.yaml 2>/dev/null; printf 'ROADMAP\\n'; test -f ROADMAP.md && printf 'ROADMAP.md exists\\n' || printf 'ROADMAP.md missing\\n'; printf 'HEALTH_FILES\\n'; test -f NEXT.md && printf 'NEXT.md exists\\n' || printf 'NEXT.md missing\\n'; test -d .tad/active/handoffs && find .tad/active/handoffs -maxdepth 1 -type f -name 'HANDOFF-*' -print | sort || true; test -f .tad/pair-testing/SESSIONS.yaml && printf '.tad/pair-testing/SESSIONS.yaml exists\\n' || printf '.tad/pair-testing/SESSIONS.yaml missing\\n'; test -f .tad/active/session-state.md && printf '.tad/active/session-state.md exists\\n' || printf '.tad/active/session-state.md missing\\n'" in /path/to/TAD
  succeeded in 0ms:
 CONFIG_FILES
 .tad/config-agents.yaml
@@ -2750,9 +2750,9 @@ NEXT.md exists
 codex
 Startup files are present: `ROADMAP.md`, `NEXT.md`, one active handoff, and `session-state.md`; no pair-testing sessions file was found. I’m loading the config modules and reading the health files read-only now.
 exec
-/bin/zsh -lc "sed -n '1,240p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' .tad/config.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Configuration v2.24.0 - Triple-Question KA
 method: TAD
@@ -3258,7 +3258,7 @@ human_role_v13:
         - "测试通过了吗？"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -3522,7 +3522,7 @@ quality_gates:
     matrix:
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Workflow & Document Management
 # Part of TAD config.yaml modular split (v2.2)
@@ -3786,7 +3786,7 @@ pair_testing:
       P0: "Create immediate handoff"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -4029,7 +4029,7 @@ important_notes:
 codex
 The required config modules are loaded. Some module outputs are longer than the preview window, so I’m doing targeted tail reads for the remaining sections plus `ROADMAP.md`, `NEXT.md`, and session state.
 exec
-/bin/zsh -lc "sed -n '261,999p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,999p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
       test-runner:
         gate3: "Required (Layer 2)"
@@ -4538,7 +4538,7 @@ template_triggers:
 
 
 exec
-/bin/zsh -lc "sed -n '261,999p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,999p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
         - "UI显示正确吗？"
       decision: "继续→下个Phase / 调整→修改本Phase"
@@ -4624,7 +4624,7 @@ agent_teams:
     shared_config_reserved_for_lead: true
 
 exec
-/bin/zsh -lc "sed -n '261,999p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,999p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
       P1: "Create handoff"
       P2: "Add to NEXT.md"
@@ -5162,7 +5162,7 @@ research_notebook:
 
 
 exec
-/bin/zsh -lc "sed -n '1,260p' NEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' NEXT.md" in /path/to/TAD
  succeeded in 0ms:
 # Next Steps
 
@@ -5426,7 +5426,7 @@ From html-anything research (2026-05-27):
   - Commit: 9993ce7
 
 exec
-/bin/zsh -lc "sed -n '1,260p' ROADMAP.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' ROADMAP.md" in /path/to/TAD
  succeeded in 0ms:
 # Roadmap
 
@@ -5498,7 +5498,7 @@ All 6 phases: Session Hook Spike (pivot), Spec Compliance, Anti-Rationalization,
 Codex/Gemini removed as full TAD runtimes (~1100 lines), repositioned as specialized tools. Superseded by Codex CLI Adaptation (v2.9.0).
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/active/session-state.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/active/session-state.md" in /path/to/TAD
  succeeded in 0ms:
 # TAD Session State
 <!-- Auto-maintained by TAD agents. See .tad/templates/session-state-template.md -->

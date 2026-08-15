@@ -290,7 +290,7 @@ Phase 1 spike-hook.sh 已经做了 90% 的工作 — 你只需要把 hardcoded m
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/userprompt-domain-router.sh'"
+            "command": "bash '/path/to/TAD/.tad/hooks/userprompt-domain-router.sh'"
           }
         ]
       }

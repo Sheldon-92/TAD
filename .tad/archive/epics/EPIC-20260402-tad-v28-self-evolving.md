@@ -44,7 +44,7 @@
 ## Context for Next Phase
 
 ### Research Assets（已有）
-- DeerFlow 源码: `/Users/sheldonzhao/01-on progress programs/references/deer-flow/`
+- DeerFlow 源码: `/path/to/references/deer-flow/`
 - Meta-Harness 源码: `.../references/meta-harness-tbench2-artifact/`
 - EvoAgentX 源码: `.../references/EvoAgentX/`
 - AutoHarness 源码: `.../references/AutoHarness/`
@@ -72,4 +72,4 @@ Phase 0: 深度读 5 个克隆的源码项目，提取：
 
 ## Notes
 - 这是 TAD 的第三次重大升级（v2.0 Ralph Loop → v2.7 Hook 架构 → v2.8 自我进化）
-- 参考源码已克隆到 /Users/sheldonzhao/01-on progress programs/references/
+- 参考源码已克隆到 /path/to/references/

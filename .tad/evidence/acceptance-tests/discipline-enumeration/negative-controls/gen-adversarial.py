@@ -3,7 +3,7 @@
 # Each table is realistic in every column EXCEPT the single dimension the claimed
 # guard is supposed to catch, so the interception point stays unambiguous.
 import sys, subprocess, re
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-enumeration"
 NC = f"{EV}/negative-controls"
 WIDE = open(f"{EV}/wide-markers.txt", encoding="utf-8").read().rstrip("\n")

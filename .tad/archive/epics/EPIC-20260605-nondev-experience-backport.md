@@ -121,7 +121,7 @@ Copy ai-podcast-production pack from Colin声音项目 to TAD main repo. Registe
 NOT in scope: Modifying pack content (copy as-is per user decision). NOT running *sync (separate operation).
 
 #### Input
-- /Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills/ai-podcast-production/ (complete pack)
+- /path/to/Downloads/Colin声音项目/.claude/skills/ai-podcast-production/ (complete pack)
 - Existing .tad/capability-packs/pack-registry.yaml
 
 #### Output

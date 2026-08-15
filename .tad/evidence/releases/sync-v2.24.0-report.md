@@ -1,7 +1,7 @@
 # TAD v2.24.0 Sync Report
 
 - **Date**: 2026-06-07
-- **Source**: `/Users/sheldonzhao/01-on progress programs/TAD` (version 2.24.0)
+- **Source**: `/path/to/TAD` (version 2.24.0)
 - **Targets**: 14 projects in `.tad/sync-registry.yaml`
 - **Script**: `.tad/evidence/releases/sync-v2.24.0.sh`
 - **Log**: `.tad/evidence/releases/sync-v2.24.0.log`

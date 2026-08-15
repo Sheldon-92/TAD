@@ -4,7 +4,7 @@ Model: harness=claude-code | model=deepseek-v4-flash | route=api.deepseek.com al
 
 **Role**: Layer 2 Group 0 blocking — §9.1 Spec Compliance Checklist（逐行实跑 Verification Method）
 **Date**: 2026-08-04
-**Repo**: /Users/sheldonzhao/01-on progress programs/TAD（main @ 80e49b3，改动未 commit）
+**Repo**: /path/to/TAD（main @ 80e49b3，改动未 commit）
 
 ---
 
@@ -76,7 +76,7 @@ AC3: assert1 exit=0 ; assert2 exit=0 ; c6=2 ; c5=0 ; c4=1
 $ bash .tad/hooks/lib/release-verify.sh parity --fix . 2>&1
 =========================================
 PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
-  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  REPO: /path/to/TAD
   MODE: --fix (will attempt auto-fix if claude-newer)
 =========================================
   ✅ .claude/skills <-> .agents/skills byte-identical
@@ -86,7 +86,7 @@ parity-fix exit=0
 $ bash .tad/hooks/lib/release-verify.sh parity . 2>&1
 =========================================
 PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
-  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  REPO: /path/to/TAD
 =========================================
   ✅ .claude/skills <-> .agents/skills byte-identical
 VERDICT: parity PASS (exit 0)

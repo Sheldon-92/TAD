@@ -88,7 +88,7 @@ Status and progress are computed from the Phase Map:
 - Phase 2: ai-agent-architecture.yaml v1.1.0，+4 steps, +8 quality_criteria, +1 anti_pattern, 18 OpenHarness refs。Commit f1af57e。
 
 ### Decisions Made So Far
-- OpenHarness 已 clone 到 /Users/sheldonzhao/01-on progress programs/OpenHarness/
+- OpenHarness 已 clone 到 /path/to/OpenHarness/
 - 10 个子系统的深度研究已在当前会话完成（Explore agent）
 - 优先级确认：Domain Pack > 参考文档 > TAD 迭代 > OpenClaw 迭代
 - 采用 Epic 模式分 3 阶段推进（用户确认）
@@ -106,5 +106,5 @@ Phase 3: 基于 Phase 1 的 TAD Mapping 差距表 + Phase 2 的改动过程，�
 
 ## Notes
 - 来源项目：https://github.com/HKUDS/OpenHarness (HKU Data Intelligence Lab)
-- 用户研究笔记：/Users/sheldonzhao/01-on progress programs/thoughts/discoveries/2026-04-03-openharness-final.md
-- 本地 clone：/Users/sheldonzhao/01-on progress programs/OpenHarness/
+- 用户研究笔记：/path/to/thoughts/discoveries/2026-04-03-openharness-final.md
+- 本地 clone：/path/to/OpenHarness/

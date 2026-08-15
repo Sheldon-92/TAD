@@ -477,7 +477,7 @@ Blake的实现被认为完成，当且仅当：
 
 ## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
 
-> 所有命令在仓库根 `/Users/sheldonzhao/01-on progress programs/TAD` 执行。
+> 所有命令在仓库根 `/path/to/TAD` 执行。
 > Pipe-escape note: 表格内 `\|` 提取到 bash 时须还原为 `|`。
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |

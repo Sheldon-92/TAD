@@ -82,7 +82,7 @@ Keep the existing `interim_rubric_source` line as a comment/provenance anchor (o
 
 ## 5. Verification Commands
 ```bash
-cd "/Users/sheldonzhao/01-on progress programs/TAD"
+cd "/path/to/TAD"
 SRC=.tad/capability-packs/product-thinking/references/pressure-test-rubric.md
 INST=.claude/skills/product-thinking/references/pressure-test-rubric.md
 test -f "$SRC" && test -f "$INST" && echo AC-files-exist

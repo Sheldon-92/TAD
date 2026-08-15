@@ -169,7 +169,7 @@ Codex CLI 全 TAD 可行性 Spike — 用 6 个测试验证 Codex 能否承担�
 **执行步骤**:
 1. 从 TAD 项目根目录启动 Codex:
    ```bash
-   cd "/Users/sheldonzhao/01-on progress programs/TAD"
+   cd "/path/to/TAD"
    codex --full-auto -c model="o4-mini" "Read ./CLAUDE.md and tell me the first heading"
    ```
 2. 如果成功 → 记录 "mechanism: file access OK in interactive mode"
@@ -184,7 +184,7 @@ Codex CLI 全 TAD 可行性 Spike — 用 6 个测试验证 Codex 能否承担�
 **Codex CLI 已验证的正确语法**:
 - 交互模式 (多轮): `codex --full-auto -c model="o4-mini"`
 - 非交互模式 (单次): `codex exec -m o4-mini "prompt"`
-- 工作目录: 必须从 TAD 项目根启动 (或用 `-C "/Users/sheldonzhao/01-on progress programs/TAD"`)
+- 工作目录: 必须从 TAD 项目根启动 (或用 `-C "/path/to/TAD"`)
 - 指令注入: `cat file.md | codex --full-auto "based on the instructions above, do X"` (stdin pipe)
 - 已存储的 Blake prompt: `~/.codex/prompts/tad_blake.md` (可用)
 
@@ -472,7 +472,7 @@ All paths above are relative to `.tad/evidence/spikes/SPIKE-20260501-codex-cli-f
 ### 10.2 Codex Session Management
 - **Blake tests (P0.2-P0.4): MUST use same session** (context retention is under test)
 - **Alex tests (P0.5-P0.7): MAY use separate sessions** (each tests an independent capability)
-- **Always launch from TAD project root**: `cd "/Users/sheldonzhao/01-on progress programs/TAD"`
+- **Always launch from TAD project root**: `cd "/path/to/TAD"`
 - Record the exact Codex invocation command used for each test
 - If Codex errors out, record the error as part of evidence (errors are data)
 

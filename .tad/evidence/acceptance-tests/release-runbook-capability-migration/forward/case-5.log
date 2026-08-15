@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.147.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.6-sol
 provider: openai
 approval: never
@@ -11,12 +11,12 @@ reasoning summaries: none
 session id: 019fe9c4-92e7-7143-90f9-a78d1a465f48
 --------
 user
-You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md
+You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /path/to/TAD/.claude/skills/release-runbook/SKILL.md
 
 Read the entry skill and only the reference it routes for this scenario. Do not read the active migration handoff, coverage TSV, test harness, other case outputs, or reviewer conclusions. Stay read-only. Never execute push, tag, publish, sync, registry writes, downstream writes, commits, or auto-healing. If a read-only command is appropriate, cite the exact command and observed result; do not claim a command ran when it did not.
 
 Scenario:
-Use $release-runbook to assess adding a project whose absolute fixture path is /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project, which has TAD installed and whose CLAUDE.md contains the merge marker. Explain the registration decision, but do not write the real registry.
+Use $release-runbook to assess adding a project whose absolute fixture path is /path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project, which has TAD installed and whose CLAUDE.md contains the merge marker. Explain the registration decision, but do not write the real registry.
 warning: Skill descriptions were shortened to fit the skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
 hook: SessionStart
 hook: SessionStart
@@ -25,7 +25,7 @@ hook: SessionStart Completed
 codex
 I’m using the requested `release-runbook` in read-only verification/assessment mode. I’ll read only its entry file and the routed sync/registration reference, then inspect only the fixture state needed for the registration decision; I will not read the excluded migration/testing artifacts or mutate the registry.
 exec
-/bin/zsh -lc "sed -n '1,240p' '.claude/skills/release-runbook/SKILL.md' && sed -n '1,320p' '.claude/skills/release-runbook/references/sync-ops.md'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' '.claude/skills/release-runbook/SKILL.md' && sed -n '1,320p' '.claude/skills/release-runbook/references/sync-ops.md'" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: release-runbook
@@ -358,7 +358,7 @@ case "$origin" in
   https://github.com/Sheldon-92/TAD|https://github.com/Sheldon-92/TAD.git|git@github.com:Sheldon-92/TAD.git|ssh://git@github.com/Sheldon-92/TAD.git) ;;
   *) exit 1 ;;
 esac
-fixture='"'/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'
+fixture='"'/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'
 fixture_parent="'$(dirname "$fixture")
 fixture_base=$(basename "$fixture")
 fixture_physical=$(cd "$fixture_parent" && cd "$fixture_base" && pwd -P) || exit 1
@@ -377,12 +377,12 @@ printf '"'agents_md_readable=%s\\n' \""'$([ -r "$fixture_physical/AGENTS.md" ] &
 printf '"'claude_skill_tree=%s\\n' \""'$([ -d "$fixture_physical/.claude/skills" ] && printf present || printf missing)"
 printf '"'agents_skill_tree=%s\\n' \""'$([ -d "$fixture_physical/.agents/skills" ] && printf present || printf missing)"
 printf '"'claude_marker_count=%s\\n' \""'$(grep -cF '"'<"'!-- TAD:PROJECT-CONTENT-BELOW -->'"' \""'$fixture_physical/CLAUDE.md")"
-printf '"'registry_exact_path_count=%s\\n' \""'$(grep -cF "$fixture_physical" "$repo_root/.tad/sync-registry.yaml")"' in /Users/sheldonzhao/01-on progress programs/TAD
+printf '"'registry_exact_path_count=%s\\n' \""'$(grep -cF "$fixture_physical" "$repo_root/.tad/sync-registry.yaml")"' in /path/to/TAD
  succeeded in 280ms:
-repo_root=/Users/sheldonzhao/01-on progress programs/TAD
-cwd_physical=/Users/sheldonzhao/01-on progress programs/TAD
+repo_root=/path/to/TAD
+cwd_physical=/path/to/TAD
 origin=https://github.com/Sheldon-92/TAD.git
-fixture_physical=/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project
+fixture_physical=/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project
 absolute=yes
 canonical_exact=yes
 target_readable=yes
@@ -397,7 +397,7 @@ claude_marker_count=1
 registry_exact_path_count=0
 
 exec
-/bin/zsh -lc "fixture='/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'
+/bin/zsh -lc "fixture='/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project'
 printf 'fixture_top_level_entries:\\n'
 find \""'$fixture" -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort
 printf '"'fixture_tad_top_level_files:\\n'
@@ -405,13 +405,13 @@ find \""'$fixture/.tad" -mindepth 1 -maxdepth 1 -type f -print | LC_ALL=C sort
 printf '"'marker_and_preserved_region:\\n'
 awk 'found {print NR \":\" "'$0} /<!-- TAD:PROJECT-CONTENT-BELOW -->/ {print NR ":" $0; found=1}'"' \""'$fixture/CLAUDE.md"
 printf '"'registry_platform_strategy_values:\\n'
-awk '/"'^[[:space:]]+platform:/ || /''^[[:space:]]+claude_md_strategy:/ {print}'"' '.tad/sync-registry.yaml' | LC_ALL=C sort -u" in /Users/sheldonzhao/01-on progress programs/TAD
+awk '/"'^[[:space:]]+platform:/ || /''^[[:space:]]+claude_md_strategy:/ {print}'"' '.tad/sync-registry.yaml' | LC_ALL=C sort -u" in /path/to/TAD
  succeeded in 0ms:
 fixture_top_level_entries:
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/.tad
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/CLAUDE.md
+/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/.tad
+/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/CLAUDE.md
 fixture_tad_top_level_files:
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/.tad/version.txt
+/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project/.tad/version.txt
 marker_and_preserved_region:
 3:<!-- TAD:PROJECT-CONTENT-BELOW -->
 4:
@@ -428,10 +428,10 @@ exec
   /"'^projects:/ {print; next}
   /''^  - / {if (++entries == 1) {print; capture=1; next} else {exit}}
   capture && /''^    [A-Za-z_]+:/ {print}
-'"' '.tad/sync-registry.yaml'" in /Users/sheldonzhao/01-on progress programs/TAD
+'"' '.tad/sync-registry.yaml'" in /path/to/TAD
  succeeded in 0ms:
 projects:
-  - path: "/Users/sheldonzhao/01-on progress programs/menu-snap"
+  - path: "/path/to/menu-snap"
     name: "menu-snap"
     platform: "both"
     claude_md_strategy: "overwrite"
@@ -444,7 +444,7 @@ Decision: the fixture is eligible for a proposed registration, using `merge`. Th
 Proposed entry:
 
 ```yaml
-- path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+- path: "/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
   name: "fixture-project"
   platform: "claude"
   claude_md_strategy: "merge"
@@ -461,7 +461,7 @@ Project-owned content that must be preserved.
 Read-only evidence:
 
 - The runbook’s exact source-identity guard completed with exit code `0`:
-  - root and physical working directory: `/Users/sheldonzhao/01-on progress programs/TAD`
+  - root and physical working directory: `/path/to/TAD`
   - origin: `https://github.com/Sheldon-92/TAD.git`
 - Physical-path resolution used:
 
@@ -505,7 +505,7 @@ Decision: the fixture is eligible for a proposed registration, using `merge`. Th
 Proposed entry:
 
 ```yaml
-- path: "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
+- path: "/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
   name: "fixture-project"
   platform: "claude"
   claude_md_strategy: "merge"
@@ -522,7 +522,7 @@ Project-owned content that must be preserved.
 Read-only evidence:
 
 - The runbook’s exact source-identity guard completed with exit code `0`:
-  - root and physical working directory: `/Users/sheldonzhao/01-on progress programs/TAD`
+  - root and physical working directory: `/path/to/TAD`
   - origin: `https://github.com/Sheldon-92/TAD.git`
 - Physical-path resolution used:
 

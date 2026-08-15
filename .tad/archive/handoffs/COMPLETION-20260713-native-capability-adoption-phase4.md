@@ -2,8 +2,8 @@
 
 **Handoff**: `.tad/active/handoffs/HANDOFF-20260713-native-capability-adoption-phase4.md`
 (NOTE: handoff lives in the MAIN working dir — `.tad/active/` is untracked and does not
-propagate into worktrees; read from `/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/`)
-**Worktree**: `/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_0019f033-1ce-1`
+propagate into worktrees; read from `/path/to/TAD/.tad/active/handoffs/`)
+**Worktree**: `/path/to/TAD/.claude/worktrees/wf_0019f033-1ce-1`
 **Date**: 2026-07-13 | **Executor**: Blake (YOLO Phase 4) | **Task**: TASK-20260713-004
 
 ## Blake understanding declaration (handoff §1.3)

@@ -165,7 +165,7 @@ With:
 
 ## 5. Verification Commands (run after edit)
 ```bash
-cd "/Users/sheldonzhao/01-on progress programs/TAD"
+cd "/path/to/TAD"
 # AC1: guard supported-list line present (P1 fix: grep the supported: line directly, not -A1)
 grep -q 'supported: \[weighted, categorical, checklist\]' .claude/skills/gate/SKILL.md && echo AC1-OK
 # AC2: weighted ladder line still present verbatim

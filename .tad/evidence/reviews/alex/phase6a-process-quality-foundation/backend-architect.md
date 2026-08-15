@@ -277,4 +277,4 @@ The handoff's weakest point: **the asymmetry between the FR1 step1d block (5-ite
 
 ---
 
-**File:** /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/reviews/alex/phase6a-process-quality-foundation/backend-architect.md
+**File:** /path/to/TAD/.tad/evidence/reviews/alex/phase6a-process-quality-foundation/backend-architect.md

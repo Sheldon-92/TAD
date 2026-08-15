@@ -5,7 +5,7 @@
 - `.mcp.json` created at repo root (project-scoped)
 - Server name: `ldr-mcp`
 - Transport: STDIO (command-based, no url/port)
-- Command: `/Users/sheldonzhao/.tad-ldr-venv/bin/ldr-mcp`
+- Command: `/path/to/.tad-ldr-venv/bin/ldr-mcp`
 - API key: `${LDR_API_KEY}` reference (not literal)
 
 ## AC3a Verification
@@ -22,7 +22,7 @@ grep -c literal-key .mcp.json → 0 ✅
 In-session equivalent verification performed instead:
 
 ### STDIO smoke test attempt
-- Command: `ldr-mcp` entry point confirmed at `/Users/sheldonzhao/.tad-ldr-venv/bin/ldr-mcp`
+- Command: `ldr-mcp` entry point confirmed at `/path/to/.tad-ldr-venv/bin/ldr-mcp`
 - Entry point imports `local_deep_research.mcp.server:run_server`
 - `run_server()` calls `mcp.run(transport="stdio")` — standard MCP STDIO transport
 - Server module defines tools: `quick_research`, `detailed_research`, `generate_report` (confirmed by source inspection of server.py)

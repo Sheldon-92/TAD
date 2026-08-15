@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # AC11 三负控（逐条单独跑）：任一负控为绿 = 该 AC 永真 → 停下退回 Alex
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/activation-ondemand"
 NC="$EV/negative-controls"; mkdir -p "$NC"
 HB=".tad/active/handoffs/HANDOFF-20260817-activation-ondemand"
@@ -13,7 +13,7 @@ mkcopy(){ # outfile python_pins_selector(pid -> new|old|skip)
   local out="$1"
   SELECTOR="$2" OUT="$out" python3 - <<'PY'
 import os, subprocess
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 T0 = open(f"{R}/.tad/evidence/acceptance-tests/activation-ondemand/t0.txt").read().strip()
 HB = ".tad/active/handoffs/HANDOFF-20260817-activation-ondemand"
 pins = []
@@ -48,7 +48,7 @@ ac1_check(){ # file -> 0 if PASS(每 NEW 恰1 / 每 OLD 0)
 mkcopy "$NC/nc-a-half.tsv" "s"
 python3 - <<'PY'
 import os
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 EV = f"{R}/.tad/evidence/acceptance-tests/activation-ondemand"
 NC = f"{EV}/negative-controls"
 p = f"{NC}/nc-a-half.tsv"
@@ -68,7 +68,7 @@ else echo "NC OK: AC1 half-pins (red via AC1)"; fi
 mkcopy "$NC/nc-b-noss.tsv" "n"
 python3 - <<'PY'
 import os
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 NC = f"{R}/.tad/evidence/acceptance-tests/activation-ondemand/negative-controls"
 p = f"{NC}/nc-b-noss.tsv"
 s = open(p, encoding="utf-8").read()
@@ -83,7 +83,7 @@ else echo "NC OK: AC3 session-state (red via AC3)"; fi
 mkcopy "$NC/nc-c-revert6.tsv" "n"
 python3 - <<'PY'
 import os
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 NC = f"{R}/.tad/evidence/acceptance-tests/activation-ondemand/negative-controls"
 p = f"{NC}/nc-c-revert6.tsv"
 s = open(p, encoding="utf-8").read()

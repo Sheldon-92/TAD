@@ -4,7 +4,7 @@
 
 ## Scope
 
-Re-reviewed `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/designs/dual-platform-native-runtime-architecture.md` (389 lines) to verify 5 P1 fixes from Round 1.
+Re-reviewed `/path/to/TAD/.tad/evidence/designs/dual-platform-native-runtime-architecture.md` (389 lines) to verify 5 P1 fixes from Round 1.
 
 Cross-referenced: `AGENTS.md` L65-72 (Codex-Specific Notes section).
 

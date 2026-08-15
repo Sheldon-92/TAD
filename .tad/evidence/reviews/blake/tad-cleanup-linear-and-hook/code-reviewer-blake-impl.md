@@ -117,7 +117,7 @@ The deprecation.yaml note correctly enumerates all 7 affected files (more compre
 ## Appendix: Commands run for re-verification
 
 ```bash
-cd "/Users/sheldonzhao/01-on progress programs/TAD"
+cd "/path/to/TAD"
 
 # AC1-9, AC12-15 grep batch (output above)
 grep -c "STEP 3.7" .claude/skills/alex/SKILL.md

@@ -48,10 +48,10 @@
       "density": 1.2,
       "cost_rationale": "Read-only trace analysis across 56 JSONL trace files; no code changes; single output report.",
       "value_rationale": "O1/KR3 explicitly lists 'gate-ROI unproven' as a new gap; also advances O2/KR1 by producing evidence-grounded upgrade direction (mechanical vs soft enforcement). Without this measurement TAD's core quality positioning remains rhetorical per the repositioning-3-walls research verdict.",
-      "deliverable": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/gate-roi-measurement-2026-07.md — analysis of ≥20 handoffs, defect classification table, counterfactual verdict, and a go/no-go recommendation on investing in mechanical gate enforcement",
+      "deliverable": "/path/to/TAD/.tad/evidence/research/gate-roi-measurement-2026-07.md — analysis of ≥20 handoffs, defect classification table, counterfactual verdict, and a go/no-go recommendation on investing in mechanical gate enforcement",
       "target_paths": [
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/gate-roi-measurement-2026-07.md",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/"
+        "/path/to/TAD/.tad/evidence/research/gate-roi-measurement-2026-07.md",
+        "/path/to/TAD/.tad/evidence/traces/"
       ],
       "safety_flag": true,
       "risk_tag": "needs-human",
@@ -70,10 +70,10 @@
       "density": 1.0933333333333333,
       "cost_rationale": "Two NotebookLM query sessions plus write-up; no code changes; builds on existing 45-source notebook.",
       "value_rationale": "Directly closes O3/KR3 (stalled at 3/5 rounds since May) and simultaneously advances O1/KR3 (the two named gaps each map to an O1 capability gap requiring severity assessment).",
-      "deliverable": "Two research findings files: /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/2026-07-staleness-trap-findings.md and /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/2026-07-human-skill-growth-findings.md — each with ≥3 cross-source synthesis points and citations. Together these bring O3/KR3 from 3 to 5 rounds (status: DONE).",
+      "deliverable": "Two research findings files: /path/to/TAD/.tad/evidence/research/2026-07-staleness-trap-findings.md and /path/to/TAD/.tad/evidence/research/2026-07-human-skill-growth-findings.md — each with ≥3 cross-source synthesis points and citations. Together these bring O3/KR3 from 3 to 5 rounds (status: DONE).",
       "target_paths": [
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/2026-07-staleness-trap-findings.md",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/2026-07-human-skill-growth-findings.md"
+        "/path/to/TAD/.tad/evidence/research/2026-07-staleness-trap-findings.md",
+        "/path/to/TAD/.tad/evidence/research/2026-07-human-skill-growth-findings.md"
       ],
       "safety_flag": true,
       "risk_tag": "needs-human",
@@ -92,13 +92,13 @@
       "density": 0.39,
       "cost_rationale": "Multiple new files across 3 packs plus a new verifier script and a gate/SKILL.md modification that touches SAFETY zones; L-class scope.",
       "value_rationale": "O2/KR1 explicitly lists behavioral eval as an upgrade direction (rank #3 in 2026-05-14 prioritization matrix); closes the 'validation theater' P0 from cross-model audit (YOLO Audit Findings principle); the pattern is proven from html-anything evidence.",
-      "deliverable": "examples/ directory with 2 input/output fixture pairs in each of 3 packs (ai-agent-architecture, web-frontend, code-security); /Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/pack-eval.sh running fixtures and checking expected output markers; Gate 3 checklist item 'examples/ present and passing pack-eval.sh' added to gate/SKILL.md",
+      "deliverable": "examples/ directory with 2 input/output fixture pairs in each of 3 packs (ai-agent-architecture, web-frontend, code-security); /path/to/TAD/.tad/hooks/lib/pack-eval.sh running fixtures and checking expected output markers; Gate 3 checklist item 'examples/ present and passing pack-eval.sh' added to gate/SKILL.md",
       "target_paths": [
-        "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-agent-architecture/",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/web-frontend/",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/code-security/",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/pack-eval.sh",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/gate/SKILL.md"
+        "/path/to/TAD/.claude/skills/ai-agent-architecture/",
+        "/path/to/TAD/.claude/skills/web-frontend/",
+        "/path/to/TAD/.claude/skills/code-security/",
+        "/path/to/TAD/.tad/hooks/lib/pack-eval.sh",
+        "/path/to/TAD/.claude/skills/gate/SKILL.md"
       ],
       "safety_flag": true,
       "risk_tag": "needs-human",
@@ -386,11 +386,11 @@
       "density": 0.73,
       "cost_rationale": "2-3 files modified (both agent SKILLs are SAFETY-adjacent); 1 new template; moderate complexity.",
       "value_rationale": "O2/KR1 lists 'candidate upgrade directions extracted from research' — workflow capture closure is a concrete direction from the 2026-06-03 dynamic-workflow research; the idea was explicitly labeled HIGH priority by the user in the idea file, but it has never moved past 'promoted'.",
-      "deliverable": "alex/SKILL.md and blake/SKILL.md updated to include Q3 at all 7 identified KA trigger points; /Users/sheldonzhao/01-on progress programs/TAD/.tad/templates/workflow-candidate-template.md (WCAND-*.md format); smoke test showing Q3 prompt fires correctly in a *discuss session exit KA",
+      "deliverable": "alex/SKILL.md and blake/SKILL.md updated to include Q3 at all 7 identified KA trigger points; /path/to/TAD/.tad/templates/workflow-candidate-template.md (WCAND-*.md format); smoke test showing Q3 prompt fires correctly in a *discuss session exit KA",
       "target_paths": [
-        "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/SKILL.md",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/blake/SKILL.md",
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/templates/workflow-candidate-template.md"
+        "/path/to/TAD/.claude/skills/alex/SKILL.md",
+        "/path/to/TAD/.claude/skills/blake/SKILL.md",
+        "/path/to/TAD/.tad/templates/workflow-candidate-template.md"
       ],
       "safety_flag": true,
       "risk_tag": "needs-human",
@@ -520,9 +520,9 @@
       "density": 0.67,
       "cost_rationale": "Read-only analysis of 25 SKILL.md files; single output report; no code changes.",
       "value_rationale": "O1/KR3 requires capability gaps identified with severity — the judgment-vs-MCP boundary is a concrete architectural gap that the 2026-06-23 AI Tinkerers Maestro research surfaced; the audit either confirms MCP investment is warranted or formally closes the question with evidence.",
-      "deliverable": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/mcp-skill-boundary-audit-2026-07.md — per-pack classification table (25 packs), top 3 MCP conversion candidates with ROI estimate, and a 1-page decision record (invest / defer / reject) grounded in the single-user CLI L1 principle",
+      "deliverable": "/path/to/TAD/.tad/evidence/research/mcp-skill-boundary-audit-2026-07.md — per-pack classification table (25 packs), top 3 MCP conversion candidates with ROI estimate, and a 1-page decision record (invest / defer / reject) grounded in the single-user CLI L1 principle",
       "target_paths": [
-        "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/research/mcp-skill-boundary-audit-2026-07.md"
+        "/path/to/TAD/.tad/evidence/research/mcp-skill-boundary-audit-2026-07.md"
       ],
       "safety_flag": true,
       "risk_tag": "needs-human",

@@ -1,7 +1,7 @@
 =========================================
 PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
-  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
-  TARGET: /Users/sheldonzhao/01-on progress programs/TAD
+  SOURCE: /path/to/TAD
+  TARGET: /path/to/TAD
 =========================================
   ✅ _archived symmetric
   ✅ academic-research symmetric

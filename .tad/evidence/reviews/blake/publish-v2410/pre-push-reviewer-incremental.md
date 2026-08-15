@@ -58,7 +58,7 @@ AC11: FAIL: 目标 #1 元组变化
 
 ### P2-1..P2-7（首轮遗留，非本单范围，未修不阻塞）
 
-- P2-1 路径泄露仍在（基线 893 行 `derived from /Users/sheldonzhao/…`）；P2-2 账本 run-local-acs 仍 partial；P2-3/4/6/7 文案/死代码未变。均不阻塞。
+- P2-1 路径泄露仍在（基线 893 行 `derived from /path/to/…`）；P2-2 账本 run-local-acs 仍 partial；P2-3/4/6/7 文案/死代码未变。均不阻塞。
 
 ---
 

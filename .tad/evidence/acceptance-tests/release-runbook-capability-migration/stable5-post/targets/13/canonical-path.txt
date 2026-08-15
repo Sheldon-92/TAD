@@ -1,1 +1,1 @@
-/Users/sheldonzhao/01-on progress programs/Monica-website
+/path/to/Monica-website

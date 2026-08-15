@@ -737,7 +737,7 @@ Blake's implementation is complete when:
 ### 10.2 Known Constraints
 
 - **Bash 3.2 on macOS**: No associative arrays, no `grep -P`, no `readarray`. All code must be bash 3.2 compatible.
-- **Repo path contains spaces**: The TAD repo lives at `/Users/sheldonzhao/01-on progress programs/TAD`. All path variables must be properly quoted.
+- **Repo path contains spaces**: The TAD repo lives at `/path/to/TAD`. All path variables must be properly quoted.
 - **YAML without yq**: Manifest cross-referencing uses grep -F, not a YAML parser. This is intentionally approximate (smoke alarm).
 - **No jq dependency**: NFR4 prohibits adding new tool dependencies.
 

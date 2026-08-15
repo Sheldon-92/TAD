@@ -299,7 +299,7 @@ P0 修复后 spawn **1 个 fresh `code-reviewer`**（不复用首轮 reviewer，
 
 **Step 0（动手前第一件事）**
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/review-scaling"; mkdir -p "$EV/fixtures"
 T0=47918da
 git -C "$R" rev-parse --verify --quiet "$T0^{commit}" >/dev/null || { echo "RESULT=FAIL (T0 无效)"; exit 1; }
@@ -326,7 +326,7 @@ echo "Step 0 OK: baseline=$(wc -l < "$EV/fence-baseline.txt") lines, verify.sh �
 **验证脚本**
 ```bash
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/review-scaling"
 T0=47918da
 B1="$R/.claude/skills/blake-lite/SKILL.md"; B2="$R/.agents/skills/blake-lite/SKILL.md"

@@ -3,7 +3,7 @@
 - **Epic**: EPIC-20260712-native-capability-adoption (Phase 2/4)
 - **Handoff**: `.tad/active/handoffs/HANDOFF-20260713-native-capability-adoption-phase2.md` (read from main working dir; file is untracked there and thus not visible inside the worktree)
 - **Blake execution date**: 2026-07-13
-- **Worktree**: `/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_f91fb5e4-5de-1`
+- **Worktree**: `/path/to/TAD/.claude/worktrees/wf_f91fb5e4-5de-1`
 - **Phase status**: **DEGRADED (honest partial)** — spike gated out the two headline features; unconditional deliverables shipped; zero silent drops.
 
 ## Blake understanding confirmation (Intent §1.3)

@@ -172,7 +172,7 @@ fi
 
 ```yaml
 projects:
-  - path: "/Users/sheldonzhao/01-on progress programs/menu-snap"
+  - path: "/path/to/menu-snap"
     name: "menu-snap"
     platform: "claude-code"    # 新增字段
     claude_md_strategy: "overwrite"

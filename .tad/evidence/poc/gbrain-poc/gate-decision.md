@@ -50,7 +50,7 @@ Q2 worked because "allow-list" and "deny-list" are EXACT KEYWORDS used consisten
 | Import errors | 0 |
 | Files skipped | 4 (frontmatter slug conflicts) |
 | Search mode | conservative (no LLM expansion) |
-| DB path | /Users/sheldonzhao/.gbrain/brain.pglite |
+| DB path | /path/to/.gbrain/brain.pglite |
 | Install path | ~/.gbrain-poc/node_modules/.bin/gbrain |
 
 ### Deviation from Handoff

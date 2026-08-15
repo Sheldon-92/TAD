@@ -18,7 +18,7 @@ Expected exit:
 
 Live result (from this Phase 3 implementation):
 ───────────────────────────────────────────────────────────────
-$ cd "/Users/sheldonzhao/01-on progress programs/TAD"
+$ cd "/path/to/TAD"
 $ grep -A 30 'express_path_protocol:' .claude/skills/alex/SKILL.md \
     | grep -c 'expert review.*code-reviewer\|code-reviewer.*expert review'
 

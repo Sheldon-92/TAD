@@ -4,11 +4,11 @@
 **Date**: 2026-04-24
 **Scope**: TAD Phase 2 — stale-knowledge-check.sh + Alex step1c grounding + README/template updates
 **Files reviewed**:
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/stale-knowledge-check.sh` (282 lines, NEW)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/SKILL.md` (+63 lines, step0_5 #9 + step1c)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/project-knowledge/README.md` (+47 lines)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/templates/handoff-a-to-b.md` (+18 lines, §7.3)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/phase2-grounding/AC-P2.{1,2}*.sh`
+- `/path/to/TAD/.tad/hooks/lib/stale-knowledge-check.sh` (282 lines, NEW)
+- `/path/to/TAD/.claude/skills/alex/SKILL.md` (+63 lines, step0_5 #9 + step1c)
+- `/path/to/TAD/.tad/project-knowledge/README.md` (+47 lines)
+- `/path/to/TAD/.tad/templates/handoff-a-to-b.md` (+18 lines, §7.3)
+- `/path/to/TAD/.tad/evidence/acceptance-tests/phase2-grounding/AC-P2.{1,2}*.sh`
 
 ---
 

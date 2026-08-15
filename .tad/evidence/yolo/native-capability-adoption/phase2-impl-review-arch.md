@@ -4,7 +4,7 @@
 - **Handoff**: HANDOFF-20260713-native-capability-adoption-phase2.md
 - **Commit**: 8b6f0a5 (`feat(native-capability-adoption): Subagent frontmatter upgrades ... [YOLO Phase 2]`)
 - **Reviewer lens**: backend/systems architecture — blast radius, completeness, degradation soundness
-- **Worktree**: /Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_f91fb5e4-5de-1
+- **Worktree**: /path/to/TAD/.claude/worktrees/wf_f91fb5e4-5de-1
 - **Verdict**: PASS (DEGRADED-as-designed). 0 P0, 0 P1, 3 P2.
 
 ---

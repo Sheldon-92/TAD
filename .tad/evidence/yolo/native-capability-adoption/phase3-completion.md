@@ -3,7 +3,7 @@
 **Handoff**: `.tad/active/handoffs/HANDOFF-20260713-native-capability-adoption-phase3.md`
 **Epic**: EPIC-20260712-native-capability-adoption.md (Phase 3/4)
 **Executed by**: Blake (YOLO Epic sub-agent), 2026-07-13
-**Worktree**: `/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_a4ff2d3f-9c0-3` (isolated; all paths below relative to this root)
+**Worktree**: `/path/to/TAD/.claude/worktrees/wf_a4ff2d3f-9c0-3` (isolated; all paths below relative to this root)
 
 ---
 

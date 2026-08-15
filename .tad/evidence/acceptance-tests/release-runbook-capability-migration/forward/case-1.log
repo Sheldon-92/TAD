@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.147.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.6-sol
 provider: openai
 approval: never
@@ -11,7 +11,7 @@ reasoning summaries: none
 session id: 019fe9c0-5828-78f3-a609-7b5837aee01d
 --------
 user
-You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md
+You are a fresh independent behavior-evaluation session. Use the release-runbook skill at: /path/to/TAD/.claude/skills/release-runbook/SKILL.md
 
 Read the entry skill and only the reference it routes for this scenario. Do not read the active migration handoff, coverage TSV, test harness, other case outputs, or reviewer conclusions. Stay read-only. Never execute push, tag, publish, sync, registry writes, downstream writes, commits, or auto-healing. If a read-only command is appropriate, cite the exact command and observed result; do not claim a command ran when it did not.
 
@@ -25,7 +25,7 @@ hook: SessionStart Completed
 codex
 I’m using the explicitly requested `release-runbook` in plan/verify-only mode. I’ll read its entry and publish reference, then run only the read-only preflight commands that reference authorizes; I will not inspect handoffs, coverage/harness artifacts, or perform any release mutation.
 exec
-/bin/zsh -lc "sed -n '1,260p' .claude/skills/release-runbook/SKILL.md && sed -n '1,360p' .claude/skills/release-runbook/references/publish-ops.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .claude/skills/release-runbook/SKILL.md && sed -n '1,360p' .claude/skills/release-runbook/references/publish-ops.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: release-runbook
@@ -331,10 +331,10 @@ case "$origin" in
   https://github.com/Sheldon-92/TAD|https://github.com/Sheldon-92/TAD.git|git@github.com:Sheldon-92/TAD.git|ssh://git@github.com/Sheldon-92/TAD.git) ;;
   *) exit 1 ;;
 esac
-printf '"'repo_root=%s\\ncwd_physical=%s\\norigin=%s\\n' \""'$repo_root" "$cwd_physical" "$origin"' in /Users/sheldonzhao/01-on progress programs/TAD
+printf '"'repo_root=%s\\ncwd_physical=%s\\norigin=%s\\n' \""'$repo_root" "$cwd_physical" "$origin"' in /path/to/TAD
  succeeded in 400ms:
-repo_root=/Users/sheldonzhao/01-on progress programs/TAD
-cwd_physical=/Users/sheldonzhao/01-on progress programs/TAD
+repo_root=/path/to/TAD
+cwd_physical=/path/to/TAD
 origin=https://github.com/Sheldon-92/TAD.git
 
 exec
@@ -344,17 +344,17 @@ case \""'$current_version" in
   [0-9]*.[0-9]*.[0-9]*) ;;
   *) exit 1 ;;
 esac
-printf '"'%s\\n' \""'$current_version"' in /Users/sheldonzhao/01-on progress programs/TAD
+printf '"'%s\\n' \""'$current_version"' in /path/to/TAD
  succeeded in 39ms:
 2.40.0
 
 exec
-/bin/zsh -lc "rg -n -C 2 '("'^|[''^0-9])v?2'"\\.41\\.0(["'^0-9]|$)'"' CHANGELOG.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg -n -C 2 '("'^|[''^0-9])v?2'"\\.41\\.0(["'^0-9]|$)'"' CHANGELOG.md" in /path/to/TAD
  exited 1 in 970ms:
 codex
 The requested target is a SemVer minor bump (`2.40.0 → 2.41.0`). The CHANGELOG lookup returned exit `1` with no match, so a `2.41.0` user-facing entry is currently missing. I’ll still finish the runbook’s read-only intent/scope inspection, then enter the formal gates in their mandated order and stop at the first gate blocker.
 exec
-/bin/zsh -lc 'git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "/path/to/TAD" status --short' in /path/to/TAD
  succeeded in 667ms:
  M .agents/skills/release-runbook/SKILL.md
  M .claude/skills/release-runbook/SKILL.md
@@ -393,14 +393,14 @@ exec
 ?? .tad/memory/feedback_cross-project-tracking-boundary.md
 
 exec
-/bin/zsh -lc 'git -C "/Users/sheldonzhao/01-on progress programs/TAD" log --oneline origin/main..HEAD' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "/path/to/TAD" log --oneline origin/main..HEAD' in /path/to/TAD
  succeeded in 205ms:
 e05a135 chore(tad): full 能力 inventory + Lite↔skill composition 契约 (Phase 1-2 决策底座)
 4116517 chore(tad): close v2.40 lite-first lifecycle
 ac0699f fix(installer): make remote version authoritative before no-op
 
 exec
-/bin/zsh -lc 'git -C "/Users/sheldonzhao/01-on progress programs/TAD" diff --stat' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git -C "/path/to/TAD" diff --stat' in /path/to/TAD
  succeeded in 94ms:
  .agents/skills/release-runbook/SKILL.md            | 554 ++++-----------------
  .claude/skills/release-runbook/SKILL.md            | 554 ++++-----------------
@@ -413,21 +413,21 @@ exec
 codex
 Scope inspection found three commits ahead of `origin/main` plus a large dirty/untracked set. Because this independent session is forbidden to inspect the task contract or those artifacts, I cannot establish that scope as intentional; it is therefore a publish blocker. The runbook still permits detect-only gates, so I’m starting the normative gate sequence at canonical parity and will stop on its first nonzero result.
 exec
-/bin/zsh -lc 'bash "/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/release-verify.sh" parity "/Users/sheldonzhao/01-on progress programs/TAD"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash "/path/to/TAD/.tad/hooks/lib/release-verify.sh" parity "/path/to/TAD"' in /path/to/TAD
 codex
 The parity verifier is still running; I’m waiting for that same read-only invocation to finish rather than launching anything else out of order.
  succeeded in 18775ms:
 =========================================
 PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)
-  REPO: /Users/sheldonzhao/01-on progress programs/TAD
+  REPO: /path/to/TAD
 =========================================
   ✅ .claude/skills <-> .agents/skills byte-identical
 VERDICT: parity PASS (exit 0)
 
 exec
-/bin/zsh -lc 'bash "/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/derive-sync-set.sh" --report "/Users/sheldonzhao/01-on progress programs/TAD"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash "/path/to/TAD/.tad/hooks/lib/derive-sync-set.sh" --report "/path/to/TAD"' in /path/to/TAD
  succeeded in 620ms:
-=== RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
+=== RELEASE SYNC SET (derived from /path/to/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
 
 --- A. ZERO-TOUCH (preserve target's own — NEVER sync) ---
   active
@@ -481,11 +481,11 @@ exec
   * per-release one-shot scripts → write to .tad/evidence/releases/ (zero-touch ⇒ not in the synced set).
 
 exec
-/bin/zsh -lc 'bash "/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/release-verify.sh" version "/Users/sheldonzhao/01-on progress programs/TAD" "2.41.0" "2.40.0"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'bash "/path/to/TAD/.tad/hooks/lib/release-verify.sh" version "/path/to/TAD" "2.41.0" "2.40.0"' in /path/to/TAD
  exited 1 in 5836ms:
 =========================================
 VERSION VERIFY (grep zero non-historical stale)
-  REPO:     /Users/sheldonzhao/01-on progress programs/TAD
+  REPO:     /path/to/TAD
   EXPECTED: 2.41.0
   OLD:      2.40.0
 =========================================
@@ -521,13 +521,13 @@ VERSION VERIFY (grep zero non-historical stale)
 VERDICT: version FAIL — 29 stale ref(s) (exit 1)
 
 codex
-TAD v2.41.0 is not publish-ready. I performed a read-only assessment using [release-runbook/SKILL.md](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md>) and only its routed [publish-ops.md](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/publish-ops.md>).
+TAD v2.41.0 is not publish-ready. I performed a read-only assessment using [release-runbook/SKILL.md](</path/to/TAD/.claude/skills/release-runbook/SKILL.md>) and only its routed [publish-ops.md](</path/to/TAD/.claude/skills/release-runbook/references/publish-ops.md>).
 
 No files were changed; no commits, pushes, tags, syncs, registry writes, or healing actions occurred.
 
 ### Preflight evidence
 
-All commands ran from `/Users/sheldonzhao/01-on progress programs/TAD`.
+All commands ran from `/path/to/TAD`.
 
 - Physical-root guard: exit `0`.
 
@@ -550,9 +550,9 @@ Observed root and physical CWD both matched the repository root; origin was `htt
 |---|---:|---|
 | `current_version=$(tr -d '\r\n' < .tad/version.txt)` plus SemVer validation | 0 | Current version `2.40.0`; requested `2.41.0` is a minor bump. |
 | `rg -n -C 2 '(^\|[^0-9])v?2\.41\.0([^0-9]\|$)' CHANGELOG.md` | 1 | No `2.41.0` CHANGELOG entry found. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short` | 0 | 6 modified and 29 untracked paths. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" log --oneline origin/main..HEAD` | 0 | Three commits ahead: `e05a135`, `4116517`, `ac0699f`. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" diff --stat` | 0 | 6 tracked files changed: 239 insertions, 917 deletions. |
+| `git -C "/path/to/TAD" status --short` | 0 | 6 modified and 29 untracked paths. |
+| `git -C "/path/to/TAD" log --oneline origin/main..HEAD` | 0 | Three commits ahead: `e05a135`, `4116517`, `ac0699f`. |
+| `git -C "/path/to/TAD" diff --stat` | 0 | 6 tracked files changed: 239 insertions, 917 deletions. |
 | `bash ".../.tad/hooks/lib/release-verify.sh" parity "$repo_root"` | 0 | Claude/Agents skill parity passed byte-identically. |
 | `bash ".../.tad/hooks/lib/derive-sync-set.sh" --report "$repo_root"` | 0 | Sync-set derivation reported successfully. |
 | `bash ".../.tad/hooks/lib/release-verify.sh" version "$repo_root" "2.41.0" "2.40.0"` | 1 | Failed with 29 stale `2.40.0` references. |
@@ -578,13 +578,13 @@ Per the runbook, I stopped at that first formal gate blocker. Therefore `version
 7. Execute and verify those actions individually in a separate authorized session.
 tokens used
 41,010
-TAD v2.41.0 is not publish-ready. I performed a read-only assessment using [release-runbook/SKILL.md](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md>) and only its routed [publish-ops.md](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/publish-ops.md>).
+TAD v2.41.0 is not publish-ready. I performed a read-only assessment using [release-runbook/SKILL.md](</path/to/TAD/.claude/skills/release-runbook/SKILL.md>) and only its routed [publish-ops.md](</path/to/TAD/.claude/skills/release-runbook/references/publish-ops.md>).
 
 No files were changed; no commits, pushes, tags, syncs, registry writes, or healing actions occurred.
 
 ### Preflight evidence
 
-All commands ran from `/Users/sheldonzhao/01-on progress programs/TAD`.
+All commands ran from `/path/to/TAD`.
 
 - Physical-root guard: exit `0`.
 
@@ -607,9 +607,9 @@ Observed root and physical CWD both matched the repository root; origin was `htt
 |---|---:|---|
 | `current_version=$(tr -d '\r\n' < .tad/version.txt)` plus SemVer validation | 0 | Current version `2.40.0`; requested `2.41.0` is a minor bump. |
 | `rg -n -C 2 '(^\|[^0-9])v?2\.41\.0([^0-9]\|$)' CHANGELOG.md` | 1 | No `2.41.0` CHANGELOG entry found. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short` | 0 | 6 modified and 29 untracked paths. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" log --oneline origin/main..HEAD` | 0 | Three commits ahead: `e05a135`, `4116517`, `ac0699f`. |
-| `git -C "/Users/sheldonzhao/01-on progress programs/TAD" diff --stat` | 0 | 6 tracked files changed: 239 insertions, 917 deletions. |
+| `git -C "/path/to/TAD" status --short` | 0 | 6 modified and 29 untracked paths. |
+| `git -C "/path/to/TAD" log --oneline origin/main..HEAD` | 0 | Three commits ahead: `e05a135`, `4116517`, `ac0699f`. |
+| `git -C "/path/to/TAD" diff --stat` | 0 | 6 tracked files changed: 239 insertions, 917 deletions. |
 | `bash ".../.tad/hooks/lib/release-verify.sh" parity "$repo_root"` | 0 | Claude/Agents skill parity passed byte-identically. |
 | `bash ".../.tad/hooks/lib/derive-sync-set.sh" --report "$repo_root"` | 0 | Sync-set derivation reported successfully. |
 | `bash ".../.tad/hooks/lib/release-verify.sh" version "$repo_root" "2.41.0" "2.40.0"` | 1 | Failed with 29 stale `2.40.0` references. |

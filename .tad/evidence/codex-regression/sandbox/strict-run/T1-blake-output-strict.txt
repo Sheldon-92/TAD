@@ -1,7 +1,7 @@
 Reading prompt from stdin...
 OpenAI Codex v0.138.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+workdir: /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
 model: gpt-5.4
 provider: openai
 approval: never
@@ -2066,7 +2066,7 @@ Implement the carrier task in the current working directory only. Produce local 
 codex
 按 Blake 模式执行这个 inline handoff。我先做激活要求里的只读检查：加载 TAD 配置、扫 `NEXT.md` 和 `.tad/active/handoffs/`、确认当前目录结构，然后直接进入实现。
 exec
-/bin/zsh -lc "ls -la . && printf '\\n-- handoffs --\\n' && ls -la .tad/active/handoffs 2>/dev/null || true && printf '\\n-- next --\\n' && ls -la NEXT.md 2>/dev/null || true" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc "ls -la . && printf '\\n-- handoffs --\\n' && ls -la .tad/active/handoffs 2>/dev/null || true && printf '\\n-- next --\\n' && ls -la NEXT.md 2>/dev/null || true" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 total 512
 drwxr-xr-x@ 7 sheldonzhao  staff     224 Jun  9 13:47 .
@@ -2084,7 +2084,7 @@ drwxr-xr-x@ 2 sheldonzhao  staff      64 Jun  9 13:41 evidence
 codex
 这个 sandbox 没有完整的 `.tad/` 目录，只有当前任务文件和 `evidence/`。我会按 handoff 的约束在当前目录内实现，并把本地 review/completion 产物写到已有的 `evidence/` 下。
 exec
-/bin/zsh -lc "sed -n '1,220p' HANDOFF-inline-strict.md" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc "sed -n '1,220p' HANDOFF-inline-strict.md" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 # Inline Handoff: to_upper Strict Sandbox
 
@@ -2132,10 +2132,10 @@ to_upper() {
 - Keep all artifacts in `./`
 
 exec
-/bin/zsh -lc 'find evidence -maxdepth 3 -type f | sort' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'find evidence -maxdepth 3 -type f | sort' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 exec
-/bin/zsh -lc 'git status --short' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'git status --short' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
  D ../../../../../.tad.backup.20260323_235534/CHANGELOG.md
  D ../../../../../.tad.backup.20260323_235534/README.md
@@ -4510,8 +4510,8 @@ codex
 实现很小，我直接落地两个脚本：一个严格走 `stdin -> stdout` 的 POSIX `sh` 工具，一个本地可执行测试脚本，覆盖 handoff 里的 5 条验收条件。
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/to_upper.sh
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/to_upper.sh
 diff --git a/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh b/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh
 new file mode 100644
 index 0000000000000000000000000000000000000000..576f495be528bb30f3ddf334e8032cec7805cb50
@@ -4642,7 +4642,7 @@ codex
 代码已经写好。现在跑 Layer 1 风格的本地检查：`sh -n` 语法检查、逐条验收命令、以及 `sh ./test_to_upper.sh`，确认输出和退出码都符合 handoff。
 exec
 /bin/zsh -lc "printf '' | ./to_upper.sh >/tmp/tad-empty-out && status="'$?; wc -c </tmp/tad-empty-out; printf '"'exit=%s
-' \""'$status"' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+' \""'$status"' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 zsh:1: permission denied: ./to_upper.sh
        0
@@ -4650,12 +4650,12 @@ exit=0
 
 exec
 /bin/zsh -lc "printf 'abc
-' | ./to_upper.sh | od -An -t x1" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+' | ./to_upper.sh | od -An -t x1" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 zsh:2: permission denied: ./to_upper.sh
 
 exec
-/bin/zsh -lc 'chmod +x to_upper.sh test_to_upper.sh && sh -n to_upper.sh && sh -n test_to_upper.sh' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'chmod +x to_upper.sh test_to_upper.sh && sh -n to_upper.sh && sh -n test_to_upper.sh' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 diff --git a/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh b/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh
 new file mode 100644
@@ -4723,13 +4723,13 @@ index 0000000000000000000000000000000000000000..47caa85c68fe8aedf1b367151af4d3f2
 codex
 并行检查里有个竞态：`chmod` 和执行同时发生了，所以两个验收命令先于权限变更启动了。我重新顺序跑一遍，先确认可执行位，再执行所有验证并把结果落到 `evidence/`。
 exec
-/bin/zsh -lc 'ls -l to_upper.sh test_to_upper.sh' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'ls -l to_upper.sh test_to_upper.sh' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 -rwxr-xr-x@ 1 sheldonzhao  staff  789 Jun  9 13:47 test_to_upper.sh
 -rwxr-xr-x@ 1 sheldonzhao  staff   74 Jun  9 13:47 to_upper.sh
 
 exec
-/bin/zsh -lc 'file to_upper.sh test_to_upper.sh' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'file to_upper.sh test_to_upper.sh' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 to_upper.sh:      POSIX shell script text executable, ASCII text
 test_to_upper.sh: POSIX shell script text executable, ASCII text
@@ -4814,7 +4814,7 @@ exec
   printf 'hello\\nworld\\n' | ./to_upper.sh ;
   echo '== ac5 ==' ;
   sh ./test_to_upper.sh ;
-} > evidence/acceptance-tests/to_upper-results.txt && cat evidence/acceptance-tests/to_upper-results.txt" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+} > evidence/acceptance-tests/to_upper-results.txt && cat evidence/acceptance-tests/to_upper-results.txt" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
 diff --git a/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh b/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh
 new file mode 100644
 index 0000000000000000000000000000000000000000..576f495be528bb30f3ddf334e8032cec7805cb50
@@ -4898,9 +4898,9 @@ codex
 本地验证都过了。我现在补齐交付文档：一份 acceptance 报告、一份本地 review 证据、以及 completion report，并明确说明这里没有完整 `.tad/` runtime，所以只做了本地版的 Gate 3 证据。
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/acceptance-verification-report.md
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/reviews/blake-local-review.md
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/acceptance-verification-report.md
+/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/reviews/blake-local-review.md
 diff --git a/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md b/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md
 new file mode 100644
 index 0000000000000000000000000000000000000000..ed5dce70b319d27aacb158f07196771909d22a11
@@ -5208,7 +5208,7 @@ index 0000000000000000000000000000000000000000..47caa85c68fe8aedf1b367151af4d3f2
 +to_upper
 
 exec
-/bin/zsh -lc 'git status --short -- to_upper.sh test_to_upper.sh evidence/acceptance-tests evidence/reviews COMPLETION-inline-strict.md' in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc 'git status --short -- to_upper.sh test_to_upper.sh evidence/acceptance-tests evidence/reviews COMPLETION-inline-strict.md' in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 ?? COMPLETION-inline-strict.md
 ?? evidence/acceptance-tests/
@@ -5217,7 +5217,7 @@ exec
 ?? to_upper.sh
 
 exec
-/bin/zsh -lc "sed -n '1,200p' to_upper.sh && printf '\\n-- test --\\n' && sed -n '1,220p' test_to_upper.sh" in /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run
+/bin/zsh -lc "sed -n '1,200p' to_upper.sh && printf '\\n-- test --\\n' && sed -n '1,220p' test_to_upper.sh" in /path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run
  succeeded in 0ms:
 #!/bin/sh
 
@@ -5426,9 +5426,9 @@ index 0000000000000000000000000000000000000000..47caa85c68fe8aedf1b367151af4d3f2
 +to_upper
 
 codex
-业务上，这个 handoff 已经落成一个可直接本地跑的小工具：你现在可以把任意 ASCII 小写文本从 `stdin` 管道进 [to_upper.sh](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/to_upper.sh)，它会只把小写字母转成大写，空输入也会安静成功返回。测试脚本 [test_to_upper.sh](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh) 也已经就位并可执行。
+业务上，这个 handoff 已经落成一个可直接本地跑的小工具：你现在可以把任意 ASCII 小写文本从 `stdin` 管道进 [to_upper.sh](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/to_upper.sh)，它会只把小写字母转成大写，空输入也会安静成功返回。测试脚本 [test_to_upper.sh](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh) 也已经就位并可执行。
 
-本地验证已通过，结果记录在 [to_upper-results.txt](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/to_upper-results.txt)，验收摘要在 [acceptance-verification-report.md](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/acceptance-verification-report.md)，本地 review 证据在 [blake-local-review.md](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/reviews/blake-local-review.md)，completion report 在 [COMPLETION-inline-strict.md](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md)。我额外注明了一个限制：这个 sandbox 没有完整 `.tad/` runtime，所以这里只能产出本地版 review/completion 证据，不能跑完整的 Ralph Loop / Gate 3 自动化。
+本地验证已通过，结果记录在 [to_upper-results.txt](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/to_upper-results.txt)，验收摘要在 [acceptance-verification-report.md](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/acceptance-verification-report.md)，本地 review 证据在 [blake-local-review.md](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/reviews/blake-local-review.md)，completion report 在 [COMPLETION-inline-strict.md](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md)。我额外注明了一个限制：这个 sandbox 没有完整 `.tad/` runtime，所以这里只能产出本地版 review/completion 证据，不能跑完整的 Ralph Loop / Gate 3 自动化。
 diff --git a/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md b/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md
 new file mode 100644
 index 0000000000000000000000000000000000000000..ed5dce70b319d27aacb158f07196771909d22a11
@@ -5584,6 +5584,6 @@ index 0000000000000000000000000000000000000000..47caa85c68fe8aedf1b367151af4d3f2
 
 tokens used
 64,668
-业务上，这个 handoff 已经落成一个可直接本地跑的小工具：你现在可以把任意 ASCII 小写文本从 `stdin` 管道进 [to_upper.sh](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/to_upper.sh)，它会只把小写字母转成大写，空输入也会安静成功返回。测试脚本 [test_to_upper.sh](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh) 也已经就位并可执行。
+业务上，这个 handoff 已经落成一个可直接本地跑的小工具：你现在可以把任意 ASCII 小写文本从 `stdin` 管道进 [to_upper.sh](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/to_upper.sh)，它会只把小写字母转成大写，空输入也会安静成功返回。测试脚本 [test_to_upper.sh](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/test_to_upper.sh) 也已经就位并可执行。
 
-本地验证已通过，结果记录在 [to_upper-results.txt](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/to_upper-results.txt)，验收摘要在 [acceptance-verification-report.md](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/acceptance-verification-report.md)，本地 review 证据在 [blake-local-review.md](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/reviews/blake-local-review.md)，completion report 在 [COMPLETION-inline-strict.md](/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md)。我额外注明了一个限制：这个 sandbox 没有完整 `.tad/` runtime，所以这里只能产出本地版 review/completion 证据，不能跑完整的 Ralph Loop / Gate 3 自动化。
+本地验证已通过，结果记录在 [to_upper-results.txt](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/to_upper-results.txt)，验收摘要在 [acceptance-verification-report.md](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/acceptance-tests/acceptance-verification-report.md)，本地 review 证据在 [blake-local-review.md](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/evidence/reviews/blake-local-review.md)，completion report 在 [COMPLETION-inline-strict.md](/path/to/TAD/.tad/evidence/codex-regression/sandbox/strict-run/COMPLETION-inline-strict.md)。我额外注明了一个限制：这个 sandbox 没有完整 `.tad/` runtime，所以这里只能产出本地版 review/completion 证据，不能跑完整的 Ralph Loop / Gate 3 自动化。

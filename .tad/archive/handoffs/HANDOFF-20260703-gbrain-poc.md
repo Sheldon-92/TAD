@@ -175,7 +175,7 @@ Blake在开始实现前，请确认：
    - 查看 `$GBRAIN --help` 或 README 确认本地 embedding 配置方式（可能是 `--embedder llama` 或类似 flag）
    - 如需下载本地模型（~500MB），按 gbrain 文档指引操作
    - Note where PGLite database is created (likely `~/.gbrain/` or CWD `.gbrain/`), document the path
-5. Import (absolute path): `$GBRAIN import "/Users/sheldonzhao/01-on progress programs/TAD/.tad/"`
+5. Import (absolute path): `$GBRAIN import "/path/to/TAD/.tad/"`
    ⚠️ 本地 embedding 索引速度较慢（CPU），~2000 文件可能需要 20-40 分钟
 6. 验证导入：`$GBRAIN search "TAD"` 返回结果
 7. 验证 CJK：`$GBRAIN search "原则"` 返回结果
@@ -258,7 +258,7 @@ Blake在开始实现前，请确认：
    记录 database 路径（`$GBRAIN` 输出或 `ls ~/.gbrain/` 确认）
 8. 导入 .tad/（使用绝对路径）：
    ```bash
-   $GBRAIN import "/Users/sheldonzhao/01-on progress programs/TAD/.tad/"
+   $GBRAIN import "/path/to/TAD/.tad/"
    ```
    记录导入的文件数量（从 import 输出中捕获）
 9. 验证导入：`$GBRAIN search "TAD"` 应返回结果

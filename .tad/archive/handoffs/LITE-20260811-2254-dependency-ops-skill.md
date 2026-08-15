@@ -95,7 +95,7 @@ dogfood 对象已在设计期实测确定：**`gh` 2.96.0 → 2.97.0**（上游 
 - ⚠️ **日期一律运行时自导出，禁止硬编码。** 开工第一条命令**逐字为**：
   ```
   ROOT="$(git rev-parse --show-toplevel)" && \
-  test "$ROOT" = "/Users/sheldonzhao/01-on progress programs/TAD" && \
+  test "$ROOT" = "/path/to/TAD" && \
   mkdir -p "$ROOT/.tad/evidence/acceptance-tests/dependency-ops-skill" && \
   date "+%Y-%m-%d" > "$ROOT/.tad/evidence/acceptance-tests/dependency-ops-skill/TODAY.txt" && \
   test -s "$ROOT/.tad/evidence/acceptance-tests/dependency-ops-skill/TODAY.txt" && \
@@ -179,7 +179,7 @@ dogfood 对象已在设计期实测确定：**`gh` 2.96.0 → 2.97.0**（上游 
   (c) `grep -c 'yq -i'` == 0（REGISTRY 写入禁用 `yq -i`，DEP-003）
 - AC5（check 能力可执行）: 用新 skill 的 check 流程跑（**必须显式传绝对 project-root**：
   `deps-scan.sh:16` 是 `ROOT="${1:-.}"`，依赖 cwd，而 Bash 工具的 cwd 不保证）：
-  `HOMEBREW_NO_AUTO_UPDATE=1 /usr/bin/perl -e 'alarm shift; exec @ARGV' 300 bash "/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/deps-scan.sh" "/Users/sheldonzhao/01-on progress programs/TAD"`
+  `HOMEBREW_NO_AUTO_UPDATE=1 /usr/bin/perl -e 'alarm shift; exec @ARGV' 300 bash "/path/to/TAD/.tad/hooks/lib/deps-scan.sh" "/path/to/TAD"`
   ⚠️ **`HOMEBREW_NO_AUTO_UPDATE=1` 前缀不可省**（`deps-scan.sh:148` 内部调 `brew info`，见实现约束）。
   退出码 == 0，且 `yq -r '.last_scan' .tad/dependencies/scan-results.yaml` 的输出
   **== `TODAY.txt` 的内容**（不得硬编码日期；且该字段在文件里是**带引号**的，

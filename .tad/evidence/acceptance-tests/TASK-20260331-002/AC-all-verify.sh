@@ -2,7 +2,7 @@
 # Acceptance Criteria Verification for TASK-20260331-002
 # TAD v3.0 Hook Infrastructure (Phase 2/5)
 
-cd "/Users/sheldonzhao/01-on progress programs/TAD" || exit 1
+cd "/path/to/TAD" || exit 1
 
 PASS=0
 FAIL=0
@@ -66,7 +66,7 @@ else
 fi
 
 # AC7: Scripts handle missing files gracefully
-OUTPUT=$(cd /tmp && echo '{"session_id":"t","source":"startup"}' | bash "/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/startup-health.sh" 2>&1)
+OUTPUT=$(cd /tmp && echo '{"session_id":"t","source":"startup"}' | bash "/path/to/TAD/.tad/hooks/startup-health.sh" 2>&1)
 EXIT_CODE=$?
 [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | jq -e . >/dev/null 2>&1 && \
   check "AC7" "Graceful handling of missing files" "PASS" || \

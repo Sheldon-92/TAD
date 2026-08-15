@@ -9,7 +9,7 @@
 #   `常驻=否` 的 8 项单独列出但**不计入总额**。
 set -uo pipefail
 DONE=0; trap '[ "$DONE" = 1 ] || { echo "RESULT=FAIL (budget.sh 中途退出)"; exit 1; }' EXIT
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
 BLK="$R/.tad/active/handoffs/HANDOFF-20260818-lazy-by-floor.blocks.tsv"
 OUT="$EV/budget-computed.tsv"; : > "$OUT"; TOT=0; ERR=0

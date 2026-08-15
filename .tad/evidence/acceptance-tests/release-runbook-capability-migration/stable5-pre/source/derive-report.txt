@@ -1,4 +1,4 @@
-=== RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
+=== RELEASE SYNC SET (derived from /path/to/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
 
 --- A. ZERO-TOUCH (preserve target's own — NEVER sync) ---
   active

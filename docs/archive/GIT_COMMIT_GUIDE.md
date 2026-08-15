@@ -52,7 +52,7 @@ TAD v1.3 introduces **Evidence-Based Development**:
 
 ```bash
 # Navigate to TAD directory
-cd /Users/sheldonzhao/programs/TAD
+cd /path/to/programs/TAD
 
 # Stage all modified and new files
 git add .tad/config.yaml

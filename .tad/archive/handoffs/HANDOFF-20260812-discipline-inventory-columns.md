@@ -88,7 +88,7 @@ rev2 写成"必须为空"，Blake 一行字没写就会被自己的围栏拦死�
 
 §9 表头（每段沿用）：
 ```
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 D="$R/.tad/evidence/designs/discipline-inventory"
 T0=2859b75
 TMP="<本 session 的 scratchpad 绝对路径>"   # ⚠️ 必须在仓库之外；Blake 用前先 test -d
@@ -514,7 +514,7 @@ md5 -q "$R/.tad/active/handoffs/HANDOFF-20260812-discipline-inventory-columns.md
 ## 9. 验证命令（一律从此代码块复制）
 
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 D="$R/.tad/evidence/designs/discipline-inventory"
 T0=2859b75
 TMP="<本 session 的 scratchpad 绝对路径>"   # ⚠️ 必须在仓库之外

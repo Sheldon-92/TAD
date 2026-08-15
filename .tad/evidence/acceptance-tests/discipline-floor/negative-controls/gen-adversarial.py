@@ -5,7 +5,7 @@
 # (b) all Layer=2 -> AC3
 # (c) trigger strings all "MUST" -> AC5 (no anchor containment)
 import subprocess, sys
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 NC = f"{EV}/negative-controls"
 def run(cmd):

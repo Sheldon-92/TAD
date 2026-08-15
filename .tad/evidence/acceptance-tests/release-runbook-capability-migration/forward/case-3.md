@@ -1,4 +1,4 @@
-Read-only planning is complete. Source TAD is `2.40.0`; 12 registered projects are reachable and outdated, while 2 must be skipped because their registered paths are missing. No project, registry, Git, or task-state writes were performed. I read only the requested [entry skill](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/SKILL.md>) and its routed [sync reference](</Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/release-runbook/references/sync-ops.md>).
+Read-only planning is complete. Source TAD is `2.40.0`; 12 registered projects are reachable and outdated, while 2 must be skipped because their registered paths are missing. No project, registry, Git, or task-state writes were performed. I read only the requested [entry skill](</path/to/TAD/.claude/skills/release-runbook/SKILL.md>) and its routed [sync reference](</path/to/TAD/.claude/skills/release-runbook/references/sync-ops.md>).
 
 ## Proposed scope
 
@@ -106,17 +106,17 @@ esac
 
 Observed identity:
 
-- Physical root: `/Users/sheldonzhao/01-on progress programs/TAD`
+- Physical root: `/path/to/TAD`
 - Physical cwd: same
 - Origin: `https://github.com/Sheldon-92/TAD.git`
 
 The four required derivations were run exactly as read-only commands:
 
 ```bash
-bash .tad/hooks/lib/derive-sync-set.sh --dirs "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --report "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/Users/sheldonzhao/01-on progress programs/TAD"
-bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/Users/sheldonzhao/01-on progress programs/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --dirs "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --report "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --zero-touch "/path/to/TAD"
+bash .tad/hooks/lib/derive-sync-set.sh --registry-only "/path/to/TAD"
 ```
 
 All exited `0`; the report contained exactly one `(+ top-level file: sync-registry.yaml)` record.
@@ -124,9 +124,9 @@ All exited `0`; the report contained exactly one `(+ top-level file: sync-regist
 Git state was inspected with:
 
 ```bash
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" status --branch --short
-git -C "/Users/sheldonzhao/01-on progress programs/TAD" rev-list --left-right --count HEAD...@{upstream}
+git -C "/path/to/TAD" status --short
+git -C "/path/to/TAD" status --branch --short
+git -C "/path/to/TAD" rev-list --left-right --count HEAD...@{upstream}
 ```
 
 Observed: dirty working tree, `main...origin/main [ahead 3]`, and divergence `3 0`. No listed file contents were opened.

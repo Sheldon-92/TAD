@@ -98,7 +98,7 @@ lite 已冻结不接新工作。若档位机制日后移入 full，L1 随之复�
 ## 8. Step 0
 
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/discipline-floor"; mkdir -p "$EV"
 T0=$(git -C "$R" rev-parse --short HEAD); echo "$T0" > "$EV/t0.txt"
 ( cd "$R" && shasum -a 256 .tad/active/handoffs/HANDOFF-20260815-discipline-floor.md ) > "$EV/inputs.sha256"

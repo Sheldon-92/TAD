@@ -12,7 +12,7 @@ Built the web-testing capability pack from Domain Pack `web-testing.yaml` + deep
 
 ## Files Created
 
-### Source Pack (`/Users/sheldonzhao/01-on progress programs/TAD/.tad/capability-packs/web-testing/`)
+### Source Pack (`/path/to/TAD/.tad/capability-packs/web-testing/`)
 
 | File | Words | Purpose |
 |------|-------|---------|
@@ -26,7 +26,7 @@ Built the web-testing capability pack from Domain Pack `web-testing.yaml` + deep
 | install.sh | — | Installer with --agent, --force, --dry-run, Phase 3 stubs |
 | LICENSE | — | Apache 2.0 |
 
-### Installed Skill (`/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/web-testing/`)
+### Installed Skill (`/path/to/TAD/.claude/skills/web-testing/`)
 
 - SKILL.md (copy of CAPABILITY.md with YAML frontmatter)
 - LICENSE

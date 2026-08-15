@@ -15,7 +15,7 @@
 #            AC7 的"严格下降"判在 **TOTAL_STATIC**（不含随树漂移的 CMD_OUTPUT）。
 set -uo pipefail
 DONE=0; trap '[ "$DONE" = 1 ] || { echo "RESULT=FAIL (measure.sh 中途退出)"; exit 1; }' EXIT
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
 HB="$R/.tad/archive/handoffs/HANDOFF-20260818-lazy-by-floor"
 A1="$R/.claude/skills/alex/SKILL.md"

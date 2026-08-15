@@ -6,7 +6,7 @@
 #    3 packs legitimately transform SKILL.md at install — NEXT.md follow-up (a)).
 # Local skills survive: per-skill refresh, never whole-dir delete (Phase 2 sync-safety).
 set -u
-SRC="/Users/sheldonzhao/01-on progress programs/TAD"
+SRC="/path/to/TAD"
 NEW="2.29.0"
 LOG="$SRC/.tad/evidence/releases/sync-v2.29.0.log"
 : > "$LOG"
@@ -16,20 +16,20 @@ DIRS="$(bash "$SRC/.tad/hooks/lib/derive-sync-set.sh" --dirs "$SRC")"
 bash "$SRC/.tad/hooks/lib/derive-sync-set.sh" --report "$SRC" >> "$LOG" 2>&1
 
 PROJECTS=(
-"/Users/sheldonzhao/01-on progress programs/menu-snap|overwrite"
-"/Users/sheldonzhao/01-on progress programs/my-openclaw-agents|merge"
-"/Users/sheldonzhao/01-on progress programs/OpenClaw Hack|overwrite"
-"/Users/sheldonzhao/01-on progress programs/运动打卡小助手|overwrite"
-"/Users/sheldonzhao/01-on progress programs/合规ai|overwrite"
-"/Users/sheldonzhao/01-on progress programs/ArtForge|overwrite"
-"/Users/sheldonzhao/01-on progress programs/Sober Creator|overwrite"
-"/Users/sheldonzhao/01-on progress programs/toy|merge"
-"/Users/sheldonzhao/01-on progress programs/内存管理|merge"
-"/Users/sheldonzhao/01-on progress programs/Next Guest|overwrite"
-"/Users/sheldonzhao/01-on progress programs/下载md插件|overwrite"
-"/Users/sheldonzhao/01-on progress programs/买卖|overwrite"
-"/Users/sheldonzhao/01-on progress programs/Monica-website|overwrite"
-"/Users/sheldonzhao/Downloads/Colin声音项目|overwrite"
+"/path/to/menu-snap|overwrite"
+"/path/to/my-openclaw-agents|merge"
+"/path/to/OpenClaw Hack|overwrite"
+"/path/to/运动打卡小助手|overwrite"
+"/path/to/合规ai|overwrite"
+"/path/to/ArtForge|overwrite"
+"/path/to/Sober Creator|overwrite"
+"/path/to/toy|merge"
+"/path/to/内存管理|merge"
+"/path/to/Next Guest|overwrite"
+"/path/to/下载md插件|overwrite"
+"/path/to/买卖|overwrite"
+"/path/to/Monica-website|overwrite"
+"/path/to/Downloads/Colin声音项目|overwrite"
 )
 
 SUMMARY=""

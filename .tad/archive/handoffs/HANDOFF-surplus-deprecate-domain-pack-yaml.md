@@ -598,7 +598,7 @@ Blake的实现被认为完成，当且仅当：
 
 ## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
 
-> 运行目录：repo root（`/Users/sheldonzhao/01-on progress programs/TAD`）。
+> 运行目录：repo root（`/path/to/TAD`）。
 > `PACKS="hw-circuit-design hw-enclosure hw-firmware hw-testing mobile-development mobile-release mobile-testing mobile-ui-design supply-chain-security"`
 > ⚠️ Pipe-escape note：表内 `\|` 为 markdown 渲染转义；bash 执行时还原为 `|`。
 

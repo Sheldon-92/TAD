@@ -223,7 +223,7 @@ w=$(printf '%s\n' "$sec" | LC_ALL=C command grep -E "^- \[${ltr:-@}\] " | LC_ALL
 ### 7.0 Step 0（Blake 动手前第一件事，只跑一次，输出即证据）
 
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/requirement-first"; mkdir -p "$EV/fixtures"
 T0=d225585
 # (1) 围栏基线
@@ -271,7 +271,7 @@ echo "Step 0 OK: baseline=$(wc -l < "$EV/fence-baseline.txt") lines"
 
 ```bash
 set -uo pipefail
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/requirement-first"
 CP=".tad/active/handoffs/HANDOFF-20260812-requirement-first.md"
 T0=d225585

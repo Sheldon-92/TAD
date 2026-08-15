@@ -3,7 +3,7 @@
 # Red: exit != 0 AND last line RESULT=FAIL.  Per-AC checks; --negative <fixture> mode
 # substitutes the disposition file for adversarial runs (AC9 negative controls).
 set -u
-R="/Users/sheldonzhao/01-on progress programs/TAD"
+R="/path/to/TAD"
 EV="$R/.tad/evidence/acceptance-tests/discipline-enumeration"
 H="$R/.tad/active/handoffs/HANDOFF-20260815-discipline-enumeration.md"
 S0="$R/.tad/active/handoffs/HANDOFF-20260815-discipline-enumeration.step0.sh"

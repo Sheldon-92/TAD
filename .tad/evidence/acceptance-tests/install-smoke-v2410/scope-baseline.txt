@@ -904,4 +904,4 @@ yq (https://github.com/mikefarah/yq/) version v4.53.3
 ## dormant_after_days
 30
 ## npm cache 前值 (AC18)
-984M	/Users/sheldonzhao/.npm/_cacache
+984M	/path/to/.npm/_cacache

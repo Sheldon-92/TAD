@@ -103,7 +103,7 @@ TAD v2.6.0 uses prompt-based constraints exclusively. No hooks, no skill frontma
 - The TAD project directory (experiments run here)
 
 ### 2.4 Source Reference
-Claude Code leaked source at: `/Users/sheldonzhao/01-on progress programs/claude-code-leaked/src/`
+Claude Code leaked source at: `/path/to/claude-code-leaked/src/`
 You can reference this for implementation details, but the goal is to TEST behavior, not just read code.
 
 ---

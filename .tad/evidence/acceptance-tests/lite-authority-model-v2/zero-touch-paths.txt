@@ -1,17 +1,17 @@
-registered_target	/Users/sheldonzhao/01-on progress programs/ArtForge
-registered_target	/Users/sheldonzhao/01-on progress programs/Monica-website
-registered_target	/Users/sheldonzhao/01-on progress programs/Next Guest
-registered_target	/Users/sheldonzhao/01-on progress programs/OpenClaw Hack
-registered_target	/Users/sheldonzhao/01-on progress programs/Sober Creator
-registered_target	/Users/sheldonzhao/01-on progress programs/menu-snap
-registered_target	/Users/sheldonzhao/01-on progress programs/my-openclaw-agents
-registered_target	/Users/sheldonzhao/01-on progress programs/toy
-registered_target	/Users/sheldonzhao/01-on progress programs/下载md插件
-registered_target	/Users/sheldonzhao/01-on progress programs/买卖
-registered_target	/Users/sheldonzhao/01-on progress programs/内存管理
-registered_target	/Users/sheldonzhao/01-on progress programs/合规ai
-registered_target	/Users/sheldonzhao/01-on progress programs/运动打卡小助手
-registered_target	/Users/sheldonzhao/Downloads/Colin声音项目
+registered_target	/path/to/ArtForge
+registered_target	/path/to/Monica-website
+registered_target	/path/to/Next Guest
+registered_target	/path/to/OpenClaw Hack
+registered_target	/path/to/Sober Creator
+registered_target	/path/to/menu-snap
+registered_target	/path/to/my-openclaw-agents
+registered_target	/path/to/toy
+registered_target	/path/to/下载md插件
+registered_target	/path/to/买卖
+registered_target	/path/to/内存管理
+registered_target	/path/to/合规ai
+registered_target	/path/to/运动打卡小助手
+registered_target	/path/to/Downloads/Colin声音项目
 source_pathspec	.claude/settings*.json
 source_pathspec	.claude/settings.local.json.bak-20260806-082549
 source_pathspec	.codex/agents/**

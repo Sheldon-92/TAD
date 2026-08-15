@@ -317,7 +317,7 @@ feedback_collector:
 
 **Evidence**:
 - Playground v2 (`/playground` command) is the current design iteration tool, but it focuses on visual exploration (picking a style direction), not structured element-level feedback
-- Colin voice project has 3 working HTML prototypes at `/Users/sheldonzhao/Downloads/Colin声音项目/`:
+- Colin voice project has 3 working HTML prototypes at `/path/to/Downloads/Colin声音项目/`:
   - `podcasts/EP04-colin/segments/EP04-segments/evaluate_v3.html` — per-segment OK/Redo
   - `podcasts/bgm/bgm-clips/annotate.html` — multi-select usage tags per clip
   - `voice-clone/colin/ref-library/annotate.html` — reference audio annotation

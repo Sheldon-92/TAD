@@ -429,7 +429,7 @@ project/path 不得重复。该 manifest 是 Phase 6 的迁移输入，不能只
 - `.agents/skills/ai-agent-architecture/references/testing-evaluation.md` 与
   `production-disasters.md` — D9/D10 要求测试 agent transition 与坏输入，重点防权限越界、状态分叉、
   无幂等重试和不可逆动作重复执行。
-- `/Users/sheldonzhao/.codex/skills/.system/skill-creator/SKILL.md` — 先用真实触发例规划 resources，
+- `/path/to/.codex/skills/.system/skill-creator/SKILL.md` — 先用真实触发例规划 resources，
   SKILL.md 保持简洁并渐进披露；实际创建时用 init/validate/forward-test，不提前造空目录。
 - `.tad/project-knowledge/patterns/handoff-design.md` — 删除/退役必须做 downstream consumer grep，
   且 tracked 与 untracked 消费者都要覆盖。

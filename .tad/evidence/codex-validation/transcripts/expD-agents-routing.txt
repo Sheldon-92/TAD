@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
@@ -15,7 +15,7 @@ user
 codex
 我会先读取 Alex 的 Codex skill 文件，按里面的激活协议执行，然后以 Alex 身份给出菜单。
 exec
-/bin/zsh -lc "wc -l .tad/codex/codex-alex-skill.md && sed -n '1,260p' .tad/codex/codex-alex-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "wc -l .tad/codex/codex-alex-skill.md && sed -n '1,260p' .tad/codex/codex-alex-skill.md" in /path/to/TAD
  succeeded in 0ms:
     1350 .tad/codex/codex-alex-skill.md
 # Agent A - Alex (Solution Lead) — Codex Edition
@@ -282,9 +282,9 @@ intent_router_protocol:
 codex
 Alex 文件较长，我正在完整读取激活协议和命令行为，确保不会漏掉启动检查。
 exec
-/bin/zsh -lc "sed -n '621,980p' .tad/codex/codex-alex-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '621,980p' .tad/codex/codex-alex-skill.md" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '261,620p' .tad/codex/codex-alex-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,620p' .tad/codex/codex-alex-skill.md" in /path/to/TAD
  succeeded in 0ms:
       - "Control variables clear (generator/judge/optimizer distinct?)"
       - "Self-enhancement bias mitigated (judge ≠ optimizer)"
@@ -1010,7 +1010,7 @@ experiment_path_protocol:
     gate3_additional:
 
 exec
-/bin/zsh -lc "sed -n '981,1350p' .tad/codex/codex-alex-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '981,1350p' .tad/codex/codex-alex-skill.md" in /path/to/TAD
  succeeded in 0ms:
 
   step7:
@@ -1386,9 +1386,9 @@ next_md_rules:
 codex
 已读完 Alex skill。下一步是加载 TAD 配置，并做只读健康检查：ROADMAP、NEXT、active handoff 文件名、配对测试报告和 session state。
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-agents.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Configuration v2.24.0 - Triple-Question KA
 method: TAD
@@ -1874,7 +1874,7 @@ human_role_v13:
         - "测试通过了吗？"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -2138,7 +2138,7 @@ quality_gates:
     matrix:
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Workflow & Document Management
 # Part of TAD config.yaml modular split (v2.2)
@@ -2402,7 +2402,7 @@ pair_testing:
       P0: "Create immediate handoff"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -2645,7 +2645,7 @@ important_notes:
 codex
 配置已开始加载；我还要确认各模块是否超过已读取范围，避免只加载了前半段。
 exec
-/bin/zsh -lc 'wc -l .tad/config-agents.yaml .tad/config-quality.yaml .tad/config-workflow.yaml .tad/config-platform.yaml .tad/config-cognitive.yaml ROADMAP.md NEXT.md .tad/pair-testing/SESSIONS.yaml .tad/active/session-state.md 2>/dev/null' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'wc -l .tad/config-agents.yaml .tad/config-quality.yaml .tad/config-workflow.yaml .tad/config-platform.yaml .tad/config-cognitive.yaml ROADMAP.md NEXT.md .tad/pair-testing/SESSIONS.yaml .tad/active/session-state.md 2>/dev/null' in /path/to/TAD
  exited 1 in 0ms:
      342 .tad/config-agents.yaml
      765 .tad/config-quality.yaml
@@ -2658,13 +2658,13 @@ exec
     2824 total
 
 exec
-/bin/zsh -lc 'find .tad/active/handoffs -maxdepth 1 -type f -print 2>/dev/null | sort' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/active/handoffs -maxdepth 1 -type f -print 2>/dev/null | sort' in /path/to/TAD
  succeeded in 0ms:
 .tad/active/handoffs/COMPLETION-20260603-declarative-constraints-v01.md
 .tad/active/handoffs/HANDOFF-20260603-declarative-constraints-v01.md
 
 exec
-/bin/zsh -lc "test -f ROADMAP.md && sed -n '1,220p' ROADMAP.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f ROADMAP.md && sed -n '1,220p' ROADMAP.md || true" in /path/to/TAD
  succeeded in 0ms:
 # Roadmap
 
@@ -2736,9 +2736,9 @@ All 6 phases: Session Hook Spike (pivot), Spec Compliance, Anti-Rationalization,
 Codex/Gemini removed as full TAD runtimes (~1100 lines), repositioned as specialized tools. Superseded by Codex CLI Adaptation (v2.9.0).
 
 exec
-/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml && sed -n '1,220p' .tad/pair-testing/SESSIONS.yaml || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml && sed -n '1,220p' .tad/pair-testing/SESSIONS.yaml || true" in /path/to/TAD
 exec
-/bin/zsh -lc "test -f NEXT.md && sed -n '1,220p' NEXT.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f NEXT.md && sed -n '1,220p' NEXT.md || true" in /path/to/TAD
  succeeded in 0ms:
  succeeded in 0ms:
 # Next Steps
@@ -2963,7 +2963,7 @@ exec
 - [ ] Run *evolve cross-project (5 projects with traces, 50+ trace files total)
 
 exec
-/bin/zsh -lc "test -f .tad/active/session-state.md && sed -n '1,220p' .tad/active/session-state.md || true" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f .tad/active/session-state.md && sed -n '1,220p' .tad/active/session-state.md || true" in /path/to/TAD
  succeeded in 0ms:
 # TAD Session State
 <!-- Auto-maintained by TAD agents. See .tad/templates/session-state-template.md -->
@@ -2992,9 +2992,9 @@ Human: review branch epic/nondev-verdict-shapes → merge to main if approved. O
 codex
 健康检查结果：active handoffs 目录里有一个 handoff 和一个 completion report；session-state 显示 Alex 当前 COMPLETE，等待人工决定是否 merge `epic/nondev-verdict-shapes`。我还在补读配置模块的剩余段落。
 exec
-/bin/zsh -lc "sed -n '261,765p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,765p' .tad/config-quality.yaml" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '261,342p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,342p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
         - "UI显示正确吗？"
       decision: "继续→下个Phase / 调整→修改本Phase"
@@ -3587,7 +3587,7 @@ template_triggers:
 
 
 exec
-/bin/zsh -lc "sed -n '261,794p' .tad/config-workflow.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '261,794p' .tad/config-workflow.yaml" in /path/to/TAD
  succeeded in 0ms:
       P1: "Create handoff"
       P2: "Add to NEXT.md"
@@ -4125,7 +4125,7 @@ research_notebook:
 
 
 exec
-/bin/zsh -lc "sed -n '1,294p' .tad/config-cognitive.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,294p' .tad/config-cognitive.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Cognitive Firewall
 # Part of TAD config.yaml modular split (v2.3)
@@ -4423,12 +4423,12 @@ integration:
     consumers: ["tad-alex.md", "tad-blake.md", "tad-gate.md"]
 
 exec
-/bin/zsh -lc 'find .tad/pair-testing -maxdepth 2 -name PAIR_TEST_REPORT.md -print 2>/dev/null | sort' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/pair-testing -maxdepth 2 -name PAIR_TEST_REPORT.md -print 2>/dev/null | sort' in /path/to/TAD
  succeeded in 0ms:
 codex
 配对测试报告没有检测到；`SESSIONS.yaml` 看起来不存在。剩余配置也已加载，包括 cognitive 模块，因为 master config 把它列为 Alex 绑定模块。
 exec
-/bin/zsh -lc "sed -n '221,301p' NEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '221,301p' NEXT.md" in /path/to/TAD
  succeeded in 0ms:
 - [ ] Test Agent Teams on next Full or Standard TAD task
 - [ ] Add Bash command deny patterns to PreToolUse hook (rm -rf, DROP TABLE etc.)
@@ -4513,7 +4513,7 @@ From html-anything research (2026-05-27):
 > Archived history: see [docs/HISTORY.md](docs/HISTORY.md)
 
 exec
-/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml; printf 'SESSIONS_EXISTS=%s\\n' \""'$?"' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "test -f .tad/pair-testing/SESSIONS.yaml; printf 'SESSIONS_EXISTS=%s\\n' \""'$?"' in /path/to/TAD
  succeeded in 0ms:
 SESSIONS_EXISTS=1
 

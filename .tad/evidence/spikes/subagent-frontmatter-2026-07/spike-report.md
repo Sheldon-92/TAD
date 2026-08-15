@@ -35,7 +35,7 @@ skills:
 
 - Field was **accepted without error or warning** (agent spawned normally, replied `SPIKE-ALIVE` to connectivity probe).
 - Probe: "Does your system prompt or configuration mention a persistent memory directory assigned to you?"
-- First answer was a false positive: the agent cited `/Users/sheldonzhao/01-on progress programs/TAD/.tad/memory/` — that is the **project auto-memory** (CLAUDE.md §7.5 redirect, loaded for every session), NOT an agent-specific memory. Discriminating re-probe (quote system-prompt memory sentences verbatim) returned:
+- First answer was a false positive: the agent cited `/path/to/TAD/.tad/memory/` — that is the **project auto-memory** (CLAUDE.md §7.5 redirect, loaded for every session), NOT an agent-specific memory. Discriminating re-probe (quote system-prompt memory sentences verbatim) returned:
 
 > Here are every line from my system prompt ... that contains the word "memory":
 > [quotes ONLY the spike agent's own body instructions]
@@ -58,7 +58,7 @@ NO-AGENT-MEMORY-IN-SYSTEM-PROMPT
 
 ```
 $ ls ~/.claude/agent-memory
-ls: /Users/sheldonzhao/.claude/agent-memory: No such file or directory
+ls: /path/to/.claude/agent-memory: No such file or directory
 $ ls <repo>/.claude/agent-memory
 ls: ... No such file or directory
 ```

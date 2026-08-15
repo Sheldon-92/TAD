@@ -2,7 +2,7 @@
 # Generate disposition-60.md from Blake's block judgments + frozen Step 0 inputs.
 # Columns: path TAB start TAB blockname TAB 归宿 TAB 理由码 TAB 一句话 TAB hits TAB subkeys
 import subprocess, re, sys
-R = "/Users/sheldonzhao/01-on progress programs/TAD"
+R = "/path/to/TAD"
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-enumeration"
 WIDE = open(f"{EV}/wide-markers.txt", encoding="utf-8").read().rstrip("\n")
 marker_re = re.compile(r"(?:" + WIDE + r")")

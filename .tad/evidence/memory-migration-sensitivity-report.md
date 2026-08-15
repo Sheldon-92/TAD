@@ -1,12 +1,12 @@
 # Memory Migration Sensitivity Report — TASK-20260712-001 (SEC P0-1)
 
 **Date:** 2026-07-12
-**Scope:** 36 files migrated from `~/.claude/projects/-Users-sheldonzhao-01-on-progress-programs-TAD/memory/` → `.tad/memory/`
+**Scope:** 36 files migrated from `~/.claude/projects/-path-to-TAD/memory/` → `.tad/memory/`
 **Repo visibility:** PUBLIC (github.com/Sheldon-92/TAD)
 **Classification rules (from HANDOFF-20260712 §6 T3a, conservative — 宁多勿漏):**
 R1 `metadata.type: user` → SENSITIVE | R2 email/API-key/token/password/privacy content → SENSITIVE | R3 unpublished product strategy or third-party leaked-material analysis → SENSITIVE | R4 else SAFE
 
-**Mechanical scan:** `grep -lEi '@[a-z0-9.-]+\.(edu|com|org)|api[_-]?key|token|password'` hit 4 files — all verified FALSE POSITIVES on inspection ("token cost" / "header-token" CSP design term / "token-burn" / LLM-token counts; no credentials, no emails). Email-specific sweep (`newschool|zhaos948|@gmail|@outlook`): zero hits.
+**Mechanical scan:** `grep -lEi '@[a-z0-9.-]+\.(edu|com|org)|api[_-]?key|token|password'` hit 4 files — all verified FALSE POSITIVES on inspection ("token cost" / "header-token" CSP design term / "token-burn" / LLM-token counts; no credentials, no emails). Email-specific sweep (`<redacted>|<redacted>|@gmail|@outlook`): zero hits.
 
 ⚠️ Gate 4 human review item: verify the 7 SENSITIVE classifications and the 29 SAFE calls before any *publish (push is out of scope for this handoff).
 

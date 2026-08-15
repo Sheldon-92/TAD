@@ -1,1 +1,1 @@
-/Users/sheldonzhao/01-on progress programs/menu-snap
+/path/to/menu-snap

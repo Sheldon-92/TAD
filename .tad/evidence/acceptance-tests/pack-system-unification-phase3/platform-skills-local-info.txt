@@ -1,6 +1,6 @@
 =========================================
 PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
-  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  SOURCE: /path/to/TAD
   TARGET: /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.xWR4AUBgnA
 =========================================
   ✅ _archived symmetric

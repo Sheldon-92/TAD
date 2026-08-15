@@ -4,11 +4,11 @@
 **Scope:** Phase 3 protocol-layer changes (no runtime code)
 **Date:** 2026-04-24
 **Files reviewed:**
-- `/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/SKILL.md` (lines 300-498, 983-1158, 2298-2398)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/blake/SKILL.md` (lines 1152-1201)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/templates/handoff-a-to-b.md` (lines 1-19)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/config-workflow.yaml` (lines 649-705)
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/templates/completion-report.md` (cross-checked, lines 140-156)
+- `/path/to/TAD/.claude/skills/alex/SKILL.md` (lines 300-498, 983-1158, 2298-2398)
+- `/path/to/TAD/.claude/skills/blake/SKILL.md` (lines 1152-1201)
+- `/path/to/TAD/.tad/templates/handoff-a-to-b.md` (lines 1-19)
+- `/path/to/TAD/.tad/config-workflow.yaml` (lines 649-705)
+- `/path/to/TAD/.tad/templates/completion-report.md` (cross-checked, lines 140-156)
 
 ---
 
@@ -20,7 +20,7 @@
 
 **Evidence:**
 - Alex `acceptance_protocol.step7.pre_check` (Alex SKILL.md:2321) and Blake `completion_knowledge_override.override_marker_anchor` (Blake SKILL.md:1168) both anchor on **`## Knowledge Updates`**.
-- Canonical template `/Users/sheldonzhao/01-on progress programs/TAD/.tad/templates/completion-report.md:142` uses **`## 📖 Knowledge Assessment (MANDATORY — Gate 3 BLOCKING)`**.
+- Canonical template `/path/to/TAD/.tad/templates/completion-report.md:142` uses **`## 📖 Knowledge Assessment (MANDATORY — Gate 3 BLOCKING)`**.
 - All 10 archived completion reports under `.tad/archive/handoffs/COMPLETION-*.md` use literal `## Knowledge Assessment` (verified by grep). Zero use `## Knowledge Updates`.
 - Result: when Blake writes a correctly-formatted override marker as the first non-blank line under the section he actually owns (`## Knowledge Assessment`), Alex's `step7.pre_check` step 2 ("Locate `## Knowledge Updates` section header") will NOT find the section and will fall through to `branch_1_skip_no_override` — silently skipping KA. This is exactly the menu-snap SDK shape cast bug failure mode the safety net was designed to prevent.
 

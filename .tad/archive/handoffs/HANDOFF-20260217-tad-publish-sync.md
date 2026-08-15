@@ -32,7 +32,7 @@ tad_source: "."  # This repo is the TAD source
 
 projects: []
   # Example entry:
-  # - path: "/Users/sheldonzhao/01-on progress programs/menu-snap"
+  # - path: "/path/to/menu-snap"
   #   name: "menu-snap"
   #   claude_md_strategy: "overwrite"  # overwrite | merge
   #   last_synced_version: "2.3.0"
@@ -423,17 +423,17 @@ NEXT.md:
 After creating the file, pre-populate with the 3 projects we just synced:
 ```yaml
 projects:
-  - path: "/Users/sheldonzhao/01-on progress programs/menu-snap"
+  - path: "/path/to/menu-snap"
     name: "menu-snap"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.3.0"
     last_synced_date: "2026-02-17"
-  - path: "/Users/sheldonzhao/01-on progress programs/my-openclaw-agents"
+  - path: "/path/to/my-openclaw-agents"
     name: "my-openclaw-agents"
     claude_md_strategy: "merge"
     last_synced_version: "2.3.0"
     last_synced_date: "2026-02-17"
-  - path: "/Users/sheldonzhao/01-on progress programs/O1 for builder"
+  - path: "/path/to/O1 for builder"
     name: "O1 for builder"
     claude_md_strategy: "overwrite"
     last_synced_version: "2.3.0"

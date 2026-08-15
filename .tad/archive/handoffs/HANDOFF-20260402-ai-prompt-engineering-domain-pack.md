@@ -631,8 +631,8 @@ Agent({
 
 - `.tad/spike-v3/domain-pack-tools/ai-agent-architecture-research.md` — prompt architecture 部分
 - `.tad/project-knowledge/architecture.md` — "Judgment-Only Skill Files" 条目
-- `/Users/sheldonzhao/01-on progress programs/claude-code-leaked/src/constants/prompts.ts` — Claude Code 的 system prompt 组装
-- `/Users/sheldonzhao/01-on progress programs/my-openclaw-agents/rss-knowledge-companion/workspace/SOUL.md` — OpenClaw 的 prompt 设计实例
+- `/path/to/claude-code-leaked/src/constants/prompts.ts` — Claude Code 的 system prompt 组装
+- `/path/to/my-openclaw-agents/rss-knowledge-companion/workspace/SOUL.md` — OpenClaw 的 prompt 设计实例
 
 ### 建议 Capabilities
 

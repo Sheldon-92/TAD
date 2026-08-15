@@ -2,7 +2,7 @@
 
 - Reviewer: code-reviewer
 - Handoff: `.tad/active/handoffs/HANDOFF-20260712-precompact-session-state-hook.md` (v2)
-- Worktree: `/Users/sheldonzhao/01-on progress programs/TAD/.claude/worktrees/wf_4d1c412a-719-3`
+- Worktree: `/path/to/TAD/.claude/worktrees/wf_4d1c412a-719-3`
 - Commit: `e87547f` — 23 files changed, 522 insertions(+), 2 deletions(-)
 - Verdict: **PASS (0 P0, 0 P1, 3 P2)** — recommend merge; P2s are hardening notes, not blockers.
 

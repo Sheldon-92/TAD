@@ -59,13 +59,13 @@ This is solid smoke-alarm infrastructure. The Epic-1 cancellation boundaries are
 
 ## Files reviewed (absolute paths)
 
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/drift-check.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/gate3-git-tracked-check.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/lib/layer2-audit.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/hooks/userprompt-domain-router.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.claude/settings.json`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.1-gate3-git-tracked.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.2-drift-check.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.2-g-backward-compat.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.3-layer2-audit-slug-fallback.sh`
-- `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh`
+- `/path/to/TAD/.tad/hooks/lib/drift-check.sh`
+- `/path/to/TAD/.tad/hooks/lib/gate3-git-tracked-check.sh`
+- `/path/to/TAD/.tad/hooks/lib/layer2-audit.sh`
+- `/path/to/TAD/.tad/hooks/userprompt-domain-router.sh`
+- `/path/to/TAD/.claude/settings.json`
+- `/path/to/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.1-gate3-git-tracked.sh`
+- `/path/to/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.2-drift-check.sh`
+- `/path/to/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.2-g-backward-compat.sh`
+- `/path/to/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.3-layer2-audit-slug-fallback.sh`
+- `/path/to/TAD/.tad/evidence/acceptance-tests/phase1-state-consistency/AC-P1.4-router-event-filter.sh`

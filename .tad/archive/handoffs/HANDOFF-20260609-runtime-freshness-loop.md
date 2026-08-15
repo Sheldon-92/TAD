@@ -335,7 +335,7 @@ For Claude Code entries:
 Required:
 ```bash
 codex --version
-node /Users/sheldonzhao/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs
+node /path/to/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs
 ```
 
 If manual fetch fails due network, use the most recent cached manual only if timestamp is same-day; otherwise record `source_unavailable` and do not update verified dates.

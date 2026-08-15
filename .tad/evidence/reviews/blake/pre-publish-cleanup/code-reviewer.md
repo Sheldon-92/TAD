@@ -2,7 +2,7 @@
 
 **Reviewer:** code-reviewer (Layer 2 / Gate 2 expert review)
 **Date:** 2026-04-27
-**Handoff:** `/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260427-pre-publish-cleanup.md`
+**Handoff:** `/path/to/TAD/.tad/active/handoffs/HANDOFF-20260427-pre-publish-cleanup.md`
 **Scope:** Edit correctness, BSD/macOS portability, AC verification command validity
 **Mode:** REVIEW only — no implementation changes proposed in code
 
@@ -31,7 +31,7 @@ specific and have concrete fixes that do not change the handoff's design.
 PLAIN-LANGUAGE EXPLANATION block is "约 line 980-1050" in
 `.claude/skills/alex/SKILL.md`.
 
-**Actual location** (verified by `grep -n "generate_message" /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/SKILL.md`):
+**Actual location** (verified by `grep -n "generate_message" /path/to/TAD/.claude/skills/alex/SKILL.md`):
 - `step7.generate_message:` at **line 2009**
 - `PLAIN-LANGUAGE EXPLANATION` at **line 2053**
 - "Required content" list (insertion target) at **line 2067**

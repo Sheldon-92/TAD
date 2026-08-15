@@ -98,7 +98,7 @@ AC14: FAIL: 存在清单外新增未跟踪路径（见上）
 ### P2-1 — 隐私残留：基线泄露本地绝对路径（执行实证）
 
 `preflight-baseline.txt`（进 commit 8b0c40a 并推送公开仓库）第 893 行：
-`syncset | === RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===`
+`syncset | === RELEASE SYNC SET (derived from /path/to/TAD/.tad/ — bias-to-sync, REPORTED each run) ===`
 —— F9 rev3 方案只把 `## untracked-hashed` 段摘要化（该段已合规：`<顶层目录>/<sha256>`），
 但 `## derive-sync-set-pre` 段第一行原样保留了 `derive-sync-set.sh --report` 的完整本地
 绝对路径（用户名 + 目录结构）。F9 定级「仅文件名无内容，严重度低但无必要」，按同尺度记
@@ -251,7 +251,7 @@ $ find "…/Sober Creator"/{.tad,.claude,.agents,.codex} \( -type f -o -type l \
 （空 = snapshot 后无文件修改）
 
 $ git show 8b0c40a:.tad/evidence/acceptance-tests/publish-v2410/preflight-baseline.txt | grep -n 'Users/'
-893:syncset | === RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ …) ===
+893:syncset | === RELEASE SYNC SET (derived from /path/to/TAD/.tad/ …) ===
 
 $ AC14 独立重算（comm -13 基线键 现状键）
 new keys count: 1

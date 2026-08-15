@@ -22,7 +22,7 @@ additively. T8 rollback path implemented and round-trip tested.
 
 | AC | Result | Evidence (raw source + line) |
 |----|--------|------------------------------|
-| AC1 | ✅ PASS | AC-01 script: permissions deep-equal (diff of `jq -S .permissions` before/after = empty); `autoMemoryDirectory=/Users/sheldonzhao/01-on progress programs/TAD/.tad/memory` |
+| AC1 | ✅ PASS | AC-01 script: permissions deep-equal (diff of `jq -S .permissions` before/after = empty); `autoMemoryDirectory=/path/to/TAD/.tad/memory` |
 | AC2 | ✅ PASS | AC-02 script: `diff -rq` old↔new 0 missing-from-target; old dir `ls | wc -l` = 36 untouched |
 | AC3 | ✅ PASS | AC-03 script: lib grep -cx memory = **1**; tad.sh TAD_ZERO_TOUCH block = **1**; `tad.sh --verify-denylist` exit **0** ("16 entries" set-equality); `--dirs` exclusion = **0** |
 | AC4 | ✅ PASS | AC-04 script: comm deletion-side = **0**; `grep -c '^## Step'` = **7**; new section = **1** |

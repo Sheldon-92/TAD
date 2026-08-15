@@ -72,7 +72,7 @@ Baseline captures the unavoidable `claude -p` CLI overhead (CLAUDE.md loading, s
 **Sentinel dump** (decisive Q2 evidence):
 
 ```json
-P1B-SENTINEL 1775585718 STDIN={"session_id":"4dc1e02c-16aa-49a7-ba8b-00f68e2b226a","transcript_path":"/Users/sheldonzhao/.claude/projects/-Users-sheldonzhao-01-on-progress-programs-TAD/4dc1e02c-16aa-49a7-ba8b-00f68e2b226a.jsonl","cwd":"/Users/sheldonzhao/01-on progress programs/TAD","permission_mode":"default","hook_event_name":"UserPromptSubmit","prompt":"probe 1b payload check with some content\n"}
+P1B-SENTINEL 1775585718 STDIN={"session_id":"4dc1e02c-16aa-49a7-ba8b-00f68e2b226a","transcript_path":"/path/to/.claude/projects/-path-to-TAD/4dc1e02c-16aa-49a7-ba8b-00f68e2b226a.jsonl","cwd":"/path/to/TAD","permission_mode":"default","hook_event_name":"UserPromptSubmit","prompt":"probe 1b payload check with some content\n"}
 ```
 
 **Claude Code's system-layer stdin payload for UserPromptSubmit hooks is a JSON envelope with 6 fields:**
@@ -81,7 +81,7 @@ P1B-SENTINEL 1775585718 STDIN={"session_id":"4dc1e02c-16aa-49a7-ba8b-00f68e2b226
 |---|---|---|---|
 | `session_id` | string (UUID) | `4dc1e02c-...` | identifies the Claude Code session |
 | `transcript_path` | string (absolute path) | `/Users/.../XYZ.jsonl` | full conversation log file |
-| `cwd` | string | `/Users/sheldonzhao/01-on progress programs/TAD` | working directory |
+| `cwd` | string | `/path/to/TAD` | working directory |
 | `permission_mode` | string | `default` | session permission mode |
 | `hook_event_name` | string | `UserPromptSubmit` | self-identifying |
 | `prompt` | string | `"probe 1b payload check...\n"` | **the user's actual message** (trailing `\n`) |

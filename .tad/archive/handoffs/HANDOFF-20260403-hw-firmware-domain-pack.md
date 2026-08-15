@@ -615,8 +615,8 @@ Agent({
 ## Alex 的领域补充：HW Firmware 特定指引
 
 ### 必读
-- `/Users/sheldonzhao/01-on progress programs/toy/PROJECT_CONTEXT.md`
-- `/Users/sheldonzhao/01-on progress programs/toy/_template/` — 可复用的 ESP32 项目模板
+- `/path/to/toy/PROJECT_CONTEXT.md`
+- `/path/to/toy/_template/` — 可复用的 ESP32 项目模板
 
 ### 范围
 - ✅ 固件架构设计（主循环、中断、状态机）

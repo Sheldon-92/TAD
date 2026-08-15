@@ -116,7 +116,7 @@ hook 每日写 `traces/decisions/<date>.jsonl`，**跨午夜会从 2 个变 4 �
 ## 8. Step 0（动手前，一次冻结全部基线）
 
 ```bash
-R="/Users/sheldonzhao/01-on progress programs/TAD"; EV="$R/.tad/evidence/acceptance-tests/routing-decouple"
+R="/path/to/TAD"; EV="$R/.tad/evidence/acceptance-tests/routing-decouple"
 mkdir -p "$EV"; T0=$(git -C "$R" rev-parse --short HEAD); echo "$T0" > "$EV/t0.txt"
 ( cd "$R" && shasum -a 256 .tad/active/handoffs/HANDOFF-20260814-routing-decouple.{md,pins.tsv,block-a.txt,block-b.txt,block-c.txt} ) > "$EV/inputs.sha256"
 { git -C "$R" -c core.quotePath=false diff --name-only HEAD -- .; \

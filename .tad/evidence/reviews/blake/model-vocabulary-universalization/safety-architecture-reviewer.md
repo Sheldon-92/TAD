@@ -82,7 +82,7 @@ section-ownership caveat. A reviewer with `CODEX_HOME` unset is therefore given
 an ambiguous/nonexistent config path and less precise route provenance. AC4
 only checks token presence, so it does not catch this semantic mismatch.
 
-The raw AC9 evidence shows the real fallback is `/Users/sheldonzhao/.codex`
+The raw AC9 evidence shows the real fallback is `/path/to/.codex`
 when `CODEX_HOME` is unset, plus per-agent overrides. Align the workflow
 semantic port with §B2’s fallback and route-resolution wording.
 

@@ -526,7 +526,7 @@ Blake的实现被认为完成，当且仅当：
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|
-| AC1 | CLI 二进制存在（preflight 前提） | pre-impl-verifiable | `ls ~/.tad-notebooklm-venv/bin/notebooklm` | 路径输出，exit 0 | `/Users/sheldonzhao/.tad-notebooklm-venv/bin/notebooklm` (run 2026-07-05, exit 0) |
+| AC1 | CLI 二进制存在（preflight 前提） | pre-impl-verifiable | `ls ~/.tad-notebooklm-venv/bin/notebooklm` | 路径输出，exit 0 | `/path/to/.tad-notebooklm-venv/bin/notebooklm` (run 2026-07-05, exit 0) |
 | AC2 | Registry 现有条目在场（改前基线） | pre-impl-verifiable | `grep -c 'notebook_id: "37cfefa5-52b3-4a8a-a8e3-a83f32150759"' .tad/research-notebooks/REGISTRY.yaml` | `1` | `1` (run 2026-07-05；同 grep 确认 `status: dormant` / `source_count: 45` 基线) |
 | AC3 | Findings 文件存在且非空 | post-impl-verifiable | `test -s ".tad/evidence/research/framework-landscape/2026-07-q3-refresh-findings.md" && echo OK` | `OK` | (post-impl) |
 | AC4 | ≥5 条综合观点各带 Sources 行 | post-impl-verifiable | `grep -c 'Sources:' ".tad/evidence/research/framework-landscape/2026-07-q3-refresh-findings.md"` | 数值 ≥ 5（Gate 3 另做人工 spot-check：观点与 Sources 行一一配对，非堆在文末） | (post-impl) |

@@ -537,7 +537,7 @@ Blake的实现被认为完成，当且仅当：
 ## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
 
 > Pipe-escape note: `\|` in rendered cells → un-escape to `|` when running.
-> `$REPO` = `/Users/sheldonzhao/01-on progress programs/TAD`（含空格，命令中必须引号包裹）。
+> `$REPO` = `/path/to/TAD`（含空格，命令中必须引号包裹）。
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|

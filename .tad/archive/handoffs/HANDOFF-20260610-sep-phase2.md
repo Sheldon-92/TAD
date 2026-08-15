@@ -71,7 +71,7 @@ Phase 1 evidence: Colin's 3 SCANDs were marked `accepted` with ZERO artifacts �
 
 - blake SKILL `skillify_evaluation`: lines 1839-1883. Current flow ends at step 3/4 (write SCAND, note in completion report). Constraint to amend at ~L1879: `"MUST NOT create .claude/skills/{slug}/SKILL.md from Blake — Blake writes candidates, Alex/human creates skills"`
 - Phase 1 landed: SCAND template defaults `status: draft` (discoverer must not set accepted); `.tad/skill-library/` exists with empty `_index.md`; deny-listed (14 entries)
-- Colin SCANDs (at `/Users/sheldonzhao/Downloads/Colin声音项目/.tad/active/skillify-candidates/`): SCAND-20260603-colab-drive-deploy (legacy status: accepted, target ml-training), SCAND-20260606-eval-page-generator, SCAND-20260607-smart-interval — all with zero artifacts
+- Colin SCANDs (at `/path/to/Downloads/Colin声音项目/.tad/active/skillify-candidates/`): SCAND-20260603-colab-drive-deploy (legacy status: accepted, target ml-training), SCAND-20260606-eval-page-generator, SCAND-20260607-smart-interval — all with zero artifacts
 - Skills parity currently 0 (`diff -qr .claude/skills .agents/skills`)
 - sync-registry.yaml: 14 projects (paths listed there — harvest scanner derives from it, never hardcodes)
 
@@ -185,12 +185,12 @@ feedback_required: false
 | AC5 | harvest-scan is read-only (word-bounded command tokens, not substrings) | `bash -c "grep -cE '(^\|[;&\|]\|[[:space:]])(mv\|cp\|rm\|rmdir\|mkdir\|tee\|sed -i)[[:space:]]' .tad/hooks/lib/harvest-scan.sh \|\| true"` | 0 |
 | AC5b | no redirection writes into project paths | Blake manual inspection + statement in completion report: "no >, >> targeting registry project paths" | stated |
 | AC6 | harvest-scan finds Colin candidates | `bash .tad/hooks/lib/harvest-scan.sh \| grep -c "Colin声音项目"` | ≥1 |
-| AC7 | smart-interval materialized in Colin | `test -f "/Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills/smart-interval/SKILL.md" && echo EXISTS` | EXISTS |
+| AC7 | smart-interval materialized in Colin | `test -f "/path/to/Downloads/Colin声音项目/.claude/skills/smart-interval/SKILL.md" && echo EXISTS` | EXISTS |
 | AC8 | 2 T2 references in skill-library | `ls .tad/skill-library/colin--*.md \| wc -l \| tr -d ' '` | 2 |
 | AC9 | _index updated (entry lines, anchored) | `grep -c "^- .*colin--" .tad/skill-library/_index.md` | 2 |
-| AC10a | exactly the T1 SCAND has materialized_at | `grep -l "materialized_at:" "/Users/sheldonzhao/Downloads/Colin声音项目/.tad/active/skillify-candidates/"SCAND-*.md \| wc -l \| tr -d ' '` | 1 |
-| AC10b | all 3 SCANDs carry tier | `grep -l "^tier: T" "/Users/sheldonzhao/Downloads/Colin声音项目/.tad/active/skillify-candidates/"SCAND-*.md \| wc -l \| tr -d ' '` | 3 |
-| AC10c | both T2 SCANDs carry reference_at | `grep -l "reference_at:" "/Users/sheldonzhao/Downloads/Colin声音项目/.tad/active/skillify-candidates/"SCAND-*.md \| wc -l \| tr -d ' '` | 2 |
+| AC10a | exactly the T1 SCAND has materialized_at | `grep -l "materialized_at:" "/path/to/Downloads/Colin声音项目/.tad/active/skillify-candidates/"SCAND-*.md \| wc -l \| tr -d ' '` | 1 |
+| AC10b | all 3 SCANDs carry tier | `grep -l "^tier: T" "/path/to/Downloads/Colin声音项目/.tad/active/skillify-candidates/"SCAND-*.md \| wc -l \| tr -d ' '` | 3 |
+| AC10c | both T2 SCANDs carry reference_at | `grep -l "reference_at:" "/path/to/Downloads/Colin声音项目/.tad/active/skillify-candidates/"SCAND-*.md \| wc -l \| tr -d ' '` | 2 |
 | AC11 | Parity restored | `diff -qr .claude/skills .agents/skills \| wc -l \| tr -d ' '` | 0 |
 | AC12 | Sync-safety analysis exists | `test -f .tad/evidence/reviews/blake/sep-phase2/sync-safety-analysis.md && echo EXISTS` | EXISTS |
 | AC13 | No settings/hooks registration | `git diff --name-only HEAD -- .claude/settings.json \| wc -l \| tr -d ' '` | 0 |

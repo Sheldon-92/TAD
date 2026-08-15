@@ -346,7 +346,7 @@ Required evidence:
 
 Required evidence route:
 1. First use local Codex self-knowledge when available:
-   `node /Users/sheldonzhao/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs`
+   `node /path/to/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs`
 2. Use the generated manual/outline to verify relevant Codex surfaces.
 3. If local manual fetch fails or lacks the relevant claim, use official OpenAI Codex docs only.
 4. If neither establishes the claim, classify it as `unknown_current_behavior` and do not base a design decision on it.

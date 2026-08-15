@@ -2,11 +2,11 @@ warning: `--full-auto` is deprecated; use `--sandbox workspace-write` instead.
 Reading additional input from stdin...
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
-sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/sheldonzhao/.codex/memories]
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /path/to/.codex/memories]
 reasoning effort: high
 reasoning summaries: none
 session id: 019ea2dd-8d39-7522-8d0a-ff19e760d263
@@ -821,7 +821,7 @@ on_start: |
 codex
 I’m activating Blake for this handoff and keeping the write scope constrained to `.tad/evidence/codex-validation/sandbox/`. I’ll read the handoff and required TAD config/read-only health context first, then create only the requested sandbox artifacts.
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/codex/codex-blake-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/codex/codex-blake-skill.md" in /path/to/TAD
  succeeded in 0ms:
 # Agent B - Blake (Execution Master) — Codex Edition
 <!-- Codex-edition: Claude Code-only mechanisms stripped per .tad/portable-rules.md -->
@@ -1045,7 +1045,7 @@ develop_command:
       purpose: "Ensure handoff context is fresh before coding"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/handoff-slugify.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/handoff-slugify.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 task_type: code
@@ -1263,7 +1263,7 @@ Notes: all task-created files must stay under `.tad/evidence/codex-validation/sa
 Action: implement from this handoff in Blake mode.
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Configuration v2.24.0 - Triple-Question KA
 method: TAD
@@ -1487,12 +1487,12 @@ command_system:
       - "*design <feature>": "创建技术设计"
 
 exec
-/bin/zsh -lc "find .tad/active/handoffs -maxdepth 1 -type f -name 'HANDOFF-*.md' -print" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "find .tad/active/handoffs -maxdepth 1 -type f -name 'HANDOFF-*.md' -print" in /path/to/TAD
  succeeded in 0ms:
 .tad/active/handoffs/HANDOFF-20260603-declarative-constraints-v01.md
 
 exec
-/bin/zsh -lc "sed -n '1,160p' NEXT.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,160p' NEXT.md" in /path/to/TAD
  succeeded in 0ms:
 # Next Steps
 
@@ -1658,9 +1658,9 @@ exec
 codex
 Frontmatter confirmed: `task_type=code`, `e2e_required=no`, `research_required=no`, `git_tracked_dirs=[".tad/evidence/codex-validation/sandbox"]`. TAD Health: one unrelated active handoff exists in `.tad/active/handoffs/`, but this run is explicitly scoped to the codex-validation handoff the user named.
 exec
-/bin/zsh -lc "sed -n '221,520p' .tad/codex/codex-blake-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '221,520p' .tad/codex/codex-blake-skill.md" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-agents.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Agents & Interaction
 # Part of TAD config.yaml modular split (v2.2)
@@ -2186,7 +2186,7 @@ knowledge_assessment:
   requirement: "必须在 Gate 结果表格中填写 Knowledge Assessment 部分"
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/config-quality.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Quality Assurance
 # Part of TAD config.yaml modular split (v2.2)
@@ -2450,7 +2450,7 @@ quality_gates:
     matrix:
 
 exec
-/bin/zsh -lc "sed -n '1,240p' .tad/config-execution.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' .tad/config-execution.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: Execution & Learning
 # Part of TAD config.yaml modular split (v2.2)
@@ -2694,7 +2694,7 @@ learning_mechanisms:
 
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/config-platform.yaml" in /path/to/TAD
  succeeded in 0ms:
 # TAD Config Module: MCP Tools Integration
 # Part of TAD config.yaml modular split (v2.2)
@@ -2920,7 +2920,7 @@ mcp_tools:
 codex
 I understand the implementation contract: create a source-safe Bash `slugify` function, a relative-path Bash test runner with the specified cases, and sandbox-local evidence for syntax, tests, code review, testing review, and completion. I will not update TAD global state, `NEXT.md`, or any review directory outside the sandbox because your constraint is stricter for this run.
 exec
-/bin/zsh -lc "sed -n '521,920p' .tad/codex/codex-blake-skill.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '521,920p' .tad/codex/codex-blake-skill.md" in /path/to/TAD
  succeeded in 0ms:
   location: ".tad/project-knowledge/{category}.md"
 
@@ -3198,7 +3198,7 @@ on_start: |
 <!-- honest_partial_protocol:END -->
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/shell-portability.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/shell-portability.md" in /path/to/TAD
  succeeded in 0ms:
 # Shell Portability Patterns (Layer 2)
 
@@ -3253,7 +3253,7 @@ exec
 - **Grounded in**: .tad/scripts/scan-collisions.sh (shared-keyword pre-filter), .tad/evidence/yolo/pack-collision-detection/phase1-impl-review-cr.md (P1-1), COMPLETION-20260531-pack-collision-detection-phase1.md
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/ac-verification.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/project-knowledge/patterns/ac-verification.md" in /path/to/TAD
  succeeded in 0ms:
 # AC Verification Patterns (Layer 2)
 
@@ -3285,7 +3285,7 @@ exec
 - **Grounded in**: .tad/scripts/pack-eval-runner.sh, .claude/skills/*/examples/*.md (16 fixtures), .tad/templates/pack-example-fixture.md, COMPLETION-20260531-tad-lean-trustworthy-phase5.md AC5.3
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-testing/SKILL.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-testing/SKILL.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: web-testing
@@ -3417,12 +3417,12 @@ Produce a structured testing review:
 | Stryker | `npx stryker init` | Mutation testing |
 
 exec
-/bin/zsh -lc 'git status --porcelain -- .tad/evidence/codex-validation/sandbox .tad/evidence/codex-validation/handoff-slugify.md' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git status --porcelain -- .tad/evidence/codex-validation/sandbox .tad/evidence/codex-validation/handoff-slugify.md' in /path/to/TAD
  succeeded in 0ms:
 ?? .tad/evidence/codex-validation/handoff-slugify.md
 
 exec
-/bin/zsh -lc "sed -n '1,260p' .claude/skills/web-testing/references/test-strategy-rules.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .claude/skills/web-testing/references/test-strategy-rules.md" in /path/to/TAD
  succeeded in 0ms:
 # Test Strategy Rules
 <!-- capability: test_strategy -->
@@ -3633,9 +3633,9 @@ required_status_checks:
 | "We'll fix tests later" bypass | Permanent broken window | Zero tolerance quality gates (S8) |
 
 exec
-/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -maxdepth 3 -type d -print 2>/dev/null' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -maxdepth 3 -type d -print 2>/dev/null' in /path/to/TAD
 exec
-/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -maxdepth 3 -type f -print 2>/dev/null' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -maxdepth 3 -type f -print 2>/dev/null' in /path/to/TAD
  succeeded in 0ms:
 .tad/evidence/codex-validation/sandbox
 
@@ -3643,12 +3643,12 @@ exec
 codex
 Implementation shape is straightforward and matches the portability notes: pure Bash plus POSIX `tr`/`sed`, explicit `LC_ALL=C`, no GNU-only flags, and tests ordered as fast syntax checks before behavior. I’m creating the two scripts and sandbox-local evidence directory now.
 exec
-/bin/zsh -lc 'mkdir -p .tad/evidence/codex-validation/sandbox/evidence' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'mkdir -p .tad/evidence/codex-validation/sandbox/evidence' in /path/to/TAD
  succeeded in 0ms:
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 diff --git a/.tad/evidence/codex-validation/sandbox/slugify.sh b/.tad/evidence/codex-validation/sandbox/slugify.sh
 new file mode 100644
 index 0000000000000000000000000000000000000000..78f3ab6572ea789956174979c614a19be487969e
@@ -3802,7 +3802,7 @@ exec
   if [ "$status" -ne 0 ] || [ -n "$source_output" ]; then
     exit 1
   fi
-} > .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt 2>&1' in /Users/sheldonzhao/01-on progress programs/TAD
+} > .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt 2>&1' in /path/to/TAD
  exited 1 in 0ms:
 diff --git a/.tad/evidence/codex-validation/sandbox/slugify.sh b/.tad/evidence/codex-validation/sandbox/slugify.sh
 new file mode 100644
@@ -3870,7 +3870,7 @@ index 0000000000000000000000000000000000000000..87f38846a437a47464332e9d3f80edfb
 +exit 1
 
 exec
-/bin/zsh -lc "sed -n '1,160p' .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,160p' .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt" in /path/to/TAD
  succeeded in 0ms:
 $ bash -n .tad/evidence/codex-validation/sandbox/slugify.sh
 zsh:5: read-only variable: status
@@ -3963,7 +3963,7 @@ exec
   if [ "$rc" -ne 0 ] || [ -n "$source_output" ]; then
     exit 1
   fi
-} > .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt 2>&1' in /Users/sheldonzhao/01-on progress programs/TAD
+} > .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt 2>&1' in /path/to/TAD
  succeeded in 0ms:
 diff --git a/.tad/evidence/codex-validation/sandbox/slugify.sh b/.tad/evidence/codex-validation/sandbox/slugify.sh
 new file mode 100644
@@ -4039,7 +4039,7 @@ exec
   rc="'$?
   printf '"'exit %d\\n' \""'$rc"
   exit "$rc"
-} > .tad/evidence/codex-validation/sandbox/evidence/test-output.txt 2>&1' in /Users/sheldonzhao/01-on progress programs/TAD
+} > .tad/evidence/codex-validation/sandbox/evidence/test-output.txt 2>&1' in /path/to/TAD
  succeeded in 0ms:
 diff --git a/.tad/evidence/codex-validation/sandbox/slugify.sh b/.tad/evidence/codex-validation/sandbox/slugify.sh
 new file mode 100644
@@ -4107,9 +4107,9 @@ index 0000000000000000000000000000000000000000..87f38846a437a47464332e9d3f80edfb
 +exit 1
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /path/to/TAD
  succeeded in 0ms:
 #!/usr/bin/env bash
 
@@ -4167,7 +4167,7 @@ printf '%d assertion(s) failed\n' "$failures"
 exit 1
 
 exec
-/bin/zsh -lc "sed -n '1,160p' .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,160p' .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt" in /path/to/TAD
  succeeded in 0ms:
 $ bash -n .tad/evidence/codex-validation/sandbox/slugify.sh
 exit 0
@@ -4177,7 +4177,7 @@ $ bash -c 'source .tad/evidence/codex-validation/sandbox/slugify.sh'
 exit 0
 
 exec
-/bin/zsh -lc "sed -n '1,200p' .tad/evidence/codex-validation/sandbox/evidence/test-output.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,200p' .tad/evidence/codex-validation/sandbox/evidence/test-output.txt" in /path/to/TAD
  succeeded in 0ms:
 $ bash .tad/evidence/codex-validation/sandbox/test_slugify.sh
 PASS: Hello\ World -> hello-world
@@ -4261,9 +4261,9 @@ codex
 The implementation and test transcript are clean. I’m adding the required sandbox-local review and completion artifacts now, with the knowledge assessment recorded in the completion report instead of writing project-knowledge files outside the allowed sandbox.
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/evidence/completion-report.md
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/evidence/testing-review.txt
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/evidence/completion-report.md
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/evidence/testing-review.txt
 diff --git a/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt b/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 new file mode 100644
 index 0000000000000000000000000000000000000000..03f1dd4d482660c932178f5ff2a16d6af53a797a
@@ -4599,7 +4599,7 @@ index 0000000000000000000000000000000000000000..87f38846a437a47464332e9d3f80edfb
 codex
 All required evidence files have been created under the sandbox. I’m doing the final scope and manifest checks now: list files, verify evidence presence, and inspect git status to separate task-created sandbox files from the pre-existing handoff file.
 exec
-/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -type f -print | sort' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -type f -print | sort' in /path/to/TAD
  succeeded in 0ms:
 .tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 .tad/evidence/codex-validation/sandbox/evidence/completion-report.md
@@ -4610,7 +4610,7 @@ exec
 .tad/evidence/codex-validation/sandbox/test_slugify.sh
 
 exec
-/bin/zsh -lc 'ls -la .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt .tad/evidence/codex-validation/sandbox/evidence/test-output.txt .tad/evidence/codex-validation/sandbox/evidence/code-review.txt .tad/evidence/codex-validation/sandbox/evidence/testing-review.txt .tad/evidence/codex-validation/sandbox/evidence/completion-report.md' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'ls -la .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt .tad/evidence/codex-validation/sandbox/evidence/test-output.txt .tad/evidence/codex-validation/sandbox/evidence/code-review.txt .tad/evidence/codex-validation/sandbox/evidence/testing-review.txt .tad/evidence/codex-validation/sandbox/evidence/completion-report.md' in /path/to/TAD
  succeeded in 0ms:
 -rw-r--r--@ 1 sheldonzhao  staff   761 Jun  7 12:17 .tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 -rw-r--r--@ 1 sheldonzhao  staff  2446 Jun  7 12:17 .tad/evidence/codex-validation/sandbox/evidence/completion-report.md
@@ -4621,7 +4621,7 @@ exec
 -rw-r--r--@ 1 sheldonzhao  staff   931 Jun  7 12:16 .tad/evidence/codex-validation/sandbox/test_slugify.sh
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/evidence/completion-report.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/evidence/completion-report.md" in /path/to/TAD
  succeeded in 0ms:
 # Completion Report: HANDOFF-20260607-slugify-bash-sandbox
 
@@ -4675,7 +4675,7 @@ Layer 2 verification:
 - The standard TAD steps that would update `.tad/active/session-state.md`, `NEXT.md`, non-sandbox review directories, or git commits were intentionally skipped to honor the stricter user constraint that every created/modified task file must remain under `.tad/evidence/codex-validation/sandbox/`.
 
 exec
-/bin/zsh -lc 'git status --porcelain -- .tad/evidence/codex-validation' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git status --porcelain -- .tad/evidence/codex-validation' in /path/to/TAD
  succeeded in 0ms:
 ?? .tad/evidence/codex-validation/
 
@@ -4846,7 +4846,7 @@ index 0000000000000000000000000000000000000000..87f38846a437a47464332e9d3f80edfb
 +exit 1
 
 exec
-/bin/zsh -lc 'git status --porcelain -uall -- .tad/evidence/codex-validation' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git status --porcelain -uall -- .tad/evidence/codex-validation' in /path/to/TAD
  succeeded in 0ms:
 ?? .tad/evidence/codex-validation/git-before-blake.txt
 ?? .tad/evidence/codex-validation/handoff-slugify.md
@@ -5031,8 +5031,8 @@ codex
 One implementation detail needed tightening before finalizing: line-oriented `sed` would treat embedded newlines as separate output lines. I’m changing the function to normalize internal newlines into separators before the final `sed` pass and adding a focused assertion for that whitespace case.
 apply patch
 patch: completed
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
+/path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 diff --git a/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt b/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 new file mode 100644
 index 0000000000000000000000000000000000000000..03f1dd4d482660c932178f5ff2a16d6af53a797a
@@ -5398,7 +5398,7 @@ exec
   if [ "$rc" -ne 0 ] || [ -n "$source_output" ]; then
     exit 1
   fi
-} > .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt 2>&1' in /Users/sheldonzhao/01-on progress programs/TAD
+} > .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt 2>&1' in /path/to/TAD
  succeeded in 0ms:
 diff --git a/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt b/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 new file mode 100644
@@ -5578,7 +5578,7 @@ exec
   rc="'$?
   printf '"'exit %d\\n' \""'$rc"
   exit "$rc"
-} > .tad/evidence/codex-validation/sandbox/evidence/test-output.txt 2>&1' in /Users/sheldonzhao/01-on progress programs/TAD
+} > .tad/evidence/codex-validation/sandbox/evidence/test-output.txt 2>&1' in /path/to/TAD
  succeeded in 0ms:
 diff --git a/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt b/.tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 new file mode 100644
@@ -5754,7 +5754,7 @@ index 0000000000000000000000000000000000000000..1761ffc9285548d79bb0139ff018501b
 codex
 Final verification passed after the newline fix. I’m reading back the saved transcripts one last time so the final report can include the actual command output, not a paraphrase.
 exec
-/bin/zsh -lc "sed -n '1,180p' .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,180p' .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt" in /path/to/TAD
  succeeded in 0ms:
 $ bash -n .tad/evidence/codex-validation/sandbox/slugify.sh
 exit 0
@@ -5764,7 +5764,7 @@ $ bash -c 'source .tad/evidence/codex-validation/sandbox/slugify.sh'
 exit 0
 
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/evidence/test-output.txt" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/evidence/test-output.txt" in /path/to/TAD
  succeeded in 0ms:
 $ bash .tad/evidence/codex-validation/sandbox/test_slugify.sh
 PASS: Hello\ World -> hello-world
@@ -5781,7 +5781,7 @@ all assertions pass
 exit 0
 
 exec
-/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -type f -print | sort' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'find .tad/evidence/codex-validation/sandbox -type f -print | sort' in /path/to/TAD
  succeeded in 0ms:
 .tad/evidence/codex-validation/sandbox/evidence/code-review.txt
 .tad/evidence/codex-validation/sandbox/evidence/completion-report.md
@@ -5792,7 +5792,7 @@ exec
 .tad/evidence/codex-validation/sandbox/test_slugify.sh
 
 exec
-/bin/zsh -lc 'git status --porcelain -uall -- .tad/evidence/codex-validation' in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc 'git status --porcelain -uall -- .tad/evidence/codex-validation' in /path/to/TAD
  succeeded in 0ms:
 ?? .tad/evidence/codex-validation/git-before-blake.txt
 ?? .tad/evidence/codex-validation/handoff-slugify.md
@@ -5982,8 +5982,8 @@ codex
 Implemented as Blake under the sandbox constraint only.
 
 Created:
-- [slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
-- [test_slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
+- [slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
+- [test_slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
 - Evidence files under `.tad/evidence/codex-validation/sandbox/evidence/`
 
 Gate 3: PASS
@@ -6192,8 +6192,8 @@ tokens used
 Implemented as Blake under the sandbox constraint only.
 
 Created:
-- [slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
-- [test_slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
+- [slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
+- [test_slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
 - Evidence files under `.tad/evidence/codex-validation/sandbox/evidence/`
 
 Gate 3: PASS

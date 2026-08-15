@@ -1,7 +1,7 @@
 # backend-architect Pre-Handoff Review — Pre-Publish Cleanup
 
 **Reviewer**: backend-architect (pre-handoff, parallel with code-reviewer)
-**Handoff**: `/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260427-pre-publish-cleanup.md`
+**Handoff**: `/path/to/TAD/.tad/active/handoffs/HANDOFF-20260427-pre-publish-cleanup.md`
 **Date**: 2026-04-27
 **Type**: Design coherence + AC13 fresh grep dogfood + symmetry concerns
 **Mode**: REVIEW only — no handoff modifications, no implementation code
@@ -10,7 +10,7 @@
 
 ## AC13 Fresh Grep Result (REQUIRED)
 
-**Command run from `/Users/sheldonzhao/01-on progress programs/TAD/`**:
+**Command run from `/path/to/TAD/`**:
 ```bash
 grep -rln "additionalContext\|hookSpecificOutput" .tad/ .claude/ 2>/dev/null \
   | grep -v "^\.tad/archive" \
@@ -197,6 +197,6 @@ The handoff's gate4_delta tracking from the prior cleanup correctly self-prescri
 
 ---
 
-**File**: `/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/reviews/blake/pre-publish-cleanup/backend-architect.md`
+**File**: `/path/to/TAD/.tad/evidence/reviews/blake/pre-publish-cleanup/backend-architect.md`
 **Reviewer**: backend-architect
 **Status**: CONDITIONAL PASS — fix P0-1, P0-2, P0-3 before Blake starts

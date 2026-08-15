@@ -1,7 +1,7 @@
 Reading additional input from stdin...
 OpenAI Codex v0.130.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.5
 provider: openai
 approval: never
@@ -53,7 +53,7 @@ Report findings as P0 (blocking) / P1 (important) / P2 (advisory), with specific
 codex
 I’ll review this as a backend/spec review and check the local code context for `slugify` consumers, since the signature change is the main risk surface. I’m also loading the relevant backend capability guidance first because the request explicitly frames this as a backend architecture review.
 exec
-/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-backend/SKILL.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .claude/skills/web-backend/SKILL.md" in /path/to/TAD
  succeeded in 0ms:
 ---
 name: web-backend
@@ -204,9 +204,9 @@ DB migration, error handling, auth middleware), see `CONVENTIONS.md`.
 | `references/debugging.md` | Rules 1–4: 3-Strike Rule, test-verified fixes, blast radius, Iron Law |
 
 exec
-/bin/zsh -lc "pwd && rg --files -g 'slugify.sh' -g '*.sh' -g 'NEXT.md' -g 'HANDOFF-*' .tad . 2>/dev/null | sed -n '1,120p'" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "pwd && rg --files -g 'slugify.sh' -g '*.sh' -g 'NEXT.md' -g 'HANDOFF-*' .tad . 2>/dev/null | sed -n '1,120p'" in /path/to/TAD
  succeeded in 0ms:
-/Users/sheldonzhao/01-on progress programs/TAD
+/path/to/TAD
 ./scripts/archive/cleanup.sh
 ./scripts/archive/cleanup-configs.sh
 ./scripts/archive/upgrade-to-v31.sh
@@ -331,7 +331,7 @@ exec
 codex
 The backend pack routes this to its architecture reference. I’ve found the sandbox target path is not in the first file listing, so next I’m checking the actual `slugify` definition and any call sites before judging blast radius.
 exec
-/bin/zsh -lc "sed -n '1,240p' .claude/skills/web-backend/references/architecture.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' .claude/skills/web-backend/references/architecture.md" in /path/to/TAD
  succeeded in 0ms:
 # Architecture Rules
 
@@ -503,7 +503,7 @@ Justify deviations in an ADR (Architectural Decision Record).
 [Source: Sairyss/domain-driven-hexagon — Architecture Patterns; Microsoft Architecture Guides]
 
 exec
-/bin/zsh -lc "find . -path '*/slugify.sh' -print" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "find . -path '*/slugify.sh' -print" in /path/to/TAD
  succeeded in 3340ms:
 ./.tad/evidence/codex-validation/sandbox/slugify.sh
 
@@ -517,9 +517,9 @@ mcp: codebase-memory-mcp/query_graph started
 mcp: codebase-memory-mcp/query_graph (failed)
 user cancelled MCP tool call
 exec
-/bin/zsh -lc "rg -n \"\\bslugify\\b|slugify\\.sh\" ." in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg -n \"\\bslugify\\b|slugify\\.sh\" ." in /path/to/TAD
 exec
-/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /path/to/TAD
  succeeded in 0ms:
 #!/usr/bin/env bash
 
@@ -549,7 +549,7 @@ mcp: codebase-memory-mcp/trace_path started
 mcp: codebase-memory-mcp/trace_path (failed)
 user cancelled MCP tool call
 exec
-/bin/zsh -lc "rg --hidden -n \"\\bslugify\\b|slugify\\.sh\" ." in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg --hidden -n \"\\bslugify\\b|slugify\\.sh\" ." in /path/to/TAD
  succeeded in 396ms:
 ./.tad/evidence/codex-validation/handoff-slugify.md:10:# HANDOFF-20260607-slugify-bash-sandbox
 ./.tad/evidence/codex-validation/handoff-slugify.md:29:Build a Bash `slugify` function in:
@@ -623,18 +623,18 @@ exec
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:41:  Verification: `slugify "a very long string here"` truncates to 50 chars.
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:43:  Verification: `slugify "a very long string here"` returns the full slug.
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:54:I’ll review this as a backend/spec review and check the local code context for `slugify` consumers, since the signature change is the main risk surface. I’m also loading the relevant backend capability guidance first because the request explicitly frames this as a backend architecture review.
-./.tad/evidence/codex-validation/transcripts/expC-architect.txt:207:/bin/zsh -lc "pwd && rg --files -g 'slugify.sh' -g '*.sh' -g 'NEXT.md' -g 'HANDOFF-*' .tad . 2>/dev/null | sed -n '1,120p'" in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expC-architect.txt:207:/bin/zsh -lc "pwd && rg --files -g 'slugify.sh' -g '*.sh' -g 'NEXT.md' -g 'HANDOFF-*' .tad . 2>/dev/null | sed -n '1,120p'" in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:332:The backend pack routes this to its architecture reference. I’ve found the sandbox target path is not in the first file listing, so next I’m checking the actual `slugify` definition and any call sites before judging blast radius.
-./.tad/evidence/codex-validation/transcripts/expC-architect.txt:506:/bin/zsh -lc "find . -path '*/slugify.sh' -print" in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expC-architect.txt:506:/bin/zsh -lc "find . -path '*/slugify.sh' -print" in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:508:./.tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:515:The target file exists at the path named in §7. I’m now checking whether `slugify` is indexed and then cross-checking literal call sites, because shell functions can be invoked through sourcing or subprocess patterns that a graph may miss.
-./.tad/evidence/codex-validation/transcripts/expC-architect.txt:520:/bin/zsh -lc "rg -n \"\\bslugify\\b|slugify\\.sh\" ." in /Users/sheldonzhao/01-on progress programs/TAD
-./.tad/evidence/codex-validation/transcripts/expC-architect.txt:522:/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expC-architect.txt:520:/bin/zsh -lc "rg -n \"\\bslugify\\b|slugify\\.sh\" ." in /path/to/TAD
+./.tad/evidence/codex-validation/transcripts/expC-architect.txt:522:/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:526:slugify() {
 ./.tad/evidence/codex-validation/transcripts/expC-architect.txt:544:The current `slugify.sh` has a subtle signature issue already: `input="$*"` consumes every argument as source text, so adding a second positional argument changes behavior unless the implementation explicitly separates `$1` and `$2`. The first literal search skipped hidden directories, so I’m rerunning it with hidden files included.
-./.tad/evidence/codex-validation/transcripts/expC-architect.txt:552:/bin/zsh -lc "rg --hidden -n \"\\bslugify\\b|slugify\\.sh\" ." in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expC-architect.txt:552:/bin/zsh -lc "rg --hidden -n \"\\bslugify\\b|slugify\\.sh\" ." in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:16:  .tad/evidence/codex-validation/handoff-slugify.md
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1048:/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/handoff-slugify.md" in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1048:/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/handoff-slugify.md" in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1059:# HANDOFF-20260607-slugify-bash-sandbox
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1078:Build a Bash `slugify` function in:
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1080:`.tad/evidence/codex-validation/sandbox/slugify.sh`
@@ -664,10 +664,10 @@ exec
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1260:Scope: create `slugify.sh`, `test_slugify.sh`, and sandbox-local evidence only  
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:1261:Key files: `.tad/evidence/codex-validation/sandbox/slugify.sh`, `.tad/evidence/codex-validation/sandbox/test_slugify.sh`  
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:2921:I understand the implementation contract: create a source-safe Bash `slugify` function, a relative-path Bash test runner with the specified cases, and sandbox-local evidence for syntax, tests, code review, testing review, and completion. I will not update TAD global state, `NEXT.md`, or any review directory outside the sandbox because your constraint is stricter for this run.
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3420:/bin/zsh -lc 'git status --porcelain -- .tad/evidence/codex-validation/sandbox .tad/evidence/codex-validation/handoff-slugify.md' in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3420:/bin/zsh -lc 'git status --porcelain -- .tad/evidence/codex-validation/sandbox .tad/evidence/codex-validation/handoff-slugify.md' in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3422:?? .tad/evidence/codex-validation/handoff-slugify.md
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3650:/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3651:/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3650:/path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3651:/path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3652:diff --git a/.tad/evidence/codex-validation/sandbox/slugify.sh b/.tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3656:+++ b/.tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:3660:+slugify() {
@@ -719,8 +719,8 @@ exec
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4067:+++ b/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4073:+source "$script_dir/slugify.sh"
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4082:+  actual="$(slugify "$input")"
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4110:/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4112:/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4110:/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/slugify.sh" in /path/to/TAD
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4112:/bin/zsh -lc "sed -n '1,260p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4116:slugify() {
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4133:source "$script_dir/slugify.sh"
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4142:  actual="$(slugify "$input")"
@@ -779,7 +779,7 @@ exec
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4572:+  actual="$(slugify "$input")"
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4609:.tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4610:.tad/evidence/codex-validation/sandbox/test_slugify.sh
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4613:/bin/zsh -lc 'ls -la .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt .tad/evidence/codex-validation/sandbox/evidence/test-output.txt .tad/evidence/codex-validation/sandbox/evidence/code-review.txt .tad/evidence/codex-validation/sandbox/evidence/testing-review.txt .tad/evidence/codex-validation/sandbox/evidence/completion-report.md' in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4613:/bin/zsh -lc 'ls -la .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh .tad/evidence/codex-validation/sandbox/evidence/syntax-check.txt .tad/evidence/codex-validation/sandbox/evidence/test-output.txt .tad/evidence/codex-validation/sandbox/evidence/code-review.txt .tad/evidence/codex-validation/sandbox/evidence/testing-review.txt .tad/evidence/codex-validation/sandbox/evidence/completion-report.md' in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4620:-rw-r--r--@ 1 sheldonzhao  staff   228 Jun  7 12:16 .tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4621:-rw-r--r--@ 1 sheldonzhao  staff   931 Jun  7 12:16 .tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4626:# Completion Report: HANDOFF-20260607-slugify-bash-sandbox
@@ -837,8 +837,8 @@ exec
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4988:+++ b/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:4994:+source "$script_dir/slugify.sh"
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5003:+  actual="$(slugify "$input")"
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5034:/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5035:/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5034:/path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5035:/path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5043:+Scope: .tad/evidence/codex-validation/sandbox/slugify.sh and test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5053:+- slugify.sh defines exactly one source-safe Bash function named slugify.
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5065:+# Completion Report: HANDOFF-20260607-slugify-bash-sandbox
@@ -958,8 +958,8 @@ exec
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5938:+++ b/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5944:+source "$script_dir/slugify.sh"
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5953:+  actual="$(slugify "$input")"
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5985:- [slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5986:- [test_slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5985:- [slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5986:- [test_slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5993:$ bash -n .tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5995:$ bash -n .tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:5997:$ bash -c 'source .tad/evidence/codex-validation/sandbox/slugify.sh'
@@ -985,19 +985,19 @@ exec
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6147:+++ b/.tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6153:+source "$script_dir/slugify.sh"
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6162:+  actual="$(slugify "$input")"
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6195:- [slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
-./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6196:- [test_slugify.sh](</Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6195:- [slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh>)
+./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6196:- [test_slugify.sh](</path/to/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh>)
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6203:$ bash -n .tad/evidence/codex-validation/sandbox/slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6205:$ bash -n .tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6207:$ bash -c 'source .tad/evidence/codex-validation/sandbox/slugify.sh'
 ./.tad/evidence/codex-validation/transcripts/p2-blake.txt:6213:$ bash .tad/evidence/codex-validation/sandbox/test_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:17:In .tad/evidence/codex-validation/sandbox/rework/ there are two files: buggy_slugify.sh and test_buggy.sh.
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:21:  diagnose the failures -> fix buggy_slugify.sh -> re-run the test -> repeat until ALL assertions pass (exit 0).
-./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2220:/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2220:/bin/zsh -lc "sed -n '1,220p' .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh" in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2224:slugify() {
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2234:source "$dir/buggy_slugify.sh"
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2236:check(){ local got; got="$(slugify "$1")"; if [ "$got" = "$2" ]; then echo "PASS: [$1] -> [$got]"; else echo "FAIL: [$1] expected [$2] got [$got]"; fail=$((fail+1)); fi; }
-./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2417:/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
+./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2417:/path/to/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2418:diff --git a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2420:--- a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2421:+++ b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
@@ -1010,25 +1010,25 @@ exec
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2460:--- a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2461:+++ b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2466: slugify() {
-./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2476:/bin/zsh -lc 'git diff -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2476:/bin/zsh -lc 'git diff -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2478:diff --git a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2480:--- a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2481:+++ b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2486: slugify() {
-./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2496:/bin/zsh -lc 'git status --short -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2496:/bin/zsh -lc 'git status --short -- .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh .tad/evidence/codex-validation/sandbox/rework/test_buggy.sh' in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2498:?? .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2501:diff --git a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2503:--- a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2504:+++ b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2509: slugify() {
-./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2521:- Diagnosis: [buggy_slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
+./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2521:- Diagnosis: [buggy_slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2522:- Fix: updated `slugify()` to lowercase via `tr`, convert non-alphanumeric runs to one hyphen, and trim leading/trailing hyphens using portable `sed`.
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2533:Only `buggy_slugify.sh` was modified under `.tad/evidence/codex-validation/sandbox/rework/`.
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2534:diff --git a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2536:--- a/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2537:+++ b/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2542: slugify() {
-./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2555:- Diagnosis: [buggy_slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
+./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2555:- Diagnosis: [buggy_slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3) only replaced literal spaces with `-`.
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2556:- Fix: updated `slugify()` to lowercase via `tr`, convert non-alphanumeric runs to one hyphen, and trim leading/trailing hyphens using portable `sed`.
 ./.tad/evidence/codex-validation/transcripts/expB-blake.txt:2567:Only `buggy_slugify.sh` was modified under `.tad/evidence/codex-validation/sandbox/rework/`.
 ./.tad/evidence/codex-validation/transcripts/expC-code-reviewer.txt:24:# HANDOFF-20260607-slugify-maxlen
@@ -1044,7 +1044,7 @@ exec
 ./.tad/evidence/codex-validation/transcripts/expC-code-reviewer.txt:81:`slugify "hello world foo bar" 11 | grep -P '^[a-z\-]+$'` only checks lowercase/hyphen shape. `hello-world-foo-bar` would pass, so it does not verify truncation or exact output. Also `grep -P` is GNU-only and not portable to macOS/BSD.
 ./.tad/evidence/codex-validation/transcripts/expC-code-reviewer.txt:91:P2: §7 lists only `slugify.sh`. If tests or validation scripts exist for this sandbox, they should be listed too; otherwise the handoff should explicitly say no test files are modified.
 ./.tad/evidence/codex-validation/transcripts/p1-alex.txt:16:  'Write a bash slugify function: converts any string to a kebab-case slug (lowercase, spaces to hyphens, strip special chars). Put it in slugify.sh with a companion test script. All files must live under .tad/evidence/codex-validation/sandbox/'
-./.tad/evidence/codex-validation/transcripts/p1-alex.txt:4209:/bin/zsh -lc 'for f in .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh; do test -f "$f" && sed -n '"'1,50p' \""'$f"; done' in /Users/sheldonzhao/01-on progress programs/TAD
+./.tad/evidence/codex-validation/transcripts/p1-alex.txt:4209:/bin/zsh -lc 'for f in .tad/evidence/codex-validation/sandbox/slugify.sh .tad/evidence/codex-validation/sandbox/test_slugify.sh; do test -f "$f" && sed -n '"'1,50p' \""'$f"; done' in /path/to/TAD
 ./.tad/evidence/codex-validation/transcripts/p1-alex.txt:4216:1. Should `slugify` be a source-able Bash function only, or should `slugify.sh` also work as a CLI when executed directly?
 ./.tad/evidence/codex-validation/transcripts/p1-alex.txt:4244:# HANDOFF-20260607-slugify-bash-sandbox
 ./.tad/evidence/codex-validation/transcripts/p1-alex.txt:4263:Build a Bash `slugify` function in:
@@ -1107,7 +1107,7 @@ exec
 codex
 The graph tool did not return usable results for this shell symbol, so I’m treating literal evidence as authoritative for this review. The concrete downstream consumer I see is the sandbox test script that sources `slugify.sh`; the broader repo references are handoff/evidence transcripts rather than production callers.
 exec
-/bin/zsh -lc "sed -n '1,120p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,120p' .tad/evidence/codex-validation/sandbox/test_slugify.sh" in /path/to/TAD
  succeeded in 0ms:
 #!/usr/bin/env bash
 set -u
@@ -1151,7 +1151,7 @@ printf '%d assertion(s) failed\n' "$failures"
 exit 1
 
 exec
-/bin/zsh -lc "rg --hidden -n \"source .*slugify\\.sh|\\. .*slugify\\.sh|slugify \\\"|slugify '\\''|slugify \\"'$|slugify'"\\(\" .tad/evidence/codex-validation/sandbox .tad/evidence/codex-validation/*.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "rg --hidden -n \"source .*slugify\\.sh|\\. .*slugify\\.sh|slugify \\\"|slugify '\\''|slugify \\"'$|slugify'"\\(\" .tad/evidence/codex-validation/sandbox .tad/evidence/codex-validation/*.md" in /path/to/TAD
  succeeded in 0ms:
 .tad/evidence/codex-validation/sandbox/rework/buggy_slugify.sh:3:slugify() {
 .tad/evidence/codex-validation/handoff-slugify.md:65:FR9: `test_slugify.sh` must source `slugify.sh` relative to its own location and run deterministic assertions.
@@ -1178,10 +1178,10 @@ exec
 codex
 **P0 — Blocking**
 - §9 AC2 and AC5 directly contradict each other. AC2 says omitted `max_length` defaults to `50`; AC5 says omitted `max_length` returns the full slug with no truncation. The implementation cannot satisfy both. Pick one contract.
-- §1/§6/§9 are ambiguous against the current API. [slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh:3) currently uses `input="$*"`, so all args are treated as input. A new positional second arg changes semantics for callers using `slugify hello world`. Specify whether the new contract is `slugify "$input" "$max_length"` only, or use a less ambiguous option form like `slugify --max-length 11 "$input"`.
+- §1/§6/§9 are ambiguous against the current API. [slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh:3) currently uses `input="$*"`, so all args are treated as input. A new positional second arg changes semantics for callers using `slugify hello world`. Specify whether the new contract is `slugify "$input" "$max_length"` only, or use a less ambiguous option form like `slugify --max-length 11 "$input"`.
 
 **P1 — Important**
-- §7 blast radius is incomplete. [test_slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh:5) sources `slugify.sh`, and line 14 calls `slugify "$input"`. It is a downstream consumer and should be listed for updates or explicitly declared unchanged with added coverage elsewhere.
+- §7 blast radius is incomplete. [test_slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh:5) sources `slugify.sh`, and line 14 calls `slugify "$input"`. It is a downstream consumer and should be listed for updates or explicitly declared unchanged with added coverage elsewhere.
 - §9 AC1 verification does not verify AC1. `grep -P '^[a-z\-]+$'` would pass `hello-world-foo-bar`, so truncation could be broken while the check passes. It also uses GNU `grep -P`, which is not portable on macOS. Use exact comparison: `[[ "$(slugify "hello world foo bar" 11)" == "hello-world" ]]`.
 - §6 lacks edge-case rules for truncation. “Last hyphen before the limit” needs behavior for no hyphen before limit, hyphen exactly at limit, non-positive/invalid `max_length`, and whether the returned slug may end with `-`.
 
@@ -1192,10 +1192,10 @@ tokens used
 62,341
 **P0 — Blocking**
 - §9 AC2 and AC5 directly contradict each other. AC2 says omitted `max_length` defaults to `50`; AC5 says omitted `max_length` returns the full slug with no truncation. The implementation cannot satisfy both. Pick one contract.
-- §1/§6/§9 are ambiguous against the current API. [slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh:3) currently uses `input="$*"`, so all args are treated as input. A new positional second arg changes semantics for callers using `slugify hello world`. Specify whether the new contract is `slugify "$input" "$max_length"` only, or use a less ambiguous option form like `slugify --max-length 11 "$input"`.
+- §1/§6/§9 are ambiguous against the current API. [slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/slugify.sh:3) currently uses `input="$*"`, so all args are treated as input. A new positional second arg changes semantics for callers using `slugify hello world`. Specify whether the new contract is `slugify "$input" "$max_length"` only, or use a less ambiguous option form like `slugify --max-length 11 "$input"`.
 
 **P1 — Important**
-- §7 blast radius is incomplete. [test_slugify.sh](/Users/sheldonzhao/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh:5) sources `slugify.sh`, and line 14 calls `slugify "$input"`. It is a downstream consumer and should be listed for updates or explicitly declared unchanged with added coverage elsewhere.
+- §7 blast radius is incomplete. [test_slugify.sh](/path/to/01-on%20progress%20programs/TAD/.tad/evidence/codex-validation/sandbox/test_slugify.sh:5) sources `slugify.sh`, and line 14 calls `slugify "$input"`. It is a downstream consumer and should be listed for updates or explicitly declared unchanged with added coverage elsewhere.
 - §9 AC1 verification does not verify AC1. `grep -P '^[a-z\-]+$'` would pass `hello-world-foo-bar`, so truncation could be broken while the check passes. It also uses GNU `grep -P`, which is not portable on macOS. Use exact comparison: `[[ "$(slugify "hello world foo bar" 11)" == "hello-world" ]]`.
 - §6 lacks edge-case rules for truncation. “Last hyphen before the limit” needs behavior for no hyphen before limit, hyphen exactly at limit, non-positive/invalid `max_length`, and whether the returned slug may end with `-`.
 
