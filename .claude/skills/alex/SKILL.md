@@ -326,7 +326,7 @@ activation-instructions:
             If days_since_release < buffer_days → buffer_status = "observing"
             urgent_security (dual-path, either triggers):
               Path 1: security_advisories is non-empty
-              Path 2: changelog_text matches CVE pattern (regex: /CVE-\d{4}-\d+/)
+              Path 2: changelog_text matches advisory pattern (regex: /CVE-\d{4}-\d+|GHSA-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}/) — ⚠️ GHSA 必须在内：触发这条纪律的 2026 年那次事故（停跑 28 天、漏 4 个漏洞、其中一个明文打印 token）里的编号全是 GHSA-，原正则只写 CVE- 时本就不可能命中
             If either → buffer_status = "urgent_security" (overrides tier — always show)
          b. LLM RELEVANCE ASSESSMENT (inline, no sub-agent):
             Read capabilities_used from REGISTRY for this dependency.

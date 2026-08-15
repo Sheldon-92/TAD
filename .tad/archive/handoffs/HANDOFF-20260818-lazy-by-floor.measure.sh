@@ -17,7 +17,7 @@ set -uo pipefail
 DONE=0; trap '[ "$DONE" = 1 ] || { echo "RESULT=FAIL (measure.sh 中途退出)"; exit 1; }' EXIT
 R="/Users/sheldonzhao/01-on progress programs/TAD"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
-HB="$R/.tad/active/handoffs/HANDOFF-20260818-lazy-by-floor"
+HB="$R/.tad/archive/handoffs/HANDOFF-20260818-lazy-by-floor"
 A1="$R/.claude/skills/alex/SKILL.md"
 STAGE="${1:-X}"; OUT="$EV/measure-${STAGE}.txt"; : > "$OUT"; TOT=0; ERR=0
 fail(){ echo "  !! $*"; ERR=$((ERR+1)); }
