@@ -6,7 +6,7 @@
 set -u
 
 VERSION="2.24.0"
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 REGISTRY="$SRC/.tad/sync-registry.yaml"
 DEPRECATION="$SRC/.tad/deprecation.yaml"
 

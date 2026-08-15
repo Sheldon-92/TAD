@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Per-AC negative controls — every AC must be provably red in an adversarial state.
 set -u
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/discipline-floor"
 NC="$EV/negative-controls"
 V="$EV/verify-all.sh"
@@ -27,7 +27,8 @@ mkfix() { # outfile python_snippet_operating_on rows
   local out="$1" snippet="$2"
   OUT="$out" python3 - <<PY
 import os
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
 MAIN = f"{R}/.tad/discipline-floor.md"
 rows = []
 for l in open(MAIN, encoding="utf-8"):
@@ -74,7 +75,8 @@ expect_red "AC6 single carrier" AC6 "$NC/ac6-singlecarrier.log"
 # AC7: real main rows + subtable whose first row duplicates a REAL main (carrier,anchor)
 python3 - <<'PY'
 import os
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 NC = f"{EV}/negative-controls"
 main_rows = []
@@ -94,7 +96,8 @@ expect_red "AC7 main/sub dup" AC7 "$NC/ac7-dupe.log"
 # AC8: real main rows + subtable missing Forbidden (keeps 反合理化, drops Forbidden row)
 python3 - <<'PY'
 import os
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 NC = f"{EV}/negative-controls"
 main_rows = []
@@ -127,7 +130,8 @@ expect_red "AC9 TBD" AC9 "$NC/ac9-tbd.log"
 # AC10: missing R6 token
 mkfix "$NC/tmp-ac10.tsv" ''
 python3 - <<'PY'
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 NC = f"{EV}/negative-controls"
 # real main rows + sections WITHOUT the R6 token
@@ -139,7 +143,8 @@ expect_red "AC10 no R6" AC10 "$NC/ac10-nor6.log"
 # AC11: contains 4557
 mkfix "$NC/tmp-ac11.tsv" ''
 python3 - <<'PY'
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 NC = f"{EV}/negative-controls"
 open(f"{NC}/tmp-ac11.tsv", "a", encoding="utf-8").write("\n## 承接单\nexpert-criteria security 触发 4557 分母实测。\n")

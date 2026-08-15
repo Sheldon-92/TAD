@@ -5,7 +5,8 @@
 # (b) all Layer=2 -> AC3
 # (c) trigger strings all "MUST" -> AC5 (no anchor containment)
 import subprocess, sys
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 NC = f"{EV}/negative-controls"
 def run(cmd):

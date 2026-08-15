@@ -3,7 +3,7 @@
 # MINOR release: first real minor+ sync after self-deriving change → TAD_RELEASE_GATE=warn (shadow).
 # Added: platform-skills parity check (Pack System Unification Phase 3).
 set -u
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 NEW="2.30.0"
 LOG="$SRC/.tad/evidence/releases/sync-v2.30.0.log"
 : > "$LOG"

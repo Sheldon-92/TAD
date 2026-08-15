@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # P2a Step 0 —— 一次冻结全部基线。由 Blake 在动手前运行，不得修改（AC13 守其哈希）。
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/discipline-enumeration"; mkdir -p "$EV/negative-controls"
 H=".tad/active/handoffs/HANDOFF-20260815-discipline-enumeration.md"
 T0=$(git -C "$R" rev-parse --short HEAD); echo "$T0" > "$EV/t0.txt"

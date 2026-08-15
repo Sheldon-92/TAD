@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # Generate .tad/discipline-floor.md from Blake's judgments + frozen Step 0 inputs.
 import subprocess, re, os
-R = "/path/to/TAD"
+import subprocess as _sp
+R = _sp.run(["git","rev-parse","--show-toplevel"],capture_output=True,text=True).stdout.strip()
+assert R, "must run inside the TAD git repo"
 EV = f"{R}/.tad/evidence/acceptance-tests/discipline-floor"
 K30 = f"{R}/.tad/archive/handoffs/HANDOFF-20260816-discipline-floor.keys30.tsv"
 WIDE = open(f"{EV}/wide-markers.txt", encoding="utf-8").read().rstrip("\n")

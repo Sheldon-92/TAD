@@ -3,7 +3,7 @@
 # Patch release: structural gate is advisory (WARN not BLOCK).
 # Added: platform-skills parity check (Pack System Unification Phase 3).
 set -u
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 NEW="2.29.1"
 LOG="$SRC/.tad/evidence/releases/sync-v2.29.1.log"
 : > "$LOG"

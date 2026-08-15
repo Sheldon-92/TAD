@@ -3,7 +3,7 @@
 # Continue-on-error: set -u (NOT set -e). One broken project must not abort the rest.
 set -u
 
-TAD_SRC="/path/to/TAD"
+TAD_SRC="$(git rev-parse --show-toplevel)"
 NEW_VERSION="2.24.1"
 TODAY="$(date +%Y-%m-%d)"
 REG="$TAD_SRC/.tad/sync-registry.yaml"

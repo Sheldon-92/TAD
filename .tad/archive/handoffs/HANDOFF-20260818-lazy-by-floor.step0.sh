@@ -12,7 +12,7 @@
 #    （rev4 只匹配大写 → `NEVER a skip reason` 这类 Layer 0 纪律行根本不在分母里）
 #  - 删除上一轮遗留的 readback-questions.txt（禁止型三题，取错文件 = AC8 稳定假绿）
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/lazy-by-floor"
 HB=".tad/active/handoffs/HANDOFF-20260818-lazy-by-floor"
 D="$R/.tad/discipline-floor.md"; P="$R/.tad/project-knowledge/principles.md"

@@ -3,7 +3,7 @@
 # Dir set = derive-sync-set.sh --dirs (deny-list, auto-includes codex/etc). Gate = release-verify.sh structural.
 # set -u (NOT -e): continue-on-error. Run as ONE bash process (ALL mode) to avoid the eval-loop PATH bug.
 set -u
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 NEW_VERSION="2.22.0"
 DERIVE="$SRC/.tad/hooks/lib/derive-sync-set.sh"
 VERIFY="$SRC/.tad/hooks/lib/release-verify.sh"

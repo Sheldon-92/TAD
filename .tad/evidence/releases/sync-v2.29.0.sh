@@ -6,7 +6,7 @@
 #    3 packs legitimately transform SKILL.md at install — NEXT.md follow-up (a)).
 # Local skills survive: per-skill refresh, never whole-dir delete (Phase 2 sync-safety).
 set -u
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 NEW="2.29.0"
 LOG="$SRC/.tad/evidence/releases/sync-v2.29.0.log"
 : > "$LOG"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # AC verify — HANDOFF-20260816-discipline-floor (rev2)
 # Red: exit != 0 AND last line RESULT=FAIL. --negative <fixture> substitutes the main table.
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/discipline-floor"
 H="$R/.tad/active/handoffs/HANDOFF-20260816-discipline-floor.md"
 S0="$R/.tad/active/handoffs/HANDOFF-20260816-discipline-floor.step0.sh"

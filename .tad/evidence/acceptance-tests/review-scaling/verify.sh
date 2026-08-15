@@ -1,5 +1,5 @@
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/review-scaling"
 T0=47918da
 B1="$R/.claude/skills/blake-lite/SKILL.md"; B2="$R/.agents/skills/blake-lite/SKILL.md"

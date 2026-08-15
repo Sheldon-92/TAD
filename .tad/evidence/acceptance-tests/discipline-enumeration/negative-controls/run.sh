@@ -3,7 +3,7 @@
 # Any AC that passes pre-implementation is vacuously true -> stop and return to Alex.
 # Usage: bash negative-controls/run.sh ; exit 0 means every negative control caught.
 set -u
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/discipline-enumeration"
 NC="$EV/negative-controls"
 V="$EV/verify-all.sh"
@@ -34,7 +34,7 @@ expect_red "AC1 empty disposition" AC1 "$NC/ac1-empty.log"
 # AC2: fabricated 已有 name (valid syntax, not in names.txt)
 python3 - "$NC/tmp-ac2.tsv" <<'PY'
 import sys
-rows = [l.rstrip("\n").split("\t") for l in open("/path/to/TAD/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
+rows = [l.rstrip("\n").split("\t") for l in open("$(git rev-parse --show-toplevel)/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
 for r in rows: r[3] = "已有:胡编纪律"
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join("\t".join(r) for r in rows) + "\n")
 PY
@@ -44,7 +44,7 @@ expect_red "AC2 fabricated name" AC2 "$NC/ac2-fabname.log"
 # AC3: 非纪律 row without reason code
 python3 - "$NC/tmp-ac3.tsv" <<'PY'
 import sys
-rows = [l.rstrip("\n").split("\t") for l in open("/path/to/TAD/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
+rows = [l.rstrip("\n").split("\t") for l in open("$(git rev-parse --show-toplevel)/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
 for r in rows: r[3] = "非纪律"; r[4] = ""
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join("\t".join(r) for r in rows) + "\n")
 PY
@@ -54,7 +54,7 @@ expect_red "AC3 missing reason code" AC3 "$NC/ac3-noreason.log"
 # AC4: sentence without any in-range fragment
 python3 - "$NC/tmp-ac4.tsv" <<'PY'
 import sys
-rows = [l.rstrip("\n").split("\t") for l in open("/path/to/TAD/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
+rows = [l.rstrip("\n").split("\t") for l in open("$(git rev-parse --show-toplevel)/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
 for r in rows: r[5] = "这一句完全不在块区间内的解释性文本。"
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join("\t".join(r) for r in rows) + "\n")
 PY
@@ -64,7 +64,7 @@ expect_red "AC4 fragment not in range" AC4 "$NC/ac4-nofrag.log"
 # AC4b: hit column forged
 python3 - "$NC/tmp-ac4b.tsv" <<'PY'
 import sys
-rows = [l.rstrip("\n").split("\t") for l in open("/path/to/TAD/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
+rows = [l.rstrip("\n").split("\t") for l in open("$(git rev-parse --show-toplevel)/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
 for r in rows: r[6] = "999"
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join("\t".join(r) for r in rows) + "\n")
 PY
@@ -74,7 +74,7 @@ expect_red "AC4b forged hit count" AC4 "$NC/ac4b-forgehit.log"
 # AC5: valid disposition with 1 新增 but inventory NOT appended
 python3 - "$NC/tmp-ac5.tsv" <<'PY'
 import sys
-rows = [l.rstrip("\n").split("\t") for l in open("/path/to/TAD/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
+rows = [l.rstrip("\n").split("\t") for l in open("$(git rev-parse --show-toplevel)/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
 rows[0][3] = "新增:负控试验纪律"
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join("\t".join(r) for r in rows) + "\n")
 PY
@@ -113,7 +113,7 @@ fi
 # AC7: forged subkey column
 python3 - "$NC/tmp-ac7.tsv" <<'PY'
 import sys
-rows = [l.rstrip("\n").split("\t") for l in open("/path/to/TAD/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
+rows = [l.rstrip("\n").split("\t") for l in open("$(git rev-parse --show-toplevel)/.tad/evidence/acceptance-tests/discipline-enumeration/negative-controls/all-ondiscipline.tsv", encoding="utf-8")]
 for r in rows: r[7] = "伪造子键,另一个伪造"
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join("\t".join(r) for r in rows) + "\n")
 PY

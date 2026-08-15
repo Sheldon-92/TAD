@@ -12,7 +12,7 @@
 # 用法：bash resident.sh          → 每行一个相对路径（仅输出真实存在的）
 #       bash resident.sh --declared → 连不存在的也输出（用于差异排查）
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 A1="$R/.claude/skills/alex/SKILL.md"
 MODE="${1:-}"
 OUT=""

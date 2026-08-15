@@ -2,7 +2,7 @@
 # Acceptance verification for TASK-20260617-006 (Pack Content Protection P1)
 set -euo pipefail
 
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 PASS=0
 FAIL=0
 

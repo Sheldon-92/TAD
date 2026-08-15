@@ -2,7 +2,7 @@
 # curate-and-ask.sh — Phase 1c: per pack, curate (delete error sources) + 5 seed asks → findings.md
 # Run AFTER collection (deep research import) completes. Sequential (NotebookLM stateful).
 set -uo pipefail
-cd "/path/to/TAD"
+cd "$(git rev-parse --show-toplevel)"
 NB=~/.tad-notebooklm-venv/bin/notebooklm
 BASE=.tad/evidence/research/agent-pack-factory
 NBFILE="$BASE/notebooks.txt"

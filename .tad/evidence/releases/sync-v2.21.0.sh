@@ -4,7 +4,7 @@
 # Verification centers on `diff -rq` source-vs-target per synced path → proves no omission.
 set -u
 
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 NEW_VERSION="2.21.0"
 
 # Framework dirs to FULL-REFRESH: runbook's 14 + codex (the historically-omitted dir).

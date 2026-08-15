@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # P2b Step 0 —— 冻结基线。Blake 动手前运行，不得修改（AC12 守其哈希）。
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/discipline-floor"; mkdir -p "$EV/negative-controls"
 HB=".tad/active/handoffs/HANDOFF-20260816-discipline-floor"
 D="$R/.tad/evidence/designs/discipline-inventory/discipline-inventory.md"

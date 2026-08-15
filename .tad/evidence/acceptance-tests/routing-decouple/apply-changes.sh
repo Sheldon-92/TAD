@@ -2,7 +2,7 @@
 # Apply — HANDOFF-20260814-routing-decouple (rev2)
 # Literal whole-line replacement. NO eval, NO shell expansion of tsv content.
 # Each replacement asserts its precondition (exactly 1 hit) before writing.
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 TSV="$R/.tad/active/handoffs/HANDOFF-20260814-routing-decouple.pins.tsv"
 BLK="$R/.tad/active/handoffs/HANDOFF-20260814-routing-decouple"
 export LC_ALL=C

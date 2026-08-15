@@ -9,7 +9,7 @@
 # target (NO install.sh this time), re-verify platform-skills symmetry, re-commit.
 # Only framework skills present in SOURCE are touched → project-local skills preserved.
 set -u
-SRC="/path/to/TAD"
+SRC="$(git rev-parse --show-toplevel)"
 LOG="$SRC/.tad/evidence/releases/sync-v2.30.0-repair.log"
 : > "$LOG"
 log(){ printf '%s\n' "$*" | tee -a "$LOG"; }

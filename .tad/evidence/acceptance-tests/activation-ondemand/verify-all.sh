@@ -2,7 +2,7 @@
 # P3 verify-all —— AC1-AC10（AC11 负控在 negative-controls/run.sh）
 # AC 红 = exit != 0 且末行 RESULT=FAIL；TAB 分隔，禁 #/:/ 切分
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/activation-ondemand"
 HB=".tad/active/handoffs/HANDOFF-20260817-activation-ondemand"
 A1="$R/.claude/skills/alex/SKILL.md"; A2="$R/.agents/skills/alex/SKILL.md"

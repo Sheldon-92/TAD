@@ -1,5 +1,5 @@
 set -uo pipefail
-R="/path/to/TAD"
+R="$(git rev-parse --show-toplevel)"
 EV="$R/.tad/evidence/acceptance-tests/requirement-first"
 CP=".tad/active/handoffs/HANDOFF-20260812-requirement-first.md"
 T0=d225585
