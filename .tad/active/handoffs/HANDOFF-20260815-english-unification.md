@@ -1,7 +1,8 @@
 # HANDOFF: 先修被中文字面量绑架的纪律，再谈英文化
 
 **From**: Alex（full） **To**: Blake **Created**: 2026-08-15
-**Rev**: **rev2 —— 重划**。rev1 被两位专家共 **13 个 P0** 打回，其中一条不是契约缺陷，
+**Rev**: **rev3**（复审 4 个阻塞项；其中一条指出 rev2 的 S0.1 **会让 Gate 3 更脆**）
+**血统**: rev1 被 13 个 P0 打回 → rev2 重划。rev1 被两位专家共 **13 个 P0** 打回，其中一条不是契约缺陷，
 是**用户要求本身的内部冲突**（见 §1.2）。rev2 拆成 S0/S1/S2，**S0 与翻译无关但必须先做**。
 
 **用户裁定（2026-08-15）**：
@@ -35,7 +36,9 @@
 | 类别 | 文件 | 汉字 | 处置 |
 |---|---|---|---|
 | `.tad/hooks/`（**活 hook**） | 5 | 256 | **S0 修锚点**（不是翻译） |
-| 根目录（README/CLAUDE.md/AGENTS.md/ROADMAP…） | 9 | 4,457 | **S1 立规则 + S2 翻** |
+| 根目录 —— `README` `ROADMAP` `INSTALLATION_GUIDE` `PROJECT_CONTEXT` | 4 | — | **S2 翻** |
+| 根目录 —— **`CLAUDE.md` / `AGENTS.md`** | 2 | — | ⚠️ **只加 S1 那一段，正文不翻**。它们是地板表 6 项的载体（`gen-floor.py` 逐字断言 `- Alex does not write implementation code…` / `### Post-compact recovery` / `## Role Switching`），翻正文 = 直接打断载体断言。rev2 的 §2 与 §5 对这两个文件说了两遍相反的话 |
+| 根目录 —— 其余 3 个 | 3 | 4,457（9 个合计） | **S2 翻** |
 | `docs/`（不含 archive/legacy） | 4 | 5,119 | **S2 翻** |
 | `.tad/capability-packs/` 的**说明文字** | 49 | 3,785 | **S2 翻**（⚠️ `keywords:` 不翻，见 §1.2） |
 | `.tad/project-knowledge/` | 11 | 10,997 | **S2 翻**（⚠️ 单独一批：它是 `CLAUDE.md` §7 的 @import，每 session 常驻） |
@@ -53,12 +56,31 @@
 
 ### S0 —— 修被中文绑架的纪律（**不翻译任何东西**）
 
-1. **Gate 3 / KA 的两个 hook 锚点换成语言无关标记**：
-   在模板与 SKILL 里加 `<!-- tad:gate3-verdict -->` / `<!-- tad:ka-verdict -->` 注释锚，
-   `pre-gate-check.sh` 改 grep 这两个标记；**中文原句保留不动**（它是给人读的）。
-   ⚠️ **同一 commit 内改完生产方与消费方**，逐处贴出 hook 冒烟输出。
-2. **`SAFETY_FLOOR` 从全局计数改成按类别存在性**（`principles.md` 2026-06-01 已写死这个判据：
-   「同一产物既合法移除又可能非法丢失时，全局计数底线结构性失明」）。
+1. **Gate 3 / KA 的检测改成 fail-closed —— ⚠️ rev3 更正了这一条的方向**
+
+   **rev2 写的是「把中文 grep 换成注释锚」。那是错的，会让 Gate 3 比现在更脆。**
+   实测 `pre-gate-check.sh` L191-203：外层 `if [ -n "$GATE3_RESULT" ]` **没有 `else`** ——
+   **串找不到 = 零输出、零警告、不拦截。今天就已经是 fail-open 且完全静默的。**
+   换成注释锚**失败方向一个字节没变**，而注释锚在任何渲染视图里不可见
+   → **误删概率上升、被发现概率下降、后果相同。净效果比现状差。**
+
+   **rev3 的三条，缺一不可**：
+   (a) **加分支不是换分支**：hook 改成 `新锚 OR 中文原句 OR 英文 Result` 的**并集**。
+       今天这条纪律有中文/英文两个独立分支——**那正是「靠重复守住」的一个实例，不许减少。**
+   (b) **补 `else` 分支 fail-closed**：completion 文件存在但三种形式**全都没命中**
+       → `HAS_BLOCK=1`。**这才是这一条真正要修的东西**，与语言无关。
+   (c) 注释锚**只作位置标记不携带判定**（不写 `<!-- …:FAIL -->`），
+       避免制造「散文与锚两个真值源」这种今天不存在的新 bug。
+2. **`SAFETY_FLOOR` 改成**行集 diff**，⚠️ rev3 更正：不是「按类别存在性」**
+
+   rev2 说改成「按类别存在性」。**那是把 rev1 的分母问题搬了家**——类别清单由 Blake 定，
+   且「每类 ≥1 即绿」比计数底线**更弱**（84 条删到剩 1 条照样过）。
+
+   **正确做法已经在仓库里，不要新造**：`HANDOFF-20260818-lazy-by-floor.verify.sh` 的 `acref()`
+   ——它比**行集**不是计数、**中英双语**（对翻译稀释天然免疫）、已冻结，
+   注释里就写着「等量替换瞒得过计数底线」。
+   **S0.2 = 把 `acref` 的行集基线搬进 `skill-body-verify.sh`**，T0 落基线。
+   这样分母是**外生**的（= T0 的行集），不存在"谁定义类别"的问题。
 3. ⚠️ **已由 Alex 在 rev2 前完成**：34 个脚本的根路径从 `/path/to/TAD` 占位符改回
    `git rev-parse --show-toplevel` 推导。**这是 Alex 脱敏时打断的**——六个判定器
    （`gen-floor.py`/`budget.sh`/`resident.sh`/`verify.sh`/`step0.sh`/`measure.sh`）当时全部跑不动。
@@ -90,7 +112,7 @@
 两位审查员一致判断：**"96% 的风险换一个未验证的收益"**。等有已知的英文读者再动。｜
 ❌ 不翻任何 `keywords:` / trigger / 被 matcher 逐字 grep 的串（§1.2 用户裁定）｜
 ❌ 不翻 evidence / archive / active / memory / decisions / tasks / tad-work（记录类）｜
-❌ 不改任何 YAML 键名、命令名、skill 名、文件名｜❌ 不发布不 push
+❌ **不翻 `CLAUDE.md` / `AGENTS.md` 正文**（只加 S1 那一段，见 §2）｜❌ 不改任何 YAML 键名、命令名、skill 名、文件名｜❌ 不发布不 push
 
 ## 5. 写权限（编号即全集）
 
@@ -109,21 +131,26 @@ T0 = 开工前 commit（**本契约须先 `git add`**）。**不变量类 T0 必
 | # | AC | 类 |
 |---|---|---|
 | **AC1** | **S0 的 hook 锚点已换且 hook 仍工作**：`pre-gate-check.sh` 中 `Gate 3.*结果` 与 `是否有新发现` 的 grep **已不再是唯一判据**（新标记 `grep -Fq` 命中）；且**冒烟**：造一份含 `Gate 3 ... FAIL` 的临时 completion 喂给 hook，确认仍 `HAS_BLOCK=1`；再造一份改写措辞的，确认**仍然拦截**。两次原始输出落盘 | 完成度 |
-| **AC2** | **SAFETY_FLOOR 改为按类别存在性**：`skill-body-verify.sh` 不再依赖单一全局计数；对 `alex`/`blake` 各跑一次，输出列出**每个必备类别的命中数**；负控：临时删掉某一类的全部条目 → 必须 FAIL（原全局计数写法在删 39 条内不会红） | 完成度 |
-| **AC3** | **六个判定器都能跑**：`gen-floor.py --check` · `budget.sh` · `resident.sh` · `verify.sh AC13` · `step0.sh`（拒绝重跑属正常）· `measure.sh smoke` —— **逐个 exit 码与输出落盘**，无一因路径/占位符失败 | 完成度 |
+| **AC2** | **SAFETY 改为行集 diff**：`skill-body-verify.sh` 用 T0 冻结的**约束行集**（`acref` 口径，中英双语正则）做 `comm -23`，丢失即 FAIL；不再依赖任何计数或类别清单。负控：**随机删掉 1 条**约束行 → 必须 FAIL（旧的全局计数写法在删 39 条内都不红；「按类别存在性」在删到每类剩 1 条时也不红） | 完成度 |
+| **AC3** | **六个判定器逐个 exit 0**：`gen-floor.py --check` · `budget.sh` · `resident.sh` · **`verify.sh all`** · `measure.sh smoke`（`step0.sh` 拒绝重跑属正常，单列）。⚠️ **rev3 两处更正**：(a) rev2 只要求「能跑 + 落盘 exit 码」——`gen-floor.py --check` 退出 1 打印 `anchor not in carrier` **完全满足字面要求**，而它是唯一能抓到「英文地板锚被删」的 AC；(b) rev2 点的是 `verify.sh AC13`（skill-body-verify 的壳），**漏掉了 `ac1()`——29 条义务祈使句的冻结判定器**，其分母是外生的 `obligations.tsv`。改点 `all` | 完成度 |
 | **AC4** | **S1 规则两侧逐字一致且非空**：`grep -c 'Artifact language' CLAUDE.md AGENTS.md` **两侧各 ≥1**（前置断言，防空对空）；再 `diff <(sed -n '/Artifact language/,/neither implies the other/p' CLAUDE.md) <(同 AGENTS.md)` 零输出。⚠️ rev1 的写法在两边都为空时 `diff` 也是 exit 0 | 完成度 |
 | **AC5** | **S1/S0 阶段不得翻译任何东西**：全仓活文件的**逐文件汉字数**与 T0 完全一致（除 §5 第 6 项新目录）。基线 Step 0 落盘。⚠️ 这是 rev1 完全缺失的一条——S1 最核心的约束此前零验证器 | 不变量 |
-| **AC6** | **S2 只动了批次内文件**：`docs` 与根目录两批各自 commit；每个 commit 的改动集 ⊆ 该批文件清单；且**批内文件的汉字数只减不增**，批外文件汉字数**逐文件不变** | 完成度 |
-| **AC7** | **路由面未被翻译**（用户裁定 A）：34 个含中文 `keywords:` 的 SKILL + `pack-registry.yaml`，其 `keywords` 行相对 T0 **逐字未变**（`git diff ${T0} -- <清单> \| grep -c '^[+-].*keywords:'` = 0） | 不变量 |
-| **AC8** | **六闸全绿**（完整命令行写死）：`bash .tad/hooks/lib/release-verify.sh parity "$R"` · `… version "$R" 2.42.0 2.41.0` · `… version-sweep "$R" 2.42.0` · `… migration "$R"` · `bash "$R/tad.sh" --verify-denylist` · `bash "$R/.tad/hooks/lib/skill-body-verify.sh"`。⚠️ `version` 不给第三个参数是恒真 no-op；`$R` 必须是绝对路径（传 `.` 返回 exit 2） | 不变量 |
+| **AC6** | **S2 只动了批次内文件**：`docs` 与根目录两批各自 commit；每个 commit 的改动集 ⊆ 该批文件清单；且**批内文件的汉字数只减不增**，批外文件汉字数**逐文件不变**；⚠️ **并且批内每文件非空白字节数 ≥ T0 × 0.8** —— 否则「把中文整段删掉不翻译」完美满足「只减不增」，没有任何 AC 要求英文被补上 | 完成度 |
+| **AC7** | **路由面未被翻译**（用户裁定 A）：34 个含中文 `keywords:` 的 SKILL + `pack-registry.yaml`，其 `keywords:` **以及 `description:` / `trigger:`** 行相对 T0 **逐字未变**（`git diff ${T0} -- <清单> \| grep -cE '^[+-].*(keywords|description|trigger):'` = 0）。⚠️ rev3 扩了范围：**harness 选 skill 用的是 `description:` 不是 `keywords:`**，而 `save-skill` 的中文触发串（`把这个存成 skill`）正在 `description:` 里 | 不变量 |
+| **AC8** | **六闸全绿，且新旧两版 `skill-body-verify.sh` 都绿**（⚠️ rev3：S0.2 让 Blake **重写**这个闸，而 AC8/AC3 都断言它绿 —— 闸与被闸的东西同作者同 commit，是自证。Step 0 须把 T0 版冻结到 `<ev>/skill-body-verify.T0.sh`，两版都跑都绿）。完整命令行写死：`bash .tad/hooks/lib/release-verify.sh parity "$R"` · `… version "$R" 2.42.0 2.41.0` · `… version-sweep "$R" 2.42.0` · `… migration "$R"` · `bash "$R/tad.sh" --verify-denylist` · `bash "$R/.tad/hooks/lib/skill-body-verify.sh"`。⚠️ `version` 不给第三个参数是恒真 no-op；`$R` 必须是绝对路径（传 `.` 返回 exit 2） | 不变量 |
 | **AC9** | parity：`diff -rq -x local .claude/skills .agents/skills` 零输出。⚠️ **rev1 漏了 `-x local`**：`.claude/skills/local/` 是 save-skill 的机器本地目录、gitignored、从不镜像，裸 `diff -r` 在 T0 就 exit 1 —— Blake 第一条 AC 就会被挡住 | 不变量 |
-| **AC10** | **行为验证（带负控）**：同一任务跑两次 fresh subagent —— (a) **不含**新规则的上下文、(b) **含**新规则。任务写死：「用中文问它，让它把一条知识条目写进 `<ev>/english-unification/probe-<n>.md`」。机械判据：产物文件**汉字数 = 0**、终端回复**汉字数 > 0**。**(a) 与 (b) 的产物必须有差异**，否则该规则未被证明起作用。两次原始作答与两个计数全部落盘 | 完成度 |
+| **AC10** | **行为验证（带负控）**：同一任务跑两次 fresh subagent —— (a) **不含**新规则的上下文、(b) **含**新规则。任务写死：「用中文问它，让它写一份 **COMPLETION 报告**到 `<ev>/english-unification/probe-<n>.md`」。⚠️ rev3 换了体裁：rev2 用「知识条目」，而 `project-knowledge/` 现在**本来就以英文为主** → (a) 也会得到汉字 0 → 「无差异」→ 按 §8.4 误判「规则未生效」。COMPLETION 的 baseline 确实是中文（每份都写着 `**是否有新发现？**`）。**隔离机制也须写死**：`CLAUDE.md` 是每 session 自动 @import 的，在本仓 spawn 的 subagent 必然带着规则 —— (a) 必须换 cwd 或另起进程，做不到就如实记 `BLOCKED` 退回 Alex，不许即兴。机械判据：产物文件**汉字数 = 0**、终端回复**汉字数 > 0**。**(a) 与 (b) 的产物必须有差异**，否则该规则未被证明起作用。两次原始作答与两个计数全部落盘 | 完成度 |
 | **AC11** | 围栏：改动集 −(§5 七项 ∪ `T0-dirty.txt` ∪ `.tad/evidence/{traces,decisions}/*.jsonl` ∪ `session-state.md`) 为空 | 不变量 |
 | **AC12** | **契约未变**：`git diff --quiet ${T0} -- <本文件>` | 不变量 |
 
 ## 7. Step 0
 
 1. `git add` 本契约 → commit → 记 T0；`git status --porcelain > <ev>/T0-dirty.txt` 并提交（AC11 的分母，防事后声称"T0 就有"）
+1b. **冻结 T0 版的闸与基线**（AC2/AC8 的外生分母，防自证）：
+    `cp .tad/hooks/lib/skill-body-verify.sh <ev>/skill-body-verify.T0.sh`；
+    并按 `verify.sh` 的 `acref()` 口径落盘 `alex`/`blake` 两份 SKILL 的**约束行集**基线
+    （`grep -hiE 'MUST|MANDATORY|VIOLATION|BLOCKING|forbidden|NEVER|不得|必须|禁止'` → 去首尾空白 → `LC_ALL=C sort`）。
+    ⚠️ **行集基线由本步骤从 T0 现算并提交，之后不得重算**——它是 AC2 的分母，重算就等于分母由被判定方定。
 2. **落盘逐文件汉字数基线**（AC5/AC6 用）：活文件（排除 evidence/archive/docs-archive/docs-legacy）逐个 `文件 ⇥ 汉字数`
 3. **复算 §1.1 的三条与 §2 的分类**——⚠️ **Alex 在 §3 的耦合清单上已经错过两次**
    （第一次漏了整个 `.tad/hooks/`；第二次说 `tad.sh` 只有 1 行中文，实为 **11 行、全是注释、代码里 0 处**）。
