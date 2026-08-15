@@ -27,10 +27,9 @@ config_modules:
 
   config-quality.yaml:
     path: ".tad/config-quality.yaml"
-    description: "Quality gates, evidence verification, mandatory questions, sub-agent enforcement, fatal operation protection"
+    description: "Quality gates, evidence verification, mandatory questions, sub-agent enforcement"
     contains:
       - subagents_enforcement
-      - fatal_operations (universal_preset, project_custom, risk_translation, handoff_awareness)
       - quality_gates (gate3_v2, gate4_v2, gate_responsibility_matrix)
       - evidence_based_verification
       - mandatory_questions (MQ1-MQ6)
@@ -84,10 +83,11 @@ config_modules:
 
   config-cognitive.yaml:
     path: ".tad/config-cognitive.yaml"
-    description: "Cognitive Firewall: research protocol, decision transparency"
+    description: "Cognitive Firewall: research protocol, decision transparency, fatal operation protection, risk translation"
     contains:
       - decision_transparency (triggers, presentation, depth_rules)
       - research_first (protocol, quality, violations)
+      - fatal_operations (universal_preset, project_custom, risk_translation, handoff_awareness)
       - integration (alex_design_flow, blake_execution_flow, gate_flow)
     loaded_by:
       - tad-alex.md

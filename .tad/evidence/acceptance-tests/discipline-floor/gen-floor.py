@@ -48,7 +48,7 @@ M = {
 "版本发布管理":("否",".tad/config-execution.yaml","release_management:","版本发布管理必须执行：release_management:","1","循环触发实测","是","版本发布/API 变更事件自知，需实测发布清单执行率；不可降级（发布回归代价不可逆）"),
 "失败学习闭环":("否",".tad/config-execution.yaml","failure_learning_loop:","失败学习闭环必须执行：failure_learning_loop:","1","循环触发实测","否","Human 纠正/测试失败/Bug 报告事件自知，需实测失败条目转化率"),
 "强制激活协议":("否",".claude/skills/blake/SKILL.md","## ⚠️ MANDATORY 4-STEP ACTIVATION PROTOCOL ⚠️","## ⚠️ MANDATORY 4-STEP ACTIVATION PROTOCOL ⚠️","1","循环触发实测","否","角色激活事件自知（SKILL 顶部即协议本身），需实测激活步骤遵守率"),
-"致命操作强制人审":("否",".tad/config-cognitive.yaml","description: \"Risk filter for operations that could cause irreversible damage\"","致命操作必须人审：description: \"Risk filter for operations that could cause irreversible damage\"","1","循环触发实测","否","致命操作命中时 agent 自知（risk 卡片），需实测人审放行率"),
+"致命操作强制人审":("否",".tad/config-quality.yaml","description: \"Risk filter for operations that could cause irreversible damage\"","致命操作必须人审：description: \"Risk filter for operations that could cause irreversible damage\"","1","循环触发实测","否","致命操作命中时 agent 自知（risk 卡片），需实测人审放行率"),
 }
 assert set(M) == {v[0] for v in verdicts}, "judgment set mismatch"
 

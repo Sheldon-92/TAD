@@ -1,0 +1,6 @@
+data_leak	0
+financial_loss	0
+service_crash	0
+forced_review	0
+DROP TABLE	0
+chmod 777	0

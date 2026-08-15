@@ -219,12 +219,12 @@ Spec_Compliance_Dev_Floor:
 # ⚠️ RISK TRANSLATION CHECK (Cognitive Firewall - Pillar 3)
 Risk_Translation:
   description: "Detect fatal operations and translate code changes to business consequences"
-  config: ".tad/config-cognitive.yaml → fatal_operations"
+  config: ".tad/config-quality.yaml → fatal_operations"
   blocking: "Only for critical severity (forced_review = true)"
 
   check_process:
     step0_handoff_intent: "Read handoff task descriptions — operations matching handoff intent are EXPECTED, not blocked (P0-3 FIX)"
-    step1: "Read config-cognitive.yaml fatal_operations (universal_preset + project_custom)"
+    step1: "Read config-quality.yaml fatal_operations (universal_preset + project_custom)"
     step2: "Scan all changed files against safety_net paths and patterns"
     step2b: "For each match, cross-check against step0 handoff intent — skip EXPECTED operations"
     step3: "For remaining matches, generate risk translation (one-liner + risk card)"

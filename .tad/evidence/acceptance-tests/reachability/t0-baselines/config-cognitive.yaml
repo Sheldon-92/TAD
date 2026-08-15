@@ -1,6 +1,6 @@
 # TAD Config Module: Cognitive Firewall
 # Part of TAD config.yaml modular split (v2.3)
-# Contains: research_protocol, decision_transparency
+# Contains: research_protocol, decision_transparency, fatal_operations, risk_translation
 # Consumers: tad-alex.md, tad-blake.md, tad-gate.md
 
 # ==================== Pillar 1: Technical Decision Transparency ====================
@@ -176,6 +176,103 @@ research_first:
     - "Recommending only one option without alternatives = VIOLATION"
     - "No evidence links in comparison = VIOLATION (for important decisions)"
     - "Ignoring well-known open-source solutions = VIOLATION"
+
+# ==================== Pillar 3: Fatal Operation Protection ====================
+fatal_operations:
+  description: "Risk filter for operations that could cause irreversible damage"
+
+  # Universal preset (applies to all projects)
+  universal_preset:
+    data_loss:
+      operations:
+        - "Database schema DROP or destructive migration"
+        - "File deletion (rm -rf, unlink in batch)"
+        - "Data truncation or overwrite without backup"
+        - "Storage bucket deletion"
+      severity: "critical"
+      forced_review: true
+
+    data_leak:
+      operations:
+        - "API endpoint exposing sensitive data without auth"
+        - "Logging sensitive information (passwords, tokens, PII)"
+        - "Removing authentication/authorization checks"
+        - "Changing data visibility from private to public"
+      severity: "critical"
+      forced_review: true
+
+    financial_loss:
+      operations:
+        - "Payment processing logic changes"
+        - "Pricing calculation modifications"
+        - "Subscription/billing flow changes"
+        - "Removing rate limits on paid APIs"
+      severity: "critical"
+      forced_review: true
+
+    service_crash:
+      operations:
+        - "Production deployment configuration changes"
+        - "Database connection pool changes"
+        - "Removing error handling in critical paths"
+        - "Changing timeout/retry logic in core services"
+      severity: "high"
+      forced_review: true
+
+  # Project-specific additions (user can customize)
+  project_custom:
+    location: ".tad/config-cognitive.yaml → fatal_operations.project_custom"
+    format: |
+      project_custom:
+        {category_name}:
+          operations:
+            - "description of operation"
+          severity: "critical|high"
+          forced_review: true
+
+  # Risk translation: code change → business consequence
+  risk_translation:
+    format: |
+      ⚠️ RISK DETECTED: {operation_description}
+
+      📊 Business Impact:
+      - What could happen: {business consequence in plain language}
+      - Who is affected: {users/customers/business}
+      - Reversibility: {easy/hard/impossible to reverse}
+
+      🛡️ Recommendation: {what the human should verify}
+
+    output_modes:
+      one_liner: "{severity_emoji} {operation} → {business consequence}"
+      risk_card: "Full structured format above"
+
+    # Both modes used: one-liner in summary, risk card in detail
+
+  # P0-3 FIX: Handoff-awareness — don't block operations that ARE the approved fix
+  handoff_awareness:
+    description: "Before blocking, check if detected operation is the intended fix from handoff"
+    process: |
+      1. Read handoff task descriptions and acceptance criteria
+      2. If detected operation matches handoff's stated intent → mark as EXPECTED
+      3. Only BLOCK if the operation appears BEYOND handoff scope
+      4. Example: Handoff says "Add auth to admin API" → changing auth checks = EXPECTED, not blocked
+
+  # Safety net: critical paths always get human review
+  safety_net:
+    always_review_paths:
+      - "database/migrations/*"
+      - "auth/*"
+      - "payment/*"
+      - "billing/*"
+      - "**/middleware/auth*"
+      - "**/api/admin/*"
+
+    always_review_patterns:
+      - "DROP TABLE|DROP INDEX|DROP DATABASE"
+      - "DELETE FROM .* WHERE 1|DELETE FROM .* WITHOUT WHERE"
+      - "process\\.env\\.(SECRET|KEY|TOKEN|PASSWORD)"
+      - "chmod 777|chmod 666"
+      - "sudo|--force|--no-verify"
 
 # ==================== Integration Points ====================
 integration:
