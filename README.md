@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.41.0 - Lite is the Default Channel**
+**Version 2.42.0 - Full is the Default Channel**
 
 > 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -159,7 +159,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.41.0
+# Should show: 2.42.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -470,6 +470,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.41.0 - Lite is the Default Channel**
+**Welcome to TAD v2.42.0 - Full is the Default Channel**
 
 *AI does the work. Humans guard the value.*

@@ -1,7 +1,7 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 2.41.0 (Lite is the default channel + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
+- **Version**: 2.42.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
 - **Last Updated**: 2026-08-10
 - **Framework**: TAD v2.27.0 + Self-Evolving + 24 Capability Packs + Dual-Platform (Claude Code + Codex) + Self-Deriving Release/Sync (deny-list) + NotebookLM Research Engine + Compact Recovery
 
