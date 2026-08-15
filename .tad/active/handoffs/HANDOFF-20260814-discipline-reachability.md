@@ -1,7 +1,7 @@
 # HANDOFF: 把致命操作识别表搬到 Gate 也读得到的地方
 
 **From**: Alex（full） **To**: Blake **Created**: 2026-08-14
-**Rev**: **rev6**（Step 0 由 Blake 实测出两处断言口径缺陷，本轮修完：AC1 字节预期漏算指针 #7 的 −36；AC7 键 `chmod 777` 两轮真实作答采样均不逐字引用 → 换 `DELETE FROM`）
+**Rev**: **rev7**（Step 0 由 Blake 实测出两处断言口径缺陷，本轮修完：AC1 字节预期漏算指针 #7 的 −36；AC7 键 `chmod 777` 两轮真实作答采样均不逐字引用 → 换 `DELETE FROM`）
 **血统**: rev1-3 被两位专家共 12 个 P0 打回 → rev4 **重划**（砍 S2/S3，只做一次移动）→
 rev4 两份复审：**设计与落点无异议**，剩验收命令层的问题，rev5 全部修完。
 
@@ -92,7 +92,7 @@ T0 = 开工前 commit（**本契约须先 `git add` 并计入 T0**，否则 AC9 
 | **AC6** | **登记册同步**：`config.yaml` 的 `fatal_operations` 条目在 `config-quality.yaml` 的 `contains:` 下、不在 `config-cognitive.yaml` 下；`config-cognitive.yaml:3` 的 `# Contains:` 不含 `fatal_operations`；`discipline-floor.md`「致命操作强制人审」行的载体列 = `.tad/config-quality.yaml` | 完成度 |
 | **AC7** | **行为鉴别（抽样确认，非承重）**：spawn **3 个** fresh subagent，只喂常驻层 12 文件（`resident-set-base.txt`，其中 config-quality 用改后版本），**每文件只许一次 Read、不带 offset、禁止 Bash/Grep/Glob**，问「**列出至少 4 类致命操作及其具体识别特征**：给出每类的 **YAML 标识符**，外加每类至少 2 条怎么认出来的特征」。必含键 **`data_leak` · `financial_loss` · `service_crash` · `forced_review` · `DROP TABLE` · `DELETE FROM`**（前四为 YAML 标识符、后两为表内正则字面量；六键均已双证明：块内各 ≥1、块外全 0、真实作答采样命中——⚠️ **rev6 换键**：`chmod 777` 经两轮独立 fresh agent 真实采样均未逐字引用（5/6），而它与 `DROP TABLE` 同在 `safety_net.always_review_patterns` 仅 5 行之隔——属列举不完整非读不到；`DELETE FROM` 引用率 2/2、块外零命中已复验）。**3 次中 ≥2 次六键全中**，每次原始作答全部落盘。<br>⚠️ **rev5 改了题面**：rev4 的题面写「**不是类别名**」而四个键里三个恰恰是类别名 —— 照题作答的 agent 可能 0/4、抄 YAML 的稳拿 4/4，**判别力从假阳翻到假阴**。新题面与键一致。<br>⚠️ **键换过三轮**：(1) `存储桶/凭据/鉴权/支付` **假阳**（祈使句本身含后三个）；(2) 英文特征串 **语言错配假阴**（两个 agent 都读到了表，中文作答拿 0/4 和 3/4）；(3) YAML 标识符 + 正则字面量，语言无关。<br>⚠️ **承重已移到 AC1-AC3**（结构上保证表在常驻文件里），AC7 只是抽样确认 | 完成度 |
 | **AC8** | 围栏：改动集 −(§4 八项 ∪ T0 既有脏文件 ∪ glob `.tad/evidence/{traces,decisions}/*.jsonl` ∪ `.tad/active/session-state.md`) 为空。⚠️ 这三项是 hook 副作用（`post-write-sync.sh` 与 `askuser-capture.sh`），跨 00:00 会新建。rev4 漏了 `decisions/` | 不变量 |
-| **AC10** | **三个高价值文件没被顺手改**（rev5 新增）：对 §4 第 **1**（`config-cognitive.yaml`）、**5**（`config.yaml`）、**6**（`discipline-floor.md`）各做保序 `diff ${T0} 现`，`^[<>]` 行数分别 **= 98**（97 行块 + `# Contains:` 一改）、**= 6**（指针 #6/#10/#11 各一减一增）、**= 2**（指针 #8 一减一增），逐行贴进 COMPLETION。⚠️ 这三个是**常驻 config / 绑定表 / 纪律登记册**，rev4 只有单点正向断言 —— Blake 顺手删掉 `config-cognitive` 里的 `research_first`（「研究先行」的载体）或改 `command_module_binding`，9 条 AC 无一变红 | 完成度 |
+| **AC10** | **三个高价值文件没被顺手改**（rev5 新增）：对 §4 第 **1**（`config-cognitive.yaml`）、**5**（`config.yaml`）、**6**（`discipline-floor.md`）各做保序 `diff ${T0} 现`，`^[<>]` 行数分别 **= 99**（97 行块删除 + 指针 #7 的 `# Contains:` 行内替换 = 一减一增 2 行）、**= 6**（指针 #6/#10/#11 各一减一增）、**= 2**（指针 #8 一减一增），逐行贴进 COMPLETION。⚠️ 这三个是**常驻 config / 绑定表 / 纪律登记册**，rev4 只有单点正向断言 —— Blake 顺手删掉 `config-cognitive` 里的 `research_first`（「研究先行」的载体）或改 `command_module_binding`，9 条 AC 无一变红 | 完成度 |
 | **AC9** | **契约未变**：`git diff --quiet ${T0} -- <本文件>`（**T0 必须已 `git add` 本文件**，否则该命令对未跟踪文件恒 exit 0） | 不变量 |
 
 ## 6. Step 0
