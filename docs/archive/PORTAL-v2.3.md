@@ -1,3 +1,9 @@
+> ⚠️ **已归档（2026-08-15）。本文描述的是 TAD 早期版本，不再维护。**
+> 其中的版本号、提交数、下游项目数、目录结构、以及「Codex 是专用工具」的定位**均已过时**。
+> 当前状态见 [README.md](../../README.md)、[CHANGELOG.md](../../CHANGELOG.md)、[INSTALLATION_GUIDE.md](../../INSTALLATION_GUIDE.md)。
+
+---
+
 # TAD Documentation Portal
 
 > **Current Version: v2.3.0** | [Quick Start](../README.md#-installation--upgrade) | [Specialized Tools](MULTI-PLATFORM.md)

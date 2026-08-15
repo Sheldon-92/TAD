@@ -122,7 +122,7 @@ function parseArgs() {
         break;
       case '--help':
       case '-h':
-        console.log('Usage: npx tad-framework [--platform <name>] [--packs <list>] [--force]');
+        console.log('Usage: npx github:Sheldon-92/TAD [--platform <name>] [--packs <list>] [--force]');
         console.log('');
         console.log('Options:');
         console.log('  --platform <name>  Target platform (claude-code, codex, both). Default: both');

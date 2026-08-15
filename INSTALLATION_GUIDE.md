@@ -135,7 +135,7 @@ A: 检查 `.claude/skills/` 目录是否存在且包含 SKILL.md 文件。重启
 A: 确认 `.claude/skills/alex/SKILL.md` 存在。如果缺失，重新运行安装命令。
 
 **Q: 如何只安装特定 packs？**
-A: `npx tad-framework --packs web-frontend,web-backend` 或 `bash tad.sh --packs web-frontend,web-backend`
+A: `npx github:Sheldon-92/TAD --packs web-frontend,web-backend` 或 `bash tad.sh --packs web-frontend,web-backend`
 
 **Q: npm 和 curl 有什么区别？**
 A: npm 有完整的交互式 pack 选择（每个 pack 附说明）；curl 只选平台，packs 通过参数指定。功能完全相同。

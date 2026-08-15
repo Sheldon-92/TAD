@@ -10,7 +10,7 @@
 
 ### Codex CLI Adaptation
 **Status:** Active
-**Description:** Enable TAD to run on Codex CLI as a fallback channel when Claude Code quota is exhausted. Static SKILL files + AGENTS.md native role switching.
+**Description:** Enable TAD to run on Codex CLI as a first-class runtime (since v2.25.0) — not a quota fallback. Static SKILL files + AGENTS.md native role switching.
 
 | Item | Type | Status | Reference |
 |------|------|--------|-----------|
@@ -35,7 +35,7 @@
 
 | Item | Type | Status | Reference |
 |------|------|--------|-----------|
-| Design Playground v2 (standalone command) | Direction | Stable | [/playground](./.claude/skills/playground/SKILL.md) |
+| Design Playground v2 (standalone command) | Direction | **Deprecated 2026-06-10** | [/playground](./.claude/skills/playground/SKILL.md) |
 | Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/skills/tad-test-brief/SKILL.md) |
 | Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
 | Iterate on Playground based on user feedback | Idea | Pending | — |
@@ -53,7 +53,7 @@
 | Dual-Platform Orchestration Adapter | Direction | Researched — Codex has subagents (2026-03 GA), needs adapter layer | [Idea](./.tad/active/ideas/IDEA-20260603-dual-platform-orchestration-adapter.md) |
 | Token Budget observability for YOLO | Direction | Blind spot confirmed — 0 token data in traces | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
 | Quarantine (reader/actor isolation) | Idea | Documented for future non-dev use, not urgent now | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
-| Research System Consolidation | Epic | Complete | [Epic](./.tad/active/epics/EPIC-20260616-research-system-consolidation.md) |
+| Research System Consolidation | Epic | Complete | [Epic](./.tad/archive/epics/EPIC-20260616-research-system-consolidation.md) |
 
 ---
 

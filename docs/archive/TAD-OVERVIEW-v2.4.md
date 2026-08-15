@@ -1,3 +1,9 @@
+> ⚠️ **已归档（2026-08-15）。本文描述的是 TAD 早期版本，不再维护。**
+> 其中的版本号、提交数、下游项目数、目录结构、以及「Codex 是专用工具」的定位**均已过时**。
+> 当前状态见 [README.md](../../README.md)、[CHANGELOG.md](../../CHANGELOG.md)、[INSTALLATION_GUIDE.md](../../INSTALLATION_GUIDE.md)。
+
+---
+
 # TAD Framework 完整介绍
 
 > 本文档面向外部 agent / 知识库，完整介绍 TAD 是什么、为什么这样做、怎么演进过来的、现在能做什么。

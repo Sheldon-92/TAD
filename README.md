@@ -2,7 +2,7 @@
 
 **Version 2.42.0 - Full is the Default Channel**
 
-> 📚 **[Documentation Portal](docs/README.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
+> 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
@@ -462,12 +462,17 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ## 📖 Further Reading
 
-- [Documentation Portal](docs/README.md)
-- [Specialized Tools Guide](docs/MULTI-PLATFORM.md)
+- [Changelog](CHANGELOG.md) — every version, what changed and what did not land
+- [Installation Guide](INSTALLATION_GUIDE.md)
+- [Dual-Platform Guide](docs/MULTI-PLATFORM.md) — Claude Code + Codex CLI
+- [Codex User Guide](docs/CODEX-USER-GUIDE.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
+- [Value Proposition](docs/value-proposition.md) — every claim cited to an on-disk artifact
 - [Agent Skills](.claude/skills/)
-- [Configuration Guide](.tad/config.yaml)
-- [Skills Reference](.tad/skills/README.md)
+- [Configuration](.tad/config.yaml)
+
+> Earlier documentation (portal, overview, audit report) is archived under
+> [`docs/archive/`](docs/archive/) — it describes TAD as of v2.3–v2.4 and is no longer maintained.
 
 ---
 

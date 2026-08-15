@@ -56,7 +56,7 @@ npx github:Sheldon-92/TAD
 ### 验证安装
 
 ```bash
-cat .tad/version.txt                    # 应显示 2.30.0
+cat .tad/version.txt                    # 应显示 2.42.0
 ls .agents/skills/ | head -5            # 应看到 alex/ blake/ 等目录
 test -f .codex/hooks.json && echo OK    # 应显示 OK
 test -f .tad/hooks/lib/migration-engine.sh && echo OK  # Migration 引擎
@@ -150,8 +150,6 @@ Alex: "验收通过，已归档。"
 |------|------|
 | `*publish` | 推送 TAD 更新到 GitHub |
 | `*sync` | 同步 TAD 到注册项目 |
-| `*dream` | 整合项目知识（去重+合并） |
-| `*optimize` | 分析执行轨迹，提出改进 |
 
 ---
 
@@ -467,16 +465,3 @@ Packs 按需加载 — 只有当任务关键词匹配时才会激活。可以在
 
 这样 TAD 升级时只更新 marker 上方的框架部分，你写的内容不会被覆盖。
 
-### 10. 用 `*dream` 清理知识库
-
-项目知识积累多了之后（50+ 条），运行 `*dream` 自动去重、合并、删除过时条目。它只生成 candidates 等你审核，不会直接修改原文件。
-
----
-
-## 更多资源
-
-- [README](../README.md) — 项目总览
-- [CHANGELOG](../CHANGELOG.md) — 版本变更历史
-- [Multi-Platform Guide](MULTI-PLATFORM.md) — 双平台技术细节
-- [Ralph Loop Guide](RALPH-LOOP.md) — Blake 的迭代质量循环
-- [Installation Guide](../INSTALLATION_GUIDE.md) — 详细安装选项

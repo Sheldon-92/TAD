@@ -208,7 +208,7 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 | Runtime policy | `.tad/evidence/designs/codex-native-runtime-policy.md` | Phase 2 |
 | Draft candidates | `.tad/evidence/designs/codex-runtime-candidates/` | Phase 2 |
 | Docs upgrade evidence | `.tad/evidence/designs/dual-platform-docs-upgrade.md` | Phase 3 |
-| Epic | `.tad/active/epics/EPIC-20260609-dual-platform-native-runtime-architecture.md` | All |
+| Epic | `.tad/archive/epics/EPIC-20260609-dual-platform-native-runtime-architecture.md` | All |
 
 ---
 
