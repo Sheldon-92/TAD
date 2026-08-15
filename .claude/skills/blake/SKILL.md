@@ -1924,7 +1924,7 @@ completion_protocol:
 # ⚠️ P3.3 (2026-04-24): Blake override unskip protocol
 # Safety net: even if handoff frontmatter says skip_knowledge_assessment: yes,
 # Blake MUST add KA when implementation surfaces reusable knowledge.
-# Precedent: menu-snap SDK shape cast bug (architecture.md:55) was found in what
+# Precedent: 某应用项目 SDK shape cast bug (architecture.md:55) was found in what
 # looked like a small bugfix — without override channel that lesson would be lost.
 completion_knowledge_override:
   rule: |
@@ -1969,7 +1969,7 @@ completion_knowledge_override:
   # patterns in sync (Blake-side format spec ↔ Alex-side grep window).
 
   rationale: |
-    menu-snap SDK shape cast bug (architecture.md:55) was found in what looked like a
+    某应用项目 SDK shape cast bug (architecture.md:55) was found in what looked like a
     small bugfix. If the handoff had skip_KA=yes and Blake had no override channel,
     the lesson would have been lost. Override is the safety net.
 

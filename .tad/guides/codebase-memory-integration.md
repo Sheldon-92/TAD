@@ -51,8 +51,8 @@ codebase-memory-mcp derives project names from the absolute filesystem path
 with slashes replaced by dashes:
 
 ```
-/Users/sheldonzhao/01-on progress programs/menu-snap
-→ Users-sheldonzhao-01-on progress programs-menu-snap
+/path/to/your-project
+→ path-to-your-project
 ```
 
 Always discover the correct project name via `list_projects` before querying.

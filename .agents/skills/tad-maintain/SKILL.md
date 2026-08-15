@@ -62,8 +62,8 @@ stderr has human-readable status lines `[drift-check] {subcheck} {handoff} {stat
 
 | Subcheck | What it detects | Evidence source |
 |----------|----------------|-----------------|
-| `slug_consistency` | handoff filename slug not in Required Evidence Manifest paths | menu-snap 2026-04-11 + toy layer2-audit FN 2x in 8d |
-| `zombie_handoffs`  | git commit found for slug + COMPLETION archived + handoff still active | menu-snap code-quality.md:36 |
+| `slug_consistency` | handoff filename slug not in Required Evidence Manifest paths | 某应用项目 2026-04-11 + toy layer2-audit FN 2x in 8d |
+| `zombie_handoffs`  | git commit found for slug + COMPLETION archived + handoff still active | 某应用项目 code-quality.md:36 |
 | `supersedes_chains` | `Supersedes:` field points to a handoff still in active/ | Next Guest 3 same-day handoffs |
 | `ghost_tasks`      | housekeeping/sync/cleanup slug missing `grounded_state` frontmatter | toy 2026-04-24 |
 

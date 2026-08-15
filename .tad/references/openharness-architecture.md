@@ -3,7 +3,7 @@
 > Source: https://github.com/HKUDS/OpenHarness (HKU Data Intelligence Lab)
 > Version analyzed: 2026-04-03 (first public release)
 > LOC: 11,733 Python | License: MIT
-> Local path: /Users/sheldonzhao/01-on progress programs/OpenHarness/
+> Local path: /path/to/OpenHarness/
 
 ## How to Use This Document
 

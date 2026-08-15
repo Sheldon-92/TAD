@@ -723,7 +723,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Graceful degradation**: Codex/Gemini unavailable → single-model or skip with WARN
 
 ### Cleanup
-- Archived Cross-Model Orchestration Epic (4/4 phases validated via menu-snap)
+- Archived Cross-Model Orchestration Epic (4/4 phases validated via 某应用项目)
 - Archived 8 obsolete/promoted/done Ideas (19→11 active)
 - NEXT.md rewritten: 235→75 lines
 
@@ -734,7 +734,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced Epic Template**: Phase Detail Blocks with Scope/Input/Output/AC/Files/Dependencies/Notes. When sufficiently detailed, Alex reduces Socratic inquiry to light tier (2-3 questions instead of 3-5).
 - **Step7 Execution Mode**: After Gate 2, Epic handoffs offer 3 execution modes — manual (current), YOLO (full auto), semi-auto (pause between phases).
 - **audit-yolo.sh**: 4-dimension post-execution audit script — artifact chain completeness, content truthfulness (min lines + P0/P1/P2 classification), code verification (tsc re-run), timing order. 379 lines, pure bash.
-- **Dogfood Validated**: First real YOLO execution on menu-snap (Chinese allergen detection, 2 phases) — 39/39 audit checks passed.
+- **Dogfood Validated**: First real YOLO execution on 某应用项目 (Chinese allergen detection, 2 phases) — 39/39 audit checks passed.
 
 ### New Features — LSP Code Understanding (from v2.13.1)
 - **LSP Auto-Provision**: 12-language plugin mapping, auto-detect + install + graceful fallback to grep
@@ -849,7 +849,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Research Backing
 - Autonomous Research Agents notebook (`f3d46229`) with 15 sources: identified CRAG (Corrective RAG), STORM multi-perspective, and IterDRAG reflection loop as candidate architectures. CRAG chosen for lowest cost (NotebookLM provides free gap signals).
-- menu-snap experiment report validated 5-Phase pipeline and identified the 4 improvement recommendations that drove this release.
+- 某应用项目 experiment report validated 5-Phase pipeline and identified the 4 improvement recommendations that drove this release.
 
 ## [2.10.3] - 2026-05-05
 
@@ -1609,7 +1609,7 @@ See `docs/MIGRATION-v2.md` for detailed migration instructions.
 
 ### Fixed
 
-- Sync improvements from menu-snap project
+- Sync improvements from 某应用项目 project
 
 ---
 

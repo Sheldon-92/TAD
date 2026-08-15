@@ -18,7 +18,7 @@ gate4_delta: []
 | AC# | Description | Verification Method | Expected Evidence | Verified Output |
 |-----|-------------|--------------------|-------------------|-----------------|
 | AC1 | settings.local.json 仅多 autoMemoryDirectory 键;permissions **深度相等** | 前后各存 `jq -S .permissions` 快照并 diff;`jq -r '.autoMemoryDirectory'` | diff 空;值为绝对路径以 .tad/memory 结尾 | (post-impl) |
-| AC2 | 迁移**内容级**完整且旧目录未动 | `diff -rq ~/.claude/projects/-Users-sheldonzhao-01-on-progress-programs-TAD/memory .tad/memory` 只允许 "Only in .tad/memory" 方向差异(如后续新写入);旧目录 `ls | wc -l` = 36 | diff 无 "Only in ~/.claude..." 行(36 条全到齐,内容一致);旧目录不变 | (post-impl) |
+| AC2 | 迁移**内容级**完整且旧目录未动 | `diff -rq ~/.claude/projects/-path-to-TAD/memory .tad/memory` 只允许 "Only in .tad/memory" 方向差异(如后续新写入);旧目录 `ls | wc -l` = 36 | diff 无 "Only in ~/.claude..." 行(36 条全到齐,内容一致);旧目录不变 | (post-impl) |
 | AC3 | **SAFETY 端到端**:memory 在两处 deny-list + drift gate + sync 集排除 | ① `derive-sync-set.sh --zero-touch | grep -cx memory` ② `grep -c '"memory"\|memory' tad.sh 的 TAD_ZERO_TOUCH 块`(实现时按实际格式写精确 grep)③ `bash tad.sh --verify-denylist; echo $?` ④ `derive-sync-set.sh --dirs | grep -cx memory` | ① 1 ② ≥1 ③ 0 ④ 0 | (post-impl;基线 0/0/0(15==15)/—) |
 | AC4 | 蒸馏协议纯 additive | `comm -23 <(git show HEAD:.claude/skills/alex/references/distillation-loop-protocol.md | sort -u) <(sort -u 同文件) | wc -l`;`grep -c '^## Step'`;`grep -c '^## Second Capture Source'` | 0(无删除行);7;1 | (post-impl) |
 | AC5 | CLAUDE.md §7.5 + runbook gotcha 均 additive | `grep -c 'Memory Capture Layer' CLAUDE.md`;`grep -c 'memory-redirect' .claude/skills/release-runbook/SKILL.md`;两文件同法 comm 删除侧 = 0 | ≥1;≥1;0/0 | (post-impl) |
@@ -129,7 +129,7 @@ additively. T8 rollback path implemented and round-trip tested.
 
 | AC | Result | Evidence (raw source + line) |
 |----|--------|------------------------------|
-| AC1 | ✅ PASS | AC-01 script: permissions deep-equal (diff of `jq -S .permissions` before/after = empty); `autoMemoryDirectory=/Users/sheldonzhao/01-on progress programs/TAD/.tad/memory` |
+| AC1 | ✅ PASS | AC-01 script: permissions deep-equal (diff of `jq -S .permissions` before/after = empty); `autoMemoryDirectory=/path/to/TAD/.tad/memory` |
 | AC2 | ✅ PASS | AC-02 script: `diff -rq` old↔new 0 missing-from-target; old dir `ls | wc -l` = 36 untouched |
 | AC3 | ✅ PASS | AC-03 script: lib grep -cx memory = **1**; tad.sh TAD_ZERO_TOUCH block = **1**; `tad.sh --verify-denylist` exit **0** ("16 entries" set-equality); `--dirs` exclusion = **0** |
 | AC4 | ✅ PASS | AC-04 script: comm deletion-side = **0**; `grep -c '^## Step'` = **7**; new section = **1** |
@@ -343,17 +343,17 @@ git ls-files .tad/memory/  → empty (nothing committed to history yet; clean sl
 ```
 
 ### Credential / email / identity sweep across all 29 SAFE files
-Pattern set: `zhaos948|newschool|@gmail|@outlook|@qq.com|api_key|secret_key|-----BEGIN|ghp_|sk-…|xox[baprs]-|password[:=]`
+Pattern set: `<user-email-pattern>|@gmail|@outlook|@qq.com|api_key|secret_key|-----BEGIN|ghp_|sk-…|xox[baprs]-|password[:=]`
 **Result: zero hits.** The 4 mechanical grep hits noted in the report ("token cost", "header-token" CSP term, "token-burn", "args") are confirmed false positives — all are LLM-token or design-vocabulary usages, no credentials.
 
 ### Verbatim-conversation / home-path / friend-detail sweep across all 29 SAFE files
-Pattern: `/Users/sheldonzhao|朋友|friend|co-thinking|SEED.md|leaked|泄露|newschool`
+Pattern: `/path/to|朋友|friend|co-thinking|SEED.md|leaked|泄露|`
 **Only one hit**, in `project_pack-quality-leveling-epic.md` line 43:
 > 另：独立的"纯 skills 包给朋友"方向见 [[IDEA-20260613-tad-opt-in-mode-posture 文件内 Notes]]（未启动）
 
 This is a bare direction-label ("a pure-skills pack for friends" idea, not started) with **no personal identity, no name, no private detail about any individual**. It is a TAD-scoped roadmap cross-reference. This matches the triage's own stated rationale for file #24 ("朋友" mention is a cross-reference to an idea name, no personal identity). **Correctly SAFE.** No re-classification needed.
 
-Notably, the two SENSITIVE files that carry the actual private material — `project_co-thinking-workshop-seed.md` (contains the absolute home path `/Users/sheldonzhao/01-on progress programs/co-thinking-workshop/SEED.md` and the unpublished sibling-methodology core) and `project_tad-universal-method.md` (unpublished standalone-product strategy + "user's friends only use Codex, non-dev projects" personal context) — are both correctly gitignored, and **no SAFE file reproduces their sensitive content**. The wikilink references to them in SAFE files (`[[project_tad-universal-method]]`, `[[user_agent-builder-goals]]`) are just bracketed names; they leak the existence of a parked idea but no substance.
+Notably, the two SENSITIVE files that carry the actual private material — `project_co-thinking-workshop-seed.md` (contains the absolute home path `/path/to/co-thinking-workshop/SEED.md` and the unpublished sibling-methodology core) and `project_tad-universal-method.md` (unpublished standalone-product strategy + "user's friends only use Codex, non-dev projects" personal context) — are both correctly gitignored, and **no SAFE file reproduces their sensitive content**. The wikilink references to them in SAFE files (`[[project_tad-universal-method]]`, `[[user_agent-builder-goals]]`) are just bracketed names; they leak the existence of a parked idea but no substance.
 
 ### Per-file re-classification of the 29 SAFE files
 All 29 are TAD-framework-internal engineering records: Epic completion notes, pack build records, workflow/tooling lessons, TAD process/communication rules, and research methodology. None contain third-party private material or personal profile. Representative spot-checks:
@@ -410,7 +410,7 @@ VERDICT: PASS
 
 | AC | Description | Classification | Evidence (re-run by reviewer) |
 |----|-------------|----------------|-------------------------------|
-| AC1 | settings.local.json +1 key only; permissions deep-equal | **SATISFIED** | Re-ran AC-01: PASS. `jq -S .permissions` diff vs before-snapshot empty; `autoMemoryDirectory=/Users/sheldonzhao/01-on progress programs/TAD/.tad/memory` (absolute, ends `.tad/memory`). Before-snapshot exists at `.tad/evidence/ralph-loops/TASK-20260712-001-ac1-permissions-before.json`. |
+| AC1 | settings.local.json +1 key only; permissions deep-equal | **SATISFIED** | Re-ran AC-01: PASS. `jq -S .permissions` diff vs before-snapshot empty; `autoMemoryDirectory=/path/to/TAD/.tad/memory` (absolute, ends `.tad/memory`). Before-snapshot exists at `.tad/evidence/ralph-loops/TASK-20260712-001-ac1-permissions-before.json`. |
 | AC2 | Content-level complete migration; old dir untouched (36) | **SATISFIED** | Re-ran AC-02: PASS. `diff -rq` old→target: 0 "Only in <old>" lines; old dir count = 36. Correct direction-scoped diff (not a count floor), per SEC P1-1 resolution. |
 | AC3 | SAFETY end-to-end: memory in BOTH deny-lists + drift gate + sync-set exclusion | **SATISFIED** | Re-ran AC-03: PASS (lib=1, tadsh=1, `tad.sh --verify-denylist` exit 0, `--dirs | grep -cx memory`=0). Verified diffs directly: `derive-sync-set.sh` ZERO_TOUCH +memory with count comments updated 10→11 / 15→16; `tad.sh` TAD_ZERO_TOUCH +memory (no separate count comment exists near it — "如有" satisfied). All four assertions hold, including the load-bearing exclusion assertion. |
 | AC4 | Distillation protocol purely additive | **SATISFIED** | Re-ran AC-04: PASS (comm deletions=0, `^## Step`=7, `^## Second Capture Source`=1). Diff confirms the new section is inserted immediately before `## Anti-Theater`, content matches handoff T4 text verbatim incl. the explicit `[ -f cursor ]` first-run branch (CR P1-1). alex/SKILL.md body untouched (not in diff). |
@@ -467,9 +467,9 @@ VERDICT: PASS
 
 # TRACE EVENTS (slug=memory-redirect-capture-layer, sorted by ts)
 
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-07-12.jsonl:{"ts":"2026-07-12T23:04:47Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260712-memory-redirect-capture-layer.md","size_bytes":21171,"slug":"memory-redirect-capture-layer"}
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-07-12.jsonl:{"ts":"2026-07-13T02:06:29Z","type":"task_completed","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/COMPLETION-20260712-memory-redirect-capture-layer.md","size_bytes":10261,"slug":"memory-redirect-capture-layer"}
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-07-12.jsonl:{"ts":"2026-07-13T02:07:55Z","type":"gate_result","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","context":"Gate 3: Gate 3","outcome":"pass","slug":"memory-redirect-capture-layer","agent":"blake"}
+/path/to/TAD/.tad/evidence/traces/2026-07-12.jsonl:{"ts":"2026-07-12T23:04:47Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/HANDOFF-20260712-memory-redirect-capture-layer.md","size_bytes":21171,"slug":"memory-redirect-capture-layer"}
+/path/to/TAD/.tad/evidence/traces/2026-07-12.jsonl:{"ts":"2026-07-13T02:06:29Z","type":"task_completed","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/COMPLETION-20260712-memory-redirect-capture-layer.md","size_bytes":10261,"slug":"memory-redirect-capture-layer"}
+/path/to/TAD/.tad/evidence/traces/2026-07-12.jsonl:{"ts":"2026-07-13T02:07:55Z","type":"gate_result","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","context":"Gate 3: Gate 3","outcome":"pass","slug":"memory-redirect-capture-layer","agent":"blake"}
 
 ---
 

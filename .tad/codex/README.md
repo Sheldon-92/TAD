@@ -124,7 +124,7 @@ codex exec "Read .agents/skills/alex-lite/SKILL.md and tell me the skill name fr
 ```
 OpenAI Codex v0.145.0
 --------
-workdir: /Users/sheldonzhao/01-on progress programs/TAD
+workdir: /path/to/TAD
 model: gpt-5.6-sol
 provider: openai
 approval: never
@@ -137,7 +137,7 @@ user
 Read .agents/skills/alex-lite/SKILL.md and tell me the skill name from the frontmatter. Reply in exactly one line.
 historical warning: a pre-schema Codex build rejected the then-current hooks fixture; current v0.146.0 schema is nested under `description` + `hooks`
 exec
-/bin/zsh -lc "sed -n '1,240p' .agents/skills/alex-lite/SKILL.md" in /Users/sheldonzhao/01-on progress programs/TAD
+/bin/zsh -lc "sed -n '1,240p' .agents/skills/alex-lite/SKILL.md" in /path/to/TAD
  succeeded in 0ms:
 [full SKILL.md content output — 81 lines]
 codex

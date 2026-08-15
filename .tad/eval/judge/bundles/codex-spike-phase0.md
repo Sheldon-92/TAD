@@ -60,7 +60,7 @@ gate4_delta: []
 **执行步骤**:
 1. 从 TAD 项目根目录启动 Codex:
    ```bash
-   cd "/Users/sheldonzhao/01-on progress programs/TAD"
+   cd "/path/to/TAD"
    codex --full-auto -c model="o4-mini" "Read ./CLAUDE.md and tell me the first heading"
    ```
 2. 如果成功 → 记录 "mechanism: file access OK in interactive mode"
@@ -75,7 +75,7 @@ gate4_delta: []
 **Codex CLI 已验证的正确语法**:
 - 交互模式 (多轮): `codex --full-auto -c model="o4-mini"`
 - 非交互模式 (单次): `codex exec -m o4-mini "prompt"`
-- 工作目录: 必须从 TAD 项目根启动 (或用 `-C "/Users/sheldonzhao/01-on progress programs/TAD"`)
+- 工作目录: 必须从 TAD 项目根启动 (或用 `-C "/path/to/TAD"`)
 - 指令注入: `cat file.md | codex --full-auto "based on the instructions above, do X"` (stdin pipe)
 - 已存储的 Blake prompt: `~/.codex/prompts/tad_blake.md` (可用)
 

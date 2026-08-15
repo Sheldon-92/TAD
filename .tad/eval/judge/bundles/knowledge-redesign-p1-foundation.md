@@ -90,7 +90,7 @@ gate4_delta: []
 
 # TRACE EVENTS (slug=knowledge-redesign-p1-foundation, sorted by ts)
 
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-06-22.jsonl:{"ts":"2026-06-22T14:32:22Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260622-knowledge-redesign-p1-foundation.md","size_bytes":14946,"slug":"knowledge-redesign-p1-foundation"}
+/path/to/TAD/.tad/evidence/traces/2026-06-22.jsonl:{"ts":"2026-06-22T14:32:22Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/HANDOFF-20260622-knowledge-redesign-p1-foundation.md","size_bytes":14946,"slug":"knowledge-redesign-p1-foundation"}
 
 ---
 

@@ -34,11 +34,11 @@
 
 > Today I learned that when you loop background music in the audio production pipeline,
 > you get an audible seam at the loop point. I tried crossfading but the BGM track for
-> Colin's voice-studio project was only 30 seconds and the crossfade ate too much.
+> 某音频项目 project was only 30 seconds and the crossfade ate too much.
 > The fix was to use a longer BGM track (2+ minutes) so the episode ends before the loop
 > point. Also the swell should be 40% not 80% — 80% drowns out the voice.
 
-Problems: relative time ("today"), project-specific names ("Colin's voice-studio"),
+Problems: relative time ("today"), project-specific names ("某音频项目"),
 no failure_mode stated, no validator, a reader without this session's context cannot
 reproduce the lesson.
 
@@ -71,10 +71,10 @@ read_only: false
 ```
 
 **What changed**:
-- "Colin's voice-studio project" → removed (project-specific, variabilized away)
+- "某音频项目 project" → removed (project-specific, variabilized away)
 - "30 seconds" → `{episode-duration}` context (the concrete number was episode-specific)
 - "40%" → `{swell-percentage}` (the optimal value depends on the voice/BGM pair)
 - "today" → removed (no relative time, rule 3)
 - `failure_mode` explicitly states the naive default ("loop directly + 80% swell") and why it fails
 - `One Way`-style invariants: "loop point", "crossfade", "swell" stay literal (these are domain-stable terms, rule 2)
-- Leak check: no remaining literals from the original "Colin" / "voice-studio" / "30 seconds" episode
+- Leak check: no remaining literals from the original 「人名」/「项目名」 / "30 seconds" episode

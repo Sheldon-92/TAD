@@ -69,7 +69,7 @@
   - Blast radius: `codebase-memory-mcp cli detect_changes '{"project":"<proj>"}'`
   - Caller chain: `codebase-memory-mcp cli query_graph "$(jq -nc --arg p '<proj>' --arg s '<fn>' '{query: "MATCH (c)-[:CALLS]->(f {name: \"\($s)\"}) RETURN c.name, c.file_path", project: $p}')"`
   - Architecture: `codebase-memory-mcp cli get_architecture '{"project":"<proj>","aspects":["all"]}'`
-- **Project naming:** Directory path with slashes replaced by dashes (e.g., `Users-sheldonzhao-01-on progress programs-menu-snap`)
+- **Project naming:** Directory path with slashes replaced by dashes (e.g., `path-to-your-project`)
 - **Graph DB:** `~/.cache/codebase-memory-mcp/` (SQLite, auto-managed)
 - **Known limitation:** Shell script call-chain detection is limited (CALLS edges sparse for bash). TypeScript/Python/Go have full type-aware resolution.
 - **Integration guide:** `.tad/guides/codebase-memory-integration.md`

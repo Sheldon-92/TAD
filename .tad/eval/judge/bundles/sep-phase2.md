@@ -366,9 +366,9 @@ instances; carrier-file + existence-AC rule; smoke alarms must fail closed). gat
 
 # TRACE EVENTS (slug=sep-phase2, sorted by ts)
 
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-06-10.jsonl:{"ts":"2026-06-11T00:17:14Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260610-sep-phase2.md","size_bytes":13872,"slug":"sep-phase2"}
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-06-10.jsonl:{"ts":"2026-06-11T00:40:57Z","type":"gate_result","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","context":"Gate 3: Gate 3","outcome":"pass","slug":"sep-phase2","agent":"blake"}
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-06-10.jsonl:{"ts":"2026-06-11T00:40:57Z","type":"task_completed","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/COMPLETION-20260610-sep-phase2.md","size_bytes":6342,"slug":"sep-phase2"}
+/path/to/TAD/.tad/evidence/traces/2026-06-10.jsonl:{"ts":"2026-06-11T00:17:14Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/HANDOFF-20260610-sep-phase2.md","size_bytes":13872,"slug":"sep-phase2"}
+/path/to/TAD/.tad/evidence/traces/2026-06-10.jsonl:{"ts":"2026-06-11T00:40:57Z","type":"gate_result","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","context":"Gate 3: Gate 3","outcome":"pass","slug":"sep-phase2","agent":"blake"}
+/path/to/TAD/.tad/evidence/traces/2026-06-10.jsonl:{"ts":"2026-06-11T00:40:57Z","type":"task_completed","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/COMPLETION-20260610-sep-phase2.md","size_bytes":6342,"slug":"sep-phase2"}
 
 ---
 

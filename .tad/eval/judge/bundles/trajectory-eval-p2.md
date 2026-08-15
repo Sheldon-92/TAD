@@ -490,9 +490,9 @@ AC7: wall-clock 全记录；token DEGRADED（预声明允许的 proxy 路径）
 
 # TRACE EVENTS (slug=trajectory-eval-p2, sorted by ts)
 
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-07-02.jsonl:{"ts":"2026-07-02T15:39:46Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/HANDOFF-20260702-trajectory-eval-p2.md","size_bytes":20334,"slug":"trajectory-eval-p2"}
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-07-02.jsonl:{"ts":"2026-07-02T16:27:07Z","type":"task_completed","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/Users/sheldonzhao/01-on progress programs/TAD/.tad/active/handoffs/COMPLETION-20260702-trajectory-eval-p2.md","size_bytes":4350,"slug":"trajectory-eval-p2"}
-/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/traces/2026-07-02.jsonl:{"ts":"2026-07-02T16:27:40Z","type":"gate_result","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","context":"Gate 3: Gate 3","outcome":"pass","slug":"trajectory-eval-p2","agent":"blake"}
+/path/to/TAD/.tad/evidence/traces/2026-07-02.jsonl:{"ts":"2026-07-02T15:39:46Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/HANDOFF-20260702-trajectory-eval-p2.md","size_bytes":20334,"slug":"trajectory-eval-p2"}
+/path/to/TAD/.tad/evidence/traces/2026-07-02.jsonl:{"ts":"2026-07-02T16:27:07Z","type":"task_completed","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/active/handoffs/COMPLETION-20260702-trajectory-eval-p2.md","size_bytes":4350,"slug":"trajectory-eval-p2"}
+/path/to/TAD/.tad/evidence/traces/2026-07-02.jsonl:{"ts":"2026-07-02T16:27:40Z","type":"gate_result","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","context":"Gate 3: Gate 3","outcome":"pass","slug":"trajectory-eval-p2","agent":"blake"}
 
 ---
 
