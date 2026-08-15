@@ -71,35 +71,36 @@ cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposi
 
 ## 🔄 Codex CLI Support (v2.26.0)
 
-TAD runs on Codex CLI with the same SKILL files. Use `$alex-lite` or `$blake-lite` to activate roles; `$alex` / `$blake` remain reserved:
+TAD runs on Codex CLI with the same SKILL files. Use `$alex` / `$blake` — the default channel.
 
 ```bash
 bash tad.sh --platform both --yes   # Dual-platform (recommended)
 bash tad.sh --platform codex --yes  # Codex only
-# In Codex: $alex-lite or $blake-lite (auto-discovered via .agents/skills/)
+# In Codex: $alex or $blake (auto-discovered via .agents/skills/)
 ```
 
 See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details.
 
 ---
 
-## 🎯 What's New in v2.39
+## 🎯 What's New in v2.42
 
-### v2.39.0 — Lite / Standard / Full Routing Profiles
-- **Lite is capability-complete by default**: shared knowledge, route preflight, approval/revision records, technical gates, honest partials, and completion closeout remain available without full-TAD ceremony.
-- **Standard and Full are routing profiles, not separate agents**: Alex and Blake can be selected independently by design/execution depth, with `.tad/routing-contract.yaml` as the shared source of truth.
-- **Fail-closed boundaries remain**: safety, protocol-contract, and fatal-operation work routes to Full; Lite does not auto-upgrade because a task is long, detailed, or spans many files.
-- **Claude Code and Codex share the same route contract and knowledge/state boundaries**, including independent route enforcement and 11 behavior scenarios.
+### v2.42.0 — Full is the default channel again; Alex costs 42% less to activate
+- **`/alex` `/blake` `/gate` are the default.** The Lite channel (`/alex-lite`, `/blake-lite`) is a
+  **frozen experiment** as of 2026-08-13: it takes no new work, and explicit invocation still works.
+  Eleven files previously pointed new projects at Lite by default.
+- **Activation cost 107.7K → 62K tokens (−42%), with no discipline removed.** Startup scans now read
+  command output instead of whole files; mode-specific protocol blocks moved behind `load_when` stubs.
+- **The 29 obligations that must never be forgotten now sit verbatim in the resident layer**, before the
+  activation protocol. The test is whether the forbidden action is the agent's *default* behaviour:
+  forgetting "don't auto-invoke an external CLI" is harmless, forgetting "get two expert reviews" is not.
+- **The fatal-operation recognition table moved to a module Gate actually loads.** Before this, an agent
+  could say "this needs human review" but could not tell you what counts as a fatal operation.
 
-## 🎯 What's New in v2.37
-
-### v2.38.0 — Lite Core Closure
-- Lite is now the default workhorse with shared Knowledge Closeout, lightweight progress recovery, Technical Gate/Human Gate separation, bounded repair circuit breaker, scope/risk routing, and Honest Partial handling.
-
-### v2.37.0 — Default Dual-Platform Installation
-- Fresh installs and upgrades without `--platform` now install both Claude Code and Codex entry points.
-- Existing Claude-only projects gain the Codex files during upgrade while project data remains untouched.
-- Explicit `--platform claude-code`, `codex`, and `both` overrides remain available.
+### Known limits, stated plainly
+- The ≤15K activation target was **not** met (62K). The discipline floor itself is only ~20KB; the rest
+  is movable but has to be moved safely, and this release moved part of it.
+- `express`'s expert-review floor is written **five contradictory ways** across the tree. Not yet unified.
 
 ## 🎯 What's New in v2.36
 
@@ -180,19 +181,19 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ### 2. Pick a Channel
 
-**Default — TAD Lite** (one terminal; the human types the command to switch roles)
-
-| Command | Role |
-|---------|------|
-| `/alex-lite` | Design & Planning |
-| `/blake-lite` | Implementation |
-
-**Reserved — full TAD** (two terminals, human is the only bridge)
+**Default — full TAD** (two terminals, the human is the only bridge between them)
 
 | Terminal 1 | Terminal 2 |
 |------------|------------|
 | `/alex` | `/blake` |
 | Design & Planning | Implementation |
+
+**Frozen — TAD Lite** (one terminal; explicit invocation still works, but takes no new work)
+
+| Command | Role |
+|---------|------|
+| `/alex-lite` | Design & Planning — 🧊 frozen experiment since 2026-08-13 |
+| `/blake-lite` | Implementation — 🧊 frozen experiment since 2026-08-13 |
 
 ### 3. Start Collaboration
 
@@ -295,11 +296,11 @@ Alex: [Reviews with subagents, accepts or requests changes]
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/alex-lite` | - | **Default channel** — Alex Lite (design) |
-| `/blake-lite` | - | **Default channel** — Blake Lite (implementation) |
-| `/alex` | - | Reserved channel — Alex (Solution Lead) |
-| `/blake` | - | Reserved channel — Blake (Execution Master) |
-| `/gate N` | Both | Reserved channel — Execute quality gate N |
+| `/alex` | - | **Default** — Alex (Solution Lead): design, planning, acceptance |
+| `/blake` | - | **Default** — Blake (Execution Master): implementation, testing |
+| `/gate N` | Both | **Default** — Execute quality gate N |
+| `/alex-lite` | - | 🧊 Frozen experiment — explicit invocation only |
+| `/blake-lite` | - | 🧊 Frozen experiment — explicit invocation only |
 | `/knowledge-audit` | Both | Audit project knowledge health |
 | `/tad-init` | - | Initialize TAD in new project |
 | `/tad-maintain` | - | Document health check and sync |
