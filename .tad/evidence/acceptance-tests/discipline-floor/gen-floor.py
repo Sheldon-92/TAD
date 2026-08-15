@@ -33,7 +33,7 @@ M = {
 "约束准入":("是",".claude/skills/blake-lite/SKILL.md","## 约束准入（新增约束前必须定价）","## 约束准入（新增约束前必须定价）","0","待判默认","否","需要台账超期扫描的机械告警（而非人工自查）方能判定非循环，「流程重量失控」目前只在本体内部可见"),
 "AC可执行性检查":("否",".claude/skills/gate/SKILL.md","step2: \"对每一行，实际执行其 Verification Method（grep/命令/脚本）\"","AC 可执行性必须实跑：step2: \"对每一行，实际执行其 Verification Method（grep/命令/脚本）\"","0","既有判定","否","-"),
 "Friction反跳过":("否",".claude/skills/blake/SKILL.md","# Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.","# Missing dependency, auth, approval, reviewer, or setup friction is NEVER a skip reason.","0","既有判定","否","-"),
-"Ralph Loop自检":("否",".claude/skills/blake/SKILL.md","## 🔄 Ralph Loop (TAD v2.41.0)","## 🔄 Ralph Loop (TAD v2.41.0) 自检必须执行","1","既有判定","否","-"),
+"Ralph Loop自检":("否",".claude/skills/blake/SKILL.md","## 🔄 Ralph Loop (TAD v2.42.0)","## 🔄 Ralph Loop (TAD v2.42.0) 自检必须执行","1","既有判定","否","-"),
 "研究先行":("否",".tad/config-cognitive.yaml","research_first:","研究先行必须执行：research_first:","1","循环触发实测","否","触发事件（技术选型/架构决策出现且未先搜索）由设计流程自知，需实测设计阶段搜索步骤的真实执行率"),
 "技术决策透明":("否",".tad/config-cognitive.yaml","decision_transparency:","重要技术决策必须透明：decision_transparency:","1","循环触发实测","否","触发事件（重要技术决策出现）自知，需实测决策记录的实际留存率"),
 "平台绑定交互决策":("否",".claude/skills/alex/SKILL.md","平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有","平台绑定交互决策必须执行（无 AskUserQuestion 的 harness 激活时自知）：平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有","1","循环触发实测","否","harness 类型激活时自知（alex:335 已有内联指针），需跨 harness 实测其遵守率"),

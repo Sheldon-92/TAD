@@ -698,7 +698,7 @@ Lite Authority Model v2（Execution Mandate）、`dependency-ops` skill、v2.41.
 **其中 Execution Mandate 是 lite 的净发明**——full 至今没有等价物（实测 full=0 / lite=5）。
 它把授权从隐含变显式（desired outcome / consequence classes / blast radius /
 exclusions / recovery / expiry）。**这是最值得反哺回 full 的一件，但必须按后果分档**
-（本机文件改动 3 个字段，触及外部服务/凭据/发布才要全套）——2026-08-13 在 dps-harness
+（本机文件改动 3 个字段，触及外部服务/凭据/发布才要全套）——2026-08-13 在某下游项目
 实测：一个注册 4 个命令的小活被要求先写 14 个字段的授权块，仪式与后果不成比例。
 
 **后继 Epic**：见 `.tad/active/epics/`（2026-08-13 创建），方向为

@@ -71,3 +71,6 @@ __pycache__/
 .tad/active/precompact/
 # Raw stdin tee from real compacts (live session metadata — impl-review P2-2)
 .tad/evidence/hooks/precompact-snapshot/last-stdin.json
+
+# 本地权限配置备份 —— 含本机绝对路径与白名单，永不提交
+.claude/settings.local.json.bak-*
