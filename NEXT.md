@@ -16,10 +16,29 @@
 
 TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。前两条是同一个病：**约束够不着 agent**。
 
-- [ ] **`config-cognitive.yaml` 从不加载 → 三条纪律现在是暗的**
-      `command_module_binding` 列了 5 个模块，`alex/SKILL.md` 的 `STEP 3` 正文只读 4 个。
-      承载的 `研究先行` / `技术决策透明` / `致命操作强制人审` **激活时根本不进上下文**。
-      ⚠️ Gate 4 时一个零上下文 agent 从纯行为侧独立撞出了这条（问它致命操作的识别特征，答"找不到"）。
+- [x] **✅ 2026-08-15 ACCEPTED + ARCHIVED — 致命操作识别表已搬到够得着的地方**
+      commit `2c220f5`（未 push）。`fatal_operations`（97 行/3,439 B）从 `config-cognitive.yaml`
+      整块移到 `config-quality.yaml`（alex/blake 正文实读 + Gate 显式指针可达），11 处指针同步。
+      Gate 4：10/10 AC **Alex 独立复算**；AC7 用 **Alex 自派**的零上下文 agent 复验 **6/6**
+      （12 次 Read、每文件一次、无 offset、无 Bash/Grep）。**结构保证**：目标文件 875 行 ≈10.8K tokens，
+      离 Read 上限 25K 有一倍余量——不重演 P7「在场但不可达」。
+      ⚠️ 契约出了 7 个 rev，**没有一个是因为要做的事有问题**——全是验收层：落点判据错、
+      字节漏算、键三次选错、行内替换按 1 行计、指针 #9 无 AC 覆盖。
+      ⚠️ 过程如实记录不追认：Blake 一次越权改契约（内容对、过程错）＋ 一次误报指针已改。
+      归档：`.tad/archive/handoffs/{HANDOFF,COMPLETION}-20260814-discipline-reachability.md`；
+      Gate 4 报告 `.tad/evidence/acceptance-tests/reachability/gate4-alex-recompute.md`。
+      **剩下三条（`研究先行`/`技术决策透明` 的载体仍在不加载的 `config-cognitive`）见下条。**
+
+- [ ] **`config-cognitive.yaml` 仍不被 Alex 加载 → 另两条纪律仍是暗的**
+      `研究先行` / `技术决策透明` 的载体还在 `config-cognitive.yaml`，而 `STEP 3` 正文不读它。
+      ⚠️ 这两条**有常驻祈使句兜底**（P7 放的），缺的是本体；不像致命操作那样本体即识别能力，
+      优先级低于原来的判断。**动手前先量：它们的本体到底承载什么，值不值 +N 字节。**
+
+- [ ] **`gen-floor.py` 两处朽坏（Alex 留下的，同一脚本第二次）**
+      (a) `:27` 的 `启动扫描` 锚点仍是 P3 前的旧串，实测在 T0 的 `SKILL.md` 已命中 0
+      → 生成器现在跑必报 `anchor not in carrier`；
+      (b) 它读的 `keys30` 路径已随单归档（与 `measure.sh` 硬编码归档路径同病）。
+      ⚠️ **形状**：改了产物没改生成器。P7 时改地板表锚点漏了它，本单改载体又漏了它。
 - [ ] **`alex/references/**` 83 条强制行中 82 条在常驻层无重复副本**
       → **今天守住纪律的是"重复"，不是加载机制。** 9 条 `forbidden` 里 8 条靠 `CLAUDE.md` 重复侥幸安全。
 - [ ] **净省要打 25% 的折**：`knowledge-bootstrap` 的 `load_when` 是"每次激活时"，
