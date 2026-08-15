@@ -12,7 +12,43 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### 1. 纪律可达性修复单（**有真实风险，排第一**）
+### 0. Gate 3 的拦截现在是静默失效的（**真 bug，十分钟，先做这个**）
+
+- [ ] **`pre-gate-check.sh` 的 Gate 3 检查缺 `else`，找不到结果行就完全不出声**
+      ```
+      .tad/hooks/pre-gate-check.sh:191-203
+      GATE3_RESULT=$(grep 'Gate 3.*结果|Gate 3.*Result' "$COMPLETION_FILE" | head -1)
+      if [ -n "$GATE3_RESULT" ]; then ... fi      ← 没有 else
+      ```
+      **串找不到 = 零输出、零警告、不拦截。** 这是 Gate 3 FAIL 唯一的 BLOCK 路径
+      （`.claude/settings.json:59` 注册的活 hook），**今天就是 fail-open 且完全静默**。
+      改法：补 `else` → completion 文件存在但三种形式全没命中 → `HAS_BLOCK=1`。
+      ⚠️ **只改这一个文件的这一个分支**，不要顺手动锚点（见第 1 条的教训）。
+      负控：造一份 `Gate 3 Verdict: FAIL`（旧 grep 抓不到的措辞）→ 必须拦截。
+
+### 1. 英文化 —— 🛑 **计划已作废，需重做**（用户 2026-08-15 裁定停下）
+
+- [ ] **重做前先读作废的那版**：`.tad/archive/handoffs/blocked/HANDOFF-20260815-english-unification.md`
+      **三轮专家审查、18 个 P0。停下的理由是结构问题，不是改不完**：
+      **S0 要改的文件正是验证 S0 的机器要测量的文件**——插一个锚就改变地板表记录的载体字节数，
+      地板表必须重生成、而它不在写权限里；真做成干跑不写文件，地板表就静默过时。**两条路都坏。**
+      → **重做时拆成三张独立小单**，每张只碰一个文件：
+      (a) Gate 3 fail-closed（= 上面第 0 条，已单列）
+      (b) `skill-body-verify.sh` 的 SAFETY 判据从**全局计数**改成**行集 diff**
+          （`verify.sh` 的 `acref()` 已实现过一遍，中英双语、防等量替换、已冻结——**复用别新造**）。
+          ⚠️ 现状：`SAFETY_FLOOR=70`，blake 命中 84（余量 14）；而 blake 有 **26 行**、
+          alex 有 **44 行**中文约束**完全不在计数内**——这是今天就存在、与翻译无关的洞。
+      (c) `gen-floor.py` 真加 `--check` 干跑（现在压根不解析参数，`--check` 被静默忽略照样写文件）。
+- [ ] **仍然有效、别重新量的调研结论**（作废那版的 §1.2/§2）：
+      · 活文件含汉字 **626 个 / 320,883 字**；`.tad/evidence`+`archive` 另有 1,719 个 / 123 万字（**记录，不翻**）
+      · `.claude/skills` 354 个 / 204,752 字 = **64%**，两位审查员一致判「96% 的风险换未验证的收益」→ 等有英文读者再动
+      · **34 个包的中文 `keywords` 与 5 个 skill 的中文 `description` 是路由面不是文案**
+        （`save-skill` 的触发串就是 `把这个存成 skill`）——**翻掉就破坏「能用中文使唤 TAD」这件事本身**。
+        **用户已裁定：保留中文（选项 A）。**
+      · 要立的规则：**产物一律英文，对话跟随用户**——这两件事框架里从来没区分过，
+        所以不先立规则，翻完下个 session 又开始写中文。
+
+### 2. 纪律可达性剩余项
 
 TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。前两条是同一个病：**约束够不着 agent**。
 
@@ -52,7 +88,7 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
       `principles.md` 的 SAFETY 条目与 AR-001（`alex/SKILL.md:1710`）说 express 可降到 **min 1**。
       P7 把 min 2 一侧写成了常驻祈使句（更严，方向安全），矛盾因此更显眼。
 
-### 2. Phase 3c —— **BLOCKED，通道被关**（需人裁定）
+### 3. Phase 3c —— **BLOCKED，通道被关**（需人裁定）
 
 - [ ] **Phase 3c Release live dogfood** — 原文：「**Lite-only** 真实 publish+sync，
       这是整个 Epic 第一个真正对外写的阶段」。**但 lite 已于 2026-08-13 冻结**
@@ -60,7 +96,7 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
       三选一：改走 full ｜ 作废 ｜ 作为"在飞单"例外放行。开工前另需处理
       AC8 只剩 **2 字节**余量（Lite core 52,198 / 上限 52,200）。
 
-### 3. 剩余机制缺口
+### 4. 剩余机制缺口
 
 - [ ] **③ 移植 lite 的无条件轮次上限到 full**
       lite 有 `repair_round 3/3`（不看错是否相同）+ 跨压缩持久化；full 只有 error-shaped 的
@@ -72,7 +108,7 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
       落点必须在**任何 reviewer 被 spawn 之前**（step1b/step1c 之间），否则"坚持原样"是唯一理性选项。
       实测分布：出事那张 107KB/27AC；64/62/52KB 三张都跑完了；其余 <40KB。
 
-### 4. 杂活（不走 phase 那套机器）
+### 5. 杂活（不走 phase 那套机器）
 
 - [ ] **brain-index 生成器 `set -e` 缺陷** — 撞到缺 `task_type:` 的旧归档即退出 →
       「recent 50」段只出 11 条（缺 39）。**预存缺陷**。
