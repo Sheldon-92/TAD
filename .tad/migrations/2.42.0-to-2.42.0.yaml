@@ -1,0 +1,33 @@
+schema_version: 1
+from: "2.42.0"
+to: "2.42.0"
+generated_by: "manual"
+note: |
+  In-version privacy remediation (2026-08-15). No behaviour change; nothing downstream
+  ever received the removed paths.
+delete:
+  - path: ".tad/sync-registry.yaml"
+    type: "file"
+    reason: >-
+      Untracked from version control (local file retained). It lists the absolute paths of
+      14 downstream projects on the maintainer's machine and has always been TAD_TOP_DENY,
+      i.e. excluded from every installer and sync copy path — it was never distributed, so
+      removing it from the repository cannot affect any downstream install. *sync continues
+      to read the local copy.
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-pre-targets.txt"
+    type: "file"
+    reason: >-
+      78 MB across four files of per-file content hashes for every downstream project,
+      including uncommitted filenames and private document titles. Zero-touch directory,
+      never installed; removed from the current version for privacy. Replaced by
+      zero-touch-targets-REMOVED.md recording what the ACs proved and how to recompute.
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-post-targets.txt"
+    type: "file"
+    reason: "Same set — see zero-touch-pre-targets.txt"
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-targets.txt"
+    type: "file"
+    reason: "Same set — see zero-touch-pre-targets.txt"
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-targets.txt"
+    type: "file"
+    reason: "Same set — see zero-touch-pre-targets.txt"
+rename: []
