@@ -531,3 +531,41 @@
 - **Grounded in**: `47918da7` 的 `git ls-tree` 输出（mode 120000 / blob 3bdaf056 / 35 字节）；
   `gitleaks git --no-banner` 848 commits 扫描报告；
   `.tad/evidence/acceptance-tests/codex-wiring-stopbleed/REMOVED-spike-codex-home.md` §判断错误复盘
+
+### 连续两张单：设计过审、验收层不合格——AC 的四个永真陷阱 - 2026-08-16
+
+- **Context**: 同日两张 handoff（`gate3-check8-audible`、`trace-relative-path`）的
+  Gate 2 结果高度一致：**代码设计零 P0，专家在沙箱里打过补丁确认行为正确；
+  P0 全部落在 §9 验收层**（第一张 5 个，第二张 8 个）。第二张更刺眼——
+  作者在 §7 写下「验证要匹配 `$` 串一律用 `grep -F`」，却在同一份文档的 §6 没照做；
+  在 §3 写下「`mktemp -d` 的 `/var` 与 `git rev-parse` 的 `/private/var` 分歧 → 保持绝对」，
+  却在 §4 强制所有 AC 在那个环境里跑——**导致打了正确补丁后 AC1（须红）与 AC2（须绿）返回同一结果**。
+- **Discovery**: 四类永真/永假陷阱，每一类都让**正确实现变红或错误实现变绿**：
+  1. **永真断言**：`record_trace` 结尾是 `unset`，函数**恒返回 0**。审查员把函数体整个
+     换成 `echo "TOTALLY BROKEN"` 仍 `rc=0` → 所有「assert exit 0」形同虚设。
+     **凡断言退出码前，先确认被测函数的退出码是否由业务逻辑决定。**
+  2. **测试环境本身触发已知降级**：`mktemp -d` 返回 `/var/...`，`git rev-parse` 返回
+     `/private/var/...`，symlink 分歧使功能按设计不生效。**修法：`BOX=$(cd "$(mktemp -d)" && pwd -P)`。**
+  3. **判别力为零的配置**：验证「转换在 `stat` 之后」，但在 **cwd=仓库根**时，
+     错序实现的 `size_bytes` 同样正确 —— 只有 **cwd=子目录**才能分开两者。
+     **AC 必须显式指定那个唯一能区分正确与错误实现的配置。**
+  4. **前置条件与现实不符**：`AC5` 用 `PATH=/usr/bin:/bin` 想去掉 jq，而
+     **`/usr/bin/jq` 存在**；且 `HAS_JQ` 在 **source 时** latch，调用时改 PATH 无效
+     → 该 AC 静默地把上一条又跑了一遍。**修法：直接置 `HAS_JQ=false` 并断言它确实为 false。**
+- **Action**: 每条 AC 写完，问四个问题：
+  (a) **这条断言在被测对象完全损坏时会失败吗？**（永真检测）
+  (b) **测试环境是否恰好落在本单已知的降级分支里？**（读自己写的边界表）
+  (c) **存在哪个配置能区分正确与错误实现？我指定它了吗？**（判别力）
+  (d) **这条 AC 的前置条件我实测过吗？**（不是推测 jq 不在、文件存在、hook 会触发）
+  更强的做法：**AC 层交给一个实际搭 harness 跑的审查者**（`test-runner`），
+  而不是只做文本审查——本次两处最关键的发现（判别力为零、sandbox 自触发降级）
+  都来自实跑，纯读文档不可能发现。
+- **failure_mode**: 朴素默认：把精力放在"改什么"，验收部分照着熟悉的模板写完就交。
+  为什么错：**AC 是唯一决定"改对没有"的东西**，而它的缺陷不会在设计评审里暴露——
+  设计对不对是能读出来的，AC 有没有判别力**必须跑**。结果是设计连续通过、
+  验收连续不合格，且失败方向双向（好改动被拦、坏改动放行）。
+  更隐蔽的是：**作者把教训写进同一份文档的警告段，却没有应用到自己的验收命令上**——
+  知识在纸上不等于在手上。
+- **Grounded in**: `HANDOFF-20260816-gate3-check8-audible.md` §9.2 Audit Trail（5 P0 全在验收层）；
+  `HANDOFF-20260816-trace-relative-path.md` Gate 2 两份报告（code-reviewer FAIL / test-runner
+  CONDITIONAL，8 P0 全在验收层，含实测的错序变体对照与 `HAS_JQ` latch 证据）
