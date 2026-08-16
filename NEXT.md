@@ -37,6 +37,35 @@
       `" 3"`（前导空格）和 `"gate 3"` 都会让 hook 静默放行 `{}` exit 0。
       详见 `.tad/archive/handoffs/HANDOFF-20260816-gate3-check8-audible.md` §10.2(b)。
 
+### 0d. 隐私：trace hook 仍在写绝对路径，上轮治的是症状不是源头
+
+- [ ] **`post-write-sync.sh` 的 `record_trace` 把 `file` 字段写成绝对路径**
+      （`FILE_PATH="${HOOK_FILE_PATH:-}"`，`post-write-sync.sh:279`，直接落进
+      `.tad/evidence/traces/*.jsonl`，而该目录是**被跟踪并推送到 PUBLIC 仓库的**）。
+      **上轮的"个人标识清零"是事后批量替换**（77 个 trace 里 75 个是
+      `/path/to/TAD/...`，那是清洗结果不是原始写入），**hook 一天没改，就一天继续产**。
+      2026-08-16 实测：08-15 和 08-16 两个文件里又出现 3 条真实绝对路径，
+      全部由当天的 handoff/evidence 创建触发。已手工修正，但**这不是修复，是再清洗一次**。
+      改法：`record_trace` 写入前把 `$FILE_PATH` 转成仓库相对路径
+      （`${FILE_PATH#$(git rev-parse --show-toplevel)/}`）。
+      ⚠️ **不要**把根路径换成字面量 `/path/to/TAD` —— 2026-08-15 就是这么干的，
+      **34 个脚本的判定器当场全死**（见 `NEXT.md` 历史与 `9e1e719`）。数据文件里放占位符没问题，
+      **脚本里必须派生**。
+      负控：新建一个 handoff → 检查当天 trace 的 `file` 字段不含 `/Users/`。
+
+### 0e. 隐私扫描判据太窄，同一个标识有三种形态
+
+- [ ] **建一个覆盖全部形态的扫描器**（本轮手工发现，三类都命中过）：
+      | 形态 | 例子 | 上轮规则是否覆盖 |
+      |---|---|---|
+      | `/Users/<user>/` | 绝对路径 | ✅ 覆盖了 |
+      | `-Users-<user>-` | Claude Code 项目目录编码（横杠代斜杠） | ❌ **漏** |
+      | 裸用户名 | `ls -l` 的 owner 字段 | ❌ **漏** |
+      2026-08-16 实测：变体 A 命中 4 文件、变体 B 命中 18 文件、变体 C 命中 2 文件。
+      **更根本的教训**（同日凭据事故）：**扫路径的判据不会发现凭据**。
+      一套判据过了不代表另一类风险过了。扫描器至少要覆盖：个人路径三形态 + 凭据模式
+      （`refresh_token`/`access_token`/`sk-`/`ghp_`/`AKIA` 等）。
+
 ### 0c. EPIC alex-blake-lightening 的两项未收口标准（Epic 已归档 2026-08-16）
 
 > Epic 5/5 phase 全 Gate 4 PASS，已归档到 `.tad/archive/epics/`。

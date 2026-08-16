@@ -415,7 +415,7 @@ NOT in separate files (too easy to skip reading).
 ## References
 
 - [obra/superpowers](https://github.com/obra/superpowers) - Original verification skill
-- [TAD Framework](https://github.com/sheldonzhao/TAD) - Gate-based quality assurance
+- [TAD Framework](https://github.com/Sheldon-92/TAD) - Gate-based quality assurance
 - [Evidence-Based Software Engineering](https://www.amazon.com/Evidence-Based-Software-Engineering-David-Budgen/dp/0321717589)
 
 ---
