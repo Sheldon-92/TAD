@@ -12,19 +12,42 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### 0. Gate 3 的拦截现在是静默失效的（**真 bug，十分钟，先做这个**）
+### 0. ✅ **DONE 2026-08-16** — Gate 3 Check 8 已改成「出声但不拦」（commit `f5f62af`）
 
-- [ ] **`pre-gate-check.sh` 的 Gate 3 检查缺 `else`，找不到结果行就完全不出声**
-      ```
-      .tad/hooks/pre-gate-check.sh:191-203
-      GATE3_RESULT=$(grep 'Gate 3.*结果|Gate 3.*Result' "$COMPLETION_FILE" | head -1)
-      if [ -n "$GATE3_RESULT" ]; then ... fi      ← 没有 else
-      ```
-      **串找不到 = 零输出、零警告、不拦截。** 这是 Gate 3 FAIL 唯一的 BLOCK 路径
-      （`.claude/settings.json:59` 注册的活 hook），**今天就是 fail-open 且完全静默**。
-      改法：补 `else` → completion 文件存在但三种形式全没命中 → `HAS_BLOCK=1`。
-      ⚠️ **只改这一个文件的这一个分支**，不要顺手动锚点（见第 1 条的教训）。
-      负控：造一份 `Gate 3 Verdict: FAIL`（旧 grep 抓不到的措辞）→ 必须拦截。
+- [x] **`pre-gate-check.sh` 补了 `else`**，读不到判定行时发 WARNING 并点名它读的文件。
+      Gate 2（code-reviewer + security-auditor，5 个 P0）+ Gate 3 + Gate 4（Alex 独立复算）全过。
+      归档：`.tad/archive/handoffs/{HANDOFF,COMPLETION}-20260816-gate3-check8-audible.md`
+      ⚠️ **本条原来的三处说法都是错的，留档备查**（清单不准 = 清单有害）：
+      (a) 称它是「Gate 3 FAIL 唯一的 BLOCK 路径」→ 实际有 4 条 exit-2 路径，
+          只有这条以**判定本身**为触发条件；主拦截是「无 COMPLETION」那条。
+      (b) 原修法「补 else → `HAS_BLOCK=1`」→ **照做会误拦 90% 的报告**。
+          实测最近 20 份 COMPLETION 有 **18 份根本不写任何 Gate 3 判定标记**。
+          用户 2026-08-16 裁定：只出声，不拦截。
+      (c) 起草时一度提出「扩 grep 抓 frontmatter `gate3_verdict:`」→ 也错：
+          那字段是 Gate 3 **跑完后**的 post-step 才写，PreToolUse 时点按设计就是空的。
+
+### 0b. 上游才是病根：完工报告根本不写 Gate 3 判定标记（**接替上面那条**）
+
+- [ ] **18/20 的 COMPLETION 既无正文自评行、也无 frontmatter `gate3_verdict:`。**
+      §0 那一刀只让闸「如实说它读不到」，没让上游开始写。要修的是
+      Blake `completion_protocol` step4b/step5 + `completion-report.md`/`deliverable-completion.md` 两个模板。
+      **进度条现成的**：§0 那条新 WARNING 的触发率降下来，就是这件事做成了。
+- [ ] **`args` 形状可绕过整个 Gate 3 块**（同一批发现，独立缺陷）：
+      `GATE_NUM` 由 `grep -oE '^[0-9]+'` 行首锚定解析，
+      `" 3"`（前导空格）和 `"gate 3"` 都会让 hook 静默放行 `{}` exit 0。
+      详见 `.tad/archive/handoffs/HANDOFF-20260816-gate3-check8-audible.md` §10.2(b)。
+
+### 0c. EPIC alex-blake-lightening 的两项未收口标准（Epic 已归档 2026-08-16）
+
+> Epic 5/5 phase 全 Gate 4 PASS，已归档到 `.tad/archive/epics/`。
+> 这两条是它**自己写明未达标**的成功标准，单列出来免得随 Epic 关闭一起消失。
+
+- [ ] **SC1 收口：激活即付从 62K 继续降。** 全程已砍 42%（107.7K → 62K），但离 15K 目标还远。
+      **Epic 的自述值得先读**：地板本体只占 20,081 B（≈5K tokens），
+      其余 ~230K B 在「可搬但要搬得安全」的区间——**本 Epic 交付的是"能安全地搬"这个能力，不是 15K 这个数**。
+      动手前先量，别把「精简」做成 v2.7 那种连约束一起删。
+- [ ] **SC3：0/5 真活验证。** Epic 要求「每刀切完跑过 ≥1 个非框架真活且未回滚」，五刀一个都没跑。
+      **这是唯一能证明减负没伤到能力的证据**，纯框架内自证不算。
 
 ### 1. 英文化 —— 🛑 **计划已作废，需重做**（用户 2026-08-15 裁定停下）
 

@@ -2,7 +2,11 @@
 
 **Created**: 2026-08-13
 **Owner**: Alex（full 通道）
-**Status**: ACTIVE
+**Status**: 📦 **ARCHIVED 2026-08-16** — 5/5 phase 全部 Gate 4 PASS。
+**归档时两项成功标准未收口，已转入 `NEXT.md` 独立条目，不随本 Epic 关闭而消失**：
+`SC1`（激活即付 62K，未达 15K 目标）与 `SC3`（0/5 真活验证）。
+归档理由：phase 已全部交付，Epic 不应因为拖着一个长期指标而永远 ACTIVE；
+本 Epic 真正交付的是「能不能安全地搬」这个能力，不是 15K 那个数（见下方 SC1 自述）。
 **Predecessors**（均已冻结归档 2026-08-13）:
 `.tad/archive/epics/EPIC-20260804-lite-as-tad-body.md` →
 `EPIC-20260809-full-capability-extraction-retirement.md` →
