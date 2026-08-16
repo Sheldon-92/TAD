@@ -1,0 +1,3 @@
+ M .tad/evidence/traces/2026-08-16.jsonl
+?? .tad/evidence/acceptance-tests/trace-relative-path/.tr-path
+?? .tad/evidence/ralph-loops/trace-relative-path_state.yaml

@@ -1,0 +1,1 @@
+{"ts":"2026-08-16T19:41:53Z","type":"evidence_created","project":"repo","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/private/var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.0F7yfvJZMR/repo/some-file.md","size_bytes":7}

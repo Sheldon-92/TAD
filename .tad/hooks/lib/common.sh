@@ -110,6 +110,15 @@ record_trace() {
   local size=0
   [ -n "$file_path" ] && size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path" 2>/dev/null || echo "0")
 
+  # 输出用仓库相对路径（size 已在上面用原始路径取得，故必须在 stat 之后）
+  local _repo_root=""
+  if [ -n "$file_path" ]; then
+    _repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+  fi
+  if [ -n "$_repo_root" ]; then
+    case "$file_path" in "$_repo_root"/*) file_path="${file_path#"$_repo_root"/}" ;; esac
+  fi
+
   if [ "$HAS_JQ" = true ]; then
     local jq_args=(
       --arg ts "$ts"
