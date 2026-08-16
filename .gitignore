@@ -108,3 +108,8 @@ __pycache__/
 **/spike-codex-home/
 **/*-codex-home/
 **/.codex-home/
+
+# gitleaks 扫描产物（报告/baseline 默认写到仓库根，2026-08-16 实测残留过两个）
+.gitleaks-baseline.json
+findings.json
+gitleaks-report.json
