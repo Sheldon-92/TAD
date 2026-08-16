@@ -78,13 +78,26 @@ __pycache__/
 # 下游项目登记表 —— 含本机绝对路径，仅本地使用（安装器本就 TAD_TOP_DENY 排除）
 .tad/sync-registry.yaml
 
-# ⚠️ 凭据与 agent HOME 沙箱 —— 2026-08-16 事故后新增，勿删
-# 起因：一次 codex-wiring spike 把整个 CODEX_HOME 当证据提交，其中 auth.json 含
-# 真实的 ChatGPT OAuth id_token / access_token / refresh_token，在 PUBLIC 仓库
-# 公开了 3 天（commit 47918da7，2026-08-13 → 发现于 2026-08-16）。
-# 上一轮隐私清理扫的是路径里的个人标识，没扫凭据，所以漏了。
-# 教训：把外部工具的 HOME/配置目录整个当"证据"留存时，里面几乎必然有认证态。
-# 证据要留的是"我验证了什么"，不是"当时那台机器长什么样"。
+# ⚠️ 凭据与 agent HOME 沙箱 —— 2026-08-16 新增，勿删
+# 起因：一次 codex-wiring spike 把整个 CODEX_HOME 当证据提交（commit 47918da7，
+# 2026-08-13），其中包含一个名为 auth.json 的条目。
+#
+# ✅ 事实核定（2026-08-16，两个独立来源）：**凭据从未进入 git。**
+#    被提交的 auth.json 是一个 **符号链接**（git mode 120000，blob 仅 35 字节，
+#    内容是路径字符串 `~/.codex/auth.json`）。真 token 一直在本机 600 权限的文件里。
+#    `gitleaks git` 扫描 848 个 commit / 227MB，auth.json 与 OAuth token 命中 **0 条**。
+#    实际泄漏的只是**家目录路径字符串**（个人信息，轻微）。
+#
+# ⚠️ 但这些规则必须留着，理由是**下一次可能不是符号链接**：
+#    同一个操作（把工具 HOME 当证据留存）只要复制的是真文件而非符号链接，
+#    进的就是真凭据。规则挡的是那个动作，不是这一次的结果。
+#
+# 教训（仍然成立）：把外部工具的 HOME/配置目录整个当"证据"留存时，
+# 里面几乎必然有认证态。证据要留的是"我验证了什么"，不是"当时那台机器长什么样"。
+#
+# 附带教训（这次判断出错的原因，代价更大）：`wc -c` / `open()` 会**跟随符号链接**
+# 读到本机真文件，而 `git ls-files` 只说明路径被跟踪。两个各自正确的事实拼出了
+# 错误结论。**要判断"git 里有什么"，只能用 `git show <commit>:<path>`。**
 **/auth.json
 **/installation_id
 **/models_cache.json

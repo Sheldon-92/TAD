@@ -53,18 +53,26 @@
       **脚本里必须派生**。
       负控：新建一个 handoff → 检查当天 trace 的 `file` 字段不含 `/Users/`。
 
-### 0e. 隐私扫描判据太窄，同一个标识有三种形态
+### 0e. ~~建隐私/凭据扫描器~~ —— 🛑 **用户 2026-08-16 裁定不做**
 
-- [ ] **建一个覆盖全部形态的扫描器**（本轮手工发现，三类都命中过）：
-      | 形态 | 例子 | 上轮规则是否覆盖 |
-      |---|---|---|
-      | `/Users/<user>/` | 绝对路径 | ✅ 覆盖了 |
-      | `-Users-<user>-` | Claude Code 项目目录编码（横杠代斜杠） | ❌ **漏** |
-      | 裸用户名 | `ls -l` 的 owner 字段 | ❌ **漏** |
-      2026-08-16 实测：变体 A 命中 4 文件、变体 B 命中 18 文件、变体 C 命中 2 文件。
-      **更根本的教训**（同日凭据事故）：**扫路径的判据不会发现凭据**。
-      一套判据过了不代表另一类风险过了。扫描器至少要覆盖：个人路径三形态 + 凭据模式
-      （`refresh_token`/`access_token`/`sk-`/`ghp_`/`AKIA` 等）。
+- [x] **不做。** 契约已撤到 `.tad/archive/handoffs/blocked/HANDOFF-20260816-privacy-scanner-and-trace-relpath.md`。
+      **撤单理由（两条，都不是"改不完"）**：
+      (a) **前提没了** —— 立单的紧迫性来自"凭据泄漏过 3 天"，事后核定**凭据从未进入 git**
+      （被提交的是 symlink，35 字节；`gitleaks` 扫 848 commit 确认 0 条）。
+      (b) **方案本身是错的** —— Gate 2 两名专家合计 **11 个 P0**：手写正则漏掉
+      Stripe/Slack/npm/PyPI/GCP/AWS-secret/`sk-proj-`/`.env` 几乎所有主流形态；
+      `\s` 在 BSD ERE 里失效；`{40,}` 长度门槛把 32-36 字符的真凭据挡在外面；
+      扫工作区而非暂存 blob（`git add` 后编辑即可绕过）；扫描器打印凭据且被要求提交进公开仓库。
+      **而 `gitleaks` 已装（8.30.1），项目 `code-security` pack 里早有调用规范** ——
+      违反 `principles.md`「Never Hand-Write What an Existing Tool Already Does」(2026-05-28)。
+- [ ] **顺带发现，值得单独修**：`code-security` pack 里写的 `gitleaks protect --staged`
+      在 **8.30.1 上是不存在的命令**（子命令已改为 `git` / `dir` / `stdin`）。
+      **一条失效的安全操作指令，比没有更糟。** 改成 `gitleaks git --staged`。
+- [ ] **若日后重启**：凭据检测直接用 gitleaks，只手写"个人路径三形态"那部分
+      （`/Users/<u>/` ✅上轮覆盖 · `-Users-<u>-` ❌漏 4 文件 · 裸用户名 ❌漏 18 文件）。
+      已知基线：gitleaks 开箱在本仓库有 **54 条误报**（全是研究文档里的 `api.example.com`
+      等示例值），必须先建 allowlist。**服务端的 GitHub secret scanning + push protection
+      优先级高于任何本地钩子** —— 服务端执行、`--no-verify` 绕不过、新 clone 免装。
 
 ### 0c. EPIC alex-blake-lightening 的两项未收口标准（Epic 已归档 2026-08-16）
 

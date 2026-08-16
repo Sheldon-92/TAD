@@ -502,3 +502,32 @@
 - **Grounded in**: `HANDOFF-20260816-gate3-check8-audible.md` §9 前置警告 + §11.2 第 1 条；
   Gate 2 两名专家的 P0（code-reviewer P0-1 / security-auditor P0-2）；
   Gate 4 实测 AC15 原判据 FAIL、排除合法 COMPLETION 后 PASS
+
+### 判断"git 里有什么"必须用 `git show`——任何走文件系统的读取都会跟随符号链接 - 2026-08-16
+
+- **Context**: 打扫时发现一次 spike 把整个 `CODEX_HOME` 当证据提交，其中有 `auth.json`。
+  Alex 用 `git ls-files --error-unmatch` 确认该路径被跟踪，再用 `wc -c` 和
+  `json.load(open(path))` 读出 `id_token`/`access_token`/`refresh_token` 三个真值，
+  据此判定「真实凭据已推送到 PUBLIC 仓库、公开 3 天」，并让用户执行紧急吊销。
+- **Discovery**: **被提交的是一个符号链接**（git mode `120000`，blob 仅 **35 字节**，
+  内容是路径字符串 `~/.codex/auth.json`）。真 token 一直在本机 600 权限的文件里，
+  **从未进入 git**。`git show <commit>:<path>` 与 `git ls-tree`（看 mode）立刻能证伪，
+  但当时没做。`gitleaks git` 扫 848 commit / 227MB 事后确认：OAuth token 命中 **0** 条。
+  **错误的结构是「两个各自正确的事实，错误的合取」**：
+  (a)「路径被 git 跟踪」为真；(b)「本机该路径的文件含真 token」为真；
+  合取推出「git 里有真 token」为假 —— 因为 (a) 说的是 blob，(b) 说的是 symlink 的目标。
+  所有走文件系统的读取（`wc` / `cat` / `open()` / `stat` / `du` / `grep <path>`）
+  都**跟随符号链接**，回答的是「本机有什么」，不是「仓库里有什么」。
+- **Action**: 判断仓库内容只用两条命令：`git show <commit>:<path>`（内容）与
+  `git ls-tree <commit> -- <path>`（模式，`120000`=symlink / `160000`=gitlink /
+  `100644`=普通文件）。**凡是要对"已提交/已推送了什么"下结论，先看 mode。**
+  推广：任何"证据 A 在容器里"的判断，都要用**容器自己的**读取方式取证，
+  不能用宿主文件系统的视图代替 —— 同理适用于 tar/zip/docker image/sqlite blob。
+- **failure_mode**: 朴素默认：确认路径被跟踪后，直接用常规文件工具读该路径的内容。
+  为什么错：路径在 git 里可能是 symlink 或 gitlink，其 blob 内容与文件系统上
+  同名路径的内容**是两个不同的东西**；而常规工具会静默解引用，不给任何提示。
+  失败方向是**放大**而非缩小：把无害的东西读成灾难，触发不必要的紧急响应，
+  并在文档、`.gitignore` 注释、commit message 里留下多处错误记录。
+- **Grounded in**: `47918da7` 的 `git ls-tree` 输出（mode 120000 / blob 3bdaf056 / 35 字节）；
+  `gitleaks git --no-banner` 848 commits 扫描报告；
+  `.tad/evidence/acceptance-tests/codex-wiring-stopbleed/REMOVED-spike-codex-home.md` §判断错误复盘
