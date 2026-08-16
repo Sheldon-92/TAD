@@ -39,19 +39,24 @@
 
 ### 0d. 隐私：trace hook 仍在写绝对路径，上轮治的是症状不是源头
 
-- [ ] **`post-write-sync.sh` 的 `record_trace` 把 `file` 字段写成绝对路径**
-      （`FILE_PATH="${HOOK_FILE_PATH:-}"`，`post-write-sync.sh:279`，直接落进
-      `.tad/evidence/traces/*.jsonl`，而该目录是**被跟踪并推送到 PUBLIC 仓库的**）。
-      **上轮的"个人标识清零"是事后批量替换**（77 个 trace 里 75 个是
-      `/path/to/TAD/...`，那是清洗结果不是原始写入），**hook 一天没改，就一天继续产**。
-      2026-08-16 实测：08-15 和 08-16 两个文件里又出现 3 条真实绝对路径，
-      全部由当天的 handoff/evidence 创建触发。已手工修正，但**这不是修复，是再清洗一次**。
-      改法：`record_trace` 写入前把 `$FILE_PATH` 转成仓库相对路径
-      （`${FILE_PATH#$(git rev-parse --show-toplevel)/}`）。
-      ⚠️ **不要**把根路径换成字面量 `/path/to/TAD` —— 2026-08-15 就是这么干的，
-      **34 个脚本的判定器当场全死**（见 `NEXT.md` 历史与 `9e1e719`）。数据文件里放占位符没问题，
-      **脚本里必须派生**。
-      负控：新建一个 handoff → 检查当天 trace 的 `file` 字段不含 `/Users/`。
+- [x] **✅ DONE 2026-08-16 — 源头已修（commit `87c3db93`，Gate 3 PASS）**
+      `record_trace()` 在 stat 之后把 `file_path` 转成**仓库相对路径**
+      （`git rev-parse --show-toplevel` + case 前缀剥离，一处覆盖 jq/无-jq 两条输出路径）。
+      15 条 AC 全绿（负控改前红 + 判别力实测：错序实现被 AC3 抓、jq 分支内插被 AC5 抓）；
+      Layer 2：code-reviewer PASS、test-runner R1 CONDITIONAL → R2 PASS（F1-F4 全修复）。
+      hook 端到端等效验证：`post-write-sync.sh` 产出的新 trace 是相对路径
+      （`file":".tad/evidence/...`，不再以 `/` 开头、不含 `/Users/`）。
+      AC12 钉死已知残留：**跨仓库写入保持绝对路径**（`*sync` 写下游项目仍泄漏），见下一条 NEXT。
+      负控：新建一个 handoff → 当天 trace 的 `file` 不含 `/Users/`（已用等效验证覆盖；
+      真实 Write→PostToolUse 触发待 Claude Code 环境复核）。
+
+### 0d-2. 隐私：跨仓库写入的 trace 仍是绝对路径（AC12 钉死的残留，本单未堵）
+
+- [ ] `git rev-parse --show-toplevel` 按 **cwd** 求值，不按文件路径求值：cwd=TAD、文件在
+      下游项目（如 `*sync` 写 ~14 个项目）时，trace 记下**下游仓库的绝对路径**，仍在
+      `/Users/<user>/` 下。语义本身歧义（相对 TAD 还是相对下游？），也可能正确答案是
+      "跨仓库写入根本不该记进本仓库的 trace"。需要独立设计决定，另立单。
+      证据：HANDOFF-20260816-trace-relative-path.md §7.1 + AC12。
 
 ### 0e. ~~建隐私/凭据扫描器~~ —— 🛑 **用户 2026-08-16 裁定不做**
 

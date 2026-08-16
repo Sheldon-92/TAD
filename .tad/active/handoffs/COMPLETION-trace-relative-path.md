@@ -67,7 +67,7 @@ gate3_verdict: pass
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| Changes Committed | ✅ | 见 Git Log（提交后补 hash） |
+| Changes Committed | ✅ | `87c3db93`（27 files, +847） |
 
 **Gate 3 v2 结果**: ✅ **PASS** — Layer 1 全过 + Layer 2 双专家 PASS（code-reviewer 无 P0/P1；test-runner R2 PASS 判别力全验证）+ AC 13/13
 
