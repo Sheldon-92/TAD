@@ -473,3 +473,32 @@
   后者正是纪律失效的入口。
 - **Grounded in**: 第三轮审查报告 P0-1（4 份原始作答 T1 0/4 vs postmove 3/4、2/4）；
   `HANDOFF-20260814-obligations-above-cap.md` §6 Step 0 第 5 步（零旁路 + 抗改写双证明）
+
+### 断言"仓库当前状态"的 AC 会在验收时点反转——工作流自己的产物就是那个改变状态的手 - 2026-08-16
+
+- **Context**: `HANDOFF-20260816-gate3-check8-audible` 给一个 PreToolUse hook 补分支。
+  rev1 写了 `AC5: 跑 gate-3 envelope → exit 2`。写 handoff 的那一刻这是真的——
+  `.tad/active/handoffs/` 里没有 COMPLETION 文件，hook 因此走"无完工报告"分支 exit 2。
+- **Discovery**: Blake 的 `completion_protocol` **要求**在 Gate 3 之前把 COMPLETION 报告
+  写进同一个目录。于是验收发生时，同一条命令返回 exit 0——**一个完全正确的实现会被判 FAIL**。
+  两名 Gate 2 专家独立抓到这条并标 P0；理由不是"数值错了"，而是它制造了一个
+  **让实现者删掉/移走完工报告来让测试变绿**的激励——即诱导对闸自身的状态动手。
+  修正后仍有残留：rev2 修了 AC5/AC6，**漏了同形状的 AC15**（"handoffs 目录内容与基线一致"），
+  Gate 4 复算时它如期报红，红的原因正是那份合法的 COMPLETION。
+  **一次修复没横向扫干净，病灶原地转移。**
+- **Action**: 每写一条断言仓库/文件系统状态的 AC，问两个问题：
+  (1) **验收发生时这个状态还成立吗？** 工作流自己会不会产出改变它的东西
+  （COMPLETION 报告、evidence 文件、commit、临时目录）；
+  (2) **让这条 AC 变绿的最省事办法是什么？** 如果答案是"删掉/移走某个正当产物"，
+  这条 AC 就是有害的，必须重写。
+  正确写法：把行为类 AC 放进 `mktemp -d` 沙箱执行（状态由 fixture 完全控制），
+  把范围类 AC 写成"对基线的集合差、并显式排除本单已知的合法产物"。
+  修完一条要**横向扫所有同形状的 AC**，别只修被点名的那条。
+- **failure_mode**: 朴素默认：在写 handoff 的当下跑一遍命令，看到期望值就把它固化成 AC。
+  为什么错：AC 的执行时点在**未来**，而 handoff 描述的工作本身会改变仓库状态；
+  "此刻为真"和"验收时为真"是两个命题，前者不蕴含后者。
+  更隐蔽的是失败方向——它让**正确的实现**变红，于是要么阻塞好改动，
+  要么训练验收者对红色 AC 挥手放行（`principles.md` 2026-05-15 的 validation theater）。
+- **Grounded in**: `HANDOFF-20260816-gate3-check8-audible.md` §9 前置警告 + §11.2 第 1 条；
+  Gate 2 两名专家的 P0（code-reviewer P0-1 / security-auditor P0-2）；
+  Gate 4 实测 AC15 原判据 FAIL、排除合法 COMPLETION 后 PASS

@@ -53,7 +53,7 @@
 TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。前两条是同一个病：**约束够不着 agent**。
 
 - [x] **✅ 2026-08-15 ACCEPTED + ARCHIVED — 致命操作识别表已搬到够得着的地方**
-      commit `2c220f5`（未 push）。`fatal_operations`（97 行/3,439 B）从 `config-cognitive.yaml`
+      commit `2c220f5`（**已推送，2026-08-16 核实在 `origin/main`**）。`fatal_operations`（97 行/3,439 B）从 `config-cognitive.yaml`
       整块移到 `config-quality.yaml`（alex/blake 正文实读 + Gate 显式指针可达），11 处指针同步。
       Gate 4：10/10 AC **Alex 独立复算**；AC7 用 **Alex 自派**的零上下文 agent 复验 **6/6**
       （12 次 Read、每文件一次、无 offset、无 Bash/Grep）。**结构保证**：目标文件 875 行 ≈10.8K tokens，

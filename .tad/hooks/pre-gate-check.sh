@@ -199,6 +199,8 @@ if [ "$GATE_NUM" = "3" ]; then
       else
         WARNINGS="${WARNINGS}"$'\n'"WARNING: Gate 3 result line found but doesn't contain PASS or FAIL — may be unfilled template."
       fi
+    else
+      WARNINGS="${WARNINGS}"$'\n'"WARNING: No Gate 3 verdict line found in ${COMPLETION_FILE} — this check could not confirm whether Gate 3 passed. Verify manually before accepting."
     fi
   fi
 
