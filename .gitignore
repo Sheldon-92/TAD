@@ -77,3 +77,21 @@ __pycache__/
 
 # 下游项目登记表 —— 含本机绝对路径，仅本地使用（安装器本就 TAD_TOP_DENY 排除）
 .tad/sync-registry.yaml
+
+# ⚠️ 凭据与 agent HOME 沙箱 —— 2026-08-16 事故后新增，勿删
+# 起因：一次 codex-wiring spike 把整个 CODEX_HOME 当证据提交，其中 auth.json 含
+# 真实的 ChatGPT OAuth id_token / access_token / refresh_token，在 PUBLIC 仓库
+# 公开了 3 天（commit 47918da7，2026-08-13 → 发现于 2026-08-16）。
+# 上一轮隐私清理扫的是路径里的个人标识，没扫凭据，所以漏了。
+# 教训：把外部工具的 HOME/配置目录整个当"证据"留存时，里面几乎必然有认证态。
+# 证据要留的是"我验证了什么"，不是"当时那台机器长什么样"。
+**/auth.json
+**/installation_id
+**/models_cache.json
+**/*.sqlite
+**/*.sqlite-shm
+**/*.sqlite-wal
+# agent HOME 沙箱目录（Codex / 其他 CLI 的 $HOME 快照）
+**/spike-codex-home/
+**/*-codex-home/
+**/.codex-home/
