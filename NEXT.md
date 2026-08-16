@@ -26,12 +26,27 @@
       (c) 起草时一度提出「扩 grep 抓 frontmatter `gate3_verdict:`」→ 也错：
           那字段是 Gate 3 **跑完后**的 post-step 才写，PreToolUse 时点按设计就是空的。
 
-### 0b. 上游才是病根：完工报告根本不写 Gate 3 判定标记（**接替上面那条**）
+### 0b. ~~上游根本不写 Gate 3 判定标记~~ —— 🛑 **前提是错的，2026-08-16 重新测量后撤销**
 
-- [ ] **18/20 的 COMPLETION 既无正文自评行、也无 frontmatter `gate3_verdict:`。**
-      §0 那一刀只让闸「如实说它读不到」，没让上游开始写。要修的是
-      Blake `completion_protocol` step4b/step5 + `completion-report.md`/`deliverable-completion.md` 两个模板。
-      **进度条现成的**：§0 那条新 WARNING 的触发率降下来，就是这件事做成了。
+- [x] **原表述「18/20 的 COMPLETION 既无正文自评行、也无 frontmatter」是错的。**
+      那个 18 是用 `grep 'Gate 3.*结果\|Gate 3.*Result'` 数出来的 ——
+      **判据只认模板那一种措辞**。重新按语义测量最近 20 份：
+
+      | | 份数 |
+      |---|---|
+      | 有模板标记（`**Gate 3 v2 结果**` 或 frontmatter `gate3_verdict:`） | 4 |
+      | **有等价判定表述**（`## AC 结果（…RESULT=PASS）`、`## Layer 2（Gate 3）` 等） | **10** |
+      | 确实没有判定 | **6** —— 且全部集中在 YOLO/Conductor、spike、pack-build 这类非常规通道 |
+
+      也就是说：**full 通道的常规任务，判定信息一直都在，只是措辞不统一。**
+      典型反例 `COMPLETION-20260814-routing-decouple.md` 结构完整、有 Layer 2 记录、
+      有 Gate 4 验收段、甚至有「更正 Blake 报告中的两处不准」——它只是没照抄模板那句话。
+- [x] **因此不立单。** §0 那一刀（Check 8 出声不拦）**仍然是对的**：
+      机器确实读不到那 10 份的判定（措辞是开放集合），WARNING 说「我读不到」是**诚实的**。
+      而 Gate 3 的判定本来就是**人跑 `/gate 3` 时做的**，报告措辞只是记录。
+- [ ] **若日后想让判定机器可读**（可选，非缺陷）：统一措辞或强制 frontmatter。
+      **取舍**：统一 → 机器可读但损失表达力（那些精简报告质量很高）；
+      不统一 → 保持灵活、靠人读。**这是设计选择，不是 bug，需人裁定后再立单。**
 - [ ] **`args` 形状可绕过整个 Gate 3 块**（同一批发现，独立缺陷）：
       `GATE_NUM` 由 `grep -oE '^[0-9]+'` 行首锚定解析，
       `" 3"`（前导空格）和 `"gate 3"` 都会让 hook 静默放行 `{}` exit 0。
