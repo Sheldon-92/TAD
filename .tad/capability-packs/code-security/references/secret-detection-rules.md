@@ -1,12 +1,17 @@
 # Secret Detection Rules
 <!-- capability: secret_detection -->
+<!-- Verified against gitleaks 8.30.1 on 2026-08-16. ⚠️ Subcommands changed in 8.x:
+     `protect` and `detect` NO LONGER EXIST — they are now `git` / `dir` / `stdin`,
+     and `--source <path>` became a positional argument. A stale command here fails
+     with "unknown command", i.e. a security step that silently does nothing.
+     When bumping gitleaks, re-verify every command in this file actually runs. -->
 
 ## Quick Rule Index
 
 | # | Rule | Scope |
 |---|------|-------|
 | SE1 | Two-layer defense: pre-commit (Gitleaks) + CI (Gitleaks + TruffleHog) | architecture |
-| SE2 | Pre-commit hook: Gitleaks `protect --staged` in .pre-commit-config.yaml | prevention |
+| SE2 | Pre-commit hook: Gitleaks `git --staged` in .pre-commit-config.yaml | prevention |
 | SE3 | Baseline management: `--baseline-path` for delta scanning (new secrets only) | adoption |
 | SE4 | TruffleHog `--fail` flag: exit 183 blocks CI on verified leaked credentials | ci-pipeline |
 | SE5 | Inline suppression: `# gitleaks:allow` with mandatory review | suppression |
@@ -23,7 +28,7 @@ Secret detection MUST run at two layers — pre-commit hooks alone are insuffici
 
 | Layer | Tool | Command | Why |
 |-------|------|---------|-----|
-| Pre-commit | Gitleaks | `gitleaks protect --staged -v` | Fast (<5s), catches before commit |
+| Pre-commit | Gitleaks | `gitleaks git --staged -v` | Fast (<5s), catches before commit |
 | CI pipeline | Gitleaks + TruffleHog | See SE4 | Safety net (catches `--no-verify` bypass) |
 
 Why both layers:
@@ -55,7 +60,7 @@ pre-commit install
 # Option 2: native git hook
 # .git/hooks/pre-commit
 #!/bin/bash
-gitleaks protect --staged -v
+gitleaks git --staged -v
 ```
 
 Pre-commit scan MUST complete in <5 seconds. If it exceeds this:
@@ -65,7 +70,7 @@ Pre-commit scan MUST complete in <5 seconds. If it exceeds this:
 
 ```bash
 # Verify hook timing
-time gitleaks protect --staged -v
+time gitleaks git --staged -v
 # Should be <5s. If >10s, add allowlist paths.
 ```
 
@@ -77,13 +82,13 @@ When adopting secret scanning on a repo with existing history, use baseline to a
 
 ```bash
 # Step 1: Generate baseline (record existing known findings)
-gitleaks detect --source . --report-format json --report-path .gitleaks-baseline.json -v
+gitleaks git . --report-format json --report-path .gitleaks-baseline.json -v
 
 # Step 2: Review and triage existing findings
 # (rotate any truly active secrets found in baseline)
 
 # Step 3: Future scans compare against baseline (only NEW secrets reported)
-gitleaks detect --source . --baseline-path .gitleaks-baseline.json -v
+gitleaks git . --baseline-path .gitleaks-baseline.json -v
 ```
 
 Baseline workflow:
@@ -224,7 +229,7 @@ Not all detected secrets are equally urgent:
 trufflehog git file://. --only-verified --json
 
 # Gitleaks: all patterns (broad, includes unverified)
-gitleaks detect --source . --report-format json --report-path findings.json -v
+gitleaks git . --report-format json --report-path findings.json -v
 ```
 
 Use TruffleHog for triage prioritization (verified = P0), Gitleaks for coverage (catches patterns TruffleHog doesn't test against).

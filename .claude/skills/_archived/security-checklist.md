@@ -181,7 +181,7 @@ npx @cyclonedx/cdxgen -o sbom.json --validate
 
 ```bash
 # gitleaks (recommended)
-gitleaks detect --source . --verbose --report-format json --report-path secrets.json
+gitleaks git . --verbose --report-format json --report-path secrets.json
 
 # trufflehog (cloud-aware)
 trufflehog filesystem . --only-verified --json
@@ -984,7 +984,7 @@ $ snyk test
 ### 2. Secrets Scan
 
 ```bash
-$ gitleaks detect
+$ gitleaks git .
 No leaks found
 ```
 

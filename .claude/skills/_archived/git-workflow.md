@@ -645,7 +645,7 @@ echo "Running pre-push checks..."
 # 1. Secret detection
 if command -v gitleaks &> /dev/null; then
   echo "Checking for secrets..."
-  gitleaks protect --staged --verbose
+  gitleaks git --staged --verbose
   if [ $? -ne 0 ]; then
     echo "❌ Secrets detected! Push blocked."
     exit 1
