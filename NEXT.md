@@ -37,7 +37,7 @@
       `" 3"`（前导空格）和 `"gate 3"` 都会让 hook 静默放行 `{}` exit 0。
       详见 `.tad/archive/handoffs/HANDOFF-20260816-gate3-check8-audible.md` §10.2(b)。
 
-### 0d. 隐私：trace hook 仍在写绝对路径，上轮治的是症状不是源头
+### 0d. ✅ 隐私：trace hook 写绝对路径 —— **源头已修**（Gate 4 accepted 2026-08-16）
 
 - [x] **✅ DONE 2026-08-16 — 源头已修（commit `87c3db93`，Gate 3 PASS）**
       `record_trace()` 在 stat 之后把 `file_path` 转成**仓库相对路径**
@@ -47,8 +47,15 @@
       hook 端到端等效验证：`post-write-sync.sh` 产出的新 trace 是相对路径
       （`file":".tad/evidence/...`，不再以 `/` 开头、不含 `/Users/`）。
       AC12 钉死已知残留：**跨仓库写入保持绝对路径**（`*sync` 写下游项目仍泄漏），见下一条 NEXT。
-      负控：新建一个 handoff → 当天 trace 的 `file` 不含 `/Users/`（已用等效验证覆盖；
-      真实 Write→PostToolUse 触发待 Claude Code 环境复核）。
+      **Gate 4（Alex 独立复算，2026-08-16）**：自建 harness 重跑五条核心行为全过
+      （含唯一有判别力的 AC3 —— cwd=子目录时 `size_bytes=2` 且路径相对，证明转换在 `stat` 之后）。
+      **真实 Write→PostToolUse 链路已复核**（Blake 环境限制的那一环）：Alex 用 Write 工具建探针文件，
+      hook 触发，`file` 字段为 `.tad/evidence/.../gate4-probe.md` —— **相对路径，修复在真实链路上生效**。
+      探针与当天 trace 已清理；同文件内另一条 `/Users/` 是 `18:46:32Z` 产生的、
+      **早于修复 commit `19:56:29Z`**，属修复前残留而非回归，已脱敏。
+      ⚠️ **Gate 4 更正了 handoff 的一处机理描述**：「`case` 加引号防空格」是错的
+      （`case` 模式不分词，含空格加不加引号都 MATCH）；引号真正防的是 **glob 元字符**
+      （`/a[b]/repo` 不加引号 NO MATCH）。**结论没变，理由变了** —— 已进 `patterns/shell-portability.md`。
 
 ### 0d-2. 隐私：跨仓库写入的 trace 仍是绝对路径（AC12 钉死的残留，本单未堵）
 
