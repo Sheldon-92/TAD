@@ -92,9 +92,11 @@
       扫工作区而非暂存 blob（`git add` 后编辑即可绕过）；扫描器打印凭据且被要求提交进公开仓库。
       **而 `gitleaks` 已装（8.30.1），项目 `code-security` pack 里早有调用规范** ——
       违反 `principles.md`「Never Hand-Write What an Existing Tool Already Does」(2026-05-28)。
-- [ ] **顺带发现，值得单独修**：`code-security` pack 里写的 `gitleaks protect --staged`
-      在 **8.30.1 上是不存在的命令**（子命令已改为 `git` / `dir` / `stdin`）。
-      **一条失效的安全操作指令，比没有更糟。** 改成 `gitleaks git --staged`。
+- [x] **✅ DONE 2026-08-16（commit `5897879`）**：`code-security` pack 里的
+      `gitleaks protect/detect` 在 **8.30.1 上是不存在的命令**（子命令已改为 `git`/`dir`/`stdin`，
+      `--source` 变位置参数）—— **一条失效的安全指令，比没有更糟**。
+      24 处替换，`.claude`/`.agents`/`capability-packs` 三份同步（四组 parity 已验），
+      **文档里的命令逐条抽出实跑**（4 条全 exit 0），并加版本注记钉死 8.30.1。
 - [ ] **若日后重启**：凭据检测直接用 gitleaks，只手写"个人路径三形态"那部分
       （`/Users/<u>/` ✅上轮覆盖 · `-Users-<u>-` ❌漏 4 文件 · 裸用户名 ❌漏 18 文件）。
       已知基线：gitleaks 开箱在本仓库有 **54 条误报**（全是研究文档里的 `api.example.com`
