@@ -1,6 +1,0 @@
-# AC16 收尾围栏 (2026-08-11)
-## 新增路径检查（快照差集）
-FENCE-FRESH: CLEAN
-## dirty tracked 摘要 + REGISTRY props + brain-index
-BRAIN-INDEX UNCHANGED
-FENCE-AUDIT: CLEAN

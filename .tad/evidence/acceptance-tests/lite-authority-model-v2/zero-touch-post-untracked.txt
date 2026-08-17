@@ -1,5 +1,0 @@
-MANIFEST_SHA256	a330b817725fe3ed45d755afbefc0044273d2747e970555dac44aa481ad01ee7
-PATH	.claude/settings.local.json	file	600	17273	a9fe59149482dbadc87a91d1452bcc27b4c9bffffc2c446e748b78fcc56daf00
-PATH	.claude/settings.local.json.bak-20260806-082549	file	600	18476	e0e32f103b4c4734f9571dc298b5932820326b5d93f12394024d358da3e1a4ae
-PATH	.tad/archive/handoffs/COMPLETION-20260809-release-runbook-capability-migration.md	file	644	11043	b8e67a48472b355ddfde5e40eb56128762ebcf1c766381e044b7b3123a6c0878
-PATH	.tad/archive/handoffs/HANDOFF-20260809-release-runbook-capability-migration.md	file	644	41143	87dc723f30041c0530d4dd7b628b40d8643dbe06d66c937e4cba3f4bb0fa4a73

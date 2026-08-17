@@ -1,2 +1,0 @@
-P1B-SENTINEL 1775585718 STDIN={"session_id":"4dc1e02c-16aa-49a7-ba8b-00f68e2b226a","transcript_path":"/path/to/.claude/projects/-path-to-TAD/4dc1e02c-16aa-49a7-ba8b-00f68e2b226a.jsonl","cwd":"/path/to/TAD","permission_mode":"default","hook_event_name":"UserPromptSubmit","prompt":"probe 1b payload check with some content\n"}
-

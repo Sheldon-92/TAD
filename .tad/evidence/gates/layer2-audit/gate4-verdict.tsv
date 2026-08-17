@@ -1,2 +1,0 @@
-gate	verdict	ts	reviewer	notes
-gate4	PASS	2026-04-15T18:30:00Z	alex	8/8 AC verified via independent raw-data re-derivation; meta-dogfood reproduced (tool audits itself, exit 0); 2 protocol deviations accepted (test-runner skip justified by equivalent fixture coverage; no separate acceptance-verification.md since TSV covers all 8 AC); AR-005 3-way knowledge iteration: no new discovery

@@ -1,8 +1,0 @@
-.tad/evidence/acceptance-tests/lite-pricing-gate-protocol/AC6.txt
-.tad/evidence/acceptance-tests/lite-pricing-gate-protocol/tracked-after.txt
-.tad/evidence/acceptance-tests/lite-pricing-gate-protocol/untracked-after.txt
-.tad/evidence/journal/lite-pricing-gate-protocol-2026-08-05.md
-.tad/project-knowledge/patterns/ac-verification.md
-.tad/project-knowledge/patterns/gate-design.md
-.tad/project-knowledge/patterns/shell-portability.md
-NEXT.md

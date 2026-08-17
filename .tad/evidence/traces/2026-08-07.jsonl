@@ -1,2 +1,0 @@
-{"ts":"2026-08-07T15:47:24Z","type":"evidence_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/evidence/acceptance-tests/tadsh-version-authority/ac-results.md","size_bytes":6220}
-{"ts":"2026-08-07T15:54:33Z","type":"evidence_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":"/path/to/TAD/.tad/evidence/reviews/blake/tadsh-version-authority/code-reviewer.md","size_bytes":11498}

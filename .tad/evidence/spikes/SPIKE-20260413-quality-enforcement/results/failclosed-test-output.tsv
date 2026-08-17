@@ -1,2 +1,0 @@
-fixture	decision	reason
-minimal-stdin-pretool-malformed.json	deny	hook crashed - fail closed

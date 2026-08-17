@@ -1,8 +1,0 @@
-rc=0
-rc=0
-nothing-to-do=0
-preview-anchor=1
-exec-anchor=1
-migration-skip=1
-ready-banner=1
-RESULT: PASS

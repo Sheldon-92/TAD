@@ -1,3 +1,0 @@
-rc=0
-ready-banner-count=1
-RESULT: PASS

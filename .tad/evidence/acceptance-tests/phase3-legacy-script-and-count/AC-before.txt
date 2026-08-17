@@ -1,8 +1,0 @@
-# Phase 3 AC 改前实测 — 2026-08-17T04:29:17Z
-
-AC-A1 sync-v2.8.4.sh 存在(期望0)       1
-AC-A2 活代码含 eval $@ (期望0)       1
-AC-B1 rsync前有断言(期望>=1)         0
-  AC-C1 实际输出: $'4\037A-alpha.md B-my file.md C-中文文件.md'
-  AC-C1 期望输出: $'3\037A-alpha.md B-my file.md C-中文文件.md'
-  AC-C2 换行数: 0

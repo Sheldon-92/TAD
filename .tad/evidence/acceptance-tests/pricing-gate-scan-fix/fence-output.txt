@@ -1,6 +1,0 @@
-========== 负向自测：禁区 untracked 文件必须被抓 ==========
-✓ 负向探针被 AC8 围栏抓获：.tad/active/epics/PLANTED-fence-probe.md
-========== 正向自测：git add 授权集 untracked 文件后仍静默 ==========
-✓ 正向自测静默（授权集 untracked 加入 index 后围栏无输出）
-✓ git add 已回滚（unstage）
-========== 围栏双向自测完毕 ==========

@@ -1,4 +1,0 @@
-## AC12 YAML 仍合法
-yq '.' exit=0 ✅
-dependencies 数: 6
-RESULT: PASS

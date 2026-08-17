@@ -1,6 +1,0 @@
-test_review_protocol	references/test-review-protocol.md	*test-review	.claude/skills/alex/SKILL.md:2493(commands)
-my_templates	references/my-templates.md	*design	.claude/skills/alex/SKILL.md:2493(commands)
-release_duties	references/release-duties.md	*publish	.claude/skills/alex/SKILL.md:2493(commands)
-project_context_update	references/project-context-update.md	*accept	.claude/skills/alex/SKILL.md:2493(commands)
-next_md_rules	references/next-md-rules.md	*handoff	.claude/skills/alex/SKILL.md:2493(commands)
-knowledge_bootstrap	references/knowledge-bootstrap.md	activation protocol STEP 1	.claude/skills/alex/SKILL.md:5511(MANDATORY 4-STEP ACTIVATION PROTOCOL)

@@ -1,3 +1,0 @@
-FAIL: new WARNING text not emitted
-FAIL: WARNING does not name the file it read
-AC-01 FAILED (rc=0)

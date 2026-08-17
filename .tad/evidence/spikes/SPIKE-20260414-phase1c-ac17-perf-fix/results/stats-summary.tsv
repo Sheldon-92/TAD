@@ -1,5 +1,0 @@
-hook	p50	p95	p99	n
-pretool-interceptor	51.10	67.44	114.97	100
-override-detector	31.98	52.48	97.94	100
-evidence-validator	69.47	156.51	223.40	100
-bash-watcher	69.59	130.57	397.35	100

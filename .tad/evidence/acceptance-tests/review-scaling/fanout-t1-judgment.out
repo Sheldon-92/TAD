@@ -1,4 +1,0 @@
-ROSTER=code-reviewer#base,code-reviewer#judgment
-档位判定: 新建判断=2 产物是判据=否 失败可见=是 → 中 加派=1
-兜底判定: 未命中（fixture 改动集不涉及 hooks/settings/agents/gitignore/publish/sync/push/凭据）
-加派: code-reviewer#judgment（顺位 3：新建判断 ≥1）问题原文: "这些新判断有没有被独立复算过？逐个重推，与契约给的值 diff"

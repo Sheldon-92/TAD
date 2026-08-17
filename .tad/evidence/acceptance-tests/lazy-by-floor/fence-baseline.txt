@@ -1,8 +1,0 @@
-.claude/settings.local.json.bak-20260806-082549
-.tad/active/epics/EPIC-20260813-alex-blake-lightening.md
-.tad/evidence/acceptance-tests/codex-wiring-stopbleed/spike-work
-.tad/evidence/acceptance-tests/lazy-by-floor/fence-baseline.txt
-.tad/evidence/acceptance-tests/lazy-by-floor/t0.txt
-.tad/evidence/traces/2026-08-14.jsonl
-.tad/active/handoffs/HANDOFF-20260814-obligations-above-cap.md
-.tad/archive/handoffs/COMPLETION-20260814-obligations-above-cap.md

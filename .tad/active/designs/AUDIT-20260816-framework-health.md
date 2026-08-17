@@ -492,7 +492,7 @@ research_first:
 |---|---|---|---|
 | **F-18** | 文档主推的 `curl \| bash` 路径下载**整棵工作树**：实测 **30.19 MB**，实际需要 **4.54 MB**（6.6 倍）。`.tad/evidence/` 65.49 MB / 3522 文件 = 仓库 67%；其中**单张验收单 `release-runbook-capability-migration` 占 37.50 MB = 全仓 38%** | `git archive HEAD \| gzip -9 \| wc -c` | `[已验证-审计]` |
 | **F-19** | `stable5-pre` / `stable5-post` **182 对文件、182 对 blob 完全相同、0 对有差异**。⚠️ **2026-08-16 更正**：「18.62 MB 纯重复」**只对工作树与 tarball 成立，对 `.git` 不成立** —— git 早已按内容去重（该目录 **396 个 blob 引用 → 103 个唯一 blob**）。删除 `stable5-pre` 释放工作树/发行包约 18.6 MB（对 **F-18 有效**），但 **`.git` 释放 0 字节**，反而多一个 commit。原表述夸大了收益的适用范围 | `git ls-tree -r HEAD <dir> \| wc -l` = 396；`\| awk '{print $3}' \| sort -u \| wc -l` = 103 | `[已验证-Alex]` 复核更正 |
-| **F-20** | `package.json` `"files"` 列 `.tad/` 且**无 `.npmignore`**，npm 路径会打包 evidence | 已确认 `files` 内容与 `.npmignore` 缺失；`npm pack --dry-run` 因本机 npm 缓存 root 权限报 EPERM 未能实测 | `[推断]` |
+| **F-20** | `package.json` `"files"` 列 `.tad/` 且**无 `.npmignore`**，npm 路径会打包 evidence | **✅ 2026-08-16 已实测**（`npm pack --dry-run --cache /tmp/npmcache-test` 绕过 EPERM）：`package size 23.1 MB`／`unpacked 83.2 MB`／`total files 6512`／**其中 evidence 条目 3443** | `[已验证-Alex]`（原 `[推断]`，已升级） |
 
 **F-18/F-19 的关键有利条件**：
 - `tad.sh:226` 已将 `evidence` 列入 `TAD_ZERO_TOUCH`，**不会复制进用户项目**（设计正确）。
@@ -638,6 +638,12 @@ research_first:
 **更正 4 —— F-15 的「Alex 对 `config-cognitive` 零引用」是错的**（详见 F-15 内更正）。只 grep 字面量，未沿 reference 下钻一层。
 
 **更正 5 —— F-19 的「18.62 MB 纯重复」适用范围被夸大**（详见 F-19）。对工作树/tarball 成立，对 `.git` 不成立。
+
+**补验 1 —— F-20 已从 `[推断]` 升级为 `[已验证]`**（2026-08-16，Phase 4 审查期）。
+原因：起草时 `npm pack --dry-run` 因本机 npm 缓存 root 权限报 EPERM。
+解法：`--cache /tmp/npmcache-test` 绕过。实测 **6512 个文件中 3443 条属 evidence**，包体 23.1 MB。
+→ **教训：`[推断]` 标记必须有解除路径。** 本条卡在一个纯环境问题上，而绕过只需一个参数 ——
+标记为推断后若不主动找解法，它会一直以推断的身份被引用。
 
 ### ⚠️ 五次更正里有三次是同一个形状
 

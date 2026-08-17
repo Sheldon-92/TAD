@@ -1,3 +1,0 @@
-=== AC4: version ===
-2.41.0
-RESULT: PASS

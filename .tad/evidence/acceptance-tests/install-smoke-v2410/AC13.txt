@@ -1,4 +1,0 @@
-=== AC13: 升级后版本 ===
-U  version: 2.30.0
-U2 version: 2.41.0
-RESULT: FAIL

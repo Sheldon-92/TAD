@@ -1,2 +1,0 @@
-trial	hook_mode	file_created	claude_output_excerpt	verdict
-1	exit0-stdout-deny	no	The Write was blocked by a PreToolUse hook (`deny-hook.sh`) with message: "TAD test: exit-0-stdout-deny contract verification". File not created.	PASS

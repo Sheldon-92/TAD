@@ -1,4 +1,0 @@
-ROSTER=code-reviewer#base,code-reviewer#criterion
-档位判定: 新建判断=0 产物是判据=是 失败可见=是 → 中 加派=1
-兜底判定: 未命中（fixture 改动集不涉及 hooks/settings/agents/gitignore/publish/sync/push/凭据）
-加派: code-reviewer#criterion（顺位 2：产物成为判据/基线）问题原文: "哪条 AC 是永真的？产物不存在时命令会不会静默通过？"红"有没有机械载体？"

@@ -1,5 +1,0 @@
-fixture	decision	reason_excerpt
-minimal-stdin-pretool-match-missing.json	deny	Missing evidence: .tad/evidence/reviews/blake/quality-enforcement-spike/*.md has
-minimal-stdin-pretool-match-ok.json	allow	
-minimal-stdin-pretool-no-match.json	allow	
-minimal-stdin-pretool-malformed.json	deny	hook crashed - fail closed

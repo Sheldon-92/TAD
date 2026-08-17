@@ -1,0 +1,25 @@
+# TAD npm 打包排除清单
+#
+# 为什么需要这个文件：package.json 的 "files" 是【白名单】且列了裸 ".tad/"，
+# 它会【覆盖】.gitignore —— 因此仅把目录 gitignore 掉不会改变 npm pack 结果。
+# 必须用 .npmignore 显式排除。（审计 F-20，2026-08-16 实测确认：
+# 未排除时包内含 3443 条 evidence 记录，包体 23.1 MB / 6512 文件）
+#
+# 完整内容保留在 orphan 分支：git show origin/maintainer-evidence:<path>
+
+# 维护者调试记录 —— 从不复制进用户项目（tad.sh TAD_ZERO_TOUCH），下载后即丢弃
+.tad/evidence/
+.tad/archive/
+
+# 维护者工作状态 —— 同属 zero-touch，用户项目自行生成
+.tad/active/
+.tad/memory/
+.tad/decisions/
+.tad/research-notebooks/
+.tad/skill-library/
+.tad/spike-v3/
+
+# 开发期产物
+.tad/logs/
+.tad/reports/
+.tad/working/

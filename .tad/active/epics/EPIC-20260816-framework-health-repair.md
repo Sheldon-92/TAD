@@ -19,7 +19,11 @@
 
 - [ ] **SC1** 沙箱中执行完整安装流程后，用户预置的 `.codex/`、`.gemini/`、`AGENTS.md`、`GEMINI.md`、`CLAUDE.md` **全部逐字节保留**（`diff -r` 为空）
 - [ ] **SC2** `grep -c 'deny_ref' .claude/skills/alex/SKILL.md` == `0`，且 `gate4_delta` / `step1d_ac_dryrun` / `step0_graph` 三条禁令在 SKILL **正文**中各出现 ≥ 1 次
-- [ ] **SC3** `git archive --format=tar HEAD | gzip -9 | wc -c` < `8 MB`（现状 30.19 MB）
+- [ ] **SC3**（**2026-08-16 修订**）发行包不再携带维护者的调试记录：
+  - **主判据**：`git ls-files '.tad/evidence/*' | wc -l` == `0` **且** `git ls-files '.tad/archive/*' | wc -l` == `0`
+  - **辅助度量**：`git archive --format=tar HEAD | gzip -9 | wc -c` 相对审计基线 `31,659,251` 降幅 ≥ **70%**（实测移出后 7.99 MB = **降 74%**）
+  - ⚠️ **原判据「< 8 MB」已废弃**：那是审计时拍的圆整数，非从需求推出。实测移出 evidence+archive 后为 7,99 MB，**余量仅 5,874 字节**，而本 Epic 自身产出的单张工单 gzip 后即 10,134 字节 —— **该阈值会因本单自己要求产出的证据文件而 FAIL**。
+  - **教训**：验收阈值必须从需求推导，不能取「看起来整齐」的数。一个会被自己的交付物撞破的阈值，度量的是巧合而非目标。
 - [ ] **SC4** `tad.sh` 中 `rm -rf` 的调用点全部位于 `guarded_remove` 内或有等价前置断言 —— 用可复跑的检查命令钉死
 - [ ] **SC5** 安装器可在 `mktemp -d` 沙箱中以本地源完整执行（不依赖网络），且该能力有 AC 覆盖
 

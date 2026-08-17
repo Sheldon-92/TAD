@@ -1,9 +1,0 @@
-## AC11 update 记录 + 邻居零触碰
-(i) 三行逐字（grep -Fxq）:
-  current_version: "2.97.0" ✅
-  version_pinned_at: 2026-08-12 ✅
-  last_checked: 2026-08-12 ✅
-(ii) diff 变化行: 6 条（期望 6）
-  区间外变化行: 0
-  变化行区间: 47-48 / 71（均在 gh 条目 44-73 内）
-RESULT: PASS

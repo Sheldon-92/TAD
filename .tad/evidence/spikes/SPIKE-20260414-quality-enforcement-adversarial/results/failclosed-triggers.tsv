@@ -1,7 +1,0 @@
-trigger	input_description	hook_decision	pass?
-1_json_malform	unterminated JSON	deny	PASS
-2_stdin_eof	empty stdin	deny	PASS
-3_missing_dep	PATH=/nonexistent (jq not found)	empty	FAIL
-4_unreadable_file	chmod 000 input file	validator FAIL	PASS
-5_dangling_symlink	ln -s /nonexistent	deny	PASS (symlink detected)
-6_partial_json	truncated JSON envelope	deny	PASS

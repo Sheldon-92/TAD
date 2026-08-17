@@ -1,3 +1,0 @@
-ROSTER=code-reviewer#base
-档位判定: 新建判断=0 产物是判据=否 失败可见=是 → 轻 加派=0
-兜底判定: 未命中（fixture 改动集不涉及 hooks/settings/agents/gitignore/publish/sync/push/凭据）

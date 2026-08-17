@@ -1,7 +1,0 @@
-## AC1 源覆盖
-表 A 承重检查: 19/19 MAPPED（见 source-coverage.md 表 A）
-表 B 承重检查: 9/9 MAPPED（见 source-coverage.md 表 B）
-实际 UNMAPPED 状态条目: 0
-承重 4 条落正文（字面或语义）: N-K2=1 C-U1=2 C-U2=1 C-U3=1
-deps_init NOT-MIGRATED: 3
-RESULT: PASS

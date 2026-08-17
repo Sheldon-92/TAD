@@ -113,3 +113,11 @@ __pycache__/
 .gitleaks-baseline.json
 findings.json
 gitleaks-report.json
+
+# ── EPIC-20260816 Phase 4: 维护者调试记录移出发行物 ──────────────────
+# 理由（审计 F-18）：tad.sh 拉取的是 GitHub tarball 快照（当前树，无历史），
+# 故从 main 移除即刻减小所有用户的下载量。这两个目录已在 TAD_ZERO_TOUCH
+# (tad.sh:225-226)，从不复制进用户项目——下载后即被丢弃。
+# 完整内容保留在 orphan 分支：git show origin/maintainer-evidence:<path>
+.tad/evidence/
+.tad/archive/

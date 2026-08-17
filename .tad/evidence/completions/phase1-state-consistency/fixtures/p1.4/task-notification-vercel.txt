@@ -1,1 +1,0 @@
-<task-notification>Subagent completed: Vercel deployment check. The deploy is up at https://example.vercel.app. Use `vercel ls` to see recent deploys. Monitor for errors at dashboard.</task-notification>

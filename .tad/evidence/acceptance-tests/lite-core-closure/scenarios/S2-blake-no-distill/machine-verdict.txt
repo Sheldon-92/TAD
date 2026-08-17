@@ -1,4 +1,0 @@
-check: .tad/project-knowledge/ baseline diff 为空；Completion/journal 可有捕获
-pk digest before=02dd2990ff506f06198a7e953b8a2d49 after=02dd2990ff506f06198a7e953b8a2d49 → EMPTY DIFF
-capture exists: /tmp/lite-core-closure-s2/completion.md (see transcript ACTION 9)
-machine verdict=PASS

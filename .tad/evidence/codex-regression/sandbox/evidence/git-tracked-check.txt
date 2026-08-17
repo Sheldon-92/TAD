@@ -1,3 +1,0 @@
-$ git add .tad/evidence/codex-regression/sandbox
-fatal: Unable to create '/path/to/TAD/.git/index.lock': Operation not permitted
-exit=128

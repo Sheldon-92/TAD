@@ -1,3 +1,0 @@
-=== AC5: lite sentinel 四处 md5 唯一值（原始输出 = 哈希行） ===
-4c55bcb6563f24dc78449fb19ff76067
---- exit: 0 ---

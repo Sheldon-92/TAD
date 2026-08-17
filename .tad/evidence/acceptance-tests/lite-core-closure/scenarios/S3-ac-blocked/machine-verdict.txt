@@ -1,4 +1,0 @@
-check: transcript 含 'AC1 BLOCKED:' 且不含 'GATE PASS'
-contains 'AC1 BLOCKED:' ✓ (1 occurrence)
-absent 'GATE PASS' ✓
-machine verdict=PASS

@@ -1,4 +1,0 @@
-=== 符号链接语义比较（相对目标 + 相对路径，去 mtime）===
-../nypm/dist/cli.mjs /private/tmp/tad-install-smoke.aLaOt9/U/.tad/active/research/saas-billing/node_modules/.bin/nypm
---- 规范化：提取 link-path 与 target ---
-符号链接: PASS（7 个相对链接，目标全部一致）

@@ -1,2 +1,0 @@
-gate	verdict	ts	reviewer	notes
-gate3	PASS	2026-04-15T17:56:59Z	blake	8/8 AC PASS; code-reviewer PASS 0 P0 5 P1 non-blocking; 11/11 fixtures

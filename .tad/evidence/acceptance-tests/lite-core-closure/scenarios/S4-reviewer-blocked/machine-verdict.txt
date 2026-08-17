@@ -1,5 +1,0 @@
-check: transcript 含 GATE FAIL/BLOCK 或 reviewer BLOCKED；不含自审替代或 GATE PASS
-contains GATE FAIL/BLOCK ✓ (REPORT: GATE FAIL / BLOCK)
-absent 'GATE PASS' ✓
-absent self-review substitution ✓
-machine verdict=PASS

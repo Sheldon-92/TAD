@@ -1,3 +1,0 @@
-TOOL_UNAVAILABLE
-
-`ask_user_question` is not available in this runtime. The closest tool, `request_user_input`, exists but is unavailable in the current mode. Reply with exactly one choice: `alpha` or `beta`.

@@ -1,3 +1,0 @@
-.tad/project-knowledge/patterns/ac-verification.md
-.tad/project-knowledge/patterns/gate-design.md
-NEXT.md

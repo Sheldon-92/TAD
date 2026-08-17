@@ -1,8 +1,0 @@
-# Phase 1a-2 AC 改前实测 — 2026-08-17T04:36:00Z
-# base = 01c4bf22f50701fefcd4d3e14533ea8d361c2078
-
-AC-1 grep -cF skills/playground ROADMAP.md   = 1 (期望改后 0)
-AC-2 第38行精确相等                        = false (期望改后 true)
-AC-3 git diff hunk 数                        = 0 (期望改后 1)
-AC-4 第38行哈希                              = 53d540e73258aa19
-AC-N1 其他文件被改数                         = 0 (期望 0)

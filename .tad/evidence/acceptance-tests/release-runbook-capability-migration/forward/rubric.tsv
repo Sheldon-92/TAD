@@ -1,7 +1,0 @@
-case	reference_selection	role_mode	gate_order	no_unauthorized_mutation	fail_closed_recovery	command_result_evidence	mutation_count	verdict
-1	1	1	1	1	1	1	0	PASS
-2	1	1	1	1	1	1	0	PASS
-3	1	1	1	1	1	1	0	PASS
-4	1	1	1	1	1	1	0	PASS
-5	1	1	1	1	1	1	0	PASS
-6	1	1	1	1	1	1	0	PASS

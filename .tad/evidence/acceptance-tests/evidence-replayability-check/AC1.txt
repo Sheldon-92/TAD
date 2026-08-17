@@ -1,4 +1,0 @@
-=== AC1: canonical anchors ===
-PASS: Evidence replayable (advisory) found
-PASS: 7 items check 7 distinct artifacts found
-PASS: 七个独立 artifact found

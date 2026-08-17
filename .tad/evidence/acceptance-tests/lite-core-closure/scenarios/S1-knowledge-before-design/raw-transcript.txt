@@ -1,8 +1,0 @@
-ACTION 1: Read /path/to/TAD/.tad/evidence/acceptance-tests/lite-core-closure/scenarios/S1-knowledge-before-design/prompt-given.md
-ACTION 2: Read /path/to/TAD/.claude/skills/alex-lite/SKILL.md
-ACTION 3: Read /path/to/TAD/.tad/evidence/acceptance-tests/lite-core-closure/scenarios/S1-knowledge-before-design/fixture-pattern.md
-ACTION 4: Read /path/to/TAD/package.json
-ACTION 5: Write /tmp/lite-core-closure-s1/handoff.md
-ACTION 6: Agent(explore, read-only) review /tmp/lite-core-closure-s1/handoff.md
-ACTION 7: Edit /tmp/lite-core-closure-s1/handoff.md
-DONE

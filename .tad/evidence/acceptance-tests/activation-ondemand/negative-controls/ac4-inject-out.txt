@@ -1,2 +1,0 @@
-last_scan: "2026-08-12"
-gh 2.96.0 -> 2.97.0 (12d, success) adv=YES cve=YES ::     changelog_text: "## Security\r\n\r\nFour security vulnerabilities have been identified, and fixed, in this release. Users are advised to update gh to version `v2.97.0` as soon as possible.\r\n\r\nSeveral commands (including `gh gist view`, `gh api`, `gh pr diff`, `gh release download --output -`, `gh codespace logs`, `gh skills preview`, and `gh agent-task view`/`create`) printed externally co

@@ -1,9 +1,0 @@
-registry_version: 1
-tad_source: "."
-projects:
-  - path: "/path/to/TAD/.tad/evidence/acceptance-tests/release-runbook-capability-migration/forward/fixture-project"
-    name: "fixture-project"
-    platform: "both"
-    claude_md_strategy: "merge"
-    last_synced_version: "2.38.0"
-    last_synced_date: "2026-08-01"

@@ -1,6 +1,0 @@
-=== AC3: .agents gate SKILL 五条断言（独立查 .agents 内容） ===
-PASS: advisory marker found
-PASS: MECE 6 items found
-PASS: Critical Check (6 items): count=2
-PASS: Critical Check (5 items): count=0
-PASS: Critical Check (4 items): count=1 (Gate 2 invariant)

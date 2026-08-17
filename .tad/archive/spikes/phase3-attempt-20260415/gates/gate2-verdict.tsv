@@ -1,2 +1,0 @@
-gate	verdict	ts	reviewer	notes
-gate2	PASS	2026-04-15T00:00:00Z	alex	v2 post-review: 3 experts (code-reviewer + security-auditor + backend-architect) parallel, 17 P0 → 13 distinct, all integrated in handoff v2 (19 AC); P1 trade-offs in §9.2

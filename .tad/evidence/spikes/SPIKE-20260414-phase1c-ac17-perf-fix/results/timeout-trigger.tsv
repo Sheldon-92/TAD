@@ -1,3 +1,0 @@
-scenario	hook	elapsed_s	deny_detected	jq_valid	self_aborted_under_3s	verdict	note
-A	pretool-interceptor	0.032	yes	yes	yes	PASS	outer_rc=0
-B	pretool-interceptor	5.023	no	no	no	FAIL	outer_rc=124 (killed by test wrapper; hook did NOT self-timeout)

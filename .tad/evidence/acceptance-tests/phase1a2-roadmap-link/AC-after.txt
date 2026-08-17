@@ -1,8 +1,0 @@
-# Phase 1a-2 AC 改后实测 — 2026-08-17T04:37:09Z
-# Gate 3 由独立 subagent f1618118 验证：1A2 GATE3 PASS (5/5)
-
-AC-1 skills/playground 引用     = 0 (期望0) ✅
-AC-2 第38行精确相等             = true ✅
-AC-3 hunk数/加/删               = 1/1/1，头=@@ -38 +38 @@ ✅
-AC-4 第38行哈希                 = cc1e8cd2628d41d5
-AC-N1 其他文件被改             = 1 (期望0) ✅
