@@ -36,13 +36,24 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1a | 纯删除 | ✅ **DONE**（`01c4bf22`） | `HANDOFF-20260816-phase1a-pure-deletion.md` | 删 playground 两侧 + 两个空头绑定 + evidence 去重 182 文件 |
-| 1a-2 | ROADMAP 悬空链接 | 🔄 实现完成，Gate 3 验证中 | `HANDOFF-20260816-phase1a2-roadmap-link.md` | 修 `ROADMAP.md:38` 的悬空 markdown 链接 |
+| 1a-2 | ROADMAP 悬空链接 | ✅ **DONE**（`b6956606`） | `HANDOFF-20260816-phase1a2-roadmap-link.md` | 修 `ROADMAP.md:38` 的悬空 markdown 链接 |
 | 1b | 退休 frontmatter 约束块 | ⬚ 单子就绪，**待人裁定 `enforcement` 二选一** | `HANDOFF-20260816-phase1b-retire-frontmatter.md` | 写 4 条孤儿 + 处理标量 + 改 16 处悬空引用 |
-| 2 | 安装器数据安全 | ⬚ 单子就绪，**实现需人授权** | `HANDOFF-20260816-phase2-installer-data-safety.md` | 三个 P0 + 本地源可测试性 + 修正把缺陷当规格的验收测试 |
+| 2 | 安装器数据安全 | 📋 **出单+两轮审查完成**（`0e14a15b`）；Gate 2 **FAIL**，阻塞为两项人裁定 | `HANDOFF-20260816-phase2-installer-data-safety.md` | 三个 P0 + 本地源可测试性 + 修正把缺陷当规格的验收测试 |
 | 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`） | `HANDOFF-20260816-phase3-legacy-script-and-count.md` | 删 `eval`+`rm -rf` 脚本、镜像删除加守卫、修 Layer-0 计数 |
-| 4 | 发行瘦身 | 🔄 审查中，**待人裁定打包方式** | `HANDOFF-20260816-phase4-distribution-slimming.md` | evidence/archive 移出 main、`.npmignore`、tarball 降至 8 MB 以下 |
+| 4 | 发行瘦身 | ✅ **DONE**（`659f4161`） | `HANDOFF-20260816-phase4-distribution-slimming.md` | evidence/archive 移出 main、`.npmignore`、tarball 降至 8 MB 以下 |
 
-### ✅ 已交付（commit `01c4bf22`，2026-08-16）
+### ✅ Epic 自动部分已全部交付（4 次提交，2026-08-16）
+
+| commit | 内容 | Gate 2 | Gate 3 | Gate 4 |
+|---|---|---|---|---|
+| `01c4bf22` | Phase 1a + Phase 3 | ✅ | ✅ 双份 | ✅ |
+| `b6956606` | Phase 1a-2 | ✅ | ✅ 5/5 | ✅ |
+| `659f4161` | Phase 4 | ✅ | ✅ 13/13 | ✅ |
+| `0e14a15b` | Phase 2 出单 + 两轮审查 + 9 处 P0 回改 + 4 条知识蒸馏 | ❌ FAIL（人裁定阻塞） | — | — |
+
+**Gate 4 业务验收**：回到审计原始发现逐条复算，**F-16 / F-15 / F-19 / F-09 / F-10 / F-11 / F-12 / F-18 / F-20 全部闭环**，无一靠削弱验收标准达成。
+
+### ✅ 已交付明细（commit `01c4bf22`，2026-08-16）
 
 ```
 210 files changed, 4340 insertions(+), 131241 deletions(-)
