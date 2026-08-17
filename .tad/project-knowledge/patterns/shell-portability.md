@@ -275,3 +275,9 @@
   **一般规则：验收能证明结论，不能证明理由。写进文档的机理必须单独验证。**
 - **Grounded in**: `HANDOFF-20260816-trace-relative-path.md` §2 承重点 2 + Gate 4 更正块；
   Blake Gate 3 报告 §Notes 3（code-reviewer 首先指出）；Alex Gate 4 四组 `case` 对照实测
+
+### macOS 无 `timeout` —— 且其缺失会伪装成被测条件不成立 - 2026-08-16
+- **Discovery**: EPIC-20260816 Phase 4 中用 `timeout 15 git ls-remote --exit-code origin HEAD` 探测远端可达性，命令返回非零 → 判定「origin 不可达」→ 据此做出「拆分交付、延后 FR-A」的范围裁定。实际是 **macOS base 系统没有 `timeout`**（GNU coreutils 才提供；Homebrew 装 coreutils 后叫 `gtimeout`），`bash: timeout: command not found` 返回 **127**。去掉 `timeout` 重测，origin 完全可达，裁定被撤销。
+- **Action**: (1) 需要超时时不要假设 `timeout` 存在 —— 用 `command -v timeout || command -v gtimeout` 探测，或改用 `perl -e 'alarm shift; exec @ARGV' 15 <cmd>`，或后台执行 + `kill`。(2) **更普遍的规则**：任何"非零即下结论"的探测，工具缺失(127)与条件不成立必须**分开报**，否则前者会伪装成后者并向上传播成错误决策。
+- **Grounded in**: `HANDOFF-20260816-phase4-distribution-slimming.md` §4.0c；`COMPLETION-20260816-phase4-distribution-slimming.md` §3.2
+- **failure_mode**: Naive default: 在 macOS 上直接用 `timeout N cmd` 做带超时的探测，并把非零退出码当作 cmd 的结论。Why wrong: `timeout` 不在 macOS base 系统中，shell 返回 127（command not found），与探测目标的真实状态无关——一个可达的远端会被判成不可达，一个存在的文件会被判成缺失。

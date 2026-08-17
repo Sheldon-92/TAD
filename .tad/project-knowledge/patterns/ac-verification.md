@@ -625,3 +625,32 @@
   **C. 改判据 = 判据失效** —— 任何对 AC 命令的修改（哪怕只是「变得更 robust」）都必须**重新测量基线**。旧测量值不随命令迁移。
 - **Grounded in**: `.tad/active/designs/AUDIT-20260816-framework-health.md` §9（五处自我更正）；`.tad/active/designs/CARRIER-MAP-alex-constraints.md` §1（四轮判据演进表）；`HANDOFF-20260816-phase1-zero-risk-sweep.md` 的两轮 Gate 2 FAIL 记录（4 名 reviewer / 15 个唯一 P0）；`HANDOFF-20260816-phase1a-pure-deletion.md` §9.2-§9.3
 - **failure_mode**: Naive default: 用一条 grep 计数直接回答一个语义问题（"这条规则还有承载者吗"/"这个禁令生效了吗"/"这次改动碰了 shell 文件吗"），并把「计数为 0」读作「不存在」。Why wrong: grep 只能证明**在被搜索的范围内、以被匹配的措辞**没有出现。范围与措辞任一窄于问题，0 就是假阴性；而假阴性在删除类任务中会直接导致**静默移除仍在生效的治理规则**——本 Epic 若照初版执行，会无声删掉 CLAUDE.md §4 的两条核心不变式（Alex 不得直接写 skill 文件、不得跨终端调用），且没有任何 AC 会报警。
+
+### 阈值必须从需求推导；会被自己交付物撞破的阈值度量的是巧合 - 2026-08-16
+- **Context**: EPIC-20260816 Phase 4（发行瘦身）的 SC3 定为「`git archive | gzip -9 | wc -c` < 8 MB」。实现时实测：移出 evidence+archive 后为 **8,382,734 字节**，距 8,388,608 的上限**仅余 5,874 字节**。而该 Phase 自身要求产出的交付物——单张工单 gzip 后就有 **10,134 字节**，另加 `.npmignore`、`evidence/README.md`、completion report、§7.4 要求的 ≥2 份 reviewer 文件。
+- **Discovery**: **阈值会被本工单自己要求产出的文件撞破。** 根因不是余量算错，而是 **8 MB 这个数从未从需求推导** —— 它是审计阶段随手取的圆整数。真实需求（F-18）是「用户不该下载维护者的调试记录」，而相对原始基线 31,659,251 的降幅已达 **74%**，那个目的早已达成。继续守 8 MB 只会逼出两种坏结果：(a) 为了让 AC 通过而压缩交付物本身（把 reviewer 证据挪出被跟踪区、少写 completion）；(b) 判 FAIL 一个正确的实现。
+- **Action**: 写数值型 AC 前，先回答「这个数是从哪个需求推出来的」。答不上来就不要用绝对阈值，改用**直接断言意图的主判据** + **相对基线的辅助度量**。本例改为：主判据 `git ls-files '.tad/evidence/*' | wc -l == 0 && archive == 0`（直接断言「调试记录不再随包发布」），辅助度量「相对审计基线降幅 ≥70%」。
+  **症状识别（可机械检查）**：当你发现「为了让某条 AC 通过，必须约束本次交付物自身的体积/数量」时，该阈值已经错了 —— 它在度量巧合而非目标。
+- **Grounded in**: `.tad/active/handoffs/HANDOFF-20260816-phase4-distribution-slimming.md` §4.0d；`COMPLETION-20260816-phase4-distribution-slimming.md` §4；`EPIC-20260816-framework-health-repair.md` SC3 修订记录
+- **failure_mode**: Naive default: 用一个"看起来整齐"的绝对阈值（< 8 MB、< 100 行、≤ 5 个文件）作为验收标准。Why wrong: 该阈值与真实需求之间没有推导关系，因此其余量是偶然的。当余量小于本次交付物自身的体积时，AC 会把「正确实现 + 完整证据」判成 FAIL，从而系统性地激励删减证据——即用验收标准去侵蚀验收质量。
+
+### 判据本身失败 ≠ 被测条件不成立（工具缺失的伪装） - 2026-08-16
+- **Context**: EPIC-20260816 Phase 4 中，为判断 orphan 分支能否推送，Alex 执行 `timeout 15 git ls-remote --exit-code origin HEAD`，命令返回非零，据此判定「origin 不可达 → AC-A3 不可执行」，并基于该结论做出「拆分交付、FR-A 延后」的范围裁定。
+- **Discovery**: **macOS 没有 `timeout` 命令**（GNU coreutils 才有；Homebrew 装的是 `gtimeout`）。实际发生的是 `bash: timeout: command not found` 返回 127，**而我把这个「工具缺失」信号读成了「被测对象的属性」**。去掉 `timeout` 重测：`GIT_TERMINAL_PROMPT=0 git ls-remote --heads origin` 退出 0 并正常返回 refs —— origin 完全可达，随后 orphan 分支正常创建并推送成功。基于错误前提的范围裁定被撤销。
+  同批还有一例同型：`bash .tad/hooks/lib/release-verify.sh`（无子命令）**恒返回 2**（usage 错误），被写成期望 0 的负控 AC；用正确子命令 `parity .` 重测则改前改后均为 0。
+- **Action**: 任何「命令返回非零即下结论」的探测，**必须先确认命令本身可用且调用形式正确**：
+  1. 外部工具先 `command -v <tool> >/dev/null || { echo "TOOL MISSING"; }` —— 工具缺失必须与条件不成立**分开报**；
+  2. 带子命令的脚本，先确认无参数调用的退出码语义（很多脚本的 usage 错误是非零）；
+  3. 探测失败时，**换一种独立手段复验**再下结论（本例：去掉 `timeout` 直接跑）。
+  可移植性补充：macOS 无 `timeout`/`gtimeout`（除非 Homebrew coreutils）；需要超时时用 `perl -e 'alarm N; exec @ARGV'` 或后台 + `kill`。
+- **Grounded in**: `HANDOFF-20260816-phase4-distribution-slimming.md` §4.0c 撤销记录；`COMPLETION-20260816-phase4-distribution-slimming.md` §3.2、§3.3
+- **failure_mode**: Naive default: 把探测命令的非零退出码直接当作"被测条件不成立"的证据。Why wrong: 非零退出码有多个来源——工具未安装(127)、参数用法错误(常见 2)、权限不足、网络超时、条件确实不成立——它们无法从退出码本身区分。误判会向上传播成错误的范围裁定（本例：据此把一个完整可交付的 Phase 拆成两半并延后其中一半）。
+
+### 代裁定必须附可证伪判据 - 2026-08-16
+- **Context**: EPIC-20260816 Phase 4 在 YOLO 模式下需要 Alex 代人裁定三项。其中裁定 #2 是「用 `.npmignore` 排除 evidence，而非收窄 `package.json` 的 `files`」，理由写的是「不容易漏 —— `files` 白名单将来新增子目录时会静默漏掉」。
+- **Discovery**: 该裁定**是错的**。npm 的 `files` 字段是**白名单，优先级高于 `.npmignore`**；`files` 中列了裸 `".tad/"` 时，`.npmignore` 对其子路径**完全无效**。实测：创建 `.npmignore` 后 `npm pack --dry-run | grep -c 'evidence/'` **仍是 3445，纹丝不动**。改用收窄 `files`（裸 `".tad/"` → 22 个具体子目录）后归零，包体 23.1 MB → 3.3 MB。
+  **关键在于这个错误是被自己的 AC 当场抓住的**，而非流到 Gate 3 之后 —— 因为裁定时同步写下了 AC-C2（`npm pack --dry-run | grep -c 'evidence/'` 必须为 0）这条可证伪判据。
+- **Action**: 在授权范围内代人做技术裁定时，**裁定必须与一条可执行的验证命令同时写下**，且该命令要能在实现后立即区分「裁定正确」与「裁定错误」。只写理由（"更安全"/"不容易漏"/"更符合惯例"）而不写判据的裁定，其错误会静默存活到下游 Gate。
+  同时记录**回滚方式**：本例三项代裁定各附了一行回滚指令，使人类事后否决任一项的成本是常数级。
+- **Grounded in**: `HANDOFF-20260816-phase4-distribution-slimming.md` §4.0c 裁定表（含回滚列）；`COMPLETION-20260816-phase4-distribution-slimming.md` §3.1
+- **failure_mode**: Naive default: 代人裁定时只写选择与理由，把验证留给后续的 Gate。Why wrong: 理由是不可证伪的——"不容易漏"听起来合理，但与 npm 的实际优先级规则无关。没有配套判据时，错误裁定会被后续所有步骤当作既定前提继承，直到某个下游检查偶然暴露它；而此时返工成本已包含所有基于该前提的工作。
