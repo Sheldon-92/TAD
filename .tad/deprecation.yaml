@@ -3,15 +3,40 @@
 
 deprecations:
   "2.3.0":
-    description: "Multi-platform cleanup — remove Codex/Gemini full runtime"
+    description: "Multi-platform cleanup — remove TAD-authored Codex/Gemini runtime files"
+    # ⚠️ 2026-08-16 修订（EPIC-20260816 Phase 2 / 审计 F-01，人裁定采用方案 C）
+    #
+    # 原条目列的是 AGENTS.md / GEMINI.md / .codex/ / .gemini/ —— 那些是【用户或第三方拥有】的
+    # 路径，每次安装都被 rm -rf 删除，无备份无提示。AGENTS.md 更是跨厂商 agents.md 标准
+    # （Codex / Cursor / Aider / Zed 都读），本仓自己就有一个。
+    #
+    # 排查结论（全仓 git ls-files 搜索活代码，排除 evidence/archive）：
+    #   TAD 在 .codex/ 中【只】写 hooks.json（tad.sh:940）
+    #   TAD 在 .gemini/ 中【不写任何文件】
+    #   （两个 capability-pack install.sh 里的 ~/.gemini/ 是打印给用户的家目录提示，非写入）
+    #
+    # 方案 C：只列 TAD 自己写入的具体文件路径，不列目录、不列用户拥有的文件。
+    # 这样「只删自己写的东西」在结构上无法违反，而不是靠 owner: 标签约束。
     files:
-      - AGENTS.md
-      - GEMINI.md
-      - .codex/
-      - .gemini/
+      - .codex/hooks.json
       - .tad/templates/AGENTS.md.template
       - .tad/templates/GEMINI.md.template
     date: "2026-02-17"
+    revised: "2026-08-16"
+    removed_from_this_list:
+      # 这四项【曾被误列】，现已移除。它们属于用户/第三方，安装器不得触碰。
+      - path: AGENTS.md
+        owner: user
+        reason: "跨厂商 agents.md 标准；用户可能有自己的版本"
+      - path: GEMINI.md
+        owner: user
+        reason: "用户的 Gemini 指令文件"
+      - path: .codex/
+        owner: user
+        reason: "混合归属目录——用户拥有 config.toml / prompts / MCP 接线；TAD 只拥有其中的 hooks.json"
+      - path: .gemini/
+        owner: user
+        reason: "TAD 从不在其中写入任何文件"
 
   "2.8.1":
     description: "Commands consolidated into skills — remove .claude/commands/ files"

@@ -859,17 +859,28 @@ copy_framework_files() {
     apply_deprecations "$src"
 
     # --- Root files from platform extra_root_files ---
-    # Placed AFTER apply_deprecations because deprecation.yaml v2.3.0 removes
-    # AGENTS.md (old full-runtime cleanup). For codex platform, we re-install it.
+    # 2026-08-16 (EPIC-20260816 Phase 2): deprecation.yaml v2.3.0 曾列 AGENTS.md，
+    # 那会删除【用户拥有】的文件（agents.md 是跨厂商标准）。该条目已移除——
+    # 现在 v2.3.0 只列 TAD 自己写入的文件。本段仍负责按平台安装 TAD 版根文件，
+    # 但已改为「内容不同则先备份」而非无声覆盖（见下方 FR-4b 注释）。
     local root_files=""
     if [ -f "$src/.tad/platform-codes.yaml" ]; then
         root_files="$(parse_platform_root_files "$src/.tad/platform-codes.yaml" "$PLATFORM")"
     fi
     if [ -n "$root_files" ]; then
         local rf
+        local _rf_backup=""
         while IFS= read -r rf; do
             [ -n "$rf" ] || continue
             if [ -f "$src/$rf" ]; then
+                # FR-4b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 这些是【用户可能已有】的
+                # 根文件（如 AGENTS.md —— 跨厂商 agents.md 标准，Codex/Cursor/Aider/Zed 都读）。
+                # 原实现用裸 cp 直接覆盖，用户版本无声丢失。改为：已存在且内容不同时先备份。
+                if [ -f "./$rf" ] && ! cmp -s "$src/$rf" "./$rf"; then
+                    _rf_backup="./${rf}.pre-tad.$(date +%Y%m%d-%H%M%S)"
+                    cp "./$rf" "$_rf_backup" 2>/dev/null \
+                        && log_info "  → Backed up existing $rf → $(basename "$_rf_backup")"
+                fi
                 cp "$src/$rf" ./ 2>/dev/null || true
             fi
         done <<< "$root_files"
@@ -1570,6 +1581,9 @@ main() {
     curl -sSL "$DOWNLOAD_URL" | tar -xz 2>/dev/null || \
     curl -sSL --http1.1 "$DOWNLOAD_URL" | tar -xz
     TAD_SRC="TAD-main"
+    # FR-1b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 标记此 TAD_SRC 是本次下载
+    # 产生的临时目录，仅这种情况才可在收尾时 rm -rf 它。
+    TAD_SRC_DOWNLOADED=1
 
     # AC2: derive the authoritative version from the freshly-downloaded source's
     # .tad/version.txt — this runs AFTER the download, so the derived value is
@@ -1583,7 +1597,11 @@ main() {
     # 依赖 L22 的字面量，因此字面量陈旧不可能再产生静默 no-op。本块是后一条路径。
     if [ "$FORCE" != "1" ] && [ "$CURRENT_VERSION" != "none" ] \
        && [ "$(_tad_ver_cmp "$CURRENT_VERSION" "$TARGET_VERSION")" != "-1" ]; then
-        rm -rf "$TAD_SRC"
+        # FR-1b: 只清理本次下载产生的临时目录。若将来支持 --source <dir>，
+        # $TAD_SRC 会是用户传入的路径，绝不能删。
+        if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ]; then
+            rm -rf "$TAD_SRC"
+        fi
         echo ""
         echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
         exit 0
@@ -1620,7 +1638,11 @@ main() {
             cp -r "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
 
             # Copy root files
-            cp "$TAD_SRC"/CLAUDE.md ./
+            # F-03 (EPIC-20260816 Phase 2 / 审计): install 分支原为裸 cp，会无声覆盖用户
+            # 已有的 CLAUDE.md。detect_state 在 .tad/ 与 .claude/commands/ 均不存在时返回
+            # fresh —— 那正是「有自写 CLAUDE.md 但从未装过 TAD」的用户状态。
+            # merge_claude_md 自身已处理全新项目（无 CLAUDE.md 时直接 cp）。
+            merge_claude_md "$TAD_SRC"
 
             # Create user files if not exist
             if [ ! -f "PROJECT_CONTEXT.md" ]; then
@@ -1862,7 +1884,11 @@ NEXTEOF
     validate_generated_configs
 
     # Cleanup
-    rm -rf "$TAD_SRC"
+    # FR-1b: 只清理本次下载产生的临时目录。若将来支持 --source <dir>，
+    # $TAD_SRC 会是用户传入的路径，绝不能删。
+    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ]; then
+        rm -rf "$TAD_SRC"
+    fi
 
     echo ""
     echo -e "${GREEN}=====================================${NC}"
