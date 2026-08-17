@@ -31,13 +31,31 @@
 
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
-| 1a | 纯删除 | 🛑 **BLOCKED**（缺 reviewer） | `HANDOFF-20260816-phase1a-pure-deletion.md` | 删 playground 两侧 + 两个空头绑定 + evidence 去重 |
-| 1b | 退休 frontmatter 约束块 | ⬚ 前置已完成，待出单 | — | 写 4 条孤儿 + 处理 `enforcement` 标量 + 改 16 处悬空引用 |
-| 2 | 安装器数据安全 | ⬚ Planned（**只到 Gate 2 即停**） | — | 三个 P0 修复 + 本地源可测试性 + 修正把缺陷当规格的验收测试 |
-| 3 | 遗留脚本与计数安全 | ⬚ Planned | — | 隔离 `eval`+`rm -rf` 脚本、镜像删除加断言、修 Layer-0 计数 |
-| 4 | 发行瘦身 | ⬚ Planned | — | evidence/archive 移出 main、`.npmignore`、tarball 降至 6 MB 量级 |
+| 1a | 纯删除 | ✅ **DONE**（`01c4bf22`） | `HANDOFF-20260816-phase1a-pure-deletion.md` | 删 playground 两侧 + 两个空头绑定 + evidence 去重 182 文件 |
+| 1a-2 | ROADMAP 悬空链接 | 🔄 实现完成，Gate 3 验证中 | `HANDOFF-20260816-phase1a2-roadmap-link.md` | 修 `ROADMAP.md:38` 的悬空 markdown 链接 |
+| 1b | 退休 frontmatter 约束块 | ⬚ 单子就绪，**待人裁定 `enforcement` 二选一** | `HANDOFF-20260816-phase1b-retire-frontmatter.md` | 写 4 条孤儿 + 处理标量 + 改 16 处悬空引用 |
+| 2 | 安装器数据安全 | ⬚ 单子就绪，**实现需人授权** | `HANDOFF-20260816-phase2-installer-data-safety.md` | 三个 P0 + 本地源可测试性 + 修正把缺陷当规格的验收测试 |
+| 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`） | `HANDOFF-20260816-phase3-legacy-script-and-count.md` | 删 `eval`+`rm -rf` 脚本、镜像删除加守卫、修 Layer-0 计数 |
+| 4 | 发行瘦身 | 🔄 审查中，**待人裁定打包方式** | `HANDOFF-20260816-phase4-distribution-slimming.md` | evidence/archive 移出 main、`.npmignore`、tarball 降至 8 MB 以下 |
 
-### 🛑 当前阻塞：reviewer 机制不可用
+### ✅ 已交付（commit `01c4bf22`，2026-08-16）
+
+```
+210 files changed, 4340 insertions(+), 131241 deletions(-)
+```
+
+| 消除的风险 | 证据 |
+|---|---|
+| `eval` 驱动的 `rm -rf`，路径来自含空格/CJK 的注册表 | `sync-v2.8.4.sh` 已删除（实测零活引用） |
+| `rsync --delete` 无非空守卫 → 源空即清空 `.agents/skills` | 守卫在 `release-verify.sh:683`，三场景实测正确 |
+| 压缩恢复安全网对含空格文件名多计数（2 文件报 3） | `list_dir` 改为先按行计数；端到端在真实仓库验证输出 `(7)` 正确 |
+| 废弃两月的 skill 仍在发布并在 description 推销 | 两侧目录已删；系统技能目录已自动更新 |
+| 两个无消费者的空头配置绑定 | 已删，`tad-gate` 原位留可追溯注释 |
+| 182 个逐字节重复的证据文件 | 换成从 `git show` 生成的可回溯清单（溯源抽样 5/5） |
+
+**Gate 3 由 4 名独立 subagent 分工验证**（每次合并任务过大都会卡死 → 拆小，本 Epic 内三次奏效）。
+
+### 📌 历史阻塞记录：reviewer 机制曾不可用（已解除）
 
 **6 次 subagent 调用连续失败且无消息**（`727f3ab1`、`2c922a5c`、`a5b767eb`、`8baaf359`，及两次最小探针）。最小探针仅执行一条 `grep -c`、不写文件，同样失败 → **能力不可用，非 prompt 规模问题**。
 

@@ -35,7 +35,7 @@
 
 | Item | Type | Status | Reference |
 |------|------|--------|-----------|
-| Design Playground v2 (standalone command) | Direction | **Deprecated 2026-06-10** | [/playground](./.claude/skills/playground/SKILL.md) |
+| Design Playground v2 (standalone command) | Direction | **Deprecated 2026-06-10** | /playground |
 | Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/skills/tad-test-brief/SKILL.md) |
 | Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
 | Iterate on Playground based on user feedback | Idea | Pending | — |
