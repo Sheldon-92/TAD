@@ -12,6 +12,18 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
+### ⭐ 0-NEW. **EPIC-20260816-framework-health-repair** —— 2026-08-16 全仓审计后立项
+
+- **Epic**: `.tad/active/epics/EPIC-20260816-framework-health-repair.md`（Phase 1 = 🔄 Active）
+- **审计报告**: `.tad/active/designs/AUDIT-20260816-framework-health.md`（36 条发现 F-01~F-34 + S-01~S-04）
+- **🔴 Epic 级硬约束**：**Phase 2 过 Gate 4 之前，禁止 `*sync` / 禁止发布 / 禁止建议任何人跑安装命令。**
+      安装器有三个会不可逆删除用户数据的 P0（`.codex/`、`.gemini/`、`AGENTS.md`、`GEMINI.md` 每次运行必删；
+      首装覆盖用户 `CLAUDE.md`），现在同步等于把缺陷推给 13 个存活的下游项目。
+- **最尖锐的一条**：`upgrade-acceptance.sh` Check 3 把上述删除**断言为期望结果**（用户 `.codex/` 幸存 → 判 `stale dir` → FAIL）。
+      **修 F-01 必须同批修 F-34**，否则修好的正确行为会被自己的测试判失败。
+- **待人裁定（Phase 1 handoff 前）**：F-15 方向（补 SKILL 的 `config-cognitive` vs 删 `config.yaml` 绑定）；playground 退役的下游依赖确认。
+- **不在本 Epic**：恢复对 14 个项目的同步、激活成本削减（SC1 的下半场）、结果度量体系 —— 见报告 §10。
+
 ### 0. ✅ **DONE 2026-08-16** — Gate 3 Check 8 已改成「出声但不拦」（commit `f5f62af`）
 
 - [x] **`pre-gate-check.sh` 补了 `else`**，读不到判定行时发 WARNING 并点名它读的文件。

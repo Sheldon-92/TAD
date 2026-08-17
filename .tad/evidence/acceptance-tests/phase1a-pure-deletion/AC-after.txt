@@ -1,0 +1,17 @@
+# Phase 1a AC 改后实测 — 2026-08-17T04:26:03Z
+
+AC-A1 .claude playground(期望0)  0
+AC-A2 .agents playground(期望0)  0
+AC-B1 alex:3 playground(期望0)   0
+AC-C1 playground绑定(期望0)    0
+AC-C2 tad-gate绑定(期望0)      0
+AC-C2b 原位注释(期望>=1)     1
+AC-C3neg gate无加载步(期望0) 0
+AC-C3pos alex正控(期望2)       2
+AC-D1 pre跟踪(期望0)           0
+AC-D2 post跟踪(期望182)        182
+AC-D3 清单行数(期望182)      182
+AC-D4 头含SHA(期望1)           2
+AC-D6 pre路径数(期望182)      182
+AC-D5 目录字节                 19818247
+      减少量                    19502480 (期望>=18000000)

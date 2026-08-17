@@ -105,9 +105,10 @@ command_module_binding:
     modules: [config-agents, config-quality, config-execution, config-platform, config-cognitive]
     note: "Blake needs agents (role), quality (gates), execution (ralph/release), platform (MCP), cognitive (decision escalation)"
 
-  tad-gate:
-    modules: [config-quality, config-cognitive]
-    note: "Gates need quality definitions + cognitive (risk translation, decision compliance)"
+  # tad-gate: 绑定已删除（2026-08-16, EPIC-20260816 Phase 1a / 审计 F-15）。
+  #   理由：gate/SKILL.md 无任何模块加载步骤，且 Cognitive Firewall 内容已内联
+  #   （gate/SKILL.md:219 Risk Translation Pillar 3、:706 Decision Compliance Pillar 1）；
+  #   config-quality 由 gate/SKILL.md:227 按需读取。该绑定曾是无消费者的空头声明。
 
   tad-init:
     modules: []
@@ -140,10 +141,6 @@ command_module_binding:
   tad-test-brief:
     modules: [config-workflow]
     note: "Test brief needs pair_testing config from workflow module"
-
-  playground:
-    modules: [config-workflow]
-    note: "Playground needs workflow (playground section, document_management)"
 
 # ==================== 任务管理系统 ====================
 task_management:

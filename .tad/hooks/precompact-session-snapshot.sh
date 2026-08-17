@@ -116,13 +116,21 @@ fi
 # --- Active handoffs / epics (count + single-line space-joined names per FR1) ---
 list_dir() {
   # $1 = glob; prints "count<US>joined-names" using \x1F separator (never newline)
+  # NOTE: $1 is INTENTIONALLY unquoted — it is a glob pattern and must expand.
+  #       shellcheck disable=SC2086 is deliberate; quoting it makes the glob literal
+  #       and the function returns 0 matches. (EPIC-20260816 Phase 3 / 审计 F-12)
+  # FIX (F-12): count LINES before joining. The previous version joined basenames with
+  #       spaces and then counted words, so a filename containing a space was counted twice.
   local names count
-  names=$(ls -1 $1 2>/dev/null | while read -r f; do basename "$f" 2>/dev/null; done | tr '\n' ' ' | sed 's/ $//' || echo "")
+  # shellcheck disable=SC2086
+  names=$(ls -1 $1 2>/dev/null | while IFS= read -r f; do basename "$f" 2>/dev/null; done)
   if [ -n "$names" ]; then
-    count=$(printf '%s ' "$names" | tr ' ' '\n' | grep -c . 2>/dev/null || echo "?")
+    count=$(printf '%s\n' "$names" | grep -c . 2>/dev/null || echo "?")
   else
     count=0
   fi
+  # join for display only, AFTER counting; contract stays "count<US>names", never a newline
+  names=$(printf '%s' "$names" | tr '\n' ' ' | sed 's/ $//')
   printf '%s\x1f%s' "$count" "$names"
 }
 

@@ -597,3 +597,31 @@
 - **Grounded in**: `NEXT.md` §0b 撤销记录（含重新测量的三行表）；
   `COMPLETION-20260814-routing-decouple.md`（有完整判定信息但不匹配模板措辞的反例）；
   `HANDOFF-20260816-gate3-check8-audible.md` §1.2 引用的原始 18/20 表
+
+### 判据范围 ≠ 问题范围：代理指标当本体（11 次同形错误的蒸馏）- 2026-08-16
+- **Context**: EPIC-20260816-framework-health-repair 的审计与出单过程中，Alex 在同一形状上连续犯错 **11 次**，全部由外部 reviewer 或设计期空跑抓出，无一次由自查发现。全部错误可归约为一句话：**量了 A，却用来回答 B，而 A 的范围窄于（或宽于）B。**
+- **Discovery**: 十一例按范围错位的方向分为三类。
+  **(一) 搜索范围窄于问题范围（5 例）**：
+  ① 「3 条禁令从未生效」← 只 grep `alex/SKILL.md` **正文**，而禁令活在 `references/`（经 `load_when` 正常送达）。
+  ② 「Alex 对 config-cognitive 零引用」← 只 grep 字面量，未沿 `reference:` 下钻一层（`alex:1145` MANDATORY 块 → `research-decision-protocol.md:9` → 该文件）。
+  ③ 承载者地图第 1 轮 ← 同 ①。
+  ④ 「config-workflow 删绑定后不可达」← 假设按段加载；实测该文件被 **7 个命令**绑定且加载是**整文件粒度**。**尤其可耻：我本轮激活时亲自整读过该文件。**
+  ⑤ 1a 工单漏掉 `ROADMAP.md:38` 的悬空链接 ← 搜索只覆盖配置文件，未覆盖人可见文档。
+  **(二) 判据措辞窄于语义全集（3 例）**：
+  ⑥ 承载者地图第 3 轮只认 `MUST NOT`，漏掉 `forbidden interpretation` / `禁止` / `VIOLATION` 等等价措辞。
+  ⑦ AC-N7 用 `grep -cF '.sh'` 判断「是否改了 shell 文件」，会误匹 `foo.shtml` / `b.shell`。
+  ⑧ AC-E2 用 `grep -cF '<短语>' <整文件>` 判断「第 38 行是否正确修改」，可被「删整行 + 把短语写到别处」绕过。
+  **(三) 命中 ≠ 承载 / 计数 ≠ 语义（3 例）**：
+  ⑨ 承载者地图第 2 轮把关键字命中当承载：`exit_codes` 的 16 处全是 bash 退出码的普通用法；`tool_blocking` 的 5 处全是「某检查不阻塞流程」，与「不得阻断 Write/Edit/Read」语义无关。
+  ⑩ AC-B1 用 `sed -n '661,681p' \| grep -c 'CLAUDE_SKILLS'` 判断「rsync 前有无非空断言」，实际匹到的是 `rsync` 那行**自己**的变量 → 改前即绿。
+  ⑪ 判 `skillify` 为「已覆盖」← 依据是它在正文出现 9 次，而那 9 次全是 `*harvest` 的命令描述与路径字符串，**两条 CLAUDE.md §4 核心不变式实为孤儿**。
+  **一个附带的独立形状**：⑫ 把已验证正确的命令改「robust」后**没有重测**，却沿用了旧命令的测量值（rev1 的 AC1.2 假基线：旧命令测得 0/0/0，新命令实为 3/2/2，导致该 AC 动手前就是绿的）。
+- **Action**: 写任何以 grep/wc 计数回答语义问题的 AC 或判断前，**显式写出两个范围并确认重合**：
+  (1) **我量的范围**（哪些文件？正文还是含 references？是否沿引用链下钻？）
+  (2) **问题的范围**（「agent 有没有见过」≠「SKILL.md 正文有没有」；「有无承载」≠「关键字有无命中」）。
+  三条强制动作：
+  **A. 反向自证** —— 命中为 0 时必须换一种措辞或扩一层范围复测，**0 只说明「没在我看的地方」**；命中非 0 时必须**人眼确认语义对应**，不得只看计数。
+  **B. 正控** —— 每条含「或」或依赖模式的 AC，必须先对一个**已知包含该模式**的文件跑一遍，证明模式是活的（本 Epic 中 `\|` 在 ERE 里是字面竖线，使一条负控永远返回 0 而看起来通过）。
+  **C. 改判据 = 判据失效** —— 任何对 AC 命令的修改（哪怕只是「变得更 robust」）都必须**重新测量基线**。旧测量值不随命令迁移。
+- **Grounded in**: `.tad/active/designs/AUDIT-20260816-framework-health.md` §9（五处自我更正）；`.tad/active/designs/CARRIER-MAP-alex-constraints.md` §1（四轮判据演进表）；`HANDOFF-20260816-phase1-zero-risk-sweep.md` 的两轮 Gate 2 FAIL 记录（4 名 reviewer / 15 个唯一 P0）；`HANDOFF-20260816-phase1a-pure-deletion.md` §9.2-§9.3
+- **failure_mode**: Naive default: 用一条 grep 计数直接回答一个语义问题（"这条规则还有承载者吗"/"这个禁令生效了吗"/"这次改动碰了 shell 文件吗"），并把「计数为 0」读作「不存在」。Why wrong: grep 只能证明**在被搜索的范围内、以被匹配的措辞**没有出现。范围与措辞任一窄于问题，0 就是假阴性；而假阴性在删除类任务中会直接导致**静默移除仍在生效的治理规则**——本 Epic 若照初版执行，会无声删掉 CLAUDE.md §4 的两条核心不变式（Alex 不得直接写 skill 文件、不得跨终端调用），且没有任何 AC 会报警。

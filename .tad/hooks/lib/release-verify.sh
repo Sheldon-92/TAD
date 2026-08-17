@@ -678,6 +678,13 @@ PARITY_EOF
       if [ "$DIRECTION" = "claude-newer" ]; then
         echo "  🔧 Auto-fixing: rsync Claude→Codex..."
         # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
+        # FR-B (EPIC-20260816 Phase 3 / 审计 F-11): --delete 会清空目标端所有源端没有的内容。
+        # 若源目录为空或无任何 skill 子目录，这会静默清空 .agents/skills（/local/ 除外）。
+        if [ ! -d "$CLAUDE_SKILLS" ] || [ -z "$(find "$CLAUDE_SKILLS" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -1)" ]; then
+          echo "  ❌ REFUSING --delete mirror: source has no skill directories: $CLAUDE_SKILLS" >&2
+          echo "VERDICT: parity FIX-FAIL — empty source guard (exit 1)" >&2
+          exit 1
+        fi
         rsync -a --delete --exclude=/local/ "$CLAUDE_SKILLS/" "$AGENTS_SKILLS/"
         if ! check_platform_coupled_references; then
           echo "VERDICT: parity FIX-FAIL — platform-coupled reference paths remain (exit 1)" >&2
