@@ -484,6 +484,33 @@ Gate 2 的最终 PASS 依赖两项**人类裁定**（§4.3b 的归属粒度、FR
 5. **禁止弱化 `migration-engine.sh` 的闸口。** AC-N3 拦这个。
 6. **禁止删除整个第三方工具目录。** 只删其中 TAD 自己写入的文件。
 
+### 10.1b ⚠️ 护栏尝试的失败记录 —— 正确修复位置在执行点，不在声明点
+
+2026-08-16，Alex 尝试补一条 `release-verify.sh deprecation-safety` 护栏，
+校验 `deprecation.yaml` 的 `files:` 清单里有无用户拥有的路径。**写了五版，五版全被独立 reviewer 打穿，已全部撤销。**
+
+| 版本 | 判据 | 打穿方式 |
+|---|---|---|
+| v1 | 黑名单 | `.aider.conf.yml` |
+| v2 | 前缀白名单 | `.tad/../AGENTS.md` 路径穿越 |
+| v3 | + 规范性检查 | **awk vs `read -r` 的 NUL 分歧** —— 护栏校验的是另一个列表 |
+| v4 | 共用解析器 | **所有权模型错** —— `.tad/*` 吞掉 12 个 zero-touch 用户子树 |
+| v5 | 读 `--zero-touch` | 内部 `/./`、大小写不敏感卷、漏读同文件的 `TOP_DENY` |
+
+**五版都挡不住的**：护栏校验**声明的字符串**，而破坏发生在**执行时的解析结果**。
+实测：目标项目里 `.tad/domains` 若是符号链接，一条**完全合法**的 `.tad/domains/x`
+也会删掉项目外的用户数据 —— 任何字符串检查都拦不住。
+
+**结论（对本单 FR-2 的输入）**：
+> 正确的修复位置是 **`apply_deprecations` 内部**：对每个 `$target` 做 `realpath` 解析，
+> 拒绝任何解析后逃出 `$PWD/.tad`、`$PWD/.claude`、`$PWD/.agents` 的路径，
+> 并排除 `derive-sync-set.sh` 的 `--zero-touch` 子树与 `TOP_DENY`。
+> **这与 FR-2「删除走 `guarded_remove`」是同一件事** —— `migration-engine.sh` 的
+> `check_containment` 正是做这个的。**声明层的护栏是绕路，不要再试。**
+
+⚠️ **给 Blake 的提醒**：若你被要求"加一条检查防止 `deprecation.yaml` 被误编辑"，
+先读 `patterns/ac-verification.md` 中「五版全败」那条。**这个方向已被证伪。**
+
 ### 10.2 遇到以下必须停下上报
 - `--source` 模式与现有下载路径产生行为差异
 - 任何 zero-touch 目录在沙箱中被改动
