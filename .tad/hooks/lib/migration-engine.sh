@@ -1016,4 +1016,7 @@ main() {
     printf '\nMigration complete: %s → %s\n' "$FROM_VER" "$TO_VER"
 }
 
-main "$@"
+# Only auto-run when executed directly, never when sourced.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main "$@"
+fi

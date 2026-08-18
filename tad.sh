@@ -1178,7 +1178,62 @@ apply_deprecations() {
 
     log_info "  → Applying deprecations for versions ≤ $current_version..."
 
+    # ── F-02: route deletions through migration-engine's guard chain ──────────
+    # Rationale: apply_deprecations previously deleted with an unguarded recursive
+    # remove, bypassing the containment + zero-touch guards that already exist in
+    # migration-engine.sh. Guarding must live at the EXECUTION point (after path
+    # resolution), not at the declaration layer — see
+    # patterns/ac-verification.md "五版全败" (2026-08-16).
+    #
+    # Sourced INSIDE this function (not at top level): the engine defines main(),
+    # which at top level would silently replace the installer's main() and make the
+    # installer print engine usage and exit 2 (Gate 2 round-3 sandbox finding).
+    # The engine's `main "$@"` is BASH_SOURCE-guarded so sourcing does not run it.
+    local engine="$src/.tad/hooks/lib/migration-engine.sh"
+    local backup_base=""
+    if [ -f "$engine" ]; then
+        # shellcheck source=/dev/null
+        source "$engine"
+        # Engine line 15 resets TARGET/SOURCE/FROM_VER/TO_VER on source →
+        # these MUST be assigned AFTER the source, not before.
+        TARGET="$(pwd)"
+        SOURCE="$src"
+        # do_backup reads TARGET/M_FROM/M_TO (all three REQUIRED — an unset one is a
+        # fatal `unbound variable` that neither `|| rc=$?` nor the ERR trap can catch).
+        # current→current keeps this backup namespace distinct from call_migration_engine's
+        # (${old_ver}-to-${new_ver}), so paths present in both manifests are not refused
+        # by do_backup's "refuse to overwrite existing backup" check.
+        M_FROM="$current_version"
+        M_TO="$current_version"
+        backup_base="$TARGET/.tad-backup/${M_FROM}-to-${M_TO}"
+        # ZT_LIST must come from derive-sync-set.sh (FR-4). Omitting this call fails
+        # OPEN: an empty ZT_LIST makes check_zero_touch pass everything.
+        #
+        # load_zero_touch exits 2 when the authority is unreadable — a hard exit that
+        # bypasses `|| rc=$?` AND the rollback trap, killing the installer mid-run and
+        # leaving a half-updated target (files copied, version.txt not yet updated).
+        # Fail-closed is the right DIRECTION for a deletion path, but killing the whole
+        # install is disproportionate and asymmetric with the engine-missing branch below.
+        # So: probe the authority in a SUBSHELL first (its exit 2 dies with the subshell),
+        # and degrade to warn+skip when it is unusable. Skipping deprecations is equally
+        # fail-closed — no authority means nothing gets deleted.
+        # `trap - ERR` inside the probe: the subshell inherits the armed rollback trap,
+        # and rollback_on_failure runs with cwd=target (it would wipe .tad). No command
+        # in load_zero_touch can currently trip it, but disarming costs one word and
+        # removes the whole class.
+        if ( trap - ERR; load_zero_touch "$src" ) >/dev/null 2>&1; then
+            load_zero_touch "$src"
+        else
+            log_warn "  → Zero-touch authority unavailable; deprecations skipped (nothing deleted)"
+            return 0
+        fi
+    else
+        log_warn "  → Migration engine not found in source; deprecations skipped (guarded deletion unavailable)"
+        return 0
+    fi
+
     local deleted=0
+    local refused=0
     local current_dep_version=""
     local in_files=0
 
@@ -1210,7 +1265,57 @@ apply_deprecations() {
                 local target
                 target=$(printf '%s' "$line" | sed -E 's/^[[:space:]]+-[[:space:]]+//' | tr -d '"')
                 if [ -e "$target" ]; then
-                    rm -rf -- "$target" 2>/dev/null && deleted=$((deleted + 1))
+                    local rc=0
+                    # Traversal / self-reference pre-check BEFORE do_backup.
+                    # check_containment only inspects the PARENT of "$base/$p", which
+                    # degenerates for paths that resolve back to base itself ("..", ".",
+                    # "./", "a/./"), so such an entry would reach do_backup and get
+                    # cp -a'd — for "./" that is a RECURSIVE self-copy of the whole
+                    # target into its own .tad-backup (nests until the path is too long)
+                    # and makes every later entry in the run fail with "backup already
+                    # exists". Predicate (^|/)\.\.?(/|$) covers "." and ".." in every
+                    # position; plain names like "..foo" / "..." / ".foo" stay allowed.
+                    # Deliberately NARROWER than the engine's validate_path: that one
+                    # also enforces a prefix allow-list and rejects trailing slashes,
+                    # which would refuse the legitimate entry ".tad/codex/schemas/"
+                    # (1 of 82) and break NFR4. Verified: this predicate rejects 0 of
+                    # the 82 real manifest entries.
+                    if printf '%s' "$target" | grep -qE '(^|/)\.\.?(/|$)'; then
+                        printf 'REJECT: path traversal or self-reference: %s\n' "$target" >&2
+                        rc=1
+                    fi
+                    # ERR trap bypass: `|| rc=$?` is POSIX-guaranteed to suppress the
+                    # armed ERR trap (set +e does NOT). Without this, a single refused
+                    # entry would fire rollback_on_failure (which wipes .tad and exits 1),
+                    # destroying the whole install (FR-3 / hard-prohibition #5).
+                    #
+                    # do_backup runs BEFORE the guards (same order as the engine's own
+                    # delete flow, migration-engine.sh:898-899), so a refused entry has
+                    # already been cp -a'd into .tad-backup by the time we learn it is
+                    # refused. For a zero-touch path that means a COPY of the user's
+                    # private data (e.g. .tad/memory) is left behind in a directory the
+                    # target project does not necessarily gitignore — the guard saved the
+                    # original but leaked a duplicate. So: if this run created the backup
+                    # and the entry was then refused, remove that copy again.
+                    local backup_preexisted=0
+                    [ -e "$backup_base/$target" ] && backup_preexisted=1
+                    [ "$rc" -eq 0 ] && { do_backup "$target" "$backup_base" || rc=$?; }
+                    [ "$rc" -eq 0 ] && { guarded_remove "$TARGET/$target" "$backup_base/$target" "$target" "$TARGET" || rc=$?; }
+                    if [ "$rc" -ne 0 ] && [ "$backup_preexisted" -eq 0 ] && [ -e "$backup_base/$target" ]; then
+                        # find -depth -delete (not a recursive rm) so the AC that forbids
+                        # unguarded recursive removal inside this function stays meaningful:
+                        # the only thing removed here is the copy THIS run just made under
+                        # .tad-backup, never anything in the target project itself.
+                        # `|| true` because find exits 1 when the path is already gone,
+                        # which would trip the ERR trap under set -e.
+                        find "$backup_base/$target" -depth -delete 2>/dev/null || true
+                    fi
+                    if [ "$rc" -eq 0 ]; then
+                        deleted=$(( deleted + 1 ))
+                    else
+                        refused=$(( refused + 1 ))
+                        log_warn "  ⚠ refused (rc=$rc): $target"
+                    fi
                 fi
             fi
         fi
@@ -1220,6 +1325,9 @@ apply_deprecations() {
         log_success "  → Removed $deleted deprecated file(s)"
     else
         log_info "  → No deprecated files to remove"
+    fi
+    if [ "$refused" -gt 0 ]; then
+        log_warn "  → $refused deprecated path(s) refused by guards (see ABORT lines above)"
     fi
 }
 
