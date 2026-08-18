@@ -254,7 +254,15 @@ None（可立即执行）
       ｜ 改前实测：审计沙箱中除 `.tad/version.txt` 外**全部消失**（红）
 - [ ] **AC2.3** 上述测试对 `--platform claude-code` / `codex` / `both` **三种平台各跑一次**，全部通过（F-01 的丢失面随平台不同）
 - [ ] **AC2.4（F-03）** 沙箱预置含自定义内容的 `CLAUDE.md`（无 TAD marker）→ 安装后用户内容仍在，且存在带时间戳的备份
-- [ ] **AC2.5（F-02/SC4）** `tad.sh` 内所有 `rm -rf` 调用点均在 `guarded_remove` 内或有前置非空+containment 断言 —— 用一条可复跑的检查命令表达并纳入 `release-verify.sh`
+- [~] **AC2.5（F-02/SC4）** `tad.sh` 内所有 `rm -rf` 调用点均在 `guarded_remove` 内或有前置非空+containment 断言 —— 用一条可复跑的检查命令表达并纳入 `release-verify.sh`
+      ｜ **部分达成 2026-08-17（commit `65bb0840`，Gate 3 PASS）**：
+      `apply_deprecations` 的删除点已接入 `do_backup` + `guarded_remove`（containment + zero-touch
+      两重 + 遍历/自引用谓词 + 被拒副本回滚）；该函数体内裸 `rm -rf` 计数 **1 → 0**。
+      Layer 2 双专家 PASS（code-reviewer 4 轮 + 独立复验 2 轮，含真实安装路径与符号链接对抗）。
+      **剩余未做（不在本单范围）**：① tad.sh 另有 4 处 `rm -rf` 未评估 ——
+      `:1396`（rollback_on_failure）、`:1711`/`:1998`（TAD_SRC 清理）、`:1871`（.tad-migrate-backup），
+      它们删的是安装器自有产物而非用户路径，需各自判定是否需要断言；
+      ② **「纳入 `release-verify.sh`」的可复跑检查命令尚未编写**。
 - [ ] **AC2.6（F-01 版本闸门）** 构造 `current_version` 为高版本的沙箱，断言 `2.3.0` 块**不再触发**（上界生效）
 - [ ] **AC2.7（F-34）** `upgrade-acceptance.sh` 在「用户 `.codex/` 存在」的目标上判定为 **PASS**（方向修正）｜ 改前：判 `stale dir` → FAIL（红）
 - [ ] **AC2.8（F-06）** 人为触发 ERR 后，回滚结果与其打印的声明一致；或声明改为如实描述其覆盖范围
