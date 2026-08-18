@@ -408,8 +408,38 @@ N/A。
 ⚠️ **场景 4 需要绕过网络下载**：`tad.sh:1583` 在 `curl | tar -xz` 之后才设 `TAD_SRC`，而本仓尚无 `--source` 模式（F-33）。
 reviewer 实测的可行做法：**在 `PATH` 前置一个 `curl` stub**（约 6 行）使其解出预置的本地源目录。
 
-⚠️ **场景 4 需绕过网络下载**：`tad.sh:1583` 在 `curl | tar -xz` 之后才设 `TAD_SRC`，本仓尚无 `--source` 模式（F-33）。
-reviewer 实测可行做法：**在 `PATH` 前置一个 `curl` stub**（约 6 行）令其解出预置的本地源目录。
+⚠️ **场景 4 需绕过网络下载**：`tad.sh:1581-1583` 在 `curl … | tar -xz` 之后才设 `TAD_SRC`，本仓尚无 `--source` 模式（F-33）。
+
+**✅ 可运行的 `curl` stub 方案（Alex 已实测通过，直接抄用）**：
+
+```bash
+SB=$(mktemp -d)
+
+# 1) 把改好的源码打成 tarball，顶层目录名必须是 TAD-main（tad.sh:1583 写死）
+mkdir -p "$SB/stage/TAD-main"
+cp -R <你改好的 tad.sh 与 .tad/> "$SB/stage/TAD-main/"
+( cd "$SB/stage" && tar -czf "$SB/src.tgz" TAD-main )
+
+# 2) 造 stub：忽略全部参数，把 tarball 吐到 stdout
+mkdir -p "$SB/bin"
+cat > "$SB/bin/curl" <<'STUB'
+#!/bin/bash
+cat "$TAD_STUB_TARBALL"
+STUB
+chmod +x "$SB/bin/curl"
+
+# 3) 在目标项目里跑真实安装路径
+mkdir -p "$SB/proj" && cd "$SB/proj"
+export TAD_STUB_TARBALL="$SB/src.tgz"
+export PATH="$SB/bin:$PATH"
+bash "$SB/stage/TAD-main/tad.sh" --yes   # ERR trap 与 set -euo pipefail 均已武装
+```
+
+**实测确认**：`curl -sSL <url> | tar -xz` 经 stub 后正确解出 `TAD-main/`，
+后续 `TAD_SRC="TAD-main"` 与 `TAD_SRC_DOWNLOADED=1` 照常生效。
+
+⚠️ **注意**：stub 会让 `tad.sh` 认为源是「下载来的」，因此 FR-1b 的清理门控会在收尾时
+`rm -rf "$TAD_SRC"` —— 这是**正确行为**（沙箱内的 `TAD-main/` 本就是临时的），不要误判为缺陷。
 
 ⚠️ **场景 4 不可用"提取函数到沙箱"的方式测** —— 那样 `set -e` 与 `trap ERR` 都不存在，
 **P0-2（单条拒绝摧毁整个安装）按构造就看不见**。必须走真实安装路径。
