@@ -35,12 +35,27 @@
 
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
-| 1a | 纯删除 | ✅ **DONE**（`01c4bf22`） | `HANDOFF-20260816-phase1a-pure-deletion.md` | 删 playground 两侧 + 两个空头绑定 + evidence 去重 182 文件 |
-| 1a-2 | ROADMAP 悬空链接 | ✅ **DONE**（`b6956606`） | `HANDOFF-20260816-phase1a2-roadmap-link.md` | 修 `ROADMAP.md:38` 的悬空 markdown 链接 |
-| 1b | 退休 frontmatter 约束块 | ⬚ 单子就绪，**待人裁定 `enforcement` 二选一** | `HANDOFF-20260816-phase1b-retire-frontmatter.md` | 写 4 条孤儿 + 处理标量 + 改 16 处悬空引用 |
-| 2 | 安装器数据安全 | 📋 **出单+两轮审查完成**（`0e14a15b`）；Gate 2 **FAIL**，阻塞为两项人裁定 | `HANDOFF-20260816-phase2-installer-data-safety.md` | 三个 P0 + 本地源可测试性 + 修正把缺陷当规格的验收测试 |
-| 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`） | `HANDOFF-20260816-phase3-legacy-script-and-count.md` | 删 `eval`+`rm -rf` 脚本、镜像删除加守卫、修 Layer-0 计数 |
-| 4 | 发行瘦身 | ✅ **DONE**（`659f4161`） | `HANDOFF-20260816-phase4-distribution-slimming.md` | evidence/archive 移出 main、`.npmignore`、tarball 降至 8 MB 以下 |
+| 1a | 纯删除 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 playground 两侧 + 两个空头绑定 + evidence 去重 |
+| 1a-2 | ROADMAP 悬空链接 | ✅ **DONE**（`b6956606`，Gate 3 5/5） | 已归档 | 修 `ROADMAP.md:38` |
+| 1b | 退休 frontmatter 约束块 | ⬚ **待人裁定** `enforcement` 二选一 | `HANDOFF-20260816-phase1b-retire-frontmatter.md` | 写 4 条孤儿 + 处理标量 + 改 16 处悬空引用 |
+| 2 | 安装器数据安全 | 🔶 **部分完成** | `HANDOFF-20260816-phase2-installer-data-safety.md` | 见下方拆解 |
+| 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 `eval`+`rm -rf` 脚本、镜像守卫、修计数 |
+| 4 | 发行瘦身 | ✅ **DONE**（`659f4161`，Gate 4 ✅） | 已归档 | npm 23.1→3.3 MB、evidence/archive 移出 main |
+
+### 🔶 Phase 2 的逐项状态（本 Epic 唯一未收口的部分）
+
+| 项 | 状态 | 依据 |
+|---|---|---|
+| **F-01** 清单删用户文件 | ✅ **DONE**（`46af019c`） | 方案 C：只列 TAD 自有 3 个文件。沙箱实测用户 `.codex/config.toml`/`AGENTS.md` 等全部存活 |
+| **F-03** install 分支裸 `cp` 覆盖 `CLAUDE.md` | ✅ **DONE**（`46af019c`） | 改调 `merge_claude_md`，三分支一致 |
+| **F-34** 验收测试把破坏当规格 | ✅ **自动消解**（`46af019c`） | 方案 C 后清单已无用户路径；双向实测：用户文件在→PASS，真过期文件在→FAIL |
+| **F-02** 删除路径绕过守卫链 | ✅ **DONE**（`65bb0840`，**Gate 4 ✅** `fa106d4e`） | 接入 `do_backup`+`guarded_remove`；独立复算三组攻击全部拦下 |
+| **FR-1** `--source` 本地源模式（F-33） | ⬚ **未做** | 无本地源 → 端到端验证须靠 `curl` stub 绕过 |
+| **FR-5** 验收测试 owner 感知 | ⬚ **未做** | 方案 C 使其非必需，但护栏未落实 |
+| **AC2.5** `rm -rf` 全覆盖 | 🔶 **部分** | 另 4 处未评估；`release-verify.sh` 可复跑检查未编写 |
+
+⚠️ **发布约束仍然有效**：Phase 2 未全部收口前，**禁止 `*publish` / `*sync`**。
+14 个下游项目仍停在 2.30.0。
 
 ### ✅ Epic 自动部分已全部交付（4 次提交，2026-08-16）
 
