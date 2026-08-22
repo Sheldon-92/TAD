@@ -45,6 +45,18 @@ gate3_verdict: pass
 
 全部 AC 在 `.agents/` 镜像上同样通过（9 条适用项）。
 
+**⚠️ AC-N5 的判据范围修正（如实记录）**：脚本初版把 AC-N5 写成
+`git diff --name-only 35187243 | wc -l`。Gate 3 收尾复跑时它变红（得 6，期望 4）——
+因为此时 COMPLETION 报告与 `NEXT.md` 已进入第二个提交，被一并计入。
+**这是判据范围写错，不是实现越界**：实现提交 `dab4daf1` 实测
+`git diff --name-only 35187243 dab4daf1` = **恰好 4 个文件**，全是那 4 个镜像 skill 文件；
+`git diff --name-only dab4daf1 HEAD` 只含 COMPLETION 与 NEXT.md 两个文档
+（step3c / step7 要求的 Blake 必交产物）。已把 AC-N2/N3/N5 的度量范围改为
+**实现区间**（`$SHA..dab4daf1`），复跑 24/24 全绿。
+
+这正好撞上本 Epic 已入库的教训 ——「**判据范围 ≠ 问题范围**」
+（`patterns/ac-verification.md`）。**我先让它红着，查清成因才改判据，没有反过来。**
+
 **改前值由 reviewer B 独立复算**（`git show 35187243:<path>`），与 handoff §7 声称的
 「改前实测」列逐项吻合 —— **每条 AC 都是真实状态迁移，不是本来就绿的条件。**
 
