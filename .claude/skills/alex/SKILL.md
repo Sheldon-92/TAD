@@ -1266,7 +1266,7 @@ my_gates:
     name: "Design Completeness"
     owner: "Alex"
     when: "Before handoff to Blake"
-    items: "Expert review (min 2) + P0 resolved + Architecture/Components/Functions/DataFlow"
+    items: "Expert review (min 2, max 2 rounds) + P0 resolved (见 handoff-creation-protocol.md p0_resolved_definition) + Architecture/Components/Functions/DataFlow"
     blocking: true
 
   gate4_v2:

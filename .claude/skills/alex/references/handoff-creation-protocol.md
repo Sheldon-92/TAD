@@ -805,6 +805,69 @@ handoff_creation_protocol:
     4. Overall Assessment (PASS/CONDITIONAL PASS/FAIL)
 
   minimum_experts: 2
+
+  # 轮次上限 —— 2026-08-17 补。此前本协议 810 行无任何终止条件，而 Gate 2 要求
+  # "P0 resolved" 却未定义如何证明，导致唯一可得的证明方式是再审一次；
+  # reviewer 的任务是找 P0，在无真实缺陷时会转向构造假想场景 → 循环无终点。
+  # 实测代价：EPIC-20260816 的 1a 单审 5 轮，第 2-5 轮全在打磨一行 markdown 链接。
+  # 本上限照抄 alex-lite/SKILL.md:197-199 已验证的写法。
+  max_review_rounds: 2
+
+  round_protocol:
+    round_1: "全文审查。reviewer 收到 handoff 全文。"
+    round_2: |
+      增量复核。reviewer 收到：
+        (a) 第 1 轮 P0 的修复 diff
+        (b) 第 1 轮 P0 列表 —— 含每条的【完整理由】，不止标题
+        (c) diff 触及的每个章节的【全文】
+      MUST NOT 重发 handoff 全文。
+      理由：重读全文会让 reviewer 重新审视与本轮修复无关的部分，
+      产出与「P0 是否已解决」无关的新发现，这正是循环的燃料。
+
+      ⚠️ (b)(c) 是 full 特有的补充，lite 不需要：lite 用【同一个】reviewer 做增量复核
+      （有第 1 轮上下文），full 每轮 spawn 全新 subagent（无记忆）。
+      只给 diff 对无状态 reviewer 不足以判断「这条 P0 是否真的解决了」。
+
+      round_2 的审查范围【限定为】：
+        1. 第 1 轮的每条 P0 是否已解决
+        2. 修复是否弄坏了 (c) 所列章节里的东西
+      本轮发现的【新问题】一律记为 P1 交人类，MUST NOT 记为 P0 —— 新 P0 会重置计数，
+      那正是循环。
+    after_round_2: |
+      第 2 轮后仍未满足 p0_resolved_definition（verdict 为 FAIL，
+      或 verdict 为 CONDITIONAL PASS 但仍有遗留 P0）→ 【停】。
+      照抄 lite:199 的终态语义：
+        "本单 2 轮审查后 verdict 仍为 FAIL，任务可能超出本单范围或方案不成立。
+         P0 列表：{每条含标题 + 完整理由 + 影响面}。
+         请裁定：缩小范围 / 换方案 / 撤单。"
+
+      ⚠️ 【不提供「接受风险继续」选项】—— lite 的停是硬停（`不得把 FAIL 契约交给 blake-lite`），
+      本单照此。理由（Gate 2 reviewer `48f007ec` 指出，已复核）：
+        · 「继续」会把 agent 侧的无界循环变成【人类侧的】—— 每轮问一次，同意一次，循环重开
+        · Alex 控制上报措辞，而本单 §1.2 自己提供了现成说辞（"reviewer 在构造假想场景"）
+        · 无记录要求时，未修的 P0 在人类点头那一刻就消失了
+
+      MUST NOT 进入第 3 轮 —— 【无论人类是否同意】。
+      MUST NOT 把 verdict=FAIL 的 handoff 交给 Blake。
+
+  p0_resolved_definition: |
+    Gate 2 的 "P0 resolved" 判定为以下之一：
+      (a) 第 2 轮增量复核 verdict 非 FAIL 【且】无遗留 P0；或
+      (b) 第 1 轮 verdict 非 FAIL 【且】无 P0。
+    Alex 自行断言 "已修复" 不构成 resolved。
+
+    ⚠️ verdict 为 CONDITIONAL PASS 时（本协议 OUTPUT FORMAT 允许该值）：
+    仅在【无遗留 P0】时算 resolved。CONDITIONAL PASS 附带未修 P0 →
+    不算 resolved，按 after_round_2 处理。未修的 P1 写进 handoff
+    「风险与注意」作已知取舍（照 alex-lite 的 CONDITIONAL 分支）。
+
+    ⚠️ 【没有第三种】。原草案曾有 "(c) 人类裁定继续"，已删除 ——
+    它使 cap 可被一句「同意」抵消，且 Alex 控制提问措辞。lite 无此分支。
+    人类在 after_round_2 的选项是【缩小范围 / 换方案 / 撤单】，
+    三者都不导向 "带着未解决 P0 进 Gate 2"。
+
   violations:
     - "不经过专家审查直接发送 handoff 给 Blake = VIOLATION"
     - "忽略专家发现的 P0 问题不修复 = VIOLATION"
+    - "自行进入第 3 轮 = VIOLATION（无论人类是否同意）"
+    - "把 verdict=FAIL 的 handoff 交给 Blake，或第 2 轮复核时重发 handoff 全文而非 diff = VIOLATION"
