@@ -12,6 +12,16 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
+### ⏳ 0-WAIT. **alex-review-loop-cap** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
+
+- **Completion**: `.tad/active/handoffs/COMPLETION-20260817-alex-review-loop-cap.md`（commit `dab4daf1`，AC 24/24）
+- 给 full Alex 的专家审查补了终止条件（`max_review_rounds: 2` + 增量复核 + `p0_resolved_definition`）。
+- ⚠️ **Gate 4 必须回看的一条**：**下一张单的专家审查轮次是否 ≤2。**
+      本单是 prompt 层文本，静态 AC 只证明约束被**写下**了，证明不了它**生效** —— 行为学证据只能在下一张真实 handoff 上取。
+- **新发现（另立单，未做）**：`handoff-creation-protocol.md:522` 的 `<!-- -->` HTML 注释卡在 YAML 序列里，
+      该文件**自 baseline 起就无法被 `yq` 解析**（报错 line 516），两侧镜像相同。
+      长期没人发现是因为 `skill-body-verify.sh` **只做 diff 不做解析**。修它超出本单 4 文件上限。
+
 ### ⭐ 0-NEW. **EPIC-20260816-framework-health-repair** —— 2026-08-16 全仓审计后立项
 
 - **Epic**: `.tad/active/epics/EPIC-20260816-framework-health-repair.md`（Phase 1 = 🔄 Active）
