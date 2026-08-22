@@ -1,3 +1,38 @@
+> # 🔴 第五轮更正（2026-08-17）—— 本图的核心结论曾是循环论证
+>
+> Gate 2 reviewer `09438365` 实测推翻本图的「26 条有承载 / 4 条孤儿」结论。
+>
+> **致命缺陷**：`G1 hook_registration` 被判为「有承载」，依据是
+> `handoff-creation-protocol.md:310` 与 `:445`。而那两行逐字是：
+> ```
+> - "MUST NOT register hooks or modify settings — see constraints.deny (global)"
+> ```
+> **它们本身就是指向本图正要删除的那个块的悬空指针。**
+> 用待删的指针证明「内容有别处承载」= 循环论证。
+>
+> **修正后的判据（本图第 5 条，前四条见 §1）**：
+> > **指向被删块的引用不构成承载。** 判定「有承载」时必须排除任何形如
+> > `see constraints.*` / `inherits_global` / `# See ...（global）` 的转发指针 ——
+> > 它们是**索引**，不是**内容**。
+>
+> **重判结果**：
+> | | 原判 | 重判 |
+> |---|---|---|
+> | 真孤儿 | 4 | **≥5**（新增 G1；G2 仅条件承载） |
+> | 潜在第 6 个 | — | 祖先 skillify 的 `MUST NOT register hooks for skillify enforcement`（`deny_extra` 未编码，也无承载） |
+>
+> **连带失效**：§5.3 关于 `step1c_grounding`/`step1c_lsp` 的 `inherits_global: true`
+> 在 O1/O2 落地后即成立的推论 —— G1/G2 未承载时仍不成立。
+>
+> **其余四条更正**（均经复核）：
+> 1. `skillify.auto_invoke` 引的承载者 `body:1372` 说的是 `*harvest` 不是 skillify
+> 2. 悬空引用在 `SKILL.md:702` 不是 `:703`
+> 3. O4 的「全仓无第二处承载」说过头 —— `hcp:719` 泛化承载了 Terminal 隔离
+> 4. **`*skillify` 命令已不存在**（实测 `grep -c '\*skillify' alex/SKILL.md` = 0）——
+>    O3/O4 管的是一个已退休的命令
+>
+> ⚠️ **本图在修正前不得作为 Phase 1b 的实施依据。**
+
 # 承载者地图：`alex/SKILL.md` frontmatter `constraints:` 块
 
 **日期**: 2026-08-16

@@ -147,16 +147,35 @@ git show "$A:.claude/skills/alex/SKILL.md" | sed -n '4232,4245p'   # skillify（
 ⚠️ **`deny_extra` 是有损索引**：祖先 `gate4_delta` 有 5 条，`deny_extra` 只编码 2 条。
 **规则：祖先原文权威，`deny_extra` 只是查找清单。** 冲突时以祖先为准并在 completion 记录。
 
-### 4.3 半孤儿 `enforcement: prompt-level-only` —— 需人裁定
+### 4.3 半孤儿 `enforcement: prompt-level-only` —— ✅ 人已裁定：方案 B
 
-定义在 `SKILL.md:7`，8 处引用在 references（形如 `enforcement: "prompt-level-only"  # See constraints.enforcement (global)`）。删定义后引用悬空。
+⚠️ **2026-08-17 实测推翻了本单起草时的假设**：
 
-| 方案 | 做法 | 代价 |
+| | 起草时写的 | 实测 |
 |---|---|---|
-| **A** | 在正文写下该声明，8 处引用改指新落点 | 正文 +1 条声明 |
-| **B** | 把 8 处引用改成自足表述（各自写明 prompt-only），不在正文集中声明 | 8 处各自重复一次 |
+| 会悬空的引用数 | 8 处 | **4 处** |
+| 已自足的写法 | 未提及 | **已有 2 处**且工作良好 |
 
-⚠️ **Blake 不得自选。** 出单时此项未决 → 实现前必须由人裁定。
+**四处会悬空的**（形如 `# See constraints.enforcement (global)`）：
+```
+acceptance-protocol.md:360
+cancel-protocol.md:103
+experiment-path-protocol.md:109
+express-path-protocol.md:53
+```
+
+**两处已自足的**（`handoff-creation-protocol.md:271` 与 `:450`）——**直接作为模板**：
+```yaml
+enforcement: "prompt-level-only"  # ⚠️ NOT a hook, NOT in settings.json, NOT a tool block
+```
+
+**✅ 裁定（人，2026-08-17）：方案 B —— 把那 4 处改成与已有 2 处相同的自足写法。**
+
+理由：
+- 正文是**常驻成本**，方案 A 会给每次激活加一条声明
+- 仓内已有 2 处自足写法，选 B 使**全仓 6 处统一**；选 A 反而会造成两种写法共存
+- 自足写法本身信息量更大（明写"不是 hook、不在 settings.json、不阻塞工具"），
+  优于一个需要跳转的 `See constraints.enforcement`
 
 ### 4.4 16 处悬空引用的分布
 
@@ -297,8 +316,72 @@ P='MUST NOT|forbidden|禁止|不得|VIOLATION|never '
 
 **若步骤 1 返回非 0，说明模式太宽，AC-1b 无效，须重设计。**
 
-### 9.3 Expert Review Status
-**待审。**
+### 9.3 Expert Review Status —— 第 1 轮
+
+**Reviewer A（`09438365`，承载者地图准确性）→ `1B MAP FLAWED`**
+**Reviewer B（`34044966`，AC 与风险）→ `1B GATE2 BLOCKED`**
+
+---
+
+#### 🔴 A 的核心发现：地图是循环论证，实际有 **5 个孤儿**不是 4 个
+
+**G1 `hook_registration` 被我判为「有承载」，依据是 `handoff-creation-protocol.md:310` 与 `:445`。**
+实测那两行逐字是：
+```
+- "MUST NOT register hooks or modify settings — see constraints.deny (global)"
+```
+**它们本身就是指向被删块的悬空指针** —— 而同一张单的 FR-3 把它们算作待改的 16 处之一。
+**用一个待删的指针去证明"内容有别处承载"，是循环论证。**
+
+真正的候选全部**带范围限定**（实测）：
+- `SKILL.md:750-751` —— `for friction enforcement in Phase 1`
+- `handoff-creation-protocol.md:523` —— 只针对 `verify-ac-commands.sh` 一个脚本
+
+→ **无条件的全局禁令没有承载者。G1 是第 5 个孤儿；G2 `settings_modification` 同病，仅条件承载。**
+→ 连带 §5.3 的 `inherits_global` 恢复推论也不成立。
+
+#### A 的其余四条（全部经我复核属实）
+
+| # | 发现 | 复核 |
+|---|---|---|
+| 1 | `skillify.auto_invoke` 引的承载者 `body:1372` 说的是 **`*harvest`** 不是 skillify | ✅ 属实 |
+| 2 | 悬空引用在 **`:702`** 不是 `:703`（我在四处引用了错误行号） | ✅ 属实 |
+| 3 | 祖先 skillify 有 **5** 条 `MUST NOT`，`deny_extra` 只编码 4 —— **缺的那条本身也无承载**，是第 6 个潜在孤儿 | ✅ 实测 5 条 |
+| 4 | O4 的「全仓无第二处承载」**说过头了** —— `hcp:719` 有 `在同一个 terminal 调用 /blake = VIOLATION` 泛化承载 Terminal 隔离 | ✅ 属实 |
+
+**另有一条 A 主动提出、我未曾注意的**：`*skillify` 命令**在 `alex/SKILL.md` 中已不存在**
+（实测 `grep -c '\*skillify'` = **0**，只剩 `*harvest`）。
+→ **O3/O4 管的是一个已经退休的命令。** 这不使写入它们变得错误，但我在 §1.3 称其为
+「框架核心不变式，需常驻重述」的论证**建立在一个已退休的命令上**。
+
+---
+
+#### 🔴 B 的三个 P0（全部经我复核属实）
+
+| # | P0 | 实测 |
+|---|---|---|
+| **a** | **AC-N6 的占位符导致假 PASS** —— 命令写 `git diff --name-only <1a提交SHA>..HEAD`，SHA 全单未定义。**未填时 git 求值 `..HEAD` 返回 0，正好等于期望值** | ✅ **实测**：空占位符 → **0**（假 PASS）；真实区间 `01c4bf22..HEAD` → **262**。这是 NFR3 唯一的守卫，且是安全相关的负控 |
+| **b** | **无 AC 证明 frontmatter 块真的没了**，只证明几个子 key 不见了。部分删除（留下 `constraints:` 裸键带小 body）可通过 AC-4a/b/c/d | ✅ **实测**：裸键检查当前返回 **2**，而现有 AC 查不到这一层 |
+| **c** | **AC-N5 不可执行** —— 「抽查 5 条已承载规则」无规则名、无模式、无方言，改前值 `0` **不可复现**。而 NFR2 与硬禁止 #1 全靠它 | ✅ 属实。且抽 5/26 本身就留下 21 条无守卫 |
+
+**B 另指出**：§9.1 未随 §4.3 的方案 B 裁定更新 —— AC-2 仍写「A 或 B / 未裁定 🔴」，
+§10.1 #4 仍禁止选择，且**无 AC 验证方案 B 要达成的「全仓 6 处统一」**
+（实测自足写法当前 **2** 处，改后须为 **6**）。
+
+---
+
+### 9.4 Gate 2 判定：**FAIL**（2026-08-17，第 1 轮）
+
+⚠️ **这次 FAIL 与本 Epic 以往的不同**：以往是 AC 判据有缺陷，**这次是前置产物本身错了**。
+
+`CARRIER-MAP-alex-constraints.md` 的「26 条有承载 / 4 条孤儿」结论**不成立** ——
+至少 5 个孤儿，可能 6 个；且其中一条的「有承载」判定是**循环论证**。
+
+**照本单原样实施，会静默删除 G1/G2 两条无条件的全局禁令**（不得注册 hook、不得改 settings.json），
+只留下两条带范围限定的替代品。**这正是本单存在的理由所要防止的事。**
+
+**→ 必须先重做承载者地图（用不把悬空指针算作承载的判据），再重出本单。**
+按 `max_review_rounds: 2`，本单**不进入第 2 轮** —— 因为要改的不是 AC，是前置输入。
 
 ---
 
