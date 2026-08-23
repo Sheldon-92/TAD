@@ -12,6 +12,17 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
+### ⏳ 0-WAIT. **retire-sync-decouple-projects** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
+
+- **Completion**: `.tad/active/handoffs/COMPLETION-20260817-retire-sync-decouple-projects.md`（commit `65380b7c`，AC 15/15）
+- 退休 `*sync` / `*sync-add` / `*sync-list` + 删注册表 + 三协议文件 + harvest(方案A) + sync-ops(退休桩)。
+- ⚠️ **Gate 4 要看的**：
+  1. **AC-7 排除正则待 addendum 补**（历史 3 处保留：config.yaml v2.4.0 日志 / migrations 记录 / ac-verification 教训）。
+  2. **跨文件残留另立单**（优先）：`tad-help/SKILL.md:70-72`、`publish-protocol.md:205` 仍广告已退休命令。
+     `research-notebook/SKILL.md:1153` 是**假阳性**（NotebookLM 自己的 *sync，勿动）。
+  3. **FR-1 不可从 git 验证**（注册表 untracked）——以 AC-1 `ls` 为唯一证据。
+- **行为学验证**：下一张单不再出现 *sync 出单/执行，即证明退休生效。
+
 ### ⏳ 0-WAIT. **alex-review-loop-cap** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
 
 - **Completion**: `.tad/active/handoffs/COMPLETION-20260817-alex-review-loop-cap.md`（commit `dab4daf1`，AC 24/24）
@@ -26,9 +37,10 @@
 
 - **Epic**: `.tad/active/epics/EPIC-20260816-framework-health-repair.md`（Phase 1 = 🔄 Active）
 - **审计报告**: `.tad/active/designs/AUDIT-20260816-framework-health.md`（36 条发现 F-01~F-34 + S-01~S-04）
-- **🔴 Epic 级硬约束**：**Phase 2 过 Gate 4 之前，禁止 `*sync` / 禁止发布 / 禁止建议任何人跑安装命令。**
+- **🔴 Epic 级硬约束**：**Phase 2 过 Gate 4 之前，禁止发布 / 禁止建议任何人跑安装命令。**
+      （`*sync` 已于 2026-08-17 退休——本行原「禁止 *sync」约束随之失效，仅剩发布禁令。
       安装器有三个会不可逆删除用户数据的 P0（`.codex/`、`.gemini/`、`AGENTS.md`、`GEMINI.md` 每次运行必删；
-      首装覆盖用户 `CLAUDE.md`），现在同步等于把缺陷推给 13 个存活的下游项目。
+      首装覆盖用户 `CLAUDE.md`），现在发布等于把缺陷推给下游安装者。）
 - **最尖锐的一条**：`upgrade-acceptance.sh` Check 3 把上述删除**断言为期望结果**（用户 `.codex/` 幸存 → 判 `stale dir` → FAIL）。
       **修 F-01 必须同批修 F-34**，否则修好的正确行为会被自己的测试判失败。
 - **待人裁定（Phase 1 handoff 前）**：F-15 方向（补 SKILL 的 `config-cognitive` vs 删 `config.yaml` 绑定）；playground 退役的下游依赖确认。
