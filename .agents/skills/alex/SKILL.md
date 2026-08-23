@@ -1,6 +1,6 @@
 ---
 name: alex
-description: "TAD Solution Lead (Agent A). Use for new features (>3 files), architecture changes, complex multi-step requirements, multi-module refactoring. Supports modes: *bug, *discuss, *idea, *learn, *publish, *sync."
+description: "TAD Solution Lead (Agent A). Use for new features (>3 files), architecture changes, complex multi-step requirements, multi-module refactoring. Supports modes: *bug, *discuss, *idea, *learn, *publish."
 constraints_schema: "v0.2"
 
 constraints:
@@ -1362,7 +1362,7 @@ harvest_protocol:
   description: "Master-side review of skillify candidates across ALL projects (registry + this repo)"
   trigger: "*harvest (explicit command ONLY — no startup auto-scan)"
   steps:
-    1_scan: "bash .tad/hooks/lib/harvest-scan.sh → display table + COLLISIONS section. ALSO list this repo's own .tad/active/skillify-candidates/ (scanner covers registry projects only)."
+    1_scan: "bash .tad/hooks/lib/harvest-scan.sh → 打印退休说明（跨项目扫描已随 *sync 于 2026-08-17 退休）。随后列出本仓库自己的 .tad/active/skillify-candidates/（不再有注册项目可扫）。"
     2_route_per_candidate (AskUserQuestion each, human decides):
       - "T2 → copy pattern summary to .tad/skill-library/{project}--{slug}.md + _index entry. MASTER-SIDE FILES ONLY — the source project's SCAND frontmatter (tier: T2, reference_at — Phase 2 FR4b fields) is updated by THAT project's next session; *harvest output includes a per-project 'pending frontmatter updates' note"
       - "T1-remote → note: materialization happens in THAT project's next Blake session via the T1 ceremony — Alex does NOT write into downstream projects from here"
@@ -1534,18 +1534,10 @@ mandatory_review:
 publish_protocol:
   reference: "references/publish-protocol.md"
   load_when: "When *publish is invoked, Read the reference and follow it verbatim."
-# *sync protocol (Cross-Project Sync)
-sync_protocol:
-  reference: "references/sync-protocol.md"
-  load_when: "When *sync is invoked, Read the reference and follow it verbatim."
-# *sync-add protocol (Register Project)
-sync_add_protocol:
-  reference: "references/sync-add-protocol.md"
-  load_when: "When *sync-add is invoked, Read the reference and follow it verbatim."
-# *sync-list protocol (List Registered Projects)
-sync_list_protocol:
-  reference: "references/sync-list-protocol.md"
-  load_when: "When *sync-list is invoked, Read the reference and follow it verbatim."
+# *sync / *sync-add / *sync-list 已于 2026-08-17 退休（人裁定）。
+#   理由：TAD 不再持有下游项目清单——是否升级由各项目自行决定。
+#   安装/升级请在目标项目内直接运行 tad.sh。
+#   历史协议见 git history: git show 0566ee4d:.claude/skills/alex/references/sync-protocol.md
 # TAD Brain Protocol (knowledge search via Agent tool)
 tad_brain_protocol:
   description: "Semantic search over TAD's knowledge base using Claude as the search engine"
@@ -1638,7 +1630,6 @@ on_start: |
   - *learn — Understand a technical concept (Socratic teaching)
   - *harvest — Review skillify candidates across projects (T1/T2/T3 routing)
   - *publish — Push TAD updates to GitHub (version check + push + tag)
-  - *sync — Sync TAD to your other projects
   - *surplus --plan — Find + rank highest value-density backlog work (read-only)
 
   Just describe what you need, and I'll figure out the right mode.
@@ -1678,9 +1669,6 @@ on_start: |
 - `*gate 4` - Run Gate 4 v2 (business acceptance)
 - `*accept` - Archive handoff after acceptance
 - `*publish` - GitHub publish (version consistency check → push → tag)
-- `*sync` - Sync TAD framework to registered projects
-- `*sync-add` - Register a new project for sync
-- `*sync-list` - List registered sync projects
 - `*harvest` - Review skillify candidates across projects (T1/T2/T3 routing)
 
 ### Gate Ownership (since v2.0)

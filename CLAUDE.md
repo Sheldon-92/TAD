@@ -14,11 +14,11 @@
 ## 2. 使用场景（默认路径）
 
 ⚠️ **下表即默认路径。** lite 已冻结（§2.5），不再作为新工作的入口。
-2026-08-06 实测：`*publish` / `*sync` / `*research` 的操作知识 lite 已可按需读取
+2026-08-06 实测：`*publish` / `*research` 的操作知识 lite 已可按需读取
 （`release-runbook` skill、`.tad/guides/tool-quick-reference-alex.md`），用普通 LITE 单即可完成
-——`*publish` / `*sync` 的高后果范围须写入并随 L3 一次接受的 Execution Mandate；
+——`*publish` 的高后果范围须写入并随 L3 一次接受的 Execution Mandate；
 运行时技术步骤不再逐项请示。release 渐进加载仅允许 entry + 一个已选 named reference；
-publish+sync 组合 transaction 可依次加载 entry、`publish-ops.md`、`sync-ops.md`，硬上限 3 个
+publish transaction 可依次加载 entry、`publish-ops.md`，硬上限 2 个
 release 文档且不得加载无关 reference。工具编排文档仍单次 ≤2 个，不能一张单同时吃
 publish + research 两套知识。
 lite **已知**无等价物：`*tournament`（竞赛式设计）、`*deps` 系列（操作协议在 full
@@ -34,7 +34,6 @@ lite **已知**无等价物：`*tournament`（竞赛式设计）、`*deps` 系�
 | `/alex` + `*idea` | 捕获想法 |
 | `/alex` + `*learn` | 苏格拉底式学习 |
 | `/alex` + `*publish` | GitHub 发布 |
-| `/alex` + `*sync` | 同步到注册项目 |
 | `/blake` | 有 handoff → 实现；常规发布 |
 | `/gate` | Gate 1-4 |
 | 深度研究 | 需要持久积累的研究任务 → `*research`（Alex 自动判断 Quick/Standard/Deep 级别） |

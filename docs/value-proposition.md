@@ -35,10 +35,12 @@ knowledge, packs, and research notebooks persist.
 Each entry follows the shape: domain — one-line outcome — on-disk path. Every path
 below was verified with `test -e` at the repository root on 2026-07-05.
 
-1. **Cross-domain adoption (breadth)** — 14 downstream projects are registered
-   consumers of TAD, spanning food apps, agent labs, fitness tracking, voice
-   production, and more. The registry is the live sync target list, not a
-   marketing count: `.tad/sync-registry.yaml` (14 registered project entries).
+1. **Cross-domain adoption (breadth)** — TAD has been used to build across
+   food apps, agent labs, fitness tracking, voice production, and more. Since
+   2026-08-17 TAD no longer holds a downstream project list — each project
+   decides on its own when to install/upgrade by running `tad.sh` directly
+   (see `.tad/decisions/DR-20260601-self-deriving-release-sync.md` for the
+   decision trail). The distributable surface is the framework repo itself.
 
 2. **AI voice production (non-code domain)** — a full judgment pack for TTS tool
    selection, voice cloning, audiobook/podcast/dubbing pipelines, distilled from
