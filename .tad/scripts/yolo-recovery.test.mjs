@@ -22,7 +22,9 @@ import crypto from 'node:crypto';
 import { spawnSync, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { writeAtomic, REQUIRED_LABELS, CAPSULE_TOKEN_BUDGET } from './yolo-recovery.mjs';
+import {
+  writeAtomic, REQUIRED_LABELS, CAPSULE_TOKEN_BUDGET, reduceRun, renderRecovery,
+} from './yolo-recovery.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '..', '..');
@@ -232,7 +234,7 @@ function caseLifecycleE2e() {
   expectRed(stopped, 1, 'stopped', 'stop must yield a recoverable honest_partial');
   expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'stopped', 'status after stop stays honest_partial');
   expectRed(cli(['checkpoint', '--run', RUN_REL, '--slice', 'S2', '--reason', 'candidate', '--next', 'x'], repo.dir),
-    1, 'run_in_honest_partial', 'no work may continue after stop');
+    1, 'stopped', 'no work may continue after stop');
 }
 
 // ═════════════════════════ CASE: verified-authority ═════════════════════════
@@ -269,7 +271,7 @@ function caseVerifiedAuthority() {
     ['-slice', { slice: 'S9' }, 'receipt_slice_mismatch'],
     ['-rev', { handoff_revision: 'f'.repeat(64) }, 'receipt_handoff_revision_mismatch'],
     ['-wt', { worktree_realpath: '/tmp/not-this-worktree' }, 'receipt_worktree_mismatch'],
-    ['-head', { verified_head: '0'.repeat(40) }, 'receipt_head_mismatch'],
+    ['-head', { verified_head: '0'.repeat(40) }, 'receipt_head_not_ancestor'],
     ['-verdict', { verdict: 'FAIL' }, 'receipt_verdict_not_pass'],
   ];
   for (const [tag, over, reason] of mismatches) {
@@ -391,16 +393,22 @@ function caseAuthorityConflicts() {
     fs.unlinkSync(path.join(repo.dir, 'docs/handoff.md'));
     expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'handoff_missing', 'a missing handoff must fail closed');
   }
-  // (h) worktree identity mismatch
+  // (h) worktree identity mismatch — provoked by RELOCATING the worktree, which
+  // is the real-world trigger (restore from backup, different mount, migration).
   {
     const repo = makeRepo();
     initRun(repo);
-    const goalPath = path.join(repo.dir, RUN_REL, 'goal.json');
-    const goal = JSON.parse(fs.readFileSync(goalPath, 'utf8'));
-    goal.worktree_realpath = '/tmp/some-other-worktree';
-    fs.writeFileSync(goalPath, JSON.stringify(goal, null, 2) + '\n');
-    expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'worktree_identity_mismatch',
-      'a run must refuse to operate outside its frozen worktree');
+    const moved = path.join(tmpDir('yolo-rec-moved-'), 'relocated');
+    fs.cpSync(repo.dir, moved, { recursive: true });
+    const res = cli(['status', '--run', RUN_REL], moved);
+    expectRed(res, 1, 'worktree_identity_mismatch',
+      'a relocated worktree must be reported');
+    expect(res.out.includes('GOAL:'),
+      'status must still RENDER under a binding failure — a lockout leaves no way to close the run');
+    const stopped = cli(['stop', '--run', RUN_REL, '--reason', 'worktree was relocated'], moved);
+    expectExit(stopped, 1, 'stop must remain available under a binding failure');
+    expect(readJournalEvents({ dir: moved }).some((e) => e.type === 'stopped'),
+      'stop must actually record the truth even when the binding is broken');
   }
   // (i) verified evidence deleted after the fact
   {
@@ -498,7 +506,12 @@ function caseSideEffectReconcile() {
 
   const start = ['action-start', '--run', RUN_REL, '--action', 'A1', '--description', 'patch frozen paragraph',
     '--target', 'work/guide.md', '--pre-sha256', preSha, '--intended-post-sha256', postSha];
-  expectExit(cli(start, repo.dir), 0, 'action-start must pass');
+  // FR5: an UNRESOLVED side effect is honest_partial and must not exit 0, or a
+  // script marches straight past a real-world change nobody has reconciled.
+  expectRed(cli(start, repo.dir), 1, 'unreconciled_side_effect',
+    'a started-but-unreconciled side effect must not report success');
+  expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'unreconciled_side_effect',
+    'status must keep reporting the unreconciled side effect');
 
   expectRed(cli(['action-start', '--run', RUN_REL, '--action', 'A2', '--description', 'other',
     '--target', 'work/guide.md', '--pre-sha256', preSha, '--intended-post-sha256', postSha], repo.dir),
@@ -518,9 +531,9 @@ function caseSideEffectReconcile() {
   // Second action lands in a third state -> outcome_unknown.
   const pre2 = sha256(targetAbs);
   const intended2 = crypto.createHash('sha256').update('PARAGRAPH ONE (patched twice)\n').digest('hex');
-  expectExit(cli(['action-start', '--run', RUN_REL, '--action', 'A2', '--description', 'second patch',
+  expectRed(cli(['action-start', '--run', RUN_REL, '--action', 'A2', '--description', 'second patch',
     '--target', 'work/guide.md', '--pre-sha256', pre2, '--intended-post-sha256', intended2], repo.dir),
-    0, 'second action-start must pass');
+    1, 'unreconciled_side_effect', 'second action-start opens another unreconciled side effect');
   fs.writeFileSync(targetAbs, 'PARAGRAPH ONE (something else entirely)\n');
   const unknown = cli(['reconcile', '--run', RUN_REL, '--action', 'A2', '--outcome', 'outcome_unknown'], repo.dir);
   expectRed(unknown, 1, 'outcome_unknown', 'an unknown outcome must yield honest_partial');
@@ -530,9 +543,9 @@ function caseSideEffectReconcile() {
     '--target', 'work/guide.md', '--pre-sha256', sha256(targetAbs), '--intended-post-sha256', intended2], repo.dir),
     1, 'blind_retry_forbidden', 'retrying an unknown-outcome action id must be forbidden');
   expectRed(cli(['checkpoint', '--run', RUN_REL, '--slice', 'S1', '--reason', 'candidate', '--next', 'x'], repo.dir),
-    1, 'run_in_honest_partial', 'no progress may be recorded while an outcome is unknown');
+    1, 'outcome_unknown', 'no progress may be recorded while an outcome is unknown');
   expectRed(cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', makeReceipt(repo, { slice: 'S1' })], repo.dir),
-    1, 'run_in_honest_partial', 'verify must be blocked while an outcome is unknown');
+    1, 'outcome_unknown', 'verify must be blocked while an outcome is unknown');
 
   // Resolution requires explicit evidence and the real observed hash.
   const ev = makeEvidenceFile(repo, 'reconcile-A2', 'Human inspected the file and the downstream system.\n');
@@ -578,11 +591,32 @@ function caseStatusCapsule() {
   const spec2 = writeGoalSpec(repo2, { success: fat });
   const over = initRun(repo2, spec2);
   expectRed(over, 1, 'capsule_over_budget', 'an oversized capsule must stop instead of silently shipping');
-  const packet2 = fs.readFileSync(path.join(repo2.dir, RUN_REL, 'recovery.md'), 'utf8');
-  for (const label of REQUIRED_LABELS) {
-    expect(packet2.includes(label), `over-budget packet must still carry the hard anchor ${label}`);
-  }
   expect(over.out.includes('composition'), 'over-budget failure must report the capsule composition');
+  // Transactional: the budget is checked BEFORE the first write, so a rejected
+  // init leaves nothing behind and the run-dir name stays usable.
+  expect(!fs.existsSync(path.join(repo2.dir, RUN_REL, 'goal.json')),
+    'a rejected init must leave no half-written run behind');
+  expectExit(initRun(repo2, writeGoalSpec(repo2)), 0,
+    'the run dir name must still be usable after a rolled-back init');
+
+  // The anchors-never-trimmed property, asserted directly on the renderer.
+  const fatGoal = {
+    format: 'yolo-recovery-phase1-v1', run_id: 'r', goal_id: 'g', handoff_path: 'h.md',
+    handoff_revision: 'a'.repeat(64), base_commit: 'b'.repeat(40), worktree_realpath: '/w',
+    goal: 'a goal', success: fat, non_goals: ['do not touch prod'],
+    forbidden_scope: ['.claude/'], oracle_path: 'o.md', created_at: 'now',
+  };
+  const fatState = reduceRun(fatGoal, [{
+    seq: 1, type: 'initialized', at: 'now', observed_head: 'b'.repeat(40),
+    payload: { goal_sha256: '0'.repeat(64) },
+  }]);
+  const fatPacket = renderRecovery(fatGoal, fatState,
+    { runDir: '/w/run', dirty_count: 0, resumeCommand: 'x' });
+  expect(fatPacket.tokens > CAPSULE_TOKEN_BUDGET, 'the over-budget fixture must really exceed the budget');
+  for (const label of REQUIRED_LABELS) {
+    expect(fatPacket.text.includes(label),
+      `an over-budget packet must still carry the hard anchor ${label} — never trim anchors to fit`);
+  }
 }
 
 // ═════════════════════════ CASE: atomic-write ═════════════════════════
@@ -605,6 +639,135 @@ function caseAtomicWrite() {
   expect(threw.reason === 'atomic_write_failed', `expected atomic_write_failed, got ${threw && threw.reason}`);
   expect(sha256(target) === before, 'a failed atomic write must leave the previous authority state intact');
   expect(fs.readdirSync(dir).length === 1, 'a failed atomic write must not leave a half-written temp file');
+}
+
+
+// ═════════════════════════ CASE: binding-and-closure ═════════════════════════
+// Regression cases for the Layer 2 findings: every one of these was a state the
+// tool could reach with NO legal next action at all.
+
+function caseBindingAndClosure() {
+  // 1. No command may append an event the reducer would reject (arch/code P0-1).
+  //    Previously: reconcile after stop WROTE the event, then every command —
+  //    status, stop, resume — died on event_after_stop forever.
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    const targetAbs = path.join(repo.dir, 'work/guide.md');
+    const pre = sha256(targetAbs);
+    const post = crypto.createHash('sha256').update('changed\n').digest('hex');
+    cli(['action-start', '--run', RUN_REL, '--action', 'A1', '--description', 'p',
+      '--target', 'work/guide.md', '--pre-sha256', pre, '--intended-post-sha256', post], repo.dir);
+    fs.writeFileSync(targetAbs, 'something else\n');
+    cli(['reconcile', '--run', RUN_REL, '--action', 'A1', '--outcome', 'outcome_unknown'], repo.dir);
+    const before = readJournalEvents(repo).length;
+    cli(['stop', '--run', RUN_REL, '--reason', 'giving up'], repo.dir);
+    const afterStop = readJournalEvents(repo).length;
+    expect(afterStop === before + 1, 'stop must record exactly one event');
+
+    const ev = makeEvidenceFile(repo, 'late', 'inspected afterwards\n');
+    const res = cli(['reconcile', '--run', RUN_REL, '--action', 'A1', '--outcome', 'reconciled',
+      '--evidence', ev.path, '--observed-sha256', sha256(targetAbs)], repo.dir);
+    expectRed(res, 1, 'run_stopped', 'reconcile after stop must be refused');
+    expect(readJournalEvents(repo).length === afterStop,
+      'a refused command must not have written anything to the journal');
+    expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'stopped',
+      'the ledger must still be readable after a refused reconcile');
+  }
+
+  // 2. A handoff amendment must not lock the operator out (arch P0-2).
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    fs.appendFileSync(path.join(repo.dir, 'docs/handoff.md'), '\n## 9.2 Expert Review Status: added during the work\n');
+    const st = cli(['status', '--run', RUN_REL], repo.dir);
+    expectRed(st, 1, 'handoff_revision_drift', 'drift must be reported');
+    expect(st.out.includes('GOAL:') && st.out.includes('LEGAL NEXT ACTION'),
+      'status must still render the run under drift');
+    expectRed(cli(['checkpoint', '--run', RUN_REL, '--slice', 'S1', '--reason', 'candidate', '--next', 'x'], repo.dir),
+      1, 'handoff_revision_drift', 'no progress may be recorded under drift');
+    const stopped = cli(['stop', '--run', RUN_REL, '--reason', 'handoff was amended mid-run'], repo.dir);
+    expectExit(stopped, 1, 'stop must remain possible under drift');
+    expect(readJournalEvents(repo).some((e) => e.type === 'stopped'),
+      'the run must be closable honestly even when the handoff drifted');
+  }
+
+  // 3. The run owns its authority: init freezes a copy of the approved handoff.
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    const frozen = path.join(repo.dir, RUN_REL, 'handoff-frozen.md');
+    expect(fs.existsSync(frozen), 'init must freeze a copy of the approved handoff into the run');
+    expect(sha256(frozen) === sha256(path.join(repo.dir, 'docs/handoff.md')),
+      'the frozen copy must be byte-identical to the approved handoff');
+    fs.appendFileSync(frozen, 'tampered\n');
+    expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'handoff_frozen_tampered',
+      "tampering with the run's own frozen authority must be fatal, not a blocker");
+  }
+
+  // 4. Verify accepts the gated commit or any ancestor of HEAD (arch P1-3).
+  //    Committing the Gate and reviewer reports before verifying is the natural
+  //    TAD order; exact-HEAD equality made it fail.
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    const receipt = makeReceipt(repo, { slice: 'S1' });
+    fs.writeFileSync(path.join(repo.dir, 'work/extra.md'), 'gate report committed after the receipt\n');
+    git(['add', '-A'], repo.dir);
+    git(['commit', '-q', '-m', 'commit the gate evidence'], repo.dir);
+    const res = cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', receipt], repo.dir);
+    expectExit(res, 0, 'a receipt gated at an ancestor commit must still verify');
+    const verified = readJournalEvents(repo).find((e) => e.type === 'verified');
+    expect(verified.payload.observed_head_at_verify === git(['rev-parse', 'HEAD'], repo.dir),
+      'the verified event must record the head actually observed at verify time');
+    expect(Array.isArray(verified.payload.dirty_paths_at_verify),
+      'the verified event must record whether the tree was dirty, not imply it was clean');
+  }
+
+  // 5. Repo-relative paths must anchor at the REPO ROOT, not at cwd (security HIGH-2).
+  {
+    const repo = makeRepo();
+    fs.mkdirSync(path.join(repo.dir, 'sub/docs'), { recursive: true });
+    fs.writeFileSync(path.join(repo.dir, 'sub/docs/handoff.md'), '# DECOY handoff nobody approved\n');
+    const spec = writeGoalSpec(repo);
+    const res = cli(['init', '--run', path.join(repo.dir, RUN_REL), '--handoff', 'docs/handoff.md',
+      '--goal-file', spec], path.join(repo.dir, 'sub'));
+    expectExit(res, 0, 'init from a subdirectory must work');
+    const goal = JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'goal.json'), 'utf8'));
+    expect(goal.handoff_path === 'docs/handoff.md',
+      `a documented relative path must bind to the APPROVED handoff, got ${goal.handoff_path}`);
+    expect(goal.handoff_revision === sha256(path.join(repo.dir, 'docs/handoff.md')),
+      'the frozen revision must be the approved handoff, not a same-named decoy under cwd');
+  }
+
+  // 6. An exclusive lock prevents the duplicate-seq race that permanently
+  //    destroys a ledger (arch P2-2).
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    fs.writeFileSync(path.join(repo.dir, RUN_REL, '.run.lock'), '99999');
+    expectRed(cli(['checkpoint', '--run', RUN_REL, '--slice', 'S1', '--reason', 'candidate', '--next', 'x'], repo.dir),
+      1, 'run_locked', 'a held lock must block a second writer');
+    fs.unlinkSync(path.join(repo.dir, RUN_REL, '.run.lock'));
+    expectExit(cli(['checkpoint', '--run', RUN_REL, '--slice', 'S1', '--reason', 'candidate', '--next', 'x'], repo.dir),
+      0, 'releasing the lock must restore normal operation');
+    expect(!fs.existsSync(path.join(repo.dir, RUN_REL, '.run.lock')),
+      'the lock must be released after a successful command');
+  }
+
+  // 7. A derived-file edit is reported by EVERY command, not only resume (P2-1).
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    const cpPath = path.join(repo.dir, RUN_REL, 'checkpoint.json');
+    const cp = JSON.parse(fs.readFileSync(cpPath, 'utf8'));
+    cp.verified = [{ slice: 'S1', seq: 99, at: 'forged', receipt_path: 'x', receipt_sha256: 'x', verified_head: 'x' }];
+    fs.writeFileSync(cpPath, JSON.stringify(cp, null, 2));
+    const res = cli(['checkpoint', '--run', RUN_REL, '--slice', 'S1', '--reason', 'candidate', '--next', 'x'], repo.dir);
+    expectExit(res, 0, 'the journal remains authority, so the command still succeeds');
+    expect(/WARNING/.test(res.out) && /checkpoint\.json/.test(res.out),
+      'a silently-repaired derived file must still be reported, not erased');
+  }
 }
 
 // ═════════════════════════ dogfood evidence checker ═════════════════════════
@@ -1060,6 +1223,7 @@ const CASES = {
   'side-effect-reconcile': caseSideEffectReconcile,
   'status-capsule': caseStatusCapsule,
   'atomic-write': caseAtomicWrite,
+  'binding-and-closure': caseBindingAndClosure,
   'dogfood-evidence': caseDogfoodEvidence,
   'required-evidence': caseRequiredEvidence,
 };

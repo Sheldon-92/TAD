@@ -161,27 +161,57 @@ function git(args, cwd) {
 export function readGitIdentity(cwd) {
   const root = git(['rev-parse', '--show-toplevel'], cwd);
   const head = git(['rev-parse', 'HEAD'], cwd);
-  const porcelain = git(['status', '--porcelain'], cwd);
+  // Observation only — must never be able to fail a command (security MEDIUM-5).
+  let dirtyPaths = [];
+  try {
+    const porcelain = git(['status', '--porcelain'], cwd);
+    dirtyPaths = porcelain ? porcelain.split('\n').filter(Boolean).map((l) => l.slice(3)) : [];
+  } catch {
+    dirtyPaths = null;
+  }
   return {
     worktree_realpath: fs.realpathSync(root),
     head,
-    dirty_count: porcelain ? porcelain.split('\n').filter(Boolean).length : 0,
+    dirty_paths: dirtyPaths,
+    dirty_count: dirtyPaths === null ? null : dirtyPaths.length,
   };
 }
 
 // ─────────────────────────── path scope ───────────────────────────
 
+/**
+ * Anchor a relative path at the REPO ROOT, not at process.cwd().
+ * Security review HIGH-2: every documented path (the guide's commands, the goal
+ * spec's `oracle_path`, a receipt's `gate_evidence[].path`) is repo-relative,
+ * but `path.resolve` anchors at cwd. Agent harnesses change cwd freely, so a
+ * subdirectory cwd silently bound a run to a DIFFERENT handoff file that the
+ * human never approved — with exit 0 and no warning.
+ */
+function anchorAtRepo(input, repoRoot) {
+  return path.isAbsolute(input) ? input : path.join(repoRoot, input);
+}
+
+/** Anchor-and-resolve that returns null instead of throwing on an escape. */
+function anchorAtRepoSafe(input, repoRoot) {
+  try {
+    const target = realpathDeepest(anchorAtRepo(input, repoRoot));
+    return assertInside(repoRoot, target, 'recorded_path');
+  } catch {
+    return null;
+  }
+}
+
 export function resolveRunDir(input, repoRoot) {
   if (!input) throw new UsageError('missing_flag', { flag: '--run' });
   const base = realpathDeepest(path.join(repoRoot, RUN_ROOT_REL));
-  const target = realpathDeepest(input);
+  const target = realpathDeepest(anchorAtRepo(input, repoRoot));
   return assertInside(base, target, 'run_dir');
 }
 
 /** Resolve any referenced path and require it inside the repo worktree. */
 export function resolveInRepo(input, repoRoot, label) {
   if (!input) throw new UsageError('missing_flag', { flag: label });
-  const target = realpathDeepest(input);
+  const target = realpathDeepest(anchorAtRepo(input, repoRoot));
   return assertInside(repoRoot, target, label);
 }
 
@@ -296,6 +326,10 @@ export function reduceRun(goal, events) {
         if (!CHECKPOINT_REASONS.includes(p.reason)) {
           throw new ContractError('checkpoint_reason_invalid', { seq: ev.seq, reason: p.reason });
         }
+        if (verifiedIds.has(p.slice)) {
+          // Otherwise the packet advises repeating work that is already verified.
+          throw new ContractError('checkpoint_after_verified', { seq: ev.seq, slice: p.slice });
+        }
         checkpoints.set(p.slice, { slice: p.slice, reason: p.reason, next: p.next || '', seq: ev.seq, at: ev.at });
         break;
       }
@@ -408,7 +442,7 @@ export function reduceRun(goal, events) {
 function deriveLegalNextAction({ goal, stopped, unknownActions, pendingAction, candidates, verifiedIds }) {
   if (stopped) {
     return {
-      action: 'Do NOT continue. Resolve the recorded stop reason with the human, then open a NEW run or explicitly reconcile this one.',
+      action: 'Do NOT continue. This run is closed. Resolve the recorded stop reason with the human and open a NEW run from a known commit. No further event may be recorded here.',
       why: `run was explicitly stopped: ${stopped.reason}`,
       owner: 'conductor+human',
     };
@@ -596,6 +630,62 @@ or a compact summary as progress truth.
 
 // ─────────────────────────── journal append ───────────────────────────
 
+/**
+ * Structural guarantee (arch review P0-1): NO command may append an event that
+ * `reduceRun` would later reject. The candidate is reduced in memory first; if
+ * that throws, nothing is written. Without this, a single mis-ordered command
+ * makes the journal — the level-2 authority, which the guide forbids hand-
+ * repairing — permanently unreducible, leaving no legal next action at all.
+ */
+function appendEventGuarded(runDir, goal, events, type, payload, observedHead) {
+  const candidate = {
+    seq: events.length + 1,
+    type,
+    at: nowIso(),
+    observed_head: observedHead,
+    payload,
+  };
+  try {
+    reduceRun(goal, events.concat([candidate]));
+  } catch (err) {
+    throw new ContractError('event_would_corrupt_journal', {
+      type,
+      would_fail_with: err.reason || String(err.message).slice(0, 120),
+      detail: err.details || {},
+      note: 'refused before writing; the journal is unchanged',
+    });
+  }
+  return appendEvent(runDir, candidate.seq, type, payload, observedHead);
+}
+
+/**
+ * Exclusive run lock (arch review P2-2). The line-count check below fails closed
+ * only when it fires; two writers can both pass it and produce a duplicate seq,
+ * which is an unrepairable ledger. An O_EXCL lockfile is the cheaper guarantee.
+ */
+function withRunLock(runDir, fn) {
+  const lock = path.join(runDir, '.run.lock');
+  let fd;
+  try {
+    fd = fs.openSync(lock, 'wx');
+  } catch (err) {
+    if (err && err.code === 'EEXIST') {
+      throw new ContractError('run_locked', {
+        lock,
+        note: 'another writer holds this run, or a previous command died. If you are certain no other process is running, delete the lock file and retry.',
+      });
+    }
+    throw err;
+  }
+  try {
+    fs.writeSync(fd, String(process.pid));
+    return fn();
+  } finally {
+    try { fs.closeSync(fd); } catch { /* ignore */ }
+    try { fs.unlinkSync(lock); } catch { /* ignore */ }
+  }
+}
+
 function appendEvent(runDir, expectedSeq, type, payload, observedHead) {
   const file = path.join(runDir, 'journal.jsonl');
   // Single-writer contract: re-read and fail closed if someone else advanced it.
@@ -619,21 +709,6 @@ function loadRun(runDir, repoRoot, cwd) {
   const identity = readGitIdentity(cwd);
   const { goal, sha256: goalSha } = readGoal(runDir);
 
-  if (goal.worktree_realpath !== identity.worktree_realpath) {
-    throw new ContractError('worktree_identity_mismatch', {
-      frozen: goal.worktree_realpath, current: identity.worktree_realpath,
-    });
-  }
-
-  const handoffAbs = path.resolve(repoRoot, goal.handoff_path);
-  if (!fs.existsSync(handoffAbs)) throw new ContractError('handoff_missing', { path: goal.handoff_path });
-  const currentRevision = sha256File(handoffAbs);
-  if (currentRevision !== goal.handoff_revision) {
-    throw new ContractError('handoff_revision_drift', {
-      frozen: goal.handoff_revision, current: currentRevision, path: goal.handoff_path,
-    });
-  }
-
   const events = readJournal(runDir);
   if (events[0].payload.goal_sha256 !== goalSha) {
     throw new ContractError('goal_mutated', { frozen: events[0].payload.goal_sha256, current: goalSha });
@@ -641,27 +716,99 @@ function loadRun(runDir, repoRoot, cwd) {
 
   const state = reduceRun(goal, events);
 
+  // ── Binding checks ───────────────────────────────────────────────────────
+  // Architecture review P0-2: these used to THROW, which routed every binding
+  // failure to one outcome — total lockout. A normal handoff amendment (TAD
+  // writes §9.2 rows into the handoff DURING the work this ledger is meant to
+  // survive) made `status` AND `stop` impossible, so the run could never be
+  // closed honestly. They are now BLOCKERS: the run is honest_partial, every
+  // command still exits non-zero and no progress may be recorded, but the
+  // operator keeps a way to see the state and to close the run truthfully.
+  const bindingBlockers = [];
+
+  if (goal.worktree_realpath !== identity.worktree_realpath) {
+    bindingBlockers.push({
+      code: 'worktree_identity_mismatch',
+      detail: `frozen ${goal.worktree_realpath}, currently running in ${identity.worktree_realpath}`,
+    });
+  }
+
+  // The run owns its own authority: handoff-frozen.md is the byte copy taken at
+  // init, so the run no longer depends on an external mutable file to be usable.
+  const frozenHandoff = path.join(runDir, 'handoff-frozen.md');
+  if (fs.existsSync(frozenHandoff) && sha256File(frozenHandoff) !== goal.handoff_revision) {
+    throw new ContractError('handoff_frozen_tampered', {
+      path: frozenHandoff,
+      note: "the run's own frozen copy of the approved handoff no longer matches goal.json",
+    });
+  }
+  const handoffAbs = anchorAtRepoSafe(goal.handoff_path, repoRoot);
+  if (!handoffAbs || !fs.existsSync(handoffAbs)) {
+    bindingBlockers.push({ code: 'handoff_missing', detail: goal.handoff_path });
+  } else if (sha256File(handoffAbs) !== goal.handoff_revision) {
+    bindingBlockers.push({
+      code: 'handoff_revision_drift',
+      detail: `${goal.handoff_path} no longer matches the revision this run was authorised under`,
+    });
+  }
+
   // Authority level 2 includes the journal's EVIDENCE POINTERS. A verified slice
-  // whose receipt has vanished or changed is not verified progress any more.
+  // whose receipt vanished, changed, or no longer reads as a bound Conductor
+  // receipt is not verified progress any more (security HIGH-1, code P1-2).
   for (const v of state.verified) {
-    const rAbs = path.resolve(repoRoot, v.receipt_path || '');
-    if (!v.receipt_path || !fs.existsSync(rAbs) || !fs.lstatSync(rAbs).isFile()) {
-      throw new ContractError('verified_evidence_missing', { slice: v.slice, path: v.receipt_path });
+    const rAbs = v.receipt_path ? anchorAtRepoSafe(v.receipt_path, repoRoot) : null;
+    if (!rAbs || !fs.existsSync(rAbs) || !fs.lstatSync(rAbs).isFile()) {
+      bindingBlockers.push({ code: 'verified_evidence_missing', detail: `slice ${v.slice}: ${v.receipt_path}` });
+      continue;
     }
-    const actual = sha256File(rAbs);
-    if (actual !== v.receipt_sha256) {
-      throw new ContractError('verified_evidence_hash_mismatch', {
-        slice: v.slice, path: v.receipt_path, recorded: v.receipt_sha256, actual,
+    if (sha256File(rAbs) !== v.receipt_sha256) {
+      bindingBlockers.push({ code: 'verified_evidence_hash_mismatch', detail: `slice ${v.slice}: ${v.receipt_path}` });
+      continue;
+    }
+    let rec = null;
+    try { rec = JSON.parse(fs.readFileSync(rAbs, 'utf8')); } catch { rec = null; }
+    if (!isPlainObject(rec) || rec.format !== RECEIPT_FORMAT || rec.verdict !== 'PASS'
+        || rec.run_id !== goal.run_id || rec.slice !== v.slice
+        || rec.written_by !== 'conductor' || rec.written_by_id === rec.executor_id) {
+      bindingBlockers.push({
+        code: 'verified_evidence_not_a_bound_receipt',
+        detail: `slice ${v.slice}: ${v.receipt_path} no longer reads as a bound Conductor PASS receipt`,
       });
+    }
+  }
+
+  state.binding_blockers = bindingBlockers;
+  if (bindingBlockers.length > 0) {
+    state.blockers = state.blockers.concat(bindingBlockers);
+    state.state = 'HONEST_PARTIAL';
+    if (!state.stopped) {
+      state.legal_next_action = {
+        action: 'Binding failed. Inspect the named artifact with `status --run <dir>`. If the change was legitimate, restore the artifact; if it was not, close the run with `stop --run <dir> --reason "<why>"`. No progress may be recorded until the binding holds again.',
+        why: `binding blockers: ${bindingBlockers.map((b) => b.code).join(', ')}`,
+        owner: 'conductor+human',
+      };
     }
   }
 
   return { identity, goal, goalSha, events, state };
 }
 
-function writeDerived(runDir, repoRoot, goal, state, identity) {
+function writeDerived(runDir, repoRoot, goal, state, identity, out) {
   const cp = semanticCheckpoint(state);
-  writeAtomic(path.join(runDir, 'checkpoint.json'),
+  // Report (never silently repair) a derived file that disagreed with the
+  // journal before we overwrite it — otherwise the forensic signal that someone
+  // edited a derived file is erased by the next mutating command.
+  let derivedConflict = null;
+  const cpPath = path.join(runDir, 'checkpoint.json');
+  if (fs.existsSync(cpPath)) {
+    try {
+      const { generated_at: _ig, ...body } = JSON.parse(fs.readFileSync(cpPath, 'utf8'));
+      if (JSON.stringify(body) !== JSON.stringify(cp)) derivedConflict = 'checkpoint.json';
+    } catch {
+      derivedConflict = 'checkpoint.json (unparseable)';
+    }
+  }
+  writeAtomic(cpPath,
     JSON.stringify({ ...cp, generated_at: nowIso() }, null, 2) + '\n');
 
   const ctx = {
@@ -671,7 +818,12 @@ function writeDerived(runDir, repoRoot, goal, state, identity) {
   };
   const packet = renderRecovery(goal, state, ctx);
   writeAtomic(path.join(runDir, 'recovery.md'), packet.text);
-  return { packet, ctx };
+  if (derivedConflict && typeof out === 'function') {
+    out(`!! WARNING: ${derivedConflict} disagreed with the journal and has been rebuilt from it.\n`
+      + '   The journal is authority, so nothing was lost — but a derived file does not change on its own.\n'
+      + '   Someone or something edited it. Investigate before trusting this run.\n');
+  }
+  return { packet, ctx, derivedConflict };
 }
 
 // ─────────────────────────── receipt validation ───────────────────────────
@@ -688,6 +840,7 @@ const RECEIPT_REQUIRED = [
  * shape, evidence existence and hash — nothing about semantic correctness.
  */
 export function validateVerificationReceipt(receiptPathInput, { goal, state, identity, repoRoot, slice }) {
+  void state;
   const abs = resolveInRepo(receiptPathInput, repoRoot, '--receipt');
   if (!fs.existsSync(abs)) throw new ContractError('receipt_missing', { path: receiptPathInput });
   const st = fs.lstatSync(abs);
@@ -718,13 +871,38 @@ export function validateVerificationReceipt(receiptPathInput, { goal, state, ide
   if (receipt.worktree_realpath !== goal.worktree_realpath) {
     throw new ContractError('receipt_worktree_mismatch', { got: receipt.worktree_realpath, want: goal.worktree_realpath });
   }
+  // Architecture review P1-3: exact-HEAD equality made the natural TAD order
+  // (commit the Gate + reviewer reports, THEN verify) fail, whose only "repair"
+  // was editing the receipt to assert verification at a tree that was never
+  // gated. Accept the gated commit or any ancestor of the current HEAD; the
+  // delta is recorded in the journal rather than refused.
   if (receipt.verified_head !== identity.head) {
-    throw new ContractError('receipt_head_mismatch', { got: receipt.verified_head, current_head: identity.head });
+    let isAncestor = false;
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', receipt.verified_head, identity.head],
+        { cwd: repoRoot, stdio: 'ignore' });
+      isAncestor = true;
+    } catch { isAncestor = false; }
+    if (!isAncestor) {
+      throw new ContractError('receipt_head_not_ancestor', {
+        gated_head: receipt.verified_head,
+        current_head: identity.head,
+        note: 'the gated commit is not an ancestor of the current HEAD, so the receipt does not describe this history',
+      });
+    }
   }
   if (receipt.written_by !== 'conductor') {
     throw new ContractError('receipt_author_role_invalid', { written_by: receipt.written_by });
   }
-  if (receipt.written_by_id === receipt.executor_id) {
+  // Security MEDIUM-4: bound and typed, so `written_by_id != executor_id` cannot
+  // be satisfied by two values of different types or by unbounded junk.
+  for (const key of ['executor_id', 'written_by_id']) {
+    const v = receipt[key];
+    if (typeof v !== 'string' || v.trim().length === 0 || v.length > 200) {
+      throw new ContractError('receipt_identity_malformed', { field: key });
+    }
+  }
+  if (receipt.written_by_id.trim() === receipt.executor_id.trim()) {
     throw new ContractError('receipt_self_authored', { id: receipt.executor_id });
   }
   if (state.verified_slices.includes(slice)) {
@@ -737,13 +915,18 @@ export function validateVerificationReceipt(receiptPathInput, { goal, state, ide
     }
     let sawIndependent = false;
     for (const e of list) {
-      if (!isPlainObject(e) || !e.path || !e.sha256) {
+      if (!isPlainObject(e) || typeof e.path !== 'string' || !e.path
+          || typeof e.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(e.sha256)) {
         throw new ContractError('receipt_evidence_malformed', { field: label, entry: e });
       }
       if (e.verdict !== 'PASS') throw new ContractError('receipt_evidence_not_pass', { field: label, path: e.path, verdict: e.verdict });
       const evAbs = resolveInRepo(e.path, repoRoot, `${label}.path`);
       if (!fs.existsSync(evAbs) || !fs.lstatSync(evAbs).isFile()) {
         throw new ContractError('receipt_evidence_missing', { field: label, path: e.path });
+      }
+      // Security MEDIUM-3: an empty file must not stand in for "Gate PASS".
+      if (fs.statSync(evAbs).size === 0) {
+        throw new ContractError('receipt_evidence_empty_file', { field: label, path: e.path });
       }
       const actual = sha256File(evAbs);
       if (actual !== e.sha256) {
@@ -841,15 +1024,61 @@ function cmdInit(flags, cwd, out) {
   };
   if (goal.slices === undefined) delete goal.slices;
 
-  fs.mkdirSync(runDir, { recursive: true });
-  const goalPath = path.join(runDir, 'goal.json');
-  writeAtomic(goalPath, JSON.stringify(goal, null, 2) + '\n');
-  appendEvent(runDir, 1, 'initialized', { goal_sha256: sha256File(goalPath), base_commit: goal.base_commit }, identity.head);
+  // The capsule budget is a property of the FROZEN GOAL TEXT, so it is knowable
+  // BEFORE the first write (arch P1-1). Checking it afterwards made init a
+  // one-way trap: the error's own remedy ("shorten the goal") is forbidden by
+  // goal immutability, and `resume` — the fresh-context entry point — stayed
+  // permanently dead.
+  const previewEvents = [{
+    seq: 1, type: 'initialized', at: nowIso(), observed_head: identity.head,
+    payload: { goal_sha256: '0'.repeat(64) },
+  }];
+  const previewCtx = {
+    runDir, dirty_count: identity.dirty_count, resumeCommand: resumeCommand(repoRoot, runDir),
+  };
+  const preview = renderRecovery(goal, reduceRun(goal, previewEvents), previewCtx);
+  if (preview.tokens > CAPSULE_TOKEN_BUDGET) {
+    throw new ContractError('capsule_over_budget', {
+      tokens: preview.tokens,
+      budget: CAPSULE_TOKEN_BUDGET,
+      composition: preview.composition,
+      note: 'NOTHING was written. Shorten the goal/success text in the goal SPEC and re-run init. Hard anchors are never dropped to make a capsule fit.',
+    });
+  }
 
-  const loaded = loadRun(runDir, repoRoot, cwd);
-  const { packet, ctx } = writeDerived(runDir, repoRoot, loaded.goal, loaded.state, loaded.identity);
-  out(renderStatus(loaded.goal, loaded.state, ctx));
-  return finish('init', runDir, loaded.state, packet);
+  // Transactional (arch P1-2): init leaves either a complete run or nothing.
+  // A half-written run dir used to be permanently unusable — `init` refused
+  // (run_already_initialized) and everything else refused (journal_missing).
+  const dirExisted = fs.existsSync(runDir);
+  const created = [];
+  try {
+    fs.mkdirSync(runDir, { recursive: true });
+    const goalPath = path.join(runDir, 'goal.json');
+    writeAtomic(goalPath, JSON.stringify(goal, null, 2) + '\n');
+    created.push(goalPath);
+    // The run owns its authority: a byte copy of the approved handoff, so a
+    // later amendment of the live file cannot make this run unusable (P0-2).
+    const frozenPath = path.join(runDir, 'handoff-frozen.md');
+    fs.copyFileSync(handoffAbs, frozenPath);
+    created.push(frozenPath);
+    appendEvent(runDir, 1, 'initialized',
+      { goal_sha256: sha256File(goalPath), base_commit: goal.base_commit }, identity.head);
+    created.push(path.join(runDir, 'journal.jsonl'));
+
+    const loaded = loadRun(runDir, repoRoot, cwd);
+    const { packet, ctx } = writeDerived(runDir, repoRoot, loaded.goal, loaded.state, loaded.identity, out);
+    created.push(path.join(runDir, 'checkpoint.json'), path.join(runDir, 'recovery.md'));
+    out(renderStatus(loaded.goal, loaded.state, ctx));
+    return finish('init', runDir, loaded.state, packet);
+  } catch (err) {
+    for (const f of created.reverse()) {
+      try { fs.rmSync(f, { force: true }); } catch { /* best effort */ }
+    }
+    if (!dirExisted) {
+      try { fs.rmSync(runDir, { recursive: true, force: true }); } catch { /* best effort */ }
+    }
+    throw err;
+  }
 }
 
 function withRun(flags, cwd) {
@@ -862,7 +1091,10 @@ function withRun(flags, cwd) {
 
 function refuseIfHonestPartial(state, command) {
   if (state.state === 'HONEST_PARTIAL') {
-    throw new ContractError('run_in_honest_partial', {
+    // Name the ACTUAL blocker. A generic 'run_in_honest_partial' hides which of
+    // handoff drift / relocated worktree / missing evidence / unknown outcome is
+    // in the way, and the operator's next move differs for each.
+    throw new ContractError(state.blockers[0] ? state.blockers[0].code : 'run_in_honest_partial', {
       command,
       blockers: state.blockers,
       required: state.legal_next_action.action,
@@ -884,6 +1116,9 @@ function cmdStatus(flags, cwd, out) {
 function cmdCheckpoint(flags, cwd, out) {
   const r = withRun(flags, cwd);
   refuseIfHonestPartial(r.state, 'checkpoint');
+  if (r.state.pending_action) {
+    throw new ContractError('pending_action_blocks_checkpoint', { action_id: r.state.pending_action.action_id });
+  }
   const slice = need(flags, 'slice');
   const reason = need(flags, 'reason');
   const next = need(flags, 'next');
@@ -893,9 +1128,10 @@ function cmdCheckpoint(flags, cwd, out) {
   if (r.state.verified_slices.includes(slice)) {
     throw new ContractError('slice_already_verified', { slice });
   }
-  appendEvent(r.runDir, r.events.length + 1, 'checkpointed', { slice, reason, next }, r.identity.head);
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'checkpointed',
+    { slice, reason, next }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
-  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity);
+  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
   out(renderStatus(after.goal, after.state, ctx));
   return finish('checkpoint', r.runDir, after.state, packet);
 }
@@ -911,18 +1147,22 @@ function cmdVerify(flags, cwd, out) {
   const v = validateVerificationReceipt(receiptInput, {
     goal: r.goal, state: r.state, identity: r.identity, repoRoot: r.repoRoot, slice,
   });
-  appendEvent(r.runDir, r.events.length + 1, 'verified', {
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'verified', {
     slice,
     receipt_path: v.repoRelPath,
     receipt_sha256: v.sha256,
     verified_head: v.receipt.verified_head,
+    // Arch P1-3 "too weak": a commit id says nothing about a dirty tree, so
+    // record what was actually observed at verify time instead of implying it.
+    observed_head_at_verify: r.identity.head,
+    dirty_paths_at_verify: r.identity.dirty_paths,
     gate_evidence: v.receipt.gate_evidence.map((e) => e.path),
     review_evidence: v.receipt.review_evidence.map((e) => e.path),
     written_by_id: v.receipt.written_by_id,
     executor_id: v.receipt.executor_id,
-  }, r.identity.head);
+  }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
-  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity);
+  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
   out(renderStatus(after.goal, after.state, ctx));
   return finish('verify', r.runDir, after.state, packet);
 }
@@ -953,21 +1193,37 @@ function cmdActionStart(flags, cwd, out) {
   if (actual !== preSha) {
     throw new ContractError('pre_state_mismatch', { path: targetInput, declared: preSha, actual });
   }
-  appendEvent(r.runDir, r.events.length + 1, 'action_started', {
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'action_started', {
     action_id: actionId,
     description,
     target: repoRel(r.repoRoot, targetAbs),
     pre_sha256: preSha,
     intended_post_sha256: postSha,
-  }, r.identity.head);
+  }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
-  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity);
+  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
   out(renderStatus(after.goal, after.state, ctx));
   return finish('action-start', r.runDir, after.state, packet);
 }
 
 function cmdReconcile(flags, cwd, out) {
   const r = withRun(flags, cwd);
+  // Reconcile is deliberately NOT blocked by honest_partial — clearing an
+  // outcome_unknown is its purpose. But a stopped run is closed, and appending
+  // after `stopped` would make the journal unreducible forever (arch P0-1).
+  if (r.state.stopped) {
+    throw new ContractError('run_stopped', {
+      reason: r.state.stopped.reason,
+      note: 'this run is closed; open a NEW run from a known commit. Nothing further may be recorded here.',
+    });
+  }
+  if (r.state.binding_blockers && r.state.binding_blockers.length > 0) {
+    throw new ContractError(r.state.binding_blockers[0].code, {
+      command: 'reconcile',
+      blockers: r.state.binding_blockers,
+      required: r.state.legal_next_action.action,
+    });
+  }
   const actionId = need(flags, 'action');
   const outcome = need(flags, 'outcome');
   if (!RECONCILE_OUTCOMES.includes(outcome)) {
@@ -1047,9 +1303,9 @@ function cmdReconcile(flags, cwd, out) {
     }
   }
 
-  appendEvent(r.runDir, r.events.length + 1, 'action_reconciled', payload, r.identity.head);
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'action_reconciled', payload, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
-  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity);
+  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
   out(renderStatus(after.goal, after.state, ctx));
   return finish('reconcile', r.runDir, after.state, packet);
 }
@@ -1076,7 +1332,7 @@ function cmdResume(flags, cwd, out) {
       });
     }
   }
-  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, r.goal, r.state, r.identity);
+  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, r.goal, r.state, r.identity, out);
   out(renderStatus(r.goal, r.state, ctx));
   out(`RECOVERY PACKET: ${path.join(r.runDir, 'recovery.md')} (${packet.tokens} est. tokens, budget ${CAPSULE_TOKEN_BUDGET})\n`);
   return finish('resume', r.runDir, r.state, packet);
@@ -1086,9 +1342,9 @@ function cmdStop(flags, cwd, out) {
   const r = withRun(flags, cwd);
   const reason = need(flags, 'reason');
   if (r.state.stopped) throw new ContractError('already_stopped', { reason: r.state.stopped.reason });
-  appendEvent(r.runDir, r.events.length + 1, 'stopped', { reason }, r.identity.head);
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'stopped', { reason }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
-  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity);
+  const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
   out(renderStatus(after.goal, after.state, ctx));
   return finish('stop', r.runDir, after.state, packet);
 }
@@ -1105,7 +1361,10 @@ function finish(command, runDir, state, packet) {
       note: 'recovery.md was written in full; shorten the frozen goal/success text instead of dropping anchors',
     });
   }
-  const honest = state.state === 'HONEST_PARTIAL';
+  // FR5 counts an UNRESOLVED side effect as honest_partial. The state label stays
+  // ACTION_PENDING (per the §4.4 state machine) but the exit code must not be 0,
+  // or a script will happily march past an unreconciled real-world change.
+  const honest = state.state === 'HONEST_PARTIAL' || state.state === 'ACTION_PENDING';
   return {
     exitCode: honest ? 1 : 0,
     status: {
@@ -1114,7 +1373,10 @@ function finish(command, runDir, state, packet) {
       result: honest ? 'HONEST_PARTIAL' : 'PASS',
       run_dir: runDir,
       state: state.state,
-      reason: honest ? (state.blockers[0] ? state.blockers[0].code : 'honest_partial') : null,
+      reason: honest
+        ? (state.blockers[0] ? state.blockers[0].code
+          : (state.pending_action ? 'unreconciled_side_effect' : 'honest_partial'))
+        : null,
       verified_slices: state.verified_slices,
       unverified_slices: state.candidate_slices.map((c) => c.slice),
       blockers: state.blockers,
