@@ -793,6 +793,25 @@ function loadRun(runDir, repoRoot, cwd) {
         code: 'verified_evidence_not_a_bound_receipt',
         detail: `slice ${v.slice}: ${v.receipt_path} no longer reads as a bound Conductor PASS receipt`,
       });
+      continue;
+    }
+    // Security review finding 1: the receipt binds to gate/review EVIDENCE
+    // files by hash. If those files are deleted or edited AFTER verify, the
+    // verified claim loses its carrier — FR5 requires missing/tampered
+    // evidence to fail closed on every later load, not just at verify time.
+    const boundEvidence = [
+      ...(Array.isArray(rec.gate_evidence) ? rec.gate_evidence : []),
+      ...(Array.isArray(rec.review_evidence) ? rec.review_evidence : []),
+    ];
+    for (const ev of boundEvidence) {
+      const eAbs = ev && typeof ev.path === 'string' ? anchorAtRepoSafe(ev.path, repoRoot) : null;
+      if (!eAbs || !fs.existsSync(eAbs) || !fs.lstatSync(eAbs).isFile()) {
+        bindingBlockers.push({ code: 'verified_evidence_missing', detail: `slice ${v.slice}: ${ev && ev.path}` });
+        continue;
+      }
+      if (typeof ev.sha256 === 'string' && sha256File(eAbs) !== ev.sha256) {
+        bindingBlockers.push({ code: 'verified_evidence_hash_mismatch', detail: `slice ${v.slice}: ${ev.path}` });
+      }
     }
   }
 

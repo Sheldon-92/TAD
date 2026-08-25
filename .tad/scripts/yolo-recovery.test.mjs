@@ -430,6 +430,27 @@ function caseAuthorityConflicts() {
     expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'verified_evidence_hash_mismatch',
       'a mutated receipt must invalidate the verified claim');
   }
+  // (j2) gate/review evidence destroyed AFTER verify — the receipt itself is
+  // intact, so only the post-verify bound-evidence re-check catches this.
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    const rel = makeReceipt(repo, { slice: 'S1' });
+    expectExit(cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', rel], repo.dir), 0, 'verify');
+    fs.unlinkSync(path.join(repo.dir, '.tad/evidence/yolo/ev-gate-S1.md'));
+    expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'verified_evidence_missing',
+      'verified progress whose gate evidence vanished must fail closed');
+  }
+  // (j3) gate/review evidence tampered AFTER verify
+  {
+    const repo = makeRepo();
+    initRun(repo);
+    const rel = makeReceipt(repo, { slice: 'S1' });
+    expectExit(cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', rel], repo.dir), 0, 'verify');
+    fs.appendFileSync(path.join(repo.dir, '.tad/evidence/yolo/ev-review-S1.md'), 'tampered\n');
+    expectRed(cli(['status', '--run', RUN_REL], repo.dir), 1, 'verified_evidence_hash_mismatch',
+      'verified progress whose review evidence was edited must fail closed');
+  }
   // (k) events after stop
   {
     const repo = makeRepo();
@@ -1164,6 +1185,15 @@ const ALLOW_EXACT = [
   '.tad/scripts/yolo-recovery.mjs',
   '.tad/scripts/yolo-recovery.test.mjs',
   '.tad/guides/yolo-recovery.md',
+  // Gate 4 corrective amendment (2026-08-25): TAD lifecycle artifacts the
+  // design/completion/knowledge-capture flow itself must persist. Exact paths
+  // only — this must never grow into a product/runtime scope expansion.
+  '.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md',
+  '.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
+  '.tad/decisions/DR-20260824-yolo2-orchestration-kernel.md',
+  '.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md',
+  '.tad/project-knowledge/patterns/memory-and-learning.md',
+  'NEXT.md',
 ];
 const ALLOW_PREFIX = [
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/',
