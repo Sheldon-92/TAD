@@ -24,6 +24,7 @@
 - **Decision**: human confirmed Epic v2 on 2026-08-24 (option 1).
 - **Phase 1 handoff**: `.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` — 2 review rounds, residual P0=0, Gate 2 PASS.
 - **🟢 Gate 3 PASS 2026-08-25**: COMPLETION at `.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md`（commit 链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`，AC1-10 全绿）。
+- **🟠 Gate 4 PARTIAL 2026-08-25**: Alex 独立复跑发现 final HEAD 的 AC2/AC10 实际为 FAIL（completion 生命周期文件未进 scope checker allowlist）；code/architecture/security 审查载体仍为 FAIL，缺增量 PASS 闭环；OpenCode Task-subagent 降级需持久批准载体。已由 Alex 补正 AC10 精确契约，退回 Blake 窄修复，无需重跑 dogfood（除非恢复行为变更）。证据：`.tad/evidence/acceptance-tests/yolo2-phase1-recovery-slice/gate4-partial-report.md`。
   - **dogfood 3/3 恢复全过**（base `84c3666c`）：interruption-a/b/c 各 hard 8/8 + soft 1.00 + 继续 + 隐藏验收 13/13 + Gate PASS + receipt。
   - ⚠️ **三次机制修复**（真实失败购买）：recovery packet 缺 VERIFICATION MODEL / PROHIBITIONS / side-effect 分类规则 → 各 0.88 → 修后 1.00。详见 `knowledge-assessment.md` + patterns/memory-and-learning.md 新条目。
   - ⚠️ 已知偏差：fresh context 为 opencode Task 子代理（DEGRADED_WITH_APPROVAL，2026-08-24 批准）。
