@@ -627,6 +627,19 @@ or a compact summary as progress truth.
     '- Completion prose, an ordinary file, a self-authored receipt, or any executor assertion NEVER advances `verified`.',
     '- Until a validated receipt names the slice, that slice stays unverified — even if the work appears done.',
   ].join('\n'));
+  const prohibitions = [
+    ...(ctx.dirty_count > 0
+      ? ['- Uncommitted worktree changes are observation only and MUST NOT be treated as progress or as done.']
+      : []),
+    ...(state.pending_action
+      ? [`- While action \`${state.pending_action.action_id}\` is pending, NO slice progress may be recorded and the action MUST NOT be blindly re-applied: read the real file and reconcile it first.`]
+      : []),
+    ...(state.unknown_actions.length
+      ? ['- Actions with `outcome_unknown` MUST NOT be re-run with the same action id.']
+      : []),
+    ['- Completion prose, a self-authored receipt, or any executor assertion NEVER advances `verified` (see VERIFICATION MODEL).'],
+  ].flat();
+  add('PROHIBITIONS', prohibitions.join('\n'));
 
   const text = header + '\n' + sections.map((s) => s.text).join('\n');
   const composition = sections.map((s) => ({ section: s.title, tokens: estimateTokens(s.text) }));

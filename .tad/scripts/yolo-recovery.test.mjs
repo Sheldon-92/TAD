@@ -585,6 +585,10 @@ function caseStatusCapsule() {
     'recovery packet must carry the verification model section');
   expect(/CANDIDATE/.test(packet) && /written_by_id/.test(packet) && /NEVER advances `verified`/.test(packet),
     'verification model must state: checkpoint=candidate, conductor-distinct receipt advances, self-assertion never advances');
+  expect(packet.includes('PROHIBITIONS'),
+    'recovery packet must carry the PROHIBITIONS section');
+  expect(/MUST NOT be treated as progress or as done/.test(packet),
+    'with uncommitted work present, the packet must forbid treating it as progress');
   const resume = cli(['resume', '--run', RUN_REL], repo.dir);
   expect(resume.status.capsule_tokens > 0 && resume.status.capsule_tokens <= CAPSULE_TOKEN_BUDGET,
     `capsule must fit the ${CAPSULE_TOKEN_BUDGET} token budget, got ${resume.status.capsule_tokens}`);
