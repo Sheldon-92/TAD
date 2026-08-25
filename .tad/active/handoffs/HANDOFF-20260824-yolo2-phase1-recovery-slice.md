@@ -23,6 +23,10 @@ gate4_delta:
     alex_said: "Allowlisting the six completion-flow lifecycle paths would make final-head acceptance stable."
     actual: "AC10 passes while Handoff/COMPLETION are active but fails immediately after the required archive transition because the checker hard-codes the active COMPLETION path and does not model the archived pair."
     caught_by: "Alex post-archive consistency rerun on 2026-08-25"
+  - field: "AC10 committed archive diff"
+    alex_said: "The round-2 active/archive state machine plus simulated archive run would make the committed archive stable."
+    actual: "The real archive layout passes before commit, but after the archive/status commit required-evidence fails because ALLOW_EXACT still asserts that the active Handoff must appear in base..HEAD. The simulation changed file existence only and did not model the committed diff."
+    caught_by: "Alex post-commit real-archive full-suite rerun at 54bc9ab9 on 2026-08-25"
 ---
 
 # Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片
@@ -31,7 +35,7 @@ gate4_delta:
 **To:** Blake (Execution Master)  
 **Date:** 2026-08-24  
 **Task ID:** TASK-20260824-YOLO2-P1  
-**Handoff Version:** 1.0.2 — Gate 2 PASS; Gate 4 lifecycle amendment
+**Handoff Version:** 1.0.3 — Gate 2 PASS; Gate 4 committed-diff amendment
 **Epic:** `EPIC-20260824-yolo2-verified-orchestration.md` (Phase 1/4)  
 **Decision:** `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`  
 **Supersedes:** archived `SUPERSEDED-HANDOFF-20260824-yolo2-phase1-contract-baseline.md`
@@ -59,6 +63,23 @@ one matching Handoff/COMPLETION pair is valid: either both under `.tad/active/ha
 before acceptance archive, or both under `.tad/archive/handoffs/` afterward. Missing
 both, a split pair, or duplicate active+archive copies must fail. Both states must
 retain the same product/runtime scope fence and evidence requirements.
+
+### Gate 4 lifecycle amendment — round 3
+
+The lifecycle state and the frozen-base-to-HEAD diff must agree. Stable product and
+status paths may retain unconditional must-appear assertions, but the four lifecycle
+paths must not. In the active state, the committed diff must contain the active
+Handoff and active COMPLETION and need not contain their archive paths. In the
+archived state, it must contain the archived Handoff and archived COMPLETION and
+must not require the active pair to remain in the net diff. The resolved lifecycle
+pair is still required to exist and be non-empty.
+
+The archive proof must exercise both dimensions: filesystem existence and the actual
+`git diff --name-only <frozen-base>..HEAD`. An existence-only environment simulation
+is insufficient. Use a disposable worktree/commit or an equivalently faithful pure
+fixture, then obtain one narrow independent review. Alex will still perform the
+decisive full-suite rerun after the real archive commit. Runtime, dogfood, prior
+reviews, and the Phase-1-only human degradation approval remain unchanged.
 
 ## 🔴 Gate 2: Design Completeness
 
@@ -554,7 +575,7 @@ Three treatment runs plus one control as P4. Fresh-session evidence must record 
 | AC7 | Raw evidence proves soft semantic recovery ≥90% | `node .tad/scripts/yolo-recovery.test.mjs --case dogfood-evidence` | each treatment ≥0.90 with independent reviewer whose report hash and assertion/oracle binding verify | post-impl |
 | AC8 | Raw evidence proves real continuation and no repeated verified work | `node .tad/scripts/yolo-recovery.test.mjs --case dogfood-evidence` | control present/same base+input; each treatment continuation, hidden acceptance, Gate PASS, receipt hashes valid; repeat/unauthorized = 0 | post-impl |
 | AC9 | human-readable bounded status/recovery | `node .tad/scripts/yolo-recovery.test.mjs --case status-capsule` | all required labels present; token estimate ≤2500 or explicit blocked result preserving hard anchors | post-impl |
-| AC10 | evidence and scope complete across acceptance lifecycle | `node .tad/scripts/yolo-recovery.test.mjs --case required-evidence` | checker reads frozen base SHA, requires all §6.2 evidence non-empty, accepts exactly one matching active-or-archive Handoff/COMPLETION pair, rejects missing/split/duplicate pairs, and compares `git diff --name-only <base>..HEAD` to the exact §7 product + lifecycle allowlist; unrelated workflow/runtime paths remain red controls | Gate 4 lifecycle amendment: pending Blake two-state rerun |
+| AC10 | evidence and scope complete across acceptance lifecycle | `node .tad/scripts/yolo-recovery.test.mjs --case required-evidence` | checker reads frozen base SHA, requires all §6.2 evidence non-empty, accepts exactly one matching active-or-archive Handoff/COMPLETION pair, rejects missing/split/duplicate pairs, and compares `git diff --name-only <base>..HEAD` to the exact §7 product + lifecycle allowlist; must-appear assertions follow the resolved pair (active pair in active state, archived pair in archived state), and the archive proof models the real committed diff; unrelated workflow/runtime paths remain red controls | Gate 4 lifecycle amendment round 3: pending Blake committed-diff rerun |
 
 ### 9.2 Expert Review Status
 
