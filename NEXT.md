@@ -12,6 +12,23 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
+### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Epic accepted; Phase 1 Gate 2 PASS
+
+- **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 0/4)
+- **Reset decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
+- **Status**: old 1,171-line Phase-1 verifier handoff is archived as SUPERSEDED and must not go to Blake; Cycle 6 is cancelled as a product path, not repaired locally.
+- **Why reset**: five Gate-2 cycles optimized AST/VM/verifier safety before any real compact/kill/resume YOLO behavior existed. State integrity was strong, but semantic re-entry and final-quality non-regression were not first-class outcomes.
+- **New Phase 1**: one real opt-in recovery vertical slice on a capability-proven reference harness: approved goal → verified work → forced compact/kill → fresh context semantic recovery assertion → continue → existing Gate.
+- **Kept**: local files, frozen Handoff, bounded MEA slices, no blind retry, independent review, Y1–Y8/Gate authority and honest harness modes.
+- **Deferred**: universal six-schema reducer, hash chain/fencing, bespoke JavaScript sandbox, full three-harness parity and default-on.
+- **Decision**: human confirmed Epic v2 on 2026-08-24 (option 1).
+- **Phase 1 handoff**: `.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` — 2 review rounds, residual P0=0, Gate 2 PASS.
+- **🟢 Gate 3 PASS 2026-08-25**: COMPLETION at `.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md`（commit 链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`，AC1-10 全绿）。
+  - **dogfood 3/3 恢复全过**（base `84c3666c`）：interruption-a/b/c 各 hard 8/8 + soft 1.00 + 继续 + 隐藏验收 13/13 + Gate PASS + receipt。
+  - ⚠️ **三次机制修复**（真实失败购买）：recovery packet 缺 VERIFICATION MODEL / PROHIBITIONS / side-effect 分类规则 → 各 0.88 → 修后 1.00。详见 `knowledge-assessment.md` + patterns/memory-and-learning.md 新条目。
+  - ⚠️ 已知偏差：fresh context 为 opencode Task 子代理（DEGRADED_WITH_APPROVAL，2026-08-24 批准）。
+- **Next**: Alex 跑 Gate 4 验收（Epic Phase 1 acceptance outcomes 已逐项对照于 COMPLETION 末节）。
+
 ### ⏳ 0-WAIT. **retire-sync-decouple-projects** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
 
 - **Completion**: `.tad/active/handoffs/COMPLETION-20260817-retire-sync-decouple-projects.md`（commit `65380b7c`，AC 15/15）

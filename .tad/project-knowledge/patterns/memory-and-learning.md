@@ -69,3 +69,38 @@
   §外部依赖 F1 行 + 其下紧接的 ⚠️ 段（含 AC12b 实测结论）；
   `EPIC-20260813-alex-blake-lightening.md` R4/SC5 的修正历史；用户 2026-08-13 原话
   「为什么老是说更新那条路坏了，已经好几次了」
+
+### A Recovery Capsule Must Carry the Run's Decision Rules, Not Just Its Facts - 2026-08-25
+- **Discovery**: YOLO 2.0 Phase 1 dogfood ran five failed recoveries before the
+  packet carried the rules the fresh contexts were scored on: (1) the
+  verification model (checkpoint=candidate; only a bound Conductor receipt
+  after Gate + independent review advances verified) was unknowable from
+  goal.json/journal.jsonl/recovery.md — two fresh contexts scored soft 0.88 on
+  that anchor; (2) state-derived prohibitions (uncommitted work is not
+  progress, no progress while an action is pending) were facts-but-not-rules —
+  one context missed S4; (3) the side-effect classification rule (hash ==
+  intended_post → confirmed; == pre → reconciled; else outcome_unknown) and
+  the double-application rationale were absent — two contexts missed S3, one
+  hedged H5. Every fix (VERIFICATION MODEL, PROHIBITIONS, classification rule)
+  took the next fresh context from 0.88 to 1.00. A fresh context can re-derive
+  facts from the ledger, but cannot re-derive rules the protocol owns.
+- **Action**: When designing a recovery/checkpoint capsule, treat "which
+  decision rules must be IN the packet" as a first-class design question:
+  verification model, side-effect classification, state prohibitions, and the
+  rationale for the legal next action. Verify completeness by dogfooding each
+  interruption stage at least twice — two independent misses of the same
+  anchor with passable material = a knowability gap, not agent variance. A
+  capsule that conveys only facts will consistently score below a 0.90
+  soft-anchor floor.
+- **failure_mode**: Naive default: make the recovery packet a facts-only
+  summary (goal, journal-derived state, next action) and expect the recovering
+  agent to re-derive the protocol's rules from those facts. Why wrong: the
+  rules (what makes a checkpoint verified, how to classify a side effect, what
+  is forbidden while an action is pending) live in the guide, not the packet —
+  the fresh agent is forbidden from reading the guide, so the anchors it must
+  demonstrate are systematically missable, producing repeated 0.88 < 0.90
+  failures that look like flaky agents but are actually missing material.
+- **Grounded in**: EPIC-20260824-yolo2-verified-orchestration Phase 1 dogfood
+  (interruption-a/b/c, control), commits 00570c00/0ccd30cd/84c3666c,
+  `.tad/evidence/yolo/yolo2-verified-orchestration/phase1/` incl.
+  knowledge-assessment.md (discoveries B1-B3)
