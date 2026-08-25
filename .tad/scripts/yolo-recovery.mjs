@@ -610,7 +610,7 @@ or a compact summary as progress truth.
     ? state.unknown_actions.map((a) => `- action \`${a.action_id}\` on \`${a.target}\`: outcome unknown. Re-running this action id is **FORBIDDEN**; it must be reconciled with explicit evidence.`).join('\n')
     : '- (none)');
   add('PENDING ACTION', state.pending_action
-    ? `- \`${state.pending_action.action_id}\`: ${state.pending_action.description}\n  target \`${state.pending_action.target}\`\n  pre sha256 \`${state.pending_action.pre_sha256}\`\n  intended post sha256 \`${state.pending_action.intended_post_sha256}\`\n  Read the real file before deciding anything.`
+    ? `- \`${state.pending_action.action_id}\`: ${state.pending_action.description}\n  target \`${state.pending_action.target}\`\n  pre sha256 \`${state.pending_action.pre_sha256}\`\n  intended post sha256 \`${state.pending_action.intended_post_sha256}\`\n  Read the real file before deciding anything: a hash equal to \`intended_post_sha256\` means the action DID land (outcome \`confirmed\`); equal to \`pre_sha256\` means it never landed (\`reconciled\`); any other hash means \`outcome_unknown\`.`
     : '- (none)');
   add('LEGAL NEXT ACTION', `${state.legal_next_action.action}\n\n**WHY:** ${state.legal_next_action.why}`);
   add('OWNER', state.legal_next_action.owner);
@@ -629,10 +629,10 @@ or a compact summary as progress truth.
   ].join('\n'));
   const prohibitions = [
     ...(ctx.dirty_count > 0
-      ? ['- Uncommitted worktree changes are observation only and MUST NOT be treated as progress or as done.']
+      ? ['- Uncommitted worktree changes are observation only and MUST NOT be treated as progress or as done; inspect them before continuing — do not silently discard them.']
       : []),
     ...(state.pending_action
-      ? [`- While action \`${state.pending_action.action_id}\` is pending, NO slice progress may be recorded and the action MUST NOT be blindly re-applied: read the real file and reconcile it first.`]
+      ? [`- While action \`${state.pending_action.action_id}\` is pending, NO slice progress may be recorded and the action MUST NOT be blindly re-applied: the patch may already be on disk, so re-applying it risks double-applying the side effect (a duplicated or corrupted target that matches no recorded hash). Read the real file and reconcile it first.`]
       : []),
     ...(state.unknown_actions.length
       ? ['- Actions with `outcome_unknown` MUST NOT be re-run with the same action id.']
