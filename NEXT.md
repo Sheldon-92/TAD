@@ -30,6 +30,19 @@
   - ⚠️ 已知偏差：fresh context 为 opencode Task 子代理（DEGRADED_WITH_APPROVAL，2026-08-24 批准）。
 - **Next**: Alex 跑 Gate 4 验收（Epic Phase 1 acceptance outcomes 已逐项对照于 COMPLETION 末节）。
 
+### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进
+
+- **来源**：yolo2 Phase 1 三份增量复核（code/architecture/security，@`fc7a07fc`）的 OPEN 项，
+  按 TAD 语义非阻塞、记录于此防丢失。另立单时按需挑拣，不打包。
+- code：fsync 缺失；reason/exit-code 表重复对；reducer 检查顺序；errorResult schema；
+  reconcile 目标路径裸 `path.resolve`；handoff §4.2 缺 `--rebuild-derived`；
+  binding-and-closure case (o) 标注错误 + `concurrent_writer_detected` 零覆盖；T-2/T-3/T-4 fixture 缺口。
+- architecture：guide §8 缺 `git clean` 警告（ledger 留在 worktree）；§4 新会话 prompt 缺错误分支；无 test-only barrel export。
+- security：init 时 `executor_id` 未绑定冻结内容（MEDIUM，typed 检查已有）；
+  reconcile 对逃逸目标路径仍做哈希（LOW）；ledger 文件 symlink 守卫（LOW）；
+  writeAtomic 无 fsync/mode（LOW）；parseArgs 边界（LOW）。
+- **安全修复已含**：post-verify 证据重验（`fc7a07fc`，原 P0 已关）。
+
 ### ⏳ 0-WAIT. **retire-sync-decouple-projects** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
 
 - **Completion**: `.tad/active/handoffs/COMPLETION-20260817-retire-sync-decouple-projects.md`（commit `65380b7c`，AC 15/15）

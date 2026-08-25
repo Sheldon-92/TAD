@@ -30,11 +30,13 @@ gate3_verdict: pass
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
 | spec-compliance | ✅ | PASS round 2 (round-1 FAIL: stale packaged run archives → re-copied from live worktrees → fixed) |
-| code-reviewer | ✅ | `.tad/evidence/reviews/blake/yolo2-phase1/code-reviewer.md` |
-| architecture-reviewer | ✅ | `.tad/evidence/reviews/blake/yolo2-phase1/architecture-reviewer.md` |
-| security-auditor | ✅ | `.tad/evidence/reviews/blake/yolo2-phase1/security-reviewer.md` |
+| code-reviewer | ✅* | 原文 FAIL（针对 `d7813c6b` 前实现）→ **独立增量复核 PASS @ `fc7a07fc`**（5 个 blocking 全解决；12 个 P2/test-quality 转入 NEXT.md 跟进） |
+| architecture-reviewer | ✅* | 原文 FAIL → **增量复核 PASS @ `fc7a07fc`**（blocking 全解决；3 个 P2 转入跟进） |
+| security-auditor | ✅* | 原文 FAIL → **增量复核 PASS @ `fc7a07fc`**（其 OPEN P0「verify 后证据不再复查」已在 `fc7a07fc` 修复并手工复现 fails closed；5 个 P2/LOW 转入跟进） |
 | performance-optimizer | ✅ | `.tad/evidence/reviews/blake/yolo2-phase1/performance-reviewer.md` |
 | test-runner | ✅ | dogfood-evidence checker green; real E2E across 4 runs (3 treatments + control) |
+
+\* 三份原文保留原始 FAIL 判定作 provenance；独立验证者在同文件追加 Incremental re-review 段，按 TAD 阻塞语义（P0/P1 blocking、P2/LOW 记录为跟进）对最终 head 出 PASS。
 
 ### Evidence
 
@@ -135,7 +137,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 | AC | 描述 | 结果 |
 |----|------|------|
 | AC1 | 默认 YOLO/runtime 未变（diff allowlist 空） | ✅ |
-| AC2 | 契约套件真实红/绿态，RESULT=PASS exit 0 | ✅ |
+| AC2 | 契约套件真实红/绿态，RESULT=PASS exit 0 | ✅（Gate 4 修正后：最终 HEAD `fc7a07fc` 全量 RESULT=PASS，含修正后 required-evidence scope） |
 | AC3 | goal 不可变；仅 bound Conductor PASS receipt 可 verify | ✅ (verified-authority) |
 | AC4 | authority/conflict fail-closed | ✅ (authority-conflicts) |
 | AC5 | side effect 永不盲重试 | ✅ (side-effect-reconcile + b run A1 reconcile) |
@@ -143,7 +145,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 | AC7 | soft semantic recovery ≥0.90（3/3 均 1.00） | ✅ |
 | AC8 | 真实继续 + 隐藏验收 + Gate PASS + receipt 有效；repeat/unauthorized=0 | ✅ |
 | AC9 | bounded status/capsule ≤2500 tokens（706-1082 observed） | ✅ (status-capsule + capsule-budget.md) |
-| AC10 | 证据与 scope 完整（frozen base 校验 + allowlist diff + manifest 非空） | ✅ (required-evidence) |
+| AC10 | 证据与 scope 完整（frozen base 校验 + allowlist diff + manifest 非空） | ✅（Gate 4 修正：checker allowlist 增补 Alex 指定的 6 个 TAD lifecycle 路径，红控保留） |
 
 ---
 
@@ -177,7 +179,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 ## ⚠️ 遗留问题（如有）
 
 ### 已知问题
-- **opencode harness 偏差**（DEGRADED_WITH_APPROVAL，2026-08-24 用户批准）：fresh recovery context 是当前 harness 的 Task 子代理而非独立 `claude -p`；隔离性由 prompt 禁令保证，非进程级。已逐条记录于 run-evidence `fresh_session`。
+- **opencode harness 偏差**（DEGRADED_WITH_APPROVAL，人工批准已持久化于 `harness-degradation-approval.md`）：fresh recovery context 是当前 harness 的 Task 子代理而非独立 `claude -p`；隔离性由 prompt 禁令保证，非进程级。已逐条记录于 run-evidence `fresh_session`。
 - **四份专家 review 针对 `d7813c6b`**：后续 3 个 commit 只改 packet prose + 测试断言，由 spec-compliance（对最终 head 重跑 AC）+ Layer 1 套件覆盖；如需对最终 head 重跑四份专家 review 可补。
 - **journal 中 receipt 路径标注**：run 档案内 journal 的 receipt_path 指向 `dogfood/conductor/`，打包目录为 `{run}-conductor/`（内容一致，标签不同）——spec-compliance 已记录，非缺陷。
 - **reconcile 行措辞**（b S1 review 顺带 note）：`--evidence` 在 confirmed/outcome_unknown 路径下不读取，文档措辞 "validated" 略宽——reviewer 判定 PASS 不构成缺陷。
@@ -197,8 +199,8 @@ node .tad/scripts/yolo-recovery.test.mjs
 
 | Friction | Status | Note |
 |----------|--------|------|
-| Fresh contexts = harness Task sub-agents (not separate `claude -p`) | DEGRADED_WITH_APPROVAL | 用户 2026-08-24 批准（nested claude -p OAuth 失败）；记录于 run-evidence |
-| 参考 harness 为 opencode | DEGRADED_WITH_APPROVAL | 同上；Phase 3 做跨 harness 适配 |
+| Fresh contexts = harness Task sub-agents (not separate `claude -p`) | DEGRADED_WITH_APPROVAL | 人工批准已持久化：`.tad/evidence/yolo/yolo2-verified-orchestration/phase1/harness-degradation-approval.md`；另记录于 run-evidence |
+| 参考 harness 为 opencode | DEGRADED_WITH_APPROVAL | 同一持久化批准；Phase 3 做跨 harness 适配 |
 | Node/git/worktrees/reviewers | READY | 全部可用 |
 
 ## 📂 Evidence Checklist (MANDATORY)
@@ -215,7 +217,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 - fixtures + capsule-budget：见 deterministic-fixtures.txt / capsule-budget.md
 
 ### Git Commit
-- HEAD: `84c3666c4b8d658ecfd737c5305728f0e2152aea`（机制修复链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`）
+- HEAD: `fc7a07fc`（机制链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c` + Gate 4 修正 `019cdeb1`(Alex)→AC10 checker→`fc7a07fc`）
 
 ---
 
