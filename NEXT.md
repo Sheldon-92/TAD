@@ -12,9 +12,9 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Phase 2 ready for Alex design
+### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Phase 1 Gate 4 lifecycle correction pending
 
-- **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 1/4)
+- **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 0/4)
 - **Reset decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
 - **Status**: old 1,171-line Phase-1 verifier handoff is archived as SUPERSEDED and must not go to Blake; Cycle 6 is cancelled as a product path, not repaired locally.
 - **Why reset**: five Gate-2 cycles optimized AST/VM/verifier safety before any real compact/kill/resume YOLO behavior existed. State integrity was strong, but semantic re-entry and final-quality non-regression were not first-class outcomes.
@@ -22,12 +22,13 @@
 - **Kept**: local files, frozen Handoff, bounded MEA slices, no blind retry, independent review, Y1–Y8/Gate authority and honest harness modes.
 - **Deferred**: universal six-schema reducer, hash chain/fencing, bespoke JavaScript sandbox, full three-harness parity and default-on.
 - **Decision**: human confirmed Epic v2 on 2026-08-24 (option 1).
-- **Phase 1 archive**: `.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` + matching COMPLETION.
-- **✅ Gate 4 PASS 2026-08-25**: lifecycle amendment `9d89eedf`; active, simulated-archive, and real post-archive full suites each passed 10/10 with exit 0. The checker accepts only complete active or complete archived pairs and rejects absent, incomplete, duplicate, and split states.
+- **Phase 1 handoff**: `.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` — Gate 4 lifecycle amendment v1.0.2 active.
+- **🟢 Gate 3 substance PASS 2026-08-25**: current HEAD `4d9039c9`; runtime/dogfood/reviewer blockers closed.
+- **🟠 Gate 4 PARTIAL round 2**: human degradation approval is now valid, but the required archive transition exposed AC10 hard-coding of the active COMPLETION path; post-archive `required-evidence` exits 1. Archive was safely rolled back. Blake must prove active and archive states, plus missing/split/duplicate red controls. No dogfood rerun required. Report: `.tad/evidence/acceptance-tests/yolo2-phase1-recovery-slice/gate4-partial-report.md`.
   - **dogfood 3/3 恢复全过**（base `84c3666c`）：interruption-a/b/c 各 hard 8/8 + soft 1.00 + 继续 + 隐藏验收 13/13 + Gate PASS + receipt。
   - ⚠️ **三次机制修复**（真实失败购买）：recovery packet 缺 VERIFICATION MODEL / PROHIBITIONS / side-effect 分类规则 → 各 0.88 → 修后 1.00。详见 `knowledge-assessment.md` + patterns/memory-and-learning.md 新条目。
   - ⚠️ 已知偏差：fresh context 为 OpenCode Task 子代理（DEGRADED_WITH_APPROVAL，人类 2026-08-25 明确批准，仅限 Phase 1）。
-- **Next**: Phase 2 可进入 Alex 设计；尚未启动实现。Phase 1 的 OpenCode Task-subagent 降级批准不得自动延续到后续阶段。
+- **Next**: Blake 修复 AC10 的 active/archive 双状态契约并窄复核；完成前不启动 Phase 2。
 
 ### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进
 
