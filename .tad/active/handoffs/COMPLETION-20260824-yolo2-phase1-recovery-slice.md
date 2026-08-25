@@ -137,7 +137,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 | AC | 描述 | 结果 |
 |----|------|------|
 | AC1 | 默认 YOLO/runtime 未变（diff allowlist 空） | ✅ |
-| AC2 | 契约套件真实红/绿态，RESULT=PASS exit 0 | ✅（Gate 4 修正后：最终 HEAD `fc7a07fc` 全量 RESULT=PASS，含修正后 required-evidence scope） |
+| AC2 | 契约套件真实红/绿态，RESULT=PASS exit 0 | ✅（Gate 4 round 2 后：HEAD `9d89eedf` 全量 RESULT=PASS，**active 与 simulated-archive 双态各 10/10**；lifecycle 状态机经独立窄复核 PASS） |
 | AC3 | goal 不可变；仅 bound Conductor PASS receipt 可 verify | ✅ (verified-authority) |
 | AC4 | authority/conflict fail-closed | ✅ (authority-conflicts) |
 | AC5 | side effect 永不盲重试 | ✅ (side-effect-reconcile + b run A1 reconcile) |
@@ -145,7 +145,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 | AC7 | soft semantic recovery ≥0.90（3/3 均 1.00） | ✅ |
 | AC8 | 真实继续 + 隐藏验收 + Gate PASS + receipt 有效；repeat/unauthorized=0 | ✅ |
 | AC9 | bounded status/capsule ≤2500 tokens（706-1082 observed） | ✅ (status-capsule + capsule-budget.md) |
-| AC10 | 证据与 scope 完整（frozen base 校验 + allowlist diff + manifest 非空） | ✅（Gate 4 修正：checker allowlist 增补 Alex 指定的 6 个 TAD lifecycle 路径，红控保留） |
+| AC10 | 证据与 scope 完整 **across acceptance lifecycle** | ✅（round 2：checker 接受且只接受 active 或 archived 的 Handoff/COMPLETION 配对；absent/split/duplicate/incomplete 全部 FAIL（16 组合 fixture）；archive 路径入 allowlist 无 must-appear；红控保留并加强。PROJECT_CONTEXT.md 增补已披露并经窄复核接受） |
 
 ---
 
@@ -217,7 +217,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 - fixtures + capsule-budget：见 deterministic-fixtures.txt / capsule-budget.md
 
 ### Git Commit
-- HEAD: `fc7a07fc`（机制链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c` + Gate 4 修正 `019cdeb1`(Alex)→AC10 checker→`fc7a07fc`）
+- HEAD: `9d89eedf`（机制链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`；Gate 4 轮次 `78094228(compl)→019cdeb1(Alex)→fc7a07fc(security P0 fix)→4d9039c9(resubmission)→276f6ac9(Alex lifecycle)→9d89eedf(lifecycle checker)`）
 
 ---
 
