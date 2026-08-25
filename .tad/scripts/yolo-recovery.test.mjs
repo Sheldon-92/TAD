@@ -1194,6 +1194,19 @@ const ALLOW_EXACT = [
   '.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md',
   '.tad/project-knowledge/patterns/memory-and-learning.md',
   'NEXT.md',
+  // Added after the fact with disclosure: Alex's own Gate 4 amendment commit
+  // 276f6ac9 updates PROJECT_CONTEXT.md as part of this task's gate flow
+  // (project status lifecycle doc, not product code). Flagged for the
+  // independent checker review.
+  'PROJECT_CONTEXT.md',
+];
+// Gate 4 lifecycle amendment round 2: the post-*accept archive locations are
+// legal diff members ONLY while the archived lifecycle state is the real one.
+// They are deliberately NOT in ALLOW_EXACT (which asserts must-appear); a
+// change touching them without the archived pair actually existing stays red.
+const ALLOW_LIFECYCLE_ARCHIVE = [
+  '.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
+  '.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
 ];
 const ALLOW_PREFIX = [
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/',
@@ -1201,9 +1214,48 @@ const ALLOW_PREFIX = [
   '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
 ];
 
+/** Pure lifecycle state machine (Gate 4 round 2). Exactly one matching
+ *  Handoff/COMPLETION pair is valid: both active, or both archived. Missing,
+ *  split, duplicated, or half-present pairs fail with machine-readable codes
+ *  so fixtures can drive every state without touching real files. */
+export function checkLifecyclePair(exists) {
+  const P = {
+    handoff: {
+      active: '.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
+      archived: '.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
+    },
+    completion: {
+      active: '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
+      archived: '.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
+    },
+  };
+  const ah = !!exists(P.handoff.active);
+  const arh = !!exists(P.handoff.archived);
+  const ac = !!exists(P.completion.active);
+  const arc = !!exists(P.completion.archived);
+  const shape = JSON.stringify({ handoff_active: ah, handoff_archived: arh, completion_active: ac, completion_archived: arc });
+  if ((ah && arh) || (ac && arc)) {
+    return { state: 'duplicate', errors: [`lifecycle_duplicate: a Handoff/COMPLETION copy exists in BOTH .tad/active/handoffs/ and .tad/archive/handoffs/ ${shape}`] };
+  }
+  if (!ah && !arh && !ac && !arc) {
+    return { state: 'absent', errors: ['lifecycle_absent: neither an active nor an archived Handoff/COMPLETION pair exists'] };
+  }
+  const handoffSide = ah ? 'active' : (arh ? 'archived' : null);
+  const completionSide = ac ? 'active' : (arc ? 'archived' : null);
+  if (handoffSide === null || completionSide === null) {
+    return { state: 'incomplete', errors: [`lifecycle_incomplete: only one file of the pair exists (handoff=${handoffSide ?? 'missing'}, completion=${completionSide ?? 'missing'})`] };
+  }
+  if (handoffSide !== completionSide) {
+    return { state: 'split', errors: [`lifecycle_split: the pair is split across directories (handoff=${handoffSide}, completion=${completionSide})`] };
+  }
+  return { state: handoffSide, errors: [] };
+}
+
 /** Pure allowlist comparison so the rule itself has a red state. */
 export function offAllowlist(paths) {
-  return paths.filter((p) => !ALLOW_EXACT.includes(p) && !ALLOW_PREFIX.some((pre) => p.startsWith(pre)));
+  return paths.filter((p) => !ALLOW_EXACT.includes(p)
+    && !ALLOW_PREFIX.some((pre) => p.startsWith(pre))
+    && !ALLOW_LIFECYCLE_ARCHIVE.includes(p));
 }
 
 const REQUIRED_EVIDENCE = [
@@ -1221,7 +1273,25 @@ const REQUIRED_EVIDENCE = [
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/interruption-b.md',
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/interruption-c.md',
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/recovery-scores.json',
-  '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
+  // NOTE: the Handoff/COMPLETION pair is intentionally NOT listed here — it is
+  // resolved through the lifecycle state machine below (Gate 4 round 2).
+];
+
+/** Exhaustive fixture for the pure state machine: every one of the 16
+ *  existence combinations must classify exactly as the amendment requires.
+ *  Combo order: [handoff_active, handoff_archived, completion_active,
+ *  completion_archived]. `null` = invalid (must fail), otherwise the required
+ *  state string. */
+const LIFECYCLE_COMBOS = [
+  ['0000', 'lifecycle_absent'],
+  ['1000', 'lifecycle_incomplete'], ['0100', 'lifecycle_incomplete'],
+  ['0010', 'lifecycle_incomplete'], ['0001', 'lifecycle_incomplete'],
+  ['1100', 'lifecycle_duplicate'], ['0011', 'lifecycle_duplicate'],
+  ['1110', 'lifecycle_duplicate'], ['1101', 'lifecycle_duplicate'],
+  ['1011', 'lifecycle_duplicate'], ['0111', 'lifecycle_duplicate'],
+  ['1111', 'lifecycle_duplicate'],
+  ['1001', 'lifecycle_split'], ['0110', 'lifecycle_split'],
+  ['1010', 'active'], ['0101', 'archived'],
 ];
 
 function caseRequiredEvidence() {
@@ -1231,16 +1301,86 @@ function caseRequiredEvidence() {
     'an out-of-scope path must be reported');
   expect(offAllowlist(['.tad/hooks/precompact-session-snapshot.sh']).length === 1,
     'touching hooks must be reported');
+  expect(offAllowlist(['.agents/skills/alex/references/yolo-execution-protocol.md']).length === 1,
+    'touching the YOLO execution protocol must be reported');
+  expect(offAllowlist(['.tad/config.yaml']).length === 1,
+    'touching config must be reported');
+  // The archive locations are legal diff members only as a pair-state
+  // consequence; the paths themselves must never satisfy must-appear.
+  expect(ALLOW_EXACT.includes('.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md') === false,
+    'archive paths must not carry a must-appear assertion');
+
+  // Exhaustive pure-machine fixture: all 16 existence combinations.
+  for (const [combo, expected] of LIFECYCLE_COMBOS) {
+    const r = checkLifecyclePair((p) => {
+      if (p === '.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md') return combo[0] === '1';
+      if (p === '.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md') return combo[1] === '1';
+      if (p === '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md') return combo[2] === '1';
+      if (p === '.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md') return combo[3] === '1';
+      throw new Error(`fixture asked about an unknown path: ${p}`);
+    });
+    const valid = expected === 'active' || expected === 'archived';
+    if (valid) {
+      expect(r.errors.length === 0 && r.state === expected,
+        `combo ${combo} must resolve to state "${expected}", got ${JSON.stringify(r)}`);
+    } else {
+      expect(r.errors.length === 1 && r.errors[0].startsWith(expected),
+        `combo ${combo} must fail as "${expected}", got ${JSON.stringify(r)}`);
+    }
+  }
 
   const basePath = path.join(PHASE1, 'base-commit.txt');
   expect(fs.existsSync(basePath), `frozen base commit file missing: ${basePath}`);
   const base = fs.readFileSync(basePath, 'utf8').trim();
   expect(/^[0-9a-f]{40}$/.test(base), `frozen base commit is not a sha: ${base}`);
 
+  // ── Lifecycle resolution (Gate 4 round 2) ────────────────────────────────
+  // YOLO2_LIFECYCLE_SIM=archive simulates the post-*accept layout WITHOUT
+  // touching real files: the archive copies are reported present and their
+  // content size is taken from the active counterpart (an accept-archive is a
+  // move, so content is identical by construction). Real runs leave the env
+  // unset and read the filesystem directly.
+  const SIM_ARCHIVE = process.env.YOLO2_LIFECYCLE_SIM === 'archive';
+  const ACTIVE_PAIR = {
+    '.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md':
+      '.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
+    '.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md':
+      '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
+  };
+  const lifecycleExists = (rel) => {
+    if (SIM_ARCHIVE && ACTIVE_PAIR[rel]) return false; // active copy gone after the move
+    if (SIM_ARCHIVE && ALLOW_LIFECYCLE_ARCHIVE.includes(rel)) return true;
+    return fs.existsSync(path.join(REPO_ROOT, rel));
+  };
+  const lifecycle = checkLifecyclePair(lifecycleExists);
+  expect(lifecycle.errors.length === 0,
+    `task lifecycle is not in a valid state:\n  - ${lifecycle.errors.join('\n  - ')}`);
+
   const missing = REQUIRED_EVIDENCE.filter((rel) => {
     const abs = path.join(REPO_ROOT, rel);
     return !fs.existsSync(abs) || fs.statSync(abs).size === 0;
   });
+  // The resolved pair files must exist and be non-empty. Under the simulated
+  // archive state the content size comes from the active counterpart (move
+  // semantics); under the real archived state these are ordinary disk reads.
+  const pairPaths = {
+    handoff: lifecycle.state === 'archived'
+      ? '.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md'
+      : '.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
+    completion: lifecycle.state === 'archived'
+      ? '.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md'
+      : '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
+  };
+  for (const rel of Object.values(pairPaths)) {
+    let ok;
+    if (SIM_ARCHIVE && ALLOW_LIFECYCLE_ARCHIVE.includes(rel)) {
+      ok = fs.existsSync(path.join(REPO_ROOT, ACTIVE_PAIR[rel]))
+        && fs.statSync(path.join(REPO_ROOT, ACTIVE_PAIR[rel])).size > 0;
+    } else {
+      ok = fs.existsSync(path.join(REPO_ROOT, rel)) && fs.statSync(path.join(REPO_ROOT, rel)).size > 0;
+    }
+    if (!ok) missing.push(rel);
+  }
   expect(missing.length === 0, `required evidence missing or empty:\n  - ${missing.join('\n  - ')}`);
 
   const changed = git(['diff', '--name-only', `${base}..HEAD`], REPO_ROOT).split('\n').filter(Boolean);
