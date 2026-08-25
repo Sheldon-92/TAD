@@ -621,6 +621,12 @@ or a compact summary as progress truth.
     '3. rebuildable `checkpoint.json`',
     '4. this packet / `session-state.md` / PreCompact snapshots — navigation only',
   ].join('\n'));
+  add('VERIFICATION MODEL', [
+    '- A checkpoint is only a CANDIDATE: it records intent, it does not verify the work.',
+    '- `verified` advances ONLY when a Conductor (an identity distinct from the executor, `written_by_id` != `executor_id`) writes a bound verification receipt after the existing Gate and an independent review have both PASSed.',
+    '- Completion prose, an ordinary file, a self-authored receipt, or any executor assertion NEVER advances `verified`.',
+    '- Until a validated receipt names the slice, that slice stays unverified — even if the work appears done.',
+  ].join('\n'));
 
   const text = header + '\n' + sections.map((s) => s.text).join('\n');
   const composition = sections.map((s) => ({ section: s.title, tokens: estimateTokens(s.text) }));

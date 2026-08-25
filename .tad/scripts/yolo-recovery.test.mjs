@@ -581,6 +581,10 @@ function caseStatusCapsule() {
   }
   expect(packet.includes('NON-GOALS') && packet.includes('FORBIDDEN SCOPE'),
     'recovery packet must keep non-goals and forbidden scope');
+  expect(packet.includes('VERIFICATION MODEL'),
+    'recovery packet must carry the verification model section');
+  expect(/CANDIDATE/.test(packet) && /written_by_id/.test(packet) && /NEVER advances `verified`/.test(packet),
+    'verification model must state: checkpoint=candidate, conductor-distinct receipt advances, self-assertion never advances');
   const resume = cli(['resume', '--run', RUN_REL], repo.dir);
   expect(resume.status.capsule_tokens > 0 && resume.status.capsule_tokens <= CAPSULE_TOKEN_BUDGET,
     `capsule must fit the ${CAPSULE_TOKEN_BUDGET} token budget, got ${resume.status.capsule_tokens}`);
