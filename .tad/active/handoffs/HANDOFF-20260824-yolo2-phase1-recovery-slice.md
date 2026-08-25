@@ -19,6 +19,10 @@ gate4_delta:
     alex_said: "Phase 1 would use fresh Claude Code contexts on the selected Claude Code reference harness."
     actual: "The dogfood used OpenCode Task sub-agents with prompt-level isolation rather than process-level fresh Claude Code contexts."
     caught_by: "Gate 3 completion deviation disclosure, verified by Alex from raw run evidence"
+  - field: "AC10 post-archive lifecycle"
+    alex_said: "Allowlisting the six completion-flow lifecycle paths would make final-head acceptance stable."
+    actual: "AC10 passes while Handoff/COMPLETION are active but fails immediately after the required archive transition because the checker hard-codes the active COMPLETION path and does not model the archived pair."
+    caught_by: "Alex post-archive consistency rerun on 2026-08-25"
 ---
 
 # Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片
@@ -27,7 +31,7 @@ gate4_delta:
 **To:** Blake (Execution Master)  
 **Date:** 2026-08-24  
 **Task ID:** TASK-20260824-YOLO2-P1  
-**Handoff Version:** 1.0.1 — Gate 2 PASS; Gate 4 corrective amendment
+**Handoff Version:** 1.0.2 — Gate 2 PASS; Gate 4 lifecycle amendment
 **Epic:** `EPIC-20260824-yolo2-verified-orchestration.md` (Phase 1/4)  
 **Decision:** `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`  
 **Supersedes:** archived `SUPERSEDED-HANDOFF-20260824-yolo2-phase1-contract-baseline.md`
@@ -47,6 +51,14 @@ Blake must update the checker to this exact amended allowlist, retain red contro
 for unrelated workflow/runtime paths, run the complete suite after all completion
 artifacts exist, and obtain independent incremental PASS verdicts for the prior
 code/architecture/security FAIL reports before resubmitting Gate 3.
+
+### Gate 4 lifecycle amendment — round 2
+
+The checker must recognize the TAD task lifecycle, not one directory state. Exactly
+one matching Handoff/COMPLETION pair is valid: either both under `.tad/active/handoffs/`
+before acceptance archive, or both under `.tad/archive/handoffs/` afterward. Missing
+both, a split pair, or duplicate active+archive copies must fail. Both states must
+retain the same product/runtime scope fence and evidence requirements.
 
 ## 🔴 Gate 2: Design Completeness
 
@@ -485,6 +497,8 @@ required_evidence:
 - The final-head scope checker must additionally allow only these TAD lifecycle paths, all of which are produced or updated by design/completion/knowledge capture for this same task:
   - `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md`
   - `.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md`
+  - `.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` (post-accept alternative; exactly one active/archive pair)
+  - `.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md` (post-accept alternative; exactly one active/archive pair)
   - `.tad/decisions/DR-20260824-yolo2-orchestration-kernel.md`
   - `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
   - `.tad/project-knowledge/patterns/memory-and-learning.md`
@@ -540,7 +554,7 @@ Three treatment runs plus one control as P4. Fresh-session evidence must record 
 | AC7 | Raw evidence proves soft semantic recovery ≥90% | `node .tad/scripts/yolo-recovery.test.mjs --case dogfood-evidence` | each treatment ≥0.90 with independent reviewer whose report hash and assertion/oracle binding verify | post-impl |
 | AC8 | Raw evidence proves real continuation and no repeated verified work | `node .tad/scripts/yolo-recovery.test.mjs --case dogfood-evidence` | control present/same base+input; each treatment continuation, hidden acceptance, Gate PASS, receipt hashes valid; repeat/unauthorized = 0 | post-impl |
 | AC9 | human-readable bounded status/recovery | `node .tad/scripts/yolo-recovery.test.mjs --case status-capsule` | all required labels present; token estimate ≤2500 or explicit blocked result preserving hard anchors | post-impl |
-| AC10 | evidence and scope complete | `node .tad/scripts/yolo-recovery.test.mjs --case required-evidence` | checker reads frozen base SHA, requires all §6.2 paths non-empty, and compares `git diff --name-only <base>..HEAD` to the exact §7 product + TAD-lifecycle allowlist and declared evidence/completion prefixes; unrelated workflow/runtime paths remain red controls | Gate 4 amendment: pending Blake final-head rerun |
+| AC10 | evidence and scope complete across acceptance lifecycle | `node .tad/scripts/yolo-recovery.test.mjs --case required-evidence` | checker reads frozen base SHA, requires all §6.2 evidence non-empty, accepts exactly one matching active-or-archive Handoff/COMPLETION pair, rejects missing/split/duplicate pairs, and compares `git diff --name-only <base>..HEAD` to the exact §7 product + lifecycle allowlist; unrelated workflow/runtime paths remain red controls | Gate 4 lifecycle amendment: pending Blake two-state rerun |
 
 ### 9.2 Expert Review Status
 

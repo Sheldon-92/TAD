@@ -12,7 +12,7 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Epic accepted; Phase 1 Gate 2 PASS
+### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Phase 1 Gate 4 lifecycle correction pending
 
 - **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 0/4)
 - **Reset decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
@@ -22,13 +22,13 @@
 - **Kept**: local files, frozen Handoff, bounded MEA slices, no blind retry, independent review, Y1–Y8/Gate authority and honest harness modes.
 - **Deferred**: universal six-schema reducer, hash chain/fencing, bespoke JavaScript sandbox, full three-harness parity and default-on.
 - **Decision**: human confirmed Epic v2 on 2026-08-24 (option 1).
-- **Phase 1 handoff**: `.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` — 2 review rounds, residual P0=0, Gate 2 PASS.
-- **🟢 Gate 3 PASS 2026-08-25**: COMPLETION at `.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md`（commit 链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`，AC1-10 全绿）。
-- **🟠 Gate 4 PARTIAL 2026-08-25**: Alex 独立复跑发现 final HEAD 的 AC2/AC10 实际为 FAIL（completion 生命周期文件未进 scope checker allowlist）；code/architecture/security 审查载体仍为 FAIL，缺增量 PASS 闭环；OpenCode Task-subagent 降级需持久批准载体。已由 Alex 补正 AC10 精确契约，退回 Blake 窄修复，无需重跑 dogfood（除非恢复行为变更）。证据：`.tad/evidence/acceptance-tests/yolo2-phase1-recovery-slice/gate4-partial-report.md`。
+- **Phase 1 handoff**: `.tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` — Gate 4 lifecycle amendment v1.0.2 active.
+- **🟢 Gate 3 substance PASS 2026-08-25**: current HEAD `4d9039c9`; runtime/dogfood/reviewer blockers closed.
+- **🟠 Gate 4 PARTIAL round 2**: human degradation approval is now valid, but the required archive transition exposed AC10 hard-coding of the active COMPLETION path; post-archive `required-evidence` exits 1. Archive was safely rolled back. Blake must prove active and archive states, plus missing/split/duplicate red controls. No dogfood rerun required. Report: `.tad/evidence/acceptance-tests/yolo2-phase1-recovery-slice/gate4-partial-report.md`.
   - **dogfood 3/3 恢复全过**（base `84c3666c`）：interruption-a/b/c 各 hard 8/8 + soft 1.00 + 继续 + 隐藏验收 13/13 + Gate PASS + receipt。
   - ⚠️ **三次机制修复**（真实失败购买）：recovery packet 缺 VERIFICATION MODEL / PROHIBITIONS / side-effect 分类规则 → 各 0.88 → 修后 1.00。详见 `knowledge-assessment.md` + patterns/memory-and-learning.md 新条目。
-  - ⚠️ 已知偏差：fresh context 为 opencode Task 子代理（DEGRADED_WITH_APPROVAL，2026-08-24 批准）。
-- **Next**: Alex 跑 Gate 4 验收（Epic Phase 1 acceptance outcomes 已逐项对照于 COMPLETION 末节）。
+  - ⚠️ 已知偏差：fresh context 为 OpenCode Task 子代理（DEGRADED_WITH_APPROVAL，人类 2026-08-25 明确批准，仅限 Phase 1）。
+- **Next**: Blake 修复 AC10 的 active/archive 双状态契约并窄复核；完成前不启动 Phase 2。
 
 ### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进
 

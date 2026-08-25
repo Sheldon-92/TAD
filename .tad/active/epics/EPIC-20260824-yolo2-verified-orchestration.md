@@ -2,7 +2,7 @@
 
 **Epic ID**: EPIC-20260824-yolo2-verified-orchestration  
 **Revision**: v2 — vertical-slice-first reset  
-**Status**: ACCEPTED — human confirmed 2026-08-24  
+**Status**: IN PROGRESS — Phase 1 Gate 4 lifecycle correction pending
 **Owner**: Alex  
 **Created**: 2026-08-24  
 **Reset**: 2026-08-24  
@@ -141,7 +141,7 @@ Fresh context re-enters through a semantic recovery assertion
 
 | # | Phase | Status | First useful outcome |
 |---|---|---|---|
-| 1 | 真实恢复纵向切片 | 🔄 Active — Gate 2 PASS; ready for Blake | 一个真实 YOLO 任务可在 compact/kill 后由新上下文正确继续 |
+| 1 | 真实恢复纵向切片 | 🔄 Active — Gate 4 post-archive checker correction pending | 一个真实 YOLO 任务可在 compact/kill 后由新上下文正确继续 |
 | 2 | 质量保持的有界执行闭环 | Planned | 恢复理解、短回合、独立验证和整体质量检查形成闭环 |
 | 3 | 多 harness 适配与 opt-in 接入 | Planned | Claude/Codex/OpenCode 给出实测 strict/degraded/blocked 结论 |
 | 4 | 配对评估、故障注入与默认裁决 | Planned | 用真实任务证明质量与可靠性，再决定是否 default-on |
@@ -152,7 +152,12 @@ Fresh context re-enters through a semantic recovery assertion
 
 ### Phase 1 — 真实恢复纵向切片
 
-**Status:** 🔄 Active — handoff Gate 2 PASS; ready for implementation
+**Status:** 🔄 Active — Gate 4 post-archive checker correction pending
+
+**Notes:** Runtime and dogfood outcomes are accepted in substance at `4d9039c9`.
+Human approved the OpenCode Task-subagent degradation for Phase 1 only. Final archive
+is pending one lifecycle-checker correction: AC10 must remain green after the required
+Handoff/COMPLETION move to archive.
 
 **Scope**
 
@@ -257,4 +262,6 @@ Fresh context re-enters through a semantic recovery assertion
 
 ## 11. Next Design Step
 
-Epic v2 已获人类确认。Alex 正在为 Phase 1 编写一份新的、纵向切片优先的 Handoff。该 Handoff 必须把可执行交付面保持在最小范围，并在 Gate 2 中优先验证真实恢复链路，而不是证明任意 JavaScript 安全。
+Phase 1 cannot advance to Phase 2 until AC10 is proven green in both the active and
+post-archive lifecycle states. This is a narrow test-contract correction; recovery
+runtime and dogfood must not be repeated unless that runtime changes.
