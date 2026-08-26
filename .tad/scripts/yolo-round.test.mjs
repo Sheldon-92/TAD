@@ -68,7 +68,7 @@ function makeRepo({ withPolicy = true, skipInit = false } = {}) {
   execFileSync('git', ['config', 'user.email', 'suite@tad.local'], { cwd: dir });
   execFileSync('git', ['config', 'user.name', 'suite'], { cwd: dir });
   fs.mkdirSync(path.join(dir, '.tad/scripts'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.gitignore'), '.tad/evidence/\n');
+  fs.writeFileSync(path.join(dir, '.gitignore'), '.tad/evidence/\n*.json\nh.md\noracle.md\n');
   fs.copyFileSync(CLI, path.join(dir, '.tad/scripts/yolo-recovery.mjs'));
   fs.writeFileSync(path.join(dir, 'work.md'), '# work file\n\nFrozen paragraph stays.\n');
   execFileSync('git', ['add', '-A'], { cwd: dir });
@@ -108,13 +108,46 @@ function makeRepo({ withPolicy = true, skipInit = false } = {}) {
 }
 
 function writeJson(repo, rel, obj) {
+  if (obj && obj.format === 'yolo-round-report-v1' && !obj.deterministic_checks) {
+    const round = currentRound(repo);
+    obj = {
+      ...obj,
+      round_id: obj.round_id || (round && round.round_id),
+      deterministic_checks: (round && round.deterministic_checks || [{ id: 'check-1', expected_exit: 0, expected_result: 'PASS' }])
+        .map((check) => ({ id: check.id, exit: check.expected_exit, result: check.expected_result })),
+    };
+  }
   const abs = path.join(repo.dir, rel);
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   fs.writeFileSync(abs, JSON.stringify(obj, null, 2));
   return { path: rel, sha256: sha256File(abs) };
 }
 
+function journalEvents(repo) {
+  return fs.readFileSync(path.join(repo.dir, RUN_REL, 'journal.jsonl'), 'utf8')
+    .split('\n').filter(Boolean).map((line) => JSON.parse(line));
+}
+
+function journalSeq(repo) { return journalEvents(repo).length; }
+
+function currentRound(repo) {
+  const events = journalEvents(repo);
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    if (events[i].type === 'round_prepared') return events[i].payload;
+  }
+  return null;
+}
+
+function rawCarrier(repo, label, body) {
+  const rel = `.tad/evidence/yolo/raw-${roundCounter}-${label}.txt`;
+  const abs = path.join(repo.dir, rel);
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  fs.writeFileSync(abs, body || `${label}\n`);
+  return { host_locator: abs, sha256: sha256File(abs) };
+}
+
 let roundCounter = 0;
+let artifactCounter = 0;
 function runGoal(repo) {
   return JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'goal.json'), 'utf8'));
 }
@@ -138,7 +171,7 @@ function makeContract(repo, over = {}) {
     maps_to_success: ['SC-1'],
     necessary_evidence: [{ path: evidenceRel, sha256: sha256File(path.join(repo.dir, evidenceRel)) }],
     allowed_paths: ['work.md'],
-    forbidden_scope_sha256: sha256String(JSON.stringify(repo.goal.forbidden_scope)),
+     forbidden_scope_sha256: sha256String(JSON.stringify(repo.goal.forbidden_scope)),
     tool_allowlist: ['Read', 'Edit', 'Write'],
     deterministic_checks: [{ id: 'check-1', command: 'node --check .tad/scripts/yolo-recovery.mjs', expected_exit: 0, expected_result: 'PASS' }],
     semantic_review_required: true,
@@ -151,43 +184,94 @@ function makeContract(repo, over = {}) {
 }
 
 function makeAssertion(repo, { hard = 8, soft = 0.95, verdict = 'PASS', author = 'fresh-exec', session = 'sess-exec-1' } = {}) {
+  const artifactId = ++artifactCounter;
   const runDir = path.join(repo.dir, RUN_REL);
-  const packetPath = path.join(runDir, 'rounds', preparedRoundId(repo), 'execution.md');
+  const round = currentRound(repo) || { round_id: preparedRoundId(repo) };
+  const packetPath = path.join(runDir, 'rounds', round ? round.round_id : preparedRoundId(repo), 'execution.md');
   const sha = fs.existsSync(packetPath) ? sha256File(packetPath) : sha256String('missing');
-  return writeJson(repo, `assertion-${roundCounter}.json`, {
+  const usage = { input_tokens: 100, output_tokens: 50, total_tokens: 150, native: true };
+  const result = writeJson(repo, `assertion-${roundCounter}-${artifactId}.json`, {
     format: 'yolo-recovery-assertion-v1', verdict, author_id: author,
     hard_correct: hard, hard_total: 8, soft_score: soft, packet_sha256: sha,
+    written_by: 'reference-runner', runner_version: '1.0.0', runner_sha256: sha256File(CLI),
+    parser_version: '1', invocation_nonce: crypto.randomBytes(6).toString('hex'),
+    role: 'executor', turn_kind: 'assertion', session_id: session,
+    round_id: round.round_id, journal_seq: journalSeq(repo), exit_status: 0,
+    raw_native_output: rawCarrier(repo, `assertion-out-${artifactId}`, 'assertion native output\n'),
+    raw_native_trace: rawCarrier(repo, `assertion-trace-${artifactId}`, '{"kind":"assertion"}\n'),
+    tool_policy: { allowed: ['Read'], denied: ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'], sandbox: 'read-only' },
+    tool_calls: [{ native_call_id: 'assertion-read', tool: 'Read', args_sha256: sha256String('assertion-read'), decision: 'allowed', action_nonce: null, observed_changed: [], observed_deleted: [], observed_untracked: [] }],
+    worktree_observation: [], usage,
   });
+  repo.lastAssertionPath = result.path;
+  return result;
 }
 
 function makeReview(repo, { verdict = 'PASS', reviewer = 'independent-rev-1' } = {}) {
-  return writeJson(repo, `review-${roundCounter}.json`, {
-    format: 'yolo-recovery-review-v1', verdict, reviewer_id: reviewer,
+  const artifactId = ++artifactCounter;
+  const round = currentRound(repo) || { round_id: preparedRoundId(repo) };
+  const packetPath = path.join(repo.dir, RUN_REL, 'rounds', round.round_id, 'execution.md');
+  const assertionPath = path.join(repo.dir, repo.lastAssertionPath || `assertion-${roundCounter}.json`);
+  const goal = runGoal(repo);
+  return writeJson(repo, `review-${roundCounter}-${artifactId}.json`, {
+    format: 'yolo-recovery-review-v1', verdict, reviewer_id: reviewer, author_id: reviewer,
+    written_by: 'reference-runner', runner_version: '1.0.0', runner_sha256: sha256File(CLI),
+    parser_version: '1', invocation_nonce: crypto.randomBytes(6).toString('hex'),
+    role: 'reviewer', turn_kind: 'review', session_id: `review-${reviewer}`,
+    round_id: round.round_id, journal_seq: journalSeq(repo), packet_sha256: fs.existsSync(packetPath) ? sha256File(packetPath) : sha256String('missing'),
+    assertion_sha256: sha256File(assertionPath), oracle_sha256: goal.oracle_sha256, exit_status: 0,
+    raw_native_output: rawCarrier(repo, `review-out-${artifactId}`, 'review native output\n'),
+    raw_native_trace: rawCarrier(repo, `review-trace-${artifactId}`, '{"kind":"review"}\n'),
+    usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
   });
 }
 
 function makeTurnRecord(repo, { kind = 'assertion', session = 'sess-exec-1', nonce = null, mutate = false, resumedFrom = null, extra = {} } = {}) {
-  const pktPath = path.join(repo.dir, RUN_REL, 'rounds', preparedRoundId(repo), 'execution.md');
+  const artifactId = ++artifactCounter;
+  const round = currentRound(repo) || { round_id: preparedRoundId(repo) };
+  const pktPath = path.join(repo.dir, RUN_REL, 'rounds', round.round_id, 'execution.md');
   const pktSha = fs.existsSync(pktPath) ? sha256File(pktPath) : sha256String('missing');
-  return writeJson(repo, `turn-${kind}-${roundCounter}.json`, {
+  const action = nonce ? journalEvents(repo).flatMap((event) => event.type === 'action_started' ? [event.payload] : [])
+    .find((candidate) => candidate.action_nonce === nonce) : null;
+  const defaultCall = mutate
+    ? {
+      native_call_id: 'c1', tool: action ? action.tool_class : 'Edit',
+      args_sha256: action ? action.args_sha256 : sha256String('a'), decision: 'allowed', action_nonce: nonce,
+      round_id: round.round_id, target: action ? action.target : 'work.md',
+      pre_sha256: action ? action.pre_sha256 : sha256String('pre'),
+      post_sha256: action ? (action.observed_sha256 || action.intended_post_sha256) : sha256String('post'),
+      observed_sha256: action ? (action.observed_sha256 || action.intended_post_sha256) : sha256String('post'),
+      effect_manifest_sha256: action ? action.effect_manifest_sha256 : sha256String('effect'),
+      observed_changed: action ? [...action.effect_paths] : ['work.md'], observed_deleted: [], observed_untracked: [],
+    }
+    : { native_call_id: 'c0', tool: 'Read', args_sha256: sha256String('r'), decision: 'allowed', action_nonce: null, round_id: round.round_id, observed_changed: [], observed_deleted: [], observed_untracked: [] };
+  const calls = extra.tool_calls || [defaultCall];
+  const worktreeObservation = extra.worktree_observation || calls.flatMap((call) => [
+    ...(call.observed_changed || []), ...(call.observed_deleted || []), ...(call.observed_untracked || []),
+  ]);
+  const usage = extra.usage || (kind === 'assertion'
+    ? { input_tokens: 100, output_tokens: 50, total_tokens: 150, native: true }
+    : { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
+  return writeJson(repo, `turn-${kind}-${roundCounter}-${artifactId}.json`, {
     format: 'yolo-reference-turn-v1', written_by: 'reference-runner',
     runner_version: '1.0.0', runner_sha256: sha256File(CLI), parser_version: '1',
     invocation_nonce: crypto.randomBytes(6).toString('hex'),
     harness: 'reference', harness_version: '1', model_id: 'm1', model_family: 'f1', reasoning: 'balanced',
     role: 'executor', session_id: session, resumed_from_session: resumedFrom, turn_kind: kind,
-    packet_sha256: pktSha, raw_native_output: { host_locator: '/host/out', sha256: sha256String('out') },
-    raw_native_trace: { host_locator: '/host/trace', sha256: sha256String('trace') },
-    tool_policy: { allowed: ['Read'], denied: ['Write', 'Edit', 'Shell', 'Agent'] },
-    tool_calls: mutate
-      ? [{ native_call_id: 'c1', tool: 'Edit', args_sha256: sha256String('a'), decision: 'allowed', action_nonce: nonce, observed_changed: ['work.md'], observed_deleted: [], observed_untracked: [] }]
-      : [{ native_call_id: 'c0', tool: 'Read', args_sha256: sha256String('r'), decision: 'allowed', action_nonce: null, observed_changed: [], observed_deleted: [], observed_untracked: [] }],
-    usage: { input_tokens: 100, output_tokens: 50, total_tokens: 150, native: true },
+    round_id: round.round_id, journal_seq: journalSeq(repo), packet_sha256: pktSha,
+    raw_native_output: rawCarrier(repo, `${kind}-out-${artifactId}`, `${kind} native output\n`),
+    raw_native_trace: rawCarrier(repo, `${kind}-trace-${artifactId}`, `{\"kind\":\"${kind}\"}\n`),
+    tool_policy: kind === 'assertion'
+      ? { allowed: ['Read'], denied: ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'], sandbox: 'read-only' }
+      : { allowed: ['Read', 'Edit', 'Write'], denied: ['Shell', 'Bash', 'Agent', 'Task'], sandbox: 'workspace-write' },
+    tool_calls: calls, worktree_observation: worktreeObservation,
+    usage, exit_status: 0,
     ...extra,
   });
 }
 
 function authorizeRound(repo, { session = 'sess-exec-1' } = {}) {
-  const a = makeAssertion(repo);
+  const a = makeAssertion(repo, { session });
   const r = makeReview(repo);
   const t = makeTurnRecord(repo, { session });
   const res = cli(['round-authorize', '--run', RUN_REL, '--assertion', a.path, '--review', r.path, '--turn-record', t.path], repo.dir);
@@ -196,7 +280,8 @@ function authorizeRound(repo, { session = 'sess-exec-1' } = {}) {
 }
 
 function closeAndVerify(repo, { slice = 'S1', nonce = null } = {}) {
-  const report = writeJson(repo, `report-${roundCounter}.json`, { format: 'yolo-round-report-v1', round_id: `R-${String(roundCounter).padStart(2, '0')}`, changed_paths: ['work.md'] });
+  const round = currentRound(repo);
+  const report = writeJson(repo, `report-${roundCounter}.json`, { format: 'yolo-round-report-v1', round_id: round.round_id, changed_paths: nonce ? ['work.md'] : [] });
   const usage = writeJson(repo, `usage-${roundCounter}.json`, { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   const t = makeTurnRecord(repo, { kind: 'execution', session: 'sess-exec-1', nonce });
   const close = cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', report.path, '--usage', usage.path, '--turn-record', t.path], repo.dir);
@@ -207,7 +292,10 @@ function closeAndVerify(repo, { slice = 'S1', nonce = null } = {}) {
   const rg = runGoal(repo);
   const receipt = writeJson(repo, `receipt-${roundCounter}.json`, {
     format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: rg.run_id, slice,
-    handoff_revision: rg.handoff_revision, worktree_realpath: rg.worktree_realpath,
+     handoff_revision: rg.handoff_revision, worktree_realpath: rg.worktree_realpath,
+     round_id: round.round_id, report_sha256: sha256File(path.join(repo.dir, report.path)),
+     usage_sha256: sha256File(path.join(repo.dir, usage.path)), turn_record_sha256: sha256File(path.join(repo.dir, t.path)),
+     maps_to_success: ['SC-1'],
     verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo.dir }).toString().trim(),
     gate_evidence: [{ ...gate, verdict: 'PASS' }], review_evidence: [{ ...rev, independent: true, verdict: 'PASS' }],
     executor_id: 'exec-fresh', written_by: 'conductor', written_by_id: 'conductor-blake',
@@ -215,6 +303,70 @@ function closeAndVerify(repo, { slice = 'S1', nonce = null } = {}) {
   const v = cli(['verify', '--run', RUN_REL, '--slice', slice, '--receipt', receipt.path], repo.dir);
   expect(v.exitCode === 0, `verify failed:\n${v.stdout.slice(-600)}`);
   return receipt;
+}
+
+function completeVerifiedRound(repo, { slice = 'S1', maps = ['SC-1'] } = {}) {
+  const contract = makeContract(repo, { slice_id: slice, maps_to_success: maps });
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', contract.path], repo.dir), 0, `prepare ${slice}`);
+  authorizeRound(repo);
+  const report = writeJson(repo, `complete-report-${slice}-${roundCounter}.json`, { format: 'yolo-round-report-v1', changed_paths: [] });
+  const usage = writeJson(repo, `complete-usage-${slice}-${roundCounter}.json`, { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
+  const turn = makeTurnRecord(repo, { kind: 'execution' });
+  expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', report.path, '--usage', usage.path, '--turn-record', turn.path], repo.dir), 0, `close ${slice}`);
+  const closed = journalEvents(repo).find((event) => event.type === 'round_closed' && event.payload.round_id === currentRound(repo)?.round_id)
+    || journalEvents(repo).filter((event) => event.type === 'round_closed').pop();
+  const gate = writeJson(repo, `complete-gate-${slice}-${roundCounter}.json`, { verdict: 'PASS' });
+  const review = writeJson(repo, `complete-review-${slice}-${roundCounter}.json`, { verdict: 'PASS', independent: true, reviewer_id: `post-${slice}` });
+  const goal = runGoal(repo);
+  const receipt = writeJson(repo, `complete-receipt-${slice}-${roundCounter}.json`, {
+    format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: goal.run_id, slice,
+    handoff_revision: goal.handoff_revision, worktree_realpath: goal.worktree_realpath,
+    verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo.dir }).toString().trim(),
+    round_id: closed.payload.round_id, report_sha256: closed.payload.report_sha256,
+    usage_sha256: closed.payload.usage_sha256, turn_record_sha256: closed.payload.turn_record_sha256,
+    maps_to_success: maps,
+    gate_evidence: [{ ...gate, verdict: 'PASS' }], review_evidence: [{ ...review, independent: true, verdict: 'PASS' }],
+    executor_id: `executor-${slice}`, written_by: 'conductor', written_by_id: `conductor-${slice}`,
+  });
+  expectExit(cli(['verify', '--run', RUN_REL, '--slice', slice, '--receipt', receipt.path], repo.dir), 0, `verify ${slice}`);
+}
+
+function makeAlignmentReceipt(repo, over = {}) {
+  const goal = runGoal(repo);
+  const verified = JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'checkpoint.json'), 'utf8')).verified;
+  const reviewerEvidence = writeJson(repo, `alignment-evidence-${++artifactCounter}.json`, { verdict: 'PASS', reviewer_id: 'alignment-reviewer' });
+  return writeJson(repo, `alignment-${artifactCounter}.json`, {
+    format: 'yolo-alignment-receipt-v1', verdict: 'PASS',
+    goal_sha256: journalEvents(repo)[0].payload.goal_sha256, handoff_revision: goal.handoff_revision,
+    verified_digest: sha256String(JSON.stringify(verified)), watermark_seq: journalSeq(repo),
+    success: [{ id: 'SC-1', status: 'met', evidence: 'verified S1' }, { id: 'SC-2', status: 'met', evidence: 'verified S2' }],
+    non_goals: [{ id: 'NG-1', status: 'checked' }],
+    forbidden_scope: [{ id: 'FS-1', status: 'checked' }, { id: 'FS-2', status: 'checked' }, { id: 'FS-3', status: 'checked' }],
+    changed_paths: [], unresolved_risks: [],
+    reviewer: { id: 'alignment-reviewer', independent: true, verdict: 'PASS', evidence: [reviewerEvidence] },
+    ...over,
+  });
+}
+
+function makePhaseCandidateReceipt(repo, over = {}) {
+  const goal = runGoal(repo);
+  const events = journalEvents(repo);
+  const alignment = events.filter((event) => event.type === 'alignment_verified').pop();
+  const state = JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'checkpoint.json'), 'utf8'));
+  const hidden = writeJson(repo, `hidden-acceptance-${++artifactCounter}.json`, { verdict: 'PASS', passed: true });
+  const reviewerEvidence = writeJson(repo, `final-review-evidence-${artifactCounter}.json`, { verdict: 'PASS', reviewer_id: 'final-reviewer' });
+  return writeJson(repo, `phase-candidate-${artifactCounter}.json`, {
+    format: 'yolo-phase-candidate-receipt-v1', verdict: 'PASS',
+    goal_sha256: events[0].payload.goal_sha256, handoff_revision: goal.handoff_revision,
+    verified_digest: sha256String(JSON.stringify(state.verified)), watermark_seq: alignment.payload.watermark_seq,
+    alignment_receipt_sha256: alignment.payload.receipt_sha256,
+    verified_slices: ['S1', 'S2'],
+    success: [{ id: 'SC-1', status: 'met', evidence: 'verified S1' }, { id: 'SC-2', status: 'met', evidence: 'verified S2' }],
+    failed_checks: [], wrong_or_unauthorized_next_action: 0, repeated_verified_actions: 0,
+    hidden_acceptance: { ...hidden, verdict: 'PASS', passed: true },
+    final_reviewer: { id: 'final-reviewer', independent: true, verdict: 'PASS', evidence: [reviewerEvidence] },
+    ...over,
+  });
 }
 
 // ═══════════════ CASE: phase2-policy ═══════════════
@@ -266,17 +418,21 @@ function caseRoundState() {
   expectRed(cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', '.tad/evidence/yolo/ev-1.md'], repo.dir),
     'receipt_not_json', 'verify before closed candidate must fail');
   const report = writeJson(repo, 'rep.json', { format: 'yolo-round-report-v1', changed_paths: [] });
-  const usage = writeJson(repo, 'use.json', { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true });
+  const usage = writeJson(repo, 'use.json', { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   const tE = makeTurnRecord(repo, { kind: 'execution' });
   expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', report.path, '--usage', usage.path, '--turn-record', tE.path], repo.dir), 0, 'close candidate');
   // verify binds the closed candidate (inline; closeAndVerify would close twice)
   const rg = runGoal(repo);
   const gate = writeJson(repo, 'g-rs.json', { verdict: 'PASS' });
   const rev = writeJson(repo, 'v-rs.json', { verdict: 'PASS', independent: true });
+  const closed = journalEvents(repo).find((event) => event.type === 'round_closed');
   const receipt = writeJson(repo, 'rc-rs.json', {
     format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: rg.run_id, slice: 'S1',
     handoff_revision: rg.handoff_revision, worktree_realpath: rg.worktree_realpath,
     verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo.dir }).toString().trim(),
+    round_id: closed.payload.round_id, report_sha256: closed.payload.report_sha256,
+    usage_sha256: closed.payload.usage_sha256, turn_record_sha256: closed.payload.turn_record_sha256,
+    maps_to_success: ['SC-1'],
     gate_evidence: [{ ...gate, verdict: 'PASS' }], review_evidence: [{ ...rev, independent: true, verdict: 'PASS' }],
     executor_id: 'exec-x', written_by: 'conductor', written_by_id: 'conductor-b',
   });
@@ -298,8 +454,16 @@ function caseSliceContract() {
     ['missing success mapping', { maps_to_success: [] }],
     ['outcome phrased as file edit', { outcome: 'edit file X' }],
     ['omitted non-goal hash', { forbidden_scope_sha256: '' }],
+    ['wrong frozen-scope hash', { forbidden_scope_sha256: sha256String('different scope') }],
     ['unapproved path', { allowed_paths: ['.claude/workflows/'] }],
+    ['path traversal', { allowed_paths: ['../work.md'] }],
+    ['non-normalized path', { allowed_paths: ['./work.md'] }],
+    ['duplicate allowed path', { allowed_paths: ['work.md', 'work.md'] }],
+    ['absolute allowed path', { allowed_paths: [path.join('/tmp', 'outside')] }],
     ['missing check outcome and no semantic review', { deterministic_checks: [], semantic_review_required: false }],
+    ['deterministic check missing id', { deterministic_checks: [{ expected_exit: 0, expected_result: 'PASS' }] }],
+    ['deterministic check missing outcome', { deterministic_checks: [{ id: 'check-1', expected_exit: 0 }] }],
+    ['duplicate deterministic check id', { deterministic_checks: [{ id: 'check-1', expected_exit: 0, expected_result: 'PASS' }, { id: 'check-1', expected_exit: 0, expected_result: 'PASS' }] }],
     ['executor shell in allowlist', { tool_allowlist: ['Read', 'Shell'] }],
     ['evidence hash drift', { necessary_evidence: [{ path: 'nowhere.md', sha256: '0'.repeat(64) }] }],
   ];
@@ -309,6 +473,13 @@ function caseSliceContract() {
     expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c.path], repo.dir),
       null, `contract negative (${name}) must be refused`);
   }
+  const symlinkRepo = makeRepo();
+  const outside = fs.mkdtempSync(path.join('/tmp', 'yolo2p2-outside-'));
+  TMP_DIRS.push(outside);
+  fs.symlinkSync(outside, path.join(symlinkRepo.dir, 'escape'));
+  const symlinkContract = makeContract(symlinkRepo, { allowed_paths: ['escape/new.md'] });
+  expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', symlinkContract.path], symlinkRepo.dir),
+    null, 'allowed path through an escaping symlink must be refused');
   const repo = makeRepo();
   const c = makeContract(repo);
   expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', c.path], repo.dir), 0, 'valid contract prepares');
@@ -351,6 +522,33 @@ function caseReentryGate() {
   const estUsage = makeTurnRecord(repo, { extra: { usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2, native: false } } });
   expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', makeAssertion(repo).path, '--review', makeReview(repo).path, '--turn-record', estUsage.path], repo.dir),
     'usage_not_native', 'estimated usage must be refused');
+  const badSandbox = makeAssertion(repo);
+  const badSandboxDoc = JSON.parse(fs.readFileSync(path.join(repo.dir, badSandbox.path), 'utf8'));
+  badSandboxDoc.tool_policy.sandbox = 'workspace-write';
+  fs.writeFileSync(path.join(repo.dir, badSandbox.path), JSON.stringify(badSandboxDoc, null, 2));
+  const badSandboxReview = makeReview(repo); const badSandboxTurn = makeTurnRecord(repo);
+  expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', badSandbox.path, '--review', badSandboxReview.path, '--turn-record', badSandboxTurn.path], repo.dir),
+    'assertion_sandbox_not_read_only', 'write-capable assertion metadata must be refused');
+  const badCarrier = makeAssertion(repo);
+  const badCarrierDoc = JSON.parse(fs.readFileSync(path.join(repo.dir, badCarrier.path), 'utf8'));
+  fs.appendFileSync(badCarrierDoc.raw_native_output.host_locator, 'tampered\n');
+  const badCarrierReview = makeReview(repo); const badCarrierTurn = makeTurnRecord(repo);
+  expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', badCarrier.path, '--review', badCarrierReview.path, '--turn-record', badCarrierTurn.path], repo.dir),
+    'native_carrier_hash_mismatch', 'tampered assertion raw output must be refused');
+  const wrongRoundTurn = makeTurnRecord(repo, { extra: { round_id: 'R-99' } });
+  expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', aOk.path, '--review', rOk.path, '--turn-record', wrongRoundTurn.path], repo.dir),
+    'round_mismatch', 'assertion turn must bind the current round');
+  // Empty native observation arrays cannot hide a product mutation that is
+  // visible in the round-start worktree manifest.
+  const mutatedBeforeAssertion = makeRepo();
+  const mutatedContract = makeContract(mutatedBeforeAssertion);
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', mutatedContract.path], mutatedBeforeAssertion.dir), 0, 'prepare mutation-isolation fixture');
+  fs.writeFileSync(path.join(mutatedBeforeAssertion.dir, 'work.md'), '# changed before assertion\n');
+  const mutatedAssertion = makeAssertion(mutatedBeforeAssertion);
+  const mutatedReview = makeReview(mutatedBeforeAssertion);
+  const mutatedTurn = makeTurnRecord(mutatedBeforeAssertion);
+  expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', mutatedAssertion.path, '--review', mutatedReview.path, '--turn-record', mutatedTurn.path], mutatedBeforeAssertion.dir),
+    'assertion_turn_side_effect', 'fabricated empty assertion observations must not hide a mutation');
   // Valid authorization grants exactly one round.
   authorizeRound(repo);
   const again = makeAssertion(repo); const rAgain = makeReview(repo); const tAgain = makeTurnRecord(repo);
@@ -367,18 +565,44 @@ function caseRoundCloseAndVerify() {
   // Session mismatch on execution turn.
   const badTurn = makeTurnRecord(repo, { kind: 'execution', session: 'sess-someone-else' });
   const rep = writeJson(repo, 'r.json', { format: 'yolo-round-report-v1', changed_paths: [] });
-  const use = writeJson(repo, 'u.json', { input_tokens: 1, output_tokens: 1, total_tokens: 2, native: true });
+  const use = writeJson(repo, 'u.json', { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', badTurn.path], repo.dir),
     'session_mismatch', 'execution turn from another session must be refused');
   // Token reservation overrun.
   const overUse = writeJson(repo, 'u-over.json', { input_tokens: 900000, output_tokens: 900000, total_tokens: 1800000, native: true });
-  const okTurn = makeTurnRecord(repo, { kind: 'execution' });
+  const okTurn = makeTurnRecord(repo, { kind: 'execution', extra: { usage: { input_tokens: 900000, output_tokens: 900000, total_tokens: 1800000, native: true } } });
   expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', overUse.path, '--turn-record', okTurn.path], repo.dir),
     'token_reservation_exceeded', 'reservation overrun must fail');
   // Estimated (non-native) usage refused.
   const estUse = writeJson(repo, 'u-est.json', { input_tokens: 1, output_tokens: 1, total_tokens: 2, native: false });
   expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', estUse.path, '--turn-record', okTurn.path], repo.dir),
     'usage_not_native', 'estimated usage cannot satisfy the ledger');
+  const usageMismatchTurn = makeTurnRecord(repo, { kind: 'execution', extra: { usage: { input_tokens: 401, output_tokens: 200, total_tokens: 601, native: true } } });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', usageMismatchTurn.path], repo.dir),
+    'usage_turn_mismatch', 'usage artifact must equal native turn usage');
+  const missingRoundTurn = makeTurnRecord(repo, { kind: 'execution', extra: { round_id: 'R-99' } });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', missingRoundTurn.path], repo.dir),
+    'round_mismatch', 'execution turn must bind the current round');
+  const emptyTraceTurn = makeTurnRecord(repo, { kind: 'execution', extra: { tool_calls: [], worktree_observation: [] } });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', emptyTraceTurn.path], repo.dir),
+    'native_tool_trace_missing', 'an empty native trace must not authorize a close');
+  const badTraceTurn = makeTurnRecord(repo, { kind: 'execution' });
+  const badTraceDoc = JSON.parse(fs.readFileSync(path.join(repo.dir, badTraceTurn.path), 'utf8'));
+  fs.appendFileSync(badTraceDoc.raw_native_trace.host_locator, 'tampered\n');
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', badTraceTurn.path], repo.dir),
+    'native_carrier_hash_mismatch', 'tampered execution trace must be refused');
+  const untrackedCallTurn = makeTurnRecord(repo, { kind: 'execution', extra: {
+    tool_calls: [{ native_call_id: 'untracked', tool: 'Write', args_sha256: sha256String('untracked'), decision: 'allowed', action_nonce: null,
+      round_id: preparedRoundId(repo), observed_changed: [], observed_deleted: [], observed_untracked: ['rogue.txt'] }],
+  } });
+  const untrackedReport = writeJson(repo, 'r-untracked.json', { format: 'yolo-round-report-v1', changed_paths: ['rogue.txt'] });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', untrackedReport.path, '--usage', use.path, '--turn-record', untrackedCallTurn.path], repo.dir),
+    'unauthorized_mutation', 'observed_untracked mutation must be authorized by a current action');
+  fs.writeFileSync(path.join(repo.dir, 'rogue.txt'), 'direct mutation\n');
+  const directMutationTurn = makeTurnRecord(repo, { kind: 'execution' });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', directMutationTurn.path], repo.dir),
+    'unreceipted_mutation', 'direct mutation absent from the native trace must block');
+  fs.unlinkSync(path.join(repo.dir, 'rogue.txt'));
   // Unauthorized mutation: mutating call with no open policy action.
   const mutTurn = makeTurnRecord(repo, { kind: 'execution', mutate: true });
   expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', mutTurn.path], repo.dir),
@@ -399,14 +623,69 @@ function caseRoundCloseAndVerify() {
   const started = JSON.parse(jlines[jlines.length - 1]);
   const nonce = started.payload.action_nonce;
   // The side effect is reconciled (confirmed) before the round may close.
-  const rec = cli(['reconcile', '--run', RUN_REL, '--action', 'A1', '--outcome', 'confirmed', '--observed-sha256', sha256String('# work file\n\nFrozen paragraph stays.\nplus one line\n')], repo.dir);
+   const rec = cli(['reconcile', '--run', RUN_REL, '--action', 'A1', '--outcome', 'confirmed', '--observed-sha256', sha256String('# work file\n\nFrozen paragraph stays.\nplus one line\n')], repo.dir);
   expect(rec.exitCode === 0, `reconcile:\n${rec.stdout.slice(-400)}`);
+  const wrongActionTurn = makeTurnRecord(repo, { kind: 'execution', mutate: true, nonce });
+  const wrongActionDoc = JSON.parse(fs.readFileSync(path.join(repo.dir, wrongActionTurn.path), 'utf8'));
+  wrongActionDoc.tool_calls[0].tool = 'Write';
+  fs.writeFileSync(path.join(repo.dir, wrongActionTurn.path), JSON.stringify(wrongActionDoc, null, 2));
+  const mutReport = writeJson(repo, 'r-mut.json', { format: 'yolo-round-report-v1', changed_paths: ['work.md'] });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', mutReport.path, '--usage', use.path, '--turn-record', wrongActionTurn.path], repo.dir),
+    'action_trace_mismatch', 'mutation tool must match the policy action');
+  const duplicateFirstTurn = makeTurnRecord(repo, { kind: 'execution', mutate: true, nonce });
+  const duplicateFirstDoc = JSON.parse(fs.readFileSync(path.join(repo.dir, duplicateFirstTurn.path), 'utf8'));
+  duplicateFirstDoc.tool_calls.push({ ...duplicateFirstDoc.tool_calls[0], native_call_id: 'second-first-round-call' });
+  fs.writeFileSync(path.join(repo.dir, duplicateFirstTurn.path), JSON.stringify(duplicateFirstDoc, null, 2));
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', mutReport.path, '--usage', use.path, '--turn-record', duplicateFirstTurn.path], repo.dir),
+    'duplicate_action_nonce', 'a nonce may be consumed only once in a native turn');
   const mutOk = makeTurnRecord(repo, { kind: 'execution', mutate: true, nonce });
-  expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', mutOk.path], repo.dir), 0, 'authorized mutation closes');
+  expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', mutReport.path, '--usage', use.path, '--turn-record', mutOk.path], repo.dir), 0, 'authorized mutation closes');
   // Superseding VERIFIED work remains forbidden after the successful round.
   const c3 = makeContract(repo, { supersedes_unverified_slice: 'S1', replan_reason: 'try again anyway' });
   expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c3.path], repo.dir),
     'supersede_target_not_failed', 'superseding a verified slice must be forbidden (it is not a failed unverified target)');
+
+  // Once the first effect is genuinely verified, a new action may not replay
+  // the same observed effect under a renamed action/slice/outcome label.
+  const closed = journalEvents(repo).filter((event) => event.type === 'round_closed').pop();
+  const gate = writeJson(repo, 'replay-gate.json', { verdict: 'PASS' });
+  const review = writeJson(repo, 'replay-review.json', { verdict: 'PASS', independent: true });
+  const goal = runGoal(repo);
+  const firstReceipt = writeJson(repo, 'replay-receipt.json', {
+    format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: goal.run_id, slice: 'S1',
+    handoff_revision: goal.handoff_revision, worktree_realpath: goal.worktree_realpath,
+    verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo.dir }).toString().trim(),
+    round_id: closed.payload.round_id, report_sha256: closed.payload.report_sha256,
+    usage_sha256: closed.payload.usage_sha256, turn_record_sha256: closed.payload.turn_record_sha256,
+    maps_to_success: ['SC-1'], gate_evidence: [{ ...gate, verdict: 'PASS' }],
+    review_evidence: [{ ...review, verdict: 'PASS', independent: true }],
+    executor_id: 'replay-exec', written_by: 'conductor', written_by_id: 'replay-conductor',
+  });
+  expectExit(cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', firstReceipt.path], repo.dir), 0, 'verify first replay effect');
+  fs.writeFileSync(path.join(repo.dir, 'work.md'), '# work file\n\nFrozen paragraph stays.\n');
+  const secondContract = makeContract(repo, { slice_id: 'S2', maps_to_success: ['SC-2'], outcome: 'Produce the second frozen criterion with the same observable output' });
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', secondContract.path], repo.dir), 0, 'prepare replay slice');
+  authorizeRound(repo);
+  const staleTurn = makeTurnRecord(repo, { kind: 'execution', mutate: true, nonce });
+  const staleReport = writeJson(repo, 'replay-stale-report.json', { format: 'yolo-round-report-v1', changed_paths: ['work.md'] });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', staleReport.path, '--usage', use.path, '--turn-record', staleTurn.path], repo.dir),
+    'stale_round_action', 'historical action nonce cannot close a later round');
+  const preReplay = sha256File(path.join(repo.dir, 'work.md'));
+  const replayArgs = writeJson(repo, 'replay-args.json', { op: 'same-effect-different-label', file: 'work.md' });
+  const replayEffects = writeJson(repo, 'replay-effects.json', { affected: ['work.md'] });
+  const replayStart = cli(['action-start', '--run', RUN_REL, '--action', 'A2', '--description', 'renamed effect',
+    '--target', 'work.md', '--pre-sha256', preReplay, '--intended-post-sha256', sha256String('# work file\n\nFrozen paragraph stays.\nplus one line\n'),
+    '--round', preparedRoundId(repo), '--outcome-id', 'OID-RENAMED', '--tool', 'Edit',
+    '--args-json', replayArgs.path, '--effect-manifest', replayEffects.path], repo.dir);
+  expect(replayStart.exitCode === 0 || replayStart.stdout.includes('ACTION_PENDING'), `start renamed replay action:\n${replayStart.stdout.slice(-600)}`);
+  fs.writeFileSync(path.join(repo.dir, 'work.md'), '# work file\n\nFrozen paragraph stays.\nplus one line\n');
+  const replayHash = sha256File(path.join(repo.dir, 'work.md'));
+  expectExit(cli(['reconcile', '--run', RUN_REL, '--action', 'A2', '--outcome', 'confirmed', '--observed-sha256', replayHash], repo.dir), 0, 'reconcile renamed replay action');
+  const replayReport = writeJson(repo, 'replay-report.json', { format: 'yolo-round-report-v1', changed_paths: ['work.md'] });
+  const replayNonce = journalEvents(repo).filter((event) => event.type === 'action_started').pop().payload.action_nonce;
+  const replayTurn = makeTurnRecord(repo, { kind: 'execution', mutate: true, nonce: replayNonce });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', replayReport.path, '--usage', use.path, '--turn-record', replayTurn.path], repo.dir),
+    'repeated_verified_action', 'effect-equivalent replay must remain blocked when labels change');
 }
 
 // ═══════════════ CASE: replan-boundary ═══════════════
@@ -416,7 +695,7 @@ function caseReplanBoundary() {
   expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', c1.path], repo.dir), 0, 'prepare 1');
   authorizeRound(repo);
   const rep = writeJson(repo, 'rf.json', { format: 'yolo-round-report-v1', changed_paths: [] });
-  const use = writeJson(repo, 'u.json', { input_tokens: 1, output_tokens: 1, total_tokens: 2, native: true });
+  const use = writeJson(repo, 'u.json', { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   const t = makeTurnRecord(repo, { kind: 'execution' });
   expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'blocked', '--report', rep.path, '--usage', use.path, '--turn-record', t.path], repo.dir), 0, 'close blocked');
   // Replan without reason refused.
@@ -454,7 +733,7 @@ function caseAlignmentGate() {
       format: 'yolo-slice-contract-v1', slice_id: 'S1', outcome: `Checkable reference-table acceptance pass ${counter}`,
       maps_to_success: ['SC-1'],
       necessary_evidence: [], allowed_paths: ['work.md'],
-      forbidden_scope_sha256: sha256String('x'), tool_allowlist: ['Read'],
+       forbidden_scope_sha256: sha256String(JSON.stringify(repo.goal.forbidden_scope)), tool_allowlist: ['Read'],
       deterministic_checks: [{ id: 'c', command: 'true', expected_exit: 0, expected_result: 'PASS' }],
       semantic_review_required: false, stop_conditions: [],
       supersedes_unverified_slice: null, replan_reason: null,
@@ -462,7 +741,7 @@ function caseAlignmentGate() {
     expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', c.path], repo.dir), 0, `prepare ${counter}`);
     authorizeRound(repo);
     const rep = writeJson(repo, `ra${counter}.json`, { format: 'yolo-round-report-v1', changed_paths: [] });
-    const use = writeJson(repo, `ua${counter}.json`, { input_tokens: 1, output_tokens: 1, total_tokens: 2, native: true });
+    const use = writeJson(repo, `ua${counter}.json`, { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
     const t = makeTurnRecord(repo, { kind: 'execution' });
     expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', t.path], repo.dir), 0, `close ${counter}`);
     const gate = writeJson(repo, `ga${counter}.json`, { verdict: 'PASS' });
@@ -471,6 +750,11 @@ function caseAlignmentGate() {
     const receipt = writeJson(repo, `rc${counter}.json`, {
       format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: rg.run_id, slice: 'S1',
       handoff_revision: rg.handoff_revision, worktree_realpath: rg.worktree_realpath,
+      round_id: `R-${String(counter).padStart(2, '0')}`,
+      report_sha256: sha256File(path.join(repo.dir, `ra${counter}.json`)),
+      usage_sha256: sha256File(path.join(repo.dir, `ua${counter}.json`)),
+      turn_record_sha256: sha256File(path.join(repo.dir, t.path)),
+      maps_to_success: ['SC-1'],
       verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo.dir }).toString().trim(),
       gate_evidence: [{ ...gate, verdict: 'PASS' }], review_evidence: [{ ...rev, verdict: 'PASS', independent: true }],
       executor_id: 'exec-x', written_by: 'conductor', written_by_id: 'conductor-b',
@@ -501,10 +785,17 @@ function caseAlignmentGate() {
   const verifiedDigest = sha256String(JSON.stringify(
     JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'checkpoint.json'), 'utf8')).verified,
   ));
+  const alignReview = writeJson(repo, 'align-review.json', { verdict: 'PASS', reviewer_id: 'align-reviewer' });
+  const rg = runGoal(repo);
   const goodAlign = writeJson(repo, 'align-ok.json', {
     format: 'yolo-alignment-receipt-v1', verdict: 'PASS', verified_digest: verifiedDigest,
+    goal_sha256: journalEvents(repo)[0].payload.goal_sha256, handoff_revision: rg.handoff_revision,
+    watermark_seq: journalSeq(repo),
     success: [{ id: 'SC-1', status: 'met', evidence: 'gate' }, { id: 'SC-2', status: 'not_yet_due', evidence: '-' }],
-    non_goals_checked: true,
+    non_goals: [{ id: 'NG-1', status: 'checked' }],
+    forbidden_scope: [{ id: 'FS-1', status: 'checked' }, { id: 'FS-2', status: 'checked' }, { id: 'FS-3', status: 'checked' }],
+    changed_paths: [], unresolved_risks: [],
+    reviewer: { id: 'align-reviewer', independent: true, verdict: 'PASS', evidence: [alignReview] },
   });
   expectExit(cli(['align', '--run', RUN_REL, '--receipt', goodAlign.path], repo.dir), 0, 'valid align');
   expect(digest().includes('S1'), 'verified state intact after align');
@@ -515,16 +806,51 @@ function caseAlignmentGate() {
 
 // ═══════════════ CASE: completion-gate ═══════════════
 function caseCompletionGate() {
+  // No alignment and no verified state cannot be promoted by a summary receipt.
+  {
+    const repo = makeRepo();
+    const receiptNoop = writeJson(repo, 'pc-noop.json', {
+      format: 'yolo-phase-candidate-receipt-v1', verdict: 'PASS', wrong_or_unauthorized_next_action: 0,
+      repeated_verified_actions: 0, hidden_acceptance: { path: '.tad/evidence/yolo/ha.txt' },
+    });
+    expectRed(cli(['phase-candidate', '--run', RUN_REL, '--receipt', receiptNoop.path], repo.dir),
+      'phase_candidate_alignment_required', 'phase candidate without alignment must fail');
+  }
+
+  // One verified slice is still only a partial goal, even with a current
+  // alignment and a passing hidden fixture.
+  {
+    const repo = makeRepo();
+    completeVerifiedRound(repo, { slice: 'S1', maps: ['SC-1'] });
+    const alignment = makeAlignmentReceipt(repo, {
+      success: [{ id: 'SC-1', status: 'met', evidence: 'verified S1' }, { id: 'SC-2', status: 'not_yet_due', evidence: 'pending S2' }],
+    });
+    expectExit(cli(['align', '--run', RUN_REL, '--receipt', alignment.path], repo.dir), 0, 'partial alignment');
+    const partial = makePhaseCandidateReceipt(repo, { verified_slices: ['S1'] });
+    expectRed(cli(['phase-candidate', '--run', RUN_REL, '--receipt', partial.path], repo.dir),
+      'phase_candidate_slices_incomplete', 'unverified frozen slice must block phase candidate');
+  }
+
+  // Full closure: every slice and criterion is covered, the watermark is
+  // current, hidden acceptance and an independent final reviewer both pass.
   const repo = makeRepo();
-  const receiptNoop = writeJson(repo, 'pc-noop.json', {
-    format: 'yolo-phase-candidate-receipt-v1', wrong_or_unauthorized_next_action: 0,
-    repeated_verified_actions: 0, hidden_acceptance: { path: '.tad/evidence/yolo/ha.txt' },
-  });
-  expectRed(cli(['phase-candidate', '--run', RUN_REL, '--receipt', receiptNoop.path], repo.dir),
-    'phase_candidate_alignment_required', 'phase candidate without alignment must fail');
-  // With zero verified slices even a forged alignment watermark cannot exist —
-  // the watermark binds the journal; nothing appended here means ACTIVE with
-  // no verified digest match.
+  completeVerifiedRound(repo, { slice: 'S1', maps: ['SC-1'] });
+  completeVerifiedRound(repo, { slice: 'S2', maps: ['SC-2'] });
+  const alignment = makeAlignmentReceipt(repo);
+  expectExit(cli(['align', '--run', RUN_REL, '--receipt', alignment.path], repo.dir), 0, 'full alignment');
+  const candidate = makePhaseCandidateReceipt(repo);
+  const promoted = cli(['phase-candidate', '--run', RUN_REL, '--receipt', candidate.path], repo.dir);
+  expectExit(promoted, 0, 'full phase candidate closure');
+  expect(promoted.stdout.includes('PHASE_CANDIDATE'), 'status must expose PHASE_CANDIDATE');
+  const promotedStatus = JSON.parse(promoted.stdout.trim().split('\n').pop());
+  expect(promotedStatus.state === 'PHASE_CANDIDATE', 'machine status must expose terminal phase candidate state');
+  expect(!/Start slice|next frozen slice/i.test(JSON.stringify(promotedStatus.legal_next_action)),
+    'phase candidate legal next action must not invent more work');
+  const journalBefore = fs.readFileSync(path.join(repo.dir, RUN_REL, 'journal.jsonl'), 'utf8');
+  const stopAfterCandidate = cli(['stop', '--run', RUN_REL, '--reason', 'must not append after candidate'], repo.dir);
+  expectRed(stopAfterCandidate, 'event_after_phase_candidate', 'all later events must be rejected after phase candidate');
+  expect(fs.readFileSync(path.join(repo.dir, RUN_REL, 'journal.jsonl'), 'utf8') === journalBefore,
+    'a rejected event after phase candidate must not change journal bytes');
 }
 
 // ═══════════════ CASE: budget-exhaustion ═══════════════
@@ -542,7 +868,7 @@ function caseBudgetExhaustion() {
   // close first round so the counter advances, then refuse the second.
   authorizeRound(r2);
   const rep = writeJson(r2, 'rr.json', { format: 'yolo-round-report-v1', changed_paths: [] });
-  const use = writeJson(r2, 'uu.json', { input_tokens: 1, output_tokens: 1, total_tokens: 2, native: true });
+  const use = writeJson(r2, 'uu.json', { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   const t = makeTurnRecord(r2, { kind: 'execution' });
   expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'blocked', '--report', rep.path, '--usage', use.path, '--turn-record', t.path], r2.dir), 0, 'close');
   expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c2.path], r2.dir),
@@ -622,7 +948,7 @@ function caseResumeContinuation() {
   expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', c.path], repo.dir), 0, 'prepare');
   authorizeRound(repo, { session: 'sess-A' });
   const rep = writeJson(repo, 'rc-report.json', { format: 'yolo-round-report-v1', changed_paths: [] });
-  const use = writeJson(repo, 'rc-usage.json', { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true });
+  const use = writeJson(repo, 'rc-usage.json', { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   // Negative: fresh unrelated session — neither native id nor resume binding matches the pin.
   const strangerTurn = makeTurnRecord(repo, { kind: 'execution', session: 'sess-C-native', resumedFrom: null });
   expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', strangerTurn.path], repo.dir),

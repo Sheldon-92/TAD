@@ -41,6 +41,55 @@ function parseEvents(raw) {
   return events;
 }
 
+function gitOutput(repoRoot, args) {
+  try {
+    return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' });
+  } catch {
+    return '';
+  }
+}
+
+function worktreeManifest(repoRoot) {
+  const files = gitOutput(repoRoot, ['ls-files', '--cached', '--others', '--exclude-standard'])
+    .split('\n').filter(Boolean);
+  const manifest = {};
+  for (const rel of files) {
+    const abs = path.join(repoRoot, rel);
+    if (fs.existsSync(abs) && fs.lstatSync(abs).isFile()) manifest[rel] = sha256File(abs);
+  }
+  return manifest;
+}
+
+function statusMap(repoRoot) {
+  const map = {};
+  for (const line of gitOutput(repoRoot, ['status', '--porcelain', '--untracked-files=all']).split('\n').filter(Boolean)) {
+    map[line.slice(3)] = line.slice(0, 2);
+  }
+  return map;
+}
+
+function changedPaths(before, after) {
+  return [...new Set([...Object.keys(before), ...Object.keys(after)])]
+    .filter((rel) => before[rel] !== after[rel]).sort();
+}
+
+function classifyChanges(paths, beforeStatus, afterStatus, beforeManifest, afterManifest) {
+  const changed = [];
+  const deleted = [];
+  const untracked = [];
+  for (const rel of paths) {
+    const status = afterStatus[rel] || '';
+    if (!afterManifest[rel] || status.includes('D')) deleted.push(rel);
+    else if (status === '??' && beforeStatus[rel] !== '??') untracked.push(rel);
+    else changed.push(rel);
+  }
+  return { changed, deleted, untracked };
+}
+
+function isSha256(value) {
+  return typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
+}
+
 function main() {
   const argv = process.argv.slice(2);
   if (argv[0] !== 'turn') {
@@ -48,18 +97,20 @@ function main() {
     process.exit(2);
   }
   const flags = {};
-  for (let i = 1; i < argv.length; i += 2) flags[argv[i].replace(/^--/, '')] = argv[i + 1];
+  for (let i = 1; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (!token.startsWith('--')) continue;
+    const name = token.replace(/^--/, '');
+    const next = argv[i + 1];
+    if (next === undefined || next.startsWith('--')) flags[name] = true;
+    else { flags[name] = next; i += 1; }
+  }
   for (const f of ['host-evidence', 'packet', 'prompt']) {
     if (!flags[f]) { console.log(JSON.stringify({ format: 'yolo-reference-runner-error', reason: 'missing_flag', flag: f })); process.exit(2); }
   }
   const role = flags.role || 'executor';
   const turnKind = flags['turn-kind'] || 'assertion';
-  // Assertion turns create the session; resumed execution turns inherit it. To
-  // let execution WRITE within a resumed session, the session must be created
-  // write-capable — so assertion defaults to workspace-write too. Assertion
-  // non-mutation is enforced by the runner/engine git side-effect check
-  // (not by a codex read-only sandbox), per the disclosed deviation.
-  const sandbox = flags.sandbox || 'workspace-write';
+  const sandbox = flags.sandbox || (turnKind === 'assertion' ? 'read-only' : 'workspace-write');
   const nonce = flags.nonce || null;
   const hostRoot = path.resolve(flags['host-evidence']);
   const packetAbs = path.resolve(flags.packet);
@@ -91,27 +142,38 @@ function main() {
     } catch { return path.dirname(packetAbs); }
   })();
 
-  // Session continuation: codex resumes a native thread via the `resume`
-  // subcommand. NOTE: `codex exec resume` does NOT accept `--sandbox`
-  // (inherits the session's creation sandbox); passing it errors out
-  // (exit 2, "unexpected argument '--sandbox'"). So resume omits --sandbox
-  // and instead relies on the assertion turn having created the session with a
-  // write-capable sandbox (see sandbox default below). Assertion isolation is
-  // still enforced by the runner/engine git-based side-effect check, not by a
-  // codex read-only sandbox — a deliberate, disclosed deviation.
+  // Session continuation: `exec resume` has no --sandbox option, but accepts a
+  // sandbox_mode config override. This keeps assertion and execution turns in
+  // the same native session while applying the intended mode to each turn.
   const args = flags.session
-    ? ['exec', 'resume', flags.session, '--json', '--skip-git-repo-check']
+    ? ['exec', 'resume', flags.session, '--json', '--skip-git-repo-check', '-c', `sandbox_mode="${sandbox}"`]
     : ['exec', '--json', '--skip-git-repo-check', '--sandbox', sandbox];
   args.push(userText.length ? userText : 'Proceed.');
+  const preManifest = worktreeManifest(repoRoot);
+  const preStatus = statusMap(repoRoot);
   const t0 = Date.now();
   const res = spawnSync('codex', args, { encoding: 'utf8', timeout: 30 * 60 * 1000, cwd: repoRoot });
   const elapsedMs = Date.now() - t0;
 
+  const postManifest = worktreeManifest(repoRoot);
+  const postStatus = statusMap(repoRoot);
+  const delta = changedPaths(preManifest, postManifest);
+  const classified = classifyChanges(delta, preStatus, postStatus, preManifest, postManifest);
+  const actionTarget = flags['action-target'] || null;
+  const targetAbs = actionTarget
+    ? (path.isAbsolute(actionTarget) ? actionTarget : path.join(repoRoot, actionTarget)) : null;
+  const observedSha = targetAbs && fs.existsSync(targetAbs) && fs.lstatSync(targetAbs).isFile()
+    ? sha256File(targetAbs) : (targetAbs ? '0'.repeat(64) : null);
+  const observedPaths = [...new Set([...classified.changed, ...classified.deleted, ...classified.untracked])].sort();
+  const effectFingerprint = observedPaths.length && isSha256(observedSha)
+    ? sha256String(JSON.stringify([observedPaths, [observedSha]])) : null;
+
   // Raw artifacts land host-side with content hashes bound into the record.
   const rawOutRel = `${stamp}-${invocationNonce}-raw-output.txt`;
   const rawTraceRel = `${stamp}-${invocationNonce}-raw-trace.jsonl`;
+  const rawTrace = JSON.stringify({ cmd: args.join(' '), exit: res.status, stderr: (res.stderr || '').slice(-4000), elapsed_ms: elapsedMs }, null, 2);
   fs.writeFileSync(path.join(hostRoot, rawOutRel), res.stdout || '');
-  fs.writeFileSync(path.join(hostRoot, rawTraceRel), JSON.stringify({ cmd: args.join(' '), exit: res.status, stderr: (res.stderr || '').slice(-4000), elapsed_ms: elapsedMs }, null, 2));
+  fs.writeFileSync(path.join(hostRoot, rawTraceRel), rawTrace);
 
   const events = parseEvents(res.stdout || '');
   const threadStarted = events.find((e) => e.type === 'thread.started');
@@ -126,14 +188,6 @@ function main() {
     native: true,
   } : { input_tokens: 0, output_tokens: 0, total_tokens: 0, native: false };
 
-  // Tool policy: assertion turns run under read-only sandbox; every observed
-  // filesystem mutation in an assertion turn must be empty (checked via git).
-  let changed = [];
-  try {
-    changed = execFileSync('git', ['status', '--porcelain'], { cwd: repoRoot, encoding: 'utf8' })
-      .split('\n').filter(Boolean);
-  } catch { /* not a repo or git unavailable — recorded as-is */ }
-
   const record = {
     format: 'yolo-reference-turn-v1',
     written_by: 'reference-runner',
@@ -147,39 +201,41 @@ function main() {
     model_family: 'gpt',
     reasoning: flags.reasoning || 'balanced',
     role,
-    // codex exec-resume natively continues a thread but assigns a NEW thread id
-    // per exec call. Continuity is therefore proven two ways: session_id is the
-    // native id of THIS run, resumed_from_session is the exact --session arg
-    // the runner passed to `codex exec resume` (null on fresh turns). Consumers
-    // (round-close) accept either match against the pinned session.
     session_id: threadStarted ? threadStarted.thread_id : null,
     resumed_from_session: flags.session || null,
     turn_kind: turnKind,
     round_id: flags['round-id'] || null,
+    journal_seq: flags['journal-seq'] === undefined ? null : Number(flags['journal-seq']),
     packet_sha256: packetSha,
     raw_native_output: { host_locator: path.join(hostRoot, rawOutRel), sha256: sha256File(path.join(hostRoot, rawOutRel)) },
-    raw_native_trace: { host_locator: path.join(hostRoot, rawTraceRel), sha256: sha256String(JSON.stringify({ cmd: args.join(' '), exit: res.status })) },
+    raw_native_trace: { host_locator: path.join(hostRoot, rawTraceRel), sha256: sha256File(path.join(hostRoot, rawTraceRel)) },
     tool_policy: {
       allowed: turnKind === 'assertion' ? ['Read'] : ['Read', 'Edit', 'Write'],
-      denied: turnKind === 'assertion' ? ['Write', 'Edit', 'Shell', 'Agent'] : ['Shell', 'Agent'],
+      denied: turnKind === 'assertion' ? ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'] : ['Shell', 'Bash', 'Agent', 'Task'],
       sandbox,
     },
     tool_calls: [{
       native_call_id: 'final',
-      tool: 'codex-exec',
-      args_sha256: sha256String(args.join(' ')),
+      tool: flags['action-tool'] || (turnKind === 'assertion' ? 'Read' : 'codex-exec'),
+      args_sha256: flags['action-args-sha256'] || sha256String(args.join(' ')),
+      invocation_args_sha256: sha256String(args.join(' ')),
       decision: 'allowed',
       action_nonce: nonce,
-      pre_manifest_sha256: null,
-      post_manifest_sha256: changed.length ? sha256String(changed.join('\n')) : null,
-      // Only TRACKED modifications/deletions count as mutations by this turn.
-      // Untracked entries are pre-existing setup inputs recorded as worktree
-      // observation. In read-only assertion turns nothing can mutate, so all
-      // three observed lists are empty by construction.
-      observed_changed: turnKind === 'assertion' ? [] : changed.filter((l) => !l.startsWith('??')),
-      observed_deleted: turnKind === 'assertion' ? [] : changed.filter((l) => l.startsWith(' D ') || l.startsWith('D ')),
-      observed_untracked: turnKind === 'assertion' ? [] : changed.filter((l) => l.startsWith('??')).map((l) => l.slice(3)),
-      worktree_observation: changed,
+      action_id: flags['action-id'] || null,
+      round_id: flags['action-round'] || flags['round-id'] || null,
+      target: actionTarget,
+      pre_sha256: flags['action-pre-sha256'] || null,
+      post_sha256: observedSha,
+      observed_sha256: observedSha,
+      effect_manifest_sha256: flags['action-effect-manifest-sha256'] || null,
+      effect_paths: observedPaths,
+      effect_fingerprint: effectFingerprint,
+      pre_manifest_sha256: sha256String(JSON.stringify(preManifest)),
+      post_manifest_sha256: sha256String(JSON.stringify(postManifest)),
+      observed_changed: classified.changed,
+      observed_deleted: classified.deleted,
+      observed_untracked: classified.untracked,
+      worktree_observation: observedPaths,
     }],
     usage,
     exit_status: res.status,
@@ -189,6 +245,7 @@ function main() {
   const recRel = `${stamp}-${invocationNonce}-record.json`;
   fs.writeFileSync(path.join(hostRoot, recRel), JSON.stringify(record, null, 2));
   console.log(JSON.stringify({ format: 'yolo-reference-runner-result-v1', record_path: path.join(hostRoot, recRel), record }));
+  process.exit(res.status === 0 ? 0 : 1);
 }
 
 main();
