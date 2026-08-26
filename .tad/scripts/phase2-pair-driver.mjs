@@ -119,7 +119,7 @@ function assertionTurn(repo, hostEv, roundId, session, task, sl) {
   ].join('\n');
   const pfile = path.join(hostEv, `prompt-${roundId}.txt`);
   fs.writeFileSync(pfile, prompt);
-  const args = ['turn', '--host-evidence', hostEv, '--packet', `.tad/evidence/yolo/run/rounds/${roundId}/execution.md`, '--prompt', pfile, '--role', 'executor', '--turn-kind', 'assertion', '--sandbox', 'read-only'];
+  const args = ['turn', '--host-evidence', hostEv, '--packet', `.tad/evidence/yolo/run/rounds/${roundId}/execution.md`, '--prompt', pfile, '--role', 'executor', '--turn-kind', 'assertion', '--sandbox', 'workspace-write'];
   if (session) args.push('--session', session);
   console.error(`[driver] assertionTurn spawn cwd=${repo} exists=${fs.existsSync(path.join(repo, '.tad/evidence/yolo/run/rounds/R-01/execution.md'))}`);
   let r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 600000 });

@@ -54,7 +54,12 @@ function main() {
   }
   const role = flags.role || 'executor';
   const turnKind = flags['turn-kind'] || 'assertion';
-  const sandbox = flags.sandbox || (turnKind === 'assertion' ? 'read-only' : 'workspace-write');
+  // Assertion turns create the session; resumed execution turns inherit it. To
+  // let execution WRITE within a resumed session, the session must be created
+  // write-capable — so assertion defaults to workspace-write too. Assertion
+  // non-mutation is enforced by the runner/engine git side-effect check
+  // (not by a codex read-only sandbox), per the disclosed deviation.
+  const sandbox = flags.sandbox || 'workspace-write';
   const nonce = flags.nonce || null;
   const hostRoot = path.resolve(flags['host-evidence']);
   const packetAbs = path.resolve(flags.packet);
@@ -76,9 +81,15 @@ function main() {
   const userText = fs.readFileSync(promptAbs, 'utf8');
 
   // Session continuation: codex resumes a native thread via the `resume`
-  // subcommand (verified by magic-word probe). Fresh turns omit --session.
+  // subcommand. NOTE: `codex exec resume` does NOT accept `--sandbox`
+  // (inherits the session's creation sandbox); passing it errors out
+  // (exit 2, "unexpected argument '--sandbox'"). So resume omits --sandbox
+  // and instead relies on the assertion turn having created the session with a
+  // write-capable sandbox (see sandbox default below). Assertion isolation is
+  // still enforced by the runner/engine git-based side-effect check, not by a
+  // codex read-only sandbox — a deliberate, disclosed deviation.
   const args = flags.session
-    ? ['exec', 'resume', flags.session, '--json', '--skip-git-repo-check', '--sandbox', sandbox]
+    ? ['exec', 'resume', flags.session, '--json', '--skip-git-repo-check']
     : ['exec', '--json', '--skip-git-repo-check', '--sandbox', sandbox];
   args.push(userText.length ? userText : 'Proceed.');
   const t0 = Date.now();
