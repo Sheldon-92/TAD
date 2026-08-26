@@ -12,7 +12,7 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Phase 2 ready for Alex design
+### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Phase 2 Gate 2 HONEST_PARTIAL
 
 - **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 1/4)
 - **Reset decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
@@ -28,7 +28,12 @@
   - **dogfood 3/3 恢复全过**（base `84c3666c`）：interruption-a/b/c 各 hard 8/8 + soft 1.00 + 继续 + 隐藏验收 13/13 + Gate PASS + receipt。
   - ⚠️ **三次机制修复**（真实失败购买）：recovery packet 缺 VERIFICATION MODEL / PROHIBITIONS / side-effect 分类规则 → 各 0.88 → 修后 1.00。详见 `knowledge-assessment.md` + patterns/memory-and-learning.md 新条目。
   - ⚠️ 已知偏差：fresh context 为 OpenCode Task 子代理（DEGRADED_WITH_APPROVAL，人类 2026-08-25 明确批准，仅限 Phase 1）。
-- **Next**: Phase 2 可进入 Alex 设计；尚未启动实现。Phase 1 的 OpenCode Task-subagent 降级批准不得自动延续到后续阶段。
+- **Phase 2 design**: `.tad/active/handoffs/HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md`
+  v0.9.2 已完成主体设计，但 Gate 2 两轮上限已到。Round 2 的新 P0（effect fingerprint
+  含可改名 outcome ID）与 P1（native runner record 自证）均已修入 v0.9.2，尚无允许范围内的
+  第三轮独立 PASS carrier，因此状态是 `HONEST_PARTIAL`，不得交 Blake。
+- **Next human decision**: 是否显式重开一次仅验证这两个 closure 的窄独立复核；若不重开，Phase 2 保持未实现。
+  Phase 1 的 OpenCode Task-subagent 降级批准不得自动延续到后续阶段。
 
 ### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进
 

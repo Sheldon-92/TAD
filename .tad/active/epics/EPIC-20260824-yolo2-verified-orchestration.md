@@ -2,7 +2,7 @@
 
 **Epic ID**: EPIC-20260824-yolo2-verified-orchestration  
 **Revision**: v2 — vertical-slice-first reset  
-**Status**: IN PROGRESS — Phase 1 accepted; Phase 2 ready for design
+**Status**: IN PROGRESS — Phase 1 accepted; Phase 2 design is HONEST_PARTIAL at Gate 2 review cap
 **Owner**: Alex  
 **Created**: 2026-08-24  
 **Reset**: 2026-08-24  
@@ -142,7 +142,7 @@ Fresh context re-enters through a semantic recovery assertion
 | # | Phase | Status | First useful outcome |
 |---|---|---|---|
 | 1 | 真实恢复纵向切片 | ✅ Done — Gate 4 accepted 2026-08-25 | 一个真实 YOLO 任务可在 compact/kill 后由新上下文正确继续 |
-| 2 | 质量保持的有界执行闭环 | Ready for Alex design | 恢复理解、短回合、独立验证和整体质量检查形成闭环 |
+| 2 | 质量保持的有界执行闭环 | Gate 2 HONEST_PARTIAL (v0.9.2; review cap) | 恢复理解、短回合、独立验证和整体质量检查形成闭环 |
 | 3 | 多 harness 适配与 opt-in 接入 | Planned | Claude/Codex/OpenCode 给出实测 strict/degraded/blocked 结论 |
 | 4 | 配对评估、故障注入与默认裁决 | Planned | 用真实任务证明质量与可靠性，再决定是否 default-on |
 
@@ -266,7 +266,12 @@ post-archive layouts.
 
 ## 11. Next Design Step
 
-Phase 1 is accepted and archived. Phase 2 may now enter Alex design, using the
-accepted recovery record as its fixed foundation. Phase 2 must add the bounded
-execution/quality loop without silently inheriting the Phase-1-only OpenCode
-degradation approval or weakening the existing recovery, review, and Gate authority.
+Phase 1 is accepted and archived. Phase-2 Handoff v0.9.2 now defines the bounded
+execution/quality loop on top of the same journal/reducer, with a strict one-harness
+runner, native action reconciliation, whole-goal alignment, frozen budgets, and five
+paired dogfoods. Two Gate-2 rounds found and drove concrete amendments; round 2 still
+returned one new evaluation P0 and one architecture P1. Alex incorporated both, but
+the two-round review cap is reached, so there is no independent PASS carrier and no
+implementation authority. The next move is a human decision to reopen one narrow
+independent closure review or revise/stop the Phase-2 design; Phase-1-only OpenCode
+degradation approval still does not carry forward.
