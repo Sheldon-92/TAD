@@ -2,7 +2,7 @@
 
 **Epic ID**: EPIC-20260824-yolo2-verified-orchestration  
 **Revision**: v2 — vertical-slice-first reset  
-**Status**: IN PROGRESS — Phase 1 Gate 4 committed-archive diff correction pending
+**Status**: IN PROGRESS — Phase 1 accepted; Phase 2 ready for design
 **Owner**: Alex  
 **Created**: 2026-08-24  
 **Reset**: 2026-08-24  
@@ -141,8 +141,8 @@ Fresh context re-enters through a semantic recovery assertion
 
 | # | Phase | Status | First useful outcome |
 |---|---|---|---|
-| 1 | 真实恢复纵向切片 | 🔄 Active — Gate 4 committed-archive diff correction pending | 一个真实 YOLO 任务可在 compact/kill 后由新上下文正确继续 |
-| 2 | 质量保持的有界执行闭环 | Planned | 恢复理解、短回合、独立验证和整体质量检查形成闭环 |
+| 1 | 真实恢复纵向切片 | ✅ Done — Gate 4 accepted 2026-08-25 | 一个真实 YOLO 任务可在 compact/kill 后由新上下文正确继续 |
+| 2 | 质量保持的有界执行闭环 | Ready for Alex design | 恢复理解、短回合、独立验证和整体质量检查形成闭环 |
 | 3 | 多 harness 适配与 opt-in 接入 | Planned | Claude/Codex/OpenCode 给出实测 strict/degraded/blocked 结论 |
 | 4 | 配对评估、故障注入与默认裁决 | Planned | 用真实任务证明质量与可靠性，再决定是否 default-on |
 
@@ -152,14 +152,16 @@ Fresh context re-enters through a semantic recovery assertion
 
 ### Phase 1 — 真实恢复纵向切片
 
-**Status:** 🔄 Active — Gate 4 committed-archive diff correction pending
+**Status:** ✅ Done — Gate 4 accepted 2026-08-25
 
-**Notes:** Runtime and dogfood outcomes are accepted in substance at `4d9039c9`.
-Human approved the OpenCode Task-subagent degradation for Phase 1 only. The round-2
-state machine correctly validates active/archive file existence, but the committed
-archive still fails AC10 because an unconditional must-appear assertion requires the
-active Handoff in the frozen-base-to-HEAD diff. Final archive is pending this narrow
-diff/lifecycle alignment correction.
+**Notes:** Runtime and dogfood outcomes passed: all three interruption recoveries
+scored hard 8/8 and soft 1.00, continued the task, passed hidden acceptance, and
+passed the existing Gate. Human approved the OpenCode Task-subagent degradation for
+Phase 1 only. The lifecycle checker now accepts exactly one complete active or
+archived pair, rejects all other combinations, and makes committed-diff must-appear
+assertions follow the resolved state. Alex independently passed the full 10-case
+suite in active, simulated-archive, disposable committed-archive, and final real
+post-archive layouts.
 
 **Scope**
 
@@ -264,7 +266,7 @@ diff/lifecycle alignment correction.
 
 ## 11. Next Design Step
 
-Phase 1 cannot advance to Phase 2 until AC10 passes after the archive move is committed
-and the checker reads the resulting real frozen-base-to-HEAD diff. This is a narrow
-test-contract correction; recovery runtime and dogfood must not be repeated unless
-that runtime changes.
+Phase 1 is accepted and archived. Phase 2 may now enter Alex design, using the
+accepted recovery record as its fixed foundation. Phase 2 must add the bounded
+execution/quality loop without silently inheriting the Phase-1-only OpenCode
+degradation approval or weakening the existing recovery, review, and Gate authority.
