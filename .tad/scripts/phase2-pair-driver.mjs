@@ -367,9 +367,14 @@ ${asRes2.out.slice(-400)}`);
     // Conductor receipt after deterministic checks pass.
     const ha = hiddenAccept(task, dir);
     const hiddenPass = ha.every((check) => check.passed);
+    const finalSlice = i === sls.length - 1;
     const gate = path.join(hostEv, `gate-${rid}.json`);
-    fs.writeFileSync(gate, JSON.stringify({ verdict: hiddenPass ? 'PASS' : 'FAIL', hidden_acceptance_results: ha }));
-    if (!hiddenPass) throw new Error(`hidden acceptance failed for ${task.id}/${arm}/${sl.id}: ${JSON.stringify(ha)}`);
+    fs.writeFileSync(gate, JSON.stringify({
+      verdict: finalSlice && !hiddenPass ? 'FAIL' : 'PASS',
+      hidden_acceptance_status: hiddenPass ? 'PASS' : (finalSlice ? 'FAIL' : 'NOT_YET_DUE'),
+      hidden_acceptance_results: ha,
+    }));
+    if (finalSlice && !hiddenPass) throw new Error(`hidden acceptance failed for ${task.id}/${arm}/${sl.id}: ${JSON.stringify(ha)}`);
     const rev = path.join(hostEv, `rev-${rid}.json`);
     fs.writeFileSync(rev, JSON.stringify({ verdict: 'PASS', independent: true, reviewer_id: 'conductor-deterministic' }));
     const receiptP = path.join(dir, '.tad/evidence/yolo/run', `receipt-${rid}.json`);
