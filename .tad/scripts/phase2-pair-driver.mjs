@@ -78,6 +78,12 @@ function targetForSlice(taskId, sliceId) {
   return target;
 }
 
+function successIdForSlice(sliceId) {
+  const match = /^S(\d+)$/.exec(sliceId);
+  if (!match) throw new Error(`invalid slice id: ${sliceId}`);
+  return `SC-${match[1]}`;
+}
+
 function setupRepo(task, arm, pairDir) {
   const dir = path.join(WORK, `${task.id}-${arm}`);
   fs.rmSync(dir, { recursive: true, force: true });
@@ -91,12 +97,14 @@ function setupRepo(task, arm, pairDir) {
   execFileSync('git', ['add', '-A'], { cwd: dir });
   execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: dir });
   const base = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir }).toString().trim();
+  const slicePlan = slicesFor(task.id);
   const goal = {
     format: 'yolo-recovery-phase1-v1', run_id: `${task.id}-${arm}`, goal_id: `y2p2-${task.id}`,
     handoff_path: 'handoff.md', handoff_revision: '', base_commit: base,
     worktree_realpath: fs.realpathSync(dir),
-    goal: task.task, success: [`SC-1 body: ${task.task}`],
-    slices: slicesFor(task.id).map((slice) => ({ id: slice.id, statement: slice.outcome })),
+    goal: task.task,
+    success: slicePlan.map((slice) => `${successIdForSlice(slice.id)} body: ${slice.outcome}`),
+    slices: slicePlan.map((slice) => ({ id: slice.id, statement: slice.outcome })),
     non_goals: ['no scope beyond the stated task'],
     forbidden_scope: ['.tad/scripts/', '.claude/', '.tad/hooks/'],
     oracle_path: 'oracle.txt', created_at: new Date().toISOString(),
@@ -124,7 +132,7 @@ function contractFile(dir, sl, task) {
   const target = targetForSlice(task.id, sl.id);
   fs.writeFileSync(path.join(dir, rel), JSON.stringify({
     format: 'yolo-slice-contract-v1', slice_id: sl.id, outcome: sl.outcome,
-    maps_to_success: ['SC-1'], necessary_evidence: [], allowed_paths: [target],
+    maps_to_success: [successIdForSlice(sl.id)], necessary_evidence: [], allowed_paths: [target],
     forbidden_scope_sha256: shas(JSON.stringify(goal.forbidden_scope)), tool_allowlist: ['Read', 'Edit', 'Write'],
     deterministic_checks: [], semantic_review_required: true,
     semantic_review_reason: 'outcome wording requires judgment beyond shell checks',
