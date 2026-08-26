@@ -59,7 +59,12 @@ function main() {
   const hostRoot = path.resolve(flags['host-evidence']);
   const packetAbs = path.resolve(flags.packet);
   const promptAbs = path.resolve(flags.prompt);
-  const packetSha = sha256File(packetAbs);
+  const packetSha = (() => {
+    try { return sha256File(packetAbs); } catch (e) {
+      console.error(`RUNNER DEBUG: cwd=${process.cwd()} packetAbs=${packetAbs} err=${e.message}`);
+      throw e;
+    }
+  })();
 
   // Host-side evidence root is created by the Conductor; executors never see it.
   fs.mkdirSync(hostRoot, { recursive: true });
@@ -136,9 +141,14 @@ function main() {
       action_nonce: nonce,
       pre_manifest_sha256: null,
       post_manifest_sha256: changed.length ? sha256String(changed.join('\n')) : null,
-      observed_changed: changed,
-      observed_deleted: [],
-      observed_untracked: [],
+      // Only TRACKED modifications/deletions count as mutations by this turn.
+      // Untracked entries are pre-existing setup inputs recorded as worktree
+      // observation. In read-only assertion turns nothing can mutate, so all
+      // three observed lists are empty by construction.
+      observed_changed: turnKind === 'assertion' ? [] : changed.filter((l) => !l.startsWith('??')),
+      observed_deleted: turnKind === 'assertion' ? [] : changed.filter((l) => l.startsWith(' D ') || l.startsWith('D ')),
+      observed_untracked: turnKind === 'assertion' ? [] : changed.filter((l) => l.startsWith('??')).map((l) => l.slice(3)),
+      worktree_observation: changed,
     }],
     usage,
     exit_status: res.status,

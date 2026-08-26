@@ -1440,7 +1440,7 @@ function cmdActionStart(flags, cwd, out) {
       outcome_id: flags['outcome-id'],
       tool_class: flags.tool,
       args_sha256: sha256String(String(flags['args-json'])),
-      effect_manifest_sha256: sha256File(resolveInRepo(flags['effect-manifest'], r.repoRoot, '--effect-manifest')),
+      effect_manifest_sha256: sha256File(path.resolve(flags['effect-manifest'])),
       action_nonce: actionNonce,
     } : {}),
   }, r.identity.head));
@@ -1488,7 +1488,9 @@ function cmdReconcile(flags, cwd, out) {
     if (outcome !== 'reconciled') {
       throw new ContractError('unknown_outcome_needs_reconciled', { action_id: actionId, outcome });
     }
-    const evidenceAbs = resolveInRepo(need(flags, 'evidence'), r.repoRoot, '--evidence');
+    // §4.4-class artifact: reconciliation evidence may be a runner-owned
+    // host-side file; it is hash-bound into the event either way.
+    const evidenceAbs = path.resolve(need(flags, 'evidence'));
     if (!fs.existsSync(evidenceAbs) || !fs.lstatSync(evidenceAbs).isFile()) {
       throw new ContractError('reconcile_evidence_missing', { path: flags.evidence });
     }
@@ -1532,7 +1534,7 @@ function cmdReconcile(flags, cwd, out) {
       }
       payload = { action_id: actionId, outcome, observed_sha256: observedActual };
     } else {
-      const evidenceAbs = resolveInRepo(need(flags, 'evidence'), r.repoRoot, '--evidence');
+      const evidenceAbs = path.resolve(need(flags, 'evidence'));
       if (!fs.existsSync(evidenceAbs) || !fs.lstatSync(evidenceAbs).isFile()) {
         throw new ContractError('reconcile_evidence_missing', { path: flags.evidence });
       }
@@ -1804,9 +1806,11 @@ function cmdRoundAuthorize(flags, cwd, out) {
   if (!cur || cur.state !== 'prepared') {
     throw new ContractError('authorize_requires_prepared_round', { current: cur || null });
   }
+  // §4.4: assertion/review/turn-record are RUNNER-OWNED host-side artifacts;
+  // they are hash-bound into the event but need not live inside the run repo.
   const readArt = (flag) => {
     const rel = need(flags, flag);
-    const abs = resolveInRepo(rel, r.repoRoot, `--${flag}`);
+    const abs = path.resolve(rel);
     return { rel, abs, doc: readJsonArtifact(abs, flag), sha: sha256File(abs) };
   };
   const assertion = readArt('assertion');
@@ -1884,16 +1888,16 @@ function cmdRoundClose(flags, cwd, out) {
     throw new UsageError('close_outcome_invalid', { outcome, allowed: ['candidate', 'failed', 'blocked'] });
   }
   const reportRel = need(flags, 'report');
-  const reportAbs = resolveInRepo(reportRel, r.repoRoot, '--report');
+  const reportAbs = path.resolve(reportRel);
   const report = readJsonArtifact(reportAbs, 'round-report');
   if (report.round_id && report.round_id !== cur.id) throw new ContractError('round_mismatch', { via: 'report' });
   const usageRel = need(flags, 'usage');
-  const usageAbs = resolveInRepo(usageRel, r.repoRoot, '--usage');
+  const usageAbs = path.resolve(usageRel);
   const usage = readJsonArtifact(usageAbs, 'usage');
   if (!usage || usage.native !== true) throw new ContractError('usage_not_native', {});
   const total = typeof usage.total_tokens === 'number' ? usage.total_tokens : (usage.input_tokens || 0) + (usage.output_tokens || 0);
   const turnRel = need(flags, 'turn-record');
-  const turnAbs = resolveInRepo(turnRel, r.repoRoot, '--turn-record');
+  const turnAbs = path.resolve(turnRel);
   const turn = readJsonArtifact(turnAbs, 'execution-turn');
   if (turn.turn_kind !== 'execution') throw new ContractError('turn_role_invalid', { kind: turn.turn_kind });
   if (turn.session_id !== cur.session_id) throw new ContractError('session_mismatch', { pinned: cur.session_id, observed: turn.session_id });
