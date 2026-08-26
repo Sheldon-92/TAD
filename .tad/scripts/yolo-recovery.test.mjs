@@ -1366,6 +1366,14 @@ function caseRequiredEvidence() {
   expect(fs.existsSync(basePath), `frozen base commit file missing: ${basePath}`);
   const base = fs.readFileSync(basePath, 'utf8').trim();
   expect(/^[0-9a-f]{40}$/.test(base), `frozen base commit is not a sha: ${base}`);
+  // The scope window CLOSES at the Phase-1 Gate-4 archive commit, not HEAD:
+  // this proof certifies exactly what Gate 4 accepted; later phases (phase2
+  // engine/driver/runner) legitimately commit outside the Phase-1 allowlist.
+  // Endpoint is a frozen evidence file following base-commit.txt's pattern.
+  const finPath = path.join(PHASE1, 'final-commit.txt');
+  expect(fs.existsSync(finPath), `frozen final commit file missing: ${finPath}`);
+  const fin = fs.readFileSync(finPath, 'utf8').trim();
+  expect(/^[0-9a-f]{40}$/.test(fin), `frozen final commit is not a sha: ${fin}`);
 
   // ── Lifecycle resolution (Gate 4 round 2) ────────────────────────────────
   // YOLO2_LIFECYCLE_SIM=archive simulates the post-*accept layout WITHOUT
@@ -1416,7 +1424,7 @@ function caseRequiredEvidence() {
   }
   expect(missing.length === 0, `required evidence missing or empty:\n  - ${missing.join('\n  - ')}`);
 
-  const changedRaw = git(['diff', '--name-only', `${base}..HEAD`], REPO_ROOT).split('\n').filter(Boolean);
+  const changedRaw = git(['diff', '--name-only', `${base}..${fin}`], REPO_ROOT).split('\n').filter(Boolean);
   // Gate 4 round 3: the archive proof must model the REAL committed diff, not
   // just filesystem existence. In simulated-archive mode the net effect of
   // committing the move is applied to the real frozen-base..HEAD list: the two
