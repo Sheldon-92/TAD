@@ -153,12 +153,45 @@ function hiddenAccept(task, dir) {
       if (dir) {
         const run = (c) => { const r = spawnSync('bash', ['-c', c], { cwd: dir, encoding: 'utf8' }); return { code: r.status, out: r.stdout }; };
         const c = h.check;
-        if (c.includes('contains') || c.includes('mentions')) {
+        const cLow = c.toLowerCase();
+        if (cLow.includes('no longer') || cLow.includes('not 0.9.0')) {
+          // negative containment: the named file must NOT still contain the term
+          const neg = (cLow.split('no longer')[1] || cLow.split('not ').pop() || '0.9.0');
+          const token = neg.replace(/^(echoes?|prints?|contains?|has|the|a|an|and)\s+/g, '').trim().split(/\s+/).filter(Boolean).pop() || '0.9.0';
+          const target = c.split(' ').find(w => w.endsWith('.md') || w.endsWith('.mjs') || w.endsWith('.sh')) || 'run.sh';
+          const fpath = path.join(dir, target);
+          if (fs.existsSync(fpath)) ok = !fs.readFileSync(fpath, 'utf8').includes(token);
+        } else if (cLow.includes('contain') || cLow.includes('mention')) {
           const target = c.split(' ').find(w => w.endsWith('.md') || w.endsWith('.mjs') || w.endsWith('.sh'));
           const body = fs.readFileSync(path.join(dir, target || 'guide.md'), 'utf8');
           const terms = (c.match(/init|status|verify|Worked Example|Command Reference|stableSlug|1\.0\.0|total/g) || []);
           ok = terms.length > 0 && terms.every(t2 => body.toLowerCase().includes(t2.toLowerCase()));
           if (c.includes('no longer') || c.includes('not 0.9.0')) ok = !body.includes('0.9.0');
+        } else if (cLow.includes('preserved')) {
+          // the seed content of the named file must still be present (intro/setup preserved)
+          const target = c.split(' ').find(w => w.endsWith('.md') || w.endsWith('.mjs') || w.endsWith('.sh')) || (task.seed && Object.keys(task.seed)[0]);
+          const seedBody = (task.seed && target && task.seed[target]) || '';
+          if (seedBody && fs.existsSync(path.join(dir, target))) {
+            ok = fs.readFileSync(path.join(dir, target), 'utf8').includes(seedBody.trim());
+          }
+        } else if (cLow.includes('exists and exports')) {
+          const sym = (c.match(/exports\s+([A-Za-z0-9_$]+)/i) || [])[1];
+          const target = c.split(' ').find(w => w.endsWith('.mjs')) || 'util.mjs';
+          const fpath = path.join(dir, target);
+          if (fs.existsSync(fpath) && sym) {
+            const body = fs.readFileSync(fpath, 'utf8');
+            ok = new RegExp(`export\\s+(default\\s+)?(function\\s+)?${sym}\\b|${sym}\\s*=`).test(body);
+          }
+        } else if (cLow.includes('assert')) {
+          const m = c.match(/>=\s*(\d+)/);
+          const need = m ? parseInt(m[1], 10) : 1;
+          const target = c.split(' ').find(w => w.endsWith('.mjs')) || 'tests.mjs';
+          const fpath = path.join(dir, target);
+          if (fs.existsSync(fpath)) {
+            const body = fs.readFileSync(fpath, 'utf8');
+            const count = (body.match(/(assert|assertEqual|strictEqual|deepStrictEqual|deepEqual)\s*\(/g) || []).length;
+            ok = count >= need;
+          }
         } else if (c.startsWith('node ')) {
           ok = run(c).code === 0;
         } else if (c.includes('first line ==')) {
@@ -177,7 +210,7 @@ function hiddenAccept(task, dir) {
         } else if (c.includes('exits 0') && c.includes('run.sh')) {
           ok = run('sh run.sh').code === 0;
         } else if (c.includes('unchanged')) {
-          ok = fs.readFileSync(path.join(dir,'config.json'),'utf8') === '{\"version\": \"1.0.0\"}\n';
+          ok = fs.readFileSync(path.join(dir,'config.json'),'utf8') === '{"version": "1.0.0"}\n';
         } else if (c.includes('still passing') || c.includes('tests.js still passes')) {
           ok = run('node tests.js').code === 0;
         } else { ok = false; detail += ' [unmatched check expression]'; }
