@@ -189,7 +189,9 @@ function hiddenAccept(task, dir) {
           const fpath = path.join(dir, target);
           if (fs.existsSync(fpath)) {
             const body = fs.readFileSync(fpath, 'utf8');
-            const count = (body.match(/(assert|assertEqual|strictEqual|deepStrictEqual|deepEqual)\s*\(/g) || []).length;
+            // Count both assert(...) and node:assert methods such as
+            // assert.equal(...), which are equivalent test assertions.
+            const count = (body.match(/\bassert(?:\.[A-Za-z_$][A-Za-z0-9_$]*)?\s*\(|\b(?:assertEqual|strictEqual|deepStrictEqual|deepEqual)\s*\(/g) || []).length;
             ok = count >= need;
           }
         } else if (c.startsWith('node ')) {
@@ -199,7 +201,7 @@ function hiddenAccept(task, dir) {
         } else if (c.includes('exports total')) {
           const r = run('node -e "import(\'./totals.js\').then(m=>{process.exit(typeof m.total===\'function\'?0:1)})"');
           ok = r.code === 0;
-        } else if (c.includes('empty array')) {
+        } else if (c.includes('empty array') || cLow.includes('result for []')) {
           const r = run('node -e "import(\'./totals.js\').then(m=>{process.exit(m.total([])===0?0:1)})"');
           ok = r.code === 0;
         } else if (c.includes('numeric addition')) {
