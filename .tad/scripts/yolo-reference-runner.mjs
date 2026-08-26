@@ -75,8 +75,11 @@ function main() {
   // injects prior transcripts; the packet is the only context carrier.
   const userText = fs.readFileSync(promptAbs, 'utf8');
 
-  const args = ['exec', '--json', '--skip-git-repo-check', '--sandbox', sandbox];
-  if (flags.session) args.push('resume', flags.session);
+  // Session continuation: codex resumes a native thread via the `resume`
+  // subcommand (verified by magic-word probe). Fresh turns omit --session.
+  const args = flags.session
+    ? ['exec', 'resume', flags.session, '--json', '--skip-git-repo-check', '--sandbox', sandbox]
+    : ['exec', '--json', '--skip-git-repo-check', '--sandbox', sandbox];
   args.push(userText.length ? userText : 'Proceed.');
   const t0 = Date.now();
   const res = spawnSync('codex', args, { encoding: 'utf8', timeout: 30 * 60 * 1000, cwd: path.dirname(packetAbs) });
