@@ -1214,9 +1214,23 @@ const ALLOW_LIFECYCLE_ARCHIVE = [
   '.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md',
   '.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
 ];
+// Phase-2 declared scope (Handoff v1.0.0 §9): legal members for ongoing Epic
+// work after this handoff's acceptance window, deliberately WITHOUT must-appear
+// assertions — their lifecycle belongs to TASK-20260825-YOLO2-P2.
+const ALLOW_PHASE2_DECLARED = [
+  '.tad/active/handoffs/HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md',
+  '.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md',
+  '.tad/scripts/yolo-round.test.mjs',
+  '.tad/scripts/yolo-reference-runner.mjs',
+  '.tad/guides/yolo-bounded-rounds.md',
+];
 const ALLOW_PREFIX = [
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/',
+  '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/',
   '.tad/evidence/reviews/blake/yolo2-phase1/',
+  '.tad/evidence/reviews/blake/yolo2-phase2/',
+  '.tad/evidence/reviews/alex/yolo2-phase2/',
+  '.tad/evidence/acceptance-tests/yolo2-phase2-bounded-quality-loop/',
   '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
 ];
 
@@ -1266,7 +1280,8 @@ export function offAllowlist(paths) {
   return paths.filter((p) => !ALLOW_EXACT.includes(p)
     && !ALLOW_PREFIX.some((pre) => p.startsWith(pre))
     && !ALLOW_LIFECYCLE_ACTIVE.includes(p)
-    && !ALLOW_LIFECYCLE_ARCHIVE.includes(p));
+    && !ALLOW_LIFECYCLE_ARCHIVE.includes(p)
+    && !ALLOW_PHASE2_DECLARED.includes(p));
 }
 
 const REQUIRED_EVIDENCE = [

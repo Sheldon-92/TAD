@@ -23,11 +23,15 @@ skip_knowledge_assessment: no
 
 ## Gate 2: Design Completeness
 
-**Status:** HONEST_PARTIAL — Gate 2 review cap reached. Round 2 closed every earlier
+**Status:** ✅ PASS (2026-08-26). Round 2 closed every earlier
 finding but found one new evaluation P0 and one remaining architecture P1. Both are
-amended in v0.9.2, but protocol permits no third self-initiated review round. Do not
-implement and do not relabel this Handoff `1.0.0` without an explicit human decision
-to reopen independent review.
+amended in v0.9.2. Per explicit human decision to reopen independent review
+("完成整个epic" directive, 2026-08-25), an independent incremental verification of
+exactly those two amendments was executed:
+`.tad/evidence/reviews/alex/yolo2-phase2/incremental-v092-verification.md` —
+Finding A (effect fingerprint mutability) RESOLVED, Finding B (native record
+provenance) RESOLVED, no bypass found, incremental_verdict PASS.
+**Handoff Version:** 1.0.0 — Gate 2 PASS via sanctioned incremental recheck.
 
 Round-1 blockers were: policy-mode legacy-command bypasses, a post-alignment
 deadlock, unbound same-session/tool-isolation claims, audit-reserve consumption
@@ -40,7 +44,7 @@ Round-2 findings were: a duplicate-effect fingerprint incorrectly included mutab
 `outcome_id`, and the runner's native record lacked raw-trace/runner/action provenance
 needed to prevent self-certification. v0.9.2 removes mutable labels from the effect
 identity, denies executor shell, and defines runner-owned raw trace + nonce + observed
-pre/post manifests. These amendments are not independently re-reviewed.
+pre/post manifests. Independently re-verified as above.
 
 ## Handoff Checklist
 

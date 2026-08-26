@@ -69,6 +69,7 @@ export const REQUIRED_LABELS = [
 const COMMANDS = [
   'init', 'status', 'checkpoint', 'verify',
   'action-start', 'reconcile', 'resume', 'stop',
+  'round-prepare', 'round-authorize', 'round-close', 'align', 'phase-candidate',
 ];
 
 // ─────────────────────────── errors ───────────────────────────
@@ -227,6 +228,31 @@ const GOAL_REQUIRED = [
   'forbidden_scope', 'oracle_path', 'created_at',
 ];
 
+export function validateExecutionPolicy(goal) {
+  const ep = goal.execution_policy;
+  if (!ep) return null;
+  if (ep.format !== 'yolo-bounded-policy-v1') {
+    throw new ContractError('policy_format_invalid', { format: ep.format });
+  }
+  for (const f of ['max_rounds', 'max_retries_per_slice', 'max_actions', 'max_wall_seconds',
+    'max_tokens', 'audit_reserve_tokens', 'max_executor_tokens_per_round',
+    'align_every_verified_slices', 'packet_token_budget']) {
+    if (!Number.isInteger(ep[f]) || ep[f] <= 0) {
+      throw new ContractError('policy_field_invalid', { field: f, value: ep[f] });
+    }
+  }
+  if (ep.audit_reserve_tokens >= ep.max_tokens) {
+    throw new ContractError('policy_reserve_ge_max', { audit_reserve_tokens: ep.audit_reserve_tokens, max_tokens: ep.max_tokens });
+  }
+  if (ep.max_executor_tokens_per_round > ep.max_tokens - ep.audit_reserve_tokens) {
+    throw new ContractError('policy_round_ceiling_exceeds_consumable', { max_executor_tokens_per_round: ep.max_executor_tokens_per_round });
+  }
+  if (![2, 3].includes(ep.align_every_verified_slices)) {
+    throw new ContractError('policy_align_invalid', { align_every_verified_slices: ep.align_every_verified_slices });
+  }
+  return ep;
+}
+
 export function readGoal(runDir) {
   const file = path.join(runDir, 'goal.json');
   if (!fs.existsSync(file)) throw new ContractError('goal_missing', { path: file });
@@ -300,7 +326,7 @@ export function readJournal(runDir) {
  * Throws ContractError on any internally inconsistent history.
  */
 export function reduceRun(goal, events) {
-  const verified = [];               // [{slice, seq, at, receipt_path, receipt_sha256, verified_head}]
+  const verified = [];               // [{slice, seq, at, receipt_path, receipt_sha256, verified_head, round_id?}]
   const verifiedIds = new Set();
   const checkpoints = new Map();     // slice -> {slice, reason, next, seq, at}
   const actionsSeen = new Set();
@@ -310,9 +336,27 @@ export function reduceRun(goal, events) {
   let stopped = null;
   let latestHead = null;
 
+  // ── Phase-2 bounded-round tracking (active only when execution_policy exists) ──
+  const policy = goal.execution_policy || null;
+  let currentRound = null;      // {id, slice_id, state: prepared|authorized|closed_candidate|closed_failed|closed_blocked}
+  let lastClosedRound = null;   // consumed by verify (candidate) or replaced (failed/blocked)
+  let roundsPrepared = 0;
+  let verifiedSinceAlignment = 0;
+  let alignmentWatermark = null;
+  let phaseCandidate = null;
+  let tokensCharged = 0;
+  let lastEventAt = null;
+  const clockBlockers = [];
+
   for (const ev of events) {
     if (stopped) throw new ContractError('event_after_stop', { seq: ev.seq, type: ev.type });
     latestHead = ev.observed_head;
+    // Clock integrity (Phase-2 budgets): a timestamp moving backwards is a
+    // blocker, never free extra wall time.
+    if (lastEventAt !== null && String(ev.at) < String(lastEventAt)) {
+      clockBlockers.push({ code: 'clock_integrity', detail: `seq ${ev.seq} at ${ev.at} precedes ${lastEventAt}` });
+    }
+    lastEventAt = ev.at;
     const p = ev.payload;
     switch (ev.type) {
       case 'initialized':
@@ -322,6 +366,7 @@ export function reduceRun(goal, events) {
         }
         break;
       case 'checkpointed': {
+        if (policy) throw new ContractError('legacy_checkpoint_forbidden', { seq: ev.seq, note: 'policy mode: round-close is the only candidate path' });
         if (!p.slice) throw new ContractError('journal_field_missing', { seq: ev.seq, field: 'payload.slice' });
         if (!CHECKPOINT_REASONS.includes(p.reason)) {
           throw new ContractError('checkpoint_reason_invalid', { seq: ev.seq, reason: p.reason });
@@ -336,6 +381,16 @@ export function reduceRun(goal, events) {
       case 'verified': {
         if (!p.slice) throw new ContractError('journal_field_missing', { seq: ev.seq, field: 'payload.slice' });
         if (verifiedIds.has(p.slice)) throw new ContractError('duplicate_verified_slice', { seq: ev.seq, slice: p.slice });
+        if (policy) {
+          // Policy mode: verify requires the matching round closed as candidate.
+          if (!lastClosedRound || lastClosedRound.state !== 'closed_candidate'
+            || lastClosedRound.slice_id !== p.slice) {
+            throw new ContractError('verify_requires_closed_candidate', {
+              seq: ev.seq, slice: p.slice,
+              note: 'policy mode: run round-close --outcome candidate before verify',
+            });
+          }
+        }
         verifiedIds.add(p.slice);
         verified.push({
           slice: p.slice,
@@ -346,6 +401,10 @@ export function reduceRun(goal, events) {
           verified_head: p.verified_head,
         });
         checkpoints.delete(p.slice);
+        if (policy) {
+          lastClosedRound = null;
+          verifiedSinceAlignment += 1;
+        }
         break;
       }
       case 'action_started': {
@@ -354,6 +413,9 @@ export function reduceRun(goal, events) {
         if (forbiddenRetry.has(id)) throw new ContractError('blind_retry_forbidden', { seq: ev.seq, action_id: id });
         if (actionsSeen.has(id)) throw new ContractError('duplicate_action_id', { seq: ev.seq, action_id: id });
         if (pendingAction) throw new ContractError('concurrent_action', { seq: ev.seq, pending: pendingAction.action_id });
+        if (policy && (!currentRound || currentRound.state !== 'authorized')) {
+          throw new ContractError('action_requires_authorized_round', { seq: ev.seq, action_id: id });
+        }
         actionsSeen.add(id);
         pendingAction = {
           action_id: id,
@@ -361,6 +423,7 @@ export function reduceRun(goal, events) {
           target: p.target,
           pre_sha256: p.pre_sha256,
           intended_post_sha256: p.intended_post_sha256,
+          action_nonce: p.action_nonce || null,
           seq: ev.seq,
           at: ev.at,
         };
@@ -382,7 +445,7 @@ export function reduceRun(goal, events) {
           forbiddenRetry.add(id);
           unknownActions.push({
             action_id: id,
-            target: pendingAction.target,
+            target: pendingAction ? pendingAction.target : (p.target || null),
             observed_sha256: p.observed_sha256 || null,
             seq: ev.seq,
           });
@@ -391,6 +454,64 @@ export function reduceRun(goal, events) {
           if (idx >= 0) unknownActions.splice(idx, 1);
         }
         pendingAction = null;
+        break;
+      }
+      // ── Phase-2 bounded-round events (require execution_policy in goal.json) ──
+      case 'round_prepared': {
+        if (!policy) throw new ContractError('policy_mode_required', { seq: ev.seq, type: ev.type });
+        if (currentRound) throw new ContractError('prepare_with_open_round', { seq: ev.seq, open: currentRound.id });
+        if (!p.round_id || !p.slice_id || !p.contract_sha256 || !p.packet_sha256) {
+          throw new ContractError('journal_field_missing', { seq: ev.seq, field: 'round_prepared payload' });
+        }
+        currentRound = {
+          id: p.round_id, slice_id: p.slice_id, state: 'prepared', seq: ev.seq,
+          contract_sha256: p.contract_sha256, packet_sha256: p.packet_sha256,
+        };
+        roundsPrepared += 1;
+        break;
+      }
+      case 'reentry_verified': {
+        if (!policy) throw new ContractError('policy_mode_required', { seq: ev.seq, type: ev.type });
+        if (!currentRound || currentRound.state !== 'prepared') {
+          throw new ContractError('authorize_requires_prepared_round', { seq: ev.seq });
+        }
+        if (p.round_id !== currentRound.id) throw new ContractError('round_mismatch', { seq: ev.seq });
+        if (!p.session_id || typeof p.reservation_tokens !== 'number') {
+          throw new ContractError('journal_field_missing', { seq: ev.seq, field: 'reentry_verified payload' });
+        }
+        currentRound.state = 'authorized';
+        currentRound.session_id = p.session_id;
+        currentRound.reservation_tokens = p.reservation_tokens;
+        break;
+      }
+      case 'round_closed': {
+        if (!policy) throw new ContractError('policy_mode_required', { seq: ev.seq, type: ev.type });
+        if (!currentRound || currentRound.state !== 'authorized') {
+          throw new ContractError('close_requires_authorized_round', { seq: ev.seq });
+        }
+        if (p.round_id !== currentRound.id) throw new ContractError('round_mismatch', { seq: ev.seq });
+        if (!['candidate', 'failed', 'blocked'].includes(p.outcome)) {
+          throw new ContractError('close_outcome_invalid', { seq: ev.seq, outcome: p.outcome });
+        }
+        currentRound.state = p.outcome === 'candidate' ? 'closed_candidate' : `closed_${p.outcome}`;
+        lastClosedRound = currentRound;
+        currentRound = null;
+        if (p.usage && typeof p.usage.total_tokens === 'number') tokensCharged += p.usage.total_tokens;
+        break;
+      }
+      case 'alignment_verified': {
+        if (!policy) throw new ContractError('policy_mode_required', { seq: ev.seq, type: ev.type });
+        if (!p.verified_digest || !p.receipt_sha256) {
+          throw new ContractError('journal_field_missing', { seq: ev.seq, field: 'alignment_verified payload' });
+        }
+        alignmentWatermark = { seq: ev.seq, watermark_seq: p.watermark_seq ?? ev.seq, verified_digest: p.verified_digest };
+        verifiedSinceAlignment = 0;
+        break;
+      }
+      case 'phase_candidate_recorded': {
+        if (!policy) throw new ContractError('policy_mode_required', { seq: ev.seq, type: ev.type });
+        if (currentRound) throw new ContractError('phase_candidate_with_open_round', { seq: ev.seq, open: currentRound.id });
+        phaseCandidate = { seq: ev.seq, receipt_sha256: p.receipt_sha256 || null };
         break;
       }
       case 'stopped':
@@ -409,12 +530,22 @@ export function reduceRun(goal, events) {
   for (const a of unknownActions) {
     blockers.push({ code: 'outcome_unknown', detail: `action ${a.action_id} on ${a.target}` });
   }
+  for (const c of clockBlockers) blockers.push(c);
 
   let state = 'ACTIVE';
-  if (stopped || unknownActions.length > 0) state = 'HONEST_PARTIAL';
+  if (stopped || unknownActions.length > 0 || clockBlockers.length > 0) state = 'HONEST_PARTIAL';
   else if (pendingAction) state = 'ACTION_PENDING';
+  else if (policy && currentRound && currentRound.state === 'closed_candidate') state = 'ROUND_CANDIDATE';
 
   const legal = deriveLegalNextAction({ goal, stopped, unknownActions, pendingAction, candidates, verifiedIds });
+
+  // Phase-2 budget derivation (frozen policy; native usage only).
+  const budgets = policy ? {
+    rounds: { used: roundsPrepared, max: policy.max_rounds },
+    actions: { used: actionsSeen.size, max: policy.max_actions },
+    tokens: { charged: tokensCharged, max: policy.max_tokens, audit_reserve: policy.audit_reserve_tokens },
+    verified_since_alignment: { count: verifiedSinceAlignment, max: policy.align_every_verified_slices },
+  } : null;
 
   return {
     run_id: goal.run_id,
@@ -436,6 +567,20 @@ export function reduceRun(goal, events) {
     latest_observed_head: latestHead,
     events_count: events.length,
     goal_sha256_at_init: events[0].payload.goal_sha256,
+    phase2: policy ? {
+      enabled: true,
+      policy,
+      quality_policy: goal.quality_policy || null,
+      rounds_prepared: roundsPrepared,
+      current_round: currentRound,
+      last_closed_round: lastClosedRound,
+      verified_since_alignment: verifiedSinceAlignment,
+      alignment_watermark: alignmentWatermark,
+      phase_candidate: phaseCandidate,
+      tokens_charged: tokensCharged,
+      budgets,
+    } : null,
+    phase_candidate: phaseCandidate,
   };
 }
 
@@ -1220,6 +1365,24 @@ function cmdActionStart(flags, cwd, out) {
   const preSha = need(flags, 'pre-sha256');
   const postSha = need(flags, 'intended-post-sha256');
 
+  // Phase-2 policy bindings (§5.1): when the run carries an execution_policy,
+  // an action binds to the current authorized round and mints a unique nonce.
+  let actionNonce = null;
+  if (r.goal.execution_policy) {
+    for (const f of ['round', 'outcome-id', 'tool', 'args-json', 'effect-manifest']) {
+      need(flags, f);
+    }
+    if (!r.state.phase2 || !r.state.phase2.current_round
+      || r.state.phase2.current_round.state !== 'authorized') {
+      throw new ContractError('action_requires_authorized_round', { action_id: actionId });
+    }
+    if (flags.round !== r.state.phase2.current_round.id) {
+      throw new ContractError('round_mismatch', { declared: flags.round, current: r.state.phase2.current_round.id });
+    }
+    assertBudgetRemaining(r.state, 'actions');
+    actionNonce = crypto.randomBytes(8).toString('hex');
+  }
+
   if (r.state.pending_action) {
     throw new ContractError('concurrent_action', { pending: r.state.pending_action.action_id });
   }
@@ -1237,6 +1400,14 @@ function cmdActionStart(flags, cwd, out) {
     target: repoRel(r.repoRoot, targetAbs),
     pre_sha256: preSha,
     intended_post_sha256: postSha,
+    ...(actionNonce ? {
+      round: flags.round,
+      outcome_id: flags['outcome-id'],
+      tool_class: flags.tool,
+      args_sha256: sha256String(String(flags['args-json'])),
+      effect_manifest_sha256: sha256File(resolveInRepo(flags['effect-manifest'], r.repoRoot, '--effect-manifest')),
+      action_nonce: actionNonce,
+    } : {}),
   }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
   const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
@@ -1389,6 +1560,395 @@ function cmdStop(flags, cwd, out) {
 
 // ─────────────────────────── result shaping ───────────────────────────
 
+// ──────────────── Phase-2 bounded-round commands ────────────────
+
+const FORBIDDEN_ALLOWED_PATH_PREFIXES = [
+  '.tad/scripts/', '.claude/', '.tad/hooks/', '.agents/',
+  '.tad/active/handoffs/', '.tad/archive/handoffs/',
+];
+const DENIED_EXECUTOR_TOOLS = ['Shell', 'Bash', 'Agent', 'Task'];
+
+function requirePolicyMode(goal) {
+  if (!goal.execution_policy) {
+    throw new ContractError('policy_mode_required', { note: 'goal.json has no execution_policy block' });
+  }
+}
+
+function assertBudgetRemaining(state, kind) {
+  const b = state.phase2.budgets[kind];
+  if (b.used >= b.max) {
+    throw new ContractError('budget_exhausted', { budget: kind, used: b.used, max: b.max });
+  }
+}
+
+function assertWallClock(goal) {
+  const policy = goal.execution_policy;
+  if (!policy || typeof goal.created_at !== 'string') return;
+  const start = Date.parse(goal.created_at);
+  if (!Number.isFinite(start)) return;
+  const deadline = start + policy.max_wall_seconds * 1000;
+  if (Date.now() > deadline) {
+    throw new ContractError('budget_exhausted', {
+      budget: 'wall_time',
+      deadline: new Date(deadline).toISOString(),
+    });
+  }
+}
+
+function readJsonArtifact(absPath, label) {
+  let raw;
+  try { raw = fs.readFileSync(absPath, 'utf8'); } catch {
+    throw new UsageError('artifact_missing', { label, path: absPath });
+  }
+  try { return JSON.parse(raw); } catch {
+    throw new ContractError('artifact_not_json', { label, path: absPath });
+  }
+}
+
+function cmdRoundPrepare(flags, cwd, out) {
+  const r = withRun(flags, cwd);
+  requirePolicyMode(r.goal);
+  refuseIfHonestPartial(r.state, 'round-prepare');
+  if (r.state.pending_action) {
+    throw new ContractError('pending_action_blocks_prepare', { action_id: r.state.pending_action.action_id });
+  }
+  if (r.state.phase2.current_round) {
+    throw new ContractError('prepare_with_open_round', { open: r.state.phase2.current_round.id });
+  }
+  const policy = r.goal.execution_policy;
+  if (r.state.phase2.verified_since_alignment >= policy.align_every_verified_slices) {
+    throw new ContractError('alignment_required_before_prepare', {
+      verified_since_alignment: r.state.phase2.verified_since_alignment,
+      align_every_verified_slices: policy.align_every_verified_slices,
+      remedy: 'run align --receipt <alignment-receipt.json>',
+    });
+  }
+  assertBudgetRemaining(r.state, 'rounds');
+  assertWallClock(r.goal);
+
+  // Slice contract validation (§4.2).
+  const contractRel = need(flags, 'contract');
+  const contractAbs = resolveInRepo(contractRel, r.repoRoot, '--contract');
+  if (!fs.existsSync(contractAbs) || !fs.lstatSync(contractAbs).isFile()) {
+    throw new UsageError('contract_missing', { path: contractRel });
+  }
+  const c = readJsonArtifact(contractAbs, 'slice-contract');
+  if (c.format !== 'yolo-slice-contract-v1') throw new ContractError('contract_format_invalid', { format: c.format });
+  if (typeof c.slice_id !== 'string' || !c.slice_id) throw new ContractError('journal_field_missing', { field: 'slice_id' });
+  if (typeof c.outcome !== 'string' || c.outcome.trim().length < 15
+    || /^(edit|modify|change)\s+(the\s+)?file\b/i.test(c.outcome.trim())) {
+    throw new ContractError('outcome_not_checkable', { outcome: c.outcome });
+  }
+  const successIds = (Array.isArray(r.goal.success) ? r.goal.success : []).map((_, i) => `SC-${i + 1}`);
+  if (!Array.isArray(c.maps_to_success) || c.maps_to_success.length === 0
+    || !c.maps_to_success.every((id) => successIds.includes(id))) {
+    throw new ContractError('success_mapping_invalid', { maps_to_success: c.maps_to_success, frozen: successIds });
+  }
+  if (!Array.isArray(c.necessary_evidence)) throw new ContractError('journal_field_missing', { field: 'necessary_evidence' });
+  for (const e of c.necessary_evidence) {
+    const eAbs = resolveInRepo(e.path, r.repoRoot, 'necessary_evidence.path');
+    if (!fs.existsSync(eAbs) || sha256File(eAbs) !== e.sha256) {
+      throw new ContractError('evidence_hash_mismatch', { path: e.path, declared: e.sha256 });
+    }
+  }
+  if (!Array.isArray(c.allowed_paths) || c.allowed_paths.length === 0) {
+    throw new ContractError('journal_field_missing', { field: 'allowed_paths' });
+  }
+  for (const ap of c.allowed_paths) {
+    if (FORBIDDEN_ALLOWED_PATH_PREFIXES.some((pre) => String(ap).startsWith(pre))) {
+      throw new ContractError('allowed_path_forbidden', { path: ap });
+    }
+  }
+  if (typeof c.forbidden_scope_sha256 !== 'string' || !c.forbidden_scope_sha256) {
+    throw new ContractError('journal_field_missing', { field: 'forbidden_scope_sha256' });
+  }
+  if (!Array.isArray(c.tool_allowlist) || c.tool_allowlist.length === 0) {
+    throw new ContractError('journal_field_missing', { field: 'tool_allowlist' });
+  }
+  for (const t of c.tool_allowlist) {
+    if (DENIED_EXECUTOR_TOOLS.includes(t)) throw new ContractError('executor_shell_denied', { tool: t });
+  }
+  if (!Array.isArray(c.deterministic_checks)) throw new ContractError('journal_field_missing', { field: 'deterministic_checks' });
+  if (c.deterministic_checks.length === 0 && c.semantic_review_required !== true) {
+    throw new ContractError('no_check_and_no_semantic_review', { slice_id: c.slice_id });
+  }
+  if (c.semantic_review_required === true && !c.semantic_review_reason) {
+    throw new ContractError('semantic_review_reason_missing', { slice_id: c.slice_id });
+  }
+  // Replanning may supersede only an unverified failed/blocked slice.
+  if (c.supersedes_unverified_slice !== null && c.supersedes_unverified_slice !== undefined) {
+    const target = c.supersedes_unverified_slice;
+    if (r.state.verified_slices.includes(target)) throw new ContractError('supersede_verified_forbidden', { slice: target });
+    const lc = r.state.phase2.last_closed_round;
+    if (!lc || lc.slice_id !== target || !['closed_failed', 'closed_blocked'].includes(lc.state)) {
+      throw new ContractError('supersede_target_not_failed', { slice: target, last_closed: lc || null });
+    }
+    if (!c.replan_reason) throw new ContractError('replan_reason_missing', { slice: target });
+  } else if (c.replan_reason) {
+    throw new ContractError('replan_without_supersede', {});
+  }
+
+  const contractSha = sha256File(contractAbs);
+  const roundId = `R-${String(r.state.phase2.rounds_prepared + 1).padStart(2, '0')}`;
+
+  // Derived execution packet (§4.3) — rebuildable, bounded, anchors never trimmed.
+  const sections = [];
+  const add = (title, body) => sections.push({ title, text: `## ${title}\n\n${body}\n` });
+  add('GOAL', `${r.goal.goal}\n\nGoal id: \`${r.goal.goal_id}\``);
+  add('SUCCESS CRITERIA', r.goal.success.map((s, i) => `- \`SC-${i + 1}\`: ${typeof s === 'string' ? s : s.statement}`).join('\n'));
+  add('NON-GOALS AND FORBIDDEN SCOPE', `${r.goal.non_goals.map((s) => `- ${s}`).join('\n')}\n\nForbidden scope:\n${r.goal.forbidden_scope.map((s) => `- ${s}`).join('\n')}`);
+  add('HANDOFF REVISION', `\`${r.goal.handoff_path}\` @ \`${r.goal.handoff_revision.slice(0, 12)}\`; base \`${r.goal.base_commit.slice(0, 10)}\`.`);
+  add('VERIFIED STATE', r.state.verified.length
+    ? r.state.verified.map((v) => `- \`${v.slice}\` verified (DO NOT redo)`).join('\n')
+    : '- none yet');
+  add('CURRENT SLICE CONTRACT', [
+    `- slice: \`${c.slice_id}\``,
+    `- outcome: ${c.outcome}`,
+    `- maps to: ${c.maps_to_success.join(', ')}`,
+    `- allowed paths: ${c.allowed_paths.join(', ')}`,
+    `- tools: ${c.tool_allowlist.join(', ')}`,
+    `- deterministic checks: ${c.deterministic_checks.map((k) => k.id).join(', ') || '(none)'}`,
+    `- stop conditions: ${(c.stop_conditions || []).join('; ') || '(none)'}`,
+    c.replan_reason ? `- REPLAN of \`${c.supersedes_unverified_slice}\`: ${c.replan_reason}` : '',
+  ].filter(Boolean).join('\n'));
+  add('VERIFICATION MODEL', [
+    '- A checkpoint is only a CANDIDATE: it records intent, it does not verify the work.',
+    '- `verified` advances ONLY when a Conductor (an identity distinct from the executor, `written_by_id` != `executor_id`) writes a bound verification receipt after the existing Gate and an independent review have both PASSed.',
+    '- Completion prose, an ordinary file, a self-authored receipt, or any executor assertion NEVER advances `verified`.',
+  ].join('\n'));
+  add('PROHIBITIONS', [
+    '- Execute ONLY this slice. Starting other slices, redoing verified work, or declaring completion is FORBIDDEN.',
+    '- Uncommitted worktree changes are observation only and MUST NOT be treated as progress or as done.',
+    '- Shell/Bash and Agent spawning are denied in strict Phase 2; predeclared deterministic checks run Conductor-side only.',
+    '- Hidden acceptance is outside your namespace; do not look for it.',
+  ].join('\n'));
+  add('BUDGETS', [
+    `- round ${roundId} of max ${policy.max_rounds}`,
+    `- executor token reservation for this round: ${policy.max_executor_tokens_per_round}`,
+    `- total tokens charged so far: ${r.state.phase2.tokens_charged} / ${policy.max_tokens} (audit reserve ${policy.audit_reserve_tokens})`,
+    `- actions so far: ${r.state.phase2.budgets.actions.used} / ${policy.max_actions}`,
+  ].join('\n'));
+
+  const header = `# Execution Packet — round ${roundId} (slice ${c.slice_id})\n\nDerived from goal.json + journal.jsonl. NO authority. If it disagrees with the ledger, the ledger wins.\n`;
+  const text = header + '\n' + sections.map((s) => s.text).join('\n');
+  const tokens = estimateTokens(text);
+  if (tokens > policy.packet_token_budget) {
+    throw new ContractError('packet_over_budget', {
+      tokens,
+      budget: policy.packet_token_budget,
+      composition: sections.map((s) => ({ section: s.title, tokens: estimateTokens(s.text) })),
+      note: 'never trim anchors to fit',
+    });
+  }
+  const packetSha = sha256String(text);
+  const packetDir = path.join(r.runDir, 'rounds', roundId);
+  fs.mkdirSync(packetDir, { recursive: true });
+  writeAtomic(path.join(packetDir, 'execution.md'), text);
+
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'round_prepared', {
+    round_id: roundId,
+    slice_id: c.slice_id,
+    contract_rel: contractRel,
+    contract_sha256: contractSha,
+    packet_rel: `.tad/evidence-placeholder/rounds/${roundId}/execution.md`.replace('.tad/evidence-placeholder', ''),
+    packet_sha256: packetSha,
+    replaces_slice: c.supersedes_unverified_slice ?? null,
+    replan_reason: c.replan_reason ?? null,
+  }, r.identity.head));
+  fs.renameSync(path.join(packetDir, 'execution.md'), path.join(r.runDir, 'rounds', roundId, 'execution.md'));
+  const after = loadRun(r.runDir, r.repoRoot, cwd);
+  out(`EXECUTION PACKET: ${path.join(packetDir, 'execution.md')} (${tokens} est. tokens, budget ${policy.packet_token_budget})\n`);
+  return finish('round-prepare', r.runDir, after.state, null);
+}
+
+function cmdRoundAuthorize(flags, cwd, out) {
+  const r = withRun(flags, cwd);
+  requirePolicyMode(r.goal);
+  refuseIfHonestPartial(r.state, 'round-authorize');
+  const cur = r.state.phase2.current_round;
+  if (!cur || cur.state !== 'prepared') {
+    throw new ContractError('authorize_requires_prepared_round', { current: cur || null });
+  }
+  const readArt = (flag) => {
+    const rel = need(flags, flag);
+    const abs = resolveInRepo(rel, r.repoRoot, `--${flag}`);
+    return { rel, abs, doc: readJsonArtifact(abs, flag), sha: sha256File(abs) };
+  };
+  const assertion = readArt('assertion');
+  const review = readArt('review');
+  const turn = readArt('turn-record');
+
+  if (assertion.doc.format !== 'yolo-recovery-assertion-v1') throw new ContractError('assertion_format_invalid', { format: assertion.doc.format });
+  if (assertion.doc.verdict !== 'PASS') throw new ContractError('assertion_verdict_not_pass', {});
+  if (assertion.doc.hard_total !== 8 || assertion.doc.hard_correct !== 8) {
+    throw new ContractError('assertion_hard_anchors_incomplete', { hard: `${assertion.doc.hard_correct}/${assertion.doc.hard_total}` });
+  }
+  if (typeof assertion.doc.soft_score !== 'number' || assertion.doc.soft_score < 0.90) {
+    throw new ContractError('assertion_soft_below_floor', { soft_score: assertion.doc.soft_score });
+  }
+  if (assertion.doc.packet_sha256 !== cur.packet_sha256) {
+    throw new ContractError('assertion_packet_mismatch', { declared: assertion.doc.packet_sha256 });
+  }
+  if (review.doc.verdict !== 'PASS') throw new ContractError('review_verdict_not_pass', {});
+  const execAuthor = assertion.doc.author_id || turn.doc.session_id;
+  const revAuthor = review.doc.author_id || review.doc.reviewer_id;
+  if (!revAuthor || revAuthor === execAuthor) throw new ContractError('self_review_forbidden', {});
+
+  // Native turn record (runner-owned provenance).
+  const t = turn.doc;
+  if (t.format !== 'yolo-reference-turn-v1') throw new ContractError('turn_format_invalid', { format: t.format });
+  if (t.written_by !== 'reference-runner') throw new ContractError('turn_not_runner_owned', { written_by: t.written_by });
+  for (const f of ['runner_version', 'runner_sha256', 'parser_version', 'invocation_nonce']) {
+    if (!t[f]) throw new ContractError('native_provenance_missing', { field: f });
+  }
+  if (t.role !== 'executor' || t.turn_kind !== 'assertion') throw new ContractError('turn_role_invalid', { role: t.role, kind: t.turn_kind });
+  if (!t.session_id) throw new ContractError('journal_field_missing', { field: 'session_id' });
+  if (t.packet_sha256 && t.packet_sha256 !== cur.packet_sha256) throw new ContractError('assertion_packet_mismatch', { via: 'turn-record' });
+  if (!t.raw_native_output || !t.raw_native_output.sha256) throw new ContractError('native_provenance_missing', { field: 'raw_native_output' });
+  if (!t.usage || t.usage.native !== true) throw new ContractError('usage_not_native', {});
+  for (const call of Array.isArray(t.tool_calls) ? t.tool_calls : []) {
+    if (call.decision !== 'allowed') throw new ContractError('denied_tool_attempt', { tool: call.tool });
+    if ((call.observed_changed || []).length || (call.observed_deleted || []).length || (call.observed_untracked || []).length) {
+      throw new ContractError('assertion_turn_side_effect', { native_call_id: call.native_call_id });
+    }
+  }
+
+  // Token reservation keeping the audit reserve intact.
+  const policy = r.goal.execution_policy;
+  const remainingTotal = policy.max_tokens - r.state.phase2.tokens_charged;
+  const reserve = Math.min(policy.max_executor_tokens_per_round, remainingTotal);
+  if (remainingTotal - reserve < policy.audit_reserve_tokens) {
+    throw new ContractError('audit_reserve_would_be_consumed', { remaining_total: remainingTotal, audit_reserve: policy.audit_reserve_tokens });
+  }
+
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'reentry_verified', {
+    round_id: cur.id,
+    session_id: t.session_id,
+    reservation_tokens: reserve,
+    assertion_sha256: assertion.sha,
+    review_sha256: review.sha,
+    turn_record_sha256: turn.sha,
+  }, r.identity.head));
+  const after = loadRun(r.runDir, r.repoRoot, cwd);
+  out(`ROUND ${cur.id} AUTHORIZED. Same session may execute; reservation ${reserve} tokens.\n`);
+  return finish('round-authorize', r.runDir, after.state, null);
+}
+
+function cmdRoundClose(flags, cwd, out) {
+  const r = withRun(flags, cwd);
+  requirePolicyMode(r.goal);
+  const cur = r.state.phase2.current_round;
+  if (!cur || cur.state !== 'authorized') {
+    throw new ContractError('close_requires_authorized_round', { current: cur || null });
+  }
+  if (r.state.pending_action) {
+    throw new ContractError('pending_action_blocks_close', { action_id: r.state.pending_action.action_id });
+  }
+  const outcome = need(flags, 'outcome');
+  if (!['candidate', 'failed', 'blocked'].includes(outcome)) {
+    throw new UsageError('close_outcome_invalid', { outcome, allowed: ['candidate', 'failed', 'blocked'] });
+  }
+  const reportRel = need(flags, 'report');
+  const reportAbs = resolveInRepo(reportRel, r.repoRoot, '--report');
+  const report = readJsonArtifact(reportAbs, 'round-report');
+  if (report.round_id && report.round_id !== cur.id) throw new ContractError('round_mismatch', { via: 'report' });
+  const usageRel = need(flags, 'usage');
+  const usageAbs = resolveInRepo(usageRel, r.repoRoot, '--usage');
+  const usage = readJsonArtifact(usageAbs, 'usage');
+  if (!usage || usage.native !== true) throw new ContractError('usage_not_native', {});
+  const total = typeof usage.total_tokens === 'number' ? usage.total_tokens : (usage.input_tokens || 0) + (usage.output_tokens || 0);
+  const turnRel = need(flags, 'turn-record');
+  const turnAbs = resolveInRepo(turnRel, r.repoRoot, '--turn-record');
+  const turn = readJsonArtifact(turnAbs, 'execution-turn');
+  if (turn.turn_kind !== 'execution') throw new ContractError('turn_role_invalid', { kind: turn.turn_kind });
+  if (turn.session_id !== cur.session_id) throw new ContractError('session_mismatch', { pinned: cur.session_id, observed: turn.session_id });
+  if (total > cur.reservation_tokens) {
+    throw new ContractError('token_reservation_exceeded', { total, reservation: cur.reservation_tokens });
+  }
+  // One-to-one reconciliation: every observed mutation must map to an open
+  // policy-mode action_started (pendingAction carries the minted nonce).
+  for (const call of Array.isArray(turn.tool_calls) ? turn.tool_calls : []) {
+    const mutated = (call.observed_changed || []).length > 0 || (call.observed_deleted || []).length > 0;
+    if (mutated && (!pendingActionMatch(r, call))) {
+      throw new ContractError('unauthorized_mutation', { native_call_id: call.native_call_id });
+    }
+  }
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'round_closed', {
+    round_id: cur.id,
+    outcome,
+    report_sha256: sha256File(reportAbs),
+    usage: { input_tokens: usage.input_tokens || 0, output_tokens: usage.output_tokens || 0, total_tokens: total, native: true },
+    session_id: cur.session_id,
+  }, r.identity.head));
+  const after = loadRun(r.runDir, r.repoRoot, cwd);
+  return finish('round-close', r.runDir, after.state, null);
+}
+
+function pendingActionMatch(r, call) {
+  const pa = r.state.pending_action;
+  if (!pa) return false;
+  if (!call.action_nonce || pa.action_nonce !== call.action_nonce) return false;
+  return true;
+}
+
+function cmdAlign(flags, cwd, out) {
+  const r = withRun(flags, cwd);
+  requirePolicyMode(r.goal);
+  const receiptRel = need(flags, 'receipt');
+  const receiptAbs = resolveInRepo(receiptRel, r.repoRoot, '--receipt');
+  const rec = readJsonArtifact(receiptAbs, 'alignment-receipt');
+  if (rec.format !== 'yolo-alignment-receipt-v1') throw new ContractError('alignment_format_invalid', { format: rec.format });
+  if (rec.verdict !== 'PASS') throw new ContractError('alignment_verdict_not_pass', {});
+  const verifiedDigest = sha256String(JSON.stringify(r.state.verified));
+  if (rec.verified_digest !== verifiedDigest) {
+    throw new ContractError('alignment_stale_digest', { declared: rec.verified_digest, actual: verifiedDigest });
+  }
+  const successCount = Array.isArray(r.goal.success) ? r.goal.success.length : 0;
+  if (!Array.isArray(rec.success) || rec.success.length !== successCount
+    || !rec.success.every((s) => ['met', 'unmet', 'not_yet_due'].includes(s.status))) {
+    throw new ContractError('alignment_success_coverage_invalid', { expected: successCount });
+  }
+  if (!rec.non_goals_checked) throw new ContractError('alignment_non_goals_unchecked', {});
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'alignment_verified', {
+    watermark_seq: r.state.events_count,
+    verified_digest: verifiedDigest,
+    receipt_sha256: sha256File(receiptAbs),
+  }, r.identity.head));
+  const after = loadRun(r.runDir, r.repoRoot, cwd);
+  return finish('align', r.runDir, after.state, null);
+}
+
+function cmdPhaseCandidate(flags, cwd, out) {
+  const r = withRun(flags, cwd);
+  requirePolicyMode(r.goal);
+  if (r.state.phase2.current_round) throw new ContractError('phase_candidate_with_open_round', { open: r.state.phase2.current_round.id });
+  if (r.state.pending_action || r.state.unknown_actions.length > 0) {
+    throw new ContractError('phase_candidate_pending_side_effect', {});
+  }
+  const wm = r.state.phase2.alignment_watermark;
+  const verifiedDigest = sha256String(JSON.stringify(r.state.verified));
+  if (!wm || wm.verified_digest !== verifiedDigest) {
+    throw new ContractError('phase_candidate_alignment_required', { watermark: wm });
+  }
+  const receiptRel = need(flags, 'receipt');
+  const receiptAbs = resolveInRepo(receiptRel, r.repoRoot, '--receipt');
+  const rec = readJsonArtifact(receiptAbs, 'phase-candidate-receipt');
+  if (rec.format !== 'yolo-phase-candidate-receipt-v1') throw new ContractError('phase_candidate_format_invalid', { format: rec.format });
+  if (rec.wrong_or_unauthorized_next_action !== 0) throw new ContractError('unauthorized_next_actions_present', { count: rec.wrong_or_unauthorized_next_action });
+  if (rec.repeated_verified_actions !== 0) throw new ContractError('repeated_verified_actions_present', { count: rec.repeated_verified_actions });
+  const ha = rec.hidden_acceptance || null;
+  if (r.goal.quality_policy && r.goal.quality_policy.phase_candidate_requires_hidden_acceptance) {
+    if (!ha || !ha.path || !fs.existsSync(resolveInRepo(ha.path, r.repoRoot, 'hidden_acceptance.path'))) {
+      throw new ContractError('phase_candidate_hidden_acceptance_missing', {});
+    }
+  }
+  withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'phase_candidate_recorded', {
+    receipt_sha256: sha256File(receiptAbs),
+  }, r.identity.head));
+  const after = loadRun(r.runDir, r.repoRoot, cwd);
+  return finish('phase-candidate', r.runDir, after.state, null);
+}
+
 function finish(command, runDir, state, packet) {
   if (packet && packet.tokens > CAPSULE_TOKEN_BUDGET) {
     // Report composition and stop. Hard anchors are never trimmed to fit.
@@ -1452,6 +2012,13 @@ const USAGE = `yolo-recovery.mjs — TAD YOLO 2.0 Phase 1 recovery recorder (opt
                [--evidence <path>] [--observed-sha256 <sha>]
   resume       --run <dir> [--rebuild-derived]
   stop         --run <dir> --reason <text>
+  round-prepare   --run <dir> --contract <slice-contract.json>          (Phase-2)
+  round-authorize --run <dir> --assertion <a.json> --review <r.json>
+                  --turn-record <turn.json>                             (Phase-2)
+  round-close     --run <dir> --outcome <candidate|failed|blocked>
+                  --report <r.json> --usage <u.json> --turn-record <t.json> (Phase-2)
+  align           --run <dir> --receipt <alignment-receipt.json>        (Phase-2)
+  phase-candidate --run <dir> --receipt <receipt.json>                   (Phase-2)
 
 Exit: 0 PASS | 1 contract failure (honest_partial) | 2 usage/input error.
 Last stdout line is always a single-line JSON status object.
@@ -1479,6 +2046,11 @@ export function runCli(argv, options = {}) {
       case 'reconcile': res = cmdReconcile(flags, cwd, out); break;
       case 'resume': res = cmdResume(flags, cwd, out); break;
       case 'stop': res = cmdStop(flags, cwd, out); break;
+      case 'round-prepare': res = cmdRoundPrepare(flags, cwd, out); break;
+      case 'round-authorize': res = cmdRoundAuthorize(flags, cwd, out); break;
+      case 'round-close': res = cmdRoundClose(flags, cwd, out); break;
+      case 'align': res = cmdAlign(flags, cwd, out); break;
+      case 'phase-candidate': res = cmdPhaseCandidate(flags, cwd, out); break;
       default: throw new UsageError('unknown_command', { command });
     }
   } catch (err) {
