@@ -80,6 +80,17 @@ function main() {
   // injects prior transcripts; the packet is the only context carrier.
   const userText = fs.readFileSync(promptAbs, 'utf8');
 
+  // codex's workspace-write sandbox restricts writes to the cwd SUBTREE. The
+  // packet lives deep inside .tad/evidence/..., but the slice targets (guide.md,
+  // util.mjs, ...) live at the repo ROOT — spawning codex from the packet dir
+  // makes those targets "outside the writable sandbox" and the write is blocked.
+  // So run codex (and the git side-effect probe) from the repo root instead.
+  const repoRoot = (() => {
+    try {
+      return execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: path.dirname(packetAbs), encoding: 'utf8' }).trim();
+    } catch { return path.dirname(packetAbs); }
+  })();
+
   // Session continuation: codex resumes a native thread via the `resume`
   // subcommand. NOTE: `codex exec resume` does NOT accept `--sandbox`
   // (inherits the session's creation sandbox); passing it errors out
@@ -93,7 +104,7 @@ function main() {
     : ['exec', '--json', '--skip-git-repo-check', '--sandbox', sandbox];
   args.push(userText.length ? userText : 'Proceed.');
   const t0 = Date.now();
-  const res = spawnSync('codex', args, { encoding: 'utf8', timeout: 30 * 60 * 1000, cwd: path.dirname(packetAbs) });
+  const res = spawnSync('codex', args, { encoding: 'utf8', timeout: 30 * 60 * 1000, cwd: repoRoot });
   const elapsedMs = Date.now() - t0;
 
   // Raw artifacts land host-side with content hashes bound into the record.
@@ -119,7 +130,7 @@ function main() {
   // filesystem mutation in an assertion turn must be empty (checked via git).
   let changed = [];
   try {
-    changed = execFileSync('git', ['status', '--porcelain'], { cwd: path.dirname(packetAbs), encoding: 'utf8' })
+    changed = execFileSync('git', ['status', '--porcelain'], { cwd: repoRoot, encoding: 'utf8' })
       .split('\n').filter(Boolean);
   } catch { /* not a repo or git unavailable — recorded as-is */ }
 
