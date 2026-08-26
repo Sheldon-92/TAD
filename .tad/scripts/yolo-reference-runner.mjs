@@ -240,7 +240,10 @@ function main() {
     }],
     usage,
     exit_status: res.status,
-    final_message: finalMessage.slice(0, 4000),
+    // The assertion scorer consumes this field. Keep the complete bounded
+    // response; 4,000 chars can truncate S4 while the packet budget permits
+    // substantially more, turning a valid assertion into a false FAIL.
+    final_message: finalMessage.slice(0, 16000),
   };
 
   const recRel = `${stamp}-${invocationNonce}-record.json`;
