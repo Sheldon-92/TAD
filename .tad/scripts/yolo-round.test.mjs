@@ -166,7 +166,7 @@ function makeReview(repo, { verdict = 'PASS', reviewer = 'independent-rev-1' } =
   });
 }
 
-function makeTurnRecord(repo, { kind = 'assertion', session = 'sess-exec-1', nonce = null, mutate = false, extra = {} } = {}) {
+function makeTurnRecord(repo, { kind = 'assertion', session = 'sess-exec-1', nonce = null, mutate = false, resumedFrom = null, extra = {} } = {}) {
   const pktPath = path.join(repo.dir, RUN_REL, 'rounds', preparedRoundId(repo), 'execution.md');
   const pktSha = fs.existsSync(pktPath) ? sha256File(pktPath) : sha256String('missing');
   return writeJson(repo, `turn-${kind}-${roundCounter}.json`, {
@@ -174,7 +174,7 @@ function makeTurnRecord(repo, { kind = 'assertion', session = 'sess-exec-1', non
     runner_version: '1.0.0', runner_sha256: sha256File(CLI), parser_version: '1',
     invocation_nonce: crypto.randomBytes(6).toString('hex'),
     harness: 'reference', harness_version: '1', model_id: 'm1', model_family: 'f1', reasoning: 'balanced',
-    role: 'executor', session_id: session, turn_kind: kind,
+    role: 'executor', session_id: session, resumed_from_session: resumedFrom, turn_kind: kind,
     packet_sha256: pktSha, raw_native_output: { host_locator: '/host/out', sha256: sha256String('out') },
     raw_native_trace: { host_locator: '/host/trace', sha256: sha256String('trace') },
     tool_policy: { allowed: ['Read'], denied: ['Write', 'Edit', 'Shell', 'Agent'] },
@@ -612,6 +612,31 @@ function caseRequiredEvidence() {
   expect(missing.length === 0, `phase2 required evidence missing or empty:\n  - ${missing.join('\n  - ')}`);
 }
 
+// ═══════════════ CASE: resume-continuation ═══════════════
+// codex exec-resume assigns a NEW native thread id per exec call; round-close
+// must accept the resume chain (resumed_from_session === pinned) while still
+// refusing fresh unrelated sessions.
+function caseResumeContinuation() {
+  const repo = makeRepo();
+  const c = makeContract(repo);
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', c.path], repo.dir), 0, 'prepare');
+  authorizeRound(repo, { session: 'sess-A' });
+  const rep = writeJson(repo, 'rc-report.json', { format: 'yolo-round-report-v1', changed_paths: [] });
+  const use = writeJson(repo, 'rc-usage.json', { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true });
+  // Negative: fresh unrelated session — neither native id nor resume binding matches the pin.
+  const strangerTurn = makeTurnRecord(repo, { kind: 'execution', session: 'sess-C-native', resumedFrom: null });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', strangerTurn.path], repo.dir),
+    'session_mismatch', 'fresh unrelated execution session must be refused');
+  // Negative: resume binding points somewhere else — continuity NOT proven.
+  const wrongResumeTurn = makeTurnRecord(repo, { kind: 'execution', session: 'sess-D-native', resumedFrom: 'sess-someone-else' });
+  expectRed(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', wrongResumeTurn.path], repo.dir),
+    'session_mismatch', 'resume chain to another session must be refused');
+  // Positive: codex model — new native thread id, runner-owned resume of the pinned session.
+  const resumedTurn = makeTurnRecord(repo, { kind: 'execution', session: 'sess-B-native', resumedFrom: 'sess-A' });
+  expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', rep.path, '--usage', use.path, '--turn-record', resumedTurn.path], repo.dir), 0,
+    'resume-chain continuation must be accepted');
+}
+
 // ── runner ──
 const CASES = {
   'phase2-policy': casePhase2Policy,
@@ -619,6 +644,7 @@ const CASES = {
   'slice-contract': caseSliceContract,
   'reentry-gate': caseReentryGate,
   'round-close-and-verify': caseRoundCloseAndVerify,
+  'resume-continuation': caseResumeContinuation,
   'replan-boundary': caseReplanBoundary,
   'alignment-gate': caseAlignmentGate,
   'completion-gate': caseCompletionGate,

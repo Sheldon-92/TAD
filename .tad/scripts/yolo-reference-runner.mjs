@@ -125,7 +125,13 @@ function main() {
     model_family: 'gpt',
     reasoning: flags.reasoning || 'balanced',
     role,
+    // codex exec-resume natively continues a thread but assigns a NEW thread id
+    // per exec call. Continuity is therefore proven two ways: session_id is the
+    // native id of THIS run, resumed_from_session is the exact --session arg
+    // the runner passed to `codex exec resume` (null on fresh turns). Consumers
+    // (round-close) accept either match against the pinned session.
     session_id: threadStarted ? threadStarted.thread_id : null,
+    resumed_from_session: flags.session || null,
     turn_kind: turnKind,
     round_id: flags['round-id'] || null,
     packet_sha256: packetSha,

@@ -232,9 +232,11 @@ function runArm(task, arm, pairDir) {
 ${asRes2.out.slice(-400)}`);
     const jrLines = fs.readFileSync(path.join(dir, '.tad/evidence/yolo/run/journal.jsonl'), 'utf8').split('\n').filter(Boolean);
     const mintedNonce = JSON.parse(jrLines[jrLines.length - 1]).payload.action_nonce;
-    // Execution: control resumes SAME session; treatment gets a NEW session,
-    // mirroring forced loss at the verified boundary.
-    const eSession = (arm === 'treatment') ? null : sessionId;
+    // Execution: BOTH arms resume THIS round's authorized session (handoff §4.4
+    // exact-session continuation; a fresh execution thread would be refused by
+    // round-close). Forced loss for treatment happens BETWEEN rounds: its next
+    // assertion starts a fresh thread (aSession=null above).
+    const eSession = sessionId;
     const eRes = executionTurn(dir, hostEv, rid, eSession, mintedNonce, sl, task);
     const eRec = eRes.record;
     const postSha = fs.existsSync(targetAbs) ? shaF(targetAbs) : null;

@@ -1900,7 +1900,14 @@ function cmdRoundClose(flags, cwd, out) {
   const turnAbs = path.resolve(turnRel);
   const turn = readJsonArtifact(turnAbs, 'execution-turn');
   if (turn.turn_kind !== 'execution') throw new ContractError('turn_role_invalid', { kind: turn.turn_kind });
-  if (turn.session_id !== cur.session_id) throw new ContractError('session_mismatch', { pinned: cur.session_id, observed: turn.session_id });
+  // Exact-session continuation (§4.4) under codex's id-per-exec-call model:
+  // the execution turn matches when its NATIVE thread id is the pinned session,
+  // or its resumed_from_session binding proves the runner invoked
+  // `codex exec resume <pinned-id>` for this turn. A fresh unrelated session
+  // matches neither and is still refused.
+  if (turn.session_id !== cur.session_id && turn.resumed_from_session !== cur.session_id) {
+    throw new ContractError('session_mismatch', { pinned: cur.session_id, observed: turn.session_id, resumed_from: turn.resumed_from_session ?? null });
+  }
   if (total > cur.reservation_tokens) {
     throw new ContractError('token_reservation_exceeded', { total, reservation: cur.reservation_tokens });
   }
