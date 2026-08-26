@@ -137,7 +137,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 | AC | 描述 | 结果 |
 |----|------|------|
 | AC1 | 默认 YOLO/runtime 未变（diff allowlist 空） | ✅ |
-| AC2 | 契约套件真实红/绿态，RESULT=PASS exit 0 | ✅（Gate 4 round 2 后：HEAD `9d89eedf` 全量 RESULT=PASS，**active 与 simulated-archive 双态各 10/10**；lifecycle 状态机经独立窄复核 PASS） |
+| AC2 | 契约套件真实红/绿态，RESULT=PASS exit 0 | ✅（Gate 4 round 3 后：HEAD `7b12d429` 全量 RESULT=PASS——**active、simulated-archive、committed-archive（disposable worktree, archive commit `35996d99`）三态各 10/10**；must-appear 跟随 resolved lifecycle state；两轮独立窄复核 PASS） |
 | AC3 | goal 不可变；仅 bound Conductor PASS receipt 可 verify | ✅ (verified-authority) |
 | AC4 | authority/conflict fail-closed | ✅ (authority-conflicts) |
 | AC5 | side effect 永不盲重试 | ✅ (side-effect-reconcile + b run A1 reconcile) |
@@ -145,7 +145,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 | AC7 | soft semantic recovery ≥0.90（3/3 均 1.00） | ✅ |
 | AC8 | 真实继续 + 隐藏验收 + Gate PASS + receipt 有效；repeat/unauthorized=0 | ✅ |
 | AC9 | bounded status/capsule ≤2500 tokens（706-1082 observed） | ✅ (status-capsule + capsule-budget.md) |
-| AC10 | 证据与 scope 完整 **across acceptance lifecycle** | ✅（round 2：checker 接受且只接受 active 或 archived 的 Handoff/COMPLETION 配对；absent/split/duplicate/incomplete 全部 FAIL（16 组合 fixture）；archive 路径入 allowlist 无 must-appear；红控保留并加强。PROJECT_CONTEXT.md 增补已披露并经窄复核接受） |
+| AC10 | 证据与 scope 完整 **across acceptance lifecycle** | ✅（round 3：四个 lifecycle pair 路径的 must-appear 断言跟随 resolved pair state——active 态要求 active pair、archived 态要求 archived pair 且不再要求 active pair；stable product/status 路径保留无条件断言；16 组合负控与 workflow/hooks/protocol/config 红控不变。committed-archive 证明见 `committed-archive-proof.txt` + `lifecycle-checker-review-round3.md`） |
 
 ---
 
@@ -217,7 +217,7 @@ node .tad/scripts/yolo-recovery.test.mjs
 - fixtures + capsule-budget：见 deterministic-fixtures.txt / capsule-budget.md
 
 ### Git Commit
-- HEAD: `9d89eedf`（机制链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`；Gate 4 轮次 `78094228(compl)→019cdeb1(Alex)→fc7a07fc(security P0 fix)→4d9039c9(resubmission)→276f6ac9(Alex lifecycle)→9d89eedf(lifecycle checker)`）
+- HEAD: `7b12d429`（机制链 `323c380d→d7813c6b→00570c00→0ccd30cd→84c3666c`；Gate 4 轮次 `78094228(compl)→019cdeb1(Alex)→fc7a07fc→4d9039c9→276f6ac9(Alex)→9d89eedf→54bc9ab9(归档试运行,e92d4a4a回滚)→87d30085(Alex v1.0.3)→7b12d429(must-appear follows state)`）
 
 ---
 
