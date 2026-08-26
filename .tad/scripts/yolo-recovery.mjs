@@ -44,6 +44,11 @@ export const EVENT_TYPES = [
   'verified',
   'action_started',
   'action_reconciled',
+  'round_prepared',
+  'reentry_verified',
+  'round_closed',
+  'alignment_verified',
+  'phase_candidate_recorded',
   'stopped',
 ];
 export const CHECKPOINT_REASONS = ['before-compact', 'before-stop', 'candidate'];
@@ -347,6 +352,8 @@ export function reduceRun(goal, events) {
   let tokensCharged = 0;
   let lastEventAt = null;
   const clockBlockers = [];
+  const mintedNonces = [];
+  const forbiddenRetryNonces = new Set();
 
   for (const ev of events) {
     if (stopped) throw new ContractError('event_after_stop', { seq: ev.seq, type: ev.type });
@@ -417,6 +424,7 @@ export function reduceRun(goal, events) {
           throw new ContractError('action_requires_authorized_round', { seq: ev.seq, action_id: id });
         }
         actionsSeen.add(id);
+        if (p.action_nonce) mintedNonces.push(p.action_nonce);
         pendingAction = {
           action_id: id,
           description: p.description,
@@ -443,6 +451,7 @@ export function reduceRun(goal, events) {
         }
         if (p.outcome === 'outcome_unknown') {
           forbiddenRetry.add(id);
+          if (pendingAction && pendingAction.action_nonce) forbiddenRetryNonces.add(pendingAction.action_nonce);
           unknownActions.push({
             action_id: id,
             target: pendingAction ? pendingAction.target : (p.target || null),
@@ -579,6 +588,7 @@ export function reduceRun(goal, events) {
       phase_candidate: phaseCandidate,
       tokens_charged: tokensCharged,
       budgets,
+      minted_nonces: mintedNonces.filter((n) => !forbiddenRetryNonces.has(n)),
     } : null,
     phase_candidate: phaseCandidate,
   };
@@ -1206,6 +1216,26 @@ function cmdInit(flags, cwd, out) {
     created_at: nowIso(),
   };
   if (goal.slices === undefined) delete goal.slices;
+  // Phase-2 optional policy block: frozen at init; validated before any write
+  // so a rejected init leaves nothing behind (same transactional guarantee as
+  // the capsule-budget check below).
+  validateExecutionPolicy(spec);
+  if (spec.execution_policy) {
+    goal.execution_policy = spec.execution_policy;
+    if (spec.quality_policy) {
+      goal.quality_policy = spec.quality_policy;
+      for (const f of ['phase_candidate_requires_hidden_acceptance', 'phase_candidate_requires_alignment']) {
+        if (typeof goal.quality_policy[f] !== 'boolean') {
+          throw new ContractError('quality_policy_field_invalid', { field: f });
+        }
+      }
+      for (const f of ['wrong_or_unauthorized_next_action_max', 'repeated_verified_action_max']) {
+        if (goal.quality_policy[f] !== 0) {
+          throw new ContractError('quality_policy_zero_required', { field: f });
+        }
+      }
+    }
+  }
 
   // The capsule budget is a property of the FROZEN GOAL TEXT, so it is knowable
   // BEFORE the first write (arch P1-1). Checking it afterwards made init a
@@ -1298,6 +1328,11 @@ function cmdStatus(flags, cwd, out) {
 
 function cmdCheckpoint(flags, cwd, out) {
   const r = withRun(flags, cwd);
+  if (r.goal.execution_policy) {
+    throw new ContractError('legacy_checkpoint_forbidden', {
+      note: 'policy mode: round-close is the only candidate path',
+    });
+  }
   refuseIfHonestPartial(r.state, 'checkpoint');
   if (r.state.pending_action) {
     throw new ContractError('pending_action_blocks_checkpoint', { action_id: r.state.pending_action.action_id });
@@ -1884,11 +1919,15 @@ function cmdRoundClose(flags, cwd, out) {
   return finish('round-close', r.runDir, after.state, null);
 }
 
+/** One-to-one reconciliation (§4.5): an observed mutating call is authorized
+ *  when its nonce matches ANY prior policy-minted action_started nonce that is
+ *  not forbidden-retry (outcome_unknown). Reconciled actions remain matched —
+ *  the mutation happened and was accounted; only unknown outcomes ban retry. */
 function pendingActionMatch(r, call) {
-  const pa = r.state.pending_action;
-  if (!pa) return false;
-  if (!call.action_nonce || pa.action_nonce !== call.action_nonce) return false;
-  return true;
+  if (!call || !call.action_nonce) return false;
+  return r.state.phase2
+    && Array.isArray(r.state.phase2.minted_nonces)
+    && r.state.phase2.minted_nonces.includes(call.action_nonce);
 }
 
 function cmdAlign(flags, cwd, out) {
