@@ -214,6 +214,7 @@ function main() {
       denied: turnKind === 'assertion' ? ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'] : ['Shell', 'Bash', 'Agent', 'Task'],
       sandbox,
     },
+    worktree_observation: observedPaths,
     tool_calls: [{
       native_call_id: 'final',
       tool: flags['action-tool'] || (turnKind === 'assertion' ? 'Read' : 'codex-exec'),
