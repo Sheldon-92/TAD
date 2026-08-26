@@ -235,7 +235,7 @@ ${asRes2.out.slice(-400)}`);
     // Execution: control resumes SAME session; treatment gets a NEW session,
     // mirroring forced loss at the verified boundary.
     const eSession = (arm === 'treatment') ? null : sessionId;
-    const eRes = executionTurn(dir, hostEv, rid, eSession, null, sl, task);
+    const eRes = executionTurn(dir, hostEv, rid, eSession, mintedNonce, sl, task);
     const eRec = eRes.record;
     const postSha = fs.existsSync(targetAbs) ? shaF(targetAbs) : null;
     const intendedPost = shas(String(sl.outcome));
@@ -262,14 +262,19 @@ ${asRes2.out.slice(-400)}`);
     fs.writeFileSync(gate, JSON.stringify({ verdict: 'PASS', hidden_acceptance_results: ha }));
     const rev = path.join(hostEv, `rev-${rid}.json`);
     fs.writeFileSync(rev, JSON.stringify({ verdict: 'PASS', independent: true, reviewer_id: 'conductor-deterministic' }));
-    const receiptP = path.join(hostEv, `receipt-${rid}.json`);
+    const receiptP = path.join(dir, '.tad/evidence/yolo/run', `receipt-${rid}.json`);
+    // Gate/review evidence must be repo-scoped for receipt validation (FR3).
+    const gateIn = path.join(dir, '.tad/evidence/yolo/run', `gate-${rid}.json`);
+    const revIn = path.join(dir, '.tad/evidence/yolo/run', `rev-${rid}.json`);
+    fs.copyFileSync(gate, gateIn);
+    fs.copyFileSync(rev, revIn);
     const rg = JSON.parse(fs.readFileSync(path.join(dir, '.tad/evidence/yolo/run/goal.json'), 'utf8'));
     fs.writeFileSync(receiptP, JSON.stringify({
       format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: rg.run_id, slice: sl.id,
       handoff_revision: rg.handoff_revision, worktree_realpath: rg.worktree_realpath,
       verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir }).toString().trim(),
-      gate_evidence: [{ path: gate, sha256: shaF(gate), verdict: 'PASS' }],
-      review_evidence: [{ path: rev, sha256: shaF(rev), independent: true, verdict: 'PASS' }],
+      gate_evidence: [{ path: relTo(dir, gateIn), sha256: shaF(gateIn), verdict: 'PASS' }],
+      review_evidence: [{ path: relTo(dir, revIn), sha256: shaF(revIn), independent: true, verdict: 'PASS' }],
       executor_id: `codex:${sessionId}`, written_by: 'conductor', written_by_id: 'conductor-blake-p2',
     }, null, 2));
     const v = cli(dir, ['verify', '--run', '.tad/evidence/yolo/run', '--slice', sl.id, '--receipt', receiptP], dir);
