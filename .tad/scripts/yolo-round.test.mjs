@@ -257,6 +257,9 @@ function makeTurnRecord(repo, { kind = 'assertion', session = 'sess-exec-1', non
     runner_version: '1.0.0', runner_sha256: sha256File(CLI), parser_version: '1',
     invocation_nonce: crypto.randomBytes(6).toString('hex'),
     harness: 'reference', harness_version: '1', model_id: 'm1', model_family: 'f1', reasoning: 'balanced',
+    // Every runner record must declare its native event inventory; synthetic
+    // fixtures carry an empty one (their carriers contain no tool events).
+    native_event_count: 0, native_event_kinds: [],
     role: 'executor', session_id: session, resumed_from_session: resumedFrom, turn_kind: kind,
     round_id: round.round_id, journal_seq: journalSeq(repo), packet_sha256: pktSha,
     raw_native_output: rawCarrier(repo, `${kind}-out-${artifactId}`, `${kind} native output\n`),

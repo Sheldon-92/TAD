@@ -2451,15 +2451,16 @@ function nativeToolEventsFromCarrier(abs) {
 }
 
 function validateNativeEventBinding(doc, { assertion = false, qualityPolicy = null, degradedApprovalSha = null } = {}) {
-  // Synthetic reference fixtures intentionally have no Codex event stream;
-  // runner records that declare an inventory must bind it to BOTH carriers.
-  if (!Array.isArray(doc.native_event_kinds)) return;
+  // Every runner-owned record MUST declare its native event inventory —
+  // omitting the field must not skip the shell-read policy check.
+  if (!Array.isArray(doc.native_event_kinds)) {
+    throw new ContractError('native_event_inventory_missing', { label: 'native_event_kinds' });
+  }
   const outputAbs = validateRawCarrier(doc.raw_native_output, 'native event output').abs;
   const traceAbs = validateRawCarrier(doc.raw_native_trace, 'native event trace').abs;
   const outputKinds = nativeToolEventsFromCarrier(outputAbs);
   const traceKinds = nativeToolEventsFromCarrier(traceAbs);
-  if (!Array.isArray(doc.native_event_kinds)
-      || doc.native_event_count !== outputKinds.length
+  if (doc.native_event_count !== outputKinds.length
       || JSON.stringify(doc.native_event_kinds) !== JSON.stringify(outputKinds)) {
     throw new ContractError('native_event_binding_mismatch', { declared: doc.native_event_kinds, actual: outputKinds });
   }
