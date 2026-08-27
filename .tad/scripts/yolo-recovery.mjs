@@ -738,6 +738,7 @@ export function reduceRun(goal, events) {
         if (!Array.isArray(p.allowed_paths) || p.allowed_paths.length === 0
             || !Array.isArray(p.tool_allowlist) || p.tool_allowlist.length === 0
             || !Array.isArray(p.deterministic_checks)
+            || !Array.isArray(p.necessary_evidence)
             || !isPlainObject(p.worktree_manifest_at_prepare)) {
           throw new ContractError('round_contract_binding_missing', { seq: ev.seq, round_id: p.round_id });
         }
@@ -757,9 +758,10 @@ export function reduceRun(goal, events) {
         currentRound = {
           id: p.round_id, slice_id: p.slice_id, state: 'prepared', seq: ev.seq,
           contract_rel: p.contract_rel, contract_sha256: p.contract_sha256,
-          packet_rel: p.packet_rel, packet_sha256: p.packet_sha256,
-          maps_to_success: [...p.maps_to_success], allowed_paths: [...p.allowed_paths],
-          tool_allowlist: [...p.tool_allowlist], deterministic_checks: [...p.deterministic_checks],
+           packet_rel: p.packet_rel, packet_sha256: p.packet_sha256,
+           maps_to_success: [...p.maps_to_success], allowed_paths: [...p.allowed_paths],
+           tool_allowlist: [...p.tool_allowlist], deterministic_checks: [...p.deterministic_checks],
+           necessary_evidence: p.necessary_evidence.map((entry) => ({ ...entry })),
           dirty_paths_at_prepare: Array.isArray(p.dirty_paths_at_prepare) ? [...p.dirty_paths_at_prepare] : [],
           worktree_manifest_at_prepare: isPlainObject(p.worktree_manifest_at_prepare)
             ? { ...p.worktree_manifest_at_prepare } : {},
@@ -1541,6 +1543,34 @@ function loadRun(runDir, repoRoot, cwd) {
         checkHostArtifact(event, 'turn_record_path', 'turn_record_sha256', 'execution turn');
       }
     }
+    for (const event of events) {
+      if (event.type !== 'round_prepared') continue;
+      for (const evidence of event.payload.necessary_evidence || []) {
+        try {
+          validateEvidenceReference(evidence, repoRoot, 'necessary_evidence', { requirePass: false });
+        } catch (err) {
+          bindingBlockers.push({
+            code: 'necessary_evidence_binding_failed',
+            detail: `${evidence && evidence.path}: ${err.reason || String(err.message)}`,
+          });
+        }
+      }
+    }
+    for (const action of state.phase2.action_records || []) {
+      for (const [pathField, hashField, label] of [
+        ['args_path', 'args_sha256', 'action args'],
+        ['effect_manifest_path', 'effect_manifest_sha256', 'effect manifest'],
+      ]) {
+        try {
+          validateEvidenceReference({ path: action[pathField], sha256: action[hashField] }, repoRoot, label, { requirePass: false });
+        } catch (err) {
+          bindingBlockers.push({
+            code: 'action_evidence_binding_failed',
+            detail: `${label} for ${action.action_id}: ${err.reason || String(err.message)}`,
+          });
+        }
+      }
+    }
     const alignment = state.phase2.alignment_watermark;
     if (alignment) {
       const abs = alignment.receipt_path ? anchorAtRepoSafe(alignment.receipt_path, repoRoot) : null;
@@ -1998,6 +2028,13 @@ function cmdVerify(flags, cwd, out) {
         || v.receipt.turn_record_sha256 !== closed.turn_record_sha256) {
       throw new ContractError('verification_round_binding_mismatch', { slice, round_id: closed.id });
     }
+    if (!Array.isArray(v.receipt.maps_to_success)
+        || JSON.stringify([...v.receipt.maps_to_success].sort())
+          !== JSON.stringify([...(closed.maps_to_success || [])].sort())) {
+      throw new ContractError('verification_success_mapping_mismatch', {
+        slice, declared: v.receipt.maps_to_success, expected: closed.maps_to_success,
+      });
+    }
   }
   withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'verified', {
     slice,
@@ -2380,6 +2417,41 @@ function validateRawCarrier(carrier, label) {
   return { abs, sha256: actual };
 }
 
+function nativeToolEventsFromCarrier(abs) {
+  const events = [];
+  for (const line of fs.readFileSync(abs, 'utf8').split('\n')) {
+    const text = line.trim();
+    if (!text.startsWith('{')) continue;
+    try {
+      const event = JSON.parse(text);
+      if (event.item && ['command_execution', 'file_change', 'mcp_tool_call'].includes(event.item.type)) {
+        events.push(event.item.type);
+      }
+    } catch {
+      // Non-JSON diagnostic lines are retained in the raw carrier but do not
+      // count as native tool events.
+    }
+  }
+  return events;
+}
+
+function validateNativeEventBinding(doc, { assertion = false } = {}) {
+  // Synthetic reference fixtures intentionally have no Codex event stream;
+  // real Codex records must bind their native event inventory to the carrier.
+  if (doc.harness !== 'codex') return;
+  const output = validateRawCarrier(doc.raw_native_output, 'native event output');
+  const kinds = nativeToolEventsFromCarrier(output.abs);
+  if (!Array.isArray(doc.native_event_kinds)
+      || doc.native_event_count !== kinds.length
+      || JSON.stringify(doc.native_event_kinds) !== JSON.stringify(kinds)) {
+    throw new ContractError('native_event_binding_mismatch', { declared: doc.native_event_kinds, actual: kinds });
+  }
+  const forbidden = kinds.some((kind) => ['command_execution', 'mcp_tool_call'].includes(kind));
+  if (assertion && forbidden && doc.strict_tool_policy === true) {
+    throw new ContractError('assertion_native_tool_policy_violation', { kinds });
+  }
+}
+
 function validateRunnerBoundArtifact(doc, { round, packet, journalSeq, label, role = null, kind = null } = {}) {
   if (!isPlainObject(doc) || doc.written_by !== 'reference-runner') {
     throw new ContractError('turn_not_runner_owned', { label, written_by: doc && doc.written_by });
@@ -2416,6 +2488,7 @@ function validateNativeTurn(doc, { kind, round, packet, journalSeq, label }) {
     throw new ContractError('turn_format_invalid', { label, format: doc && doc.format });
   }
   validateRunnerBoundArtifact(doc, { round, packet, journalSeq, label, role: 'executor', kind });
+  validateNativeEventBinding(doc, { assertion: kind === 'assertion' });
   if (!Array.isArray(doc.tool_calls) || doc.tool_calls.length === 0) {
     throw new ContractError('native_tool_trace_missing', { label });
   }
@@ -2698,6 +2771,7 @@ function cmdRoundPrepare(flags, cwd, out) {
     allowed_paths: normalizedAllowed,
     tool_allowlist: [...c.tool_allowlist],
     deterministic_checks: deterministicChecks,
+    necessary_evidence: c.necessary_evidence.map((entry) => ({ ...entry })),
     dirty_paths_at_prepare: Array.isArray(r.identity.dirty_paths) ? [...r.identity.dirty_paths] : [],
     worktree_manifest_at_prepare: readWorktreeManifest(r.repoRoot),
     replaces_slice: c.supersedes_unverified_slice ?? null,
@@ -2726,6 +2800,9 @@ function cmdRoundAuthorize(flags, cwd, out) {
   const contractAbs = resolveInRepo(cur.contract_rel, r.repoRoot, 'slice_contract');
   if (!fs.existsSync(contractAbs) || sha256File(contractAbs) !== cur.contract_sha256) {
     throw new ContractError('contract_hash_mismatch', { round_id: cur.id });
+  }
+  for (const evidence of cur.necessary_evidence || []) {
+    validateEvidenceReference(evidence, r.repoRoot, 'necessary_evidence', { requirePass: false });
   }
   // §4.4: assertion/review/turn-record are RUNNER-OWNED host-side artifacts;
   // they are hash-bound into the event but need not live inside the run repo.

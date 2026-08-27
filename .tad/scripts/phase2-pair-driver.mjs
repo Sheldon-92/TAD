@@ -130,9 +130,13 @@ function contractFile(dir, sl, task) {
   const rel = `contract-${sl.id}.json`;
   const goal = JSON.parse(fs.readFileSync(path.join(dir, 'goal-spec.json'), 'utf8'));
   const target = targetForSlice(task.id, sl.id);
+  const evidenceRel = `.tad/evidence/yolo/run/necessary-${sl.id}.txt`;
+  const evidenceAbs = path.join(dir, evidenceRel);
+  fs.writeFileSync(evidenceAbs, `necessary evidence for ${task.id}/${sl.id}\n`);
   fs.writeFileSync(path.join(dir, rel), JSON.stringify({
     format: 'yolo-slice-contract-v1', slice_id: sl.id, outcome: sl.outcome,
-    maps_to_success: [successIdForSlice(sl.id)], necessary_evidence: [], allowed_paths: [target],
+    maps_to_success: [successIdForSlice(sl.id)],
+    necessary_evidence: [{ path: evidenceRel, sha256: shaF(evidenceAbs) }], allowed_paths: [target],
     forbidden_scope_sha256: shas(JSON.stringify(goal.forbidden_scope)), tool_allowlist: ['Read', 'Edit', 'Write'],
     deterministic_checks: [], semantic_review_required: true,
     semantic_review_reason: 'outcome wording requires judgment beyond shell checks',
@@ -396,7 +400,7 @@ ${asRes2.out.slice(-400)}`);
       format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: rg.run_id, slice: sl.id,
       handoff_revision: rg.handoff_revision, worktree_realpath: rg.worktree_realpath,
       round_id: rid, report_sha256: shaF(reportP), usage_sha256: shaF(usageP),
-      turn_record_sha256: shaF(eRes.recordPath), maps_to_success: ['SC-1'],
+      turn_record_sha256: shaF(eRes.recordPath), maps_to_success: [successIdForSlice(sl.id)],
       verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir }).toString().trim(),
       gate_evidence: [{ path: relTo(dir, gateIn), sha256: shaF(gateIn), verdict: 'PASS' }],
       review_evidence: [{ path: relTo(dir, revIn), sha256: shaF(revIn), independent: true, verdict: 'PASS' }],

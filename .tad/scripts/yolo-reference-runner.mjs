@@ -171,7 +171,10 @@ function main() {
   // Raw artifacts land host-side with content hashes bound into the record.
   const rawOutRel = `${stamp}-${invocationNonce}-raw-output.txt`;
   const rawTraceRel = `${stamp}-${invocationNonce}-raw-trace.jsonl`;
-  const rawTrace = JSON.stringify({ cmd: args.join(' '), exit: res.status, stderr: (res.stderr || '').slice(-4000), elapsed_ms: elapsedMs }, null, 2);
+  // Preserve the exact native JSONL stream in both raw carriers. Invocation
+  // metadata is bound separately below; the trace must remain independently
+  // parseable instead of being reduced to a summary object.
+  const rawTrace = res.stdout || '';
   fs.writeFileSync(path.join(hostRoot, rawOutRel), res.stdout || '');
   fs.writeFileSync(path.join(hostRoot, rawTraceRel), rawTrace);
 
@@ -180,6 +183,15 @@ function main() {
   const turnCompleted = events.find((e) => e.type === 'turn.completed');
   const agentMessages = events.filter((e) => e.type === 'item.completed' && e.item && e.item.type === 'agent_message');
   const finalMessage = agentMessages.length ? agentMessages[agentMessages.length - 1].item.text : '';
+  const nativeToolEvents = events
+    .filter((event) => event.item && ['command_execution', 'file_change', 'mcp_tool_call'].includes(event.item.type))
+    .map((event) => ({
+      event_type: event.type,
+      item_type: event.item.type,
+      item_id: event.item.id || null,
+      command_sha256: typeof event.item.command === 'string' ? sha256String(event.item.command) : null,
+      paths: Array.isArray(event.item.changes) ? event.item.changes.map((change) => change.path).filter(Boolean) : [],
+    }));
   const usage = turnCompleted && turnCompleted.usage ? {
     input_tokens: turnCompleted.usage.input_tokens || 0,
     output_tokens: turnCompleted.usage.output_tokens || 0,
@@ -207,6 +219,14 @@ function main() {
     round_id: flags['round-id'] || null,
     journal_seq: flags['journal-seq'] === undefined ? null : Number(flags['journal-seq']),
     packet_sha256: packetSha,
+    invocation: { cmd: args, exit: res.status, stderr: (res.stderr || '').slice(-4000), elapsed_ms: elapsedMs },
+    native_event_count: nativeToolEvents.length,
+    native_event_kinds: nativeToolEvents.map((event) => event.item_type),
+    native_tool_events: nativeToolEvents,
+    native_policy_violation: turnKind === 'assertion'
+      && nativeToolEvents.some((event) => ['command_execution', 'file_change', 'mcp_tool_call'].includes(event.item_type)),
+    pre_manifest: preManifest,
+    post_manifest: postManifest,
     raw_native_output: { host_locator: path.join(hostRoot, rawOutRel), sha256: sha256File(path.join(hostRoot, rawOutRel)) },
     raw_native_trace: { host_locator: path.join(hostRoot, rawTraceRel), sha256: sha256File(path.join(hostRoot, rawTraceRel)) },
     tool_policy: {
