@@ -51,8 +51,9 @@ The implementation and local dogfood are complete, but Group 0 found a P0 native
 
 ### Git
 
-- **Implementation HEAD:** `b8faef6ee863d0477b1c652fc2755d6a2190ed4e`
-- **Worktree:** clean before report generation
+- **Implementation baseline:** `b8faef6ee863d0477b1c652fc2755d6a2190ed4e`
+- **Current HEAD:** `c3c2673c` (documentation/status commit after implementation)
+- **Worktree:** clean before final regression
 
 ---
 
