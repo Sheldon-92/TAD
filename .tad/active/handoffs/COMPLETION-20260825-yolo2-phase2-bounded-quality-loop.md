@@ -65,6 +65,10 @@ The implementation and local dogfood are complete, but Group 0 found a P0 native
 - Added native carrier hashes, event inventories, before/after manifests, round/journal/action bindings, receipt mapping checks, and phase-candidate closure guards.
 - Completed hidden acceptance oracle coverage and mechanism-versioned/resumable dogfood runs.
 - Re-ran the final frozen five-pair dogfood: control 5/5, treatment 5/5, repeated actions 0, unauthorized next actions 0.
+- Post-review enforcement (`6eaef1fb`): assertion shell reads require an explicit
+  goal-frozen degraded-approval hash; dual-carrier event-inventory equality is
+  enforced; deterministic checks require observed exits; blind retry removed.
+  Dogfood revalidated on mechanism `5ef23944dc06bedc` (5/5 + 5/5, safety 0/0).
 
 ### Modified Tracked Files
 
@@ -105,7 +109,7 @@ The implementation and local dogfood are complete, but Group 0 found a P0 native
 | Friction point | Status | Action taken | Approval / substitute evidence | Gate impact |
 |---|---|---|---|---|
 | Codex host-side hidden namespace isolation (capability 9) | DEGRADED_WITH_APPROVAL | Ran the frozen dogfood under the explicit Phase-2 approval; kept result marked degraded | `harness-degradation-approval.md`, human approval 2026-08-26; accepted risk: hidden fixture isolation is host-side, not process-enforced | Blocking for strict Gate 3 |
-| Native assertion Read-only boundary | BLOCKED | Bound raw native event inventory; current Codex emits `command_execution` events in assertion turns | No equivalent strict substitute; Group-0 P0 report | Blocking |
+| Native assertion Read-only boundary | DEGRADED_WITH_APPROVAL | Raw shell reads in assertion turns now FAIL authorization unless the frozen goal binds the human approval hash; the current dogfood runs under that explicit binding | `harness-degradation-approval.md` sha bound in goal quality_policy and every assertion record | Non-blocking for degraded disposition; blocking for strict |
 | Independent native reviewer/judge carriers | BLOCKED | Local deterministic rubric retained only as dogfood evidence, not promoted as independent Layer 2 | Group-0 report | Blocking |
 | Codex resume sandbox flag incompatibility | READY | Removed invalid `--sandbox` from `exec resume`; used supported `sandbox_mode` config override and recorded invocation | Current raw traces and runner source | Resolved |
 
