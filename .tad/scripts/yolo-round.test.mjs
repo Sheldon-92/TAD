@@ -549,6 +549,27 @@ function caseReentryGate() {
   const mutatedTurn = makeTurnRecord(mutatedBeforeAssertion);
   expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', mutatedAssertion.path, '--review', mutatedReview.path, '--turn-record', mutatedTurn.path], mutatedBeforeAssertion.dir),
     'assertion_turn_side_effect', 'fabricated empty assertion observations must not hide a mutation');
+  // Native event inventory must match BOTH raw carriers, and forbidden native
+  // kinds in an assertion turn require the frozen degraded-approval binding.
+  const kindRepo = makeRepo();
+  const kindContract = makeContract(kindRepo);
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', kindContract.path], kindRepo.dir), 0, 'prepare kind fixtures');
+  const mismatchTurn = makeTurnRecord(kindRepo, { extra: { harness: 'codex', native_event_count: 1, native_event_kinds: ['command_execution'] } });
+  expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', makeAssertion(kindRepo).path, '--review', makeReview(kindRepo).path, '--turn-record', mismatchTurn.path], kindRepo.dir),
+    'native_event_binding_mismatch', 'declared native events must match carrier contents');
+  const codexShellTurn = makeTurnRecord(kindRepo, { extra: {
+    harness: 'codex', native_event_count: 1,
+    native_event_kinds: ['command_execution'], native_tool_events: [{ item_type: 'command_execution' }],
+  } });
+  const shellDoc = JSON.parse(fs.readFileSync(path.join(kindRepo.dir, codexShellTurn.path), 'utf8'));
+  fs.writeFileSync(shellDoc.raw_native_output.host_locator, '{"item":{"type":"command_execution"}}\n');
+  fs.writeFileSync(shellDoc.raw_native_trace.host_locator, '{"item":{"type":"command_execution"}}\n');
+  shellDoc.raw_native_output.sha256 = sha256File(shellDoc.raw_native_output.host_locator);
+  shellDoc.raw_native_trace.sha256 = sha256File(shellDoc.raw_native_trace.host_locator);
+  fs.writeFileSync(path.join(kindRepo.dir, codexShellTurn.path), JSON.stringify(shellDoc, null, 2));
+  const shellAssertion = makeAssertion(kindRepo); const shellReview = makeReview(kindRepo);
+  expectRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', shellAssertion.path, '--review', shellReview.path, '--turn-record', codexShellTurn.path], kindRepo.dir),
+    'assertion_native_tool_policy_violation', 'native assertion shell reads need the frozen degraded approval');
   // Valid authorization grants exactly one round.
   authorizeRound(repo);
   const again = makeAssertion(repo); const rAgain = makeReview(repo); const tAgain = makeTurnRecord(repo);

@@ -26,6 +26,8 @@ const MECHANISM_SHA = shas([shaF(DRIVER), shaF(REC), shaF(RUNNER)].join('\n'));
 const RUN_DIR = path.join(PHASE2_DIR, 'runs', MECHANISM_SHA.slice(0, 16));
 const PAIRS_DIR = path.join(RUN_DIR, 'pairs');
 const RESULTS_PATH = path.join(PHASE2_DIR, 'pair-results.json');
+const APPROVAL_PATH = path.join(PHASE2_DIR, 'harness-degradation-approval.md');
+const APPROVAL_SHA = shaF(APPROVAL_PATH);
 const HANDOFF_BASE = execFileSync('git', ['rev-parse', '96bbfada'], { cwd: ROOT, encoding: 'utf8' }).trim();
 
 function sh(cmd, cwd, input) {
@@ -114,7 +116,12 @@ function setupRepo(task, arm, pairDir) {
     forbidden_scope: ['.tad/scripts/', '.claude/', '.tad/hooks/'],
     oracle_path: 'oracle.txt', created_at: new Date().toISOString(),
     execution_policy: POLICY,
-    quality_policy: { phase_candidate_requires_hidden_acceptance: true, phase_candidate_requires_alignment: true, wrong_or_unauthorized_next_action_max: 0, repeated_verified_action_max: 0 },
+    quality_policy: {
+      phase_candidate_requires_hidden_acceptance: true, phase_candidate_requires_alignment: true,
+      wrong_or_unauthorized_next_action_max: 0, repeated_verified_action_max: 0,
+      degraded_assertion_shell_reads: true,
+      degraded_approval_path: path.relative(ROOT, APPROVAL_PATH), degraded_approval_sha256: APPROVAL_SHA,
+    },
   };
   fs.writeFileSync(path.join(dir, 'handoff.md'), `handoff for ${task.id} ${arm}\n`);
   goal.handoff_revision = '';
@@ -158,12 +165,11 @@ function assertionTurn(repo, hostEv, roundId, session, task, sl) {
   ].join('\n');
   const pfile = path.join(hostEv, `prompt-${roundId}.txt`);
   fs.writeFileSync(pfile, prompt);
-  const args = ['turn', '--host-evidence', hostEv, '--packet', `.tad/evidence/yolo/run/rounds/${roundId}/execution.md`, '--prompt', pfile, '--role', 'executor', '--turn-kind', 'assertion', '--sandbox', 'read-only', '--round-id', roundId, '--journal-seq', String(journalCount(repo))];
+  const args = ['turn', '--host-evidence', hostEv, '--packet', `.tad/evidence/yolo/run/rounds/${roundId}/execution.md`, '--prompt', pfile, '--role', 'executor', '--turn-kind', 'assertion', '--sandbox', 'read-only', '--round-id', roundId, '--journal-seq', String(journalCount(repo)), '--approval-sha256', APPROVAL_SHA];
   if (session) args.push('--session', session);
   console.error(`[driver] assertionTurn spawn cwd=${repo} exists=${fs.existsSync(path.join(repo, '.tad/evidence/yolo/run/rounds/R-01/execution.md'))}`);
-  let r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 600000 });
-  if (r.status !== 0) r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 600000 });
-  if (r.status !== 0) throw new Error(`assertion runner failed x2: exit=${r.status} STDERR=${r.stderr || ''} STDOUT=${(r.stdout || '').slice(-300)}`);
+  const r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 600000 });
+  if (r.status !== 0) throw new Error(`assertion runner failed: exit=${r.status} STDERR=${r.stderr || ''} STDOUT=${(r.stdout || '').slice(-300)}`);
   const parsed = JSON.parse(r.stdout.trim().split('\n').pop());
   return { record: parsed.record, recordPath: parsed.record_path };
 }
@@ -182,11 +188,10 @@ function executionTurn(repo, hostEv, roundId, session, nonce, sl, task, action =
   if (action.round) args.push('--action-round', action.round);
   if (session) args.push('--session', session);
   if (nonce) args.push('--nonce', nonce);
-  let r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 900000 });
-  if (r.status !== 0) {
-    r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 900000 });
-  }
-  if (r.status !== 0) throw new Error(`execution runner failed x2: exit=${r.status} STDERR=${r.stderr || ''} STDOUT=${(r.stdout || '').slice(-300)}`);
+  const r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 900000 });
+  // No blind retry: a failed native invocation may have unknown side effects,
+  // so the arm fails honestly and preserves its evidence for inspection.
+  if (r.status !== 0) throw new Error(`execution runner failed: exit=${r.status} STDERR=${r.stderr || ''} STDOUT=${(r.stdout || '').slice(-300)}`);
   const parsed = JSON.parse(r.stdout.trim().split('\n').pop());
   return { record: parsed.record, recordPath: parsed.record_path };
 }

@@ -225,6 +225,9 @@ function main() {
     native_tool_events: nativeToolEvents,
     native_policy_violation: turnKind === 'assertion'
       && nativeToolEvents.some((event) => ['command_execution', 'file_change', 'mcp_tool_call'].includes(event.item_type)),
+    // Explicit degraded-approval binding carried from the Conductor so the
+    // engine can verify record↔goal approval equality (never silent).
+    degraded_approval_sha256: isSha256(flags['approval-sha256'] || '') ? flags['approval-sha256'] : null,
     pre_manifest: preManifest,
     post_manifest: postManifest,
     raw_native_output: { host_locator: path.join(hostRoot, rawOutRel), sha256: sha256File(path.join(hostRoot, rawOutRel)) },

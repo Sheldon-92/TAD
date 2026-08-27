@@ -1883,6 +1883,18 @@ function cmdInit(flags, cwd, out) {
           throw new ContractError('quality_policy_zero_required', { field: f });
         }
       }
+      // Degraded assertion-shell tolerance is an explicit, hash-bound approval —
+      // never a silent default. The binding is frozen at init.
+      if (goal.quality_policy.degraded_assertion_shell_reads !== undefined) {
+        if (typeof goal.quality_policy.degraded_assertion_shell_reads !== 'boolean') {
+          throw new ContractError('quality_policy_field_invalid', { field: 'degraded_assertion_shell_reads' });
+        }
+        if (goal.quality_policy.degraded_assertion_shell_reads === true) {
+          if (!isSha256(goal.quality_policy.degraded_approval_sha256)) {
+            throw new ContractError('quality_policy_field_invalid', { field: 'degraded_approval_sha256' });
+          }
+        }
+      }
     }
   }
 
@@ -2438,20 +2450,36 @@ function nativeToolEventsFromCarrier(abs) {
   return events;
 }
 
-function validateNativeEventBinding(doc, { assertion = false } = {}) {
+function validateNativeEventBinding(doc, { assertion = false, qualityPolicy = null, degradedApprovalSha = null } = {}) {
   // Synthetic reference fixtures intentionally have no Codex event stream;
-  // real Codex records must bind their native event inventory to the carrier.
-  if (doc.harness !== 'codex') return;
-  const output = validateRawCarrier(doc.raw_native_output, 'native event output');
-  const kinds = nativeToolEventsFromCarrier(output.abs);
+  // runner records that declare an inventory must bind it to BOTH carriers.
+  if (!Array.isArray(doc.native_event_kinds)) return;
+  const outputAbs = validateRawCarrier(doc.raw_native_output, 'native event output').abs;
+  const traceAbs = validateRawCarrier(doc.raw_native_trace, 'native event trace').abs;
+  const outputKinds = nativeToolEventsFromCarrier(outputAbs);
+  const traceKinds = nativeToolEventsFromCarrier(traceAbs);
   if (!Array.isArray(doc.native_event_kinds)
-      || doc.native_event_count !== kinds.length
-      || JSON.stringify(doc.native_event_kinds) !== JSON.stringify(kinds)) {
-    throw new ContractError('native_event_binding_mismatch', { declared: doc.native_event_kinds, actual: kinds });
+      || doc.native_event_count !== outputKinds.length
+      || JSON.stringify(doc.native_event_kinds) !== JSON.stringify(outputKinds)) {
+    throw new ContractError('native_event_binding_mismatch', { declared: doc.native_event_kinds, actual: outputKinds });
   }
-  const forbidden = kinds.some((kind) => ['command_execution', 'mcp_tool_call'].includes(kind));
-  if (assertion && forbidden && doc.strict_tool_policy === true) {
-    throw new ContractError('assertion_native_tool_policy_violation', { kinds });
+  if (JSON.stringify(outputKinds) !== JSON.stringify(traceKinds)) {
+    throw new ContractError('native_carrier_event_mismatch', { output: outputKinds, trace: traceKinds });
+  }
+  if (!assertion) return;
+  // An assertion turn must be mutation-free; any file_change native event is a
+  // hard violation regardless of any degradation flag.
+  if (outputKinds.includes('file_change')) {
+    throw new ContractError('assertion_native_mutation', { kinds: outputKinds });
+  }
+  const shellReads = outputKinds.filter((kind) => ['command_execution', 'mcp_tool_call'].includes(kind));
+  if (shellReads.length === 0) return;
+  // Read-only-shell events are only tolerated when the frozen goal explicitly
+  // carries the degraded-approval binding; silence is never acceptance.
+  const policyDegraded = qualityPolicy && qualityPolicy.degraded_assertion_shell_reads === true;
+  const approvalSha = qualityPolicy ? qualityPolicy.degraded_approval_sha256 : null;
+  if (!policyDegraded || !isSha256(approvalSha) || degradedApprovalSha !== approvalSha) {
+    throw new ContractError('assertion_native_tool_policy_violation', { kinds: outputKinds });
   }
 }
 
@@ -2486,12 +2514,16 @@ function validateRunnerBoundArtifact(doc, { round, packet, journalSeq, label, ro
   return doc;
 }
 
-function validateNativeTurn(doc, { kind, round, packet, journalSeq, label }) {
+function validateNativeTurn(doc, { kind, round, packet, journalSeq, label, qualityPolicy = null }) {
   if (!isPlainObject(doc) || doc.format !== 'yolo-reference-turn-v1') {
     throw new ContractError('turn_format_invalid', { label, format: doc && doc.format });
   }
   validateRunnerBoundArtifact(doc, { round, packet, journalSeq, label, role: 'executor', kind });
-  validateNativeEventBinding(doc, { assertion: kind === 'assertion' });
+  validateNativeEventBinding(doc, {
+    assertion: kind === 'assertion',
+    qualityPolicy,
+    degradedApprovalSha: doc.degraded_approval_sha256 ?? null,
+  });
   if (!Array.isArray(doc.tool_calls) || doc.tool_calls.length === 0) {
     throw new ContractError('native_tool_trace_missing', { label });
   }
@@ -2867,6 +2899,7 @@ function cmdRoundAuthorize(flags, cwd, out) {
   validateNativeTurn(t, {
     kind: 'assertion', round: cur.id, packet: cur.packet_sha256,
     journalSeq: r.state.events_count, label: 'turn-record',
+    qualityPolicy: r.goal.quality_policy || null,
   });
   validateAssertionToolPolicy(t);
   validateToolTrace(t, { assertion: true });
@@ -2951,8 +2984,11 @@ function validateRoundReport(report, currentRound) {
     seen.add(result.id);
     const expectedCheck = expectedById.get(result.id);
     const actualResult = result.result ?? result.outcome;
-    const actualExit = result.exit ?? result.exit_status ?? result.expected_exit;
-    if (actualResult !== expectedCheck.expected_result || actualExit !== expectedCheck.expected_exit) {
+    // The OBSERVED exit is required; defaulting to the expectation would let a
+    // prose-only PASS satisfy an exit-code assertion.
+    const actualExit = result.exit ?? result.exit_status;
+    if (!Number.isInteger(actualExit)
+        || actualResult !== expectedCheck.expected_result || actualExit !== expectedCheck.expected_exit) {
       failed.push(result.id);
     }
   }
@@ -3129,6 +3165,7 @@ function cmdRoundClose(flags, cwd, out) {
   validateNativeTurn(turn, {
     kind: 'execution', round: cur.id, packet: cur.packet_sha256,
     journalSeq: r.state.events_count, label: 'execution-turn',
+    qualityPolicy: r.goal.quality_policy || null,
   });
   if (!usageEqual(usage, turn.usage)) throw new ContractError('usage_turn_mismatch', {});
   if (!Array.isArray(turn.tool_policy) && !isPlainObject(turn.tool_policy)) {
