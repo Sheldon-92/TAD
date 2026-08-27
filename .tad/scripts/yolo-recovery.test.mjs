@@ -1222,7 +1222,14 @@ const ALLOW_PHASE2_DECLARED = [
   '.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md',
   '.tad/scripts/yolo-round.test.mjs',
   '.tad/scripts/yolo-reference-runner.mjs',
+  '.tad/scripts/phase2-pair-driver.mjs',
   '.tad/guides/yolo-bounded-rounds.md',
+  // The amended completion run is itself a control-plane artifact. These
+  // exact paths are not product scope; they are the handoff/decision/status
+  // carriers already present in the 96bbfada..HEAD acceptance range.
+  '.tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md',
+  '.tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md',
+  '.tad/project-knowledge/security.md',
 ];
 const ALLOW_PREFIX = [
   '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/',
@@ -1282,6 +1289,70 @@ export function offAllowlist(paths) {
     && !ALLOW_LIFECYCLE_ACTIVE.includes(p)
     && !ALLOW_LIFECYCLE_ARCHIVE.includes(p)
     && !ALLOW_PHASE2_DECLARED.includes(p));
+}
+
+// AC-B: the Phase-1 archive proof is intentionally a separate endpoint from
+// caseRequiredEvidence(). That older case must continue to close its own
+// proof at phase1/final-commit.txt; Phase 2 must certify the live HEAD.
+const PHASE2_SCOPE_BASE = '96bbfada';
+const PHASE1_ARCHIVE_PREFIX = [
+  '.tad/evidence/yolo/yolo2-verified-orchestration/phase1/',
+  '.tad/evidence/reviews/blake/yolo2-phase1/',
+  '.tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md',
+];
+const PHASE2_PRODUCT_ALLOWLIST = [
+  '.tad/scripts/yolo-recovery.mjs',
+  '.tad/scripts/yolo-reference-runner.mjs',
+  '.tad/scripts/phase2-pair-driver.mjs',
+  '.tad/scripts/yolo-round.test.mjs',
+  '.tad/scripts/yolo-recovery.test.mjs',
+];
+const PHASE2_CONTROL_PLANE_ALLOWLIST = [
+  '.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md',
+  '.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md',
+  '.tad/active/handoffs/HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md',
+  '.tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md',
+  '.tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md',
+  '.tad/guides/yolo-bounded-rounds.md',
+  '.tad/project-knowledge/security.md',
+  'NEXT.md',
+];
+
+function phase1ArchiveAllows(rel) {
+  return ALLOW_EXACT.includes(rel)
+    || PHASE1_ARCHIVE_PREFIX.some((prefix) => rel.startsWith(prefix))
+    || ALLOW_LIFECYCLE_ACTIVE.includes(rel)
+    || ALLOW_LIFECYCLE_ARCHIVE.includes(rel);
+}
+
+/** AC-B scope endpoint: compare the frozen Phase-1 archive boundary to HEAD. */
+export function phase2ScopeOffAllowlist(paths) {
+  return paths.filter((rel) => !phase1ArchiveAllows(rel)
+    && !PHASE2_PRODUCT_ALLOWLIST.includes(rel)
+    && !PHASE2_CONTROL_PLANE_ALLOWLIST.includes(rel));
+}
+
+function casePhase2ScopeProof() {
+  const base = git(['rev-parse', PHASE2_SCOPE_BASE], REPO_ROOT);
+  expect(base === '96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7',
+    `scope base moved unexpectedly: ${base}`);
+
+  const changed = git(['diff', '--name-only', `${PHASE2_SCOPE_BASE}..HEAD`], REPO_ROOT)
+    .split('\n').filter(Boolean);
+  const off = phase2ScopeOffAllowlist(changed);
+  expect(off.length === 0,
+    `96bbfada..HEAD contains out-of-scope paths:\n  - ${off.join('\n  - ')}`);
+
+  for (const rel of PHASE2_PRODUCT_ALLOWLIST) {
+    expect(changed.includes(rel), `Phase-2 product path missing from ${PHASE2_SCOPE_BASE}..HEAD: ${rel}`);
+  }
+
+  // Red fixture: the endpoint must reject a deliberately forbidden tracked
+  // path even when every real changed path is within the accepted union.
+  const redFixture = '.tad/hooks/phase2-out-of-scope-fixture.sh';
+  const red = phase2ScopeOffAllowlist([...changed, redFixture]);
+  expect(red.includes(redFixture),
+    `scope red fixture must remain rejected: ${redFixture}`);
 }
 
 const REQUIRED_EVIDENCE = [
@@ -1466,6 +1537,7 @@ const CASES = {
   'atomic-write': caseAtomicWrite,
   'binding-and-closure': caseBindingAndClosure,
   'dogfood-evidence': caseDogfoodEvidence,
+  'phase2-scope-proof': casePhase2ScopeProof,
   'required-evidence': caseRequiredEvidence,
 };
 
