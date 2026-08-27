@@ -35,11 +35,15 @@
 - **Gate 3 disposition**: `HONEST_PARTIAL`, not PASS. Independent Group-0 review
   reports `NOT_SATISFIED=8`, `PARTIALLY_SATISFIED=3`, `SATISFIED=1`. Matching completion,
   verdict, and knowledge assessment are recorded under the active handoff/evidence.
-- **Blocking next actions**: provide a strict native assertion boundary (current Codex
-  raw assertions contain `command_execution`), prove capability-9 host-hidden isolation,
-  build the full §12 durable dogfood/judge carrier tree, then reopen Group 0. Do not
-  run remaining Layer-2 groups or archive until Group 0 passes. The Phase-1 degraded
-  approval does not carry forward.
+- **🟢 NEW HANDOFF 2026-08-27**: `.tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md`
+  —— 人类已选**修正案路径**并签署 `.tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md`
+  （接受 capability 9 降级 / resume-chain 会话延续 / 同 harness 异会话 reviewer 为有效证据）。
+  Blake 按 §4 AC-B…AC-J 补齐：scope proof、六预算 fixture、alignment 链、arm 冻结等价、
+  原生独立 reviewer、per-call 归因、durable §12 tree、三轮盲评 judges，最终 Group 0
+  PASS → Layer 2 → Gate 3。Gate 4 归档仍由 Alex 执行。
+  原 20260825 handoff 保留为设计权威；DR 仅取代其 strict-only 验收条款（限 Phase 2）。
+- ~~Blocking next actions~~（由上述 completion handoff 接管）：strict assertion 边界已由
+  显式降级批准绑定解决（`6eaef1fb`）；其余并入 AC-B…AC-J。
 
 ### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进
 
