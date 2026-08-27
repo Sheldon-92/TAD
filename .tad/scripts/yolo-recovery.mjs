@@ -870,10 +870,12 @@ export function reduceRun(goal, events) {
         for (const observation of p.observed_mutations) {
           if (!isPlainObject(observation) || typeof observation.action_id !== 'string'
               || typeof observation.action_nonce !== 'string' || !Array.isArray(observation.paths)
-              || observation.paths.length === 0 || !isSha256(observation.observed_sha256)
+              || !isSha256(observation.observed_sha256)
               || !isSha256(observation.effect_fingerprint)) {
             throw new ContractError('round_observation_binding_invalid', { seq: ev.seq, observation });
           }
+          // paths may be empty: an inspected no-op consumption (effect already
+          // present) is a legal, explicitly recorded outcome.
         }
         const currentActions = actionRecords.filter((a) => a.round === currentRound.id);
         const currentNonces = currentActions.map((a) => a.action_nonce);
@@ -3191,9 +3193,34 @@ function cmdRoundClose(flags, cwd, out) {
   for (const call of turn.tool_calls) {
     const paths = mutationPaths(call);
     if (paths.length === 0) {
-      if (call.action_nonce !== null && call.action_nonce !== undefined) {
+      if (call.action_nonce === null || call.action_nonce === undefined) continue;
+      // No-op consumption: the executor inspected the target and found the
+      // intended effect ALREADY present, so correctly refusing to redo it is
+      // the anti-blind-retry behavior working. Legal ONLY when the bound
+      // current-round action was reconciled as 'reconciled' with the observed
+      // state byte-identical to its pre-state (inspected, unchanged).
+      const action = currentActionForNonce(r.state, call.action_nonce);
+      if (!action || action.round !== cur.id) {
         throw new ContractError('action_nonce_on_read_only_call', { native_call_id: call.native_call_id });
       }
+      if (action.reconciliation_outcome !== 'reconciled' || action.observed_sha256 !== action.pre_sha256) {
+        throw new ContractError('action_nonce_on_read_only_call', {
+          native_call_id: call.native_call_id, action_id: action.action_id,
+          reconciliation: action.reconciliation_outcome,
+          note: 'a nonce-carrying zero-mutation call is legal only as an inspected no-op (effect already present)',
+        });
+      }
+      if (seenNonces.has(call.action_nonce)) throw new ContractError('duplicate_action_nonce', { action_nonce: call.action_nonce });
+      seenNonces.add(call.action_nonce);
+      const noOpFingerprint = effectFingerprint([], []);
+      if (seenEffects.has(noOpFingerprint)) throw new ContractError('duplicate_effect_fingerprint', { effect_fingerprint: noOpFingerprint });
+      seenEffects.add(noOpFingerprint);
+      consumed.push(call.action_nonce);
+      observations.push({
+        action_id: action.action_id, action_nonce: call.action_nonce,
+        paths: [], observed_sha256: action.observed_sha256,
+        effect_fingerprint: noOpFingerprint,
+      });
       continue;
     }
     const actionForCall = currentActionForNonce(r.state, call.action_nonce);

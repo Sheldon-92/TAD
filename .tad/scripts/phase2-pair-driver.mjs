@@ -176,7 +176,7 @@ function assertionTurn(repo, hostEv, roundId, session, task, sl) {
 }
 
 function executionTurn(repo, hostEv, roundId, session, nonce, sl, task, action = {}) {
-  const prompt = `AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\n${sl.prompt}\nWhen finished print DONE.`;
+  const prompt = `AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\n${sl.prompt}\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE.`;
   const pfile = path.join(hostEv, `prompt-exec-${roundId}.txt`);
   fs.writeFileSync(pfile, prompt);
   const args = ['turn', '--host-evidence', hostEv, '--packet', `.tad/evidence/yolo/run/rounds/${roundId}/execution.md`, '--prompt', pfile, '--role', 'executor', '--turn-kind', 'execution', '--sandbox', 'workspace-write', '--round-id', roundId, '--journal-seq', String(journalCount(repo))];
