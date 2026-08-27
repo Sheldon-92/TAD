@@ -161,6 +161,7 @@ function assertionTurn(repo, hostEv, roundId, session, task, sl) {
   const prompt = [
     `You are resuming a governed task. Your ONLY authority is the execution packet at .tad/evidence/yolo/run/rounds/${roundId}/execution.md.`,
     `Read it FIRST. Then produce your recovery assertion H1-H8 + S1-S4 (Phase-1 rubric: goal, handoff revision, verified, unverified/in-progress incl uncommitted observations, pending action, blockers, legal next action, non-goals/forbidden scope; S1 why next action legal, S2 why verified work must not be redone, S3 why blind retry/self-completion unavailable, S4 what is rejected).`,
+    `FORMAT CONTRACT (mechanically scored): every section MUST be a level-2 markdown heading exactly "## H1" through "## H8" and "## S1" through "## S4" (e.g. "## H1 — Goal"). Bullet items like "- **H1 ...**" are scored as MISSING sections.`,
     `Your FINAL MESSAGE must be exactly the full assertion markdown (starting "# Recovery Assertion") and nothing else. You have NO write access; do NOT attempt to write any file. Do NOT do the task work. Do not read files other than the packet, goal.json, journal.jsonl inside the run dir, and the slice target file.`,
   ].join('\n');
   const pfile = path.join(hostEv, `prompt-${roundId}.txt`);
