@@ -44,7 +44,7 @@ function sha256String(s) { return crypto.createHash('sha256').update(s).digest('
 class CaseFail extends Error {}
 function expect(cond, msg) { if (!cond) throw new CaseFail(msg); }
 function expectExit(res, code, msg) {
-  expect(res.exitCode === code, `${msg}: expected exit ${code}, got ${res.exitCode}\n${res.stdout.slice(-800)}`);
+  expect(res.exitCode === code, `${msg}: expected exit ${code}, got ${res.exitCode}\n${res.stdout.slice(-1800)}`);
 }
 function expectRed(res, reason, msg) {
   expect(res.exitCode === 1, `${msg}: expected honest_partial exit 1, got ${res.exitCode}\n${res.stdout.slice(-800)}`);
@@ -53,6 +53,14 @@ function expectRed(res, reason, msg) {
   try { status = JSON.parse(last); } catch { /* handled below */ }
   expect(status && status.result === 'HONEST_PARTIAL', `${msg}: last line is not HONEST_PARTIAL JSON:\n${last}`);
   if (reason) expect((status.reason || '').includes(reason), `${msg}: expected reason ~ "${reason}", got "${status.reason}"`);
+}
+function expectBudgetRed(res, budget, msg) {
+  expectRed(res, 'budget_exhausted', msg);
+  const status = JSON.parse(res.stdout.trim().split('\n').pop());
+  const observed = status.details && (status.details.budget
+    || (status.details.blockers || []).find((blocker) => blocker.code === 'budget_exhausted')?.budget);
+  expect(observed === budget,
+    `${msg}: expected budget ${budget}, got ${observed} (${JSON.stringify(status.details)})`);
 }
 
 function cli(argv, cwd) {
@@ -130,6 +138,11 @@ function journalEvents(repo) {
 
 function journalSeq(repo) { return journalEvents(repo).length; }
 
+function verifiedStateDigest(repo) {
+  const checkpoint = JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'checkpoint.json'), 'utf8'));
+  return sha256String(JSON.stringify(checkpoint.verified || []));
+}
+
 function currentRound(repo) {
   const events = journalEvents(repo);
   for (let i = events.length - 1; i >= 0; i -= 1) {
@@ -183,13 +196,13 @@ function makeContract(repo, over = {}) {
   });
 }
 
-function makeAssertion(repo, { hard = 8, soft = 0.95, verdict = 'PASS', author = 'fresh-exec', session = 'sess-exec-1' } = {}) {
+function makeAssertion(repo, { hard = 8, soft = 0.95, verdict = 'PASS', author = 'fresh-exec', session = 'sess-exec-1', usage = null } = {}) {
   const artifactId = ++artifactCounter;
   const runDir = path.join(repo.dir, RUN_REL);
   const round = currentRound(repo) || { round_id: preparedRoundId(repo) };
   const packetPath = path.join(runDir, 'rounds', round ? round.round_id : preparedRoundId(repo), 'execution.md');
   const sha = fs.existsSync(packetPath) ? sha256File(packetPath) : sha256String('missing');
-  const usage = { input_tokens: 100, output_tokens: 50, total_tokens: 150, native: true };
+  const turnUsage = usage || { input_tokens: 100, output_tokens: 50, total_tokens: 150, native: true };
   const result = writeJson(repo, `assertion-${roundCounter}-${artifactId}.json`, {
     format: 'yolo-recovery-assertion-v1', verdict, author_id: author,
     hard_correct: hard, hard_total: 8, soft_score: soft, packet_sha256: sha,
@@ -201,13 +214,13 @@ function makeAssertion(repo, { hard = 8, soft = 0.95, verdict = 'PASS', author =
     raw_native_trace: rawCarrier(repo, `assertion-trace-${artifactId}`, '{"kind":"assertion"}\n'),
     tool_policy: { allowed: ['Read'], denied: ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'], sandbox: 'read-only' },
     tool_calls: [{ native_call_id: 'assertion-read', tool: 'Read', args_sha256: sha256String('assertion-read'), decision: 'allowed', action_nonce: null, observed_changed: [], observed_deleted: [], observed_untracked: [] }],
-    worktree_observation: [], usage,
+    worktree_observation: [], usage: turnUsage,
   });
   repo.lastAssertionPath = result.path;
   return result;
 }
 
-function makeReview(repo, { verdict = 'PASS', reviewer = 'independent-rev-1' } = {}) {
+function makeReview(repo, { verdict = 'PASS', reviewer = 'independent-rev-1', usage = null } = {}) {
   const artifactId = ++artifactCounter;
   const round = currentRound(repo) || { round_id: preparedRoundId(repo) };
   const packetPath = path.join(repo.dir, RUN_REL, 'rounds', round.round_id, 'execution.md');
@@ -222,7 +235,7 @@ function makeReview(repo, { verdict = 'PASS', reviewer = 'independent-rev-1' } =
     assertion_sha256: sha256File(assertionPath), oracle_sha256: goal.oracle_sha256, exit_status: 0,
     raw_native_output: rawCarrier(repo, `review-out-${artifactId}`, 'review native output\n'),
     raw_native_trace: rawCarrier(repo, `review-trace-${artifactId}`, '{"kind":"review"}\n'),
-    usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
+    usage: usage || { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
   });
 }
 
@@ -338,6 +351,7 @@ function makeAlignmentReceipt(repo, over = {}) {
   const goal = runGoal(repo);
   const verified = JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'checkpoint.json'), 'utf8')).verified;
   const reviewerEvidence = writeJson(repo, `alignment-evidence-${++artifactCounter}.json`, { verdict: 'PASS', reviewer_id: 'alignment-reviewer' });
+  const hiddenAcceptance = writeJson(repo, `alignment-hidden-${artifactCounter}.json`, { verdict: 'PASS', passed: true });
   return writeJson(repo, `alignment-${artifactCounter}.json`, {
     format: 'yolo-alignment-receipt-v1', verdict: 'PASS',
     goal_sha256: journalEvents(repo)[0].payload.goal_sha256, handoff_revision: goal.handoff_revision,
@@ -346,7 +360,12 @@ function makeAlignmentReceipt(repo, over = {}) {
     non_goals: [{ id: 'NG-1', status: 'checked' }],
     forbidden_scope: [{ id: 'FS-1', status: 'checked' }, { id: 'FS-2', status: 'checked' }, { id: 'FS-3', status: 'checked' }],
     changed_paths: [], unresolved_risks: [],
-    reviewer: { id: 'alignment-reviewer', independent: true, verdict: 'PASS', evidence: [reviewerEvidence] },
+    hidden_acceptance: { ...hiddenAcceptance, verdict: 'PASS', passed: true },
+    usage: { input_tokens: 20, output_tokens: 10, total_tokens: 30, native: true },
+    reviewer: {
+      id: 'alignment-reviewer', independent: true, verdict: 'PASS', evidence: [reviewerEvidence],
+      usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
+    },
     ...over,
   });
 }
@@ -367,7 +386,10 @@ function makePhaseCandidateReceipt(repo, over = {}) {
     success: [{ id: 'SC-1', status: 'met', evidence: 'verified S1' }, { id: 'SC-2', status: 'met', evidence: 'verified S2' }],
     failed_checks: [], wrong_or_unauthorized_next_action: 0, repeated_verified_actions: 0,
     hidden_acceptance: { ...hidden, verdict: 'PASS', passed: true },
-    final_reviewer: { id: 'final-reviewer', independent: true, verdict: 'PASS', evidence: [reviewerEvidence] },
+    final_reviewer: {
+      id: 'final-reviewer', independent: true, verdict: 'PASS', evidence: [reviewerEvidence],
+      usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
+    },
     ...over,
   });
 }
@@ -810,6 +832,7 @@ function caseAlignmentGate() {
     JSON.parse(fs.readFileSync(path.join(repo.dir, RUN_REL, 'checkpoint.json'), 'utf8')).verified,
   ));
   const alignReview = writeJson(repo, 'align-review.json', { verdict: 'PASS', reviewer_id: 'align-reviewer' });
+  const alignHidden = writeJson(repo, 'align-hidden.json', { verdict: 'PASS', passed: true });
   const rg = runGoal(repo);
   const goodAlign = writeJson(repo, 'align-ok.json', {
     format: 'yolo-alignment-receipt-v1', verdict: 'PASS', verified_digest: verifiedDigest,
@@ -819,13 +842,53 @@ function caseAlignmentGate() {
     non_goals: [{ id: 'NG-1', status: 'checked' }],
     forbidden_scope: [{ id: 'FS-1', status: 'checked' }, { id: 'FS-2', status: 'checked' }, { id: 'FS-3', status: 'checked' }],
     changed_paths: [], unresolved_risks: [],
-    reviewer: { id: 'align-reviewer', independent: true, verdict: 'PASS', evidence: [alignReview] },
+    hidden_acceptance: { ...alignHidden, verdict: 'PASS', passed: true },
+    usage: { input_tokens: 20, output_tokens: 10, total_tokens: 30, native: true },
+    reviewer: {
+      id: 'align-reviewer', independent: true, verdict: 'PASS', evidence: [alignReview],
+      usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
+    },
   });
   expectExit(cli(['align', '--run', RUN_REL, '--receipt', goodAlign.path], repo.dir), 0, 'valid align');
   expect(digest().includes('S1'), 'verified state intact after align');
-  // Whole-goal counterexample: local tests green but hidden business acceptance
-  // fails → alignment receipt that marks SC met without hidden evidence is still
-  // only a watermark; phase-candidate closure refuses it (covered in completion-gate).
+
+  // Local checks can be green while hidden acceptance fails. Alignment must
+  // refuse that receipt and must not rewrite the receipt bytes.
+  const hiddenFail = writeJson(repo, 'align-hidden-fail.json', { verdict: 'FAIL', passed: false });
+  const hiddenFailReceipt = makeAlignmentReceipt(repo, {
+    success: [{ id: 'SC-1', status: 'met', evidence: 'local checks' }, { id: 'SC-2', status: 'not_yet_due', evidence: 'pending' }],
+    hidden_acceptance: { ...hiddenFail, verdict: 'FAIL', passed: false },
+  });
+  const hiddenFailBytes = sha256File(path.join(repo.dir, hiddenFailReceipt.path));
+  expectRed(cli(['align', '--run', RUN_REL, '--receipt', hiddenFailReceipt.path], repo.dir),
+    'alignment_hidden_acceptance_failed', 'hidden acceptance failure must reject local-green alignment');
+  expect(sha256File(path.join(repo.dir, hiddenFailReceipt.path)) === hiddenFailBytes,
+    'rejected alignment must preserve receipt bytes');
+
+  // Three verified slices consume the cadence. The fourth prepare is refused
+  // until a whole-goal alignment is recorded.
+  const cadence = makeRepo({ withPolicy: false, skipInit: true });
+  const cadenceSpec = JSON.parse(fs.readFileSync(path.join(cadence.dir, 'goal-spec.json'), 'utf8'));
+  cadenceSpec.execution_policy = { ...POLICY };
+  cadenceSpec.success = [
+    ...cadenceSpec.success,
+    'SC-3 body: third slice verified',
+    'SC-4 body: fourth slice verified',
+  ];
+  cadenceSpec.slices = [
+    ...cadenceSpec.slices,
+    { id: 'S3', statement: 'add third bounded slice' },
+    { id: 'S4', statement: 'add fourth bounded slice' },
+  ];
+  fs.writeFileSync(path.join(cadence.dir, 'goal-spec.json'), JSON.stringify(cadenceSpec));
+  expectExit(cli(['init', '--run', RUN_REL, '--handoff', 'h.md', '--goal-file', 'goal-spec.json'], cadence.dir), 0, 'cadence init');
+  completeVerifiedRound(cadence, { slice: 'S1', maps: ['SC-1'] });
+  completeVerifiedRound(cadence, { slice: 'S2', maps: ['SC-2'] });
+  completeVerifiedRound(cadence, { slice: 'S3', maps: ['SC-3'] });
+  const cadenceBefore = verifiedStateDigest(cadence);
+  expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', makeContract(cadence, { slice_id: 'S4', maps_to_success: ['SC-4'] }).path], cadence.dir),
+    'alignment_required_before_prepare', 'fourth prepare must require alignment after three verified slices');
+  expect(verifiedStateDigest(cadence) === cadenceBefore, 'cadence refusal must preserve verified state');
 }
 
 // ═══════════════ CASE: completion-gate ═══════════════
@@ -879,6 +942,10 @@ function caseCompletionGate() {
 
 // ═══════════════ CASE: budget-exhaustion ═══════════════
 function caseBudgetExhaustion() {
+  // Each fixture below must stop with exit 1, the machine-readable
+  // budget_exhausted reason, its named budget, and an unchanged verified
+  // watermark. No fixture relies on a summary-only counter.
+
   // rounds budget exhausted
   const r2 = makeRepo({ withPolicy: false, skipInit: true });
   const spec2 = JSON.parse(fs.readFileSync(path.join(r2.dir, 'goal-spec.json'), 'utf8'));
@@ -895,24 +962,24 @@ function caseBudgetExhaustion() {
   const use = writeJson(r2, 'uu.json', { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
   const t = makeTurnRecord(r2, { kind: 'execution' });
   expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'blocked', '--report', rep.path, '--usage', use.path, '--turn-record', t.path], r2.dir), 0, 'close');
-  expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c2.path], r2.dir),
-    'budget_exhausted', 'round budget exhaustion must produce honest partial naming the budget');
-  // actions budget exhausted (max_actions: 1)
-  const r3 = makeRepo();
-  const spec3 = JSON.parse(fs.readFileSync(path.join(r3.dir, 'goal-spec.json'), 'utf8'));
-  spec3.execution_policy = { ...POLICY, max_actions: 1 };
-  fs.writeFileSync(path.join(r3.dir, 'goal-spec.json'), JSON.stringify(spec3));
+  const roundsBefore = verifiedStateDigest(r2);
+  expectBudgetRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c2.path], r2.dir),
+    'rounds', 'round budget exhaustion must produce honest partial naming the budget');
+  expect(verifiedStateDigest(r2) === roundsBefore, 'round budget failure must preserve verified state');
+
   // wall-clock exhaustion via past deadline
-  const r4 = makeRepo();
+  const r4 = makeRepo({ withPolicy: false, skipInit: true });
   const goalSpec = JSON.parse(fs.readFileSync(path.join(r4.dir, 'goal-spec.json'), 'utf8'));
+  goalSpec.execution_policy = { ...POLICY };
   goalSpec.created_at = new Date(Date.now() - (POLICY.max_wall_seconds + 60) * 1000).toISOString();
   fs.writeFileSync(path.join(r4.dir, 'goal-spec.json'), JSON.stringify(goalSpec));
   const runDirAbs = path.join(r4.dir, RUN_REL);
+  const init4 = cli(['init', '--run', RUN_REL, '--handoff', 'h.md', '--goal-file', 'goal-spec.json'], r4.dir);
+  expectExit(init4, 0, 'past-deadline init');
   const goalAbs = path.join(runDirAbs, 'goal.json');
   const g = JSON.parse(fs.readFileSync(goalAbs, 'utf8'));
   g.created_at = goalSpec.created_at;
   fs.writeFileSync(goalAbs, JSON.stringify(g, null, 2));
-  // journal's initialized event must keep matching goal hash; rewrite it too.
   const jPath = path.join(runDirAbs, 'journal.jsonl');
   const lines = fs.readFileSync(jPath, 'utf8').split('\n').filter(Boolean);
   const first = JSON.parse(lines[0]);
@@ -920,16 +987,119 @@ function caseBudgetExhaustion() {
   lines[0] = JSON.stringify(first);
   fs.writeFileSync(jPath, lines.join('\n') + '\n');
   const c4 = makeContract(r4);
-  expectRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c4.path], r4.dir),
-    'budget_exhausted', 'wall-clock exhaustion must fail honestly');
-  // audit reserve protection: tiny remaining total
-  const r5 = makeRepo();
+  const wallBefore = verifiedStateDigest(r4);
+  expectBudgetRed(cli(['round-prepare', '--run', RUN_REL, '--contract', c4.path], r4.dir),
+    'wall_time', 'wall-clock exhaustion must fail honestly');
+  expect(verifiedStateDigest(r4) === wallBefore, 'wall-clock failure must preserve verified state');
+
+  // actions budget exhausted (max_actions: 1)
+  const r3 = makeRepo({ withPolicy: false, skipInit: true });
+  const spec3 = JSON.parse(fs.readFileSync(path.join(r3.dir, 'goal-spec.json'), 'utf8'));
+  spec3.execution_policy = { ...POLICY, max_actions: 1 };
+  fs.writeFileSync(path.join(r3.dir, 'goal-spec.json'), JSON.stringify(spec3));
+  const init3 = cli(['init', '--run', RUN_REL, '--handoff', 'h.md', '--goal-file', 'goal-spec.json'], r3.dir);
+  expectExit(init3, 0, 'actions-budget init');
+  const c3 = makeContract(r3);
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', c3.path], r3.dir), 0, 'actions prepare');
+  authorizeRound(r3);
+  const actionStart = (id) => {
+    const pre = sha256File(path.join(r3.dir, 'work.md'));
+    const args = writeJson(r3, `${id}-args.json`, { action: id, target: 'work.md' });
+    const effects = writeJson(r3, `${id}-effects.json`, { affected: ['work.md'] });
+    return cli(['action-start', '--run', RUN_REL, '--action', id, '--description', `action ${id}`,
+      '--target', 'work.md', '--pre-sha256', pre,
+      '--intended-post-sha256', sha256String(`${id}-post`), '--round', preparedRoundId(r3),
+      '--outcome-id', `OID-${id}`, '--tool', 'Edit', '--args-json', args.path,
+      '--effect-manifest', effects.path], r3.dir);
+  };
+  const firstAction = actionStart('A1');
+  expect(firstAction.exitCode === 0 || firstAction.stdout.includes('ACTION_PENDING'),
+    `first action within action budget:\n${firstAction.stdout.slice(-600)}`);
+  const actionEvidence = writeJson(r3, 'A1-reconcile.json', { verdict: 'PASS', note: 'inspected no-op for budget fixture' });
+  expectExit(cli(['reconcile', '--run', RUN_REL, '--action', 'A1', '--outcome', 'reconciled',
+    '--evidence', actionEvidence.path, '--observed-sha256', sha256File(path.join(r3.dir, 'work.md'))], r3.dir), 0, 'reconcile first action');
+  const actionsBefore = verifiedStateDigest(r3);
+  expectBudgetRed(actionStart('A2'), 'actions', 'action budget exhaustion must fail before a second action');
+  expect(verifiedStateDigest(r3) === actionsBefore, 'action budget failure must preserve verified state');
+
+  // retries-per-slice exhausted: the first retry is legal, the second is not.
+  const r5 = makeRepo({ withPolicy: false, skipInit: true });
   const spec5 = JSON.parse(fs.readFileSync(path.join(r5.dir, 'goal-spec.json'), 'utf8'));
-  spec5.execution_policy = { ...POLICY, max_tokens: 50000, audit_reserve_tokens: 48000, max_executor_tokens_per_round: 2000 };
+  spec5.execution_policy = { ...POLICY, max_retries_per_slice: 1 };
   fs.writeFileSync(path.join(r5.dir, 'goal-spec.json'), JSON.stringify(spec5));
-  // tokens exhausted: charge beyond max via crafted round_closed payloads is
-  // covered by token_reservation_exceeded; here assert reserve guard exists in
-  // the authorize path when remaining_total − reserve < audit_reserve.
+  expectExit(cli(['init', '--run', RUN_REL, '--handoff', 'h.md', '--goal-file', 'goal-spec.json'], r5.dir), 0, 'retries-budget init');
+  const closeBlocked = (repo, label) => {
+    const rep = writeJson(repo, `${label}-report.json`, { format: 'yolo-round-report-v1', changed_paths: [] });
+    const use = writeJson(repo, `${label}-usage.json`, { input_tokens: 400, output_tokens: 200, total_tokens: 600, native: true });
+    const t = makeTurnRecord(repo, { kind: 'execution' });
+    expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'blocked', '--report', rep.path,
+      '--usage', use.path, '--turn-record', t.path], repo.dir), 0, `${label} close`);
+  };
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', makeContract(r5).path], r5.dir), 0, 'first retry prepare');
+  authorizeRound(r5); closeBlocked(r5, 'retry-1');
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', makeContract(r5).path], r5.dir), 0, 'second retry prepare');
+  authorizeRound(r5); closeBlocked(r5, 'retry-2');
+  const retriesBefore = verifiedStateDigest(r5);
+  expectBudgetRed(cli(['round-prepare', '--run', RUN_REL, '--contract', makeContract(r5).path], r5.dir),
+    'retries', 'retry budget exhaustion must fail after the allowed retry');
+  expect(verifiedStateDigest(r5) === retriesBefore, 'retry budget failure must preserve verified state');
+
+  // total-token exhausted by a native alignment + reviewer pair consuming the
+  // reserved quality-gate budget. Executor dispatch remains reserve-protected.
+  const r6 = makeRepo({ withPolicy: false, skipInit: true });
+  const spec6 = JSON.parse(fs.readFileSync(path.join(r6.dir, 'goal-spec.json'), 'utf8'));
+  spec6.execution_policy = { ...POLICY, max_tokens: 700, audit_reserve_tokens: 200, max_executor_tokens_per_round: 300 };
+  fs.writeFileSync(path.join(r6.dir, 'goal-spec.json'), JSON.stringify(spec6));
+  expectExit(cli(['init', '--run', RUN_REL, '--handoff', 'h.md', '--goal-file', 'goal-spec.json'], r6.dir), 0, 'total-token init');
+  const tokenContract = makeContract(r6);
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', tokenContract.path], r6.dir), 0, 'total-token prepare');
+  authorizeRound(r6);
+  const tokenReport = writeJson(r6, 'token-report.json', { format: 'yolo-round-report-v1', changed_paths: [] });
+  const tokenUsage = writeJson(r6, 'token-usage.json', { input_tokens: 100, output_tokens: 100, total_tokens: 200, native: true });
+  const tokenTurn = makeTurnRecord(r6, { kind: 'execution', extra: { usage: { input_tokens: 100, output_tokens: 100, total_tokens: 200, native: true } } });
+  expectExit(cli(['round-close', '--run', RUN_REL, '--outcome', 'candidate', '--report', tokenReport.path,
+    '--usage', tokenUsage.path, '--turn-record', tokenTurn.path], r6.dir), 0, 'total-token close');
+  const tokenClosed = journalEvents(r6).filter((event) => event.type === 'round_closed').pop();
+  const tokenGoal = runGoal(r6);
+  const tokenGate = writeJson(r6, 'token-gate.json', { verdict: 'PASS' });
+  const tokenReview = writeJson(r6, 'token-review.json', { verdict: 'PASS', independent: true });
+  const tokenReceipt = writeJson(r6, 'token-receipt.json', {
+    format: 'yolo-recovery-verification-v1', verdict: 'PASS', run_id: tokenGoal.run_id, slice: 'S1',
+    handoff_revision: tokenGoal.handoff_revision, worktree_realpath: tokenGoal.worktree_realpath,
+    verified_head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: r6.dir }).toString().trim(),
+    round_id: tokenClosed.payload.round_id, report_sha256: tokenClosed.payload.report_sha256,
+    usage_sha256: tokenClosed.payload.usage_sha256, turn_record_sha256: tokenClosed.payload.turn_record_sha256,
+    maps_to_success: ['SC-1'], gate_evidence: [{ ...tokenGate, verdict: 'PASS' }],
+    review_evidence: [{ ...tokenReview, independent: true, verdict: 'PASS' }],
+    executor_id: 'token-exec', written_by: 'conductor', written_by_id: 'token-conductor',
+  });
+  expectExit(cli(['verify', '--run', RUN_REL, '--slice', 'S1', '--receipt', tokenReceipt.path], r6.dir), 0, 'total-token verify');
+  const totalBefore = verifiedStateDigest(r6);
+  const highAlignment = makeAlignmentReceipt(r6, {
+    success: [{ id: 'SC-1', status: 'met', evidence: 'verified S1' }, { id: 'SC-2', status: 'not_yet_due', evidence: 'pending' }],
+    usage: { input_tokens: 300, output_tokens: 300, total_tokens: 600, native: true },
+    reviewer: {
+      id: 'alignment-reviewer', independent: true, verdict: 'PASS',
+      evidence: [writeJson(r6, 'high-alignment-evidence.json', { verdict: 'PASS' })],
+      usage: { input_tokens: 50, output_tokens: 50, total_tokens: 100, native: true },
+    },
+  });
+  expectBudgetRed(cli(['align', '--run', RUN_REL, '--receipt', highAlignment.path], r6.dir),
+    'tokens', 'total-token budget exhaustion must fail at quality-gate charge');
+  expect(verifiedStateDigest(r6) === totalBefore, 'total-token failure must preserve verified state');
+
+  // audit reserve exhausted before executor authorization.
+  const r7 = makeRepo({ withPolicy: false, skipInit: true });
+  const spec7 = JSON.parse(fs.readFileSync(path.join(r7.dir, 'goal-spec.json'), 'utf8'));
+  spec7.execution_policy = { ...POLICY, max_tokens: 950, audit_reserve_tokens: 400, max_executor_tokens_per_round: 400 };
+  fs.writeFileSync(path.join(r7.dir, 'goal-spec.json'), JSON.stringify(spec7));
+  expectExit(cli(['init', '--run', RUN_REL, '--handoff', 'h.md', '--goal-file', 'goal-spec.json'], r7.dir), 0, 'audit-reserve init');
+  expectExit(cli(['round-prepare', '--run', RUN_REL, '--contract', makeContract(r7).path], r7.dir), 0, 'audit-reserve prepare');
+  const reserveBefore = verifiedStateDigest(r7);
+  const a7 = makeAssertion(r7); const rv7 = makeReview(r7); const t7 = makeTurnRecord(r7);
+  expectBudgetRed(cli(['round-authorize', '--run', RUN_REL, '--assertion', a7.path, '--review', rv7.path,
+    '--turn-record', t7.path], r7.dir), 'audit_reserve', 'audit reserve exhaustion must be explicit');
+  expect(verifiedStateDigest(r7) === reserveBefore, 'audit reserve failure must preserve verified state');
 }
 
 // ═══════════════ CASE: dogfood-evidence ═══════════════

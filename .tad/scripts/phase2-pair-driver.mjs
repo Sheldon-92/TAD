@@ -29,6 +29,8 @@ const RESULTS_PATH = path.join(PHASE2_DIR, 'pair-results.json');
 const APPROVAL_PATH = path.join(PHASE2_DIR, 'harness-degradation-approval.md');
 const APPROVAL_SHA = shaF(APPROVAL_PATH);
 const HANDOFF_BASE = execFileSync('git', ['rev-parse', '96bbfada'], { cwd: ROOT, encoding: 'utf8' }).trim();
+const FROZEN_CREATED_AT = '2026-08-27T00:00:00.000Z';
+const FROZEN_GIT_DATE = '2026-08-27T00:00:00 +0000';
 
 function sh(cmd, cwd, input) {
   const r = spawnSync('bash', ['-c', cmd], { cwd, encoding: 'utf8', input });
@@ -102,11 +104,15 @@ function setupRepo(task, arm, pairDir) {
   execFileSync('git', ['config', 'user.email', 'dogfood@tad'], { cwd: dir });
   execFileSync('git', ['config', 'user.name', 'dogfood'], { cwd: dir });
   execFileSync('git', ['add', '-A'], { cwd: dir });
-  execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: dir });
+  execFileSync('git', ['commit', '-q', '-m', 'seed'], {
+    cwd: dir,
+    env: { ...process.env, GIT_AUTHOR_DATE: FROZEN_GIT_DATE, GIT_COMMITTER_DATE: FROZEN_GIT_DATE },
+  });
   const base = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir }).toString().trim();
   const slicePlan = slicesFor(task.id);
   const goal = {
-    format: 'yolo-recovery-phase1-v1', run_id: `${task.id}-${arm}`, goal_id: `y2p2-${task.id}`,
+    format: 'yolo-recovery-phase1-v1', run_id: `y2p2-${task.id}`, goal_id: `y2p2-${task.id}`,
+    arm_namespace: arm,
     handoff_path: 'handoff.md', handoff_revision: '', base_commit: base,
     worktree_realpath: fs.realpathSync(dir),
     goal: task.task,
@@ -114,7 +120,7 @@ function setupRepo(task, arm, pairDir) {
     slices: slicePlan.map((slice) => ({ id: slice.id, statement: slice.outcome })),
     non_goals: ['no scope beyond the stated task'],
     forbidden_scope: ['.tad/scripts/', '.claude/', '.tad/hooks/'],
-    oracle_path: 'oracle.txt', created_at: new Date().toISOString(),
+    oracle_path: 'oracle.txt', created_at: FROZEN_CREATED_AT,
     execution_policy: POLICY,
     quality_policy: {
       phase_candidate_requires_hidden_acceptance: true, phase_candidate_requires_alignment: true,
@@ -123,7 +129,7 @@ function setupRepo(task, arm, pairDir) {
       degraded_approval_path: path.relative(ROOT, APPROVAL_PATH), degraded_approval_sha256: APPROVAL_SHA,
     },
   };
-  fs.writeFileSync(path.join(dir, 'handoff.md'), `handoff for ${task.id} ${arm}\n`);
+  fs.writeFileSync(path.join(dir, 'handoff.md'), `handoff for ${task.id}\n`);
   goal.handoff_revision = '';
   fs.writeFileSync(path.join(dir, 'goal-spec.json'), JSON.stringify(goal));
   fs.writeFileSync(path.join(dir, 'oracle.txt'), `oracle for ${task.id} ${arm}\n`);
@@ -435,6 +441,7 @@ ${asRes2.out.slice(-400)}`);
   const result = {
     format: 'yolo2-phase2-arm-result-v1', arm, task: task.id,
     mechanism_sha256: MECHANISM_SHA, task_sha256: taskSha,
+    worktree_dir: path.relative(WORK, dir),
     base_commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir }).toString().trim(),
     host_evidence_dir: path.relative(pairDir, hostEv),
     safety: deriveSafetyMetrics(dir),
@@ -443,6 +450,41 @@ ${asRes2.out.slice(-400)}`);
   };
   fs.writeFileSync(marker, JSON.stringify(result, null, 2));
   return result;
+}
+
+function compareFrozenPackets(task, control, treatment, pairDir) {
+  const rounds = slicesFor(task.id).map((slice) => `R-${String(slicesFor(task.id).indexOf(slice) + 1).padStart(2, '0')}`);
+  const packetRows = [];
+  for (const roundId of rounds) {
+    const controlPath = path.join(WORK, control.worktree_dir, '.tad/evidence/yolo/run/rounds', roundId, 'execution.md');
+    const treatmentPath = path.join(WORK, treatment.worktree_dir, '.tad/evidence/yolo/run/rounds', roundId, 'execution.md');
+    if (!fs.existsSync(controlPath) || !fs.existsSync(treatmentPath)) {
+      throw new Error(`missing packet for frozen equivalence: ${task.id}/${roundId}`);
+    }
+    const controlBytes = fs.readFileSync(controlPath);
+    const treatmentBytes = fs.readFileSync(treatmentPath);
+    if (!controlBytes.equals(treatmentBytes)) {
+      throw new Error(`packet byte mismatch for frozen equivalence: ${task.id}/${roundId}`);
+    }
+    packetRows.push({
+      round_id: roundId,
+      control_sha256: shaF(controlPath),
+      treatment_sha256: shaF(treatmentPath),
+      byte_equal: true,
+    });
+  }
+  const manifest = {
+    format: 'yolo2-phase2-arm-equivalence-v1',
+    task_id: task.id,
+    control_arm_namespace: 'control',
+    treatment_arm_namespace: 'treatment',
+    permitted_difference: 'continuity condition only; arm namespace stays outside packet text',
+    packets: packetRows,
+    packet_bytes_equal: true,
+  };
+  const manifestPath = path.join(pairDir, 'arm-equivalence-manifest.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  return { path: path.relative(PHASE2_DIR, manifestPath), sha256: shaF(manifestPath), ...manifest };
 }
 
 function expectOk(r, msg) { if (r.code !== 0) throw new Error(`${msg} failed:\n${String(r.out || r.stdout || '').slice(-700)}`); }
@@ -534,6 +576,7 @@ for (const p of index.pairs) {
   const task = JSON.parse(fs.readFileSync(path.join(DATASET_DIR, p.task_id, 'task.json'), 'utf8'));
   const ctrl = runArm(task, 'control', pairDir);
   const trt = runArm(task, 'treatment', pairDir);
+  const armEquivalence = compareFrozenPackets(task, ctrl, trt, pairDir);
   const pairResult = {
     format: 'yolo2-phase2-pair-result-v1', pair_id: p.pair_id, task_id: p.task_id,
     mechanism_sha256: MECHANISM_SHA, task_sha256: p.task_sha256,
@@ -543,6 +586,11 @@ for (const p of index.pairs) {
     wrong_or_unauthorized_next_action: ctrl.safety.wrong_or_unauthorized_next_action
       + trt.safety.wrong_or_unauthorized_next_action,
     tokens: { control: ctrl.tokens_total, treatment: trt.tokens_total },
+    arm_equivalence: {
+      manifest_path: armEquivalence.path,
+      manifest_sha256: armEquivalence.sha256,
+      packet_bytes_equal: armEquivalence.packet_bytes_equal,
+    },
     control: ctrl, treatment: trt,
   };
   fs.writeFileSync(path.join(pairDir, 'pair-result.json'), JSON.stringify(pairResult, null, 2));

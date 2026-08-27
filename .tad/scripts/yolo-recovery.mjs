@@ -487,6 +487,8 @@ export function reduceRun(goal, events) {
   let tokensCharged = 0;
   let assertionTokens = 0;
   let executionTokens = 0;
+  let reviewerTokens = 0;
+  let alignmentTokens = 0;
   let lastEventAt = null;
   const clockBlockers = [];
   const mintedNonces = [];
@@ -795,13 +797,18 @@ export function reduceRun(goal, events) {
           throw new ContractError('usage_not_native', { seq: ev.seq, role: 'assertion' });
         }
         const assertionTotal = checkedUsageTotal(p.assertion_usage, 'assertion_usage');
+        if (!p.review_usage || p.review_usage.native !== true) {
+          throw new ContractError('usage_not_native', { seq: ev.seq, role: 'reviewer' });
+        }
+        const reviewerTotal = checkedUsageTotal(p.review_usage, 'review_usage');
         if (p.reservation_tokens > policy.max_executor_tokens_per_round) {
           throw new ContractError('reservation_invalid', { seq: ev.seq, reservation: p.reservation_tokens });
         }
-        if (tokensCharged + assertionTotal + p.reservation_tokens
+        if (tokensCharged + assertionTotal + reviewerTotal + p.reservation_tokens
             > policy.max_tokens - policy.audit_reserve_tokens) {
-          throw new ContractError('audit_reserve_would_be_consumed', {
-            seq: ev.seq, charged: tokensCharged, assertion: assertionTotal,
+          throw new ContractError('budget_exhausted', {
+            budget: 'audit_reserve',
+            seq: ev.seq, charged: tokensCharged, assertion: assertionTotal, reviewer: reviewerTotal,
             reservation: p.reservation_tokens, audit_reserve: policy.audit_reserve_tokens,
           });
         }
@@ -814,8 +821,11 @@ export function reduceRun(goal, events) {
         currentRound.review_sha256 = p.review_sha256 || null;
         currentRound.turn_record_sha256 = p.turn_record_sha256 || null;
         currentRound.assertion_usage = { ...p.assertion_usage, total_tokens: assertionTotal };
+        currentRound.reviewer_usage = { ...p.review_usage, total_tokens: reviewerTotal };
         tokensCharged += assertionTotal;
         assertionTokens += assertionTotal;
+        tokensCharged += reviewerTotal;
+        reviewerTokens += reviewerTotal;
         break;
       }
       case 'round_closed': {
@@ -936,11 +946,39 @@ export function reduceRun(goal, events) {
         if (p.goal_sha256 !== events[0].payload.goal_sha256 || p.handoff_revision !== goal.handoff_revision) {
           throw new ContractError('alignment_binding_mismatch', { seq: ev.seq });
         }
+        if (goal.quality_policy && goal.quality_policy.phase_candidate_requires_hidden_acceptance) {
+          if (!p.hidden_acceptance_path || !isSha256(p.hidden_acceptance_sha256)
+              || p.hidden_acceptance_verdict !== 'PASS') {
+            throw new ContractError('alignment_hidden_acceptance_required', { seq: ev.seq });
+          }
+        }
         alignmentWatermark = {
           seq: ev.seq, watermark_seq: p.watermark_seq, verified_digest: p.verified_digest,
           receipt_path: p.receipt_path, receipt_sha256: p.receipt_sha256,
           success_ids: [...p.success_ids], reviewer_id: p.reviewer_id || null,
+          hidden_acceptance_path: p.hidden_acceptance_path || null,
+          hidden_acceptance_sha256: p.hidden_acceptance_sha256 || null,
+          hidden_acceptance_verdict: p.hidden_acceptance_verdict || null,
         };
+        if (!p.alignment_usage || p.alignment_usage.native !== true) {
+          throw new ContractError('usage_not_native', { seq: ev.seq, role: 'alignment' });
+        }
+        const alignmentTotal = checkedUsageTotal(p.alignment_usage, 'alignment_usage');
+        if (!p.reviewer_usage || p.reviewer_usage.native !== true) {
+          throw new ContractError('usage_not_native', { seq: ev.seq, role: 'reviewer' });
+        }
+        const alignmentReviewerTotal = checkedUsageTotal(p.reviewer_usage, 'alignment_reviewer_usage');
+        if (tokensCharged + alignmentTotal + alignmentReviewerTotal > policy.max_tokens) {
+          throw new ContractError('budget_exhausted', {
+            seq: ev.seq, budget: 'tokens', charged: tokensCharged,
+            attempted: alignmentTotal + alignmentReviewerTotal, max: policy.max_tokens,
+          });
+        }
+        tokensCharged += alignmentTotal + alignmentReviewerTotal;
+        alignmentTokens += alignmentTotal;
+        reviewerTokens += alignmentReviewerTotal;
+        alignmentWatermark.alignment_usage = { ...p.alignment_usage, total_tokens: alignmentTotal };
+        alignmentWatermark.reviewer_usage = { ...p.reviewer_usage, total_tokens: alignmentReviewerTotal };
         verifiedSinceAlignment = 0;
         break;
       }
@@ -967,7 +1005,7 @@ export function reduceRun(goal, events) {
           throw new ContractError('phase_candidate_alignment_required', { seq: ev.seq });
         }
         if (roundsPrepared > policy.max_rounds || actionsSeen.size > policy.max_actions
-            || tokensCharged > policy.max_tokens - policy.audit_reserve_tokens
+            || tokensCharged > policy.max_tokens
             || [...retryCounts.values()].some((count) => count > policy.max_retries_per_slice)) {
           throw new ContractError('budget_exhausted', { seq: ev.seq, budget: 'phase_candidate' });
         }
@@ -989,12 +1027,25 @@ export function reduceRun(goal, events) {
             || typeof p.final_reviewer_id !== 'string' || !p.final_reviewer_id) {
           throw new ContractError('phase_candidate_quality_incomplete', { seq: ev.seq });
         }
+        if (!p.final_reviewer_usage || p.final_reviewer_usage.native !== true) {
+          throw new ContractError('usage_not_native', { seq: ev.seq, role: 'final_reviewer' });
+        }
+        const finalReviewerTotal = checkedUsageTotal(p.final_reviewer_usage, 'final_reviewer_usage');
+        if (tokensCharged + finalReviewerTotal > policy.max_tokens) {
+          throw new ContractError('budget_exhausted', {
+            seq: ev.seq, budget: 'tokens', charged: tokensCharged,
+            attempted: finalReviewerTotal, max: policy.max_tokens,
+          });
+        }
+        tokensCharged += finalReviewerTotal;
+        reviewerTokens += finalReviewerTotal;
         phaseCandidate = {
           seq: ev.seq, receipt_sha256: p.receipt_sha256,
           receipt_path: p.receipt_path || null,
           hidden_acceptance_path: p.hidden_acceptance_path || null,
           hidden_acceptance_sha256: p.hidden_acceptance_sha256,
           final_reviewer_id: p.final_reviewer_id,
+          final_reviewer_usage: { ...p.final_reviewer_usage, total_tokens: finalReviewerTotal },
         };
         break;
       }
@@ -1056,7 +1107,8 @@ export function reduceRun(goal, events) {
     actions: { used: actionsSeen.size, max: policy.max_actions },
     tokens: {
       charged: tokensCharged, max: policy.max_tokens, audit_reserve: policy.audit_reserve_tokens,
-      assertion: assertionTokens, execution: executionTokens,
+      assertion: assertionTokens, execution: executionTokens, reviewer: reviewerTokens,
+      alignment: alignmentTokens,
     },
     wall_time: {
       max_seconds: policy.max_wall_seconds,
@@ -2896,6 +2948,7 @@ function cmdRoundAuthorize(flags, cwd, out) {
   if (review.doc.oracle_sha256 !== r.goal.oracle_sha256) {
     throw new ContractError('review_oracle_mismatch', { declared: review.doc.oracle_sha256 });
   }
+  const reviewerTotal = checkedUsageTotal(review.doc.usage, 'review');
 
   // Native assertion turn (runner-owned provenance).
   const t = turn.doc;
@@ -2929,10 +2982,11 @@ function cmdRoundAuthorize(flags, cwd, out) {
   // Token reservation keeping the audit reserve intact.
   const policy = r.goal.execution_policy;
   const assertionTotal = checkedUsageTotal(t.usage, 'assertion');
-  const remainingTotal = policy.max_tokens - r.state.phase2.tokens_charged - assertionTotal;
+  const remainingTotal = policy.max_tokens - r.state.phase2.tokens_charged - assertionTotal - reviewerTotal;
   const reserve = policy.max_executor_tokens_per_round;
   if (remainingTotal - reserve < policy.audit_reserve_tokens) {
-    throw new ContractError('audit_reserve_would_be_consumed', {
+    throw new ContractError('budget_exhausted', {
+      budget: 'audit_reserve',
       remaining_total: remainingTotal, assertion: assertionTotal, audit_reserve: policy.audit_reserve_tokens,
     });
   }
@@ -2950,6 +3004,7 @@ function cmdRoundAuthorize(flags, cwd, out) {
     assertion_author_id: assertion.doc.author_id,
     reviewer_id: review.doc.reviewer_id,
     assertion_usage: { ...t.usage, total_tokens: assertionTotal },
+    review_usage: { ...review.doc.usage, total_tokens: reviewerTotal },
   }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
   out(`ROUND ${cur.id} AUTHORIZED. Same session may execute; reservation ${reserve} tokens.\n`);
@@ -3340,11 +3395,32 @@ function cmdAlign(flags, cwd, out) {
   if (!Array.isArray(rec.changed_paths) || !Array.isArray(rec.unresolved_risks)) {
     throw new ContractError('alignment_inventory_missing', {});
   }
+  let hidden = null;
+  if (r.goal.quality_policy && r.goal.quality_policy.phase_candidate_requires_hidden_acceptance) {
+    const hiddenRef = rec.hidden_acceptance;
+    if (!hiddenRef || typeof hiddenRef.path !== 'string') {
+      throw new ContractError('alignment_hidden_acceptance_required', {});
+    }
+    if (hiddenRef.verdict !== 'PASS' && hiddenRef.passed !== true) {
+      throw new ContractError('alignment_hidden_acceptance_failed', {});
+    }
+    hidden = validateEvidenceReference(hiddenRef, r.repoRoot, 'alignment hidden_acceptance', { requirePass: true });
+  }
   const reviewer = validateReviewerEvidence(rec, {
     repoRoot: r.repoRoot,
     label: 'reviewer',
     executorIds: r.state.verified.map((v) => v.executor_id).filter(Boolean),
   });
+  const alignmentTotal = checkedUsageTotal(rec.usage, 'alignment');
+  const alignmentReviewerSource = isPlainObject(rec.reviewer) ? rec.reviewer.usage : null;
+  const alignmentReviewerTotal = checkedUsageTotal(alignmentReviewerSource, 'alignment reviewer');
+  if (r.state.phase2.tokens_charged + alignmentTotal + alignmentReviewerTotal > r.goal.execution_policy.max_tokens) {
+    throw new ContractError('budget_exhausted', {
+      budget: 'tokens', charged: r.state.phase2.tokens_charged,
+      attempted: alignmentTotal + alignmentReviewerTotal,
+      max: r.goal.execution_policy.max_tokens,
+    });
+  }
   withRunLock(r.runDir, () => appendEventGuarded(r.runDir, r.goal, r.events, 'alignment_verified', {
     watermark_seq: r.state.events_count,
     verified_digest: verifiedDigest,
@@ -3358,6 +3434,11 @@ function cmdAlign(flags, cwd, out) {
     reviewer_session_id: reviewer.session_id,
     changed_paths: rec.changed_paths,
     unresolved_risks: rec.unresolved_risks,
+    hidden_acceptance_path: hidden ? repoRel(r.repoRoot, hidden.abs) : null,
+    hidden_acceptance_sha256: hidden ? hidden.sha256 : null,
+    hidden_acceptance_verdict: hidden ? 'PASS' : null,
+    alignment_usage: { ...rec.usage, total_tokens: alignmentTotal },
+    reviewer_usage: { ...alignmentReviewerSource, total_tokens: alignmentReviewerTotal },
   }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
   return finish('align', r.runDir, after.state, null);
@@ -3426,6 +3507,14 @@ function cmdPhaseCandidate(flags, cwd, out) {
     label: 'final_reviewer',
     executorIds: r.state.verified.map((v) => v.executor_id).filter(Boolean),
   });
+  const finalReviewerSource = isPlainObject(rec.final_reviewer) ? rec.final_reviewer.usage : null;
+  const finalReviewerTotal = checkedUsageTotal(finalReviewerSource, 'final reviewer');
+  if (r.state.phase2.tokens_charged + finalReviewerTotal > r.goal.execution_policy.max_tokens) {
+    throw new ContractError('budget_exhausted', {
+      budget: 'tokens', charged: r.state.phase2.tokens_charged,
+      attempted: finalReviewerTotal, max: r.goal.execution_policy.max_tokens,
+    });
+  }
   if (!Array.isArray(rec.success) || rec.success.length !== successIds.length
       || new Set(rec.success.map((item) => item && item.id)).size !== successIds.length
       || rec.success.some((item) => !item || item.status !== 'met' || !successIds.includes(item.id)
@@ -3445,6 +3534,7 @@ function cmdPhaseCandidate(flags, cwd, out) {
     hidden_acceptance_verdict: 'PASS',
     final_reviewer_id: finalReviewer.id,
     final_reviewer_independent: true,
+    final_reviewer_usage: { ...finalReviewerSource, total_tokens: finalReviewerTotal },
     verified_slices: frozen,
   }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
