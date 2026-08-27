@@ -37,3 +37,9 @@ Project-specific security learnings accumulated through TAD workflow.
 > - Patterns: `.tad/project-knowledge/patterns/`
 > - Incidents: `.tad/project-knowledge/incidents/`
 > See `.tad/project-knowledge/README.md` for the Knowledge Lifecycle System documentation.
+
+### Native Tool Boundary Requires Raw-Event Enforcement - 2026-08-27
+- **Discovery**: A Codex assertion can return a valid-looking H1-H8/S1-S4 response while its native JSONL contains `command_execution` events. A runner that emits a synthetic `Read` call from the final message can therefore certify a shell-capable assertion as read-only; carrier hashes alone do not prove the declared tool boundary.
+- **Action**: Bind the native event inventory to the raw carrier and fail strict authorization when forbidden event kinds appear. Keep degraded runs explicitly marked and never promote them to strict Gate 3 evidence.
+- **failure_mode**: Naive default: trust the declared tool-policy metadata and final response after hashing the carrier. Why wrong: the raw event stream is the execution fact; a self-consistent synthetic record can omit forbidden native calls and let an assertion read or mutate outside its declared capability.
+- **Grounded in**: `.tad/scripts/yolo-reference-runner.mjs`, `.tad/scripts/yolo-recovery.mjs`, `.tad/evidence/yolo/yolo2-verified-orchestration/phase2/reference-harness-capability.json`, and the final Phase-2 Group-0 review.
