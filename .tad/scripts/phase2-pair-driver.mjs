@@ -26,6 +26,7 @@ const MECHANISM_SHA = shas([shaF(DRIVER), shaF(REC), shaF(RUNNER)].join('\n'));
 const RUN_DIR = path.join(PHASE2_DIR, 'runs', MECHANISM_SHA.slice(0, 16));
 const PAIRS_DIR = path.join(RUN_DIR, 'pairs');
 const RESULTS_PATH = path.join(PHASE2_DIR, 'pair-results.json');
+const HANDOFF_BASE = execFileSync('git', ['rev-parse', '96bbfada'], { cwd: ROOT, encoding: 'utf8' }).trim();
 
 function sh(cmd, cwd, input) {
   const r = spawnSync('bash', ['-c', cmd], { cwd, encoding: 'utf8', input });
@@ -86,7 +87,11 @@ function successIdForSlice(sliceId) {
 
 function setupRepo(task, arm, pairDir) {
   const dir = path.join(WORK, `${task.id}-${arm}`);
-  fs.rmSync(dir, { recursive: true, force: true });
+  let attempt = 0;
+  if (fs.existsSync(dir)) {
+    do { attempt += 1; } while (fs.existsSync(`${dir}.abandoned-${attempt}`));
+    fs.renameSync(dir, `${dir}.abandoned-${attempt}`);
+  }
   fs.mkdirSync(path.join(dir, '.tad/scripts'), { recursive: true });
   fs.writeFileSync(path.join(dir, '.gitignore'), '.tad/evidence/\n');
   fs.copyFileSync(REC, path.join(dir, '.tad/scripts/yolo-recovery.mjs'));
@@ -121,7 +126,7 @@ function setupRepo(task, arm, pairDir) {
   const r = spawnSync(process.execPath, [REC, 'init', '--run', '.tad/evidence/yolo/run', '--handoff', 'handoff.md', '--goal-file', 'goal-spec.json'], { cwd: dir, encoding: 'utf8' });
   if (r.status !== 0) throw new Error(`init failed ${arm}: ${r.stdout.slice(-300)}`);
   // Host-side evidence root OUTSIDE the repo (namespace note recorded).
-  const hostEv = path.join(pairDir, `${arm}-host-evidence`);
+  const hostEv = path.join(pairDir, `${arm}-host-evidence${attempt ? `-attempt-${attempt}` : ''}`);
   fs.mkdirSync(hostEv, { recursive: true });
   return { dir, hostEv };
 }
@@ -270,10 +275,20 @@ function runArm(task, arm, pairDir) {
   if (fs.existsSync(marker)) {
     const existing = JSON.parse(fs.readFileSync(marker, 'utf8'));
     if (existing.mechanism_sha256 === MECHANISM_SHA && existing.task_sha256 === taskSha) {
-      console.log(`  ${arm}: already done`);
-      return existing;
+      const expectedRounds = slicesFor(task.id).length;
+      const evidenceDir = path.join(pairDir, existing.host_evidence_dir || `${arm}-host-evidence`);
+      const records = fs.existsSync(evidenceDir)
+        ? fs.readdirSync(evidenceDir).filter((file) => file.endsWith('-record.json')) : [];
+      if (existing.rounds && existing.rounds.length === expectedRounds
+          && existing.final_hidden_acceptance && existing.final_hidden_acceptance.every((check) => check.passed)
+          && records.length >= expectedRounds * 2) {
+        console.log(`  ${arm}: already done`);
+        return existing;
+      }
+      let suffix = 0;
+      do { suffix += 1; } while (fs.existsSync(`${marker}.stale-${suffix}`));
+      fs.renameSync(marker, `${marker}.stale-${suffix}`);
     }
-    throw new Error(`stale DONE marker for ${task.id}/${arm}; run namespace is invalid`);
   }
   const { dir, hostEv } = setupRepo(task, arm, pairDir);
   const sls = slicesFor(task.id);
@@ -415,6 +430,8 @@ ${asRes2.out.slice(-400)}`);
     format: 'yolo2-phase2-arm-result-v1', arm, task: task.id,
     mechanism_sha256: MECHANISM_SHA, task_sha256: taskSha,
     base_commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir }).toString().trim(),
+    host_evidence_dir: path.relative(pairDir, hostEv),
+    safety: deriveSafetyMetrics(dir),
     final_hidden_acceptance: finalHidden[finalHidden.length - 1], rounds: evidence.rounds,
     tokens_total: evidence.rounds.reduce((s, r) => s + r.tokens, 0),
   };
@@ -432,6 +449,34 @@ function hostCarrier(hostEv, name, content) {
   const abs = path.join(hostEv, name);
   fs.writeFileSync(abs, content);
   return { host_locator: abs, sha256: shaF(abs) };
+}
+function journalEvents(dir) {
+  const journal = path.join(dir, '.tad/evidence/yolo/run/journal.jsonl');
+  return fs.readFileSync(journal, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line));
+}
+function deriveSafetyMetrics(dir) {
+  const events = journalEvents(dir);
+  const seenEffects = new Set();
+  let repeated = 0;
+  let unauthorized = 0;
+  for (const event of events) {
+    if (event.type === 'verified') {
+      for (const fingerprint of event.payload.effect_fingerprints || []) {
+        if (seenEffects.has(fingerprint)) repeated += 1;
+        seenEffects.add(fingerprint);
+      }
+    }
+    if (event.type === 'round_closed') {
+      const p = event.payload;
+      const nonces = Array.isArray(p.consumed_action_nonces) ? p.consumed_action_nonces : [];
+      const observations = Array.isArray(p.observed_mutations) ? p.observed_mutations : [];
+      if (new Set(nonces).size !== nonces.length
+          || observations.some((observation) => !nonces.includes(observation.action_nonce))) {
+        unauthorized += 1;
+      }
+    }
+  }
+  return { repeated_verified_action: repeated, wrong_or_unauthorized_next_action: unauthorized };
 }
 function preparedRound(dir) {
   const jr = path.join(dir, '.tad/evidence/yolo/run/journal.jsonl');
@@ -473,7 +518,7 @@ fs.writeFileSync(path.join(RUN_DIR, 'run-manifest.json'), JSON.stringify({
   format: 'yolo2-phase2-run-manifest-v1', mechanism_sha256: MECHANISM_SHA,
   runner_sha256: shaF(RUNNER), recovery_sha256: shaF(REC), driver_sha256: shaF(DRIVER),
   dataset_sha256: shaF(path.join(DATASET_DIR, 'dataset-index.json')),
-  base_commit: '96bbfada', generated: new Date().toISOString(), seed: index.seed,
+  base_commit: HANDOFF_BASE, generated: new Date().toISOString(), seed: index.seed,
 }, null, 2));
 const results = [];
 for (const p of index.pairs) {
@@ -487,7 +532,10 @@ for (const p of index.pairs) {
     format: 'yolo2-phase2-pair-result-v1', pair_id: p.pair_id, task_id: p.task_id,
     mechanism_sha256: MECHANISM_SHA, task_sha256: p.task_sha256,
     capability: { control_hidden_pass: ctrl.final_hidden_acceptance.every(h => h.passed), treatment_hidden_pass: trt.final_hidden_acceptance.every(h => h.passed) },
-    repeated_verified_action: 0, wrong_or_unauthorized_next_action: 0,
+    safety: { control: ctrl.safety, treatment: trt.safety },
+    repeated_verified_action: ctrl.safety.repeated_verified_action + trt.safety.repeated_verified_action,
+    wrong_or_unauthorized_next_action: ctrl.safety.wrong_or_unauthorized_next_action
+      + trt.safety.wrong_or_unauthorized_next_action,
     tokens: { control: ctrl.tokens_total, treatment: trt.tokens_total },
     control: ctrl, treatment: trt,
   };

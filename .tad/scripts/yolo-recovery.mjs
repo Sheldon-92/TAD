@@ -2049,7 +2049,10 @@ function cmdVerify(flags, cwd, out) {
     review_evidence: v.receipt.review_evidence.map((e) => e.path),
     written_by_id: v.receipt.written_by_id,
     executor_id: v.receipt.executor_id,
-    ...(r.goal.execution_policy ? { maps_to_success: [...r.state.phase2.last_closed_round.maps_to_success] } : {}),
+    ...(r.goal.execution_policy ? {
+      maps_to_success: [...r.state.phase2.last_closed_round.maps_to_success],
+      effect_fingerprints: [...(r.state.phase2.last_closed_round.effect_fingerprints || [])],
+    } : {}),
   }, r.identity.head));
   const after = loadRun(r.runDir, r.repoRoot, cwd);
   const { packet, ctx } = writeDerived(r.runDir, r.repoRoot, after.goal, after.state, after.identity, out);
