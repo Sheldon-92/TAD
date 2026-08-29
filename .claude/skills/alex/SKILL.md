@@ -827,12 +827,15 @@ research_unified_protocol:
       output: "直接在对话中给出答案"
     standard:
       signals: ["研究一下", "了解", "对比", "有哪些", "default when ambiguous", "--standard"]
-      execution: "NotebookLM: 找匹配 notebook → ask（含动态追问）；无匹配 → 新建 notebook + research fast + ask"
-      output: "notebook 研究结果 + 动态追问链"
+      execution: "local_wiki research: load canon _topics/_questions → check _index for topic hit → ask wiki with Iron Rule; no hit → ingest 3 raw → create canon → compile wiki → lint PASS → generate. Fallback: NotebookLM if local_wiki missing."
+      output: "local_wiki 研究结果 + wiki canon 溯源 (via research/wiki/ + research/canon/_index.md)"
     deep:
       signals: ["深入研究", "建知识库", "landscape", "全面调研", "--deep"]
-      execution: "Full research-plan Phase 0-5 (→ references/research-plan-protocol.md)"
+      execution: "Full research-plan Phase 0-5 (→ references/research-plan-protocol.md) via local_wiki; canon loop + saturation probes"
       output: "完整研究报告 + 多轮知识积累"
+
+  iron_rule: |
+    Iron Rule (local_wiki): every wiki claim MUST have raw_refs with locator (p.|para|timestamp) and existing raw file; research/canon/lint.sh enforces 6 rules; missing/empty locator or missing file or claim==raw_refs mismatch → FAIL. BLOCKS *research Standard/Deep until lint PASS. This discipline stays in SKILL body per principles.md:103 (circular trigger — execution discipline must not move to references/).
 
   tie_breaking: |
     Quick vs Standard → default to Standard（更高覆盖，不冒遗漏风险）

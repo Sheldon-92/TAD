@@ -1,0 +1,15 @@
+core:
+  - ai-agents
+  - mcp-servers
+  - rag-retrieval
+  - agent-memory
+  - llm-observability
+  - ai-guardrails
+  - data-engineering
+  - agent-orchestration
+  - synthetic-data
+  - knowledge-graph
+  - web-frontend
+  - web-backend
+allow_extend: true
+extension_rule: "新 topic 需在首条 canon 的 frontmatter 写 added_by + reason: 1行"

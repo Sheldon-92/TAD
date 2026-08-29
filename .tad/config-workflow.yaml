@@ -786,8 +786,8 @@ research_notebook:
   # BA-P1-2: orchestration logic here, not in capabilities.yaml (catalog-only)
   fallback_chains:
     research:
-      primary: notebooklm_research
-      secondary: gemini_research       # DEFER status — skip until symmetric-prompt retest passes
+      primary: local_wiki
+      secondary: notebooklm_research  # fallback when local_wiki unavailable
       tertiary: claude_websearch
     image_generation:
       primary: codex_image_gen

@@ -190,6 +190,8 @@ Step 7: Store selection in conversation for *research-github notebook to use
 
 Create a NotebookLM notebook from selected repos (the full research pipeline).
 
+> **LOCAL-WIKI SHIM (2026-08-28)**: Primary research is now `local_wiki` (see `.tad/config-workflow.yaml` fallback). This command is retained as an alias: it now writes `research/canon/{type}/{slug}.md` (12-field) + `research/raw/github/` sources from the selected repos, runs `research/canon/lint.sh` + `research/scripts/generate.py`, and prompts `*research --standard "{domain}"` for wiki compilation. NotebookLM `create/ask` path is fallback only when `research/` missing.
+
 ```
 PREREQUISITE: Run *research-github explore <domain> first to select repos.
 If no repos selected yet, run explore internally (Step 2).

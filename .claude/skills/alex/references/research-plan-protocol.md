@@ -3,7 +3,20 @@
 # Original source: .claude/skills/alex/SKILL.md
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
 # Updated: 2026-06-17 (EPIC-20260616-research-system-consolidation Phase 1 — remove OBJECTIVES hard dep)
+# Updated: 2026-08-28 (LOCAL-WIKI Phase 1 — Deep now uses local_wiki canon loop; see LOCAL-WIKI DEEP EXTENSION below)
 
+# LOCAL-WIKI DEEP EXTENSION (2026-08-28) — canon loop for Deep via local_wiki primary
+# When research_unified_protocol routing is local_wiki (Standard → local_wiki research),
+# Deep's Phase 1-4 sources are local_wiki artifacts, not NotebookLM:
+# - PHASE 1 sourcing = ingest 3 raw (papers/articles/github) via research/scripts/ingest.sh
+#   (wraps .tad/cross-model/source-preprocessor.sh; yq-safe original_url; supports
+#    x_article/bilibili/arxiv_abs/substack/medium/generic_web + arxiv_pdf passthrough)
+# - PHASE 2 curate = not needed (local files); replaced by canon lint (research/canon/lint.sh 6 rules)
+# - PHASE 3 baseline = canon entries (12-field, ≤15 lines/≤120w) compiled to wiki
+# - PHASE 4 ask = wiki answers with Iron Rule (raw_refs + locator p.|para|timestamp)
+#   saturation = (a) no new canon topics, (b) lint PASS stable, (c) 0 new locators for 2 asks → log to wiki/log.md
+# Deep still runs Phase 0c/4c adversarial challenges via Codex/Gemini (DR-20260531) on the wiki findings file.
+# Fallback: if local_wiki missing (no research/ dir), degrade to NotebookLM path per config-workflow fallback.
 research_plan_protocol:
   description: "Deep research — full Phase 0-5 pipeline. Called via *research --deep"
   trigger: |

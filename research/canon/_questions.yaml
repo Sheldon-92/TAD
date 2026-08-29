@@ -1,0 +1,37 @@
+# Mirrors socratic_inquiry_protocol.question_dimensions (6 dims)
+value_validation:
+  description: "验证价值"
+  example_questions:
+    - "这个功能解决的核心痛点是什么？"
+    - "如果不做这个功能，用户会怎样？"
+    - "这个功能的成功标准是什么？"
+boundary_clarification:
+  description: "边界澄清"
+  example_questions:
+    - "哪些场景明确不需要支持？"
+    - "有什么约束条件我应该知道？"
+    - "最小可行版本应该包含什么？"
+risk_foresight:
+  description: "风险预见"
+  example_questions:
+    - "如果这个功能出问题，最坏情况是什么？"
+    - "有什么依赖可能会失败？"
+    - "用户可能会怎么误用这个功能？"
+acceptance_criteria:
+  description: "验收标准"
+  example_questions:
+    - "怎样算做完了？"
+    - "你会怎么测试这个功能？"
+    - "什么情况下你会说'这不是我要的'？"
+user_scenarios:
+  description: "用户场景"
+  example_questions:
+    - "典型用户会怎么使用这个功能？"
+    - "有没有边缘用户群需要考虑？"
+    - "用户的使用频率如何？"
+technical_constraints:
+  description: "技术约束"
+  example_questions:
+    - "有哪些现有系统的限制需要考虑？"
+    - "性能要求是什么？"
+    - "需要兼容哪些平台/浏览器？"

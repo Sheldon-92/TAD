@@ -1,0 +1,8 @@
+# Migrated from NotebookLM 2026-08-28
+# Source -> Destination (cp, no modification)
+.tad/evidence/research/2026-07-staleness-trap-findings.md -> research/raw/papers/migrated-staleness-trap.md
+.tad/evidence/research/agent-pack-factory/agent-memory/findings.md -> research/raw/papers/migrated-agent-memory.md
+.tad/evidence/research/agent-pack-factory/ai-guardrails/findings.md -> research/raw/papers/migrated-ai-guardrails.md
+.tad/evidence/research/agent-knowledge-systems/2026-06-22-findings.md -> research/raw/papers/migrated-agent-knowledge.md
+.tad/evidence/research/product-capability-pack/2026-05-07-research-findings.md -> research/raw/papers/migrated-product-pack.md
+Total: 5 seeds + existing mcp-001 = 6 papers

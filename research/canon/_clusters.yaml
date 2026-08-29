@@ -1,0 +1,7 @@
+# Optional clusters - P1
+clusters:
+  - name: security-foundations
+    topics: [ai-guardrails, mcp-servers]
+    description: "MCP and guardrail security"
+  - name: agent-core
+    topics: [ai-agents, agent-memory, agent-orchestration]
