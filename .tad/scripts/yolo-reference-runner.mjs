@@ -86,6 +86,19 @@ function classifyChanges(paths, beforeStatus, afterStatus, beforeManifest, after
   return { changed, deleted, untracked };
 }
 
+function normalizeEventPath(value, repoRoot) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const raw = value.trim();
+  const candidate = path.isAbsolute(raw) ? raw : path.join(repoRoot, raw);
+  try {
+    const rootReal = fs.realpathSync(repoRoot);
+    const candidateReal = fs.realpathSync(candidate);
+    const rel = path.relative(rootReal, candidateReal);
+    if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return rel;
+  } catch { /* retain the native path for the closed-world mismatch check */ }
+  return raw;
+}
+
 function isSha256(value) {
   return typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 }
@@ -110,7 +123,7 @@ function main() {
   }
   const role = flags.role || 'executor';
   const turnKind = flags['turn-kind'] || 'assertion';
-  const sandbox = flags.sandbox || (turnKind === 'assertion' ? 'read-only' : 'workspace-write');
+  const sandbox = flags.sandbox || (turnKind === 'assertion' || turnKind === 'review' ? 'read-only' : 'workspace-write');
   const nonce = flags.nonce || null;
   const hostRoot = path.resolve(flags['host-evidence']);
   const packetAbs = path.resolve(flags.packet);
@@ -184,14 +197,79 @@ function main() {
   const agentMessages = events.filter((e) => e.type === 'item.completed' && e.item && e.item.type === 'agent_message');
   const finalMessage = agentMessages.length ? agentMessages[agentMessages.length - 1].item.text : '';
   const nativeToolEvents = events
-    .filter((event) => event.item && ['command_execution', 'file_change', 'mcp_tool_call'].includes(event.item.type))
-    .map((event) => ({
+    .map((event, eventIndex) => ({ event, eventIndex }))
+    .filter(({ event }) => event.item && ['command_execution', 'file_change', 'mcp_tool_call'].includes(event.item.type))
+    .map(({ event, eventIndex }) => ({
+      event_index: eventIndex,
       event_type: event.type,
       item_type: event.item.type,
       item_id: event.item.id || null,
       command_sha256: typeof event.item.command === 'string' ? sha256String(event.item.command) : null,
       paths: Array.isArray(event.item.changes) ? event.item.changes.map((change) => change.path).filter(Boolean) : [],
     }));
+  // Codex emits item.started and item.completed for one file change. Every
+  // native event still receives a trace carrier, but only the final event for
+  // a file-change item may carry the single governed side effect nonce.
+  const finalMutationEvents = new Set();
+  for (let i = nativeToolEvents.length - 1; i >= 0; i -= 1) {
+    const event = nativeToolEvents[i];
+    if (event.item_type !== 'file_change') continue;
+    if (![...finalMutationEvents].some((index) => nativeToolEvents[index].item_id === event.item_id)) {
+      finalMutationEvents.add(i);
+    }
+  }
+  const classifiedPaths = new Set([...classified.changed, ...classified.deleted, ...classified.untracked]);
+  const inspectedNoOp = turnKind === 'execution'
+    && Boolean(nonce)
+    && observedPaths.length === 0
+    && /DONE-ALREADY/.test(finalMessage);
+  const noOpCarrierIndex = inspectedNoOp
+    ? nativeToolEvents.map((event, index) => ({ event, index }))
+      .filter(({ event }) => event.item_type === 'command_execution' || event.item_type === 'file_change')
+      .map(({ index }) => index).pop()
+    : null;
+  const nativeToolCalls = nativeToolEvents.map((event, index) => {
+    const paths = finalMutationEvents.has(index)
+      ? [...new Set(event.paths.map((value) => normalizeEventPath(value, repoRoot)).filter((value) => value && classifiedPaths.has(value)))]
+      : [];
+    const isMutation = paths.length > 0;
+    const carriesInspectedNoOp = inspectedNoOp && index === noOpCarrierIndex;
+    const carriesAction = isMutation || carriesInspectedNoOp;
+    const eventSha = isMutation && actionTarget && paths.includes(actionTarget) ? observedSha : null;
+    const eventFingerprint = isMutation && eventSha
+      ? sha256String(JSON.stringify([paths, [eventSha]])) : null;
+    const nativeCallId = `${event.item_id || event.item_type}-${String(index + 1).padStart(4, '0')}`;
+    const argsSha = isMutation && flags['action-args-sha256']
+      ? flags['action-args-sha256']
+      : (event.command_sha256 || sha256String(JSON.stringify(event)));
+    return {
+      native_call_id: nativeCallId,
+      native_event_index: event.event_index,
+      native_event_type: event.event_type,
+      native_item_id: event.item_id,
+      native_item_type: event.item_type,
+      tool: isMutation ? (flags['action-tool'] || 'Edit') : event.item_type,
+      args_sha256: argsSha,
+      invocation_args_sha256: event.command_sha256 || argsSha,
+      decision: 'allowed',
+      action_nonce: carriesAction ? nonce : null,
+      action_id: carriesAction ? (flags['action-id'] || null) : null,
+      round_id: flags['action-round'] || flags['round-id'] || null,
+      target: isMutation ? actionTarget : null,
+      pre_sha256: isMutation ? (flags['action-pre-sha256'] || null) : null,
+      post_sha256: eventSha,
+      observed_sha256: eventSha,
+      effect_manifest_sha256: isMutation ? (flags['action-effect-manifest-sha256'] || null) : null,
+      effect_paths: paths,
+      effect_fingerprint: eventFingerprint,
+      pre_manifest_sha256: sha256String(JSON.stringify(preManifest)),
+      post_manifest_sha256: sha256String(JSON.stringify(postManifest)),
+      observed_changed: paths.filter((value) => classified.changed.includes(value)),
+      observed_deleted: paths.filter((value) => classified.deleted.includes(value)),
+      observed_untracked: paths.filter((value) => classified.untracked.includes(value)),
+      worktree_observation: paths,
+    };
+  });
   const usage = turnCompleted && turnCompleted.usage ? {
     input_tokens: turnCompleted.usage.input_tokens || 0,
     output_tokens: turnCompleted.usage.output_tokens || 0,
@@ -233,34 +311,12 @@ function main() {
     raw_native_output: { host_locator: path.join(hostRoot, rawOutRel), sha256: sha256File(path.join(hostRoot, rawOutRel)) },
     raw_native_trace: { host_locator: path.join(hostRoot, rawTraceRel), sha256: sha256File(path.join(hostRoot, rawTraceRel)) },
     tool_policy: {
-      allowed: turnKind === 'assertion' ? ['Read'] : ['Read', 'Edit', 'Write'],
-      denied: turnKind === 'assertion' ? ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'] : ['Shell', 'Bash', 'Agent', 'Task'],
+      allowed: turnKind === 'assertion' || turnKind === 'review' ? ['Read'] : ['Read', 'Edit', 'Write'],
+      denied: turnKind === 'assertion' || turnKind === 'review' ? ['Write', 'Edit', 'Shell', 'Bash', 'Agent', 'Task'] : ['Shell', 'Bash', 'Agent', 'Task'],
       sandbox,
     },
     worktree_observation: observedPaths,
-    tool_calls: [{
-      native_call_id: 'final',
-      tool: flags['action-tool'] || (turnKind === 'assertion' ? 'Read' : 'codex-exec'),
-      args_sha256: flags['action-args-sha256'] || sha256String(args.join(' ')),
-      invocation_args_sha256: sha256String(args.join(' ')),
-      decision: 'allowed',
-      action_nonce: nonce,
-      action_id: flags['action-id'] || null,
-      round_id: flags['action-round'] || flags['round-id'] || null,
-      target: actionTarget,
-      pre_sha256: flags['action-pre-sha256'] || null,
-      post_sha256: observedSha,
-      observed_sha256: observedSha,
-      effect_manifest_sha256: flags['action-effect-manifest-sha256'] || null,
-      effect_paths: observedPaths,
-      effect_fingerprint: effectFingerprint,
-      pre_manifest_sha256: sha256String(JSON.stringify(preManifest)),
-      post_manifest_sha256: sha256String(JSON.stringify(postManifest)),
-      observed_changed: classified.changed,
-      observed_deleted: classified.deleted,
-      observed_untracked: classified.untracked,
-      worktree_observation: observedPaths,
-    }],
+    tool_calls: nativeToolCalls,
     usage,
     exit_status: res.status,
     // The assertion scorer consumes this field. Keep the complete bounded

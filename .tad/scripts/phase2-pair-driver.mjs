@@ -26,11 +26,17 @@ const MECHANISM_SHA = shas([shaF(DRIVER), shaF(REC), shaF(RUNNER)].join('\n'));
 const RUN_DIR = path.join(PHASE2_DIR, 'runs', MECHANISM_SHA.slice(0, 16));
 const PAIRS_DIR = path.join(RUN_DIR, 'pairs');
 const RESULTS_PATH = path.join(PHASE2_DIR, 'pair-results.json');
+const DOGFOOD_DIR = path.join(PHASE2_DIR, 'dogfood');
+const DOGFOOD_CASES_DIR = path.join(DOGFOOD_DIR, 'cases');
 const APPROVAL_PATH = path.join(PHASE2_DIR, 'harness-degradation-approval.md');
 const APPROVAL_SHA = shaF(APPROVAL_PATH);
 const HANDOFF_BASE = execFileSync('git', ['rev-parse', '96bbfada'], { cwd: ROOT, encoding: 'utf8' }).trim();
 const FROZEN_CREATED_AT = '2026-08-27T00:00:00.000Z';
 const FROZEN_GIT_DATE = '2026-08-27T00:00:00 +0000';
+const OPENCODE = process.env.TAD_JUDGE_BIN || '/Users/sheldonzhao/.opencode/bin/opencode';
+const JUDGE_MODEL = process.env.TAD_JUDGE_MODEL || '';
+const JUDGE_MODEL_FAMILY = process.env.TAD_JUDGE_MODEL_FAMILY
+  || (JUDGE_MODEL ? path.basename(JUDGE_MODEL).split('-')[0] : 'claude');
 
 function sh(cmd, cwd, input) {
   const r = spawnSync('bash', ['-c', cmd], { cwd, encoding: 'utf8', input });
@@ -141,6 +147,15 @@ function setupRepo(task, arm, pairDir) {
   // Host-side evidence root OUTSIDE the repo (namespace note recorded).
   const hostEv = path.join(pairDir, `${arm}-host-evidence${attempt ? `-attempt-${attempt}` : ''}`);
   fs.mkdirSync(hostEv, { recursive: true });
+  fs.writeFileSync(path.join(pairDir, `evidence-bootstrap-${arm}.json`), JSON.stringify({
+    format: 'yolo2-phase2-evidence-bootstrap-v1',
+    task_id: task.id, arm, source_task: path.relative(ROOT, path.join(DATASET_DIR, task.id, 'task.json')),
+    destination_worktree: path.relative(WORK, dir), copied_at: FROZEN_CREATED_AT,
+    files: Object.keys(task.seed).sort().map((rel) => ({
+      source: `dataset/${task.id}/${rel}`, destination: rel,
+      sha256: shaF(path.join(dir, rel)),
+    })),
+  }, null, 2));
   return { dir, hostEv };
 }
 
@@ -177,6 +192,24 @@ function assertionTurn(repo, hostEv, roundId, session, task, sl) {
   console.error(`[driver] assertionTurn spawn cwd=${repo} exists=${fs.existsSync(path.join(repo, '.tad/evidence/yolo/run/rounds/R-01/execution.md'))}`);
   const r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 600000 });
   if (r.status !== 0) throw new Error(`assertion runner failed: exit=${r.status} STDERR=${r.stderr || ''} STDOUT=${(r.stdout || '').slice(-300)}`);
+  const parsed = JSON.parse(r.stdout.trim().split('\n').pop());
+  return { record: parsed.record, recordPath: parsed.record_path };
+}
+
+function reviewerTurn(repo, hostEv, roundId, task, sl) {
+  const prompt = [
+    'You are an independent reviewer for a governed recovery round.',
+    `Read the execution packet at .tad/evidence/yolo/run/rounds/${roundId}/execution.md, then inspect goal.json, journal.jsonl, and the slice target.`,
+    `Check that the frozen slice ${sl.id} has a legal next action, that the assertion context is coherent, and that no verified work is being redone.`,
+    'This is an intentionally disposable dogfood repository and is not indexed by codebase-memory. Do not call MCP, graph, browser, or project-discovery tools; use only direct read-only file inspection of the named files. Inability to index this temporary repository is not a review failure.',
+    'If the target already satisfies the current slice contract, treat that as a coherent inspected no-op and return PASS; do not require a redundant edit or interpret an already-present effect as a review failure.',
+    'Do not edit or write and do not perform the task. Your final message MUST be exactly PASS if the packet and current ledger are coherent; otherwise exactly FAIL.',
+  ].join('\n');
+  const pfile = path.join(hostEv, `prompt-review-${roundId}.txt`);
+  fs.writeFileSync(pfile, prompt);
+  const args = ['turn', '--host-evidence', hostEv, '--packet', `.tad/evidence/yolo/run/rounds/${roundId}/execution.md`, '--prompt', pfile, '--role', 'reviewer', '--turn-kind', 'review', '--sandbox', 'read-only', '--round-id', roundId, '--journal-seq', String(journalCount(repo))];
+  const r = spawnSync(process.execPath, [RUNNER, ...args], { cwd: repo, encoding: 'utf8', timeout: 600000 });
+  if (r.status !== 0) throw new Error(`reviewer runner failed: exit=${r.status} STDERR=${r.stderr || ''} STDOUT=${(r.stdout || '').slice(-300)}`);
   const parsed = JSON.parse(r.stdout.trim().split('\n').pop());
   return { record: parsed.record, recordPath: parsed.record_path };
 }
@@ -331,22 +364,19 @@ function runArm(task, arm, pairDir) {
     }));
     const rJson = path.join(hostEv, `review-${rid}.json`);
     const goalForReview = JSON.parse(fs.readFileSync(path.join(dir, '.tad/evidence/yolo/run/goal.json'), 'utf8'));
-    const reviewOutput = hostCarrier(hostEv, `review-output-${rid}.txt`, `deterministic review for ${rid}\n`);
-    const reviewTrace = hostCarrier(hostEv, `review-trace-${rid}.json`, JSON.stringify({ reviewer: 'deterministic-rubric-v1', round_id: rid }));
+    const reviewRes = reviewerTurn(dir, hostEv, rid, task, sl);
+    const reviewRec = reviewRes.record;
+    if (!reviewRec.session_id || reviewRec.session_id === aRec.session_id || reviewRec.resumed_from_session) {
+      throw new Error(`reviewer session is not fresh/independent for ${task.id}/${arm}/${rid}`);
+    }
+    const reviewerVerdict = /^PASS\b/i.test(String(reviewRec.final_message || '').trim()) ? 'PASS' : 'FAIL';
     fs.writeFileSync(rJson, JSON.stringify({
-      format: 'yolo-recovery-review-v1', verdict: score.verdict,
-      author_id: 'deterministic-rubric-v1', reviewer_id: 'deterministic-rubric-v1',
-      written_by: 'reference-runner', runner_version: '1.0.0',
-      runner_sha256: shaF(RUNNER), parser_version: '1',
-      invocation_nonce: crypto.randomBytes(6).toString('hex'),
-      harness: 'deterministic-rubric', harness_version: '1', model_id: 'deterministic-rubric-v1',
-      model_family: 'deterministic', reasoning: 'fixed', role: 'reviewer', turn_kind: 'review',
-      session_id: `review-${rid}`, round_id: rid, journal_seq: journalCount(dir),
-      packet_sha256: aRec.packet_sha256, assertion_sha256: shaF(aJson),
-      oracle_sha256: goalForReview.oracle_sha256, exit_status: 0,
-      raw_native_output: reviewOutput, raw_native_trace: reviewTrace,
-      usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15, native: true },
-    }));
+      ...reviewRec,
+      format: 'yolo-recovery-review-v1', verdict: reviewerVerdict,
+      author_id: `codex:${reviewRec.session_id}`, reviewer_id: `codex:${reviewRec.session_id}`,
+      assertion_sha256: shaF(aJson), oracle_sha256: goalForReview.oracle_sha256,
+      independent_native_session: true,
+    }, null, 2));
     const az = cli(dir, ['round-authorize', '--run', '.tad/evidence/yolo/run', '--assertion', aJson, '--review', rJson, '--turn-record', aRes.recordPath]);
     expectOk(az, `authorize ${rid}`);
     // Mint the round's side-effect nonce via action-start on the primary
@@ -453,7 +483,7 @@ ${asRes2.out.slice(-400)}`);
 }
 
 function compareFrozenPackets(task, control, treatment, pairDir) {
-  const rounds = slicesFor(task.id).map((slice) => `R-${String(slicesFor(task.id).indexOf(slice) + 1).padStart(2, '0')}`);
+  const rounds = slicesFor(task.id).map((_slice, index) => `R-${String(index + 1).padStart(2, '0')}`);
   const packetRows = [];
   for (const roundId of rounds) {
     const controlPath = path.join(WORK, control.worktree_dir, '.tad/evidence/yolo/run/rounds', roundId, 'execution.md');
@@ -473,6 +503,28 @@ function compareFrozenPackets(task, control, treatment, pairDir) {
       byte_equal: true,
     });
   }
+  const frozenInputHashes = (armResult, arm) => {
+    const sourceDir = path.join(WORK, armResult.worktree_dir);
+    const contracts = slicesFor(task.id).map((slice) => shaF(path.join(sourceDir, `contract-${slice.id}.json`)));
+    const packets = packetRows.map((row) => arm === 'control' ? row.control_sha256 : row.treatment_sha256);
+    return {
+      task_seed_sha256: shas(JSON.stringify(task.seed)),
+      contracts_sha256: shas(JSON.stringify(contracts)),
+      packet_text_sha256: shas(JSON.stringify(packets)),
+      tool_policy_sha256: shas(JSON.stringify({
+        assertion: { sandbox: 'read-only', allowed: ['Read'] },
+        execution: { sandbox: 'workspace-write', allowed: ['Read', 'Edit', 'Write'] },
+      })),
+      budgets_sha256: shas(JSON.stringify(POLICY)),
+      model_settings_sha256: shas(JSON.stringify({
+        harness: 'codex', model_id: 'codex-default', model_family: 'gpt', reasoning: 'balanced',
+      })),
+    };
+  };
+  const controlFrozen = frozenInputHashes(control, 'control');
+  const treatmentFrozen = frozenInputHashes(treatment, 'treatment');
+  const normalizedInputsEqual = JSON.stringify(controlFrozen) === JSON.stringify(treatmentFrozen);
+  if (!normalizedInputsEqual) throw new Error(`normalized frozen input mismatch for ${task.id}`);
   const manifest = {
     format: 'yolo2-phase2-arm-equivalence-v1',
     task_id: task.id,
@@ -480,11 +532,302 @@ function compareFrozenPackets(task, control, treatment, pairDir) {
     treatment_arm_namespace: 'treatment',
     permitted_difference: 'continuity condition only; arm namespace stays outside packet text',
     packets: packetRows,
+    normalized_frozen_inputs: { control: controlFrozen, treatment: treatmentFrozen },
+    normalized_inputs_equal: normalizedInputsEqual,
     packet_bytes_equal: true,
   };
   const manifestPath = path.join(pairDir, 'arm-equivalence-manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   return { path: path.relative(PHASE2_DIR, manifestPath), sha256: shaF(manifestPath), ...manifest };
+}
+
+function productFiles(dir) {
+  const excluded = new Set(['.gitignore', 'goal-spec.json', 'handoff.md', 'oracle.txt']);
+  const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+    cwd: dir, encoding: 'utf8',
+  }).split('\n').filter(Boolean);
+  return files.filter((rel) => !rel.startsWith('.tad/')
+    && !/^contract-[^/]+\.json$/.test(rel)
+    && !excluded.has(rel));
+}
+
+function outputManifest(dir, arm) {
+  const files = productFiles(dir).map((rel) => ({ path: rel, sha256: shaF(path.join(dir, rel)) }));
+  return { format: 'yolo2-phase2-output-manifest-v1', arm, files };
+}
+
+function writeEvidenceJson(target, value) {
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, JSON.stringify(value, null, 2));
+  return target;
+}
+
+function copyProductFiles(sourceDir, targetDir, files) {
+  fs.mkdirSync(targetDir, { recursive: true });
+  for (const entry of files) {
+    const dest = path.join(targetDir, entry.path);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(path.join(sourceDir, entry.path), dest);
+  }
+}
+
+function directoryManifest(dir) {
+  const entries = [];
+  const walk = (root, prefix = '') => {
+    for (const name of fs.readdirSync(root).sort()) {
+      const abs = path.join(root, name);
+      const rel = prefix ? path.join(prefix, name) : name;
+      if (fs.lstatSync(abs).isDirectory()) walk(abs, rel);
+      else entries.push({ path: rel, sha256: shaF(abs) });
+    }
+  };
+  walk(dir);
+  return entries;
+}
+
+function nativeRecords(hostEv) {
+  return fs.readdirSync(hostEv).filter((name) => name.endsWith('-record.json')).sort().map((name) => ({
+    name, path: path.join(hostEv, name), doc: JSON.parse(fs.readFileSync(path.join(hostEv, name), 'utf8')),
+  }));
+}
+
+function writeArmDurableEvidence(caseDir, arm, armResult, task) {
+  const sourceDir = path.join(WORK, armResult.worktree_dir);
+  const hostEv = path.join(path.dirname(caseDir), '..', 'runs', MECHANISM_SHA.slice(0, 16), 'pairs',
+    path.basename(caseDir), armResult.host_evidence_dir);
+  const actualHostEv = fs.existsSync(hostEv) ? hostEv : path.join(RUN_DIR, 'pairs', path.basename(caseDir), armResult.host_evidence_dir);
+  const records = nativeRecords(actualHostEv);
+  const manifest = outputManifest(sourceDir, arm);
+  const manifestPath = path.join(caseDir, `${arm}-output-manifest.json`);
+  writeEvidenceJson(manifestPath, manifest);
+  copyProductFiles(sourceDir, path.join(caseDir, `final-output-${arm}`), manifest.files);
+
+  const recordLines = records.map((entry) => JSON.stringify(entry.doc)).join('\n') + '\n';
+  fs.writeFileSync(path.join(caseDir, `native-turn-records-${arm}.jsonl`), recordLines);
+  const rawDir = path.join(caseDir, `raw-native-${arm}`);
+  fs.mkdirSync(rawDir, { recursive: true });
+  for (const name of fs.readdirSync(actualHostEv).filter((file) => file.endsWith('-raw-output.txt') || file.endsWith('-raw-trace.jsonl'))) {
+    fs.copyFileSync(path.join(actualHostEv, name), path.join(rawDir, name));
+  }
+  const events = journalEvents(sourceDir);
+  writeEvidenceJson(path.join(caseDir, `action-reconciliation-${arm}.json`), {
+    format: 'yolo2-phase2-action-reconciliation-v1', arm,
+    events: events.filter((event) => ['action_started', 'action_reconciled', 'round_closed'].includes(event.type)),
+  });
+  writeEvidenceJson(path.join(caseDir, `${arm}-invocation.json`), {
+    format: 'yolo2-phase2-invocation-manifest-v1', arm,
+    records: records.map((entry) => ({
+      record: entry.name, record_sha256: shaF(entry.path), turn_kind: entry.doc.turn_kind,
+      role: entry.doc.role, session_id: entry.doc.session_id,
+      resumed_from_session: entry.doc.resumed_from_session ?? null,
+      usage: entry.doc.usage, invocation: entry.doc.invocation,
+    })),
+  });
+  writeEvidenceJson(path.join(caseDir, `${arm}-evidence.json`), {
+    format: 'yolo2-phase2-arm-evidence-v1', arm, task_id: task.id,
+    arm_result: armResult, output_manifest: path.basename(manifestPath),
+    output_manifest_sha256: shaF(manifestPath),
+    native_record_count: records.length,
+  });
+  return { manifest, manifestPath, records };
+}
+
+function writeDurableCase(pair, task, control, treatment, armEquivalence) {
+  const caseDir = path.join(DOGFOOD_CASES_DIR, pair.pair_id);
+  fs.rmSync(caseDir, { recursive: true, force: true });
+  fs.mkdirSync(caseDir, { recursive: true });
+  fs.copyFileSync(path.join(DATASET_DIR, task.id, 'task.json'), path.join(caseDir, 'task.json'));
+  const taskSha = shaF(path.join(DATASET_DIR, task.id, 'task.json'));
+  const controlEvidence = writeArmDurableEvidence(caseDir, 'control', control, task);
+  const treatmentEvidence = writeArmDurableEvidence(caseDir, 'treatment', treatment, task);
+  writeEvidenceJson(path.join(caseDir, 'oracle.json'), {
+    format: 'yolo2-phase2-oracle-v1', task_id: task.id,
+    hidden_fixture_sha256: shas(JSON.stringify(task.hidden)),
+    hidden_release_id: shas(`${task.id}:${taskSha}:${FROZEN_CREATED_AT}`),
+  });
+  writeEvidenceJson(path.join(caseDir, 'pair-config.json'), {
+    format: 'yolo2-phase2-pair-config-v1', pair_id: pair.pair_id, task_id: task.id,
+    task_sha256: taskSha, generator: { harness: 'codex', model_id: 'codex-default', model_family: 'gpt', reasoning: 'balanced' },
+    policy: POLICY, cache_policy: 'native-codex-cache-preserved',
+    base_commit: { control: control.base_commit, treatment: treatment.base_commit },
+    tool_policy: { assertion: { sandbox: 'read-only', allowed: ['Read'] }, execution: { sandbox: 'workspace-write', allowed: ['Read', 'Edit', 'Write'] } },
+    arm_equivalence_manifest: path.relative(PHASE2_DIR, path.join(RUN_DIR, 'pairs', pair.pair_id, 'arm-equivalence-manifest.json')),
+    arm_equivalence_sha256: shaF(path.join(RUN_DIR, 'pairs', pair.pair_id, 'arm-equivalence-manifest.json')),
+    packet_sha256: armEquivalence.packets.map((row) => row.control_sha256),
+    permitted_arm_difference: 'continuity condition only',
+  });
+  writeEvidenceJson(path.join(caseDir, 'hidden-fixture-commitment.json'), {
+    format: 'yolo2-phase2-hidden-fixture-commitment-v1', task_id: task.id,
+    fixture_sha256: shas(JSON.stringify(task.hidden)), release_id: shas(`${task.id}:${taskSha}:${FROZEN_CREATED_AT}`),
+    released_only_after_output_hashes: true,
+  });
+  writeEvidenceJson(path.join(caseDir, 'hidden-acceptance-release.json'), {
+    format: 'yolo2-phase2-hidden-acceptance-release-v1', task_id: task.id,
+    control_output_manifest_sha256: shaF(controlEvidence.manifestPath),
+    treatment_output_manifest_sha256: shaF(treatmentEvidence.manifestPath),
+    released_after_both_output_manifests: true,
+    control: control.final_hidden_acceptance, treatment: treatment.final_hidden_acceptance,
+  });
+  fs.writeFileSync(path.join(caseDir, 'hidden-acceptance-output.txt'), JSON.stringify({
+    control: control.final_hidden_acceptance, treatment: treatment.final_hidden_acceptance,
+  }, null, 2) + '\n');
+  const bootstrapPairDir = path.join(RUN_DIR, 'pairs', pair.pair_id);
+  for (const arm of ['control', 'treatment']) {
+    const src = path.join(bootstrapPairDir, `evidence-bootstrap-${arm}.json`);
+    if (!fs.existsSync(src)) throw new Error(`missing bootstrap evidence for ${pair.pair_id}/${arm}`);
+    fs.copyFileSync(src, path.join(caseDir, `evidence-bootstrap-${arm}.json`));
+  }
+  return { caseDir, controlEvidence, treatmentEvidence };
+}
+
+function prepareDurableScaffold(index) {
+  fs.mkdirSync(DOGFOOD_CASES_DIR, { recursive: true });
+  const datasetIndexPath = path.join(DATASET_DIR, 'dataset-index.json');
+  writeEvidenceJson(path.join(DOGFOOD_DIR, 'dataset-manifest.json'), {
+    format: 'yolo2-phase2-durable-dataset-manifest-v1', seed: index.seed,
+    dataset_index_sha256: shaF(datasetIndexPath), pairs: index.pairs.map((pair) => ({ ...pair })),
+  });
+  const mapping = index.pairs.map((pair) => ({ pair_id: pair.pair_id, A: 'control', B: 'treatment' }));
+  writeEvidenceJson(path.join(DOGFOOD_DIR, 'label-commitment.json'), {
+    format: 'yolo2-phase2-label-commitment-v1', seed: index.seed,
+    mapping_commitment_sha256: shas(JSON.stringify(mapping)), mapping_withheld_from_judges: true,
+    committed_before_runs: true,
+  });
+  writeEvidenceJson(path.join(DOGFOOD_DIR, 'randomization-schedule.json'), {
+    format: 'yolo2-phase2-randomization-schedule-v1', seed: index.seed,
+    pair_order: index.pairs.map((pair, indexPosition) => ({ pair_id: pair.pair_id, position: indexPosition + 1 })),
+    judge_order: { '1': ['A', 'B'], '2': ['B', 'A'], '3': ['A', 'B'] },
+  });
+  writeEvidenceJson(path.join(DOGFOOD_DIR, 'rubric.json'), {
+    format: 'yolo2-phase2-blinded-rubric-v1', version: 1,
+    dimensions: ['contract fidelity', 'scope discipline', 'verified-state preservation', 'hidden acceptance readiness'],
+    score_range: [0, 1], p0_p1_blocking: true, reversal_policy: 'pairwise reversal becomes TIE',
+    judge_must_not_receive: ['control', 'treatment', 'condition mapping', 'generator session identifiers'],
+  });
+}
+
+function parseJudgePayload(raw) {
+  const candidates = [];
+  const collectText = (text) => {
+    if (typeof text !== 'string') return;
+    try { candidates.push(JSON.parse(text)); } catch { /* text may contain prose or a fenced JSON object */ }
+    const embedded = text.match(/\{[\s\S]*\}/g) || [];
+    for (const item of embedded) { try { candidates.push(JSON.parse(item)); } catch { /* continue */ } }
+  };
+  const collect = (value) => {
+    if (!value || typeof value !== 'object') return;
+    candidates.push(value);
+    for (const key of ['text', 'content', 'result']) {
+      if (typeof value[key] === 'string') collectText(value[key]);
+      else if (Array.isArray(value[key])) value[key].forEach(collect);
+      else if (value[key] && typeof value[key] === 'object') collect(value[key]);
+    }
+    if (value.part && typeof value.part === 'object') collect(value.part);
+    if (value.message && typeof value.message === 'object') collect(value.message);
+  };
+  for (const line of String(raw).split('\n').reverse()) {
+    const text = line.trim();
+    if (!text) continue;
+    try { collect(JSON.parse(text)); } catch { /* inspect embedded JSON below */ }
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) { try { collect(JSON.parse(match[0])); } catch { /* continue */ } }
+  }
+  const payload = candidates.find((value) => value && typeof value === 'object'
+    && typeof value.preferred === 'string'
+    && Number.isFinite(Number(value.score_A)) && Number.isFinite(Number(value.score_B)));
+  if (!payload) throw new Error('judge output did not contain the required blinded JSON verdict');
+  if (!['A', 'B', 'TIE'].includes(payload.preferred)) throw new Error(`judge preferred value invalid: ${payload.preferred}`);
+  return {
+    preferred: payload.preferred,
+    score_A: Number(payload.score_A), score_B: Number(payload.score_B),
+    p0_A: Number(payload.p0_A || 0), p0_B: Number(payload.p0_B || 0),
+    p1_A: Number(payload.p1_A || 0), p1_B: Number(payload.p1_B || 0),
+    rationale: String(payload.rationale || ''),
+  };
+}
+
+function runJudge(caseDir, pairId, pass, inputOrder) {
+  const inputRoot = path.join(caseDir, 'judge-input', `pass-${pass}`);
+  const inputA = path.join(inputRoot, 'A');
+  const inputB = path.join(inputRoot, 'B');
+  const sourceA = path.join(caseDir, `final-output-${inputOrder.A}`);
+  const sourceB = path.join(caseDir, `final-output-${inputOrder.B}`);
+  fs.mkdirSync(inputRoot, { recursive: true });
+  const rubricPath = path.join(inputRoot, 'rubric.json');
+  fs.copyFileSync(path.join(DOGFOOD_DIR, 'rubric.json'), rubricPath);
+  fs.cpSync(sourceA, inputA, { recursive: true, force: true });
+  fs.cpSync(sourceB, inputB, { recursive: true, force: true });
+  const filesA = directoryManifest(inputA).map((entry) => entry.path);
+  const filesB = directoryManifest(inputB).map((entry) => entry.path);
+  const prompt = [
+    'You are a blinded final-quality judge.',
+    `Compare only the two final product directories A=${inputA} and B=${inputB} using rubric ${rubricPath}.`,
+    'The ONLY permitted tool is read. Never call bash, shell, terminal, glob, grep, code execution, package loading, or network tools, and never access any path under /tmp; do not attempt to execute the products. Do not inspect any other evidence, metadata, parent directories, git history, or condition mapping. Do not refer to condition names or infer which arm is which in your response.',
+    `The complete relative file list for A is: ${filesA.join(', ') || '(empty)'}. Read only these files under A.`,
+    `The complete relative file list for B is: ${filesB.join(', ') || '(empty)'}. Read only these files under B.`,
+    'Blocking classification: set p0 or p1 above zero only for a concrete defect against an explicit task contract, rubric requirement, or acceptance requirement that needs corrective work. Optional robustness, extra tests, stylistic preferences, broader edge-case coverage, or speculative hidden inputs are not p0/p1; record those only in scores or rationale. A test-coverage gap is blocking only when the contract or rubric explicitly requires the missing behavior. If both outputs satisfy the explicit requirements, set p0_A, p0_B, p1_A, and p1_B to 0.',
+    'After reading the rubric and the files under A and B, stop using tools and return the required JSON immediately, even if you cannot execute a product.',
+    'Return exactly one JSON object and no prose: {"preferred":"A|B|TIE","score_A":0.0,"score_B":0.0,"p0_A":0,"p0_B":0,"p1_A":0,"p1_B":0,"rationale":"brief"}. A reversal of an earlier order is not a defect; judge only the supplied outputs.',
+  ].join('\n');
+  const useClaude = path.basename(OPENCODE) === 'claude';
+  const invocation = useClaude
+    ? ['-p', '--output-format', 'json', '--model', process.env.TAD_JUDGE_MODEL || 'sonnet',
+      '--permission-mode', 'plan', '--no-session-persistence', '--disable-slash-commands',
+      '--allowed-tools', 'Read', '--disallowed-tools', 'Bash', 'Edit', 'Write', prompt]
+    : ['run', ...(JUDGE_MODEL ? ['--model', JUDGE_MODEL] : []), '--format', 'json', '--pure', '--dir', caseDir, prompt];
+  const started = new Date().toISOString();
+  fs.writeFileSync(path.join(caseDir, `judge-pass-${pass}-prompt.txt`), prompt);
+  writeEvidenceJson(path.join(caseDir, `judge-pass-${pass}-input.json`), {
+    format: 'yolo2-phase2-blinded-judge-input-v1', pair_id: pairId, pass,
+    labels: ['A', 'B'], A_sha256: shas(JSON.stringify(directoryManifest(inputA))),
+    B_sha256: shas(JSON.stringify(directoryManifest(inputB))), prompt_sha256: shas(prompt),
+  });
+  const res = spawnSync(OPENCODE, invocation, { cwd: caseDir, encoding: 'utf8', timeout: 900000 });
+  const raw = `${res.stdout || ''}${res.stderr || ''}`;
+  const rawPath = path.join(caseDir, `judge-pass-${pass}-raw.txt`);
+  fs.writeFileSync(rawPath, raw);
+  if (res.status !== 0) throw new Error(`judge blocked or failed for ${pairId}/pass-${pass}: exit=${res.status}; ${raw.slice(-600)}`);
+  // OpenCode may emit the JSON event stream on stderr while stdout is empty;
+  // parse the same combined stream that is durably captured above.
+  const verdict = parseJudgePayload(raw);
+  const anonymous = {
+    format: 'yolo2-phase2-blinded-judge-pass-v1', pair_id: pairId, pass,
+    input_labels: ['A', 'B'], input_order: ['A', 'B'], model_family: JUDGE_MODEL_FAMILY,
+    harness: useClaude ? 'claude' : 'opencode', invocation: { cmd: invocation, started, exit: res.status },
+    raw_output_sha256: shaF(rawPath), ...verdict,
+  };
+  writeEvidenceJson(path.join(caseDir, `judge-pass-${pass}.json`), anonymous);
+  return anonymous;
+}
+
+function runBlindedJudges(caseDir, pairId) {
+  const orders = [
+    { A: 'control', B: 'treatment' },
+    { A: 'treatment', B: 'control' },
+    { A: 'control', B: 'treatment' },
+  ];
+  const passes = orders.map((order, index) => runJudge(caseDir, pairId, index + 1, order));
+  const mapping = { control: 'A', treatment: 'B' };
+  for (let i = 0; i < passes.length; i += 1) {
+    const pass = passes[i]; const order = orders[i];
+    for (const condition of ['control', 'treatment']) {
+      const label = order[condition] === condition ? 'A' : 'B';
+      writeEvidenceJson(path.join(caseDir, `judge-pass-${i + 1}-${condition}.json`), {
+        format: 'yolo2-phase2-condition-judge-view-v1', pair_id: pairId, pass: i + 1,
+        condition, blind_label: label, preferred: pass.preferred,
+        score: condition === 'control' ? (label === 'A' ? pass.score_A : pass.score_B) : (label === 'A' ? pass.score_A : pass.score_B),
+        p0: condition === 'control' ? (label === 'A' ? pass.p0_A : pass.p0_B) : (label === 'A' ? pass.p0_A : pass.p0_B),
+        p1: condition === 'control' ? (label === 'A' ? pass.p1_A : pass.p1_B) : (label === 'A' ? pass.p1_A : pass.p1_B),
+      });
+    }
+  }
+  writeEvidenceJson(path.join(caseDir, 'judge-aggregate.json'), {
+    format: 'yolo2-phase2-judge-aggregate-v1', pair_id: pairId,
+    judge_model_family: JUDGE_MODEL_FAMILY, generator_model_family: 'gpt', mapping_released_after_passes: true,
+    passes: passes.map((pass, index) => ({ pass: index + 1, preferred: pass.preferred, score_A: pass.score_A, score_B: pass.score_B })),
+    reversal_tie_policy: 'reversal becomes TIE', blocking_p0_p1: passes.some((pass) => pass.p0_A > 0 || pass.p0_B > 0 || pass.p1_A > 0 || pass.p1_B > 0),
+  });
+  return passes;
 }
 
 function expectOk(r, msg) { if (r.code !== 0) throw new Error(`${msg} failed:\n${String(r.out || r.stdout || '').slice(-700)}`); }
@@ -562,6 +905,7 @@ for (const pair of index.pairs) {
     throw new Error(`dataset task hash mismatch for ${pair.task_id}: declared=${pair.task_sha256} actual=${actual}`);
   }
 }
+prepareDurableScaffold(index);
 fs.writeFileSync(path.join(RUN_DIR, 'run-manifest.json'), JSON.stringify({
   format: 'yolo2-phase2-run-manifest-v1', mechanism_sha256: MECHANISM_SHA,
   runner_sha256: shaF(RUNNER), recovery_sha256: shaF(REC), driver_sha256: shaF(DRIVER),
@@ -594,6 +938,9 @@ for (const p of index.pairs) {
     control: ctrl, treatment: trt,
   };
   fs.writeFileSync(path.join(pairDir, 'pair-result.json'), JSON.stringify(pairResult, null, 2));
+  const durableCase = writeDurableCase(p, task, ctrl, trt, armEquivalence);
+  runBlindedJudges(durableCase.caseDir, p.pair_id);
+  writeEvidenceJson(path.join(durableCase.caseDir, 'paired-results.json'), pairResult);
   results.push(pairResult);
   console.log(`  control=${pairResult.capability.control_hidden_pass} treatment=${pairResult.capability.treatment_hidden_pass}`);
 }
@@ -611,4 +958,5 @@ out.mechanism_sha256 = MECHANISM_SHA;
 out.run_manifest = path.relative(PHASE2_DIR, path.join(RUN_DIR, 'run-manifest.json'));
 fs.writeFileSync(path.join(RUN_DIR, 'pair-results.json'), JSON.stringify(out, null, 2));
 fs.writeFileSync(RESULTS_PATH, JSON.stringify(out, null, 2));
+writeEvidenceJson(path.join(DOGFOOD_DIR, 'paired-results.json'), out);
 console.log('ALL PAIRS COMPLETE ->', RESULTS_PATH);

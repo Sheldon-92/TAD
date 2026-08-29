@@ -1103,9 +1103,220 @@ function caseBudgetExhaustion() {
 }
 
 // ═══════════════ CASE: dogfood-evidence ═══════════════
+function durableJson(file, label) {
+  expect(fs.existsSync(file), `${label} missing: ${file}`);
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
+  catch (error) { throw new CaseFail(`${label} is not valid JSON: ${error.message}`); }
+}
+
+function durableFiles(dir) {
+  const files = [];
+  const walk = (root, prefix = '') => {
+    expect(fs.existsSync(root), `durable directory missing: ${root}`);
+    for (const name of fs.readdirSync(root).sort()) {
+      const abs = path.join(root, name);
+      const rel = prefix ? path.join(prefix, name) : name;
+      if (fs.lstatSync(abs).isDirectory()) walk(abs, rel);
+      else files.push({ path: rel, sha256: sha256File(abs) });
+    }
+  };
+  walk(dir);
+  return files;
+}
+
+function durableJsonl(file, label) {
+  expect(fs.existsSync(file), `${label} missing: ${file}`);
+  return fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((line, index) => {
+    try { return JSON.parse(line); }
+    catch (error) { throw new CaseFail(`${label} line ${index + 1} is not JSON: ${error.message}`); }
+  });
+}
+
+function validateDurableDogfood(p2dir) {
+  const dogfood = path.join(p2dir, 'dogfood');
+  const pairsDir = path.join(p2dir, 'pairs');
+  const top = durableJson(path.join(p2dir, 'pair-results.json'), 'phase2 pair-results');
+  const durableTop = durableJson(path.join(dogfood, 'paired-results.json'), 'durable paired-results');
+  const index = durableJson(path.join(pairsDir, 'dataset-index.json'), 'dataset index');
+  const runManifestPath = path.resolve(p2dir, top.run_manifest || '');
+  const runManifest = durableJson(runManifestPath, 'run manifest');
+  const pairIds = ['P1', 'P2', 'P3', 'P4', 'P5'];
+  const approval = path.join(p2dir, 'harness-degradation-approval.md');
+  const driverPath = path.join(REPO_ROOT, '.tad/scripts/phase2-pair-driver.mjs');
+  const recoveryPath = path.join(REPO_ROOT, '.tad/scripts/yolo-recovery.mjs');
+  const runnerPath = path.join(REPO_ROOT, '.tad/scripts/yolo-reference-runner.mjs');
+
+  expect(top.format === 'yolo2-phase2-pair-results-v1', 'durable pair-results format');
+  expect(JSON.stringify(top.pairs) === JSON.stringify(durableTop.pairs), 'durable paired-results must match top pair-results');
+  expect(Array.isArray(top.pairs) && top.pairs.length === pairIds.length, 'exactly five pairs recorded');
+  expect(JSON.stringify(top.pairs.map((pair) => pair.pair_id)) === JSON.stringify(pairIds), 'pair order must be P1..P5');
+  expect(top.mechanism_sha256 === runManifest.mechanism_sha256, 'top mechanism must match run manifest');
+  expect(runManifest.format === 'yolo2-phase2-run-manifest-v1', 'run manifest format');
+  expect(runManifest.driver_sha256 === sha256File(driverPath), 'driver hash must be bound');
+  expect(runManifest.recovery_sha256 === sha256File(recoveryPath), 'recovery hash must be bound');
+  expect(runManifest.runner_sha256 === sha256File(runnerPath), 'runner hash must be bound');
+  expect(runManifest.base_commit === '96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7', 'dogfood base commit');
+  expect(runManifest.dataset_sha256 === sha256File(path.join(pairsDir, 'dataset-index.json')), 'dataset hash must be bound');
+  expect(runManifest.mechanism_sha256 === sha256String([runManifest.driver_sha256, runManifest.recovery_sha256, runManifest.runner_sha256].join('\n')), 'mechanism hash recomputation');
+
+  const datasetManifest = durableJson(path.join(dogfood, 'dataset-manifest.json'), 'dataset manifest');
+  expect(datasetManifest.format === 'yolo2-phase2-durable-dataset-manifest-v1', 'dataset manifest format');
+  expect(datasetManifest.seed === index.seed && datasetManifest.seed === 'yolo2p2-fixed-seed-001', 'dataset seed');
+  expect(datasetManifest.dataset_index_sha256 === sha256File(path.join(pairsDir, 'dataset-index.json')), 'dataset index commitment');
+  expect(JSON.stringify(datasetManifest.pairs) === JSON.stringify(index.pairs), 'dataset manifest pair set');
+
+  const label = durableJson(path.join(dogfood, 'label-commitment.json'), 'label commitment');
+  const mapping = index.pairs.map((pair) => ({ pair_id: pair.pair_id, A: 'control', B: 'treatment' }));
+  expect(label.format === 'yolo2-phase2-label-commitment-v1', 'label commitment format');
+  expect(label.seed === index.seed && label.mapping_withheld_from_judges === true && label.committed_before_runs === true, 'label commitment controls');
+  expect(label.mapping_commitment_sha256 === sha256String(JSON.stringify(mapping)), 'label commitment hash');
+
+  const schedule = durableJson(path.join(dogfood, 'randomization-schedule.json'), 'randomization schedule');
+  expect(schedule.format === 'yolo2-phase2-randomization-schedule-v1', 'randomization schedule format');
+  expect(JSON.stringify(schedule.pair_order) === JSON.stringify(pairIds.map((pair_id, i) => ({ pair_id, position: i + 1 }))), 'randomized pair order');
+  expect(JSON.stringify(schedule.judge_order) === JSON.stringify({ '1': ['A', 'B'], '2': ['B', 'A'], '3': ['A', 'B'] }), 'judge order');
+  const rubric = durableJson(path.join(dogfood, 'rubric.json'), 'blinded rubric');
+  expect(rubric.format === 'yolo2-phase2-blinded-rubric-v1' && rubric.p0_p1_blocking === true, 'blocking rubric');
+  expect(fs.existsSync(approval) && sha256File(approval).length === 64, 'degraded approval evidence');
+
+  const expectedPassOrder = [{ A: 'control', B: 'treatment' }, { A: 'treatment', B: 'control' }, { A: 'control', B: 'treatment' }];
+  const judgeSessions = new Set();
+  for (const pairId of pairIds) {
+    const pair = top.pairs.find((entry) => entry.pair_id === pairId);
+    const caseDir = path.join(dogfood, 'cases', pairId);
+    const runPairDir = path.join(path.dirname(runManifestPath), 'pairs', pairId);
+    expect(pair && pair.format === 'yolo2-phase2-pair-result-v1', `${pairId} pair result`);
+    const task = durableJson(path.join(caseDir, 'task.json'), `${pairId} task`);
+    const indexPair = index.pairs.find((entry) => entry.pair_id === pairId);
+    expect(indexPair && task.id === indexPair.task_id, `${pairId} task identity`);
+    expect(sha256File(path.join(pairsDir, task.id, 'task.json')) === indexPair.task_sha256, `${pairId} dataset task hash`);
+    expect(sha256File(path.join(caseDir, 'task.json')) === indexPair.task_sha256, `${pairId} durable task hash`);
+    const pairConfig = durableJson(path.join(caseDir, 'pair-config.json'), `${pairId} pair config`);
+    expect(pairConfig.format === 'yolo2-phase2-pair-config-v1' && pairConfig.pair_id === pairId && pairConfig.task_id === task.id, `${pairId} pair config identity`);
+    expect(pairConfig.task_sha256 === indexPair.task_sha256 && pairConfig.generator.model_family === 'gpt', `${pairId} generator binding`);
+    expect(pairConfig.arm_equivalence_sha256 && pairConfig.arm_equivalence_manifest, `${pairId} arm equivalence locator`);
+    const armEqPath = path.resolve(p2dir, pairConfig.arm_equivalence_manifest);
+    const armEq = durableJson(armEqPath, `${pairId} arm equivalence`);
+    expect(sha256File(armEqPath) === pairConfig.arm_equivalence_sha256, `${pairId} arm equivalence hash`);
+    expect(armEq.format === 'yolo2-phase2-arm-equivalence-v1' && armEq.packet_bytes_equal === true && armEq.normalized_inputs_equal === true, `${pairId} frozen equivalence controls`);
+    expect(armEq.normalized_frozen_inputs && JSON.stringify(armEq.normalized_frozen_inputs.control) === JSON.stringify(armEq.normalized_frozen_inputs.treatment), `${pairId} normalized frozen inputs`);
+    expect(Array.isArray(armEq.packets) && armEq.packets.length === 2 && armEq.packets.every((row) => row.byte_equal && row.control_sha256 === row.treatment_sha256), `${pairId} packet equality`);
+    expect(JSON.stringify(pairConfig.packet_sha256) === JSON.stringify(armEq.packets.map((row) => row.control_sha256)), `${pairId} packet commitment`);
+    const runPair = durableJson(path.join(runPairDir, 'pair-result.json'), `${pairId} run pair result`);
+    expect(runPair.mechanism_sha256 === top.mechanism_sha256 && runPair.task_sha256 === indexPair.task_sha256, `${pairId} run result binding`);
+    expect(JSON.stringify(pair.capability) === JSON.stringify(runPair.capability), `${pairId} capability binding`);
+    expect(pair.capability.control_hidden_pass === true && pair.capability.treatment_hidden_pass === true, `${pairId} hidden acceptance both arms`);
+    expect(pair.repeated_verified_action === 0 && pair.wrong_or_unauthorized_next_action === 0, `${pairId} pair safety totals`);
+
+    const release = durableJson(path.join(caseDir, 'hidden-acceptance-release.json'), `${pairId} hidden release`);
+    const commitment = durableJson(path.join(caseDir, 'hidden-fixture-commitment.json'), `${pairId} hidden commitment`);
+    const taskSha = sha256File(path.join(caseDir, 'task.json'));
+    expect(release.format === 'yolo2-phase2-hidden-acceptance-release-v1' && release.released_after_both_output_manifests === true, `${pairId} release ordering`);
+    expect(commitment.format === 'yolo2-phase2-hidden-fixture-commitment-v1' && commitment.released_only_after_output_hashes === true, `${pairId} fixture commitment`);
+
+    const armRecords = {};
+    for (const arm of ['control', 'treatment']) {
+      const evidence = durableJson(path.join(caseDir, `${arm}-evidence.json`), `${pairId}/${arm} evidence`);
+      const armResult = evidence.arm_result;
+      const outputManifest = durableJson(path.join(caseDir, `${arm}-output-manifest.json`), `${pairId}/${arm} output manifest`);
+      const finalDir = path.join(caseDir, `final-output-${arm}`);
+      expect(evidence.format === 'yolo2-phase2-arm-evidence-v1' && evidence.arm === arm && armResult.arm === arm, `${pairId}/${arm} evidence identity`);
+      expect(armResult.task_sha256 === indexPair.task_sha256 && armResult.mechanism_sha256 === top.mechanism_sha256, `${pairId}/${arm} result binding`);
+      expect(outputManifest.format === 'yolo2-phase2-output-manifest-v1' && outputManifest.arm === arm, `${pairId}/${arm} output manifest format`);
+      expect(JSON.stringify(outputManifest.files) === JSON.stringify(durableFiles(finalDir)), `${pairId}/${arm} output manifest recomputation`);
+      expect(evidence.output_manifest_sha256 === sha256File(path.join(caseDir, `${arm}-output-manifest.json`)), `${pairId}/${arm} output manifest hash`);
+      expect(release[`${arm}_output_manifest_sha256`] === sha256File(path.join(caseDir, `${arm}-output-manifest.json`)), `${pairId}/${arm} release hash`);
+      expect(armResult.final_hidden_acceptance.every((check) => check.passed), `${pairId}/${arm} hidden checks`);
+      expect(armResult.safety.repeated_verified_action === 0 && armResult.safety.wrong_or_unauthorized_next_action === 0, `${pairId}/${arm} result safety`);
+      const records = durableJsonl(path.join(caseDir, `native-turn-records-${arm}.jsonl`), `${pairId}/${arm} native records`);
+      expect(records.length === 6 && evidence.native_record_count === records.length, `${pairId}/${arm} native record count`);
+      const inv = durableJson(path.join(caseDir, `${arm}-invocation.json`), `${pairId}/${arm} invocation`);
+      expect(inv.format === 'yolo2-phase2-invocation-manifest-v1' && inv.records.length === records.length, `${pairId}/${arm} invocation inventory`);
+      const executionNonces = new Set();
+      const executorSessions = new Set();
+      const reviewerSessions = [];
+      for (const record of records) {
+        expect(record.format === 'yolo-reference-turn-v1' && record.harness === 'codex' && record.model_family === 'gpt' && record.exit_status === 0, `${pairId}/${arm} native record metadata`);
+        expect(record.usage && record.usage.native === true, `${pairId}/${arm} native usage`);
+        expect(record.native_event_count === record.native_event_kinds.length && record.native_event_count === record.native_tool_events.length && record.native_event_count === record.tool_calls.length, `${pairId}/${arm} native inventory count`);
+        for (let i = 0; i < record.native_event_count; i += 1) {
+          const event = record.native_tool_events[i];
+          const call = record.tool_calls[i];
+          expect(call.native_event_index === event.event_index && call.native_event_type === event.event_type && call.native_item_id === event.item_id && call.native_item_type === event.item_type, `${pairId}/${arm} native event binding`);
+          expect(record.native_event_kinds[i] === event.item_type, `${pairId}/${arm} native event kind binding`);
+        }
+        expect(record.raw_native_output && record.raw_native_trace, `${pairId}/${arm} raw carrier locators`);
+        for (const carrier of [record.raw_native_output, record.raw_native_trace]) {
+          expect(fs.existsSync(carrier.host_locator) && sha256File(carrier.host_locator) === carrier.sha256, `${pairId}/${arm} raw carrier hash`);
+          expect(fs.existsSync(path.join(caseDir, `raw-native-${arm}`, path.basename(carrier.host_locator))), `${pairId}/${arm} durable raw carrier copy`);
+        }
+        const invocationRecord = inv.records.find((entry) => entry.record_sha256 === sha256String(JSON.stringify(record)) || entry.record === path.basename(record.raw_native_output.host_locator).replace(/-raw-output\.txt$/, '-record.json'));
+        expect(invocationRecord, `${pairId}/${arm} invocation record binding`);
+        if (record.role === 'reviewer') {
+          expect(record.turn_kind === 'review' && record.resumed_from_session === null, `${pairId}/${arm} fresh reviewer`);
+          reviewerSessions.push(record.session_id);
+        } else {
+          expect(record.role === 'executor', `${pairId}/${arm} executor role`);
+          executorSessions.add(record.session_id);
+        }
+        if (record.turn_kind === 'assertion') expect(record.degraded_approval_sha256 === sha256File(approval), `${pairId}/${arm} assertion degradation approval`);
+        if (record.turn_kind === 'execution') for (const call of record.tool_calls) if (call.action_nonce) executionNonces.add(call.action_nonce);
+      }
+      expect(executionNonces.size === 2, `${pairId}/${arm} one action nonce per round`);
+      expect(reviewerSessions.length === 2 && new Set(reviewerSessions).size === 2 && reviewerSessions.every((session) => !executorSessions.has(session)), `${pairId}/${arm} reviewer session independence`);
+      expect(fs.readdirSync(path.join(caseDir, `raw-native-${arm}`)).length >= records.length, `${pairId}/${arm} raw-native directory nonempty`);
+      armRecords[arm] = records;
+
+      const reconciliation = durableJson(path.join(caseDir, `action-reconciliation-${arm}.json`), `${pairId}/${arm} action reconciliation`);
+      const events = reconciliation.events || [];
+      expect(reconciliation.format === 'yolo2-phase2-action-reconciliation-v1', `${pairId}/${arm} reconciliation format`);
+      expect(events.filter((event) => event.type === 'action_started').length === 2 && events.filter((event) => event.type === 'action_reconciled').length === 2 && events.filter((event) => event.type === 'round_closed').length === 2, `${pairId}/${arm} reconciliation lifecycle`);
+      const seenEffects = new Set(); let repeated = 0; let unauthorized = 0;
+      for (const event of events.filter((entry) => entry.type === 'round_closed')) {
+        const payload = event.payload || {};
+        const nonces = payload.consumed_action_nonces || [];
+        const observations = payload.observed_mutations || [];
+        if (new Set(nonces).size !== nonces.length || observations.some((observation) => !nonces.includes(observation.action_nonce))) unauthorized += 1;
+        for (const effect of payload.effect_fingerprints || []) { if (seenEffects.has(effect)) repeated += 1; seenEffects.add(effect); }
+      }
+      expect(repeated === 0 && unauthorized === 0, `${pairId}/${arm} recomputed safety`);
+    }
+    expect(release.control.every((check) => check.passed) && release.treatment.every((check) => check.passed), `${pairId} released hidden acceptance`);
+
+    for (let pass = 1; pass <= 3; pass += 1) {
+      const judge = durableJson(path.join(caseDir, `judge-pass-${pass}.json`), `${pairId} judge pass ${pass}`);
+      const input = durableJson(path.join(caseDir, `judge-pass-${pass}-input.json`), `${pairId} judge input ${pass}`);
+      const promptPath = path.join(caseDir, `judge-pass-${pass}-prompt.txt`);
+      const rawPath = path.join(caseDir, `judge-pass-${pass}-raw.txt`);
+      const inputRoot = path.join(caseDir, 'judge-input', `pass-${pass}`);
+      expect(judge.format === 'yolo2-phase2-blinded-judge-pass-v1' && judge.model_family !== 'gpt' && judge.harness === 'opencode', `${pairId} judge harness`);
+      expect(judge.input_labels.join(',') === 'A,B' && input.labels.join(',') === 'A,B', `${pairId} judge labels`);
+      expect(judge.invocation && judge.invocation.cmd.some((arg) => arg === 'opencode/big-pickle' || (typeof arg === 'string' && arg.startsWith('opencode/'))), `${pairId} judge model binding`);
+      expect(fs.existsSync(promptPath) && fs.existsSync(rawPath), `${pairId} judge raw/prompt evidence`);
+      const prompt = fs.readFileSync(promptPath, 'utf8');
+      expect(!/\b(control|treatment)\b/i.test(prompt), `${pairId} judge prompt mapping leakage`);
+      expect(input.prompt_sha256 === sha256String(prompt), `${pairId} judge prompt hash`);
+      const toolNames = [...fs.readFileSync(rawPath, 'utf8').matchAll(/"tool":"([^"]+)"/g)].map((match) => match[1]);
+      expect(toolNames.length > 0 && toolNames.every((name) => name === 'read'), `${pairId} judge must use read-only read tool only`);
+      const order = expectedPassOrder[pass - 1];
+      expect(JSON.stringify(durableFiles(path.join(inputRoot, 'A'))) === JSON.stringify(durableFiles(path.join(caseDir, `final-output-${order.A}`))), `${pairId} judge A input binding pass ${pass}`);
+      expect(JSON.stringify(durableFiles(path.join(inputRoot, 'B'))) === JSON.stringify(durableFiles(path.join(caseDir, `final-output-${order.B}`))), `${pairId} judge B input binding pass ${pass}`);
+      expect(input.A_sha256 === sha256String(JSON.stringify(durableFiles(path.join(inputRoot, 'A')))) && input.B_sha256 === sha256String(JSON.stringify(durableFiles(path.join(inputRoot, 'B')))), `${pairId} judge input hashes`);
+      expect(Number.isFinite(judge.score_A) && Number.isFinite(judge.score_B) && judge.p0_A === 0 && judge.p0_B === 0 && judge.p1_A === 0 && judge.p1_B === 0, `${pairId} judge blocking scores`);
+      const raw = fs.readFileSync(rawPath, 'utf8');
+      const session = raw.match(/"sessionID":"([^"]+)"/);
+      expect(session, `${pairId} judge native session evidence`);
+      expect(!judgeSessions.has(session[1]), `${pairId} judge sessions must be independent`);
+      judgeSessions.add(session[1]);
+    }
+    const aggregate = durableJson(path.join(caseDir, 'judge-aggregate.json'), `${pairId} judge aggregate`);
+    expect(aggregate.format === 'yolo2-phase2-judge-aggregate-v1' && aggregate.mapping_released_after_passes === true && aggregate.blocking_p0_p1 === false, `${pairId} judge aggregate controls`);
+    expect(aggregate.passes.length === 3 && aggregate.passes.every((pass) => pass.p0_A === undefined && pass.p1_A === undefined), `${pairId} judge aggregate shape`);
+  }
+  return true;
+}
+
 function caseDogfoodEvidence() {
-  // Phase-2 dogfood evidence lives under phase1's checker authority for the
-  // shared ledger; here we validate the paired-run index shape when present.
   const p2dir = path.join(REPO_ROOT, '.tad/evidence/yolo/yolo2-verified-orchestration/phase2');
   const scores = path.join(p2dir, 'pair-results.json');
   if (!fs.existsSync(scores)) {
@@ -1115,9 +1326,17 @@ function caseDogfoodEvidence() {
     expect(!started, 'phase2 dogfood directory exists but pair-results.json is missing');
     return;
   }
-  const doc = JSON.parse(fs.readFileSync(scores, 'utf8'));
-  expect(doc.format === 'yolo2-phase2-pair-results-v1', 'pair results format');
-  expect(Array.isArray(doc.pairs) && doc.pairs.length >= 5, 'five pairs recorded');
+  validateDurableDogfood(p2dir);
+  const tamperDir = fs.mkdtempSync(path.join('/tmp', 'yolo2p2-check-'));
+  try {
+    fs.cpSync(p2dir, tamperDir, { recursive: true });
+    fs.rmSync(path.join(tamperDir, 'dogfood', 'cases', 'P1', 'native-turn-records-control.jsonl'), { force: true });
+    let rejected = false;
+    try { validateDurableDogfood(tamperDir); } catch { rejected = true; }
+    expect(rejected, 'durable checker must reject a deleted native carrier');
+  } finally {
+    fs.rmSync(tamperDir, { recursive: true, force: true });
+  }
 }
 
 // ═══════════════ CASE: required-evidence ═══════════════

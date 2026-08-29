@@ -2521,20 +2521,49 @@ function validateNativeEventBinding(doc, { assertion = false, qualityPolicy = nu
   if (JSON.stringify(outputKinds) !== JSON.stringify(traceKinds)) {
     throw new ContractError('native_carrier_event_mismatch', { output: outputKinds, trace: traceKinds });
   }
-  if (!assertion) return;
-  // An assertion turn must be mutation-free; any file_change native event is a
-  // hard violation regardless of any degradation flag.
-  if (outputKinds.includes('file_change')) {
-    throw new ContractError('assertion_native_mutation', { kinds: outputKinds });
+  if (assertion) {
+    // An assertion turn must be mutation-free; any file_change native event is
+    // a hard violation regardless of any degradation flag.
+    if (outputKinds.includes('file_change')) {
+      throw new ContractError('assertion_native_mutation', { kinds: outputKinds });
+    }
+    const shellReads = outputKinds.filter((kind) => ['command_execution', 'mcp_tool_call'].includes(kind));
+    if (shellReads.length > 0) {
+      // Read-only-shell events are only tolerated when the frozen goal
+      // explicitly carries the degraded-approval binding; silence is never
+      // acceptance.
+      const policyDegraded = qualityPolicy && qualityPolicy.degraded_assertion_shell_reads === true;
+      const approvalSha = qualityPolicy ? qualityPolicy.degraded_approval_sha256 : null;
+      if (!policyDegraded || !isSha256(approvalSha) || degradedApprovalSha !== approvalSha) {
+        throw new ContractError('assertion_native_tool_policy_violation', { kinds: outputKinds });
+      }
+    }
   }
-  const shellReads = outputKinds.filter((kind) => ['command_execution', 'mcp_tool_call'].includes(kind));
-  if (shellReads.length === 0) return;
-  // Read-only-shell events are only tolerated when the frozen goal explicitly
-  // carries the degraded-approval binding; silence is never acceptance.
-  const policyDegraded = qualityPolicy && qualityPolicy.degraded_assertion_shell_reads === true;
-  const approvalSha = qualityPolicy ? qualityPolicy.degraded_approval_sha256 : null;
-  if (!policyDegraded || !isSha256(approvalSha) || degradedApprovalSha !== approvalSha) {
-    throw new ContractError('assertion_native_tool_policy_violation', { kinds: outputKinds });
+  // Native runner records must preserve a one-to-one attribution from every
+  // native event to exactly one tool-call carrier. Legacy synthetic fixtures
+  // use harness=reference and are intentionally outside this native endpoint.
+  if (doc.harness === 'codex' || Array.isArray(doc.native_tool_events)) {
+    if (!Array.isArray(doc.native_tool_events)
+        || doc.native_tool_events.length !== outputKinds.length
+        || !Array.isArray(doc.tool_calls)
+        || doc.tool_calls.length !== outputKinds.length) {
+      throw new ContractError('native_tool_call_attribution_mismatch', {
+        events: Array.isArray(doc.native_tool_events) ? doc.native_tool_events.length : null,
+        kinds: outputKinds.length,
+        tool_calls: Array.isArray(doc.tool_calls) ? doc.tool_calls.length : null,
+      });
+    }
+    for (let i = 0; i < doc.native_tool_events.length; i += 1) {
+      const event = doc.native_tool_events[i];
+      const call = doc.tool_calls[i];
+      if (!isPlainObject(event) || !isPlainObject(call)
+          || call.native_event_index !== event.event_index
+          || call.native_event_type !== event.event_type
+          || call.native_item_type !== event.item_type
+          || (call.native_item_id ?? null) !== (event.item_id ?? null)) {
+        throw new ContractError('native_tool_call_attribution_mismatch', { index: i });
+      }
+    }
   }
 }
 
@@ -2830,8 +2859,8 @@ function cmdRoundPrepare(flags, cwd, out) {
   add('BUDGETS', [
     `- round ${roundId} of max ${policy.max_rounds}`,
     `- executor token reservation for this round: ${policy.max_executor_tokens_per_round}`,
-    `- total tokens charged so far: ${r.state.phase2.tokens_charged} / ${policy.max_tokens} (audit reserve ${policy.audit_reserve_tokens})`,
-    `- actions so far: ${r.state.phase2.budgets.actions.used} / ${policy.max_actions}`,
+    `- total token budget: ${policy.max_tokens} (audit reserve ${policy.audit_reserve_tokens})`,
+    `- action budget: ${policy.max_actions}`,
   ].join('\n'));
 
   const header = `# Execution Packet — round ${roundId} (slice ${c.slice_id})\n\nDerived from goal.json + journal.jsonl. NO authority. If it disagrees with the ledger, the ledger wins.\n`;
@@ -2939,6 +2968,14 @@ function cmdRoundAuthorize(flags, cwd, out) {
     round: cur.id, packet: cur.packet_sha256, journalSeq: r.state.events_count,
     label: 'review', role: 'reviewer', kind: 'review',
   });
+  if (review.doc.harness === 'codex') {
+    if (review.doc.resumed_from_session !== null && review.doc.resumed_from_session !== undefined) {
+      throw new ContractError('reviewer_session_not_fresh', { resumed_from: review.doc.resumed_from_session });
+    }
+    validateAssertionToolPolicy(review.doc);
+    validateNativeEventBinding(review.doc);
+    validateToolTrace(review.doc, { assertion: true });
+  }
   if (review.doc.session_id === assertion.doc.session_id || review.doc.reviewer_id === execAuthor) {
     throw new ContractError('self_review_forbidden', {});
   }
