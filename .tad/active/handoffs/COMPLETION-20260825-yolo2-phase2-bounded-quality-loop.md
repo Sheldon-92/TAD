@@ -2,6 +2,43 @@
 gate3_verdict: partial
 ---
 
+## Final Revalidation Addendum — 2026-08-29
+
+This addendum supersedes the stale status values below for the current
+completion attempt. The implementation changes are committed at
+`0961d7e3517c59fc32c7118a5668a551f85a8a86`.
+
+### Layer 1
+
+| Check | Status | Evidence |
+|---|---|---|
+| Syntax | PASS | `node --check` for recovery, runner, driver, and both suites |
+| Phase-1 suite | BLOCKED | `phase1-suite-final.log`: 10/11; AC-B scope proof fails on unrelated parallel commit `f967276f` |
+| Phase-2 suite | PASS | `phase2-suite-final.log`: 12/12, exit 0 |
+| Final paired dogfood | PASS | `runs/a6fe746c2ff351dff3c99e1fff584a171f5ee3d37b58417f131fb24a55a82f35/`; 5/5 control and 5/5 treatment; safety 0/0 |
+| Durable evidence checker | PASS | `node .tad/scripts/yolo-round.test.mjs --case dogfood-evidence`; deleted-carrier negative control also PASS |
+
+### Gate 3 disposition
+
+`HONEST_PARTIAL`. AC-B is a mandatory Gate 3 regression and compares
+`96bbfada..HEAD` against the Phase-1 archive plus this handoff's declared
+allowlist. The independent parallel local-wiki commit `f967276f` adds 35
+out-of-scope paths, so the proof is correctly red at the current HEAD.
+The YOLO2 allowlist was not widened and the parallel work was not reverted.
+Group-0 and downstream Layer-2 reviews were not started because the mandatory
+scope proof is red.
+
+### Knowledge Assessment
+
+New implementation/process discovery recorded in
+`.tad/evidence/journal/yolo2-phase2-completion-2026-08-29.md`.
+
+### Current handoff state
+
+The Phase-2 implementation and dogfood are complete, but Gate 3 is not passed.
+Resume after a human/branch reconciliation of the shared-base scope boundary,
+then rerun AC-B at final HEAD before Group-0 and Layer-2.
+
 # Implementation Completion Report
 
 **From:** Alex in explicit YOLO execution mode
