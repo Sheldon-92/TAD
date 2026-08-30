@@ -298,3 +298,8 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
 ## 🧊 长期停放的 Epic（非阻塞）
 
 - Agent Capability Packs 6/9 · Goal-Driven Research Director 3/4 · Security Domain Pack Chain 2/5（暂停）
+
+## Cancelled
+
+- [c] phase1b-retire-frontmatter (2026-08-30) — scope-change: carrier map 与当前约束承载关系已失配，需重新设计
+- [c] phase2-installer-data-safety (2026-08-30) — scope-change: 原范围已部分交付，剩余 FR-1/FR-5/AC2.5 需重新出单

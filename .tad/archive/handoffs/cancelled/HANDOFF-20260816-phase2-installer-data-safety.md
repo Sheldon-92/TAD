@@ -5,6 +5,8 @@ research_required: no
 git_tracked_dirs: []
 skip_knowledge_assessment: no
 gate4_delta: []
+cancel_reason: scope-change
+cancel_rationale: "原范围已被 46af019c 和 65bb0840 部分交付，剩余 FR-1、FR-5、AC2.5 与原整单 AC 不再一致，后续须按当前安装器状态重新出单。"
 ---
 
 # Handoff Document for Agent B (Blake)

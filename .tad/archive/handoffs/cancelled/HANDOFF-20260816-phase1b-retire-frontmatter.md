@@ -5,6 +5,8 @@ research_required: no
 git_tracked_dirs: []
 skip_knowledge_assessment: no
 gate4_delta: []
+cancel_reason: scope-change
+cancel_rationale: "Gate 2 发现 carrier map 与约束承载关系不准确，当前约束引用也已继续演化，原方案不可直接执行，后续须基于当前 skill 重新设计。"
 ---
 
 # Handoff Document for Agent B (Blake)

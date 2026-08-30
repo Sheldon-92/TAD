@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-08-30 18:33
+Generated: 2026-08-30 19:29
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -60,8 +60,6 @@ Generated: 2026-08-30 18:33
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-20260816-phase1b-retire-frontmatter.md | mixed | 退休 `alex/SKILL.md` frontmatter 的 `constraints:` + `migration:` 块（L6-146）。 |
-| HANDOFF-20260816-phase2-installer-data-safety.md | code | 修复安装器中三个会**不可逆删除用户数据**的缺陷，并交付验证它们所必需的可测试性。 |
 | HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Add an opt-in Phase-2 round contract to the accepted Phase-1 recovery recorder. |
 | HANDOFF-20260827-yolo2-phase2-completion.md | code |  |
 

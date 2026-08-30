@@ -37,8 +37,8 @@
 |---|-------|--------|---------|-----------------|
 | 1a | 纯删除 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 playground 两侧 + 两个空头绑定 + evidence 去重 |
 | 1a-2 | ROADMAP 悬空链接 | ✅ **DONE**（`b6956606`，Gate 3 5/5） | 已归档 | 修 `ROADMAP.md:38` |
-| 1b | 退休 frontmatter 约束块 | ⬚ **待人裁定** `enforcement` 二选一 | `HANDOFF-20260816-phase1b-retire-frontmatter.md` | 写 4 条孤儿 + 处理标量 + 改 16 处悬空引用 |
-| 2 | 安装器数据安全 | 🔶 **部分完成** | `HANDOFF-20260816-phase2-installer-data-safety.md` | 见下方拆解 |
+| 1b | 退休 frontmatter 约束块 | ⬚ **Planned — redesign required** | 旧 handoff 已取消归档 | Gate 2 推翻 carrier map；须按当前约束承载关系重新设计 |
+| 2 | 安装器数据安全 | ⬚ **Planned — remaining scope redesign required** | 旧 handoff 已取消归档 | F-01/F-02/F-03/F-34 已交付；FR-1/FR-5/AC2.5 重新出单 |
 | 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 `eval`+`rm -rf` 脚本、镜像守卫、修计数 |
 | 4 | 发行瘦身 | ✅ **DONE**（`659f4161`，Gate 4 ✅） | 已归档 | npm 23.1→3.3 MB、evidence/archive 移出 main |
 
@@ -61,6 +61,10 @@
 | full Alex 审查终止条件（`max_review_rounds: 2`） | `dab4daf1` | ✅ `3764c43f` |
 
 ### 🔶 Phase 2 的逐项状态（本 Epic 唯一未收口的部分）
+
+> 2026-08-30：原 `HANDOFF-20260816-phase2-installer-data-safety.md` 因范围已被
+> 多个小任务部分交付而以 `scope-change` 取消。下表继续作为事实台账；未完成项
+> 必须基于当前安装器重新设计，不得恢复执行旧 handoff。
 
 | 项 | 状态 | 依据 |
 |---|---|---|
@@ -432,7 +436,9 @@ _（尚无 Phase 完成）_
 - ⚠️ **一条方法教训（2026-08-16）**：Alex 在本 Epic 立项时曾把两个问题当作"需人裁定"抛给用户，实际其中一个是可查的事实（playground 下游使用），另一个是自己尚未查清的结论（`config-cognitive` 是否可有可无 —— 查完发现 Blake 有活指针，根本不是取舍题）。**能查的不该拿去问人；问之前先把功课做完。**
 
 ### Next Phase Scope
-Phase 1：零风险缺陷清扫。**两项裁定已完成，无剩余待决项。** 下一步是 Alex 完成苏格拉底提问（规则 0，BLOCKING）后出 handoff 给 Blake。
+先重新设计 Phase 1b 与 Phase 2 的剩余工作。Phase 1b 必须重新建立当前约束承载图；
+Phase 2 只覆盖尚未完成的 FR-1、FR-5、AC2.5。两个 2026-08-16 旧 handoff 已于
+2026-08-30 以 `scope-change` 取消，不得直接恢复执行。
 
 ---
 
