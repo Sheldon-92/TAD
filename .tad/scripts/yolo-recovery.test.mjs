@@ -2009,7 +2009,7 @@ function casePhase2ScopeProof() {
     // Scope fixtures (real Git repos)
     const fixtureErrors = runScopeFixtures();
     if (fixtureErrors.length) throw new CaseFail(`scope fixtures failed:\n  - ${fixtureErrors.join('\n  - ')}`);
-    // Main ref post-check
+    // Main ref post-check (recompute postMain for later log)
     let postMain;
     try { postMain = git(['rev-parse', 'refs/heads/main'], REPO_ROOT); }
     catch { postMain = git(['rev-parse', 'HEAD'], REPO_ROOT); }
@@ -2018,6 +2018,8 @@ function casePhase2ScopeProof() {
       process.stdout.write('RESULT=ERROR\n');
       process.exit(2);
     }
+    // stash postMain for later carrier log (needs to be accessible outside block)
+    globalThis.__yolo_postMain = postMain;
   } else {
     // Legacy mode (suite without pinned args): verify that the net
     // 96bbfada..HEAD diff, once the single fixed Local Wiki exclusion is
@@ -2124,7 +2126,8 @@ function casePhase2ScopeProof() {
     }
     // scope-proof.log
     const logPath = path.join(evidenceDir, 'scope-proof.log');
-    const logContent = `pre_main=${preMain}\npost_main=${postMain}\nbase=${baseFull}\nmain=${mainFull}\ncandidate=${candidateFull}\nmanifest=${manifestPath}\nverifier_blob=${blobSha}\nexit=0\nresult=PASS\n`;
+    const _postMain = globalThis.__yolo_postMain || mainFull;
+    const logContent = `pre_main=${preMain}\npost_main=${_postMain}\nbase=${baseFull}\nmain=${mainFull}\ncandidate=${candidateFull}\nmanifest=${manifestPath}\nverifier_blob=${blobSha}\nexit=0\nresult=PASS\n`;
     fs.writeFileSync(logPath, logContent);
   }
 }
