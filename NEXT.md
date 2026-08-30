@@ -45,10 +45,10 @@
 - ~~Blocking next actions~~（由上述 completion handoff 接管）：strict assertion 边界已由
   显式降级批准绑定解决（`6eaef1fb`）；其余并入 AC-B…AC-J。
 
-- **Current blocker (2026-08-29)**: final AC-B scope proof is red because the shared
+- **Current blocker (2026-08-30)**: final AC-B scope proof is red because the shared
   `96bbfada..HEAD` range includes the unrelated parallel local-wiki commit `f967276f`
   (35 paths outside the YOLO2 §3.1 allowlist). Do not widen the allowlist or revert
-  that task; reconcile the acceptance baseline/range, then rerun Phase-1 AC-B before
+  that task (Local Wiki Gate 4 accepted and archived 2026-08-30); reconcile the acceptance baseline/range, then rerun Phase-1 AC-B before
   Group-0 and Layer-2. Evidence: `.tad/evidence/journal/yolo2-phase2-completion-2026-08-29.md`.
 
 ### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进

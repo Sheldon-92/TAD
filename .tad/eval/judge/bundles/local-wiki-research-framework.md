@@ -1,3 +1,47 @@
+
+# HANDOFF: local-wiki-research-framework
+
+---
+task_id: TASK-20260828-LOCAL-WIKI
+status: approved
+owner: Alex
+created: 2026-08-28
+task_type: code
+e2e_required: no
+research_required: yes
+gate2_note: >
+  Gate 2 双专家审查已完成（2026-08-28, max_review_rounds 1/2）：
+  code-reviewer: CONDITIONAL PASS (P0-1 scope, P0-2 enforcement, P1-1/2/3, P2-1)
+  security-auditor: CONDITIONAL PASS (P0 Iron Rule 验证剧场, P0 YAML 注入, P1 凭据泄露/覆写, P2 供应链)
+  2 个 P0 已在 handoff §4 AC 设计中闭环（见 §4.1 增量），剩余 P1 由 Blake 在 Gate 3 前闭环。
+  审查载体：本文件 §11 + 两份独立 review 报告（见 evidence/reviews/alex/local-wiki/）。
+---
+
+---
+
+## §6 Implementation Steps (head)
+## 6. Required Evidence Manifest
+
+```
+research/CLAUDE.md, research/canon/_topics.yaml, research/canon/_questions.yaml
+research/canon/research/mcp-prompt-injection.md, research/canon/concepts/guardrail-layers.md
+research/raw/{papers,articles,github}/mcp-*.md (≥3)
+research/wiki/topics/mcp-security.md, research/wiki/research/mcp-prompt-injection.md
+research/scripts/generate.py, research/scripts/ingest.sh, research/canon/lint.sh
+research/wiki/index.md, research/canon/_index.md, research/raw/manifests/migrated-from-notebooklm.txt
+.tad/evidence/research/local-wiki/{lint-report,generate-diff,migration-log}.md
+.tad/evidence/reviews/blake/local-wiki/{code-reviewer,security-auditor}.md
+```
+
+---
+
+## 7. Layer 2 / Gate 3 要求
+
+---
+
+
+# COMPLETION: local-wiki-research-framework
+
 ---
 task_id: TASK-20260828-LOCAL-WIKI
 status: completed
@@ -174,3 +218,5 @@ Commit:    {see git log}
 ---
 
 *Evidence produced per `.tad/config-quality.yaml` gate3_v2 (Ralph Loop + expert + git + KA).*
+
+---

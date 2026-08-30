@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-08-13 18:40
+Generated: 2026-08-30 18:33
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -60,15 +60,16 @@ Generated: 2026-08-13 18:40
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-20260812-lite-goal-gate.md | unknown | 给 **Epic 的 Objective** 加一道目标选择闸 + 机械载体： |
-| HANDOFF-20260812-requirement-first.md | unknown |  |
-| HANDOFF-20260813-review-scaling.md | unknown |  |
-| HANDOFF-20260814-routing-decouple.md | unknown |  |
+| HANDOFF-20260816-phase1b-retire-frontmatter.md | mixed | 退休 `alex/SKILL.md` frontmatter 的 `constraints:` + `migration:` 块（L6-146）。 |
+| HANDOFF-20260816-phase2-installer-data-safety.md | code | 修复安装器中三个会**不可逆删除用户数据**的缺陷，并交付验证它们所必需的可测试性。 |
+| HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Add an opt-in Phase-2 round contract to the accepted Phase-1 recovery recorder. |
+| HANDOFF-20260827-yolo2-phase2-completion.md | code |  |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
-| EPIC-20260813-alex-blake-lightening.md | **Created**: 2026-08-13 |
+| EPIC-20260816-framework-health-repair.md | **Epic ID**: EPIC-20260816-framework-health-repair |
+| EPIC-20260824-yolo2-verified-orchestration.md | **Epic ID**: EPIC-20260824-yolo2-verified-orchestration   |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -83,4 +84,5 @@ Generated: 2026-08-13 18:40
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260812-discipline-inventory.md | research | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260828-local-wiki-research-framework.md | code | HANDOFF-20260828-local-wiki-research-framework |
+| HANDOFF-20260824-yolo2-phase1-recovery-slice.md | mixed | Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片 |
