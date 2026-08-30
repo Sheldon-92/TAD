@@ -64,27 +64,6 @@
   writeAtomic 无 fsync/mode（LOW）；parseArgs 边界（LOW）。
 - **安全修复已含**：post-verify 证据重验（`fc7a07fc`，原 P0 已关）。
 
-### ⏳ 0-WAIT. **retire-sync-decouple-projects** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
-
-- **Completion**: `.tad/active/handoffs/COMPLETION-20260817-retire-sync-decouple-projects.md`（commit `65380b7c`，AC 15/15）
-- 退休 `*sync` / `*sync-add` / `*sync-list` + 删注册表 + 三协议文件 + harvest(方案A) + sync-ops(退休桩)。
-- ⚠️ **Gate 4 要看的**：
-  1. **AC-7 排除正则待 addendum 补**（历史 3 处保留：config.yaml v2.4.0 日志 / migrations 记录 / ac-verification 教训）。
-  2. **跨文件残留另立单**（优先）：`tad-help/SKILL.md:70-72`、`publish-protocol.md:205` 仍广告已退休命令。
-     `research-notebook/SKILL.md:1153` 是**假阳性**（NotebookLM 自己的 *sync，勿动）。
-  3. **FR-1 不可从 git 验证**（注册表 untracked）——以 AC-1 `ls` 为唯一证据。
-- **行为学验证**：下一张单不再出现 *sync 出单/执行，即证明退休生效。
-
-### ⏳ 0-WAIT. **alex-review-loop-cap** —— Gate 3 ✅ PASS，等 Alex 跑 Gate 4
-
-- **Completion**: `.tad/active/handoffs/COMPLETION-20260817-alex-review-loop-cap.md`（commit `dab4daf1`，AC 24/24）
-- 给 full Alex 的专家审查补了终止条件（`max_review_rounds: 2` + 增量复核 + `p0_resolved_definition`）。
-- ⚠️ **Gate 4 必须回看的一条**：**下一张单的专家审查轮次是否 ≤2。**
-      本单是 prompt 层文本，静态 AC 只证明约束被**写下**了，证明不了它**生效** —— 行为学证据只能在下一张真实 handoff 上取。
-- **新发现（另立单，未做）**：`handoff-creation-protocol.md:522` 的 `<!-- -->` HTML 注释卡在 YAML 序列里，
-      该文件**自 baseline 起就无法被 `yq` 解析**（报错 line 516），两侧镜像相同。
-      长期没人发现是因为 `skill-body-verify.sh` **只做 diff 不做解析**。修它超出本单 4 文件上限。
-
 ### ⭐ 0-NEW. **EPIC-20260816-framework-health-repair** —— 2026-08-16 全仓审计后立项
 
 - **Epic**: `.tad/active/epics/EPIC-20260816-framework-health-repair.md`（Phase 1 = 🔄 Active）
