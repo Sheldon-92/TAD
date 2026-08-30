@@ -1773,8 +1773,8 @@ function runScopeFixtures() {
     const dir = makeRepo();
     const base = git(['rev-parse', 'HEAD'], dir);
     // create a phase2 product commit
-    fs.writeFileSync(path.join(dir, '.tad/scripts/yolo-recovery.mjs'), 'product v1\n');
     fs.mkdirSync(path.join(dir, '.tad/scripts'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.tad/scripts/yolo-recovery.mjs'), 'product v1\n');
     git(['add', '.tad/scripts/yolo-recovery.mjs'], dir);
     git(['commit', '-q', '-m', 'phase2 product'], dir);
     const prodSha = git(['rev-parse', 'HEAD'], dir);
