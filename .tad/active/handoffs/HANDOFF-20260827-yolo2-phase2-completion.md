@@ -10,6 +10,11 @@ gate2_note: >
   Gate-2 双专家审查以用户直接指令豁免（Value Guardian 2026-08-27 明确指示
   "写一个 handoff，我给 blake 执行完成"）。设计输入为独立 Group-0 复审报告
   （第二视角），修正案契约由人类 DR 签署。此豁免记录于 DR-20260827。
+scope_proof_amendment: .tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md
+scope_amendment_gate2: pass
+scope_amendment_reviews:
+  - .tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/architecture-review.md
+  - .tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/evidence-security-review.md
 ---
 
 # HANDOFF-20260827-yolo2-phase2-completion
@@ -19,6 +24,8 @@ gate2_note: >
 **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (Phase 2 completion)
 **Design authority**: `HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md`（冻结，语义权威）
 **Amendment contract**: `.tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md`（人类签署，验收契约权威）
+**Scope-proof amendment**: `.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md`
+（人类签署；仅替换 AC-B 的共享-main连续历史假设，不放宽 allowlist）
 
 ---
 
@@ -85,11 +92,27 @@ Phase-1 归档证据、本文件与 20260825 handoff 原文（发现 handoff 本
 ## 4. Work items and ACs
 
 ### AC-B — Scope proof 端点（P1-2）
-Phase-1 套件的 scope checker 改为：`96bbfada..HEAD` 与「Phase-1 归档 allowlist ∪
-本 handoff §3.1 allowlist」比对，保留既有 red controls 与 lifecycle 语义；
-`phase1/final-commit.txt` 机制保留给 Phase-1 自身证明，Phase-2 判定改读 HEAD。
+按 `DR-20260830-yolo2-phase2-scope-proof-amendment.md` 执行双证明：
+
+1. frozen base 仍为 `96bbfada`；verifier 对 pinned `BASE..MAIN_HEAD` 的每个 commit
+   重算 first-parent diff 并要求 manifest 恰好分类一次；在独立 validation
+   worktree/branch 中只重放被纳入的 Phase-2 commits，`96bbfada..PHASE2_CANDIDATE_HEAD` 与
+   「Phase-1 归档 allowlist ∪ 本 handoff §3.1/§3.2 allowlist ∪ Alex-authored amendment
+   carrier」比对，必须零越界；
+2. candidate 与 pinned main SHA 上五个 Phase-2 product paths 及枚举的 immutable
+   Phase-2 evidence 做 Git blob/tree 等价证明；共享控制面使用 DR 定义的 selector +
+   exact value + canonical subdocument hash；Phase-2 owned paths 必须 clean；
+3. 使用 DR 固定的唯一 verifier 命令与真实临时 Git fixtures；commit 闭集遗漏、禁止路径
+   后回滚、manifest 篡改、main ref 漂移、错误 marker hash 均必须变红/exit 2；
+4. dogfood 复用只由 canonical `dogfood-input-manifest.json` 判定，不由五个 product
+   hashes 或 mechanism 名称判定。
+
+不得把 base 改为 `f967276f`，不得扩大 YOLO allowlist，不得回滚 Local Wiki。
+
 **Verify**: `node .tad/scripts/yolo-recovery.test.mjs` → 11/11 `RESULT=PASS`；
-scope 红控 fixture（故意越界文件）仍 FAIL。
+Gate 4 重跑 DR 的唯一 verifier 命令并得到 `RESULT=PASS`；scope-proof 五个 carrier
+（含 dogfood-input manifest）存在且 hash 互绑；DR §3 的真实 Git fixtures 全部有
+机器可读红/绿证据。carrier 存在或手写 PASS 日志本身不构成证明。
 
 ### AC-C — 六预算 fixture + 全角色记账（P1-7 / AC9）
 yolo-round.test.mjs 的 budget-exhaustion 必须真实执行 6 个独立 fixture：
@@ -145,7 +168,9 @@ reversal 记 tie）。输出 judge-pass-{1,2,3}-{arm}.json + 聚合（P0/P1 阻�
 **Verify**: 9 个 judge 文件存在；family ≠ gpt；checker 校验 label 泄漏拒绝。
 
 ### AC-J — 最终重验证 + Layer 2 + Gate 3
-1. 最终机制版本：commit → 新 namespace 全量 dogfood（5/5+5/5, safety 0/0）。
+1. 最终 candidate commit 后重算 dogfood-input manifest：若与既有最终 run 逐项全等，
+   复用并重跑 durable checker；若任一输入变化/不可重建，则新 namespace 全量 dogfood
+   （5/5+5/5, safety 0/0）。
 2. 双套件全绿 + scope proof（AC-B）绿。
 3. 更新 `gate3-verdict.md` / `knowledge-assessment.md` / COMPLETION 至最终 HEAD。
 4. 发起独立 Group-0 复审 → **必须 PASS**（NOT=0, PARTIAL≤3）。
@@ -162,6 +187,9 @@ reversal 记 tie）。输出 judge-pass-{1,2,3}-{arm}.json + 聚合（P0/P1 阻�
 6. AC-H durable tree + checker 硬化 + AC-I judges。
 7. AC-J 最终链路（dogfood → suites → Group 0 → Layer 2）。
 每次机制变更后：commit → 新 namespace 全量重跑 dogfood（§14 规则，禁止增量混跑）。
+若 AC-B 修正只改变 scope proof/test/evidence，且 canonical dogfood-input manifest 与
+最终 run 逐项全等，按 DR-20260830 复用既有 dogfood；任一 dogfood input 改变或旧 run
+无法无歧义重建 input manifest，则全量失效重跑。
 
 ## 6. Required Evidence Manifest（新增部分）
 
@@ -170,6 +198,9 @@ reversal 记 tie）。输出 judge-pass-{1,2,3}-{arm}.json + 聚合（P0/P1 阻�
   dataset-manifest.json, label-commitment.json, randomization-schedule.json, rubric.json
   cases/<case-id>/{pair-config,invocation-*,bootstrap-*,output-manifest-*,judge-pass-*}.json
   paired-results.json
+.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/
+  phase2-commit-manifest.json + candidate-tree.json + main-equivalence.json
+  dogfood-input-manifest.json + scope-proof.log
 .tad/evidence/reviews/blake/yolo2-phase2/
   spec-compliance-final.md (Group 0 PASS 载体) + code-reviewer.md + test-runner 报告
 ```
@@ -177,9 +208,13 @@ reversal 记 tie）。输出 judge-pass-{1,2,3}-{arm}.json + 聚合（P0/P1 阻�
 
 ## 7. Layer 2 / Gate 3 要求
 
-- Group 0（spec-compliance）先行并阻塞其余；复审须针对最终 HEAD，引用本 handoff +
-  DR-20260827 作为验收契约。
+- Group 0（spec-compliance）先行并阻塞其余；复审须针对 DR-20260830 定义的
+  candidate/main binding tuple，引用本 handoff + DR-20260827 + DR-20260830 作为验收契约。
 - Reviewers 必须读最终代码与 raw evidence，不得只看 COMPLETION。
+- Group-0、code-reviewer、test-runner 最终报告必须绑定同一
+  `{candidate_sha, main_sha, scope_manifest_sha256, main_equivalence_sha256,
+  product_tree_sha256, immutable_evidence_tree_sha256, verifier_output_sha256}`；
+  tuple 不一致视为未审查同一对象。
 - P0/P1 阻塞；P2/LOW 可延后但须落 NEXT 条目。
 - 原有 FAIL 报告保留为 provenance，修复需增量 PASS 载体。
 
