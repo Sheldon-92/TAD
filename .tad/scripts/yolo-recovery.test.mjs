@@ -1353,9 +1353,11 @@ function phase2ScopeAllowsInclusive(rel) {
   // candidate appear out-of-scope; they are not part of the fixed
   // exclusion's 35 paths but are also not YOLO2-owned.
   if (rel.startsWith('.tad/archive/handoffs/')) return true;
+  if (rel.startsWith('.tad/archive/handoffs/cancelled/')) return true;
   if (rel === '.tad/brain-index.md') return true;
   if (rel.startsWith('.tad/eval/judge/bundles/')) return true;
   if (rel === 'PROJECT_CONTEXT.md') return true;
+  if (rel === '.tad/active/epics/EPIC-20260816-framework-health-repair.md') return true;
   return false;
 }
 
