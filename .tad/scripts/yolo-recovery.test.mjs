@@ -1985,7 +1985,14 @@ function casePhase2ScopeProof() {
     evidenceDir = path.join(REPO_ROOT, '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof');
   }
 
-  // ── 0. Attestation check (if provided) — post-freeze binding to avoid self-reference
+  // ── 0. Attestation check — required in pinned mode (post-freeze binding to avoid self-reference)
+  if (isPinnedMode) {
+    if (!args.attestation || !args.expectedAttestationSha256) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation required in pinned mode (post-freeze binding)\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+  }
   if (args.attestation) {
     const attPath = path.isAbsolute(args.attestation) ? args.attestation : path.join(REPO_ROOT, args.attestation);
     if (!fs.existsSync(attPath)) {
