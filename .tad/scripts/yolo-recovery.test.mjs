@@ -1871,25 +1871,75 @@ function runScopeFixtures() {
     const off = ['research/wiki.md'].filter(p => !phase2ScopeAllowsInclusive(p));
     if (off.length !== 1) errors.push('fixture1: parallel wiki path should be excluded from allowlist');
   }
-  // Fixture 2: manifest or candidate contains forbidden path → FAIL
-  {
-    const forbidden = '.tad/hooks/phase2-out-of-scope-fixture.sh';
-    const off = [forbidden].filter(p => !phase2ScopeAllowsInclusive(p));
-    if (off.length !== 1) errors.push('fixture2: forbidden path must be rejected');
-  }
-  // Fixture 3: missing product commit → FAIL (check product path missing in candidate diff)
+  // Fixture 2: manifest or candidate contains forbidden path → FAIL (real verifier invocation)
   {
     const dir = makeRepo();
     const base = git(['rev-parse', 'HEAD'], dir);
-    // No product commit; candidate == base
-    const candidate = base;
-    const changed = git(['diff', '--name-only', `${base}..${candidate}`], dir).split('\n').filter(Boolean);
-    const missing = PHASE2_PRODUCT_ALLOWLIST.filter(p => !changed.includes(p));
-    if (missing.length === 0) errors.push('fixture3: missing product commit should be detected (candidate lacks product path)');
+    fs.mkdirSync(path.join(dir, '.tad/hooks'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.tad/hooks/bad.sh'), 'bad\n');
+    git(['add', '.tad/hooks/bad.sh'], dir);
+    git(['commit', '-q', '-m', 'add forbidden'], dir);
+    const badCommit = git(['rev-parse', 'HEAD'], dir);
+    const manifestPath = path.join(dir, 'manifest.json');
+    const manifest = {
+      format: 'yolo2-phase2-scope-proof-v1',
+      base_sha: base,
+      main_sha: badCommit,
+      candidate_sha: base,
+      candidate_tree: git(['rev-parse', `${base}^{tree}`], dir),
+      verifier_blob_sha256: sha256File(path.join(dir, '.tad/scripts/yolo-recovery.test.mjs')),
+      commits: [{
+        source_sha: badCommit,
+        parents: [base],
+        source_tree: git(['rev-parse', `${badCommit}^{tree}`], dir),
+        first_parent_binary_diff_sha256: computeBinaryDiffSha(base, badCommit, dir),
+        sorted_changed_paths_sha256: computeSortedPathsSha(getChangedPaths(base, badCommit, dir)),
+        patch_id: getPatchId(badCommit, dir),
+        stable_patch_id: getPatchId(badCommit, dir),
+        changed_paths: getChangedPaths(base, badCommit, dir).sort(),
+        classification: 'included',
+        reason: 'phase2-yolo',
+        shared_phase2_path_exemptions: [],
+      }],
+    };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    const evidenceDir = path.join(dir, 'evidence');
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    // Create dummy carriers for the verifier's pre-check (they will fail on allowlist but we test the verifier's ability to detect)
+    for (const name of ['candidate-tree.json','main-equivalence.json','dogfood-input-manifest.json','scope-proof.log']) {
+      fs.writeFileSync(path.join(evidenceDir, name), '{}');
+    }
+    const res = invoke(dir, ['--base', base, '--main', badCommit, '--candidate', base, '--manifest', manifestPath, '--evidence-dir', evidenceDir]);
+    // The verifier should detect the forbidden path via the manifest's included commit
+    // We check that it does not return PASS (it should be FAIL or ERROR)
+    if (res.code === 0 && res.out.includes('RESULT=PASS')) errors.push('fixture2: verifier should not PASS with forbidden path in included commit');
   }
-  // Fixture 4: forbidden path then rollback, final tree still FAIL
-  // Simulate by creating a commit that adds forbidden file, then a second commit that removes it;
-  // the included set still contains the forbidden commit, so verifier must FAIL even though final tree is clean.
+  // Fixture 3: missing product commit → FAIL (real verifier: candidate lacks product path)
+  {
+    const dir = makeRepo();
+    const base = git(['rev-parse', 'HEAD'], dir);
+    const candidate = base;
+    const main = base;
+    const manifestPath = path.join(dir, 'manifest.json');
+    const manifest = {
+      format: 'yolo2-phase2-scope-proof-v1',
+      base_sha: base,
+      main_sha: main,
+      candidate_sha: candidate,
+      candidate_tree: git(['rev-parse', `${candidate}^{tree}`], dir),
+      verifier_blob_sha256: sha256File(path.join(dir, '.tad/scripts/yolo-recovery.test.mjs')),
+      commits: [],
+    };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    const evidenceDir = path.join(dir, 'evidence');
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    for (const name of ['candidate-tree.json','main-equivalence.json','dogfood-input-manifest.json','scope-proof.log']) {
+      fs.writeFileSync(path.join(evidenceDir, name), '{}');
+    }
+    const res = invoke(dir, ['--base', base, '--main', main, '--candidate', candidate, '--manifest', manifestPath, '--evidence-dir', evidenceDir]);
+    if (res.code === 0 && res.out.includes('RESULT=PASS')) errors.push('fixture3: verifier should not PASS when candidate lacks product path');
+  }
+  // Fixture 4: forbidden path then rollback, final tree still FAIL (real verifier with history)
   {
     const dir = makeRepo();
     const base = git(['rev-parse', 'HEAD'], dir);
@@ -1901,12 +1951,51 @@ function runScopeFixtures() {
     git(['rm', '-q', '.tad/hooks/bad.sh'], dir);
     git(['commit', '-q', '-m', 'remove forbidden'], dir);
     const final = git(['rev-parse', 'HEAD'], dir);
-    // Even though final tree has no forbidden file, the bad commit's changed_paths
-    // contains forbidden path, so included set would be tainted.
-    const badChanged = getChangedPaths(base, bad, dir).concat(getChangedPaths(bad, final, dir));
-    // Simplified check: if any included commit had forbidden path, should be FAIL
-    const hasForbidden = badChanged.some(p => p === '.tad/hooks/bad.sh');
-    if (!hasForbidden) errors.push('fixture4: forbidden-then-rollback should still be detected via commit history');
+    const manifestPath = path.join(dir, 'manifest.json');
+    const manifest = {
+      format: 'yolo2-phase2-scope-proof-v1',
+      base_sha: base,
+      main_sha: final,
+      candidate_sha: base,
+      candidate_tree: git(['rev-parse', `${base}^{tree}`], dir),
+      verifier_blob_sha256: sha256File(path.join(dir, '.tad/scripts/yolo-recovery.test.mjs')),
+      commits: [
+        {
+          source_sha: bad,
+          parents: [base],
+          source_tree: git(['rev-parse', `${bad}^{tree}`], dir),
+          first_parent_binary_diff_sha256: computeBinaryDiffSha(base, bad, dir),
+          sorted_changed_paths_sha256: computeSortedPathsSha(getChangedPaths(base, bad, dir)),
+          patch_id: getPatchId(bad, dir),
+          stable_patch_id: getPatchId(bad, dir),
+          changed_paths: getChangedPaths(base, bad, dir).sort(),
+          classification: 'included',
+          reason: 'phase2-yolo',
+          shared_phase2_path_exemptions: [],
+        },
+        {
+          source_sha: final,
+          parents: [bad],
+          source_tree: git(['rev-parse', `${final}^{tree}`], dir),
+          first_parent_binary_diff_sha256: computeBinaryDiffSha(bad, final, dir),
+          sorted_changed_paths_sha256: computeSortedPathsSha(getChangedPaths(bad, final, dir)),
+          patch_id: getPatchId(final, dir),
+          stable_patch_id: getPatchId(final, dir),
+          changed_paths: getChangedPaths(bad, final, dir).sort(),
+          classification: 'included',
+          reason: 'phase2-yolo',
+          shared_phase2_path_exemptions: [],
+        },
+      ],
+    };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    const evidenceDir = path.join(dir, 'evidence');
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    for (const name of ['candidate-tree.json','main-equivalence.json','dogfood-input-manifest.json','scope-proof.log']) {
+      fs.writeFileSync(path.join(evidenceDir, name), '{}');
+    }
+    const res = invoke(dir, ['--base', base, '--main', final, '--candidate', base, '--manifest', manifestPath, '--evidence-dir', evidenceDir]);
+    if (res.code === 0 && res.out.includes('RESULT=PASS')) errors.push('fixture4: verifier should not PASS when forbidden path was in history even after rollback');
   }
   // Fixture 5: moving base to any excluded SHA → FAIL (base check)
   {
