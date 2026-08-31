@@ -1,8 +1,8 @@
 {
   "format": "yolo2-phase2-scope-proof-v1",
   "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
-  "main_sha": "f517cfaeeb45deda61c6332670564307ceb33822",
-  "candidate_sha": "e0ae358bce5f763b753abcb621a673395763d76c",
+  "main_sha": "d48d2dd748daa0f5fab809df980c0d9f08d32232",
+  "candidate_sha": "9ad3cd806acf8833edd18e4680d4b321880d6828",
   "product_equivalence": [
     {
       "path": ".tad/scripts/yolo-recovery.mjs",
@@ -53,7 +53,7 @@
       "candidate_value": ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
       "main_value": ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
       "canonical_subdocument_sha256": "5427d8fac6a9a053414c13cf29892cc72108a216aa117430637b6dd3f68b6e8f",
-      "source_commit": "e0ae358bce5f763b753abcb621a673395763d76c"
+      "source_commit": "9ad3cd806acf8833edd18e4680d4b321880d6828"
     },
     {
       "path": ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
@@ -62,7 +62,7 @@
       "candidate_value": "pass",
       "main_value": "pass",
       "canonical_subdocument_sha256": "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1",
-      "source_commit": "e0ae358bce5f763b753abcb621a673395763d76c"
+      "source_commit": "9ad3cd806acf8833edd18e4680d4b321880d6828"
     },
     {
       "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md",
@@ -73,8 +73,8 @@
       "candidate_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
       "main_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
       "canonical_subdocument_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
-      "source_commit": "e0ae358bce5f763b753abcb621a673395763d76c",
-      "expected_sha": "e0ae358bce5f763b753abcb621a673395763d76c"
+      "source_commit": "9ad3cd806acf8833edd18e4680d4b321880d6828",
+      "expected_sha": "9ad3cd806acf8833edd18e4680d4b321880d6828"
     }
   ],
   "verifier_blob_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15"
