@@ -1,40 +1,91 @@
-# DR-20260831 — YOLO2 Phase-2 Budget Amendment
+# DR-20260831 — YOLO2 Phase-2 Dogfood Budget Amendment
 
-**Date**: 2026-08-31
-**Decider**: Sheldon (human, Value Guardian)
-**Applies to**: TASK-20260827-YOLO2-P2-COMPLETION, HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md §4.1
-**Supersedes**: The frozen budget values `max_tokens=240000 / audit_reserve=48000 / max_executor_per_round=24000` for Phase-2 dogfood only.
+**Date:** 2026-08-31
+**Decider:** Sheldon (human, Value Guardian)
+**Decision provenance:** Human replied “同意以上预算修正案” after Alex independently
+recomputed the existing dogfood usage and explained the cost and reuse consequences.
+**Applies to:** `TASK-20260827-YOLO2-P2-COMPLETION`, mechanism/run namespace
+`a6fe746c2ff351dff3c99e1fff584a171f5ee3d37b58417f131fb24a55a82f35`.
+**Supersedes only:** The Phase-2 dogfood values in
+`HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md` §4.1 for this acceptance run.
+All other budget semantics, scope rules, ACs, Gate thresholds, and signed amendments remain
+unchanged.
 
-## Decision
+## 1. Decision
 
-The Phase-2 paired dogfood is authorized to run under:
+For the named Phase-2 dogfood mechanism and its Gate 3/4 acceptance, the frozen policy is:
 
+```json
+{
+  "max_tokens": 3000000,
+  "audit_reserve_tokens": 600000,
+  "max_executor_tokens_per_round": 600000
+}
 ```
-max_tokens: 3000000
-audit_reserve_tokens: 600000
-max_executor_tokens_per_round: 600000
-```
 
-This is 12.5× / 12.5× / 25× the original §4.1 values. The human explicitly accepts:
+The human explicitly accepts the material expansion from the original
+`240000 / 48000 / 24000` limits, including the observed cost of a
+`149654`-token executor round.
 
-- The observed cost: largest arm 232090, largest round 149654, total 1.6M across 5 pairs
-- That the original 24000 per-round ceiling would have made the observed 149654 round `HONEST_PARTIAL` (budget_exhausted) and would have invalidated the already-passed 5/5 dogfood
-- That this larger budget is **Phase-2 only** and does not carry to Phase-3 without a new decision
+## 2. Evidence behind the decision
 
-## Rationale
+The existing five-pair dogfood is not compatible with the original budget:
 
-- The original 240k total budget was set before any real Codex dogfood had been measured. The first real 5-pair run (mechanism a6fe746c2ff351df) demonstrated that a single execution round can legitimately need ~150k tokens (assertion + reviewer + execution with full packet and tool traces).
-- The larger budget does not change the bounded-loop semantics: the driver still enforces a finite pre-reserved per-round ceiling, audit-reserve isolation, and honest HONEST_PARTIAL on exhaustion. It only moves the ceiling to where the real harness can succeed.
-- Rerunning the entire 5-pair campaign under the smaller budget would be pure cost with a predictable HONEST_PARTIAL outcome and no new learning, as the token profile is already measured.
+- Maximum executor round: `149654` tokens (`P5/control/R-02`), including
+  `141312` cached input tokens.
+- Maximum executor-only arm total: `232090` tokens (`P5/control`).
+- Maximum all-role arm total recomputed from assertion, reviewer, and executor usage:
+  `518704` tokens (`P1/control`).
 
-## Provenance
+Therefore, a new run under `240000 / 48000 / 24000` is already known to stop as
+`HONEST_PARTIAL`. Spending another full five-pair campaign would not test an uncertain
+hypothesis; it would reproduce a known budget failure.
 
-- Human approval: 2026-08-31, explicit "同意以上预算修正案" in session after Blake's budget-escalation pause
-- Prior measurement: runs/a6fe746c2ff351df, pair-results.json, native turn records
-- This DR is the only authority for the 3000000 budget; the original handoff remains design authority for all other semantics.
+## 3. Reuse authorization and integrity conditions
 
-## Consequences
+Blake may reuse the existing `a6fe746c…` dogfood only if the corrected, read-only verifier
+recomputes a canonical dogfood-input manifest and proves exact equality for every input,
+including:
 
-- The existing dogfood run `a6fe746c2ff351df` (5/5 control + 5/5 treatment, safety 0/0, mechanism 13a3.../56ac.../a095...) remains valid and may be reused via dogfood-input-manifest
-- No new dogfood namespace is required for this budget reason alone
-- Phase-3 must re-freeze its own budget explicitly; this amendment does not auto-carry
+- the three mechanism files and their Git blob hashes;
+- the exact budget policy above;
+- dataset index and every task input via committed Git blobs or immutable
+  content-addressed carriers;
+- approval/policy carriers;
+- generator, judge, harness, CLI/model/family/version, settings, and canonicalization version;
+- the final raw run namespace and durable evidence tree.
+
+Restoring the driver policy to the exact values used by `a6fe746c…` is authorized. Relabeling,
+editing, rehashing, or mutating the old run is forbidden. If any canonical dogfood input differs,
+or the old inputs cannot be reconstructed without a mutable-filesystem fallback, reuse is invalid
+and a new namespace/full run is required.
+
+Reuse still requires the durable checker to run again against the corrected candidate and return
+PASS. This amendment does not waive the Gate-4 findings about read-only verification, immutable
+evidence, exact Gate-3 carrier binding, self-contained replay, or internally consistent reports.
+
+## 4. Scope limits
+
+This decision is **not**:
+
+- a TAD/YOLO default runtime budget;
+- a Phase 3 or Phase 4 budget baseline;
+- evidence that cost efficiency is acceptable;
+- authorization for future runs to inherit these limits;
+- authorization to make YOLO default-on.
+
+Phase 3 is blocked from inheriting this policy. Before Phase 3 execution, Alex must design a
+separate budget-calibration acceptance criterion using full-role native usage, cached-input
+visibility, observed distribution, and an explicit safety margin. That calibration requires a
+new human decision and new evidence; this DR cannot satisfy it.
+
+## 5. Consequences and recovery
+
+- **Accepted consequence:** Phase 2 retains a loose but finite safety ceiling so the already-paid
+  dogfood can be assessed honestly without falsifying its policy.
+- **Remaining risk:** The ceiling is materially above observed usage and does not demonstrate
+  production cost discipline.
+- **Recovery:** If reuse equality fails, stop and report the mismatching input. Do not silently
+  rerun under a different budget or broaden this authorization.
+- **Gate consequence:** Blake must generate a new candidate/main tuple, rebind Group-0 and Layer 2,
+  and stop at Gate 3 PASS for Alex. Gate 4 and archive remain Alex-owned.

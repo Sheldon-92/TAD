@@ -11,6 +11,7 @@ gate2_note: >
   "写一个 handoff，我给 blake 执行完成"）。设计输入为独立 Group-0 复审报告
   （第二视角），修正案契约由人类 DR 签署。此豁免记录于 DR-20260827。
 scope_proof_amendment: .tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md
+budget_amendment: .tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md
 scope_amendment_gate2: pass
 scope_amendment_reviews:
   - .tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/architecture-review.md
@@ -26,6 +27,9 @@ scope_amendment_reviews:
 **Amendment contract**: `.tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md`（人类签署，验收契约权威）
 **Scope-proof amendment**: `.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md`
 （人类签署；仅替换 AC-B 的共享-main连续历史假设，不放宽 allowlist）
+**Budget amendment**: `.tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md`
+（人类签署；仅批准 Phase-2 `a6fe746c…` 验收 run 使用 `3000000 / 600000 / 600000`
+并在 canonical input 全等时复用，不构成 Phase 3/default-on 预算授权）
 
 ---
 
