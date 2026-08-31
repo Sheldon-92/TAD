@@ -1,0 +1,42 @@
+{
+  "format": "yolo2-phase2-dataset-v1",
+  "frozen": "2026-08-26T02:17:31.811492+00:00",
+  "seed": "yolo2p2-fixed-seed-001",
+  "pairs": [
+    {
+      "pair_id": "P1",
+      "task_id": "T1-doc-ref",
+      "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+      "provenance": "replay of Phase-1 dogfood slice family (HANDOFF-20260824-yolo2-phase1 \u00a76 P4, commit 96bbfada): guide reference-table maintenance",
+      "order_seed_pos": 1
+    },
+    {
+      "pair_id": "P2",
+      "task_id": "T2-node-behavior",
+      "task_sha256": "f61ddd88966601ecf1c4f6a860fc7f3ac90b122799d4b9168dea4dc9e3947982",
+      "provenance": "replay of real maintenance on yolo-recovery.mjs atomic-write behavior (commit 323c380d \u00a74.2 writeAtomic)",
+      "order_seed_pos": 2
+    },
+    {
+      "pair_id": "P3",
+      "task_id": "T3-shell-edge",
+      "task_sha256": "a5feda1bbd706f4c544114125b79aa2ec2e22d4dbb59b8924cc64de1f9030b0a",
+      "provenance": "replay of shell-portability lesson (patterns/shell-portability.md, BSD date quoting incident 2026-04)",
+      "order_seed_pos": 3
+    },
+    {
+      "pair_id": "P4",
+      "task_id": "T4-cross-file",
+      "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+      "provenance": "replay of cross-file contract work (Phase-1 dogfood T3 worked example referencing CLI flags across files)",
+      "order_seed_pos": 4
+    },
+    {
+      "pair_id": "P5",
+      "task_id": "T5-hidden-business",
+      "task_sha256": "4db4517bee16512e302ab4de35c81a90c64723337d7bfa9f8cb6aca6f027c5b6",
+      "provenance": "replay of 'local green / business red' class (Epic \u00a77 AC7 counterexample 3)",
+      "order_seed_pos": 5
+    }
+  ]
+}

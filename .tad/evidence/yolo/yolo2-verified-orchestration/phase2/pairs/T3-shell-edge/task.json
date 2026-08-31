@@ -1,0 +1,19 @@
+{
+  "id": "T3-shell-edge",
+  "provenance": "replay of shell-portability lesson (patterns/shell-portability.md, BSD date quoting incident 2026-04)",
+  "task": "Fix run.sh: it must print today's year using a portable invocation that works on both GNU and BSD date, then echo done. Current content uses the non-portable form.",
+  "seed": {
+    "run.sh": "#!/bin/sh\ndate +%Y 2>/dev/null || date -j +%Y\necho not-done\n"
+  },
+  "hidden": [
+    {
+      "check": "run.sh no longer echoes not-done"
+    },
+    {
+      "check": "run.sh prints a 4-digit year line"
+    },
+    {
+      "check": "sh run.sh exits 0"
+    }
+  ]
+}
