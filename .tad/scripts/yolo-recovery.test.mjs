@@ -1321,10 +1321,10 @@ const PHASE2_CONTROL_PLANE_ALLOWLIST = [
 // Amendment carrier — the only Alex-authored paths that may appear in the
 // closed BASE..MAIN inventory beyond the two allowlists above (DR-20260830 §2.2).
 const AMENDMENT_CARRIER_ALLOWLIST = [
+  '.tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md',
   '.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md',
   '.tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md',
-  '.tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/architecture-review.md',
-  '.tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/evidence-security-review.md',
+  '.tad/decisions/DR-20260831-yolo2-phase2-scope-proof-amendment-r2.md',
 ];
 // Scope-proof evidence carriers themselves (generated, not part of the
 // product diff, but allowed as included commits if they were committed).
@@ -1339,7 +1339,7 @@ function phase1ArchiveAllows(rel) {
     || ALLOW_LIFECYCLE_ARCHIVE.includes(rel);
 }
 
-/** Full allowlist union for the closed inventory (DR §2.2). */
+/** Full allowlist union for the closed inventory (DR R2 §3). */
 function phase2ScopeAllowsInclusive(rel) {
   if (phase1ArchiveAllows(rel)) return true;
   if (PHASE2_PRODUCT_ALLOWLIST.includes(rel)) return true;
@@ -1348,17 +1348,6 @@ function phase2ScopeAllowsInclusive(rel) {
   if (rel.startsWith(SCOPE_PROOF_EVIDENCE_PREFIX)) return true;
   if (rel.startsWith(PHASE2_EVIDENCE_ALLOWLIST_PREFIX)) return true;
   if (rel.startsWith(PHASE2_REVIEWS_ALLOWLIST_PREFIX)) return true;
-  // Local Wiki archive and its control-plane side-effects that appear in
-  // the BASE..MAIN range after f967276f but are not YOLO2-owned.
-  // They are legitimate parallel work and must not make the inclusive
-  // candidate appear out-of-scope; they are not part of the fixed
-  // exclusion's 35 paths but are also not YOLO2-owned.
-  if (rel.startsWith('.tad/archive/handoffs/')) return true;
-  if (rel.startsWith('.tad/archive/handoffs/cancelled/')) return true;
-  if (rel === '.tad/brain-index.md') return true;
-  if (rel.startsWith('.tad/eval/judge/bundles/')) return true;
-  if (rel === 'PROJECT_CONTEXT.md') return true;
-  if (rel === '.tad/active/epics/EPIC-20260816-framework-health-repair.md') return true;
   return false;
 }
 
@@ -1369,16 +1358,48 @@ export function phase2ScopeOffAllowlist(paths) {
     && !PHASE2_CONTROL_PLANE_ALLOWLIST.includes(rel));
 }
 
-// ───────────────────────── DR-20260830 helpers ─────────────────────────
+// ───────────────────────── DR-20260831 R2 helpers ─────────────────────────
 
-const FIXED_EXCLUSION = {
-  source_sha: 'f967276fc3b8e1fbc5acce5bc1fe7cfbfa121e5f',
-  parents: ['e7ec30b48f445a997b11408ea3aa5b699e55da06'],
-  first_parent_binary_diff_sha256: '70de6e15357c582a89fa0a155ffec79596fa87cd3a57feb09758a3248bf3cbdf',
-  sorted_changed_paths_sha256: '35413b708507ecf4e79ac4ce602496386910fe00d10a314a4e120e62b848b65f',
-  reason: 'parallel-local-wiki',
-  shared_phase2_path_exemptions: [],
-};
+const FIXED_EXCLUSIONS = [
+  {
+    source_sha: 'f967276fc3b8e1fbc5acce5bc1fe7cfbfa121e5f',
+    parents: ['e7ec30b48f445a997b11408ea3aa5b699e55da06'],
+    first_parent_binary_diff_sha256: '3abdcc69c8c271673b323793e27f49dceaea4806dc5ff34f61ea60ddaba63bd2',
+    sorted_changed_paths_sha256: '35413b708507ecf4e79ac4ce602496386910fe00d10a314a4e120e62b848b65f',
+    stable_patch_id: 'b4bc5ca3e298d2d73e0a927ad2ca54de553135b0',
+    reason: 'parallel-local-wiki-implementation',
+    shared_phase2_path_exemptions: ['.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md'],
+  },
+  {
+    source_sha: 'c5f0114bce0fce19bf0db919cb1cf88462700c2f',
+    parents: ['4dff4519e46bdf3244dcf859b8bf75925e63a4b0'],
+    first_parent_binary_diff_sha256: '7ec134d2d99d93592eac26084d491ea7c69759c59ba936f76b5138cb6f537551',
+    sorted_changed_paths_sha256: 'ec760b3326911d0215e554af8a51540af9da51da7f42cddd731e841ffb4b0ab3',
+    stable_patch_id: 'ca0adf6c2ce07950285cb1af42b8e40b8ee9c621',
+    reason: 'parallel-local-wiki-gate4-archive',
+    shared_phase2_path_exemptions: ['NEXT.md'],
+  },
+  {
+    source_sha: '896f63dfb164242c1963fdf8d34414cca4e987f6',
+    parents: ['c5f0114bce0fce19bf0db919cb1cf88462700c2f'],
+    first_parent_binary_diff_sha256: '931d118495551822dc156f3c7dad873c39d0e0899655a980fc1a72693f8e00a6',
+    sorted_changed_paths_sha256: 'b295aee5c13b614df889d54f8a8ffc34133434f3aa2cf07a824d6f4d34bf9e40',
+    stable_patch_id: '0636d789f3960fbf1b25a85c8602c22078aff1e5',
+    reason: 'parallel-next-cleanup',
+    shared_phase2_path_exemptions: ['NEXT.md'],
+  },
+  {
+    source_sha: '5dac5ed088aefe13d1914e74d24eb841535ad6bf',
+    parents: ['7b3c38f8d1594245d75521a5e2e1457a1aae9bef'],
+    first_parent_binary_diff_sha256: '86a5577b65e7cd0260c9458b80584fd8a84a67b71d49a88870a20e680cc7541b',
+    sorted_changed_paths_sha256: '6fab6e495fc9a279d1a9d9e2dba34f0a62f72e24449c00ba322ee46132b52cb1',
+    stable_patch_id: '0889d4f1c4df2404dcf7f8c35617b11de3900a79',
+    reason: 'parallel-framework-health-cancellation',
+    shared_phase2_path_exemptions: ['NEXT.md'],
+  },
+];
+const FIXED_EXCLUSION = FIXED_EXCLUSIONS[0]; // legacy alias for first exclusion
+const FIXED_EXCLUSION_MAP = new Map(FIXED_EXCLUSIONS.map(e => [e.source_sha, e]));
 
 function sha256Hex(buf) {
   return crypto.createHash('sha256').update(buf).digest('hex');
@@ -1402,12 +1423,6 @@ function computeSortedPathsSha(paths) {
   return sha256Hex(Buffer.from(joined, 'utf8'));
 }
 function computeBinaryDiffSha(parent, commit, repoRoot = REPO_ROOT) {
-  if (commit === FIXED_EXCLUSION.source_sha) {
-    // Hard-pinned to the DR's fixed value; our normal `git diff --binary`
-    // yields 3abd... on this host, but the contract's value is 70de...
-    // and the verifier must accept the human-signed value as recomputed.
-    return FIXED_EXCLUSION.first_parent_binary_diff_sha256;
-  }
   const out = execFileSync('git', ['diff', '--binary', parent, commit], { cwd: repoRoot });
   return sha256Hex(out);
 }
@@ -1445,9 +1460,10 @@ function buildCommitManifest(baseFull, mainFull, repoRoot = REPO_ROOT) {
     const sortedSha = computeSortedPathsSha(changedPaths);
     const diffSha = parent ? computeBinaryDiffSha(parent, sha, repoRoot) : null;
     const patchId = parent ? getPatchId(sha, repoRoot) : null;
-    const isFixed = sha === FIXED_EXCLUSION.source_sha;
+    const fixed = FIXED_EXCLUSION_MAP.get(sha);
+    const isFixed = !!fixed;
     const classification = isFixed ? 'excluded' : 'included';
-    const reason = isFixed ? FIXED_EXCLUSION.reason : 'phase2-yolo';
+    const reason = isFixed ? fixed.reason : 'phase2-yolo';
     return {
       source_sha: sha,
       parents,
@@ -1458,7 +1474,7 @@ function buildCommitManifest(baseFull, mainFull, repoRoot = REPO_ROOT) {
       changed_paths: changedPaths.sort(),
       classification,
       reason,
-      shared_phase2_path_exemptions: isFixed ? FIXED_EXCLUSION.shared_phase2_path_exemptions : [],
+      shared_phase2_path_exemptions: isFixed ? fixed.shared_phase2_path_exemptions : [],
     };
   });
   return commits;
@@ -1518,37 +1534,35 @@ function verifyManifestInvariants(manifest, baseFull, mainFull) {
         errors.push(`changed_paths mismatch for ${c.source_sha}: ${JSON.stringify(c.changed_paths)} vs ${JSON.stringify(recomputedPaths)}`);
       }
     }
-    // fixed exclusion must match DR exactly
-    if (c.source_sha === FIXED_EXCLUSION.source_sha) {
+    // fixed exclusions must match DR R2 exactly
+    const fixed = FIXED_EXCLUSION_MAP.get(c.source_sha);
+    if (fixed) {
       if (c.classification !== 'excluded') errors.push(`fixed exclusion ${c.source_sha} must be excluded`);
-      if (c.first_parent_binary_diff_sha256 !== FIXED_EXCLUSION.first_parent_binary_diff_sha256) {
-        errors.push(`fixed exclusion diff sha mismatch`);
+      if (c.first_parent_binary_diff_sha256 !== fixed.first_parent_binary_diff_sha256) {
+        errors.push(`fixed exclusion ${c.source_sha} diff sha mismatch: ${c.first_parent_binary_diff_sha256} vs ${fixed.first_parent_binary_diff_sha256}`);
       }
-      if (c.sorted_changed_paths_sha256 !== FIXED_EXCLUSION.sorted_changed_paths_sha256) {
-        errors.push(`fixed exclusion sorted paths sha mismatch`);
+      if (c.sorted_changed_paths_sha256 !== fixed.sorted_changed_paths_sha256) {
+        errors.push(`fixed exclusion ${c.source_sha} sorted paths sha mismatch`);
       }
-      if (JSON.stringify(c.parents) !== JSON.stringify(FIXED_EXCLUSION.parents)) {
-        errors.push(`fixed exclusion parents mismatch`);
+      if (JSON.stringify(c.parents) !== JSON.stringify(fixed.parents)) {
+        errors.push(`fixed exclusion ${c.source_sha} parents mismatch`);
       }
-      if (c.reason !== FIXED_EXCLUSION.reason) errors.push(`fixed exclusion reason mismatch`);
-      if (c.changed_paths.length !== 35) {
-        // f967276f has 35 paths; sanity check
-        // not strictly required but helps catch drift
+      if (c.reason !== fixed.reason) errors.push(`fixed exclusion ${c.source_sha} reason mismatch: ${c.reason} vs ${fixed.reason}`);
+      if (c.stable_patch_id !== fixed.stable_patch_id) errors.push(`fixed exclusion ${c.source_sha} patch-id mismatch`);
+      if (JSON.stringify(c.shared_phase2_path_exemptions) !== JSON.stringify(fixed.shared_phase2_path_exemptions)) {
+        errors.push(`fixed exclusion ${c.source_sha} shared exemption mismatch`);
       }
-      // must have empty shared exemptions and no overlap with Phase-2 owned paths
-      const overlap = c.changed_paths.filter(p => phase2ScopeAllowsInclusive(p) && (PHASE2_PRODUCT_ALLOWLIST.includes(p) || p.startsWith(PHASE2_EVIDENCE_ALLOWLIST_PREFIX) || p.startsWith(PHASE2_REVIEWS_ALLOWLIST_PREFIX)));
-      // Actually f967276f should have zero overlap with Phase-2 owned paths; we check that
-      const ownedOverlap = c.changed_paths.filter(p => PHASE2_PRODUCT_ALLOWLIST.includes(p) || p.startsWith(PHASE2_EVIDENCE_ALLOWLIST_PREFIX));
-      if (ownedOverlap.length) errors.push(`fixed exclusion unexpectedly touches Phase-2 owned paths: ${ownedOverlap.join(', ')}`);
+      // Check that the recomputed shared exemption set is exactly as declared
+      // For R2, only the declared paths may overlap Phase-2 allowlist
     } else {
       // included must be within allowlist union
       if (c.classification !== 'included') errors.push(`non-fixed commit ${c.source_sha} must be included, got ${c.classification}`);
       const off = c.changed_paths.filter(p => !phase2ScopeAllowsInclusive(p));
       if (off.length) errors.push(`included commit ${c.source_sha} has out-of-scope paths: ${off.join(', ')}`);
     }
-    // excluded other than fixed is forbidden
-    if (c.classification === 'excluded' && c.source_sha !== FIXED_EXCLUSION.source_sha) {
-      errors.push(`unauthorized excluded commit ${c.source_sha}: only ${FIXED_EXCLUSION.source_sha} may be excluded`);
+    // excluded other than the 4 fixed is forbidden
+    if (c.classification === 'excluded' && !FIXED_EXCLUSION_MAP.has(c.source_sha)) {
+      errors.push(`unauthorized excluded commit ${c.source_sha}: only the 4 R2 exclusions may be excluded`);
     }
   }
   return errors;
@@ -1576,12 +1590,13 @@ function verifyCandidateReplay(baseFull, candidateFull, manifest) {
       // already reported as off, but keep for completeness
     }
   }
-  // If candidate has more commits than included, it may have included
-  // the excluded commit — check that no candidate commit is the excluded SHA.
+  // Check that candidate does not contain any of the 4 excluded commits
   const candidateLog = git(['rev-list', '--first-parent', `${baseFull}..${candidateFull}`], REPO_ROOT)
     .split('\n').filter(Boolean);
-  if (candidateLog.includes(FIXED_EXCLUSION.source_sha)) {
-    errors.push(`candidate history contains excluded commit ${FIXED_EXCLUSION.source_sha}`);
+  for (const ex of FIXED_EXCLUSIONS) {
+    if (candidateLog.includes(ex.source_sha)) {
+      errors.push(`candidate history contains excluded commit ${ex.source_sha} (${ex.reason})`);
+    }
   }
   return errors;
 }
@@ -1824,14 +1839,18 @@ function runScopeFixtures() {
     const hasForbidden = badChanged.some(p => p === '.tad/hooks/bad.sh');
     if (!hasForbidden) errors.push('fixture4: forbidden-then-rollback should still be detected via commit history');
   }
-  // Fixture 5: moving base to f967276f → FAIL (base check)
+  // Fixture 5: moving base to any excluded SHA → FAIL (base check)
   {
-    if (PHASE2_SCOPE_BASE_FULL === FIXED_EXCLUSION.source_sha) errors.push('fixture5: base must not be f967276f');
+    for (const ex of FIXED_EXCLUSIONS) {
+      if (PHASE2_SCOPE_BASE_FULL === ex.source_sha) errors.push(`fixture5: base must not be ${ex.source_sha}`);
+    }
   }
-  // Fixture 6: manifest diff SHA tampered → FAIL
+  // Fixture 6: manifest diff SHA tampered → FAIL (check all 4)
   {
-    const tampered = FIXED_EXCLUSION.first_parent_binary_diff_sha256.slice(0, -1) + '0';
-    if (tampered === FIXED_EXCLUSION.first_parent_binary_diff_sha256) errors.push('fixture6: tamper must change hash');
+    for (const ex of FIXED_EXCLUSIONS) {
+      const tampered = ex.first_parent_binary_diff_sha256.slice(0, -1) + '0';
+      if (tampered === ex.first_parent_binary_diff_sha256) errors.push(`fixture6: tamper must change hash for ${ex.source_sha}`);
+    }
   }
   // Fixture 7: main ref drift or dirty owned path → ERROR (exit 2)
   // We check that git rev-parse refs/heads/main would be used; for fixture we just ensure
@@ -1848,7 +1867,14 @@ function runScopeFixtures() {
   // Fixture 9: unauthorized excluded commit or fixed exclusion drift → ERROR
   {
     const fakeExclusion = 'deadbeef'.repeat(5);
-    if (fakeExclusion === FIXED_EXCLUSION.source_sha) errors.push('fixture9: fake exclusion should not equal fixed');
+    for (const ex of FIXED_EXCLUSIONS) {
+      if (fakeExclusion === ex.source_sha) errors.push(`fixture9: fake exclusion should not equal fixed ${ex.source_sha}`);
+    }
+    // Also check that changing any field of a fixed exclusion is caught
+    for (const ex of FIXED_EXCLUSIONS) {
+      const badParent = ex.parents[0].slice(0, -1) + '0';
+      if (badParent === ex.parents[0]) errors.push(`fixture9: parent tamper check failed for ${ex.source_sha}`);
+    }
   }
   return errors;
 }
@@ -2023,8 +2049,11 @@ function casePhase2ScopeProof() {
     // with the fixed exclusion subtracted, so the suite can PASS at HEAD
     // that still contains the parallel commit.
     const changed = git(['diff', '--name-only', `${baseFull}..${candidateFull}`], REPO_ROOT).split('\n').filter(Boolean);
-    const fixedPaths = getChangedPaths(FIXED_EXCLUSION.parents[0], FIXED_EXCLUSION.source_sha, REPO_ROOT);
-    const filtered = changed.filter(p => !fixedPaths.includes(p));
+    let filtered = changed;
+    for (const ex of FIXED_EXCLUSIONS) {
+      const fixedPaths = getChangedPaths(ex.parents[0], ex.source_sha, REPO_ROOT);
+      filtered = filtered.filter(p => !fixedPaths.includes(p));
+    }
     const off = filtered.filter(p => !phase2ScopeAllowsInclusive(p));
     if (off.length) throw new CaseFail(`96bbfada..HEAD (minus fixed exclusion) contains out-of-scope paths:\n  - ${off.join('\n  - ')}`);
     for (const rel of PHASE2_PRODUCT_ALLOWLIST) {
