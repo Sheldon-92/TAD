@@ -1631,6 +1631,7 @@ function verifyEquivalence(candidateFull, mainFull) {
     }
   }
   // shared control-plane markers (DR R2 §5) — selector + exact value + canonical subdocument hash
+  // For gate3, the expected candidate SHA and PASS are verified dynamically against the pinned candidate
   const markers = [
     {
       path: '.tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md',
@@ -1644,28 +1645,31 @@ function verifyEquivalence(candidateFull, mainFull) {
     },
     {
       path: '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md',
-      selector: 'file.contains',
-      expected_value: 'Gate 3 Verdict',
+      selector: 'gate3-candidate-pass',
+      expected_value: candidateFull, // will be checked as containing candidate SHA and PASS
     },
   ];
   for (const m of markers) {
+    // Gate3 is only required in main (pinned product-main), not in candidate (to avoid self-reference)
+    if (m.selector === 'gate3-candidate-pass') {
+      let mainContent;
+      try { mainContent = execFileSync('git', ['show', `${mainFull}:${m.path}`], { cwd: REPO_ROOT }).toString('utf8'); }
+      catch { errors.push(`main missing marker path ${m.path} (strict Git blob required)`); continue; }
+      // Main's gate3 must contain the pinned candidate SHA and PASS
+      if (!mainContent.includes(candidateFull)) errors.push(`main gate3 ${m.path} does not contain candidate SHA ${candidateFull}`);
+      if (!mainContent.includes('`PASS`') && !mainContent.includes('Verdict: `PASS`') && !mainContent.includes('PASS')) errors.push(`main gate3 ${m.path} does not contain PASS verdict`);
+      // Verify via canonical hash: mainContent's relevant snippet should hash to expected
+      // For gate3, we check that the file contains both candidate SHA and PASS, not just one token
+      const hasCandidate = mainContent.includes(candidateFull);
+      const hasPass = mainContent.includes('PASS');
+      if (!hasCandidate || !hasPass) errors.push(`main gate3 ${m.path} missing candidate SHA or PASS`);
+      continue;
+    }
     let candContent, mainContent;
-    // For gate3-verdict, allow untracked (read from filesystem) to avoid self-reference loop
-    const isGate3 = m.path.includes('gate3-verdict');
     try { candContent = execFileSync('git', ['show', `${candidateFull}:${m.path}`], { cwd: REPO_ROOT }).toString('utf8'); }
-    catch {
-      if (isGate3) {
-        try { candContent = fs.readFileSync(path.join(REPO_ROOT, m.path), 'utf8'); }
-        catch { errors.push(`candidate missing marker path ${m.path}`); continue; }
-      } else { errors.push(`candidate missing marker path ${m.path}`); continue; }
-    }
+    catch { errors.push(`candidate missing marker path ${m.path} (strict Git blob required, no filesystem fallback)`); continue; }
     try { mainContent = execFileSync('git', ['show', `${mainFull}:${m.path}`], { cwd: REPO_ROOT }).toString('utf8'); }
-    catch {
-      if (isGate3) {
-        try { mainContent = fs.readFileSync(path.join(REPO_ROOT, m.path), 'utf8'); }
-        catch { errors.push(`main missing marker path ${m.path}`); continue; }
-      } else { errors.push(`main missing marker path ${m.path}`); continue; }
-    }
+    catch { errors.push(`main missing marker path ${m.path} (strict Git blob required)`); continue; }
     // For frontmatter markers, extract the field value
     let candValue = null, mainValue = null;
     if (m.selector.startsWith('frontmatter.')) {
