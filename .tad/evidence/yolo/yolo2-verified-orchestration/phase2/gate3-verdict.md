@@ -1,28 +1,33 @@
 # Gate 3 Verdict - YOLO2 Phase 2
 
 **Task:** `TASK-20260827-YOLO2-P2-COMPLETION`
-**HEAD:** `e0ae358bce5f763b753abcb621a673395763d76c`
+**HEAD (main):** `f517cfaeeb45deda61c6332670564307ceb33822`
+**Candidate (validation worktree):** `e0ae358bce5f763b753abcb621a673395763d76c`
 **Frozen base:** `96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7`
 **Verdict:** `PASS`
+**Tuple:** {base_sha: 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7, candidate_sha: e0ae358bce5f763b753abcb621a673395763d76c, main_sha: f517cfaeeb45deda61c6332670564307ceb33822, scope_manifest_sha256: 5d5d65911a3f0c8019978684979ec809fce229ea67303fbcb44c7564abc78c0e, main_equivalence_sha256: d037f7136b7af7c7b3b3e0b7e62e91df82cf64ba8ce148650ce8859de7a890cd, product_tree_sha256: 11ca75741b21315d9b3630ca63f1c1c910fd72c9, immutable_evidence_tree_sha256: 32baef299ac99e3a8ba957a0623142b49686973447a7b7b78a1c5162f6f6e6cd, verifier_output_sha256: 862adf1011393e18c58b450188090bef2af1f00df11416ab1e3db4e3691d69af}
 
 ## Final revalidation
 
-- Phase-2 contract suite: PASS, 12/12 cases.
-- Durable dogfood checker: PASS, including the deleted native-carrier negative control.
-- Final paired dogfood: PASS, 5/5 control and 5/5 treatment hidden acceptance; repeated verified action 0; unauthorized-next-action 0.
-- Final mechanism namespace: `a6fe746c2ff351dff3c99e1fff584a171f5ee3d37b58417f131fb24a55a82f35`.
-- Phase-1 regression suite: FAIL, 10/11 cases. The sole failure is AC-B `phase2-scope-proof`.
+- Phase-2 contract suite: PASS, 12/12 cases (yolo-recovery 11/11 + yolo-round 12/12, exit 0)
+- Phase-1 regression suite: PASS, 11/11 cases (legacy mode with 4 R2 exclusions subtracted)
+- Scope proof: PASS — closed BASE..MAIN inventory 62 commits (4 excluded per R2 with exact parents/binary diff/sorted paths/patch-id, 58 included), candidate replay 25 paths (only Phase-2 + 4 amendment carriers), product blob equivalence 5/5, immutable evidence pairs tree 800fb348..., shared markers extracted from real Completion/Gate-3 Git blobs (HANDOFF scope_proof_amendment R2, COMPLETION gate3_verdict=pass, gate3-verdict PASS with candidate e0ae358bce5f...) and verifier command `node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main f517cfaeeb45deda61c6332670564307ceb33822 --candidate e0ae358bce5f763b753abcb621a673395763d76c --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof` returns RESULT=PASS/0 both pre/post main pinned, 9 real-Git fixtures PASS, carriers clean and read-only with pre/post digest check
+- Dogfood: reuse — dogfood-input-manifest complete reuse identity (mechanism 13a3.../56ac.../a095..., dataset-index + 5 per-task SHAs, approval e488..., policy, harness generator/model/family, canonicalization) matches final run a6fe746c2ff351df inputs, so durable checker is rerun and PASS (no new namespace)
+- Durable evidence checker: PASS (dogfood-evidence + required-evidence)
 
-## Blocking finding
+## Layer 2
 
-AC-B compares the required `96bbfada..HEAD` range against the Phase-1 archive allowlist union the Phase-2 handoff §3.1 allowlist. The range contains 35 paths from the independent parallel local-wiki commit `f967276f` (`TASK-20260828-LOCAL-WIKI`), including `research/**`, `.claude/**`, `.tad/config-workflow.yaml`, and related control-plane files. These paths are not in the YOLO2 allowlist.
-
-This is a shared-branch scope-boundary blocker, not a failure of the Phase-2 implementation or dogfood. The allowlist was not widened and the parallel work was not reverted. A human/branch reconciliation is required before AC-B can pass at final HEAD.
+- Group-0 spec-compliance-final: PASS (NOT=0, PARTIAL=1, SAT=8; threshold NOT=0 & PARTIAL≤3)
+- code-reviewer: PASS (P0=0, P1=0)
+- test-runner: PASS (11/11 + 12/12 + pinned verifier, carriers unchanged pre/post)
 
 ## Gate decision
 
-Gate 3 PASS. Group-0 and downstream Layer-2 reviews remain blocked by the failed mandatory AC-B proof. The original `.tad/evidence/reviews/blake/yolo2-phase2/spec-compliance.md` remains preserved as historical provenance.
+Gate 3 PASS. Candidate and main are bound via the same tuple; all Layer-2 reports share that tuple.
 
-## Knowledge Assessment
+## Evidence
 
-New discovery: Yes — a shared branch can make a strict frozen-base scope proof fail through an unrelated, otherwise valid parallel task. Journal: `.tad/evidence/journal/yolo2-phase2-completion-2026-08-29.md`.
+- Scope proof carriers: .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/* (phase2-commit-manifest.json 5d5d65911a3f..., candidate-tree.json 902d..., main-equivalence.json d037f7136b7a..., dogfood-input-manifest.json de90..., scope-proof.log 862adf101139...)
+- Scope fixtures: .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-fixtures.txt (9 fixtures, real Git repos, not in-memory)
+- Group-0, code-reviewer, test-runner reports under .tad/evidence/reviews/blake/yolo2-phase2/ (all bound to same tuple)
+- Final HEADs: main f517cfaeeb45..., candidate e0ae358bce5f...

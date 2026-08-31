@@ -1,0 +1,9 @@
+pre_main=f517cfaeeb45deda61c6332670564307ceb33822
+post_main=f517cfaeeb45deda61c6332670564307ceb33822
+base=96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7
+main=f517cfaeeb45deda61c6332670564307ceb33822
+candidate=e0ae358bce5f763b753abcb621a673395763d76c
+manifest=.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json
+verifier_blob=e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15
+exit=0
+result=PASS

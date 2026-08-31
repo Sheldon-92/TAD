@@ -1,0 +1,1182 @@
+{
+  "format": "yolo2-phase2-scope-proof-v1",
+  "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
+  "main_sha": "f517cfaeeb45deda61c6332670564307ceb33822",
+  "candidate_sha": "e0ae358bce5f763b753abcb621a673395763d76c",
+  "candidate_tree": "11ca75741b21315d9b3630ca63f1c1c910fd72c9",
+  "verifier_blob_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15",
+  "invocation": "node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main f517cfaeeb45deda61c6332670564307ceb33822 --candidate e0ae358bce5f763b753abcb621a673395763d76c --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof",
+  "commits": [
+    {
+      "source_sha": "3a9bd2e0a9f330c3648b213743475c99c6e15730",
+      "parents": [
+        "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7"
+      ],
+      "source_tree": "a2dcde9fa7e0d26ac713e7d3955f63d7f527f400",
+      "first_parent_binary_diff_sha256": "11bea922de2934018ee326954e3ae7ea5a3f54775eb0c681ab32128ca5f5444b",
+      "sorted_changed_paths_sha256": "44262bbcd30f007a86f5ebecc44ebb8b2a63f20fe609c6242a996e637d55106c",
+      "patch_id": "af41897fd66d461663c3036ffed6e281a64740ac",
+      "stable_patch_id": "af41897fd66d461663c3036ffed6e281a64740ac",
+      "changed_paths": [
+        ".tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md",
+        ".tad/active/handoffs/HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md",
+        "NEXT.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "5eb0995c75a990ac2f907ab1c73ae1043fbf2138",
+      "parents": [
+        "3a9bd2e0a9f330c3648b213743475c99c6e15730"
+      ],
+      "source_tree": "5a8f32cd73bb0343c80ac9444589e614578196d9",
+      "first_parent_binary_diff_sha256": "e020936436af5a20803666b8cdafa70d26c5ea047313d3c0ed6cdfff193f6f36",
+      "sorted_changed_paths_sha256": "3ff3d00954083d0af6b613def1e787bafb597459f1a77547615eb3c1ed6e69ac",
+      "patch_id": "f306f6f0840d7a747c3693e34e8407e836951454",
+      "stable_patch_id": "f306f6f0840d7a747c3693e34e8407e836951454",
+      "changed_paths": [
+        ".tad/active/handoffs/HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "92b0ee3b717d6fc2a85288b52b9199d8039014e8",
+      "parents": [
+        "5eb0995c75a990ac2f907ab1c73ae1043fbf2138"
+      ],
+      "source_tree": "fd39a2c7a1ade1010075395ba255ca19464529fe",
+      "first_parent_binary_diff_sha256": "0a070a0f3f7113d5c21e3cf785acdf20aeca71b2267760ef4cc33ae7dbca4a3e",
+      "sorted_changed_paths_sha256": "6c5c8ccebffa34ba8c92005dd321c7190ae399375b3e3e7422dcd882460f6f14",
+      "patch_id": "4eb299bc6b3354a8386fb833c1817c786c4eb0c9",
+      "stable_patch_id": "4eb299bc6b3354a8386fb833c1817c786c4eb0c9",
+      "changed_paths": [
+        ".tad/guides/yolo-bounded-rounds.md",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "44fe16d5b09281a3ddefbdd2300019a5abf7968a",
+      "parents": [
+        "92b0ee3b717d6fc2a85288b52b9199d8039014e8"
+      ],
+      "source_tree": "5b6d49fdeb24aff97d793064eb3af03cc12699bb",
+      "first_parent_binary_diff_sha256": "11e4bd5c4bc2876d73eedf8c2b218dc5e76c3502417a3e620789dee70ee204a2",
+      "sorted_changed_paths_sha256": "8ef3b83e956d0fc01244e9386ed3da42cb6710fe46958ef16abbbb0ecf79f613",
+      "patch_id": "223efef04ee0d32801b002cd5671db0f7acb3628",
+      "stable_patch_id": "223efef04ee0d32801b002cd5671db0f7acb3628",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "6e1f21c5bf7831fd312291d8fe4e8124a3e5d0c0",
+      "parents": [
+        "44fe16d5b09281a3ddefbdd2300019a5abf7968a"
+      ],
+      "source_tree": "f0537273e3b42e64fbb666cf7d65756a679f0f5c",
+      "first_parent_binary_diff_sha256": "2e888afce5addc03d49f5ea10ffa4e4cf7ff85d002e9ab7478800c90a156617e",
+      "sorted_changed_paths_sha256": "f3aeebbfbd6bc91a13eefd1443d8d20722ca425e23618348133705b473786d64",
+      "patch_id": "cefd95ad6687771a0bd1fe3585466dcacef46585",
+      "stable_patch_id": "cefd95ad6687771a0bd1fe3585466dcacef46585",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "f0a6dcd48e82a49506f5eba78d6e4d465afb00e0",
+      "parents": [
+        "6e1f21c5bf7831fd312291d8fe4e8124a3e5d0c0"
+      ],
+      "source_tree": "2c363850138f105b5a675dc7187c56148c12816e",
+      "first_parent_binary_diff_sha256": "04f81bbe7140031797cf2851ef828aa40a01b3567bd1faf799a1fe40a5107ec5",
+      "sorted_changed_paths_sha256": "d7271cd25527ae39a80612000a6e0129ee643cae8563c814fd5ade4f4d3e7bad",
+      "patch_id": "98b8928d8194bb2ca3998e2676e0438fd123776f",
+      "stable_patch_id": "98b8928d8194bb2ca3998e2676e0438fd123776f",
+      "changed_paths": [
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "09e643c5bc0f2de26dd0ffb47ed368f9e25f4ca5",
+      "parents": [
+        "f0a6dcd48e82a49506f5eba78d6e4d465afb00e0"
+      ],
+      "source_tree": "318543149478948444a8b995220ab7fac24ccc19",
+      "first_parent_binary_diff_sha256": "f6cdadcba1f36d1740c87f40dca43d929acf751b380b4bf243570abd2b73be9e",
+      "sorted_changed_paths_sha256": "35d5147555162180546b3dcdb16bbb66b7fe5f847ef5da89b31b0139fc0dd4d1",
+      "patch_id": "16e69a785d0db616570d3111a030b98dfa957de3",
+      "stable_patch_id": "16e69a785d0db616570d3111a030b98dfa957de3",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "da429b832ccdd6fb7411b9b2c383e7238776ea5f",
+      "parents": [
+        "09e643c5bc0f2de26dd0ffb47ed368f9e25f4ca5"
+      ],
+      "source_tree": "f6bff936ef01ddb73aee498e1bcb432af1ebf621",
+      "first_parent_binary_diff_sha256": "0f9fb92ab33c77697601d4bf690337faed4440492a02eb6700667a2d56749742",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "ffd092321f84847d26293886540e61189c116e1a",
+      "stable_patch_id": "ffd092321f84847d26293886540e61189c116e1a",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "51d1db2ad7f7d34f1732b8c1f9c172c5af3074c4",
+      "parents": [
+        "da429b832ccdd6fb7411b9b2c383e7238776ea5f"
+      ],
+      "source_tree": "992283dee1872712b1ce15d87dce817d824e0e45",
+      "first_parent_binary_diff_sha256": "3ce213d49bd9952224a6f6526337cad359656d0ec045e704e7acca1a52d1aaa6",
+      "sorted_changed_paths_sha256": "7d585bf767e165f947b780e219807af8d1c6a7543b23fd55f570253b59199d26",
+      "patch_id": "f850e0376dba31542d24c75ccbf2742c129cc923",
+      "stable_patch_id": "f850e0376dba31542d24c75ccbf2742c129cc923",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "0168bbd78a73737db5b665e3792046d94bb717b1",
+      "parents": [
+        "51d1db2ad7f7d34f1732b8c1f9c172c5af3074c4"
+      ],
+      "source_tree": "1c8320438e067c054b809a066ffa50ab49d2a790",
+      "first_parent_binary_diff_sha256": "f8c1c98e5f98cc955f36b2dfb441bed50c47add7e31a3bafb702f4d45675100c",
+      "sorted_changed_paths_sha256": "d7271cd25527ae39a80612000a6e0129ee643cae8563c814fd5ade4f4d3e7bad",
+      "patch_id": "15fa0a8b7ba8ce7752ae03273660d16a3e8eaaaf",
+      "stable_patch_id": "15fa0a8b7ba8ce7752ae03273660d16a3e8eaaaf",
+      "changed_paths": [
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "bb885e3b1e887d71a51fe3b19cf258ec27b0e380",
+      "parents": [
+        "0168bbd78a73737db5b665e3792046d94bb717b1"
+      ],
+      "source_tree": "9573da670b626f6c5151ef00fd1b83631f8bbdc5",
+      "first_parent_binary_diff_sha256": "84d854f1e637e45af142ac0de075523e88fef7539afc2a4159c3581ed1415097",
+      "sorted_changed_paths_sha256": "f3aeebbfbd6bc91a13eefd1443d8d20722ca425e23618348133705b473786d64",
+      "patch_id": "b3c6121223a7685a2f8eb9df33a29379681aa7d7",
+      "stable_patch_id": "b3c6121223a7685a2f8eb9df33a29379681aa7d7",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "c57dcf3a09afcc392a15f3b867c467a51f9cb7f7",
+      "parents": [
+        "bb885e3b1e887d71a51fe3b19cf258ec27b0e380"
+      ],
+      "source_tree": "b144f1477263a9ae82b2ba69b1d60bd40dd030fa",
+      "first_parent_binary_diff_sha256": "e54cf3c10ecf5acbd22da92cbbe42f1e568d286576edccf27207795d29dd2392",
+      "sorted_changed_paths_sha256": "f3aeebbfbd6bc91a13eefd1443d8d20722ca425e23618348133705b473786d64",
+      "patch_id": "5491c8af26229efb6ab9753c67a1b242ea703379",
+      "stable_patch_id": "5491c8af26229efb6ab9753c67a1b242ea703379",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "89af007f56835b7b4ca296b207536d4d60c43aaa",
+      "parents": [
+        "c57dcf3a09afcc392a15f3b867c467a51f9cb7f7"
+      ],
+      "source_tree": "f5c5f4005519867097153ac6d0e3619e4c6c632b",
+      "first_parent_binary_diff_sha256": "23c352ede7404ff7cf300fabed91009b485f4e59db2857ce8901f2375ebd6a35",
+      "sorted_changed_paths_sha256": "35d5147555162180546b3dcdb16bbb66b7fe5f847ef5da89b31b0139fc0dd4d1",
+      "patch_id": "0fd55714df774d1a3488710c2f2057dc32348a54",
+      "stable_patch_id": "0fd55714df774d1a3488710c2f2057dc32348a54",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "7a64c3d8654e61be6fe88c224fbf326925a7efac",
+      "parents": [
+        "89af007f56835b7b4ca296b207536d4d60c43aaa"
+      ],
+      "source_tree": "cee24cae078e95306b401674bee31f31469fc896",
+      "first_parent_binary_diff_sha256": "fabc9107604b33c606e962094c7fd0516d17bf259d2cbcb21c4ad0c7522f1c51",
+      "sorted_changed_paths_sha256": "d7271cd25527ae39a80612000a6e0129ee643cae8563c814fd5ade4f4d3e7bad",
+      "patch_id": "1964342f23e41c0e969ca6c5db6edb8648f08fd0",
+      "stable_patch_id": "1964342f23e41c0e969ca6c5db6edb8648f08fd0",
+      "changed_paths": [
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "6a56e78590c544f2e645a7fd38c35ad131c73e06",
+      "parents": [
+        "7a64c3d8654e61be6fe88c224fbf326925a7efac"
+      ],
+      "source_tree": "3893f827bc8c511f9e8a2405aef1e94c56406e83",
+      "first_parent_binary_diff_sha256": "dcd888c575b77e01138df79e3c4d9e1ae751440bf1587f77ffa7f0313fe42774",
+      "sorted_changed_paths_sha256": "f3aeebbfbd6bc91a13eefd1443d8d20722ca425e23618348133705b473786d64",
+      "patch_id": "6a7716f9b9ad87c9831d07620360cbc9c94a527f",
+      "stable_patch_id": "6a7716f9b9ad87c9831d07620360cbc9c94a527f",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "33927e00fc6a839e6e08563718cba62370a61fdc",
+      "parents": [
+        "6a56e78590c544f2e645a7fd38c35ad131c73e06"
+      ],
+      "source_tree": "dd534291e960424e574ef0e02562901e06b9c9db",
+      "first_parent_binary_diff_sha256": "04b9bfb8f5fd42879268781646b2d3ed542ae364046f418fab3b4fcfdc617746",
+      "sorted_changed_paths_sha256": "f3aeebbfbd6bc91a13eefd1443d8d20722ca425e23618348133705b473786d64",
+      "patch_id": "05b15c5bbfda46b0df62216afed9cdcc8680356b",
+      "stable_patch_id": "05b15c5bbfda46b0df62216afed9cdcc8680356b",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "fc902e0ac95fc648beca3d62a9df0210e0d77d9c",
+      "parents": [
+        "33927e00fc6a839e6e08563718cba62370a61fdc"
+      ],
+      "source_tree": "2d211a91c6290ac522652c1a3f3670b714ffeca9",
+      "first_parent_binary_diff_sha256": "6f7d9c46d5c5007d387badc0c59f3134bde892ae7b6e496ba1322ff042c46be7",
+      "sorted_changed_paths_sha256": "d7271cd25527ae39a80612000a6e0129ee643cae8563c814fd5ade4f4d3e7bad",
+      "patch_id": "dcd96eddd78be722e590e7f357144a4fecd1ba55",
+      "stable_patch_id": "dcd96eddd78be722e590e7f357144a4fecd1ba55",
+      "changed_paths": [
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "29759232dadf224e17865a4804e09b1631935ed8",
+      "parents": [
+        "fc902e0ac95fc648beca3d62a9df0210e0d77d9c"
+      ],
+      "source_tree": "e7ea6e2bdd3b3740dd560593a3c631f6a5321198",
+      "first_parent_binary_diff_sha256": "840ddd904b0d6bd444a8fd7c7ff4844e23766b5ac546c9cfe07eedb73526b092",
+      "sorted_changed_paths_sha256": "8ef3b83e956d0fc01244e9386ed3da42cb6710fe46958ef16abbbb0ecf79f613",
+      "patch_id": "b4b5c3fb0a6409d1ec77a8af2cf5936b2c93a16c",
+      "stable_patch_id": "b4b5c3fb0a6409d1ec77a8af2cf5936b2c93a16c",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "b8faef6ee863d0477b1c652fc2755d6a2190ed4e",
+      "parents": [
+        "29759232dadf224e17865a4804e09b1631935ed8"
+      ],
+      "source_tree": "4ed90a13041aa22dc578beff8a6ee00c75cb5b0c",
+      "first_parent_binary_diff_sha256": "7fa0961e067bdd7b7cd488d694c418847992738893b0a7fb9419f5c14474cf84",
+      "sorted_changed_paths_sha256": "a347f5e1a2c47a4a83bada9ab1ba42901b0f9a9a776e81fa322efe5cdedbdd0c",
+      "patch_id": "415acd98937ff99f99cb9d81cbd9d921545f9d05",
+      "stable_patch_id": "415acd98937ff99f99cb9d81cbd9d921545f9d05",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "c3c2673c385d9ed318944ea5113ea3e93dfbca02",
+      "parents": [
+        "b8faef6ee863d0477b1c652fc2755d6a2190ed4e"
+      ],
+      "source_tree": "7acae0519d548d57b199f5b241676ef5c1c4315a",
+      "first_parent_binary_diff_sha256": "2e6a4d0c126bb6d2621bce101c54e2b4f34ddb1625957adf0322e74704379aa7",
+      "sorted_changed_paths_sha256": "ec33699cfa4392bd361e840c4b7ca8850a5dbea4ae938195a81f1f2bf1966a5d",
+      "patch_id": "c1035dd69208dbb69dee73e3bff712232b6a5c68",
+      "stable_patch_id": "c1035dd69208dbb69dee73e3bff712232b6a5c68",
+      "changed_paths": [
+        ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
+        ".tad/project-knowledge/security.md",
+        "NEXT.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "598c91b9a3cfa7b7b9fbada67da0f4b374dc7c1d",
+      "parents": [
+        "c3c2673c385d9ed318944ea5113ea3e93dfbca02"
+      ],
+      "source_tree": "cf6b64de84cc5f7b409cab2e47cf73e47e69691d",
+      "first_parent_binary_diff_sha256": "ae814c756f6c99fc6a544915d6f1a31f3000b7e8262da1d1a43647f679fa254b",
+      "sorted_changed_paths_sha256": "a52961b63031755b4a5f09b1daac9a80fffe75fa71ae562ed0385de723300ad2",
+      "patch_id": "3355a6c6d0a101bc431562ae5b69f324a8f349bb",
+      "stable_patch_id": "3355a6c6d0a101bc431562ae5b69f324a8f349bb",
+      "changed_paths": [
+        ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "6eaef1fb9dc99f3f9b78444fb5e3729ea8f42f80",
+      "parents": [
+        "598c91b9a3cfa7b7b9fbada67da0f4b374dc7c1d"
+      ],
+      "source_tree": "eb991803e57859d0291997c58f763687975f40d0",
+      "first_parent_binary_diff_sha256": "89b2c815c6cdbb2c313e76bd08081b700910a6c01fdc0af9a28cf63f2bcc6a68",
+      "sorted_changed_paths_sha256": "35d5147555162180546b3dcdb16bbb66b7fe5f847ef5da89b31b0139fc0dd4d1",
+      "patch_id": "85739b419dd93b008d3d55b661273908aabed422",
+      "stable_patch_id": "85739b419dd93b008d3d55b661273908aabed422",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "1bd70f2e72085974732b359336cdd459779c1732",
+      "parents": [
+        "6eaef1fb9dc99f3f9b78444fb5e3729ea8f42f80"
+      ],
+      "source_tree": "5cd73fa9a6a675a40e24bb01bc5353ffae0fd67f",
+      "first_parent_binary_diff_sha256": "1f2389effedaa4af258a1260b6b586f9e062046dd3440999b767172a1a6f92da",
+      "sorted_changed_paths_sha256": "a52961b63031755b4a5f09b1daac9a80fffe75fa71ae562ed0385de723300ad2",
+      "patch_id": "1eceac7722e2aafb25d01d708f259cc72edb5c49",
+      "stable_patch_id": "1eceac7722e2aafb25d01d708f259cc72edb5c49",
+      "changed_paths": [
+        ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "4b21c464759541dd3e8b6c9006386ab10f1c5cc1",
+      "parents": [
+        "1bd70f2e72085974732b359336cdd459779c1732"
+      ],
+      "source_tree": "9d933721ab794446d1a9bf4378104a121160c51b",
+      "first_parent_binary_diff_sha256": "c793242f517483a6b29eb0bd12d7ad87c8a9577f714be2874e76b6191f7dc3ef",
+      "sorted_changed_paths_sha256": "3e0bf4c26af2750748657596ded58ed08d385806d679f31457faeba527ac06b8",
+      "patch_id": "87615384eb193e47c4fd71162a37612603d1b254",
+      "stable_patch_id": "87615384eb193e47c4fd71162a37612603d1b254",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "87daf0083c312c8b1b7c99980cd7e15e3dc9908d",
+      "parents": [
+        "4b21c464759541dd3e8b6c9006386ab10f1c5cc1"
+      ],
+      "source_tree": "2fe29beb52d6bcc74df14fa1d7948526e2a6829e",
+      "first_parent_binary_diff_sha256": "1728d077a88d1701e047711af09806e40c50a47a1505378730f0a23cd4304c7c",
+      "sorted_changed_paths_sha256": "f3aeebbfbd6bc91a13eefd1443d8d20722ca425e23618348133705b473786d64",
+      "patch_id": "893484465ef77f73aeb136600165d2fd6eb71d36",
+      "stable_patch_id": "893484465ef77f73aeb136600165d2fd6eb71d36",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "72ab0a45596a86f45adfce2345dc3afea154a3ad",
+      "parents": [
+        "87daf0083c312c8b1b7c99980cd7e15e3dc9908d"
+      ],
+      "source_tree": "684696f9d4f82adb286bb0529791ff74126f5e80",
+      "first_parent_binary_diff_sha256": "34ce030204924db5d49aa521f844f04c6e5aa8a41e91ed28dfabe846cd8f6d33",
+      "sorted_changed_paths_sha256": "a347f5e1a2c47a4a83bada9ab1ba42901b0f9a9a776e81fa322efe5cdedbdd0c",
+      "patch_id": "b400da495943388d2cc7d91a34527747082e47d5",
+      "stable_patch_id": "b400da495943388d2cc7d91a34527747082e47d5",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "01e4468a39029cc615870543b4e6789958076962",
+      "parents": [
+        "72ab0a45596a86f45adfce2345dc3afea154a3ad"
+      ],
+      "source_tree": "693d82f3423c7dd8cbc6fa9290c37f73a8b32e4a",
+      "first_parent_binary_diff_sha256": "c0c2ed3996bdafe07797bc8990672fe9bb5665896ab5fbe8dc882e33c35bc71d",
+      "sorted_changed_paths_sha256": "c4779438c4da2670324dc7efe0a084405feebe37d4ee6b705fea0c9aee3383be",
+      "patch_id": "24b6ca42b62a5a00e23a151d2f96fce13babcb09",
+      "stable_patch_id": "24b6ca42b62a5a00e23a151d2f96fce13babcb09",
+      "changed_paths": [
+        ".tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md",
+        ".tad/decisions/DR-20260827-yolo2-phase2-amended-acceptance.md",
+        "NEXT.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "12e0f0fe5e3f9c75d097913f4384e09db2401ef0",
+      "parents": [
+        "01e4468a39029cc615870543b4e6789958076962"
+      ],
+      "source_tree": "36668195302752e62a6f3aadf9c327f5bc84044a",
+      "first_parent_binary_diff_sha256": "c9ee3e3c671e9ab0e371e7b8e3f3358c83b07cde49646b4639f796ff3014f43b",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "0212debffa3d0a0b11e90181fc4fc0283899b4f5",
+      "stable_patch_id": "0212debffa3d0a0b11e90181fc4fc0283899b4f5",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "e7ec30b48f445a997b11408ea3aa5b699e55da06",
+      "parents": [
+        "12e0f0fe5e3f9c75d097913f4384e09db2401ef0"
+      ],
+      "source_tree": "01f836339bcd0a83b4ad99c807176b5f2e260acf",
+      "first_parent_binary_diff_sha256": "a3c858f6daadfcc86089e374f9f97f6ee0dead4cc452ad8d461aa682db489a57",
+      "sorted_changed_paths_sha256": "c7ec5aa8b1a80a191c851f6bbb9b5ce382f167646511b9feefe65e6f8c00b497",
+      "patch_id": "fef6ec304a323362db870e9c4e3fb97cc59913f5",
+      "stable_patch_id": "fef6ec304a323362db870e9c4e3fb97cc59913f5",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "f967276fc3b8e1fbc5acce5bc1fe7cfbfa121e5f",
+      "parents": [
+        "e7ec30b48f445a997b11408ea3aa5b699e55da06"
+      ],
+      "source_tree": "383418624f79bca8d4f028012a833e147aaf3a5e",
+      "first_parent_binary_diff_sha256": "3abdcc69c8c271673b323793e27f49dceaea4806dc5ff34f61ea60ddaba63bd2",
+      "sorted_changed_paths_sha256": "35413b708507ecf4e79ac4ce602496386910fe00d10a314a4e120e62b848b65f",
+      "patch_id": "b4bc5ca3e298d2d73e0a927ad2ca54de553135b0",
+      "stable_patch_id": "b4bc5ca3e298d2d73e0a927ad2ca54de553135b0",
+      "changed_paths": [
+        ".claude/skills/alex/SKILL.md",
+        ".claude/skills/alex/references/research-plan-protocol.md",
+        ".claude/skills/research-github/SKILL.md",
+        ".tad/active/handoffs/COMPLETION-20260828-local-wiki-research-framework.md",
+        ".tad/config-workflow.yaml",
+        ".tad/project-knowledge/patterns/research-methodology.md",
+        ".tad/research-notebooks/REGISTRY.yaml",
+        "research/CLAUDE.md",
+        "research/canon/README.md",
+        "research/canon/_clusters.yaml",
+        "research/canon/_index.md",
+        "research/canon/_questions.yaml",
+        "research/canon/_topics.yaml",
+        "research/canon/concepts/guardrail-layers.md",
+        "research/canon/lint.sh",
+        "research/canon/research/mcp-prompt-injection.md",
+        "research/raw/articles/guardrail-001.md",
+        "research/raw/articles/mcp-002.md",
+        "research/raw/github/guardrail-002.md",
+        "research/raw/github/mcp-003.md",
+        "research/raw/manifests/migrated-from-notebooklm.txt",
+        "research/raw/papers/mcp-001.md",
+        "research/raw/papers/migrated-agent-knowledge.md",
+        "research/raw/papers/migrated-agent-memory.md",
+        "research/raw/papers/migrated-ai-guardrails.md",
+        "research/raw/papers/migrated-product-pack.md",
+        "research/raw/papers/migrated-staleness-trap.md",
+        "research/scripts/generate.py",
+        "research/scripts/ingest.sh",
+        "research/wiki/index.md",
+        "research/wiki/log.md",
+        "research/wiki/research/mcp-prompt-injection.md",
+        "research/wiki/topics/_clusters.md",
+        "research/wiki/topics/guardrail-layers.md",
+        "research/wiki/topics/mcp-security.md"
+      ],
+      "classification": "excluded",
+      "reason": "parallel-local-wiki-implementation",
+      "shared_phase2_path_exemptions": [
+        ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md"
+      ]
+    },
+    {
+      "source_sha": "0961d7e3517c59fc32c7118a5668a551f85a8a86",
+      "parents": [
+        "f967276fc3b8e1fbc5acce5bc1fe7cfbfa121e5f"
+      ],
+      "source_tree": "f1fd0e7baa3f113b473b043db18fc6f1e1b46eb8",
+      "first_parent_binary_diff_sha256": "060d6a3d2cf13ee6fee2ca3bed1daa5ef1e017efe0822798d17830222daf434a",
+      "sorted_changed_paths_sha256": "35d5147555162180546b3dcdb16bbb66b7fe5f847ef5da89b31b0139fc0dd4d1",
+      "patch_id": "af663083f94abd6813bc4c3ef365252b87fffaca",
+      "stable_patch_id": "af663083f94abd6813bc4c3ef365252b87fffaca",
+      "changed_paths": [
+        ".tad/scripts/phase2-pair-driver.mjs",
+        ".tad/scripts/yolo-recovery.mjs",
+        ".tad/scripts/yolo-reference-runner.mjs",
+        ".tad/scripts/yolo-round.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "4dff4519e46bdf3244dcf859b8bf75925e63a4b0",
+      "parents": [
+        "0961d7e3517c59fc32c7118a5668a551f85a8a86"
+      ],
+      "source_tree": "aff15374c62c9933ba6721bf6016f65200dc7472",
+      "first_parent_binary_diff_sha256": "074d194e555ddaec8b7576b3e6dd0d940504b35cda2a53a9dd11dbe3cae34f6c",
+      "sorted_changed_paths_sha256": "666e6c36e81d86424345c1f9d75725952620a61e3602dcbbfb0a73df21ccfbdd",
+      "patch_id": "70c8734bc1b071f9b863e6d804f690436e2b72ab",
+      "stable_patch_id": "70c8734bc1b071f9b863e6d804f690436e2b72ab",
+      "changed_paths": [
+        ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
+        "NEXT.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "c5f0114bce0fce19bf0db919cb1cf88462700c2f",
+      "parents": [
+        "4dff4519e46bdf3244dcf859b8bf75925e63a4b0"
+      ],
+      "source_tree": "c6638d096926ae47cd83e8ed720b35afa4122481",
+      "first_parent_binary_diff_sha256": "7ec134d2d99d93592eac26084d491ea7c69759c59ba936f76b5138cb6f537551",
+      "sorted_changed_paths_sha256": "ec760b3326911d0215e554af8a51540af9da51da7f42cddd731e841ffb4b0ab3",
+      "patch_id": "ca0adf6c2ce07950285cb1af42b8e40b8ee9c621",
+      "stable_patch_id": "ca0adf6c2ce07950285cb1af42b8e40b8ee9c621",
+      "changed_paths": [
+        ".tad/archive/handoffs/COMPLETION-20260828-local-wiki-research-framework.md",
+        ".tad/archive/handoffs/GATE4-20260828-local-wiki-research-framework.md",
+        ".tad/archive/handoffs/HANDOFF-20260828-local-wiki-research-framework.md",
+        ".tad/brain-index.md",
+        ".tad/eval/judge/bundles/local-wiki-research-framework.md",
+        "NEXT.md",
+        "PROJECT_CONTEXT.md"
+      ],
+      "classification": "excluded",
+      "reason": "parallel-local-wiki-gate4-archive",
+      "shared_phase2_path_exemptions": [
+        "NEXT.md"
+      ]
+    },
+    {
+      "source_sha": "896f63dfb164242c1963fdf8d34414cca4e987f6",
+      "parents": [
+        "c5f0114bce0fce19bf0db919cb1cf88462700c2f"
+      ],
+      "source_tree": "5454f91af324aed1a7e18c659f3d4bd2ceec4984",
+      "first_parent_binary_diff_sha256": "931d118495551822dc156f3c7dad873c39d0e0899655a980fc1a72693f8e00a6",
+      "sorted_changed_paths_sha256": "b295aee5c13b614df889d54f8a8ffc34133434f3aa2cf07a824d6f4d34bf9e40",
+      "patch_id": "0636d789f3960fbf1b25a85c8602c22078aff1e5",
+      "stable_patch_id": "0636d789f3960fbf1b25a85c8602c22078aff1e5",
+      "changed_paths": [
+        "NEXT.md"
+      ],
+      "classification": "excluded",
+      "reason": "parallel-next-cleanup",
+      "shared_phase2_path_exemptions": [
+        "NEXT.md"
+      ]
+    },
+    {
+      "source_sha": "69194cd1931abfe359636b0447031de3352dd615",
+      "parents": [
+        "896f63dfb164242c1963fdf8d34414cca4e987f6"
+      ],
+      "source_tree": "eeb028518f731c1153a08fe32102201e52897e35",
+      "first_parent_binary_diff_sha256": "79bb2a418990296632de758dccdbaabc81b70b57fd9e1654db7b077c44cafdd7",
+      "sorted_changed_paths_sha256": "62dd402aadda7eaf1e539d2375170a223ba859ba3eb22f628b03f66e1554fcac",
+      "patch_id": "48088be16a17a1313485e9bbb444cb0b4de44915",
+      "stable_patch_id": "48088be16a17a1313485e9bbb444cb0b4de44915",
+      "changed_paths": [
+        ".tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md",
+        ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
+        ".tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/architecture-review.md",
+        ".tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/evidence-security-review.md",
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "bc60e0e5052d5fd8bd70f7855a3a69c1e8847b7d",
+      "parents": [
+        "69194cd1931abfe359636b0447031de3352dd615"
+      ],
+      "source_tree": "b9ef188224b215649ec184688a74587ddfef6adc",
+      "first_parent_binary_diff_sha256": "c616e04e9c58e10fee678c214322782c40f0cc62e78e6f8762ff8ba818638ecc",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "e87c0454f0367a4ac9efdd2c7376edcb6136f91c",
+      "stable_patch_id": "e87c0454f0367a4ac9efdd2c7376edcb6136f91c",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "aac2b9d9a0ccd6424e9ad8bffcac3b1f068d087e",
+      "parents": [
+        "bc60e0e5052d5fd8bd70f7855a3a69c1e8847b7d"
+      ],
+      "source_tree": "eba30f7e5087b985b63403fe46b7d649133b57b5",
+      "first_parent_binary_diff_sha256": "3a47ae6637596aa4a7746bffa6680b60d10d8a071e47ee28707020352110a05d",
+      "sorted_changed_paths_sha256": "52edbb72753aae289338dcc6e2fb60d5541d6d03b43e676e5a14897f0b545f05",
+      "patch_id": "55139e80068d0331f03c305621f33bd1fbc8e80c",
+      "stable_patch_id": "55139e80068d0331f03c305621f33bd1fbc8e80c",
+      "changed_paths": [
+        ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "e2e400b74103f00bd61462739bff3ecb339f2322",
+      "parents": [
+        "aac2b9d9a0ccd6424e9ad8bffcac3b1f068d087e"
+      ],
+      "source_tree": "fa2b1918a911f35206221372ed0a9857dfcfdf76",
+      "first_parent_binary_diff_sha256": "c1e63ac22a398e1d2d809c81c627afcff72e44fa67c73a2e43cdc35dd5ca48ac",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "9157776854332b52814ff186eef88552a3693cfc",
+      "stable_patch_id": "9157776854332b52814ff186eef88552a3693cfc",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "dea9ab321af1e5cdc84531c7ab6575dda10837fb",
+      "parents": [
+        "e2e400b74103f00bd61462739bff3ecb339f2322"
+      ],
+      "source_tree": "887214ad8a90ebb1d5f514abeb11aa77dc67c39c",
+      "first_parent_binary_diff_sha256": "89337a6927b62ba85f17668fd44a2a016b47e5a82a4df9869063ca9f07bc06fb",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "a8077c163fc5a1055c82ee190ffcf642811932b9",
+      "stable_patch_id": "a8077c163fc5a1055c82ee190ffcf642811932b9",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "df59df033266ddcdeb5a2cdf4f603b4fdb3d594a",
+      "parents": [
+        "dea9ab321af1e5cdc84531c7ab6575dda10837fb"
+      ],
+      "source_tree": "d970ff96121b6f96cb73297412514360852aaad3",
+      "first_parent_binary_diff_sha256": "a154fe11288fe6fadfa836536f10627885aec8b75d6882b805966c24147b721e",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "d7892180137859e82affc07cf062bc10e435b966",
+      "stable_patch_id": "d7892180137859e82affc07cf062bc10e435b966",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "7b3c38f8d1594245d75521a5e2e1457a1aae9bef",
+      "parents": [
+        "df59df033266ddcdeb5a2cdf4f603b4fdb3d594a"
+      ],
+      "source_tree": "56fced2205e5867a705a54339b5082008d9f6e18",
+      "first_parent_binary_diff_sha256": "368539d0a95f25e4be8e21f5574a8fc73d237a779a27d2f2980f41a0443fe073",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "ef42afd7f2a709c1f5fc237452e1e8fd460e1d29",
+      "stable_patch_id": "ef42afd7f2a709c1f5fc237452e1e8fd460e1d29",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "5dac5ed088aefe13d1914e74d24eb841535ad6bf",
+      "parents": [
+        "7b3c38f8d1594245d75521a5e2e1457a1aae9bef"
+      ],
+      "source_tree": "d8fb50e4ca64c1fa0963f2665704dad7c72bf47b",
+      "first_parent_binary_diff_sha256": "86a5577b65e7cd0260c9458b80584fd8a84a67b71d49a88870a20e680cc7541b",
+      "sorted_changed_paths_sha256": "6fab6e495fc9a279d1a9d9e2dba34f0a62f72e24449c00ba322ee46132b52cb1",
+      "patch_id": "0889d4f1c4df2404dcf7f8c35617b11de3900a79",
+      "stable_patch_id": "0889d4f1c4df2404dcf7f8c35617b11de3900a79",
+      "changed_paths": [
+        ".tad/active/epics/EPIC-20260816-framework-health-repair.md",
+        ".tad/archive/handoffs/cancelled/HANDOFF-20260816-phase1b-retire-frontmatter.md",
+        ".tad/archive/handoffs/cancelled/HANDOFF-20260816-phase2-installer-data-safety.md",
+        ".tad/brain-index.md",
+        "NEXT.md"
+      ],
+      "classification": "excluded",
+      "reason": "parallel-framework-health-cancellation",
+      "shared_phase2_path_exemptions": [
+        "NEXT.md"
+      ]
+    },
+    {
+      "source_sha": "3884a744974c327ec42a0286c4c6578c7af80dff",
+      "parents": [
+        "5dac5ed088aefe13d1914e74d24eb841535ad6bf"
+      ],
+      "source_tree": "cd4d7f97ed517771a89b383583cd520b8e19ae58",
+      "first_parent_binary_diff_sha256": "7f354e6e93954a336948d5a8894a860e73a8f347deb6bde42ef3e585617cb333",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "0b945593d0c614003802bb5255473ec3bea95d42",
+      "stable_patch_id": "0b945593d0c614003802bb5255473ec3bea95d42",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "c38a004184f93e3af8ed1d162c506d39d38fe058",
+      "parents": [
+        "3884a744974c327ec42a0286c4c6578c7af80dff"
+      ],
+      "source_tree": "e1ae9488b2de708654c75e5a7e78ea56081b3aca",
+      "first_parent_binary_diff_sha256": "c230f515643d4cb7ccc5558eea7b41ba34644ca7faa1b442b3c838fef10c7cb7",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "b7641fc48cf3754ea17b2cf1a596c5093d72d908",
+      "stable_patch_id": "b7641fc48cf3754ea17b2cf1a596c5093d72d908",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "f0183e0d971b208e83640926c6af1a9bdae4c593",
+      "parents": [
+        "c38a004184f93e3af8ed1d162c506d39d38fe058"
+      ],
+      "source_tree": "be56b49fca34527429b3a488ad93b7c47791c541",
+      "first_parent_binary_diff_sha256": "e2a87073b5993e4e8390f471e4a57334e617f22afe3e1855a52c0374a59bffd5",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "e6d67a90ca3ae4846070310fbbff83e77767fb19",
+      "stable_patch_id": "e6d67a90ca3ae4846070310fbbff83e77767fb19",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "42597cfa65c2f22f763d23418e115d7cb4fc5e9a",
+      "parents": [
+        "f0183e0d971b208e83640926c6af1a9bdae4c593"
+      ],
+      "source_tree": "ea9e5d931ff3dfeb2e16578889e5f64785ec095a",
+      "first_parent_binary_diff_sha256": "638d2f3db04feb3110fd5f8fe74fa3d693e6b539273ca2b95c2ddfa683b09c40",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "277e42196626eda8b7531316be7516f081395792",
+      "stable_patch_id": "277e42196626eda8b7531316be7516f081395792",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "baf80b15aa237cc7497ebfa80ad90eb2bc12c1c4",
+      "parents": [
+        "42597cfa65c2f22f763d23418e115d7cb4fc5e9a"
+      ],
+      "source_tree": "49b60474712f0155f3c2bb7cb03bc08d7a4eba20",
+      "first_parent_binary_diff_sha256": "987bc248dc0358740f8862363a2ca28062aa5f26c4e1dda8a42aa549ec5876d5",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "6282d961de0257b81500ae0c35b93b993d537400",
+      "stable_patch_id": "6282d961de0257b81500ae0c35b93b993d537400",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "c1ccd94ff4c79b702ee888c36be6b0314378d6eb",
+      "parents": [
+        "baf80b15aa237cc7497ebfa80ad90eb2bc12c1c4"
+      ],
+      "source_tree": "e33fbaaacdcbad0f2eb68771dc550c02e1f3c72b",
+      "first_parent_binary_diff_sha256": "4d7f2fefe322dc9e0bfd6885ac71305b1d3e9afd73de90d352547187002f6c8b",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "8e23d3e833a7c1df8c86bf30976e29f4198ee349",
+      "stable_patch_id": "8e23d3e833a7c1df8c86bf30976e29f4198ee349",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "06a535320b98f6469b4afbb87914fd9092d36872",
+      "parents": [
+        "c1ccd94ff4c79b702ee888c36be6b0314378d6eb"
+      ],
+      "source_tree": "85e1364541330f383e7f86f8bdadb94cc64c76a7",
+      "first_parent_binary_diff_sha256": "1e5416d389c502186ab437698d9fb651cd39b6fe638c90ee05c1a566dc204582",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "4f8f36f0a4e4a5a92e9ccf3b1d8728e0c9407ade",
+      "stable_patch_id": "4f8f36f0a4e4a5a92e9ccf3b1d8728e0c9407ade",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "df19022565a486ee1ed0cf74a54d05dadd2136a5",
+      "parents": [
+        "06a535320b98f6469b4afbb87914fd9092d36872"
+      ],
+      "source_tree": "13562004c702da4a870da70b9307a08a0ba46bb3",
+      "first_parent_binary_diff_sha256": "61dbaaa0683f5645953ca8872282a345575906fe3b4dddf92f98a0e0425e82d3",
+      "sorted_changed_paths_sha256": "1a2a6ccad7a8636dc22c8b316e6389ec444612a3ea9f45c109a524f6eb69cefc",
+      "patch_id": "2fb0623f65f46ae26d19ddcaf9e53641fbf38fda",
+      "stable_patch_id": "2fb0623f65f46ae26d19ddcaf9e53641fbf38fda",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T1-doc-ref/task.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T2-node-behavior/task.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T3-shell-edge/task.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T4-cross-file/task.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T5-hidden-business/task.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/dataset-index.json"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "7756a6fe155af16d86d05a7008431f60643873f8",
+      "parents": [
+        "df19022565a486ee1ed0cf74a54d05dadd2136a5"
+      ],
+      "source_tree": "efa2abdaae39045ac53a42ad8336e7024ff81b3f",
+      "first_parent_binary_diff_sha256": "7d49506e70a750ca83ae565b0172a71bf86ae9dc033bcbd939c8e7a04a232c3d",
+      "sorted_changed_paths_sha256": "3ddf26c5812be69119c9b67b765e985757200c5b67aff562f36fb6eb0e22d2d2",
+      "patch_id": "403904f52677a950415013af9f7d3dc2f624c589",
+      "stable_patch_id": "403904f52677a950415013af9f7d3dc2f624c589",
+      "changed_paths": [
+        ".tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md",
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "59d355f343ff03dceb119285e664d1a17e72e1b8",
+      "parents": [
+        "7756a6fe155af16d86d05a7008431f60643873f8"
+      ],
+      "source_tree": "a3fa0c2df1e3eb36ec6c24461c615934062683cf",
+      "first_parent_binary_diff_sha256": "bd37cf5a1c3ce349ab37eb4a9d95a0d70043fcfdac4202108ae02ef1dc4a7557",
+      "sorted_changed_paths_sha256": "cad0e95cf2fa4b8f1e84e7516ac8a76c2667e321a7fe1af063a9dafd91824c08",
+      "patch_id": "9b6bc733a444353a1ef7289566f4f50f91a1b1f1",
+      "stable_patch_id": "9b6bc733a444353a1ef7289566f4f50f91a1b1f1",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/harness-degradation-approval.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "47eebfb2bc03dd9e65a78657501e0bd7290ebce7",
+      "parents": [
+        "59d355f343ff03dceb119285e664d1a17e72e1b8"
+      ],
+      "source_tree": "2da99a4b500468f1eb1014b05e228b5ec8db8a4b",
+      "first_parent_binary_diff_sha256": "f512c3166f0adc9784f0062d440f7cf80685a33070350009321b34bcd21151d2",
+      "sorted_changed_paths_sha256": "128d0c7745505cf3b746342f7847c6b81cc19bc0f529678ea3ee26766d3ceeec",
+      "patch_id": "34e1a98e2acc695a71a50705c56009372a8a29de",
+      "stable_patch_id": "34e1a98e2acc695a71a50705c56009372a8a29de",
+      "changed_paths": [
+        ".tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md",
+        ".tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "28c0f9af83c23945038475ec4723a7c43a8acfbf",
+      "parents": [
+        "47eebfb2bc03dd9e65a78657501e0bd7290ebce7"
+      ],
+      "source_tree": "024c16b5c2abc238f900300e138719e918f430ab",
+      "first_parent_binary_diff_sha256": "5056e5dbc60a454124e41435db1f235896ff1c8ba18322f1e2d12a04d3e33f03",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "456b5ad75c904ae7d49528dcd0924d8a293a36ed",
+      "stable_patch_id": "456b5ad75c904ae7d49528dcd0924d8a293a36ed",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "90df53e3924c80888d280b79b12a4cb23219bc77",
+      "parents": [
+        "28c0f9af83c23945038475ec4723a7c43a8acfbf"
+      ],
+      "source_tree": "5f6a1d64f9bdd2b91de934852fc84aaa8eec65ce",
+      "first_parent_binary_diff_sha256": "1908ceb0f647aea0d3a40e89cf0b7fcc7714ee7109e9bdeb444ef65c868df6b2",
+      "sorted_changed_paths_sha256": "0fdfc373af6cf7c85c80d0e4858103cc5041c53449e118c44fc12d2727474ef9",
+      "patch_id": "769d3f3579e65d904ddd482b98a015b2a392b53d",
+      "stable_patch_id": "769d3f3579e65d904ddd482b98a015b2a392b53d",
+      "changed_paths": [
+        ".tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md",
+        ".tad/decisions/DR-20260831-yolo2-phase2-scope-proof-amendment-r2.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "cd94d9570518ef7135e0fef071fb6bc1b9e1662a",
+      "parents": [
+        "90df53e3924c80888d280b79b12a4cb23219bc77"
+      ],
+      "source_tree": "e8d19d15988a72f2354a9705842567cdadcae17f",
+      "first_parent_binary_diff_sha256": "6d6a823f64756117b0c8d790034a351ed835e3d73eaeba32d49138ed1df5244a",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "40367757d1c430ca22cb6f1370961068b52bd084",
+      "stable_patch_id": "40367757d1c430ca22cb6f1370961068b52bd084",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "22b3e1fc94fc7503deead17bdbca7f9875f11f58",
+      "parents": [
+        "cd94d9570518ef7135e0fef071fb6bc1b9e1662a"
+      ],
+      "source_tree": "8e45d5c7d22269c5864ca9de948388a160eab968",
+      "first_parent_binary_diff_sha256": "34ba44dde0663c54265b516ad055149c0a2165a4f9931ef2ea481a7187443474",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "19baa007cbcea06552e02aba07d0d4919e1bb1dc",
+      "stable_patch_id": "19baa007cbcea06552e02aba07d0d4919e1bb1dc",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "2e1f28c44a8cfffb76605919e5f36cce244945ab",
+      "parents": [
+        "22b3e1fc94fc7503deead17bdbca7f9875f11f58"
+      ],
+      "source_tree": "30de5927226babf70b66a71d938c26d59333c23d",
+      "first_parent_binary_diff_sha256": "4579d091d1faf69ee56fd5ea7e9052912add91131c9b5002cfd671cf72f28c6b",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "7e24c465f0fbf05a08123717dc43d769c66c8972",
+      "stable_patch_id": "7e24c465f0fbf05a08123717dc43d769c66c8972",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "3841d6b3057a74460b8166a4bb20c66582c3fc2f",
+      "parents": [
+        "2e1f28c44a8cfffb76605919e5f36cce244945ab"
+      ],
+      "source_tree": "7c4feb16ba54a681518c348431413686eec22038",
+      "first_parent_binary_diff_sha256": "ec1ba346bbc4c1c98276040c865846ad299b9ebc2256e159ec86b261509ff48a",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "a7ea22677ebf9f99f1458641887ab9891ad7b272",
+      "stable_patch_id": "a7ea22677ebf9f99f1458641887ab9891ad7b272",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "9368a30e77e5694b864fdb409b470e288793e8d5",
+      "parents": [
+        "3841d6b3057a74460b8166a4bb20c66582c3fc2f"
+      ],
+      "source_tree": "ce4bf77a975514c45b30fd7bbf05eeed864fd766",
+      "first_parent_binary_diff_sha256": "a23bdb9bc9ac9612d01fbc7d8844451a1d6204f5b49afe9f0734f1a220774774",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "f5061d873263661c286309c29703c8d35cdc07df",
+      "stable_patch_id": "f5061d873263661c286309c29703c8d35cdc07df",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "e64bf89904f62b504aa0ca6234972251b31a34bf",
+      "parents": [
+        "9368a30e77e5694b864fdb409b470e288793e8d5"
+      ],
+      "source_tree": "87b85a9bce4c5ae72ce6b13e726ab0d64ed014d4",
+      "first_parent_binary_diff_sha256": "62f3532cff15348441203f30917ef37c0c732bc2e4c6fe5ceae94dcb5415824f",
+      "sorted_changed_paths_sha256": "0503d778f0f537babe881102cf8d64db9c9fd445b8a0f147bd452116b60ac085",
+      "patch_id": "97bab8aa5d85177fb7b61ee6c633ef75e622c242",
+      "stable_patch_id": "97bab8aa5d85177fb7b61ee6c633ef75e622c242",
+      "changed_paths": [
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "a6f28532c81cadbae72dff45d2e135095cd3aa90",
+      "parents": [
+        "e64bf89904f62b504aa0ca6234972251b31a34bf"
+      ],
+      "source_tree": "ef205e21343b32de9d0e77b06a24b8db72512256",
+      "first_parent_binary_diff_sha256": "4e465948adfcc0f9c2d2077beac15f0b1d380aee5cea9d5edb2cb5d04bf9b5c3",
+      "sorted_changed_paths_sha256": "3ee3b5caade129f021cef1833bdddef0661b3dcbcd2869f74a257fbb47aaa62a",
+      "patch_id": "4eee5128fccb719572f00ff83dbf1fe4148794ca",
+      "stable_patch_id": "4eee5128fccb719572f00ff83dbf1fe4148794ca",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md",
+        ".tad/scripts/yolo-recovery.test.mjs"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "f517cfaeeb45deda61c6332670564307ceb33822",
+      "parents": [
+        "a6f28532c81cadbae72dff45d2e135095cd3aa90"
+      ],
+      "source_tree": "89a3beaf034e1cd6a90b952b65cfce267265897c",
+      "first_parent_binary_diff_sha256": "168495f738b7928057f246514401a588a9eec70b61b6299c9d1da384bd920ab7",
+      "sorted_changed_paths_sha256": "3b436c169131323177dc4f6652f165ccaee05392886cc6859c6255eb3a23a794",
+      "patch_id": "9e8b269b6d4a6e67df87ae5e31f690e8157c2a3c",
+      "stable_patch_id": "9e8b269b6d4a6e67df87ae5e31f690e8157c2a3c",
+      "changed_paths": [
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    }
+  ]
+}

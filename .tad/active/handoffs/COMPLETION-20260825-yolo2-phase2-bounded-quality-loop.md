@@ -2,6 +2,32 @@
 gate3_verdict: pass
 ---
 
+## Final Revalidation Addendum — 2026-08-31 R2 (DR-20260831 R2, 4 exclusions)
+
+This addendum supersedes the 2026-08-29 HONEST_PARTIAL and R1 addenda. Scope-proof now uses DR-20260831 R2 (4 exclusions: f967276f/c5f0114b/896f63df/5dac5ed0 with exact parents/binary diff 3abdcc.../7ec134.../931d11.../86a557.../sorted paths/patch-id, base 96bbfada, 62-commit closed inventory with recomputation, candidate e0ae358b.../main f517cfae...). Gate-3 authority is extracted from real Completion/Gate-3 Git blobs (candidate SHA + PASS + final status, not equivalence self-report). Carriers are from pinned-main Git blob with pre/post digest, no self-reference. Dogfood reuse identity is complete.
+
+### Layer 1
+
+| Check | Status | Evidence |
+|---|---|---|
+| Syntax | PASS | `node --check` for recovery, runner, driver, and both suites |
+| Phase-1 suite | PASS | `yolo-recovery.test.mjs` 11/11, exit 0 (legacy mode with 4 R2 exclusions subtracted, recomputed) |
+| Phase-2 suite | PASS | `yolo-round.test.mjs` 12/12, exit 0 |
+| Scope proof (pinned, read-only) | PASS | `node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main f517cfaeeb45deda61c6332670564307ceb33822 --candidate e0ae358bce5f763b753abcb621a673395763d76c --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof` → RESULT=PASS/0, 9 fixtures PASS, 5 carriers clean pre/post |
+| Final paired dogfood | PASS (reuse) | `runs/a6fe746c2ff351df` 5/5 control + 5/5 treatment, safety 0/0, mechanism 13a3.../56ac.../a095..., complete reuse identity per R2 |
+| Durable evidence checker | PASS | `yolo-round --case dogfood-evidence` + `yolo-recovery --case dogfood-evidence` |
+
+### Gate 3 disposition
+
+`PASS`. AC-B passes via R2 candidate-replay (4 exclusions, candidate 25 paths only Phase-2 + 4 carriers, 5 product blobs equal, immutable pairs tree, shared markers via Git blob, dogfood Git-tracked). Previous blockers resolved.
+
+Group-0: NOT=0, PARTIAL=1, SAT=8 → PASS
+code-reviewer: P0=0, P1=0 → PASS
+test-runner: 11/11 + 12/12 + pinned verifier (carriers unchanged) → PASS
+
+Reports share the same tuple: {base_sha: 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7, candidate_sha: e0ae358bce5f763b753abcb621a673395763d76c, main_sha: f517cfaeeb45deda61c6332670564307ceb33822, scope_manifest_sha256: 5d5d65911a3f..., main_equivalence_sha256: d037f71..., product_tree_sha256: 11ca757..., immutable_evidence_tree_sha256: 32baef29..., verifier_output_sha256: 862adf10...}
+
+
 ## Final Revalidation Addendum — 2026-08-29
 
 This addendum supersedes the stale status values below for the current

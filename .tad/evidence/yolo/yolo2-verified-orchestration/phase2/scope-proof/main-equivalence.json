@@ -1,0 +1,81 @@
+{
+  "format": "yolo2-phase2-scope-proof-v1",
+  "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
+  "main_sha": "f517cfaeeb45deda61c6332670564307ceb33822",
+  "candidate_sha": "e0ae358bce5f763b753abcb621a673395763d76c",
+  "product_equivalence": [
+    {
+      "path": ".tad/scripts/yolo-recovery.mjs",
+      "candidate_sha256": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+      "main_sha256": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/yolo-reference-runner.mjs",
+      "candidate_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+      "main_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/phase2-pair-driver.mjs",
+      "candidate_sha256": "a095e0362ea93d0056ec226ad1e113362c9845d27cf6226eb03da6b922a516e5",
+      "main_sha256": "a095e0362ea93d0056ec226ad1e113362c9845d27cf6226eb03da6b922a516e5",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/yolo-round.test.mjs",
+      "candidate_sha256": "10fc4313956a6d5566bf484af9e826d3baa09e20e3edba45275e9f9ababa6c9d",
+      "main_sha256": "10fc4313956a6d5566bf484af9e826d3baa09e20e3edba45275e9f9ababa6c9d",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/yolo-recovery.test.mjs",
+      "candidate_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15",
+      "main_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15",
+      "equal": true
+    }
+  ],
+  "immutable_evidence": [
+    {
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs",
+      "candidate_tree": "800fb348993dcd2da9d8f04ff3f5d1ed9ee05cc2",
+      "main_tree": "800fb348993dcd2da9d8f04ff3f5d1ed9ee05cc2",
+      "candidate_sha256": "32baef299ac99e3a8ba957a0623142b49686973447a7b7b78a1c5162f6f6e6cd",
+      "main_sha256": "32baef299ac99e3a8ba957a0623142b49686973447a7b7b78a1c5162f6f6e6cd",
+      "equal": true
+    }
+  ],
+  "shared_control_plane": [
+    {
+      "path": ".tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md",
+      "selector": "frontmatter.scope_proof_amendment",
+      "expected_value": ".tad/decisions/DR-20260831-yolo2-phase2-scope-proof-amendment-r2.md",
+      "candidate_value": ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
+      "main_value": ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
+      "canonical_subdocument_sha256": "5427d8fac6a9a053414c13cf29892cc72108a216aa117430637b6dd3f68b6e8f",
+      "source_commit": "e0ae358bce5f763b753abcb621a673395763d76c"
+    },
+    {
+      "path": ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
+      "selector": "frontmatter.gate3_verdict",
+      "expected_value": "pass",
+      "candidate_value": "pass",
+      "main_value": "pass",
+      "canonical_subdocument_sha256": "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1",
+      "source_commit": "e0ae358bce5f763b753abcb621a673395763d76c"
+    },
+    {
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md",
+      "selector": "file.contains: Verdict PASS and candidate SHA",
+      "expected_value": "PASS",
+      "candidate_value": "PASS",
+      "main_value": "PASS",
+      "candidate_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
+      "main_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
+      "canonical_subdocument_sha256": "2f9acb02faa121bb2a3621951f57b4c690655337edee2e5ac350be2b3be88ea8",
+      "source_commit": "e0ae358bce5f763b753abcb621a673395763d76c",
+      "expected_sha": "e0ae358bce5f763b753abcb621a673395763d76c"
+    }
+  ],
+  "verifier_blob_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15"
+}
