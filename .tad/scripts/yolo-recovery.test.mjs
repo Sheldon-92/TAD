@@ -1473,6 +1473,7 @@ function buildCommitManifest(baseFull, mainFull, repoRoot = REPO_ROOT) {
       first_parent_binary_diff_sha256: diffSha,
       sorted_changed_paths_sha256: sortedSha,
       patch_id: patchId,
+      stable_patch_id: patchId,
       changed_paths: changedPaths.sort(),
       classification,
       reason,
@@ -1550,7 +1551,8 @@ function verifyManifestInvariants(manifest, baseFull, mainFull) {
         errors.push(`fixed exclusion ${c.source_sha} parents mismatch`);
       }
       if (c.reason !== fixed.reason) errors.push(`fixed exclusion ${c.source_sha} reason mismatch: ${c.reason} vs ${fixed.reason}`);
-      if (c.stable_patch_id !== fixed.stable_patch_id) errors.push(`fixed exclusion ${c.source_sha} patch-id mismatch`);
+      const cPatch = c.stable_patch_id || c.patch_id;
+      if (cPatch !== fixed.stable_patch_id) errors.push(`fixed exclusion ${c.source_sha} patch-id mismatch: ${cPatch} vs ${fixed.stable_patch_id}`);
       if (JSON.stringify(c.shared_phase2_path_exemptions) !== JSON.stringify(fixed.shared_phase2_path_exemptions)) {
         errors.push(`fixed exclusion ${c.source_sha} shared exemption mismatch`);
       }
@@ -1874,7 +1876,8 @@ function runScopeFixtures() {
     }
     // Also check that changing any field of a fixed exclusion is caught
     for (const ex of FIXED_EXCLUSIONS) {
-      const badParent = ex.parents[0].slice(0, -1) + '0';
+      const last = ex.parents[0].slice(-1);
+      const badParent = ex.parents[0].slice(0, -1) + (last === '0' ? '1' : '0');
       if (badParent === ex.parents[0]) errors.push(`fixture9: parent tamper check failed for ${ex.source_sha}`);
     }
   }
