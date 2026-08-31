@@ -1322,6 +1322,7 @@ const PHASE2_CONTROL_PLANE_ALLOWLIST = [
 // closed BASE..MAIN inventory beyond the two allowlists above (DR-20260830 §2.2).
 const AMENDMENT_CARRIER_ALLOWLIST = [
   '.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md',
+  '.tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md',
   '.tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/architecture-review.md',
   '.tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/evidence-security-review.md',
 ];
