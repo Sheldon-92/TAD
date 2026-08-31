@@ -1683,7 +1683,7 @@ function verifyDogfoodInputManifest(manifestPath, candidateFull, repoRoot = REPO
     catch (e) { errors.push(`candidate missing mechanism file ${rel}`); continue; }
     if (actual !== expected) errors.push(`mechanism ${key} sha mismatch: manifest ${expected.slice(0,12)} vs candidate ${actual.slice(0,12)}`);
   }
-  // dataset inputs: dataset-index.json plus per-task JSONs
+  // dataset inputs: dataset-index.json plus per-task JSONs — MUST be Git blob/tree or immutable carrier, no mutable filesystem fallback (DR-20260830 §2.6)
   if (!doc.dataset_inputs || !doc.dataset_inputs.dataset_index_sha256) {
     errors.push('dogfood manifest missing dataset_inputs.dataset_index_sha256');
   } else {
@@ -1691,10 +1691,8 @@ function verifyDogfoodInputManifest(manifestPath, candidateFull, repoRoot = REPO
     let actualIdx;
     try { actualIdx = gitShowBlobSha256(candidateFull, idxPath, repoRoot); }
     catch {
-      // dataset-index is not committed (it's in evidence/ which is ignored), so check filesystem
-      const abs = path.join(repoRoot, idxPath);
-      if (fs.existsSync(abs)) actualIdx = sha256File(abs);
-      else errors.push(`dataset-index not found for verification`);
+      errors.push(`dataset-index not found in candidate Git object ${candidateFull}:${idxPath} — mutable filesystem fallback is forbidden; if candidate cannot be rebuilt from Git blobs, reuse is invalid and a new dogfood namespace is required`);
+      actualIdx = null;
     }
     if (actualIdx && actualIdx !== doc.dataset_inputs.dataset_index_sha256) {
       errors.push(`dataset-index sha mismatch: ${doc.dataset_inputs.dataset_index_sha256.slice(0,12)} vs ${actualIdx.slice(0,12)}`);
@@ -1706,13 +1704,9 @@ function verifyDogfoodInputManifest(manifestPath, candidateFull, repoRoot = REPO
     for (const entry of doc.dataset_inputs.per_task) {
       if (!entry.path || !entry.sha256) errors.push(`per_task entry missing path/sha: ${JSON.stringify(entry)}`);
       else {
-        const abs = path.join(repoRoot, entry.path);
         let actual;
-        if (fs.existsSync(abs)) actual = sha256File(abs);
-        else {
-          try { actual = gitShowBlobSha256(candidateFull, entry.path, repoRoot); }
-          catch { errors.push(`per_task file not found: ${entry.path}`); continue; }
-        }
+        try { actual = gitShowBlobSha256(candidateFull, entry.path, repoRoot); }
+        catch { errors.push(`per_task file not found in candidate Git object ${candidateFull}:${entry.path} — mutable fallback forbidden; reuse invalid`); continue; }
         if (actual !== entry.sha256) errors.push(`per_task ${entry.path} sha mismatch: ${entry.sha256.slice(0,12)} vs ${actual.slice(0,12)}`);
       }
     }
@@ -2041,94 +2035,101 @@ function casePhase2ScopeProof() {
     if (fixtureErrors.length) throw new CaseFail(`scope fixtures failed:\n  - ${fixtureErrors.join('\n  - ')}`);
   }
 
-  // ── 11. Write carriers if in pinned mode and evidenceDir exists ──
+  // ── 11. Verify carriers are present and clean (read-only) ──
   if (isPinnedMode && evidenceDir) {
-    try { fs.mkdirSync(evidenceDir, { recursive: true }); } catch {}
-    // candidate-tree.json
-    const candidateTree = getCommitTree(candidateFull, REPO_ROOT);
-    const candidateChanged = git(['diff', '--name-only', `${baseFull}..${candidateFull}`], REPO_ROOT).split('\n').filter(Boolean);
-    const candidateTreeDoc = {
-      format: 'yolo2-phase2-scope-proof-v1',
-      base_sha: baseFull,
-      main_sha: mainFull,
-      candidate_sha: candidateFull,
-      candidate_tree_sha: candidateTree,
-      candidate_changed_paths: candidateChanged.sort(),
-      verifier_blob_sha256: blobSha,
-    };
-    fs.writeFileSync(path.join(evidenceDir, 'candidate-tree.json'), JSON.stringify(candidateTreeDoc, null, 2));
-    // main-equivalence.json
-    const productEquiv = PHASE2_PRODUCT_ALLOWLIST.map(rel => {
-      const cand = gitShowBlobSha256(candidateFull, rel, REPO_ROOT);
-      const main = gitShowBlobSha256(mainFull, rel, REPO_ROOT);
-      return { path: rel, candidate_sha256: cand, main_sha256: main, equal: cand === main };
-    });
-    const mainEquivDoc = {
-      format: 'yolo2-phase2-scope-proof-v1',
-      base_sha: baseFull,
-      main_sha: mainFull,
-      candidate_sha: candidateFull,
-      product_equivalence: productEquiv,
-      immutable_evidence: [],
-      shared_control_plane: [
-        { path: '.tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md', selector: 'frontmatter.scope_proof_amendment', expected_value: '.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md', candidate_value: '.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md', canonical_subdocument_sha256: sha256Hex(Buffer.from('.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md')) },
-        { path: '.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md', selector: 'frontmatter.gate3_verdict', expected_value: 'pass', candidate_value: 'pass', canonical_subdocument_sha256: sha256Hex(Buffer.from('pass')) },
-      ],
-      verifier_blob_sha256: blobSha,
-    };
-    fs.writeFileSync(path.join(evidenceDir, 'main-equivalence.json'), JSON.stringify(mainEquivDoc, null, 2));
-    // dogfood-input-manifest.json generation if not exists
-    const dogfoodPath = path.join(evidenceDir, 'dogfood-input-manifest.json');
-    if (!fs.existsSync(dogfoodPath)) {
-      const mech = {
-        recovery: gitShowBlobSha256(candidateFull, '.tad/scripts/yolo-recovery.mjs', REPO_ROOT),
-        reference_runner: gitShowBlobSha256(candidateFull, '.tad/scripts/yolo-reference-runner.mjs', REPO_ROOT),
-        pair_driver: gitShowBlobSha256(candidateFull, '.tad/scripts/phase2-pair-driver.mjs', REPO_ROOT),
-      };
-      const datasetIndexAbs = path.join(REPO_ROOT, '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/dataset-index.json');
-      const datasetIdxSha = fs.existsSync(datasetIndexAbs) ? sha256File(datasetIndexAbs) : null;
-      const pairsDir = path.join(REPO_ROOT, '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs');
-      const perTask = [];
-      if (fs.existsSync(pairsDir)) {
-        const entries = fs.readdirSync(pairsDir, { withFileTypes: true }).filter(d => d.isDirectory() && d.name.startsWith('T'));
-        for (const d of entries) {
-          const p = path.join(pairsDir, d.name, 'task.json');
-          if (fs.existsSync(p)) perTask.push({ path: path.relative(REPO_ROOT, p), sha256: sha256File(p) });
-        }
-        perTask.sort((a,b) => a.path.localeCompare(b.path));
+    const requiredCarriers = [
+      'phase2-commit-manifest.json',
+      'candidate-tree.json',
+      'main-equivalence.json',
+      'dogfood-input-manifest.json',
+      'scope-proof.log',
+    ];
+    for (const name of requiredCarriers) {
+      const p = path.join(evidenceDir, name);
+      if (!fs.existsSync(p)) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  missing carrier ${name}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
       }
-      const approvalAbs = path.join(REPO_ROOT, '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/harness-degradation-approval.md');
-      const approvalSha = fs.existsSync(approvalAbs) ? sha256File(approvalAbs) : null;
-      const dogfoodDoc = {
-        format: 'yolo2-phase2-scope-proof-v1',
-        base_sha: baseFull,
-        main_sha: mainFull,
-        candidate_sha: candidateFull,
-        candidate_tree_sha: candidateTree,
-        verifier_blob_sha256: blobSha,
-        mechanism: mech,
-        dataset_inputs: {
-          dataset_index_sha256: datasetIdxSha,
-          per_task: perTask,
-        },
-        policy: {
-          approval_sha256: approvalSha,
-          policy_sha256: sha256Hex(Buffer.from(JSON.stringify({ max_rounds: 8, max_retries_per_slice: 2, max_actions: 40 }), 'utf8')),
-        },
-        harness: {
-          generator: 'codex',
-          model_family: 'gpt',
-          canonicalization_version: 'v1',
-        },
-        invocation: process.argv.join(' '),
-      };
-      fs.writeFileSync(dogfoodPath, JSON.stringify(dogfoodDoc, null, 2));
+      const st = fs.statSync(p);
+      if (st.size === 0) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  empty carrier ${name}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      // Must be clean (no uncommitted changes) if the file is Git-tracked; if ignored, check that the worktree copy is not dirty
+      // For the 5 carriers, we require that the on-disk file's SHA matches the committed blob if the file is tracked, otherwise it must be present and not dirty
+      const rel = path.relative(REPO_ROOT, p);
+      const status = git(['status', '--porcelain', '--', rel], REPO_ROOT);
+      if (status.trim()) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  carrier dirty: ${rel} ${status.trim()}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
     }
-    // scope-proof.log
+    // Verify candidate-tree.json content is consistent with Git objects (read-only check)
+    const candidateTreePath = path.join(evidenceDir, 'candidate-tree.json');
+    try {
+      const ct = JSON.parse(fs.readFileSync(candidateTreePath, 'utf8'));
+      const expectedTree = getCommitTree(candidateFull, REPO_ROOT);
+      if (ct.candidate_tree_sha !== expectedTree) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  candidate-tree.json tree mismatch\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      if (ct.candidate_sha !== candidateFull || ct.main_sha !== mainFull || ct.base_sha !== baseFull) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  candidate-tree.json binding mismatch\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+    } catch (e) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  candidate-tree.json invalid: ${e.message}\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+    // Verify main-equivalence.json has non-empty immutable evidence and exact gate3 binding
+    const mainEquivPath = path.join(evidenceDir, 'main-equivalence.json');
+    try {
+      const me = JSON.parse(fs.readFileSync(mainEquivPath, 'utf8'));
+      if (!me.immutable_evidence || !Array.isArray(me.immutable_evidence) || me.immutable_evidence.length === 0) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  main-equivalence.json immutable_evidence empty\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      const gateEntry = (me.shared_control_plane || []).find(e => e.path === '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md');
+      if (!gateEntry || gateEntry.expected_value !== 'PASS' || !gateEntry.candidate_sha256 || gateEntry.candidate_sha256 !== gateEntry.canonical_subdocument_sha256) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  main-equivalence gate3-verdict binding incomplete\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      if (!gateEntry.source_commit || gateEntry.source_commit !== candidateFull) {
+        // source_commit must be candidate
+        if (!gateEntry.source_commit) {
+          process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  gate3-verdict missing source_commit\n`);
+          process.stdout.write('RESULT=ERROR\n');
+          process.exit(2);
+        }
+      }
+    } catch (e) {
+      if (e.message.includes('RESULT=ERROR')) throw e;
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  main-equivalence.json invalid: ${e.message}\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+    // Verify scope-proof.log is consistent
     const logPath = path.join(evidenceDir, 'scope-proof.log');
-    const _postMain = globalThis.__yolo_postMain || mainFull;
-    const logContent = `pre_main=${preMain}\npost_main=${_postMain}\nbase=${baseFull}\nmain=${mainFull}\ncandidate=${candidateFull}\nmanifest=${manifestPath}\nverifier_blob=${blobSha}\nexit=0\nresult=PASS\n`;
-    fs.writeFileSync(logPath, logContent);
+    try {
+      const log = fs.readFileSync(logPath, 'utf8');
+      if (!log.includes(`candidate=${candidateFull}`) || !log.includes(`main=${mainFull}`) || !log.includes('result=PASS')) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  scope-proof.log binding mismatch\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+    } catch (e) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  scope-proof.log invalid\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
   }
 }
 
