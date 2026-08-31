@@ -1325,6 +1325,8 @@ const AMENDMENT_CARRIER_ALLOWLIST = [
   '.tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md',
   '.tad/decisions/DR-20260831-yolo2-phase2-budget-amendment.md',
   '.tad/decisions/DR-20260831-yolo2-phase2-scope-proof-amendment-r2.md',
+  '.tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/architecture-review.md',
+  '.tad/evidence/reviews/alex/yolo2-phase2-scope-amendment/evidence-security-review.md',
 ];
 // Scope-proof evidence carriers themselves (generated, not part of the
 // product diff, but allowed as included commits if they were committed).
