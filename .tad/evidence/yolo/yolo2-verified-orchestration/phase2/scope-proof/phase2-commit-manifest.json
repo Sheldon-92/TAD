@@ -1,11 +1,11 @@
 {
   "format": "yolo2-phase2-scope-proof-v1",
   "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
-  "main_sha": "d48d2dd748daa0f5fab809df980c0d9f08d32232",
-  "candidate_sha": "9ad3cd806acf8833edd18e4680d4b321880d6828",
-  "candidate_tree": "72452847d341801686b6d9dd44064cfda214c2b2",
+  "main_sha": "6f1403e0d0c5fd29b4deeb3a4212468ca70e394f",
+  "candidate_sha": "644b24cb1d24eb0d7b678ba3a0600e9cf44aff49",
+  "candidate_tree": "b9cb500e55f526d18e0e6469710ca534660da257",
   "verifier_blob_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15",
-  "invocation": "node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main d48d2dd748daa0f5fab809df980c0d9f08d32232 --candidate 9ad3cd806acf8833edd18e4680d4b321880d6828 --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof",
+  "invocation": "node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main 6f1403e0d0c5fd29b4deeb3a4212468ca70e394f --candidate 644b24cb1d24eb0d7b678ba3a0600e9cf44aff49 --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof",
   "commits": [
     {
       "source_sha": "3a9bd2e0a9f330c3648b213743475c99c6e15730",
@@ -1190,6 +1190,31 @@
       "stable_patch_id": "4929f797b2c2ef6f2e68dcf1c47ab86d3dcc5505",
       "changed_paths": [
         ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
+        ".tad/evidence/reviews/blake/yolo2-phase2/code-reviewer.md",
+        ".tad/evidence/reviews/blake/yolo2-phase2/spec-compliance-final.md",
+        ".tad/evidence/reviews/blake/yolo2-phase2/test-runner.md",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/candidate-tree.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/dogfood-input-manifest.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/main-equivalence.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json",
+        ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/scope-proof.log"
+      ],
+      "classification": "included",
+      "reason": "phase2-yolo",
+      "shared_phase2_path_exemptions": []
+    },
+    {
+      "source_sha": "6f1403e0d0c5fd29b4deeb3a4212468ca70e394f",
+      "parents": [
+        "d48d2dd748daa0f5fab809df980c0d9f08d32232"
+      ],
+      "source_tree": "fb0925dc466d473c0ca98e18db9623303a506adf",
+      "first_parent_binary_diff_sha256": "e4783c99ce3666eb1fa8118b116db8eca9c131759a5fb6ad5705b1b4dea3b553",
+      "sorted_changed_paths_sha256": "870496a6991e9cb22a6318bac3db1caf199ed68b008038f096e678b4bb6401a9",
+      "patch_id": "f54332b30d16cc81f08ecef832d9f08c4fbd537a",
+      "stable_patch_id": "f54332b30d16cc81f08ecef832d9f08c4fbd537a",
+      "changed_paths": [
         ".tad/evidence/reviews/blake/yolo2-phase2/code-reviewer.md",
         ".tad/evidence/reviews/blake/yolo2-phase2/spec-compliance-final.md",
         ".tad/evidence/reviews/blake/yolo2-phase2/test-runner.md",

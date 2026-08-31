@@ -1,9 +1,9 @@
 {
   "format": "yolo2-phase2-scope-proof-v1",
   "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
-  "main_sha": "d48d2dd748daa0f5fab809df980c0d9f08d32232",
-  "candidate_sha": "9ad3cd806acf8833edd18e4680d4b321880d6828",
-  "candidate_tree_sha": "72452847d341801686b6d9dd44064cfda214c2b2",
+  "main_sha": "6f1403e0d0c5fd29b4deeb3a4212468ca70e394f",
+  "candidate_sha": "644b24cb1d24eb0d7b678ba3a0600e9cf44aff49",
+  "candidate_tree_sha": "b9cb500e55f526d18e0e6469710ca534660da257",
   "verifier_blob_sha256": "e5d3fa73ec309cc0d577d317ed95c042113ff9f41c209363f379cfcc656a9c15",
   "mechanism": {
     "recovery": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
@@ -44,5 +44,5 @@
     "model_family": "gpt",
     "canonicalization_version": "v1"
   },
-  "invocation": "node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main d48d2dd748daa0f5fab809df980c0d9f08d32232 --candidate 9ad3cd806acf8833edd18e4680d4b321880d6828 --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof"
+  "invocation": "node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 --main 6f1403e0d0c5fd29b4deeb3a4212468ca70e394f --candidate 644b24cb1d24eb0d7b678ba3a0600e9cf44aff49 --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof"
 }
