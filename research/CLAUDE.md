@@ -39,3 +39,16 @@ Stop when **(a)** new raw adds no new canon topics, **(b)** `lint.sh` PASS uncha
 ## 6. Fallback
 
 Primary: `local_wiki`. NotebookLM is **fallback only** when `~/.tad-notebooklm-venv` missing. `research-github` writes canon, not notebook. Details: `research/canon/README.md`.
+
+## 7. Retrieval
+
+Search before manually loading the corpus:
+
+```bash
+python3 research/scripts/search.py query "<question>" --limit 5
+```
+
+Use `--scope wiki|canon|raw|governance` to narrow results and `--json` for agent/tool
+consumption. Results are local evidence locations, not generated answers: inspect the
+returned path and line range before making a claim. The index is rebuilt in memory from
+Markdown on every call, so files remain the only source of truth.
