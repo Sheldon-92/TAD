@@ -7,4 +7,3 @@ python3 research/scripts/generate.py --emit all >"$tmp1"
 python3 research/scripts/generate.py --emit all >"$tmp2"
 diff -u "$tmp1" "$tmp2"
 echo 'AC5 PASS'
-

@@ -1,7 +1,7 @@
 # EPIC-20260901 — Local Wiki Retrieval
 
-**Status:** Active — Phase 2 only  
-**Previous phase:** Local Wiki framework, Gate 4 PASS at `f967276f`  
+**Status:** Active — Phase 2 only
+**Previous phase:** Local Wiki framework, Gate 4 PASS at `f967276f`
 **Decision:** `.tad/decisions/DR-20260901-local-wiki-retrieval-before-multimedia.md`
 
 ## Outcome
@@ -25,4 +25,3 @@ filtering, machine-readable output, deterministic evaluation, documentation.
 
 Out of scope: media transcription, web fetching, hosted search, paid embeddings,
 mandatory vector extensions, answer generation, mutation of canon/raw/wiki content.
-

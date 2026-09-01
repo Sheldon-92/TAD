@@ -1,6 +1,6 @@
 # DR-20260901 — Local Wiki Retrieval Before Multimedia
 
-**Status:** accepted by human instruction on 2026-09-01  
+**Status:** accepted by human instruction on 2026-09-01
 **Authority:** “你自己使用yolo模式设计phase2，并自主完成”
 
 ## Decision
@@ -32,4 +32,3 @@ Alex may design and pass Gates 1/2; Blake may implement, test, review, commit, a
 prepare Gate 3; Alex may perform Gate 4 and archive without additional checkpoints.
 The mandate does not authorize network provider calls, paid embeddings, publishing,
 pushing, deleting user data, or modifying unrelated dirty worktree state.
-

@@ -15,4 +15,3 @@ Result:
 
 `coverage.py` was not installed. Python stdlib `trace` is an equivalent line-coverage
 measurement for this dependency-free CLI; branch coverage is not claimed.
-

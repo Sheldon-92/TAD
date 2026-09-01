@@ -11,4 +11,3 @@ Model: harness=codex | model=gpt-5.6-luna | route=native
 
 Advisory: per-invocation parsing/indexing should be revisited at hundreds or thousands
 of documents. It is intentionally simpler and drift-free at the current scale.
-

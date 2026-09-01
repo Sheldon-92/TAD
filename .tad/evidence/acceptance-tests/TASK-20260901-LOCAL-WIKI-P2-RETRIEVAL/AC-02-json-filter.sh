@@ -7,4 +7,3 @@ required={"path","layer","heading","start_line","end_line","snippet","score"}
 assert all(set(x)==required and x["layer"]=="raw" and math.isfinite(x["score"]) and x["start_line"]>=1 and x["end_line"]>=x["start_line"] for x in r)
 '
 echo 'AC2 PASS'
-

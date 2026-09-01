@@ -11,4 +11,3 @@ conversion errors to `SearchError`, and adds a temporary-repository root-symlink
 Re-review independently reproduced controlled `SearchError` behavior and confirmed the
 focused suite at 14/14. SQL values and FTS expressions remain parameterized; fixed SQL
 fragments are allowlisted.
-

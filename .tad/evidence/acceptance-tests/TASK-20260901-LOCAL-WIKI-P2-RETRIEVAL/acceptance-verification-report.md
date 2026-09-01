@@ -1,6 +1,6 @@
 # Acceptance Verification Report
 
-**Task:** `TASK-20260901-LOCAL-WIKI-P2-RETRIEVAL`  
+**Task:** `TASK-20260901-LOCAL-WIKI-P2-RETRIEVAL`
 **Verdict:** PASS — 5/5 AC scripts
 
 | AC | Script | Result |
@@ -12,4 +12,3 @@
 | AC5 | `AC-05-phase1-regression.sh` | PASS — lint + idempotence |
 
 All scripts ran independently from the worktree root and completed in under 30 seconds.
-

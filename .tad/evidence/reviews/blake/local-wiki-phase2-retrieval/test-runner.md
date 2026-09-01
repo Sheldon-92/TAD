@@ -15,4 +15,3 @@ Model: harness=codex | model=gpt-5.6-terra | route=native
 
 Tests exercise public search/evaluate behavior over real corpus and temporary isolated
 fixtures rather than duplicating implementation internals.
-

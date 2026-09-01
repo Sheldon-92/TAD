@@ -15,4 +15,3 @@
 - Q2: No new skill candidate; the pattern is already covered by the RAG retrieval pack
   and Local Wiki design records.
 - Q3: No novel workflow pattern; the standard TAD review loop was used as designed.
-

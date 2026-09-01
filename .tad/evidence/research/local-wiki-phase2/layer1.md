@@ -1,6 +1,6 @@
 # Layer 1 — Local Wiki Phase 2
 
-**Iterations:** 2 (second full run after Layer-2 path-containment repair)  
+**Iterations:** 2 (second full run after Layer-2 path-containment repair)
 **Verdict:** PASS (zero Layer-1 failures)
 
 | Check | Result |

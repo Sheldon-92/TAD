@@ -14,4 +14,3 @@ Model: harness=codex | model=gpt-5.6-terra | route=native
 
 The implementation is stdlib-only, uses in-memory SQLite FTS5, and did not modify
 raw/canon/wiki evidence pages to game evaluation.
-

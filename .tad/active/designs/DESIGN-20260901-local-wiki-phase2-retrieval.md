@@ -1,6 +1,6 @@
 # Design — Local Wiki Phase 2 Retrieval Foundations
 
-**Epic:** `.tad/active/epics/EPIC-20260901-local-wiki-retrieval.md`  
+**Epic:** `.tad/active/epics/EPIC-20260901-local-wiki-retrieval.md`
 **Decision:** `.tad/decisions/DR-20260901-local-wiki-retrieval-before-multimedia.md`
 
 ## 1. Problem
