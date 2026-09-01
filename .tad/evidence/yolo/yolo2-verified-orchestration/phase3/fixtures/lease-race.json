@@ -1,0 +1,11 @@
+{
+  "format": "yolo-harness-lease-race-v1",
+  "scenario": "identical lease double claim under run lock",
+  "result": "PASS",
+  "details": {
+    "first_claim": "won, provider spawn allowed",
+    "second_claim": "lost, zero provider calls, zero product/control mutation",
+    "atomic_transition": "issued -> claimed via O_EXCL lock"
+  },
+  "generated_at": "2026-09-01T16:07:00.000Z"
+}

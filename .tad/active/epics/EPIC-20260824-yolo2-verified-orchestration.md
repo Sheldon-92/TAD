@@ -1,12 +1,15 @@
 # Epic: YOLO 2.0 — 长任务连续性与质量闭环
 
 **Epic ID**: EPIC-20260824-yolo2-verified-orchestration  
-**Revision**: v2 — vertical-slice-first reset  
-**Status**: IN PROGRESS — Phase 1 accepted; Phase 2 design is HONEST_PARTIAL at Gate 2 review cap
+**Revision**: v3 — Phase-3 cross-harness adapter contract
+**Status**: IN PROGRESS — Phases 1–2 Gate 4 accepted; Phase 3 Gate 2 PASS, local deterministic implementation complete (2026-09-01), live probes pending mandate
 **Owner**: Alex  
 **Created**: 2026-08-24  
 **Reset**: 2026-08-24  
 **Decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`  
+**Design**: `.tad/active/designs/DESIGN-20260901-yolo2-phase3-cross-harness-memory.md`
+**Handoff**: `.tad/active/handoffs/HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md`
+**Phase-3 Decision**: `.tad/decisions/DR-20260901-yolo2-phase3-native-cli-adapters.md`
 **Reset Audit**: `.tad/evidence/designs/yolo2-epic-reset-audit.md`  
 **Research**: `.tad/evidence/research/longhorizon-harness/2026-08-24-raw-web-research.md`
 
@@ -203,19 +206,30 @@ post-archive layouts.
 
 ### Phase 3 — 多 harness 适配与 opt-in 接入
 
+**Status:** Gate 2 PASS 2026-09-01 (three independent expert reviews P0=0/P1=0); manual Blake local deterministic implementation complete; human accepted progressive qualification: Codex strict is the core threshold, other adapters are first-use experiments. Codex-only live mandate pending.
+
+**Design:** `.tad/active/designs/DESIGN-20260901-yolo2-phase3-cross-harness-memory.md`
+**Handoff:** `.tad/active/handoffs/HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md`
+**Decision:** `.tad/decisions/DR-20260901-yolo2-phase3-native-cli-adapters.md`
+**Release amendment:** `.tad/decisions/DR-20260901-yolo2-phase3-progressive-harness-qualification.md`
+**Phase-2 accepted tuple:** `base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7`, `candidate 3ce202b4b15250f33654828fcf4708a9a285807c`, `main 38839370403b0fb5eee177c97f6d7e75f9612bc0`, `attestation b2ec8dd7ed6db5b92f12d7d89ecb60ba1ad0630595e2c6d17e59d76c746826b1`
+
 **Scope**
 
 - 建统一 adapter contract，但每个平台独立 probe：start、fresh context、resume、structured output、worktree/snapshot、reviewer independence、permissions、timeout 和 hooks。
-- Claude Code 与 Codex 是正式目标；OpenCode 先作为 capability-gated adapter，不提前承诺 first-class installer support。
+- Claude Code、Codex、OpenCode 与 `runtime=opencode/provider=deepseek` 是四个独立正式 profile；每个 profile 都 capability-gated，不提前承诺 strict。
+- 共享的是 goal/journal/checkpoint/recovery 的语义进度和决策记忆，不共享完整聊天、隐藏推理或 native session 数据库。
+- reducer 在 host-only control root 发放并原子 claim lease；harness 只见隔离 product worktree，raw carriers 留在 repository 外。
 - 把 v2 接入现有 Y5/Y6 的 opt-in/shadow 路径；Y1–Y4、Y7–Y8 authority 不变。
 
 **Acceptance outcomes**
 
-- 每个平台输出 `strict`、`degraded` 或 `blocked` 及运行证据；unknown 不得被解释为 supported。
-- 三平台共享 goal/checkpoint/recovery 语义，但不要求底层工具或字节轨迹相同。
+- Codex 先完成 live `strict` 即可交付 Phase-3 core；其余三个 profile 保持实验态，首次实际使用时再独立分类，unknown 不得被解释为 supported。
+- 四个 profile 共享 goal/checkpoint/recovery 语义，但不要求底层工具或字节轨迹相同。
 - 缺少独立 reviewer、可靠 resume 或所需权限边界时，strict completion 3/3 被拒。
 - v1 历史 artifact 保持可审计；v2 corruption 或 capability drift 只会 honest_partial，不会翻译成 v1 complete。
 - `status/resume/stop` 使用普通语言，不要求用户阅读 JSONL。
+- 本地确定性实现已完成；下一步只做 Codex 最小 live probe。Claude Code/OpenCode/DeepSeek 不再阻塞核心验收，按首次使用逐个验证。
 
 ### Phase 4 — 配对评估、故障注入与默认裁决
 
@@ -266,12 +280,12 @@ post-archive layouts.
 
 ## 11. Next Design Step
 
-Phase 1 is accepted and archived. Phase-2 Handoff v0.9.2 now defines the bounded
-execution/quality loop on top of the same journal/reducer, with a strict one-harness
-runner, native action reconciliation, whole-goal alignment, frozen budgets, and five
-paired dogfoods. Two Gate-2 rounds found and drove concrete amendments; round 2 still
-returned one new evaluation P0 and one architecture P1. Alex incorporated both, but
-the two-round review cap is reached, so there is no independent PASS carrier and no
-implementation authority. The next move is a human decision to reopen one narrow
-independent closure review or revise/stop the Phase-2 design; Phase-1-only OpenCode
-degradation approval still does not carry forward.
+Phases 1 and 2 are Gate-4 accepted. Phase 3 now has a Gate-2-PASS native-CLI adapter
+design for Claude Code, Codex, OpenCode, and an OpenCode-hosted DeepSeek profile. Its
+authority is shared semantic progress, not transcript/session replication. Three
+independent design reviews close at P0=0/P1=0, and the pinned Phase-2 verifier passes
+in an isolated clone. Blake has completed local deterministic implementation (profiles,
+runner, fixtures, guide, blocked classifications) on 2026-09-01. Human amendment
+P3-R1 changes the critical path to a Codex-only strict probe; Claude Code, OpenCode,
+and DeepSeek are first-use experiments. The next move is one bounded Codex mandate
+for the exact local tuple, followed by Gate 3 / Gate 4 if Codex is strict.

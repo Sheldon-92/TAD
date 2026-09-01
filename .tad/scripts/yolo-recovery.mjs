@@ -37,6 +37,9 @@ export const GOAL_FORMAT = 'yolo-recovery-phase1-v1';
 export const RECEIPT_FORMAT = 'yolo-recovery-verification-v1';
 export const CHECKPOINT_FORMAT = 'yolo-recovery-checkpoint-v1';
 export const STATUS_FORMAT = 'yolo-recovery-status-v1';
+export const HARNESS_TURN_FORMAT_V2 = 'yolo-harness-turn-v2';
+export const LEASE_FORMAT = 'yolo-lease-v1';
+export const CAPABILITY_FORMAT = 'yolo-harness-capability-v1';
 
 export const EVENT_TYPES = [
   'initialized',
@@ -75,6 +78,7 @@ const COMMANDS = [
   'init', 'status', 'checkpoint', 'verify',
   'action-start', 'reconcile', 'resume', 'stop',
   'round-prepare', 'round-authorize', 'round-close', 'align', 'phase-candidate',
+  'v2-init', 'lease-issue', 'lease-claim', 'lease-close', 'lease-reconcile', 'budget-reserve',
 ];
 
 // ─────────────────────────── errors ───────────────────────────
@@ -3622,6 +3626,178 @@ function finish(command, runDir, state, packet) {
   };
 }
 
+// ─────────────────────── Phase-3 v2 harness adapters ───────────────────────
+// External control-root resolver: v2-only, additive, legacy resolveRunDir unchanged.
+export function resolveV2ControlRoot(controlRootInput, hostParent, repoRoot){
+  if(!controlRootInput) throw new UsageError('missing_flag',{flag:'--control-root'});
+  if(!hostParent) throw new UsageError('missing_flag',{flag:'--host-parent'});
+  const controlReal=realpathDeepest(path.resolve(controlRootInput));
+  const hostReal=realpathDeepest(path.resolve(hostParent));
+  const repoReal=fs.realpathSync(repoRoot);
+  // must be inside hostParent
+  assertInside(hostReal, controlReal, 'control_root');
+  // must be outside repo
+  if(!path.relative(repoReal, controlReal).startsWith('..')) throw new ContractError('control_root_inside_repo',{control:controlReal, repo:repoReal});
+  if(isSymlink(controlReal) || isSymlink(path.resolve(controlRootInput))) throw new ContractError('symlink_not_allowed',{path:controlReal});
+  // ensure no overlap - caller also checks product/raw
+  return controlReal;
+}
+export function validateHarnessTurnV2(doc){
+  if(!isPlainObject(doc) || doc.format!==HARNESS_TURN_FORMAT_V2) throw new ContractError('harness_turn_format_invalid',{format:doc&&doc.format});
+  const required=['profile_id','runtime','provider','model','model_family','executable_realpath','executable_digest','profile_hash','lease_hash','budget_hash','packet_hash','prompt_hash','role','turn_kind','session_id','invocation_argv','exit_status','raw_output','raw_trace','pre_manifest','post_manifest','changed_paths'];
+  for(const f of required) if(doc[f]===undefined) throw new ContractError('harness_turn_field_missing',{field:f});
+  if(!['executor','reviewer'].includes(doc.role)) throw new ContractError('harness_turn_role_invalid',{role:doc.role});
+  if(!['reentry','execution','review','probe'].includes(doc.turn_kind)) throw new ContractError('harness_turn_kind_invalid',{kind:doc.turn_kind});
+  // secret scan: ensure no env values leaked
+  const asJson=JSON.stringify(doc);
+  if(/API_KEY|SECRET|TOKEN.*[A-Za-z0-9]{10,}/.test(asJson)) throw new ContractError('harness_turn_secret_leak',{});
+  // raw carriers must exist and hash match
+  for(const field of ['raw_output','raw_trace']){
+    const carrier=doc[field];
+    if(!carrier || typeof carrier.host_locator!=='string' || !isSha256(carrier.sha256)) throw new ContractError('harness_turn_carrier_malformed',{field});
+    const abs=path.resolve(carrier.host_locator);
+    if(!fs.existsSync(abs)) throw new ContractError('harness_turn_carrier_missing',{field, path:carrier.host_locator});
+    if(sha256File(abs)!==carrier.sha256) throw new ContractError('harness_turn_carrier_hash_mismatch',{field});
+  }
+  return true;
+}
+function cmdV2Init(flags,cwd,out){
+  const identity=readGitIdentity(cwd);
+  const repoRoot=identity.worktree_realpath;
+  const hostParent=need(flags,'host-parent');
+  const controlRoot=need(flags,'control-root');
+  const productWorktree=need(flags,'product-worktree');
+  const runId=need(flags,'run');
+  const controlReal=resolveV2ControlRoot(controlRoot, hostParent, repoRoot);
+  const productReal=realpathDeepest(path.resolve(productWorktree));
+  const rawRoot=flags['raw-root'] ? realpathDeepest(path.resolve(flags['raw-root'])) : null;
+  // three-root isolation
+  const repoReal=fs.realpathSync(repoRoot);
+  if(!path.relative(repoReal, productReal).startsWith('..') && productReal!==repoReal) {
+    // product must be isolated - if inside repo, block strict
+    throw new ContractError('product_root_inside_repo',{product:productReal});
+  }
+  // disjoint
+  if(controlReal===productReal) throw new ContractError('roots_overlap',{detail:'control==product'});
+  if(rawRoot){
+    if(rawRoot===controlReal || rawRoot===productReal) throw new ContractError('roots_overlap',{detail:'raw overlaps'});
+    if(!path.relative(controlReal, rawRoot).startsWith('..') || !path.relative(rawRoot, controlReal).startsWith('..')){
+      const rel1=path.relative(controlReal, rawRoot);
+      const rel2=path.relative(rawRoot, controlReal);
+      if(rel1!=='' && !rel1.startsWith('..')) throw new ContractError('roots_overlap',{detail:'control contains raw'});
+      if(rel2!=='' && !rel2.startsWith('..')) throw new ContractError('roots_overlap',{detail:'raw contains control'});
+    }
+  }
+  // create control run dir with 0700
+  const controlRunDir=path.join(controlReal, runId);
+  fs.mkdirSync(controlRunDir,{recursive:true, mode:0o700});
+  try{ fs.chmodSync(controlReal,0o700); }catch{}
+  try{ fs.chmodSync(controlRunDir,0o700); }catch{}
+  // freeze mapping
+  const mappingPath=path.join(controlReal, `${runId}.mapping.json`);
+  const mapping={run_id:runId, control_root:controlReal, product_worktree:productReal, raw_root:rawRoot, created_at: new Date().toISOString(), repo_root:repoReal};
+  writeAtomic(mappingPath, JSON.stringify(mapping,null,2)+'\n');
+  // also init inside product worktree? The harness sees product worktree
+  out(`V2 control root initialized: ${controlReal} -> product ${productReal}\n`);
+  return finish('v2-init', controlRunDir, {state:'ACTIVE', verified_slices:[], candidate_slices:[], blockers:[], pending_action:null, unknown_actions:[], stopped:null, verified:[], legal_next_action:{action:'v2 init complete', why:'mapping frozen', owner:'conductor'}, phase2:null, latest_observed_head:identity.head, events_count:1}, null);
+}
+function cmdLeaseIssue(flags,cwd,out){
+  const runDir=resolveRunDir(need(flags,'run'), readGitIdentity(cwd).worktree_realpath);
+  const repoRoot=readGitIdentity(cwd).worktree_realpath;
+  const loaded=loadRun(runDir, repoRoot, cwd);
+  const role=need(flags,'role');
+  const kind=need(flags,'kind');
+  const nonce=crypto.randomBytes(8).toString('hex');
+  const packetHash=flags['packet-sha256'] || sha256String('packet');
+  const lease={
+    format: LEASE_FORMAT,
+    run_id: loaded.goal.run_id,
+    round_id: flags['round'] || `R-${String(loaded.state.events_count+1).padStart(2,'0')}`,
+    journal_seq: loaded.state.events_count,
+    journal_prefix_sha256: sha256String(JSON.stringify(loaded.events.slice(0,3))),
+    semantic_state_digest: sha256String(JSON.stringify(loaded.state.verified)),
+    packet_sha256: packetHash,
+    contract_sha256: flags['contract-sha256'] || sha256String('contract'),
+    profile_hash: flags['profile-hash'] || sha256String('profile'),
+    probe_hash: flags['probe-hash'] || sha256String('probe'),
+    budget_hash: flags['budget-hash'] || sha256String('budget'),
+    role, turn_kind:kind,
+    nonce,
+    deadline: new Date(Date.now()+ 15*60*1000).toISOString(),
+    allowed_paths: flags['allowed-paths'] ? String(flags['allowed-paths']).split(',') : ['work.md'],
+    expected_session: flags['expected-session'] || 'fresh',
+    issued_at: new Date().toISOString(),
+    status:'issued',
+  };
+  const leasePath=path.join(runDir, `.lease-${nonce}.json`);
+  writeAtomic(leasePath, JSON.stringify(lease,null,2)+'\n');
+  out(`LEASE ISSUED: ${leasePath} nonce=${nonce}\n`);
+  // also write to control root if v2
+  if(flags['control-root']){
+    const ctrlReal=realpathDeepest(path.resolve(flags['control-root']));
+    const ctrlLease=path.join(ctrlReal, path.basename(leasePath));
+    try{ fs.copyFileSync(leasePath, ctrlLease); }catch{}
+  }
+  return {exitCode:0, status:{format:STATUS_FORMAT, command:'lease-issue', result:'PASS', lease_path:leasePath, nonce}};
+}
+function cmdLeaseClaim(flags,cwd,out){
+  const leasePath=need(flags,'lease');
+  const leaseDoc=JSON.parse(fs.readFileSync(leasePath,'utf8'));
+  if(leaseDoc.status!=='issued') throw new ContractError('lease_already_claimed',{lease:leasePath});
+  const claimPath=leasePath+'.claimed.json';
+  try{
+    const fd=fs.openSync(claimPath,'wx');
+    fs.writeSync(fd, JSON.stringify({claimed_at:new Date().toISOString(), pid:process.pid, nonce:leaseDoc.nonce},null,2));
+    fs.closeSync(fd);
+  } catch(e){
+    if(e.code==='EEXIST') throw new ContractError('lease_already_claimed',{lease:leasePath});
+    throw e;
+  }
+  leaseDoc.status='claimed';
+  leaseDoc.claimed_at=new Date().toISOString();
+  leaseDoc.adapter_pid=process.pid;
+  fs.writeFileSync(leasePath, JSON.stringify(leaseDoc,null,2));
+  out(`LEASE CLAIMED: ${leasePath}\n`);
+  return {exitCode:0, status:{format:STATUS_FORMAT, command:'lease-claim', result:'PASS'}};
+}
+function cmdLeaseClose(flags,cwd,out){
+  const leasePath=need(flags,'lease');
+  const outcome=need(flags,'outcome');
+  if(!['success','failed','reconciled'].includes(outcome)) throw new UsageError('lease_outcome_invalid',{outcome});
+  const leaseDoc=JSON.parse(fs.readFileSync(leasePath,'utf8'));
+  leaseDoc.status='closed';
+  leaseDoc.outcome=outcome;
+  leaseDoc.closed_at=new Date().toISOString();
+  fs.writeFileSync(leasePath, JSON.stringify(leaseDoc,null,2));
+  out(`LEASE CLOSED: ${leasePath} outcome=${outcome}\n`);
+  return {exitCode:0, status:{format:STATUS_FORMAT, command:'lease-close', result:'PASS'}};
+}
+function cmdLeaseReconcile(flags,cwd,out){
+  const leasePath=need(flags,'lease');
+  const leaseDoc=JSON.parse(fs.readFileSync(leasePath,'utf8'));
+  if(leaseDoc.status!=='closed' && leaseDoc.outcome!=='failed') throw new ContractError('lease_not_failed',{lease:leasePath});
+  leaseDoc.status='reconciled';
+  leaseDoc.reconciled_at=new Date().toISOString();
+  fs.writeFileSync(leasePath, JSON.stringify(leaseDoc,null,2));
+  out(`LEASE RECONCILED: ${leasePath}\n`);
+  return {exitCode:0, status:{format:STATUS_FORMAT, command:'lease-reconcile', result:'PASS'}};
+}
+function cmdBudgetReserve(flags,cwd,out){
+  const approvalPath=need(flags,'approval');
+  const profileHash=need(flags,'profile-hash');
+  const approval=JSON.parse(fs.readFileSync(approvalPath,'utf8'));
+  if(approval.profile_hash!==profileHash) throw new ContractError('budget_profile_mismatch',{});
+  const statePath=approvalPath+'.state.json';
+  let used=0;
+  if(fs.existsSync(statePath)) try{ used=JSON.parse(fs.readFileSync(statePath,'utf8')).used||0; }catch{}
+  if(used >= approval.max_invocations) throw new ContractError('budget_exhausted',{budget:'invocations', used, max:approval.max_invocations});
+  fs.writeFileSync(statePath, JSON.stringify({used:used+1, updated_at:new Date().toISOString()}));
+  out(`BUDGET RESERVED: ${used+1}/${approval.max_invocations}\n`);
+  return {exitCode:0, status:{format:STATUS_FORMAT, command:'budget-reserve', result:'PASS', reserved:used+1}};
+}
+
+function isSymlink(p){ try{ return fs.lstatSync(p).isSymbolicLink(); }catch{ return false; } }
+
 function errorResult(command, err) {
   const usage = err instanceof UsageError || err.kind === 'usage';
   return {
@@ -3655,8 +3831,14 @@ const USAGE = `yolo-recovery.mjs — TAD YOLO 2.0 Phase 1 recovery recorder (opt
                   --turn-record <turn.json>                             (Phase-2)
   round-close     --run <dir> --outcome <candidate|failed|blocked>
                   --report <r.json> --usage <u.json> --turn-record <t.json> (Phase-2)
-  align           --run <dir> --receipt <alignment-receipt.json>        (Phase-2)
-  phase-candidate --run <dir> --receipt <receipt.json>                   (Phase-2)
+   align           --run <dir> --receipt <alignment-receipt.json>        (Phase-2)
+   phase-candidate --run <dir> --receipt <receipt.json>                   (Phase-2)
+   v2-init         --control-root <dir> --host-parent <dir> --product-worktree <dir> --run <id> [--raw-root <dir>]  (Phase-3)
+   lease-issue     --run <dir> --role <executor|reviewer> --kind <reentry|execution|review|probe> [--packet-sha256 <sha>] [--profile-hash <sha>] (Phase-3)
+   lease-claim     --lease <path>                                         (Phase-3)
+   lease-close     --lease <path> --outcome <success|failed|reconciled>   (Phase-3)
+   lease-reconcile --lease <path>                                          (Phase-3)
+   budget-reserve  --approval <path> --profile-hash <sha>                  (Phase-3)
 
 Exit: 0 PASS | 1 contract failure (honest_partial) | 2 usage/input error.
 Last stdout line is always a single-line JSON status object.
@@ -3689,6 +3871,12 @@ export function runCli(argv, options = {}) {
       case 'round-close': res = cmdRoundClose(flags, cwd, out); break;
       case 'align': res = cmdAlign(flags, cwd, out); break;
       case 'phase-candidate': res = cmdPhaseCandidate(flags, cwd, out); break;
+      case 'v2-init': res = cmdV2Init(flags, cwd, out); break;
+      case 'lease-issue': res = cmdLeaseIssue(flags, cwd, out); break;
+      case 'lease-claim': res = cmdLeaseClaim(flags, cwd, out); break;
+      case 'lease-close': res = cmdLeaseClose(flags, cwd, out); break;
+      case 'lease-reconcile': res = cmdLeaseReconcile(flags, cwd, out); break;
+      case 'budget-reserve': res = cmdBudgetReserve(flags, cwd, out); break;
       default: throw new UsageError('unknown_command', { command });
     }
   } catch (err) {

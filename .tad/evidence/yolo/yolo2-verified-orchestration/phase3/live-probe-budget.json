@@ -1,0 +1,11 @@
+{
+  "format": "yolo-live-probe-budget-v1",
+  "status": "blocked_no_mandate",
+  "reason": "provider calls remain blocked until exact profile/model and live-probe budget mandate is signed (Handoff §8.4)",
+  "proposed_ceiling": {
+    "per_profile": { "max_tokens": 50000, "max_wall_minutes": 15, "max_invocations": 6, "retries": 0 },
+    "all_profiles": { "max_tokens": 200000, "max_wall_minutes": 60, "max_invocations": 24 }
+  },
+  "approved": false,
+  "generated_at": "2026-09-01T16:07:00.000Z"
+}

@@ -1,0 +1,10 @@
+{
+  "format": "yolo-live-probe-approval-v1",
+  "status": "not_approved",
+  "reason": "manual Blake execution authorized for local deterministic implementation only; provider calls separately gated",
+  "required_mandate": "exact profile/model tuples + Phase-3 live-probe ceiling (max invocations, tokens, wall time) + cost enforcement mode",
+  "approved_by": null,
+  "approved_at": null,
+  "profiles": ["claude-code","codex","opencode","opencode-deepseek"],
+  "generated_at": "2026-09-01T16:07:00.000Z"
+}

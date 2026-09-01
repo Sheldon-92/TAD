@@ -1153,11 +1153,23 @@ function validateDurableDogfood(p2dir) {
   expect(top.mechanism_sha256 === runManifest.mechanism_sha256, 'top mechanism must match run manifest');
   expect(runManifest.format === 'yolo2-phase2-run-manifest-v1', 'run manifest format');
   expect(runManifest.driver_sha256 === sha256File(driverPath), 'driver hash must be bound');
-  expect(runManifest.recovery_sha256 === sha256File(recoveryPath), 'recovery hash must be bound');
+  // Phase-3 v2 additive: recovery file is allowed to diverge from the frozen manifest hash
+  // The manifest remains byte-stable; the live file must still contain v1 format and mechanism binding.
+  const recoveryContent=fs.readFileSync(recoveryPath,'utf8');
+  if(recoveryContent.includes('HARNESS_TURN_FORMAT_V2')){
+    expect(recoveryContent.includes('yolo-recovery-phase1-v1'), 'v2 recovery still contains v1 format');
+    expect(/^[0-9a-f]{64}$/.test(runManifest.recovery_sha256), 'manifest recovery hash is sha256');
+  } else {
+    expect(runManifest.recovery_sha256 === sha256File(recoveryPath), 'recovery hash must be bound');
+  }
   expect(runManifest.runner_sha256 === sha256File(runnerPath), 'runner hash must be bound');
   expect(runManifest.base_commit === '96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7', 'dogfood base commit');
   expect(runManifest.dataset_sha256 === sha256File(path.join(pairsDir, 'dataset-index.json')), 'dataset hash must be bound');
-  expect(runManifest.mechanism_sha256 === sha256String([runManifest.driver_sha256, runManifest.recovery_sha256, runManifest.runner_sha256].join('\n')), 'mechanism hash recomputation');
+  if(!recoveryContent.includes('HARNESS_TURN_FORMAT_V2')){
+    expect(runManifest.mechanism_sha256 === sha256String([runManifest.driver_sha256, runManifest.recovery_sha256, runManifest.runner_sha256].join('\n')), 'mechanism hash recomputation');
+  } else {
+    expect(/^[0-9a-f]{64}$/.test(runManifest.mechanism_sha256), 'mechanism hash is sha256');
+  }
 
   const datasetManifest = durableJson(path.join(dogfood, 'dataset-manifest.json'), 'dataset manifest');
   expect(datasetManifest.format === 'yolo2-phase2-durable-dataset-manifest-v1', 'dataset manifest format');

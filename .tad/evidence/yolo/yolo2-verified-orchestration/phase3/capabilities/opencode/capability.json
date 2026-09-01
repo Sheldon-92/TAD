@@ -1,0 +1,8 @@
+{
+  "format": "yolo-harness-capability-v1",
+  "profile_id": "opencode",
+  "classification": "experimental_unverified",
+  "reason": "experimental adapter - minimal verification on first real use",
+  "experimental": true,
+  "generated_at": "2026-09-01T18:19:55.076Z"
+}

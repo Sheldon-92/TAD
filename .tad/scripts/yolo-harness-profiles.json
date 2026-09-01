@@ -1,0 +1,78 @@
+{
+  "format": "yolo-harness-profiles-v1",
+  "version": "1.0.0",
+  "generated_at": "2026-09-01T00:00:00.000Z",
+  "policy": {
+    "timeout_ms": 120000,
+    "grace_ms": 5000,
+    "quiet_period_ms": 2000,
+    "max_wall_ms": 900000,
+    "max_tokens_per_profile": 50000,
+    "max_invocations_per_profile": 6,
+    "max_total_tokens": 200000,
+    "max_total_invocations": 24
+  },
+  "profiles": {
+    "claude-code": {
+      "profile_id": "claude-code",
+      "runtime": "claude",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "model_family": "claude",
+      "executable": "claude",
+      "executable_candidates": ["claude"],
+      "invocation_template": ["{executable}", "--print", "--output-format", "json", "--model", "{model}", "--strict-json"],
+      "version_args": ["--version"],
+      "version_expected_prefix": "2.",
+      "permission_flag": "--permission-mode",
+      "resume_flag": "--resume",
+      "capabilities": ["start", "fresh", "schema", "permission", "resume", "timeout", "worktree", "reviewer", "hooks"]
+    },
+    "codex": {
+      "profile_id": "codex",
+      "runtime": "codex",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "model_family": "openai",
+      "executable": "/opt/homebrew/bin/codex",
+      "executable_candidates": ["/opt/homebrew/bin/codex", "codex"],
+      "invocation_template": ["{executable}", "exec", "--json", "--model", "{model}", "--sandbox", "workspace-write"],
+      "version_args": ["--version"],
+      "version_expected": "0.151.0",
+      "version_expected_prefix": "0.151.",
+      "permission_flag": "--sandbox",
+      "resume_flag": "resume",
+      "capabilities": ["start", "fresh", "schema", "permission", "resume", "timeout", "worktree", "reviewer", "hooks"]
+    },
+    "opencode": {
+      "profile_id": "opencode",
+      "runtime": "opencode",
+      "provider": "openai",
+      "model": "openai/gpt-4o",
+      "model_family": "openai",
+      "executable": "opencode",
+      "executable_candidates": ["opencode"],
+      "invocation_template": ["{executable}", "run", "--model", "{model}", "--format", "json"],
+      "version_args": ["--version"],
+      "version_expected_prefix": "1.",
+      "permission_flag": "--permission",
+      "resume_flag": "--session",
+      "capabilities": ["start", "fresh", "schema", "permission", "resume", "timeout", "worktree", "reviewer", "hooks"]
+    },
+    "opencode-deepseek": {
+      "profile_id": "opencode-deepseek",
+      "runtime": "opencode",
+      "provider": "deepseek",
+      "model": "deepseek/deepseek-chat",
+      "model_family": "deepseek",
+      "executable": "opencode",
+      "executable_candidates": ["opencode"],
+      "invocation_template": ["{executable}", "run", "--model", "{model}", "--format", "json"],
+      "version_args": ["--version"],
+      "version_expected_prefix": "1.",
+      "permission_flag": "--permission",
+      "resume_flag": "--session",
+      "capabilities": ["start", "fresh", "schema", "permission", "resume", "timeout", "worktree", "reviewer", "hooks"]
+    }
+  }
+}

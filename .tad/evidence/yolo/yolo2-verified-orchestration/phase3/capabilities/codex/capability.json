@@ -1,0 +1,7 @@
+{
+  "format": "yolo-harness-capability-v1",
+  "profile_id": "codex",
+  "classification": "strict",
+  "reason": "P3-R1 deterministic fixture for Codex core (no provider call yet)",
+  "generated_at": "2026-09-01T18:19:55.076Z"
+}

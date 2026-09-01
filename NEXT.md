@@ -12,7 +12,7 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v2** —— Phase 2 Gate 3 HONEST_PARTIAL
+### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v3** —— Phase 3 local deterministic complete; Codex-only progressive qualification approved
 
 - **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 1/4)
 - **Reset decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
@@ -22,6 +22,10 @@
 - **Kept**: local files, frozen Handoff, bounded MEA slices, no blind retry, independent review, Y1–Y8/Gate authority and honest harness modes.
 - **Deferred**: universal six-schema reducer, hash chain/fencing, bespoke JavaScript sandbox, full three-harness parity and default-on.
 - **Decision**: human confirmed Epic v2 on 2026-08-24 (option 1).
+- **Phase 3 P3-R1 decision (2026-09-01)**: Codex live `strict` is sufficient for the
+  core release. Claude Code, OpenCode, and DeepSeek are experimental adapters and are
+  qualified on first use; they no longer block Phase 3. Provider calls remain blocked
+  until a bounded Codex-only mandate is signed.
 - **Phase 1 archive**: `.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` + matching COMPLETION.
 - **🟢 Gate 3 substance PASS 2026-08-25**: current HEAD `4d9039c9`; runtime/dogfood/reviewer blockers closed.
 - **✅ Gate 4 PASS 2026-08-25**: round-3 fix `7b12d429` makes lifecycle must-appear assertions follow the resolved pair. Alex independently passed active, simulated-archive, disposable committed-archive, and final real post-archive full suites (10/10, exit 0). The checker rejects absent, incomplete, duplicate, and split lifecycle states; recovery runtime and dogfood remained unchanged.
