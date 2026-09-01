@@ -18,4 +18,3 @@
 
 The implementation is committed, dependency-free, local-only, and does not mutate
 raw/canon/wiki content. No unresolved BLOCKED friction or P0/P1 finding remains.
-

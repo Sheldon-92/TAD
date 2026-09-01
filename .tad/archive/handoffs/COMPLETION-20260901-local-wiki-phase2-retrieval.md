@@ -75,4 +75,3 @@ Per-invocation index rebuilding is intentionally accepted at the current corpus 
 When the corpus reaches hundreds/thousands of documents, remeasure latency before adding
 a persisted or vector index. That future enhancement must beat this phase's evaluation
 contract rather than replace it.
-

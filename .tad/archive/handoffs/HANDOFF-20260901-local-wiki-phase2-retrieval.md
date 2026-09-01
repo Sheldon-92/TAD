@@ -8,9 +8,9 @@ git_tracked_dirs:
 ---
 # HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations
 
-**Task ID:** `TASK-20260901-LOCAL-WIKI-P2-RETRIEVAL`  
-**Epic:** `.tad/active/epics/EPIC-20260901-local-wiki-retrieval.md`  
-**Mode:** YOLO, human-authorized 2026-09-01  
+**Task ID:** `TASK-20260901-LOCAL-WIKI-P2-RETRIEVAL`
+**Epic:** `.tad/active/epics/EPIC-20260901-local-wiki-retrieval.md`
+**Mode:** YOLO, human-authorized 2026-09-01
 **Status:** Gate 1 PASS; Gate 2 PASS (architecture + safety, P0=0/P1=0)
 
 ## 1. Goal
