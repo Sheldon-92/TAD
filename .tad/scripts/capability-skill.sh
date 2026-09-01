@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # capability-skill.sh — project-owned Agent Skill validate / project / verify
 # BSD/macOS-safe. No grep -P. Advisory-friendly exit classes.
+# Concurrency boundary: This helper safely serializes multiple cooperative local
+# invocations via an atomic per-skill directory lock (mkdir). Hostile,
+# non-cooperating filesystem mutation is explicitly out of scope.
 set -uo pipefail
 
 SCRIPT_NAME="$(basename "$0")"
@@ -42,6 +45,8 @@ Notes:
   - Placeholder scan: SKILL.md must not contain {{...}}, [TODO], [TBD].
   - Forbidden root artifacts: CAPABILITY.md, README.md, CHANGELOG.md, install.sh.
   - BSD/macOS-safe; no grep -P.
+  - Concurrency: cooperative local invocations are serialized via per-skill lock; hostile
+    filesystem mutation is out of scope and not protected (no FD hardening in Phase 1).
 
 USAGE
 }
@@ -359,6 +364,7 @@ do_project() {
   _published_inode=""
 
   # Cleanup handler for lock and temp owned by this invocation
+  # Centralized owned-parent cleanup (P1): after temp/lock, remove empty parents we created
   cleanup_project_resources() {
     # Remove temp if we created it and it still exists and is inside expected parent
     if [ -n "${_tmp:-}" ] && [ -d "$_tmp" ]; then
@@ -367,6 +373,7 @@ do_project() {
           rm -rf "$_tmp" 2>/dev/null || true
           ;;
       esac
+      _tmp=""
     fi
     # Remove lock only if we own it
     if [ -n "${LOCK_DIR:-}" ] && [ -n "${LOCK_ID:-}" ] && [ -d "$LOCK_DIR" ]; then
@@ -374,6 +381,18 @@ do_project() {
       if [ "$cur_id" = "$LOCK_ID" ] && [ -n "$cur_id" ]; then
         rmdir "$LOCK_DIR" 2>/dev/null || true
       fi
+    fi
+    # Remove owned empty parents (only if we created them and they are now empty)
+    # Must be after temp/lock removal, and only on failure paths; success path also calls this but parents are non-empty (contain projection)
+    if [ "${CREATED_SKILLS_DIR:-0}" -eq 1 ] && [ -d "$_claude_skills_dir" ]; then
+      if [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
+        rmdir "$_claude_skills_dir" 2>/dev/null || true
+        if [ "${CREATED_CLAUDE_DIR:-0}" -eq 1 ] && [ -d "$_claude_dir" ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
+          rmdir "$_claude_dir" 2>/dev/null || true
+        fi
+      fi
+    elif [ "${CREATED_CLAUDE_DIR:-0}" -eq 1 ] && [ -d "$_claude_dir" ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
+      rmdir "$_claude_dir" 2>/dev/null || true
     fi
   }
 
@@ -423,23 +442,12 @@ do_project() {
   LOCK_DIR="$_claude_skills_dir/.lock.${_skill_name}"
   # Re-check path chain before lock acquisition
   if ! check_path_chain_symlinks "$_root_dir"; then
-    if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-      rmdir "$_claude_skills_dir" 2>/dev/null || true
-      if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-        rmdir "$_claude_dir" 2>/dev/null || true
-      fi
-    fi
+    cleanup_project_resources
     return 2
   fi
   if ! mkdir "$LOCK_DIR" 2>/dev/null; then
     err "ERROR: lock exists for $_skill_name (contention), refusing to proceed"
-    # Do not modify canonical/projection; clean up empty parents we created if they remain empty
-    if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-      rmdir "$_claude_skills_dir" 2>/dev/null || true
-      if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-        rmdir "$_claude_dir" 2>/dev/null || true
-      fi
-    fi
+    cleanup_project_resources
     return 3
   fi
   LOCK_ID="$(get_inode "$LOCK_DIR" 2>/dev/null || echo "")"
@@ -461,8 +469,6 @@ do_project() {
       err "ERROR: cannot create temp sibling in $_claude_skills_dir"
       cleanup_project_resources
       trap - EXIT INT TERM HUP
-      if [ "$CREATED_SKILLS_DIR" -eq 1 ]; then rmdir "$_claude_skills_dir" 2>/dev/null || true; fi
-      if [ "$CREATED_CLAUDE_DIR" -eq 1 ]; then rmdir "$_claude_dir" 2>/dev/null || true; fi
       return 4
     }
     if ! cp -R "$CANONICAL/." "$_tmp/" 2>/dev/null; then
@@ -520,10 +526,6 @@ do_project() {
         cur_proj_id="$(get_inode "$PROJECTION" 2>/dev/null || echo "")"
         if [ "$cur_lock_id" = "$LOCK_ID" ] && [ "$cur_proj_id" = "$_published_inode" ] && [ -n "$cur_lock_id" ] && [ -n "$cur_proj_id" ]; then
           rm -rf "$PROJECTION" 2>/dev/null || true
-          if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null | grep -v "^\.lock")" ]; then
-            # Only lock remains; after we release lock, parent may become empty
-            true
-          fi
         else
           err "ERROR: ownership cannot be proven for rollback, refusing to delete (lock or projection changed)"
           cleanup_project_resources

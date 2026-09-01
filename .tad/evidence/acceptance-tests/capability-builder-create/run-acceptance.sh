@@ -687,6 +687,85 @@ EOF
   rm -f "$TP5/.claude/skills"
   rm -rf "$TMP5"
 
+  # 19b. copy failure via PATH wrapper from absent .claude (P1: parent cleanup)
+  echo "--- Case: copy failure via wrapper (absent parent) ---"
+  TMP5b="$(mktemp -d 2>/dev/null)"
+  cp -R "$FIXTURE_PROJECT" "$TMP5b/fixture-project"
+  TP5b="$TMP5b/fixture-project"
+  rm -rf "$TP5b/.claude"
+  WRAPPER_DIR5b="$(mktemp -d 2>/dev/null)"
+  cat > "$WRAPPER_DIR5b/cp" <<'WRAP5B'
+#!/usr/bin/env bash
+REAL_CP="/bin/cp"
+[ -x "$REAL_CP" ] || REAL_CP="/usr/bin/cp"
+NEED_FAIL=0
+for arg in "$@"; do
+  case "$arg" in
+    *".agents/skills/example-skill"*) NEED_FAIL=1 ;;
+  esac
+done
+for arg in "$@"; do
+  case "$arg" in
+    *".tmp."*) if [ "$NEED_FAIL" -eq 1 ]; then exit 1; fi ;;
+  esac
+done
+exec "$REAL_CP" "$@"
+WRAP5B
+  chmod +x "$WRAPPER_DIR5b/cp"
+  OLD_PATH5b="$PATH"
+  export PATH="$WRAPPER_DIR5b:$PATH"
+  set +e
+  bash "$HELPER" project "$TP5b" example-skill >"$TMP5b/out.log" 2>"$TMP5b/err.log"
+  rc=$?
+  set -e
+  export PATH="$OLD_PATH5b"
+  if [ "$rc" -eq 4 ]; then echo "PASS copy failure via wrapper (got 4)"; passed=$((passed+1)); else echo "FAIL copy failure via wrapper expected 4 got $rc"; failed=$((failed+1)); cat "$TMP5b/err.log"; fi
+  if [ -e "$TP5b/.claude" ]; then echo "FAIL copy failure via wrapper: .claude should be absent after rollback"; failed=$((failed+1)); else echo "PASS copy failure via wrapper: .claude absent (restored)"; passed=$((passed+1)); fi
+  if [ -d "$TP5b/.claude/skills/.lock.example-skill" ]; then echo "FAIL lock remains"; failed=$((failed+1)); else echo "PASS lock cleaned"; passed=$((passed+1)); fi
+  if [ -d "$TP5b/.claude/skills" ] && find "$TP5b/.claude/skills" -maxdepth 1 -name ".tmp.*" 2>/dev/null | grep -q .; then echo "FAIL temp remains"; failed=$((failed+1)); else echo "PASS no temp"; passed=$((passed+1)); fi
+  rm -rf "$TMP5b" "$WRAPPER_DIR5b"
+
+  # 19c. temp diff failure via PATH wrapper from absent .claude
+  echo "--- Case: temp diff failure via wrapper (absent parent) ---"
+  TMP5c="$(mktemp -d 2>/dev/null)"
+  cp -R "$FIXTURE_PROJECT" "$TMP5c/fixture-project"
+  TP5c="$TMP5c/fixture-project"
+  rm -rf "$TP5c/.claude"
+  WRAPPER_DIR5c="$(mktemp -d 2>/dev/null)"
+  WRAPPER_STATE5c="$TMP5c/diff_counter2"
+  echo 0 > "$WRAPPER_STATE5c"
+  cat > "$WRAPPER_DIR5c/diff" <<'WRAP5C'
+#!/usr/bin/env bash
+STATE_FILE="$WRAPPER_STATE_FILE"
+REAL_DIFF="/usr/bin/diff"
+[ -x "$REAL_DIFF" ] || REAL_DIFF="/bin/diff"
+[ -f "$STATE_FILE" ] || echo 0 > "$STATE_FILE"
+COUNT=$(cat "$STATE_FILE" 2>/dev/null || echo 0)
+COUNT=$((COUNT+1))
+echo "$COUNT" > "$STATE_FILE"
+if [ "$COUNT" -eq 1 ]; then
+  echo "wrapper: simulated temp diff failure" >&2
+  exit 1
+else
+  exec "$REAL_DIFF" "$@"
+fi
+WRAP5C
+  chmod +x "$WRAPPER_DIR5c/diff"
+  OLD_PATH5c="$PATH"
+  export PATH="$WRAPPER_DIR5c:$PATH"
+  export WRAPPER_STATE_FILE="$WRAPPER_STATE5c"
+  set +e
+  bash "$HELPER" project "$TP5c" example-skill >"$TMP5c/out.log" 2>"$TMP5c/err.log"
+  rc=$?
+  set -e
+  export PATH="$OLD_PATH5c"
+  unset WRAPPER_STATE_FILE
+  if [ "$rc" -eq 4 ]; then echo "PASS temp diff failure via wrapper (got 4)"; passed=$((passed+1)); else echo "FAIL temp diff failure via wrapper expected 4 got $rc"; failed=$((failed+1)); cat "$TMP5c/err.log"; fi
+  if [ -e "$TP5c/.claude" ]; then echo "FAIL temp diff: .claude should be absent"; failed=$((failed+1)); else echo "PASS temp diff: .claude absent"; passed=$((passed+1)); fi
+  if [ -d "$TP5c/.claude/skills/.lock.example-skill" ]; then echo "FAIL lock remains"; failed=$((failed+1)); else echo "PASS lock cleaned"; passed=$((passed+1)); fi
+  if [ -d "$TP5c/.claude/skills" ] && find "$TP5c/.claude/skills" -maxdepth 1 -name ".tmp.*" 2>/dev/null | grep -q .; then echo "FAIL temp remains"; failed=$((failed+1)); else echo "PASS no temp"; passed=$((passed+1)); fi
+  rm -rf "$TMP5c" "$WRAPPER_DIR5c"
+
   # 20. foreign temp byte preservation (divergent must not touch foreign .tmp)
   echo "--- Case: foreign temp byte preservation ---"
   TMP6="$(mktemp -d 2>/dev/null)"
