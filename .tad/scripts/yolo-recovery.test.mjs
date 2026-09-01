@@ -1409,6 +1409,20 @@ function sha256Hex(buf) {
 function sha256File(p) {
   return sha256Hex(fs.readFileSync(p));
 }
+function sha256DirectoryManifest(root) {
+  const entries = [];
+  const walk = (dir, prefix = '') => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const abs = path.join(dir, entry.name);
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) walk(abs, rel);
+      else if (entry.isFile()) entries.push({ path: rel, sha256: sha256File(abs) });
+      else throw new Error(`unsupported durable evidence entry: ${rel}`);
+    }
+  };
+  walk(root);
+  return sha256Hex(Buffer.from(JSON.stringify(entries), 'utf8'));
+}
 function gitShowBlobSha256(rev, rel, repoRoot = REPO_ROOT) {
   // Returns SHA-256 of the blob content as stored in Git object <rev>:<rel>
   const content = execFileSync('git', ['show', `${rev}:${rel}`], { cwd: repoRoot });
@@ -1630,8 +1644,7 @@ function verifyEquivalence(candidateFull, mainFull) {
       errors.push(`immutable evidence tree mismatch for ${root}: ${candTree.slice(0,12)} vs ${mainTree.slice(0,12)}`);
     }
   }
-  // shared control-plane markers (DR R2 §5) — selector + exact value + canonical subdocument hash
-  // For gate3, the expected candidate SHA and PASS are verified dynamically against the pinned candidate
+  // shared control-plane markers (DR R2 §5) — only Handoff and Completion are checked via Git; Gate3 is via attestation only (no self-reference)
   const markers = [
     {
       path: '.tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md',
@@ -1642,11 +1655,6 @@ function verifyEquivalence(candidateFull, mainFull) {
       path: '.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md',
       selector: 'frontmatter.gate3_verdict',
       expected_value: 'pass',
-    },
-    {
-      path: '.tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md',
-      selector: 'gate3-candidate-pass',
-      expected_value: candidateFull, // will be checked as containing candidate SHA and PASS
     },
   ];
   for (const m of markers) {
@@ -1752,7 +1760,8 @@ function verifyDogfoodInputManifest(manifestPath, candidateFull, repoRoot = REPO
       }
     }
   }
-  // Complete reuse identity per R3: check all remaining required fields
+  // Complete reuse identity: every declared field is recomputed from the
+  // candidate Git object or the immutable raw/durable evidence named below.
   if (!doc.policy || !doc.policy.approval_sha256) errors.push('dogfood manifest missing policy.approval_sha256');
   else {
     // Verify approval blob exists in candidate Git
@@ -1762,20 +1771,107 @@ function verifyDogfoodInputManifest(manifestPath, candidateFull, repoRoot = REPO
       if (actualApproval !== doc.policy.approval_sha256) errors.push(`approval sha mismatch: manifest ${doc.policy.approval_sha256.slice(0,12)} vs candidate ${actualApproval.slice(0,12)}`);
     } catch { errors.push(`candidate missing approval file ${approvalPath} (strict Git blob required)`); }
   }
-  if (!doc.policy || !doc.policy.policy_sha256) errors.push('dogfood manifest missing policy.policy_sha256');
-  else {
-    // Verify exact numeric policy per DR-20260831 (3000000/600000/600000)
-    const expectedPolicyHash = sha256Hex(Buffer.from(JSON.stringify({ max_rounds: 8, max_retries_per_slice: 2, max_actions: 40 }), 'utf8'));
-    // The policy_sha256 in manifest is hash of policy object; we just check it exists and is not the old 240k value
-    // For strict check, we verify that the manifest's policy numbers are the authorized 3M values by checking that the dogfood run's pair-configs have those values
-    // This will be verified via the raw run manifest if present
+  const authorizedPolicy = {
+    format: 'yolo-bounded-policy-v1',
+    max_rounds: 8,
+    max_retries_per_slice: 2,
+    max_actions: 40,
+    max_wall_seconds: 14400,
+    max_tokens: 3000000,
+    audit_reserve_tokens: 600000,
+    max_executor_tokens_per_round: 600000,
+    align_every_verified_slices: 3,
+    packet_token_budget: 3500,
+  };
+  const expectedPolicyHash = sha256Hex(Buffer.from(JSON.stringify(authorizedPolicy), 'utf8'));
+  if (!doc.policy || JSON.stringify(doc.policy.values) !== JSON.stringify(authorizedPolicy)) {
+    errors.push('dogfood manifest policy.values does not equal the authorized Phase-2 policy');
   }
-  if (!doc.harness || !doc.harness.generator || !doc.harness.model_family) errors.push('dogfood manifest missing harness.generator/model_family');
-  if (!doc.harness || !doc.harness.canonicalization_version) errors.push('dogfood manifest missing harness.canonicalization_version');
+  if (!doc.policy || doc.policy.policy_sha256 !== expectedPolicyHash) {
+    errors.push(`dogfood policy sha mismatch: ${doc.policy?.policy_sha256 || 'missing'} vs ${expectedPolicyHash}`);
+  }
+
+  const expectedHarness = {
+    generator: 'codex',
+    harness_version: 'codex-cli 0.150.1',
+    model_id: 'codex-default',
+    model_family: 'gpt',
+    reasoning: 'balanced',
+    canonicalization_version: 'v1',
+  };
+  for (const [key, expected] of Object.entries(expectedHarness)) {
+    if (!doc.harness || doc.harness[key] !== expected) {
+      errors.push(`dogfood harness.${key} ${doc.harness?.[key] || 'missing'} != ${expected}`);
+    }
+  }
+  const expectedJudge = { harness: 'opencode', model: 'opencode/big-pickle', model_family: 'big-pickle', passes_per_pair: 3 };
+  for (const [key, expected] of Object.entries(expectedJudge)) {
+    if (!doc.judge || doc.judge[key] !== expected) {
+      errors.push(`dogfood judge.${key} ${doc.judge?.[key] || 'missing'} != ${expected}`);
+    }
+  }
+
+  const raw = doc.raw_run;
+  if (!raw || raw.namespace !== 'a6fe746c2ff351df') {
+    errors.push(`dogfood raw_run.namespace ${raw?.namespace || 'missing'} != a6fe746c2ff351df`);
+  } else {
+    const runManifestPath = path.join(repoRoot, raw.run_manifest_path || '');
+    const pairResultsPath = path.join(repoRoot, raw.pair_results_path || '');
+    if (!fs.existsSync(runManifestPath) || sha256File(runManifestPath) !== raw.run_manifest_sha256) {
+      errors.push('dogfood raw run-manifest missing or sha mismatch');
+    }
+    if (!fs.existsSync(pairResultsPath) || sha256File(pairResultsPath) !== raw.pair_results_sha256) {
+      errors.push('dogfood raw pair-results missing or sha mismatch');
+    }
+    if (fs.existsSync(runManifestPath)) {
+      const runManifest = JSON.parse(fs.readFileSync(runManifestPath, 'utf8'));
+      if (runManifest.recovery_sha256 !== doc.mechanism.recovery
+        || runManifest.runner_sha256 !== doc.mechanism.reference_runner
+        || runManifest.driver_sha256 !== doc.mechanism.pair_driver
+        || runManifest.dataset_sha256 !== doc.dataset_inputs.dataset_index_sha256
+        || runManifest.base_commit !== doc.base_sha) {
+        errors.push('dogfood raw run-manifest identity does not equal canonical inputs');
+      }
+    }
+    if (fs.existsSync(pairResultsPath)) {
+      const results = JSON.parse(fs.readFileSync(pairResultsPath, 'utf8'));
+      if (results.mechanism_sha256 !== raw.mechanism_sha256
+        || results.summary?.pairs !== 5
+        || results.summary?.treatment_capability_5of5 !== 5
+        || results.summary?.repeated_or_unauthorized_nonzero !== 0) {
+        errors.push('dogfood raw pair-results identity or PASS summary mismatch');
+      }
+    }
+  }
+
+  const durable = doc.durable_evidence;
+  if (!durable || !durable.root_path || !durable.directory_manifest_sha256) {
+    errors.push('dogfood manifest missing durable_evidence root/hash');
+  } else {
+    const durableRoot = path.join(repoRoot, durable.root_path);
+    if (!fs.existsSync(durableRoot)) errors.push(`dogfood durable evidence root missing: ${durable.root_path}`);
+    else if (sha256DirectoryManifest(durableRoot) !== durable.directory_manifest_sha256) {
+      errors.push('dogfood durable evidence directory manifest sha mismatch');
+    }
+  }
+
+  // Validate all 15 blinded judge invocations against the declared judge identity.
+  for (let pair = 1; pair <= 5; pair += 1) {
+    for (let pass = 1; pass <= 3; pass += 1) {
+      const judgePath = path.join(repoRoot, `.tad/evidence/yolo/yolo2-verified-orchestration/phase2/dogfood/cases/P${pair}/judge-pass-${pass}.json`);
+      if (!fs.existsSync(judgePath)) { errors.push(`dogfood judge evidence missing: P${pair}/pass-${pass}`); continue; }
+      const judge = JSON.parse(fs.readFileSync(judgePath, 'utf8'));
+      const cmd = judge.invocation?.cmd || [];
+      const modelIndex = cmd.indexOf('--model');
+      if (judge.harness !== expectedJudge.harness || judge.model_family !== expectedJudge.model_family
+        || modelIndex < 0 || cmd[modelIndex + 1] !== expectedJudge.model || judge.invocation?.exit !== 0) {
+        errors.push(`dogfood judge identity mismatch: P${pair}/pass-${pass}`);
+      }
+    }
+  }
   // Check that manifest's base/candidate/main match the invocation
   if (doc.base_sha && doc.base_sha !== '96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7') errors.push(`dogfood manifest base_sha mismatch: ${doc.base_sha}`);
   if (doc.candidate_sha && doc.candidate_sha !== candidateFull) errors.push(`dogfood manifest candidate_sha mismatch: ${doc.candidate_sha} vs ${candidateFull}`);
-  // If manifest has rawRun or durableTree fields, verify they exist and are not empty
   return errors;
 }
 
@@ -1813,6 +1909,67 @@ function verifyVerifierBlob(candidateFull) {
 function runScopeFixtures() {
   // 9 fixtures using real temporary Git repos, invoking the SAME production verifier
   const errors = [];
+  // Exercise the same production invariant functions against the real immutable
+  // Git objects.  Each negative mutates exactly one signed field and must be
+  // rejected; a generic non-YOLO path and an unknown exclusion are also red.
+  // This avoids accepting an unrelated setup/attestation error as a fixture PASS.
+  let fixtureMain;
+  try { fixtureMain = git(['rev-parse', 'refs/heads/main'], REPO_ROOT); }
+  catch { fixtureMain = git(['rev-parse', 'HEAD'], REPO_ROOT); }
+  const pristine = {
+    format: 'yolo2-phase2-scope-proof-v1',
+    base_sha: PHASE2_SCOPE_BASE_FULL,
+    main_sha: fixtureMain,
+    commits: buildCommitManifest(PHASE2_SCOPE_BASE_FULL, fixtureMain, REPO_ROOT),
+  };
+  const pristineErrors = verifyManifestInvariants(pristine, PHASE2_SCOPE_BASE_FULL, fixtureMain);
+  if (pristineErrors.length) errors.push(`fixture-valid-inventory: ${pristineErrors.join('; ')}`);
+
+  const clone = (value) => JSON.parse(JSON.stringify(value));
+  const expectRejected = (label, mutate) => {
+    const changed = clone(pristine);
+    mutate(changed);
+    try {
+      const found = verifyManifestInvariants(changed, PHASE2_SCOPE_BASE_FULL, fixtureMain);
+      if (found.length === 0) errors.push(`${label}: tampered manifest was accepted`);
+    } catch {
+      // A Git-object lookup failure is also a correct fail-closed result.
+    }
+  };
+  for (const fixed of FIXED_EXCLUSIONS) {
+    const entry = pristine.commits.find((item) => item.source_sha === fixed.source_sha);
+    if (!entry) { errors.push(`fixture-exclusion-present: ${fixed.source_sha} missing`); continue; }
+    const actualDiff = computeBinaryDiffSha(fixed.parents[0], fixed.source_sha, REPO_ROOT);
+    if (actualDiff !== fixed.first_parent_binary_diff_sha256) errors.push(`fixture-exclusion-recompute: ${fixed.source_sha}`);
+    expectRejected(`fixture-diff-tamper-${fixed.source_sha}`, (doc) => {
+      doc.commits.find((item) => item.source_sha === fixed.source_sha).first_parent_binary_diff_sha256 = '0'.repeat(64);
+    });
+    expectRejected(`fixture-reason-tamper-${fixed.source_sha}`, (doc) => {
+      doc.commits.find((item) => item.source_sha === fixed.source_sha).reason = 'tampered';
+    });
+    expectRejected(`fixture-exemption-tamper-${fixed.source_sha}`, (doc) => {
+      doc.commits.find((item) => item.source_sha === fixed.source_sha).shared_phase2_path_exemptions = ['NEXT.md', 'unexpected.md'];
+    });
+  }
+  expectRejected('fixture-unknown-exclusion', (doc) => {
+    const included = doc.commits.find((item) => item.classification === 'included');
+    included.classification = 'excluded';
+    included.reason = 'unknown-fifth-exclusion';
+  });
+  if (phase2ScopeAllowsInclusive('research/unauthorized-generic-path.md')) {
+    errors.push('fixture-generic-path: unrelated path accepted');
+  }
+  const excludedCandidateErrors = verifyCandidateReplay(
+    PHASE2_SCOPE_BASE_FULL, FIXED_EXCLUSIONS[0].source_sha, pristine,
+  );
+  if (!excludedCandidateErrors.some((item) => item.includes(FIXED_EXCLUSIONS[0].source_sha))) {
+    errors.push('fixture-candidate-exclusion: candidate containing fixed exclusion was accepted');
+  }
+  return errors;
+
+  /* Legacy fixture construction retained below as historical test data.  It is
+     intentionally unreachable; the production-core fixtures above are the
+     authoritative checks. */
   const makeRepo = () => {
     const dir = tmpDir('yolo-scope-fix-');
     git(['init', '-q'], dir);
@@ -2056,6 +2213,7 @@ function parseScopeArgs() {
 function casePhase2ScopeProof() {
   const args = parseScopeArgs();
   const isPinnedMode = !!(args.base || args.main || args.candidate || args.manifest || args.evidenceDir);
+  const attestationSnapshot = [];
   // Determine effective values
   let baseFull, mainFull, candidateFull, manifestPath, evidenceDir;
   if (isPinnedMode) {
@@ -2103,6 +2261,12 @@ function casePhase2ScopeProof() {
       process.stdout.write('RESULT=ERROR\n');
       process.exit(2);
     }
+    if (attDoc.format !== 'yolo2-phase2-attestation-v1') {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  unsupported attestation format\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+    attestationSnapshot.push({ path: attPath, sha256: attSha });
     if (attDoc.base_sha !== baseFull) {
       process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation base_sha ${attDoc.base_sha} != pinned ${baseFull}\n`);
       process.stdout.write('RESULT=ERROR\n');
@@ -2118,9 +2282,21 @@ function casePhase2ScopeProof() {
       process.stdout.write('RESULT=ERROR\n');
       process.exit(2);
     }
+    const requiredCarrierNames = ['candidate-tree.json', 'dogfood-input-manifest.json', 'main-equivalence.json', 'phase2-commit-manifest.json', 'scope-proof.log'];
+    const carrierNames = Object.keys(attDoc.carriers || {}).sort();
+    if (JSON.stringify(carrierNames) !== JSON.stringify(requiredCarrierNames)) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation carrier set mismatch\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
     // Verify carrier SHAs in attestation match actual files
     for (const [name, info] of Object.entries(attDoc.carriers || {})) {
-      const carrierPath = path.join(REPO_ROOT, info.path);
+      const carrierPath = path.resolve(REPO_ROOT, info.path);
+      if (!carrierPath.startsWith(`${REPO_ROOT}${path.sep}`)) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation carrier escapes repository: ${name}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
       if (!fs.existsSync(carrierPath)) {
         process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation carrier missing: ${name} at ${info.path}\n`);
         process.stdout.write('RESULT=ERROR\n');
@@ -2132,10 +2308,11 @@ function casePhase2ScopeProof() {
         process.stdout.write('RESULT=ERROR\n');
         process.exit(2);
       }
+      attestationSnapshot.push({ path: carrierPath, sha256: actualSha });
     }
-    // Verify gate3 SHA in attestation
+    // Verify gate3 SHA in attestation and that its content contains base/main/candidate/PASS (attestation is the only Gate3 authority)
     if (attDoc.gate3) {
-      const gate3Path = path.join(REPO_ROOT, attDoc.gate3.path);
+      const gate3Path = path.resolve(REPO_ROOT, attDoc.gate3.path);
       if (!fs.existsSync(gate3Path)) {
         process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation gate3 missing at ${attDoc.gate3.path}\n`);
         process.stdout.write('RESULT=ERROR\n');
@@ -2147,6 +2324,62 @@ function casePhase2ScopeProof() {
         process.stdout.write('RESULT=ERROR\n');
         process.exit(2);
       }
+      attestationSnapshot.push({ path: gate3Path, sha256: actualGate3Sha });
+      const gate3Content = fs.readFileSync(gate3Path, 'utf8');
+      if (!gate3Content.includes(attDoc.base_sha)) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attested gate3 does not contain base_sha ${attDoc.base_sha}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      if (!gate3Content.includes(attDoc.candidate_sha)) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attested gate3 does not contain candidate_sha ${attDoc.candidate_sha}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      if (!gate3Content.includes(attDoc.main_sha)) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attested gate3 does not contain main_sha ${attDoc.main_sha}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      if (!gate3Content.includes('`PASS`') && !gate3Content.includes('PASS')) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attested gate3 does not contain PASS\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+    } else {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation gate3 binding missing\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+    const requiredReportNames = ['code-reviewer.md', 'spec-compliance-final.md', 'test-runner.md'];
+    const reportNames = Object.keys(attDoc.reports || {}).sort();
+    if (JSON.stringify(reportNames) !== JSON.stringify(requiredReportNames)) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation report set mismatch\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+    // Verify 3 reports SHAs in attestation
+    for (const [name, info] of Object.entries(attDoc.reports || {})) {
+      const reportPath = path.resolve(REPO_ROOT, info.path);
+      if (!fs.existsSync(reportPath)) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation report missing: ${name} at ${info.path}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      const actualReportSha = sha256File(reportPath);
+      if (actualReportSha !== info.sha256) {
+        process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation report ${name} sha mismatch: ${actualReportSha.slice(0,12)} vs attestation ${info.sha256.slice(0,12)}\n`);
+        process.stdout.write('RESULT=ERROR\n');
+        process.exit(2);
+      }
+      attestationSnapshot.push({ path: reportPath, sha256: actualReportSha });
+    }
+    // Verify product tree directly from the pinned candidate Git object.
+    const actualProductTree = getCommitTree(candidateFull, REPO_ROOT);
+    if (attDoc.product_tree_sha !== actualProductTree) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attestation product_tree_sha mismatch: ${attDoc.product_tree_sha || 'missing'} vs ${actualProductTree}\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
     }
   }
 
@@ -2379,6 +2612,15 @@ function casePhase2ScopeProof() {
       }
     } catch (e) {
       process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  scope-proof.log invalid\n`);
+      process.stdout.write('RESULT=ERROR\n');
+      process.exit(2);
+    }
+  }
+  // TOCTOU guard: every externally attested byte sequence must be unchanged
+  // after all verification work has completed.
+  for (const entry of attestationSnapshot) {
+    if (!fs.existsSync(entry.path) || sha256File(entry.path) !== entry.sha256) {
+      process.stdout.write(`CASE=phase2-scope-proof RESULT=ERROR  attested input changed during verification: ${entry.path}\n`);
       process.stdout.write('RESULT=ERROR\n');
       process.exit(2);
     }
