@@ -26,7 +26,7 @@ Exit codes (stable):
   0  success
   1  usage error (wrong args, unknown command)
   2  invalid canonical / path (validation failed, traversal, symlink, frontmatter, forbidden artifact)
-  3  divergent target (projection exists and differs; no overwrite)
+  3  divergent target (projection exists and differs; no overwrite) or lock contention
   4  I/O failure (copy failure, parent unavailable, temp cleanup)
 
 Behavior:
@@ -83,20 +83,38 @@ resolve_root() {
   return 0
 }
 
+# Get device:inode for ownership proof (BSD macOS stat -f, fallback to Linux stat -c)
+get_inode() {
+  _p="$1"
+  if [ ! -e "$_p" ]; then
+    printf ''
+    return 1
+  fi
+  # Try BSD stat first
+  if stat -f '%d:%i' "$_p" 2>/dev/null | grep -qE '^[0-9]+:[0-9]+$'; then
+    stat -f '%d:%i' "$_p" 2>/dev/null
+    return 0
+  fi
+  # Fallback Linux
+  if stat -c '%d:%i' "$_p" 2>/dev/null | grep -qE '^[0-9]+:[0-9]+$'; then
+    stat -c '%d:%i' "$_p" 2>/dev/null
+    return 0
+  fi
+  # Fallback: use ls -di
+  ls -di "$_p" 2>/dev/null | awk '{print $1}' || printf ''
+  return 0
+}
+
 # Check symlink in path chain for .agents/skills and .claude/skills parents
 # Args: <resolved_root>
 check_path_chain_symlinks() {
   _root="$1"
-  # Check each component from root down to .agents, .agents/skills, .claude, .claude/skills if they exist
   for _rel in ".agents" ".agents/skills" ".claude" ".claude/skills"; do
     _p="$_root/$_rel"
     if [ -e "$_p" ] && [ -L "$_p" ]; then
       err "ERROR: symlink in path chain: $_p (refuse to write through link)"
       return 1
     fi
-    # Also check intermediate if path exists partially: need to walk components
-    # For deeper safety, check each parent directory of _p that exists is not a symlink
-    # Walk from root to leaf: split _rel by /
     _cur="$_root"
     _rest="$_rel"
     while [ -n "$_rest" ]; do
@@ -111,9 +129,6 @@ check_path_chain_symlinks() {
         err "ERROR: symlink in path chain component: $_cur"
         return 1
       fi
-      # If segment doesn't exist yet, loop will still check but -e false so continue
-      # Need to also handle case where _cur exists but is symlink even if _p doesn't exist
-      # Already handled
       if [ "$_rest" = "" ]; then break; fi
     done
   done
@@ -124,7 +139,6 @@ check_path_chain_symlinks() {
 has_symlink_in_tree() {
   _dir="$1"
   if [ ! -d "$_dir" ]; then return 1; fi
-  # find -type l
   if find "$_dir" -type l 2>/dev/null | grep -q .; then
     return 0
   else
@@ -159,32 +173,27 @@ validate_canonical() {
     err "ERROR: SKILL.md is a symlink"
     return 2
   fi
-  # Single check for forbidden root artifacts
   for _bad in "CAPABILITY.md" "README.md" "CHANGELOG.md" "install.sh"; do
     if [ -e "$_canon/$_bad" ]; then
       err "ERROR: forbidden artifact at Skill root: $_bad"
       return 2
     fi
   done
-  # Frontmatter must start at line 1 with ---
   _first="$(head -n 1 "$_skill" 2>/dev/null | tr -d '\r')"
   if [ "$_first" != "---" ]; then
     err "ERROR: frontmatter must start on line 1 with ---"
     return 2
   fi
-  # Find closing fence
   _close_line="$(awk 'NR==1{next} /^---[[:space:]]*$/{print NR; exit}' "$_skill" 2>/dev/null)"
   if [ -z "$_close_line" ]; then
     err "ERROR: frontmatter missing closing ---"
     return 2
   fi
-  # Extract frontmatter block (lines 2 to close-1)
   _fm="$(sed -n "2,$((_close_line-1))p" "$_skill" 2>/dev/null)"
   if [ -z "$_fm" ]; then
     err "ERROR: empty frontmatter"
     return 2
   fi
-  # Must contain exactly one name and one description, each once
   _name_count="$(printf '%s\n' "$_fm" | grep -cE '^[[:space:]]*name:[[:space:]]*')"
   _desc_count="$(printf '%s\n' "$_fm" | grep -cE '^[[:space:]]*description:[[:space:]]*')"
   if [ "$_name_count" -ne 1 ]; then
@@ -195,40 +204,32 @@ validate_canonical() {
     err "ERROR: frontmatter must contain exactly one 'description:' (found $_desc_count)"
     return 2
   fi
-  # Ensure no extra frontmatter keys beyond name and description
-  # Allowed keys are exactly name and description (one-line scalars)
   _extra="$(printf '%s\n' "$_fm" | grep -E '^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*:' | grep -vE '^[[:space:]]*(name|description):' || true)"
   if [ -n "$_extra" ]; then
     err "ERROR: frontmatter contains extra keys (only name+description allowed):"
     printf '%s\n' "$_extra" | sed 's/^/  -> /' >&2
     return 2
   fi
-  # Extract name and description values
   _fm_name="$(printf '%s\n' "$_fm" | sed -n 's/^[[:space:]]*name:[[:space:]]*//p' | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//;s/^'\''//;s/'\''$//')"
   _fm_desc="$(printf '%s\n' "$_fm" | sed -n 's/^[[:space:]]*description:[[:space:]]*//p' | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//;s/^'\''//;s/'\''$//')"
 
-  # Validate name format
   if ! printf '%s' "$_fm_name" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
     err "ERROR: name does not match ^[a-z0-9]+(-[a-z0-9]+)*\$: '$_fm_name'"
     return 2
   fi
-  # Must match directory basename
   _base="$(basename "$_canon")"
   if [ "$_fm_name" != "$_base" ]; then
     err "ERROR: frontmatter name '$_fm_name' != directory basename '$_base'"
     return 2
   fi
-  # Also must match requested skill-name (if different, error)
   if [ "$_fm_name" != "$_name" ]; then
     err "ERROR: frontmatter name '$_fm_name' != requested skill-name '$_name'"
     return 2
   fi
-  # description non-empty
   if [ -z "$_fm_desc" ]; then
     err "ERROR: description must be non-empty"
     return 2
   fi
-  # Reject block/folded scalar (P1-3): Phase 1 requires one-line scalar frontmatter
   if printf '%s\n' "$_fm" | grep -qE '^[[:space:]]*description:[[:space:]]*[>|]'; then
     err "ERROR: description must be one-line scalar, block/folded style not allowed (found '>' or '|')"
     return 2
@@ -237,7 +238,6 @@ validate_canonical() {
     err "ERROR: name must be one-line scalar, block/folded style not allowed"
     return 2
   fi
-  # Also reject values that are exactly > / | / >- etc even if not caught by line prefix due to quotes stripping
   if printf '%s' "$_fm_desc" | grep -qE '^[>|]([-+][0-9]*)?$'; then
     err "ERROR: description must be one-line scalar, block/folded style not allowed"
     return 2
@@ -246,9 +246,7 @@ validate_canonical() {
     err "ERROR: name must be one-line scalar, block/folded style not allowed"
     return 2
   fi
-  # Placeholder markers in SKILL.md
   if grep -qF "{{" "$_skill" 2>/dev/null; then
-    # Need to check for {{...}} pattern (contains closing }})
     if grep -qE '\{\{.*\}\}' "$_skill" 2>/dev/null; then
       err "ERROR: placeholder {{...}} found in SKILL.md"
       return 2
@@ -272,12 +270,10 @@ derive_paths() {
   _root_in="$1"
   _name="$2"
 
-  # Normalized name check first (rejects slash, absolute, traversal)
   if ! is_normalized_name "$_name"; then
     err "ERROR: invalid skill-name '$_name' (must match ^[a-z0-9]+(-[a-z0-9]+)*\$)"
     return 2
   fi
-  # Reject absolute name (already covered but explicit)
   case "$_name" in
     /*) err "ERROR: absolute skill-name not allowed"; return 2 ;;
     *".."* ) err "ERROR: traversal in skill-name"; return 2 ;;
@@ -286,13 +282,11 @@ derive_paths() {
 
   _root="$(resolve_root "$_root_in")" || return 2
 
-  # Containment: derived paths must be inside root (ensure name didn't escape via symlink? name already normalized so safe)
   CANONICAL="$_root/.agents/skills/$_name"
   PROJECTION="$_root/.claude/skills/$_name"
   PARENT_CLAUDE_SKILLS="$_root/.claude/skills"
   PARENT_AGENTS_SKILLS="$_root/.agents/skills"
 
-  # Ensure derived paths still prefix with root (defense against weird root)
   case "$CANONICAL" in
     "$_root"/*) ;;
     *) err "ERROR: canonical path escapes project root"; return 2 ;;
@@ -302,7 +296,6 @@ derive_paths() {
     *) err "ERROR: projection path escapes project root"; return 2 ;;
   esac
 
-  # Symlink path chain checks (before any creation)
   if ! check_path_chain_symlinks "$_root"; then
     return 2
   fi
@@ -313,7 +306,6 @@ derive_paths() {
 do_validate() {
   if [ $# -ne 2 ]; then err "ERROR: validate requires <project-root> <skill-name>"; usage >&2; return 1; fi
   derive_paths "$1" "$2" || return $?
-  # validate_canonical expects canonical and name
   validate_canonical "$CANONICAL" "$2"
   _rc=$?
   if [ $_rc -eq 0 ]; then
@@ -325,9 +317,7 @@ do_validate() {
 do_verify() {
   if [ $# -ne 2 ]; then err "ERROR: verify requires <project-root> <skill-name>"; usage >&2; return 1; fi
   derive_paths "$1" "$2" || return $?
-  # First validate canonical
   validate_canonical "$CANONICAL" "$2" || return 2
-  # Then check projection exists and is byte-identical
   if [ ! -d "$PROJECTION" ]; then
     err "ERROR: projection missing: $PROJECTION"
     return 3
@@ -336,7 +326,6 @@ do_verify() {
     err "ERROR: projection is a symlink: $PROJECTION"
     return 2
   fi
-  # Check projection not a symlink tree? find inside?
   if find "$PROJECTION" -type l 2>/dev/null | grep -q .; then
     err "ERROR: symlink inside projection tree"
     return 2
@@ -345,7 +334,6 @@ do_verify() {
     err "ERROR: projection missing SKILL.md"
     return 3
   fi
-  # Compare byte-identical
   _out="$(diff -rq "$CANONICAL" "$PROJECTION" 2>&1)" || true
   if [ -z "$_out" ]; then
     printf 'VERIFY PASS: %s <-> %s byte-identical\n' "$CANONICAL" "$PROJECTION"
@@ -361,20 +349,39 @@ do_project() {
   if [ $# -ne 2 ]; then err "ERROR: project requires <project-root> <skill-name>"; usage >&2; return 1; fi
   derive_paths "$1" "$2" || return $?
   _skill_name="$2"
-  # Record which parent dirs we create so we can clean up only those on failure
+
   CREATED_CLAUDE_DIR=0
   CREATED_SKILLS_DIR=0
-  NEED_CLEANUP_PARENTS=""
+  _tmp=""
+  LOCK_DIR=""
+  LOCK_ID=""
+  _published_by_this_invocation=0
+  _published_inode=""
+
+  # Cleanup handler for lock and temp owned by this invocation
+  cleanup_project_resources() {
+    # Remove temp if we created it and it still exists and is inside expected parent
+    if [ -n "${_tmp:-}" ] && [ -d "$_tmp" ]; then
+      case "$_tmp" in
+        "$_claude_skills_dir/.tmp."* | "$PARENT_CLAUDE_SKILLS/.tmp."*)
+          rm -rf "$_tmp" 2>/dev/null || true
+          ;;
+      esac
+    fi
+    # Remove lock only if we own it
+    if [ -n "${LOCK_DIR:-}" ] && [ -n "${LOCK_ID:-}" ] && [ -d "$LOCK_DIR" ]; then
+      cur_id="$(get_inode "$LOCK_DIR" 2>/dev/null || echo "")"
+      if [ "$cur_id" = "$LOCK_ID" ] && [ -n "$cur_id" ]; then
+        rmdir "$LOCK_DIR" 2>/dev/null || true
+      fi
+    fi
+  }
 
   # Validate first; fail without touching target
   if ! validate_canonical "$CANONICAL" "$_skill_name"; then
     return 2
   fi
 
-  # Handle missing .claude and .claude/skills parents: create only after checks
-  # Need to decide if they existed before
-  _root="$CANONICAL"
-  # Extract root again (already derived)
   _root_dir="$(resolve_root "$1")" || return 2
   _claude_dir="$_root_dir/.claude"
   _claude_skills_dir="$_root_dir/.claude/skills"
@@ -383,11 +390,9 @@ do_project() {
   _skills_existed=0
   [ -d "$_claude_dir" ] && _claude_existed=1
   [ -d "$_claude_skills_dir" ] && _skills_existed=1
-  # Track whether projection existed before for rollback on post-publish failure (P1-2)
   _projection_existed_before=0
   [ -e "$PROJECTION" ] && _projection_existed_before=1
 
-  # If parents missing, create after containment/symlink checks (already done)
   if [ "$_claude_existed" -eq 0 ]; then
     if ! mkdir -p "$_claude_dir" 2>/dev/null; then
       err "ERROR: cannot create .claude directory: $_claude_dir"
@@ -398,7 +403,6 @@ do_project() {
   if [ "$_skills_existed" -eq 0 ]; then
     if ! mkdir -p "$_claude_skills_dir" 2>/dev/null; then
       err "ERROR: cannot create .claude/skills directory"
-      # cleanup claude if we created it and it's empty
       if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -d "$_claude_dir" ]; then
         rmdir "$_claude_dir" 2>/dev/null || true
       fi
@@ -407,140 +411,156 @@ do_project() {
     CREATED_SKILLS_DIR=1
   fi
 
-  # Re-check symlink chain after creation (new dirs shouldn't be symlinks)
   if [ -L "$_claude_dir" ] || [ -L "$_claude_skills_dir" ]; then
     err "ERROR: created path is a symlink (race)"
-    # cleanup
     if [ "$CREATED_SKILLS_DIR" -eq 1 ]; then rmdir "$_claude_skills_dir" 2>/dev/null || true; fi
     if [ "$CREATED_CLAUDE_DIR" -eq 1 ]; then rmdir "$_claude_dir" 2>/dev/null || true; fi
     return 2
   fi
 
-  # Target state handling
+  # Acquire per-skill lock (cooperative concurrency, P1-2)
+  # Lock path derived from project root + normalized skill name, not caller-specified
+  LOCK_DIR="$_claude_skills_dir/.lock.${_skill_name}"
+  # Re-check path chain before lock acquisition
+  if ! check_path_chain_symlinks "$_root_dir"; then
+    if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
+      rmdir "$_claude_skills_dir" 2>/dev/null || true
+      if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
+        rmdir "$_claude_dir" 2>/dev/null || true
+      fi
+    fi
+    return 2
+  fi
+  if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+    err "ERROR: lock exists for $_skill_name (contention), refusing to proceed"
+    # Do not modify canonical/projection; clean up empty parents we created if they remain empty
+    if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
+      rmdir "$_claude_skills_dir" 2>/dev/null || true
+      if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
+        rmdir "$_claude_dir" 2>/dev/null || true
+      fi
+    fi
+    return 3
+  fi
+  LOCK_ID="$(get_inode "$LOCK_DIR" 2>/dev/null || echo "")"
+  # Ensure lock cleanup on exit, but only if we own it
+  trap 'cleanup_project_resources' EXIT
+  trap 'cleanup_project_resources; exit 4' INT TERM HUP
+
+  # Re-check path chain and target after lock acquisition (fail-closed)
+  if ! check_path_chain_symlinks "$_root_dir"; then
+    err "ERROR: path chain became symlinked after lock acquisition"
+    cleanup_project_resources
+    trap - EXIT INT TERM HUP
+    return 2
+  fi
+
+  # Target state handling — now under lock
   if [ ! -e "$PROJECTION" ]; then
-    # Absent → create via temp sibling
-    # Create temp sibling dir inside parent
     _tmp="$(mktemp -d "$_claude_skills_dir/.tmp.${_skill_name}.XXXXXX" 2>/dev/null)" || {
       err "ERROR: cannot create temp sibling in $_claude_skills_dir"
-      # cleanup parents if empty
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       if [ "$CREATED_SKILLS_DIR" -eq 1 ]; then rmdir "$_claude_skills_dir" 2>/dev/null || true; fi
       if [ "$CREATED_CLAUDE_DIR" -eq 1 ]; then rmdir "$_claude_dir" 2>/dev/null || true; fi
       return 4
     }
-    # Copy
     if ! cp -R "$CANONICAL/." "$_tmp/" 2>/dev/null; then
       err "ERROR: copy failed to temp sibling"
-      rm -rf "$_tmp" 2>/dev/null || true
-      # cleanup parents if empty
-      if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null | grep -v "^\.tmp\.")" ]; then
-        # only empty aside from our tmp which is removed, check empty
-        if [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-          rmdir "$_claude_skills_dir" 2>/dev/null || true
-          if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-            rmdir "$_claude_dir" 2>/dev/null || true
-          fi
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
+      if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null | grep -v "^\.lock")" ]; then
+        if [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null | grep -v "^\.lock")" ]; then
+          # Only empty besides lock; lock still held, so not empty yet
+          true
         fi
-      elif [ "$CREATED_SKILLS_DIR" -eq 1 ]; then
-        # check if parent now empty aside from dotfiles
-        true
       fi
       return 4
     fi
-    # Verify copy
     _vout="$(diff -rq "$CANONICAL" "$_tmp" 2>&1)" || true
     if [ -n "$_vout" ]; then
       err "ERROR: verify failed after copy to temp"
       printf '%s\n' "$_vout" | sed 's/^/  /' >&2
-      rm -rf "$_tmp" 2>/dev/null || true
-      # cleanup empty parents we created
-      if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-        rmdir "$_claude_skills_dir" 2>/dev/null || true
-        if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-          rmdir "$_claude_dir" 2>/dev/null || true
-        fi
-      fi
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       return 4
     fi
-    # Re-check containment and target absence at publication (P1-4 fail-closed)
-    # Test hook for deterministic contention testing
-    if [ -n "${CAPABILITY_SKILL_TEST_RACE:-}" ]; then
-      eval "$CAPABILITY_SKILL_TEST_RACE" 2>/dev/null || true
-    fi
-    if ! check_path_chain_symlinks "$_root_dir"; then
-      err "ERROR: path chain became symlinked before publish (race)"
-      rm -rf "$_tmp" 2>/dev/null || true
-      if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-        rmdir "$_claude_skills_dir" 2>/dev/null || true
-        if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-          rmdir "$_claude_dir" 2>/dev/null || true
-        fi
-      fi
-      return 4
-    fi
+    # Re-check target absence after holding lock (contention check)
     if [ -e "$PROJECTION" ]; then
       err "ERROR: target appeared before publish (contention), refusing to overwrite"
-      rm -rf "$_tmp" 2>/dev/null || true
-      if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-        rmdir "$_claude_skills_dir" 2>/dev/null || true
-        if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-          rmdir "$_claude_dir" 2>/dev/null || true
-        fi
-      fi
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       return 3
     fi
-    # Rename into place (atomic)
+    # Re-check path chain again before publish
+    if ! check_path_chain_symlinks "$_root_dir"; then
+      err "ERROR: path chain became symlinked before publish"
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
+      return 2
+    fi
     if ! mv "$_tmp" "$PROJECTION" 2>/dev/null; then
       err "ERROR: rename temp to projection failed"
-      rm -rf "$_tmp" 2>/dev/null || true
-      if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-        rmdir "$_claude_skills_dir" 2>/dev/null || true
-        if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-          rmdir "$_claude_dir" 2>/dev/null || true
-        fi
-      fi
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       return 4
     fi
-    # Test hook for deterministic final-verify failure (P1-2 regression test)
-    if [ -n "${CAPABILITY_SKILL_TEST_AFTER_PUBLISH:-}" ]; then
-      eval "$CAPABILITY_SKILL_TEST_AFTER_PUBLISH" 2>/dev/null || true
-    fi
-    # Final verify byte identity — rollback on failure to preserve pre-call absent state (P1-2)
+    # Mark published and record ownership token (device:inode)
+    _published_by_this_invocation=1
+    _published_inode="$(get_inode "$PROJECTION" 2>/dev/null || echo "")"
+    _tmp=""  # Clear temp so cleanup handler does not try to remove it again (now moved)
+    # Final verify byte identity — rollback on failure with ownership proof (P1-3)
     _fout="$(diff -rq "$CANONICAL" "$PROJECTION" 2>&1)" || true
     if [ -n "$_fout" ]; then
       err "ERROR: final verify after rename failed"
       printf '%s\n' "$_fout" | sed 's/^/  /' >&2
-      # Rollback published projection if it did not exist before this invocation
-      if [ "$_projection_existed_before" -eq 0 ]; then
-        rm -rf "$PROJECTION" 2>/dev/null || true
-        # Clean empty parents we created
-        if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null)" ]; then
-          rmdir "$_claude_skills_dir" 2>/dev/null || true
-          if [ "$CREATED_CLAUDE_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_dir" 2>/dev/null)" ]; then
-            rmdir "$_claude_dir" 2>/dev/null || true
+      # Rollback only if we published and still own lock and projection is still ours
+      if [ "$_published_by_this_invocation" -eq 1 ] && [ -n "$LOCK_ID" ] && [ -d "$LOCK_DIR" ]; then
+        cur_lock_id="$(get_inode "$LOCK_DIR" 2>/dev/null || echo "")"
+        cur_proj_id="$(get_inode "$PROJECTION" 2>/dev/null || echo "")"
+        if [ "$cur_lock_id" = "$LOCK_ID" ] && [ "$cur_proj_id" = "$_published_inode" ] && [ -n "$cur_lock_id" ] && [ -n "$cur_proj_id" ]; then
+          rm -rf "$PROJECTION" 2>/dev/null || true
+          if [ "$CREATED_SKILLS_DIR" -eq 1 ] && [ -z "$(ls -A "$_claude_skills_dir" 2>/dev/null | grep -v "^\.lock")" ]; then
+            # Only lock remains; after we release lock, parent may become empty
+            true
           fi
+        else
+          err "ERROR: ownership cannot be proven for rollback, refusing to delete (lock or projection changed)"
+          cleanup_project_resources
+          trap - EXIT INT TERM HUP
+          return 4
         fi
       fi
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       return 4
     fi
+    # Success: release lock and clear trap
+    cleanup_project_resources
+    trap - EXIT INT TERM HUP
+    # Remove lock after successful publish (cleanup handler already does, but ensure)
+    # Lock already removed by cleanup_project_resources
     printf 'PROJECTED: %s -> %s\n' "$CANONICAL" "$PROJECTION"
     return 0
   else
-    # Target exists → check divergent
+    # Target exists → check divergent (under lock)
     if [ -L "$PROJECTION" ]; then
       err "ERROR: projection is a symlink, refusing"
-      # cleanup parents if we created them and projection is divergent? no, projection existed before, so parents existed. But if we created parents for a new repo, projection shouldn't have existed. So no cleanup need for symlink case beyond temp check already done. Just ensure no temp residue (none created)
-      # On failure, if we created empty parent dirs and target already existed, parents weren't newly created (since target exists implies parent existed). So nothing to clean regarding parents we created path would not have happened because target exists implies parent existed. But for safety handle created parents that are now non-empty? Do not remove pre-existing. Only remove empty parents we created if we created them and failure occurred and no target existed before? For divergent case with pre-existing target, we shouldn't remove anything.
-      # Since _claude_existed or _skills_existed would have been 1 if target existed, they wouldn't be 1. So no creation.
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       return 2
     fi
     _dout="$(diff -rq "$CANONICAL" "$PROJECTION" 2>&1)" || true
     if [ -z "$_dout" ]; then
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       printf 'PROJECT NO-OP: target already byte-identical\n'
       return 0
     else
       err "ERROR: divergent target exists, refusing to overwrite:"
       printf '%s\n' "$_dout" | sed 's/^/  /' >&2 | head -20
-      # Per P1-1: do not touch any pre-existing .tmp paths; this invocation created no temp, so no cleanup.
+      cleanup_project_resources
+      trap - EXIT INT TERM HUP
       return 3
     fi
   fi

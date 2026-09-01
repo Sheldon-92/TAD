@@ -166,6 +166,11 @@ mode_structural() {
   passed=0
   failed=0
 
+  # P1: no production eval/hook in helper
+  echo "--- Case: no production eval/hook ---"
+  if grep -qw "eval" "$HELPER" 2>/dev/null; then echo "FAIL no eval in helper: found eval"; failed=$((failed+1)); else echo "PASS no eval in helper"; passed=$((passed+1)); fi
+  if grep -q "CAPABILITY_SKILL_TEST_" "$HELPER" 2>/dev/null; then echo "FAIL production hook found"; failed=$((failed+1)); else echo "PASS no production hook"; passed=$((passed+1)); fi
+
   run_case() {
     _name="$1"
     _expected_exit="$2" # expected exit class: 1,2,3,4 or 0 for success cases
@@ -278,6 +283,12 @@ mode_structural() {
           return 1
         fi
       fi
+      if [ -d "$TP/.claude/skills/.lock.example-skill" ]; then
+        echo "FAIL $_name: lock remains after failure"
+        failed=$((failed+1))
+        rm -rf "$TMP"
+        return 1
+      fi
       # Parent inventory must match before unless the setup created parent which is expected? But for failure, we should ensure we didn't leave created empty parents behind if they were created by helper during failure.
       # Spec: on projection failure, remove only empty parent directories created by this invocation and assert no temp sibling remains.
       # Our helper already does cleanup. So if before was absent and failure occurred, after should be absent or if helper cleaned up, should be absent. Check that we don't leak empty .claude.
@@ -312,6 +323,12 @@ mode_structural() {
       if [ -d "$TP/.claude/skills" ]; then
         if find "$TP/.claude/skills" -maxdepth 1 -name ".tmp.*" 2>/dev/null | grep -q .; then
           echo "FAIL $_name: temp sibling remains on success"
+          failed=$((failed+1))
+          rm -rf "$TMP"
+          return 1
+        fi
+        if [ -d "$TP/.claude/skills/.lock.example-skill" ]; then
+          echo "FAIL $_name: lock remains after success"
           failed=$((failed+1))
           rm -rf "$TMP"
           return 1
@@ -670,41 +687,145 @@ EOF
   rm -f "$TP5/.claude/skills"
   rm -rf "$TMP5"
 
-  # 20. target contention via race hook (P1-4) — deterministic via CAPABILITY_SKILL_TEST_RACE
-  echo "--- Case: target contention (race) ---"
+  # 20. foreign temp byte preservation (divergent must not touch foreign .tmp)
+  echo "--- Case: foreign temp byte preservation ---"
   TMP6="$(mktemp -d 2>/dev/null)"
   cp -R "$FIXTURE_PROJECT" "$TMP6/fixture-project"
   TP6="$TMP6/fixture-project"
   rm -rf "$TP6/.claude"
-  # Hook will create target before mv, causing contention detection
+  bash "$HELPER" project "$TP6" example-skill >/dev/null 2>&1
+  # Create foreign temp with content not owned by helper
+  FOREIGN_TMP="$TP6/.claude/skills/.tmp.example-skill.foreign123"
+  mkdir -p "$FOREIGN_TMP"
+  echo "foreign content 999" > "$FOREIGN_TMP/foreign.txt"
+  FOREIGN_HASH_BEFORE="$(find "$FOREIGN_TMP" -type f -exec shasum -a 256 {} \; 2>/dev/null | cut -d' ' -f1 | LC_ALL=C sort | shasum -a 256 2>/dev/null | cut -d' ' -f1)"
+  FOREIGN_LIST_BEFORE="$(ls -1A "$TP6/.claude/skills" 2>/dev/null | LC_ALL=C sort | tr '\n' ',')"
+  # Make divergent
+  echo "divergent" >> "$TP6/.claude/skills/example-skill/SKILL.md"
   set +e
-  CAPABILITY_SKILL_TEST_RACE='mkdir -p "$PROJECTION" && echo "race content" > "$PROJECTION/SKILL.md"' bash "$HELPER" project "$TP6" example-skill >"$TMP6/out.log" 2>"$TMP6/err.log"
+  bash "$HELPER" project "$TP6" example-skill >"$TMP6/out.log" 2>"$TMP6/err.log"
   rc=$?
   set -e
-  if [ "$rc" -eq 3 ]; then echo "PASS target contention (got 3)"; passed=$((passed+1)); else echo "FAIL target contention expected 3 got $rc"; failed=$((failed+1)); cat "$TMP6/err.log"; fi
-  # Must preserve pre-call state: canonical unchanged, projection should be the race-created one (not overwritten), no temp remains
-  if [ -d "$TP6/.claude/skills" ] && find "$TP6/.claude/skills" -maxdepth 1 -name ".tmp.*" 2>/dev/null | grep -q .; then echo "FAIL target contention temp remains"; failed=$((failed+1)); fi
-  # Canonical must not be mutated
-  if ! bash "$HELPER" validate "$TP6" example-skill >/dev/null 2>&1; then echo "FAIL target contention canonical invalid"; failed=$((failed+1)); fi
+  if [ "$rc" -eq 3 ]; then echo "PASS foreign temp divergent (got 3)"; passed=$((passed+1)); else echo "FAIL foreign temp divergent expected 3 got $rc"; failed=$((failed+1)); cat "$TMP6/err.log"; fi
+  FOREIGN_HASH_AFTER="$(find "$FOREIGN_TMP" -type f -exec shasum -a 256 {} \; 2>/dev/null | cut -d' ' -f1 | LC_ALL=C sort | shasum -a 256 2>/dev/null | cut -d' ' -f1)"
+  if [ "$FOREIGN_HASH_BEFORE" != "$FOREIGN_HASH_AFTER" ]; then echo "FAIL foreign temp byte changed"; failed=$((failed+1)); else echo "PASS foreign temp byte identical"; passed=$((passed+1)); fi
+  # Also check foreign temp still exists
+  if [ ! -d "$FOREIGN_TMP" ]; then echo "FAIL foreign temp missing"; failed=$((failed+1)); fi
   rm -rf "$TMP6"
 
-  # 21. final verify rollback (P1-2) — corrupt after publish, helper must rollback to absent
-  echo "--- Case: final verify rollback ---"
+  # 21. final verify rollback via diff PATH wrapper (ownership proof)
+  echo "--- Case: final verify rollback (diff wrapper) ---"
   TMP7="$(mktemp -d 2>/dev/null)"
   cp -R "$FIXTURE_PROJECT" "$TMP7/fixture-project"
   TP7="$TMP7/fixture-project"
   rm -rf "$TP7/.claude"
+  WRAPPER_DIR7="$(mktemp -d 2>/dev/null)"
+  WRAPPER_STATE7="$TMP7/diff_counter"
+  echo 0 > "$WRAPPER_STATE7"
+  cat > "$WRAPPER_DIR7/diff" <<'WRAP7'
+#!/usr/bin/env bash
+STATE_FILE="$WRAPPER_STATE_FILE"
+REAL_DIFF="/usr/bin/diff"
+[ -x "$REAL_DIFF" ] || REAL_DIFF="/bin/diff"
+[ -f "$STATE_FILE" ] || echo 0 > "$STATE_FILE"
+COUNT=$(cat "$STATE_FILE" 2>/dev/null || echo 0)
+COUNT=$((COUNT+1))
+echo "$COUNT" > "$STATE_FILE"
+if [ "$COUNT" -eq 1 ]; then
+  exec "$REAL_DIFF" "$@"
+else
+  echo "wrapper: simulated final verify failure" >&2
+  exit 1
+fi
+WRAP7
+  chmod +x "$WRAPPER_DIR7/diff"
+  OLD_PATH7="$PATH"
+  export PATH="$WRAPPER_DIR7:$PATH"
+  export WRAPPER_STATE_FILE="$WRAPPER_STATE7"
   set +e
-  CAPABILITY_SKILL_TEST_AFTER_PUBLISH='echo "corrupt" >> "$PROJECTION/SKILL.md"' bash "$HELPER" project "$TP7" example-skill >"$TMP7/out.log" 2>"$TMP7/err.log"
+  bash "$HELPER" project "$TP7" example-skill >"$TMP7/out.log" 2>"$TMP7/err.log"
   rc=$?
   set -e
+  export PATH="$OLD_PATH7"
+  unset WRAPPER_STATE_FILE
   if [ "$rc" -eq 4 ]; then echo "PASS final verify rollback (got 4)"; passed=$((passed+1)); else echo "FAIL final verify rollback expected 4 got $rc"; failed=$((failed+1)); cat "$TMP7/err.log"; fi
-  # After failure, projection must be absent (rolled back), no temp, parents cleaned if empty
-  if [ -e "$TP7/.claude/skills/example-skill" ]; then echo "FAIL final verify rollback: projection still exists"; failed=$((failed+1)); ls -la "$TP7/.claude/skills/example-skill" 2>&1 | head -20; fi
-  if [ -d "$TP7/.claude/skills" ] && find "$TP7/.claude/skills" -maxdepth 1 -name ".tmp.*" 2>/dev/null | grep -q .; then echo "FAIL final verify rollback temp remains"; failed=$((failed+1)); fi
-  # Canonical must remain valid
-  if ! bash "$HELPER" validate "$TP7" example-skill >/dev/null 2>&1; then echo "FAIL final verify rollback canonical invalid"; failed=$((failed+1)); fi
-  rm -rf "$TMP7"
+  if [ -e "$TP7/.claude/skills/example-skill" ]; then echo "FAIL final verify rollback: projection still exists (should be rolled back with ownership)"; failed=$((failed+1)); else echo "PASS final verify rollback: projection absent (rolled back)"; passed=$((passed+1)); fi
+  if [ -d "$TP7/.claude/skills" ] && find "$TP7/.claude/skills" -maxdepth 1 -name ".tmp.example-skill.*" 2>/dev/null | grep -q .; then echo "FAIL final verify rollback temp remains"; failed=$((failed+1)); else echo "PASS final verify rollback no temp"; passed=$((passed+1)); fi
+  # Lock must be cleaned on this error path
+  if [ -d "$TP7/.claude/skills/.lock.example-skill" ]; then echo "FAIL final verify rollback lock remains"; failed=$((failed+1)); else echo "PASS final verify rollback lock cleaned"; passed=$((passed+1)); fi
+  if ! bash "$HELPER" validate "$TP7" example-skill >/dev/null 2>&1; then echo "FAIL final verify rollback canonical invalid"; failed=$((failed+1)); else echo "PASS final verify rollback canonical valid"; passed=$((passed+1)); fi
+  rm -rf "$TMP7" "$WRAPPER_DIR7"
+
+  # 22. cooperative concurrency via cp PATH wrapper
+  echo "--- Case: cooperative concurrency (cp wrapper) ---"
+  TMP8="$(mktemp -d 2>/dev/null)"
+  cp -R "$FIXTURE_PROJECT" "$TMP8/fixture-project"
+  TP8="$TMP8/fixture-project"
+  rm -rf "$TP8/.claude"
+  WRAPPER_DIR8="$(mktemp -d 2>/dev/null)"
+  SYNC_DIR8="$(mktemp -d 2>/dev/null)"
+  cat > "$WRAPPER_DIR8/cp" <<'WRAP8'
+#!/usr/bin/env bash
+REAL_CP="/bin/cp"
+[ -x "$REAL_CP" ] || REAL_CP="/usr/bin/cp"
+# Detect helper's canonical copy: source contains .agents/skills/example-skill and dest contains .tmp.
+NEED_PAUSE=0
+for arg in "$@"; do
+  case "$arg" in
+    *".agents/skills/example-skill"*) NEED_PAUSE=1 ;;
+  esac
+done
+for arg in "$@"; do
+  case "$arg" in
+    *".tmp."*) if [ "$NEED_PAUSE" -eq 1 ]; then NEED_PAUSE=2; fi ;;
+  esac
+done
+if [ "$NEED_PAUSE" -eq 2 ] && [ -n "${WRAPPER_SYNC_DIR:-}" ]; then
+  touch "$WRAPPER_SYNC_DIR/first_started"
+  for i in $(seq 1 100); do
+    if [ -f "$WRAPPER_SYNC_DIR/continue" ]; then break; fi
+    sleep 0.05
+  done
+fi
+exec "$REAL_CP" "$@"
+WRAP8
+  chmod +x "$WRAPPER_DIR8/cp"
+  OLD_PATH8="$PATH"
+  export PATH="$WRAPPER_DIR8:$PATH"
+  export WRAPPER_SYNC_DIR="$SYNC_DIR8"
+  # Start first project in background (will pause at cp)
+  bash "$HELPER" project "$TP8" example-skill >"$TMP8/first.log" 2>"$TMP8/first.err" &
+  FIRST_PID=$!
+  # Wait for first to acquire lock and reach cp
+  for i in $(seq 1 50); do
+    if [ -f "$SYNC_DIR8/first_started" ]; then break; fi
+    sleep 0.05
+  done
+  if [ ! -f "$SYNC_DIR8/first_started" ]; then echo "FAIL concurrency: first did not start"; failed=$((failed+1)); kill $FIRST_PID 2>/dev/null || true; fi
+  # Verify lock exists
+  if [ ! -d "$TP8/.claude/skills/.lock.example-skill" ]; then echo "FAIL concurrency: lock not held by first"; failed=$((failed+1)); else echo "PASS concurrency: lock held by first"; passed=$((passed+1)); fi
+  # Start second project while first holds lock — should fail closed
+  set +e
+  bash "$HELPER" project "$TP8" example-skill >"$TMP8/second.log" 2>"$TMP8/second.err"
+  rc2=$?
+  set -e
+  if [ "$rc2" -eq 3 ]; then echo "PASS concurrency: second fail closed (got 3)"; passed=$((passed+1)); else echo "FAIL concurrency: second expected 3 got $rc2"; failed=$((failed+1)); cat "$TMP8/second.err"; fi
+  # Second must not have mutated projection (still absent, since first hasn't published yet)
+  if [ -e "$TP8/.claude/skills/example-skill" ]; then echo "FAIL concurrency: second created projection"; failed=$((failed+1)); else echo "PASS concurrency: second no mutation"; passed=$((passed+1)); fi
+  # Check second did not delete foreign temp or lock
+  if [ ! -d "$TP8/.claude/skills/.lock.example-skill" ]; then echo "FAIL concurrency: lock missing after second (should still be held)"; failed=$((failed+1)); else echo "PASS concurrency: lock still held after second"; passed=$((passed+1)); fi
+  # Release first
+  touch "$SYNC_DIR8/continue"
+  wait $FIRST_PID 2>/dev/null
+  rc1=$?
+  if [ "$rc1" -eq 0 ] && [ -d "$TP8/.claude/skills/example-skill" ]; then echo "PASS concurrency: first completed after release"; passed=$((passed+1)); else echo "FAIL concurrency: first should succeed after release (rc $rc1)"; failed=$((failed+1)); cat "$TMP8/first.err"; fi
+  # After first completes, lock must be cleaned
+  if [ -d "$TP8/.claude/skills/.lock.example-skill" ]; then echo "FAIL concurrency: lock not cleaned after first"; failed=$((failed+1)); else echo "PASS concurrency: lock cleaned"; passed=$((passed+1)); fi
+  # No temp remains
+  if find "$TP8/.claude/skills" -maxdepth 1 -name ".tmp.*" 2>/dev/null | grep -q .; then echo "FAIL concurrency: temp remains"; failed=$((failed+1)); else echo "PASS concurrency: no temp"; passed=$((passed+1)); fi
+  export PATH="$OLD_PATH8"
+  unset WRAPPER_SYNC_DIR
+  rm -rf "$TMP8" "$WRAPPER_DIR8" "$SYNC_DIR8"
 
   echo "=== structural summary: $passed passed, $failed failed ==="
   if [ "$failed" -ne 0 ]; then
