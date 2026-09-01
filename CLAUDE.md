@@ -37,7 +37,7 @@ lite **已知**无等价物：`*tournament`（竞赛式设计）、`*deps` 系�
 | `/blake` | 有 handoff → 实现；常规发布 |
 | `/gate` | Gate 1-4 |
 | 深度研究 | 需要持久积累的研究任务 → `*research`（Alex 自动判断 Quick/Standard/Deep 级别） |
-| 能力包升级 | Domain Pack 升级为 Capability Pack（升级/重建/capability pack）→ 调用 `/capability-upgrade` 按 5 阶段流程执行 |
+| 能力构建 | 新能力 → `$capability-builder create` 构建项目自有 Skill；旧 Capability Pack 维护 → `$capability-upgrade` 兼容路由（LEGACY_PACK_OUT_OF_SCOPE） |
 
 跳过 TAD：单文件修复、配置调整、文档更新、用户说"直接帮我"。
 Adaptive Complexity：Alex 评估建议，**人类做最终决策**。

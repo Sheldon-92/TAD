@@ -1,0 +1,21 @@
+{
+  "prompt_path": "prompt/task.md",
+  "prompt_hash": "454cc031edb82a1e57dd7f2537b609376f385a488434c34621b7498ab33f4250",
+  "fixture_path": "fixtures/example-skill.md",
+  "fixture_hash": "62a012878c7527de9c3dceb71358dd59c085caa3141a4cd350e572e2a5db11c7",
+  "skill_canonical_path": "fixture-project/.agents/skills/example-skill",
+  "skill_hash": "1258867053d6eebe49c9cd9f7ee2711a2f60978df182639653ad7978ee21c4fb",
+  "harness": "opencode-claude-code",
+  "model": "muse-spark-1.2-contributor",
+  "control_invocation": "Skill disabled (no .claude/skills/example-skill) — CONTROL run with identical prompt",
+  "with_invocation": "Skill enabled via .agents→.claude projection (.claude/skills/example-skill present) — WITH run with identical prompt",
+  "control_output_path": "raw/control.md",
+  "control_output_hash": "f8556ac1e7d33990062cda192c0dab2632a1dc5051e562262faec64701963b2a",
+  "with_output_path": "raw/with-skill.md",
+  "with_output_hash": "5afef2ac6f19c126028835186bbfba6e600635088aab60872bf049be6f915ce6",
+  "control_verdict": "PACK example-skill FIXTURE example-skill-fixture: disc 0/3 [combined 0/3] → FAIL",
+  "with_verdict": "PACK example-skill FIXTURE example-skill-fixture: disc 3/3 [combined 3/3] → PASS",
+  "run_timestamp": "2026-09-01T03:41:07Z",
+  "control_timestamp": "2026-09-01T03:41:07Z",
+  "with_timestamp": "2026-09-01T03:41:07Z"
+}

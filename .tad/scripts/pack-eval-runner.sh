@@ -75,6 +75,44 @@ parse_pack() {
 }
 
 # ---------------------------------------------------------------------------
+# parse_skill <fixture.md> → prints skill name (frontmatter `skill:`)
+# ---------------------------------------------------------------------------
+parse_skill() {
+  fixture="$1"
+  sk=""
+  if [ -f "$fixture" ]; then
+    sk=$(awk '
+      /^---[[:space:]]*$/ { fence++; next }
+      fence==1 && /^skill:/ {
+        v=$0; sub(/^skill:[[:space:]]*/, "", v); gsub(/["'"'"']/, "", v)
+        gsub(/[[:space:]]+$/, "", v); print v; exit
+      }
+      fence>=2 { exit }
+    ' "$fixture")
+  fi
+  printf '%s' "$sk"
+}
+
+# ---------------------------------------------------------------------------
+# parse_pack_raw <fixture.md> → prints pack name from frontmatter only (no fallback)
+# ---------------------------------------------------------------------------
+parse_pack_raw() {
+  fixture="$1"
+  pk=""
+  if [ -f "$fixture" ]; then
+    pk=$(awk '
+      /^---[[:space:]]*$/ { fence++; next }
+      fence==1 && /^pack:/ {
+        v=$0; sub(/^pack:[[:space:]]*/, "", v); gsub(/["'"'"']/, "", v)
+        gsub(/[[:space:]]+$/, "", v); print v; exit
+      }
+      fence>=2 { exit }
+    ' "$fixture")
+  fi
+  printf '%s' "$pk"
+}
+
+# ---------------------------------------------------------------------------
 # parse_name <fixture.md> → prints fixture name (frontmatter `name:` or base)
 # ---------------------------------------------------------------------------
 parse_name() {
@@ -108,8 +146,8 @@ parse_pattern() {
     invc && /^##[[:space:]]/ { invc=0 }
     invc && /grep -oE/ {
       line=$0
-      # Strip everything up to and including the first quote after grep -oE.
-      sub(/.*grep -oE[[:space:]]+'"'"'/, "", line)
+      # Strip everything up to and including the first quote after grep -oE (handles optional --).
+      sub(/.*grep -oE([[:space:]]+--[[:space:]]+|[[:space:]]+)'"'"'/, "", line)
       # Strip from the closing quote onward.
       sub(/'"'"'.*/, "", line)
       print line
@@ -165,15 +203,26 @@ parse_min_disc() {
 
 # ---------------------------------------------------------------------------
 # count_matches <pattern> <output-file> → distinct-match count via
-# grep -oE | sort -u | wc -l (NOT grep -c). Never aborts; 0 on any miss.
+# grep -oE -- | sort -u | wc -l (NOT grep -c). Never aborts; 0 on any miss.
+# Uses -- to avoid pattern starting with - being misparsed.
 # ---------------------------------------------------------------------------
 count_matches() {
   _pat="$1"; _out="$2"
   [ -n "$_pat" ] || { printf '0'; return 0; }
   [ -f "$_out" ] || { printf '0'; return 0; }
-  _n=$(grep -oE "$_pat" "$_out" 2>/dev/null | sort -u | wc -l | tr -d ' ')
+  _n=$(grep -oE -- "$_pat" "$_out" 2>/dev/null | sort -u | wc -l | tr -d ' ')
   [ -z "$_n" ] && _n=0
   printf '%s' "$_n"
+}
+
+# is_invalid_regex <pattern> → returns 0 if invalid (grep error 2)
+is_invalid_regex() {
+  _pat="$1"
+  [ -n "$_pat" ] || return 1
+  # grep exits 2 on invalid regex, 0/1 otherwise
+  grep -oE -- "$_pat" /dev/null >/dev/null 2>&1
+  _rc=$?
+  [ "$_rc" -eq 2 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -191,7 +240,23 @@ count_matches() {
 assert_one() {
   fixture="$1"
   output="$2"
+  skill=$(parse_skill "$fixture")
+  pack_raw=$(parse_pack_raw "$fixture")
   pack=$(parse_pack "$fixture")
+  # Dual-field detection: both skill: and pack: present in frontmatter → bad fixture SKIP
+  if [ -n "$skill" ] && [ -n "$pack_raw" ]; then
+    _subj="$skill"
+    name=$(parse_name "$fixture")
+    printf 'PACK %s FIXTURE %s: conflicting subject fields → SKIP (bad fixture: conflicting subject fields)\n' "$_subj" "$name"
+    return 2
+  fi
+  # Subject resolution: skill → pack → path fallback (pack fallback handled inside parse_pack)
+  subject=""
+  if [ -n "$skill" ]; then
+    subject="$skill"
+  else
+    subject="$pack"
+  fi
   name=$(parse_name "$fixture")
   min=$(parse_min_count "$fixture")
   pattern=$(parse_pattern "$fixture")
@@ -199,11 +264,21 @@ assert_one() {
   min_disc=$(parse_min_disc "$fixture")
 
   if [ -z "$pattern" ]; then
-    printf 'PACK %s FIXTURE %s: no verification pattern → SKIP (bad fixture)\n' "$pack" "$name"
+    printf 'PACK %s FIXTURE %s: no verification pattern → SKIP (bad fixture)\n' "$subject" "$name"
     return 2
   fi
   if [ ! -f "$output" ]; then
-    printf 'PACK %s FIXTURE %s: no output captured → SKIP\n' "$pack" "$name"
+    printf 'PACK %s FIXTURE %s: no output captured → SKIP\n' "$subject" "$name"
+    return 2
+  fi
+
+  # Invalid regex → bad fixture SKIP (P1-6 hardening, uses --)
+  if is_invalid_regex "$pattern"; then
+    printf 'PACK %s FIXTURE %s: invalid regex → SKIP (bad fixture: invalid pattern)\n' "$subject" "$name"
+    return 2
+  fi
+  if [ -n "$disc_pattern" ] && is_invalid_regex "$disc_pattern"; then
+    printf 'PACK %s FIXTURE %s: invalid discriminative regex → SKIP (bad fixture: invalid pattern)\n' "$subject" "$name"
     return 2
   fi
 
@@ -213,10 +288,10 @@ assert_one() {
   # ---- BACKWARD-COMPAT path: no discriminative_pattern → old combined gate.
   if [ -z "$disc_pattern" ]; then
     if [ "$combined" -ge "$min" ] 2>/dev/null; then
-      printf 'PACK %s FIXTURE %s: combined %s/%s → PASS  [WARN: no discriminative_pattern — using combined (non-discriminative) gate]\n' "$pack" "$name" "$combined" "$min"
+      printf 'PACK %s FIXTURE %s: combined %s/%s → PASS  [WARN: no discriminative_pattern — using combined (non-discriminative) gate]\n' "$subject" "$name" "$combined" "$min"
       return 0
     else
-      printf 'PACK %s FIXTURE %s: combined %s/%s → FAIL  [WARN: no discriminative_pattern — using combined (non-discriminative) gate]\n' "$pack" "$name" "$combined" "$min"
+      printf 'PACK %s FIXTURE %s: combined %s/%s → FAIL  [WARN: no discriminative_pattern — using combined (non-discriminative) gate]\n' "$subject" "$name" "$combined" "$min"
       return 1
     fi
   fi
@@ -225,10 +300,10 @@ assert_one() {
   disc=$(count_matches "$disc_pattern" "$output")
 
   if [ "$disc" -ge "$min_disc" ] 2>/dev/null; then
-    printf 'PACK %s FIXTURE %s: disc %s/%s [combined %s/%s] → PASS\n' "$pack" "$name" "$disc" "$min_disc" "$combined" "$min"
+    printf 'PACK %s FIXTURE %s: disc %s/%s [combined %s/%s] → PASS\n' "$subject" "$name" "$disc" "$min_disc" "$combined" "$min"
     return 0
   else
-    printf 'PACK %s FIXTURE %s: disc %s/%s [combined %s/%s] → FAIL\n' "$pack" "$name" "$disc" "$min_disc" "$combined" "$min"
+    printf 'PACK %s FIXTURE %s: disc %s/%s [combined %s/%s] → FAIL\n' "$subject" "$name" "$disc" "$min_disc" "$combined" "$min"
     return 1
   fi
 }

@@ -1,0 +1,9 @@
+=== Regression: legacy pack fixture verification ===
+Fixture: .claude/skills/academic-research/examples/systematic-review-depth.md
+Baseline output: .tad/evidence/acceptance-tests/capability-builder-create/scope/legacy-baseline-output.md
+
+--- Verdict (must be PASS, not SKIP) ---
+PACK academic-research FIXTURE systematic-review-depth: disc 8/2 [combined 6/3] → PASS
+
+--- Exit code (advisory 0) ---
+exit:0
