@@ -109,6 +109,19 @@ for frontmatter. Supports `x_article/bilibili/arxiv_abs/substack/medium/generic_
 ## 9. Wiki Compilation
 
 `wiki/topics/<topic>.md` (topic skeleton) and `wiki/research/<canon-slug>.md` (per-canon answer)
+
+## 9. Retrieval (`research/scripts/search.py`)
+
+```bash
+python3 research/scripts/search.py query "MCP prompt injection" --limit 5
+python3 research/scripts/search.py query "agent memory" --scope raw --json
+python3 research/scripts/search.py eval --dataset research/eval/retrieval-queries.json --json
+```
+
+Search is read-only and indexes current eligible Markdown in memory. Human output always
+includes repository path, exact line range, layer, heading, and snippet. JSON uses the
+same result contract. The checked-in evaluation reports Recall@5 and MRR separately;
+it does not claim answer correctness or permit uncited generated conclusions.
 compiled FROM canon, with ≥3 `raw_refs` each and `locator`.
 
 ## 10. Saturation (see CLAUDE.md §4)

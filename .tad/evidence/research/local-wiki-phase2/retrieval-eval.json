@@ -1,0 +1,22 @@
+{
+  "command": "python3 research/scripts/search.py eval --dataset research/eval/retrieval-queries.json --json",
+  "cases": 8,
+  "recall_at_5": 1.0,
+  "mrr": 0.9375,
+  "thresholds": {
+    "recall_at_5": 1.0,
+    "mrr": 0.75
+  },
+  "passed": true,
+  "case_ranks": {
+    "mcp-prompt-injection": 2,
+    "guardrail-layers": 1,
+    "sanitize-verify": 1,
+    "agent-memory-vector": 1,
+    "judgment-knowledge": 1,
+    "product-pack": 1,
+    "staleness": 1,
+    "iron-rule": 1
+  }
+}
+

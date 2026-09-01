@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "mcp-prompt-injection",
+      "query": "MCP prompt injection tool outputs",
+      "scope": "all",
+      "expected_paths": [
+        "research/wiki/research/mcp-prompt-injection.md",
+        "research/canon/research/mcp-prompt-injection.md"
+      ]
+    },
+    {
+      "id": "guardrail-layers",
+      "query": "guardrail layers input reasoning output tool",
+      "scope": "wiki",
+      "expected_paths": ["research/wiki/topics/guardrail-layers.md"]
+    },
+    {
+      "id": "sanitize-verify",
+      "query": "sanitize then verify tool channels",
+      "scope": "all",
+      "expected_paths": [
+        "research/wiki/topics/mcp-security.md",
+        "research/canon/research/mcp-prompt-injection.md"
+      ]
+    },
+    {
+      "id": "agent-memory-vector",
+      "query": "agent memory vector database temporal tracking",
+      "scope": "raw",
+      "expected_paths": ["research/raw/papers/migrated-agent-memory.md"]
+    },
+    {
+      "id": "judgment-knowledge",
+      "query": "judgment type knowledge executable audio",
+      "scope": "raw",
+      "expected_paths": ["research/raw/papers/migrated-agent-knowledge.md"]
+    },
+    {
+      "id": "product-pack",
+      "query": "product pack reusable capability",
+      "scope": "raw",
+      "expected_paths": ["research/raw/papers/migrated-product-pack.md"]
+    },
+    {
+      "id": "staleness",
+      "query": "staleness detection refresh mechanisms",
+      "scope": "raw",
+      "expected_paths": ["research/raw/papers/migrated-staleness-trap.md"]
+    },
+    {
+      "id": "iron-rule",
+      "query": "Iron Rule claims locator",
+      "scope": "governance",
+      "expected_paths": [
+        "research/CLAUDE.md",
+        "research/canon/README.md"
+      ]
+    }
+  ]
+}
+
