@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import vm from 'node:vm';
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, lstat, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'node:net';
-import { boundedJson, CaptureError, CdpTransport, PAGE_FUNCTION, captureAndImport, httpsUrl, isYoutubeUrl, languageCode, launch, portNumber, publicTabs, selectTab, validateWsUrl } from '../scripts/browser-capture.mjs';
+import { boundedJson, CaptureError, CdpTransport, PAGE_FUNCTION, captureAndImport, httpsUrl, isYoutubeUrl, languageCode, launch, managedPort, portNumber, publicTabs, safeCaptureUrl, selectTab, validateWsUrl } from '../scripts/browser-capture.mjs';
 
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const page = { id:'page-1', type:'page', title:'Visible page', url:'https://example.test/article', webSocketDebuggerUrl:'ws://127.0.0.1:9223/devtools/page/page-1' };
@@ -17,12 +17,22 @@ function response(body, { url='http://127.0.0.1:9223/json/list', length=null }={
 
 test('strict URL, port, language, selection and exact WebSocket validation', () => {
   assert.equal(httpsUrl('https://example.test/a'),'https://example.test/a');
-  assert.throws(()=>httpsUrl('http://example.test'),CaptureError); assert.equal(portNumber('9223'),9223); assert.throws(()=>portNumber('80'),CaptureError);
+  for (const value of ['http://localhost:8123/a','http://127.0.0.1/a','http://[::1]:8123/a']) assert.match(safeCaptureUrl(value),/^http:/);
+  for (const value of ['http://example.test','http://user@localhost/a','ftp://localhost/a']) assert.throws(()=>safeCaptureUrl(value),CaptureError); assert.equal(portNumber('9223'),9223); assert.throws(()=>portNumber('80'),CaptureError);
   assert.equal(languageCode('en-US'),'en-US'); assert.throws(()=>languageCode('en;bad'),CaptureError); assert.equal(isYoutubeUrl('https://www.youtube.com/watch?v=x'),true);
   assert.equal(selectTab([page],null,false).id,'page-1'); assert.throws(()=>selectTab([page,page],null,false),CaptureError); assert.throws(()=>selectTab([page],null,true),CaptureError);
   assert.deepEqual(publicTabs([page]),[{id:'page-1',title:'Visible page',url:'https://example.test/article'}]);
   assert.equal(validateWsUrl(page.webSocketDebuggerUrl,9223),page.webSocketDebuggerUrl);
   for (const value of ['ws://evil.test/devtools/page/x','ws://127.0.0.1:9223/devtools/page/x/extra','ws://127.0.0.1:9223/devtools/page/x?token=x','ws://user@127.0.0.1:9223/devtools/page/x']) assert.throws(()=>validateWsUrl(value,9223),CaptureError);
+});
+
+test('loopback HTTP tab and returned URL are accepted, arbitrary HTTP is not', async () => {
+  const root=await repo(); const tab={...page,id:'local',url:'http://localhost:8123/article'};
+  try {
+    const result=await captureAndImport({port:9223,tab:'local',kind:'page',language:'',repoRoot:root,explicitPort:true,discover:async()=>[tab]},fake({ok:true,kind:'page',title:'Local',url:tab.url,body:'local body'}));
+    assert.match(await readFile(join(root,result.path),'utf8'),/http:\/\/localhost:8123\/article/);
+    await assert.rejects(()=>captureAndImport({port:9223,tab:'bad',kind:'page',language:'',repoRoot:root,explicitPort:true,discover:async()=>[{...tab,id:'bad',url:'http://example.test/a'}]},fake({ok:true,kind:'page',url:'http://example.test/a',body:'x'})),CaptureError);
+  } finally { await rm(root,{recursive:true,force:true}); }
 });
 
 test('page capture uses fixed declaration and internal importer publication', async () => {
@@ -92,5 +102,25 @@ test('launcher rejects default, unowned, unsafe-marker, and occupied profiles be
     await writeFile(join(profile,'.tad-local-wiki-owner.json'),'{}',{mode:0o600}); await assert.rejects(()=>launch({url:'about:blank',profile,port:9229,headless:true}),CaptureError);
     await rm(join(profile,'.tad-local-wiki-owner.json')); await symlink('/tmp',join(profile,'.tad-local-wiki-owner.json')); await assert.rejects(()=>launch({url:'about:blank',profile,port:9229,headless:true}),CaptureError); await rm(join(profile,'.tad-local-wiki-owner.json'));
     const server=createServer(); await new Promise(resolve=>server.listen(9234,'127.0.0.1',resolve)); await assert.rejects(()=>launch({url:'about:blank',profile,port:9234,headless:true}),CaptureError); await new Promise(resolve=>server.close(resolve));
+  } finally { await rm(root,{recursive:true,force:true}); }
+});
+
+test('launch failure terminates only its child, removes a newly created profile, and permits retry', async () => {
+  const root=await mkdtemp(join(tmpdir(),'browser-capture-retry-')); const profile=join(root,'profile'); const stopped=[];
+  try {
+    await assert.rejects(()=>launch({url:'http://localhost:8123/',profile,port:null,headless:true},{spawnImpl:()=>({pid:987654,unref(){}}),waitForReadyImpl:async()=>{throw new CaptureError('simulated readiness failure');},terminateImpl:async child=>stopped.push(child.pid)}),CaptureError);
+    await assert.rejects(()=>lstat(profile)); assert.deepEqual(stopped,[987654]);
+    const result=await launch({url:'http://localhost:8123/',profile,port:null,headless:true},{spawnImpl:()=>({pid:987653,unref(){}}),waitForReadyImpl:async()=>9333,terminateImpl:async()=>{}});
+    assert.equal(result.port,9333); assert.match(await readFile(join(profile,'.tad-local-wiki-owner.json'),'utf8'),/"port":9333/);
+  } finally { await rm(root,{recursive:true,force:true}); }
+});
+
+test('healthy owned profile is reused and supplies the default port', async () => {
+  const root=await mkdtemp(join(tmpdir(),'browser-capture-owned-')); const profile=join(root,'profile'); await mkdir(profile,{mode:0o700}); const canonical=await realpath(profile);
+  try {
+    await writeFile(join(profile,'.tad-local-wiki-owner.json'),JSON.stringify({magic:'tad-local-wiki-profile',path:canonical,pid:process.pid,port:9444,started_at:'2026-09-02T00:00:00Z'})+'\n',{mode:0o600});
+    assert.equal(await managedPort(profile,async port=>{assert.equal(port,9444);return [];}),9444);
+    const result=await launch({url:'about:blank',profile,port:null,headless:true},{discoverImpl:async port=>{assert.equal(port,9444);return [];},spawnImpl:()=>{throw new Error('must not spawn');}});
+    assert.deepEqual({pid:result.pid,port:result.port,reused:result.reused},{pid:process.pid,port:9444,reused:true});
   } finally { await rm(root,{recursive:true,force:true}); }
 });

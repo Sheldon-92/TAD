@@ -57,5 +57,8 @@ Markdown on every call, so files remain the only source of truth.
 
 Use the TAD-owned CLI with an isolated Chrome profile; it reads only the rendered DOM of the
 specific tab you select and never asks for browser credentials. Start with
-`node research/scripts/browser-capture.mjs launch https://example.com --headless`, then use
-the printed port with `tabs --port PORT` and `capture --port PORT --tab TAB_ID`.
+`node research/scripts/browser-capture.mjs launch https://example.com --headless`; the owned
+profile marker supplies the active port to `tabs` and `capture` when `--port` is omitted. Use
+`tabs`, then `capture --tab TAB_ID` (or supply `--port` explicitly for a separately selected
+owned profile). Capture accepts HTTPS pages and local fixtures only at `http://localhost`,
+`http://127.0.0.1`, or `http://[::1]`; arbitrary HTTP remains rejected.

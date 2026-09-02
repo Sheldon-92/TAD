@@ -109,7 +109,10 @@ for frontmatter. Supports `x_article/bilibili/arxiv_abs/substack/medium/generic_
 ### Native browser capture
 
 For an HTTPS page already rendered in the isolated TAD Chrome profile, use
-`node research/scripts/browser-capture.mjs capture --port PORT --tab TAB_ID`. The CLI sends
+`node research/scripts/browser-capture.mjs capture --tab TAB_ID`. The owned profile marker
+supplies the active port when `--port` is omitted; an explicit `--port` remains available for
+a separately selected owned profile. Local deterministic fixtures may use only
+`http://localhost`, `http://127.0.0.1`, or `http://[::1]`; arbitrary HTTP is rejected. The CLI sends
 only rendered Markdown metadata/body to the internal importer, never stores browser credentials,
 and routes YouTube transcript captures to `raw/transcripts/`. Search immediately with
 `python3 research/scripts/search.py query "phrase" --scope raw`.
