@@ -52,3 +52,10 @@ Use `--scope wiki|canon|raw|governance` to narrow results and `--json` for agent
 consumption. Results are local evidence locations, not generated answers: inspect the
 returned path and line range before making a claim. The index is rebuilt in memory from
 Markdown on every call, so files remain the only source of truth.
+
+## 8. Native browser capture
+
+Use the TAD-owned CLI with an isolated Chrome profile; it reads only the rendered DOM of the
+specific tab you select and never asks for browser credentials. Start with
+`node research/scripts/browser-capture.mjs launch https://example.com --headless`, then use
+the printed port with `tabs --port PORT` and `capture --port PORT --tab TAB_ID`.
