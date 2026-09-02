@@ -7,6 +7,7 @@ import argparse
 import datetime as dt
 import os
 import re
+import secrets
 import stat
 import sys
 from pathlib import Path, PurePosixPath
@@ -90,6 +91,20 @@ def _keywords(raw: str) -> list[str] | None:
     return [value for value in values if value is not None]
 
 
+def _block_keywords(lines: list[str]) -> list[str]:
+    if not lines or len(lines) > 50:
+        raise ImportError("keywords must be a bounded quoted-string list")
+    values: list[str] = []
+    for line in lines:
+        if not line.startswith("  - "):
+            raise ImportError("unsupported keywords block structure")
+        value = _scalar(line[4:], key="keywords")
+        if value is None:
+            raise ImportError("unsafe keywords")
+        values.append(value)
+    return values
+
+
 def parse_clip(text: str) -> tuple[dict[str, object], str]:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     if not text.startswith("---\n"):
@@ -102,7 +117,10 @@ def parse_clip(text: str) -> tuple[dict[str, object], str]:
     if not body.strip():
         raise ImportError("input body is empty")
     parsed: dict[str, object] = {}
-    for line in frontmatter.splitlines():
+    lines = frontmatter.splitlines()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
         if not line or line[0].isspace() or ":" not in line:
             raise ImportError("unsupported frontmatter structure")
         key, raw = line.split(":", 1)
@@ -110,7 +128,16 @@ def parse_clip(text: str) -> tuple[dict[str, object], str]:
             raise ImportError(f"unsupported or duplicate frontmatter key: {key}")
         if any(token in raw for token in ("!", "&", "*", "|", ">")):
             raise ImportError("YAML tags, anchors, aliases, and block scalars are not allowed")
+        if key == "keywords" and not raw.strip():
+            index += 1
+            block: list[str] = []
+            while index < len(lines) and lines[index].startswith("  "):
+                block.append(lines[index])
+                index += 1
+            parsed[key] = _block_keywords(block)
+            continue
         parsed[key] = _keywords(raw) if key == "keywords" else _scalar(raw, key=key)
+        index += 1
     missing = REQUIRED_KEYS - parsed.keys()
     if missing or any(not parsed[key] for key in REQUIRED_KEYS):
         raise ImportError("title, source_url, and saved_at are required")
@@ -196,16 +223,22 @@ def _safe_publish(repo_root: Path, destination: Path, content: bytes) -> Path:
     try:
         for index in range(1000):
             target_name = destination.name if index == 0 else f"{stem}-{index}{suffix}"
-            temp_name = f".import-clip-{os.getpid()}-{index}"
+            temp_name = f".import-clip-{os.getpid()}-{secrets.token_hex(8)}"
             temp_fd = None
             try:
                 temp_fd = os.open(temp_name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o600, dir_fd=directory_fd)
-                os.write(temp_fd, content)
+                written = 0
+                while written < len(content):
+                    count = os.write(temp_fd, content[written:])
+                    if not isinstance(count, int) or count <= 0:
+                        raise ImportError("short write while publishing clip")
+                    written += count
                 os.fsync(temp_fd)
                 os.close(temp_fd)
                 temp_fd = None
                 os.link(temp_name, target_name, src_dir_fd=directory_fd, dst_dir_fd=directory_fd, follow_symlinks=False)
                 os.unlink(temp_name, dir_fd=directory_fd)
+                os.fsync(directory_fd)
                 return destination.with_name(target_name)
             except FileExistsError:
                 continue

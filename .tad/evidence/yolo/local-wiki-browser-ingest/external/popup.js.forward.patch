@@ -1,8 +1,8 @@
 diff --git a/.tad/evidence/yolo/local-wiki-browser-ingest/external/popup.js.before "b/Users/sheldonzhao/01-on progress programs/\344\270\213\350\275\275md\346\217\222\344\273\266/web-to-markdown/popup/popup.js"
-index 6487654d..37271320 100644
+index 6487654d..85646173 100644
 --- a/.tad/evidence/yolo/local-wiki-browser-ingest/external/popup.js.before
 +++ "b/Users/sheldonzhao/01-on progress programs/\344\270\213\350\275\275md\346\217\222\344\273\266/web-to-markdown/popup/popup.js"	
-@@ -554,58 +554,85 @@ async function handleYouTubeDownload() {
+@@ -554,58 +554,95 @@ async function handleYouTubeDownload() {
        world: 'MAIN',
        args: [langCode],
        func: async (targetLang) => {
@@ -106,10 +106,20 @@ index 6487654d..37271320 100644
 +          settle({ ok: true, text, length: text.length });
 +        };
 +        const fetchWrapper = async function(input) {
-+          const response = await origFetch.apply(this, arguments);
++          let response;
++          try {
++            response = await origFetch.apply(this, arguments);
++          } catch (error) {
++            const url = typeof input === 'string' ? input : input?.url || '';
++            if (isTrustedTimedtextUrl(url)) settle({ ok: false, error: 'Subtitle request failed' });
++            throw error;
++          }
 +          const url = typeof input === 'string' ? input : input?.url || '';
 +          if (isTrustedTimedtextUrl(url)) {
-+            try { capture(await response.clone().text()); }
++            const declaredLength = Number(response.headers?.get?.('content-length'));
++            if (Number.isFinite(declaredLength) && declaredLength > MAX_CAPTURE_BYTES) {
++              settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
++            } else try { capture(await response.clone().text()); }
 +            catch (_) { settle({ ok: false, error: 'Subtitle response could not be read' }); }
            }
 +          return response;
@@ -139,7 +149,7 @@ index 6487654d..37271320 100644
  
            // Ensure video is playing (captions only load during playback)
            if (player.getPlayerState && player.getPlayerState() !== 1) {
-@@ -620,22 +647,19 @@ async function handleYouTubeDownload() {
+@@ -620,22 +657,19 @@ async function handleYouTubeDownload() {
            // Set caption track to trigger timedtext fetch
            player.setOption('captions', 'track', { languageCode: targetLang });
  

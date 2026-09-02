@@ -12,10 +12,10 @@ gate3_verdict:
 |---|---|---|
 | AC1 | PASS | `test_article_maps_to_raw_articles_and_preserves_body` |
 | AC2 | PASS | `test_youtube_routes_to_transcripts_and_searches_timestamp_body` |
-| AC3 | PASS | invalid URL/frontmatter, size, symlink, and output escape tests |
-| AC4 | PASS | collision test verifies no overwrite and no temporary residue |
-| AC5 | PASS | `npm test` runs the focused capture lifecycle contract and syntax check |
-| AC6 | PASS | 20 Python tests, canon lint, deterministic generation, extension npm suite |
+| AC3 | PASS | invalid URL/frontmatter, invalid UTF-8, size, input/destination symlinks, and output escape tests |
+| AC4 | PASS | collision and five concurrent importers verify no overwrite, complete files, and no temporary residue |
+| AC5 | PASS | `npm test` executes the exact shipped serialized capture function in a VM for success, missing/throw/timeout/rejection/re-entry/oversize/XHR cleanup |
+| AC6 | PASS | 23 Python tests, canon lint, deterministic generation, extension npm suite |
 | AC7 | PASS | `research/canon/README.md` documents authorized two-step import and first-use behavior |
 | AC8 | experimental_degraded | Probe attempted: no managed Chrome/Chromium or Playwright is installed. No browser automation was added; deterministic bridge remains verified. |
 
@@ -24,12 +24,12 @@ gate3_verdict:
 - `research/scripts/import-clip.py`: stdlib-only, no-follow input/desination traversal, closed metadata grammar, non-overwriting atomic publication, article/transcript routing.
 - Fixtures and focused unittest coverage for article, YouTube, failure cases, collisions, CLI dry-run, and existing raw search.
 - `popup.js`: exact trusted YouTube timedtext endpoint validation, 5 MiB cap, owned API cleanup, and re-entry rejection.
-- External pre-image and forward/reverse patch evidence under `.tad/evidence/yolo/local-wiki-browser-ingest/external/`.
+- Full external rollback manifest, pre/post digests, and forward/reverse patches under `.tad/evidence/yolo/local-wiki-browser-ingest/external/`.
 
 ## Layer 1 commands
 
 ```text
-python3 -m unittest -v research.tests.test_import_clip research.tests.test_search  # 20/20 PASS
+python3 -m unittest -v research.tests.test_import_clip research.tests.test_search  # 23/23 PASS
 bash research/canon/lint.sh                                                       # PASS
 diff <(python3 research/scripts/generate.py --emit all) <(python3 research/scripts/generate.py --emit all)  # exit 0
 npm test --prefix /Users/sheldonzhao/01-on progress programs/下载md插件/web-to-markdown  # ALL PASS
@@ -38,8 +38,7 @@ npm test --prefix /Users/sheldonzhao/01-on progress programs/下载md插件/web-
 ## External change integrity
 
 - Pre-image / backup SHA-256: `7f873c78a850ed491c087373d18eedf4e3a6f5fedd134627a84f3b05770eee73`.
-- Post-image SHA-256: recorded in `external/popup.js.after.sha256`.
-- Reversible patches: `external/popup.js.forward.patch` and `external/popup.js.reverse.patch`.
+- Full three-file recovery material is listed in `external/rollback-manifest.md`.
 - External project has no Git repository; only `popup/popup.js`, its focused test, and test runner were changed.
 
 ## Friction Status
