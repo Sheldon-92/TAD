@@ -19,10 +19,11 @@ node research/scripts/browser-capture.mjs capture [--tab ID] [--kind auto|page|y
 ```
 
 `launch` uses a dedicated profile outside the repository, defaulting to
-`~/.tad-browser/local-wiki-profile`, and loopback CDP. It never attaches to the default
-Chrome profile. The user may log into that isolated browser normally when an authorized
-page requires it. Capture never requests credentials and never accesses cookies, local
-storage, request headers, or Chrome profile files.
+`~/.tad-browser/local-wiki-profile`, and loopback CDP on a Chrome-selected random port. It
+creates a restrictive ownership marker and reuses only a marked TAD profile; it rejects the
+default Chrome profile and unowned pre-existing directories. The user may log into that
+isolated browser normally when an authorized page requires it. Capture never requests
+credentials and never accesses cookies, local storage, request headers, or profile files.
 
 ## Why this architecture
 
@@ -37,4 +38,3 @@ The prior external extension dependency was a product error. All three external 
 were reversed and their original hashes reverified before this decision was implemented.
 The earlier importer remains internal plumbing and testable file import fallback, not a
 required companion application.
-

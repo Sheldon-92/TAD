@@ -1,4 +1,7 @@
-# Design — Local Wiki Phase 3 Browser Ingest Bridge
+# SUPERSEDED Design — Local Wiki Phase 3 Browser Ingest Bridge
+
+> Runtime dependency rejected by Human on 2026-09-02. Kept only as audit history;
+> replaced by `DESIGN-20260902-local-wiki-native-capture.md`.
 
 ## User flow
 

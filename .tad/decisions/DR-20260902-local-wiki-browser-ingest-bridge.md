@@ -1,6 +1,9 @@
 # DR-20260902 — Local Wiki Browser Ingest Bridge
 
-**Status:** Accepted by Human on 2026-09-02
+**Status:** Superseded by Human correction on 2026-09-02
+
+> The Markdown importer remains useful internal plumbing, but the separate extension is
+> not an accepted runtime dependency. See `DR-20260902-local-wiki-native-browser-capture.md`.
 
 ## Context
 
@@ -47,4 +50,3 @@ frontmatter.
 - Fetch YouTube captions directly from Local Wiki: public captions require page-specific
   player context and are prone to access/token drift.
 - Add an MCP server: needless process and protocol overhead for a one-user inner loop.
-

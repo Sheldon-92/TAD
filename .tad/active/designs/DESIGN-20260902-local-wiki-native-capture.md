@@ -30,10 +30,21 @@ machinery until a real failure demonstrates the need.
 
 ## Browser lifecycle
 
-`launch` starts installed Chrome with `--remote-debugging-port=9223`, loopback binding, and a
-dedicated user-data directory. `capture` never starts or kills a browser implicitly. Existing
-process ownership remains clear. `tabs`/`capture` reject non-page/devtools targets and unsafe
-CDP endpoints. Tests use a fake local CDP server; live proof uses a temporary profile/port.
+`launch` starts installed Chrome with `--remote-debugging-address=127.0.0.1`, a random port
+(`--remote-debugging-port=0`), and a dedicated user-data directory. A 0600 ownership record
+inside a 0700 profile binds the TAD marker, canonical path, PID, port, and start time. Existing
+marked profiles may be reused; unmarked/pre-existing or known default Chrome profiles are
+rejected. An occupied explicit port fails before launch. `capture` never starts or kills a
+browser implicitly. Explicit `--port` connections are external and require exact `--tab`.
+
+Only a unique eligible page may be captured without `--tab`; multiple eligible targets fail
+closed. Discovery is repeated immediately before extraction and the page extractor checks
+its current URL and kind against structured expected arguments. Fixed function declarations
+are invoked with `Runtime.callFunctionOn`; no CLI value is concatenated into JavaScript.
+
+Deterministic tests use an injected `CdpTransport` seam and the actual publication adapter,
+not a fake WebSocket implementation. Transport framing/close behavior is tested at the client
+unit boundary; a real temporary Chrome covers the actual WebSocket/CDP integration.
 
 ## Scope discipline
 
@@ -42,3 +53,11 @@ art, but there is no runtime path, filesystem lookup, or installation instructio
 to it. One public YouTube probe is sufficient; authenticated-page behavior uses a local
 rendered fixture because no private source was supplied.
 
+## Frozen bounds
+
+- CDP/connect/extract timeout: 15 seconds per operation.
+- WebSocket message and returned UTF-8 payload: 6 MiB and 5 MiB respectively.
+- DOM traversal: 50,000 nodes; output: 5 MiB UTF-8.
+- Player scan: at most 50 scripts and 5 MiB per candidate script.
+- Subtitle payload: 5 MiB and at most 100,000 events.
+- Language: 2–3 ASCII letters plus optional 2–8 alphanumeric subtags, total ≤35 chars.
