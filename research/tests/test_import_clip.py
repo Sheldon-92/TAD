@@ -43,6 +43,14 @@ class ImportClipTests(unittest.TestCase):
             results = local_search.search("Agent memory starts", scope="raw", repo_root=root)
             self.assertEqual(results[0].path, "research/raw/transcripts/a-public-youtube-transcript.md")
 
+    def test_loopback_http_clip_is_allowed_but_remote_http_is_rejected(self) -> None:
+        content = '---\ntitle: "Local fixture"\nsource_url: "http://localhost:8123/article"\nsaved_at: "2026-09-02T00:00:00Z"\n---\nbody\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); init_root(root)
+            source = root / "local.md"; source.write_text(content, encoding="utf-8")
+            output = import_clip.import_clip(source, root, None, False)
+            self.assertIn('original_url: "http://localhost:8123/article"', output.read_text(encoding="utf-8"))
+
     def test_invalid_input_rejected_without_output(self) -> None:
         cases = {
             "bad-url.md": '---\ntitle: "x"\nsource_url: "http://example.test"\nsaved_at: "2026-09-02T00:00:00Z"\n---\nbody\n',

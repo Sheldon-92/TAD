@@ -1,6 +1,6 @@
 # EPIC-20260902 — Local Wiki Browser Ingest Bridge
 
-**Status:** Complete — Phase 3 Gate 4 PASS on 2026-09-02
+**Status:** Superseded — runtime dependency rejected by Human on 2026-09-02
 **Previous:** Local Wiki Phase 2 Retrieval, Gate 4 PASS at `cbbb0303`
 **Decision:** `.tad/decisions/DR-20260902-local-wiki-browser-ingest-bridge.md`
 
@@ -46,3 +46,10 @@ local command. The imported file is immediately searchable and retains provenanc
 4. No cookies, authorization headers, or browser credentials are written into imported files.
 5. Existing Local Wiki and extension deterministic tests remain green.
 6. Experimental/live drift may degrade that adapter honestly; it does not block the completed local bridge.
+
+## Supersession
+
+The bridge architecture depended on a separate browser extension at runtime and therefore
+did not internalize the research capability. Its importer remains reusable plumbing, but
+the product acceptance is revoked. The external extension was restored exactly; the native
+replacement is `EPIC-20260902-local-wiki-native-capture.md`.

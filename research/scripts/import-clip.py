@@ -143,8 +143,9 @@ def parse_clip(text: str) -> tuple[dict[str, object], str]:
         raise ImportError("title, source_url, and saved_at are required")
     url = str(parsed["source_url"])
     pieces = urlparse(url)
-    if pieces.scheme != "https" or not pieces.netloc or pieces.username or pieces.password:
-        raise ImportError("source_url must be a credential-free HTTPS URL")
+    loopback_http = pieces.scheme == "http" and (pieces.hostname or "").lower() in {"localhost", "127.0.0.1", "::1"}
+    if (pieces.scheme != "https" and not loopback_http) or not pieces.netloc or pieces.username or pieces.password:
+        raise ImportError("source_url must be credential-free HTTPS or loopback HTTP")
     try:
         dt.datetime.fromisoformat(str(parsed["saved_at"]).replace("Z", "+00:00"))
     except ValueError as exc:
