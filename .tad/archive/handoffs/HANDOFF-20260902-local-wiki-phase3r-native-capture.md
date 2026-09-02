@@ -51,8 +51,8 @@ It is prior art only and has already been restored.
 
 ## 4. CLI contract
 
-- `launch [URL] [--port N] [--profile PATH] [--headless]`: accept only HTTPS URL or
-  `about:blank`; start Chrome with an explicit owned non-default profile and
+- `launch [URL] [--port N] [--profile PATH] [--headless]`: accept only HTTPS URL,
+  explicit loopback HTTP (`localhost`, `127.0.0.1`, `[::1]`), or `about:blank`; start Chrome with an explicit owned non-default profile and
   `--remote-debugging-address=127.0.0.1`. Default port 0 lets Chrome choose a free port.
   Print only PID/port/profile, never a debugger WebSocket URL.
 - `tabs [--port N] [--json]`: use loopback CDP discovery, show only page targets with id/title/url.
@@ -102,6 +102,9 @@ It is prior art only and has already been restored.
   creates/reuses only a 0700 TAD-owned profile with a 0600 marker containing magic, canonical
   path, PID, port, and start time. It never kills a pre-existing Chrome. Capture never controls
   unrelated tabs beyond the chosen target.
+- Without `--port`, `tabs` and `capture` resolve the port only from a healthy owned-profile
+  marker. A healthy existing profile is reused. Failed launch terminates only the child/process
+  group created by that invocation and restores or removes its own profile state for retry.
 
 ## 7. Acceptance criteria
 
