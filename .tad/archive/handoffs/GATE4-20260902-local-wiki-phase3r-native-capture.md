@@ -3,6 +3,7 @@
 **Date:** 2026-09-02
 **Verdict:** PASS
 **Accepted product commit:** `7cce3f78`
+**Evidence repair:** `f235e377` (test-only AC scan self-leak)
 
 ## Business acceptance
 

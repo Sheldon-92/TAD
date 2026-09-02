@@ -2,6 +2,7 @@
 
 **Date:** 2026-09-02
 **Product commit:** `7cce3f78`
+**Final evidence fix:** `f235e377` (AC1 scan self-leak only)
 **Verdict:** PASS
 
 ## Layer 1
@@ -29,6 +30,10 @@ and `f8e3556ab78f68fbd78dfba038b89e109e02225e4e6a7be0b95c3eff6ea5d95f`.
 
 All nine acceptance criteria are satisfied. The live YouTube result is a declared experimental
 limitation, not a hidden fallback or a claim of live success.
+
+Final mainline replay confirmed the literal AC1 repository scan returns zero. The test preserves
+the same negative dependency assertion by constructing its forbidden names at runtime rather than
+self-leaking those names into the scanned tree.
 
 `audit-yolo.sh` is informationally incompatible with the corrective `phase3r-*` naming: it
 parses `phase3r-grounding.md` as a phase identifier and searches for synthetic
