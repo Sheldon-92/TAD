@@ -12,9 +12,22 @@
 
 ## 🔴 优先队列（一个一个做，不并行）
 
-### ⭐ 0-NEW. **EPIC-20260824-yolo2-verified-orchestration v3** —— Phase 3 local deterministic complete; Codex-only progressive qualification approved
+### ✅ DONE 2026-09-02. Local Wiki native browser capture
 
-- **Epic**: `.tad/active/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4 phases, 1/4)
+- TAD now owns the Node/Chrome-CDP capture path; the external download-Markdown plugin is prior art only and is not a runtime dependency.
+- Gate 4 PASS at product `7cce3f78`; final AC scan repair `f235e377`; Node 12/12 and Python 24/24 PASS.
+- Real rendered-page capture is accepted. Public YouTube captions remain experimental and degrade honestly on first-use failure.
+
+### ⏸ PARKED. **EPIC-20260831-capability-builder-v1** — Phase 1/4 accepted; `evolve` not started
+
+- **Epic**: `.tad/active/epics/EPIC-20260831-capability-builder-v1.md`
+- **Phase 1**: Gate 4 PASS on 2026-09-02 at implementation `2d7e359b`; project-owned Skill create/validate/project/behavioral-proof path is available.
+- **Next boundary**: Phase 2 `evolve` requires a separate human decision plus a concrete failure, correction, regression, external change, or explicit new requirement. Do not start it automatically.
+- **Accepted P2s**: conservative stale-lock recovery, large-tree hash process cost, and eval-regex resource bounds.
+
+### ✅ DONE 2026-09-01. **EPIC-20260824-yolo2-verified-orchestration** —— 4/4 accepted, remains opt-in
+
+- **Epic**: `.tad/archive/epics/EPIC-20260824-yolo2-verified-orchestration.md` (4/4 accepted)
 - **Reset decision**: `.tad/decisions/DR-20260824-yolo2-vertical-slice-first.md`
 - **Status**: old 1,171-line Phase-1 verifier handoff is archived as SUPERSEDED and must not go to Blake; Cycle 6 is cancelled as a product path, not repaired locally.
 - **Why reset**: five Gate-2 cycles optimized AST/VM/verifier safety before any real compact/kill/resume YOLO behavior existed. State integrity was strong, but semantic re-entry and final-quality non-regression were not first-class outcomes.
@@ -24,8 +37,15 @@
 - **Decision**: human confirmed Epic v2 on 2026-08-24 (option 1).
 - **Phase 3 P3-R1 decision (2026-09-01)**: Codex live `strict` is sufficient for the
   core release. Claude Code, OpenCode, and DeepSeek are experimental adapters and are
-  qualified on first use; they no longer block Phase 3. Provider calls remain blocked
-  until a bounded Codex-only mandate is signed.
+  qualified on first use; they no longer block Phase 3. The bounded Codex-only mandate
+  was subsequently exercised by Alex with two calls and zero retries.
+- **Phase 3 acceptance (2026-09-01)**: Alex independently completed two bounded Codex
+  calls and proved native fresh/resume state recovery. Human accepted the limited core
+  with runner packet injection and native resume argv wiring explicitly deferred to
+  first actual automated use. No further provider calls are pending for Phase 3.
+- **Phase 4 closure (2026-09-01)**: human selected immediate opt-in closure. The
+  original 50–100 trajectory program is retained only as a future default-on proof
+  requirement; it was not run. Epic closed with zero new provider calls/tests.
 - **Phase 1 archive**: `.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md` + matching COMPLETION.
 - **🟢 Gate 3 substance PASS 2026-08-25**: current HEAD `4d9039c9`; runtime/dogfood/reviewer blockers closed.
 - **✅ Gate 4 PASS 2026-08-25**: round-3 fix `7b12d429` makes lifecycle must-appear assertions follow the resolved pair. Alex independently passed active, simulated-archive, disposable committed-archive, and final real post-archive full suites (10/10, exit 0). The checker rejects absent, incomplete, duplicate, and split lifecycle states; recovery runtime and dogfood remained unchanged.

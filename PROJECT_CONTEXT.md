@@ -2,11 +2,11 @@
 
 ## Current State
 - **Version**: 2.42.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
-- **Last Updated**: 2026-08-30
+- **Last Updated**: 2026-09-02
 - **Framework**: TAD v2.42.0 + Full-default/Lite-frozen + 25 Capability Packs + Dual-Platform (Claude Code + Codex) + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
-- **EPIC: YOLO 2.0 Verified Orchestration** — Phase 1 ✅ Gate 4 accepted. Phase 2 implementation and durable dogfood are complete, but Gate 3 remains blocked on the amended AC-B scope proof: the shared baseline includes the now-accepted unrelated Local Wiki commit. Reconcile the scope boundary without widening the allowlist or reverting Local Wiki, then rerun Group 0 and Layer 2.
+- **EPIC: Capability Builder v1** — Phase 1/4 Gate 4 accepted on 2026-09-02 at `2d7e359b`. TAD now provides bounded creation of project-owned Agent Skills with canonical `.agents` ownership, safe `.claude` projection, and fresh behavioral proof. Phase 2 `evolve` is planned but parked; it requires separate human authorization and a concrete evolution signal.
 - **EPIC: Full 能力提取与硬退休** — Phases 1–3b done. Phase 3b Lite Authority Model v2 is Gate 4 accepted and archived at `80413f8` (**pushed — verified on `origin/main` 2026-08-16**): outcome-level Execution Mandates replace per-command approval; effective authority is `Lite role ∩ capability skill ∩ accepted mandate`; handoff-owned transaction CAS, closed boundary-change enum, four-plane zero-touch evidence. Two Gate 4 repair rounds — round 1 caught an AC7 false PASS (self-certifying fixture matrix) and a revision-1 mandate that mis-encoded "one commit" as human blast radius. **Phase 3c (live Lite-only publish+sync dogfood) is READY and is the Epic's first outward-writing phase** — 3b performed no push/tag/publish/sync/registry write at all. ⚠️ Carry: AC8 Lite-core budget has 2 bytes of headroom (52,198 / 52,200); deferred by user until 3c hits it. No active implementation handoff remains.
 - ~~EPIC: AI-Native Reading Companion~~ (20260613) — **COMPLETE 4/4** (Phase 4 sinks + multi-format shipped in `5efca79`; corrected 2026-08-16 — this entry had been stale at "3/4 planned" while the code was committed and tracked). ⚠️ Remaining carry: real-browser visual co-read still UNVERIFIED (carry to first real-book use).
 - ~~EPIC: Self-Evolution Pruning~~ — **COMPLETE + ARCHIVED 2026-06-10** (3/3 phases same-day). dream/evolve/optimize/skillify retired by measurement; 3-tier skill formalization live (T1 ceremony dogfooded in Colin, T2 skill-library ×2 refs, T3 via *harvest collisions); Alex SKILL -1872 lines; layer2-audit fail-closed. L2: "Claims Need Carriers".
@@ -19,7 +19,18 @@
 
 ## Recently Completed
 
+- **Local Wiki Native Browser Capture** (2026-09-02) — Gate 4 PASS and archived. TAD now launches/reuses an isolated owned Chrome profile and captures rendered HTTPS/loopback pages into Local Wiki through repository-owned Node/CDP code. No runtime dependency remains on the external download-Markdown plugin. Final checks: Node 12/12, Python 24/24, real Chrome page PASS, two independent reviewers P0/P1/P2=0. Public YouTube caption capture remains experimental and fails closed without fallback when the site does not expose a usable transcript.
+
+- **Capability Builder v1 — Phase 1 Create** (2026-09-02) — Gate 4 PASS and archived. Delivered project-owned Agent Skill creation without changing TAD core or legacy Capability Packs; 12/12 ACs, 54/54 structural cases, and 7/7 eval compatibility passed. Accepted P2s are stale-lock recovery after hard crashes, large-tree hash cost, and eval-regex resource bounds.
+
+- **YOLO 2.0 Verified Orchestration** (2026-09-01) — COMPLETE 4/4 and archived.
+  Phase 1 recovery slice, Phase 2 bounded quality loop, and Phase 3 limited cross-harness
+  core were accepted; Alex independently proved Codex native fresh/resume. Phase 4
+  closed by human product decision to remain opt-in instead of running a speculative
+  50–100 trajectory default-on campaign. Experimental adapters and two runner wiring
+  steps remain first-use deferred and are not claimed complete.
 - **Local Wiki Research Framework** (2026-08-30) — Gate 4 PASS. Replaced the unavailable NotebookLM-primary chain with a file-is-truth `raw → canon → wiki` workflow while preserving `*research` entry points. All 10 ACs passed, Iron Rule negatives were discriminative, generation was idempotent, 34 notebooks were archived locally, and dual reviewers closed at P0=0/P1=0. Product commit `3ee3915d`, mainline equivalent `f967276f`.
+- **Local Wiki Phase 2 Retrieval Foundations** (2026-09-01) — Gate 4 PASS and archived. Added stdlib-only local FTS5 retrieval with text/JSON output, scope filters, exact citations, path/symlink safety, and an 8-query checked-in evaluation set. Final quality: 14/14 tests, Recall@5 1.0, MRR 0.9375; merged to main at `cbbb0303`. Video/audio ingestion is the optional Phase 3; a persisted/vector index is conditional on measured need.
 
 - **Full retirement Phase 3a — Release capability migration** (2026-08-10) — Gate 4 PASS at `cabe287`; AC1–AC11, 27 behavior IDs, 6 forward cases, and 10/10 negative groups passed. Source-guard ordering and literal/symlink self-target rejection were independently re-reviewed at P0/P1/P2=0. Claude/Agents mirrors are byte-identical; live mutation count remained 0 across 14 sealed targets. Handoff/completion archived; no push, tag, publish, or sync performed.
 
@@ -83,5 +94,5 @@
 - **PUSH decision**: 41 commits ahead of origin (both Alexes' work) — outward-facing, confirm before pushing
 - Scout-identified optimization directions (evidence-backed, non-colliding): ~~(B) fix self-evolution loop 0% close-rate~~ → RESOLVED differently 2026-06-10: loops retired by EPIC self-evolution-pruning (measured-yield decision), not fixed; (C) architecture.md leanness — consolidate May surge via Supersedes: pattern (~5-7K tokens/session saved); (D/E/F) safety bundle — Blake distinct-reviewer false-PASS + research-source provenance + trace TRACE_DETAIL truncation bug
 - Behavioral eval remaining 13 capability packs (lean-trustworthy P5 follow-up)
-- Local Wiki follow-ups: Phase 2 video/audio ingest and Phase 3 vector retrieval remain separately scoped future work.
+- Local Wiki follow-up: retrieval and native rendered-page capture are complete. Public YouTube captions are experimental-on-first-use; audio download/Whisper and persisted/vector retrieval remain deferred until measured need.
 - Pack collision follow-up: escalate-form one-liner should also carry loser quote; new packs may add licensing/cost collision categories

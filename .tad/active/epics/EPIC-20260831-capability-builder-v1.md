@@ -12,7 +12,7 @@ Give any TAD-enabled subproject a TAD-native way to create, evolve, and optional
 
 ## Success Criteria
 
-- [ ] A downstream project can create one locally owned Agent Skill at `.agents/skills/<name>/`, validate it, project it mechanically to `.claude/skills/<name>/`, and prove behavioral value with a fresh WITH/CONTROL run.
+- [x] A downstream project can create one locally owned Agent Skill at `.agents/skills/<name>/`, validate it, project it mechanically to `.claude/skills/<name>/`, and prove behavioral value with a fresh WITH/CONTROL run.
 - [ ] A validated Skill can evolve fixture-first without regressing its prior behavior.
 - [ ] A project owner can explicitly package one validated Skill into one OpenAI Plugin without creating a second editable copy of the Skill.
 - [ ] Voice Studio materializes `eval-page-generator` from its accepted SCAND and completes the end-to-end Builder workflow.
@@ -46,7 +46,7 @@ Status and progress are computed from the Phase Map:
 ### Phase 1: Create
 
 **Status:** ✅ Done
-**Execution:** implementation complete; awaiting Gate 3/4
+**Execution:** Gate 4 accepted and archived on 2026-09-02
 
 #### Scope
 
@@ -62,12 +62,12 @@ A discoverable `$capability-builder` entry with create protocol, a compatibility
 
 #### Acceptance Criteria
 
-- [ ] A valid fixture project produces `.agents/skills/example-skill/SKILL.md` and byte-identical `.claude/skills/example-skill/SKILL.md`; `diff -rq` exits 0.
-- [ ] Invalid YAML/frontmatter, folder/name mismatch, unresolved scaffold placeholders, and a divergent existing `.claude` target each produce a non-zero validation/projection result without overwriting either tree.
-- [ ] A fresh no-Skill CONTROL fails its discriminative threshold and a fresh WITH-Skill run passes it; both raw outputs and the recomputed verdict live under `.tad/evidence/acceptance-tests/capability-builder-create/`.
-- [ ] Existing `pack-eval-runner.sh` single-fixture behavior remains backward compatible for legacy `pack:` fixtures while accepting the new Skill fixture label.
-- [ ] Scope proof shows no changes to `tad.sh`, `.claude/skills/alex/`, `.claude/skills/blake/`, `.claude/skills/gate/`, or `.tad/capability-packs/`.
-- [ ] Builder output contains no `CAPABILITY.md`, generated README, generated CHANGELOG, or per-Skill `install.sh`.
+- [x] A valid fixture project produces `.agents/skills/example-skill/SKILL.md` and byte-identical `.claude/skills/example-skill/SKILL.md`; `diff -rq` exits 0.
+- [x] Invalid YAML/frontmatter, folder/name mismatch, unresolved scaffold placeholders, and a divergent existing `.claude` target each produce a non-zero validation/projection result without overwriting either tree.
+- [x] A fresh no-Skill CONTROL fails its discriminative threshold and a fresh WITH-Skill run passes it; both raw outputs and the recomputed verdict live under `.tad/evidence/acceptance-tests/capability-builder-create/`.
+- [x] Existing `pack-eval-runner.sh` single-fixture behavior remains backward compatible for legacy `pack:` fixtures while accepting the new Skill fixture label.
+- [x] Scope proof shows no changes to `tad.sh`, `.claude/skills/alex/`, `.claude/skills/blake/`, `.claude/skills/gate/`, or `.tad/capability-packs/`.
+- [x] Builder output contains no `CAPABILITY.md`, generated README, generated CHANGELOG, or per-Skill `install.sh`.
 
 #### Files Likely Affected
 
@@ -90,6 +90,8 @@ None. This is the first independently useful delivery.
 #### Notes
 
 Framework-owned skills keep TAD's existing `.claude → .agents` release invariant. Builder-created target-project skills use `.agents → .claude`; the existing framework-owned/target-only local-skill distinction prevents TAD updates from taking ownership. The implementation must preserve useful deep-research material from `capability-upgrade` behind conditional progressive disclosure rather than deleting it.
+
+Completed: 2026-09-02, Handoff: `HANDOFF-20260831-capability-builder-phase1-create.md`, Commit: `2d7e359b765f1f05896b4b41cd442662791b003e`. Gate 4 PASS with 12/12 ACs, 54/54 structural cases, and 7/7 eval-compat cases. Accepted P2 follow-ups remain non-blocking.
 
 ### Phase 2: Evolve
 
@@ -219,25 +221,35 @@ Phase 4 is executed from the Voice Studio project under its own TAD boundary. If
 
 ### Completed Work Summary
 
-- None. Epic approved; Phase 1 design is next.
+- Phase 1 Create is Gate 4 accepted. TAD can now create one project-owned Agent Skill,
+  validate its canonical `.agents` tree, project it safely to `.claude`, and prove value
+  with fresh discriminative WITH/CONTROL evidence.
 
 ### Decisions Made So Far
 
 - New work retires Capability Pack as an artifact concept; `Capability` remains the outcome, Agent Skill the canonical carrier, and OpenAI Plugin an optional wrapper.
 - Source projects own their Skills. TAD supplies the build/evolve/package workflow but does not absorb domain content.
 - Existing 25 Capability Packs remain legacy and out of scope until a later retirement program.
+- Phase 1 deliberately uses cooperative local locking and bounded one-Skill fixture trees;
+  stale-lock recovery and large-tree hashing remain non-blocking future hardening.
 
 ### Known Issues / Carry-forward
 
 - Codebase-memory MCP was unavailable during initial discovery; exact shell/config paths were verified by bounded local reads instead.
 - Current `pack-eval-runner.sh` terminology is legacy, but its single-fixture discriminative assertion is reusable. Renaming or replacing it is explicitly not required for Phase 1.
+- Phase 1 accepted P2s: SIGKILL may leave a conservative stale lock; acceptance hashing is per-file; eval-regex resource complexity is unbounded.
 
 ### Next Phase Scope
 
-Complete Phase 1 detailed architecture, Gate 1, handoff drafting, and expert review without implementing the Builder.
+Phase 2 `evolve` remains planned but parked. It requires a separate human decision and
+a concrete evolution signal; Phase 1 acceptance does not authorize automatic start.
 
 ---
 
 ## Notes
 
 The user explicitly rejected a TAD-wide architecture change. Every phase is constrained to the capability-development surface, and each phase must independently prove that core TAD behavior remains unchanged.
+
+**Parked by Human — 2026-09-02:** Phase 1 already provides the usable core capability.
+Keep this Epic in `active/epics/` as parked context; do not start Phases 2–4 until
+real downstream use creates a concrete need and the Human explicitly resumes it.

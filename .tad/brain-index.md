@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-08-30 19:29
+Generated: 2026-09-02 14:23
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -28,6 +28,7 @@ Generated: 2026-08-30 19:29
 | Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report |
 | Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5 |
 | AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands |
+| Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
 | Pack Build Rules | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope, cross-cutting rules, quality delta, capability pack, SKILL.md install, skill-vs-MCP boundary, judgment-vs-capability |
 | Pack Evaluation | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check |
@@ -60,14 +61,12 @@ Generated: 2026-08-30 19:29
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Add an opt-in Phase-2 round contract to the accepted Phase-1 recovery recorder. |
-| HANDOFF-20260827-yolo2-phase2-completion.md | code |  |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260816-framework-health-repair.md | **Epic ID**: EPIC-20260816-framework-health-repair |
-| EPIC-20260824-yolo2-verified-orchestration.md | **Epic ID**: EPIC-20260824-yolo2-verified-orchestration   |
+| EPIC-20260831-capability-builder-v1.md | **Epic ID**: EPIC-20260831-capability-builder-v1 |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -82,5 +81,12 @@ Generated: 2026-08-30 19:29
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260902-local-wiki-phase3r-native-capture.md | mixed | Handoff — Local Wiki Phase 3R Native Browser Capture |
+| HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
+| HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
+| HANDOFF-20260901-local-wiki-phase2-retrieval.md | code | HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations |
+| HANDOFF-20260831-capability-builder-phase1-create.md | mixed | Handoff: Capability Builder v1 — Phase 1 Create |
 | HANDOFF-20260828-local-wiki-research-framework.md | code | HANDOFF-20260828-local-wiki-research-framework |
+| HANDOFF-20260827-yolo2-phase2-completion.md | code | HANDOFF-20260827-yolo2-phase2-completion |
+| HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Handoff: YOLO 2.0 Phase 2 — 质量保持的有界执行闭环 |
 | HANDOFF-20260824-yolo2-phase1-recovery-slice.md | mixed | Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片 |

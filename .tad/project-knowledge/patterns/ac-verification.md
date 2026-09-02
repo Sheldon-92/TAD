@@ -676,3 +676,9 @@
 - **Grounded in**: 五轮独立 reviewer 报告（`b43c1a53` / `64fcf7cc` / `1e518407` / `21321f50`）；每一轮都用从 `tad.sh` 逐字节提取的 `apply_deprecations` 做端到端证明，而非静态推理；最终撤销记录见 `COMPLETION-20260816-phase2-partial-p0-fix.md`
 - **failure_mode**: Naive default: 为一个已修复的数据安全缺陷补写一条"防止配置被误编辑"的字符串校验护栏，并用双向测试确认其有效。Why wrong: 该护栏校验的是声明层，而破坏发生在执行层——两层之间隔着解析器差异、路径规范化、文件系统语义和符号链接解析，每一处都能让"校验通过的字符串"与"实际删除的位置"分离。五个版本、四个不同的失败根因证明这类护栏的正确性不可由作者自证；真正的修复位置在执行点（`apply_deprecations` 内用 `realpath` 校验），而非声明点。
 
+### 失败不变式要核对整个调用前状态，不只核对临时文件 - 2026-09-01
+- **Context**: Capability Builder 的安全投影 helper 已能在失败时清理本次创建的 temp 和 lock，但 copy/temp-verify 的晚期失败仍会留下本次创建的空 `.claude/skills` 与 `.claude`。原有 I/O 负例从一个预存的错误类型父节点开始，因此无法观察 absent-parent 被泄漏成 empty-parent。
+- **Discovery**: “只删除本 invocation 拥有的对象”必须覆盖完整的创建链：owned temp → owned lock → invocation-created empty parents；只证明无 temp/lock，不等于恢复了调用前状态。负例也必须从会区分两个状态的前置条件开始：若契约要求 absent 保持 absent，就从 absent parent 注入 copy/diff failure，并比较完整 parent inventory，而不是从预存父节点制造失败。
+- **Action**: 为有事务语义的文件系统 helper 定义 pre-call snapshot，并让每条非零路径断言 canonical hash、target hash、parent inventory、owned temp/lock 全部恢复。集中 cleanup 顺序，父目录仅在本 invocation 创建且仍为空时 `rmdir`。故障注入放在测试侧 PATH wrapper，不在生产脚本中加入 `eval` hook。
+- **Grounded in**: `2d7e359b`；`.tad/scripts/capability-skill.sh` 的 `cleanup_project_resources`；`.tad/evidence/acceptance-tests/capability-builder-create/run-acceptance.sh` 的 absent-parent copy/temp-diff wrapper cases。
+- **failure_mode**: Naive default: 失败测试只断言“没有临时文件”和“目标没生成”。Why wrong: helper 为准备操作创建的父目录也是状态；若失败后从 absent 变成 empty，调用前不变式已经被破坏，只是目标级断言看不见。
