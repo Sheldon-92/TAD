@@ -1,8 +1,6 @@
-diff --git a/.tad/evidence/yolo/local-wiki-browser-ingest/external/popup.js.before "b/Users/sheldonzhao/01-on progress programs/\344\270\213\350\275\275md\346\217\222\344\273\266/web-to-markdown/popup/popup.js"
-index 6487654d..85646173 100644
---- a/.tad/evidence/yolo/local-wiki-browser-ingest/external/popup.js.before
-+++ "b/Users/sheldonzhao/01-on progress programs/\344\270\213\350\275\275md\346\217\222\344\273\266/web-to-markdown/popup/popup.js"	
-@@ -554,58 +554,95 @@ async function handleYouTubeDownload() {
+--- a/popup/popup.js
++++ b/popup/popup.js
+@@ -554,58 +554,95 @@
        world: 'MAIN',
        args: [langCode],
        func: async (targetLang) => {
@@ -102,7 +100,7 @@ index 6487654d..85646173 100644
 +          if (text.length > MAX_CAPTURE_BYTES) {
 +            settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
 +            return;
-+          }
+           }
 +          settle({ ok: true, text, length: text.length });
 +        };
 +        const fetchWrapper = async function(input) {
@@ -121,7 +119,7 @@ index 6487654d..85646173 100644
 +              settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
 +            } else try { capture(await response.clone().text()); }
 +            catch (_) { settle({ ok: false, error: 'Subtitle response could not be read' }); }
-           }
++          }
 +          return response;
 +        };
 +        const openWrapper = function(method, url) {
@@ -149,7 +147,7 @@ index 6487654d..85646173 100644
  
            // Ensure video is playing (captions only load during playback)
            if (player.getPlayerState && player.getPlayerState() !== 1) {
-@@ -620,22 +657,19 @@ async function handleYouTubeDownload() {
+@@ -620,22 +657,19 @@
            // Set caption track to trigger timedtext fetch
            player.setOption('captions', 'track', { languageCode: targetLang });
  
@@ -160,13 +158,13 @@ index 6487654d..85646173 100644
            // Pause video if we started it
            if (player.pauseVideo) {
              player.pauseVideo();
-           }
- 
+-          }
+-
 -          if (!data || data.length === 0) {
 -            // Fallback: try direct fetch with the baseUrl
 -            return { ok: false, error: 'YouTube player did not load subtitle data. Try refreshing the page.' };
--          }
--
+           }
+ 
 -          return { ok: true, text: data, length: data.length };
 +          return result;
          } catch (e) {

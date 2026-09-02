@@ -1,0 +1,942 @@
+// Popup script for Web to Markdown extension
+
+// DOM Elements
+const pageTitleEl = document.getElementById('pageTitle');
+const downloadBtn = document.getElementById('downloadBtn');
+const statusEl = document.getElementById('status');
+
+// State
+let currentTabId = null;
+let currentTabUrl = null;
+let port = null;
+let isYouTubeMode = false;
+let availableTracks = [];
+let youtubeVideoMeta = null;
+
+// ==================== Configuration ====================
+
+// Preset selector mappings
+const PRESET_SELECTORS = {
+  removeComments: [
+    '#comments', '.comments', '.comment-section', '.disqus',
+    '[id*="comment"]', '[class*="comment"]'
+  ],
+  removeShare: [
+    '.share', '.social-share', '.share-buttons', '.sharing',
+    '[class*="share"]', '[class*="social"]'
+  ],
+  removeSidebar: [
+    '.sidebar', '#sidebar', 'aside', '[role="complementary"]',
+    '[class*="sidebar"]'
+  ],
+  removeAds: [
+    '.ad', '.ads', '.advertisement', '[class*="ad-"]',
+    '[id*="ad-"]', '.sponsored'
+  ],
+  removeNav: [
+    'nav', '.nav', '.navigation', '.menu', '.breadcrumb',
+    '[role="navigation"]'
+  ],
+  removeRelated: [
+    '.related', '.recommended', '.more-articles',
+    '[class*="related"]', '[class*="recommend"]'
+  ]
+};
+
+const PRESET_KEYS = Object.keys(PRESET_SELECTORS);
+
+// Default configuration
+const DEFAULT_CONFIG = {
+  includeTables: true,
+  includeCode: true,
+  includeImages: false,
+  includeLinks: true,
+  removeComments: false,
+  removeShare: false,
+  removeSidebar: false,
+  removeAds: false,
+  removeNav: false,
+  removeRelated: false,
+  cleanupSelectors: '',
+  exportFormat: 'md'
+};
+
+// Load config from storage with validation
+async function loadConfig() {
+  try {
+    const result = await chrome.storage.local.get('config');
+    const loaded = result.config || {};
+
+    // Validate and coerce types (IMPORTANT-2 fix)
+    const config = {
+      includeTables: typeof loaded.includeTables === 'boolean' ? loaded.includeTables : DEFAULT_CONFIG.includeTables,
+      includeCode: typeof loaded.includeCode === 'boolean' ? loaded.includeCode : DEFAULT_CONFIG.includeCode,
+      includeImages: typeof loaded.includeImages === 'boolean' ? loaded.includeImages : DEFAULT_CONFIG.includeImages,
+      includeLinks: typeof loaded.includeLinks === 'boolean' ? loaded.includeLinks : DEFAULT_CONFIG.includeLinks,
+      cleanupSelectors: typeof loaded.cleanupSelectors === 'string' ? loaded.cleanupSelectors : DEFAULT_CONFIG.cleanupSelectors,
+      // Only accept the known formats; anything else falls back to 'md' (backward compatible).
+      exportFormat: (loaded.exportFormat === 'md' || loaded.exportFormat === 'html') ? loaded.exportFormat : DEFAULT_CONFIG.exportFormat
+    };
+
+    // Load preset options
+    for (const key of PRESET_KEYS) {
+      config[key] = typeof loaded[key] === 'boolean' ? loaded[key] : DEFAULT_CONFIG[key];
+    }
+
+    return config;
+  } catch (error) {
+    console.error('Failed to load config:', error);
+    return DEFAULT_CONFIG;
+  }
+}
+
+// Save config to storage
+async function saveConfig(config) {
+  try {
+    await chrome.storage.local.set({ config });
+    showSaveIndicator();
+  } catch (error) {
+    console.error('Failed to save config:', error);
+  }
+}
+
+// Show save indicator
+function showSaveIndicator() {
+  const indicator = document.getElementById('saveIndicator');
+  if (!indicator) return;
+  indicator.textContent = 'Saved';
+  indicator.classList.add('visible');
+  setTimeout(() => {
+    indicator.classList.remove('visible');
+  }, 2000);
+}
+
+// Validate CSS selectors with security limits
+function validateSelectors(selectorString) {
+  if (!selectorString || !selectorString.trim()) {
+    return { valid: [], invalid: [] };
+  }
+
+  const selectors = selectorString.split(',').map(s => s.trim()).filter(Boolean);
+  const results = { valid: [], invalid: [] };
+
+  for (const selector of selectors) {
+    // Security: limit selector length (200 chars max)
+    if (selector.length > 200) {
+      results.invalid.push(selector.substring(0, 20) + '...');
+      continue;
+    }
+
+    // Security: prevent ReDoS - limit nested parentheses (CRITICAL-1 fix)
+    if ((selector.match(/\(/g) || []).length > 1) {
+      results.invalid.push(selector);
+      continue;
+    }
+
+    // Security: limit pseudo-selector complexity (max 3)
+    if ((selector.match(/:/g) || []).length > 3) {
+      results.invalid.push(selector);
+      continue;
+    }
+
+    // Security: limit attribute selector count and combinator depth
+    if ((selector.match(/\[/g) || []).length > 5) {
+      results.invalid.push(selector);
+      continue;
+    }
+    if ((selector.match(/>/g) || []).length > 5) {
+      results.invalid.push(selector);
+      continue;
+    }
+
+    try {
+      // Use querySelectorAll for consistency with content script (CRITICAL-2 fix)
+      document.querySelectorAll(selector);
+      results.valid.push(selector);
+    } catch (e) {
+      results.invalid.push(selector);
+    }
+  }
+
+  return results;
+}
+
+// Show selector validation feedback
+function showSelectorValidation(results) {
+  const validationEl = document.getElementById('selectorValidation');
+  if (!validationEl) return;
+
+  if (results.invalid.length === 0 && results.valid.length === 0) {
+    validationEl.hidden = true;
+    return;
+  }
+
+  validationEl.hidden = false;
+
+  if (results.invalid.length > 0) {
+    validationEl.className = 'validation-message error';
+    validationEl.textContent = `Invalid: ${results.invalid.join(', ')}`;
+  } else {
+    validationEl.className = 'validation-message success';
+    validationEl.textContent = `${results.valid.length} selector(s) valid`;
+  }
+}
+
+// Validate at least one content type selected
+function validateContentTypes() {
+  const checkboxIds = ['includeTables', 'includeCode', 'includeImages', 'includeLinks'];
+  const anyChecked = checkboxIds.some(id => {
+    const el = document.getElementById(id);
+    return el && el.checked;
+  });
+
+  const warningEl = document.getElementById('contentWarning');
+  if (warningEl) {
+    warningEl.hidden = anyChecked;
+  }
+
+  return anyChecked;
+}
+
+// Build combined selector string from presets + custom
+function buildCleanupSelectors(config) {
+  const selectors = [];
+
+  for (const [key, selectorList] of Object.entries(PRESET_SELECTORS)) {
+    if (config[key]) {
+      selectors.push(...selectorList);
+    }
+  }
+
+  if (config.cleanupSelectors) {
+    const custom = config.cleanupSelectors.split(',').map(s => s.trim()).filter(Boolean);
+    selectors.push(...custom);
+  }
+
+  return selectors.join(', ');
+}
+
+// Get current config from UI
+function getConfigFromUI() {
+  const config = {
+    includeTables: document.getElementById('includeTables')?.checked ?? DEFAULT_CONFIG.includeTables,
+    includeCode: document.getElementById('includeCode')?.checked ?? DEFAULT_CONFIG.includeCode,
+    includeImages: document.getElementById('includeImages')?.checked ?? DEFAULT_CONFIG.includeImages,
+    includeLinks: document.getElementById('includeLinks')?.checked ?? DEFAULT_CONFIG.includeLinks,
+    cleanupSelectors: document.getElementById('cleanupSelectors')?.value ?? DEFAULT_CONFIG.cleanupSelectors,
+    exportFormat: document.getElementById('formatHtml')?.checked ? 'html' : 'md'
+  };
+
+  for (const key of PRESET_KEYS) {
+    config[key] = document.getElementById(key)?.checked ?? false;
+  }
+
+  return config;
+}
+
+// Apply config to UI
+function applyConfigToUI(config) {
+  const fields = {
+    includeTables: 'checked',
+    includeCode: 'checked',
+    includeImages: 'checked',
+    includeLinks: 'checked',
+    cleanupSelectors: 'value'
+  };
+
+  for (const [id, prop] of Object.entries(fields)) {
+    const el = document.getElementById(id);
+    if (el) {
+      el[prop] = config[id];
+    }
+  }
+
+  // Apply preset options
+  for (const key of PRESET_KEYS) {
+    const el = document.getElementById(key);
+    if (el) {
+      el.checked = config[key] ?? false;
+    }
+  }
+
+  // Apply export format radio + sync the download button label
+  const format = (config.exportFormat === 'html') ? 'html' : 'md';
+  const formatMd = document.getElementById('formatMd');
+  const formatHtml = document.getElementById('formatHtml');
+  if (formatMd) formatMd.checked = (format === 'md');
+  if (formatHtml) formatHtml.checked = (format === 'html');
+  updateDownloadButtonLabel(format);
+}
+
+// Reflect the selected export format in the primary button label.
+function updateDownloadButtonLabel(format) {
+  if (!downloadBtn) return;
+  // Don't clobber transient states (Processing/Done/Retry).
+  if (downloadBtn.classList.contains('success') || downloadBtn.classList.contains('error') || downloadBtn.disabled) return;
+  downloadBtn.textContent = format === 'html' ? 'Download as HTML' : 'Download as MD';
+}
+
+// Initialize settings panel
+async function initSettings() {
+  const config = await loadConfig();
+  applyConfigToUI(config);
+
+  // Settings toggle button
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsPanel = document.getElementById('settingsPanel');
+
+  if (settingsToggle && settingsPanel) {
+    settingsToggle.addEventListener('click', () => {
+      const isHidden = settingsPanel.hidden;
+      settingsPanel.hidden = !isHidden;
+      settingsToggle.classList.toggle('active', isHidden);
+    });
+  }
+
+  // Help toggle
+  const selectorHelp = document.getElementById('selectorHelp');
+  const helpText = document.getElementById('selector-help');
+
+  if (selectorHelp && helpText) {
+    selectorHelp.addEventListener('click', () => {
+      helpText.hidden = !helpText.hidden;
+    });
+  }
+
+  // Auto-save on content type checkbox change
+  const checkboxIds = ['includeTables', 'includeCode', 'includeImages', 'includeLinks'];
+  checkboxIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', () => {
+        if (validateContentTypes()) {
+          saveConfig(getConfigFromUI());
+        }
+      });
+    }
+  });
+
+  // Export format radios — save + update button label on change
+  ['formatMd', 'formatHtml'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', () => {
+        const format = document.getElementById('formatHtml')?.checked ? 'html' : 'md';
+        updateDownloadButtonLabel(format);
+        saveConfig(getConfigFromUI());
+      });
+    }
+  });
+
+  // Auto-save on preset checkbox change (debounced)
+  let presetSaveTimeout;
+  PRESET_KEYS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', () => {
+        clearTimeout(presetSaveTimeout);
+        presetSaveTimeout = setTimeout(() => saveConfig(getConfigFromUI()), 200);
+      });
+    }
+  });
+
+  // Auto-save on textarea change (with debounce)
+  const cleanupSelectors = document.getElementById('cleanupSelectors');
+  let selectorTimeout;
+
+  if (cleanupSelectors) {
+    cleanupSelectors.addEventListener('input', (e) => {
+      clearTimeout(selectorTimeout);
+      selectorTimeout = setTimeout(() => {
+        const results = validateSelectors(e.target.value);
+        showSelectorValidation(results);
+        saveConfig(getConfigFromUI());
+      }, 500);
+    });
+  }
+
+  // Reset button
+  const resetSettings = document.getElementById('resetSettings');
+  if (resetSettings) {
+    resetSettings.addEventListener('click', () => {
+      applyConfigToUI(DEFAULT_CONFIG);
+      saveConfig(DEFAULT_CONFIG);
+      const validationEl = document.getElementById('selectorValidation');
+      const warningEl = document.getElementById('contentWarning');
+      if (validationEl) validationEl.hidden = true;
+      if (warningEl) warningEl.hidden = true;
+      // Collapse advanced section on reset
+      const advancedSection = document.querySelector('.advanced-section');
+      if (advancedSection) advancedSection.removeAttribute('open');
+    });
+  }
+}
+
+// ==================== YouTube Mode ====================
+
+// Detect YouTube video pages
+function isYouTubeVideo(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Support www.youtube.com, youtube.com, m.youtube.com
+    if ((hostname === 'www.youtube.com' ||
+         hostname === 'youtube.com' ||
+         hostname === 'm.youtube.com') &&
+        parsed.pathname === '/watch' &&
+        parsed.searchParams.has('v')) {
+      return true;
+    }
+
+    // Support youtu.be short links
+    if (hostname === 'youtu.be' && parsed.pathname.length > 1) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// Enter YouTube mode
+async function enterYouTubeMode() {
+  // Hide web page settings toggle
+  const settingsToggle = document.getElementById('settingsToggle');
+  if (settingsToggle) settingsToggle.hidden = true;
+
+  // Hide export-format selector (irrelevant for subtitle download)
+  const formatGroup = document.getElementById('formatGroup');
+  if (formatGroup) formatGroup.hidden = true;
+
+  // Show YouTube panel
+  document.getElementById('youtubePanel').hidden = false;
+
+  // Load saved YouTube preferences
+  const ytConfig = await loadYouTubeConfig();
+  const timestampCheckbox = document.getElementById('includeTimestamps');
+  if (timestampCheckbox) timestampCheckbox.checked = ytConfig.includeTimestamps;
+
+  // Save timestamp preference on change
+  if (timestampCheckbox) {
+    timestampCheckbox.addEventListener('change', () => {
+      chrome.storage.local.set({ youtubeConfig: { includeTimestamps: timestampCheckbox.checked } });
+    });
+  }
+
+  // Inject YouTube subtitle content script
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: currentTabId },
+      files: ['content/youtube-subtitle.js']
+    });
+  } catch (error) {
+    showError('Cannot access this YouTube page');
+    return;
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 200));
+
+  // Discover available tracks
+  try {
+    const response = await chrome.tabs.sendMessage(currentTabId, {
+      type: 'DISCOVER_TRACKS'
+    });
+
+    if (!response) {
+      showError('Content script disconnected. Please refresh the page.');
+      return;
+    }
+
+    if (response.success && response.tracks && response.tracks.length > 0) {
+      availableTracks = response.tracks;
+      populateLanguageSelector(response.tracks);
+      pageTitleEl.textContent = response.videoMeta?.title || 'YouTube Video';
+    } else {
+      showNoSubtitles();
+    }
+  } catch (error) {
+    if (error.message.includes('Receiving end does not exist')) {
+      showError('Failed to connect to page. Please refresh and try again.');
+    } else {
+      showNoSubtitles();
+    }
+  }
+}
+
+// Load YouTube config from storage
+async function loadYouTubeConfig() {
+  try {
+    const result = await chrome.storage.local.get('youtubeConfig');
+    return result.youtubeConfig || { includeTimestamps: true };
+  } catch {
+    return { includeTimestamps: true };
+  }
+}
+
+// Populate language selector dropdown
+function populateLanguageSelector(tracks) {
+  const select = document.getElementById('subtitleLanguage');
+  select.innerHTML = '';
+
+  // Sort: manual first, then auto-generated; alphabetically within each group
+  const sorted = [...tracks].sort((a, b) => {
+    if (a.isAutoGenerated !== b.isAutoGenerated) return a.isAutoGenerated ? 1 : -1;
+    return a.languageName.localeCompare(b.languageName);
+  });
+
+  // Try to auto-select user's browser language
+  const userLang = navigator.language.split('-')[0];
+  let defaultIndex = 0;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const track = sorted[i];
+    const option = document.createElement('option');
+    option.value = track.baseUrl;
+    option.textContent = track.languageName + (track.isAutoGenerated ? ' (auto)' : '');
+    option.dataset.languageName = track.languageName + (track.isAutoGenerated ? ' (auto-generated)' : '');
+    option.dataset.langCode = track.languageCode;
+    option.dataset.isAuto = track.isAutoGenerated;
+    select.appendChild(option);
+
+    // Auto-select matching language (prefer manual over auto)
+    if (track.languageCode.startsWith(userLang) && !track.isAutoGenerated && defaultIndex === 0) {
+      defaultIndex = i;
+    } else if (track.languageCode.startsWith(userLang) && defaultIndex === 0) {
+      defaultIndex = i;
+    }
+  }
+
+  select.selectedIndex = defaultIndex;
+}
+
+// Show no subtitles fallback UI
+function showNoSubtitles() {
+  document.getElementById('noSubtitlesMsg').hidden = false;
+  document.getElementById('subtitleLanguage').hidden = true;
+  document.getElementById('includeTimestamps').parentElement.hidden = true;
+  // Button still works - falls back to page content download via handleWebPageDownload()
+}
+
+// Handle YouTube subtitle download
+async function handleYouTubeDownload() {
+  const select = document.getElementById('subtitleLanguage');
+  const trackUrl = select.value;
+
+  if (!trackUrl || trackUrl === '') {
+    showError('Please select a subtitle language');
+    return;
+  }
+
+  const selectedOption = select.options[select.selectedIndex];
+  const includeTimestamps = document.getElementById('includeTimestamps').checked;
+  const languageName = selectedOption?.dataset.languageName || '';
+
+  downloadBtn.disabled = true;
+  downloadBtn.textContent = 'Processing...';
+  statusEl.textContent = 'Fetching subtitles...';
+  statusEl.className = 'status extracting';
+
+  try {
+    // Step 1: Intercept subtitle data from YouTube player in MAIN world.
+    // YouTube's timedtext API requires POT (Proof of Origin Token) which only
+    // the YouTube player JS adds. Instead of fetching directly, we:
+    // 1. Monkey-patch fetch/XHR to capture timedtext responses
+    // 2. Trigger subtitle loading via player.setOption()
+    // 3. Return the captured subtitle data
+    const langCode = select.options[select.selectedIndex]?.dataset.langCode ||
+      new URL(trackUrl).searchParams.get('lang') || 'en';
+
+    const fetchResults = await chrome.scripting.executeScript({
+      target: { tabId: currentTabId },
+      world: 'MAIN',
+      args: [langCode],
+      func: async (targetLang) => {
+        const MAX_CAPTURE_BYTES = 5 * 1024 * 1024;
+        const activeKey = '__webToMarkdownTimedtextCaptureV1';
+        const isTrustedTimedtextUrl = (candidate) => {
+          try {
+            const parsed = new URL(String(candidate), location.href);
+            return parsed.protocol === 'https:' &&
+              (parsed.hostname === 'youtube.com' || parsed.hostname === 'www.youtube.com') &&
+              parsed.pathname === '/api/timedtext';
+          } catch (_) {
+            return false;
+          }
+        };
+        if (window[activeKey]) {
+          return { ok: false, error: 'Subtitle capture is already active. Please wait.' };
+        }
+        const player = document.querySelector('#movie_player');
+        if (!player) {
+          return { ok: false, error: 'YouTube player not found on page' };
+        }
+        const origFetch = window.fetch;
+        const origXHROpen = XMLHttpRequest.prototype.open;
+        const origXHRSend = XMLHttpRequest.prototype.send;
+        const xhrListeners = [];
+        let timer = null;
+        let resolveCapture;
+        let settled = false;
+        const cleanup = () => {
+          if (timer !== null) clearTimeout(timer);
+          for (const { xhr, listener } of xhrListeners) xhr.removeEventListener('load', listener);
+          if (window.fetch === fetchWrapper) window.fetch = origFetch;
+          if (XMLHttpRequest.prototype.open === openWrapper) XMLHttpRequest.prototype.open = origXHROpen;
+          if (XMLHttpRequest.prototype.send === sendWrapper) XMLHttpRequest.prototype.send = origXHRSend;
+          if (window[activeKey] === token) delete window[activeKey];
+        };
+        const settle = (result) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolveCapture(result);
+        };
+        const capture = (text) => {
+          if (typeof text !== 'string' || text.length === 0) return;
+          if (text.length > MAX_CAPTURE_BYTES) {
+            settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
+            return;
+          }
+          settle({ ok: true, text, length: text.length });
+        };
+        const fetchWrapper = async function(input) {
+          let response;
+          try {
+            response = await origFetch.apply(this, arguments);
+          } catch (error) {
+            const url = typeof input === 'string' ? input : input?.url || '';
+            if (isTrustedTimedtextUrl(url)) settle({ ok: false, error: 'Subtitle request failed' });
+            throw error;
+          }
+          const url = typeof input === 'string' ? input : input?.url || '';
+          if (isTrustedTimedtextUrl(url)) {
+            const declaredLength = Number(response.headers?.get?.('content-length'));
+            if (Number.isFinite(declaredLength) && declaredLength > MAX_CAPTURE_BYTES) {
+              settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
+            } else try { capture(await response.clone().text()); }
+            catch (_) { settle({ ok: false, error: 'Subtitle response could not be read' }); }
+          }
+          return response;
+        };
+        const openWrapper = function(method, url) {
+          this.__webToMarkdownTimedtextUrl = url;
+          return origXHROpen.apply(this, arguments);
+        };
+        const sendWrapper = function() {
+          if (isTrustedTimedtextUrl(this.__webToMarkdownTimedtextUrl)) {
+            const xhr = this;
+            const listener = () => capture(xhr.responseText);
+            xhrListeners.push({ xhr, listener });
+            xhr.addEventListener('load', listener, { once: true });
+          }
+          return origXHRSend.apply(this, arguments);
+        };
+        const token = {};
+        window[activeKey] = token;
+        const capturePromise = new Promise((resolve) => { resolveCapture = resolve; });
+        window.fetch = fetchWrapper;
+        XMLHttpRequest.prototype.open = openWrapper;
+        XMLHttpRequest.prototype.send = sendWrapper;
+        timer = setTimeout(() => settle({ ok: false, error: 'YouTube player did not load subtitle data. Try refreshing the page.' }), 10000);
+
+        try {
+
+          // Ensure video is playing (captions only load during playback)
+          if (player.getPlayerState && player.getPlayerState() !== 1) {
+            player.playVideo();
+            await new Promise(r => setTimeout(r, 1500));
+          }
+
+          // First disable captions, then re-enable to force a fresh request
+          player.setOption('captions', 'track', {});
+          await new Promise(r => setTimeout(r, 500));
+
+          // Set caption track to trigger timedtext fetch
+          player.setOption('captions', 'track', { languageCode: targetLang });
+
+          const result = await capturePromise;
+
+          // Pause video if we started it
+          if (player.pauseVideo) {
+            player.pauseVideo();
+          }
+
+          return result;
+        } catch (e) {
+          settle({ ok: false, error: e?.message || 'Subtitle capture failed' });
+          return await capturePromise;
+        } finally {
+          cleanup();
+        }
+      }
+    });
+
+    const fetchResult = fetchResults?.[0]?.result;
+    if (!fetchResult) {
+      showError('Failed to execute in page context');
+      return;
+    }
+    if (!fetchResult.ok) {
+      showError(fetchResult.error || 'Failed to fetch subtitle data');
+      return;
+    }
+
+    const subtitleText = fetchResult.text;
+    if (!subtitleText || subtitleText.length === 0) {
+      showError('No subtitle data received from YouTube player');
+      return;
+    }
+
+    // Step 2: Send raw subtitle text to content script for formatting + download
+    const response = await chrome.tabs.sendMessage(currentTabId, {
+      type: 'PROCESS_SUBTITLE',
+      subtitleText: subtitleText,
+      includeTimestamps: includeTimestamps,
+      languageName: languageName
+    });
+
+    if (!response) {
+      showError('Content script disconnected. Please refresh the page.');
+      return;
+    }
+    if (!response.success) {
+      showError(response.error || 'Failed to process subtitles');
+    }
+  } catch (error) {
+    if (error.message.includes('Receiving end does not exist')) {
+      showError('Failed to connect to page. Please refresh and try again.');
+    } else {
+      showError('Failed: ' + error.message);
+    }
+  }
+}
+
+// ==================== Main Popup Logic ====================
+
+// Initialize popup
+async function init() {
+  try {
+    // Initialize settings first
+    await initSettings();
+
+    // Get current tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab) {
+      showError('No active tab found');
+      return;
+    }
+
+    currentTabId = tab.id;
+    currentTabUrl = tab.url;
+    pageTitleEl.textContent = tab.title || 'Untitled Page';
+
+    // Check if this is a restricted page
+    if (isRestrictedUrl(currentTabUrl)) {
+      showError('Cannot extract from this page type');
+      downloadBtn.disabled = true;
+      return;
+    }
+
+    // Check if this is a YouTube video page
+    if (isYouTubeVideo(currentTabUrl)) {
+      isYouTubeMode = true;
+      // Establish status channel first
+      port = chrome.runtime.connect({ name: 'status-channel' });
+      port.onMessage.addListener(handleStatusUpdate);
+      port.onDisconnect.addListener(() => {
+        port = null;
+      });
+      await enterYouTubeMode();
+      statusEl.textContent = 'Ready';
+      statusEl.className = 'status';
+      return;
+    }
+
+    // Establish long connection for status updates
+    port = chrome.runtime.connect({ name: 'status-channel' });
+    port.onMessage.addListener(handleStatusUpdate);
+    port.onDisconnect.addListener(() => {
+      port = null;
+    });
+
+    statusEl.textContent = 'Ready';
+    statusEl.className = 'status';
+
+  } catch (error) {
+    showError('Failed to initialize: ' + error.message);
+  }
+}
+
+// Check if URL is restricted (cannot inject content scripts)
+function isRestrictedUrl(url) {
+  if (!url) return true;
+
+  const restrictedPatterns = [
+    /^chrome:\/\//,
+    /^chrome-extension:\/\//,
+    /^edge:\/\//,
+    /^about:/,
+    /^file:\/\//,
+    /^view-source:/,
+    /^devtools:/,
+    /^data:/,
+    /^javascript:/,
+    /^chrome\.google\.com\/webstore/
+  ];
+
+  return restrictedPatterns.some(pattern => pattern.test(url));
+}
+
+// Handle status updates from service worker
+function handleStatusUpdate(msg) {
+  if (msg.type !== 'STATUS_UPDATE') return;
+
+  const { status, progress, error } = msg;
+
+  switch (status) {
+    case 'extracting':
+      updateUI('Extracting content...', 'extracting', true);
+      break;
+    case 'downloading_images':
+      updateUI(`Downloading images${progress !== undefined ? ` (${progress}%)` : ''}...`, 'downloading', true);
+      break;
+    case 'packaging':
+      updateUI('Packaging...', 'packaging', true);
+      break;
+    case 'complete':
+      updateUI('Download complete!', 'complete', false);
+      downloadBtn.textContent = 'Done';
+      downloadBtn.classList.add('success');
+      // Auto-close popup after success
+      setTimeout(() => window.close(), 1500);
+      break;
+    case 'error':
+      showError(error || 'An error occurred');
+      break;
+  }
+}
+
+// Update UI state
+function updateUI(statusText, statusClass, disabled) {
+  statusEl.textContent = statusText;
+  statusEl.className = 'status ' + statusClass;
+  downloadBtn.disabled = disabled;
+
+  if (disabled) {
+    downloadBtn.textContent = 'Processing...';
+  }
+}
+
+// Show error with user-friendly messages
+function showError(message) {
+  let friendlyMessage = message;
+
+  if (message.includes('Cannot access')) {
+    friendlyMessage = 'Cannot access this page. Try a regular web page.';
+  } else if (message.includes('Could not extract')) {
+    friendlyMessage = 'No article content found on this page.';
+  } else if (message.includes('No frame')) {
+    friendlyMessage = 'Page not accessible. Please refresh and try again.';
+  }
+
+  statusEl.textContent = friendlyMessage;
+  statusEl.className = 'status error';
+  downloadBtn.textContent = 'Retry';
+  downloadBtn.classList.remove('success');
+  downloadBtn.classList.add('error');
+  downloadBtn.disabled = false;
+}
+
+// Handle download button click - routes to YouTube or web page mode
+async function handleDownload() {
+  if (!currentTabId) {
+    showError('No tab available');
+    return;
+  }
+
+  // Reset error state if retrying
+  downloadBtn.classList.remove('success', 'error');
+
+  if (isYouTubeMode && availableTracks.length > 0) {
+    await handleYouTubeDownload();
+  } else {
+    await handleWebPageDownload();
+  }
+}
+
+// Handle web page download (original logic)
+async function handleWebPageDownload() {
+  try {
+    // Reset UI
+    downloadBtn.disabled = true;
+    downloadBtn.textContent = 'Processing...';
+    statusEl.textContent = 'Preparing...';
+    statusEl.className = 'status extracting';
+
+    // Load current config and build combined selectors
+    const config = await loadConfig();
+    const combinedSelectors = buildCleanupSelectors(config);
+    const isHtml = config.exportFormat === 'html';
+
+    // Inject content script dynamically. HTML mode also injects the vendored DOMPurify
+    // (lib/purify.js) — the sole sanitization defense for the file:// shareable product.
+    const injectFiles = ['lib/Readability.js', 'lib/turndown.js'];
+    if (isHtml) injectFiles.push('lib/purify.js');
+    injectFiles.push('content/content.js');
+
+    await chrome.scripting.executeScript({
+      target: { tabId: currentTabId },
+      files: injectFiles
+    });
+
+    // Small delay to ensure scripts are loaded
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Send extract request to content script with config
+    const requestId = Date.now().toString();
+
+    try {
+      const response = await chrome.tabs.sendMessage(currentTabId, {
+        type: 'EXTRACT_CONTENT',
+        requestId,
+        config: {
+          ...config,
+          cleanupSelectors: combinedSelectors,  // Override with combined presets + custom
+          // Images are the core value of the HTML snapshot — force on (still bound by the
+          // three-layer image filter). MD mode keeps the user's includeImages choice.
+          includeImages: isHtml ? true : config.includeImages
+        }
+      });
+
+      if (response && !response.success) {
+        showError(response.error || 'Extraction failed');
+      }
+    } catch (sendError) {
+      if (sendError.message.includes('Receiving end does not exist')) {
+        showError('Failed to connect to page. Please refresh and try again.');
+      } else {
+        throw sendError;
+      }
+    }
+
+  } catch (error) {
+    console.error('Download error:', error);
+
+    if (error.message.includes('Cannot access')) {
+      showError('Cannot access this page type');
+    } else if (error.message.includes('No tab')) {
+      showError('Tab no longer available');
+    } else {
+      showError('Failed: ' + error.message);
+    }
+  }
+}
+
+// Event listeners
+downloadBtn.addEventListener('click', handleDownload);
+
+// Initialize on load
+init();

@@ -1,5 +1,5 @@
---- a/tests/youtube-capture-contract.test.js
-+++ b/tests/youtube-capture-contract.test.js
+--- a/tests/youtube-capture-contract.test.js	2026-09-02 10:28:17
++++ /dev/null	2026-09-02 10:28:17
 @@ -1,64 +0,0 @@
 -// Execute the exact MAIN-world function serialized from popup.js in a fake browser.
 -const fs = require('fs');

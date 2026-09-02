@@ -1,8 +1,6 @@
-diff --git "a/Users/sheldonzhao/01-on progress programs/\344\270\213\350\275\275md\346\217\222\344\273\266/web-to-markdown/popup/popup.js" b/.tad/evidence/yolo/local-wiki-browser-ingest/external/popup.js.before
-index 85646173..6487654d 100644
---- "a/Users/sheldonzhao/01-on progress programs/\344\270\213\350\275\275md\346\217\222\344\273\266/web-to-markdown/popup/popup.js"	
-+++ b/.tad/evidence/yolo/local-wiki-browser-ingest/external/popup.js.before
-@@ -554,95 +554,58 @@ async function handleYouTubeDownload() {
+--- a/popup/popup.js
++++ b/popup/popup.js
+@@ -554,95 +554,58 @@
        world: 'MAIN',
        args: [langCode],
        func: async (targetLang) => {
@@ -93,8 +91,7 @@ index 85646173..6487654d 100644
 -        XMLHttpRequest.prototype.open = openWrapper;
 -        XMLHttpRequest.prototype.send = sendWrapper;
 -        timer = setTimeout(() => settle({ ok: false, error: 'YouTube player did not load subtitle data. Try refreshing the page.' }), 10000);
--
-         try {
++        try {
 +          // Set up interception for timedtext responses
 +          let capturedData = null;
 +          const capturePromise = new Promise((resolve) => {
@@ -114,7 +111,8 @@ index 85646173..6487654d 100644
 +              }
 +              return resp;
 +            };
-+
+ 
+-        try {
 +            // Also patch XHR (YouTube player might use XHR)
 +            const origXHROpen = XMLHttpRequest.prototype.open;
 +            const origXHRSend = XMLHttpRequest.prototype.send;
@@ -149,7 +147,7 @@ index 85646173..6487654d 100644
  
            // Ensure video is playing (captions only load during playback)
            if (player.getPlayerState && player.getPlayerState() !== 1) {
-@@ -657,19 +620,22 @@ async function handleYouTubeDownload() {
+@@ -657,19 +620,22 @@
            // Set caption track to trigger timedtext fetch
            player.setOption('captions', 'track', { languageCode: targetLang });
  

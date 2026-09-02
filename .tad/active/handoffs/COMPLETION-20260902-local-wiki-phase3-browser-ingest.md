@@ -38,7 +38,8 @@ npm test --prefix /Users/sheldonzhao/01-on progress programs/下载md插件/web-
 ## External change integrity
 
 - Pre-image / backup SHA-256: `7f873c78a850ed491c087373d18eedf4e3a6f5fedd134627a84f3b05770eee73`.
-- Full three-file recovery material is listed in `external/rollback-manifest.md`.
+- Full three-file recovery material is listed in `external/rollback-manifest.md`; a real
+  temporary-copy reverse/forward replay with exact SHA-256 checks is `external/rollback-replay.log`.
 - External project has no Git repository; only `popup/popup.js`, its focused test, and test runner were changed.
 
 ## Friction Status
