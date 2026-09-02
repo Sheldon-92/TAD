@@ -33,7 +33,7 @@ phase. No further provider matrix or repeated public probe was required.
 
 - Gate 3: PASS; two independent final reviewers, P0/P1/P2 all zero.
 - Knowledge: recorded “internalized capability requires an absence proof” in
-  `.tad/project-knowledge/patterns/ac-verification.md`.
+  `.tad/project-knowledge/patterns/capability-ownership.md`.
 - Pair testing: not opened; this is a CLI/internal research workflow with a completed real Chrome
   smoke test and no visual UI change.
 - YOLO audit helper: N/A for the `phase3r` corrective suffix because its parser assumes numeric

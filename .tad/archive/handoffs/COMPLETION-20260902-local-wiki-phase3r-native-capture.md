@@ -50,7 +50,7 @@ Live dispositions are in `.tad/evidence/yolo/local-wiki-native-capture/phase3r-l
 ## Knowledge Assessment
 
 - Q1: Yes — “internalize a capability” requires an absence test for the prior-art runtime, not
-  merely a wrapper around it. Recorded in `.tad/project-knowledge/patterns/ac-verification.md`.
+  merely a wrapper around it. Recorded in `.tad/project-knowledge/patterns/capability-ownership.md`.
 - Q2: No — no new reusable skill candidate.
 - Q3: No — no new workflow pattern.
 
