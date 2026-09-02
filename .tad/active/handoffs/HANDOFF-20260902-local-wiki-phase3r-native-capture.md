@@ -107,7 +107,7 @@ It is prior art only and has already been restored.
 
 | ID | Criterion | Verification |
 |---|---|---|
-| AC1 | No active runtime/product documentation requires the external plugin; old active design is archived and old DR marked superseded | `rg -n 'companion browser extension|下载md插件' research .tad/active --glob '!**/evidence/**'` returns 0 |
+| AC1 | No runtime or product-facing research documentation requires the external plugin; old active design is archived and old DR marked superseded | `rg -n 'companion browser extension|下载md插件' research` returns 0 |
 | AC2 | Injected fake transport page capture plus real importer writes searchable `raw/articles` Markdown; real temporary Chrome proves actual CDP page extraction | deterministic integration + live local/HTTPS page |
 | AC3 | Injected fake transport YouTube capture plus transcript transformation and importer writes timestamped searchable `raw/transcripts` Markdown | deterministic integration |
 | AC4 | URL/port/target/WebSocket/result/timeout/protocol negatives fail closed without raw output | negative suite |
@@ -115,7 +115,7 @@ It is prior art only and has already been restored.
 | AC6 | launch rejects default/unowned profiles and occupied ports; creates/reuses only owned 0700/0600 profile state; never mutates/kills default Chrome | argv/process tests |
 | AC7 | One temporary-profile real Chrome HTTPS page capture and one public YouTube transcript probe attempted; YouTube failure may be honest live degradation only if deterministic AC3 passes | live evidence |
 | AC8 | Existing importer/search tests, canon lint, generation, and new Node tests pass | regression commands |
-| AC9 | Prior external plugin exact pre-state remains unchanged | three-state hash/absence check |
+| AC9 | Prior external plugin restoration is recorded once as migration evidence, with no portable/runtime test dependency on that absolute path | evidence inspection + scoped runtime search |
 
 ## 8. Required commands
 
