@@ -1,69 +1,53 @@
 # Roadmap
 
-> Strategic themes and direction for the project.
-> This is an upper-layer aggregation view — see PROJECT_CONTEXT.md for current state,
-> NEXT.md for tactical tasks, and .tad/active/epics/ for multi-phase tracking.
+> Strategic direction for TAD. Updated 2026-09-02 for v2.43.0.
+> See [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) for current state and
+> [NEXT.md](./NEXT.md) for the tactical queue.
 
 ---
 
-## Themes
+## Current direction
 
-### Codex CLI Adaptation
-**Status:** Active
-**Description:** Enable TAD to run on Codex CLI as a first-class runtime (since v2.25.0) — not a quota fallback. Static SKILL files + AGENTS.md native role switching.
+### Stable foundation
 
-| Item | Type | Status | Reference |
-|------|------|--------|-----------|
-| Feasibility Spike (6-test matrix) | Epic Phase 0 | Complete | [Epic](./.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md) |
-| Build (launchers + static SKILLs) | Epic Phase 1 | Complete | [Epic](./.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md) |
-| Dogfood + AGENTS.md | Epic Phase 2 | Complete | [Epic](./.tad/archive/epics/EPIC-20260427-codex-cli-adaptation.md) |
+- **Full TAD is the default path.** Alex owns requirements and acceptance; Blake owns implementation and technical verification.
+- **Codex is a first-class runtime.** Claude Code and Codex share the same durable `.tad/` project state and mirrored skills.
+- **TAD Lite is frozen, not removed.** Existing Lite workflows remain available when explicitly invoked, but new framework work targets Full TAD.
+- **Quality remains evidence-based.** Four gates, the Ralph Loop, independent review, and honest partial outcomes remain the default safeguards.
 
-### Quality System
-**Status:** Active
-**Description:** Maintain and evolve the multi-layer quality assurance system including Gates, Ralph Loop, Cognitive Firewall, and expert review patterns.
+Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.md), [Gate protocol](./.agents/skills/gate/SKILL.md), and [Blake protocol](./.agents/skills/blake/SKILL.md).
 
-| Item | Type | Status | Reference |
-|------|------|--------|-----------|
-| Four-Gate quality system (v2.0) | Direction | Stable | [Gate protocol](./.claude/skills/gate/SKILL.md) |
-| Ralph Loop two-layer architecture | Direction | Stable | [Blake protocol](./.claude/skills/blake/SKILL.md) |
-| Cognitive Firewall (human empowerment) | Direction | Active — needs real-feature validation | [config-cognitive.yaml](./.tad/config-cognitive.yaml) |
-| Agent Teams (experimental parallel review) | Direction | Experimental — needs real-task validation | [config-agents.yaml](./.tad/config-agents.yaml) |
+### Recently delivered
 
-### Developer Experience
-**Status:** Active
-**Description:** Improve the day-to-day experience of using TAD — design exploration, testing workflows, knowledge management, and onboarding.
+| Capability | Status | Product boundary |
+|---|---|---|
+| YOLO 2.0 verified orchestration | Complete, opt-in | Codex fresh/resume is proven. Claude Code, OpenCode, and DeepSeek adapters are experimental and qualify on first real use. Default-on remains deferred. |
+| Local Wiki research | Complete | File-is-truth research, stdlib FTS5 retrieval, and native rendered-page capture are accepted. Public YouTube captions remain experimental; Whisper/vector retrieval wait for measured need. |
+| Capability Builder `create` | Phase 1 complete | Projects can create, validate, project, and behaviorally prove locally owned Agent Skills. Evolution and packaging remain separate phases. |
+| v2.43.0 release | Published | Full-default framework release containing YOLO2, Local Wiki capture, and Capability Builder Phase 1. See [CHANGELOG](./CHANGELOG.md). |
 
-| Item | Type | Status | Reference |
-|------|------|--------|-----------|
-| Design Playground v2 (standalone command) | Direction | **Deprecated 2026-06-10** | /playground |
-| Multi-Session Pair Testing | Direction | Stable — needs real E2E validation | [Test brief](./.claude/skills/tad-test-brief/SKILL.md) |
-| Knowledge Auto-loading (@import) | Direction | Stable | [project-knowledge/](./.tad/project-knowledge/) |
-| Iterate on Playground based on user feedback | Idea | Pending | — |
+## Active and parked work
 
-### Dynamic Workflow Integration
-**Status:** Active (2026-06-03)
-**Description:** Adopt Claude Code dynamic workflow patterns to evolve TAD from static prompt-based orchestration to deterministic JS-based orchestration. Judgment rules stay in SKILL.md, orchestration logic moves to workflow scripts. Validated by 3 experiments (23 agents, ~1.2M tokens) on 2026-06-03.
-**Source:** [Thariq article](./.tad/evidence/research/2026-06-03-dynamic-workflows-thariq.md) + [measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md)
+### Capability Builder v1
 
-| Item | Type | Status | Reference |
-|------|------|--------|-----------|
-| Tournament for *design + pack builds | Direction | Validated — experiment proved ~30% richer output vs single-agent | [Tournament result](./.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md) |
-| Rule Adherence (per-AC verifier + skeptic) | Direction | Measured — 2 real false-negative incidents found | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
-| Declarative Constraints schema v0.1 | Deliverable | Schema designed (tournament output), ready for *analyze | [Schema](./.tad/evidence/research/2026-06-03-tournament-declarative-constraints-result.md) |
-| Dual-Platform Orchestration Adapter | Direction | Researched — Codex has subagents (2026-03 GA), needs adapter layer | [Idea](./.tad/active/ideas/IDEA-20260603-dual-platform-orchestration-adapter.md) |
-| Token Budget observability for YOLO | Direction | Blind spot confirmed — 0 token data in traces | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
-| Quarantine (reader/actor isolation) | Idea | Documented for future non-dev use, not urgent now | [Measurement](./.tad/evidence/research/2026-06-03-workflow-pattern-measurement.md) |
-| Research System Consolidation | Epic | Complete | [Epic](./.tad/archive/epics/EPIC-20260616-research-system-consolidation.md) |
+**Status:** Phase 1 of 4 complete; later phases parked.
 
----
+[Phase 1](./.tad/active/epics/EPIC-20260831-capability-builder-v1.md) delivered the independently useful `create` path. Phase 2 `evolve` starts only after a real failure, correction, regression, external change, or explicit new requirement. Phase 3 packaging and Phase 4 Voice Studio dogfood remain downstream of that signal-driven work.
 
-## Archive
+### Framework health repair
 
-### Alex Flexibility & Learning — Complete (2026-02-16)
-All 5 phases complete: Intent Router, *learn, Idea Pool, Roadmap, Layer Integration. [Epic](./.tad/archive/epics/EPIC-20260216-alex-flexibility-and-project-mgmt.md)
+**Status:** Active backlog; execute only from a current, explicitly accepted scope.
 
-### Superpowers-Inspired Tactical Upgrades — Complete (2026-03-23)
-All 6 phases: Session Hook Spike (pivot), Spec Compliance, Anti-Rationalization, TDD, Micro-Tasks, Worktree. [Epic](./.tad/archive/epics/EPIC-20260323-superpowers-tactical-upgrades.md)
+The repository still carries older framework-health follow-ups and verifier hygiene work. Before starting any item, revalidate it against current code because several historical “urgent” entries were already fixed when re-audited. The authoritative tactical queue is [NEXT.md](./NEXT.md).
 
-### Multi-Platform Cleanup — Complete (2026-02-17)
-Codex/Gemini removed as full TAD runtimes (~1100 lines), repositioned as specialized tools. Superseded by Codex CLI Adaptation (v2.9.0).
+## Revisit when evidence appears
+
+- **YOLO2 default-on:** reconsider only after a new human-authorized real-work evaluation demonstrates enough reliability and acceptable cost.
+- **Experimental harnesses:** qualify Claude Code, OpenCode, and DeepSeek with a minimal harmless probe on first actual use; one adapter failure must not block the verified Codex core.
+- **Capability evolution:** add `evolve` only when a concrete regression fixture or explicit new requirement exists.
+- **Local Wiki media retrieval:** add audio download/Whisper or persisted/vector retrieval only when current text and FTS5 paths show a measured gap.
+- **Remaining capability-pack evals:** expand behavioral evaluation as real projects exercise the packs, rather than creating a speculative all-pack campaign.
+
+## Maintenance rule
+
+This file is a strategic view, not a historical ledger. Completed implementation detail belongs in [CHANGELOG.md](./CHANGELOG.md) and `PROJECT_CONTEXT.md`; actionable work belongs in `NEXT.md`. Keep links limited to files shipped in the public repository so the GitHub roadmap remains navigable.
