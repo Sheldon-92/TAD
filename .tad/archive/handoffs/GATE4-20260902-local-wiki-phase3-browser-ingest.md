@@ -1,7 +1,7 @@
 # Gate 4 Acceptance — Local Wiki Phase 3 Browser Ingest Bridge
 
 **Date:** 2026-09-02
-**Verdict:** PASS
+**Verdict:** SUPERSEDED — revoked by Human correction on 2026-09-02
 **Accepted by:** Alex under the Human's autonomous acceptance instruction
 
 The browser-to-file-to-Local-Wiki path is complete. The imported Markdown boundary is
@@ -20,3 +20,9 @@ Accepted evidence:
 
 Final report: `.tad/evidence/yolo/local-wiki-browser-ingest/phase3-gate-report.md`.
 
+## Correction
+
+This acceptance incorrectly allowed a runtime dependency on the separate “下载md插件”
+project. The Human explicitly rejected that product boundary. The external project was
+restored byte-for-byte to its pre-task state. Native replacement work is tracked by
+`EPIC-20260902-local-wiki-native-capture.md`; this document remains only as audit history.
