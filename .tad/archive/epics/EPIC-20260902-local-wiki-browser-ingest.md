@@ -1,6 +1,6 @@
 # EPIC-20260902 — Local Wiki Browser Ingest Bridge
 
-**Status:** Phase 3 Active
+**Status:** Complete — Phase 3 Gate 4 PASS on 2026-09-02
 **Previous:** Local Wiki Phase 2 Retrieval, Gate 4 PASS at `cbbb0303`
 **Decision:** `.tad/decisions/DR-20260902-local-wiki-browser-ingest-bridge.md`
 
@@ -14,11 +14,11 @@ local command. The imported file is immediately searchable and retains provenanc
 
 | Phase | Name | Status |
 |---|---|---|
-| 3 | Browser Ingest Bridge | Active |
+| 3 | Browser Ingest Bridge | Done |
 
 ## Phase 3 detail
 
-**Status:** Active
+**Status:** Done — Gate 3 + Gate 4 PASS
 
 ### In scope
 
@@ -46,4 +46,3 @@ local command. The imported file is immediately searchable and retains provenanc
 4. No cookies, authorization headers, or browser credentials are written into imported files.
 5. Existing Local Wiki and extension deterministic tests remain green.
 6. Experimental/live drift may degrade that adapter honestly; it does not block the completed local bridge.
-

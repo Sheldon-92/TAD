@@ -1,5 +1,5 @@
 ---
-gate3_verdict:
+gate3_verdict: PASS
 ---
 
 # Completion — Local Wiki Phase 3 Browser Ingest Bridge
@@ -17,7 +17,7 @@ gate3_verdict:
 | AC5 | PASS | `npm test` executes the exact shipped serialized capture function in a VM for success, missing/throw/timeout/rejection/re-entry/oversize/XHR cleanup |
 | AC6 | PASS | 23 Python tests, canon lint, deterministic generation, extension npm suite |
 | AC7 | PASS | `research/canon/README.md` documents authorized two-step import and first-use behavior |
-| AC8 | experimental_degraded | Probe attempted: no managed Chrome/Chromium or Playwright is installed. No browser automation was added; deterministic bridge remains verified. |
+| AC8 | experimental_degraded | Chrome exists, but the Codex browser-control bootstrap referenced a missing older Browser runtime module. No extension UI action ran; deterministic bridge remains verified. |
 
 ## Delivered
 
@@ -46,7 +46,7 @@ npm test --prefix /Users/sheldonzhao/01-on progress programs/下载md插件/web-
 
 | Item | Status | Detail |
 |---|---|---|
-| Real YouTube UI smoke | DEGRADED_WITH_APPROVAL | Handoff/DR explicitly allow first-use environmental degradation; no browser runtime is installed, and scope forbids new automation infrastructure. |
+| Real YouTube UI smoke | DEGRADED_WITH_APPROVAL | Handoff/DR allow first-use environmental degradation. Chrome is installed, but the control adapter has an internal version-path mismatch; scope forbids repairing browser infrastructure here. |
 | External source control | READY | Immutable pre-image and reversible patches are recorded. |
 
 ## Knowledge Assessment
