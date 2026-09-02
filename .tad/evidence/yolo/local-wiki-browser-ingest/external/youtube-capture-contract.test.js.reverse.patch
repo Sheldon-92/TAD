@@ -1,0 +1,67 @@
+--- a/tests/youtube-capture-contract.test.js	2026-09-02 10:28:17
++++ /dev/null	2026-09-02 10:28:17
+@@ -1,64 +0,0 @@
+-// Execute the exact MAIN-world function serialized from popup.js in a fake browser.
+-const fs = require('fs');
+-const path = require('path');
+-const vm = require('vm');
+-
+-const source = fs.readFileSync(path.resolve(__dirname, '../popup/popup.js'), 'utf8');
+-const start = source.indexOf('func: async (targetLang) => {');
+-const end = source.indexOf('\n      }\n    });', start);
+-if (start < 0 || end < 0) throw new Error('could not extract shipped MAIN-world function');
+-const functionSource = source.slice(start + 'func: '.length, end + '\n      }'.length).trim();
+-
+-function makeWorld(mode) {
+-  const timers = new Map(); let nextTimer = 1; let removed = 0; let context;
+-  const originalFetch = async () => {
+-    if (mode === 'reject') throw new Error('network');
+-    const text = mode === 'oversize' ? 'x'.repeat(5 * 1024 * 1024 + 1) : 'caption';
+-    return { clone: () => ({ text: async () => text }), headers: { get: () => null } };
+-  };
+-  function FakeXHR() { this.listeners = []; this.responseText = 'caption'; }
+-  FakeXHR.prototype.open = function() {};
+-  FakeXHR.prototype.send = function() { for (const listener of [...this.listeners]) listener(); };
+-  FakeXHR.prototype.addEventListener = function(_name, listener) { this.listeners.push(listener); };
+-  FakeXHR.prototype.removeEventListener = function(_name, listener) { removed++; this.listeners = this.listeners.filter(x => x !== listener); };
+-  const window = { fetch: originalFetch };
+-  const player = mode === 'missing' ? null : {
+-    getPlayerState: () => 1, playVideo() {}, pauseVideo() {},
+-    setOption(_kind, _track, options) {
+-      if (mode === 'throw') throw new Error('player failure');
+-      if (options.languageCode && mode === 'xhr') { const xhr = new context.XMLHttpRequest(); xhr.open('GET', 'https://www.youtube.com/api/timedtext?lang=en'); xhr.send(); }
+-      else if (options.languageCode && mode !== 'timeout') window.fetch('https://www.youtube.com/api/timedtext?lang=en').catch(() => {});
+-    }
+-  };
+-  context = { window, XMLHttpRequest: FakeXHR, URL, String, Number, Promise, Error,
+-    location: { href: 'https://www.youtube.com/watch?v=x' }, document: { querySelector: () => player },
+-    setTimeout(fn, delay) { const id = nextTimer++; if (delay === 500) queueMicrotask(fn); else timers.set(id, fn); return id; },
+-    clearTimeout(id) { timers.delete(id); } };
+-  vm.createContext(context);
+-  return { capture: vm.runInContext(`(${functionSource})`, context), context, window, originalFetch,
+-    originalOpen: FakeXHR.prototype.open, originalSend: FakeXHR.prototype.send, timers,
+-    runTimeout: () => { for (const fn of timers.values()) fn(); }, removed: () => removed };
+-}
+-
+-async function run(name, mode, verify) {
+-  const world = makeWorld(mode); const pending = world.capture('en');
+-  if (mode === 'timeout') { await Promise.resolve(); world.runTimeout(); }
+-  const result = await pending;
+-  if (world.window.fetch !== world.originalFetch || world.context.XMLHttpRequest.prototype.open !== world.originalOpen || world.context.XMLHttpRequest.prototype.send !== world.originalSend) throw new Error('patched API identity not restored');
+-  if (world.timers.size !== 0) throw new Error('timer not cleaned up');
+-  verify(result, world); console.log('PASS ' + name);
+-}
+-
+-(async () => {
+-  await run('success exact trusted URL', 'success', result => { if (!result.ok || result.text !== 'caption') throw new Error('success result'); });
+-  await run('player missing', 'missing', result => { if (result.ok || !/not found/.test(result.error)) throw new Error('missing result'); });
+-  await run('player throw', 'throw', result => { if (result.ok || !/player failure/.test(result.error)) throw new Error('throw result'); });
+-  await run('timeout', 'timeout', result => { if (result.ok || !/did not load/.test(result.error)) throw new Error('timeout result'); });
+-  await run('trusted fetch rejection', 'reject', result => { if (result.ok || !/request failed/.test(result.error)) throw new Error('rejection result'); });
+-  await run('oversize response', 'oversize', result => { if (result.ok || !/exceeds/.test(result.error)) throw new Error('oversize result'); });
+-  await run('XHR listener cleanup', 'xhr', (result, world) => { if (!result.ok || world.removed() < 1) throw new Error('XHR listener cleanup'); });
+-  const reentry = makeWorld('success'); reentry.window.__webToMarkdownTimedtextCaptureV1 = {};
+-  const result = await reentry.capture('en');
+-  if (result.ok || !/already active/.test(result.error) || reentry.window.fetch !== reentry.originalFetch) throw new Error('re-entry result');
+-  console.log('PASS re-entry rejection');
+-})().catch(error => { console.error('FAIL ' + error.stack); process.exit(1); });
