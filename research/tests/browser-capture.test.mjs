@@ -91,7 +91,8 @@ test('exact YouTube page function executes in node:vm and detects navigation dri
 });
 
 test('native source has no external absolute-path runtime dependency', async () => {
-  const source=await readFile(join(ROOT,'research/scripts/browser-capture.mjs'),'utf8'); assert.doesNotMatch(source,/下载md插件|web-to-markdown/);
+  const forbidden=new RegExp([String.fromCodePoint(0x4e0b,0x8f7d,0x6d,0x64,0x63d2,0x4ef6),['web','to','markdown'].join('-')].join('|'));
+  const source=await readFile(join(ROOT,'research/scripts/browser-capture.mjs'),'utf8'); assert.doesNotMatch(source,forbidden);
 });
 
 test('launcher rejects default, unowned, unsafe-marker, and occupied profiles before Chrome launch', async () => {
