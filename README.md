@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.42.0 - Full is the Default Channel**
+**Version 2.43.0 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -83,6 +83,21 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ---
 
+## 🎯 What's New in v2.43
+
+### v2.43.0 — Opt-in YOLO2, project-owned Skills, and local-first research
+
+- **YOLO2 is complete as an opt-in workflow.** Durable recovery, bounded quality rounds,
+  evidence attestation, and Codex native fresh/resume are accepted. Other harness adapters
+  remain experimental and are qualified when first used.
+- **Capability Builder Phase 1 is available.** TAD can create, validate, project, and
+  behaviorally evaluate one project-owned Agent Skill without taking ownership of the
+  downstream project's content.
+- **Local Wiki now includes FTS5 retrieval and native Chrome/CDP capture.** The capture path
+  is repository-owned and does not depend on the external download-Markdown plugin.
+- **Honest limits:** YOLO2 remains off by default, Capability Builder evolution is parked,
+  and public YouTube captions are experimental and fail closed when unavailable.
+
 ## 🎯 What's New in v2.42
 
 ### v2.42.0 — Full is the default channel again; Alex costs 42% less to activate
@@ -160,7 +175,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.42.0
+# Should show: 2.43.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -476,6 +491,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.42.0 - Full is the Default Channel**
+**Welcome to TAD v2.43.0 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
 
 *AI does the work. Humans guard the value.*

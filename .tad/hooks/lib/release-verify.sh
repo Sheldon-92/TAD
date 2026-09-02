@@ -310,22 +310,28 @@ case "$MODE" in
         content="${rest#*:}"        # content (everything after line number)
         base="$(basename "$file")"
         excluded=0
-        case "$base" in
-          README.md|INSTALLATION_GUIDE.md|CHANGELOG.md|NEXT.md|PROJECT_CONTEXT.md|HISTORY.md)
-            # (a) VERSION-LABEL table row — semver is the LEADING cell (a version-history row).
-            #     A live install snippet (`| Install | pip install tad==X |`) has a NON-semver
-            #     first cell → NOT matched here → still CAUGHT (P1-2 false-negative closed).
-            if printf '%s' "$content" | LC_ALL=C grep -qE '^[[:space:]]*\|[[:space:]]*\*{0,2}v?[0-9]+\.[0-9]+\.[0-9]+\*{0,2}[[:space:]]*\|'; then
-              excluded=1
-            # (b) CHANGELOG SECTION heading: `## [X.Y.Z] - ...`.
-            elif printf '%s' "$content" | LC_ALL=C grep -qE '^[[:space:]]*#{1,6}[[:space:]]*\[?v?[0-9]+\.[0-9]+\.[0-9]+'; then
-              excluded=1
-            # (c) HISTORICAL-STATUS prose marker — a line recording a PAST release event.
-            elif printf '%s' "$content" | LC_ALL=C grep -qiE '(PUBLISHED|SYNCED|RELEASED|DONE|retired|archived|deprecated)'; then
-              excluded=1
-            fi
-            ;;
-        esac
+        # The canonical upgrade manifest must name OLD in its filename, `from`,
+        # reasons, and carried-forward paths. Exempt only that exact OLD→NEW file.
+        if [ "$file" = ".tad/migrations/${OLD}-to-${NEW}.yaml" ]; then
+          excluded=1
+        else
+          case "$base" in
+            README.md|INSTALLATION_GUIDE.md|CHANGELOG.md|NEXT.md|PROJECT_CONTEXT.md|HISTORY.md)
+              # (a) VERSION-LABEL table row — semver is the LEADING cell (a version-history row).
+              #     A live install snippet (`| Install | pip install tad==X |`) has a NON-semver
+              #     first cell → NOT matched here → still CAUGHT (P1-2 false-negative closed).
+              if printf '%s' "$content" | LC_ALL=C grep -qE '^[[:space:]]*\|[[:space:]]*\*{0,2}v?[0-9]+\.[0-9]+\.[0-9]+\*{0,2}[[:space:]]*\|'; then
+                excluded=1
+              # (b) CHANGELOG SECTION heading: `## [X.Y.Z] - ...`.
+              elif printf '%s' "$content" | LC_ALL=C grep -qE '^[[:space:]]*#{1,6}[[:space:]]*\[?v?[0-9]+\.[0-9]+\.[0-9]+'; then
+                excluded=1
+              # (c) HISTORICAL-STATUS prose marker — a line recording a PAST release event.
+              elif printf '%s' "$content" | LC_ALL=C grep -qiE '(PUBLISHED|SYNCED|RELEASED|DONE|retired|archived|deprecated)'; then
+                excluded=1
+              fi
+              ;;
+          esac
+        fi
         if [ "$excluded" -eq 0 ]; then
           survivors=$((survivors + 1))
           survivor_list="${survivor_list}  ❌ STALE: ${hit}"$'\n'
@@ -419,7 +425,9 @@ EOF
     fi
 
     # Compute framework-scoped diff (D, R, A entries)
-    DIFF_OUTPUT="$(git -C "$REPO" diff --name-status -M "$PREV_TAG"..HEAD -- .tad/ .claude/ .codex/ .agents/ CLAUDE.md AGENTS.md tad.sh 2>/dev/null)" || true
+    # Disable Git's C-style path quoting so ZERO_TOUCH matching also sees the real
+    # prefix for non-ASCII paths (for example .tad/evidence/证据.md).
+    DIFF_OUTPUT="$(git -C "$REPO" -c core.quotePath=false diff --name-status -M "$PREV_TAG"..HEAD -- .tad/ .claude/ .codex/ .agents/ CLAUDE.md AGENTS.md tad.sh 2>/dev/null)" || true
 
     # Classify entries, filtering ZERO_TOUCH
     DELETES=""

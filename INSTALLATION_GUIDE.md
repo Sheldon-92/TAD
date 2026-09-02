@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.42.0 — Alex / Blake is the Default**
+**Version 2.43.0 — Alex / Blake is the Default**
 
 ## 安装方式
 
@@ -48,7 +48,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.42.0
+cat .tad/version.txt          # 应显示 2.43.0
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code

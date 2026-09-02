@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.43.0] - 2026-09-02
+
+### New Features
+
+- **YOLO2 verified orchestration is available as an opt-in workflow.** It adds durable
+  recovery state, bounded quality rounds, immutable scope/evidence binding, and a
+  Codex-proven fresh/resume path. YOLO2 remains opt-in; default-on rollout was not claimed.
+- **Capability Builder Phase 1 creates project-owned Agent Skills.** A project can now
+  create and validate a canonical `.agents/skills/<name>/` Skill, safely project it to
+  `.claude/skills/<name>/`, and compare fresh WITH/CONTROL behavior. Evolution and Plugin
+  packaging remain parked follow-up phases.
+- **Local Wiki gained local-first retrieval and native rendered-page capture.** FTS5
+  search, JSON output, and repository-owned Chrome/CDP capture replace the external
+  download-Markdown plugin as a runtime dependency.
+
+### Changed
+
+- Research Standard/Deep routes through Local Wiki with raw-source locators and the
+  six-rule Iron Rule lint gate; NotebookLM remains only a fallback when Local Wiki is absent.
+- Claude Code and Codex Skill trees are byte-identical again, including the Local Wiki
+  research routing added after the previous release.
+
+### Known Limitations
+
+- Claude Code, OpenCode, and OpenCode-hosted DeepSeek YOLO adapters are experimental and
+  are qualified on first real use; only the bounded Codex core has live fresh/resume proof.
+- Public YouTube caption capture is experimental and fails closed when no usable transcript
+  is exposed. It does not fall back to the external download-Markdown plugin.
+
 ## [2.42.0] - 2026-08-15
 
 ### 行为变更

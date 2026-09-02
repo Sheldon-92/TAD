@@ -10,7 +10,7 @@ ENGINE="$(cd "$SCRIPT_DIR/../../hooks/lib" && pwd -P)/migration-engine.sh"
 
 VERIFIER="$(cd "$SCRIPT_DIR/../../hooks/lib" && pwd -P)/release-verify.sh"
 
-PASS_COUNT=0 FAIL_COUNT=0 TOTAL=22
+PASS_COUNT=0 FAIL_COUNT=0 TOTAL=23
 FAILURES=""
 
 # Colors (if terminal supports)
@@ -1168,11 +1168,14 @@ test_mg2() {
     create_source "$src"
     add_version "$src" "0.1.0" \
         ".tad/active/handoffs/test-handoff.md" "handoff content" \
+        ".tad/evidence/证据/test-evidence.md" "evidence content" \
         ".claude/skills/blake/SKILL.md" "blake skill"
 
-    # v0.2.0: remove file inside active/ (which is ZERO_TOUCH)
+    # v0.2.0: remove ASCII and non-ASCII paths inside ZERO_TOUCH directories.
+    # Git normally C-quotes the latter; the verifier must still recognize its prefix.
     cd "$src"
     rm -f .tad/active/handoffs/test-handoff.md
+    rm -f .tad/evidence/证据/test-evidence.md
     printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 
@@ -1214,6 +1217,39 @@ test_mg3() {
 }
 
 # ══════════════════════════════════════════════════════════════
+# MG4: version-gate: canonical OLD→NEW manifest is the only OLD exemption
+# The manifest must name OLD, while a stale OLD marker elsewhere must still fail.
+# ══════════════════════════════════════════════════════════════
+test_mg4() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source"
+
+    create_source "$src"
+    add_version "$src" "0.2.0" \
+        ".claude/skills/blake/SKILL.md" "blake skill"
+    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<'BODY'
+delete:
+  - path: ".claude/skills/old-ref-0.1.0.md"
+    type: "file"
+    reason: "removed while upgrading from 0.1.0"
+BODY
+)"
+
+    local out rc=0
+    out="$(bash "$VERIFIER" version "$src" "0.2.0" "0.1.0" 2>&1)" || rc=$?
+    if [ "$rc" -ne 0 ]; then report_fail "MG4a" "canonical manifest caused exit $rc"; rm -rf "$tmp"; return; fi
+
+    printf 'version: 0.1.0\n' > "$src/.tad/config.yaml"
+    cd "$src" && git add .tad/config.yaml && git commit -q -m "stale config"
+    rc=0
+    out="$(bash "$VERIFIER" version "$src" "0.2.0" "0.1.0" 2>&1)" || rc=$?
+    if [ "$rc" -ne 1 ]; then report_fail "MG4b" "stale non-manifest marker exit $rc (expected 1)"; rm -rf "$tmp"; return; fi
+
+    report_pass "MG4 canonical-version-manifest-exemption"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
 # Run all fixtures
 # ══════════════════════════════════════════════════════════════
 printf '=== TAD Migration Engine Fixture Harness ===\n\n'
@@ -1240,9 +1276,10 @@ test_ac17
 test_mg1
 test_mg2
 test_mg3
+test_mg4
 
 printf '\n=== Results ===\n'
-printf 'Passed: %d / %d (18 fixtures + 1 inline AC17 + 3 migration gate)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
+printf 'Passed: %d / %d (18 fixtures + 1 inline AC17 + 4 release gates)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
     printf '\nFailures:\n'
@@ -1251,5 +1288,5 @@ if [ "$FAIL_COUNT" -gt 0 ]; then
     exit 1
 fi
 
-printf '\nALL FIXTURES PASS (22/22)\n'
+printf '\nALL FIXTURES PASS (23/23)\n'
 exit 0

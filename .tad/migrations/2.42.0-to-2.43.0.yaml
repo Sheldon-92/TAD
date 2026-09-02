@@ -1,0 +1,63 @@
+schema_version: 1
+from: "2.42.0"
+to: "2.43.0"
+generated_by: "manual"
+note: |
+  Upgrade from v2.42.0 to v2.43.0. The retained delete entries carry forward the
+  v2.42.0 privacy remediation for installations that did not consume the in-version fix.
+delete:
+  - path: ".tad/migrations/2.42.0-to-2.42.0.yaml"
+    type: "file"
+    reason: "Replace the in-version remediation carrier with the canonical v2.42.0-to-v2.43.0 upgrade manifest."
+  - path: ".agents/skills/alex/references/sync-add-protocol.md"
+    type: "file"
+    reason: "The retired *sync command no longer exposes the sync-add protocol."
+  - path: ".agents/skills/alex/references/sync-list-protocol.md"
+    type: "file"
+    reason: "The retired *sync command no longer exposes the sync-list protocol."
+  - path: ".agents/skills/alex/references/sync-protocol.md"
+    type: "file"
+    reason: "The retired *sync command no longer exposes the sync protocol."
+  - path: ".claude/skills/alex/references/sync-add-protocol.md"
+    type: "file"
+    reason: "The retired *sync command no longer exposes the sync-add protocol."
+  - path: ".claude/skills/alex/references/sync-list-protocol.md"
+    type: "file"
+    reason: "The retired *sync command no longer exposes the sync-list protocol."
+  - path: ".claude/skills/alex/references/sync-protocol.md"
+    type: "file"
+    reason: "The retired *sync command no longer exposes the sync protocol."
+  - path: ".agents/skills/playground/SKILL.md"
+    type: "file"
+    reason: "Remove the obsolete mirrored playground Skill during framework-health cleanup."
+  - path: ".claude/skills/playground/SKILL.md"
+    type: "file"
+    reason: "Remove the obsolete playground Skill during framework-health cleanup."
+  - path: ".tad/scripts/sync-v2.8.4.sh"
+    type: "file"
+    reason: "Remove the obsolete version-specific sync helper after *sync retirement."
+  - path: ".tad/sync-registry.yaml"
+    type: "file"
+    reason: >-
+      Untracked from version control (local file retained). It lists the absolute paths of
+      14 downstream projects on the maintainer's machine and has always been TAD_TOP_DENY,
+      i.e. excluded from every installer and sync copy path — it was never distributed, so
+      removing it from the repository cannot affect any downstream install. *sync continues
+      to read the local copy.
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-pre-targets.txt"
+    type: "file"
+    reason: >-
+      78 MB across four files of per-file content hashes for every downstream project,
+      including uncommitted filenames and private document titles. Zero-touch directory,
+      never installed; removed from the current version for privacy. Replaced by
+      zero-touch-targets-REMOVED.md recording what the ACs proved and how to recompute.
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/zero-touch-post-targets.txt"
+    type: "file"
+    reason: "Same set — see zero-touch-pre-targets.txt"
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-pre-targets.txt"
+    type: "file"
+    reason: "Same set — see zero-touch-pre-targets.txt"
+  - path: ".tad/evidence/acceptance-tests/lite-authority-model-v2/repair2-zero-touch-post-targets.txt"
+    type: "file"
+    reason: "Same set — see zero-touch-pre-targets.txt"
+rename: []

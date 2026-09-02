@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.42.0 | Generated: [timestamp]
+ Version: v2.43.0 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,12 +218,11 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.42.0 Highlights
-- **Alex / Blake is the default; Lite is a frozen experiment (2026-08-13)**: new work goes to `/alex` → `/blake`. The two lite skills are unchanged and still fully usable when invoked explicitly — only the recommendation moved back.
-- **Escalation list replaced by a 3-item safety-stop list**: file count, protocol density and "touches a protocol contract" no longer force an upgrade — only irreversible operations, SAFETY surfaces and global registration surfaces stop for a human. 296 lines of three-tier routing machinery removed. Lifecycle stays location-based (`active/` → `archive/`).
-- **Constraint pricing gate**: every new MUST/BLOCKING clause must first be priced in `.tad/evidence/audits/lite-constraint-ledger.md` — per-ticket cost, the failure mode it blocks (with a verbatim grep anchor), and a real incident carrier. Default action on review is deletion.
-- **Lite gained five capabilities**: read tool-orchestration docs (≤2 files, must name paths), spawn subagents for non-implementation work, write `session-state.md`, and commit/push after explicit human authorization.
-- **Measured, not assumed**: fixed read load per lite session is 62,220 chars (protocol layer 16,964 + knowledge layer 45,256); the full channel measures ≈221,281 — 3.56×.
+## TAD v2.43.0 Highlights
+- **YOLO2 opt-in orchestration**: durable recovery, bounded quality rounds, evidence binding, and a live-proven Codex fresh/resume core. Other harness adapters stay experimental until first use.
+- **Capability Builder Phase 1**: create, validate, project, and behaviorally evaluate project-owned Agent Skills while keeping `.agents` canonical in the downstream project.
+- **Local Wiki retrieval and capture**: local FTS5 search plus repository-owned Chrome/CDP rendered-page capture, with no runtime dependency on the external download-Markdown plugin.
+- **Honest rollout boundary**: YOLO2 is not default-on, Skill evolution remains parked, and public YouTube caption capture fails closed when unavailable.
 ## Support
 Report issues at: https://github.com/Sheldon-92/TAD/issues
 ```
