@@ -106,6 +106,14 @@ Wrapper around `.tad/cross-model/source-preprocessor.sh` (detect|validate|dispat
 Must NOT reimplement `normalize_url`/`validate_url`. Uses `printf '%s' "$url" | yq` safe escaping
 for frontmatter. Supports `x_article/bilibili/arxiv_abs/substack/medium/generic_web` + `arxiv_pdf` passthrough.
 
+### Browser-exported Markdown
+
+For content you are already authorized to view, export Markdown through the companion browser
+extension and import it with `python3 research/scripts/import-clip.py ~/Downloads/export.md`.
+The importer accepts a closed metadata subset, never stores credentials, never overwrites raw
+files, and routes YouTube transcript exports to `raw/transcripts/`. Search immediately with
+`python3 research/scripts/search.py query "phrase" --scope raw`.
+
 ## 9. Wiki Compilation
 
 `wiki/topics/<topic>.md` (topic skeleton) and `wiki/research/<canon-slug>.md` (per-canon answer)
