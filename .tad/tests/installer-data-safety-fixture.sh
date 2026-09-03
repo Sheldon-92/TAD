@@ -93,10 +93,16 @@ preflight_target() {
 }
 
 guarded_cleanup() {
+  # Family prefix /tmp/tad-ac (NOT /tmp/tad-ac. literal): members are
+  # /tmp/tad-ac.XXXXXX sandbox dirs AND /tmp/tad-ac-parent.XXXXXX sentinel
+  # files — after `tad-ac` comes `-`, never `.`, so a `.*` pattern would
+  # silently refuse half the family (found live 2026-09-03: vacuous FAIL).
+  # This is typo-protection (never bare-rm a wrong path), not an attacker
+  # boundary: non-empty + plain dir/file + symlink refusal do the real work.
   local d="$1"
   if [ -z "$d" ]; then echo "fixture: refusing cleanup of empty path" >&2; return 1; fi
   case "$d" in
-    /tmp/tad-ac.*)
+    /tmp/tad-ac*)
       if [ -d "$d" ] && [ ! -L "$d" ]; then rm -rf "$d"
       elif [ -f "$d" ] && [ ! -L "$d" ]; then rm -f "$d"
       else echo "fixture: not a plain dir/file: $d" >&2; return 1; fi
