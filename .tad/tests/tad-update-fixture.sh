@@ -30,7 +30,25 @@ DETECT_STATE_FIXTURE="$REPO_ROOT/.tad/tests/detect-state-fixture.sh"
 MIGRATION_RUNNER="$REPO_ROOT/.tad/tests/migration-fixtures/run-fixtures.sh"
 
 FIXTURE_VERSION="$(head -1 "$REPO_ROOT/.tad/version.txt" | tr -d '[:space:]')"
-OLD_VERSION="${OLD_VERSION:-2.43.0}"
+# Gate-4 finding 2026-09-03: version gate fails toward false-positive by design,
+# so derive OLD_VERSION from .tad/migrations/*-to-<current>.yaml to avoid a second literal source of truth.
+_derive_old_version() {
+    local _match_count=0
+    local _match_file=""
+    local _f
+    for _f in "$REPO_ROOT"/.tad/migrations/*-to-"$FIXTURE_VERSION".yaml; do
+        [ -e "$_f" ] || continue
+        _match_count=$((_match_count + 1))
+        _match_file="$_f"
+    done
+    if [ "$_match_count" -ne 1 ]; then
+        echo "tad-update-fixture: expected exactly one migration *-to-$FIXTURE_VERSION.yaml (found $_match_count)" >&2
+        exit 2
+    fi
+    basename "$_match_file" | cut -d- -f1
+}
+OLD_VERSION="${OLD_VERSION:-$(_derive_old_version)}"
+[ -n "${OLD_VERSION:-}" ] || { echo "tad-update-fixture: could not derive OLD_VERSION from .tad/migrations/*-to-$FIXTURE_VERSION.yaml" >&2; exit 2; }
 
 CASE="" EXPECTED_COMMIT=""
 while [ $# -gt 0 ]; do
