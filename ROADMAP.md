@@ -1,6 +1,6 @@
 # Roadmap
 
-> Strategic direction for TAD. Updated 2026-09-02 for v2.43.0.
+> Strategic direction for TAD. Updated 2026-09-02 for v2.43.1.
 > See [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) for current state and
 > [NEXT.md](./NEXT.md) for the tactical queue.
 
@@ -24,7 +24,7 @@ Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.m
 | YOLO 2.0 verified orchestration | Complete, opt-in | Codex fresh/resume is proven. Claude Code, OpenCode, and DeepSeek adapters are experimental and qualify on first real use. Default-on remains deferred. |
 | Local Wiki research | Complete | File-is-truth research, stdlib FTS5 retrieval, and native rendered-page capture are accepted. Public YouTube captions remain experimental; Whisper/vector retrieval wait for measured need. |
 | Capability Builder `create` | Phase 1 complete | Projects can create, validate, project, and behaviorally prove locally owned Agent Skills. Evolution and packaging remain separate phases. |
-| v2.43.0 release | Published | Full-default framework release containing YOLO2, Local Wiki capture, and Capability Builder Phase 1. See [CHANGELOG](./CHANGELOG.md). |
+| v2.43.1 release | Published | Full-default framework release containing YOLO2, Local Wiki capture, and Capability Builder Phase 1. See [CHANGELOG](./CHANGELOG.md). |
 
 ## Active and parked work
 

@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.43.1] - 2026-09-02
+
+### Fixed
+
+- **macOS upgrades no longer fail on dangling symlinks under `.tad/`.** BSD/macOS
+  lowercase `cp -r` dereferences a dangling symlink (the reported
+  `helpers/node_modules` case) and aborts under `set -e`, which made some real
+  projects un-upgradeable. Both project-data snapshot sites (the normal pre-mutation
+  backup and the legacy migration snapshot) now use symlink-preserving `cp -R`, and
+  the migration snapshot uses a unique captured path instead of a fixed name plus a
+  destructive pre-delete — a pre-existing recovery copy is never deleted or
+  overwritten. The normal backup now runs only after download, version validation,
+  and human confirmation, immediately before the first project mutation; a failed
+  backup aborts before any framework copy or migration.
+- **Installer rollback now fires on ACTION-branch failures.** Bash's `ERR` trap is
+  not triggered by a failing command inside a `case` branch, so failures such as a
+  missing source `CLAUDE.md` exited without restoring the project. Rollback moved to
+  the `EXIT` trap gated by a mutation flag set right after the backup.
+
+### Added
+
+- **`$tad-update` in Claude Code and Codex, `/tad-update` in OpenCode (updater-only).**
+  All three entrypoints delegate to one shared helper `.tad/scripts/tad-update.sh`,
+  which reports the current and remote versions, refuses downgrades, and — only
+  after explicit human confirmation or `--yes` after external approval — delegates
+  to the canonical tagged `tad.sh` under a new pinned release contract
+  (`--release-ref vX.Y.Z --expected-version X.Y.Z`). The installer downloads the
+  immutable tag archive into a private mode-0700 temp root outside the project,
+  validates exactly one safe extracted source root, and compares the derived
+  authoritative version before any project mutation.
+- **OpenCode support is updater-only by design.** Install/upgrade modes project
+  exactly one TAD-owned command (`.opencode/commands/tad-update.md`); unrelated
+  user OpenCode content is never touched, a divergent existing command fails the
+  preflight with a deterministic recovery instruction, and rollback removes only a
+  command this run created. OpenCode is not a full TAD platform and gains no
+  Alex/Blake/Gate roles, hooks, or gate parity.
+
+### Changed
+
+- `tad.sh` accepts `--release-ref`/`--expected-version` only as a matching strict
+  pair; pinned mode never consumes the mutable-main version probe, and the ordinary
+  curl install path is unchanged.
+
 ## [2.43.0] - 2026-09-02
 
 ### New Features

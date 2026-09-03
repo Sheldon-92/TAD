@@ -23,7 +23,7 @@ NC='\033[0m'
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="2.43.0"
+TARGET_VERSION="2.43.1"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -59,6 +59,13 @@ probe_remote_version() {
 # Global variables
 BACKUP_PATH=""
 DETECTED_PLATFORMS=""
+RELEASE_REF=""
+EXPECTED_VERSION=""
+PINNED_MODE=0
+# Migration snapshot captured once as a UNIQUE path; every later migration read
+# and the final report use this same variable (FR-1: never reuse a fixed name
+# that a pre-existing recovery copy may already own).
+MIGRATE_BACKUP_DIR=""
 
 # Argument parsing — while-loop + shift (supports --key value two-token args).
 # --yes/-y skips the interactive confirmation prompt (non-TTY: Claude Code Bash,
@@ -91,9 +98,16 @@ while [ $# -gt 0 ]; do
       [ -z "${2:-}" ] && echo "tad.sh: --unfork-pack requires a pack name" >&2 && exit 1
       UNFORK_PACK="$2"; shift 2 ;;
     --list-packs) LIST_PACKS=1; shift ;;
+    --release-ref)
+      [ -z "${2:-}" ] && echo "tad.sh: --release-ref requires a value" >&2 && exit 1
+      RELEASE_REF="$2"; shift 2 ;;
+    --expected-version)
+      [ -z "${2:-}" ] && echo "tad.sh: --expected-version requires a value" >&2 && exit 1
+      EXPECTED_VERSION="$2"; shift 2 ;;
     --help|-h)
       echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist]"
       echo "       tad.sh --fork-pack <name> | --unfork-pack <name> | --list-packs"
+      echo "       tad.sh --release-ref vX.Y.Z --expected-version X.Y.Z [--yes]  (pinned update)"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
       echo "  --platform <name>  target platform (claude-code, codex, both). Default: both"
@@ -104,10 +118,50 @@ while [ $# -gt 0 ]; do
       echo "  --unfork-pack <name> unmark a forked pack (follows upstream again)"
       echo "  --list-packs       show all installed packs with sync status"
       echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
+      echo "  --release-ref/--expected-version  pinned immutable-tag update (must be a matching pair)"
       exit 0 ;;
     *) echo "tad.sh: unknown option '$1' (use --help)" >&2; exit 1 ;;
   esac
 done
+
+# ============================================
+# Pinned release contract validation (FR-2)
+# ============================================
+# --release-ref and --expected-version must be a matching pair: the ref is the
+# immutable GitHub tag archive selector, the expected version is the strict
+# SemVer that the downloaded source's .tad/version.txt MUST equal. Neither may
+# appear alone. Strict syntax only — no version-prefix or ref-prefix guessing.
+# Pinned mode never calls probe_remote_version; the mutable-main target is
+# deliberately not consumed (a main that advertises a different version must
+# not leak into the decision).
+PINNED_MODE=0
+if [ -n "${RELEASE_REF:-}" ] || [ -n "${EXPECTED_VERSION:-}" ]; then
+    if [ -z "${RELEASE_REF:-}" ] || [ -z "${EXPECTED_VERSION:-}" ]; then
+        echo "tad.sh: --release-ref and --expected-version must be provided as a matching pair" >&2
+        exit 1
+    fi
+    case "$RELEASE_REF" in
+        v[0-9]*.[0-9]*.[0-9]*)
+            if [[ ! "$RELEASE_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "tad.sh: --release-ref must be strict vMAJOR.MINOR.PATCH (got: $RELEASE_REF)" >&2
+                exit 1
+            fi ;;
+        *) echo "tad.sh: --release-ref must be strict vMAJOR.MINOR.PATCH (got: $RELEASE_REF)" >&2; exit 1 ;;
+    esac
+    case "$EXPECTED_VERSION" in
+        [0-9]*.[0-9]*.[0-9]*)
+            if [[ ! "$EXPECTED_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "tad.sh: --expected-version must be strict MAJOR.MINOR.PATCH (got: $EXPECTED_VERSION)" >&2
+                exit 1
+            fi ;;
+        *) echo "tad.sh: --expected-version must be strict MAJOR.MINOR.PATCH (got: $EXPECTED_VERSION)" >&2; exit 1 ;;
+    esac
+    if [ "v${EXPECTED_VERSION}" != "$RELEASE_REF" ]; then
+        echo "tad.sh: --release-ref and --expected-version mismatch (v${EXPECTED_VERSION} != $RELEASE_REF)" >&2
+        exit 1
+    fi
+    PINNED_MODE=1
+fi
 
 # Validate --resolve parameter
 if [ -n "$RESOLVE_STRATEGY" ]; then
@@ -162,14 +216,25 @@ validate_environment() {
 # Phase 2: Backup Existing Config
 # ============================================
 backup_existing() {
-    local backup_dir=".tad.backup.$(date +%Y%m%d_%H%M%S)"
+    # Unique destination: same-second reruns must never overwrite or nest into
+    # an existing backup (FR-1). Suffix increments until a free name is found.
+    local base=".tad.backup.$(date +%Y%m%d_%H%M%S)"
+    local backup_dir="$base"
+    local n=1
+    while [ -e "$backup_dir" ]; do
+        backup_dir="${base}.$n"
+        n=$((n + 1))
+    done
 
     if [ -d ".tad" ]; then
         log_info "Backing up existing .tad/ to $backup_dir"
-        cp -r .tad "$backup_dir"
+        # Uppercase -R: on BSD/macOS, lowercase -r dereferences a dangling
+        # symlink and fails under set -e (the reported helpers/node_modules
+        # case). -R preserves the link and succeeds. The backup is user-owned
+        # project data; a failed backup MUST abort before any mutation.
+        cp -R .tad "$backup_dir"
         BACKUP_PATH="$backup_dir"
     fi
-
 }
 
 # ============================================
@@ -989,6 +1054,9 @@ HOOKS_EOF
         -not -path ".tad/pair-testing/*" | wc -l | tr -d ' ')
     log_success "  → Synced $count framework files to .tad/"
 
+    # --- OpenCode updater-only projection (exact single-file copy + compare) ---
+    project_opencode_command "$src"
+
     # --- AC3: post-install completeness self-check ---
     verify_install_complete "$src"
 }
@@ -1095,6 +1163,20 @@ verify_install_complete() {
                 missing=$((missing + 1))
             fi
         done
+    fi
+
+    # OpenCode updater-only command — the source owns it, so the target MUST
+    # carry it byte-identically (FR-4 completeness).
+    local src_op_f="$src/.opencode/commands/tad-update.md"
+    if [ -f "$src_op_f" ]; then
+        checked=$((checked + 1))
+        if [ ! -f ".opencode/commands/tad-update.md" ]; then
+            log_warn "    ✗ MISSING OpenCode command: .opencode/commands/tad-update.md"
+            missing=$((missing + 1))
+        elif ! cmp -s "$src_op_f" ".opencode/commands/tad-update.md"; then
+            log_warn "    ✗ MISMATCH OpenCode command: .opencode/commands/tad-update.md differs from source"
+            missing=$((missing + 1))
+        fi
     fi
 
     if [ "$missing" -eq 0 ]; then
@@ -1398,6 +1480,16 @@ rollback_on_failure() {
         log_info "Restored from backup: $BACKUP_PATH"
     fi
 
+    # Undo exactly the OpenCode command this run created (FR-4 rollback):
+    # pre-existing OpenCode content was never touched by construction.
+    rollback_opencode_projection
+
+    # Remove a download-created source tree (TAD-main) so a failed run leaves
+    # no TAD-* residue in the project (FR-2; pinned mode cleans via EXIT trap).
+    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "$TAD_SRC" ]; then
+        rm -rf "$TAD_SRC"
+    fi
+
     log_error "Rollback complete. Please check logs."
     exit 1
 }
@@ -1415,7 +1507,15 @@ if [ -n "$UNFORK_PACK" ]; then unfork_pack "$UNFORK_PACK"; exit 0; fi
 if [ "$LIST_PACKS" = "1" ]; then list_packs; exit 0; fi
 
 # Set trap for automatic rollback
-trap 'rollback_on_failure' ERR
+# ⚠️ 2026-09-02 (v2.43.1): ERR trap does NOT fire for failures inside a
+# `case` branch (verified: `case x in x) g;; esac` where g returns 1 exits
+# via set -e with NO ERR trap). merge_claude_md and other ACTION-branch steps
+# therefore never triggered rollback. Rollback now lives on the EXIT trap,
+# gated by NEED_ROLLBACK — set immediately before the first project mutation
+# and cleared on the success path. Every exit (set -e, explicit, signal) that
+# happens while NEED_ROLLBACK=1 restores the project.
+NEED_ROLLBACK=0
+trap 'if [ -n "${TAD_TMP_ROOT:-}" ] && [ -d "$TAD_TMP_ROOT" ]; then rm -rf "$TAD_TMP_ROOT"; fi; if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "$TAD_SRC" ]; then rm -rf "$TAD_SRC"; fi; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
 
 # ============================================
 # CLAUDE.md Merge (marker-based)
@@ -1515,8 +1615,137 @@ detect_state() {
 }
 
 # ============================================
-# Main Installation Flow
+# Pinned-source download (FR-2 immutable release binding)
 # ============================================
+# Downloads the immutable tag archive into a private mode-0700 temp root OUTSIDE
+# the project, validates the payload, discovers exactly one safe extracted source
+# root (no symlinked / escaping / multiple roots), and compares the derived
+# authoritative version against the pinned expected version BEFORE any project
+# state detection or mutation. On failure: prints the error, trap-cleans the
+# temp root, and exits 1 — the project tree is never touched.
+# Sets TAD_SRC (the verified root) and TAD_TMP_ROOT (cleaned by the EXIT trap).
+download_pinned_source() {
+    local ref="$1" expected="$2"
+    TAD_SRC_DOWNLOADED=0
+    local tmp_root
+    tmp_root=$(mktemp -d "${TMPDIR:-/tmp}/tad-update.XXXXXX") || { log_error "mktemp failed for pinned download"; exit 1; }
+    chmod 700 "$tmp_root"
+    local archive="$tmp_root/tad.tar.gz"
+    local tag_url="https://github.com/Sheldon-92/TAD/archive/refs/tags/${ref}.tar.gz"
+
+    log_info "  → Downloading pinned tag archive ${ref}..."
+    curl -fsSL --max-time 60 "$tag_url" -o "$archive" 2>/dev/null || {
+        log_error "Download failed for ${tag_url}"
+        rm -rf "$tmp_root"; exit 1
+    }
+    if [ ! -s "$archive" ]; then
+        log_error "Downloaded archive is empty — refusing to continue"
+        rm -rf "$tmp_root"; exit 1
+    fi
+    if ! tar -tzf "$archive" >/dev/null 2>&1; then
+        log_error "Downloaded payload is not a valid tar archive — refusing to extract"
+        rm -rf "$tmp_root"; exit 1
+    fi
+    mkdir -p "$tmp_root/src"
+    tar -xzf "$archive" -C "$tmp_root/src" 2>/dev/null || {
+        log_error "Archive extraction failed"
+        rm -rf "$tmp_root"; exit 1
+    }
+
+    # Discover exactly one safe extracted source root.
+    local roots=0 root=""
+    local entry
+    for entry in "$tmp_root"/src/*; do
+        [ -e "$entry" ] || continue
+        if [ ! -d "$entry" ] || [ -L "$entry" ]; then
+            log_error "Unsafe extracted root: $entry (must be a real directory, not a link)"
+            rm -rf "$tmp_root"; exit 1
+        fi
+        roots=$((roots + 1))
+        root="$entry"
+    done
+    if [ "$roots" -ne 1 ]; then
+        log_error "Expected exactly one extracted source root, found $roots"
+        rm -rf "$tmp_root"; exit 1
+    fi
+
+    TAD_SRC="$root"
+    TAD_TMP_ROOT="$tmp_root"
+
+    # Authoritative version comparison BEFORE any project mutation. Fail CLOSED
+    # on a missing/empty version.txt: derive_target_version's literal fallback
+    # must never stand in for an unverifiable archive version (FR-2 binding).
+    if [ ! -f "$TAD_SRC/.tad/version.txt" ]; then
+        log_error "Pinned source has no .tad/version.txt — refusing to install"
+        rm -rf "$tmp_root"; TAD_SRC=""; exit 1
+    fi
+    derive_target_version "$TAD_SRC"
+    if [ "$TARGET_VERSION" != "$expected" ]; then
+        log_error "Pinned version mismatch: expected ${expected}, archive source contains ${TARGET_VERSION}"
+        rm -rf "$tmp_root"; TAD_SRC=""; exit 1
+    fi
+    log_info "  → Pinned source verified: v${TARGET_VERSION} (ref ${ref})"
+}
+
+# ============================================
+# OpenCode updater-only projection (FR-4)
+# ============================================
+# Every install/upgrade mode projects exactly ONE TAD-owned command into
+# .opencode/commands/: tad-update.md. This function:
+#   - PREFLIGHT: if the target file already exists and differs from the source,
+#     fail before ANY .tad/.claude/.agents/root-file/.opencode mutation and print
+#     the deterministic recovery instruction. Identical content is accepted.
+#   - PROJECT: create parent dirs as needed, copy only that one file, and compare
+#     it with the source (byte-identical).
+#   - ROLLBACK: if this run created the file, record that fact so rollback can
+#     remove exactly that TAD-created file (and empty TAD-created parents),
+#     never pre-existing OpenCode content.
+# Never deletes or recursively synchronizes .opencode.
+OPCODE_CREATED_FILE=0
+
+opencode_preflight() {
+    local src="$1"
+    local src_f="$src/.opencode/commands/tad-update.md"
+    local tgt_f=".opencode/commands/tad-update.md"
+    [ -f "$src_f" ] || return 0
+    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f"; then
+        log_error "OpenCode conflict: .opencode/commands/tad-update.md already exists and differs from TAD's copy."
+        echo "  Recovery: rename or remove your file, then re-run the installer. Example:"
+        echo "    mv .opencode/commands/tad-update.md .opencode/commands/tad-update.md.local"
+        echo "  No files were changed by this run."
+        exit 1
+    fi
+}
+
+project_opencode_command() {
+    local src="$1"
+    local src_f="$src/.opencode/commands/tad-update.md"
+    [ -f "$src_f" ] || return 0
+    local tgt_f=".opencode/commands/tad-update.md"
+
+    if [ ! -f "$tgt_f" ]; then
+        OPCODE_CREATED_FILE=1
+    fi
+    mkdir -p .opencode/commands
+    cp "$src_f" "$tgt_f"
+    if ! cmp -s "$src_f" "$tgt_f"; then
+        log_error "OpenCode projection verification FAILED: .opencode/commands/tad-update.md differs from source"
+        return 1
+    fi
+    log_success "  → Projected .opencode/commands/tad-update.md (updater-only)"
+}
+
+# Rollback of an OpenCode command created by THIS run: remove exactly the file
+# this run created plus empty TAD-created parent directories. Never touches
+# pre-existing OpenCode content (the preflight guarantees a divergent file was
+# never reached, so only a fresh creation can be undone here).
+rollback_opencode_projection() {
+    if [ "$OPCODE_CREATED_FILE" = "1" ]; then
+        rm -f .opencode/commands/tad-update.md
+        rmdir .opencode/commands 2>/dev/null || true
+        rmdir .opencode 2>/dev/null || true
+    fi
+}
 main() {
     echo ""
     echo -e "${CYAN}=====================================${NC}"
@@ -1526,7 +1755,6 @@ main() {
     echo ""
 
     validate_environment
-    backup_existing
 
     # Resolve platform (from --platform flag or auto-detect)
     resolve_platform
@@ -1556,7 +1784,14 @@ main() {
 
     echo ""
 
-    probe_remote_version
+    if [ "$PINNED_MODE" != "1" ]; then
+        probe_remote_version
+    else
+        # Pinned mode: the target comes from the validated immutable tag archive,
+        # never from a mutable-main probe (FR-2). TARGET_VERSION was already set
+        # from the pinned expected version.
+        TARGET_VERSION="$EXPECTED_VERSION"
+    fi
     STATE=$(detect_state)
     CURRENT_VERSION="none"
     if [ -f ".tad/version.txt" ]; then
@@ -1611,7 +1846,13 @@ main() {
 
     # If already current, check --force
     if [ "$ACTION" == "none" ]; then
-        if [ "$FORCE" = "1" ]; then
+        if [ "$PINNED_MODE" = "1" ]; then
+            # Pinned mode target is exact by construction (tag archive verified
+            # against expected version); current == expected is a true no-op.
+            echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
+            echo ""
+            exit 0
+        elif [ "$FORCE" = "1" ]; then
             local cmp_result
             cmp_result="$(_tad_ver_cmp "$CURRENT_VERSION" "$TARGET_VERSION")"
             if [ "$cmp_result" = "0" ]; then
@@ -1656,7 +1897,7 @@ main() {
             echo -e "  ${GREEN}✓ Preserved:${NC} handoffs, evidence, project-knowledge"
             ;;
         "migrate")
-            echo "  1. Backup existing .tad/ to .tad-migrate-backup/"
+            echo "  1. Backup existing .tad/ to a unique .tad-migrate-backup.*/ directory"
             echo "  2. Create new v2.1 directory structure"
             echo "  3. Migrate your handoffs and evidence"
             echo "  4. Install skills"
@@ -1685,20 +1926,24 @@ main() {
     echo ""
     log_info "Downloading TAD Framework v${TARGET_VERSION}..."
 
-    # Download (--http1.1 fallback for GitHub HTTP2 framing errors)
-    curl -sSL "$DOWNLOAD_URL" | tar -xz 2>/dev/null || \
-    curl -sSL --http1.1 "$DOWNLOAD_URL" | tar -xz
-    TAD_SRC="TAD-main"
-    # FR-1b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 标记此 TAD_SRC 是本次下载
-    # 产生的临时目录，仅这种情况才可在收尾时 rm -rf 它。
-    TAD_SRC_DOWNLOADED=1
+    if [ "$PINNED_MODE" = "1" ]; then
+        download_pinned_source "$RELEASE_REF" "$EXPECTED_VERSION"
+    else
+        # Download (--http1.1 fallback for GitHub HTTP2 framing errors)
+        curl -sSL "$DOWNLOAD_URL" | tar -xz 2>/dev/null || \
+        curl -sSL --http1.1 "$DOWNLOAD_URL" | tar -xz
+        TAD_SRC="TAD-main"
+        # FR-1b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 标记此 TAD_SRC 是本次下载
+        # 产生的临时目录，仅这种情况才可在收尾时 rm -rf 它。
+        TAD_SRC_DOWNLOADED=1
 
-    # AC2: derive the authoritative version from the freshly-downloaded source's
-    # .tad/version.txt — this runs AFTER the download, so the derived value is
-    # fresh by construction; the state gate runs earlier and must rely on
-    # probe_remote_version / the ROOT FIX block, not the literal above.
-    derive_target_version "$TAD_SRC"
-    log_info "  → Source version: v${TARGET_VERSION}"
+        # AC2: derive the authoritative version from the freshly-downloaded source's
+        # .tad/version.txt — this runs AFTER the download, so the derived value is
+        # fresh by construction; the state gate runs earlier and must rely on
+        # probe_remote_version / the ROOT FIX block, not the literal above.
+        derive_target_version "$TAD_SRC"
+        log_info "  → Source version: v${TARGET_VERSION}"
+    fi
 
     # ROOT FIX：「已是最新」的判定，要么在状态闸用探测到的实时版本完成（探测成功，
     # 多数情况），要么推迟到这里用已下载源树的版本确认（探测失败）。两条路径都不再
@@ -1714,6 +1959,20 @@ main() {
         echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
         exit 0
     fi
+
+    # OpenCode collision preflight — AFTER immutable version validation, BEFORE
+    # any project mutation. A divergent existing .opencode/commands/tad-update.md
+    # fails here with zero changes across every managed surface and prints the
+    # deterministic rename/remove recovery instruction.
+    opencode_preflight "$TAD_SRC"
+
+    # FR-1: the normal project backup occurs immediately before the first
+    # project mutation — AFTER download, immutable-version validation, platform
+    # resolution, OpenCode collision preflight, and human confirmation. A failed
+    # backup aborts (set -e → EXIT trap → rollback) before any copy/migration.
+    backup_existing
+    # From here on, any non-success exit restores the project from the backup.
+    NEED_ROLLBACK=1
 
     # Execute based on action
     case $ACTION in
@@ -1866,11 +2125,18 @@ NEXTEOF
             log_info "Migrating and upgrading to v${TARGET_VERSION}..."
 
             # Structural backup for v1.x→v2.x migration (separate from engine's .tad-backup/)
+            # FR-1: unique destination captured ONCE; never delete or overwrite a
+            # pre-existing recovery copy; every later migration read and the final
+            # report use the same captured variable.
             log_info "  → Creating migration backup..."
-            if [ -d ".tad-migrate-backup" ]; then
-                rm -rf .tad-migrate-backup
-            fi
-            cp -r .tad .tad-migrate-backup
+            local mb_base=".tad-migrate-backup.$(date +%Y%m%d_%H%M%S)"
+            MIGRATE_BACKUP_DIR="$mb_base"
+            local mb_n=1
+            while [ -e "$MIGRATE_BACKUP_DIR" ]; do
+                MIGRATE_BACKUP_DIR="${mb_base}.$mb_n"
+                mb_n=$((mb_n + 1))
+            done
+            cp -R .tad "$MIGRATE_BACKUP_DIR"
 
             # Create project-specific directories
             mkdir -p .tad/active/handoffs
@@ -1894,18 +2160,21 @@ NEXTEOF
             fi
 
             # Migrate user data from backup (old directory layouts)
+            # cp -R (not -r): the backup may contain user-owned dangling
+            # symlinks; lowercase -r would dereference and fail, dropping the
+            # migration for that subtree (same class as FR-1).
             log_info "  → Migrating user data..."
-            if [ -d ".tad-migrate-backup/handoffs" ]; then
-                cp -r .tad-migrate-backup/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
+            if [ -d "$MIGRATE_BACKUP_DIR/handoffs" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/handoffs/"* .tad/active/handoffs/ 2>/dev/null || true
             fi
-            if [ -d ".tad-migrate-backup/active/handoffs" ]; then
-                cp -r .tad-migrate-backup/active/handoffs/* .tad/active/handoffs/ 2>/dev/null || true
+            if [ -d "$MIGRATE_BACKUP_DIR/active/handoffs" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/active/handoffs/"* .tad/active/handoffs/ 2>/dev/null || true
             fi
-            if [ -d ".tad-migrate-backup/working" ]; then
-                cp -r .tad-migrate-backup/working/* .tad/active/ 2>/dev/null || true
+            if [ -d "$MIGRATE_BACKUP_DIR/working" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/working/"* .tad/active/ 2>/dev/null || true
             fi
-            if [ -d ".tad-migrate-backup/context" ]; then
-                cp -r .tad-migrate-backup/context/* .tad/active/ 2>/dev/null || true
+            if [ -d "$MIGRATE_BACKUP_DIR/context" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/context/"* .tad/active/ 2>/dev/null || true
             fi
 
             # Archive old skills if needed
@@ -1984,12 +2253,15 @@ NEXTEOF
             echo "$TARGET_VERSION" > .tad/version.txt
 
             echo ""
-            log_success "Backup saved to .tad-migrate-backup/"
+            log_success "Backup saved to $MIGRATE_BACKUP_DIR/"
             ;;
     esac
 
     # Validate everything
     validate_generated_configs
+    # Success path: project is fully installed — disarm rollback so the
+    # EXIT trap leaves the tree in place.
+    NEED_ROLLBACK=0
 
     # Cleanup
     # FR-1b: 只清理本次下载产生的临时目录。若将来支持 --source <dir>，

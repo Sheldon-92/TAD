@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.43.0 — Alex / Blake is the Default**
+**Version 2.43.1 — Alex / Blake is the Default**
 
 ## 安装方式
 
@@ -48,7 +48,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.43.0
+cat .tad/version.txt          # 应显示 2.43.1
 ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 使用 Claude Code
@@ -72,6 +72,16 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 ```
 
 脚本自动检测现有安装，保留你的 handoffs、evidence、project-knowledge，只更新框架文件。
+
+### 项目内更新（`$tad-update` / `/tad-update`）
+
+安装后，当前项目内置一个更新入口，三个平台共用同一个 helper：
+
+- **Claude Code**：`$tad-update`（skill）
+- **Codex**：`$tad-update`（skill，与 Claude Code 字节一致）
+- **OpenCode**：`/tad-update`（**updater-only**：仅提供更新入口，不包含 Alex/Blake/Gate 角色、hooks 或 gate 能力）
+
+流程：先运行 `--check` 查看当前/远程版本与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 apply。helper 会在每次项目变更前自动备份，且仅在你确认后调用官方安装器。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
 
 ## 平台说明
 

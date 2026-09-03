@@ -6,11 +6,19 @@
 > ②a/②d/②e 三条标着「最高优先级」的待办**早已修复**，清单挂了两周没人划掉，
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 
-**当前版本**：2.43.0 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：2.43.1 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列（一个一个做，不并行）
+
+### 🟡 GATE-3-PASS 2026-09-02. TAD v2.43.1 backup repair + `/tad-update`
+
+- **Handoff**: `.tad/active/handoffs/HANDOFF-20260902-tad-update-v2431.md`
+- **Gate 2**: PASS after two independent review rounds; no unresolved P0/P1.
+- **Gate 3 (Blake)**: PASS — AC1–AC13 verified; Layer 2 spec-compliance/code-reviewer/test-runner all PASS (P0=0/P1=0/P2=0 after fix rounds); implementation committed locally, NOT pushed.
+- **Scope**: repair macOS dangling-symlink backups; add one current-project updater shared by Claude Code, Codex, and updater-only OpenCode `/tad-update`; then verify and publish v2.43.1.
+- **Boundary**: OpenCode is not added as a full TAD platform. Next: Alex Gate 4 on the exact commit; only after Gate 4, publish tag v2.43.1 + GitHub Release. Do NOT push/tag/release before Gate 4.
 
 ### ✅ DONE 2026-09-02. Local Wiki native browser capture
 

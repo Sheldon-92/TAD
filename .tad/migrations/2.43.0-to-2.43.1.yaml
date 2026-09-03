@@ -1,0 +1,10 @@
+schema_version: 1
+from: "2.43.0"
+to: "2.43.1"
+generated_by: "manual"
+note: |
+  Upgrade from v2.43.0 to v2.43.1. Patch release: backup-repair + updater +
+  updater-only OpenCode projection. No framework file is deleted or renamed in
+  this release, so the delete/rename lists are empty.
+delete: []
+rename: []

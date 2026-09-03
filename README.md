@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.43.0 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
+**Version 2.43.1 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -85,7 +85,7 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 
 ## 🎯 What's New in v2.43
 
-### v2.43.0 — Opt-in YOLO2, project-owned Skills, and local-first research
+### v2.43.1 — Opt-in YOLO2, project-owned Skills, and local-first research
 
 - **YOLO2 is complete as an opt-in workflow.** Durable recovery, bounded quality rounds,
   evidence attestation, and Codex native fresh/resume are accepted. Other harness adapters
@@ -171,11 +171,21 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 > 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 
+### In-project updates (`$tad-update` / `/tad-update`)
+
+Installed projects ship one shared update entrypoint: `$tad-update` in Claude Code
+and Codex, and `/tad-update` in OpenCode (**updater-only** — OpenCode gets the
+update entry, not Alex/Blake/Gate roles, hooks, or gate parity). All three delegate
+to `.tad/scripts/tad-update.sh`, which checks current/remote versions read-only,
+refuses downgrades, and applies only after explicit human confirmation. The helper
+backs up the project before the first mutation and delegates installation to the
+official tagged installer; it never runs unattended.
+
 ### Verify Installation
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.43.0
+# Should show: 2.43.1
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -491,6 +501,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.43.0 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
+**Welcome to TAD v2.43.1 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
 
 *AI does the work. Humans guard the value.*

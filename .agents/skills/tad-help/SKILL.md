@@ -14,7 +14,7 @@ When this command is used, provide comprehensive help for using TAD Framework.
 ### 📚 Help Output Template
 ```
 TAD Framework Help Guide
- Version: v2.43.0 | Generated: [timestamp]
+ Version: v2.43.1 | Generated: [timestamp]
 
 🚀 QUICK START CHECKLIST
 - [ ] Install: curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
@@ -218,7 +218,7 @@ TAD integrates with 16 Claude Code sub-agents:
  - Skills: `.tad/skills/` (8 platform-agnostic skills)
  - Config: `.tad/config.yaml` + modular config files (`config-agents`, `config-quality`, `config-execution`, `config-platform`)
 
-## TAD v2.43.0 Highlights
+## TAD v2.43.1 Highlights
 - **YOLO2 opt-in orchestration**: durable recovery, bounded quality rounds, evidence binding, and a live-proven Codex fresh/resume core. Other harness adapters stay experimental until first use.
 - **Capability Builder Phase 1**: create, validate, project, and behaviorally evaluate project-owned Agent Skills while keeping `.agents` canonical in the downstream project.
 - **Local Wiki retrieval and capture**: local FTS5 search plus repository-owned Chrome/CDP rendered-page capture, with no runtime dependency on the external download-Markdown plugin.

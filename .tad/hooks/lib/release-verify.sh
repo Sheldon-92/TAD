@@ -314,9 +314,18 @@ case "$MODE" in
         # reasons, and carried-forward paths. Exempt only that exact OLD→NEW file.
         if [ "$file" = ".tad/migrations/${OLD}-to-${NEW}.yaml" ]; then
           excluded=1
+        # Historical migration manifests: a PAST release's .tad/migrations/
+        # {from}-to-{to}.yaml records that release's own version facts. Its
+        # `to:`/`from:`/reason lines are provably-historical — after a release
+        # OLD moves forward and the previous manifest stops matching the
+        # OLD-to-NEW filename rule, so it must be excluded here or every
+        # subsequent release fails on its own history (e.g. the manifest of the
+        # immediately previous release, once a newer OLD is being verified).
+        elif printf '%s' "$file" | LC_ALL=C grep -qE '^\.tad/migrations/[0-9]+\.[0-9]+\.[0-9]+-to-[0-9]+\.[0-9]+\.[0-9]+\.yaml$'; then
+          excluded=1
         else
           case "$base" in
-            README.md|INSTALLATION_GUIDE.md|CHANGELOG.md|NEXT.md|PROJECT_CONTEXT.md|HISTORY.md)
+            README.md|INSTALLATION_GUIDE.md|CHANGELOG.md|NEXT.md|PROJECT_CONTEXT.md|HISTORY.md|ROADMAP.md)
               # (a) VERSION-LABEL table row — semver is the LEADING cell (a version-history row).
               #     A live install snippet (`| Install | pip install tad==X |`) has a NON-semver
               #     first cell → NOT matched here → still CAUGHT (P1-2 false-negative closed).
