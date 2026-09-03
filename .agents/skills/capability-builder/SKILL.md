@@ -3,9 +3,9 @@ name: capability-builder
 description: TAD-native project-owned Agent Skill creation via create with behavioral proof and safe projection to Claude runtime.
 ---
 
-# $capability-builder — Project-Owned Agent Skill Builder (Phase 1 Create)
+# $capability-builder — Project-Owned Agent Skill Builder (Phase 1 Create + Phase 2 Evolve + Phase 3 Package)
 
-Use for creating exactly one project-owned Agent Skill that is validated, behavior-proven, and safely projected from `.agents/skills/<name>/` to `.claude/skills/<name>/`.
+Use for creating exactly one project-owned Agent Skill that is validated, behavior-proven, and safely projected from `.agents/skills/<name>/` to `.claude/skills/<name>/`; for signal-driven evolution; and for explicit one-Skill/one-Plugin packaging.
 
 ## Ownership Directions
 
@@ -17,8 +17,8 @@ Use for creating exactly one project-owned Agent Skill that is validated, behavi
 On activation, detect intent:
 
 - `$capability-builder create` — Phase 1 (this handoff). Valid. Execute create protocol below.
-- `$capability-builder evolve` — Phase 2 (planned). **STOPPED_WITH_REASON**: evolve is not available in Phase 1. Do not attempt. Record `STOPPED_WITH_REASON: evolve is Phase 2` and stop. No writes.
-- `$capability-builder package` — Phase 3 (planned). **STOPPED_WITH_REASON**: package is not available in Phase 1. Do not attempt. Record `STOPPED_WITH_REASON: package is Phase 3` and stop. No writes.
+- `$capability-builder evolve` — Phase 2. Valid. You MUST read `references/evolve-protocol.md` before any design or file work, then follow the protocol.
+- `$capability-builder package` — Phase 3. Valid. You MUST read `references/package-openai-plugin.md` before any design or file work, then follow the protocol.
 
 If no explicit phase is given, ask via AskUserQuestion: `create | evolve | package`, then route.
 
@@ -28,6 +28,8 @@ If no explicit phase is given, ask via AskUserQuestion: `create | evolve | packa
 
 Progressive disclosure:
 - `references/create-protocol.md` — always on `create` (state machine + roles + evidence).
+- `references/evolve-protocol.md` — always on `evolve` (trigger enum + fixture-first + stops).
+- `references/package-openai-plugin.md` — always on `package` (scaffold/validate/install/drift).
 - `../capability-upgrade/references/legacy-pack-research.md` — only after a named evidence gap is found (deep research conditional). See protocol for when.
 
 ## Role Boundary (Alex vs Blake)
@@ -67,3 +69,5 @@ No empty directories. No speculative files. No `CAPABILITY.md`, root `README.md`
 ## References
 
 - `references/create-protocol.md` — create state machine and evidence flow (mandatory on create).
+- `references/evolve-protocol.md` — evolve state machine and evidence flow (mandatory on evolve).
+- `references/package-openai-plugin.md` — package scaffold/validate/install/drift (mandatory on package).
