@@ -62,10 +62,205 @@ DETECTED_PLATFORMS=""
 RELEASE_REF=""
 EXPECTED_VERSION=""
 PINNED_MODE=0
+# FR-1 --source offline mode (Phase 2 remainder).
+# SOURCE_ARG = flag value (--source <dir>); TAD_SOURCE_DIR env fills ONLY when
+# flag absent (flag wins, never silent env override — env use is logged).
+# SOURCE_MODE=1 iff validated --source effective; TAD_SOURCE_RESOLVED = physical
+# resolved source dir (cd && pwd -P); TAD_SRC/DOWNLOADED/TMP_ROOT runtime state.
+SOURCE_ARG=""
+SOURCE_MODE=0
+TAD_SOURCE_RESOLVED=""
+TAD_SRC=""
+TAD_SRC_DOWNLOADED=0
+TAD_TMP_ROOT=""
+# F-06 rollback state (absolutized at snapshot time; see take_rollback_snapshot).
+TARGET_ROOT=""
+BACKUP_PATH_ABS=""
+ROLLBACK_SNAP=""
+MERGE_CREATED_BACKUP=""
+ROLLBACK_CREATED_TOP=""
+ROLLBACK_PRE_TOP=""
 # Migration snapshot captured once as a UNIQUE path; every later migration read
 # and the final report use this same variable (FR-1: never reuse a fixed name
 # that a pre-existing recovery copy may already own).
 MIGRATE_BACKUP_DIR=""
+
+# ============================================
+# FR-1 --source offline mode (Phase 2 remainder)
+# ============================================
+# --source <dir> = fully-TRUSTED local tree. The installer runs (bash/sources)
+# engine scripts from it — never point it at an unreviewed checkout.
+# Validation runs at arg-parse time, BEFORE probe/download/trap-arm/backup and
+# the first bash/source of anything under the tree. On violation: usage error
+# (exit 1) with ZERO mutations (nothing has run yet by construction).
+resolve_tmpdir() {
+    # Fail-closed to /tmp unless TMPDIR is absolute + existing + writable.
+    # Trailing slashes are stripped (this host exports a trailing-slash TMPDIR).
+    case "${TMPDIR:-}" in
+        /*) if [ -d "$TMPDIR" ] && [ -w "$TMPDIR" ]; then
+                local _t="${TMPDIR%/}"
+                [ -n "$_t" ] || _t="/tmp"
+                printf '%s' "$_t"
+                return 0
+            fi ;;
+    esac
+    printf '/tmp'
+}
+
+# cleanup_source_tree — the SINGLE chokepoint allowed to remove $TAD_SRC.
+# User-supplied --source dirs (TAD_SRC_DOWNLOADED=0) are NEVER removed here:
+# the EXIT trap and rollback stay inert for them (FR-1b regression-pinned).
+cleanup_source_tree() {
+    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "${TAD_SRC:-}" ]; then
+        rm -rf "$TAD_SRC" # RM-OK:source-chokepoint-downloaded-only
+    fi
+}
+
+# discard_tmp_root <dir> — guarded removal for mktemp-created pinned/unpinned
+# download roots (basename must carry the tad-update. mktemp template).
+discard_tmp_root() {
+    local _d="${1:-}"
+    if [ -n "$_d" ] && [ -d "$_d" ]; then
+        case "$(basename "$_d")" in
+            tad-update.*) rm -rf "$_d" ;; # RM-OK:pinned-tmp-discard
+        esac
+    fi
+}
+
+# cleanup_installer_temp — EXIT-trap removal of the verified download root's
+# parent temp dir (set ONLY by the download paths from mktemp; never user input).
+cleanup_installer_temp() {
+    local _t="${TAD_TMP_ROOT:-}"
+    if [ -n "$_t" ] && [ -d "$_t" ]; then
+        case "$(basename "$_t")" in
+            tad-update.*) rm -rf "$_t" ;; # RM-OK:installer-tmp-root
+        esac
+    fi
+}
+
+# validate_tar_members <archive> — tar-slip gate for BOTH extract paths.
+# Rejects pre-extraction (zero outside writes): absolute members, dot-dot
+# members, and symlink/hardlink members whose `->` target escapes
+# (absolute or dot-dot). See N5 adjudication (evidence appendix) for the
+# `->` predicate rationale + residual.
+validate_tar_members() {
+    local archive="$1"
+    local listing
+    listing="$(tar -tzf "$archive" 2>/dev/null)" || { log_error "Downloaded payload is not a valid tar archive — refusing to extract"; return 1; }
+    if [ -z "$listing" ]; then
+        log_error "Archive member listing is empty — refusing to extract"
+        return 1
+    fi
+    local member
+    while IFS= read -r member; do
+        [ -n "$member" ] || continue
+        case "$member" in
+            /*) log_error "tar-slip rejected: absolute member: $member"; return 1 ;;
+        esac
+        case "$member" in
+            ..|../*|*/../*|*/..) log_error "tar-slip rejected: dot-dot member: $member"; return 1 ;;
+        esac
+    done <<< "$listing"
+    local vline linktarget
+    # NOTE: the verbose listing is captured ONCE with fail-closed error check
+    # (a failed/empty second listing must refuse, never skip the loop into
+    # a vacuous PASS). BSD + GNU tar both render symlinks as `-> target` and
+    # hardlinks as `link to target` — BOTH forms are checked with identical
+    # escaping rules. Filenames containing ` -> ` cannot smuggle an outside
+    # write: the worst parse yields a relative target (passes) while the
+    # member-name loop above still rejects absolute/dot-dot members, and any
+    # absolute/dot-dot fragment from a newline-split name rejects fail-closed.
+    local vlisting
+    vlisting="$(tar -tvzf "$archive" 2>/dev/null)" || { log_error "Downloaded payload verbose listing failed — refusing to extract"; return 1; }
+    if [ -z "$vlisting" ]; then
+        log_error "Downloaded payload verbose listing is empty — refusing to extract"
+        return 1
+    fi
+    while IFS= read -r vline; do
+        case "$vline" in
+            *" -> "*)
+                linktarget="${vline##* -> }"
+                case "$linktarget" in
+                    /*) log_error "tar-slip rejected: escaping link target: $vline"; return 1 ;;
+                esac
+                case "$linktarget" in
+                    ..|../*|*/../*|*/..) log_error "tar-slip rejected: escaping link target: $vline"; return 1 ;;
+                esac
+                ;;
+            *"link to "*)
+                linktarget="${vline##*link to }"
+                case "$linktarget" in
+                    /*) log_error "tar-slip rejected: escaping hardlink target: $vline"; return 1 ;;
+                esac
+                case "$linktarget" in
+                    ..|../*|*/../*|*/..) log_error "tar-slip rejected: escaping hardlink target: $vline"; return 1 ;;
+                esac
+                ;;
+        esac
+    done <<< "$vlisting"
+    return 0
+}
+
+# resolve_source_mode — flag/env resolution + full validation. Called once,
+# after the pinned-contract block (mutual exclusion needs PINNED verdicts)
+# and before probe/download/trap-arm/backup/first-exec.
+resolve_source_mode() {
+    # TAD_SOURCE_DIR env fills ONLY when the flag is absent (flag wins);
+    # env use is logged, never silent.
+    if [ -z "$SOURCE_ARG" ] && [ -n "${TAD_SOURCE_DIR:-}" ]; then
+        SOURCE_ARG="$TAD_SOURCE_DIR"
+        echo "tad.sh: using source tree from TAD_SOURCE_DIR=$TAD_SOURCE_DIR (flag --source absent; flag wins when both are given)" >&2
+    fi
+    if [ -z "$SOURCE_ARG" ]; then
+        return 0
+    fi
+    if [ -n "${RELEASE_REF:-}" ] || [ -n "${EXPECTED_VERSION:-}" ]; then
+        echo "tad.sh: --source is mutually exclusive with --release-ref/--expected-version" >&2
+        exit 1
+    fi
+    if [ -L "$SOURCE_ARG" ]; then
+        echo "tad.sh: --source must not be a symlink: $SOURCE_ARG" >&2
+        exit 1
+    fi
+    if [ ! -d "$SOURCE_ARG" ]; then
+        echo "tad.sh: --source is not a directory: $SOURCE_ARG" >&2
+        exit 1
+    fi
+    TAD_SOURCE_RESOLVED="$(cd "$SOURCE_ARG" && pwd -P)" || { echo "tad.sh: --source cannot be physically resolved: $SOURCE_ARG" >&2; exit 1; }
+    local _s
+    for _s in tad.sh .tad .claude .agents; do
+        if [ ! -e "$TAD_SOURCE_RESOLVED/$_s" ]; then
+            echo "tad.sh: --source tree is missing sentinel '$_s': $TAD_SOURCE_RESOLVED" >&2
+            exit 1
+        fi
+    done
+    local _target_phys _lsrc _ltgt
+    _target_phys="$(pwd -P)" || { echo "tad.sh: cannot resolve target directory" >&2; exit 1; }
+    # Case-normalised compare (APFS case-aliases); residual: exotic
+    # Unicode-normalisation aliases are NOT folded — documented, not silent.
+    _lsrc="$(printf '%s' "$TAD_SOURCE_RESOLVED" | tr '[:upper:]' '[:lower:]')"
+    _ltgt="$(printf '%s' "$_target_phys" | tr '[:upper:]' '[:lower:]')"
+    if [ "$_lsrc" = "$_ltgt" ]; then
+        echo "tad.sh: --source == target (post-resolution): $TAD_SOURCE_RESOLVED" >&2
+        exit 1
+    fi
+    case "$_lsrc/" in
+        "$_ltgt"/*)
+            echo "tad.sh: target is inside --source (self-nesting refused): target=$_target_phys source=$TAD_SOURCE_RESOLVED" >&2
+            exit 1
+            ;;
+    esac
+    case "$_ltgt/" in
+        "$_lsrc"/*)
+            echo "tad.sh: --source is inside target (self-nesting refused): target=$_target_phys source=$TAD_SOURCE_RESOLVED" >&2
+            exit 1
+            ;;
+    esac
+    SOURCE_MODE=1
+    TAD_SRC="$TAD_SOURCE_RESOLVED"
+    TAD_SRC_DOWNLOADED=0
+    derive_target_version "$TAD_SRC"
+}
 
 # Argument parsing — while-loop + shift (supports --key value two-token args).
 # --yes/-y skips the interactive confirmation prompt (non-TTY: Claude Code Bash,
@@ -101,6 +296,12 @@ while [ $# -gt 0 ]; do
     --release-ref)
       [ -z "${2:-}" ] && echo "tad.sh: --release-ref requires a value" >&2 && exit 1
       RELEASE_REF="$2"; shift 2 ;;
+    --source)
+      [ -z "${2:-}" ] && echo "tad.sh: --source requires a value" >&2 && exit 1
+      SOURCE_ARG="$2"; shift 2 ;;
+    --source=*)
+      [ -z "${1#--source=}" ] && echo "tad.sh: --source requires a value" >&2 && exit 1
+      SOURCE_ARG="${1#--source=}"; shift ;;
     --expected-version)
       [ -z "${2:-}" ] && echo "tad.sh: --expected-version requires a value" >&2 && exit 1
       EXPECTED_VERSION="$2"; shift 2 ;;
@@ -108,6 +309,7 @@ while [ $# -gt 0 ]; do
       echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist]"
       echo "       tad.sh --fork-pack <name> | --unfork-pack <name> | --list-packs"
       echo "       tad.sh --release-ref vX.Y.Z --expected-version X.Y.Z [--yes]  (pinned update)"
+      echo "       tad.sh --source <dir> [--platform <name>] --yes  (offline install from local tree)"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
       echo "  --platform <name>  target platform (claude-code, codex, both). Default: both"
@@ -119,6 +321,10 @@ while [ $# -gt 0 ]; do
       echo "  --list-packs       show all installed packs with sync status"
       echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
       echo "  --release-ref/--expected-version  pinned immutable-tag update (must be a matching pair)"
+      echo "  --source <dir>     offline source tree (fully-TRUSTED: the installer runs engine scripts"
+      echo "                     from it — never point at unreviewed checkouts). Bypasses the network"
+      echo "                     download + version probe; TAD_SOURCE_DIR env fills ONLY when the flag is"
+      echo "                     absent (flag wins). Mutually exclusive with --release-ref."
       exit 0 ;;
     *) echo "tad.sh: unknown option '$1' (use --help)" >&2; exit 1 ;;
   esac
@@ -170,6 +376,12 @@ if [ -n "$RESOLVE_STRATEGY" ]; then
         *) echo "tad.sh: --resolve must be local, upstream, or ask" >&2; exit 1 ;;
     esac
 fi
+
+# FR-1 --source resolution: flag/env + full trust validation, at arg-parse
+# time — BEFORE probe, download, trap-arm side effects, backup, and the first
+# bash/source of anything under the tree. Usage-error exits here leave ZERO
+# mutations (nothing has run yet by construction).
+resolve_source_mode
 
 # ============================================
 # Logging Functions
@@ -571,7 +783,7 @@ fork_pack() {
         echo "'$name' is already forked"; exit 0
     fi
 
-    sed -i.bak "s/^sync_policy:.*/sync_policy: forked/" "$meta_file" && rm -f "$meta_file.bak"
+    sed -i.bak "s/^sync_policy:.*/sync_policy: forked/" "$meta_file" && rm -f "$meta_file.bak" # RM-OK:fork-sed-bak
     echo "✓ '$name' forked — will be skipped on future installs"
 }
 
@@ -596,7 +808,7 @@ unfork_pack() {
         echo "'$name' is not forked (current: ${current:-upstream})"; exit 0
     fi
 
-    sed -i.bak "s/^sync_policy:.*/sync_policy: upstream/" "$meta_file" && rm -f "$meta_file.bak"
+    sed -i.bak "s/^sync_policy:.*/sync_policy: upstream/" "$meta_file" && rm -f "$meta_file.bak" # RM-OK:unfork-sed-bak
     echo "✓ '$name' unforked — will follow upstream on next install"
 }
 
@@ -839,6 +1051,16 @@ copy_framework_files() {
     # under $src/.tad/ EXCEPT TAD_TOP_DENY), NOT a fixed extension allow-list.
     # A new top-level framework file (.sh/.json/…) auto-copies — this is what
     # makes .tad/portable-extract.sh land on a fresh machine.
+    #
+    # AC2.6 version-floor: capture the PRE-SYNC target version BEFORE this
+    # loop overwrites .tad/version.txt with the source version.
+    # apply_deprecations compares deprecation entries against the OLD
+    # (pre-install) version — entries newer than what the target ran are
+    # inert for this run (pinned: old=2.2.0 → 2.3.0 inert; old=2.3.1 → applies).
+    local pre_sync_version=""
+    if [ -f ".tad/version.txt" ]; then
+        pre_sync_version="$(head -1 .tad/version.txt | tr -d '[:space:]')"
+    fi
     local tf
     while IFS= read -r tf; do
         [ -n "$tf" ] || continue
@@ -898,22 +1120,40 @@ copy_framework_files() {
                     continue
                 fi
             fi
+            # F-06: record run-created skill dirs for rollback removal (the
+            # atomic snap-restore covers pre-existing trees; these notes cover
+            # surfaces that did not exist pre-run).
+            local _skill_new=0
+            if [ ! -e "$TARGET_SKILL_DIR/$skill_name" ]; then _skill_new=1; fi
             if is_pack_skill "$skill_name" "$src"; then
                 copy_pack_skill_smart "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
             else
                 cp -r "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
             fi
+            if [ "$_skill_new" = "1" ] && [ -e "$TARGET_SKILL_DIR/$skill_name" ]; then
+                note_created_top "$TARGET_SKILL_DIR/$skill_name"
+            fi
         done
     fi
     # settings.json — platform deny check
     if ! is_denied ".claude/settings.json" "$platform_deny"; then
+        local _settings_new=0
+        if [ ! -e ".claude/settings.json" ]; then _settings_new=1; fi
         cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
+        if [ "$_settings_new" = "1" ] && [ -e ".claude/settings.json" ]; then
+            note_created_top ".claude/settings.json"
+        fi
     fi
     # Workflow scripts — platform deny check
     if ! is_denied ".claude/workflows" "$platform_deny"; then
         if [ -d "$src/.claude/workflows" ]; then
+            local _wf_new=0
+            if [ ! -e ".claude/workflows" ]; then _wf_new=1; fi
             mkdir -p .claude/workflows
             cp -r "$src"/.claude/workflows/* .claude/workflows/ 2>/dev/null || true
+            if [ "$_wf_new" = "1" ]; then
+                note_created_top ".claude/workflows"
+            fi
         fi
     fi
 
@@ -921,7 +1161,7 @@ copy_framework_files() {
     # Read .tad/deprecation.yaml and delete files listed for deprecation
     # versions ≤ current TARGET_VERSION. Previously no deprecation processing,
     # which caused 2.8.1 command file cleanup to never execute on downstream projects.
-    apply_deprecations "$src"
+    apply_deprecations "$src" "$pre_sync_version"
 
     # --- Root files from platform extra_root_files ---
     # 2026-08-16 (EPIC-20260816 Phase 2): deprecation.yaml v2.3.0 曾列 AGENTS.md，
@@ -935,18 +1175,31 @@ copy_framework_files() {
     if [ -n "$root_files" ]; then
         local rf
         local _rf_backup=""
+        local _rf_ts=""
+        local _rf_n=1
+        local _rf_new=0
         while IFS= read -r rf; do
             [ -n "$rf" ] || continue
             if [ -f "$src/$rf" ]; then
                 # FR-4b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 这些是【用户可能已有】的
                 # 根文件（如 AGENTS.md —— 跨厂商 agents.md 标准，Codex/Cursor/Aider/Zed 都读）。
                 # 原实现用裸 cp 直接覆盖，用户版本无声丢失。改为：已存在且内容不同时先备份。
+                _rf_new=0
+                if [ ! -e "./$rf" ]; then _rf_new=1; fi
                 if [ -f "./$rf" ] && ! cmp -s "$src/$rf" "./$rf"; then
-                    _rf_backup="./${rf}.pre-tad.$(date +%Y%m%d-%H%M%S)"
+                    _rf_ts="$(date +%Y%m%d-%H%M%S)"
+                    _rf_backup="./${rf}.pre-tad.${_rf_ts}"
+                    _rf_n=1
+                    while [ -e "$_rf_backup" ]; do _rf_backup="./${rf}.pre-tad.${_rf_ts}.$_rf_n"; _rf_n=$((_rf_n + 1)); done
                     cp "./$rf" "$_rf_backup" 2>/dev/null \
-                        && log_info "  → Backed up existing $rf → $(basename "$_rf_backup")"
+                        && { log_info "  → Backed up existing $rf → $(basename "$_rf_backup")"; note_created_top "${_rf_backup#./}"; }
                 fi
                 cp "$src/$rf" ./ 2>/dev/null || true
+                # F-06: a root file this run created (no pre-existing bytes)
+                # is rollback-removed (snapshot restore covers the rest).
+                if [ "$_rf_new" = "1" ] && [ -e "./$rf" ]; then
+                    note_created_top "$rf"
+                fi
             fi
         done <<< "$root_files"
     fi
@@ -965,10 +1218,15 @@ copy_framework_files() {
                         continue
                     fi
                 fi
+                local _skill_new_b=0
+                if [ ! -e ".agents/skills/$skill_name_b" ]; then _skill_new_b=1; fi
                 if is_pack_skill "$skill_name_b" "$src"; then
                     copy_pack_skill_smart "$skill_dir_b" ".agents/skills/$skill_name_b"
                 else
                     cp -r "$skill_dir_b" ".agents/skills/$skill_name_b"
+                fi
+                if [ "$_skill_new_b" = "1" ] && [ -e ".agents/skills/$skill_name_b" ]; then
+                    note_created_top ".agents/skills/$skill_name_b"
                 fi
             done
         fi
@@ -1013,6 +1271,11 @@ copy_framework_files() {
     # --- Codex hooks.json generation ---
     if [ "$PLATFORM" = "codex" ] || [ "$PLATFORM" = "both" ]; then
         mkdir -p .codex
+        # F-06: a generated hooks.json with no pre-existing bytes is
+        # rollback-removed (snapshot restore covers the pre-existing case).
+        local _hooks_new=0
+        if [ ! -e ".codex/hooks.json" ]; then _hooks_new=1; fi
+        if [ "$_hooks_new" = "1" ]; then note_created_top ".codex/hooks.json"; fi
         cat > .codex/hooks.json << 'HOOKS_EOF'
 {
   "description": "TAD lifecycle hooks",
@@ -1239,18 +1502,27 @@ call_migration_engine() {
 # ============================================
 # Phase 4b: Apply Deprecations (v2.8.2+)
 # ============================================
-# Reads .tad/deprecation.yaml and removes files listed for versions
-# from (old_version, current_version]. Simple semver parser — no yq dependency.
-# Safe: deletion errors are non-fatal.
+# Reads .tad/deprecation.yaml and removes files listed for versions ≤ the
+# comparison version: the pre-install target version when the target had one
+# (AC2.6 floor — entries newer than what the target ran are inert for this
+# run), else the source version (fresh install). Simple semver parser — no
+# yq dependency. Safe: deletion errors are non-fatal.
 apply_deprecations() {
     local src="$1"
+    local old_version="${2:-}"
     local dep_file="$src/.tad/deprecation.yaml"
 
     [ -f "$dep_file" ] || return 0
 
-    # Read TARGET_VERSION (MAJOR.MINOR) and actual full version
+    # AC2.6 version-floor: compare against the OLD (pre-install, pre-sync)
+    # target version passed by the caller. Entries newer than what the target
+    # ran are inert for this run (old=2.2.0 → 2.3.0 inert; old=2.3.1 → the 3
+    # TAD-owned 2.3.0 paths apply). Empty old (fresh install) falls back to
+    # the file reads below (post-sync source version — inert by absence).
     local current_version
-    if [ -f ".tad/version.txt" ]; then
+    if [ -n "$old_version" ]; then
+        current_version="$old_version"
+    elif [ -f ".tad/version.txt" ]; then
         current_version=$(head -1 .tad/version.txt | tr -d '[:space:]')
     elif [ -f "$src/.tad/version.txt" ]; then
         current_version=$(head -1 "$src/.tad/version.txt" | tr -d '[:space:]')
@@ -1390,7 +1662,7 @@ apply_deprecations() {
                         # .tad-backup, never anything in the target project itself.
                         # `|| true` because find exits 1 when the path is already gone,
                         # which would trip the ERR trap under set -e.
-                        find "$backup_base/$target" -depth -delete 2>/dev/null || true
+                        find "$backup_base/$target" -depth -delete 2>/dev/null || true # RM-OK:deprecation-backup-copy-purge
                     fi
                     if [ "$rc" -eq 0 ]; then
                         deleted=$(( deleted + 1 ))
@@ -1469,27 +1741,222 @@ validate_generated_configs() {
 }
 
 # ============================================
-# Phase 7: Rollback on Failure
+# Phase 7: Rollback on Failure (F-06: coverage-extended, absolutized, atomic)
 # ============================================
+# snap_one <relpath> — copy an existing target surface into ROLLBACK_SNAP.
+snap_one() {
+    local _p="$1"
+    if [ -e "$_p" ]; then
+        mkdir -p "$ROLLBACK_SNAP/$(dirname "$_p")"
+        cp -R "$_p" "$ROLLBACK_SNAP/$_p"
+    fi
+}
+
+# take_rollback_snapshot — capture the absolute target root, absolutize
+# BACKUP_PATH (a relative BACKUP_PATH is cwd-sensitive: the red defect), and
+# snapshot EVERY surface mutated after NEED_ROLLBACK=1: .tad/ is covered by
+# BACKUP_PATH; CLAUDE.md + timestamped backup, skills trees, root files,
+# .codex/hooks.json, settings/workflows are snapshotted here. Runs once,
+# immediately after NEED_ROLLBACK=1, before the first project mutation.
+take_rollback_snapshot() {
+    TARGET_ROOT="$(pwd -P)" || { log_error "cannot resolve target root for rollback snapshot"; exit 1; }
+    if [ -z "$TARGET_ROOT" ] || [ "$TARGET_ROOT" = "/" ]; then
+        log_error "refusing to snapshot: unsafe TARGET_ROOT ('$TARGET_ROOT')"
+        exit 1
+    fi
+    if [ -n "${BACKUP_PATH:-}" ]; then
+        case "$BACKUP_PATH" in
+            /*) BACKUP_PATH_ABS="$BACKUP_PATH" ;;
+            *) BACKUP_PATH_ABS="$TARGET_ROOT/$BACKUP_PATH" ;;
+        esac
+    fi
+    ROLLBACK_SNAP="$(mktemp -d "$(resolve_tmpdir)/tad-rollback.XXXXXX")" || { log_error "rollback snapshot mktemp failed"; exit 1; }
+    chmod 700 "$ROLLBACK_SNAP"
+    # Record which top-level framework surfaces pre-exist: on rollback, a
+    # framework top dir that did NOT pre-exist is entirely run-created and is
+    # removed wholesale (step 4); pre-existing ones restore file-precisely.
+    local _pre
+    ROLLBACK_PRE_TOP=""
+    for _pre in CLAUDE.md AGENTS.md GEMINI.md .tad .claude .agents .codex .opencode; do
+        if [ -e "$_pre" ]; then ROLLBACK_PRE_TOP="${ROLLBACK_PRE_TOP}${_pre} "; fi
+    done
+    snap_one "CLAUDE.md"
+    snap_one "AGENTS.md"
+    snap_one "GEMINI.md"
+    snap_one ".codex/hooks.json"
+    snap_one ".claude/settings.json"
+    snap_one ".claude/workflows"
+    snap_one ".claude/skills"
+    snap_one ".agents/skills"
+    snap_one ".tad/project-knowledge/README.md"
+}
+
+# discard_rollback_snap — success-path only: the install verified complete,
+# so the snapshot (a recovery copy) is consumed. Failure paths NEVER call
+# this (a failed restore must preserve its recovery sources).
+discard_rollback_snap() {
+    local _s="${ROLLBACK_SNAP:-}"
+    if [ -n "$_s" ] && [ -d "$_s" ]; then
+        case "$(basename "$_s")" in
+            tad-rollback.*) rm -rf "$_s" ;; # RM-OK:rollback-snap-consumed
+        esac
+    fi
+    ROLLBACK_SNAP=""
+}
+
+# note_created_top <relpath> — record a run-created top-level file for
+# rollback removal (only files this run created, never pre-existing bytes).
+note_created_top() {
+    ROLLBACK_CREATED_TOP="${ROLLBACK_CREATED_TOP:-}${1}
+"
+}
+
+# restore_dir_entry <snap_entry> <dst_path> — atomic DIRECTORY restore via a
+# same-filesystem staging dir + rename (never diff-output parsing, never a
+# merging cp-over that would leave run-created extras behind): stage ← snap,
+# verify stage, clear dst, rename stage → dst, re-verify. ANY failure returns
+# 1 with the recovery source (snap entry / backup) ALWAYS preserved — the
+# caller prints the explicit failed-state message naming it.
+restore_dir_entry() {
+    local _snap_e="$1" _dst="$2"
+    local _stage="${_dst}.rollback-staging"
+    rm -rf "$_stage" # RM-OK:rollback-stage-preclean
+    if cp -R "$_snap_e" "$_stage" 2>/dev/null \
+       && diff -rq "$_snap_e" "$_stage" >/dev/null 2>&1; then
+        if rm -rf "$_dst"; then # RM-OK:rollback-dst-clear
+            mkdir -p "$(dirname "$_dst")"
+            if mv "$_stage" "$_dst" \
+               && diff -rq "$_snap_e" "$_dst" >/dev/null 2>&1; then
+                return 0
+            fi
+        fi
+    fi
+    rm -rf "$_stage" 2>/dev/null # RM-OK:rollback-stage-abort
+    return 1
+}
+
 rollback_on_failure() {
     log_error "Installation failed. Rolling back..."
+    if [ -z "${TARGET_ROOT:-}" ]; then
+        TARGET_ROOT="$(pwd -P 2>/dev/null)" || TARGET_ROOT=""
+    fi
+    if [ -z "${TARGET_ROOT:-}" ] || [ "$TARGET_ROOT" = "/" ]; then
+        log_error "Rollback REFUSED: unsafe target root ('${TARGET_ROOT:-<empty>}'). Backup preserved at '${BACKUP_PATH_ABS:-${BACKUP_PATH:-<none>}}' / snapshot '${ROLLBACK_SNAP:-<none>}'. Restore manually."
+        exit 1
+    fi
+    local _restored_list="" _kept_list="" _removed_list=""
 
-    if [ -n "${BACKUP_PATH:-}" ] && [ -d "$BACKUP_PATH" ]; then
-        rm -rf .tad
-        mv "$BACKUP_PATH" .tad
-        log_info "Restored from backup: $BACKUP_PATH"
+    # 1. .tad/ via the absolutized backup: atomic stage-verify-rename (extras
+    # from the half-installed tree cannot survive — a merging cp-over would
+    # leave run-created files behind). A failed restore NEVER deletes the
+    # backup (ENOSPC class) — the failed-state message names the preserved path.
+    if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ]; then
+        if restore_dir_entry "$BACKUP_PATH_ABS" "$TARGET_ROOT/.tad"; then
+            rm -rf "$BACKUP_PATH_ABS" # RM-OK:rollback-backup-consumed
+            log_info "Restored from backup: $BACKUP_PATH_ABS (.tad/ verified, backup consumed)"
+            _restored_list="${_restored_list}.tad/ "
+        else
+            log_error "Rollback FAILED for .tad/ (stage, rename, or verify failed) — backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+            _kept_list="${_kept_list}.tad-backup "
+        fi
+    elif [ -z "${BACKUP_PATH_ABS:-}" ] && [ -d "$TARGET_ROOT/.tad" ]; then
+        # Fresh install: .tad/ is entirely run-created → guarded removal.
+        rm -rf "$TARGET_ROOT/.tad" # RM-OK:rollback-fresh-tad-created
+        log_info "Removed run-created .tad/ (fresh-install rollback)"
+        _removed_list="${_removed_list}.tad/ "
     fi
 
-    # Undo exactly the OpenCode command this run created (FR-4 rollback):
+    # 2. Snapshot surfaces (CLAUDE.md, skills trees, root files, hooks.json,
+    # settings/workflows): directories restore ATOMICALLY via staging+rename
+    # (merging cp-over would leave run-created extras — the ac2.8 skills
+    # residue class); files copy over + verify. The snapshot is the recovery
+    # copy — PRESERVED here regardless of outcome.
+    if [ -n "${ROLLBACK_SNAP:-}" ] && [ -d "$ROLLBACK_SNAP" ]; then
+        local _top _rel
+        for _top in "$ROLLBACK_SNAP"/* "$ROLLBACK_SNAP"/.*; do
+            [ -e "$_top" ] || continue
+            _rel="$(basename "$_top")"
+            case "$_rel" in .|..) continue ;; esac
+            if [ -d "$_top" ] && [ ! -L "$_top" ]; then
+                if restore_dir_entry "$_top" "$TARGET_ROOT/$_rel"; then
+                    _restored_list="${_restored_list}${_rel} "
+                else
+                    log_error "Rollback FAILED for $_rel — snapshot PRESERVED at $ROLLBACK_SNAP/$_rel; restore manually."
+                    _kept_list="${_kept_list}snap-$_rel "
+                fi
+            else
+                mkdir -p "$(dirname "$TARGET_ROOT/$_rel")"
+                if cp -R "$_top" "$TARGET_ROOT/$_rel" 2>/dev/null \
+                   && diff -rq "$_top" "$TARGET_ROOT/$_rel" >/dev/null 2>&1; then
+                    _restored_list="${_restored_list}${_rel} "
+                else
+                    log_error "Rollback FAILED for $_rel — snapshot PRESERVED at $ROLLBACK_SNAP/$_rel; restore manually."
+                    _kept_list="${_kept_list}snap-$_rel "
+                fi
+            fi
+        done
+    fi
+
+    # 3. Undo exactly the OpenCode command this run created (FR-4 rollback):
     # pre-existing OpenCode content was never touched by construction.
-    rollback_opencode_projection
-
-    # Remove a download-created source tree (TAD-main) so a failed run leaves
-    # no TAD-* residue in the project (FR-2; pinned mode cleans via EXIT trap).
-    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "$TAD_SRC" ]; then
-        rm -rf "$TAD_SRC"
+    if [ "${OPCODE_CREATED_FILE:-0}" = "1" ]; then
+        rollback_opencode_projection
+        _removed_list="${_removed_list}.opencode/commands/tad-update.md "
     fi
 
+    # 4. Remove exactly the files THIS run created (merge backup, fresh
+    # PROJECT_CONTEXT.md/NEXT.md, .pre-tad backups) — never user bytes.
+    if [ -n "${MERGE_CREATED_BACKUP:-}" ] && [ -e "$TARGET_ROOT/$MERGE_CREATED_BACKUP" ]; then
+        rm -f "$TARGET_ROOT/$MERGE_CREATED_BACKUP" # RM-OK:rollback-merge-backup
+        _removed_list="${_removed_list}${MERGE_CREATED_BACKUP} "
+    fi
+    local _c
+    while IFS= read -r _c; do
+        [ -n "$_c" ] || continue
+        case "$_c" in /*|*..*) continue ;; esac
+        if [ -e "$TARGET_ROOT/$_c" ]; then
+            rm -rf "$TARGET_ROOT/$_c" # RM-OK:rollback-created-top
+            _removed_list="${_removed_list}${_c} "
+        fi
+    done <<< "${ROLLBACK_CREATED_TOP:-}"
+
+    # 4b. Framework top dirs that did NOT pre-exist are entirely run-created
+    # (.tad is owned by step 1; the rest fall here). Fixed names under the
+    # absolutized root — pre-existing dirs are exempt via ROLLBACK_PRE_TOP,
+    # so user content inside them is never touched by this sweep.
+    local _td
+    for _td in .claude .agents .codex .opencode; do
+        case " ${ROLLBACK_PRE_TOP:-} " in
+            *" $_td "*) ;;
+            *)
+                if [ -e "$TARGET_ROOT/$_td" ]; then
+                    rm -rf "$TARGET_ROOT/$_td" # RM-OK:rollback-fresh-top-dirs
+                    _removed_list="${_removed_list}${_td}/ "
+                fi
+                ;;
+        esac
+    done
+    # 4c. Possibly-emptied parents (run-created skill/workflow dirs removed
+    # above can leave empty shells): rmdir removes ONLY empty dirs, never
+    # content — a non-empty dir (user content) stays, silently by design.
+    rmdir "$TARGET_ROOT/.claude/skills" 2>/dev/null || true # RM-OK:rollback-rmdir-skills
+    rmdir "$TARGET_ROOT/.agents/skills" 2>/dev/null || true # RM-OK:rollback-rmdir-agents-skills
+    rmdir "$TARGET_ROOT/.claude/workflows" 2>/dev/null || true # RM-OK:rollback-rmdir-workflows
+    # 4d. Structural migration backups are recovery copies — enumerated as
+    # preserved-for-manual-recovery, never removed here.
+    local _mb
+    for _mb in "$TARGET_ROOT"/.tad-migrate-backup.*; do
+        [ -e "$_mb" ] || continue
+        _kept_list="${_kept_list}$(basename "$_mb") "
+    done
+
+    # 5. Downloaded source residue via the single chokepoint (user-supplied
+    # --source trees stay inert here by construction).
+    cleanup_source_tree
+
+    # Coverage-enumerating message (R2 P0-1: coverage wins over message-only —
+    # every surface is listed as restored / removed / preserved-for-recovery).
+    log_info "Rollback coverage — restored: [${_restored_list:-none}] removed-run-created: [${_removed_list:-none}] preserved-for-manual-recovery: [${_kept_list:-none}]"
     log_error "Rollback complete. Please check logs."
     exit 1
 }
@@ -1500,6 +1967,46 @@ if [ "$VERIFY_DENYLIST" = "1" ]; then
     verify_denylist_drift
     exit $?
 fi
+
+# archive_old_skill_mds <skills_dir> — F-08: move legacy top-level *.md skill
+# files (except doc-organization.md) into a UNIQUE timestamped _archived.<ts>
+# dir (backup_existing()-style increment loop — skip-if-exists is WRONG per
+# audit: it silently drops the 2nd run's files). No legacy files → no dir is
+# created. A failed move is LOUD (return 1 → set -e → rollback restores the
+# skills tree from snapshot); the silent `mv || true` swallowing is removed
+# (scoped purge per MQ5 covers ONLY these two _archived call sites' success
+# path — there is no `|| true` left on the move itself).
+archive_old_skill_mds() {
+    local skill_base="$1"
+    [ -d "$skill_base" ] || return 0
+    local f found=0
+    for f in "$skill_base"/*.md; do
+        [ -f "$f" ] || continue
+        [ "$(basename "$f")" = "doc-organization.md" ] && continue
+        found=1
+        break
+    done
+    [ "$found" = "1" ] || return 0
+    local ts base dest n
+    ts="$(date +%Y%m%d_%H%M%S)"
+    base="$skill_base/_archived.$ts"
+    dest="$base"; n=1
+    while [ -e "$dest" ]; do dest="${base}.$n"; n=$((n + 1)); done
+    mkdir -p "$dest"
+    note_created_top "$dest"
+    local moved=0
+    for f in "$skill_base"/*.md; do
+        [ -f "$f" ] || continue
+        [ "$(basename "$f")" = "doc-organization.md" ] && continue
+        if mv "$f" "$dest/"; then
+            moved=$((moved + 1))
+        else
+            log_error "archive move failed: $f → $dest/ (refusing to swallow; rollback restores the skills tree)"
+            return 1
+        fi
+    done
+    log_info "  → Archived $moved legacy skill file(s) → $(basename "$dest")"
+}
 
 # Standalone pack management commands — exit before install flow
 if [ -n "$FORK_PACK" ]; then fork_pack "$FORK_PACK"; exit 0; fi
@@ -1515,7 +2022,7 @@ if [ "$LIST_PACKS" = "1" ]; then list_packs; exit 0; fi
 # and cleared on the success path. Every exit (set -e, explicit, signal) that
 # happens while NEED_ROLLBACK=1 restores the project.
 NEED_ROLLBACK=0
-trap 'if [ -n "${TAD_TMP_ROOT:-}" ] && [ -d "$TAD_TMP_ROOT" ]; then rm -rf "$TAD_TMP_ROOT"; fi; if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "$TAD_SRC" ]; then rm -rf "$TAD_SRC"; fi; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
+trap 'cleanup_installer_temp; cleanup_source_tree; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
 
 # ============================================
 # CLAUDE.md Merge (marker-based)
@@ -1534,8 +2041,19 @@ merge_claude_md() {
         return
     fi
 
-    # Always backup first
-    cp "CLAUDE.md" "CLAUDE.md.bak"
+    # F-05: namespaced timestamped backup (backup_existing() scheme). The bare
+    # `CLAUDE.md.bak` name is USER-OWNED — a pre-existing user file of that
+    # name must survive byte-identical (AC2.9), so the installer never
+    # creates, overwrites, or deletes it. The run-created backup path is
+    # recorded for rollback (removed on failure; original restored from snap).
+    MERGE_CREATED_BACKUP=""
+    local _ts _backup _n
+    _ts="$(date +%Y%m%d_%H%M%S)"
+    _backup="CLAUDE.md.backup.${_ts}"
+    _n=1
+    while [ -e "$_backup" ]; do _backup="CLAUDE.md.backup.${_ts}.$_n"; _n=$((_n + 1)); done
+    cp "CLAUDE.md" "$_backup"
+    MERGE_CREATED_BACKUP="$_backup"
 
     local marker_line
     marker_line=$(grep -nF "$marker" "CLAUDE.md" | head -1 | cut -d: -f1 || true)
@@ -1543,22 +2061,23 @@ merge_claude_md() {
     if [ -n "$marker_line" ]; then
         local content_start=$((marker_line + 1))
 
+        # Merge tmp lives in the validated TMPDIR, never in the project root
+        # (F-07: zero stray writes into the target).
         local tmpfile
-        tmpfile=$(mktemp "CLAUDE.md.merge.XXXXXX")
+        tmpfile=$(mktemp "$(resolve_tmpdir)/CLAUDE.md.merge.XXXXXX") || return 1
 
         # Invariant: source CLAUDE.md MUST end with the marker as its last line.
         # The full source (including marker) is written, then project content appended.
-        cat "$src/CLAUDE.md" > "$tmpfile" || { rm -f "$tmpfile"; return 1; }
+        cat "$src/CLAUDE.md" > "$tmpfile" || { rm -f "$tmpfile"; return 1; } # RM-OK:merge-tmp-abort
 
         # tail -n +N on a file shorter than N lines outputs nothing (safe no-op)
-        tail -n +"$content_start" "CLAUDE.md" >> "$tmpfile" || { rm -f "$tmpfile"; return 1; }
+        tail -n +"$content_start" "CLAUDE.md" >> "$tmpfile" || { rm -f "$tmpfile"; return 1; } # RM-OK:merge-tmp-abort-tail
 
-        mv "$tmpfile" "CLAUDE.md" || { rm -f "$tmpfile"; return 1; }
-        log_success "  → CLAUDE.md merged (project content preserved below marker)"
-        rm -f "CLAUDE.md.bak"
+        mv "$tmpfile" "CLAUDE.md" || { rm -f "$tmpfile"; return 1; } # RM-OK:merge-tmp-abort-mv
+        log_success "  → CLAUDE.md merged (project content preserved below marker; backup: $(basename "$_backup"))"
     else
         cp "$src/CLAUDE.md" ./
-        log_warn "CLAUDE.md backed up to CLAUDE.md.bak (no merge marker found)"
+        log_warn "CLAUDE.md backed up to $(basename "$_backup") (no merge marker found)"
         log_warn "If you had project-specific rules, restore them from the backup"
     fi
 }
@@ -1624,11 +2143,33 @@ detect_state() {
 # state detection or mutation. On failure: prints the error, trap-cleans the
 # temp root, and exits 1 — the project tree is never touched.
 # Sets TAD_SRC (the verified root) and TAD_TMP_ROOT (cleaned by the EXIT trap).
+# discover_single_source_root <tmp_root> — print the exactly-one safe extracted
+# source root (real directory, not a link). Fail CLOSED otherwise.
+discover_single_source_root() {
+    local tmp_root="$1"
+    local roots=0 root=""
+    local entry
+    for entry in "$tmp_root"/src/*; do
+        [ -e "$entry" ] || continue
+        if [ ! -d "$entry" ] || [ -L "$entry" ]; then
+            log_error "Unsafe extracted root: $entry (must be a real directory, not a link)"
+            return 1
+        fi
+        roots=$((roots + 1))
+        root="$entry"
+    done
+    if [ "$roots" -ne 1 ]; then
+        log_error "Expected exactly one extracted source root, found $roots"
+        return 1
+    fi
+    printf '%s' "$root"
+}
+
 download_pinned_source() {
     local ref="$1" expected="$2"
     TAD_SRC_DOWNLOADED=0
     local tmp_root
-    tmp_root=$(mktemp -d "${TMPDIR:-/tmp}/tad-update.XXXXXX") || { log_error "mktemp failed for pinned download"; exit 1; }
+    tmp_root=$(mktemp -d "$(resolve_tmpdir)/tad-update.XXXXXX") || { log_error "mktemp failed for pinned download"; exit 1; }
     chmod 700 "$tmp_root"
     local archive="$tmp_root/tad.tar.gz"
     local tag_url="https://github.com/Sheldon-92/TAD/archive/refs/tags/${ref}.tar.gz"
@@ -1636,37 +2177,25 @@ download_pinned_source() {
     log_info "  → Downloading pinned tag archive ${ref}..."
     curl -fsSL --max-time 60 "$tag_url" -o "$archive" 2>/dev/null || {
         log_error "Download failed for ${tag_url}"
-        rm -rf "$tmp_root"; exit 1
+        discard_tmp_root "$tmp_root"; exit 1
     }
     if [ ! -s "$archive" ]; then
         log_error "Downloaded archive is empty — refusing to continue"
-        rm -rf "$tmp_root"; exit 1
+        discard_tmp_root "$tmp_root"; exit 1
     fi
-    if ! tar -tzf "$archive" >/dev/null 2>&1; then
-        log_error "Downloaded payload is not a valid tar archive — refusing to extract"
-        rm -rf "$tmp_root"; exit 1
-    fi
+    # F-07: tar-slip member validation BEFORE extraction (both paths).
+    validate_tar_members "$archive" || { discard_tmp_root "$tmp_root"; exit 1; }
     mkdir -p "$tmp_root/src"
     tar -xzf "$archive" -C "$tmp_root/src" 2>/dev/null || {
         log_error "Archive extraction failed"
-        rm -rf "$tmp_root"; exit 1
+        discard_tmp_root "$tmp_root"; exit 1
     }
 
-    # Discover exactly one safe extracted source root.
-    local roots=0 root=""
-    local entry
-    for entry in "$tmp_root"/src/*; do
-        [ -e "$entry" ] || continue
-        if [ ! -d "$entry" ] || [ -L "$entry" ]; then
-            log_error "Unsafe extracted root: $entry (must be a real directory, not a link)"
-            rm -rf "$tmp_root"; exit 1
-        fi
-        roots=$((roots + 1))
-        root="$entry"
-    done
-    if [ "$roots" -ne 1 ]; then
-        log_error "Expected exactly one extracted source root, found $roots"
-        rm -rf "$tmp_root"; exit 1
+    local root
+    root="$(discover_single_source_root "$tmp_root")" || { discard_tmp_root "$tmp_root"; exit 1; }
+    if [ ! -f "$root/.tad/version.txt" ]; then
+        log_error "Pinned source has no .tad/version.txt — refusing to install"
+        discard_tmp_root "$tmp_root"; TAD_SRC=""; exit 1
     fi
 
     TAD_SRC="$root"
@@ -1675,16 +2204,56 @@ download_pinned_source() {
     # Authoritative version comparison BEFORE any project mutation. Fail CLOSED
     # on a missing/empty version.txt: derive_target_version's literal fallback
     # must never stand in for an unverifiable archive version (FR-2 binding).
-    if [ ! -f "$TAD_SRC/.tad/version.txt" ]; then
-        log_error "Pinned source has no .tad/version.txt — refusing to install"
-        rm -rf "$tmp_root"; TAD_SRC=""; exit 1
-    fi
     derive_target_version "$TAD_SRC"
     if [ "$TARGET_VERSION" != "$expected" ]; then
         log_error "Pinned version mismatch: expected ${expected}, archive source contains ${TARGET_VERSION}"
-        rm -rf "$tmp_root"; TAD_SRC=""; exit 1
+        discard_tmp_root "$tmp_root"; TAD_SRC=""; TAD_TMP_ROOT=""; exit 1
     fi
     log_info "  → Pinned source verified: v${TARGET_VERSION} (ref ${ref})"
+}
+
+# download_unpinned_source — F-07: the mutable-main path extracts into a
+# private mode-0700 temp root (TMPDIR-validated), never into the project cwd.
+# Tar-slip members are rejected pre-extraction with zero outside writes.
+download_unpinned_source() {
+    TAD_SRC_DOWNLOADED=0
+    local tmp_root
+    tmp_root=$(mktemp -d "$(resolve_tmpdir)/tad-update.XXXXXX") || { log_error "mktemp failed for download"; exit 1; }
+    chmod 700 "$tmp_root"
+    local archive="$tmp_root/tad.tar.gz"
+
+    log_info "  → Downloading TAD Framework v${TARGET_VERSION}..."
+    curl -sSL --max-time 60 "$DOWNLOAD_URL" -o "$archive" 2>/dev/null \
+        || curl -sSL --http1.1 --max-time 60 "$DOWNLOAD_URL" -o "$archive" 2>/dev/null \
+        || {
+            log_error "Download failed for $DOWNLOAD_URL"
+            discard_tmp_root "$tmp_root"; exit 1
+        }
+    if [ ! -s "$archive" ]; then
+        log_error "Downloaded archive is empty — refusing to continue"
+        discard_tmp_root "$tmp_root"; exit 1
+    fi
+    # F-07: tar-slip member validation BEFORE extraction (both paths).
+    validate_tar_members "$archive" || { discard_tmp_root "$tmp_root"; exit 1; }
+    mkdir -p "$tmp_root/src"
+    tar -xzf "$archive" -C "$tmp_root/src" 2>/dev/null || {
+        log_error "Archive extraction failed"
+        discard_tmp_root "$tmp_root"; exit 1
+    }
+
+    local root
+    root="$(discover_single_source_root "$tmp_root")" || { discard_tmp_root "$tmp_root"; exit 1; }
+    if [ ! -f "$root/.tad/version.txt" ]; then
+        log_error "Downloaded source has no .tad/version.txt — refusing to install"
+        discard_tmp_root "$tmp_root"; exit 1
+    fi
+
+    TAD_SRC="$root"
+    TAD_TMP_ROOT="$tmp_root"
+    TAD_SRC_DOWNLOADED=1
+
+    derive_target_version "$TAD_SRC"
+    log_info "  → Source version: v${TARGET_VERSION}"
 }
 
 # ============================================
@@ -1741,9 +2310,13 @@ project_opencode_command() {
 # never reached, so only a fresh creation can be undone here).
 rollback_opencode_projection() {
     if [ "$OPCODE_CREATED_FILE" = "1" ]; then
-        rm -f .opencode/commands/tad-update.md
-        rmdir .opencode/commands 2>/dev/null || true
-        rmdir .opencode 2>/dev/null || true
+        # F-06: absolute-target-only (the pre-fix relative form is the
+        # foreign-cwd clobber class). Empty-dir rmdirs keep `|| true`: a
+        # non-empty dir (user content) must NOT fail the rollback.
+        local _t="${TARGET_ROOT:-.}"
+        rm -f "$_t/.opencode/commands/tad-update.md" # RM-OK:rollback-opencode-created
+        rmdir "$_t/.opencode/commands" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-commands
+        rmdir "$_t/.opencode" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-root
     fi
 }
 main() {
@@ -1784,7 +2357,12 @@ main() {
 
     echo ""
 
-    if [ "$PINNED_MODE" != "1" ]; then
+    if [ "$SOURCE_MODE" = "1" ]; then
+        # FR-1 offline: the target was already derived from the trusted tree at
+        # arg-parse time — the probe is bypassed (same as the pinned branch) and
+        # the network is never touched.
+        :
+    elif [ "$PINNED_MODE" != "1" ]; then
         probe_remote_version
     else
         # Pinned mode: the target comes from the validated immutable tag archive,
@@ -1926,23 +2504,17 @@ main() {
     echo ""
     log_info "Downloading TAD Framework v${TARGET_VERSION}..."
 
-    if [ "$PINNED_MODE" = "1" ]; then
+    if [ "$SOURCE_MODE" = "1" ]; then
+        # FR-1 offline: skip curl/tar entirely. TAD_SRC is the validated
+        # user-supplied tree (TAD_SRC_DOWNLOADED=0) — cleanup stays inert
+        # for it via the single cleanup_source_tree chokepoint (FR-1b).
+        log_info "  → Offline source: $TAD_SRC (no download; probe bypassed)"
+        log_info "  → Source version: v${TARGET_VERSION}"
+    elif [ "$PINNED_MODE" = "1" ]; then
         download_pinned_source "$RELEASE_REF" "$EXPECTED_VERSION"
     else
-        # Download (--http1.1 fallback for GitHub HTTP2 framing errors)
-        curl -sSL "$DOWNLOAD_URL" | tar -xz 2>/dev/null || \
-        curl -sSL --http1.1 "$DOWNLOAD_URL" | tar -xz
-        TAD_SRC="TAD-main"
-        # FR-1b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 标记此 TAD_SRC 是本次下载
-        # 产生的临时目录，仅这种情况才可在收尾时 rm -rf 它。
-        TAD_SRC_DOWNLOADED=1
-
-        # AC2: derive the authoritative version from the freshly-downloaded source's
-        # .tad/version.txt — this runs AFTER the download, so the derived value is
-        # fresh by construction; the state gate runs earlier and must rely on
-        # probe_remote_version / the ROOT FIX block, not the literal above.
-        derive_target_version "$TAD_SRC"
-        log_info "  → Source version: v${TARGET_VERSION}"
+        # Unpinned mutable-main path: temp-dir extraction (F-07), never cwd.
+        download_unpinned_source
     fi
 
     # ROOT FIX：「已是最新」的判定，要么在状态闸用探测到的实时版本完成（探测成功，
@@ -1950,11 +2522,10 @@ main() {
     # 依赖 L22 的字面量，因此字面量陈旧不可能再产生静默 no-op。本块是后一条路径。
     if [ "$FORCE" != "1" ] && [ "$CURRENT_VERSION" != "none" ] \
        && [ "$(_tad_ver_cmp "$CURRENT_VERSION" "$TARGET_VERSION")" != "-1" ]; then
-        # FR-1b: 只清理本次下载产生的临时目录。若将来支持 --source <dir>，
-        # $TAD_SRC 会是用户传入的路径，绝不能删。
-        if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ]; then
-            rm -rf "$TAD_SRC"
-        fi
+        # FR-1b: 只清理本次下载产生的临时目录。--source <dir> 传入的用户
+        # 路径（TAD_SRC_DOWNLOADED=0）绝不能删 —— 经由单一 cleanup_source_tree
+        # 收口（AC 断言：没有别的 rm 引用 TAD_SRC）。
+        cleanup_source_tree
         echo ""
         echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
         exit 0
@@ -1973,6 +2544,10 @@ main() {
     backup_existing
     # From here on, any non-success exit restores the project from the backup.
     NEED_ROLLBACK=1
+    # F-06: absolutize target + backup and snapshot every mutable surface
+    # (CLAUDE.md, skills trees, root files, hooks.json, settings/workflows)
+    # BEFORE the first project mutation below.
+    take_rollback_snapshot
 
     # Execute based on action
     case $ACTION in
@@ -2032,6 +2607,7 @@ main() {
 ---
 *Last Updated: [Date]*
 CTXEOF
+                note_created_top "PROJECT_CONTEXT.md"
             fi
 
             if [ ! -f "NEXT.md" ]; then
@@ -2053,6 +2629,7 @@ CTXEOF
 ---
 *Managed by TAD Framework*
 NEXTEOF
+                note_created_top "NEXT.md"
             fi
 
             # Hint: codebase-memory-mcp for code intelligence (opt-in, user installs manually)
@@ -2087,15 +2664,9 @@ NEXTEOF
             mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
 
-            # Archive old skills if needed
-            if [ -d ".claude/skills" ] && [ ! -d ".claude/skills/_archived" ]; then
-                mkdir -p .claude/skills/_archived
-                for f in .claude/skills/*.md; do
-                    if [ -f "$f" ] && [ "$(basename "$f")" != "doc-organization.md" ]; then
-                        mv "$f" .claude/skills/_archived/ 2>/dev/null || true
-                    fi
-                done
-            fi
+            # Archive legacy top-level skill files (F-08: unique timestamped
+            # dir per run via the shared increment loop — never skip-if-exists).
+            archive_old_skill_mds ".claude/skills"
 
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
@@ -2155,9 +2726,6 @@ NEXTEOF
             mkdir -p .tad/project-knowledge
             mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
-            if [ -d ".claude/skills" ]; then
-                mkdir -p .claude/skills/_archived
-            fi
 
             # Migrate user data from backup (old directory layouts)
             # cp -R (not -r): the backup may contain user-owned dangling
@@ -2177,14 +2745,9 @@ NEXTEOF
                 cp -R "$MIGRATE_BACKUP_DIR/context/"* .tad/active/ 2>/dev/null || true
             fi
 
-            # Archive old skills if needed
-            if [ -d ".claude/skills" ]; then
-                for f in .claude/skills/*.md; do
-                    if [ -f "$f" ] && [ "$(basename "$f")" != "doc-organization.md" ]; then
-                        mv "$f" .claude/skills/_archived/ 2>/dev/null || true
-                    fi
-                done
-            fi
+            # Archive legacy top-level skill files (F-08: same unique
+            # timestamped-dir rule as the upgrade branch).
+            archive_old_skill_mds ".claude/skills"
 
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
@@ -2219,6 +2782,7 @@ NEXTEOF
 ---
 *Last Updated: [Date]*
 CTXEOF
+                note_created_top "PROJECT_CONTEXT.md"
             fi
 
             if [ ! -f "NEXT.md" ]; then
@@ -2240,6 +2804,7 @@ CTXEOF
 ---
 *Managed by TAD Framework*
 NEXTEOF
+                note_created_top "NEXT.md"
             fi
 
             # Hint: codebase-memory-mcp for code intelligence (opt-in, user installs manually)
@@ -2259,16 +2824,16 @@ NEXTEOF
 
     # Validate everything
     validate_generated_configs
-    # Success path: project is fully installed — disarm rollback so the
-    # EXIT trap leaves the tree in place.
+    # Success path: snapshot consumed (recovery copy no longer needed), then
+    # disarm rollback so the EXIT trap leaves the tree in place.
+    discard_rollback_snap
     NEED_ROLLBACK=0
 
     # Cleanup
-    # FR-1b: 只清理本次下载产生的临时目录。若将来支持 --source <dir>，
-    # $TAD_SRC 会是用户传入的路径，绝不能删。
-    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ]; then
-        rm -rf "$TAD_SRC"
-    fi
+    # FR-1b: 只清理本次下载产生的临时目录。--source <dir> 传入的用户路径绝不能删
+    # —— 经由单一 cleanup_source_tree 收口（AC 断言：没有别的 rm 引用 TAD_SRC）。
+    # 下载产生的 temp root 由 EXIT trap 经 cleanup_installer_temp 清理。
+    cleanup_source_tree
 
     echo ""
     echo -e "${GREEN}=====================================${NC}"

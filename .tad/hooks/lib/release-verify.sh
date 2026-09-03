@@ -84,6 +84,20 @@
 #       exit 2 = usage/wiring error. The script always exits honestly — the caller
 #       (publish-protocol step3d) handles warn/block downgrade via TAD_RELEASE_GATE.
 #
+#   installer-destructive-guard <repo_root>
+#       Machine-checked destructive-operation guard (AC2.5): every `rm -rf` /
+#       `rm -f` / `find -delete` / `rmdir` call site in <repo_root>/tad.sh carries
+#       a SAME-LINE `# RM-OK:<id>` marker (one per site, each id used exactly
+#       once; per-site id→reason table lives in the evidence appendix).
+#       `cp`/`mv`-onto-user-destination vectors are covered BEHAVIORALLY by the
+#       sandbox suite (AC2.2/2.4/2.9/2.10) — stated explicitly, never via this
+#       check alone. Comment/prose mentions are excluded ONLY by baked-in
+#       fixed-string literals inside the check (each a reviewed literal; Gate 3
+#       verifies no exclusion covers a real call via a mutation probe).
+#       Exit 0 = all sites marked + ids unique; exit 1 = unmarked/duplicate
+#       site (each NAMED file:line); exit 2 = usage. STABLE-contract: the
+#       exit-code meanings are frozen (see gate rule above).
+#
 #   parity [--fix] <repo_root>
 #       Claude↔Codex dual-platform skills parity: diff -rq <repo>/.claude/skills vs
 #       <repo>/.agents/skills (the Codex mirror). The invariant is FULL BYTE-PARITY with
@@ -134,6 +148,7 @@ usage() {
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
   echo "  release-verify.sh parity [--fix] <repo_root>" >&2
   echo "  release-verify.sh platform-skills <source_root> <target_root>" >&2
+  echo "  release-verify.sh installer-destructive-guard <repo_root>" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -1036,6 +1051,93 @@ VERSION_SWEEP_EOF
       exit 0
     else
       echo "VERDICT: platform-skills FAIL — $fails missing/drifted skill(s) (exit 1)"
+      exit 1
+    fi
+    ;;
+
+  # ───────────────────────── installer-destructive-guard ─────────────────────────
+  installer-destructive-guard)
+    if [ $# -ne 2 ]; then usage; exit 2; fi
+    GREPO="$2"
+    GFILE="$GREPO/tad.sh"
+    if [ ! -f "$GFILE" ]; then echo "ERROR: tad.sh not found under: $GREPO" >&2; exit 2; fi
+
+    echo "========================================="
+    echo "INSTALLER-DESTRUCTIVE-GUARD (per-site RM-OK markers)"
+    echo "  FILE: $GFILE"
+    echo "========================================="
+
+    # Baked-in comment/prose exclusions — REVIEWED FIXED-STRING literals (each
+    # names a prose fragment that cannot be a live call: live calls never start
+    # with `#`). Listed in the evidence appendix; the mutation probe proves no
+    # exclusion covers a real call. The probe itself lives in the fixture suite
+    # (installer-data-safety-fixture.sh case_ac25), not here: the guard stays a
+    # pure assertion so it can run on any checkout without side effects.
+    GEXCL1="so the AC that forbids"
+    GEXCL2="Empty-dir rmdirs keep"
+    GEXCL3="rmdir removes ONLY empty dirs"
+
+    gcandidates="$(grep -nE -e 'rm -rf|rm -fr|rm -f|rmdir|-delete' "$GFILE")" || true
+    if [ -z "$gcandidates" ]; then
+      echo "  (no destructive-verb lines found)"
+      echo "VERDICT: installer-destructive-guard PASS (exit 0)"
+      exit 0
+    fi
+
+    gids_file="$(mktemp /tmp/tad-guard-ids.XXXXXX)" || exit 2
+    gfails=0
+    gmarked=0
+    gexcluded=0
+    while IFS= read -r gline; do
+      [ -n "$gline" ] || continue
+      gno="${gline%%:*}"
+      gcontent="${gline#*:}"
+      if printf '%s' "$gcontent" | grep -qF -e '# RM-OK:'; then
+        # One marker per site: extract EVERY id on the line (multi-site lines
+        # carry N markers); each id must be non-empty [A-Za-z0-9_-].
+        gids_on_line="$(printf '%s' "$gcontent" | grep -o -e 'RM-OK:[A-Za-z0-9][A-Za-z0-9_-]*' | sed -e 's/^RM-OK://')" || true
+        if [ -z "$gids_on_line" ]; then
+          echo "  ❌ UNMARKED (malformed marker): tad.sh:$gno" >&2
+          gfails=$((gfails + 1))
+          continue
+        fi
+        while IFS= read -r gid; do
+          [ -n "$gid" ] || continue
+          printf '%s\n' "$gid" >> "$gids_file"
+          gmarked=$((gmarked + 1))
+        done <<< "$gids_on_line"
+      else
+        # Comment-only lines (#-first) matching a baked literal are excluded.
+        if printf '%s' "$gcontent" | grep -qE -e '^[[:space:]]*#' \
+           && { printf '%s' "$gcontent" | grep -qF -e "$GEXCL1" \
+                || printf '%s' "$gcontent" | grep -qF -e "$GEXCL2" \
+                || printf '%s' "$gcontent" | grep -qF -e "$GEXCL3"; }; then
+          gexcluded=$((gexcluded + 1))
+        else
+          echo "  ❌ UNMARKED: tad.sh:$gno: $(printf '%s' "$gcontent" | head -c 120)" >&2
+          gfails=$((gfails + 1))
+        fi
+      fi
+    done <<< "$gcandidates"
+
+    # Uniqueness: each id used exactly once.
+    gdupes="$(LC_ALL=C sort "$gids_file" | LC_ALL=C uniq -d)" || true
+    rm -f "$gids_file"
+    if [ -n "$gdupes" ]; then
+      while IFS= read -r gd; do
+        [ -n "$gd" ] || continue
+        echo "  ❌ DUPLICATE id: $gd" >&2
+      done <<< "$gdupes"
+      gfails=$((gfails + 1))
+    fi
+
+    echo "-----------------------------------------"
+    echo "Marked: $gmarked  Excluded(prose): $gexcluded"
+    if [ "$gfails" -eq 0 ]; then
+      echo "VERDICT: installer-destructive-guard PASS (exit 0)"
+      exit 0
+    else
+      echo "VERDICT: installer-destructive-guard FAIL — $gfails unmarked/duplicate site(s) (exit 1)"
       exit 1
     fi
     ;;

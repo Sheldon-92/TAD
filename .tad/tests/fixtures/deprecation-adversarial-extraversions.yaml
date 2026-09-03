@@ -1,0 +1,24 @@
+# Adversarial parser fixture (AC2.7): extra versions (future + unordered) and a
+# removed-list entry naming a PRESENT user file. Check 3 must PASS on the
+# AC2.7 target (AGENTS.md + .codex/ present; listed files: paths absent).
+# A leak would flag AGENTS.md and FAIL. (Static tracked fixture; see N6.)
+
+deprecations:
+  "9.9.9":
+    description: "adversarial-fixture: future version, absent path only"
+    files:
+      - .codex/never-existed-absent.json
+    date: "2030-01-01"
+
+  "2.3.0":
+    description: "adversarial-fixture: unordered after future version"
+    removed_from_this_list:
+      - path: AGENTS.md
+        owner: user
+        reason: "cross-vendor agents.md standard; user may have their own"
+      - path: GEMINI.md
+        owner: user
+        reason: "user-owned Gemini instructions file"
+    files:
+      - .tad/templates/OLD-REMOVED-ABSENT.template
+    date: "2026-02-17"
