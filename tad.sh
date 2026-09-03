@@ -110,9 +110,24 @@ resolve_tmpdir() {
 # cleanup_source_tree — the SINGLE chokepoint allowed to remove $TAD_SRC.
 # User-supplied --source dirs (TAD_SRC_DOWNLOADED=0) are NEVER removed here:
 # the EXIT trap and rollback stay inert for them (FR-1b regression-pinned).
+# Defense in depth (R2 P1-5): downloaded trees must additionally live under
+# the mktemp root (basename tad-update.*, literal prefix) — a corrupted
+# TAD_SRC value refuses LOUDLY instead of deleting.
 cleanup_source_tree() {
-    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "${TAD_SRC:-}" ]; then
-        rm -rf "$TAD_SRC" # RM-OK:source-chokepoint-downloaded-only
+    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "${TAD_SRC:-}" ] \
+       && [ -n "${TAD_TMP_ROOT:-}" ] && [ -d "${TAD_TMP_ROOT:-}" ]; then
+        case "$(basename "$TAD_TMP_ROOT")" in
+            tad-update.*)
+                if _literal_has_prefix "$TAD_SRC/" "$TAD_TMP_ROOT/"; then
+                    rm -rf "$TAD_SRC" # RM-OK:source-chokepoint-downloaded-only
+                else
+                    log_error "cleanup_source_tree REFUSED: TAD_SRC outside mktemp root: $TAD_SRC"
+                fi
+                ;;
+            *)
+                log_error "cleanup_source_tree REFUSED: unexpected tmp root basename: $TAD_TMP_ROOT"
+                ;;
+        esac
     fi
 }
 
@@ -234,32 +249,61 @@ resolve_source_mode() {
             exit 1
         fi
     done
+    # version.txt is REQUIRED (R2 P1-3): without it derive_target_version
+    # silently falls back to a baked literal while the download paths exit 1
+    # on the same condition — fail closed here too.
+    if [ ! -f "$TAD_SOURCE_RESOLVED/.tad/version.txt" ]; then
+        echo "tad.sh: --source tree is missing '.tad/version.txt': $TAD_SOURCE_RESOLVED" >&2
+        exit 1
+    fi
     local _target_phys _lsrc _ltgt
     _target_phys="$(pwd -P)" || { echo "tad.sh: cannot resolve target directory" >&2; exit 1; }
-    # Case-normalised compare (APFS case-aliases); residual: exotic
-    # Unicode-normalisation aliases are NOT folded — documented, not silent.
-    _lsrc="$(printf '%s' "$TAD_SOURCE_RESOLVED" | tr '[:upper:]' '[:lower:]')"
-    _ltgt="$(printf '%s' "$_target_phys" | tr '[:upper:]' '[:lower:]')"
+    # Case-normalised compare (APFS case-aliases; LC_ALL=C so tr classes are
+    # locale-stable — R2 P1-10); residual: exotic Unicode-normalisation
+    # aliases are NOT folded — documented, not silent.
+    _lsrc="$(printf '%s' "$TAD_SOURCE_RESOLVED" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
+    _ltgt="$(printf '%s' "$_target_phys" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
     if [ "$_lsrc" = "$_ltgt" ]; then
         echo "tad.sh: --source == target (post-resolution): $TAD_SOURCE_RESOLVED" >&2
         exit 1
     fi
-    case "$_lsrc/" in
-        "$_ltgt"/*)
-            echo "tad.sh: target is inside --source (self-nesting refused): target=$_target_phys source=$TAD_SOURCE_RESOLVED" >&2
-            exit 1
-            ;;
-    esac
-    case "$_ltgt/" in
-        "$_lsrc"/*)
-            echo "tad.sh: --source is inside target (self-nesting refused): target=$_target_phys source=$TAD_SOURCE_RESOLVED" >&2
-            exit 1
-            ;;
-    esac
+    # Literal-prefix containment (R2 P1-1/P1-2: messages corrected AND glob
+    # injection closed — _literal_has_prefix escapes metachars in paths).
+    if _literal_has_prefix "$_lsrc/" "$_ltgt/"; then
+        echo "tad.sh: --source is inside target (self-nesting refused): target=$_target_phys source=$TAD_SOURCE_RESOLVED" >&2
+        exit 1
+    fi
+    if _literal_has_prefix "$_ltgt/" "$_lsrc/"; then
+        echo "tad.sh: target is inside --source (self-nesting refused): target=$_target_phys source=$TAD_SOURCE_RESOLVED" >&2
+        exit 1
+    fi
     SOURCE_MODE=1
     TAD_SRC="$TAD_SOURCE_RESOLVED"
     TAD_SRC_DOWNLOADED=0
     derive_target_version "$TAD_SRC"
+}
+
+# _literal_has_prefix <haystack> <needle> — 0 iff haystack starts with needle,
+# byte-literal (NO glob interpretation: needle's *?[\ are escaped first).
+# Rationale (R2 P1-2): `case x in "$var"/*)` treats metachars IN THE PATH
+# (/tmp/[a]/x) as patterns — a path can bypass or misfire containment.
+# macOS awk is unusable here (CJK equality collapse), so shell + sed-escape.
+_literal_has_prefix() {
+    local _lhp_s="$1" _lhp_p="$2" _lhp_esc
+    _lhp_esc="$(printf '%s' "$_lhp_p" | sed -e 's/[[*?\\]/\\&/g')"
+    case "$_lhp_s" in
+        $_lhp_esc*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# assert_under_root <path> — defense-in-depth for rollback removals (R2 P1-5):
+# non-empty, not /, literally under $TARGET_ROOT. Callers still keep their
+# own guards; this is the second bar, not the first.
+assert_under_root() {
+    local _aur_t="${TARGET_ROOT:-}" _aur_p="${1:-}"
+    [ -n "$_aur_p" ] && [ "$_aur_p" != "/" ] && [ -n "$_aur_t" ] \
+        && _literal_has_prefix "$_aur_p/" "$_aur_t/"
 }
 
 # Argument parsing — while-loop + shift (supports --key value two-token args).
@@ -1743,12 +1787,17 @@ validate_generated_configs() {
 # ============================================
 # Phase 7: Rollback on Failure (F-06: coverage-extended, absolutized, atomic)
 # ============================================
-# snap_one <relpath> — copy an existing target surface into ROLLBACK_SNAP.
+# snap_one <relpath> — copy an existing target surface into ROLLBACK_SNAP and
+# record its EXACT relpath in .manifest. Step-2 restores manifest entries at
+# their recorded granularity ONLY (R2 P0-1: a snapshotted FILE must never
+# trigger a wholesale restore of its parent dir — that wiped unsnapshotted
+# user siblings like .codex/config.toml).
 snap_one() {
     local _p="$1"
     if [ -e "$_p" ]; then
         mkdir -p "$ROLLBACK_SNAP/$(dirname "$_p")"
         cp -R "$_p" "$ROLLBACK_SNAP/$_p"
+        printf '%s\n' "$_p" >> "$ROLLBACK_SNAP/.manifest"
     fi
 }
 
@@ -1788,7 +1837,11 @@ take_rollback_snapshot() {
     snap_one ".claude/workflows"
     snap_one ".claude/skills"
     snap_one ".agents/skills"
-    snap_one ".tad/project-knowledge/README.md"
+    # NOTE (R2 P0-2): NO snap of anything under .tad/ — .tad/ is owned SOLELY
+    # by step-1 (BACKUP_PATH_ABS whole-dir restore / fresh-install removal).
+    # A snap entry under .tad/ would make step-2 restore $SNAP/.tad wholesale
+    # and clobber the full tree down to one file. The manifest loop below
+    # additionally skips any .tad entry as defense in depth.
 }
 
 # discard_rollback_snap — success-path only: the install verified complete,
@@ -1820,6 +1873,7 @@ note_created_top() {
 restore_dir_entry() {
     local _snap_e="$1" _dst="$2"
     local _stage="${_dst}.rollback-staging"
+    assert_under_root "$_dst" || { log_error "Rollback REFUSED: dir restore target escapes project root: $_dst"; return 1; }
     rm -rf "$_stage" # RM-OK:rollback-stage-preclean
     if cp -R "$_snap_e" "$_stage" 2>/dev/null \
        && diff -rq "$_snap_e" "$_stage" >/dev/null 2>&1; then
@@ -1832,6 +1886,28 @@ restore_dir_entry() {
         fi
     fi
     rm -rf "$_stage" 2>/dev/null # RM-OK:rollback-stage-abort
+    return 1
+}
+
+# restore_file_entry <snap_file> <dst_path> — atomic FILE restore (R2 P0-3):
+# stage-verify-rename, never in-place cp-over (ENOSPC mid-copy truncated
+# CLAUDE.md/AGENTS.md/GEMINI.md with the snap preserved but dst lost).
+# ANY failure returns 1 with dst either intact or explicitly failed — the
+# caller prints the failed-state message naming the preserved snapshot.
+restore_file_entry() {
+    local _snap_f="$1" _dst="$2"
+    local _stage="${_dst}.rollback-staging"
+    assert_under_root "$_dst" || { log_error "Rollback REFUSED: file restore target escapes project root: $_dst"; return 1; }
+    rm -f "$_stage" # RM-OK:rollback-file-stage-preclean
+    if cp -R "$_snap_f" "$_stage" 2>/dev/null \
+       && diff -rq "$_snap_f" "$_stage" >/dev/null 2>&1; then
+        mkdir -p "$(dirname "$_dst")"
+        if mv "$_stage" "$_dst" \
+           && diff -rq "$_snap_f" "$_dst" >/dev/null 2>&1; then
+            return 0
+        fi
+    fi
+    rm -f "$_stage" 2>/dev/null # RM-OK:rollback-file-stage-abort
     return 1
 }
 
@@ -1850,7 +1926,8 @@ rollback_on_failure() {
     # from the half-installed tree cannot survive — a merging cp-over would
     # leave run-created files behind). A failed restore NEVER deletes the
     # backup (ENOSPC class) — the failed-state message names the preserved path.
-    if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ]; then
+    if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ] \
+       && [ "$BACKUP_PATH_ABS" != "/" ] && assert_under_root "$BACKUP_PATH_ABS"; then
         if restore_dir_entry "$BACKUP_PATH_ABS" "$TARGET_ROOT/.tad"; then
             rm -rf "$BACKUP_PATH_ABS" # RM-OK:rollback-backup-consumed
             log_info "Restored from backup: $BACKUP_PATH_ABS (.tad/ verified, backup consumed)"
@@ -1864,19 +1941,26 @@ rollback_on_failure() {
         rm -rf "$TARGET_ROOT/.tad" # RM-OK:rollback-fresh-tad-created
         log_info "Removed run-created .tad/ (fresh-install rollback)"
         _removed_list="${_removed_list}.tad/ "
+    elif [ -n "${BACKUP_PATH_ABS:-}" ]; then
+        # Set but unsafe (missing / / / outside-root): refuse LOUDLY, never
+        # silently skip — the operator must restore manually from the backup.
+        log_error "Rollback REFUSED for .tad/: backup path unsafe ('$BACKUP_PATH_ABS'). Backup PRESERVED; restore manually."
+        _kept_list="${_kept_list}.tad-backup-UNSAFE "
     fi
 
-    # 2. Snapshot surfaces (CLAUDE.md, skills trees, root files, hooks.json,
-    # settings/workflows): directories restore ATOMICALLY via staging+rename
-    # (merging cp-over would leave run-created extras — the ac2.8 skills
-    # residue class); files copy over + verify. The snapshot is the recovery
-    # copy — PRESERVED here regardless of outcome.
-    if [ -n "${ROLLBACK_SNAP:-}" ] && [ -d "$ROLLBACK_SNAP" ]; then
-        local _top _rel
-        for _top in "$ROLLBACK_SNAP"/* "$ROLLBACK_SNAP"/.*; do
+    # 2. Manifest-driven snapshot restore (R2 P0-1/P0-2): each recorded entry
+    # restores at its RECORDED granularity — a snapshotted file restores the
+    # file (never its parent dir, which would wipe unsnapshotted siblings);
+    # a snapshotted dir restores wholesale (its content was fully captured).
+    # `.tad` entries are skipped (owned by step-1 only). The snapshot is the
+    # recovery copy — PRESERVED here regardless of outcome.
+    if [ -n "${ROLLBACK_SNAP:-}" ] && [ -d "$ROLLBACK_SNAP" ] && [ -f "$ROLLBACK_SNAP/.manifest" ]; then
+        local _rel _top
+        while IFS= read -r _rel; do
+            [ -n "$_rel" ] || continue
+            case "$_rel" in .tad|.tad/*) continue ;; esac
+            _top="$ROLLBACK_SNAP/$_rel"
             [ -e "$_top" ] || continue
-            _rel="$(basename "$_top")"
-            case "$_rel" in .|..) continue ;; esac
             if [ -d "$_top" ] && [ ! -L "$_top" ]; then
                 if restore_dir_entry "$_top" "$TARGET_ROOT/$_rel"; then
                     _restored_list="${_restored_list}${_rel} "
@@ -1885,16 +1969,14 @@ rollback_on_failure() {
                     _kept_list="${_kept_list}snap-$_rel "
                 fi
             else
-                mkdir -p "$(dirname "$TARGET_ROOT/$_rel")"
-                if cp -R "$_top" "$TARGET_ROOT/$_rel" 2>/dev/null \
-                   && diff -rq "$_top" "$TARGET_ROOT/$_rel" >/dev/null 2>&1; then
+                if restore_file_entry "$_top" "$TARGET_ROOT/$_rel"; then
                     _restored_list="${_restored_list}${_rel} "
                 else
                     log_error "Rollback FAILED for $_rel — snapshot PRESERVED at $ROLLBACK_SNAP/$_rel; restore manually."
                     _kept_list="${_kept_list}snap-$_rel "
                 fi
             fi
-        done
+        done < "$ROLLBACK_SNAP/.manifest"
     fi
 
     # 3. Undo exactly the OpenCode command this run created (FR-4 rollback):
@@ -1913,8 +1995,9 @@ rollback_on_failure() {
     local _c
     while IFS= read -r _c; do
         [ -n "$_c" ] || continue
+        case "$_c" in ""|.|/|.|..) continue ;; esac
         case "$_c" in /*|*..*) continue ;; esac
-        if [ -e "$TARGET_ROOT/$_c" ]; then
+        if [ -e "$TARGET_ROOT/$_c" ] && assert_under_root "$TARGET_ROOT/$_c"; then
             rm -rf "$TARGET_ROOT/$_c" # RM-OK:rollback-created-top
             _removed_list="${_removed_list}${_c} "
         fi
@@ -1929,7 +2012,7 @@ rollback_on_failure() {
         case " ${ROLLBACK_PRE_TOP:-} " in
             *" $_td "*) ;;
             *)
-                if [ -e "$TARGET_ROOT/$_td" ]; then
+                if [ -e "$TARGET_ROOT/$_td" ] && assert_under_root "$TARGET_ROOT/$_td"; then
                     rm -rf "$TARGET_ROOT/$_td" # RM-OK:rollback-fresh-top-dirs
                     _removed_list="${_removed_list}${_td}/ "
                 fi
@@ -1943,12 +2026,17 @@ rollback_on_failure() {
     rmdir "$TARGET_ROOT/.agents/skills" 2>/dev/null || true # RM-OK:rollback-rmdir-agents-skills
     rmdir "$TARGET_ROOT/.claude/workflows" 2>/dev/null || true # RM-OK:rollback-rmdir-workflows
     # 4d. Structural migration backups are recovery copies — enumerated as
-    # preserved-for-manual-recovery, never removed here.
+    # preserved-for-manual-recovery, never removed here (R2 P1-9: BOTH the
+    # engine namespace and the legacy one; an unlisted recovery copy is a
+    # coverage lie by omission).
     local _mb
     for _mb in "$TARGET_ROOT"/.tad-migrate-backup.*; do
         [ -e "$_mb" ] || continue
         _kept_list="${_kept_list}$(basename "$_mb") "
     done
+    if [ -e "$TARGET_ROOT/.tad-backup" ]; then
+        _kept_list="${_kept_list}.tad-backup "
+    fi
 
     # 5. Downloaded source residue via the single chokepoint (user-supplied
     # --source trees stay inert here by construction).
@@ -2052,7 +2140,7 @@ merge_claude_md() {
     _backup="CLAUDE.md.backup.${_ts}"
     _n=1
     while [ -e "$_backup" ]; do _backup="CLAUDE.md.backup.${_ts}.$_n"; _n=$((_n + 1)); done
-    cp "CLAUDE.md" "$_backup"
+    cp "CLAUDE.md" "$_backup" || return 1
     MERGE_CREATED_BACKUP="$_backup"
 
     local marker_line

@@ -97,7 +97,9 @@ guarded_cleanup() {
   if [ -z "$d" ]; then echo "fixture: refusing cleanup of empty path" >&2; return 1; fi
   case "$d" in
     /tmp/tad-ac.*)
-      if [ -d "$d" ]; then rm -rf "$d"; else echo "fixture: not a dir: $d" >&2; return 1; fi
+      if [ -d "$d" ] && [ ! -L "$d" ]; then rm -rf "$d"
+      elif [ -f "$d" ] && [ ! -L "$d" ]; then rm -f "$d"
+      else echo "fixture: not a plain dir/file: $d" >&2; return 1; fi
       ;;
     *) echo "fixture: refusing cleanup outside mktemp root: $d" >&2; return 1 ;;
   esac
@@ -187,9 +189,14 @@ diff_snapshot() { # $1 = snapshot dir; prints diff, rc=0 when identical
 }
 
 # sed-extract ONE top-level function from tad.sh into a harness file.
-extract_fn() { # $1=fn-name $2=outfile
+# Hardened (R2 P1-8): the extraction must end at the function's closing lone
+# `}` (a future inner lone-`}` would otherwise truncate silently into a
+# vacuous PASS) and must contain the expected body token when given.
+extract_fn() { # $1=fn-name $2=outfile [$3=required body token]
   sed -n "/^$1() {/,/^}/p" "$TADSH" > "$2"
   if [ ! -s "$2" ]; then echo "fixture: cannot extract $1" >&2; exit 2; fi
+  if [ "$(tail -n 1 "$2")" != "}" ]; then echo "fixture: $1 extraction truncated (tail is not })" >&2; exit 2; fi
+  if [ -n "${3:-}" ] && ! grep -qF -e "$3" "$2"; then echo "fixture: $1 extraction missing token: $3" >&2; exit 2; fi
 }
 
 # ════════════════════════ AC2.1 (FR-1) ════════════════════════
@@ -360,6 +367,13 @@ case_ac25() {
   local mrc=0
   bash "$GUARD" installer-destructive-guard "$SANDBOX" >/dev/null 2>&1 || mrc=$?
   if [ "$mrc" != "0" ]; then pass "ac2.5: mutation probe fails guard on demand (rc=$mrc)"; else fail "ac2.5: mutation probe did NOT fail guard"; fi
+  # Second mutation (R2 P1-6): a LIVE call wearing a baked-literal comment
+  # must ALSO fail — exclusions cover comment-only lines, never live calls.
+  cp "$REPO/tad.sh" "$SANDBOX/tad.sh"
+  printf '\nrm -rf "$TARGET" # so the AC that forbids\n' >> "$SANDBOX/tad.sh"
+  local mrc2=0
+  bash "$GUARD" installer-destructive-guard "$SANDBOX" >/dev/null 2>&1 || mrc2=$?
+  if [ "$mrc2" != "0" ]; then pass "ac2.5: exclusion-masked live call fails guard (rc=$mrc2)"; else fail "ac2.5: exclusion-masked live call did NOT fail guard"; fi
 }
 
 # ════════════════════════ AC2.6 (version floor, both directions) ════════════════════════
@@ -475,11 +489,19 @@ case_ac28() {
   stage_pruned_source
   # Upgrade-shaped target (current=2.2.0: every deprecation inert, so the
   # failure lands purely on the cp fault → rollback coverage is isolated).
-  mkdir -p "$TARGET/.tad" "$TARGET/.claude/skills/custom" "$TARGET/.codex"
+  mkdir -p "$TARGET/.tad" "$TARGET/.tad/project-knowledge" "$TARGET/.claude/skills/custom" "$TARGET/.codex" "$TARGET/.codex/prompts" "$TARGET/.claude/commands"
   printf '2.2.0\n' > "$TARGET/.tad/version.txt"
   printf '# Project\n<!-- TAD:PROJECT-CONTENT-BELOW -->\nMY-PROJECT-BYTES\n' > "$TARGET/CLAUDE.md"
   printf 'CUSTOM-SKILL-BYTES\n' > "$TARGET/.claude/skills/custom/skill.md"
   printf 'USER-HOOKS\n' > "$TARGET/.codex/hooks.json"
+  # R2 P0-1/P0-2 siblings: NEVER snapshotted as wholes, must survive rollback.
+  # config.toml + prompts (P0-1: wholesale .codex restore wiped them),
+  # user commands file (P0-1: wholesale .claude restore wiped it),
+  # project-knowledge README (P0-2: $SNAP/.tad wholesale restore clobbered .tad/).
+  printf 'USER-CONFIG-TOML\n' > "$TARGET/.codex/config.toml"
+  printf 'USER-PROMPT\n' > "$TARGET/.codex/prompts/mine.md"
+  printf 'USER-COMMAND\n' > "$TARGET/.claude/commands/my-cmd.md"
+  printf 'KNOWLEDGE-README\n' > "$TARGET/.tad/project-knowledge/README.md"
   snapshot_target "$SNAP/pre"
   # One-shot cp fault: fail the FIRST cp whose args name the staged source
   # AND a .claude/skills path (the first framework-skills copy — an UNGUARDED
@@ -520,17 +542,24 @@ case_ac28() {
   new_sandbox
   # Extract rollback + its dir-restore helper (BACKUP_PATH_ABS semantics: the
   # dir whose CONTENT is the .tad content, exactly like .tad.backup.TS).
-  extract_fn restore_dir_entry "$SANDBOX/rollback.fn.sh"
-  extract_fn rollback_on_failure "$SANDBOX/rollback2.fn.sh"
-  cat "$SANDBOX/rollback2.fn.sh" >> "$SANDBOX/rollback.fn.sh"
+  # Helper fns are load-bearing for the exercised guard path — extract them
+  # strictly when present (a half-extracted harness must never go vacuous).
+  extract_fn restore_dir_entry "$SANDBOX/rb.fn.sh" "rollback-staging"
+  extract_fn rollback_on_failure "$SANDBOX/rb2.fn.sh" "Rollback coverage"
+  cat "$SANDBOX/rb2.fn.sh" >> "$SANDBOX/rb.fn.sh"
+  if grep -q -e '^_literal_has_prefix() {' "$TADSH"; then
+    extract_fn _literal_has_prefix "$SANDBOX/rb-h1.fn.sh" "lhp_esc"
+    extract_fn assert_under_root "$SANDBOX/rb-h2.fn.sh" "TARGET_ROOT"
+    cat "$SANDBOX/rb-h1.fn.sh" "$SANDBOX/rb-h2.fn.sh" >> "$SANDBOX/rb.fn.sh"
+  fi
   printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb.log"; }\nrollback_opencode_projection() { printf "OPCODE-ROLLBACK-CALLED\\n" >> "%s/rb.log"; }\ncleanup_source_tree() { printf "CLEANUP-SOURCE-CALLED\\n" >> "%s/rb.log"; }\n' \
     "$SANDBOX" "$SANDBOX" "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs.sh"
-  mkdir -p "$TARGET/.tad" "$SANDBOX/foreign" "$SANDBOX/fakebackup"
-  printf 'ORIGINAL-TAD\n' > "$SANDBOX/fakebackup/data.txt"
+  mkdir -p "$TARGET/.tad" "$SANDBOX/foreign" "$TARGET/.tad.backup.PROBE"
+  printf 'ORIGINAL-TAD\n' > "$TARGET/.tad.backup.PROBE/data.txt"
   printf 'HALF-INSTALLED\n' > "$TARGET/.tad/data.txt"
   printf 'FOREIGN-TAD\n' > "$SANDBOX/foreign/marker.txt"
   local rc4=0
-  ( cd "$SANDBOX/foreign" && TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$SANDBOX/fakebackup" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb.log" 2>&1 ) || rc4=$?
+  ( cd "$SANDBOX/foreign" && TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$TARGET/.tad.backup.PROBE" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs.sh"; source "'"$SANDBOX"'/rb.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb.log" 2>&1 ) || rc4=$?
   if [ "$(cat "$TARGET/.tad/data.txt" 2>/dev/null)" = "ORIGINAL-TAD" ]; then
     pass "ac2.8: foreign-cwd rollback restored target via absolute paths"
   else
@@ -546,31 +575,39 @@ case_ac28() {
   # (c) ENOSPC injection: restore under `ulimit -f` → backup preserved +
   # explicit failed-state message (calibrated to the host; fallback fault-shim
   # proves the same branch and is logged as such, never silent).
+  # Backup layout mirrors production (backup_existing creates .tad.backup.TS
+  # UNDER the target) — a sibling-dir backup would trip the under-root guard
+  # and pass vacuously, so the probe must not use one.
   CURRENT_CASE="ac2.8"
   new_sandbox
-  extract_fn restore_dir_entry "$SANDBOX/rollback.fn.sh"
-  extract_fn rollback_on_failure "$SANDBOX/rollback3.fn.sh"
+  extract_fn restore_dir_entry "$SANDBOX/rollback.fn.sh" "rollback-staging"
+  extract_fn rollback_on_failure "$SANDBOX/rollback3.fn.sh" "Rollback coverage"
   cat "$SANDBOX/rollback3.fn.sh" >> "$SANDBOX/rollback.fn.sh"
+  if grep -q -e '^_literal_has_prefix() {' "$TADSH"; then
+    extract_fn _literal_has_prefix "$SANDBOX/rb-h1.fn.sh" "lhp_esc"
+    extract_fn assert_under_root "$SANDBOX/rb-h2.fn.sh" "TARGET_ROOT"
+    cat "$SANDBOX/rb-h1.fn.sh" "$SANDBOX/rb-h2.fn.sh" >> "$SANDBOX/rollback.fn.sh"
+  fi
   printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb2.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb2.log"; }\nrollback_opencode_projection() { :; }\ncleanup_source_tree() { :; }\n' \
     "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs2.sh"
-  mkdir -p "$TARGET/.tad" "$SANDBOX/bigbackup"
-  head -c 200000 /dev/zero | tr '\0' 'B' > "$SANDBOX/bigbackup/big.bin"
+  mkdir -p "$TARGET/.tad" "$TARGET/.tad.backup.BIG"
+  head -c 200000 /dev/zero | tr '\0' 'B' > "$TARGET/.tad.backup.BIG/big.bin"
   printf 'HALF\n' > "$TARGET/.tad/data.txt"
   local mech="ulimit"
-  if ! ( ulimit -f 20; cp "$SANDBOX/bigbackup/big.bin" "$SANDBOX/probe.bin" 2>/dev/null ); then
+  if ! ( ulimit -f 20; cp "$TARGET/.tad.backup.BIG/big.bin" "$SANDBOX/probe.bin" 2>/dev/null ); then
     mech="ulimit"
   else
     mech="fault-shim"
   fi
   rm -f "$SANDBOX/probe.bin"
   if [ "$mech" = "ulimit" ]; then
-    ( cd "$TARGET" && ulimit -f 20; TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$SANDBOX/bigbackup" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
+    ( cd "$TARGET" && ulimit -f 20; TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$TARGET/.tad.backup.BIG" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
   else
     printf '#!/bin/sh\nexit 1\n' > "$SHIMBIN/cp"
     chmod +x "$SHIMBIN/cp"
-    ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$SANDBOX/bigbackup" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
+    ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$TARGET/.tad.backup.BIG" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
   fi
-  if [ -d "$SANDBOX/bigbackup" ]; then
+  if [ -d "$TARGET/.tad.backup.BIG" ]; then
     pass "ac2.8: ENOSPC ($mech) → backup preserved"
   else
     fail "ac2.8: ENOSPC ($mech) → backup GONE"
@@ -579,6 +616,42 @@ case_ac28() {
     pass "ac2.8: ENOSPC ($mech) → explicit failed-state message"
   else
     fail "ac2.8: ENOSPC ($mech) → failed-state message missing"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+
+  # (d) File-restore atomicity (R2 P0-3): in-place cp-over loses dst on a
+  # mid-copy failure; staged restore leaves dst intact. Snap layout works on
+  # BOTH code generations (top-level file for the old glob loop, .manifest
+  # for the new manifest loop). Fault-cp truncates-then-fails every call.
+  CURRENT_CASE="ac2.8"
+  new_sandbox
+  extract_fn restore_dir_entry "$SANDBOX/rb.fn.sh" "rollback-staging"
+  extract_fn rollback_on_failure "$SANDBOX/rb2.fn.sh" "Rollback coverage"
+  cat "$SANDBOX/rb2.fn.sh" >> "$SANDBOX/rb.fn.sh"
+  # New-generation helpers (absent pre-fix): extract strictly when present so
+  # a half-extracted harness can never produce a vacuous GREEN.
+  if grep -q -e '^restore_file_entry() {' "$TADSH"; then
+    extract_fn restore_file_entry "$SANDBOX/rb3.fn.sh" "rollback-staging"
+    cat "$SANDBOX/rb3.fn.sh" >> "$SANDBOX/rb.fn.sh"
+  fi
+  if grep -q -e '^_literal_has_prefix() {' "$TADSH"; then
+    extract_fn _literal_has_prefix "$SANDBOX/helpers.fn.sh" "lhp_esc"
+    extract_fn assert_under_root "$SANDBOX/helpers2.fn.sh" "TARGET_ROOT"
+    cat "$SANDBOX/helpers.fn.sh" "$SANDBOX/helpers2.fn.sh" >> "$SANDBOX/rb.fn.sh"
+  fi
+  printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb3.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb3.log"; }\nrollback_opencode_projection() { :; }\ncleanup_source_tree() { :; }\n' \
+    "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs3.sh"
+  printf '#!/bin/sh\nfor _a in "$@"; do _last="$_a"; done\n: > "$_last"\nexit 1\n' > "$SHIMBIN/cp"
+  chmod +x "$SHIMBIN/cp"
+  mkdir -p "$SANDBOX/rsnap"
+  printf 'VICTIM-ORIG\n' > "$TARGET/victim.txt"
+  printf 'VICTIM-ORIG\n' > "$SANDBOX/rsnap/victim.txt"
+  printf 'victim.txt\n' > "$SANDBOX/rsnap/.manifest"
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="" ROLLBACK_SNAP="$SANDBOX/rsnap" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" ROLLBACK_PRE_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs3.sh"; source "'"$SANDBOX"'/rb.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb3.log" 2>&1 ) || true
+  if [ "$(cat "$TARGET/victim.txt" 2>/dev/null)" = "VICTIM-ORIG" ]; then
+    pass "ac2.8: truncating-cp fault → file dst preserved (atomic restore)"
+  else
+    fail "ac2.8: truncating-cp fault → file dst LOST (in-place cp-over)"
   fi
 }
 
@@ -619,7 +692,11 @@ case_ac210() {
   mkdir -p "$TARGET/TAD-main"
   printf 'PRECIOUS-USER-BYTES\n' > "$TARGET/TAD-main/precious.txt"
   printf 'ROOT-SENTINEL\n' > "$TARGET/.root-sentinel"
-  printf 'PARENT-SENTINEL\n' > "$SANDBOX/../parent-sentinel-ac210"
+  # Parent sentinel OUTSIDE the target (R2 P1-7): mktemp-unique (no fixed
+  # /tmp name → no parallel race) + guarded cleanup (never bare rm).
+  local _parent_sent
+  _parent_sent="$(mktemp /tmp/tad-ac-parent.XXXXXX)" || { fail "ac2.10: parent sentinel mktemp failed"; return; }
+  printf 'PARENT-SENTINEL\n' > "$_parent_sent"
   cp "$TARGET/TAD-main/precious.txt" "$SNAP/precious.orig"
   local want rc
   want="$(source_version)"
@@ -632,18 +709,18 @@ case_ac210() {
   else
     fail "ac2.10: user TAD-main/ clobbered"
   fi
-  if [ "$(cat "$TARGET/.root-sentinel")" = "ROOT-SENTINEL" ] && [ "$(cat "$SANDBOX/../parent-sentinel-ac210")" = "PARENT-SENTINEL" ]; then
+  if [ "$(cat "$TARGET/.root-sentinel")" = "ROOT-SENTINEL" ] && [ "$(cat "$_parent_sent")" = "PARENT-SENTINEL" ]; then
     pass "ac2.10: root+parent sentinels identical (zero outside writes)"
   else
     fail "ac2.10: sentinel drift (outside write)"
   fi
-  rm -f "$SANDBOX/../parent-sentinel-ac210"
   guarded_cleanup "$SANDBOX"; SANDBOX=""
+  guarded_cleanup "$_parent_sent" || { fail "ac2.10: parent sentinel cleanup failed"; return; }
   # Malicious-tar unit probe against the REAL validate_tar_members
   # (sed-extracted; tad.sh executes on source so it cannot be sourced).
   CURRENT_CASE="ac2.10"
   new_sandbox
-  extract_fn validate_tar_members "$SANDBOX/validate.fn.sh"
+  extract_fn validate_tar_members "$SANDBOX/validate.fn.sh" "link to"
   printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/v.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/v.log"; }\n' \
     "$SANDBOX" "$SANDBOX" > "$SANDBOX/vstubs.sh"
   mkdir -p "$SANDBOX/payload/evil" "$SANDBOX/outside"
@@ -745,7 +822,7 @@ case_ac211() {
   CURRENT_CASE="ac2.11"
   new_sandbox
   # Unit level: the REAL archive_old_skill_mds, twice in the same second.
-  extract_fn archive_old_skill_mds "$SANDBOX/archive.fn.sh"
+  extract_fn archive_old_skill_mds "$SANDBOX/archive.fn.sh" "_archived."
   printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/a.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/a.log"; }\nnote_created_top() { :; }\n' \
     "$SANDBOX" "$SANDBOX" > "$SANDBOX/astubs.sh"
   mkdir -p "$SANDBOX/skills"
