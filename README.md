@@ -1,6 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.44.1 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
+**Version 2.44.1 — Optional PM Bridge (patch on the v2.44.0 bundle)**
+
+> v2.44.0 bundle: Capability Builder Evolve + Packaging, Installer Data-Safety (+ v2.43.1 trio) — see [CHANGELOG](CHANGELOG.md#2440---2026-09-04). This patch adds only the optional completion-template PM Bridge — see [CHANGELOG](CHANGELOG.md#2441---2026-09-04).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -15,7 +17,7 @@ Many AI coding tools promise: "Give AI a goal, it handles everything." This soun
 - **False quality**: AI says "all tests pass" — but it wrote those tests itself
 - **Priority confusion**: AI spends 80% of time on 20% of value
 
-TAD takes a different approach: **AI can do a lot, but must stop at three critical points for human confirmation.**
+TAD — Triangle Agent Development (Two-Agent Quality Framework) — takes a different approach: **AI can do a lot, but must stop at three critical points for human confirmation.**
 
 ### The Three Friction Points
 
@@ -501,6 +503,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.44.1 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
+**Welcome to TAD v2.44.1 — Optional PM Bridge (patch on the v2.44.0 bundle)**
 
 *AI does the work. Humans guard the value.*
