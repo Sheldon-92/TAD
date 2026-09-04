@@ -10,7 +10,14 @@
 
 ---
 
-## 🔴 优先队列（2026-09-03 YOLO：v2431 待发布裁定；Builder P23 已验收；framework-health A 单 READY）
+## 🔴 优先队列（2026-09-03 晚：YOLO 三轨落地；B 单测量完成，设计待续 —— 明天继续）
+
+### 🔜 NEXT 2026-09-04. Framework-health close-out B — 1b 搬运 + SC2 + SC3 re-slim（设计中）
+
+- **测量已冻结（2026-09-03 实测）**: SC2 deny_ref=9（正文禁令 3/2/2 已达标，只剩搬运+删除）；SC3 tracked 112+22，tarball 9,414,984（>8,388,608）；orphan 分支 `maintainer-evidence` 存在但缺新文件；运行时零读取（仅 mkdir 脚手架）。
+- **地图状态**: 载体地图第 5 轮自我推翻后不可直接用（G1 实为孤儿、O3/O4 管退休命令）；B 设计须在当前树上重核。
+- **人已裁定（两个二选一，人说"不知道"→按推荐走，Gate 2 可推翻）**: ① 最小集搬运（O1/O2/G1 进正文，O3/O4 不重复）；② 纯删除 sweep（orphan 先补齐再 rm --cached，E2b 走 orphan 取）。
+- **Next**: 写 DESIGN（Gate 1 + MQ1-6）→ 双专家评审 → Gate 2 → handoff → Blake 实现。
 
 ### ✅ DONE 2026-09-03. Framework-health close-out A — installer data-safety remainder (Gate 4 PASS, human accepted)
 
@@ -25,7 +32,7 @@
 - **Handoff/completion/Gate-4**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260902-tad-update-v2431.md`
 - **Gate 3 (Blake)**: PASS — AC1–AC13 verified; Layer 2 all PASS.
 - **Gate 4 (Alex, independent recompute)**: PASS — 69/69 assertions re-verified on macOS; one finding (AC10 red: fixture's own `OLD_VERSION` literal vs version gate) fixed test-tooling-only in `8b8c7877`, re-verified 7/7+8/8. **Accepted SHA: `8b8c7877`** (local only).
-- **⛔ Publish BLOCKED**: framework-health Phase-2 ban still active (`EPIC-20260816:79`). Unblock = human names the ban override for `8b8c7877`, or Phase 2 closes. Then AC14 + publish exact SHA.
+- **⛔ Publish 待定**: framework-health Phase-2 禁令已解除（A-track Gate 4 PASS 2026-09-03）。发布仍需人明确指令：(a) 按原 SHA `8b8c7877` 发 v2.43.1；(b) 并入 A-track 重验再发。然后 AC14 + publish exact SHA。
 - **Scope**: macOS dangling-symlink backup repair + one shared updater (Claude Code / Codex / updater-only OpenCode).
 
 ### ✅ DONE 2026-09-03. Capability Builder v1 — Phase 2 Evolve + Phase 3 Package (3/4, accepted `bba6ce84`, NOT published)
