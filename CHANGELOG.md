@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.44.1] - 2026-09-04
+
+### Added
+
+- **Optional PM Bridge on the completion template.** `.tad/templates/completion-report.md`
+  gains an optional trailing `## 📡 PM Bridge (Optional)` section with exactly 3
+  machine-readable lines (`PM-Status:` / `PM-Next:` / `PM-Blockers:`), each optional.
+  Advisory-only, never gating: Friction Status remains the sole blocker authority;
+  absent section or absent line reads as empty, never fails.
+
+### Upgrade Notes 2.44.1
+
+- What: completion template +18 lines (optional PM Bridge section); no Gate, hook,
+  handoff-template, or evidence-path changes.
+- Upgrade: docs-only patch — pull latest and continue; no migration.
+- Rollback: re-checkout `.tad/templates/completion-report.md` from the prior release;
+  no data migration involved.
+
 ## [2.44.0] - 2026-09-04
 
 ### Added
