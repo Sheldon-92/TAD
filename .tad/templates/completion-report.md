@@ -278,6 +278,24 @@ Blake确认以下所有项：
 
 ---
 
+## 📡 PM Bridge (Optional)
+
+<!-- ANCHOR: pm-bridge — OPTIONAL section. Absent = no PM info (consumers treat as empty, never fail).
+     Each of the 3 lines is OPTIONAL (missing line = empty). Writer: Blake at *complete.
+     ADVISORY-ONLY, NEVER GATING: Friction Status (§Friction) is the SOLE blocker authority;
+     PM-Blockers is a non-authoritative mirror; divergence → WARN. PM lines are advisory hints,
+     not claims — they never substitute evidence (exempt from claims-need-carriers, scoped to
+     exactly these 3 lines).
+     GRAMMAR: single physical line each, ≤200 chars, MUST NOT contain: `[` `]` leading-`#`
+     `**` backtick `gate3_verdict:` `Gate 3` `Handoff ID` `what_failed:` `root_cause_hypothesis:`
+     `revised_approach:` `confidence:` `P0-` `P1-`. -->
+
+PM-Status: <one line>
+PM-Next: <one line>
+PM-Blockers: <one line>
+
+---
+
 ## 📝 Human 验收区
 
 **验收时间**: [YYYY-MM-DD HH:MM]
