@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.44.0] - 2026-09-04
+
+### Added
+
+- **Capability Builder Phase 2 evolve + Phase 3 packaging.** The evolve protocol
+  is live (including the no-signal idle gate) with eval-runner resource bounds,
+  and one-Skill/one-Plugin packaging. Core-framework zero-change proof re-verified.
+- **Installer data-safety remainder (framework-health Phase 2).** Manifest
+  rollback restore, file-write atomicity, literal-prefix guards, and fixture
+  cleanup-prefix family.
+
+### Changed
+
+- v2.43.1 trio included (macOS dangling-symlink backup repair + shared
+  `$tad-update`/`/tad-update` updater with updater-only OpenCode entry).
+
 ## [2.43.1] - 2026-09-02
 
 ### Fixed

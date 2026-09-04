@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.43.1 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
+**Version 2.44.0 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -185,7 +185,7 @@ official tagged installer; it never runs unattended.
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.43.1
+# Should show: 2.44.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -501,6 +501,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.43.1 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
+**Welcome to TAD v2.44.0 - Verified Orchestration, Capability Builder, and Local Wiki Capture**
 
 *AI does the work. Humans guard the value.*
