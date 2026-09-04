@@ -38,7 +38,7 @@
 | 1a | 纯删除 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 playground 两侧 + 两个空头绑定 + evidence 去重 |
 | 1a-2 | ROADMAP 悬空链接 | ✅ **DONE**（`b6956606`，Gate 3 5/5） | 已归档 | 修 `ROADMAP.md:38` |
 | 1b | 退休 frontmatter 约束块 | ⬚ **Planned — redesign required** | 旧 handoff 已取消归档 | Gate 2 推翻 carrier map；须按当前约束承载关系重新设计 |
-| 2 | 安装器数据安全 | ⬚ **Planned — remaining scope redesign required** | 旧 handoff 已取消归档 | F-01/F-02/F-03/F-34 已交付；FR-1/FR-5/AC2.5 重新出单 |
+| 2 | 安装器数据安全 | ✅ **DONE (Gate 4 2026-09-03: `f61c1892` + fix `1a256534` + fixture `b09aa052`)** | 已归档 (`{HANDOFF,COMPLETION,GATE4}-20260903-framework-health-phase2-remainder.md`) | FR-1/FR-5/F-05/06/07/08/F-34/AC2.5 全收口，14/14 红绿证据 |
 | 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 `eval`+`rm -rf` 脚本、镜像守卫、修计数 |
 | 4 | 发行瘦身 | ✅ **DONE**（`659f4161`，Gate 4 ✅） | 已归档 | npm 23.1→3.3 MB、evidence/archive 移出 main |
 
@@ -72,11 +72,13 @@
 | **F-03** install 分支裸 `cp` 覆盖 `CLAUDE.md` | ✅ **DONE**（`46af019c`） | 改调 `merge_claude_md`，三分支一致 |
 | **F-34** 验收测试把破坏当规格 | ✅ **自动消解**（`46af019c`） | 方案 C 后清单已无用户路径；双向实测：用户文件在→PASS，真过期文件在→FAIL |
 | **F-02** 删除路径绕过守卫链 | ✅ **DONE**（`65bb0840`，**Gate 4 ✅** `fa106d4e`） | 接入 `do_backup`+`guarded_remove`；独立复算三组攻击全部拦下 |
-| **FR-1** `--source` 本地源模式（F-33） | ⬚ **未做** | 无本地源 → 端到端验证须靠 `curl` stub 绕过 |
-| **FR-5** 验收测试 owner 感知 | ⬚ **未做** | 方案 C 使其非必需，但护栏未落实 |
-| **AC2.5** `rm -rf` 全覆盖 | 🔶 **部分** | 另 4 处未评估；`release-verify.sh` 可复跑检查未编写 |
+| **FR-1** `--source` 本地源模式（F-33） | ✅ **DONE** (Gate 4 2026-09-03) | `--source` 离线安装 + 信任边界 + 机检回归（AC2.1） |
+| **FR-5** 验收测试 owner 感知 | ✅ **DONE** (Gate 4 2026-09-03) | 用户拥有路径断言存在且逐字节一致（AC2.2 沙箱矩阵） |
+| **AC2.5** `rm -rf` 全覆盖 | ✅ **DONE** (Gate 4 2026-09-03) | `installer-destructive-guard` + 26-id 附录 + 双变异探针；rollback 精确粒度 + 文件原子恢复同批交付 |
 
-⚠️ **发布约束仍然有效**：Phase 2 未全部收口前，**禁止 `*publish` / `*sync`**。
+⚠️ **发布约束已解除（2026-09-03）**：Phase 2 Gate 4 PASS，硬约束 1 的条件满足。原禁令行保留作历史记录：
+~~Phase 2 未全部收口前，**禁止 `*publish` / `*sync`**。~~
+v2.43.1 的实际发布仍需人另行明确指令（待定-a/b），本 Epic 不代发。
 14 个下游项目仍停在 2.30.0。
 
 ### ✅ Epic 自动部分已全部交付（4 次提交，2026-08-16）

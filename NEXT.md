@@ -10,15 +10,31 @@
 
 ---
 
-## 🔴 优先队列（一个一个做，不并行）
+## 🔴 优先队列（2026-09-03 YOLO：v2431 待发布裁定；Builder P23 已验收；framework-health A 单 READY）
 
-### 🟡 GATE-3-PASS 2026-09-02. TAD v2.43.1 backup repair + `/tad-update`
+### ✅ DONE 2026-09-03. Framework-health close-out A — installer data-safety remainder (Gate 4 PASS, human accepted)
 
-- **Handoff**: `.tad/active/handoffs/HANDOFF-20260902-tad-update-v2431.md`
-- **Gate 2**: PASS after two independent review rounds; no unresolved P0/P1.
-- **Gate 3 (Blake)**: PASS — AC1–AC13 verified; Layer 2 spec-compliance/code-reviewer/test-runner all PASS (P0=0/P1=0/P2=0 after fix rounds); implementation committed locally, NOT pushed.
-- **Scope**: repair macOS dangling-symlink backups; add one current-project updater shared by Claude Code, Codex, and updater-only OpenCode `/tad-update`; then verify and publish v2.43.1.
-- **Boundary**: OpenCode is not added as a full TAD platform. Next: Alex Gate 4 on the exact commit; only after Gate 4, publish tag v2.43.1 + GitHub Release. Do NOT push/tag/release before Gate 4.
+- **Handoff/completion/Gate-4**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260903-framework-health-phase2-remainder.md` + `.tad/archive/proposals/DESIGN-20260903-framework-health-phase2-remainder.md`
+- **Implementation**: `f61c1892` + fix `1a256534` + fixture `b09aa052` (all local, NOT pushed).
+- **Epic effect**: Phase 2 全 DONE，发布禁令已解除（条件满足）。v2.43.1 发布仍待人明确指令（issue-2 待定）。
+- **Knowledge**: 1 条 pattern 已蒸馏进 `shell-portability.md`（red-first + cancelled-agent + printf-dash）。
+- **Next**: B 单（1b deny_ref 搬运 + SC2 + SC3 re-slim）→ 发布裁定 v2.43.1(a/b) → ideas。
+
+### ✅ GATE-4-PASS 2026-09-03. TAD v2.43.1 backup repair + `/tad-update` (accepted, NOT published)
+
+- **Handoff/completion/Gate-4**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260902-tad-update-v2431.md`
+- **Gate 3 (Blake)**: PASS — AC1–AC13 verified; Layer 2 all PASS.
+- **Gate 4 (Alex, independent recompute)**: PASS — 69/69 assertions re-verified on macOS; one finding (AC10 red: fixture's own `OLD_VERSION` literal vs version gate) fixed test-tooling-only in `8b8c7877`, re-verified 7/7+8/8. **Accepted SHA: `8b8c7877`** (local only).
+- **⛔ Publish BLOCKED**: framework-health Phase-2 ban still active (`EPIC-20260816:79`). Unblock = human names the ban override for `8b8c7877`, or Phase 2 closes. Then AC14 + publish exact SHA.
+- **Scope**: macOS dangling-symlink backup repair + one shared updater (Claude Code / Codex / updater-only OpenCode).
+
+### ✅ DONE 2026-09-03. Capability Builder v1 — Phase 2 Evolve + Phase 3 Package (3/4, accepted `bba6ce84`, NOT published)
+
+- **Handoff/completion/Gate-4**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260903-capability-builder-phase23-evolve-package.md` + `.tad/archive/proposals/DESIGN-20260903-capability-builder-phase23-evolve-package.md`
+- **Gate 2**: PASS (R1 双 FAIL 11 P0 全修 → R2 双 CONDITIONAL 0 P0). **Gate 3**: PASS (Layer-1 10/10 + Layer-2 双审 + fix-round 重验；P4 打靶纠偏 + rollback 前缀卫 4 行修复）。
+- **Gate 4 (Alex)**: PASS — evolve 上线（含无信号空转闸）+ runner 资源设界 + 单 Skill 单 Plugin 打包；R1 核心零改动复核过；知识蒸馏 APPROVED 待应用（shell-portability 在 R1  fence 内， deferred 到 knowledge-maintain）。
+- **Epic 现状**：Create ✅ / Evolve ✅ / Package ✅ / Dogfood ⬚（Voice Studio 边界，需人另起）。
+- **剩余 P2**：stale-lock 恢复、大树哈希开销、timeout 路径跨机验证、`awk --` 卫生。
 
 ### ✅ DONE 2026-09-02. Local Wiki native browser capture
 
@@ -26,12 +42,12 @@
 - Gate 4 PASS at product `7cce3f78`; final AC scan repair `f235e377`; Node 12/12 and Python 24/24 PASS.
 - Real rendered-page capture is accepted. Public YouTube captions remain experimental and degrade honestly on first-use failure.
 
-### ⏸ PARKED. **EPIC-20260831-capability-builder-v1** — Phase 1/4 accepted; `evolve` not started
+### 🔄 ACTIVE 2026-09-03. **EPIC-20260831-capability-builder-v1** — Phase 1 accepted; Phase 2+3 handoff READY
 
 - **Epic**: `.tad/active/epics/EPIC-20260831-capability-builder-v1.md`
 - **Phase 1**: Gate 4 PASS on 2026-09-02 at implementation `2d7e359b`; project-owned Skill create/validate/project/behavioral-proof path is available.
-- **Next boundary**: Phase 2 `evolve` requires a separate human decision plus a concrete failure, correction, regression, external change, or explicit new requirement. Do not start it automatically.
-- **Accepted P2s**: conservative stale-lock recovery, large-tree hash process cost, and eval-regex resource bounds.
+- **Phase 2+3**: human 2026-09-03 authorized merged single handoff (signal = elevated P2 eval-regex bounds as explicit new requirement, option A; target = example-skill; Phase 4 deferred). Handoff `.tad/active/handoffs/HANDOFF-20260903-capability-builder-phase23-evolve-package.md`, Gate 2 PASS. Awaiting Blake.
+- **Accepted P2s remaining**: conservative stale-lock recovery, large-tree hash process cost (regex bounds now in flight).
 
 ### ✅ DONE 2026-09-01. **EPIC-20260824-yolo2-verified-orchestration** —— 4/4 accepted, remains opt-in
 
@@ -301,6 +317,10 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
 - [ ] **`STEP 3.5b` 的 CVE 正则抓不到 GHSA** — Path 2 是 `/CVE-\d{4}-\d+/`，
       而触发这条纪律的那次真实事故（停跑 28 天、漏 4 个漏洞、含明文 token 打印）
       里的编号全是 **GHSA-**。**原正则本来就不可能命中。**
+- [ ] **Full 通道 Lite 触发词消音（2026-09-03，用户报噪音）** — mini-handoff
+      `.tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md`（P2，mute-only，显式调用保留）。
+      范围：`AGENTS.md`（激活句/触发词表/冻结段→文末 Frozen 注）+ `CLAUDE.md`（页眉压 1 行/§2.5 压缩）；
+      不动：条件分支、路由规则、4 个 lite SKILL、hooks/templates。待 Blake 实现 + ≥1 专家审查。
 
 ---
 
