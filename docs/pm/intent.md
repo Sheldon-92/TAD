@@ -8,4 +8,5 @@
 - 当前对外 Latest **v2.44.1**（PM Bridge 可选三行 + 门面清理：hybrid 命名、补丁诚实 README、补发 v2.44.0/v2.44.1 Release）
 - 默认通道 full；Lite 冻结
 - Gate1 门面一揽子（2026-09-04）：各建 Release、诚实标题、hybrid c、旧 Release 不动、仅 README+package+repo meta+Releases、Express
+- 默认派活：Alex=Cursor gemini-3.8-flash-medium；Blake=OpenCode muse-spark；原则：设计略好/执行更省（source: docs/pm-charter.md §3.3b + docs/model-routing.md · 2026-09-04）
 ## 今日目标：TBD（门面清理 TASK-20260904-FACADE 已 Gate4 ACCEPTED；等你点名下一目标）
