@@ -25,7 +25,7 @@
 - **发布**: `origin/main = 40cf3234`（`2af31d1e` FF），annotated tag `v2.44.0`（obj `b9ac39c8`，peeled `40cf3234`）；CHANGELOG `[2.44.0]`（②Builder evolve+打包 ③安装器数据安全余项 + ①v2.43.1 三件套）
 - **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION-STOPPED,COMPLETION-FINAL,GATE4}-20260904-publish-v2440-bundle.md`；AC1 `PASS-PER-A1`（14 条定性非漂移、仅本版有效），AC2–AC8 全 PASS
 - **知识**: 1 条 pattern 进 `release-sync.md`（version-grep 门 exclusion 契约债）
-- **待办**: P1 version 门 exclusion 契约更新（另起设计单）；ROADMAP:27 “v2.43.1 | Published” docs 小单；B-track 设计；lite-mute P2 单。以上全在本地、未受影响。
+- **待办**: P1 version 门 exclusion 契约更新（另起设计单）；ROADMAP:27 “v2.43.1 | Published” docs 小单；B-track 设计。以上全在本地、未受影响。
 
 ### ✅ DONE 2026-09-06. Workspace hygiene & GitHub Registry scan — Gate 4 PASS, accepted
 
@@ -33,6 +33,13 @@
 - **Scan**: 54 lists, 33 updates, 43 pending candidates; REGISTRY.yaml untouched; `last_scan: 2026-09-04` per AC4
 - **Gates**: Gate 3 PASS (Layer 1 7/7 + Layer 2 spec/code/test PASS); Gate 4 PASS (Alex 7/7 independent recompute + Layer 2 audit PASS, P0/P1 = 0). No push.
 - **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260904-workspace-hygiene-and-scan.md`
+
+### ✅ DONE 2026-09-06. Full-channel Lite trigger mute — Gate 4 PASS, accepted
+
+- **Implementation**: `30aa5ea4` (`fix(docs): mute Lite triggers on the Full-channel default path`, 2 files: `AGENTS.md`, `CLAUDE.md`)
+- **Outcome**: Role Switching lite triggers muted; Alex/Blake definitions intact; footer `## Frozen Channel: TAD Lite` preserves explicit triggers; `CLAUDE.md` header compressed to 1 line blockquote; §2.5 byte-identical.
+- **Gates**: Gate 3 PASS (Layer 1 5/5 + Layer 2 spec/code PASS, DISTINCT_COUNT=2); Gate 4 PASS (Alex 5/5 independent recompute + Layer 2 audit PASS, P0/P1 = 0). No push.
+- **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260903-bugfix-lite-mute.md`
 
 ### 🔜 NEXT 2026-09-04. Framework-health close-out B — 1b 搬运 + SC2 + SC3 re-slim（设计中）
 
@@ -346,10 +353,9 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
 - [ ] **`STEP 3.5b` 的 CVE 正则抓不到 GHSA** — Path 2 是 `/CVE-\d{4}-\d+/`，
       而触发这条纪律的那次真实事故（停跑 28 天、漏 4 个漏洞、含明文 token 打印）
       里的编号全是 **GHSA-**。**原正则本来就不可能命中。**
-- [ ] **Full 通道 Lite 触发词消音（2026-09-03，用户报噪音）** — mini-handoff
-      `.tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md`（P2，mute-only，显式调用保留）。
-      范围：`AGENTS.md`（激活句/触发词表/冻结段→文末 Frozen 注）+ `CLAUDE.md`（页眉压 1 行/§2.5 压缩）；
-      不动：条件分支、路由规则、4 个 lite SKILL、hooks/templates。待 Blake 实现 + ≥1 专家审查。
+- [x] **Full 通道 Lite 触发词消音（2026-09-03，用户报噪音）** — mini-handoff
+      `.tad/archive/handoffs/HANDOFF-20260903-bugfix-lite-mute.md`（P2，mute-only，显式调用保留）。
+      Gate 4 PASS 2026-09-06 (commit `30aa5ea4`)，已归档。
 
 ---
 
