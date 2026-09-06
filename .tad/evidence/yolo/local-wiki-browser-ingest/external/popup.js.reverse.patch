@@ -1,0 +1,178 @@
+--- a/popup/popup.js
++++ b/popup/popup.js
+@@ -554,95 +554,58 @@
+       world: 'MAIN',
+       args: [langCode],
+       func: async (targetLang) => {
+-        const MAX_CAPTURE_BYTES = 5 * 1024 * 1024;
+-        const activeKey = '__webToMarkdownTimedtextCaptureV1';
+-        const isTrustedTimedtextUrl = (candidate) => {
+-          try {
+-            const parsed = new URL(String(candidate), location.href);
+-            return parsed.protocol === 'https:' &&
+-              (parsed.hostname === 'youtube.com' || parsed.hostname === 'www.youtube.com') &&
+-              parsed.pathname === '/api/timedtext';
+-          } catch (_) {
+-            return false;
+-          }
+-        };
+-        if (window[activeKey]) {
+-          return { ok: false, error: 'Subtitle capture is already active. Please wait.' };
+-        }
+-        const player = document.querySelector('#movie_player');
+-        if (!player) {
+-          return { ok: false, error: 'YouTube player not found on page' };
+-        }
+-        const origFetch = window.fetch;
+-        const origXHROpen = XMLHttpRequest.prototype.open;
+-        const origXHRSend = XMLHttpRequest.prototype.send;
+-        const xhrListeners = [];
+-        let timer = null;
+-        let resolveCapture;
+-        let settled = false;
+-        const cleanup = () => {
+-          if (timer !== null) clearTimeout(timer);
+-          for (const { xhr, listener } of xhrListeners) xhr.removeEventListener('load', listener);
+-          if (window.fetch === fetchWrapper) window.fetch = origFetch;
+-          if (XMLHttpRequest.prototype.open === openWrapper) XMLHttpRequest.prototype.open = origXHROpen;
+-          if (XMLHttpRequest.prototype.send === sendWrapper) XMLHttpRequest.prototype.send = origXHRSend;
+-          if (window[activeKey] === token) delete window[activeKey];
+-        };
+-        const settle = (result) => {
+-          if (settled) return;
+-          settled = true;
+-          cleanup();
+-          resolveCapture(result);
+-        };
+-        const capture = (text) => {
+-          if (typeof text !== 'string' || text.length === 0) return;
+-          if (text.length > MAX_CAPTURE_BYTES) {
+-            settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
+-            return;
+-          }
+-          settle({ ok: true, text, length: text.length });
+-        };
+-        const fetchWrapper = async function(input) {
+-          let response;
+-          try {
+-            response = await origFetch.apply(this, arguments);
+-          } catch (error) {
+-            const url = typeof input === 'string' ? input : input?.url || '';
+-            if (isTrustedTimedtextUrl(url)) settle({ ok: false, error: 'Subtitle request failed' });
+-            throw error;
+-          }
+-          const url = typeof input === 'string' ? input : input?.url || '';
+-          if (isTrustedTimedtextUrl(url)) {
+-            const declaredLength = Number(response.headers?.get?.('content-length'));
+-            if (Number.isFinite(declaredLength) && declaredLength > MAX_CAPTURE_BYTES) {
+-              settle({ ok: false, error: 'Subtitle response exceeds 5 MiB limit' });
+-            } else try { capture(await response.clone().text()); }
+-            catch (_) { settle({ ok: false, error: 'Subtitle response could not be read' }); }
+-          }
+-          return response;
+-        };
+-        const openWrapper = function(method, url) {
+-          this.__webToMarkdownTimedtextUrl = url;
+-          return origXHROpen.apply(this, arguments);
+-        };
+-        const sendWrapper = function() {
+-          if (isTrustedTimedtextUrl(this.__webToMarkdownTimedtextUrl)) {
+-            const xhr = this;
+-            const listener = () => capture(xhr.responseText);
+-            xhrListeners.push({ xhr, listener });
+-            xhr.addEventListener('load', listener, { once: true });
+-          }
+-          return origXHRSend.apply(this, arguments);
+-        };
+-        const token = {};
+-        window[activeKey] = token;
+-        const capturePromise = new Promise((resolve) => { resolveCapture = resolve; });
+-        window.fetch = fetchWrapper;
+-        XMLHttpRequest.prototype.open = openWrapper;
+-        XMLHttpRequest.prototype.send = sendWrapper;
+-        timer = setTimeout(() => settle({ ok: false, error: 'YouTube player did not load subtitle data. Try refreshing the page.' }), 10000);
++        try {
++          // Set up interception for timedtext responses
++          let capturedData = null;
++          const capturePromise = new Promise((resolve) => {
++            // Patch fetch
++            const origFetch = window.fetch;
++            window.fetch = async function(input, init) {
++              const url = typeof input === 'string' ? input : input?.url || '';
++              const resp = await origFetch.apply(this, arguments);
++              if (url.includes('timedtext')) {
++                const clone = resp.clone();
++                const text = await clone.text();
++                if (text.length > 0) {
++                  capturedData = text;
++                  window.fetch = origFetch; // Restore
++                  resolve(text);
++                }
++              }
++              return resp;
++            };
+ 
+-        try {
++            // Also patch XHR (YouTube player might use XHR)
++            const origXHROpen = XMLHttpRequest.prototype.open;
++            const origXHRSend = XMLHttpRequest.prototype.send;
++            XMLHttpRequest.prototype.open = function(method, url) {
++              this.__captureUrl = url;
++              return origXHROpen.apply(this, arguments);
++            };
++            XMLHttpRequest.prototype.send = function() {
++              const self = this;
++              if (this.__captureUrl && this.__captureUrl.includes('timedtext')) {
++                this.addEventListener('load', function() {
++                  if (self.responseText && self.responseText.length > 0) {
++                    capturedData = self.responseText;
++                    XMLHttpRequest.prototype.open = origXHROpen; // Restore
++                    XMLHttpRequest.prototype.send = origXHRSend;
++                    resolve(self.responseText);
++                  }
++                });
++              }
++              return origXHRSend.apply(this, arguments);
++            };
++
++            // Timeout after 10s
++            setTimeout(() => resolve(null), 10000);
++          });
++
++          // Trigger subtitle loading via player API
++          const player = document.querySelector('#movie_player');
++          if (!player) {
++            return { ok: false, error: 'YouTube player not found on page' };
++          }
+ 
+           // Ensure video is playing (captions only load during playback)
+           if (player.getPlayerState && player.getPlayerState() !== 1) {
+@@ -657,19 +620,22 @@
+           // Set caption track to trigger timedtext fetch
+           player.setOption('captions', 'track', { languageCode: targetLang });
+ 
+-          const result = await capturePromise;
++          // Wait for captured data
++          const data = await capturePromise;
+ 
+           // Pause video if we started it
+           if (player.pauseVideo) {
+             player.pauseVideo();
+           }
+ 
+-          return result;
++          if (!data || data.length === 0) {
++            // Fallback: try direct fetch with the baseUrl
++            return { ok: false, error: 'YouTube player did not load subtitle data. Try refreshing the page.' };
++          }
++
++          return { ok: true, text: data, length: data.length };
+         } catch (e) {
+-          settle({ ok: false, error: e?.message || 'Subtitle capture failed' });
+-          return await capturePromise;
+-        } finally {
+-          cleanup();
++          return { ok: false, error: e.message };
+         }
+       }
+     });

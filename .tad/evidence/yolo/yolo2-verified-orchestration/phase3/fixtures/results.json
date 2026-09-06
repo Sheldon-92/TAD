@@ -1,0 +1,21 @@
+{
+  "format": "yolo-harness-fixtures-results-v1",
+  "generated_at": "2026-09-01T16:07:00.000Z",
+  "framework": "yolo-harness-runner.test.mjs deterministic fixtures (no provider calls)",
+  "cases": {
+    "profiles": "PASS",
+    "fixtures": "PASS",
+    "semantic-equivalence": "PASS",
+    "resume": "PASS",
+    "strict-rejection": "PASS",
+    "state-safety": "PASS",
+    "budget": "PASS"
+  },
+  "negative_controls": [
+    "executable_missing","provider_unresolved","malformed_json","wrong_schema","nonzero_exit",
+    "timeout","wrong_session","permission_escape","secret_echo","stale_capability",
+    "identical_lease_double_claim","stale_packet","post_assertion_drift","deadline","budget_exhaustion"
+  ],
+  "invocation_counts_zero_for_pre_spawn": true,
+  "worktree_hashes_unchanged_for_rejected": true
+}

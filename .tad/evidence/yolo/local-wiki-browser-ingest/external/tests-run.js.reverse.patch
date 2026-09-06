@@ -1,0 +1,11 @@
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -35,8 +35,6 @@
+ // 3. collectImages unit.
+ runNode('collectImages unit', [path.join(testsDir, 'collectImages-unit.test.js')]);
+ 
+-// 4. YouTube MAIN-world interception lifecycle contract.
+-runNode('YouTube timedtext capture contract', [path.join(testsDir, 'youtube-capture-contract.test.js')]);
+ 
+ // 5. node --check on the shipped sources.
+ //    lib/purify.js: vendored UMD; verified `node --check` PASSES (exit 0), so it stays in the

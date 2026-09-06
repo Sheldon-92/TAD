@@ -1,0 +1,76 @@
+// Regression test orchestrator for the HTML-snapshot security net.
+// Runs all checks (NO fail-fast), prints each PASS/FAIL, accumulates exit codes,
+// and exits non-zero if ANY check failed. Invoked by `npm test`.
+//
+// Checks:
+//   1. AC-S6 buildHtmlDocument   — node script, exit-code API (spawned, API untouched)
+//   2. sanitizer drift-check     — config bytes (content.js === snapshot) + purify.js version/hash
+//   3. collectImages unit        — INLINED_DATA_IMG_RE 3 vectors
+//   4. node --check (syntax)      — content.js / service-worker.js / popup.js / lib/purify.js
+
+const { spawnSync } = require('child_process');
+const path = require('path');
+
+const NODE = process.execPath;
+const testsDir = __dirname;
+const root = path.resolve(__dirname, '..');
+
+const results = []; // { name, code }
+
+function runNode(name, args, cwd) {
+  console.log('\n========================================');
+  console.log('RUN: ' + name);
+  console.log('========================================');
+  const r = spawnSync(NODE, args, { cwd: cwd || testsDir, stdio: 'inherit' });
+  const code = r.status === null ? 1 : r.status; // killed/signal → treat as fail
+  results.push({ name, code });
+}
+
+// 1. AC-S6 (spawned as an independent exit-code script — do NOT change its API).
+runNode('AC-S6 buildHtmlDocument', [path.join(testsDir, 'AC-S6-buildHtmlDocument.test.js')]);
+
+// 2. drift-check.
+runNode('sanitizer drift-check', [path.join(testsDir, 'drift-check.js')]);
+
+// 3. collectImages unit.
+runNode('collectImages unit', [path.join(testsDir, 'collectImages-unit.test.js')]);
+
+// 4. YouTube MAIN-world interception lifecycle contract.
+runNode('YouTube timedtext capture contract', [path.join(testsDir, 'youtube-capture-contract.test.js')]);
+
+// 5. node --check on the shipped sources.
+//    lib/purify.js: vendored UMD; verified `node --check` PASSES (exit 0), so it stays in the
+//    list (see tests/README.md). If a future purify.js bump fails --check, drop it here and note why.
+const syntaxTargets = [
+  'content/content.js',
+  'background/service-worker.js',
+  'popup/popup.js',
+  'lib/purify.js'
+];
+console.log('\n========================================');
+console.log('RUN: node --check (syntax)');
+console.log('========================================');
+let syntaxCode = 0;
+for (const t of syntaxTargets) {
+  const r = spawnSync(NODE, ['--check', t], { cwd: root, stdio: 'pipe', encoding: 'utf8' });
+  const ok = r.status === 0;
+  console.log((ok ? 'PASS ' : 'FAIL ') + 'node --check ' + t);
+  if (!ok) {
+    syntaxCode = 1;
+    if (r.stderr) console.error(r.stderr.trim());
+  }
+}
+console.log('\n' + (syntaxCode === 0 ? 'PASS' : 'FAIL') + ' — node --check');
+results.push({ name: 'node --check (syntax)', code: syntaxCode });
+
+// Summary.
+console.log('\n========================================');
+console.log('SUMMARY');
+console.log('========================================');
+let total = 0;
+for (const { name, code } of results) {
+  console.log((code === 0 ? 'PASS ' : 'FAIL ') + name);
+  total += code === 0 ? 0 : 1;
+}
+console.log('\n' + (total === 0 ? 'ALL PASS' : total + ' CHECK(S) FAILED'));
+process.exit(total === 0 ? 0 : 1);

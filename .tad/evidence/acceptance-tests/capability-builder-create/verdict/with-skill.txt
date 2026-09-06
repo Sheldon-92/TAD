@@ -1,0 +1,1 @@
+PACK example-skill FIXTURE example-skill-fixture: disc 3/3 [combined 3/3] → PASS

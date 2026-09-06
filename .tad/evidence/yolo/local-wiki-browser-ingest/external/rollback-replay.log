@@ -1,0 +1,14 @@
+reverse replay (patch -E removes /dev/null target)
+patching file 'popup/popup.js'
+patching file 'tests/run.js'
+patching file 'tests/youtube-capture-contract.test.js'
+7f873c78a850ed491c087373d18eedf4e3a6f5fedd134627a84f3b05770eee73  /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.EsLTrm7jVM/popup/popup.js
+f8e3556ab78f68fbd78dfba038b89e109e02225e4e6a7be0b95c3eff6ea5d95f  /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.EsLTrm7jVM/tests/run.js
+forward replay
+patching file 'popup/popup.js'
+patching file 'tests/run.js'
+patching file 'tests/youtube-capture-contract.test.js'
+51051bb97339589ddf0fe443dccef072568340e122be88d7e9521a52496da7a5  /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.EsLTrm7jVM/popup/popup.js
+cefe0d3a2db20f9e86e89524f88add9b0414a7f8983c4110a592f7df69ca049a  /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.EsLTrm7jVM/tests/run.js
+44bf8595a2fa3eb83c02826297497c8d1b18733f01651ece7e070385ac92e101  /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.EsLTrm7jVM/tests/youtube-capture-contract.test.js
+PASS rollback replay

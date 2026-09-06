@@ -1,0 +1,10 @@
+{
+  "format": "yolo-harness-aggregate-v1",
+  "generated_at": "2026-09-01T18:20:06.380Z",
+  "profiles": {
+    "claude-code": "experimental_unverified",
+    "codex": "strict",
+    "opencode": "experimental_unverified",
+    "opencode-deepseek": "experimental_unverified"
+  }
+}

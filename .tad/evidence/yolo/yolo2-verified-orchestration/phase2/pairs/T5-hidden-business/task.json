@@ -1,0 +1,24 @@
+{
+  "id": "T5-hidden-business",
+  "provenance": "replay of 'local green / business red' class (Epic \u00a77 AC7 counterexample 3)",
+  "task": "Add function total(items) to totals.js returning the SUM of item.price values, and make app.js print total([ {price:2},{price:3} ]). All existing tests must keep passing.",
+  "seed": {
+    "totals.js": "",
+    "app.js": "console.log('app');\n",
+    "tests.js": "const assert=require('node:assert'); assert(true);\nconsole.log('tests ok');\n"
+  },
+  "hidden": [
+    {
+      "check": "totals.js exports total"
+    },
+    {
+      "check": "total uses numeric addition of price fields"
+    },
+    {
+      "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+    },
+    {
+      "check": "node tests.js still passes"
+    }
+  ]
+}
