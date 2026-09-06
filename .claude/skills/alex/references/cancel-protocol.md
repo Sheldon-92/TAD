@@ -100,12 +100,11 @@ cancel_protocol:
         Archived to .tad/archive/handoffs/cancelled/. Returning to standby."
         Enter Alex standby state (per intent_router_protocol.standby).
 
-  enforcement: "prompt-level-only"  # See constraints.enforcement (global)
+  enforcement: "prompt-level-only"
 
   # P5.3 BA-P0-3: symmetric forbidden_implementations 5-item block
   # (parity with *express / *experiment / skip_knowledge_assessment per
   # Path Layering 2026-04-24 attack-surface defense)
-  # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.cancel_protocol
   forbidden_implementations:
     - "MUST NOT couple *cancel to skip_knowledge_assessment (cancelled handoffs bypass Gate 4 by design but MUST still write cancel_reason + cancel_rationale)"
     - "Anti-AR-001: '*cancel = silent abandonment' is a forbidden interpretation — both reason taxonomy AND rationale text are mandatory"

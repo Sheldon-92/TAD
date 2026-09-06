@@ -305,9 +305,8 @@ handoff_creation_protocol:
         At step2 (expert review), if §6 has no Grounded Against line AND §6 is non-empty
         AND no exemption applies: self-audit failed → return to step1c.
         This is Alex's own check — NOT a hook, NOT a tool block.
-      # Mechanical deny: see constraints.deny (global) + constraints.section_overrides.step1c_grounding (inherits_global)
       forbidden_implementations:
-        - "MUST NOT register hooks or modify settings — see constraints.deny (global)"
+        - "MUST NOT register hooks or modify settings"
         - "violation level mirrors anti_rationalization_registry: prompt-only enforcement"
 
     # ──────────────────────────────────────────────────────────
@@ -339,7 +338,6 @@ handoff_creation_protocol:
         skip_if:
           - "§6 is empty or all files are new (create, not modify)"
           - "task_type is doc-only, yaml, or research"
-        # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.step0_graph
         forbidden_implementations:
           - "MUST NOT auto-index the repository (TAD never triggers indexing)"
           - "MUST NOT block or slow down if graph probe fails (strict <500ms budget)"
@@ -440,9 +438,8 @@ handoff_creation_protocol:
 
       known_limitations: "Provisions one language per session. Multi-language handoffs get LSP for dominant extension only; others fall back to grep."
 
-      # Mechanical deny: see constraints.deny (global) + constraints.section_overrides.step1c_lsp (inherits_global)
       forbidden_implementations:
-        - "MUST NOT register hooks or modify settings — see constraints.deny (global)"
+        - "MUST NOT register hooks or modify settings"
 
     step1d:
       name: "AC Dry-Run Pass — verify §9.1 verification commands actually work (P6-A.1, 2026-04-25)"
@@ -516,7 +513,6 @@ handoff_creation_protocol:
       violation_self_audit: |
         At step2, if §9.1 has rows but no AC Dry-Run Log section AND no exemption:
         self-audit failed → return to step1d.
-      # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.step1d_ac_dryrun
       forbidden_implementations:
         - "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
         <!-- Claude Code: .claude/settings.json hooks / Codex: .codex/hooks.json -->

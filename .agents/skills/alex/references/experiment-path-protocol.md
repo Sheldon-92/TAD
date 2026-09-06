@@ -106,8 +106,7 @@ experiment_path_protocol:
       experiment_path_protocol is the workflow + Gate semantics.
       Loaded explicitly via capability_pack_auto_load (above) at protocol entry.
 
-  enforcement: "prompt-level-only"  # See constraints.enforcement (global)
-  # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.experiment_path
+  enforcement: "prompt-level-only"
   forbidden_implementations:
     - "MUST NOT replace Gate 3/4 silently — semantics is AUGMENT (additive), original criteria still apply"
     - "MUST NOT bypass *analyze Socratic for *experiment — all Standard TAD steps DO run"

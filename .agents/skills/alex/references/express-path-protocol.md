@@ -50,8 +50,7 @@ express_path_protocol:
     - "Epic Phase Map evaluation (express handoffs not part of Epics)"
     - "Knowledge Assessment ceremony (skip_knowledge_assessment defaults to yes; Blake can override unskip per P3.3)"
 
-  enforcement: "prompt-level-only"  # See constraints.enforcement (global)
-  # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.express_path
+  enforcement: "prompt-level-only"
   forbidden_implementations:
     - "Anti-AR-001: 'express = review-exempt' is a forbidden interpretation"
     - "MUST NOT auto-downgrade Standard TAD handoff to *express via any mechanism"

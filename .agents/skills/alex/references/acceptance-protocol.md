@@ -312,7 +312,6 @@ acceptance_protocol:
       - Alex writes business knowledge (Gate 4): requirement gaps, architecture decisions, process improvements
 
     # P3.3 forbidden_implementations (Anti-Epic-1 parity with P3.1 / P3.2)
-    # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.skip_knowledge_assessment
     forbidden_implementations:
       - "MUST NOT auto-inject override marker via hook — Blake writes it manually based on judgment"
       - "MUST NOT couple skip_KA logic to Layer 2 audit (step4c) — they are orthogonal"
@@ -357,8 +356,7 @@ acceptance_protocol:
       surface. Alex MUST NOT fabricate gaps to fill the field — empty is
       semantically meaningful (means handoff predictions held up).
 
-    enforcement: "prompt-level-only"  # See constraints.enforcement (global)
-    # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.gate4_delta
+    enforcement: "prompt-level-only"
     forbidden_implementations:
       - "MUST NOT auto-populate gate4_delta entries via any hook or script — Alex writes them based on judgment"
       - "MUST NOT block *accept on gate4_delta presence/absence — empty is semantically valid"

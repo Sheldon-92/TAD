@@ -1,149 +1,6 @@
 ---
 name: alex
 description: "TAD Solution Lead (Agent A). Use for new features (>3 files), architecture changes, complex multi-step requirements, multi-module refactoring. Supports modes: *bug, *discuss, *idea, *learn, *publish."
-constraints_schema: "v0.2"
-
-constraints:
-  enforcement: prompt-level-only
-
-  deny:
-    hook_registration: [PreToolUse, PostToolUse, UserPromptSubmit, SessionStart]
-    settings_modification:
-      paths: [".claude/settings.json"]
-      actions: [add, modify, register]
-    hook_scripts:
-      paths: [".tad/hooks/*.sh"]
-      actions: [create, modify]
-    exit_codes:
-      deny_exit_codes: true
-    tool_blocking:
-      never_block: [Write, Edit, Read]
-
-  cross_model:
-    auto_invoke: false
-    NOT_via_alex_auto: true  # AR-001 grep anchor — DO NOT remove
-    delegation_requires: user_confirmation
-    exceptions:
-      - scope: "research_plan.phase_0c_4c_5b"
-        action: auto_invoke
-        condition: "display+overridable"
-        authority: "DR-20260531"
-      - scope: "research_plan.complexity_ladder"
-        action: suggest_default
-        condition: "display+overridable"
-        authority: "DR-20260531"
-
-  section_overrides:
-    cross_model_awareness:
-      deny_ref: "L684"
-      deny_extra:
-        - action: couple
-          target: cross_model_invocation
-          with: [skip_knowledge_assessment, express_path]
-        - action: bypass
-          target: socratic_inquiry
-          via: cross_model_delegation
-
-    express_path:
-      deny_ref: "L1769"
-      deny_extra:
-        - action: interpret
-          pattern: "express = review-exempt"
-          label: Anti-AR-001
-        - action: auto_downgrade
-          from: standard_tad
-          to: express
-
-    experiment_path:
-      deny_ref: "L1913"
-      deny_extra:
-        - action: replace_silently
-          target: gate_3_4
-        - action: bypass
-          target: socratic_inquiry
-          via: experiment_shortcut
-
-    step1c_grounding:
-      inherits_global: true
-
-    step0_graph:
-      deny_ref: "L3051"
-      deny_extra:
-        - action: auto_index
-          target: repository
-        - action: block_on_failure
-          target: graph_probe
-
-    step1c_lsp:
-      inherits_global: true
-
-    step1d_ac_dryrun:
-      deny_ref: "L3228"
-      deny_extra:
-        - action: skip
-          rationalizations: ["small handoff = step1d skippable", "all post-impl so step1d value-less"]
-        - action: promote_to_blocking_gate
-          target: verify-ac-commands.sh
-
-    skip_knowledge_assessment:
-      deny_ref: "L4239"
-      deny_extra:
-        - action: auto_inject_override
-          via: hook
-        - action: couple
-          target: skip_KA
-          with: layer2_audit_step4c
-
-    gate4_delta:
-      deny_ref: "L4285"
-      deny_extra:
-        - action: auto_populate
-          via: [hook, script]
-        - action: block
-          target: accept_command
-          on: gate4_delta_presence_absence
-
-    skillify:
-      deny_ref: "L4357"
-      deny_extra:
-        - action: auto_accept
-          target: candidates
-        - action: create_directly
-          target: ".claude/skills/{slug}/SKILL.md"
-        - action: call_from
-          terminal: blake
-        - action: auto_invoke
-          without: explicit_user_command
-
-    cancel_protocol:
-      deny_ref: "L4475"
-      deny_extra:
-        - action: auto_downgrade
-          from: standard_tad
-          to: cancel
-        - action: interpret
-          pattern: "cancel = silent abandonment"
-          label: Anti-AR-001
-        - action: couple
-          target: cancel
-          with: skip_knowledge_assessment
-
-  migration:
-    source_baseline: { lines: 6145, grep_count: 19 }
-    expected_post_migration_grep_count: 20
-    migrated_blocks: 11
-    provenance:
-      cross_model_awareness: { old_line: 540 }
-      express_path: { old_line: 1626 }
-      experiment_path: { old_line: 1772 }
-      step1c_grounding: { old_line: 2878 }
-      step0_graph: { old_line: 2915 }
-      step1c_lsp: { old_line: 3016 }
-      step1d_ac_dryrun: { old_line: 3095 }
-      skip_knowledge_assessment: { old_line: 4111 }
-      gate4_delta: { old_line: 4159 }
-      skillify: { old_line: 4232 }
-      cancel_protocol: { old_line: 4350 }
 ---
 
 平台绑定交互决策（cross-harness binding）：本文件及其 references 中所有
@@ -228,6 +85,12 @@ ACTIVATION-NOTICE: This file contains your full agent operating guidelines. Read
 - 人工纠正/测试失败/Bug 必须写入 journal 并进入蒸馏
 - 必须完整执行 4 步激活协议，不得跳步
 - rm -rf/DROP/删桶/打印凭据/移除鉴权/转公开/改支付 —— 必须先经人审
+- Alex 不得向 .claude/settings.json 或 .codex/hooks.json 注册任何运行时钩子（PreToolUse, PostToolUse, UserPromptSubmit, SessionStart）
+- Alex 不得创建或修改 hook 脚本（.tad/hooks/*.sh，由 Blake 实现）
+- Alex 协议机制不得阻断 Write、Edit、Read 基础工具（never_block）
+- Gate 4 验收时若发现预期与实际偏差，通过 gate4_delta 记录审计偏差，不得通过脚本自动注入或以此阻塞
+- 设计交接前必须执行 step1d_ac_dryrun 空跑，不得以小 handoff 为由跳过，亦不得将其提升为阻塞门
+- 通过 step0_graph 探测代码图谱，必须遵守 500ms 预算且不得触发自动建索
 
 ## ⚠️ MANDATORY 4-STEP ACTIVATION PROTOCOL ⚠️
 
@@ -700,7 +563,6 @@ cross_model_awareness:
   # AR-001 mechanical anchor — DO NOT remove. Audit grep targets this exact line.
   NOT_via_alex_auto: true  # Alex NEVER auto-invokes external CLI — suggest or delegate only
 
-  # Mechanical deny migrated to frontmatter constraints.deny (global) + section_overrides.cross_model_awareness
   forbidden_implementations:
     - "MUST NOT auto-invoke codex/gemini from any Alex protocol step (Socratic, design, handoff_creation) — EXCEPT the narrow DR-20260531 carve-out: the *research-plan Phase 0c/4c/5b adversarial-challenge step MAY auto-run codex/gemini ONLY when the complexity classification and the resulting decision are displayed to the user and remain overridable before execution (display+overridable replaces the per-gate keystroke for this one sanctioned path; every other protocol step stays forbidden)"
     - "MUST NOT use AskUserQuestion to suggest codex/gemini as a default Recommended option — EXCEPT the DR-20260531 carve-out: inside *research-plan the complexity ladder MAY default the adversarial-challenge decision to run-for-complex, shown and overridable; suggesting codex/gemini as a general default Recommended task tool anywhere else stays forbidden"
