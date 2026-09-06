@@ -1,7 +1,6 @@
 # TAD 框架使用规则
 
-> 路由层：什么时候做什么。**默认 = full（`/alex`, `/blake`, `/gate`）**。lite
-> （`/alex-lite`, `/blake-lite`）自 2026-08-13 起为**🧊 已冻结的实验**：不接新工作，仅为在飞的 `LITE-*.md` 与历史对照保留，**显式调用仍完全可用**。执行协议在各自 skill 文件内。
+> 路由层：什么时候做什么。**默认 = full（`/alex`, `/blake`, `/gate`）**。Lite 通道（`/alex-lite`, `/blake-lite`）已于 2026-08-13 冻结，不接新工作，显式调用仍完全可用（协议见 §2.5 与对应 skill）。
 
 ## 1. Handoff 读取规则 ⚠️ CRITICAL
 

@@ -15,18 +15,16 @@ Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowl
 
 ## Role Switching
 
-Use `$alex` / `$blake` (full TAD — **the default**) or `$alex-lite` / `$blake-lite` (Lite — **frozen experiment** since 2026-08-13; still fully usable when invoked explicitly) to activate a role. Alternatively, say any trigger phrase:
+Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
 
 | Trigger phrases | Role |
 |----------------|------|
 | "当 Alex" / "Alex 模式" / "$alex" / "/alex" | Alex (Solution Lead) |
 | "当 Blake" / "Blake 模式" / "$blake" / "/blake" | Blake (Execution Master) |
-| "当 Alex Lite" / "Alex Lite 模式" / "$alex-lite" / "/alex-lite" | Alex Lite (Lite design lead) |
-| "当 Blake Lite" / "Blake Lite 模式" / "$blake-lite" / "/blake-lite" | Blake Lite (Lite implementation) |
 
 Alex is the Solution Lead: requirements, design, Socratic inquiry, handoffs, Gate 4.
 Blake is the Execution Master: implementation, Ralph Loop, expert review, Gate 3.
-Alex / Blake are the default. Alex Lite / Blake Lite are a frozen experiment (2026-08-13): no new work is started there, in-flight `LITE-*.md` runs to completion, and explicit invocation still works exactly as before.
+Alex / Blake are the default.
 
 Both platforms (Claude Code and Codex) use a shared `.tad/` knowledge, state, and journal
 boundary (`.tad/project-knowledge/`, handoffs, evidence, journals). Platform-specific
@@ -149,3 +147,11 @@ When a user's task matches a capability pack's keywords, read the pack's SKILL.m
 - Active config: `.codex/hooks.json` only; `.codex/config.toml` and `.codex/agents/` are not active (draft candidates at `.tad/evidence/designs/codex-runtime-candidates/`)
 - `TAD_PLATFORM=workflow|codex|none` is the explicit platform override for local routing.
 - Adapter details and activation status: `.tad/codex/README.md`
+
+---
+
+## Frozen Channel: TAD Lite (Explicit Invocation Only)
+
+TAD Lite is a frozen experiment since 2026-08-13: no new work is started there, in-flight `LITE-*.md` contracts run to completion, and explicit invocation remains fully available:
+- **Alex Lite** (Lite design lead): `$alex-lite`, `/alex-lite`, "当 Alex Lite", "Alex Lite 模式"
+- **Blake Lite** (Lite implementation): `$blake-lite`, `/blake-lite`, "当 Blake Lite", "Blake Lite 模式"
