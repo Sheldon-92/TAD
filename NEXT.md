@@ -12,6 +12,21 @@
 
 ## 🔴 优先队列（2026-09-03 晚：YOLO 三轨落地；B 单测量完成，设计待续 —— 明天继续）
 
+### ✅ DONE 2026-09-04. Public-facade cleanup — Gate 4 PASS, accepted (was: ~~Public-facade cleanup — Express handoff READY, Gate 2 PASS (awaiting Blake)~~)
+
+- **Implementation**: `39a4aa50` (README.md only, 5+/3-: R1a headline patch-honest / R1b pointer + dual CHANGELOG anchors / R1c hybrid naming / R1d footer mirror); package.json verify-only (canon, zero edits)
+- **Public writes**: `gh repo edit --description` (hybrid-c) + draft v2.44.0 (full SHA, non-Latest) → draft v2.44.1 (full SHA, Latest) → human draft-render approval → publish 2026-09-04T22:52:08Z/22:52:10Z; Latest = v2.44.1; v2.43.0 body hash unchanged (`d3af1fff…1b0c6c`)
+- **Gates**: Gate 3 PASS (AC1–AC7 + dual Layer-2, 0 findings); Gate 4 PASS (Alex 7/7 independent recompute + fresh code/security reviews, P0/P1 = 0; performance N/A docs-facade; UX N/A)
+- **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260904-public-facade-cleanup.md` + `.tad/archive/proposals/DESIGN-20260904-public-facade-cleanup.md`
+- **Notes**: completion `gate3_verdict:` marker left empty (Blake post-step telemetry gap, non-blocking, recorded in GATE4 §1); DESIGN AC6 comment "3 expected" miscounts case-sensitive count (actual 2, threshold ≥ 2 met — P2 observation, no action)
+
+### ✅ DONE 2026-09-04. Publish v2.44.0 bundle — Gate 4 PASS, live
+
+- **发布**: `origin/main = 40cf3234`（`2af31d1e` FF），annotated tag `v2.44.0`（obj `b9ac39c8`，peeled `40cf3234`）；CHANGELOG `[2.44.0]`（②Builder evolve+打包 ③安装器数据安全余项 + ①v2.43.1 三件套）
+- **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION-STOPPED,COMPLETION-FINAL,GATE4}-20260904-publish-v2440-bundle.md`；AC1 `PASS-PER-A1`（14 条定性非漂移、仅本版有效），AC2–AC8 全 PASS
+- **知识**: 1 条 pattern 进 `release-sync.md`（version-grep 门 exclusion 契约债）
+- **待办**: P1 version 门 exclusion 契约更新（另起设计单）；ROADMAP:27 “v2.43.1 | Published” docs 小单；B-track 设计；lite-mute P2 单。以上全在本地、未受影响。
+
 ### 🔜 NEXT 2026-09-04. Framework-health close-out B — 1b 搬运 + SC2 + SC3 re-slim（设计中）
 
 - **测量已冻结（2026-09-03 实测）**: SC2 deny_ref=9（正文禁令 3/2/2 已达标，只剩搬运+删除）；SC3 tracked 112+22，tarball 9,414,984（>8,388,608）；orphan 分支 `maintainer-evidence` 存在但缺新文件；运行时零读取（仅 mkdir 脚手架）。

@@ -4,47 +4,397 @@
 # Single-writer principle: this file is the ONLY output of the routine.
 # REGISTRY.yaml last_checked is updated separately (by *research-github refresh or Alex consuming scan-log).
 version: 1.0.0
-last_scan: 2026-07-13
+last_scan: "2026-09-04"
 scan_results:
   updates:
-    - repo: "Shubhamsaboo/awesome-llm-apps"
-      domain: "ai-agents"
-      last_commit: 2026-07-11
-      previous_checked: 2026-05-04
-    - repo: "e2b-dev/awesome-ai-agents"
-      domain: "ai-agents"
-      last_commit: 2026-07-09
-      previous_checked: 2026-05-04
-    - repo: "aishwaryanr/awesome-generative-ai-guide"
-      domain: "ai-agents"
-      last_commit: 2026-06-24
-      previous_checked: 2026-05-04
-    - repo: "f/awesome-chatgpt-prompts"
-      domain: "ai-agents"
-      last_commit: 2026-07-13
-      previous_checked: 2026-05-04
+    - repo: Shubhamsaboo/awesome-llm-apps
+      domain: ai-agents
+      last_commit: "2026-09-02"
+      previous_checked: "2026-05-04"
+    - repo: e2b-dev/awesome-ai-agents
+      domain: ai-agents
+      last_commit: "2026-08-21"
+      previous_checked: "2026-05-04"
+    - repo: aishwaryanr/awesome-generative-ai-guide
+      domain: ai-agents
+      last_commit: "2026-09-03"
+      previous_checked: "2026-05-04"
+    - repo: f/awesome-chatgpt-prompts
+      domain: ai-agents
+      last_commit: "2026-09-06"
+      previous_checked: "2026-05-04"
+    - repo: Jenqyang/Awesome-AI-Agents
+      domain: ai-agents
+      last_commit: "2026-09-02"
+      previous_checked: "2026-07-14"
+    - repo: punkpeye/awesome-mcp-servers
+      domain: mcp-servers
+      last_commit: "2026-09-01"
+      previous_checked: "2026-05-04"
+    - repo: promptslab/Awesome-Prompt-Engineering
+      domain: prompt-engineering
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: enaqx/awesome-react
+      domain: web-frontend
+      last_commit: "2026-09-04"
+      previous_checked: "2026-05-04"
+    - repo: sindresorhus/awesome-nodejs
+      domain: backend
+      last_commit: "2026-09-02"
+      previous_checked: "2026-05-04"
+    - repo: vinta/awesome-python
+      domain: backend
+      last_commit: "2026-09-01"
+      previous_checked: "2026-05-04"
+    - repo: mehdihadeli/awesome-software-architecture
+      domain: architecture
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: igorbarinov/awesome-data-engineering
+      domain: database-data
+      last_commit: "2026-07-18"
+      previous_checked: "2026-05-04"
+    - repo: awesomedata/awesome-public-datasets
+      domain: database-data
+      last_commit: "2026-09-03"
+      previous_checked: "2026-05-04"
+    - repo: decalage2/awesome-security-hardening
+      domain: security
+      last_commit: "2026-05-05"
+      previous_checked: "2026-05-04"
+    - repo: jondot/awesome-react-native
+      domain: mobile
+      last_commit: "2026-08-26"
+      previous_checked: "2026-05-04"
+    - repo: matteocrippa/awesome-swift
+      domain: mobile
+      last_commit: "2026-08-03"
+      previous_checked: "2026-05-04"
+    - repo: awesome-selfhosted/awesome-selfhosted
+      domain: devops
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: wmariuss/awesome-devops
+      domain: devops
+      last_commit: "2026-07-24"
+      previous_checked: "2026-05-04"
+    - repo: nhivp/Awesome-Embedded
+      domain: hardware-iot
+      last_commit: "2026-09-06"
+      previous_checked: "2026-05-04"
+    - repo: phodal/awesome-iot
+      domain: hardware-iot
+      last_commit: "2026-08-26"
+      previous_checked: "2026-05-04"
+    - repo: ad-si/awesome-3d-printing
+      domain: hardware-iot
+      last_commit: "2026-08-11"
+      previous_checked: "2026-05-04"
+    - repo: avelino/awesome-go
+      domain: programming-languages
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: rust-unofficial/awesome-rust
+      domain: programming-languages
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: sorrycc/awesome-javascript
+      domain: programming-languages
+      last_commit: "2026-09-02"
+      previous_checked: "2026-05-04"
+    - repo: wilsonfreitas/awesome-quant
+      domain: finance
+      last_commit: "2026-09-02"
+      previous_checked: "2026-05-04"
+    - repo: thuquant/awesome-quant
+      domain: finance
+      last_commit: "2026-09-02"
+      previous_checked: "2026-05-04"
+    - repo: keon/awesome-nlp
+      domain: nlp
+      last_commit: "2026-08-18"
+      previous_checked: "2026-05-04"
+    - repo: ai-boost/awesome-ai-for-science
+      domain: ai-science
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: analyticalmonk/awesome-neuroscience
+      domain: ai-science
+      last_commit: "2026-06-24"
+      previous_checked: "2026-05-04"
+    - repo: viatsko/awesome-vscode
+      domain: developer-tools
+      last_commit: "2026-06-21"
+      previous_checked: "2026-05-04"
+    - repo: agarrharr/awesome-cli-apps
+      domain: developer-tools
+      last_commit: "2026-09-05"
+      previous_checked: "2026-05-04"
+    - repo: Calinou/awesome-gamedev
+      domain: game-dev
+      last_commit: "2026-08-25"
+      previous_checked: "2026-05-04"
+    - repo: sindresorhus/awesome
+      domain: meta
+      last_commit: "2026-09-02"
+      previous_checked: "2026-05-04"
   new_candidates:
-    - repo: "jim-schwoebel/awesome_ai_agents"
-      domain: "ai-agents"
-      stars: 1884
-      description: "🤖 A comprehensive list of 1,500+ resources and tools related to AI agents."
-      status: accepted
-      first_seen: 2026-07-13
-    - repo: "slavakurilyak/awesome-ai-agents"
-      domain: "ai-agents"
-      stars: 1829
-      description: "Awesome list of 300+ agentic AI resources"
-      status: accepted
-      first_seen: 2026-07-13
-    - repo: "caramaschiHG/awesome-ai-agents-2026"
-      domain: "ai-agents"
-      stars: 1437
-      description: "🤖 The most comprehensive list of AI agents, frameworks & tools in 2026. 300+ resources · 20+ categories · Updated monthly."
-      status: accepted
-      first_seen: 2026-07-13
-    - repo: "Jenqyang/Awesome-AI-Agents"
-      domain: "ai-agents"
-      stars: 1185
-      description: "A collection of autonomous agents 🤖️ powered by LLM."
-      status: accepted
-      first_seen: 2026-07-13
+    - repo: AgenticHealthAI/Awesome-AI-Agents-for-Healthcare
+      domain: ai-agents
+      stars: 1238
+      description: Latest Advances on Agentic AI & AI Agents for Healthcare
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: appcypher/awesome-mcp-servers
+      domain: mcp-servers
+      stars: 5765
+      description: Awesome MCP Servers - A curated list of Model Context Protocol servers
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: wong2/awesome-mcp-servers
+      domain: mcp-servers
+      stars: 4292
+      description: A curated list of Model Context Protocol (MCP) servers
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: chatmcp/mcpso
+      domain: mcp-servers
+      stars: 2105
+      description: directory for Awesome MCP Servers
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: YuzeHao2023/Awesome-MCP-Servers
+      domain: mcp-servers
+      stars: 1061
+      description: 'A curated list of Model Context Protocol (MCP) servers '
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: zhashkevych/awesome-backend
+      domain: backend
+      stars: 3457
+      description: "\U0001F680 A curated and opinionated list of resources (English & Russian) for Backend developers | Структурированный список ресурсов для изучения Backend разработки"
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: toutiaoio/awesome-architecture
+      domain: architecture
+      stars: 9680
+      description: 架构师技术图谱，助你早日成为架构师
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: study8677/awesome-architecture
+      domain: architecture
+      stars: 2277
+      description: "\U0001F9ED Architecture-first system design: 26 bilingual tutorials, 25 architecture templates, and 6 end-to-end cases covering distributed systems, AI-native systems, RAG, coding Agents, and production trade-offs."
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: markdtw/awesome-architecture-search
+      domain: architecture
+      stars: 1190
+      description: A curated list of awesome architecture search resources
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: PaulSec/awesome-sec-talks
+      domain: security
+      stars: 4235
+      description: A collected list of awesome security talks
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: DropsOfZut/awesome-security-weixin-official-accounts
+      domain: security
+      stars: 2265
+      description: 网络安全类公众号推荐，欢迎大家推荐
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: mthcht/awesome-lists
+      domain: security
+      stars: 1906
+      description: Awesome Security lists for SOC/CERT/CTI
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: vaib25vicky/awesome-mobile-security
+      domain: mobile
+      stars: 3528
+      description: An effort to build a single place for all useful android and iOS security related stuff. All references and tools belong to their respective owners. I'm just maintaining it.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: myshov/awesome-mobile-web-development
+      domain: mobile
+      stars: 1287
+      description: ' All that you need to create a great mobile web experience'
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: xtiankisutsa/awesome-mobile-CTF
+      domain: mobile
+      stars: 1165
+      description: 'This is a curated list of mobile based CTFs, write-ups and vulnerable apps. Most of them are android based due to the popularity of the platform. '
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: mathiasmantelli/awesome-mobile-robotics
+      domain: mobile
+      stars: 783
+      description: Useful links of different content related to AI, Computer Vision, and Robotics.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: AcalephStorage/awesome-devops
+      domain: devops
+      stars: 1092
+      description: A curated list of resources for Devops
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: rohitg00/awesome-devops-mcp-servers
+      domain: devops
+      stars: 1021
+      description: A curated list of awesome MCP servers focused on DevOps tools and capabilities.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: joubertredrat/awesome-devops
+      domain: devops
+      stars: 842
+      description: This is my awesome list with all open source and free applications that you can use in your management
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: awesome-soft/awesome-devops
+      domain: devops
+      stars: 535
+      description: A curated list of awesome softwares for Devops.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: VoltAgent/awesome-design-md
+      domain: design
+      stars: 114320
+      description: A collection of DESIGN.md files analysis by popular brand design systems. Drop one into your project and let coding agents generate a matching UI.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: DovAmir/awesome-design-patterns
+      domain: design
+      stars: 48824
+      description: A curated list of software and architecture related design patterns.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: goabstract/Awesome-Design-Tools
+      domain: design
+      stars: 41103
+      description: "The best design tools and plugins for everything \U0001F449"
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: gztchan/awesome-design
+      domain: design
+      stars: 17494
+      description: "\U0001F31F Curated design resources from all over the world."
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: ChessMax/awesome-programming-languages
+      domain: programming-languages
+      stars: 834
+      description: The list of awesome programming languages that you might be interested in.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: RKiding/Awesome-finance-skills
+      domain: finance
+      stars: 2936
+      description: A collection of Awesome Finance Agent Skills for free and easy to start | 一系列开源免费的金融分析Agent Skills
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: haiker2011/awesome-nlp-sentiment-analysis
+      domain: nlp
+      stars: 695
+      description: ':book: 收集NLP领域相关的数据集、论文、开源实现，尤其是情感分析、情绪原因识别、评价对象和评价词抽取方面。'
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: zubair-irshad/Awesome-Robotics-3D
+      domain: computer-vision
+      stars: 820
+      description: A curated list of 3D Vision papers relating to Robotics domain in the era of large models i.e. LLMs/VLMs, inspired by awesome-computer-vision, including papers, codes, and related websites
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: yarkable/Awesome-Computer-Vision-Paper-List
+      domain: computer-vision
+      stars: 765
+      description: This repository contains all the papers accepted in top conference of computer vision, with convenience to search related papers.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: gmalivenko/awesome-computer-vision-models
+      domain: computer-vision
+      stars: 543
+      description: A list of popular deep learning models related to classification, segmentation and detection problems
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: bcoe/awesome-cross-platform-nodejs
+      domain: developer-tools
+      stars: 1208
+      description: ':two_men_holding_hands: A curated list of awesome developer tools for writing cross-platform Node.js code'
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: devtoolsd/awesome-devtools
+      domain: developer-tools
+      stars: 675
+      description: A curated list of awesome developer tools and services — from cloud platforms and IDEs to AI-powered coding assistants and productivity utilities.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: TheJambo/awesome-testing
+      domain: testing
+      stars: 2366
+      description: A curated list of testing resources
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: MortyFx/speedtest-x
+      domain: testing
+      stars: 1952
+      description: A self-hosted speedtest appilication with an awesome test result datasheet.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: tim-learn/awesome-test-time-adaptation
+      domain: testing
+      stars: 1312
+      description: Collection of awesome test-time (domain/batch/instance) adaptation methods
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: totogo/awesome-knowledge-graph
+      domain: knowledge-graph
+      stars: 1886
+      description: A curated list of Knowledge Graph related learning materials, databases, tools and other resources
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: BrambleXu/knowledge-graph-learning
+      domain: knowledge-graph
+      stars: 778
+      description: A curated list of awesome knowledge graph tutorials, projects and communities.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: autonomousdrivingkr/Awesome-Autonomous-Driving
+      domain: autonomous-driving
+      stars: 615
+      description: ""
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: M3-org/awesome-metaverse
+      domain: meta
+      stars: 1665
+      description: Awesome metaverse projects
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: sudharsan13296/Awesome-Meta-Learning
+      domain: meta
+      stars: 1554
+      description: ' A curated list of Meta Learning papers, code, books, blogs, videos, datasets and other resources.'
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: shadowcz007/awesome-metaverse
+      domain: meta
+      stars: 901
+      description: 'Useful resources for creating Meta-verse '
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: gokulkrishh/awesome-meta-and-manifest
+      domain: meta
+      stars: 796
+      description: ⚡ Awesome collection of meta tags & manifest properties.
+      status: pending
+      first_seen: "2026-09-04"
+    - repo: dragen1860/awesome-meta-learning
+      domain: meta
+      stars: 553
+      description: A curated list of Meta-Learning resources/papers.
+      status: pending
+      first_seen: "2026-09-04"

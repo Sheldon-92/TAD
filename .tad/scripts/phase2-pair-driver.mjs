@@ -7,11 +7,12 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import crypto from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = '/Users/sheldonzhao/01-on progress programs/TAD';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PHASE2_DIR = path.join(ROOT, '.tad/evidence/yolo/yolo2-verified-orchestration/phase2');
 const DATASET_DIR = path.join(PHASE2_DIR, 'pairs');
 const WORK = '/tmp/yolo2p2-dogfood';
@@ -33,7 +34,7 @@ const APPROVAL_SHA = shaF(APPROVAL_PATH);
 const HANDOFF_BASE = execFileSync('git', ['rev-parse', '96bbfada'], { cwd: ROOT, encoding: 'utf8' }).trim();
 const FROZEN_CREATED_AT = '2026-08-27T00:00:00.000Z';
 const FROZEN_GIT_DATE = '2026-08-27T00:00:00 +0000';
-const OPENCODE = process.env.TAD_JUDGE_BIN || '/Users/sheldonzhao/.opencode/bin/opencode';
+const OPENCODE = process.env.TAD_JUDGE_BIN || path.join(os.homedir(), '.opencode/bin/opencode');
 const JUDGE_MODEL = process.env.TAD_JUDGE_MODEL || '';
 const JUDGE_MODEL_FAMILY = process.env.TAD_JUDGE_MODEL_FAMILY
   || (JUDGE_MODEL ? path.basename(JUDGE_MODEL).split('-')[0] : 'claude');
