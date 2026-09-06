@@ -27,6 +27,13 @@
 - **知识**: 1 条 pattern 进 `release-sync.md`（version-grep 门 exclusion 契约债）
 - **待办**: P1 version 门 exclusion 契约更新（另起设计单）；ROADMAP:27 “v2.43.1 | Published” docs 小单；B-track 设计；lite-mute P2 单。以上全在本地、未受影响。
 
+### ✅ DONE 2026-09-06. Workspace hygiene & GitHub Registry scan — Gate 4 PASS, accepted
+
+- **Implementation**: `fdd4831f` (exactly 5 files: `.gitignore`, `phase2-pair-driver.mjs`, `release-sync.md`, `NEXT.md`, `scan-log.yaml`)
+- **Scan**: 54 lists, 33 updates, 43 pending candidates; REGISTRY.yaml untouched; `last_scan: 2026-09-04` per AC4
+- **Gates**: Gate 3 PASS (Layer 1 7/7 + Layer 2 spec/code/test PASS); Gate 4 PASS (Alex 7/7 independent recompute + Layer 2 audit PASS, P0/P1 = 0). No push.
+- **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260904-workspace-hygiene-and-scan.md`
+
 ### 🔜 NEXT 2026-09-04. Framework-health close-out B — 1b 搬运 + SC2 + SC3 re-slim（设计中）
 
 - **测量已冻结（2026-09-03 实测）**: SC2 deny_ref=9（正文禁令 3/2/2 已达标，只剩搬运+删除）；SC3 tracked 112+22，tarball 9,414,984（>8,388,608）；orphan 分支 `maintainer-evidence` 存在但缺新文件；运行时零读取（仅 mkdir 脚手架）。
