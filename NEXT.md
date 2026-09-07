@@ -41,12 +41,14 @@
 - **Gates**: Gate 3 PASS (Layer 1 5/5 + Layer 2 spec/code PASS, DISTINCT_COUNT=2); Gate 4 PASS (Alex 5/5 independent recompute + Layer 2 audit PASS, P0/P1 = 0). No push.
 - **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260903-bugfix-lite-mute.md`
 
-### 🔜 NEXT 2026-09-04. Framework-health close-out B — 1b 搬运 + SC2 + SC3 re-slim（设计中）
+### ✅ DONE 2026-09-06. Framework-health close-out B — 1b 搬运 + SC2 + SC3 re-slim (Gate 4 PASS, accepted)
 
-- **测量已冻结（2026-09-03 实测）**: SC2 deny_ref=9（正文禁令 3/2/2 已达标，只剩搬运+删除）；SC3 tracked 112+22，tarball 9,414,984（>8,388,608）；orphan 分支 `maintainer-evidence` 存在但缺新文件；运行时零读取（仅 mkdir 脚手架）。
-- **地图状态**: 载体地图第 5 轮自我推翻后不可直接用（G1 实为孤儿、O3/O4 管退休命令）；B 设计须在当前树上重核。
-- **人已裁定（两个二选一，人说"不知道"→按推荐走，Gate 2 可推翻）**: ① 最小集搬运（O1/O2/G1 进正文，O3/O4 不重复）；② 纯删除 sweep（orphan 先补齐再 rm --cached，E2b 走 orphan 取）。
-- **Next**: 写 DESIGN（Gate 1 + MQ1-6）→ 双专家评审 → Gate 2 → handoff → Blake 实现。
+- **Implementation (local, NOT pushed)**: Commit 1 `5f500691`（12 alex skill files，parity PASS）；Commit 2 `98b7e396`（`git rm --cached` 134 files + `.gitignore` 取回注释）。物理文件仍在磁盘（`find` ≥ 12558）。
+- **Orphan**: 本地 `maintainer-evidence` = `8713ea4e`（4377 files，含 2 个 `.log`，`git add -f` 保护）；`origin/maintainer-evidence` 仍锁 `b6956606`（未 push）。
+- **AC8**: `git archive | gzip -9` = `8704939` bytes → `SIZE_PASS`（载体 `.tad/evidence/acceptance-tests/TASK-20260906-FWHEALTH-B/ac8-tarball.txt` L1；降幅 72.50% ≥ 70%）。
+- **Gates**: Gate 3 PASS（Layer 1 10/10 + Layer 2 spec/code PASS，P0/P1=0）；Gate 4 PASS（Alex 10/10 独立复算 PASS + Layer 2 审计 DISTINCT_COUNT=2 通过）。无 push。
+- **Epic**: `EPIC-20260816-framework-health-repair` 全部 Phase（1a, 1a-2, 1b, 2, 3, 4）与全部 SC（SC1–SC5）全满贯闭环完成！
+- **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260906-framework-health-closeout-b.md` + `.tad/archive/proposals/DESIGN-20260906-framework-health-closeout-b.md`
 
 ### ✅ DONE 2026-09-03. Framework-health close-out A — installer data-safety remainder (Gate 4 PASS, human accepted)
 

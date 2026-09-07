@@ -17,15 +17,15 @@
 
 ## Success Criteria
 
-- [ ] **SC1** 沙箱中执行完整安装流程后，用户预置的 `.codex/`、`.gemini/`、`AGENTS.md`、`GEMINI.md`、`CLAUDE.md` **全部逐字节保留**（`diff -r` 为空）
-- [ ] **SC2** `grep -c 'deny_ref' .claude/skills/alex/SKILL.md` == `0`，且 `gate4_delta` / `step1d_ac_dryrun` / `step0_graph` 三条禁令在 SKILL **正文**中各出现 ≥ 1 次
-- [ ] **SC3**（**2026-08-16 修订**）发行包不再携带维护者的调试记录：
-  - **主判据**：`git ls-files '.tad/evidence/*' | wc -l` == `0` **且** `git ls-files '.tad/archive/*' | wc -l` == `0`
-  - **辅助度量**：`git archive --format=tar HEAD | gzip -9 | wc -c` 相对审计基线 `31,659,251` 降幅 ≥ **70%**（实测移出后 7.99 MB = **降 74%**）
+- [x] **SC1** 沙箱中执行完整安装流程后，用户预置的 `.codex/`、`.gemini/`、`AGENTS.md`、`GEMINI.md`、`CLAUDE.md` **全部逐字节保留**（`diff -r` 为空，Phase 2 Gate 4 PASS 2026-09-03）
+- [x] **SC2** `grep -c 'deny_ref' .claude/skills/alex/SKILL.md` == `0`，且 `gate4_delta` / `step1d_ac_dryrun` / `step0_graph` 三条禁令在 SKILL **正文**中各出现 ≥ 1 次（Phase 1b Gate 4 PASS 2026-09-06，commit `5f500691`）
+- [x] **SC3**（**2026-08-16 修订 / 2026-09-06 Track B 闭环**）发行包不再携带维护者的调试记录：
+  - **主判据**：`git ls-files '.tad/evidence/*' | wc -l` == `0` **且** `git ls-files '.tad/archive/*' | wc -l` == `0`（commit `98b7e396` 达成）
+  - **辅助度量**：`git archive --format=tar HEAD | gzip -9 | wc -c` 相对审计基线 `31,659,251` 降幅 ≥ **70%**（实测移出后 8.70 MB = **降 72.50%**，达标）
   - ⚠️ **原判据「< 8 MB」已废弃**：那是审计时拍的圆整数，非从需求推出。实测移出 evidence+archive 后为 7,99 MB，**余量仅 5,874 字节**，而本 Epic 自身产出的单张工单 gzip 后即 10,134 字节 —— **该阈值会因本单自己要求产出的证据文件而 FAIL**。
   - **教训**：验收阈值必须从需求推导，不能取「看起来整齐」的数。一个会被自己的交付物撞破的阈值，度量的是巧合而非目标。
-- [ ] **SC4** `tad.sh` 中 `rm -rf` 的调用点全部位于 `guarded_remove` 内或有等价前置断言 —— 用可复跑的检查命令钉死
-- [ ] **SC5** 安装器可在 `mktemp -d` 沙箱中以本地源完整执行（不依赖网络），且该能力有 AC 覆盖
+- [x] **SC4** `tad.sh` 中 `rm -rf` 的调用点全部位于 `guarded_remove` 内或有等价前置断言 —— 用可复跑的检查命令钉死（Phase 2 Gate 4 PASS 2026-09-03）
+- [x] **SC5** 安装器可在 `mktemp -d` 沙箱中以本地源完整执行（不依赖网络），且该能力有 AC 覆盖（Phase 2 Gate 4 PASS 2026-09-03）
 
 ---
 
@@ -37,10 +37,10 @@
 |---|-------|--------|---------|-----------------|
 | 1a | 纯删除 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 playground 两侧 + 两个空头绑定 + evidence 去重 |
 | 1a-2 | ROADMAP 悬空链接 | ✅ **DONE**（`b6956606`，Gate 3 5/5） | 已归档 | 修 `ROADMAP.md:38` |
-| 1b | 退休 frontmatter 约束块 | ⬚ **Planned — redesign required** | 旧 handoff 已取消归档 | Gate 2 推翻 carrier map；须按当前约束承载关系重新设计 |
+| 1b | 退休 frontmatter 约束块 | ✅ **DONE (Gate 4 2026-09-06: `5f500691` + `98b7e396`)** | 已归档 (`{HANDOFF,COMPLETION,GATE4}-20260906-framework-health-closeout-b.md`) | 退休 frontmatter，清理 16 处悬空引用，SC2/SC3 全闭环 |
 | 2 | 安装器数据安全 | ✅ **DONE (Gate 4 2026-09-03: `f61c1892` + fix `1a256534` + fixture `b09aa052`)** | 已归档 (`{HANDOFF,COMPLETION,GATE4}-20260903-framework-health-phase2-remainder.md`) | FR-1/FR-5/F-05/06/07/08/F-34/AC2.5 全收口，14/14 红绿证据 |
 | 3 | 遗留脚本与计数安全 | ✅ **DONE**（`01c4bf22`，Gate 4 ✅） | 已归档 | 删 `eval`+`rm -rf` 脚本、镜像守卫、修计数 |
-| 4 | 发行瘦身 | ✅ **DONE**（`659f4161`，Gate 4 ✅） | 已归档 | npm 23.1→3.3 MB、evidence/archive 移出 main |
+| 4 | 发行瘦身 | ✅ **DONE**（`659f4161` + `98b7e396`，Gate 4 ✅） | 已归档 | npm 23.1→3.3 MB、evidence/archive 移出 main |
 
 ### 🆕 Epic 范围变更（人裁定 2026-08-17）
 
@@ -141,8 +141,8 @@ Phase 1 ──► Phase 2 ──► Phase 4
 ⚠️ **同时只能 1 个 Active phase。**
 
 ### Derived Status
-- **Status**: In Progress（Phase 1 = 🔄）
-- **Progress**: 0 / 4
+- **Status**: ✅ Completed (ALL PHASES DONE)
+- **Progress**: 4 / 4 (Phase 1, 2, 3, 4 all closed)
 
 ---
 
