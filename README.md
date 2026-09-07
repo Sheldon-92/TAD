@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.44.1 — Optional PM Bridge (patch on the v2.44.0 bundle)**
+**Version 2.44.2 — Framework Health close-out B + Lite mute + 72.5% tarball slimming**
 
-> v2.44.0 bundle: Capability Builder Evolve + Packaging, Installer Data-Safety (+ v2.43.1 trio) — see [CHANGELOG](CHANGELOG.md#2440---2026-09-04). This patch adds only the optional completion-template PM Bridge — see [CHANGELOG](CHANGELOG.md#2441---2026-09-04).
+> v2.44.2 release: Framework-Health repair Track B (-72.5% tarball slimming + SC2 frontmatter retirement) + Full-channel Lite trigger mute — see [CHANGELOG](CHANGELOG.md#2442---2026-09-07).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -187,7 +187,7 @@ official tagged installer; it never runs unattended.
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.44.1
+# Should show: 2.44.2
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -503,6 +503,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.44.1 — Optional PM Bridge (patch on the v2.44.0 bundle)**
+**Welcome to TAD v2.44.2 — Framework Health close-out B + Lite mute + 72.5% tarball slimming**
 
 *AI does the work. Humans guard the value.*

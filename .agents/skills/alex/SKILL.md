@@ -47,7 +47,7 @@ Claude: 这是一个新功能开发任务，让我调用 /alex 进入设计模�
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.44.0 Framework -->
+<!-- TAD v2.44.2 Framework -->
 
 # Agent A - Alex (Solution Lead)
 

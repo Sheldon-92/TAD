@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.44.2] - 2026-09-07
+
+### Added / Changed
+
+- **Framework-Health Repair Track B (SC2 & SC3 Closed)**:
+  - **Release Tarball Slimming**: Removed `.tad/evidence/` and `.tad/archive/` from `main` tracking, reducing release package size by 72.5% (down to 8.70MB). Historical evidence safely preserved on `maintainer-evidence` branch.
+  - **Governance Cleanup**: Retired `alex/SKILL.md` frontmatter constraints block (`deny_ref` count = 0), migrated core prohibitions (O1/O2/G1) into prose obligations, eliminated 16 dangling references, and synchronized `.claude` / `.agents` dual-tree with 100% byte parity.
+  - **Epic Closed**: Fully satisfied and closed `EPIC-20260816-framework-health-repair` with all phases (1a, 1a-2, 1b, 2, 3, 4) and success criteria (SC1–SC5) verified.
+- **Lite Channel Mute**:
+  - Muted Lite triggers on the Full-channel default path to reduce session startup noise while keeping explicit invocations (`当 Blake Lite` / `当 Alex Lite`) fully available.
+- **Workspace Hygiene**:
+  - Hardened pair-driver path resolution and updated release-sync documentation.
+
 ## [2.44.1] - 2026-09-04
 
 ### Added
