@@ -6,7 +6,7 @@
 > ②a/②d/②e 三条标着「最高优先级」的待办**早已修复**，清单挂了两周没人划掉，
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 
-**当前版本**：2.43.1 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：2.44.2 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
@@ -26,6 +26,16 @@
 - **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION-STOPPED,COMPLETION-FINAL,GATE4}-20260904-publish-v2440-bundle.md`；AC1 `PASS-PER-A1`（14 条定性非漂移、仅本版有效），AC2–AC8 全 PASS
 - **知识**: 1 条 pattern 进 `release-sync.md`（version-grep 门 exclusion 契约债）
 - **待办**: P1 version 门 exclusion 契约更新（另起设计单）；ROADMAP:27 “v2.43.1 | Published” docs 小单；B-track 设计。以上全在本地、未受影响。
+
+### ✅ DONE 2026-09-07. Publish v2.44.2 — Framework Health close-out B + Lite mute (-72.5% tarball)
+
+- **Release Commit**: `7c1eb5a8` (`release: v2.44.2`, 16 files changed, +35/-22, version markers + CHANGELOG only).
+- **Remote Branches**:
+  - `origin/maintainer-evidence` synchronized to `8713ea4e` (clean fast-forward, 4377 evidence/archive files preserved).
+  - `origin/main` synchronized to `7c1eb5a8` (clean fast-forward, ahead by 8 commits from `6a29edad`).
+- **Tag & Release**: Annotated tag `v2.44.2` (`a11ed702`, peeled to `7c1eb5a8`) pushed; GitHub Release created at https://github.com/Sheldon-92/TAD/releases/tag/v2.44.2.
+- **Gates**: Gate 3 PASS (Layer 1 8/8 ACs + Layer 2 DISTINCT_COUNT=2); Gate 4 PASS (Alex independent recompute verified).
+- **档**: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260907-publish-v2442.md`.
 
 ### ✅ DONE 2026-09-06. Workspace hygiene & GitHub Registry scan — Gate 4 PASS, accepted
 
