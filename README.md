@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.44.2 — Framework Health close-out B + Lite mute + 72.5% tarball slimming**
+**Version 2.44.3 — Local Wiki Primary Research Route + Experimental Thin-TAD Pilot Tooling**
 
-> v2.44.2 release: Framework-Health repair Track B (-72.5% tarball slimming + SC2 frontmatter retirement) + Full-channel Lite trigger mute — see [CHANGELOG](CHANGELOG.md#2442---2026-09-07).
+> v2.44.3 release: Local Wiki primary research route + experimental thin-tad pilot tooling & harness adapter — see [CHANGELOG](CHANGELOG.md#2443---2026-09-08).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -187,7 +187,7 @@ official tagged installer; it never runs unattended.
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.44.2
+# Should show: 2.44.3
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -503,6 +503,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.44.2 — Framework Health close-out B + Lite mute + 72.5% tarball slimming**
+**Welcome to TAD v2.44.3 — Local Wiki Primary Research Route + Experimental Thin-TAD Pilot Tooling**
 
 *AI does the work. Humans guard the value.*

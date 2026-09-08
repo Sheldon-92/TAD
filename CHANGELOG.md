@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.44.3] - 2026-09-08
+
+### Added / Changed
+
+- **Local Wiki Primary Research Route**:
+  - Declared Local Wiki + Iron Rule as TAD's primary research engine across 6 architectural tiers (`CLAUDE.md`, Alex/Blake `SKILL.md` files, elicitation/handoff protocols, quick-reference guides, and capability packs).
+  - Preserved NotebookLM intact as cloud fallback (`*research-notebook`), eliminating 20-40s cloud latency and session expiration risks on standard research tasks while maintaining deep cross-source synthesis when needed.
+  - Synchronized dual-platform mirrors (`.claude/` and `.agents/`) with 100% byte-for-byte parity.
+- **Experimental Thin-TAD Pilot Tooling & Harness Adapter**:
+  - Added offline task package tool under `experiments/thin-tad-pilot/` with 12 synthetic instances across 6 categories × Human/Variant arms and 32/32 offline unit tests (`9e0d8ab1`).
+  - Added fail-closed isolation probe runner suite and `oc-adapter.sh` with 40/40 tests (`12aafe19`), strictly partitioned as experimental pilot tooling without affecting production TAD core runtime.
+
 ## [2.44.2] - 2026-09-07
 
 ### Added / Changed
