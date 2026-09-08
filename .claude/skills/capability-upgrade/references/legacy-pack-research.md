@@ -5,6 +5,11 @@ description: Capability Pack 构建/升级流程。从评估到研究到构建�
 
 # /capability-upgrade — Capability Pack 构建流程
 
+> ⚠️ ARCHITECTURE UPDATE (2026-09-08):
+> Capability Pack 升级与构建的调研地基已全面演进为 Local Wiki (`research/`).
+> 本文档中所有关于 NotebookLM source add/ask 的操作指导，作为历史存档与云端 fallback 机制保留.
+> 编写新包或升级老包时，应优先产出 `research/canon/` 与 `research/wiki/` 词条，并通过 `research/canon/lint.sh` 形式化验证。
+
 构建 action-ready Capability Pack（菜谱）。YAML Domain Pack 源已归档至 `.tad/archive/domains/`。
 基于 web-ui-design 升级的完整实战经验（119 源、3 轮研究、9 个 P0 修复）。
 

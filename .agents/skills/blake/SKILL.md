@@ -584,7 +584,7 @@ ralph_loop_execution:
           
           3. If no pack matches: skip silently
           
-          → Proceed to 1_5b_notebook_check
+          → Proceed to 1_5b_research_check
         
         blocking: false
         purpose: "Catch packs Alex missed — Blake independently identifies relevant quality rules"
@@ -595,36 +595,34 @@ ralph_loop_execution:
           If the same pack was already loaded via handoff's Capability Pack References (step 1),
           don't re-read it.
 
-      1_5b_notebook_check:
-        description: "Check for relevant research notebooks before implementation"
+      1_5b_research_check:
+        description: "Check for relevant research from Local Wiki (primary) or NotebookLM (fallback) before implementation"
         action: |
           0. P1-1 early-exit: Read stored task_type (from 1_5_context_refresh).
-             If task_type == "research" → SKIP this step entirely.
+             If task_type == "research" → SKIP this step entirely (handled by 1_5c).
              Rationale: 1_5c will run the full research pipeline which includes
              its own notebook queries. Avoids duplicate 23-43s latency.
 
-          1. Read .tad/research-notebooks/REGISTRY.yaml
-             If not found → skip silently (no error)
-
-          2. Identify relevant notebook:
-             a. Check handoff §5 Research Evidence for explicit notebook_id reference
-                → If found: use that notebook_id directly
-             b. If no explicit reference: match handoff topic/task against notebook
-                `topic` fields using LLM semantic judgment
-                → Match if notebook topic clearly covers the implementation domain
-
-          3. If relevant notebook found:
-             a. Announce: "📚 Found relevant notebook: '{topic}' ({source_count} sources)"
-             b. Run: *research-notebook ask --notebook {notebook_id}
-                     "What are the key implementation patterns and constraints for {handoff_task_summary}?"
-                (Uses allowed command from notebooklm_access — NOT raw ~/.tad-notebooklm-venv/bin/notebooklm binary.
-                 Expect 23-43s latency — acceptable since step is non-blocking.)
-             c. Note key findings in context: "📌 Notebook findings: {brief_summary}"
-             d. For deeper lookup during implementation: see notebooklm_access.allowed for full
-                permitted command list (*research-notebook ask, fulltext, guide, topics, list)
-
-          4. Skip silently when:
-             - REGISTRY.yaml not found
+          1. Check handoff §5 Research Evidence:
+             a. If Local Wiki references present (`research/wiki/...`, `research/canon/...`):
+                → Read referenced wiki pages directly
+                → Note key patterns and locators in context
+                → Announce: "📚 Found Local Wiki research: {wiki_page} ({citable_claims} claims)"
+                → Proceed to implementation (Zero latency, local truth)
+          2. If no explicit reference in handoff, probe Local Wiki:
+             → If test -d research/wiki:
+               Run: python3 research/scripts/search.py query "{handoff_task_summary}" --scope wiki --json 2>/dev/null
+               If matches found → inspect top match, note findings
+          3. Fallback: If Local Wiki absent or yielded no match:
+             → Check .tad/research-notebooks/REGISTRY.yaml
+             → If relevant notebook found → run *research-notebook ask --notebook {id}
+             → Match handoff topic/task against notebook `topic` fields using LLM semantic judgment
+             → Note key findings in context: "📌 Notebook findings (fallback): {brief_summary}"
+             → (Uses allowed command from notebooklm_access — NOT raw ~/.tad-notebooklm-venv/bin/notebooklm binary.
+                Expect 23-43s latency — acceptable since step is non-blocking.)
+          4. Skip silently when neither source has relevant data.
+             Skip silently when:
+             - Neither Local Wiki nor REGISTRY.yaml has relevant data
              - No notebook matches the handoff topic
              - *research-notebook command unavailable (preflight fail)
              - Notebook query returns error or timeout
@@ -646,8 +644,10 @@ ralph_loop_execution:
              a. Announce: "🔬 This is a research task.
                            Entering research-task mode — expanded notebook access active."
              b. Execute the *research unified pipeline (alex/SKILL.md research_unified_protocol):
+                Standard first choice is the Local Wiki toolchain (`research/scripts/ingest.sh`
+                + write canon + run `research/canon/lint.sh` for 6-rule PASS); NotebookLM only as restricted fallback.
                 Use Deep level (*research --deep, Phase 0-5) as the PRIMARY workflow.
-                If NotebookLM CLI not available → fallback to WebSearch-based research.
+                If Local Wiki absent AND NotebookLM CLI not available → fallback to WebSearch-based research.
                 Pack outputs are the deliverables:
                 - .research/report.md (QCE-structured research report)
                 - .research/acs.md (extracted ACs from research)

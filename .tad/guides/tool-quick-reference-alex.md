@@ -3,7 +3,9 @@
 
 ## External CLI Tools
 
-### NotebookLM
+> NotebookLM is fallback only; Local Wiki is primary.
+
+### NotebookLM (Fallback Research CLI)
 - **Path:** `~/.tad-notebooklm-venv/bin/notebooklm`
 - **Preflight:** `test -x ~/.tad-notebooklm-venv/bin/notebooklm`
 - **Setup:** `bash .tad/cross-model/setup-notebooklm.sh`
@@ -146,7 +148,17 @@ rating=$(head -5 challenge-file.md | grep -oE 'INSUFFICIENT|ADEQUATE|STRONG' | h
 
 ## TAD Research Commands (Alex-domain)
 
-### *research-notebook (19 commands — top 7 for daily use)
+### Local Wiki Research Suite (Primary)
+| Command / Script | Purpose | When to use |
+|---|---|---|
+| `python3 research/scripts/search.py query "<q>"` | Local Wiki 语义与关键词检索 | 调研前知识排查 |
+| `bash research/scripts/ingest.sh <url>` | 摄取原始语料到 `research/raw/` | 收集一手材料 |
+| `bash research/canon/lint.sh` | 机械检查 6 大 Iron Rule | Canon 词条合规校验 |
+| `python3 research/scripts/generate.py` | 纯函数生成 index 与目录 | 词条编译更新 |
+| `*research --standard "<topic>"` | 启动标准 Local Wiki 调研 | 常规方案调研 |
+| `*research --deep "<topic>"` | 启动深度 Local Wiki 调研（含对抗） | 架构与全景调研 |
+
+### *research-notebook (Fallback Research CLI) (19 commands — top 7 for daily use)
 | Command | What it does | When to use |
 |---------|-------------|-------------|
 | `*research-notebook create "<topic>"` | Create notebook + add sources | New research topic |
@@ -166,7 +178,7 @@ Phase 1 Deep Research → Phase 2 Auto-Curate → Phase 3 Baseline Report → Ph
 | Command | What it does | When to use |
 |---------|-------------|-------------|
 | `*research-github explore <domain>` | Browse awesome-lists in a domain | Tech discovery |
-| `*research-github notebook <domain>` | Create NotebookLM notebook from registry entries | Deep study |
+| `*research-github notebook <domain>` | Create NotebookLM fallback notebook from registry entries | Deep study (cloud fallback) |
 | `*research-github scan` | Weekly scan for new awesome-lists | Automated via /schedule |
 
 Execution: Read `.claude/skills/research-github/SKILL.md` for the sub-command.

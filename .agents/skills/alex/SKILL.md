@@ -112,7 +112,7 @@ activation-instructions:
     action: |
       Read `.tad/guides/tool-quick-reference-alex.md` (if exists).
       This provides CLI paths, preflight checks, and key commands for all TAD tools.
-      Without this file, Alex cannot invoke NotebookLM, Codex, Gemini, or research commands.
+      Without this file, Alex cannot invoke Local Wiki, NotebookLM, Codex, Gemini, or research commands.
     blocking: false
     suppress_if: "File not found - skip silently (project may not have research tools installed)"
   - STEP 3.4: Load roadmap context
@@ -279,8 +279,13 @@ activation-instructions:
       Does NOT affect STEP 3.8 suppression.
   - STEP 3.8: Research Landscape + Objective Alignment Scan
     action: |
-      After STEP 3.7, check research landscape:
-      1. Check if .tad/research-notebooks/REGISTRY.yaml exists
+      After STEP 3.7, check research landscape (Local Wiki primary, NotebookLM secondary):
+      0. Probe Local Wiki first: check `research/canon/_index.md` and `research/wiki/index.md`.
+         If Local Wiki present, count canon entries and covered topics, output:
+         `📚 Local Wiki: {canon_count} entries across {topics_count} topics ✅`.
+         Align objectives against Local Wiki topics first, notebook topics second.
+         (`grep -c` probe; dynamic anchor `Local Wiki:.*canon_count`.)
+      1. Check if .tad/research-notebooks/REGISTRY.yaml exists (secondary asset/archive)
          → If not: skip silently (project has no NotebookLM integration)
       2. If exists: 只跑命令读输出，禁止整读（须给出三态计数与**active 的** topic，实测裸 grep 会取到 dormant 的 topic 并多数一行注释模板）：`awk '/^    topic:/{t=$0} /^    status: *active/{a++;act[a]=t} /^    status: *dormant/{d++} /^    status: *archived/{r++} END{print "active="a+0" dormant="d+0" archived="r+0; for(i=1;i<=a;i++) print act[i]}' .tad/research-notebooks/REGISTRY.yaml`
          a. Count notebooks by status (active/dormant/archived)
@@ -394,7 +399,7 @@ global_skill_exclusion:
   excluded_skills:
     - name: "deep-research"
       reason: "TAD uses *research (unified — Quick/Standard/Deep), not WebSearch multi-phase"
-      tad_replacement: "*research (unified — Quick/Standard/Deep, defaults to NotebookLM)"
+      tad_replacement: "*research (unified — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: NotebookLM)"
     - name: "code-review"
       reason: "TAD uses code-reviewer sub-agent with narrow-scope prompt template (expert_prompt_template)"
       tad_replacement: "Agent tool with subagent_type=code-reviewer + TAD prompt template"
@@ -472,7 +477,7 @@ commands:
   doc-list: List all project documents
 
   # Research commands
-  research: "Unified research — Quick/Standard/Deep, defaults to NotebookLM Standard"
+  research: "Unified research — Quick/Standard/Deep, primary: Local Wiki Standard (Iron Rule); fallback: NotebookLM"
   research status: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
   # Cross-project & skill management
@@ -679,7 +684,7 @@ deps_update_protocol:
 # references/, agent won't know levels exist → trigger never fires.
 # ═══════════════════════════════════════════════════════════
 research_unified_protocol:
-  description: "Unified research entry — Quick/Standard/Deep, defaults to Standard (NotebookLM)"
+  description: "Unified research entry — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: NotebookLM"
   trigger: "User types *research OR Alex auto-routes from intent detection (研究/research/调研/对比/了解)"
 
   routing_table:
@@ -705,10 +710,14 @@ research_unified_protocol:
     用户可随时用 *research --quick / --standard / --deep 显式指定
 
   preflight:
-    check: "test -x ~/.tad-notebooklm-venv/bin/notebooklm"
+    check: "test -d research/canon && test -f research/canon/lint.sh"
+    on_pass: "Use Local Wiki research engine (primary)"
     on_fail: |
+      Check NotebookLM fallback: test -x ~/.tad-notebooklm-venv/bin/notebooklm
+      If NotebookLM available → run NotebookLM fallback path.
+      If both unavailable → degrade to WebSearch.
       Standard/Deep 降级为 WebSearch:
-      "⚠️ NotebookLM CLI 不可用。降级为 WebSearch 研究。
+      "⚠️ Local Wiki 与 NotebookLM CLI 均不可用。降级为 WebSearch 研究。
        安装: bash .tad/cross-model/setup-notebooklm.sh"
       Quick 不受影响（本身用 WebSearch）
 
@@ -745,7 +754,24 @@ research_unified_protocol:
         Note: Q1 always runs for Standard/Deep. Quick is exempt (no notebook, no Q1).
         Note: When NotebookLM preflight fails (degraded to WebSearch), Q1 still runs normally.
 
+      1_check_wiki: |
+        Run `python3 research/scripts/search.py query "{topic}" --scope wiki` or check `research/canon/_index.md`.
+        If a mature page covers the need → adopt directly (primary: Local Wiki + Iron Rule).
+        If no match → proceed to 2_ingest_and_compile_if_needed.
+
+      2_ingest_and_compile_if_needed: |
+        If Local Wiki has no match, run the Local Wiki compile flow:
+        ingest 3+ raw (`research/scripts/ingest.sh`) → write 12-field canon entries →
+        compile wiki page (with strict raw_refs + locator) → run `research/canon/lint.sh`
+        (6 rules must PASS) → run `research/scripts/generate.py`.
+        (Protocol spec text only — see handoff task boundaries for execution scope.)
+
+      3_fallback_notebooklm: |
+        Only when `research/` is missing or damaged, run the legacy NotebookLM create-and-query flow below.
+        Fallback Execution (when Local Wiki absent).
+
       1_find_notebook: |
+        (NotebookLM fallback — runs only via 3_fallback_notebooklm when Local Wiki absent.)
         Read .tad/research-notebooks/REGISTRY.yaml
         Filter: only status == "active" notebooks participate in matching
         - dormant: AskUserQuestion "Found dormant notebook '{topic}' (last queried {date}). Reactivate or create fresh?"
@@ -1075,9 +1101,13 @@ yolo_execution_protocol:
 research_citation_in_handoff:
   trigger: "handoff_creation_protocol step1 draft 写作时，当 step0_5b found research findings"
   action: |
-    If step0_5b found relevant notebook findings:
-    1. In §📚 Project Knowledge section, add sub-section:
-       "### Research Notebook Findings
+    If step0_5b found relevant Local Wiki or notebook findings:
+    1. In §📚 Project Knowledge section, add sub-section FIRST:
+       "### Research Findings (Local Wiki)
+        Topic: '{topic}' | Wiki Page: '{wiki_page}'
+        Key Carriers: [raw_ref + locator]"
+       Then, only as fallback, the notebook subsection:
+       "### Research Notebook Findings (Fallback)
         Notebook: '{topic}' ({source_count} sources)
         Key findings relevant to this handoff:
         - {finding 1 from *research-notebook ask}

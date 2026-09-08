@@ -5,6 +5,7 @@
 notebooklm_access:
   description: "Blake can query existing notebooks for implementation context"
   scope: "read-only + controlled ingest (see mutation_scope)"
+  preamble: "本协议仅规范 Blake 对云端 NotebookLM 的受限回退访问。对于项目内的首选知识源 Local Wiki，Blake 享有常规本地文件系统读写与 `research/scripts/` 运行权限，不受本白名单约束。"
 
   allowed:
     - "*research-notebook ask --notebook <id> 'question'"  # query existing research (explicit notebook)

@@ -12,6 +12,48 @@
 
 ## 🔴 优先队列（2026-09-03 晚：YOLO 三轨落地；B 单测量完成，设计待续 —— 明天继续）
 
+### ✅ DONE 2026-09-08. Clean TAD upstream research-routing entry pointers (Local Wiki primary, NotebookLM fallback) — Gate 4 PASS, accepted
+
+- Task ID: `TASK-20260908-research-route-local-wiki`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260908-research-route-local-wiki.md`
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-08-gate4-acceptance-research-route-local-wiki.md` (Verdict: PASS)
+- Gate 4 Rulings:
+  - (a) Layer 2 audit warning accepted as `EQUIVALENT_SUBSTITUTE` (substantive independent reviews verified).
+  - (b) Protected boundaries clean: `docs/pm/` baseline exact match (0 added diff), `research/` read-only strictly adhered to.
+  - (c) Scope: 28 modified in-scope files across 6 categories; 12 dual-platform mirror pairs 100% byte-for-byte identical; NotebookLM preserved intact as fallback under explicit `(Fallback)` designation.
+
+
+### ✅ DONE 2026-09-08. TAD thin-tad harness adapter & OpenCode contract alignment — Gate 4 PASS, accepted (commit `d23f78ab`)
+
+- Epic: `.tad/active/epics/EPIC-20260907-thin-tad-evaluation.md` — Harness Alignment Track completed.
+- Task ID: `TASK-20260908-thin-tad-harness-adapter`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260908-thin-tad-harness-adapter.md`
+- Implementation Commit: `d23f78ab` (4 files under `experiments/thin-tad-pilot/`: `oc-adapter.sh` 100755, `runner.mjs`, `runner.test.mjs`, `README.md`)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-08-gate4-acceptance-thin-tad-harness-adapter.md` (Verdict: PASS)
+- Gate 4 Rulings:
+  - (a) PREREQ-2 live OPEN accepted (`DELEGATED_TO_LIVE_RUN_PAIR`); 40/40 tests cover offline & real adapter spawn.
+  - (b) Layer 2 in-harness subagents accepted as `EQUIVALENT_SUBSTITUTE` (R1 caught 3×P0, R2 verified all closed).
+  - (c) Runner suite files committed to git (`d23f78ab`); handoff and completion archived.
+- Boundary: Zero live model spend, zero forged runs, zero production TAD core edits. Hard stop.
+
+### ✅ DONE 2026-09-08. TAD reliable-delivery cost experiment — Epic Complete (P1/P2/P3 Gate 4 PASS / Accepted & Closed)
+
+- **Epic**: `.tad/active/epics/EPIC-20260907-thin-tad-evaluation.md` — All 3 phases completed and closed.
+- **Phase 1 (Offline Suite)**: Gate 4 PASS (commit `fc2c07ce`).
+- **Phase 2 (Tools Leg & Ineligible Matrix)**: Tools leg ACCEPT, live matrix `ADAPTER_INELIGIBLE` fail-closed closed.
+- **Phase 3 (Offline Analysis & Decision)**: Gate 4 PASS (`.tad/evidence/reviews/2026-09-08-gate4-acceptance-thin-tad-evaluation-p3.md`). Deliverables `analysis.md` + `decision.md` + `verify-p3.mjs` accepted. Rulings: `MAINTAIN_CURRENT_RULES` + `NO_PRODUCTION_RULE_DELETION`; status `LIVE_EFFECT_UNDETERMINED` + `EMPIRICAL_DATA_ABSENT`.
+- **Handoff & Completion**: Archived to `.tad/archive/handoffs/{HANDOFF,COMPLETION}-20260908-thin-tad-evaluation-p3.md`.
+- **Boundary**: Zero live model calls, zero forged runs, zero production TAD core edits. Hard stop.
+
+### ✅ DONE 2026-09-08. TAD reliable-delivery cost experiment — Phase 1 Gate 4 PASS, accepted (commit `fc2c07ce`)
+
+- Epic: `.tad/active/epics/EPIC-20260907-thin-tad-evaluation.md` — Phase 1/3 completed.
+- Handoff & Completion: `.tad/active/handoffs/{HANDOFF,COMPLETION}-20260907-thin-tad-evaluation-p1.md`
+- Implementation Commit: `fc2c07ce` (5 files under `experiments/thin-tad-pilot/`)
+- Verification & Reviews: AC0–AC9 all green (`.tad/evidence/acceptance-tests/thin-tad-evaluation-p1/`), unit/negatives 32/32; Layer 2 spec + code reviews both DELTA-RECHECK PASS (`.tad/evidence/reviews/blake/thin-tad-evaluation-p1/`).
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-08-gate4-acceptance-thin-tad-evaluation-p1.md` (Verdict: PASS).
+- Status & Boundary: P1 offline task package and validation chain accepted. No model executed, no OS sandbox isolation claimed, tokens/costs null/synthetic.
+
 ### ✅ DONE 2026-09-04. Public-facade cleanup — Gate 4 PASS, accepted (was: ~~Public-facade cleanup — Express handoff READY, Gate 2 PASS (awaiting Blake)~~)
 
 - **Implementation**: `39a4aa50` (README.md only, 5+/3-: R1a headline patch-honest / R1b pointer + dual CHANGELOG anchors / R1c hybrid naming / R1d footer mirror); package.json verify-only (canon, zero edits)

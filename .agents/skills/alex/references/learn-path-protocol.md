@@ -65,7 +65,10 @@ learn_path_protocol:
       name: "Generate Learning Assessment (optional)"
       trigger: "After 3+ Socratic rounds, when user shows understanding"
       action: |
-        1. Check if current topic has a matching notebook in .tad/research-notebooks/REGISTRY.yaml
+        0. Prefer Local Wiki first: if `research/wiki/` has a page covering the current topic,
+           generate the Quiz/Flashcards directly from the Local Wiki page (primary);
+           NotebookLM below is the fallback.
+        1. Check if current topic has a matching notebook in .tad/research-notebooks/REGISTRY.yaml (fallback)
         2. If yes → AskUserQuestion:
            "你对这个话题理解得不错了。要生成一个小测验来巩固学习吗？"
            Options:

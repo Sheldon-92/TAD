@@ -156,15 +156,15 @@ Research findings persist across sessions via TAD's existing memory stack — no
 | Memory Need | TAD Solution | How It Works |
 |------------|-------------|-------------|
 | Cross-session findings | `.tad/project-knowledge/*.md` | Knowledge Assessment (Gate 3/4) writes reusable discoveries to category files. Blake or Alex reads them on next session via `@import` in CLAUDE.md. |
-| Semantic recall across sources | NotebookLM via `*research-notebook ask` | Multi-source notebooks (30-50 sources each) enable cross-source synthesis. Query returns grounded answers with source attribution. |
+| Semantic recall across sources | Local Wiki via search.py & canon lookup (NotebookLM as cloud fallback) | Multi-source notebooks (30-50 sources each) enable cross-source synthesis. Query returns grounded answers with source attribution. |
 | Per-topic evidence archive | `.tad/evidence/research/{topic}/` | Subdirectories per research topic store raw findings, analysis files, and search logs. Persists across handoffs within an Epic. |
 | Self-evaluation patterns | Completion report Knowledge Assessment | Reflexion Cycle (reflexion-cycle.md) captures what worked and what failed. Written to completion report, promoted to project-knowledge if reusable. |
-| Research notebook portfolio | `.tad/research-notebooks/REGISTRY.yaml` | Index of all NotebookLM notebooks with topic, source count, and status. Alex creates and curates; Blake queries during implementation. |
+| Research notebook portfolio | Local Wiki (`research/canon/_index.md`) primary; `.tad/research-notebooks/REGISTRY.yaml` secondary | Index of all NotebookLM notebooks with topic, source count, and status. Alex creates and curates; Blake queries during implementation. |
 
 **Integration rules:**
 - Findings that apply beyond a single handoff → write to `.tad/project-knowledge/` via Knowledge Assessment
 - Findings specific to one research question → keep in `.tad/evidence/research/{topic}/`
-- Findings worth cross-source synthesis → ingest into NotebookLM via `*research-notebook ingest`
+- Findings worth cross-source synthesis → prefer Local Wiki canon first; ingest into NotebookLM via `*research-notebook ingest` only as cloud fallback
 - Do NOT duplicate: choose one persistence path per finding
 
 ---
@@ -234,5 +234,6 @@ Use this script during research Phase 1 (Discovery) and Phase 4 (Database Cross-
 ## Notes
 
 - **Skill evolution**: This pack improves via TAD's existing *optimize → proposal → human approval → handoff cycle (not runtime generation). See tad-mapping-blueprint.md Decision 4
-- **Memory**: Uses TAD's file-based project-knowledge + optional NotebookLM notebooks. See Step 6 for the full memory integration mapping
+- **Memory**: Uses TAD's file-based project-knowledge + Local Wiki canon/wiki (primary) + optional NotebookLM notebooks (cloud fallback). See Step 6 for the full memory integration mapping
+- **Research routing**: `*research-github` first output is local `research/raw/github/` + `research/canon/` entries (per 2026-08-28 local shim); NotebookLM is an optional cloud fallback.
 - **Source coverage**: 86 unique ScienceClaw skills cited across 15 reference files (consolidated from 150 P1+P2 skills)

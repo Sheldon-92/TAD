@@ -1,6 +1,6 @@
 ---
 name: research-github
-description: GitHub Awesome-List Registry — discover, browse, and create deep-research notebooks from GitHub repos. 6 commands for Alex research phase.
+description: GitHub Awesome-List Registry — discover, browse, ingest raw GitHub repos and compile Local Wiki canon entries (with NotebookLM deep-research fallback).
 ---
 
 # /research-github Command (GitHub Knowledge Discovery)
@@ -8,7 +8,7 @@ description: GitHub Awesome-List Registry — discover, browse, and create deep-
 ## Overview
 
 `*research-github` manages the GitHub Awesome-List Registry as TAD's open-source discovery layer.
-Use to find relevant repos before starting a project, then create deep-research NotebookLM notebooks.
+Use to find relevant repos before starting a project, then ingest raw GitHub repos and compile Local Wiki canon entries (with NotebookLM deep-research fallback).
 
 **Key principle**: Awesome-lists are community-curated "book lists" — leverage existing curation, don't reinvent.
 
@@ -188,7 +188,7 @@ Step 7: Store selection in conversation for *research-github notebook to use
 
 ### `*research-github notebook <domain>`
 
-Create a NotebookLM notebook from selected repos (the full research pipeline).
+Compile Local Wiki canon entries from selected repos (primary); NotebookLM notebook creation below is cloud fallback only.
 
 > **LOCAL-WIKI SHIM (2026-08-28)**: Primary research is now `local_wiki` (see `.tad/config-workflow.yaml` fallback). This command is retained as an alias: it now writes `research/canon/{type}/{slug}.md` (12-field) + `research/raw/github/` sources from the selected repos, runs `research/canon/lint.sh` + `research/scripts/generate.py`, and prompts `*research --standard "{domain}"` for wiki compilation. NotebookLM `create/ask` path is fallback only when `research/` missing.
 
@@ -238,7 +238,7 @@ Step 6: Source limit check (NotebookLM per-notebook limit = 50):
       - "Reduce files per repo to 5 max" → apply 5-cap to tier selection
       - "Keep top 3 repos only" → discard lowest-star repos
 
-Step 7: Create NotebookLM notebook:
+Step 7: Create NotebookLM notebook (optional cloud fallback — run only on explicit user request or cross-repo cloud Q&A need):
   → ~/.tad-notebooklm-venv/bin/notebooklm create "{domain} Research"
   → Parse output to capture notebook_id
   → If error: "⚠️ Failed to create notebook: {error}. Check NotebookLM auth."

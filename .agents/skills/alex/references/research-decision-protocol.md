@@ -96,13 +96,17 @@ research_decision_protocol:
 
       4. Always include "build custom" as a comparison option
 
-  # Step 2.5: Optional notebook check (before or alongside Landscape Search)
-  step2_5_notebook_check:
-    name: "Check Research Notebook (optional)"
+  # Step 2.5: Optional research check (before or alongside Landscape Search)
+  step2_5_research_check:
+    # alias: step2_5_notebook_check (legacy name)
+    name: "Check Local Wiki + Research Notebook (optional)"
     blocking: false
     action: |
       Before executing Landscape Search (WebSearch ×N):
-      1. Check .tad/research-notebooks/REGISTRY.yaml for a notebook matching this decision's domain
+      0. Prefer Local Wiki first: run `python3 research/scripts/search.py query "<decision question>" --scope wiki`.
+         If Local Wiki matches → use it as the authoritative local baseline for Landscape Search.
+         Only when Local Wiki has no match → fall back to the notebook lookup below.
+      1. Check .tad/research-notebooks/REGISTRY.yaml for a notebook matching this decision's domain (fallback)
       2. If found (active notebook) → query it first:
          notebooklm use <notebook_id>
          notebooklm ask "<decision question>"

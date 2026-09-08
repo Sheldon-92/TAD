@@ -1,13 +1,16 @@
 <!-- Extracted from alex/SKILL.md P3 progressive disclosure 2026-05-31. Updated 2026-06-17: renamed from *research-review to *research status. Cross-referenced protocols (notebook_consolidation_suggestion / adaptive_complexity_protocol / research_unified_protocol) remain INLINE in alex/SKILL.md and resolve in-session via the router. -->
 
 research_review_protocol:
-  description: "Research portfolio review — classify all notebooks by goal alignment + produce action plan"
+  description: "Research portfolio review — Local Wiki health (primary) + notebook portfolio (secondary) + action plan"
   trigger: "User types *research status OR Alex proactively suggests it in *discuss when research is scattered"
 
   execution:
     step1:
       name: "全景扫描"
       action: |
+        Part 1 (Primary - Local Wiki): review `research/canon/` entry health, `wiki/` coverage,
+        `lint.sh` status, and uncompiled raw corpus.
+        Part 2 (Secondary - NotebookLM): list cloud/local registry notebook status below.
         1. Read REGISTRY.yaml → all notebooks (active, dormant, archived)
         2. Read ROADMAP.md → project themes + goals (if exists)
         3. Read NEXT.md → current tasks + epics

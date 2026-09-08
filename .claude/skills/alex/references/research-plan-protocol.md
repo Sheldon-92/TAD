@@ -38,7 +38,12 @@ research_plan_protocol:
 
         1. If OBJECTIVES.md exists: Read → extract all Objectives + Key Results with status ⬚/🔄
            If not: use user's research question from *research --deep invocation
-        2. Read REGISTRY.yaml → list all active notebooks with topics (empty if absent)
+        1b. Local Wiki gap check (primary): check `research/canon/_topics.yaml` and existing
+           wiki pages for KR coverage first; only KRs/topics NOT covered by Local Wiki count as Gaps.
+           (Default execution body Phase 1-4 is Local Wiki: Phase 1 `research/scripts/ingest.sh`
+           raw capture → Phase 2 `research/canon/` entries → Phase 3 wiki compile → Phase 4
+           `bash research/canon/lint.sh` 6-rule gate.)
+        2. Read REGISTRY.yaml → list all active notebooks with topics (empty if absent; secondary fallback)
         3. Identify gaps: which ⬚/🔄 KRs have NO aligned notebook research? (LLM semantic match)
            If no OBJECTIVES: treat the user's question as the single gap
         4. If OBJECTIVES exists and no gaps → "✅ 所有目标都有对应研究覆盖，暂无空白。" → standby
@@ -92,6 +97,7 @@ research_plan_protocol:
           - "不执行，只记录" → mkdir -p .tad/evidence/research/ → save plan to .tad/evidence/research/research-plan-{YYYY-MM-DD}.md → standby
 
     step4:
+      note: "Fallback Execution (when Local Wiki absent) — the *research-notebook command block below runs ONLY when Local Wiki is absent; otherwise Phase 1-4 execute via the Local Wiki toolchain above."
       name: "执行研究"
       action: |
         ⚠️ EXECUTION MECHANISM (CRITICAL — prevents WebSearch fallback):

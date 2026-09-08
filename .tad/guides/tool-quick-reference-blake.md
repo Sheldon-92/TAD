@@ -53,7 +53,13 @@
 | Session state | Init + completion | `.tad/templates/session-state-template.md` |
 | Handoff B→A | Message to Alex | `.tad/templates/handoff-b-to-a.md` |
 
-## NotebookLM (Blake-limited)
+## Local Wiki Research Lookup (Primary)
+- Blake 在实现前通过 `research/scripts/search.py` 或直接读取 `research/wiki/` 获取即时一手设计约束：
+  - 检索：`python3 research/scripts/search.py query "<question>" --scope wiki`
+  - 直读：`research/wiki/` 页面 + `research/canon/_index.md` 词条索引
+  - 合规：`bash research/canon/lint.sh` 确认 6 大 Iron Rule 通过
+
+## NotebookLM (Fallback, Blake-limited)
 - Blake MAY use `*research-notebook ingest <file>` to feed implementation findings back
 - **Path:** `~/.tad-notebooklm-venv/bin/notebooklm source add <file> -n <id>`
 - Blake does NOT create notebooks or run research — that's Alex domain

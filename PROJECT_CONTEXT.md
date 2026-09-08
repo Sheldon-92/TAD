@@ -19,6 +19,10 @@
 
 ## Recently Completed
 
+- **Clean TAD Upstream Research-Routing Entry Pointers** (2026-09-08) — Gate 4 PASS and archived. Cleared stale NotebookLM-primary pointers across 6 architectural tiers (CLAUDE.md, Alex/Blake SKILLs, protocols, quick-reference guides, capability packs); established Local Wiki + Iron Rule as the primary research engine and preserved NotebookLM intact as fallback. 12 dual-platform mirror pairs are 100% byte-identical. All 8 ACs and 11 spec matrix rows verified clean. Protected boundaries (`docs/pm/` and `research/`) zero diff. Task ID: `TASK-20260908-research-route-local-wiki`.
+
+- **TAD 可靠交付成本与精简实验 (Thin-TAD Evaluation)** (2026-09-08) — COMPLETE 3/3 and archived. Phase 1 offline task package (Gate 4 PASS, `fc2c07ce`), Phase 2 tools leg & ineligible adapter fail-closed (runner + 25/25 tests ACCEPT, live matrix `ADAPTER_INELIGIBLE`), and Phase 3 offline analysis/decision reports (Gate 4 PASS) accepted. Bounded rulings: `MAINTAIN_CURRENT_RULES` + `NO_PRODUCTION_RULE_DELETION`; status `LIVE_EFFECT_UNDETERMINED` + `EMPIRICAL_DATA_ABSENT`. Zero live model calls, zero production TAD changes. Hard stop.
+
 - **Local Wiki Native Browser Capture** (2026-09-02) — Gate 4 PASS and archived. TAD now launches/reuses an isolated owned Chrome profile and captures rendered HTTPS/loopback pages into Local Wiki through repository-owned Node/CDP code. No runtime dependency remains on the external download-Markdown plugin. Final checks: Node 12/12, Python 24/24, real Chrome page PASS, two independent reviewers P0/P1/P2=0. Public YouTube caption capture remains experimental and fails closed without fallback when the site does not expose a usable transcript.
 
 - **Capability Builder v1 — Phase 1 Create** (2026-09-02) — Gate 4 PASS and archived. Delivered project-owned Agent Skill creation without changing TAD core or legacy Capability Packs; 12/12 ACs, 54/54 structural cases, and 7/7 eval compatibility passed. Accepted P2s are stale-lock recovery after hard crashes, large-tree hash cost, and eval-regex resource bounds.

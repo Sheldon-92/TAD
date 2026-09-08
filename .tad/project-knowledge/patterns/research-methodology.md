@@ -91,3 +91,11 @@
   harness FAIL) would ship a dead config key with a false claim.
 - **Grounded in**: .tad/evidence/spikes/subagent-frontmatter-2026-07/spike-report.md (ADDENDUM
   #2+#3), fr5-delivery-evidence.md (AC1b discriminative pair), COMPLETION-20260713-skills-preload-delivery.md
+
+### Upstream Entry Pointer Cleanliness & Multi-Layer Realignment — 2026-09-08
+- **Context**: Local Wiki replaced NotebookLM as primary research engine in late August 2026, but upstream entry pointers across 6 architectural categories (root docs, agent personas, protocols, Blake checks, quick refs, and capability packs) still directed agents to NotebookLM by default, causing 20-40s cloud latency and session expiration risks.
+- **Discovery**: When promoting a local deterministic architecture over an external cloud architecture, superficial configuration updates are insufficient; prompt reflexes and entry routing must be systematically cleaned across all 6 layers: (1) root governance docs (`CLAUDE.md`), (2) agent persona instructions and preflights (`alex/SKILL.md`), (3) Socratic inquiry and decision protocols, (4) implementer pre-execution checks (`blake/SKILL.md` 1_5b), (5) quick reference sheets, and (6) capability pack prefaces. Crucially, the secondary engine (NotebookLM) must remain 100% operational as a non-breaking fallback under explicit `(Fallback)` namespaces.
+- **Action**: (1) Update entry pointers and command definitions to declare Local Wiki as Primary and NotebookLM as Fallback. (2) Keep dual-platform mirrors (`.claude/` and `.agents/`) 100% byte-identical. (3) Establish pre-implementation snapshots for concurrent branches (`docs/pm/` baseline) to guarantee zero added blast radius.
+- **Grounded in**: `TASK-20260908-research-route-local-wiki`, `HANDOFF-20260908-research-route-local-wiki.md`, `COMPLETION-20260908-research-route-local-wiki.md`
+- **failure_mode**: Naive default: update the main config to point to the new engine but leave agent prompt templates and protocol references mentioning the old engine as default. Why wrong: LLM agents follow prompt-level reflexes and persona examples over distant config keys, so legacy pointers in SKILL.md or protocols cause agents to continuously regress to the old slow/cloud workflow despite the new architecture being available.
+
