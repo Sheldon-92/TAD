@@ -236,8 +236,8 @@ No BLOCKED rows. Gate 3 PASS.
 - [x] Research Required: no → N/A
 
 ### Git Commit
-- **Commit Hash**: `05c7c11d` (implementation commit; this hash-field fill rides in the amend commit on top — verify containment: `git log --oneline --all | grep 05c7c11d`)
-- **Verified**: `git cat-file -t 05c7c11d` = commit ✅
+- **Commit Hash**: `e6e2126e` (implementation commit; this hash-record fill rides on top)
+- **Verified**: `git log --oneline --all | grep -c e6e2126e` ≥ 1 ✅ + `git cat-file -t e6e2126e` = commit ✅
 
 ---
 
