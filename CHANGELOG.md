@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.44.4] - 2026-09-09
+
+### Added / Changed
+
+- **Knowledge-seam isolation (downstream zero-touch)**:
+  - Stopped syncing `brain-index.md` as a framework top file (`TOP_DENY` / `TAD_TOP_DENY`); generated index stays local to each project.
+  - Fresh install `project-knowledge/` is **Option A**: `README.md` only at pk root, empty `patterns/` and `incidents/` directories; no `framework-principles.md`.
+  - Added opt-in `tad.sh --quarantine-pk` to archive identical upstream pk copies; **never** auto-runs on `tad.sh update`.
+  - Landed on `main` as `e6e2126e` + `65963d6b`. Gate 4 PASS: `.tad/archive/handoffs/GATE4-20260908-knowledge-seam-isolation.md` and `.tad/evidence/reviews/2026-09-09-gate4-acceptance-knowledge-seam-isolation.md`.
+
 ## [2.44.3] - 2026-09-08
 
 ### Added / Changed
