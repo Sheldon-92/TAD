@@ -58,6 +58,10 @@ If ≥1 field is unfillable:
 - Leak detection: if the finished entry still contains source-episode literal values → fix or annotate
 - Write to project-knowledge/{category}.md (using playbook-entry-schema.md format)
 - KA writes "Playbook entry created: {label} in {category}.md"
+- Soft refresh of the local semantic index (non-blocking, WARN-only — never a Gate PASS requirement):
+  ```bash
+  bash .tad/hooks/lib/brain-index-gen.sh >/dev/null 2>&1 || true
+  ```
 
 ## Step 7: Codex upgrade (optional)
 Trigger conditions (any):

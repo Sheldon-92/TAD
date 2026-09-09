@@ -2,6 +2,16 @@
 
 Project-specific knowledge accumulated through TAD workflow execution.
 
+> **Isolation contract (Option A, v2.45.0+)**: a fresh `tad.sh install` seeds
+> this directory with ONLY this `README.md` plus empty `patterns/` and
+> `incidents/` subdirectories. Upstream framework internals (methodology
+> principles, framework patterns, framework incidents) are NEVER pre-seeded —
+> they live in `CLAUDE.md` and the installed skill files. Knowledge here is
+> **forged at distill** (Alex distills Blake's journal into typed entries via
+> the distillation loop), never copied. If this directory contains
+> byte-identical framework files from an older install, run the opt-in
+> quarantine once: `bash tad.sh --quarantine-pk` (never automatic).
+
 ## Structure
 
 ```

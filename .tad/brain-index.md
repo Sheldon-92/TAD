@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-09-02 14:23
+Generated: 2026-09-09 00:23
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -7,19 +7,19 @@ Generated: 2026-09-02 14:23
 | Two-Agent System - inception | two-agent system - inception | Naive default: one agent does everything (design + implement + review). Why wrong: self-review has no second perspective |
 | Four-Gate Quality System - inception | four-gate quality system - inception | Naive default: ship after implementation passes tests, skipping design review and business acceptance. Why wrong: tests  |
 | Measure Before Optimizing | measure before optimizing | TAD's context loading is already well-optimized (~8.5% session start overhead). @import zero-cost for non-existent files |
-| Judgment-Only Skill Files: Constraint Rules Are NOT Mechanical — AMENDED 2026-04-04 | judgment-only skill files constraint rules are not mechanical amended 2026-04-04 | v2.7 slim skills removed constraint rules alongside mechanical logic → quality chain failure. Constraint rules (MUST/MAN |
-| Express Handoff is NOT Review-Exemption | express handoff is not review-exemption | "Express → exempt" rationalization is persistent. "Small edit" pattern-matches to "low risk" but bypasses the real quest |
-| Mechanical Enforcement Rejected on Single-User CLI | mechanical enforcement rejected on single-user cli | PreToolUse hooks work as designed but fail-closed on missing deps (Homebrew PATH not in pin list) → deny all tool calls  |
+| Judgment-Only Skill Files: Constraint Rules Are NOT Mechanical | judgment-only skill files constraint rules are not mechanical | v2.7 slim skills removed constraint rules alongside mechanical logic → quality chain failure. Constraint rules (MUST/M |
+| Express Handoff is NOT Review-Exemption | express handoff is not review-exemption | "Express → exempt" rationalization is persistent. "Small edit" pattern-matches to "low risk" but bypasses the real que |
+| Mechanical Enforcement Rejected on Single-User CLI | mechanical enforcement rejected on single-user cli | PreToolUse hooks work as designed but fail-closed on missing deps (Homebrew PATH not in pin list) → deny all tool call |
 | Path Layering: Three Defenses Against AR-001 Drift | path layering three defenses against ar-001 drift | Three independently sufficient defenses: (1) SKILL grep for CI detection, (2) NOT_via_alex_suggestion 3-rule constraint, |
 | YOLO Epic Execution: Cross-Model Audit Findings | yolo epic execution cross-model audit findings | YOLO mode executed a full Epic (5 capability pack builds + validation + freeze + cross-agent + template) in one session. |
-| Never Hand-Write What an Existing Tool Already Does | never hand-write what an existing tool already does | Installing TAD v2.18.0 to a new project (Colin声音项目). `tad.sh` failed due to interactive `/dev/tty` prompt in non-TTY con |
+| Never Hand-Write What an Existing Tool Already Does | never hand-write what an existing tool already does | Installing TAD v2.18.0 to a new project (Colin声音项目). `tad.sh` failed due to interactive `/dev/tty` prompt in non |
 | Rewiring a Gate's Prose Can Trip a `grep -c` SAFETY Count — Use Line-Set Diff + Re-cite the Constraint | rewiring a gate s prose can trip a grep -c safety count use line-set diff re-cite the constraint | research-engine-wire-phase4 rewired the Phase 0c/4c/5b adversarial-challenge gates in alex/SKILL.md from opt-in AskUserQ |
 | A Coverage Gate's Global-Count Floor Cannot Detect Must-Cover SAFETY Loss When Legit Stripping Also Lowers the Count | a coverage gate s global-count floor cannot detect must-cover safety loss when legit stripping also lowers the count | Gate 4 acceptance of the Codex-parity Phase-1 spike (Alex raw-recompute). The parity criterion's constraint layer checks |
-| Deny-List Beats Allow-List for Sync Sets; Version Grep Must Scope to git-ls-files; diff-r is the Universal Omission Catcher | deny-list beats allow-list for sync sets version grep must scope to git-ls-files diff-r is the universal omission catcher | TAD publish/sync had recurring silent-omission failures — `.tad/codex/` (+~11 other framework dirs) never in the hardcod |
+| Deny-List Beats Allow-List for Sync Sets; Version Grep Must Scope to git-ls-files; diff-r is the Universal Omission Catcher | deny-list beats allow-list for sync sets version grep must scope to git-ls-files diff-r is the universal omission catcher | TAD publish/sync had recurring silent-omission failures — `.tad/codex/` (+~11 other framework dirs) never in the hardc |
 | Deny-List Must Be Applied at EVERY Copy Granularity, and Verifiers Must Match Each Granularity | deny-list must be applied at every copy granularity and verifiers must match each granularity | P2 of the self-deriving-release-sync Epic killed the hardcoded 14-DIR allow-list in tad.sh (deny-list derivation). But a |
 | Execution Discipline Content Must Stay in SKILL Body — Circular Trigger Test | execution discipline content must stay in skill body circular trigger test | SKILL Progressive Loading (v2.26.0) extracted 36 protocols to references/. Codex dogfood: Blake skipped Layer 2, Gate 3, |
 | Knowledge Is Forged at Distill, Not Captured | knowledge is forged at distill not captured | The doer who just did the work cannot write reusable knowledge — the curse of |
-| AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 | ai human judgment domain awareness agent  | Voice Studio 播客制作中反复验证：切点精度（人 — 听觉感知）vs 语义分析（AI — 文本理解）；配乐品味（人 — 从 shortlist 挑）vs 情绪/能量/速度匹配（AI — 可计算）。学术佐证：HitL LLM Jud |
+| AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 | ai human judgment domain awareness agent  | Voice Studio 播客制作中反复验证：切点精度（人 — 听觉感知）vs 语义分析（AI — 文本理解� |
 
 ## Patterns
 | File | Keywords | Summary |
@@ -32,7 +32,7 @@ Generated: 2026-09-02 14:23
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
 | Pack Build Rules | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope, cross-cutting rules, quality delta, capability pack, SKILL.md install, skill-vs-MCP boundary, judgment-vs-capability |
 | Pack Evaluation | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check |
-| Research Methodology | NotebookLM, Codex/Gemini CLI, cross-model orchestration, source quality, cloud compute | NotebookLM, Codex/Gemini CLI, cross-model orchestration, source quality, cloud compute, deep research, *research, web search |
+| Research Methodology | Local Wiki primary, NotebookLM fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, NotebookLM fallback, cross-model orchestration, source quality, deep research, *research |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
 | Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync |
 
@@ -52,7 +52,7 @@ Generated: 2026-09-02 14:23
 | 2. 使用场景（默认路径） | 2  | ⚠️ **下表即默认路径。** lite 已冻结（§2.5），不再作为新工作的入口。 |
 | 3. Quality Gates | 3 quality gates | - 规则 0: Handoff 前必须苏格拉底提问 (⚠️ BLOCKING) |
 | 4. Terminal 隔离 ⚠️ CRITICAL | 4 terminal critical | Alex = Terminal 1, Blake = Terminal 2。**人类是唯一信息桥梁。** |
-| 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | 三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手动触发。 |
+| 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | 三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手� |
 | 5. 违规处理 | 5  | 违规 → 立即停止 → 调用正确 agent → 从头执行。 |
 | 6. 协议位置 | 6  | \| 协议 \| 位置 \| |
 | 7. Project Knowledge (Auto-loaded) | 7 project knowledge auto-loaded  | @import 自动加载，不存在的文件静默跳过。超 30KB 时整合。 |
@@ -61,6 +61,8 @@ Generated: 2026-09-02 14:23
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
+| HANDOFF-20260908-knowledge-seam-isolation.md | feature |  |
+| HANDOFF-20260908-release-v2443.md | release |  |
 
 ## Active Epics
 | File | Summary |
@@ -73,6 +75,17 @@ Generated: 2026-09-02 14:23
 |------|-----------|---------|
 | HANDOFF-20260804-lite-pricing-gate.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260804-full-reviewer-tier-rule.md | yaml | Handoff Document for Agent B (Blake) |
+| HANDOFF-surplus-tad-self-test-agent.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-tad-methodology-skeleton.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-session-health-check.md | code | Handoff: session-health.sh — Framework Component Integrity Check |
+| HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-o1-landscape-refresh-2026q3.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-codex-adapter-yaml.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260816-phase2-installer-data-safety.md | code | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260816-phase1b-retire-frontmatter.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260816-privacy-scanner-and-trace-relpath.md | code | Quality Chain Metadata (Alex 必填) |
+| HANDOFF-20260815-english-unification.md | unknown | HANDOFF: 先修被中文字面量绑架的纪律，再谈英文化 |
+| HANDOFF-20260804-gate-loop-circuit-breaker.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-saveable-skills-from-conversation.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-repositioning-capability-acquisition.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-o3-kr3-deep-ask-rounds-4-5.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
@@ -81,6 +94,20 @@ Generated: 2026-09-02 14:23
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260908-thin-tad-harness-adapter.md | mixed | Handoff: thin-tad 评测适配器设计与 OpenCode 二进制契约对齐 (TASK-20260908-thin-tad-harness-adapter) |
+| HANDOFF-20260908-thin-tad-evaluation-p3.md | mixed | Handoff: TAD 精简实验 P3 — 离线分析、ADAPTER_INELIGIBLE 审计与有界决策报告 |
+| HANDOFF-20260908-research-route-local-wiki.md | mixed | Handoff: Clean TAD Upstream Research-Routing Entry Pointers (Local Wiki Primary, NotebookLM Fallback) |
+| HANDOFF-20260908-release-v2443.md | release | HANDOFF-20260908-release-v2443 — Publish v2.44.3 (Local Wiki Research Route + Experimental Thin-TAD Pilot Tooling) |
+| HANDOFF-20260907-publish-v2442.md | release | HANDOFF-20260907-publish-v2442 — Publish v2.44.2 (Framework-Health B + Lite Mute) |
+| HANDOFF-20260906-framework-health-closeout-b.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260904-workspace-hygiene-and-scan.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260904-publish-v2440-bundle.md | unknown | HANDOFF-20260904-publish-v2440-bundle — Publish v2.44.0 (3 accepted tracks) |
+| HANDOFF-20260904-public-facade-cleanup.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260904-pm-bridge-completion-optional.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260903-framework-health-phase2-remainder.md | unknown | Handoff: Framework-Health Close-out A — Installer Data-Safety Remainder |
+| HANDOFF-20260903-capability-builder-phase23-evolve-package.md | unknown | Handoff: Capability Builder v1 — Merged Phase 2 Evolve + Phase 3 Package |
+| HANDOFF-20260903-bugfix-lite-mute.md | doc-only | Mini-Handoff: Bugfix — Full 通道 Lite 触发词消音（保留显式可用） |
+| HANDOFF-20260902-tad-update-v2431.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260902-local-wiki-phase3r-native-capture.md | mixed | Handoff — Local Wiki Phase 3R Native Browser Capture |
 | HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
 | HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
@@ -90,3 +117,162 @@ Generated: 2026-09-02 14:23
 | HANDOFF-20260827-yolo2-phase2-completion.md | code | HANDOFF-20260827-yolo2-phase2-completion |
 | HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Handoff: YOLO 2.0 Phase 2 — 质量保持的有界执行闭环 |
 | HANDOFF-20260824-yolo2-phase1-recovery-slice.md | mixed | Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片 |
+| HANDOFF-20260818-lazy-by-floor.md | unknown | HANDOFF: 按地板表懒加载 —— 可达性记录取代计数，实测定目标 |
+| HANDOFF-20260817-activation-ondemand.md | unknown | HANDOFF: 激活按需化 —— 启动扫描从「整读文件」改成「跑命令读输出」 |
+| HANDOFF-20260816-trace-relative-path.md | code | Handoff: 让 trace 写仓库相对路径（止住绝对路径的源头） |
+| HANDOFF-20260816-gate3-check8-audible.md | code | Quality Chain Metadata (Alex 必填) |
+| HANDOFF-20260816-discipline-floor.md | unknown | HANDOFF: 地板表 —— 30 条纪律的载体该常驻还是按需 |
+| HANDOFF-20260815-discipline-floor.md | unknown | HANDOFF: 地板表 —— 每条纪律的载体该常驻还是按需 |
+
+## Evidence Directories
+| Directory | Files | Topic |
+|-----------|-------|-------|
+| evidence/acceptance-tests/ | 638 | acceptance-tests |
+| evidence/audits/ | 3 | audits |
+| evidence/codex-regression/ | 10 | codex-regression |
+| evidence/codex-validation/ | 4 | codex-validation |
+| evidence/completions/ | 72 | completions |
+| evidence/decisions/ | 0 | decisions |
+| evidence/designs/ | 26 | designs |
+| evidence/dogfood/ | 3 | dogfood |
+| evidence/dual-platform-regression/ | 4 | dual-platform-regression |
+| evidence/e2e/ | 3 | e2e |
+| evidence/eval/ | 2 | eval |
+| evidence/experiments/ | 23 | experiments |
+| evidence/fixtures/ | 10 | fixtures |
+| evidence/gates/ | 2 | gates |
+| evidence/handoff-reviews/ | 6 | handoff-reviews |
+| evidence/handoffs/ | 5 | handoffs |
+| evidence/hooks/ | 5 | hooks |
+| evidence/journal/ | 37 | journal |
+| evidence/knowledge-migration/ | 2 | knowledge-migration |
+| evidence/learnings/ | 3 | learnings |
+| evidence/maintenance/ | 1 | maintenance |
+| evidence/metrics/ | 1 | metrics |
+| evidence/overrides/ | 0 | overrides |
+| evidence/pack-dogfood/ | 11 | pack-dogfood |
+| evidence/pack-eval/ | 56 | pack-eval |
+| evidence/pack-quality/ | 4 | pack-quality |
+| evidence/pack-system-unification-phase1/ | 0 | pack-system-unification-phase1 |
+| evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
+| evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
+| evidence/patterns/ | 2 | patterns |
+| evidence/pm/ | 56 | pm |
+| evidence/poc/ | 11 | poc |
+| evidence/project-logs/ | 0 | project-logs |
+| evidence/ralph-loops/ | 12 | ralph-loops |
+| evidence/releases/ | 2 | releases |
+| evidence/research/ | 168 | research |
+| evidence/reviews/ | 693 | reviews |
+| evidence/spikes/ | 54 | spikes |
+| evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
+| evidence/surplus-plans/ | 4 | surplus-plans |
+| evidence/traces/ | 0 | traces |
+| evidence/yolo/ | 805 | yolo |
+| evidence/yolo2-baseline/ | 3 | yolo2-baseline |
+
+## Decision Records
+| File | Summary |
+|------|---------|
+| DR-20260531-ar001-research-challenge-carveout.md | DR-20260531: AR-001 Carve-Out for Auto-Running Adversarial Challenge Inside *research-plan |
+| DR-20260601-codex-edition-parity-architecture.md | DR-20260601: Codex-Edition Parity Architecture — Automated Regeneration (B) |
+| DR-20260601-self-deriving-release-sync.md | DR-20260601-B: Self-Deriving + Self-Verifying Release/Sync (kill the hardcoded-list disease) |
+| DR-20260606-checklist-shape-dogfood-deferral.md | DR-20260606: checklist verdict_shape ships gate-logic-only (real dogfood deferred) |
+| DR-20260609-deprecation-yaml-disposition.md | DR-20260609: deprecation.yaml Disposition — Relationship to Migration Manifest |
+| DR-20260609-migration-backfill-depth.md | DR-20260609: Migration Manifest Backfill Depth |
+| DR-20260609-user-modified-detection.md | DR-20260609: User-Modified File Detection Method |
+| DR-20260712-native-capability-overlap-verdicts.md | DR-20260712: Native Capability Overlap — 裁决(退役/改造/保留) |
+| DR-20260809-lite-authority-model-v2.md | Architecture Decision Document: Lite Authority Model v2 — Outcome Mandate |
+| DR-20260824-yolo2-orchestration-kernel.md | DR-20260824: YOLO 2.0 Orchestration Kernel |
+| DR-20260824-yolo2-vertical-slice-first.md | DR-20260824: YOLO 2.0 Vertical-Slice-First Reset |
+| DR-20260827-yolo2-phase2-amended-acceptance.md | DR-20260827-yolo2-phase2-amended-acceptance — Phase-2 修正案验收契约 |
+| DR-20260830-yolo2-phase2-scope-proof-amendment.md | DR-20260830 — YOLO2 Phase-2 并行历史下的范围证明修正 |
+| DR-20260831-yolo2-phase2-budget-amendment.md | DR-20260831 — YOLO2 Phase-2 Dogfood Budget Amendment |
+| DR-20260831-yolo2-phase2-scope-proof-amendment-r2.md | DR-20260831 — YOLO2 Phase-2 Scope-Proof Amendment R2 |
+| DR-20260901-local-wiki-retrieval-before-multimedia.md | DR-20260901 — Local Wiki Retrieval Before Multimedia |
+| DR-20260901-yolo2-phase3-limited-core-acceptance.md | DR-20260901 — YOLO2 Phase 3 Limited-Core Acceptance |
+| DR-20260901-yolo2-phase3-native-cli-adapters.md | DR-20260901 — YOLO2 Phase 3 Native CLI Adapters |
+| DR-20260901-yolo2-phase3-progressive-harness-qualification.md | DR-20260901 — YOLO2 Phase 3 Progressive Harness Qualification |
+| DR-20260901-yolo2-phase4-remain-opt-in.md | DR-20260901 — YOLO2 Phase 4 Remains Opt-In |
+| DR-20260902-local-wiki-browser-ingest-bridge.md | DR-20260902 — Local Wiki Browser Ingest Bridge |
+| DR-20260902-local-wiki-native-browser-capture.md | DR-20260902 — Native Chrome Capture for Local Wiki |
+
+## Config Files
+| File | Contains |
+|------|---------|
+| config-agents.yaml | "跳过任何步骤 → 警告并重新激活",    - "身份混淆 → 立即纠正",    - "未显示help → 自动补� |
+| config-cognitive.yaml | "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)",      - "Architecture pattern choice (e.g., mo |
+| config-execution.yaml | Layer 1: Self-Check (handoff §9.1 technical check rows),    - Layer 2: Expert Review (spec-compliance-reviewer, code-re |
+| config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
+| config-quality.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
+| config-workflow.yaml | tasks         # 任务追踪,      - designs       # 设计文档,      - handoffs      # 交接文档,      - epics     |
+| config.yaml | activation_protocol,      - triangle (terminal_isolation, agent_a, agent_b, human),      - interaction_protocol,      -  |
+
+## Skills
+| Skill | Summary |
+|-------|---------|
+| academic-research | name: academic-research |
+| agent-computer-interface | name: agent-computer-interface |
+| agent-memory | name: agent-memory |
+| agent-orchestration | name: agent-orchestration |
+| agent-skill-evolution | name: agent-skill-evolution |
+| ai-agent-architecture | name: ai-agent-architecture |
+| ai-evaluation | name: ai-evaluation |
+| ai-guardrails | name: ai-guardrails |
+| ai-podcast-production | name: ai-podcast-production |
+| ai-prompt-engineering | name: ai-prompt-engineering |
+| ai-tool-integration | name: ai-tool-integration |
+| ai-voice-production | name: ai-voice-production |
+| alex-lite | name: alex-lite |
+| alex | name: alex |
+| blake-lite | name: blake-lite |
+| blake | name: blake |
+| capability-builder | name: capability-builder |
+| capability-upgrade | name: capability-upgrade |
+| code-security | name: code-security |
+| data-engineering | name: data-engineering |
+| dependency-ops | name: dependency-ops |
+| gate | name: gate |
+| hw-circuit-design | name: hw-circuit-design |
+| hw-enclosure | name: hw-enclosure |
+| hw-firmware | name: hw-firmware |
+| hw-testing | name: hw-testing |
+| knowledge-audit | name: knowledge-audit |
+| knowledge-graph | name: knowledge-graph |
+| llm-observability | name: llm-observability |
+| ml-training | name: ml-training |
+| mobile-development | name: mobile-development |
+| mobile-release | name: mobile-release |
+| mobile-testing | name: mobile-testing |
+| mobile-ui-design | name: mobile-ui-design |
+| product-thinking | name: product-thinking |
+| rag-retrieval | name: rag-retrieval |
+| reading-companion | name: reading-companion |
+| release-runbook | name: release-runbook |
+| research-github | name: research-github |
+| research-notebook | name: research-notebook |
+| save-skill | name: save-skill |
+| save-workflow | name: save-workflow |
+| supply-chain-security | name: supply-chain-security |
+| surplus | name: surplus |
+| synthetic-data | name: synthetic-data |
+| tad-elicit | name: tad-elicit |
+| tad-handoff | name: tad-handoff |
+| tad-help | name: tad-help |
+| tad-init | name: tad-init |
+| tad-maintain | name: tad-maintain |
+| tad-parallel | name: tad-parallel |
+| tad-scenario | name: tad-scenario |
+| tad-status | name: tad-status |
+| tad-test-brief | name: tad-test-brief |
+| tad-update | name: tad-update |
+| tad | name: tad |
+| video-creation | name: video-creation |
+| web-backend | name: web-backend |
+| web-deployment | name: web-deployment |
+| web-frontend | name: web-frontend |
+| web-testing | name: web-testing |
+| web-ui-design | name: web-ui-design |
+
+---
+Total indexed entries: (see above tables)

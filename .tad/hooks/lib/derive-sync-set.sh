@@ -73,8 +73,9 @@ domains"
 DENY_LIST="$ZERO_TOUCH
 $TRANSIENT"
 
-# Top-level deny (a FILE, not a dir — excluded from top-level config copy):
-TOP_DENY="sync-registry.yaml"
+# Top-level deny (FILES, not dirs — excluded from top-level config copy):
+TOP_DENY="sync-registry.yaml
+brain-index.md"
 
 # The ONE dir with a sub-path rule: sync/diff ONLY its registry index, never the tree.
 REGISTRY_ONLY="capability-packs"

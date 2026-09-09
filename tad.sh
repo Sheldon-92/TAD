@@ -311,6 +311,7 @@ assert_under_root() {
 # CI, curl|bash). "$@" is set -u-safe even with zero args.
 AUTO_YES=0
 VERIFY_DENYLIST=0
+DOCTOR=0
 FORCE=0
 PLATFORM=""
 PACKS=""
@@ -323,6 +324,12 @@ while [ $# -gt 0 ]; do
     --yes|-y)  AUTO_YES=1; shift ;;
     --force)   FORCE=1; shift ;;
     --verify-denylist) VERIFY_DENYLIST=1; shift ;;
+    --doctor) DOCTOR=1; shift ;;
+    --quarantine-pk)
+      shift
+      _qp_self_dir="$(cd "$(dirname "$0")" && pwd)"
+      exec bash "$_qp_self_dir/.tad/hooks/lib/quarantine-framework-pk.sh" "$@"
+      ;;
     --platform)
       [ -z "${2:-}" ] && echo "tad.sh: --platform requires a value" >&2 && exit 1
       PLATFORM="$2"; shift 2 ;;
@@ -350,7 +357,7 @@ while [ $# -gt 0 ]; do
       [ -z "${2:-}" ] && echo "tad.sh: --expected-version requires a value" >&2 && exit 1
       EXPECTED_VERSION="$2"; shift 2 ;;
     --help|-h)
-      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist]"
+      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist] [--doctor] [--quarantine-pk]"
       echo "       tad.sh --fork-pack <name> | --unfork-pack <name> | --list-packs"
       echo "       tad.sh --release-ref vX.Y.Z --expected-version X.Y.Z [--yes]  (pinned update)"
       echo "       tad.sh --source <dir> [--platform <name>] --yes  (offline install from local tree)"
@@ -364,6 +371,8 @@ while [ $# -gt 0 ]; do
       echo "  --unfork-pack <name> unmark a forked pack (follows upstream again)"
       echo "  --list-packs       show all installed packs with sync status"
       echo "  --verify-denylist  (TAD repo only) assert tad.sh's inlined DENY_LIST == derive-sync-set.sh"
+      echo "  --quarantine-pk    quarantine legacy framework project-knowledge pollution (opt-in)"
+      echo "  --doctor           health check: WARN-only brain-index freshness advisory (always exits 0)"
       echo "  --release-ref/--expected-version  pinned immutable-tag update (must be a matching pair)"
       echo "  --source <dir>     offline source tree (fully-TRUSTED: the installer runs engine scripts"
       echo "                     from it — never point at unreviewed checkouts). Bypasses the network"
@@ -562,8 +571,9 @@ domains"
 # DENY_LIST = A ∪ C (the full set excluded from SYNC).
 TAD_DENY_LIST="$TAD_ZERO_TOUCH
 $TAD_TRANSIENT"
-# Top-level deny (a FILE, not a dir):
-TAD_TOP_DENY="sync-registry.yaml"
+# Top-level deny (FILES, not dirs):
+TAD_TOP_DENY="sync-registry.yaml
+brain-index.md"
 # The ONE dir with a sub-path rule: sync ONLY its registry index, never the tree.
 TAD_REGISTRY_ONLY="capability-packs"
 TAD_REGISTRY_FILE="pack-registry.yaml"
@@ -589,14 +599,15 @@ derive_framework_dirs() {
 # LC_ALL=C sorted. DENY-LIST derived, NOT an extension allow-list — a new top-level
 # framework file of ANY extension (.sh/.json/.yaml/.md/…) is auto-copied. This
 # kills the 2nd surviving hardcoded list (the old `*.yaml *.md *.txt` glob that
-# silently dropped .tad/portable-extract.sh). TAD_TOP_DENY = the only excluded file.
+# silently dropped .tad/portable-extract.sh). TAD_TOP_DENY = the excluded files
+# (newline-delimited set: sync-registry.yaml + brain-index.md).
 derive_framework_top_files() {
     local src="$1"
     local f bn
     for f in "$src"/.tad/*; do
         [ -f "$f" ] || continue
         bn="$(basename "$f")"
-        [ "$bn" = "$TAD_TOP_DENY" ] && continue
+        printf '%s\n' "$TAD_TOP_DENY" | grep -Fxq -e "$bn" && continue
         printf '%s\n' "$bn"
     done | LC_ALL=C sort
 }
@@ -1164,6 +1175,22 @@ copy_framework_files() {
                     continue
                 fi
             fi
+            # Project skill protection (knowledge-seam isolation): never
+            # overwrite the project-owned `local/` tree or any skill that
+            # declares `ownership: project-owned` (bare, single- or
+            # double-quoted YAML forms). The `local/` skip applies only when
+            # the target tree already exists — a fresh install still seeds
+            # the framework `local/` scaffolds (required by the post-install
+            # self-check); a re-sync never touches the project's own tree.
+            if [ "$skill_name" = "local" ] && [ -e "$TARGET_SKILL_DIR/$skill_name" ]; then
+                log_info "  → Preserving project skill tree: $skill_name"
+                continue
+            fi
+            if [ -f "$TARGET_SKILL_DIR/$skill_name/SKILL.md" ] && \
+               grep -qE '^[[:space:]]*ownership:[[:space:]]*["'"'"']?project-owned["'"'"']?' "$TARGET_SKILL_DIR/$skill_name/SKILL.md"; then
+                log_info "  → Preserving project-owned skill: $skill_name"
+                continue
+            fi
             # F-06: record run-created skill dirs for rollback removal (the
             # atomic snap-restore covers pre-existing trees; these notes cover
             # surfaces that did not exist pre-run).
@@ -1261,6 +1288,19 @@ copy_framework_files() {
                     if ! is_selected_pack "$skill_name_b"; then
                         continue
                     fi
+                fi
+                # Project skill protection (knowledge-seam isolation, Codex
+                # secondary path): same `local/` + `ownership: project-owned`
+                # guarantee as the primary loop above (existing tree preserved,
+                # fresh seed still installed).
+                if [ "$skill_name_b" = "local" ] && [ -e ".agents/skills/$skill_name_b" ]; then
+                    log_info "  → Preserving project skill tree: $skill_name_b"
+                    continue
+                fi
+                if [ -f ".agents/skills/$skill_name_b/SKILL.md" ] && \
+                   grep -qE '^[[:space:]]*ownership:[[:space:]]*["'"'"']?project-owned["'"'"']?' ".agents/skills/$skill_name_b/SKILL.md"; then
+                    log_info "  → Preserving project-owned skill: $skill_name_b"
+                    continue
                 fi
                 local _skill_new_b=0
                 if [ ! -e ".agents/skills/$skill_name_b" ]; then _skill_new_b=1; fi
@@ -2056,6 +2096,31 @@ if [ "$VERIFY_DENYLIST" = "1" ]; then
     exit $?
 fi
 
+# tad_doctor — lightweight health check. WARN-only: prints advisories, ALWAYS
+# exits 0. Currently covers brain-index.md freshness vs .tad/project-knowledge/.
+# It MUST NOT fail gates, block acceptance, or trigger rollback.
+tad_doctor() {
+    if [ -f ".tad/brain-index.md" ] && [ -d ".tad/project-knowledge" ]; then
+        local _newer
+        _newer="$(find .tad/project-knowledge -type f -newer .tad/brain-index.md -print -quit 2>/dev/null || true)"
+        if [ -n "$_newer" ]; then
+            log_warn "⚠️ brain-index.md is older than project-knowledge ($_newer is newer; run bash .tad/hooks/lib/brain-index-gen.sh to refresh)"
+        else
+            log_success "brain-index.md is fresh (newer than project-knowledge)"
+        fi
+    else
+        log_warn "doctor: .tad/brain-index.md or .tad/project-knowledge/ not found — skipping freshness check"
+    fi
+    return 0
+}
+
+# --doctor: health check. Runs BEFORE the rollback trap is set (it must never
+# trigger rollback) and exits immediately — it never installs or modifies.
+if [ "$DOCTOR" = "1" ]; then
+    tad_doctor
+    exit 0
+fi
+
 # archive_old_skill_mds <skills_dir> — F-08: move legacy top-level *.md skill
 # files (except doc-organization.md) into a UNIQUE timestamped _archived.<ts>
 # dir (backup_existing()-style increment loop — skip-if-exists is WRONG per
@@ -2657,6 +2722,12 @@ main() {
             mkdir -p .tad/evidence/pair-tests
             mkdir -p .tad/evidence/acceptance-tests
             mkdir -p .tad/project-knowledge
+            # Option A pure isolation (knowledge-seam): new installs receive
+            # ONLY the clean README.md seed. Empty patterns/ + incidents/
+            # subdirs are created; upstream principles/patterns/incidents are
+            # NEVER copied (copy_framework_files already skips the deny-listed
+            # project-knowledge dir).
+            mkdir -p .tad/project-knowledge/patterns .tad/project-knowledge/incidents
             mkdir -p .tad/pair-testing
             mkdir -p .tad/reports
             mkdir -p "$TARGET_SKILL_DIR"
@@ -2664,8 +2735,8 @@ main() {
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
 
-            # Copy project-knowledge README
-            cp -r "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+            # Copy project-knowledge README seed (Option A: README only)
+            cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
 
             # Copy root files
             # F-03 (EPIC-20260816 Phase 2 / 审计): install 分支原为裸 cp，会无声覆盖用户
@@ -2766,8 +2837,12 @@ NEXTEOF
             log_info "  → Updating CLAUDE.md..."
             merge_claude_md "$TAD_SRC"
 
-            # Update project-knowledge README
-            cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+            # Update project-knowledge README seed — preserve a downstream-
+            # customized README (knowledge-seam isolation): only install the
+            # seed when the target has none.
+            if [ ! -f .tad/project-knowledge/README.md ]; then
+                cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+            fi
 
             # Hint: codebase-memory-mcp for code intelligence (opt-in, user installs manually)
             if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
@@ -2846,8 +2921,12 @@ NEXTEOF
             # Merge CLAUDE.md (preserve project content below marker)
             merge_claude_md "$TAD_SRC"
 
-            # Copy project-knowledge README
-            cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+            # Copy project-knowledge README seed — preserve a downstream-
+            # customized README (knowledge-seam isolation): only install the
+            # seed when the target has none.
+            if [ ! -f .tad/project-knowledge/README.md ]; then
+                cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
+            fi
 
             # Create user files if not exist
             if [ ! -f "PROJECT_CONTEXT.md" ]; then

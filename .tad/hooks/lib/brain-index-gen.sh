@@ -91,7 +91,7 @@ echo "|------|----------|---------|"
 find "$TAD_DIR/project-knowledge" -maxdepth 1 -name "*.md" -not -name "README.md" -print0 2>/dev/null | sort -z | \
   while IFS= read -r -d '' file; do
     fname=$(basename "$file")
-    summary=$(grep -m1 '^## \|^### ' "$file" 2>/dev/null | sed 's/^#* //' | cut -c1-120 | escape_pipe)
+    summary=$({ grep -m1 '^## \|^### ' "$file" 2>/dev/null || true; } | sed 's/^#* //' | cut -c1-120 | escape_pipe)
     [ -z "$summary" ] && summary=$(sed -n '/^[^#>@!-]/p' "$file" 2>/dev/null | head -1 | cut -c1-120 | escape_pipe)
     kw=$(slug_keywords "${fname%.md}")
     echo "| $fname | $kw | $summary |"
@@ -133,7 +133,8 @@ if [ -d "$ACTIVE_DIR" ]; then
   find "$ACTIVE_DIR" -name "HANDOFF-*.md" -print0 2>/dev/null | sort -z | \
     while IFS= read -r -d '' file; do
       fname=$(basename "$file")
-      task_type=$(grep '^task_type:' "$file" 2>/dev/null | head -1 | sed 's/task_type: *//' || echo "unknown")
+      task_type=$({ grep -m1 '^task_type:' "$file" 2>/dev/null || true; } | sed 's/task_type: *//' | tr -d '[:space:]')
+      task_type="${task_type:-unknown}"
       # Get first line of §1.1
       summary=$(sed -n '/^### 1.1/,/^###/{/^### 1.1/d;/^###/d;/^$/d;p;}' "$file" 2>/dev/null | head -1 | cut -c1-120 | escape_pipe)
       echo "| $fname | $task_type | $summary |"
@@ -153,7 +154,7 @@ if [ -d "$EPIC_DIR" ]; then
   find "$EPIC_DIR" \( -name "EPIC-*.md" -o -name "epic-*.md" \) -print0 2>/dev/null | sort -z | \
     while IFS= read -r -d '' file; do
       fname=$(basename "$file")
-      summary=$(grep -m1 '^[^#>|!-]' "$file" 2>/dev/null | head -1 | cut -c1-120 | escape_pipe)
+      summary=$({ grep -m1 '^[^#>|!-]' "$file" 2>/dev/null || true; } | head -1 | cut -c1-120 | escape_pipe)
       echo "| $fname | $summary |"
       file_count=$((file_count + 1))
     done
@@ -168,13 +169,13 @@ if [ -d "$ARCHIVE_DIR" ]; then
   echo "## Archived Handoffs (recent 50)"
   echo "| File | Task Type | Summary |"
   echo "|------|-----------|---------|"
-  find "$ARCHIVE_DIR" -name "HANDOFF-*.md" -o -name "handoff-*.md" 2>/dev/null | sort -r | head -50 | \
+  find "$ARCHIVE_DIR" \( -name "HANDOFF-*.md" -o -name "handoff-*.md" \) 2>/dev/null | sort -r | head -50 | \
     while IFS= read -r file; do
       fname=$(basename "$file")
-      task_type=$(grep -m1 '^task_type:' "$file" 2>/dev/null | sed 's/task_type: *//;s/ *#.*//' | tr -d '[:space:]')
+      task_type=$({ grep -m1 '^task_type:' "$file" 2>/dev/null || true; } | sed 's/task_type: *//;s/ *#.*//' | tr -d '[:space:]')
       [ -z "$task_type" ] && task_type="unknown"
       task_type=$(echo "$task_type" | escape_pipe)
-      summary=$(grep -m1 '^# ' "$file" 2>/dev/null | sed 's/^# //' | cut -c1-120 | escape_pipe)
+      summary=$({ grep -m1 '^# ' "$file" 2>/dev/null || true; } | sed 's/^# //' | cut -c1-120 | escape_pipe)
       [ -z "$summary" ] && summary=$(basename "$file" .md | sed 's/^[Hh][Aa][Nn][Dd][Oo][Ff][Ff]-//' | escape_pipe)
       echo "| $fname | $task_type | $summary |"
       file_count=$((file_count + 1))
@@ -209,7 +210,7 @@ if [ -d "$DECISIONS_DIR" ]; then
   find "$DECISIONS_DIR" -name "*.md" -print0 2>/dev/null | sort -z | \
     while IFS= read -r -d '' file; do
       fname=$(basename "$file")
-      summary=$(grep -m1 '^# \|^## ' "$file" 2>/dev/null | sed 's/^#* //' | cut -c1-120 | escape_pipe)
+      summary=$({ grep -m1 '^# \|^## ' "$file" 2>/dev/null || true; } | sed 's/^#* //' | cut -c1-120 | escape_pipe)
       echo "| $fname | $summary |"
       file_count=$((file_count + 1))
     done
@@ -225,7 +226,7 @@ echo "|------|---------|"
 find "$TAD_DIR" -maxdepth 1 -name "config*.yaml" -print0 2>/dev/null | sort -z | \
   while IFS= read -r -d '' file; do
     fname=$(basename "$file")
-    contains=$(grep '^ *- ' "$file" 2>/dev/null | head -5 | tr '\n' ',' | sed 's/^ *- //g;s/,$//' | cut -c1-120 | escape_pipe)
+    contains=$({ grep '^ *- ' "$file" 2>/dev/null || true; } | head -5 | tr '\n' ',' | sed 's/^ *- //g;s/,$//' | cut -c1-120 | escape_pipe)
     echo "| $fname | $contains |"
     file_count=$((file_count + 1))
   done
@@ -248,7 +249,7 @@ if [ -n "$SKILLS_DIR" ]; then
   find "$SKILLS_DIR" -name "SKILL.md" -print0 2>/dev/null | sort -z | \
     while IFS= read -r -d '' file; do
       skill_name=$(echo "$file" | sed "s|$SKILLS_DIR/||" | sed 's|/SKILL.md||')
-      summary=$(grep -m1 '^[^#>|!-]' "$file" 2>/dev/null | head -1 | cut -c1-80 | escape_pipe)
+      summary=$({ grep -m1 '^[^#>|!-]' "$file" 2>/dev/null || true; } | head -1 | cut -c1-80 | escape_pipe)
       echo "| $skill_name | $summary |"
       file_count=$((file_count + 1))
   done

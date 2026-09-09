@@ -106,6 +106,29 @@ DRIFT FINDINGS (advisory — human review required)
 - jq missing → the whole tool fails with exit 1 (jq is required for safe JSON emission).
 - Any subcheck internal exception → caught by the dispatch's `|| _emit error` safety net.
 
+## Step 1.6: Brain-Index Freshness (WARN-only, advisory)
+
+Compare mtime of `.tad/brain-index.md` against the newest file in
+`.tad/project-knowledge/`. This check is strictly advisory — it NEVER fails
+a gate and NEVER blocks acceptance (L1 "Knowledge Is Forged at Distill").
+
+```bash
+if [ -f .tad/brain-index.md ] && [ -d .tad/project-knowledge ]; then
+  if find .tad/project-knowledge -type f -newer .tad/brain-index.md -print -quit 2>/dev/null | grep -q .; then
+    echo "⚠️ brain-index.md is older than project-knowledge (run bash .tad/hooks/lib/brain-index-gen.sh to refresh)"
+  fi
+fi
+```
+
+### Modes
+
+- **CHECK**: Print the advisory warning if stale (exit 0 — WARN-only, never fail).
+- **SYNC**: Automatically run the soft rebuild after lifecycle actions complete:
+  ```bash
+  bash .tad/hooks/lib/brain-index-gen.sh >/dev/null 2>&1 || true
+  ```
+- **FULL**: Same as SYNC.
+
 ## Step 2: Handoff Lifecycle Audit
 
 For each file in `.tad/active/handoffs/`:
