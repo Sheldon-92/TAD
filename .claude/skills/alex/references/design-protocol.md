@@ -31,16 +31,23 @@ design_protocol:
 
         3. Dedup: if ≥2 matched packs share a domain, note the overlap but let user decide.
 
-        4. If ≥1 match found — 3-tier pack lookup (AC2):
-           For EACH matched pack, determine availability:
+        3b. Freeze filter: drop every matched pack whose registry `status` equals
+            `frozen` (exact match) — frozen packs are omitted from the offer list
+            even if keywords match. Any other value — or missing status — counts
+            as active (missing status = active).
+
+        4. If ≥1 active match found — 3-tier pack lookup (AC2):
+           For EACH matched pack, determine availability by file-exists check ONLY.
+           Do NOT open any CAPABILITY.md or SKILL.md body before the user confirms
+           in step 4a below.
 
            Tier 1 — pack source installed (TAD project):
              Check: .tad/capability-packs/{pack_name}/CAPABILITY.md exists
-             → Load CAPABILITY.md directly from this path
+             → Mark available; do NOT open the file yet
 
            Tier 2 — pack installed as skill (downstream project or manual install):
              Check: .claude/skills/{pack_name}/SKILL.md exists
-             → Load that SKILL.md as the pack content
+             → Mark available; do NOT open the file yet
 
            Tier 3 — pack matched but not installed:
              Neither path exists → offer install via AskUserQuestion:
@@ -79,7 +86,9 @@ design_protocol:
                  (CONSUMES: {pack.consumes} → PRODUCES: {pack.produces})
                Confirm which packs to use?"
               Options: up to 4 packs as options + "None — skip packs"
-           b. On confirmation, load confirmed pack CAPABILITY.md (Tier 1) or SKILL.md (Tier 2)
+           b. On confirmation, the confirmed pack is human-named escalate → Read its
+              CAPABILITY.md (Tier 1) or SKILL.md (Tier 2) now. Until confirmation,
+              availability stays file-exists only; no pack body is in context.
            c. State persistence: Record confirmed packs as:
               "🎯 Loaded Capability Packs: {pack1}, {pack2}"
 

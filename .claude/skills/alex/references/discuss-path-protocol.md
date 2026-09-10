@@ -30,17 +30,24 @@ discuss_path_protocol:
         在首次回答 *discuss 话题之前：
         1. 判断当前话题是否匹配某个 Capability Pack
            匹配条件：话题关键词与 pack 名称或描述有语义相关性
-        2. 如果匹配：
-           a. Check if .claude/skills/{pack-name}/SKILL.md exists → Read SKILL.md
-           b. 输出: "🔧 Loaded Pack: {pack-name} — using {capability} framework"
-           c. 用 pack 的质量标准和反模式指导后续讨论
-        3. 如果不匹配：正常讨论，不加载
+           先读 .tad/capability-packs/pack-registry.yaml：registry `status`
+           等于 `frozen` 的 pack 直接跳过（不参与匹配、不进指针列表）；
+           行缺 `status` 或取其他值视为 active（missing status = active）。
+        2. 如果有 active pack 匹配（最多 2 个）：
+           a. 只做文件存在检查（.claude/skills/{pack-name}/SKILL.md 是否在盘上），不打开正文
+           b. 输出指针：`Pack pointer: {pack-name} — {one-line when}. Path: {SKILL.md path}. Do not load unless escalated.`
+           c. 用指针继续讨论；pack 的质量标准只在 escalate 之后才引用
+        3. Escalate 到整份 SKILL 正文仅当：human-named（人点名该 pack / 说加载）
+           或 recorded failure-retry（已记录的失败重试，点名该 pack）。
+           关键词命中本身绝不触发整份读取。
+        4. 如果不匹配：正常讨论，不加载
       fallback: |
         如果无 Capability Pack 可用 → 静默跳过，正常进入 *discuss
       note: |
         这不是流程要求 — 是知识质量保证。
         *discuss 不需要走 AskUserQuestion 确认（不同于 *design 的 step1_5b）
         匹配是 LLM 语义判断，不是精确字符串匹配。
+        指针 ≠ 加载：frozen pack 不进指针列表，即使关键词命中。
 
     research_knowledge_awareness:
       # alias: research_notebook_awareness (legacy name — shared declined_research_domains set)

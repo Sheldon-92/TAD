@@ -559,9 +559,11 @@ ralph_loop_execution:
         action: |
           1. Check handoff for explicit pack references:
              a. Look for "🔧 Capability Pack References" section in handoff
-             b. If found: read referenced pack files directly → announce + skip auto-detection
+             b. If found: the handoff lists the pack because a human already confirmed
+                it (human-named escalate) → read referenced pack files directly
+                → announce + skip auto-detection below
           
-          2. If no explicit references (Alex didn't include pack section):
+          2. If no explicit references, auto-detect (pointer only, never a Read):
              a. Extract primary file extensions from handoff §6 (Files to Modify):
                 - .tsx/.jsx/.css/.scss → keywords: ["frontend", "component", "UI"]
                 - .ts/.js (in api/, routes/, server/, services/) → keywords: ["backend", "API"]
@@ -569,20 +571,34 @@ ralph_loop_execution:
                 - .md (DESIGN.md, design tokens) → keywords: ["UI", "design"]
              b. Read .tad/capability-packs/pack-registry.yaml (or scan the platform skill tree)
                 If not found or YAML parse error → skip silently
-             c. Match extracted keywords against pack keyword lists
-             d. For each matched pack (max 2):
-                → Check availability: for f in .claude/skills/{name}/SKILL.md .agents/skills/{name}/SKILL.md; do [ -f "$f" ] && { available_path="$f"; break; }; done; or use .tad/capability-packs/{name}/CAPABILITY.md
-                → If available: Read "$available_path" (or CAPABILITY.md)
-                → Output: "🎯 Pack loaded: {name} — applying quality rules during implementation"
+             c. Skip every pack whose registry `status` equals `frozen` (exact match).
+                Any other value — or missing status — counts as active
+                (missing status = active). Frozen packs never enter the pointer list,
+                even if keywords match. Pack files remain on disk.
+             d. Match extracted keywords against the remaining (active) pack keyword lists
+             e. For each matched pack (max 2), check availability only (file exists —
+                never open the file here):
+                for f in .claude/skills/{name}/SKILL.md .agents/skills/{name}/SKILL.md; do [ -f "$f" ] && { available_path="$f"; break; }; done; or use .tad/capability-packs/{name}/CAPABILITY.md
+                → Announce a pointer instead of loading:
+                `Pack pointer: {name} — {one-line when}. Path: {available_path}. Do not load unless escalated.`
+                → Output: "🎯 Pack pointer: {name} — escalate only on human-named or recorded failure-retry"
           
-          2.5 Collision check (only if ≥2 packs loaded above):
+          2.5 Collision check (only among packs escalated to a full Read in this session,
+             never at pointer time):
              → Read .tad/capability-packs/pack-collisions.yaml (if absent or parse error → skip silently)
-             → For each row where BOTH pack_a AND pack_b are loaded:
+             → For each row where BOTH pack_a AND pack_b are escalated:
                - resolution: auto → "⚙️ resolved: {winner} over {loser} ({rule}) — {topic}"
                - resolution: escalate → "⚠️ unresolved: {pack_a} vs {pack_b} — human decides ({topic})"
              → Advisory only; does NOT block implementation.
           
-          3. If no pack matches: skip silently
+          3. Escalate a pointer to a full Read only if (a) the human names the pack
+             (human-named, including the explicit handoff pack section in step 1), or
+             (b) a recorded failure-retry names the pack (a Layer 1 retry note, a Gate
+             FAIL citing missing pack judgment, or a human sentence that the generalist
+             output was wrong naming the pack). Keyword match alone MUST NOT trigger
+             a Read. Do not re-escalate a pack already escalated in step 1.
+          
+          4. If no pack matches: skip silently
           
           → Proceed to 1_5b_research_check
         
@@ -592,8 +608,8 @@ ralph_loop_execution:
           This is INDEPENDENT of Alex's handoff. Even if Alex loaded a pack,
           Blake re-checks because: (a) Alex may have used *express which skips
           step1_5b entirely, (b) Alex's keyword matching may have missed a relevant pack.
-          If the same pack was already loaded via handoff's Capability Pack References (step 1),
-          don't re-read it.
+          If the same pack was already escalated via handoff's Capability Pack References (step 1),
+          don't re-escalate it.
 
       1_5b_research_check:
         description: "Check for relevant research from Local Wiki (primary) or NotebookLM (fallback) before implementation"

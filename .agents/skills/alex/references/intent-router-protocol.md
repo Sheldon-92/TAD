@@ -127,23 +127,35 @@ intent_router_protocol:
            Tier 2: .claude/skills/{name}/SKILL.md exists → available
            Tier 3: neither → not installed, skip (don't offer install here — not the right moment)
         
-        4. Match user input against available packs' description fields
+        4. Drop every pack whose registry `status` equals `frozen` (exact match).
+           A pack row with any other value — or with missing status — counts as
+           active (missing status = active) and stays eligible.
+        
+        5. Match user input against the remaining (active) packs' description fields
            (LLM semantic match — compare task description against each pack's
             description to find the most relevant packs)
         
-        5. If ≥1 pack matches:
-           → Read matched pack(s) SKILL.md (Tier 2) or CAPABILITY.md (Tier 1)
-           → Output: "🎯 Pack loaded: {name} — {one-line description}"
-           → Pack content is now in context for the entire path execution
+        6. If ≥1 active pack matches, announce at most 2 pointers (most relevant first):
+           `Pack pointer: {name} — {one-line when}. Path: {SKILL.md}. Do not load unless escalated.`
+           Compose the one-liner from the registry description + keywords + path
+           already read for matching. Do NOT open the pack SKILL or CAPABILITY body
+           to compose it. Pack content is NOT in context — only the pointer is.
         
-        5b. Collision check (only if ≥2 packs were loaded in step 5):
+        6b. Collision check (only among packs escalated to a full Read in this session,
+            never at pointer time):
            → Read .tad/capability-packs/pack-collisions.yaml (if absent or parse error → skip silently)
-           → For each collision row where BOTH pack_a AND pack_b are in the loaded set:
+           → For each collision row where BOTH pack_a AND pack_b are in the escalated set:
              - resolution: auto → "⚙️ resolved: {winner} over {loser} ({rule}) — {topic}. loser said: \"{loser quote}\" (verify it isn't independently violated)"
              - resolution: escalate → "⚠️ unresolved: {pack_a} vs {pack_b} — human decides ({topic}); full quotes in pack-collisions.yaml"
-           → Advisory surfacing ONLY — does NOT block, does NOT auto-edit packs, does NOT change which packs loaded.
+           → Advisory surfacing ONLY — does NOT block, does NOT auto-edit packs, does NOT change which packs are pointed at.
         
-        6. If no match: skip silently (no output)
+        7. If no match: skip silently (no output)
+
+        Escalate a pointer to a full Read of the pack SKILL only if (a) the human
+        names the pack or says to load it, or (b) a recorded failure-retry exists
+        (a Layer 1 retry note naming the pack, a Gate FAIL citing missing pack
+        judgment, or a human sentence that the generalist output was wrong naming
+        the pack). Keyword or semantic match alone MUST NOT trigger a Read.
       
       applies_to: "All user-task modes: *analyze, *express, *bug, *discuss, *learn, *experiment"
       skip_if:
@@ -151,7 +163,7 @@ intent_router_protocol:
         - "No available packs (all Tier 3)"
         - "Framework management commands: *publish, *sync, *sync-add, *sync-list, *status, *harvest, *surplus, *idea-list, *idea-promote, *research status, *research --deep, *test-review, *cancel"
       
-      max_packs: 2  # Load at most 2 packs per session (context budget)
+      max_packs: 2  # Announce at most 2 pointers per session (context budget)
       ranking_when_over_limit: |
         If >2 packs match, select 2 whose descriptions have the highest topical
         overlap with the user's stated task (prefer packs where the description's
@@ -160,17 +172,21 @@ intent_router_protocol:
         Break ties by pack order in pack-registry.yaml (earlier = higher priority).
       
       does_NOT_write_to_handoff: |
-        step4_5 loads pack into conversation context only — it does NOT inject
+        step4_5 announces pointers only — it does NOT load pack content into
+        conversation context and does NOT inject
         the "🔧 Capability Pack References" section into the handoff. That remains
-        step1_5b's responsibility during *design. Blake's 1_5a independently
-        re-detects packs, so Alex and Blake may load different packs for the
+        step1_5b's responsibility during *design. A pointer is not a load:
+        step1_5b must still run its AskUserQuestion to escalate before any pack
+        SKILL is Read. Blake's 1_5a independently
+        re-detects packs, so Alex and Blake may announce different pointers for the
         same task. This is intentional — Blake catches what Alex missed.
       note: |
         step4_5 matches on pack descriptions only; step1_5b matches on keywords+descriptions
         (different mechanism, intentional). step4_5 is lightweight and silent — no user interaction.
-        This does NOT replace step1_5b in *design — step1_5b has the full
+        This does NOT replace step1_5b in *design — step1_5b owns the
         confirmation flow (AskUserQuestion, CONSUMES/PRODUCES chain, install offer).
-        If step4_5 already loaded a pack, step1_5b should detect it and skip re-loading.
+        A step4_5 pointer is not a load: step1_5b must still run its AskUserQuestion
+        before any pack SKILL is Read.
 
   # Standby State Definition (P1 fix from Phase 1)
   standby:

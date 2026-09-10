@@ -102,7 +102,7 @@ If no role is requested, act as a general TAD assistant:
 
 ## Capability Packs (Domain Expertise)
 
-When a user's task matches a capability pack's keywords, read the pack's SKILL.md BEFORE responding. These packs contain research-grounded judgment rules that improve output quality.
+When a user's task matches a capability pack's keywords, announce a pointer — never Read the pack file up front. These packs contain research-grounded judgment rules that improve output quality once loaded on demand.
 
 | Pack | Keywords | SKILL.md Path |
 |------|----------|---------------|
@@ -132,7 +132,7 @@ When a user's task matches a capability pack's keywords, read the pack's SKILL.m
 | rag-retrieval | RAG & retrieval engineering capability pack. Gives AI agents the judgm | `.agents/skills/rag-retrieval/SKILL.md` |
 | synthetic-data | Synthetic data & fine-tune dataset curation capability pack. Gives AI  | `.agents/skills/synthetic-data/SKILL.md` |
 
-**How to use:** When keywords match, read the SKILL.md file. It contains a context detection router that dispatches to `references/*.md` files with specific rules. Follow the pack's Step 0 → Step 1 → Step 2 workflow.
+**How to use:** When keywords match, announce at most 2 pointers (`Pack pointer: {name} — {one-line when}. Path: {SKILL.md}. Do not load unless escalated.`), composed from the registry description/keywords/path. First consult the registry `status`: a pack with `status: frozen` is skipped in auto-match (files stay on disk); a row with missing status counts as active. Escalate a pointer to a full Read only when human-named (the human names the pack or confirms loading it) or on a recorded failure-retry (a written retry note naming the pack). Keyword match alone never loads the SKILL.md file. After escalation, the pack's context detection router dispatches to `references/*.md` files with specific rules. Follow the pack's Step 0 → Step 1 → Step 2 workflow.
 
 **Do NOT load packs preemptively.** Only load when the user's task clearly matches keywords.
 
