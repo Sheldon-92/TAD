@@ -165,9 +165,10 @@ Spec_Compliance_Verification:
   source: "active handoff 的 §9.1 Spec Compliance Checklist（每行：AC 编号 + Verification Method + Expected Evidence）"
   process:
     step1: "读取 active handoff 的 §9.1 表格"
-    step2: "对每一行，实际执行其 Verification Method（grep/命令/脚本）"
-    step3: "对比执行结果与 Expected Evidence → 标记该行 pass / fail"
-    step4_decision: |
+    step2_classify: "classify Method legality before execute — each landing row's Verification Method cell is LEGAL iff exactly one of: runnable command in backticks | evidence path-check | fixture runner | rubric-spawn | light-tier N/A with reason. prose-only Verification Method = FAIL for that row (present-but-prose is NOT the Empty Guard — it is a row FAIL → cannot Gate 3 PASS)."
+    step3: "对每个 LEGAL 行，实际执行其 Verification Method（grep/命令/脚本）；ILLEGAL 行直接记 FAIL，不执行"
+    step4: "对比执行结果与 Expected Evidence → 标记该行 pass / fail"
+    step5_decision: |
       IF 任何一行 FAIL → BLOCK Gate 3（不是 silent pass）。
       IF §9.1 含 test 类 AC（如 npm test / pytest）→ 运行该命令；可选调用 test-runner subagent 补充覆盖率视角。
       IF 所有行 pass → 继续 Gate 3 后续检查项。
@@ -614,7 +615,7 @@ Gate4_Friction_Review:
       - EQUIVALENT_SUBSTITUTE → verify replacement description, equivalence reasoning, and
         evidence path. Self-review as substitute for expert review → REJECT.
       - READY / NOT_APPLICABLE_WITH_REASON → accepted.
-  note: "Alex does NOT re-perform Gate 3 technical validation. This is business-acceptance review of friction handling evidence."
+  note: "Alex does NOT re-perform Gate 3 technical validation. This is business-acceptance review of friction handling evidence. Friction_Review does not waive Method recompute — friction review never substitutes for re-running the §9.1 Verification Methods."
   optional_advisory_checker: |
     Optional advisory smoke alarm (Phase 2):
       bash .tad/hooks/lib/friction-status-check.sh <completion-report.md>
@@ -729,7 +730,7 @@ Decision_Compliance:
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (4 items):
-  - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any)
+  - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Fail-close: cannot Gate 4 PASS if landing Verification Method missing or unrun — Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
   - [ ] Quality evidence complete (BLOCKING per Structural_Subagent_Conditionality):
     - [ ] Code review evidence exists
     - [ ] Security review evidence exists (code/mixed only)
@@ -739,6 +740,9 @@ Critical Check (4 items):
   - [ ] Subagent issues resolved — all P0/P1 from subagent feedback addressed
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
 # Note: Functional acceptance reads from handoff §9 (not hardcoded). Quality evidence is structural role enforcement (see Structural_Subagent_Conditionality).
+# Functional acceptance fail-close detail: for every landing-tier §9.1 row, Gate 4 re-runs the declared Verification Method from the on-disk artifact. A row whose Method is missing, illegal (prose-only), or never executed → Functional acceptance cannot PASS. Blake summary is not Gate 4 evidence — only recomputed command output counts.
+Trust_Curve_Judgment: |
+  Do not expand parallelism, add bots, or claim an unverified capability until that capability's evidence chain has actually run — the Gate 3 §9.1 rows and Gate 4 recompute are the chain. A green verdict on prose-only verification is validation theater, not trust. This is judgment applied at each Gate, not a checklist row and not an L1 principle.
 Evidence: Record in NEXT.md or completion report + evidence files
 Output Format:
   ### Gate 4 Result

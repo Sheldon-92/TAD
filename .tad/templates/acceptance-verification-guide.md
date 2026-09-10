@@ -2,6 +2,13 @@
 
 > Blake's reference guide for generating and executing acceptance criterion verifications.
 > Each Handoff Acceptance Criterion must have at least one runnable verification before Gate 3.
+>
+> **Verification Method legality (2026-09-10 verify-delta):** a landing-tier Method cell is LEGAL
+> iff exactly one of — runnable command in backticks | evidence path-check | fixture runner |
+> rubric-spawn | light-tier N/A with reason (light tiers only). Prose-only cells ("looks OK",
+> "human verified", "manual check" with no command) are ILLEGAL → Gate 3 row FAIL → cannot
+> Gate 3 PASS; Gate 4 cannot PASS if landing Methods missing or unrun. `*bug` mini-handoffs carry
+> the same rule via their one-row `## 9.1 Spec Compliance Checklist` (see bug-path-protocol).
 
 ---
 

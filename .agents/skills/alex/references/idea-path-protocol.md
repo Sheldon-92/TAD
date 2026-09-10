@@ -3,6 +3,7 @@
 idea_path_protocol:
   description: "Lightweight idea capture — discuss briefly, store for later"
   trigger: "Intent Router routes to idea mode"
+  verification_note: "Light tier — Verification Method may be N/A with a one-line reason; never invent fake commands. This note never enters Gate 3/4."
 
   execution:
     step1:

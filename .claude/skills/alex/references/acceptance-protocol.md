@@ -22,10 +22,14 @@ acceptance_protocol:
          - AC 是否在 completion report 中标记完成？
          - AC 的验证方法是否有对应 evidence？
          - 如果 AC 标记未完成 → 记录为"未满足"
-      4. 输出对照表：
-         | AC# | 要求 | Blake 报告状态 | Evidence 存在 | Alex 判定 |
-         |-----|------|---------------|--------------|----------|
-      5. 如有任何 AC 未满足 → 不通过，退回 Blake
+       4. 输出对照表：
+          | AC# | 要求 | Blake 报告状态 | Evidence 存在 | Alex 判定 |
+          |-----|------|---------------|--------------|----------|
+       5. 如有任何 AC 未满足 → 不通过，退回 Blake
+       6. Fail-close on Verification Methods: recompute landing Verification Methods from disk —
+          re-run each landing-tier §9.1 Verification Method against the on-disk artifact instead of
+          trusting Blake's reported output. cannot Gate 4 PASS if landing Verification Method missing or unrun.
+          Blake summary is not Gate 4 evidence — only recomputed command output counts.
     blocking: true
     # ⚠️ ANTI-RATIONALIZATION: "仔细审查了 completion report，功能看起来完全符合"
     # → "看起来符合"≠实际验证。必须输出逐条对照表。

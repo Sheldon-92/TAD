@@ -64,9 +64,11 @@ bug_path_protocol:
         ## Affected Files
         {list of files}
 
-        ## Acceptance Criteria
-        - [ ] Bug no longer reproduces under reported conditions
-        - [ ] No regression in related functionality
+        ## 9.1 Spec Compliance Checklist
+        Mini-handoff AC must include a legal runnable Verification Method — mini-handoff includes §9.1 Spec Compliance Checklist (one row is enough; without this table Gate 3 empty-guard BLOCKS and the Method can never be checked).
+        | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output |
+        |---|---------------------|-------------------|---------------------|-------------------|-----------------|
+        | 1 | Reported symptom fixed, no related regression | post-impl-verifiable | `{repro command or failing-then-passing test, e.g. pytest tests/test_slug.py -k bugfix}` | exit 0, symptom gone under reported conditions | (post-impl) |
 
         ## Blake Instructions
         - This is an express bugfix — no Socratic inquiry or expert review needed

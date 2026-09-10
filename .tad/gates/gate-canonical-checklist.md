@@ -12,6 +12,9 @@ Checklist items:
 - [ ] User identified — ICP 或目标用户已定义（Socratic Q1）. Why ME: 只检查"给谁用"
 - [ ] Scope bounded (including edge cases) — 范围、排除项、边界条件明确（Socratic Q3a/Q3b）. Why ME: 只检查"做什么/不做什么/边界在哪"
 - [ ] Acceptance criteria verifiable — 每个 AC 有可运行的验证方法. Why ME: 只检查"怎么验收"
+  Method grammar (2026-09-10 verify-delta): a legal Verification Method is exactly one of
+  command | path-check | fixture | rubric-spawn | light-tier N/A — prose-only cells are
+  illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS.
 
 Why CE: What / Who / Boundary / How-to-verify — 四个独立需求维度。
 
@@ -35,6 +38,8 @@ Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 Checklist items:
 - [ ] Code/deliverable complete — all handoff tasks done. Why ME: 产出物完整性
 - [ ] §9.1 Spec Compliance — every row verified. Why ME: AC 逐条验证
+  Present-but-prose ≠ empty: any landing row whose Verification Method is prose-only FAILs
+  that row → cannot Gate 3 PASS. Empty §9.1 still BLOCKS (separate guard).
 - [ ] Evidence files exist — per handoff manifest. Why ME: 证据存在性
 - [ ] Evidence replayable (advisory) — 证据采集命令重跑两次应 0 diff。若每次重跑都产生
       全量改动（随机 ID / 时间戳 / commit SHA 入了证据体），则任何一处改动都触发全量重采，
@@ -50,6 +55,8 @@ Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 — 七�
 
 Checklist items:
 - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Why ME: 只检查"功能达标+可交付"
+  Fail-close (2026-09-10 verify-delta): cannot Gate 4 PASS if landing Verification Method missing or unrun.
+  Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
 - [ ] Quality evidence complete (BLOCKING per Structural_Subagent_Conditionality) — 以下 evidence 逐项确认; FAIL must enumerate which are missing:
   - [ ] Code review evidence exists
   - [ ] Security review evidence exists (code/mixed only)

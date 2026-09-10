@@ -563,6 +563,15 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 > The `Verified Output` column is filled by Alex during step1d for pre-impl rows;
 > by Blake during Gate 3 for post-impl rows. Empty Verified Output post step1d
 > with non-empty Verification Method = handoff incomplete.
+>
+> **Verification Method grammar — legal Verification Method (command | path-check | fixture | rubric-spawn | light-tier N/A)** (no new column, no `verify:` key):
+> - LEGAL: runnable command in backticks (`grep -cF -- 'token' path`, `test -f path`, test runner);
+>   evidence path-check (named path + assert command); fixture runner (fixture path + exec command);
+>   rubric-spawn (`spawn independent judge per Rubric Evaluation Protocol…`); `N/A` + one-line reason
+>   ONLY on light-tier artifacts (`*discuss` / `*idea` / `*learn`) that never enter Gate 3/4.
+> - ILLEGAL on landing rows: prose-only cells ("looks OK", "human verified", "manual check" with no
+>   command), empty cells, invented light-tier commands → Gate 3 row FAIL → cannot Gate 3 PASS;
+>   Gate 4 cannot PASS if landing Methods missing or unrun.
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|

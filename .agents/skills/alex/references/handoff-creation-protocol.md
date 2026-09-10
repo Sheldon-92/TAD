@@ -221,6 +221,13 @@ handoff_creation_protocol:
           Method is "spawn independent judge per Rubric Evaluation Protocol against {rubric_ref}
           → verdict: PASS" so Gate 3's Rubric Evaluation Protocol activates.
       empty_guard_reminder: "NEVER leave §9.1 empty — Gate 3 BLOCKS on an empty §9.1 (gate/SKILL.md Spec_Compliance_Empty_Guard)."
+      method_legality: |
+        Every landing-tier §9.1 Verification Method cell must be LEGAL — exactly one of:
+        runnable command in backticks | evidence path-check | fixture runner | rubric-spawn |
+        light-tier N/A with reason (light tiers only). An ILLEGAL (prose-only) Method cell is
+        NOT shippable: rewrite it into a runnable command BEFORE ship — Gate 3 marks the row
+        FAIL (prose-only Verification Method = FAIL) and Gate 4 cannot PASS on missing/unrun
+        Methods. Do NOT invent a new `verify:` column or frontmatter key; tighten the Method cell.
 
     step1a:
       name: "Capability Pack Injection"

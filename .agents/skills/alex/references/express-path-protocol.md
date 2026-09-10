@@ -51,6 +51,10 @@ express_path_protocol:
     - "Knowledge Assessment ceremony (skip_knowledge_assessment defaults to yes; Blake can override unskip per P3.3)"
 
   enforcement: "prompt-level-only"
+  verification_floor: |
+    *express* is landing-tier: skipping e2e is allowed, but express skip-e2e still requires a cheaper runnable check —
+    at least one legal Verification Method (targeted grep, fixture run, or focused test) must remain in §9.1.
+    A §9.1 with zero runnable Methods cannot Gate 3 PASS, even on express.
   forbidden_implementations:
     - "Anti-AR-001: 'express = review-exempt' is a forbidden interpretation"
     - "MUST NOT auto-downgrade Standard TAD handoff to *express via any mechanism"

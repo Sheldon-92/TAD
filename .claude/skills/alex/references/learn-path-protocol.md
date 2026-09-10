@@ -3,6 +3,7 @@
 learn_path_protocol:
   description: "Socratic teaching mode — guide user to understand concepts through questions"
   trigger: "Intent Router routes to learn mode"
+  verification_note: "Light tier — Verification Method may be N/A with a one-line reason; never invent fake commands. This note never enters Gate 3/4."
 
   behavior:
     persona: "Teacher / Mentor (not Solution Lead executing a process)"
