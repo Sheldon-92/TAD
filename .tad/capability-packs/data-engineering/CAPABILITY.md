@@ -3,6 +3,7 @@ name: data-engineering
 description: Data engineering for AI capability pack. Gives AI agents the judgment rules for AI data pipelines — ETL/ELT ingestion (dlt, schema evolution), local-first transformation stacks (DuckDB, Polars, dbt) and train-serve skew defense, orchestration selection (Airflow 3.2 / Dagster 1.13 / Prefect 3.7), data quality gates (Great Expectations v1.0 / Soda Core v4), dimensional modeling and Slowly Changing Dimensions (SCD Type 0-6), and vector + streaming retrieval (metadata filtering, RRF, Kafka/Flink). Research-grounded rules with source citations. Use for any AI data pipeline, feature engineering, warehouse modeling, RAG context-lake, or real-time inference architecture task.
 keywords: ["数据工程", "data engineering", "数据管道", "data pipeline", "ETL", "ELT", "特征工程", "feature engineering", "dbt", "dlt", "DuckDB", "Polars", "数据质量", "data quality", "Great Expectations", "Soda", "编排", "orchestration", "Airflow", "Dagster", "Prefect", "维度建模", "SCD", "slowly changing dimensions", "向量数据库", "vector database", "RAG", "流式处理", "streaming", "Kafka", "Flink", "feature store", "schema evolution"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User data-pipeline task + source/destination description + optional existing pipeline configs, dbt models, warehouse schemas, or RAG/streaming setup

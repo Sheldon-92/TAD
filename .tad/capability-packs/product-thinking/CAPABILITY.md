@@ -3,6 +3,7 @@ name: product-thinking
 description: "Three deep skills that turn any AI agent into a product decision partner. Covers adversarial idea validation, business model generation, and executable product definition across 6 product types. Use for any product strategy, idea validation, business model design, or product definition task."
 keywords: ["product", "strategy", "business", "PMF", "pivot", "产品", "商业", "市场", "idea", "PRD", "business model", "压力测试", "商业模式"]
 type: deep-skill
+status: frozen
 ---
 
 **CONSUMES**: Product idea or problem statement + optional existing market context

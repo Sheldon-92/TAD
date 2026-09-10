@@ -4,6 +4,7 @@ description: "ML model training on cloud GPU capability pack. Covers platform se
 version: 0.1.0
 type: reference-based
 keywords: ["fine-tune", "微调", "LoRA", "QLoRA", "train model", "训练模型", "Colab", "Kaggle", "RunPod", "cloud GPU", "云GPU", "云训练", "training data", "训练数据", "GPU hours", "model training", "模型训练", "personality clone", "个性克隆"]
+status: frozen
 ---
 
 # ML Training Capability Pack

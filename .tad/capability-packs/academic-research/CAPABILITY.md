@@ -4,6 +4,7 @@ description: "Academic research methodology pack for systematic literature revie
 version: 0.1.0
 type: reference-based
 keywords: ["学术", "academic", "论文", "paper", "文献", "literature", "meta-analysis", "元分析", "PRISMA", "systematic review", "系统性综述", "PubMed", "文献综述", "学术研究", "科研"]
+status: frozen
 ---
 
 # Academic Research Capability Pack

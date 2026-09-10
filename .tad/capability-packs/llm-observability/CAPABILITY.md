@@ -3,6 +3,7 @@ name: llm-observability
 description: LLM observability & LLMOps capability pack. Gives AI agents the judgment rules for production-grade distributed tracing, real-time cost attribution & budget governance, OpenTelemetry GenAI semantic conventions, latency/TTFT profiling, prompt registry & versioning, and online evaluation with groundedness & drift detection. Research-grounded rules from LangSmith, Langfuse, Arize Phoenix, Helicone, MLflow, Braintrust, TrueFoundry, vLLM, and the OpenTelemetry GenAI semantic conventions. Use for any LLM monitoring, tracing, cost governance, prompt versioning, latency profiling, or production drift/hallucination task.
 keywords: ["可观测性", "observability", "LLMOps", "监控", "monitoring", "分布式追踪", "tracing", "OpenTelemetry", "OTel", "成本归因", "cost attribution", "token 计费", "延迟", "latency", "TTFT", "提示词版本", "prompt registry", "漂移检测", "drift", "groundedness", "Langfuse", "vLLM"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User observability/LLMOps task + production LLM-or-agent system description + optional existing tracing/cost/registry configs

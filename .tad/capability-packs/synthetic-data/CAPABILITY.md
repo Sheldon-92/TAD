@@ -3,6 +3,7 @@ name: synthetic-data
 description: Synthetic data & fine-tune dataset curation capability pack. Gives AI agents the judgment rules for pretraining/SFT data quality filtering, document-level deduplication, synthetic instruction generation, preference-pair curation, and benchmark contamination detection. Research-grounded rules from Self-Instruct, Evol-Instruct/WizardLM, LSHBloom, distilabel, Axolotl/Unsloth, DPO/RRHF/GRPO, and the ConTAM/CoDeC contamination literature. Use for any synthetic dataset build, fine-tune data prep, dedup pipeline, preference dataset, or contamination audit task.
 keywords: ["合成数据", "synthetic data", "数据集", "dataset", "微调数据", "fine-tune data", "去重", "deduplication", "数据清洗", "data filtering", "Self-Instruct", "Evol-Instruct", "偏好数据", "preference data", "DPO", "污染检测", "contamination", "蒸馏", "distillation", "指令数据", "instruction tuning"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User dataset-curation task + raw corpus / seed tasks / fine-tune data description + target model + optional existing pipeline configs

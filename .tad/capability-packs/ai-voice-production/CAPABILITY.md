@@ -4,6 +4,7 @@ description: "AI voice production judgment for coding agents. Covers TTS tool se
 version: 0.1.0
 type: reference-based
 keywords: ["TTS", "text-to-speech", "语音合成", "voice cloning", "声音克隆", "voice design", "音色设计", "audiobook", "有声书", "podcast", "播客", "dubbing", "配音", "narration", "旁白", "audio production", "音频制作", "voice acting", "语音", "朗读", "prosody"]
+status: frozen
 ---
 
 # AI Voice Production Capability Pack

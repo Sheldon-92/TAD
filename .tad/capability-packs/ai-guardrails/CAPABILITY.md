@@ -3,6 +3,7 @@ name: ai-guardrails
 description: AI guardrails & LLM I/O security capability pack. Gives AI agents the judgment rules for defending LLM and agent pipelines against prompt injection (OWASP LLM01), improper output handling (OWASP LLM05), excessive agency, PII leakage, and unsafe content. Research-grounded rules from OWASP Gen AI Security, Microsoft Presidio, NVIDIA NeMo Guardrails, Meta Llama Guard, Lakera Guard, Rebuff, and Pydantic AI. Use for any guardrail design, prompt-injection defense, PII de-identification, output/tool-call validation, content-moderation, or LLM security review task.
 keywords: ["护栏", "guardrails", "ai security", "提示注入", "prompt injection", "越狱", "jailbreak", "OWASP LLM", "PII", "脱敏", "de-identification", "内容审核", "content moderation", "输出校验", "output validation", "Presidio", "Llama Guard", "NeMo Guardrails", "Lakera", "Rebuff", "LLM05", "excessive agency", "rule of two"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User LLM/agent pipeline description + optional existing guardrail configs + the inputs/outputs/tools the agent touches

@@ -3,6 +3,7 @@ name: knowledge-graph
 description: Knowledge Graph & GraphRAG capability pack. Gives AI agents the judgment rules for building graph-enhanced retrieval systems — Microsoft GraphRAG indexing (Leiden communities, Global/Local/Drift search), LazyGraphRAG vs LightRAG cost selection, LLM knowledge-graph construction (ontology design, extraction prompting), entity resolution & deduplication, graph database selection (Neo4j/Memgraph/FalkorDB, LPG vs RDF-Star), and Text2Cypher/SPARQL-Star query translation. Research-grounded rules from Microsoft Research, Neo4j, LightRAG, OntoDup, and graph database benchmarks. Use for any GraphRAG pipeline, knowledge-graph construction, entity-resolution, graph-DB selection, or graph-query-translation task.
 keywords: ["知识图谱", "knowledge graph", "GraphRAG", "图谱", "图检索", "graph rag", "实体消歧", "entity resolution", "本体", "ontology", "图数据库", "graph database", "Neo4j", "Cypher", "LightRAG", "三元组", "triple", "Leiden", "RDF"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User knowledge-graph / GraphRAG task + corpus description + optional existing graph schema, extraction configs, or DB choice

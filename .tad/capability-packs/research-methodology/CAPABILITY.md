@@ -3,6 +3,7 @@ name: research-methodology
 description: Unified research pipeline for AI agents — 5-phase (Plan→Source→Curate→Analyze→Output) with state-tracking, saturation detection, anti-hallucination guards, PIVOT/REFINE logic, and QCE output. Invoke when user says "研究 X", "研究一下", "深入了解", "调研", "landscape", "对比研究", "deep research", or similar multi-source synthesis tasks.
 keywords: ["研究", "research", "调研", "landscape", "对比研究", "deep research", "分析", "综述", "竞品", "市场调研", "技术调研"]
 type: orchestration-router
+status: frozen
 ---
 
 # Research Methodology Capability Pack v1.0

@@ -3,6 +3,7 @@ name: rag-retrieval
 description: RAG & retrieval engineering capability pack. Gives AI agents the judgment rules a senior retrieval engineer applies automatically — chunking strategy selection, embedding model choice, vector database routing, hybrid search with Reciprocal Rank Fusion, two-stage cross-encoder reranking, GraphRAG, and reference-based + LLM-as-judge RAG evaluation. Research-grounded rules with specific numbers from chunking benchmarks, embedding/reranker/vector-DB comparisons, and Ragas-style evaluation. Use for any RAG pipeline design, retrieval quality debugging, chunking/embedding/vector-DB selection, hybrid search fusion, reranker selection, or RAG eval task.
 keywords: ["RAG", "检索增强", "retrieval", "检索", "chunking", "分块", "embedding", "嵌入", "向量数据库", "vector database", "reranker", "重排序", "hybrid search", "混合检索", "RRF", "BM25", "pgvector", "GraphRAG", "faithfulness", "向量检索"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User RAG/retrieval task + corpus description (size, format, language, domain) + optional existing pipeline config (chunker, embedder, vector DB, reranker, eval suite)

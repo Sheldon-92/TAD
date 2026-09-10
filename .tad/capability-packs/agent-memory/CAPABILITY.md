@@ -3,6 +3,7 @@ name: agent-memory
 description: Agent memory and context engineering capability pack. Gives AI agents the judgment rules for memory architecture (CoALA working/episodic/semantic/procedural layers), context compaction strategy selection, MemGPT/Letta virtual context management, Mem0 extract-reconcile pipelines, LangGraph state persistence and time-travel debugging, and Anthropic prompt-caching topology. Research-grounded rules from MemGPT/Letta, Mem0, LangGraph, the CoALA framework, and Anthropic caching docs. Use for any agent memory design, context-window optimization, checkpointing, or long-horizon statefulness task.
 keywords: ["记忆", "agent memory", "智能体记忆", "上下文工程", "context engineering", "compaction", "压缩", "checkpoint", "检查点", "MemGPT", "Letta", "Mem0", "prompt caching", "提示缓存", "CoALA", "时间旅行", "time travel", "LangGraph", "长期记忆", "context window", "上下文窗口"]
 type: reference-based
+status: frozen
 ---
 
 **CONSUMES**: User agent description + memory/context requirements + optional existing memory configs, checkpointer setup, or prompt structure

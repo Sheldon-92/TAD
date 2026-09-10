@@ -4,6 +4,7 @@ description: "Professional video production judgment for AI coding agents. Cover
 version: 0.1.0
 type: reference-based
 keywords: ["video", "animation", "motion design", "HyperFrames", "Remotion", "视频", "动画", "剪辑", "音频"]
+status: frozen
 ---
 
 # Video Creation Capability Pack
