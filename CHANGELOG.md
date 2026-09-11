@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.44.5] - 2026-09-11
+
+### Added / Changed
+
+- **Runnable Verification Method fail-close (*bug / *express)**:
+  - Landing-tier Verification Method cells must be a legal runnable form; Gate 3 fail-closes on prose-only Methods.
+  - Landed on `main` as `7048b835`. Gate 4 PASS: `.tad/evidence/reviews/2026-09-10-gate4-verify-delta.md`. Archives: `.tad/archive/handoffs/{HANDOFF,COMPLETION}-20260910-verify-delta.md`.
+- **Pack loader thin on-demand pointer + freeze skip**:
+  - Keyword/auto-match announces at most 2 pointers and does not Read pack `SKILL.md`; registry `status: frozen` skips auto-match with files left on disk; escalate only when human-named or a recorded failure-retry exists.
+  - Landed as `9c33e2e5`. Gate 4 PASS: `.tad/archive/handoffs/GATE4-20260910-pack-loader-thin-ondemand.md`.
+- **Freeze 14 capability packs (KEEP-POINTER 11 remain active)**:
+  - CAPABILITY first-fence `status: frozen` + live `scan-packs.sh` registry regen (14 frozen / 11 active). Files stay. AGENTS rows stay.
+  - Landed as `eb09597a`. Gate 4 PASS: `.tad/archive/handoffs/GATE4-20260910-pack-freeze-inventory.md`.
+- **KEEP11 Knife 1 CLI/SHA refresh (two packs only)**:
+  - `code-security` + `web-deployment` banners dated; checkout SHA re-pin. Remaining KEEP11 knives are **not** in this patch.
+  - Landed as `63cf6291`. Gate 4 PASS: `.tad/archive/handoffs/GATE4-20260911-keep11-knife1-cli-refresh.md`.
+
+
 ## [2.44.4] - 2026-09-09
 
 ### Added / Changed

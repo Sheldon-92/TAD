@@ -1,6 +1,6 @@
 {
   "name": "tad-framework",
-  "version": "2.44.4",
+  "version": "2.44.5",
   "description": "Triangle Agent Development - Two-Agent Quality Framework for AI-assisted development",
   "type": "module",
   "bin": {

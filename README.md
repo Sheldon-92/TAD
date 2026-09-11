@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.44.4 — Knowledge-Seam Isolation + Opt-in PK Quarantine**
+**Version 2.44.5 — Verify-Delta + Pack Loader/Freeze + KEEP11 Knife 1**
 
-> v2.44.4 release: knowledge-seam isolation (brain-index not synced; install pk README-only; --quarantine-pk opt-in) — see [CHANGELOG](CHANGELOG.md#2444---2026-09-09).
+> v2.44.5 release: runnable Verification Method fail-close; thin pack loader + freeze skip; freeze 14 packs; KEEP11 knife 1 (code-security + web-deployment only) — see [CHANGELOG](CHANGELOG.md#2445---2026-09-11).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -187,7 +187,7 @@ official tagged installer; it never runs unattended.
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.44.4
+# Should show: 2.44.5
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -503,6 +503,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.44.4 — Knowledge-Seam Isolation + Opt-in PK Quarantine**
+**Welcome to TAD v2.44.5 — Verify-Delta + Pack Loader/Freeze + KEEP11 Knife 1**
 
 *AI does the work. Humans guard the value.*
