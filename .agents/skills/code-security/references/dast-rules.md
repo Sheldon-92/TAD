@@ -1,5 +1,6 @@
 # DAST Scanning Rules
 <!-- capability: dast_scan -->
+<!-- Verified against Nuclei v3.11.1 on 2026-09-11 via docs https://docs.projectdiscovery.io/tools/nuclei (CLI ABSENT on impl host). `-u` / `-update-templates` / `-as` flags unchanged upstream. ZAP/Nikto via docs https://www.zaproxy.org/docs/ and https://github.com/sullo/nikto (docker ABSENT on impl host). -->
 
 ## Quick Rule Index
 
@@ -85,7 +86,7 @@ Severity mapping for pipeline gating:
 
 ### D4: Rate Limiting to Protect Infrastructure
 
-Always set rate limits to avoid overwhelming the target. Nuclei v3 (current v3.8.0, released 2026-04-18) has **three** distinct throttling knobs — do not conflate them:
+Always set rate limits to avoid overwhelming the target. Nuclei v3 (current v3.11.1, released 2026-08-08) has **three** distinct throttling knobs — do not conflate them:
 
 | Flag | Controls | v3 default |
 |------|----------|-----------|
@@ -93,7 +94,7 @@ Always set rate limits to avoid overwhelming the target. Nuclei v3 (current v3.8
 | `-c` / `-concurrency` | Templates run in parallel | **10** |
 | `-bs` / `-bulk-size` | Hosts scanned in parallel **per template** | **25** |
 
-> ⚠️ **Precedence rule**: `-rate-limit` takes PRECEDENCE over `-c` and `-bs`. Actual req/s can never exceed `-rl` regardless of how high concurrency or bulk-size are set. So `-rl` is the real safety throttle; `-c`/`-bs` only tune how that budget is distributed. (Source: docs.projectdiscovery.io Nuclei running docs, retrieved 2026-06-13.)
+> ⚠️ **Precedence rule**: `-rate-limit` takes PRECEDENCE over `-c` and `-bs`. Actual req/s can never exceed `-rl` regardless of how high concurrency or bulk-size are set. So `-rl` is the real safety throttle; `-c`/`-bs` only tune how that budget is distributed. (Source: docs.projectdiscovery.io Nuclei running docs, retrieved 2026-09-11.)
 
 ```bash
 # Default: 150 req/s, concurrency 10, bulk-size 25 (Nuclei v3 defaults)

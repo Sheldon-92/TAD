@@ -9,6 +9,7 @@ type: reference-based
 **PRODUCES**: Applied security judgment rules + SARIF scan output + prioritized triage plan (P0-P3) + remediation actions + CI/CD gate configs
 
 # Code Security Capability Pack
+<!-- Verified against Semgrep v1.176.0 / Nuclei v3.11.1 / Gitleaks 8.30.1 / TruffleHog v3.97.4 / Checkov 3.3.16 / OSV-Scanner v2.5.1 / Grype v0.118.0 / Trivy v0.74.0 docs on 2026-09-11 via docs (CLIs ABSENT on impl host). Subcommands re-checked; only TruffleHog `--only-verified` → `--results=verified` renamed (see secret-detection-rules.md). -->
 
 **Version**: 0.1.0
 **Compatibility**: Claude Code (Phase 1); Codex / Cursor / Gemini in Phase 3
@@ -150,11 +151,11 @@ Produce a structured security review:
 
 | Tool | Install | Primary Use (current version) | Exit Code (fail) |
 |------|---------|-------------|-------------------|
-| semgrep | `pip install semgrep` or `brew install semgrep` | Multi-language SAST; v1.163.0 (2026-05-27) `--pro` interfile taint | 1 |
-| nuclei | `go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest` | Template-based DAST; v3.8.0 (2026-04-18), default `-rate-limit 150` | 1 |
+| semgrep | `pip install semgrep` or `brew install semgrep` | Multi-language SAST; v1.176.0 (2026-09-01) `--pro` interfile taint | 1 |
+| nuclei | `go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest` | Template-based DAST; v3.11.1 (2026-08-08), default `-rate-limit 150` | 1 |
 | gitleaks | `brew install gitleaks` | Fast secret detection, pre-commit | 1 |
 | trufflehog | `brew install trufflehog` | Deep secret detection with verification | 183 |
 | checkov | `pip install checkov` | IaC security lint, 1000+ policies | 1 |
-| osv-scanner | `go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest` | OSS vuln DB (Google); v2 adds container + transitive (v2.3.5) | 1 |
+| osv-scanner | `go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest` | OSS vuln DB (Google); v2 adds container + transitive (v2.5.1, 2026-08-17) | 1 |
 | grype | `brew install grype` | Container/SBOM vulnerability scan | 1 |
 | trivy | `brew install trivy` | All-in-one: fs, container, IaC, SBOM | 1 |

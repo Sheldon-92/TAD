@@ -1,5 +1,6 @@
 # Rollback Strategy Rules
 <!-- capability: rollback_strategy -->
+<!-- Verified against Vercel CLI 59.10.0 (`vercel rollback` per https://vercel.com/docs/cli/rollback) + flyctl v0.4.99 (`fly releases`, `fly deploy --image` per https://fly.io/docs/flyctl) + Docker CLI docs on 2026-09-11 (CLIs ABSENT on impl host). `docker build/push/run` unchanged upstream. -->
 
 ## Quick Rule Index
 

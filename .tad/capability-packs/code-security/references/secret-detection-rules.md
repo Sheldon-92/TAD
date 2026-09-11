@@ -1,10 +1,11 @@
 # Secret Detection Rules
 <!-- capability: secret_detection -->
-<!-- Verified against gitleaks 8.30.1 on 2026-08-16. ⚠️ Subcommands changed in 8.x:
+<!-- Verified against gitleaks 8.30.1 + TruffleHog v3.97.4 on 2026-09-11 via docs https://github.com/gitleaks/gitleaks and https://github.com/trufflesecurity/trufflehog (CLIs ABSENT on impl host). ⚠️ Subcommands changed in 8.x:
      `protect` and `detect` NO LONGER EXIST — they are now `git` / `dir` / `stdin`,
-     and `--source <path>` became a positional argument. A stale command here fails
-     with "unknown command", i.e. a security step that silently does nothing.
-     When bumping gitleaks, re-verify every command in this file actually runs. -->
+     and `--source <path>` became a positional argument. TruffleHog `--only-verified`
+     is likewise GONE — it is now `--results=verified`. A stale command here fails
+     or silently does nothing, i.e. a security step that silently does nothing.
+     When bumping gitleaks/trufflehog, re-verify every command in this file actually runs. -->
 
 ## Quick Rule Index
 
@@ -16,7 +17,7 @@
 | SE4 | TruffleHog `--fail` flag: exit 183 blocks CI on verified leaked credentials | ci-pipeline |
 | SE5 | Inline suppression: `# gitleaks:allow` with mandatory review | suppression |
 | SE6 | Remediation order: rotate FIRST, then clean code, then purge history | incident |
-| SE7 | Verified vs unverified: TruffleHog `--only-verified` for active credential detection | triage |
+| SE7 | Verified vs unverified: TruffleHog `--results=verified` for active credential detection | triage |
 
 ---
 
@@ -106,7 +107,7 @@ TruffleHog verifies secrets are actually active by testing them against services
 
 ```bash
 # CI pipeline: scan and fail on verified leaks
-trufflehog git file://. --only-verified --fail --json > trufflehog-results.json
+trufflehog git file://. --results=verified --fail --json > trufflehog-results.json
 ```
 
 Exit codes:
@@ -122,26 +123,26 @@ Exit 183 specifically means: TruffleHog found a credential AND confirmed it work
 # GitHub Actions
 - name: Secret scan (TruffleHog)
   run: |
-    trufflehog git file://. --only-verified --fail --json > trufflehog.json
+    trufflehog git file://. --results=verified --fail --json > trufflehog.json
   # Exit 183 automatically fails this step
 ```
 
 TruffleHog scan modes:
 ```bash
 # Git repo (all history)
-trufflehog git file://. --only-verified --json
+trufflehog git file://. --results=verified --json
 
 # Remote repo
-trufflehog git https://github.com/org/repo --only-verified --json
+trufflehog git https://github.com/org/repo --results=verified --json
 
 # Filesystem (no git history)
-trufflehog filesystem /path/to/code --only-verified --json
+trufflehog filesystem /path/to/code --results=verified --json
 
 # S3 bucket
-trufflehog s3 --bucket=my-bucket --only-verified --json
+trufflehog s3 --bucket=my-bucket --results=verified --json
 ```
 
-**Anti-pattern**: Using TruffleHog without `--only-verified`. Unverified findings have high false-positive rate. Use Gitleaks for broad pattern matching, TruffleHog specifically for verification of active credentials.
+**Anti-pattern**: Using TruffleHog without `--results=verified`. Unverified findings have high false-positive rate. Use Gitleaks for broad pattern matching, TruffleHog specifically for verification of active credentials.
 
 ### SE5: Inline Suppression Rules
 
@@ -226,7 +227,7 @@ Not all detected secrets are equally urgent:
 
 ```bash
 # TruffleHog: only verified (high confidence)
-trufflehog git file://. --only-verified --json
+trufflehog git file://. --results=verified --json
 
 # Gitleaks: all patterns (broad, includes unverified)
 gitleaks git . --report-format json --report-path findings.json -v

@@ -1,5 +1,6 @@
 # Platform Selection Rules
 <!-- capability: platform_selection -->
+<!-- Verified against Vercel CLI 59.10.0 / Netlify CLI v27.5.2 / flyctl v0.4.99 docs on 2026-09-11 via docs https://vercel.com/docs/cli, https://github.com/netlify/cli and https://fly.io/docs/flyctl (CLIs ABSENT on impl host). `vercel --prod/login/link/env/rollback` + `netlify deploy --prod/login` + `fly deploy` unchanged upstream. -->
 
 ## Quick Rule Index
 

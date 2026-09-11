@@ -1,11 +1,12 @@
 # SAST Scanning Rules
 <!-- capability: sast_scan -->
+<!-- Verified against Semgrep v1.176.0 on 2026-09-11 via docs https://semgrep.dev/docs (CLI ABSENT on impl host). `semgrep ci` / `semgrep scan` subcommands unchanged upstream. -->
 
 ## Quick Rule Index
 
 | # | Rule | Scope |
 |---|------|-------|
-| S1 | Default tool: Semgrep v1.163.0; `semgrep ci` for CI, `semgrep scan` for local, `--pro` for interfile | tool-selection |
+| S1 | Default tool: Semgrep v1.176.0; `semgrep ci` for CI, `semgrep scan` for local, `--pro` for interfile | tool-selection |
 | S2 | Rule sets: `p/ci` for general, `p/security-audit` for deep, `p/owasp-top-ten` for compliance | config |
 | S3 | Diff-aware scanning: GitHub Actions auto-diffs on `pull_request` (no env var); set SEMGREP_BASELINE_REF=main only on Jenkins/GitLab | ci-pipeline |
 | S4 | Taint mode: `mode: taint` + `--pro` interfile (cross-file) data-flow for real SQLi/SSRF flows | custom-rules |
@@ -30,7 +31,7 @@ semgrep scan --config auto .
 semgrep ci
 ```
 
-Semgrep covers 30+ languages with 2000+ free community rules (current engine: **v1.163.0, 2026-05-27**). It is the correct default because:
+Semgrep covers 30+ languages with 2000+ free community rules (current engine: **v1.176.0, 2026-09-01**). It is the correct default because:
 - Zero config needed (`--config auto` selects rules by detected language)
 - Fast enough for PR gates (<30s on most repos) — recent Community Edition releases cut scan time **~25-30%** via parallel rule parsing + prefiltering
 - SARIF output for GitHub Security tab
@@ -129,7 +130,7 @@ semgrep scan --config ./semgrep-rules/ .
 semgrep scan --pro --config ./semgrep-rules/ .
 ```
 
-The redesigned Pro interfile engine gives **~20-40% taint-analysis perf improvement** and may shift the true/false-positive set (re-baseline after enabling). (Source: semgrep.dev release notes, retrieved 2026-06-13.)
+The redesigned Pro interfile engine gives **~20-40% taint-analysis perf improvement** and may shift the true/false-positive set (re-baseline after enabling). (Source: semgrep.dev release notes, retrieved 2026-09-11.)
 
 **Anti-pattern**: Writing pattern-only rules for injection vulnerabilities. Without taint tracking, you get false positives on every SQL query, not just ones with user input flowing in. Second anti-pattern: relying on default single-file taint mode and concluding "no SQLi" — the real flow crosses files and is only visible with `--pro` interfile analysis.
 

@@ -64,7 +64,7 @@ After loading the relevant reference file(s):
 Output format per finding:
 ```
 [P0] Rule 3 (ci-cd): GitHub Actions uses actions/checkout@v4 tag — supply chain risk.
--> Pin to SHA: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+-> Pin to SHA: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
 [P1] Rule 2 (environment): API key stored as repo-wide secret — overly broad access.
 -> Use GitHub Environment secrets scoped to production environment only.

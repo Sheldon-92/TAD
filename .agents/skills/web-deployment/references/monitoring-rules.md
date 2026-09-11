@@ -1,5 +1,6 @@
 # Monitoring Rules
 <!-- capability: monitoring -->
+<!-- Verified against Docker CLI docs + louislam/uptime-kuma:1 on 2026-09-11 via docs https://docs.docker.com/reference/cli/docker/ (CLI ABSENT on impl host). `docker run -d -p … -v … --name … <image>` form unchanged upstream. -->
 
 ## Quick Rule Index
 

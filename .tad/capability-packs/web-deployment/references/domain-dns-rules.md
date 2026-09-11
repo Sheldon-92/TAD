@@ -1,5 +1,6 @@
 # Domain & DNS Rules
 <!-- capability: domain_dns -->
+<!-- Verified against Vercel CLI 59.10.0 / Netlify CLI v27.5.2 / flyctl v0.4.99 / Certbot docs on 2026-09-11 via docs https://vercel.com/docs/cli, https://github.com/netlify/cli, https://fly.io/docs/flyctl and https://eff-certbot.readthedocs.io (CLIs ABSENT on impl host). Fix: `flyctl certs show` does not exist upstream — `flyctl certs check` (cert + DNS status). `certbot --nginx` / `certbot renew --dry-run` unchanged upstream. -->
 
 ## Quick Rule Index
 
@@ -50,7 +51,7 @@ DNS records to add:
 **Fly.io**:
 ```bash
 flyctl certs add example.com
-flyctl certs show example.com  # shows required DNS records
+flyctl certs check example.com  # shows certificate + required DNS status
 ```
 
 **General process** (10-20 minutes):

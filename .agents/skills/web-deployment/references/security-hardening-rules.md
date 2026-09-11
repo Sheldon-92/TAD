@@ -1,5 +1,6 @@
 # Security Hardening Rules
 <!-- capability: security_hardening -->
+<!-- Verified against Checkov 3.3.16 + Grype v0.118.0 + `gh attestation verify` docs on 2026-09-11 via docs https://www.checkov.io, https://github.com/anchore/grype and https://cli.github.com/manual/gh_attestation_verify (CLIs ABSENT on impl host; host gh 2.46.0 lacks the `attestation` subcommand — needs newer gh). Snyk/Certbot via docs https://docs.snyk.io and https://eff-certbot.readthedocs.io. -->
 
 ## Quick Rule Index
 
@@ -275,7 +276,7 @@ gh attestation verify dist/myapp.tar.gz --repo <owner/repo> \
 gh attestation verify oci://ghcr.io/<owner>/<app>@sha256:<digest> --repo <owner/repo>
 ```
 
-This extends the cross-cutting **Immutable Deploys + OIDC** rule with end-to-end provenance: OIDC proves *who* authenticated, immutability fixes *what* ran, and attestation proves the artifact *came from your pipeline and was not swapped in transit*. Source: docs.github.com Artifact Attestations (retrieved 2026-06-13).
+This extends the cross-cutting **Immutable Deploys + OIDC** rule with end-to-end provenance: OIDC proves *who* authenticated, immutability fixes *what* ran, and attestation proves the artifact *came from your pipeline and was not swapped in transit*. Source: docs.github.com Artifact Attestations (retrieved 2026-09-11).
 
 ---
 

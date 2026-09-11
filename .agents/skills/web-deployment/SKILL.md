@@ -9,6 +9,7 @@ type: reference-based
 **PRODUCES**: Applied deployment judgment rules + CI/CD workflow configs + environment setup + monitoring configs + rollback SOPs + security headers + DNS records
 
 # Web Deployment Capability Pack
+<!-- Verified against git 2.47.3 + actions/checkout v4.1.7@692973e3d937129bcbf40652eb9f2f61becf3332 on 2026-09-11 (CLIs present on impl host; SHA re-resolved live via scripts/find-action-sha.sh). actionlint/zizmor/dotenvx via docs https://github.com/rhysd/actionlint, https://docs.zizmor.sh, https://dotenvx.com (CLIs ABSENT on impl host). -->
 
 **Version**: 0.1.0
 **Compatibility**: Claude Code (Phase 1); Codex / Cursor / Gemini in Phase 3
@@ -73,7 +74,7 @@ After loading the relevant reference file(s):
 Output format per finding:
 ```
 [P0] Rule 3 (ci-cd): GitHub Actions uses actions/checkout@v4 tag — supply chain risk.
--> Pin to SHA: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+-> Pin to SHA: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
 [P1] Rule 2 (environment): API key stored as repo-wide secret — overly broad access.
 -> Use GitHub Environment secrets scoped to production environment only.

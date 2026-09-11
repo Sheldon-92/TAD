@@ -1,5 +1,6 @@
 # Environment Configuration Rules
 <!-- capability: environment_config -->
+<!-- Verified against git 2.47.3 + Docker CLI docs + Vault/AWS/Azure/1Password/dotenvx CLI docs on 2026-09-11 (git present on impl host; docker + secret-manager CLIs ABSENT — docs https://docs.docker.com/reference/cli/docker/, https://developer.hashicorp.com/vault/docs/commands, https://docs.aws.amazon.com/cli/, https://learn.microsoft.com/en-us/cli/azure/, https://developer.1password.com/docs/cli, https://dotenvx.com). `docker build/push/run` + `vault kv get` + `aws secretsmanager get-secret-value` + `az keyvault secret show` + `op read` unchanged upstream. -->
 
 ## Quick Rule Index
 

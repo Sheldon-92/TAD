@@ -1,5 +1,6 @@
 # Security Hardening Rules
 <!-- capability: security_hardening -->
+<!-- Verified against Checkov 3.3.16 + Grype v0.118.0 + `gh attestation verify` docs on 2026-09-11 via docs https://www.checkov.io, https://github.com/anchore/grype and https://cli.github.com/manual/gh_attestation_verify (CLIs ABSENT on impl host; host gh 2.46.0 lacks the `attestation` subcommand — needs newer gh). Snyk/Certbot via docs https://docs.snyk.io and https://eff-certbot.readthedocs.io. -->
 
 ## Quick Rule Index
 
@@ -12,6 +13,7 @@
 | SH5 | Rate limiting at the edge, not just application layer | API and login endpoints |
 | SH6 | Platform-specific header configuration via config files | Vercel / Netlify / Next.js |
 | SH7 | Cookie security: Secure + HttpOnly + SameSite=Strict | Authentication cookies |
+| SH8 | Verify artifact attestations before deploy — fail closed on unsigned artifacts | Release / supply-chain gate |
 
 ---
 
@@ -176,14 +178,18 @@ When protecting APIs and login endpoints, rate limit at the edge (before traffic
 // middleware.ts
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { ipAddress } from '@vercel/functions';   // NextRequest.ip/.geo were REMOVED in Next.js 15
+import type { NextRequest } from 'next/server';
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(60, '1 m'),
 });
 
-export async function middleware(request) {
-  const ip = request.ip ?? '127.0.0.1';
+export async function middleware(request: NextRequest) {
+  // `request.ip` was removed in Next.js 15 (vercel/next.js PR #68379) — it is now undefined.
+  // On Vercel, read the client IP via @vercel/functions instead.
+  const ip = ipAddress(request) ?? '127.0.0.1';
   const { success } = await ratelimit.limit(ip);
   if (!success) {
     return new Response('Too Many Requests', { status: 429 });
@@ -255,6 +261,23 @@ res.cookie('session', token, {
 - `sameSite: 'strict'` — Default for auth cookies. Use `'lax'` only if cross-site navigation is required.
 - Never store sensitive data directly in cookies. Store a session ID that references server-side data.
 
+### SH8: Verify Artifact Attestations Before Deploy (Fail Closed)
+
+Header hardening protects the served response; **attestation verification** protects what you ship onto the box. This is the deploy-time consumer side of CI12 (which generates the attestation in CI). **GitHub Artifact Attestations** are built on **Sigstore** (ephemeral ~10-minute signing certs) with the **Rekor** transparency log, binding the artifact **digest** to a **SLSA build-provenance** predicate.
+
+The deploy step MUST verify provenance and **fail closed** if there is no valid attestation for the expected repo — an unsigned artifact is indistinguishable from a tampered one:
+
+```bash
+# Verify a release artifact before promoting it (fails non-zero if unsigned/wrong repo):
+gh attestation verify dist/myapp.tar.gz --repo <owner/repo> \
+  || { echo "[P0] no valid attestation — refusing to deploy"; exit 1; }
+
+# Verify a container image by digest:
+gh attestation verify oci://ghcr.io/<owner>/<app>@sha256:<digest> --repo <owner/repo>
+```
+
+This extends the cross-cutting **Immutable Deploys + OIDC** rule with end-to-end provenance: OIDC proves *who* authenticated, immutability fixes *what* ran, and attestation proves the artifact *came from your pipeline and was not swapped in transit*. Source: docs.github.com Artifact Attestations (retrieved 2026-09-11).
+
 ---
 
 ## Anti-Patterns
@@ -266,3 +289,4 @@ res.cookie('session', token, {
 - **CSP enforce without report-only phase**: Will break third-party scripts, analytics, and widgets. Always test with report-only first.
 - **Cloudflare SSL "Flexible" mode**: Browser sees HTTPS padlock but Cloudflare-to-origin is plaintext HTTP. Use Full (Strict).
 - **Manual certificate management**: Certbot auto-renews. Manual cert management = expired certs at 2 AM.
+- **Deploying an unattested artifact**: an artifact with no SLSA provenance can't be distinguished from a tampered one. Gate deploy on `gh attestation verify ... --repo <owner/repo>` and fail closed.

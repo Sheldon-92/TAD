@@ -1,5 +1,6 @@
 # IaC Security Linting Rules
 <!-- capability: iac_security_lint -->
+<!-- Verified against Checkov 3.3.16 on 2026-09-11 via docs https://www.checkov.io (CLI ABSENT on impl host). `-d` / `-f` / `--framework` / `--skip-check` flags unchanged upstream. Hadolint via docs https://github.com/hadolint/hadolint (CLI ABSENT on impl host). -->
 
 ## Quick Rule Index
 

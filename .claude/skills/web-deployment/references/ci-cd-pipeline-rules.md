@@ -1,5 +1,6 @@
 # CI/CD Pipeline Rules
 <!-- capability: ci_cd_pipeline -->
+<!-- Verified against actions/checkout v4.1.7@692973e3d937129bcbf40652eb9f2f61becf3332 + Zizmor v1.30.0 on 2026-09-11 (SHA re-resolved live via scripts/find-action-sha.sh; zizmor via docs https://docs.zizmor.sh, CLI ABSENT on impl host). `zizmor <path>` + `unpinned-uses`/`impostor-commit`/`template-injection`/`excessive-permissions` audits confirmed in upstream usage docs. -->
 
 ## Quick Rule Index
 
@@ -10,7 +11,7 @@
 | CI3 | Scoped secrets per environment, not repo-wide | Secret management |
 | CI4 | Matrix builds for OS x Node version coverage | Multi-platform support |
 | CI5 | Deployment gates with manual reviewers for production | Production deploys |
-| CI6 | Cache node_modules + build artifacts with actions/cache@v4 | Build optimization |
+| CI6 | Cache node_modules + build artifacts with actions/cache, pinned to the current v4-line SHA | Build optimization |
 | CI7 | Parallel stages for independent jobs (lint, typecheck, test) | Pipeline speed |
 | CI8 | Concurrency groups to prevent parallel deploy conflicts | Deploy safety |
 | CI9 | tj-actions/changed-files (CVE-2025-30066) — the dated incident behind SHA-pinning | GitHub Actions workflows |
@@ -60,7 +61,7 @@ When using GitHub Actions, NEVER reference actions by tag. Tags are mutable — 
 
 **RIGHT**:
 ```yaml
-- uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.7
+- uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
 - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b  # v4.0.3
 ```
 
@@ -179,21 +180,21 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - run: npm ci
       - run: npm run lint
 
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - run: npm ci
       - run: npx tsc --noEmit
 
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - run: npm ci
       - run: npm test -- --coverage
 
