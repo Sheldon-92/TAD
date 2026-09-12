@@ -2,6 +2,11 @@
 
 > Reusable patterns for acceptance criteria design, verification command correctness, and dry-run discipline.
 
+### Process tax-cut: AC realism — 2026-09-12
+- **Discovery**: Vacuous ACs (unmodified-repo green, empty-set green, whole-file grep, exit-0 vs mandated BLOCK) burn Gate 2 amend rounds (knowledge-seam R2→R4).
+- **Action**: Before locking Gate 2, paste/apply `docs/process-tax-cut.md` §1 (also loaded via `patterns/process-tax-cut.md`). Every landing Method is exactly one legal kind; dry-run on the live baseline; known-BAD must FAIL.
+- **failure_mode**: Naive default: ship ACs that would PASS on the unmodified tree or an empty `git ls-files` set. Why wrong: Gate 2 then spends rounds amending unsatisfiable or theater checks instead of reviewing the design.
+
 ---
 
 ### Alex Handoff AC Design Rules - 2026-04-14

@@ -9,6 +9,11 @@
 > "human verified", "manual check" with no command) are ILLEGAL → Gate 3 row FAIL → cannot
 > Gate 3 PASS; Gate 4 cannot PASS if landing Methods missing or unrun. `*bug` mini-handoffs carry
 > the same rule via their one-row `## 9.1 Spec Compliance Checklist` (see bug-path-protocol).
+>
+> **AC realism** (P2 tax-cut): before treating a Method as locked, apply `docs/process-tax-cut.md` §1
+> (also `patterns/process-tax-cut.md`). Vacuous if it would PASS on the unmodified repo, an empty
+> `git ls-files` set, a whole-file grep with the sentence in the wrong section, or `exit 0` when the
+> contract mandates BLOCK. Known-GOOD must PASS; known-BAD must FAIL.
 
 ---
 

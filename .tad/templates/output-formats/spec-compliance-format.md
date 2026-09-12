@@ -31,3 +31,13 @@
 - Implementation exists but does not match AC description
 - File mentioned in AC was not created or modified
 - Feature partially implemented but missing critical behavior
+
+## Layer 2 dirty-tree adjudicate (P2 tax-cut)
+
+Independent review is **required**. Before raising **P0** on a dirty worktree, paste/apply
+`docs/process-tax-cut.md` §2 (also `patterns/process-tax-cut.md`):
+
+1. Diff **this task’s pathspec** vs the finding path. Outside pathspec → not this knife unless a whole-tree fence was contracted.
+2. Cross-check prior knives’ known dirty patterns (NEXT/PROJECT_CONTEXT riders, leftover twins, judge bundles, gitignored fixtures). Same class already recorded → **FALSE POSITIVE (pre-existing)** + pointer — do not mint a new P0.
+3. Still write the finding. Adjudication is a label, not a skip of the second reviewer.
+4. Record: `{path} | P0 vs FALSE_POSITIVE | pointer or “in-delta”`.

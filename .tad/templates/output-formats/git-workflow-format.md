@@ -20,6 +20,7 @@
 - Force pushing to shared branches
 - Long-lived feature branches (>1 week)
 - Unsigned commits on protected branches
+- Treating pre-existing dirty-tree files **outside this knife’s pathspec** as this-commit P0 (adjudicate per `docs/process-tax-cut.md` §2; still record the finding)
 
 ## Branch Naming
 

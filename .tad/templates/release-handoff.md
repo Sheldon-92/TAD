@@ -63,6 +63,11 @@
 
 ## Gate Criteria
 
+### Gate 2: Design Completeness (process)
+
+Process Gate 2 PASS ⇔ **two independent review files on disk** (P0=0 or sanctioned). Do **not**
+block dispatch on a human typing `/gate 2`. Role switch is still `当 Blake`. See `docs/process-tax-cut.md` §3.
+
 ### Gate 3: Release Quality
 - [ ] Tests pass
 - [ ] Build succeeds

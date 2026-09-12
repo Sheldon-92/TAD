@@ -61,6 +61,8 @@ gate4_delta: []
 
 **Alex确认**: 我已验证所有设计要素，Blake可以独立根据本文档完成实现。
 
+> **Process Gate 2 = dual reviews on disk** (P2 tax-cut). PASS ⇔ two independent artifacts under `.tad/evidence/reviews/` (P0=0 or sanctioned). Do **not** write a dispatch lock that waits for a human chat string `/gate 2`. `/gate 2` = Alex executes this protocol. Human still says `当 Blake` for role switch. Paste: `docs/process-tax-cut.md` §3.
+
 ---
 
 ## 📋 Handoff Checklist (Blake必读)
@@ -572,6 +574,11 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 > - ILLEGAL on landing rows: prose-only cells ("looks OK", "human verified", "manual check" with no
 >   command), empty cells, invented light-tier commands → Gate 3 row FAIL → cannot Gate 3 PASS;
 >   Gate 4 cannot PASS if landing Methods missing or unrun.
+>
+> **AC realism** (P2 tax-cut, paste before locking this table): dry-run each Method on the **live
+> baseline**; post-impl rows must fail for the *right* reason on unmodified tree; known-GOOD PASS /
+> known-BAD FAIL. Vacuous if it would PASS on unmodified repo, empty `git ls-files`, whole-file
+> grep in the wrong section, or `exit 0` vs a mandated BLOCK. Full paste: `docs/process-tax-cut.md` §1.
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|
@@ -587,6 +594,8 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 
 > Alex MUST integrate every expert finding into an Audit Trail table row before sending to Blake.
 > Free-text narratives are NOT acceptable — the table is the canonical format (Phase 1 P1.5, 2026-04-24, dogfooded by HANDOFF-20260424-phase1-state-consistency).
+> Process Gate 2 completeness = these dual review **files on disk**, not a human typing `/gate 2`.
+> Layer 2 later: adjudicate dirty-tree false P0s (`docs/process-tax-cut.md` §2) — still write the finding.
 
 ### Audit Trail
 

@@ -9,7 +9,8 @@
 - [Gate Design](gate-design.md) — Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL
 - [Handoff Design](handoff-design.md) — Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report
 - [Shell Portability](shell-portability.md) — macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5
-- [AC Verification](ac-verification.md) — AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands
+- [AC Verification](ac-verification.md) — AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC
+- [Process Tax Cut](process-tax-cut.md) — AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2)
 - [Capability Ownership](capability-ownership.md) — Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof
 - [Hook Contracts](hook-contracts.md) — Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json
 - [Pack Build Rules](pack-build-rules.md) — Pack architecture, pointer default, freeze skip, escalate gates, status durable, skill-vs-MCP boundary

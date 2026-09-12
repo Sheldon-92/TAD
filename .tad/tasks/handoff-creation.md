@@ -10,6 +10,8 @@ When this task is invoked:
 2. **NO ASSUMPTIONS ALLOWED** - Blake needs explicit instructions
 3. **CONTEXT IS EVERYTHING** - Blake won't load other documents
 4. **VALIDATION REQUIRED** - User must confirm before sending to Blake
+   (role switch = `当 Blake`). **Process Gate 2** = dual independent reviews **on disk**;
+   do **not** wait for a human to type `/gate 2`. See `docs/process-tax-cut.md` §3.
 
 **VIOLATION INDICATOR:** If handoff is incomplete or ambiguous, Blake will reject it.
 
