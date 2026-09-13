@@ -45,3 +45,7 @@ If accepted, SKILL.md should contain:
 - description: {one-line description}
 - triggers: [{trigger phrase 1}, {trigger phrase 2}]
 - Body: {above Steps + Quality Criteria + Anti-Patterns}
+- Invocation class: user-invoked orchestrator (human-typed) vs model-invoked / keyword-recruited (pointer then escalate). Never Skill-tool-call `/alex` or `/blake`.
+- Hard vs soft setup: "run X if missing" only if the skill cannot function without X. Gate 2 dual review and Alex≠Blake are teeth, not setup nags.
+- Docs-as-env-cache: SKILL.md caches live CLI / `package.json` / `--help`; do not restate those as a second SSOT. MUST/MANDATORY stay in the body.
+- Facts vs decisions: gather facts; wait for the human on product/tech decisions (cite L1 AI/Human Judgment Domain + existing Socratic / Gate 1). No grilling protocol.

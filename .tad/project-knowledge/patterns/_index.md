@@ -13,7 +13,7 @@
 - [Process Tax Cut](process-tax-cut.md) — AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2)
 - [Capability Ownership](capability-ownership.md) — Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof
 - [Hook Contracts](hook-contracts.md) — Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json
-- [Pack Build Rules](pack-build-rules.md) — Pack architecture, pointer default, freeze skip, escalate gates, status durable, skill-vs-MCP boundary
+- [Pack Build Rules](pack-build-rules.md) — Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP
 - [Pack Evaluation](pack-evaluation.md) — Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check
 - [Research Methodology](research-methodology.md) — Local Wiki primary, NotebookLM fallback, cross-model orchestration, source quality, deep research, *research
 - [Memory and Learning](memory-and-learning.md) — Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion
