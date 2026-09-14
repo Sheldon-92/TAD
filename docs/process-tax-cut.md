@@ -4,7 +4,7 @@
 **Epic**: `.tad/active/epics/EPIC-20260912-p2-process-tax-cut.md`  
 **Teeth**: Gate 2 dual independent review stays. Alex ≠ Blake stays.
 
-Alex/Blake: paste the three blocks into the relevant handoff sections. Do not invent a fourth “skip review” checklist.
+Alex/Blake: paste the blocks into the relevant handoff sections. Do not invent a fourth “skip review” checklist.
 
 ---
 
@@ -86,12 +86,33 @@ Alex running the Gate 2 **protocol** (spawn two reviewers, write evidence) is re
 
 ---
 
+## 4) Optional Layer 2 review habits (OCR thin borrow)
+
+Optional paste. Not a Gate. Land K1–K5 only; forbidden lines stay (no OCR CLI/npm, no replacing Gate 2/3/Layer 2, no AACR-Bench as a TAD KPI).
+
+### Optional Layer 2 review habits (OCR thin borrow, copy)
+
+```
+Status: optional paste. Not a Gate. Not a substitute for Gate 2 dual disk reviews or Alex ≠ Blake.
+
+- K1 Asymmetric-bound, falsify-only second pass. A later look at the same delta sees less evidence (diff + claimed findings only). Veto only when the diff directly contradicts the claim. Do not mint new findings on this pass. Parse/format failure → fail-open (keep the finding).
+- K2 Precision over recall as Layer 2 default. Prefer fewer P0/P1 with replayable evidence (path + command/hunk). Comment volume is not quality. Do not lower recall on security-auditor when that Group 2 trigger fired (see K5).
+- K3 Dispatch is the pathspec, not agent whim. Review handoff §7 / allowed files only. Do not expand the file set like a free agent. Do not add a rule.json or language-md rule engine.
+- K4 Claims must be localizable or labeled unanchored. Every finding cites path + command/hunk, or is labeled unanchored / extra-file. Do not treat model line numbers as SSOT.
+- K5 Recall-up is opt-in for high-risk deltas. Extra budget is the existing security-auditor Group 2 trigger — not a named Ultra Gate and not an extra Ralph round by default.
+
+Forbidden in this paste: OCR CLI or npm; replacing Gate 2 / Gate 3 / Layer 2; AACR-Bench as a TAD KPI; Alibaba language rule packs as SSOT.
+```
+
+---
+
 ## What this does **not** change
 
 - Min 2 experts at Gate 2; max review-round cap still applies.  
 - Fresh Blake session; no implementing in the Alex context.  
 - Gate 3/4 evidence-on-disk rules.  
 - Publish / tag / bump.
+- Optional K1–K5 paste is not a new Gate.
 
 ## Pointers
 

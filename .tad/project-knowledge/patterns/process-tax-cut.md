@@ -1,6 +1,6 @@
 # Process Tax Cut (Layer 2)
 
-> Route, don't duplicate. **SSOT** for the three paste blocks: `docs/process-tax-cut.md`.
+> Route, don't duplicate. **SSOT** for the paste blocks: `docs/process-tax-cut.md`.
 > If this file and the guide drift, **docs win**.
 
 **When**: writing §9 ACs; Layer 2 raising P0 on a dirty tree; Gate 2 / dispatch to Blake.
@@ -79,4 +79,22 @@ Alex running the Gate 2 **protocol** (spawn two reviewers, write evidence) is re
   publish L3 separately — that is not Gate 2).
 - `/gate 2` as Alex’s skill invocation = execute the dual-review protocol.
   It is not a standing human lock.
+```
+
+## 4) Optional Layer 2 review habits (OCR thin borrow) — paste into Layer 2 reviewer prompt
+
+Optional paste. Not a Gate. SSOT is `docs/process-tax-cut.md` §4; if drift, docs win.
+
+### Optional Layer 2 review habits (OCR thin borrow, copy)
+
+```
+Status: optional paste. Not a Gate. Not a substitute for Gate 2 dual disk reviews or Alex ≠ Blake.
+
+- K1 Asymmetric-bound, falsify-only second pass. A later look at the same delta sees less evidence (diff + claimed findings only). Veto only when the diff directly contradicts the claim. Do not mint new findings on this pass. Parse/format failure → fail-open (keep the finding).
+- K2 Precision over recall as Layer 2 default. Prefer fewer P0/P1 with replayable evidence (path + command/hunk). Comment volume is not quality. Do not lower recall on security-auditor when that Group 2 trigger fired (see K5).
+- K3 Dispatch is the pathspec, not agent whim. Review handoff §7 / allowed files only. Do not expand the file set like a free agent. Do not add a rule.json or language-md rule engine.
+- K4 Claims must be localizable or labeled unanchored. Every finding cites path + command/hunk, or is labeled unanchored / extra-file. Do not treat model line numbers as SSOT.
+- K5 Recall-up is opt-in for high-risk deltas. Extra budget is the existing security-auditor Group 2 trigger — not a named Ultra Gate and not an extra Ralph round by default.
+
+Forbidden in this paste: OCR CLI or npm; replacing Gate 2 / Gate 3 / Layer 2; AACR-Bench as a TAD KPI; Alibaba language rule packs as SSOT.
 ```
