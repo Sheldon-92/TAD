@@ -21,7 +21,7 @@
 # - PHASE 4 ask = wiki answers with Iron Rule (raw_refs + locator p.|para|timestamp)
 #   saturation = (a) no new canon topics, (b) lint PASS stable, (c) 0 new locators for 2 asks → log to wiki/log.md
 # Deep still runs Phase 0c/4c adversarial challenges via Codex/Gemini (DR-20260531) on the wiki findings file.
-# Fallback: if local_wiki missing (no research/ dir), degrade to NotebookLM path per config-workflow fallback.
+# Fallback: if local_wiki missing (no research/ dir), degrade to claude_websearch (WebSearch); NotebookLM layer deprecated 2.44.6.
 research_plan_protocol:
   description: "Deep research — full Phase 0-5 pipeline. Called via *research --deep"
   trigger: |
@@ -101,8 +101,9 @@ research_plan_protocol:
           - "调整计划" → user modifies → back to step3
           - "不执行，只记录" → mkdir -p .tad/evidence/research/ → save plan to .tad/evidence/research/research-plan-{YYYY-MM-DD}.md → standby
 
+    # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
     step4:
-      note: "Fallback Execution (when Local Wiki absent) — the *research-notebook command block below runs ONLY when Local Wiki is absent; otherwise Phase 1-4 execute via the Local Wiki toolchain above."
+      note: "Fallback Execution (when Local Wiki absent) — RETIRED 2.44.6: the *research-notebook block below no longer runs; when Local Wiki is absent use claude_websearch (WebSearch) in-session; otherwise Phase 1-4 execute via the Local Wiki toolchain above."
       name: "执行研究"
       action: |
         ⚠️ EXECUTION MECHANISM (CRITICAL — prevents WebSearch fallback):
@@ -110,16 +111,13 @@ research_plan_protocol:
         DO NOT delegate to background Agent tools.
         DO NOT invoke /deep-research or /research skill.
         
-        To execute *research-notebook X:
-        1. Read .claude/skills/research-notebook/SKILL.md (if not already in context)
-        2. Run preflight: test -x ~/.tad-notebooklm-venv/bin/notebooklm
-        3. If preflight PASS → follow sub-command steps using Bash tool (sequential)
-        4. If preflight FAIL → announce to user:
-           "⚠️ NotebookLM CLI not available. Falling back to WebSearch-based research.
-            To enable NotebookLM: bash .tad/cross-model/setup-notebooklm.sh"
-           Then SKIP the *research-notebook commands below entirely.
-           Instead, use WebSearch/WebFetch IN THIS SESSION (not Agent tools)
+        NotebookLM execution path retired 2.44.6 — do NOT run *research-notebook.
+        To execute a fallback research item:
+        1. (REMOVED 2.44.6 — no research-notebook read, no NotebookLM preflight)
+        2. Use WebSearch/WebFetch IN THIS SESSION (not Agent tools)
            for each research item. Keep results in conversation context.
+           Announce to user:
+           "⚠️ Local Wiki absent; NotebookLM layer retired 2.44.6. Using WebSearch-based research." 
         
         NotebookLM is STATEFUL — cannot be parallelized across agents.
         Execute research items SEQUENTIALLY in this session.

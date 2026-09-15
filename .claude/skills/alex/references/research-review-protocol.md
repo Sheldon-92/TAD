@@ -10,7 +10,7 @@ research_review_protocol:
       action: |
         Part 1 (Primary - Local Wiki): review `research/canon/` entry health, `wiki/` coverage,
         `lint.sh` status, and uncompiled raw corpus.
-        Part 2 (Secondary - NotebookLM): list cloud/local registry notebook status below.
+        Part 2 (REMOVED — NotebookLM layer deprecated 2.44.6): do not list notebooks; notebook status is no longer part of *research status.
         1. Read REGISTRY.yaml → all notebooks (active, dormant, archived)
         2. Read ROADMAP.md → project themes + goals (if exists)
         3. Read NEXT.md → current tasks + epics

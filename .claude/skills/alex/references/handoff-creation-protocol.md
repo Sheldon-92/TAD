@@ -91,7 +91,7 @@ handoff_creation_protocol:
            `python3 research/scripts/search.py query "<handoff scope>" --scope wiki`.
            If a related wiki is found → extract conclusions + raw_refs into handoff
            §📚 Project Knowledge and §5 Research Evidence.
-           Only when Local Wiki has no hit → fall back to REGISTRY.yaml NotebookLM lookup below.
+           Only when Local Wiki has no hit → degrade to WebSearch; NotebookLM layer deprecated 2.44.6.
         1. Read REGISTRY.yaml → find notebooks relevant to this handoff's scope (fallback)
            (match against task keywords from step0_5 step 1)
         2. If relevant notebook exists:

@@ -3,9 +3,15 @@
 
 ## External CLI Tools
 
-> NotebookLM is fallback only; Local Wiki is primary.
+> Research fallback chain: local_wiki → claude_websearch (SSOT: .tad/config-workflow.yaml fallback_chains.research); NotebookLM layer retired 2.44.6.
 
-### NotebookLM (Fallback Research CLI)
+> ⚠️ **DEPRECATED (TAD 2.44.6, 2026-09-15)** — NotebookLM 整层退役（不是升级）。
+> 本文件保留仅作历史存档，不参与任何 routing / fallback，不再维护。
+> 研究 fallback 链现为 `local_wiki → claude_websearch`
+> （SSOT: `.tad/config-workflow.yaml` → `fallback_chains.research`）。
+> 请勿再运行 `*research-notebook` / `~/.tad-notebooklm-venv/bin/notebooklm` / `bash .tad/cross-model/setup-notebooklm.sh`。
+> 作废依据: `.tad/evidence/research/2026-09-15-gemini-notebook-fallback/VERDICT.md`（0.8.2 升级建议作废）。
+### NotebookLM (Fallback Research CLI — DEPRECATED 2.44.6; use WebSearch, Local Wiki primary)
 - **Path:** `~/.tad-notebooklm-venv/bin/notebooklm`
 - **Preflight:** `test -x ~/.tad-notebooklm-venv/bin/notebooklm`
 - **Setup:** `bash .tad/cross-model/setup-notebooklm.sh`
@@ -178,7 +184,7 @@ Phase 1 Deep Research → Phase 2 Auto-Curate → Phase 3 Baseline Report → Ph
 | Command | What it does | When to use |
 |---------|-------------|-------------|
 | `*research-github explore <domain>` | Browse awesome-lists in a domain | Tech discovery |
-| `*research-github notebook <domain>` | Create NotebookLM fallback notebook from registry entries | Deep study (cloud fallback) |
+| DEPRECATED — `*research-github notebook <domain>` | Create NotebookLM fallback notebook from registry entries | Retired 2.44.6 (cloud fallback) |
 | `*research-github scan` | Weekly scan for new awesome-lists | Automated via /schedule |
 
 Execution: Read `.claude/skills/research-github/SKILL.md` for the sub-command.

@@ -59,7 +59,13 @@
   - 直读：`research/wiki/` 页面 + `research/canon/_index.md` 词条索引
   - 合规：`bash research/canon/lint.sh` 确认 6 大 Iron Rule 通过
 
-## NotebookLM (Fallback, Blake-limited)
+> ⚠️ **DEPRECATED (TAD 2.44.6, 2026-09-15)** — NotebookLM 整层退役（不是升级）。
+> 本文件保留仅作历史存档，不参与任何 routing / fallback，不再维护。
+> 研究 fallback 链现为 `local_wiki → claude_websearch`
+> （SSOT: `.tad/config-workflow.yaml` → `fallback_chains.research`）。
+> 请勿再运行 `*research-notebook` / `~/.tad-notebooklm-venv/bin/notebooklm` / `bash .tad/cross-model/setup-notebooklm.sh`。
+> 作废依据: `.tad/evidence/research/2026-09-15-gemini-notebook-fallback/VERDICT.md`（0.8.2 升级建议作废）。
+## NotebookLM (Fallback, Blake-limited — DEPRECATED 2.44.6; use WebSearch, Local Wiki primary)
 - Blake MAY use `*research-notebook ingest <file>` to feed implementation findings back
 - **Path:** `~/.tad-notebooklm-venv/bin/notebooklm source add <file> -n <id>`
 - Blake does NOT create notebooks or run research — that's Alex domain

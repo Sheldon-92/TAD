@@ -612,7 +612,7 @@ ralph_loop_execution:
           don't re-escalate it.
 
       1_5b_research_check:
-        description: "Check for relevant research from Local Wiki (primary) or NotebookLM (fallback) before implementation"
+        description: "Check for relevant research from Local Wiki (primary) or WebSearch (fallback) before implementation"
         action: |
           0. P1-1 early-exit: Read stored task_type (from 1_5_context_refresh).
              If task_type == "research" → SKIP this step entirely (handled by 1_5c).
@@ -630,12 +630,9 @@ ralph_loop_execution:
                Run: python3 research/scripts/search.py query "{handoff_task_summary}" --scope wiki --json 2>/dev/null
                If matches found → inspect top match, note findings
           3. Fallback: If Local Wiki absent or yielded no match:
-             → Check .tad/research-notebooks/REGISTRY.yaml
-             → If relevant notebook found → run *research-notebook ask --notebook {id}
-             → Match handoff topic/task against notebook `topic` fields using LLM semantic judgment
-             → Note key findings in context: "📌 Notebook findings (fallback): {brief_summary}"
-             → (Uses allowed command from notebooklm_access — NOT raw ~/.tad-notebooklm-venv/bin/notebooklm binary.
-                Expect 23-43s latency — acceptable since step is non-blocking.)
+             → NotebookLM layer deprecated 2.44.6 — do NOT check REGISTRY.yaml or run *research-notebook.
+             → Degrade to WebSearch (claude_websearch) in-session for implementation context.
+             → Note key findings in context: "📌 WebSearch findings (fallback): {brief_summary}".
           4. Skip silently when neither source has relevant data.
              Skip silently when:
              - Neither Local Wiki nor REGISTRY.yaml has relevant data
@@ -661,9 +658,9 @@ ralph_loop_execution:
                            Entering research-task mode — expanded notebook access active."
              b. Execute the *research unified pipeline (alex/SKILL.md research_unified_protocol):
                 Standard first choice is the Local Wiki toolchain (`research/scripts/ingest.sh`
-                + write canon + run `research/canon/lint.sh` for 6-rule PASS); NotebookLM only as restricted fallback.
+                + write canon + run `research/canon/lint.sh` for 6-rule PASS); NotebookLM layer retired (2.44.6) — do not query.
                 Use Deep level (*research --deep, Phase 0-5) as the PRIMARY workflow.
-                If Local Wiki absent AND NotebookLM CLI not available → fallback to WebSearch-based research.
+                If Local Wiki absent → fallback to WebSearch-based research.
                 Pack outputs are the deliverables:
                 - .research/report.md (QCE-structured research report)
                 - .research/acs.md (extracted ACs from research)
@@ -678,8 +675,8 @@ ralph_loop_execution:
 
           4. If NOT a research task → skip this step entirely, proceed to 1_5d_lsp_blast_radius
 
-          5. Fallback (NotebookLM CLI not available):
-             Warn: "⚠️ NotebookLM CLI not available. Falling back to WebSearch-based research."
+          5. Fallback (Local Wiki unavailable):
+             Warn: "⚠️ Local Wiki unavailable (NotebookLM layer retired 2.44.6). Falling back to WebSearch-based research."
              Execute WebSearch-based research inline:
              Plan question tree → Search ≥3 sources per question →
              Curate findings → QCE structure output → Reference .research/report.md
@@ -687,6 +684,7 @@ ralph_loop_execution:
         blocking: true
         purpose: "Enable Blake to execute complete research workflows when research IS the deliverable"
 
+        # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
         notebooklm_access_override:
           description: "CR-P0-1 fix: temporarily expands allowed notebook commands during pack execution only"
           rationale: |
@@ -1085,7 +1083,8 @@ ralph_loop_execution:
         3. Re-run /blake to reload full SKILL
         4. Resume from Current Position
 
-# NotebookLM Access (Blake read-only + controlled ingest channel)
+# DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+# NotebookLM Access (RETIRED 2.44.6 — Blake read-only channel closed; use WebSearch)
 notebooklm_access:
   # Extracted for progressive loading — full protocol in the reference below.
   reference: "references/notebooklm-access.md"

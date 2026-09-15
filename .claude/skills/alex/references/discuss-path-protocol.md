@@ -62,7 +62,7 @@ discuss_path_protocol:
            or check `research/canon/_index.md`. If related wiki/canon found → suggest first:
            "已在 Local Wiki 检索到相关实践 / 要在 Local Wiki 编译一个研究课题吗？"
            and offer `*research --standard` as the recommended option.
-           Only when Local Wiki is absent for this topic → offer the NotebookLM alternative below.
+           Only when Local Wiki is absent for this topic → use WebSearch below (NotebookLM layer retired 2.44.6).
         1. Read .tad/research-notebooks/REGISTRY.yaml (fallback)
            → If not found → skip silently (同现有 fallback)
 
@@ -96,10 +96,10 @@ discuss_path_protocol:
         5. If multiple matching notebooks found (>2 on same topic):
            → Trigger notebook_consolidation_suggestion protocol (see below)
 
-      fallback: "Local Wiki 无命中且 REGISTRY.yaml 不存在或 NotebookLM 未安装 → 静默跳过"
+      fallback: "Local Wiki 无命中 → 降级为 WebSearch（NotebookLM 层已于 2.44.6 退役）"
       note: |
         匹配是 LLM 语义判断，不是精确字符串匹配。
-        Local Wiki 是首选（本地秒级 + Iron Rule 溯源）；NotebookLM 是 WebSearch 的补充（跨源综合 + 引用），不是替代，且仅在 Local Wiki 缺失时回退。
+        Local Wiki 是首选（本地秒级 + Iron Rule 溯源）；缺失时降级为 WebSearch（claude_websearch）。
 
     passive_detection_during_discuss:
       trigger: "*discuss 中 Alex 发现用户在谈论一个已有 dormant notebook 的话题"

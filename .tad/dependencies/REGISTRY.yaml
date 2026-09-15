@@ -4,11 +4,14 @@ project: "TAD Framework"
 
 dependencies:
   - name: "notebooklm-cli"
+    deprecated: true
+    deprecated_in: "2.44.6"
+    notes: "NotebookLM layer retired; retained for record."
     type: platform
     safety_tier: L2
     current_version: "0.5.x"
     version_pinned_at: 2026-06-01
-    status: active
+    status: deprecated
 
     upstream:
       repo: null

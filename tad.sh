@@ -1369,7 +1369,6 @@ copy_framework_files() {
         "matcher": "startup|resume|compact",
         "hooks": [
           { "type": "command", "command": "bash .tad/hooks/startup-health.sh", "timeout": 30 },
-          { "type": "command", "command": "bash .tad/hooks/notebook-dormant-sync.sh", "timeout": 30 }
         ]
       }
     ],

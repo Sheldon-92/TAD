@@ -15,6 +15,6 @@
 - [Hook Contracts](hook-contracts.md) — Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json
 - [Pack Build Rules](pack-build-rules.md) — Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP
 - [Pack Evaluation](pack-evaluation.md) — Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check
-- [Research Methodology](research-methodology.md) — Local Wiki primary, NotebookLM fallback, cross-model orchestration, source quality, deep research, *research
+- [Research Methodology](research-methodology.md) — Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research
 - [Memory and Learning](memory-and-learning.md) — Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion
 - [Release & Sync](release-sync.md) — Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync

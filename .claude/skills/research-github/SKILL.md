@@ -1,6 +1,6 @@
 ---
 name: research-github
-description: GitHub Awesome-List Registry — discover, browse, ingest raw GitHub repos and compile Local Wiki canon entries (with NotebookLM deep-research fallback).
+description: GitHub Awesome-List Registry — discover, browse, ingest raw GitHub repos and compile Local Wiki canon entries (with WebSearch fallback).
 ---
 
 # /research-github Command (GitHub Knowledge Discovery)
@@ -8,7 +8,7 @@ description: GitHub Awesome-List Registry — discover, browse, ingest raw GitHu
 ## Overview
 
 `*research-github` manages the GitHub Awesome-List Registry as TAD's open-source discovery layer.
-Use to find relevant repos before starting a project, then ingest raw GitHub repos and compile Local Wiki canon entries (with NotebookLM deep-research fallback).
+Use to find relevant repos before starting a project, then ingest raw GitHub repos and compile Local Wiki canon entries (with WebSearch fallback).
 
 **Key principle**: Awesome-lists are community-curated "book lists" — leverage existing curation, don't reinvent.
 
@@ -34,8 +34,8 @@ preflight:
   registry_path: ".tad/github-registry/REGISTRY.yaml"
   checks:
     - "gh CLI authenticated: gh auth status 2>&1 | grep -q 'Logged in'"
-    - "notebooklm CLI available: test -x ~/.tad-notebooklm-venv/bin/notebooklm"
-    - "notebooklm version ≥0.3.4: ver=$(~/.tad-notebooklm-venv/bin/notebooklm --version | awk '{print $NF}'); printf '%s\\n0.3.4\\n' \"$ver\" | sort -V | head -1 | grep -qx '0.3.4'"
+    - "notebooklm checks retired 2.44.6 (DEPRECATED — cloud fallback removed; WebSearch is the fallback)"
+    - "retired 2.44.6 — notebooklm version ≥0.3.4: ver=$(~/.tad-notebooklm-venv/bin/notebooklm --version | awk '{print $NF}'); printf '%s\\n0.3.4\\n' \"$ver\" | sort -V | head -1 | grep -qx '0.3.4'"
     - "REGISTRY exists: test -f .tad/github-registry/REGISTRY.yaml"
   on_fail_gh: "Output: '⚠️ gh CLI not authenticated. Run: gh auth login'"
   on_fail_notebooklm: "Output: '⚠️ NotebookLM not ready. Run: bash .tad/cross-model/setup-notebooklm.sh'"
@@ -188,7 +188,9 @@ Step 7: Store selection in conversation for *research-github notebook to use
 
 ### `*research-github notebook <domain>`
 
-Compile Local Wiki canon entries from selected repos (primary); NotebookLM notebook creation below is cloud fallback only.
+> DEPRECATED (2.44.6): the NotebookLM cloud-fallback pipeline below is retired (retained for record). Local Wiki canon is the active path.
+
+Compile Local Wiki canon entries from selected repos (primary); NotebookLM notebook creation below is retired cloud fallback (DEPRECATED 2.44.6).
 
 > **LOCAL-WIKI SHIM (2026-08-28)**: Primary research is now `local_wiki` (see `.tad/config-workflow.yaml` fallback). This command is retained as an alias: it now writes `research/canon/{type}/{slug}.md` (12-field) + `research/raw/github/` sources from the selected repos, runs `research/canon/lint.sh` + `research/scripts/generate.py`, and prompts `*research --standard "{domain}"` for wiki compilation. NotebookLM `create/ask` path is fallback only when `research/` missing.
 
@@ -238,7 +240,7 @@ Step 6: Source limit check (NotebookLM per-notebook limit = 50):
       - "Reduce files per repo to 5 max" → apply 5-cap to tier selection
       - "Keep top 3 repos only" → discard lowest-star repos
 
-Step 7: Create NotebookLM notebook (optional cloud fallback — run only on explicit user request or cross-repo cloud Q&A need):
+Step 7: Create NotebookLM notebook (DEPRECATED 2.44.6 — retired cloud fallback, do not run):
   → ~/.tad-notebooklm-venv/bin/notebooklm create "{domain} Research"
   → Parse output to capture notebook_id
   → If error: "⚠️ Failed to create notebook: {error}. Check NotebookLM auth."

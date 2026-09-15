@@ -399,7 +399,7 @@ global_skill_exclusion:
   excluded_skills:
     - name: "deep-research"
       reason: "TAD uses *research (unified — Quick/Standard/Deep), not WebSearch multi-phase"
-      tad_replacement: "*research (unified — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: NotebookLM)"
+      tad_replacement: "*research (unified — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: claude_websearch)"
     - name: "code-review"
       reason: "TAD uses code-reviewer sub-agent with narrow-scope prompt template (expert_prompt_template)"
       tad_replacement: "Agent tool with subagent_type=code-reviewer + TAD prompt template"
@@ -477,7 +477,7 @@ commands:
   doc-list: List all project documents
 
   # Research commands
-  research: "Unified research — Quick/Standard/Deep + charter (RG1 front-door), primary: Local Wiki Standard (Iron Rule); fallback: NotebookLM"
+  research: "Unified research — Quick/Standard/Deep + charter (RG1 front-door), primary: Local Wiki Standard (Iron Rule); fallback: claude_websearch"
   research charter: "Research charter front-door — write + authorize RESEARCH-CHARTER.md before *research --deep (RG1)"
   research status: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
@@ -685,7 +685,7 @@ deps_update_protocol:
 # references/, agent won't know levels exist → trigger never fires.
 # ═══════════════════════════════════════════════════════════
 research_unified_protocol:
-  description: "Unified research entry — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: NotebookLM"
+  description: "Unified research entry — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: claude_websearch"
   trigger: "User types *research OR Alex auto-routes from intent detection (研究/research/调研/对比/了解)"
 
   routing_table:
@@ -695,7 +695,7 @@ research_unified_protocol:
       output: "直接在对话中给出答案"
     standard:
       signals: ["研究一下", "了解", "对比", "有哪些", "default when ambiguous", "--standard"]
-      execution: "local_wiki research: load canon _topics/_questions → check _index for topic hit → ask wiki with Iron Rule; no hit → ingest 3 raw → create canon → compile wiki → lint PASS → generate. Fallback: NotebookLM if local_wiki missing."
+      execution: "local_wiki research: load canon _topics/_questions → check _index for topic hit → ask wiki with Iron Rule; no hit → ingest 3 raw → create canon → compile wiki → lint PASS → generate. Fallback: claude_websearch if local_wiki missing."
       output: "local_wiki 研究结果 + wiki canon 溯源 (via research/wiki/ + research/canon/_index.md)"
     deep:
       signals: ["深入研究", "建知识库", "landscape", "全面调研", "--deep"]
@@ -714,12 +714,10 @@ research_unified_protocol:
     check: "test -d research/canon && test -f research/canon/lint.sh"
     on_pass: "Use Local Wiki research engine (primary)"
     on_fail: |
-      Check NotebookLM fallback: test -x ~/.tad-notebooklm-venv/bin/notebooklm
-      If NotebookLM available → run NotebookLM fallback path.
-      If both unavailable → degrade to WebSearch.
+      NotebookLM 整层已于 2.44.6 退役（不再作为 fallback）。
+      Degrade directly to WebSearch (claude_websearch):
       Standard/Deep 降级为 WebSearch:
-      "⚠️ Local Wiki 与 NotebookLM CLI 均不可用。降级为 WebSearch 研究。
-       安装: bash .tad/cross-model/setup-notebooklm.sh"
+      "⚠️ Local Wiki 不可用。降级为 WebSearch 研究（NotebookLM 层已于 2.44.6 退役）。"
       Quick 不受影响（本身用 WebSearch）
 
   quick_execution:
@@ -767,12 +765,14 @@ research_unified_protocol:
         (6 rules must PASS) → run `research/scripts/generate.py`.
         (Protocol spec text only — see handoff task boundaries for execution scope.)
 
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
       3_fallback_notebooklm: |
         Only when `research/` is missing or damaged, run the legacy NotebookLM create-and-query flow below.
         Fallback Execution (when Local Wiki absent).
 
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
       1_find_notebook: |
-        (NotebookLM fallback — runs only via 3_fallback_notebooklm when Local Wiki absent.)
+        (Retired NotebookLM path — runs no longer; see 3_fallback_notebooklm banner.)
         Read .tad/research-notebooks/REGISTRY.yaml
         Filter: only status == "active" notebooks participate in matching
         - dormant: AskUserQuestion "Found dormant notebook '{topic}' (last queried {date}). Reactivate or create fresh?"
@@ -783,10 +783,12 @@ research_unified_protocol:
         >1 matches → AskUserQuestion: "Found {N} matching notebooks: {list with topic + source_count}. Which to use?"
           Options: each notebook + "Create new notebook"
 
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
       2_create_if_needed: |
         *research-notebook create "{topic}"
         *research-notebook research --mode fast -n <new_id>
 
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
       2b_source_verify: |
         Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
 
@@ -826,11 +828,13 @@ research_unified_protocol:
             log "⚠️ Source count {remaining} exceeds 15 cap. Consider *research-notebook curate."
             (Advisory only — user may have manually added sources)
 
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
       3_ask: |
         *research-notebook ask "{research_decision_point}" -n <id>
         (ask 自带动态追问协议, 4 轮上限, 6 策略 — step3_5 内层饱和)
         研究链文件自动保存到 .tad/evidence/research/
 
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
       3b_semantic_saturation: |
         Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
 

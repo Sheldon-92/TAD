@@ -1,3 +1,6 @@
+# ⚠️ DEPRECATED (TAD 2.44.6, 2026-09-15) — NotebookLM 整层退役（不是升级）。
+# notebooklm_* 能力键保留仅作历史存档；研究 fallback 链现为 local_wiki → claude_websearch
+# （SSOT: .tad/config-workflow.yaml → fallback_chains.research）。
 # Cross-Model Capability Catalog
 # Protocol fixed, capabilities pluggable.
 # New capability discovered → add entry → TAD immediately usable.
@@ -23,6 +26,9 @@ capabilities:
     notes: "codex exec --full-auto validated in Phase 2 dogfood (2026-05-02). --skip-git-repo-check needed for non-git dirs."
 
   notebooklm_research:
+    deprecated: true
+    deprecated_in: "2.44.6"
+    replaced_by: "claude_websearch"
     platform: notebooklm
     cli_commands:
       - 'notebooklm ask "{question}"'
@@ -73,6 +79,9 @@ capabilities:
       Phase 2 additions: fulltext, quiz, flashcards, language commands (see *research-notebook SKILL).
 
   notebooklm_fulltext:
+    deprecated: true
+    deprecated_in: "2.44.6"
+    replaced_by: "claude_websearch"
     platform: notebooklm
     cli_command: 'notebooklm source fulltext <source_id> -n <notebook_id> -o /tmp/tad-fulltext-{source_id}.txt'
     description: "Extract and preview full text content of a specific source — source quality evaluation"
@@ -85,6 +94,9 @@ capabilities:
     setup_ref: "bash .tad/cross-model/setup-notebooklm.sh"
 
   notebooklm_quiz:
+    deprecated: true
+    deprecated_in: "2.44.6"
+    replaced_by: "claude_websearch"
     platform: notebooklm
     cli_command: 'notebooklm generate quiz --difficulty medium --quantity standard -n <id> --retry 3 --wait && notebooklm download quiz --format markdown <output_path> -n <id>'
     description: "Generate quiz from notebook content + download as local markdown — for *learn integration"
@@ -97,6 +109,9 @@ capabilities:
     setup_required: true
 
   notebooklm_flashcards:
+    deprecated: true
+    deprecated_in: "2.44.6"
+    replaced_by: "claude_websearch"
     platform: notebooklm
     cli_command: 'notebooklm generate flashcards --difficulty medium --quantity standard -n <id> --retry 3 --wait && notebooklm download flashcards --format markdown <output_path> -n <id>'
     description: "Generate flashcards from notebook content + download as local markdown"
@@ -109,6 +124,9 @@ capabilities:
     setup_required: true
 
   notebooklm_language:
+    deprecated: true
+    deprecated_in: "2.44.6"
+    replaced_by: "claude_websearch"
     platform: notebooklm
     cli_command: 'notebooklm language set <code> -n <id>'
     description: "Manage NotebookLM output language — affects reports, quizzes, flashcards, summaries"

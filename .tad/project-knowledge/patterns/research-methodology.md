@@ -1,6 +1,6 @@
 # Research Methodology Patterns (Layer 2)
 
-> Reusable patterns for research workflows, cross-model orchestration, NotebookLM integration, and source quality.
+> Reusable patterns for research workflows, cross-model orchestration (NotebookLM retired 2.44.6), and source quality.
 
 ---
 
@@ -52,6 +52,8 @@
 - **Action**: (1) Treat every native-capability research finding as a hypothesis carrying a version pin; the first micro-task of any adoption phase is a local spike whose FAIL branch is pre-designed (degradation matrix), never a blocker. (2) Record verdicts as VERDICT-<topic>: PASS/FAIL lines with raw transcripts so reviewers can re-adjudicate. (3) When a spike contradicts research (or a GitHub issue), write the falsification back to the research evidence AND the decision record — the version-pinned correction is itself the reusable asset (re-spike triggers on CLI upgrade).
 - **failure_mode**: Naive default: design integrations directly on top of documented/community-reported platform capabilities because the research phase was thorough. Why wrong: 3 of 6 capabilities behaved differently on the actual installed CLI than every doc-level source suggested — integrations built without spikes would have shipped inert config (validation theater) or silently-dying automation.
 - **Grounded in**: .tad/evidence/spikes/subagent-frontmatter-2026-07/spike-report.md, .tad/evidence/spikes/cron-github-scan-2026-07/spike-evidence.md (incl CRON-FIRE-VERIFY), .tad/evidence/yolo/native-capability-adoption/phase4-rules-spike.md (GH #17204 adjudication), EPIC-COMPLETION.md "Native-Runtime Ground Truth"
+
+> AMENDED 2026-09-15 (2.44.6): "NotebookLM as fallback" statements below are historical; the current research chain is `local_wiki → claude_websearch` (SSOT: `.tad/config-workflow.yaml` → `fallback_chains.research`).
 
 ### Local Wiki Three-Layer Architecture — file-is-truth + Iron Rule + generate.py purity — 2026-08-28
 - **Context**: Replace NotebookLM cloud chain (auth/30s indexing/false-ready) with local markdown three layers (canon → raw → wiki) while keeping `*research Quick/Standard/Deep` transparent. Requirements: persistence, synthesis, citation tracing, GitHub-First, saturation stop.

@@ -775,25 +775,26 @@ scenarios:
 # Lifecycle thresholds and fallback chains for *research-notebook skill.
 # Catalog data (per-capability metadata) lives in .tad/cross-model/capabilities.yaml
 research_notebook:
+  # ⚠️ DEPRECATED (TAD 2.44.6, 2026-09-15) — NotebookLM 整层退役（不是升级）。
+  # 本块仅保留 lifecycle thresholds；fallback 链已上移至顶层 fallback_chains.research（local_wiki → claude_websearch）。
   # Lifecycle thresholds (days)
   dormant_after_days: 30           # active → dormant after N days without query
   archive_suggest_after_days: 90   # suggest archive after M days dormant
   max_sources_per_notebook: 20     # *add prompts curate when exceeded
   source_stale_after_days: 90      # curate flags sources older than N days
 
-  # Fallback chains for cross-model capability routing
-  # Primary → secondary → tertiary fallback order
-  # BA-P1-2: orchestration logic here, not in capabilities.yaml (catalog-only)
-  fallback_chains:
-    research:
-      primary: local_wiki
-      secondary: notebooklm_research  # fallback when local_wiki unavailable
-      tertiary: claude_websearch
-    image_generation:
-      primary: codex_image_gen
-      secondary: manual_mermaid
-    code_review:
-      primary: claude_code_reviewer
+# NotebookLM removed 2.44.6; research = local_wiki → claude_websearch
+# SSOT: fallback_chains.research (top level; hoisted out of deprecated research_notebook block)
+fallback_chains:
+  research:
+    primary: local_wiki
+    secondary: claude_websearch
+  image_generation:
+    primary: codex_image_gen
+    secondary: manual_mermaid
+  code_review:
+    primary: claude_code_reviewer
+
 
 # ==================== Feedback Collector Configuration ====================
 # 2026-06-10 — Structured human feedback for non-code AI artifacts.

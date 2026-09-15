@@ -1,3 +1,5 @@
+# ⚠️ DEPRECATED (2.44.6) — NotebookLM layer retired; this registry is frozen/archival; do not add or sync notebooks.
+# 研究 fallback 链现为 local_wiki → claude_websearch（SSOT: .tad/config-workflow.yaml → fallback_chains.research）。
 # TAD Research Notebook Registry
 # Local index of NotebookLM notebooks known to TAD.
 # Canonical truth is NotebookLM cloud. Use *research-notebook sync to reconcile.

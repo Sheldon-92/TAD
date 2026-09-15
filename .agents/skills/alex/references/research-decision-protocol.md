@@ -105,13 +105,10 @@ research_decision_protocol:
       Before executing Landscape Search (WebSearch ×N):
       0. Prefer Local Wiki first: run `python3 research/scripts/search.py query "<decision question>" --scope wiki`.
          If Local Wiki matches → use it as the authoritative local baseline for Landscape Search.
-         Only when Local Wiki has no match → fall back to the notebook lookup below.
-      1. Check .tad/research-notebooks/REGISTRY.yaml for a notebook matching this decision's domain (fallback)
-      2. If found (active notebook) → query it first:
-         notebooklm use <notebook_id>
-         notebooklm ask "<decision question>"
-      3. Use notebook answer as SUPPLEMENT to WebSearch, not replacement:
-         - notebook = curated deep knowledge (cross-source, citations, video content)
+         Only when Local Wiki has no match → use WebSearch only (NotebookLM layer deprecated 2.44.6; notebook lookup removed).
+      1. (REMOVED 2.44.6 — no REGISTRY.yaml notebook lookup)
+      2. (REMOVED 2.44.6 — no notebooklm use/ask)
+      3. Use WebSearch as the sole supplement:
          - WebSearch = current broad coverage (freshness, breadth)
       4. If not found → skip, proceed with standard WebSearch flow
     note: |

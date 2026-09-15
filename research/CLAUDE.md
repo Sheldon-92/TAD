@@ -38,7 +38,7 @@ Stop when **(a)** new raw adds no new canon topics, **(b)** `lint.sh` PASS uncha
 
 ## 6. Fallback
 
-Primary: `local_wiki`. NotebookLM is **fallback only** when `~/.tad-notebooklm-venv` missing. `research-github` writes canon, not notebook. Details: `research/canon/README.md`.
+Primary: `local_wiki`; fallback is **`claude_websearch`** (WebSearch); NotebookLM layer retired in 2.44.6. `research-github` writes canon, not notebook. Details: `research/canon/README.md`.
 
 ## 7. Retrieval
 

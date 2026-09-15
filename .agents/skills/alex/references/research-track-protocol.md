@@ -2,6 +2,7 @@
 # Wrapper (gates) lives here; engine = references/research-plan-protocol.md (Phase 0-5).
 # Owner: Alex. Research Track is Alex-owned; NOT Build Gate 3. No Blake route.
 # Called by: research_unified_protocol.deep_execution (alex/SKILL.md repoints here).
+# Fallback chain: local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research); NotebookLM layer deprecated 2.44.6.
 
 research_track_protocol:
   description: "RG1–RG4 gate wrapper for *research --deep. Binds existing research-plan phases; adds Charter/Critic/Verdict+Sources contracts only."

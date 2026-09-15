@@ -68,7 +68,7 @@ learn_path_protocol:
       action: |
         0. Prefer Local Wiki first: if `research/wiki/` has a page covering the current topic,
            generate the Quiz/Flashcards directly from the Local Wiki page (primary);
-           NotebookLM below is the fallback.
+           NotebookLM layer retired 2.44.6; generate Quiz/Flashcards from Local Wiki only; else WebSearch-based.
         1. Check if current topic has a matching notebook in .tad/research-notebooks/REGISTRY.yaml (fallback)
         2. If yes → AskUserQuestion:
            "你对这个话题理解得不错了。要生成一个小测验来巩固学习吗？"
