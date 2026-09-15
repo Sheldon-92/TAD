@@ -125,3 +125,6 @@ gitleaks-report.json
 # 工作区磁盘副本仍保留；勿 git clean -x / 物理删除。
 .tad/evidence/
 .tad/archive/
+
+# 模型派活运行时哨兵（job dispatch 产物，本机临时；2026-09-15 清理时加入）
+.dispatch-*.sentinel

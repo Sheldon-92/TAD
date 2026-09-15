@@ -6,11 +6,140 @@
 > ②a/②d/②e 三条标着「最高优先级」的待办**早已修复**，清单挂了两周没人划掉，
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 
-**当前版本**：2.44.2 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：2.44.5 (live tag `b3193d24` / commit `1f6aaad2`) → **next patch 2.44.6** ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+
+---
+
+## 🔴 优先队列
+
+### 🟡 PENDING HUMAN CHECK 2026-09-15. TAD Research 机制 (RG1–RG4 wrapper) — Gate 2/3/4 PASS
+
+- Task ID: `TASK-20260915-TAD-RESEARCH-MECHANISM`
+- Handoff (tracked): `.tad/active/handoffs/HANDOFF-2026-09-15-tad-research-mechanism.md`
+- Completion: `.tad/active/handoffs/COMPLETION-20260915-tad-research-mechanism.md`
+- Commit: `f92cbc73` (12 files; **local, not pushed**; not in v2.44.5)
+- Gate 4 PASS: `.tad/evidence/reviews/2026-09-15-gate4-acceptance-tad-research-mechanism.md` (fuse-not-fork; 3人决策点; 14/14 AC; 双平台 cmp=0)
+- Human next: CHECK（设计方向 / 三个待定问题 / 是否记为正式机制）→ 通过后 `*accept` 归档。
+
+### ✅ DONE 2026-09-14. OCR K1–K5 optional paste — Gate 4 PASS, archived
+
+- Task ID: `TASK-20260914-OCR-REVIEW-HABITS`
+- Handoff & Completion & Gate4: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260914-ocr-review-habits.md`
+- Commit: `c48e5620` (4 §6.2 files; local; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-14-gate4-ocr-review-habits.md` (Verdict: PASS; AC1–AC13 recomputed from HEAD; pathspec set-equal; short intent lens holds)
+- Human lock held: KEEP K1–K5 optional; REJECT CLI/npm, rule.json SSOT, replacing Gate2/3/Layer2, AACR-Bench KPI. Dual Gate 2 on disk. `layer2-audit.sh` missing `blake/{slug}/` (smoke alarm; not blocking).
+- Do not absorb into v2.44.5. No tad.sh change.
+
+### ✅ DISCUSS LANDED 2026-09-14. Thin user story vs AC / Gate3·4 (*research + *discuss, no Blake)
+
+- Evidence: `.tad/evidence/research/2026-09-14-thin-user-story-vs-ac-gate34.md`
+- Verdict: **recommend-practice only** for thin slices (who / situation / outcome / non-goals). **Reject** mandatory story format and dual SSOT. Gate3=AC/spec/evidence **consistent**. Gate4 = **AC recompute stays** + optional short intent lens (not intent-only).
+- Teeth held: Gate 2 dual; Alex≠Blake. No charter/gate rewrite as locked policy.
+- Human next: **lock** before any handoff/Blake. Do not absorb into v2.44.5.
+
+### ✅ DONE 2026-09-13. Skill authoring habits (docs-only L2 + skillify) — Gate 4 PASS, archived
+
+- Task ID: `TASK-20260913-SKILL-AUTHORING-HABITS`
+- Handoff & Completion & Gate4: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260913-skill-authoring-habits.md`
+- Commit: `09fe43d4` (4 §6.2 files; local; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-13-gate4-skill-authoring-habits.md` (Verdict: PASS; AC1–AC13 recomputed from HEAD; pathspec set-equal)
+- Human lock held: Q1=② Q2=② Q3=①. Dual Gate 2 on disk. Layer 2 `blake/{slug}/` missing (smoke alarm; not blocking).
+- Do not absorb into v2.44.5. No pack edits.
+
+### ✅ DONE 2026-09-12. P2 SC4 process-tax-cut wire — Gate 4 PASS, archived
+
+- Task ID: `TASK-20260912-P2-SC4-TAX-CUT-WIRE`
+- Handoff & Completion & Gate4: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260912-p2-sc4-process-tax-cut-wire.md`
+- Epic archived: `.tad/archive/epics/EPIC-20260912-p2-process-tax-cut.md` (SC1–SC4 complete)
+- Commit: `86c89917` (12 §7 files; local; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-12-gate4-p2-sc4-process-tax-cut-wire.md` (Verdict: PASS; AC1–AC13 recomputed from commit blobs; pathspec set-equal)
+- Do not absorb into v2.44.5. Residual WT riders stay other knives.
+
+### ✅ DISCUSS LANDED 2026-09-12. P2 process tax-cut principles (no Blake, no release)
+
+- Epic archived with SC4 (see DONE row above). Guide SSOT: `docs/process-tax-cut.md`
+- Teeth held: Gate 2 dual review; Alex≠Blake. Out of scope: GM P0/P1, KEEP11, publish.
+- Do not absorb into v2.44.5 R. Do not bump/tag.
+
+### ✅ DONE 2026-09-11. KEEP11 Knife 1 CLI refresh — Gate 4 PASS, archived
+
+- Task ID: `TASK-20260911-KEEP11-KNIFE1`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260911-keep11-knife1-cli-refresh.md`
+- Commit: `63cf6291` (41 allow-prefix files; local; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-11-gate4-rerun-keep11-knife1-cli-refresh.md` (Verdict: PASS; AC1–AC9 recomputed from disk; pathspec `extra []`; KA justified No)
+- Prior PARTIAL: `.tad/evidence/reviews/2026-09-11-gate4-acceptance-keep11-knife1-cli-refresh.md` (KA missing; closed by Blake amend)
+- Human locks held: two KEEP packs only; no Gemini; no freeze/unfreeze; no absorb into v2.44.4
+- Carry (later knives): Netlify v27.5.2 re-resolve; banner GONE wording; pre-existing SAST `checkout@v4` example
+- Human next: none for this task (archived)
+
+### ✅ DISCUSS LOCKED 2026-09-11. KEEP-POINTER 11 content refresh ranking (Q1–Q5 = 2,1,2,1,1)
+
+- Design: `.tad/evidence/designs/2026-09-11-keep-pointer-11-content-refresh.md`
+- Roster lock holds: KEEP 11 still announce; 14 frozen at `eb09597a` (do not unfreeze).
+- Later knives (not this handoff): web-ui-design split; P1 API packs; P2 trio.
+
+### ✅ DONE 2026-09-10. Pack freeze inventory apply — Gate 4 PASS, archived
+
+- Task ID: `TASK-20260910-PACK-FREEZE-INVENTORY`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260910-pack-freeze-inventory.md`
+- Commit: `eb09597a` (§7.2 15 paths only; local; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-10-gate4-pack-freeze-inventory.md` (Verdict: PASS; AC1–AC12 recomputed from disk; pathspec set-equal)
+- Registry: 14 `frozen` / 11 `active`. Files stay. AGENTS rows stay.
+- Human next: none for this task (archived). Do not absorb into v2.44.4.
+- Out of scope (later tickets): leftovers, AGENTS ACI row, experiment-path dump, KEEP body refresh
+
+### ✅ DONE 2026-09-10. Pack freeze inventory (*discuss) — roster locked by human
+
+- Design: `.tad/evidence/designs/2026-09-10-pack-freeze-inventory.md`
+- Lock: KEEP-POINTER 11 / FREEZE 14 (Unsure six frozen with the eight). Mechanic = CAPABILITY status + scan-packs. AGENTS rows kept.
+- Superseded as active work by apply handoff above.
+
+### ✅ DONE 2026-09-10. Pack loader thin / on-demand / freeze — Gate 4 PASS, accepted
+
+- Task ID: `TASK-20260910-PACK-LOADER-THIN`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260910-pack-loader-thin-ondemand.md`
+- Commit: `9c33e2e5` (§7.2 12 files only; local; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-10-gate4-pack-loader-thin-ondemand.md` (Verdict: PASS; AC1–AC12 recomputed from disk)
+- Human locks held: pointer max-2 / frozen-skip+files-stay / human-named OR recorded failure-retry escalate / loader pathspec only
+- Residual (deferred): `experiment-path-protocol.md` `capability_pack_auto_load` still dumps `ai-evaluation` SKILL — later ticket
+- Do not absorb into v2.44.4
+
+### ✅ DONE 2026-09-10. verify-delta (runnable Verification Method fail-close) — Gate 4 PASS, archived
+
+- Task ID: `TASK-20260910-VERIFY-DELTA`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION}-20260910-verify-delta.md`
+- Commit: `7048b835` (§7 pathspec only; riders unstaged; do not push/tag/release)
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-10-gate4-verify-delta.md` (Verdict: PASS; 23/23 Methods recomputed from disk)
+- P2-2: legal-grep fixture exists locally under gitignored `.tad/evidence/acceptance-tests/verify-delta/` (not in the commit)
+- Human next: none for this task (archived). Do not absorb into v2.44.4.
+
+### ✅ DONE 2026-09-11. Publish patch v2.44.5 — shipped (live tag `b3193d24`)
+
+- Task ID: `TASK-20260911-PUBLISH-V2445`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION}-2026091*-*v2445*` (archived 2026-09-15)
+- Commit R: `1f6aaad2` (`release: v2.44.5`); annotated tag `b3193d24` → R; GitHub Release live.
+- Payload: three commits after live `v2.44.4` / `83e2ff03` (verify-delta + pack loader/freeze + KEEP11 knife 1).
+- Boundary: publish-only (no sync). Local handoff cleanup done 2026-09-15.
+- Remaining KEEP11 knives out of scope.
+
+### ✅ DONE 2026-09-09. Publish patch v2.44.4 (knowledge-seam) — shipped (live tag)
+
+- Prior live tag `v2.44.4` / `83e2ff03`. Stale active twins of that handoff must not enter v2.44.5 R.
 
 ---
 
 ## 🔴 优先队列（2026-09-03 晚：YOLO 三轨落地；B 单测量完成，设计待续 —— 明天继续）
+
+### ✅ DONE 2026-09-09. Upstream knowledge seam & downstream isolation — Gate 4 PASS, accepted (commits `e6e2126e` + `65963d6b`)
+
+- Task ID: `TASK-20260908-KNOWLEDGE-SEAM-ISOLATION`
+- Handoff & Completion: `.tad/archive/handoffs/{HANDOFF,COMPLETION,GATE4}-20260908-knowledge-seam-isolation.md`
+- Gate 4 Evidence: `.tad/evidence/reviews/2026-09-09-gate4-acceptance-knowledge-seam-isolation.md` (Verdict: PASS)
+- Gate 4 Rulings:
+  - (a) Human locks hold strictly: Option A pure isolation (only README.md on clean installs, empty patterns/incidents); quarantine opt-in only via `tad.sh --quarantine-pk` (zero auto-quarantine on update).
+  - (b) Layer 2 independent reviews: spec-compliance 19/19 PASS, code-reviewer PASS (P0:0, P1:0, P2:5; 3 applied, 2 deferred to Alex), test-runner 19/19 PASS + 5/5 supplemental probes green.
+  - (c) Implementation adaptations D1 (cd-form install), D2 (scoped local/ skip for fresh install seeds), and D3 (script-dir resolution for `--quarantine-pk`) verified as `EQUIVALENT_SUBSTITUTE` and intent-preserving.
+  - (d) Boundaries: local-only commits `e6e2126e` + `65963d6b`; no push, no tag, no release.
 
 ### ✅ DONE 2026-09-08. Clean TAD upstream research-routing entry pointers (Local Wiki primary, NotebookLM fallback) — Gate 4 PASS, accepted
 
@@ -402,8 +531,7 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
 
 ### 5. 杂活（不走 phase 那套机器）
 
-- [ ] **brain-index 生成器 `set -e` 缺陷** — 撞到缺 `task_type:` 的旧归档即退出 →
-      「recent 50」段只出 11 条（缺 39）。**预存缺陷**。
+- [x] **brain-index 生成器 `set -e` 缺陷** — 已于 TASK-20260908-KNOWLEDGE-SEAM-ISOLATION 修复 (2026-09-09)。grep sites 均使用 `{ grep ... || true; }` 守卫，archive handoff 遍历 50 条满载无中断。
 - [ ] **`STEP 3.5b` 的 CVE 正则抓不到 GHSA** — Path 2 是 `/CVE-\d{4}-\d+/`，
       而触发这条纪律的那次真实事故（停跑 28 天、漏 4 个漏洞、含明文 token 打印）
       里的编号全是 **GHSA-**。**原正则本来就不可能命中。**

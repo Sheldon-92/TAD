@@ -681,6 +681,20 @@
 - **Grounded in**: 五轮独立 reviewer 报告（`b43c1a53` / `64fcf7cc` / `1e518407` / `21321f50`）；每一轮都用从 `tad.sh` 逐字节提取的 `apply_deprecations` 做端到端证明，而非静态推理；最终撤销记录见 `COMPLETION-20260816-phase2-partial-p0-fix.md`
 - **failure_mode**: Naive default: 为一个已修复的数据安全缺陷补写一条"防止配置被误编辑"的字符串校验护栏，并用双向测试确认其有效。Why wrong: 该护栏校验的是声明层，而破坏发生在执行层——两层之间隔着解析器差异、路径规范化、文件系统语义和符号链接解析，每一处都能让"校验通过的字符串"与"实际删除的位置"分离。五个版本、四个不同的失败根因证明这类护栏的正确性不可由作者自证；真正的修复位置在执行点（`apply_deprecations` 内用 `realpath` 校验），而非声明点。
 
+### Gitignored fixtures can PASS Gate 4 locally while absent from the pathspec commit - 2026-09-10
+- **Context**: TASK-20260910-VERIFY-DELTA. Human committed §7 pathspec only (`7048b835`). AC12 greps Method-cell tokens in `.tad/evidence/acceptance-tests/verify-delta/*.example.md`. `.tad/evidence/` is gitignored. Handoff §7 CREATE also omitted the legal fixture that the Required Evidence Manifest and AC12 required (P2-2); the file still existed on the authoring disk.
+- **Discovery**: Gate 4 fail-close (“recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence”) is **machine-local**. A green AC12 on the machine that wrote the fixtures does not prove those fixtures traveled with the protocol commit. Clone-from-`7048b835` without the ignored dir would fail the same Method. That is expected when evidence is maintainer-local, but it must be named at acceptance — otherwise “Gate 4 PASS” is misread as “the commit is self-contained.”
+- **Action**: When an AC path-checks files under `.tad/evidence/`, record at Gate 4 whether the file is (a) in the pathspec commit, (b) gitignored-local, or (c) missing. Keep Required Evidence Manifest and §7 CREATE in sync so Blake’s CREATE checklist cannot omit a file AC will grep. Do not treat a local-only fixture PASS as proof a fresh clone would pass.
+- **Grounded in**: HANDOFF-20260910-verify-delta.md P2-2 / `gate4_delta`; COMPLETION Git `7048b835`; `.gitignore` `.tad/evidence/`; AC12
+- **failure_mode**: Naive default: Gate 4 recomputes AC greps against the working tree, sees PASS, and infers the commit contains the fixtures. Why wrong: gitignored evidence never enters the pathspec; the gate certified the author’s disk, not the object the next machine will check out.
+
+### Pathspec-in-scope files can still carry a foreign hunk — stage the hunk, not the file - 2026-09-10
+- **Context**: TASK-20260910-PACK-LOADER-THIN. `_index.md` was in §7.2, so a whole-file `git add` would have been AC12-legal. The same file also held an uncommitted verify-delta hunk (foreign ticket). Layer 2 code-reviewer flagged it; Blake staged only the `:15` pack-loader hunk via `git apply --cached` of a filtered patch. Impl `9c33e2e5` `diff-tree` stayed 12 §7.2 names.
+- **Discovery**: File-level pathspec ACs cannot see hunk attribution. A path allowed by §7.2 can still smuggle another ticket’s lines if the index takes the whole file. Hunk-level staging is the hygiene that file-set equality cannot provide.
+- **Action**: When a pathspec file is dirty with mixed tickets, do not `git add` the file. Extract the in-contract hunk and `git apply --cached` (or equivalent hunk stage). Prove with `git diff-tree --name-only -r <impl>` **and** `git show <impl> -- <file>` that only the intended hunk landed.
+- **Grounded in**: COMPLETION-20260910-pack-loader-thin-ondemand.md §3–§4; journal `pack-loader-thin-ondemand-2026-09-10.md`; commit `9c33e2e5`
+- **failure_mode**: Naive default: if the file is on the allowlist, stage the whole file. Why wrong: AC12 ⊆ §7.2 still passes while another ticket’s hunk rides along, so Gate 3 scope-green does not mean attribution-clean.
+
 ### 失败不变式要核对整个调用前状态，不只核对临时文件 - 2026-09-01
 - **Context**: Capability Builder 的安全投影 helper 已能在失败时清理本次创建的 temp 和 lock，但 copy/temp-verify 的晚期失败仍会留下本次创建的空 `.claude/skills` 与 `.claude`。原有 I/O 负例从一个预存的错误类型父节点开始，因此无法观察 absent-parent 被泄漏成 empty-parent。
 - **Discovery**: “只删除本 invocation 拥有的对象”必须覆盖完整的创建链：owned temp → owned lock → invocation-created empty parents；只证明无 temp/lock，不等于恢复了调用前状态。负例也必须从会区分两个状态的前置条件开始：若契约要求 absent 保持 absent，就从 absent parent 注入 copy/diff failure，并比较完整 parent inventory，而不是从预存父节点制造失败。

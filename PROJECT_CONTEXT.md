@@ -2,7 +2,7 @@
 
 ## Current State
 - **Version**: 2.44.5 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture)
-- **Last Updated**: 2026-09-07
+- **Last Updated**: 2026-09-15
 - **Framework**: TAD v2.44.5 + Full-default/Lite-frozen + 25 Capability Packs + Dual-Platform (Claude Code + Codex) + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
@@ -15,9 +15,23 @@
 - **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
 - **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)
 - **EPIC: ml-training Pack** (20260529) — parked
-- 16 capability packs active; behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending, 13 packs' eval is a follow-up
+- Capability packs: 11 auto-match-active / 14 frozen (status on CAPABILITY + registry; files stay). Behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending; remaining eval is a follow-up
 
 ## Recently Completed
+
+- **OCR K1–K5 optional Layer 2 review habits** (2026-09-14) — Gate 4 PASS and archived (commit `c48e5620`, 4 files, local only). Optional paste on tax-cut SSOT + pattern + install-visible spec-compliance-format; identical 1281-byte fence; teeth and tad.sh copy-set unchanged. Do not absorb into v2.44.5. Task ID: `TASK-20260914-OCR-REVIEW-HABITS`.
+
+- **Skill authoring habits (L2 + skillify)** (2026-09-13) — Gate 4 PASS and archived (commit `09fe43d4`, 4 files, local only). Named D1/D2/D4 + D3 cite on Pack Build Rules; `_index` hook 110 chars; skillify four outline bullets. Packs/role SKILLs/principles untouched. Do not absorb into v2.44.5. Task ID: `TASK-20260913-SKILL-AUTHORING-HABITS`.
+
+- **P2 process tax-cut (SC1–SC4)** (2026-09-12) — Gate 4 PASS and archived (commit `86c89917`, 12 files, local only). Checklists load via `patterns/_index.md` → `process-tax-cut.md`; SSOT `docs/process-tax-cut.md`. Dual Gate 2 / Layer 2 held. Do not absorb into v2.44.5. Task ID: `TASK-20260912-P2-SC4-TAX-CUT-WIRE`.
+
+- **KEEP11 Knife 1 CLI/SHA refresh** (2026-09-11) — Gate 4 PASS (re-run) and archived (commit `63cf6291`, 41 files, local only). `code-security` + `web-deployment` banners dated, checkout SHA re-pinned to `692973e3…` / v4.1.7, dual-tree + cap-pack lockstep. KA justified No. Do not absorb into v2.44.4. Task ID: `TASK-20260911-KEEP11-KNIFE1`.
+
+- **Pack freeze inventory apply** (2026-09-10) — Gate 4 PASS and archived (commit `eb09597a`, local only). Human-locked FREEZE 14 CAPABILITY first fences set `status: frozen`; live `scan-packs.sh` regen → registry 14 frozen / 11 active. KEEP-POINTER 11 untouched. AGENTS rows kept. Do not absorb into v2.44.4. Task ID: `TASK-20260910-PACK-FREEZE-INVENTORY`.
+
+- **Pack loader thin / on-demand / freeze** (2026-09-10) — Gate 4 PASS and archived (commit `9c33e2e5`, local only). Keyword/auto-match now announces at most 2 pointers and does not Read pack `SKILL.md`; registry `status: frozen` skips auto-match with files left on disk; escalate only when human-named or a recorded failure-retry exists; `scan-packs.sh` emits `status` (`frozen|active`, missing→active). Human locks held. Residual: `experiment-path-protocol.md` still dumps `ai-evaluation` SKILL (later ticket). Do not absorb into v2.44.4. Task ID: `TASK-20260910-PACK-LOADER-THIN`.
+
+- **Upstream Knowledge Seam & Downstream Isolation** (2026-09-09) — Gate 4 PASS and archived (commits `e6e2126e` + `65963d6b`, local only). Enforced Option A pure isolation on downstream installs (only clean `README.md` at pk root, empty `patterns/` and `incidents/` subdirs; zero framework incident/pattern leakage); excluded `.tad/brain-index.md` from top-level framework sync; fixed `set -euo pipefail` abortion defect across all grep pipeline sites in `brain-index-gen.sh`; wired non-blocking soft rebuild triggers into post-distillation, doctor, and maintain routines; delivered non-destructive opt-in quarantine utility (`tad.sh --quarantine-pk`) with manifest audit logging and user-modification preservation; protected project-owned skills (`ownership: project-owned` in all YAML serialization forms and `local/` skill tree) across both `.claude/skills/` and `.agents/skills/`. All 19 §9.1 ACs re-verified PASS, Layer 2 spec/code/test all PASS. Task ID: `TASK-20260908-KNOWLEDGE-SEAM-ISOLATION`.
 
 - **Clean TAD Upstream Research-Routing Entry Pointers** (2026-09-08) — Gate 4 PASS and archived. Cleared stale NotebookLM-primary pointers across 6 architectural tiers (CLAUDE.md, Alex/Blake SKILLs, protocols, quick-reference guides, capability packs); established Local Wiki + Iron Rule as the primary research engine and preserved NotebookLM intact as fallback. 12 dual-platform mirror pairs are 100% byte-identical. All 8 ACs and 11 spec matrix rows verified clean. Protected boundaries (`docs/pm/` and `research/`) zero diff. Task ID: `TASK-20260908-research-route-local-wiki`.
 

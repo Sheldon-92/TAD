@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-09-09 00:23
+Generated: 2026-09-13 10:39
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -27,10 +27,11 @@ Generated: 2026-09-09 00:23
 | Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
 | Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report |
 | Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5 |
-| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands |
+| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC |
+| Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
-| Pack Build Rules | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope | Pack architecture, keyword curation, YAML frontmatter, rule sourcing, security pack scope, cross-cutting rules, quality delta, capability pack, SKILL.md install, skill-vs-MCP boundary, judgment-vs-capability |
+| Pack Build Rules | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP |
 | Pack Evaluation | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check |
 | Research Methodology | Local Wiki primary, NotebookLM fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, NotebookLM fallback, cross-model orchestration, source quality, deep research, *research |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
@@ -63,6 +64,8 @@ Generated: 2026-09-09 00:23
 |------|-----------|---------|
 | HANDOFF-20260908-knowledge-seam-isolation.md | feature |  |
 | HANDOFF-20260908-release-v2443.md | release |  |
+| HANDOFF-20260909-release-v2444.md | release |  |
+| HANDOFF-20260911-release-v2445.md | release |  |
 
 ## Active Epics
 | File | Summary |
@@ -94,10 +97,17 @@ Generated: 2026-09-09 00:23
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260913-skill-authoring-habits.md | doc-only | HANDOFF-20260913-skill-authoring-habits |
+| HANDOFF-20260912-p2-sc4-process-tax-cut-wire.md | doc-only | HANDOFF-20260912-p2-sc4-process-tax-cut-wire |
+| HANDOFF-20260911-keep11-knife1-cli-refresh.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260910-verify-delta.md | mixed | HANDOFF-20260910-verify-delta — Runnable Verification Method fail-close |
+| HANDOFF-20260910-pack-loader-thin-ondemand.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260910-pack-freeze-inventory.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260908-thin-tad-harness-adapter.md | mixed | Handoff: thin-tad 评测适配器设计与 OpenCode 二进制契约对齐 (TASK-20260908-thin-tad-harness-adapter) |
 | HANDOFF-20260908-thin-tad-evaluation-p3.md | mixed | Handoff: TAD 精简实验 P3 — 离线分析、ADAPTER_INELIGIBLE 审计与有界决策报告 |
 | HANDOFF-20260908-research-route-local-wiki.md | mixed | Handoff: Clean TAD Upstream Research-Routing Entry Pointers (Local Wiki Primary, NotebookLM Fallback) |
 | HANDOFF-20260908-release-v2443.md | release | HANDOFF-20260908-release-v2443 — Publish v2.44.3 (Local Wiki Research Route + Experimental Thin-TAD Pilot Tooling) |
+| HANDOFF-20260908-knowledge-seam-isolation.md | feature | HANDOFF-20260908-knowledge-seam-isolation — Upstream Knowledge Seam & Downstream Isolation |
 | HANDOFF-20260907-publish-v2442.md | release | HANDOFF-20260907-publish-v2442 — Publish v2.44.2 (Framework-Health B + Lite Mute) |
 | HANDOFF-20260906-framework-health-closeout-b.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260904-workspace-hygiene-and-scan.md | mixed | Handoff Document for Agent B (Blake) |
@@ -116,24 +126,18 @@ Generated: 2026-09-09 00:23
 | HANDOFF-20260828-local-wiki-research-framework.md | code | HANDOFF-20260828-local-wiki-research-framework |
 | HANDOFF-20260827-yolo2-phase2-completion.md | code | HANDOFF-20260827-yolo2-phase2-completion |
 | HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Handoff: YOLO 2.0 Phase 2 — 质量保持的有界执行闭环 |
-| HANDOFF-20260824-yolo2-phase1-recovery-slice.md | mixed | Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片 |
-| HANDOFF-20260818-lazy-by-floor.md | unknown | HANDOFF: 按地板表懒加载 —— 可达性记录取代计数，实测定目标 |
-| HANDOFF-20260817-activation-ondemand.md | unknown | HANDOFF: 激活按需化 —— 启动扫描从「整读文件」改成「跑命令读输出」 |
-| HANDOFF-20260816-trace-relative-path.md | code | Handoff: 让 trace 写仓库相对路径（止住绝对路径的源头） |
-| HANDOFF-20260816-gate3-check8-audible.md | code | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260816-discipline-floor.md | unknown | HANDOFF: 地板表 —— 30 条纪律的载体该常驻还是按需 |
-| HANDOFF-20260815-discipline-floor.md | unknown | HANDOFF: 地板表 —— 每条纪律的载体该常驻还是按需 |
 
 ## Evidence Directories
 | Directory | Files | Topic |
 |-----------|-------|-------|
-| evidence/acceptance-tests/ | 638 | acceptance-tests |
+| evidence/acceptance-tests/ | 642 | acceptance-tests |
 | evidence/audits/ | 3 | audits |
 | evidence/codex-regression/ | 10 | codex-regression |
 | evidence/codex-validation/ | 4 | codex-validation |
 | evidence/completions/ | 72 | completions |
 | evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 26 | designs |
+| evidence/designs/ | 39 | designs |
+| evidence/discuss/ | 1 | discuss |
 | evidence/dogfood/ | 3 | dogfood |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
 | evidence/e2e/ | 3 | e2e |
@@ -144,7 +148,7 @@ Generated: 2026-09-09 00:23
 | evidence/handoff-reviews/ | 6 | handoff-reviews |
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
-| evidence/journal/ | 37 | journal |
+| evidence/journal/ | 39 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/maintenance/ | 1 | maintenance |
@@ -157,13 +161,13 @@ Generated: 2026-09-09 00:23
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 56 | pm |
+| evidence/pm/ | 71 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
 | evidence/ralph-loops/ | 12 | ralph-loops |
 | evidence/releases/ | 2 | releases |
-| evidence/research/ | 168 | research |
-| evidence/reviews/ | 693 | reviews |
+| evidence/research/ | 169 | research |
+| evidence/reviews/ | 744 | reviews |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
