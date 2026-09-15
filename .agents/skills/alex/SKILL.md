@@ -477,7 +477,8 @@ commands:
   doc-list: List all project documents
 
   # Research commands
-  research: "Unified research — Quick/Standard/Deep, primary: Local Wiki Standard (Iron Rule); fallback: NotebookLM"
+  research: "Unified research — Quick/Standard/Deep + charter (RG1 front-door), primary: Local Wiki Standard (Iron Rule); fallback: NotebookLM"
+  research charter: "Research charter front-door — write + authorize RESEARCH-CHARTER.md before *research --deep (RG1)"
   research status: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
   # Cross-project & skill management
@@ -625,7 +626,7 @@ intent_router_protocol:
   blocking: true
 
   # Core routing — explicit commands bypass detection
-  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*analyze", "*deps", "*deps-init", "*deps-add", "*deps-check", "*deps-update"]
+  explicit_commands: ["*bug", "*discuss", "*idea", "*learn", "*express", "*experiment", "*research", "*research charter", "*analyze", "*deps", "*deps-init", "*deps-add", "*deps-check", "*deps-update"]
   idle_patterns_zh: ["谢谢", "ok", "好的", "收到", "明白了"]
   idle_patterns_en: ["thanks", "ok", "got it", "sure", "noted"]
 
@@ -990,9 +991,9 @@ research_unified_protocol:
     note: "Standard 使用 -n <id> 指定 notebook，不使用 use <id>（避免全局状态污染）"
 
   deep_execution:
-    reference: "references/research-plan-protocol.md"
-    load_when: "When *research --deep is invoked, Read the reference and follow it verbatim."
-    note: "Deep 是完整的 Phase 0-5 研究流程（原 *research-plan），已去除 OBJECTIVES.md 硬依赖"
+    reference: "references/research-track-protocol.md"
+    load_when: "When *research --deep is invoked, Read references/research-track-protocol.md (RG1–RG4 wrapper over the research-plan engine) and follow it verbatim."
+    note: "Deep 经由 RG wrapper 进入完整 Phase 0-5（原 *research-plan）；RG1 charter 先于 Phase 0"
 
   backward_compat: |
     旧命令处理:
@@ -1149,6 +1150,7 @@ my_templates:
   reference: "references/my-templates.md"
   load_when: "When *design is invoked, Read the reference for output templates and usage rules."
 # Gate items: see .tad/gates/gate-canonical-checklist.md for full definitions (SSOT)
+# Research gates: see .tad/gates/research-gate-canonical-checklist.md (RG1–RG4 SSOT, Alex-owned)
 my_gates:
   gate1:
     name: "Requirements Clarity"

@@ -1,3 +1,5 @@
+**Verdict-first**: 结论第一句 ≤3 句；provenance 见 SOURCES.md（每条结论→来源→检索日期）。
+
 # 决策简报: {topic}
 
 **决策问题**: {research_decision_point}

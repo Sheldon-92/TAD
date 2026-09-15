@@ -827,3 +827,12 @@ feedback_collector:
 
   json_schema_ref: ".tad/templates/feedback-json-schema.md"
 
+research_track:
+  enabled: true
+  round_budget_default: 3
+  saturation_signals: [no_new_topics, lint_stable, zero_new_locators_x2]
+  critic_required: all_deep
+  cross_model_challenge_tier_gate: phase_0class
+  critic_independent_session: required
+  landing: {process: ".tad/evidence/research", durable: "research/", published_optional: "docs/research"}
+

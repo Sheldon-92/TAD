@@ -1,3 +1,8 @@
+# RG WRAPPER (2026-09-15): Research Track gate wrapper lives in references/research-track-protocol.md.
+# RG1 charter runs before Phase 0; RG2 = Phase 0 + step2/3 + Phase 0class + Phase 0c;
+# Rounds = Phase 4/4b/2.5; RG3 = Critic over findings (covers Phase 4c/5b);
+# RG4 = Phase 5 (Verdict+Sources). Engine below unchanged;
+# DR-20260531 carve-out unchanged; SAFETY anchors byte-preserved.
 # Research Plan Protocol — Deep Level of *research
 # Called by: research_unified_protocol.deep_execution (alex/SKILL.md)
 # Original source: .claude/skills/alex/SKILL.md
