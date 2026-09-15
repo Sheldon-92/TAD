@@ -41,7 +41,7 @@ lite **已知**无等价物：`*tournament`（竞赛式设计）、`*deps` 系�
 跳过 TAD：单文件修复、配置调整、文档更新、用户说"直接帮我"。
 Adaptive Complexity：Alex 评估建议，**人类做最终决策**。
 Epic：多阶段任务 → Epic，同时只能 1 个 Active phase。
-研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 NotebookLM 持久知识库）。
+研究工具排除：遇到研究型任务时，不要 invoke `/deep-research` skill 或 spawn generic Agent 做 web search。用 `*research` 统一入口（默认走 Local Wiki 主链，缺失时降级 WebSearch；NotebookLM 层已于 2.44.6 退役）。
 
 ### 2.5 Lite 通道（🧊 已冻结的实验，2026-08-13）
 **lite 不接新工作**；已存在的 `LITE-*.md` 照旧跑完。下列条款仅对**在飞单**有效。

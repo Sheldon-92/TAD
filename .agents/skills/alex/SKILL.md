@@ -279,39 +279,30 @@ activation-instructions:
       Does NOT affect STEP 3.8 suppression.
   - STEP 3.8: Research Landscape + Objective Alignment Scan
     action: |
-      After STEP 3.7, check research landscape (Local Wiki primary, NotebookLM secondary):
+      After STEP 3.7, check research landscape (Local Wiki primary, WebSearch degrade; NotebookLM layer retired 2.44.6):
       0. Probe Local Wiki first: check `research/canon/_index.md` and `research/wiki/index.md`.
          If Local Wiki present, count canon entries and covered topics, output:
          `📚 Local Wiki: {canon_count} entries across {topics_count} topics ✅`.
-         Align objectives against Local Wiki topics first, notebook topics second.
+         Align objectives against Local Wiki topics (notebook topics are archival only, do not route).
          (`grep -c` probe; dynamic anchor `Local Wiki:.*canon_count`.)
-      1. Check if .tad/research-notebooks/REGISTRY.yaml exists (secondary asset/archive)
-         → If not: skip silently (project has no NotebookLM integration)
-      2. If exists: 只跑命令读输出，禁止整读（须给出三态计数与**active 的** topic，实测裸 grep 会取到 dormant 的 topic 并多数一行注释模板）：`awk '/^    topic:/{t=$0} /^    status: *active/{a++;act[a]=t} /^    status: *dormant/{d++} /^    status: *archived/{r++} END{print "active="a+0" dormant="d+0" archived="r+0; for(i=1;i<=a;i++) print act[i]}' .tad/research-notebooks/REGISTRY.yaml`
-         a. Count notebooks by status (active/dormant/archived)
-         b. Derive topics_summary: first 3 active notebook topic fields (comma-separated)
-         c. If active_count > 5:
-            → Output: "📚 Research: {active_count} active notebooks. Consider *research-notebook curate to consolidate."
-         d. If active_count > 0 AND active_count <= 5:
-            → Output: "📚 Research: {active_count} notebooks available ({topics_summary})"
-         e. If active_count == 0 AND dormant_count > 0:
-            → Output: "📚 Research: {dormant_count} dormant notebooks. Use *research-notebook list to review."
+      1. (RETIRED 2.44.6 — NotebookLM layer retired; `.tad/research-notebooks/REGISTRY.yaml` is frozen/archival, do not route.) If REGISTRY.yaml exists, treat as archival only and skip live scan silently. Do not prompt `*research-notebook curate/list` (tool DEPRECATED — see `.agents/skills/research-notebook/SKILL.md`). History files are retained, not deleted.
+      2. (RETIRED 2.44.6 — see sub-step 1.) No live notebook counts or topics_summary. If REGISTRY.yaml is present, output at most one line: `📚 Research notebooks: archival only (NotebookLM retired 2.44.6; current chain local_wiki → claude_websearch).`
 
-      # ---- 新增：目标对齐检查 (独立于 REGISTRY 检查) ----
+      # ---- 新增：目标对齐检查 (REGISTRY 已退役为档案，不作为覆盖源) ----
       3. Check if OBJECTIVES.md exists (project root)
          → If not: skip sub-steps 3-5 silently (项目没定义目标)
       4. If OBJECTIVES.md exists: 只读标题与 KR 行，禁止整读（KR 是表格行不是 checkbox）：`command grep -E '^#{1,3} |^\| KR' OBJECTIVES.md | head -40`
          a. Extract all Objectives + Key Results (including KR status: ⬚/🔄/✅)
-         b. Matching method: LLM semantic judgment over (notebook.topic, objective.title).
-            If active_count > 8: only check top 3 Objectives (first 3 in file).
+         b. Matching method: LLM semantic judgment over (Local Wiki topics, objective.title).
+            If Objectives count > 8: only check top 3 Objectives (first 3 in file).
             Output note: "(showing alignment for top 3 of {N} objectives; run *research-review for full)"
-         c. For each Objective checked: mark covered (record matched topic) or gap (no match found).
-            REGISTRY missing or empty → all Objectives are automatically gaps.
-      5. Output format (append after existing research landscape output, or standalone if REGISTRY absent):
+         c. For each Objective checked: mark covered (record matched Local Wiki topic) or gap (no match found).
+            Local Wiki absent → all Objectives are automatically gaps (REGISTRY is archival only, not a coverage source).
+      5. Output format (append after existing research landscape output, or standalone if Local Wiki absent):
          ```
-         🎯 Objective Alignment:
-         - O1: {title} — ✅ Covered (notebook: {topic}) / ⚠️ No research
-         - O2: {title} — ✅ / ⚠️
+          🎯 Objective Alignment:
+          - O1: {title} — ✅ Covered (wiki: {topic}) / ⚠️ No research
+          - O2: {title} — ✅ / ⚠️
          ```
          If ANY gap detected:
          → "💡 建议: 运行 *research --deep 来执行深度研究"
@@ -320,13 +311,13 @@ activation-instructions:
          here, append that domain to `declined_research_domains` (honored by
          research_decision_protocol research-gate, so it won't re-prompt the same domain).
     blocking: false
-    suppress_if: "(REGISTRY.yaml not found OR 0 active + 0 dormant notebooks) AND OBJECTIVES.md not found"
+    suppress_if: "Local Wiki absent AND OBJECTIVES.md not found (REGISTRY.yaml is archival only since 2.44.6 and does not keep this step alive)"
     interacts_with: |
       Runs AFTER STEP 3.7 (session state), regardless of STEP 3.7 outcome.
       Does NOT affect STEP 4 suppression — STEP 3.7's interacts_with rule controls that.
       If STEP 3.7 already suppresses STEP 4, STEP 3.8 output still shows
       (research landscape is informational, independent of greeting).
-      Sub-steps 1-2 (landscape scan) suppressed if REGISTRY.yaml absent.
+      Sub-steps 1-2 are retired (archival-only; never live-scan REGISTRY.yaml).
       Sub-steps 3-5 (objective alignment) suppressed if OBJECTIVES.md absent.
       Either sub-path can run independently.
   - STEP 3.9: GitHub Registry Weekly Scan Report
