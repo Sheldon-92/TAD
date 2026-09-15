@@ -5,7 +5,30 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.44.6] - 2026-09-15
+
+### Deprecated
+
+- **NotebookLM research layer retired — whole layer, not upgraded**:
+  - The research fallback chain is now `local_wiki → claude_websearch` (was
+    `local_wiki → notebooklm_research → claude_websearch`). SSOT:
+    `.tad/config-workflow.yaml` (`fallback_chains.research`).
+  - **Retirement, not upgrade.** The pilot recommendation to upgrade `notebooklm-py` to 0.8.2
+    (`.tad/evidence/research/2026-09-15-gemini-notebook-fallback/VERDICT.md`) is **withdrawn**.
+    The root causes stand: no official consumer API, and the NotebookLM→Gemini Notebook rename
+    broke login below 0.8.0.
+  - **Files retained, nothing deleted, no migration.** `*research-notebook`, the `notebooklm`
+    CLI integration (`~/.tad-notebooklm-venv`), the `notebooklm-py` pin, the
+    `notebooklm_research` capability (plus `notebooklm_fulltext` / `_quiz` / `_flashcards` /
+    `_language`), `setup-notebooklm.sh`, and `notebooklm-access.md` are marked **DEPRECATED**
+    in place and carry a pointer to the new chain. No `.tad/deprecation.yaml` entry (that
+    registry records deleted files only).
+  - **Hook de-registered.** `notebook-dormant-sync.sh` is removed from the SessionStart hook
+    lists (`.claude/settings.json`, `.codex/hooks.json`, `tad.sh`); the script and
+    `notebook-lifecycle.sh` remain as inert DEPRECATED files.
+  - **No capability regression.** `claude_websearch` already carried the terminal degradation
+    path for Standard/Deep; this change only removes the intermediate NotebookLM hop.
+  - **Supersedes** the "preserve NotebookLM intact as cloud fallback" decision of v2.44.3.
 
 ## [2.44.5] - 2026-09-11
 
