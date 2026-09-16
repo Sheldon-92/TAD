@@ -1,6 +1,6 @@
 # TAD Codex Adapter
 
-Codex is a **first-class TAD runtime** (since v2.25.0, current v2.44.0). Both Claude Code and Codex receive the same SKILL.md files and follow the same shared TAD protocol.
+Codex is the **primary TAD runtime** (first-class since v2.25.0, sole runtime since v3.0.0). There is a single skill tree (`.agents/skills/`, the sole source of truth) and a single shared TAD protocol.
 
 ---
 
@@ -23,12 +23,12 @@ These files are committed and active in the TAD project:
 
 - `.codex/hooks.json` — TAD lifecycle hooks (SessionStart startup/resume/compact, PostToolUse)
 - `.tad/hooks/lib/hook-envelope.sh` — shared stdin/field normalization with empty-input and TTY guards
-- `.agents/skills/alex/SKILL.md` — Alex role (same content as `.claude/skills/alex/SKILL.md`)
-- `.agents/skills/blake/SKILL.md` — Blake role (same content as `.claude/skills/blake/SKILL.md`)
-- `.agents/skills/{pack}/SKILL.md` — Capability packs (byte-identical to `.claude/skills/{pack}/SKILL.md`)
+- `.agents/skills/alex/SKILL.md` — Alex role (sole source of truth since v3.0.0)
+- `.agents/skills/blake/SKILL.md` — Blake role (sole source of truth since v3.0.0)
+- `.agents/skills/{pack}/SKILL.md` — Capability packs (installed from the same sole source)
 - `AGENTS.md` — Role routing, capability pack keywords, Codex-specific notes
 
-SKILL.md Capability Packs are the only active pack system for both Claude Code and Codex. YAML Domain Packs were retired in v2.30.0 and archived to `.tad/archive/domains/`.
+SKILL.md Capability Packs are the only active pack system. YAML Domain Packs were retired in v2.30.0 and archived to `.tad/archive/domains/`.
 
 ---
 
@@ -86,7 +86,7 @@ Codex adapter handles **platform mechanics only**: how hooks fire, how skills lo
 | Gap | Impact | Status |
 |-----|--------|--------|
 | `ask_user_question` in `codex exec` batch mode | `request_user_input` unavailable (by design — no interactive user); interactive Codex works normally | Accepted limitation — text-based fallback documented |
-| Custom-agent review quality untested | Unknown whether TOML agents match Claude Code Agent tool quality | Pending — activate after human approval |
+| Custom-agent review quality untested | Unknown whether TOML agents match prompt-driven review quality | Pending — activate after human approval |
 | Runtime freshness | Ledgers active at `.tad/runtime-compat/`; `runtime-freshness-verify.sh` 21/21 PASS | Completed |
 | Full-cycle regression | PASS (verdict: PASS, release_readiness: CONDITIONAL_GO, 2026-06-09) | Completed |
 | Codex PreCompact delivery | Spike D reached no authenticated turn; no PreCompact hook is wired; session-state fallback remains | Honest limitation — re-probe required |

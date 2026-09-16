@@ -1,5 +1,5 @@
 # ⚠️ DEPRECATED (TAD 2.44.6, 2026-09-15) — NotebookLM 整层退役（不是升级）。
-# notebooklm_* 能力键保留仅作历史存档；研究 fallback 链现为 local_wiki → claude_websearch
+# notebooklm_* 能力键保留仅作历史存档；研究 fallback 链现为 local_wiki → websearch
 # （SSOT: .tad/config-workflow.yaml → fallback_chains.research）。
 # Cross-Model Capability Catalog
 # Protocol fixed, capabilities pluggable.
@@ -28,7 +28,7 @@ capabilities:
   notebooklm_research:
     deprecated: true
     deprecated_in: "2.44.6"
-    replaced_by: "claude_websearch"
+    replaced_by: "websearch"
     platform: notebooklm
     cli_commands:
       - 'notebooklm ask "{question}"'
@@ -45,7 +45,7 @@ capabilities:
     skill_ref: "*research-notebook (19 commands: create, add, ask, list, sync, curate, archive, use, research, report, guide, configure, topics, ingest, fulltext, language, consolidate, quiz, flashcards)"
     use_when: "Research-intensive topics needing cross-source synthesis + video content + citations; auto source discovery (research cmd); report generation (report cmd)"
     dont_use_when: "Quick fact lookup (use WebSearch) / real-time data (NotebookLM does not fetch live web)"
-    fallback: "WebSearch ×5-8 (Claude iterative search)"
+    fallback: "WebSearch ×5-8 (harness iterative search)"
     setup_required: true
     setup_ref: "*research-notebook create OR bash .tad/cross-model/setup-notebooklm.sh"
     minimum_version: "notebooklm-py==0.3.4 (0.1.1 has deprecated RPC endpoints — all AI commands fail)"
@@ -81,7 +81,7 @@ capabilities:
   notebooklm_fulltext:
     deprecated: true
     deprecated_in: "2.44.6"
-    replaced_by: "claude_websearch"
+    replaced_by: "websearch"
     platform: notebooklm
     cli_command: 'notebooklm source fulltext <source_id> -n <notebook_id> -o /tmp/tad-fulltext-{source_id}.txt'
     description: "Extract and preview full text content of a specific source — source quality evaluation"
@@ -96,7 +96,7 @@ capabilities:
   notebooklm_quiz:
     deprecated: true
     deprecated_in: "2.44.6"
-    replaced_by: "claude_websearch"
+    replaced_by: "websearch"
     platform: notebooklm
     cli_command: 'notebooklm generate quiz --difficulty medium --quantity standard -n <id> --retry 3 --wait && notebooklm download quiz --format markdown <output_path> -n <id>'
     description: "Generate quiz from notebook content + download as local markdown — for *learn integration"
@@ -111,7 +111,7 @@ capabilities:
   notebooklm_flashcards:
     deprecated: true
     deprecated_in: "2.44.6"
-    replaced_by: "claude_websearch"
+    replaced_by: "websearch"
     platform: notebooklm
     cli_command: 'notebooklm generate flashcards --difficulty medium --quantity standard -n <id> --retry 3 --wait && notebooklm download flashcards --format markdown <output_path> -n <id>'
     description: "Generate flashcards from notebook content + download as local markdown"
@@ -126,7 +126,7 @@ capabilities:
   notebooklm_language:
     deprecated: true
     deprecated_in: "2.44.6"
-    replaced_by: "claude_websearch"
+    replaced_by: "websearch"
     platform: notebooklm
     cli_command: 'notebooklm language set <code> -n <id>'
     description: "Manage NotebookLM output language — affects reports, quizzes, flashcards, summaries"
@@ -137,6 +137,20 @@ capabilities:
     dont_use_when: "English output is acceptable (default)"
     setup_required: true
 
+  websearch:
+    platform: harness
+    description: "Harness-native web search (WebSearch/WebFetch tools)"
+    verified: true
+    use_when: "Quick fact lookup, real-time data, fallback research chain"
+    setup_required: false
+
+  code_reviewer:
+    platform: harness
+    description: "Harness-native code reviewer sub-agent (Gate 3 review)"
+    verified: true
+    use_when: "Code review gate, spec-compliance review"
+    setup_required: false
+
   gemini_research:
     platform: gemini
     cli_command: 'gemini -p "{question}"'
@@ -145,7 +159,7 @@ capabilities:
     spike_ref: "SPIKE-20260503-cross-model-orchestration/SPIKE-REPORT.md"
     use_when: "Need real-time web info + fact-checking with Google search grounding"
     dont_use_when: "Need deep cross-source synthesis (use NotebookLM) / need to write files (Gemini -p is read-only)"
-    fallback: "WebSearch (Claude built-in)"
+    fallback: "WebSearch (harness built-in)"
     status: "DEFER — symmetric prompt retest required (Phase 0 Spike B asymmetry issue)"
     latency: "~61s per query"
     notes: |

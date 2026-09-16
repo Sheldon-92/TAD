@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TAD updater helper — the SINGLE update orchestration point for the current
-# project (Claude Code / Codex skills and the OpenCode command all delegate here).
+# project (Codex skills and the OpenCode command all delegate here).
 #
 # Design contract (TAD v2.43.1, HANDOFF-20260902-tad-update-v2431 FR-2):
 #   - One engine: this helper only checks, compares, and delegates. Installation,
@@ -38,14 +38,13 @@ PLATFORM_ARG=""
 
 usage() {
     cat <<'EOF'
-Usage: tad-update.sh [--check] [--yes] [--platform <claude-code|codex|both>] [--help]
+Usage: tad-update.sh [--check] [--yes] [--platform <codex>] [--help]
 
   --check                read-only check: print current/remote versions and
                          whether an update is available. Never mutates.
   --yes                  apply the update. ONLY after explicit human approval;
                          the helper itself never infers consent.
-  --platform <name>      explicit platform when automatic detection is
-                         ambiguous (claude-code | codex | both).
+  --platform <name>      explicit platform (codex — the only target since v3.0.0).
   --help                 this help.
 
 Default (no flag): with a controlling TTY, check then prompt once for
@@ -76,8 +75,10 @@ fi
 
 if [ -n "$PLATFORM_ARG" ]; then
     case "$PLATFORM_ARG" in
-        claude-code|codex|both) ;;
-        *) echo "tad-update: --platform must be claude-code, codex, or both (got: $PLATFORM_ARG)" >&2; exit 2 ;;
+        codex) ;;
+        both|*claude*)
+            echo "tad-update: --platform '$PLATFORM_ARG' was removed in TAD v3.0.0. Re-run with --platform codex." >&2; exit 2 ;;
+        *) echo "tad-update: --platform must be codex (got: $PLATFORM_ARG)" >&2; exit 2 ;;
     esac
 fi
 
@@ -112,19 +113,12 @@ ver_cmp() {
 # ============================================
 # Platform detection (deterministic precedence)
 # ============================================
-# both → both canonical Alex skill roots present
-# claude-code → only .claude/skills/alex
-# codex → only .agents/skills/alex
+# v3.0.0: codex is the only target. .agents/skills/alex present → codex.
+# A leftover downstream .claude tree is NEVER auto-deleted and never
+# re-detected as an install target (see tad.sh tombstone).
 # else → ambiguous/absent (check may report; apply REQUIRES --platform)
 detect_platform() {
-    local has_claude=0 has_codex=0
-    [ -d "$PROJECT_ROOT/.claude/skills/alex" ] && has_claude=1
-    [ -d "$PROJECT_ROOT/.agents/skills/alex" ] && has_codex=1
-    if [ "$has_claude" = "1" ] && [ "$has_codex" = "1" ]; then
-        echo "both"
-    elif [ "$has_claude" = "1" ]; then
-        echo "claude-code"
-    elif [ "$has_codex" = "1" ]; then
+    if [ -d "$PROJECT_ROOT/.agents/skills/alex" ]; then
         echo "codex"
     else
         echo "ambiguous"
@@ -245,8 +239,8 @@ platform="$PLATFORM_ARG"
 if [ -z "$platform" ]; then
     platform="$(detect_platform)"
     if [ "$platform" = "ambiguous" ]; then
-        echo "Error: cannot determine the installed platform (neither .claude/skills/alex nor .agents/skills/alex was found)." >&2
-        echo "Re-run with --platform claude-code|codex|both. No update was applied." >&2
+        echo "Error: cannot determine the installed platform (.agents/skills/alex was not found)." >&2
+        echo "Re-run with --platform codex. No update was applied." >&2
         exit 1
     fi
 fi

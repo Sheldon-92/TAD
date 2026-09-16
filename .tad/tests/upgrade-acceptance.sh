@@ -180,7 +180,7 @@ check_deprecated() {
   # Paths the installer REGENERATES on every run after deprecation cleanup
   # (copy-after-deprecation ordering: apply_deprecations removes them, then the
   # install flow re-creates the current content — e.g. .codex/hooks.json on
-  # codex/both platforms). Their presence is NOT a stale-deprecation defect.
+  # codex platform). Their presence is NOT a stale-deprecation defect.
   local regenerated=".codex/hooks.json"
   while IFS= read -r fpath; do
     [ -n "$fpath" ] || continue

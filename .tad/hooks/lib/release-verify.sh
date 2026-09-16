@@ -12,7 +12,7 @@
 #           (i.e. capability-packs), diff ONLY that command's sub-path
 #           (capability-packs/pack-registry.yaml) — NOT the dir tree;
 #         - else diff -rq the whole dir source-vs-target.
-#       Also diff -rq .claude/skills (the verbatim-synced skills path).
+#       Also diff -rq .agents/skills (the sole framework skills path, v3.0.0).
 #       The registry-only special-case is READ from --registry-only, NEVER hardcoded here.
 #       Exit 0 = every derived path byte-identical source-vs-target; exit 1 = ≥1 missing/
 #       differing path (each NAMED); exit 2 = usage.
@@ -27,7 +27,7 @@
 #       SCOPE (P1-1 fix — both reviewers' load-bearing condition):
 #         - If <repo_root> is inside a git work tree, scope the search to GIT-TRACKED files
 #           (`git -C <repo> ls-files`). This structurally excludes gitignored ephemeral trees
-#           (`.claude/worktrees/agent-*/`, `.tad.backup.*/`, `codex-tad-bundle/`, node_modules)
+#           (`.tad.backup.*/`, `codex-tad-bundle/`, node_modules)
 #           that the raw FS-walk picked up (~88% noise on a real prior-version dry run). The
 #           zero-touch dirs (read from `derive-sync-set.sh --zero-touch`) are then filtered
 #           OUT of that tracked set by path-prefix (`.tad/<zero-touch>/`), since git tracks
@@ -74,7 +74,7 @@
 #
 #   migration <repo_root> [<expected_version>]
 #       Detect D (deleted) and R (renamed) files between the previous git tag and HEAD,
-#       scoped to framework-managed paths (.tad/, .claude/, .codex/, .agents/, root files).
+#       scoped to framework-managed paths (.tad/, .codex/, .agents/, root files).
 #       Cross-reference against manifest in .tad/migrations/{prev_ver}-to-{exp_ver}.yaml.
 #       ZERO_TOUCH directories (from derive-sync-set.sh --zero-touch) are excluded.
 #       Secondary rename detection: for each D without manifest coverage, flag if any A
@@ -98,23 +98,9 @@
 #       site (each NAMED file:line); exit 2 = usage. STABLE-contract: the
 #       exit-code meanings are frozen (see gate rule above).
 #
-#   parity [--fix] <repo_root>
-#       Claude↔Codex dual-platform skills parity: diff -rq <repo>/.claude/skills vs
-#       <repo>/.agents/skills (the Codex mirror). The invariant is FULL BYTE-PARITY with
-#       .claude/skills as the SOLE source of truth (direction FIXED Claude→Codex per f428d70 AC1).
-#       On exit 1 (drift), computes and prints DIRECTION:
-#         claude-newer  = safe to mirror (.claude was edited, .agents is stale)
-#         agents-newer (STOP) = someone edited the mirror directly — DO NOT auto-fix
-#       Direction heuristic (biased to STOP): a differing/orphan .agents path that is
-#       working-tree-modified, untracked, or whose last commit touches ONLY the .agents side
-#       → agents-newer. When the heuristic cannot decide → agents-newer (false-positive preferred).
-#       --fix: if claude-newer → rsync -a --delete Claude→Codex, re-verify to exit 0.
-#              if agents-newer → REFUSE (exit 1, names offending paths, changes nothing).
-#       Exit 0 = byte-identical; exit 1 = drift (each path NAMED, DIRECTION printed);
-#       exit 2 = usage / missing dir.
-#       NO PATCH-RELEASE DOWNGRADE: parity drift is fixed unconditionally regardless of
-#       release_type — a stale mirror is never acceptable to ship. This is asymmetric vs
-#       step3c/step3d which allow warn-mode on patch releases.
+#   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
+#       nothing to mirror). Replaced by `structural` (.agents/skills byte-identity).
+#       Any caller still invoking them gets usage exit 2 (fail-closed).
 #
 # Gate rule (in both protocols) — exit 1 (DRIFT) and exit 2 (WIRING) are handled SEPARATELY
 # (cr-P1-3 / arch-P1-2 fix). `TAD_RELEASE_GATE=warn` (shadow cutover) downgrades ONLY drift:
@@ -133,7 +119,7 @@
 # ==========================================================================================
 #
 # BSD/macOS safe: no grep -P. LC_ALL=C on sort/comm. Quote all path expansions
-# (repo path contains a space). Mirrors codex-parity-check.sh conventions.
+# (repo path contains a space). Same quoting conventions as before.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -146,8 +132,6 @@ usage() {
   echo "  release-verify.sh version-sweep <repo_root> <expected_version>" >&2
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
-  echo "  release-verify.sh parity [--fix] <repo_root>" >&2
-  echo "  release-verify.sh platform-skills <source_root> <target_root>" >&2
   echo "  release-verify.sh installer-destructive-guard <repo_root>" >&2
 }
 
@@ -205,15 +189,15 @@ case "$MODE" in
       fi
     done < <(bash "$DERIVE" --dirs "$SRC")
 
-    # .claude/skills — verbatim-synced framework skills path.
+    # .agents/skills — the sole framework skills path (v3.0.0 SSOT).
     # FR7 (2026-06-10): "Only in target" extras are local-skill INFO, not fail.
     # The structural gate catches INCOMPLETE copies (omissions); target-side extras
     # are the T1 local-skill model working as designed.
     # Phase 1 (2026-06-17): filter out .tad-pack-meta.yaml from diff output —
     # these are generated at install time in the target and expected to differ.
-    sout="$(diff -rq "$SRC/.claude/skills" "$TGT/.claude/skills" 2>&1 | grep -v '\.tad-pack-meta\.yaml')" || true
+    sout="$(diff -rq "$SRC/.agents/skills" "$TGT/.agents/skills" 2>&1 | grep -v '\.tad-pack-meta\.yaml')" || true
     if [ -z "$sout" ]; then
-      echo "  ✅ .claude/skills identical"
+      echo "  ✅ .agents/skills identical"
     else
       local_skills="$(printf '%s\n' "$sout" | grep "^Only in $TGT" || true)"
       real_diffs="$(printf '%s\n' "$sout" | grep -v "^Only in $TGT" || true)"
@@ -223,22 +207,10 @@ case "$MODE" in
         done
       fi
       if [ -z "$real_diffs" ]; then
-        echo "  ✅ .claude/skills identical (local-skill extras ignored)"
+        echo "  ✅ .agents/skills identical (local-skill extras ignored)"
       else
-        echo "  ❌ .claude/skills DIFF:"
+        echo "  ❌ .agents/skills DIFF:"
         printf '%s\n' "$real_diffs" | sed 's/^/      /' | head -4
-        fails=$((fails + 1))
-      fi
-    fi
-
-    # .claude/workflows — dynamic workflow scripts (EPIC-20260603).
-    if [ -d "$SRC/.claude/workflows" ]; then
-      wout="$(diff -rq "$SRC/.claude/workflows" "$TGT/.claude/workflows" 2>&1)" || true
-      if [ -z "$wout" ]; then
-        echo "  ✅ .claude/workflows identical"
-      else
-        echo "  ❌ .claude/workflows DIFF:"
-        printf '%s\n' "$wout" | sed 's/^/      /' | head -4
         fails=$((fails + 1))
       fi
     fi
@@ -451,7 +423,7 @@ EOF
     # Compute framework-scoped diff (D, R, A entries)
     # Disable Git's C-style path quoting so ZERO_TOUCH matching also sees the real
     # prefix for non-ASCII paths (for example .tad/evidence/证据.md).
-    DIFF_OUTPUT="$(git -C "$REPO" -c core.quotePath=false diff --name-status -M "$PREV_TAG"..HEAD -- .tad/ .claude/ .codex/ .agents/ CLAUDE.md AGENTS.md tad.sh 2>/dev/null)" || true
+    DIFF_OUTPUT="$(git -C "$REPO" -c core.quotePath=false diff --name-status -M "$PREV_TAG"..HEAD -- .tad/ .codex/ .agents/ AGENTS.md tad.sh 2>/dev/null)" || true
 
     # Classify entries, filtering ZERO_TOUCH
     DELETES=""
@@ -555,198 +527,6 @@ MIG_REN_EOF
     fi
     ;;
 
-  # ───────────────────────────── parity ─────────────────────────────
-  parity)
-    FIX_MODE=false
-    if [ "${2:-}" = "--fix" ]; then FIX_MODE=true; shift; fi
-    if [ $# -ne 2 ]; then usage; exit 2; fi
-    REPO="$(cd "$2" && pwd -P)" || { echo "ERROR: cannot resolve repo path: $2" >&2; exit 2; }
-    CLAUDE_SKILLS="$REPO/.claude/skills"
-    AGENTS_SKILLS="$REPO/.agents/skills"
-    if [ ! -d "$CLAUDE_SKILLS" ]; then echo "ERROR: no .claude/skills under repo: $REPO" >&2; exit 2; fi
-    if [ ! -d "$AGENTS_SKILLS" ]; then echo "ERROR: no .agents/skills under repo: $REPO (Codex mirror missing)" >&2; exit 2; fi
-
-    echo "========================================="
-    echo "PARITY VERIFY (.claude/skills <-> .agents/skills byte-identity)"
-    echo "  REPO: $REPO"
-    if $FIX_MODE; then echo "  MODE: --fix (will attempt auto-fix if claude-newer)"; fi
-    echo "========================================="
-
-    check_platform_coupled_references() {
-      local ref_file ref_hits ref_line relpath line_no
-      local violations=0
-      while IFS= read -r -d '' ref_file; do
-        ref_hits="$(grep -nE '^[[:space:]]*reference:.*\.claude/' "$ref_file" 2>/dev/null || true)"
-        while IFS= read -r ref_line; do
-          [ -n "$ref_line" ] || continue
-          relpath="${ref_file#$REPO/}"
-          line_no="${ref_line%%:*}"
-          echo "parity FAIL: platform-coupled reference path in ${relpath}:${line_no}" >&2
-          violations=$((violations + 1))
-        done <<< "$ref_hits"
-      done < <(find "$AGENTS_SKILLS" -type f -name '*.md' -print0)
-      if [ "$violations" -gt 0 ]; then
-        echo "VERDICT: parity FAIL — platform-coupled reference paths (exit 1)" >&2
-        return 1
-      fi
-      return 0
-    }
-
-    # Reference declarations must be platform-neutral before the byte-parity early exit.
-    # --fix defers this check until after the mirror rsync to avoid a fix deadlock.
-    if [ "$FIX_MODE" = false ] && ! check_platform_coupled_references; then
-      exit 1
-    fi
-
-    # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
-    pout="$(diff -rq -x local "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
-    if [ -z "$pout" ]; then
-      if [ "$FIX_MODE" = true ] && ! check_platform_coupled_references; then
-        exit 1
-      fi
-      echo "  ✅ .claude/skills <-> .agents/skills byte-identical"
-      echo "VERDICT: parity PASS (exit 0)"
-      exit 0
-    fi
-
-    printf '%s\n' "$pout" | sed 's/^/  ❌ /'
-
-    # DIRECTION heuristic — DEFAULT STOP, promote to claude-newer only when proven safe.
-    # FR2: "When the heuristic cannot decide → agents-newer (STOP) (false-positive preferred)."
-    # Non-git repo, parse failure, ambiguous commit history → all stay at default STOP.
-    DIRECTION="agents-newer (STOP)"
-    is_git=false
-    if cd "$REPO" && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then is_git=true; fi
-
-    if $is_git; then
-      # Try to PROVE claude-newer: every differing path must pass ALL checks.
-      # Any single path that fails → stays at default STOP (break immediately).
-      all_claude_newer=true
-      while IFS= read -r line; do
-        apath=""
-        case "$line" in
-          "Only in $AGENTS_SKILLS"*)
-            # Orphan on .agents side → agents-newer
-            all_claude_newer=false
-            echo "  ⚠️  orphan on .agents side: ${line#Only in }"
-            break
-            ;;
-          "Only in $CLAUDE_SKILLS"*)
-            # Orphan on .claude side → this path is claude-newer, continue checking others
-            continue
-            ;;
-          "Files "*"differ")
-            apath="$(printf '%s\n' "$line" | sed -n "s|.*and \($AGENTS_SKILLS[^ ]*\) differ|\1|p")"
-            ;; # [^ ]* assumes no spaces in skill filenames (convention-enforced)
-        esac
-        if [ -z "$apath" ]; then all_claude_newer=false; echo "  ⚠️  unparseable diff line — cannot prove direction"; break; fi
-
-        relpath="${apath#$REPO/}"
-
-        # Check 1: .agents path has uncommitted changes → agents-newer
-        gstatus="$(cd "$REPO" && git status --porcelain -- "$relpath" 2>/dev/null)" || true
-        if [ -n "$gstatus" ]; then
-          # Also check .claude counterpart — if .claude has uncommitted changes
-          # but .agents does NOT, that's claude-newer
-          cpath="${apath/$AGENTS_SKILLS/$CLAUDE_SKILLS}"
-          crelpath="${cpath#$REPO/}"
-          cstatus="$(cd "$REPO" && git status --porcelain -- "$crelpath" 2>/dev/null)" || true
-          if [ -n "$cstatus" ] && [ -z "$gstatus" ]; then
-            continue  # .claude dirty, .agents clean → this path is claude-newer
-          fi
-          if [ -n "$gstatus" ] && [ -z "$cstatus" ]; then
-            all_claude_newer=false
-            echo "  ⚠️  $relpath has uncommitted changes on .agents side"
-            break
-          fi
-          # Both dirty or unable to determine → STOP
-          all_claude_newer=false
-          echo "  ⚠️  $relpath: both sides have uncommitted changes — cannot determine direction"
-          break
-        fi
-
-        # Check 2: .claude counterpart has uncommitted changes → claude-newer (positive proof)
-        cpath="${apath/$AGENTS_SKILLS/$CLAUDE_SKILLS}"
-        crelpath="${cpath#$REPO/}"
-        cstatus="$(cd "$REPO" && git status --porcelain -- "$crelpath" 2>/dev/null)" || true
-        if [ -n "$cstatus" ]; then
-          continue  # .claude is dirty, .agents is clean → this path is claude-newer
-        fi
-
-        # Check 3: last commit analysis — only promote if .agents commit == .claude commit
-        # (same mirror commit) or .claude commit is strictly newer
-        alast="$(cd "$REPO" && git log -1 --format=%H -- "$relpath" 2>/dev/null)" || true
-        clast="$(cd "$REPO" && git log -1 --format=%H -- "$crelpath" 2>/dev/null)" || true
-        if [ -z "$alast" ] || [ -z "$clast" ]; then
-          all_claude_newer=false
-          echo "  ⚠️  $relpath: no git history for one side — cannot determine direction"
-          break
-        fi
-        if [ "$alast" = "$clast" ]; then
-          continue  # same last commit → likely imperfect sync, .claude is SOT
-        fi
-        # Different commits — check if .agents commit touches only .agents (independent edit)
-        afiles="$(cd "$REPO" && git diff-tree --no-commit-id --name-only -r "$alast" 2>/dev/null)" || true
-        if printf '%s\n' "$afiles" | grep -q -- "^\.agents/" && ! printf '%s\n' "$afiles" | grep -q -- "^\.claude/"; then
-          all_claude_newer=false
-          echo "  ⚠️  $relpath last commit ($alast) touches only .agents side"
-          break
-        fi
-        # .agents commit also touches .claude → likely a bulk sync, treat as claude-newer
-      done <<PARITY_EOF
-$pout
-PARITY_EOF
-
-      if $all_claude_newer; then
-        DIRECTION="claude-newer"
-      fi
-    else
-      echo "  ⚠️  not a git repository — cannot determine direction (default: STOP)"
-    fi
-
-    echo "DIRECTION: $DIRECTION"
-
-    if $FIX_MODE; then
-      if [ "$DIRECTION" = "claude-newer" ]; then
-        echo "  🔧 Auto-fixing: rsync Claude→Codex..."
-        # local/ = machine-local skills (save-skill), gitignored, never mirrored — DR: NEXT.md parity-tool bugfix item
-        # FR-B (EPIC-20260816 Phase 3 / 审计 F-11): --delete 会清空目标端所有源端没有的内容。
-        # 若源目录为空或无任何 skill 子目录，这会静默清空 .agents/skills（/local/ 除外）。
-        if [ ! -d "$CLAUDE_SKILLS" ] || [ -z "$(find "$CLAUDE_SKILLS" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -1)" ]; then
-          echo "  ❌ REFUSING --delete mirror: source has no skill directories: $CLAUDE_SKILLS" >&2
-          echo "VERDICT: parity FIX-FAIL — empty source guard (exit 1)" >&2
-          exit 1
-        fi
-        rsync -a --delete --exclude=/local/ "$CLAUDE_SKILLS/" "$AGENTS_SKILLS/"
-        if ! check_platform_coupled_references; then
-          echo "VERDICT: parity FIX-FAIL — platform-coupled reference paths remain (exit 1)" >&2
-          exit 1
-        fi
-        # Re-verify
-        reverify="$(diff -rq -x local "$CLAUDE_SKILLS" "$AGENTS_SKILLS" 2>&1)" || true
-        if [ -z "$reverify" ]; then
-          echo "  ✅ Fix successful — .agents/skills now matches .claude/skills"
-          echo "VERDICT: parity FIX-PASS (exit 0)"
-          exit 0
-        else
-          echo "  ❌ Fix FAILED — still divergent after rsync" >&2
-          printf '%s\n' "$reverify" | sed 's/^/  /'
-          echo "VERDICT: parity FIX-FAIL (exit 1)"
-          exit 1
-        fi
-      else
-        echo "  🛑 REFUSED: direction is $DIRECTION — cannot auto-fix."
-        echo "  Someone edited .agents/skills directly. Investigate before mirroring."
-        echo "VERDICT: parity FIX-REFUSED (exit 1)"
-        exit 1
-      fi
-    fi
-
-    echo "VERDICT: parity FAIL — Codex mirror drift (exit 1)"
-    echo "  FIX: run 'release-verify.sh parity --fix \"$REPO\"' if direction is claude-newer"
-    exit 1
-    ;;
-
   # ───────────────────────── version-sweep ─────────────────────────
   # Full-repo version drift detection. Dual-layer:
   #   Layer 1 (Must-Version Registry): positive-assert that specific files contain the
@@ -787,9 +567,9 @@ PARITY_EOF
       ".tad/config.yaml|# TAD Configuration v${VER_RE}"
       "README.md|Version ${VER_RE}"
       "INSTALLATION_GUIDE.md|Version ${VER_RE}"
-      ".claude/skills/tad-help/SKILL.md|Version: v${VER_RE}"
-      ".claude/skills/alex/SKILL.md|<!-- TAD v${VER_RE} Framework -->"
-      ".claude/skills/blake/SKILL.md|<!-- TAD v${VER_RE} Framework -->"
+      ".agents/skills/tad-help/SKILL.md|Version: v${VER_RE}"
+      ".agents/skills/alex/SKILL.md|<!-- TAD v${VER_RE} Framework -->"
+      ".agents/skills/blake/SKILL.md|<!-- TAD v${VER_RE} Framework -->"
       "tad.sh|TARGET_VERSION=\"${VER_RE}\""
       "package.json|\"version\": \"${VER_RE}\""
       "PROJECT_CONTEXT.md|Version.*: ${VER_RE}"
@@ -904,153 +684,6 @@ VERSION_SWEEP_EOF
       exit 0
     else
       echo "VERDICT: version-sweep FAIL — $l1_fails Layer 1 stale ref(s) (exit 1)"
-      exit 1
-    fi
-    ;;
-
-  # ───────────────────────── platform-skills ─────────────────────────
-  # Post-sync/install verifier: framework-owned skills must be byte-symmetric
-  # between .claude/skills and .agents/skills in the TARGET project.
-  # Framework-owned = skill dir present in SOURCE .claude/skills/ or .agents/skills/.
-  # Target-only extras = local-skill INFO (FR7).
-  # Exit 0 = symmetric; exit 1 = drift/missing; exit 2 = usage.
-  platform-skills)
-    if [ $# -ne 3 ]; then usage; exit 2; fi
-    SRC="$2"
-    TGT="$3"
-
-    echo "========================================="
-    echo "PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)"
-    echo "  SOURCE: $SRC"
-    echo "  TARGET: $TGT"
-    echo "========================================="
-
-    # Derive framework-owned skill set from source (union of .claude + .agents basenames)
-    fw_skills=""
-    if [ -d "$SRC/.claude/skills" ]; then
-      for d in "$SRC/.claude/skills"/*/; do
-        [ -d "$d" ] || continue
-        name="$(basename "$d")"
-        fw_skills="$fw_skills $name"
-      done
-    fi
-    if [ -d "$SRC/.agents/skills" ]; then
-      for d in "$SRC/.agents/skills"/*/; do
-        [ -d "$d" ] || continue
-        name="$(basename "$d")"
-        case " $fw_skills " in
-          *" $name "*) ;; # already in set
-          *) fw_skills="$fw_skills $name" ;;
-        esac
-      done
-    fi
-
-    if [ -z "$fw_skills" ]; then
-      echo "WARNING: no framework-owned skills found in source"
-      echo "VERDICT: platform-skills PASS (nothing to verify, exit 0)"
-      exit 0
-    fi
-
-    # Source precondition: source .claude and .agents must be symmetric
-    src_fails=0
-    for skill in $fw_skills; do
-      has_claude=false
-      has_agents=false
-      [ -d "$SRC/.claude/skills/$skill" ] && has_claude=true
-      [ -d "$SRC/.agents/skills/$skill" ] && has_agents=true
-
-      if [ "$has_claude" = true ] && [ "$has_agents" = true ]; then
-        sout="$(diff -rq "$SRC/.claude/skills/$skill" "$SRC/.agents/skills/$skill" 2>&1)" || true
-        if [ -n "$sout" ]; then
-          echo "  ❌ SOURCE PRECONDITION: $skill differs between .claude and .agents in source"
-          printf '%s\n' "$sout" | sed 's/^/      /' | head -4
-          src_fails=$((src_fails + 1))
-        fi
-      elif [ "$has_claude" = true ] && [ "$has_agents" = false ]; then
-        echo "  ❌ SOURCE PRECONDITION: $skill exists in source .claude but missing from .agents"
-        src_fails=$((src_fails + 1))
-      elif [ "$has_claude" = false ] && [ "$has_agents" = true ]; then
-        echo "  ❌ SOURCE PRECONDITION: $skill exists in source .agents but missing from .claude"
-        src_fails=$((src_fails + 1))
-      fi
-    done
-    if [ "$src_fails" -gt 0 ]; then
-      echo "VERDICT: platform-skills FAIL — $src_fails source precondition error(s) (exit 1)"
-      exit 1
-    fi
-
-    fails=0
-    infos=0
-    checked=0
-
-    # Collect target-side skill basenames for local-skill detection
-    tgt_skills=""
-    for platform in .claude .agents; do
-      if [ -d "$TGT/$platform/skills" ]; then
-        for d in "$TGT/$platform/skills"/*/; do
-          [ -d "$d" ] || continue
-          name="$(basename "$d")"
-          case " $tgt_skills " in
-            *" $name "*) ;;
-            *) tgt_skills="$tgt_skills $name" ;;
-          esac
-        done
-      fi
-    done
-
-    # Check framework-owned skills in target
-    for skill in $fw_skills; do
-      checked=$((checked + 1))
-      claude_dir="$TGT/.claude/skills/$skill"
-      agents_dir="$TGT/.agents/skills/$skill"
-
-      if [ ! -d "$claude_dir" ] && [ ! -d "$agents_dir" ]; then
-        echo "  ❌ MISSING: $skill — absent from both .claude and .agents in target"
-        fails=$((fails + 1))
-        continue
-      fi
-      if [ ! -d "$claude_dir" ]; then
-        echo "  ❌ MISSING: $skill — absent from .claude/skills in target"
-        fails=$((fails + 1))
-        continue
-      fi
-      if [ ! -d "$agents_dir" ]; then
-        echo "  ❌ MISSING: $skill — absent from .agents/skills in target"
-        fails=$((fails + 1))
-        continue
-      fi
-
-      out="$(diff -rq "$claude_dir" "$agents_dir" 2>&1)" || true
-      if [ -z "$out" ]; then
-        echo "  ✅ $skill symmetric"
-      else
-        echo "  ❌ DRIFT: $skill — .claude and .agents differ in target"
-        printf '%s\n' "$out" | sed 's/^/      /' | head -4
-        fails=$((fails + 1))
-      fi
-    done
-
-    # Report target-only local skills as INFO
-    for skill in $tgt_skills; do
-      case " $fw_skills " in
-        *" $skill "*) ;; # framework-owned, already checked
-        *)
-          echo "  ℹ️  local-skill: $skill (target-only, not framework-owned)"
-          infos=$((infos + 1))
-          ;;
-      esac
-    done
-
-    echo "-----------------------------------------"
-    echo "Checked: $checked framework-owned skills"
-    if [ "$infos" -gt 0 ]; then
-      echo "Local-only: $infos (INFO, not blocking)"
-    fi
-    if [ "$fails" -eq 0 ]; then
-      echo "VERDICT: platform-skills PASS (exit 0)"
-      exit 0
-    else
-      echo "VERDICT: platform-skills FAIL — $fails missing/drifted skill(s) (exit 1)"
       exit 1
     fi
     ;;

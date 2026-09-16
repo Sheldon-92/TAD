@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# brain-index-gen.sh — Generate .tad/brain-index.md from .tad/ + CLAUDE.md
+# brain-index-gen.sh — Generate .tad/brain-index.md from .tad/ + AGENTS.md
 # Zero external dependencies. Output is a markdown file readable by an agent in one pass.
 set -euo pipefail
 
 TAD_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 TAD_DIR="$TAD_ROOT/.tad"
 OUT="$TAD_DIR/brain-index.md"
-CLAUDE_MD="$TAD_ROOT/CLAUDE.md"
+AGENTS_MD="$TAD_ROOT/AGENTS.md"
 
 escape_pipe() { sed 's/|/\\|/g'; }
 first_sentence() { head -1 | sed 's/[[:space:]]*$//' | cut -c1-120 | escape_pipe; }
@@ -100,10 +100,10 @@ find "$TAD_DIR/project-knowledge" -maxdepth 1 -name "*.md" -not -name "README.md
 echo ""
 
 # ═══════════════════════════════════════
-# §4 CLAUDE.md Sections
+# §4 AGENTS.md Sections
 # ═══════════════════════════════════════
-if [ -f "$CLAUDE_MD" ]; then
-  echo "## CLAUDE.md Sections"
+if [ -f "$AGENTS_MD" ]; then
+  echo "## AGENTS.md Sections"
   echo "| Section | Keywords | Summary |"
   echo "|---------|----------|---------|"
   while IFS= read -r line; do
@@ -118,7 +118,7 @@ if [ -f "$CLAUDE_MD" ]; then
       file_count=$((file_count + 1))
       section=""
     fi
-  done < "$CLAUDE_MD"
+  done < "$AGENTS_MD"
   echo ""
 fi
 
@@ -235,9 +235,7 @@ echo ""
 # ═══════════════════════════════════════
 # §11 Skills (SKILL.md files)
 # ═══════════════════════════════════════
-if [ -d "$TAD_ROOT/.claude/skills" ]; then
-  SKILLS_DIR="$TAD_ROOT/.claude/skills"
-elif [ -d "$TAD_ROOT/.agents/skills" ]; then
+if [ -d "$TAD_ROOT/.agents/skills" ]; then
   SKILLS_DIR="$TAD_ROOT/.agents/skills"
 else
   SKILLS_DIR=""

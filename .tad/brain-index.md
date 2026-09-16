@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-09-13 10:39
+Generated: 2026-09-16 00:54
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -46,26 +46,25 @@ Generated: 2026-09-13 10:39
 | principles.md | principles | Principles |
 | security.md | security | Foundational: Security Domain Pack Architecture |
 
-## CLAUDE.md Sections
+## AGENTS.md Sections
 | Section | Keywords | Summary |
 |---------|----------|---------|
-| 1. Handoff 读取规则 ⚠️ CRITICAL | 1 handoff critical | ⚠️ 本节管 `HANDOFF-*.md`，即**默认路径**。lite 的 `LITE-*.md` 见 §2.5（已冻结，仅在飞单）。 |
-| 2. 使用场景（默认路径） | 2  | ⚠️ **下表即默认路径。** lite 已冻结（§2.5），不再作为新工作的入口。 |
-| 3. Quality Gates | 3 quality gates | - 规则 0: Handoff 前必须苏格拉底提问 (⚠️ BLOCKING) |
-| 4. Terminal 隔离 ⚠️ CRITICAL | 4 terminal critical | Alex = Terminal 1, Blake = Terminal 2。**人类是唯一信息桥梁。** |
-| 4.5 Post-Compact Recovery ⚠️ | 4 5 post-compact recovery  | 三层防线：Layer 0 = PreCompact hook 机械快照（自动落盘），Layer 1 = agent 自检，Layer 2 = 用户手� |
-| 5. 违规处理 | 5  | 违规 → 立即停止 → 调用正确 agent → 从头执行。 |
-| 6. 协议位置 | 6  | \| 协议 \| 位置 \| |
-| 7. Project Knowledge (Auto-loaded) | 7 project knowledge auto-loaded  | @import 自动加载，不存在的文件静默跳过。超 30KB 时整合。 |
-| 7.5 Memory Capture Layer | 7 5 memory capture layer | 原生 auto-memory 已重定向至 `.tad/memory/`(via settings.local.json,DR-20260712)。 |
+| Role Switching | role switching | Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). A |
+| Knowledge Ingress (read on activation) | knowledge ingress read on activation  | - Every role activation reads `.tad/project-knowledge/principles.md` and |
+| Critical Rules | critical rules | - Reading `HANDOFF-*` requires Blake plus Gate 3/4; `/tad-maintain` CHECK/SYNC is exempt. |
+| Default Behavior (no role specified) | default behavior no role specified  | If no role is requested, act as a general TAD assistant: |
+| Capability Packs (Domain Expertise) | capability packs domain expertise  | When a user's task matches a capability pack's keywords, announce a pointer — never Read the pack file up front. These |
+| Codex-Specific Notes | codex-specific notes | - Use `codex exec resume --last` to continue multi-turn TAD workflows |
+| Frozen Channel: TAD Lite (Explicit Invocation Only) | frozen channel tad lite explicit invocation only  | TAD Lite is a frozen experiment since 2026-08-13: no new work is started there, in-flight `LITE-*.md` contracts run to c |
 
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-20260908-knowledge-seam-isolation.md | feature |  |
-| HANDOFF-20260908-release-v2443.md | release |  |
-| HANDOFF-20260909-release-v2444.md | release |  |
-| HANDOFF-20260911-release-v2445.md | release |  |
+| HANDOFF-2026-09-15-claude-decouple-design.md | docs#audit+decisionbrief;noimplementationinthishandoff | 一份**解绑审计 + 决策简报**。它回答三件事： |
+| HANDOFF-2026-09-15-claude-removal-plan-codex.md | unknown |  |
+| HANDOFF-2026-09-15-claude-removal-plan.md | refactor#code+config+docs;deletesoneplatformsurface | TAD 的核心资产（两角色协议、四关、handoff、skill 库）绝大多数字节与 Claude 无关，但**物理 |
+| HANDOFF-2026-09-15-notebooklm-deprecation.md | mixed#docs+config(yaml)+shellhookde-registration | NotebookLM 整层退役：研究 fallback 链由 `local_wiki → notebooklm_research → claude_websearch` |
+| HANDOFF-2026-09-15-tad-research-mechanism.md | doc-only | TAD 的**一等 Research 轨道**：在现有 `*research --deep` 引擎之上，加一层对标 Build Gate 1-4 的 |
 
 ## Active Epics
 | File | Summary |
@@ -97,12 +96,15 @@ Generated: 2026-09-13 10:39
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260914-ocr-review-habits.md | doc-only | HANDOFF-20260914-ocr-review-habits |
 | HANDOFF-20260913-skill-authoring-habits.md | doc-only | HANDOFF-20260913-skill-authoring-habits |
 | HANDOFF-20260912-p2-sc4-process-tax-cut-wire.md | doc-only | HANDOFF-20260912-p2-sc4-process-tax-cut-wire |
+| HANDOFF-20260911-release-v2445.md | release | HANDOFF-20260911-release-v2445 — Publish v2.44.5 (Verify-Delta + Pack Loader/Freeze + KEEP11 Knife 1) |
 | HANDOFF-20260911-keep11-knife1-cli-refresh.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260910-verify-delta.md | mixed | HANDOFF-20260910-verify-delta — Runnable Verification Method fail-close |
 | HANDOFF-20260910-pack-loader-thin-ondemand.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260910-pack-freeze-inventory.md | yaml | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260909-release-v2444.md | release | HANDOFF-20260909-release-v2444 — Publish v2.44.4 (Knowledge-Seam Isolation + Opt-in PK Quarantine) |
 | HANDOFF-20260908-thin-tad-harness-adapter.md | mixed | Handoff: thin-tad 评测适配器设计与 OpenCode 二进制契约对齐 (TASK-20260908-thin-tad-harness-adapter) |
 | HANDOFF-20260908-thin-tad-evaluation-p3.md | mixed | Handoff: TAD 精简实验 P3 — 离线分析、ADAPTER_INELIGIBLE 审计与有界决策报告 |
 | HANDOFF-20260908-research-route-local-wiki.md | mixed | Handoff: Clean TAD Upstream Research-Routing Entry Pointers (Local Wiki Primary, NotebookLM Fallback) |
@@ -123,9 +125,6 @@ Generated: 2026-09-13 10:39
 | HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
 | HANDOFF-20260901-local-wiki-phase2-retrieval.md | code | HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations |
 | HANDOFF-20260831-capability-builder-phase1-create.md | mixed | Handoff: Capability Builder v1 — Phase 1 Create |
-| HANDOFF-20260828-local-wiki-research-framework.md | code | HANDOFF-20260828-local-wiki-research-framework |
-| HANDOFF-20260827-yolo2-phase2-completion.md | code | HANDOFF-20260827-yolo2-phase2-completion |
-| HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Handoff: YOLO 2.0 Phase 2 — 质量保持的有界执行闭环 |
 
 ## Evidence Directories
 | Directory | Files | Topic |
@@ -136,7 +135,7 @@ Generated: 2026-09-13 10:39
 | evidence/codex-validation/ | 4 | codex-validation |
 | evidence/completions/ | 72 | completions |
 | evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 39 | designs |
+| evidence/designs/ | 40 | designs |
 | evidence/discuss/ | 1 | discuss |
 | evidence/dogfood/ | 3 | dogfood |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
@@ -166,8 +165,8 @@ Generated: 2026-09-13 10:39
 | evidence/project-logs/ | 0 | project-logs |
 | evidence/ralph-loops/ | 12 | ralph-loops |
 | evidence/releases/ | 2 | releases |
-| evidence/research/ | 169 | research |
-| evidence/reviews/ | 744 | reviews |
+| evidence/research/ | 184 | research |
+| evidence/reviews/ | 758 | reviews |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |

@@ -41,11 +41,11 @@ Built from analysis of 102+ sources across:
 ## Installation
 
 ```bash
-# Claude Code (Phase 1)
-bash install.sh --agent=claude-code
+# Codex (v3.0.0)
+bash install.sh --agent=codex
 
 # Dry run first
-bash install.sh --agent=claude-code --dry-run
+bash install.sh --agent=codex --dry-run
 ```
 
 ## License

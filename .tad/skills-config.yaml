@@ -1,3 +1,6 @@
+# ARCHIVED (v3.0.0): v1.4 legacy skills metadata. No live consumer (superseded by
+# .agents/skills/ as the sole skill source). Retained as a historical record;
+# `.claude/skills` paths below are stale by design — do not repoint.
 # ==================== Skills 知识库系统 (v1.4 新增) ====================
 skills_system:
   enabled: true

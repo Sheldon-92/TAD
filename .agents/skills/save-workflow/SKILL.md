@@ -146,7 +146,7 @@ section of the generated file.
   never-synced promise.
 - **MUST NOT create or modify any framework file**: alex/blake SKILL.md,
   CLAUDE.md, tad.sh, derive-sync-set.sh, anything under `.tad/`. The ONLY
-  writes this skill performs are under `.claude/skills/local/`.
+  writes this skill performs are under `.agents/skills/local/`.
 - **MUST NOT write executable scripts or hooks** — output is instruction
   markdown only.
 - **MUST NOT call Linear MCP** (or any external API). Linear Agent Skills were

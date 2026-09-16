@@ -446,12 +446,14 @@ case_states() {
                  bash "$UPDATER" "$@" 2>&1 ) || true
     }
 
+    # v3.0.0: codex is the only target. A leftover downstream .claude tree is
+    # never an install target and never auto-deleted.
     rm -rf "$proj/.claude" "$proj/.agents"
     mkdir -p "$proj/.claude/skills/alex"
     out="$(run_updater_platform "$proj" "$fast_installer" --yes)"
-    printf '%s\n' "$out" | grep -q "platform: claude-code" \
-        && ok "claude-only → platform claude-code forwarded" \
-        || bad "claude-only → platform not claude-code"
+    printf '%s\n' "$out" | grep -q "cannot determine the installed platform" \
+        && ok "claude-only leftover → apply refuses (never targets .claude)" \
+        || bad "claude-only leftover → did not refuse"
 
     rm -rf "$proj/.claude"
     mkdir -p "$proj/.agents/skills/alex"
@@ -462,12 +464,17 @@ case_states() {
     rm -rf "$proj/.agents"
     mkdir -p "$proj/.claude/skills/alex" "$proj/.agents/skills/alex"
     out="$(run_updater_platform "$proj" "$fast_installer" --yes)"
-    printf '%s\n' "$out" | grep -q "platform: both" && ok "both present → platform both forwarded" \
-        || bad "both present → platform not both"
+    printf '%s\n' "$out" | grep -q "platform: codex" && ok "both present → platform codex forwarded (never both)" \
+        || bad "both present → platform not codex"
 
     out="$(run_updater_platform "$proj" "$fast_installer" --yes --platform codex)"
     printf '%s\n' "$out" | grep -q "platform: codex" && ok "explicit --platform overrides detection" \
         || bad "explicit --platform not honored"
+
+    out="$(run_updater_platform "$proj" "$fast_installer" --yes --platform both)"
+    printf '%s\n' "$out" | grep -q "was removed in TAD v3.0.0" \
+        && ok "explicit --platform both → removed-error" \
+        || bad "explicit --platform both → no removed-error"
 
     rm -rf "$proj/.claude" "$proj/.agents"
     out="$(run_updater_platform "$proj" "$fast_installer" --yes)"

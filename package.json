@@ -1,6 +1,6 @@
 {
   "name": "tad-framework",
-  "version": "2.44.6",
+  "version": "3.0.0",
   "description": "Triangle Agent Development - Two-Agent Quality Framework for AI-assisted development",
   "type": "module",
   "bin": {
@@ -11,8 +11,6 @@
   },
   "keywords": [
     "tad",
-    "claude",
-    "claude-code",
     "codex",
     "ai",
     "development",
@@ -65,12 +63,10 @@
     ".tad/platform-codes.yaml",
     ".tad/discipline-floor.md",
     ".tad/brain-index.md",
-    ".claude/",
     ".agents/",
     "bin/",
     "tad.sh",
     "AGENTS.md",
-    "CLAUDE.md",
     "*.md",
     "scripts/"
   ],

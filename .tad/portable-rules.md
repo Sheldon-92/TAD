@@ -6,14 +6,14 @@ Defines which TAD files are portable to Codex CLI vs Claude Code-only.
 
 | Category | Files | Classification | Rationale |
 |----------|-------|----------------|-----------|
-| SKILL files | `.claude/skills/*/SKILL.md` | Transform | Strip Claude Code-only tools (AskUserQuestion, Agent, hooks), keep all protocol logic and constraint rules |
+| SKILL files | `.agents/skills/*/SKILL.md` (v3.0.0 SSOT; was `.claude/skills/`) | Transform | Strip Claude Code-only tools (AskUserQuestion, Agent, hooks), keep all protocol logic and constraint rules |
 | Config | `.tad/config*.yaml` | Portable | Pure YAML config, no tool dependency |
 | Templates | `.tad/templates/*.md` | Portable | Markdown templates, no tool dependency |
 | Hooks lib | `.tad/hooks/lib/*.sh` | Portable | Bash scripts — run manually on Codex, auto-triggered on Claude Code |
 | Hooks root | `.tad/hooks/*.sh` (root-level) | CC-only | Auto-triggered by Claude Code `settings.json` — Codex users run manually |
 | ~~Domains~~ | ~~YAML packs~~ | RETIRED (2026-06-11) | Archived; Capability Packs replace YAML packs |
 | Evidence | `.tad/evidence/` | Portable | File structure, no tool dependency — create manually on Codex |
-| Settings | `.claude/settings.json` | CC-only | Claude Code hook registration, no Codex equivalent |
+| Settings | `.claude/settings.json` | REMOVED (v3.0.0) | Claude Code hook registration — runtime path deleted; hooks live in `.codex/hooks.json` |
 | Codex adapters | `.tad/codex/` | DEPRECATED (v2.26.0) | Unified SKILL routing replaced compressed editions. Only README.md remains. |
 
 ## Transform Rules for SKILL Files

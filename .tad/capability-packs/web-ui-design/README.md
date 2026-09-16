@@ -19,7 +19,7 @@ A self-contained capability pack that teaches AI agents how to design and build 
 bash install.sh
 ```
 
-The script copies `CAPABILITY.md` to `.claude/skills/web-ui-design/SKILL.md` in your project.
+The script copies `CAPABILITY.md` to `.agents/skills/web-ui-design/SKILL.md` in your project.
 
 ### Manual (any agent)
 1. Copy `CAPABILITY.md` to wherever your agent reads its skill files
@@ -69,7 +69,7 @@ bash install.sh --dry-run
 bash install.sh
 ```
 
-After install, CAPABILITY.md lives at `.claude/skills/web-ui-design/SKILL.md` in your project.
+After install, CAPABILITY.md lives at `.agents/skills/web-ui-design/SKILL.md` in your project.
 
 ## Design Capabilities
 

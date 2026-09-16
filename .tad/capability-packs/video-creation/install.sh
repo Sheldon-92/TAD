@@ -13,23 +13,23 @@ usage() {
 Usage: bash install.sh [OPTIONS]
 
 Options:
-  --agent <name>    Target agent runtime (default: claude-code)
-                    Supported: claude-code
+  --agent <name>    Target agent runtime (default: codex)
+                    Supported: codex
                     Planned: codex, cursor, gemini (Phase 2)
   --target <path>   Override install target directory
   --check           Check tool prerequisites only, do not install
   --help            Show this message
 
 Examples:
-  bash install.sh                          # Install for Claude Code (default)
-  bash install.sh --agent claude-code      # Explicit Claude Code
+  bash install.sh                          # Install for Codex (default)
+  bash install.sh --agent codex      # Explicit Codex
   bash install.sh --check                  # Check prerequisites only
 EOF
   exit 0
 }
 
 # Parse arguments
-AGENT="claude-code"
+AGENT="codex"
 CUSTOM_TARGET=""
 CHECK_ONLY=false
 DRY_RUN=false
@@ -135,17 +135,17 @@ check_prerequisites() {
 }
 
 install_pack() {
-  local PLATFORM="${1:-claude-code}"
+  local PLATFORM="${1:-codex}"
   if [[ -n "$CUSTOM_TARGET" ]]; then
     TARGET_DIR="$CUSTOM_TARGET"
   elif [[ "$PLATFORM" = "codex" ]]; then
     TARGET_DIR=".agents/skills/${PACK_NAME}"
-  elif [[ -d ".claude" ]]; then
-    TARGET_DIR=".claude/skills/${PACK_NAME}"
-  elif [[ -d "${HOME}/.claude" ]]; then
-    TARGET_DIR="${HOME}/.claude/skills/${PACK_NAME}"
+  elif [[ -d ".agents" ]]; then
+    TARGET_DIR=".agents/skills/${PACK_NAME}"
+  elif [[ -d "${HOME}/.agents" ]]; then
+    TARGET_DIR="${HOME}/.agents/skills/${PACK_NAME}"
   else
-    echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
+    echo "✗ Codex not found (.agents/ or ~/.agents/ missing)." >&2
     exit 1
   fi
 
@@ -192,7 +192,7 @@ install_pack() {
   echo "✅ ${PACK_NAME} v${PACK_VERSION} installed to: ${TARGET_DIR}"
   echo ""
   echo "Next steps:"
-  echo "  1. Restart Claude Code (or reload the session)"
+  echo "  1. Restart Codex (or reload the session)"
   echo "  2. The pack activates automatically when you work on video tasks"
   echo "  3. Use SKILL.md Step 1 to detect context → load the right reference"
 }
@@ -234,8 +234,8 @@ check_prerequisites || true  # warn but don't block install
 echo ""
 
 case "$AGENT" in
-  claude-code)
-    install_pack "claude-code"
+  codex)
+    install_pack "codex"
     ;;
   codex)
     install_pack "codex"
@@ -248,7 +248,7 @@ case "$AGENT" in
     ;;
   *)
     echo "Unknown agent: ${AGENT}"
-    echo "Supported: claude-code (installed), codex/cursor/gemini (Phase 2)"
+    echo "Supported: codex (installed), codex/cursor/gemini (Phase 2)"
     exit 1
     ;;
 esac

@@ -13,21 +13,6 @@
     "max_total_invocations": 24
   },
   "profiles": {
-    "claude-code": {
-      "profile_id": "claude-code",
-      "runtime": "claude",
-      "provider": "anthropic",
-      "model": "claude-sonnet-4-20250514",
-      "model_family": "claude",
-      "executable": "claude",
-      "executable_candidates": ["claude"],
-      "invocation_template": ["{executable}", "--print", "--output-format", "json", "--model", "{model}", "--strict-json"],
-      "version_args": ["--version"],
-      "version_expected_prefix": "2.",
-      "permission_flag": "--permission-mode",
-      "resume_flag": "--resume",
-      "capabilities": ["start", "fresh", "schema", "permission", "resume", "timeout", "worktree", "reviewer", "hooks"]
-    },
     "codex": {
       "profile_id": "codex",
       "runtime": "codex",

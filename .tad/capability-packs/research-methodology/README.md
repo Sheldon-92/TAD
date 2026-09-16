@@ -24,7 +24,7 @@ Plan → Source → Curate → Analyze → Output
 ### 1. Install
 
 ```bash
-bash install.sh --agent=claude-code
+bash install.sh --agent=codex
 ```
 
 ### 2. Use

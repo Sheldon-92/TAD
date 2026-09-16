@@ -12,9 +12,9 @@
 #
 # ⚠️ Anti-validation-theater: "N collisions found" is NOT acceptance. Every `ref` below
 #    MUST be hand-re-derivable against the LIVE pack files (count != signal,
-#    architecture.md 2026-05-30). Each was hand-re-derived against .claude/skills/ on 2026-05-31.
+#    architecture.md 2026-05-30). Each was hand-re-derived against .agents/skills/ on 2026-05-31.
 #
-# ⚠️ Canonical tree (P0-2): every `ref` is recorded against `.claude/skills/` — the
+# ⚠️ Canonical tree (P0-2): every `ref` is recorded against `.agents/skills/` — the
 #    runtime-loaded tree the P2 surfacing consumers actually load. `.tad/capability-packs/`
 #    is a *sync-maintained source copy; it is NOT the ref anchor.
 #
@@ -30,11 +30,11 @@ collisions:
     pack_b: web-frontend
     topic: inter-font
     a_says:
-      ref: ".claude/skills/web-ui-design/SKILL.md:93"
+      ref: ".agents/skills/web-ui-design/SKILL.md:93"
       quote: "NEVER use Inter, Roboto, Arial, or system-ui as the primary typeface."
       category: style
     b_says:
-      ref: ".claude/skills/web-frontend/references/performance.md:215"
+      ref: ".agents/skills/web-frontend/references/performance.md:215"
       quote: "import { Inter } from 'next/font/google'"
       category: performance
     resolution: auto
@@ -54,11 +54,11 @@ collisions:
     pack_b: web-frontend
     topic: contrast-standard
     a_says:
-      ref: ".claude/skills/web-ui-design/SKILL.md:454"
+      ref: ".agents/skills/web-ui-design/SKILL.md:454"
       quote: "Step 4: Validate contrast with APCA (LC ≥60 body, ≥45 large — see SKILL.md:476)"
       category: a11y
     b_says:
-      ref: ".claude/skills/web-frontend/references/accessibility.md:45"
+      ref: ".agents/skills/web-frontend/references/accessibility.md:45"
       quote: "Minimum 4.5:1 (normal text), 3:1 (large text/UI) — WCAG 2.2 SC 1.4.3"
       category: a11y
     resolution: escalate
@@ -75,12 +75,12 @@ collisions:
     pack_b: web-testing
     topic: testing-pyramid
     a_says:
-      ref: ".claude/skills/web-frontend/references/testing.md:15"
+      ref: ".agents/skills/web-frontend/references/testing.md:15"
       quote: "Unit (most) ~60%; E2E (fewest) ~10%; if E2E >20% of the suite — cut (testing.md:19)"
       category: correctness     # testing directives sit in the correctness band (P1-A: rankable member of the 5-band list)
       subdomain: testing
     b_says:
-      ref: ".claude/skills/web-testing/references/test-strategy-rules.md:25"
+      ref: ".agents/skills/web-testing/references/test-strategy-rules.md:25"
       quote: "Unit tests (base) ~70% of test count; UI-heavy app: More E2E tests (test-strategy-rules.md:31)"
       category: correctness     # same band as a_says → tie → escalate (verdict unchanged)
       subdomain: testing

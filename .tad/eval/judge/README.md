@@ -2,7 +2,7 @@
 
 ## Per-Trajectory Evaluation
 
-Each trajectory is evaluated by a **fresh Agent spawn** (model: sonnet — 校准绑定档位；非 Anthropic harness 用同档并标 uncalibrated-judge):
+Each trajectory is evaluated by a **fresh Agent spawn** (strong-tier model — harness 同档；非校准 harness 标 uncalibrated-judge):
 - Prompt: Read `judge-prompt.md` then read `rubric.md` then read the bundle at `bundles/{slug}.md`
 - The agent returns a JSON with D1-D5 scores and rationales
 - Save the returned JSON to `results/round{N}/{slug}.json`

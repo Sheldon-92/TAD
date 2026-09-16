@@ -43,7 +43,7 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
 情况 1: 发现 handoff 文件
 Claude: 检测到 .tad/active/handoffs/user-auth.md
        让我调用 /blake 进入执行模式...
-       <!-- Claude Code: Skill tool / Codex: $skill-name or /skills -->
+       <!-- Platform binding: harness skill invocation (`$skill-name` / `/skills`) -->
        [调用 Skill tool with skill="tad-blake"]
 
 情况 2: Alex 完成设计
@@ -163,7 +163,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.44.6 Framework -->
+<!-- TAD v3.0.0 Framework -->
 
 # Agent B - Blake (Execution Master)
 
@@ -197,7 +197,7 @@ activation-instructions:
       After health check, scan `.tad/active/handoffs/` for HANDOFF-*.md files.
       If active handoffs exist:
         1. List them with index number, title (from first H1/H2), and creation date (from filename).
-        <!-- Claude Code: AskUserQuestion / Codex: numbered-options text（见平台绑定交互决策条款） -->
+        <!-- Platform binding: interactive-decision tool or numbered-options text（见平台绑定交互决策条款） -->
         2. Use AskUserQuestion to ask:
            "检测到 {N} 个待执行的 handoff，要执行哪个？"
            Options: each handoff as an option + "暂不执行，先看看" (skip)
@@ -631,7 +631,7 @@ ralph_loop_execution:
                If matches found → inspect top match, note findings
           3. Fallback: If Local Wiki absent or yielded no match:
              → NotebookLM layer deprecated 2.44.6 — do NOT check REGISTRY.yaml or run *research-notebook.
-             → Degrade to WebSearch (claude_websearch) in-session for implementation context.
+             → Degrade to WebSearch (websearch) in-session for implementation context.
              → Note key findings in context: "📌 WebSearch findings (fallback): {brief_summary}".
           4. Skip silently when neither source has relevant data.
              Skip silently when:
@@ -684,7 +684,7 @@ ralph_loop_execution:
         blocking: true
         purpose: "Enable Blake to execute complete research workflows when research IS the deliverable"
 
-        # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+        # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
         notebooklm_access_override:
           description: "CR-P0-1 fix: temporarily expands allowed notebook commands during pack execution only"
           rationale: |
@@ -769,7 +769,7 @@ ralph_loop_execution:
         compact_recovery: "Step produces no persistent state. Safe to skip after compact."
 
         forbidden_implementations:
-          <!-- Claude Code: .claude/settings.json hooks / Codex: .codex/hooks.json -->
+          <!-- Platform binding: harness hook config (`.codex/hooks.json`) -->
           - "MUST NOT register as PreToolUse hook in .claude/settings.json"
           - "MUST NOT block implementation based on blast radius findings"
           - "MUST NOT auto-expand handoff §6 (informational only — Alex owns scope)"
@@ -1083,7 +1083,7 @@ ralph_loop_execution:
         3. Re-run /blake to reload full SKILL
         4. Resume from Current Position
 
-# DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+# DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
 # NotebookLM Access (RETIRED 2.44.6 — Blake read-only channel closed; use WebSearch)
 notebooklm_access:
   # Extracted for progressive loading — full protocol in the reference below.
@@ -1424,9 +1424,8 @@ execution_checklist:
             Blake's actual diff
 
           REQUIRED OUTPUT (first line of every reviewer report):
-          Model: harness={claude-code|codex|other} | model={运行时自报 ID} | route={host|native|unknown}
-          Capture by harness: claude-code → ANTHROPIC_* env plus both settings.json model
-          queries; codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
+          Model: harness={codex|other} | model={运行时自报 ID} | route={host|native|unknown}
+          Capture by harness: codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
           CFG="${CODEX_HOME:-$HOME/.codex}" config.toml
           model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys plus selected
           [model_providers.<id>] route base_url (manual section ownership) plus agents/*.toml
@@ -1874,12 +1873,12 @@ completion_protocol:
            trigger: "Steps 1-2b produced a SCAND with 4/4 gates AND the human is present in-session"
            a. AskUserQuestion: "Pattern {slug} passed 4/4 gates. Materialize now?"
               options: "Materialize as project skill (T1)" / "Keep as draft candidate" / "Discard"
-           b. On Materialize:
-              - type judgment → create in the authority skill tree (`.claude/skills/` if it
-                exists, otherwise `.agents/skills/`) from the SCAND's Proposed Skill Outline
-                (project-local; NOT TAD-master unless working in TAD repo), then mirror with
-                `parity --fix` when both trees exist
-              - type orchestration → create .claude/workflows/{slug}.workflow.js skeleton
+            b. On Materialize:
+               - type judgment → create in the authority skill tree (`.agents/skills/`)
+                 from the SCAND's Proposed Skill Outline
+                 (project-local; NOT TAD-master unless working in TAD repo)
+               - type orchestration → harness-native orchestration skeleton
+                 (the `.claude/workflows/*.workflow.js` runtime was removed in v3.0.0)
               - Update SCAND frontmatter: status: accepted, tier: T1, materialized_at: {path}
               - Completion report MUST add row: "Skill materialized: {path}" with
                 verification `test -f {path}` — acceptance = action with artifact AC

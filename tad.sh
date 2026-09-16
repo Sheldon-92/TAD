@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TAD Framework - Unified Install & Upgrade Script v2.3
-# Claude Code Support
+# Codex-first, multi-harness neutral
 # One command for all scenarios: fresh install, upgrade, or migration
 
 set -euo pipefail
@@ -23,7 +23,7 @@ NC='\033[0m'
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="2.44.6"
+TARGET_VERSION="3.0.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -243,7 +243,7 @@ resolve_source_mode() {
     fi
     TAD_SOURCE_RESOLVED="$(cd "$SOURCE_ARG" && pwd -P)" || { echo "tad.sh: --source cannot be physically resolved: $SOURCE_ARG" >&2; exit 1; }
     local _s
-    for _s in tad.sh .tad .claude .agents; do
+    for _s in tad.sh .tad .agents; do
         if [ ! -e "$TAD_SOURCE_RESOLVED/$_s" ]; then
             echo "tad.sh: --source tree is missing sentinel '$_s': $TAD_SOURCE_RESOLVED" >&2
             exit 1
@@ -307,7 +307,7 @@ assert_under_root() {
 }
 
 # Argument parsing — while-loop + shift (supports --key value two-token args).
-# --yes/-y skips the interactive confirmation prompt (non-TTY: Claude Code Bash,
+# --yes/-y skips the interactive confirmation prompt (non-TTY: harness Bash,
 # CI, curl|bash). "$@" is set -u-safe even with zero args.
 AUTO_YES=0
 VERIFY_DENYLIST=0
@@ -363,7 +363,7 @@ while [ $# -gt 0 ]; do
       echo "       tad.sh --source <dir> [--platform <name>] --yes  (offline install from local tree)"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
-      echo "  --platform <name>  target platform (claude-code, codex, both). Default: both"
+      echo "  --platform <name>  target platform (codex). Default: codex"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
       echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
       echo "                     default: ask, or local with --yes"
@@ -511,18 +511,29 @@ backup_existing() {
 # ⚠️ DRIFT: must match platforms: keys in .tad/platform-codes.yaml. Adding a new
 # platform requires updating BOTH this list AND platform-codes.yaml.
 # Future: release-verify.sh could add a --verify-platforms check.
-KNOWN_PLATFORMS="claude-code codex both"
+KNOWN_PLATFORMS="codex"
 
+# v3.0.0: the Claude Code runtime path was removed. The old dual-tree mode and
+# any platform value naming that path are rejected BEFORE any mutation
+# (fail-before-mutation) with a recovery command.
 validate_platform() {
     local p="$1"
-    local found=0
-    for known in $KNOWN_PLATFORMS; do
-        [ "$known" = "$p" ] && found=1 && break
-    done
-    if [ "$found" = "0" ]; then
-        log_error "Unknown platform: '$p'. Valid platforms: $KNOWN_PLATFORMS"
-        exit 1
-    fi
+    case "$p" in
+        codex) return 0 ;;
+        both|*claude*)
+            log_error "Platform '$p' was removed in TAD v3.0.0 (Claude Code runtime path deleted)."
+            echo "  Recovery — re-run with the Codex target:" >&2
+            echo "    bash .tad/scripts/tad-update.sh --platform codex --yes" >&2
+            echo "    npx tad-framework@latest --platform codex" >&2
+            echo "    curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes" >&2
+            echo "  No files were changed by this run." >&2
+            exit 1
+            ;;
+        *)
+            log_error "Unknown platform: '$p'. Valid platforms: $KNOWN_PLATFORMS"
+            exit 1
+            ;;
+    esac
 }
 
 resolve_platform() {
@@ -530,8 +541,8 @@ resolve_platform() {
         validate_platform "$PLATFORM"
         log_info "Platform (explicit): $PLATFORM"
     else
-        PLATFORM="both"
-        log_info "No platform specified. Using default platform: both (Claude Code + Codex)"
+        PLATFORM="codex"
+        log_info "No platform specified. Using default platform: codex"
     fi
 }
 
@@ -808,11 +819,10 @@ resolve_conflict() {
     esac
 }
 
-# resolve_pack_dir <name> — find the skill dir across both platforms
+# resolve_pack_dir <name> — find the skill dir under .agents/skills
 resolve_pack_dir() {
     local name="$1"
-    if [ -d ".claude/skills/$name" ]; then echo ".claude/skills/$name"
-    elif [ -d ".agents/skills/$name" ]; then echo ".agents/skills/$name"
+    if [ -d ".agents/skills/$name" ]; then echo ".agents/skills/$name"
     else return 1
     fi
 }
@@ -824,7 +834,7 @@ fork_pack() {
 
     local skill_dir
     skill_dir="$(resolve_pack_dir "$name")" || {
-        echo "tad.sh: pack '$name' not found in .claude/skills/ or .agents/skills/" >&2; exit 1
+        echo "tad.sh: pack '$name' not found in .agents/skills/" >&2; exit 1
     }
     local meta_file="$skill_dir/.tad-pack-meta.yaml"
 
@@ -849,7 +859,7 @@ unfork_pack() {
 
     local skill_dir
     skill_dir="$(resolve_pack_dir "$name")" || {
-        echo "tad.sh: pack '$name' not found in .claude/skills/ or .agents/skills/" >&2; exit 1
+        echo "tad.sh: pack '$name' not found in .agents/skills/" >&2; exit 1
     }
     local meta_file="$skill_dir/.tad-pack-meta.yaml"
 
@@ -869,9 +879,8 @@ unfork_pack() {
 
 # list_packs — show all installed packs with sync status
 list_packs() {
-    local skill_base=".claude/skills"
-    [ ! -d "$skill_base" ] && skill_base=".agents/skills"
-    [ ! -d "$skill_base" ] && echo "No .claude/skills/ or .agents/skills/ directory found" >&2 && exit 1
+    local skill_base=".agents/skills"
+    [ ! -d "$skill_base" ] && echo "No .agents/skills/ directory found" >&2 && exit 1
 
     printf '%-24s %-11s %-15s %s\n' "Pack" "Policy" "Baseline" "Files"
     printf '%.0s─' {1..60}; echo
@@ -1143,30 +1152,27 @@ copy_framework_files() {
         fi
     done <<< "$(derive_framework_dirs "$src")"
 
-    # --- .claude/ framework files (platform-scoped) ---
+    # --- .agents/skills framework files ---
     # Read extra_deny from platform-codes.yaml (file exists in $src at this point).
     local platform_deny=""
     if [ -f "$src/.tad/platform-codes.yaml" ]; then
         platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
     fi
 
-    # Platform switch detection — warn about remnants from the other platform
-    if [ "$PLATFORM" = "codex" ] && [ -d ".claude/skills/alex" ]; then
-        log_warn "Detected Claude Code skills from previous install. Codex skills will be installed to .agents/skills/. Old .claude/skills/ left intact — remove manually if no longer needed."
-    elif [ "$PLATFORM" = "claude-code" ] && [ -d ".agents/skills/alex" ]; then
-        log_warn "Detected Codex skills from previous install. Claude Code skills will be installed to .claude/skills/. Old .agents/skills/ left intact — remove manually if no longer needed."
-    fi
+    # v3.0.0: single target (codex). No cross-platform remnant warning —
+    # pre-existing downstream .claude/ trees are always left intact (never deleted).
 
     mkdir -p "$TARGET_SKILL_DIR"
     # Copy skill directories — respecting platform deny + pack selection
-    if [ -d "$src/.claude/skills" ]; then
+    # v3.0.0 SSOT: source is $src/.agents/skills (sole source, no mirror).
+    if [ -d "$src/.agents/skills" ]; then
         local skill_dir
-        for skill_dir in "$src"/.claude/skills/*/; do
+        for skill_dir in "$src"/.agents/skills/*/; do
             [ -d "$skill_dir" ] || continue
             local skill_name
             skill_name="$(basename "$skill_dir")"
-            # Platform deny check — uses SOURCE path (.claude/skills/) to match deny-list entries
-            if is_denied ".claude/skills/$skill_name" "$platform_deny"; then
+            # Platform deny check — uses SOURCE path (.agents/skills/) to match deny-list entries
+            if is_denied ".agents/skills/$skill_name" "$platform_deny"; then
                 continue
             fi
             # Pack selection check (if --packs specified, only copy selected packs + non-pack skills)
@@ -1206,28 +1212,7 @@ copy_framework_files() {
             fi
         done
     fi
-    # settings.json — platform deny check
-    if ! is_denied ".claude/settings.json" "$platform_deny"; then
-        local _settings_new=0
-        if [ ! -e ".claude/settings.json" ]; then _settings_new=1; fi
-        cp "$src"/.claude/settings.json .claude/ 2>/dev/null || true
-        if [ "$_settings_new" = "1" ] && [ -e ".claude/settings.json" ]; then
-            note_created_top ".claude/settings.json"
-        fi
-    fi
-    # Workflow scripts — platform deny check
-    if ! is_denied ".claude/workflows" "$platform_deny"; then
-        if [ -d "$src/.claude/workflows" ]; then
-            local _wf_new=0
-            if [ ! -e ".claude/workflows" ]; then _wf_new=1; fi
-            mkdir -p .claude/workflows
-            cp -r "$src"/.claude/workflows/* .claude/workflows/ 2>/dev/null || true
-            if [ "$_wf_new" = "1" ]; then
-                note_created_top ".claude/workflows"
-            fi
-        fi
-    fi
-
+    # v3.0.0: Claude Code settings.json + workflows removed (no copy target).
     # --- Deprecation cleanup (v2.8.2) ---
     # Read .tad/deprecation.yaml and delete files listed for deprecation
     # versions ≤ current TARGET_VERSION. Previously no deprecation processing,
@@ -1275,53 +1260,10 @@ copy_framework_files() {
         done <<< "$root_files"
     fi
 
-    # --- "both" platform: secondary Codex copy ---
-    if [ "$PLATFORM" = "both" ]; then
-        mkdir -p .agents/skills
-        if [ -d "$src/.claude/skills" ]; then
-            local skill_dir_b
-            for skill_dir_b in "$src"/.claude/skills/*/; do
-                [ -d "$skill_dir_b" ] || continue
-                local skill_name_b
-                skill_name_b="$(basename "$skill_dir_b")"
-                if [ -n "$PACKS" ] && is_pack_skill "$skill_name_b" "$src"; then
-                    if ! is_selected_pack "$skill_name_b"; then
-                        continue
-                    fi
-                fi
-                # Project skill protection (knowledge-seam isolation, Codex
-                # secondary path): same `local/` + `ownership: project-owned`
-                # guarantee as the primary loop above (existing tree preserved,
-                # fresh seed still installed).
-                if [ "$skill_name_b" = "local" ] && [ -e ".agents/skills/$skill_name_b" ]; then
-                    log_info "  → Preserving project skill tree: $skill_name_b"
-                    continue
-                fi
-                if [ -f ".agents/skills/$skill_name_b/SKILL.md" ] && \
-                   grep -qE '^[[:space:]]*ownership:[[:space:]]*["'"'"']?project-owned["'"'"']?' ".agents/skills/$skill_name_b/SKILL.md"; then
-                    log_info "  → Preserving project-owned skill: $skill_name_b"
-                    continue
-                fi
-                local _skill_new_b=0
-                if [ ! -e ".agents/skills/$skill_name_b" ]; then _skill_new_b=1; fi
-                if is_pack_skill "$skill_name_b" "$src"; then
-                    copy_pack_skill_smart "$skill_dir_b" ".agents/skills/$skill_name_b"
-                else
-                    cp -r "$skill_dir_b" ".agents/skills/$skill_name_b"
-                fi
-                if [ "$_skill_new_b" = "1" ] && [ -e ".agents/skills/$skill_name_b" ]; then
-                    note_created_top ".agents/skills/$skill_name_b"
-                fi
-            done
-        fi
-        log_info "  → Copied skills to .agents/skills/ (Codex secondary path)"
-    fi
-
     # --- Pack meta generation (Phase 1: hash manifest) ---
-    # Runs AFTER both primary and secondary copy loops so smart copy reads OLD meta.
+    # v3.0.0: single skill tree — meta targets only $TARGET_SKILL_DIR.
     if [ -f "$src/.tad/capability-packs/pack-registry.yaml" ]; then
         local meta_targets="$TARGET_SKILL_DIR"
-        [ "$PLATFORM" = "both" ] && meta_targets="$TARGET_SKILL_DIR .agents/skills"
         local mt
         for mt in $meta_targets; do
             [ -d "$mt" ] || continue
@@ -1331,7 +1273,7 @@ copy_framework_files() {
                 local sn
                 sn="$(basename "$skill_dir_m")"
                 is_pack_skill "$sn" "$src" || continue
-                generate_pack_meta "$skill_dir_m" "$src/.claude/skills/$sn" || log_warn "Meta generation failed for $sn, skipping"
+                generate_pack_meta "$skill_dir_m" "$src/.agents/skills/$sn" || log_warn "Meta generation failed for $sn, skipping"
             done
         done
     fi
@@ -1352,8 +1294,8 @@ copy_framework_files() {
         fi
     fi
 
-    # --- Codex hooks.json generation ---
-    if [ "$PLATFORM" = "codex" ] || [ "$PLATFORM" = "both" ]; then
+    # Codex hooks.json generation (v3.0.0: codex is the only target)
+    if [ "$PLATFORM" = "codex" ]; then
         mkdir -p .codex
         # F-06: a generated hooks.json with no pre-existing bytes is
         # rollback-removed (snapshot restore covers the pre-existing case).
@@ -1431,7 +1373,7 @@ verify_install_complete() {
     local src="$1"
     log_info "  → Post-install self-check (derived completeness + content diff)..."
 
-    # Platform deny for .claude/ verification scope
+    # Platform deny for skills verification scope
     local platform_deny=""
     if [ -f "$src/.tad/platform-codes.yaml" ]; then
         platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
@@ -1483,13 +1425,13 @@ verify_install_complete() {
     done <<< "$(derive_framework_top_files "$src")"
 
     # Verify skills — check TARGET path (platform-aware), deny with SOURCE path
-    if [ -d "$src/.claude/skills" ]; then
+    if [ -d "$src/.agents/skills" ]; then
         local skill_dir skill_name
-        for skill_dir in "$src"/.claude/skills/*/; do
+        for skill_dir in "$src"/.agents/skills/*/; do
             [ -d "$skill_dir" ] || continue
             skill_name="$(basename "$skill_dir")"
             # Skip if denied by platform — uses SOURCE path for deny-list matching
-            if is_denied ".claude/skills/$skill_name" "$platform_deny"; then
+            if is_denied ".agents/skills/$skill_name" "$platform_deny"; then
                 continue
             fi
             # Skip if not a selected pack (when --packs is specified)
@@ -1501,11 +1443,6 @@ verify_install_complete() {
             checked=$((checked + 1))
             if [ ! -d "$TARGET_SKILL_DIR/$skill_name" ]; then
                 log_warn "    ✗ MISSING skill: $TARGET_SKILL_DIR/$skill_name/"
-                missing=$((missing + 1))
-            fi
-            # "both" platform: also verify .agents/skills/ secondary path
-            if [ "$PLATFORM" = "both" ] && [ ! -d ".agents/skills/$skill_name" ]; then
-                log_warn "    ✗ MISSING skill (codex secondary): .agents/skills/$skill_name/"
                 missing=$((missing + 1))
             fi
         done
@@ -1695,7 +1632,7 @@ apply_deprecations() {
             in_files=0
             continue
         fi
-        # File list item: e.g.       - ".claude/commands/foo.md"
+        # File list item: e.g.       - ".codex/hooks.json"
         if [ "$in_files" = "1" ] && printf '%s' "$line" | grep -qE '^[[:space:]]+-[[:space:]]+'; then
             # Only process if dep_version ≤ current_version (version_le uses sort -V)
             if version_le "$current_dep_version" "$current_version"; then
@@ -1843,8 +1780,8 @@ snap_one() {
 # take_rollback_snapshot — capture the absolute target root, absolutize
 # BACKUP_PATH (a relative BACKUP_PATH is cwd-sensitive: the red defect), and
 # snapshot EVERY surface mutated after NEED_ROLLBACK=1: .tad/ is covered by
-# BACKUP_PATH; CLAUDE.md + timestamped backup, skills trees, root files,
-# .codex/hooks.json, settings/workflows are snapshotted here. Runs once,
+# BACKUP_PATH; AGENTS.md + timestamped backup, skills trees, root files,
+# .codex/hooks.json are snapshotted here. Runs once,
 # immediately after NEED_ROLLBACK=1, before the first project mutation.
 take_rollback_snapshot() {
     TARGET_ROOT="$(pwd -P)" || { log_error "cannot resolve target root for rollback snapshot"; exit 1; }
@@ -1865,16 +1802,12 @@ take_rollback_snapshot() {
     # removed wholesale (step 4); pre-existing ones restore file-precisely.
     local _pre
     ROLLBACK_PRE_TOP=""
-    for _pre in CLAUDE.md AGENTS.md GEMINI.md .tad .claude .agents .codex .opencode; do
+    for _pre in AGENTS.md GEMINI.md .tad .agents .codex .opencode; do
         if [ -e "$_pre" ]; then ROLLBACK_PRE_TOP="${ROLLBACK_PRE_TOP}${_pre} "; fi
     done
-    snap_one "CLAUDE.md"
     snap_one "AGENTS.md"
     snap_one "GEMINI.md"
     snap_one ".codex/hooks.json"
-    snap_one ".claude/settings.json"
-    snap_one ".claude/workflows"
-    snap_one ".claude/skills"
     snap_one ".agents/skills"
     # NOTE (R2 P0-2): NO snap of anything under .tad/ — .tad/ is owned SOLELY
     # by step-1 (BACKUP_PATH_ABS whole-dir restore / fresh-install removal).
@@ -1930,7 +1863,7 @@ restore_dir_entry() {
 
 # restore_file_entry <snap_file> <dst_path> — atomic FILE restore (R2 P0-3):
 # stage-verify-rename, never in-place cp-over (ENOSPC mid-copy truncated
-# CLAUDE.md/AGENTS.md/GEMINI.md with the snap preserved but dst lost).
+# AGENTS.md/GEMINI.md with the snap preserved but dst lost).
 # ANY failure returns 1 with dst either intact or explicitly failed — the
 # caller prints the failed-state message naming the preserved snapshot.
 restore_file_entry() {
@@ -2047,7 +1980,7 @@ rollback_on_failure() {
     # absolutized root — pre-existing dirs are exempt via ROLLBACK_PRE_TOP,
     # so user content inside them is never touched by this sweep.
     local _td
-    for _td in .claude .agents .codex .opencode; do
+    for _td in .agents .codex .opencode; do
         case " ${ROLLBACK_PRE_TOP:-} " in
             *" $_td "*) ;;
             *)
@@ -2061,9 +1994,7 @@ rollback_on_failure() {
     # 4c. Possibly-emptied parents (run-created skill/workflow dirs removed
     # above can leave empty shells): rmdir removes ONLY empty dirs, never
     # content — a non-empty dir (user content) stays, silently by design.
-    rmdir "$TARGET_ROOT/.claude/skills" 2>/dev/null || true # RM-OK:rollback-rmdir-skills
     rmdir "$TARGET_ROOT/.agents/skills" 2>/dev/null || true # RM-OK:rollback-rmdir-agents-skills
-    rmdir "$TARGET_ROOT/.claude/workflows" 2>/dev/null || true # RM-OK:rollback-rmdir-workflows
     # 4d. Structural migration backups are recovery copies — enumerated as
     # preserved-for-manual-recovery, never removed here (R2 P1-9: BOTH the
     # engine namespace and the legacy one; an unlisted recovery copy is a
@@ -2168,7 +2099,7 @@ if [ "$LIST_PACKS" = "1" ]; then list_packs; exit 0; fi
 # Set trap for automatic rollback
 # ⚠️ 2026-09-02 (v2.43.1): ERR trap does NOT fire for failures inside a
 # `case` branch (verified: `case x in x) g;; esac` where g returns 1 exits
-# via set -e with NO ERR trap). merge_claude_md and other ACTION-branch steps
+# via set -e with NO ERR trap). ACTION-branch steps
 # therefore never triggered rollback. Rollback now lives on the EXIT trap,
 # gated by NEED_ROLLBACK — set immediately before the first project mutation
 # and cleared on the success path. Every exit (set -e, explicit, signal) that
@@ -2177,62 +2108,9 @@ NEED_ROLLBACK=0
 trap 'cleanup_installer_temp; cleanup_source_tree; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
 
 # ============================================
-# CLAUDE.md Merge (marker-based)
+# v3.0.0: CLAUDE.md merge removed (Claude Code runtime path deleted).
+# A pre-existing downstream CLAUDE.md is user-owned and left byte-identical.
 # ============================================
-merge_claude_md() {
-    local src="$1"
-    local marker="<!-- TAD:PROJECT-CONTENT-BELOW -->"
-
-    if [ ! -f "$src/CLAUDE.md" ]; then
-        log_error "Source CLAUDE.md not found: $src/CLAUDE.md"
-        return 1
-    fi
-
-    if [ ! -f "CLAUDE.md" ]; then
-        cp "$src/CLAUDE.md" ./
-        return
-    fi
-
-    # F-05: namespaced timestamped backup (backup_existing() scheme). The bare
-    # `CLAUDE.md.bak` name is USER-OWNED — a pre-existing user file of that
-    # name must survive byte-identical (AC2.9), so the installer never
-    # creates, overwrites, or deletes it. The run-created backup path is
-    # recorded for rollback (removed on failure; original restored from snap).
-    MERGE_CREATED_BACKUP=""
-    local _ts _backup _n
-    _ts="$(date +%Y%m%d_%H%M%S)"
-    _backup="CLAUDE.md.backup.${_ts}"
-    _n=1
-    while [ -e "$_backup" ]; do _backup="CLAUDE.md.backup.${_ts}.$_n"; _n=$((_n + 1)); done
-    cp "CLAUDE.md" "$_backup" || return 1
-    MERGE_CREATED_BACKUP="$_backup"
-
-    local marker_line
-    marker_line=$(grep -nF "$marker" "CLAUDE.md" | head -1 | cut -d: -f1 || true)
-
-    if [ -n "$marker_line" ]; then
-        local content_start=$((marker_line + 1))
-
-        # Merge tmp lives in the validated TMPDIR, never in the project root
-        # (F-07: zero stray writes into the target).
-        local tmpfile
-        tmpfile=$(mktemp "$(resolve_tmpdir)/CLAUDE.md.merge.XXXXXX") || return 1
-
-        # Invariant: source CLAUDE.md MUST end with the marker as its last line.
-        # The full source (including marker) is written, then project content appended.
-        cat "$src/CLAUDE.md" > "$tmpfile" || { rm -f "$tmpfile"; return 1; } # RM-OK:merge-tmp-abort
-
-        # tail -n +N on a file shorter than N lines outputs nothing (safe no-op)
-        tail -n +"$content_start" "CLAUDE.md" >> "$tmpfile" || { rm -f "$tmpfile"; return 1; } # RM-OK:merge-tmp-abort-tail
-
-        mv "$tmpfile" "CLAUDE.md" || { rm -f "$tmpfile"; return 1; } # RM-OK:merge-tmp-abort-mv
-        log_success "  → CLAUDE.md merged (project content preserved below marker; backup: $(basename "$_backup"))"
-    else
-        cp "$src/CLAUDE.md" ./
-        log_warn "CLAUDE.md backed up to $(basename "$_backup") (no merge marker found)"
-        log_warn "If you had project-specific rules, restore them from the backup"
-    fi
-}
 
 # ============================================
 # Detect current state
@@ -2252,7 +2130,7 @@ _tad_ver_cmp() {
 }
 
 detect_state() {
-    if [ ! -d ".tad" ] && [ ! -d ".claude/commands" ]; then
+    if [ ! -d ".tad" ] && [ ! -d ".agents/skills" ]; then
         echo "fresh"
     elif [ -f ".tad/version.txt" ]; then
         local ver; ver=$(cat .tad/version.txt)
@@ -2414,7 +2292,7 @@ download_unpinned_source() {
 # Every install/upgrade mode projects exactly ONE TAD-owned command into
 # .opencode/commands/: tad-update.md. This function:
 #   - PREFLIGHT: if the target file already exists and differs from the source,
-#     fail before ANY .tad/.claude/.agents/root-file/.opencode mutation and print
+#     fail before ANY .tad/.agents/root-file/.opencode mutation and print
 #     the deterministic recovery instruction. Identical content is accepted.
 #   - PROJECT: create parent dirs as needed, copy only that one file, and compare
 #     it with the source (byte-identical).
@@ -2475,7 +2353,7 @@ main() {
     echo ""
     echo -e "${CYAN}=====================================${NC}"
     echo -e "${CYAN}   TAD Framework v${TARGET_VERSION}${NC}"
-    echo -e "${CYAN}   Claude Code Integration${NC}"
+    echo -e "${CYAN}   Codex-first Integration${NC}"
     echo -e "${CYAN}=====================================${NC}"
     echo ""
 
@@ -2485,12 +2363,8 @@ main() {
     resolve_platform
 
     # Set platform-aware skill directory (used by copy, verify, and main)
-    # "both" uses .claude/skills as primary + .agents/skills as secondary
-    if [ "$PLATFORM" = "codex" ]; then
-        TARGET_SKILL_DIR=".agents/skills"
-    else
-        TARGET_SKILL_DIR=".claude/skills"
-    fi
+    # v3.0.0: codex is the only target; skills live in .agents/skills.
+    TARGET_SKILL_DIR=".agents/skills"
 
     # Codex CLI version detection (non-blocking)
     if [ "$PLATFORM" = "codex" ]; then
@@ -2617,7 +2491,6 @@ main() {
             echo "  1. Create .tad/ directory structure"
             echo "  2. Create .tad/skills/ with 8 P0 skills (NEW)"
             echo "  3. Create $TARGET_SKILL_DIR/ with TAD skill files"
-            echo "  4. Create CLAUDE.md project rules"
             ;;
         "upgrade")
             echo "  1. Update $TARGET_SKILL_DIR/"
@@ -2697,7 +2570,7 @@ main() {
     # From here on, any non-success exit restores the project from the backup.
     NEED_ROLLBACK=1
     # F-06: absolutize target + backup and snapshot every mutable surface
-    # (CLAUDE.md, skills trees, root files, hooks.json, settings/workflows)
+    # (AGENTS.md, skills trees, root files, hooks.json)
     # BEFORE the first project mutation below.
     take_rollback_snapshot
 
@@ -2738,11 +2611,8 @@ main() {
             cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
 
             # Copy root files
-            # F-03 (EPIC-20260816 Phase 2 / 审计): install 分支原为裸 cp，会无声覆盖用户
-            # 已有的 CLAUDE.md。detect_state 在 .tad/ 与 .claude/commands/ 均不存在时返回
-            # fresh —— 那正是「有自写 CLAUDE.md 但从未装过 TAD」的用户状态。
-            # merge_claude_md 自身已处理全新项目（无 CLAUDE.md 时直接 cp）。
-            merge_claude_md "$TAD_SRC"
+            # v3.0.0: no CLAUDE.md merge — a pre-existing downstream CLAUDE.md
+            # is user-owned and left byte-identical (never written, never deleted).
 
             # Create user files if not exist
             if [ ! -f "PROJECT_CONTEXT.md" ]; then
@@ -2824,7 +2694,7 @@ NEXTEOF
 
             # Archive legacy top-level skill files (F-08: unique timestamped
             # dir per run via the shared increment loop — never skip-if-exists).
-            archive_old_skill_mds ".claude/skills"
+            archive_old_skill_mds ".agents/skills"
 
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
@@ -2832,9 +2702,7 @@ NEXTEOF
             # Run migration engine (after copy makes engine available; before version.txt update)
             call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
 
-            # Update CLAUDE.md (merge: preserve project content below marker)
-            log_info "  → Updating CLAUDE.md..."
-            merge_claude_md "$TAD_SRC"
+            # v3.0.0: no CLAUDE.md merge (user-owned file left untouched).
 
             # Update project-knowledge README seed — preserve a downstream-
             # customized README (knowledge-seam isolation): only install the
@@ -2909,7 +2777,7 @@ NEXTEOF
 
             # Archive legacy top-level skill files (F-08: same unique
             # timestamped-dir rule as the upgrade branch).
-            archive_old_skill_mds ".claude/skills"
+            archive_old_skill_mds ".agents/skills"
 
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
@@ -2917,8 +2785,7 @@ NEXTEOF
             # Run migration engine (after copy makes engine available; before version.txt update)
             call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
 
-            # Merge CLAUDE.md (preserve project content below marker)
-            merge_claude_md "$TAD_SRC"
+            # v3.0.0: no CLAUDE.md merge (user-owned file left untouched).
 
             # Copy project-knowledge README seed — preserve a downstream-
             # customized README (knowledge-seam isolation): only install the
@@ -3020,7 +2887,7 @@ NEXTEOF
     echo "  └── templates/           # Handoff & output templates"
     echo ""
     echo "Quick start:"
-    echo "  1. Restart Claude Code (or open new terminal)"
+    echo "  1. Restart your terminal (or open a new one)"
     echo -e "  2. ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
 
     echo ""

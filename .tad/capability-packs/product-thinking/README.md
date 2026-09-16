@@ -41,7 +41,7 @@ Produces: Tech handoff (software), product listing + supplier plan (ecommerce), 
 
 ## Installation
 
-### Claude Code
+### Codex
 
 ```bash
 git clone https://github.com/your-username/product-thinking.git
@@ -49,13 +49,13 @@ cd product-thinking
 bash install.sh
 ```
 
-The installer copies the skills to `.claude/skills/product-thinking/`.
+The installer copies the skills to `.agents/skills/product-thinking/`.
 
 **Options:**
 ```bash
 bash install.sh --dry-run    # See what will be installed without doing it
 bash install.sh --force      # Overwrite existing installation
-bash install.sh --global     # Install to ~/.claude/skills/ (available in all projects)
+bash install.sh --global     # Install to ~/.agents/skills/ (available in all projects)
 ```
 
 ---

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # install.sh — Web UI Design Capability Pack installer
-# Phase 1: Claude Code support
+# Phase 1: Codex support
 # Phase 3 (future): Codex, Cursor, Gemini — interfaces reserved via --agent flag
 #
-# Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=claude|codex|cursor|gemini]
+# Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=codex|cursor|gemini]
 
 set -euo pipefail
 
@@ -11,7 +11,7 @@ PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY_RUN=false
 FORCE=false
 ALLOW_GLOBAL=false
-AGENT="claude"
+AGENT="codex"
 
 # Parse flags
 for arg in "$@"; do
@@ -26,10 +26,10 @@ for arg in "$@"; do
       echo "Options:"
       echo "  --dry-run      Show what would be installed without writing files"
       echo "  --force        Overwrite existing files without warning"
-      echo "  --global       Allow install to ~/.claude/ when no project .claude/ is found"
-      echo "  --agent=NAME   Agent to install for (default: claude)"
-      echo "                 Supported: claude"
-      echo "                 Planned (Phase 3): codex, cursor, gemini"
+      echo "  --global       Allow install to ~/.agents/ when no project .agents/ is found"
+      echo "  --agent=NAME   Agent to install for (default: codex)"
+      echo "                 Supported: codex"
+      echo "                 Planned (Phase 3): cursor, gemini"
       exit 0
       ;;
     *)
@@ -45,44 +45,47 @@ echo ""
 
 # --- Phase 3 interface stub (not yet implemented) ---
 case "$AGENT" in
-  claude|claude-code)
-    ;;
   codex)
+    ;;
+  *claude*)
+    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+    echo "  Re-run with --agent=codex. No files were changed." >&2
+    exit 1
     ;;
   cursor|gemini)
     echo "⚠️  Phase 3 ($AGENT) is not yet implemented." >&2
-    echo "   For now, install with --agent=claude and adapt manually." >&2
+    echo "   For now, install with --agent=codex and adapt manually." >&2
     exit 2
     ;;
   *)
-    echo "Unknown agent: $AGENT. Supported: claude, codex (others in Phase 3)" >&2
+    echo "Unknown agent: $AGENT. Supported: codex (others in Phase 3)" >&2
     exit 1
     ;;
 esac
 
 # --- Detect install target ---
 
-SKILLS_ROOT=""
+AGENTS_ROOT=""
 if [ "$AGENT" = "codex" ]; then
-  SKILLS_ROOT=".agents"
+  AGENTS_ROOT=".agents"
   echo "✓ Codex install — target .agents/skills/"
-elif [ -d ".claude" ]; then
-  SKILLS_ROOT=".claude"
-  echo "✓ .claude/ detected — Claude Code project install"
-elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.claude" ]; then
-  SKILLS_ROOT="$HOME/.claude"
-  echo "✓ ~/.claude/ detected — Claude Code global install (--global flag set)"
-elif [ -d "$HOME/.claude" ]; then
-  echo "✗ No .claude/ in current directory." >&2
-  echo "  Found ~/.claude/ — use --global to install globally, or cd to your project first." >&2
+elif [ -d ".agents" ]; then
+  AGENTS_ROOT=".agents"
+  echo "✓ .agents/ detected — Codex project install"
+elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.agents" ]; then
+  AGENTS_ROOT="$HOME/.agents"
+  echo "✓ ~/.agents/ detected — Codex global install (--global flag set)"
+elif [ -d "$HOME/.agents" ]; then
+  echo "✗ No .agents/ in current directory." >&2
+  echo "  Found ~/.agents/ — use --global to install globally, or cd to your project first." >&2
   exit 1
 else
-  echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
-  echo "  Install Claude Code: https://claude.ai/code" >&2
+  echo "✗ Codex target not found (.agents/ or ~/.agents/ missing)." >&2
+  echo "  Run from your project root, or use --global." >&2
   exit 1
 fi
 
-SKILL_DIR="${SKILLS_ROOT}/skills/web-ui-design"
+SKILL_DIR="${AGENTS_ROOT}/skills/web-ui-design"
 echo "Target: ${SKILL_DIR}/"
 echo ""
 
@@ -190,6 +193,6 @@ echo "  Skipped (already exist): ${EXISTED} files (use --force to overwrite)"
 echo ""
 echo "SKILL.md available at: ${SKILL_DIR}/SKILL.md"
 echo ""
-echo "To activate in Claude Code:"
+echo "To activate in Codex:"
 echo "  Reference 'web-ui-design' skill in your conversation"
 echo "  Or: 'Design this using the web-ui-design capability pack'"

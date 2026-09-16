@@ -162,7 +162,7 @@ check_slug_consistency() {
     # If a manifest path is one of these, slug check doesn't apply.
     # Pattern is anchored on absolute-ish relative paths; keep tight to avoid
     # accidentally muting real handoff-specific files.
-    local ALLOWLIST_REGEX='^(\.tad/project-knowledge/|NEXT\.md$|PROJECT_CONTEXT\.md$|CHANGELOG\.md$|README\.md$|\.tad/config[-a-zA-Z0-9_]*\.yaml$|\.claude/skills/|\.tad/hooks/|\.tad/templates/)'
+    local ALLOWLIST_REGEX='^(\.tad/project-knowledge/|NEXT\.md$|PROJECT_CONTEXT\.md$|CHANGELOG\.md$|README\.md$|\.tad/config[-a-zA-Z0-9_]*\.yaml$|\.agents/skills/|\.tad/hooks/|\.tad/templates/)'
 
     local mismatches=""
     while IFS= read -r p; do

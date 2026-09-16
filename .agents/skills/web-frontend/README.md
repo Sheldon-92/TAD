@@ -34,7 +34,7 @@ Use the [web-ui-design](https://github.com/tad-capability-packs/web-ui-design) p
 ```bash
 bash install.sh
 # or explicitly:
-bash install.sh --agent=claude-code
+bash install.sh --agent=codex
 ```
 
 Preview what would be installed:

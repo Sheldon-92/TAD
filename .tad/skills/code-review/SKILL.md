@@ -1,4 +1,6 @@
 ---
+<!-- ARCHIVED (v3.0.0): v1.4 legacy skill definition. No live consumer. Retained as
+  a historical record; `.claude/skills` paths below are stale by design. -->
 name: "Code Review"
 id: "code-review"
 version: "1.0"

@@ -13,8 +13,8 @@ usage() {
 Usage: bash install.sh [OPTIONS]
 
 Options:
-  --agent=<name>    Target agent runtime (default: claude-code)
-                    Supported: claude-code, codex
+  --agent=<name>    Target agent runtime (default: codex)
+                    Supported: codex, codex
   --agent <name>    Same (space-separated form)
   --target <path>   Override install target directory
   --dry-run         Show what would be installed without copying files
@@ -22,15 +22,15 @@ Options:
   --help            Show this message
 
 Examples:
-  bash install.sh                          # Install for Claude Code (default)
-  bash install.sh --agent=claude-code      # Explicit Claude Code
+  bash install.sh                          # Install for Codex (default)
+  bash install.sh --agent=codex      # Explicit Codex
   bash install.sh --agent=codex            # Install for Codex (.agents/skills/)
   bash install.sh --dry-run                # Preview without writing
 EOF
   exit "${1:-0}"
 }
 
-AGENT="claude-code"
+AGENT="codex"
 CUSTOM_TARGET=""
 DRY_RUN=false
 FORCE=false
@@ -77,12 +77,12 @@ install_pack() {
     TARGET_DIR=".agents/skills/${PACK_NAME}"
   else
     PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-    if [[ -d "${PROJECT_ROOT}/.claude" ]]; then
-      TARGET_DIR="${PROJECT_ROOT}/.claude/skills/${PACK_NAME}"
-    elif [[ -d "${HOME}/.claude" ]]; then
-      TARGET_DIR="${HOME}/.claude/skills/${PACK_NAME}"
+    if [[ -d "${PROJECT_ROOT}/.agents" ]]; then
+      TARGET_DIR="${PROJECT_ROOT}/.agents/skills/${PACK_NAME}"
+    elif [[ -d "${HOME}/.agents" ]]; then
+      TARGET_DIR="${HOME}/.agents/skills/${PACK_NAME}"
     else
-      echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
+      echo "✗ Codex not found (.agents/ or ~/.agents/ missing)." >&2
       exit 1
     fi
   fi
@@ -130,21 +130,21 @@ install_pack() {
   echo "✅ ${PACK_NAME} v${PACK_VERSION} installed to: ${TARGET_DIR}"
   echo ""
   echo "Next steps:"
-  echo "  1. Restart Claude Code (or reload the session)"
+  echo "  1. Restart Codex (or reload the session)"
   echo "  2. The pack activates on academic/scientific research keywords"
   echo "  3. Keywords: 学术, academic, 论文, paper, 文献, literature, PRISMA, PubMed"
 }
 
 case "$AGENT" in
-  claude-code)
-    install_pack "claude-code"
+  codex)
+    install_pack "codex"
     ;;
   codex)
     install_pack "codex"
     ;;
   *)
     echo "Unknown agent: ${AGENT}"
-    echo "Supported: claude-code, codex"
+    echo "Supported: codex, codex"
     exit 1
     ;;
 esac

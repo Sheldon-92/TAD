@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-DEFAULT_SKILL=".claude/skills/blake/SKILL.md"
+DEFAULT_SKILL=".agents/skills/blake/SKILL.md"
 SKILL_PATH="${1:-$DEFAULT_SKILL}"
 IS_CUSTOM_PATH=false
 if [ "$SKILL_PATH" != "$DEFAULT_SKILL" ]; then
@@ -65,7 +65,7 @@ fi
 echo "---"
 
 # Negative presence: inlined refs must NOT be recreated
-BLAKE_REFS=".claude/skills/blake/references"
+BLAKE_REFS=".agents/skills/blake/references"
 for ref in completion-protocol.md execution-checklist.md ralph-loop.md; do
   if [[ -f "$BLAKE_REFS/$ref" ]]; then
     echo "FAIL: $ref was re-extracted (must stay inlined in body)"
@@ -78,21 +78,12 @@ done
 echo "---"
 
 if [ "$IS_CUSTOM_PATH" = true ]; then
-  echo "SKIP: .agents/ mirror and ref-ok checks (custom path — marker+safety only)"
+  echo "SKIP: source-consistency checks (custom path — marker+safety only)"
 else
+  # v3.0.0: single skill tree (.agents/skills is the sole source) — no mirror
+  # comparison remains. Assert the canonical blake body exists and is non-empty.
   AGENTS_SKILL=".agents/skills/blake/SKILL.md"
-  REF_DIR=".claude/skills/blake/references"
-
-  if [ -f "$DEFAULT_SKILL" ] && [ -f "$AGENTS_SKILL" ]; then
-    if diff -q "$DEFAULT_SKILL" "$AGENTS_SKILL" > /dev/null 2>&1; then
-      echo "  OK: .agents/ mirror is identical to .claude/ copy"
-    else
-      echo "FAIL: .agents/ mirror differs from .claude/ copy"
-      FAIL=1
-    fi
-  elif [ ! -f "$AGENTS_SKILL" ]; then
-    echo "WARN: .agents/ mirror not found at $AGENTS_SKILL (skipping)"
-  fi
+  REF_DIR=".agents/skills/blake/references"
 
   for ref in cross-model-invocation.md notebooklm-access.md; do
     if [ -f "$REF_DIR/$ref" ]; then
@@ -113,8 +104,8 @@ echo "---"
 #   ALEX_REFS_DIR   — alternate references/ dir (negative-presence check only)
 # ============================================================
 
-DEFAULT_ALEX_SKILL=".claude/skills/alex/SKILL.md"
-DEFAULT_ALEX_REFS=".claude/skills/alex/references"
+DEFAULT_ALEX_SKILL=".agents/skills/alex/SKILL.md"
+DEFAULT_ALEX_REFS=".agents/skills/alex/references"
 ALEX_SKILL="${ALEX_SKILL_PATH:-$DEFAULT_ALEX_SKILL}"
 ALEX_REFS="${ALEX_REFS_DIR:-$DEFAULT_ALEX_REFS}"
 ALEX_IS_CUSTOM=false
@@ -197,38 +188,33 @@ done
 echo "---"
 
 if [ "$ALEX_IS_CUSTOM" = true ]; then
-  echo "SKIP: alex .agents/ mirror + gate checks (custom path — marker/negative-presence only)"
+  echo "SKIP: alex source-consistency + gate checks (custom path — marker/negative-presence only)"
 else
-  # .agents mirror byte-identity for alex SKILL.md + references/
+  # v3.0.0: single skill tree — the alex body IS the canonical source.
   AGENTS_ALEX_SKILL=".agents/skills/alex/SKILL.md"
-  if [ -f "$AGENTS_ALEX_SKILL" ]; then
-    if diff -q "$DEFAULT_ALEX_SKILL" "$AGENTS_ALEX_SKILL" > /dev/null 2>&1; then
-      echo "  OK: alex .agents/ SKILL.md mirror is identical"
-    else
-      echo "FAIL: alex .agents/ SKILL.md mirror differs from .claude/ copy"
-      FAIL=1
-    fi
+  if [ -s "$AGENTS_ALEX_SKILL" ]; then
+    echo "  OK: alex canonical SKILL.md present and non-empty"
   else
-    echo "WARN: alex .agents/ mirror not found at $AGENTS_ALEX_SKILL (skipping)"
+    echo "FAIL: alex canonical SKILL.md missing or empty at $AGENTS_ALEX_SKILL"
+    FAIL=1
   fi
 
   # TEMP exclusion (2026-07-12): distillation-loop-protocol.md is mid-flight in the
   # memory-redirect handoff (parallel session). REMOVE the -x exclusion after it lands.
   AGENTS_ALEX_REFS=".agents/skills/alex/references"
   if [ -d "$AGENTS_ALEX_REFS" ]; then
-    if diff -qr -x distillation-loop-protocol.md "$DEFAULT_ALEX_REFS" "$AGENTS_ALEX_REFS" > /dev/null 2>&1; then
-      echo "  OK: alex references/ mirror is identical (excl. distillation-loop-protocol.md — TEMP)"
+    if [ -f "$AGENTS_ALEX_REFS/research-track-protocol.md" ]; then
+      echo "  OK: alex canonical references/ present"
     else
-      echo "FAIL: alex references/ mirror differs from .claude/ copy (excl. distillation-loop-protocol.md)"
-      diff -qr -x distillation-loop-protocol.md "$DEFAULT_ALEX_REFS" "$AGENTS_ALEX_REFS" 2>&1 | head -10 || true
+      echo "FAIL: alex canonical references/ missing anchor file at $AGENTS_ALEX_REFS"
       FAIL=1
     fi
   else
-    echo "WARN: alex .agents/ references dir not found at $AGENTS_ALEX_REFS (skipping)"
+    echo "WARN: alex references dir not found at $AGENTS_ALEX_REFS (skipping)"
   fi
 
   # gate/SKILL.md must have NO references/ dir (extraction without verifier coverage is forbidden)
-  for gate_refs in .claude/skills/gate/references .agents/skills/gate/references; do
+  for gate_refs in .agents/skills/gate/references .agents/skills/gate/references; do
     if [ -d "$gate_refs" ]; then
       echo "FAIL: $gate_refs exists — gate/SKILL.md was extracted without verifier coverage"
       FAIL=1

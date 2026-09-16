@@ -4,21 +4,8 @@
 # ⚠️ NEVER use per-platform install_dirs allow-list (2026-06-01 principle).
 
 platforms:
-  claude-code:
-    label: "Claude Code"
-    extra_deny: []
-    extra_root_files: []
-
   codex:
     label: "Codex CLI"
-    extra_deny:
-      - ".claude/settings.json"
-      - ".claude/workflows"
-    extra_root_files:
-      - "AGENTS.md"
-
-  both:
-    label: "Claude Code + Codex"
     extra_deny: []
     extra_root_files:
       - "AGENTS.md"

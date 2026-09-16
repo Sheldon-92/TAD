@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 2.44.6 — Alex / Blake is the Default**
+**Version 3.0.0 — Alex / Blake is the Default, Codex is the Runtime**
 
 ## 安装方式
 
@@ -10,18 +10,21 @@
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-默认双平台安装（Claude Code + Codex）+ 全部 25 个 packs。无需 Node.js，只需 bash + curl。首次安装与后续升级在不传 `--platform` 时均为双平台；只有 Claude Code 的旧项目升级后自动补齐 Codex 文件，项目数据（handoffs、evidence、project-knowledge）保持不变。
+默认安装（Codex）+ 全部 25 个 packs。无需 Node.js，只需 bash + curl。首次安装与后续升级用同一命令；升级不会删除你的既有文件，项目数据（handoffs、evidence、project-knowledge）保持不变。
 
-只要单平台（显式覆盖默认值）：
+平台参数（显式覆盖默认值）：
+
 ```bash
-# 仅 Claude Code
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform claude-code
-
-# 仅 Codex，或选择特定 packs
+# Codex（默认，也是唯一目标）
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform codex --packs web-frontend,web-backend
 ```
 
+> `--platform claude-code` / `--platform both` 自 v3.0.0 起被拒绝：
+> 安装器会在改动任何文件前报错，并打印恢复命令（改传 `--platform codex` 即可）。
+> 详见下方「升级到 v3.0.0」。
+
 CI / 脚本化（跳过确认提示）：
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
@@ -32,7 +35,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 npx github:Sheldon-92/TAD
 ```
 
-交互式选择平台（Claude Code / Codex CLI）和 capability packs，每个 pack 附一句话说明。
+交互式选择 capability packs，每个 pack 附一句话说明（安装目标恒为 Codex）。
 
 > 需要 Node.js 14+。不想装 Node.js 就用上面的 curl。
 
@@ -48,11 +51,8 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 2.44.6
-ls .claude/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
-
-# 使用 Claude Code
-claude .                       # 打开项目
+cat .tad/version.txt          # 应显示 3.0.0
+ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 默认（Alex / Blake —— 两个 terminal，人是唯一信息桥梁）
 /alex           # Terminal 1: 设计与规划
@@ -75,19 +75,38 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ### 项目内更新（`$tad-update` / `/tad-update`）
 
-安装后，当前项目内置一个更新入口，三个平台共用同一个 helper：
+安装后，当前项目内置一个更新入口，两个 harness 共用同一个 helper：
 
-- **Claude Code**：`$tad-update`（skill）
-- **Codex**：`$tad-update`（skill，与 Claude Code 字节一致）
+- **Codex**：`$tad-update`（skill）
 - **OpenCode**：`/tad-update`（**updater-only**：仅提供更新入口，不包含 Alex/Blake/Gate 角色、hooks 或 gate 能力）
 
 流程：先运行 `--check` 查看当前/远程版本与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 apply。helper 会在每次项目变更前自动备份，且仅在你确认后调用官方安装器。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
+
+### 升级到 v3.0.0（Claude Code 路径移除）
+
+1. **只用 Codex 的用户**：无需操作。`npx tad-framework` / `curl | bash` 现在默认装
+   `.agents/skills`；`--platform codex` 为默认。
+2. **仍装 Claude Code 的用户**：Claude 路径自 v3.0.0 起**不再更新**。升级**不会删除、
+   不会改写**你现有的 `.claude/`（含 skills、settings.json、hooks、MCP、权限配置）。
+   如需清理请手动操作：`rm -rf .claude/skills .claude/workflows .claude/settings.json`
+  （**TAD 不会代删**）。
+3. **脚本里传 `--platform claude-code` 或 `--platform both` 的用户**：v3 会**在改动任何文件前**
+   报错，并打印恢复命令。请改传 `--platform codex`，或直接重跑：
+   - 本地 updater：`bash .tad/scripts/tad-update.sh --platform codex --yes`
+   - npm：`npx tad-framework@latest --platform codex`
+   - curl：`curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes`
+
+   > 若你用**旧版（≤2.44.6）自带 updater**：它会自动探测出 `both` 并原样透传 →
+   > v3 会 fail-before-mutation 停下。用上面任一条恢复命令即可，**不会丢文件**。
+4. **直接调用某个 capability pack 的 `install.sh`**：目标现在是 `.agents/skills/`；
+   旧的 `~/.claude/skills/` 安装不会自动迁移或删除。
+5. **迁移安全保证**：v3.0.0 **不生成**删除用户 `.claude/**` 的 migration manifest；
+   历史 manifest 只读保留。
 
 ## 平台说明
 
 | 平台 | 说明 | 安装大小 |
 |------|------|----------|
-| Claude Code | 完整安装，含全部 SKILL + hooks | ~200KB |
 | Codex CLI | 完整安装，含 alex/blake SKILL + hooks | ~120KB |
 
 Codex 用户可以用更少的 context 跑 TAD 工作流。详见 [Codex CLI 指南](#codex-cli)。
@@ -117,11 +136,8 @@ TAD 完整支持 Codex CLI（v0.130+），使用同一套 SKILL.md 文件：
 # 前提：已安装 codex CLI + 配置 OpenAI 认证
 codex --version
 
-# 仅 Codex（skills 安装到 .agents/skills/）
+# 安装（skills 安装到 .agents/skills/）
 bash tad.sh --platform codex --yes
-
-# 双平台（同时安装 .claude/skills/ + .agents/skills/，推荐）
-bash tad.sh --platform both --yes
 
 # 使用：在 Codex 中输入 $alex 或 $blake 激活角色
 ```
@@ -138,11 +154,11 @@ bash tad.sh --platform both --yes
 
 ## 常见问题
 
-**Q: Claude Code 没有识别 TAD？**
-A: 检查 `.claude/skills/` 目录是否存在且包含 SKILL.md 文件。重启 Claude Code。
+**Q: Codex 没有识别 TAD？**
+A: 检查 `.agents/skills/` 目录是否存在且包含 SKILL.md 文件。确认 `AGENTS.md` 在项目根目录。
 
 **Q: /alex 命令不可用？**
-A: 确认 `.claude/skills/alex/SKILL.md` 存在。如果缺失，重新运行安装命令。
+A: 确认 `.agents/skills/alex/SKILL.md` 存在。如果缺失，重新运行安装命令。
 
 **Q: 如何只安装特定 packs？**
 A: `npx github:Sheldon-92/TAD --packs web-frontend,web-backend` 或 `bash tad.sh --packs web-frontend,web-backend`

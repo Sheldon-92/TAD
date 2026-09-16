@@ -19,7 +19,7 @@ AI agents can write video via HTML (HyperFrames) and React (Remotion), but they 
 ```bash
 # Clone or download the pack, then:
 bash install.sh                    # Claude Code (default)
-bash install.sh --agent claude-code  # Explicit
+bash install.sh --agent codex  # Explicit
 bash install.sh --check           # Check prerequisites only
 ```
 

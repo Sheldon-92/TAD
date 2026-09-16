@@ -1177,11 +1177,11 @@ Criteria:
 
 After running `bash install.sh`, this file is available at:
 ```
-.claude/skills/web-ui-design/SKILL.md
+.agents/skills/web-ui-design/SKILL.md
 ```
 
 To activate in a conversation:
-- Claude Code loads skills automatically from `.claude/skills/`
+- Claude Code loads skills automatically from `.agents/skills/`
 - Reference specific capabilities: "Use C3 and C7 from the web-ui-design pack"
 - Or run the full pipeline: "Design this UI using the web-ui-design capability pack"
 

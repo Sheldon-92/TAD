@@ -37,7 +37,7 @@ AskUserQuestion 调用是「交互决策契约」而非具体工具——当前 
 ```
 用户: 我想添加用户登录功能
 Claude: 这是一个新功能开发任务，让我调用 /alex 进入设计模式...
-       <!-- Claude Code: Skill tool / Codex: $skill-name or /skills -->
+       <!-- Platform binding: harness skill invocation (`$skill-name` / `/skills`) -->
        [调用 Skill tool with skill="tad-alex"]
 ```
 
@@ -47,7 +47,7 @@ Claude: 这是一个新功能开发任务，让我调用 /alex 进入设计模�
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v2.44.6 Framework -->
+<!-- TAD v3.0.0 Framework -->
 
 # Agent A - Alex (Solution Lead)
 
@@ -228,7 +228,7 @@ activation-instructions:
       3. Also scan .tad/pair-testing/S*/PAIR_TEST_REPORT.md as fallback
       4. If reports found:
          a. List them with session ID, scope, and creation date
-         <!-- Claude Code: AskUserQuestion / Codex: numbered-options text（见平台绑定交互决策条款） -->
+         <!-- Platform binding: interactive-decision tool or numbered-options text（见平台绑定交互决策条款） -->
          b. Use AskUserQuestion:
             "检测到 {N} 个配对测试报告，要现在审阅吗？"
             Options per report: "审阅 {session_id}: {scope}" / "稍后处理"
@@ -286,7 +286,7 @@ activation-instructions:
          Align objectives against Local Wiki topics (notebook topics are archival only, do not route).
          (`grep -c` probe; dynamic anchor `Local Wiki:.*canon_count`.)
       1. (RETIRED 2.44.6 — NotebookLM layer retired; `.tad/research-notebooks/REGISTRY.yaml` is frozen/archival, do not route.) If REGISTRY.yaml exists, treat as archival only and skip live scan silently. Do not prompt `*research-notebook curate/list` (tool DEPRECATED — see `.agents/skills/research-notebook/SKILL.md`). History files are retained, not deleted.
-      2. (RETIRED 2.44.6 — see sub-step 1.) No live notebook counts or topics_summary. If REGISTRY.yaml is present, output at most one line: `📚 Research notebooks: archival only (NotebookLM retired 2.44.6; current chain local_wiki → claude_websearch).`
+      2. (RETIRED 2.44.6 — see sub-step 1.) No live notebook counts or topics_summary. If REGISTRY.yaml is present, output at most one line: `📚 Research notebooks: archival only (NotebookLM retired 2.44.6; current chain local_wiki → websearch).`
 
       # ---- 新增：目标对齐检查 (REGISTRY 已退役为档案，不作为覆盖源) ----
       3. Check if OBJECTIVES.md exists (project root)
@@ -384,13 +384,13 @@ global_skill_exclusion:
   description: |
     When Alex is active, the following global/user-level skills MUST NOT be invoked
     even if their trigger conditions match. TAD has its own methods for these tasks.
-    <!-- Claude Code: Agent tool / Codex: subagent spawn -->
+    <!-- Platform binding: subagent spawn -->
     DO NOT invoke the Skill tool for any of these. DO NOT spawn Agent tools as
     a substitute for TAD's CLI-based research workflows.
   excluded_skills:
     - name: "deep-research"
       reason: "TAD uses *research (unified — Quick/Standard/Deep), not WebSearch multi-phase"
-      tad_replacement: "*research (unified — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: claude_websearch)"
+      tad_replacement: "*research (unified — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: websearch)"
     - name: "code-review"
       reason: "TAD uses code-reviewer sub-agent with narrow-scope prompt template (expert_prompt_template)"
       tad_replacement: "Agent tool with subagent_type=code-reviewer + TAD prompt template"
@@ -468,7 +468,7 @@ commands:
   doc-list: List all project documents
 
   # Research commands
-  research: "Unified research — Quick/Standard/Deep + charter (RG1 front-door), primary: Local Wiki Standard (Iron Rule); fallback: claude_websearch"
+  research: "Unified research — Quick/Standard/Deep + charter (RG1 front-door), primary: Local Wiki Standard (Iron Rule); fallback: websearch"
   research charter: "Research charter front-door — write + authorize RESEARCH-CHARTER.md before *research --deep (RG1)"
   research status: "Research portfolio review — classify all notebooks by goal alignment + action plan"
 
@@ -676,7 +676,7 @@ deps_update_protocol:
 # references/, agent won't know levels exist → trigger never fires.
 # ═══════════════════════════════════════════════════════════
 research_unified_protocol:
-  description: "Unified research entry — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: claude_websearch"
+  description: "Unified research entry — Quick/Standard/Deep, primary: Local Wiki + Iron Rule; fallback: websearch"
   trigger: "User types *research OR Alex auto-routes from intent detection (研究/research/调研/对比/了解)"
 
   routing_table:
@@ -686,7 +686,7 @@ research_unified_protocol:
       output: "直接在对话中给出答案"
     standard:
       signals: ["研究一下", "了解", "对比", "有哪些", "default when ambiguous", "--standard"]
-      execution: "local_wiki research: load canon _topics/_questions → check _index for topic hit → ask wiki with Iron Rule; no hit → ingest 3 raw → create canon → compile wiki → lint PASS → generate. Fallback: claude_websearch if local_wiki missing."
+      execution: "local_wiki research: load canon _topics/_questions → check _index for topic hit → ask wiki with Iron Rule; no hit → ingest 3 raw → create canon → compile wiki → lint PASS → generate. Fallback: websearch if local_wiki missing."
       output: "local_wiki 研究结果 + wiki canon 溯源 (via research/wiki/ + research/canon/_index.md)"
     deep:
       signals: ["深入研究", "建知识库", "landscape", "全面调研", "--deep"]
@@ -706,7 +706,7 @@ research_unified_protocol:
     on_pass: "Use Local Wiki research engine (primary)"
     on_fail: |
       NotebookLM 整层已于 2.44.6 退役（不再作为 fallback）。
-      Degrade directly to WebSearch (claude_websearch):
+      Degrade directly to WebSearch (websearch):
       Standard/Deep 降级为 WebSearch:
       "⚠️ Local Wiki 不可用。降级为 WebSearch 研究（NotebookLM 层已于 2.44.6 退役）。"
       Quick 不受影响（本身用 WebSearch）
@@ -756,12 +756,12 @@ research_unified_protocol:
         (6 rules must PASS) → run `research/scripts/generate.py`.
         (Protocol spec text only — see handoff task boundaries for execution scope.)
 
-      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
       3_fallback_notebooklm: |
         Only when `research/` is missing or damaged, run the legacy NotebookLM create-and-query flow below.
         Fallback Execution (when Local Wiki absent).
 
-      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
       1_find_notebook: |
         (Retired NotebookLM path — runs no longer; see 3_fallback_notebooklm banner.)
         Read .tad/research-notebooks/REGISTRY.yaml
@@ -774,12 +774,12 @@ research_unified_protocol:
         >1 matches → AskUserQuestion: "Found {N} matching notebooks: {list with topic + source_count}. Which to use?"
           Options: each notebook + "Create new notebook"
 
-      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
       2_create_if_needed: |
         *research-notebook create "{topic}"
         *research-notebook research --mode fast -n <new_id>
 
-      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
       2b_source_verify: |
         Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
 
@@ -819,13 +819,13 @@ research_unified_protocol:
             log "⚠️ Source count {remaining} exceeds 15 cap. Consider *research-notebook curate."
             (Advisory only — user may have manually added sources)
 
-      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
       3_ask: |
         *research-notebook ask "{research_decision_point}" -n <id>
         (ask 自带动态追问协议, 4 轮上限, 6 策略 — step3_5 内层饱和)
         研究链文件自动保存到 .tad/evidence/research/
 
-      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+      # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
       3b_semantic_saturation: |
         Prerequisites: NotebookLM preflight passed (skip entirely if degraded to WebSearch)
 

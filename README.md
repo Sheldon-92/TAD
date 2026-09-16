@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 2.44.6 — NotebookLM Retirement + Research-Track + Cleanup**
+**Version 3.0.0 — Claude Code Path Removed, Codex Sole Runtime**
 
-> v2.44.6 release: NotebookLM research layer retired whole-layer (fallback local_wiki → claude_websearch); RG1–RG4 research track wrapper; handoff archive cleanup — see [CHANGELOG](CHANGELOG.md#2446---2026-09-15).
+> v3.0.0 release: Claude Code runtime path removed (breaking); `.agents/skills/` is the sole skill source; `--platform codex` is the only target; upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -71,13 +71,12 @@ cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposi
 
 ---
 
-## 🔄 Codex CLI Support (v2.26.0)
+## 🔄 Codex CLI Support (v2.26.0; sole runtime since v3.0.0)
 
 TAD runs on Codex CLI with the same SKILL files. Use `$alex` / `$blake` — the default channel.
 
 ```bash
-bash tad.sh --platform both --yes   # Dual-platform (recommended)
-bash tad.sh --platform codex --yes  # Codex only
+bash tad.sh --platform codex --yes  # Codex (default; the only install target)
 # In Codex: $alex or $blake (auto-discovered via .agents/skills/)
 ```
 
@@ -167,16 +166,17 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-一行命令，默认双平台安装（Claude Code + Codex）+ 全部 25 个 capability packs。首次安装与升级用同一命令；只有 Claude Code 的旧项目升级后会自动补齐 Codex 文件，项目数据不变。
+一行命令，默认安装（Codex）+ 全部 25 个 capability packs。首次安装与升级用同一命令；旧项目升级不会删除既有文件，项目数据不变。
 
-只要单平台：加 `--platform claude-code`（仅 Claude Code）或 `--platform codex`（仅 Codex），也可显式 `--platform both`；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+`--platform codex` 是唯一目标（也是默认值）。`--platform claude-code` / `--platform both`
+在 v3.0.0 起被拒绝（改动任何文件前报错，并打印恢复命令）；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
 
 > 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 
 ### In-project updates (`$tad-update` / `/tad-update`)
 
-Installed projects ship one shared update entrypoint: `$tad-update` in Claude Code
-and Codex, and `/tad-update` in OpenCode (**updater-only** — OpenCode gets the
+Installed projects ship one shared update entrypoint: `$tad-update` in Codex,
+and `/tad-update` in OpenCode (**updater-only** — OpenCode gets the
 update entry, not Alex/Blake/Gate roles, hooks, or gate parity). All three delegate
 to `.tad/scripts/tad-update.sh`, which checks current/remote versions read-only,
 refuses downgrades, and applies only after explicit human confirmation. The helper
@@ -187,7 +187,7 @@ official tagged installer; it never runs unattended.
 
 ```bash
 cat .tad/version.txt
-# Should show: 2.44.6
+# Should show: 3.0.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -491,7 +491,7 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 - [Changelog](CHANGELOG.md) — every version, what changed and what did not land
 - [Installation Guide](INSTALLATION_GUIDE.md)
-- [Dual-Platform Guide](docs/MULTI-PLATFORM.md) — Claude Code + Codex CLI
+- [Multi-Platform Guide](docs/MULTI-PLATFORM.md) — Codex-first, multi-harness neutral
 - [Codex User Guide](docs/CODEX-USER-GUIDE.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
 - [Value Proposition](docs/value-proposition.md) — every claim cited to an on-disk artifact
@@ -503,6 +503,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v2.44.6 — NotebookLM Retirement + Research-Track + Cleanup**
+**Welcome to TAD v3.0.0 — Claude Code Path Removed, Codex Sole Runtime**
 
 *AI does the work. Humans guard the value.*

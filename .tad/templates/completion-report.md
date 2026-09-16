@@ -123,9 +123,9 @@ path/to/new-file2.ts  # [用途说明]
 **Examples:**
 | Artifact | Generation Method | Sub-agent | Notes |
 |----------|------------------|-----------|-------|
-| .tad/evidence/acceptance-tests/p1/audit-report.md | `grep '^description:' .claude/skills/*/SKILL.md` + manual comparison | direct | bash one-liner + manual formatting |
+| .tad/evidence/acceptance-tests/p1/audit-report.md | `grep '^description:' .agents/skills/*/SKILL.md` + manual comparison | direct | bash one-liner + manual formatting |
 | .tad/eval/pack-discovery-eval.md | Manual structured test per handoff §3.2 | direct | 12-case fixture, self-graded |
-| .claude/skills/alex/references/intent-router-protocol.md | Edit tool — 3 text replacements per handoff §2.1-2.2 | direct | protocol text only |
+| .agents/skills/alex/references/intent-router-protocol.md | Edit tool — 3 text replacements per handoff §2.1-2.2 | direct | protocol text only |
 
 **Rules:**
 - Fill for every CREATE/MODIFY file in the File Manifest

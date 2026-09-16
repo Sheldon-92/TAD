@@ -402,7 +402,7 @@ ACCEPTED / ARCHIVED
 
   ## Completion ({date})
   **Commit**: {hash 或 uncommitted}
-  **Model**: harness={claude-code|codex|other} | model={运行时自报模型 ID} | route={当前 harness 的 base-URL host，未设置则 native；无法判定则 unknown}
+  **Model**: harness={codex|other} | model={运行时自报模型 ID} | route={当前 harness 的 base-URL host，未设置则 native；无法判定则 unknown}
   - 上下文刷新：{已读知识路径} | 关键约束：{一行} | 成功条件：{一行}
   - 改动文件：{列表，清单外标 [清单外]}
   - Authority: mandate_id={id} revision={n}; authorized consequence/target bindings={摘要}

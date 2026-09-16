@@ -65,11 +65,11 @@ design_protocol:
 
                  私有仓库 (gh CLI, works with existing GitHub auth):
                    gh api "repos/{source_repo}/contents/{source_base_path}/{pack_name}/install.sh?ref={source_branch}" \
-                     --jq '.content' | base64 -d | bash -s -- --agent=claude-code
+                     --jq '.content' | base64 -d | bash -s -- --agent=codex
 
                  公开仓库 (curl, no auth needed):
                    curl -sSL "https://raw.githubusercontent.com/{source_repo}/{source_branch}/{source_base_path}/{pack_name}/install.sh" \
-                     | bash -s -- --agent=claude-code
+                     | bash -s -- --agent=codex
 
                  Note: "私有仓库用 gh 命令，公开仓库用 curl 命令。运行后重启对话，pack 将在下次自动加载。"
                  P1-3 404 hint: "如果命令返回 404，pack 可能尚未推送到远端。请先检查上方 URL 确认文件存在。"
@@ -77,7 +77,7 @@ design_protocol:
                If source_repo missing from registry (AC6 fallback):
                  Display: "无法自动安装 — pack registry 缺少 source_repo。
                            请手动从 GitHub clone TAD 仓库，然后运行：
-                           bash .tad/capability-packs/{pack_name}/install.sh --agent=claude-code"
+                           bash .tad/capability-packs/{pack_name}/install.sh --agent=codex"
 
            a. Present matched packs (with tier labels) to user via AskUserQuestion:
               "Based on your task, these Capability Packs may be useful:

@@ -1,6 +1,14 @@
 # Release & Sync Patterns (Layer 2)
 
 > Mirror/parity/install hazards — sibling of the L1 deny-list principles.
+>
+> **AMENDED 2026-09-16 (v3.0.0)**: the 2.x dual-tree mirror gate
+> (`release-verify.sh parity` / `platform-skills`, Claude→Codex direction) was
+> removed with the Claude Code runtime path (single skill tree under
+> `.agents/skills/`, nothing to mirror; `structural` now covers copy
+> completeness). The Discovery entries below are retained verbatim as
+> historical record — their Action guidance still applies to any present or
+> future mirror/sync tool.
 
 ---
 

@@ -96,8 +96,8 @@ glob_guard() {
 
 # ── Case runner ──
 # run_case "<version-string|FRESH|PARTIAL>" "<expected-state>"
-# FRESH   sentinel: sandbox with neither .tad nor .claude/commands
-# PARTIAL sentinel: sandbox with .claude/commands but no .tad
+# FRESH   sentinel: sandbox with neither .tad nor .agents/skills
+# PARTIAL sentinel: sandbox with .agents/skills but no .tad
 # FR4: every 2.x version input additionally asserts the output is NOT any of
 # the original misclassification class v1.8/v1.6/v1.4 (hazard-check).
 run_case() {
@@ -106,7 +106,7 @@ run_case() {
     sandbox="$(mktemp -d "$WORK/case.XXXXXX")"
     case "$ver" in
         FRESH)   : ;;  # empty dir baseline
-        PARTIAL) mkdir -p "$sandbox/.claude/commands" ;;
+        PARTIAL) mkdir -p "$sandbox/.agents/skills" ;;
         *)
             mkdir -p "$sandbox/.tad"
             printf '%s\n' "$ver" > "$sandbox/.tad/version.txt"
@@ -149,7 +149,7 @@ run_case "$TARGET_VERSION" "current"          # exact match, version-relative (s
 run_case "9.9.9" "current"                    # newer than target → never downgrade
 run_case "abc" "old"                          # unparseable → fail-safe migrate path (undecidable input)
 run_case "FRESH" "fresh"                      # empty-dir baseline
-run_case "PARTIAL" "partial"                  # .claude/commands without .tad (allowed 7th case, §10.2)
+run_case "PARTIAL" "partial"                  # .agents/skills without .tad (allowed 7th case, §10.2)
 
 # ── Cross-major glob-arm cases (impl-review P0 fix) ──
 # All 1.x inputs have installed major (1) < target major (≥2 forever), so they

@@ -6,7 +6,7 @@ Last File Written: <none>                  <!-- Updated by post-write-sync.sh ho
 
 ## Active Agent
 **Role**: {Blake | Alex}
-**SKILL**: {.claude/skills/blake/SKILL.md | .claude/skills/alex/SKILL.md}
+**SKILL**: {.agents/skills/blake/SKILL.md | .agents/skills/alex/SKILL.md}
 
 ## Active Task
 **Status**: {ACTIVE | COMPLETE | ABANDONED}
@@ -31,4 +31,4 @@ Last File Written: <none>                  <!-- Updated by post-write-sync.sh ho
 
 <!-- Mechanical facts (git HEAD, branch, handoff/epic lists) are auto-snapshotted before every
      compaction to .tad/active/precompact/snapshot-*.md (newest-wins) by the PreCompact hook.
-     This file stays 100% agent-written — the hook never touches it. See CLAUDE.md §4.5 Layer 0. -->
+     This file stays 100% agent-written — the hook never touches it. See AGENTS.md role separation rules. -->

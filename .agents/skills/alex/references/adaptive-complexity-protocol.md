@@ -172,7 +172,7 @@ adaptive_complexity_protocol:
       failure_handling: |
         REGISTRY.yaml malformed → log warning, skip step entirely (do NOT clear notebook_id)
         Cross-reg notebook_id stale → write cleared value back to github-registry REGISTRY
-        # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+        # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
         notebooklm CLI unavailable → skip refresh silently (inert 2.44.6), still announce notebook exists
         notebooklm auth expired → skip refresh silently, announce "results may be slightly stale"
         Mutation policy: use Edit tool on REGISTRY.yaml; ONLY clear notebook_id and last_researched

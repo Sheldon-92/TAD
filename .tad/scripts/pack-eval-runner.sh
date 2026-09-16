@@ -208,7 +208,7 @@ parse_pack() {
     ' "$fixture")
   fi
   if [ -z "$pk" ]; then
-    # Fallback: derive from path .claude/skills/<pack>/examples/<name>.md
+    # Fallback: derive from path .agents/skills/<pack>/examples/<name>.md
     pk=$(printf '%s\n' "$fixture" | sed -n 's#.*/skills/\([^/]*\)/examples/.*#\1#p')
   fi
   [ -z "$pk" ] && pk="unknown"
@@ -575,7 +575,7 @@ run_all() {
 
   # Glob; if no fixtures, nullglob-style guard.
   found_any=0
-  for fixture in .claude/skills/*/examples/*.md; do
+  for fixture in .agents/skills/*/examples/*.md; do
     [ -f "$fixture" ] || continue
     found_any=1
     base=$(basename "$fixture" .md)
@@ -591,7 +591,7 @@ run_all() {
   done
 
   if [ "$found_any" -eq 0 ]; then
-    printf '%s\n' "(no fixtures found under .claude/skills/*/examples/)"
+    printf '%s\n' "(no fixtures found under .agents/skills/*/examples/)"
   fi
   printf '%s\n' "-------------------------------------------------------------"
   printf '%s pass / %s fail / %s skipped (no output captured)\n' "$pass" "$fail" "$skip"
@@ -614,13 +614,13 @@ Usage:
       Fixtures lacking discriminative_pattern fall back to the combined gate with a WARN.
 
   pack-eval-runner.sh --all <outputs-dir>
-      Iterate every .claude/skills/*/examples/*.md fixture, match a captured
+      Iterate every .agents/skills/*/examples/*.md fixture, match a captured
       output at <outputs-dir>/<fixture-basename>.md, run each assertion, and
       print a results table + summary (P pass / F fail / S skipped).
 
 Notes:
   - Advisory only. Never fail-closed. Not a hook.
-  - Run from the TAD repo root (paths are relative to .claude/skills/).
+  - Run from the TAD repo root (paths are relative to .agents/skills/).
 USAGE
 }
 

@@ -33,17 +33,17 @@ scripts/
 
 ## Install
 
-### Claude Code (Phase 1)
+### Codex
 
 ```bash
 # Install to current project
-bash install.sh --agent=claude-code
+bash install.sh --agent=codex
 
 # Install globally
-bash install.sh --agent=claude-code --global
+bash install.sh --agent=codex --global
 
 # Dry run (preview only)
-bash install.sh --agent=claude-code --dry-run
+bash install.sh --agent=codex --dry-run
 ```
 
 ### Codex / Cursor / Gemini (Phase 3 — planned)
@@ -69,16 +69,16 @@ Run scripts directly from your project root:
 
 ```bash
 # API spec lint
-bash .claude/skills/web-backend/scripts/api-lint.sh openapi.yaml
+bash .agents/skills/web-backend/scripts/api-lint.sh openapi.yaml
 
 # Schema check
-bash .claude/skills/web-backend/scripts/schema-check.sh migrations/
+bash .agents/skills/web-backend/scripts/schema-check.sh migrations/
 
 # Security scan
-bash .claude/skills/web-backend/scripts/security-scan.sh .
+bash .agents/skills/web-backend/scripts/security-scan.sh .
 
 # Production readiness score
-bash .claude/skills/web-backend/scripts/readiness-score.sh .
+bash .agents/skills/web-backend/scripts/readiness-score.sh .
 ```
 
 ---

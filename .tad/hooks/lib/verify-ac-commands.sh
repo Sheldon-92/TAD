@@ -14,7 +14,7 @@
 #    Rejected on Single-User CLI"; 2026-05-30 "Ad-hoc audit tools are themselves
 #    validation theater"): this script is a SMOKE ALARM, NOT a fire suppressor.
 #    - MUST NOT be registered as a PreToolUse / UserPromptSubmit / SessionStart hook.
-#    - MUST NOT be added to .claude/settings.json (any matcher / permissions.deny).
+#    - MUST NOT be added to .codex/hooks.json (any matcher / permissions.deny).
 #    - MUST NOT return a blocking/deny exit code; exit is ALWAYS 0 (advisory only).
 #    - MUST NOT fail-closed or abort (no `set -e`); every parse path tolerates
 #      malformed input and continues.

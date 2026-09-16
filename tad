@@ -81,12 +81,12 @@ case "$1" in
             echo -e "${YELLOW}⚠${NC} Configuration files missing"
         fi
 
-        # Check slash commands
-        if [ -d "$TAD_ROOT/.claude/commands" ]; then
-            COMMAND_COUNT=$(find "$TAD_ROOT/.claude/commands" -name "tad-*.md" | wc -l)
-            echo -e "${GREEN}✓${NC} Slash commands: $COMMAND_COUNT found"
+        # Check project skills (v1.4 legacy command surface retired; skills live in .agents/skills)
+        if [ -d "$TAD_ROOT/.agents/skills" ]; then
+            COMMAND_COUNT=$(find "$TAD_ROOT/.agents/skills" -maxdepth 2 -name "SKILL.md" | wc -l)
+            echo -e "${GREEN}✓${NC} Skills: $COMMAND_COUNT found"
         else
-            echo -e "${YELLOW}⚠${NC} Slash commands directory missing"
+            echo -e "${YELLOW}⚠${NC} Skills directory missing"
         fi
 
         # Check for MCP tools (optional)

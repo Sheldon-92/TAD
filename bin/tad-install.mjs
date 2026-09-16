@@ -64,6 +64,14 @@ function getValidPackNames() {
 }
 
 function validatePlatform(value) {
+  // v3.0.0: the Claude Code runtime path was removed — any platform value
+  // naming that path, and the old dual-tree mode, are rejected with a
+  // recovery command (fail-before-mutation happens in tad.sh).
+  if (value === 'both' || value.includes('claude')) {
+    console.error(`Error: platform '${value}' was removed in TAD v3.0.0 (Claude Code runtime path deleted).`);
+    console.error('Recovery: re-run with --platform codex');
+    process.exit(1);
+  }
   const valid = getValidPlatformIds();
   if (!valid.includes(value)) {
     console.error(`Error: unknown platform '${value}'. Valid: ${valid.join(', ')}`);
@@ -125,7 +133,7 @@ function parseArgs() {
         console.log('Usage: npx github:Sheldon-92/TAD [--platform <name>] [--packs <list>] [--force]');
         console.log('');
         console.log('Options:');
-        console.log('  --platform <name>  Target platform (claude-code, codex, both). Default: both');
+        console.log('  --platform <name>  Target platform (codex). Default: codex');
         console.log('  --packs <list>     Comma-separated pack names to install');
         console.log('  --force            Reinstall even if already on the same version');
         console.log('  --help             Show this message');
@@ -149,8 +157,8 @@ async function main() {
     validatePacks(argPacks.split(','));
   }
 
-  // Default: full install for both platforms (claude-code + codex, all packs), no questions asked
-  const platform = argPlatform || 'both';
+  // Default: codex-only install (all packs), no questions asked
+  const platform = argPlatform || 'codex';
   runInstall(platform, argPacks, argForce);
 }
 

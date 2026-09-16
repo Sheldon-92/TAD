@@ -25,7 +25,7 @@ REPO_DIR="$(cd "$TAD_DIR/.." && pwd)"
 
 REGISTRY="$TAD_DIR/capability-packs/pack-registry.yaml"
 PACKS_DIR="$TAD_DIR/capability-packs"
-SKILLS_DIR="$REPO_DIR/.claude/skills"
+SKILLS_DIR="$REPO_DIR/.agents/skills"
 
 TMP_DIR="$(mktemp -d 2>/dev/null || echo /tmp)"
 A_FILE="$TMP_DIR/drift_A.$$"
@@ -95,7 +95,7 @@ echo ""
 echo "(d) advisory WARN (informational — does NOT affect exit code):"
 if [ -n "$c_without_skill" ]; then
   echo "$c_without_skill" | while IFS= read -r p; do
-    [ -n "$p" ] && echo "    WARN: source pack '$p' has no installed .claude/skills/$p/SKILL.md (source-only)"
+    [ -n "$p" ] && echo "    WARN: source pack '$p' has no installed .agents/skills/$p/SKILL.md (source-only)"
   done
 fi
 if [ -n "$skill_without_c" ]; then

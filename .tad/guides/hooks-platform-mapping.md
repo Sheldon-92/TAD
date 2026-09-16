@@ -1,8 +1,10 @@
-# Hooks Platform Mapping: Claude Code → Codex
+# Harness Hook Mapping (Codex)
 
-> TAD v2.26.0 — Cross-Platform Unification Phase 2
-> This document defines the hook conversion rules between Claude Code (.claude/settings.json)
-> and Codex (.codex/hooks.json). Used by tad.sh when generating hooks.json for --platform codex.
+> TAD v2.26.0 — Cross-Platform Unification Phase 2; reframed v3.0.0.
+> This document defines the hook mapping for the Codex harness (`.codex/hooks.json`).
+> The left column in each table is the **removed v2 source** (Claude Code
+> `.claude/settings.json`, deleted in v3.0.0) — retained as conversion record.
+> Used by tad.sh when generating hooks.json for `--platform codex`.
 
 ## Codex hooks.json schema
 
@@ -25,7 +27,7 @@ parsing and must not be regenerated.
 
 ## Event Mapping
 
-| Claude Code Event | Codex Event | Notes |
+| Removed source event (v2 `.claude/settings.json`) | Codex Event | Notes |
 |-------------------|-------------|-------|
 | `SessionStart` | `SessionStart` | Identical. Codex matcher uses `startup\|resume\|compact` |
 | `PreToolUse` | `PreToolUse` | Identical event name |
@@ -33,7 +35,7 @@ parsing and must not be regenerated.
 
 ## Tool/Matcher Mapping
 
-| Claude Code Matcher | Codex Matcher | Notes |
+| Removed source matcher (v2) | Codex Matcher | Notes |
 |---------------------|---------------|-------|
 | `Write\|Edit` | `^apply_patch$` | Codex uses `apply_patch` for file modifications |
 | `AskUserQuestion` | `^ask_user_question$` | Different tool names |
@@ -41,7 +43,7 @@ parsing and must not be regenerated.
 
 ## Hook Type Mapping
 
-| Claude Code Type | Codex Type | Notes |
+| Removed source type (v2) | Codex Type | Notes |
 |------------------|------------|-------|
 | `type: command` | `type: command` | Identical |
 | `type: prompt` | **Not convertible** | Codex hooks do not support LLM inline judgment |
@@ -60,7 +62,7 @@ parsing and must not be regenerated.
 
 ## Field Mapping
 
-| Claude Code Field | Codex Field | Notes |
+| Removed source field (v2) | Codex Field | Notes |
 |-------------------|-------------|-------|
 | `model` | N/A | Codex command hooks do not support model specification |
 | `timeout` | `timeout` | Identical semantics (seconds) |

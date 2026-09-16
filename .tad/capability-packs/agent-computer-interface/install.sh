@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # install.sh — Agent Computer Interface Capability Pack installer
-# SINGLE-SOURCE COPY: copies from .claude/skills/agent-computer-interface/ (authoritative)
+# SINGLE-SOURCE COPY: copies from .agents/skills/agent-computer-interface/ (authoritative)
 # Does NOT regenerate SKILL.md from a secondary source.
 #
-# Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=claude-code|codex]
+# Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=codex]
 
 set -euo pipefail
 
@@ -11,7 +11,7 @@ PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY_RUN=false
 FORCE=false
 ALLOW_GLOBAL=false
-AGENT="claude-code"
+AGENT="codex"
 
 for arg in "$@"; do
   case "$arg" in
@@ -25,9 +25,9 @@ for arg in "$@"; do
       echo "Options:"
       echo "  --dry-run          Show what would be installed without writing files"
       echo "  --force            Overwrite existing files without warning"
-      echo "  --global           Allow install to ~/.claude/ when no project .claude/ is found"
-      echo "  --agent=NAME       Agent to install for (default: claude-code)"
-      echo "                     Supported: claude-code, codex"
+      echo "  --global           Allow install to ~/.agents/ when no project .agents/ is found"
+      echo "  --agent=NAME       Agent to install for (default: codex)"
+      echo "                     Supported: codex, codex"
       exit 0
       ;;
     *)
@@ -42,7 +42,7 @@ echo "=== ${PACK_NAME} Capability Pack Installer ==="
 
 # Locate the authoritative source (single source of truth)
 # PACK_DIR = .tad/capability-packs/{pack}/ → project root is 3 levels up
-# Source is .claude/skills/{pack}/ in the same project
+# Source is .agents/skills/{pack}/ in the same project
 PROJECT_ROOT=""
 # .tad/ is 2 levels up from PACK_DIR; config.yaml lives in .tad/
 if [ -f "${PACK_DIR}/../../config.yaml" ]; then
@@ -50,15 +50,15 @@ if [ -f "${PACK_DIR}/../../config.yaml" ]; then
 fi
 
 SKILL_SOURCE=""
-if [ -n "$PROJECT_ROOT" ] && [ -f "${PROJECT_ROOT}/.claude/skills/${PACK_NAME}/SKILL.md" ]; then
-  SKILL_SOURCE="${PROJECT_ROOT}/.claude/skills/${PACK_NAME}"
-elif [ -f ".claude/skills/${PACK_NAME}/SKILL.md" ]; then
+if [ -n "$PROJECT_ROOT" ] && [ -f "${PROJECT_ROOT}/.agents/skills/${PACK_NAME}/SKILL.md" ]; then
+  SKILL_SOURCE="${PROJECT_ROOT}/.agents/skills/${PACK_NAME}"
+elif [ -f ".agents/skills/${PACK_NAME}/SKILL.md" ]; then
   # Running from project root directly
-  SKILL_SOURCE="$(pwd)/.claude/skills/${PACK_NAME}"
+  SKILL_SOURCE="$(pwd)/.agents/skills/${PACK_NAME}"
 else
   echo "Error: Cannot find authoritative source for ${PACK_NAME}" >&2
-  echo "Expected: .claude/skills/${PACK_NAME}/SKILL.md relative to project root" >&2
-  echo "Hint: Run from project root or ensure .claude/skills/${PACK_NAME}/ exists" >&2
+  echo "Expected: .agents/skills/${PACK_NAME}/SKILL.md relative to project root" >&2
+  echo "Hint: Run from project root or ensure .agents/skills/${PACK_NAME}/ exists" >&2
   exit 1
 fi
 
@@ -66,33 +66,38 @@ echo "Source: ${SKILL_SOURCE}"
 
 # Agent routing
 case "$AGENT" in
-  claude-code|claude|codex)
+  codex)
+    ;;
+  *claude*)
+    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+    echo "  Re-run with --agent=codex. No files were changed." >&2
+    exit 1
     ;;
   *)
-    echo "Unknown agent: $AGENT. Supported: claude-code, codex" >&2
+    echo "Unknown agent: $AGENT. Supported: codex" >&2
     exit 1
     ;;
 esac
 
 # Detect install target
-CLAUDE_DIR=""
+AGENTS_DIR=""
 if [ "$AGENT" = "codex" ]; then
   if [ -d ".agents" ]; then
-    CLAUDE_DIR=".agents"
+    AGENTS_DIR=".agents"
   else
     echo "Error: .agents/ directory not found for codex agent" >&2
     exit 1
   fi
-elif [ -d ".claude" ]; then
-  CLAUDE_DIR=".claude"
-elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.claude" ]; then
-  CLAUDE_DIR="$HOME/.claude"
+elif [ -d ".agents" ]; then
+  AGENTS_DIR=".agents"
+elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.agents" ]; then
+  AGENTS_DIR="$HOME/.agents"
 else
-  echo "Error: .claude/ not found. Run from project root or use --global." >&2
+  echo "Error: .agents/ not found. Run from project root or use --global." >&2
   exit 1
 fi
 
-TARGET_DIR="${CLAUDE_DIR}/skills/${PACK_NAME}"
+TARGET_DIR="${AGENTS_DIR}/skills/${PACK_NAME}"
 echo "Target: ${TARGET_DIR}/"
 echo ""
 

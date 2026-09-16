@@ -18,7 +18,7 @@ task_type: deliverable   # code | yaml | research | e2e | mixed | deliverable
 #   2. Else fall back to the .tad/capability-packs/deliverable-rubrics.yaml row keyed by `pack`.
 #   3. If BOTH absent (no frontmatter value AND no registry row/null) → Gate 3 BLOCKS.
 pack:                    # capability pack name — key into deliverable-rubrics.yaml (e.g. academic-research)
-rubric_ref:              # path to rubric file (e.g. .claude/skills/academic-research/references/scholar-eval.md). Blank → fall back to registry.
+rubric_ref:              # path to rubric file (e.g. .agents/skills/academic-research/references/scholar-eval.md). Blank → fall back to registry.
 pass_threshold:          # numeric 0-1 (e.g. 0.75). Blank → fall back to registry.
 deliverable_paths: []    # list of artifact paths the producer must create (the Deliverables to Produce)
 

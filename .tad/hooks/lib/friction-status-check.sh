@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------------
 # SAFETY — This script is a SMOKE ALARM, NOT a fire suppressor.
 #   - MUST NOT be registered as a PreToolUse / PostToolUse / SessionStart hook.
-#   - MUST NOT be added to .claude/settings.json or .codex/hooks.json.
+#   - MUST NOT be added to .codex/hooks.json.
 #   - MUST NOT fail-closed or abort on malformed markdown.
 #   - advisory exit code only: 0 = clean, 1 = warnings.
 #   BSD/macOS-safe shell only. No grep -P, no GNU-only sed -r, no Python/Node.

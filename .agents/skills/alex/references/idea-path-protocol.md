@@ -45,7 +45,7 @@ idea_path_protocol:
     step4:
       name: "Next"
       action: |
-        <!-- Claude Code: AskUserQuestion / Codex: numbered-options text（见平台绑定交互决策条款） -->
+        <!-- Platform binding: interactive-decision tool or numbered-options text（见平台绑定交互决策条款） -->
         Use AskUserQuestion:
         "Idea captured. What's next?"
         Options:

@@ -21,7 +21,7 @@
 # - PHASE 4 ask = wiki answers with Iron Rule (raw_refs + locator p.|para|timestamp)
 #   saturation = (a) no new canon topics, (b) lint PASS stable, (c) 0 new locators for 2 asks → log to wiki/log.md
 # Deep still runs Phase 0c/4c adversarial challenges via Codex/Gemini (DR-20260531) on the wiki findings file.
-# Fallback: if local_wiki missing (no research/ dir), degrade to claude_websearch (WebSearch); NotebookLM layer deprecated 2.44.6.
+# Fallback: if local_wiki missing (no research/ dir), degrade to websearch (WebSearch); NotebookLM layer deprecated 2.44.6.
 research_plan_protocol:
   description: "Deep research — full Phase 0-5 pipeline. Called via *research --deep"
   trigger: |
@@ -101,9 +101,9 @@ research_plan_protocol:
           - "调整计划" → user modifies → back to step3
           - "不执行，只记录" → mkdir -p .tad/evidence/research/ → save plan to .tad/evidence/research/research-plan-{YYYY-MM-DD}.md → standby
 
-    # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → claude_websearch (SSOT config-workflow.yaml fallback_chains.research).
+    # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
     step4:
-      note: "Fallback Execution (when Local Wiki absent) — RETIRED 2.44.6: the *research-notebook block below no longer runs; when Local Wiki is absent use claude_websearch (WebSearch) in-session; otherwise Phase 1-4 execute via the Local Wiki toolchain above."
+      note: "Fallback Execution (when Local Wiki absent) — RETIRED 2.44.6: the *research-notebook block below no longer runs; when Local Wiki is absent use websearch (WebSearch) in-session; otherwise Phase 1-4 execute via the Local Wiki toolchain above."
       name: "执行研究"
       action: |
         ⚠️ EXECUTION MECHANISM (CRITICAL — prevents WebSearch fallback):

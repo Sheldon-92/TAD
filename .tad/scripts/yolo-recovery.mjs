@@ -2384,7 +2384,7 @@ function cmdStop(flags, cwd, out) {
 // ──────────────── Phase-2 bounded-round commands ────────────────
 
 const FORBIDDEN_ALLOWED_PATH_PREFIXES = [
-  '.tad/scripts/', '.claude/', '.tad/hooks/', '.agents/',
+  '.tad/scripts/', '.agents/', '.tad/hooks/',
   '.tad/active/handoffs/', '.tad/archive/handoffs/',
 ];
 const DENIED_EXECUTOR_TOOLS = ['Shell', 'Bash', 'Agent', 'Task'];

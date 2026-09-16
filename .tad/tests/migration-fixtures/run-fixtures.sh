@@ -1120,13 +1120,17 @@ test_mg1() {
     local src="$tmp/source"
 
     create_source "$src"
+    # v3.0.0: migration-gate scope no longer covers .claude/ (release-verify.sh
+    # migration scope dropped .claude/ per removal plan V5) — exercise the gate
+    # with the in-scope .agents/skills/ tree instead. Historical .claude
+    # manifest replay is still covered engine-side (F-series + L3 allow-list).
     add_version "$src" "0.1.0" \
-        ".claude/skills/old-ref.md" "old content" \
-        ".claude/skills/blake/SKILL.md" "blake skill"
+        ".agents/skills/old-ref.md" "old content" \
+        ".agents/skills/blake/SKILL.md" "blake skill"
 
     # v0.2.0: remove old-ref.md (no manifest yet)
     cd "$src"
-    rm -f .claude/skills/old-ref.md
+    rm -f .agents/skills/old-ref.md
     printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 
@@ -1139,12 +1143,12 @@ test_mg1() {
     # Now create the manifest
     write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<'BODY'
 delete:
-  - path: ".claude/skills/old-ref.md"
+  - path: ".agents/skills/old-ref.md"
     type: "file"
     reason: "removed in v0.2.0"
 verify:
   - type: "absent"
-    path: ".claude/skills/old-ref.md"
+    path: ".agents/skills/old-ref.md"
 BODY
 )"
 
@@ -1197,12 +1201,13 @@ test_mg3() {
     local src="$tmp/source"
 
     create_source "$src"
+    # v3.0.0: same scope note as MG1 — .claude/ left the migration-gate scope.
     add_version "$src" "0.1.0" \
-        ".claude/skills/old-name.md" "skill content"
+        ".agents/skills/old-name.md" "skill content"
 
     # v0.2.0: rename the file (git -M should detect it)
     cd "$src"
-    git mv .claude/skills/old-name.md .claude/skills/new-name.md
+    git mv .agents/skills/old-name.md .agents/skills/new-name.md
     printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 

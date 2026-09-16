@@ -1,6 +1,6 @@
 # TAD Codex CLI 使用指南
 
-**适用版本**: TAD v2.30.0+ | Codex CLI 0.146+
+**适用版本**: TAD v3.0.0+ | Codex CLI 0.146+
 
 ---
 
@@ -14,14 +14,16 @@ TAD (Triangle Agent Development) 是一套让 AI 写代码更靠谱的方法论�
 
 ### TAD 在 Codex 上的定位
 
-Codex 是 TAD 的一等公民运行时（和 Claude Code 平级）。两个平台共享同一套 SKILL 文件、同一套质量门禁、同一套协议。区别只在平台机制层：
+Codex 是 TAD 自 v3.0.0 起的运行时。SKILL 文件、质量门禁、协议全部只有一套，
+唯一源是 `.agents/skills/`。Claude Code 路径已在 v3.0.0 移除（见 `CHANGELOG.md`
+`### Removed`；升级不会删除你既有的 `.claude/`）：
 
-| | Claude Code | Codex CLI |
+| | Codex CLI |
 |---|---|---|
-| 角色激活 | `/alex` `/blake` | `$alex` `$blake` |
-| Skill 目录 | `.claude/skills/` | `.agents/skills/` |
-| 配置 | `.claude/settings.json` | `.codex/hooks.json` |
-| 子 agent | `Agent tool` | 内置 subagent |
+| 角色激活 | `$alex` `$blake` |
+| Skill 目录 | `.agents/skills/` |
+| 配置 | `.codex/hooks.json` |
+| 子 agent | 内置 subagent |
 
 ---
 
@@ -40,11 +42,8 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 - `AGENTS.md` — 角色路由文件
 - `tad.sh` — 升级脚本（以后升级也用它）
 
-### 双平台（同时用 Claude Code + Codex）
-
-```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform both --yes
-```
+> `--platform both` / `--platform claude-code` 自 v3.0.0 起被拒绝（改动任何文件前报错，
+> 并打印恢复命令）。旧脚本请改传 `--platform codex`。
 
 ### 交互式安装（可选 packs）
 
@@ -56,7 +55,7 @@ npx github:Sheldon-92/TAD
 ### 验证安装
 
 ```bash
-cat .tad/version.txt                    # 应显示 2.44.0
+cat .tad/version.txt                    # 应显示 3.0.0
 ls .agents/skills/ | head -5            # 应看到 alex/ blake/ 等目录
 test -f .codex/hooks.json && echo OK    # 应显示 OK
 test -f .tad/hooks/lib/migration-engine.sh && echo OK  # Migration 引擎
@@ -261,7 +260,7 @@ TAD 自动积累项目经验到 `.tad/project-knowledge/`：
 3. ⭐ Migration 引擎介入:
    - 删除旧版本废弃的文件（有备份）
    - 重命名被移动的文件
-   - 合并 CLAUDE.md（你写的内容不会丢）
+   - 预先存在的用户文件（如旧 `.claude/`、旧 `CLAUDE.md`）原样保留，不合并、不改写
    - 验证升级完整性
 4. 完成
 
@@ -272,16 +271,20 @@ TAD 自动积累项目经验到 `.tad/project-knowledge/`：
 
 ---
 
-## 与 Claude Code 的差异
+## Claude Code 路径（v3.0.0 已移除）
 
-| 方面 | Claude Code | Codex CLI |
-|------|-------------|-----------|
-| 角色激活 | `/alex` `/blake`（slash command） | `$alex` `$blake`（skill 引用） |
-| Workflow 工具 | `.claude/workflows/*.workflow.js` | 不支持（用 Alex *analyze 替代） |
-| MCP 服务器 | `.claude/settings.json` 配置 | `.codex/config.toml`（待激活） |
-| 上下文压缩 | 自动 + session-state.md | 自动 + `/compact` |
-| 权限模型 | settings.json allowlist | Codex sandbox profiles |
-| sub-agent | `Agent tool` + `subagent_type` | 内置 default/worker/explorer |
+Claude Code install target、hooks、workflows 与模型绑定已随 v3.0.0 删除。
+升级**不会删除**你既有的 `.claude/`（hooks / MCP / 权限配置字节不变），旧树只是不再更新。
+如需清理请手动删除（TAD 不会代删）。Codex 侧的能力面保持不变：
+
+| 方面 | Codex CLI |
+|------|-----------|
+| 角色激活 | `$alex` `$blake`（skill 引用） |
+| Workflow 工具 | 不支持（用 Alex *analyze 替代） |
+| MCP 服务器 | `.codex/config.toml`（待激活） |
+| 上下文压缩 | 自动 + `/compact` |
+| 权限模型 | Codex sandbox profiles |
+| sub-agent | 内置 default/worker/explorer |
 
 **共享的（完全一样）**：Gates 1-4、Handoff 协议、Layer 2 审查、Ralph Loop、Knowledge Assessment、Completion Report 格式。
 
@@ -366,7 +369,6 @@ $alex
 │   ├── migrations/          # 版本迁移 manifest
 │   └── templates/           # 文档模板
 ├── AGENTS.md                # 角色路由（Codex 读这个）
-├── CLAUDE.md                # 框架规则（Claude Code 读这个）
 └── tad.sh                   # 安装/升级脚本
 ```
 
@@ -454,14 +456,9 @@ Packs 按需加载 — 只有当任务关键词匹配时才会激活。可以在
 
 下次做相似任务时，Alex 会自动读取相关历史经验，避免重复踩坑。你不需要手动管理。
 
-### 9. CLAUDE.md marker 保护你的内容
+### 9. 用户文件在升级中原样保留（v3.0.0 起无 marker 合并）
 
-如果你在 `CLAUDE.md` 里写了项目特定的规则，加一行 marker：
-
-```
-<!-- TAD:PROJECT-CONTENT-BELOW -->
-你的项目特定规则写在这里...
-```
-
-这样 TAD 升级时只更新 marker 上方的框架部分，你写的内容不会被覆盖。
+`<!-- TAD:PROJECT-CONTENT-BELOW -->` marker 合并机制随 `CLAUDE.md` 合并一并移除。
+预先存在的用户文件（旧 `CLAUDE.md`、旧 `.claude/` 树）升级时原样保留、不合并、不改写；
+如需清理请手动操作（TAD 不会代删）。
 

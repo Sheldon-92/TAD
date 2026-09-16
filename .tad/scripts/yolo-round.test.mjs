@@ -96,7 +96,7 @@ function makeRepo({ withPolicy = true, skipInit = false } = {}) {
       'SC-2 body: work.md carries a copy-pasteable worked example transcript',
     ],
     non_goals: ['do not restructure existing sections'],
-    forbidden_scope: ['.tad/scripts/', '.claude/', '.tad/hooks/'],
+    forbidden_scope: ['.tad/scripts/', '.agents/', '.tad/hooks/'],
     slices: [
       { id: 'S1', statement: "add the '## 10. Command Reference' section" },
       { id: 'S2', statement: "add the '## 11. Worked Example' section" },
@@ -480,7 +480,7 @@ function caseSliceContract() {
     ['outcome phrased as file edit', { outcome: 'edit file X' }],
     ['omitted non-goal hash', { forbidden_scope_sha256: '' }],
     ['wrong frozen-scope hash', { forbidden_scope_sha256: sha256String('different scope') }],
-    ['unapproved path', { allowed_paths: ['.claude/workflows/'] }],
+    ['unapproved path', { allowed_paths: ['.agents/skills/'] }],
     ['path traversal', { allowed_paths: ['../work.md'] }],
     ['non-normalized path', { allowed_paths: ['./work.md'] }],
     ['duplicate allowed path', { allowed_paths: ['work.md', 'work.md'] }],

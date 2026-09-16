@@ -183,8 +183,8 @@ function caseProfiles(){
   expect(doc.format==='yolo-harness-profiles-v1', 'profiles format');
   expect(doc.version==='1.0.0', 'profiles version');
   const ids=Object.keys(doc.profiles);
-  expect(ids.length===4, `exactly four profiles, got ${ids.length}: ${ids}`);
-  expect(ids.includes('claude-code') && ids.includes('codex') && ids.includes('opencode') && ids.includes('opencode-deepseek'), 'four honest identities');
+  expect(ids.length===3, `exactly three profiles, got ${ids.length}: ${ids}`);
+  expect(ids.includes('codex') && ids.includes('opencode') && ids.includes('opencode-deepseek'), 'three honest identities');
   const ds=doc.profiles['opencode-deepseek'];
   expect(ds.runtime==='opencode', 'DeepSeek runtime=opencode');
   expect(ds.provider==='deepseek', 'DeepSeek provider=deepseek');
@@ -298,7 +298,7 @@ function caseFixtures(){
 function caseSemanticEquivalence(){
   const packetContent='# Recovery Packet\nGOAL: test\nVERIFIED: ...\n';
   const packetHash=sha256String(packetContent);
-  const profiles=['claude-code','codex','opencode','opencode-deepseek'];
+  const profiles=['codex','opencode','opencode-deepseek'];
   // Simulate that each profile would produce same packet hash/canonical fields
   // Our runner's turn record binds packet_hash; we test that same packet yields same canonical fields across profiles
   const canonicalFields=['goal_id','handoff_revision','verified','blockers','legal_next_action'];
@@ -308,7 +308,7 @@ function caseSemanticEquivalence(){
   }
   // Also check that recovery.md authority order is same
   const doc=JSON.parse(fs.readFileSync(PROFILES,'utf8'));
-  expect(Object.keys(doc.profiles).length===4, 'four profiles for semantic equivalence');
+  expect(Object.keys(doc.profiles).length===3, 'three profiles for semantic equivalence');
 }
 
 // ─────────────── AC4 resume proof ───────────────
@@ -487,7 +487,7 @@ function caseCompatibility(opts){
   // Use a disposable clone approach: we just check that current recovery can still read old journal format by creating a v1 run
   const specPath=path.join(repo.dir,'goal-spec.json');
   fs.writeFileSync(specPath, JSON.stringify({
-    run_id:'compat-run', goal_id:'g1', base_commit:repo.head, goal:'test', success:['s1'], non_goals:['ng'], forbidden_scope:['.claude/'], oracle_path:'.tad/evidence/yolo/oracle.md', slices:[{id:'S1',statement:'s1'}]
+    run_id:'compat-run', goal_id:'g1', base_commit:repo.head, goal:'test', success:['s1'], non_goals:['ng'], forbidden_scope:['.agents/'], oracle_path:'.tad/evidence/yolo/oracle.md', slices:[{id:'S1',statement:'s1'}]
   }));
   const initRes=spawnSync(process.execPath,[path.join(HERE,'yolo-recovery.mjs'),'init','--run','.tad/evidence/yolo/compat-run','--handoff','docs/handoff.md','--goal-file','goal-spec.json'],{cwd:repo.dir, encoding:'utf8'});
   expect(initRes.status===0, 'v1 init must still work for compatibility');
@@ -515,11 +515,11 @@ function caseCompatibility(opts){
 // ─────────────── AC8 live-evidence (P3-R1) ───────────────
 function caseLiveEvidence(opts){
   const evidenceDir=opts.evidenceDir||path.join(REPO_ROOT,'.tad/evidence/yolo/yolo2-verified-orchestration/phase3');
-  // P3-R1: Codex is core; other three are experimental adapters. Exactly four records still required,
+  // P3-R1: Codex is core; other two are experimental adapters. Exactly three records still required,
   // but classification rule is Codex=strict is core PASS; others may be experimental_unverified|degraded|blocked.
   const capsDir=path.join(evidenceDir,'capabilities');
   fs.mkdirSync(capsDir,{recursive:true});
-  const profiles=['claude-code','codex','opencode','opencode-deepseek'];
+  const profiles=['codex','opencode','opencode-deepseek'];
   const allowedOther=['experimental_unverified','degraded','blocked'];
   for(const pid of profiles){
     const capPath=path.join(capsDir, pid, 'capability.json');
@@ -547,11 +547,11 @@ function caseLiveEvidence(opts){
     agg.profiles[pid]=cap.classification;
   }
   fs.writeFileSync(aggPath, JSON.stringify(agg,null,2));
-  // Verify exactly 4 and P3-R1 rule
+  // Verify exactly 3 and P3-R1 rule
   const found=profiles.filter(pid=> fs.existsSync(path.join(capsDir,pid,'capability.json')));
-  expect(found.length===4, `exactly four capability records, got ${found.length}`);
+  expect(found.length===3, `exactly three capability records, got ${found.length}`);
   const aggCheck=JSON.parse(fs.readFileSync(aggPath,'utf8'));
-  expect(Object.keys(aggCheck.profiles).length===4, 'aggregate has 4');
+  expect(Object.keys(aggCheck.profiles).length===3, 'aggregate has 3');
   for(const pid of profiles){
     const capPath=path.join(capsDir,pid,'capability.json');
     const cap=JSON.parse(fs.readFileSync(capPath,'utf8'));
@@ -571,7 +571,7 @@ function caseOptIn(){
   // Test that yolo-recovery init/status without profile flag still works and doesn't require harness
   const specPath=path.join(repo.dir,'goal-spec.json');
   fs.writeFileSync(specPath, JSON.stringify({
-    run_id:'optin-run', goal_id:'g1', base_commit:repo.head, goal:'test', success:['s1'], non_goals:['ng'], forbidden_scope:['.claude/'], oracle_path:'.tad/evidence/yolo/oracle.md', slices:[{id:'S1',statement:'s1'}]
+    run_id:'optin-run', goal_id:'g1', base_commit:repo.head, goal:'test', success:['s1'], non_goals:['ng'], forbidden_scope:['.agents/'], oracle_path:'.tad/evidence/yolo/oracle.md', slices:[{id:'S1',statement:'s1'}]
   }));
   const initRes=spawnSync(process.execPath,[path.join(HERE,'yolo-recovery.mjs'),'init','--run','.tad/evidence/yolo/optin-run','--handoff','docs/handoff.md','--goal-file','goal-spec.json'],{cwd:repo.dir, encoding:'utf8'});
   expect(initRes.status===0, 'opt-in: default path without profile must still work');
@@ -612,11 +612,11 @@ function caseReleaseThreshold(opts){
     caseLiveEvidence(opts);
   }
   const agg=JSON.parse(fs.readFileSync(aggPath,'utf8'));
-  expect(Object.keys(agg.profiles).length===4, 'exactly 4 classified');
+  expect(Object.keys(agg.profiles).length===3, 'exactly 3 classified');
   // P3-R1: Codex strict satisfies Phase-3 core; other three experimental do not block core
   const codexClass=agg.profiles['codex'];
   expect(codexClass==='strict', `P3-R1 release threshold: codex must be strict, got ${codexClass}`);
-  const otherIds=['claude-code','opencode','opencode-deepseek'];
+  const otherIds=['opencode','opencode-deepseek'];
   const allowedOther=['experimental_unverified','degraded','blocked'];
   for(const pid of otherIds){
     expect(allowedOther.includes(agg.profiles[pid]), `${pid} must be ${allowedOther.join('|')}, got ${agg.profiles[pid]}`);

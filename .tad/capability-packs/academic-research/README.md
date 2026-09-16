@@ -4,18 +4,18 @@ Teaches AI agents HOW to do academic research — depth enforcement, citation in
 
 ## Installation
 
-### For Claude Code (default)
+### For Codex (default)
 
 ```bash
 bash install.sh
 ```
 
-This copies CAPABILITY.md → SKILL.md, all reference files, and scripts to `.claude/skills/academic-research/`.
+This copies CAPABILITY.md → SKILL.md, all reference files, and scripts to `.agents/skills/academic-research/`.
 
 ### For other agents
 
 ```bash
-bash install.sh --agent claude-code --target /path/to/skills/dir
+bash install.sh --agent codex --target /path/to/skills/dir
 ```
 
 ### CV Tools Setup (optional)

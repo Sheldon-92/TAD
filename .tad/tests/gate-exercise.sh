@@ -97,8 +97,8 @@ cp "$VERIFIER_SRC" .tad/hooks/lib/release-verify.sh
 # ══════════════════════════════════════════════════════════════
 # Step 2: Create v0.1.0 tag with a framework file
 # ══════════════════════════════════════════════════════════════
-mkdir -p .claude/skills
-printf 'test skill content' > .claude/skills/test-file.md
+mkdir -p .agents/skills
+printf 'test skill content' > .agents/skills/test-file.md
 printf '0.1.0\n' > .tad/version.txt
 git add -A
 git commit -q -m "v0.1.0"
@@ -107,7 +107,7 @@ git tag "v0.1.0"
 # ══════════════════════════════════════════════════════════════
 # Step 3: Remove the file, bump to v0.2.0, commit and tag — NO manifest
 # ══════════════════════════════════════════════════════════════
-rm -f .claude/skills/test-file.md
+rm -f .agents/skills/test-file.md
 printf '0.2.0\n' > .tad/version.txt
 git add -A
 git commit -q -m "v0.2.0 - removed test-file without manifest"
@@ -147,6 +147,6 @@ fi
 # PASS — gate correctly intercepted the unmanifested delete
 # ══════════════════════════════════════════════════════════════
 printf '%sPASS%s: Migration gate correctly blocked unmanifested delete (exit 1)\n' "$GREEN" "$RESET"
-printf '  Gate detected: UNMANIFESTED DELETE of .claude/skills/test-file.md\n'
+printf '  Gate detected: UNMANIFESTED DELETE of .agents/skills/test-file.md\n'
 printf '  Proof: gate exit code = 1, output contains "UNMANIFESTED DELETE"\n'
 exit 0

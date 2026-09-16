@@ -37,7 +37,7 @@ const FROZEN_GIT_DATE = '2026-08-27T00:00:00 +0000';
 const OPENCODE = process.env.TAD_JUDGE_BIN || path.join(os.homedir(), '.opencode/bin/opencode');
 const JUDGE_MODEL = process.env.TAD_JUDGE_MODEL || '';
 const JUDGE_MODEL_FAMILY = process.env.TAD_JUDGE_MODEL_FAMILY
-  || (JUDGE_MODEL ? path.basename(JUDGE_MODEL).split('-')[0] : 'claude');
+  || (JUDGE_MODEL ? path.basename(JUDGE_MODEL).split('-')[0] : 'opencode');
 
 function sh(cmd, cwd, input) {
   const r = spawnSync('bash', ['-c', cmd], { cwd, encoding: 'utf8', input });
@@ -126,7 +126,7 @@ function setupRepo(task, arm, pairDir) {
     success: slicePlan.map((slice) => `${successIdForSlice(slice.id)} body: ${slice.outcome}`),
     slices: slicePlan.map((slice) => ({ id: slice.id, statement: slice.outcome })),
     non_goals: ['no scope beyond the stated task'],
-    forbidden_scope: ['.tad/scripts/', '.claude/', '.tad/hooks/'],
+    forbidden_scope: ['.tad/scripts/', '.agents/', '.tad/hooks/'],
     oracle_path: 'oracle.txt', created_at: FROZEN_CREATED_AT,
     execution_policy: POLICY,
     quality_policy: {
@@ -770,12 +770,8 @@ function runJudge(caseDir, pairId, pass, inputOrder) {
     'After reading the rubric and the files under A and B, stop using tools and return the required JSON immediately, even if you cannot execute a product.',
     'Return exactly one JSON object and no prose: {"preferred":"A|B|TIE","score_A":0.0,"score_B":0.0,"p0_A":0,"p0_B":0,"p1_A":0,"p1_B":0,"rationale":"brief"}. A reversal of an earlier order is not a defect; judge only the supplied outputs.',
   ].join('\n');
-  const useClaude = path.basename(OPENCODE) === 'claude';
-  const invocation = useClaude
-    ? ['-p', '--output-format', 'json', '--model', process.env.TAD_JUDGE_MODEL || 'sonnet',
-      '--permission-mode', 'plan', '--no-session-persistence', '--disable-slash-commands',
-      '--allowed-tools', 'Read', '--disallowed-tools', 'Bash', 'Edit', 'Write', prompt]
-    : ['run', ...(JUDGE_MODEL ? ['--model', JUDGE_MODEL] : []), '--format', 'json', '--pure', '--dir', caseDir, prompt];
+  // v3.0.0: judge always runs via the opencode CLI (legacy judge spawn removed).
+  const invocation = ['run', ...(JUDGE_MODEL ? ['--model', JUDGE_MODEL] : []), '--format', 'json', '--pure', '--dir', caseDir, prompt];
   const started = new Date().toISOString();
   fs.writeFileSync(path.join(caseDir, `judge-pass-${pass}-prompt.txt`), prompt);
   writeEvidenceJson(path.join(caseDir, `judge-pass-${pass}-input.json`), {
@@ -794,7 +790,7 @@ function runJudge(caseDir, pairId, pass, inputOrder) {
   const anonymous = {
     format: 'yolo2-phase2-blinded-judge-pass-v1', pair_id: pairId, pass,
     input_labels: ['A', 'B'], input_order: ['A', 'B'], model_family: JUDGE_MODEL_FAMILY,
-    harness: useClaude ? 'claude' : 'opencode', invocation: { cmd: invocation, started, exit: res.status },
+    harness: 'opencode', invocation: { cmd: invocation, started, exit: res.status },
     raw_output_sha256: shaF(rawPath), ...verdict,
   };
   writeEvidenceJson(path.join(caseDir, `judge-pass-${pass}.json`), anonymous);

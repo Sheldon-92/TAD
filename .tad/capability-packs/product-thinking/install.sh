@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Product Thinking — Claude Code Installer
+# Product Thinking — Codex Installer
 # Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=<name>]
 
 set -euo pipefail
@@ -10,14 +10,14 @@ PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR=""
 DRY_RUN=false
 FORCE=false
-AGENT="claude-code"
+AGENT="codex"
 
 # ── Argument parsing ─────────────────────────────────────────────────────────
 for arg in "$@"; do
   case "$arg" in
     --dry-run)   DRY_RUN=true ;;
     --force)     FORCE=true ;;
-    --global)    TARGET_DIR="$HOME/.claude/skills/$PACK_NAME" ;;
+    --global)    TARGET_DIR="$HOME/.agents/skills/$PACK_NAME" ;;
     --agent=*)   AGENT="${arg#--agent=}" ;;
     --help|-h)
       echo "Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=<name>]"
@@ -25,9 +25,9 @@ for arg in "$@"; do
       echo "Options:"
       echo "  --dry-run    Preview what will be installed without making changes"
       echo "  --force      Overwrite existing installation"
-      echo "  --global     Install to ~/.claude/skills/ (all projects)"
-      echo "  --agent=X    Target agent (default: claude-code)"
-      echo "               Supported: claude-code"
+      echo "  --global     Install to ~/.agents/skills/ (all projects)"
+      echo "  --agent=X    Target agent (default: codex)"
+      echo "               Supported: codex"
       echo "               Phase 3: codex, cursor, gemini (not yet implemented)"
       exit 0
       ;;
@@ -41,20 +41,20 @@ done
 
 # ── Agent routing ────────────────────────────────────────────────────────────
 case "$AGENT" in
-  claude-code|codex)
+  codex)
     if [ -z "$TARGET_DIR" ]; then
-      TARGET_DIR=".claude/skills/$PACK_NAME"
+      TARGET_DIR=".agents/skills/$PACK_NAME"
     fi
     ;;
   codex|cursor|gemini)
     echo "⚠️  Agent '$AGENT' is reserved for Phase 3 (not yet implemented)."
     echo "   Phase 3 will add: $AGENT install target at the appropriate path."
-    echo "   For now, use: bash install.sh (defaults to Claude Code)"
+    echo "   For now, use: bash install.sh (defaults to Codex)"
     exit 2
     ;;
   *)
     echo "Unknown agent: $AGENT"
-    echo "Supported: claude-code"
+    echo "Supported: codex"
     exit 1
     ;;
 esac

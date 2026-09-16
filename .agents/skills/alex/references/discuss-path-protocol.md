@@ -99,7 +99,7 @@ discuss_path_protocol:
       fallback: "Local Wiki 无命中 → 降级为 WebSearch（NotebookLM 层已于 2.44.6 退役）"
       note: |
         匹配是 LLM 语义判断，不是精确字符串匹配。
-        Local Wiki 是首选（本地秒级 + Iron Rule 溯源）；缺失时降级为 WebSearch（claude_websearch）。
+        Local Wiki 是首选（本地秒级 + Iron Rule 溯源）；缺失时降级为 WebSearch（websearch）。
 
     passive_detection_during_discuss:
       trigger: "*discuss 中 Alex 发现用户在谈论一个已有 dormant notebook 的话题"

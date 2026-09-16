@@ -91,7 +91,10 @@ if [ -n "$ZT_DIRS" ]; then
 fi
 
 # Run git diff --name-status -M scoped to framework-managed paths
-DIFF_OUTPUT="$(git diff --name-status -M "$FROM_TAG".."$TO_TAG" -- .tad/ .claude/ .codex/ .agents/ CLAUDE.md AGENTS.md tad.sh 2>/dev/null)" || true
+# v3.0.0: the removed vendor skill tree and its root routing file are OUT of
+# scope — the v2.44.6 to v3.0.0 tree deletion must never be drafted as delete:
+# entries against downstream user trees.
+DIFF_OUTPUT="$(git diff --name-status -M "$FROM_TAG".."$TO_TAG" -- .tad/ .codex/ .agents/ AGENTS.md tad.sh 2>/dev/null)" || true
 
 # Classify entries
 DELETES=""

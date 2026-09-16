@@ -2,7 +2,7 @@
 
 **Status:** Phase 3 opt-in adapter layer (local, no provider calls without explicit budget mandate)
 **Authority:** `goal.json + journal.jsonl` is progress; `recovery.md` is bounded navigation aid
-**Profiles:** `claude-code`, `codex`, `opencode`, `opencode-deepseek` (all via native CLI adapters)
+**Profiles:** `codex`, `opencode`, `opencode-deepseek` (all via native CLI adapters)
 
 ## 1. What Is Shared Across Harnesses
 

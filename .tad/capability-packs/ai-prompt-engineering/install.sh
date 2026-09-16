@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # install.sh — AI Prompt Engineering Capability Pack installer
-# Phase 1: Claude Code support
+# v3.0.0: Codex support (.agents/skills target)
 # Phase 3 (future): Codex, Cursor, Gemini — interfaces reserved via --agent flag
 #
-# Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=claude-code|codex|cursor|gemini]
+# Usage: bash install.sh [--dry-run] [--force] [--global] [--agent=codex|cursor|gemini]
 
 set -euo pipefail
 
@@ -11,7 +11,7 @@ PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY_RUN=false
 FORCE=false
 ALLOW_GLOBAL=false
-AGENT="claude-code"
+AGENT="codex"
 
 for arg in "$@"; do
   case "$arg" in
@@ -25,10 +25,10 @@ for arg in "$@"; do
       echo "Options:"
       echo "  --dry-run          Show what would be installed without writing files"
       echo "  --force            Overwrite existing files without warning"
-      echo "  --global           Allow install to ~/.claude/ when no project .claude/ is found"
-      echo "  --agent=NAME       Agent to install for (default: claude-code)"
-      echo "                     Supported: claude-code"
-      echo "                     Planned (Phase 3): codex, cursor, gemini"
+      echo "  --global           Allow install to ~/.agents/ when no project .agents/ is found"
+      echo "  --agent=NAME       Agent to install for (default: codex)"
+      echo "                     Supported: codex"
+      echo "                     Planned (Phase 3): cursor, gemini"
       exit 0
       ;;
     *)
@@ -44,52 +44,57 @@ echo ""
 
 # ── Phase 3 stubs ────────────────────────────────────────────────────────────
 case "$AGENT" in
-  claude-code|claude|codex)
-    # Phase 1 — implemented below
+  codex)
+    # v3.0.0 — implemented below
+    ;;
+  *claude*)
+    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+    echo "  Re-run with --agent=codex. No files were changed." >&2
+    exit 1
     ;;
   cursor)
     echo "⚠️  Phase 3 (cursor) is not yet implemented." >&2
     echo "   Phase 3 will install to:" >&2
     echo "   .cursor/rules/ai-prompt-engineering.md" >&2
-    echo "   For now, install with --agent=claude-code and adapt manually." >&2
+    echo "   For now, install with --agent=codex and adapt manually." >&2
     exit 2
     ;;
   gemini)
     echo "⚠️  Phase 3 (gemini) is not yet implemented." >&2
     echo "   Phase 3 will install to:" >&2
     echo "   CAPABILITY.md (project root, loaded via 'gemini -p @CAPABILITY.md')" >&2
-    echo "   For now, install with --agent=claude-code and adapt manually." >&2
+    echo "   For now, install with --agent=codex and adapt manually." >&2
     exit 2
     ;;
   *)
-    echo "Unknown agent: $AGENT. Supported: claude-code (others in Phase 3)" >&2
+    echo "Unknown agent: $AGENT. Supported: codex (others in Phase 3)" >&2
     exit 1
     ;;
 esac
 
-# ── Claude Code: detect install target ──────────────────────────────────────
-CLAUDE_DIR=""
-if [ -d ".claude" ]; then
-  CLAUDE_DIR=".claude"
-  echo "✓ .claude/ detected — Claude Code project install"
-elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.claude" ]; then
-  CLAUDE_DIR="$HOME/.claude"
-  echo "✓ ~/.claude/ detected — Claude Code global install (--global flag set)"
-elif [ -d "$HOME/.claude" ]; then
+# ── Codex: detect install target ──────────────────────────────────────
+AGENTS_DIR=""
+if [ -d ".agents" ]; then
+  AGENTS_DIR=".agents"
+  echo "✓ .agents/ detected — Codex project install"
+elif [ "$ALLOW_GLOBAL" = true ] && [ -d "$HOME/.agents" ]; then
+  AGENTS_DIR="$HOME/.agents"
+  echo "✓ ~/.agents/ detected — Codex global install (--global flag set)"
+elif [ -d "$HOME/.agents" ]; then
   if [ "$DRY_RUN" = true ]; then
-    echo "ℹ No .claude/ in current directory. Found ~/.claude/ — showing global install preview:"
-    CLAUDE_DIR="$HOME/.claude"
+    echo "ℹ No .agents/ in current directory. Found ~/.agents/ — showing global install preview:"
+    AGENTS_DIR="$HOME/.agents"
   else
-    echo "✗ No .claude/ in current directory." >&2
-    echo "  Found ~/.claude/ — use --global to install globally, or cd to your project first." >&2
+    echo "✗ No .agents/ in current directory." >&2
+    echo "  Found ~/.agents/ — use --global to install globally, or cd to your project first." >&2
     exit 1
   fi
 else
-  echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
+  echo "✗ Codex not found (.agents/ or ~/.agents/ missing)." >&2
   exit 1
 fi
 
-TARGET_DIR="${CLAUDE_DIR}/skills/ai-prompt-engineering"
+TARGET_DIR="${AGENTS_DIR}/skills/ai-prompt-engineering"
 echo "Target: ${TARGET_DIR}/"
 echo ""
 
@@ -184,6 +189,6 @@ echo "  Skipped (already exist): ${EXISTED} files (use --force to overwrite)"
 echo ""
 echo "SKILL.md available at: ${TARGET_DIR}/SKILL.md"
 echo ""
-echo "To activate in Claude Code:"
+echo "To activate in Codex:"
 echo "  Reference 'ai-prompt-engineering' skill in your conversation."
 echo "  Or: 'Use the ai-prompt-engineering capability pack to help me test this prompt.'"

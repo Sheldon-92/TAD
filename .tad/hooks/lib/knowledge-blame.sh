@@ -17,8 +17,8 @@ esac
 
 # ── Scope guard: project-knowledge + SKILL.md + hooks/lib (ARCH P1-4 widened) ──
 case "$FILE" in
-  .tad/project-knowledge/*|.tad/project-knowledge/*/*|.tad/project-knowledge/*/*/*|.claude/skills/*/SKILL.md|.tad/hooks/lib/*.sh) ;;
-  *) echo "ERROR: out of scope. Allowed: .tad/project-knowledge/, .claude/skills/*/SKILL.md, .tad/hooks/lib/*.sh"; exit 2 ;;
+  .tad/project-knowledge/*|.tad/project-knowledge/*/*|.tad/project-knowledge/*/*/*|.agents/skills/*/SKILL.md|.tad/hooks/lib/*.sh) ;;
+  *) echo "ERROR: out of scope. Allowed: .tad/project-knowledge/, .agents/skills/*/SKILL.md, .tad/hooks/lib/*.sh"; exit 2 ;;
 esac
 
 [ -L "$FILE" ] && { echo "ERROR: symlinks not supported"; exit 2; }

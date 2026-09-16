@@ -1,4 +1,8 @@
 # Agent B - Execution Master
+#
+# ARCHIVED (v3.0.0): v1.4 legacy role definition. No live consumer (roles now live
+# in `.agents/skills/`). Retained as a historical record; `.claude/skills` paths
+# below are stale by design — do not repoint.
 
 ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
 

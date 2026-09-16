@@ -2,9 +2,8 @@
 # install.sh — Research Methodology Capability Pack installer
 #
 # Usage:
-#   bash install.sh --agent=claude-code          Install to Claude Code
-#   bash install.sh --agent=claude-code --dry-run  Show paths without installing
-#   bash install.sh --agent=codex                Print "not yet implemented" (exit 2)
+#   bash install.sh --agent=codex                Install to .agents/skills/ (Codex-first)
+#   bash install.sh --agent=codex --dry-run      Show paths without installing
 #   bash install.sh --agent=cursor               Print "not yet implemented" (exit 2)
 #   bash install.sh --agent=gemini               Print "not yet implemented" (exit 2)
 #   bash install.sh --help                       Show this help
@@ -19,16 +18,15 @@ usage() {
 Usage: bash install.sh --agent=<agent> [--dry-run]
 
 Options:
-  --agent=claude-code   Install to Claude Code (.claude/skills/)
-  --agent=codex         Not yet implemented (exits 2)
+  --agent=codex         Install to .agents/skills/
   --agent=cursor        Not yet implemented (exits 2)
   --agent=gemini        Not yet implemented (exits 2)
   --dry-run             Show target paths without writing files
   --help                Show this message
 
 Examples:
-  bash install.sh --agent=claude-code
-  bash install.sh --agent=claude-code --dry-run
+  bash install.sh --agent=codex
+  bash install.sh --agent=codex --dry-run
 EOF
   exit 0
 }
@@ -65,8 +63,13 @@ fi
 
 # ─── Phase 3 stubs (not yet implemented) ───────────────────────────────────
 case "$AGENT" in
-  claude-code|codex)
-    : # both install to .claude/skills/ — handled below
+  codex)
+    : # installs to .agents/skills/ — handled below
+    ;;
+  *claude*)
+    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+    echo "  Re-run with --agent=codex. No files were changed." >&2
+    exit 1
     ;;
   cursor)
     echo "Error: --agent=cursor is not yet implemented." >&2
@@ -77,19 +80,19 @@ case "$AGENT" in
     exit 2
     ;;
   *)
-    echo "Error: Unknown agent '${AGENT}'. Supported: claude-code, codex" >&2
+    echo "Error: Unknown agent '${AGENT}'. Supported: codex" >&2
     exit 1
     ;;
 esac
 
-# ─── Claude Code installation ───────────────────────────────────────────────
-TARGET_DIR=".claude/skills/${PACK_NAME}"
+# ─── Codex installation (.agents/skills/) ───────────────────────────────────
+TARGET_DIR=".agents/skills/${PACK_NAME}"
 SKILL_DEST="${TARGET_DIR}/SKILL.md"
 REF_DEST="${TARGET_DIR}/references"
 SCRIPTS_DEST="${TARGET_DIR}/scripts"
 CHECKLIST_DEST="${TARGET_DIR}/checklists"
 
-echo "Research Methodology Capability Pack — Claude Code installer"
+echo "Research Methodology Capability Pack — Codex installer"
 echo ""
 echo "Target paths:"
 echo "  SKILL:      ${SKILL_DEST}"
@@ -159,7 +162,7 @@ echo ""
 echo "✅ Installation complete!"
 echo ""
 echo "Quick start:"
-echo "  1. Reload Claude Code (or open new chat)"
+echo "  1. Reload your harness session (or open a new chat)"
 echo "  2. Say: '研究一下 [your topic]'"
 echo "  3. The pack activates automatically via keyword routing"
 echo ""

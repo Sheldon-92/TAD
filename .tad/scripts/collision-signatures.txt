@@ -13,11 +13,11 @@
 #
 # ⚠️ Anchor SPECIFICALLY. Bare tokens over-match (e.g. bare `Inter` hits
 #    "INP (Interaction to Next Paint)"). Each regex below was dry-run against live
-#    .claude/skills/ files and confirmed to hit ONLY the intended contradiction line(s).
+#    .agents/skills/ files and confirmed to hit ONLY the intended contradiction line(s).
 #
 # ⚠️ Parser self-trigger (architecture.md 2026-05-30): these literal patterns live in
 #    .tad/scripts/ (NOT under a scanned pack dir) so describing them here does not
-#    self-trigger the scanner. Do NOT move this file under .claude/skills/.
+#    self-trigger the scanner. Do NOT move this file under .agents/skills/.
 #
 # BSD-safe only: no \d, no .*?, no grep -P constructs.
 

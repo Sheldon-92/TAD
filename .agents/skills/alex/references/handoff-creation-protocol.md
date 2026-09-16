@@ -527,7 +527,7 @@ handoff_creation_protocol:
         self-audit failed → return to step1d.
       forbidden_implementations:
         - "MUST NOT skip step1d under Anti-AR-001 rationalizations ('small handoff = step1d skippable' OR 'all post-impl so step1d value-less'); step1d's value includes Sub-rule 2 syntax validation regardless of pre/post split."
-        <!-- Claude Code: .claude/settings.json hooks / Codex: .codex/hooks.json -->
+        <!-- Platform binding: harness hook config (`.codex/hooks.json`) -->
         - "MUST NOT turn verify-ac-commands.sh (the step1d advisory tail linter) into a blocking gate: it MUST NOT be registered as a PreToolUse / UserPromptSubmit / SessionStart hook, MUST NOT be added to .claude/settings.json, MUST NOT return a deny/blocking exit, and a WARN/INFO from it MUST NOT block the handoff (advisory smoke alarm only — single-user-CLI mechanical-enforcement-rejected lesson 2026-04-15)."
 
     step2:
@@ -794,8 +794,8 @@ handoff_creation_protocol:
     - Reading full handoff if §6 + §9 + §10 + listed files is sufficient
 
     REQUIRED OUTPUT (first line of every reviewer report):
-    Model: harness={claude-code|codex|other} | model={运行时自报 ID} | route={host|native|unknown}
-    Capture by harness: claude-code → ANTHROPIC_* env plus both settings.json model queries;
+    Model: harness={codex|other} | model={运行时自报 ID} | route={host|native|unknown}
+    Capture by harness:
     codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
     CFG="${CODEX_HOME:-$HOME/.codex}" config.toml
     model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys plus selected

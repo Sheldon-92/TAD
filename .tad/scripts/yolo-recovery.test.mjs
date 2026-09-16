@@ -112,7 +112,7 @@ function writeGoalSpec(repo, over = {}) {
     goal: 'Maintain the reference guide without touching runtime config.',
     success: ['S1 command reference added', 'S2 troubleshooting added'],
     non_goals: ['do not modify the live workflow'],
-    forbidden_scope: ['.claude/workflows/'],
+    forbidden_scope: ['.agents/skills/'],
     oracle_path: '.tad/evidence/yolo/oracle.md',
     slices: [
       { id: 'S1', statement: 'add command reference' },
@@ -633,7 +633,7 @@ function caseStatusCapsule() {
     format: 'yolo-recovery-phase1-v1', run_id: 'r', goal_id: 'g', handoff_path: 'h.md',
     handoff_revision: 'a'.repeat(64), base_commit: 'b'.repeat(40), worktree_realpath: '/w',
     goal: 'a goal', success: fat, non_goals: ['do not touch prod'],
-    forbidden_scope: ['.claude/'], oracle_path: 'o.md', created_at: 'now',
+    forbidden_scope: ['.agents/'], oracle_path: 'o.md', created_at: 'now',
   };
   const fatState = reduceRun(fatGoal, [{
     seq: 1, type: 'initialized', at: 'now', observed_head: 'b'.repeat(40),
@@ -2666,7 +2666,7 @@ const LIFECYCLE_COMBOS = [
 function caseRequiredEvidence() {
   // Negative control for the allowlist rule itself.
   expect(offAllowlist(['.tad/scripts/yolo-recovery.mjs']).length === 0, 'allowlisted path must be accepted');
-  expect(offAllowlist(['.claude/workflows/yolo-epic.workflow.js']).length === 1,
+  expect(offAllowlist(['.agents/skills/yolo-epic.md']).length === 1,
     'an out-of-scope path must be reported');
   expect(offAllowlist(['.tad/hooks/precompact-session-snapshot.sh']).length === 1,
     'touching hooks must be reported');

@@ -21,7 +21,7 @@ last_updated: "2026-05-31"
 # real weighted rubric (or a second verdict_shape implementation) exists.
 packs:
   academic-research:
-    rubric_ref: ".claude/skills/academic-research/references/scholar-eval.md"
+    rubric_ref: ".agents/skills/academic-research/references/scholar-eval.md"
     pass_threshold: 0.75
     partial_threshold: 0.60
     verdict_shape: weighted
@@ -29,7 +29,7 @@ packs:
     status: active            # active | rubric-tbd
   ai-voice-production:
     rubric_ref: null          # TBD Phase 4; interim: audiobook-pipeline.md ACX specs (RMS -23 to -18 dB)
-    interim_rubric_source: ".claude/skills/ai-voice-production/references/audiobook-pipeline.md"
+    interim_rubric_source: ".agents/skills/ai-voice-production/references/audiobook-pipeline.md"
     pass_threshold: null
     partial_threshold: null
     verdict_shape: checklist  # categorical pass/fail dB/format specs — not a 0-1 score (Phase 4 to formalize)
@@ -37,15 +37,15 @@ packs:
     status: rubric-tbd
   video-creation:
     rubric_ref: null          # TBD Phase 4; interim: quality.md export specs
-    interim_rubric_source: ".claude/skills/video-creation/references/quality.md"
+    interim_rubric_source: ".agents/skills/video-creation/references/quality.md"
     pass_threshold: null
     partial_threshold: null
     verdict_shape: checklist  # export-spec checklist (Phase 4 to formalize)
     dogfood_capable: no       # hardware (render)
     status: rubric-tbd
   product-thinking:
-    rubric_ref: ".claude/skills/product-thinking/references/pressure-test-rubric.md"
-    interim_rubric_source: ".claude/skills/product-thinking/checklists/fatal-flaws.md"  # provenance anchor — folded into the active rubric's D3 citation
+    rubric_ref: ".agents/skills/product-thinking/references/pressure-test-rubric.md"
+    interim_rubric_source: ".agents/skills/product-thinking/checklists/fatal-flaws.md"  # provenance anchor — folded into the active rubric's D3 citation
     pass_threshold: null        # categorical uses RIGOR bands, not a numeric threshold
     partial_threshold: null
     verdict_shape: categorical  # rigor band (rigorous→PASS|partial→PARTIAL|superficial→FAIL); scores rigor, not BUILD/PIVOT/KILL

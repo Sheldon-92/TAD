@@ -27,23 +27,23 @@ Work from `repo_root`; never use remembered versions or an inherited relative `$
 
 Run every command from the physical root, record stdout/stderr/exit code, and branch on the exact
 exit code. A missing tool, malformed invocation, or exit `2` is a wiring failure and always blocks.
-The normative order is: parity → derived sync-set report + version → version-sweep → migration
+The normative order is: structural → derived sync-set report + version → version-sweep → migration
 → supporting checks. Do not parallelize, defer, or reorder these gates; stop at the first blocker.
 
-### 2.1 Canonical skill parity
+### 2.1 Canonical skill integrity (structural)
 
 ```bash
-bash "$repo_root/.tad/hooks/lib/release-verify.sh" parity "$repo_root"
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" structural "$repo_root" "$repo_root"
 ```
 
-- `0`: parity is clean.
-- `1`: drift. In `plan`/`verify`, report direction without healing. In a separately contracted
-  `execute` remediation, `parity --fix` may run only for `claude-newer`; `agents-newer` or
-  undecidable direction must refuse. Re-run detect-only parity afterward.
+- `0`: `.agents/skills` (the sole skill source since v3.0.0) is self-consistent.
+- `1`: drift/omission. In `plan`/`verify`, report without healing. In a separately contracted
+  `execute` remediation, fix the copy omission and re-run structural afterward.
 - `2`: hard block for every release type.
 
-Never independently author `.agents/skills`; `.claude/skills` is canonical. A parity pass proves
-identity, not semantic correctness, so it does not replace the remaining gates.
+A structural pass proves copy completeness, not semantic correctness, so it does not replace
+the remaining gates. (The dual-tree mirror gate was removed in v3.0.0 — single skill tree,
+nothing to mirror.)
 
 ### 2.2 Version zero-stale gate
 

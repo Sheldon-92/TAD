@@ -82,31 +82,18 @@ publish_protocol:
         If uncommitted changes → warn and ask user to commit first.
 
     step3b:
-      name: "Codex Parity Gate (.claude/skills ↔ .agents/skills — BLOCKING, auto-fix via --fix)"
+      name: "Skill Integrity Gate (.agents/skills structural — BLOCKING)"
       action: |
-        Run the Codex-mirror parity gate (.claude/skills is the SOLE source of truth;
-        direction is FIXED Claude→Codex, full byte-parity invariant per f428d70 AC1):
-          bash .tad/hooks/lib/release-verify.sh parity "$PWD"
+        Run the skill integrity gate (.agents/skills is the SOLE source of truth
+        since v3.0.0; the dual-tree mirror gate was removed — single tree):
+          bash .tad/hooks/lib/release-verify.sh structural "$PWD" "$PWD"
 
         Branch on exit code — exit 1 (DRIFT) and exit 2 (WIRING) handled SEPARATELY
         (same pattern as step3c/step3d):
         - exit 0 → proceed to step3c.
-        - exit 2 (skills dir missing / usage) → ALWAYS HARD BLOCK, regardless of release_type.
-          A stale mirror is never acceptable to ship — no patch-release downgrade.
-        - exit 1 (drift detected) → check DIRECTION printed by the script:
-          1. Run: bash .tad/hooks/lib/release-verify.sh parity --fix "$PWD"
-             --fix checks DIRECTION internally: claude-newer → rsync mirror; agents-newer → REFUSE.
-          2. If --fix exits 0 (fixed):
-             Commit ONLY the mirror: git add .agents/skills
-             (NEVER git add -A — scoped commit to avoid pulling unrelated changes)
-             git commit -m "chore(TAD): sync .agents/skills from .claude/skills (step3b parity)"
-             Re-run step3 (git status) before proceeding.
-          3. If --fix exits 1 — two possible causes (check VERDICT line):
-             a. FIX-REFUSED (agents-newer): someone edited .agents/skills directly.
-                STOP. Ask the human to investigate and resolve manually.
-             b. FIX-FAIL (rsync succeeded but re-verify still shows drift):
-                STOP. The fix itself failed — investigate, do not publish.
-             In either case: do NOT proceed to step3c.
+        - exit 2 (usage) → ALWAYS HARD BLOCK, regardless of release_type.
+        - exit 1 (drift/omission detected) → STOP. Investigate the missing/differing
+          path named by the script; do NOT proceed to step3c.
 
     step3c:
       name: "Self-Deriving Release Verification Gate (version — BLOCKING on minor+)"

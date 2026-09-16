@@ -2,7 +2,7 @@
 # AI Agent Architecture Capability Pack Installer
 # Installs the capability into the appropriate AI agent's skills directory.
 # Usage:
-#   ./install.sh [--agent=claude-code] [--dry-run]
+#   ./install.sh [--agent=codex] [--dry-run]
 #   ./install.sh --agent=codex          # Phase 3 stub (not yet implemented)
 #   ./install.sh --agent=cursor         # Phase 3 stub (not yet implemented)
 #   ./install.sh --agent=gemini         # Phase 3 stub (not yet implemented)
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AGENT="claude-code"
+AGENT="codex"
 DRY_RUN=false
 FORCE=false
 ALLOW_GLOBAL=false
@@ -31,11 +31,11 @@ for arg in "$@"; do
       ALLOW_GLOBAL=true
       ;;
     --help|-h)
-      echo "Usage: $0 [--agent=claude-code] [--dry-run] [--global]"
+      echo "Usage: $0 [--agent=codex] [--dry-run] [--global]"
       echo ""
       echo "Options:"
-      echo "  --agent=NAME   Target agent (claude-code [default], codex, cursor, gemini)"
-      echo "  --global       Allow install to ~/.claude/ when no project .claude/ is found"
+      echo "  --agent=NAME   Target agent (codex [default], codex, cursor, gemini)"
+      echo "  --global       Allow install to ~/.agents/ when no project .agents/ is found"
       echo "  --dry-run      Show what would be installed without making changes"
       exit 0
       ;;
@@ -48,17 +48,17 @@ for arg in "$@"; do
 done
 
 install_pack() {
-  local PLATFORM="${1:-claude-code}"
+  local PLATFORM="${1:-codex}"
   if [[ "$PLATFORM" = "codex" ]]; then
     TARGET_DIR=".agents/skills/ai-agent-architecture"
-  elif [[ -d ".claude" ]]; then
-    TARGET_DIR=".claude/skills/ai-agent-architecture"
-  elif [[ "$ALLOW_GLOBAL" = true ]] && [[ -d "$HOME/.claude" ]]; then
-    TARGET_DIR="$HOME/.claude/skills/ai-agent-architecture"
-  elif [[ -d "$HOME/.config/claude" ]]; then
-    TARGET_DIR="$HOME/.config/claude/skills/ai-agent-architecture"
+  elif [[ -d ".agents" ]]; then
+    TARGET_DIR=".agents/skills/ai-agent-architecture"
+  elif [[ "$ALLOW_GLOBAL" = true ]] && [[ -d "$HOME/.agents" ]]; then
+    TARGET_DIR="$HOME/.agents/skills/ai-agent-architecture"
+  elif [[ -d "$HOME/.agents" ]]; then
+    TARGET_DIR="$HOME/.agents/skills/ai-agent-architecture"
   else
-    echo "✗ Claude Code not found. Run from your project root, or use --global." >&2
+    echo "✗ Codex not found. Run from your project root, or use --global." >&2
     exit 1
   fi
 
@@ -97,14 +97,14 @@ install_pack() {
     echo "  $(basename "$f") ($size lines)"
   done
   echo ""
-  echo "To use: In Claude Code, reference /ai-agent-architecture or"
+  echo "To use: In Codex, reference /ai-agent-architecture or"
   echo "        ask 'help me design an agent system' to activate /design mode"
 }
 
 # Route by agent type
 case "$AGENT" in
-  claude-code)
-    install_pack "claude-code"
+  codex)
+    install_pack "codex"
     ;;
   codex)
     install_pack "codex"
@@ -122,7 +122,7 @@ case "$AGENT" in
     ;;
   *)
     echo "Unknown agent: $AGENT"
-    echo "Supported agents: claude-code, codex (Phase 3), cursor (Phase 3), gemini (Phase 3)"
+    echo "Supported agents: codex, codex (Phase 3), cursor (Phase 3), gemini (Phase 3)"
     exit 1
     ;;
 esac

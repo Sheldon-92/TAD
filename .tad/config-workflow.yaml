@@ -199,7 +199,7 @@ drift_check:
 # ==================== Document Maintenance Command ====================
 tad_maintain:
   description: "Document health check and synchronization"
-  command_file: ".claude/skills/tad-maintain/SKILL.md"
+  command_file: ".agents/skills/tad-maintain/SKILL.md"
   modes:
     check:
       description: "Read-only health scan"
@@ -222,7 +222,7 @@ tad_maintain:
 # ==================== 配对测试协议 ====================
 pair_testing:
   description: "Cross-tool E2E pair testing protocol with multi-session support"
-  ownership: "Alex generates brief, human decides, Claude Code + Playwright executes with human"
+  ownership: "Alex generates brief, human decides, Codex + Playwright executes with human"
   methodology: "4D Protocol (Discover→Discuss→Decide→Deliver)"
   base_dir: ".tad/pair-testing/"
   version: "2.1"
@@ -276,7 +276,7 @@ playground:
   ownership: "Independent Design Explorer agent. Alex references outputs, Blake implements from spec."
 
   # Command definition
-  command: ".claude/skills/playground/SKILL.md"
+  # command 于 v3.0.0 移除：playground 自 2.28.0 deprecated，skill 路径在 HEAD 前已不存在（悬空引用）
 
   # Core resources
   resources:
@@ -776,24 +776,25 @@ scenarios:
 # Catalog data (per-capability metadata) lives in .tad/cross-model/capabilities.yaml
 research_notebook:
   # ⚠️ DEPRECATED (TAD 2.44.6, 2026-09-15) — NotebookLM 整层退役（不是升级）。
-  # 本块仅保留 lifecycle thresholds；fallback 链已上移至顶层 fallback_chains.research（local_wiki → claude_websearch）。
+  # 本块仅保留 lifecycle thresholds；fallback 链已上移至顶层 fallback_chains.research（local_wiki → websearch）。
   # Lifecycle thresholds (days)
   dormant_after_days: 30           # active → dormant after N days without query
   archive_suggest_after_days: 90   # suggest archive after M days dormant
   max_sources_per_notebook: 20     # *add prompts curate when exceeded
   source_stale_after_days: 90      # curate flags sources older than N days
 
-# NotebookLM removed 2.44.6; research = local_wiki → claude_websearch
+# NotebookLM removed 2.44.6; research = local_wiki → websearch
 # SSOT: fallback_chains.research (top level; hoisted out of deprecated research_notebook block)
 fallback_chains:
   research:
     primary: local_wiki
-    secondary: claude_websearch
+    secondary: websearch
   image_generation:
     primary: codex_image_gen
     secondary: manual_mermaid
   code_review:
-    primary: claude_code_reviewer
+    primary: code_reviewer
+    secondary: manual_review
 
 
 # ==================== Feedback Collector Configuration ====================

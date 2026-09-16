@@ -17,7 +17,7 @@
 #                 ONLY the Conductor flips pending → verified after a real eval run
 #                 (AC5.6, driven in Y6 — NOT by Blake, NOT by fixture authoring).
 #   no-fixture  — pack is registered in .tad/capability-packs/ but is NOT installed
-#                 as a .claude/skills/<pack>/ skill, so it has no examples/ fixture.
+#                 as a .agents/skills/<pack>/ skill, so it has no examples/ fixture.
 #
 # CONTRACT: pack-eval-runner.sh --all <outputs-dir> produces the PASS/FAIL data that
 #   justifies a flip. Never hand-set `verified` — only a passing runner result does.

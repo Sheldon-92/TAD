@@ -4,18 +4,17 @@
 # BMAD Files (Not part of TAD)
 .bmad-core/
 .bmad/
-.claude/commands/BMad/
 
 # Local settings
 .claude/settings.local.json
+# 本地权限配置备份 —— 含本机绝对路径与白名单，永不提交
+.claude/settings.local.json.bak-*
 
 # Local skills (*save-skill output — project-local, never distributed)
 .claude/skills/local/
-# Mirror rule: parity --fix rsyncs .claude/skills → .agents/skills wholesale and can
-# re-copy local/ into the tracked .agents tree — never commit it (public repo)
 .agents/skills/local/
 
-# Claude Code local session/memory + sub-agent worktree artifacts (not source)
+# Machine-local session/memory + sub-agent worktree artifacts (not source)
 .claude/projects/
 .claude/worktrees/
 .worktrees/
@@ -69,13 +68,10 @@ __pycache__/
 .tad/memory/project_tad-universal-method.md
 .tad/memory/reference_claude-code-source.md
 
-# PreCompact mechanical session snapshots (transient hook output — CLAUDE.md §4.5 Layer 0; not source)
+# PreCompact mechanical session snapshots (transient hook output — not source)
 .tad/active/precompact/
 # Raw stdin tee from real compacts (live session metadata — impl-review P2-2)
 .tad/evidence/hooks/precompact-snapshot/last-stdin.json
-
-# 本地权限配置备份 —— 含本机绝对路径与白名单，永不提交
-.claude/settings.local.json.bak-*
 
 # 下游项目登记表 —— 含本机绝对路径，仅本地使用（安装器本就 TAD_TOP_DENY 排除）
 .tad/sync-registry.yaml

@@ -171,7 +171,7 @@
 <body>
 
 <h1>TAD 使用指南</h1>
-<p class="subtitle">Codex CLI Edition &middot; v2.30.0 &middot; 全中文 &middot; 所有机制一页讲清</p>
+<p class="subtitle">Codex CLI Edition &middot; v3.0.0 &middot; 全中文 &middot; 所有机制一页讲清</p>
 
 <nav class="toc card">
   <strong>目录</strong>
@@ -187,7 +187,7 @@
   <a href="#epic">10. Epic：大型项目管理</a>
   <a href="#migration">11. Migration 引擎</a>
   <a href="#handoff">12. Handoff：信息传递的唯一通道</a>
-  <a href="#diff">13. Codex vs Claude Code</a>
+  <a href="#diff">13. Claude Code 路径（v3.0.0 已移除）</a>
   <a href="#tips">14. 十个实用技巧</a>
   <a href="#files">15. 文件结构</a>
   <a href="#faq">16. 常见问题</a>
@@ -247,14 +247,15 @@
 <h3>Codex 专用</h3>
 <pre>curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes</pre>
 
-<h3>双平台（Claude Code + Codex）</h3>
-<pre>curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform both --yes</pre>
+<h3>单目标（Codex，默认）</h3>
+<pre>curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes</pre>
+<p><code>--platform both</code> / <code>--platform claude-code</code> 自 v3.0.0 起被拒绝（改动任何文件前报错，并打印恢复命令）。</p>
 
 <h3>交互式（可选能力包）</h3>
 <pre>npx github:Sheldon-92/TAD</pre>
 
 <h3>验证</h3>
-<pre>cat .tad/version.txt                    # → 2.30.0
+<pre>cat .tad/version.txt                    # → 3.0.0
 ls .agents/skills/ | head -5            # → alex/ blake/ ...
 test -f .tad/hooks/lib/migration-engine.sh && echo OK</pre>
 
@@ -510,7 +511,7 @@ Epic: 用户认证系统
   <tr><th>步骤</th><th>检查什么</th><th>不过怎么办</th></tr>
   <tr><td>1. 路径规范化</td><td>去掉 <code>..</code>、多余斜杠</td><td>拒绝</td></tr>
   <tr><td>2. 禁止字符</td><td>反斜杠、控制字符、冒号</td><td>拒绝</td></tr>
-  <tr><td>3. 前缀白名单</td><td>只允许 <code>.tad/</code> <code>.claude/</code> 等</td><td>拒绝</td></tr>
+  <tr><td>3. 前缀白名单</td><td>只允许 <code>.tad/</code> <code>.agents/</code> 等（历史 manifest 仍可解析 <code>.claude/</code> 路径）</td><td>拒绝</td></tr>
   <tr><td>4. 物理路径验证</td><td>cd + pwd -P，防 symlink 逃逸</td><td>拒绝</td></tr>
   <tr><td>5. ZERO_TOUCH 检查</td><td>不碰用户数据目录</td><td>拒绝</td></tr>
 </table>
@@ -547,16 +548,18 @@ Epic: 用户认证系统
 <p><strong>关键规则</strong>：Handoff 创建前必须经过 2+ 位 AI 专家审查。P0 问题必须修复才能发给 Blake。</p>
 
 <!-- ============================================ -->
-<h2 id="diff">13. Codex vs Claude Code</h2>
+<h2 id="diff">13. Claude Code 路径（v3.0.0 已移除）</h2>
+
+<p>Claude Code 安装目标、hooks、workflows 与模型绑定已随 v3.0.0 删除。升级不会删除你既有的 <code>.claude/</code>（hooks / MCP / 权限配置字节不变），旧树只是不再更新。如需清理请手动删除。</p>
 
 <table>
-  <tr><th>方面</th><th>Claude Code</th><th>Codex CLI</th></tr>
-  <tr><td>角色激活</td><td><code>/alex</code> <code>/blake</code></td><td><code>$alex</code> <code>$blake</code></td></tr>
-  <tr><td>Skill 目录</td><td><code>.claude/skills/</code></td><td><code>.agents/skills/</code></td></tr>
-  <tr><td>Workflow</td><td><code>.claude/workflows/*.js</code></td><td>不支持</td></tr>
-  <tr><td>MCP</td><td>settings.json 配置</td><td>config.toml（待激活）</td></tr>
-  <tr><td>上下文压缩</td><td>自动 + session-state.md</td><td>自动 + <code>/compact</code></td></tr>
-  <tr><td>子 agent</td><td>Agent tool + subagent_type</td><td>内置 default/worker/explorer</td></tr>
+  <tr><th>方面</th><th>Codex CLI</th></tr>
+  <tr><td>角色激活</td><td><code>$alex</code> <code>$blake</code></td></tr>
+  <tr><td>Skill 目录</td><td><code>.agents/skills/</code>（唯一源）</td></tr>
+  <tr><td>Workflow</td><td>不支持</td></tr>
+  <tr><td>MCP</td><td>config.toml（待激活）</td></tr>
+  <tr><td>上下文压缩</td><td>自动 + <code>/compact</code></td></tr>
+  <tr><td>子 agent</td><td>内置 default/worker/explorer</td></tr>
 </table>
 
 <div class="card card-green">
@@ -599,8 +602,8 @@ Epic: 用户认证系统
   Gate 通过后 agent 自动评估学到了什么，存入项目知识库。下次做类似任务自动读取，不用手动管理。
 </div>
 <div class="tip">
-  <div class="tip-title">9. CLAUDE.md marker 保护内容</div>
-  在 CLAUDE.md 里加 <code>&lt;!-- TAD:PROJECT-CONTENT-BELOW --&gt;</code>，升级时你写在下面的内容不会被覆盖。
+  <div class="tip-title">9. 用户文件在升级中原样保留（v3.0.0 起无 marker 合并）</div>
+  旧 <code>CLAUDE.md</code> marker 合并机制已移除。预先存在的用户文件升级时原样保留、不合并、不改写；如需清理请手动删除。
 </div>
 <div class="tip">
   <div class="tip-title">10. *dream 清理知识库</div>
@@ -637,7 +640,6 @@ Epic: 用户认证系统
 │   ├── templates/               ← 文档模板
 │   └── decisions/               ← 决策记录 (DR)
 ├── AGENTS.md                    ← 角色路由（Codex 读）
-├── CLAUDE.md                    ← 框架规则（Claude Code 读）
 └── tad.sh                       ← 安装 / 升级脚本
 </pre>
 
@@ -668,11 +670,11 @@ Epic: 用户认证系统
 </div>
 <div class="card">
   <strong>Q: TAD 占多少 context？</strong><br>
-  CLAUDE.md 路由层 ~2K tokens。SKILL 文件按需加载（progressive loading），只在激活角色时加载。能力包按关键词匹配动态加载。
+  AGENTS.md 路由层 ~2K tokens。SKILL 文件按需加载（progressive loading），只在激活角色时加载。能力包按关键词匹配动态加载。
 </div>
 
 <footer style="margin-top:64px;padding-top:24px;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.85em;text-align:center;">
-  TAD v2.30.0 &middot; <a href="https://github.com/Sheldon-92/TAD">GitHub</a> &middot; MIT License
+  TAD v3.0.0 &middot; <a href="https://github.com/Sheldon-92/TAD">GitHub</a> &middot; MIT License
 </footer>
 
 </body>

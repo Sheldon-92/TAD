@@ -8,7 +8,7 @@
 # confirms each candidate is a true opposing directive and writes pack-collisions.yaml.
 #
 # ⚠️ This is a CLI TOOL invoked manually / by an agent procedure — it is NOT a registered
-#    hook. It MUST NOT be added to .claude/settings.json. The fail-fast strict-mode
+#    hook. It MUST NOT be added to .codex/hooks.json. The fail-fast strict-mode
 #    set below is correct here (no-fail-closed-hook rule does NOT apply to non-hook tools).
 #
 # ⚠️ Anti-validation-theater: "N candidates found" is NOT acceptance. Every emitted
@@ -16,7 +16,7 @@
 #    architecture.md 2026-05-30). The grep-seed half is deliberately dumb; the confirm
 #    half is where false positives (co-mentions) get dropped.
 #
-# Canonical tree: scans the runtime-loaded `.claude/skills/` tree (where contradictions
+# Canonical tree: scans the runtime-loaded `.agents/skills/` tree (where contradictions
 #    AND the P2 surfacing consumers live), NOT `.tad/capability-packs/` (a *sync source copy).
 #
 # BSD-safe only (macOS): no `grep -P`, no `\d`, no `.*?`, no `readlink -f`. Use grep -E/-o + sed.
@@ -32,7 +32,7 @@ REPO_ROOT="$(cd "$TAD_DIR/.." && pwd)"
 # Scan target = runtime-loaded tree (NOT $TAD_DIR/capability-packs). The mirror of
 # scan-packs.sh is about CONVENTIONS (set -e, arg-parse-before-OUTPUT, anchored awk,
 # BSD-safe), not the literal directory.
-SKILLS_DIR="$REPO_ROOT/.claude/skills"
+SKILLS_DIR="$REPO_ROOT/.agents/skills"
 
 # Curated opposing-directive signatures (topic|A-side -E regex|B-side -E regex).
 SIGNATURES_FILE="$SCRIPT_DIR/collision-signatures.txt"
@@ -44,7 +44,7 @@ for arg in "$@"; do
     --skills-dir=*) SKILLS_DIR="${arg#--skills-dir=}" ;;
     --help|-h)
       echo "Usage: bash scan-collisions.sh [--skills-dir=PATH]"
-      echo "  --skills-dir=PATH  Override skills directory (default: .claude/skills/)"
+      echo "  --skills-dir=PATH  Override skills directory (default: .agents/skills/)"
       echo ""
       echo "GREP-SEED candidate detector. For each pack pair sharing >=1 keyword,"
       echo "greps curated opposing-directive signatures and emits CANDIDATE collisions to:"
@@ -52,7 +52,7 @@ for arg in "$@"; do
       echo ""
       echo "STAGE 1 of a hybrid detector. STAGE 2 (LLM-confirm) is a documented agent"
       echo "procedure (see .tad/guides/pack-collision-detection.md), NOT part of this script."
-      echo "NOT a registered hook — do not add to .claude/settings.json."
+      echo "NOT a registered hook — do not add to .codex/hooks.json."
       exit 0
       ;;
   esac

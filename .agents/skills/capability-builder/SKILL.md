@@ -1,16 +1,16 @@
 ---
 name: capability-builder
-description: TAD-native project-owned Agent Skill creation via create with behavioral proof and safe projection to Claude runtime.
+description: TAD-native project-owned Agent Skill creation via create with behavioral proof and safe harness-neutral materialization.
 ---
 
 # $capability-builder — Project-Owned Agent Skill Builder (Phase 1 Create + Phase 2 Evolve + Phase 3 Package)
 
-Use for creating exactly one project-owned Agent Skill that is validated, behavior-proven, and safely projected from `.agents/skills/<name>/` to `.claude/skills/<name>/`; for signal-driven evolution; and for explicit one-Skill/one-Plugin packaging.
+Use for creating exactly one project-owned Agent Skill that is validated, behavior-proven, and safely materialized into `.agents/skills/<name>/`; for signal-driven evolution; and for explicit one-Skill/one-Plugin packaging.
 
 ## Ownership Directions
 
-- **Framework Skills (this Builder, alex, blake, gate):** editable authority `.claude/skills/` → generated mirror `.agents/skills/` (existing framework release direction).
-- **Builder-created downstream Skills:** editable authority `.agents/skills/<name>/` → generated projection `.claude/skills/<name>/` via explicit `capability-skill.sh project`. Only `capability-skill.sh project` owns this direction. `release-verify.sh parity --fix` is `Claude→Codex` only and must not be used for downstream projection.
+- **Framework Skills (this Builder, alex, blake, gate):** editable authority `.agents/skills/` (sole source since v3.0.0; the Claude mirror direction was removed).
+- **Builder-created downstream Skills:** editable authority `.agents/skills/<name>/` via direct materialization (v3.0.0: the `project` projection was removed).
 
 ## Router — Phase Selection
 

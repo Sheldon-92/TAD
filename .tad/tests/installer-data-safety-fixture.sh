@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.12|r1|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.13|r1|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.12|r1|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.13|r1|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -114,7 +114,7 @@ guarded_cleanup() {
 # ── pruned source staging (NEVER the live repo) ──────────────────────
 stage_pruned_source() {
   mkdir -p "$SOURCE"
-  cp "$REPO/tad.sh" "$REPO/CLAUDE.md" "$REPO/AGENTS.md" "$SOURCE/"
+  cp "$REPO/tad.sh" "$REPO/AGENTS.md" "$SOURCE/"
   mkdir -p "$SOURCE/.tad"
   # Top-level framework FILES (every regular file minus the top-level deny).
   local f bn
@@ -133,16 +133,8 @@ stage_pruned_source() {
       cp -R "$REPO/.tad/$d/." "$SOURCE/.tad/$d/"
     fi
   done <<< "$(bash "$DERIVE" --dirs "$REPO")"
-  # .claude/: exactly the three paths the installer reads (skills cluster +
-  # settings + workflows). Local/ephemeral trees (worktrees, agents, projects,
-  # rules, commands, *.local) are NOT staged.
-  mkdir -p "$SOURCE/.claude/skills" "$SOURCE/.claude/workflows"
-  cp -R "$REPO/.claude/skills/." "$SOURCE/.claude/skills/"
-  cp "$REPO/.claude/settings.json" "$SOURCE/.claude/" 2>/dev/null || true
-  if [ -d "$REPO/.claude/workflows" ]; then
-    cp -R "$REPO/.claude/workflows/." "$SOURCE/.claude/workflows/" 2>/dev/null || true
-  fi
-  # .agents mirror (sentinel dir; installer generates the target side).
+  # v3.0.0: no .claude/ in the source tree (Claude Code path removed).
+  # .agents/skills is the SOLE skill source the installer reads.
   mkdir -p "$SOURCE/.agents"
   cp -R "$REPO/.agents/skills" "$SOURCE/.agents/skills"
   # OpenCode updater-only command (exact single-file projection).
@@ -150,7 +142,7 @@ stage_pruned_source() {
   cp "$REPO/.opencode/commands/tad-update.md" "$SOURCE/.opencode/commands/"
   # Sentinel self-check: the staged tree carries the 4 sentinels + version.
   local s
-  for s in tad.sh .tad .claude .agents; do
+  for s in tad.sh .tad .agents; do
     if [ ! -e "$SOURCE/$s" ]; then echo "fixture: staged source missing sentinel $s" >&2; exit 2; fi
   done
   if [ ! -f "$SOURCE/.tad/version.txt" ]; then echo "fixture: staged source missing version.txt" >&2; exit 2; fi
@@ -215,7 +207,7 @@ case_ac21() {
   # (a) offline full run → rc=0, zero network, version proof, source intact.
   mkdir -p "$SNAP/source-pre"
   cp -R "$SOURCE/." "$SNAP/source-pre/"
-  rc="$(run_install both "$SANDBOX/install.log")"
+  rc="$(run_install codex "$SANDBOX/install.log")"
   if [ "$rc" = "0" ]; then pass "ac2.1: offline run rc=0"; else fail "ac2.1: offline run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
@@ -227,7 +219,7 @@ case_ac21() {
   # (b) --source == target (post-resolution) → usage error + zero mutations.
   snapshot_target "$SNAP/target-pre"
   local rc2=0
-  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$TARGET" --platform both --yes >"$SANDBOX/reject.log" 2>&1 ) || rc2=$?
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$TARGET" --platform codex --yes >"$SANDBOX/reject.log" 2>&1 ) || rc2=$?
   if [ "$rc2" != "0" ]; then pass "ac2.1: --source==target rejected (rc=$rc2)"; else fail "ac2.1: --source==target NOT rejected"; fi
   if diff -r "$SNAP/target-pre" "$TARGET" >/dev/null 2>&1; then
     pass "ac2.1: zero mutations on --source==target rejection"
@@ -241,7 +233,7 @@ case_ac21() {
   mkdir -p "$TARGET/.opencode/commands"
   printf 'DIVERGENT-USER-CONTENT\n' > "$TARGET/.opencode/commands/tad-update.md"
   local rc3=0
-  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform both --yes --force >"$SANDBOX/prefail.log" 2>&1 ) || rc3=$?
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform codex --yes --force >"$SANDBOX/prefail.log" 2>&1 ) || rc3=$?
   if [ "$rc3" != "0" ]; then pass "ac2.1: preflight-failure run non-zero (rc=$rc3)"; else fail "ac2.1: preflight-failure run unexpectedly rc=0"; fi
   if diff -r "$SNAP/source-pre" "$SOURCE" >/dev/null 2>&1; then
     pass "ac2.1: source tree byte-identical after failed run"
@@ -263,24 +255,21 @@ plant_user_matrix() {
 }
 
 # matrix_assert <platform> — byte-identity where owned by the user; AGENTS.md
-# on codex/both follows the documented FR-4b backup-and-install semantics.
+# follows the documented FR-4b backup-and-install semantics; user CLAUDE.md is
+# NEVER written by the v3 installer (byte-identical, no backup).
+# v3.0.0: only platform is codex (claude-code/both are tombstoned elsewhere).
 matrix_assert() {
   local plat="$1" ok=0
   local f
-  for f in .codex/config.toml .codex/prompts/mine.md .gemini/settings.json GEMINI.md; do
+  for f in .codex/config.toml .codex/prompts/mine.md .gemini/settings.json GEMINI.md CLAUDE.md; do
     if cmp -s "$SNAP/pre/$f" "$TARGET/$f"; then pass "ac2.x[$plat]: $f byte-identical"; else fail "ac2.x[$plat]: $f MODIFIED"; ok=1; fi
   done
-  if [ ! -f "$TARGET/CLAUDE.md" ]; then fail "ac2.x[$plat]: CLAUDE.md missing"; ok=1; fi
-  if [ "$plat" = "claude-code" ]; then
-    if cmp -s "$SNAP/pre/AGENTS.md" "$TARGET/AGENTS.md"; then pass "ac2.x[$plat]: AGENTS.md byte-identical (not a root file here)"; else fail "ac2.x[$plat]: AGENTS.md MODIFIED"; ok=1; fi
+  local bk
+  bk="$(ls "$TARGET"/AGENTS.md.pre-tad.* 2>/dev/null | head -1)" || bk=""
+  if [ -n "$bk" ] && cmp -s "$SNAP/pre/AGENTS.md" "$bk"; then
+    pass "ac2.x[$plat]: AGENTS.md user bytes preserved in $(basename "$bk")"
   else
-    local bk
-    bk="$(ls "$TARGET"/AGENTS.md.pre-tad.* 2>/dev/null | head -1)" || bk=""
-    if [ -n "$bk" ] && cmp -s "$SNAP/pre/AGENTS.md" "$bk"; then
-      pass "ac2.x[$plat]: AGENTS.md user bytes preserved in $(basename "$bk")"
-    else
-      fail "ac2.x[$plat]: AGENTS.md user bytes NOT preserved via .pre-tad backup"; ok=1
-    fi
+    fail "ac2.x[$plat]: AGENTS.md user bytes NOT preserved via .pre-tad backup"; ok=1
   fi
   return "$ok"
 }
@@ -294,35 +283,57 @@ case_ac22() {
   snapshot_target "$SNAP/pre"
   local want rc
   want="$(source_version)"
-  rc="$(run_install both "$SANDBOX/install.log")"
+  rc="$(run_install codex "$SANDBOX/install.log")"
   if [ "$rc" = "0" ]; then pass "ac2.2: run rc=0"; else fail "ac2.2: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
-  matrix_assert both || true
+  matrix_assert codex || true
 }
 
-# ════════════════════════ AC2.3 (×3 platforms) ════════════════════════
+# ════════════════════════ AC2.3 (codex success + tombstone zero-mutation) ════════════════════════
 case_ac23() {
   CURRENT_CASE="ac2.3"
   local plat
-  for plat in claude-code codex both; do
+  # v3.0.0: codex is the only install target. claude-code/both must
+  # fail-before-mutation (tombstone) with a recovery command.
+  new_sandbox
+  stage_pruned_source
+  plant_user_matrix
+  snapshot_target "$SNAP/pre"
+  local want rc
+  want="$(source_version)"
+  rc="$(run_install codex "$SANDBOX/install-codex.log")"
+  if [ "$rc" = "0" ]; then pass "ac2.3[codex]: run rc=0"; else fail "ac2.3[codex]: run rc=$rc"; fi
+  assert_no_network
+  assert_version_proof "$want"
+  CURRENT_CASE="ac2.3"
+  matrix_assert "codex" || true
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  for plat in claude-code both; do
+    CURRENT_CASE="ac2.3"
     new_sandbox
     stage_pruned_source
     plant_user_matrix
     snapshot_target "$SNAP/pre"
-    local want rc
-    want="$(source_version)"
     rc="$(run_install "$plat" "$SANDBOX/install-$plat.log")"
-    if [ "$rc" = "0" ]; then pass "ac2.3[$plat]: run rc=0"; else fail "ac2.3[$plat]: run rc=$rc"; fi
-    assert_no_network
-    assert_version_proof "$want"
-    CURRENT_CASE="ac2.3"
-    matrix_assert "$plat" || true
+    if [ "$rc" != "0" ]; then pass "ac2.3[$plat]: tombstone rejects (rc=$rc)"; else fail "ac2.3[$plat]: tombstone NOT rejected"; fi
+    if grep -qF -e '--platform codex' "$SANDBOX/install-$plat.log" 2>/dev/null; then
+      pass "ac2.3[$plat]: recovery command printed"
+    else
+      fail "ac2.3[$plat]: recovery command missing"
+    fi
+    local d_unexp
+    d_unexp="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 || true)"
+    if [ -z "$d_unexp" ]; then
+      pass "ac2.3[$plat]: zero mutation on tombstone reject"
+    else
+      fail "ac2.3[$plat]: target mutated on reject:"; printf '%s\n' "$d_unexp" | head -5
+    fi
     guarded_cleanup "$SANDBOX"; SANDBOX=""
   done
 }
 
-# ════════════════════════ AC2.4 (F-05 marker-less CLAUDE.md) ════════════════════════
+# ════════════════════════ AC2.4 (v3: user CLAUDE.md byte-identical, never written) ════════════════════════
 case_ac24() {
   CURRENT_CASE="ac2.4"
   new_sandbox
@@ -331,21 +342,21 @@ case_ac24() {
   cp "$TARGET/CLAUDE.md" "$SNAP/claude-orig.md"
   local want rc
   want="$(source_version)"
-  rc="$(run_install both "$SANDBOX/install.log")"
+  rc="$(run_install codex "$SANDBOX/install.log")"
   if [ "$rc" = "0" ]; then pass "ac2.4: run rc=0"; else fail "ac2.4: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
+  if cmp -s "$SNAP/claude-orig.md" "$TARGET/CLAUDE.md"; then
+    pass "ac2.4: user CLAUDE.md byte-identical (installer never writes it)"
+  else
+    fail "ac2.4: user CLAUDE.md MODIFIED"
+  fi
   local bk
   bk="$(ls "$TARGET"/CLAUDE.md.backup.* 2>/dev/null | head -1)" || bk=""
-  if [ -n "$bk" ] && cmp -s "$SNAP/claude-orig.md" "$bk"; then
-    pass "ac2.4: marker-less CLAUDE.md preserved in timestamped $(basename "$bk")"
+  if [ -z "$bk" ]; then
+    pass "ac2.4: no CLAUDE.md backup created (nothing to merge)"
   else
-    fail "ac2.4: timestamped backup missing or content differs"
-  fi
-  if cmp -s "$SOURCE/CLAUDE.md" "$TARGET/CLAUDE.md"; then
-    pass "ac2.4: CLAUDE.md now matches source"
-  else
-    fail "ac2.4: CLAUDE.md does not match source"
+    fail "ac2.4: unexpected CLAUDE.md backup $(basename "$bk")"
   fi
 }
 
@@ -397,7 +408,7 @@ case_ac26() {
   printf 'STALE-AGENTS-TPL\n' > "$TARGET/.tad/templates/AGENTS.md.template"
   printf 'STALE-GEMINI-TPL\n' > "$TARGET/.tad/templates/GEMINI.md.template"
   snapshot_target "$SNAP/pre"
-  rc="$(run_install claude-code "$SANDBOX/install-220.log")"
+  rc="$(run_install codex "$SANDBOX/install-220.log")"
   if [ "$rc" = "0" ]; then pass "ac2.6a: run rc=0"; else fail "ac2.6a: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
@@ -427,7 +438,7 @@ case_ac26() {
   printf 'USER-GEMINI\n' > "$TARGET/GEMINI.md"
   printf 'USER-CONFIG\n' > "$TARGET/.codex/config.toml"
   snapshot_target "$SNAP/pre"
-  rc="$(run_install claude-code "$SANDBOX/install-231.log")"
+  rc="$(run_install codex "$SANDBOX/install-231.log")"
   if [ "$rc" = "0" ]; then pass "ac2.6b: run rc=0"; else fail "ac2.6b: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
@@ -510,16 +521,16 @@ case_ac28() {
   printf 'KNOWLEDGE-README\n' > "$TARGET/.tad/project-knowledge/README.md"
   snapshot_target "$SNAP/pre"
   # One-shot cp fault: fail the FIRST cp whose args name the staged source
-  # AND a .claude/skills path (the first framework-skills copy — an UNGUARDED
-  # `cp -r`, deterministically past NEED_ROLLBACK=1; the `.tad/skills-config`
+  # AND a .agents/skills path (the first framework-skills copy —
+  # deterministically past NEED_ROLLBACK=1; the `.tad/skills-config`
   # top file and snapshot copies are excluded by the dotted predicate), then
   # pass again so rollback's own copies succeed.
   printf '0\n' > "$SANDBOX/failcp"
-  printf '#!/bin/sh\nprintf "%%s\\n" "CP-CALL $*" >> "%s/cp.log"\ncase "$*" in\n  *"%s"*) case "$*" in\n    *.claude/skills*) n=$(cat "%s/failcp"); if [ "$n" = "0" ]; then echo 1 > "%s/failcp"; exit 1; fi ;;\n  esac ;;\nesac\nexec /bin/cp "$@"\n' \
+  printf '#!/bin/sh\nprintf "%%s\\n" "CP-CALL $*" >> "%s/cp.log"\ncase "$*" in\n  *"%s"*) case "$*" in\n    *.agents/skills*) n=$(cat "%s/failcp"); if [ "$n" = "0" ]; then echo 1 > "%s/failcp"; exit 1; fi ;;\n  esac ;;\nesac\nexec /bin/cp "$@"\n' \
     "$SANDBOX" "$SOURCE" "$SANDBOX" "$SANDBOX" > "$SHIMBIN/cp"
   chmod +x "$SHIMBIN/cp"
   local rc=0
-  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform both --yes >"$SANDBOX/install-fail.log" 2>&1 ) || rc=$?
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform codex --yes >"$SANDBOX/install-fail.log" 2>&1 ) || rc=$?
   if [ "$rc" != "0" ]; then pass "ac2.8: faulted run non-zero (rc=$rc)"; else fail "ac2.8: faulted run unexpectedly rc=0"; fi
   # Coverage: every user surface byte-identical after rollback (allowlist: the
   # run log itself lives outside the target; .tad-backup recovery copies are
@@ -669,9 +680,10 @@ case_ac29() {
   printf 'USER-BAK-ORIGINAL-BYTES\n' > "$TARGET/CLAUDE.md.bak"
   cp "$TARGET/CLAUDE.md.bak" "$SNAP/user-bak.orig"
   printf '# Mine\nNo marker\n' > "$TARGET/CLAUDE.md"
+  cp "$TARGET/CLAUDE.md" "$SNAP/claude-orig.md"
   local want rc
   want="$(source_version)"
-  rc="$(run_install both "$SANDBOX/install.log")"
+  rc="$(run_install codex "$SANDBOX/install.log")"
   if [ "$rc" = "0" ]; then pass "ac2.9: run rc=0"; else fail "ac2.9: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
@@ -680,12 +692,10 @@ case_ac29() {
   else
     fail "ac2.9: user CLAUDE.md.bak clobbered"
   fi
-  local bk
-  bk="$(ls "$TARGET"/CLAUDE.md.backup.* 2>/dev/null | head -1)" || bk=""
-  if [ -n "$bk" ]; then
-    pass "ac2.9: new backups namespaced+timestamped ($(basename "$bk"))"
+  if cmp -s "$SNAP/claude-orig.md" "$TARGET/CLAUDE.md"; then
+    pass "ac2.9: user CLAUDE.md byte-identical (v3 never merges)"
   else
-    fail "ac2.9: no namespaced backup found"
+    fail "ac2.9: user CLAUDE.md MODIFIED"
   fi
 }
 
@@ -706,7 +716,7 @@ case_ac210() {
   cp "$TARGET/TAD-main/precious.txt" "$SNAP/precious.orig"
   local want rc
   want="$(source_version)"
-  rc="$(run_install both "$SANDBOX/install.log")"
+  rc="$(run_install codex "$SANDBOX/install.log")"
   if [ "$rc" = "0" ]; then pass "ac2.10: run rc=0"; else fail "ac2.10: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
@@ -862,20 +872,20 @@ case_ac211() {
   CURRENT_CASE="ac2.11"
   new_sandbox
   stage_pruned_source
-  mkdir -p "$TARGET/.claude/skills" "$TARGET/.tad"
+  mkdir -p "$TARGET/.agents/skills" "$TARGET/.tad"
   printf '2.2.0\n' > "$TARGET/.tad/version.txt"
-  printf 'LEGACY-ONE\n' > "$TARGET/.claude/skills/legacy-one.md"
+  printf 'LEGACY-ONE\n' > "$TARGET/.agents/skills/legacy-one.md"
   local rc
-  rc="$(run_install both "$SANDBOX/install1.log")"
-  printf 'LEGACY-TWO\n' > "$TARGET/.claude/skills/legacy-two.md"
+  rc="$(run_install codex "$SANDBOX/install1.log")"
+  printf 'LEGACY-TWO\n' > "$TARGET/.agents/skills/legacy-two.md"
   local rc2=0
-  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform both --yes --force >"$SANDBOX/install2.log" 2>&1 ) || rc2=$?
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform codex --yes --force >"$SANDBOX/install2.log" 2>&1 ) || rc2=$?
   local want
   want="$(source_version)"
   if [ "$rc" = "0" ] && [ "$rc2" = "0" ]; then pass "ac2.11: integration double-run rc=0/0"; else fail "ac2.11: integration rcs $rc/$rc2"; fi
   assert_version_proof "$want"
   local idirs
-  idirs="$(ls -d "$TARGET"/.claude/skills/_archived.* 2>/dev/null | LC_ALL=C wc -l | tr -d ' ')"
+  idirs="$(ls -d "$TARGET"/.agents/skills/_archived.* 2>/dev/null | LC_ALL=C wc -l | tr -d ' ')"
   if [ "$idirs" = "2" ]; then
     pass "ac2.11: integration produced two timestamped _archived dirs"
   else
@@ -901,6 +911,48 @@ case_ac212() {
   bash "$TADSH" --verify-denylist >"$gtmp" 2>&1 || rc=$?
   rm -f "$gtmp"
   if [ "$rc" = "0" ]; then pass "ac2.12: --verify-denylist PASS"; else fail "ac2.12: --verify-denylist rc=$rc"; fi
+}
+
+# ════════════════════════ AC2.13 (v3 upgrade safety: pre-existing user .claude/ byte-identical) ════════════════════════
+case_ac213() {
+  CURRENT_CASE="ac2.13"
+  new_sandbox
+  stage_pruned_source
+  local want rc
+  want="$(source_version)"
+  # Pre-existing downstream .claude tree with user assets (hooks / MCP /
+  # permissions / skills / commands). The v3 installer must never write,
+  # delete, or recurse into it.
+  mkdir -p "$TARGET/.claude/skills/alex" "$TARGET/.claude/commands" "$TARGET/.agents/skills"
+  printf 'USER-SKILL-BYTES\n' > "$TARGET/.claude/skills/alex/SKILL.md"
+  printf '{"hooks": ["user-hook"]}\n' > "$TARGET/.claude/settings.json"
+  printf '{"local": true}\n' > "$TARGET/.claude/settings.local.json"
+  printf '{"mcpServers": {"mine": {}}}\n' > "$TARGET/.claude/.mcp.json"
+  printf 'USER-COMMAND\n' > "$TARGET/.claude/commands/mine.md"
+  mkdir -p "$TARGET/.tad"
+  printf '2.44.6\n' > "$TARGET/.tad/version.txt"
+  mkdir -p "$TARGET/.tad/project-knowledge"
+  # Simulate the 2.44.6→3.0.0 upgrade: staged source carries the new version
+  # (sandbox copy only — the repo version.txt is bumped separately in S9).
+  printf '3.0.0\n' > "$SOURCE/.tad/version.txt"
+  want="3.0.0"
+  snapshot_target "$SNAP/pre-claude"
+  rc="$(run_install codex "$SANDBOX/install-upgrade.log")"
+  if [ "$rc" = "0" ]; then pass "ac2.13: upgrade run rc=0"; else fail "ac2.13: upgrade run rc=$rc"; fi
+  assert_no_network
+  assert_version_proof "$want"
+  local d_unexp
+  d_unexp="$(diff -r "$SNAP/pre-claude/.claude" "$TARGET/.claude" 2>&1 || true)"
+  if [ -z "$d_unexp" ]; then
+    pass "ac2.13: pre-existing user .claude/ byte-identical after upgrade"
+  else
+    fail "ac2.13: user .claude/ MUTATED:"; printf '%s\n' "$d_unexp" | head -10
+  fi
+  if [ -d "$TARGET/.agents/skills/alex" ]; then
+    pass "ac2.13: new .agents/skills/ installed alongside"
+  else
+    fail "ac2.13: .agents/skills/ missing after upgrade"
+  fi
 }
 
 # ════════════════════════ R1 (scope fence) ════════════════════════
@@ -936,6 +988,7 @@ run_case() {
     ac2.10) case_ac210 ;;
     ac2.11) case_ac211 ;;
     ac2.12) case_ac212 ;;
+    ac2.13) case_ac213 ;;
     r1) case_r1 ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
@@ -950,6 +1003,7 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.1; run_case ac2.2; run_case ac2.3; run_case ac2.4
   run_case ac2.5; run_case ac2.6; run_case ac2.7; run_case ac2.8
   run_case ac2.9; run_case ac2.10; run_case ac2.11; run_case ac2.12
+  run_case ac2.13
   run_case r1
 else
   run_case "$CASE"

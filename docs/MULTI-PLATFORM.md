@@ -1,8 +1,14 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 2.44.6 (Dual-Platform Architecture — Full is the Default Channel; lite frozen 2026-08-13)
+**Version**: 3.0.0 (Codex-first + multi-harness neutral; Claude Code path removed)
 
-TAD runs on **two first-class runtimes**: Claude Code and Codex. Both platforms receive the same SKILL.md files and follow the same shared TAD protocol. Each platform also has its own native adapter layer for hooks, config, subagents, and tooling.
+TAD runs on **Codex as its primary runtime**, with a harness-neutral protocol that
+future runtimes can adopt. Since v3.0.0 there is a single skill tree
+(`.agents/skills/`, the sole source of truth) and a single install target (`codex`).
+The Claude Code runtime path (install target, hooks, workflows, model bindings) was
+removed in v3.0.0 — see `CHANGELOG.md` (`### Removed`) and the retired ledger
+`.tad/runtime-compat/claude-code.md`. Upgrading never deletes a pre-existing
+downstream `.claude/` tree (user hooks / MCP / permission config stay byte-identical).
 
 ---
 
@@ -10,8 +16,8 @@ TAD runs on **two first-class runtimes**: Claude Code and Codex. Both platforms 
 
 | Platform | Runtime Status | SKILL Install | Active Config | Active Custom Agents |
 |----------|---------------|---------------|---------------|---------------------|
-| **Claude Code** | First-class | `.claude/skills/` | `.claude/settings.json` | Agent tool with subagent_type |
-| **Codex** | First-class (since v2.25.0) | `.agents/skills/` | `.codex/hooks.json` only | Built-in default/worker/explorer |
+| **Codex** | First-class (since v2.25.0; sole runtime since v3.0.0) | `.agents/skills/` | `.codex/hooks.json` only | Built-in default/worker/explorer |
+| **Claude Code** | Removed in v3.0.0 (was first-class ≤2.44.6) | — (no longer installed; pre-existing downstream trees are left untouched) | — | — |
 
 Codex native config (`.codex/config.toml`) and custom agents (`.codex/agents/`) are **draft-only** — candidate files exist under `.tad/evidence/designs/codex-runtime-candidates/` but are **not active** until activation criteria are met (see below).
 
@@ -29,19 +35,18 @@ TAD Shared Protocol (invariant across platforms)
 ├── Completion/evidence/trace requirements
 └── Knowledge assessment
 
-Claude Code Adapter                    Codex Adapter
-├── .claude/skills/                    ├── .agents/skills/
-├── .claude/settings.json              ├── AGENTS.md routing
-├── Skill tool (slash commands)        ├── $skill invocation
-├── Agent tool (subagent_type)         ├── Subagents (custom .toml agents)
-├── .claude/workflows/                 ├── (no workflow equivalent)
-├── Hooks (settings.json)              ├── Hooks (.codex/hooks.json)
-├── MCP (settings.json)                ├── MCP (.codex/config.toml)
-└── Compact (auto, session-state.md)   └── Compact (auto, /compact)
+Claude Code Adapter (removed in v3.0.0)   Codex Adapter
+├── (install target deleted)               ├── .agents/skills/
+├── (settings.json hooks deleted)          ├── AGENTS.md routing
+├── (workflows deleted — no equivalent)    ├── $skill invocation
+├── (opus/sonnet/haiku pins deleted)       ├── Subagents (custom .toml agents)
+├── (skill mirror deleted)                 ├── Hooks (.codex/hooks.json)
+                                           ├── MCP (.codex/config.toml)
+                                           └── Compact (auto, /compact)
 
-Runtime Freshness Layer (Active — 21/21 PASS)
+Runtime Freshness Layer
 ├── .tad/runtime-compat/codex.md       (active)
-├── .tad/runtime-compat/claude-code.md (active)
+├── .tad/runtime-compat/claude-code.md (RETIRED in v3.0.0 — retained as historical record, not gated)
 └── Release/sync freshness gate        (active)
 ```
 
@@ -49,7 +54,7 @@ Runtime Freshness Layer (Active — 21/21 PASS)
 
 ## Shared TAD Protocol
 
-These elements are **invariant** across both platforms. They live in SKILL.md body (not in platform config) and must not be forked:
+These elements are **invariant** across harnesses. They live in SKILL.md body (not in platform config) and must not be forked:
 
 | Element | Description |
 |---------|-------------|
@@ -66,31 +71,22 @@ These elements are **invariant** across both platforms. They live in SKILL.md bo
 
 ## Active Pack System
 
-SKILL.md Capability Packs are the only active pack system for both Claude Code and Codex.
+SKILL.md Capability Packs are the only active pack system.
 
-- **Source of truth**: `.tad/capability-packs/{pack}/SKILL.md` (prebuilt, framework-owned)
-- **Claude Code**: installed to `.claude/skills/{pack}/SKILL.md`
-- **Codex**: installed to `.agents/skills/{pack}/SKILL.md`
-- **Symmetry**: framework-owned skills must be byte-identical across both platforms
-- **Local skills**: project-only skills may exist on one or both platforms and are reported as INFO by the verifier (`release-verify.sh platform-skills`)
+- **Source of truth**: `.agents/skills/` (sole source since v3.0.0; no mirror)
+- **Codex**: installed to `.agents/skills/` by `tad.sh --platform codex`
+- **Local skills**: project-only skills under `.agents/skills/local/` are reported as INFO by the verifier (`release-verify.sh structural`)
 - **YAML Domain Packs**: retired 2026-06-11, archived to `.tad/archive/domains/`
 
 ---
 
-## Claude Code Adapter
+## Claude Code Adapter (removed in v3.0.0)
 
-Claude Code has the deepest current TAD integration.
-
-| Surface | Implementation |
-|---------|---------------|
-| Skill loading | `.claude/skills/` via Skill tool; full SKILL.md loaded on invocation |
-| Hooks | `.claude/settings.json` hooks; PreToolUse, PostToolUse, SessionStart, etc. |
-| Workflows | `.claude/workflows/*.workflow.js`; deterministic agent/parallel/pipeline/phase |
-| Subagents | Agent tool with 16+ built-in subagent_type options; isolation: worktree |
-| MCP | `.claude/settings.json` MCP server config; project-scoped |
-| Permissions | `.claude/settings.json` allow/deny lists |
-| Compact | Auto-compact with summary; session-state.md for TAD recovery |
-| Release/sync | `*publish` / `*sync` commands; `tad.sh` installer; deny-list derivation |
+The Claude Code runtime path — install target (`.claude/skills/`, `.claude/settings.json`
+hooks, `.claude/workflows/`, `.claude/agents/` model pins) — was removed in v3.0.0
+(see `CHANGELOG.md` `### Removed`). The retired compatibility ledger
+`.tad/runtime-compat/claude-code.md` records the removal rationale and is retained as a
+historical record. Downstream upgrades never delete a pre-existing `.claude/` tree.
 
 ---
 
@@ -115,7 +111,7 @@ Codex is a first-class TAD runtime with native skill loading, hooks, subagents, 
 Currently committed to the TAD project:
 
 - `.codex/hooks.json` — TAD lifecycle hooks (auto-generated by `tad.sh`)
-- `.agents/skills/` — Unified SKILL.md files (same content as `.claude/skills/`)
+- `.agents/skills/` — Unified SKILL.md files (sole source of truth since v3.0.0)
 - `AGENTS.md` — Role routing and capability pack keyword table
 
 ### What Is NOT Active
@@ -152,12 +148,12 @@ Before copying any draft to active `.codex/` location, ALL must be true:
 
 ## Runtime Freshness
 
-Platform capabilities change over time. Codex is high-volatility; Claude Code is lower-volatility but not exempt.
+Platform capabilities change over time. Codex is high-volatility.
 
-Runtime freshness ledgers are **active**:
-- `.tad/runtime-compat/codex.md` — compatibility ledger with `last_verified`, volatility, recheck triggers
-- `.tad/runtime-compat/claude-code.md` — same format, lower update frequency
-- Release/sync freshness gate: `runtime-freshness-verify.sh` (21/21 PASS as of 2026-06-09)
+Runtime freshness ledgers:
+- `.tad/runtime-compat/codex.md` — compatibility ledger with `last_verified`, volatility, recheck triggers (**active**)
+- `.tad/runtime-compat/claude-code.md` — **RETIRED in v3.0.0** (retained as historical record, not gated)
+- Release/sync freshness gate: `runtime-freshness-verify.sh`
 
 **Current policy**: Before any cross-platform architectural decision, do a fresh capability audit of the target platform's current state. Never rely on assumptions older than 2 months for fast-evolving CLI tools.
 
@@ -177,15 +173,15 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ## Workflow Matrix
 
-| Workflow | Claude Code | Codex | Notes |
-|----------|------------|-------|-------|
-| Alex activation | `/alex` (Skill tool) | `$alex` (AGENTS.md → `.agents/skills/alex/SKILL.md`) | Both load full SKILL.md |
-| Blake activation | `/blake` (Skill tool) | `$blake` (AGENTS.md → `.agents/skills/blake/SKILL.md`) | Both load full SKILL.md |
-| Layer 2 review | Agent tool spawns reviewer sub-agents | Subagent spawning or sequential sessions | Codex custom agents not yet activated |
-| Gate pre-checks | hooks auto-fire | `pre-accept-check.sh` / `pre-gate-check.sh` run manually | Codex hooks require trust review |
-| Workflows | `.claude/workflows/*.workflow.js` | No equivalent; use prompt-driven subagent orchestration | Gap: Codex has no workflow script runtime |
-| Release/sync | `*publish` / `*sync` from Claude Code | Codex is a sync target, not a sync source | Release always runs from Claude Code |
-| Evidence capture | Hook-driven (post-write-sync.sh) | Hook-driven (same scripts via `.codex/hooks.json`) | `ask_user_question`: accepted limitation — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
+| Workflow | Codex | Notes |
+|----------|-------|-------|
+| Alex activation | `$alex` (AGENTS.md → `.agents/skills/alex/SKILL.md`) | Loads full SKILL.md |
+| Blake activation | `$blake` (AGENTS.md → `.agents/skills/blake/SKILL.md`) | Loads full SKILL.md |
+| Layer 2 review | Subagent spawning or sequential sessions | Codex custom agents not yet activated |
+| Gate pre-checks | `pre-accept-check.sh` / `pre-gate-check.sh` run manually | Codex hooks require trust review |
+| Workflows | No equivalent; use prompt-driven subagent orchestration | The `.claude/workflows/` script runtime was removed in v3.0.0 (accepted limitation) |
+| Release/sync | `*publish` / `*sync` run from the repo with the Codex harness | Single install target since v3.0.0 |
+| Evidence capture | Hook-driven (same scripts via `.codex/hooks.json`) | `ask_user_question`: accepted limitation — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
 
 ---
 
@@ -196,7 +192,7 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 | `.codex/config.toml` not active | Codex uses default model/sandbox, not TAD-optimized | Activate after human approval + final secrets audit |
 | `.codex/agents/` not active | Layer 2 review uses prompt-driven spawning, not dedicated reviewer agents | Activate after human approval + final secrets audit |
 | `ask_user_question` in `codex exec` batch mode | `request_user_input` unavailable in batch mode (by design — no interactive user); interactive Codex can ask via text normally | Accepted limitation — text-based fallback is documented pattern |
-| No workflow script runtime on Codex | Complex orchestration (YOLO Conductor, parallel workflows) is Claude Code-only | Use prompt-driven subagent spawning on Codex |
+| No workflow script runtime on Codex | Complex orchestration (YOLO Conductor, parallel workflows) uses prompt-driven subagent spawning | Accepted limitation (the Claude-only workflow runtime was removed in v3.0.0) |
 
 ---
 
@@ -212,4 +208,4 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
-*TAD v2.30.0 — Claude Code + Codex dual-runtime, shared protocol, platform adapters, runtime freshness active (21/21 PASS), full-cycle regression PASS (CONDITIONAL_GO).*
+*TAD v3.0.0 — Codex-first, single skill tree (`.agents/skills/`), Claude Code path removed, runtime freshness active.*

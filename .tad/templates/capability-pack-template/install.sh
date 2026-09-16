@@ -1,13 +1,14 @@
 #!/bin/bash
 # {{Pack Name}} Capability Pack Installer
-# Usage: bash install.sh [--agent=claude-code|codex|cursor] [--force] [--dry-run]
+# Usage: bash install.sh [--agent=codex|cursor] [--force] [--dry-run]
+# v3.0.0: Codex-first target (.agents/skills/); Claude Code path removed.
 set -euo pipefail
 
 PACK_NAME="{{pack-name}}"
 PACK_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Parse flags
-AGENT="claude-code"
+AGENT="codex"
 FORCE=false
 DRY_RUN=false
 for arg in "$@"; do
@@ -15,7 +16,7 @@ for arg in "$@"; do
     --agent=*) AGENT="${arg#--agent=}" ;;
     --force) FORCE=true ;;
     --dry-run) DRY_RUN=true ;;
-    --help) echo "Usage: bash install.sh [--agent=claude-code|codex|cursor] [--force] [--dry-run]"; exit 0 ;;
+    --help) echo "Usage: bash install.sh [--agent=codex|cursor] [--force] [--dry-run]"; exit 0 ;;
   esac
 done
 
@@ -25,26 +26,26 @@ echo ""
 
 # Determine target directory based on agent
 case "$AGENT" in
-  claude-code|claude)
-    if [ -d ".claude" ]; then
-      TARGET_DIR=".claude/skills/${PACK_NAME}"
-    elif [ -d "$HOME/.claude" ]; then
-      TARGET_DIR="$HOME/.claude/skills/${PACK_NAME}"
+  codex)
+    if [ -d ".agents" ]; then
+      TARGET_DIR=".agents/skills/${PACK_NAME}"
+    elif [ -d "$HOME/.agents" ]; then
+      TARGET_DIR="$HOME/.agents/skills/${PACK_NAME}"
     else
-      echo "❌ No .claude/ directory found. Run from a Claude Code project root."
+      echo "❌ No .agents/ directory found. Run from a project root with .agents/skills/."
       exit 1
     fi
     ;;
-  codex)
-    echo "⚠️  Codex: Add pack reference to AGENTS.md manually."
-    echo "   Path: .claude/skills/${PACK_NAME}/SKILL.md"
-    TARGET_DIR=".claude/skills/${PACK_NAME}"
+  *claude*)
+    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+    echo "  Re-run with --agent=codex. No files were changed." >&2
+    exit 1
     ;;
   cursor)
     TARGET_DIR=".cursor/rules/${PACK_NAME}"
     ;;
   *)
-    echo "❌ Unknown agent: ${AGENT}. Supported: claude-code, codex, cursor"
+    echo "❌ Unknown agent: ${AGENT}. Supported: codex, cursor"
     exit 1
     ;;
 esac

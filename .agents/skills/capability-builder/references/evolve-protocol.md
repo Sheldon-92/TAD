@@ -33,9 +33,9 @@ OLD_RERUN
 NEW_PASSES
   │ capability-skill.sh validate
   ▼
-PROJECTED
-  │ capability-skill.sh project + verify byte identity
-  ├── divergent target ──► DRIFT_REFUSES_OVERWRITE
+MATERIALIZED
+  │ materialize directly under .agents/skills/<name>/ + verify self-integrity
+  ├── invalid canonical ──► DRIFT_REFUSES_OVERWRITE
   ├── canonical drifted mid-run ──► TARGET_DRIFT_STOP
   ▼
 GATE_3_READY ──► Gate 3 → human Gate 4
@@ -55,8 +55,8 @@ Named stops/blocks: `NO_TRIGGER_NO_WRITES`, `REGRESSION_BLOCKS_PROJECTION`, `DRI
 1. Sandbox ONLY: `<FIXTURE_PROJ>` (`.tad/evidence/acceptance-tests/capability-builder-evolve/fixture-proj/`). Never framework `.agents/skills/`.
 2. `bash .tad/scripts/capability-skill.sh validate <root> <skill>` — must exit 0.
 3. Behavioral proof — same prompt, fresh outputs; `SKIP` never satisfies `FAIL`/`PASS`.
-4. `bash .tad/scripts/capability-skill.sh project <root> <skill>` — only after 2+3 pass; divergent → exit 3, alter neither tree.
-5. `bash .tad/scripts/capability-skill.sh verify <root> <skill>` + `diff -rq` — must pass.
+4. Materialize directly under `<root>/.agents/skills/<skill>/` — only after 2+3 pass (v3.0.0: the `project` projection was removed; fail-closed tombstone).
+5. `bash .tad/scripts/capability-skill.sh verify <root> <skill>` — must pass (self-integrity).
 6. Evidence under `.tad/evidence/acceptance-tests/capability-builder-evolve/` (raw outputs, manifests, digests; `LC_ALL=C`, `grep -F -e`, no `for x in $VAR`).
 
 ## 5. Eval Fixture Contract (reuse Phase-1, plus bounds)

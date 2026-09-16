@@ -35,18 +35,18 @@ BEHAVIOR_PROVEN
   │ CONTROL fails, WITH passes (same prompt)
   ├── nondiscriminative ──► RETURN_TO_FIXTURE_OR_SKILL
   ▼
-PROJECTED
-  │ capability-skill.sh project + verify byte identity
-  ├── divergent target ──► BLOCKED_BOTH_TREES_UNCHANGED
+MATERIALIZED
+  │ materialize directly under .agents/skills/<name>/ + verify self-integrity
+  ├── divergent target ──► BLOCKED_CANONICAL_UNCHANGED
   ▼
 GATE_3_READY ──► Gate 3 → human Gate 4
 ```
 
-Named stops/blocks: `STOPPED_WITH_REASON`, `LEGACY_PACK_OUT_OF_SCOPE`, `BLOCKED_CANONICAL_UNCHANGED`, `RETURN_TO_FIXTURE_OR_SKILL`, `BLOCKED_BOTH_TREES_UNCHANGED`.
+Named stops/blocks: `STOPPED_WITH_REASON`, `LEGACY_PACK_OUT_OF_SCOPE`, `BLOCKED_CANONICAL_UNCHANGED`, `RETURN_TO_FIXTURE_OR_SKILL`.
 
 ## 3. Alex Responsibilities
 
-1. Evidence intake + duplicate check (existing `.agents/skills/` + `.claude/skills/`).
+1. Evidence intake + duplicate check (existing `.agents/skills/`).
 2. Reusable-capability justification (why not one-off).
 3. Canonical name (`^[a-z0-9]+(-[a-z0-9]+)*$`) and minimal resource selection (`SKILL.md` required; references/scripts/assets only when evidence justifies).
 4. Behavioral fixture design — frontmatter `skill: <name>`, `name:`, `discriminative_pattern`, `min_discriminative`, `## Verification Command` (`grep -oE | sort -u | wc -l`). Markers are named rules / thresholds / output shapes, not generic vocabulary. Require ≥1 structural marker.
@@ -64,9 +64,9 @@ Deep research: load `capability-upgrade/references/legacy-pack-research.md` only
    - `CONTROL` (no Skill) → `SKIP` is not `FAIL`; `FAIL` required.
    - `WITH` (Skill enabled) → `PASS` required.
    - `prompt` byte-identical, Skill state is the only delta. Record prompt hash, Skill-tree hash, harness/model identity, invocation description, timestamps, output hashes, fixture hash in `run-manifest.json`. Recompute hashes + verdicts.
-4. `bash .tad/scripts/capability-skill.sh project <project-root> <skill-name>` — only after 2+3 pass.
-5. `bash .tad/scripts/capability-skill.sh verify <project-root> <skill-name>` + `diff -rq` canonical vs projection — must pass.
-6. Ralph Loop + Gate 3. Projection of a divergent target must never overwrite; helper refuses with non-zero and alters neither tree.
+4. Materialize directly under `<project-root>/.agents/skills/<skill-name>/` — only after 2+3 pass (v3.0.0: the `project` projection was removed; fail-closed tombstone).
+5. `bash .tad/scripts/capability-skill.sh verify <project-root> <skill-name>` — must pass (self-integrity).
+6. Ralph Loop + Gate 3. Materialization of a divergent target must never overwrite; helper refuses with non-zero and alters neither tree.
 
 ## 5. Skill Validation Contract
 
@@ -94,8 +94,8 @@ Runner exit 0 is advisory; Gate checks verdict text. `SKIP` never satisfies `FAI
 
 | Data | Authority | Consumer | Direction |
 |---|---|---|---|
-| Downstream Skill | `.agents/skills/<name>/` | `.claude/skills/<name>/` | explicit `project` only |
-| Builder framework Skill | `.claude/skills/capability-builder/` | `.agents/skills/capability-builder/` | framework release `.claude → .agents` |
+| Downstream Skill | `.agents/skills/<name>/` | — (v3.0.0: projection removed) | direct materialization |
+| Builder framework Skill | `.agents/skills/capability-builder/` | — (sole source) | framework release |
 | Prompt + raw outputs | `.tad/evidence/.../prompt + raw` | hashes + verdicts | capture then recompute |
 | Legacy packs | `.tad/capability-packs/` | existing TAD consumers | unchanged |
 

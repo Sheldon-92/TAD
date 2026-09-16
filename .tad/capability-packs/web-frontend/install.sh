@@ -4,15 +4,15 @@
 #
 # Usage:
 #   bash install.sh                         # Install project-local (default)
-#   bash install.sh --agent=claude-code     # Explicit Claude Code install
-#   bash install.sh --global               # Install to ~/.claude/ (all projects)
+#   bash install.sh --agent=codex     # Explicit Codex install
+#   bash install.sh --global               # Install to ~/.agents/ (all projects)
 #   bash install.sh --dry-run               # Show what would be installed, don't copy
 #   bash install.sh --agent=codex           # Phase 3 (not yet implemented)
 
 set -euo pipefail
 
 PACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AGENT="claude-code"
+AGENT="codex"
 DRY_RUN=false
 FORCE=false
 ALLOW_GLOBAL=false
@@ -39,13 +39,13 @@ for arg in "$@"; do
       echo "  bash install.sh [--agent=AGENT] [--dry-run] [--global]"
       echo ""
       echo "Supported agents:"
-      echo "  claude-code    Claude Code CLI (default)"
+      echo "  codex    Codex CLI (default)"
       echo "  codex          OpenAI Codex CLI (Phase 3 — not yet available)"
       echo "  cursor         Cursor IDE (Phase 3 — not yet available)"
       echo "  gemini         Gemini CLI (Phase 3 — not yet available)"
       echo ""
       echo "Options:"
-      echo "  --global       Allow install to ~/.claude/ when no project .claude/ is found"
+      echo "  --global       Allow install to ~/.agents/ when no project .agents/ is found"
       echo "  --dry-run      Show what would be installed without copying files"
       echo "  --help         Show this help"
       exit 0
@@ -59,26 +59,26 @@ for arg in "$@"; do
 done
 
 install_pack() {
-  local PLATFORM="${1:-claude-code}"
+  local PLATFORM="${1:-codex}"
   if [[ "$PLATFORM" = "codex" ]]; then
     SKILLS_ROOT=".agents"
     echo "✓ Codex install — target .agents/skills/"
-  elif [[ -d ".claude" ]]; then
-    SKILLS_ROOT=".claude"
-    echo "✓ .claude/ detected — Claude Code project install"
-  elif [[ "$ALLOW_GLOBAL" = true ]] && [[ -d "${HOME}/.claude" ]]; then
-    SKILLS_ROOT="${HOME}/.claude"
-    echo "✓ ~/.claude/ detected — Claude Code global install (--global flag set)"
-  elif [[ -d "${HOME}/.claude" ]]; then
-    echo "ℹ No .claude/ in current directory. Found ~/.claude/ — use --global to install globally, or cd to your project first." >&2
+  elif [[ -d ".agents" ]]; then
+    SKILLS_ROOT=".agents"
+    echo "✓ .agents/ detected — Codex project install"
+  elif [[ "$ALLOW_GLOBAL" = true ]] && [[ -d "${HOME}/.agents" ]]; then
+    SKILLS_ROOT="${HOME}/.agents"
+    echo "✓ ~/.agents/ detected — Codex global install (--global flag set)"
+  elif [[ -d "${HOME}/.agents" ]]; then
+    echo "ℹ No .agents/ in current directory. Found ~/.agents/ — use --global to install globally, or cd to your project first." >&2
     exit 1
   else
-    echo "✗ Claude Code not found (.claude/ or ~/.claude/ missing)." >&2
+    echo "✗ Codex not found (.agents/ or ~/.agents/ missing)." >&2
     exit 1
   fi
   TARGET_DIR="${SKILLS_ROOT}/skills/web-frontend"
 
-  echo "Web Frontend Capability Pack — Installing for Claude Code"
+  echo "Web Frontend Capability Pack — Installing for Codex"
   echo ""
   echo "Source: $PACK_DIR"
   echo "Target: $TARGET_DIR"
@@ -136,7 +136,7 @@ install_pack() {
   echo ""
   echo "✅ Installation complete!"
   echo ""
-  echo "Claude Code will now load the web-frontend skill automatically when you"
+  echo "Codex will now load the web-frontend skill automatically when you"
   echo "discuss component architecture, state management, design tokens, styling,"
   echo "performance, accessibility, or testing."
   echo ""
@@ -151,24 +151,24 @@ install_pack() {
 
 # Dispatch
 case "$AGENT" in
-  claude-code)
-    install_pack "claude-code"
+  codex)
+    install_pack "codex"
     ;;
   codex)
     install_pack "codex"
     ;;
   cursor)
     echo "INFO: Cursor IDE support is planned for Phase 3."
-    echo "For now, use: bash install.sh --agent=claude-code"
+    echo "For now, use: bash install.sh --agent=codex"
     exit 2
     ;;
   gemini)
     echo "INFO: Gemini CLI support is planned for Phase 3."
-    echo "For now, use: bash install.sh --agent=claude-code"
+    echo "For now, use: bash install.sh --agent=codex"
     exit 2
     ;;
   *)
-    echo "ERROR: Unknown agent: $AGENT. Supported: claude-code, codex"
+    echo "ERROR: Unknown agent: $AGENT. Supported: codex, codex"
     exit 1
     ;;
 esac

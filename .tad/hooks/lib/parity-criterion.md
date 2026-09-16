@@ -1,4 +1,9 @@
-# Codex-Edition Parity Criterion
+# Codex-Edition Parity Criterion — ARCHIVED in TAD v3.0.0
+
+> The dual-tree mirror gate (`release-verify.sh parity` / `platform-skills`)
+> was removed in v3.0.0 (single skill tree under `.agents/skills/`, nothing
+> to mirror). This criterion is retained as a historical record only and is
+> no longer executed by any gate.
 
 Mechanizable semantic-coverage check for Codex editions against Claude source SKILLs.
 Designed for Phase 1 prototype; Phase 3 hardens into a release-gate.

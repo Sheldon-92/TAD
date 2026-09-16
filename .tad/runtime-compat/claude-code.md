@@ -1,5 +1,10 @@
 # Runtime Compatibility Ledger: Claude Code
 
+> **RETIRED in TAD v3.0.0** — the Claude Code runtime path was removed
+> (installer target, hooks, workflows, model bindings). This ledger is retained
+> as a historical record only and is NOT gated by `runtime-freshness-verify.sh`.
+> Status: RETIRED. Do not update entries.
+
 **Platform:** claude_code
 **Ledger Version:** 1
 **Last Updated:** 2026-06-09

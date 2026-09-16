@@ -4,7 +4,7 @@ This reference is **mandatory** when `$capability-builder package` is selected. 
 
 ## 1. Entry Conditions
 
-`package` starts from a validated, behavior-proven, projected Skill (`example-skill` for this handoff; Plugin `example-skill`; no MCP/App unless explicitly requested with real project files).
+`package` starts from a validated, behavior-proven, materialized Skill (`example-skill` for this handoff; Plugin `example-skill`; no MCP/App unless explicitly requested with real project files).
 
 ## 2. Commands (`capability-plugin.sh`)
 
