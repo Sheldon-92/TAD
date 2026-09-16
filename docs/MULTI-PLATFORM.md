@@ -1,10 +1,11 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 3.0.0 (Codex-first + multi-harness neutral; Claude Code path removed)
+**Version**: 3.1 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
 
-TAD runs on **Codex as its primary runtime**, with a harness-neutral protocol that
-future runtimes can adopt. Since v3.0.0 there is a single skill tree
-(`.agents/skills/`, the sole source of truth) and a single install target (`codex`).
+TAD runs on **Codex, OpenCode, and Cursor as supported harnesses**, with a shared protocol.
+Since v3.1 there is a single skill tree
+(`.agents/skills/`, the shared source of truth) and three install targets (`codex|opencode|cursor`, default `codex`).
+Codex is the **hook-enabled** runtime; OpenCode and Cursor get skills + routing + packs but no lifecycle hooks (Platform Adapters P2 — known gap).
 The Claude Code runtime path (install target, hooks, workflows, model bindings) was
 removed in v3.0.0 — see `CHANGELOG.md` (`### Removed`) and the retired ledger
 `.tad/runtime-compat/claude-code.md`. Upgrading never deletes a pre-existing
@@ -16,7 +17,9 @@ downstream `.claude/` tree (user hooks / MCP / permission config stay byte-ident
 
 | Platform | Runtime Status | SKILL Install | Active Config | Active Custom Agents |
 |----------|---------------|---------------|---------------|---------------------|
-| **Codex** | First-class (since v2.25.0; sole runtime since v3.0.0) | `.agents/skills/` | `.codex/hooks.json` only | Built-in default/worker/explorer |
+| **Codex** | Hook-enabled (since v2.25.0; hooks via `.codex/hooks.json`) | `.agents/skills/` | `.codex/hooks.json` only | Built-in default/worker/explorer |
+| **OpenCode** | Supported (skills + AGENTS.md + packs; hooks P2 — not yet) | `.agents/skills/` | `.opencode/commands/tad-update.md` updater-only; hooks P2 | Built-in |
+| **Cursor** | Supported (skills + AGENTS.md + packs; hooks P2 — not yet) | `.agents/skills/` | — (hooks P2) | Built-in |
 | **Claude Code** | Removed in v3.0.0 (was first-class ≤2.44.6) | — (no longer installed; pre-existing downstream trees are left untouched) | — | — |
 
 Codex native config (`.codex/config.toml`) and custom agents (`.codex/agents/`) are **draft-only** — candidate files exist under `.tad/evidence/designs/codex-runtime-candidates/` but are **not active** until activation criteria are met (see below).
@@ -180,7 +183,7 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 | Layer 2 review | Subagent spawning or sequential sessions | Codex custom agents not yet activated |
 | Gate pre-checks | `pre-accept-check.sh` / `pre-gate-check.sh` run manually | Codex hooks require trust review |
 | Workflows | No equivalent; use prompt-driven subagent orchestration | The `.claude/workflows/` script runtime was removed in v3.0.0 (accepted limitation) |
-| Release/sync | `*publish` / `*sync` run from the repo with the Codex harness | Single install target since v3.0.0 |
+| Release/sync | `*publish` / `*sync` run from the repo with the Codex harness | Install targets `codex\|opencode\|cursor` (default `codex`) |
 | Evidence capture | Hook-driven (same scripts via `.codex/hooks.json`) | `ask_user_question`: accepted limitation — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
 
 ---
@@ -208,4 +211,4 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
-*TAD v3.0.0 — Codex-first, single skill tree (`.agents/skills/`), Claude Code path removed, runtime freshness active.*
+*TAD v3.1 — Codex hook-enabled + OpenCode/Cursor supported, single skill tree (`.agents/skills/`), Claude Code path removed, runtime freshness active.*

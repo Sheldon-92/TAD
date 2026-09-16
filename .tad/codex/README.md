@@ -1,6 +1,6 @@
 # TAD Codex Adapter
 
-Codex is the **primary TAD runtime** (first-class since v2.25.0, sole runtime since v3.0.0). There is a single skill tree (`.agents/skills/`, the sole source of truth) and a single shared TAD protocol.
+Codex is the **hook-enabled TAD runtime** (first-class since v2.25.0). OpenCode and Cursor are also supported (skills + AGENTS.md + packs; lifecycle hooks via Platform Adapters P2 — not yet). There is a single skill tree (`.agents/skills/`, the shared source of truth) and a single shared TAD protocol.
 
 ---
 

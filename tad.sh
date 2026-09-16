@@ -363,7 +363,7 @@ while [ $# -gt 0 ]; do
       echo "       tad.sh --source <dir> [--platform <name>] --yes  (offline install from local tree)"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
-      echo "  --platform <name>  target platform (codex). Default: codex"
+      echo "  --platform <name>  target platform (codex|opencode|cursor). Default: codex"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
       echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
       echo "                     default: ask, or local with --yes"
@@ -511,15 +511,17 @@ backup_existing() {
 # ⚠️ DRIFT: must match platforms: keys in .tad/platform-codes.yaml. Adding a new
 # platform requires updating BOTH this list AND platform-codes.yaml.
 # Future: release-verify.sh could add a --verify-platforms check.
-KNOWN_PLATFORMS="codex"
+KNOWN_PLATFORMS="codex opencode cursor"
 
-# v3.0.0: the Claude Code runtime path was removed. The old dual-tree mode and
-# any platform value naming that path are rejected BEFORE any mutation
-# (fail-before-mutation) with a recovery command.
+# v3.1: `opencode` / `cursor` are accepted targets — the installer body is
+# platform-agnostic (same .agents/skills tree, same packs, same .tad/ core),
+# so these values only relax the fail-before-mutation gate. They do NOT add
+# lifecycle hooks or slash commands (Platform Adapters P2 — known gap).
+# `both` / `*claude*` stay rejected before any mutation.
 validate_platform() {
     local p="$1"
     case "$p" in
-        codex) return 0 ;;
+        codex|opencode|cursor) return 0 ;;
         both|*claude*)
             log_error "Platform '$p' was removed in TAD v3.0.0 (Claude Code runtime path deleted)."
             echo "  Recovery — re-run with the Codex target:" >&2

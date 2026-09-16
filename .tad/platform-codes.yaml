@@ -9,3 +9,13 @@ platforms:
     extra_deny: []
     extra_root_files:
       - "AGENTS.md"
+  opencode:
+    label: "OpenCode"
+    extra_deny: []
+    extra_root_files:
+      - "AGENTS.md"
+  cursor:
+    label: "Cursor"
+    extra_deny: []
+    extra_root_files:
+      - "AGENTS.md"

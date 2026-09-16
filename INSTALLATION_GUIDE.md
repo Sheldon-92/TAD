@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 3.0.0 — Alex / Blake is the Default, Codex is the Runtime**
+**Version 3.1 — Alex / Blake is the Default, Codex / OpenCode / Cursor are supported runtimes**
 
 ## 安装方式
 
@@ -15,12 +15,13 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 平台参数（显式覆盖默认值）：
 
 ```bash
-# Codex（默认，也是唯一目标）
+# codex（默认；或 opencode / cursor）
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform codex --packs web-frontend,web-backend
 ```
 
 > `--platform claude-code` / `--platform both` 自 v3.0.0 起被拒绝：
 > 安装器会在改动任何文件前报错，并打印恢复命令（改传 `--platform codex` 即可）。
+> `opencode` / `cursor` 现为合法目标。
 > 详见下方「升级到 v3.0.0」。
 
 CI / 脚本化（跳过确认提示）：
@@ -35,7 +36,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 npx github:Sheldon-92/TAD
 ```
 
-交互式选择 capability packs，每个 pack 附一句话说明（安装目标恒为 Codex）。
+交互式选择 capability packs，每个 pack 附一句话说明（安装目标：codex / opencode / cursor）。
 
 > 需要 Node.js 14+。不想装 Node.js 就用上面的 curl。
 
@@ -108,6 +109,8 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 | 平台 | 说明 | 安装大小 |
 |------|------|----------|
 | Codex CLI | 完整安装，含 alex/blake SKILL + hooks | ~120KB |
+| OpenCode | skills + AGENTS.md（无 lifecycle hooks，P2） | ~120KB |
+| Cursor | skills + AGENTS.md（无 lifecycle hooks，P2） | ~120KB |
 
 Codex 用户可以用更少的 context 跑 TAD 工作流。详见 [Codex CLI 指南](#codex-cli)。
 
@@ -130,7 +133,7 @@ TAD 包含 25 个 capability packs，每个提供特定领域的判断规则：
 
 ## Codex CLI
 
-TAD 完整支持 Codex CLI（v0.130+），使用同一套 SKILL.md 文件：
+TAD 完整支持 Codex CLI（v0.130+），使用同一套 SKILL.md 文件。OpenCode / Cursor 通过同一套 `.agents/skills/` + `AGENTS.md` open-box 可用（激活语法见下）。
 
 ```bash
 # 前提：已安装 codex CLI + 配置 OpenAI 认证
@@ -138,19 +141,22 @@ codex --version
 
 # 安装（skills 安装到 .agents/skills/）
 bash tad.sh --platform codex --yes
+# 或：bash tad.sh --platform opencode|cursor --yes（skills + AGENTS.md，无 hooks）
 
-# 使用：在 Codex 中输入 $alex 或 $blake 激活角色
+# 使用：在 Codex 中输入 $alex 或 $blake 激活角色；在 OpenCode / Cursor 中输入 /alex 或 /blake（skills 也可经模型选择加载）
 ```
 
-**安装内容**：
+**安装内容（Codex）**：
 - `.agents/skills/` — 完整 SKILL.md + 24 capability packs
 - `.codex/hooks.json` — 按 Codex CLI 0.146+ schema 自动生成的 lifecycle hooks
 - `AGENTS.md` — 角色触发词和 capability pack 表
 
-**已知限制**：
+**已知限制（Codex）**：
 - Codex hooks 不支持 `type: prompt`（LLM 内联安全检查），详见 `.tad/guides/hooks-platform-mapping.md`
 - Codex 无等价的 Skill matcher，`pre-accept-check.sh` 和 `pre-gate-check.sh` 需手动运行
 - skill 引用按各自 `.agents/skills/<skill>/` 基目录解析；激活时间约 65 秒
+
+**Known Gaps（OpenCode / Cursor）**：P2 lifecycle hooks 未实现（`.opencode/plugins/tad.ts`、`.cursor/hooks.json`）；P4 真机回归未跑。
 
 ## 常见问题
 

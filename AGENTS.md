@@ -6,16 +6,19 @@ TAD (Triangle Agent Development) uses two specialized roles:
 
 Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
 
-> Codex is a **first-class platform** for TAD (since v2.25.0).
-> Both platforms receive the same SKILL.md files with full protocol.
-> Codex has native subagents and hooks, but TAD custom-agent config (`.codex/agents/`) is not yet activated — reviewer sessions run via explicit subagent prompting until Phase 5 regression validates the draft agents.
+> **Runtime status (v3.1)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
+> `.agents/skills/` is a first-party discovery path on all three and `AGENTS.md`
+> is read natively by all three, so roles, gates, and capability packs load
+> open-box. Codex is the **hook-enabled** runtime (SessionStart / PostToolUse);
+> OpenCode and Cursor currently get skills + routing + packs but **no lifecycle
+> hooks** (Platform Adapters P2 — see Known Gaps).
 > See `.tad/codex/README.md` for adapter details and activation status.
 
 ---
 
 ## Role Switching
 
-Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
+Harness activation: `$alex` / `$blake` = Codex invocation; `/alex` / `/blake` = OpenCode / Cursor invocation (skills also model-selectable). Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
 
 | Trigger phrases | Role |
 |----------------|------|
@@ -137,7 +140,7 @@ When a user's task matches a capability pack's keywords, announce a pointer — 
 
 ---
 
-## Codex-Specific Notes
+## Codex-Specific Notes (Codex harness only — not applicable to OpenCode/Cursor)
 
 - Use `codex exec resume --last` to continue multi-turn TAD workflows
 - Layer 2 expert review: run via explicit subagent prompting or sequential sessions; TAD custom agents (`.codex/agents/`) are draft-only and not yet activated
@@ -146,6 +149,14 @@ When a user's task matches a capability pack's keywords, announce a pointer — 
 - Active config: `.codex/hooks.json` only; `.codex/config.toml` and `.codex/agents/` are not active (draft candidates at `.tad/evidence/designs/codex-runtime-candidates/`)
 - `TAD_PLATFORM=codex|none` is the explicit platform override for local routing.
 - Adapter details and activation status: `.tad/codex/README.md`
+
+---
+
+## Known Gaps (OpenCode / Cursor)
+
+- **P2 — Hook adapters not implemented**: OpenCode (`.opencode/plugins/tad.ts`) and Cursor (`.cursor/hooks.json`) lifecycle hooks are not shipped. OpenCode/Cursor installs get skills + routing + packs but no SessionStart / PostToolUse hooks, no TAD trace emission, no ask-user capture.
+- **P4 — Live behavioral regression not run**: "open-box usable" rests on vendor docs + installer probe; no live OpenCode/Cursor harness transcript yet.
+- Deferred by reference: C-5 (`/alex` `/blake` slash projection — only `/tad-update` projected on OpenCode), C-11 (updater `--platform` gate), C-12 (no runtime freshness ledger for OpenCode/Cursor).
 
 ---
 

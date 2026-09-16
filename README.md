@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 3.0.0 — Claude Code Path Removed, Codex Sole Runtime**
+**Version 3.1 — Claude Code Path Removed, Codex / OpenCode / Cursor Supported**
 
-> v3.0.0 release: Claude Code runtime path removed (breaking); `.agents/skills/` is the sole skill source; `--platform codex` is the only target; upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
+> v3.1: Claude Code runtime path removed (breaking); `.agents/skills/` is the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -71,13 +71,13 @@ cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposi
 
 ---
 
-## 🔄 Codex CLI Support (v2.26.0; sole runtime since v3.0.0)
+## 🔄 Supported Harnesses (Codex · OpenCode · Cursor)
 
-TAD runs on Codex CLI with the same SKILL files. Use `$alex` / `$blake` — the default channel.
+TAD runs on Codex, OpenCode, and Cursor — all three discover `.agents/skills/` + `AGENTS.md` open-box. Use `$alex` / `$blake` on Codex and `/alex` / `/blake` on OpenCode/Cursor (skills also model-selectable). Lifecycle hooks ship on Codex only (Platform Adapters P2 — known gap).
 
 ```bash
-bash tad.sh --platform codex --yes  # Codex (default; the only install target)
-# In Codex: $alex or $blake (auto-discovered via .agents/skills/)
+bash tad.sh --platform codex|opencode|cursor --yes  # default: codex
+# Codex: $alex or $blake; OpenCode/Cursor: /alex or /blake (auto-discovered via .agents/skills/)
 ```
 
 See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details.
@@ -166,9 +166,9 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-一行命令，默认安装（Codex）+ 全部 25 个 capability packs。首次安装与升级用同一命令；旧项目升级不会删除既有文件，项目数据不变。
+一行命令，默认安装（codex 目标）+ 全部 25 个 capability packs。首次安装与升级用同一命令；旧项目升级不会删除既有文件，项目数据不变。
 
-`--platform codex` 是唯一目标（也是默认值）。`--platform claude-code` / `--platform both`
+`--platform codex|opencode|cursor` 均可（默认 codex）。`--platform claude-code` / `--platform both`
 在 v3.0.0 起被拒绝（改动任何文件前报错，并打印恢复命令）；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
 
 > 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
@@ -176,8 +176,8 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 ### In-project updates (`$tad-update` / `/tad-update`)
 
 Installed projects ship one shared update entrypoint: `$tad-update` in Codex,
-and `/tad-update` in OpenCode (**updater-only** — OpenCode gets the
-update entry, not Alex/Blake/Gate roles, hooks, or gate parity). All three delegate
+and `/tad-update` in OpenCode (**updater-only projection in addition** — OpenCode/Cursor also receive
+Alex/Blake/Gate roles via `.agents/skills/` open-box, but no lifecycle hooks (P2)). All three delegate
 to `.tad/scripts/tad-update.sh`, which checks current/remote versions read-only,
 refuses downgrades, and applies only after explicit human confirmation. The helper
 backs up the project before the first mutation and delegates installation to the
