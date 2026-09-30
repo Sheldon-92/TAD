@@ -14,7 +14,7 @@
 - [Capability Ownership](capability-ownership.md) — Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof
 - [Hook Contracts](hook-contracts.md) — Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json
 - [Pack Build Rules](pack-build-rules.md) — Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP
-- [Pack Evaluation](pack-evaluation.md) — Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check
+- [Pack Evaluation](pack-evaluation.md) — Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改
 - [Research Methodology](research-methodology.md) — Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research
 - [Memory and Learning](memory-and-learning.md) — Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion
 - [Release & Sync](release-sync.md) — Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync

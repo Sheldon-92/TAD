@@ -23,6 +23,7 @@ AI agents set up evaluation by copying tutorial configs. They run promptfoo once
 This pack embeds the judgment rules that evaluation engineers apply automatically — rules from real evaluation frameworks, red-team tooling documentation, and statistical testing literature.
 
 **Pack = evaluation judgment. Your workflow system = process constraints. No overlap.**
+流程约束（噪声地板、held-out 标题、一轮一变）见 L2 `.tad/project-knowledge/patterns/pack-evaluation.md` 条目「Declare Improvement Only Past a Noise Floor, on a Held-Out Headline, One Variable per Round」。本包不改写成爬坡工作流。
 
 ---
 
