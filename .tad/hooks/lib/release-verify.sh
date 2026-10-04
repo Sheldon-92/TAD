@@ -133,6 +133,7 @@ usage() {
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
   echo "  release-verify.sh installer-destructive-guard <repo_root>" >&2
+  echo "  release-verify.sh state-surface [<repo_root>]" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -773,6 +774,17 @@ VERSION_SWEEP_EOF
       echo "VERDICT: installer-destructive-guard FAIL — $gfails unmarked/duplicate site(s) (exit 1)"
       exit 1
     fi
+    ;;
+
+  # ───────────────────────── state-surface ─────────────────────────
+  state-surface)
+    # TASK-20261004 mechanism 3 (design §2.2/§2.3): release-closeout
+    # delegation to the detect-only state-surface check. This arm only
+    # forwards; all check logic lives in state-surface-check.sh.
+    if [ $# -gt 2 ]; then usage; exit 2; fi
+    SS_REPO="$SCRIPT_DIR/../../.."
+    if [ $# -eq 2 ]; then SS_REPO="$2"; fi
+    exec bash "$SCRIPT_DIR/state-surface-check.sh" --repo "$SS_REPO"
     ;;
 
   *)

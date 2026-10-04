@@ -168,6 +168,28 @@ publish_protocol:
       blocking: true
       detect_only: true  # reads only — never edits manifests
 
+    step3e:
+      name: "State-Surface Closeout （机制 3 — TASK-20261004, ALWAYS blocking)"
+      action: |
+        发版收口三步（设计 §2.2 机制 3；状态面防再过期的收口挂钩）：
+        1. 文件集断言：bump .tad/version.txt 的同一 release commit 必须同时含
+           NEXT.md 与 ROADMAP.md 的头部行回填。断言执行者 = 发版执行者本人
+           （收口人工步，不入检查脚本——脚本跑的是树、不是某个 commit）；
+           执行命令：
+             git show --name-only --format= <release-commit>
+           核对 {.tad/version.txt, NEXT.md, ROADMAP.md} 三文件齐备，命令与输出
+           记入本次发版收口记录；缺一 → 不许宣告发版完成。
+        2. 状态面检查：运行
+             bash .tad/hooks/lib/release-verify.sh state-surface
+           （转调 .tad/hooks/lib/state-surface-check.sh，detect-only，只读只报）；
+           非 0 → 不许宣告发版完成；纠偏由人/Alex 另行执行，收口流内不自动改文档。
+        3. 下游台账刷新：重跑
+             bash .tad/scripts/scan-downstream-versions.sh
+           生成的台账 .tad/evidence/pm/downstream-versions.md 以 git add -f
+           单文件例外随收口 commit 入主仓（Gate 2 载体裁定（乙））；
+           台账是派生索引，禁止手改。
+      blocking: true
+
     step4:
       name: "Confirm & Execute"
       action: |

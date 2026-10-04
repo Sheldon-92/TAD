@@ -1,9 +1,9 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 3.1 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
+**Version**: 3.0.0 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
 
 TAD runs on **Codex, OpenCode, and Cursor as supported harnesses**, with a shared protocol.
-Since v3.1 there is a single skill tree
+Since v3.0.0 there is a single skill tree
 (`.agents/skills/`, the shared source of truth) and three install targets (`codex|opencode|cursor`, default `codex`).
 Codex is the **hook-enabled** runtime; OpenCode and Cursor get skills + routing + packs but no lifecycle hooks (Platform Adapters P2 — known gap).
 The Claude Code runtime path (install target, hooks, workflows, model bindings) was
@@ -211,4 +211,4 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
-*TAD v3.1 — Codex hook-enabled + OpenCode/Cursor supported, single skill tree (`.agents/skills/`), Claude Code path removed, runtime freshness active.*
+*TAD v3.0.0 — Codex hook-enabled + OpenCode/Cursor supported, single skill tree (`.agents/skills/`), Claude Code path removed, runtime freshness active.*

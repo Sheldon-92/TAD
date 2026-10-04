@@ -6,13 +6,14 @@ TAD (Triangle Agent Development) uses two specialized roles:
 
 Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
 
-> **Runtime status (v3.1)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
+> **Runtime status (v3.0.0)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
 > `.agents/skills/` is a first-party discovery path on all three and `AGENTS.md`
 > is read natively by all three, so roles, gates, and capability packs load
 > open-box. Codex is the **hook-enabled** runtime (SessionStart / PostToolUse);
 > OpenCode and Cursor currently get skills + routing + packs but **no lifecycle
 > hooks** (Platform Adapters P2 — see Known Gaps).
 > See `.tad/codex/README.md` for adapter details and activation status.
+> Version of record: `.tad/version.txt`. Do not restate a version number anywhere else; link here instead.
 
 ---
 
