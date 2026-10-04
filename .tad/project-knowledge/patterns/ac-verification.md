@@ -701,3 +701,11 @@
 - **Action**: 为有事务语义的文件系统 helper 定义 pre-call snapshot，并让每条非零路径断言 canonical hash、target hash、parent inventory、owned temp/lock 全部恢复。集中 cleanup 顺序，父目录仅在本 invocation 创建且仍为空时 `rmdir`。故障注入放在测试侧 PATH wrapper，不在生产脚本中加入 `eval` hook。
 - **Grounded in**: `2d7e359b`；`.tad/scripts/capability-skill.sh` 的 `cleanup_project_resources`；`.tad/evidence/acceptance-tests/capability-builder-create/run-acceptance.sh` 的 absent-parent copy/temp-diff wrapper cases。
 - **failure_mode**: Naive default: 失败测试只断言“没有临时文件”和“目标没生成”。Why wrong: helper 为准备操作创建的父目录也是状态；若失败后从 absent 变成 empty，调用前不变式已经被破坏，只是目标级断言看不见。
+
+---
+
+### Ignored-tree blindness in inventory claims — 2026-10-04
+- **Discovery**: `git status` is structurally blind to `.gitignore` whole-tree-ignored directories (this repo: `.tad/evidence/`, `.tad/archive/`). A clean status proves only the non-ignored surface is clean; deliverables living in ignored trees (e.g. the A2 archive piece of TASK-20261004) are invisible to status-based inventory and were located only by explicit disk enumeration.
+- **Action**: Any "tree is clean / nothing unaccounted" claim must enumerate ignored trees explicitly (`find .tad/evidence .tad/archive -type f` or per-path checks) and state its coverage surface (non-ignored only vs including ignored trees). First applied in TASK-20261004 HANDOFF §1.2, where the "cleared" wording was narrowed to the non-ignored surface (Gate 2 amendment R3).
+- **Grounded in**: TASK-20261004-TAD-STATE-SURFACE-CLOSEOUT; `.tad/evidence/reviews/2026-10-04-gate4-acceptance-state-surface-closeout.md` §8 (KA distill ruling).
+- **failure_mode**: Naive default: read `git status` clean as "everything is accounted for". Why wrong: ignored-tree artifacts never appear in status at all, so the claim silently excludes exactly the evidence/archive surface it sounds like it covers.
