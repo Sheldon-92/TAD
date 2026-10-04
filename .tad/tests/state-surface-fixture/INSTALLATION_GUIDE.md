@@ -1,3 +1,3 @@
 # TAD Installation Guide (fixture)
 
-Minimal stand-in; no version declaration here.
+Minimal stand-in. Fixture build (v8.8) — planted negative control.

@@ -1,3 +1,3 @@
 # TAD Method (fixture)
 
-Minimal stand-in; no version declaration here.
+Minimal stand-in. **Runtime status (v3.0.0)** — positive control (correct value; must not be flagged).

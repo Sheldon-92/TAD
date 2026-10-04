@@ -17,8 +17,13 @@
 #   2. ROADMAP.md header "for vX.Y.Z" == .tad/version.txt
 #   3. Every current-version declaration in AGENTS.md / README.md /
 #      INSTALLATION_GUIDE.md / docs/MULTI-PLATFORM.md / PROJECT_CONTEXT.md
+#      == .tad/version.txt. Two pattern families: (a) declaration forms
 #      (pattern family Version\*{0,2}:?\*{0,2} ?v?X.Y[.Z], covering the
-#      bold-colon form "**Version**: X.Y") == .tad/version.txt
+#      bold-colon form "**Version**: X.Y"); (b) parenthesized forms —
+#      "(Version X.Y)" self-anchored anywhere, and bare "(vX.Y)" tokens
+#      line-qualified (header lines <= 15, or lines containing
+#      "Runtime status") so historical body references stay clean
+#      (design delta 2026-10-04, Gate 3 C1).
 #   4. "3.1" edition-number forms (AC6 widened pattern) count == 0
 #      in the same file list
 #   5. session-state.md header multi-chain INDEX BLOCK (the leading
@@ -91,6 +96,12 @@ fi
 DECL_FILES="AGENTS.md README.md INSTALLATION_GUIDE.md docs/MULTI-PLATFORM.md PROJECT_CONTEXT.md"
 DECL_PAT='Version\*{0,2}:?\*{0,2} ?v?[0-9]+\.[0-9]+(\.[0-9]+)?'
 OLD_PAT='(Version|v)\*{0,2}:?\*{0,2} ?3\.1([^0-9]|$)'
+# P1 — self-anchored parenthesized declaration: "(Version 9.9)" / "(Version: v9.9)"
+PAREN_VER_PAT='\(Version:? ?v?[0-9]+\.[0-9]+(\.[0-9]+)?\)'
+# P2 — bare parenthesized token: "(v9.9)" / "(9.9)" (line-qualified, see delta §2)
+PAREN_TOKEN_PAT='\(v?[0-9]+\.[0-9]+(\.[0-9]+)?\)'
+PAREN_KEYWORD='Runtime status'
+PAREN_HEAD_LINES=15
 
 c3_bad=0
 for f in $DECL_FILES; do
@@ -109,6 +120,56 @@ for f in $DECL_FILES; do
     fi
   done <<EOF
 $(grep -oE "$DECL_PAT" "$p" || true)
+EOF
+done
+
+# P1 pass (delta §1.3): self-anchored "(Version X.Y)" declarations,
+# whole file — the "(Version" lead-in is its own anchor.
+for f in $DECL_FILES; do
+  p="$REPO/$f"
+  [ -f "$p" ] || continue
+  while IFS= read -r tok; do
+    [ -n "$tok" ] || continue
+    ver="$(printf '%s' "$tok" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n 1 || true)"
+    if [ -z "$ver" ] || [ "$(norm "$ver")" != "$(norm "$SSOT")" ]; then
+      fail check3 "$f: parenthesized version declaration '$tok' != version.txt $SSOT"
+      c3_bad=1
+    fi
+  done <<EOF
+$(grep -oE "$PAREN_VER_PAT" "$p" || true)
+EOF
+done
+
+# P2 pass (delta §1.3/§2): bare parenthesized tokens "(vX.Y)", reported
+# only on anchored lines (header anchor: line <= PAREN_HEAD_LINES;
+# keyword anchor: line contains PAREN_KEYWORD). P2 tokens are space-free
+# by construction, so the inner word-split is exact; a token on an
+# anchored line is extracted and compared once.
+for f in $DECL_FILES; do
+  p="$REPO/$f"
+  [ -f "$p" ] || continue
+  while IFS= read -r entry; do
+    [ -n "$entry" ] || continue
+    lineno="${entry%%:*}"
+    text="${entry#*:}"
+    anchored=0
+    case "$lineno" in
+      ''|*[!0-9]*) ;;
+      *) if [ "$lineno" -le "$PAREN_HEAD_LINES" ]; then anchored=1; fi ;;
+    esac
+    case "$text" in
+      *"$PAREN_KEYWORD"*) anchored=1 ;;
+    esac
+    [ "$anchored" -eq 1 ] || continue
+    for tok in $(printf '%s' "$text" | grep -oE "$PAREN_TOKEN_PAT" || true); do
+      ver="$(printf '%s' "$tok" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n 1 || true)"
+      if [ -z "$ver" ] || [ "$(norm "$ver")" != "$(norm "$SSOT")" ]; then
+        fail check3 "$f: parenthesized version declaration '$tok' != version.txt $SSOT"
+        c3_bad=1
+      fi
+    done
+  done <<EOF
+$(grep -nE "$PAREN_TOKEN_PAT" "$p" || true)
 EOF
 done
 if [ "$c3_bad" -eq 0 ]; then
