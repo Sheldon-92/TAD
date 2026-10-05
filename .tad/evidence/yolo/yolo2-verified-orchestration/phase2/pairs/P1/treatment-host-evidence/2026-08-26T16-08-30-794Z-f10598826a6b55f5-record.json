@@ -1,0 +1,72 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "6c59a704701fcd2419bf73200ddee1a97c465c5fdf831879b63be28f0e33f5f2",
+  "parser_version": "1",
+  "invocation_nonce": "f10598826a6b55f5",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": null,
+  "resumed_from_session": "01a03ed4-1326-7c12-8203-ed8afbdde626",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "bf7402a96a1134bc35fdb1e70fc5f01ae0db5f5b42a479a37b83d1dcea8c181c",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/treatment-host-evidence/2026-08-26T16-08-30-794Z-f10598826a6b55f5-raw-output.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/treatment-host-evidence/2026-08-26T16-08-30-794Z-f10598826a6b55f5-raw-trace.jsonl",
+    "sha256": "d15277aa4436be7f2a724536dd7d67ee9ff7db2acca54ff07d71e8bdacfc7478"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "fea58639cf8ead640fb0d68d8f00ace822401b4b638705e8f2d67775f179eaa4",
+      "decision": "allowed",
+      "action_nonce": "7e0ff73c3c8a7c13",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "native": false
+  },
+  "exit_status": 2,
+  "final_message": ""
+}

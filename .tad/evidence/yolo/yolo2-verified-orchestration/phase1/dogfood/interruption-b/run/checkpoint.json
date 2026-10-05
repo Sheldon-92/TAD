@@ -1,0 +1,50 @@
+{
+  "format": "yolo-recovery-checkpoint-v1",
+  "run_id": "interruption-b",
+  "goal_id": "yolo2-p1-guide-maintenance",
+  "handoff_path": ".tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md",
+  "handoff_revision": "1e064fd530cce81505b20a86a9d0ba2b4a8674960081758de1a94a9e5bcd7ba8",
+  "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-b",
+  "state": "ACTIVE",
+  "events_count": 9,
+  "latest_observed_head": "8977be6e8a04e95bd54a32b1b0f2bf42bb208b5b",
+  "verified": [
+    {
+      "slice": "S1",
+      "seq": 3,
+      "at": "2026-08-25T19:43:10.330Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S1.json",
+      "receipt_sha256": "5249dcb3d1ea52fb92bd5006cd39e24e9e5aaa8c2c2c64dedac744654e22fb73",
+      "verified_head": "d738e4e9711012ac0917b2b4c3fbd48fd28cec31"
+    },
+    {
+      "slice": "S2",
+      "seq": 7,
+      "at": "2026-08-25T19:54:32.362Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S2.json",
+      "receipt_sha256": "b3b172a0e40f988be98a89c5e8e8b94dfb4b484b2606acaf73242e59542b4ff6",
+      "verified_head": "d52d41374d4772281617a710b555f4fd466b850c"
+    },
+    {
+      "slice": "S3",
+      "seq": 9,
+      "at": "2026-08-25T19:58:20.090Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S3.json",
+      "receipt_sha256": "d66c72d190531ae0fa5b683a508c644fa9243d289af45e4a9f72b23c4b7ec020",
+      "verified_head": "8977be6e8a04e95bd54a32b1b0f2bf42bb208b5b"
+    }
+  ],
+  "candidate_slices": [],
+  "pending_action": null,
+  "unknown_actions": [],
+  "forbidden_retry_actions": [],
+  "stopped": null,
+  "blockers": [],
+  "legal_next_action": {
+    "action": "All frozen slices are verified. Run the handoff-level acceptance and hand back to the Conductor; do NOT invent extra scope.",
+    "why": "the frozen slice plan is exhausted and nothing is pending",
+    "owner": "conductor"
+  },
+  "generated_at": "2026-08-25T19:58:20.187Z"
+}

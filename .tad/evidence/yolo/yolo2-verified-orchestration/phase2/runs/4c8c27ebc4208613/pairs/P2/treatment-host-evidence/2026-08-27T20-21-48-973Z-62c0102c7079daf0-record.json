@@ -1,0 +1,167 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "62c0102c7079daf0",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a044e2-4ad6-79d0-8396-28e19148f0a8",
+  "resumed_from_session": "01a044e2-4ad6-79d0-8396-28e19148f0a8",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "ab33994288533e826a3dd0364f8bb4b11b28abfe4204aa5e7e74960d82539239",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a044e2-4ad6-79d0-8396-28e19148f0a8",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCreate tests.mjs using node:assert importing stableSlug from util.mjs with at least 3 test cases including stableSlug(\"\")===\"\" ; make it runnable via node tests.mjs printing \"tests ok\" at the end. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 24468
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "2e2977f3491d4f38ffeef7bfdebeed2541e097f9d220df5063cc309cd45461c5",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "2e2977f3491d4f38ffeef7bfdebeed2541e097f9d220df5063cc309cd45461c5",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T2-node-behavior-treatment/tests.mjs"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T2-node-behavior-treatment/tests.mjs"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "544de7dc487640004796200700dc7cd7983c3c7de97d9143e92bb33f2d18bf54",
+    "contract-S2.json": "0687d855d19d8d4e03606720a5d9e05218b41d78815c0c0f1fdd1423563ac324",
+    "goal-spec.json": "f4275b8ccf3e15f74f483c29073c9f93b4f8cf1f751dec860d64e856b6e30d8a",
+    "handoff.md": "aa4ec6b14d64af64ab69ed45408a99822e1fce1dd0c29f5504b84a02f22411b8",
+    "oracle.txt": "6da1fbd3c5e26c549cf34c6376639211dd6e876855d57f0fbf60a51c00541fa4",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "README.md": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839",
+    "tests.mjs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "util.mjs": "1dc09340bd25aeb84bce9d34abba8cc42df639b0d07886f983701fbfd5a2243e"
+  },
+  "post_manifest": {
+    "contract-S1.json": "544de7dc487640004796200700dc7cd7983c3c7de97d9143e92bb33f2d18bf54",
+    "contract-S2.json": "0687d855d19d8d4e03606720a5d9e05218b41d78815c0c0f1fdd1423563ac324",
+    "goal-spec.json": "f4275b8ccf3e15f74f483c29073c9f93b4f8cf1f751dec860d64e856b6e30d8a",
+    "handoff.md": "aa4ec6b14d64af64ab69ed45408a99822e1fce1dd0c29f5504b84a02f22411b8",
+    "oracle.txt": "6da1fbd3c5e26c549cf34c6376639211dd6e876855d57f0fbf60a51c00541fa4",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "README.md": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839",
+    "tests.mjs": "f925098619f450c2bfce2462389c1814fa4a434ba75bf565ec62e422112a859b",
+    "util.mjs": "1dc09340bd25aeb84bce9d34abba8cc42df639b0d07886f983701fbfd5a2243e"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P2/treatment-host-evidence/2026-08-27T20-21-48-973Z-62c0102c7079daf0-raw-output.txt",
+    "sha256": "eeb101a3d25d3ebfc0a0dec5e8c1b7003e748bfe9a411bb2aa53a88bf0d328a2"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P2/treatment-host-evidence/2026-08-27T20-21-48-973Z-62c0102c7079daf0-raw-trace.jsonl",
+    "sha256": "eeb101a3d25d3ebfc0a0dec5e8c1b7003e748bfe9a411bb2aa53a88bf0d328a2"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "tests.mjs"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "e403cf61fdfa14b90ebc4b7bbaedc723d43a736dd00f0cea9f760db51d3e0b3d",
+      "invocation_args_sha256": "fa22020e7786dd4b7037220ec633f5ce7475b2c37882f1382d46481081fb0faa",
+      "decision": "allowed",
+      "action_nonce": "d8d0db8130c5b1aa",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "tests.mjs",
+      "pre_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "post_sha256": "f925098619f450c2bfce2462389c1814fa4a434ba75bf565ec62e422112a859b",
+      "observed_sha256": "f925098619f450c2bfce2462389c1814fa4a434ba75bf565ec62e422112a859b",
+      "effect_manifest_sha256": "08d380cf4dd0fae3ee89590ffffce8f11f46e3dd14a45a9c29b7cd61d5ff20db",
+      "effect_paths": [
+        "tests.mjs"
+      ],
+      "effect_fingerprint": "9411497bd36a18f8043aa020664d317550c0f65da62cc20c16e763c82ce47733",
+      "pre_manifest_sha256": "62d83dc009c71572a2fbcd1a9dc20102a9fe36075aa0d3936355e275a27b807b",
+      "post_manifest_sha256": "61a7545c4484e5f539ad4e82486e6b71cd8f65ade885fea7350820dce2bfe77f",
+      "observed_changed": [
+        "tests.mjs"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "tests.mjs"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 71663,
+    "output_tokens": 1276,
+    "total_tokens": 72939,
+    "cached_input_tokens": 65792,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

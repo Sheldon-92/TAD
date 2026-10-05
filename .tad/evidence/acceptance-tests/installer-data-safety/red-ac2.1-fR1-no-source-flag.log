@@ -1,0 +1,18 @@
+=== RED PROBE AC2.1 FR-1 --source (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty for unmodified proof)---
+---ASSERTION: bash tad.sh --source <dir> --platform both --yes should rc=0 offline (FR-1)---
+SANDBOX=/tmp/tad-red-ac21.67ub68
+curl () {
+	echo "CURL-SHIM-INVOKED $*" >> "$SANDBOX/curl.log"
+	return 1
+}
+tad.sh: unknown option '--source' (use --help)
+RC=1

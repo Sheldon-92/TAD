@@ -1,0 +1,151 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "0de0f833b8971f38",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a044ed-ceab-7c33-91c9-0c95968e1b0d",
+  "resumed_from_session": "01a044ed-ceab-7c33-91c9-0c95968e1b0d",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "75164db589a47e40b43d4c0ff50b3a8e8e304423d1d5b2b7feebc0dd16ae8ee1",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a044ed-ceab-7c33-91c9-0c95968e1b0d",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nUpdate app.js to import total from totals.js and print total([ {price:2},{price:3} ]) instead of the literal string app. Ensure node tests.js still passes. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 31525
+  },
+  "native_event_count": 2,
+  "native_event_kinds": [
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T5-hidden-business-treatment/app.js"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T5-hidden-business-treatment/app.js"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "cc70a51329b5814d067657e88ddbe09402cb73ee93386b9a7a548f7749ede566",
+    "contract-S2.json": "b1f502135faea065c7f2b869922b7480b35a0899328ade0cc9c864db88345dcc",
+    "goal-spec.json": "63845e0d99922ecc809fc08797c3c128410ec4679a56364da96caf7a6ea2a7aa",
+    "handoff.md": "9b0b469283e106021deaeb0258291d84407ced550a0360eb168b2754ac0bd376",
+    "oracle.txt": "c03f3b580e6c9911761242e69f2fed11fbe45b2441679d02547f57396ee0990c",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "app.js": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a",
+    "tests.js": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89",
+    "totals.js": "c30344b2d25a778b675cb301eed864ff77fa79ff7ef172d4db373181d07e6608"
+  },
+  "post_manifest": {
+    "contract-S1.json": "cc70a51329b5814d067657e88ddbe09402cb73ee93386b9a7a548f7749ede566",
+    "contract-S2.json": "b1f502135faea065c7f2b869922b7480b35a0899328ade0cc9c864db88345dcc",
+    "goal-spec.json": "63845e0d99922ecc809fc08797c3c128410ec4679a56364da96caf7a6ea2a7aa",
+    "handoff.md": "9b0b469283e106021deaeb0258291d84407ced550a0360eb168b2754ac0bd376",
+    "oracle.txt": "c03f3b580e6c9911761242e69f2fed11fbe45b2441679d02547f57396ee0990c",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "app.js": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f",
+    "tests.js": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89",
+    "totals.js": "c30344b2d25a778b675cb301eed864ff77fa79ff7ef172d4db373181d07e6608"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P5/treatment-host-evidence/2026-08-27T20-34-42-794Z-0de0f833b8971f38-raw-output.txt",
+    "sha256": "60aea1ccccada23b12d993f5f9e1c6189cc4e646e4bda4f88a6574390e2dbbe1"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P5/treatment-host-evidence/2026-08-27T20-34-42-794Z-0de0f833b8971f38-raw-trace.jsonl",
+    "sha256": "60aea1ccccada23b12d993f5f9e1c6189cc4e646e4bda4f88a6574390e2dbbe1"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "app.js"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "a126f8c72bf4b7e7092be868888d572e6b7f37258824edb339b97af7ebb11631",
+      "invocation_args_sha256": "28c9211fc65cb157edf0087d2df8030e9e617ea72727c8de460b9123346d9e8b",
+      "decision": "allowed",
+      "action_nonce": "328e9804607da850",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "app.js",
+      "pre_sha256": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a",
+      "post_sha256": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f",
+      "observed_sha256": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f",
+      "effect_manifest_sha256": "ed6e1b25bc0598939d50f1684b05c4a86097187c1be793ed673cfd02d3512d7d",
+      "effect_paths": [
+        "app.js"
+      ],
+      "effect_fingerprint": "67dd1103b78a55ecf85a3bf24483f787d9cc28c982c5ed0023c5c19c8ad86429",
+      "pre_manifest_sha256": "0884477b5f6a974de57c3af00fb7a803ecc9317eccdc5b1ddf246abe9b502505",
+      "post_manifest_sha256": "75442048d74de89fcafaec0029025bba0eab0bb8f452ce7187a377abef51d53b",
+      "observed_changed": [
+        "app.js"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "app.js"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 56727,
+    "output_tokens": 1747,
+    "total_tokens": 58474,
+    "cached_input_tokens": 47616,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

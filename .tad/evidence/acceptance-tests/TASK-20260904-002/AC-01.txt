@@ -1,0 +1,4 @@
+$ grep -cE '^/?\.worktrees/' .gitignore
+1
+EXPECTED: >= 1
+VERDICT: PASS

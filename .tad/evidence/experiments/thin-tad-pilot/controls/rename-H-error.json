@@ -1,0 +1,17 @@
+{
+  "case_id": "rename-H",
+  "family": "rename",
+  "kind": "error-delivery",
+  "artifact": {
+    "files": {
+      "migration-report.json": "{\"old_key\":\"nb-cart-v1\",\"new_key\":\"cv-cart-v2\",\"sku_prefix_old\":\"NB-\",\"sku_prefix_new\":\"CV-\",\"retired_sku_active\":true}",
+      "storage.js": "const KEY = \"nb-cart-v1\";\nconst SKU_PREFIX = \"NB-\";\n"
+    },
+    "log": [
+      "prepare"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "arm": "treatment",
+  "task": "T5-hidden-business",
+  "final_hidden_acceptance": [
+    {
+      "check": "totals.js exports total",
+      "passed": true,
+      "detail": "totals.js exports total"
+    },
+    {
+      "check": "total uses numeric addition of price fields",
+      "passed": true,
+      "detail": "total uses numeric addition of price fields"
+    },
+    {
+      "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+      "passed": true,
+      "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+    },
+    {
+      "check": "node tests.js still passes",
+      "passed": true,
+      "detail": "node tests.js still passes"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "totals.js exports total",
+          "passed": true,
+          "detail": "totals.js exports total"
+        },
+        {
+          "check": "total uses numeric addition of price fields",
+          "passed": true,
+          "detail": "total uses numeric addition of price fields"
+        },
+        {
+          "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+          "passed": true,
+          "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+        },
+        {
+          "check": "node tests.js still passes",
+          "passed": true,
+          "detail": "node tests.js still passes"
+        }
+      ],
+      "tokens": 42448
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "totals.js exports total",
+          "passed": true,
+          "detail": "totals.js exports total"
+        },
+        {
+          "check": "total uses numeric addition of price fields",
+          "passed": true,
+          "detail": "total uses numeric addition of price fields"
+        },
+        {
+          "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+          "passed": true,
+          "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+        },
+        {
+          "check": "node tests.js still passes",
+          "passed": true,
+          "detail": "node tests.js still passes"
+        }
+      ],
+      "tokens": 45449
+    }
+  ],
+  "tokens_total": 87897
+}

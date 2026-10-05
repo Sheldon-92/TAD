@@ -1,0 +1,75 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "4811df76435f9fbe",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03edf-04af-7af2-8c09-a35d9f27fff3",
+  "resumed_from_session": "01a03edf-04af-7af2-8c09-a35d9f27fff3",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "ab7a89d8f6bee2090ebe32916fc815e557352bea20b71ced1c430dbf9aec35bd",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P3/control-host-evidence/2026-08-26T16-21-31-250Z-4811df76435f9fbe-raw-output.txt",
+    "sha256": "2563a149873eed526124564fe5e67864360a45301482745de17f87d4cd37ec67"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P3/control-host-evidence/2026-08-26T16-21-31-250Z-4811df76435f9fbe-raw-trace.jsonl",
+    "sha256": "c913ad97ba0386b43784254cac2952993b9cc438a699168eb7bab01767353053"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "25859861148f77607d4d050cd1915f63f388f868d798a6d5377ccb6b4cf071ae",
+      "decision": "allowed",
+      "action_nonce": "231d475d39ccc021",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "f75dd12e977c314baaf09d986050483bb56e4f23100739126fe584046b4b2223",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "contract-S2.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 57161,
+    "output_tokens": 718,
+    "total_tokens": 57879,
+    "cached_input_tokens": 53760,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "BLOCKED: the edit tool denied access because `run.sh` is outside the writable project root. No file was changed."
+}

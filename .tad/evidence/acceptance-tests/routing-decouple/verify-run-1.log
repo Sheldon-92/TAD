@@ -1,0 +1,45 @@
+AC1: pins OLD=0 / NEW=1 (19 rows)
+  AC1 rows=19 OK
+AC1 PASS
+AC2: installed blocks sha256 == frozen block files
+  block A sha256 OK
+  LITE-FROZEN .claude/skills/alex-lite/SKILL.md OK
+  LITE-FROZEN .claude/skills/blake-lite/SKILL.md OK
+  LITE-FROZEN .agents/skills/alex-lite/SKILL.md OK
+  LITE-FROZEN .agents/skills/blake-lite/SKILL.md OK
+AC2 PASS
+AC3: lite skill minus-block sha256 == T0 (description pins applied on T0 side)
+  .claude/skills/alex-lite/SKILL.md rest sha256 OK
+  .claude/skills/blake-lite/SKILL.md rest sha256 OK
+  .agents/skills/alex-lite/SKILL.md rest sha256 OK
+  .agents/skills/blake-lite/SKILL.md rest sha256 OK
+AC3 PASS
+AC4: reconstruct expected state from frozen inputs, diff live
+  AC4 reconstruction OK (diff zero)
+AC4 PASS
+AC5: parity pairs
+  alex-lite identical
+  blake-lite identical
+  tad-help identical
+AC5 PASS
+AC6: pattern scan (git ls-files, case-insensitive)
+  AC6 HIT tad.sh: default channel
+  AC FAIL: AC6 hits=1
+AC6 FAIL
+AC7: discipline counts
+  AC7 all equal
+AC7 FAIL
+AC8: version + brain-index
+  version.txt 2.42.0 OK
+  brain-index 默认走 lite=0 OK
+AC8 FAIL
+AC9: frozen artifacts
+  AC9 frozen OK
+AC9 FAIL
+AC10: behavioral readback
+  AC FAIL: AC10 ac10-output.txt missing
+AC10 FAIL
+AC11: fence
+  AC11 fence clean (no changes outside allowed set)
+AC11 FAIL
+RESULT=FAIL

@@ -1,0 +1,52 @@
+{
+  "format": "yolo2-phase2-pair-config-v1",
+  "pair_id": "P5",
+  "task_id": "T5-hidden-business",
+  "task_sha256": "4db4517bee16512e302ab4de35c81a90c64723337d7bfa9f8cb6aca6f027c5b6",
+  "generator": {
+    "harness": "codex",
+    "model_id": "codex-default",
+    "model_family": "gpt",
+    "reasoning": "balanced"
+  },
+  "policy": {
+    "format": "yolo-bounded-policy-v1",
+    "max_rounds": 8,
+    "max_retries_per_slice": 2,
+    "max_actions": 40,
+    "max_wall_seconds": 14400,
+    "max_tokens": 3000000,
+    "audit_reserve_tokens": 600000,
+    "max_executor_tokens_per_round": 600000,
+    "align_every_verified_slices": 3,
+    "packet_token_budget": 3500
+  },
+  "cache_policy": "native-codex-cache-preserved",
+  "base_commit": {
+    "control": "4ba004a489c5c18846cf2852b6b57cb58ebdbc31",
+    "treatment": "4ba004a489c5c18846cf2852b6b57cb58ebdbc31"
+  },
+  "tool_policy": {
+    "assertion": {
+      "sandbox": "read-only",
+      "allowed": [
+        "Read"
+      ]
+    },
+    "execution": {
+      "sandbox": "workspace-write",
+      "allowed": [
+        "Read",
+        "Edit",
+        "Write"
+      ]
+    }
+  },
+  "arm_equivalence_manifest": "runs/a6fe746c2ff351df/pairs/P5/arm-equivalence-manifest.json",
+  "arm_equivalence_sha256": "23497cca0bb3f759b73f11df286adbfa8c384dba1ac8099e43c0fbbdfabb6a6e",
+  "packet_sha256": [
+    "7becdda2616c464c31758bf7e9daa55a877a99735d378c261aa2f0e256493a32",
+    "a3d60dbbc065c4fd106eed6a14f3e2d3f62f25a236d648b98544742d170ed5ff"
+  ],
+  "permitted_arm_difference": "continuity condition only"
+}

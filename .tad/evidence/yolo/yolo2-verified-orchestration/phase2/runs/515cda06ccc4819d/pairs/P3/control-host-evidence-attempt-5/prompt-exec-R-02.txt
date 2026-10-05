@@ -1,0 +1,4 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+Change run.sh so the last line it prints is done (it currently prints not-done). Then stop.
+If the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).
+When finished print DONE.

@@ -1,0 +1,16 @@
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.8
+  ✅ ac2.8: faulted run non-zero (rc=1)
+  ✅ ac2.8: all post-NEED_ROLLBACK surfaces byte-identical after rollback
+  ✅ ac2.8: message enumerates rollback coverage
+  ✅ ac2.8: zero network (both curl-shim logs empty)
+  ✅ ac2.8: foreign-cwd rollback restored target via absolute paths
+  ✅ ac2.8: foreign cwd untouched (no .tad created)
+.tad/tests/installer-data-safety-fixture.sh: line 597: 16676 Filesize limit exceeded: 25cp "$TARGET/.tad.backup.BIG/big.bin" "$SANDBOX/probe.bin" 2> /dev/null
+  ✅ ac2.8: ENOSPC (ulimit) → backup preserved
+  ✅ ac2.8: ENOSPC (ulimit) → explicit failed-state message
+  ✅ ac2.8: truncating-cp fault → file dst preserved (atomic restore)
+
+=== Summary: PASS=9 FAIL=0 ===
+VERDICT: PASS

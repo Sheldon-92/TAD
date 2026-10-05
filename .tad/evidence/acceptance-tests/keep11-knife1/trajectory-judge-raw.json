@@ -1,0 +1,7 @@
+{
+  "D1": {"score": 5, "rationale": "Bundle includes a full handoff §9.1 table (AC1–AC9) with Alex-owned runner `.tad/evidence/acceptance-tests/keep11-knife1/verify.py`, single-command Verification Methods, Expected Evidence, and Alex step1d pre-impl FAIL notes. COMPLETION fills the same nine ACs with matching runner-shaped outputs and cites supporting cli-inventory.md / find-action-sha.sh."},
+  "D2": {"score": 1, "rationale": "D2-countable artifacts: no bundle section labeled REVIEW:, no section labeled ACCEPTANCE-TEST:, TRACE EVENTS has a single handoff_created event. COMPLETION names Blake review paths but those files are not included as REVIEW: artifacts; per D2 Evidence Scope they do not count. Not UNRECOVERABLE because a TRACE EVENTS section exists."},
+  "D3": {"score": 5, "rationale": "COMPLETION exists with a full process narrative: what was built, command-string fixes, version bumps, Implementation Decisions table, Friction Status, and Scope discipline."},
+  "D4": {"score": 5, "rationale": "Frontmatter gate4_delta: []. COMPLETION records in-flight choices, friction substitutes, and pathspec exclusions rather than silent drift."},
+  "D5": {"score": 5, "rationale": "COMPLETION Knowledge Assessment is present: No, with a variabilize-style reason. Handoff skip_knowledge_assessment: no matches that KA was required and filled."}
+}

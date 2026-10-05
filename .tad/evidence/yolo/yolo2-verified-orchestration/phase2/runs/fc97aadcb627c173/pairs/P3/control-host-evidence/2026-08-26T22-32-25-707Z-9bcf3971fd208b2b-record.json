@@ -1,0 +1,85 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "154bb171764111a77d12efbba724ea868e94a85ae5268233025ccbeead82cbc0",
+  "parser_version": "1",
+  "invocation_nonce": "9bcf3971fd208b2b",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04033-7135-7fe3-87b0-ebe7a4ed62c4",
+  "resumed_from_session": "01a04033-7135-7fe3-87b0-ebe7a4ed62c4",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "a49812f64993f18ca6f5b423e84cac43365358f40e99101573c8e1df3d16e15a",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P3/control-host-evidence/2026-08-26T22-32-25-707Z-9bcf3971fd208b2b-raw-output.txt",
+    "sha256": "0ae3d49601e95e8e35c29497a3e41b01f499053f7e85a17ea2d711315ad62b5f"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P3/control-host-evidence/2026-08-26T22-32-25-707Z-9bcf3971fd208b2b-raw-trace.jsonl",
+    "sha256": "d3dc6444bca26c550d1ce1d0b454f3faad95a2148b2e86d3c74e527d8677761e"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "d3db2e4ad02ae9d391d70cd79b56fc4890bf7148604c32b2448b04dc8543af48",
+      "decision": "allowed",
+      "action_nonce": "cf74ab3f4ab8eb23",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "run.sh",
+      "pre_sha256": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71",
+      "post_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "observed_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "08fe1f463ce6f8d1495cfaf7c84ca993bcb583df31667d26c7c7dca236f5fcb3",
+      "pre_manifest_sha256": "1f9e5d63d9cc098d8ebde457298d3a80fe332a3e520adec77d7e4c1aa6be1c57",
+      "post_manifest_sha256": "2bc04af1faf382bd760fec4ed05e1bd82420aa0e6c47b643dd35a346529958ad",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 66892,
+    "output_tokens": 424,
+    "total_tokens": 67316,
+    "cached_input_tokens": 61696,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

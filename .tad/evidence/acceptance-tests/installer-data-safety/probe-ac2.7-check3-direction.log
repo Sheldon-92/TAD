@@ -1,0 +1,104 @@
+=== PROBE AC2.7 F-34 Check-3 direction (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION: user .codex/ + AGENTS.md present -> Check 3 PASS; adversarial YAML battery green---
+---CODE: Check 3 parser (awk state machine)---
+check_deprecated() {
+  if [ ! -f "$DEPRECATION_YAML" ]; then
+    report_skip "deprecated files" "deprecation.yaml not found at $DEPRECATION_YAML"
+    return
+  fi
+
+  # Parse deprecated file paths from deprecation.yaml using awk state machine
+  local deprecated_paths
+  deprecated_paths="$(awk '
+    /^  "[0-9]/ { in_version=1; next }
+    /^    files:/ { in_files=1; next }
+    in_files && /^      - / {
+      sub(/^      - /, "")
+      gsub(/"/, "")
+      gsub(/'\''/, "")
+      print
+      next
+    }
+    in_files && !/^      / { in_files=0 }
+  ' "$DEPRECATION_YAML")"
+
+  local stale_found=0
+  # Paths the installer REGENERATES on every run after deprecation cleanup
+  # (copy-after-deprecation ordering: apply_deprecations removes them, then the
+  # install flow re-creates the current content — e.g. .codex/hooks.json on
+  # codex/both platforms). Their presence is NOT a stale-deprecation defect.
+  local regenerated=".codex/hooks.json"
+  while IFS= read -r fpath; do
+    [ -n "$fpath" ] || continue
+    # Trim whitespace
+    fpath="$(printf '%s' "$fpath" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    [ -n "$fpath" ] || continue
+
+    local reg=0
+    for rp in $regenerated; do
+      [ "$fpath" = "$rp" ] && reg=1 && break
+    done
+    [ "$reg" = "1" ] && continue
+
+    local full_path="$TARGET/$fpath"
+    # Directory entries end with /
+    if printf '%s' "$fpath" | grep -q '/$'; then
+      if [ -d "$full_path" ]; then
+        printf '    stale dir: %s\n' "$fpath"
+        stale_found=1
+      fi
+    else
+      if [ -f "$full_path" ]; then
+        printf '    stale file: %s\n' "$fpath"
+        stale_found=1
+      fi
+    fi
+  done <<< "$deprecated_paths"
+
+  if [ "$stale_found" -eq 0 ]; then
+    report_pass "deprecated files absent"
+  else
+    report_fail "deprecated files" "stale deprecated files found in target"
+  fi
+}
+SANDBOX=/tmp/tad-probe-ac27.F9oGfS
+AGENTS.md
+=== TAD Upgrade Acceptance Verification ===
+  Target: /tmp/tad-probe-ac27.F9oGfS/target
+  Expected version: 2.43.1
+
+  version (2.43.1): PASS
+  ZERO_TOUCH diff: SKIP — no --snapshot provided
+  deprecated files absent: PASS
+  migration report: SKIP — no --expect-migration-from provided
+
+=== Summary ===
+  PASS: 2  FAIL: 0  SKIP: 2
+
+VERDICT: PASS
+RC=0 (expected 0 = PASS, user files must NOT cause FAIL)
+=== TAD Upgrade Acceptance Verification ===
+  Target: /tmp/tad-probe-ac27.F9oGfS/target2
+  Expected version: 2.43.1
+
+  version (2.43.1): PASS
+  ZERO_TOUCH diff: SKIP — no --snapshot provided
+    stale file: .claude/commands/tad-alex.md
+    stale file: .claude/commands/tad-alex.md
+  deprecated files: FAIL — stale deprecated files found in target
+  migration report: SKIP — no --expect-migration-from provided
+
+=== Summary ===
+  PASS: 1  FAIL: 1  SKIP: 2
+
+VERDICT: FAIL
+RC=0 (expected 1 = FAIL due to stale deprecated file, but AGENTS.md must NOT be listed as stale)

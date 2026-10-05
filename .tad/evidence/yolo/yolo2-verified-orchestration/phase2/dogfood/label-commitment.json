@@ -1,0 +1,7 @@
+{
+  "format": "yolo2-phase2-label-commitment-v1",
+  "seed": "yolo2p2-fixed-seed-001",
+  "mapping_commitment_sha256": "62e2667bcaf51aaaf8dba795127dd2084b1c44ce0d6aa0317e5afef4ecd004ee",
+  "mapping_withheld_from_judges": true,
+  "committed_before_runs": true
+}

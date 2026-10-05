@@ -1,0 +1,29 @@
+{
+  "format": "yolo2-phase2-judge-aggregate-v1",
+  "pair_id": "P4",
+  "judge_model_family": "big-pickle",
+  "generator_model_family": "gpt",
+  "mapping_released_after_passes": true,
+  "passes": [
+    {
+      "pass": 1,
+      "preferred": "TIE",
+      "score_A": 1,
+      "score_B": 1
+    },
+    {
+      "pass": 2,
+      "preferred": "TIE",
+      "score_A": 1,
+      "score_B": 1
+    },
+    {
+      "pass": 3,
+      "preferred": "TIE",
+      "score_A": 0.9,
+      "score_B": 0.9
+    }
+  ],
+  "reversal_tie_policy": "reversal becomes TIE",
+  "blocking_p0_p1": false
+}

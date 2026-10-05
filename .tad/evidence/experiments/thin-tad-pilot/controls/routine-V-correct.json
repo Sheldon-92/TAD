@@ -1,0 +1,20 @@
+{
+  "case_id": "routine-V",
+  "family": "routine",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "doc.md": "# Field Guide\n\n## Overview\n\nFictional widget loop used only for this drill.\n\n## Release Notes\n\n- 1.0: initial fictional release note.\n- 2.0: revised retry note\n\n## Wiring Notes\n\nPanel routing is documented in wiring.js; do not edit wiring here.\n",
+      "wiring.js": "const SIGNAL_ROUTE = \"bay-panel-gamma-rail-4\";\n",
+      "edit-report.json": "{\"verdict\":\"done\",\"sections_touched\":[\"Release Notes\"]}"
+    },
+    "log": [
+      "prepare",
+      "edit",
+      "confine"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

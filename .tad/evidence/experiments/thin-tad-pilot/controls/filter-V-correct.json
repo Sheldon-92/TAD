@@ -1,0 +1,20 @@
+{
+  "case_id": "filter-V",
+  "family": "filter",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "rows.json": "{\"ids\":[\"W01\",\"W02\",\"W04\",\"W05\",\"W07\",\"W08\",\"W09\",\"W11\",\"W03\",\"W06\",\"W10\",\"W12\"]}",
+      "spec-codes.json": "{\"codes\":[\"QM-DRIFT\",\"QM-ANCHOR\"]}",
+      "filtered.json": "{\"kept_ids\":[\"W01\",\"W02\",\"W04\",\"W05\",\"W07\",\"W08\",\"W09\",\"W11\"],\"removed\":[{\"id\":\"W03\",\"reason_cites\":\"QM-ANCHOR\"},{\"id\":\"W06\",\"reason_cites\":\"QM-ANCHOR\"},{\"id\":\"W10\",\"reason_cites\":\"QM-ANCHOR\"},{\"id\":\"W12\",\"reason_cites\":\"QM-ANCHOR\"}]}"
+    },
+    "log": [
+      "prepare",
+      "filter",
+      "conserve"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

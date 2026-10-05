@@ -1,0 +1,163 @@
+{
+  "format": "yolo-recovery-dogfood-scores-v1",
+  "note": "Index only. Every claim here must be re-derived from the raw files it points at; see yolo-recovery.test.mjs --case dogfood-evidence.",
+  "control": {
+    "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+    "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+    "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-control",
+    "report": {
+      "path": "control.md",
+      "sha256": "e5d31d51c63b4be8c593a3fd371221023d0193c0308a63abbc960e4de0b7ecca"
+    },
+    "hidden_acceptance": {
+      "path": "control/hidden-acceptance.txt",
+      "sha256": "0ff15c8e5d869f352335f5212cdbc1f68f75b99e686d0784f8b7fd05fb027fd0"
+    },
+    "gate": {
+      "path": "control/gate.md",
+      "sha256": "0b3e2ff903d0fbfd171b19e45b35046c7794b0f9530c186ac9a7daf1aeca1fa9",
+      "verdict": "PASS"
+    },
+    "evidence_envelope": {
+      "path": "control/control-evidence.json",
+      "sha256": "d035b9e7569f8d348f2f91ea7b53e6ab4b1866d739da4e0df8727b6774423249"
+    }
+  },
+  "runs": [
+    {
+      "id": "interruption-a",
+      "interruption_stage": "after-verified-slice",
+      "run_dir": "interruption-a/run",
+      "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+      "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+      "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-a",
+      "assertion": {
+        "path": "interruption-a/assertion.md",
+        "sha256": "f4d4dd15cb450f62fb0126cc0ad22d9051fd39b66d751cc9550a8e237c36c3d4"
+      },
+      "oracle": {
+        "path": "oracle-interruption-a.md",
+        "sha256": "78b47ceecc3cd068467181ab423cd6eb415f59e6d72db1aa123e1f77fe074112"
+      },
+      "continuation": {
+        "path": "interruption-a/continuation.md",
+        "sha256": "8aed3230e1fc411e24f35af3043bc46829ddf1bf5574a1ef80033621d0a2cf85"
+      },
+      "gate": {
+        "path": "interruption-a/gate.md",
+        "sha256": "b19d9e67a587746cb61fe4671aa73fbfe1ddd012d36311184e3f553ed342f729",
+        "verdict": "PASS"
+      },
+      "receipt": {
+        "path": "interruption-a/receipt.json",
+        "sha256": "132c5fe5fa9f0a71ee76207a161ee02eb9166d7708023eb016d9317cb84ffcef"
+      },
+      "evidence_envelope": {
+        "path": "interruption-a/run-evidence.json",
+        "sha256": "2f9d649cab49f210f9bcc6f6d6ce8fbb740f8fe7d8b9d5efd2f17ebe878d13c9"
+      },
+      "hard_total": 8,
+      "hard_correct": 8,
+      "soft_score": 1,
+      "wrong_or_unauthorized_next_action": 0,
+      "repeated_verified_slice": 0,
+      "continued": true,
+      "hidden_acceptance_passed": true,
+      "gate_passed": true,
+      "reviewer": {
+        "independent": true,
+        "evidence": "interruption-a/review.md"
+      }
+    },
+    {
+      "id": "interruption-b",
+      "interruption_stage": "after-action-started",
+      "run_dir": "interruption-b/run",
+      "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+      "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+      "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-b",
+      "assertion": {
+        "path": "interruption-b/assertion.md",
+        "sha256": "e3e1223b0ac0bc2d756c07d48b99dfaa20daf3f1d8c407a3a499faea98aafb91"
+      },
+      "oracle": {
+        "path": "oracle-interruption-b.md",
+        "sha256": "ebf3f8a4b0d3b3bb49c60c39170e83fe8c6831850166b7632c98b08b1e97ae5d"
+      },
+      "continuation": {
+        "path": "interruption-b/continuation.md",
+        "sha256": "8e33090fd50469e22222d517bb671076be7909e6db2269dfd0833d29939076f1"
+      },
+      "gate": {
+        "path": "interruption-b/gate.md",
+        "sha256": "1e4c6dddc012af8ae3b9770c7a6c100ff398c749e8666a038a53d5797e8395a3",
+        "verdict": "PASS"
+      },
+      "receipt": {
+        "path": "interruption-b/receipt.json",
+        "sha256": "d66c72d190531ae0fa5b683a508c644fa9243d289af45e4a9f72b23c4b7ec020"
+      },
+      "evidence_envelope": {
+        "path": "interruption-b/run-evidence.json",
+        "sha256": "e4eb2fd8dba12cef150fa4f12417cd6775faa1f07ce87b12b4c9132d3034901f"
+      },
+      "hard_total": 8,
+      "hard_correct": 8,
+      "soft_score": 1,
+      "wrong_or_unauthorized_next_action": 0,
+      "repeated_verified_slice": 0,
+      "continued": true,
+      "hidden_acceptance_passed": true,
+      "gate_passed": true,
+      "reviewer": {
+        "independent": true,
+        "evidence": "interruption-b/review.md"
+      }
+    },
+    {
+      "id": "interruption-c",
+      "interruption_stage": "before-recovery-packet",
+      "run_dir": "interruption-c/run",
+      "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+      "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+      "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-c",
+      "assertion": {
+        "path": "interruption-c/assertion.md",
+        "sha256": "a49489ff1632938aaa5f27ad6f09075bf498337e26550e0fdc54edfbe818dcc4"
+      },
+      "oracle": {
+        "path": "oracle-interruption-c.md",
+        "sha256": "329184854de780ffc641603213ec6c7d7b9da097bbe3bf1ae63ff6c75d45b41e"
+      },
+      "continuation": {
+        "path": "interruption-c/continuation.md",
+        "sha256": "465d3d0592724ce69c512eccc4492509e3acad6570015894303aaf620a568a77"
+      },
+      "gate": {
+        "path": "interruption-c/gate.md",
+        "sha256": "0ddffdb5e81c3a998e39666d0c1432a0828882d3e8de4210f7fb3d6d73bf21ed",
+        "verdict": "PASS"
+      },
+      "receipt": {
+        "path": "interruption-c/receipt.json",
+        "sha256": "0ae794ac6eac6ad4e5f148169f48cfccec3600eb333d969ef72641e1b06ffec4"
+      },
+      "evidence_envelope": {
+        "path": "interruption-c/run-evidence.json",
+        "sha256": "84d8c8d47b4a0aa1d4466d2207429061dd57395a3a9a8f235ab8c11852db3a9d"
+      },
+      "hard_total": 8,
+      "hard_correct": 8,
+      "soft_score": 1,
+      "wrong_or_unauthorized_next_action": 0,
+      "repeated_verified_slice": 0,
+      "continued": true,
+      "hidden_acceptance_passed": true,
+      "gate_passed": true,
+      "reviewer": {
+        "independent": true,
+        "evidence": "interruption-c/review.md"
+      }
+    }
+  ]
+}

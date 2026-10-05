@@ -1,0 +1,11 @@
+[deps-scan] Scanning 6 dependencies from /Users/sheldonzhao/01-on progress programs/TAD/.tad/dependencies/REGISTRY.yaml
+[deps-scan] [1/6] Scanning: notebooklm-cli (registry: null)
+[deps-scan] notebooklm-cli: skipped (no upstream registry)
+[deps-scan] [2/6] Scanning: gh (registry: homebrew)
+[deps-scan] [3/6] Scanning: yq (registry: homebrew)
+[deps-scan] [4/6] Scanning: jq (registry: homebrew)
+[deps-scan] [5/6] Scanning: rsync (registry: null)
+[deps-scan] rsync: skipped (no upstream registry)
+[deps-scan] [6/6] Scanning: claude-code-cli (registry: null)
+[deps-scan] claude-code-cli: skipped (no upstream registry)
+[deps-scan] Scan complete: 6 deps in 5s → /Users/sheldonzhao/01-on progress programs/TAD/.tad/dependencies/scan-results.yaml

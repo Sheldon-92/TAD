@@ -1,0 +1,165 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "9e50c70b2c458c53",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a044e1-35e5-7ed0-ac8d-3ee11f6e00a0",
+  "resumed_from_session": "01a044e1-35e5-7ed0-ac8d-3ee11f6e00a0",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "c09a1cc24d6a011b50820a1fff4b812dccb14930cd5e1b112a220b61eb5f75c5",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a044e1-35e5-7ed0-ac8d-3ee11f6e00a0",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCreate util.mjs exporting function stableSlug(s): lowercase ASCII letters, trim, replace runs of non-alphanumerics with \"-\", trim leading/trailing \"-\". export default also fine but named export required. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 17964
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "7b0fc1380ff964bbfd13114d685bbdf96a13fe607f5db90df5e52d2bb283b70e",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "7b0fc1380ff964bbfd13114d685bbdf96a13fe607f5db90df5e52d2bb283b70e",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T2-node-behavior-treatment/util.mjs"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T2-node-behavior-treatment/util.mjs"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "544de7dc487640004796200700dc7cd7983c3c7de97d9143e92bb33f2d18bf54",
+    "goal-spec.json": "f4275b8ccf3e15f74f483c29073c9f93b4f8cf1f751dec860d64e856b6e30d8a",
+    "handoff.md": "aa4ec6b14d64af64ab69ed45408a99822e1fce1dd0c29f5504b84a02f22411b8",
+    "oracle.txt": "6da1fbd3c5e26c549cf34c6376639211dd6e876855d57f0fbf60a51c00541fa4",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "README.md": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839",
+    "tests.mjs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "util.mjs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "post_manifest": {
+    "contract-S1.json": "544de7dc487640004796200700dc7cd7983c3c7de97d9143e92bb33f2d18bf54",
+    "goal-spec.json": "f4275b8ccf3e15f74f483c29073c9f93b4f8cf1f751dec860d64e856b6e30d8a",
+    "handoff.md": "aa4ec6b14d64af64ab69ed45408a99822e1fce1dd0c29f5504b84a02f22411b8",
+    "oracle.txt": "6da1fbd3c5e26c549cf34c6376639211dd6e876855d57f0fbf60a51c00541fa4",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "README.md": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839",
+    "tests.mjs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "util.mjs": "1dc09340bd25aeb84bce9d34abba8cc42df639b0d07886f983701fbfd5a2243e"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P2/treatment-host-evidence/2026-08-27T20-20-57-038Z-9e50c70b2c458c53-raw-output.txt",
+    "sha256": "f06db1eee8ae82515e3897223021b987dd88b6cdbaccff02df075e621991567a"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P2/treatment-host-evidence/2026-08-27T20-20-57-038Z-9e50c70b2c458c53-raw-trace.jsonl",
+    "sha256": "f06db1eee8ae82515e3897223021b987dd88b6cdbaccff02df075e621991567a"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "util.mjs"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "aaaaebcee98db5eea9188012024370ee4cadcd21ae5cf655f0deeed7f6ea52b7",
+      "invocation_args_sha256": "3fc07e2cb8d9cd8db446dcfb6334fa166f875c5fbe4421eaf0858b667a3f123d",
+      "decision": "allowed",
+      "action_nonce": "28fb1f4cf4e5b309",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "util.mjs",
+      "pre_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "post_sha256": "1dc09340bd25aeb84bce9d34abba8cc42df639b0d07886f983701fbfd5a2243e",
+      "observed_sha256": "1dc09340bd25aeb84bce9d34abba8cc42df639b0d07886f983701fbfd5a2243e",
+      "effect_manifest_sha256": "0afadf1a05bbd888d1645c65d9f04e333b01009979a677e60d4f59ecf0d93fd1",
+      "effect_paths": [
+        "util.mjs"
+      ],
+      "effect_fingerprint": "f997f3e84c24cfd1f1c1d87e9ae650f037acb0dfe2b15a294e852e7492209ec2",
+      "pre_manifest_sha256": "8490a97c991e5664fef47b59af54b756f5c13ba9c2ba193967b4a19beda1a3ee",
+      "post_manifest_sha256": "0f40a79d60cc79a10409b510f57da12c20a237e1f3a720b1d036a4056d4eb8e6",
+      "observed_changed": [
+        "util.mjs"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "util.mjs"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 76376,
+    "output_tokens": 662,
+    "total_tokens": 77038,
+    "cached_input_tokens": 65792,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

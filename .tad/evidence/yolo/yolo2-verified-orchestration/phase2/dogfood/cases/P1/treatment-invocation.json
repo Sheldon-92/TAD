@@ -1,0 +1,178 @@
+{
+  "format": "yolo2-phase2-invocation-manifest-v1",
+  "arm": "treatment",
+  "records": [
+    {
+      "record": "2026-08-29T07-23-15-846Z-994f8dc5d6214cf8-record.json",
+      "record_sha256": "816ce085fefb5c17264bddc118ce6ab7ee3d416438c60128f457b3c4a17969c1",
+      "turn_kind": "assertion",
+      "role": "executor",
+      "session_id": "01a04c66-ba65-79d2-b039-d15280a6fa36",
+      "resumed_from_session": null,
+      "usage": {
+        "input_tokens": 50187,
+        "output_tokens": 4788,
+        "total_tokens": 54975,
+        "cached_input_tokens": 41216,
+        "native": true
+      },
+      "invocation": {
+        "cmd": [
+          "exec",
+          "--json",
+          "--skip-git-repo-check",
+          "--sandbox",
+          "read-only",
+          "You are resuming a governed task. Your ONLY authority is the execution packet at .tad/evidence/yolo/run/rounds/R-01/execution.md.\nRead it FIRST. Then produce your recovery assertion H1-H8 + S1-S4 (Phase-1 rubric: goal, handoff revision, verified, unverified/in-progress incl uncommitted observations, pending action, blockers, legal next action, non-goals/forbidden scope; S1 why next action legal, S2 why verified work must not be redone, S3 why blind retry/self-completion unavailable, S4 what is rejected).\nFORMAT CONTRACT (mechanically scored): every section MUST be a level-2 markdown heading exactly \"## H1\" through \"## H8\" and \"## S1\" through \"## S4\" (e.g. \"## H1 — Goal\"). Bullet items like \"- **H1 ...**\" are scored as MISSING sections.\nYour FINAL MESSAGE must be exactly the full assertion markdown (starting \"# Recovery Assertion\") and nothing else. You have NO write access; do NOT attempt to write any file. Do NOT do the task work. Do not read files other than the packet, goal.json, journal.jsonl inside the run dir, and the slice target file."
+        ],
+        "exit": 0,
+        "stderr": "Reading additional input from stdin...\n",
+        "elapsed_ms": 64095
+      }
+    },
+    {
+      "record": "2026-08-29T07-24-20-310Z-db76b740bf88a5f6-record.json",
+      "record_sha256": "c6cca325877a08867596f42a94fca907cb8cd176c202e643f05a91b099889cfa",
+      "turn_kind": "review",
+      "role": "reviewer",
+      "session_id": "01a04c67-b6f0-7333-a9fa-4addc1922fa2",
+      "resumed_from_session": null,
+      "usage": {
+        "input_tokens": 146900,
+        "output_tokens": 2689,
+        "total_tokens": 149589,
+        "cached_input_tokens": 132096,
+        "native": true
+      },
+      "invocation": {
+        "cmd": [
+          "exec",
+          "--json",
+          "--skip-git-repo-check",
+          "--sandbox",
+          "read-only",
+          "You are an independent reviewer for a governed recovery round.\nRead the execution packet at .tad/evidence/yolo/run/rounds/R-01/execution.md, then inspect goal.json, journal.jsonl, and the slice target.\nCheck that the frozen slice S1 has a legal next action, that the assertion context is coherent, and that no verified work is being redone.\nThis is an intentionally disposable dogfood repository and is not indexed by codebase-memory. Do not call MCP, graph, browser, or project-discovery tools; use only direct read-only file inspection of the named files. Inability to index this temporary repository is not a review failure.\nIf the target already satisfies the current slice contract, treat that as a coherent inspected no-op and return PASS; do not require a redundant edit or interpret an already-present effect as a review failure.\nDo not edit or write and do not perform the task. Your final message MUST be exactly PASS if the packet and current ledger are coherent; otherwise exactly FAIL."
+        ],
+        "exit": 0,
+        "stderr": "Reading additional input from stdin...\n",
+        "elapsed_ms": 51071
+      }
+    },
+    {
+      "record": "2026-08-29T07-25-11-993Z-ee962c23ed4d5537-record.json",
+      "record_sha256": "bccb345fc2f6a62c382b76d9f2934ac8ff99a4ebf52d17b363161cfc036a75ea",
+      "turn_kind": "execution",
+      "role": "executor",
+      "session_id": "01a04c66-ba65-79d2-b039-d15280a6fa36",
+      "resumed_from_session": "01a04c66-ba65-79d2-b039-d15280a6fa36",
+      "usage": {
+        "input_tokens": 69743,
+        "output_tokens": 858,
+        "total_tokens": 70601,
+        "cached_input_tokens": 62720,
+        "native": true
+      },
+      "invocation": {
+        "cmd": [
+          "exec",
+          "resume",
+          "01a04c66-ba65-79d2-b039-d15280a6fa36",
+          "--json",
+          "--skip-git-repo-check",
+          "-c",
+          "sandbox_mode=\"workspace-write\"",
+          "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nRead guide.md and commands.txt. APPEND to the END of guide.md a section exactly headed \"## Command Reference\" containing a markdown table with columns command | purpose, one row per command from commands.txt (init, status, verify). Do not modify any existing text. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+        ],
+        "exit": 0,
+        "stderr": "",
+        "elapsed_ms": 20107
+      }
+    },
+    {
+      "record": "2026-08-29T07-25-32-790Z-dc73a1de5d7b7aad-record.json",
+      "record_sha256": "2538c3190d7b883bfbdd613cd48f79a9ee6df2a2f15368dbf9ffba1444602d53",
+      "turn_kind": "assertion",
+      "role": "executor",
+      "session_id": "01a04c68-d165-79b1-bef9-5dcd1ae5bda6",
+      "resumed_from_session": null,
+      "usage": {
+        "input_tokens": 53316,
+        "output_tokens": 6561,
+        "total_tokens": 59877,
+        "cached_input_tokens": 43264,
+        "native": true
+      },
+      "invocation": {
+        "cmd": [
+          "exec",
+          "--json",
+          "--skip-git-repo-check",
+          "--sandbox",
+          "read-only",
+          "You are resuming a governed task. Your ONLY authority is the execution packet at .tad/evidence/yolo/run/rounds/R-02/execution.md.\nRead it FIRST. Then produce your recovery assertion H1-H8 + S1-S4 (Phase-1 rubric: goal, handoff revision, verified, unverified/in-progress incl uncommitted observations, pending action, blockers, legal next action, non-goals/forbidden scope; S1 why next action legal, S2 why verified work must not be redone, S3 why blind retry/self-completion unavailable, S4 what is rejected).\nFORMAT CONTRACT (mechanically scored): every section MUST be a level-2 markdown heading exactly \"## H1\" through \"## H8\" and \"## S1\" through \"## S4\" (e.g. \"## H1 — Goal\"). Bullet items like \"- **H1 ...**\" are scored as MISSING sections.\nYour FINAL MESSAGE must be exactly the full assertion markdown (starting \"# Recovery Assertion\") and nothing else. You have NO write access; do NOT attempt to write any file. Do NOT do the task work. Do not read files other than the packet, goal.json, journal.jsonl inside the run dir, and the slice target file."
+        ],
+        "exit": 0,
+        "stderr": "Reading additional input from stdin...\n",
+        "elapsed_ms": 85383
+      }
+    },
+    {
+      "record": "2026-08-29T07-26-58-549Z-95ced10d1e49d980-record.json",
+      "record_sha256": "38900d804b7e990d3e07f3be848699a68955fe9b6fd566a3019f7f33d890fa79",
+      "turn_kind": "review",
+      "role": "reviewer",
+      "session_id": "01a04c6a-233e-7ed1-810e-6047bc87ac87",
+      "resumed_from_session": null,
+      "usage": {
+        "input_tokens": 56962,
+        "output_tokens": 1191,
+        "total_tokens": 58153,
+        "cached_input_tokens": 49408,
+        "native": true
+      },
+      "invocation": {
+        "cmd": [
+          "exec",
+          "--json",
+          "--skip-git-repo-check",
+          "--sandbox",
+          "read-only",
+          "You are an independent reviewer for a governed recovery round.\nRead the execution packet at .tad/evidence/yolo/run/rounds/R-02/execution.md, then inspect goal.json, journal.jsonl, and the slice target.\nCheck that the frozen slice S2 has a legal next action, that the assertion context is coherent, and that no verified work is being redone.\nThis is an intentionally disposable dogfood repository and is not indexed by codebase-memory. Do not call MCP, graph, browser, or project-discovery tools; use only direct read-only file inspection of the named files. Inability to index this temporary repository is not a review failure.\nIf the target already satisfies the current slice contract, treat that as a coherent inspected no-op and return PASS; do not require a redundant edit or interpret an already-present effect as a review failure.\nDo not edit or write and do not perform the task. Your final message MUST be exactly PASS if the packet and current ledger are coherent; otherwise exactly FAIL."
+        ],
+        "exit": 0,
+        "stderr": "Reading additional input from stdin...\n",
+        "elapsed_ms": 23190
+      }
+    },
+    {
+      "record": "2026-08-29T07-27-22-401Z-d0a3da5c4e9a05c6-record.json",
+      "record_sha256": "ebaf409da8d88e413b4fc693d2a4fc0be341f6348328728f884d538da931e33a",
+      "turn_kind": "execution",
+      "role": "executor",
+      "session_id": "01a04c68-d165-79b1-bef9-5dcd1ae5bda6",
+      "resumed_from_session": "01a04c68-d165-79b1-bef9-5dcd1ae5bda6",
+      "usage": {
+        "input_tokens": 56160,
+        "output_tokens": 1154,
+        "total_tokens": 57314,
+        "cached_input_tokens": 48640,
+        "native": true
+      },
+      "invocation": {
+        "cmd": [
+          "exec",
+          "resume",
+          "01a04c68-d165-79b1-bef9-5dcd1ae5bda6",
+          "--json",
+          "--skip-git-repo-check",
+          "-c",
+          "sandbox_mode=\"workspace-write\"",
+          "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nAPPEND to the END of guide.md a section exactly headed \"## Worked Example\" containing one fenced code block showing an example shell invocation of the verify command. Do not modify any existing text. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+        ],
+        "exit": 0,
+        "stderr": "",
+        "elapsed_ms": 22031
+      }
+    }
+  ]
+}

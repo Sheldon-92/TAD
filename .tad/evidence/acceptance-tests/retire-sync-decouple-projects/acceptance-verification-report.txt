@@ -1,0 +1,19 @@
+--- 正向 AC ---
+PASS  AC-1 registry deleted              expected=0        got=0
+PASS  AC-2 sync protocols (6)            expected=0        got=0
+PASS  AC-3 reg blocks removed            expected=0        got=0
+PASS  AC-3b retire note present          expected>=1       got=1
+PASS  AC-4 desc no *sync                 expected=0        got=0
+PASS  AC-5 CLAUDE.md no *sync            expected=0        got=0
+PASS  AC-6 harvest exit 0                expected=0        got=0
+PASS  AC-7 live sync-registry            expected=3        got=3
+--- 负控 AC ---
+PASS  AC-N1 tad.sh untouched             expected=0        got=0
+PASS  AC-N2 *publish alive               expected>=1       got=8
+PASS  AC-N2b publish-protocol md         expected=1        got=1
+PASS  AC-N3 DR file kept                 expected=1        got=1
+PASS  AC-N4 derive-sync-set              expected=1        got=1
+PASS  AC-N5 skill-body-verify            expected=0        got=0
+PASS  AC-N6 bash -n tad.sh               expected=0        got=0
+
+RESULT: ALL ACs PASS

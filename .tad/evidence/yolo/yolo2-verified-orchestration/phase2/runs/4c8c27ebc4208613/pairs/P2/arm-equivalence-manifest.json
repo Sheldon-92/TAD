@@ -1,0 +1,22 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T2-node-behavior",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "c09a1cc24d6a011b50820a1fff4b812dccb14930cd5e1b112a220b61eb5f75c5",
+      "treatment_sha256": "c09a1cc24d6a011b50820a1fff4b812dccb14930cd5e1b112a220b61eb5f75c5",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "ab33994288533e826a3dd0364f8bb4b11b28abfe4204aa5e7e74960d82539239",
+      "treatment_sha256": "ab33994288533e826a3dd0364f8bb4b11b28abfe4204aa5e7e74960d82539239",
+      "byte_equal": true
+    }
+  ],
+  "packet_bytes_equal": true
+}

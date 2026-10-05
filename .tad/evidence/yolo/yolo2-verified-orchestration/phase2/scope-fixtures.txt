@@ -1,0 +1,70 @@
+AC-B SCOPE PROOF — DR-20260830 candidate-replay verifier
+==========================================================
+
+Command (single authoritative entrypoint):
+  node .tad/scripts/yolo-recovery.test.mjs --case phase2-scope-proof \
+    --base 96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7 \
+    --main c1ccd94ff4c79b702ee888c36be6b0314378d6eb --candidate 64b5a44d50b76c4d7e8f6d193b70e62300b572a1 \
+    --manifest .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json \
+    --evidence-dir .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof
+
+Frozen base:
+  96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7
+
+Fixed exclusion (parallel Local Wiki):
+  source_sha: f967276fc3b8e1fbc5acce5bc1fe7cfbfa121e5f
+  parents: [e7ec30b48f445a997b11408ea3aa5b699e55da06]
+  first_parent_binary_diff_sha256: 70de6e15357c582a89fa0a155ffec79596fa87cd3a57feb09758a3248bf3cbdf
+  sorted_changed_paths_sha256: 35413b708507ecf4e79ac4ce602496386910fe00d10a314a4e120e62b848b65f
+  reason: parallel-local-wiki
+  shared_phase2_path_exemptions: []
+
+Closed inventory:
+  BASE..MAIN first-parent non-merge commits, each exactly once as included/excluded.
+  Manifest recomputes parents, tree, binary diff SHA, sorted paths SHA, patch-id and changed_paths from Git objects.
+
+Candidate replay:
+  From 96bbfada, replay only included commits → PHASE2_CANDIDATE_HEAD
+  96bbfada..CANDIDATE must be zero out-of-scope and contain all 5 product paths.
+
+Main equivalence:
+  Candidate vs pinned main (Git blob SHA-256) for 5 product paths + immutable evidence tree SHA
+  Shared control-plane markers via selector + exact value + canonical subdocument SHA-256:
+    - HANDOFF-20260827 frontmatter scope_proof_amendment = .tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md
+    - COMPLETION-20260825 frontmatter gate3_verdict = pass
+    - gate3-verdict.md contains "Gate 3 Verdict" and PASS
+
+Dogfood input manifest:
+  Canonical .tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/dogfood-input-manifest.json
+  Binds 3 mechanism files, dataset-index.json + per-task task.json SHAs, approval, policy, harness versions.
+
+Fixtures (real temporary Git repos, same verifier, not in-memory string append):
+  1. main contains valid parallel Local Wiki commit, candidate excludes it → PASS (exit 0)
+  2. manifest or candidate contains forbidden path (.tad/hooks/...) → FAIL (exit 1)
+  3. missing product commit (candidate lacks .tad/scripts/yolo-recovery.mjs etc.) → FAIL (exit 1)
+     missing evidence/control-plane commit → FAIL (exit 1)
+  4. forbidden path then rollback (commit adds .tad/hooks/bad.sh, next commit removes it, final tree clean) → still FAIL (exit 1) — history matters, not final tree
+  5. frozen base moved to f967276f → FAIL (exit 1)
+  6. manifest diff SHA / patch-id / source SHA tampered → FAIL (exit 1)
+  7. main ref drift during verification (refs/heads/main changes) or Phase-2 owned path dirty → ERROR (exit 2)
+  8. marker text exists but expected value / subdocument hash wrong → FAIL (exit 1)
+  9. unauthorized excluded commit or fixed exclusion path-set/diff/parent drift → ERROR (exit 2); fixed exclusion correctly present → PASS (exit 0)
+
+Verifier exit codes:
+  RESULT=PASS / 0, RESULT=FAIL / 1, RESULT=ERROR / 2
+  Gate 4 must rerun the same command and get RESULT=PASS.
+
+Positive result (current run):
+  phase2-scope-proof PASS (candidate 64b5a44d50b76c4d7e8f6d193b70e62300b572a1, main c1ccd94ff4c79b702ee888c36be6b0314378d6eb)
+  all 11 Phase-1 suite cases PASS (legacy mode)
+  yolo-round suite 12/12 PASS
+  dogfood-evidence PASS
+  RESULT=PASS
+
+Negative fixtures:
+  All 9 fixtures above were executed in temporary Git worktrees with real commits and the same verifier binary.
+  Each produced the expected exit code (0 for PASS cases, 1 for FAIL, 2 for ERROR) and machine-readable RESULT line.
+  See runScopeFixtures() in yolo-recovery.test.mjs for implementation.
+
+Legacy Phase-1 proof retained:
+  caseRequiredEvidence() continues to read phase1/final-commit.txt and keeps the existing lifecycle state-machine and forbidden-path red controls.

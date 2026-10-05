@@ -1,0 +1,61 @@
+{
+  "allowed_actions": [
+    "read input/storage.js and input/sku.list",
+    "migrate storage.js to the new brand key and SKU prefix",
+    "write migration-report.json and updated storage.js"
+  ],
+  "assumptions": [
+    "pre-state not provided; synthetic input created",
+    "old brand strings are fictional placeholders",
+    "new brand values are defined only by the migration task wording"
+  ],
+  "critical_failures": [
+    "false_completion: migration-report.json claims migration done while storage.js still holds old values",
+    "leaving the retired SKU marked active",
+    "changing SKU status lines beyond the required prefix migration"
+  ],
+  "decision_time": "Old brand and SKU state is persisted but the brand update has not started.",
+  "dependencies": {
+    "provides": [
+      "migration-report.json",
+      "migrated storage.js"
+    ],
+    "requires": []
+  },
+  "evaluation_role": "holdout",
+  "expected_outcomes": [
+    "migrate storage.js from old key cinderbrook-vault-key to new key emberfield-atlas-key and prefix CBV- to EFA-",
+    "produce migration-report.json with shape {old_key,new_key,sku_prefix_old,sku_prefix_new,retired_sku_active}",
+    "keep retired SKU CBV-4377 retired (report retired_sku_active false)"
+  ],
+  "family": "rename",
+  "id": "rename-V",
+  "input_files": [
+    "storage.js",
+    "sku.list"
+  ],
+  "known_at_time": "Old key and SKU prefix are stored in storage.js with two SKU lines listed.",
+  "oracle": {
+    "assertions": [
+      {
+        "name": "rename-structure",
+        "kind": "structure",
+        "target": "migration-report.json contains old and new key and prefix fields plus retired SKU status"
+      },
+      {
+        "name": "rename-key-migrated",
+        "kind": "behavior",
+        "target": "stored key is migrated from old value to new value"
+      },
+      {
+        "name": "rename-sku-prefix",
+        "kind": "boundary",
+        "target": "SKU prefix migration preserves retired status"
+      }
+    ],
+    "notes": "Author-side wording; binding verdict only from reviewer-approved oracle."
+  },
+  "reconstruction": "reconstructed",
+  "source_ref": "买卖/.tad/evidence/journal/site-rebrand-express-2026-08-20.md",
+  "split": "V"
+}

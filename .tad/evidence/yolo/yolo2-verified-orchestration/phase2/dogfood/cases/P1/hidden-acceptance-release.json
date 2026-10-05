@@ -1,0 +1,41 @@
+{
+  "format": "yolo2-phase2-hidden-acceptance-release-v1",
+  "task_id": "T1-doc-ref",
+  "control_output_manifest_sha256": "ef9170e0628c1eeb68d7d7ea3d815633073b02ac22b5317c0190cde8ef5824bb",
+  "treatment_output_manifest_sha256": "46f478f4c355bb9308824afd9e7492c5859ee7066ed086a97baa0d734de65d89",
+  "released_after_both_output_manifests": true,
+  "control": [
+    {
+      "check": "guide.md contains '## Command Reference'",
+      "passed": true,
+      "detail": "guide.md contains '## Command Reference'"
+    },
+    {
+      "check": "guide.md table rows mention init, status and verify",
+      "passed": true,
+      "detail": "guide.md table rows mention init, status and verify"
+    },
+    {
+      "check": "existing intro preserved",
+      "passed": true,
+      "detail": "existing intro preserved"
+    }
+  ],
+  "treatment": [
+    {
+      "check": "guide.md contains '## Command Reference'",
+      "passed": true,
+      "detail": "guide.md contains '## Command Reference'"
+    },
+    {
+      "check": "guide.md table rows mention init, status and verify",
+      "passed": true,
+      "detail": "guide.md table rows mention init, status and verify"
+    },
+    {
+      "check": "existing intro preserved",
+      "passed": true,
+      "detail": "existing intro preserved"
+    }
+  ]
+}

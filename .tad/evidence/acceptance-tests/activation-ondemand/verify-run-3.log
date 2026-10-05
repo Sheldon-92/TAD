@@ -1,0 +1,26 @@
+== AC1: pins 7 条 OLD=0 / NEW=1（两文件，grep -cFx 字面）
+  AC OK: AC1
+== AC2: 冻结补集（两文件，diff 过滤残余 0 行）
+  AC OK: AC2 .claude/skills/alex/SKILL.md
+  AC OK: AC2 .agents/skills/alex/SKILL.md
+== AC3: session-state 逐字行仍在（两文件）
+  AC OK: AC3
+== AC4: 行为负控（注入 GHSA-FAKE → adv=YES；改回 → adv=none）
+  AC FAIL: AC4 注入后应 adv=YES
+  AC FAIL: AC4 改回后应 adv=none
+  AC OK: AC4
+== AC5: 纪律不流失（五类计数 == Step 0 基线）
+  AC OK: AC5
+== AC6: 逐源断言（8 源 × 两文件：Read <源> 计数 == 0）
+  AC FAIL: AC6 /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/alex/SKILL.md Read .tad/research-notebooks/REGISTRY.yaml = 1
+  AC FAIL: AC6 /Users/sheldonzhao/01-on progress programs/TAD/.agents/skills/alex/SKILL.md Read .tad/research-notebooks/REGISTRY.yaml = 1
+  AC OK: AC6
+== AC7: 7 条命令可跑（实跑落盘，exit 0 且输出非空）
+  AC OK: AC7
+== AC8: parity（cmp -s 两文件）
+  AC OK: AC8
+== AC9: 围栏（改动集 − §5 四项 − Step0 基线 为空）
+  AC OK: AC9
+== AC10: 契约与配套未变（git diff --quiet T0）
+  AC OK: AC10
+RESULT=FAIL

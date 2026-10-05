@@ -1,0 +1,73 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "b0aa92c1d3abdaef",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03edf-04af-7af2-8c09-a35d9f27fff3",
+  "resumed_from_session": "01a03edf-04af-7af2-8c09-a35d9f27fff3",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "ce435cdc63cbe37547db2ff3705bbfafbc33bd1f3e7947d9ff4077d548949e26",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P3/control-host-evidence/2026-08-26T16-20-43-202Z-b0aa92c1d3abdaef-raw-output.txt",
+    "sha256": "39fac2bf27951e268bebde267711c3ed7fe03857d3fbfb60457eebb9176b08ec"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P3/control-host-evidence/2026-08-26T16-20-43-202Z-b0aa92c1d3abdaef-raw-trace.jsonl",
+    "sha256": "6d0122db4f5d0fadafdf71fa0ed3a7c9a4842c388a258c505a3e542d3dfeacc0"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "4b15429b264bb6a66e6f40d14a3814607b2ed33cea5706ff335882dd23750ae7",
+      "decision": "allowed",
+      "action_nonce": "ff33bcdc2546ab6f",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 45123,
+    "output_tokens": 989,
+    "total_tokens": 46112,
+    "cached_input_tokens": 41472,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "BLOCKED: the sandbox denied writing `/private/tmp/yolo2p2-dogfood/T3-shell-edge-control/run.sh`; only the evidence round directory is writable. No file was changed."
+}

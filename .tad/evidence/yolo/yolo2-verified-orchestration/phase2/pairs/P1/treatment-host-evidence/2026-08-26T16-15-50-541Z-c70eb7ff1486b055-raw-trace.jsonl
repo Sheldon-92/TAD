@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a03eda-91e5-7241-876d-c40533baeb95 --json --skip-git-repo-check AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nAPPEND to the END of guide.md a section exactly headed \"## Worked Example\" containing one fenced code block showing an example shell invocation of the verify command. Do not modify any existing text. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "2026-08-26T16:15:58.977416Z ERROR codex_core::tools::router: error=patch rejected: writing outside of the project; rejected by user approval settings\n",
+  "elapsed_ms": 14905
+}

@@ -1,0 +1,20 @@
+{
+  "id": "T1-doc-ref",
+  "provenance": "replay of Phase-1 dogfood slice family (HANDOFF-20260824-yolo2-phase1 \u00a76 P4, commit 96bbfada): guide reference-table maintenance",
+  "task": "Append a section '## Command Reference' to guide.md containing a markdown table with one row per command listed in commands.txt; columns: command | purpose. Do not change existing content.",
+  "seed": {
+    "guide.md": "# Guide\n\nExisting intro paragraph.\n",
+    "commands.txt": "init\nstatus\nverify\n"
+  },
+  "hidden": [
+    {
+      "check": "guide.md contains '## Command Reference'"
+    },
+    {
+      "check": "guide.md table rows mention init, status and verify"
+    },
+    {
+      "check": "existing intro preserved"
+    }
+  ]
+}

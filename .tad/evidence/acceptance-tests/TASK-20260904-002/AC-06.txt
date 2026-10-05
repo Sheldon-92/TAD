@@ -1,0 +1,4 @@
+$ git log -1 --oneline
+fdd4831f chore: workspace hygiene, portable driver path & v2.44 release sync knowledge
+EXPECTED: contains "chore: workspace hygiene"
+VERDICT: PASS

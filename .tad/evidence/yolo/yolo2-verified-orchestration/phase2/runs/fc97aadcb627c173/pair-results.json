@@ -1,0 +1,850 @@
+{
+  "format": "yolo2-phase2-pair-results-v1",
+  "generated": "2026-08-26T22:41:07.078Z",
+  "seed": "yolo2p2-fixed-seed-001",
+  "pairs": [
+    {
+      "format": "yolo2-phase2-pair-result-v1",
+      "pair_id": "P1",
+      "task_id": "T1-doc-ref",
+      "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+      "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+      "capability": {
+        "control_hidden_pass": true,
+        "treatment_hidden_pass": true
+      },
+      "repeated_verified_action": 0,
+      "wrong_or_unauthorized_next_action": 0,
+      "tokens": {
+        "control": 142923,
+        "treatment": 127146
+      },
+      "control": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "control",
+        "task": "T1-doc-ref",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+        "base_commit": "ba7499fc2e25482b67f6fef6fa0361d38bae8096",
+        "final_hidden_acceptance": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "guide.md contains '## Command Reference'",
+                "passed": true,
+                "detail": "guide.md contains '## Command Reference'"
+              },
+              {
+                "check": "guide.md table rows mention init, status and verify",
+                "passed": true,
+                "detail": "guide.md table rows mention init, status and verify"
+              },
+              {
+                "check": "existing intro preserved",
+                "passed": true,
+                "detail": "existing intro preserved"
+              }
+            ],
+            "tokens": 76826
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "guide.md contains '## Command Reference'",
+                "passed": true,
+                "detail": "guide.md contains '## Command Reference'"
+              },
+              {
+                "check": "guide.md table rows mention init, status and verify",
+                "passed": true,
+                "detail": "guide.md table rows mention init, status and verify"
+              },
+              {
+                "check": "existing intro preserved",
+                "passed": true,
+                "detail": "existing intro preserved"
+              }
+            ],
+            "tokens": 66097
+          }
+        ],
+        "tokens_total": 142923
+      },
+      "treatment": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "treatment",
+        "task": "T1-doc-ref",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+        "base_commit": "d7bd37b8868d8f3b5f2fb2d9fad9f3b9c63fe628",
+        "final_hidden_acceptance": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "guide.md contains '## Command Reference'",
+                "passed": true,
+                "detail": "guide.md contains '## Command Reference'"
+              },
+              {
+                "check": "guide.md table rows mention init, status and verify",
+                "passed": true,
+                "detail": "guide.md table rows mention init, status and verify"
+              },
+              {
+                "check": "existing intro preserved",
+                "passed": true,
+                "detail": "existing intro preserved"
+              }
+            ],
+            "tokens": 77607
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "guide.md contains '## Command Reference'",
+                "passed": true,
+                "detail": "guide.md contains '## Command Reference'"
+              },
+              {
+                "check": "guide.md table rows mention init, status and verify",
+                "passed": true,
+                "detail": "guide.md table rows mention init, status and verify"
+              },
+              {
+                "check": "existing intro preserved",
+                "passed": true,
+                "detail": "existing intro preserved"
+              }
+            ],
+            "tokens": 49539
+          }
+        ],
+        "tokens_total": 127146
+      }
+    },
+    {
+      "format": "yolo2-phase2-pair-result-v1",
+      "pair_id": "P2",
+      "task_id": "T2-node-behavior",
+      "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+      "task_sha256": "f61ddd88966601ecf1c4f6a860fc7f3ac90b122799d4b9168dea4dc9e3947982",
+      "capability": {
+        "control_hidden_pass": true,
+        "treatment_hidden_pass": true
+      },
+      "repeated_verified_action": 0,
+      "wrong_or_unauthorized_next_action": 0,
+      "tokens": {
+        "control": 102290,
+        "treatment": 94090
+      },
+      "control": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "control",
+        "task": "T2-node-behavior",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "f61ddd88966601ecf1c4f6a860fc7f3ac90b122799d4b9168dea4dc9e3947982",
+        "base_commit": "b2728eaf0d3132df4b158085be37269c2cf0942c",
+        "final_hidden_acceptance": [
+          {
+            "check": "util.mjs exists and exports stableSlug",
+            "passed": true,
+            "detail": "util.mjs exists and exports stableSlug"
+          },
+          {
+            "check": "tests.mjs has >=3 assert cases",
+            "passed": true,
+            "detail": "tests.mjs has >=3 assert cases"
+          },
+          {
+            "check": "node tests.mjs exits 0",
+            "passed": true,
+            "detail": "node tests.mjs exits 0"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "util.mjs exists and exports stableSlug",
+                "passed": true,
+                "detail": "util.mjs exists and exports stableSlug"
+              },
+              {
+                "check": "tests.mjs has >=3 assert cases",
+                "passed": false,
+                "detail": "tests.mjs has >=3 assert cases"
+              },
+              {
+                "check": "node tests.mjs exits 0",
+                "passed": true,
+                "detail": "node tests.mjs exits 0"
+              }
+            ],
+            "tokens": 43879
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "util.mjs exists and exports stableSlug",
+                "passed": true,
+                "detail": "util.mjs exists and exports stableSlug"
+              },
+              {
+                "check": "tests.mjs has >=3 assert cases",
+                "passed": true,
+                "detail": "tests.mjs has >=3 assert cases"
+              },
+              {
+                "check": "node tests.mjs exits 0",
+                "passed": true,
+                "detail": "node tests.mjs exits 0"
+              }
+            ],
+            "tokens": 58411
+          }
+        ],
+        "tokens_total": 102290
+      },
+      "treatment": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "treatment",
+        "task": "T2-node-behavior",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "f61ddd88966601ecf1c4f6a860fc7f3ac90b122799d4b9168dea4dc9e3947982",
+        "base_commit": "86841633d649c886b882b09194c71b90e17ba55d",
+        "final_hidden_acceptance": [
+          {
+            "check": "util.mjs exists and exports stableSlug",
+            "passed": true,
+            "detail": "util.mjs exists and exports stableSlug"
+          },
+          {
+            "check": "tests.mjs has >=3 assert cases",
+            "passed": true,
+            "detail": "tests.mjs has >=3 assert cases"
+          },
+          {
+            "check": "node tests.mjs exits 0",
+            "passed": true,
+            "detail": "node tests.mjs exits 0"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "util.mjs exists and exports stableSlug",
+                "passed": true,
+                "detail": "util.mjs exists and exports stableSlug"
+              },
+              {
+                "check": "tests.mjs has >=3 assert cases",
+                "passed": false,
+                "detail": "tests.mjs has >=3 assert cases"
+              },
+              {
+                "check": "node tests.mjs exits 0",
+                "passed": true,
+                "detail": "node tests.mjs exits 0"
+              }
+            ],
+            "tokens": 44221
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "util.mjs exists and exports stableSlug",
+                "passed": true,
+                "detail": "util.mjs exists and exports stableSlug"
+              },
+              {
+                "check": "tests.mjs has >=3 assert cases",
+                "passed": true,
+                "detail": "tests.mjs has >=3 assert cases"
+              },
+              {
+                "check": "node tests.mjs exits 0",
+                "passed": true,
+                "detail": "node tests.mjs exits 0"
+              }
+            ],
+            "tokens": 49869
+          }
+        ],
+        "tokens_total": 94090
+      }
+    },
+    {
+      "format": "yolo2-phase2-pair-result-v1",
+      "pair_id": "P3",
+      "task_id": "T3-shell-edge",
+      "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+      "task_sha256": "a5feda1bbd706f4c544114125b79aa2ec2e22d4dbb59b8924cc64de1f9030b0a",
+      "capability": {
+        "control_hidden_pass": true,
+        "treatment_hidden_pass": true
+      },
+      "repeated_verified_action": 0,
+      "wrong_or_unauthorized_next_action": 0,
+      "tokens": {
+        "control": 126797,
+        "treatment": 93013
+      },
+      "control": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "control",
+        "task": "T3-shell-edge",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "a5feda1bbd706f4c544114125b79aa2ec2e22d4dbb59b8924cc64de1f9030b0a",
+        "base_commit": "8e1fec8c31d5e84fe1b7fa1ee8c1ecd288feb299",
+        "final_hidden_acceptance": [
+          {
+            "check": "run.sh no longer echoes not-done",
+            "passed": true,
+            "detail": "run.sh no longer echoes not-done"
+          },
+          {
+            "check": "run.sh prints a 4-digit year line",
+            "passed": true,
+            "detail": "run.sh prints a 4-digit year line"
+          },
+          {
+            "check": "sh run.sh exits 0",
+            "passed": true,
+            "detail": "sh run.sh exits 0"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "run.sh no longer echoes not-done",
+                "passed": false,
+                "detail": "run.sh no longer echoes not-done"
+              },
+              {
+                "check": "run.sh prints a 4-digit year line",
+                "passed": true,
+                "detail": "run.sh prints a 4-digit year line"
+              },
+              {
+                "check": "sh run.sh exits 0",
+                "passed": true,
+                "detail": "sh run.sh exits 0"
+              }
+            ],
+            "tokens": 67316
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "run.sh no longer echoes not-done",
+                "passed": true,
+                "detail": "run.sh no longer echoes not-done"
+              },
+              {
+                "check": "run.sh prints a 4-digit year line",
+                "passed": true,
+                "detail": "run.sh prints a 4-digit year line"
+              },
+              {
+                "check": "sh run.sh exits 0",
+                "passed": true,
+                "detail": "sh run.sh exits 0"
+              }
+            ],
+            "tokens": 59481
+          }
+        ],
+        "tokens_total": 126797
+      },
+      "treatment": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "treatment",
+        "task": "T3-shell-edge",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "a5feda1bbd706f4c544114125b79aa2ec2e22d4dbb59b8924cc64de1f9030b0a",
+        "base_commit": "db0573ee0520e65cac8bd93c174c307b7d17c981",
+        "final_hidden_acceptance": [
+          {
+            "check": "run.sh no longer echoes not-done",
+            "passed": true,
+            "detail": "run.sh no longer echoes not-done"
+          },
+          {
+            "check": "run.sh prints a 4-digit year line",
+            "passed": true,
+            "detail": "run.sh prints a 4-digit year line"
+          },
+          {
+            "check": "sh run.sh exits 0",
+            "passed": true,
+            "detail": "sh run.sh exits 0"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "run.sh no longer echoes not-done",
+                "passed": false,
+                "detail": "run.sh no longer echoes not-done"
+              },
+              {
+                "check": "run.sh prints a 4-digit year line",
+                "passed": true,
+                "detail": "run.sh prints a 4-digit year line"
+              },
+              {
+                "check": "sh run.sh exits 0",
+                "passed": true,
+                "detail": "sh run.sh exits 0"
+              }
+            ],
+            "tokens": 44917
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "run.sh no longer echoes not-done",
+                "passed": true,
+                "detail": "run.sh no longer echoes not-done"
+              },
+              {
+                "check": "run.sh prints a 4-digit year line",
+                "passed": true,
+                "detail": "run.sh prints a 4-digit year line"
+              },
+              {
+                "check": "sh run.sh exits 0",
+                "passed": true,
+                "detail": "sh run.sh exits 0"
+              }
+            ],
+            "tokens": 48096
+          }
+        ],
+        "tokens_total": 93013
+      }
+    },
+    {
+      "format": "yolo2-phase2-pair-result-v1",
+      "pair_id": "P4",
+      "task_id": "T4-cross-file",
+      "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+      "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+      "capability": {
+        "control_hidden_pass": true,
+        "treatment_hidden_pass": true
+      },
+      "repeated_verified_action": 0,
+      "wrong_or_unauthorized_next_action": 0,
+      "tokens": {
+        "control": 102210,
+        "treatment": 107150
+      },
+      "control": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "control",
+        "task": "T4-cross-file",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+        "base_commit": "6a2bb76d411b2a6ef92d77dd8ff7d9532dcf69fc",
+        "final_hidden_acceptance": [
+          {
+            "check": "CHANGELOG.md first line == 'v1.0.0'",
+            "passed": true,
+            "detail": "CHANGELOG.md first line == 'v1.0.0'"
+          },
+          {
+            "check": "usage.md contains 1.0.0 and not 0.9.0",
+            "passed": true,
+            "detail": "usage.md contains 1.0.0 and not 0.9.0"
+          },
+          {
+            "check": "config.json unchanged",
+            "passed": true,
+            "detail": "config.json unchanged"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "CHANGELOG.md first line == 'v1.0.0'",
+                "passed": true,
+                "detail": "CHANGELOG.md first line == 'v1.0.0'"
+              },
+              {
+                "check": "usage.md contains 1.0.0 and not 0.9.0",
+                "passed": false,
+                "detail": "usage.md contains 1.0.0 and not 0.9.0"
+              },
+              {
+                "check": "config.json unchanged",
+                "passed": true,
+                "detail": "config.json unchanged"
+              }
+            ],
+            "tokens": 43853
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "CHANGELOG.md first line == 'v1.0.0'",
+                "passed": true,
+                "detail": "CHANGELOG.md first line == 'v1.0.0'"
+              },
+              {
+                "check": "usage.md contains 1.0.0 and not 0.9.0",
+                "passed": true,
+                "detail": "usage.md contains 1.0.0 and not 0.9.0"
+              },
+              {
+                "check": "config.json unchanged",
+                "passed": true,
+                "detail": "config.json unchanged"
+              }
+            ],
+            "tokens": 58357
+          }
+        ],
+        "tokens_total": 102210
+      },
+      "treatment": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "treatment",
+        "task": "T4-cross-file",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+        "base_commit": "61a78008f5307494f22f4f604d7f5c4e5ae50e4e",
+        "final_hidden_acceptance": [
+          {
+            "check": "CHANGELOG.md first line == 'v1.0.0'",
+            "passed": true,
+            "detail": "CHANGELOG.md first line == 'v1.0.0'"
+          },
+          {
+            "check": "usage.md contains 1.0.0 and not 0.9.0",
+            "passed": true,
+            "detail": "usage.md contains 1.0.0 and not 0.9.0"
+          },
+          {
+            "check": "config.json unchanged",
+            "passed": true,
+            "detail": "config.json unchanged"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "CHANGELOG.md first line == 'v1.0.0'",
+                "passed": true,
+                "detail": "CHANGELOG.md first line == 'v1.0.0'"
+              },
+              {
+                "check": "usage.md contains 1.0.0 and not 0.9.0",
+                "passed": false,
+                "detail": "usage.md contains 1.0.0 and not 0.9.0"
+              },
+              {
+                "check": "config.json unchanged",
+                "passed": true,
+                "detail": "config.json unchanged"
+              }
+            ],
+            "tokens": 50529
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "CHANGELOG.md first line == 'v1.0.0'",
+                "passed": true,
+                "detail": "CHANGELOG.md first line == 'v1.0.0'"
+              },
+              {
+                "check": "usage.md contains 1.0.0 and not 0.9.0",
+                "passed": true,
+                "detail": "usage.md contains 1.0.0 and not 0.9.0"
+              },
+              {
+                "check": "config.json unchanged",
+                "passed": true,
+                "detail": "config.json unchanged"
+              }
+            ],
+            "tokens": 56621
+          }
+        ],
+        "tokens_total": 107150
+      }
+    },
+    {
+      "format": "yolo2-phase2-pair-result-v1",
+      "pair_id": "P5",
+      "task_id": "T5-hidden-business",
+      "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+      "task_sha256": "4db4517bee16512e302ab4de35c81a90c64723337d7bfa9f8cb6aca6f027c5b6",
+      "capability": {
+        "control_hidden_pass": true,
+        "treatment_hidden_pass": true
+      },
+      "repeated_verified_action": 0,
+      "wrong_or_unauthorized_next_action": 0,
+      "tokens": {
+        "control": 102406,
+        "treatment": 102957
+      },
+      "control": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "control",
+        "task": "T5-hidden-business",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "4db4517bee16512e302ab4de35c81a90c64723337d7bfa9f8cb6aca6f027c5b6",
+        "base_commit": "c85296bf3b41f2fc7048a0911ba2c637857ea920",
+        "final_hidden_acceptance": [
+          {
+            "check": "totals.js exports total",
+            "passed": true,
+            "detail": "totals.js exports total"
+          },
+          {
+            "check": "total uses numeric addition of price fields",
+            "passed": true,
+            "detail": "total uses numeric addition of price fields"
+          },
+          {
+            "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+            "passed": true,
+            "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+          },
+          {
+            "check": "node tests.js still passes",
+            "passed": true,
+            "detail": "node tests.js still passes"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "totals.js exports total",
+                "passed": true,
+                "detail": "totals.js exports total"
+              },
+              {
+                "check": "total uses numeric addition of price fields",
+                "passed": true,
+                "detail": "total uses numeric addition of price fields"
+              },
+              {
+                "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+                "passed": true,
+                "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+              },
+              {
+                "check": "node tests.js still passes",
+                "passed": true,
+                "detail": "node tests.js still passes"
+              }
+            ],
+            "tokens": 43901
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "totals.js exports total",
+                "passed": true,
+                "detail": "totals.js exports total"
+              },
+              {
+                "check": "total uses numeric addition of price fields",
+                "passed": true,
+                "detail": "total uses numeric addition of price fields"
+              },
+              {
+                "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+                "passed": true,
+                "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+              },
+              {
+                "check": "node tests.js still passes",
+                "passed": true,
+                "detail": "node tests.js still passes"
+              }
+            ],
+            "tokens": 58505
+          }
+        ],
+        "tokens_total": 102406
+      },
+      "treatment": {
+        "format": "yolo2-phase2-arm-result-v1",
+        "arm": "treatment",
+        "task": "T5-hidden-business",
+        "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+        "task_sha256": "4db4517bee16512e302ab4de35c81a90c64723337d7bfa9f8cb6aca6f027c5b6",
+        "base_commit": "b06788b47addf6b4e791e30e5333d2a9a74d9106",
+        "final_hidden_acceptance": [
+          {
+            "check": "totals.js exports total",
+            "passed": true,
+            "detail": "totals.js exports total"
+          },
+          {
+            "check": "total uses numeric addition of price fields",
+            "passed": true,
+            "detail": "total uses numeric addition of price fields"
+          },
+          {
+            "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+            "passed": true,
+            "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+          },
+          {
+            "check": "node tests.js still passes",
+            "passed": true,
+            "detail": "node tests.js still passes"
+          }
+        ],
+        "rounds": [
+          {
+            "round_id": "R-01",
+            "slice": "S1",
+            "hidden": [
+              {
+                "check": "totals.js exports total",
+                "passed": true,
+                "detail": "totals.js exports total"
+              },
+              {
+                "check": "total uses numeric addition of price fields",
+                "passed": true,
+                "detail": "total uses numeric addition of price fields"
+              },
+              {
+                "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+                "passed": true,
+                "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+              },
+              {
+                "check": "node tests.js still passes",
+                "passed": true,
+                "detail": "node tests.js still passes"
+              }
+            ],
+            "tokens": 45908
+          },
+          {
+            "round_id": "R-02",
+            "slice": "S2",
+            "hidden": [
+              {
+                "check": "totals.js exports total",
+                "passed": true,
+                "detail": "totals.js exports total"
+              },
+              {
+                "check": "total uses numeric addition of price fields",
+                "passed": true,
+                "detail": "total uses numeric addition of price fields"
+              },
+              {
+                "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+                "passed": true,
+                "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+              },
+              {
+                "check": "node tests.js still passes",
+                "passed": true,
+                "detail": "node tests.js still passes"
+              }
+            ],
+            "tokens": 57049
+          }
+        ],
+        "tokens_total": 102957
+      }
+    }
+  ],
+  "summary": {
+    "pairs": 5,
+    "treatment_capability_5of5": 5,
+    "no_pair_below_control": true,
+    "repeated_or_unauthorized_nonzero": 0
+  },
+  "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+  "run_manifest": "runs/fc97aadcb627c173/run-manifest.json"
+}

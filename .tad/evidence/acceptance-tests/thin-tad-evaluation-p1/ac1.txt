@@ -1,0 +1,219 @@
+TAP version 13
+# Subtest: static side-effect gate
+    # Subtest: imports only node: builtins; no network/eval/vm/spawn paths
+    ok 1 - imports only node: builtins; no network/eval/vm/spawn paths
+      ---
+      duration_ms: 1.749209
+      ...
+    1..1
+ok 1 - static side-effect gate
+  ---
+  duration_ms: 2.876717
+  type: 'suite'
+  ...
+# Subtest: subprocess gate unit proofs (fake argv, no real spawn)
+    # Subtest: rejects curl, node, opencode, git push, other revisions
+    ok 1 - rejects curl, node, opencode, git push, other revisions
+      ---
+      duration_ms: 0.860089
+      ...
+    # Subtest: accepts only show/ls-tree at FIXED_SHA on allowlisted paths
+    ok 2 - accepts only show/ls-tree at FIXED_SHA on allowlisted paths
+      ---
+      duration_ms: 0.233079
+      ...
+    # Subtest: prefix boundary is exact: siblings of allowlisted paths rejected
+    ok 3 - prefix boundary is exact: siblings of allowlisted paths rejected
+      ---
+      duration_ms: 0.227231
+      ...
+    # Subtest: misbound control (right family, wrong case) is rejected
+    ok 4 - misbound control (right family, wrong case) is rejected
+      ---
+      duration_ms: 130.017702
+      ...
+    # Subtest: source resolver rejects symlink, absolute, dotdot, escape
+    ok 5 - source resolver rejects symlink, absolute, dotdot, escape
+      ---
+      duration_ms: 1.272622
+      ...
+    # Subtest: scorer: flipped oracle value fails; self-claimed PASS raises false_completion
+    ok 6 - scorer: flipped oracle value fails; self-claimed PASS raises false_completion
+      ---
+      duration_ms: 0.736625
+      ...
+    # Subtest: scorer works on independent testdata samples
+    ok 7 - scorer works on independent testdata samples
+      ---
+      duration_ms: 0.479334
+      ...
+    1..7
+ok 2 - subprocess gate unit proofs (fake argv, no real spawn)
+  ---
+  duration_ms: 134.507478
+  type: 'suite'
+  ...
+# Subtest: CLI happy paths on frozen bundle
+    # Subtest: verify-sources exits 0 with ok JSON
+    ok 1 - verify-sources exits 0 with ok JSON
+      ---
+      duration_ms: 114.129175
+      ...
+    # Subtest: verify-package exits 0 with ok JSON
+    ok 2 - verify-package exits 0 with ok JSON
+      ---
+      duration_ms: 124.984334
+      ...
+    # Subtest: verify-arms exits 0 with ok JSON
+    ok 3 - verify-arms exits 0 with ok JSON
+      ---
+      duration_ms: 181.663075
+      ...
+    # Subtest: verify-export exits 0 with ok JSON
+    ok 4 - verify-export exits 0 with ok JSON
+      ---
+      duration_ms: 111.706019
+      ...
+    # Subtest: verify-controls exits 0 with ok JSON
+    ok 5 - verify-controls exits 0 with ok JSON
+      ---
+      duration_ms: 117.875934
+      ...
+    # Subtest: dry-run exits 0 with ok JSON
+    ok 6 - dry-run exits 0 with ok JSON
+      ---
+      duration_ms: 123.970844
+      ...
+    # Subtest: verify-accounting exits 0 with ok JSON
+    ok 7 - verify-accounting exits 0 with ok JSON
+      ---
+      duration_ms: 115.134511
+      ...
+    # Subtest: verify-scope exits 0 with ok JSON
+    ok 8 - verify-scope exits 0 with ok JSON
+      ---
+      duration_ms: 107.723125
+      ...
+    1..8
+ok 3 - CLI happy paths on frozen bundle
+  ---
+  duration_ms: 997.883651
+  type: 'suite'
+  ...
+# Subtest: CLI negatives locked in suite (reviewer-required)
+    # Subtest: source content change vs frozen hash fails closed (exit 1)
+    ok 1 - source content change vs frozen hash fails closed (exit 1)
+      ---
+      duration_ms: 127.253916
+      ...
+    # Subtest: missing SOURCE-MAP exits 2 (never a silent pass)
+    ok 2 - missing SOURCE-MAP exits 2 (never a silent pass)
+      ---
+      duration_ms: 126.45158
+      ...
+    # Subtest: baseline tamper fails verify-arms (exit 1)
+    ok 3 - baseline tamper fails verify-arms (exit 1)
+      ---
+      duration_ms: 137.337157
+      ...
+    # Subtest: scope violations fail closed: private staged, or staged outside allowlist
+    ok 4 - scope violations fail closed: private staged, or staged outside allowlist
+      ---
+      duration_ms: 238.295154
+      ...
+    1..4
+ok 4 - CLI negatives locked in suite (reviewer-required)
+  ---
+  duration_ms: 629.641971
+  type: 'suite'
+  ...
+# Subtest: CLI happy-path edge cases
+    # Subtest: unknown command exits 2 with JSON
+    ok 1 - unknown command exits 2 with JSON
+      ---
+      duration_ms: 106.040582
+      ...
+    # Subtest: extra args exit 2
+    ok 2 - extra args exit 2
+      ---
+      duration_ms: 106.517048
+      ...
+    1..2
+ok 5 - CLI happy-path edge cases
+  ---
+  duration_ms: 212.753921
+  type: 'suite'
+  ...
+# Subtest: negative controls on temp copies (frozen bundle untouched)
+    # Subtest: duplicate IDs fail closed (exit 1, never pass)
+    ok 1 - duplicate IDs fail closed (exit 1, never pass)
+      ---
+      duration_ms: 131.054636
+      ...
+    # Subtest: empty case set never passes
+    ok 2 - empty case set never passes
+      ---
+      duration_ms: 125.215116
+      ...
+    # Subtest: dropped V breaks H/V pairing
+    ok 3 - dropped V breaks H/V pairing
+      ---
+      duration_ms: 119.220363
+      ...
+    # Subtest: flipped oracle key value fails scoring
+    ok 4 - flipped oracle key value fails scoring
+      ---
+      duration_ms: 131.339295
+      ...
+    # Subtest: rewriting manifest expected_outcomes cannot change the verdict
+    ok 5 - rewriting manifest expected_outcomes cannot change the verdict
+      ---
+      duration_ms: 136.769232
+      ...
+    # Subtest: extra oracle file in exports fails the leak check
+    ok 6 - extra oracle file in exports fails the leak check
+      ---
+      duration_ms: 133.752211
+      ...
+    # Subtest: symlink in exports is rejected
+    ok 7 - symlink in exports is rejected
+      ---
+      duration_ms: 124.253085
+      ...
+    # Subtest: accounting without missing_reason fails; hand-computed null edge holds
+    ok 8 - accounting without missing_reason fails; hand-computed null edge holds
+      ---
+      duration_ms: 244.882649
+      ...
+    1..8
+ok 6 - negative controls on temp copies (frozen bundle untouched)
+  ---
+  duration_ms: 1147.04258
+  type: 'suite'
+  ...
+# Subtest: cwd independence + determinism
+    # Subtest: verify-sources resolves the same six files from any cwd
+    ok 1 - verify-sources resolves the same six files from any cwd
+      ---
+      duration_ms: 221.512792
+      ...
+    # Subtest: dry-run twice yields the same stable projection
+    ok 2 - dry-run twice yields the same stable projection
+      ---
+      duration_ms: 232.96573
+      ...
+    1..2
+ok 7 - cwd independence + determinism
+  ---
+  duration_ms: 454.651986
+  type: 'suite'
+  ...
+1..7
+# tests 32
+# suites 7
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3732.933469

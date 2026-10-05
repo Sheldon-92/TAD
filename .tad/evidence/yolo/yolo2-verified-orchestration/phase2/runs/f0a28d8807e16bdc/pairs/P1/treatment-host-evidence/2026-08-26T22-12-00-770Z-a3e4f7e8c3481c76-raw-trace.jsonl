@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a04020-c782-76f3-893d-87057f4008e8 --json --skip-git-repo-check -c sandbox_mode=\"workspace-write\" AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nAPPEND to the END of guide.md a section exactly headed \"## Worked Example\" containing one fenced code block showing an example shell invocation of the verify command. Do not modify any existing text. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "",
+  "elapsed_ms": 10752
+}

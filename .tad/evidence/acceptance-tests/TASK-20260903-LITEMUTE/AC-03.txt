@@ -1,0 +1,4 @@
+$ sed -n '3,5p' CLAUDE.md | grep -c "^>"
+1
+$ grep -cF "方向互斥：full" CLAUDE.md
+1

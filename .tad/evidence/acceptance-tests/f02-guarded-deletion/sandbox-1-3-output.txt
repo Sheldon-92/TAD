@@ -1,0 +1,33 @@
+############ SCENARIO 1: normal deprecated file MUST be deleted ############
+[0;34mℹ [0m  → Applying deprecations for versions ≤ 2.42.0...
+[0;32m✓ [0m  → Removed 1 deprecated file(s)
+SCENARIO_RC=0
+AC-3 PASS: normal deprecated file deleted
+
+############ SCENARIO 2: symlinked dir → outside file MUST survive ############
+[0;34mℹ [0m  → Applying deprecations for versions ≤ 2.42.0...
+REJECT: symlink component: domains in .tad/domains/precious.md
+ABORT: rm-site step4 recheck failed: .tad/domains/precious.md
+[1;33m⚠ [0m  ⚠ refused (rc=1): .tad/domains/precious.md
+[0;34mℹ [0m  → No deprecated files to remove
+[1;33m⚠ [0m  → 1 deprecated path(s) refused by guards (see ABORT lines above)
+SCENARIO_RC=0
+AC-4 PASS: outside-project file survived (containment guard held)
+
+############ SCENARIO 3: zero-touch subtree MUST survive ############
+[0;34mℹ [0m  → Applying deprecations for versions ≤ 2.42.0...
+REJECT: ZERO_TOUCH: .tad/memory
+ABORT: rm-site zero-touch recheck failed: .tad/memory
+[1;33m⚠ [0m  ⚠ refused (rc=1): .tad/memory
+[0;34mℹ [0m  → No deprecated files to remove
+[1;33m⚠ [0m  → 1 deprecated path(s) refused by guards (see ABORT lines above)
+SCENARIO_RC=0
+AC-5 PASS: zero-touch subtree survived
+
+############ AC-1b / AC-1b2: guard functions must come FROM the engine ############
+guarded_remove <- /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.pFrFietx6n/src/.tad/hooks/lib/migration-engine.sh
+check_containment <- /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.pFrFietx6n/src/.tad/hooks/lib/migration-engine.sh
+check_zero_touch <- /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.pFrFietx6n/src/.tad/hooks/lib/migration-engine.sh
+do_backup <- /var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.pFrFietx6n/src/.tad/hooks/lib/migration-engine.sh
+
+SANDBOX=/var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.pFrFietx6n

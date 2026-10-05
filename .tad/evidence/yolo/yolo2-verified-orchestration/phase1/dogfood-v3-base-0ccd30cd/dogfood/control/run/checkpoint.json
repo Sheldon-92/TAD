@@ -1,0 +1,50 @@
+{
+  "format": "yolo-recovery-checkpoint-v1",
+  "run_id": "control",
+  "goal_id": "yolo2-p1-guide-maintenance",
+  "handoff_path": ".tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md",
+  "handoff_revision": "1e064fd530cce81505b20a86a9d0ba2b4a8674960081758de1a94a9e5bcd7ba8",
+  "base_commit": "323c380dbb02dcdc4b58facd15e96825be66eb50",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-control",
+  "state": "ACTIVE",
+  "events_count": 7,
+  "latest_observed_head": "5e6211e2c6303b5b348a04526c203e0a7e45653e",
+  "verified": [
+    {
+      "slice": "S1",
+      "seq": 5,
+      "at": "2026-08-24T22:44:50.823Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S1.json",
+      "receipt_sha256": "b51929263485e28460bf7ea3dd1f8e663d3022427aabf753c8a59643ef1c0292",
+      "verified_head": "5e6211e2c6303b5b348a04526c203e0a7e45653e"
+    },
+    {
+      "slice": "S2",
+      "seq": 6,
+      "at": "2026-08-24T22:44:57.214Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S2.json",
+      "receipt_sha256": "9d319fe8e0d2d0f5cc57a73822e499ac230008ee86a78e8a10fca6710ab9d6e1",
+      "verified_head": "5e6211e2c6303b5b348a04526c203e0a7e45653e"
+    },
+    {
+      "slice": "S3",
+      "seq": 7,
+      "at": "2026-08-24T22:45:01.656Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S3.json",
+      "receipt_sha256": "157394b894619cce821196ca39f007c88138a6150bffbb902955604fbb336903",
+      "verified_head": "5e6211e2c6303b5b348a04526c203e0a7e45653e"
+    }
+  ],
+  "candidate_slices": [],
+  "pending_action": null,
+  "unknown_actions": [],
+  "forbidden_retry_actions": [],
+  "stopped": null,
+  "blockers": [],
+  "legal_next_action": {
+    "action": "All frozen slices are verified. Run the handoff-level acceptance and hand back to the Conductor; do NOT invent extra scope.",
+    "why": "the frozen slice plan is exhausted and nothing is pending",
+    "owner": "conductor"
+  },
+  "generated_at": "2026-08-24T22:45:02.829Z"
+}

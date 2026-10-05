@@ -1,0 +1,22 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T3-shell-edge",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "d671a2bcb020e7c900deb408f5c328acecaffdea01e50ff1742af7e4d2aaa213",
+      "treatment_sha256": "d671a2bcb020e7c900deb408f5c328acecaffdea01e50ff1742af7e4d2aaa213",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "63f65a388ab10406baca380f8485ea26d521aa426ce15c9ab78d117987d067b7",
+      "treatment_sha256": "63f65a388ab10406baca380f8485ea26d521aa426ce15c9ab78d117987d067b7",
+      "byte_equal": true
+    }
+  ],
+  "packet_bytes_equal": true
+}

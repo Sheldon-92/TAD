@@ -1,0 +1,6 @@
+{
+  "cmd": "exec --json --skip-git-repo-check --sandbox read-only You are resuming a governed task. Your ONLY authority is the execution packet at .tad/evidence/yolo/run/rounds/R-01/execution.md.\nRead it FIRST. Then produce your recovery assertion H1-H8 + S1-S4 (Phase-1 rubric: goal, handoff revision, verified, unverified/in-progress incl uncommitted observations, pending action, blockers, legal next action, non-goals/forbidden scope; S1 why next action legal, S2 why verified work must not be redone, S3 why blind retry/self-completion unavailable, S4 what is rejected).\nYour FINAL MESSAGE must be exactly the full assertion markdown (starting \"# Recovery Assertion\") and nothing else. You have NO write access; do NOT attempt to write any file. Do NOT do the task work. Do not read files other than the packet, goal.json, journal.jsonl inside the run dir, and the slice target file.",
+  "exit": 0,
+  "stderr": "Reading additional input from stdin...\n",
+  "elapsed_ms": 55004
+}

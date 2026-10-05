@@ -1,0 +1,252 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+  "parser_version": "1",
+  "invocation_nonce": "cc4df80a9b4e6450",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04b33-73cc-7432-881b-e1c6a54d693f",
+  "resumed_from_session": "01a04b33-73cc-7432-881b-e1c6a54d693f",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "a4d44a9319131c72863ccec4988f848ca23e4edb419a91f8c7ed35f394f77d38",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04b33-73cc-7432-881b-e1c6a54d693f",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nRead guide.md and commands.txt. APPEND to the END of guide.md a section exactly headed \"## Command Reference\" containing a markdown table with columns command | purpose, one row per command from commands.txt (init, status, verify). Do not modify any existing text. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "2026-08-29T01:50:00.466236Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:50:00.502334Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:50:14.311300Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:50:24.225989Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:50:30.635799Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:50:37.852294Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n",
+    "elapsed_ms": 61319
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_index": 3,
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "73baf60e5d0cf16fc154e269abbee44fca22badd170cf5cc94ec97c0cf788926",
+      "paths": []
+    },
+    {
+      "event_index": 4,
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "73baf60e5d0cf16fc154e269abbee44fca22badd170cf5cc94ec97c0cf788926",
+      "paths": []
+    },
+    {
+      "event_index": 5,
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T1-doc-ref-treatment/guide.md"
+      ]
+    },
+    {
+      "event_index": 6,
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T1-doc-ref-treatment/guide.md"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "goal-spec.json": "1a99041b97b50bb54eb7583281cef1d0bbfdc705caf40e11f19eece0c49adcf3",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "9fbf09d4dfd45e3529ce1583dbd80723d5bf876eaef8e1032c1f55cb66257cb5",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38"
+  },
+  "post_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "goal-spec.json": "1a99041b97b50bb54eb7583281cef1d0bbfdc705caf40e11f19eece0c49adcf3",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "9fbf09d4dfd45e3529ce1583dbd80723d5bf876eaef8e1032c1f55cb66257cb5",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "626c90776c03662667587bbdd23528ce43f5db94ccdde9043af6acf45f3697d7"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/5b06d20399ba9237/pairs/P1/treatment-host-evidence-attempt-6/2026-08-29T01-49-55-208Z-cc4df80a9b4e6450-raw-output.txt",
+    "sha256": "e9e3bc755602b910beaf445a8702f48049fea1459608d43a7ad2f4530c8e6186"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/5b06d20399ba9237/pairs/P1/treatment-host-evidence-attempt-6/2026-08-29T01-49-55-208Z-cc4df80a9b4e6450-raw-trace.jsonl",
+    "sha256": "e9e3bc755602b910beaf445a8702f48049fea1459608d43a7ad2f4530c8e6186"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "guide.md"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "item_1-0001",
+      "native_event_index": 3,
+      "native_event_type": "item.started",
+      "native_item_id": "item_1",
+      "native_item_type": "command_execution",
+      "tool": "command_execution",
+      "args_sha256": "73baf60e5d0cf16fc154e269abbee44fca22badd170cf5cc94ec97c0cf788926",
+      "invocation_args_sha256": "73baf60e5d0cf16fc154e269abbee44fca22badd170cf5cc94ec97c0cf788926",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "32858bdf690814b873b76ffe5696c8cf227976fbf426f1768636489ec2047626",
+      "post_manifest_sha256": "7ab230efa59f30a2a0c25f9351b9ecde43877ec6905cc8f50bcecc3386d5eb2a",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_1-0002",
+      "native_event_index": 4,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_1",
+      "native_item_type": "command_execution",
+      "tool": "command_execution",
+      "args_sha256": "73baf60e5d0cf16fc154e269abbee44fca22badd170cf5cc94ec97c0cf788926",
+      "invocation_args_sha256": "73baf60e5d0cf16fc154e269abbee44fca22badd170cf5cc94ec97c0cf788926",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "32858bdf690814b873b76ffe5696c8cf227976fbf426f1768636489ec2047626",
+      "post_manifest_sha256": "7ab230efa59f30a2a0c25f9351b9ecde43877ec6905cc8f50bcecc3386d5eb2a",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_2-0003",
+      "native_event_index": 5,
+      "native_event_type": "item.started",
+      "native_item_id": "item_2",
+      "native_item_type": "file_change",
+      "tool": "file_change",
+      "args_sha256": "b13a55fdd013a356bbefcb6552fab1b3b694c93d4d020dc619ba2e32c2da55cd",
+      "invocation_args_sha256": "b13a55fdd013a356bbefcb6552fab1b3b694c93d4d020dc619ba2e32c2da55cd",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "32858bdf690814b873b76ffe5696c8cf227976fbf426f1768636489ec2047626",
+      "post_manifest_sha256": "7ab230efa59f30a2a0c25f9351b9ecde43877ec6905cc8f50bcecc3386d5eb2a",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_2-0004",
+      "native_event_index": 6,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_2",
+      "native_item_type": "file_change",
+      "tool": "Edit",
+      "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+      "invocation_args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+      "decision": "allowed",
+      "action_nonce": "c982a40469685aea",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "guide.md",
+      "pre_sha256": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38",
+      "post_sha256": "626c90776c03662667587bbdd23528ce43f5db94ccdde9043af6acf45f3697d7",
+      "observed_sha256": "626c90776c03662667587bbdd23528ce43f5db94ccdde9043af6acf45f3697d7",
+      "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+      "effect_paths": [
+        "guide.md"
+      ],
+      "effect_fingerprint": "bfb4095ea6de84314b10011b36e36587d30309c07ac876e5a952543204e96810",
+      "pre_manifest_sha256": "32858bdf690814b873b76ffe5696c8cf227976fbf426f1768636489ec2047626",
+      "post_manifest_sha256": "7ab230efa59f30a2a0c25f9351b9ecde43877ec6905cc8f50bcecc3386d5eb2a",
+      "observed_changed": [
+        "guide.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "guide.md"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 73487,
+    "output_tokens": 697,
+    "total_tokens": 74184,
+    "cached_input_tokens": 65792,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

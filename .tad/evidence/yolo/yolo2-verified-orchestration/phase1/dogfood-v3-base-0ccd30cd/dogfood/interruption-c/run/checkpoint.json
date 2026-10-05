@@ -1,0 +1,34 @@
+{
+  "format": "yolo-recovery-checkpoint-v1",
+  "run_id": "interruption-c",
+  "goal_id": "yolo2-p1-guide-maintenance",
+  "handoff_path": ".tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md",
+  "handoff_revision": "1e064fd530cce81505b20a86a9d0ba2b4a8674960081758de1a94a9e5bcd7ba8",
+  "base_commit": "323c380dbb02dcdc4b58facd15e96825be66eb50",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-c",
+  "state": "HONEST_PARTIAL",
+  "events_count": 2,
+  "latest_observed_head": "323c380dbb02dcdc4b58facd15e96825be66eb50",
+  "verified": [],
+  "candidate_slices": [],
+  "pending_action": null,
+  "unknown_actions": [],
+  "forbidden_retry_actions": [],
+  "stopped": {
+    "reason": "recovery assertion review FAILED: hard 8/8 but soft 0.88 below the 0.90 floor; continuing is not authorised",
+    "seq": 2,
+    "at": "2026-08-24T22:37:11.370Z"
+  },
+  "blockers": [
+    {
+      "code": "stopped",
+      "detail": "recovery assertion review FAILED: hard 8/8 but soft 0.88 below the 0.90 floor; continuing is not authorised"
+    }
+  ],
+  "legal_next_action": {
+    "action": "Do NOT continue. Resolve the recorded stop reason with the human, then open a NEW run or explicitly reconcile this one.",
+    "why": "run was explicitly stopped: recovery assertion review FAILED: hard 8/8 but soft 0.88 below the 0.90 floor; continuing is not authorised",
+    "owner": "conductor+human"
+  },
+  "generated_at": "2026-08-24T22:37:11.467Z"
+}

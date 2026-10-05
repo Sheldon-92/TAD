@@ -1,0 +1,165 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "6a5cce3653d4c558",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a044db-e4ba-7fa2-8a09-7cf10bd2a181",
+  "resumed_from_session": "01a044db-e4ba-7fa2-8a09-7cf10bd2a181",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "6113672c7e11667d04d0174cbbe57810aafb71739c3e31dcb910c973b9944943",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a044db-e4ba-7fa2-8a09-7cf10bd2a181",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nAPPEND to the END of guide.md a section exactly headed \"## Worked Example\" containing one fenced code block showing an example shell invocation of the verify command. Do not modify any existing text. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 11541
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "bf876389bb56feb07e74c579806e445d3b4e89d6e126a51973de1e653502f391",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "bf876389bb56feb07e74c579806e445d3b4e89d6e126a51973de1e653502f391",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T1-doc-ref-control/guide.md"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T1-doc-ref-control/guide.md"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "contract-S2.json": "c4974d3dbf089ff074db38e52117dc3a4b6e56697ffb09fe519dffecf12a019b",
+    "goal-spec.json": "ae27a00da953297ef255bba17bb63f90b05182590e851a6a328346e61bc2a400",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "156feb82e583c35b29a767f4d3c132de9acc0aa7f3236899729e11e11504b495",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "5b3fe259e27172b885d9239a7b6a8b5c65211c1e9e320a5f6c790db1130ea570"
+  },
+  "post_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "contract-S2.json": "c4974d3dbf089ff074db38e52117dc3a4b6e56697ffb09fe519dffecf12a019b",
+    "goal-spec.json": "ae27a00da953297ef255bba17bb63f90b05182590e851a6a328346e61bc2a400",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "156feb82e583c35b29a767f4d3c132de9acc0aa7f3236899729e11e11504b495",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "84f018bbe391f9347a7c828fe5a2743d9657cf0c6b0e8a89e74d19a426d16bd3"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P1/control-host-evidence/2026-08-27T20-15-49-065Z-6a5cce3653d4c558-raw-output.txt",
+    "sha256": "a7fa9f90a5be7edae078f951aa8108a350e78b14108a35c7671eab6b1de563e5"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P1/control-host-evidence/2026-08-27T20-15-49-065Z-6a5cce3653d4c558-raw-trace.jsonl",
+    "sha256": "a7fa9f90a5be7edae078f951aa8108a350e78b14108a35c7671eab6b1de563e5"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "guide.md"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+      "invocation_args_sha256": "d71982e04ca714125de3b37a56723cf2a117c2d64848534c2b7b1672c1ae9636",
+      "decision": "allowed",
+      "action_nonce": "92b74e54c0e0ce4c",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "guide.md",
+      "pre_sha256": "5b3fe259e27172b885d9239a7b6a8b5c65211c1e9e320a5f6c790db1130ea570",
+      "post_sha256": "84f018bbe391f9347a7c828fe5a2743d9657cf0c6b0e8a89e74d19a426d16bd3",
+      "observed_sha256": "84f018bbe391f9347a7c828fe5a2743d9657cf0c6b0e8a89e74d19a426d16bd3",
+      "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+      "effect_paths": [
+        "guide.md"
+      ],
+      "effect_fingerprint": "b3fcaad676bd24144381f23d8d466b52d0343ff829001c402e46d614d3378cab",
+      "pre_manifest_sha256": "ac4520d190f860397e1b9fd37dbe1f72c79e1653d32aabcbfebb4453c86e8813",
+      "post_manifest_sha256": "7130d031b8e0544e313c804c69b7df568059a38e1da78a60b4b2e9d8d66ce351",
+      "observed_changed": [
+        "guide.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "guide.md"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 105391,
+    "output_tokens": 386,
+    "total_tokens": 105777,
+    "cached_input_tokens": 101632,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

@@ -1,0 +1,15 @@
+{
+  "format": "yolo2-phase2-evidence-bootstrap-v1",
+  "task_id": "T3-shell-edge",
+  "arm": "control",
+  "source_task": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T3-shell-edge/task.json",
+  "destination_worktree": "T3-shell-edge-control",
+  "copied_at": "2026-08-27T00:00:00.000Z",
+  "files": [
+    {
+      "source": "dataset/T3-shell-edge/run.sh",
+      "destination": "run.sh",
+      "sha256": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71"
+    }
+  ]
+}

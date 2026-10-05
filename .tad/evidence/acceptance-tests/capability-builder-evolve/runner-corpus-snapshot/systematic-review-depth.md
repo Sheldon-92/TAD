@@ -1,0 +1,1 @@
+This review applies ScholarEval 8-dimension rubric with threshold 0.75 and uses DerSimonian-Laird estimator for random-effects pooling. Depth tier requires minimum tool calls 80+ across 4-6 phases. We select PRISMA 2020 27-item vs PRISMA-ScR 20+2 and report Gwet AC1 to address kappa paradox screening.

@@ -1,0 +1,72 @@
+{
+  "format": "yolo2-phase2-arm-result-v1",
+  "arm": "treatment",
+  "task": "T3-shell-edge",
+  "mechanism_sha256": "39b8160abc1ee37bf3ed2becfc8266f4d084a4c1d018b5b4550ddf95c1e7293b",
+  "task_sha256": "a5feda1bbd706f4c544114125b79aa2ec2e22d4dbb59b8924cc64de1f9030b0a",
+  "base_commit": "9596b98fb4d41c711bc98662dec713eb2da5642f",
+  "final_hidden_acceptance": [
+    {
+      "check": "run.sh no longer echoes not-done",
+      "passed": true,
+      "detail": "run.sh no longer echoes not-done"
+    },
+    {
+      "check": "run.sh prints a 4-digit year line",
+      "passed": true,
+      "detail": "run.sh prints a 4-digit year line"
+    },
+    {
+      "check": "sh run.sh exits 0",
+      "passed": true,
+      "detail": "sh run.sh exits 0"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "run.sh no longer echoes not-done",
+          "passed": false,
+          "detail": "run.sh no longer echoes not-done"
+        },
+        {
+          "check": "run.sh prints a 4-digit year line",
+          "passed": true,
+          "detail": "run.sh prints a 4-digit year line"
+        },
+        {
+          "check": "sh run.sh exits 0",
+          "passed": true,
+          "detail": "sh run.sh exits 0"
+        }
+      ],
+      "tokens": 51702
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "run.sh no longer echoes not-done",
+          "passed": true,
+          "detail": "run.sh no longer echoes not-done"
+        },
+        {
+          "check": "run.sh prints a 4-digit year line",
+          "passed": true,
+          "detail": "run.sh prints a 4-digit year line"
+        },
+        {
+          "check": "sh run.sh exits 0",
+          "passed": true,
+          "detail": "sh run.sh exits 0"
+        }
+      ],
+      "tokens": 55545
+    }
+  ],
+  "tokens_total": 107247
+}

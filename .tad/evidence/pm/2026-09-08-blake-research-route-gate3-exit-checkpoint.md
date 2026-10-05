@@ -1,0 +1,23 @@
+# Exit checkpoint — research-route-local-wiki Blake Gate3
+
+- woke: OpenCode exit wake webhook
+- source: oc-run (→ opencode ledger)
+- owner: 6cea3eb5-afd4-4cf9-bb80-9673fb7243e9 (match TAD PM)
+- exit: 0
+- elapsed_s: 530
+- ended: 2026-09-08T19:47:30Z
+- dir: /home/box/云同步/TAD
+- continue: no
+- ledger: /home/box/pm/last-opencode.md + .tad/evidence/pm/last-opencode.POINTER.md
+- dual-read: last-cursor.md older (ended 19:32:34Z rev3); selected opencode per source=oc-run
+- verdict: PASS
+- evidence (on disk):
+  - .tad/active/handoffs/COMPLETION-20260908-research-route-local-wiki.md (gate3_verdict: pass)
+  - .tad/evidence/reviews/blake/research-route-local-wiki/layer1-row-verification.md (11/11 PASS)
+  - .tad/evidence/reviews/blake/research-route-local-wiki/layer2-spec-compliance.md (PASS)
+  - .tad/evidence/reviews/blake/research-route-local-wiki/layer2-safety-blast-radius.md (PASS)
+  - .tad/active/handoffs/HANDOFF-20260908-research-route-local-wiki.md (Gate2-PASS-Round3)
+  - .tad/evidence/reviews/alex/research-route-local-wiki/row06.baseline
+- note: uncommitted; ~250 other-line dirty tree left alone; lint.sh FAIL on pre-existing wiki = OOS
+- next: Alex Gate4 via cursor-run (standing auth 你自己决策; Routine Gate4 不问人; oc busy 买卖 → Cursor channel)
+- auto_continue_n: →1

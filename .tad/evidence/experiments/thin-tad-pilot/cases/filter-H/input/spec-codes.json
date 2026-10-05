@@ -1,0 +1,1 @@
+{"codes": ["ZG-A", "ZG-B"], "rule": "Remove rows whose code is ZG-B (out-of-scope category). Keep every ZG-A row. Cite the code for each removal."}

@@ -1,0 +1,67 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "4b759687af947481aaaa2c4a842b977492b3eddf8d068083d62ffc9dd61bbf46",
+  "parser_version": "1",
+  "invocation_nonce": "f6b2e352cde9087b",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03c35-78ac-7503-add8-56b87e8eabbb",
+  "turn_kind": "assertion",
+  "round_id": null,
+  "packet_sha256": "fe2c4c9d9b89c76f6fc2735871156e66184e351947deba2acd7023ab4bd89f61",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T03-55-32-185Z-f6b2e352cde9087b-raw-output.txt",
+    "sha256": "8c22fe5c05433539cf054d5611130d1210f01d90f3e453840cb2f7667762f4cf"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T03-55-32-185Z-f6b2e352cde9087b-raw-trace.jsonl",
+    "sha256": "2af2884121995c6802587e3d1809bac532572740a482e69393dd973a5896a3ea"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "read-only"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "04cf7d2b5302d5f0404951ede024d7fd300358142ee72eb80f44a3ba62024cab",
+      "decision": "allowed",
+      "action_nonce": null,
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 74737,
+    "output_tokens": 2570,
+    "total_tokens": 77307,
+    "cached_input_tokens": 63488,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "# Recovery Assertion\n\n## H1 — Goal\n\nAppend `## Command Reference` to `guide.md` with a Markdown table containing `command | purpose` columns and one row for every command in `commands.txt`, without changing existing content. This is goal `y2p2-T1-doc-ref`, mapped entirely to `SC-1`.\n\n## H2 — Handoff Revision\n\nThe governed handoff is `handoff.md` at revision `aeb9c58e13cf87200c16c787fadc610480ffcf3cd0c063a0e3a6a2bea5e699ed`, based on commit `a4b3df30a3dbaa0ec1857986b7edd729a194b325`.\n\n## H3 — Verified\n\nNo work is verified. The ledger contains only initialization and preparation of round `R-01`, slice `S1`; it contains no checkpoint, Gate result, independent review, or Conductor-authored bound verification receipt.\n\n## H4 — Unverified / In Progress\n\nSlice `S1` is prepared but has no recorded execution progress. The observed `guide.md` contains only:\n\n```markdown\n# Guide\n\nExisting intro paragraph.\n```\n\nThat observation is not proof of committed state or progress. Whether any broader worktree changes are uncommitted was not inspected and remains unverified. The exact purpose values from `commands.txt` also remain uninspected in this recovery phase.\n\n## H5 — Pending Action\n\nExecute only slice `S1`: preserve the existing introduction and append the required Command Reference table for `init`, `status`, and `verify`, using the corresponding purposes from `commands.txt`. The allowed paths are only `guide.md` and `commands.txt`.\n\n## H6 — Blockers\n\nThere is no ledger-recorded blocker. Task execution is intentionally unavailable during this recovery assertion because the governing request forbids doing the task work and grants no write access.\n\n## H7 — Legal Next Action\n\nAfter recovery, the legal next executor action is to read the allowed source `commands.txt` to obtain the exact command-purpose data, then edit only `guide.md` to satisfy slice `S1`. The executor must stop if scope drift is required.\n\n## H8 — Non-Goals / Forbidden Scope\n\nNo work beyond the stated documentation change is authorized. Changes under `.tad/scripts/`, `.claude/`, and `.tad/hooks/` are forbidden. Starting another slice, inspecting hidden acceptance, altering existing guide content, or modifying any path outside the slice contract is outside authority.\n\n## S1 — Why the Next Action Is Legal\n\nReading `commands.txt` and editing `guide.md` are expressly within the current `S1` contract, directly serve `SC-1`, use allowed paths and declared tools, and do not enter forbidden scope.\n\n## S2 — Why Verified Work Must Not Be Redone\n\nVerified work may advance only through a bound receipt written by a Conductor distinct from the executor after both Gate and independent review pass. No such receipt exists, so there is currently no verified slice to redo. The existing guide introduction must nevertheless remain untouched because preservation is part of the goal and slice outcome.\n\n## S3 — Why Blind Retry / Self-Completion Is Unavailable\n\nThere is no failed attempt or retry authorization in the ledger, no checkpoint to adopt as verified, and no deterministic check declared for executor use. Uncommitted observations cannot establish progress. The executor cannot self-verify, issue an effective receipt, infer missing purpose text, or declare completion; verification requires the prescribed Gate, independent review, and distinct-Conductor receipt.\n\n## S4 — Rejected\n\nRejected are: declaring the goal or slice complete now; treating observed file content or completion prose as verified progress; blindly appending guessed purpose text; retrying nonexistent prior work; redoing future verified work; changing existing guide content; touching paths outside `guide.md` and `commands.txt`; entering forbidden directories; starting other slices; spawning agents or using shell execution during strict Phase 2; and seeking hidden acceptance evidence."
+}

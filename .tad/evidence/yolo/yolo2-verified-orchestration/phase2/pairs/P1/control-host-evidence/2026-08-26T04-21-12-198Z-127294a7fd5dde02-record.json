@@ -1,0 +1,72 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "4b759687af947481aaaa2c4a842b977492b3eddf8d068083d62ffc9dd61bbf46",
+  "parser_version": "1",
+  "invocation_nonce": "127294a7fd5dde02",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03c4c-5a47-7271-b0af-9cc88d7ea5c9",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "b869d286d4a70315f2310296749cb8618a485b4914ee533c5d059782caf0288b",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T04-21-12-198Z-127294a7fd5dde02-raw-output.txt",
+    "sha256": "3bab71b5ea1131aad3cdd044050aef575ad5a16f1811d286fd57b9fca3af4218"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T04-21-12-198Z-127294a7fd5dde02-raw-trace.jsonl",
+    "sha256": "3f5a7e8760ad28be7c68f0ec0bec0da76173db4f2f2c2c5d7d720a1f25cc0873"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "4d0ff00e9e7ba9e5e49cbdd7542c7b27dd1a012f08ea581f7e6275b207036d29",
+      "decision": "allowed",
+      "action_nonce": "640f77b924d03e35",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 111439,
+    "output_tokens": 1371,
+    "total_tokens": 112810,
+    "cached_input_tokens": 105216,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: the patch tool denied writing `guide.md` because it is outside the writable workspace root. No file was changed."
+}

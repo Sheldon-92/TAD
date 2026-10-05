@@ -1,0 +1,17 @@
+{
+  "interruption_stage": "after-verified-slice",
+  "base_commit": "0ccd30cdf25daa3abc75cdf46ee6a98b68fbc9ec",
+  "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-a",
+  "session_id": "recover-a@ses_fc5ba27b3ffea9S5lTrg93i11r",
+  "assertion_author_id": "recover-a",
+  "review_author_id": "review-a",
+  "executor_ids": [
+    "exec-a1",
+    "exec-a2"
+  ],
+  "repeated_verified_slice": 0,
+  "wrong_or_unauthorized_next_action": 0,
+  "continued": true,
+  "hidden_acceptance_passed": true
+}

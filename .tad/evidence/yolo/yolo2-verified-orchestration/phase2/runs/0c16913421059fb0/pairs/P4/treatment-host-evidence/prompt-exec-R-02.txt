@@ -1,0 +1,4 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+usage.md says "usage for 0.9.0". Change that line to "usage for 1.0.0". Nothing else changes. Then stop.
+If the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).
+When finished print DONE.

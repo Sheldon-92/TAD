@@ -1,0 +1,20 @@
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.10
+  ✅ ac2.10: run rc=0
+  ✅ ac2.10: zero network (both curl-shim logs empty)
+  ✅ ac2.10: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.10: user TAD-main/ identical
+  ✅ ac2.10: root+parent sentinels identical (zero outside writes)
+  ✅ ac2.10: benign tar passes member validation
+  ✅ ac2.10: absolute-member tar rejected pre-extraction
+  ✅ ac2.10: dot-dot-member tar rejected pre-extraction
+  ✅ ac2.10: absolute-link-target tar rejected pre-extraction
+  ✅ ac2.10: dot-dot-link-target tar rejected pre-extraction
+  ✅ ac2.10: benign in-tree link tar passes (predicate is escaping-only)
+  ✅ ac2.10: absolute hardlink-target tar rejected pre-extraction
+  ✅ ac2.10: benign in-tree hardlink tar passes
+  ✅ ac2.10: zero outside writes across tar probes
+
+=== Summary: PASS=14 FAIL=0 ===
+VERDICT: PASS

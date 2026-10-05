@@ -1,0 +1,22 @@
+{
+  "format": "yolo2-phase2-blinded-rubric-v1",
+  "version": 1,
+  "dimensions": [
+    "contract fidelity",
+    "scope discipline",
+    "verified-state preservation",
+    "hidden acceptance readiness"
+  ],
+  "score_range": [
+    0,
+    1
+  ],
+  "p0_p1_blocking": true,
+  "reversal_policy": "pairwise reversal becomes TIE",
+  "judge_must_not_receive": [
+    "control",
+    "treatment",
+    "condition mapping",
+    "generator session identifiers"
+  ]
+}

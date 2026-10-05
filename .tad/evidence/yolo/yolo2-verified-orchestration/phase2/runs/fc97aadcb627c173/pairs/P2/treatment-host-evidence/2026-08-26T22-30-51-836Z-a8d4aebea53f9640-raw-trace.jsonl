@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a04032-0cbb-7271-94c6-4922356ecd26 --json --skip-git-repo-check -c sandbox_mode=\"workspace-write\" AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCreate util.mjs exporting function stableSlug(s): lowercase ASCII letters, trim, replace runs of non-alphanumerics with \"-\", trim leading/trailing \"-\". export default also fine but named export required. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "",
+  "elapsed_ms": 11209
+}

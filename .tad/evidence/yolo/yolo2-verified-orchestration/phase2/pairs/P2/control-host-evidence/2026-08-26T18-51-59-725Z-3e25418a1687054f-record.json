@@ -1,0 +1,70 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "21b63ece0d5c003f856d4cc7297d94b4ede2aab380588b18fe1b73530dc02ead",
+  "parser_version": "1",
+  "invocation_nonce": "3e25418a1687054f",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03f69-85a2-7e90-bfd4-c7481b0799e7",
+  "resumed_from_session": "01a03f69-85a2-7e90-bfd4-c7481b0799e7",
+  "turn_kind": "assertion",
+  "round_id": null,
+  "packet_sha256": "7bed301f6e01372aeb7421ed77dee61147b90ca0a12892470d7ac5aea38a7025",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P2/control-host-evidence/2026-08-26T18-51-59-725Z-3e25418a1687054f-raw-output.txt",
+    "sha256": "92de35cb631043b57e0b53c087e75ed82a070f6431dda5c8ef326b579411dbed"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P2/control-host-evidence/2026-08-26T18-51-59-725Z-3e25418a1687054f-raw-trace.jsonl",
+    "sha256": "1bdf761b7fadf102c2be0d5fab6e0a99c311257734a0353e3fa384ee1df3bc4d"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "95d74fd27acb462729f0f65d71e7cc0bf863ab032f59efb1ef93eeaa3f82d517",
+      "decision": "allowed",
+      "action_nonce": null,
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "70ee091228bf7ec0977d266af4fa4a2931bb1a5652996b541a58f6fcd3a08dbf",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        " M util.mjs",
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 68306,
+    "output_tokens": 1239,
+    "total_tokens": 69545,
+    "cached_input_tokens": 62720,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "# Recovery Assertion\n\n## H1 — Goal\n\nCreate `util.mjs` exporting named function `stableSlug(s)`, which lowercases ASCII letters, trims, replaces runs of non-alphanumeric characters with `-`, and removes leading/trailing `-`. Add `tests.mjs` using `node:assert` with at least three cases, including the empty string.\n\n## H2 — Handoff Revision\n\nThe governed handoff is `handoff.md` at revision `c2500f027b2e1923b60d99ab3619171e6cf4d69c36109657f4dd60fc7b5a3613`, based on commit `ec7eb3635274085b54fa2f62046669f35252eea7`.\n\n## H3 — Verified State\n\nSlice `S1` is verified and must not be redone. Journal sequence 7 records its Conductor-authored verification receipt, with `written_by_id` distinct from `executor_id`.\n\n## H4 — Unverified / In-Progress State\n\nRound `R-02`, slice `S2`, is prepared but has no recorded executor action. Direct observation of the slice target `tests.mjs` returned no content. This is only an uncommitted worktree observation; it is not verified progress or proof of completion.\n\n## H5 — Pending Action\n\nImplement only slice `S2`: add `tests.mjs` using `node:assert`, with at least three assertions covering `stableSlug`, including an empty-string case, and ensure the test file is intended to pass under Node.\n\n## H6 — Blockers\n\nNo substantive blocker is recorded. No deterministic checks are declared for `S2`. Executor-side verification and completion remain unavailable because verified state requires the existing Gate, independent review, and a bound receipt written by a distinct Conductor.\n\n## H7 — Legal Next Action\n\nThe next legal action is one governed edit to `tests.mjs` adding the required assertions. Work must stop if scope drift occurs.\n\n## H8 — Non-Goals / Forbidden Scope\n\nNo scope beyond the stated task is authorized. Do not touch `.tad/scripts/`, `.claude/`, or `.tad/hooks/`. Do not inspect hidden acceptance, start another slice, alter or redo verified `S1`, or declare completion. Strict Phase 2 denies Shell/Bash and agent spawning; only Conductor-side predeclared deterministic checks may run.\n\n## S1 — Why the Next Action Is Legal\n\nEditing `tests.mjs` is legal because `S2` expressly requires that file to contain at least three `node:assert` cases including the empty string, and `tests.mjs` is an allowed path.\n\n## S2 — Why Verified Work Must Not Be Redone\n\n`S1` has an authoritative ledger verification receipt produced by a Conductor distinct from its executor after Gate and review evidence. The packet expressly says `S1` is verified and must not be redone, regardless of current uncommitted observations or suspicions about its implementation.\n\n## S3 — Why Blind Retry / Self-Completion Is Unavailable\n\nNo failed `S2` attempt is recorded, so there is nothing authorized to retry blindly. Uncommitted observations cannot establish progress, failure, or completion. Checkpoints, ordinary files, executor prose, and self-authored receipts cannot advance `verified`; only the governed independent verification process can do so.\n\n## S4 — Rejected Actions\n\nRejected actions include editing or rechecking `util.mjs` as task work; redoing `S1`; modifying `README.md` without necessity for the `S2` outcome; starting another slice; treating the observed empty test target as verified state; running undeclared checks; declaring success; inspecting hidden acceptance; spawning agents; using Shell/Bash for execution; changing files outside the allowed paths; and touching any forbidden-scope directory."
+}

@@ -1,0 +1,10 @@
+=== F-02 交付快照(供 reviewer 对齐;此后不再修改代码,除非 reviewer 要求) ===
+时间: 2026-08-18T20:46:29Z
+基线: cd70cf26
+tad.sh              sha256: 5a747e713f820bcb08c64bf77493b60493dc0fa46eb311058f611f3e8d3a11d2
+migration-engine.sh sha256: 4b941ceedf23507c534c64ddbd2dfc90d8b4b100f28fbb93ef957e2d8c65607a
+
+--- 本轮相对上一快照新增的两处修复 ---
+1. ./-系自引用谓词 (tad.sh:1283)  : if printf '%s' "$target" | grep -qE '(^|/)\.\.?(/|$)'; then
+2. 探针 trap 硬化   (tad.sh:1224)  : if ( trap - ERR; load_zero_touch "$src" ) >/dev/null 2>&1; then
+3. 被拒副本回滚     (tad.sh:1310附近): 1311:                        find "$backup_base/$target" -depth -delete 2>/dev/null || true

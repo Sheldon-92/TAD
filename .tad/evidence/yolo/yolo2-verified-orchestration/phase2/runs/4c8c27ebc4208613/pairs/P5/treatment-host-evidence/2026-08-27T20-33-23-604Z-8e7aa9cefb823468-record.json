@@ -1,0 +1,165 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "8e7aa9cefb823468",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a044ec-c650-7282-acd9-2085ed6123e1",
+  "resumed_from_session": "01a044ec-c650-7282-acd9-2085ed6123e1",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "2b8141563256480dc06029c31d7db2fdeeba1f27b122800a56c371d532724359",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a044ec-c650-7282-acd9-2085ed6123e1",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCreate totals.js exporting function total(items) that returns the sum of item.price across items, and MUST return 0 for an empty array (never NaN/undefined). Use a plain numeric loop/reduce starting from 0. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 24625
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "d705a3ee7d14e5cc1e89ddb741c95b4b5153b7205448b3b45dc57c1ad144a225",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "d705a3ee7d14e5cc1e89ddb741c95b4b5153b7205448b3b45dc57c1ad144a225",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T5-hidden-business-treatment/totals.js"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T5-hidden-business-treatment/totals.js"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "cc70a51329b5814d067657e88ddbe09402cb73ee93386b9a7a548f7749ede566",
+    "goal-spec.json": "63845e0d99922ecc809fc08797c3c128410ec4679a56364da96caf7a6ea2a7aa",
+    "handoff.md": "9b0b469283e106021deaeb0258291d84407ced550a0360eb168b2754ac0bd376",
+    "oracle.txt": "c03f3b580e6c9911761242e69f2fed11fbe45b2441679d02547f57396ee0990c",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "app.js": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a",
+    "tests.js": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89",
+    "totals.js": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "post_manifest": {
+    "contract-S1.json": "cc70a51329b5814d067657e88ddbe09402cb73ee93386b9a7a548f7749ede566",
+    "goal-spec.json": "63845e0d99922ecc809fc08797c3c128410ec4679a56364da96caf7a6ea2a7aa",
+    "handoff.md": "9b0b469283e106021deaeb0258291d84407ced550a0360eb168b2754ac0bd376",
+    "oracle.txt": "c03f3b580e6c9911761242e69f2fed11fbe45b2441679d02547f57396ee0990c",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "d2df64e110fce6331524f66a9c5d2daba271d0d04ae88adfd70f7fafa0aa362e",
+    "app.js": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a",
+    "tests.js": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89",
+    "totals.js": "c30344b2d25a778b675cb301eed864ff77fa79ff7ef172d4db373181d07e6608"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P5/treatment-host-evidence/2026-08-27T20-33-23-604Z-8e7aa9cefb823468-raw-output.txt",
+    "sha256": "7c2629d95aebf087ed3c1b910c0a01a70b94a98f34d2bb778644716a3c32b37e"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/4c8c27ebc4208613/pairs/P5/treatment-host-evidence/2026-08-27T20-33-23-604Z-8e7aa9cefb823468-raw-trace.jsonl",
+    "sha256": "7c2629d95aebf087ed3c1b910c0a01a70b94a98f34d2bb778644716a3c32b37e"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "totals.js"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "4b2ffd51100bc70db6cd1591296dcd56a25a33492f52fec897f440c524fce3f3",
+      "invocation_args_sha256": "b2a1fcb2bda4d8545ebc685c7ad67c9b07320ddb4e642d2740190f841daa88ec",
+      "decision": "allowed",
+      "action_nonce": "deb3be937e59c2ff",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "totals.js",
+      "pre_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "post_sha256": "c30344b2d25a778b675cb301eed864ff77fa79ff7ef172d4db373181d07e6608",
+      "observed_sha256": "c30344b2d25a778b675cb301eed864ff77fa79ff7ef172d4db373181d07e6608",
+      "effect_manifest_sha256": "a1f011fd10a5c25d89c212366c69608e27f698bc0fe6908efce49d41c0b45c8b",
+      "effect_paths": [
+        "totals.js"
+      ],
+      "effect_fingerprint": "945f55803497d5588f865304e509671590068ddc3e70ebac83f261dca6add8e2",
+      "pre_manifest_sha256": "0fe3274094a4a5da8ad22471000613c69655bf1bd6016124991f8d0e6c63c622",
+      "post_manifest_sha256": "dad500d0b7e41aba376ebfc5a53e1728413a5f251d0fa3bd5e434fb4e178d1b9",
+      "observed_changed": [
+        "totals.js"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "totals.js"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 67757,
+    "output_tokens": 829,
+    "total_tokens": 68586,
+    "cached_input_tokens": 62720,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

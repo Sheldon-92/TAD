@@ -1,0 +1,3 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+APPEND to the END of guide.md a section exactly headed "## Worked Example" containing one fenced code block showing an example shell invocation of the verify command. Do not modify any existing text. Then stop.
+When finished print DONE.

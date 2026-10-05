@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a04030-b0bb-7683-bb71-94044152b739 --json --skip-git-repo-check -c sandbox_mode=\"workspace-write\" AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCreate tests.mjs using node:assert importing stableSlug from util.mjs with at least 3 test cases including stableSlug(\"\")===\"\" ; make it runnable via node tests.mjs printing \"tests ok\" at the end. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "",
+  "elapsed_ms": 11317
+}

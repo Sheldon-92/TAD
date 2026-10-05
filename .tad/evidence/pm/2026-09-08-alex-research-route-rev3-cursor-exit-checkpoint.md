@@ -1,0 +1,23 @@
+# Checkpoint — research-route-local-wiki Alex rev3 (Cursor) exit wake
+
+- woken: 2026-09-08T19:32:40Z (webhook source=cursor-run)
+- owner: 6cea3eb5-afd4-4cf9-bb80-9673fb7243e9 (match TAD PM ✅)
+- ledger: last-cursor.md (+ POINTER); dual-read last-opencode.md (prior Gate2 Round2 CONDITIONAL, older ended)
+- exit: 0
+- elapsed_s: 358
+- ended: 2026-09-08T19:32:34Z
+- dir: /home/box/云同步/TAD
+- model: gemini-3.8-flash-medium
+- continue: no
+- evidence (on disk ✅):
+  - `.tad/active/handoffs/HANDOFF-20260908-research-route-local-wiki.md` — Version 3.0 (rev3); Status Ready-for-Gate2-rereview; mtime ~ended; 51893 bytes
+  - §8 message: STRICTLY READ-ONLY / no ingest|generate in any mode (R2-2 cleared; "in write mode" only in history tables)
+  - ROW-06: dual-write Step0 + BASELINE_PENDING guard in AC8/ROW-06 text (R2-1); durable `row06.baseline` file not yet created (Blake Step0 — expected)
+  - §2.2 items 10–14 disposition + item-6 `.claude/workflows/pack-upgrade.workflow.js` (R2-3)
+  - "8处" typo cleared; academic-research line ~175/178/183 grep-anchored (R2-4)
+  - prior Round2 carriers unchanged: `.tad/evidence/reviews/alex/research-route-local-wiki/{leg1,leg2,gate2-synthesis}-round2.md`
+  - Round3 carriers: absent (expected; next OpenCode §3.7)
+- handoff: R2-1–R2-4 text fixes landed; Blake NOT released; no Gate2 PASS claimed
+- verdict: PASS
+- next: HOLD OpenCode Alex Gate2 Round3 (light line-confirm R2-1–R2-4 + NEW round3 carriers; muse-spark; not Cursor) — oc busy on 买卖 (owner dd2bd459 Blake linecard); auto_continue_n stays 0 for this hop until R3 dispatched; no Blake
+- L3: no

@@ -1,0 +1,8 @@
+{"type":"thread.started","thread_id":"01a04435-3423-7bf2-946e-f1ed2bfb9bf9"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item_0","type":"command_execution","command":"/bin/zsh -lc \"sed -n '1,200p' guide.md && sed -n '1,200p' commands.txt\"","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_0","type":"command_execution","command":"/bin/zsh -lc \"sed -n '1,200p' guide.md && sed -n '1,200p' commands.txt\"","aggregated_output":"init\nstatus\nverify\n","exit_code":0,"status":"completed"}}
+{"type":"item.started","item":{"id":"item_1","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T1-doc-ref-control/guide.md","kind":"update"}],"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T1-doc-ref-control/guide.md","kind":"update"}],"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"DONE"}}
+{"type":"turn.completed","usage":{"input_tokens":72188,"cached_input_tokens":65792,"cache_write_input_tokens":0,"output_tokens":481,"reasoning_output_tokens":277}}

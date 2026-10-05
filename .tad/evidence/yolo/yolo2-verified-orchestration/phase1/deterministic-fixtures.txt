@@ -1,0 +1,34 @@
+# Deterministic contract suite — yolo-recovery.test.mjs
+# Gate 4 lifecycle amendment round 3 — THREE-STATE proof at HEAD 7b12d429bae65cad0b530c54ff0df6e0e58cfa66
+# AC10 instrument base: bfce27f3469960946679b03e2562ece67a34f0f3 (base-commit.txt)
+
+== STATE 1: active layout (real files) ==
+CASE=path-guard RESULT=PASS
+CASE=lifecycle-e2e RESULT=PASS
+CASE=verified-authority RESULT=PASS
+CASE=authority-conflicts RESULT=PASS
+CASE=side-effect-reconcile RESULT=PASS
+CASE=status-capsule RESULT=PASS
+CASE=atomic-write RESULT=PASS
+CASE=binding-and-closure RESULT=PASS
+CASE=dogfood-evidence RESULT=PASS
+CASE=required-evidence RESULT=PASS
+RESULT=PASS
+ACTIVE_SUITE_EXIT=0
+
+== STATE 2: simulated archived layout (YOLO2_LIFECYCLE_SIM=archive: existence + net-diff simulation) ==
+CASE=path-guard RESULT=PASS
+CASE=lifecycle-e2e RESULT=PASS
+CASE=verified-authority RESULT=PASS
+CASE=authority-conflicts RESULT=PASS
+CASE=side-effect-reconcile RESULT=PASS
+CASE=status-capsule RESULT=PASS
+CASE=atomic-write RESULT=PASS
+CASE=binding-and-closure RESULT=PASS
+CASE=dogfood-evidence RESULT=PASS
+CASE=required-evidence RESULT=PASS
+RESULT=PASS
+ARCHIVE_SIM_SUITE_EXIT=0
+
+== STATE 3: committed archive in disposable worktree (real files, real diff) ==
+# Executed at archive commit 35996d99670f0c1bce58bf5bac28f015a7baf385 BEFORE worktree removal; full transcript: committed-archive-proof.txt (10/10 RESULT=PASS, WORKTREE_SUITE_EXIT=0)

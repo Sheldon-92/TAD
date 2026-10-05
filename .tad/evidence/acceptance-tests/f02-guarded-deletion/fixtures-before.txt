@@ -1,0 +1,29 @@
+=== TAD Migration Engine Fixture Harness ===
+
+  PASS: F1 normal-upgrade
+  PASS: F2 idempotent-rerun
+  PASS: F3 user-modified-mixed
+  PASS: F4 detection-unavailable
+  PASS: F5 chain-upgrade+gap
+  PASS: F6 malicious-zero-touch ×3
+  PASS: F7 malicious-path ×4
+  PASS: F8 unknown-strategy
+  PASS: F9 dir-delete dual-branch
+  PASS: F10 delete-only-no-verify
+  PASS: F11 zt-authority-unavailable
+  PASS: F12 rm-site-recheck
+  PASS: F13 mid-chain-malformed
+  PASS: F14 backup-collision
+  PASS: F16 merge-marker-present
+  PASS: F17 merge-marker-absent
+  PASS: F18 merge-idempotent
+  PASS: F19 merge-dry-run
+  PASS: AC17 min_engine_version
+  PASS: MG1 unmanifested-delete-detected
+  PASS: MG2 zero-touch-excluded
+  PASS: MG3 rename-detected
+
+=== Results ===
+Passed: 22 / 22 (18 fixtures + 1 inline AC17 + 3 migration gate)
+
+ALL FIXTURES PASS (22/22)

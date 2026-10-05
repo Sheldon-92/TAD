@@ -1,0 +1,25 @@
+{
+  "format": "yolo2-phase2-evidence-bootstrap-v1",
+  "task_id": "T2-node-behavior",
+  "arm": "treatment",
+  "source_task": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T2-node-behavior/task.json",
+  "destination_worktree": "T2-node-behavior-treatment",
+  "copied_at": "2026-08-27T00:00:00.000Z",
+  "files": [
+    {
+      "source": "dataset/T2-node-behavior/README.md",
+      "destination": "README.md",
+      "sha256": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839"
+    },
+    {
+      "source": "dataset/T2-node-behavior/tests.mjs",
+      "destination": "tests.mjs",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "dataset/T2-node-behavior/util.mjs",
+      "destination": "util.mjs",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

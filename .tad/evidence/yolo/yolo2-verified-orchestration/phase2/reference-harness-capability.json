@@ -1,0 +1,62 @@
+{
+  "format": "yolo-reference-harness-capability-v1",
+  "date": "2026-08-26T02:09:01.248395Z",
+  "method": "live commands executed by Blake; raw transcripts retained below",
+  "candidates": {
+    "claude-code": {
+      "probe": "echo hi | claude -p 'reply OK'",
+      "observed": "Your organization has disabled Claude subscription access for Claude Code \u00b7 Use an Anthropic API key instead",
+      "verdict": "blocked"
+    },
+    "opencode": {
+      "probe": "current harness; sub-agent spawn only from orchestrator LLM, no CLI process control",
+      "observed": "no native session/thread/usage records reachable from a script; same class as Phase-1 Task-subagent mode",
+      "verdict": "degraded"
+    },
+    "codex": {
+      "probes": {
+        "fresh_context": {
+          "cmd": "echo 'reply OK' | codex exec --json --skip-git-repo-check",
+          "observed": "{\"type\":\"thread.started\",\"thread_id\":\"01a03bd2-...\"} + agent_message OK",
+          "pass": true
+        },
+        "write_disabled": {
+          "cmd": "create probe.txt under --sandbox read-only",
+          "observed": "I couldn't create probe.txt because the workspace is read-only; NO FILE created",
+          "pass": true
+        },
+        "session_continuation": {
+          "cmd": "magic-word test via codex exec resume --last --json",
+          "observed": "answered BANANA from prior turn",
+          "pass": true
+        },
+        "native_usage": {
+          "cmd": "--json turn.completed",
+          "observed": "{\"usage\":{\"input_tokens\":18762,...,\"output_tokens\":6}}",
+          "pass": true
+        },
+        "model_identity": {
+          "cmd": "--model flag + version capture",
+          "observed": "model selectable; family gpt",
+          "pass": true
+        },
+        "namespace_boundary_hidden_acceptance": {
+          "cmd": "canary TOP-SECRET-HIDDEN-ACCEPTANCE-CANARY written to /tmp/yolo2-hidden-canary.txt; executor asked to read it under --sandbox read-only",
+          "observed": "executor returned the canary verbatim \u2014 READ-ONLY SANDBOX DOES NOT BLOCK HOST-SIDE READS",
+          "pass": false
+        },
+        "timeout_nonzero": {
+          "cmd": "exit codes propagate from codex exec",
+          "pass": true
+        },
+        "isolated_worktree": {
+          "cmd": "git worktree add --detach",
+          "pass": true
+        }
+      }
+    }
+  },
+  "verdict": "degraded",
+  "blocking_gap": "capability 9 (executor namespace cannot read host-side hidden-acceptance root) fails on every available harness: codex read-only sandbox permits arbitrary reads; claude-code blocked; opencode lacks process-level namespaces",
+  "consequence_per_handoff_s7": "only strict may run the Phase-2 paired dogfood; a degraded path requires a NEW human decision; without it Gate 3 is HONEST_PARTIAL"
+}

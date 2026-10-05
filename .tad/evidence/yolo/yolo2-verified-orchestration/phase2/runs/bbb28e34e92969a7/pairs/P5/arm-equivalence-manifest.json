@@ -1,0 +1,22 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T5-hidden-business",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "7becdda2616c464c31758bf7e9daa55a877a99735d378c261aa2f0e256493a32",
+      "treatment_sha256": "7becdda2616c464c31758bf7e9daa55a877a99735d378c261aa2f0e256493a32",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "a3d60dbbc065c4fd106eed6a14f3e2d3f62f25a236d648b98544742d170ed5ff",
+      "treatment_sha256": "a3d60dbbc065c4fd106eed6a14f3e2d3f62f25a236d648b98544742d170ed5ff",
+      "byte_equal": true
+    }
+  ],
+  "packet_bytes_equal": true
+}

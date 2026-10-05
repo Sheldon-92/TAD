@@ -1,0 +1,46 @@
+===== CASE ac2.7 =====
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.7
+  ✅ ac2.7: user .codex/+AGENTS.md → Check 3 PASS
+  ✅ ac2.7: AGENTS.md never named by Check 3
+  ✅ ac2.7: negative control FAILs on truly-stale file (check is live)
+  ✅ ac2.7: adversarial deprecation-adversarial-reordered.yaml green (user files never flag)
+  ✅ ac2.7: adversarial deprecation-adversarial-extraversions.yaml green (user files never flag)
+
+=== Summary: PASS=5 FAIL=0 ===
+VERDICT: PASS
+===== CASE ac2.9 =====
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.9
+  ✅ ac2.9: run rc=0
+  ✅ ac2.9: zero network (both curl-shim logs empty)
+  ✅ ac2.9: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.9: pre-existing user CLAUDE.md.bak byte-identical
+  ✅ ac2.9: new backups namespaced+timestamped (CLAUDE.md.backup.20260903_150139)
+
+=== Summary: PASS=5 FAIL=0 ===
+VERDICT: PASS
+===== CASE ac2.12 =====
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.12
+  ✅ ac2.12: --dirs ∩ --zero-touch = ∅
+  ✅ ac2.12: --verify-denylist PASS
+
+=== Summary: PASS=2 FAIL=0 ===
+VERDICT: PASS
+===== CASE r1 =====
+?? .worktrees/
+?? progress/
+  ⚠️  out-of-fence change:  M NEXT.md
+  ⚠️  out-of-fence change: ?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+  ⚠️  out-of-fence change: ?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+  ⚠️  out-of-fence change: ?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+  ⚠️  out-of-fence change: ?? .worktrees/
+  ⚠️  out-of-fence change: ?? progress/
+  ❌ r1: out-of-fence entries present (see above)
+
+=== Summary: PASS=0 FAIL=1 ===
+VERDICT: FAIL

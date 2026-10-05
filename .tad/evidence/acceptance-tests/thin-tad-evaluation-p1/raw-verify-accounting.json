@@ -1,0 +1,19 @@
+{
+  "command": "verify-accounting",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "records": 5,
+      "per_success": 5,
+      "partial": true,
+      "result": "MATCH"
+    },
+    {
+      "dryrun_records": 48,
+      "partial": true,
+      "result": "OK"
+    }
+  ],
+  "summary": "hand computation matches: per-success=5, partial=true, unpaired=[rename-H#r1]"
+}

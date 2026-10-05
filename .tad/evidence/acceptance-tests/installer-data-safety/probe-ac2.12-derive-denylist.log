@@ -1,0 +1,55 @@
+=== PROBE AC2.12 derive-sync-set disjointness + verify-denylist (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION: derive-sync-set.sh --dirs ∩ --zero-touch = empty + tad.sh --verify-denylist PASS---
+---DIRS---
+agents
+capability-packs
+codex
+context
+cross-model
+data
+eval
+gates
+guides
+hooks
+logs
+migrations
+ralph-config
+references
+runtime-compat
+schemas
+scripts
+skills
+sub-agents
+tasks
+templates
+tests
+workflows
+---ZERO-TOUCH---
+active
+archive
+decisions
+dependencies
+evidence
+github-registry
+memory
+pair-testing
+project-knowledge
+research-notebooks
+skill-library
+skillify-candidates
+---INTERSECTION (LC_ALL=C sorted, comm)---
+(empty above = PASS, disjoint)
+---VERIFY-DENYLIST---
+[0;32m✓ [0m--verify-denylist: tad.sh inlined DENY_LIST == derive-sync-set.sh (17 entries)
+RC= (expected 0)
+[0;32m✓ [0m--verify-denylist: tad.sh inlined DENY_LIST == derive-sync-set.sh (17 entries)
+RC=0 (expected 0 = GREEN)

@@ -1,0 +1,14 @@
+PASS s1-heading
+PASS s2-heading
+PASS s3-heading
+PASS s1-all-commands  — missing: 
+PASS s1-exit-codes
+PASS s2-real-reasons  — found 22 real reason strings (need >=8)
+PASS s2-no-invented-reasons  — invented: 
+PASS s3-transcript
+PASS preserved-warning
+PASS preserved-authority-order
+PASS no-truncation  — guide length 24464
+PASS balanced-fences  — 14 fence lines
+PASS scope-respected  — off-scope: 
+HIDDEN_ACCEPTANCE=PASS (13/13)

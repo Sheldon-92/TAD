@@ -1,0 +1,3 @@
+{"ts":"2026-09-07T16:46:19Z","type":"handoff_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":".tad/active/handoffs/HANDOFF-20260907-publish-v2442.md","size_bytes":9795,"slug":"publish-v2442"}
+{"ts":"2026-09-07T17:34:49Z","type":"evidence_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":".tad/evidence/reviews/blake/publish-v2442/code-reviewer.md","size_bytes":5449}
+{"ts":"2026-09-07T17:36:45Z","type":"evidence_created","project":"TAD","schema_version":"2.0","actor_tag":"agent_inferred","detail_level":"summary","file":".tad/evidence/reviews/blake/publish-v2442/spec-compliance.md","size_bytes":9783}

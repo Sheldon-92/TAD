@@ -1,0 +1,4 @@
+$ awk '/## Role Switching/,/## Knowledge Ingress/' AGENTS.md | grep -E "当 .* Lite|alex-lite|blake-lite" | tr -d ' '
+--- role counts ---
+1
+1

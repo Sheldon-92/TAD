@@ -1,0 +1,27 @@
+{
+  "format": "yolo-recovery-verification-v1",
+  "verdict": "PASS",
+  "run_id": "interruption-b",
+  "slice": "S1",
+  "handoff_revision": "1e064fd530cce81505b20a86a9d0ba2b4a8674960081758de1a94a9e5bcd7ba8",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-b",
+  "verified_head": "9982a621fdccbb26d38910be1b3800a0d67400eb",
+  "gate_evidence": [
+    {
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/gate-S1.txt",
+      "sha256": "8415c97752ad47087654c74ae6989fbd5b1217c81e76d6d129e05305e28fe048",
+      "verdict": "PASS"
+    }
+  ],
+  "review_evidence": [
+    {
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/review-S1.md",
+      "sha256": "cc4127b426ccc93390a6d6cc4451849656d5713e5dc11df861d9dda64c9effad",
+      "independent": true,
+      "verdict": "PASS"
+    }
+  ],
+  "executor_id": "exec-b1",
+  "written_by": "conductor",
+  "written_by_id": "conductor-blake-t2"
+}

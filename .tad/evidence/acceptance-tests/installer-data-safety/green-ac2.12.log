@@ -1,0 +1,8 @@
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.12
+  ✅ ac2.12: --dirs ∩ --zero-touch = ∅
+  ✅ ac2.12: --verify-denylist PASS
+
+=== Summary: PASS=2 FAIL=0 ===
+VERDICT: PASS

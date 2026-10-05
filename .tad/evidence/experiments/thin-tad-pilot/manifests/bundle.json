@@ -1,0 +1,17 @@
+{
+  "schema": "thin-tad-pilot-bundle/1",
+  "cases": [
+    "date-H",
+    "date-V",
+    "rename-H",
+    "rename-V",
+    "evidence-H",
+    "evidence-V",
+    "sync-H",
+    "sync-V",
+    "filter-H",
+    "filter-V",
+    "routine-H",
+    "routine-V"
+  ]
+}

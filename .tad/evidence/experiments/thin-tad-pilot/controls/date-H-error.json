@@ -1,0 +1,16 @@
+{
+  "case_id": "date-H",
+  "family": "date",
+  "kind": "error-delivery",
+  "artifact": {
+    "files": {
+      "report.json": "{\"verdict\":\"done\",\"checked_dates\":[\"2026-13-40\"],\"flags\":[{\"date\":\"2026-13-40\",\"valid\":true}]}"
+    },
+    "log": [
+      "prepare"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

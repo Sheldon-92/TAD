@@ -1,0 +1,73 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "2aee5722541f3090",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03edd-0c9b-7aa2-9b4b-f3d428c00439",
+  "resumed_from_session": "01a03edd-0c9b-7aa2-9b4b-f3d428c00439",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "55a6eb553a7caf99d749bc8146cbb4ef85c3bf772ec3c92146ac30bc02729add",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P2/treatment-host-evidence/2026-08-26T16-18-32-222Z-2aee5722541f3090-raw-output.txt",
+    "sha256": "e8b8042d2659d11bf9a4841ebebfc6ec38f6846cf5f3723f571f8ea3438ef920"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P2/treatment-host-evidence/2026-08-26T16-18-32-222Z-2aee5722541f3090-raw-trace.jsonl",
+    "sha256": "90cbb6e330649d317b335b28e583f7950a97b157fd1fb49e65b9108d921c90be"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "70bb1818953d3aed9932aee9b6d1806f4a048fc8f7c688eb6672a1bd0804d678",
+      "decision": "allowed",
+      "action_nonce": "2db4a0ade78c3d4b",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 43886,
+    "output_tokens": 501,
+    "total_tokens": 44387,
+    "cached_input_tokens": 41472,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: `util.mjs` is outside the writable sandbox, so no change was made."
+}

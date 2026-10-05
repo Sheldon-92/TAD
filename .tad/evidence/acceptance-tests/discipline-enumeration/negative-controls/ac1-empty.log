@@ -1,0 +1,86 @@
+AC1: disposition cols 1-3 == blocks.txt
+  AC FAIL: rows=0 (want 60)
+  AC FAIL: comm diff:
+	.claude/skills/gate/SKILL.md	103	## Gate 3: Implementation Quality (Blake) - **MANDATORY*
+	.claude/skills/gate/SKILL.md	13	### 必须执行 Gate 的时机
+	.claude/skills/gate/SKILL.md	19	### ⚠️ 强制规则
+	.claude/skills/gate/SKILL.md	2	name: gate
+	.claude/skills/gate/SKILL.md	27	### 如何激活
+AC1 FAIL
+AC2: 归宿 syntax + 已有名 ∈ names.txt
+AC2 PASS
+AC3: 理由码闭集 + 仅非纪律行非空
+AC3 PASS
+AC4: 原文片段分档 + AC4b: 命中数列 == hits.tsv
+Traceback (most recent call last):
+  File "<stdin>", line 12, in <module>
+AssertionError
+  AC FAIL: AC4/AC4b
+AC4 FAIL
+AC5: inventory 既有15行逐字 + 行数
+  AC FAIL: inventory body rows=30 (want 15, 新增去重=0)
+AC5 FAIL
+AC6: 新增唯一 + 白名单列 + 列数
+AC6 PASS
+AC7: 子键集合逐字 + 子键可解释
+  AC FAIL: row 10 .claude/skills/gate/SKILL.md:103 subkey set mismatch
+    got:  ,
+    want: action,gate3_addition,if_empty_or_missing,if_exists,on_invalid,optional_advisory_checker,output_format,violations,
+  AC FAIL: row 11 .claude/skills/gate/SKILL.md:413 subkey set mismatch
+    got:  ,
+    want: categorical,checklist,decoupling_firewall,extra_output,forbidden,hard_rule,judge_prompt_constraint,malformed_guard,message,output_format,output_format
+  AC FAIL: row 12 .claude/skills/gate/SKILL.md:575 subkey set mismatch
+    got:  ,
+    want: anti_skip,escape_valve,for_rubric_based,gate4_addition,optional_advisory_checker,output_format,skip_if,
+  AC FAIL: row 34 .tad/config-workflow.yaml:458 subkey set mismatch
+    got:  ,
+    want: blocking,description,
+  AC FAIL: row 35 .tad/config-workflow.yaml:606 subkey set mismatch
+    got:  ,
+    want: description,express,modes,
+  AC FAIL: row 41 .tad/config-quality.yaml:59 subkey set mismatch
+    got:  ,
+    want: actions,archive,checks,gate3_v2_implementation_integration,gate4_v2_acceptance_archive,gate_responsibility_matrix,integration_verification,knowledge_a
+  AC FAIL: row 43 .tad/config-quality.yaml:393 subkey set mismatch
+    got:  ,
+    want: enabled,evidence_format,questions,
+  AC FAIL: row 45 .tad/config-quality.yaml:690 subkey set mismatch
+    got:  ,
+    want: date_format,enforcement,evidence_path,gate_3,gate_3_check,gate_4,gate_4_check,mandatory,storage,
+  AC FAIL: row 48 .tad/config-execution.yaml:52 subkey set mismatch
+    got:  ,
+    want: agent_responsibilities,alex,blake,post_release,pre_release,release_checklist,
+  AC FAIL: row 52 .tad/config-cognitive.yaml:120 subkey set mismatch
+    got:  ,
+    want: description,violations,
+  AC FAIL: row 56 .tad/config-agents.yaml:36 subkey set mismatch
+    got:  ,
+    want: agent_a,agent_b,detection,enabled,terminal_isolation,violation,
+  AC FAIL: row 57 .tad/config-agents.yaml:158 subkey set mismatch
+    got:  ,
+    want: format,violation_alerts,
+  AC FAIL: row 59 .tad/config-platform.yaml:7 subkey set mismatch
+    got:  ,
+    want: agent_a_tools,enforcement,violation_format,
+  AC FAIL: AC7: 78 subkey-blocks not explained (sentence must mention 子键 + at least one subkey name)
+AC7 FAIL
+AC8: gate2-candidates.md
+AC8 PASS
+AC10: 已有 分布 ≤24
+AC10 PASS
+AC11: 采纳↔新增 绑定
+  AC FAIL: AC11: 采纳 subagents强制调用 无对应 新增
+  AC FAIL: AC11: 采纳 产物证据链 无对应 新增
+  AC FAIL: AC11: 采纳 六个强制问题 无对应 新增
+  AC FAIL: AC11: 采纳 平台绑定交互决策 无对应 新增
+  AC FAIL: AC11: 采纳 技术决策透明 无对应 新增
+  AC FAIL: AC11: 采纳 研究先行 无对应 新增
+  AC FAIL: AC11: 新增  未采纳且未标非候选新增
+AC11 FAIL
+AC12: fence
+  AC12 fence clean
+AC12 PASS
+AC13: contract + step0.sh frozen
+  AC13 frozen OK
+AC13 PASS
+RESULT=FAIL

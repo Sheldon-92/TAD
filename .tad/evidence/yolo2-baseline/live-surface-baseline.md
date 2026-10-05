@@ -1,0 +1,140 @@
+# YOLO 2 Phase 1 — Alex-authorized live surface baseline
+
+Captured by: Alex (design authority)
+Captured at: 2026-08-24T18:57:09Z
+Repository HEAD at capture: `bfce27f3469960946679b03e2562ece67a34f0f3`
+Purpose: AC1.6 author-side byte baseline. Blake MUST NOT regenerate or edit this file.
+
+Protected roots (closed set):
+
+- `.claude/workflows/yolo-epic.workflow.js`
+- `.tad/hooks/**` (all regular files)
+- `.agents/skills/alex/**` and `.claude/skills/alex/**` (all regular files)
+- `.agents/skills/blake/**` and `.claude/skills/blake/**` (all regular files)
+- `.tad/config*.yaml` at `.tad/` root
+
+Manifest format: `<sha256><TAB><repo-relative-path>`. The final verifier MUST recompute the same closed path set, so added, removed, renamed, and byte-modified files all fail.
+
+```tsv
+949487c75c627b9788eeb798d52543061ef08d8b0ff392de8bd607b83ea82087	.agents/skills/alex/SKILL.md
+68d56c1981c211e5ff903143a2e0e7df1d17405b7185e55771631422988c8c4e	.agents/skills/alex/references/accept-command.md
+4ce10c7b8d14913513a9fcf378320da3b772e36a786dfee3e64f9e6623362799	.agents/skills/alex/references/acceptance-protocol.md
+28c84bf77b4c7c4972a3daec2db3d85c3f2e234a13fb0217b7ecec296e445024	.agents/skills/alex/references/adaptive-complexity-protocol.md
+9bcaf74545dcd61a2d4ca383824515acdaf838114fd08299e8332fa4295124d8	.agents/skills/alex/references/bug-path-protocol.md
+a4991b1641ff4105edb7f1169c8e560466cff06d1910ee92151ba4fba5239f7f	.agents/skills/alex/references/cancel-protocol.md
+ec40f8c020488b117c28cd3d3ded53ca6259b7b49e6b87c7104850a883691106	.agents/skills/alex/references/deps-protocol.md
+4228159160e95aa7cc30647ee420b2d340abbed4a52c450778de29d86c3be83f	.agents/skills/alex/references/design-protocol.md
+7be6123daa15d20e8a6f2e7ebb0c97d191d6e1d26681d5f11437214856b3b228	.agents/skills/alex/references/discuss-path-protocol.md
+4764fa8eb16285753529daefb81409c8d9ae70047056a7cfc9db0220d165e7dd	.agents/skills/alex/references/distillation-loop-protocol.md
+86cb9d676d0e7bceadf5b46c9bbafd76114740952b2f422f23289050dc3bbee1	.agents/skills/alex/references/experiment-path-protocol.md
+bdfe63b1349844bb32a1bfd2e1795f4b87bed95c90770a19771f90a78f4309f9	.agents/skills/alex/references/express-path-protocol.md
+a4e9f9909a5805777ec7d4661b03a485b7a757f9ba839db2a7c59673ab3ee66b	.agents/skills/alex/references/handoff-creation-protocol.md
+760f375990c18f9c665a78bd1f8e9c9d9fca47745399f5362c56b6bd0d099c6c	.agents/skills/alex/references/idea-list-protocol.md
+0ce86400f7835b2e1dc15ba3ef84fe88cf0166ca1127295a1dd369d947010a49	.agents/skills/alex/references/idea-path-protocol.md
+c2f4fc96de005df71672ae57f0b3eb8b6e48a5e09654d72027ab5a0171fbe431	.agents/skills/alex/references/idea-promote-protocol.md
+17bbf5de2447fd3bc8243f6f47b3a40cbb6318e993562114539a59aceb078de7	.agents/skills/alex/references/intent-router-protocol.md
+eb6343fb78ed3c53bcf7be492687778e2e1cbd51bf12ee1aae11c767bf3f4a5b	.agents/skills/alex/references/knowledge-bootstrap.md
+f3430c778fde7bcc8f754d881a02e32f0439e9fc78b0f1092d3021b8953a8cd9	.agents/skills/alex/references/knowledge-maintain-protocol.md
+f08ffc44b992e81ce4c93b2e712a46b69e9c01470d620b4aad61bdd785c0d6a0	.agents/skills/alex/references/learn-path-protocol.md
+fbde84a90099fe518352cecacf21f0b2894a9bd69f3963a613a19c99403b88f9	.agents/skills/alex/references/my-templates.md
+8edb5ded601016907f3855942e0bec54647e8a513ee01f762f25c9e5c3870a10	.agents/skills/alex/references/next-md-rules.md
+8f2320c460989830c9d028e320c49afd549c0ecfbb4cb7928c15c93745d0b0b3	.agents/skills/alex/references/project-context-update.md
+e2c808001653abb8566bb49801b8ce131b91aa0b5d6f725615ef5024e94b870c	.agents/skills/alex/references/publish-protocol.md
+a4ae8296208dd66bf6e541db8973e9aa4b482588be5751979781c5c7a7997429	.agents/skills/alex/references/release-duties.md
+3e413d4fc3e8b7f6bb2797ec40a793f30e9bb2a02db93f8c4e3cf2d7c4780300	.agents/skills/alex/references/research-decision-protocol.md
+3e184a988bec27688b5a4bf4cfad534aa422dba5137aed74cc0a9f410e4fb677	.agents/skills/alex/references/research-plan-protocol.md
+550efcafbdd346a8e41e4547208be51c67e388b60e6d5bc912392600119baf39	.agents/skills/alex/references/research-review-protocol.md
+853df58d25a8f087fdcf2f3b6f272f9096276f1e298d340e4c94c9a5585a0332	.agents/skills/alex/references/socratic-inquiry-protocol.md
+b9d4668ca25fabb3fbcf5cde39a2f2a544fdb6398ae35440e6862ad5cb71deb0	.agents/skills/alex/references/status-panoramic-protocol.md
+82de24f32950fae5a8019b214a527583034cd2a620cd043b1d11ae251add48b5	.agents/skills/alex/references/test-review-protocol.md
+48ff4cd2a1fae5e5faa557ec635761afb2b54b87be1d5fa34ce73d4d0deb500f	.agents/skills/alex/references/update-roadmap-protocol.md
+435f9796c349ab6b7ed646a34a4a53f4044e515412181aef8326caa357ec3fb6	.agents/skills/alex/references/workflow-completion-trigger.md
+19418f1ba222110bfb9e93e750553d5cda6387e086c0d07a9b63d5f938ccee84	.agents/skills/alex/references/yolo-execution-protocol.md
+d28e3e0d510b44a40e7c65395bf2eaa9d44ecd9a666ec580e935ef1b50b69671	.agents/skills/blake/SKILL.md
+fd9cc0ab583232783503ecfb34337f7649cbfca453d194aac0f4f64673599467	.agents/skills/blake/references/cross-model-invocation.md
+d31ef8d5ea1ddf0b28752e267013c7356205618f92010ee4d69807f0919832e4	.agents/skills/blake/references/notebooklm-access.md
+949487c75c627b9788eeb798d52543061ef08d8b0ff392de8bd607b83ea82087	.claude/skills/alex/SKILL.md
+68d56c1981c211e5ff903143a2e0e7df1d17405b7185e55771631422988c8c4e	.claude/skills/alex/references/accept-command.md
+4ce10c7b8d14913513a9fcf378320da3b772e36a786dfee3e64f9e6623362799	.claude/skills/alex/references/acceptance-protocol.md
+28c84bf77b4c7c4972a3daec2db3d85c3f2e234a13fb0217b7ecec296e445024	.claude/skills/alex/references/adaptive-complexity-protocol.md
+9bcaf74545dcd61a2d4ca383824515acdaf838114fd08299e8332fa4295124d8	.claude/skills/alex/references/bug-path-protocol.md
+a4991b1641ff4105edb7f1169c8e560466cff06d1910ee92151ba4fba5239f7f	.claude/skills/alex/references/cancel-protocol.md
+ec40f8c020488b117c28cd3d3ded53ca6259b7b49e6b87c7104850a883691106	.claude/skills/alex/references/deps-protocol.md
+4228159160e95aa7cc30647ee420b2d340abbed4a52c450778de29d86c3be83f	.claude/skills/alex/references/design-protocol.md
+7be6123daa15d20e8a6f2e7ebb0c97d191d6e1d26681d5f11437214856b3b228	.claude/skills/alex/references/discuss-path-protocol.md
+4764fa8eb16285753529daefb81409c8d9ae70047056a7cfc9db0220d165e7dd	.claude/skills/alex/references/distillation-loop-protocol.md
+86cb9d676d0e7bceadf5b46c9bbafd76114740952b2f422f23289050dc3bbee1	.claude/skills/alex/references/experiment-path-protocol.md
+bdfe63b1349844bb32a1bfd2e1795f4b87bed95c90770a19771f90a78f4309f9	.claude/skills/alex/references/express-path-protocol.md
+a4e9f9909a5805777ec7d4661b03a485b7a757f9ba839db2a7c59673ab3ee66b	.claude/skills/alex/references/handoff-creation-protocol.md
+760f375990c18f9c665a78bd1f8e9c9d9fca47745399f5362c56b6bd0d099c6c	.claude/skills/alex/references/idea-list-protocol.md
+0ce86400f7835b2e1dc15ba3ef84fe88cf0166ca1127295a1dd369d947010a49	.claude/skills/alex/references/idea-path-protocol.md
+c2f4fc96de005df71672ae57f0b3eb8b6e48a5e09654d72027ab5a0171fbe431	.claude/skills/alex/references/idea-promote-protocol.md
+17bbf5de2447fd3bc8243f6f47b3a40cbb6318e993562114539a59aceb078de7	.claude/skills/alex/references/intent-router-protocol.md
+eb6343fb78ed3c53bcf7be492687778e2e1cbd51bf12ee1aae11c767bf3f4a5b	.claude/skills/alex/references/knowledge-bootstrap.md
+f3430c778fde7bcc8f754d881a02e32f0439e9fc78b0f1092d3021b8953a8cd9	.claude/skills/alex/references/knowledge-maintain-protocol.md
+f08ffc44b992e81ce4c93b2e712a46b69e9c01470d620b4aad61bdd785c0d6a0	.claude/skills/alex/references/learn-path-protocol.md
+fbde84a90099fe518352cecacf21f0b2894a9bd69f3963a613a19c99403b88f9	.claude/skills/alex/references/my-templates.md
+8edb5ded601016907f3855942e0bec54647e8a513ee01f762f25c9e5c3870a10	.claude/skills/alex/references/next-md-rules.md
+8f2320c460989830c9d028e320c49afd549c0ecfbb4cb7928c15c93745d0b0b3	.claude/skills/alex/references/project-context-update.md
+e2c808001653abb8566bb49801b8ce131b91aa0b5d6f725615ef5024e94b870c	.claude/skills/alex/references/publish-protocol.md
+a4ae8296208dd66bf6e541db8973e9aa4b482588be5751979781c5c7a7997429	.claude/skills/alex/references/release-duties.md
+3e413d4fc3e8b7f6bb2797ec40a793f30e9bb2a02db93f8c4e3cf2d7c4780300	.claude/skills/alex/references/research-decision-protocol.md
+3e184a988bec27688b5a4bf4cfad534aa422dba5137aed74cc0a9f410e4fb677	.claude/skills/alex/references/research-plan-protocol.md
+550efcafbdd346a8e41e4547208be51c67e388b60e6d5bc912392600119baf39	.claude/skills/alex/references/research-review-protocol.md
+853df58d25a8f087fdcf2f3b6f272f9096276f1e298d340e4c94c9a5585a0332	.claude/skills/alex/references/socratic-inquiry-protocol.md
+b9d4668ca25fabb3fbcf5cde39a2f2a544fdb6398ae35440e6862ad5cb71deb0	.claude/skills/alex/references/status-panoramic-protocol.md
+82de24f32950fae5a8019b214a527583034cd2a620cd043b1d11ae251add48b5	.claude/skills/alex/references/test-review-protocol.md
+48ff4cd2a1fae5e5faa557ec635761afb2b54b87be1d5fa34ce73d4d0deb500f	.claude/skills/alex/references/update-roadmap-protocol.md
+435f9796c349ab6b7ed646a34a4a53f4044e515412181aef8326caa357ec3fb6	.claude/skills/alex/references/workflow-completion-trigger.md
+19418f1ba222110bfb9e93e750553d5cda6387e086c0d07a9b63d5f938ccee84	.claude/skills/alex/references/yolo-execution-protocol.md
+d28e3e0d510b44a40e7c65395bf2eaa9d44ecd9a666ec580e935ef1b50b69671	.claude/skills/blake/SKILL.md
+fd9cc0ab583232783503ecfb34337f7649cbfca453d194aac0f4f64673599467	.claude/skills/blake/references/cross-model-invocation.md
+d31ef8d5ea1ddf0b28752e267013c7356205618f92010ee4d69807f0919832e4	.claude/skills/blake/references/notebooklm-access.md
+a05d3e288d1022f63d58903f34ce95fdc9cc05778ed193fe38ca4d837b7c4dcc	.claude/workflows/yolo-epic.workflow.js
+393dbb8b6eb185b340d1a058f70374b480b5dbe7945421f814ffb0a725dfeb1f	.tad/config-agents.yaml
+c8b3fcc4cdf5c693747470ef1902189d601b6d3b9265b9832da7f5059ea9f98a	.tad/config-cognitive.yaml
+7ff2519b2b7d6a291c1f6ecd86f92966640f3185eb5001cb050440cc04ce2d72	.tad/config-execution.yaml
+03a705e9aefe59920b58f0cb53fd2175adea71ab6732ecf909111fc89c2a1c68	.tad/config-platform.yaml
+4328aad424851e2316dd7360159c6debc992840ef3ed4096462f6fd5c2a6798d	.tad/config-quality.yaml
+08b7ac7910f4e057181c4a3d85d0f4120fb9d8b00b2225b8939bc3c59ec39486	.tad/config-workflow.yaml
+3ee03364c3da51cdea7e98f7480aabd44570491b067aa9f4e9bb38fc5c3bb566	.tad/config.yaml
+92afa579175bf8da61def4f6fc38ebb12a87dd5bc6749a621d1e26161a454b46	.tad/hooks/.phase2b-testresults.tsv
+cca575d2753e0238a86499fd1c92b0e81c5c3c6e31c1cd335d7f535b2b5ff273	.tad/hooks/.phase2b-testset.tsv
+86e3806eaf4e5c850b5948028400f55720695457ff2735d2709b4457d62e0456	.tad/hooks/lib/askuser-capture.sh
+d1cdfc845d3242f9914ba7efda069fa14735571add5c57230d204ea9c1001ab5	.tad/hooks/lib/audit-yolo.sh
+dd1aaae2d17e8ef289d573eb3cbc53f9d2ed1630257066df827173e8f653451e	.tad/hooks/lib/brain-index-gen.sh
+4f8a02d7acdbc7769a04a86a1871b27836a3da0c5ff4d00b54ca72d227275e12	.tad/hooks/lib/common.sh
+518bda28d28e11e811560bb7f0369c1bb392e6a29f131e680c059b4d4565c73a	.tad/hooks/lib/deps-scan.sh
+e625411af76be476add4d3ce8a45c83f8107cb5d2705ec203603ea90fcdc869f	.tad/hooks/lib/derive-sync-set.sh
+9cdf3eabac4c785306d9a17a0d489515ceb6b86c820e52a3ab581c9a476b90d2	.tad/hooks/lib/detect-platform.sh
+8f2aff08d2b09116b7d196a3a00b6713f1ab95b1fd0ea1e80b0077887df2bb04	.tad/hooks/lib/detect-state-test.sh
+805f25f23d6fcb6cb3969c3d32702b5463bb17e7abb46f4597fc9aa7979aba1b	.tad/hooks/lib/drift-check.sh
+8cdf3baeb194a84aa0d7b8a59c304a81100e8b0f92def92dbc1180ba0cc98c24	.tad/hooks/lib/friction-status-check.sh
+bd490835dae18b78415a270487f21c0ce8fa44f8bf95371b0c1240c9bd76a914	.tad/hooks/lib/gate3-git-tracked-check.sh
+df1a34e2e9440408cfd9d4c01ed08b3cee174e6e76e62311f918bf440758e66f	.tad/hooks/lib/harvest-scan.sh
+53b7c55b9b272dfbd42769726ca266534d3d70872220bddadfb253fb79c7711f	.tad/hooks/lib/hook-envelope.sh
+710dd2e88bda59598613de102356329ba4fba5c6c682f8d7a32ddbc4f86be1bd	.tad/hooks/lib/knowledge-blame.sh
+4fba7ba3b92c557e57d75e5146ed758a5958b996a43a4ed32a199c987ca9808b	.tad/hooks/lib/knowledge-lint.sh
+dca5788fcfc3dacddbd180fe03850e96c020bfaa5208dcd0fe99fb07b945302f	.tad/hooks/lib/layer2-audit.sh
+95da3f15540374f64d95123cb912cf043edf789d8b640609497ae52ce5852dcf	.tad/hooks/lib/memory-redirect.sh
+565d8fbf6aae5a31919d296378c05bb63180ab13ca333922642fd0e8bebc09fe	.tad/hooks/lib/migration-draft.sh
+4b941ceedf23507c534c64ddbd2dfc90d8b4b100f28fbb93ef957e2d8c65607a	.tad/hooks/lib/migration-engine.sh
+87091e4c2ae9a1e65c5cfcac935832407fa1c3439c15db3f7c39ef1c1300ad00	.tad/hooks/lib/notebook-lifecycle.sh
+39624398058292f6acad34ee53f9ccbe221d8e35fbacc3b89574cc121306aa26	.tad/hooks/lib/pack-registry-driftcheck.sh
+6039c793df6a77416f632b86e99bfd3ccfb0f9df7215dc6322aeac07fbb3f4d8	.tad/hooks/lib/parity-criterion.md
+b1283bdddbe5747a843229879ffd3f73af728c4374776c083297ed6772e80910	.tad/hooks/lib/release-verify.sh
+c622a35bcfe4899c32e4e0340464f4f8d12116dbe209364e23e911b8a53228ee	.tad/hooks/lib/runtime-freshness-verify.sh
+3e9ef4365153359a0765132e87407b79677ab6dfdb4b72a6b6e6f9c87539abdf	.tad/hooks/lib/skill-body-verify.sh
+b689a4d118178dbc93b507fae7f9d5d3a628ffd61fff55f299325c455d72d7f8	.tad/hooks/lib/stale-knowledge-check.sh
+eee18a683b7a8a5cbec1d05e2c09a27dc6c6221011736cb1a0de91bab3f737e5	.tad/hooks/lib/trace-rotate.sh
+590111b8d2b8670a26d3b12397313bcc7d23cf5c6979b723b8d98c8ed3eba8d8	.tad/hooks/lib/trace-writer.sh
+2aa257c1cd78651099095ad36956f00e757f3f387113904bea9644a37449c781	.tad/hooks/lib/verify-ac-commands.sh
+23c29a038d8c14ea5a8873f5d88617454739b389ba0a500735bd856c56b6801d	.tad/hooks/notebook-dormant-sync.sh
+6d5b99e125338f61d45e12dad84516fbf41f5a910a4dbdcf070bd531a4dcb49e	.tad/hooks/post-write-sync.sh
+f5379649be35ddefd5cbf8258b48afadabc5b96620c677b375dfa02437a7f40e	.tad/hooks/pre-accept-check.sh
+69fd2789df04c757a79a54cd98a9c9508523c5f0a591e20d76f45c2b6e653541	.tad/hooks/pre-gate-check.sh
+2b36fd97f5f114399a20a98976b1a974afccbe60fa8c8cd876968c8875175f7f	.tad/hooks/precompact-session-snapshot.sh
+a56fd173d98dc4b6ed652761e6d746352222b627eb50c3a0c9a55d512c89afa8	.tad/hooks/startup-health.sh
+49d7e3fe82361ee5f17ec99e2374c2165fd058e2cf1c9ef0630e49656412aca5	.tad/hooks/trace-step.sh
+```
+

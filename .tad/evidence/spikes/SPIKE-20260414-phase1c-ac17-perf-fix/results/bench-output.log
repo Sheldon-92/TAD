@@ -1,0 +1,18 @@
+Running pretool-interceptor (N=100)...
+Running override-detector (N=100)...
+Running evidence-validator (N=100)...
+Running bash-watcher (N=100)...
+
+--- stats-summary.tsv ---
+hook                 p50     p95     p99     n
+pretool-interceptor  72.50   138.19  191.70  100
+override-detector    48.83   136.73  245.50  100
+evidence-validator   145.15  390.42  499.72  100
+bash-watcher         110.14  175.58  243.13  100
+AC6 FAIL: pretool-interceptor p95=138.19 ms >= 100ms
+AC6 FAIL: override-detector p95=136.73 ms >= 100ms
+AC6 FAIL: evidence-validator p95=390.42 ms >= 100ms
+AC6 FAIL: bash-watcher p95=175.58 ms >= 100ms
+
+AC6: 4 hook(s) over threshold
+AC7: only 1/4 hooks median < 50ms (sanity metric non-blocking)

@@ -1,0 +1,1 @@
+{"verdict":"FAIL","hidden_acceptance_results":[{"check":"util.mjs exists and exports stableSlug","passed":true,"detail":"util.mjs exists and exports stableSlug"},{"check":"tests.mjs has >=3 assert cases","passed":false,"detail":"tests.mjs has >=3 assert cases"},{"check":"node tests.mjs exits 0","passed":true,"detail":"node tests.mjs exits 0"}]}

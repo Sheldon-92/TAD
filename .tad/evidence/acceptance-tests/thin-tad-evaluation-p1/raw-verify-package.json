@@ -1,0 +1,104 @@
+{
+  "command": "verify-package",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "id": "date-H",
+      "family": "date",
+      "split": "H",
+      "role": "calibration",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "date-V",
+      "family": "date",
+      "split": "V",
+      "role": "holdout",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "rename-H",
+      "family": "rename",
+      "split": "H",
+      "role": "calibration",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "rename-V",
+      "family": "rename",
+      "split": "V",
+      "role": "holdout",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "evidence-H",
+      "family": "evidence",
+      "split": "H",
+      "role": "calibration",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "evidence-V",
+      "family": "evidence",
+      "split": "V",
+      "role": "holdout",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "sync-H",
+      "family": "sync",
+      "split": "H",
+      "role": "calibration",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "sync-V",
+      "family": "sync",
+      "split": "V",
+      "role": "holdout",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "filter-H",
+      "family": "filter",
+      "split": "H",
+      "role": "calibration",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "filter-V",
+      "family": "filter",
+      "split": "V",
+      "role": "holdout",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "routine-H",
+      "family": "routine",
+      "split": "H",
+      "role": "calibration",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    },
+    {
+      "id": "routine-V",
+      "family": "routine",
+      "split": "V",
+      "role": "holdout",
+      "reconstruction": "reconstructed",
+      "result": "OK"
+    }
+  ],
+  "summary": "12 cases, 6 families × H/V, inputs present, no placeholder dependency"
+}

@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a03ed4-1326-7c12-8203-ed8afbdde626 --json --skip-git-repo-check --sandbox workspace-write AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nRead guide.md and commands.txt. APPEND to the END of guide.md a section exactly headed \"## Command Reference\" containing a markdown table with columns command | purpose, one row per command from commands.txt (init, status, verify). Do not modify any existing text. Then stop.\nWhen finished print DONE.",
+  "exit": 2,
+  "stderr": "error: unexpected argument '--sandbox' found\n\n  tip: to pass '--sandbox' as a value, use '-- --sandbox'\n\nUsage: codex exec resume --json --skip-git-repo-check <SESSION_ID> [PROMPT]\n\nFor more information, try '--help'.\n",
+  "elapsed_ms": 10
+}

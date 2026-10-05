@@ -1,0 +1,17 @@
+{
+  "case_id": "sync-V",
+  "family": "sync",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "preflight-report.json": "{\"config_issues\":[\"legacy marker: legacy-relay.oldmesh.local:22011\",\"legacy marker: /var/legacy-cache-v2\"],\"capacity_ok\":false,\"started_sync\":false}"
+    },
+    "log": [
+      "prepare",
+      "preflight"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

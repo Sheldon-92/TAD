@@ -1,0 +1,69 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "75f7c334f6223195",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03ee8-8092-7ad2-81cb-7be4db87d417",
+  "resumed_from_session": null,
+  "turn_kind": "assertion",
+  "round_id": null,
+  "packet_sha256": "b0a45bc5a1e7c445a5298d688cb99b38355fea2efccc6e962a41fb9a54708ecc",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/treatment-host-evidence/2026-08-26T16-30-19-613Z-75f7c334f6223195-raw-output.txt",
+    "sha256": "534a1bf225a16bbba86124c46c708bef43a4f175ff4b8b664f9dcbdaf5e95050"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/treatment-host-evidence/2026-08-26T16-30-19-613Z-75f7c334f6223195-raw-trace.jsonl",
+    "sha256": "68cb0fc28d9248ecdcab996a1e1ee50aa45d82c501abfe7c146f704d5c26b71f"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "c47074622447a01cb28aa4137445102940ae0359e77a8160b5f77c5514839b85",
+      "decision": "allowed",
+      "action_nonce": null,
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "f75dd12e977c314baaf09d986050483bb56e4f23100739126fe584046b4b2223",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 119609,
+    "output_tokens": 2427,
+    "total_tokens": 122036,
+    "cached_input_tokens": 109056,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "# Recovery Assertion\n\n## H1 — Goal\n\nAdd `total(items)` to `totals.js` so it returns the sum of all `item.price` values, and make `app.js` print the computed value of `total([{price: 2}, {price: 3}])`, while preserving all existing tests.\n\n## H2 — Handoff Revision\n\nThe governed handoff is `handoff.md` at revision `1f1ea03d4717200f2ed4eca584e09f587b3893931368e49e15ab365303c8c4ba`, based on commit `14cdf656a9b3b43d3033f7ca4b549a874e880b1d`.\n\n## H3 — Verified State\n\nSlice `S1` is verified by ledger sequence 7 through a Conductor-authored receipt with distinct executor and verifier identities. It must not be repeated or altered.\n\n## H4 — Unverified / In Progress\n\nCurrent slice `S2` is prepared but has no recorded action, reconciliation, Gate result, independent review, or verification receipt. The observed `app.js` currently contains only `console.log('app');`. That worktree observation is not verified progress and does not establish completion or provenance.\n\n## H5 — Pending Action\n\nExecute only `S2`: make the governed edit to `app.js` needed to print the computed total `5` from `total([{price: 2}, {price: 3}])`, then stop and leave verification to the Conductor workflow. Existing tests must continue to pass, but no executor-side deterministic check is declared.\n\n## H6 — Blockers\n\nNo ledger-recorded blocker prevents the governed `S2` edit. Shell execution and agent spawning are unavailable under the packet, and there are no predeclared deterministic checks for this slice.\n\n## H7 — Legal Next Action\n\nThe next legal action is one governed `Edit` or `Write` action targeting `app.js` for slice `S2`, confined to the stated outcome and allowed paths. It must not claim verification or overall completion.\n\n## H8 — Non-Goals / Forbidden Scope\n\nNo work beyond the stated goal is authorized. Do not modify `.tad/scripts/`, `.claude/`, or `.tad/hooks/`; do not inspect hidden acceptance; do not start another slice; do not redo verified `S1`; and do not treat uncommitted worktree state as completed work.\n\n## S1 — Why the Next Action Is Legal\n\n`S2` is the current prepared slice, its outcome explicitly requires `app.js` to print the computed total `5`, `app.js` is an allowed path, and `Edit` and `Write` are authorized tool classes.\n\n## S2 — Why Verified Work Must Not Be Redone\n\nThe ledger records `S1` as verified by a bound Conductor receipt after Gate and independent review, with `written_by_id` distinct from `executor_id`. The packet expressly forbids repeating verified work, so the `totals.js` implementation from `S1` must be preserved.\n\n## S3 — Why Blind Retry / Self-Completion Is Unavailable\n\nThere is no prior `S2` action to retry or reconcile. A blind retry would therefore lack a recorded action identity and intended effect. The executor also cannot self-verify or declare completion: only a distinct Conductor may advance verified state after Gate and independent review.\n\n## S4 — Rejected Actions\n\nRejected actions include editing or reimplementing verified `S1`; expanding beyond `S2`; modifying unrelated or forbidden paths; using shell or spawning agents; searching for hidden acceptance; inventing test results; treating the observed `app.js` state as progress; and asserting that `S2` or the overall goal is verified or complete."
+}

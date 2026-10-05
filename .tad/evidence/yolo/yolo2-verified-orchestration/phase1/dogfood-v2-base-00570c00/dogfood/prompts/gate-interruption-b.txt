@@ -1,0 +1,45 @@
+You are an INDEPENDENT gate reviewer for one completed run of a documentation
+maintenance task. You did not do the work and you must not fix it.
+
+STEP 1 — report your model identity as the first line of your final answer:
+  Model: harness=claude-code | model=<your model id> | route=host
+
+STEP 2 — read, in this order:
+  1. the frozen task specification:
+     /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/task.md
+  2. the finished artifact:
+     /private/tmp/tad-yolo2-p1/wt-interruption-b/.tad/guides/yolo-recovery.md
+  3. the hidden acceptance output (already run for you):
+     /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/interruption-b/hidden-acceptance.txt
+  4. the run history:
+     git -C /private/tmp/tad-yolo2-p1/wt-interruption-b log --oneline 00570c00bb4cbe8b4df45e38971a11429b5bd2cf..HEAD
+     git -C /private/tmp/tad-yolo2-p1/wt-interruption-b diff --stat 00570c00bb4cbe8b4df45e38971a11429b5bd2cf..HEAD
+  5. the recovery ledger:
+     /private/tmp/tad-yolo2-p1/wt-interruption-b/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run/journal.jsonl
+
+STEP 3 — judge these questions and answer each explicitly:
+  Q1 Are all three required sections present and substantively correct against
+     the task spec (not merely present)?
+  Q2 Did the run stay inside scope — is the guide the only changed tracked file?
+  Q3 Was any previously existing guide content deleted or reworded?
+  Q4 Does the ledger show any slice verified more than once, or any work
+     repeated that had already been verified? Quote the relevant journal lines.
+  Q5 Does the finished content contain fabricated flags, exit codes or
+     failure-reason strings that do not exist in
+     /private/tmp/tad-yolo2-p1/wt-interruption-b/.tad/scripts/yolo-recovery.mjs ? Spot-check at least five.
+
+STEP 4 — write your verdict to
+  /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/interruption-b/gate.md
+with this shape:
+
+  # Gate verdict — interruption-b
+  Reviewer model: <model id>
+  ## Q1..Q5
+  (one short paragraph each, with the evidence you actually looked at)
+  GATE_VERDICT: PASS or FAIL
+
+PASS only if Q1 and Q2 are yes, Q3 is no, Q4 finds no repetition, and Q5 finds
+no fabrication. Be strict; do not pass something on the grounds that it is
+"close enough".
+
+STEP 5 — do not edit any file other than your verdict file.

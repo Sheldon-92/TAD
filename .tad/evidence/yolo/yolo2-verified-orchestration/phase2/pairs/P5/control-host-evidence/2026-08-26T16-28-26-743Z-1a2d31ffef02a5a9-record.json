@@ -1,0 +1,73 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "1a2d31ffef02a5a9",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03ee6-12ac-7730-b63c-e7cedede3634",
+  "resumed_from_session": "01a03ee6-12ac-7730-b63c-e7cedede3634",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "29797d07f2a3d74c2a5bbb0531e3f092f4536a5f2b824a9cc63e17b926e80b38",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T16-28-26-743Z-1a2d31ffef02a5a9-raw-output.txt",
+    "sha256": "f137d01cf9c8ae394c062af91a2844767ea95bb4920fb38cea5566228bbc3a72"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T16-28-26-743Z-1a2d31ffef02a5a9-raw-trace.jsonl",
+    "sha256": "0c3c16669e76dd5146b950c9322fc92eb00509459f1f0b7b2c61912be1b222cd"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "2c29f5b41aaeb0e45fb9fedcdf45d4602a1843810c593c4c6f00752a728c5bc2",
+      "decision": "allowed",
+      "action_nonce": "305c734e675de110",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 44665,
+    "output_tokens": 458,
+    "total_tokens": 45123,
+    "cached_input_tokens": 41472,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: sandbox permissions reject writes to `/private/tmp/yolo2p2-dogfood/T5-hidden-business-control/totals.js`. No files were changed."
+}

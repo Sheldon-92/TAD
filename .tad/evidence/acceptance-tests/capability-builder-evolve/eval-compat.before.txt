@@ -1,0 +1,11 @@
+=== Mode: eval-compat ===
+PASS eval-compat: legacy baseline preserved
+skill control: PACK example-skill FIXTURE example-skill-fixture: disc 0/3 [combined 0/3] → FAIL
+skill with: PACK example-skill FIXTURE example-skill-fixture: disc 3/3 [combined 3/3] → PASS
+PASS eval-compat: skill fixture discriminates
+PASS eval-compat: fallback valid
+PASS eval-compat: dual SKIP
+PASS eval-compat: missing VC SKIP
+PASS eval-compat: invalid regex SKIP
+PASS eval-compat: leading-dash handled
+PASS eval-compat

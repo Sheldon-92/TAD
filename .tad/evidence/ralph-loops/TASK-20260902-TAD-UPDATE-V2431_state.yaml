@@ -1,0 +1,33 @@
+current_iteration: 0
+layer1_retries: 0
+layer2_rounds: 0
+last_completed_layer: layer1
+last_error_category: null
+consecutive_same_error: 0
+reflection_count: 0
+last_reflection_summary: ""
+escalation_assessment: ""
+layer1_summary: |
+  All §9.1 post-impl ACs pass (AC1-AC13; AC14 post-Gate-4):
+  AC2 backup 5/5, AC3 states 13/13, AC4 consent 9/9, AC5 download-safety 14/14,
+  AC6 parity+content, AC7 opencode command, AC8 preservation 9/9, AC9 full-upgrade 8/8
+  (+detect-state 22/22, migration 23/23), AC10 release-gates 7/7, AC11 version gates,
+  AC12 bash -n, AC13 docs. Existing suites green (gate-exercise blocked correctly).
+layer2_rounds: 1
+last_completed_layer: layer2-group0
+layer2_notes: |
+  spec-compliance-reviewer: PASS (0 NOT_SATISFIED / 0 PARTIALLY). One P1 found:
+  BSD mktemp template ending in .sh creates a literal filename — FIXED
+  (template now ends in XXXXXX); consent/download-safety/states re-verified.
+layer2_rounds: 2
+last_completed_layer: layer2-group1
+layer2_group1: |
+  code-reviewer: FAIL→PASS. F1 (P1, plain-installer preflight leaves TAD-main
+  residue) fixed via EXIT-trap TAD_SRC cleanup + fixture residue assertion.
+  F2 (P2, pinned verify passes a version.txt-less archive) fixed via explicit
+  existence check + fixture fail-closed assertions. Re-review: P0=0/P1=0/P2=0.
+layer2_group2_notes: |
+  test-runner: PASS (68+45 assertions green). Two quality notes addressed:
+  (1) backup case gained integration-level cp-R negative control (b2);
+  (2) BSD-tar basename-class exclude './scripts' removed (it silently stripped
+  .tad/scripts/ from fixture tarballs) — remaining excludes verified safe.

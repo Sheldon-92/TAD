@@ -1,0 +1,50 @@
+
+=== P1a ===
+timestamp: 1775585627
+baseline_wall_ms: 42992
+baseline_duration_ms: 4834
+baseline_api_ms: 4361
+p1a_wall_ms: 48798
+p1a_duration_ms: 6345
+p1a_api_ms: 6073
+p1a_result: P1A-FIRED-ABSENT
+p1a_is_error: false
+sentinel_lines:        1
+sentinel_content: 1775585620 P1A-SENTINEL;
+
+=== P1b ===
+timestamp: 1775585722
+p1b_wall_ms: 47287
+p1b_duration_ms: 3205
+p1b_api_ms: 2908
+p1b_result: OK_P1B_RESPONSE
+sentinel_bytes:      405
+sentinel_content_first_500:
+P1B-SENTINEL 1775585718 STDIN={"session_id":"4dc1e02c-16aa-49a7-ba8b-00f68e2b226a","transcript_path":"/Users/sheldonzhao/.claude/projects/-Users-sheldonzhao-01-on-progress-programs-TAD/4dc1e02c-16aa-49a7-ba8b-00f68e2b226a.jsonl","cwd":"/Users/sheldonzhao/01-on progress programs/TAD","permission_mode":"default","hook_event_name":"UserPromptSubmit","prompt":"probe 1b payload check with some content\n"}
+
+=== P2 (Contract A envelope) ===
+timestamp: 1775585824
+p2_wall_ms: 42768
+p2_duration_ms: 5107
+p2_api_ms: 4677
+p2_result: SEEN:NONE
+sentinel_content: 1775585819 P2-SENTINEL;
+
+=== P3 (Contract C permission gate) ===
+timestamp: 1775585906
+p3_wall_ms: 39643
+p3_duration_ms: 3779
+p3_api_ms: 3534
+p3_result: SEEN:NONE
+p3_is_error: false
+sentinel_content: 1775585902 P3-SENTINEL;
+
+=== P3b (Contract C with ok:false to test gating) ===
+timestamp: 1775586010
+p3b_wall_ms: 37153
+p3b_duration_ms: 1049
+p3b_is_error: false
+p3b_subtype: success
+p3b_stop_reason: null
+p3b_result: 
+sentinel_content: 1775586009 P3B-SENTINEL;

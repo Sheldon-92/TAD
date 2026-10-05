@@ -1,0 +1,4 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+Create tests.mjs using node:assert importing stableSlug from util.mjs with at least 3 test cases including stableSlug("")==="" ; make it runnable via node tests.mjs printing "tests ok" at the end. Then stop.
+If the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).
+When finished print DONE.

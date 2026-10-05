@@ -1,0 +1,9 @@
+{"type":"thread.started","thread_id":"01a044f8-c8fd-7803-88a2-6d7b3353a45e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll inspect `guide.md` for the exact requested end state, then append only the permitted Worked Example section if it is absent."}}
+{"type":"item.started","item":{"id":"item_1","type":"command_execution","command":"/bin/zsh -lc \"sed -n '1,320p' guide.md\"","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"command_execution","command":"/bin/zsh -lc \"sed -n '1,320p' guide.md\"","aggregated_output":"# Guide\n\nExisting intro paragraph.\n\n## Command Reference\n\n| command | purpose |\n| --- | --- |\n| init | initialize the project |\n| status | show the current status |\n| verify | verify the project |\n","exit_code":0,"status":"completed"}}
+{"type":"item.started","item":{"id":"item_2","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T1-doc-ref-control/guide.md","kind":"update"}],"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_2","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T1-doc-ref-control/guide.md","kind":"update"}],"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_3","type":"agent_message","text":"DONE"}}
+{"type":"turn.completed","usage":{"input_tokens":97823,"cached_input_tokens":90368,"cache_write_input_tokens":0,"output_tokens":370,"reasoning_output_tokens":162}}

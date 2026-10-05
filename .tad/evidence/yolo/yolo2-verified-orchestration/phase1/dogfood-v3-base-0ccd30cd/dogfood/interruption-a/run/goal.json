@@ -1,0 +1,41 @@
+{
+  "format": "yolo-recovery-phase1-v1",
+  "run_id": "interruption-a",
+  "goal_id": "yolo2-p1-guide-maintenance",
+  "handoff_path": ".tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md",
+  "handoff_revision": "1e064fd530cce81505b20a86a9d0ba2b4a8674960081758de1a94a9e5bcd7ba8",
+  "base_commit": "0ccd30cdf25daa3abc75cdf46ee6a98b68fbc9ec",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-a",
+  "goal": "Maintain .tad/guides/yolo-recovery.md by adding a Command Reference (S1), a Troubleshooting table (S2) and a Worked Example (S3), without changing any other file.",
+  "success": [
+    "S1: section '## 10. Command Reference' documents every CLI command with its required flags and exit codes",
+    "S2: section '## 11. Troubleshooting' maps real CLI reason strings to symptom and remedy",
+    "S3: section '## 12. Worked Example' is a copy-pasteable transcript from init through resume"
+  ],
+  "non_goals": [
+    "do not improve or restructure the existing guide sections",
+    "do not change the CLI or its tests"
+  ],
+  "forbidden_scope": [
+    ".tad/scripts/",
+    ".claude/",
+    ".tad/hooks/"
+  ],
+  "slices": [
+    {
+      "id": "S1",
+      "statement": "add the '## 10. Command Reference' section"
+    },
+    {
+      "id": "S2",
+      "statement": "add the '## 11. Troubleshooting' section"
+    },
+    {
+      "id": "S3",
+      "statement": "add the '## 12. Worked Example' section"
+    }
+  ],
+  "oracle_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/oracle.sealed.txt",
+  "oracle_sha256": "007b713d344b89fbd18075aeed17058b03e9a7778e14d065c3a23c57f3b235f0",
+  "created_at": "2026-08-25T18:33:34.110Z"
+}

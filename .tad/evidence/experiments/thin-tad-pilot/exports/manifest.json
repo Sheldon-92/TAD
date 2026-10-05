@@ -1,0 +1,159 @@
+{
+  "allowlist": [
+    "date-H/task.md",
+    "date-H/input/**",
+    "rename-H/task.md",
+    "rename-H/input/**",
+    "evidence-H/task.md",
+    "evidence-H/input/**",
+    "sync-H/task.md",
+    "sync-H/input/**",
+    "filter-H/task.md",
+    "filter-H/input/**",
+    "routine-H/task.md",
+    "routine-H/input/**",
+    "date-V/task.md",
+    "date-V/input/**",
+    "rename-V/task.md",
+    "rename-V/input/**",
+    "evidence-V/task.md",
+    "evidence-V/input/**",
+    "sync-V/task.md",
+    "sync-V/input/**",
+    "filter-V/task.md",
+    "filter-V/input/**",
+    "routine-V/task.md",
+    "routine-V/input/**"
+  ],
+  "isolation_limit": "Exports are plain files on the same shell: any process with filesystem access can read parent directories. Real OS/container/harness isolation is NOT established by this layout; P2 must run an isolation probe before claiming a valid blind test.",
+  "files": [
+    {
+      "path": "date-H/input/delivery.json",
+      "sha256": "f2fd55714fd5d00b243dc6ef1268665fc03b7532a24588bda324bc38540b96f9"
+    },
+    {
+      "path": "date-H/task.md",
+      "sha256": "dfdd7d18d8d6d77c0730abbfcce2f002e045a7e3c1e9c661d3d7c7ed95b30b4a"
+    },
+    {
+      "path": "date-V/input/delivery.json",
+      "sha256": "6ce9d1df4a12f5ab59c771b7fe8e4dd8204fbc391739880359ed99542c5100a6"
+    },
+    {
+      "path": "date-V/task.md",
+      "sha256": "18f756f809ca23e9722a7f1376240bc52f4989c60f5286391c7e2265578bb3d4"
+    },
+    {
+      "path": "evidence-H/input/checks.log",
+      "sha256": "dc4b883bf76eb5bdcbebeb25c2ea5fef94ffeb918e01e7d01801cd666dbe2796"
+    },
+    {
+      "path": "evidence-H/input/evidence-pack.json",
+      "sha256": "cbe2797d26acc2bfdfde1741eb34516271aa48b18c8fc4ed844b5f21204c4a42"
+    },
+    {
+      "path": "evidence-H/task.md",
+      "sha256": "4d7f3945258fb33066ca0ff16c6573183bf1ffb6909d519a647024b2d8a1c7f7"
+    },
+    {
+      "path": "evidence-V/input/evidence-pack.json",
+      "sha256": "d10f0d4b063654722df2a89b76a8f04a5144ac35057bf72b00b572d5b7384d7e"
+    },
+    {
+      "path": "evidence-V/input/run-log.txt",
+      "sha256": "3710b777edca1e0c67a4fda164df87d59b33849a96eeabb882751f0ab373f294"
+    },
+    {
+      "path": "evidence-V/task.md",
+      "sha256": "14f382f3d3221e483f871f83dbd28ca62619b52c108f664f466f551c3111f5cd"
+    },
+    {
+      "path": "filter-H/input/rows.json",
+      "sha256": "f55fc09cbb4bfaa4ff53789257641be69ab320b0a276436aafda0b74a9170404"
+    },
+    {
+      "path": "filter-H/input/spec-codes.json",
+      "sha256": "8559c387f0d22c4b04f889985c0c00d937625c999838ed7abb8d0e290aab124c"
+    },
+    {
+      "path": "filter-H/task.md",
+      "sha256": "212c2750ebc5abb810062e3747be6d1b9d993778199c176974fe7a4ad58254b7"
+    },
+    {
+      "path": "filter-V/input/rows.json",
+      "sha256": "32379c2dcb323c9e3620d14b8c56c96f1939260de259b49b1c17e5460043d272"
+    },
+    {
+      "path": "filter-V/input/spec-codes.json",
+      "sha256": "61f3d46f0d3b08d61cf5ca450e919a8adaed59ed61e9c0005448a134dcf2bced"
+    },
+    {
+      "path": "filter-V/task.md",
+      "sha256": "7caae04c49f9f438d7704d74d723e19ac575b0a6818735505240bb1b9306bdca"
+    },
+    {
+      "path": "rename-H/input/sku.list",
+      "sha256": "4d8868b53d80d6af5c17ad02c6765ab6c03ca54fd3060ce89884a4ecf54d4a10"
+    },
+    {
+      "path": "rename-H/input/storage.js",
+      "sha256": "de462bd06d385c87c056ce9285ecc39b908ff168af63e935b753b19d55ee30cb"
+    },
+    {
+      "path": "rename-H/task.md",
+      "sha256": "94dd988288681d3564df44293ec1f375f2289604059349bf573ad619c9b4c415"
+    },
+    {
+      "path": "rename-V/input/sku.list",
+      "sha256": "2de189fcb57a1463a321319926c84d75af0fec5423bcaf5a675f11aa106b6456"
+    },
+    {
+      "path": "rename-V/input/storage.js",
+      "sha256": "9efc9e74b066b1b049036c5af668acf854780633c11e2bbf645954ba899a9245"
+    },
+    {
+      "path": "rename-V/task.md",
+      "sha256": "740907f3b0bc0dee01c01e0a25b2b814a3503a6b5d0ea976721b1c8a182d08d2"
+    },
+    {
+      "path": "routine-H/input/doc.md",
+      "sha256": "65f4adb3d95654e7991e210140e0b5319ebf6d669e2cfbafd8af0a2a685d053f"
+    },
+    {
+      "path": "routine-H/input/wiring.js",
+      "sha256": "374ed43673673acc515865ce4401a4688a1044ec4ad643b886b8c88deb94871a"
+    },
+    {
+      "path": "routine-H/task.md",
+      "sha256": "cb4c2ac916bd1ac740dee7e634226bbeef40c3e74b6da40b4bf1e2e282b028a4"
+    },
+    {
+      "path": "routine-V/input/doc.md",
+      "sha256": "fbffdb09c66f2c22decd56d038df3f6a4d0fe27a57bc5a6dc7ab2b7cba159782"
+    },
+    {
+      "path": "routine-V/input/wiring.js",
+      "sha256": "9e608404d8cdde20e52a1905740cf2df8f53f308d73ffbd424d1e10951bced87"
+    },
+    {
+      "path": "routine-V/task.md",
+      "sha256": "5386c34288e0b1f9291930caa6fc19f56217a61c355aede9a09481e5999e5bfc"
+    },
+    {
+      "path": "sync-H/input/node.conf",
+      "sha256": "ee973372e97da901176c4ca9e386bfcea83d285c810305793002699f74e81002"
+    },
+    {
+      "path": "sync-H/task.md",
+      "sha256": "012d0ec6db3fa253b1e39e43bc4e261bf56b85f952096eb36d407d207c4536ad"
+    },
+    {
+      "path": "sync-V/input/node.conf",
+      "sha256": "4114165778bf58dd6f39cd6e540e00ff9bfc717f560a4a72b4c376e46ef03fb2"
+    },
+    {
+      "path": "sync-V/task.md",
+      "sha256": "721c1badabd9af3b87b96e20bf133091c7e3d4a6118586c9edbf75c0e78bf426"
+    }
+  ]
+}

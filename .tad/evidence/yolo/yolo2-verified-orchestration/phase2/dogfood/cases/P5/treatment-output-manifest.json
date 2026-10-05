@@ -1,0 +1,18 @@
+{
+  "format": "yolo2-phase2-output-manifest-v1",
+  "arm": "treatment",
+  "files": [
+    {
+      "path": "app.js",
+      "sha256": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f"
+    },
+    {
+      "path": "tests.js",
+      "sha256": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89"
+    },
+    {
+      "path": "totals.js",
+      "sha256": "c30344b2d25a778b675cb301eed864ff77fa79ff7ef172d4db373181d07e6608"
+    }
+  ]
+}

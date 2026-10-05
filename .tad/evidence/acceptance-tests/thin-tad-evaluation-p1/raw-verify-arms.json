@@ -1,0 +1,60 @@
+{
+  "command": "verify-arms",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "path": ".agents/skills/blake/SKILL.md",
+      "result": "MATCH"
+    },
+    {
+      "path": ".agents/skills/blake/references/cross-model-invocation.md",
+      "result": "MATCH"
+    },
+    {
+      "path": ".agents/skills/blake/references/notebooklm-access.md",
+      "result": "MATCH"
+    },
+    {
+      "path": ".agents/skills/gate/SKILL.md",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/config-agents.yaml",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/config-execution.yaml",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/config-quality.yaml",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/config-platform.yaml",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/ralph-config/loop-config.yaml",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/ralph-config/expert-criteria.yaml",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/templates/completion-report.md",
+      "result": "MATCH"
+    },
+    {
+      "path": ".tad/templates/handoff-b-to-a.md",
+      "result": "MATCH"
+    },
+    {
+      "path": ".codex/hooks.json",
+      "result": "MATCH"
+    }
+  ],
+  "summary": "13 baseline files recomputed at edce76067f31127d06a1bdbbf3407578d25c81ce; candidate frozen; closure approved; fidelity explicitly unverified"
+}

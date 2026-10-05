@@ -1,0 +1,17 @@
+{
+  "case_id": "sync-H",
+  "family": "sync",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "preflight-report.json": "{\"config_issues\":[\"legacy marker: old-relay\",\"legacy marker: v1-cache-dir\"],\"capacity_ok\":false,\"started_sync\":false}"
+    },
+    "log": [
+      "prepare",
+      "preflight"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

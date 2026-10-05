@@ -1,0 +1,21 @@
+{
+  "id": "T2-node-behavior",
+  "provenance": "replay of real maintenance on yolo-recovery.mjs atomic-write behavior (commit 323c380d \u00a74.2 writeAtomic)",
+  "task": "Create util.mjs exporting function stableSlug(s) that lowercases ASCII letters, trims, replaces runs of non-alphanumerics with '-', and trims leading/trailing '-'. Add tests.mjs using node:assert with at least 3 cases including empty string.",
+  "seed": {
+    "README.md": "# pkg\n",
+    "util.mjs": "",
+    "tests.mjs": ""
+  },
+  "hidden": [
+    {
+      "check": "util.mjs exists and exports stableSlug"
+    },
+    {
+      "check": "tests.mjs has >=3 assert cases"
+    },
+    {
+      "check": "node tests.mjs exits 0"
+    }
+  ]
+}

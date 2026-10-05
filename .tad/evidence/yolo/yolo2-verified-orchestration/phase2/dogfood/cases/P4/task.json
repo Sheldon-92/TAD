@@ -1,0 +1,21 @@
+{
+  "id": "T4-cross-file",
+  "provenance": "replay of cross-file contract work (Phase-1 dogfood T3 worked example referencing CLI flags across files)",
+  "task": "config.json lists \"version\": \"1.0.0\" but CHANGELOG.md's first line says v0.9.0. Update CHANGELOG.md first line to match config.json exactly in format 'vX.Y.Z'. Also update version field inside usage.md from 0.9.0 to 1.0.0.",
+  "seed": {
+    "config.json": "{\"version\": \"1.0.0\"}\n",
+    "CHANGELOG.md": "v0.9.0\n- initial\n",
+    "usage.md": "usage for 0.9.0\n"
+  },
+  "hidden": [
+    {
+      "check": "CHANGELOG.md first line == 'v1.0.0'"
+    },
+    {
+      "check": "usage.md contains 1.0.0 and not 0.9.0"
+    },
+    {
+      "check": "config.json unchanged"
+    }
+  ]
+}

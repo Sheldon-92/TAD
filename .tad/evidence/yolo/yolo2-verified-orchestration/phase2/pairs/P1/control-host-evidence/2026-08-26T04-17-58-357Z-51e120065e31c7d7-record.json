@@ -1,0 +1,72 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "4b759687af947481aaaa2c4a842b977492b3eddf8d068083d62ffc9dd61bbf46",
+  "parser_version": "1",
+  "invocation_nonce": "51e120065e31c7d7",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03c49-6272-7e42-9e7a-d4198775a536",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "1e60d215db416f4b21fc4b1437160f52e907defa2a7ff3381bee3b62da9f374b",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T04-17-58-357Z-51e120065e31c7d7-raw-output.txt",
+    "sha256": "730c6d9444111ab322dfa97a94bbcb741e81eae68385095f4527591f4c56158d"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T04-17-58-357Z-51e120065e31c7d7-raw-trace.jsonl",
+    "sha256": "b20e552126830400f8433b6403eda82fbccbce0683a837c73e23b81712347340"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "d733d87e59e04c368a0793221ce05fdf48ffe0aa4bdb575a621444d9448663d8",
+      "decision": "allowed",
+      "action_nonce": "63ff34c1be2dd76c",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 206878,
+    "output_tokens": 2267,
+    "total_tokens": 209145,
+    "cached_input_tokens": 185856,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "BLOCKED: the authorized target `guide.md` is outside the writable workspace, and the permitted edit was rejected. No file was changed."
+}

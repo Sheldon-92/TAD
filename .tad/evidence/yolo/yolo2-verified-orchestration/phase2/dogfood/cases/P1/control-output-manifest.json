@@ -1,0 +1,14 @@
+{
+  "format": "yolo2-phase2-output-manifest-v1",
+  "arm": "control",
+  "files": [
+    {
+      "path": "commands.txt",
+      "sha256": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f"
+    },
+    {
+      "path": "guide.md",
+      "sha256": "a1ed9b26d6c27fef9cc55cad670a1c000d1154697aceeeb9622c190531af39ef"
+    }
+  ]
+}

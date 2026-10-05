@@ -1,0 +1,157 @@
+AC1: disposition cols 1-3 == blocks.txt
+AC1 PASS
+AC2: 归宿 syntax + 已有名 ∈ names.txt
+AC2 PASS
+AC3: 理由码闭集 + 仅非纪律行非空
+AC3 PASS
+AC4: 原文片段分档 + AC4b: 命中数列 == hits.tsv
+row 1: short block hits=0 non-非纪律 missing 零标记理由 marker; row 2: hits=0 non-非纪律 missing 零标记理由 marker; row 3: hits=0 non-非纪律 missing 零标记理由 marker; row 7: hits=0 non-非纪律 missing 零标记理由 marker; row 16: fragment line does not hit wide markers (hits=2); row 18: hits=0 non-非纪律 missing 零标记理由 marker; row 19: hits=0 non-非纪律 missing 零标记理由 marker; row 20: hits=0 non-非纪律 missing 零标记理由 marker; row 21: hits=0 non-非纪律 missing 零标记理由 marker; row 22: hits=0 non-非纪律 missing 零标记理由 marker; row 24: hits=0 non-非纪律 missing 零标记理由 marker; row 25: hits=0 non-非纪律 missing 零标记理由 marker; row 26: hits=0 non-非纪律 missing 零标记理由 marker; row 27: hits=0 non-非纪律 missing 零标记理由 marker; row 28: fragment line does not hit wide markers (hits=1); row 29: hits=0 non-非纪律 missing 零标记理由 marker; row 30: hits=0 non-非纪律 missing 零标记理由 marker; row 31: hits=0 non-非纪律 missing 零标记理由 marker; row 33: fragment line does not hit wide markers (hits=1); row 35: fragment line does not hit wide markers (hits=4); row 36: fragment line does not hit wide markers (hits=4); row 37: hits=0 non-非纪律 missing 零标记理由 marker; row 38: hits=0 non-非纪律 missing 零标记理由 marker; row 39: fragment line does not hit wide markers (hits=1); row 40: hits=0 non-非纪律 missing 零标记理由 marker; row 41: fragment line does not hit wide markers (hits=27); row 43: fragment line does not hit wide markers (hits=14); row 46: hits=0 non-非纪律 missing 零标记理由 marker; row 47: hits=0 non-非纪律 missing 零标记理由 marker; row 49: hits=0 non-非纪律 missing 零标记理由 marker; row 51: hits=0 non-非纪律 missing 零标记理由 marker; row 52: fragment line does not hit wide markers (hits=5); row 54: hits=0 non-非纪律 missing 零标记理由 marker; row 55: hits=0 non-非纪律 missing 零标记理由 marker; row 60: hits=0 non-非纪律 missing 零标记理由 marker
+  AC FAIL: AC4/AC4b
+AC4 FAIL
+AC5: inventory 既有15行逐字 + 行数
+  AC FAIL: inventory body rows=30 (want 75, 新增去重=60)
+AC5 FAIL
+AC6: 新增唯一 + 白名单列 + 列数
+  AC FAIL: 新增 新增:伪造纪律1 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律10 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律11 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律12 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律13 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律14 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律15 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律16 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律17 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律18 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律19 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律2 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律20 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律21 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律22 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律23 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律24 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律25 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律26 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律27 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律28 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律29 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律3 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律30 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律31 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律32 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律33 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律34 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律35 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律36 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律37 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律38 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律39 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律4 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律40 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律41 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律42 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律43 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律44 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律45 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律46 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律47 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律48 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律49 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律5 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律50 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律51 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律52 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律53 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律54 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律55 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律56 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律57 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律58 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律59 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律6 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律60 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律7 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律8 在 inventory 出现 0 次
+  AC FAIL: 新增 新增:伪造纪律9 在 inventory 出现 0 次
+AC6 FAIL
+AC7: 子键集合逐字 + 子键可解释
+  AC FAIL: AC7: 78 subkey-blocks not explained (sentence must mention 子键 + at least one subkey name)
+AC7 FAIL
+AC8: gate2-candidates.md
+AC8 PASS
+AC10: 已有 分布 ≤24
+AC10 PASS
+AC11: 采纳↔新增 绑定
+  AC FAIL: AC11: 采纳 subagents强制调用 无对应 新增
+  AC FAIL: AC11: 采纳 产物证据链 无对应 新增
+  AC FAIL: AC11: 采纳 六个强制问题 无对应 新增
+  AC FAIL: AC11: 采纳 平台绑定交互决策 无对应 新增
+  AC FAIL: AC11: 采纳 技术决策透明 无对应 新增
+  AC FAIL: AC11: 采纳 研究先行 无对应 新增
+  AC FAIL: AC11: 新增 伪造纪律1 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律10 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律11 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律12 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律13 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律14 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律15 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律16 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律17 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律18 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律19 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律2 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律20 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律21 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律22 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律23 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律24 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律25 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律26 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律27 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律28 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律29 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律3 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律30 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律31 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律32 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律33 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律34 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律35 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律36 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律37 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律38 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律39 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律4 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律40 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律41 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律42 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律43 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律44 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律45 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律46 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律47 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律48 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律49 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律5 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律50 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律51 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律52 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律53 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律54 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律55 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律56 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律57 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律58 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律59 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律6 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律60 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律7 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律8 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 伪造纪律9 未采纳且未标非候选新增
+AC11 FAIL
+AC12: fence
+  AC12 fence clean
+AC12 PASS
+AC13: contract + step0.sh frozen
+  AC13 frozen OK
+AC13 PASS
+RESULT=FAIL

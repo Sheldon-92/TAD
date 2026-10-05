@@ -1,0 +1,29 @@
+=== RED AC2.6a version-floor clobber (surfaced during green-run) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS-AT-OBSERVATION:
+ M tad.sh (FR-1 + F-05/F-06/F-07/F-08 + guard markers; defect region UNTOUCHED — see below)
+ M NEXT.md (pre-existing track dirt, unrelated)
+?? design/handoff docs + .worktrees/ + progress/ (pre-existing, unrelated)
+---DEFECT-REGION PROVENANCE---
+The defect (apply_deprecations reads .tad/version.txt AFTER the .tad top-file
+sync overwrote it with the source version) sits in code predating this handoff:
+`git diff tad.sh` shows NO removals/reorders in that region — only ADDITIONS
+(pre_sync_version capture + $2 param + comparison branch). The comparison ran
+against 2.43.1 (post-sync source version) instead of the pre-install 2.2.0.
+---FAILING ASSERTION OUTPUT (verbatim fixture output, AC2.6a current=2.2.0)---
+  ✅ ac2.6a: run rc=0
+  ✅ ac2.6: zero network (both curl-shim logs empty)
+  ✅ ac2.6: positive-install proof (.tad/version.txt == 2.43.1)
+  ❌ ac2.6a: .codex/hooks.json touched (must be inert)
+  ❌ ac2.6a: .tad/templates/AGENTS.md.template touched (must be inert)
+  ❌ ac2.6a: .tad/templates/GEMINI.md.template touched (must be inert)
+  ❌ ac2.6a: deletion-attempt log lines present
+---MANUAL REPRO (same cause, installer log grep)---
+  → Applying deprecations for versions ≤ 2.43.1...
+  → Removed 3 deprecated file(s)
+(Proves the floor compared against the NEW version 2.43.1, not OLD 2.2.0:
+version_le 2.3.0 ≤ 2.43.1 TRUE → applied. Expected per AC2.6a: inert.)
+---FIX---
+copy_framework_files captures pre_sync_version before the top-file sync loop;
+apply_deprecations takes it as $2 and compares against the OLD version
+(fresh-install fallback chain unchanged). Post-fix: full ac2.6 case 10/10 PASS.

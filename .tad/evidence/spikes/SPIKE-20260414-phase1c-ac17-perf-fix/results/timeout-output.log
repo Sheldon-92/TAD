@@ -1,0 +1,5 @@
+--- results ---
+scenario  hook                 elapsed_s  deny_detected  jq_valid  self_aborted_under_3s  verdict  note
+A         pretool-interceptor  0.011      no             no        yes                    FAIL     outer_rc=127
+B         pretool-interceptor  0.067      no             no        yes                    FAIL     outer_rc=127
+AC8: 2 FAIL (see note column — likely 1b hooks lack internal stdin timeout; AC12 constraint prevents adding it in this spike)

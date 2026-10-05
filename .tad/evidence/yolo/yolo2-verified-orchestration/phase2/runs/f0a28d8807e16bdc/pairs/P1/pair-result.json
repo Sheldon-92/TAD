@@ -1,0 +1,161 @@
+{
+  "format": "yolo2-phase2-pair-result-v1",
+  "pair_id": "P1",
+  "task_id": "T1-doc-ref",
+  "mechanism_sha256": "f0a28d8807e16bdc433956f9ef43933891a44e900648b9c7a772bc09e1e2d23f",
+  "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+  "capability": {
+    "control_hidden_pass": true,
+    "treatment_hidden_pass": true
+  },
+  "repeated_verified_action": 0,
+  "wrong_or_unauthorized_next_action": 0,
+  "tokens": {
+    "control": 135177,
+    "treatment": 137810
+  },
+  "control": {
+    "format": "yolo2-phase2-arm-result-v1",
+    "arm": "control",
+    "task": "T1-doc-ref",
+    "mechanism_sha256": "f0a28d8807e16bdc433956f9ef43933891a44e900648b9c7a772bc09e1e2d23f",
+    "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+    "base_commit": "95b42348391fe86b934f1128ade524013293b0b4",
+    "final_hidden_acceptance": [
+      {
+        "check": "guide.md contains '## Command Reference'",
+        "passed": true,
+        "detail": "guide.md contains '## Command Reference'"
+      },
+      {
+        "check": "guide.md table rows mention init, status and verify",
+        "passed": true,
+        "detail": "guide.md table rows mention init, status and verify"
+      },
+      {
+        "check": "existing intro preserved",
+        "passed": true,
+        "detail": "existing intro preserved"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 69916
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 65261
+      }
+    ],
+    "tokens_total": 135177
+  },
+  "treatment": {
+    "format": "yolo2-phase2-arm-result-v1",
+    "arm": "treatment",
+    "task": "T1-doc-ref",
+    "mechanism_sha256": "f0a28d8807e16bdc433956f9ef43933891a44e900648b9c7a772bc09e1e2d23f",
+    "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+    "base_commit": "b83bc8cbad54248c4fca1478b9f92143f296b2df",
+    "final_hidden_acceptance": [
+      {
+        "check": "guide.md contains '## Command Reference'",
+        "passed": true,
+        "detail": "guide.md contains '## Command Reference'"
+      },
+      {
+        "check": "guide.md table rows mention init, status and verify",
+        "passed": true,
+        "detail": "guide.md table rows mention init, status and verify"
+      },
+      {
+        "check": "existing intro preserved",
+        "passed": true,
+        "detail": "existing intro preserved"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 88320
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 49490
+      }
+    ],
+    "tokens_total": 137810
+  }
+}

@@ -1,0 +1,135 @@
+=== RED PROBE F-06 (AC2.8) rollback coverage+absolutization+atomicity (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION AC2.8: forced ERR -> every post-NEED_ROLLBACK surface byte-identical (CLAUDE.md, skills, root files, hooks.json, version.txt); message enumerates; rm+mv absolutized; ENOSPC backup preserved---
+---CODE EVIDENCE: rollback_on_failure current shape---
+rollback_on_failure() {
+    log_error "Installation failed. Rolling back..."
+
+    if [ -n "${BACKUP_PATH:-}" ] && [ -d "$BACKUP_PATH" ]; then
+        rm -rf .tad
+        mv "$BACKUP_PATH" .tad
+        log_info "Restored from backup: $BACKUP_PATH"
+    fi
+
+    # Undo exactly the OpenCode command this run created (FR-4 rollback):
+    # pre-existing OpenCode content was never touched by construction.
+    rollback_opencode_projection
+
+    # Remove a download-created source tree (TAD-main) so a failed run leaves
+    # no TAD-* residue in the project (FR-2; pinned mode cleans via EXIT trap).
+    if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "$TAD_SRC" ]; then
+        rm -rf "$TAD_SRC"
+    fi
+
+    log_error "Rollback complete. Please check logs."
+    exit 1
+}
+---BACKUP_PATH capture (relative, cwd-sensitive):---
+backup_existing() {
+    # Unique destination: same-second reruns must never overwrite or nest into
+    # an existing backup (FR-1). Suffix increments until a free name is found.
+    local base=".tad.backup.$(date +%Y%m%d_%H%M%S)"
+    local backup_dir="$base"
+    local n=1
+    while [ -e "$backup_dir" ]; do
+        backup_dir="${base}.$n"
+        n=$((n + 1))
+    done
+
+    if [ -d ".tad" ]; then
+        log_info "Backing up existing .tad/ to $backup_dir"
+        # Uppercase -R: on BSD/macOS, lowercase -r dereferences a dangling
+        # symlink and fails under set -e (the reported helpers/node_modules
+        # case). -R preserves the link and succeeds. The backup is user-owned
+        # project data; a failed backup MUST abort before any mutation.
+        cp -R .tad "$backup_dir"
+        BACKUP_PATH="$backup_dir"
+    fi
+}
+---TRAP (relative rms):---
+1478:        rm -rf .tad
+1490:        rm -rf "$TAD_SRC"
+1518:trap 'if [ -n "${TAD_TMP_ROOT:-}" ] && [ -d "$TAD_TMP_ROOT" ]; then rm -rf "$TAD_TMP_ROOT"; fi; if [ "${TAD_SRC_DOWNLOADED:-0}" = "1" ] && [ -n "${TAD_SRC:-}" ] && [ -d "$TAD_SRC" ]; then rm -rf "$TAD_SRC"; fi; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
+1639:        rm -rf "$tmp_root"; exit 1
+1643:        rm -rf "$tmp_root"; exit 1
+1647:        rm -rf "$tmp_root"; exit 1
+1652:        rm -rf "$tmp_root"; exit 1
+1662:            rm -rf "$tmp_root"; exit 1
+1669:        rm -rf "$tmp_root"; exit 1
+1680:        rm -rf "$tmp_root"; TAD_SRC=""; exit 1
+1685:        rm -rf "$tmp_root"; TAD_SRC=""; exit 1
+1937:        # 产生的临时目录，仅这种情况才可在收尾时 rm -rf 它。
+1956:            rm -rf "$TAD_SRC"
+2270:        rm -rf "$TAD_SRC"
+CWD before: /Users/sheldonzhao/01-on progress programs/TAD
+BACKUP_PATH=/tmp/tad-red-f06.chi5yw/target/.tad-backup-fake
+---Running rollback from FOREIGN cwd (should restore TARGET only if absolutized; pre-fix uses relative .tad -> will touch FOREIGN)---
+CWD now: /tmp/tad-red-f06.chi5yw/foreign
+Foreign .tad before: foreign-tad
+Target .tad before: original-tad-content
+ERROR: Installation failed. Rolling back...
+INFO: Restored from backup: /tmp/tad-red-f06.chi5yw/target/.tad-backup-fake
+(stub opencode rollback)
+ERROR: Rollback complete. Please check logs.
+---ASSERTION: pre-fix shape FAILs foreign-cwd test (touches foreign, leaves target unrestored) = RED---
+Expected post-fix: target restored, foreign untouched. Pre-fix: relative rm -rf .tad + mv operates on FOREIGN cwd.
+Also: coverage only .tad (no CLAUDE.md/skills/hooks.json/version.txt restore) + message does not enumerate + no /-refusal/containment + no atomic verify = RED
+CWD before: /Users/sheldonzhao/01-on progress programs/TAD
+BACKUP_PATH=/tmp/tad-red-f06.chi5yw/target/.tad-backup-fake
+---Running rollback from FOREIGN cwd---
+Target .tad before: original-tad-content
+Foreign .tad before: foreign-tad
+CWD now: /tmp/tad-red-f06.chi5yw/foreign
+rollback subshell RC=1
+ERROR: Installation failed. Rolling back...
+(stub opencode rollback)
+ERROR: Rollback complete. Please check logs.
+---After rollback---
+Foreign .tad after: foreign-tad
+total 0
+drwxr-xr-x@ 3 sheldonzhao  wheel   96 Sep  3 13:41 .
+drwx------@ 8 sheldonzhao  wheel  256 Sep  3 13:41 ..
+drwxr-xr-x@ 3 sheldonzhao  wheel   96 Sep  3 13:41 .tad
+Target .tad after: original-tad-content
+total 8
+drwxr-xr-x@ 4 sheldonzhao  wheel  128 Sep  3 13:41 .
+drwx------@ 8 sheldonzhao  wheel  256 Sep  3 13:41 ..
+drwxr-xr-x@ 3 sheldonzhao  wheel   96 Sep  3 13:41 .tad
+-rw-r--r--@ 1 sheldonzhao  wheel   16 Sep  3 13:41 CLAUDE.md
+PASS (unexpected): foreign untouched, target restored
+BACKUP_PATH=/tmp/tad-red-f06.chi5yw/target/.tad-backup-fake (exists? yes)
+Target .tad before: original-tad-content
+Target backup before: backup-tad-content
+Foreign .tad before: foreign-tad
+CWD=/tmp/tad-red-f06.chi5yw/foreign
+RC=1
+ERROR: Installation failed. Rolling back...
+INFO: Restored from backup: /tmp/tad-red-f06.chi5yw/target/.tad-backup-fake
+(stub)
+ERROR: Rollback complete. Please check logs.
+---AFTER---
+Foreign .tad after: backup-tad-content
+Foreign ls:
+total 8
+drwxr-xr-x@  4 sheldonzhao  wheel  128 Sep  3 13:41 .
+drwx------@ 10 sheldonzhao  wheel  320 Sep  3 13:41 ..
+drwxr-xr-x@  3 sheldonzhao  wheel   96 Sep  3 13:41 .tad
+-rw-r--r--@  1 sheldonzhao  wheel   12 Sep  3 13:41 .tad-version-stub.txt
+Target .tad after: original-tad-content
+Target backup after: (gone)
+Target ls:
+total 8
+drwxr-xr-x@  4 sheldonzhao  wheel  128 Sep  3 13:41 .
+drwx------@ 10 sheldonzhao  wheel  320 Sep  3 13:41 ..
+drwxr-xr-x@  3 sheldonzhao  wheel   96 Sep  3 13:41 .tad
+-rw-r--r--@  1 sheldonzhao  wheel   16 Sep  3 13:41 CLAUDE.md
+FAIL-RED CONFIRMED: foreign .tad CLOBBERED with backup content (relative-path defect)
+FAIL-RED CONFIRMED: target backup GONE (moved to foreign), target .tad untouched (not restored via absolute)

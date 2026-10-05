@@ -1,0 +1,13 @@
+CASE=path-guard RESULT=PASS
+CASE=lifecycle-e2e RESULT=PASS
+CASE=verified-authority RESULT=PASS
+CASE=authority-conflicts RESULT=PASS
+CASE=side-effect-reconcile RESULT=PASS
+CASE=status-capsule RESULT=PASS
+CASE=atomic-write RESULT=PASS
+CASE=binding-and-closure RESULT=PASS
+CASE=dogfood-evidence RESULT=PASS
+CASE=phase2-scope-proof RESULT=FAIL
+  96bbfada..HEAD contains out-of-scope paths from parallel commit f967276f: research/**, .claude/**, .tad/config-workflow.yaml, and related local-wiki control-plane files
+CASE=required-evidence RESULT=PASS
+RESULT=FAIL

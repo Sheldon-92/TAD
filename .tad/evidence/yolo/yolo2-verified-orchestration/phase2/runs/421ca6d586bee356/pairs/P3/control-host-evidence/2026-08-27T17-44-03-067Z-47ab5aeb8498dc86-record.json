@@ -1,0 +1,161 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "47ab5aeb8498dc86",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04451-b9cd-79a3-bc92-f8f6b4b80898",
+  "resumed_from_session": "01a04451-b9cd-79a3-bc92-f8f6b4b80898",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "9d95b0e6b3acca3c1377dea13f1d94f408024c551bd811940becc491a9191252",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04451-b9cd-79a3-bc92-f8f6b4b80898",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nFix run.sh so it prints today's year using a portable form working on BOTH GNU date and BSD date (hint: BSD date -j needs -f or use cut of a long format). Keep it POSIX /bin/sh compatible. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 26007
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "d3f44c27300f20725f0b3c6ca3695fd3fe32eafe96da978bf2419881d3c7b8a9",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "d3f44c27300f20725f0b3c6ca3695fd3fe32eafe96da978bf2419881d3c7b8a9",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-control/run.sh"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-control/run.sh"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "3d2530e0bb64f8508731f72ae4825df030d9284816a3cf98af833e1329a16922",
+    "handoff.md": "b276f08f98bd968edbbf9f31db4d0a5fb12f1f11ed9700b1fe8a231761697914",
+    "oracle.txt": "7f666ec7e26e47908432e1e3be7a03dbce038a5fc5ed91aaf7b2e53c2e9809a3",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "fdec6dd620da62601b56efd098f1024b2fcd40a2eb06b7d02521b95b8d3f7773",
+    "run.sh": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71"
+  },
+  "post_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "3d2530e0bb64f8508731f72ae4825df030d9284816a3cf98af833e1329a16922",
+    "handoff.md": "b276f08f98bd968edbbf9f31db4d0a5fb12f1f11ed9700b1fe8a231761697914",
+    "oracle.txt": "7f666ec7e26e47908432e1e3be7a03dbce038a5fc5ed91aaf7b2e53c2e9809a3",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "fdec6dd620da62601b56efd098f1024b2fcd40a2eb06b7d02521b95b8d3f7773",
+    "run.sh": "f97594de857065c14705fb66f3759d21dead0fb825feaae9cbec340f27dd8b28"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/421ca6d586bee356/pairs/P3/control-host-evidence/2026-08-27T17-44-03-067Z-47ab5aeb8498dc86-raw-output.txt",
+    "sha256": "ccdcf26ab9007152058e810e813a80e7140f0ba214b0d1b4c214140bf017d1d1"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/421ca6d586bee356/pairs/P3/control-host-evidence/2026-08-27T17-44-03-067Z-47ab5aeb8498dc86-raw-trace.jsonl",
+    "sha256": "ccdcf26ab9007152058e810e813a80e7140f0ba214b0d1b4c214140bf017d1d1"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "6d3c42ff7764d7a2c567f8825afc23d0b44d5a7d78b96c0c37c535460a93ddf5",
+      "decision": "allowed",
+      "action_nonce": "ff875555aa7384a4",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "run.sh",
+      "pre_sha256": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71",
+      "post_sha256": "f97594de857065c14705fb66f3759d21dead0fb825feaae9cbec340f27dd8b28",
+      "observed_sha256": "f97594de857065c14705fb66f3759d21dead0fb825feaae9cbec340f27dd8b28",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "033a967e6854876b4c45ab968c215bc2ca718a1ad169bc5acd6a8a725679a21d",
+      "pre_manifest_sha256": "659e32526eb9f2de94cc2d3448617c64d921011a86dc819310579afe425b49a9",
+      "post_manifest_sha256": "6bf4e8f725d7744dc5060d5670cb84fa5411e3904cb413abfb7bb423be7c0247",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 68721,
+    "output_tokens": 1445,
+    "total_tokens": 70166,
+    "cached_input_tokens": 62720,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

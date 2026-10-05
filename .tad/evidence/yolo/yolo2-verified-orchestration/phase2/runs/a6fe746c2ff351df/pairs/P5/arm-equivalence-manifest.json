@@ -1,0 +1,41 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T5-hidden-business",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "7becdda2616c464c31758bf7e9daa55a877a99735d378c261aa2f0e256493a32",
+      "treatment_sha256": "7becdda2616c464c31758bf7e9daa55a877a99735d378c261aa2f0e256493a32",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "a3d60dbbc065c4fd106eed6a14f3e2d3f62f25a236d648b98544742d170ed5ff",
+      "treatment_sha256": "a3d60dbbc065c4fd106eed6a14f3e2d3f62f25a236d648b98544742d170ed5ff",
+      "byte_equal": true
+    }
+  ],
+  "normalized_frozen_inputs": {
+    "control": {
+      "task_seed_sha256": "f07a53d9a9dd8f85122de9dede1c73f494fe06f63db7d73a203e42a15dc3dfaa",
+      "contracts_sha256": "11aa788880bc3a80bae1aa5a2fde37f303cf40c9f45fefebcd4a4b5b7263c422",
+      "packet_text_sha256": "14cda26ce3f93ca750801f250a61dbb1a06a516b7d9017ab4377f55655c15a9d",
+      "tool_policy_sha256": "3ff01bb4e1a50814381629fbea45fad0beb9167c69591f7f03c85c066bf33407",
+      "budgets_sha256": "6bffcd3da016b860352fb47386d57222943bc15930d160f1c640ad01e66afc8e",
+      "model_settings_sha256": "36c5448bf3e7e0cb794b791dce615ce1e57a574f193adac8bd894a09d5a1b2fb"
+    },
+    "treatment": {
+      "task_seed_sha256": "f07a53d9a9dd8f85122de9dede1c73f494fe06f63db7d73a203e42a15dc3dfaa",
+      "contracts_sha256": "11aa788880bc3a80bae1aa5a2fde37f303cf40c9f45fefebcd4a4b5b7263c422",
+      "packet_text_sha256": "14cda26ce3f93ca750801f250a61dbb1a06a516b7d9017ab4377f55655c15a9d",
+      "tool_policy_sha256": "3ff01bb4e1a50814381629fbea45fad0beb9167c69591f7f03c85c066bf33407",
+      "budgets_sha256": "6bffcd3da016b860352fb47386d57222943bc15930d160f1c640ad01e66afc8e",
+      "model_settings_sha256": "36c5448bf3e7e0cb794b791dce615ce1e57a574f193adac8bd894a09d5a1b2fb"
+    }
+  },
+  "normalized_inputs_equal": true,
+  "packet_bytes_equal": true
+}

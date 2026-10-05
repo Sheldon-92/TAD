@@ -1,0 +1,13 @@
+CASE=phase2-policy RESULT=PASS
+CASE=round-state RESULT=PASS
+CASE=slice-contract RESULT=PASS
+CASE=reentry-gate RESULT=PASS
+CASE=round-close-and-verify RESULT=PASS
+CASE=resume-continuation RESULT=PASS
+CASE=replan-boundary RESULT=PASS
+CASE=alignment-gate RESULT=PASS
+CASE=completion-gate RESULT=PASS
+CASE=budget-exhaustion RESULT=PASS
+CASE=dogfood-evidence RESULT=PASS
+CASE=required-evidence RESULT=PASS
+RESULT=PASS

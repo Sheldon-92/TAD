@@ -1,0 +1,85 @@
+=== RED PROBE F-08 (AC2.11) _archived skip-if-exists + silent mv (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION AC2.11: migrate twice -> 2nd timestamped _archived dir via increment loop, zero overwrites (incl. same-second); chmod -w failure loud non-zero---
+---CODE EVIDENCE: upgrade branch skip-if-exists (WRONG per audit)---
+            # Archive old skills if needed
+            if [ -d ".claude/skills" ] && [ ! -d ".claude/skills/_archived" ]; then
+                mkdir -p .claude/skills/_archived
+                for f in .claude/skills/*.md; do
+                    if [ -f "$f" ] && [ "$(basename "$f")" != "doc-organization.md" ]; then
+                        mv "$f" .claude/skills/_archived/ 2>/dev/null || true
+                    fi
+                done
+            fi
+
+---CODE EVIDENCE: migrate branch fixed _archived (no timestamp, overwrites)---
+            if [ -d ".claude/skills" ]; then
+                mkdir -p .claude/skills/_archived
+            fi
+
+            # Migrate user data from backup (old directory layouts)
+            # cp -R (not -r): the backup may contain user-owned dangling
+            # symlinks; lowercase -r would dereference and fail, dropping the
+            # migration for that subtree (same class as FR-1).
+            log_info "  → Migrating user data..."
+            if [ -d "$MIGRATE_BACKUP_DIR/handoffs" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/handoffs/"* .tad/active/handoffs/ 2>/dev/null || true
+            fi
+            if [ -d "$MIGRATE_BACKUP_DIR/active/handoffs" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/active/handoffs/"* .tad/active/handoffs/ 2>/dev/null || true
+            fi
+            if [ -d "$MIGRATE_BACKUP_DIR/working" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/working/"* .tad/active/ 2>/dev/null || true
+            fi
+            if [ -d "$MIGRATE_BACKUP_DIR/context" ]; then
+                cp -R "$MIGRATE_BACKUP_DIR/context/"* .tad/active/ 2>/dev/null || true
+            fi
+
+            # Archive old skills if needed
+            if [ -d ".claude/skills" ]; then
+                for f in .claude/skills/*.md; do
+                    if [ -f "$f" ] && [ "$(basename "$f")" != "doc-organization.md" ]; then
+                        mv "$f" .claude/skills/_archived/ 2>/dev/null || true
+                    fi
+                done
+            fi
+---CODE EVIDENCE: silent mv || true (evidence swallowing)---
+2095:                        mv "$f" .claude/skills/_archived/ 2>/dev/null || true
+2184:                        mv "$f" .claude/skills/_archived/ 2>/dev/null || true
+---EXPECTED: unique-timestamp-suffix via backup_existing-style increment loop (REUSE pattern); GOT: fixed _archived + skip + silent---
+SANDBOX=/tmp/tad-red-f08.TFyQDC
+Simulating upgrade-branch logic twice (pre-fix):
+Run1: if [ ! -d _archived ]; then mkdir + mv; fi
+run1: archived
+After run1:
+_archived
+doc-organization.md
+
+/tmp/tad-red-f08.TFyQDC/target/.claude/skills/_archived:
+old.md
+Re-create old.md to simulate 2nd migrate with new file (or same-second rerun):
+_archived
+doc-organization.md
+new.md
+
+/tmp/tad-red-f08.TFyQDC/target/.claude/skills/_archived:
+old.md
+Run2 (pre-fix skips because _archived exists):
+run2: SKIPPED (pre-fix BUG - no 2nd timestamped dir)
+After run2:
+_archived
+doc-organization.md
+new.md
+
+/tmp/tad-red-f08.TFyQDC/target/.claude/skills/_archived:
+old.md
+FAIL-RED CONFIRMED: 2nd run SKIPPED, no 2nd timestamped dir, zero-overwrite + determinism FAIL = RED
+Also: mv || true swallows chmod -w failures silently (no loud non-zero) = RED

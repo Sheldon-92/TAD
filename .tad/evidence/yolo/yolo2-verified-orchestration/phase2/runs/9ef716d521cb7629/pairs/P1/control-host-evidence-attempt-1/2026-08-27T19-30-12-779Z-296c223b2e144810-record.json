@@ -1,0 +1,114 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "296c223b2e144810",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": null,
+  "resumed_from_session": null,
+  "turn_kind": "assertion",
+  "round_id": "R-01",
+  "journal_seq": 2,
+  "packet_sha256": "8e3bd174be5c616950a1a015d47bea12637f3a779997e27df3492d694b73a489",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--sandbox",
+      "read-only",
+      "You are resuming a governed task. Your ONLY authority is the execution packet at .tad/evidence/yolo/run/rounds/R-01/execution.md.\nRead it FIRST. Then produce your recovery assertion H1-H8 + S1-S4 (Phase-1 rubric: goal, handoff revision, verified, unverified/in-progress incl uncommitted observations, pending action, blockers, legal next action, non-goals/forbidden scope; S1 why next action legal, S2 why verified work must not be redone, S3 why blind retry/self-completion unavailable, S4 what is rejected).\nFORMAT CONTRACT (mechanically scored): every section MUST be a level-2 markdown heading exactly \"## H1\" through \"## H8\" and \"## S1\" through \"## S4\" (e.g. \"## H1 — Goal\"). Bullet items like \"- **H1 ...**\" are scored as MISSING sections.\nYour FINAL MESSAGE must be exactly the full assertion markdown (starting \"# Recovery Assertion\") and nothing else. You have NO write access; do NOT attempt to write any file. Do NOT do the task work. Do not read files other than the packet, goal.json, journal.jsonl inside the run dir, and the slice target file."
+    ],
+    "exit": 1,
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)\nReading additional input from stdin...\nError: failed to initialize in-process app-server client: Operation not permitted (os error 1)\n",
+    "elapsed_ms": 1232
+  },
+  "native_event_count": 0,
+  "native_event_kinds": [],
+  "native_tool_events": [],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": "e488be7a495d218219cb8a77ee8c72f4039454a27376522240031271e1e109e5",
+  "pre_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "goal-spec.json": "f283e8887adb877815063d11efd6cb090563f73401bed9234909764457f08c68",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "156feb82e583c35b29a767f4d3c132de9acc0aa7f3236899729e11e11504b495",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "b9ce43f57bffca626f4b32de396a12024c1231a6d06b0e83671bd05c357a49d6",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38"
+  },
+  "post_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "goal-spec.json": "f283e8887adb877815063d11efd6cb090563f73401bed9234909764457f08c68",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "156feb82e583c35b29a767f4d3c132de9acc0aa7f3236899729e11e11504b495",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "b9ce43f57bffca626f4b32de396a12024c1231a6d06b0e83671bd05c357a49d6",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/9ef716d521cb7629/pairs/P1/control-host-evidence-attempt-1/2026-08-27T19-30-12-779Z-296c223b2e144810-raw-output.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/9ef716d521cb7629/pairs/P1/control-host-evidence-attempt-1/2026-08-27T19-30-12-779Z-296c223b2e144810-raw-trace.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "read-only"
+  },
+  "worktree_observation": [],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Read",
+      "args_sha256": "178695364b5c471106d3bd51235bc2089ff485d5638f726861d1bf2105711b6b",
+      "invocation_args_sha256": "178695364b5c471106d3bd51235bc2089ff485d5638f726861d1bf2105711b6b",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "cb8dbd327fe73130088627043fed8ba99ffb19a9f3aacc2096e3e6143fbea02a",
+      "post_manifest_sha256": "cb8dbd327fe73130088627043fed8ba99ffb19a9f3aacc2096e3e6143fbea02a",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    }
+  ],
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "native": false
+  },
+  "exit_status": 1,
+  "final_message": ""
+}

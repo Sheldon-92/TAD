@@ -1,0 +1,78 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "21b63ece0d5c003f856d4cc7297d94b4ede2aab380588b18fe1b73530dc02ead",
+  "parser_version": "1",
+  "invocation_nonce": "21697086daf187f4",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03f60-020d-7c73-b1eb-dc4ea26175bb",
+  "resumed_from_session": "01a03f60-020d-7c73-b1eb-dc4ea26175bb",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "5d9a3c1576e7f46bfed4cd65bdaa89cc0f75396ee2679fce381658be0a1cfecd",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T18-42-24-709Z-21697086daf187f4-raw-output.txt",
+    "sha256": "aaf568c180186251c36029ad13f58be6b85c9da02a6bd09eeda76193646fd782"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T18-42-24-709Z-21697086daf187f4-raw-trace.jsonl",
+    "sha256": "b4eada8a821e19dcd733b2007091bdf86deb9ac5e86cbeecca15175c2c932a26"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "42d4c3401629f42e3225e0a8503ba341efbbce8750107ff3c33e886f4162853b",
+      "decision": "allowed",
+      "action_nonce": "fc3cb689f72ad8cf",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "cb33381fc8e87016a46ffb95f0e614198c4aa5ce0241fab5a80038895403d9b6",
+      "observed_changed": [
+        " M guide.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "contract-S2.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        " M guide.md",
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 31706,
+    "output_tokens": 270,
+    "total_tokens": 31976,
+    "cached_input_tokens": 27392,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Cannot execute: the governed R-02 slice conflicts with the sole goal and triggers its explicit `scope drift` stop condition. No files were changed."
+}

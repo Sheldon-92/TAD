@@ -1,0 +1,256 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+  "parser_version": "1",
+  "invocation_nonce": "52db85b616925ef8",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04b16-cfa9-7cb2-bda1-377ccb857649",
+  "resumed_from_session": "01a04b16-cfa9-7cb2-bda1-377ccb857649",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "a3d60dbbc065c4fd106eed6a14f3e2d3f62f25a236d648b98544742d170ed5ff",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04b16-cfa9-7cb2-bda1-377ccb857649",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nUpdate app.js to import total from totals.js and print total([ {price:2},{price:3} ]) instead of the literal string app. Ensure node tests.js still passes. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "2026-08-29T01:19:15.915035Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:19:15.960303Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:19:28.286309Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:19:38.386685Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:20:09.087479Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T01:20:15.407948Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n",
+    "elapsed_ms": 98879
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_index": 3,
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "825409881d8bd42ee815563330bf0d6bd8a78fff4982cc2bf5c1289f515765d9",
+      "paths": []
+    },
+    {
+      "event_index": 4,
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "825409881d8bd42ee815563330bf0d6bd8a78fff4982cc2bf5c1289f515765d9",
+      "paths": []
+    },
+    {
+      "event_index": 5,
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T5-hidden-business-treatment/app.js"
+      ]
+    },
+    {
+      "event_index": 6,
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T5-hidden-business-treatment/app.js"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "cc70a51329b5814d067657e88ddbe09402cb73ee93386b9a7a548f7749ede566",
+    "contract-S2.json": "b1f502135faea065c7f2b869922b7480b35a0899328ade0cc9c864db88345dcc",
+    "goal-spec.json": "ebe181808f4a942f2d7c9acb012dd527e7e5d43b00ae78eba843ba3378b40d47",
+    "handoff.md": "9b0b469283e106021deaeb0258291d84407ced550a0360eb168b2754ac0bd376",
+    "oracle.txt": "c03f3b580e6c9911761242e69f2fed11fbe45b2441679d02547f57396ee0990c",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "app.js": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a",
+    "tests.js": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89",
+    "totals.js": "6c74b53d5d637fd73b48281c3998107c40e79009437954e4dd03972e349253fb"
+  },
+  "post_manifest": {
+    "contract-S1.json": "cc70a51329b5814d067657e88ddbe09402cb73ee93386b9a7a548f7749ede566",
+    "contract-S2.json": "b1f502135faea065c7f2b869922b7480b35a0899328ade0cc9c864db88345dcc",
+    "goal-spec.json": "ebe181808f4a942f2d7c9acb012dd527e7e5d43b00ae78eba843ba3378b40d47",
+    "handoff.md": "9b0b469283e106021deaeb0258291d84407ced550a0360eb168b2754ac0bd376",
+    "oracle.txt": "c03f3b580e6c9911761242e69f2fed11fbe45b2441679d02547f57396ee0990c",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "app.js": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f",
+    "tests.js": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89",
+    "totals.js": "6c74b53d5d637fd73b48281c3998107c40e79009437954e4dd03972e349253fb"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/515cda06ccc4819d/pairs/P5/treatment-host-evidence-attempt-2/2026-08-29T01-19-10-652Z-52db85b616925ef8-raw-output.txt",
+    "sha256": "c6bc7fd9c9a83673beaf774b115c0021d6b958b08ff5a2f01d8bac0e0822f331"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/515cda06ccc4819d/pairs/P5/treatment-host-evidence-attempt-2/2026-08-29T01-19-10-652Z-52db85b616925ef8-raw-trace.jsonl",
+    "sha256": "c6bc7fd9c9a83673beaf774b115c0021d6b958b08ff5a2f01d8bac0e0822f331"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "app.js"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "item_1-0001",
+      "native_event_index": 3,
+      "native_event_type": "item.started",
+      "native_item_id": "item_1",
+      "native_item_type": "command_execution",
+      "tool": "command_execution",
+      "args_sha256": "825409881d8bd42ee815563330bf0d6bd8a78fff4982cc2bf5c1289f515765d9",
+      "invocation_args_sha256": "825409881d8bd42ee815563330bf0d6bd8a78fff4982cc2bf5c1289f515765d9",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-02",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "d5f9dbb37fcb266d1cc02474d58fa81abe938e9e574495cf6cb9f5ad86355803",
+      "post_manifest_sha256": "551a16bf4e43a82d3802099a6d25cc99c9c842f899154234b93d1b44bc171fcc",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_1-0002",
+      "native_event_index": 4,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_1",
+      "native_item_type": "command_execution",
+      "tool": "command_execution",
+      "args_sha256": "825409881d8bd42ee815563330bf0d6bd8a78fff4982cc2bf5c1289f515765d9",
+      "invocation_args_sha256": "825409881d8bd42ee815563330bf0d6bd8a78fff4982cc2bf5c1289f515765d9",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-02",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "d5f9dbb37fcb266d1cc02474d58fa81abe938e9e574495cf6cb9f5ad86355803",
+      "post_manifest_sha256": "551a16bf4e43a82d3802099a6d25cc99c9c842f899154234b93d1b44bc171fcc",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_2-0003",
+      "native_event_index": 5,
+      "native_event_type": "item.started",
+      "native_item_id": "item_2",
+      "native_item_type": "file_change",
+      "tool": "file_change",
+      "args_sha256": "ca03cb7ac01bd9c4dd7bfd7dd3eec063b7ed2868c65a574bfe0dd1f389ef75d2",
+      "invocation_args_sha256": "ca03cb7ac01bd9c4dd7bfd7dd3eec063b7ed2868c65a574bfe0dd1f389ef75d2",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-02",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "d5f9dbb37fcb266d1cc02474d58fa81abe938e9e574495cf6cb9f5ad86355803",
+      "post_manifest_sha256": "551a16bf4e43a82d3802099a6d25cc99c9c842f899154234b93d1b44bc171fcc",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_2-0004",
+      "native_event_index": 6,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_2",
+      "native_item_type": "file_change",
+      "tool": "Edit",
+      "args_sha256": "a126f8c72bf4b7e7092be868888d572e6b7f37258824edb339b97af7ebb11631",
+      "invocation_args_sha256": "a126f8c72bf4b7e7092be868888d572e6b7f37258824edb339b97af7ebb11631",
+      "decision": "allowed",
+      "action_nonce": "eb1567a64fb692e3",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "app.js",
+      "pre_sha256": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a",
+      "post_sha256": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f",
+      "observed_sha256": "b9926b41250669cc3dba943a5d8b2e45e34d941b19de164f2bd74903a4fe097f",
+      "effect_manifest_sha256": "ed6e1b25bc0598939d50f1684b05c4a86097187c1be793ed673cfd02d3512d7d",
+      "effect_paths": [
+        "app.js"
+      ],
+      "effect_fingerprint": "67dd1103b78a55ecf85a3bf24483f787d9cc28c982c5ed0023c5c19c8ad86429",
+      "pre_manifest_sha256": "d5f9dbb37fcb266d1cc02474d58fa81abe938e9e574495cf6cb9f5ad86355803",
+      "post_manifest_sha256": "551a16bf4e43a82d3802099a6d25cc99c9c842f899154234b93d1b44bc171fcc",
+      "observed_changed": [
+        "app.js"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "app.js"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 93546,
+    "output_tokens": 4845,
+    "total_tokens": 98391,
+    "cached_input_tokens": 63744,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

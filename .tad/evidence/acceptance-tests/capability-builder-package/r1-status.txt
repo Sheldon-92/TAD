@@ -1,0 +1,15 @@
+ M .agents/skills/capability-builder/SKILL.md
+ M .claude/skills/capability-builder/SKILL.md
+ M .tad/scripts/pack-eval-runner.sh
+ M NEXT.md
+?? .agents/skills/capability-builder/references/evolve-protocol.md
+?? .agents/skills/capability-builder/references/package-openai-plugin.md
+?? .claude/skills/capability-builder/references/evolve-protocol.md
+?? .claude/skills/capability-builder/references/package-openai-plugin.md
+?? .tad/active/designs/DESIGN-20260903-capability-builder-phase23-evolve-package.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-capability-builder-phase23-evolve-package.md
+?? .tad/scripts/capability-plugin.sh
+?? .tad/templates/openai-plugin/
+?? .worktrees/
+?? progress/

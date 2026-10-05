@@ -1,0 +1,18 @@
+VERBATIM (handoff §9.1):
+$ git status --porcelain | grep -v "^\?\?" | awk '{print $2}'
+(empty — BSD grep treats \? as optional, so ^\?\? matches every porcelain line; grep -v drops all)
+
+INTENT-EQUIVALENT (exclude untracked only):
+$ git status --porcelain | grep -v '^??' | awk '{print $2}'
+AGENTS.md
+CLAUDE.md
+
+$ grep -cF "## Frozen Channel: TAD Lite" AGENTS.md
+1
+
+STAGED PATHSPEC (handoff §10):
+M  AGENTS.md
+M  CLAUDE.md
+?? handoff only (excluded)
+
+VERDICT: SATISFIED on intent + equivalent command; verbatim BSD false-FAIL recorded.

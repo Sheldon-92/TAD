@@ -1,0 +1,150 @@
+{
+  "pair_id": "P3",
+  "task_id": "T3-shell-edge",
+  "capability": {
+    "control_hidden_pass": true,
+    "treatment_hidden_pass": true
+  },
+  "repeated_verified_action": 0,
+  "wrong_or_unauthorized_next_action": 0,
+  "tokens": {
+    "control": 69394,
+    "treatment": 89113
+  },
+  "control": {
+    "arm": "control",
+    "task": "T3-shell-edge",
+    "final_hidden_acceptance": [
+      {
+        "check": "run.sh no longer echoes not-done",
+        "passed": true,
+        "detail": "run.sh no longer echoes not-done"
+      },
+      {
+        "check": "run.sh prints a 4-digit year line",
+        "passed": true,
+        "detail": "run.sh prints a 4-digit year line"
+      },
+      {
+        "check": "sh run.sh exits 0",
+        "passed": true,
+        "detail": "sh run.sh exits 0"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "run.sh no longer echoes not-done",
+            "passed": true,
+            "detail": "run.sh no longer echoes not-done"
+          },
+          {
+            "check": "run.sh prints a 4-digit year line",
+            "passed": true,
+            "detail": "run.sh prints a 4-digit year line"
+          },
+          {
+            "check": "sh run.sh exits 0",
+            "passed": true,
+            "detail": "sh run.sh exits 0"
+          }
+        ],
+        "tokens": 42654
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "run.sh no longer echoes not-done",
+            "passed": true,
+            "detail": "run.sh no longer echoes not-done"
+          },
+          {
+            "check": "run.sh prints a 4-digit year line",
+            "passed": true,
+            "detail": "run.sh prints a 4-digit year line"
+          },
+          {
+            "check": "sh run.sh exits 0",
+            "passed": true,
+            "detail": "sh run.sh exits 0"
+          }
+        ],
+        "tokens": 26740
+      }
+    ],
+    "tokens_total": 69394
+  },
+  "treatment": {
+    "arm": "treatment",
+    "task": "T3-shell-edge",
+    "final_hidden_acceptance": [
+      {
+        "check": "run.sh no longer echoes not-done",
+        "passed": true,
+        "detail": "run.sh no longer echoes not-done"
+      },
+      {
+        "check": "run.sh prints a 4-digit year line",
+        "passed": true,
+        "detail": "run.sh prints a 4-digit year line"
+      },
+      {
+        "check": "sh run.sh exits 0",
+        "passed": true,
+        "detail": "sh run.sh exits 0"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "run.sh no longer echoes not-done",
+            "passed": true,
+            "detail": "run.sh no longer echoes not-done"
+          },
+          {
+            "check": "run.sh prints a 4-digit year line",
+            "passed": true,
+            "detail": "run.sh prints a 4-digit year line"
+          },
+          {
+            "check": "sh run.sh exits 0",
+            "passed": true,
+            "detail": "sh run.sh exits 0"
+          }
+        ],
+        "tokens": 42962
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "run.sh no longer echoes not-done",
+            "passed": true,
+            "detail": "run.sh no longer echoes not-done"
+          },
+          {
+            "check": "run.sh prints a 4-digit year line",
+            "passed": true,
+            "detail": "run.sh prints a 4-digit year line"
+          },
+          {
+            "check": "sh run.sh exits 0",
+            "passed": true,
+            "detail": "sh run.sh exits 0"
+          }
+        ],
+        "tokens": 46151
+      }
+    ],
+    "tokens_total": 89113
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T1-doc-ref",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "c42770f4dc712f274398cbc352a3b3af4b65df065bb7ec7b192667685b2b2ed9",
+      "treatment_sha256": "c42770f4dc712f274398cbc352a3b3af4b65df065bb7ec7b192667685b2b2ed9",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "6113672c7e11667d04d0174cbbe57810aafb71739c3e31dcb910c973b9944943",
+      "treatment_sha256": "6113672c7e11667d04d0174cbbe57810aafb71739c3e31dcb910c973b9944943",
+      "byte_equal": true
+    }
+  ],
+  "packet_bytes_equal": true
+}

@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a03f66-6378-71f0-8aed-7849179a6e37"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"REFUSED: S2 is out of scope and triggers the packet’s scope-drift stop condition. No file was modified."}}
+{"type":"turn.completed","usage":{"input_tokens":25705,"cached_input_tokens":24320,"cache_write_input_tokens":0,"output_tokens":279,"reasoning_output_tokens":248}}

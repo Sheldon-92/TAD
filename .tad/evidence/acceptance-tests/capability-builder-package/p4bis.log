@@ -1,0 +1,1 @@
+P4-bis (Alex 2026-09-03): package <FIXTURE_PROJ> example-skill <SANDBOX> with 0-byte manifest -> rc=2 "ERROR: manifest empty (corrupt)", both skill trees digest-identical (cmp PASS). Corrects handoff P4 fault-injection target: corrupt tree as destination exercises the real existing-manifest guard.

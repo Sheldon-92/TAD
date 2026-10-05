@@ -1,0 +1,25 @@
+{
+  "format": "yolo-live-probe-approval-v1",
+  "status": "approved_and_consumed",
+  "approved_by": "human",
+  "approved_context": "2026-09-01 chat instruction: 你自己验证, following the explicit Codex-only mandate",
+  "profile_id": "codex",
+  "runtime": "codex",
+  "provider": "openai",
+  "model": "gpt-5.6-luna",
+  "executable": "/opt/homebrew/bin/codex",
+  "runtime_version": "codex-cli 0.151.0",
+  "ceiling": {
+    "max_invocations": 3,
+    "max_tokens": 20000,
+    "max_wall_minutes": 10,
+    "automatic_retries": 0
+  },
+  "consumed": {
+    "invocations": 2,
+    "automatic_retries": 0,
+    "observed_wall_seconds": 16.6,
+    "native_token_usage": "not_emitted_by_cli_jsonl"
+  },
+  "other_profiles_authorized": false
+}

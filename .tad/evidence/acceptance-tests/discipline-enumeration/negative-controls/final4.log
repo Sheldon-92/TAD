@@ -1,0 +1,17 @@
+NC OK: AC1 empty disposition (red via AC1)
+NC OK: AC2 fabricated name (red via AC2)
+NC OK: AC3 missing reason code (red via AC3)
+NC OK: AC4 fragment not in range (red via AC4)
+NC OK: AC4b forged hit count (red via AC4)
+NC OK: AC5 新增未追加 (red via AC5)
+NC FAIL: AC6 whitelist check is vacuous
+NC FAIL: AC6 column-count check is vacuous
+NC OK: AC7 forged subkeys (red via AC7)
+NC OK: AC8 candidates missing (red via AC8)
+NC OK: AC9 all-ondiscipline (red via AC11)
+NC OK: AC9 all-existing (red via AC10)
+NC OK: AC9 all-new (red via AC4)
+NC OK: AC10 >24 coverage caught (all-existing)
+NC OK: AC12 outside-fence file (red via AC12)
+NC OK: AC13 guard green on unchanged contract (read-only, no negative state constructible)
+NEGATIVE CONTROL FAILURES PRESENT

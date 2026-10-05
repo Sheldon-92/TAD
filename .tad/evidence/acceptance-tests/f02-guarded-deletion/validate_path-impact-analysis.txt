@@ -1,0 +1,4 @@
+REJECTED-BY-validate_path: .tad/codex/schemas/
+----
+清单条目总数: 82
+会被 validate_path 拒绝: 1

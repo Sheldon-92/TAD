@@ -1,0 +1,41 @@
+AC1: disposition cols 1-3 == blocks.txt
+AC1 PASS
+AC2: 归宿 syntax + 已有名 ∈ names.txt
+AC2 PASS
+AC3: 理由码闭集 + 仅非纪律行非空
+  AC FAIL: AC3 violations:
+1: 非纪律行带理由码
+AC3 FAIL
+AC4: 原文片段分档 + AC4b: 命中数列 == hits.tsv
+row 1: short block hits=0 non-非纪律 missing 零标记理由 marker; row 16: fragment line does not hit wide markers (hits=2); row 28: fragment line does not hit wide markers (hits=1); row 33: fragment line does not hit wide markers (hits=1); row 35: fragment line does not hit wide markers (hits=4); row 36: fragment line does not hit wide markers (hits=4); row 39: fragment line does not hit wide markers (hits=1); row 41: fragment line does not hit wide markers (hits=27); row 43: fragment line does not hit wide markers (hits=14); row 52: fragment line does not hit wide markers (hits=5)
+  AC FAIL: AC4/AC4b
+AC4 FAIL
+AC5: inventory 既有15行逐字 + 行数
+  AC FAIL: inventory body rows=30 (want 16, 新增去重=1)
+AC5 FAIL
+AC6: 新增唯一 + 白名单列 + 列数
+  AC FAIL: 新增 新增:负控试验纪律 在 inventory 出现 0 次
+AC6 FAIL
+AC7: 子键集合逐字 + 子键可解释
+  AC FAIL: AC7: 78 subkey-blocks not explained (sentence must mention 子键 + at least one subkey name)
+AC7 FAIL
+AC8: gate2-candidates.md
+AC8 PASS
+AC10: 已有 分布 ≤24
+AC10 PASS
+AC11: 采纳↔新增 绑定
+  AC FAIL: AC11: 采纳 subagents强制调用 无对应 新增
+  AC FAIL: AC11: 采纳 产物证据链 无对应 新增
+  AC FAIL: AC11: 采纳 六个强制问题 无对应 新增
+  AC FAIL: AC11: 采纳 平台绑定交互决策 无对应 新增
+  AC FAIL: AC11: 采纳 技术决策透明 无对应 新增
+  AC FAIL: AC11: 采纳 研究先行 无对应 新增
+  AC FAIL: AC11: 新增 负控试验纪律 未采纳且未标非候选新增
+AC11 FAIL
+AC12: fence
+  AC12 fence clean
+AC12 PASS
+AC13: contract + step0.sh frozen
+  AC13 frozen OK
+AC13 PASS
+RESULT=FAIL

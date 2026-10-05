@@ -1,0 +1,7 @@
+{
+  "format": "yolo2-phase2-hidden-fixture-commitment-v1",
+  "task_id": "T3-shell-edge",
+  "fixture_sha256": "9bf1ab2a8e29dcb10753f3445ab04a9b5f483af68384aa117c32bfe6e500f205",
+  "release_id": "70a6e2e91357f6cb3f008b6c18e25d413c6b860c2dee19ac490e60612fbacd74",
+  "released_only_after_output_hashes": true
+}

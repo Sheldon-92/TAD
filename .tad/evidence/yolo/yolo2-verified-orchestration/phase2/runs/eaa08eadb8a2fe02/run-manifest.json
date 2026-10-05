@@ -1,0 +1,11 @@
+{
+  "format": "yolo2-phase2-run-manifest-v1",
+  "mechanism_sha256": "eaa08eadb8a2fe02cabcbdcdc1da1ae2d9e510aad337d9e9fc32c6729fc379ff",
+  "runner_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+  "recovery_sha256": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+  "driver_sha256": "09d1cb46b60158c47726f953b5f50273ac6092f34cd09b8aabb0dcae2d302c67",
+  "dataset_sha256": "3f80d269dec74e793d895e4f3974d7a5ec4b2621410675860d400fe553439f4e",
+  "base_commit": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
+  "generated": "2026-08-27T23:42:02.616Z",
+  "seed": "yolo2p2-fixed-seed-001"
+}

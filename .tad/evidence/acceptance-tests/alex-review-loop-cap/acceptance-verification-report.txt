@@ -1,0 +1,29 @@
+--- protocol [claude] ---
+PASS  AC-1  max_review_rounds      expected=1          got=1
+PASS  AC-2  round_protocol         expected=1          got=1
+PASS  AC-3  p0_resolved_def        expected=1          got=1
+PASS  AC-4a violation round3       expected=1          got=1
+PASS  AC-4b violation diff         expected=1          got=1
+PASS  AC-N1 minimum_experts        expected=1          got=1
+PASS  AC-N6 violations count       expected=4          got=4
+PASS  AC-N7 yaml err line          expected=line 516   got=line 516
+--- protocol [agents] ---
+PASS  AC-1  max_review_rounds      expected=1          got=1
+PASS  AC-2  round_protocol         expected=1          got=1
+PASS  AC-3  p0_resolved_def        expected=1          got=1
+PASS  AC-4a violation round3       expected=1          got=1
+PASS  AC-4b violation diff         expected=1          got=1
+PASS  AC-N1 minimum_experts        expected=1          got=1
+PASS  AC-N6 violations count       expected=4          got=4
+PASS  AC-N7 yaml err line          expected=line 516   got=line 516
+--- SKILL.md ---
+PASS  AC-5  max 2 rounds [claude]  expected>=1         got=1
+PASS  AC-5  max 2 rounds [agents]  expected>=1         got=1
+--- negative controls ---
+PASS  AC-N2 no blake touched       expected=0          got=0
+PASS  AC-N3 no lite touched        expected=0          got=0
+PASS  AC-N5 changed file count     expected=4          got=4
+--- mirror parity (AC-N4) ---
+PASS  AC-N4 skill-body-verify      expected=0          got=0
+
+RESULT: ALL ACs PASS

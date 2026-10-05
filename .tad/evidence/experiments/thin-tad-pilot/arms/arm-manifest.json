@@ -1,0 +1,63 @@
+{
+  "baseline_manifest_hash": "5a53ebc414e0fcfe20637ec374a20673e05e3a596c94d2db08b648655a1ffcf2",
+  "candidate_hash": "e73f41f5000ab56ce20e96877ebd0476dde6a516b7581e87de3dc4aa5dfbc296",
+  "frozen_at": "2026-09-08",
+  "diff_table": [
+    {
+      "item": 1,
+      "candidate_section": "§1 goal/deliverables/non-goals",
+      "disposition": "retained",
+      "reason": "Task completion duty kept; reorganized as an explicit card-anchored list so scope is checkable per deliverable."
+    },
+    {
+      "item": 2,
+      "candidate_section": "§2 write scope and authorization",
+      "disposition": "reorganized",
+      "reason": "Baseline file-permission and safety rules kept verbatim in effect; restated as an exact path allowlist plus an explicit ceiling (local synthetic only)."
+    },
+    {
+      "item": 3,
+      "candidate_section": "§3 acceptance behavior and no-false-reporting",
+      "disposition": "retained",
+      "reason": "Evidence honesty kept and sharpened: missing checks are MISSING, and refusing normal work to look safe is itself a failure."
+    },
+    {
+      "item": 4,
+      "candidate_section": "§4 per-stage knowledge entry",
+      "disposition": "experimental_omit",
+      "reason": "EXPERIMENTAL: progressive per-stage loading replaces whole-handoff preload. Reachability rule kept (unreachable references count as absent). If a stage fails for lack of context, that failure is evidence against the candidate, not a license to preload."
+    },
+    {
+      "item": 5,
+      "candidate_section": "§5 self-check to independent check to delivery",
+      "disposition": "reorganized",
+      "reason": "Layer-1 self-check plus independent second pass kept; the second pass must use a different method, and disagreement blocks delivery."
+    },
+    {
+      "item": 6,
+      "candidate_section": "§6 escalation",
+      "disposition": "retained",
+      "reason": "Missing-info/failure/out-of-scope escalation kept; inventing facts and working around scope stay forbidden."
+    },
+    {
+      "item": 7,
+      "candidate_section": "§7 raw-failure retention and bounded retry",
+      "disposition": "retained",
+      "reason": "Raw failure retention plus a bounded retry budget (2/deliverable) kept; unbounded retry was never allowed."
+    },
+    {
+      "item": 8,
+      "candidate_section": "§8 one result record",
+      "disposition": "on_demand",
+      "reason": "Single-sourced record kept as the default; the no-hand-copy rule applies whenever a second consumer exists, and is waived only for single-consumer scratch notes."
+    }
+  ],
+  "invariants": [
+    "same_task",
+    "same_permission",
+    "same_scale",
+    "same_input",
+    "same_acceptance"
+  ],
+  "fidelity_disclaimer": "Adapter loading fidelity is NOT verified in P1: this manifest proves the candidate TEXT is frozen and the baseline TEXT is intact, not that any harness loads either arm as written. P2 must verify what the harness actually loaded before any arm may be called a real TAD condition; otherwise readiness is adapter-ineligible."
+}

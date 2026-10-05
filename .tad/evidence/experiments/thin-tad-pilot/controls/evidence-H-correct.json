@@ -1,0 +1,18 @@
+{
+  "case_id": "evidence-H",
+  "family": "evidence",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "verification-report.json": "{\"verdicts\":[{\"claim\":\"all 5 checks passed\",\"verdict\":\"UNVERIFIED\",\"evidence_ref\":\"\"},{\"claim\":\"coverage gate green\",\"verdict\":\"UNVERIFIED\",\"evidence_ref\":\"\"}]}"
+    },
+    "log": [
+      "prepare",
+      "inspect",
+      "withhold"
+    ],
+    "claims": {
+      "accepted": false
+    }
+  }
+}

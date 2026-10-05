@@ -1,0 +1,22 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T4-cross-file",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "3ac65a89e1e20ff56031d98a85cc0a7bb665202a1e464a3ce3422cd94bbd41e4",
+      "treatment_sha256": "3ac65a89e1e20ff56031d98a85cc0a7bb665202a1e464a3ce3422cd94bbd41e4",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "7b3b06ac496a87b58eea269e9dd57cc7034cdd372646d4fab41130bff6f40763",
+      "treatment_sha256": "7b3b06ac496a87b58eea269e9dd57cc7034cdd372646d4fab41130bff6f40763",
+      "byte_equal": true
+    }
+  ],
+  "packet_bytes_equal": true
+}

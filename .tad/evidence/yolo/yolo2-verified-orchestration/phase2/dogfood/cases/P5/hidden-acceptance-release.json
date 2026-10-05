@@ -1,0 +1,51 @@
+{
+  "format": "yolo2-phase2-hidden-acceptance-release-v1",
+  "task_id": "T5-hidden-business",
+  "control_output_manifest_sha256": "56d9a792cc4fcf576391e9f62d6e0cc80570cabe5b8801ddf796680575b4aded",
+  "treatment_output_manifest_sha256": "0be5aa74dd0bfa98db21e755664a475d449b3b1a0f952bb9b612326b7247a257",
+  "released_after_both_output_manifests": true,
+  "control": [
+    {
+      "check": "totals.js exports total",
+      "passed": true,
+      "detail": "totals.js exports total"
+    },
+    {
+      "check": "total uses numeric addition of price fields",
+      "passed": true,
+      "detail": "total uses numeric addition of price fields"
+    },
+    {
+      "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+      "passed": true,
+      "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+    },
+    {
+      "check": "node tests.js still passes",
+      "passed": true,
+      "detail": "node tests.js still passes"
+    }
+  ],
+  "treatment": [
+    {
+      "check": "totals.js exports total",
+      "passed": true,
+      "detail": "totals.js exports total"
+    },
+    {
+      "check": "total uses numeric addition of price fields",
+      "passed": true,
+      "detail": "total uses numeric addition of price fields"
+    },
+    {
+      "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+      "passed": true,
+      "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+    },
+    {
+      "check": "node tests.js still passes",
+      "passed": true,
+      "detail": "node tests.js still passes"
+    }
+  ]
+}

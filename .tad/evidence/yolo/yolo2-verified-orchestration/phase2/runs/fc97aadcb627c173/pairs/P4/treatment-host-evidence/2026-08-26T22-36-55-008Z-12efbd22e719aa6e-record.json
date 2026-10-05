@@ -1,0 +1,85 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "154bb171764111a77d12efbba724ea868e94a85ae5268233025ccbeead82cbc0",
+  "parser_version": "1",
+  "invocation_nonce": "12efbd22e719aa6e",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04037-a592-7c81-ba0e-aa762ecee24e",
+  "resumed_from_session": "01a04037-a592-7c81-ba0e-aa762ecee24e",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "90319ee0f917062f018feb3890abcf832f4afeff34370424336a762c5a543544",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P4/treatment-host-evidence/2026-08-26T22-36-55-008Z-12efbd22e719aa6e-raw-output.txt",
+    "sha256": "0e38c9642ffd61f0a596d0cb1a0fbdd487e9b94c7488b232d3a82065c62353f3"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P4/treatment-host-evidence/2026-08-26T22-36-55-008Z-12efbd22e719aa6e-raw-trace.jsonl",
+    "sha256": "cda94af892d2ad11bad13a8b83d55438e367f121b6f69d57327601a1c63c42dc"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "CHANGELOG.md"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "eaea225e887d37c6623cf0db4f924a97076e6131e35659197b701fa8879f06bd",
+      "invocation_args_sha256": "056993ee07479889c5f08241d27f6239880e3665d362b2307f909386edb441c8",
+      "decision": "allowed",
+      "action_nonce": "1d45c7ffd59fb8da",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "CHANGELOG.md",
+      "pre_sha256": "b41df428daf36b1f72ff77e98fc489402c8322c520c1ab28d4b0fa1af581df4f",
+      "post_sha256": "f3d64b04f0b983139f87b58fcb79e3eff0d552fcde6b32257fb0215a5f9be598",
+      "observed_sha256": "f3d64b04f0b983139f87b58fcb79e3eff0d552fcde6b32257fb0215a5f9be598",
+      "effect_manifest_sha256": "e69f494c54dff715c7ea5df8a1ca2ff6d95c787c18adfc3dd75cda34d43af0af",
+      "effect_paths": [
+        "CHANGELOG.md"
+      ],
+      "effect_fingerprint": "55a4c86e7d9da113f3bff24d1ee43bac3c37814a173597c6025795ffe53897af",
+      "pre_manifest_sha256": "14564116916d6e52c60b56bb1ce296ceb5756277a0caa7f87839db9d95b0e2c5",
+      "post_manifest_sha256": "ee112a8a923391204bba9210098a3a1838fd7f75bb07e42ecc7b3ad8217b05b6",
+      "observed_changed": [
+        "CHANGELOG.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "CHANGELOG.md"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 50290,
+    "output_tokens": 239,
+    "total_tokens": 50529,
+    "cached_input_tokens": 44544,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

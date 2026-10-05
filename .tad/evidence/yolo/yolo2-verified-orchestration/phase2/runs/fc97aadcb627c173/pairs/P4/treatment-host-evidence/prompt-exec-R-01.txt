@@ -1,0 +1,3 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+CHANGELOG.md first line says v0.9.0 but config.json says 1.0.0. Update ONLY the first line of CHANGELOG.md to v1.0.0. Then stop.
+When finished print DONE.

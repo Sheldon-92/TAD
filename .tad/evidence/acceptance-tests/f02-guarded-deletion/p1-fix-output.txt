@@ -1,0 +1,56 @@
+########## P1-1: unreadable zero-touch authority ##########
+    ℹ   → Applying deprecations for versions ≤ 2.42.0...
+    ⚠   → Zero-touch authority unavailable; deprecations skipped (nothing deleted)
+    EXTRACT_RC=0
+    harness_rc=0
+P1-1 PASS: degraded to warn+skip, installer survived (rc=0)
+P1-1 fail-closed OK: nothing deleted without authority
+
+########## P1-2: traversal entries refused before do_backup ##########
+    ℹ   → Applying deprecations for versions ≤ 2.42.0...
+    REJECT: path traversal or self-reference: ..
+    ⚠   ⚠ refused (rc=1): ..
+    REJECT: path traversal or self-reference: .
+    ⚠   ⚠ refused (rc=1): .
+    ✓   → Removed 1 deprecated file(s)
+    ⚠   → 2 deprecated path(s) refused by guards (see ABORT lines above)
+    EXTRACT_RC=0
+    harness_rc=0
+P1-2 PASS: traversal entries rejected
+    .tad-backup entries: 4
+P1-2 PASS: no whole-tree cp -a into backup area
+P1-2 PASS: loop continued, normal entry still deleted
+
+########## NFR4 regression: trailing-slash entry must still delete ##########
+    ℹ   → Applying deprecations for versions ≤ 2.42.0...
+    ✓   → Removed 1 deprecated file(s)
+    EXTRACT_RC=0
+NFR4 PASS: trailing-slash entry still deletable
+
+########## P1-2b: ./-family (self-reference) must be refused too ##########
+    ℹ   → Applying deprecations for versions ≤ 2.42.0...
+    REJECT: path traversal or self-reference: ./
+    ⚠   ⚠ refused (rc=1): ./
+    REJECT: path traversal or self-reference: .//
+    ⚠   ⚠ refused (rc=1): .//
+    ✓   → Removed 1 deprecated file(s)
+    ⚠   → 2 deprecated path(s) refused by guards (see ABORT lines above)
+    EXTRACT_RC=0
+P1-2b PASS: ./-family rejected
+    nested .tad-backup inside backup area: 0 (expect 0)
+P1-2b PASS: no recursive self-copy
+P1-2b PASS: normal entry still deleted (run not poisoned)
+
+########## P1-3: refused entry must NOT leave a copy in .tad-backup ##########
+    ℹ   → Applying deprecations for versions ≤ 2.42.0...
+    REJECT: ZERO_TOUCH: .tad/memory
+    ABORT: rm-site zero-touch recheck failed: .tad/memory
+    ⚠   ⚠ refused (rc=1): .tad/memory
+    ✓   → Removed 1 deprecated file(s)
+    ⚠   → 1 deprecated path(s) refused by guards (see ABORT lines above)
+    EXTRACT_RC=0
+P1-3 PASS: original user data survived
+P1-3 PASS: refused entry's backup copy rolled back
+P1-3 PASS: accepted entry's backup retained (recoverable)
+
+SANDBOX=/var/folders/ht/dds194f911zbp3nk0vl3ssr00000gn/T/tmp.lgF4TbgXTZ

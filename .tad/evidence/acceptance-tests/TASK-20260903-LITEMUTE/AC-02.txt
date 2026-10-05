@@ -1,0 +1,7 @@
+$ grep -n "当 .* Lite\|alex-lite\|blake-lite" AGENTS.md | cut -d: -f2-
+- Full roles ignore `LITE-*`; `blake-lite` accepts only `LITE-*`.
+4. If a LITE-*.md file is present: prompt the user to say "当 Blake Lite" — do NOT read the handoff content yourself
+- **Alex Lite** (Lite design lead): `$alex-lite`, `/alex-lite`, "当 Alex Lite", "Alex Lite 模式"
+- **Blake Lite** (Lite implementation): `$blake-lite`, `/blake-lite`, "当 Blake Lite", "Blake Lite 模式"
+$ grep -cF "Full roles ignore" AGENTS.md
+1

@@ -1,0 +1,7 @@
+# Gate evidence — slice S1 — worktree /private/tmp/tad-yolo2-p1/wt-control
+PASS S1-heading-present  — expected heading "## 10. Command Reference"
+PASS S1-documents-every-command  — missing: 
+PASS S1-has-table
+PASS S1-mentions-exit-codes
+PASS existing-content-preserved
+GATE_VERDICT=PASS (5/5)

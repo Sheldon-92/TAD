@@ -1,0 +1,50 @@
+{
+  "command": "verify-sources",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "family": "date",
+      "path": "agent-workshop/.tad/evidence/reviews/alex-acceptance.md",
+      "mode": "644",
+      "sha256": "607b29297f2c524f1448b2b84f9bc42026543df4573e1b83d1f8feba1f61f475",
+      "result": "MATCH"
+    },
+    {
+      "family": "rename",
+      "path": "买卖/.tad/evidence/journal/site-rebrand-express-2026-08-20.md",
+      "mode": "644",
+      "sha256": "8992fe3d19cc7691251e95f28d58daf9d1ba70ba55c83287c1a39e7db445b7c9",
+      "result": "MATCH"
+    },
+    {
+      "family": "evidence",
+      "path": "Terminal-Mission-Control/.tad/evidence/gates/20260901-phase7-gate4-r3.md",
+      "mode": "644",
+      "sha256": "2fc3e41c8ca1ac391c1790f86857ea657e4f51085add190040f9970377789b5b",
+      "result": "MATCH"
+    },
+    {
+      "family": "sync",
+      "path": "dual-mac-workspace-sync/.tad/evidence/journal/syncthing-lab-phase2-2026-08-25.md",
+      "mode": "644",
+      "sha256": "c68f8fd1b0e245ba41d55442055120d7fed2929b6c19a79b163071d51a85c9d2",
+      "result": "MATCH"
+    },
+    {
+      "family": "filter",
+      "path": "买卖/.tad/evidence/journal/clinic-segment-correction-2026-08-20.md",
+      "mode": "644",
+      "sha256": "df42a60a656ceb64e63d5a85bd2ee66cc5c9ca6ef3f1f51d4324284306f69f62",
+      "result": "MATCH"
+    },
+    {
+      "family": "routine",
+      "path": "grok-cloud/.tad/archive/handoffs/COMPLETION-20260904-mechanical-exit-wake.md",
+      "mode": "644",
+      "sha256": "a913fa7207c96fc4ad9bf1181d07e43ca8024166dd4fbfc7745e6478c222fd38",
+      "result": "MATCH"
+    }
+  ],
+  "summary": "6/6 sources match frozen manifest; no symlink followed; full text never printed"
+}

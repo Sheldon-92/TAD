@@ -1,0 +1,6 @@
+guard binaries:
+gtimeout: absent
+timeout: absent
+/usr/bin/perl
+functional alarm proof:
+alarm-rc=142 (142 = 128+SIGALRM: guard fires, child reaped ~1s)

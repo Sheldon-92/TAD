@@ -1,0 +1,36 @@
+# Committed-archive proof — disposable worktree (Gate 4 round 3)
+# Proof date: 2026-08-26T00:15:30Z
+# Worktree: /private/tmp/tad-yolo2-ac10-proof (detached at 7b12d429, disposable)
+# Frozen AC10 base (base-commit.txt): bfce27f3469960946679b03e2562ece67a34f0f3
+
+== STEP 1: pre-archive suite (active state) ==
+CASE=dogfood-evidence RESULT=PASS
+CASE=required-evidence RESULT=PASS
+RESULT=PASS
+
+== STEP 2: the archive move ==
+$ mkdir -p .tad/archive/handoffs && git mv .tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md .tad/archive/handoffs/ && git mv .tad/active/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md .tad/archive/handoffs/ && git commit
+archive commit: 35996d99670f0c1bce58bf5bac28f015a7baf385
+
+== net diff bfce27f3..HEAD (lifecycle paths only) ==
+.tad/archive/handoffs/COMPLETION-20260824-yolo2-phase1-recovery-slice.md
+.tad/archive/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md
+
+== STEP 3: post-archive FULL suite (real files, real diff) ==
+CASE=path-guard RESULT=PASS
+CASE=lifecycle-e2e RESULT=PASS
+CASE=verified-authority RESULT=PASS
+== STEP 3 (rerun to completion): post-archive FULL suite (real files, real diff) ==
+# rerun 2026-08-26T00:18:02Z at archive commit 35996d99670f0c1bce58bf5bac28f015a7baf385
+CASE=path-guard RESULT=PASS
+CASE=lifecycle-e2e RESULT=PASS
+CASE=verified-authority RESULT=PASS
+CASE=authority-conflicts RESULT=PASS
+CASE=side-effect-reconcile RESULT=PASS
+CASE=status-capsule RESULT=PASS
+CASE=atomic-write RESULT=PASS
+CASE=binding-and-closure RESULT=PASS
+CASE=dogfood-evidence RESULT=PASS
+CASE=required-evidence RESULT=PASS
+RESULT=PASS
+WORKTREE_SUITE_EXIT=0

@@ -1,0 +1,698 @@
+=== RELEASE SYNC SET (derived from /Users/sheldonzhao/01-on progress programs/TAD/.tad/ — bias-to-sync, REPORTED each run) ===
+
+--- A. ZERO-TOUCH (preserve target's own — NEVER sync) ---
+  active
+  archive
+  decisions
+  evidence
+  github-registry
+  pair-testing
+  project-knowledge
+  research-notebooks
+  skill-library
+  skillify-candidates
+  (+ top-level file: sync-registry.yaml)
+
+--- B. FRAMEWORK-SYNC (derived = live dirs MINUS deny-list — the auto-included set) ---
+  agents
+  capability-packs
+  codex
+  context
+  cross-model
+  data
+  domains
+  gates
+  guides
+  hooks
+  logs
+  migrations
+  ralph-config
+  references
+  runtime-compat
+  schemas
+  scripts
+  skills
+  sub-agents
+  tasks
+  templates
+  tests
+  workflows
+
+--- C. TRANSIENT / MAIN-ONLY (do NOT sync) ---
+  checklists
+  reports
+  spike-v3
+  working
+
+--- Special-case notes ---
+  * capability-packs → sync/diff ONLY capability-packs/pack-registry.yaml (registry index), never the pack tree.
+  * per-release one-shot scripts → write to .tad/evidence/releases/ (zero-touch ⇒ not in the synced set).
+
+════════ menu-snap (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/menu-snap
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/menu-snap/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: committed
+
+════════ my-openclaw-agents (merge) ════════
+old version: 2.27.0
+CLAUDE.md: merged (head replaced, project content preserved)
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/my-openclaw-agents
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/my-openclaw-agents/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+[0;33mWARNING[0m: Modifying protected file: CLAUDE.md
+  Make sure this is intentional and review the changes carefully.
+git: committed
+
+════════ OpenClaw Hack (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/OpenClaw Hack
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/OpenClaw Hack/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: no repo, skipped
+
+════════ 运动打卡小助手 (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/运动打卡小助手
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/运动打卡小助手/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: no repo, skipped
+
+════════ 合规ai (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/合规ai
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/合规ai/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: committed
+
+════════ ArtForge (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/ArtForge
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/ArtForge/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: no repo, skipped
+
+════════ Sober Creator (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/Sober Creator
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/Sober Creator/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: nothing to commit / commit failed (see log)
+
+════════ toy (merge) ════════
+old version: 2.27.0
+CLAUDE.md: merged (head replaced, project content preserved)
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/toy
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/toy/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: committed
+
+════════ 内存管理 (merge) ════════
+old version: 2.27.0
+CLAUDE.md: merged (head replaced, project content preserved)
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/内存管理
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/内存管理/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: no repo, skipped
+
+════════ Next Guest (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/Next Guest
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/Next Guest/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: committed
+
+════════ 下载md插件 (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/下载md插件
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/下载md插件/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: no repo, skipped
+
+════════ 买卖 (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/买卖
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/买卖/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: no repo, skipped
+
+════════ Monica-website (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/Monica-website
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/01-on progress programs/Monica-website/.claude/skills: ml-training
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: committed
+
+════════ Colin声音项目 (overwrite) ════════
+old version: 2.27.0
+CLAUDE.md: overwritten
+settings.json: hooks merged
+framework copy: done
+=========================================
+STRUCTURAL VERIFY (diff -rq over derived paths)
+  SRC:    /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/Downloads/Colin声音项目
+=========================================
+  ✅ .tad/agents identical
+  ✅ .tad/capability-packs/pack-registry.yaml identical
+  ✅ .tad/codex identical
+  ✅ .tad/context identical
+  ✅ .tad/cross-model identical
+  ✅ .tad/data identical
+  ✅ .tad/domains identical
+  ✅ .tad/gates identical
+  ✅ .tad/guides identical
+  ✅ .tad/hooks identical
+  ✅ .tad/logs identical
+  ✅ .tad/migrations identical
+  ✅ .tad/ralph-config identical
+  ✅ .tad/references identical
+  ✅ .tad/runtime-compat identical
+  ✅ .tad/schemas identical
+  ✅ .tad/scripts identical
+  ✅ .tad/skills identical
+  ✅ .tad/sub-agents identical
+  ✅ .tad/tasks identical
+  ✅ .tad/templates identical
+  ✅ .tad/tests identical
+  ✅ .tad/workflows identical
+  ℹ️  local-skill: Only in /Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills: ml-training
+  ℹ️  local-skill: Only in /Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills: smart-interval
+  ✅ .claude/skills identical (local-skill extras ignored)
+  ✅ .claude/workflows identical
+-----------------------------------------
+VERDICT: structural PASS (exit 0)
+structural gate: PASS (pre-transform)
+packs: 25 ok, 0 failed
+REJECT: chain gap at 2.27.0 — no manifest from 2.27.0. Suggest clean reinstall.
+migration engine exit: 2 (non-blocking)
+version.txt: 2.29.0 ✓
+git: nothing to commit / commit failed (see log)
+
+════════ SUMMARY ════════
+menu-snap|SYNCED|gate=PASS|packs=25/25
+my-openclaw-agents|SYNCED|gate=PASS|packs=25/25
+OpenClaw Hack|SYNCED|gate=PASS|packs=25/25
+运动打卡小助手|SYNCED|gate=PASS|packs=25/25
+合规ai|SYNCED|gate=PASS|packs=25/25
+ArtForge|SYNCED|gate=PASS|packs=25/25
+Sober Creator|SYNCED|gate=PASS|packs=25/25
+toy|SYNCED|gate=PASS|packs=25/25
+内存管理|SYNCED|gate=PASS|packs=25/25
+Next Guest|SYNCED|gate=PASS|packs=25/25
+下载md插件|SYNCED|gate=PASS|packs=25/25
+买卖|SYNCED|gate=PASS|packs=25/25
+Monica-website|SYNCED|gate=PASS|packs=25/25
+Colin声音项目|SYNCED|gate=PASS|packs=25/25

@@ -1,0 +1,68 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "21b63ece0d5c003f856d4cc7297d94b4ede2aab380588b18fe1b73530dc02ead",
+  "parser_version": "1",
+  "invocation_nonce": "9a4a772df7c6cb2a",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03f7e-a9cd-7d21-961d-f7d93aea0a15",
+  "resumed_from_session": null,
+  "turn_kind": "assertion",
+  "round_id": null,
+  "packet_sha256": "2d4e7eedad2e711a334727df2b1fbb2908954f3c091ca7459276c580a9959b6f",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T19-14-20-606Z-9a4a772df7c6cb2a-raw-output.txt",
+    "sha256": "f0c4989512e6e63add0098b392d24a7137895eb6b3549444bf068d2c849e5c23"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T19-14-20-606Z-9a4a772df7c6cb2a-raw-trace.jsonl",
+    "sha256": "216c0c121612e721dde35534a8cb0502a26d8345c1d8c7c60af1d1643a04b67d"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "31ee54811fd40d94b6e5aa7d08bb4a81da4386ad81f5f5462bd88b8b062ff2cd",
+      "decision": "allowed",
+      "action_nonce": null,
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 75463,
+    "output_tokens": 1722,
+    "total_tokens": 77185,
+    "cached_input_tokens": 56320,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "# Recovery Assertion\n\n## H1 — Goal\n\nAdd `total(items)` to `totals.js` so it returns the sum of `item.price` values, make `app.js` print the result of `total([{price:2},{price:3}])`, and preserve all existing tests.\n\n## H2 — Handoff Revision\n\nThe governed handoff is `handoff.md` at revision `41b1ed11ad2f3ba785556c672aa1ea239086b65f4e8d7f079d7a6b94b93d9b88`, based on commit `c2bab4ec866efe14b3892207138baa1511aa2eb9`.\n\n## H3 — Verified\n\nNo work is verified. The ledger contains only initialization and preparation of round `R-01` for slice `S1`; it contains no candidate checkpoint or bound verification receipt.\n\n## H4 — Unverified / In Progress\n\nSlice `S1` is prepared but not verified. Its contracted outcome is for `totals.js` to export `total(items)`, summing numeric price fields and returning `0` for an empty array. The observed worktree copy of `totals.js` is empty; its committed or uncommitted status was not established, so this is observation only and must not be treated as progress or completed work.\n\n## H5 — Pending Action\n\nExecute only slice `S1`, confined to `totals.js`, `app.js`, and `tests.js`, using only the packet-authorized Read, Edit, and Write operations. After an executor produces a candidate, Conductor-side Gate checks and independent review must pass before a distinct Conductor may record verification.\n\n## H6 — Blockers\n\nThere is no recorded implementation failure or technical blocker. No deterministic checks are declared in the slice packet, and no verification receipt exists; therefore completion cannot currently be asserted.\n\n## H7 — Legal Next Action\n\nThe next legal action is executor implementation of slice `S1` within its allowed paths, beginning from the observed target state and stopping on scope drift. It is not legal to start another slice, declare the goal complete, or advance verified state directly.\n\n## H8 — Non-Goals / Forbidden Scope\n\nNo work beyond the stated task is authorized. `.tad/scripts/`, `.claude/`, and `.tad/hooks/` are forbidden. Hidden acceptance is outside the executor namespace and must not be inspected. Redoing verified work, spawning agents, using Shell/Bash during strict Phase 2, or modifying paths outside `totals.js`, `app.js`, and `tests.js` is outside the current slice authority.\n\n## S1 — Why the Next Action Is Legal\n\nImplementing `S1` is legal because round `R-01` explicitly prepares that slice, maps it to `SC-1`, defines its outcome, and authorizes Read, Edit, and Write on `totals.js`, `app.js`, and `tests.js`.\n\n## S2 — Why Verified Work Must Not Be Redone\n\nGovernance forbids redoing verified work because verification is durable ledger state backed by a bound receipt. Here, the verified set is empty, so nothing qualifies for redo; future recovery must preserve any work that later enters that set.\n\n## S3 — Why Blind Retry / Self-Completion Is Unavailable\n\nBlind retry is unavailable because the journal records no failed attempt, retry authorization, or replacement slice. Self-completion is unavailable because executor assertions and ordinary files cannot advance verified state: verification requires an existing Gate PASS, an independent review PASS, and a bound receipt written by a Conductor whose identity differs from the executor.\n\n## S4 — Rejected\n\nRejected are any claim that `S1` or the goal is already complete; treating the empty `totals.js` observation as verified progress; task implementation during this recovery assertion; blind retry; executor-authored verification; inspection of hidden acceptance; work on another slice; access outside the packet-authorized evidence and target files; agent spawning; Shell/Bash task execution; forbidden-path changes; and all scope beyond the stated goal."
+}

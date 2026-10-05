@@ -1,0 +1,36 @@
+{
+  "control": [
+    {
+      "check": "guide.md contains '## Command Reference'",
+      "passed": true,
+      "detail": "guide.md contains '## Command Reference'"
+    },
+    {
+      "check": "guide.md table rows mention init, status and verify",
+      "passed": true,
+      "detail": "guide.md table rows mention init, status and verify"
+    },
+    {
+      "check": "existing intro preserved",
+      "passed": true,
+      "detail": "existing intro preserved"
+    }
+  ],
+  "treatment": [
+    {
+      "check": "guide.md contains '## Command Reference'",
+      "passed": true,
+      "detail": "guide.md contains '## Command Reference'"
+    },
+    {
+      "check": "guide.md table rows mention init, status and verify",
+      "passed": true,
+      "detail": "guide.md table rows mention init, status and verify"
+    },
+    {
+      "check": "existing intro preserved",
+      "passed": true,
+      "detail": "existing intro preserved"
+    }
+  ]
+}

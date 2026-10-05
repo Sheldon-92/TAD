@@ -1,0 +1,25 @@
+# Checkpoint — Blake thin-tad-evaluation-p1 exit wake (auto_continue #1 result)
+
+- when: ended 2026-09-08T02:24:29Z; wake ~2026-09-08T02:24:35Z (America/Chicago 9:24 PM)
+- source: oc-run (opencode ledger; cursor ledger 2026-09-04 ignored)
+- owner: 6cea3eb5-afd4-4cf9-bb80-9673fb7243e9 (TAD PM — match)
+- exit: 0
+- elapsed_s: 1407
+- dir: /home/box/云同步/TAD
+- continue: -c (this run was the auto_continue from Blake #1)
+- prompt: You are Blake. Follow TAD. Continue HANDOFF-20260907-thin-tad-evaluation-p1 from empty scaffold; finish P1.
+- dual-ledger: selected last-opencode.md + .tad/evidence/pm/last-opencode.POINTER.md; last-cursor.md older / other owner — not selected
+- evidence observed:
+  - experiments/thin-tad-pilot/{README.md,pilot.mjs,pilot.test.mjs,testdata/} present (git ?? untracked)
+  - live: node --test → 32/32 pass; all 8 CLI cmds exit 0 ok:true
+  - .tad/evidence/acceptance-tests/thin-tad-evaluation-p1/{ac0.txt,ac1.txt,raw-*.json} — raw ok:true; ac1.txt stale (still shows 26 tests; refresh via /tmp rejected)
+  - .tad/evidence/experiments/thin-tad-pilot/{SOURCE-MAP.md,arms,cases,controls,exports,manifests,oracles}/ filled
+  - .tad/evidence/reviews/blake/thin-tad-evaluation-p1/{code-review.md,spec-review.md}
+    - code-review: updated verdict PASS (unconditional) after 3× P2 fixes
+    - spec-review: CONDITIONAL — still requires P1-1 (CLI negatives for verify-sources/arms/scope in pilot.test.mjs)
+  - no COMPLETION-20260907-thin-tad-evaluation-p1
+  - no commit (experiments/ still ??); non-docs commit = L3
+- tail blocker: OpenCode `external_directory (/tmp/*)` auto-reject while rewriting ac1.txt via /tmp; process then exited 0
+- auto_continue_n: 1 (this was the continue) → next would be 2 → charter stop+报人
+- verdict: PARTIAL
+- next: stop auto-continue; ask human — (A) Blake -c fix P1-1 + evidence refresh without /tmp + COMPLETION, then L3 commit; or (B) other

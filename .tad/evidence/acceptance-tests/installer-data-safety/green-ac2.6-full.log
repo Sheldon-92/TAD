@@ -1,0 +1,16 @@
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.6
+  ✅ ac2.6a: run rc=0
+  ✅ ac2.6: zero network (both curl-shim logs empty)
+  ✅ ac2.6: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.6a: 2.3.0 entries inert (3 TAD-owned paths intact)
+  ✅ ac2.6a: zero deletion-attempt log lines
+  ✅ ac2.6b: run rc=0
+  ✅ ac2.6: zero network (both curl-shim logs empty)
+  ✅ ac2.6: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.6b: user files untouched
+  ✅ ac2.6b: stale TAD-owned templates removed
+
+=== Summary: PASS=10 FAIL=0 ===
+VERDICT: PASS

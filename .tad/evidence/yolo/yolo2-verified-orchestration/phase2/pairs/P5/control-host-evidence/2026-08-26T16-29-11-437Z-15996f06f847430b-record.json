@@ -1,0 +1,75 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "15996f06f847430b",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03ee6-12ac-7730-b63c-e7cedede3634",
+  "resumed_from_session": "01a03ee6-12ac-7730-b63c-e7cedede3634",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "847aa26aa51e3e18981df3ae8d5208292043544e2f18210ea96df59f71819762",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T16-29-11-437Z-15996f06f847430b-raw-output.txt",
+    "sha256": "38645813a9d4db2c1d8c97a4e42415a25710671a590a192cbdf09105211538dc"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T16-29-11-437Z-15996f06f847430b-raw-trace.jsonl",
+    "sha256": "0a96128cd8393b7e660b5457fa54a0ee5c1a350442c4ff25582d0ce40e6303e4"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "38f8b790aca26989928db72e4751a771ea3b52747b84f1c56a0f721fb12d26be",
+      "decision": "allowed",
+      "action_nonce": "4b50d7a3de6b8a86",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "f75dd12e977c314baaf09d986050483bb56e4f23100739126fe584046b4b2223",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "contract-S2.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 56552,
+    "output_tokens": 534,
+    "total_tokens": 57086,
+    "cached_input_tokens": 53760,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: `app.js` is outside the writable project root, so the edit was rejected. No files were changed and tests were not run."
+}

@@ -1,0 +1,67 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "4b759687af947481aaaa2c4a842b977492b3eddf8d068083d62ffc9dd61bbf46",
+  "parser_version": "1",
+  "invocation_nonce": "a20905090d802421",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03c2b-6d9f-7d32-9b21-1a55ee88574e",
+  "turn_kind": "assertion",
+  "round_id": null,
+  "packet_sha256": "e4cbc32a40025a3e46d783e0551c87efcd5ad0b2dc9a133a05f7e3f9153aedc2",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T03-44-33-782Z-a20905090d802421-raw-output.txt",
+    "sha256": "e5782cef31ea3adbe3dec0578cd048af47921a4600c27fec465daf19399e47c0"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T03-44-33-782Z-a20905090d802421-raw-trace.jsonl",
+    "sha256": "2af2884121995c6802587e3d1809bac532572740a482e69393dd973a5896a3ea"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "read-only"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "04cf7d2b5302d5f0404951ede024d7fd300358142ee72eb80f44a3ba62024cab",
+      "decision": "allowed",
+      "action_nonce": null,
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 94250,
+    "output_tokens": 2124,
+    "total_tokens": 96374,
+    "cached_input_tokens": 79616,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "# Recovery Assertion\n\n## H1 — Goal\n\nAppend `## Command Reference` to `guide.md`, followed by a Markdown table with columns `command` and `purpose` and one row for each command listed in `commands.txt`. Preserve all existing content unchanged.\n\n## H2 — Handoff Revision\n\nThe controlling handoff revision is `aeb9c58e13cf87200c16c787fadc610480ffcf3cd0c063a0e3a6a2bea5e699ed`, based on commit `0818c6e7db5f8698affae66c107d0ddb037bb826`.\n\n## H3 — Verified\n\nNothing is verified. The ledger contains only initialization and preparation of round `R-01`, slice `S1`; it contains no checkpoint, Gate result, independent review, or Conductor-authored verification receipt.\n\n## H4 — Unverified / In Progress\n\nSlice `S1` is prepared but not completed or verified. The observed `guide.md` contains only:\n\n```markdown\n# Guide\n\nExisting intro paragraph.\n```\n\nIt does not contain the requested Command Reference section. This target-file inspection is an observation only. Whether the observed state is committed or uncommitted was not established, and no uncommitted observation may be treated as progress or completion.\n\n## H5 — Pending Action\n\nAn authorized executor must execute only slice `S1`: use `commands.txt` to append the required Command Reference table to `guide.md`, listing `init`, `status`, and `verify` with purposes while leaving the existing introduction untouched. The resulting candidate must then undergo the required Gate, independent review, and distinct-Conductor verification process.\n\n## H6 — Blockers\n\nThis recovery session has no write authority and is expressly prohibited from performing task work. It therefore cannot edit `guide.md`, create a checkpoint, run completion work, or advance verification.\n\n## H7 — Legal Next Action\n\nThe next legal action is to hand slice `S1` to an authorized executor operating under its contract, limited to `guide.md` and `commands.txt`. That executor may read the command source and make only the specified append-only documentation change.\n\n## H8 — Non-Goals / Forbidden Scope\n\nNo work beyond SC-1 is authorized. Changes under `.tad/scripts/`, `.claude/`, or `.tad/hooks/` are forbidden. Starting another slice, changing existing guide content, searching for hidden acceptance, redoing verified work, or declaring completion without a bound Conductor verification receipt is also forbidden.\n\n## S1 — Why the Next Action Is Legal\n\nIt directly executes the current `S1` contract, maps solely to SC-1, uses only the contract’s allowed paths, and stops on scope drift.\n\n## S2 — Why Verified Work Must Not Be Redone\n\nThe recovery model prohibits redoing verified work because verification is authoritative ledger state. No work is verified here, so there is nothing eligible for repetition or preservation as completed work; future executors must still avoid treating observations or candidate checkpoints as verified.\n\n## S3 — Why Blind Retry / Self-Completion Is Unavailable\n\nThe ledger records no failed attempt or retry basis, and the observed target state is not verified progress. This session also lacks write authority and cannot self-author a valid verification receipt: verification requires a distinct Conductor after both the Gate and independent review pass.\n\n## S4 — What Is Rejected\n\nRejected actions include editing files in this recovery session, performing the pending documentation task, claiming the goal or slice complete, treating the inspected file as verified state, inventing command purposes without executing the slice contract, initiating other slices, inspecting hidden acceptance, reading outside the expressly permitted recovery files, and touching any forbidden-scope path."
+}

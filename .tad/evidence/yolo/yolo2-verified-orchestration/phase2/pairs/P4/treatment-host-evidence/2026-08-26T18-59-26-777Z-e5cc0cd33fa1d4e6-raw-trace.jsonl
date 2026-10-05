@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a03f70-8ab5-7b21-b122-40ed60a31cf1 --json --skip-git-repo-check AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCHANGELOG.md first line says v0.9.0 but config.json says 1.0.0. Update ONLY the first line of CHANGELOG.md to v1.0.0. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "",
+  "elapsed_ms": 12113
+}

@@ -1,0 +1,68 @@
+{
+  "arm": "treatment",
+  "task": "T2-node-behavior",
+  "final_hidden_acceptance": [
+    {
+      "check": "util.mjs exists and exports stableSlug",
+      "passed": true,
+      "detail": "util.mjs exists and exports stableSlug"
+    },
+    {
+      "check": "tests.mjs has >=3 assert cases",
+      "passed": true,
+      "detail": "tests.mjs has >=3 assert cases"
+    },
+    {
+      "check": "node tests.mjs exits 0",
+      "passed": true,
+      "detail": "node tests.mjs exits 0"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "util.mjs exists and exports stableSlug",
+          "passed": true,
+          "detail": "util.mjs exists and exports stableSlug"
+        },
+        {
+          "check": "tests.mjs has >=3 assert cases",
+          "passed": false,
+          "detail": "tests.mjs has >=3 assert cases"
+        },
+        {
+          "check": "node tests.mjs exits 0",
+          "passed": true,
+          "detail": "node tests.mjs exits 0"
+        }
+      ],
+      "tokens": 50062
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "util.mjs exists and exports stableSlug",
+          "passed": true,
+          "detail": "util.mjs exists and exports stableSlug"
+        },
+        {
+          "check": "tests.mjs has >=3 assert cases",
+          "passed": true,
+          "detail": "tests.mjs has >=3 assert cases"
+        },
+        {
+          "check": "node tests.mjs exits 0",
+          "passed": true,
+          "detail": "node tests.mjs exits 0"
+        }
+      ],
+      "tokens": 46039
+    }
+  ],
+  "tokens_total": 96101
+}

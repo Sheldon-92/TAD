@@ -1,0 +1,73 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "1597c36248058270",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03ee2-b486-7aa2-8560-a2a5c4013596",
+  "resumed_from_session": "01a03ee2-b486-7aa2-8560-a2a5c4013596",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "dda50ba3593ef65e7659915895b6aaa624cde130ce8b46a31e1c3544b4aeb58c",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P4/control-host-evidence/2026-08-26T16-24-38-734Z-1597c36248058270-raw-output.txt",
+    "sha256": "4cc487e8bd9948ca11c18a1a4866226ae5aee49f79c6a9457759708ca63b051c"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P4/control-host-evidence/2026-08-26T16-24-38-734Z-1597c36248058270-raw-trace.jsonl",
+    "sha256": "ea3b76d8ad7ef34aaf24f45a47b0939b1add2164e515b998d012498a94f93ddc"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "af4b6c756c0bac8fbf133315d983098223df4279285fb288c24cf5ae61f92f45",
+      "decision": "allowed",
+      "action_nonce": "1fc319b3e89b0716",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 106975,
+    "output_tokens": 1159,
+    "total_tokens": 108134,
+    "cached_input_tokens": 96000,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: write access excludes the repository-root `CHANGELOG.md`. No changes were made."
+}

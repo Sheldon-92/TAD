@@ -1,0 +1,3 @@
+$ git status --porcelain .claude/skills/*lite* .agents/skills/*lite*
+$ git diff HEAD -- .claude/skills/*lite* .agents/skills/*lite*
+EXPECTED: empty

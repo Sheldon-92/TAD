@@ -1,0 +1,85 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "154bb171764111a77d12efbba724ea868e94a85ae5268233025ccbeead82cbc0",
+  "parser_version": "1",
+  "invocation_nonce": "b92f89b95cbb2a97",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04039-107f-7b11-96c5-f76d95385b57",
+  "resumed_from_session": "01a04039-107f-7b11-96c5-f76d95385b57",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "51bc0bfbf41e4fd7c38dc8518bc4aaad770e427d56a11660b0e360425b00ef14",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P5/control-host-evidence/2026-08-26T22-38-29-881Z-b92f89b95cbb2a97-raw-output.txt",
+    "sha256": "e59949c0a50fcb6a0df05e2338ab9c93566dfd8201b13a25746b304093d2f67f"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P5/control-host-evidence/2026-08-26T22-38-29-881Z-b92f89b95cbb2a97-raw-trace.jsonl",
+    "sha256": "3a9eb3e96e56794f088f9dd42f17981e4015ee98f85cb88d3576b55874e765e1"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "totals.js"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "4b2ffd51100bc70db6cd1591296dcd56a25a33492f52fec897f440c524fce3f3",
+      "invocation_args_sha256": "c2e21af70f25f3d276fac34ccd2c56db839079f40724d35226593ce4e3a34d15",
+      "decision": "allowed",
+      "action_nonce": "2ebb8e35bd7a3c94",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "totals.js",
+      "pre_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "post_sha256": "f4ca73f28e747ea283464acc6adfab8e5e46d9fe30baebbe9cad6d0024fcfb1e",
+      "observed_sha256": "f4ca73f28e747ea283464acc6adfab8e5e46d9fe30baebbe9cad6d0024fcfb1e",
+      "effect_manifest_sha256": "a1f011fd10a5c25d89c212366c69608e27f698bc0fe6908efce49d41c0b45c8b",
+      "effect_paths": [
+        "totals.js"
+      ],
+      "effect_fingerprint": "1e0f7b045bd59469c8a83d998222cd544d883bc7363b5a4d479fc415a58a1a07",
+      "pre_manifest_sha256": "0cf026495b3acd487198d88b689545c0ae3f9ea3096950eda69272827842c405",
+      "post_manifest_sha256": "8c1f578b700307b13de555583899f9c4a6a3a58eb31d2404cd8b4c07dd171b47",
+      "observed_changed": [
+        "totals.js"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "totals.js"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 43627,
+    "output_tokens": 274,
+    "total_tokens": 43901,
+    "cached_input_tokens": 40448,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

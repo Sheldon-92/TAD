@@ -1,0 +1,4 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+APPEND to the END of guide.md a section exactly headed "## Worked Example" containing one fenced code block showing an example shell invocation of the verify command. Do not modify any existing text. Then stop.
+If the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).
+When finished print DONE.

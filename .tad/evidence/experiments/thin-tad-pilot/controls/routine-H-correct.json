@@ -1,0 +1,20 @@
+{
+  "case_id": "routine-H",
+  "family": "routine",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "doc.md": "# Synthetic Service Doc\n\n## Overview\n\nThis service wakes on a schedule.\n\n## Changelog\n\n- 1.0 initial\n- 1.1: clarified retry note\n\n## Wiring Notes\n\nSee wiring.js for the wake interval.\n",
+      "wiring.js": "export const WAKE_MS = 5000;\n",
+      "edit-report.json": "{\"verdict\":\"done\",\"sections_touched\":[\"Changelog\"]}"
+    },
+    "log": [
+      "prepare",
+      "edit",
+      "confine"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

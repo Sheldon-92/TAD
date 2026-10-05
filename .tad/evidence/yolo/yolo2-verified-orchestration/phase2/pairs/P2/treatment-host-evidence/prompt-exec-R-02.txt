@@ -1,0 +1,3 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+Create tests.mjs using node:assert importing stableSlug from util.mjs with at least 3 test cases including stableSlug("")==="" ; make it runnable via node tests.mjs printing "tests ok" at the end. Then stop.
+When finished print DONE.

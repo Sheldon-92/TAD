@@ -1,0 +1,38 @@
+AC1: disposition cols 1-3 == blocks.txt
+AC1 PASS
+AC2: 归宿 syntax + 已有名 ∈ names.txt
+AC2 PASS
+AC3: 理由码闭集 + 仅非纪律行非空
+AC3 PASS
+AC4: 原文片段分档 + AC4b: 命中数列 == hits.tsv
+row 1: short block fragment missing; row 2: no >=12B block fragment in sentence; row 3: no >=12B block fragment in sentence; row 4: no >=12B block fragment in sentence; row 5: no >=12B block fragment in sentence; row 6: no >=12B block fragment in sentence; row 7: no >=12B block fragment in sentence; row 8: no >=12B block fragment in sentence; row 9: no >=12B block fragment in sentence; row 10: no >=12B block fragment in sentence; row 11: no >=12B block fragment in sentence; row 12: no >=12B block fragment in sentence; row 13: no >=12B block fragment in sentence; row 14: no >=12B block fragment in sentence; row 15: no >=12B block fragment in sentence; row 16: no >=12B block fragment in sentence; row 17: no >=12B block fragment in sentence; row 18: no >=12B block fragment in sentence; row 19: no >=12B block fragment in sentence; row 20: no >=12B block fragment in sentence; row 21: no >=12B block fragment in sentence; row 22: no >=12B block fragment in sentence; row 23: no >=12B block fragment in sentence; row 24: no >=12B block fragment in sentence; row 25: no >=12B block fragment in sentence; row 26: no >=12B block fragment in sentence; row 27: no >=12B block fragment in sentence; row 28: no >=12B block fragment in sentence; row 29: no >=12B block fragment in sentence; row 30: no >=12B block fragment in sentence; row 31: no >=12B block fragment in sentence; row 32: no >=12B block fragment in sentence; row 33: no >=12B block fragment in sentence; row 34: no >=12B block fragment in sentence; row 35: no >=12B block fragment in sentence; row 36: no >=12B block fragment in sentence; row 37: no >=12B block fragment in sentence; row 38: no >=12B block fragment in sentence; row 39: no >=12B block fragment in sentence; row 40: no >=12B block fragment in sentence; row 41: no >=12B block fragment in sentence; row 42: no >=12B block fragment in sentence; row 43: no >=12B block fragment in sentence; row 44: no >=12B block fragment in sentence; row 45: no >=12B block fragment in sentence; row 46: no >=12B block fragment in sentence; row 47: no >=12B block fragment in sentence; row 48: no >=12B block fragment in sentence; row 49: no >=12B block fragment in sentence; row 50: no >=12B block fragment in sentence; row 51: no >=12B block fragment in sentence; row 52: no >=12B block fragment in sentence; row 53: no >=12B block fragment in sentence; row 54: no >=12B block fragment in sentence; row 55: no >=12B block fragment in sentence; row 56: no >=12B block fragment in sentence; row 57: no >=12B block fragment in sentence; row 58: no >=12B block fragment in sentence; row 59: no >=12B block fragment in sentence; row 60: no >=12B block fragment in sentence
+  AC FAIL: AC4/AC4b
+AC4 FAIL
+AC5: inventory 既有15行逐字 + 行数
+  AC FAIL: inventory body rows=30 (want 15, 新增去重=0)
+AC5 FAIL
+AC6: 新增唯一 + 白名单列 + 列数
+AC6 PASS
+AC7: 子键集合逐字 + 子键可解释
+  AC FAIL: AC7: 78 subkey-blocks not explained (sentence must mention 子键 + at least one subkey name)
+AC7 FAIL
+AC8: gate2-candidates.md
+AC8 PASS
+AC10: 已有 分布 ≤24
+AC10 PASS
+AC11: 采纳↔新增 绑定
+  AC FAIL: AC11: 采纳 subagents强制调用 无对应 新增
+  AC FAIL: AC11: 采纳 产物证据链 无对应 新增
+  AC FAIL: AC11: 采纳 六个强制问题 无对应 新增
+  AC FAIL: AC11: 采纳 平台绑定交互决策 无对应 新增
+  AC FAIL: AC11: 采纳 技术决策透明 无对应 新增
+  AC FAIL: AC11: 采纳 研究先行 无对应 新增
+  AC FAIL: AC11: 新增  未采纳且未标非候选新增
+AC11 FAIL
+AC12: fence
+  AC12 fence clean
+AC12 PASS
+AC13: contract + step0.sh frozen
+  AC13 frozen OK
+AC13 PASS
+RESULT=FAIL

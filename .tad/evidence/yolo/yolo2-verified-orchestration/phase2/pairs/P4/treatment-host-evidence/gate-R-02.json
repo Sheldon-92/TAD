@@ -1,0 +1,1 @@
+{"verdict":"PASS","hidden_acceptance_results":[{"check":"CHANGELOG.md first line == 'v1.0.0'","passed":true,"detail":"CHANGELOG.md first line == 'v1.0.0'"},{"check":"usage.md contains 1.0.0 and not 0.9.0","passed":true,"detail":"usage.md contains 1.0.0 and not 0.9.0"},{"check":"config.json unchanged","passed":true,"detail":"config.json unchanged"}]}

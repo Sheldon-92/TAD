@@ -1,0 +1,178 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "50c64c7a5709f08ecb12a19a78308e052104c7e521eb49bc01be25e2a2980dc1",
+  "parser_version": "1",
+  "invocation_nonce": "fb28aebc8159970a",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04545-e21d-7ac0-86a6-aaecd2eee5f6",
+  "resumed_from_session": "01a04545-e21d-7ac0-86a6-aaecd2eee5f6",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "48f43641cb240cf8145c24d1a613b00e54f3bfe463d32da5887619b3df7460f3",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04545-e21d-7ac0-86a6-aaecd2eee5f6",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nFix run.sh so it prints today's year using a portable form working on BOTH GNU date and BSD date (hint: BSD date -j needs -f or use cut of a long format). Keep it POSIX /bin/sh compatible. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 27952
+  },
+  "native_event_count": 2,
+  "native_event_kinds": [
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_index": 3,
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-treatment/run.sh"
+      ]
+    },
+    {
+      "event_index": 4,
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-treatment/run.sh"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "fdb6c12e86c831ae53233cdd9809b77121791e72ded6fb63ee467f1cb13e226b",
+    "handoff.md": "7b5d312021c315d15983960b1c8fe55ce76461dcb1bcca81bc63b99682981b0b",
+    "oracle.txt": "3c64e213ed5480b1a7b4f3d41c6455a5df3a042866ee298cda626d3a85ea7a27",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "run.sh": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71"
+  },
+  "post_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "fdb6c12e86c831ae53233cdd9809b77121791e72ded6fb63ee467f1cb13e226b",
+    "handoff.md": "7b5d312021c315d15983960b1c8fe55ce76461dcb1bcca81bc63b99682981b0b",
+    "oracle.txt": "3c64e213ed5480b1a7b4f3d41c6455a5df3a042866ee298cda626d3a85ea7a27",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "run.sh": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/d6e8a9c6d4e34281/pairs/P3/treatment-host-evidence/2026-08-27T22-11-25-856Z-fb28aebc8159970a-raw-output.txt",
+    "sha256": "f4872c311dc0741da84b4a8e8e96a97058d9d54b3cf68f2eeced52a819389234"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/d6e8a9c6d4e34281/pairs/P3/treatment-host-evidence/2026-08-27T22-11-25-856Z-fb28aebc8159970a-raw-trace.jsonl",
+    "sha256": "f4872c311dc0741da84b4a8e8e96a97058d9d54b3cf68f2eeced52a819389234"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "item_1-0001",
+      "native_event_index": 3,
+      "native_event_type": "item.started",
+      "native_item_id": "item_1",
+      "native_item_type": "file_change",
+      "tool": "file_change",
+      "args_sha256": "a369ab152368323da0f7b2555743e1c3b99a8eb86ebda2cd9614b977b4a00352",
+      "invocation_args_sha256": "a369ab152368323da0f7b2555743e1c3b99a8eb86ebda2cd9614b977b4a00352",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "2476de3141e4c3d5c24256c77b0e28e7c006ad3e45f3affcc190b8ae8eb4f53c",
+      "post_manifest_sha256": "ad58602eb6e6352bd9a88692f616875596b98f6747f6cc995289bf0897e67bd7",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_1-0002",
+      "native_event_index": 4,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_1",
+      "native_item_type": "file_change",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "decision": "allowed",
+      "action_nonce": "35edcd896d63419d",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "run.sh",
+      "pre_sha256": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71",
+      "post_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "observed_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "08fe1f463ce6f8d1495cfaf7c84ca993bcb583df31667d26c7c7dca236f5fcb3",
+      "pre_manifest_sha256": "2476de3141e4c3d5c24256c77b0e28e7c006ad3e45f3affcc190b8ae8eb4f53c",
+      "post_manifest_sha256": "ad58602eb6e6352bd9a88692f616875596b98f6747f6cc995289bf0897e67bd7",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 42690,
+    "output_tokens": 1763,
+    "total_tokens": 44453,
+    "cached_input_tokens": 38400,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

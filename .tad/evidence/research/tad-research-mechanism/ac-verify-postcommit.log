@@ -1,0 +1,44 @@
+=== POST-COMMIT AC VERIFICATION 2026-09-15T16:44:37Z HEAD=f92cbc73 ===
+--- AC1
+PASS
+--- AC2
+4
+--- AC3
+PASS
+--- AC4
+5
+PASS
+--- AC5
+5
+PASS
+--- AC6
+PASS
+--- AC7
+owners= ['deep_execution:'] deep= 6 refs= 2
+PASS
+--- AC8
+1 3 4 5
+PASS
+--- AC9
+1
+--- AC10
+PASS
+--- AC11
+HITS=[]
+PASS
+--- AC12
+SUBJ=docs(research): land RG1-RG4 research track wrapper over deep engine (TASK-20260915-TAD-RESEARCH-MECHANISM)
+MISSING=[]
+EXTRA=[]
+PASS
+--- AC13
+3 3
+PASS
+--- AC14
+8 15 3 True
+PASS
+=== EXTRA GUARDS ===
+0
+0 forbidden-path hits
+ M docs/pm/intent.md
+ M docs/pm/now.md

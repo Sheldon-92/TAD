@@ -1,0 +1,14 @@
+PASS s1-heading
+FAIL s2-heading
+FAIL s3-heading
+FAIL s1-all-commands  — missing: verify,action-start,reconcile,resume
+PASS s1-exit-codes
+FAIL s2-real-reasons  — found 0 real reason strings (need >=8)
+PASS s2-no-invented-reasons  — invented: 
+FAIL s3-transcript
+PASS preserved-warning
+PASS preserved-authority-order
+PASS no-truncation  — guide length 14179
+PASS balanced-fences  — 12 fence lines
+PASS scope-respected  — off-scope: 
+HIDDEN_ACCEPTANCE=FAIL (8/13)

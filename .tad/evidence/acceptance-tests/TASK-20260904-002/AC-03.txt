@@ -1,0 +1,4 @@
+$ (grep -c "/Users/" .tad/scripts/phase2-pair-driver.mjs || true)
+0
+EXPECTED: 0
+VERDICT: PASS

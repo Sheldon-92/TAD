@@ -1,0 +1,7 @@
+{"type":"thread.started","thread_id":"01a04c68-d165-79b1-bef9-5dcd1ae5bda6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll check the known end state and, since the Worked Example is absent, append only the requested section to `guide.md`."}}
+{"type":"item.started","item":{"id":"item_1","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T1-doc-ref-treatment/guide.md","kind":"update"}],"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T1-doc-ref-treatment/guide.md","kind":"update"}],"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"DONE"}}
+{"type":"turn.completed","usage":{"input_tokens":56160,"cached_input_tokens":48640,"cache_write_input_tokens":0,"output_tokens":1154,"reasoning_output_tokens":1028}}

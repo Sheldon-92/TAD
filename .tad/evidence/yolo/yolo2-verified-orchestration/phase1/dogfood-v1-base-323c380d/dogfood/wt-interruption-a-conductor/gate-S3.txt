@@ -1,0 +1,6 @@
+# Gate evidence — slice S3 — worktree /private/tmp/tad-yolo2-p1/wt-interruption-a
+PASS S3-heading-present  — expected heading "## 12. Worked Example"
+PASS S3-is-a-transcript
+PASS S3-has-code-fence
+PASS existing-content-preserved
+GATE_VERDICT=PASS (4/4)

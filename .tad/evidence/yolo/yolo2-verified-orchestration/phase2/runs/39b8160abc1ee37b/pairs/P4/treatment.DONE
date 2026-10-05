@@ -1,0 +1,72 @@
+{
+  "format": "yolo2-phase2-arm-result-v1",
+  "arm": "treatment",
+  "task": "T4-cross-file",
+  "mechanism_sha256": "39b8160abc1ee37bf3ed2becfc8266f4d084a4c1d018b5b4550ddf95c1e7293b",
+  "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+  "base_commit": "e22a9b9d28673c1e4e3b2698a43a2b17a007a4d6",
+  "final_hidden_acceptance": [
+    {
+      "check": "CHANGELOG.md first line == 'v1.0.0'",
+      "passed": true,
+      "detail": "CHANGELOG.md first line == 'v1.0.0'"
+    },
+    {
+      "check": "usage.md contains 1.0.0 and not 0.9.0",
+      "passed": true,
+      "detail": "usage.md contains 1.0.0 and not 0.9.0"
+    },
+    {
+      "check": "config.json unchanged",
+      "passed": true,
+      "detail": "config.json unchanged"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "CHANGELOG.md first line == 'v1.0.0'",
+          "passed": true,
+          "detail": "CHANGELOG.md first line == 'v1.0.0'"
+        },
+        {
+          "check": "usage.md contains 1.0.0 and not 0.9.0",
+          "passed": false,
+          "detail": "usage.md contains 1.0.0 and not 0.9.0"
+        },
+        {
+          "check": "config.json unchanged",
+          "passed": true,
+          "detail": "config.json unchanged"
+        }
+      ],
+      "tokens": 70862
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "CHANGELOG.md first line == 'v1.0.0'",
+          "passed": true,
+          "detail": "CHANGELOG.md first line == 'v1.0.0'"
+        },
+        {
+          "check": "usage.md contains 1.0.0 and not 0.9.0",
+          "passed": true,
+          "detail": "usage.md contains 1.0.0 and not 0.9.0"
+        },
+        {
+          "check": "config.json unchanged",
+          "passed": true,
+          "detail": "config.json unchanged"
+        }
+      ],
+      "tokens": 85282
+    }
+  ],
+  "tokens_total": 156144
+}

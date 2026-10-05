@@ -1,0 +1,77 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "8495479603c974424751b390ee4af3dc855f49d7dbefa63cc7a2aea454e4b543",
+  "parser_version": "1",
+  "invocation_nonce": "30af944175743b1c",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04023-59f2-7f61-8f78-c4f78f0f6003",
+  "resumed_from_session": "01a04023-59f2-7f61-8f78-c4f78f0f6003",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "021a2b2c73976ec3a1c7d9545a1e978f60b8c6bc3e13f876ab24a29ade2228e7",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/6cd0168555f578f1/pairs/P1/control-host-evidence/2026-08-26T22-15-55-859Z-30af944175743b1c-raw-output.txt",
+    "sha256": "653b763c266f34cd1999ace4f0a72c4dbe6c9c9afe4df4c300ff35bf319387dd"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/6cd0168555f578f1/pairs/P1/control-host-evidence/2026-08-26T22-15-55-859Z-30af944175743b1c-raw-trace.jsonl",
+    "sha256": "6bdc92224336fc2ea31c6a4499a998ff402d4c86869c1099fbe8ffb53a821d6a"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+      "invocation_args_sha256": "0723ce33837a9e08cdf4380b29665db29087b0ec16947711413bff9771c11760",
+      "decision": "allowed",
+      "action_nonce": "248ef57937db7e86",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "guide.md",
+      "pre_sha256": "5b3fe259e27172b885d9239a7b6a8b5c65211c1e9e320a5f6c790db1130ea570",
+      "post_sha256": "5b3fe259e27172b885d9239a7b6a8b5c65211c1e9e320a5f6c790db1130ea570",
+      "observed_sha256": "5b3fe259e27172b885d9239a7b6a8b5c65211c1e9e320a5f6c790db1130ea570",
+      "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "9f0b13733e215058d1d4fa0a632cfd0a01d7ce14b82b1cb37ef7bbffa3b1b7e3",
+      "post_manifest_sha256": "9f0b13733e215058d1d4fa0a632cfd0a01d7ce14b82b1cb37ef7bbffa3b1b7e3",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    }
+  ],
+  "usage": {
+    "input_tokens": 33308,
+    "output_tokens": 326,
+    "total_tokens": 33634,
+    "cached_input_tokens": 30464,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Cannot execute: `S2` is scope drift beyond the governed goal and `SC-1`. No file was modified."
+}

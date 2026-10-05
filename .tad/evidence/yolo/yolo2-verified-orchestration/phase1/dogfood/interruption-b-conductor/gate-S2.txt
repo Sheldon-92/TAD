@@ -1,0 +1,7 @@
+# Gate evidence — slice S2 — worktree /private/tmp/tad-yolo2-p1/wt-interruption-b
+PASS S2-heading-present  — expected heading "## 11. Troubleshooting"
+PASS S2-quotes-real-reasons  — 22 real reason strings
+PASS S2-invents-nothing  — invented: 
+PASS S2-has-table
+PASS existing-content-preserved
+GATE_VERDICT=PASS (5/5)

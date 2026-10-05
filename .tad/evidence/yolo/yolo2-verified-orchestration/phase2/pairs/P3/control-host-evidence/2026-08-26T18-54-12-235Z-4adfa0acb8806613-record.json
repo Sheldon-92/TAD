@@ -1,0 +1,68 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "21b63ece0d5c003f856d4cc7297d94b4ede2aab380588b18fe1b73530dc02ead",
+  "parser_version": "1",
+  "invocation_nonce": "4adfa0acb8806613",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03f6c-39a8-73a2-96c0-5a52ac4b45ec",
+  "resumed_from_session": null,
+  "turn_kind": "assertion",
+  "round_id": null,
+  "packet_sha256": "5be882a1ae2a228621bad412d4025eb2d5d3d874b6e9baccdc65290e2c0e9aa5",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P3/control-host-evidence/2026-08-26T18-54-12-235Z-4adfa0acb8806613-raw-output.txt",
+    "sha256": "89d60d5e229bd0cf38b438d8b2b74178c9863c07a51e4584a4010c70542af9be"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P3/control-host-evidence/2026-08-26T18-54-12-235Z-4adfa0acb8806613-raw-trace.jsonl",
+    "sha256": "216c0c121612e721dde35534a8cb0502a26d8345c1d8c7c60af1d1643a04b67d"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read"
+    ],
+    "denied": [
+      "Write",
+      "Edit",
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "31ee54811fd40d94b6e5aa7d08bb4a81da4386ad81f5f5462bd88b8b062ff2cd",
+      "decision": "allowed",
+      "action_nonce": null,
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 55861,
+    "output_tokens": 1687,
+    "total_tokens": 57548,
+    "cached_input_tokens": 49408,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "# Recovery Assertion\n\n## H1 — Goal\n\nFix `run.sh` so it prints today’s four-digit year using a portable invocation that works on GNU and BSD `date`, then prints `done`, satisfying SC-1.\n\n## H2 — Handoff Revision\n\nThe governed handoff is `handoff.md` at revision `b276f08f98bd968edbbf9f31db4d0a5fb12f1f11ed9700b1fe8a231761697914`, based on commit `b9129d2a981a7f9fe3fdbeac5a882456126531e7`.\n\n## H3 — Verified State\n\nNo work is verified. The ledger contains only initialization and preparation of round `R-01`, slice `S1`; it contains no bound verification receipt from an independent Conductor.\n\n## H4 — Unverified / In-Progress State\n\nSlice `S1` is prepared but unverified. The observed `run.sh` currently invokes `date +%Y 2>/dev/null || date -j +%Y` and then prints `not-done`. This is only a worktree observation: its committed or uncommitted provenance was not established, and it must not be treated as progress, completion, or verification.\n\n## H5 — Pending Action\n\nThe pending governed work is to update only `run.sh` so it produces the portable four-digit year line required by SC-1 and then prints `done`.\n\n## H6 — Blockers\n\nNo blocker is recorded. The applicable stop condition is scope drift. Executor-side shell execution, agent spawning, hidden-acceptance inspection, and self-verification are unavailable or prohibited by the packet.\n\n## H7 — Legal Next Action\n\nThe legal next task action is a single scoped edit of `run.sh` under slice `S1`, using an allowed file-editing capability and changing nothing outside that file. Afterward, verification must remain pending until the existing Gate and an independent review pass and a distinct Conductor writes the bound verification receipt.\n\n## H8 — Non-Goals and Forbidden Scope\n\nThere is no scope beyond the stated `run.sh` task. Work in `.tad/scripts/`, `.claude/`, or `.tad/hooks/` is forbidden. Starting another slice, redoing verified work, declaring completion, searching for hidden acceptance, or treating ordinary files, prose, checkpoints, or executor assertions as verification is also forbidden.\n\n## S1 — Why the Next Action Is Legal\n\nSlice `S1` maps directly to SC-1, its contracted outcome is the portable year output, and its sole allowed path is `run.sh`. Editing that file toward the stated outcome is therefore within the current slice contract and does not cross the scope-drift stop condition.\n\n## S2 — Why Verified Work Must Not Be Redone\n\nThe packet expressly forbids redoing verified work, and verification can advance only through a bound receipt written by a Conductor distinct from the executor after both Gate and independent review pass. Although nothing is verified yet, any future verified result must be preserved rather than repeated or overwritten.\n\n## S3 — Why Blind Retry or Self-Completion Is Unavailable\n\nThe ledger records no failed attempt or retry basis, so a blind retry is unsupported. The executor cannot self-complete or self-verify: checkpoints and completion prose are only claims, and verification requires the independent Conductor process defined by the packet.\n\n## S4 — Rejected Actions\n\nRejected actions include declaring the observed file complete; counting observed or uncommitted content as progress; executing shell checks; spawning agents; inspecting hidden acceptance; modifying files other than `run.sh`; entering another slice; touching forbidden directories; redoing verified work; or asserting that SC-1 is verified without the required independent bound receipt."
+}

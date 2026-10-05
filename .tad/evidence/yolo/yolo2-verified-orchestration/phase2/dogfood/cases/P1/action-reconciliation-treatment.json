@@ -1,0 +1,168 @@
+{
+  "format": "yolo2-phase2-action-reconciliation-v1",
+  "arm": "treatment",
+  "events": [
+    {
+      "seq": 4,
+      "type": "action_started",
+      "at": "2026-08-29T07:25:11.932Z",
+      "observed_head": "03c7066e15b230f2a02fd77bd3fab06a6ee6e9bd",
+      "payload": {
+        "action_id": "A-R-01",
+        "description": "governed edit of guide.md for S1",
+        "target": "guide.md",
+        "pre_sha256": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38",
+        "intended_post_sha256": "56e390366179f31ad227d6f91cd60b8ce2cd19225e6dce7c4fa88cbca994cd5e",
+        "round": "R-01",
+        "outcome_id": "OID-R-01",
+        "tool_class": "Edit",
+        "args_path": ".tad/evidence/yolo/run/args-R-01.json",
+        "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+        "args_canonical_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+        "effect_manifest_path": ".tad/evidence/yolo/run/effects-R-01.json",
+        "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+        "effect_paths": [
+          "guide.md"
+        ],
+        "action_nonce": "f65cdf624db13d29"
+      }
+    },
+    {
+      "seq": 5,
+      "type": "action_reconciled",
+      "at": "2026-08-29T07:25:32.316Z",
+      "observed_head": "03c7066e15b230f2a02fd77bd3fab06a6ee6e9bd",
+      "payload": {
+        "action_id": "A-R-01",
+        "outcome": "reconciled",
+        "evidence": ".tad/evidence/yolo/run/reconcile-evidence-R-01.json",
+        "evidence_sha256": "0f51ba8c123670b8ab7c3f49cb74486a7a3424314fb42e62ae9df9d71f531459",
+        "observed_sha256": "cc670e8813fcd207975cec9658604120761c2485f55f9f76a41bbd00ce235acd"
+      }
+    },
+    {
+      "seq": 6,
+      "type": "round_closed",
+      "at": "2026-08-29T07:25:32.453Z",
+      "observed_head": "03c7066e15b230f2a02fd77bd3fab06a6ee6e9bd",
+      "payload": {
+        "round_id": "R-01",
+        "outcome": "candidate",
+        "packet_sha256": "a4d44a9319131c72863ccec4988f848ca23e4edb419a91f8c7ed35f394f77d38",
+        "report_path": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/a6fe746c2ff351df/pairs/P1/treatment-host-evidence-attempt-7/report-R-01.json",
+        "report_sha256": "d25a8c9749f852e912fc5d9f563c10dc42c1ae59ca36ad111cc89e58f0ed75c9",
+        "usage_path": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/a6fe746c2ff351df/pairs/P1/treatment-host-evidence-attempt-7/usage-R-01.json",
+        "usage_sha256": "8c15ba4d37cc419bf6a8fdc4d4ffc72c06b5098fa75e127f0375bed4b39d89e0",
+        "turn_record_path": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/a6fe746c2ff351df/pairs/P1/treatment-host-evidence-attempt-7/2026-08-29T07-25-11-993Z-ee962c23ed4d5537-record.json",
+        "turn_record_sha256": "bccb345fc2f6a62c382b76d9f2934ac8ff99a4ebf52d17b363161cfc036a75ea",
+        "failed_checks": [],
+        "observed_mutations": [
+          {
+            "action_id": "A-R-01",
+            "action_nonce": "f65cdf624db13d29",
+            "paths": [
+              "guide.md"
+            ],
+            "observed_sha256": "cc670e8813fcd207975cec9658604120761c2485f55f9f76a41bbd00ce235acd",
+            "effect_fingerprint": "f5fb8cea1fbf74fe072e8024c9f00f270d1b4db1ad8f6c46861c76664677627f"
+          }
+        ],
+        "consumed_action_nonces": [
+          "f65cdf624db13d29"
+        ],
+        "effect_fingerprints": [
+          "f5fb8cea1fbf74fe072e8024c9f00f270d1b4db1ad8f6c46861c76664677627f"
+        ],
+        "usage": {
+          "input_tokens": 69743,
+          "output_tokens": 858,
+          "total_tokens": 70601,
+          "cached_input_tokens": 62720,
+          "native": true
+        },
+        "session_id": "01a04c66-ba65-79d2-b039-d15280a6fa36"
+      }
+    },
+    {
+      "seq": 10,
+      "type": "action_started",
+      "at": "2026-08-29T07:27:22.332Z",
+      "observed_head": "03c7066e15b230f2a02fd77bd3fab06a6ee6e9bd",
+      "payload": {
+        "action_id": "A-R-02",
+        "description": "governed edit of guide.md for S2",
+        "target": "guide.md",
+        "pre_sha256": "cc670e8813fcd207975cec9658604120761c2485f55f9f76a41bbd00ce235acd",
+        "intended_post_sha256": "1b293965fb74c862cdebea6989122d86dd1006523ac301c5c8db63ca16474544",
+        "round": "R-02",
+        "outcome_id": "OID-R-02",
+        "tool_class": "Edit",
+        "args_path": ".tad/evidence/yolo/run/args-R-02.json",
+        "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+        "args_canonical_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+        "effect_manifest_path": ".tad/evidence/yolo/run/effects-R-02.json",
+        "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+        "effect_paths": [
+          "guide.md"
+        ],
+        "action_nonce": "d31fc32f85a8e518"
+      }
+    },
+    {
+      "seq": 11,
+      "type": "action_reconciled",
+      "at": "2026-08-29T07:27:44.834Z",
+      "observed_head": "03c7066e15b230f2a02fd77bd3fab06a6ee6e9bd",
+      "payload": {
+        "action_id": "A-R-02",
+        "outcome": "reconciled",
+        "evidence": ".tad/evidence/yolo/run/reconcile-evidence-R-02.json",
+        "evidence_sha256": "71162dda9eca94411d50528423c00ee0da215f0e76f7626fc311a67c58abd991",
+        "observed_sha256": "676b0c7ef40390da1905bcf13a88ff05cd4dc6aae8d04ef5b3bc5d5df1ba494f"
+      }
+    },
+    {
+      "seq": 12,
+      "type": "round_closed",
+      "at": "2026-08-29T07:27:44.986Z",
+      "observed_head": "03c7066e15b230f2a02fd77bd3fab06a6ee6e9bd",
+      "payload": {
+        "round_id": "R-02",
+        "outcome": "candidate",
+        "packet_sha256": "5ef6954c4572e48904b4180a883e2b02fd2049b1c7f62ed8f03bbf31f18ee520",
+        "report_path": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/a6fe746c2ff351df/pairs/P1/treatment-host-evidence-attempt-7/report-R-02.json",
+        "report_sha256": "38b024ae0aa77f62a8824d30e47620277e57ba67b118ccc8bb71665565870080",
+        "usage_path": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/a6fe746c2ff351df/pairs/P1/treatment-host-evidence-attempt-7/usage-R-02.json",
+        "usage_sha256": "fd26239afaf01500be22d4086b1967f05ab88009de1732262bfff754da43a196",
+        "turn_record_path": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/a6fe746c2ff351df/pairs/P1/treatment-host-evidence-attempt-7/2026-08-29T07-27-22-401Z-d0a3da5c4e9a05c6-record.json",
+        "turn_record_sha256": "ebaf409da8d88e413b4fc693d2a4fc0be341f6348328728f884d538da931e33a",
+        "failed_checks": [],
+        "observed_mutations": [
+          {
+            "action_id": "A-R-02",
+            "action_nonce": "d31fc32f85a8e518",
+            "paths": [
+              "guide.md"
+            ],
+            "observed_sha256": "676b0c7ef40390da1905bcf13a88ff05cd4dc6aae8d04ef5b3bc5d5df1ba494f",
+            "effect_fingerprint": "b8e40edc474b53580609f1d642b178935a65402b9645869695341f1fcf34b3d8"
+          }
+        ],
+        "consumed_action_nonces": [
+          "d31fc32f85a8e518"
+        ],
+        "effect_fingerprints": [
+          "b8e40edc474b53580609f1d642b178935a65402b9645869695341f1fcf34b3d8"
+        ],
+        "usage": {
+          "input_tokens": 56160,
+          "output_tokens": 1154,
+          "total_tokens": 57314,
+          "cached_input_tokens": 48640,
+          "native": true
+        },
+        "session_id": "01a04c68-d165-79b1-bef9-5dcd1ae5bda6"
+      }
+    }
+  ]
+}

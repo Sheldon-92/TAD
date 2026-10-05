@@ -1,0 +1,18 @@
+{
+  "case_id": "routine-H",
+  "family": "routine",
+  "kind": "error-delivery",
+  "artifact": {
+    "files": {
+      "doc.md": "changed",
+      "wiring.js": "export const WAKE_MS = 9000;\n",
+      "edit-report.json": "{\"verdict\":\"done\",\"sections_touched\":[\"Changelog\"]}"
+    },
+    "log": [
+      "prepare"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

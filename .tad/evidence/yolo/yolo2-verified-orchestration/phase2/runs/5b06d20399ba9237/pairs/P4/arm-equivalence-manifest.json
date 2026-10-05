@@ -1,0 +1,41 @@
+{
+  "format": "yolo2-phase2-arm-equivalence-v1",
+  "task_id": "T4-cross-file",
+  "control_arm_namespace": "control",
+  "treatment_arm_namespace": "treatment",
+  "permitted_difference": "continuity condition only; arm namespace stays outside packet text",
+  "packets": [
+    {
+      "round_id": "R-01",
+      "control_sha256": "bfbb6165a84f1e8b981b1b78fb943b4ea599dcd31552076727269d0af74c1279",
+      "treatment_sha256": "bfbb6165a84f1e8b981b1b78fb943b4ea599dcd31552076727269d0af74c1279",
+      "byte_equal": true
+    },
+    {
+      "round_id": "R-02",
+      "control_sha256": "87a9792e4c0d0d6839c54b010aea65d39a6b0ffbe7ab570a673d25637d0656b4",
+      "treatment_sha256": "87a9792e4c0d0d6839c54b010aea65d39a6b0ffbe7ab570a673d25637d0656b4",
+      "byte_equal": true
+    }
+  ],
+  "normalized_frozen_inputs": {
+    "control": {
+      "task_seed_sha256": "b32aebb51095795a1cea557f30e0ebb975e21a8950c9dcdab20dfd8c8c24f4db",
+      "contracts_sha256": "73a0676d849e9bf263248c682f7e02db24477c33467b3bc8214be45cc1724cc7",
+      "packet_text_sha256": "ac705db15a0dd61a8be1b96fb2a282d97b6ed625fac7981c72d63f2b788a39b2",
+      "tool_policy_sha256": "3ff01bb4e1a50814381629fbea45fad0beb9167c69591f7f03c85c066bf33407",
+      "budgets_sha256": "6bffcd3da016b860352fb47386d57222943bc15930d160f1c640ad01e66afc8e",
+      "model_settings_sha256": "36c5448bf3e7e0cb794b791dce615ce1e57a574f193adac8bd894a09d5a1b2fb"
+    },
+    "treatment": {
+      "task_seed_sha256": "b32aebb51095795a1cea557f30e0ebb975e21a8950c9dcdab20dfd8c8c24f4db",
+      "contracts_sha256": "73a0676d849e9bf263248c682f7e02db24477c33467b3bc8214be45cc1724cc7",
+      "packet_text_sha256": "ac705db15a0dd61a8be1b96fb2a282d97b6ed625fac7981c72d63f2b788a39b2",
+      "tool_policy_sha256": "3ff01bb4e1a50814381629fbea45fad0beb9167c69591f7f03c85c066bf33407",
+      "budgets_sha256": "6bffcd3da016b860352fb47386d57222943bc15930d160f1c640ad01e66afc8e",
+      "model_settings_sha256": "36c5448bf3e7e0cb794b791dce615ce1e57a574f193adac8bd894a09d5a1b2fb"
+    }
+  },
+  "normalized_inputs_equal": true,
+  "packet_bytes_equal": true
+}

@@ -1,0 +1,28 @@
+═══════════════════════════════════════════════════════════════
+Integration Test — claude -p PostToolUse trigger
+═══════════════════════════════════════════════════════════════
+
+Status: N/A (documented limitation, not Blake-side bug)
+
+Reason: AskUserQuestion is permission-DENIED in `claude -p` non-interactive
+mode (no human to answer). The PostToolUse hook never fires in non-interactive
+because the tool is blocked at permission gate (verified in §0 spike — see
+spike-result.md). Real-world activation happens on first interactive
+AskUserQuestion call, at which point the hook fires per claude code docs.
+
+Synthetic-envelope coverage (proxy for integration):
+  ✅ All 10 askuser-capture-test.sh fixtures PASS
+  ✅ Hook produces correct JSONL output for canonical envelope shape
+     (see askuser-capture-test.sh fixture-basic + fixture-multiselect)
+  ✅ Slug derivation works against real .tad/active/handoffs/ scan
+     (smoke test 2026-04-25 wrote slug=phase5-evolve-data-capture correctly)
+
+Production sanity check: after Phase 5 ships, first interactive
+AskUserQuestion call will populate .tad/evidence/decisions/{date}.jsonl.
+Verify by:
+  ls -la .tad/evidence/decisions/$(date +%F).jsonl
+  jq . .tad/evidence/decisions/$(date +%F).jsonl | tail -1
+
+If the JSONL line appears with correct shape, integration is verified
+in production. If not, debug per architecture.md "claude -p Hook Contract
+Testing — 2026-04-14" pattern.

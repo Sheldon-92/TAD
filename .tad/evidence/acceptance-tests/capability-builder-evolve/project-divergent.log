@@ -1,0 +1,2 @@
+ERROR: divergent target exists, refusing to overwrite:
+  Files /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/capability-builder-evolve/fixture-proj/.agents/skills/example-skill/SKILL.md and /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/acceptance-tests/capability-builder-evolve/fixture-proj/.claude/skills/example-skill/SKILL.md differ

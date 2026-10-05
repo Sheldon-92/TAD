@@ -1,0 +1,56 @@
+{
+  "format": "yolo2-phase2-scope-proof-v1",
+  "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
+  "main_sha": "06a535320b98f6469b4afbb87914fd9092d36872",
+  "candidate_sha": "e78f0360dbcb2a71a0161ac9adc08480488c73fe",
+  "product_equivalence": [
+    {
+      "path": ".tad/scripts/yolo-recovery.mjs",
+      "candidate_sha256": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+      "main_sha256": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/yolo-reference-runner.mjs",
+      "candidate_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+      "main_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/phase2-pair-driver.mjs",
+      "candidate_sha256": "a095e0362ea93d0056ec226ad1e113362c9845d27cf6226eb03da6b922a516e5",
+      "main_sha256": "a095e0362ea93d0056ec226ad1e113362c9845d27cf6226eb03da6b922a516e5",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/yolo-round.test.mjs",
+      "candidate_sha256": "10fc4313956a6d5566bf484af9e826d3baa09e20e3edba45275e9f9ababa6c9d",
+      "main_sha256": "10fc4313956a6d5566bf484af9e826d3baa09e20e3edba45275e9f9ababa6c9d",
+      "equal": true
+    },
+    {
+      "path": ".tad/scripts/yolo-recovery.test.mjs",
+      "candidate_sha256": "6617b1b704bbbff382cf938a5b6588594ed58d5469df9b270d0df4d9485a2f25",
+      "main_sha256": "6617b1b704bbbff382cf938a5b6588594ed58d5469df9b270d0df4d9485a2f25",
+      "equal": true
+    }
+  ],
+  "immutable_evidence": [],
+  "shared_control_plane": [
+    {
+      "path": ".tad/active/handoffs/HANDOFF-20260827-yolo2-phase2-completion.md",
+      "selector": "frontmatter.scope_proof_amendment",
+      "expected_value": ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
+      "candidate_value": ".tad/decisions/DR-20260830-yolo2-phase2-scope-proof-amendment.md",
+      "canonical_subdocument_sha256": "65ff6e8cfe22f1990f5671dd062342ad3f69cdf8f42385d3bd9f96435a49788a"
+    },
+    {
+      "path": ".tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md",
+      "selector": "frontmatter.gate3_verdict",
+      "expected_value": "pass",
+      "candidate_value": "pass",
+      "canonical_subdocument_sha256": "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1"
+    }
+  ],
+  "verifier_blob_sha256": "6617b1b704bbbff382cf938a5b6588594ed58d5469df9b270d0df4d9485a2f25"
+}

@@ -1,0 +1,6 @@
+{
+  "format": "yolo2-phase2-oracle-v1",
+  "task_id": "T2-node-behavior",
+  "hidden_fixture_sha256": "9df9849ad8a5cac84840063e699a949a264d4a44a94efbcbd6cfbb9b6339a9db",
+  "hidden_release_id": "63a84e8fd4df940176f413c9cfd4c682fa5be521e66dee1001053598cf62ab42"
+}

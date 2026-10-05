@@ -1,0 +1,48 @@
+{
+  "format": "yolo2-phase2-attestation-v1",
+  "base_sha": "96bbfada1e6c757b7b9dec0d38d69eb8dc2e3aa7",
+  "candidate_sha": "3ce202b4b15250f33654828fcf4708a9a285807c",
+  "main_sha": "38839370403b0fb5eee177c97f6d7e75f9612bc0",
+  "carriers": {
+    "phase2-commit-manifest.json": {
+      "sha256": "b42bc9e94846de9b3421780ffa30eaf33b0ee6f65d9d0105a10ffc2297958e19",
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json"
+    },
+    "candidate-tree.json": {
+      "sha256": "d6754986d8d5a18fb05f5b49cb99054b024433f2fbbe1686e8e6f8733b888adf",
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/candidate-tree.json"
+    },
+    "main-equivalence.json": {
+      "sha256": "851fe635b75bbeb4ce51b38b3cc12ab73db0a28306516bb15c58b4a5f33f9bf5",
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/main-equivalence.json"
+    },
+    "dogfood-input-manifest.json": {
+      "sha256": "963fe8ab3935741ac556ca74f32058cef7317c0c80677cf349641cd441365fcd",
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/dogfood-input-manifest.json"
+    },
+    "scope-proof.log": {
+      "sha256": "d5e2b86a0cde6689f0426e253fdf4db95b31924673a0281c4ca26f11870d3549",
+      "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/scope-proof.log"
+    }
+  },
+  "gate3": {
+    "path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/gate3-verdict.md",
+    "sha256": "bf6c379e4d9ab218380756f1475941857f1759614203f5bbf337115311957814"
+  },
+  "reports": {
+    "spec-compliance-final.md": {
+      "sha256": "3352f51226f1917880e4b2a38e74e094eb98487b4b5e4bc46a07910ec43ebebc",
+      "path": ".tad/evidence/reviews/blake/yolo2-phase2/spec-compliance-final.md"
+    },
+    "code-reviewer.md": {
+      "sha256": "6e096f3cba66c46a945d8bfb0b77a0ea9bfe92ca2c03e5c964024f887b46c5cd",
+      "path": ".tad/evidence/reviews/blake/yolo2-phase2/code-reviewer.md"
+    },
+    "test-runner.md": {
+      "sha256": "4b8048dc1f54cdb16235bc34af67774af2247bb26ea2e76a77f66e6750a558f9",
+      "path": ".tad/evidence/reviews/blake/yolo2-phase2/test-runner.md"
+    }
+  },
+  "product_tree_sha": "e5e243f0b870408457ff9fb2641363c03732a188",
+  "created_at": "2026-08-31T22:00:00Z"
+}

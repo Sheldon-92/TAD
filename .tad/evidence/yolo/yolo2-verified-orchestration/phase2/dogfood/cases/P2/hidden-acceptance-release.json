@@ -1,0 +1,41 @@
+{
+  "format": "yolo2-phase2-hidden-acceptance-release-v1",
+  "task_id": "T2-node-behavior",
+  "control_output_manifest_sha256": "640ea24bdd02e4f7b932f561d4b6e3dc618fb351226ea526ac78be8fe0936f65",
+  "treatment_output_manifest_sha256": "41ee77dd4b23fab68a2f9164a6e4a0afa2fe018ca16212e43dd311617e1179c2",
+  "released_after_both_output_manifests": true,
+  "control": [
+    {
+      "check": "util.mjs exists and exports stableSlug",
+      "passed": true,
+      "detail": "util.mjs exists and exports stableSlug"
+    },
+    {
+      "check": "tests.mjs has >=3 assert cases",
+      "passed": true,
+      "detail": "tests.mjs has >=3 assert cases"
+    },
+    {
+      "check": "node tests.mjs exits 0",
+      "passed": true,
+      "detail": "node tests.mjs exits 0"
+    }
+  ],
+  "treatment": [
+    {
+      "check": "util.mjs exists and exports stableSlug",
+      "passed": true,
+      "detail": "util.mjs exists and exports stableSlug"
+    },
+    {
+      "check": "tests.mjs has >=3 assert cases",
+      "passed": true,
+      "detail": "tests.mjs has >=3 assert cases"
+    },
+    {
+      "check": "node tests.mjs exits 0",
+      "passed": true,
+      "detail": "node tests.mjs exits 0"
+    }
+  ]
+}

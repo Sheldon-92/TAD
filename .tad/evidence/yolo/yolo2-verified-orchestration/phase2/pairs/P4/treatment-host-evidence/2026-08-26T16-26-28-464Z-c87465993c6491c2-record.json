@@ -1,0 +1,73 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "c87465993c6491c2",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03ee4-6be9-7240-8d81-720c6df445ce",
+  "resumed_from_session": "01a03ee4-6be9-7240-8d81-720c6df445ce",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "c50f818a65faec2c621b8f747f2f6641e97741deead6e8630c2d303b95334b2f",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P4/treatment-host-evidence/2026-08-26T16-26-28-464Z-c87465993c6491c2-raw-output.txt",
+    "sha256": "973393aee8a49a6d4803e91c9430fd46134abcfd166764859b4e833ecc3b13b8"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P4/treatment-host-evidence/2026-08-26T16-26-28-464Z-c87465993c6491c2-raw-trace.jsonl",
+    "sha256": "e19aeb174954c0602ad426ab4c9d40e925bc11f771b15a607b14fcd75d96a93c"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "fa2c2052bcbe0a0f2ff2adbfc25cb5b07bf43fdc63a97190b1ca604f55a5531c",
+      "decision": "allowed",
+      "action_nonce": "40060314df47162d",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "bb1d1ffc7fcd741406fd9cd8f8bcb022117ebfa268762c6be8a5083fb80cad8b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 43335,
+    "output_tokens": 328,
+    "total_tokens": 43663,
+    "cached_input_tokens": 40448,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: `CHANGELOG.md` is outside the writable workspace, so the authorized edit could not be applied."
+}

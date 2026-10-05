@@ -1,0 +1,31 @@
+=== RED PROBE fix-round P0-1/P0-2/P0-3 (pre-fix tree f61c1892 + sibling planting + truncation probe) ===
+HEAD: f61c1892c952aa841efb1983a93ad617b9b80b44
+STATUS:
+ M .tad/tests/installer-data-safety-fixture.sh
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/COMPLETION-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.8
+  ✅ ac2.8: faulted run non-zero (rc=1)
+  ❌ ac2.8: post-rollback drift:
+Only in /tmp/tad-ac.QVRTIP/snapshots/pre/.claude: commands
+Only in /tmp/tad-ac.QVRTIP/snapshots/pre/.codex: config.toml
+Only in /tmp/tad-ac.QVRTIP/snapshots/pre/.codex: prompts
+Only in /tmp/tad-ac.QVRTIP/snapshots/pre/.tad: version.txt
+  ✅ ac2.8: message enumerates rollback coverage
+  ✅ ac2.8: zero network (both curl-shim logs empty)
+  ✅ ac2.8: foreign-cwd rollback restored target via absolute paths
+  ✅ ac2.8: foreign cwd untouched (no .tad created)
+.tad/tests/installer-data-safety-fixture.sh: line 582:  9047 Filesize limit exceeded: 25cp "$SANDBOX/bigbackup/big.bin" "$SANDBOX/probe.bin" 2> /dev/null
+  ✅ ac2.8: ENOSPC (ulimit) → backup preserved
+  ✅ ac2.8: ENOSPC (ulimit) → explicit failed-state message
+  ❌ ac2.8: truncating-cp fault → file dst LOST (in-place cp-over)
+
+=== Summary: PASS=7 FAIL=2 ===
+VERDICT: FAIL

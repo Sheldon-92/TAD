@@ -1,0 +1,9 @@
+=== AC 改前基线 (SHA: cd70cf26a2c2b306b8677094554fa0ad2414872e) ===
+AC-1  guarded_remove in func: 0
+AC-2  rm -rf in func:         1
+AC-2b rm -[rf] whole file:    12
+AC-2c line1585 has rm -rf:    1
+AC-7a hardcoded ZT list:      0
+AC-N1 bash -n tad.sh:         rc=0
+AC-N2b engine direct exec rc: 2
+AC-N4 release-verify parity:  0

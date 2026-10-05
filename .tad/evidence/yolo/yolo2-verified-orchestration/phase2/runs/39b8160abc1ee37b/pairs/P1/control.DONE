@@ -1,0 +1,72 @@
+{
+  "format": "yolo2-phase2-arm-result-v1",
+  "arm": "control",
+  "task": "T1-doc-ref",
+  "mechanism_sha256": "39b8160abc1ee37bf3ed2becfc8266f4d084a4c1d018b5b4550ddf95c1e7293b",
+  "task_sha256": "aaca1cfa001915a106331125010613a48dc2d17bdd9638a4cc0ceb3b4f2033c3",
+  "base_commit": "b992b9eb431988c37dc72e134d9a271e4c16284c",
+  "final_hidden_acceptance": [
+    {
+      "check": "guide.md contains '## Command Reference'",
+      "passed": true,
+      "detail": "guide.md contains '## Command Reference'"
+    },
+    {
+      "check": "guide.md table rows mention init, status and verify",
+      "passed": true,
+      "detail": "guide.md table rows mention init, status and verify"
+    },
+    {
+      "check": "existing intro preserved",
+      "passed": true,
+      "detail": "existing intro preserved"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "guide.md contains '## Command Reference'",
+          "passed": true,
+          "detail": "guide.md contains '## Command Reference'"
+        },
+        {
+          "check": "guide.md table rows mention init, status and verify",
+          "passed": true,
+          "detail": "guide.md table rows mention init, status and verify"
+        },
+        {
+          "check": "existing intro preserved",
+          "passed": true,
+          "detail": "existing intro preserved"
+        }
+      ],
+      "tokens": 66600
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "guide.md contains '## Command Reference'",
+          "passed": true,
+          "detail": "guide.md contains '## Command Reference'"
+        },
+        {
+          "check": "guide.md table rows mention init, status and verify",
+          "passed": true,
+          "detail": "guide.md table rows mention init, status and verify"
+        },
+        {
+          "check": "existing intro preserved",
+          "passed": true,
+          "detail": "existing intro preserved"
+        }
+      ],
+      "tokens": 88879
+    }
+  ],
+  "tokens_total": 155479
+}

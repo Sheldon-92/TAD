@@ -1,0 +1,852 @@
+=== TAD v2.24.0 SYNC ===
+Source: /Users/sheldonzhao/01-on progress programs/TAD
+Framework dirs (19, capability-packs excluded): agents codex context cross-model data domains gates guides hooks ralph-config references schemas scripts skills sub-agents tasks templates tests workflows
+
+Deprecation files to clean (<= 2.24.0): 42
+
+######################################################################
+## PROJECT: menu-snap
+## PATH:    /Users/sheldonzhao/01-on progress programs/menu-snap
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/menu-snap/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/menu-snap/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/menu-snap/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> menu-snap DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: my-openclaw-agents
+## PATH:    /Users/sheldonzhao/01-on progress programs/my-openclaw-agents
+## STRATEGY (CLAUDE.md): merge
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (merge)...
+    [WARN] merge strategy but no marker — left untouched
+    CLAUDE.md: merge-NO-MARKER(untouched,WARN)
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/my-openclaw-agents/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/my-openclaw-agents/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/my-openclaw-agents/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> my-openclaw-agents DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=merge-NO-MARKER(untouched,WARN) gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: OpenClaw Hack
+## PATH:    /Users/sheldonzhao/01-on progress programs/OpenClaw Hack
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/OpenClaw Hack/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/OpenClaw Hack/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/OpenClaw Hack/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> OpenClaw Hack DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: 运动打卡小助手
+## PATH:    /Users/sheldonzhao/01-on progress programs/运动打卡小助手
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/运动打卡小助手/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/运动打卡小助手/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/运动打卡小助手/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> 运动打卡小助手 DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: 合规ai
+## PATH:    /Users/sheldonzhao/01-on progress programs/合规ai
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/合规ai/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/合规ai/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/合规ai/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> 合规ai DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: ArtForge
+## PATH:    /Users/sheldonzhao/01-on progress programs/ArtForge
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/ArtForge/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/ArtForge/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/ArtForge/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> ArtForge DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: Sober Creator
+## PATH:    /Users/sheldonzhao/01-on progress programs/Sober Creator
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/Sober Creator/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/Sober Creator/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/Sober Creator/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> Sober Creator DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: toy
+## PATH:    /Users/sheldonzhao/01-on progress programs/toy
+## STRATEGY (CLAUDE.md): merge
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (merge)...
+    [WARN] merge strategy but no marker — left untouched
+    CLAUDE.md: merge-NO-MARKER(untouched,WARN)
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/toy/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/toy/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/toy/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> toy DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=merge-NO-MARKER(untouched,WARN) gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: 内存管理
+## PATH:    /Users/sheldonzhao/01-on progress programs/内存管理
+## STRATEGY (CLAUDE.md): merge
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (merge)...
+    [WARN] merge strategy but no marker — left untouched
+    CLAUDE.md: merge-NO-MARKER(untouched,WARN)
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/内存管理/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/内存管理/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/内存管理/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> 内存管理 DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=merge-NO-MARKER(untouched,WARN) gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: Next Guest
+## PATH:    /Users/sheldonzhao/01-on progress programs/Next Guest
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/Next Guest/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/Next Guest/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/Next Guest/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> Next Guest DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: 下载md插件
+## PATH:    /Users/sheldonzhao/01-on progress programs/下载md插件
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/下载md插件/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/下载md插件/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/下载md插件/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> 下载md插件 DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: 买卖
+## PATH:    /Users/sheldonzhao/01-on progress programs/买卖
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/买卖/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/买卖/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/买卖/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> 买卖 DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: Monica-website
+## PATH:    /Users/sheldonzhao/01-on progress programs/Monica-website
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/01-on progress programs/Monica-website/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/01-on progress programs/Monica-website/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/01-on progress programs/Monica-website/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> Monica-website DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## PROJECT: Colin声音项目
+## PATH:    /Users/sheldonzhao/Downloads/Colin声音项目
+## STRATEGY (CLAUDE.md): overwrite
+######################################################################
+[b] Framework full-refresh...
+    refreshed .tad/agents
+    refreshed .tad/codex
+    refreshed .tad/context
+    refreshed .tad/cross-model
+    refreshed .tad/data
+    refreshed .tad/domains
+    refreshed .tad/gates
+    refreshed .tad/guides
+    refreshed .tad/hooks
+    refreshed .tad/ralph-config
+    refreshed .tad/references
+    refreshed .tad/schemas
+    refreshed .tad/scripts
+    refreshed .tad/skills
+    refreshed .tad/sub-agents
+    refreshed .tad/tasks
+    refreshed .tad/templates
+    refreshed .tad/tests
+    refreshed .tad/workflows
+[c] capability-packs registry-only...
+    copied pack-registry.yaml
+    copied deliverable-rubrics.yaml
+    copied pack-collisions.yaml
+[d] .claude/skills full-refresh + workflows...
+    refreshed .claude/skills
+    copied workflow epic-audit.workflow.js
+    copied workflow gate-review.workflow.js
+    copied workflow loop-discover.workflow.js
+    copied workflow tournament-design.workflow.js
+    copied workflow yolo-epic.workflow.js
+[e] settings.json merge...
+    backed up settings.json -> .bak
+    merged TAD-owned hook events (preserved others)
+[f] pack install...
+    packs ok=25 fail=0
+[g] top-level .tad files...
+    copied top-level .tad config files
+[h] root files...
+    copied root files
+[i] CLAUDE.md (overwrite)...
+    CLAUDE.md: overwritten
+[j] deprecation cleanup...
+    removed 0 deprecated path(s)
+[k] version -> 2.24.0
+[l] structural verify (warn mode)...
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/academic-research/SKILL.md and /Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills/academic-research/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/ai-voice-production/SKILL.md and /Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills/ai-voice-production/SKILL.md differ
+          Files /Users/sheldonzhao/01-on progress programs/TAD/.claude/skills/video-creation/SKILL.md and /Users/sheldonzhao/Downloads/Colin声音项目/.claude/skills/video-creation/SKILL.md differ
+    VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+
+>>> Colin声音项目 DONE — version=2.24.0 packs(ok/fail)=25/0 CLAUDE=overwritten gate=[VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)] status=ok
+
+######################################################################
+## OVERALL SUMMARY (name|version|status|packs|claude|gate)
+######################################################################
+menu-snap|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+my-openclaw-agents|2.24.0|ok|25/0|merge-NO-MARKER(untouched,WARN)|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+OpenClaw Hack|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+运动打卡小助手|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+合规ai|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+ArtForge|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+Sober Creator|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+toy|2.24.0|ok|25/0|merge-NO-MARKER(untouched,WARN)|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+内存管理|2.24.0|ok|25/0|merge-NO-MARKER(untouched,WARN)|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+Next Guest|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+下载md插件|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+买卖|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+Monica-website|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)
+Colin声音项目|2.24.0|ok|25/0|overwritten|VERDICT: structural FAIL — 1 differing/missing path(s) (exit 1)

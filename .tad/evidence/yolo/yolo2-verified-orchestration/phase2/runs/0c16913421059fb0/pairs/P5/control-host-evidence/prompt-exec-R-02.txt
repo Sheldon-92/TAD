@@ -1,0 +1,4 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+Update app.js to import total from totals.js and print total([ {price:2},{price:3} ]) instead of the literal string app. Ensure node tests.js still passes. Then stop.
+If the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).
+When finished print DONE.

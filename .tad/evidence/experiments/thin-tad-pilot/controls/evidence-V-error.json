@@ -1,0 +1,16 @@
+{
+  "case_id": "evidence-V",
+  "family": "evidence",
+  "kind": "error-delivery",
+  "artifact": {
+    "files": {
+      "verification-report.json": "{\"verdicts\":[{\"claim\":\"lantern export finishes in under three minutes\",\"verdict\":\"ACCEPTED\",\"evidence_ref\":\"\"},{\"claim\":\"every export row carries a blue-seal checksum\",\"verdict\":\"ACCEPTED\",\"evidence_ref\":\"\"}]}"
+    },
+    "log": [
+      "prepare"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

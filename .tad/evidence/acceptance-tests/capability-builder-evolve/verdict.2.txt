@@ -1,0 +1,1 @@
+PACK example-skill FIXTURE regex-bound: output oversize (1258292 bytes > 1048576) → OVERSIZE → SKIP (bounded)

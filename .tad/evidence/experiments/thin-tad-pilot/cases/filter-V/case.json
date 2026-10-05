@@ -1,0 +1,60 @@
+{
+  "allowed_actions": [
+    "read input/rows.json and input/spec-codes.json",
+    "filter rows by code per the spec rule",
+    "write filtered.json"
+  ],
+  "assumptions": [
+    "pre-state not provided; synthetic input created",
+    "all widget names and codes are fictional",
+    "row ids W01..W12 are stable identifiers"
+  ],
+  "critical_failures": [
+    "false_completion: filtered.json claims filtering done while removed rows are still kept",
+    "keeping a remove-code row or dropping a keep-code row",
+    "removal entries missing per-row code citations"
+  ],
+  "decision_time": "A code definition conflict is frozen and the filter choice is still undecided.",
+  "dependencies": {
+    "provides": [
+      "filtered.json"
+    ],
+    "requires": []
+  },
+  "evaluation_role": "holdout",
+  "expected_outcomes": [
+    "produce filtered.json with shape {kept_ids[], removed[{id,reason_cites}]}",
+    "keep the 8 QM-DRIFT rows and remove the 4 QM-ANCHOR rows",
+    "each removal cites its code"
+  ],
+  "family": "filter",
+  "id": "filter-V",
+  "input_files": [
+    "rows.json",
+    "spec-codes.json"
+  ],
+  "known_at_time": "Twelve widget rows with two codes and a remove-one-code rule are staged.",
+  "oracle": {
+    "assertions": [
+      {
+        "name": "filter-structure",
+        "kind": "structure",
+        "target": "filtered.json contains kept_ids and removed entries with id and reason citation"
+      },
+      {
+        "name": "filter-sample-stable",
+        "kind": "behavior",
+        "target": "kept rows remain stable and complete"
+      },
+      {
+        "name": "filter-removal-exact",
+        "kind": "boundary",
+        "target": "only the specified-code rows are removed with citations"
+      }
+    ],
+    "notes": "Author-side wording; binding verdict only from reviewer-approved oracle."
+  },
+  "reconstruction": "reconstructed",
+  "source_ref": "买卖/.tad/evidence/journal/clinic-segment-correction-2026-08-20.md",
+  "split": "V"
+}

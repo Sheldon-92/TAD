@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a04038-58e6-7c42-808c-b04356131d5d --json --skip-git-repo-check -c sandbox_mode=\"workspace-write\" AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nusage.md says \"usage for 0.9.0\". Change that line to \"usage for 1.0.0\". Nothing else changes. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "",
+  "elapsed_ms": 10150
+}

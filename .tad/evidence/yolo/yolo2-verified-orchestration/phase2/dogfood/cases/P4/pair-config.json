@@ -1,0 +1,52 @@
+{
+  "format": "yolo2-phase2-pair-config-v1",
+  "pair_id": "P4",
+  "task_id": "T4-cross-file",
+  "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+  "generator": {
+    "harness": "codex",
+    "model_id": "codex-default",
+    "model_family": "gpt",
+    "reasoning": "balanced"
+  },
+  "policy": {
+    "format": "yolo-bounded-policy-v1",
+    "max_rounds": 8,
+    "max_retries_per_slice": 2,
+    "max_actions": 40,
+    "max_wall_seconds": 14400,
+    "max_tokens": 3000000,
+    "audit_reserve_tokens": 600000,
+    "max_executor_tokens_per_round": 600000,
+    "align_every_verified_slices": 3,
+    "packet_token_budget": 3500
+  },
+  "cache_policy": "native-codex-cache-preserved",
+  "base_commit": {
+    "control": "ba0325db8cb944d712c075a20be62ef4a7416a77",
+    "treatment": "ba0325db8cb944d712c075a20be62ef4a7416a77"
+  },
+  "tool_policy": {
+    "assertion": {
+      "sandbox": "read-only",
+      "allowed": [
+        "Read"
+      ]
+    },
+    "execution": {
+      "sandbox": "workspace-write",
+      "allowed": [
+        "Read",
+        "Edit",
+        "Write"
+      ]
+    }
+  },
+  "arm_equivalence_manifest": "runs/a6fe746c2ff351df/pairs/P4/arm-equivalence-manifest.json",
+  "arm_equivalence_sha256": "8aa83eea0d87018b3c3b7067804f60e3d9b1da7d94b0151b9820ce09f7331633",
+  "packet_sha256": [
+    "bfbb6165a84f1e8b981b1b78fb943b4ea599dcd31552076727269d0af74c1279",
+    "87a9792e4c0d0d6839c54b010aea65d39a6b0ffbe7ab570a673d25637d0656b4"
+  ],
+  "permitted_arm_difference": "continuity condition only"
+}

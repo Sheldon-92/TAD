@@ -1,0 +1,10 @@
+$ git show --stat --name-only HEAD | grep -cE '(\.gitignore|phase2-pair-driver\.mjs|release-sync\.md|NEXT\.md|scan-log\.yaml)'
+5
+FILES:
+.gitignore
+.tad/github-registry/scan-log.yaml
+.tad/project-knowledge/patterns/release-sync.md
+.tad/scripts/phase2-pair-driver.mjs
+NEXT.md
+EXPECTED: 5
+VERDICT: PASS

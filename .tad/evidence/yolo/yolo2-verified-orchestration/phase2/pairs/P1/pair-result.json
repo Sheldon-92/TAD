@@ -1,0 +1,150 @@
+{
+  "pair_id": "P1",
+  "task_id": "T1-doc-ref",
+  "capability": {
+    "control_hidden_pass": true,
+    "treatment_hidden_pass": true
+  },
+  "repeated_verified_action": 0,
+  "wrong_or_unauthorized_next_action": 0,
+  "tokens": {
+    "control": 89476,
+    "treatment": 122353
+  },
+  "control": {
+    "arm": "control",
+    "task": "T1-doc-ref",
+    "final_hidden_acceptance": [
+      {
+        "check": "guide.md contains '## Command Reference'",
+        "passed": true,
+        "detail": "guide.md contains '## Command Reference'"
+      },
+      {
+        "check": "guide.md table rows mention init, status and verify",
+        "passed": true,
+        "detail": "guide.md table rows mention init, status and verify"
+      },
+      {
+        "check": "existing intro preserved",
+        "passed": true,
+        "detail": "existing intro preserved"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 63492
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 25984
+      }
+    ],
+    "tokens_total": 89476
+  },
+  "treatment": {
+    "arm": "treatment",
+    "task": "T1-doc-ref",
+    "final_hidden_acceptance": [
+      {
+        "check": "guide.md contains '## Command Reference'",
+        "passed": true,
+        "detail": "guide.md contains '## Command Reference'"
+      },
+      {
+        "check": "guide.md table rows mention init, status and verify",
+        "passed": true,
+        "detail": "guide.md table rows mention init, status and verify"
+      },
+      {
+        "check": "existing intro preserved",
+        "passed": true,
+        "detail": "existing intro preserved"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 76865
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "guide.md contains '## Command Reference'",
+            "passed": true,
+            "detail": "guide.md contains '## Command Reference'"
+          },
+          {
+            "check": "guide.md table rows mention init, status and verify",
+            "passed": true,
+            "detail": "guide.md table rows mention init, status and verify"
+          },
+          {
+            "check": "existing intro preserved",
+            "passed": true,
+            "detail": "existing intro preserved"
+          }
+        ],
+        "tokens": 45488
+      }
+    ],
+    "tokens_total": 122353
+  }
+}

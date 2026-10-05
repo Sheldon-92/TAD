@@ -1,0 +1,16 @@
+# Phase 4 AC 改前实测 — 2026-08-17T04:41:50Z
+# base = b695660661fd8ee210061cfd0de04b77cf61c020
+# 范围：方案 A（FR-B/C/D，FR-A orphan 分支延后）
+
+AC-B1 evidence 跟踪数(期望0)      = 3348
+AC-B2 archive 跟踪数(期望0)       = 895
+AC-B3 tarball 字节(期望<8388608)  = 26594527
+AC-C1 .npmignore 存在(期望1)      = 0
+AC-C2 npm 包内 evidence 条(期望0) = 3444
+AC-D1 evidence README(期望1)      = 1
+
+# 负控（须保持）
+AC-N4 project-knowledge 路径哈希  = 843aa189cb906ba1
+AC-N5 active 路径哈希             = fdaab15e102787ef
+AC-N2 起始 commit 仍可解析        = OK
+AC-N3 未碰 tad.sh                 = 0

@@ -1,0 +1,69 @@
+You are taking over a task that was interrupted. You have NO history of it and
+you will not be given any. Do not ask for it.
+
+The only thing you get is this run directory:
+  /private/tmp/tad-yolo2-p1/wt-interruption-a/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run
+
+STEP 1 — report your model identity as the first line of your final answer:
+  Model: harness=claude-code | model=<your model id> | route=host
+
+STEP 2 — run exactly this, from the worktree root /private/tmp/tad-yolo2-p1/wt-interruption-a :
+  cd /private/tmp/tad-yolo2-p1/wt-interruption-a && node .tad/scripts/yolo-recovery.mjs resume --run .tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run
+
+STEP 3 — read these yourself; they are the authority:
+  /private/tmp/tad-yolo2-p1/wt-interruption-a/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run/goal.json
+  /private/tmp/tad-yolo2-p1/wt-interruption-a/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run/journal.jsonl
+  /private/tmp/tad-yolo2-p1/wt-interruption-a/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run/recovery.md   (convenience view only; if it disagrees with the
+                              journal, the journal wins)
+
+You may also run read-only git commands in /private/tmp/tad-yolo2-p1/wt-interruption-a (status, diff --stat, log), and
+you may compute sha256 of any file the journal names (shasum -a 256 <file>).
+
+STEP 4 — HARD PROHIBITIONS. Violating any of these invalidates the run:
+  - Do NOT read .tad/active/session-state.md, any file under
+    .tad/active/handoffs/, any compact summary, or any other chat-derived file.
+  - Do NOT read the task description file, any oracle file, or anything under
+    .tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood other than the three run files listed in STEP 3.
+  - Do NOT read the contents of .tad/guides/yolo-recovery.md (you may hash it
+    and you may look at git diff --stat, but do not read its text).
+  - Do NOT invoke any skill, slash command, agent, or workflow.
+  - Do NOT start, continue, undo or redo ANY of the task's work.
+
+STEP 5 — write your recovery assertion to
+  /private/tmp/tad-yolo2-p1/wt-interruption-a/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run/assertion.md
+using EXACTLY this template, filling every field. A missing field scores as
+wrong, not as blank. Be specific: name slice ids, action ids and paths.
+
+# Recovery Assertion — <run_id>
+
+## H1 GOAL
+<one sentence: what this run is trying to achieve>
+
+## H2 HANDOFF REVISION
+<handoff path> @ <first 12 chars of handoff_revision>
+
+## H3 VERIFIED
+<exact list of verified slice ids, or "none">
+
+## H4 UNVERIFIED / IN PROGRESS
+<checkpoint candidates and any uncommitted work observed, or "none">
+
+## H5 PENDING ACTION
+<action id, target, and its current classification, or "none">
+
+## H6 BLOCKERS
+<blocker codes and what they mean, or "none">
+
+## H7 LEGAL NEXT ACTION
+<the single next action that is legal right now>
+
+## H8 NON-GOALS AND FORBIDDEN SCOPE
+<at least one non-goal and one forbidden-scope item, stated correctly>
+
+## S1 WHY THAT NEXT ACTION IS LEGAL
+## S2 WHY THE VERIFIED WORK MUST NOT BE REDONE
+## S3 WHY A BLIND RETRY / A SELF-DECLARED COMPLETION IS NOT AVAILABLE HERE
+## S4 WHAT THIS RUN HAS EXPLICITLY REJECTED OR MUST NOT DO
+
+STEP 6 — stop. Report your model identity line, confirm the assertion file was
+written, and paste the last JSON line that the resume command printed.

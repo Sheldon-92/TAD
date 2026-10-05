@@ -1,0 +1,18 @@
+{
+  "command": "verify-scope",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "staged": 0,
+      "privacy": "PASS",
+      "attribution": "COMPLETE",
+      "result": "OK"
+    }
+  ],
+  "summary": "staged ⊆ tool allowlist (0 files); no private path staged/tracked; 20 untracked all attributed",
+  "baseline_head": "7c1eb5a8d4324f30cb4d3e20d0d659bc727a3533",
+  "current_head": "7c1eb5a8d4324f30cb4d3e20d0d659bc727a3533",
+  "captured_at": "2026-09-08T02:12:27.936Z",
+  "note": "Whole-repo cleanliness is NOT required; pre-existing dirt is attributed, not absolved."
+}

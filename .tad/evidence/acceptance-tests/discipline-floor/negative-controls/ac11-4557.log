@@ -1,0 +1,59 @@
+AC1: 30 rows, cols 1-4 == verdicts.tsv
+AC1 PASS
+AC2: 循环? enum + 否 行解除待判非空
+AC2 PASS
+AC3: Layer 机械推导
+AC3 PASS
+AC4: 锚点绑定纪律
+AC4 PASS
+AC5: 触发串双向锚定
+AC5 PASS
+AC6: 载体分散度
+AC6 PASS
+AC7: 防双计
+AC7 PASS
+AC8: 副表
+  AC FAIL: AC8: 副表缺 反合理化
+  AC FAIL: AC8: 副表缺 Forbidden
+  AC FAIL: AC8: 副表仅 0 行（需≥6）
+AC8 FAIL
+AC9: 待判解除条件
+  AC9 去重 20 种
+AC9 PASS
+AC10: 清单缺口节
+  AC FAIL: AC10: 缺逐字 凭据
+  AC FAIL: AC10: 缺逐字 修改框架自身
+  AC FAIL: AC10: 缺逐字 R6
+  AC FAIL: AC10: 缺逐字 CLAUDE.md:50
+AC10 FAIL
+AC11: 承接单节
+  AC FAIL: AC11: 缺承接单名 expert-criteria-wiring
+  AC FAIL: AC11: 缺百分比
+  AC FAIL: AC11: 出现禁用数字 86% 或 4557
+AC11 FAIL
+AC12: 三输入冻结
+  AC12 frozen OK
+AC12 PASS
+AC13: fence
+  AC13 fence clean
+AC13 PASS
+AC14: 汇总真实
+  AC FAIL: AC14: 行不符 [full]
+  got:  
+  want: full 激活 Layer0: 行数 9 触发串合计 756 bytes
+  AC FAIL: AC14: 行不符 [lite]
+  got:  
+  want: lite 激活 Layer0: 行数 8 触发串合计 632 bytes
+  AC FAIL: AC14: 行不符 [共有(both)]
+  got:  
+  want: 共有(both)      : 行数 6 触发串合计 535 bytes
+  AC FAIL: AC14: 行不符 [副表]
+  got:  
+  want: 副表            : 行数 0 触发串合计 0 bytes
+  AC FAIL: AC14: carrier 行不符
+  got:  
+  want: 触发串所在载体文件当前整读合计: 404993 bytes   ← P7 前的真实下界
+  AC FAIL: AC14: 口径警告未逐字
+  AC FAIL: AC14: 缺 lite 不计入 SC1 说明
+AC14 FAIL
+RESULT=FAIL

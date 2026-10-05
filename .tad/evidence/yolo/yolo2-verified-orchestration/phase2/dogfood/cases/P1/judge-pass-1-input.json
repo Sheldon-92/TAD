@@ -1,0 +1,12 @@
+{
+  "format": "yolo2-phase2-blinded-judge-input-v1",
+  "pair_id": "P1",
+  "pass": 1,
+  "labels": [
+    "A",
+    "B"
+  ],
+  "A_sha256": "be40aeb722c7379502698e8a36dcbd97711b6e00088c80fb029af6037babfc5c",
+  "B_sha256": "1aa0cbeff0778a2f9a274d4004dbf6f039c56009cb338240e8bddeb688b134bb",
+  "prompt_sha256": "9cacc5bd3e3886d38f399d8c6413ae1bd55691ffcab8cc735e81e86174dcbb5a"
+}

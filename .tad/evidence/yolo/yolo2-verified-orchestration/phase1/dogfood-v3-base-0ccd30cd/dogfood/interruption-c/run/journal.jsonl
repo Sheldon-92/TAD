@@ -1,0 +1,2 @@
+{"seq":1,"type":"initialized","at":"2026-08-24T22:28:01.161Z","observed_head":"323c380dbb02dcdc4b58facd15e96825be66eb50","payload":{"goal_sha256":"4612b6785053757c04f1212c6e276fd8faa4d378237c77f38144444fa20a1e24","base_commit":"323c380dbb02dcdc4b58facd15e96825be66eb50"}}
+{"seq":2,"type":"stopped","at":"2026-08-24T22:37:11.370Z","observed_head":"323c380dbb02dcdc4b58facd15e96825be66eb50","payload":{"reason":"recovery assertion review FAILED: hard 8/8 but soft 0.88 below the 0.90 floor; continuing is not authorised"}}

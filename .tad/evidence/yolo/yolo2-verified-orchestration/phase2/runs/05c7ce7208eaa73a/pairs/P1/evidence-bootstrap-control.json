@@ -1,0 +1,20 @@
+{
+  "format": "yolo2-phase2-evidence-bootstrap-v1",
+  "task_id": "T1-doc-ref",
+  "arm": "control",
+  "source_task": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T1-doc-ref/task.json",
+  "destination_worktree": "T1-doc-ref-control",
+  "copied_at": "2026-08-27T00:00:00.000Z",
+  "files": [
+    {
+      "source": "dataset/T1-doc-ref/commands.txt",
+      "destination": "commands.txt",
+      "sha256": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f"
+    },
+    {
+      "source": "dataset/T1-doc-ref/guide.md",
+      "destination": "guide.md",
+      "sha256": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38"
+    }
+  ]
+}

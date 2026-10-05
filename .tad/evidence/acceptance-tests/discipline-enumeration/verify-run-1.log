@@ -1,0 +1,209 @@
+AC1: disposition cols 1-3 == blocks.txt
+AC1 PASS
+AC2: 归宿 syntax + 已有名 ∈ names.txt
+  AC FAIL: 已有名不在 names.txt:
+有:Ralph Loop自检
+有:专家审查（多视角）
+有:角色分离
+有:配对测试
+有:门禁
+有:需求澄清
+有:需求闸
+AC2 FAIL
+AC3: 理由码闭集 + 仅非纪律行非空
+AC3 PASS
+AC4: 原文片段分档 + AC4b: 命中数列 == hits.tsv
+  AC4 OK
+AC4 PASS
+AC5: inventory 既有15行逐字 + 行数
+  body=30 OK (15+15)
+AC5 PASS
+AC6: 新增唯一 + 白名单列 + 列数
+AC6 PASS
+AC7: 子键集合逐字 + 子键可解释
+  AC FAIL: row 1 .claude/skills/gate/SKILL.md:2 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 2 .claude/skills/gate/SKILL.md:3 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 3 .claude/skills/gate/SKILL.md:9 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 4 .claude/skills/gate/SKILL.md:13 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 5 .claude/skills/gate/SKILL.md:19 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 6 .claude/skills/gate/SKILL.md:27 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 7 .claude/skills/gate/SKILL.md:46 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 8 .claude/skills/gate/SKILL.md:63 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 9 .claude/skills/gate/SKILL.md:78 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 13 .claude/skills/gate/SKILL.md:780 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 14 .claude/skills/gate/SKILL.md:913 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 15 .claude/skills/gate/SKILL.md:947 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 16 .claude/skills/gate/SKILL.md:974 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 17 AGENTS.md:16 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 18 AGENTS.md:36 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 19 AGENTS.md:55 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 20 AGENTS.md:57 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 21 AGENTS.md:62 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 22 AGENTS.md:67 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 23 AGENTS.md:74 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 24 AGENTS.md:79 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 25 AGENTS.md:94 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 26 AGENTS.md:105 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 27 AGENTS.md:131 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 28 .tad/config-workflow.yaml:7 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 29 .tad/config-workflow.yaml:177 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 30 .tad/config-workflow.yaml:200 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 31 .tad/config-workflow.yaml:223 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 32 .tad/config-workflow.yaml:269 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 33 .tad/config-workflow.yaml:332 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 36 .tad/config-workflow.yaml:710 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 37 .tad/config-workflow.yaml:777 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 38 .tad/config-workflow.yaml:801 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 39 .tad/config-quality.yaml:7 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 40 .tad/config-quality.yaml:57 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 42 .tad/config-quality.yaml:309 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 44 .tad/config-quality.yaml:571 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 46 .tad/config-execution.yaml:7 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 47 .tad/config-execution.yaml:23 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 49 .tad/config-execution.yaml:212 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 50 .tad/config-execution.yaml:336 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 51 .tad/config-cognitive.yaml:7 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 53 .tad/config-cognitive.yaml:181 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 54 .tad/config-cognitive.yaml:278 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 55 .tad/config-agents.yaml:7 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 58 .tad/config-agents.yaml:291 subkey set mismatch
+    got:  -,
+    want: ,
+  AC FAIL: row 60 .tad/config-platform.yaml:231 subkey set mismatch
+    got:  -,
+    want: ,
+AC7 FAIL
+AC8: gate2-candidates.md
+  AC FAIL: AC8 研究先行: 标 research_first: 但机械=不属实 (.tad/config-cognitive.yaml:120)
+  AC FAIL: AC8 技术决策透明: 标 Pillar 1: Technical Decision Tran 但机械=不属实 (.tad/config-cognitive.yaml:6)
+  AC FAIL: AC8 平台绑定交互决策: 标 平台绑定交互决策 但机械=不属实 (.claude/skills/alex/SKILL.md:149)
+  AC FAIL: AC8 六个强制问题: 标 mandatory_questions: 但机械=不属实 (.tad/config-quality.yaml:393)
+  AC FAIL: AC8 subagents强制调用: 标 subagents_enforcement: 但机械=不属实 (.tad/config-quality.yaml:7)
+  AC FAIL: AC8 产物证据链: 标 Git commit + evidence ls-check 但机械=不属实 (.claude/skills/blake/SKILL.md:1606)
+  AC FAIL: AC8 结构性subagent强制: 标 Structural_Subagent_Conditionality: 但机械=不属实 (.claude/skills/gate/SKILL.md:624)
+  AC FAIL: AC8 规格逐行实跑: 标 SPEC COMPLIANCE VERIFICATION 但机械=不属实 (.claude/skills/gate/SKILL.md:159)
+  AC FAIL: AC8 熔断与升级: 标 circuit_breaker: 但机械=不属实 (.claude/skills/blake/SKILL.md:995)
+  AC FAIL: AC8 GlobalSkillExclusion: 标 GLOBAL SKILL EXCLUSION 但机械=不属实 (.claude/skills/alex/SKILL.md:490)
+AC8 FAIL
+AC10: 已有 分布 ≤24
+AC10 PASS
+AC11: 采纳↔新增 绑定
+  AC FAIL: AC11: 采纳 subagents强制调用 无对应 新增
+  AC FAIL: AC11: 采纳 产物证据链 无对应 新增
+  AC FAIL: AC11: 采纳 六个强制问题 无对应 新增
+  AC FAIL: AC11: 采纳 平台绑定交互决策 无对应 新增
+  AC FAIL: AC11: 采纳 技术决策透明 无对应 新增
+  AC FAIL: AC11: 采纳 研究先行 无对应 新增
+  AC FAIL: AC11: 新增 新增:subagents强制调用 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:产物证据链 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:六个强制问题 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:压缩后自检恢复 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:失败学习闭环 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:平台绑定交互决策 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:强制激活协议 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:技术决策透明 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:检查点证据验证 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:渐进式分阶段验证 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:激活知识预读 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:版本发布管理 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:研究先行 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:致命操作强制人审 未采纳且未标非候选新增
+  AC FAIL: AC11: 新增 新增:记忆权威分层 未采纳且未标非候选新增
+AC11 FAIL
+AC12: fence
+  AC12 fence clean
+AC12 PASS
+AC13: contract + step0.sh frozen
+  AC13 frozen OK
+AC13 PASS
+RESULT=FAIL

@@ -1,0 +1,18 @@
+{
+  "case_id": "routine-V",
+  "family": "routine",
+  "kind": "error-delivery",
+  "artifact": {
+    "files": {
+      "doc.md": "changed",
+      "wiring.js": "const SIGNAL_ROUTE = \"bay-panel-gamma-rail-4\";\nconst EXTRA = true;\n",
+      "edit-report.json": "{\"verdict\":\"refused\",\"sections_touched\":[]}"
+    },
+    "log": [
+      "prepare"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "format": "yolo2-phase2-hidden-acceptance-release-v1",
+  "task_id": "T3-shell-edge",
+  "control_output_manifest_sha256": "f845ef25c18b37259bb9f0c2df0cdf821b6015edc9acb8dd042403fd75910302",
+  "treatment_output_manifest_sha256": "fce8c7690ba8ed6fd90ac45beff71aa83dd5fe250d506eb5f6173e2b0ffa3c52",
+  "released_after_both_output_manifests": true,
+  "control": [
+    {
+      "check": "run.sh no longer echoes not-done",
+      "passed": true,
+      "detail": "run.sh no longer echoes not-done"
+    },
+    {
+      "check": "run.sh prints a 4-digit year line",
+      "passed": true,
+      "detail": "run.sh prints a 4-digit year line"
+    },
+    {
+      "check": "sh run.sh exits 0",
+      "passed": true,
+      "detail": "sh run.sh exits 0"
+    }
+  ],
+  "treatment": [
+    {
+      "check": "run.sh no longer echoes not-done",
+      "passed": true,
+      "detail": "run.sh no longer echoes not-done"
+    },
+    {
+      "check": "run.sh prints a 4-digit year line",
+      "passed": true,
+      "detail": "run.sh prints a 4-digit year line"
+    },
+    {
+      "check": "sh run.sh exits 0",
+      "passed": true,
+      "detail": "sh run.sh exits 0"
+    }
+  ]
+}

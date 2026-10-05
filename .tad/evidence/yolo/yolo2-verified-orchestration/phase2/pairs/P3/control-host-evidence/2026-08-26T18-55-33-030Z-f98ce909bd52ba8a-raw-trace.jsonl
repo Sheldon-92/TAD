@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a03f6c-39a8-73a2-96c0-5a52ac4b45ec --json --skip-git-repo-check AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nChange run.sh so the last line it prints is done (it currently prints not-done). Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "",
+  "elapsed_ms": 7019
+}

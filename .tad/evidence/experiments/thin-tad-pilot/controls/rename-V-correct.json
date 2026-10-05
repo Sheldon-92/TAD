@@ -1,0 +1,19 @@
+{
+  "case_id": "rename-V",
+  "family": "rename",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "migration-report.json": "{\"old_key\":\"cinderbrook-vault-key\",\"new_key\":\"emberfield-atlas-key\",\"sku_prefix_old\":\"CBV-\",\"sku_prefix_new\":\"EFA-\",\"retired_sku_active\":false}",
+      "storage.js": "const KEY=\"emberfield-atlas-key\";\nconst SKU_PREFIX=\"EFA-\";\n"
+    },
+    "log": [
+      "prepare",
+      "migrate",
+      "verify-absent"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

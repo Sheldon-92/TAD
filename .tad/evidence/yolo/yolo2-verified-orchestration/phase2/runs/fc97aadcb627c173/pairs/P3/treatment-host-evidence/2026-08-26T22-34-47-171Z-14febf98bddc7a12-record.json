@@ -1,0 +1,85 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "154bb171764111a77d12efbba724ea868e94a85ae5268233025ccbeead82cbc0",
+  "parser_version": "1",
+  "invocation_nonce": "14febf98bddc7a12",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04035-b6eb-7ca1-b32a-c823b742d803",
+  "resumed_from_session": "01a04035-b6eb-7ca1-b32a-c823b742d803",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "7713ee5bc120964f751e0c5c3dd382aac21dca56ba22afd102a53440cd8f952c",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P3/treatment-host-evidence/2026-08-26T22-34-47-171Z-14febf98bddc7a12-raw-output.txt",
+    "sha256": "17e4276b5614e73c449adda396582d68d0933d9e1eae646f29c94e316e461c3d"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P3/treatment-host-evidence/2026-08-26T22-34-47-171Z-14febf98bddc7a12-raw-trace.jsonl",
+    "sha256": "26a9e8b36318de145b3a595395558496b9d27e8da0a5a08ad4216729910302c5"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "0e8387f818c8bb89ad9b99d6af234620c2e9b0aafda68412564e9ec154085d6a",
+      "decision": "allowed",
+      "action_nonce": "1a3bc85b847ca5f5",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "run.sh",
+      "pre_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "post_sha256": "6afec9b0fe0828a1bdbe5c3aa3e11ec87e082acb9f9a7dde5ad2d8cf6d53ea27",
+      "observed_sha256": "6afec9b0fe0828a1bdbe5c3aa3e11ec87e082acb9f9a7dde5ad2d8cf6d53ea27",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "ffbe5cbd3cd369ac184ef99846d61f10e1f5d4699a0d0a253eb3e83e70007451",
+      "pre_manifest_sha256": "5149b0ae9adc876ba3b6f4cd0ad43a6d7ac34ccc65b02e45f588e0ec72289719",
+      "post_manifest_sha256": "e213c9c2290ee1801fbdaf3473eb6370d21500b8c8d66dc0a3d0b1e67e8de8ff",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 47929,
+    "output_tokens": 167,
+    "total_tokens": 48096,
+    "cached_input_tokens": 45568,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

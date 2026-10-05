@@ -1,0 +1,10 @@
+{
+  "format": "yolo2-phase2-output-manifest-v1",
+  "arm": "control",
+  "files": [
+    {
+      "path": "run.sh",
+      "sha256": "f0a40d6ef29b6a419937f239316904f6360c655efddcda09c1e18ac306a2dd65"
+    }
+  ]
+}

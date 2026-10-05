@@ -1,0 +1,11 @@
+{
+  "format": "yolo2-phase2-condition-judge-view-v1",
+  "pair_id": "P5",
+  "pass": 2,
+  "condition": "treatment",
+  "blind_label": "B",
+  "preferred": "TIE",
+  "score": 1,
+  "p0": 0,
+  "p1": 0
+}

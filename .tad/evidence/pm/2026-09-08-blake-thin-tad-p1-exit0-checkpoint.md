@@ -1,0 +1,21 @@
+# Checkpoint — Blake thin-tad-evaluation-p1 exit wake (post Infra +x re-dispatch)
+
+- when: ended 2026-09-08T01:58:58Z; wake ~2026-09-08T01:59:03Z
+- source: oc-run (opencode ledger; cursor ledger older 2026-09-04 ignored)
+- owner: 6cea3eb5-afd4-4cf9-bb80-9673fb7243e9 (TAD PM — match)
+- exit: 0
+- elapsed_s: 50
+- dir: /home/box/云同步/TAD
+- continue: no (fresh session after Infra chmod +x)
+- prompt: You are Blake. Follow TAD. Human: 可以开. Handoff: .tad/active/handoffs/HANDOFF-20260907-thin-tad-evaluation-p1.md
+- evidence observed:
+  - /home/box/pm/last-opencode.md
+  - .tad/evidence/pm/last-opencode.POINTER.md
+  - empty dirs only: .tad/evidence/experiments/thin-tad-pilot/{arms,cases,controls,exports,manifests,oracles/review,rehearsal}/
+  - empty: .tad/evidence/reviews/blake/thin-tad-evaluation-p1/ · acceptance-tests/thin-tad-evaluation-p1/
+  - no SOURCE-MAP.md · no experiments/thin-tad-pilot/{README,pilot.mjs,pilot.test.mjs} · no COMPLETION
+- tail: hashed several §6.1 sources; external_directory auto-reject on agent-workshop / Terminal-Mission-Control / dual-mac-workspace-sync / grok-cloud archive Reads; 买卖 journal Reads in flight when process exited
+- dual-ledger: cursor ended 2026-09-04 — not selected
+- verdict: PARTIAL
+- auto_continue_n: 0 → 1
+- next: Blake `-c` same handoff (charter §3.5; human 可以开 still in force; stop+报人 only at auto_continue_n=2)

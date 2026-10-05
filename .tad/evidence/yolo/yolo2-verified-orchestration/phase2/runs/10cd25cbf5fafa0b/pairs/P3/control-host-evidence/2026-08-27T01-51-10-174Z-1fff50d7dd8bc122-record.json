@@ -1,0 +1,144 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "3a8673fee574f9c69565eec8cdc35cffc0448e75c795cb03fbfa52a40ccd3e84",
+  "parser_version": "1",
+  "invocation_nonce": "1fff50d7dd8bc122",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a040e9-450a-7a90-a3e2-a477d7090702",
+  "resumed_from_session": "01a040e9-450a-7a90-a3e2-a477d7090702",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "ec2367a2aefd7dc69a16c90a2c442a25180f14b9c629c42f1afd762c530ebc4a",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a040e9-450a-7a90-a3e2-a477d7090702",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nFix run.sh so it prints today's year using a portable form working on BOTH GNU date and BSD date (hint: BSD date -j needs -f or use cut of a long format). Keep it POSIX /bin/sh compatible. Then stop.\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 24913
+  },
+  "native_event_count": 2,
+  "native_event_kinds": [
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-control/run.sh"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-control/run.sh"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "pre_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "029ee05e2ddf81ffd109d05d41a0cc2627f04cdead6d869781a992938ab8dfbd",
+    "handoff.md": "b276f08f98bd968edbbf9f31db4d0a5fb12f1f11ed9700b1fe8a231761697914",
+    "oracle.txt": "7f666ec7e26e47908432e1e3be7a03dbce038a5fc5ed91aaf7b2e53c2e9809a3",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "49f9496919f2c4ff0ce62c9b6ca371c50e20612a20113407c72b30fa8ba5510f",
+    "run.sh": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71"
+  },
+  "post_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "029ee05e2ddf81ffd109d05d41a0cc2627f04cdead6d869781a992938ab8dfbd",
+    "handoff.md": "b276f08f98bd968edbbf9f31db4d0a5fb12f1f11ed9700b1fe8a231761697914",
+    "oracle.txt": "7f666ec7e26e47908432e1e3be7a03dbce038a5fc5ed91aaf7b2e53c2e9809a3",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "49f9496919f2c4ff0ce62c9b6ca371c50e20612a20113407c72b30fa8ba5510f",
+    "run.sh": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/10cd25cbf5fafa0b/pairs/P3/control-host-evidence/2026-08-27T01-51-10-174Z-1fff50d7dd8bc122-raw-output.txt",
+    "sha256": "856879678b7092ef6f03c2ab0138fbc9f1b7873418a5717c2093fdf6cfdc44f4"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/10cd25cbf5fafa0b/pairs/P3/control-host-evidence/2026-08-27T01-51-10-174Z-1fff50d7dd8bc122-raw-trace.jsonl",
+    "sha256": "856879678b7092ef6f03c2ab0138fbc9f1b7873418a5717c2093fdf6cfdc44f4"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "18ad046445a4f1c2665b2ad10a843e05311b69a9f3bafbe6c07a8e343727d15e",
+      "decision": "allowed",
+      "action_nonce": "7bd056119c607a8c",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "run.sh",
+      "pre_sha256": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71",
+      "post_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "observed_sha256": "513956e4536df416b9784ae269a5787bde110dd5b898307aa72570898f5973d9",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "08fe1f463ce6f8d1495cfaf7c84ca993bcb583df31667d26c7c7dca236f5fcb3",
+      "pre_manifest_sha256": "912f783b19f75bb196df47748ac209e31451aa0183b67e978cc8a807e4eb5004",
+      "post_manifest_sha256": "5fbe13adf86704bcdf849dc10369d38768d6d011438552d6b80372c403f4ba8d",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 50359,
+    "output_tokens": 654,
+    "total_tokens": 51013,
+    "cached_input_tokens": 44544,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

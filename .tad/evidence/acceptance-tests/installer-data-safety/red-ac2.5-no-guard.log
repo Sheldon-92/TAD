@@ -1,0 +1,29 @@
+=== RED PROBE AC2.5 installer-destructive-guard (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION: bash release-verify.sh installer-destructive-guard . should exit 0---
+Usage:
+  release-verify.sh structural <src_root> <target_root>
+  release-verify.sh version <repo_root> <expected_version> [<old_version>]
+  release-verify.sh version-sweep <repo_root> <expected_version>
+  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]
+  release-verify.sh migration <repo_root> [<expected_version>]
+  release-verify.sh parity [--fix] <repo_root>
+  release-verify.sh platform-skills <source_root> <target_root>
+RC=
+RC=2 (expected 0, got 2 = RED)
+Usage:
+  release-verify.sh structural <src_root> <target_root>
+  release-verify.sh version <repo_root> <expected_version> [<old_version>]
+  release-verify.sh version-sweep <repo_root> <expected_version>
+  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]
+  release-verify.sh migration <repo_root> [<expected_version>]
+  release-verify.sh parity [--fix] <repo_root>
+  release-verify.sh platform-skills <source_root> <target_root>

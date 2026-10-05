@@ -1,0 +1,25 @@
+{
+  "format": "yolo2-phase2-evidence-bootstrap-v1",
+  "task_id": "T5-hidden-business",
+  "arm": "treatment",
+  "source_task": ".tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/T5-hidden-business/task.json",
+  "destination_worktree": "T5-hidden-business-treatment",
+  "copied_at": "2026-08-27T00:00:00.000Z",
+  "files": [
+    {
+      "source": "dataset/T5-hidden-business/app.js",
+      "destination": "app.js",
+      "sha256": "23f4382db03786db366309b3205ecac1abc7c3f675ac4eaf3ddc81278080703a"
+    },
+    {
+      "source": "dataset/T5-hidden-business/tests.js",
+      "destination": "tests.js",
+      "sha256": "8e7286e2362666fa693e560f819b954293fc2e8c147af98edc4295b8173c4a89"
+    },
+    {
+      "source": "dataset/T5-hidden-business/totals.js",
+      "destination": "totals.js",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

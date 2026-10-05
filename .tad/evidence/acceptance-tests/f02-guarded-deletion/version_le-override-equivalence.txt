@@ -1,0 +1,12 @@
+--- tad.sh 原版 ---
+  version_le(2.0.0,2.42.0)=true
+  version_le(2.42.0,2.0.0)=false
+  version_le(2.42.0,2.42.0)=true
+  version_le(2.9.0,2.10.0)=true
+  version_le(2.10.0,2.9.0)=false
+--- 引擎覆盖后 ---
+  version_le(2.0.0,2.42.0)=true
+  version_le(2.42.0,2.0.0)=false
+  version_le(2.42.0,2.42.0)=true
+  version_le(2.9.0,2.10.0)=true
+  version_le(2.10.0,2.9.0)=false

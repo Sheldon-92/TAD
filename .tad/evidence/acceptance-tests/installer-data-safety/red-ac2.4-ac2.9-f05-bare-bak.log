@@ -1,0 +1,41 @@
+=== RED PROBE F-05 (AC2.4 + AC2.9) bare .bak clobber (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION AC2.4: marker-less CLAUDE.md -> timestamped (non-.bak) backup must exist---
+---ASSERTION AC2.9: pre-existing user CLAUDE.md.bak must survive byte-identical; new backups namespaced+timestamped---
+---CODE EVIDENCE (bare .bak sites, must DISAPPEAR post-fix):---
+1538:    cp "CLAUDE.md" "CLAUDE.md.bak"
+1558:        rm -f "CLAUDE.md.bak"
+1561:        log_warn "CLAUDE.md backed up to CLAUDE.md.bak (no merge marker found)"
+---EXPECTED: namespaced timestamped pattern (e.g., CLAUDE.md.backup.* or .tad.backup.* style); GOT: bare .bak---
+WARN: CLAUDE.md backed up to CLAUDE.md.bak (no merge marker found)
+WARN: If you had project-specific rules, restore them from the backup
+---POST TARGET LS---
+total 16
+drwxr-xr-x@ 4 sheldonzhao  wheel  128 Sep  3 13:40 .
+drwx------@ 8 sheldonzhao  wheel  256 Sep  3 13:40 ..
+-rw-r--r--@ 1 sheldonzhao  wheel   54 Sep  3 13:40 CLAUDE.md
+-rw-r--r--@ 1 sheldonzhao  wheel   33 Sep  3 13:40 CLAUDE.md.bak
+---POST CLAUDE.md---
+# Framework CLAUDE
+<!-- TAD:PROJECT-CONTENT-BELOW -->
+---POST CLAUDE.md.bak (if exists)---
+# My custom rules
+No marker here
+---TIMESTAMPED BACKUPS (expected, should be MISSING pre-fix)---
+(no timestamped backups = RED for AC2.4)
+---DIFF user .bak pre vs post (expected identical for AC2.9, will show CLOBBER pre-fix)---
+FAIL-RED: user CLAUDE.md.bak NOT identical (clobbered) -- pre-fix defect confirmed
+Pre snap:
+USER-BAK-ORIGINAL-BYTES-12345
+Post:
+# My custom rules
+No marker here
+RC-ASSERTION: AC2.4 requires timestamped non-.bak backup; AC2.9 requires user .bak identical -- BOTH FAIL pre-fix = RED

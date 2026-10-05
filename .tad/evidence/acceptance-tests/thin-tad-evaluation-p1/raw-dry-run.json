@@ -1,0 +1,56 @@
+{
+  "command": "dry-run",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "runs": 48,
+      "stable_twice": true,
+      "result": "OK"
+    }
+  ],
+  "summary": "12 cases × 2 arms × 2 replicates offline; H/V split; stable across two passes",
+  "tables": {
+    "H": {
+      "role": "calibration",
+      "runs": 24,
+      "ACCEPTED": 20,
+      "REJECTED": 0,
+      "UNSCORED": 4,
+      "INVALID": 0
+    },
+    "V": {
+      "role": "holdout",
+      "runs": 24,
+      "ACCEPTED": 20,
+      "REJECTED": 0,
+      "UNSCORED": 4,
+      "INVALID": 0
+    },
+    "stable_projection": "d4c0f9b053d6f4098cb2c3f52a1044df8d9531262002d436ec6faacc43bfd8a7"
+  },
+  "side_effect_policy": {
+    "subprocess": "execFileSync only; no shell; no -c; fixed cwd=REPO_ROOT",
+    "allowed_binary": "git",
+    "allowed_forms": [
+      "ls-tree edce76067f31127d06a1bdbbf3407578d25c81ce -- <allowlisted-path>",
+      "show edce76067f31127d06a1bdbbf3407578d25c81ce:<allowlisted-path>"
+    ],
+    "forbidden_examples": [
+      "curl",
+      "node",
+      "opencode",
+      "git push",
+      "any shell",
+      "out-of-scope paths",
+      "other revisions"
+    ],
+    "note": "All other process requests are rejected. Observed argv is logged in dry-run output.",
+    "observed_git_argv": []
+  },
+  "disclaimers": [
+    "synthetic artifacts only; no model started; no task-solving measured",
+    "arm loading fidelity NOT verified (see verify-arms fidelity disclaimer)",
+    "OS/container isolation NOT established (same-shell readable; see export manifest)"
+  ]
+}

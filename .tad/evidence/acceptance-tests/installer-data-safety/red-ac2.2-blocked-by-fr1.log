@@ -1,0 +1,17 @@
+=== RED PROBE ac2.2 user-file matrix (unmodified tree, blocked by FR-1) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION AC2.2: planted user files (.codex/config.toml, .codex/prompts/mine.md, .gemini/settings.json, AGENTS.md/GEMINI.md/CLAUDE.md) -> post-install diff -r empty (offline via --source)---
+---BLOCKER: FR-1 --source missing (see red-ac2.1 log: unknown option), offline matrix cannot run pre-fix = RED---
+(no --source arg-parse case = RED, confirms blocker)
+---PRESERVATION LOGIC EXISTS (code inspection, will be regression-guarded post-FR-1):---
+copy_framework_files respects deny-list + platform deny; root files backup before overwrite (FR-4b); .codex only writes hooks.json; merge preserves marker content
+947:                        && log_info "  → Backed up existing $rf → $(basename "$_rf_backup")"
+RC-ASSERTION: expected offline diff -r empty, GOT: cannot run offline (no --source) = RED (blocked)

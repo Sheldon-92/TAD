@@ -1,0 +1,25 @@
+task_id: TASK-20260903-LITEMUTE
+handoff: .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+current_iteration: 1
+layer1_retries: 0
+layer2_rounds: 0
+last_completed_layer: layer1
+last_error_category: null
+consecutive_same_error: 0
+reflection_count: 0
+last_reflection_summary: ""
+escalation_assessment: ""
+task_type: doc-only
+express: true
+e2e_required: no
+research_required: no
+skip_knowledge_assessment: yes
+started_at: "2026-09-06T17:50:00Z"
+layer1_completed_at: "2026-09-06T18:05:00Z"
+layer1_results:
+  AC1: PASS
+  AC2: PASS
+  AC3: PASS
+  AC4: PASS
+  AC5: PASS_EQUIVALENT
+  AC5_note: "verbatim grep -v ^\\?\\? is a BSD false-FAIL; intent command grep -v '^??' prints AGENTS.md CLAUDE.md"

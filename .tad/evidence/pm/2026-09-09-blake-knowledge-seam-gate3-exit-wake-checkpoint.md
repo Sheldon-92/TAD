@@ -1,0 +1,22 @@
+# exit-wake checkpoint · Blake knowledge-seam Gate3
+
+- source: oc-run (webhook)
+- owner: 6cea3eb5-afd4-4cf9-bb80-9673fb7243e9 (matches TAD PM; take-over OK)
+- note: `/home/box/pm/last-opencode-owner.txt` stale=`86a77c94…` (workshop); ignored in favor of webhook + last-opencode.md
+- exit: 0
+- elapsed_s: 1613
+- ended: 2026-09-09T00:38:13Z
+- dir: /home/box/云同步/TAD
+- continue: no
+- model: opencode-go/muse-spark-1.3-contributor
+- task: TASK-20260908-KNOWLEDGE-SEAM-ISOLATION / HANDOFF-20260908-knowledge-seam-isolation
+- evidence:
+  - COMPLETION `.tad/active/handoffs/COMPLETION-20260908-knowledge-seam-isolation.md` (gate3_verdict: pass)
+  - Gate3 `.tad/evidence/reviews/gate3-evidence-knowledge-seam-isolation.md` (verdict PASS)
+  - Layer2 spec/code/test PASS (P0=0 P1=0): `2026-09-09-gate3-layer2-{spec-compliance,code-review,test-runner}-knowledge-seam.md`
+  - commits `e6e2126e` (impl) + `65963d6b` (COMPLETION hash); not pushed
+  - tool `.tad/hooks/lib/quarantine-framework-pk.sh`
+- learning_path: 无显式「学习路径」行（黄灯观察，不阻断 Gate）
+- verdict: PASS
+- next: Alex Gate4 收口（auth.md L2 Routine Gate4；不问人要不要验收）；auto_continue_n→1；新 Cursor 会话（非 -c 跨角色）
+- stop_conditions: push/release/tag = L3；auto_continue_n 到 2 停+报人

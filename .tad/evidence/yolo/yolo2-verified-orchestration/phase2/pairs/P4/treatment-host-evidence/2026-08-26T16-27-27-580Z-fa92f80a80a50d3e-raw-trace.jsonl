@@ -1,0 +1,6 @@
+{
+  "cmd": "exec resume 01a03ee5-2452-7422-94cd-c2bd15fea19d --json --skip-git-repo-check AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nusage.md says \"usage for 0.9.0\". Change that line to \"usage for 1.0.0\". Nothing else changes. Then stop.\nWhen finished print DONE.",
+  "exit": 0,
+  "stderr": "2026-08-26T16:27:33.277922Z ERROR codex_core::tools::router: error=patch rejected: writing outside of the project; rejected by user approval settings\n",
+  "elapsed_ms": 12274
+}

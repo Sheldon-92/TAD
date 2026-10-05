@@ -1,0 +1,250 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "56acf88d128d4e79e437930ed712763d162ee600f991fdaf7c3fe40e94be8d15",
+  "parser_version": "1",
+  "invocation_nonce": "b52dc13dda51b159",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04af1-6dfb-7ea3-83cd-ddeb418fb78a",
+  "resumed_from_session": "01a04af1-6dfb-7ea3-83cd-ddeb418fb78a",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "48f43641cb240cf8145c24d1a613b00e54f3bfe463d32da5887619b3df7460f3",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04af1-6dfb-7ea3-83cd-ddeb418fb78a",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nFix run.sh so it prints today's year using a portable form working on BOTH GNU date and BSD date (hint: BSD date -j needs -f or use cut of a long format). Keep it POSIX /bin/sh compatible. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "2026-08-29T00:38:06.683808Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T00:38:06.724450Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T00:38:18.410875Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T00:38:28.166885Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T00:38:41.373359Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n2026-08-29T00:39:05.257473Z ERROR codex_models_manager::manager: failed to refresh available models: timeout waiting for child process to exit\n",
+    "elapsed_ms": 73934
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_index": 3,
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "87cc526add67ec1dd0fe03c148ec9f4e994adfca08a3fc746a3a03ab99138e5e",
+      "paths": []
+    },
+    {
+      "event_index": 4,
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "87cc526add67ec1dd0fe03c148ec9f4e994adfca08a3fc746a3a03ab99138e5e",
+      "paths": []
+    },
+    {
+      "event_index": 5,
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-treatment/run.sh"
+      ]
+    },
+    {
+      "event_index": 6,
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-treatment/run.sh"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "fdb6c12e86c831ae53233cdd9809b77121791e72ded6fb63ee467f1cb13e226b",
+    "handoff.md": "7b5d312021c315d15983960b1c8fe55ce76461dcb1bcca81bc63b99682981b0b",
+    "oracle.txt": "3c64e213ed5480b1a7b4f3d41c6455a5df3a042866ee298cda626d3a85ea7a27",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "run.sh": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71"
+  },
+  "post_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "goal-spec.json": "fdb6c12e86c831ae53233cdd9809b77121791e72ded6fb63ee467f1cb13e226b",
+    "handoff.md": "7b5d312021c315d15983960b1c8fe55ce76461dcb1bcca81bc63b99682981b0b",
+    "oracle.txt": "3c64e213ed5480b1a7b4f3d41c6455a5df3a042866ee298cda626d3a85ea7a27",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "13a3d385fccc4bb2178e55279c93a90d3a71d5c2521d48775869d310c7757035",
+    "run.sh": "8b6c7c0d0c64c76b72d40b691d41fff677838287abcd44f9678de6700621f50f"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/515cda06ccc4819d/pairs/P3/treatment-host-evidence-attempt-5/2026-08-29T00-38-01-420Z-b52dc13dda51b159-raw-output.txt",
+    "sha256": "a575bc66f133bc2cf72e3d353ac8d12330e0b4e2027233caf2fb8b10a01b5776"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/515cda06ccc4819d/pairs/P3/treatment-host-evidence-attempt-5/2026-08-29T00-38-01-420Z-b52dc13dda51b159-raw-trace.jsonl",
+    "sha256": "a575bc66f133bc2cf72e3d353ac8d12330e0b4e2027233caf2fb8b10a01b5776"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "item_1-0001",
+      "native_event_index": 3,
+      "native_event_type": "item.started",
+      "native_item_id": "item_1",
+      "native_item_type": "command_execution",
+      "tool": "command_execution",
+      "args_sha256": "87cc526add67ec1dd0fe03c148ec9f4e994adfca08a3fc746a3a03ab99138e5e",
+      "invocation_args_sha256": "87cc526add67ec1dd0fe03c148ec9f4e994adfca08a3fc746a3a03ab99138e5e",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "2476de3141e4c3d5c24256c77b0e28e7c006ad3e45f3affcc190b8ae8eb4f53c",
+      "post_manifest_sha256": "0fec0b78746a17b76454124e867ee05e27ad032d36fedcdbe6808a386992985b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_1-0002",
+      "native_event_index": 4,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_1",
+      "native_item_type": "command_execution",
+      "tool": "command_execution",
+      "args_sha256": "87cc526add67ec1dd0fe03c148ec9f4e994adfca08a3fc746a3a03ab99138e5e",
+      "invocation_args_sha256": "87cc526add67ec1dd0fe03c148ec9f4e994adfca08a3fc746a3a03ab99138e5e",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "2476de3141e4c3d5c24256c77b0e28e7c006ad3e45f3affcc190b8ae8eb4f53c",
+      "post_manifest_sha256": "0fec0b78746a17b76454124e867ee05e27ad032d36fedcdbe6808a386992985b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_2-0003",
+      "native_event_index": 5,
+      "native_event_type": "item.started",
+      "native_item_id": "item_2",
+      "native_item_type": "file_change",
+      "tool": "file_change",
+      "args_sha256": "2f25b9736514975fe129da1d83b6aa4e2cea0731a6f95410ae3a3400c29cc898",
+      "invocation_args_sha256": "2f25b9736514975fe129da1d83b6aa4e2cea0731a6f95410ae3a3400c29cc898",
+      "decision": "allowed",
+      "action_nonce": null,
+      "action_id": null,
+      "round_id": "R-01",
+      "target": null,
+      "pre_sha256": null,
+      "post_sha256": null,
+      "observed_sha256": null,
+      "effect_manifest_sha256": null,
+      "effect_paths": [],
+      "effect_fingerprint": null,
+      "pre_manifest_sha256": "2476de3141e4c3d5c24256c77b0e28e7c006ad3e45f3affcc190b8ae8eb4f53c",
+      "post_manifest_sha256": "0fec0b78746a17b76454124e867ee05e27ad032d36fedcdbe6808a386992985b",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": []
+    },
+    {
+      "native_call_id": "item_2-0004",
+      "native_event_index": 6,
+      "native_event_type": "item.completed",
+      "native_item_id": "item_2",
+      "native_item_type": "file_change",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "decision": "allowed",
+      "action_nonce": "e2959aa9c91169b3",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "run.sh",
+      "pre_sha256": "7871fce5b30612a8efb4e2da08756cb6ebd8a0705fc9d964711b54f7a2c62c71",
+      "post_sha256": "8b6c7c0d0c64c76b72d40b691d41fff677838287abcd44f9678de6700621f50f",
+      "observed_sha256": "8b6c7c0d0c64c76b72d40b691d41fff677838287abcd44f9678de6700621f50f",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "6b873f36b1c2d3ae704db6415f62f242823881fb39cc9fa68f8bbcb7cdb307e4",
+      "pre_manifest_sha256": "2476de3141e4c3d5c24256c77b0e28e7c006ad3e45f3affcc190b8ae8eb4f53c",
+      "post_manifest_sha256": "0fec0b78746a17b76454124e867ee05e27ad032d36fedcdbe6808a386992985b",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 72387,
+    "output_tokens": 2660,
+    "total_tokens": 75047,
+    "cached_input_tokens": 62720,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

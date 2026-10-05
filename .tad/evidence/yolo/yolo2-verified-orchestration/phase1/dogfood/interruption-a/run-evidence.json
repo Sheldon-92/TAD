@@ -1,0 +1,50 @@
+{
+  "format": "yolo-recovery-dogfood-evidence-v1",
+  "run_id": "interruption-a",
+  "interruption_stage": "after-verified-slice",
+  "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+  "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-a",
+  "fresh_session": {
+    "session_id": "recover-a@ses_fc595d5ceffeVUmoi9inav0RXG",
+    "prior_transcript_provided": false,
+    "prompt_path": "interruption-a/fresh-prompt.txt",
+    "prompt_sha256": "ae99c0dfc8ac1bb9906f35056bb1dea700359fb5f8185f6df79ec1caee7266f1"
+  },
+  "assertion": {
+    "path": "interruption-a/assertion.md",
+    "sha256": "f4d4dd15cb450f62fb0126cc0ad22d9051fd39b66d751cc9550a8e237c36c3d4",
+    "author_id": "recover-a"
+  },
+  "oracle": {
+    "path": "oracle-interruption-a.md",
+    "sha256": "78b47ceecc3cd068467181ab423cd6eb415f59e6d72db1aa123e1f77fe074112",
+    "frozen_before_run": true
+  },
+  "review": {
+    "path": "interruption-a/review.md",
+    "sha256": "44674317526ebac1d5c3cdb9102bc94447931859aef5bfc8b10143fc81c1b8cf",
+    "author_id": "review-a",
+    "independent": true,
+    "assertion_sha256": "f4d4dd15cb450f62fb0126cc0ad22d9051fd39b66d751cc9550a8e237c36c3d4",
+    "oracle_sha256": "78b47ceecc3cd068467181ab423cd6eb415f59e6d72db1aa123e1f77fe074112",
+    "hard_total": 8,
+    "hard_correct": 8,
+    "soft_score": 1,
+    "verdict": "PASS"
+  },
+  "continuation": {
+    "path": "interruption-a/continuation.md",
+    "sha256": "8aed3230e1fc411e24f35af3043bc46829ddf1bf5574a1ef80033621d0a2cf85",
+    "repeated_verified_slice": 0
+  },
+  "gate": {
+    "path": "interruption-a/gate.md",
+    "sha256": "b19d9e67a587746cb61fe4671aa73fbfe1ddd012d36311184e3f553ed342f729",
+    "verdict": "PASS"
+  },
+  "receipt": {
+    "path": "interruption-a/receipt.json",
+    "sha256": "132c5fe5fa9f0a71ee76207a161ee02eb9166d7708023eb016d9317cb84ffcef"
+  }
+}

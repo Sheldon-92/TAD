@@ -1,0 +1,14 @@
+GitHub Registry scan (*research-github scan protocol)
+executed: 2026-09-06 (session resume after 2026-09-04 interrupt)
+last_scan written: 2026-09-04 (accepted AC4 literal)
+lists_checked: 54
+updates: 33
+new_candidates_pending: 43
+errors: 0
+REGISTRY.yaml mutated: no
+accepted prior candidates GC'd: 4 (already in REGISTRY)
+yq counts (source of truth after write):
+  updates: 33
+  new_candidates: 43
+  last_scan: 2026-09-04
+carrier: .tad/github-registry/scan-log.yaml

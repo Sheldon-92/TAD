@@ -1,0 +1,111 @@
+=== RED PROBE F-07 (AC2.10) cwd-extract + tar-slip + TAD-main clobber (unmodified tree) ===
+HEAD: bba6ce846bd7c25671202a87d9a5ae0495114e1e
+STATUS:
+ M NEXT.md
+?? .tad/active/designs/DESIGN-20260903-framework-health-phase2-remainder.md
+?? .tad/active/handoffs/HANDOFF-20260903-bugfix-lite-mute.md
+?? .tad/active/handoffs/HANDOFF-20260903-framework-health-phase2-remainder.md
+?? .worktrees/
+?? progress/
+---TARGET FILES DIFF (must be empty)---
+---ASSERTION AC2.10: user TAD-main/ identical; extraction in temp dir (root+parent sentinels identical); malicious tar rejected pre-extraction---
+---CODE EVIDENCE: unpinned cwd-extract (no mktemp, no validation)---
+        # Download (--http1.1 fallback for GitHub HTTP2 framing errors)
+        curl -sSL "$DOWNLOAD_URL" | tar -xz 2>/dev/null || \
+        curl -sSL --http1.1 "$DOWNLOAD_URL" | tar -xz
+        TAD_SRC="TAD-main"
+        # FR-1b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 标记此 TAD_SRC 是本次下载
+        # 产生的临时目录，仅这种情况才可在收尾时 rm -rf 它。
+        TAD_SRC_DOWNLOADED=1
+
+        # AC2: derive the authoritative version from the freshly-downloaded source's
+        # .tad/version.txt — this runs AFTER the download, so the derived value is
+        # fresh by construction; the state gate runs earlier and must rely on
+        # probe_remote_version / the ROOT FIX block, not the literal above.
+        derive_target_version "$TAD_SRC"
+        log_info "  → Source version: v${TARGET_VERSION}"
+    fi
+---CODE EVIDENCE: pinned has mktemp but NO tar-slip member validation (only valid-tar check)---
+download_pinned_source() {
+    local ref="$1" expected="$2"
+    TAD_SRC_DOWNLOADED=0
+    local tmp_root
+    tmp_root=$(mktemp -d "${TMPDIR:-/tmp}/tad-update.XXXXXX") || { log_error "mktemp failed for pinned download"; exit 1; }
+    chmod 700 "$tmp_root"
+    local archive="$tmp_root/tad.tar.gz"
+    local tag_url="https://github.com/Sheldon-92/TAD/archive/refs/tags/${ref}.tar.gz"
+
+    log_info "  → Downloading pinned tag archive ${ref}..."
+    curl -fsSL --max-time 60 "$tag_url" -o "$archive" 2>/dev/null || {
+        log_error "Download failed for ${tag_url}"
+        rm -rf "$tmp_root"; exit 1
+    }
+    if [ ! -s "$archive" ]; then
+        log_error "Downloaded archive is empty — refusing to continue"
+        rm -rf "$tmp_root"; exit 1
+    fi
+    if ! tar -tzf "$archive" >/dev/null 2>&1; then
+        log_error "Downloaded payload is not a valid tar archive — refusing to extract"
+        rm -rf "$tmp_root"; exit 1
+    fi
+    mkdir -p "$tmp_root/src"
+    tar -xzf "$archive" -C "$tmp_root/src" 2>/dev/null || {
+        log_error "Archive extraction failed"
+        rm -rf "$tmp_root"; exit 1
+    }
+
+    # Discover exactly one safe extracted source root.
+    local roots=0 root=""
+    local entry
+    for entry in "$tmp_root"/src/*; do
+        [ -e "$entry" ] || continue
+        if [ ! -d "$entry" ] || [ -L "$entry" ]; then
+            log_error "Unsafe extracted root: $entry (must be a real directory, not a link)"
+            rm -rf "$tmp_root"; exit 1
+        fi
+        roots=$((roots + 1))
+        root="$entry"
+    done
+    if [ "$roots" -ne 1 ]; then
+        log_error "Expected exactly one extracted source root, found $roots"
+        rm -rf "$tmp_root"; exit 1
+    fi
+
+    TAD_SRC="$root"
+    TAD_TMP_ROOT="$tmp_root"
+
+    # Authoritative version comparison BEFORE any project mutation. Fail CLOSED
+---ASSERTION: tar member listing validation (tar -tvzf absolute/.. escaping-link rejection) MUST exist; GOT: none---
+1645:    if ! tar -tzf "$archive" >/dev/null 2>&1; then
+1365:                    if printf '%s' "$target" | grep -qE '(^|/)\.\.?(/|$)'; then
+---TAD-main handling: unpinned assumes TAD-main in cwd (clobbers user dir)---
+1487:    # Remove a download-created source tree (TAD-main) so a failed run leaves
+1935:        TAD_SRC="TAD-main"
+SANDBOX=/tmp/tad-red-f07.J5sWsM
+TAD-main
+TAD-main-user-file.txt
+
+/tmp/tad-red-f07.J5sWsM/target/TAD-main:
+precious.txt
+---Simulated cwd-extract: tar containing TAD-main/attacker.txt extracted in target cwd would merge/clobber user TAD-main/---
+Payload members:
+TAD-main/
+TAD-main/attacker.txt
+Extracting payload in TARGET cwd (pre-fix unpinned behavior: curl|tar -xz in cwd):
+Post-extract target:
+TAD-main
+TAD-main-user-file.txt
+
+/tmp/tad-red-f07.J5sWsM/target/TAD-main:
+attacker.txt
+precious.txt
+TAD-main
+TAD-main-user-file.txt
+
+/tmp/tad-red-f07.J5sWsM/target/TAD-main:
+attacker.txt
+precious.txt
+precious.txt survived this benign payload (but attacker.txt now mixed in user dir = CLobber via merge)
+FAIL-RED CONFIRMED: attacker payload merged into user TAD-main/ (no temp-dir isolation) = RED
+---Malicious tar-slip (absolute + .. members) would NOT be rejected pre-fix (no validation) = RED---
+Pre-fix has zero tar-slip rejection branches (see grep above) = RED

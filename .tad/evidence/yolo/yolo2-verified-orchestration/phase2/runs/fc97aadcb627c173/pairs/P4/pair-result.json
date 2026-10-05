@@ -1,0 +1,161 @@
+{
+  "format": "yolo2-phase2-pair-result-v1",
+  "pair_id": "P4",
+  "task_id": "T4-cross-file",
+  "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+  "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+  "capability": {
+    "control_hidden_pass": true,
+    "treatment_hidden_pass": true
+  },
+  "repeated_verified_action": 0,
+  "wrong_or_unauthorized_next_action": 0,
+  "tokens": {
+    "control": 102210,
+    "treatment": 107150
+  },
+  "control": {
+    "format": "yolo2-phase2-arm-result-v1",
+    "arm": "control",
+    "task": "T4-cross-file",
+    "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+    "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+    "base_commit": "6a2bb76d411b2a6ef92d77dd8ff7d9532dcf69fc",
+    "final_hidden_acceptance": [
+      {
+        "check": "CHANGELOG.md first line == 'v1.0.0'",
+        "passed": true,
+        "detail": "CHANGELOG.md first line == 'v1.0.0'"
+      },
+      {
+        "check": "usage.md contains 1.0.0 and not 0.9.0",
+        "passed": true,
+        "detail": "usage.md contains 1.0.0 and not 0.9.0"
+      },
+      {
+        "check": "config.json unchanged",
+        "passed": true,
+        "detail": "config.json unchanged"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "CHANGELOG.md first line == 'v1.0.0'",
+            "passed": true,
+            "detail": "CHANGELOG.md first line == 'v1.0.0'"
+          },
+          {
+            "check": "usage.md contains 1.0.0 and not 0.9.0",
+            "passed": false,
+            "detail": "usage.md contains 1.0.0 and not 0.9.0"
+          },
+          {
+            "check": "config.json unchanged",
+            "passed": true,
+            "detail": "config.json unchanged"
+          }
+        ],
+        "tokens": 43853
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "CHANGELOG.md first line == 'v1.0.0'",
+            "passed": true,
+            "detail": "CHANGELOG.md first line == 'v1.0.0'"
+          },
+          {
+            "check": "usage.md contains 1.0.0 and not 0.9.0",
+            "passed": true,
+            "detail": "usage.md contains 1.0.0 and not 0.9.0"
+          },
+          {
+            "check": "config.json unchanged",
+            "passed": true,
+            "detail": "config.json unchanged"
+          }
+        ],
+        "tokens": 58357
+      }
+    ],
+    "tokens_total": 102210
+  },
+  "treatment": {
+    "format": "yolo2-phase2-arm-result-v1",
+    "arm": "treatment",
+    "task": "T4-cross-file",
+    "mechanism_sha256": "fc97aadcb627c173e31d5d5eede1c6a91a366527d1be36d1a1565cb40fdf797a",
+    "task_sha256": "d27da0017c33bf365e12c3779c13af13da6bf0cac4812786356c3a9c1082f37b",
+    "base_commit": "61a78008f5307494f22f4f604d7f5c4e5ae50e4e",
+    "final_hidden_acceptance": [
+      {
+        "check": "CHANGELOG.md first line == 'v1.0.0'",
+        "passed": true,
+        "detail": "CHANGELOG.md first line == 'v1.0.0'"
+      },
+      {
+        "check": "usage.md contains 1.0.0 and not 0.9.0",
+        "passed": true,
+        "detail": "usage.md contains 1.0.0 and not 0.9.0"
+      },
+      {
+        "check": "config.json unchanged",
+        "passed": true,
+        "detail": "config.json unchanged"
+      }
+    ],
+    "rounds": [
+      {
+        "round_id": "R-01",
+        "slice": "S1",
+        "hidden": [
+          {
+            "check": "CHANGELOG.md first line == 'v1.0.0'",
+            "passed": true,
+            "detail": "CHANGELOG.md first line == 'v1.0.0'"
+          },
+          {
+            "check": "usage.md contains 1.0.0 and not 0.9.0",
+            "passed": false,
+            "detail": "usage.md contains 1.0.0 and not 0.9.0"
+          },
+          {
+            "check": "config.json unchanged",
+            "passed": true,
+            "detail": "config.json unchanged"
+          }
+        ],
+        "tokens": 50529
+      },
+      {
+        "round_id": "R-02",
+        "slice": "S2",
+        "hidden": [
+          {
+            "check": "CHANGELOG.md first line == 'v1.0.0'",
+            "passed": true,
+            "detail": "CHANGELOG.md first line == 'v1.0.0'"
+          },
+          {
+            "check": "usage.md contains 1.0.0 and not 0.9.0",
+            "passed": true,
+            "detail": "usage.md contains 1.0.0 and not 0.9.0"
+          },
+          {
+            "check": "config.json unchanged",
+            "passed": true,
+            "detail": "config.json unchanged"
+          }
+        ],
+        "tokens": 56621
+      }
+    ],
+    "tokens_total": 107150
+  }
+}

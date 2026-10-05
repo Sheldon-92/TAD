@@ -1,0 +1,136 @@
+{
+  "command": "verify-export",
+  "ok": true,
+  "exit_code": 0,
+  "checks": [
+    {
+      "path": "date-H/input/delivery.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "date-H/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "date-V/input/delivery.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "date-V/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "evidence-H/input/checks.log",
+      "result": "CLEAN"
+    },
+    {
+      "path": "evidence-H/input/evidence-pack.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "evidence-H/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "evidence-V/input/evidence-pack.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "evidence-V/input/run-log.txt",
+      "result": "CLEAN"
+    },
+    {
+      "path": "evidence-V/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "filter-H/input/rows.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "filter-H/input/spec-codes.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "filter-H/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "filter-V/input/rows.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "filter-V/input/spec-codes.json",
+      "result": "CLEAN"
+    },
+    {
+      "path": "filter-V/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "rename-H/input/sku.list",
+      "result": "CLEAN"
+    },
+    {
+      "path": "rename-H/input/storage.js",
+      "result": "CLEAN"
+    },
+    {
+      "path": "rename-H/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "rename-V/input/sku.list",
+      "result": "CLEAN"
+    },
+    {
+      "path": "rename-V/input/storage.js",
+      "result": "CLEAN"
+    },
+    {
+      "path": "rename-V/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "routine-H/input/doc.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "routine-H/input/wiring.js",
+      "result": "CLEAN"
+    },
+    {
+      "path": "routine-H/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "routine-V/input/doc.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "routine-V/input/wiring.js",
+      "result": "CLEAN"
+    },
+    {
+      "path": "routine-V/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "sync-H/input/node.conf",
+      "result": "CLEAN"
+    },
+    {
+      "path": "sync-H/task.md",
+      "result": "CLEAN"
+    },
+    {
+      "path": "sync-V/input/node.conf",
+      "result": "CLEAN"
+    },
+    {
+      "path": "sync-V/task.md",
+      "result": "CLEAN"
+    }
+  ],
+  "summary": "32 exported paths match allowlist; no oracle/answer leak; OS isolation explicitly NOT claimed"
+}

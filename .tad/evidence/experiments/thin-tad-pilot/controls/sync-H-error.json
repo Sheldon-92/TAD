@@ -1,0 +1,17 @@
+{
+  "case_id": "sync-H",
+  "family": "sync",
+  "kind": "error-delivery",
+  "artifact": {
+    "files": {
+      "preflight-report.json": "{\"config_issues\":[],\"capacity_ok\":true,\"started_sync\":true}"
+    },
+    "log": [
+      "prepare",
+      "sync-start"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

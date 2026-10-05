@@ -1,0 +1,151 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "2a49dac5ddf1fb1c",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04371-d6ae-7120-b64b-5af699505526",
+  "resumed_from_session": "01a04371-d6ae-7120-b64b-5af699505526",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "ada3bdb417f3f2d2543ea52056a77358f5b4bc576620e117f592d9b58fa4a231",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04371-d6ae-7120-b64b-5af699505526",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCreate tests.mjs using node:assert importing stableSlug from util.mjs with at least 3 test cases including stableSlug(\"\")===\"\" ; make it runnable via node tests.mjs printing \"tests ok\" at the end. Then stop.\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 9980
+  },
+  "native_event_count": 2,
+  "native_event_kinds": [
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T2-node-behavior-control/tests.mjs"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_1",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T2-node-behavior-control/tests.mjs"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "544de7dc487640004796200700dc7cd7983c3c7de97d9143e92bb33f2d18bf54",
+    "contract-S2.json": "0687d855d19d8d4e03606720a5d9e05218b41d78815c0c0f1fdd1423563ac324",
+    "goal-spec.json": "5951a0b05c915578c519caa6a35e30271ac750430bcf72beab6f34cb5a3bd99d",
+    "handoff.md": "c2500f027b2e1923b60d99ab3619171e6cf4d69c36109657f4dd60fc7b5a3613",
+    "oracle.txt": "a1b72366ad29861a6bf8404563a91e8e120734054711f1b0d0bc7924fdddcf0a",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "c3985be1faa6516eeec304cb7813d4aae38e4a8065e88e43bc54076a8403ff88",
+    "README.md": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839",
+    "tests.mjs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "util.mjs": "66bb57e256a76391e911a9e511c5ffa53b40af7849c43983f9784ee69e24ae3a"
+  },
+  "post_manifest": {
+    "contract-S1.json": "544de7dc487640004796200700dc7cd7983c3c7de97d9143e92bb33f2d18bf54",
+    "contract-S2.json": "0687d855d19d8d4e03606720a5d9e05218b41d78815c0c0f1fdd1423563ac324",
+    "goal-spec.json": "5951a0b05c915578c519caa6a35e30271ac750430bcf72beab6f34cb5a3bd99d",
+    "handoff.md": "c2500f027b2e1923b60d99ab3619171e6cf4d69c36109657f4dd60fc7b5a3613",
+    "oracle.txt": "a1b72366ad29861a6bf8404563a91e8e120734054711f1b0d0bc7924fdddcf0a",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "c3985be1faa6516eeec304cb7813d4aae38e4a8065e88e43bc54076a8403ff88",
+    "README.md": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839",
+    "tests.mjs": "f3c3a275b52252fdec16be25f7fbee246b4f655af631388fac4bf9b67418a8d5",
+    "util.mjs": "66bb57e256a76391e911a9e511c5ffa53b40af7849c43983f9784ee69e24ae3a"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/5ef23944dc06bedc/pairs/P2/control-host-evidence/2026-08-27T13-40-04-574Z-2a49dac5ddf1fb1c-raw-output.txt",
+    "sha256": "31022ee53c869ca6b2b39d43c25d3e0fca911e151a7ae08704ae9f486edaa311"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/5ef23944dc06bedc/pairs/P2/control-host-evidence/2026-08-27T13-40-04-574Z-2a49dac5ddf1fb1c-raw-trace.jsonl",
+    "sha256": "31022ee53c869ca6b2b39d43c25d3e0fca911e151a7ae08704ae9f486edaa311"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "tests.mjs"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "e403cf61fdfa14b90ebc4b7bbaedc723d43a736dd00f0cea9f760db51d3e0b3d",
+      "invocation_args_sha256": "315a1efbb89450ba51a2cabb920a3f4b543db29a843af36932fc94b41e640dad",
+      "decision": "allowed",
+      "action_nonce": "edfa7194a574adbd",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "tests.mjs",
+      "pre_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "post_sha256": "f3c3a275b52252fdec16be25f7fbee246b4f655af631388fac4bf9b67418a8d5",
+      "observed_sha256": "f3c3a275b52252fdec16be25f7fbee246b4f655af631388fac4bf9b67418a8d5",
+      "effect_manifest_sha256": "08d380cf4dd0fae3ee89590ffffce8f11f46e3dd14a45a9c29b7cd61d5ff20db",
+      "effect_paths": [
+        "tests.mjs"
+      ],
+      "effect_fingerprint": "5ca41144dbb2277652e1a332ce58c300ad223effb3064034963b47e1acf697af",
+      "pre_manifest_sha256": "a5e5841f41ad2212c709402dfe2416612af1111ba1f828c936edd76c51ddf3da",
+      "post_manifest_sha256": "576e6df261204831bcb38d40b0bdf6a43ff8e294ffefe7691ff4bd9a78ac3607",
+      "observed_changed": [
+        "tests.mjs"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "tests.mjs"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 59177,
+    "output_tokens": 288,
+    "total_tokens": 59465,
+    "cached_input_tokens": 55808,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

@@ -1,0 +1,16 @@
+=== AC 改后值 (SHA base: cd70cf26) ===
+AC-1   1      期望≥1
+AC-2   0      期望0
+AC-2b  11     期望11
+AC-2c  注释逐字节未变(行号 1585→1642 漂移,见完成报告)
+AC-7a  0      期望0
+AC-N1  0      期望0
+AC-N2  4      期望≤4
+AC-N2b 2      期望2
+AC-N2c 1      期望1(22/22)
+AC-N3  0      期望0
+AC-N4  0      期望0
+ZT_LIST lines: 12
+active
+archive
+decisions

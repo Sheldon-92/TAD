@@ -1,0 +1,179 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "26c08253945f88f4",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.150.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a044d8-651e-75b0-97e9-110ab3808bcf",
+  "resumed_from_session": "01a044d8-651e-75b0-97e9-110ab3808bcf",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "8e3bd174be5c616950a1a015d47bea12637f3a779997e27df3492d694b73a489",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a044d8-651e-75b0-97e9-110ab3808bcf",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nRead guide.md and commands.txt. APPEND to the END of guide.md a section exactly headed \"## Command Reference\" containing a markdown table with columns command | purpose, one row per command from commands.txt (init, status, verify). Do not modify any existing text. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 16252
+  },
+  "native_event_count": 6,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "52bc87efea3ab4783d75109f6398652a069efa70139cb06d7eef33e10c10ab27",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_2",
+      "command_sha256": "af05a0494023e5c012095d00d0772f939c1cd189bbedce184423b754b27b89f1",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_2",
+      "command_sha256": "af05a0494023e5c012095d00d0772f939c1cd189bbedce184423b754b27b89f1",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "52bc87efea3ab4783d75109f6398652a069efa70139cb06d7eef33e10c10ab27",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_3",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T1-doc-ref-treatment/guide.md"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_3",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T1-doc-ref-treatment/guide.md"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "goal-spec.json": "8ab28148109681d68ada726abec7fc5703c6f1c6f06a08dda80d07321cf4eaa8",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "9fbf09d4dfd45e3529ce1583dbd80723d5bf876eaef8e1032c1f55cb66257cb5",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "b9ce43f57bffca626f4b32de396a12024c1231a6d06b0e83671bd05c357a49d6",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38"
+  },
+  "post_manifest": {
+    "contract-S1.json": "e8233475657c4dd5d4cdf7ae18ff296aea7cff74666eeafd90b574631377b38a",
+    "goal-spec.json": "8ab28148109681d68ada726abec7fc5703c6f1c6f06a08dda80d07321cf4eaa8",
+    "handoff.md": "17b14aa1367710c0fe2b6f07ba5b826ebdfc23c05d4a397d2d006ae5c382b3ad",
+    "oracle.txt": "9fbf09d4dfd45e3529ce1583dbd80723d5bf876eaef8e1032c1f55cb66257cb5",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "b9ce43f57bffca626f4b32de396a12024c1231a6d06b0e83671bd05c357a49d6",
+    "commands.txt": "e75a910159a0f69752525b1fcf442f64037e724b5e0c501edaf8de8a29b25d6f",
+    "guide.md": "c167f436e7b8d9e42e1f3888158e0ab445f48defa871b997877860d22c8c9a68"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/e5f8cd75c34d9a46/pairs/P1/treatment-host-evidence/2026-08-27T20-11-21-045Z-26c08253945f88f4-raw-output.txt",
+    "sha256": "7855674bfd13c84a7a6a3f9fb34914e93d6d1d1e76e9339ef2ed5440cb19e716"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/e5f8cd75c34d9a46/pairs/P1/treatment-host-evidence/2026-08-27T20-11-21-045Z-26c08253945f88f4-raw-trace.jsonl",
+    "sha256": "7855674bfd13c84a7a6a3f9fb34914e93d6d1d1e76e9339ef2ed5440cb19e716"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "guide.md"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+      "invocation_args_sha256": "26dad3ff99a4cd0bffbce11ef2684e118d27bfecce7636d362351b8028ccd722",
+      "decision": "allowed",
+      "action_nonce": "67342c280c21fc91",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "guide.md",
+      "pre_sha256": "5aaea94a9a72c2a4f4ba04945cf3436c410c21ea492abc6263c5d3241143bd38",
+      "post_sha256": "c167f436e7b8d9e42e1f3888158e0ab445f48defa871b997877860d22c8c9a68",
+      "observed_sha256": "c167f436e7b8d9e42e1f3888158e0ab445f48defa871b997877860d22c8c9a68",
+      "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+      "effect_paths": [
+        "guide.md"
+      ],
+      "effect_fingerprint": "2ffee776d72212c489c1fa1bad4a125e3e7304de7b0d217647b5043d1ed6b70a",
+      "pre_manifest_sha256": "ec2b6919cac27e8c0daf50aef36a8250d60c9957955c74d2a466f0f03dc12c0a",
+      "post_manifest_sha256": "c6f3d030a06fd59a597df8b90caf3c6eeb41e40fd2187b8db726cbc05082738e",
+      "observed_changed": [
+        "guide.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "guide.md"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 66249,
+    "output_tokens": 662,
+    "total_tokens": 66911,
+    "cached_input_tokens": 59648,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

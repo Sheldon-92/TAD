@@ -1,0 +1,3 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+usage.md says "usage for 0.9.0". Change that line to "usage for 1.0.0". Nothing else changes. Then stop.
+When finished print DONE.

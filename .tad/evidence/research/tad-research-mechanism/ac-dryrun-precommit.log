@@ -1,0 +1,39 @@
+=== PRE-COMMIT DRY-RUN 2026-09-15T16:44:23Z HEAD=c48e5620 ===
+--- AC1
+PASS
+--- AC2
+4
+--- AC3
+PASS
+--- AC4
+5
+PASS
+--- AC5
+5
+PASS
+--- AC6
+PASS
+--- AC7
+owners= ['deep_execution:'] deep= 6 refs= 2
+PASS
+--- AC8
+1 3 4 5
+PASS
+--- AC9
+1
+--- AC10
+PASS
+--- AC11
+HITS=[]
+FAIL-expected-pre-commit
+--- AC12
+SUBJ=docs(ocr): paste optional K1-K5 Layer 2 review habits into tax-cut SSOT + pattern + spec format (TASK-20260914-OCR-REVIEW-HABITS)
+MISSING=['.agents/skills/alex/SKILL.md', '.agents/skills/alex/references/research-plan-protocol.md', '.agents/skills/alex/references/research-track-protocol.md', '.claude/skills/alex/SKILL.md', '.claude/skills/alex/references/research-plan-protocol.md', '.claude/skills/alex/references/research-track-protocol.md', '.tad/active/handoffs/HANDOFF-2026-09-15-tad-research-mechanism.md', '.tad/config-workflow.yaml', '.tad/gates/research-gate-canonical-checklist.md', '.tad/templates/research-charter.md', '.tad/templates/research-critic-review.md', '.tad/templates/research-decision-brief.md']
+EXTRA=['.tad/active/handoffs/HANDOFF-20260914-ocr-review-habits.md', '.tad/project-knowledge/patterns/process-tax-cut.md', '.tad/templates/output-formats/spec-compliance-format.md', 'docs/process-tax-cut.md']
+FAIL-expected-pre-commit
+--- AC13
+3 3
+PASS
+--- AC14
+8 15 3 True
+PASS

@@ -1,0 +1,6 @@
+DISTINCT_COUNT=1
+DISTINCT_LIST=code-reviewer
+SUBSTITUTIONS=self-review feedback-integration
+UNKNOWN=
+Layer 2 audit WARN: 1 distinct reviewer (need ≥2 unless *express); found: code-reviewer
+WARN_REVIEWER_COUNT=1

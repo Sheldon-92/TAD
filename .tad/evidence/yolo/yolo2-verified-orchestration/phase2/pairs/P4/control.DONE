@@ -1,0 +1,68 @@
+{
+  "arm": "control",
+  "task": "T4-cross-file",
+  "final_hidden_acceptance": [
+    {
+      "check": "CHANGELOG.md first line == 'v1.0.0'",
+      "passed": true,
+      "detail": "CHANGELOG.md first line == 'v1.0.0'"
+    },
+    {
+      "check": "usage.md contains 1.0.0 and not 0.9.0",
+      "passed": true,
+      "detail": "usage.md contains 1.0.0 and not 0.9.0"
+    },
+    {
+      "check": "config.json unchanged",
+      "passed": true,
+      "detail": "config.json unchanged"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "CHANGELOG.md first line == 'v1.0.0'",
+          "passed": true,
+          "detail": "CHANGELOG.md first line == 'v1.0.0'"
+        },
+        {
+          "check": "usage.md contains 1.0.0 and not 0.9.0",
+          "passed": false,
+          "detail": "usage.md contains 1.0.0 and not 0.9.0"
+        },
+        {
+          "check": "config.json unchanged",
+          "passed": true,
+          "detail": "config.json unchanged"
+        }
+      ],
+      "tokens": 48895
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "CHANGELOG.md first line == 'v1.0.0'",
+          "passed": true,
+          "detail": "CHANGELOG.md first line == 'v1.0.0'"
+        },
+        {
+          "check": "usage.md contains 1.0.0 and not 0.9.0",
+          "passed": true,
+          "detail": "usage.md contains 1.0.0 and not 0.9.0"
+        },
+        {
+          "check": "config.json unchanged",
+          "passed": true,
+          "detail": "config.json unchanged"
+        }
+      ],
+      "tokens": 62521
+    }
+  ],
+  "tokens_total": 111416
+}

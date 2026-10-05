@@ -1,0 +1,5 @@
+$ grep "last_scan:" .tad/github-registry/scan-log.yaml
+last_scan: "2026-09-04"
+EXPECTED: contains 2026-09-04
+VERDICT: PASS
+NOTE: scan executed 2026-09-06; last_scan literal follows accepted AC4.

@@ -1,0 +1,40 @@
+{
+  "format": "yolo2-phase2-randomization-schedule-v1",
+  "seed": "yolo2p2-fixed-seed-001",
+  "pair_order": [
+    {
+      "pair_id": "P1",
+      "position": 1
+    },
+    {
+      "pair_id": "P2",
+      "position": 2
+    },
+    {
+      "pair_id": "P3",
+      "position": 3
+    },
+    {
+      "pair_id": "P4",
+      "position": 4
+    },
+    {
+      "pair_id": "P5",
+      "position": 5
+    }
+  ],
+  "judge_order": {
+    "1": [
+      "A",
+      "B"
+    ],
+    "2": [
+      "B",
+      "A"
+    ],
+    "3": [
+      "A",
+      "B"
+    ]
+  }
+}

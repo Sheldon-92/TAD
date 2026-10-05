@@ -1,0 +1,3 @@
+SEALED ORACLE — interruption-b
+The frozen oracle for this run is sealed. This file is only a commitment.
+sha256=ebf3f8a4b0d3b3bb49c60c39170e83fe8c6831850166b7632c98b08b1e97ae5d

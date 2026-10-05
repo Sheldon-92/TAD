@@ -1,0 +1,7 @@
+{
+  "base_commit": "323c380dbb02dcdc4b58facd15e96825be66eb50",
+  "input_sha256": "1ab2d799ae608478145e09f6558ddb29c3fd2c3beb437668c4209b8c431d8e05",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-control",
+  "executor_ids": ["exec-control"],
+  "reviewer_ids": ["slice-review-control", "gate-control"]
+}

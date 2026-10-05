@@ -1,0 +1,49 @@
+{
+  "format": "yolo-recovery-checkpoint-v1",
+  "run_id": "interruption-a",
+  "goal_id": "yolo2-p1-guide-maintenance",
+  "handoff_path": ".tad/active/handoffs/HANDOFF-20260824-yolo2-phase1-recovery-slice.md",
+  "handoff_revision": "1e064fd530cce81505b20a86a9d0ba2b4a8674960081758de1a94a9e5bcd7ba8",
+  "base_commit": "84c3666c4b8d658ecfd737c5305728f0e2152aea",
+  "worktree_realpath": "/private/tmp/tad-yolo2-p1/wt-interruption-a",
+  "state": "ACTIVE",
+  "events_count": 5,
+  "latest_observed_head": "2ab10e2a3eabc0d9c854da8c6264dcca764c10cc",
+  "verified": [
+    {
+      "slice": "S1",
+      "seq": 3,
+      "at": "2026-08-25T19:33:37.465Z",
+      "receipt_path": ".tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/conductor/receipt-S1.json",
+      "receipt_sha256": "132c5fe5fa9f0a71ee76207a161ee02eb9166d7708023eb016d9317cb84ffcef",
+      "verified_head": "c35dc975e922593469f30ce99df6a5c48364e9d1"
+    }
+  ],
+  "candidate_slices": [
+    {
+      "slice": "S2",
+      "reason": "candidate",
+      "next": "continuing after recovery",
+      "seq": 4,
+      "at": "2026-08-25T19:39:06.774Z"
+    },
+    {
+      "slice": "S3",
+      "reason": "candidate",
+      "next": "continuing after recovery",
+      "seq": 5,
+      "at": "2026-08-25T19:39:07.034Z"
+    }
+  ],
+  "pending_action": null,
+  "unknown_actions": [],
+  "forbidden_retry_actions": [],
+  "stopped": null,
+  "blockers": [],
+  "legal_next_action": {
+    "action": "Slice S2 is a CANDIDATE only. Obtain a Conductor PASS receipt (existing Gate/reviewer must pass first), then run verify --slice S2 --receipt <receipt.json>",
+    "why": "a checkpoint records intent, not verified progress; only a bound Conductor receipt may advance verified state",
+    "owner": "conductor"
+  },
+  "generated_at": "2026-08-25T19:39:07.096Z"
+}

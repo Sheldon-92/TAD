@@ -1,0 +1,75 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "444576b081a783c519c7286291e0b58c59df56a27f0aa1e08bbaba7d90bcd365",
+  "parser_version": "1",
+  "invocation_nonce": "fa92f80a80a50d3e",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03ee5-2452-7422-94cd-c2bd15fea19d",
+  "resumed_from_session": "01a03ee5-2452-7422-94cd-c2bd15fea19d",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "84cdf8a78b8ef0c15541eaba86c5843b137118b844631971e0bddd709f51ae76",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P4/treatment-host-evidence/2026-08-26T16-27-27-580Z-fa92f80a80a50d3e-raw-output.txt",
+    "sha256": "d7eb03ae3ffb6565daa175af3631949437d7f8bb92a49965ae937feea1b1e5c7"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P4/treatment-host-evidence/2026-08-26T16-27-27-580Z-fa92f80a80a50d3e-raw-trace.jsonl",
+    "sha256": "c3811438e14a0a21332cda6f683710b090da740abdecc276ae4ffb6d3b187f69"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "45dc6bb441babcd35696499f17b84b310aae85f6809b47d43711dc27cd425ef7",
+      "decision": "allowed",
+      "action_nonce": "009e849b3a5cec5f",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "f75dd12e977c314baaf09d986050483bb56e4f23100739126fe584046b4b2223",
+      "observed_changed": [],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "contract-S2.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 47857,
+    "output_tokens": 444,
+    "total_tokens": 48301,
+    "cached_input_tokens": 44544,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "Blocked: `usage.md` is outside the writable sandbox, so no change was made."
+}

@@ -1,0 +1,39 @@
+{
+  "format": "yolo2-phase2-blinded-judge-pass-v1",
+  "pair_id": "P5",
+  "pass": 2,
+  "input_labels": [
+    "A",
+    "B"
+  ],
+  "input_order": [
+    "A",
+    "B"
+  ],
+  "model_family": "big-pickle",
+  "harness": "opencode",
+  "invocation": {
+    "cmd": [
+      "run",
+      "--model",
+      "opencode/big-pickle",
+      "--format",
+      "json",
+      "--pure",
+      "--dir",
+      "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/dogfood/cases/P5",
+      "You are a blinded final-quality judge.\nCompare only the two final product directories A=/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/dogfood/cases/P5/judge-input/pass-2/A and B=/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/dogfood/cases/P5/judge-input/pass-2/B using rubric /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/dogfood/cases/P5/judge-input/pass-2/rubric.json.\nThe ONLY permitted tool is read. Never call bash, shell, terminal, glob, grep, code execution, package loading, or network tools, and never access any path under /tmp; do not attempt to execute the products. Do not inspect any other evidence, metadata, parent directories, git history, or condition mapping. Do not refer to condition names or infer which arm is which in your response.\nThe complete relative file list for A is: app.js, tests.js, totals.js. Read only these files under A.\nThe complete relative file list for B is: app.js, tests.js, totals.js. Read only these files under B.\nBlocking classification: set p0 or p1 above zero only for a concrete defect against an explicit task contract, rubric requirement, or acceptance requirement that needs corrective work. Optional robustness, extra tests, stylistic preferences, broader edge-case coverage, or speculative hidden inputs are not p0/p1; record those only in scores or rationale. A test-coverage gap is blocking only when the contract or rubric explicitly requires the missing behavior. If both outputs satisfy the explicit requirements, set p0_A, p0_B, p1_A, and p1_B to 0.\nAfter reading the rubric and the files under A and B, stop using tools and return the required JSON immediately, even if you cannot execute a product.\nReturn exactly one JSON object and no prose: {\"preferred\":\"A|B|TIE\",\"score_A\":0.0,\"score_B\":0.0,\"p0_A\":0,\"p0_B\":0,\"p1_A\":0,\"p1_B\":0,\"rationale\":\"brief\"}. A reversal of an earlier order is not a defect; judge only the supplied outputs."
+    ],
+    "started": "2026-08-29T08:02:14.702Z",
+    "exit": 0
+  },
+  "raw_output_sha256": "89b094a7b1b348ac340c2bc89d48fbfb05b7f1884999cb714cc9000048c54dfe",
+  "preferred": "TIE",
+  "score_A": 1,
+  "score_B": 1,
+  "p0_A": 0,
+  "p0_B": 0,
+  "p1_A": 0,
+  "p1_B": 0,
+  "rationale": "A and B are byte-identical across all three files (app.js, tests.js, totals.js). Both implement a correct total() that sums item.price and correctly require/export the module, run the same app, and carry the same minimal test. No defect against the contract; outputs are equivalent so neither arm is preferred."
+}

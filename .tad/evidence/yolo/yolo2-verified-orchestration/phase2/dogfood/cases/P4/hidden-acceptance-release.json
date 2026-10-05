@@ -1,0 +1,41 @@
+{
+  "format": "yolo2-phase2-hidden-acceptance-release-v1",
+  "task_id": "T4-cross-file",
+  "control_output_manifest_sha256": "3cd190bcadc6e9514e49b5fecbe426df99caa1d835ac10991d600afb66e8b857",
+  "treatment_output_manifest_sha256": "89432210504625eccf430999636f17c19f5f477c8fd09b74da3e596fa5b7a60a",
+  "released_after_both_output_manifests": true,
+  "control": [
+    {
+      "check": "CHANGELOG.md first line == 'v1.0.0'",
+      "passed": true,
+      "detail": "CHANGELOG.md first line == 'v1.0.0'"
+    },
+    {
+      "check": "usage.md contains 1.0.0 and not 0.9.0",
+      "passed": true,
+      "detail": "usage.md contains 1.0.0 and not 0.9.0"
+    },
+    {
+      "check": "config.json unchanged",
+      "passed": true,
+      "detail": "config.json unchanged"
+    }
+  ],
+  "treatment": [
+    {
+      "check": "CHANGELOG.md first line == 'v1.0.0'",
+      "passed": true,
+      "detail": "CHANGELOG.md first line == 'v1.0.0'"
+    },
+    {
+      "check": "usage.md contains 1.0.0 and not 0.9.0",
+      "passed": true,
+      "detail": "usage.md contains 1.0.0 and not 0.9.0"
+    },
+    {
+      "check": "config.json unchanged",
+      "passed": true,
+      "detail": "config.json unchanged"
+    }
+  ]
+}

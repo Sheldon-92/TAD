@@ -1,0 +1,85 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "154bb171764111a77d12efbba724ea868e94a85ae5268233025ccbeead82cbc0",
+  "parser_version": "1",
+  "invocation_nonce": "9abe7e538d31d334",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a0402d-780d-7e81-bad9-81985cfa7ae8",
+  "resumed_from_session": "01a0402d-780d-7e81-bad9-81985cfa7ae8",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "2c99869454b3393eed9b66db10c6d0a2f0a878d40b183f7f18c55d308e68d27f",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P1/control-host-evidence/2026-08-26T22-26-41-686Z-9abe7e538d31d334-raw-output.txt",
+    "sha256": "beb1c107edd197afed9cc0ef2eb986d8aa1cd359a5101dc198d122402a54af41"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/fc97aadcb627c173/pairs/P1/control-host-evidence/2026-08-26T22-26-41-686Z-9abe7e538d31d334-raw-trace.jsonl",
+    "sha256": "babc8cb213d4fb9cb8c21faf048cd0d438f9cc769caeec60730a2561fed10e26"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "guide.md"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "12b3f134701041282537494ca6a65e6007b3f527ef7bf5a1bd7927633fb51d10",
+      "invocation_args_sha256": "bf3ee82f5e0439d37f178c326ac89b7acbf89617fa27f7c557db2b7bdd3ad3fb",
+      "decision": "allowed",
+      "action_nonce": "ee056616d961c8e3",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "guide.md",
+      "pre_sha256": "5b3fe259e27172b885d9239a7b6a8b5c65211c1e9e320a5f6c790db1130ea570",
+      "post_sha256": "84f018bbe391f9347a7c828fe5a2743d9657cf0c6b0e8a89e74d19a426d16bd3",
+      "observed_sha256": "84f018bbe391f9347a7c828fe5a2743d9657cf0c6b0e8a89e74d19a426d16bd3",
+      "effect_manifest_sha256": "602842eb68451a159f03c24b86cc324c97bed7935d02113d5a9feb13caaeccd2",
+      "effect_paths": [
+        "guide.md"
+      ],
+      "effect_fingerprint": "b3fcaad676bd24144381f23d8d466b52d0343ff829001c402e46d614d3378cab",
+      "pre_manifest_sha256": "6f90f7d0029882f8ace8d1d7440583dfebde61361a8ad94a6ebbc50028d1b334",
+      "post_manifest_sha256": "1ebd4c91d9692036da1ade72ed7c3c2b7856bf03cbbc09181cd603473a57990c",
+      "observed_changed": [
+        "guide.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "guide.md"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 65863,
+    "output_tokens": 234,
+    "total_tokens": 66097,
+    "cached_input_tokens": 62976,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

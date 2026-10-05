@@ -1,0 +1,19 @@
+{
+  "case_id": "rename-H",
+  "family": "rename",
+  "kind": "correct-delivery",
+  "artifact": {
+    "files": {
+      "migration-report.json": "{\"old_key\":\"nb-cart-v1\",\"new_key\":\"cv-cart-v2\",\"sku_prefix_old\":\"NB-\",\"sku_prefix_new\":\"CV-\",\"retired_sku_active\":false}",
+      "storage.js": "const KEY = \"cv-cart-v2\";\nconst SKU_PREFIX = \"CV-\";\n"
+    },
+    "log": [
+      "prepare",
+      "migrate",
+      "verify-absent"
+    ],
+    "claims": {
+      "accepted": true
+    }
+  }
+}

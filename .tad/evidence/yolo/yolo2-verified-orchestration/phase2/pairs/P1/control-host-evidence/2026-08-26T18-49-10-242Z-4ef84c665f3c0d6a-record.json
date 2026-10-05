@@ -1,0 +1,78 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "21b63ece0d5c003f856d4cc7297d94b4ede2aab380588b18fe1b73530dc02ead",
+  "parser_version": "1",
+  "invocation_nonce": "4ef84c665f3c0d6a",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03f66-6378-71f0-8aed-7849179a6e37",
+  "resumed_from_session": "01a03f66-6378-71f0-8aed-7849179a6e37",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "31e3d8baaa14c50821697a55bcdeea80ac69432fbea73df27e6d75c8a49e8c39",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T18-49-10-242Z-4ef84c665f3c0d6a-raw-output.txt",
+    "sha256": "6be34f77c9f8f469a5a845affb6a3edac8802823509cd034d1f5e944097afca7"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P1/control-host-evidence/2026-08-26T18-49-10-242Z-4ef84c665f3c0d6a-raw-trace.jsonl",
+    "sha256": "a789604d74167eebdac490a24261fd41af1ff21d2adbd071ca39b243ec2738aa"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "2b206c736471a29b778a5a2d0027d3af6c231d02e5588ea49cd49e39797ce490",
+      "decision": "allowed",
+      "action_nonce": "e045207fd582d27b",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "cb33381fc8e87016a46ffb95f0e614198c4aa5ce0241fab5a80038895403d9b6",
+      "observed_changed": [
+        " M guide.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "contract-S2.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        " M guide.md",
+        "?? contract-S1.json",
+        "?? contract-S2.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 25705,
+    "output_tokens": 279,
+    "total_tokens": 25984,
+    "cached_input_tokens": 24320,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "REFUSED: S2 is out of scope and triggers the packet’s scope-drift stop condition. No file was modified."
+}

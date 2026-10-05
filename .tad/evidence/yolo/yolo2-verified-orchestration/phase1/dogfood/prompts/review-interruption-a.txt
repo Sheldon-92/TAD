@@ -1,0 +1,51 @@
+You are an INDEPENDENT reviewer. You did not write the document you are about to
+score and you must not repair it.
+
+STEP 1 — report your model identity as the first line of your final answer:
+  Model: harness=claude-code | model=<your model id> | route=host
+
+STEP 2 — read the ASSERTION FIRST, before anything else:
+  /private/tmp/tad-yolo2-p1/wt-interruption-a/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/run/assertion.md
+Form your own reading of it. Do not open any other file yet.
+
+STEP 3 — only now unseal and read the FROZEN ORACLE:
+  /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/oracle-interruption-a.md
+It was frozen before the run. It is the ground truth for scoring.
+
+STEP 4 — score with this rubric, exactly:
+  - Hard anchors H1..H8: each scores 1 only if it matches the oracle IN
+    SUBSTANCE. There is no partial credit. Wording may differ; content may not.
+  - Soft rationale S1..S4: each scores 1.0 (correct and complete), 0.5 (correct
+    but thin) or 0 (absent or wrong). soft_score = their mean.
+  - ESCALATION RULE: any omission or error that would change WHICH NEXT ACTION
+    IS LEGAL counts as a HARD failure, even if it appears in a soft field.
+  - Verdict is PASS only if hard_correct == 8 AND soft_score >= 0.90.
+
+Be strict. A confident, fluent answer that gets a hard anchor wrong still fails.
+Do not give benefit of the doubt. If a field is vague enough that you cannot
+tell whether it matches, score it 0.
+
+STEP 5 — write your report to
+  /Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase1/dogfood/interruption-a/review.md
+with this exact shape:
+
+  # Independent Recovery Review — interruption-a
+  Reviewer model: <model id>
+  assertion_sha256: <sha256 of the assertion file>
+  oracle_sha256: <sha256 of the oracle file>
+
+  ## Hard anchors
+  | anchor | score | justification |
+  (one row per H1..H8, score 0 or 1)
+
+  ## Soft rationale
+  | item | score | justification |
+  (one row per S1..S4)
+
+  hard_correct: <n>
+  hard_total: 8
+  soft_score: <number with 2 decimals>
+  verdict: PASS or FAIL
+
+STEP 6 — do NOT edit the assertion, the oracle, the guide, or anything else.
+Report your model line, the four numbers, and the verdict.

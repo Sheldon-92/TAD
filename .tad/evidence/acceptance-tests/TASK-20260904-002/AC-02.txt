@@ -1,0 +1,4 @@
+$ test ! -d progress && echo "DELETED"
+DELETED
+EXPECTED: DELETED
+VERDICT: PASS

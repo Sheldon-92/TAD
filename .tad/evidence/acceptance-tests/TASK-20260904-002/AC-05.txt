@@ -1,0 +1,4 @@
+$ test -z "$(git status --porcelain | grep -E '(\.worktrees/|progress/)')" && echo "CLEAN"
+CLEAN
+EXPECTED: CLEAN
+VERDICT: PASS

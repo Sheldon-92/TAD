@@ -1,0 +1,858 @@
+
+════════ menu-snap ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/menu-snap
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ my-openclaw-agents ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/my-openclaw-agents
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ OpenClaw Hack ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/OpenClaw Hack
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: no-repo
+
+════════ 运动打卡小助手 ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/运动打卡小助手
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: no-repo
+
+════════ 合规ai ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/合规ai
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ ArtForge ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/ArtForge
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: no-repo
+
+════════ Sober Creator ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/Sober Creator
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ toy ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/toy
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ 内存管理 ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/内存管理
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: no-repo
+
+════════ Next Guest ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/Next Guest
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ 下载md插件 ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/下载md插件
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: no-repo
+
+════════ 买卖 ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/买卖
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: no-repo
+
+════════ Monica-website ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/01-on progress programs/Monica-website
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+-----------------------------------------
+Checked: 47 framework-owned skills
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ Colin声音项目 ════════
+skills re-mirrored (both platforms)
+=========================================
+PLATFORM-SKILLS VERIFY (framework-owned skill symmetry)
+  SOURCE: /Users/sheldonzhao/01-on progress programs/TAD
+  TARGET: /Users/sheldonzhao/Downloads/Colin声音项目
+=========================================
+  ✅ _archived symmetric
+  ✅ academic-research symmetric
+  ✅ agent-memory symmetric
+  ✅ agent-orchestration symmetric
+  ✅ ai-agent-architecture symmetric
+  ✅ ai-evaluation symmetric
+  ✅ ai-guardrails symmetric
+  ✅ ai-podcast-production symmetric
+  ✅ ai-prompt-engineering symmetric
+  ✅ ai-tool-integration symmetric
+  ✅ ai-voice-production symmetric
+  ✅ alex symmetric
+  ✅ blake symmetric
+  ✅ capability-upgrade symmetric
+  ✅ code-security symmetric
+  ✅ data-engineering symmetric
+  ✅ gate symmetric
+  ✅ knowledge-audit symmetric
+  ✅ knowledge-graph symmetric
+  ✅ llm-observability symmetric
+  ✅ ml-training symmetric
+  ✅ playground symmetric
+  ✅ product-thinking symmetric
+  ✅ rag-retrieval symmetric
+  ✅ reading-companion symmetric
+  ✅ release-runbook symmetric
+  ✅ research-github symmetric
+  ✅ research-methodology symmetric
+  ✅ research-notebook symmetric
+  ✅ surplus symmetric
+  ✅ synthetic-data symmetric
+  ✅ tad-elicit symmetric
+  ✅ tad-handoff symmetric
+  ✅ tad-help symmetric
+  ✅ tad-init symmetric
+  ✅ tad-maintain symmetric
+  ✅ tad-parallel symmetric
+  ✅ tad-scenario symmetric
+  ✅ tad-status symmetric
+  ✅ tad-test-brief symmetric
+  ✅ tad symmetric
+  ✅ video-creation symmetric
+  ✅ web-backend symmetric
+  ✅ web-deployment symmetric
+  ✅ web-frontend symmetric
+  ✅ web-testing symmetric
+  ✅ web-ui-design symmetric
+  ℹ️  local-skill: smart-interval (target-only, not framework-owned)
+-----------------------------------------
+Checked: 47 framework-owned skills
+Local-only: 1 (INFO, not blocking)
+VERDICT: platform-skills PASS (exit 0)
+platform-skills: PASS
+git: committed
+
+════════ REPAIR SUMMARY ════════
+menu-snap|REPAIRED|platform-skills=PASS|git=committed
+my-openclaw-agents|REPAIRED|platform-skills=PASS|git=committed
+OpenClaw Hack|REPAIRED|platform-skills=PASS|git=no-repo
+运动打卡小助手|REPAIRED|platform-skills=PASS|git=no-repo
+合规ai|REPAIRED|platform-skills=PASS|git=committed
+ArtForge|REPAIRED|platform-skills=PASS|git=no-repo
+Sober Creator|REPAIRED|platform-skills=PASS|git=committed
+toy|REPAIRED|platform-skills=PASS|git=committed
+内存管理|REPAIRED|platform-skills=PASS|git=no-repo
+Next Guest|REPAIRED|platform-skills=PASS|git=committed
+下载md插件|REPAIRED|platform-skills=PASS|git=no-repo
+买卖|REPAIRED|platform-skills=PASS|git=no-repo
+Monica-website|REPAIRED|platform-skills=PASS|git=committed
+Colin声音项目|REPAIRED|platform-skills=PASS|git=committed

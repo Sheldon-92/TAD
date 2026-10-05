@@ -1,0 +1,29 @@
+PACK academic-research FIXTURE systematic-review-depth: disc 8/2 [combined 6/3] → PASS
+PACK agent-computer-interface FIXTURE fixture-browser-task: no output captured → SKIP
+PACK agent-memory FIXTURE agent-memory-vector-store-review: no output captured → SKIP
+PACK agent-orchestration FIXTURE swarm-300-step-orchestration-review: no output captured → SKIP
+PACK agent-skill-evolution FIXTURE self-improving-agent: no verification pattern → SKIP (bad fixture)
+PACK ai-agent-architecture FIXTURE multi-agent-design-decisions: no output captured → SKIP
+PACK ai-evaluation FIXTURE llm-judge-ab-eval: no output captured → SKIP
+PACK ai-guardrails FIXTURE agent-guardrail-review: no output captured → SKIP
+PACK ai-podcast-production FIXTURE full-episode-production: no output captured → SKIP
+PACK ai-prompt-engineering FIXTURE hallucination-diagnosis: no output captured → SKIP
+PACK ai-prompt-engineering FIXTURE system-prompt-template: no output captured → SKIP
+PACK ai-tool-integration FIXTURE cli-vs-mcp-decision: no output captured → SKIP
+PACK ai-voice-production FIXTURE audiobook-tool-selection: no output captured → SKIP
+PACK code-security FIXTURE sast-dast-triage-pipeline: no output captured → SKIP
+PACK data-engineering FIXTURE rag-feature-pipeline-review: no output captured → SKIP
+PACK knowledge-graph FIXTURE graphrag-build-review: no output captured → SKIP
+PACK llm-observability FIXTURE llm-observability-cost-latency-review: no output captured → SKIP
+PACK ml-training FIXTURE lora-config-decision: no output captured → SKIP
+PACK product-thinking FIXTURE pressure-test-example: no verification pattern → SKIP (bad fixture)
+PACK product-thinking FIXTURE pressure-test-verdict: no output captured → SKIP
+PACK rag-retrieval FIXTURE rag-pipeline-review: no output captured → SKIP
+PACK synthetic-data FIXTURE synthetic-data-finetune-pipeline-review: no output captured → SKIP
+PACK video-creation FIXTURE photo-to-beat-sync: no output captured → SKIP
+PACK video-creation FIXTURE single-clip-narration: no output captured → SKIP
+PACK web-backend FIXTURE api-pagination-review: no output captured → SKIP
+PACK web-deployment FIXTURE cicd-sha-pin-oidc: no output captured → SKIP
+PACK web-frontend FIXTURE design-token-consumption: no output captured → SKIP
+PACK web-testing FIXTURE test-pyramid-strategy: no output captured → SKIP
+PACK web-ui-design FIXTURE anti-slop-landing-design: no output captured → SKIP

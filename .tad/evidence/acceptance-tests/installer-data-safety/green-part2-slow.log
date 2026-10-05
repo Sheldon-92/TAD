@@ -1,0 +1,44 @@
+===== CASE ac2.8 =====
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.8
+  ✅ ac2.8: faulted run non-zero (rc=1)
+  ✅ ac2.8: all post-NEED_ROLLBACK surfaces byte-identical after rollback
+  ✅ ac2.8: message enumerates rollback coverage
+  ✅ ac2.8: zero network (both curl-shim logs empty)
+  ✅ ac2.8: foreign-cwd rollback restored target via absolute paths
+  ✅ ac2.8: foreign cwd untouched (no .tad created)
+.tad/tests/installer-data-safety-fixture.sh: line 560: 42546 Filesize limit exceeded: 25cp "$SANDBOX/bigbackup/big.bin" "$SANDBOX/probe.bin" 2> /dev/null
+  ✅ ac2.8: ENOSPC (ulimit) → backup preserved
+  ✅ ac2.8: ENOSPC (ulimit) → explicit failed-state message
+
+=== Summary: PASS=8 FAIL=0 ===
+VERDICT: PASS
+===== CASE ac2.10 =====
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.10
+  ✅ ac2.10: run rc=0
+  ✅ ac2.10: zero network (both curl-shim logs empty)
+  ✅ ac2.10: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.10: user TAD-main/ identical
+  ✅ ac2.10: root+parent sentinels identical (zero outside writes)
+  ✅ ac2.10: benign tar passes member validation
+  ✅ ac2.10: absolute-member tar rejected pre-extraction
+  ✅ ac2.10: dot-dot-member tar rejected pre-extraction
+  ✅ ac2.10: zero outside writes across tar probes
+
+=== Summary: PASS=9 FAIL=0 ===
+VERDICT: PASS
+===== CASE ac2.11 =====
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.11
+  ✅ ac2.11: double archive → two timestamped dirs (same-second safe)
+  ✅ ac2.11: zero overwrites (first archive intact, source moved)
+  ✅ ac2.11: chmod -w move failure loud (rc=1)
+  ✅ ac2.11: integration double-run rc=0/0
+  ✅ ac2.11: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.11: integration produced two timestamped _archived dirs
+  ✅ ac2.11: zero network (both curl-shim logs empty)
+
+=== Summary: PASS=7 FAIL=0 ===
+VERDICT: PASS

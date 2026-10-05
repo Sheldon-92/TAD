@@ -1,0 +1,18 @@
+{
+  "format": "yolo2-phase2-output-manifest-v1",
+  "arm": "control",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "63a3ea212bed133679c4b2b69cbd23b10db9e97f1f7d59f7f4c774e4e4b44839"
+    },
+    {
+      "path": "tests.mjs",
+      "sha256": "037a2f50aca9159311834cb40b4d690b616d5910044cbb2b020a62658074506c"
+    },
+    {
+      "path": "util.mjs",
+      "sha256": "1dc09340bd25aeb84bce9d34abba8cc42df639b0d07886f983701fbfd5a2243e"
+    }
+  ]
+}

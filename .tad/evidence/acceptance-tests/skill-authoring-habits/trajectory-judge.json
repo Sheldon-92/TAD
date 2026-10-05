@@ -1,0 +1,7 @@
+{
+  "D1": {"score": 3, "rationale": "Completion maps work to handoff §6.2 with four concrete paths and claims Layer 1 §9.1 AC1–13 as 13/13 PASS on commit 09fe43d4 plus Gate 3 PASS. Bundled §9.1 is headers only."},
+  "D2": {"score": 1, "rationale": "Bundle has zero REVIEW: and zero ACCEPTANCE-TEST sections. TRACE EVENTS has a single handoff_created event. Gate 2 files are Alex pre-handoff. No on-disk executor Layer 2 dir in bundle."},
+  "D3": {"score": 4, "rationale": "Completion reconstructs paste-from-design, per-file landings, FR7, friction table, commit 09fe43d4, no push."},
+  "D4": {"score": 4, "rationale": "gate4_delta empty in handoff YAML; Out/untouched and FALSE_POSITIVE dirty-tree stated; FR7 excludes §7 from commit."},
+  "D5": {"score": 3, "rationale": "skip_knowledge_assessment: yes; completion has no KA section; authorized omission."}
+}

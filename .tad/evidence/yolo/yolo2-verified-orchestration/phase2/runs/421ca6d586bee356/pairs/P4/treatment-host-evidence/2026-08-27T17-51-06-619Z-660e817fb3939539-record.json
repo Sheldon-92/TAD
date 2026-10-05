@@ -1,0 +1,165 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "660e817fb3939539",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04458-008a-70c0-8613-ac466b4eb762",
+  "resumed_from_session": "01a04458-008a-70c0-8613-ac466b4eb762",
+  "turn_kind": "execution",
+  "round_id": "R-01",
+  "journal_seq": 4,
+  "packet_sha256": "f73ff380df4b41e9e121fb9ad3d300f257221866a790039ab1e49912d5e63b3b",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04458-008a-70c0-8613-ac466b4eb762",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nCHANGELOG.md first line says v0.9.0 but config.json says 1.0.0. Update ONLY the first line of CHANGELOG.md to v1.0.0. Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 17698
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "0f6dbbeed55cda89b49106f21e724c4172763a89c097228f973d8b5d1183230b",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "0f6dbbeed55cda89b49106f21e724c4172763a89c097228f973d8b5d1183230b",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T4-cross-file-treatment/CHANGELOG.md"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T4-cross-file-treatment/CHANGELOG.md"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "284b5503d2c49e897916ac152e0e38c56195a7f269fdc09a4873e1026edc5d3e",
+    "goal-spec.json": "643196fd4d0aee0ddb15ad216ed2f0cbd5cc700c94736b058986d6aa0db58112",
+    "handoff.md": "0bb2ee2a4b78eb78af6a5d503af71863043b24881cacc2f6d4539350d0d020c2",
+    "oracle.txt": "3596ca98c5b1e7980db4a84e0476bab055281807c56564b00a38a7dc969e2423",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "fdec6dd620da62601b56efd098f1024b2fcd40a2eb06b7d02521b95b8d3f7773",
+    "CHANGELOG.md": "b41df428daf36b1f72ff77e98fc489402c8322c520c1ab28d4b0fa1af581df4f",
+    "config.json": "144f33b2195391634c87921d72ac481d3a4c4feaf4dc3c6e4a7d0a7be30e6c53",
+    "usage.md": "826500af175dfd7f94d0df2e26b9ce780a5184c206b2dd4beaa6d7481f9a38d4"
+  },
+  "post_manifest": {
+    "contract-S1.json": "284b5503d2c49e897916ac152e0e38c56195a7f269fdc09a4873e1026edc5d3e",
+    "goal-spec.json": "643196fd4d0aee0ddb15ad216ed2f0cbd5cc700c94736b058986d6aa0db58112",
+    "handoff.md": "0bb2ee2a4b78eb78af6a5d503af71863043b24881cacc2f6d4539350d0d020c2",
+    "oracle.txt": "3596ca98c5b1e7980db4a84e0476bab055281807c56564b00a38a7dc969e2423",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "fdec6dd620da62601b56efd098f1024b2fcd40a2eb06b7d02521b95b8d3f7773",
+    "CHANGELOG.md": "f3d64b04f0b983139f87b58fcb79e3eff0d552fcde6b32257fb0215a5f9be598",
+    "config.json": "144f33b2195391634c87921d72ac481d3a4c4feaf4dc3c6e4a7d0a7be30e6c53",
+    "usage.md": "826500af175dfd7f94d0df2e26b9ce780a5184c206b2dd4beaa6d7481f9a38d4"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/421ca6d586bee356/pairs/P4/treatment-host-evidence/2026-08-27T17-51-06-619Z-660e817fb3939539-raw-output.txt",
+    "sha256": "6816c3c774f9f4627213fd571f818142f021474462ce376bd0c3447daa24b9fe"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/421ca6d586bee356/pairs/P4/treatment-host-evidence/2026-08-27T17-51-06-619Z-660e817fb3939539-raw-trace.jsonl",
+    "sha256": "6816c3c774f9f4627213fd571f818142f021474462ce376bd0c3447daa24b9fe"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "CHANGELOG.md"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "eaea225e887d37c6623cf0db4f924a97076e6131e35659197b701fa8879f06bd",
+      "invocation_args_sha256": "9c68432c2abe84dfdfacb6721281fc3beb0e93ed2a5e490652cced134e7f81e3",
+      "decision": "allowed",
+      "action_nonce": "8beefe7b3d487d50",
+      "action_id": "A-R-01",
+      "round_id": "R-01",
+      "target": "CHANGELOG.md",
+      "pre_sha256": "b41df428daf36b1f72ff77e98fc489402c8322c520c1ab28d4b0fa1af581df4f",
+      "post_sha256": "f3d64b04f0b983139f87b58fcb79e3eff0d552fcde6b32257fb0215a5f9be598",
+      "observed_sha256": "f3d64b04f0b983139f87b58fcb79e3eff0d552fcde6b32257fb0215a5f9be598",
+      "effect_manifest_sha256": "e69f494c54dff715c7ea5df8a1ca2ff6d95c787c18adfc3dd75cda34d43af0af",
+      "effect_paths": [
+        "CHANGELOG.md"
+      ],
+      "effect_fingerprint": "55a4c86e7d9da113f3bff24d1ee43bac3c37814a173597c6025795ffe53897af",
+      "pre_manifest_sha256": "2cad851401c3bc21ab979ea24ba6fb48fc6681fccbe0451e771d7a5466b839b4",
+      "post_manifest_sha256": "e2ae0bd4317d295fef2cbc6949714e850a81d6ccd784d4e57edf2cb6c290b2c6",
+      "observed_changed": [
+        "CHANGELOG.md"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "CHANGELOG.md"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 70829,
+    "output_tokens": 495,
+    "total_tokens": 71324,
+    "cached_input_tokens": 64768,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

@@ -1,0 +1,11 @@
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: ac2.5
+  ✅ ac2.5: installer-destructive-guard exit 0
+  ✅ ac2.5: all markers same-line bound
+  ✅ ac2.5: marker ids unique
+  ✅ ac2.5: mutation probe fails guard on demand (rc=1)
+  ✅ ac2.5: exclusion-masked live call fails guard (rc=1)
+
+=== Summary: PASS=5 FAIL=0 ===
+VERDICT: PASS

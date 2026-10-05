@@ -1,0 +1,87 @@
+{
+  "format": "yolo2-phase2-arm-result-v1",
+  "arm": "treatment",
+  "task": "T5-hidden-business",
+  "mechanism_sha256": "39b8160abc1ee37bf3ed2becfc8266f4d084a4c1d018b5b4550ddf95c1e7293b",
+  "task_sha256": "4db4517bee16512e302ab4de35c81a90c64723337d7bfa9f8cb6aca6f027c5b6",
+  "base_commit": "56206f57ac0a103b4de62d0c9b739506ec6c018f",
+  "final_hidden_acceptance": [
+    {
+      "check": "totals.js exports total",
+      "passed": true,
+      "detail": "totals.js exports total"
+    },
+    {
+      "check": "total uses numeric addition of price fields",
+      "passed": true,
+      "detail": "total uses numeric addition of price fields"
+    },
+    {
+      "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+      "passed": true,
+      "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+    },
+    {
+      "check": "node tests.js still passes",
+      "passed": true,
+      "detail": "node tests.js still passes"
+    }
+  ],
+  "rounds": [
+    {
+      "round_id": "R-01",
+      "slice": "S1",
+      "hidden": [
+        {
+          "check": "totals.js exports total",
+          "passed": true,
+          "detail": "totals.js exports total"
+        },
+        {
+          "check": "total uses numeric addition of price fields",
+          "passed": true,
+          "detail": "total uses numeric addition of price fields"
+        },
+        {
+          "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+          "passed": true,
+          "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+        },
+        {
+          "check": "node tests.js still passes",
+          "passed": true,
+          "detail": "node tests.js still passes"
+        }
+      ],
+      "tokens": 46547
+    },
+    {
+      "round_id": "R-02",
+      "slice": "S2",
+      "hidden": [
+        {
+          "check": "totals.js exports total",
+          "passed": true,
+          "detail": "totals.js exports total"
+        },
+        {
+          "check": "total uses numeric addition of price fields",
+          "passed": true,
+          "detail": "total uses numeric addition of price fields"
+        },
+        {
+          "check": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)",
+          "passed": true,
+          "detail": "CRITICAL business rule: result for [] must be 0 (not NaN/undefined)"
+        },
+        {
+          "check": "node tests.js still passes",
+          "passed": true,
+          "detail": "node tests.js still passes"
+        }
+      ],
+      "tokens": 104864
+    }
+  ],
+  "tokens_total": 151411
+}

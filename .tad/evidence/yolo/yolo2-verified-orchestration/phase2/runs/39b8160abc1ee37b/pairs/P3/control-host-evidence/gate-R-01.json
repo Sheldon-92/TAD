@@ -1,0 +1,1 @@
+{"verdict":"PASS","hidden_acceptance_status":"NOT_YET_DUE","hidden_acceptance_results":[{"check":"run.sh no longer echoes not-done","passed":false,"detail":"run.sh no longer echoes not-done"},{"check":"run.sh prints a 4-digit year line","passed":true,"detail":"run.sh prints a 4-digit year line"},{"check":"sh run.sh exits 0","passed":true,"detail":"sh run.sh exits 0"}]}

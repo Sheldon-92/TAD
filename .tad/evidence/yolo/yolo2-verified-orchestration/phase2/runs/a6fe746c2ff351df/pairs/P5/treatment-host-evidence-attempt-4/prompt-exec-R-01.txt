@@ -1,0 +1,4 @@
+AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:
+Create totals.js exporting function total(items) that returns the sum of item.price across items, and MUST return 0 for an empty array (never NaN/undefined). Use a plain numeric loop/reduce starting from 0. Then stop.
+If the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).
+When finished print DONE.

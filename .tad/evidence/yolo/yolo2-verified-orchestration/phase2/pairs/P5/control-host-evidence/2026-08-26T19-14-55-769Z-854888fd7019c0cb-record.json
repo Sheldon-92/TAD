@@ -1,0 +1,76 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "21b63ece0d5c003f856d4cc7297d94b4ede2aab380588b18fe1b73530dc02ead",
+  "parser_version": "1",
+  "invocation_nonce": "854888fd7019c0cb",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a03f7e-a9cd-7d21-961d-f7d93aea0a15",
+  "resumed_from_session": "01a03f7e-a9cd-7d21-961d-f7d93aea0a15",
+  "turn_kind": "execution",
+  "round_id": null,
+  "packet_sha256": "2d4e7eedad2e711a334727df2b1fbb2908954f3c091ca7459276c580a9959b6f",
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T19-14-55-769Z-854888fd7019c0cb-raw-output.txt",
+    "sha256": "6ac850fdd76691c5ea1f0dc7060352645ebc06a672fa19015fd34fbd31bf9f13"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/pairs/P5/control-host-evidence/2026-08-26T19-14-55-769Z-854888fd7019c0cb-raw-trace.jsonl",
+    "sha256": "8d0fe7c0be9b7d8ea4317d925489d9d7a25274b955e6219f0aac9759f6cc66f4"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Agent"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "codex-exec",
+      "args_sha256": "6fbb11bf97e795400a5c134c93cee47c37f195872c9396d8754c5954a880bc64",
+      "decision": "allowed",
+      "action_nonce": "9a17c7ab3653bfe7",
+      "pre_manifest_sha256": null,
+      "post_manifest_sha256": "c34f3f9968768d050ef54ac8586e618d31531ee7e060352a07db1dd654705ffc",
+      "observed_changed": [
+        " M totals.js"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [
+        "contract-S1.json",
+        "goal-spec.json",
+        "handoff.md",
+        "oracle.txt"
+      ],
+      "worktree_observation": [
+        " M totals.js",
+        "?? contract-S1.json",
+        "?? goal-spec.json",
+        "?? handoff.md",
+        "?? oracle.txt"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 49243,
+    "output_tokens": 206,
+    "total_tokens": 49449,
+    "cached_input_tokens": 43520,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

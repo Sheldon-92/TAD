@@ -1,0 +1,7 @@
+{"type":"thread.started","thread_id":"01a040f0-6fad-7373-88c4-8d4b50a2dadf"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll make only the authorized `app.js` edit and stop; the governed packet leaves test execution to the Conductor."}}
+{"type":"item.started","item":{"id":"item_1","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T5-hidden-business-control/app.js","kind":"update"}],"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"file_change","changes":[{"path":"/private/tmp/yolo2p2-dogfood/T5-hidden-business-control/app.js","kind":"update"}],"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"DONE"}}
+{"type":"turn.completed","usage":{"input_tokens":70230,"cached_input_tokens":67072,"cache_write_input_tokens":0,"output_tokens":175,"reasoning_output_tokens":40}}

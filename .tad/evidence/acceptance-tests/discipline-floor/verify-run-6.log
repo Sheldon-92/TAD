@@ -1,0 +1,46 @@
+AC1: 30 rows, cols 1-4 == verdicts.tsv
+AC1 PASS
+AC2: 循环? enum + 否 行解除待判非空
+AC2 PASS
+AC3: Layer 机械推导
+AC3 PASS
+AC4: 锚点绑定纪律
+AC4 PASS
+AC5: 触发串双向锚定
+AC5 PASS
+AC6: 载体分散度
+AC6 PASS
+AC7: 防双计
+AC7 PASS
+AC8: 副表
+  AC FAIL: AC8: 副表缺 反合理化
+  AC FAIL: AC8: 副表缺 Forbidden
+AC8 FAIL
+AC9: 待判解除条件
+  AC9 去重 20 种
+AC9 PASS
+AC10: 清单缺口节
+AC10 PASS
+AC11: 承接单节
+AC11 PASS
+AC12: 三输入冻结
+  AC12 frozen OK
+AC12 PASS
+AC13: fence
+  AC13 fence clean
+AC13 PASS
+AC14: 汇总真实
+  AC FAIL: AC14: 行不符 [full]
+  got:  full 激活 Layer0: 行数 9 触发串合计 756 bytes
+  want: full 激活 Layer0:  full_rows 触发串合计 756 bytes
+  AC FAIL: AC14: 行不符 [lite]
+  got:  lite 激活 Layer0: 行数 8 触发串合计 632 bytes
+  want: lite 激活 Layer0:  lite_rows 触发串合计 632 bytes
+  AC FAIL: AC14: 行不符 [共有(both)]
+  got:  
+  want: 共有(both) : 行数 6 触发串合计 both_b  
+  AC FAIL: AC14: 行不符 [副表]
+  got:  
+  want: 副表 : 行数 6 触发串合计 sub_b  
+AC14 FAIL
+RESULT=FAIL

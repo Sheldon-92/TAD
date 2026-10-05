@@ -1,0 +1,1 @@
+PACK example-skill FIXTURE regex-bound: disc 1/1 [combined 1/3] → PASS

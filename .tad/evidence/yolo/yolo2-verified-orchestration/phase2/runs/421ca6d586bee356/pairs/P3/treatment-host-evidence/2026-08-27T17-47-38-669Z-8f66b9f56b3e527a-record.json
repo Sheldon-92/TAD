@@ -1,0 +1,163 @@
+{
+  "format": "yolo-reference-turn-v1",
+  "written_by": "reference-runner",
+  "runner_version": "1.0.0",
+  "runner_sha256": "69ec681616345215696054e61a0e24ccbaa2a3e46a8318cf0e89a0d1fdf3a974",
+  "parser_version": "1",
+  "invocation_nonce": "8f66b9f56b3e527a",
+  "harness": "codex",
+  "harness_version": "codex-cli 0.149.1",
+  "model_id": "codex-default",
+  "model_family": "gpt",
+  "reasoning": "balanced",
+  "role": "executor",
+  "session_id": "01a04455-00f3-71e2-b13c-8433eb84e9fc",
+  "resumed_from_session": "01a04455-00f3-71e2-b13c-8433eb84e9fc",
+  "turn_kind": "execution",
+  "round_id": "R-02",
+  "journal_seq": 10,
+  "packet_sha256": "a4fb38f889dffdf5d523faccc23c784f0326deeca651860b766b5fa05ee55ccf",
+  "invocation": {
+    "cmd": [
+      "exec",
+      "resume",
+      "01a04455-00f3-71e2-b13c-8433eb84e9fc",
+      "--json",
+      "--skip-git-repo-check",
+      "-c",
+      "sandbox_mode=\"workspace-write\"",
+      "AUTHORIZED EXECUTION TURN. Perform EXACTLY this slice and nothing else:\nChange run.sh so the last line it prints is done (it currently prints not-done). Then stop.\nIf the requested end state ALREADY exists, change nothing, print DONE-ALREADY, and do not fabricate an edit (redoing verified work is forbidden).\nWhen finished print DONE."
+    ],
+    "exit": 0,
+    "stderr": "",
+    "elapsed_ms": 19292
+  },
+  "native_event_count": 4,
+  "native_event_kinds": [
+    "command_execution",
+    "command_execution",
+    "file_change",
+    "file_change"
+  ],
+  "native_tool_events": [
+    {
+      "event_type": "item.started",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "6639d7adc7a43c83219328c9dd68ee3710acca0f8212edae1a3fb8d821c44a37",
+      "paths": []
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "command_execution",
+      "item_id": "item_1",
+      "command_sha256": "6639d7adc7a43c83219328c9dd68ee3710acca0f8212edae1a3fb8d821c44a37",
+      "paths": []
+    },
+    {
+      "event_type": "item.started",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-treatment/run.sh"
+      ]
+    },
+    {
+      "event_type": "item.completed",
+      "item_type": "file_change",
+      "item_id": "item_2",
+      "command_sha256": null,
+      "paths": [
+        "/private/tmp/yolo2p2-dogfood/T3-shell-edge-treatment/run.sh"
+      ]
+    }
+  ],
+  "native_policy_violation": false,
+  "degraded_approval_sha256": null,
+  "pre_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "contract-S2.json": "f495199261424b2b3d6d03360bc7d7fcd1e6ef34674468a8ba4ee69aa687537c",
+    "goal-spec.json": "16debbde4f3c4421630e438584d42372e30cc94afeb91baf4411b9a231baca3b",
+    "handoff.md": "aded72058dfbc62127c64d80ecb07afff6dd83c9992f13dd47e1ae0efcddb236",
+    "oracle.txt": "3c64e213ed5480b1a7b4f3d41c6455a5df3a042866ee298cda626d3a85ea7a27",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "fdec6dd620da62601b56efd098f1024b2fcd40a2eb06b7d02521b95b8d3f7773",
+    "run.sh": "8b6c7c0d0c64c76b72d40b691d41fff677838287abcd44f9678de6700621f50f"
+  },
+  "post_manifest": {
+    "contract-S1.json": "348ff448c4c8ec86581810e9e95e6a460a26057074249eba4883974af5fa79ea",
+    "contract-S2.json": "f495199261424b2b3d6d03360bc7d7fcd1e6ef34674468a8ba4ee69aa687537c",
+    "goal-spec.json": "16debbde4f3c4421630e438584d42372e30cc94afeb91baf4411b9a231baca3b",
+    "handoff.md": "aded72058dfbc62127c64d80ecb07afff6dd83c9992f13dd47e1ae0efcddb236",
+    "oracle.txt": "3c64e213ed5480b1a7b4f3d41c6455a5df3a042866ee298cda626d3a85ea7a27",
+    ".gitignore": "77bac6a75488924e2d92b42e0f956fb978aa29847e45e62cc8ab091f62b9842b",
+    ".tad/scripts/yolo-recovery.mjs": "fdec6dd620da62601b56efd098f1024b2fcd40a2eb06b7d02521b95b8d3f7773",
+    "run.sh": "f0a40d6ef29b6a419937f239316904f6360c655efddcda09c1e18ac306a2dd65"
+  },
+  "raw_native_output": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/421ca6d586bee356/pairs/P3/treatment-host-evidence/2026-08-27T17-47-38-669Z-8f66b9f56b3e527a-raw-output.txt",
+    "sha256": "0413160e4be1ee9c035535bb7d5d68f1f801ab67012db0cd8903b776920fe180"
+  },
+  "raw_native_trace": {
+    "host_locator": "/Users/sheldonzhao/01-on progress programs/TAD/.tad/evidence/yolo/yolo2-verified-orchestration/phase2/runs/421ca6d586bee356/pairs/P3/treatment-host-evidence/2026-08-27T17-47-38-669Z-8f66b9f56b3e527a-raw-trace.jsonl",
+    "sha256": "0413160e4be1ee9c035535bb7d5d68f1f801ab67012db0cd8903b776920fe180"
+  },
+  "tool_policy": {
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "denied": [
+      "Shell",
+      "Bash",
+      "Agent",
+      "Task"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "worktree_observation": [
+    "run.sh"
+  ],
+  "tool_calls": [
+    {
+      "native_call_id": "final",
+      "tool": "Edit",
+      "args_sha256": "c86190149079c4b03f1263aa304e2110209674adf94a41b4761bf45817a879bd",
+      "invocation_args_sha256": "93e7e29a6b15054ac3c42b966159d7855ad2695d1cf4413be1f6279d23e67bda",
+      "decision": "allowed",
+      "action_nonce": "67c85647f6b1ddb2",
+      "action_id": "A-R-02",
+      "round_id": "R-02",
+      "target": "run.sh",
+      "pre_sha256": "8b6c7c0d0c64c76b72d40b691d41fff677838287abcd44f9678de6700621f50f",
+      "post_sha256": "f0a40d6ef29b6a419937f239316904f6360c655efddcda09c1e18ac306a2dd65",
+      "observed_sha256": "f0a40d6ef29b6a419937f239316904f6360c655efddcda09c1e18ac306a2dd65",
+      "effect_manifest_sha256": "0f4dbb4a04b34148ef4117644a51e0500c3163d7f6ff186dfe04348a0a69b29f",
+      "effect_paths": [
+        "run.sh"
+      ],
+      "effect_fingerprint": "a8bf184ee83a25d8fd2349ec27f14c8b4b774ba4f530505889315d6653b84cc5",
+      "pre_manifest_sha256": "0c8c0c899378373123cd8f692efb30d0549453091abd47b4dbf29fda74d1bac6",
+      "post_manifest_sha256": "cde9ebb40f908752275b0fc5a10e228f68629b5720f012353b04b72fa475b8f9",
+      "observed_changed": [
+        "run.sh"
+      ],
+      "observed_deleted": [],
+      "observed_untracked": [],
+      "worktree_observation": [
+        "run.sh"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 74303,
+    "output_tokens": 413,
+    "total_tokens": 74716,
+    "cached_input_tokens": 69888,
+    "native": true
+  },
+  "exit_status": 0,
+  "final_message": "DONE"
+}

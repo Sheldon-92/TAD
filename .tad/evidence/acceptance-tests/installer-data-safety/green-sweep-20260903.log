@@ -1,0 +1,58 @@
+=== installer-data-safety fixture ===
+  repo: /Users/sheldonzhao/01-on progress programs/TAD
+  case: all
+  ✅ ac2.1: offline run rc=0
+  ✅ ac2.1: zero network (both curl-shim logs empty)
+  ✅ ac2.1: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.1: source tree byte-identical after success run
+  ✅ ac2.1: --source==target rejected (rc=1)
+  ✅ ac2.1: zero mutations on --source==target rejection
+  ✅ ac2.1: preflight-failure run non-zero (rc=1)
+  ✅ ac2.1: source tree byte-identical after failed run
+  ✅ ac2.1: zero network (both curl-shim logs empty)
+  ✅ ac2.2: run rc=0
+  ✅ ac2.2: zero network (both curl-shim logs empty)
+  ✅ ac2.2: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.x[both]: .codex/config.toml byte-identical
+  ✅ ac2.x[both]: .codex/prompts/mine.md byte-identical
+  ✅ ac2.x[both]: .gemini/settings.json byte-identical
+  ✅ ac2.x[both]: GEMINI.md byte-identical
+  ✅ ac2.x[both]: AGENTS.md user bytes preserved in AGENTS.md.pre-tad.20260903-144846
+  ✅ ac2.3[claude-code]: run rc=0
+  ✅ ac2.3: zero network (both curl-shim logs empty)
+  ✅ ac2.3: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.x[claude-code]: .codex/config.toml byte-identical
+  ✅ ac2.x[claude-code]: .codex/prompts/mine.md byte-identical
+  ✅ ac2.x[claude-code]: .gemini/settings.json byte-identical
+  ✅ ac2.x[claude-code]: GEMINI.md byte-identical
+  ✅ ac2.x[claude-code]: AGENTS.md byte-identical (not a root file here)
+  ✅ ac2.3[codex]: run rc=0
+  ✅ ac2.3: zero network (both curl-shim logs empty)
+  ✅ ac2.3: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.x[codex]: .codex/config.toml byte-identical
+  ✅ ac2.x[codex]: .codex/prompts/mine.md byte-identical
+  ✅ ac2.x[codex]: .gemini/settings.json byte-identical
+  ✅ ac2.x[codex]: GEMINI.md byte-identical
+  ✅ ac2.x[codex]: AGENTS.md user bytes preserved in AGENTS.md.pre-tad.20260903-145011
+  ✅ ac2.3[both]: run rc=0
+  ✅ ac2.3: zero network (both curl-shim logs empty)
+  ✅ ac2.3: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.x[both]: .codex/config.toml byte-identical
+  ✅ ac2.x[both]: .codex/prompts/mine.md byte-identical
+  ✅ ac2.x[both]: .gemini/settings.json byte-identical
+  ✅ ac2.x[both]: GEMINI.md byte-identical
+  ✅ ac2.x[both]: AGENTS.md user bytes preserved in AGENTS.md.pre-tad.20260903-145040
+  ✅ ac2.4: run rc=0
+  ✅ ac2.4: zero network (both curl-shim logs empty)
+  ✅ ac2.4: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.4: marker-less CLAUDE.md preserved in timestamped CLAUDE.md.backup.20260903_145157
+  ✅ ac2.4: CLAUDE.md now matches source
+  ✅ ac2.5: installer-destructive-guard exit 0
+  ✅ ac2.5: all markers same-line bound
+  ✅ ac2.5: marker ids unique
+  ✅ ac2.5: mutation probe fails guard on demand (rc=1)
+  ✅ ac2.6a: run rc=0
+  ✅ ac2.6: zero network (both curl-shim logs empty)
+  ✅ ac2.6: positive-install proof (.tad/version.txt == 2.43.1)
+  ✅ ac2.6a: 2.3.0 entries inert (3 TAD-owned paths intact)
+  ✅ ac2.6a: zero deletion-attempt log lines

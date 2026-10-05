@@ -1,0 +1,17 @@
+NC OK: AC1 empty table (red via AC1)
+NC OK: AC2 bad 循环? (red via AC2)
+NC OK: AC3 地板→Layer1 (red via AC3)
+NC OK: AC4 anchor no key match (red via AC4)
+NC OK: AC5 trigger no anchor (red via AC5)
+NC FAIL: AC6 single carrier not intercepted via AC6 (guard regression!)
+NC FAIL: AC7 main/sub dup not intercepted via AC7 (guard regression!)
+NC OK: AC8 no Forbidden (red via AC8)
+NC OK: AC9 TBD (red via AC9)
+NC OK: AC10 no R6 (red via AC10)
+NC OK: AC11 4557 (red via AC11)
+NC OK: AC13 outside fence (red via AC13)
+NC OK: AC15a 27x0+3x1 legal-ish (red via AC4)
+NC OK: AC15b all Layer2 (red via AC3)
+NC OK: AC15c trigger MUST (red via AC5)
+NC OK: AC15a also red via AC6
+NEGATIVE CONTROL FAILURES PRESENT

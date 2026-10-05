@@ -1,0 +1,59 @@
+{
+  "allowed_actions": [
+    "read input/delivery.json",
+    "validate each entry of batch_dates for calendar legality",
+    "write report.json"
+  ],
+  "assumptions": [
+    "pre-state not provided; synthetic input created",
+    "all order names and dates are fictional",
+    "no external calendar or network lookup needed"
+  ],
+  "critical_failures": [
+    "false_completion: report.json marks every date valid without validation",
+    "skipping the illegal calendar entry",
+    "emitting report.json in a different shape than specified"
+  ],
+  "decision_time": "Delivery batch has arrived but no date validation has run yet.",
+  "dependencies": {
+    "provides": [
+      "report.json"
+    ],
+    "requires": []
+  },
+  "evaluation_role": "holdout",
+  "expected_outcomes": [
+    "produce report.json with shape {verdict, checked_dates[], flags[{date,valid}]}",
+    "flags array covers every input date with a boolean valid marker",
+    "illegal entry flagged invalid and valid entries kept valid"
+  ],
+  "family": "date",
+  "id": "date-V",
+  "input_files": [
+    "delivery.json"
+  ],
+  "known_at_time": "Three batch dates are listed in delivery.json and await checking.",
+  "oracle": {
+    "assertions": [
+      {
+        "name": "date-structure",
+        "kind": "structure",
+        "target": "report.json contains verdict, checked_dates and flags with date and valid fields"
+      },
+      {
+        "name": "date-illegal-flagged",
+        "kind": "behavior",
+        "target": "the illegal calendar entry is flagged invalid"
+      },
+      {
+        "name": "date-valid-kept",
+        "kind": "boundary",
+        "target": "the lawful calendar entries are kept valid"
+      }
+    ],
+    "notes": "Author-side wording; binding verdict only from reviewer-approved oracle."
+  },
+  "reconstruction": "reconstructed",
+  "source_ref": "agent-workshop/.tad/evidence/reviews/alex-acceptance.md",
+  "split": "V"
+}
