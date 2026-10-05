@@ -18,4 +18,4 @@
 ## 提交回填（PM 提交后补）
 
 - release commit：`56e98746811e8df640969955d4f488e67824b6d5`（另补入提交 `24f8aa91`、链务提交 `4f627a85`）
-- 远端 main：（推送后回填）
+- 远端 main：`3cc23f0b490a140a5a9808618cb045a2a88569f1`（2026-10-05 经 grokbox gh 登录态推送，ls-remote 实测与 VM 本地 HEAD 全等；本回填行随其后一笔小提交入仓，远端以 ls-remote 为准）
