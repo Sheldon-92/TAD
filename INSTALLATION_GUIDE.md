@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 3.0.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor are supported runtimes**
+**Version 3.0.1 — Alex / Blake is the Default, Codex / OpenCode / Cursor are supported runtimes**
 
 ## 安装方式
 
@@ -52,7 +52,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 3.0.0
+cat .tad/version.txt          # 应显示 3.0.1
 ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 默认（Alex / Blake —— 两个 terminal，人是唯一信息桥梁）

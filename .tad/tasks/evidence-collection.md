@@ -281,6 +281,26 @@ lessons_learned:
     - [pattern]
 ```
 
+## Capture Path Discipline （捕获路径唯一化纪律）
+
+Command-output captures (install logs, check/apply output, command
+transcripts filed as evidence) are evidence. Two rules govern every
+capture:
+
+1. **Unique path, always.** Write each capture to a unique path: a
+   `mktemp` file, or a file directly inside this repo's evidence tree
+   whose name carries the task/step identifier. Multiple executors or
+   waves MUST NOT share one fixed-name capture file under `/tmp` -
+   same-wave runs have overwritten each other's captures before
+   (2026-10-04 S6 alignment: one seat's check/apply output was replaced
+   byte-for-byte by another seat's), leaving reports whose numbers were
+   right by luck while the filed evidence was another repo's.
+2. **Cross-check before citing.** Before splitting, quoting, or filing a
+   capture as evidence, cross-check it against what actually exists on
+   disk (backup names, timestamps, counts, or hashes). If the capture
+   does not match the on-disk artifacts of this task, discard it and
+   re-capture; never file a capture whose provenance was not verified.
+
 ## Pattern Recognition Protocol
 
 ### Success Pattern Identification

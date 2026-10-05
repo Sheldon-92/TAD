@@ -2,11 +2,11 @@
 # Registry status rows are derived from CAPABILITY.md frontmatter (status: active|frozen) — do not hand-edit status
 # Re-generate: bash .tad/scripts/scan-packs.sh after editing any CAPABILITY.md
 version: 1.0.0
-last_scanned: "2026-09-10"
+last_scanned: "2026-10-05"
 source_repo: "Sheldon-92/TAD"
 source_branch: "main"
 source_base_path: ".tad/capability-packs"
-synced_from_version: "2.44.4"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
+synced_from_version: "3.0.1"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
 packs:
   - name: "academic-research"
     description: "Academic research methodology pack for systematic literature review, citation integrity, and quality evaluation. Covers PRISMA systematic reviews, meta-analysis, PubMed search, literature surveys, and academic writing standards. Use for any academic research, literature review, citation analysis, paper evaluation, or systematic review task."

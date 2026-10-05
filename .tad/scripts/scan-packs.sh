@@ -20,7 +20,7 @@ PACKS_DIR="$TAD_DIR/capability-packs"
 # Parse arguments BEFORE computing OUTPUT (P0-1 fix: OUTPUT depends on final PACKS_DIR)
 for arg in "$@"; do
   case "$arg" in
-    --packs-dir=*) PACKS_DIR="${arg#--packs-dir=}" ;;
+    --packs-dir=*) PACKS_DIR="${arg#--packs-dir=}"; PACKS_DIR_WAS_OVERRIDDEN=1 ;;
     --help|-h)
       echo "Usage: bash scan-packs.sh [--packs-dir=PATH]"
       echo "  --packs-dir=PATH  Override packs directory (default: .tad/capability-packs/)"
@@ -138,11 +138,13 @@ packs:
 EOF
 
 count=0
+pack_names=""
 for cap_file in "$PACKS_DIR"/*/CAPABILITY.md; do
   [ -f "$cap_file" ] || continue
 
   pack_dir="$(dirname "$cap_file")"
   pack_name="$(basename "$pack_dir")"
+  pack_names="$pack_names $pack_name"
 
   # Extract fields
   name=$(extract_frontmatter_field "$cap_file" "name")
@@ -192,4 +194,25 @@ EOF
   count=$((count + 1))
 done
 
+# --- Registry↔projection consistency assertion ---
+# Every registered pack MUST have a projection at
+# <root>/.agents/skills/<name>/SKILL.md. Missing projection = red.
+if [ -n "${PACKS_DIR_WAS_OVERRIDDEN:-}" ]; then
+  ASSERT_ROOT="$(cd "$PACKS_DIR/../.." 2>/dev/null && pwd -P)"
+else
+  ASSERT_ROOT="$(cd "$TAD_DIR/.." 2>/dev/null && pwd -P)"
+fi
+SKILLS_DIR="$ASSERT_ROOT/.agents/skills"
+if [ -d "$SKILLS_DIR" ]; then
+  missing=""
+  for pname in $pack_names; do
+    [ -f "$SKILLS_DIR/$pname/SKILL.md" ] || missing="$missing $pname"
+  done
+  if [ -n "$missing" ]; then
+    echo "ERROR: registered pack(s) missing .agents/skills projection:$missing" >&2
+    exit 1
+  fi
+else
+  echo "NOTE: no .agents/skills tree at $SKILLS_DIR - projection assertion skipped" >&2
+fi
 echo "scan-packs.sh: scanned $count packs → $OUTPUT"

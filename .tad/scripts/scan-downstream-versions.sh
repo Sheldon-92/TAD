@@ -90,6 +90,7 @@ mkdir -p "$(dirname "$OUT")"
   printf 'generated-by: .tad/scripts/scan-downstream-versions.sh\n'
   printf 'generated-at: %s\n' "$(date +%Y-%m-%d)"
   printf 'source-of-truth: 各仓 .tad/version.txt（本文件是派生索引，禁止手改）\n'
+  printf '覆盖口径：本台账覆盖范围为 yun-sync 席位仓；goal 型仓为轻量装、无 version.txt 版本面，不在扫描口径内，其缺席不构成版本缺失。\n'
   printf '\n'
   printf '# 下游仓版本台账\n'
   printf '\n'

@@ -123,6 +123,52 @@ installer change, or new runtime. For verifier modes, `0` is pass, `1` is a name
 the selected reference, and `2` is usage/wiring and always hard-blocks. Never combine `1|2` into one warn
 branch. Historical `TAD_RELEASE_GATE=warn` instructions are superseded and inactive.
 
+## Project slot in downstream root files （项目自加槽契约）
+
+Some root files synced to downstream projects (e.g. `AGENTS.md`, an
+`extra_root_files` entry) are files the project itself may have authored
+content in. That content is project-owned. The sync side MUST NOT silently
+swallow it.
+
+### Slot markers
+
+Project-owned content in a synced root file lives between a marker pair, at
+the head of the file, before the TAD body:
+
+    <!-- PROJECT-SLOT:BEGIN -->
+    ...project-owned content, verbatim...
+    <!-- PROJECT-SLOT:END -->
+
+### Sync obligations
+
+1. Before overwriting a downstream root file, extract the slot content (if
+   any) and keep it with the pre-sync backup the installer already takes.
+2. After writing the new source version, re-apply the slot content verbatim
+   at the same position (file head, before the TAD body). The overwrite is
+   complete only when the re-applied slot content compares byte-identical
+   to the backup.
+3. Content that differs from source but sits OUTSIDE a slot is unslotted
+   legacy self-added content: never drop it silently. Record it per case
+   (file, line range, disposition) in the sync evidence and flag it for
+   slot migration.
+
+### Slot discipline
+
+- Slot content MUST NOT restate a version number; the version of record
+  stays `.tad/version.txt`.
+- This contract covers root files delivered via `extra_root_files` (the
+  tad.sh root-file segment is the mechanical surface it governs). It
+  changes no installer behavior by itself; it is the norm the installer
+  and the sync operator are checked against.
+
+### Known legacy instance
+
+`trading-agent/AGENTS.md` lines 1-4 (project entry segment) predate the
+slot. Migration, at that repo's next alignment (executed by the sync side,
+not by this contract): wrap those 4 lines verbatim in the marker pair,
+position unchanged (file head); nothing else in the file is touched by
+the migration.
+
 ## Global safety stops
 
 Stop before mutation when any of these holds:

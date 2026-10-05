@@ -6,7 +6,7 @@ TAD (Triangle Agent Development) uses two specialized roles:
 
 Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
 
-> **Runtime status (v3.0.0)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
+> **Runtime status (v3.0.1)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
 > `.agents/skills/` is a first-party discovery path on all three and `AGENTS.md`
 > is read natively by all three, so roles, gates, and capability packs load
 > open-box. Codex is the **hook-enabled** runtime (SessionStart / PostToolUse);
@@ -77,6 +77,22 @@ durable project knowledge.
 - `.tad/memory/` is the framework capture layer; roles read it but never treat it
   as authoritative. Shared knowledge authority is `.tad/project-knowledge/`.
 
+### File authority order
+
+When two sources state different things about the same matter, resolve
+the conflict in this order — do not improvise per case:
+
+1. The user's explicit instruction in the current conversation.
+2. The target repo's own originals: its `AGENTS.md`, `.tad/` protocols,
+   and `.tad/project-knowledge/`.
+3. Seat-level standing files: `~/AGENTS.md`, `MEMORY.md`, `SOUL.md`.
+4. Injected defaults and overlays.
+
+A lower-ranked source never silently overrides a higher-ranked one:
+when you act on a lower source over a higher one, record the conflict
+and the reason where the decision itself is recorded. `.tad/memory/`
+is a capture layer, never an authority (see "Memory authority").
+
 ### Interaction decisions
 
 All `AskUserQuestion` references in TAD skills are interaction-decision
@@ -133,6 +149,7 @@ When a user's task matches a capability pack's keywords, announce a pointer — 
 | llm-observability | LLM observability & LLMOps capability pack. Gives AI agents the judgme | `.agents/skills/llm-observability/SKILL.md` |
 | ml-training | ML model training on cloud GPU capability pack. Covers platform select | `.agents/skills/ml-training/SKILL.md` |
 | rag-retrieval | RAG & retrieval engineering capability pack. Gives AI agents the judgm | `.agents/skills/rag-retrieval/SKILL.md` |
+| research-methodology | Unified research pipeline for AI agents — 5-phase (Plan→Source→Curate→ | `.agents/skills/research-methodology/SKILL.md` |
 | synthetic-data | Synthetic data & fine-tune dataset curation capability pack. Gives AI  | `.agents/skills/synthetic-data/SKILL.md` |
 
 **How to use:** When keywords match, announce at most 2 pointers (`Pack pointer: {name} — {one-line when}. Path: {SKILL.md}. Do not load unless escalated.`), composed from the registry description/keywords/path. First consult the registry `status`: a pack with `status: frozen` is skipped in auto-match (files stay on disk); a row with missing status counts as active. Escalate a pointer to a full Read only when human-named (the human names the pack or confirms loading it) or on a recorded failure-retry (a written retry note naming the pack). Keyword match alone never loads the SKILL.md file. After escalation, the pack's context detection router dispatches to `references/*.md` files with specific rules. Follow the pack's Step 0 → Step 1 → Step 2 workflow.
