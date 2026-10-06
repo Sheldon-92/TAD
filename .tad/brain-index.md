@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-06 13:37
+Generated: 2026-10-06 14:46
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -65,10 +65,6 @@ Generated: 2026-10-06 13:37
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-06-epic-p4-scale-SUPPLEMENT-1.md | unknown |  |
-| HANDOFF-2026-10-06-epic-p4-scale.md | mixed | Epic 收官段三件＋收官备料： |
-| HANDOFF-2026-10-06-tadsh-backup-fix-SUPPLEMENT-1.md | unknown |  |
-| HANDOFF-2026-10-06-tadsh-backup-fix.md | code#code|yaml|research|e2e|mixed | 修 `tad.sh` 的安装前备份 `backup_existing()`（现 L483–503），四条（票面/GM 验收口径）： |
 
 ## Active Epics
 | File | Summary |
@@ -140,7 +136,7 @@ Generated: 2026-10-06 13:37
 | evidence/closeout-batch-20261005/ | 0 | closeout-batch-20261005 |
 | evidence/codex-regression/ | 10 | codex-regression |
 | evidence/codex-validation/ | 4 | codex-validation |
-| evidence/completions/ | 114 | completions |
+| evidence/completions/ | 118 | completions |
 | evidence/decisions/ | 0 | decisions |
 | evidence/designs/ | 52 | designs |
 | evidence/discuss/ | 4 | discuss |
@@ -149,7 +145,7 @@ Generated: 2026-10-06 13:37
 | evidence/e2e/ | 3 | e2e |
 | evidence/epic-p1-clearance-20261006/ | 2 | epic-p1-clearance-20261006 |
 | evidence/epic-p2-measurement-20261006/ | 12 | epic-p2-measurement-20261006 |
-| evidence/epic-p4-scale-20261006/ | 2 | epic-p4-scale-20261006 |
+| evidence/epic-p4-scale-20261006/ | 6 | epic-p4-scale-20261006 |
 | evidence/eval/ | 2 | eval |
 | evidence/experiments/ | 23 | experiments |
 | evidence/fixtures/ | 10 | fixtures |
@@ -173,19 +169,20 @@ Generated: 2026-10-06 13:37
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 143 | pm |
+| evidence/pm/ | 146 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 14 | ralph-loops |
+| evidence/ralph-loops/ | 15 | ralph-loops |
 | evidence/regression-runs/ | 15 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 5 | releases |
+| evidence/releases/ | 6 | releases |
 | evidence/research/ | 187 | research |
-| evidence/reviews/ | 818 | reviews |
+| evidence/reviews/ | 825 | reviews |
 | evidence/risk-cards/ | 4 | risk-cards |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
+| evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
 | evidence/yolo/ | 805 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |

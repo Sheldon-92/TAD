@@ -44,7 +44,7 @@ gate4_delta: []
 **Date:** [Current Date]
 **Project:** [Project Name]
 **Task ID:** TASK-[YYYYMMDD]-[###]
-**Handoff Version:** 3.1.0
+**Handoff Version:** 3.2.0
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md -->
 
@@ -311,4 +311,4 @@ Producer 在开始产出前，请确认：
 
 **Handoff Created By**: Alex (Agent A)
 **Date**: [Date]
-**Version**: 3.1.0
+**Version**: 3.2.0

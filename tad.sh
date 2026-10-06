@@ -23,7 +23,7 @@ NC='\033[0m'
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="3.1.0"
+TARGET_VERSION="3.2.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -605,7 +605,7 @@ prune_backups() {
         printf '%s' "$_name" | grep -Eq '^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$' || continue
         if [ ! -f "$_path/manifest.txt" ]; then
             if [ "$(dirname "$_path")" = "$_gdir" ]; then
-                if rm -rf "$_path"; then # RM-OK:tad-backup-retention
+                if rm -rf "$_path"; then # RM-OK:tad-backup-retention-residue
                     log_info "Pruned incomplete backup residue: $_path"
                 else
                     log_warn "prune: could not remove incomplete backup residue (left in place): $_path"
@@ -2917,7 +2917,7 @@ rollback_opencode_hooks_projection() {
         local _t="${TARGET_ROOT:-.}"
         rm -f "$_t/.opencode/plugins/tad-hooks.ts" # RM-OK:rollback-opencode-hooks-created
         rmdir "$_t/.opencode/plugins" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-plugins
-        rmdir "$_t/.opencode" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-root
+        rmdir "$_t/.opencode" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-root-hooks
     fi
 }
 

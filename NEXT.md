@@ -7,7 +7,7 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：3.1.0（Epic Phase 2 持续测量层，见完事卡 done-20261006-epic-p2-measurement）→ next：Epic Phase 3 运行时适配补全（提议 v3.2.0） ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：3.2.0（自优化 Epic EPIC-20261006 总收口：Phase 3 运行时适配＋Phase 4 体量与知识复产＋tad.sh 备份修复）→ next：下一轮 PM 自查批 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 

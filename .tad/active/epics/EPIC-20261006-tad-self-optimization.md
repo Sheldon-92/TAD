@@ -26,7 +26,7 @@
 | 1 | 本体清账批 | ✅ 已收口 | v3.0.2 | 遗留五条＋GM 三件＋提案四件全销账；发版口径与校验面定案 |
 | 2 | 持续测量层 | ✅ 已收口 | v3.1.0 | 命名回归样本集＋复跑挂 Gate 3；中断续跑验收脚本；活体回归入发版清单 |
 | 3 | 运行时适配补全 | ⬚ Planned | — | OpenCode/Cursor hooks 适配落地＋两平台真机全链 transcript |
-| 4 | 体量与知识复产 | ⬚ Planned | — | 521M 逐项处置盘点；brain-index 再生成机制与周期在册 |
+| 4 | 体量与知识复产 | ✅ 已收口 | v3.2.0 并版 | 440M（净降 81M 逐项归因）；brain-index 生成器编码修复＋周期入 publish-protocol＋刷新路径接线；D35 空集＋记账装载点复活；Gate 4 PASS |
 
 ### Phase Dependencies
 顺序执行（发版节律与判据依赖使然，非全部硬依赖）：Phase 2 依赖 Phase 1（根因模板供演练记录、发版清单基座在 Phase 1 定案）；Phase 3 依赖 Phase 2（活体回归与中断续跑脚本是真机回归的判据工具）；Phase 4 仅依赖 Phase 1 所立的索引新鲜度断言（作其验收复用），与 Phase 2/3 无硬依赖，排末位系 PM 排期口径。**跨 Phase 硬约束**：Phase 1 件 1.3（minor/major 史述面口径）必须在任何 minor 升版（Phase 2 起提议）之前定案，否则 version 门在 minor/major 转硬拦、发版即红。
