@@ -8,13 +8,18 @@
 #                orchestration-router)
 #   Set B_dir  = names in A∪C whose .agents/skills/<name>/SKILL.md exists
 #   Set C      = source packs (.tad/capability-packs/*/ with a CAPABILITY.md)
-# Reports (a) C\registry  (b) B_type\registry
+# Reports (a) C\registry  (b) B_type\(registry ∪ S)
 #         (c) registry\(B_dir∪C) — the only registry-phantom drift class;
 #         (r) registry-only: A∩(B_dir∪C)\B_type — registered and present as a
 #             source pack and/or projection directory, but invisible to the
 #             type probe; advisory only and never sets drift.
-# (d) advisory WARN lines (source-only by C\B_dir / skill-only by B_type\C /
-# indexed-but-no-install.sh) — never change exit.
+#         (s) declared skill-only: (B_type\registry)∩S, where S = names
+#             declared in capability-packs/skill-only-declarations.txt as
+#             intentionally skill-only (no source pack, by design). Advisory
+#             only, never sets drift — the skill-side counterpart of (r).
+# (d) advisory WARN lines (source-only by C\B_dir / undeclared skill-only by
+# (B_type\C)\S / indexed-but-no-install.sh / stale skill-only declarations) —
+# never change exit.
 #
 # Three-layer summary: scan-packs asserts registry⊆projection on the release
 # source; this driftcheck is an advisory patrol surface; the type probe alone
@@ -41,17 +46,22 @@ REPO_DIR="$(cd "$TAD_DIR/.." && pwd)"
 REGISTRY="$TAD_DIR/capability-packs/pack-registry.yaml"
 PACKS_DIR="$TAD_DIR/capability-packs"
 SKILLS_DIR="$REPO_DIR/.agents/skills"
+DECL_FILE="$PACKS_DIR/skill-only-declarations.txt"
 
 TMP_DIR="$(mktemp -d 2>/dev/null || echo /tmp)"
 A_FILE="$TMP_DIR/drift_A.$$"
 B_FILE="$TMP_DIR/drift_B.$$"
 BDIR_FILE="$TMP_DIR/drift_BDIR.$$"
 C_FILE="$TMP_DIR/drift_C.$$"
+S_FILE="$TMP_DIR/drift_S.$$"
+AS_FILE="$TMP_DIR/drift_AS.$$"
+BUNREG_FILE="$TMP_DIR/drift_BUNREG.$$"
+SWC_FILE="$TMP_DIR/drift_SWC.$$"
 BDIRC_FILE="$TMP_DIR/drift_BDIRC.$$"
 ABC_FILE="$TMP_DIR/drift_ABC.$$"
-: > "$A_FILE"; : > "$B_FILE"; : > "$BDIR_FILE"; : > "$C_FILE"
+: > "$A_FILE"; : > "$B_FILE"; : > "$BDIR_FILE"; : > "$C_FILE"; : > "$S_FILE"
 
-cleanup() { rm -f "$A_FILE" "$B_FILE" "$BDIR_FILE" "$C_FILE" "$BDIRC_FILE" "$ABC_FILE" 2>/dev/null || true; }
+cleanup() { rm -f "$A_FILE" "$B_FILE" "$BDIR_FILE" "$C_FILE" "$S_FILE" "$AS_FILE" "$BUNREG_FILE" "$SWC_FILE" "$BDIRC_FILE" "$ABC_FILE" 2>/dev/null || true; }
 trap cleanup EXIT
 
 # --- Set A: registry pack names ---
@@ -88,6 +98,16 @@ if [ -d "$PACKS_DIR" ]; then
   fi
 fi
 
+# --- Set S: declared skill-only skills (skill-only-declarations.txt) ---
+# One name per line; '#' comments and blank lines ignored. Absent file = empty
+# set (repos that never adopted declarations behave exactly as before).
+if [ -f "$DECL_FILE" ]; then
+  grep -v '^#' "$DECL_FILE" 2>/dev/null \
+    | sed 's/[[:space:]]//g' \
+    | grep -v '^$' \
+    | LC_ALL=C sort -u > "$S_FILE"
+fi
+
 # --- Set B_dir: registered/source names with an installed SKILL.md ---
 # This is intentionally scoped to A∪C: it answers whether a name already in
 # the registry/source universe has a projection directory, regardless of the
@@ -103,11 +123,15 @@ done | LC_ALL=C sort -u > "$BDIR_FILE"
 LC_ALL=C sort -u "$BDIR_FILE" "$C_FILE" > "$BDIRC_FILE"
 # A ∩ (B_dir ∪ C), the starting set for (r)
 LC_ALL=C comm -12 "$A_FILE" "$BDIRC_FILE" > "$ABC_FILE"
+# A ∪ S, the exclusion set for (b): registered OR declared skill-only
+LC_ALL=C sort -u "$A_FILE" "$S_FILE" > "$AS_FILE"
 
 # --- Differences (comm over LC_ALL=C sort-ed lists) ---
 # comm -23 X Y → lines only in X (X minus Y)
 c_minus_reg="$(LC_ALL=C comm -23 "$C_FILE" "$A_FILE")"       # (a) source pack not indexed
-b_minus_reg="$(LC_ALL=C comm -23 "$B_FILE" "$A_FILE")"       # (b) type-visible installed skill not indexed
+b_minus_reg="$(LC_ALL=C comm -23 "$B_FILE" "$AS_FILE")"      # (b) type-visible installed skill neither indexed nor declared skill-only
+LC_ALL=C comm -23 "$B_FILE" "$A_FILE" > "$BUNREG_FILE"      # B_type\registry, the starting set for (s)
+declared_listed="$(LC_ALL=C comm -12 "$BUNREG_FILE" "$S_FILE")" # (s) unregistered but declared skill-only
 reg_minus_bdir_c="$(LC_ALL=C comm -23 "$A_FILE" "$BDIRC_FILE")" # (c) neither projection dir nor source
 registry_only="$(LC_ALL=C comm -23 "$ABC_FILE" "$B_FILE")"   # (r) present but type-probe invisible
 
@@ -117,6 +141,7 @@ echo "Set A (registry names): $(wc -l < "$A_FILE" | tr -d ' ')"
 echo "Set B_type (type-probed installed pack skills): $(wc -l < "$B_FILE" | tr -d ' ')"
 echo "Set B_dir (registered/source names with installed SKILL.md): $(wc -l < "$BDIR_FILE" | tr -d ' ')"
 echo "Set C (source packs): $(wc -l < "$C_FILE" | tr -d ' ')"
+echo "Set S (declared skill-only): $(wc -l < "$S_FILE" | tr -d ' ')"
 if [ "$C_AVAILABLE" -eq 0 ]; then
   echo "Set C unavailable in this repo form — (c) judged against projection dirs only"
 fi
@@ -127,7 +152,7 @@ drift=0
 echo "(a) source pack NOT in registry (C\\registry):"
 if [ -n "$c_minus_reg" ]; then echo "$c_minus_reg" | sed 's/^/    /'; drift=1; else echo "    (none)"; fi
 
-echo "(b) installed pack skill NOT in registry (B_type\\registry):"
+echo "(b) installed pack skill NOT in registry and NOT declared skill-only (B_type\\(registry ∪ S)):"
 if [ -n "$b_minus_reg" ]; then echo "$b_minus_reg" | sed 's/^/    /'; drift=1; else echo "    (none)"; fi
 
 echo "(c) registry entry with neither projection directory nor source pack (registry\\(B_dir∪C), true phantom):"
@@ -136,9 +161,14 @@ if [ -n "$reg_minus_bdir_c" ]; then echo "$reg_minus_bdir_c" | sed 's/^/    /'; 
 echo "(r) registry-only (registered and present, type-probe invisible; advisory — never drift):"
 if [ -n "$registry_only" ]; then echo "$registry_only" | sed 's/^/    /'; else echo "    (none)"; fi
 
+echo "(s) declared skill-only (unregistered by design, declaration on file; advisory — never drift):"
+if [ -n "$declared_listed" ]; then echo "$declared_listed" | sed 's/^/    /'; else echo "    (none)"; fi
+
 # --- (d) advisory WARN — never changes exit ---
 c_without_skill="$(LC_ALL=C comm -23 "$C_FILE" "$BDIR_FILE")"  # source pack with no projection directory
-skill_without_c="$(LC_ALL=C comm -13 "$C_FILE" "$B_FILE")"  # type-visible installed skill with no source pack
+LC_ALL=C comm -13 "$C_FILE" "$B_FILE" > "$SWC_FILE"           # type-visible installed skill with no source pack
+skill_without_c="$(LC_ALL=C comm -23 "$SWC_FILE" "$S_FILE")"  # …excluding declared skill-only
+stale_decl="$(LC_ALL=C comm -23 "$S_FILE" "$B_FILE")"  # declared skill-only but no type-visible installed skill
 echo ""
 echo "(d) advisory WARN (informational — does NOT affect exit code):"
 if [ -n "$c_without_skill" ]; then
@@ -149,6 +179,11 @@ fi
 if [ -n "$skill_without_c" ]; then
   echo "$skill_without_c" | while IFS= read -r p; do
     [ -n "$p" ] && echo "    WARN: installed skill '$p' has no source pack .tad/capability-packs/$p/ (skill-only)"
+  done
+fi
+if [ -n "$stale_decl" ]; then
+  echo "$stale_decl" | while IFS= read -r p; do
+    [ -n "$p" ] && echo "    WARN: skill '$p' is declared skill-only but has no type-visible installed SKILL.md (stale declaration?)"
   done
 fi
 # indexed-but-no-install.sh (source pack present but missing install.sh → not *sync-portable)

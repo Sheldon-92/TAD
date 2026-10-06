@@ -741,6 +741,13 @@ backup_existing() {
     # (dangling symlinks, FIFOs). It is the existence proof rollback's
     # created-entry sweep judges by (S3.4).
     ls -A ".tad" | LC_ALL=C sort > "$_bdir/pre-top.txt" || return 1
+    # pre-tree.txt (R2): the FULL .tad tree enumeration at backup time —
+    # every entry at every depth (dirs, files, symlink bodies, dotfiles),
+    # relative paths, LC_ALL=C sorted. pre-top.txt proves top-level
+    # existence only; nested run-created entries inside pre-existing dirs
+    # are invisible to it, so rollback's created-entry sweep judges by
+    # pre-tree.txt (see rollback_on_failure step 1b).
+    ( cd ".tad" && find . -mindepth 1 | sed 's|^\./||' | LC_ALL=C sort ) > "$_bdir/pre-tree.txt" || return 1
     printf '%s\n' "$_tgt" > "$_bdir/origin.txt" || return 1
     # manifest.txt is written LAST: its presence is the completeness marker
     # read by retention (C4), the rollback gate (C5), and the restore set
@@ -1696,10 +1703,14 @@ HOOKS_EOF
 # in the target. Reuses the SAME deny-list derivations so it checks exactly what was
 # meant to be copied — a new framework dir/file is auto-verified, an omission is caught.
 #
-# Dirs are verified by `diff -rq "$src/.tad/$dir" ".tad/$dir"` (the source tree is
-# LOCAL at install time): this catches PARTIAL copies (1-of-50 files), not just an
-# empty dir. The presence + non-empty check is kept as a fallback when diff is
-# unavailable or the dir is missing entirely.
+# Dirs are verified by `_tad_missing_from "$src/.tad/$dir" ".tad/$dir"` (the
+# source tree is LOCAL at install time): an existence probe over EVERY source
+# entry (dirs, files, symlink bodies, dotfiles) — this catches PARTIAL copies
+# (1-of-50 files), not just an empty dir. A recursive-diff check cannot serve
+# here: GNU diff dereferences symlinks during directory comparison and exits
+# 2 on a DANGLING symlink (a legitimate framework payload), and BSD diff has
+# no --no-dereference (see _tad_tree_equal). The presence + non-empty check
+# is kept as the first branch when the dir is missing entirely.
 #
 # Top-level files (P1: portable-extract.sh class) are verified by `cmp -s` against
 # the source — so a future top-level framework file omission is now CAUGHT here,
@@ -1740,11 +1751,11 @@ verify_install_complete() {
         if [ ! -d ".tad/$dir" ] || [ -z "$(ls -A ".tad/$dir" 2>/dev/null)" ]; then
             log_warn "    ✗ MISSING or EMPTY: .tad/$dir/"
             missing=$((missing + 1))
-        elif command -v diff >/dev/null 2>&1 \
-             && diff -rq "$src/.tad/$dir" ".tad/$dir" 2>/dev/null | grep -q "^Only in $src"; then
-            # One-directional: only flag files MISSING from target (source has but target doesn't).
-            # Target-only files (project-local additions) are expected on upgrades — not an error.
-            log_warn "    ✗ PARTIAL: .tad/$dir/ missing source files (one-directional diff)"
+        elif ! _tad_missing_from "$src/.tad/$dir" ".tad/$dir"; then
+            # One-directional existence only: flag entries MISSING from target
+            # (source has but target doesn't). Target-only files (project-local
+            # additions) are expected on upgrades — not an error.
+            log_warn "    ✗ PARTIAL: .tad/$dir/ missing source entries (one-directional existence probe)"
             missing=$((missing + 1))
         fi
     done <<< "$(derive_framework_dirs "$src")"
@@ -2202,6 +2213,28 @@ note_created_top() {
 "
 }
 
+# _tad_missing_from <src> <dst> — one-directional EXISTENCE probe: returns
+# 1 iff some entry under <src> has no counterpart in <dst>, 0 otherwise.
+# The enumeration is EVERY entry `find` lists (directories themselves,
+# regular files, symlink bodies, dotfiles) — deliberately NOT the
+# whole-tree equality semantics of _tad_tree_equal: the caller (install
+# completeness self-check) asks only "did everything that was meant to be
+# copied arrive", never "are the trees identical" (target-only project
+# files are legitimate). Existence is judged `[ -e ] || [ -L ]`, so a
+# DANGLING symlink counts as present on either side — the exact case the
+# previous recursive-diff-based check misjudged (GNU diff exits 2 on it).
+_tad_missing_from() {
+    local _src="$1" _dst="$2" _rel
+    [ -d "$_src" ] || return 0
+    while IFS= read -r _rel; do
+        [ -n "$_rel" ] || continue
+        if [ ! -e "$_dst/$_rel" ] && [ ! -L "$_dst/$_rel" ]; then
+            return 1
+        fi
+    done <<< "$(cd "$_src" && find . -mindepth 1 | sed 's|^\./||')"
+    return 0
+}
+
 # _tad_tree_equal <a> <b> — byte-exact tree equality probe used by the
 # restore helpers' stage verification. `diff -rq` cannot serve here: GNU
 # diff dereferences symlinks during directory comparison and exits 2 on a
@@ -2383,31 +2416,62 @@ rollback_on_failure() {
             _restored_list="${_restored_list}.tad/$_rb_e "
         done < "$BACKUP_PATH_ABS/manifest.txt"
         if [ "$_rb_ok" = "1" ]; then
-            # 1b. Remove run-created top-level .tad entries (SUPPLEMENT-1
-            # S3.4): an entry is run-created iff it is absent from
-            # pre-top.txt (the backup-time FULL top-level enumeration) and
-            # outside the preserve set. Deny-list surfaces are user-data
-            # territory and are never swept; the registry-only dir is
-            # deliberately NOT exempted here — pre-top membership above is
-            # its only protection, so a run-created pack tree is swept
-            # while a pre-existing one keeps its body (only its registry
-            # file was in the restore domain).
-            if [ -f "$BACKUP_PATH_ABS/pre-top.txt" ]; then
-                local _rb_cur _rb_now
-                _rb_now="$(ls -A "$TARGET_ROOT/.tad" 2>/dev/null || true)"
+            # 1b. Remove run-created .tad entries at EVERY depth (R2;
+            # extends SUPPLEMENT-1 S3.4, which swept the top level only):
+            # an entry is run-created iff it is absent from pre-tree.txt
+            # (the backup-time FULL tree enumeration) and outside the
+            # manifest domain (recorded entries, their ancestor dirs, and
+            # dir entries' backup-payload subtrees — the restore step has
+            # just made the target match the payload there). Existence is
+            # judged by the enumerations themselves, so a created DANGLING
+            # symlink is swept like any created entry and its target is
+            # never touched. Deny-list surfaces are user-data territory
+            # and are never swept (judged by top component); the
+            # registry-only dir is deliberately NOT exempted — a
+            # run-created pack tree is swept while a pre-existing one
+            # keeps its body (only its registry file was restored).
+            # Backups without pre-tree.txt (pre-R2) skip the sweep with a
+            # WARN and delete NOTHING.
+            if [ -f "$BACKUP_PATH_ABS/pre-tree.txt" ]; then
+                local _rb_keep _rb_cur _rb_top _rb_mf _rb_anc
+                _rb_keep="$(mktemp)"
+                cat "$BACKUP_PATH_ABS/pre-tree.txt" > "$_rb_keep"
+                while IFS= read -r _rb_mf; do
+                    [ -n "$_rb_mf" ] || continue
+                    case "$_rb_mf" in version=*) continue ;; esac
+                    printf '%s\n' "$_rb_mf" >> "$_rb_keep"
+                    _rb_anc="$_rb_mf"
+                    while [ "$_rb_anc" != "${_rb_anc%/*}" ]; do
+                        _rb_anc="${_rb_anc%/*}"
+                        printf '%s\n' "$_rb_anc" >> "$_rb_keep"
+                    done
+                    if [ -d "$BACKUP_PATH_ABS/.tad/$_rb_mf" ] && [ ! -L "$BACKUP_PATH_ABS/.tad/$_rb_mf" ]; then
+                        ( cd "$BACKUP_PATH_ABS/.tad/$_rb_mf" && find . -mindepth 1 | sed "s|^\./|$_rb_mf/|" ) >> "$_rb_keep"
+                    fi
+                done < "$BACKUP_PATH_ABS/manifest.txt"
+                LC_ALL=C sort -u -o "$_rb_keep" "$_rb_keep"
                 while IFS= read -r _rb_cur; do
                     [ -n "$_rb_cur" ] || continue
-                    grep -Fxq -e "$_rb_cur" "$BACKUP_PATH_ABS/pre-top.txt" && continue
-                    if printf '%s\n%s\n' "$TAD_DENY_LIST" "$TAD_TOP_DENY" | grep -Fxq -e "$_rb_cur"; then
+                    _rb_top="${_rb_cur%%/*}"
+                    if printf '%s\n%s\n' "$TAD_DENY_LIST" "$TAD_TOP_DENY" | grep -Fxq -e "$_rb_top"; then
                         continue
                     fi
+                    grep -Fxq -e "$_rb_cur" "$_rb_keep" && continue
                     if assert_under_root "$TARGET_ROOT/.tad/$_rb_cur"; then
-                        rm -rf "$TARGET_ROOT/.tad/$_rb_cur" # RM-OK:rollback-created-tad-entry
+                        if [ -d "$TARGET_ROOT/.tad/$_rb_cur" ] && [ ! -L "$TARGET_ROOT/.tad/$_rb_cur" ]; then
+                            # Children were enumerated first (find -depth):
+                            # rmdir removes the dir only once it is empty,
+                            # so a dir still holding kept entries survives.
+                            rmdir "$TARGET_ROOT/.tad/$_rb_cur" 2>/dev/null || continue
+                        else
+                            rm -f "$TARGET_ROOT/.tad/$_rb_cur"
+                        fi
                         _removed_list="${_removed_list}.tad/$_rb_cur "
                     fi
-                done <<< "$_rb_now"
+                done <<< "$(cd "$TARGET_ROOT/.tad" && find . -mindepth 1 -depth | sed 's|^\./||')"
+                rm -f "$_rb_keep"
             else
-                log_warn "Rollback: $BACKUP_PATH_ABS/pre-top.txt missing — created-entry sweep skipped (nothing is deleted without the backup-time enumeration)."
+                log_warn "Rollback: $BACKUP_PATH_ABS/pre-tree.txt missing (pre-R2 backup) — created-entry sweep skipped; NOTHING is deleted without the backup-time full-tree enumeration."
             fi
             rm -rf "$BACKUP_PATH_ABS" # RM-OK:rollback-backup-consumed
             log_info "Restored from backup: $BACKUP_PATH_ABS (manifest domain verified, backup consumed)"

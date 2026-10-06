@@ -1,0 +1,25 @@
+# skill-only-declarations.txt — declared skill-only capability skills.
+#
+# Each non-comment line names an installed skill (.agents/skills/<name>/)
+# whose 正当形态 is skill-only: it was authored and is consumed as a skill
+# (model-selectable via its own frontmatter; indexed in brain-index Skills),
+# it has no source pack under .tad/capability-packs/ and is not a
+# pack-registry.yaml entry, by design rather than by omission.
+#
+# pack-registry-driftcheck.sh reads this file as Set S: declared names are
+# excluded from drift class (b) and reported in advisory class (s) with the
+# same never-drift treatment as class (r). A declaration for a name with no
+# type-visible installed skill is reported as a stale-declaration WARN in (d).
+#
+# Declared 2026-10-06, self-review batch R2 group 1 (per-item evidence:
+# .tad/evidence/self-review-r2-20261006/g1-driftcheck-b11-dispositions.md).
+agent-skill-evolution
+hw-circuit-design
+hw-enclosure
+hw-firmware
+hw-testing
+mobile-development
+mobile-release
+mobile-testing
+mobile-ui-design
+supply-chain-security

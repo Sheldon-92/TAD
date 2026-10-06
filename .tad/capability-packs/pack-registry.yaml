@@ -16,6 +16,14 @@ packs:
     keywords: ["学术", "academic", "论文", "paper", "文献", "literature", "meta-analysis", "元分析", "PRISMA", "systematic review", "系统性综述", "PubMed", "文献综述", "学术研究", "科研"]
     type: "reference-based"
     status: "frozen"
+  - name: "agent-computer-interface"
+    description: "Agent computer & browser control capability pack. Gives AI agents the judgment rules for detecting available tools, selecting the right automation layer (engine/data/hybrid/agent/desktop), configuring browser and computer control tools, and handling fallback chains. Covers Playwright, Browser Use, Stagehand, Firecrawl, Claude in Chrome, Computer Use, and 15+ tools across 5 layers. Use for any browser automation, web scraping, desktop control, or tool selection task."
+    path: ".tad/capability-packs/agent-computer-interface/"
+    consumes: "User browser/computer/scraping task description + current environment context"
+    produces: "Tool selection decision + applied judgment rules + capability detection results + configuration guidance"
+    keywords: ["browser", "automation", "浏览器", "自动化", "scraping", "抓取", "computer use", "desktop", "GUI", "Playwright", "Puppeteer", "Browser Use", "Stagehand", "Firecrawl", "Crawl4AI", "Chrome", "MCP", "控制", "操控"]
+    type: "reference-based"
+    status: "active"
   - name: "agent-memory"
     description: "Agent memory and context engineering capability pack. Gives AI agents the judgment rules for memory architecture (CoALA working/episodic/semantic/procedural layers), context compaction strategy selection, MemGPT/Letta virtual context management, Mem0 extract-reconcile pipelines, LangGraph state persistence and time-travel debugging, and Anthropic prompt-caching topology. Research-grounded rules from MemGPT/Letta, Mem0, LangGraph, the CoALA framework, and Anthropic caching docs. Use for any agent memory design, context-window optimization, checkpointing, or long-horizon statefulness task."
     path: ".tad/capability-packs/agent-memory/"

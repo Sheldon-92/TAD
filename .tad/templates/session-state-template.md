@@ -29,6 +29,9 @@ Last File Written: <none>                  <!-- Updated by post-write-sync.sh ho
 **Key Constraint**: {most important constraint from handoff §10}
 **Success When**: {completion criteria summary — copy from handoff ACs}
 
+## 卸载记录（Offload Log）
+{材料被卸载出当前上下文时逐件登记：时间｜卸载项｜依据｜原文指针｜回取方式；无卸载项写「无」，不许留空节}
+
 <!-- Mechanical facts (git HEAD, branch, handoff/epic lists) are auto-snapshotted before every
      compaction to .tad/active/precompact/snapshot-*.md (newest-wins) by the PreCompact hook.
      This file stays 100% agent-written — the hook never touches it. See AGENTS.md role separation rules. -->

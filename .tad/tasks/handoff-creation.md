@@ -26,6 +26,7 @@ Before creating handoff, verify:
 - [ ] Design specifications created
 - [ ] Technical approach defined
 - [ ] Test criteria established
+- [ ] 若本链含 git gc：HANDOFF 设计节与风险卡须含「.git/refs loose 件预检」——gc 执行前以 `find .git/refs -type f` 清点 loose refs 并将清单落证据面，注明 pack-refs 连带移除的预期范围；链收口时以同一命令对账，差额逐件归因。（依据：Epic P4 Gate 3 SAFETY P2-1 与 PM 认领，2026-10-06）
 
 If any unchecked, STOP and complete them first.
 

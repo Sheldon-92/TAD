@@ -1,6 +1,6 @@
 # Knowledge Writing Rules
 
-> 5 rules for writing reusable playbook entries.
+> 6 rules for writing reusable playbook entries.
 > Grounded in: AWM, Letta, Anthropic Skills, Mem0.
 > Source: `.tad/evidence/research/agent-knowledge-systems/2026-06-22-findings.md`
 
@@ -25,6 +25,14 @@
 
 5. **Imperative voice, self-contained**: Write in imperative mood ("do X", "avoid Y"). Eliminate pronouns — use concrete nouns, tool names, and dates instead. The entry must be fully understandable by a reader with zero context beyond the entry itself.
    - *Why*: Anthropic imperative style; Mem0 self-contained principle — "completeness beats brevity" (research §2).
+
+6. **Source confidence （置信维）**: Every new entry MUST carry a confidence line declaring how its content is known, one of three values:
+   - **实测** — the entry rests on direct measurement evidence gathered at writing time; the entry carries a pointer to that evidence.
+   - **转述** — the entry relays another party's record and has NOT been re-verified in this repo.
+   - **推断** — the entry is derived from existing facts by reasoning, with no direct evidence.
+   An entry with no confidence line is treated as 推断 (ungraded = inferred). When an entry is CITED （转述 or 推断）, the citing text MUST mark the confidence inline on the same line; 实测 entries need no inline mark. New entries must carry the line from birth; existing entries are NOT retro-labeled in bulk — an existing entry gets its confidence line when it is first cited after this rule takes effect （引用即补标）.
+   - Entry form: pattern entries add `- **Source confidence**: <实测|转述|推断>` as the first line after the `### 标题 - 日期` heading line; incident entries add `**Source confidence:** <实测|转述|推断>` immediately after the `**Linked to:**` line.
+   - *Why*: Memory-layer proposal judgment (PM, 2026-10-06): routing and citation treated relayed and inferred knowledge as if measured; the confidence dimension makes the distinction mechanical at the point of citation instead of relying on reader judgment.
 
 ---
 
