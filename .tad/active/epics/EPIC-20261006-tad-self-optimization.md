@@ -173,7 +173,7 @@ OpenCode plugin（`.opencode/plugins/tad.ts`）与 Cursor hooks（`.cursor/hooks
 |---|------|------|
 | 3.1 | OpenCode hooks 适配：`.opencode/plugins/tad.ts` 实现 SessionStart / PostToolUse 等 lifecycle 点位、trace emission、ask-user capture，安装器分发面同步 | AGENTS.md Known Gaps P2；R1 P1 |
 | 3.2 | Cursor hooks 适配：`.cursor/hooks.json` 同等点位落地，安装器分发面同步 | AGENTS.md Known Gaps P2；R1 P1 |
-| 3.3 | 真机回归（承接 Phase 2 件 2.4/2.3）：两平台各跑至少一条真机全链（激活→派发→Gate 证据→收口），transcript 在盘；中断续跑脚本在至少一平台实跑 | AGENTS.md Known Gaps P4；判断正本 C3/C4 |
+| 3.3 | 真机回归（承接 Phase 2 件 2.4/2.3）：两平台各跑至少一条真机全链（激活→派发→Gate 证据→收口），transcript 在盘；中断续跑脚本在至少一平台实跑 **[PM 注记（2026-10-06，裁断 D-1）：以三家为准实施——step3f 首秀登记的三家 ADVISORY 补齐义务为后出且更具体的承诺，本行「两平台」为下限表述、不作上限读；见 `.tad/evidence/pm/2026-10-06-epic-p3-design-rulings.md`]** | AGENTS.md Known Gaps P4；判断正本 C3/C4 |
 | 3.4 | 执行适配器声明清单（C5）：新运行时接入前逐项声明（入口、认证、扩展来源、工作区权限、状态与失败信号、证据出口），逐项映射现有 step_id／started／done 与 Gate 证据 | 判断正本 C5 |
 | 3.5 | 派发权限声明（F1）：先核各通道（Codex 沙箱、Cursor、OpenCode、原生 subagent）权限可声明面，再定声明入派发卡与证据回执的形态；不可编程声明的通道明示固定口径 | 判断正本 F1 |
 
