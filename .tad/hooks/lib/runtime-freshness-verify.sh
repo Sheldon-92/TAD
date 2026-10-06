@@ -10,6 +10,8 @@ TODAY="${2:-$(date +%Y-%m-%d)}"
 COMPAT_DIR="$REPO/.tad/runtime-compat"
 CODEX_LEDGER="$COMPAT_DIR/codex.md"
 CLAUDE_LEDGER="$COMPAT_DIR/claude-code.md"
+OPENCODE_LEDGER="$COMPAT_DIR/opencode.md"
+CURSOR_LEDGER="$COMPAT_DIR/cursor.md"
 
 SAFETY_SURFACES="hooks ask_user_question_hook sandbox_approval_permissions trace_evidence_capture subagents_custom_agents context_compaction"
 
@@ -39,6 +41,16 @@ if [ ! -f "$CLAUDE_LEDGER" ]; then
 elif grep -qE 'RETIRED|DEPRECATED' "$CLAUDE_LEDGER" 2>/dev/null; then
   echo "INFO: ledger $CLAUDE_LEDGER is retired — skipping (v3.0.0 removal)"
   SKIP_CLAUDE=1
+fi
+if [ ! -f "$OPENCODE_LEDGER" ]; then
+  echo "ERROR: missing ledger $OPENCODE_LEDGER" >&2
+  echo "GATE: runtime-freshness exit=2"
+  exit 2
+fi
+if [ ! -f "$CURSOR_LEDGER" ]; then
+  echo "ERROR: missing ledger $CURSOR_LEDGER" >&2
+  echo "GATE: runtime-freshness exit=2"
+  exit 2
 fi
 
 date_to_epoch() {
@@ -175,6 +187,8 @@ check_ledger "codex" "$CODEX_LEDGER"
 if [ "$SKIP_CLAUDE" -eq 0 ]; then
   check_ledger "claude_code" "$CLAUDE_LEDGER"
 fi
+check_ledger "opencode" "$OPENCODE_LEDGER"
+check_ledger "cursor" "$CURSOR_LEDGER"
 
 echo "-----------------------------------------"
 echo "Total: $total entries | PASS: $pass | WARN: $warns | BLOCK: $blocks"
