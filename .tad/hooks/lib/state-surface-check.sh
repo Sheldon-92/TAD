@@ -30,8 +30,17 @@
 #      blockquote, before the first body heading) — every .tad/*.md path
 #      it references exists on disk. Body text is never scanned: it is
 #      per-chain historical state by design.
+#   6. AGENTS.md Knowledge Ingress unconditional read routes exist. Routes
+#      are extracted from AGENTS.md itself (never copied into this script);
+#      conditional "If" lines, "Before editing" instruction lines, glob
+#      tokens, and directory tokens are excluded.
+#   7. .tad/brain-index.md Generated-date freshness. The age is always
+#      reported as INFO; older than BRAIN_INDEX_WARN_AGE_DAYS is WARN only,
+#      while a missing or unparseable Generated date is FAIL.
 #
 # bash + grep + sed only; no yaml, no network, no node.
+
+BRAIN_INDEX_WARN_AGE_DAYS=14
 
 set -u
 
@@ -63,6 +72,22 @@ norm() {
     *.*)   printf '%s.0' "$1" ;;
     *)     printf '%s' "$1" ;;
   esac
+}
+
+# Convert a validated Gregorian YYYY-MM-DD date to days since 1970-01-01.
+# Pure integer arithmetic avoids GNU/BSD `date` conversion differences.
+# (Numeric fields only; no string comparison is delegated to awk.)
+date_to_days() {
+  local y=$((10#$1)) m=$((10#$2)) d=$((10#$3))
+  if [ "$m" -le 2 ]; then
+    y=$((y - 1))
+  fi
+  local era=$(( (y >= 0 ? y : y - 399) / 400 ))
+  local yoe=$((y - era * 400))
+  local mp=$((m > 2 ? m - 3 : m + 9))
+  local doy=$(((153 * mp + 2) / 5 + d - 1))
+  local doe=$((yoe * 365 + yoe / 4 - yoe / 100 + doy))
+  printf '%s' $((era * 146097 + doe - 719468))
 }
 
 # ---- Check 1: NEXT.md header version line --------------------------------
@@ -209,6 +234,80 @@ EOF
   if [ "$c5_bad" -eq 0 ]; then
     pass check5 "session-state index block paths all exist"
   fi
+fi
+
+# ---- Check 6: Knowledge Ingress unconditional read routes exist ------------
+AGENTS_FILE="$REPO/AGENTS.md"
+if [ ! -f "$AGENTS_FILE" ]; then
+  fail check6 "AGENTS.md missing"
+else
+  c6_bad=0
+  c6_count=0
+  while IFS= read -r tok; do
+    [ -n "$tok" ] || continue
+    c6_count=$((c6_count + 1))
+    case "$tok" in
+      *'*'*|*/)
+        fail check6 "Knowledge Ingress route is not a concrete file path: $tok"
+        c6_bad=1
+        continue
+        ;;
+    esac
+    if [ ! -f "$REPO/$tok" ]; then
+      fail check6 "Knowledge Ingress route missing on disk: $tok"
+      c6_bad=1
+    fi
+  done <<EOF
+$(awk '/^## Knowledge Ingress/{found=1; next} found && /^## /{exit} found{print}' "$AGENTS_FILE" \
+  | while IFS= read -r ingress_line; do
+      case "$ingress_line" in
+        *' If '*|*'Before editing'*) continue ;;
+      esac
+      printf '%s\n' "$ingress_line" | grep -oE '`\.tad/[^`]+`' | tr -d '`' || true
+    done | LC_ALL=C sort -u)
+EOF
+  if [ "$c6_count" -eq 0 ]; then
+    fail check6 "no unconditional Knowledge Ingress routes extracted from AGENTS.md"
+  elif [ "$c6_bad" -eq 0 ]; then
+    pass check6 "Knowledge Ingress unconditional routes all exist ($c6_count paths)"
+  fi
+fi
+
+# ---- Check 7: brain-index Generated-date freshness -------------------------
+BRAIN_INDEX="$REPO/.tad/brain-index.md"
+if [ ! -f "$BRAIN_INDEX" ]; then
+  fail check7 "brain-index.md missing; Generated date unavailable"
+else
+  gen_date="$(head -n 20 "$BRAIN_INDEX" | grep '^Generated:' | head -n 1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -n 1 || true)"
+  case "$gen_date" in
+    [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
+      gen_y="${gen_date%%-*}"
+      gen_rest="${gen_date#*-}"
+      gen_m="${gen_rest%%-*}"
+      gen_d="${gen_rest#*-}"
+      gen_m_num=$((10#$gen_m))
+      gen_d_num=$((10#$gen_d))
+      if [ "$gen_m_num" -lt 1 ] || [ "$gen_m_num" -gt 12 ] || [ "$gen_d_num" -lt 1 ] || [ "$gen_d_num" -gt 31 ]; then
+        fail check7 "brain-index Generated date is unparseable: $gen_date"
+      else
+        today_date="$(date +%Y-%m-%d)"
+        today_y="${today_date%%-*}"
+        today_rest="${today_date#*-}"
+        today_m="${today_rest%%-*}"
+        today_d="${today_rest#*-}"
+        gen_days="$(date_to_days "$gen_y" "$gen_m" "$gen_d")"
+        today_days="$(date_to_days "$today_y" "$today_m" "$today_d")"
+        brain_age_days=$((today_days - gen_days))
+        echo "INFO check7: brain-index generated $gen_date, age ${brain_age_days}d"
+        if [ "$brain_age_days" -gt "$BRAIN_INDEX_WARN_AGE_DAYS" ]; then
+          echo "WARN check7: brain-index age ${brain_age_days}d exceeds ${BRAIN_INDEX_WARN_AGE_DAYS}d (advisory; not counted as FAIL)"
+        fi
+      fi
+      ;;
+    *)
+      fail check7 "brain-index Generated date missing or unparseable in first 20 lines"
+      ;;
+  esac
 fi
 
 if [ "$fails" -eq 0 ]; then

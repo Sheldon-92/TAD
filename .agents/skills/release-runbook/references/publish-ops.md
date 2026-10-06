@@ -89,6 +89,13 @@ Do not create an inline migration or verifier wrapper. The existing CLI is the a
 
 - Run `bash "$repo_root/.tad/hooks/lib/pack-registry-driftcheck.sh"`; exit `1` is advisory unless
   another contract makes it blocking.
+- Run the validator positive-control self-check defined as publish-protocol step3c3: every
+  governed name must pass `capability-skill.sh validate "$repo_root" <name>`; any non-zero result
+  stops the release.
+- Judge `hooks.json` drift semantically: compare the canonicalized JSON value sequences
+  (`jq -S`) of the regenerated file and the archived `.codex/hooks.json`. Equal value sequences
+  are not drift even when byte formatting differs; any differing value is drift. Apply the same
+  rule to older generated files in downstream repositories.
 - If `tad.sh` or `derive-sync-set.sh` changed, `bash "$repo_root/tad.sh" --verify-denylist` must
   exit `0` before tagging.
 - The historical `TAD_RELEASE_GATE=warn` cutover graduated on 2026-06-10. It is not an active path.
@@ -98,6 +105,39 @@ Do not create an inline migration or verifier wrapper. The existing CLI is the a
 Only Blake-Lite in `execute` mode may make handoff-listed version/CHANGELOG edits. Derive affected
 tracked files with a fixed-string search for `OLD`, update only the approved set, and run the version
 and version-sweep gates again. Do not rely on a remembered file count. Stage explicit paths only.
+
+Version-surface derivation rule (mirror of publish-protocol step3c, which is the canonical
+wording): the version-literal change surface is derived by rule, never remembered. Change surface =
+Must-Version Registry assertion surface ∪ state-surface check1–3 assertion surface ∪ any surface
+changed by the previous same-type release that the preceding assertion surfaces do not cover ∪
+{`.tad/version.txt`, the AGENTS.md version marker line}. First run the version gate detect-only;
+triage every hit as a live change, a closeout backfill, or an exemption; and file the record at
+`.tad/evidence/releases/<NEW>-version-triage.md`. A patch advisory pass requires that triage record
+to be on disk.
+
+### 3.1 Historical version references — minor/major triage
+
+For a minor or major release, classify every hit from the version gate's detect-only run before
+changing any historical wording:
+
+- **L — Live surface:** Must-Version Registry assertion surfaces, state-surface check1–3
+  surfaces, and prior-release surfaces. Enumerate and change each line with the bump.
+- **H1 — Version-event statement:** wording that records an event tied to an already-published
+  version (for example, “removed in vX”, an ARCHIVED header, or a note explaining an old
+  version). Never rewrite it; exempt the whole class.
+- **H2 — Version-floor statement:** wording in the form “vX.Y+” that remains true after the
+  bump. Exempt it.
+- **H3 — Edition signature / welcome line:** do not mechanically renumber it. Exempt it; whether
+  to add a separate new line is an editorial decision for the closeout owner, recorded in the
+  triage record.
+- **F — Fixture pinned value:** exempt it, unless the fixture's purpose is itself to assert the
+  current version, in which case classify it as L.
+- **D — Documentation history / prior CHANGELOG entry:** exempt it.
+
+An unclassified hit stops the triage: classify it item by item, record the conclusion and any new
+precedent in the current triage record, and do not force it into an existing class. The record's
+fields are `path:line` / hit text / category / basis or precedent pointer. For minor/major, the
+record must cover 100% of the detect-only hits; any unclassified hit is a hard block.
 
 The release commit is local preparation, not publish authority. Verify its staged diff and final commit
 hash against the accepted mandate before any remote action.

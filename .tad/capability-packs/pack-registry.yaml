@@ -2,11 +2,11 @@
 # Registry status rows are derived from CAPABILITY.md frontmatter (status: active|frozen) — do not hand-edit status
 # Re-generate: bash .tad/scripts/scan-packs.sh after editing any CAPABILITY.md
 version: 1.0.0
-last_scanned: "2026-10-05"
+last_scanned: "2026-10-06"
 source_repo: "Sheldon-92/TAD"
 source_branch: "main"
 source_base_path: ".tad/capability-packs"
-synced_from_version: "3.0.1"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
+synced_from_version: "3.0.2"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
 packs:
   - name: "academic-research"
     description: "Academic research methodology pack for systematic literature review, citation integrity, and quality evaluation. Covers PRISMA systematic reviews, meta-analysis, PubMed search, literature surveys, and academic writing standards. Use for any academic research, literature review, citation analysis, paper evaluation, or systematic review task."
@@ -29,7 +29,7 @@ packs:
     path: ".tad/capability-packs/agent-orchestration/"
     consumes: "User multi-agent / orchestration task + target workflow description + step count / duration estimate + optional existing framework choice"
     produces: "Applied orchestration judgment rules + framework selection rationale + topology decision (supervisor/swarm) + durability/checkpoint plan + HITL interrupt design + tool-permission audit"
-    keywords: ["agent orchestration", "智能体编排", "multi-agent", "多智能体", "LangGraph", "CrewAI", "AutoGen", "OpenAI Agents SDK", "Claude Agent SDK", "Temporal", "durable execution", "持久化执行", "supervisor", "swarm", "checkpoint", "检查点", "human-in-the-loop", "状态机", "agent 框架"]
+    keywords: ["agent orchestration", "智能体编排", "multi-agent", "多智能体", "LangGraph", "CrewAI", "AutoGen", "Microsoft Agent Framework", "OpenAI Agents SDK", "Claude Agent SDK", "Temporal", "durable execution", "持久化执行", "supervisor", "swarm", "orchestrator-worker", "fan-out", "checkpoint", "检查点", "human-in-the-loop", "failure mode", "MAST", "失败模式", "状态机", "agent 框架"]
     type: "reference-based"
     status: "active"
   - name: "ai-agent-architecture"
@@ -189,7 +189,7 @@ packs:
     path: ".tad/capability-packs/web-frontend/"
     consumes: "Design artifacts (DESIGN.md + tokens from web-ui-design) + optional existing React codebase"
     produces: "Production-grade React code + component library + performance audit results"
-    keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG"]
+    keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG", "visual edit", "browser edit", "UI polish", "visual bridge"]
     type: "reference-based"
     status: "active"
   - name: "web-testing"
@@ -197,7 +197,7 @@ packs:
     path: ".tad/capability-packs/web-testing/"
     consumes: "User testing task + project tech stack + optional existing test configs"
     produces: "Applied testing judgment rules + test configs + CI/CD pipeline configs + accessibility audit results + performance budgets + pair testing session reports"
-    keywords: ["测试", "testing", "test", "单元测试", "unit test", "E2E", "端到端", "API 测试", "api test", "性能测试", "performance", "可访问性", "accessibility", "a11y", "WCAG", "pair testing", "配对测试", "Playwright", "Vitest", "k6", "axe-core", "测试策略", "test strategy", "coverage", "覆盖率"]
+    keywords: ["测试", "testing", "test", "单元测试", "unit test", "E2E", "端到端", "API 测试", "api test", "性能测试", "performance", "可访问性", "accessibility", "a11y", "WCAG", "WCAG 2.2", "target-size", "pair testing", "配对测试", "Playwright", "Test Agents", "Vitest", "k6", "axe-core", "Stryker", "mutation testing", "突变测试", "测试策略", "test strategy", "coverage", "覆盖率", "flaky", "Core Web Vitals", "INP"]
     type: "reference-based"
     status: "active"
   - name: "web-ui-design"

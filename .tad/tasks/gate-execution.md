@@ -264,6 +264,8 @@ Please select an option (0-8) or 9 to deliver:
 Select 0-9:
 ```
 
+链收口迁档 HANDOFF/COMPLETION 至 `.tad/archive/` 时，同一步把 session-state 索引块中该链的路径回写为归档路径；state-surface check5 为其机械见证，在下一次发版 step3e 拦截遗漏。
+
 ## Evidence Collection Requirements
 
 ### For Each Gate Execution:
@@ -290,6 +292,10 @@ patterns_identified: []
 - If pattern repeats → Update framework configuration
 
 ## Violation Handling Protocol
+
+### Root-Cause-First（先根因，后返工）
+
+On any Gate FAIL, rework does not start from the review's line items. Alex first files a root-cause report using `.tad/templates/root-cause-report.md`（定因 / 定界 / 验证）; Blake implements that report's fix design. Patching review items one by one without a root-cause report is a process violation.
 
 ### Level 1: Warning
 ```

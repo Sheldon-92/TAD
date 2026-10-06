@@ -1,7 +1,7 @@
 ---
 name: agent-orchestration
 description: Agent orchestration capability pack. Gives AI agents the judgment rules for building reliable multi-agent systems — framework selection (LangGraph / CrewAI / AutoGen v0.4+ / OpenAI Agents SDK / Claude Agent SDK), Supervisor vs Swarm topology, durable execution with Temporal event sourcing, human-in-the-loop interrupt/resume patterns, and tool-permission models. Research-grounded rules from framework docs, Temporal durable-execution patterns, and production complexity-cliff analysis. Use for any multi-agent architecture, orchestration framework choice, checkpoint/recovery design, HITL gating, or agent tool-permission task.
-keywords: ["agent orchestration", "智能体编排", "multi-agent", "多智能体", "LangGraph", "CrewAI", "AutoGen", "OpenAI Agents SDK", "Claude Agent SDK", "Temporal", "durable execution", "持久化执行", "supervisor", "swarm", "checkpoint", "检查点", "human-in-the-loop", "状态机", "agent 框架"]
+keywords: ["agent orchestration", "智能体编排", "multi-agent", "多智能体", "LangGraph", "CrewAI", "AutoGen", "Microsoft Agent Framework", "OpenAI Agents SDK", "Claude Agent SDK", "Temporal", "durable execution", "持久化执行", "supervisor", "swarm", "orchestrator-worker", "fan-out", "checkpoint", "检查点", "human-in-the-loop", "failure mode", "MAST", "失败模式", "状态机", "agent 框架"]
 type: reference-based
 ---
 

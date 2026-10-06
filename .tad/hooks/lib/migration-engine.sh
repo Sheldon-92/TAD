@@ -665,7 +665,7 @@ do_backup() {
 # Chain resolution (FR4)
 # ══════════════════════════════════════════════════════════════
 resolve_chain() {
-    local from="$1" to="$2" migrations_dir="$3"
+    local from="$1" to="$2" migrations_dir="$3" target_dir="$4"
     CHAIN_MANIFESTS=()
 
     if ! version_le "$from" "$to" || [ "$from" = "$to" ]; then
@@ -703,6 +703,21 @@ resolve_chain() {
             fi
         done
         if [ "$found" -eq 0 ]; then
+            # Genesis anchor (item 1.6): only a gap at the very head of the
+            # chain can be anchored. A target fresh-installed at <from> has
+            # no pre-genesis migration history, so an empty chain is a valid
+            # zero-operation pass. A later gap remains a real chain gap.
+            if [ "${#CHAIN_MANIFESTS[@]}" -eq 0 ]; then
+                local genesis_file="$target_dir/.tad/migrations/genesis.yaml"
+                if [ -f "$genesis_file" ]; then
+                    local genesis_version
+                    genesis_version="$(grep '^installed_version:' "$genesis_file" 2>/dev/null | head -n 1 | sed 's/^installed_version:[[:space:]]*//' | tr -d "\"'[:space:]\r")"
+                    if [ "$genesis_version" = "$from" ]; then
+                        printf 'NOTE: genesis-anchored at %s — no shipped hop; zero-operation pass\n' "$from"
+                        return 0
+                    fi
+                fi
+            fi
             printf 'REJECT: chain gap at %s — no manifest from %s. Suggest clean reinstall.\n' "$current" "$current" >&2
             return 1
         fi
@@ -972,7 +987,7 @@ main() {
     load_zero_touch "$SOURCE"
 
     local migrations_dir="$SOURCE/.tad/migrations"
-    resolve_chain "$FROM_VER" "$TO_VER" "$migrations_dir" || exit 2
+    resolve_chain "$FROM_VER" "$TO_VER" "$migrations_dir" "$TARGET" || exit 2
 
     if [ ${#CHAIN_MANIFESTS[@]} -eq 0 ]; then
         printf 'No manifests found for %s → %s\n' "$FROM_VER" "$TO_VER"

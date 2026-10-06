@@ -533,6 +533,8 @@ Blake的实现被认为完成，当且仅当：
 > Gate 3 不再硬编码 tsc/test/lint —— 对 dev 项目，这些是 Alex 在此自动生成的 AC 行
 > (alex step1_ac_generation)；对非 dev 项目，这些是域特定命令。
 >
+> **pack 计数口径**：pack 计数以登记面为准：登记面 ＝ pack-registry.yaml 条目且源包有 CAPABILITY.md 的 pack 集合；目录数不是登记数——无 CAPABILITY.md 的目录（如 agent-computer-interface）不计入登记数。凡计数类 AC 必须在方法文中写明计数对象定义。
+>
 > **AC 行示例（按项目类型）**：
 >
 > ```

@@ -1,7 +1,7 @@
 ---
 name: web-testing
 description: Web testing capability pack. Gives AI agents the judgment rules for unit testing (Vitest Browser Mode), API contract testing (Pact/OpenAPI), performance auditing (Core Web Vitals/k6), accessibility compliance (axe-core/Pa11y), human-AI pair testing (4D Protocol), and test strategy design (pyramid/CI/CD pipeline). Research-grounded rules from Playwright, Vitest, k6, axe-core, MSW, and Pact documentation. Use for any web application testing, test infrastructure setup, or quality assurance task.
-keywords: ["测试", "testing", "test", "单元测试", "unit test", "E2E", "端到端", "API 测试", "api test", "性能测试", "performance", "可访问性", "accessibility", "a11y", "WCAG", "pair testing", "配对测试", "Playwright", "Vitest", "k6", "axe-core", "测试策略", "test strategy", "coverage", "覆盖率"]
+keywords: ["测试", "testing", "test", "单元测试", "unit test", "E2E", "端到端", "API 测试", "api test", "性能测试", "performance", "可访问性", "accessibility", "a11y", "WCAG", "WCAG 2.2", "target-size", "pair testing", "配对测试", "Playwright", "Test Agents", "Vitest", "k6", "axe-core", "Stryker", "mutation testing", "突变测试", "测试策略", "test strategy", "coverage", "覆盖率", "flaky", "Core Web Vitals", "INP"]
 type: reference-based
 ---
 

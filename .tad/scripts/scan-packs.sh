@@ -195,6 +195,7 @@ EOF
 done
 
 # --- Registry↔projection consistency assertion ---
+# pack 计数以登记面为准：登记面 ＝ pack-registry.yaml 条目且源包有 CAPABILITY.md 的 pack 集合；目录数不是登记数——无 CAPABILITY.md 的目录（如 agent-computer-interface）不计入登记数。凡计数类 AC 必须在方法文中写明计数对象定义。
 # Every registered pack MUST have a projection at
 # <root>/.agents/skills/<name>/SKILL.md. Missing projection = red.
 if [ -n "${PACKS_DIR_WAS_OVERRIDDEN:-}" ]; then

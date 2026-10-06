@@ -301,6 +301,15 @@ capture:
    does not match the on-disk artifacts of this task, discard it and
    re-capture; never file a capture whose provenance was not verified.
 
+## Negative Evidence Discipline （负证据纪律）
+
+A finding that something did NOT happen — no log line, no file, no event, an empty search result — is evidence only as strong as the probe behind it.
+
+1. **Probe before you conclude.** When a conclusion depends on an absence, first run a positive probe that WOULD have detected the thing had it occurred (a known-bad token against the endpoint, a canary record through the pipeline, a control query with a known hit), and file the probe and its result next to the conclusion. A silent log proves nothing when the failing path was never shown to write log lines.
+2. **Label the strength.** If no positive probe is possible, the conclusion must carry an explicit evidence-strength label — `probed` / `observed-absent` / `assumed` — wherever it is filed. An unlabeled absence claim does not pass Gate review.
+
+Instance: 2026-10-05 BrowserSkill pairing diagnosis — failed authorize exchanges write no daemon log lines; absence in the log was misread as "the client never sent a request" until a fake-token probe (HTTP 401 returned, log still silent) proved the probe channel works and the log is blind on that path.
+
 ## Pattern Recognition Protocol
 
 ### Success Pattern Identification

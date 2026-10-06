@@ -103,6 +103,16 @@ publish_protocol:
         + scan-packs registry regen. structural is sync-only by design (no target exists at publish) —
         there is NO publish-time source-consistency hole.
 
+        Version-surface derivation rule: the set of version literals to change is
+        derived, never remembered from a prior release. Change surface =
+        Must-Version Registry assertion surface ∪ state-surface check1–3 assertion
+        surface ∪ any surface changed by the previous same-type release that the
+        preceding assertion surfaces do not cover ∪ {`.tad/version.txt`, the AGENTS.md version
+        marker line}. For every release, first run this version gate detect-only,
+        triage every hit (live change / closeout backfill / exemption), and file the
+        triage at `.tad/evidence/releases/<NEW>-version-triage.md`; a patch advisory
+        pass is permitted only when that triage record is on disk.
+
         FIRST, unconditionally emit the derived synced-set REPORT (AC8 — every run, not only on failure,
         so a newly-included framework dir is auditable at gate time per bias-to-sync):
           bash .tad/hooks/lib/derive-sync-set.sh --report
@@ -119,6 +129,10 @@ publish_protocol:
         - exit 1 (real stale-ref drift) AND release_type in {minor, major}:
           → HARD BLOCK. Do not proceed to Confirm & Execute. Fix the stale ref(s) and re-run *publish.
             (Shadow cutover graduated 2026-06-10: 14/14 projects validated. TAD_RELEASE_GATE=warn no longer used.)
+            Minor/major triage gate: before the release may proceed, `.tad/evidence/releases/<NEW>-version-triage.md`
+            must exist and cover 100% of this detect-only run's hits, with each hit assigned a category and
+            basis (fields: path:line / hit text / category / basis or precedent pointer). Any unclassified hit
+            is a HARD BLOCK at the same level as exit 2.
         - exit 1 (real drift) AND release_type == patch → advisory WARN, proceed to step4.
         On any non-zero, echo: GATE: release-verify version exit=<n>
         (so a fail-CLOSED usage error (exit 2) is distinguishable from a true stale-ref drift (exit 1) —
@@ -147,12 +161,38 @@ publish_protocol:
       blocking: true
       detect_only: true  # reads only — never edits files
 
+    step3c3:
+      name: "Validator Positive-Control Self-Check (ALWAYS BLOCKING)"
+      action: |
+        Governed set = every pack name listed in `.tad/capability-packs/pack-registry.yaml`,
+        plus `alex` and `blake`. For each governed name, substitute that name for
+        `<name>` and run exactly this two-argument form:
+
+          bash .tad/scripts/capability-skill.sh validate "$PWD" <name>
+
+        Every invocation must exit 0. Any non-zero result stops the release;
+        do not proceed to step3d. This positive-control self-check applies to
+        patch, minor, and major releases alike.
+      blocking: true
+
     step3d:
       name: "Migration Manifest Gate (BLOCKING on minor+)"
       action: |
         Run the migration gate to detect unmanifested file deletions/renames between
         the previous tag and HEAD:
           bash .tad/hooks/lib/release-verify.sh migration "$PWD"
+
+        Every release must ship `.tad/migrations/{prev}-to-{new}.yaml`; when the
+        release has no delete/rename operations, use the empty-operation form
+        (`delete: []` / `rename: []` plus a note), following the
+        `2.43.0-to-2.43.1` precedent.
+
+        Stock-repository genesis backfill: an existing fresh-installed repository's
+        missing genesis manifest may be backfilled only from on-disk installation
+        evidence (for example an install-checks report), in the same form, with
+        `installed_version` taken from that evidence. With no evidence, do not
+        backfill and do not fabricate a retrospective manifest. Backfill execution
+        belongs to the downstream refresh surface, not the release-source change set.
 
         Branch on exit code — same pattern as step3c (exit 1 vs exit 2 handled separately):
         - exit 0 → proceed to step4.

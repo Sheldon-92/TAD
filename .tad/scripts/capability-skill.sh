@@ -41,8 +41,28 @@ Notes:
   - Rejects non-normalized names, traversal, absolute names, path escape, symlink path chains,
     symlinks anywhere in canonical tree, mismatched frontmatter/directory name.
   - Placeholder scan: SKILL.md must not contain {{...}}, [TODO], [TBD].
-  - Forbidden root artifacts: CAPABILITY.md, README.md, CHANGELOG.md, install.sh.
+  - Forbidden root artifacts (Class A): CAPABILITY.md, README.md, CHANGELOG.md, install.sh.
   - BSD/macOS-safe; no grep -P.
+
+Dual-class frontmatter contract (2026-10-06, TASK-20261006-EPIC-P1-CLEARANCE item 1.1):
+  A validated name is Class P (pack projection) when it is listed in
+  <root>/.tad/capability-packs/pack-registry.yaml; when that registry is
+  unreadable (target-repo form), a SKILL.md 'type:' line in
+  {reference-based, deep-skill, orchestration-router} is the fallback Class P
+  signal. Everything else is Class A (authored / framework skill).
+  - Class A keeps the strict contract unchanged: frontmatter keys are exactly
+    {name, description}; forbidden root artifacts as above.
+  - Class P allows keys {name, description, version, type, keywords} — type /
+    keywords / version are load-bearing projection metadata (driftcheck type
+    probe, scan-packs registry generation, AGENTS.md pointer table). When the
+    source pack CAPABILITY.md declares type/keywords/version, the projection
+    must carry the line verbatim; keywords must be a one-line flow list.
+    Forbidden root artifacts narrow to {CAPABILITY.md, install.sh};
+    README.md / CHANGELOG.md are allowed only for authored-tree source packs
+    (source pack ships its own SKILL.md tree).
+  Contract-change note: historical acceptance artifacts that cite validate
+  results were judged under the pre-2026-10-06 single-class contract; re-runs
+  are judged under this dual-class contract.
   - Concurrency: cooperative local invocations are serialized via per-skill lock; hostile
     filesystem mutation is out of scope and not protected (no FD hardening in Phase 1).
 
@@ -176,7 +196,31 @@ validate_canonical() {
     err "ERROR: SKILL.md is a symlink"
     return 2
   fi
-  for _bad in "CAPABILITY.md" "README.md" "CHANGELOG.md" "install.sh"; do
+  # --- Dual-class determination (item 1.1, 2026-10-06) ---
+  # Class P (pack projection): name listed in pack-registry.yaml. Fallback when
+  # the registry is unreadable (target-repo form): SKILL.md carries a pack
+  # 'type:' line. Otherwise Class A (authored / framework) — strict contract.
+  _root="${_canon%/.agents/skills/*}"
+  _registry="$_root/.tad/capability-packs/pack-registry.yaml"
+  _class="A"
+  if [ -f "$_registry" ]; then
+    if grep -qF "name: \"$_name\"" "$_registry"; then
+      _class="P"
+    fi
+  elif grep -qE '^[[:space:]]*type:[[:space:]]*(reference-based|deep-skill|orchestration-router)[[:space:]]*$' "$_skill"; then
+    _class="P"
+  fi
+  if [ "$_class" = "P" ]; then
+    _forbidden="CAPABILITY.md install.sh"
+    # README.md/CHANGELOG.md allowed only for authored-tree source packs
+    # (the source pack ships its own SKILL.md tree; projection is a tree copy).
+    if [ ! -f "$_root/.tad/capability-packs/$_name/SKILL.md" ]; then
+      _forbidden="$_forbidden README.md CHANGELOG.md"
+    fi
+  else
+    _forbidden="CAPABILITY.md README.md CHANGELOG.md install.sh"
+  fi
+  for _bad in $_forbidden; do
     if [ -e "$_canon/$_bad" ]; then
       err "ERROR: forbidden artifact at Skill root: $_bad"
       return 2
@@ -207,9 +251,16 @@ validate_canonical() {
     err "ERROR: frontmatter must contain exactly one 'description:' (found $_desc_count)"
     return 2
   fi
-  _extra="$(printf '%s\n' "$_fm" | grep -E '^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*:' | grep -vE '^[[:space:]]*(name|description):' || true)"
+  if [ "$_class" = "P" ]; then
+    _allowed_keys="name|description|version|type|keywords"
+    _allowed_desc="name+description+version+type+keywords"
+  else
+    _allowed_keys="name|description"
+    _allowed_desc="only name+description allowed"
+  fi
+  _extra="$(printf '%s\n' "$_fm" | grep -E '^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*:' | grep -vE "^[[:space:]]*($_allowed_keys):" || true)"
   if [ -n "$_extra" ]; then
-    err "ERROR: frontmatter contains extra keys (only name+description allowed):"
+    err "ERROR: frontmatter contains extra keys ($_allowed_desc):"
     printf '%s\n' "$_extra" | sed 's/^/  -> /' >&2
     return 2
   fi
@@ -248,6 +299,58 @@ validate_canonical() {
   if printf '%s' "$_fm_name" | grep -qE '^[>|]'; then
     err "ERROR: name must be one-line scalar, block/folded style not allowed"
     return 2
+  fi
+  if [ "$_class" = "P" ]; then
+    # Class P mirror contract (item 1.1): type/keywords/version declared by
+    # the source pack CAPABILITY.md must be carried verbatim; type value is
+    # domain-bound; keywords must be a one-line flow list. When CAPABILITY.md
+    # is unreadable (target-repo form), mirror checks are skipped and only
+    # the type domain check runs.
+    for _k in type keywords version; do
+      _cnt="$(printf '%s\n' "$_fm" | grep -cE "^[[:space:]]*${_k}[[:space:]]*:")"
+      if [ "$_cnt" -gt 1 ]; then
+        err "ERROR: frontmatter must contain at most one '${_k}:' (found $_cnt)"
+        return 2
+      fi
+    done
+    _p_type_line="$(printf '%s\n' "$_fm" | grep -E '^[[:space:]]*type:' || true)"
+    if [ -n "$_p_type_line" ]; then
+      _p_type_val="$(printf '%s' "$_p_type_line" | sed 's/^[[:space:]]*type:[[:space:]]*//; s/[[:space:]]*$//')"
+      case "$_p_type_val" in
+        reference-based|deep-skill|orchestration-router) ;;
+        *) err "ERROR: pack type '$_p_type_val' not in {reference-based, deep-skill, orchestration-router}"; return 2 ;;
+      esac
+    fi
+    _p_kw_line="$(printf '%s\n' "$_fm" | grep -E '^[[:space:]]*keywords:' || true)"
+    if [ -n "$_p_kw_line" ]; then
+      _p_kw_trim="$(printf '%s' "$_p_kw_line" | sed 's/^[[:space:]]*//')"
+      if ! printf '%s' "$_p_kw_trim" | grep -qE '^keywords: \[.*\]$'; then
+        err "ERROR: pack keywords must be a one-line flow list (keywords: [...])"
+        return 2
+      fi
+    fi
+    _cap="$_root/.tad/capability-packs/$_name/CAPABILITY.md"
+    if [ -f "$_cap" ]; then
+      _cap_fm="$(awk 'NR==1{next} /^---[[:space:]]*$/{exit} {print}' "$_cap" 2>/dev/null)"
+      for _k in type keywords version; do
+        _cap_line="$(printf '%s\n' "$_cap_fm" | grep -E "^[[:space:]]*${_k}:" || true)"
+        if [ -n "$_cap_line" ]; then
+          _p_line="$(printf '%s\n' "$_fm" | grep -E "^[[:space:]]*${_k}:" || true)"
+          if [ -z "$_p_line" ]; then
+            err "ERROR: frontmatter missing '${_k}:' declared by source CAPABILITY.md"
+            return 2
+          fi
+          _cap_trim="$(printf '%s' "$_cap_line" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+          _p_trim="$(printf '%s' "$_p_line" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+          if [ "$_cap_trim" != "$_p_trim" ]; then
+            err "ERROR: frontmatter '${_k}:' diverges from source CAPABILITY.md"
+            err "  projection: $_p_trim"
+            err "  capability: $_cap_trim"
+            return 2
+          fi
+        fi
+      done
+    fi
   fi
   if grep -qF "{{" "$_skill" 2>/dev/null; then
     if grep -qE '\{\{.*\}\}' "$_skill" 2>/dev/null; then
