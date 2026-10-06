@@ -76,6 +76,11 @@ TAD_TMP_ROOT=""
 # F-06 rollback state (absolutized at snapshot time; see take_rollback_snapshot).
 TARGET_ROOT=""
 BACKUP_PATH_ABS=""
+# Backup-root state (resolved once per run by resolve_backup_root and consumed
+# by backup_existing; rollback step-1 reads TAD_BACKUP_ROOT_ABS in-process —
+# it is never re-derived from the environment at rollback time).
+TAD_BACKUP_ROOT_ABS=""
+BACKUP_GROUP=""
 ROLLBACK_SNAP=""
 MERGE_CREATED_BACKUP=""
 ROLLBACK_CREATED_TOP=""
@@ -480,26 +485,288 @@ validate_environment() {
 # ============================================
 # Phase 2: Backup Existing Config
 # ============================================
-backup_existing() {
-    # Unique destination: same-second reruns must never overwrite or nest into
-    # an existing backup (FR-1). Suffix increments until a free name is found.
-    local base=".tad.backup.$(date +%Y%m%d_%H%M%S)"
-    local backup_dir="$base"
-    local n=1
-    while [ -e "$backup_dir" ]; do
-        backup_dir="${base}.$n"
-        n=$((n + 1))
-    done
-
-    if [ -d ".tad" ]; then
-        log_info "Backing up existing .tad/ to $backup_dir"
-        # Uppercase -R: on BSD/macOS, lowercase -r dereferences a dangling
-        # symlink and fails under set -e (the reported helpers/node_modules
-        # case). -R preserves the link and succeeds. The backup is user-owned
-        # project data; a failed backup MUST abort before any mutation.
-        cp -R .tad "$backup_dir"
-        BACKUP_PATH="$backup_dir"
+# resolve_backup_root — resolve + validate the backup root (C1). Result in
+# the global TAD_BACKUP_ROOT_ABS (physical path). The root defaults to
+# $HOME/.tad-backups (built from $HOME — a literal "~" carried as data never
+# expands, shell-portability 2026-08-06) and TAD_BACKUP_ROOT may override it.
+# Refuses (return 1, caller aborts BEFORE any project mutation): a relative
+# root, an uncreatable root, or a root that is the target root or inside it.
+# "Target root" here is the cwd at backup time, as a physical path:
+# backup_existing works cwd-relative, and $TARGET_ROOT is still empty at
+# backup time (it is first set by take_rollback_snapshot, AFTER the backup —
+# SUPPLEMENT-1 N2). The physical (symlink-resolved) landing point is judged
+# BEFORE any mkdir/chmod effect, so an inside-target refusal — including via
+# a symlink alias onto an existing directory — leaves zero trace (NFR1).
+resolve_backup_root() {
+    local _root="${TAD_BACKUP_ROOT:-$HOME/.tad-backups}"
+    case "$_root" in
+        /*) ;;
+        *) log_error "TAD_BACKUP_ROOT must be an absolute path: '$_root'"; return 1 ;;
+    esac
+    local _tgt
+    _tgt="$(pwd -P)" || { log_error "resolve_backup_root: cannot resolve target root"; return 1; }
+    # Fast-path refusal on the raw strings (no filesystem write has happened
+    # yet, so the common inside-target mistake leaves zero trace).
+    if [ "$_root" = "$_tgt" ] || _literal_has_prefix "$_root/" "$_tgt/"; then
+        log_error "backup root must not be the target root or inside it: $_root (target: $_tgt)"
+        return 1
     fi
+    # Physical resolution BEFORE any mkdir/chmod effect (Gate 3 SAFETY
+    # F-S1): an existing root is resolved read-only; a not-yet-existing root
+    # is resolved through its nearest existing ancestor (read-only), so the
+    # physical landing point is fully judged before anything is created or
+    # re-permissioned. The mkdir + chmod 700 below therefore only ever run
+    # on a root that has already passed the refusal check: a root this call
+    # creates, or a legitimate existing root outside the target (whose
+    # tightening to 700 is C1 behaviour, applied only after the check).
+    local _abs _rest _probe
+    if [ -d "$_root" ]; then
+        _abs="$(cd "$_root" && pwd -P)" || { log_error "cannot resolve backup root: $_root"; return 1; }
+    elif [ -e "$_root" ] || [ -L "$_root" ]; then
+        log_error "backup root exists but is not a directory: $_root"
+        return 1
+    else
+        _rest=""
+        _probe="$_root"
+        while [ ! -d "$_probe" ]; do
+            _rest="/$(basename "$_probe")$_rest"
+            _probe="$(dirname "$_probe")"
+        done
+        _abs="$(cd "$_probe" && pwd -P)" || { log_error "cannot resolve backup root: $_root"; return 1; }
+        [ "$_abs" = "/" ] && _abs=""
+        _abs="$_abs$_rest"
+    fi
+    if [ -z "$_abs" ] || [ "$_abs" = "/" ]; then
+        log_error "unsafe backup root: '$_abs'"
+        return 1
+    fi
+    # Authoritative physical check (catches symlink aliases the raw-string
+    # fast path cannot see) — still before any filesystem effect.
+    if [ "$_abs" = "$_tgt" ] || _literal_has_prefix "$_abs/" "$_tgt/"; then
+        log_error "backup root must not be the target root or inside it: $_abs (target: $_tgt)"
+        return 1
+    fi
+    mkdir -p "$_root" || { log_error "cannot create backup root: $_root"; return 1; }
+    chmod 700 "$_root" || { log_error "cannot chmod 700 backup root: $_root"; return 1; }
+    TAD_BACKUP_ROOT_ABS="$_abs"
+    return 0
+}
+
+# repo_group_key <target_root_physical> — compute the per-repo backup group
+# key into the global BACKUP_GROUP (C2). The target basename is sanitized to
+# [A-Za-z0-9._-]; if the plain group already belongs to a DIFFERENT target
+# root (same basename, another repo), the key gains a cksum suffix of the
+# target path. Only COMPLETE backups speak for their group (SUPPLEMENT-1
+# N5): origin.txt is read only next to a manifest.txt; a group with no
+# readable origin is treated as this repo's own. This function also creates
+# + permissions the group dir (N5: component-owned, AC3's 700 is claimed
+# here for the group and in resolve_backup_root for the root).
+repo_group_key() {
+    local _tgt="$1"
+    local _base _key _gdir _f _origin
+    _base="$(basename "$_tgt")"
+    _key="$(printf '%s' "$_base" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')"
+    [ -n "$_key" ] || _key="repo"
+    _gdir="$TAD_BACKUP_ROOT_ABS/$_key"
+    if [ -d "$_gdir" ]; then
+        for _f in "$_gdir"/*/origin.txt; do
+            [ -f "$_f" ] || continue
+            [ -f "$(dirname "$_f")/manifest.txt" ] || continue
+            _origin="$(cat "$_f" 2>/dev/null || true)"
+            if [ -n "$_origin" ] && [ "$_origin" != "$_tgt" ]; then
+                _key="${_key}-$(printf '%s' "$_tgt" | cksum | cut -d' ' -f1 | cut -c1-8)"
+                break
+            fi
+        done
+    fi
+    BACKUP_GROUP="$_key"
+    _gdir="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP"
+    mkdir -p "$_gdir" || { log_error "cannot create backup group dir: $_gdir"; return 1; }
+    chmod 700 "$_gdir" || { log_error "cannot chmod 700 backup group dir: $_gdir"; return 1; }
+    return 0
+}
+
+# prune_backups <group_dir> <just_written_backup> — retention (C4, FR-4):
+# after a backup completes, trim its group to the newest 2 COMPLETE backups.
+# A dir counts as a backup only under the strict timestamp name pattern; a
+# pattern dir WITHOUT manifest.txt is an interrupted run's residue (the
+# manifest is written last) — removed first, never counted. Deletion victims
+# are exactly: this group + name pattern + outside the newest 2 (REQ-2).
+# Sort key is (timestamp, NUMERIC suffix) — a plain byte sort orders .10
+# before .2 and would prune a newer backup (SUPPLEMENT-1 N1). A deletion
+# failure warns and continues: pruning NEVER fails the backup (FR-4).
+prune_backups() {
+    local _gdir="$1" _new="$2"
+    [ -d "$_gdir" ] || return 0
+    local _path _name _ts _sfx _line _complete=""
+    for _path in "$_gdir"/*; do
+        [ -d "$_path" ] || continue
+        _name="$(basename "$_path")"
+        printf '%s' "$_name" | grep -Eq '^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$' || continue
+        if [ ! -f "$_path/manifest.txt" ]; then
+            if [ "$(dirname "$_path")" = "$_gdir" ]; then
+                if rm -rf "$_path"; then # RM-OK:tad-backup-retention
+                    log_info "Pruned incomplete backup residue: $_path"
+                else
+                    log_warn "prune: could not remove incomplete backup residue (left in place): $_path"
+                fi
+            fi
+            continue
+        fi
+        _ts="${_name%%.*}"
+        case "$_name" in
+            *.*) _sfx="${_name##*.}" ;;
+            *) _sfx="0" ;;
+        esac
+        case "$_sfx" in ''|*[!0-9]*) _sfx="0" ;; esac
+        _line="$(printf '%s %012d %s' "$_ts" "$_sfx" "$_path")"
+        _complete="${_complete}${_line}
+"
+    done
+    local _sorted="" _victim _keep1="" _keep2=""
+    _sorted="$(printf '%s' "$_complete" | LC_ALL=C sort)"
+    # Keep set = the newest 2 by (timestamp, numeric suffix). Belt (N1): if
+    # the just-written backup is not among them (its name cannot be made
+    # oldest by construction anymore, but a backwards clock jump still
+    # could), it takes the second keep slot — the count invariant holds and
+    # the newest backup is never a victim.
+    while IFS= read -r _line; do
+        [ -n "$_line" ] || continue
+        _keep1="$_keep2"
+        _keep2="$(printf '%s' "$_line" | cut -d' ' -f3-)"
+    done <<< "$_sorted"
+    if [ "$_new" != "$_keep1" ] && [ "$_new" != "$_keep2" ] \
+       && printf '%s\n' "$_sorted" | cut -d' ' -f3- | grep -Fxq -e "$_new"; then
+        _keep1="$_new"
+    fi
+    while IFS= read -r _line; do
+        [ -n "$_line" ] || continue
+        _victim="$(printf '%s' "$_line" | cut -d' ' -f3-)"
+        if [ "$_victim" = "$_keep1" ] || [ "$_victim" = "$_keep2" ]; then
+            continue
+        fi
+        if [ "$(dirname "$_victim")" != "$_gdir" ]; then
+            log_warn "prune: refusing out-of-group path: $_victim"
+            continue
+        fi
+        if rm -rf "$_victim"; then # RM-OK:tad-backup-retention
+            log_info "Pruned old backup (retention: latest 2 per repo): $_victim"
+        else
+            log_warn "prune: could not remove old backup (left in place): $_victim"
+        fi
+    done <<< "$_sorted"
+    return 0
+}
+
+backup_existing() {
+    if [ ! -d ".tad" ]; then
+        return 0
+    fi
+    # Validate the destination BEFORE any project mutation (NFR1): a bad
+    # root refuses here and the run aborts with the project untouched.
+    resolve_backup_root || return 1
+    local _tgt
+    _tgt="$(pwd -P)" || { log_error "cannot resolve target root for backup"; return 1; }
+    repo_group_key "$_tgt" || return 1
+    local _gdir="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP"
+    # Unique destination: same-second reruns must never overwrite or nest
+    # into an existing backup (FR-5). The suffix is max(existing)+1 for
+    # this timestamp, NOT the first free slot: retention may have freed the
+    # base name, and reusing it would stamp the NEWEST backup with the
+    # OLDEST name — inverting the (timestamp, suffix) order prune sorts by
+    # (found by the grokbox retention run: 4 same-second runs left 3
+    # backups, the newest wearing the base name).
+    local _base="$_gdir/$(date +%Y%m%d_%H%M%S)"
+    local _bdir="$_base" _n _sib _sfx _max=-1
+    [ -e "$_base" ] && _max=0
+    for _sib in "$_base".*; do
+        [ -e "$_sib" ] || continue
+        _sfx="${_sib##*.}"
+        case "$_sfx" in ''|*[!0-9]*) continue ;; esac
+        if [ "$_sfx" -gt "$_max" ]; then _max="$_sfx"; fi
+    done
+    if [ "$_max" -ge 0 ]; then
+        _n=$((_max + 1))
+        _bdir="${_base}.$_n"
+        while [ -e "$_bdir" ]; do
+            _n=$((_n + 1))
+            _bdir="${_base}.$_n"
+        done
+    fi
+    mkdir -p "$_bdir/.tad" || { log_error "cannot create backup dir: $_bdir"; return 1; }
+
+    log_info "Backing up existing .tad/ framework surface to $_bdir (framework only)"
+
+    # The copy set IS the installer's deny-list derivation (D-1): backup set
+    # == installer write set BY CONSTRUCTION — no second list lives here.
+    # One enumeration feeds both the copy and the manifest, so the two can
+    # never disagree. Data surfaces are excluded by the derivation itself;
+    # the exclusion side is the load-bearing one (principles 2026-06-01).
+    local _entries="" _e
+    while IFS= read -r _e; do
+        [ -n "$_e" ] || continue
+        # Redundant defense (§4.1): a backup-shaped entry is never copied,
+        # whatever the derivation says.
+        case "$_e" in .tad.backup.*|.tad-migrate-backup.*) continue ;; esac
+        if [ "$_e" = "$TAD_REGISTRY_ONLY" ]; then
+            # Registry-only special case (SUPPLEMENT-1 S2.1): copy ONLY the
+            # registry file, never the pack tree — mirrors copy_framework_files.
+            if [ -f ".tad/$TAD_REGISTRY_ONLY/$TAD_REGISTRY_FILE" ]; then
+                mkdir -p "$_bdir/.tad/$TAD_REGISTRY_ONLY" || return 1
+                cp ".tad/$TAD_REGISTRY_ONLY/$TAD_REGISTRY_FILE" \
+                   "$_bdir/.tad/$TAD_REGISTRY_ONLY/$TAD_REGISTRY_FILE" || return 1
+                _entries="${_entries}${TAD_REGISTRY_ONLY}/${TAD_REGISTRY_FILE}
+"
+            fi
+        elif [ -d ".tad/$_e" ]; then
+            # Uppercase -R: on BSD/macOS, lowercase -r dereferences a
+            # dangling symlink and fails under set -e. -R preserves the
+            # link and succeeds. A failed backup MUST abort (return 1)
+            # before any project mutation.
+            cp -R ".tad/$_e" "$_bdir/.tad/$_e" || return 1
+            _entries="${_entries}${_e}
+"
+        fi
+    done <<< "$(derive_framework_dirs ".")"
+    while IFS= read -r _e; do
+        [ -n "$_e" ] || continue
+        case "$_e" in .tad.backup.*|.tad-migrate-backup.*) continue ;; esac
+        cp ".tad/$_e" "$_bdir/.tad/$_e" || return 1
+        _entries="${_entries}${_e}
+"
+    done <<< "$(derive_framework_top_files ".")"
+
+    # pre-top.txt (SUPPLEMENT-1 S3.1): the FULL top-level enumeration of
+    # .tad at backup time — including entries no derivation can see
+    # (dangling symlinks, FIFOs). It is the existence proof rollback's
+    # created-entry sweep judges by (S3.4).
+    ls -A ".tad" | LC_ALL=C sort > "$_bdir/pre-top.txt" || return 1
+    printf '%s\n' "$_tgt" > "$_bdir/origin.txt" || return 1
+    # manifest.txt is written LAST: its presence is the completeness marker
+    # read by retention (C4), the rollback gate (C5), and the restore set
+    # (C6). Entry lines are the derivation entries, LC_ALL=C sorted, with
+    # the registry-only component as its registry path (S2.2); the final
+    # line is version=<.tad/version.txt content>.
+    local _ver=""
+    if [ -f ".tad/version.txt" ]; then
+        _ver="$(tr -d '[:space:]' < ".tad/version.txt")"
+    fi
+    { printf '%s' "$_entries" | LC_ALL=C sort
+      printf 'version=%s\n' "$_ver"
+    } > "$_bdir/manifest.txt" || return 1
+
+    BACKUP_PATH="$_bdir"
+    log_success "Backup complete: $_bdir (framework only; data surfaces excluded)"
+    prune_backups "$_gdir" "$_bdir"
+    # FR8: legacy in-root backups from older versions are history — one
+    # notice line, zero reads/writes (D-5: nothing reads them automatically).
+    local _legacy
+    for _legacy in .tad.backup.*; do
+        [ -e "$_legacy" ] || continue
+        log_info "Note: legacy backup '$_legacy' in the project root is left untouched; new backups live under $TAD_BACKUP_ROOT_ABS"
+        break
+    done
+    return 0
 }
 
 # ============================================
@@ -1935,6 +2202,40 @@ note_created_top() {
 "
 }
 
+# _tad_tree_equal <a> <b> — byte-exact tree equality probe used by the
+# restore helpers' stage verification. `diff -rq` cannot serve here: GNU
+# diff dereferences symlinks during directory comparison and exits 2 on a
+# DANGLING symlink (a legitimate framework payload — a framework dir
+# holding one failed every restore at the verify step), and BSD diff has
+# no --no-dereference. This probe compares entry types, regular-file bytes
+# (cmp), and symlink targets, with POSIX tools only. The restore helpers'
+# contract is unchanged — only the equality probe becomes link-safe.
+_tad_tree_equal() {
+    local _a="$1" _b="$2"
+    if [ -L "$_a" ] || [ -L "$_b" ]; then
+        [ -L "$_a" ] && [ -L "$_b" ] && [ "$(readlink "$_a")" = "$(readlink "$_b")" ]
+        return $?
+    fi
+    if [ -d "$_a" ] && [ -d "$_b" ]; then
+        local _ea _eb _rel
+        _ea="$(cd "$_a" && find . | LC_ALL=C sort)"
+        _eb="$(cd "$_b" && find . | LC_ALL=C sort)"
+        [ "$_ea" = "$_eb" ] || return 1
+        while IFS= read -r _rel; do
+            [ "$_rel" = "." ] && continue
+            _tad_tree_equal "$_a/$_rel" "$_b/$_rel" || return 1
+        done <<< "$_ea"
+        return 0
+    fi
+    if [ -f "$_a" ] && [ -f "$_b" ]; then
+        cmp -s "$_a" "$_b"
+        return $?
+    fi
+    # Type disagreement (or a special file): never equal while either side
+    # exists — callers fail loudly instead of mis-restoring.
+    [ ! -e "$_a" ] && [ ! -e "$_b" ]
+}
+
 # restore_dir_entry <snap_entry> <dst_path> — atomic DIRECTORY restore via a
 # same-filesystem staging dir + rename (never diff-output parsing, never a
 # merging cp-over that would leave run-created extras behind): stage ← snap,
@@ -1947,11 +2248,11 @@ restore_dir_entry() {
     assert_under_root "$_dst" || { log_error "Rollback REFUSED: dir restore target escapes project root: $_dst"; return 1; }
     rm -rf "$_stage" # RM-OK:rollback-stage-preclean
     if cp -R "$_snap_e" "$_stage" 2>/dev/null \
-       && diff -rq "$_snap_e" "$_stage" >/dev/null 2>&1; then
+       && _tad_tree_equal "$_snap_e" "$_stage" >/dev/null 2>&1; then
         if rm -rf "$_dst"; then # RM-OK:rollback-dst-clear
             mkdir -p "$(dirname "$_dst")"
             if mv "$_stage" "$_dst" \
-               && diff -rq "$_snap_e" "$_dst" >/dev/null 2>&1; then
+               && _tad_tree_equal "$_snap_e" "$_dst" >/dev/null 2>&1; then
                 return 0
             fi
         fi
@@ -1971,15 +2272,39 @@ restore_file_entry() {
     assert_under_root "$_dst" || { log_error "Rollback REFUSED: file restore target escapes project root: $_dst"; return 1; }
     rm -f "$_stage" # RM-OK:rollback-file-stage-preclean
     if cp -R "$_snap_f" "$_stage" 2>/dev/null \
-       && diff -rq "$_snap_f" "$_stage" >/dev/null 2>&1; then
+       && _tad_tree_equal "$_snap_f" "$_stage" >/dev/null 2>&1; then
         mkdir -p "$(dirname "$_dst")"
         if mv "$_stage" "$_dst" \
-           && diff -rq "$_snap_f" "$_dst" >/dev/null 2>&1; then
+           && _tad_tree_equal "$_snap_f" "$_dst" >/dev/null 2>&1; then
             return 0
         fi
     fi
     rm -f "$_stage" 2>/dev/null # RM-OK:rollback-file-stage-abort
     return 1
+}
+
+# assert_under_backup_root <path> — step-1's gate for the backup path (C5).
+# The pre-fix step-1 gated on assert_under_root, which by construction
+# REFUSES every new-root backup (the root lives outside the project) — and
+# would ACCEPT a forged backup planted inside the project. This gate checks
+# the backup root instead. The root value is TAD_BACKUP_ROOT_ABS, resolved
+# in-process by resolve_backup_root during this same run; it is never
+# re-derived from the environment at rollback time. Three bars, all must
+# pass: (1) the normalized path is strictly under the normalized backup
+# root (prefix + '/' boundary); (2) the basename matches the strict
+# timestamp name pattern; (3) manifest.txt is present (a complete backup —
+# the manifest is written last).
+assert_under_backup_root() {
+    local _p="${1:-}" _root="${TAD_BACKUP_ROOT_ABS:-}"
+    [ -n "$_p" ] && [ -n "$_root" ] || return 1
+    local _pn _rn
+    _pn="$(cd "$_p" 2>/dev/null && pwd -P)" || return 1
+    _rn="$(cd "$_root" 2>/dev/null && pwd -P)" || return 1
+    [ -n "$_pn" ] && [ "$_pn" != "/" ] && [ "$_pn" != "$_rn" ] || return 1
+    _literal_has_prefix "$_pn/" "$_rn/" || return 1
+    printf '%s' "$(basename "$_pn")" | grep -Eq '^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$' || return 1
+    [ -f "$_pn/manifest.txt" ] || return 1
+    return 0
 }
 
 rollback_on_failure() {
@@ -1993,18 +2318,103 @@ rollback_on_failure() {
     fi
     local _restored_list="" _kept_list="" _removed_list=""
 
-    # 1. .tad/ via the absolutized backup: atomic stage-verify-rename (extras
-    # from the half-installed tree cannot survive — a merging cp-over would
-    # leave run-created files behind). A failed restore NEVER deletes the
-    # backup (ENOSPC class) — the failed-state message names the preserved path.
+    # 1. .tad/ via the absolutized backup — MANIFEST-DOMAIN restore (C6):
+    # only the entries the backup actually holds are restored, each at its
+    # recorded granularity (atomic stage-verify-rename per entry). The data
+    # surfaces (evidence/archive/active/project-knowledge/...) are NOT in
+    # the manifest by construction and are never touched here (risk card
+    # REQ-3). The gate is assert_under_backup_root: the backup lives OUTSIDE
+    # the project root now, so the old assert_under_root gate would refuse
+    # every restore — and accept a forged in-project path instead. A failed
+    # restore NEVER deletes the backup — the failed-state messages name the
+    # preserved path and the failed entry.
     if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ] \
-       && [ "$BACKUP_PATH_ABS" != "/" ] && assert_under_root "$BACKUP_PATH_ABS"; then
-        if restore_dir_entry "$BACKUP_PATH_ABS" "$TARGET_ROOT/.tad"; then
+       && [ "$BACKUP_PATH_ABS" != "/" ] && assert_under_backup_root "$BACKUP_PATH_ABS"; then
+        local _rb_ok=1 _rb_e _rb_src _rb_dst _rb_kind
+        # 1a. Restore each manifest entry (the version= trailer is metadata,
+        # not an entry). Routing is by the BACKUP-side payload type
+        # (SUPPLEMENT-1 N3) — the surviving witness of the entry's recorded
+        # kind. A payload/target type disagreement is a flip: name it and
+        # fail the step, never let a staging mv misland into a foreign dir.
+        while IFS= read -r _rb_e; do
+            [ -n "$_rb_e" ] || continue
+            case "$_rb_e" in version=*) continue ;; esac
+            _rb_src="$BACKUP_PATH_ABS/.tad/$_rb_e"
+            _rb_dst="$TARGET_ROOT/.tad/$_rb_e"
+            if [ "$_rb_e" = "$TAD_REGISTRY_ONLY/$TAD_REGISTRY_FILE" ]; then
+                _rb_kind="file"   # registry-only component: file route, always (S2.3)
+            elif [ -d "$_rb_src" ] && [ ! -L "$_rb_src" ]; then
+                _rb_kind="dir"
+            elif [ -e "$_rb_src" ] || [ -L "$_rb_src" ]; then
+                _rb_kind="file"
+            else
+                log_error "Rollback FAILED for .tad/$_rb_e — backup payload missing; backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+                _rb_ok=0
+                break
+            fi
+            if [ "$_rb_kind" = "dir" ]; then
+                if [ -e "$_rb_dst" ] && [ ! -d "$_rb_dst" ] && [ ! -L "$_rb_dst" ]; then
+                    log_error "Rollback FAILED for .tad/$_rb_e — type flip: backup holds a directory, target holds a non-directory; backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+                    _rb_ok=0
+                    break
+                fi
+                if ! restore_dir_entry "$_rb_src" "$_rb_dst"; then
+                    log_error "Rollback FAILED for .tad/$_rb_e (stage, rename, or verify failed) — backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+                    _rb_ok=0
+                    break
+                fi
+            else
+                if [ -d "$_rb_src" ] && [ ! -L "$_rb_src" ]; then
+                    log_error "Rollback FAILED for .tad/$_rb_e — backup payload is a directory where a file was recorded (flipped); backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+                    _rb_ok=0
+                    break
+                fi
+                if [ -d "$_rb_dst" ]; then
+                    log_error "Rollback FAILED for .tad/$_rb_e — type flip: backup holds a file, target holds a directory; backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+                    _rb_ok=0
+                    break
+                fi
+                if ! restore_file_entry "$_rb_src" "$_rb_dst"; then
+                    log_error "Rollback FAILED for .tad/$_rb_e (stage, rename, or verify failed) — backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+                    _rb_ok=0
+                    break
+                fi
+            fi
+            _restored_list="${_restored_list}.tad/$_rb_e "
+        done < "$BACKUP_PATH_ABS/manifest.txt"
+        if [ "$_rb_ok" = "1" ]; then
+            # 1b. Remove run-created top-level .tad entries (SUPPLEMENT-1
+            # S3.4): an entry is run-created iff it is absent from
+            # pre-top.txt (the backup-time FULL top-level enumeration) and
+            # outside the preserve set. Deny-list surfaces are user-data
+            # territory and are never swept; the registry-only dir is
+            # deliberately NOT exempted here — pre-top membership above is
+            # its only protection, so a run-created pack tree is swept
+            # while a pre-existing one keeps its body (only its registry
+            # file was in the restore domain).
+            if [ -f "$BACKUP_PATH_ABS/pre-top.txt" ]; then
+                local _rb_cur _rb_now
+                _rb_now="$(ls -A "$TARGET_ROOT/.tad" 2>/dev/null || true)"
+                while IFS= read -r _rb_cur; do
+                    [ -n "$_rb_cur" ] || continue
+                    grep -Fxq -e "$_rb_cur" "$BACKUP_PATH_ABS/pre-top.txt" && continue
+                    if printf '%s\n%s\n' "$TAD_DENY_LIST" "$TAD_TOP_DENY" | grep -Fxq -e "$_rb_cur"; then
+                        continue
+                    fi
+                    if assert_under_root "$TARGET_ROOT/.tad/$_rb_cur"; then
+                        rm -rf "$TARGET_ROOT/.tad/$_rb_cur" # RM-OK:rollback-created-tad-entry
+                        _removed_list="${_removed_list}.tad/$_rb_cur "
+                    fi
+                done <<< "$_rb_now"
+            else
+                log_warn "Rollback: $BACKUP_PATH_ABS/pre-top.txt missing — created-entry sweep skipped (nothing is deleted without the backup-time enumeration)."
+            fi
             rm -rf "$BACKUP_PATH_ABS" # RM-OK:rollback-backup-consumed
-            log_info "Restored from backup: $BACKUP_PATH_ABS (.tad/ verified, backup consumed)"
-            _restored_list="${_restored_list}.tad/ "
+            log_info "Restored from backup: $BACKUP_PATH_ABS (manifest domain verified, backup consumed)"
         else
-            log_error "Rollback FAILED for .tad/ (stage, rename, or verify failed) — backup PRESERVED at $BACKUP_PATH_ABS; restore manually."
+            # Failure contract: the backup is preserved, entries already
+            # restored stay restored, and the created-entry sweep does NOT
+            # run on a half-restored tree (SUPPLEMENT-1 N4).
             _kept_list="${_kept_list}.tad-backup "
         fi
     elif [ -z "${BACKUP_PATH_ABS:-}" ] && [ -d "$TARGET_ROOT/.tad" ]; then

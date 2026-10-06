@@ -182,7 +182,7 @@ print_check() {
     echo "Remote:  $REMOTE_VERSION"
     case "$UPDATE_STATE" in
         newer)
-            echo "Backup:  .tad.backup.<timestamp-or-unique-suffix>"
+            echo "Backup:  ~/.tad-backups/<repo>/<timestamp> (framework only, keeps latest 2)"
             echo "Update available."
             ;;
         equal)
