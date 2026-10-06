@@ -33,3 +33,6 @@
 - [Derived Copy-Set Dotfiles](2026-06/derived-copy-set-dotfiles.md) — 2026-06-01, linked: L1 "Deny-List Every Copy Granularity"
 - [Embedded-Copy Drift Check](2026-06/embedded-copy-drift-check.md) — 2026-06-01, linked: L1 "Deny-List Beats Allow-List"
 - [Alex Role Decay → Direct Destructive Execution](2026-06/alex-role-decay-direct-execution.md) — 2026-06-10, linked: L1 "Mechanical Enforcement Rejected on Single-User CLI" / alex SKILL forbidden list
+
+---
+对账验证（2026-10-06，Epic Phase 4 件 4.3b）：索引条目集 ↔ 在盘文件集双向差集——仅盘面（漏登记）0 件、仅索引（悬空）1 件（`2026-05/yq-normalizes-once-idempotent.md`，已毕业至 L2 shell-portability、条目留痕注记，见 `.tad/evidence/epic-p4-scale-20261006/incidents-reconciliation.md`）。

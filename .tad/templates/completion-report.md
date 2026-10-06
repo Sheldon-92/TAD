@@ -212,6 +212,19 @@ path/to/new-file2.ts  # [用途说明]
 
 ---
 
+## 📚 Knowledge Usage (MANDATORY — D35 记账装载点)
+
+列本链实际读了/用了的知识件（仓根相对路径）。收口时由 evidence-collection 收口步把本节内容转写为一行 JSON append 进 `.tad/evidence/knowledge-usage-log.jsonl`（只许 append），字段口径照 revival HANDOFF §4.5：
+
+```json
+{"ts": "<ISO8601>", "chain": "TASK-[YYYYMMDD]-[slug]", "handoff": ".tad/active/handoffs/HANDOFF-....md", "step": "<本步>", "knowledge": ["<仓根相对路径>", "..."], "purpose": "<一句话：用这些知识件做了什么>"}
+```
+
+- 本链未读/未用任何知识件时：`knowledge` 写空数组 `[]`，purpose 写明原因——不许整节缺失。
+- 若本链发生知识层变更（principles／patterns／incidents 索引增删），收口时须实跑 brain-index 再生成并以 state-surface check7 回读判读（周期步见 publish-protocol 收口节）。
+
+---
+
 ## ⚠️ Friction Status (MANDATORY — Gate 3 BLOCKING)
 
 > Blake must fill this table for every friction point identified in handoff §8.4

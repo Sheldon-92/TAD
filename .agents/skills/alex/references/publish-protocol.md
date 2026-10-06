@@ -282,6 +282,27 @@ publish_protocol:
         and grading turns fully HARD from that point per the fallback above.
       blocking: true
 
+    step3g:
+      name: "Brain-Index Regeneration (Epic Phase 4, item 4.2)"
+      action: |
+        Regenerate the brain index and read back its freshness:
+          bash .tad/hooks/lib/brain-index-gen.sh
+          bash .tad/hooks/lib/state-surface-check.sh --repo .   # check7 line
+        The regenerated `.tad/brain-index.md` must be valid UTF-8 and the
+        check7 readback must show age 0d with no WARN line; record both in
+        the release record as this step's closeout evidence.
+        Triggers — this step runs when ANY of these holds:
+          (i) every release closeout (this protocol, unconditionally);
+          (ii) every self-audit round closeout;
+          (iii) closeout of any chain that changed the knowledge layer
+                (principles / patterns / incidents index additions or
+                removals) — also declared at that chain's COMPLETION
+                Knowledge Usage section.
+        For (ii)/(iii) outside a publish run, the same two commands are run
+        by the closing chain's PM at closeout.
+        Responsibility: the chain PM executing the closeout.
+      blocking: true
+
     step4:
       name: "Confirm & Execute"
       action: |

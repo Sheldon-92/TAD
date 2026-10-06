@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-09-16 00:54
+Generated: 2026-10-06 13:37
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -19,7 +19,7 @@ Generated: 2026-09-16 00:54
 | Deny-List Must Be Applied at EVERY Copy Granularity, and Verifiers Must Match Each Granularity | deny-list must be applied at every copy granularity and verifiers must match each granularity | P2 of the self-deriving-release-sync Epic killed the hardcoded 14-DIR allow-list in tad.sh (deny-list derivation). But a |
 | Execution Discipline Content Must Stay in SKILL Body — Circular Trigger Test | execution discipline content must stay in skill body circular trigger test | SKILL Progressive Loading (v2.26.0) extracted 36 protocols to references/. Codex dogfood: Blake skipped Layer 2, Gate 3, |
 | Knowledge Is Forged at Distill, Not Captured | knowledge is forged at distill not captured | The doer who just did the work cannot write reusable knowledge — the curse of |
-| AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 | ai human judgment domain awareness agent  | Voice Studio 播客制作中反复验证：切点精度（人 — 听觉感知）vs 语义分析（AI — 文本理解� |
+| AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 | ai human judgment domain awareness agent  | Voice Studio 播客制作中反复验证：切点精度（人 — 听觉感知）vs 语义分析（AI — 文本理解 |
 
 ## Patterns
 | File | Keywords | Summary |
@@ -32,10 +32,14 @@ Generated: 2026-09-16 00:54
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
 | Pack Build Rules | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP |
-| Pack Evaluation | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B | Anti-slop metrics, cross-model review, discriminative behavioral eval gates, dogfood, blind A/B, pack quality, WebSearch fact-check |
+| Pack Evaluation | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改 |
 | Research Methodology | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
 | Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync |
+| Runtime Adapter Checklist | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU |
+| Runtime Adapter Instance — Codex | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 |
+| Runtime Adapter Instance — Cursor | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 |
+| Runtime Adapter Instance — OpenCode | OpenCode](runtime-adapter-instance-opencode.md) — OpenCode 实例六维声明：opencode 1.18.33 run 无头面与 stdin 关闭前置、.opencode/plugins/tad-hooks.ts 四点位映射、permission 配置面实测 deny、事件总线状态信号、R-OC-1/R-OC-2 残项 | OpenCode](runtime-adapter-instance-opencode.md) — OpenCode 实例六维声明：opencode 1.18.33 run 无头面与 stdin 关闭前置、.opencode/plugins/tad-hooks.ts 四点位映射、permission 配置面实测 deny、事件总线状态信号、R-OC-1/R-OC-2 残项 |
 
 ## Project Knowledge
 | File | Keywords | Summary |
@@ -49,28 +53,29 @@ Generated: 2026-09-16 00:54
 ## AGENTS.md Sections
 | Section | Keywords | Summary |
 |---------|----------|---------|
-| Role Switching | role switching | Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). A |
+| Role Switching | role switching | Harness activation: `$alex` / `$blake` = Codex invocation; `/alex` / `/blake` = OpenCode / Cursor invocation (skills als |
 | Knowledge Ingress (read on activation) | knowledge ingress read on activation  | - Every role activation reads `.tad/project-knowledge/principles.md` and |
 | Critical Rules | critical rules | - Reading `HANDOFF-*` requires Blake plus Gate 3/4; `/tad-maintain` CHECK/SYNC is exempt. |
 | Default Behavior (no role specified) | default behavior no role specified  | If no role is requested, act as a general TAD assistant: |
 | Capability Packs (Domain Expertise) | capability packs domain expertise  | When a user's task matches a capability pack's keywords, announce a pointer — never Read the pack file up front. These |
-| Codex-Specific Notes | codex-specific notes | - Use `codex exec resume --last` to continue multi-turn TAD workflows |
+| Codex-Specific Notes (Codex harness only — not applicable to OpenCode/Cursor) | codex-specific notes codex harness only not applicable to opencode cursor  | - Use `codex exec resume --last` to continue multi-turn TAD workflows |
+| Known Gaps (OpenCode / Cursor) | known gaps opencode cursor  | - **P2 — Hook adapters (implemented 2026-10-06, Epic Phase 3)**: OpenCode lifecycle hooks ship as the tad.sh-projected |
 | Frozen Channel: TAD Lite (Explicit Invocation Only) | frozen channel tad lite explicit invocation only  | TAD Lite is a frozen experiment since 2026-08-13: no new work is started there, in-flight `LITE-*.md` contracts run to c |
 
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-09-15-claude-decouple-design.md | docs#audit+decisionbrief;noimplementationinthishandoff | 一份**解绑审计 + 决策简报**。它回答三件事： |
-| HANDOFF-2026-09-15-claude-removal-plan-codex.md | unknown |  |
-| HANDOFF-2026-09-15-claude-removal-plan.md | refactor#code+config+docs;deletesoneplatformsurface | TAD 的核心资产（两角色协议、四关、handoff、skill 库）绝大多数字节与 Claude 无关，但**物理 |
-| HANDOFF-2026-09-15-notebooklm-deprecation.md | mixed#docs+config(yaml)+shellhookde-registration | NotebookLM 整层退役：研究 fallback 链由 `local_wiki → notebooklm_research → claude_websearch` |
-| HANDOFF-2026-09-15-tad-research-mechanism.md | doc-only | TAD 的**一等 Research 轨道**：在现有 `*research --deep` 引擎之上，加一层对标 Build Gate 1-4 的 |
+| HANDOFF-2026-10-06-epic-p4-scale-SUPPLEMENT-1.md | unknown |  |
+| HANDOFF-2026-10-06-epic-p4-scale.md | mixed | Epic 收官段三件＋收官备料： |
+| HANDOFF-2026-10-06-tadsh-backup-fix-SUPPLEMENT-1.md | unknown |  |
+| HANDOFF-2026-10-06-tadsh-backup-fix.md | code#code|yaml|research|e2e|mixed | 修 `tad.sh` 的安装前备份 `backup_existing()`（现 L483–503），四条（票面/GM 验收口径）： |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
-| EPIC-20260816-framework-health-repair.md | **Epic ID**: EPIC-20260816-framework-health-repair |
-| EPIC-20260831-capability-builder-v1.md | **Epic ID**: EPIC-20260831-capability-builder-v1 |
+| EPIC-20260816-framework-health-repair.md |  |
+| EPIC-20260831-capability-builder-v1.md |  |
+| EPIC-20261006-tad-self-optimization.md | **Epic ID**: EPIC-20261006-tad-self-optimization |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -96,6 +101,7 @@ Generated: 2026-09-16 00:54
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid.md | docs | HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid |
 | HANDOFF-20260914-ocr-review-habits.md | doc-only | HANDOFF-20260914-ocr-review-habits |
 | HANDOFF-20260913-skill-authoring-habits.md | doc-only | HANDOFF-20260913-skill-authoring-habits |
 | HANDOFF-20260912-p2-sc4-process-tax-cut-wire.md | doc-only | HANDOFF-20260912-p2-sc4-process-tax-cut-wire |
@@ -124,32 +130,39 @@ Generated: 2026-09-16 00:54
 | HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
 | HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
 | HANDOFF-20260901-local-wiki-phase2-retrieval.md | code | HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations |
-| HANDOFF-20260831-capability-builder-phase1-create.md | mixed | Handoff: Capability Builder v1 — Phase 1 Create |
 
 ## Evidence Directories
 | Directory | Files | Topic |
 |-----------|-------|-------|
 | evidence/acceptance-tests/ | 642 | acceptance-tests |
+| evidence/activation-packages/ | 25 | activation-packages |
 | evidence/audits/ | 3 | audits |
+| evidence/closeout-batch-20261005/ | 0 | closeout-batch-20261005 |
 | evidence/codex-regression/ | 10 | codex-regression |
 | evidence/codex-validation/ | 4 | codex-validation |
-| evidence/completions/ | 72 | completions |
+| evidence/completions/ | 114 | completions |
 | evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 40 | designs |
-| evidence/discuss/ | 1 | discuss |
+| evidence/designs/ | 52 | designs |
+| evidence/discuss/ | 4 | discuss |
 | evidence/dogfood/ | 3 | dogfood |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
 | evidence/e2e/ | 3 | e2e |
+| evidence/epic-p1-clearance-20261006/ | 2 | epic-p1-clearance-20261006 |
+| evidence/epic-p2-measurement-20261006/ | 12 | epic-p2-measurement-20261006 |
+| evidence/epic-p4-scale-20261006/ | 2 | epic-p4-scale-20261006 |
 | evidence/eval/ | 2 | eval |
 | evidence/experiments/ | 23 | experiments |
 | evidence/fixtures/ | 10 | fixtures |
+| evidence/gate4/ | 1 | gate4 |
 | evidence/gates/ | 2 | gates |
 | evidence/handoff-reviews/ | 6 | handoff-reviews |
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
+| evidence/impl/ | 2 | impl |
 | evidence/journal/ | 39 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
+| evidence/live-regression/ | 5 | live-regression |
 | evidence/maintenance/ | 1 | maintenance |
 | evidence/metrics/ | 1 | metrics |
 | evidence/overrides/ | 0 | overrides |
@@ -160,13 +173,16 @@ Generated: 2026-09-16 00:54
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 71 | pm |
+| evidence/pm/ | 143 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 12 | ralph-loops |
-| evidence/releases/ | 2 | releases |
-| evidence/research/ | 184 | research |
-| evidence/reviews/ | 758 | reviews |
+| evidence/ralph-loops/ | 14 | ralph-loops |
+| evidence/regression-runs/ | 15 | regression-runs |
+| evidence/release/ | 1 | release |
+| evidence/releases/ | 5 | releases |
+| evidence/research/ | 187 | research |
+| evidence/reviews/ | 818 | reviews |
+| evidence/risk-cards/ | 4 | risk-cards |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
@@ -203,7 +219,7 @@ Generated: 2026-09-16 00:54
 ## Config Files
 | File | Contains |
 |------|---------|
-| config-agents.yaml | "跳过任何步骤 → 警告并重新激活",    - "身份混淆 → 立即纠正",    - "未显示help → 自动补� |
+| config-agents.yaml | "跳过任何步骤 → 警告并重新激活",    - "身份混淆 → 立即纠正",    - "未显示help → 自动补 |
 | config-cognitive.yaml | "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)",      - "Architecture pattern choice (e.g., mo |
 | config-execution.yaml | Layer 1: Self-Check (handoff §9.1 technical check rows),    - Layer 2: Expert Review (spec-compliance-reviewer, code-re |
 | config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
@@ -253,6 +269,7 @@ Generated: 2026-09-16 00:54
 | reading-companion | name: reading-companion |
 | release-runbook | name: release-runbook |
 | research-github | name: research-github |
+| research-methodology | name: research-methodology |
 | research-notebook | name: research-notebook |
 | save-skill | name: save-skill |
 | save-workflow | name: save-workflow |

@@ -281,6 +281,13 @@ lessons_learned:
     - [pattern]
 ```
 
+### 7.1 Knowledge Usage Append （收口动作，D35 记账装载点）
+
+**When:** At chain closeout, after the COMPLETION report is written
+**Collected by:** The closing executor
+
+链收口时把 COMPLETION 的 `## Knowledge Usage` 节转写为一行 JSON（字段口径：chain/handoff/step/knowledge[]/purpose/ts，照 revival HANDOFF §4.5），**append** 进 `.tad/evidence/knowledge-usage-log.jsonl`——只许 append，不许改写或删除既有行。计数与触发判读用 `.tad/scripts/knowledge-usage-count.sh`（口径出处：载体裁定 §20）。
+
 ## Capture Path Discipline （捕获路径唯一化纪律）
 
 Command-output captures (install logs, check/apply output, command

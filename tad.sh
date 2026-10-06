@@ -3319,6 +3319,10 @@ NEXTEOF
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
 
+            # brain-index.md is deny-listed from the copy set; generate the
+            # target-side index now so the installed read route is real.
+            generate_target_brain_index
+
             # Run migration engine (after copy makes engine available; before version.txt update)
             call_migration_engine "$TAD_SRC" "$CURRENT_VERSION" "$TARGET_VERSION"
 
