@@ -1,0 +1,34 @@
+=========================================
+VERSION VERIFY (grep zero non-historical stale)
+  REPO:     /home/hatch/workspace/yun-sync/TAD
+  EXPECTED: 3.1.0
+  OLD:      3.0.2
+=========================================
+  ❌ STALE: .agents/skills/alex/SKILL.md:50:<!-- TAD v3.0.2 Framework -->
+  ❌ STALE: .agents/skills/alex/references/publish-protocol.md:264:        v3.0.2 §3.1).
+  ❌ STALE: .agents/skills/blake/SKILL.md:166:<!-- TAD v3.0.2 Framework -->
+  ❌ STALE: .agents/skills/release-runbook/references/publish-ops.md:117:§2.9, retyped at v3.0.2): downstream absence is a recorded baseline state,
+  ❌ STALE: .agents/skills/tad-help/SKILL.md:17: Version: v3.0.2 | Generated: [timestamp]
+  ❌ STALE: .tad/TAD-VERSION:1:3.0.2
+  ❌ STALE: .tad/capability-packs/pack-registry.yaml:9:synced_from_version: "3.0.2"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
+  ❌ STALE: .tad/config.yaml:1:# TAD Configuration v3.0.2 - Full is the Default Channel (lite frozen 2026-08-13)
+  ❌ STALE: .tad/config.yaml:3:version: 3.0.2
+  ❌ STALE: .tad/version.txt:1:3.0.2
+  ❌ STALE: AGENTS.md:9:> **Runtime status (v3.0.2)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
+  ❌ STALE: INSTALLATION_GUIDE.md:3:**Version 3.0.2 — Alex / Blake is the Default, Codex / OpenCode / Cursor are supported runtimes**
+  ❌ STALE: INSTALLATION_GUIDE.md:55:cat .tad/version.txt          # 应显示 3.0.2
+  ❌ STALE: PROJECT_CONTEXT.md:4:- **Version**: 3.0.2 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture + Claude Code path removed, Codex hook-enabled + OpenCode/Cursor supported)
+  ❌ STALE: PROJECT_CONTEXT.md:6:- **Framework**: TAD v3.0.2 + Full-default/Lite-frozen + 25 Capability Packs + Codex hook-enabled + OpenCode/Cursor supported + Local Wiki Research + Compact Recovery
+  ❌ STALE: README.md:3:**Version 3.0.2 — Claude Code Path Removed, Codex / OpenCode / Cursor Supported**
+  ❌ STALE: README.md:190:# Should show: 3.0.2
+  ❌ STALE: ROADMAP.md:3:> Strategic direction for TAD. Updated 2026-10-06 for v3.0.2.
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:58:cat .tad/version.txt                    # 应显示 3.0.2
+  ❌ STALE: docs/MULTI-PLATFORM.md:3:**Version**: 3.0.2 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
+  ❌ STALE: docs/legacy/TAD_V3.1_UPGRADE_COMPLETE.md:109:- ✅ `.tad/config.yaml.backup.v3.0.20251125_XXXXXX`
+  ❌ STALE: docs/pm/now.md:4:当前步: Phase 1 已收口 v3.0.2 并 push（远端 526f1df3）；Phase 2 票已立（8 件含证据补同步前置），Alex 设计中
+  ❌ STALE: docs/pm/open-cards/2026-10-06-epic-p1-gate4-start-card.md:11:- prev_note: Gate 3 双审均 PASS（逐值复算与独立 fixture 复现全等、证据否决未触发）；余下仅 PM 收口面（regen 对齐＋升 v3.0.2＋提交推送＋知会 GM）在验收后执行
+  ❌ STALE: docs/pm/open-cards/done-20261006-epic-p1-clearance.md:3:- 结论：**全链收口关账**（2026-10-06）。Epic Phase 1 的 12 件全落地，版本 3.0.1 → **3.0.2**；Gate 2 双审 CONDITIONAL→PM 合并裁定＋增补 B1–B3 核销 PASS（两处设计裁断确认成立：校验器改双类契约、hooks 生成器方向翻案）；实施中两处停步均经 PM 裁断关闭（案 A 投影回同步写集扩展、AC23 供给面判读）；Gate 3 双审 PASS（独立 fixture 复现、证据否决未触发）；Gate 4 PASS（无条件，跨 Phase 硬约束「件 1.3 先于 minor 升版」已解除）。human CHECK 记「CHECK 待人」。
+  ❌ STALE: docs/pm/open-cards/done-20261006-epic-p1-clearance.md:4:- 收口动作：COMPLETION gate3_verdict 已回填 PASS；scan-packs regen 已跑（仓内 registry 三包 keywords 对齐）；版本分诊记录 `.tad/evidence/releases/3.0.2-version-triage.md`（新口径首次实地适用：29 hits 中 live 21 改、历史叙述 12 豁免登记）；NEXT.md:10／ROADMAP.md:3 已回填 3.0.2；state-surface 全量 PASS。
+  ❌ STALE: package.json:3:  "version": "3.0.2",
+  ❌ STALE: tad.sh:26:TARGET_VERSION="3.0.2"
+VERDICT: version FAIL — 27 stale ref(s) (exit 1)

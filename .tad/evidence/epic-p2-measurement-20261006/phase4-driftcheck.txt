@@ -1,0 +1,40 @@
+=== pack-registry drift-check (advisory) ===
+registry: /home/hatch/workspace/yun-sync/TAD/.tad/capability-packs/pack-registry.yaml
+Set A (registry names): 25
+Set B_type (type-probed installed pack skills): 36
+Set B_dir (registered/source names with installed SKILL.md): 25
+Set C (source packs): 25
+
+(a) source pack NOT in registry (C\registry):
+    (none)
+(b) installed pack skill NOT in registry (B_type\registry):
+    agent-computer-interface
+    agent-skill-evolution
+    hw-circuit-design
+    hw-enclosure
+    hw-firmware
+    hw-testing
+    mobile-development
+    mobile-release
+    mobile-testing
+    mobile-ui-design
+    supply-chain-security
+(c) registry entry with neither projection directory nor source pack (registry\(B_dir∪C), true phantom):
+    (none)
+(r) registry-only (registered and present, type-probe invisible; advisory — never drift):
+    (none)
+
+(d) advisory WARN (informational — does NOT affect exit code):
+    WARN: installed skill 'agent-computer-interface' has no source pack .tad/capability-packs/agent-computer-interface/ (skill-only)
+    WARN: installed skill 'agent-skill-evolution' has no source pack .tad/capability-packs/agent-skill-evolution/ (skill-only)
+    WARN: installed skill 'hw-circuit-design' has no source pack .tad/capability-packs/hw-circuit-design/ (skill-only)
+    WARN: installed skill 'hw-enclosure' has no source pack .tad/capability-packs/hw-enclosure/ (skill-only)
+    WARN: installed skill 'hw-firmware' has no source pack .tad/capability-packs/hw-firmware/ (skill-only)
+    WARN: installed skill 'hw-testing' has no source pack .tad/capability-packs/hw-testing/ (skill-only)
+    WARN: installed skill 'mobile-development' has no source pack .tad/capability-packs/mobile-development/ (skill-only)
+    WARN: installed skill 'mobile-release' has no source pack .tad/capability-packs/mobile-release/ (skill-only)
+    WARN: installed skill 'mobile-testing' has no source pack .tad/capability-packs/mobile-testing/ (skill-only)
+    WARN: installed skill 'mobile-ui-design' has no source pack .tad/capability-packs/mobile-ui-design/ (skill-only)
+    WARN: installed skill 'supply-chain-security' has no source pack .tad/capability-packs/supply-chain-security/ (skill-only)
+
+RESULT: DRIFT DETECTED (advisory) — review (a)/(b)/(c) above. NOT a session/release blocker.

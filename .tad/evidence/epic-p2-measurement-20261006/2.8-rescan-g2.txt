@@ -1,0 +1,1098 @@
+.agents/skills/academic-research/SKILL.md:202:### Cluster References (Phase 3) — Domain-Specific Judgment Rules
+.agents/skills/academic-research/SKILL.md:224:### `scripts/academic-search.sh` — Database Query Helper
+.agents/skills/academic-research/SKILL.md:234:### `scripts/image-analysis.py` — Quantitative Image Analysis
+.agents/skills/academic-research/examples/systematic-review-depth.md:19:# no-pack control — which emits none of these named introductions — FAILs.
+.agents/skills/academic-research/references/database-apis-general.md:270:## Europeana — Cultural Heritage Database
+.agents/skills/academic-research/references/database-apis-life-sciences.md:380:## USDA FoodData Central — Food Composition Database
+.agents/skills/academic-research/references/fallback-chains.md:1:# Fallback Chains — Source Failure Recovery Protocol
+.agents/skills/academic-research/references/literature-search.md:1:# Literature & Academic Research — Extracted Judgment Rules
+.agents/skills/academic-research/references/multimodal-research.md:1:# Multimodal Research — Image Analysis Methodology
+.agents/skills/academic-research/references/pattern-extraction.md:1:# Pattern Extraction — Visual Pattern Comparison Workflow
+.agents/skills/academic-research/references/pattern-extraction.md:91:## 3. Domain Vocabulary — Ornamental Pattern Terminology
+.agents/skills/academic-research/references/quantitative-analysis.md:1:# Quantitative Image Analysis — Tool Selection and Interpretation Guide
+.agents/skills/academic-research/references/reflexion-cycle.md:1:# Reflexion Cycle — Post-Task Self-Evaluation Protocol
+.agents/skills/academic-research/references/reflexion-cycle.md:118:### Biomedical Citation Chain Strategy — 2026-XX-XX
+.agents/skills/academic-research/references/research-protocol.md:1:# Research Protocol — 6-Phase Mandatory Methodology
+.agents/skills/academic-research/references/scholar-eval.md:1:# ScholarEval — 8-Dimension Research Quality Rubric
+.agents/skills/academic-research/references/zero-hallucination.md:1:# Zero-Hallucination Rules — Citation Integrity Protocol
+.agents/skills/academic-research/scripts/academic-search.sh:2:# Academic Research Pack — Database Query Helper
+.agents/skills/agent-computer-interface/SKILL.md:63:### Rule 2: Layer Match — Five-Layer Selection
+.agents/skills/agent-computer-interface/references/autonomous-agent-rules.md:29:### R3: Session Isolation — Fresh Context Per Task
+.agents/skills/agent-computer-interface/references/autonomous-agent-rules.md:36:### R4: Domain Scoping — Restrict Navigation to Approved Sites
+.agents/skills/agent-computer-interface/references/autonomous-agent-rules.md:43:### R5: Credential Entry — Require User Confirmation Before Typing Passwords
+.agents/skills/agent-computer-interface/references/claude-code-tools-rules.md:31:### R3: Token Cost Comparison — Choose by Budget
+.agents/skills/agent-computer-interface/references/claude-code-tools-rules.md:81:### R7: Login-Required Tasks — Tool Selection by Auth State
+.agents/skills/agent-computer-interface/references/claude-code-tools-rules.md:113:# Requires manual setup — consult Chrome DevTools MCP documentation
+.agents/skills/agent-computer-interface/references/desktop-control-rules.md:39:### R4: User-Confirmation Gate — MANDATORY for Destructive and Credential Actions
+.agents/skills/agent-computer-interface/references/desktop-control-rules.md:64:### R6: Sandboxing Recommendation — Docker/VM Isolation
+.agents/skills/agent-computer-interface/references/desktop-control-rules.md:76:## Security Considerations (MANDATORY — 3 sections required)
+.agents/skills/agent-computer-interface/references/desktop-control-rules.md:121:# Claude Computer Use — basic pattern
+.agents/skills/agent-computer-interface/references/hybrid-framework-rules.md:21:### R2: Three Primitives — act(), extract(), observe()
+.agents/skills/agent-computer-interface/scripts/capability-detect.sh:2:# capability-detect.sh — Detect available browser/computer control tools
+.agents/skills/agent-computer-interface/scripts/capability-detect.sh:6:# Tier 1 (MCP tools) is handled by the agent via ToolSearch — NOT in this script.
+.agents/skills/agent-computer-interface/scripts/capability-detect.sh:15:# Hardcoded allowlist — prevents command injection if called with untrusted input
+.agents/skills/agent-computer-interface/scripts/tool-health-check.sh:2:# tool-health-check.sh — Check health status of browser/computer control tools
+.agents/skills/agent-computer-interface/scripts/tool-health-check.sh:71:# Check installed tool versions (hardcoded whitelist — no injection risk)
+.agents/skills/agent-memory/SKILL.md:97:### P0 — Blocking (must fix before shipping the agent)
+.agents/skills/agent-memory/SKILL.md:100:### P1 — Required (fix before production scale)
+.agents/skills/agent-memory/SKILL.md:103:### P2 — Advisory (improves cost/latency/fidelity)
+.agents/skills/agent-memory/references/context-compaction.md:19:### CC1: Compact, Don't Inflate — Attention is O(N²)
+.agents/skills/agent-memory/references/context-editing-memory-tool.md:40:### CE2: Tool-Result Clearing — `clear_tool_uses_20250919`
+.agents/skills/agent-memory/references/context-editing-memory-tool.md:60:### CE3: Thinking-Block Clearing — `clear_thinking_20251015`
+.agents/skills/agent-memory/references/context-editing-memory-tool.md:77:### CE4: Server-Side Compaction — `compact_20260112`
+.agents/skills/agent-memory/references/context-editing-memory-tool.md:95:### CE5: Memory Tool — `memory_20250818` (Outside the Context Window)
+.agents/skills/agent-memory/references/context-editing-memory-tool.md:112:### CE6: Measured Impact — Don't Argue from O(N²) Alone
+.agents/skills/agent-memory/references/memgpt-letta-mem0.md:31:### ML2: The Model is an Active Memory Manager — Use the Named Tools
+.agents/skills/agent-memory/references/memgpt-letta-mem0.md:98:### ML6: Benchmark Reality — Use Primary-Source Numbers, Not One Bare Score
+.agents/skills/agent-memory/references/prompt-caching.md:67:### PC4: Respect the Limits — 4 Breakpoints, 20-Block Lookback
+.agents/skills/agent-memory/references/prompt-caching.md:86:### PC6: Structure Context with Nested XML — Documents First, Query Last
+.agents/skills/agent-memory/references/state-persistence.md:47:### SP3: Time Travel — Replay vs Fork
+.agents/skills/agent-memory/scripts/audit-memory-layers.sh:2:# audit-memory-layers.sh — deterministic CoALA layer-to-storage map validator
+.agents/skills/agent-memory/scripts/check-cache-topology.sh:2:# check-cache-topology.sh — deterministic prompt-cache topology linter (Rule PC1/PC3).
+.agents/skills/agent-memory/scripts/check-cache-topology.sh:6:# breakpoint in the cached prefix. Anthropic caching is prefix-based — any byte
+.agents/skills/agent-orchestration/SKILL.md:29:## Cross-Cutting Rule: The Complexity Cliff — Reliability Decays Exponentially with Step Count
+.agents/skills/agent-orchestration/SKILL.md:91:### P0 — Blocking (must fix before building)
+.agents/skills/agent-orchestration/SKILL.md:94:### P1 — Required (fix before production)
+.agents/skills/agent-orchestration/SKILL.md:97:### P2 — Advisory (improves robustness)
+.agents/skills/agent-orchestration/references/durable-execution.md:22:### DUR1: Above the Cliff, Use Event Sourcing — Not Bare Checkpoints
+.agents/skills/agent-orchestration/references/durable-execution.md:47:### DUR3: Temporal Workflows Are Deterministic — Network/IO Goes in Activities, Not Pass-Through Imports
+.agents/skills/agent-orchestration/references/durable-execution.md:133:### DUR8: LangGraph Durability MODE — `exit` / `async` / `sync`
+.agents/skills/agent-orchestration/references/durable-execution.md:149:### DUR9: Selective Checkpoint Cadence — >75% of Turns Carry No Recovery-Relevant State
+.agents/skills/agent-orchestration/references/failure-modes.md:26:### FM1: The MAST Taxonomy — 14 Failure Modes, 3 Categories, Measured Distribution
+.agents/skills/agent-orchestration/references/failure-modes.md:42:### FM2: Most Failures Are SPEC Failures — Fix the Spec Before the Topology
+.agents/skills/agent-orchestration/references/failure-modes.md:52:### FM3: 37% Are Inter-Agent Misalignment — Coordination, Not Capability
+.agents/skills/agent-orchestration/references/failure-modes.md:62:### FM4: ~21% Are VERIFICATION Failures — Mandate an Explicit Verifier Gate
+.agents/skills/agent-orchestration/references/framework-selection.md:38:### FS2: LangGraph — Determinism and Transaction Safety
+.agents/skills/agent-orchestration/references/framework-selection.md:51:### FS3: CrewAI — Prototyping + Human-Revision Flows
+.agents/skills/agent-orchestration/references/framework-selection.md:63:### FS4: Microsoft Agent Framework — the 2026 Successor to AutoGen + Semantic Kernel
+.agents/skills/agent-orchestration/references/framework-selection.md:75:### FS5: OpenAI Agents SDK — Sandbox + Filesystem Persistence
+.agents/skills/agent-orchestration/references/framework-selection.md:87:### FS6: Claude Agent SDK — Local In-Process System Work
+.agents/skills/agent-orchestration/references/orchestration-patterns.md:21:### SUP1: Supervisor — Centralized Validation Gate (O(n) failure)
+.agents/skills/agent-orchestration/references/orchestration-patterns.md:34:### SUP2: The Supervisor Tax — 20-40% Tokens + Context Saturation
+.agents/skills/agent-orchestration/references/orchestration-patterns.md:48:### SUP3: Swarm Failure Surface is Quadratic — n(n-1)
+.agents/skills/agent-orchestration/references/orchestration-patterns.md:91:### OW1: Orchestrator-Worker Economics — Multi-Agent Costs ~15x, So Pay Only for the Right Shape
+.agents/skills/agent-orchestration/references/orchestration-patterns.md:105:### OW2: Size the Fan-Out to Complexity Bands — Don't Over- or Under-Spawn
+.agents/skills/agent-orchestration/references/orchestration-patterns.md:125:### OW3: The Single-Writer Principle — Why Peer Swarms Drift (SUP3/SUP4 root cause)
+.agents/skills/agent-orchestration/references/tool-permissions.md:19:### TP1: Claude Agent SDK — Three Permission Layers
+.agents/skills/agent-orchestration/references/tool-permissions.md:67:### TP5: OpenAI Agents SDK — Five Tool Categories (Agents-as-Tools ≠ Handoff)
+.agents/skills/agent-orchestration/scripts/pfail-calc.sh:2:# pfail-calc.sh — Deterministic orchestration arithmetic for the agent-orchestration pack.
+.agents/skills/agent-skill-evolution/references/edit-safety.md:7:### ES1: Edit Mode Selection — Safety Order
+.agents/skills/agent-skill-evolution/references/edit-safety.md:21:### ES2: Learning Rate Schedule — Cosine > Constant
+.agents/skills/agent-skill-evolution/references/edit-safety.md:37:### ES3: Protected Regions — Marker-Based Write Isolation
+.agents/skills/agent-skill-evolution/references/multi-timescale-memory.md:25:### MT2: Write Isolation — Step-Level Edits Cannot Modify Epoch-Level Regions
+.agents/skills/agent-skill-evolution/references/offline-consolidation.md:57:### OC4: Experience Replay — Associative Recall via Token Jaccard
+.agents/skills/agent-skill-evolution/references/offline-consolidation.md:71:### OC5: Dream Augmentation — Synthetic Variants for Training Only
+.agents/skills/agent-skill-evolution/references/offline-consolidation.md:106:### OC7: Task Guardrail — Inject Output Contract into Reflect Prompt
+.agents/skills/agent-skill-evolution/references/skillopt-sleep-integration.md:7:### SI1: Claude Code Plugin — Install, Configure, Run
+.agents/skills/agent-skill-evolution/references/skillopt-sleep-integration.md:42:# Mock backend returns deterministic responses — useful for verifying the pipeline plumbing.
+.agents/skills/agent-skill-evolution/references/skillopt-sleep-integration.md:50:### SI2: Cross-Platform Plugin Shells — One Engine, Thin Adapters
+.agents/skills/agent-skill-evolution/references/skillopt-sleep-integration.md:69:### SI3: Safety Contract — Harvest Read-Only, Nothing Live, Staging + Adopt
+.agents/skills/agent-skill-evolution/references/training-loop.md:28:### TL2: Reflect Modes — Shallow vs Deep
+.agents/skills/agent-skill-evolution/references/training-loop.md:43:### TL3: Hierarchical Aggregate — Failure Patches Priority
+.agents/skills/agent-skill-evolution/references/training-loop.md:59:### TL4: Contrastive Reflection — K Rollouts and Spread-Based Selection
+.agents/skills/agent-skill-evolution/references/validation-gate.md:28:### VG2: Metric Selection — Hard / Soft / Mixed
+.agents/skills/agent-skill-evolution/scripts/gate-check.sh:2:# gate-check.sh — Verify a self-evolving agent design has the four safety mechanisms
+.agents/skills/agent-skill-evolution/scripts/gate-check.sh:13:#   1. Validation gate — held-out evaluation set + accept/reject
+.agents/skills/agent-skill-evolution/scripts/gate-check.sh:14:#   2. Edit budget / LR — bounded edits, learning rate schedule
+.agents/skills/agent-skill-evolution/scripts/gate-check.sh:15:#   3. Protected regions — write isolation for safety-critical sections
+.agents/skills/agent-skill-evolution/scripts/gate-check.sh:16:#   4. Staging + adopt — nothing live changes until human approval
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:8:## Anthropic — Claude Code
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:24:## OpenClaw — Multi-Channel Agent Gateway
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:40:## NousResearch — Hermes Agent System
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:56:## OWASP — Open Web Application Security Project
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:68:## Elastic — Security Research
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:79:## Invariant Labs — MCP Security Research
+.agents/skills/ai-agent-architecture/LICENSE-ATTRIBUTION.md:89:## Anthropic — "Building Effective Agents" Guide
+.agents/skills/ai-agent-architecture/SKILL.md:34:## Step 0 — Scoping (Ask BEFORE reading any reference file)
+.agents/skills/ai-agent-architecture/SKILL.md:69:## Step 1 — Walk Through Each Applicable Decision
+.agents/skills/ai-agent-architecture/references/coordination-and-state.md:194:## Anti-Pattern: Bag of Agents [Source: research — Expert Mistake #1]
+.agents/skills/ai-agent-architecture/references/cost-token-economics.md:133:## Practical Token Profile by Agent Type (use relative sizing — absolute costs change with provider pricing)
+.agents/skills/ai-agent-architecture/references/cost-token-economics.md:149:## Cost Monitoring Tools [Source: research — Tool Mapping]
+.agents/skills/ai-agent-architecture/references/observability.md:153:## Observability Tool Recommendations [Source: research — Tool Mapping]
+.agents/skills/ai-agent-architecture/references/permissions-safety.md:111:### Scoped Tokens per Environment [Source: Incident #1 — PocketOS database wipe]
+.agents/skills/ai-agent-architecture/references/permissions-safety.md:136:### Checklist Item 1: Display Full Tool Descriptions [Source: Incident #2 — Cursor poisoning]
+.agents/skills/ai-agent-architecture/references/permissions-safety.md:146:### Checklist Item 2: Enforce Cross-Server Boundaries [Source: Incident #3 — email hijacking]
+.agents/skills/ai-agent-architecture/references/production-disasters.md:1:# D10: Production Disasters — 7 Causal Chains
+.agents/skills/ai-agent-architecture/references/production-disasters.md:28:### Incident 2: Cursor MCP Tool Poisoning — Credential Exfiltration
+.agents/skills/ai-agent-architecture/references/research-findings.md:139:## 2026 Evidence Refresh — Sourced Thresholds (added 2026-06-13)
+.agents/skills/ai-agent-architecture/references/testing-evaluation.md:102:## Testing Tools [Source: research — Tool Mapping]
+.agents/skills/ai-agent-architecture/scripts/audit-decisions.sh:2:# audit-decisions.sh — deterministic structural checker for ai-agent-architecture output.
+.agents/skills/ai-agent-architecture/scripts/audit-decisions.sh:7:# discriminative_pattern — structural verification stays in code, not "punted to Claude".
+.agents/skills/ai-agent-architecture/scripts/audit-decisions.sh:32:# A decision is "addressed" if its ID appears followed by a separator (— - : ( space).
+.agents/skills/ai-evaluation/SKILL.md:88:### P0 — Blocking (must fix before running eval)
+.agents/skills/ai-evaluation/SKILL.md:91:### P1 — Required (fix before trusting results)
+.agents/skills/ai-evaluation/SKILL.md:94:### P2 — Advisory (improves eval quality)
+.agents/skills/ai-evaluation/examples/llm-judge-ab-eval.md:53:# Expected: ≥ 3 (combined / SECONDARY context count — NOT the discriminative gate)
+.agents/skills/ai-evaluation/references/ab-testing-rules.md:43:### AB2: Statistical Significance — Never Declare a Winner on Raw Win-Count
+.agents/skills/ai-evaluation/references/eval-framework-workflow.md:1:# Evaluation Framework Design — Structured Workflow
+.agents/skills/ai-evaluation/references/human-eval-protocol.md:1:# Human Evaluation Protocol — Structured Workflow
+.agents/skills/ai-evaluation/scripts/eval-config-lint.sh:2:# eval-config-lint.sh — Deterministic linter for promptfoo / deepeval eval configs.
+.agents/skills/ai-evaluation/scripts/eval-config-lint.sh:11:#       PLUS an unrelated gpt-4o baseline shows 2 families and PASSES this check — a known
+.agents/skills/ai-guardrails/SKILL.md:106:### P0 — Blocking (exploitable now; block deployment)
+.agents/skills/ai-guardrails/SKILL.md:109:### P1 — Required (fix before production)
+.agents/skills/ai-guardrails/SKILL.md:112:### P2 — Advisory (hardening)
+.agents/skills/ai-guardrails/examples/ai-guardrails-fixture.md:14:# a no-pack agent does NOT — the Rule-of-Two name (a.k.a. lethal trifecta), the A/B/C
+.agents/skills/ai-guardrails/examples/ai-guardrails-fixture.md:17:# markers (Spotlighting/datamarking, Llama Guard 4, AgentDojo/InjecAgent) — an LLM cannot
+.agents/skills/ai-guardrails/examples/ai-guardrails-fixture.md:54:## Deterministic Validator Assertion (A10 — wires the script into the eval)
+.agents/skills/ai-guardrails/references/content-moderation.md:18:### CM1: Moderate Both Input and Output — Use the Current Llama Guard 4 Benchmark
+.agents/skills/ai-guardrails/references/output-validation.md:19:### OV1: Improper Output Handling (OWASP LLM05) — "The New XSS"
+.agents/skills/ai-guardrails/references/pii-deidentification.md:78:### PII4: Prioritize Recall — Use the F2 Score (β=2)
+.agents/skills/ai-guardrails/references/prompt-injection-defense.md:21:### PI1: Direct vs Indirect Injection — All External Data Is Untrusted
+.agents/skills/ai-guardrails/references/prompt-injection-defense.md:122:### PI7: ReAct Cognitive Hijacking — Validate Tool Outputs and Trace Boundaries
+.agents/skills/ai-guardrails/scripts/check-guardrail-config.sh:2:# check-guardrail-config.sh — deterministic guardrail-config linter for the ai-guardrails pack.
+.agents/skills/ai-podcast-production/examples/full-episode-production.md:14:# DISCRIMINATIVE gate: ONLY pack-specific markers — every alternative is a research-grounded
+.agents/skills/ai-podcast-production/references/colab-deployment.md:7:## CD1: Two-Notebook Architecture — MANDATORY
+.agents/skills/ai-podcast-production/references/colab-deployment.md:26:## CD2: Self-Contained Notebooks — MANDATORY
+.agents/skills/ai-podcast-production/references/music-arrangement.md:22:## MA1: Envelope Follower — Core Algorithm
+.agents/skills/ai-podcast-production/references/music-arrangement.md:107:## MA3: Look-Ahead Ducking — MANDATORY
+.agents/skills/ai-podcast-production/references/music-arrangement.md:126:## MA4: Logarithmic Fade Curves — MANDATORY
+.agents/skills/ai-podcast-production/references/music-arrangement.md:148:## MA5: BGM Volume Sweet Spot — Validated Parameters
+.agents/skills/ai-podcast-production/references/music-arrangement.md:171:## MA6: Head/Tail Fades — MANDATORY
+.agents/skills/ai-podcast-production/references/music-arrangement.md:213:## MA8: Anti-Clipping — Sample-Peak Ceiling at -1 dBFS (true-peak needs an external tool)
+.agents/skills/ai-podcast-production/references/music-arrangement.md:229:# OLD (do NOT use): clamp at 0.95 ≈ -0.45 dBFS — too little headroom for lossy encoders
+.agents/skills/ai-podcast-production/references/music-arrangement.md:234:# OPTIONAL true-peak (dBTP) guarantee — pyloudnorm cannot do this; use ffmpeg:
+.agents/skills/ai-podcast-production/references/music-arrangement.md:335:# 10. Anti-clipping — sample-peak ceiling at -1 dBFS (MA8), reserving headroom vs old 0.95
+.agents/skills/ai-podcast-production/references/music-selection.md:7:## MS1: Atmosphere Over Melody — First Principle
+.agents/skills/ai-podcast-production/references/music-selection.md:25:## MS2: Dual-Track Strategy — MANDATORY for Episodes >10 Minutes
+.agents/skills/ai-podcast-production/references/script-writing.md:7:## SS1: Source Selection — Thematic Diptych
+.agents/skills/ai-podcast-production/references/script-writing.md:24:## SS2: Thematic Framing — Personal Question, Not Abstract Thesis
+.agents/skills/ai-podcast-production/references/script-writing.md:37:## SS3: Structural Architecture — Setup to Non-Resolution
+.agents/skills/ai-podcast-production/references/script-writing.md:53:## SS4: Reference Style — Xu Zhiqiang (Kan Lixiang) Method
+.agents/skills/ai-podcast-production/references/script-writing.md:142:## SS9: Codex Adversarial Review — MANDATORY
+.agents/skills/ai-podcast-production/references/tts-production.md:7:## TP1: Large-Chunk Strategy — MANDATORY
+.agents/skills/ai-podcast-production/references/tts-production.md:70:## TP4: Merged Processing Loop — MANDATORY
+.agents/skills/ai-podcast-production/references/tts-production.md:85:# The per-platform numbers below are REFERENCE values — what each platform
+.agents/skills/ai-podcast-production/references/tts-production.md:86:# normalizes TO at playback — NOT separate export targets.
+.agents/skills/ai-podcast-production/references/tts-production.md:201:### TP7a: Master Once for Podcast (-16 LUFS), Platforms Normalize at Playback — MANDATORY
+.agents/skills/ai-podcast-production/references/tts-production.md:230:### TP7b: noisereduce stationary vs non-stationary — choose explicitly
+.agents/skills/ai-podcast-production/references/tts-production.md:238:### TP7c: Loudness Range (LRA) acceptance check — EBU Tech 3342
+.agents/skills/ai-podcast-production/scripts/chunk-lint.sh:2:# chunk-lint.sh — Deterministic lint for the large-chunk TTS strategy (TP1/TP2/TP3).
+.agents/skills/ai-podcast-production/scripts/chunk-lint.sh:63:# TEXT MODE — char-count lint per line (TP1/TP2)
+.agents/skills/ai-podcast-production/scripts/loudness-check.sh:2:# loudness-check.sh — Deterministic loudness / peak / LRA verifier for podcast audio.
+.agents/skills/ai-podcast-production/scripts/loudness-check.sh:9:#   masters — so passing another platform here only changes the reference number
+.agents/skills/ai-podcast-production/scripts/loudness-check.sh:17:# IMPORTANT — what this script does and does NOT measure:
+.agents/skills/ai-podcast-production/scripts/loudness-check.sh:19:#   It has NO true-peak (dBTP) meter — `normalize.peak` is a sample-peak scaler
+.agents/skills/ai-podcast-production/scripts/loudness-check.sh:61:# Per-platform integrated-loudness targets (LUFS) — must match TP7a.
+.agents/skills/ai-podcast-production/scripts/loudness-check.sh:103:# LRA per EBU Tech 3342 — pyloudnorm exposes Meter.loudness_range(). This is a REQUIRED
+.agents/skills/ai-prompt-engineering/SKILL.md:84:## Phase 1: Write — Design the System Prompt
+.agents/skills/ai-prompt-engineering/SKILL.md:121:## Phase 2: Test — Automated Prompt Evaluation
+.agents/skills/ai-prompt-engineering/SKILL.md:202:# promptfooconfig.yaml — red-team section
+.agents/skills/ai-prompt-engineering/SKILL.md:234:## Phase 3: Optimize — Diagnose and Fix
+.agents/skills/ai-prompt-engineering/SKILL.md:315:### 3.6 Programmatic Optimization — DSPy MIPROv2 or GEPA
+.agents/skills/ai-prompt-engineering/SKILL.md:382:## Phase 4: Ship — Version, CI/CD, Deploy
+.agents/skills/ai-prompt-engineering/checklists/regression.md:77:# Compare baseline vs candidate (manually — promptfoo has no 'diff' subcommand)
+.agents/skills/ai-prompt-engineering/references/ci-cd-templates.md:336:## promptfooconfig.yaml — Complete Template
+.agents/skills/ai-prompt-engineering/references/claude.md:26:## Model-pinning table (use exact IDs — never aliases, never date suffixes)
+.agents/skills/ai-prompt-engineering/references/claude.md:42:### Rule 1: Adaptive Thinking Replaces Manual CoT — `budget_tokens` is REMOVED on Opus 4.7+
+.agents/skills/ai-prompt-engineering/references/claude.md:75:### Rule 2: Prefill is REMOVED on the 4.6/4.7/4.8 family + Fable 5 — Use Structured Outputs
+.agents/skills/ai-prompt-engineering/references/claude.md:109:### Rule 3: Claude 4.7+ Follows Instructions More Literally — Specify Scope Explicitly
+.agents/skills/ai-prompt-engineering/references/claude.md:149:### Rule 5: Provide Requirements Upfront — Long-Horizon Work Wants One Well-Specified Turn
+.agents/skills/ai-prompt-engineering/references/claude.md:165:### Rule 6: Prompt Caching Architecture — Stable Prefix + Frozen, Deterministic
+.agents/skills/ai-prompt-engineering/references/claude.md:199:### Rule 7: Opus 4.8 Under-Reaches for Tools — Fix with a Triggering Instruction + Higher effort, NOT `budget_tokens`
+.agents/skills/ai-prompt-engineering/references/claude.md:243:## Old patterns (do NOT use) — corrected 2026-06-13
+.agents/skills/ai-prompt-engineering/references/phase1-write.md:1:# Phase 1: Write — Design the System Prompt (full detail)
+.agents/skills/ai-prompt-engineering/tools/prompt-lint.sh:2:# prompt-lint.sh — deterministic pre-ship checker for a prompt suite.
+.agents/skills/ai-prompt-engineering/tools/prompt-lint.sh:11:# Pure bash + grep/awk — no npm, no jq, no python. macOS/BSD + Linux compatible.
+.agents/skills/ai-prompt-engineering/tools/promptfoo-starter.yaml:3:# Starter — minimum viable. Production recommendation: 20+ per research findings.
+.agents/skills/ai-prompt-engineering/tools/selection-matrix.md:23:## promptfoo — Prompt Testing and CI/CD
+.agents/skills/ai-prompt-engineering/tools/selection-matrix.md:51:## DSPy — Programmatic Prompt Optimization
+.agents/skills/ai-prompt-engineering/tools/selection-matrix.md:102:### GEPA (Genetic-Pareto reflective evolution) — tiny trainset + textual feedback
+.agents/skills/ai-prompt-engineering/tools/selection-matrix.md:179:## DeepEval — Quality Metrics and Debugging
+.agents/skills/ai-tool-integration/scripts/verify-mcp-server.sh:2:# verify-mcp-server.sh — Deterministic validator for an MCP server source tree.
+.agents/skills/ai-voice-production/references/apple-silicon.md:50:# MUST use float32 on MPS — float16/bfloat16 causes silent numerical errors
+.agents/skills/ai-voice-production/references/apple-silicon.md:71:# Some ops fall back to CPU — expect slower than native MPS, still faster than pure CPU
+.agents/skills/ai-voice-production/references/apple-silicon.md:78:# Runs natively on Apple Silicon via MLX framework — no PyTorch MPS needed
+.agents/skills/ai-voice-production/references/audiobook-pipeline.md:187:# Pass 1 — MEASURE (print JSON, write nothing). Use I=-16 for podcast/streaming, I=-23 for EBU broadcast.
+.agents/skills/ai-voice-production/references/audiobook-pipeline.md:192:# Pass 2 — APPLY measured values back into loudnorm at the SAME target:
+.agents/skills/ai-voice-production/references/audiobook-pipeline.md:254:# verify-acx.sh — check all final MP3s against ACX specs
+.agents/skills/ai-voice-production/references/chattts-workflow.md:26:# 1. 创建隔离虚拟环境（MUST — 不污染全局）
+.agents/skills/ai-voice-production/references/chattts-workflow.md:62:# 保存到文件 — 以后永远用这个文件 = 永远是同一个人
+.agents/skills/ai-voice-production/references/chattts-workflow.md:75:# 试音脚本 — 同一句话，10 个不同声音
+.agents/skills/ai-voice-production/references/licensing-safety.md:10:### GREEN — Safe for Commercial Use
+.agents/skills/ai-voice-production/references/licensing-safety.md:30:### YELLOW — Requires Enterprise License or Specific Terms
+.agents/skills/ai-voice-production/references/licensing-safety.md:47:### RED — Non-Commercial / Restricted
+.agents/skills/ai-voice-production/references/tool-landscape.md:8:## Tier A — Research-Benchmarked Tools
+.agents/skills/ai-voice-production/references/tool-landscape.md:41:## Tier B — Notable Tools (Partial Data)
+.agents/skills/ai-voice-production/scripts/acx-check.sh:2:# acx-check.sh — Deterministic ACX/Audible submission validator.
+.agents/skills/ai-voice-production/scripts/acx-check.sh:9:# sample rate, channel layout (mono OR stereo — ACX allows either, but ALL files
+.agents/skills/ai-voice-production/scripts/lufs-check.sh:2:# lufs-check.sh — Deterministic platform-loudness validator (LUFS / true-peak dBTP).
+.agents/skills/alex-lite/SKILL.md:56:### **L0 — Applicability and current-state check（适用性与现状检查）**
+.agents/skills/alex-lite/SKILL.md:76:### **L1 — Goal anchor（目标锚）**
+.agents/skills/alex-lite/SKILL.md:85:### **L1a — 目标题（⚠️ BLOCKING，每单必跑，无 agent 裁量）**
+.agents/skills/alex-lite/SKILL.md:120:### **L1.5 — Shared knowledge preflight（共享知识预检）**
+.agents/skills/alex-lite/SKILL.md:129:### **L2 — Design contract（设计契约）**
+.agents/skills/alex-lite/SKILL.md:172:### **L2.25 — AC dry run（AC 空跑检查）**
+.agents/skills/alex-lite/SKILL.md:180:### **L2.5 — Independent contract review（独立契约审查）**
+.agents/skills/alex-lite/SKILL.md:208:### **L3 — Human decision（人工拍板）**
+.agents/skills/alex/SKILL.md:384:# ⚠️ GLOBAL SKILL EXCLUSION (TAD v2.44.0 — prevents cognitive shadowing)
+.agents/skills/alex/SKILL.md:571:# ⚠️ TAD Friction Protocol (2026-06-10 — Phase 1)
+.agents/skills/alex/SKILL.md:676:# ⚠️ MUST stay in SKILL body — circular trigger: routing table
+.agents/skills/alex/SKILL.md:1183:# Feedback JSON Reader Protocol (2026-06-10 — Phase 2)
+.agents/skills/alex/SKILL.md:1184:# ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:
+.agents/skills/alex/SKILL.md:1253:# *harvest — Review skillify candidates across projects (2026-06-10)
+.agents/skills/alex/SKILL.md:1272:# Bypasses Gate 4 ceremony BY DESIGN — cancelled work doesn't need acceptance,
+.agents/skills/alex/SKILL.md:1599:## Anti-Rationalization Registry (Phase 3 — byte-exact from v2 §4.1.1)
+.agents/skills/alex/references/research-plan-protocol.md:6:# Research Plan Protocol — Deep Level of *research
+.agents/skills/alex/references/research-plan-protocol.md:10:# Updated: 2026-06-17 (EPIC-20260616-research-system-consolidation Phase 1 — remove OBJECTIVES hard dep)
+.agents/skills/alex/references/research-plan-protocol.md:11:# Updated: 2026-08-28 (LOCAL-WIKI Phase 1 — Deep now uses local_wiki canon loop; see LOCAL-WIKI DEEP EXTENSION below)
+.agents/skills/alex/references/research-plan-protocol.md:13:# LOCAL-WIKI DEEP EXTENSION (2026-08-28) — canon loop for Deep via local_wiki primary
+.agents/skills/alex/references/research-track-protocol.md:1:# Research Track Protocol — RG1–RG4 gate wrapper over the *research --deep engine
+.agents/skills/blake-lite/SKILL.md:434:## L5 STOP — 最终业务验收
+.agents/skills/blake/SKILL.md:312:# ⚠️ TAD Friction Protocol — Blake Execution Rules (2026-06-10 — Phase 1)
+.agents/skills/blake/SKILL.md:1086:# DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
+.agents/skills/blake/SKILL.md:1087:# NotebookLM Access (RETIRED 2.44.6 — Blake read-only channel closed; use WebSearch)
+.agents/skills/blake/SKILL.md:1094:# TAD Brain (knowledge search — same protocol as Alex, see alex/SKILL.md tad_brain_protocol)
+.agents/skills/blake/SKILL.md:1235:# ⚠️ EXECUTION CHECKLIST — 不可精简
+.agents/skills/blake/SKILL.md:1490:# Feedback Collector Protocol (2026-06-10 — Phase 1)
+.agents/skills/blake/SKILL.md:1491:# ⚠️ MUST stay in SKILL body (NOT references/) — circular trigger risk:
+.agents/skills/blake/SKILL.md:1942:# looked like a small bugfix — without override channel that lesson would be lost.
+.agents/skills/blake/SKILL.md:2125:## Honest Partial Protocol (Phase 3 — byte-exact from v2 §4.2.1)
+.agents/skills/capability-builder/SKILL.md:6:# $capability-builder — Project-Owned Agent Skill Builder (Phase 1 Create + Phase 2 Evolve + Phase 3 Package)
+.agents/skills/capability-builder/SKILL.md:15:## Router — Phase Selection
+.agents/skills/capability-builder/SKILL.md:25:## Create — Mandatory Protocol Load (non-circular trigger)
+.agents/skills/capability-builder/references/create-protocol.md:1:# Capability Builder — Create Protocol (Phase 1)
+.agents/skills/capability-builder/references/evolve-protocol.md:1:# Capability Builder — Evolve Protocol (Phase 2)
+.agents/skills/capability-builder/references/package-openai-plugin.md:1:# Capability Builder — Package OpenAI Plugin Protocol (Phase 3)
+.agents/skills/capability-upgrade/SKILL.md:6:# /capability-upgrade — Compatibility Route (Phase 1)
+.agents/skills/capability-upgrade/references/legacy-pack-research.md:6:# /capability-upgrade — Capability Pack 构建流程
+.agents/skills/capability-upgrade/references/legacy-pack-research.md:348:## Gate 2 — 双层质量尺（⚠️ MANDATORY build/validation deliverable）
+.agents/skills/capability-upgrade/references/legacy-pack-research.md:354:### 2.1 Layer A — 元设计/结构 checklist（QUALITY-BAR.md §1，满分 10，**通过线 7/10**）
+.agents/skills/capability-upgrade/references/legacy-pack-research.md:369:### 2.2 Layer B — 领域深度（QUALITY-BAR.md §2，0/2/5 锚点）
+.agents/skills/capability-upgrade/references/legacy-pack-research.md:380:### 2.4 对抗审查（≥3 lens，含 fact-API lens — QUALITY-BAR.md §6）
+.agents/skills/code-security/SKILL.md:119:### P0 — Blocking (must fix before merge/deploy)
+.agents/skills/code-security/SKILL.md:122:### P1 — Required (fix this sprint)
+.agents/skills/code-security/SKILL.md:125:### P2 — Advisory (improves security posture)
+.agents/skills/code-security/references/dast-rules.md:40:### D2: Production Safety — NEVER Active-Scan Production
+.agents/skills/code-security/references/dast-rules.md:57:# Passive only — safe for production monitoring
+.agents/skills/code-security/references/dast-rules.md:103:# Conservative: shared staging environment — lower the req/s ceiling
+.agents/skills/code-security/references/iac-security-rules.md:188:# Graph checks are automatic — no special flag needed
+.agents/skills/code-security/references/sast-rules.md:22:### S1: Tool Selection — Semgrep as Default SAST
+.agents/skills/code-security/references/sast-rules.md:74:# diff-aware. Do NOT set SEMGREP_BASELINE_REF — it does not apply to GitHub
+.agents/skills/code-security/references/sast-rules.md:126:# Single-file taint (default) — misses cross-module flows
+.agents/skills/code-security/references/sast-rules.md:129:# Interfile taint — tracks source→sink ACROSS files (Pro engine)
+.agents/skills/code-security/references/sast-rules.md:177:# GitHub Actions — current recommended setup
+.agents/skills/code-security/references/sast-rules.md:243:# On GitHub Actions, `semgrep ci` is auto diff-aware on pull_request — omit this.
+.agents/skills/code-security/references/vulnerability-triage-rules.md:197:## Triage Plan — P0 Items
+.agents/skills/code-security/references/vulnerability-triage-rules.md:238:### V7: KEV Remediation — CISA BOD 26-04 Risk-Based Deadlines (NOT flat 14-day)
+.agents/skills/code-security/references/vulnerability-triage-rules.md:292:### P0 — Release Blockers (fix immediately)
+.agents/skills/code-security/references/vulnerability-triage-rules.md:295:### P1 — This Sprint
+.agents/skills/code-security/references/vulnerability-triage-rules.md:298:### P2 — Backlog
+.agents/skills/code-security/scripts/triage-prioritize.sh:2:# triage-prioritize.sh — Deterministic vulnerability triage: CVSS + EPSS + KEV + reachability → P0-P3
+.agents/skills/code-security/scripts/triage-prioritize.sh:6:# rule V1/V7 — it MUST NOT be punted to the model, because the priority formula and
+.agents/skills/code-security/scripts/triage-prioritize.sh:31:# BOD 26-04 deadline (rule V7 — supersedes BOD 22-01 flat 14/60-day):
+.agents/skills/code-security/scripts/verify-pipeline-gates.sh:2:# verify-pipeline-gates.sh — Assert a CI config honors the Four-Gate fastest-fail-first
+.agents/skills/code-security/scripts/verify-pipeline-gates.sh:6:# exit-code semantics in SKILL.md Step 1 — both are fixed contracts, NOT model judgment.
+.agents/skills/data-engineering/SKILL.md:98:### P0 — Blocking (must fix before pipeline goes to production)
+.agents/skills/data-engineering/SKILL.md:101:### P1 — Required (fix before trusting the data)
+.agents/skills/data-engineering/SKILL.md:104:### P2 — Advisory (improves robustness / cost)
+.agents/skills/data-engineering/SKILL.md:149:## Validation Scripts (deterministic checks — `scripts/`)
+.agents/skills/data-engineering/examples/data-engineering-fixture.md:18:# "add metadata filtering" / "store history" / "use Polars" — not "recall collapse" /
+.agents/skills/data-engineering/references/data-quality-rules.md:19:### DQ1: Gate Ingestion — Unvalidated Data Is a Security Risk
+.agents/skills/data-engineering/references/vector-streaming-rules.md:36:### VEC2: Populate Every Metadata Field — The Missing-Field Trap
+.agents/skills/data-engineering/references/vector-streaming-rules.md:56:### VEC4: Inline Filtering — Graph Islanding, and the ACORN SOTA
+.agents/skills/data-engineering/references/vector-streaming-rules.md:80:### STR2: External RPC Inference — Async I/O + Backoff with Jitter
+.agents/skills/data-engineering/references/vector-streaming-rules.md:90:### STR3: Embedded Model Inference — Sub-ms but Restart Cost
+.agents/skills/data-engineering/scripts/determinism-lint.sh:2:# determinism-lint.sh — Annotation linter for the data-engineering pack references.
+.agents/skills/data-engineering/scripts/determinism-lint.sh:10:#      findings.md citation — no orphan depth claims (per QUALITY-BAR Layer B + the
+.agents/skills/data-engineering/scripts/dlt-load-audit.sh:2:# dlt-load-audit.sh — Audit a dlt ingestion run via the _dlt_loads metadata table (ING5).
+.agents/skills/data-engineering/scripts/dlt-load-audit.sh:8:# load did not complete, so the check is code — not "punt to Claude."
+.agents/skills/dependency-ops/SKILL.md:24:## deps show — 展示依赖表
+.agents/skills/dependency-ops/SKILL.md:33:## deps add — 添加依赖
+.agents/skills/dependency-ops/SKILL.md:46:## deps check — 检查上游
+.agents/skills/dependency-ops/SKILL.md:73:## deps update — 记录升级
+.agents/skills/gate/SKILL.md:64:# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+.agents/skills/gate/SKILL.md:79:# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+.agents/skills/gate/SKILL.md:137:# ⚠️ FRICTION STATUS VERIFICATION (BLOCKING) — TAD Friction Protocol (2026-06-10)
+.agents/skills/gate/SKILL.md:161:# ⚠️ §9.1 SPEC COMPLIANCE VERIFICATION (BLOCKING) — PRIMARY VERIFICATION SOURCE
+.agents/skills/gate/SKILL.md:163:# Gate 3 no longer hardcodes tsc/test/lint — those become Alex-generated §9.1 AC rows
+.agents/skills/gate/SKILL.md:191:# ⚠️ §9.1 EMPTY GUARD (BLOCKING) — FR7 safety net for AC-driven switch
+.agents/skills/gate/SKILL.md:203:# ⚠️ DEV REGRESSION FLOOR (smoke alarm, WARN-not-BLOCK) — FR6 zero-regression backstop
+.agents/skills/gate/SKILL.md:206:# Without this, a code handoff could PASS Gate 3 with tsc/test NEVER run — the old hardcoded
+.agents/skills/gate/SKILL.md:276:# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+.agents/skills/gate/SKILL.md:279:# MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts (2026-10-05 recount fix: Provenance item restored to the inline copy)
+.agents/skills/gate/SKILL.md:381:# ⚠️ GATE 3 POST-STEP — gate3_verdict marker (UNIVERSAL — all task_types)
+.agents/skills/gate/SKILL.md:428:# ⚠️ judge ≠ producer (BLOCKING) — contract §C — anti-self-scoring backbone (migrated byte-exact)
+.agents/skills/gate/SKILL.md:444:# ⚠️ RUBRIC + THRESHOLD RESOLUTION (BLOCKING) — contract §A.2 precedence
+.agents/skills/gate/SKILL.md:467:# ⚠️ REQUIRED JUDGE SUBAGENT (BLOCKING) — independent judge for rubric/judge §9.1 ACs
+.agents/skills/gate/SKILL.md:511:# ⚠️ VERDICT MAPPING — contract §B.5
+.agents/skills/gate/SKILL.md:607:# ⚠️ FRICTION STATUS REVIEW — Gate 4 (TAD Friction Protocol (2026-06-10))
+.agents/skills/gate/SKILL.md:627:# ⚠️ TASK-TYPE CONDITIONALITY (BLOCKING for code/mixed) — structural role enforcement, NOT AC-driven
+.agents/skills/gate/SKILL.md:633:# Feedback Collection Check (BLOCKING — Phase 3, 2026-06-10)
+.agents/skills/gate/SKILL.md:657:# ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING) — for task_type IN {code, mixed}
+.agents/skills/gate/SKILL.md:732:# ═══ Gate Checklist Items (inline — derived from canonical) ═══
+.agents/skills/gate/SKILL.md:748:# Functional acceptance fail-close detail: for every landing-tier §9.1 row, Gate 4 re-runs the declared Verification Method from the on-disk artifact. A row whose Method is missing, illegal (prose-only), or never executed → Functional acceptance cannot PASS. Blake summary is not Gate 4 evidence — only recomputed command output counts.
+.agents/skills/gate/SKILL.md:922:## Gate 4 — Rubric-Based Handoffs (universal, no separate branch)
+.agents/skills/gate/SKILL.md:927:# ⚠️ RUBRIC-LANE PREREQUISITE (BLOCKING) — when §9.1 ACs are rubric-based
+.agents/skills/gate/SKILL.md:941:# Evidence File Naming (rubric-eval) — rubric-eval is a DISTINCT type (own glob *-rubric-eval-*)
+.agents/skills/gate/SKILL.md:951:# Business acceptance + Knowledge Assessment are the UNIVERSAL Gate 4 blocks above — not re-declared here.
+.agents/skills/gate/SKILL.md:953:#  including rubric-based ones — no deliverable-only duplication.)
+.agents/skills/hw-circuit-design/references/bom-management.md:5:## 1. Select — BOM 格式定义
+.agents/skills/hw-circuit-design/references/bom-management.md:20:## 2. Execute — 构建完整 BOM
+.agents/skills/hw-circuit-design/references/bom-management.md:35:## 3. Verify — BOM 验证
+.agents/skills/hw-circuit-design/references/bom-management.md:54:## 4. Optimize — 降本与报告
+.agents/skills/hw-circuit-design/references/component-selection.md:5:## 1. Search — 收集候选元器件
+.agents/skills/hw-circuit-design/references/component-selection.md:19:## 2. Analyze — 候选对比
+.agents/skills/hw-circuit-design/references/component-selection.md:38:## 3. Derive — 选型决策
+.agents/skills/hw-circuit-design/references/component-selection.md:53:## 4. Generate — 选型报告
+.agents/skills/hw-circuit-design/references/design-documentation.md:5:## 1. Search — 收集设计决策
+.agents/skills/hw-circuit-design/references/design-documentation.md:18:## 2. Analyze — 结构化文档组织
+.agents/skills/hw-circuit-design/references/design-documentation.md:40:## 3. Derive — 制造指导文档
+.agents/skills/hw-circuit-design/references/design-documentation.md:61:## 4. Generate — 完整文档包
+.agents/skills/hw-circuit-design/references/design-review.md:6:## 1. Search — 收集评审材料
+.agents/skills/hw-circuit-design/references/design-review.md:19:## 2. Analyze — 自动化检查
+.agents/skills/hw-circuit-design/references/design-review.md:60:## 3. Derive — 4 阶段专家评审
+.agents/skills/hw-circuit-design/references/design-review.md:100:## 4. Generate — 评审报告
+.agents/skills/hw-circuit-design/references/pcb-layout.md:5:## 1. Select — 确定 PCB 参数
+.agents/skills/hw-circuit-design/references/pcb-layout.md:21:## 2. Execute — 布局布线
+.agents/skills/hw-circuit-design/references/pcb-layout.md:47:## 3. Verify — DRC 检查
+.agents/skills/hw-circuit-design/references/pcb-layout.md:66:## 4. Optimize — 制造优化
+.agents/skills/hw-circuit-design/references/power-design.md:5:## 1. Select — 电源架构
+.agents/skills/hw-circuit-design/references/power-design.md:27:## 2. Execute — 功耗预算计算
+.agents/skills/hw-circuit-design/references/power-design.md:52:## 3. Verify — 电源设计验证
+.agents/skills/hw-circuit-design/references/power-design.md:73:## 4. Optimize — 优化与报告
+.agents/skills/hw-circuit-design/references/schematic-design.md:5:## 1. Select — 设计方案
+.agents/skills/hw-circuit-design/references/schematic-design.md:23:## 2. Execute — 创建原理图
+.agents/skills/hw-circuit-design/references/schematic-design.md:54:## 3. Verify — ERC 检查
+.agents/skills/hw-circuit-design/references/schematic-design.md:70:## 4. Optimize — 优化与导出
+.agents/skills/hw-enclosure/references/enclosure-design.md:92:## Step 7: Validate Manifold（流形验证 — HARD GATE）
+.agents/skills/hw-enclosure/references/review-checklist.md:5:## 机械工程师 — Enclosure Design 交付审查
+.agents/skills/hw-enclosure/references/review-checklist.md:13:## 硬件工程师 — PCB Fitting 交付审查
+.agents/skills/hw-enclosure/references/review-checklist.md:20:## 材料工程师 — Material Selection 交付审查
+.agents/skills/hw-enclosure/references/review-checklist.md:27:## 生产工程师 — Assembly Design 交付审查
+.agents/skills/hw-enclosure/references/review-checklist.md:34:## 工业设计师 — Ergonomics 交付审查
+.agents/skills/hw-enclosure/references/review-checklist.md:41:## 3D 打印工程师 — Manufacturing Export 交付审查
+.agents/skills/hw-enclosure/references/review-checklist.md:48:## 技术文档工程师 — Documentation 交付审查
+.agents/skills/hw-firmware/references/build-upload.md:5:## 1. Select — 确定构建配置
+.agents/skills/hw-firmware/references/build-upload.md:29:## 2. Execute — 构建与上传流程
+.agents/skills/hw-firmware/references/build-upload.md:66:## 3. Verify — 验证构建结果
+.agents/skills/hw-firmware/references/build-upload.md:81:## 4. Optimize — 构建优化
+.agents/skills/hw-firmware/references/communication.md:5:## 1. Select — 选择通信方案
+.agents/skills/hw-firmware/references/communication.md:27:## 2. Execute — 实现通信模块（以 WiFi STA + HTTPS 为例）
+.agents/skills/hw-firmware/references/communication.md:107:## 3. Verify — 验证通信
+.agents/skills/hw-firmware/references/communication.md:120:## 4. Optimize — 通信优化
+.agents/skills/hw-firmware/references/firmware-architecture.md:6:## 1. Select — 选择架构模式
+.agents/skills/hw-firmware/references/firmware-architecture.md:29:## 2. Execute — 设计模块划分
+.agents/skills/hw-firmware/references/firmware-architecture.md:53:## 3. Verify — 验证架构设计
+.agents/skills/hw-firmware/references/firmware-architecture.md:69:## 3.5 Verify — 静态分析（来源: PlatformIO + Koopman checklist）
+.agents/skills/hw-firmware/references/firmware-architecture.md:88:## 4. Optimize — 优化架构
+.agents/skills/hw-firmware/references/firmware-documentation.md:5:## 1. Search — 收集文档素材
+.agents/skills/hw-firmware/references/firmware-documentation.md:21:## 2. Analyze — 确定文档结构
+.agents/skills/hw-firmware/references/firmware-documentation.md:41:## 3. Derive — 用 D2 生成图表
+.agents/skills/hw-firmware/references/firmware-documentation.md:59:## 4. Generate — 生成最终文档
+.agents/skills/hw-firmware/references/firmware-testing.md:5:## 1. Select — 确定测试策略（嵌入式三层模型）
+.agents/skills/hw-firmware/references/firmware-testing.md:28:## 2. Execute — 实现测试代码
+.agents/skills/hw-firmware/references/firmware-testing.md:100:## 3. Verify — 运行测试套件
+.agents/skills/hw-firmware/references/firmware-testing.md:115:## 4. Optimize — 测试优化
+.agents/skills/hw-firmware/references/low-power-design.md:5:## 1. Select — 选择睡眠策略
+.agents/skills/hw-firmware/references/low-power-design.md:33:## 2. Execute — 实现 Deep Sleep 周期
+.agents/skills/hw-firmware/references/low-power-design.md:88:## 3. Verify — 验证功耗
+.agents/skills/hw-firmware/references/low-power-design.md:109:## 4. Optimize — 功耗优化策略（按影响排序）
+.agents/skills/hw-firmware/references/peripheral-drivers.md:5:## 1. Select — 盘点外设与驱动库
+.agents/skills/hw-firmware/references/peripheral-drivers.md:30:## 2. Execute — 写驱动封装
+.agents/skills/hw-firmware/references/peripheral-drivers.md:69:## 3. Verify — 逐个验证驱动
+.agents/skills/hw-firmware/references/peripheral-drivers.md:82:## 4. Optimize — 优化驱动
+.agents/skills/hw-testing/references/hw-pair-testing.md:26:## 2. Discover — Human Measures, AI Analyzes
+.agents/skills/hw-testing/references/hw-pair-testing.md:49:## 3. Discuss — Interpret Results Together
+.agents/skills/hw-testing/references/hw-pair-testing.md:69:## 4. Decide — Make Decisions In-Session
+.agents/skills/hw-testing/references/hw-pair-testing.md:84:## 5. Deliver — Compile Session Report
+.agents/skills/hw-testing/references/power-measurement.md:48:# power_profile_chart.py — visualize power modes
+.agents/skills/hw-testing/references/power-on-test.md:83:# power_on_probe.py — verify MCU is alive via serial
+.agents/skills/hw-testing/references/review-checklist.md:1:# Review Checklist — Personas + Gate Standards
+.agents/skills/knowledge-graph/SKILL.md:87:### P0 — Blocking (must fix before building)
+.agents/skills/knowledge-graph/SKILL.md:90:### P1 — Required (fix before production)
+.agents/skills/knowledge-graph/SKILL.md:93:### P2 — Advisory (improves quality / cost)
+.agents/skills/knowledge-graph/examples/knowledge-graph-fixture.md:16:# DISCRIMINATIVE gate: ONLY pack-specific markers — named architectures + the
+.agents/skills/knowledge-graph/references/graph-database.md:97:# Legacy RDF-star / Turtle-star (RDF-star CG spec) — verify target-store support
+.agents/skills/knowledge-graph/references/graph-database.md:107:# Legacy SPARQL-star — may fail on RDF/SPARQL 1.2-compliant engines
+.agents/skills/knowledge-graph/references/query-translation.md:76:# Legacy SPARQL-star syntax (RDF-star CG spec) — may fail on RDF/SPARQL 1.2 engines; verify target-store support
+.agents/skills/knowledge-graph/scripts/graph-arch-lint.sh:2:# graph-arch-lint.sh — Deterministic structural linter for the knowledge-graph pack.
+.agents/skills/knowledge-graph/scripts/graph-arch-lint.sh:7:# Checks (all deterministic — no LLM, no network):
+.agents/skills/knowledge-graph/scripts/graph-arch-lint.sh:10:#   2. references/ is exactly one level deep (no nested subdirs) — Anthropic
+.agents/skills/llm-observability/SKILL.md:104:### P0 — Blocking (must fix before production)
+.agents/skills/llm-observability/SKILL.md:107:### P1 — Required (fix before trusting the telemetry)
+.agents/skills/llm-observability/SKILL.md:110:### P2 — Advisory (improves observability quality)
+.agents/skills/llm-observability/references/cost-attribution-rules.md:37:### CA2: Output Tokens Are Materially Pricier Than Input — Compute the Multiplier
+.agents/skills/llm-observability/references/cost-attribution-rules.md:114:### CA7: AWS Bedrock — Cache STS AssumeRole (1-Hour TTL)
+.agents/skills/llm-observability/references/online-eval-drift-rules.md:63:### OE4: K-Means Cluster Metrics — Inertia & Silhouette
+.agents/skills/llm-observability/references/otel-semconv-rules.md:75:### OT4: Message Payloads — Capture Gated by a Dedicated Env Var; Now Span Attributes
+.agents/skills/llm-observability/references/prompt-registry-rules.md:29:### PR2: Version Identity — Sequential vs Content-Addressable
+.agents/skills/llm-observability/scripts/otel-conformance-check.sh:2:# otel-conformance-check.sh — deterministic verifier for OpenTelemetry GenAI semconv conformance.
+.agents/skills/llm-observability/scripts/otel-conformance-check.sh:20:#   0   PASS — all four checks passed
+.agents/skills/llm-observability/scripts/otel-conformance-check.sh:21:#   N   non-zero — N = number of failed checks (1..4); see stderr for which
+.agents/skills/ml-training/SKILL.md:86:## Quick Rule Index (router — depth lives in references/)
+.agents/skills/ml-training/examples/lora-config-decision.md:14:# pick a reasonable rank, watch VRAM" — it does NOT produce alpha=2r, LR 5e-6 for DPO,
+.agents/skills/ml-training/references/lora-finetune.md:113:## Preference Tuning (DPO / GRPO) — was entirely absent before
+.agents/skills/ml-training/references/lora-finetune.md:129:## Tool Comparison (version-pinned — B2 timeliness)
+.agents/skills/ml-training/scripts/cost-estimate.sh:2:# cost-estimate.sh — Estimate GPU-hour cost of a fine-tune run.
+.agents/skills/ml-training/scripts/dataset-check.sh:2:# dataset-check.sh — Validate a fine-tune dataset (JSONL: ShareGPT / ChatML / Alpaca / preference)
+.agents/skills/ml-training/scripts/vram-fit.sh:2:# vram-fit.sh — Does this LoRA/QLoRA config fit the chosen GPU's VRAM budget?
+.agents/skills/mobile-development/SKILL.md:34:## Step 2: Decision Entry Point — Framework Selection
+.agents/skills/mobile-development/references/review-checklist.md:9:### Project Scaffold — Mobile Architect
+.agents/skills/mobile-development/references/review-checklist.md:14:### Native Components — React Native Performance Expert
+.agents/skills/mobile-development/references/review-checklist.md:19:### State Management — Mobile Security Reviewer
+.agents/skills/mobile-development/references/review-checklist.md:24:### State Management — Offline Architecture Reviewer
+.agents/skills/mobile-development/references/review-checklist.md:29:### API Integration — Mobile API Architect
+.agents/skills/mobile-development/references/review-checklist.md:34:### API Integration — Mobile Security Reviewer
+.agents/skills/mobile-development/references/review-checklist.md:39:### Platform Features — Platform Integration Reviewer
+.agents/skills/mobile-development/references/review-checklist.md:44:### Performance — Mobile Performance Engineer
+.agents/skills/mobile-development/references/review-checklist.md:49:### Code Quality — Mobile Code Quality Reviewer
+.agents/skills/mobile-development/references/review-checklist.md:54:## Gate 2 — Design checklist
+.agents/skills/mobile-development/references/review-checklist.md:62:## Gate 4 — Acceptance checklist
+.agents/skills/mobile-release/references/post-release-monitoring.md:1:# Post-Release Monitoring — Crashes, Ratings, Reviews, Downloads
+.agents/skills/mobile-release/references/release-automation.md:1:# Release Automation — CI/CD Pipeline
+.agents/skills/mobile-release/references/review-checklist.md:1:# Review Checklist — Reviewer Personas + Gate Standards
+.agents/skills/mobile-release/references/review-compliance.md:1:# Review Compliance — Prevent Rejection BEFORE Submission (CORE VALUE)
+.agents/skills/mobile-release/references/review-compliance.md:5:## Layer 1: Search — Gather Current Guidelines
+.agents/skills/mobile-release/references/review-compliance.md:14:## Layer 2: Analyze — Check THIS App Against Guidelines
+.agents/skills/mobile-release/references/review-compliance.md:33:## Layer 3: Derive — Prioritize Fixes
+.agents/skills/mobile-release/references/review-compliance.md:46:## Layer 4: Generate — Compliance Report
+.agents/skills/mobile-release/references/store-metadata.md:1:# Store Metadata — App Store Listing & ASO
+.agents/skills/mobile-release/references/testflight-distribution.md:1:# TestFlight Distribution — Build, Sign, Upload
+.agents/skills/mobile-release/references/version-management.md:1:# Version Management — Semver + Build Numbers
+.agents/skills/mobile-testing/references/review-checklist.md:7:### E2E 测试 — 移动端 QA 工程师
+.agents/skills/mobile-testing/references/review-checklist.md:12:### 单元测试 — React Native 开发者
+.agents/skills/mobile-testing/references/review-checklist.md:17:### 设备兼容性 — QA 主管
+.agents/skills/mobile-testing/references/review-checklist.md:22:### 性能测试 — 性能工程师
+.agents/skills/mobile-testing/references/review-checklist.md:27:### 可访问性 — 可访问性专家
+.agents/skills/mobile-testing/references/review-checklist.md:32:### 人机协作测试 — 产品经理
+.agents/skills/mobile-testing/references/review-checklist.md:36:### 测试策略 — QA 主管
+.agents/skills/mobile-ui-design/references/design-system.md:5:### Layer 1 — Research components
+.agents/skills/mobile-ui-design/references/design-system.md:17:### Layer 2 — Component specs (native-first)
+.agents/skills/mobile-ui-design/references/design-system.md:43:### Layer 3 — Derive the component system
+.agents/skills/mobile-ui-design/references/design-system.md:54:### Layer 4 — Generate artifacts
+.agents/skills/mobile-ui-design/references/gesture-interaction.md:5:### Layer 1 — Research gesture practices
+.agents/skills/mobile-ui-design/references/gesture-interaction.md:17:### Layer 2 — Define the full gesture catalog
+.agents/skills/mobile-ui-design/references/gesture-interaction.md:39:### Layer 3 — Derive the gesture spec
+.agents/skills/mobile-ui-design/references/gesture-interaction.md:54:### Layer 4 — Generate artifacts
+.agents/skills/mobile-ui-design/references/navigation.md:5:### Layer 1 — Research navigation patterns
+.agents/skills/mobile-ui-design/references/navigation.md:17:### Layer 2 — Analyze hierarchy and needs
+.agents/skills/mobile-ui-design/references/navigation.md:32:### Layer 3 — Derive navigation structure
+.agents/skills/mobile-ui-design/references/navigation.md:42:### Layer 4 — Generate diagrams (D2)
+.agents/skills/mobile-ui-design/references/platform-guidelines.md:7:### Layer 1 — Research platform rules
+.agents/skills/mobile-ui-design/references/platform-guidelines.md:22:### Layer 2 — Extract hard constraints
+.agents/skills/mobile-ui-design/references/platform-guidelines.md:54:### Layer 3 — Derive design decisions
+.agents/skills/mobile-ui-design/references/platform-guidelines.md:65:### Layer 4 — Generate summary
+.agents/skills/mobile-ui-design/references/review-checklist.md:7:### iOS/Android 设计规范专家 — platform guidelines work
+.agents/skills/mobile-ui-design/references/review-checklist.md:12:### 移动端 UX 架构师 — navigation work
+.agents/skills/mobile-ui-design/references/review-checklist.md:17:### 移动端 UI 设计师 — wireframing work
+.agents/skills/mobile-ui-design/references/review-checklist.md:22:### 移动端视觉设计师 — visual design work
+.agents/skills/mobile-ui-design/references/review-checklist.md:27:### 交互设计师 — gesture interaction work
+.agents/skills/mobile-ui-design/references/review-checklist.md:32:### 设计系统架构师 — design system work
+.agents/skills/mobile-ui-design/references/review-checklist.md:37:### 移动端 QA 工程师 — usability review work
+.agents/skills/mobile-ui-design/references/usability-review.md:5:### Step 1 — Gather artifacts
+.agents/skills/mobile-ui-design/references/usability-review.md:8:### Step 2 — Automated checks (on HTML artifacts)
+.agents/skills/mobile-ui-design/references/usability-review.md:17:### Step 3 — Heuristic evaluation (Nielsen 10 + Mobile 5)
+.agents/skills/mobile-ui-design/references/usability-review.md:30:### Step 4 — Derive the improvement list
+.agents/skills/mobile-ui-design/references/usability-review.md:38:### Step 5 — Generate the audit report
+.agents/skills/mobile-ui-design/references/visual-design.md:5:### Layer 1 — Research visual references
+.agents/skills/mobile-ui-design/references/visual-design.md:17:### Layer 2 — Define the visual system (platform-native, never invented)
+.agents/skills/mobile-ui-design/references/visual-design.md:34:### Layer 3 — Derive Design Tokens (JSON)
+.agents/skills/mobile-ui-design/references/visual-design.md:60:### Layer 4 — Generate artifacts
+.agents/skills/mobile-ui-design/references/wireframing.md:5:### Layer 1 — Research layouts
+.agents/skills/mobile-ui-design/references/wireframing.md:17:### Layer 2 — Design 3 UX approaches
+.agents/skills/mobile-ui-design/references/wireframing.md:31:### Layer 3 — Select and design wireframes
+.agents/skills/mobile-ui-design/references/wireframing.md:43:### Layer 4 — Generate HTML prototype (mobile viewport)
+.agents/skills/product-thinking/examples/pressure-test-verdict.md:13:# min_discriminative=2 (thin pack — mmc was already 2; verdict + protocol name suffice).
+.agents/skills/product-thinking/references/pressure-test-rubric.md:50:### D1 — Adversarial Rigor  *(load-bearing — see §B)*
+.agents/skills/product-thinking/references/pressure-test-rubric.md:68:### D2 — Evidence Grounding
+.agents/skills/product-thinking/references/pressure-test-rubric.md:86:### D3 — Fatal-Flaw Analysis
+.agents/skills/product-thinking/references/pressure-test-rubric.md:105:### D4 — Verdict Justification
+.agents/skills/product-thinking/references/pressure-test-rubric.md:125:### D5 — Product-Type Adapter Use
+.agents/skills/product-thinking/scripts/verify-verdict.sh:2:# verify-verdict.sh — Structural rigor verifier for a /pressure-test output.
+.agents/skills/product-thinking/scripts/verify-verdict.sh:6:# Asserts the output is WELL-FORMED — i.e. it carries the rigor structure the
+.agents/skills/product-thinking/scripts/verify-verdict.sh:9:# firewall (references/pressure-test-rubric.md §C — score rigor, never the verdict).
+.agents/skills/product-thinking/skills/define.md:73:# [Product Name] — Product Definition
+.agents/skills/product-thinking/skills/define.md:132:# [Product Name] — Ecommerce Definition
+.agents/skills/product-thinking/skills/define.md:181:# [Product Name] — Hardware Definition
+.agents/skills/product-thinking/skills/define.md:226:# [Service Name] — Service Definition
+.agents/skills/product-thinking/skills/define.md:268:# [Content Brand Name] — Content Definition
+.agents/skills/product-thinking/skills/define.md:310:# [Marketplace Name] — Marketplace Definition
+.agents/skills/rag-retrieval/SKILL.md:56:## Validation Script (deterministic checks — do not hand-recompute)
+.agents/skills/rag-retrieval/SKILL.md:96:### P0 — Blocking (will produce wrong or hallucinated results)
+.agents/skills/rag-retrieval/SKILL.md:99:### P1 — Required (fix before trusting retrieval quality)
+.agents/skills/rag-retrieval/SKILL.md:102:### P2 — Advisory (improves quality/latency/cost)
+.agents/skills/rag-retrieval/references/chunking-rules.md:109:### CH8: Contextual Retrieval — Prepend Generated Context Before Embedding AND BM25
+.agents/skills/rag-retrieval/references/hybrid-rerank-rules.md:51:### HR3: Never Sum Raw Scores — Use RRF (k=60)
+.agents/skills/rag-retrieval/references/rag-evaluation-rules.md:112:### RE7: Evaluation Framework Selection — and Why Faithfulness Is Not Correctness
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:2:# rag-config-lint.sh — Deterministic linter for a RAG pipeline config against the
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:9:# (all optional — only present keys are checked):
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:11:#   contextual         true | false        (Contextual Retrieval applied at index time — CH8)
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:21:#   faithfulness_gate  float (0.0–1.0) — the production gate threshold. Judged
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:28:#   P0 — blocking (wrong / hallucinated results). ANY P0 → exit 1.
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:29:#   P1 — required before trusting retrieval quality. exit 2 if no P0 but ≥1 P1.
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:30:#   P2 — advisory (quality/latency/cost).
+.agents/skills/rag-retrieval/scripts/rag-config-lint.sh:135:# 1.0 is aspirational, not a blocking target — a strict ==1.0 gate rejects every
+.agents/skills/reading-companion/SKILL.md:6:# Reading Companion (Phase 2 — Reading Surface)
+.agents/skills/reading-companion/SKILL.md:57:# SAME content.json schema — every reader/plan/bridge feature then works for free.
+.agents/skills/reading-companion/SKILL.md:93:## Persistence model (Phase 2 — LOCKED)
+.agents/skills/reading-companion/SKILL.md:156:## Phase 3 — Live Co-Read Session Protocol (FR8)
+.agents/skills/reading-companion/SKILL.md:202:### ⚠️ Least-agency + injection isolation (security P0-2 — MANDATORY)
+.agents/skills/reading-companion/fixtures/plan.md:1:# Reading Plan — The Craft of Reading
+.agents/skills/reading-companion/tools/plan-gen.py:48:# Function words to exclude — articles, prepositions, conjunctions, pronouns,
+.agents/skills/release-runbook/references/publish-ops.md:124:### 3.1 Historical version references — minor/major triage
+.agents/skills/release-runbook/references/sync-ops.md:1:# Sync / Register / List Operations — RETIRED
+.agents/skills/research-github/SKILL.md:511:### Setup steps (Conductor / main session — sub-agents cannot use CronCreate):
+.agents/skills/research-methodology/checklists/research-quality.md:10:### Phase 1 — PLAN ✓
+.agents/skills/research-methodology/checklists/research-quality.md:18:### Phase 2 — SOURCE ✓
+.agents/skills/research-methodology/checklists/research-quality.md:24:### Phase 3 — CURATE ✓
+.agents/skills/research-methodology/checklists/research-quality.md:33:### Phase 4 — ANALYZE ✓
+.agents/skills/research-methodology/references/analysis.md:14:# notebooklm_bin is defined in CAPABILITY.md §0.1 — use that value
+.agents/skills/research-methodology/references/output.md:32:### Claim 1: {analytical statement — must be arguable, not descriptive}
+.agents/skills/research-methodology/references/quality-control.md:70:## 3. Error Cleanup Protocol (FULL MODE — NotebookLM)
+.agents/skills/research-methodology/references/quality-control.md:75:# notebooklm_bin is defined in CAPABILITY.md §0.1 — do NOT redefine here
+.agents/skills/research-methodology/references/sourcing.md:53:# notebooklm_bin is set in CAPABILITY.md §0.1 — use that value
+.agents/skills/research-methodology/references/sourcing.md:58:# Deep research import (use for initial batch — 60-100 sources)
+.agents/skills/research-methodology/references/sourcing.md:60:# Note: --mode deep takes ~3 minutes and imports 60-100 sources — AskUserQuestion before running
+.agents/skills/research-methodology/references/sourcing.md:105:## 4. DEGRADED MODE — WebSearch Fallback
+.agents/skills/research-methodology/scripts/saturation-check.sh:2:# saturation-check.sh — Compute saturation status from research-state.yaml
+.agents/skills/research-methodology/scripts/saturation-check.sh:6:#   SATURATED {latest_count}   — rate=0 for >=2 rounds AND total>=3
+.agents/skills/research-methodology/scripts/saturation-check.sh:7:#   DIMINISHING {latest_count} — rate<=1 for >=3 rounds (secondary signal)
+.agents/skills/research-methodology/scripts/saturation-check.sh:8:#   CONTINUE {latest_count}    — all other cases
+.agents/skills/research-methodology/scripts/source-quality.sh:2:# source-quality.sh — T1 ratio validation from research-state.yaml
+.agents/skills/save-skill/SKILL.md:7:# *save-skill — Local Skill Capture
+.agents/skills/save-skill/SKILL.md:31:### Step 1 — Scan
+.agents/skills/save-skill/SKILL.md:43:### Step 2 — Draft
+.agents/skills/save-skill/SKILL.md:53:### Step 3 — Confirm [BLOCKING]
+.agents/skills/save-skill/SKILL.md:68:### Step 4 — 🔒 OVERWRITE GUARD [BLOCKING]
+.agents/skills/save-skill/SKILL.md:78:### Step 5 — Write
+.agents/skills/save-skill/SKILL.md:100:### Step 6 — Report
+.agents/skills/save-workflow/SKILL.md:7:# *save-workflow — Capture the Workflow We Just Ran
+.agents/skills/save-workflow/SKILL.md:27:## When to use — and when to refuse
+.agents/skills/save-workflow/SKILL.md:38:### Step 1 — Extract
+.agents/skills/save-workflow/SKILL.md:51:### Step 2 — Auto-detect trigger keywords
+.agents/skills/save-workflow/SKILL.md:60:### Step 3 — Draft (render the template)
+.agents/skills/save-workflow/SKILL.md:95:### Step 4 — Confirm (MUST happen before any write)
+.agents/skills/save-workflow/SKILL.md:111:### Step 5 — Write (overwrite-guarded)
+.agents/skills/supply-chain-security/SKILL.md:19:## Severity Policy — MANDATORY Pipeline Gating
+.agents/skills/supply-chain-security/references/review-checklist.md:1:# Review Checklist — Supply Chain Security Engineer
+.agents/skills/surplus/SKILL.md:7:# Surplus Burn Mode — Phase 1 (Scan + Rank)
+.agents/skills/surplus/SKILL.md:89:## Phase 2 — Budget-Loop Auto-Execution
+.agents/skills/synthetic-data/SKILL.md:84:### P0 — Blocking (must fix before training / shipping the dataset)
+.agents/skills/synthetic-data/SKILL.md:87:### P1 — Required (fix before trusting the dataset)
+.agents/skills/synthetic-data/SKILL.md:90:### P2 — Advisory (improves dataset quality)
+.agents/skills/synthetic-data/examples/synthetic-data-fixture.md:19:# MinHashLSH, ROUGE-L, GRPO, RRHF, Ask-LLM, SQuADv2, 0.7, k-means, embeddings) — those are generic ML
+.agents/skills/synthetic-data/references/contamination-detection-rules.md:73:### CON5: CoDeC — In-Context Learning Dynamics
+.agents/skills/synthetic-data/references/deduplication-rules.md:98:### DEDUP7: Semantic (Embedding) Dedup After MinHash — SemDeDup
+.agents/skills/synthetic-data/references/deduplication-rules.md:111:### DEDUP8: D4 — MinHash → SemDeDup → Recluster → SSL-Prototypes Diversify
+.agents/skills/synthetic-data/references/preference-alignment-rules.md:20:### PA1: DPO Is Pairwise — Match the Method to the Candidate Count
+.agents/skills/synthetic-data/references/preference-alignment-rules.md:98:### PA6: Reward-Model Training — Diverse Preference Sets
+.agents/skills/synthetic-data/references/preference-alignment-rules.md:108:### PA7: Reward-Model-as-Judge — Synthetic Preference Curation at Scale
+.agents/skills/synthetic-data/references/quality-filtering-rules.md:38:### QF2: Perplexity Filtering Has In-Distribution Bias — Never Use It Alone
+.agents/skills/synthetic-data/references/synthetic-generation-rules.md:21:### GEN1: Self-Instruct Post-Processing — ROUGE-L > 0.7 Rejection
+.agents/skills/synthetic-data/references/synthetic-generation-rules.md:35:### GEN2: Self-Instruct Sampling Mix — 6 Human + 2 Machine
+.agents/skills/synthetic-data/references/synthetic-generation-rules.md:58:### GEN4: Evol-Instruct — In-Depth + In-Breadth + Elimination
+.agents/skills/synthetic-data/references/synthetic-generation-rules.md:104:### GEN7: Magpie — Pre-Query-Template Self-Synthesis + ArmoRM Reward Filter
+.agents/skills/synthetic-data/references/synthetic-generation-rules.md:118:### GEN8: Persona-Driven Synthesis — Condition on a Persona Set, Don't Raise Temperature
+.agents/skills/synthetic-data/scripts/validate-curation-config.sh:2:# validate-curation-config.sh — Deterministic checker for a data-curation pipeline config
+.agents/skills/synthetic-data/scripts/validate-curation-config.sh:46:# ── Check 1: near-duplicate pass (not exact-only) — DEDUP3/DEDUP5 ─────────────
+.agents/skills/synthetic-data/scripts/validate-curation-config.sh:60:# ── Check 2: ROUGE-L <= 0.7 reject threshold on generation loops — GEN1 ──────
+.agents/skills/synthetic-data/scripts/validate-curation-config.sh:75:# ── Check 3: MinHash signatures as BINARY_VECTOR (not float32) — DEDUP4 ──────
+.agents/skills/synthetic-data/scripts/validate-curation-config.sh:93:# ── Check 4: chat-template token-mapping config — PA5 ─────────────────────────
+.agents/skills/synthetic-data/scripts/validate-curation-config.sh:112:# ── Check 5: decontamination precedes any benchmark-score step — cross-cutting
+.agents/skills/tad-handoff/SKILL.md:34:### Template Selection (UNIVERSAL — TAD v3.1)
+.agents/skills/video-creation/examples/photo-to-beat-sync.md:27:# cut craft, not just decompose photos — and should flag the anticipation offset as convention.
+.agents/skills/video-creation/references/ai-asset-generation.md:119:# Seedance 2.0 endpoint IDs (fal): "bytedance/seedance-2.0/<route>" — Standard tier;
+.agents/skills/video-creation/references/ai-asset-generation.md:133:# 2. Submit (async — returns immediately)
+.agents/skills/video-creation/references/ai-asset-generation.md:200:# "/fast/" variant — the Fast/Standard tier lives in the endpoint path, NOT a param) +
+.agents/skills/video-creation/references/ai-asset-generation.md:243:# Provider-enforced 429 is a separate concern — handle independently
+.agents/skills/video-creation/references/ai-asset-generation.md:595:# Resolution ceiling is endpoint-conditioned — text-to-video tops out at 720p, NOT 1080p.
+.agents/skills/video-creation/references/ai-asset-generation.md:716:# ✅ CORRECT — TTS is synchronous
+.agents/skills/video-creation/references/ai-asset-generation.md:722:# ❌ WRONG — TTS has no task_id to poll
+.agents/skills/video-creation/references/ai-asset-generation.md:784:# audio is bytes — write directly
+.agents/skills/video-creation/references/ai-asset-generation.md:862:# Fish Audio inlines the sample in the TTS call — no separate upload step
+.agents/skills/video-creation/references/ai-asset-generation.md:866:# Step 2: TTS with voice cloning — session.tts() returns a Generator, NOT a context manager
+.agents/skills/video-creation/references/ai-asset-generation.md:895:# IVC — uses voice_id from ElevenLabs voice library after uploading
+.agents/skills/video-creation/references/ai-asset-generation.md:1014:# Remotion project — same structure but under public/
+.agents/skills/video-creation/references/ai-asset-generation.md:1061:# Timestamps align to actual TTS output (not script — TTS timing differs from script)
+.agents/skills/video-creation/references/beat-sync-montage.md:48:## Tier 1 — CapCut Beat Sync (consumer path)
+.agents/skills/video-creation/references/beat-sync-montage.md:78:## Tier 2 — FFmpeg headless beat-sync recipe
+.agents/skills/video-creation/references/beat-sync-montage.md:90:### Ken Burns per photo (ffmpeg `zoompan`) — with the jitter fix
+.agents/skills/video-creation/references/beat-sync-montage.md:195:## 9:16 safe zone — exact pixels (1080×1920)
+.agents/skills/video-creation/references/quality.md:97:# Pass 1 — generate palette
+.agents/skills/video-creation/references/quality.md:99:# Pass 2 — encode using palette (much cleaner than single-pass)
+.agents/skills/video-creation/scripts/failure-mode-precheck.sh:2:# failure-mode-precheck.sh — Deterministic linter for the 6 banned timeline
+.agents/skills/video-creation/scripts/failure-mode-precheck.sh:15:#   0  — clean (no banned pattern found)
+.agents/skills/video-creation/scripts/failure-mode-precheck.sh:16:#   1  — at least one banned anti-pattern found (render must be blocked)
+.agents/skills/video-creation/scripts/failure-mode-precheck.sh:17:#   2  — usage / no input files
+.agents/skills/video-creation/scripts/verify-prereqs.sh:2:# verify-prereqs.sh — Verify the Step-0 pack prerequisites with explicit exit codes.
+.agents/skills/video-creation/scripts/verify-prereqs.sh:12:# Pinned versions (verified 2026-06-14 — refresh on tool-freshness review):
+.agents/skills/video-creation/scripts/verify-prereqs.sh:18:#   0  — all required prereqs present and meet the version floor
+.agents/skills/video-creation/scripts/verify-prereqs.sh:19:#   1  — ffmpeg missing
+.agents/skills/video-creation/scripts/verify-prereqs.sh:20:#   2  — node missing or below v22
+.agents/skills/video-creation/scripts/verify-prereqs.sh:21:#   3  — composition CLI (hyperframes / remotion) missing
+.agents/skills/web-backend/CONVENTIONS.md:282:# .env.example — copy to .env and fill in values
+.agents/skills/web-backend/SKILL.md:94:### P0 — Blocking (must fix before merge)
+.agents/skills/web-backend/SKILL.md:97:### P1 — Required (fix this sprint)
+.agents/skills/web-backend/SKILL.md:100:### P2 — Advisory (track as tech debt)
+.agents/skills/web-backend/references/architecture.md:16:# BAD: A calls B, B calls C, C calls D — all synchronously
+.agents/skills/web-backend/references/architecture.md:133:# Public API — URL versioning
+.agents/skills/web-backend/references/architecture.md:137:# Internal API — header versioning
+.agents/skills/web-backend/references/infrastructure.md:28:# RIGHT: multi-tenant cluster — set CPU limit higher than request (headroom for burst)
+.agents/skills/web-backend/references/infrastructure.md:37:# RIGHT: single-tenant cluster — omit CPU limit entirely
+.agents/skills/web-backend/references/infrastructure.md:88:# WRONG: count — removing "us-west-2" destroys and recreates "eu-west-1"
+.agents/skills/web-backend/references/infrastructure.md:97:# RIGHT: for_each — stable keys, safe to remove individual items
+.agents/skills/web-backend/references/infrastructure.md:125:# modules/s3-bucket/main.tf — no provider block
+.agents/skills/web-backend/references/production.md:9:## Tier 1 — Automatable (~25 items)
+.agents/skills/web-backend/references/production.md:65:## Tier 2 — Human Attestation (~12 items)
+.agents/skills/web-backend/references/production.md:96:## Tier 3 — Infrastructure-Dependent (~9 items)
+.agents/skills/web-backend/references/security.md:136:# Python — Pydantic
+.agents/skills/web-backend/references/security.md:214:## OWASP API Security Top 10 — Quick Mapping
+.agents/skills/web-backend/scripts/api-lint.sh:2:# api-lint.sh — Lint an OpenAPI specification against Spectral + naming rules
+.agents/skills/web-backend/scripts/readiness-score.sh:2:# readiness-score.sh — Score Tier 1 automatable production readiness checks
+.agents/skills/web-backend/scripts/readiness-score.sh:8:# not scored — they require human verification.
+.agents/skills/web-backend/scripts/readiness-score.sh:71:# PC-04: Dependency audit (check tool availability, not run full audit here — use security-scan.sh)
+.agents/skills/web-backend/scripts/schema-check.sh:2:# schema-check.sh — Lint database schema and migration files
+.agents/skills/web-backend/scripts/security-scan.sh:2:# security-scan.sh — Security scan for a backend project
+.agents/skills/web-backend/scripts/security-scan.sh:49:# Common secret patterns — not exhaustive, but catches the most common leaks
+.agents/skills/web-deployment/SKILL.md:92:### P0 — Blocking (must fix before deploying)
+.agents/skills/web-deployment/SKILL.md:95:### P1 — Required (fix before production)
+.agents/skills/web-deployment/SKILL.md:98:### P2 — Advisory (improves deployment quality)
+.agents/skills/web-deployment/references/ci-cd-pipeline-rules.md:221:### CI9: The tj-actions/changed-files Compromise (CVE-2025-30066) — Why SHA-Pinning Is Not Optional
+.agents/skills/web-deployment/references/ci-cd-pipeline-rules.md:265:### CI11: actions/upload-artifact@v3 Is Dead — v4 Is Mandatory
+.agents/skills/web-deployment/references/environment-config-rules.md:21:### EC1: Immutable Images — Build Once, Inject at Runtime
+.agents/skills/web-deployment/references/environment-config-rules.md:27:# Secrets baked into image — anyone with image access sees them
+.agents/skills/web-deployment/references/environment-config-rules.md:166:# SAFE — server-only
+.agents/skills/web-deployment/references/environment-config-rules.md:170:# SAFE — intentionally public
+.agents/skills/web-deployment/references/environment-config-rules.md:174:# DANGEROUS — secret exposed to all users
+.agents/skills/web-deployment/references/environment-config-rules.md:179:### EC7: Startup Validation — Fail Fast
+.agents/skills/web-deployment/references/monitoring-rules.md:22:### MO1: Uptime Kuma — Self-Hosted Uptime Monitoring
+.agents/skills/web-deployment/references/platform-selection-rules.md:21:### PS1: Vercel — Next.js-First Platform
+.agents/skills/web-deployment/references/platform-selection-rules.md:50:### PS2: Netlify — Static/Jamstack with Commercial Hobby
+.agents/skills/web-deployment/references/platform-selection-rules.md:91:### PS3: Fly.io — Docker-Native Global Distribution
+.agents/skills/web-deployment/references/platform-selection-rules.md:119:### PS4: Railway — One-Click Backend Services
+.agents/skills/web-deployment/references/platform-selection-rules.md:134:### PS5: Self-Hosted (Coolify) — Full Control on VPS
+.agents/skills/web-deployment/references/rollback-rules.md:198:# Netlify (no CLI rollback — use API)
+.agents/skills/web-deployment/scripts/find-action-sha.sh:2:# find-action-sha.sh — resolve a GitHub Action tag to its pinnable 40-char commit SHA,
+.agents/skills/web-deployment/scripts/find-action-sha.sh:6:# want — tags get mutated (CVE-2025-30066) and SHAs in docs rot. This wraps the resolve +
+.agents/skills/web-deployment/scripts/find-action-sha.sh:14:# preferring the ^{} peeled ref) — paste it as `uses: <owner/repo>@<sha>  # <tag>`.
+.agents/skills/web-deployment/scripts/find-action-sha.sh:53:# whose SHA is the underlying commit — that is the one to pin.
+.agents/skills/web-deployment/scripts/verify-deploy-hardening.sh:2:# verify-deploy-hardening.sh — deterministic GitHub Actions hardening checker.
+.agents/skills/web-frontend/CHANGELOG.md:9:## [1.0.0] — 2026-05-08
+.agents/skills/web-frontend/references/accessibility.md:36:## Rule 2: Top 7 axe-core Failures — Fix Patterns
+.agents/skills/web-frontend/references/component-architecture.md:205:## Rule 7: Conditional Rendering — Guard Clauses Over Nesting
+.agents/skills/web-frontend/references/design-tokens.md:8:## Rule 1: DESIGN.md Is the Input — Read It First
+.agents/skills/web-frontend/references/performance.md:117:## Rule 4: React Performance — When to Use Memoization
+.agents/skills/web-frontend/references/state-management.md:7:## Rule 1: Server State vs Client State — Never Mix
+.agents/skills/web-frontend/references/styling.md:38:## Rule 2: Responsive Design — Mobile-First with Breakpoint Tokens
+.agents/skills/web-frontend/references/styling.md:137:## Rule 5: CSS Modules — Co-location and Naming Rules
+.agents/skills/web-frontend/references/visual-code-bridge.md:16:### Injection Script (v2 — P0 fixes applied)
+.agents/skills/web-frontend/references/visual-code-bridge.md:94:## VCB3: Fallback — grep-based (non-React or production)
+.agents/skills/web-frontend/scripts/a11y-scan.sh:2:# a11y-scan.sh — Run axe-core accessibility scan on a live URL
+.agents/skills/web-frontend/scripts/a11y-scan.sh:42:# Allow exit 1 from axe (violations found) — we'll check ourselves.
+.agents/skills/web-frontend/scripts/bundle-check.sh:2:# bundle-check.sh — Check JavaScript bundle sizes against thresholds
+.agents/skills/web-frontend/scripts/lighthouse-check.sh:2:# lighthouse-check.sh — Run Lighthouse CLI and check Core Web Vitals thresholds
+.agents/skills/web-testing/SKILL.md:133:## Validation Scripts (deterministic — `scripts/`)
+.agents/skills/web-testing/examples/test-pyramid-strategy.md:18:# does not produce. Generic "mutation testing" alone is NOT scored — the THRESHOLD numbers are.
+.agents/skills/web-testing/references/accessibility-testing-rules.md:168:### X9: WCAG 2.2 — What Changed and What Is Automatable
+.agents/skills/web-testing/references/agentic-testing-rules.md:31:### G2: Expose a Live Browser to Agents — `browser.bind()` (v1.59)
+.agents/skills/web-testing/references/test-strategy-rules.md:124:### S5: Flaky Test Policy — Quarantine Immediately (the cost is measured, not theoretical)
+.agents/skills/web-testing/references/unit-testing-rules.md:31:# Setup (Vitest 4.1 — Browser Mode is stable)
+.agents/skills/web-testing/references/unit-testing-rules.md:120:# Deterministic gate (this pack) — exits non-zero below floor:
+.agents/skills/web-testing/references/unit-testing-rules.md:143:### U7: Mutation Score on Covered Code — Distinguish NoCoverage From Weak Assertions
+.agents/skills/web-testing/scripts/check-test-config.sh:2:# check-test-config.sh — Assert a Vitest config declares PER-MODULE coverage thresholds
+.agents/skills/web-testing/scripts/check-test-config.sh:7:# the pack's specific rule. This is a deterministic structural check — not a "punt to Claude".
+.agents/skills/web-testing/scripts/cwv-budget-check.sh:2:# cwv-budget-check.sh — Parse a Lighthouse JSON report and assert Core Web Vitals budgets.
+.agents/skills/web-testing/scripts/cwv-budget-check.sh:4:# Thresholds (Rule P1, web.dev official — UNCHANGED in 2026, evaluated at the 75th pct of
+.agents/skills/web-testing/scripts/mutation-gate.sh:2:# mutation-gate.sh — Parse a Stryker mutation report and assert mutation score >= floor.
+.agents/skills/web-ui-design/SKILL.md:116:# Audit animation count — should be low
+.agents/skills/web-ui-design/SKILL.md:242:# Count navigation levels — should be ≤3 for most apps
+.agents/skills/web-ui-design/SKILL.md:336:# Confirm no div soup — check heading hierarchy
+.agents/skills/web-ui-design/SKILL.md:609:# Count total animation rules — keep it low
+.agents/skills/web-ui-design/SKILL.md:1159:# Decision log should grow — check it exists
+.agents/skills/web-ui-design/SKILL.md:1188:### Phase 3 (Future — Interfaces Reserved)
+.agents/skills/web-ui-design/checklists/anti-slop.md:10:## Core Rules (Anthropic — Apache 2.0)
+.agents/skills/web-ui-design/checklists/post-generation.md:127:# Detect layout-thrashing animations (anti-pattern — should animate transform/opacity)
+.agents/skills/web-ui-design/references/brand-tokens.md:10:## Vercel — Minimalist Achromatic
+.agents/skills/web-ui-design/references/brand-tokens.md:49:## Stripe — Fintech Precision
+.agents/skills/web-ui-design/references/brand-tokens.md:100:## Linear — Precision Productivity
+.agents/skills/web-ui-design/references/design-system-patterns.md:120:# Hooks only — bring your own styling
+.agents/skills/web-ui-design/tools/tokens-to-css.sh:2:# tokens-to-css.sh — Level 0 token compiler (bash + jq only, no npm required)
+.tad/discipline-floor.md:1:# 地板表 —— 30 条纪律的载体该常驻还是按需（P2b 产物）
+.tad/gates/gate-canonical-checklist.md:39:# MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts
+.tad/hooks/lib/askuser-capture.sh:2:# askuser-capture.sh — PostToolUse logger for AskUserQuestion (Phase 5 P5.2, 2026-04-25)
+.tad/hooks/lib/askuser-capture.sh:31:# Without jq, we can't reliably parse nested arrays — skip with stderr WARN.
+.tad/hooks/lib/askuser-capture.sh:41:# separated by ASCII RS (\x1E — bash $() preserves; never appears in JSON).
+.tad/hooks/lib/askuser-capture.sh:172:# Atomic append via tmpfile + cat >> (avoids half-line on signal kill — EC5)
+.tad/hooks/lib/audit-yolo.sh:2:# audit-yolo.sh — YOLO execution audit: verifies all TAD process artifacts
+.tad/hooks/lib/audit-yolo.sh:96:# DIMENSION 1: Artifact Chain — "文件都在吗？"
+.tad/hooks/lib/audit-yolo.sh:191:# DIMENSION 2: Content Authenticity — "不是空壳吗？"
+.tad/hooks/lib/audit-yolo.sh:272:# DIMENSION 3: Code Verification — "客观重跑"
+.tad/hooks/lib/audit-yolo.sh:298:# DIMENSION 4: Timing — "顺序对吗？"
+.tad/hooks/lib/brain-index-gen.sh:2:# brain-index-gen.sh — Generate .tad/brain-index.md from .tad/ + AGENTS.md
+.tad/hooks/lib/common.sh:65:#   TRACE_CONTEXT  — context string (truncated per detail_level)
+.tad/hooks/lib/common.sh:66:#   TRACE_OUTCOME  — pass|fail|error|skip|partial
+.tad/hooks/lib/common.sh:67:#   TRACE_ACTOR    — human_confirmed|agent_inferred|agent_verified|human_overridden
+.tad/hooks/lib/common.sh:68:#   TRACE_DETAIL   — full|summary (default: summary)
+.tad/hooks/lib/common.sh:69:#   TRACE_SLUG     — handoff slug for cross-referencing
+.tad/hooks/lib/common.sh:70:#   TRACE_AGENT    — alex|blake|conductor|sub-agent|tool-name
+.tad/hooks/lib/common.sh:71:#   TRACE_DURATION — elapsed ms for timed events
+.tad/hooks/lib/deps-scan.sh:2:# deps-scan.sh — Upstream dependency scanner for TAD's dependency registry.
+.tad/hooks/lib/deps-scan.sh:4:# writes raw results to scan-results.yaml. No LLM dependency — pure bash.
+.tad/hooks/lib/derive-sync-set.sh:2:# derive-sync-set.sh — SOLE source of truth for the release/sync DENY_LIST,
+.tad/hooks/lib/derive-sync-set.sh:18:#                   This is the ONE authoritative zero-touch source — NOT re-hardcoded.
+.tad/hooks/lib/derive-sync-set.sh:27:#                   The registry-only special-case lives HERE ALONE — consumers READ it.
+.tad/hooks/lib/derive-sync-set.sh:31:# Exit: 0 normal; 2 bad flag / missing root. (Never exit 1 — this command has no drift.)
+.tad/hooks/lib/derive-sync-set.sh:40:# so P2 either curl-fetches+sources this lib OR inlines the SAME block — never a 2nd copy.
+.tad/hooks/lib/derive-sync-set.sh:49:# A dir NOT in this list defaults to SYNC (framework) — the bias-to-sync escape from the
+.tad/hooks/lib/derive-sync-set.sh:52:# Category A — zero-touch (preserve each target's own copy; NEVER sync, 12 dirs):
+.tad/hooks/lib/derive-sync-set.sh:65:# Category C — transient / main-only (do NOT sync; not part of the framework surface):
+.tad/hooks/lib/derive-sync-set.sh:76:# Top-level deny (FILES, not dirs — excluded from top-level config copy):
+.tad/hooks/lib/detect-platform.sh:2:# detect-platform.sh — Runtime detection of available orchestration backend
+.tad/hooks/lib/detect-state-test.sh:2:# detect-state-test.sh — isolated-tempdir fixture harness for tad.sh detect_state()
+.tad/hooks/lib/detect-state-test.sh:6:# `.tad/version.txt` and a pinned TARGET_VERSION — it never reads the repo's
+.tad/hooks/lib/drift-check.sh:2:# drift-check.sh — TAD handoff lifecycle drift detector (Phase 1 P1.2, 2026-04-24)
+.tad/hooks/lib/drift-check.sh:5:#   a) slug_consistency  — handoff filename slug ↔ Required Evidence Manifest paths
+.tad/hooks/lib/drift-check.sh:6:#   b) zombie_handoffs   — git commit detected but handoff still in active/
+.tad/hooks/lib/drift-check.sh:7:#   c) supersedes_chains — supersedee still in active/ (propose archive)
+.tad/hooks/lib/drift-check.sh:8:#   d) ghost_tasks       — housekeeping-prefix handoff missing grounded_state
+.tad/hooks/lib/drift-check.sh:18:#   stdout — one JSON line per finding
+.tad/hooks/lib/drift-check.sh:21:#   stderr — one status line per decision + human-readable errors
+.tad/hooks/lib/drift-check.sh:25:#   0 — checks completed (any drift count; drift is in stdout, NOT exit code)
+.tad/hooks/lib/drift-check.sh:26:#   1 — internal error (bad args, missing dep like jq, fatal)
+.tad/hooks/lib/drift-check.sh:119:# ─── P1.2.a — slug consistency ──────────────────────────────────────────
+.tad/hooks/lib/drift-check.sh:190:# ─── P1.2.b — zombie handoff detection ──────────────────────────────────
+.tad/hooks/lib/drift-check.sh:243:# ─── P1.2.c — Supersedes chain detection ────────────────────────────────
+.tad/hooks/lib/drift-check.sh:296:# ─── P1.2.d — Ghost task precheck ───────────────────────────────────────
+.tad/hooks/lib/friction-status-check.sh:2:# friction-status-check.sh — Advisory Friction Status SMOKE ALARM.
+.tad/hooks/lib/friction-status-check.sh:14:#   0 — no warnings (RESULT: clean)
+.tad/hooks/lib/friction-status-check.sh:15:#   1 — warnings detected (RESULT: WARNINGS DETECTED (advisory))
+.tad/hooks/lib/friction-status-check.sh:18:# SAFETY — This script is a SMOKE ALARM, NOT a fire suppressor.
+.tad/hooks/lib/gate3-git-tracked-check.sh:2:# gate3-git-tracked-check.sh — Phase 1 P1.1 (2026-04-24)
+.tad/hooks/lib/gate3-git-tracked-check.sh:6:# Precedent: toy 2026-04-22 — 38 production files accumulated for weeks
+.tad/hooks/lib/gate3-git-tracked-check.sh:156:# FAIL — report ALL failing dirs together
+.tad/hooks/lib/harvest-scan.sh:2:# harvest-scan.sh — Read-only scan of registered projects' skillify candidates.
+.tad/hooks/lib/knowledge-blame.sh:4:# knowledge-blame.sh — Query provenance of a TAD knowledge or protocol rule
+.tad/hooks/lib/knowledge-blame.sh:6:# Output: structured RULE/COMMIT/DATE/AUTHOR/MESSAGE fields (no context — use Read tool)
+.tad/hooks/lib/knowledge-lint.sh:2:# knowledge-lint.sh — soft lint for playbook entries
+.tad/hooks/lib/layer2-audit.sh:2:# layer2-audit.sh — Layer 2 reviewer-artifact presence check (smoke alarm)
+.tad/hooks/lib/layer2-audit.sh:41:#   1. PRIMARY  — is_express_frontmatter(): durable `express: true` YAML
+.tad/hooks/lib/layer2-audit.sh:43:#   2. FALLBACK — is_express_slug(): word-boundary slug token detection
+.tad/hooks/lib/layer2-audit.sh:62:# P2-1 (2026-07-12): durable express marker — `express: true` in the handoff's
+.tad/hooks/lib/layer2-audit.sh:166:# -integration FN fired twice in 8 days. Bounded to 2 attempts — anything
+.tad/hooks/lib/layer2-audit.sh:211:# maxdepth 1 — don't recurse into subdirs. -L follows symlinks to their targets.
+.tad/hooks/lib/memory-redirect.sh:2:# memory-redirect.sh — RETIRED in TAD v3.0.0.
+.tad/hooks/lib/memory-redirect.sh:6:# .tad/memory/ itself is untouched — only the redirect mechanism is gone.
+.tad/hooks/lib/migration-draft.sh:2:# migration-draft.sh — Generate draft migration manifests from git tag diffs.
+.tad/hooks/lib/migration-draft.sh:95:# scope — the v2.44.6 to v3.0.0 tree deletion must never be drafted as delete:
+.tad/hooks/lib/migration-engine.sh:2:# migration-engine.sh — TAD Migration Manifest Engine v1
+.tad/hooks/lib/migration-engine.sh:39:# Path validator — extracted from schema doc (Steps 1-3)
+.tad/hooks/lib/migration-engine.sh:214:# guarded_remove — single deletion chokepoint (FR5f, SA-P0-3/P0-4)
+.tad/hooks/lib/migration-engine.sh:235:# version_le — sort -V based comparison (mirrors tad.sh)
+.tad/hooks/lib/notebook-lifecycle.sh:2:# > ⚠️ **DEPRECATED (TAD 2.44.6, 2026-09-15)** — NotebookLM 整层退役（不是升级）。
+.tad/hooks/lib/notebook-lifecycle.sh:8:# TAD Notebook Lifecycle — Dormant Status Recompute (library)
+.tad/hooks/lib/notebook-lifecycle.sh:13:# CONTRACT (treat as load-bearing — consumed by notebook-dormant-sync.sh hook):
+.tad/hooks/lib/pack-registry-driftcheck.sh:2:# pack-registry-driftcheck.sh — Advisory bidirectional pack/registry drift detector.
+.tad/hooks/lib/pack-registry-driftcheck.sh:12:#         (c) registry\(B_dir∪C) — the only registry-phantom drift class;
+.tad/hooks/lib/pack-registry-driftcheck.sh:13:#         (r) registry-only: A∩(B_dir∪C)\B_type — registered and present as a
+.tad/hooks/lib/pack-registry-driftcheck.sh:17:# indexed-but-no-install.sh) — never change exit.
+.tad/hooks/lib/pack-registry-driftcheck.sh:139:# --- (d) advisory WARN — never changes exit ---
+.tad/hooks/lib/parity-criterion.md:1:# Codex-Edition Parity Criterion — ARCHIVED in TAD v3.0.0
+.tad/hooks/lib/parity-criterion.md:61:## Exit-Code Contract (pinned — P1 prototype AND P3 release gate)
+.tad/hooks/lib/parity-criterion.md:96:# Re-pinned 2026-06-07: forbidden_implementations alex 12→14, blake 6→8 — recent features (cancel P5.3 / P3.3 / declarative-constraints v0.1 / blake symmetric block) added blocks+doc-comment lines; owner-coverage layer unchanged (per-owner must-cover still enforced).
+.tad/hooks/lib/parity-criterion.md:113:### Layer 3 Feature Markers (P3 — self-sustaining)
+.tad/hooks/lib/quarantine-framework-pk.sh:2:# quarantine-framework-pk.sh — Opt-in quarantine for legacy framework
+.tad/hooks/lib/release-verify.sh:2:# release-verify.sh — STABLE (written-in-stone) release verification primitives.
+.tad/hooks/lib/release-verify.sh:13:#           (capability-packs/pack-registry.yaml) — NOT the dir tree;
+.tad/hooks/lib/release-verify.sh:27:#       SCOPE (P1-1 fix — both reviewers' load-bearing condition):
+.tad/hooks/lib/release-verify.sh:39:#       historical — fail toward FALSE-POSITIVE, never false-negative, so a live ref is never
+.tad/hooks/lib/release-verify.sh:43:#         (a) VERSION-LABEL table row — the semver is the LEADING cell:
+.tad/hooks/lib/release-verify.sh:47:#             (`| Install | pip install tad==9.9.9 |`) — the semver there is in a LATER cell,
+.tad/hooks/lib/release-verify.sh:52:#             — these words mark a recorded historical event, not a bumpable live ref.
+.tad/hooks/lib/release-verify.sh:55:#       marker is still reported — the operator eyeballs it; we never widen the marker set to
+.tad/hooks/lib/release-verify.sh:60:#       P2 FORWARD NOTE (arch P1-3 — do NOT implement here): when tad.sh inlines a 2nd copy
+.tad/hooks/lib/release-verify.sh:72:#         IP addresses). ADVISORY only — never affects exit code.
+.tad/hooks/lib/release-verify.sh:81:#       entry shares the same basename (POSSIBLE RENAME — prefer false-positive).
+.tad/hooks/lib/release-verify.sh:82:#       Manifest cross-reference uses grep -F (smoke alarm, not YAML parser — see 4.2.1).
+.tad/hooks/lib/release-verify.sh:84:#       exit 2 = usage/wiring error. The script always exits honestly — the caller
+.tad/hooks/lib/release-verify.sh:93:#       sandbox suite (AC2.2/2.4/2.9/2.10) — stated explicitly, never via this
+.tad/hooks/lib/release-verify.sh:101:#   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
+.tad/hooks/lib/release-verify.sh:105:# Gate rule (in both protocols) — exit 1 (DRIFT) and exit 2 (WIRING) are handled SEPARATELY
+.tad/hooks/lib/release-verify.sh:108:#   exit 2 (usage/wiring/parse)             → ALWAYS HARD BLOCK. warn does NOT apply — a
+.tad/hooks/lib/release-verify.sh:117:# non-zero so a wiring bug (exit 2) is distinguishable from a true drift (exit 1) — and the
+.tad/hooks/lib/runtime-freshness-verify.sh:2:# runtime-freshness-verify.sh — Runtime compatibility ledger freshness gate.
+.tad/hooks/lib/runtime-freshness-verify.sh:34:# means skip (INFO), never exit 2 — otherwise the gate would wiring-BLOCK forever.
+.tad/hooks/lib/skill-body-verify.sh:2:# skill-body-verify.sh — verify Blake + Alex SKILL.md bodies contain execution-discipline markers
+.tad/hooks/lib/skill-body-verify.sh:101:# Alex section (added 2026-07-12 — skill-body-reference-boundary re-audit)
+.tad/hooks/lib/skill-body-verify.sh:103:#   ALEX_SKILL_PATH — alternate alex SKILL.md (marker + non-circularity checks only)
+.tad/hooks/lib/skill-body-verify.sh:104:#   ALEX_REFS_DIR   — alternate references/ dir (negative-presence check only)
+.tad/hooks/lib/stale-knowledge-check.sh:2:# stale-knowledge-check.sh — Phase 2 P2.1 (2026-04-24)
+.tad/hooks/lib/stale-knowledge-check.sh:6:# any optional Revalidated date). Always advisory — never blocks Claude.
+.tad/hooks/lib/stale-knowledge-check.sh:10:# Precedent: toy 2026-04-21 OPRO incident — entry from 04-07 cited "Qwen Plus",
+.tad/hooks/lib/stale-knowledge-check.sh:88:# Always normalize to midnight 00:00:00 — BSD date -j -f with partial formats
+.tad/hooks/lib/state-surface-check.sh:2:# state-surface-check.sh — detect-only state-surface consistency check.
+.tad/hooks/lib/state-surface-check.sh:30:#      blockquote, before the first body heading) — every .tad/*.md path
+.tad/hooks/lib/state-surface-check.sh:124:# P1 — self-anchored parenthesized declaration: "(Version 9.9)" / "(Version: v9.9)"
+.tad/hooks/lib/state-surface-check.sh:126:# P2 — bare parenthesized token: "(v9.9)" / "(9.9)" (line-qualified, see delta §2)
+.tad/hooks/lib/state-surface-check.sh:152:# whole file — the "(Version" lead-in is its own anchor.
+.tad/hooks/lib/trace-rotate.sh:2:# TAD Trace Rotation — archive old trace files
+.tad/hooks/lib/trace-writer.sh:2:# TAD Trace Writer Library — decision-level event helpers
+.tad/hooks/lib/verify-ac-commands.sh:2:# verify-ac-commands.sh — Advisory §9.1 AC-verification-command linter.
+.tad/hooks/lib/verify-ac-commands.sh:7:#   Rule A (WARN) — grep with `c` flag piped to `sort -u` ... `wc -l`
+.tad/hooks/lib/verify-ac-commands.sh:8:#   Rule B (WARN) — grep -E/-nE/egrep quoted pattern with a literal `\|`
+.tad/hooks/lib/verify-ac-commands.sh:9:#                   (a literal pipe — broken-when-run if alternation was meant)
+.tad/hooks/lib/verify-ac-commands.sh:10:#   Rule D (INFO) — sentinel/marker self-leak (token also in nearby doc prose)
+.tad/hooks/lib/verify-ac-commands.sh:22:#    ⚠️ Self-discipline: this linter's OWN internal greps must be correct — it
+.tad/hooks/notebook-dormant-sync.sh:2:# > ⚠️ **DEPRECATED (TAD 2.44.6, 2026-09-15)** — NotebookLM 整层退役（不是升级）。
+.tad/hooks/notebook-dormant-sync.sh:8:# INERT 2.44.6 — de-registered from SessionStart; always no-op.
+.tad/hooks/post-write-sync.sh:2:# TAD PostToolUse Hook — Key File Write Detection
+.tad/hooks/post-write-sync.sh:11:#    compact no-space (`"type":"x"`) — all membership greps use that format (NFR3).
+.tad/hooks/post-write-sync.sh:52:# record_trace() moved to lib/common.sh (v2.0 — sourced via line 14)
+.tad/hooks/post-write-sync.sh:123:# Stable machine-readable marker (Blake writes it as a Gate 3 post-step) — NOT prose.
+.tad/hooks/post-write-sync.sh:177:# a[3]/a[5]/a[6] — those positions are correct only for the 5-col layout; 4-col tables
+.tad/hooks/pre-accept-check.sh:2:# TAD PreToolUse Hook — *accept Gate 4 Prerequisite Check
+.tad/hooks/pre-gate-check.sh:2:# TAD PreToolUse Hook — Gate 3/4 Prerequisite Check
+.tad/hooks/precompact-session-snapshot.sh:2:# TAD PreCompact Hook — mechanical session-state snapshot (Layer 0)
+.tad/hooks/precompact-session-snapshot.sh:9:# CONTRACT (consumed by CLAUDE.md §4.5 recovery flow — field renames are breaking):
+.tad/hooks/precompact-session-snapshot.sh:13:#   - ALWAYS exit 0 — any internal error must never block compaction.
+.tad/hooks/precompact-session-snapshot.sh:93:# ahead/behind vs upstream (upstream may not exist — that is a normal state)
+.tad/hooks/precompact-session-snapshot.sh:158:# 8-line template (header + 7 contract fields) — line count is asserted by AC5.
+.tad/hooks/startup-health.sh:2:# TAD SessionStart Hook — Project Health Summary
+.tad/hooks/startup-health.sh:13:# Check normalized source — only run on "startup" (or if field missing, run anyway).
+.tad/hooks/trace-step.sh:2:# trace-step.sh — Record capability step-level trace
+.tad/hooks/trace-step.sh:36:# Single source of truth — same scan as askuser-capture.sh (BA-P0-1).
+.tad/portable-rules.md:39:### Preserve — NEVER Delete
+.tad/project-knowledge/README.md:49:### Grounded in — strict grammar (Phase 2 P2.1, 2026-04-24)
+.tad/project-knowledge/README.md:79:### Revalidated — alarm-fatigue defense (Phase 2 P2.1, BA-P0-2)
+.tad/project-knowledge/incidents/2026-05/line-anchored-blockquote-sed.md:8:### Line-Anchored blockquote→col-0 sed Does NOT Fix Single-Line `CONSUMES … PRODUCES` Blockquotes — 2026-05-31
+.tad/project-knowledge/incidents/2026-05/scienceclaw-skill-decoupling.md:1:# ScienceClaw Skill Decoupling — Migration Feasibility Pattern
+.tad/project-knowledge/incidents/2026-05/scienceclaw-skill-decoupling.md:8:### ScienceClaw Skill Decoupling — Migration Feasibility Pattern - 2026-05-28
+.tad/project-knowledge/incidents/2026-05/section-9-1-region-marker.md:8:### §9.1 Region Marker is `### 9.1` (3-hash subsection), NOT `## 9.1` — 2026-05-31
+.tad/project-knowledge/incidents/2026-06/anchorless-tad-sed.md:8:### Anchorless `.tad/` sed Strips Inconsistently on Relative `ls -d` Paths — Glob With a Leading Slash — 2026-06-01
+.tad/project-knowledge/incidents/2026-06/cross-agent-parity-check.md:8:### Cross-Agent Parity Check: Source-Condition Feature Markers, Not Hardcode — 2026-06-01
+.tad/project-knowledge/incidents/2026-06/derived-copy-set-dotfiles.md:8:### A Derived Copy-Set Loop Must Copy DOTFILES, and a Completeness Self-Check Will Catch the Gap — 2026-06-01
+.tad/project-knowledge/incidents/2026-06/embedded-copy-drift-check.md:8:### Embedded-Copy Drift Check: Reconstruct the Authoritative Set From the Lib, Compare as a SORTED SET — 2026-06-01
+.tad/project-knowledge/incidents/2026-06/pack-value-non-monotonic.md:8:### Capability Pack Value Is Non-Monotonic in Model Strength — Sweet Spot Is Mid-Tier (Sonnet) - 2026-06-01
+.tad/project-knowledge/patterns/ac-verification.md:5:### Process tax-cut: AC realism — 2026-09-12
+.tad/project-knowledge/patterns/ac-verification.md:40:### `node --check` on a `.workflow.js` File is a Structural False-FAIL — Use the Wrapped-Body Check - 2026-06-07
+.tad/project-knowledge/patterns/ac-verification.md:47:### Workflow `agent({schema})` Requires Top-Level `type: 'object'` — a Top-Level Array Schema is Rejected by the StructuredOutput API - 2026-06-08
+.tad/project-knowledge/patterns/ac-verification.md:54:### Workflow `{name:}` Invocation Can Load a STALE Cached Copy — Use `scriptPath` to Test Fresh Edits - 2026-06-08
+.tad/project-knowledge/patterns/ac-verification.md:98:### Workflow `args` Are Not Injected in EITHER `name:` OR `scriptPath:` Mode — Hardcode a Default or Go Conductor-Manual - 2026-06-13, re-confirmed 2026-07-05
+.tad/project-knowledge/patterns/ac-verification.md:110:### Design-Agent AC Commands Systematically Assume a Machine That Isn't This One — Dry-Run Every AC on the LIVE Host Before Handoff Lock - 2026-07-13
+.tad/project-knowledge/patterns/ac-verification.md:124:### Exit-0 ACs Are Unsatisfiable When the Verifier Has Legitimate BLOCK States — Use Two-Branch Delta Assertions - 2026-08-03
+.tad/project-knowledge/patterns/ac-verification.md:131:### State-Isolated Spikes Strip Credentials — Fixtures Prove Parser Behavior, Not Runtime Delivery - 2026-08-03
+.tad/project-knowledge/patterns/ac-verification.md:138:### Text-Anchor ACs Are Blind to Parser-Level Regressions — Structured-Header Files Need an Active-Parse Guard, and Published Commands Must Be Tested as Literal Text - 2026-08-03
+.tad/project-knowledge/patterns/ac-verification.md:191:### A Count-Based AC Constrains the Total, Not the Location — Pin the Siblings - 2026-08-04
+.tad/project-knowledge/patterns/ac-verification.md:229:### Discriminative Power Can Live in the SEMANTICS of the Hits, Not Their Count — a Count-Only Before/After Comparison Can Read as "No Change" While the Fix Worked - 2026-08-05
+.tad/project-knowledge/patterns/ac-verification.md:236:### Verification Strength Is Bounded by the Deliverable's Determinacy — Shrink the Scope Before Hardening the Checks - 2026-08-05
+.tad/project-knowledge/patterns/ac-verification.md:244:### A Positive Existence Anchor Only Protects the Region It Physically Sits In — and Is Inert Inside an Already-Frozen Region - 2026-08-05
+.tad/project-knowledge/patterns/ac-verification.md:251:### An Aggregate-Only Check Locks the Exit, Not the Entrance — Pin One Row's Ground Truth, Not Just the Sum - 2026-08-06
+.tad/project-knowledge/patterns/ac-verification.md:267:### Before Trusting a Guard, Measure Whether Its Trigger Condition Can Even Occur — and Read the Cited Entry's Mitigation Clause - 2026-08-06
+.tad/project-knowledge/patterns/ac-verification.md:275:### A Guard Added to Repair a Guard Does Not Inherit the Original's Dry Run — Re-run the Same Check on the Fix - 2026-08-06
+.tad/project-knowledge/patterns/ac-verification.md:299:### A Fixture Matrix Whose Rows Carry Their Own `expected_result` Is Self-Certifying — a Schema + Digest Gate Proves Integrity, Not Correctness - 2026-08-10
+.tad/project-knowledge/patterns/ac-verification.md:307:### A Digest-Based Scope Fence Is Unsatisfiable in a Repo Whose Own Hooks Write During Execution — Exclude the Self-Written Telemetry Paths in the Contract, Not in the Fix - 2026-08-10
+.tad/project-knowledge/patterns/ac-verification.md:315:### A New Guard's Criteria Must Be (1) Read Verbatim From the Implementation, (2) Dry-Run Against Every Shape the Real Data Takes, and (3) Composed Only of Inputs the Executor Can Obtain Independently — Missing Any One Makes the Guard the Next Round's Defect - 2026-08-11
+.tad/project-knowledge/patterns/ac-verification.md:323:### Two Individually-Correct Fixes Can Compose Into a New Defect — Dry-Run the Revised Whole, Not the Changed Line - 2026-08-11
+.tad/project-knowledge/patterns/ac-verification.md:331:### To Test Whether a Migrated Protocol Landed as a Usable Procedure, Hand a Fresh Reviewer That Artifact and Nothing Else — With a Contract-Fixed Prompt and a Generalization Probe - 2026-08-12
+.tad/project-knowledge/patterns/ac-verification.md:347:### "Is This Right?" and "What Can't This Hold?" Are Different Questions — a Correctness Review Cannot See a Structure's Ceiling - 2026-08-12
+.tad/project-knowledge/patterns/ac-verification.md:355:### "Run X" Is Not a Criterion Until X's Failure Signal Is Defined — a Print-Only Verifier Gives Every AC a Green With No Red - 2026-08-12
+.tad/project-knowledge/patterns/ac-verification.md:362:### A Fix Is a Defect Source — Budget a Gate for Fix-Induced Defects, Not Only for Re-Checking the Original - 2026-08-12
+.tad/project-knowledge/patterns/ac-verification.md:376:### A Replay Test Reproduces the *Moment*, Not the *Utterance* — a Fixture Built From the Correction Tests a Different Scenario Than the Accident - 2026-08-12
+.tad/project-knowledge/patterns/ac-verification.md:390:### A Verification Anchor That Stores the Document and a Document That Stores the Anchor Is a Fixed Point — Exclude the Self-Referential Line - 2026-08-12
+.tad/project-knowledge/patterns/ac-verification.md:691:### Pathspec-in-scope files can still carry a foreign hunk — stage the hunk, not the file - 2026-09-10
+.tad/project-knowledge/patterns/ac-verification.md:707:### Ignored-tree blindness in inventory claims — 2026-10-04
+.tad/project-knowledge/patterns/capability-ownership.md:3:### Internalized Capability Requires an Absence Proof — 2026-09-02
+.tad/project-knowledge/patterns/gate-design.md:55:### Decouple Detect-from-Heal at Release Gates — 2026-06-01
+.tad/project-knowledge/patterns/gate-design.md:62:### Awk Range Pattern Start/End Overlap on macOS — 2026-06-03
+.tad/project-knowledge/patterns/gate-design.md:69:### Workflow-Internal Stop Gates Between Sub-Agent Steps — 2026-06-03
+.tad/project-knowledge/patterns/gate-design.md:76:### A Gate on an OPINIONATED Artifact Must Score Rigor Independent of the Opinion — Prove It with a Thin Control + Order-of-Emission Firewall - 2026-06-06
+.tad/project-knowledge/patterns/gate-design.md:110:### Independent Perspective Lives in Clean Context, Not Terminal Boundaries — Lite Channel Review Design - 2026-07-30
+.tad/project-knowledge/patterns/gate-design.md:126:### YOLO Worktree Isolation Produces False-FAIL Reviews — Reviewers Must Ground in the Tree the Implementer Wrote To - 2026-07-05
+.tad/project-knowledge/patterns/gate-design.md:132:### On an Aggregator-Routed Harness the `model` Parameter Is a Request, Not Provenance — Read the Reviewer's Self-Report - 2026-08-04
+.tad/project-knowledge/patterns/gate-design.md:174:### When Implementation Is Byte-Correct and the SPEC Is Wrong, the Executor Must Escalate — and Conditional Release Turns on Whether the Defect's Trigger Surface Exists Yet - 2026-08-05
+.tad/project-knowledge/patterns/gate-design.md:197:### A Fence Whose Baseline Is Captured by the Verified Party Is Defeatable by Timing — Anchor to an Immovable Commit Instead - 2026-08-05
+.tad/project-knowledge/patterns/gate-design.md:204:### Accepted Execution Mandate Is Lite's Permission Carrier — SAFETY Strengthens Evidence, Not Prompt Count - 2026-08-10
+.tad/project-knowledge/patterns/gate-design.md:245:### Every Irreversible Action Needs Its Own Immediately-Preceding Read-Only Gate — "Verification Before the Publish Phase" Is Not Enough - 2026-08-11
+.tad/project-knowledge/patterns/gate-design.md:253:### When Every Lower-Level Gate Passes Correctly, Suspect the Level Above — Diagnose the Layer Before Designing the Fix - 2026-08-12
+.tad/project-knowledge/patterns/handoff-design.md:7:### Platform Capability Assumptions Decay Fast — Re-research Before Architecture - 2026-06-08
+.tad/project-knowledge/patterns/handoff-design.md:116:### Epic Phase Accepted Sections Are the ONLY Carry-Forward Mechanism — Missing = Silent Loss - 2026-06-09
+.tad/project-knowledge/patterns/handoff-design.md:136:### `git grep` Is Blind to Untracked Files — a Consumer Scan That Uses It Alone Will Miss Live Sibling Contracts - 2026-08-05
+.tad/project-knowledge/patterns/handoff-design.md:143:### A Change That Makes a Dormant Defect Reachable Owns That Defect — "I Didn't Touch That Line" Is Not a Defense - 2026-08-06
+.tad/project-knowledge/patterns/handoff-design.md:167:### In a Capability-Retirement Inventory, "Not Needed" Is a Judgment, Not a Carrier — the Loss Concentrates in the Rows Exempted From Naming One - 2026-08-12
+.tad/project-knowledge/patterns/handoff-design.md:175:### Change Size Does Not Predict Verification Cost — Sizing the Process by Files-Touched Is a Measured Counterexample - 2026-08-12
+.tad/project-knowledge/patterns/handoff-design.md:182:### Count the Copies Before Editing a Rule — a Rule That Lives in N Places Is Unchanged Until All N Change - 2026-08-12
+.tad/project-knowledge/patterns/hook-contracts.md:27:### An `@import` Slot That Points at a Non-Existent File Is a Latent Prompt-Injection Channel — Creating the File Is a Privilege Escalation - 2026-08-06
+.tad/project-knowledge/patterns/memory-and-learning.md:31:### Batch Migration failure_mode Inferability: ~70% Text-Inferable, ~30% Need Doer Context — 2026-06-22
+.tad/project-knowledge/patterns/memory-and-learning.md:43:### Verify Content Lineage Before Deleting "Duplicates" — Newer Format ≠ Newer Content - 2026-04 (v2.7→v2.8 transition)
+.tad/project-knowledge/patterns/pack-build-rules.md:66:### Cross-Cutting Rules Layer in Capability Packs — 2026-06-05
+.tad/project-knowledge/patterns/pack-build-rules.md:73:### Iteration History Table for Knowledge Entries — 2026-06-05
+.tad/project-knowledge/patterns/pack-build-rules.md:80:### Content Production Quality Delta Pattern — 2026-06-05
+.tad/project-knowledge/patterns/pack-build-rules.md:87:### Sync That Mirrors Skills THEN Runs install.sh Can Silently Downgrade Them — install.sh Regenerates From a STALE Secondary Source - 2026-06-15
+.tad/project-knowledge/patterns/pack-build-rules.md:94:### Installer Fixes Must Ship BEFORE the Release Tag, Not After — 2026-06-17
+.tad/project-knowledge/patterns/pack-build-rules.md:101:### Skill File vs MCP Tool Boundary — Judgment = Skill, Capability = MCP - 2026-06-23
+.tad/project-knowledge/patterns/pack-build-rules.md:108:### Execution Gets Context, Review Gets Persona — Domain Constraints Harm Doing but Sharpen Checking - 2026-04 (validated across Domain Pack → Capability Pack eras)
+.tad/project-knowledge/patterns/pack-build-rules.md:126:### Skill Authoring Habits: Invocation Split, Hard/Soft Setup, Docs-as-Env-Cache — 2026-09-13
+.tad/project-knowledge/patterns/pack-evaluation.md:18:### Cross-Model Adversarial Review Catches a Defect Class Same-Model Review Misses — But Verify the Reviewer Too - 2026-06-01
+.tad/project-knowledge/patterns/pack-evaluation.md:25:### Structural-Gold ≠ Depth-Gold; a Single Count Mis-Ranks Both — Use a Two-Layer Bar with Per-Layer Negative Controls - 2026-06-13
+.tad/project-knowledge/patterns/pack-evaluation.md:46:### Named Workflow Resolution Caches Script; Use scriptPath for Iteration — 2026-06-17
+.tad/project-knowledge/patterns/process-tax-cut.md:16:## 1) AC realism — paste into handoff §9 / before Gate 2
+.tad/project-knowledge/patterns/process-tax-cut.md:39:## 2) Layer 2 dirty-tree adjudicate — paste into reviewer prompt
+.tad/project-knowledge/patterns/process-tax-cut.md:61:## 3) Gate 2 = disk dual review — paste into handoff Gate 2
+.tad/project-knowledge/patterns/process-tax-cut.md:84:## 4) Optional Layer 2 review habits (OCR thin borrow) — paste into Layer 2 reviewer prompt
+.tad/project-knowledge/patterns/release-sync.md:42:### A Self-Updating Installer That Decides "Already Latest" Before Fetching Cannot Ship Its Own Repair — the Fix Is Unreachable on Exactly the Machines That Need It - 2026-08-11
+.tad/project-knowledge/patterns/research-methodology.md:42:### Cloud Compute Resource Awareness — Hardware Limitation ≠ Infeasibility — 2026-05-29
+.tad/project-knowledge/patterns/research-methodology.md:49:### Doc-Level Native-Capability Research Is Hypothesis, Not Fact — One Epic Falsified 3 of Its Own Research Claims via Local Spikes - 2026-07-13
+.tad/project-knowledge/patterns/research-methodology.md:58:### Local Wiki Three-Layer Architecture — file-is-truth + Iron Rule + generate.py purity — 2026-08-28
+.tad/project-knowledge/patterns/research-methodology.md:65:### A Native-Capability Verdict Without a Spawn-Path Dimension Is Underspecified — Same CLI, Same Field, Opposite Results by Path - 2026-07-13
+.tad/project-knowledge/patterns/research-methodology.md:97:### Upstream Entry Pointer Cleanliness & Multi-Layer Realignment — 2026-09-08
+.tad/project-knowledge/patterns/shell-portability.md:132:### Acceptance Scripts Written on an rg-Equipped Host Fail exit-127 on Plain-bash Hosts — Recompute Environments Differ From Authoring Environments - 2026-08-03
+.tad/project-knowledge/patterns/shell-portability.md:139:### macOS `/usr/bin/awk` Compares Any Two CJK Strings as Equal — Never Use awk for String Equality in a CJK Repo - 2026-08-05
+.tad/project-knowledge/patterns/shell-portability.md:146:### The Bash Tool Runs zsh, Not bash — Verifying AC Semantics Under bash Verifies Nothing - 2026-08-05
+.tad/project-knowledge/patterns/shell-portability.md:153:### `comm` Silently Lies on Non-Globally-Sorted Input — Block-Sorted-Then-Concatenated Is Not Sorted - 2026-08-05
+.tad/project-knowledge/patterns/shell-portability.md:160:### `~` Does Not Expand Inside Quotes or Variables — a Tilde Path Carried as DATA Silently Fails `test -f` - 2026-08-06
+.tad/project-knowledge/patterns/shell-portability.md:168:### `grep -F` Disables Regex Anchors — a Trailing `$` Becomes a Literal, and the Lookup Silently Returns Empty for Every Key - 2026-08-10
+.tad/project-knowledge/patterns/shell-portability.md:176:### macOS `sort`/`uniq` Collate Distinct CJK Strings as Equal Under UTF-8 Locale — `LC_ALL=C` Is Mandatory for Any Chinese Enum Tally - 2026-08-12
+.tad/project-knowledge/patterns/shell-portability.md:183:### zsh Does Not Word-Split Unquoted Variables — the Same Loop Runs N Times in bash and Once in zsh, and the "Old Text Is Gone" Check Falsely Passes - 2026-08-13
+.tad/project-knowledge/patterns/shell-portability.md:279:### macOS 无 `timeout` —— 且其缺失会伪装成被测条件不成立 - 2026-08-16
+.tad/project-knowledge/patterns/shell-portability.md:285:### `trap ERR` Does Not Fire for Failures Inside a `case` Branch — Rollback Must Live on EXIT - 2026-09-02
+.tad/project-knowledge/patterns/shell-portability.md:292:### BSD tar `--exclude` Matches at Path-Component Level — a Component-Name Exclude Strips It Everywhere - 2026-09-02
+.tad/project-knowledge/patterns/shell-portability.md:298:### macOS `mktemp` Substitutes Only a Trailing `XXXXXX` — a `.sh` Suffix Makes a Literal Fixed Filename - 2026-09-02
+.tad/project-knowledge/principles.md:28:### Judgment-Only Skill Files: Constraint Rules Are NOT Mechanical — AMENDED 2026-04-04
+.tad/project-knowledge/principles.md:54:### Never Hand-Write What an Existing Tool Already Does — 2026-05-28
+.tad/project-knowledge/principles.md:60:### Rewiring a Gate's Prose Can Trip a `grep -c` SAFETY Count — Use Line-Set Diff + Re-cite the Constraint - 2026-05-31
+.tad/project-knowledge/principles.md:96:### Deny-List Must Be Applied at EVERY Copy Granularity, and Verifiers Must Match Each Granularity — 2026-06-01
+.tad/project-knowledge/principles.md:103:### Execution Discipline Content Must Stay in SKILL Body — Circular Trigger Test - 2026-06-09
+.tad/project-knowledge/principles.md:128:### AI/Human Judgment Domain Awareness — Agent 应自觉判断域归属 - 2026-07-03
+.tad/scripts/capability-plugin.sh:2:# capability-plugin.sh — one-Skill/one-Plugin validate / package / verify
+.tad/scripts/capability-skill.sh:2:# capability-skill.sh — project-owned Agent Skill validate / project / verify
+.tad/scripts/collision-signatures.txt:1:# collision-signatures.txt — curated opposing-directive signatures for scan-collisions.sh
+.tad/scripts/collision-signatures.txt:11:# shares >=1 keyword (the keyword overlap is the PRE-FILTER — it keeps the candidate
+.tad/scripts/collision-signatures.txt:30:# contrast-standard: A11Y vs A11Y — APCA (LC scale) vs WCAG (4.5:1 ratio). Same category → escalate.
+.tad/scripts/collision-signatures.txt:36:# testing-pyramid: TESTING vs TESTING — frontend says cut E2E >20% vs testing says MORE E2E for UI-heavy. Same category → escalate.
+.tad/scripts/evidence-freshness-check.sh:2:# evidence-freshness-check.sh — 证据新鲜度看守（载体裁定二参数；本链 Phase 5 / C5）
+.tad/scripts/interrupt-resume-check.sh:2:# interrupt-resume-check.sh — 中断续跑验收脚本（Epic P2 件 2.3）
+.tad/scripts/pack-eval-runner.sh:3:# pack-eval-runner.sh — Capability Pack Behavioral Eval ASSERTION engine
+.tad/scripts/pack-eval-runner.sh:5:# SAFETY HEADER (advisory — NEVER fail-closed):
+.tad/scripts/pack-eval-runner.sh:14:#     drives sub-agent spawning to PRODUCE those outputs — a bash script
+.tad/scripts/pack-eval-runner.sh:27:#     counts lines, not distinct matches — that is the P4 lint Rule A bug).
+.tad/scripts/pack-eval-runner.sh:34:# Resource bounds (Phase 2 — advisory, never fail-closed).
+.tad/scripts/regression-replay.sh:2:# regression-replay.sh — 命名回归样本集 runner（Epic P2 件 2.1）
+.tad/scripts/scan-collisions.sh:2:# scan-collisions.sh — GREP-SEED candidate detector for cross-pack directive collisions.
+.tad/scripts/scan-collisions.sh:7:# staging file. STAGE 2 (LLM-CONFIRM, a documented agent procedure — NOT code here)
+.tad/scripts/scan-collisions.sh:10:# ⚠️ This is a CLI TOOL invoked manually / by an agent procedure — it is NOT a registered
+.tad/scripts/scan-collisions.sh:61:# OUTPUT (staging) — evidence dir, NOT inside .tad/capability-packs/ (avoids polluting
+.tad/scripts/scan-collisions.sh:105:#   (1) drop excluded basenames (CHANGELOG.md / LICENSE* / README.md) — same exclusion the
+.tad/scripts/scan-collisions.sh:178:# Auto-generated by scan-collisions.sh — STAGING candidates (do not edit manually).
+.tad/scripts/scan-collisions.sh:183:# ⚠️ "N candidates found" is NOT acceptance — hand-re-derive every file:line.
+.tad/scripts/scan-collisions.sh:265:# Atomic commit (CR P2-2): the full staging file is built — move it into place. Only now
+.tad/scripts/scan-downstream-versions.sh:2:# scan-downstream-versions.sh — downstream version ledger generator.
+.tad/scripts/scan-packs.sh:2:# scan-packs.sh — Auto-generate pack-registry.yaml from .tad/capability-packs/
+.tad/scripts/scan-packs.sh:12:# Block-list form (keywords:\n  - item) is not supported — keep keywords on one line.
+.tad/scripts/scan-packs.sh:58:# P1-1 note: block-list form not supported — constraint documented in header
+.tad/scripts/scan-packs.sh:89:# Auto-generated by scan-packs.sh — do not edit manually
+.tad/scripts/scan-packs.sh:90:# Registry status rows are derived from CAPABILITY.md frontmatter (status: active|frozen) — do not hand-edit status
+.tad/scripts/scan-packs.sh:94:# Auto-detect source_repo from git remote (AC5 — not hardcoded, works for forks/renames)
+.tad/scripts/sync-maintainer-evidence.sh:2:# sync-maintainer-evidence.sh — maintainer-evidence 分支证据同步脚本
+.tad/scripts/tad-update.sh:3:# TAD updater helper — the SINGLE update orchestration point for the current
+.tad/scripts/tad-update.sh:8:#     backup, migration, and rollback live in the canonical remote tad.sh — never
+.tad/scripts/tad-update.sh:31:# so $PWD is the deterministic anchor — not the script's own location, which
+.tad/scripts/tad-update.sh:248:# Private temp installer — download the TAGGED tad.sh matching the version the
+.tad/scripts/tad-update.sh:252:# BSD/macOS mktemp substitutes ONLY a trailing XXXXXX — a .sh suffix would make
+.tad/templates/capability-pack-template/CAPABILITY.md:60:### P0 — Blocking
+.tad/templates/capability-pack-template/CAPABILITY.md:63:### P1 — Recommendations  
+.tad/templates/completion-report.md:3:# ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 runs.
+.tad/templates/completion-report.md:198:## 📖 Knowledge Assessment (MANDATORY — Gate 3 BLOCKING)
+.tad/templates/completion-report.md:215:## ⚠️ Friction Status (MANDATORY — Gate 3 BLOCKING)
+.tad/templates/deliverable-completion.md:3:#   lane) as a Gate 3 POST-STEP (value ∈ pass|fail|partial). NOT Blake — Blake is excluded from
+.tad/templates/deliverable-completion.md:6:# ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 (deliverable) runs.
+.tad/templates/deliverable-completion.md:8:# See gate SKILL "Gate 3 — Deliverable Branch" Gate3_Verdict_Marker (mirrors blake step4b, Conductor-performed).
+.tad/templates/deliverable-completion.md:124:## 📖 Knowledge Assessment (MANDATORY — Gate 3 BLOCKING)
+.tad/templates/deliverable-handoff.md:2:# ⚠️ DEPRECATED (TAD v3.1, 2026-06-07) — DO NOT USE THIS TEMPLATE.
+.tad/templates/deliverable-handoff.md:10:# (historical) DELIVERABLE TRACK — pack-produced content artifact judged by a rubric.
+.tad/templates/deliverable-handoff.md:232:## 6. Production Pipeline (contract §B.6 — who produces, NOT Blake)
+.tad/templates/deps-registry-template.yaml:1:# Dependency Evolution Registry — created by *deps init
+.tad/templates/dream-candidate.md:11:### {Proposed Title} — {date}
+.tad/templates/handoff-a-to-b.md:25:# Cancelled handoffs do NOT use this field — they use cancel_reason instead.
+.tad/templates/handoff-a-to-b.md:190:### 3.3 Optimization Target (Optional — triggers Autoresearch Mode)
+.tad/templates/handoff-a-to-b.md:371:## 6.1 Micro-Tasks (Optional — recommended for Full/Standard TAD)
+.tad/templates/handoff-a-to-b.md:441:### 7.3 Grounded Against (Phase 2 P2.2 — Alex step1c, 2026-04-24)
+.tad/templates/handoff-a-to-b.md:527:## 9.1 Spec Compliance Checklist ⚠️ PRIMARY VERIFICATION SOURCE — Gate 3 executes each row
+.tad/templates/knowledge-writing-rules.md:33:### Before (raw journal — doer's diary)
+.tad/templates/objectives-template.md:8:## O1: {Objective 1 — 定性描述}
+.tad/templates/pack-meta-template.yaml:1:# Auto-generated by tad.sh / install.sh — do not edit manually
+.tad/templates/playbook-entry-schema.md:1:# Playbook Entry Schema — Typed Entry Contract
+.tad/templates/research-challenge-prompt.md:78:## Quality Rubric (5-dim — ALWAYS fill, on every verdict)
+.tad/templates/research-quality-rubric.md:1:# Research Quality Rubric (Phase 4c — 5-dim, advisory)
+.tad/templates/research-quality-rubric.md:21:### D1 — `citation_accuracy` (scored) — citation MECHANICS only
+.tad/templates/research-quality-rubric.md:31:### D2 — `factual_accuracy` (scored) — claim TRUTH only
+.tad/templates/research-quality-rubric.md:41:### D3 — `completeness` (scored) — coverage RATIO
+.tad/templates/research-quality-rubric.md:51:### D4 — `source_quality` (scored) — tier mix
+.tad/templates/research-quality-rubric.md:60:### D5 — `efficiency` (ADVISORY — UNSCORED)
+.tad/templates/research-quality-rubric.md:67:## 2. Embedded Source Tier Table (self-contained — do NOT defer to curate tiers)
+.tad/templates/research-quality-rubric.md:101:## 4. Aggregation — Hybrid Floor Rule (NOT a plain mean)
+.tad/templates/root-cause-report.md:1:# Root-Cause Report — <chain / task name>
+.tad/templates/skillify-candidate-template.md:5:# CONSTRAINT: discoverer MUST NOT set status beyond draft. accepted is set ONLY during the in-session human confirmation (T1 ceremony, Phase 2) — see triple_question_draft_rule.
+.tad/templates/surplus-plan-template.md:1:# Surplus Plan — {DATE}
+AGENTS.md:1:# TAD Framework — Codex Agent Roles
+AGENTS.md:161:## Codex-Specific Notes (Codex harness only — not applicable to OpenCode/Cursor)
+tad.sh:17:# Version — fallback only. The AUTHORITATIVE value is derived from the source
+tad.sh:20:# the gate runs BEFORE the source is fetched — a stale literal here silently
+tad.sh:31:# derive_target_version <src> — set TARGET_VERSION from the source tree's
+tad.sh:45:# probe_remote_version — 在状态闸之前取得权威版本。成功 → 覆盖 TARGET_VERSION 并置
+tad.sh:67:# flag absent (flag wins, never silent env override — env use is logged).
+tad.sh:92:# engine scripts from it — never point it at an unreviewed checkout.
+tad.sh:110:# cleanup_source_tree — the SINGLE chokepoint allowed to remove $TAD_SRC.
+tad.sh:114:# the mktemp root (basename tad-update.*, literal prefix) — a corrupted
+tad.sh:134:# discard_tmp_root <dir> — guarded removal for mktemp-created pinned/unpinned
+tad.sh:145:# cleanup_installer_temp — EXIT-trap removal of the verified download root's
+tad.sh:156:# validate_tar_members <archive> — tar-slip gate for BOTH extract paths.
+tad.sh:219:# resolve_source_mode — flag/env resolution + full validation. Called once,
+tad.sh:286:# _literal_has_prefix <haystack> <needle> — 0 iff haystack starts with needle,
+tad.sh:289:# (/tmp/[a]/x) as patterns — a path can bypass or misfire containment.
+tad.sh:300:# assert_under_root <path> — defense-in-depth for rollback removals (R2 P1-5):
+tad.sh:309:# Argument parsing — while-loop + shift (supports --key value two-token args).
+tad.sh:392:# appear alone. Strict syntax only — no version-prefix or ref-prefix guessing.
+tad.sh:434:# time — BEFORE probe, download, trap-arm side effects, backup, and the first
+tad.sh:516:# v3.1: `opencode` / `cursor` are accepted targets — the installer body is
+tad.sh:519:# lifecycle hooks or slash commands (Platform Adapters P2 — known gap).
+tad.sh:552:# Deny-list derivation — INLINED copy of derive-sync-set.sh
+tad.sh:558:# ⚠️ MUST stay == derive-sync-set.sh DENY_LIST — drift-checked at release
+tad.sh:565:# Category A — zero-touch (preserve each target's own copy; NEVER sync):
+tad.sh:578:# Category C — transient / main-only (do NOT sync; not part of framework surface):
+tad.sh:594:# derive_framework_dirs <src> — emit one SYNC dir basename per line
+tad.sh:598:#  nothing — a source with only deny-listed dirs would otherwise return 1
+tad.sh:610:# derive_framework_top_files <src> — emit one top-level .tad/ FILE basename per
+tad.sh:612:# LC_ALL=C sorted. DENY-LIST derived, NOT an extension allow-list — a new top-level
+tad.sh:629:# Platform-aware helpers (simple YAML parsing — no yq dependency)
+tad.sh:632:# parse_platform_extra_deny <yaml_file> <platform> — emit extra_deny paths, one per line
+tad.sh:660:# parse_platform_root_files <yaml_file> <platform> — emit extra_root_files, one per line
+tad.sh:688:# is_denied <path> <deny_list_newline_separated> — return 0 if path matches any deny entry
+tad.sh:703:# is_pack_skill <skill_name> <src> — return 0 if this skill comes from a capability pack
+tad.sh:715:# generate_pack_meta <tgt_dir> [<src_dir>] — write .tad-pack-meta.yaml with SHA-256 hashes
+tad.sh:764:# resolve_conflict <skill_name> <rel> <tgt_file> <src_file> — handle three-way conflict
+tad.sh:824:# resolve_pack_dir <name> — find the skill dir under .agents/skills
+tad.sh:832:# fork_pack <name> — mark a pack as forked (skipped on future installs)
+tad.sh:857:# unfork_pack <name> — restore a forked pack to upstream
+tad.sh:882:# list_packs — show all installed packs with sync status
+tad.sh:924:# copy_pack_skill_smart <src_dir> <tgt_dir> — smart copy: compare hashes, skip customized files
+tad.sh:1040:# is_selected_pack <name> — return 0 if name is in the comma-separated PACKS list
+tad.sh:1051:# verify_denylist_drift — release-time drift check (run from the TAD repo via
+tad.sh:1056:# run on a fresh install — only when the lib is present (TAD repo / dev tree).
+tad.sh:1099:# write_genesis_manifest — record the one-time genesis anchor for a fresh
+tad.sh:1135:# generate_target_brain_index — brain-index.md is intentionally not copied
+tad.sh:1155:# pair-testing/, …) — the deny-list — is never overwritten.
+tad.sh:1423:# meant to be copied — a new framework dir/file is auto-verified, an omission is caught.
+tad.sh:1431:# the source — so a future top-level framework file omission is now CAUGHT here,
+tad.sh:1436:# This is the desired behavior — a broken/partial source must fail the install rather
+tad.sh:1544:# Engine is the SOLE executor of migration logic — no inline delete/rename here.
+tad.sh:1593:# (AC2.6 floor — entries newer than what the target ran are inert for this
+tad.sh:1594:# run), else the source version (fresh install). Simple semver parser — no
+tad.sh:1832:# snap_one <relpath> — copy an existing target surface into ROLLBACK_SNAP and
+tad.sh:1835:# trigger a wholesale restore of its parent dir — that wiped unsnapshotted
+tad.sh:1846:# take_rollback_snapshot — capture the absolute target root, absolutize
+tad.sh:1885:# discard_rollback_snap — success-path only: the install verified complete,
+tad.sh:1898:# note_created_top <relpath> — record a run-created top-level file for
+tad.sh:1905:# restore_dir_entry <snap_entry> <dst_path> — atomic DIRECTORY restore via a
+tad.sh:1909:# 1 with the recovery source (snap entry / backup) ALWAYS preserved — the
+tad.sh:1930:# restore_file_entry <snap_file> <dst_path> — atomic FILE restore (R2 P0-3):
+tad.sh:1933:# ANY failure returns 1 with dst either intact or explicitly failed — the
+tad.sh:2089:# set (it must never trigger rollback) and exits immediately — it never installs.
+tad.sh:2095:# tad_doctor — lightweight health check. WARN-only: prints advisories, ALWAYS
+tad.sh:2114:# trigger rollback) and exits immediately — it never installs or modifies.
+tad.sh:2120:# archive_old_skill_mds <skills_dir> — F-08: move legacy top-level *.md skill
+tad.sh:2122:# dir (backup_existing()-style increment loop — skip-if-exists is WRONG per
+tad.sh:2127:# path — there is no `|| true` left on the move itself).
+tad.sh:2160:# Standalone pack management commands — exit before install flow
+tad.sh:2170:# gated by NEED_ROLLBACK — set immediately before the first project mutation
+tad.sh:2240:# temp root, and exits 1 — the project tree is never touched.
+tad.sh:2242:# discover_single_source_root <tmp_root> — print the exactly-one safe extracted
+tad.sh:2311:# download_unpinned_source — F-07: the mutable-main path extracts into a

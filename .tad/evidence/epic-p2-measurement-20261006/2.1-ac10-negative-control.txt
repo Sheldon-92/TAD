@@ -1,0 +1,19 @@
+case: activation-bypass
+discriminative_hits: 4 (min 3)
+must_not_hits: 0
+control_hits: 4 (max 1)
+verdict: INVALID (control 4 > 1)
+---
+case: tmp-capture-collision
+discriminative_hits: 5 (min 3)
+must_not_hits: 0
+control_hits: 5 (max 1)
+verdict: INVALID (control 5 > 1)
+---
+case: log-absence-misread
+discriminative_hits: 4 (min 3)
+must_not_hits: 0
+control_hits: 3 (max 1)
+verdict: INVALID (control 3 > 1)
+---
+整轮 verdict: FAIL（失效案： activation-bypass tmp-capture-collision log-absence-misread）

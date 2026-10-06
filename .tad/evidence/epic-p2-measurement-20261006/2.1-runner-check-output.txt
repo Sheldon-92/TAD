@@ -1,0 +1,22 @@
+FILES: all case files present
+case: activation-bypass
+discriminative_hits: 5/5
+must_hit_missed: []
+must_not_hit_triggered: []
+control_hits: 5
+verdict: FAIL (control-contaminated)
+---
+case: tmp-capture-collision
+discriminative_hits: 5/5
+must_hit_missed: []
+must_not_hit_triggered: []
+control_hits: 5
+verdict: FAIL (control-contaminated)
+---
+case: log-absence-misread
+discriminative_hits: 5/5
+must_hit_missed: []
+must_not_hit_triggered: []
+control_hits: 3
+verdict: FAIL (control-contaminated)
+---

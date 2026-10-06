@@ -1,0 +1,72 @@
+
+[0;36m=====================================[0m
+[0;36m   TAD Framework v3.1.0[0m
+[0;36m   Codex-first Integration[0m
+[0;36m=====================================[0m
+
+[0;34mℹ [0mValidating environment...
+[0;32m✓ [0mEnvironment validated
+[0;34mℹ [0mPlatform (explicit): codex
+[1;33m⚠ [0mCodex CLI not found. Installing TAD files for Codex layout, but codex command unavailable.
+
+[0;34m📍 Installation Status:[0m
+
+   Status: [0;32mAlready v3.1.0[0m
+   You're on the latest version!
+
+[0;34mℹ [0mForce reinstall requested (same version: 3.1.0)
+[0;34m📋 What will happen:[0m
+
+  1. Update .agents/skills/
+  2. Install .tad/skills/ (8 P0 skills) (NEW)
+  3. Update .tad/config.yaml and templates/
+
+  [0;32m✓ Preserved:[0m handoffs, evidence, project-knowledge
+
+Continue? (y/n): y  [--yes]
+
+[0;34mℹ [0mDownloading TAD Framework v3.1.0...
+[0;34mℹ [0m  → Offline source: /home/box/p3-src-tad (no download; probe bypassed)
+[0;34mℹ [0m  → Source version: v3.1.0
+[0;34mℹ [0mBacking up existing .tad/ to .tad.backup.20261006_080747
+[0;34mℹ [0mUpgrading to v3.1.0...
+[0;34mℹ [0m  → Syncing framework files from source...
+[0;34mℹ [0m  → Applying deprecations for versions ≤ 3.1.0...
+[0;32m✓ [0m  → Removed 1 deprecated file(s)
+[0;34mℹ [0m  → Pack status: 0 updated, 0 customized (preserved), 25 new, 0 forked, 0 migrated
+[0;34mℹ [0m  → Generated .codex/hooks.json (Codex lifecycle hooks)
+[0;32m✓ [0m  → Synced 788 framework files to .tad/
+[0;32m✓ [0m  → Projected .opencode/commands/tad-update.md (updater-only)
+[0;32m✓ [0m  → Projected .opencode/plugins/tad-hooks.ts (lifecycle hooks adapter)
+[0;32m✓ [0m  → Projected .cursor/hooks.json (lifecycle hooks wiring)
+[0;34mℹ [0m  → Post-install self-check (derived completeness + content diff)...
+[0;32m✓ [0m    ✓ Self-check passed: 91 derived paths (diff-clean) + 23 top-level files present (platform: codex)
+  [TIP] Optional: install codebase-memory-mcp for code graph intelligence:
+     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/v0.7.0/install.sh | bash
+     (see .tad/guides/codebase-memory-integration.md for details)
+[0;34mℹ [0mValidating generated configurations...
+[0;32m✓ [0mAll configurations validated
+
+[0;32m=====================================[0m
+[0;32m   ✅ TAD v3.1.0 Ready![0m
+[0;32m=====================================[0m
+
+Directory structure:
+  .tad/
+  ├── active/handoffs/     # Current work
+  ├── agents/              # Agent definitions
+  ├── archive/handoffs/    # Completed work
+  ├── evidence/            # Gate & test evidence
+  ├── pair-testing/        # Pair test sessions
+  ├── project-knowledge/   # Project-specific knowledge
+  ├── ralph-config/        # Ralph Loop configuration
+  ├── skills/              # Platform-agnostic skills
+  ├── sub-agents/          # Sub-agent definitions
+  └── templates/           # Handoff & output templates
+
+Quick start:
+  1. Restart your terminal (or open a new one)
+  2. [0;36m/alex[0m, [0;36m/blake[0m, [0;36m/gate[0m (default) · [0;36m/alex-lite[0m, [0;36m/blake-lite[0m (frozen)
+
+Learn more: \033[0;34mhttps://github.com/Sheldon-92/TAD\033[0m
+

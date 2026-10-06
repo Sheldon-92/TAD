@@ -1,0 +1,9 @@
+./.tad/active/handoffs/COMPLETION-20260825-yolo2-phase2-bounded-quality-loop.md
+./.tad/evidence/reviews/blake/yolo2-phase2/code-reviewer.md
+./.tad/evidence/reviews/blake/yolo2-phase2/spec-compliance-final.md
+./.tad/evidence/reviews/blake/yolo2-phase2/test-runner.md
+./.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/candidate-tree.json
+./.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/dogfood-input-manifest.json
+./.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/main-equivalence.json
+./.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/phase2-commit-manifest.json
+./.tad/evidence/yolo/yolo2-verified-orchestration/phase2/scope-proof/scope-proof.log

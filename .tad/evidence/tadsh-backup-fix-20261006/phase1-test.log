@@ -1,0 +1,73 @@
+# Phase 1 test log — VM, after C1/C2/C3/C4 landed (backup surface).
+# Phase-1-scope cases green (11). restore / restore-failure / guard still red:
+# they exercise C5/C6 (rollback gate + manifest-domain restore), Phase 2 scope.
+PASS set-equality
+PASS size
+PASS location
+PASS default-home
+PASS retention
+PASS collision
+  [restore] backup-time .tad manifest:
+    B 920148907 31 ./capability-packs/pack-registry.yaml
+    B 2698828952 19 ./config.yaml
+    B 3836009803 17 ./hooks/hook.sh
+    B 3663424861 17 ./scripts/tool.sh
+    B 3881276752 6 ./version.txt
+    B L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+  [restore] pre-rollback .tad manifest:
+    P 4172772531 21 ./active/sentinel.txt
+    P 464427756 22 ./archive/sentinel.txt
+    P 4056713789 18 ./brain-index.md
+    P 591856115 23 ./capability-packs/pack-a/tree-sentinel.txt
+    P 2101812460 18 ./capability-packs/pack-registry.yaml
+    P 2361024497 15 ./config.yaml
+    P 1670719090 5632000 ./evidence/big.bin
+    P 331194844 13 ./evidence/new-evidence.txt
+    P 1847674122 19 ./evidence/sentinel.txt
+    P 1565068078 13 ./hooks/hook.sh
+    P 749597821 4 ./newdir/f.txt
+    P 3051917533 17 ./project-knowledge/sentinel.txt
+    P 2495197131 17 ./sync-registry.yaml
+    P 3881276752 6 ./version.txt
+    P L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+    P L /nonexistent-tad-test-target ./top-dangling
+  [restore] post-rollback .tad manifest:
+    A 4172772531 21 ./active/sentinel.txt
+    A 464427756 22 ./archive/sentinel.txt
+    A 4056713789 18 ./brain-index.md
+    A 591856115 23 ./capability-packs/pack-a/tree-sentinel.txt
+    A 2101812460 18 ./capability-packs/pack-registry.yaml
+    A 2361024497 15 ./config.yaml
+    A 1670719090 5632000 ./evidence/big.bin
+    A 331194844 13 ./evidence/new-evidence.txt
+    A 1847674122 19 ./evidence/sentinel.txt
+    A 1565068078 13 ./hooks/hook.sh
+    A 749597821 4 ./newdir/f.txt
+    A 3051917533 17 ./project-knowledge/sentinel.txt
+    A 2495197131 17 ./sync-registry.yaml
+    A 3881276752 6 ./version.txt
+    A L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+    A L /nonexistent-tad-test-target ./top-dangling
+  FAIL-ASSERT: hook.sh not restored
+cat: /tmp/tmp.pSSZMMdkPY/proj/.tad/scripts/tool.sh: No such file or directory
+  FAIL-ASSERT: deleted tool.sh not restored
+  FAIL-ASSERT: config.yaml not restored
+  FAIL-ASSERT: pack-registry.yaml not restored
+  FAIL-ASSERT: run-created framework dir not removed
+  FAIL-ASSERT: backup not consumed after successful rollback
+FAIL restore
+  FAIL-ASSERT: (a) error output does not name the failed entry
+  FAIL-ASSERT: (a) entry restored before the failure was un-restored (AC7)
+  FAIL-ASSERT: (b) error output does not name the failed entry
+  FAIL-ASSERT: (c) error output does not name the failed entry
+FAIL restore-failure
+PASS prune-failure
+PASS repo-key
+  FAIL-ASSERT: no REFUSED line for forged path: /tmp/tmp.VIer0hZ0JE/proj/forged/20260101_000000
+  FAIL-ASSERT: target .tad bytes moved under forged backup paths (AC10)
+FAIL guard
+PASS root-guard
+PASS legacy
+PASS symlink
+
+TALLY: PASS=11 FAIL=3

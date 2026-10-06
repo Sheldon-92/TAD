@@ -1,0 +1,6 @@
+synced rows: 8874
+missing-on-branch: 0 []
+mismatch: 2
+('.tad/evidence/knowledge-usage-log.jsonl', 'f74aa878b0155685ad0d4cd88d70a13269a21b84', '0e512a683f96f91a9583751dc8b25f9f611097fd')
+('.tad/evidence/pm/downstream-versions.md', 'c2e695f95fc2533ef0917c866398524173851931', '8f2b0e2fa1e98fe32d3e8e5c493cc7c6f4d4b12f')
+epic-p2 appended rows now synced: 155

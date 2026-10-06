@@ -1,0 +1,30 @@
+# Ralph Loop state — tadsh-backup-fix (2026-10-06)
+task_id: TASK-20261006-TADSH-BACKUP-FIX
+handoff: .tad/active/handoffs/HANDOFF-2026-10-06-tadsh-backup-fix.md (+ SUPPLEMENT-1)
+current_iteration: 4
+layer1_retries: 3
+layer2_rounds: 0
+last_completed_layer: implementation-complete (Gate 3 pending)
+last_error_category: none
+consecutive_same_error: 0
+reflection_count: 4
+last_reflection_summary: >-
+  Phase 2 (C5/C6): VM 14/14 green. The restore case exposed a pre-existing
+  helper defect: GNU diff -rq dereferences symlinks during tree comparison
+  and exits 2 on the dangling symlink the HANDOFF fixture spec mandates, so
+  every directory entry would fail stage-verify. Replaced the verify probe
+  inside restore_dir_entry/restore_file_entry (4 sites) with a link-safe
+  _tad_tree_equal; helper contract unchanged; disclosed in COMPLETION for
+  Gate 3 judgment.
+  Phase 3 + grokbox rerun: first grokbox full run went 13/14 — retention
+  left 3 complete backups because four runs shared one second: run 3's prune
+  freed the base timestamp name and run 4 reused it, inverting the
+  (timestamp, suffix) order so the keep-set held v2/v3 and the N1 belt
+  shielded v4, deleting nothing. Fixed by max-suffix+1 naming (never reuse
+  a same-second name) plus a prune keep-set belt (the just-written backup
+  always occupies a keep slot); added a deterministic date()-shadow
+  same-second regression scenario to the retention case. Final state: VM
+  14/14 and grokbox 14/14, AC14 chain rc=0, AC15 assignment-line count 0,
+  AC16 0/1. COMPLETION and impl note filed; git untouched (read-only),
+  version.txt frozen at 3.1.0.
+escalation_assessment: "No escalation: all four reflections were reproduced in kept sandboxes, root-caused, fixed, and re-verified on both machines. One disclosed implementation-level probe change awaits Gate 3."

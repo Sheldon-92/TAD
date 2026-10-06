@@ -1,0 +1,13 @@
+=== A: target genesis=3.0.1, upgrade 3.0.1->3.0.2, source=real repo (expect chain via shipped hop, NO genesis-anchored NOTE, exit 0) ===
+
+=== Migration: 3.0.1 → 3.0.2 ===
+summary	ok	-	deleted=0 skipped=0 merged=0 manual=0
+
+Migration complete: 3.0.1 → 3.0.2
+exitA=0
+=== B: genesis mismatch (genesis=3.0.1 vs from=3.0.0; no hop from 3.0.0) expect REJECT ===
+REJECT: chain gap at 3.0.0 — no manifest from 3.0.0. Suggest clean reinstall.
+exitB=2
+=== C: mid-chain gap (walks 3.0.1->3.0.2, no hop to 3.0.3) expect REJECT ===
+REJECT: chain gap at 3.0.2 — no manifest from 3.0.2. Suggest clean reinstall.
+exitC=2

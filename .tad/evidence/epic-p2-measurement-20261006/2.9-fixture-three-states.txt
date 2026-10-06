@@ -1,0 +1,31 @@
+=== A: no hop ===
+=========================================
+MIGRATION VERIFY (unmanifested D/R check)
+  REPO: /tmp/epic-p2-hopfix-pVRvzB/repo
+  PREV_TAG: v3.0.1
+  EXPECTED: 3.0.2
+=========================================
+MISSING HOP: /tmp/epic-p2-hopfix-pVRvzB/repo/.tad/migrations/3.0.1-to-3.0.2.yaml
+VERDICT: migration FAIL — missing hop manifest (exit 1)
+exitA=1
+=== B: compliant hop (canonical 2.43.1 form) ===
+=========================================
+MIGRATION VERIFY (unmanifested D/R check)
+  REPO: /tmp/epic-p2-hopfix-pVRvzB/repo
+  PREV_TAG: v3.0.1
+  EXPECTED: 3.0.2
+=========================================
+  HOP: present and well-formed (3.0.1-to-3.0.2)
+  No D/R entries in framework-scoped diff — nothing to check.
+VERDICT: migration PASS (exit 0)
+exitB=0
+=== C: malformed hop (to=3.0.3) ===
+=========================================
+MIGRATION VERIFY (unmanifested D/R check)
+  REPO: /tmp/epic-p2-hopfix-pVRvzB/repo
+  PREV_TAG: v3.0.1
+  EXPECTED: 3.0.2
+=========================================
+MALFORMED HOP: /tmp/epic-p2-hopfix-pVRvzB/repo/.tad/migrations/3.0.1-to-3.0.2.yaml (from='3.0.1' to='3.0.3', expected from='3.0.1' to='3.0.2' with delete:/rename: anchors)
+VERDICT: migration FAIL — malformed hop manifest (exit 1)
+exitC=1

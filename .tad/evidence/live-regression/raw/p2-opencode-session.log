@@ -1,0 +1,114 @@
+[0m
+> build · deepseek-v4.1-flash
+[0m
+[0m→ [0mRead AGENTS.md[90m [limit=20][0m
+[0m
+[0m$ [0mls -la /home/box/p3-skeleton-tad/.tad/evidence 2>/dev/null | head; echo "---"; ls /home/box/p3-skeleton-tad/.tad 2>/dev/null
+total 376
+drwxr-xr-x  56 box box  4096 Oct  6 08:07 .
+drwxr-xr-x  41 box box  4096 Oct  6 08:07 ..
+-rw-r--r--   1 box box  8689 Sep 22 11:07 2026-09-13-alex-discuss-release-minor.md
+-rw-r-----   1 box box 11175 Oct  4 16:35 2026-10-04-gate4-platform-adapters-pre-rewrite-copy.md
+-rw-r--r--   1 box box  1169 Sep 22 11:01 README.md
+drwxr-xr-x 131 box box 12288 Sep 13 06:38 acceptance-tests
+drwxr-x---   2 box box  4096 Oct  4 23:29 activation-packages
+drwxr-xr-x   2 box box  4096 Sep 12 20:25 audits
+drwxr-x---   2 box box  4096 Oct  5 13:36 closeout-batch-20261005
+---
+CHANGELOG.md
+README.md
+TAD-POINTER.md
+TAD-VERSION
+active
+agents
+archive
+brain-index.md
+capability-packs
+codex
+config-agents.yaml
+config-cognitive.yaml
+config-execution.yaml
+config-platform.yaml
+config-quality.yaml
+config-workflow.yaml
+config.yaml
+context
+cross-model
+data
+decisions
+dependencies
+deprecation.yaml
+discipline-floor-budget.md
+discipline-floor.md
+domains
+eval
+evidence
+gates
+github-registry
+guides
+hooks
+logs
+manifest.yaml
+mcp-registry.yaml
+memory
+migrations
+pair-testing
+platform-codes.yaml
+portable-extract.sh
+portable-rules.md
+project-detection.yaml
+project-knowledge
+ralph-config
+references
+regression-samples
+reports
+research-notebooks
+routing-contract.yaml
+runtime-compat
+schemas
+scripts
+skill-library
+skills
+skills-config.yaml
+spike-v3
+sub-agents
+tasks
+templates
+tests
+version.txt
+workflows
+working
+[0m
+[0m← [0mWrite p2-write-target.txt
+Wrote file successfully.
+[0m
+[0m→ [0mRead p2-write-target.txt
+[0m
+[0m← [0mEdit p2-write-target.txt
+Index: /home/box/p3-skeleton-tad/p2-write-target.txt
+===================================================================
+--- /home/box/p3-skeleton-tad/p2-write-target.txt
++++ /home/box/p3-skeleton-tad/p2-write-target.txt
+@@ -1,1 +1,1 @@
+-alpha
++beta
+
+[0m
+[0m← [0mWrite .tad/evidence/p2-writenote.md
+Wrote file successfully.
+[0m
+[0m$ [0mgit status --short; echo "---diff---"; git diff -- p2-write-target.txt; echo "---content---"; cat p2-write-target.txt
+?? p2-write-target.txt
+---diff---
+---content---
+beta
+[0m
+[0m← [0mWrite p2-review-record.md
+Wrote file successfully.
+[0m
+[0m← [0mWrite p2-closeout.md
+Wrote file successfully.
+[0m
+ACTIVATION: TAD v3.1.0 — running as the default general TAD assistant role surface (no `$alex`/`$blake` role activated).
+
+FINISHED

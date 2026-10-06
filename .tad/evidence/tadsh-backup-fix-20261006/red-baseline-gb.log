@@ -1,0 +1,124 @@
+# Red baseline (regenerated with the FINAL harness) — grokbox skeleton /tmp/tadfix-red,
+# tad.sh = git HEAD (pre-fix). Same expectation as VM: 14/14 red, old-behavior reasons.
+  FAIL-ASSERT: no backup tree at BACKUP_PATH='.tad.backup.20261006_094245'
+FAIL set-equality
+  FAIL-ASSERT: no backup dir at BACKUP_PATH='.tad.backup.20261006_094245'
+FAIL size
+  FAIL-ASSERT: project root gained entries during backup
+  FAIL-ASSERT: backup not under redirected root: .tad.backup.20261006_094245
+  FAIL-ASSERT: backup root perms != 700 ()
+FAIL location
+  FAIL-ASSERT: default backup path not $HOME/.tad-backups/<group>/<ts>: .tad.backup.20261006_094245
+  FAIL-ASSERT: default-home backup lacks manifest
+FAIL default-home
+  FAIL-ASSERT: complete backups after 4 runs != 2 (0)
+  FAIL-ASSERT: survivors are not newest two: 
+  FAIL-ASSERT: residual partial backup not pruned
+  FAIL-ASSERT: N1: complete count != 2
+  FAIL-ASSERT: N1: .9 retained (byte-order sort bug)
+FAIL retention
+ls: cannot access '/tmp/tmp.NLiKzeHvcB/backups/proj': No such file or directory
+  FAIL-ASSERT: expected exactly 2 backup dirs, got: 
+  FAIL-ASSERT: collision: both runs used the same dir name
+cat: /tmp/tmp.NLiKzeHvcB/backups/proj//.tad/hooks/hook.sh: No such file or directory
+cat: /tmp/tmp.NLiKzeHvcB/backups/proj//.tad/hooks/hook.sh: No such file or directory
+  FAIL-ASSERT: collision: an earlier backup was overwritten (contents:  / )
+find: '/tmp/tmp.NLiKzeHvcB/backups': No such file or directory
+FAIL collision
+  [restore] backup-time .tad manifest:
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 80: cd: .tad.backup.20261006_094245/.tad: No such file or directory
+  [restore] pre-rollback .tad manifest:
+    P 4172772531 21 ./active/sentinel.txt
+    P 464427756 22 ./archive/sentinel.txt
+    P 4056713789 18 ./brain-index.md
+    P 591856115 23 ./capability-packs/pack-a/tree-sentinel.txt
+    P 2101812460 18 ./capability-packs/pack-registry.yaml
+    P 2361024497 15 ./config.yaml
+    P 1670719090 5632000 ./evidence/big.bin
+    P 331194844 13 ./evidence/new-evidence.txt
+    P 1847674122 19 ./evidence/sentinel.txt
+    P 1565068078 13 ./hooks/hook.sh
+    P 749597821 4 ./newdir/f.txt
+    P 3051917533 17 ./project-knowledge/sentinel.txt
+    P 2495197131 17 ./sync-registry.yaml
+    P 3881276752 6 ./version.txt
+    P L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+    P L /nonexistent-tad-test-target ./top-dangling
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 388: cd: /tmp/tmp.teimBgppd5/backups: No such file or directory
+  [restore] post-rollback .tad manifest:
+    A 4172772531 21 ./active/sentinel.txt
+    A 464427756 22 ./archive/sentinel.txt
+    A 4056713789 18 ./brain-index.md
+    A 591856115 23 ./capability-packs/pack-a/tree-sentinel.txt
+    A 2101812460 18 ./capability-packs/pack-registry.yaml
+    A 2361024497 15 ./config.yaml
+    A 1670719090 5632000 ./evidence/big.bin
+    A 331194844 13 ./evidence/new-evidence.txt
+    A 1847674122 19 ./evidence/sentinel.txt
+    A 1565068078 13 ./hooks/hook.sh
+    A 749597821 4 ./newdir/f.txt
+    A 3051917533 17 ./project-knowledge/sentinel.txt
+    A 2495197131 17 ./sync-registry.yaml
+    A 3881276752 6 ./version.txt
+    A L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+    A L /nonexistent-tad-test-target ./top-dangling
+  FAIL-ASSERT: hook.sh not restored
+cat: /tmp/tmp.teimBgppd5/proj/.tad/scripts/tool.sh: No such file or directory
+  FAIL-ASSERT: deleted tool.sh not restored
+  FAIL-ASSERT: config.yaml not restored
+  FAIL-ASSERT: pack-registry.yaml not restored
+  FAIL-ASSERT: run-created framework dir not removed
+FAIL restore
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 429: .tad.backup.20261006_094245/.tad/scripts: No such file or directory
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 430: cd: /tmp/tmp.nEShJczthd/backups: No such file or directory
+  FAIL-ASSERT: (a) backup not preserved after failed restore (AC7)
+  FAIL-ASSERT: (a) error output does not name the failed entry
+  FAIL-ASSERT: (a) entry restored before the failure was un-restored (AC7)
+rm: cannot remove '.tad.backup.20261006_094245/.tad/config.yaml': No such file or directory
+mkdir: cannot create directory '.tad.backup.20261006_094245/.tad/config.yaml': No such file or directory
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 450: cd: /tmp/tmp.MZsdn0Q0hE/backups: No such file or directory
+  FAIL-ASSERT: (b) backup not preserved after failed restore (AC7)
+  FAIL-ASSERT: (b) error output does not name the failed entry
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 464: cd: /tmp/tmp.Lo3ynyOEoR/backups: No such file or directory
+  FAIL-ASSERT: (c) backup not preserved after failed restore (AC7)
+  FAIL-ASSERT: (c) error output does not name the failed entry
+FAIL restore-failure
+  FAIL-ASSERT: prune failure did not warn naming the stuck backup (AC8)
+  FAIL-ASSERT: new backup incomplete after prune failure (AC8)
+  FAIL-ASSERT: deletable old backup was not pruned
+FAIL prune-failure
+ls: cannot access '/tmp/tmp.dIijyaWSDX/backups': No such file or directory
+  FAIL-ASSERT: first group key != proj: 
+cat: '/tmp/tmp.dIijyaWSDX/backups/proj/*/origin.txt': No such file or directory
+  FAIL-ASSERT: group proj origin != a/proj
+ls: cannot access '/tmp/tmp.dIijyaWSDX/backups': No such file or directory
+  FAIL-ASSERT: same-basename repo did not get a suffixed group
+cat: '/tmp/tmp.dIijyaWSDX/backups//*/origin.txt': No such file or directory
+  FAIL-ASSERT: suffixed group origin != b/proj
+cat: '/tmp/tmp.dIijyaWSDX/backups/proj/*/origin.txt': No such file or directory
+  FAIL-ASSERT: a/proj group origin clobbered
+  FAIL-ASSERT: b group retention != 2
+  FAIL-ASSERT: a group retention disturbed by b runs
+  FAIL-ASSERT: space in basename not sanitized to sp_ace
+ls: cannot access '/tmp/tmp.dIijyaWSDX/backups': No such file or directory
+FAIL repo-key
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 545: cd: /tmp/tmp.F9O64bmaNn/backups: No such file or directory
+  FAIL-ASSERT: no REFUSED line for forged path: /tmp/tmp.F9O64bmaNn/proj/forged/20260101_000000
+  FAIL-ASSERT: target .tad bytes moved under forged backup paths (AC10)
+  FAIL-ASSERT: the genuine backup was consumed by a forged rollback
+FAIL guard
+  FAIL-ASSERT: root inside target not refused (AC11)
+  FAIL-ASSERT: inside-root refusal not logged
+  FAIL-ASSERT: root == target not refused (AC11)
+  FAIL-ASSERT: relative TAD_BACKUP_ROOT not refused
+  FAIL-ASSERT: relative-root refusal not logged
+  FAIL-ASSERT: project tree changed by refused backups (AC11)
+FAIL root-guard
+  FAIL-ASSERT: no legacy notice line in backup output (FR8)
+/tmp/tadfix-red/.tad/hooks/lib/tad-backup-test.sh: line 609: cd: /tmp/tmp.04wCTyFGd4/backups: No such file or directory
+FAIL legacy
+  FAIL-ASSERT: dangling symlink not preserved as a symlink in backup (AC13)
+  FAIL-ASSERT: symlink target altered in backup
+FAIL symlink
+
+TALLY: PASS=0 FAIL=14

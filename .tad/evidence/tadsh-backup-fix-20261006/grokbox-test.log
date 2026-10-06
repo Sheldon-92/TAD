@@ -1,0 +1,59 @@
+# Grokbox skeleton full run (FINAL code) — /tmp/tadfix-green (copied tad.sh + harness).
+# Real-machine surface where downstream refreshes actually run. 14/14 PASS.
+PASS set-equality
+PASS size
+PASS location
+PASS default-home
+PASS retention
+PASS collision
+  [restore] backup-time .tad manifest:
+    B 920148907 31 ./capability-packs/pack-registry.yaml
+    B 2698828952 19 ./config.yaml
+    B 3836009803 17 ./hooks/hook.sh
+    B 3663424861 17 ./scripts/tool.sh
+    B 3881276752 6 ./version.txt
+    B L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+  [restore] pre-rollback .tad manifest:
+    P 4172772531 21 ./active/sentinel.txt
+    P 464427756 22 ./archive/sentinel.txt
+    P 4056713789 18 ./brain-index.md
+    P 591856115 23 ./capability-packs/pack-a/tree-sentinel.txt
+    P 2101812460 18 ./capability-packs/pack-registry.yaml
+    P 2361024497 15 ./config.yaml
+    P 1670719090 5632000 ./evidence/big.bin
+    P 331194844 13 ./evidence/new-evidence.txt
+    P 1847674122 19 ./evidence/sentinel.txt
+    P 1565068078 13 ./hooks/hook.sh
+    P 749597821 4 ./newdir/f.txt
+    P 3051917533 17 ./project-knowledge/sentinel.txt
+    P 2495197131 17 ./sync-registry.yaml
+    P 3881276752 6 ./version.txt
+    P L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+    P L /nonexistent-tad-test-target ./top-dangling
+  [restore] post-rollback .tad manifest:
+    A 4172772531 21 ./active/sentinel.txt
+    A 464427756 22 ./archive/sentinel.txt
+    A 4056713789 18 ./brain-index.md
+    A 591856115 23 ./capability-packs/pack-a/tree-sentinel.txt
+    A 920148907 31 ./capability-packs/pack-registry.yaml
+    A 2698828952 19 ./config.yaml
+    A 1670719090 5632000 ./evidence/big.bin
+    A 331194844 13 ./evidence/new-evidence.txt
+    A 1847674122 19 ./evidence/sentinel.txt
+    A 3836009803 17 ./hooks/hook.sh
+    A 3051917533 17 ./project-knowledge/sentinel.txt
+    A 3663424861 17 ./scripts/tool.sh
+    A 2495197131 17 ./sync-registry.yaml
+    A 3881276752 6 ./version.txt
+    A L /nonexistent-tad-test-target ./hooks/dangling-in-framework
+    A L /nonexistent-tad-test-target ./top-dangling
+PASS restore
+PASS restore-failure
+PASS prune-failure
+PASS repo-key
+PASS guard
+PASS root-guard
+PASS legacy
+PASS symlink
+
+TALLY: PASS=14 FAIL=0

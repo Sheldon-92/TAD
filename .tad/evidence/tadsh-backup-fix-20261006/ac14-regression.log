@@ -1,0 +1,16 @@
+[0;32m✓ [0m--verify-denylist: tad.sh inlined DENY_LIST == derive-sync-set.sh (17 entries)
+PASS AC1   target=2.29.1  ver=2.29.1       -> state=current  action=none
+PASS AC2   target=2.29.1  ver=2.29.0       -> state=upgrade  action=upgrade
+PASS AC3   target=2.29.1  ver=2.20.0       -> state=upgrade  action=upgrade
+PASS AC4   target=2.29.1  ver=2.0.0        -> state=upgrade  action=upgrade
+PASS AC5   target=2.29.1  ver=1.8.0        -> state=v1.8     action=upgrade
+PASS AC6   target=2.29.1  ver=1.4.0        -> state=v1.4     action=migrate
+PASS AC7   target=3.0.0   ver=2.29.1       -> state=old      action=migrate
+PASS AC8   target=2.29.1  ver=__EMPTY__    -> state=old      action=migrate
+PASS AC9   target=2.29.1  ver=garbage      -> state=old      action=migrate
+PASS AC10  target=2.29.1  ver=2.30.0       -> state=current  action=none
+PASS AC11  target=2.29.1  ver=2.9.0        -> state=upgrade  action=upgrade
+PASS AC13  target=2.29.1  ver=2.29.1\\r\\n -> state=current  action=none
+
+TALLY: PASS=12 FAIL=0
+AC14_CHAIN_RC=0
