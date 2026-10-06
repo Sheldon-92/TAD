@@ -1,0 +1,21 @@
+== scene r1_1
+  SCENE PASS: r1-1
+== scene r1_2
+  SCENE PASS: r1-2
+== scene r1_3
+  SCENE PASS: r1-3
+== scene r1_4
+  SCENE PASS: r1-4
+== scene r1_5
+  SCENE PASS: r1-5
+== scene r2_1
+  SCENE PASS: r2-1
+== scene r2_2
+  SCENE PASS: r2-2
+== scene r2_3
+  SCENE PASS: r2-3
+== scene r2_4
+  SCENE PASS: r2-4
+== scene r2_5
+  SCENE PASS: r2-5
+== fixture done

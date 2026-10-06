@@ -1,0 +1,6 @@
+ M docs/pm/now.md
+?? .tad/active/TICKET-20261006-self-review-r2.md
+?? .tad/active/handoffs/
+?? docs/pm/open-cards/2026-10-06-r2-design-start-card.md
+?? docs/pm/open-cards/2026-10-06-r2-gate2-start-card.md
+?? docs/pm/open-cards/2026-10-06-r2-impl-start-card.md
