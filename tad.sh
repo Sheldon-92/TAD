@@ -515,8 +515,11 @@ KNOWN_PLATFORMS="codex opencode cursor"
 
 # v3.1: `opencode` / `cursor` are accepted targets — the installer body is
 # platform-agnostic (same .agents/skills tree, same packs, same .tad/ core),
-# so these values only relax the fail-before-mutation gate. They do NOT add
-# lifecycle hooks or slash commands (Platform Adapters P2 — known gap).
+# so these values only relax the fail-before-mutation gate.
+# v3.2 (Epic P3): lifecycle hooks now land for both — the OpenCode hooks
+# plugin (.opencode/plugins/tad-hooks.ts) and the Cursor hooks wiring
+# (.cursor/hooks.json) are projected byte-identically above; residual
+# per-runtime boundaries are named in AGENTS.md Known Gaps (P2/P4 rows).
 # `both` / `*claude*` stay rejected before any mutation.
 validate_platform() {
     local p="$1"
@@ -1411,6 +1414,10 @@ HOOKS_EOF
     # --- OpenCode updater-only projection (exact single-file copy + compare) ---
     project_opencode_command "$src"
 
+    # --- Epic P3: OpenCode hooks plugin + Cursor hooks projections ---
+    project_opencode_hooks_plugin "$src"
+    project_cursor_hooks "$src"
+
     # --- AC3: post-install completeness self-check ---
     verify_install_complete "$src"
 }
@@ -1524,6 +1531,32 @@ verify_install_complete() {
             missing=$((missing + 1))
         elif ! cmp -s "$src_op_f" ".opencode/commands/tad-update.md"; then
             log_warn "    ✗ MISMATCH OpenCode command: .opencode/commands/tad-update.md differs from source"
+            missing=$((missing + 1))
+        fi
+    fi
+
+    # OpenCode hooks plugin (Epic P3) — source-owned, byte-identical required.
+    local src_op_hooks_f="$src/.opencode/plugins/tad-hooks.ts"
+    if [ -f "$src_op_hooks_f" ]; then
+        checked=$((checked + 1))
+        if [ ! -f ".opencode/plugins/tad-hooks.ts" ]; then
+            log_warn "    ✗ MISSING OpenCode hooks plugin: .opencode/plugins/tad-hooks.ts"
+            missing=$((missing + 1))
+        elif ! cmp -s "$src_op_hooks_f" ".opencode/plugins/tad-hooks.ts"; then
+            log_warn "    ✗ MISMATCH OpenCode hooks plugin: .opencode/plugins/tad-hooks.ts differs from source"
+            missing=$((missing + 1))
+        fi
+    fi
+
+    # Cursor hooks wiring (Epic P3) — source-owned, byte-identical required.
+    local src_cu_hooks_f="$src/.cursor/hooks.json"
+    if [ -f "$src_cu_hooks_f" ]; then
+        checked=$((checked + 1))
+        if [ ! -f ".cursor/hooks.json" ]; then
+            log_warn "    ✗ MISSING Cursor hooks: .cursor/hooks.json"
+            missing=$((missing + 1))
+        elif ! cmp -s "$src_cu_hooks_f" ".cursor/hooks.json"; then
+            log_warn "    ✗ MISMATCH Cursor hooks: .cursor/hooks.json differs from source"
             missing=$((missing + 1))
         fi
     fi
@@ -2023,6 +2056,14 @@ rollback_on_failure() {
         rollback_opencode_projection
         _removed_list="${_removed_list}.opencode/commands/tad-update.md "
     fi
+    if [ "${OPCODE_HOOKS_CREATED_FILE:-0}" = "1" ]; then
+        rollback_opencode_hooks_projection
+        _removed_list="${_removed_list}.opencode/plugins/tad-hooks.ts "
+    fi
+    if [ "${CURSOR_HOOKS_CREATED_FILE:-0}" = "1" ]; then
+        rollback_cursor_hooks_projection
+        _removed_list="${_removed_list}.cursor/hooks.json "
+    fi
 
     # 4. Remove exactly the files THIS run created (merge backup, fresh
     # PROJECT_CONTEXT.md/NEXT.md, .pre-tad backups) — never user bytes.
@@ -2415,6 +2456,100 @@ rollback_opencode_projection() {
         rmdir "$_t/.opencode" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-root
     fi
 }
+
+# ============================================
+# Phase 3 (Epic P3): OpenCode hooks plugin + Cursor hooks projections
+# ============================================
+# Same single-file projection discipline as the OpenCode updater command
+# above (preflight FATAL on divergence -> exact copy + cmp -> symmetric
+# rollback), extended to two more source-owned files:
+#   - .opencode/plugins/tad-hooks.ts  (OpenCode lifecycle hooks adapter)
+#   - .cursor/hooks.json              (Cursor lifecycle hooks wiring)
+# The source owns both files, so the target MUST carry them byte-identically.
+# Never deletes or recursively synchronizes .opencode or .cursor.
+OPCODE_HOOKS_CREATED_FILE=0
+CURSOR_HOOKS_CREATED_FILE=0
+
+opencode_hooks_preflight() {
+    local src="$1"
+    local src_f="$src/.opencode/plugins/tad-hooks.ts"
+    local tgt_f=".opencode/plugins/tad-hooks.ts"
+    [ -f "$src_f" ] || return 0
+    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f"; then
+        log_error "OpenCode conflict: .opencode/plugins/tad-hooks.ts already exists and differs from TAD's copy."
+        echo "  Recovery: rename or remove your file, then re-run the installer. Example:"
+        echo "    mv .opencode/plugins/tad-hooks.ts .opencode/plugins/tad-hooks.ts.local"
+        echo "  No files were changed by this run."
+        exit 1
+    fi
+}
+
+project_opencode_hooks_plugin() {
+    local src="$1"
+    local src_f="$src/.opencode/plugins/tad-hooks.ts"
+    [ -f "$src_f" ] || return 0
+    local tgt_f=".opencode/plugins/tad-hooks.ts"
+
+    if [ ! -f "$tgt_f" ]; then
+        OPCODE_HOOKS_CREATED_FILE=1
+    fi
+    mkdir -p .opencode/plugins
+    cp "$src_f" "$tgt_f"
+    if ! cmp -s "$src_f" "$tgt_f"; then
+        log_error "OpenCode projection verification FAILED: .opencode/plugins/tad-hooks.ts differs from source"
+        return 1
+    fi
+    log_success "  → Projected .opencode/plugins/tad-hooks.ts (lifecycle hooks adapter)"
+}
+
+rollback_opencode_hooks_projection() {
+    if [ "$OPCODE_HOOKS_CREATED_FILE" = "1" ]; then
+        local _t="${TARGET_ROOT:-.}"
+        rm -f "$_t/.opencode/plugins/tad-hooks.ts" # RM-OK:rollback-opencode-hooks-created
+        rmdir "$_t/.opencode/plugins" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-plugins
+        rmdir "$_t/.opencode" 2>/dev/null || true # RM-OK:rollback-opencode-rmdir-root
+    fi
+}
+
+cursor_hooks_preflight() {
+    local src="$1"
+    local src_f="$src/.cursor/hooks.json"
+    local tgt_f=".cursor/hooks.json"
+    [ -f "$src_f" ] || return 0
+    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f"; then
+        log_error "Cursor conflict: .cursor/hooks.json already exists and differs from TAD's copy."
+        echo "  Recovery: rename or remove your file, then re-run the installer. Example:"
+        echo "    mv .cursor/hooks.json .cursor/hooks.json.local"
+        echo "  No files were changed by this run."
+        exit 1
+    fi
+}
+
+project_cursor_hooks() {
+    local src="$1"
+    local src_f="$src/.cursor/hooks.json"
+    [ -f "$src_f" ] || return 0
+    local tgt_f=".cursor/hooks.json"
+
+    if [ ! -f "$tgt_f" ]; then
+        CURSOR_HOOKS_CREATED_FILE=1
+    fi
+    mkdir -p .cursor
+    cp "$src_f" "$tgt_f"
+    if ! cmp -s "$src_f" "$tgt_f"; then
+        log_error "Cursor projection verification FAILED: .cursor/hooks.json differs from source"
+        return 1
+    fi
+    log_success "  → Projected .cursor/hooks.json (lifecycle hooks wiring)"
+}
+
+rollback_cursor_hooks_projection() {
+    if [ "$CURSOR_HOOKS_CREATED_FILE" = "1" ]; then
+        local _t="${TARGET_ROOT:-.}"
+        rm -f "$_t/.cursor/hooks.json" # RM-OK:rollback-cursor-hooks-created
+        rmdir "$_t/.cursor" 2>/dev/null || true # RM-OK:rollback-cursor-rmdir-root
+    fi
+}
 main() {
     echo ""
     echo -e "${CYAN}=====================================${NC}"
@@ -2627,6 +2762,8 @@ main() {
     # fails here with zero changes across every managed surface and prints the
     # deterministic rename/remove recovery instruction.
     opencode_preflight "$TAD_SRC"
+    opencode_hooks_preflight "$TAD_SRC"
+    cursor_hooks_preflight "$TAD_SRC"
 
     # FR-1: the normal project backup occurs immediately before the first
     # project mutation — AFTER download, immutable-version validation, platform

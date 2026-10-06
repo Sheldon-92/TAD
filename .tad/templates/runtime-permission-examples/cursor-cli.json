@@ -1,0 +1,1 @@
+{"approvalMode":"allowlist","permissions":{"allow":["Read(**)","Write(**)","Shell(git status*)","Shell(git diff*)","Shell(git log*)","Shell(bash .tad/hooks/*)"],"deny":["Shell(rm -rf *)","Shell(git push*)"]},"sandbox":{"mode":"enabled","networkAccess":"user_config_with_defaults"}}

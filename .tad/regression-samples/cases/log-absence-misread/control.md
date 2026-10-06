@@ -1,12 +1,16 @@
-对照捕获冻结件——捕获通道与污染说明见首跑 scores.md（.tad/evidence/regression-runs/20261006-first-run/scores.md）。
+对照捕获冻结件（替换版）——本件正文为 run `20261006-first-valid-baseline` 的洁净对照捕获，来源：`.tad/evidence/regression-runs/20261006-first-valid-baseline/controls/log-absence-misread.md`（逐字移入）。替换授权：PM 裁断 `.tad/evidence/pm/2026-10-06-epic-p3-three-escalations-ruling.md` 第一节。被替代件系首跑 fork 污染捕获，存档于 `.tad/evidence/regression-runs/20261006-first-run/`（不动）。
 
-不能得出「扩展从未发过请求」，也不能得出「配对已丢失」。
+
+不能。仅凭这份日志摘录，既不能判定"扩展从未发过请求"，也不能判定"配对已丢失"。这是典型的"把日志缺失当成事件缺失"的误读。
 
 依据：
 
-1. 日志无 authorize 行不等于扩展没发过请求：配对交换是 POST `/extension/authorize`，失败的交换在 daemon 日志里不记行（实测假令牌请求返回 401、日志零行）。日志零到达只能证明没有成功连接，不能证明扩展没有发出过请求。此前据日志无行判「扩展没拨号」已被实证推翻。
-2. 配对在服务端未丢：daemon 侧设备授权有独立持久存储，`device_ttl=90d`，daemon 重启不丢；摘录中两次 daemon start 均为 `config loaded, device_ttl=90d`，没有任何授权失效、撤销或过期的记录。
-3. 症状指向扩展侧而非服务端配对丢失：弹窗显示「无法读取连接设置」、退回未连接态，更符合扩展侧自身存的连接设置层损坏／读不出、或 daemon 停机后扩展重试耗尽休眠、daemon 回来后不自醒，而不是服务端授权丢失。
-4. 隧道侧当时健康：摘录中 `tunnel probe: mac_port_ok (ws handshake 101)`，说明隧道握手正常，不能据此把问题归为链路或配对失效。
+1. **缺失 ≠ 未发生。** 摘录里只有 start / tunnel probe / GET /status 三类行。没有 authorize 行只能说明"这类事件没被记录进这份摘录"，原因可能是日志级别或过滤器不采 authorize、写到了别的文件、或已被轮转覆盖。要断言"从未发过请求"，必须先确认 authorize 到底会不会被记录。
 
-结论须靠真交换实证：在用户已在弹窗就位后，最后才生成一次性配对链接（TTL 只有 300 秒），或从 Mac 侧用真令牌做一次 POST authorize 探针，返回 200 并签发 device_id 才算服务端健康／配对可用；不能仅凭日志缺行下结论。
+2. **日志里有反证。** 14:15:02 的 `GET /status 200` 说明 daemon 在线且有人在成功轮询——很可能就是扩展本身。若扩展完全没通信，这些 poll 从何而来？所以"扩展没连上 daemon"这个前提本身就不牢。
+
+3. **症状指向的是本地读取失败。** "无法读取连接设置"是弹窗读它自己的本地配置（storage/权限/配置格式）出错，属客户端本地问题，与 daemon 侧配对状态是两码事。把它归因成"配对丢失"是跳步。
+
+4. **14:12:31 的 keepalive 重启**只说明进程被重启，日志没写配对状态是否持久化；不能反过来推断配对因此丢失。
+
+要下结论，还需补：authorize 的日志级别/字段是否存在、扩展侧日志与本地存储、daemon 全量请求日志、配对状态是否跨重启持久化，以及那几条 /status 的来源。

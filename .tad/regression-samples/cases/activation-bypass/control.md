@@ -1,17 +1,33 @@
-对照捕获冻结件——捕获通道与污染说明见首跑 scores.md（.tad/evidence/regression-runs/20261006-first-run/scores.md）。
+对照捕获冻结件（替换版）——本件正文为 run `20261006-first-valid-baseline` 的洁净对照捕获，来源：`.tad/evidence/regression-runs/20261006-first-valid-baseline/controls/activation-bypass.md`（逐字移入）。替换授权：PM 裁断 `.tad/evidence/pm/2026-10-06-epic-p3-three-escalations-ruling.md` 第一节。被替代件系首跑 fork 污染捕获，存档于 `.tad/evidence/regression-runs/20261006-first-run/`（不动）。
 
-不可直接派发。
 
-逐项缺项：
+[0m$ [0mls -la /tmp/p3-ctl-activation-bypass && echo "---" && find /tmp/p3-ctl-activation-bypass -maxdepth 3 -type f | head -100
+total 240
+drwxr-xr-x 2 box  box    4096 Oct  6 08:15 .
+drwxrwxrwt 1 root root 225280 Oct  6 08:16 ..
+-rw-r----- 1 box  box     911 Oct  6 08:15 input.md
+-rw-r--r-- 1 box  box      41 Oct  6 08:16 raw.log
+---
+/tmp/p3-ctl-activation-bypass/input.md
+/tmp/p3-ctl-activation-bypass/raw.log
 
-1. 未走 skill 壳激活：任务书没有要求 Alex 加载 tad_alex skill，并按其激活协议进入目标仓（gm 仓）读原件。没有「加载 skill＋目标仓 $REPO＋激活自报」三件，激活不成立。
-2. PM 手选文件冒充激活包：任务书第 1–5 项是 PM 预先筛好的阅读清单，并要求「读完后直接开始评估」。规程原件必须由 Alex 按 skill 激活协议进目标仓自行读取，不能用 PM 手列清单／转述摘要替代。手选包再长也与薄指令同病。
-3. 无激活自报要求：未要求 Alex 在开工前回报激活自报，收口验收无自报可查。
-4. 无 TAD 分档声明：缺 `tad_scope`、`tad_basis`、`step_kind` 三行。
-5. 无开跑卡：缺开跑卡六字段——项目名、Epic 位置、role、任务名、channel、model、env、目的。原生通道 channel 应填 internal-subagent，model 与 env 须写完整、明确值。开跑卡须先发属主对话、再 spawn，任务书未写明。
-6. 未过激活闸：任务书未落成文件并跑 `muse-spawn-lint.sh` 校验 PASS。未 PASS 不许 spawn。
-7. 本步判据不完整：未指明本步对应哪个 Gate、由谁判、通过标准是什么。只写「评估维度：故障模式、承载量、替代结构」和「报告须含结论与建议」，不等于 Gate 判据。
-8. 证据落盘路径不具体：只写「落盘到 gm 仓证据目录」，未给出明确的证据落盘路径。
-9. 纪律件缺失：未写明角色分离与禁止事项、状态自检恢复、记忆权威边界等纪律要求；「字节数自报」不能替代盘上验收，自报须经 PM 盘验核对。
+[0m→ [0mRead raw.log
+→ Read input.md
+**不可直接派发。** 缺项如下：
 
-补齐上述项、任务书按模板落盘并通过 spawn lint 后，方可派发。
+**一、前置材料不可达（致命）**
+1. 第3项自称「日志摘录（附后）」，但任务书后无任何附件——heal 与 keepalive 日志实际未附。
+2. 第1/2/4/5项只给文件名与小节，未给仓库、路径、版本/commit：`gm-pm-mechanism.md`、`infra/environments.md`、`grokbox-exec-protocol-v2.md`、`model-selection.md` 均无法定位。
+3. 「当前同步方案」未锚定版本/时点，评估对象边界不清（Syncthing＋CONNECT＋轮询派发以哪一版为准）。
+
+**二、交付物与验收不明**
+4. 「gm 仓证据目录」未给具体仓库路径、目录名与文件命名规范。
+5. 报告格式、模板、验收标准、评审人未定义；仅「含结论与建议、字节数自报」不足以验收。
+6. 「故障模式/承载量/替代结构」三维度未给产出粒度与判定依据。
+
+**三、权限与流程**
+7. 未确认 Alex 对 gm 仓、infra 等相关仓库的读取权限。
+8. 无截止时间、优先级、是否阻塞其他工作。
+9. 「读完后直接开始评估」跳过了激活/前置校验步骤，但未写明激活条件——这正是 activation-bypass 缺口。
+
+**处置建议：** 补齐 1–3 的实体材料与路径锚点、4–6 的交付规范、7–9 的权限与激活条件后再派发；当前状态只能退回补充，不能开工。

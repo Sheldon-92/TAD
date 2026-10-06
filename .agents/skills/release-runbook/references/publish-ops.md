@@ -145,6 +145,12 @@ precedent in the current triage record, and do not force it into an existing cla
 fields are `path:line` / hit text / category / basis or precedent pointer. For minor/major, the
 record must cover 100% of the detect-only hits; any unclassified hit is a hard block.
 
+**check4 OLD_PAT check (minor bumps):** `state-surface-check.sh`'s check4 `OLD_PAT` pins the
+current edition row as an escaped literal — on every minor bump, update it to the new
+`major\.minor([^0-9.]|$)` row (patch bumps: leave it) and re-run the paired controls before
+closing: a bare `Version <major.minor>` sample must FAIL check4 and the full
+`Version <major.minor.patch>` sample must PASS.
+
 The release commit is local preparation, not publish authority. Verify its staged diff and final commit
 hash against the accepted mandate before any remote action.
 
@@ -188,3 +194,7 @@ Verify the remote main SHA equals the approved commit, the annotated tag and pee
 that commit, and local status contains no unexplained release residue. Report the exact commands,
 exit codes, remote SHAs, tag, remaining blockers, and any next sync action. Sync runs only when the same
 accepted mandate names its target/consequence binding; publish verification cannot expand authority.
+
+The tag-in-place assertion is owned by publish-protocol step5 (local tag present, remote tag
+present, tag pointing at the release commit; any miss is RED with on-the-spot re-tagging and a
+line in the release record) — adjudicate it there; this section only mirrors the pointer.

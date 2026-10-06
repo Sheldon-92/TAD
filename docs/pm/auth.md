@@ -19,3 +19,10 @@
 
 ## 硬禁区
 凭证不进仓库；不替 Blake 改实现；不默修红灯；不从业务仓私下 patch 上游顶掉正式流程。
+
+## 派活前载体（共享规则）
+
+- 规则 SSOT：`/home/box/云同步/grok-cloud/docs/pm/human-operating.md` §§3.7b、3.7d、3.10。共享薄模板：`/home/box/云同步/grok-cloud/docs/pm/templates/open-run-card.md` 与 `/home/box/云同步/grok-cloud/docs/pm/templates/restate.md`。
+- **开跑卡双写与顺序**：卡片先落盘，并将同一正文完整发到 PM↔人 1:1；然后记录匹配本步的 stamp；最后才启动包装。盘上有卡或 stamp 不能单独证明 1:1 已发送。
+- **复述门**：复述文件须已存在、非空，并留下人确认“理解对了”的迹；没有复述路径不得开跑。
+- **Blake 依据边界**：`*discuss` / `*research` 等旁路产物、复述卡或开跑卡都不能充当 Blake 的 `handoff_path`；正式派 Blake 时，该字段只能指向 `HANDOFF-*.md`（见共享 HO §3.7d）。

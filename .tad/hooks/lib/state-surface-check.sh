@@ -120,6 +120,11 @@ fi
 # ---- Checks 3 & 4: version declarations in the state-file list ------------
 DECL_FILES="AGENTS.md README.md INSTALLATION_GUIDE.md docs/MULTI-PLATFORM.md PROJECT_CONTEXT.md"
 DECL_PAT='Version\*{0,2}:?\*{0,2} ?v?[0-9]+\.[0-9]+(\.[0-9]+)?'
+# check4 maintenance point (Epic P3, inherited-item C anchor 1): OLD_PAT below is
+# a MINOR-release maintenance point — on a minor bump, change its row number to
+# the new major\.minor([^0-9.]|$) form; patch bumps leave it unchanged. It is
+# written in escaped form, so version-literal scans cannot see it: verify it by
+# hand at every minor closeout per publish-ops §3.1 (incl. the paired controls).
 OLD_PAT='(Version|v)\*{0,2}:?\*{0,2} ?3\.1([^0-9.]|$)'
 # P1 — self-anchored parenthesized declaration: "(Version 9.9)" / "(Version: v9.9)"
 PAREN_VER_PAT='\(Version:? ?v?[0-9]+\.[0-9]+(\.[0-9]+)?\)'

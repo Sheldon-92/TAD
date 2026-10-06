@@ -18,3 +18,4 @@
 - [Research Methodology](research-methodology.md) — Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research
 - [Memory and Learning](memory-and-learning.md) — Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion
 - [Release & Sync](release-sync.md) — Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync
+- [Runtime Adapter Checklist](runtime-adapter-checklist.md) — New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU

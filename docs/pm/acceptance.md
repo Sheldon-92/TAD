@@ -14,3 +14,10 @@
 - release / tag / 对外 publish / 官方 install 路径变更：须人批（L3），不做完再报
 - 跨项目摩擦只经总经理汇集进本仓；不接受业务仓「私下 patch 上游」当正式改动
 - 版本宣称与 CHANGELOG / tag / `origin/main` 一致；无审查证据不报 PASS
+
+## PM 门4与收口（共享规则）
+
+- 停工收口必须写出 `next_knife_candidate` 的任务名，或写明 `HOLD` 原因与解锁人；不得裸写 `WAIT` /「等下一步」，也不得用空候选代替 HOLD。
+- **完事、要拍、观感**只通过 PM↔人 1:1；组合群只发制度/启停知会。禁止“群里只发要拍”及任何群发要拍卡。
+- Gate 4 / closeout 必须显式勾选 Knowledge Assessment，或写“无新发现”。若本刀有项目记忆，收口卡须将盘与私有脑 `load-index` / 精选 / `log` 两项**分别显式勾选**并给出指针（`gate4_dual_write_disk` + `gate4_dual_write_brain`）；缺任一勾选都不算双写完成。若无项目记忆，须明确写“本刀无项目记忆”。现有盘⇄私有脑约定见 [ops-knowledge.md](ops-knowledge.md)。
+- 共享规则：`/home/box/云同步/grok-cloud/docs/pm/human-operating.md` §§3.8b、3.9、3.12；共享薄模板：`/home/box/云同步/grok-cloud/docs/pm/templates/exit-human-card.md` 与 `/home/box/云同步/grok-cloud/docs/pm/templates/gate4-pm-closeout.md`。

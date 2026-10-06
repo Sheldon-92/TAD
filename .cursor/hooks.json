@@ -1,0 +1,1 @@
+{"hooks":{"postToolUse":[{"command":"bash .tad/hooks/lib/cursor-post-write.sh","matcher":"Write","timeout":10,"type":"command"}],"preCompact":[{"command":"bash .tad/hooks/precompact-session-snapshot.sh","timeout":10,"type":"command"}],"sessionStart":[{"command":"bash .tad/hooks/lib/cursor-session-start.sh","timeout":30,"type":"command"}]},"version":1}

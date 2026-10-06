@@ -289,8 +289,14 @@ publish_protocol:
         "Pre-publish checks complete. Ready to publish?"
         Options:
         - "Push + Tag" → execute git push && git tag v{version} && git push --tags
-        - "Push only" → git push (no tag)
         - "Abort" → cancel
+
+        Note (Epic Phase 3, inherited item D): for a version release under this
+        protocol there is deliberately no push-without-tag option — v3.0.1 and
+        v3.0.2 were pushed without tags through exactly such an option, which
+        broke the migration assertion's PREV derivation (it reads the tag
+        chain). Ordinary non-release pushes do not use this protocol and are
+        unaffected.
 
         EXCEPTION TO "ALEX DOESN'T CODE":
         Git push/tag are one-way publish operations with no design ambiguity.
@@ -303,6 +309,15 @@ publish_protocol:
       action: |
         After successful push:
         1. Display confirmation with commit hash and tag
-        2. Suggest: "Run *sync to update registered projects"
+        2. Tag-in-place assertion (Epic Phase 3, inherited item D): verify
+           `git tag -l "v{version}"` exists locally, `git ls-remote --tags
+           origin "v{version}"` exists on the remote, and the tag points at
+           this release's release commit. If any of the three does not hold,
+           this step is RED: the closeout record must not be written as
+           complete — create the tag on the spot and record one line in the
+           release record (tag value + why it had to be created late). This
+           assertion also guards the migration in-tree assertion's PREV
+           derivation, which depends on a complete tag chain.
+        3. Suggest: "Run *sync to update registered projects"
         Return to standby.
 
