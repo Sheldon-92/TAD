@@ -1,0 +1,9 @@
+schema_version: 1
+from: "3.0.2"
+to: "3.1.0"
+generated_by: "manual"
+note: |
+  Minor release v3.1.0 (Epic Phase 2 measurement layer). No framework file is
+  deleted or renamed in this release, so the delete/rename lists are empty.
+delete: []
+rename: []

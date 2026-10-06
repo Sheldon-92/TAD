@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 3.0.2 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
+**Version**: 3.1.0 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
 
 TAD runs on **Codex, OpenCode, and Cursor as supported harnesses**, with a shared protocol.
 Since v3.0.0 there is a single skill tree
