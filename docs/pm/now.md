@@ -1,5 +1,5 @@
 # Now — TAD PM 进度块
 
-当前步: 自查批 R3 已立票开链（用户 2026-10-06 令「采纳了就改吧」提前实施补充件三改法），Alex 设计步在跑
-水位: 版本 3.2.0（R3 不升版）；R2 已 push 验远端（main 21559cbe／证据 42f23a85）；补充件二回写提交 a1c3dffd 与证据 286ee926 已补推验尖
-挂账: 2026-10-10 补测小单（Codex 基线补跑销 P3 Gate 4 条件 1＋台账 C 类 2 条补测关开放票 TASK-20260916）；candidate 冻结目录待另裁；Mac 抢救集 2.7G 待对账处置；R3 救援备份建议另立票
+当前步: **Plan B 已执行**——坏 tip `4ad330e1` 已丢弃；`main`=`26637423`（Gate2 PASS）；index 已 read-tree；reflog/冲突副本已归档；fsck 无坏 HEAD。**C-12 Blake 重派中**（OpenCode Muse；REQ `REQ-TASK-20261006-SELF-REVIEW-R3-C12`）
+水位: 版本纸面 3.2.0；origin/main 仍 `a1c3dffd`（R3 链待 C-12 落地后普通 push）
+挂账: R3 组1/组2 未交付；Codex 基线补跑 2026-10-10；candidate 冻结目录；driftcheck/runtime 台账复核
