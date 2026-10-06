@@ -23,7 +23,7 @@ NC='\033[0m'
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="3.0.1"
+TARGET_VERSION="3.0.2"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -1096,6 +1096,57 @@ verify_denylist_drift() {
     fi
 }
 
+# write_genesis_manifest — record the one-time genesis anchor for a fresh
+# install (item 1.6). The migration engine uses this target-side file to
+# distinguish "installed at this version; no earlier shipped hop exists" from
+# a real chain gap. Never overwrite an existing anchor: its provenance is the
+# original installation, not the latest upgrade.
+write_genesis_manifest() {
+    local genesis_file=".tad/migrations/genesis.yaml"
+    if [ -e "$genesis_file" ]; then
+        log_info "  → Preserving existing genesis manifest: $genesis_file"
+        return 0
+    fi
+
+    mkdir -p .tad/migrations
+    local installed_at install_form
+    installed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    if [ "${SOURCE_MODE:-0}" = "1" ]; then
+        install_form="source"
+    else
+        install_form="download"
+    fi
+
+    cat > "$genesis_file" <<EOF
+schema_version: 1
+kind: genesis
+installed_version: "$TARGET_VERSION"
+installed_at: "$installed_at"
+install_form: "$install_form"
+installer: "tad.sh"
+note: |
+  Genesis anchor: this repository was fresh-installed at the version above.
+  It has no pre-genesis migration history. Written once by the installer;
+  upgrades never rewrite it.
+EOF
+    log_info "  → Wrote genesis manifest: $genesis_file"
+}
+
+# generate_target_brain_index — brain-index.md is intentionally not copied
+# from the source tree (deny-listed); generate it in the target so the
+# AGENTS.md Knowledge Ingress route points at a file that exists (item 1.9).
+# A failure is surfaced as a warning, never silently swallowed.
+generate_target_brain_index() {
+    local generator=".tad/hooks/lib/brain-index-gen.sh"
+    if [ ! -f "$generator" ]; then
+        log_warn "brain-index generator not present in target tree: $generator — .tad/brain-index.md was not generated"
+        return 0
+    fi
+    if ! bash "$generator"; then
+        log_warn "brain-index generation failed in target tree — .tad/brain-index.md may be missing; run bash $generator in the target repository"
+    fi
+}
+
 # ============================================
 # Phase 4: Copy ALL Framework Files
 # ============================================
@@ -1304,6 +1355,7 @@ copy_framework_files() {
         local _hooks_new=0
         if [ ! -e ".codex/hooks.json" ]; then _hooks_new=1; fi
         if [ "$_hooks_new" = "1" ]; then note_created_top ".codex/hooks.json"; fi
+        # Canonical copy: repo-root `.codex/hooks.json` — edit both together; drift judged semantically per publish-ops §2.5.
         cat > .codex/hooks.json << 'HOOKS_EOF'
 {
   "description": "TAD lifecycle hooks",
@@ -1312,7 +1364,11 @@ copy_framework_files() {
       {
         "matcher": "startup|resume|compact",
         "hooks": [
-          { "type": "command", "command": "bash .tad/hooks/startup-health.sh", "timeout": 30 },
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/startup-health.sh",
+            "timeout": 30
+          }
         ]
       }
     ],
@@ -1320,13 +1376,21 @@ copy_framework_files() {
       {
         "matcher": "^apply_patch$",
         "hooks": [
-          { "type": "command", "command": "bash .tad/hooks/post-write-sync.sh", "timeout": 10 }
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/post-write-sync.sh",
+            "timeout": 10
+          }
         ]
       },
       {
         "matcher": "^ask_user_question$",
         "hooks": [
-          { "type": "command", "command": "bash .tad/hooks/lib/askuser-capture.sh", "timeout": 10 }
+          {
+            "type": "command",
+            "command": "bash .tad/hooks/lib/askuser-capture.sh",
+            "timeout": 10
+          }
         ]
       }
     ]
@@ -2609,6 +2673,10 @@ main() {
             # Copy ALL framework files (comprehensive sync)
             copy_framework_files "$TAD_SRC"
 
+            # brain-index.md is deny-listed from the copy set; generate the
+            # target-side index now so the installed read route is real.
+            generate_target_brain_index
+
             # Copy project-knowledge README seed (Option A: README only)
             cp "$TAD_SRC"/.tad/project-knowledge/README.md .tad/project-knowledge/ 2>/dev/null || true
 
@@ -2669,8 +2737,11 @@ NEXTEOF
                 printf "     (see .tad/guides/codebase-memory-integration.md for details)\n"
             fi
 
-            # Set version
+            # Set version, then anchor this fresh installation for the
+            # migration engine. Only the install action is a genesis path;
+            # upgrade/migrate retain their pre-existing version history.
             echo "$TARGET_VERSION" > .tad/version.txt
+            write_genesis_manifest
             ;;
 
         "upgrade")

@@ -5,19 +5,27 @@
 > 规矩：**动手前先验一遍条目是否还成立**——2026-08-14 清账时发现
 > ②a/②d/②e 三条标着「最高优先级」的待办**早已修复**，清单挂了两周没人划掉，
 > 照它找活等于被误导。**清单不准 = 清单有害。**
+> 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：2.44.5 (live tag `b3193d24` / commit `1f6aaad2`) → **next patch 2.44.6** ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：3.0.2（Epic Phase 1 清账批，见完事卡 done-20261006-epic-p1-clearance）→ next：Epic Phase 2 持续测量层（提议 v3.1.0） ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
+
+### 🟡 OPEN 2026-09-16. Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
+
+- Task ID: `TASK-20260916-CODEX-LEDGER-REVERIFY` (owner Blake)
+- Ticket: `.tad/active/TICKET-20260916-codex-ledger-reverification.md`
+- Waiver: `.tad/evidence/reviews/2026-09-16-gate3-rework-r3-waiver.md` (AC21 本批 WAIVED，仅"日期陈旧"子句)
+- Scope: codex ledger 12 条（≥6 BLOCK）真实 re-verification（live codex-cli + 官方文档）后刷新日期，恢复 freshness `exit 0`。禁止空 bump；本单动作不进移除批 commit/AC 证据。
 
 ### 🟡 PENDING HUMAN CHECK 2026-09-15. TAD Research 机制 (RG1–RG4 wrapper) — Gate 2/3/4 PASS
 
 - Task ID: `TASK-20260915-TAD-RESEARCH-MECHANISM`
 - Handoff (tracked): `.tad/active/handoffs/HANDOFF-2026-09-15-tad-research-mechanism.md`
 - Completion: `.tad/active/handoffs/COMPLETION-20260915-tad-research-mechanism.md`
-- Commit: `f92cbc73` (12 files; **local, not pushed**; not in v2.44.5)
+- Commit: `f92cbc73` (12 files; 已 push（在 origin/main）)
 - Gate 4 PASS: `.tad/evidence/reviews/2026-09-15-gate4-acceptance-tad-research-mechanism.md` (fuse-not-fork; 3人决策点; 14/14 AC; 双平台 cmp=0)
 - Human next: CHECK（设计方向 / 三个待定问题 / 是否记为正式机制）→ 通过后 `*accept` 归档。
 

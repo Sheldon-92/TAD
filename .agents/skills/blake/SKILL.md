@@ -163,7 +163,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v3.0.1 Framework -->
+<!-- TAD v3.0.2 Framework -->
 
 # Agent B - Blake (Execution Master)
 

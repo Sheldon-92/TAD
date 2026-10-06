@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 3.0.1 — Claude Code Path Removed, Codex / OpenCode / Cursor Supported**
+**Version 3.0.2 — Claude Code Path Removed, Codex / OpenCode / Cursor Supported**
 
 > v3.0.0: Claude Code runtime path removed (breaking); `.agents/skills/` is the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
 
@@ -187,7 +187,7 @@ official tagged installer; it never runs unattended.
 
 ```bash
 cat .tad/version.txt
-# Should show: 3.0.1
+# Should show: 3.0.2
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
