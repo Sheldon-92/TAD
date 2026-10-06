@@ -211,6 +211,14 @@ Please select an option (0-8) or 9 to pass gate:
 Select 0-9:
 ```
 
+#### Regression Replay（测量层）
+
+样本集：`.tad/regression-samples/`（规矩正本为其 README）。
+runner：`bash .tad/scripts/regression-replay.sh score <运行目录>`（只评分；`check` 验结构）。
+
+- 触发类：被审 HANDOFF 的写集命中 `.agents/skills/**`、`.tad/tasks/**`、`.tad/gates/**`、`.tad/templates/**`、模型/路由口径文件任一者时，Gate 3 评审须引用最近一次复跑的 scores.md（其捕获须基于含被审改动的树）并逐案核对 verdict。
+- 整轮非 PASS 时 Gate 3 不得 PASS，除非 PM 裁断记录在案。
+
 ### Gate 4: Integration Verification (Agent B)
 **When:** Before final delivery
 **Enforced by:** End-to-end testing and user acceptance

@@ -120,7 +120,7 @@ fi
 # ---- Checks 3 & 4: version declarations in the state-file list ------------
 DECL_FILES="AGENTS.md README.md INSTALLATION_GUIDE.md docs/MULTI-PLATFORM.md PROJECT_CONTEXT.md"
 DECL_PAT='Version\*{0,2}:?\*{0,2} ?v?[0-9]+\.[0-9]+(\.[0-9]+)?'
-OLD_PAT='(Version|v)\*{0,2}:?\*{0,2} ?3\.1([^0-9]|$)'
+OLD_PAT='(Version|v)\*{0,2}:?\*{0,2} ?3\.1([^0-9.]|$)'
 # P1 — self-anchored parenthesized declaration: "(Version 9.9)" / "(Version: v9.9)"
 PAREN_VER_PAT='\(Version:? ?v?[0-9]+\.[0-9]+(\.[0-9]+)?\)'
 # P2 — bare parenthesized token: "(v9.9)" / "(9.9)" (line-qualified, see delta §2)

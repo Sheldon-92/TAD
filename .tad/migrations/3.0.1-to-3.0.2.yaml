@@ -1,0 +1,12 @@
+schema_version: 1
+from: "3.0.1"
+to: "3.0.2"
+generated_by: "manual"
+note: |
+  Patch release v3.0.2 (Epic Phase 1 clearance batch) — retrospective manifest. The 3.0.2
+  release shipped without this hop file (step3d obligation missed at closeout); supplied
+  retrospectively by Epic Phase 2 item 2.9 per PM qualification
+  (evidence/pm/2026-10-06-qualify-techradar-refresh-two-points.md). No framework file is
+  deleted or renamed in this release, so the delete/rename lists are empty.
+delete: []
+rename: []

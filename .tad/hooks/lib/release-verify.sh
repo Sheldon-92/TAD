@@ -404,6 +404,26 @@ EOF
     echo "  EXPECTED: $EXP_VER"
     echo "========================================="
 
+    # ── Epic P2 item 2.9: shipped-hop presence assertion ──
+    # The PREV→EXP hop file must exist and be well-formed (from/to match the
+    # computed pair; delete/rename anchors present). This runs BEFORE the
+    # no-D/R early exit below so a missing hop can never ride a PASS.
+    HOP_FILE="$REPO/.tad/migrations/${PREV_VER}-to-${EXP_VER}.yaml"
+    if [ ! -f "$HOP_FILE" ]; then
+      echo "MISSING HOP: $HOP_FILE"
+      echo "VERDICT: migration FAIL — missing hop manifest (exit 1)"
+      exit 1
+    fi
+    HOP_FROM="$(sed -n 's/^from:[[:space:]]*//p' "$HOP_FILE" | head -1 | tr -d "\"'[:space:]")"
+    HOP_TO="$(sed -n 's/^to:[[:space:]]*//p' "$HOP_FILE" | head -1 | tr -d "\"'[:space:]")"
+    if [ "$HOP_FROM" != "$PREV_VER" ] || [ "$HOP_TO" != "$EXP_VER" ] \
+       || ! grep -q '^delete:' "$HOP_FILE" || ! grep -q '^rename:' "$HOP_FILE"; then
+      echo "MALFORMED HOP: $HOP_FILE (from='$HOP_FROM' to='$HOP_TO', expected from='$PREV_VER' to='$EXP_VER' with delete:/rename: anchors)"
+      echo "VERDICT: migration FAIL — malformed hop manifest (exit 1)"
+      exit 1
+    fi
+    echo "  HOP: present and well-formed (${PREV_VER}-to-${EXP_VER})"
+
     # Manifest path
     MANIFEST="$REPO/.tad/migrations/${PREV_VER}-to-${EXP_VER}.yaml"
 

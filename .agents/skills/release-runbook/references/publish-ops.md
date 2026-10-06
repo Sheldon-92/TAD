@@ -85,6 +85,8 @@ bash "$repo_root/.tad/hooks/lib/release-verify.sh" migration "$repo_root"
 
 Do not create an inline migration or verifier wrapper. The existing CLI is the authority.
 
+在船断言（Epic P2 件 2.9）：上述命令对 PREV→NEW 的 hop 文件存在且良构另有断言，缺失/畸形输出 `MISSING HOP:`/`MALFORMED HOP:` 并 exit 1——此分支对全部 release 类型（含 patch）HARD BLOCK，与 D/R 漂移的 patch advisory 分支不同。
+
 ### 2.5 Supporting checks
 
 - Run `bash "$repo_root/.tad/hooks/lib/pack-registry-driftcheck.sh"`; exit `1` is advisory unless
@@ -99,6 +101,10 @@ Do not create an inline migration or verifier wrapper. The existing CLI is the a
 - If `tad.sh` or `derive-sync-set.sh` changed, `bash "$repo_root/tad.sh" --verify-denylist` must
   exit `0` before tagging.
 - The historical `TAD_RELEASE_GATE=warn` cutover graduated on 2026-06-10. It is not an active path.
+
+### 2.6 Release-chain liveness (publish-protocol step3f)
+
+预检序：step3f 在 step3e 之后、step4 之前执行，正本为 publish-protocol 的 step3f 条目，本节只作镜像。判读口径：逐家 runtime 核当周期 transcript 在不在、六字段齐不齐、新不新（执行日期须不早于上一版发布日）；HARD 态缺失即红、硬停；ADVISORY 态缺失不拦发版，但发版记录须逐家登记「缺失＋补齐归属（Epic Phase 3 件 3.3）」，未登记按缺失同罪判红。
 
 ## 3. Version bump and CHANGELOG execution
 
@@ -161,6 +167,8 @@ never auto-force. A deterministic same-outcome recovery is agent-owned, while a 
 fork is a boundary change.
 
 ## 5. Ambiguous result and replay recovery
+
+会话或发布中断后，先在隔离副本跑 `bash .tad/scripts/interrupt-resume-check.sh selftest` 核对恢复判据，再按本节续跑；判据分类见状态图（`.tad/evidence/epic-p2-measurement-20261006/state-graph-gate-chain.md`）。
 
 If a push/tag command times out, disconnects, or returns an ambiguous result, do not blind retry. Read
 remote state:

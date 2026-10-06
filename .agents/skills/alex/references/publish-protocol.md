@@ -205,6 +205,10 @@ publish_protocol:
           Echo: GATE: release-verify migration exit=1
         - exit 1 AND release_type == patch → advisory WARN, proceed to step4.
         Fail-CLOSED: exit 2 is treated as FAIL at this gate.
+        在船断言：PREV→NEW 的 hop 文件必须存在且良构（migration 子命令的在船断言，exit 1 且输出含 `MISSING HOP:`/`MALFORMED HOP:`）。
+        - exit 1 with `MISSING HOP:` or `MALFORMED HOP:` → HARD BLOCK for every release type
+          (patch included). Supply a well-formed `.tad/migrations/{prev}-to-{new}.yaml` and re-run *publish.
+          Echo: GATE: release-verify migration missing/malformed hop
       blocking: true
       detect_only: true  # reads only — never edits manifests
 
@@ -228,6 +232,54 @@ publish_protocol:
            生成的台账 .tad/evidence/pm/downstream-versions.md 以 git add -f
            单文件例外随收口 commit 入主仓（Gate 2 载体裁定（乙））；
            台账是派生索引，禁止手改。
+      blocking: true
+
+    step3f:
+      name: "Live Regression Transcripts (BLOCKING, graded)"
+      action: |
+        Runtime set (frozen in this text; membership changes require editing
+        this step and a note in the release record): {codex, opencode, cursor}
+        — the same runtime set as AGENTS.md Known Gaps P4.
+
+        A live-regression transcript is one file per runtime per cycle at
+        `.tad/evidence/live-regression/<runtime>-<YYYYMMDD>.md` with exactly
+        six fields (missing any one = not a transcript):
+          1. runtime
+          2. harness name and version
+          3. execution date
+          4. chain type (full chain: activation → dispatch → Gate evidence →
+             closeout, or the segment actually run, named as such)
+          5. result (PASS/FAIL + one-line characterization)
+          6. raw output pointer (in-repo evidence path)
+
+        Currency rule: a transcript counts for this release only if its
+        execution date is on or after the previous release's date (produced
+        inside this release cycle; older stock does not count).
+
+        Grading (HARD / ADVISORY): a runtime is in HARD state from the first
+        release whose tree contains its first baseline transcript.
+        - HARD runtime missing a current-cycle transcript → this step is RED;
+          the release hard-stops.
+        - ADVISORY runtime missing one → does not block the release, BUT the
+          release record (the closeout note for this release) must register,
+          per missing runtime, 「缺失＋补齐归属（Epic Phase 3 件 3.3）」;
+          an unregistered absence is judged RED exactly like a missing
+          transcript （未登记即红）.
+        Fallback (written into this step): from the first minor release after
+        Epic Phase 3 closes, all three runtimes are HARD regardless of the
+        baseline rule above — whichever takes effect first governs.
+
+        Adjudication ownership: the release executor checks field presence,
+        currency, and pointer existence; Gate/closeout rechecks the pointers.
+        Whether a transcript's chain was genuinely live is Phase 3's
+        live-regression criterion, not this step's — this step judges only
+        presence, completeness, and currency.
+
+        Interface with Epic Phase 3: this step defines only the checklist
+        entry and its adjudication. Transcript production and the live
+        execution surface belong to Epic Phase 3 item 3.3; at Phase 3
+        closeout all three baseline transcripts must exist (its ACs govern),
+        and grading turns fully HARD from that point per the fallback above.
       blocking: true
 
     step4:
