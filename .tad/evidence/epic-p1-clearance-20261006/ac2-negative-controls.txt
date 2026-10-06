@@ -1,0 +1,9 @@
+classp-a exit=2
+ERROR: frontmatter contains extra keys (name+description+version+type+keywords):
+  -> owner: "extra-key"
+classp-b exit=2
+ERROR: frontmatter 'type:' diverges from source CAPABILITY.md
+  projection: type: deep-skill
+  capability: type: reference-based
+classp-c exit=2
+ERROR: forbidden artifact at Skill root: README.md

@@ -1,0 +1,61 @@
+== phantom root=/tmp/epic-p1-drift-NM7VOF exit=1
+=== pack-registry drift-check (advisory) ===
+registry: /tmp/epic-p1-drift-NM7VOF/.tad/capability-packs/pack-registry.yaml
+Set A (registry names): 2
+Set B_type (type-probed installed pack skills): 1
+Set B_dir (registered/source names with installed SKILL.md): 1
+Set C (source packs): 1
+
+(a) source pack NOT in registry (C\registry):
+    (none)
+(b) installed pack skill NOT in registry (B_type\registry):
+    (none)
+(c) registry entry with neither projection directory nor source pack (registry\(B_dir∪C), true phantom):
+    phantom-pack
+(r) registry-only (registered and present, type-probe invisible; advisory — never drift):
+    (none)
+
+(d) advisory WARN (informational — does NOT affect exit code):
+
+RESULT: DRIFT DETECTED (advisory) — review (a)/(b)/(c) above. NOT a session/release blocker.
+== registry-only root=/tmp/epic-p1-drift-k4fuvB exit=0
+=== pack-registry drift-check (advisory) ===
+registry: /tmp/epic-p1-drift-k4fuvB/.tad/capability-packs/pack-registry.yaml
+Set A (registry names): 1
+Set B_type (type-probed installed pack skills): 0
+Set B_dir (registered/source names with installed SKILL.md): 1
+Set C (source packs): 1
+
+(a) source pack NOT in registry (C\registry):
+    (none)
+(b) installed pack skill NOT in registry (B_type\registry):
+    (none)
+(c) registry entry with neither projection directory nor source pack (registry\(B_dir∪C), true phantom):
+    (none)
+(r) registry-only (registered and present, type-probe invisible; advisory — never drift):
+    r-pack
+
+(d) advisory WARN (informational — does NOT affect exit code):
+
+RESULT: clean — registry in sync with source packs and installed pack skills.
+== no-source-set root=/tmp/epic-p1-drift-pqogay exit=0
+=== pack-registry drift-check (advisory) ===
+registry: /tmp/epic-p1-drift-pqogay/.tad/capability-packs/pack-registry.yaml
+Set A (registry names): 1
+Set B_type (type-probed installed pack skills): 0
+Set B_dir (registered/source names with installed SKILL.md): 1
+Set C (source packs): 0
+Set C unavailable in this repo form — (c) judged against projection dirs only
+
+(a) source pack NOT in registry (C\registry):
+    (none)
+(b) installed pack skill NOT in registry (B_type\registry):
+    (none)
+(c) registry entry with neither projection directory nor source pack (registry\(B_dir∪C), true phantom):
+    (none)
+(r) registry-only (registered and present, type-probe invisible; advisory — never drift):
+    solo-pack
+
+(d) advisory WARN (informational — does NOT affect exit code):
+
+RESULT: clean — registry in sync with source packs and installed pack skills.

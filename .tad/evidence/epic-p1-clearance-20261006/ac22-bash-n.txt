@@ -1,0 +1,6 @@
+bash -n OK: .tad/scripts/capability-skill.sh
+bash -n OK: .tad/hooks/lib/migration-engine.sh
+bash -n OK: .tad/hooks/lib/pack-registry-driftcheck.sh
+bash -n OK: .tad/hooks/lib/state-surface-check.sh
+bash -n OK: .tad/scripts/scan-packs.sh
+bash -n OK: tad.sh

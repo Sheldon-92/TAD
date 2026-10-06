@@ -1,0 +1,17 @@
+== AC6 section 3.1 categories + step3c gate sentence
+118:### 3.1 Historical version references — minor/major triage
+class present: L — Live surface
+class present: H1 — Version-event statement
+class present: H2 — Version-floor statement
+class present: H3 — Edition signature
+class present: F — Fixture pinned value
+class present: D — Documentation history
+unclassified stop: present (ops)
+step3c 100% coverage gate: present (protocol)
+step3c unclassified hard block: present (protocol)
+
+== AC6 historical sample (CF-3 triage A1-A6,A8-A10 + README history line): git diff must be empty
+sample git diff: EMPTY (10 paths, incl. README.md + docs/MULTI-PLATFORM.md)
+A7 file (.tad/scripts/capability-skill.sh) is a write-set file; its historical line itself:
+442:  err "ERROR: 'project' was removed in TAD v3.0.0 (Claude Code projection deleted)."
+historical line not removed/changed by this batch

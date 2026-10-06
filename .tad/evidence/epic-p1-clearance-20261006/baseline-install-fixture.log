@@ -1,0 +1,67 @@
+
+[0;36m=====================================[0m
+[0;36m   TAD Framework v3.0.1[0m
+[0;36m   Codex-first Integration[0m
+[0;36m=====================================[0m
+
+[0;34mℹ [0mValidating environment...
+[0;32m✓ [0mEnvironment validated
+[0;34mℹ [0mNo platform specified. Using default platform: codex
+[0;34mℹ [0mCodex CLI detected: 0.149.0
+[1;33m⚠ [0mCodex CLI may not support skills system. TAD skills will be installed but may not auto-load. Consider upgrading Codex CLI.
+
+[0;34m📍 Installation Status:[0m
+
+   Status: [0;32mFresh install[0m
+   No existing TAD installation found
+
+[0;34m📋 What will happen:[0m
+
+  1. Create .tad/ directory structure
+  2. Create .tad/skills/ with 8 P0 skills (NEW)
+  3. Create .agents/skills/ with TAD skill files
+
+Continue? (y/n): y  [--yes]
+
+[0;34mℹ [0mDownloading TAD Framework v3.0.1...
+[0;34mℹ [0m  → Offline source: /home/hatch/workspace/yun-sync/TAD (no download; probe bypassed)
+[0;34mℹ [0m  → Source version: v3.0.1
+[0;34mℹ [0mInstalling TAD Framework...
+[0;34mℹ [0m  → Syncing framework files from source...
+[0;34mℹ [0m  → Applying deprecations for versions ≤ 3.0.1...
+[0;34mℹ [0m  → No deprecated files to remove
+[0;34mℹ [0m  → Pack status: 0 updated, 0 customized (preserved), 25 new, 0 forked, 0 migrated
+[0;34mℹ [0m  → Generated .codex/hooks.json (Codex lifecycle hooks)
+[0;32m✓ [0m  → Synced 306 framework files to .tad/
+[0;32m✓ [0m  → Projected .opencode/commands/tad-update.md (updater-only)
+[0;34mℹ [0m  → Post-install self-check (derived completeness + content diff)...
+[0;32m✓ [0m    ✓ Self-check passed: 88 derived paths (diff-clean) + 23 top-level files present (platform: codex)
+  [TIP] Optional: install codebase-memory-mcp for code graph intelligence:
+     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/v0.7.0/install.sh | bash
+     (see .tad/guides/codebase-memory-integration.md for details)
+[0;34mℹ [0mValidating generated configurations...
+[0;32m✓ [0mAll configurations validated
+
+[0;32m=====================================[0m
+[0;32m   ✅ TAD v3.0.1 Ready![0m
+[0;32m=====================================[0m
+
+Directory structure:
+  .tad/
+  ├── active/handoffs/     # Current work
+  ├── agents/              # Agent definitions
+  ├── archive/handoffs/    # Completed work
+  ├── evidence/            # Gate & test evidence
+  ├── pair-testing/        # Pair test sessions
+  ├── project-knowledge/   # Project-specific knowledge
+  ├── ralph-config/        # Ralph Loop configuration
+  ├── skills/              # Platform-agnostic skills
+  ├── sub-agents/          # Sub-agent definitions
+  └── templates/           # Handoff & output templates
+
+Quick start:
+  1. Restart your terminal (or open a new one)
+  2. [0;36m/alex[0m, [0;36m/blake[0m, [0;36m/gate[0m (default) · [0;36m/alex-lite[0m, [0;36m/blake-lite[0m (frozen)
+
+Learn more: \033[0;34mhttps://github.com/Sheldon-92/TAD\033[0m
+

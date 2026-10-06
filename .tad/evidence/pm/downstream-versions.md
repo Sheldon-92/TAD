@@ -1,14 +1,15 @@
 generated-by: .tad/scripts/scan-downstream-versions.sh
-generated-at: 2026-10-04
+generated-at: 2026-10-05
 source-of-truth: 各仓 .tad/version.txt（本文件是派生索引，禁止手改）
+覆盖口径：本台账覆盖范围为 yun-sync 席位仓；goal 型仓为轻量装、无 version.txt 版本面，不在扫描口径内，其缺席不构成版本缺失。
 
 # 下游仓版本台账
 
 总数：53
-当前版本（3.0.0）：22
-MISSING（无 version.txt）：2
+当前版本（3.0.1）：1
+MISSING（无 version.txt）：1
 EMPTY（version.txt 为空）：1
-版本分布：1.5 ×2 / 2.2.1 ×1 / 2.26.0 ×1 / 2.30.0 ×6 / 2.32.0 ×1 / 2.32.1 ×1 / 2.33.0 ×4 / 2.34.0 ×1 / 2.39.0 ×1 / 2.40.0 ×1 / 2.41.0 ×1 / 2.42.0 ×7 / 2.44.1 ×1 / 3.0.0 ×22
+版本分布：1.5 ×2 / 2.2.1 ×1 / 2.26.0 ×1 / 2.30.0 ×6 / 2.32.0 ×1 / 2.32.1 ×1 / 2.33.0 ×4 / 2.34.0 ×1 / 2.39.0 ×1 / 2.40.0 ×1 / 2.41.0 ×1 / 2.42.0 ×7 / 2.44.1 ×1 / 3.0.0 ×22 / 3.0.1 ×1
 明细行数：53
 
 | 仓名 | 版本 | 备注 |
@@ -21,7 +22,7 @@ EMPTY（version.txt 为空）：1
 | OpenClaw Hack | 2.30.0 |  |
 | Pokémon  | EMPTY | version.txt 为空 |
 | Sober Creator | 3.0.0 |  |
-| TAD | 3.0.0 |  |
+| TAD | 3.0.1 |  |
 | Terminal-Mission-Control | 2.42.0 |  |
 | Voice Studio | 3.0.0 |  |
 | X增长管理 | 3.0.0 |  |
@@ -59,7 +60,7 @@ EMPTY（version.txt 为空）：1
 | 内容副业 | 3.0.0 |  |
 | 合规ai | 2.30.0 |  |
 | 商业洞见 | 3.0.0 |  |
-| 外刊阅读 | MISSING | 无 .tad/version.txt |
+| 外刊阅读 | 3.0.0 |  |
 | 学习 | 2.40.0 |  |
 | 家族溯源 | 2.33.0 |  |
 | 艾森旭方法论 | 1.5 |  |

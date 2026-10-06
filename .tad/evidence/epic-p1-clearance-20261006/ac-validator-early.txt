@@ -1,0 +1,11 @@
+academic-research exit=0
+content-creation exit=2
+engineering-methods exit=2
+experience-design exit=2
+hardware-prototyping exit=2
+ERROR: frontmatter missing 'type:' declared by source CAPABILITY.md
+product-thinking exit=2
+ERROR: frontmatter 'keywords:' diverges from source CAPABILITY.md
+  projection: keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG", "visual edit", "browser edit", "UI polish", "visual bridge"]
+  capability: keywords: ["React", "frontend", "component", "CSS", "TypeScript", "前端", "组件", "状态管理", "performance", "accessibility", "WCAG"]
+web-frontend exit=2

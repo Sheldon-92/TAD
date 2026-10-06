@@ -1,0 +1,11 @@
+== AC4 product-thinking mirror + body hash
+type: IDENTICAL
+keywords: IDENTICAL
+body sha256=c6a83fc4ae584aa3809d3311e372b224c5631d193a3783f9712365d2a9177186
+baseline    =c6a83fc4ae584aa3809d3311e372b224c5631d193a3783f9712365d2a9177186
+AC4 body: MATCH
+
+== AC5 derivation rule + cap-pattern zero
+.agents/skills/alex/references/publish-protocol.md:1
+.agents/skills/release-runbook/references/publish-ops.md:1
+cap-pattern hits: NONE

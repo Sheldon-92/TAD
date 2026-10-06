@@ -1,0 +1,3 @@
+ERROR: frontmatter 'type:' diverges from source CAPABILITY.md
+  projection: type: deep-skill
+  capability: type: reference-based

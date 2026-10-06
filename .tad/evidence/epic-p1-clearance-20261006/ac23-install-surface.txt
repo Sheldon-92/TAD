@@ -1,0 +1,16 @@
+fixture=/tmp/epic-p1-fix1-dnggC8
+fixture state-surface exit=1
+FAIL check6: Knowledge Ingress route missing on disk: .tad/project-knowledge/frontend-design.md
+FAIL check6: Knowledge Ingress route missing on disk: .tad/project-knowledge/patterns/_index.md
+FAIL check6: Knowledge Ingress route missing on disk: .tad/project-knowledge/patterns/shell-portability.md
+FAIL check6: Knowledge Ingress route missing on disk: .tad/project-knowledge/principles.md
+INFO check7: brain-index generated 2026-10-06, age 0d
+--- route-by-route (check6 method: extract unconditional routes from fixture AGENTS.md)
+MISSING .tad/project-knowledge/principles.md
+MISSING .tad/project-knowledge/patterns/_index.md
+EXISTS .tad/brain-index.md
+MISSING .tad/project-knowledge/frontend-design.md
+MISSING .tad/project-knowledge/patterns/shell-portability.md
+--- installer design citation
+2663:            # Option A pure isolation (knowledge-seam): new installs receive
+2666:            # NEVER copied (copy_framework_files already skips the deny-listed

@@ -1,0 +1,7 @@
+positive(real source) dir=/tmp/epic-p1-engpos-NP0NTf exit=0
+NOTE: genesis-anchored at 3.0.0 — no shipped hop; zero-operation pass
+No manifests found for 3.0.0 → 3.0.1
+mismatch(real source) dir=/tmp/epic-p1-engmis-g2suKw exit=2
+REJECT: chain gap at 3.0.0 — no manifest from 3.0.0. Suggest clean reinstall.
+midgap dir=/tmp/epic-p1-engmid-EMPIYd exit=2
+REJECT: chain gap at 3.0.1 — no manifest from 3.0.1. Suggest clean reinstall.

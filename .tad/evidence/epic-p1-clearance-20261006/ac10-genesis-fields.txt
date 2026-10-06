@@ -1,0 +1,9 @@
+fixture=/tmp/epic-p1-fix1-dnggC8
+38f61a604b24363ae1c0cd470eed6c2877f87bc0272edd40aa1dc30cd132aeab  /tmp/epic-p1-fix1-dnggC8/.tad/migrations/genesis.yaml
+schema_version: 1
+kind: genesis
+installed_version: "3.0.1"
+installed_at: "2026-10-06T05:20:12Z"
+install_form: "source"
+installer: "tad.sh"
+version=3.0.1

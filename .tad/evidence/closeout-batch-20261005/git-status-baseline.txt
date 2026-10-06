@@ -1,0 +1,72 @@
+ M .agents/skills/alex/SKILL.md
+ M .agents/skills/gate/SKILL.md
+ M .tad/active/TICKET-20261004-maintainer-evidence-branch-revival.md
+ D .tad/active/handoffs/COMPLETION-2026-09-15-platform-adapters-p1p3.md
+ D .tad/active/handoffs/COMPLETION-2026-10-04-tad-state-surface-closeout.md
+ D .tad/active/handoffs/COMPLETION-20260816-phase2-partial-p0-fix.md
+ D .tad/active/handoffs/COMPLETION-20260915-notebooklm-deprecation.md
+ D .tad/active/handoffs/COMPLETION-20260915-tad-research-mechanism.md
+ D .tad/active/handoffs/HANDOFF-2026-09-15-claude-decouple-design.md
+ D .tad/active/handoffs/HANDOFF-2026-09-15-claude-removal-plan-codex.md
+ D .tad/active/handoffs/HANDOFF-2026-09-15-claude-removal-plan.md
+ D .tad/active/handoffs/HANDOFF-2026-09-15-notebooklm-deprecation.md
+ D .tad/active/handoffs/HANDOFF-2026-09-15-platform-adapters-p1p3.md
+ D .tad/active/handoffs/HANDOFF-2026-09-15-tad-research-mechanism.md
+ D .tad/active/handoffs/HANDOFF-2026-10-04-tad-state-surface-closeout.md
+ M .tad/gates/gate-canonical-checklist.md
+ M .tad/project-knowledge/patterns/ac-verification.md
+ M .tad/project-knowledge/patterns/shell-portability.md
+ M AGENTS.md
+ M NEXT.md
+ M docs/pm/acceptance.md
+ M docs/pm/auth.md
+ M docs/pm/intent.md
+ M docs/pm/now.md
+ M docs/pm/ops-knowledge.md
+?? .tad/TAD-POINTER.md
+?? .tad/active/TICKET-20261004-course-judgment-adoption.md
+?? .tad/active/TICKET-20261004-evidence-carrier-recovery-execution.md
+?? .tad/active/TICKET-20261005-tad-closeout-batch.md
+?? .tad/active/handoffs/HANDOFF-2026-10-05-tad-closeout-batch.md
+?? .tad/scripts/evidence-freshness-check.sh
+?? .tad/scripts/sync-maintainer-evidence.sh
+?? .tad/templates/dispatch-risk-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-design-amend-start-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-design-start-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-gate2-start-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-gate3-start-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-gate4-start-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-impl-resume-start-card.md
+?? docs/pm/open-cards/2026-10-04-course-adoption-impl-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-design-amend-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-design-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-f1-amend-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-gate2-fit-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-gate2-tech-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-gate3-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-gate4-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-impl-p01-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-impl-p25-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-impl-push-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-impl-push2-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-recovery-impl-resume-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-revival-ct2-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-revival-s1-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-revival-s2-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-revival-s3-start-card.md
+?? docs/pm/open-cards/2026-10-04-evidence-revival-s4-start-card.md
+?? docs/pm/open-cards/2026-10-04-housekeeping-survey-start-card.md
+?? docs/pm/open-cards/2026-10-04-phase3-anchor-gate2-fit-start-card.md
+?? docs/pm/open-cards/2026-10-04-phase3-anchor-gate2-tech-start-card.md
+?? docs/pm/open-cards/2026-10-05-closeout-batch-design-start-card.md
+?? docs/pm/open-cards/2026-10-05-closeout-batch-gate2-amend-start-card.md
+?? docs/pm/open-cards/2026-10-05-closeout-batch-gate2-start-card.md
+?? docs/pm/open-cards/2026-10-05-closeout-batch-impl-start-card.md
+?? docs/pm/open-cards/done-20261004-course-adoption-design-amend.md
+?? docs/pm/open-cards/done-20261004-course-judgment-adoption.md
+?? docs/pm/open-cards/done-20261004-evidence-carrier-recovery-execution.md
+?? docs/pm/open-cards/done-20261004-evidence-recovery-design-amend.md
+?? docs/pm/open-cards/done-20261004-evidence-recovery-f1-amend.md
+?? docs/pm/open-cards/done-20261004-evidence-recovery-impl-p01.md
+?? docs/pm/open-cards/done-20261004-maintainer-evidence-revival.md
+?? docs/pm/ops/

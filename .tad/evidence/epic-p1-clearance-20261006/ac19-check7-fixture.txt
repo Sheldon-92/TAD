@@ -1,0 +1,9 @@
+fixture=/tmp/epic-p1-check7-qPEANl
+today=2026-10-06 (2025-09-01 is 400 days before 2026-10-06)
+old-index script exit=1
+INFO check7: brain-index generated 2025-09-01, age 400d
+WARN check7: brain-index age 400d exceeds 14d (advisory; not counted as FAIL)
+state-surface: FAIL (9 failing item(s), repo: /tmp/epic-p1-check7-qPEANl, version 3.0.1)
+missing-generated script exit=1
+FAIL check7: brain-index Generated date missing or unparseable in first 20 lines
+state-surface: FAIL (10 failing item(s), repo: /tmp/epic-p1-check7-qPEANl, version 3.0.1)

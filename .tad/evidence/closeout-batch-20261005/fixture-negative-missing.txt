@@ -1,0 +1,4 @@
+# fixture negative run — IMPLANTED scan-packs.sh, fixture at /tmp/closeout-fixture-Ld73IM
+# state: pack-a projected, pack-b projection MISSING; expect exit 1 and stderr naming pack-b
+ERROR: registered pack(s) missing .agents/skills projection: pack-b
+EXIT=1

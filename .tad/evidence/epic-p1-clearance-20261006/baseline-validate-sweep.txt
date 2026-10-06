@@ -1,0 +1,66 @@
+# validate sweep baseline — 2026-10-06T05:07:04Z
+FAIL(0) _archived :: ERROR: invalid skill-name '_archived' (must match ^[a-z0-9]+(-[a-z0-9]+)*$)
+FAIL(0) academic-research :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) agent-computer-interface :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) agent-memory :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) agent-orchestration :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) agent-skill-evolution :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-agent-architecture :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-evaluation :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-guardrails :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-podcast-production :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-prompt-engineering :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-tool-integration :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ai-voice-production :: ERROR: frontmatter contains extra keys (only name+description allowed):
+PASS alex
+FAIL(0) alex-lite :: ERROR: description must be one-line scalar, block/folded style not allowed (found '>' or '|')
+PASS blake
+FAIL(0) blake-lite :: ERROR: description must be one-line scalar, block/folded style not allowed (found '>' or '|')
+PASS capability-builder
+PASS capability-upgrade
+FAIL(0) code-security :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) data-engineering :: ERROR: frontmatter contains extra keys (only name+description allowed):
+PASS dependency-ops
+PASS gate
+FAIL(0) hw-circuit-design :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) hw-enclosure :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) hw-firmware :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) hw-testing :: ERROR: frontmatter contains extra keys (only name+description allowed):
+PASS knowledge-audit
+FAIL(0) knowledge-graph :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) llm-observability :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) ml-training :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) mobile-development :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) mobile-release :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) mobile-testing :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) mobile-ui-design :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) product-thinking :: ERROR: forbidden artifact at Skill root: README.md
+FAIL(0) rag-retrieval :: ERROR: frontmatter contains extra keys (only name+description allowed):
+PASS reading-companion
+PASS release-runbook
+PASS research-github
+FAIL(0) research-methodology :: ERROR: frontmatter contains extra keys (only name+description allowed):
+PASS research-notebook
+FAIL(0) save-skill :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) save-workflow :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) supply-chain-security :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) surplus :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) synthetic-data :: ERROR: frontmatter contains extra keys (only name+description allowed):
+PASS tad
+PASS tad-elicit
+PASS tad-handoff
+PASS tad-help
+PASS tad-init
+PASS tad-maintain
+PASS tad-parallel
+PASS tad-scenario
+PASS tad-status
+PASS tad-test-brief
+PASS tad-update
+FAIL(0) video-creation :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) web-backend :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) web-deployment :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) web-frontend :: ERROR: forbidden artifact at Skill root: README.md
+FAIL(0) web-testing :: ERROR: frontmatter contains extra keys (only name+description allowed):
+FAIL(0) web-ui-design :: ERROR: frontmatter contains extra keys (only name+description allowed):
+TOTAL pass=22 fail=42

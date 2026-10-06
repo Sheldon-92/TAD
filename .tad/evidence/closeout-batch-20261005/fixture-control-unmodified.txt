@@ -1,0 +1,4 @@
+# fixture control run — UNMODIFIED scan-packs.sh, fixture at /tmp/closeout-fixture-Ld73IM
+# state: pack-a projected, pack-b projection missing; assertion not yet implanted, expect exit 0
+scan-packs.sh: scanned 2 packs → /tmp/closeout-fixture-Ld73IM/.tad/capability-packs/pack-registry.yaml
+EXIT=0

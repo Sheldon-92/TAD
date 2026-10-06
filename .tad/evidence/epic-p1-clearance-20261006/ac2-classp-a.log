@@ -1,0 +1,2 @@
+ERROR: frontmatter contains extra keys (name+description+version+type+keywords):
+  -> owner: "extra-key"

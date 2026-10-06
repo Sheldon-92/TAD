@@ -1,0 +1,5 @@
+save-skill exit=2
+ERROR: frontmatter contains extra keys (only name+description allowed):
+  -> trigger: "*save-skill [optional name/topic hint]"
+alex-lite exit=2
+ERROR: description must be one-line scalar, block/folded style not allowed (found '>' or '|')

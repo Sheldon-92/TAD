@@ -1,0 +1,25 @@
+(baseline, pre-fix) genesis in fixture:
+2.19.0-to-2.19.1.yaml
+2.19.1-to-2.20.0.yaml
+2.20.0-to-2.21.0.yaml
+2.21.0-to-2.22.0.yaml
+2.22.0-to-2.22.1.yaml
+2.22.1-to-2.23.0.yaml
+2.23.0-to-2.23.1.yaml
+2.23.1-to-2.24.0.yaml
+2.24.0-to-2.24.1.yaml
+2.24.1-to-2.25.0.yaml
+2.25.0-to-2.26.0.yaml
+2.26.0-to-2.27.0.yaml
+2.31.2-to-2.32.0.yaml
+2.42.0-to-2.43.0.yaml
+2.43.0-to-2.43.1.yaml
+genesis ABSENT (expected baseline)
+(i) target brain-index:
+ls: cannot access '/tmp/epic-p1-fix0-VeLuem/.tad/brain-index.md': No such file or directory
+(ii) target AGENTS.md routing:
+43:- `.tad/brain-index.md` is the first route for cross-library knowledge
+(iii) brain-index-gen.sh in target:
+-rwxr-x--- 1 root root 11662 Oct  6 05:09 /tmp/epic-p1-fix0-VeLuem/.tad/hooks/lib/brain-index-gen.sh
+fixture version:
+3.0.1

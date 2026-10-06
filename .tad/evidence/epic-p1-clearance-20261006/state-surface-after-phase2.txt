@@ -1,0 +1,9 @@
+PASS check1: NEXT.md header version 3.0.1 == version.txt 3.0.1
+PASS check2: ROADMAP.md header version 3.0.1 == version.txt 3.0.1
+PASS check3: all version declarations in state-file list == 3.0.1
+PASS check4: no '3.1' edition-number forms in state-file list
+PASS check5: session-state index block paths all exist
+PASS check6: Knowledge Ingress unconditional routes all exist (5 paths)
+INFO check7: brain-index generated 2026-09-16, age 20d
+WARN check7: brain-index age 20d exceeds 14d (advisory; not counted as FAIL)
+state-surface: PASS (repo: /home/hatch/workspace/yun-sync/TAD, version 3.0.1)

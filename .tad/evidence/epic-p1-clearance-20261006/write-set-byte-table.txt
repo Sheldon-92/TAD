@@ -1,0 +1,20 @@
+path | bytes_before(HEAD) | bytes_after | sha256_after
+.tad/scripts/capability-skill.sh | 11665 | 16848 | 0f16defaaf7245d870f9544eb561f0a3441c739e6b56224be1ac7fa375c3050c
+.agents/skills/product-thinking/SKILL.md | 6652 | 6826 | e53ef7320c3678fb9f8d8b8f7c9801cf50b0046d478b75948b1e4d264ff2644a
+.tad/capability-packs/agent-orchestration/CAPABILITY.md | 9797 | 9900 | 9334c20823e30fd12eb8fa53dbc53c0083e84e8485d867f0aa5cd49bd41c8e78
+.tad/capability-packs/web-frontend/CAPABILITY.md | 5571 | 5632 | 152f5bf0de5f83073b387bd59bc3fb7c69ad97fb053984ed5ccf947790577b61
+.tad/capability-packs/web-testing/CAPABILITY.md | 7677 | 7801 | a94ceb56f5d775336ae75cd193d9bc36075578d3c3fede608ce6bc8d5d662b58
+.agents/skills/alex/references/publish-protocol.md | 11015 | 13538 | f8edd5d19b328e1baad5da229cd03baf1a7409a21cd59b8a9c964d9c97ed9fc3
+.agents/skills/release-runbook/references/publish-ops.md | 6572 | 9362 | 834b66ed7ca7164de0fc391095e2cc43cbb2c264e8d548b53b15cfcb4fd1a204
+.tad/active/session-state.md | 0 | 3746 | 325a10b13308229209d0f092ef42e0d7baa951829deec12f3881085c5b2733c2
+.tad/tasks/gate-execution.md | 9316 | 9900 | ca4d7c10d499929d7642278ef1fea4de9cd5bd5ab874166ffd6a9504c8c6bc44
+.tad/templates/handoff-a-to-b.md | 24445 | 24766 | 516fca0468f311c9a6bb3a2b07c9702291857a843cdbfedfc4206cf62961254d
+.tad/scripts/scan-packs.sh | 8022 | 8317 | 3e5a3f2d525e9afe7435a388601d709f611de63c4d6bb6a6e9a4d6cd422d7fbe
+tad.sh | 128219 | 130897 | 6ffc4ed6aa2e8a74cdaf0a900a7406d736ac9b2230729884a5d6f3f241094093
+.tad/hooks/lib/migration-engine.sh | 44248 | 45241 | 19ec3230bc37a2c8576644228eefb8572ac2e9defc221a7aae1028a214a5fbcc
+.tad/hooks/lib/pack-registry-driftcheck.sh | 5655 | 8266 | 6522707dd6e866886161e0517d8c0debf9126a2d69f76c32987fede4b770ccaf
+.tad/hooks/lib/state-surface-check.sh | 7916 | 11826 | dee23f6cf02532e05622252c390332143b78a4e910f78483cec72d1e08d7dc05
+.tad/tasks/evidence-collection.md | 11250 | 12428 | f3b9fd0e76f49911a6ca855ebd8c68a353309dfcd84d48396a4517ab178ec047
+AGENTS.md | 12742 | 12779 | b85a4bee6f461a34c1669376d17694c82e2325a5ba0e6abec65e970288404bbd
+.tad/templates/root-cause-report.md | (new) | 1549 | 4bcb49bee99723046273669b5589d84e063ff4552a4c2b6d618fd1ebe158dfb0
+.tad/active/handoffs/HANDOFF-2026-10-06-epic-p1-clearance.md | 53861 (pre-batch anchor) | 54502 | 5cc953955d03688d9dbaf07daa71c5937c42077dd173a027fcb55baea7ea64a6

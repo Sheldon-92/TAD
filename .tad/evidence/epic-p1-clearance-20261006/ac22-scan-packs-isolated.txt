@@ -1,0 +1,4 @@
+isolated root=/tmp/epic-p1-scanpacks-KJP0aJ
+scan-packs.sh: scanned 25 packs → /tmp/epic-p1-scanpacks-KJP0aJ/.tad/capability-packs/pack-registry.yaml
+scan-packs exit=0
+25

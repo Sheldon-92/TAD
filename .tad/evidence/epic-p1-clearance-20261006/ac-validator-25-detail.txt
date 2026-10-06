@@ -1,0 +1,25 @@
+PASS academic-research
+PASS agent-memory
+FAIL(2) agent-orchestration :: ERROR: frontmatter 'keywords:' diverges from source CAPABILITY.md
+PASS ai-agent-architecture
+PASS ai-evaluation
+PASS ai-guardrails
+PASS ai-podcast-production
+PASS ai-prompt-engineering
+PASS ai-tool-integration
+PASS ai-voice-production
+PASS code-security
+PASS data-engineering
+PASS knowledge-graph
+PASS llm-observability
+PASS ml-training
+FAIL(2) product-thinking :: ERROR: frontmatter missing 'type:' declared by source CAPABILITY.md
+PASS rag-retrieval
+PASS research-methodology
+PASS synthetic-data
+PASS video-creation
+PASS web-backend
+PASS web-deployment
+FAIL(2) web-frontend :: ERROR: frontmatter 'keywords:' diverges from source CAPABILITY.md
+FAIL(2) web-testing :: ERROR: frontmatter 'keywords:' diverges from source CAPABILITY.md
+PASS web-ui-design

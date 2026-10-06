@@ -1,0 +1,198 @@
+=========================================
+VERSION VERIFY (grep zero non-historical stale)
+  REPO:     /home/hatch/workspace/yun-sync/TAD
+  EXPECTED: 3.0.1
+  OLD:      3.0.0
+=========================================
+  ❌ STALE: .agents/skills/alex/SKILL.md:50:<!-- TAD v3.0.0 Framework -->
+  ❌ STALE: .agents/skills/alex/references/publish-protocol.md:88:        since v3.0.0; the dual-tree mirror gate was removed — single tree):
+  ❌ STALE: .agents/skills/blake/SKILL.md:166:<!-- TAD v3.0.0 Framework -->
+  ❌ STALE: .agents/skills/blake/SKILL.md:1881:                 (the `.claude/workflows/*.workflow.js` runtime was removed in v3.0.0)
+  ❌ STALE: .agents/skills/capability-builder/SKILL.md:12:- **Framework Skills (this Builder, alex, blake, gate):** editable authority `.agents/skills/` (sole source since v3.0.0; the Claude mirror direction was removed).
+  ❌ STALE: .agents/skills/capability-builder/SKILL.md:13:- **Builder-created downstream Skills:** editable authority `.agents/skills/<name>/` via direct materialization (v3.0.0: the `project` projection was removed).
+  ❌ STALE: .agents/skills/capability-builder/references/create-protocol.md:67:4. Materialize directly under `<project-root>/.agents/skills/<skill-name>/` — only after 2+3 pass (v3.0.0: the `project` projection was removed; fail-closed tombstone).
+  ❌ STALE: .agents/skills/capability-builder/references/create-protocol.md:97:| Downstream Skill | `.agents/skills/<name>/` | — (v3.0.0: projection removed) | direct materialization |
+  ❌ STALE: .agents/skills/capability-builder/references/evolve-protocol.md:58:4. Materialize directly under `<root>/.agents/skills/<skill>/` — only after 2+3 pass (v3.0.0: the `project` projection was removed; fail-closed tombstone).
+  ❌ STALE: .agents/skills/release-runbook/references/publish-ops.md:39:- `0`: `.agents/skills` (the sole skill source since v3.0.0) is self-consistent.
+  ❌ STALE: .agents/skills/release-runbook/references/publish-ops.md:45:the remaining gates. (The dual-tree mirror gate was removed in v3.0.0 — single skill tree,
+  ❌ STALE: .agents/skills/tad-help/SKILL.md:17: Version: v3.0.0 | Generated: [timestamp]
+  ❌ STALE: .tad/TAD-VERSION:1:3.0.0
+  ❌ STALE: .tad/agents/agent-a-architect.md:3:# ARCHIVED (v3.0.0): v1.4 legacy role definition. No live consumer (roles now live
+  ❌ STALE: .tad/agents/agent-b-executor.md:3:# ARCHIVED (v3.0.0): v1.4 legacy role definition. No live consumer (roles now live
+  ❌ STALE: .tad/capability-packs/agent-computer-interface/install.sh:72:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/agent-memory/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/agent-memory/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/agent-memory/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/agent-orchestration/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/agent-orchestration/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/agent-orchestration/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/ai-agent-architecture/README.md:44:# Codex (v3.0.0)
+  ❌ STALE: .tad/capability-packs/ai-evaluation/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/ai-evaluation/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/ai-evaluation/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/ai-guardrails/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/ai-guardrails/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/ai-guardrails/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/ai-prompt-engineering/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/ai-prompt-engineering/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/ai-prompt-engineering/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/ai-tool-integration/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/ai-tool-integration/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/ai-tool-integration/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/code-security/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/code-security/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/code-security/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/data-engineering/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/data-engineering/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/data-engineering/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/knowledge-graph/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/knowledge-graph/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/knowledge-graph/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/llm-observability/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/llm-observability/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/llm-observability/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/ml-training/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/rag-retrieval/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/rag-retrieval/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/rag-retrieval/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/research-methodology/install.sh:70:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/synthetic-data/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/synthetic-data/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/synthetic-data/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/web-backend/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/web-backend/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/web-backend/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/web-deployment/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/web-deployment/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/web-deployment/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/web-testing/install.sh:3:# v3.0.0: Codex support (.agents/skills target)
+  ❌ STALE: .tad/capability-packs/web-testing/install.sh:48:    # v3.0.0 — implemented below
+  ❌ STALE: .tad/capability-packs/web-testing/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/capability-packs/web-ui-design/install.sh:51:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/codex/README.md:26:- `.agents/skills/alex/SKILL.md` — Alex role (sole source of truth since v3.0.0)
+  ❌ STALE: .tad/codex/README.md:27:- `.agents/skills/blake/SKILL.md` — Blake role (sole source of truth since v3.0.0)
+  ❌ STALE: .tad/config-workflow.yaml:279:  # command 于 v3.0.0 移除：playground 自 2.28.0 deprecated，skill 路径在 HEAD 前已不存在（悬空引用）
+  ❌ STALE: .tad/config.yaml:1:# TAD Configuration v3.0.0 - Full is the Default Channel (lite frozen 2026-08-13)
+  ❌ STALE: .tad/config.yaml:3:version: 3.0.0
+  ❌ STALE: .tad/guides/hooks-platform-mapping.md:3:> TAD v2.26.0 — Cross-Platform Unification Phase 2; reframed v3.0.0.
+  ❌ STALE: .tad/guides/hooks-platform-mapping.md:6:> `.claude/settings.json`, deleted in v3.0.0) — retained as conversion record.
+  ❌ STALE: .tad/hooks/lib/detect-platform.sh:4:# v3.0.0: the Claude workflow backend (.claude/workflows) was removed;
+  ❌ STALE: .tad/hooks/lib/detect-state-test.sh:110:check AC7  3.0.0  "2.29.1"   old      migrate
+  ❌ STALE: .tad/hooks/lib/memory-redirect.sh:2:# memory-redirect.sh — RETIRED in TAD v3.0.0.
+  ❌ STALE: .tad/hooks/lib/memory-redirect.sh:10:echo "ERROR: memory-redirect.sh was retired in TAD v3.0.0 (Claude Code memory layer removed)." >&2
+  ❌ STALE: .tad/hooks/lib/migration-draft.sh:94:# v3.0.0: the removed vendor skill tree and its root routing file are OUT of
+  ❌ STALE: .tad/hooks/lib/migration-draft.sh:95:# scope — the v2.44.6 to v3.0.0 tree deletion must never be drafted as delete:
+  ❌ STALE: .tad/hooks/lib/parity-criterion.md:1:# Codex-Edition Parity Criterion — ARCHIVED in TAD v3.0.0
+  ❌ STALE: .tad/hooks/lib/parity-criterion.md:4:> was removed in v3.0.0 (single skill tree under `.agents/skills/`, nothing
+  ❌ STALE: .tad/hooks/lib/release-verify.sh:15:#       Also diff -rq .agents/skills (the sole framework skills path, v3.0.0).
+  ❌ STALE: .tad/hooks/lib/release-verify.sh:101:#   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
+  ❌ STALE: .tad/hooks/lib/release-verify.sh:193:    # .agents/skills — the sole framework skills path (v3.0.0 SSOT).
+  ❌ STALE: .tad/hooks/lib/runtime-freshness-verify.sh:32:# v3.0.0: the Claude Code runtime path was removed. Its ledger is retained as a
+  ❌ STALE: .tad/hooks/lib/runtime-freshness-verify.sh:37:  echo "INFO: retired ledger $CLAUDE_LEDGER absent — skipping (v3.0.0 removal)"
+  ❌ STALE: .tad/hooks/lib/runtime-freshness-verify.sh:40:  echo "INFO: ledger $CLAUDE_LEDGER is retired — skipping (v3.0.0 removal)"
+  ❌ STALE: .tad/hooks/lib/skill-body-verify.sh:83:  # v3.0.0: single skill tree (.agents/skills is the sole source) — no mirror
+  ❌ STALE: .tad/hooks/lib/skill-body-verify.sh:193:  # v3.0.0: single skill tree — the alex body IS the canonical source.
+  ❌ STALE: .tad/manifest.yaml:1:# ARCHIVED (v3.0.0): v1.4 legacy document manifest. No live consumer.
+  ❌ STALE: .tad/portable-rules.md:9:| SKILL files | `.agents/skills/*/SKILL.md` (v3.0.0 SSOT; was `.claude/skills/`) | Transform | Strip Claude Code-only tools (AskUserQuestion, Agent, hooks), keep all protocol logic and constraint rules |
+  ❌ STALE: .tad/portable-rules.md:16:| Settings | `.claude/settings.json` | REMOVED (v3.0.0) | Claude Code hook registration — runtime path deleted; hooks live in `.codex/hooks.json` |
+  ❌ STALE: .tad/runtime-compat/claude-code.md:3:> **RETIRED in TAD v3.0.0** — the Claude Code runtime path was removed
+  ❌ STALE: .tad/runtime-compat/codex.md:34:| release_sync_install | codex_adapter | tad.sh --platform codex --yes installs to .agents/skills/ and generates the current hooks schema; .agents/skills is the sole source of truth (v3.0.0) | local codex --help + tad.sh + release-verify.sh structural (2026-08-03) | codex-cli 0.146.0 | 2026-08-03 | low | 2026-09-02 | no | Manual file copy | verified |
+  ❌ STALE: .tad/scripts/capability-skill.sh:25:  canonical  = <root>/.agents/skills/<name>   (sole skill source since v3.0.0)
+  ❌ STALE: .tad/scripts/capability-skill.sh:36:  project  — REMOVED in v3.0.0 (fail-closed tombstone, exit 1, no mutation).
+  ❌ STALE: .tad/scripts/capability-skill.sh:318:  # v3.0.0: single skill tree — self-integrity only (no projection comparison).
+  ❌ STALE: .tad/scripts/capability-skill.sh:336:  # v3.0.0 tombstone: the .agents -> .claude projection was removed with the
+  ❌ STALE: .tad/scripts/capability-skill.sh:339:  err "ERROR: 'project' was removed in TAD v3.0.0 (Claude Code projection deleted)."
+  ❌ STALE: .tad/scripts/phase2-pair-driver.mjs:773:  // v3.0.0: judge always runs via the opencode CLI (legacy judge spawn removed).
+  ❌ STALE: .tad/scripts/tad-update.sh:47:  --platform <name>      explicit platform (codex — the only target since v3.0.0).
+  ❌ STALE: .tad/scripts/tad-update.sh:80:            echo "tad-update: --platform '$PLATFORM_ARG' was removed in TAD v3.0.0. Re-run with --platform codex." >&2; exit 2 ;;
+  ❌ STALE: .tad/scripts/tad-update.sh:116:# v3.0.0: codex is the only target. .agents/skills/alex present → codex.
+  ❌ STALE: .tad/skills-config.yaml:1:# ARCHIVED (v3.0.0): v1.4 legacy skills metadata. No live consumer (superseded by
+  ❌ STALE: .tad/skills/code-review/SKILL.md:2:<!-- ARCHIVED (v3.0.0): v1.4 legacy skill definition. No live consumer. Retained as
+  ❌ STALE: .tad/skills/testing/SKILL.md:2:<!-- ARCHIVED (v3.0.0): v1.4 legacy skill definition. No live consumer. Retained as
+  ❌ STALE: .tad/templates/capability-pack-template/install.sh:4:# v3.0.0: Codex-first target (.agents/skills/); Claude Code path removed.
+  ❌ STALE: .tad/templates/capability-pack-template/install.sh:40:    echo "Error: --agent='$AGENT' was removed in TAD v3.0.0 (Claude Code path deleted)." >&2
+  ❌ STALE: .tad/templates/skillify-candidate-template.md:8:# orchestration → harness-native orchestration skeleton (the .claude/workflows runtime was removed in v3.0.0)
+  ❌ STALE: .tad/tests/installer-data-safety-fixture.sh:136:  # v3.0.0: no .claude/ in the source tree (Claude Code path removed).
+  ❌ STALE: .tad/tests/installer-data-safety-fixture.sh:260:# v3.0.0: only platform is codex (claude-code/both are tombstoned elsewhere).
+  ❌ STALE: .tad/tests/installer-data-safety-fixture.sh:297:  # v3.0.0: codex is the only install target. claude-code/both must
+  ❌ STALE: .tad/tests/installer-data-safety-fixture.sh:935:  # Simulate the 2.44.6→3.0.0 upgrade: staged source carries the new version
+  ❌ STALE: .tad/tests/installer-data-safety-fixture.sh:937:  printf '3.0.0\n' > "$SOURCE/.tad/version.txt"
+  ❌ STALE: .tad/tests/installer-data-safety-fixture.sh:938:  want="3.0.0"
+  ❌ STALE: .tad/tests/migration-fixtures/run-fixtures.sh:1123:    # v3.0.0: migration-gate scope no longer covers .claude/ (release-verify.sh
+  ❌ STALE: .tad/tests/migration-fixtures/run-fixtures.sh:1204:    # v3.0.0: same scope note as MG1 — .claude/ left the migration-gate scope.
+  ❌ STALE: .tad/tests/state-surface-fixture/.tad/version.txt:1:3.0.0
+  ❌ STALE: .tad/tests/state-surface-fixture/FIXTURE.md:9:- check1: NEXT.md header says 2.44.5, fixture .tad/version.txt says 3.0.0
+  ❌ STALE: .tad/tests/state-surface-fixture/FIXTURE.md:24:  - positive controls (correct value == fixture version.txt 3.0.0; must
+  ❌ STALE: .tad/tests/state-surface-fixture/FIXTURE.md:25:    NOT be flagged): README.md:3 `(v3.0.0)` (branch check3-P2) and
+  ❌ STALE: .tad/tests/state-surface-fixture/FIXTURE.md:26:    PROJECT_CONTEXT.md:3 `**Version**: 3.0.0` (branch check3-DECL)
+  ❌ STALE: .tad/tests/state-surface-fixture/PROJECT_CONTEXT.md:3:- **Version**: 3.0.0
+  ❌ STALE: .tad/tests/state-surface-fixture/README.md:3:Minimal stand-in. **Runtime status (v3.0.0)** — positive control (correct value; must not be flagged).
+  ❌ STALE: .tad/tests/state-surface-fixture/ROADMAP.md:3:> Strategic direction. Updated 2026-10-04 for v3.0.0.
+  ❌ STALE: .tad/tests/tad-update-fixture.sh:449:    # v3.0.0: codex is the only target. A leftover downstream .claude tree is
+  ❌ STALE: .tad/tests/tad-update-fixture.sh:475:    printf '%s\n' "$out" | grep -q "was removed in TAD v3.0.0" \
+  ❌ STALE: .tad/version.txt:1:3.0.0
+  ❌ STALE: AGENTS.md:9:> **Runtime status (v3.0.0)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
+  ❌ STALE: INSTALLATION_GUIDE.md:3:**Version 3.0.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor are supported runtimes**
+  ❌ STALE: INSTALLATION_GUIDE.md:22:> `--platform claude-code` / `--platform both` 自 v3.0.0 起被拒绝：
+  ❌ STALE: INSTALLATION_GUIDE.md:25:> 详见下方「升级到 v3.0.0」。
+  ❌ STALE: INSTALLATION_GUIDE.md:55:cat .tad/version.txt          # 应显示 3.0.0
+  ❌ STALE: INSTALLATION_GUIDE.md:86:### 升级到 v3.0.0（Claude Code 路径移除）
+  ❌ STALE: INSTALLATION_GUIDE.md:90:2. **仍装 Claude Code 的用户**：Claude 路径自 v3.0.0 起**不再更新**。升级**不会删除、
+  ❌ STALE: INSTALLATION_GUIDE.md:104:5. **迁移安全保证**：v3.0.0 **不生成**删除用户 `.claude/**` 的 migration manifest；
+  ❌ STALE: NEXT.md:10:**当前版本**：3.0.0（tag `v3.0.0` / commit `20223774`）→ next：未定（候选 v3.0.1 收口批） ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+  ❌ STALE: NEXT.md:16:### 🟡 OPEN 2026-09-16. Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
+  ❌ STALE: PROJECT_CONTEXT.md:4:- **Version**: 3.0.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture + Claude Code path removed, Codex hook-enabled + OpenCode/Cursor supported)
+  ❌ STALE: PROJECT_CONTEXT.md:6:- **Framework**: TAD v3.0.0 + Full-default/Lite-frozen + 25 Capability Packs + Codex hook-enabled + OpenCode/Cursor supported + Local Wiki Research + Compact Recovery
+  ❌ STALE: README.md:3:**Version 3.0.0 — Claude Code Path Removed, Codex / OpenCode / Cursor Supported**
+  ❌ STALE: README.md:5:> v3.0.0: Claude Code runtime path removed (breaking); `.agents/skills/` is the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
+  ❌ STALE: README.md:172:在 v3.0.0 起被拒绝（改动任何文件前报错，并打印恢复命令）；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+  ❌ STALE: README.md:190:# Should show: 3.0.0
+  ❌ STALE: README.md:506:**Welcome to TAD v3.0.0 — Claude Code Path Removed, Codex Sole Runtime**
+  ❌ STALE: ROADMAP.md:3:> Strategic direction for TAD. Updated 2026-10-04 for v3.0.0.
+  ❌ STALE: bin/tad-install.mjs:67:  // v3.0.0: the Claude Code runtime path was removed — any platform value
+  ❌ STALE: bin/tad-install.mjs:71:    console.error(`Error: platform '${value}' was removed in TAD v3.0.0 (Claude Code runtime path deleted).`);
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:3:**适用版本**: TAD v3.0.0+ | Codex CLI 0.146+
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:17:Codex 是 TAD 自 v3.0.0 起的运行时。SKILL 文件、质量门禁、协议全部只有一套，
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:18:唯一源是 `.agents/skills/`。Claude Code 路径已在 v3.0.0 移除（见 `CHANGELOG.md`
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:45:> `--platform both` / `--platform claude-code` 自 v3.0.0 起被拒绝（改动任何文件前报错，
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:58:cat .tad/version.txt                    # 应显示 3.0.0
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:274:## Claude Code 路径（v3.0.0 已移除）
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:276:Claude Code install target、hooks、workflows 与模型绑定已随 v3.0.0 删除。
+  ❌ STALE: docs/CODEX-USER-GUIDE.md:459:### 9. 用户文件在升级中原样保留（v3.0.0 起无 marker 合并）
+  ❌ STALE: docs/MULTI-PLATFORM.md:3:**Version**: 3.0.0 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
+  ❌ STALE: docs/MULTI-PLATFORM.md:6:Since v3.0.0 there is a single skill tree
+  ❌ STALE: docs/MULTI-PLATFORM.md:10:removed in v3.0.0 — see `CHANGELOG.md` (`### Removed`) and the retired ledger
+  ❌ STALE: docs/MULTI-PLATFORM.md:23:| **Claude Code** | Removed in v3.0.0 (was first-class ≤2.44.6) | — (no longer installed; pre-existing downstream trees are left untouched) | — | — |
+  ❌ STALE: docs/MULTI-PLATFORM.md:41:Claude Code Adapter (removed in v3.0.0)   Codex Adapter
+  ❌ STALE: docs/MULTI-PLATFORM.md:52:├── .tad/runtime-compat/claude-code.md (RETIRED in v3.0.0 — retained as historical record, not gated)
+  ❌ STALE: docs/MULTI-PLATFORM.md:79:- **Source of truth**: `.agents/skills/` (sole source since v3.0.0; no mirror)
+  ❌ STALE: docs/MULTI-PLATFORM.md:86:## Claude Code Adapter (removed in v3.0.0)
+  ❌ STALE: docs/MULTI-PLATFORM.md:89:hooks, `.claude/workflows/`, `.claude/agents/` model pins) — was removed in v3.0.0
+  ❌ STALE: docs/MULTI-PLATFORM.md:117:- `.agents/skills/` — Unified SKILL.md files (sole source of truth since v3.0.0)
+  ❌ STALE: docs/MULTI-PLATFORM.md:158:- `.tad/runtime-compat/claude-code.md` — **RETIRED in v3.0.0** (retained as historical record, not gated)
+  ❌ STALE: docs/MULTI-PLATFORM.md:185:| Workflows | No equivalent; use prompt-driven subagent orchestration | The `.claude/workflows/` script runtime was removed in v3.0.0 (accepted limitation) |
+  ❌ STALE: docs/MULTI-PLATFORM.md:198:| No workflow script runtime on Codex | Complex orchestration (YOLO Conductor, parallel workflows) uses prompt-driven subagent spawning | Accepted limitation (the Claude-only workflow runtime was removed in v3.0.0) |
+  ❌ STALE: docs/MULTI-PLATFORM.md:214:*TAD v3.0.0 — Codex hook-enabled + OpenCode/Cursor supported, single skill tree (`.agents/skills/`), Claude Code path removed, runtime freshness active.*
+  ❌ STALE: docs/codex-guide.html:174:<p class="subtitle">Codex CLI Edition &middot; v3.0.0 &middot; 全中文 &middot; 所有机制一页讲清</p>
+  ❌ STALE: docs/codex-guide.html:190:  <a href="#diff">13. Claude Code 路径（v3.0.0 已移除）</a>
+  ❌ STALE: docs/codex-guide.html:252:<p><code>--platform both</code> / <code>--platform claude-code</code> 自 v3.0.0 起被拒绝（改动任何文件前报错，并打印恢复命令）。</p>
+  ❌ STALE: docs/codex-guide.html:258:<pre>cat .tad/version.txt                    # → 3.0.0
+  ❌ STALE: docs/codex-guide.html:551:<h2 id="diff">13. Claude Code 路径（v3.0.0 已移除）</h2>
+  ❌ STALE: docs/codex-guide.html:553:<p>Claude Code 安装目标、hooks、workflows 与模型绑定已随 v3.0.0 删除。升级不会删除你既有的 <code>.claude/</code>（hooks / MCP / 权限配置字节不变），旧树只是不再更新。如需清理请手动删除。</p>
+  ❌ STALE: docs/codex-guide.html:605:  <div class="tip-title">9. 用户文件在升级中原样保留（v3.0.0 起无 marker 合并）</div>
+  ❌ STALE: docs/codex-guide.html:677:  TAD v3.0.0 &middot; <a href="https://github.com/Sheldon-92/TAD">GitHub</a> &middot; MIT License
+  ❌ STALE: docs/pm/open-cards/done-20261004-tad-state-surface-closeout.md:6:- 交付：状态文档纠偏 A1–A12（版本口径归一 `.tad/version.txt`)、防再过期三机制（互查指针/check 脚本+fixture 真负控/publish-protocol step3e)、P1P3 Gate 4 证据终态改写（保真）、§18 两 Epic 与证据链入仓、下游版本台账首份（53 仓 / 22 在 3.0.0 / 2 MISSING / 1 EMPTY)
+  ❌ STALE: package.json:3:  "version": "3.0.0",
+  ❌ STALE: tad.sh:26:TARGET_VERSION="3.0.0"
+  ❌ STALE: tad.sh:526:            log_error "Platform '$p' was removed in TAD v3.0.0 (Claude Code runtime path deleted)."
+  ❌ STALE: tad.sh:1164:    # v3.0.0: single target (codex). No cross-platform remnant warning —
+  ❌ STALE: tad.sh:1169:    # v3.0.0 SSOT: source is $src/.agents/skills (sole source, no mirror).
+  ❌ STALE: tad.sh:1217:    # v3.0.0: Claude Code settings.json + workflows removed (no copy target).
+  ❌ STALE: tad.sh:1266:    # v3.0.0: single skill tree — meta targets only $TARGET_SKILL_DIR.
+  ❌ STALE: tad.sh:1299:    # Codex hooks.json generation (v3.0.0: codex is the only target)
+  ❌ STALE: tad.sh:2113:# v3.0.0: CLAUDE.md merge removed (Claude Code runtime path deleted).
+  ❌ STALE: tad.sh:2368:    # v3.0.0: codex is the only target; skills live in .agents/skills.
+  ❌ STALE: tad.sh:2616:            # v3.0.0: no CLAUDE.md merge — a pre-existing downstream CLAUDE.md
+  ❌ STALE: tad.sh:2707:            # v3.0.0: no CLAUDE.md merge (user-owned file left untouched).
+  ❌ STALE: tad.sh:2790:            # v3.0.0: no CLAUDE.md merge (user-owned file left untouched).
+VERDICT: version FAIL — 191 stale ref(s) (exit 1)

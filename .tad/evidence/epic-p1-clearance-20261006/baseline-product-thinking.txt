@@ -1,0 +1,33 @@
+# product-thinking baseline
+---
+name: product-thinking
+description: "Three deep skills that turn any AI agent into a product decision partner. Covers adversarial idea validation, business model generation, and executable product definition across 6 product types. Use for any product strategy, idea validation, business model design, or product definition task."
+---
+
+# Product Thinking Capability Pack
+
+Three deep skills for product decisions. Not templates — a thinking engine that searches real data, challenges assumptions, and forces decisions.
+
+**CONSUMES / PRODUCES** (the 3-skill pipeline, wired through `~/.product-thinking/session.json`):
+
+| Skill | CONSUMES | PRODUCES |
+-- body (after closing ---) sha256:
+c6a83fc4ae584aa3809d3311e372b224c5631d193a3783f9712365d2a9177186  -
+-- full file sha256:
+b5542b06e793e603e8d0775c52358462981b5d4516e44994ad45db4d63727df5  .agents/skills/product-thinking/SKILL.md
+-- CAPABILITY.md frontmatter:
+---
+name: product-thinking
+description: "Three deep skills that turn any AI agent into a product decision partner. Covers adversarial idea validation, business model generation, and executable product definition across 6 product types. Use for any product strategy, idea validation, business model design, or product definition task."
+keywords: ["product", "strategy", "business", "PMF", "pivot", "产品", "商业", "市场", "idea", "PRD", "business model", "压力测试", "商业模式"]
+type: deep-skill
+status: frozen
+---
+
+**CONSUMES**: Product idea or problem statement + optional existing market context
+**PRODUCES**: BUILD/PIVOT/KILL verdict + validated business model variant + executable product spec (type-specific)
+
+# Product Thinking Capability Pack
+
+**Version**: 0.1.0
+**Compatibility**: Claude Code (Phase 1); Codex / Cursor / Gemini in Phase 3

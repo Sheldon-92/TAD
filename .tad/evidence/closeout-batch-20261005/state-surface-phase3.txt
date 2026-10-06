@@ -1,0 +1,10 @@
+FAIL check1: NEXT.md header version '3.0.0' != version.txt 3.0.1
+FAIL check2: ROADMAP.md header version '3.0.0' != version.txt 3.0.1
+PASS check3: all version declarations in state-file list == 3.0.1
+PASS check4: no '3.1' edition-number forms in state-file list
+FAIL check5: session-state index references missing path: .tad/active/handoffs/COMPLETION-2026-09-15-platform-adapters-p1p3.md
+FAIL check5: session-state index references missing path: .tad/active/handoffs/COMPLETION-2026-10-04-tad-state-surface-closeout.md
+FAIL check5: session-state index references missing path: .tad/active/handoffs/HANDOFF-2026-10-04-course-judgment-adoption.md
+FAIL check5: session-state index references missing path: .tad/active/handoffs/HANDOFF-2026-10-04-tad-state-surface-closeout.md
+state-surface: FAIL (6 failing item(s), repo: /home/hatch/workspace/yun-sync/TAD, version 3.0.1)
+EXIT=1

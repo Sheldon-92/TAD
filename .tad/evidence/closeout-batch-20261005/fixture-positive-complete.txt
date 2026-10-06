@@ -1,0 +1,4 @@
+# fixture positive run — IMPLANTED scan-packs.sh, fixture at /tmp/closeout-fixture-Ld73IM
+# state: pack-a and pack-b both projected; expect exit 0
+scan-packs.sh: scanned 2 packs → /tmp/closeout-fixture-Ld73IM/.tad/capability-packs/pack-registry.yaml
+EXIT=0

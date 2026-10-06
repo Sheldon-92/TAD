@@ -1,0 +1,2 @@
+ERROR: frontmatter contains extra keys (only name+description allowed):
+  -> trigger: "*save-skill [optional name/topic hint]"

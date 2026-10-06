@@ -1,0 +1,21 @@
+== C1 section hash (AC1 baseline) ==
+849ea922ba24d94768d5c2f107d3f6b4ecbb09d19fd12dde3eea0ed99bce7c38  -
+== write-set baselines (wc -l + sha256) ==
+AGENTS.md	184
+	99753fa26c2c6a87d0dccf546803fd8516cb4a8384b93b4806f4d92462158af0
+.agents/skills/gate/SKILL.md	1003
+	22ef3cc7ac4b4884521b1c62ee94f9390535f6f7f8b4d297047262519dc20464
+.agents/skills/release-runbook/SKILL.md	148
+	ace62d34d68024350da8a0ffce8fa8b07239d075f1c20f3bc029f04c3ee7ae72
+.tad/tasks/evidence-collection.md	448
+	7ea409de686cb72a93fec2046f9b839c917bdab7cd14fb0bdda4fd7030b9e202
+.tad/scripts/scan-downstream-versions.sh	108
+	50253a130fa938db4015b471ff693c0b5fbb7939904556e3872fdff1d83d4548
+.tad/scripts/scan-packs.sh	195
+	c399ed5e9ca25c9f64b6cea9ffff9fb00675ff603b2b92f534083239abc91cd3
+.tad/capability-packs/pack-registry.yaml	210
+	ccfa30a201dd8c466bdf2077e034e6b6d0501c68a303631b5ed11dd99a24b3b4
+.tad/evidence/pm/downstream-versions.md	68
+	e6ef1a94a689548beed8874026878b8cefe9e484d7eb9b4d378cbe78ad2fc7c5
+.tad/version.txt	1
+	2985be8b28d3ade858e8d8fb4bc22f565b1bf6020dff982dce141f7721b9999c

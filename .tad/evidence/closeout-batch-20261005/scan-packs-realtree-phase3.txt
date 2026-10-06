@@ -1,0 +1,3 @@
+# Phase 3 final registry regeneration — after bump to 3.0.1
+scan-packs.sh: scanned 25 packs → /home/hatch/workspace/yun-sync/TAD/.tad/capability-packs/pack-registry.yaml
+EXIT=0

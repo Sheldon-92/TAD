@@ -1,0 +1,6 @@
+fixture=/tmp/epic-p1-hooks-U3dG84
+baseline semantic compare: EQUAL
+changed-value semantic compare: NOT EQUAL (drift, expected)
+reformatted-only semantic compare: EQUAL (not drift, expected)
+AC14 generated-vs-archive byte compare: IDENTICAL
+AC14 jq parse: exit 0
