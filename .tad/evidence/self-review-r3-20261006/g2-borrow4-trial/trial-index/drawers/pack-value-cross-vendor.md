@@ -1,0 +1,12 @@
+# Capability Pack Value Is Cross-Vendor (Codex + Gemini)
+
+**Date:** 2026-06-01
+**Linked to:** L2 pack-evaluation "Cross-Model Adversarial Review"
+
+---
+
+### Capability Pack Value Is Cross-Vendor (Codex + Gemini), Not Claude-Specific - 2026-06-01
+- **Context**: Extended the WITH-vs-CONTROL discriminative eval to non-Claude agents — ran 3 packs (rag-retrieval/ai-guardrails/data-engineering) through `codex exec` and `gemini -p` with the pack content injected via stdin (the real `install.sh --agent=codex/gemini` deployment analog) for WITH, scenario-only for CONTROL. Scored with the same `pack-eval-runner.sh` discriminative gate.
+- **Discovery**: (1) **Packs add real value to BOTH Codex and Gemini — Δ positive everywhere (6-12).** rag: codex Δ7 / gemini Δ12; guardrails: codex Δ9 / gemini Δ6; data-eng: codex Δ6 / gemini Δ8. (2) **The robust vendor-agnostic signal: CONTROL is uniformly low across all 5 model types (haiku/sonnet/opus/codex/gemini = 0-5).** NO model, any vendor or tier, emits the pack's specific senior markers unaided → the pack's injected specifics are genuinely additive everywhere. (3) **Gemini is an excellent consumer** (Δ on par with sonnet/opus — applies injected pack fully, low baseline). (4) **Codex is good but uneven + terse**: strong on structured security (guardrails Δ9, tied best) but weak on the marker-dense rag pack (Δ7, lowest) because its concise single-shot output under-cites the pack's many specific numbers even when applying the rule. (5) **Measurement caveat**: the discriminative gate rewards verbosity, so terse CLI models (codex) may be UNDER-scored; Δ-within-model controls for each model's verbosity baseline and is the fair cross-model metric; CONTROL-stays-low is the robust finding.
+- **Action**: Treat capability packs as genuinely portable cross-vendor assets — the "pack = portable senior judgment" premise holds for Codex/Gemini, not just Claude. For terse CLI consumers (codex), don't trust raw marker counts; trust the Δ and the CONTROL floor. Gemini and Sonnet are the best pack consumers; Codex applies structured/checklist packs (security, readiness) better than number-dense reference packs. The `install.sh --agent` portability path is worth completing (currently Phase-3 stub) since the value transfers.
+- **Grounded in**: .tad/evidence/pack-eval/2026-06-01/ (12 vendor outputs: {slug}-{codex,gemini}-{WITH,CONTROL}.md), weak-model-delta-gradient.md

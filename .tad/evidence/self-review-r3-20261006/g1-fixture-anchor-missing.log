@@ -1,0 +1,13 @@
+# anchor-missing branch run (SUPPLEMENT-1 S3, mandatory once)
+$ cp -R g1-fixtures/neg g1-fixtures/anchor-missing; delete the '> **Runtime status' anchor line from its AGENTS.md
+$ bash .tad/hooks/lib/state-surface-check.sh --repo /home/hatch/workspace/yun-sync/TAD/.tad/evidence/self-review-r3-20261006/g1-fixtures/anchor-missing
+PASS check1: NEXT.md header version 3.2.0 == version.txt 3.2.0
+PASS check2: ROADMAP.md header version 3.2.0 == version.txt 3.2.0
+PASS check3: all version declarations in state-file list == 3.2.0
+PASS check4: no '3.1' edition-number forms in state-file list
+PASS check5: session-state index block paths all exist
+PASS check6: Knowledge Ingress unconditional routes all exist (1 paths)
+INFO check7: brain-index generated 2026-10-06, age 0d
+FAIL check8: PAIR-1 governed surface anchor missing in AGENTS.md (Runtime status block not found)
+state-surface: FAIL (1 failing item(s), repo: /home/hatch/workspace/yun-sync/TAD/.tad/evidence/self-review-r3-20261006/g1-fixtures/anchor-missing, version 3.2.0)
+exit=1

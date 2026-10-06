@@ -1,0 +1,12 @@
+# g1 fixture build log — R3 group 1 (2026-10-06)
+## extraction provenance
+old block: git show a1c3dffd^:AGENTS.md | sed -n '9,16p' (== anchor-awk extraction, cmp identical)
+8370d424a387d7608e019f9f0860d26ce2ca8090ab595a20e45d389b62b49f32  old-block-sed.txt
+11c3fa59c2dd6bbff8fe4a098c46dae449185d4dbb5322fafea62a8e6ab0f4ad  current-block.txt
+64346277f6ad4bbc0fed8de653bc5e1ee9b02fe2aac4ba98d24224e03b171055  p2-bullet.txt
+4cd8d6066b3f35e93231a25c7107bff8b06513c044dd1d07d87526c86681f7e3  p4-bullet.txt
+P-2 pinned old-block sha256 = 8370d424a387d7608e019f9f0860d26ce2ca8090ab595a20e45d389b62b49f32 (MATCH: see first line above)
+
+## runner result
+g1-fixture-runner.sh exit=0; summary: ALL TREES OK (5/5) — see g1-fixture-summary.log
+anchor-missing branch (SUPPLEMENT-1 S3): exit=1, FAIL check8 names 'governed surface anchor missing' — see g1-fixture-anchor-missing.log; temp tree deleted after run

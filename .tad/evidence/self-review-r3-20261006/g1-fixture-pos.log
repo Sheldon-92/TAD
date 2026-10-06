@@ -1,0 +1,10 @@
+PASS check1: NEXT.md header version 3.2.0 == version.txt 3.2.0
+PASS check2: ROADMAP.md header version 3.2.0 == version.txt 3.2.0
+PASS check3: all version declarations in state-file list == 3.2.0
+PASS check4: no '3.1' edition-number forms in state-file list
+PASS check5: session-state index block paths all exist
+PASS check6: Knowledge Ingress unconditional routes all exist (1 paths)
+INFO check7: brain-index generated 2026-10-06, age 0d
+INFO check8: PAIR-1 registered exemption not present in governed block (registration hygiene)
+PASS check8: PAIR-1 governed block carries no stale pattern contradicting the fact source
+state-surface: PASS (repo: /home/hatch/workspace/yun-sync/TAD/.tad/evidence/self-review-r3-20261006/g1-fixtures/pos, version 3.2.0)

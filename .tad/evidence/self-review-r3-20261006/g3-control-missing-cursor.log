@@ -1,0 +1,3 @@
+INFO: retired ledger .tad/evidence/self-review-r3-20261006/g3-freshness-controls/missing-cursor/.tad/runtime-compat/claude-code.md absent — skipping (v3.0.0 removal)
+ERROR: missing ledger .tad/evidence/self-review-r3-20261006/g3-freshness-controls/missing-cursor/.tad/runtime-compat/cursor.md
+GATE: runtime-freshness exit=2

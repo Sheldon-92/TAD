@@ -1,0 +1,12 @@
+# Capability Pack Value Is Non-Monotonic in Model Strength
+
+**Date:** 2026-06-01
+**Linked to:** L2 pack-evaluation "Capability Pack Quality Bar: Anti-Slop Metrics"
+
+---
+
+### Capability Pack Value Is Non-Monotonic in Model Strength — Sweet Spot Is Mid-Tier (Sonnet) - 2026-06-01
+- **Context**: Measured whether a capability pack adds more value to a weaker base model. Ran the discriminative behavioral eval (WITH-pack vs knowledgeable-no-pack CONTROL, identical prompts) with the agent forced to haiku / sonnet / opus-4.8, across 3 packs spanning the value spectrum (rag-retrieval rich/high-Δ, ai-guardrails mid, data-engineering lean/mature-domain that was redundant on Opus). Δ = WITH_disc − CONTROL_disc.
+- **Discovery**: (1) **CONTROL falls monotonically as the model weakens** — weaker models produce fewer senior specifics unaided, so the pack's marginal room grows (data-eng CONTROL 5→3→2 opus→sonnet→haiku; guardrails 2→0→0). (2) **"Redundant-for-frontier" packs regain value for weaker models** — data-engineering Δ grew 5(opus)→7(sonnet)→8(haiku) because WITH held at 10 while CONTROL collapsed. Redundancy is MODEL-RELATIVE, not absolute. (3) **BUT non-monotonic for content-RICH packs: Δ peaks at SONNET, not haiku.** rag-retrieval/ai-guardrails WITH DROPS on haiku (rag WITH 9 vs sonnet 14; guardrails 6 vs 9) — haiku cannot reliably read+apply a 50KB multi-reference pack (instruction-following / long-context gate), so it gains less. Δ: rag sonnet 12 > opus 11 > haiku 8; guardrails sonnet 9 > opus 6 = haiku 6. (4) **Sonnet-tier is the best consumer**: strong enough to operationalize the whole pack, weak enough to genuinely need the specifics. (5) Reasoned caveat (not measured): a weaker model also faithfully emits pack ERRORS it can't self-catch, so pack correctness/maintenance matters MORE for weaker consumers, not less.
+- **Action**: When deciding who a capability pack is FOR / how much to invest in one: target mid-tier (Sonnet-class) consumers for max ROI. Lean packs in mature domains follow simple "weaker model = more value"; content-rich packs peak mid-tier and underperform on the weakest models — keep rich packs' Step 0 routing + reference files small/navigable so weaker models can apply them. Pack correctness is MOST critical for the weakest consumers (they won't catch errors). Use the WITH-vs-CONTROL discriminative delta at the TARGET model tier (not just frontier) to judge a pack's real marginal value.
+- **Grounded in**: .tad/evidence/pack-eval/2026-06-01/weak-model-delta-gradient.md (12 weak-model outputs + Opus baseline)

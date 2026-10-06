@@ -1,0 +1,12 @@
+INFO: retired ledger .tad/evidence/self-review-r3-20261006/g3-freshness-controls/malformed-date/.tad/runtime-compat/claude-code.md absent — skipping (v3.0.0 removal)
+=========================================
+RUNTIME FRESHNESS VERIFY
+  Repo:  .tad/evidence/self-review-r3-20261006/g3-freshness-controls/malformed-date
+  Today: 2026-10-06
+=========================================
+BLOCK [codex] context_compaction: high-volatility stale (64 days > 30)
+BLOCK [codex] context_compaction: next_review overdue (2026-09-02 < 2026-10-06, high-volatility)
+WARN  [codex] trace_evidence_capture: medium-volatility stale (64 days > 60)
+WARN  [codex] trace_evidence_capture: next_review overdue (2026-09-02 < 2026-10-06)
+BLOCK [opencode] entry_headless: invalid last_verified date 'not-a-date'
+GATE: runtime-freshness exit=2

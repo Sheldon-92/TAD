@@ -1,0 +1,6 @@
+ASSERT-OK pos: exit=0, PASS check8 present, FAIL lines=0
+ASSERT-OK neg: exit=1, exactly one FAIL line (check8, names 'no lifecycle hooks')
+ASSERT-OK exempt: exit=0, PASS check8 present, FAIL lines=0
+ASSERT-OK outside: exit=0, PASS check8 present, FAIL lines=0
+ASSERT-OK undecidable: exit=1, FAIL check8 names 'fact-source anchor missing'
+g1-fixture-runner: ALL TREES OK (5/5)
