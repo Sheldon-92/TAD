@@ -25,7 +25,7 @@
 |---|-------|--------|---------|-----------------|
 | 1 | 本体清账批 | ✅ 已收口 | v3.0.2 | 遗留五条＋GM 三件＋提案四件全销账；发版口径与校验面定案 |
 | 2 | 持续测量层 | ✅ 已收口 | v3.1.0 | 命名回归样本集＋复跑挂 Gate 3；中断续跑验收脚本；活体回归入发版清单 |
-| 3 | 运行时适配补全 | ⬚ Planned | — | OpenCode/Cursor hooks 适配落地＋两平台真机全链 transcript |
+| 3 | 运行时适配补全 | ✅ 已收口 | v3.2.0 并版 | OpenCode/Cursor hooks 适配落地＋三家真机基线（Codex PASS 基线待 2026-10-10 补跑）；Gate 4 CONDITIONAL（(ii) 已销账） |
 | 4 | 体量与知识复产 | ✅ 已收口 | v3.2.0 并版 | 440M（净降 81M 逐项归因）；brain-index 生成器编码修复＋周期入 publish-protocol＋刷新路径接线；D35 空集＋记账装载点复活；Gate 4 PASS |
 
 ### Phase Dependencies
@@ -42,7 +42,7 @@ Status and progress are computed from the Phase Map:
 
 ### Phase 1: 本体清账批
 
-**Status:** ⬚ Planned
+**Status:** ✅ 已收口（见 Phase Map 与各段完事卡）
 **Execution:** pending
 
 #### Scope
@@ -103,7 +103,7 @@ None (can execute independently)——本 Phase 是全 Epic 的起点。
 
 ### Phase 2: 持续测量层
 
-**Status:** ⬚ Planned
+**Status:** ✅ 已收口（见 Phase Map 与各段完事卡）
 **Execution:** pending
 
 #### Scope
@@ -153,7 +153,7 @@ Phase 1（根因模板与发版清单基座）。
 
 ### Phase 3: 运行时适配补全
 
-**Status:** ⬚ Planned
+**Status:** ✅ 已收口（见 Phase Map 与各段完事卡）
 **Execution:** pending
 
 #### Scope
@@ -201,7 +201,7 @@ Phase 2（活体回归口径与中断续跑脚本为真机回归判据工具）�
 
 ### Phase 4: 体量与知识复产
 
-**Status:** ⬚ Planned
+**Status:** ✅ 已收口（见 Phase Map 与各段完事卡）
 **Execution:** pending
 
 #### Scope

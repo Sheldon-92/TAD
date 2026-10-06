@@ -232,6 +232,11 @@ publish_protocol:
            生成的台账 .tad/evidence/pm/downstream-versions.md 以 git add -f
            单文件例外随收口 commit 入主仓（Gate 2 载体裁定（乙））；
            台账是派生索引，禁止手改。
+        4. 散文状态面回读（2026-10-06 补，EPIC-20261006 收口漏网归因）：
+           语义状态面不入脚本（脚本只查字面）——收口执行者人工回读
+           AGENTS.md 的 Runtime status 段与 Known Gaps、以及当期 Epic/链
+           状态件的 Status 行，逐处与当期事实对照，不一致即当场回写并
+           记入收口记录；漏读此步不许宣告发版完成。
       blocking: true
 
     step3f:
