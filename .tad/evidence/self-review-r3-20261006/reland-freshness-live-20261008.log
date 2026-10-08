@@ -1,0 +1,14 @@
+INFO: ledger ./.tad/runtime-compat/claude-code.md is retired — skipping (v3.0.0 removal)
+=========================================
+RUNTIME FRESHNESS VERIFY
+  Repo:  .
+  Today: 2026-10-08
+=========================================
+BLOCK [codex] context_compaction: high-volatility stale (66 days > 30)
+BLOCK [codex] context_compaction: next_review overdue (2026-09-02 < 2026-10-08, high-volatility)
+WARN  [codex] trace_evidence_capture: medium-volatility stale (66 days > 60)
+WARN  [codex] trace_evidence_capture: next_review overdue (2026-09-02 < 2026-10-08)
+-----------------------------------------
+Total: 31 entries | PASS: 29 | WARN: 1 | BLOCK: 1
+VERDICT: runtime freshness BLOCK
+GATE: runtime-freshness exit=1

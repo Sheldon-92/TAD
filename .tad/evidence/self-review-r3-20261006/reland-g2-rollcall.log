@@ -1,0 +1,37 @@
+reland g2 evidence roll-call — 2026-10-08 (Blake, roll-call only, experiment NOT rerun)
+dir: .tad/evidence/self-review-r3-20261006/g2-borrow4-trial
+file_count: 33
+experiment-report.md: 6174 bytes — IN PLACE
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/authority-manifest-after.sha256
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/authority-manifest-before.sha256
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/build-record.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/expected-subset-13.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/experiment-report.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/questions-subset-13.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/run-trace.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/ac-grep-count-reference-pack.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/ac-verification-command-bug.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/academic-research-pack-pilot.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/ad-hoc-dead-code-audit.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/alex-role-decay-direct-execution.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/anchorless-tad-sed.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/chattts-consistency-pattern.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/claude-md-routing-label-conflicts.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/codex-agents-md-auto-load.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/codex-edition-parity.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/cross-agent-parity-check.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/derived-copy-set-dotfiles.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/embedded-copy-drift-check.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/expert-reviewer-premise-check.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/gemini-cli-constraints.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/layer2-audit-reviewer-name-drift.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/line-anchored-blockquote-sed.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/pack-collision-detection.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/pack-value-cross-vendor.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/pack-value-non-monotonic.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/parser-self-trigger.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/progressive-disclosure-extract.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/scienceclaw-skill-decoupling.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/scoring-rubrics-need-methodology-review.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/drawers/section-9-1-region-marker.md
+.tad/evidence/self-review-r3-20261006/g2-borrow4-trial/trial-index/routing.md
