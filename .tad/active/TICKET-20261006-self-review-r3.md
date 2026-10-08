@@ -16,3 +16,8 @@
 - 状态：**CLOSED**。Gate 4 PASS 无条件（gate4-alex.md 14,557 B）；Gate 3 终值 CODE PASS（F-1 经补落定点核销）＋SAFETY PASS。
 - 借 4 终裁（PM）：**立项、限定范围**——采 Gate 4 建议四条限定（首批只覆盖 incidents 面；只立文本路由、向量后端与 ChromaDB 许可继续挂账；后续实验预登记「恰返 3 候选」；构造纪律照试验形态冻结），列为下一轮自查批（R4）具名首项，本票不扩围实施。
 - 连带登记（转 R4 输入）：freshness 校验器 F-S2 两处非 fail-closed 残面（next_review 列格式坏静默跳过、表头锚不命中贡献 0 行不报错）。
+
+## 现行线收口确认（2026-10-08，PM）
+
+- 2026-10-06 同步对象丢失后，本票成果分两路在现行 main 补齐：组 3 经 Plan B 提交 `5b6617ad` 重做落地；组 1 经补落提交 `2d0929f2`（与原评审实现 `0099fbc0` 逐字节同哈希）入线；组 2 证据与借 4 终裁件在盘完好。
+- 补落链：Gate 3 双审 PASS（gate3-reland-code/safety）→ Gate 4 PASS 无条件（gate4-reland-alex.md），票 CLOSED 在现行线正式成立。补落记录 `.tad/evidence/self-review-r3-20261006/reland-closeout-note.md`。
