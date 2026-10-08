@@ -1,8 +1,10 @@
 # TAD Method - Triangle Agent Development
 
-**Version 3.2.0 — Codex / OpenCode / Cursor Supported**
+**Version 3.2.0 — Codex / OpenCode / Cursor Supported · Claude Code via AGENTS.md**
 
 > v3.0.0: runtime support consolidated on `.agents/skills/` as the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
+>
+> Claude Code ≥ 2.1.277 reads `AGENTS.md` natively, so TAD's roles and gates load there directly at instruction level (no separate installer target).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 

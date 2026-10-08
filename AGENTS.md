@@ -9,7 +9,9 @@ Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowl
 > **Runtime status (v3.2.0)**: TAD supports **Codex**, **OpenCode**, and **Cursor**.
 > `.agents/skills/` is a first-party discovery path on all three and `AGENTS.md`
 > is read natively by all three, so roles, gates, and capability packs load
-> open-box. All three runtimes are **hook-enabled** (Epic Phase 3, 2026-10-06):
+> open-box. **Claude Code** (≥ 2.1.277) also reads `AGENTS.md` natively, so
+> roles and gates load there at instruction level (no `.agents/skills/`
+> discovery and no installer target on that runtime). All three runtimes are **hook-enabled** (Epic Phase 3, 2026-10-06):
 > Codex natively; OpenCode via the projected plugin and Cursor via projected
 > hooks + shims, both over the shared `.tad/hooks/*.sh` behavior source
 > (residual boundaries R-OC-1/R-OC-2/R-CU-1 — see Known Gaps).
