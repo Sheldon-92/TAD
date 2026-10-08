@@ -83,7 +83,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 流程：先运行 `--check` 查看当前/远程版本与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 apply。helper 会在每次项目变更前自动备份，且仅在你确认后调用官方安装器。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
 
-### 升级到 v3.0.0（Claude Code 路径移除）
+### 升级到 v3.0.0（平台支持整合）
 
 1. **只用 Codex 的用户**：无需操作。`npx tad-framework` / `curl | bash` 现在默认装
    `.agents/skills`；`--platform codex` 为默认。

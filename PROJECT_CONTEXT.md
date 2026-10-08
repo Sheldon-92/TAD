@@ -1,7 +1,7 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 3.2.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture + Claude Code path removed, Codex hook-enabled + OpenCode/Cursor supported)
+- **Version**: 3.2.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture, Codex hook-enabled + OpenCode/Cursor supported)
 - **Last Updated**: 2026-09-16
 - **Framework**: TAD v3.2.0 + Full-default/Lite-frozen + 25 Capability Packs + Codex hook-enabled + OpenCode/Cursor supported + Local Wiki Research + Compact Recovery
 

@@ -1,8 +1,8 @@
 # TAD Method - Triangle Agent Development
 
-**Version 3.2.0 — Claude Code Path Removed, Codex / OpenCode / Cursor Supported**
+**Version 3.2.0 — Codex / OpenCode / Cursor Supported**
 
-> v3.0.0: Claude Code runtime path removed (breaking); `.agents/skills/` is the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
+> v3.0.0: runtime support consolidated on `.agents/skills/` as the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
 
 > 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
@@ -503,6 +503,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v3.0.0 — Claude Code Path Removed, Codex Sole Runtime**
+**Welcome to TAD v3.2.0 — Codex / OpenCode / Cursor**
 
 *AI does the work. Humans guard the value.*

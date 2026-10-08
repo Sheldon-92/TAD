@@ -24,7 +24,7 @@ Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.m
 | YOLO 2.0 verified orchestration | Complete, opt-in | Codex fresh/resume is proven. Claude Code, OpenCode, and DeepSeek adapters are experimental and qualify on first real use. Default-on remains deferred. |
 | Local Wiki research | Complete | File-is-truth research, stdlib FTS5 retrieval, and native rendered-page capture are accepted. Public YouTube captions remain experimental; Whisper/vector retrieval wait for measured need. |
 | Capability Builder `create` | Phase 1 complete | Projects can create, validate, project, and behaviorally prove locally owned Agent Skills. Evolution and packaging remain separate phases. |
-| v3.0.0 release | Published | Claude Code runtime path removed; single `.agents/skills/` tree. See [CHANGELOG](./CHANGELOG.md). |
+| v3.0.0 release | Published | Runtime consolidated on a single `.agents/skills/` tree. See [CHANGELOG](./CHANGELOG.md). |
 | Platform Adapters P1+P3 | Complete | Installer accepts `codex\|opencode\|cursor`; P2 (lifecycle hooks) and P4 (live regression) remain Known Gaps. |
 
 ## Active and parked work

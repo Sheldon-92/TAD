@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0] - 2026-09-16
 
 ### Removed
-- **Claude Code runtime path removed (breaking).**
+- **Runtime support consolidated on a single skill tree (breaking).**
   - Deleted `.claude/` (skills source, `settings.json` hooks, `workflows/`, `agents/`, `rules/`, `commands/`) and root `CLAUDE.md`.
   - `.agents/skills/` is now the **sole** skill source; the installer reads and writes it directly (no mirror).
   - `--platform claude-code` and `--platform both` are **rejected before any mutation**, with a printed recovery command; `--platform codex` is the only target and the default.
