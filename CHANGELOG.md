@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0] - 2026-09-16
 
-### Removed
+### Changed
 - **Runtime support consolidated on a single skill tree (breaking).**
-  - Deleted `.claude/` (skills source, `settings.json` hooks, `workflows/`, `agents/`, `rules/`, `commands/`) and root `CLAUDE.md`.
+  - The `.claude/` tree (skills source, `settings.json` hooks, `workflows/`, `agents/`, `rules/`, `commands/`) and root `CLAUDE.md` are no longer shipped.
   - `.agents/skills/` is now the **sole** skill source; the installer reads and writes it directly (no mirror).
-  - `--platform claude-code` and `--platform both` are **rejected before any mutation**, with a printed recovery command; `--platform codex` is the only target and the default.
-  - Removed Claude model bindings: `.claude/agents/*` opus/sonnet pins, the `claude-haiku` PreToolUse prompt hook, `.claude/workflows/*` model pins, `.tad/config-agents.yaml teammate_model: sonnet`, and the YOLO/pair-driver `claude` CLI spawn (`claude -p --model sonnet`).
+  - `--platform claude-code` and `--platform both` are **no longer offered**; the installer stops before any mutation and prints guidance. `--platform codex` is the default target.
+  - Model bindings tied to the legacy path: `.claude/agents/*` opus/sonnet pins, the `claude-haiku` PreToolUse prompt hook, `.claude/workflows/*` model pins, `.tad/config-agents.yaml teammate_model: sonnet`, and the YOLO/pair-driver `claude` CLI spawn (`claude -p --model sonnet`).
   - Renamed `claude_websearch` → `websearch`, `claude_code_reviewer` → `code_reviewer`.
   - `release-verify.sh parity` / `platform-skills` removed (single skill tree; nothing to mirror).
   - **No user data is deleted**: pre-existing `.claude/` trees downstream (including user hooks, MCP, and permission config) are left byte-for-byte intact and are never recursively removed. No new migration manifest deletes `.claude/**`.

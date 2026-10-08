@@ -19,8 +19,9 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform codex --packs web-frontend,web-backend
 ```
 
-> `--platform claude-code` / `--platform both` 自 v3.0.0 起被拒绝：
-> 安装器会在改动任何文件前报错，并打印恢复命令（改传 `--platform codex` 即可）。
+> `--platform claude-code` / `--platform both` 自 v3.0.0 起不再提供：
+> 安装器会在改动任何文件前停下并打印说明。Claude Code 无需安装目标——
+> Claude Code ≥2.1.277 原生读取 `AGENTS.md`，角色与门禁可直接加载。
 > `opencode` / `cursor` 现为合法目标。
 > 详见下方「升级到 v3.0.0」。
 
@@ -87,12 +88,13 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 1. **只用 Codex 的用户**：无需操作。`npx tad-framework` / `curl | bash` 现在默认装
    `.agents/skills`；`--platform codex` 为默认。
-2. **仍装 Claude Code 的用户**：Claude 路径自 v3.0.0 起**不再更新**。升级**不会删除、
-   不会改写**你现有的 `.claude/`（含 skills、settings.json、hooks、MCP、权限配置）。
-   如需清理请手动操作：`rm -rf .claude/skills .claude/workflows .claude/settings.json`
+2. **Claude Code 的用户**：自 v3.0.0 起请直接以 AGENTS.md 方式使用（Claude Code
+   ≥2.1.277 原生读取本仓 `AGENTS.md`，角色与门禁可直接加载）。升级**不会删除、
+   不会改写**你现有的 `.claude/`（含 skills、settings.json、hooks、MCP、权限配置），
+   旧文件可自行保留或清理。
   （**TAD 不会代删**）。
-3. **脚本里传 `--platform claude-code` 或 `--platform both` 的用户**：v3 会**在改动任何文件前**
-   报错，并打印恢复命令。请改传 `--platform codex`，或直接重跑：
+3. **脚本里传 `--platform claude-code` 或 `--platform both` 的用户**：该参数自 v3 起不再
+   提供，安装器会**在改动任何文件前**停下并打印说明。请改传 `--platform codex`，或直接重跑：
    - 本地 updater：`bash .tad/scripts/tad-update.sh --platform codex --yes`
    - npm：`npx tad-framework@latest --platform codex`
    - curl：`curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes`

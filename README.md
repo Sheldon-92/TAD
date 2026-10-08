@@ -171,7 +171,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 一行命令，默认安装（codex 目标）+ 全部 25 个 capability packs。首次安装与升级用同一命令；旧项目升级不会删除既有文件，项目数据不变。
 
 `--platform codex|opencode|cursor` 均可（默认 codex）。`--platform claude-code` / `--platform both`
-在 v3.0.0 起被拒绝（改动任何文件前报错，并打印恢复命令）；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+自 v3.0.0 起不再提供（安装器会在改动任何文件前停下并打印说明）；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
 
 > 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 
@@ -497,7 +497,7 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 - [Codex User Guide](docs/CODEX-USER-GUIDE.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
 - [Value Proposition](docs/value-proposition.md) — every claim cited to an on-disk artifact
-- [Agent Skills](.claude/skills/)
+- [Agent Skills](.agents/skills/)
 - [Configuration](.tad/config.yaml)
 
 > Earlier documentation (portal, overview, audit report) is archived under

@@ -1,15 +1,17 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 3.2.0 (Codex hook-enabled + OpenCode/Cursor supported; Claude Code path removed)
+**Version**: 3.2.0 (Codex hook-enabled + OpenCode/Cursor supported + Claude Code via AGENTS.md)
 
 TAD runs on **Codex, OpenCode, and Cursor as supported harnesses**, with a shared protocol.
 Since v3.0.0 there is a single skill tree
 (`.agents/skills/`, the shared source of truth) and three install targets (`codex|opencode|cursor`, default `codex`).
 Codex is the **hook-enabled** runtime; OpenCode and Cursor get skills + routing + packs but no lifecycle hooks (Platform Adapters P2 — known gap).
-The Claude Code runtime path (install target, hooks, workflows, model bindings) was
-removed in v3.0.0 — see `CHANGELOG.md` (`### Removed`) and the retired ledger
-`.tad/runtime-compat/claude-code.md`. Upgrading never deletes a pre-existing
-downstream `.claude/` tree (user hooks / MCP / permission config stay byte-identical).
+Claude Code is served at instruction level: since 2.1.277 it reads `AGENTS.md`
+natively, so TAD's roles and gates load there without an install target. The
+legacy install path (hooks, workflows, model bindings) is recorded in
+`CHANGELOG.md` and the compatibility ledger `.tad/runtime-compat/claude-code.md`.
+Upgrading never deletes a pre-existing downstream `.claude/` tree (user hooks /
+MCP / permission config stay byte-identical).
 
 ---
 
@@ -20,7 +22,7 @@ downstream `.claude/` tree (user hooks / MCP / permission config stay byte-ident
 | **Codex** | Hook-enabled (since v2.25.0; hooks via `.codex/hooks.json`) | `.agents/skills/` | `.codex/hooks.json` only | Built-in default/worker/explorer |
 | **OpenCode** | Supported (skills + AGENTS.md + packs; hooks P2 — not yet) | `.agents/skills/` | `.opencode/commands/tad-update.md` updater-only; hooks P2 | Built-in |
 | **Cursor** | Supported (skills + AGENTS.md + packs; hooks P2 — not yet) | `.agents/skills/` | — (hooks P2) | Built-in |
-| **Claude Code** | Removed in v3.0.0 (was first-class ≤2.44.6) | — (no longer installed; pre-existing downstream trees are left untouched) | — | — |
+| **Claude Code** | Via AGENTS.md (≥2.1.277, instruction level) | — (no install target; `AGENTS.md` is read natively) | — | Built-in |
 
 Codex native config (`.codex/config.toml`) and custom agents (`.codex/agents/`) are **draft-only** — candidate files exist under `.tad/evidence/designs/codex-runtime-candidates/` but are **not active** until activation criteria are met (see below).
 
@@ -38,7 +40,7 @@ TAD Shared Protocol (invariant across platforms)
 ├── Completion/evidence/trace requirements
 └── Knowledge assessment
 
-Claude Code Adapter (removed in v3.0.0)   Codex Adapter
+Claude Code Adapter (legacy, ≤2.44.6)   Codex Adapter
 ├── (install target deleted)               ├── .agents/skills/
 ├── (settings.json hooks deleted)          ├── AGENTS.md routing
 ├── (workflows deleted — no equivalent)    ├── $skill invocation
@@ -49,7 +51,7 @@ Claude Code Adapter (removed in v3.0.0)   Codex Adapter
 
 Runtime Freshness Layer
 ├── .tad/runtime-compat/codex.md       (active)
-├── .tad/runtime-compat/claude-code.md (RETIRED in v3.0.0 — retained as historical record, not gated)
+├── .tad/runtime-compat/claude-code.md (legacy — historical record, not gated)
 └── Release/sync freshness gate        (active)
 ```
 
@@ -83,13 +85,15 @@ SKILL.md Capability Packs are the only active pack system.
 
 ---
 
-## Claude Code Adapter (removed in v3.0.0)
+## Claude Code (legacy adapter, ≤2.44.6)
 
-The Claude Code runtime path — install target (`.claude/skills/`, `.claude/settings.json`
-hooks, `.claude/workflows/`, `.claude/agents/` model pins) — was removed in v3.0.0
-(see `CHANGELOG.md` `### Removed`). The retired compatibility ledger
-`.tad/runtime-compat/claude-code.md` records the removal rationale and is retained as a
-historical record. Downstream upgrades never delete a pre-existing `.claude/` tree.
+Up to v2.44.6 Claude Code had a first-class adapter — install target
+(`.claude/skills/`, `.claude/settings.json` hooks, `.claude/workflows/`,
+`.claude/agents/` model pins). Since v3.0.0 TAD ships a single skill tree for
+its install targets, and Claude Code ≥2.1.277 is served through native
+`AGENTS.md` reading instead. The compatibility ledger
+`.tad/runtime-compat/claude-code.md` is retained as a historical record.
+Downstream upgrades never delete a pre-existing `.claude/` tree.
 
 ---
 
