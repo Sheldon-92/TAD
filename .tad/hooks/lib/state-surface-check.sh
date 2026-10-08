@@ -37,6 +37,7 @@
 #   7. .tad/brain-index.md Generated-date freshness. The age is always
 #      reported as INFO; older than BRAIN_INDEX_WARN_AGE_DAYS is WARN only,
 #      while a missing or unparseable Generated date is FAIL.
+#   8. Keyword-conflict assertion on registered governed-surface pairs.
 #
 # bash + grep + sed only; no yaml, no network, no node.
 
@@ -313,6 +314,100 @@ else
       fail check7 "brain-index Generated date missing or unparseable in first 20 lines"
       ;;
   esac
+fi
+
+# ---- Check 8: keyword-conflict assertion on registered surface pairs -----
+# Registered governed-surface pairs (MAINTENANCE POINT: one block per
+# pair; adding a pair = add its constants here + a fixture tree).
+# Three-layer false-positive defence: (1) jurisdiction is this explicit
+# pair registry only — nothing outside a registered pair is scanned;
+# (2) the governed side is compared only inside its anchored block, so
+# historical sections of the same file are never scanned; (3) verbatim
+# exemptions registered per pair are masked out of the normalized block
+# before matching (exact literals only, no regex).
+#
+# PAIR-1:
+#   governed surface : AGENTS.md blockquote block anchored at the
+#                      "> **Runtime status" line
+#   fact source      : same file, "## Known Gaps" section, first line
+#                      starting "- **P2 " and naming "Hook adapters";
+#                      the fact holds iff that line contains "(implemented"
+#   stale patterns   : literals from the 2026-10-06 incident header text
+#   exemption        : registered 2026-10-06 — an in-block correction
+#                      note legitimately quoting the superseded wording
+C8_PAIR1_STALE_1='no lifecycle hooks'
+C8_PAIR1_STALE_2='the **hook-enabled** runtime'
+C8_PAIR1_STALE_3='currently get skills + routing + packs'
+C8_PAIR1_EXEMPT_1='had "no lifecycle hooks"; superseded by Epic Phase 3'
+
+C8_FILE="$REPO/AGENTS.md"
+if [ ! -f "$C8_FILE" ]; then
+  fail check8 "PAIR-1 governed surface anchor missing: AGENTS.md not found"
+else
+  # Governed block extraction (stateful awk): from the anchor line,
+  # collect the consecutive blockquote lines; stop at the first
+  # non-blockquote line. No range-pattern extraction — the extraction
+  # boundary must match the governed location exactly.
+  c8_block="$(awk '
+    /^> \*\*Runtime status/ { inblock=1 }
+    inblock && /^>/ { print; next }
+    inblock { exit }
+  ' "$C8_FILE")"
+  if [ -z "$c8_block" ]; then
+    fail check8 "PAIR-1 governed surface anchor missing in AGENTS.md (Runtime status block not found)"
+  else
+    # Fact source line (stateful awk over the Known Gaps section).
+    c8_fact="$(awk '
+      index($0, "## Known Gaps") == 1 { insec=1; next }
+      insec && /^## / { exit }
+      insec && index($0, "- **P2 ") == 1 && index($0, "Hook adapters") > 0 { print; exit }
+    ' "$C8_FILE")"
+    if [ -z "$c8_fact" ]; then
+      fail check8 "PAIR-1 fact-source anchor missing in AGENTS.md (Known Gaps P2 bullet not found)"
+    elif ! printf '%s' "$c8_fact" | grep -Fq -e '(implemented'; then
+      pass check8 "PAIR-1 fact source does not assert implementation; governed wording is not a contradiction"
+      echo "INFO check8: PAIR-1 fact pattern '(implemented' absent from fact-source line; stale-pattern scan skipped"
+    else
+      # Normalize the governed block: strip the leading ">" plus at most
+      # one space per line, join lines with a single space, collapse
+      # space runs — a stale phrase wrapped across blockquote lines
+      # (the incident text wraps "no lifecycle" / "hooks**" across two
+      # lines) must still match after normalization.
+      c8_text="$(printf '%s\n' "$c8_block" | sed 's/^> \{0,1\}//' | tr '\n' ' ' | tr -s ' ')"
+      # Registration hygiene: a registered exemption that no longer
+      # appears in the block is reported as INFO only, never a FAIL.
+      if ! printf '%s' "$c8_text" | grep -Fq -e "$C8_PAIR1_EXEMPT_1"; then
+        echo "INFO check8: PAIR-1 registered exemption not present in governed block (registration hygiene)"
+      fi
+      # Mask registered verbatim exemptions before matching: locate
+      # with awk index() (the only string operation verified safe in
+      # this repo's CJK context) and cut the literal out. Never use
+      # awk string equality or shell glob substitution here — the
+      # exemption literal contains quotes and punctuation.
+      c8_masked="$(printf '%s' "$c8_text" | C8_EXEMPT="$C8_PAIR1_EXEMPT_1" awk '
+        { buf = buf $0 }
+        END {
+          ex = ENVIRON["C8_EXEMPT"]
+          while ((i = index(buf, ex)) > 0) {
+            buf = substr(buf, 1, i - 1) substr(buf, i + length(ex))
+          }
+          print buf
+        }')"
+      # Aggregate verdict: at most one fail() call per pair, naming
+      # every stale pattern hit in the one message.
+      c8_hits=""
+      for c8_pat in "$C8_PAIR1_STALE_1" "$C8_PAIR1_STALE_2" "$C8_PAIR1_STALE_3"; do
+        if printf '%s' "$c8_masked" | grep -Fq -e "$c8_pat"; then
+          c8_hits="${c8_hits:+$c8_hits; }'$c8_pat'"
+        fi
+      done
+      if [ -n "$c8_hits" ]; then
+        fail check8 "PAIR-1 stale pattern(s) in governed block contradict fact source: $c8_hits"
+      else
+        pass check8 "PAIR-1 governed block carries no stale pattern contradicting the fact source"
+      fi
+    fi
+  fi
 fi
 
 if [ "$fails" -eq 0 ]; then
