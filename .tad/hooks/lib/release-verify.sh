@@ -98,6 +98,16 @@
 #       site (each NAMED file:line); exit 2 = usage. STABLE-contract: the
 #       exit-code meanings are frozen (see gate rule above).
 #
+#   provenance <repo_root>
+#       Legacy Claude Code ledger gate (Phase 4a): (1) .tad/provenance/MANIFEST.sha1 equals
+#       the git blob id of claude-legacy.tsv; (2) the header `rows=` equals the data row
+#       count; (3) the blob id of the current .tad/templates/claude/settings.json is a
+#       `settings` row (this is the upgrade channel for a new hook template); (4) the blob
+#       id of the current .agents/skills/alex/SKILL.md is a `skill` row keyed alex/SKILL.md
+#       (sample proof that the ledger kept up with HEAD). Fix: run
+#       .tad/scripts/gen-claude-provenance.sh. Exit 0 = pass; exit 1 = ledger stale or
+#       damaged (each failed check NAMED); exit 2 = usage / no SHA-1 tool.
+#
 #   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
 #       nothing to mirror). Replaced by `structural` (.agents/skills byte-identity).
 #       Any caller still invoking them gets usage exit 2 (fail-closed).
@@ -133,6 +143,7 @@ usage() {
   echo "  release-verify.sh freshness <repo_root> [<today_yyyy_mm_dd>]" >&2
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
   echo "  release-verify.sh installer-destructive-guard <repo_root>" >&2
+  echo "  release-verify.sh provenance <repo_root>" >&2
   echo "  release-verify.sh state-surface [<repo_root>]" >&2
 }
 
@@ -792,6 +803,72 @@ VERSION_SWEEP_EOF
       exit 0
     else
       echo "VERDICT: installer-destructive-guard FAIL — $gfails unmarked/duplicate site(s) (exit 1)"
+      exit 1
+    fi
+    ;;
+
+  # ───────────────────────── provenance ─────────────────────────
+  provenance)
+    if [ $# -ne 2 ]; then usage; exit 2; fi
+    PV_REPO="$2"
+    PV_DIR="$PV_REPO/.tad/provenance"
+    PV_LEDGER="$PV_DIR/claude-legacy.tsv"
+    PV_MANIFEST="$PV_DIR/MANIFEST.sha1"
+    PV_TPL="$PV_REPO/.tad/templates/claude/settings.json"
+    PV_ALEX="$PV_REPO/.agents/skills/alex/SKILL.md"
+    echo "========================================="
+    echo "PROVENANCE (legacy Claude Code ledger)"
+    echo "  DIR: $PV_DIR"
+    echo "========================================="
+    # Git blob id without git: sha1("blob <size>\0" + content). Same algorithm the installer uses.
+    PV_TOOL=""
+    if command -v shasum >/dev/null 2>&1 && [ "$(printf abc | shasum -a 1 2>/dev/null | cut -d' ' -f1)" = "a9993e364706816aba3e25717850c26c9cd0d89d" ]; then PV_TOOL=shasum
+    elif command -v sha1sum >/dev/null 2>&1 && [ "$(printf abc | sha1sum 2>/dev/null | cut -d' ' -f1)" = "a9993e364706816aba3e25717850c26c9cd0d89d" ]; then PV_TOOL=sha1sum
+    elif command -v openssl >/dev/null 2>&1 && [ "$(printf abc | openssl sha1 2>/dev/null | awk '{print $NF}')" = "a9993e364706816aba3e25717850c26c9cd0d89d" ]; then PV_TOOL=openssl
+    fi
+    if [ -z "$PV_TOOL" ]; then echo "ERROR: no working SHA-1 tool (shasum, sha1sum, openssl)" >&2; exit 2; fi
+    pv_blob_id() {
+      local f="$1" o
+      case "$PV_TOOL" in
+        shasum) o="$({ printf 'blob %s\0' "$(( $(LC_ALL=C wc -c < "$f") ))"; cat -- "$f"; } | shasum -a 1)"; printf '%s' "${o%% *}" ;;
+        sha1sum) o="$({ printf 'blob %s\0' "$(( $(LC_ALL=C wc -c < "$f") ))"; cat -- "$f"; } | sha1sum)"; printf '%s' "${o%% *}" ;;
+        openssl) o="$({ printf 'blob %s\0' "$(( $(LC_ALL=C wc -c < "$f") ))"; cat -- "$f"; } | openssl sha1)"; printf '%s' "${o##* }" ;;
+      esac
+    }
+    pvfails=0
+    pv_fail() { echo "  ❌ $*" >&2; pvfails=$((pvfails + 1)); }
+    if [ ! -f "$PV_LEDGER" ] || [ ! -f "$PV_MANIFEST" ]; then
+      pv_fail "ledger or MANIFEST.sha1 missing under $PV_DIR (run .tad/scripts/gen-claude-provenance.sh)"
+    else
+      # (1) manifest
+      pv_have="$(pv_blob_id "$PV_LEDGER")"
+      pv_want="$(tr -d ' \t\r\n' < "$PV_MANIFEST")"
+      if [ "$pv_have" = "$pv_want" ] && [ -n "$pv_have" ]; then echo "  ✓ MANIFEST.sha1 matches the ledger ($pv_have)"
+      else pv_fail "MANIFEST.sha1 ($pv_want) != ledger blob id ($pv_have)"; fi
+      # (2) row count
+      pv_hdr_rows="$(sed -n '1s/^# schema=1 rows=\([0-9][0-9]*\)$/\1/p' "$PV_LEDGER")"
+      pv_rows="$(grep -vc '^#' "$PV_LEDGER" || true)"
+      if [ -n "$pv_hdr_rows" ] && [ "$pv_hdr_rows" = "$(printf '%s' "$pv_rows" | tr -d ' ')" ]; then echo "  ✓ header rows= matches the data row count ($pv_hdr_rows)"
+      else pv_fail "header rows= '$pv_hdr_rows' != data rows '$pv_rows' (or the header is not '# schema=1 rows=<n>')"; fi
+      # (3) current hook template is an accepted settings blob
+      if [ -f "$PV_TPL" ]; then
+        pv_id="$(pv_blob_id "$PV_TPL")"
+        if grep -qxF -e "$(printf 'settings\t%s\t-' "$pv_id")" "$PV_LEDGER"; then echo "  ✓ current hook template is a settings row ($pv_id)"
+        else pv_fail "current .tad/templates/claude/settings.json ($pv_id) is not a settings row; regenerate the ledger"; fi
+      else pv_fail "hook template missing: $PV_TPL"; fi
+      # (4) sample: HEAD alex SKILL.md is a skill row
+      if [ -f "$PV_ALEX" ]; then
+        pv_id="$(pv_blob_id "$PV_ALEX")"
+        if grep -qxF -e "$(printf 'skill\t%s\talex/SKILL.md' "$pv_id")" "$PV_LEDGER"; then echo "  ✓ current alex/SKILL.md is a skill row ($pv_id)"
+        else pv_fail "current .agents/skills/alex/SKILL.md ($pv_id) is not a skill row; regenerate the ledger"; fi
+      else pv_fail "sample file missing: $PV_ALEX"; fi
+    fi
+    echo "-----------------------------------------"
+    if [ "$pvfails" -eq 0 ]; then
+      echo "VERDICT: provenance PASS (exit 0)"
+      exit 0
+    else
+      echo "VERDICT: provenance FAIL — $pvfails check(s) failed (exit 1)"
       exit 1
     fi
     ;;

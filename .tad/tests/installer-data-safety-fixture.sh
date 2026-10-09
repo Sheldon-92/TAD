@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.17|r1|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.17|r1|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -1237,6 +1237,383 @@ case_r1() {
   if [ "$bad" = "0" ]; then pass "r1: working tree matches §7 fence"; else fail "r1: out-of-fence entries present (see above)"; fi
 }
 
+# ── Phase 4a: legacy Claude Code install adoption ────────────────────
+# The stage_pruned_source copy omits .tad/provenance (it is a TAD_TRANSIENT dir,
+# never copied to targets); the adoption cases stage the ledger explicitly.
+stage_provenance() {
+  mkdir -p "$SOURCE/.tad/provenance"
+  cp "$REPO"/.tad/provenance/claude-legacy.tsv "$REPO"/.tad/provenance/MANIFEST.sha1 "$SOURCE/.tad/provenance/"
+}
+
+# legacy_claude_target — a v2.44.6-style Claude Code install claiming 3.1.0 (so the
+# installer takes the plain upgrade path): alex, gate, blake, settings.json and a
+# CLAUDE.md, all straight from the released tag.
+legacy_claude_target() {
+  if ! git -C "$REPO" rev-parse -q --verify 'v2.44.6^{commit}' >/dev/null 2>&1; then
+    fail "$CURRENT_CASE: tag v2.44.6 missing (cannot build the legacy fixture)"; return 1
+  fi
+  mkdir -p "$TARGET/.tad/active/handoffs"; printf '3.1.0\n' > "$TARGET/.tad/version.txt"
+  ( cd "$REPO" && git archive v2.44.6 .claude/skills/alex .claude/skills/gate .claude/skills/blake .claude/settings.json CLAUDE.md ) | tar -x -C "$TARGET" || { fail "$CURRENT_CASE: git archive failed"; return 1; }
+  return 0
+}
+
+adopt_archive_dir() { find "$SANDBOX/cc-backups" -type d -path '*/claude-adopt/*' -mindepth 3 -maxdepth 3 2>/dev/null | head -1; }
+adopt_tomb_count() { find "$TARGET/.claude" -name '.tad-adopt-tomb*' 2>/dev/null | wc -l | tr -d ' '; }
+
+# AC2.18: a read-only sub-directory inside an adopted skill must not fail the install.
+case_ac218() {
+  CURRENT_CASE="ac2.18"
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  local ro rc a
+  ro="$(find "$TARGET/.claude/skills/alex" -mindepth 1 -type d | head -1)"
+  if [ -z "$ro" ]; then fail "ac2.18: legacy alex has no sub-directory to make read-only"; return 0; fi
+  chmod 555 "$ro"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && [ -L "$TARGET/.claude/skills/alex" ] && [ "$(readlink "$TARGET/.claude/skills/alex")" = "../../.agents/skills/alex" ]; then
+    pass "ac2.18: install rc=0 and the skill with a read-only sub-directory was adopted"
+  else
+    fail "ac2.18: install rc=$rc or alex not adopted"
+  fi
+  a="$(adopt_archive_dir)"
+  if [ -n "$a" ] && [ -d "$a/tree/.claude/skills/alex" ]; then pass "ac2.18: the archive holds the skill"; else fail "ac2.18: archive copy missing"; fi
+  if [ "$(adopt_tomb_count)" = "0" ] || grep -qF 'Tombstones kept' "$SANDBOX/install.log"; then
+    pass "ac2.18: the tombstone is gone, or its being kept is stated in the summary"
+  else
+    fail "ac2.18: a tombstone is left behind without a word"
+  fi
+  chmod -R u+w "$SANDBOX" 2>/dev/null || true
+  assert_no_network
+}
+
+# AC2.19: a skill directory that cannot be renamed (mode 0555) is left, not fatal.
+case_ac219() {
+  CURRENT_CASE="ac2.19"
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  local rc a
+  cp "$TARGET/.claude/skills/alex/SKILL.md" "$SNAP/alex.skill.before"
+  chmod 555 "$TARGET/.claude/skills/alex"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" != "0" ]; then fail "ac2.19: install rc=$rc"; chmod -R u+w "$SANDBOX" 2>/dev/null || true; return 0; fi
+  pass "ac2.19: install rc=0"
+  if [ -L "$TARGET/.claude/skills/alex" ]; then
+    pass "ac2.19: SKIP-NOT-APPLICABLE here the rename of a 0555 directory is allowed; adopted instead"
+  elif [ -d "$TARGET/.claude/skills/alex" ] && cmp -s "$TARGET/.claude/skills/alex/SKILL.md" "$SNAP/alex.skill.before" \
+       && grep -qF 'CLAUDE-ADOPT-LEFT .claude/skills/alex (cannot be moved)' "$SANDBOX/install.log"; then
+    pass "ac2.19: the 0555 skill directory stayed byte-identical and is reported as left (cannot be moved)"
+    a="$(adopt_archive_dir)"
+    if [ -n "$a" ] && grep -qF "$(printf 'REVERTED\t.claude/skills/alex')" "$a/done.tsv"; then pass "ac2.19: the journal marks it REVERTED"; else fail "ac2.19: journal lacks the REVERTED line"; fi
+  else
+    fail "ac2.19: the 0555 skill directory was neither adopted nor left intact"
+  fi
+  if [ -L "$TARGET/.claude/skills/gate" ]; then pass "ac2.19: positive control: gate was adopted in the same run"; else fail "ac2.19: gate not adopted"; fi
+  if [ "$(adopt_tomb_count)" = "0" ]; then pass "ac2.19: no tombstone left"; else fail "ac2.19: tombstone left behind"; fi
+  chmod -R u+w "$SANDBOX" 2>/dev/null || true
+  assert_no_network
+}
+
+# AC2.20: no usable SHA-1 tool means report-only: the install succeeds and nothing is vacated.
+case_ac220() {
+  CURRENT_CASE="ac2.20"
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  local rc t real
+  # Shims in front of PATH: SHA-1 requests fail, everything else reaches the real tool.
+  for t in shasum sha1sum openssl; do
+    real="$(command -v "$t" 2>/dev/null || true)"
+    [ -n "$real" ] || continue
+    case "$t" in
+      shasum) printf '#!/bin/sh\ncase " $* " in *" -a 1 "*|*" -a1 "*) exit 1 ;; esac\nexec "%s" "$@"\n' "$real" > "$SHIMBIN/$t" ;;
+      sha1sum) printf '#!/bin/sh\nexit 1\n' > "$SHIMBIN/$t" ;;
+      openssl) printf '#!/bin/sh\ncase "$1" in sha1|dgst) exit 1 ;; esac\nexec "%s" "$@"\n' "$real" > "$SHIMBIN/$t" ;;
+    esac
+    chmod +x "$SHIMBIN/$t"
+  done
+  claude_sig "$TARGET" .claude > "$SNAP/pre.sig"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && grep -qF 'CLAUDE-ADOPT-DEGRADED no SHA-1 tool' "$SANDBOX/install.log"; then
+    pass "ac2.20: rc=0 and CLAUDE-ADOPT-DEGRADED names the missing SHA-1 tool"
+  else
+    fail "ac2.20: rc=$rc or no degraded line"
+  fi
+  if [ -d "$TARGET/.claude/skills/alex" ] && [ ! -L "$TARGET/.claude/skills/alex" ] && [ -d "$TARGET/.claude/skills/gate" ] && [ ! -L "$TARGET/.claude/skills/gate" ] \
+     && [ -z "$(adopt_archive_dir)" ] && [ "$(adopt_tomb_count)" = "0" ]; then
+    pass "ac2.20: legacy skill directories untouched, no archive, no tombstone"
+  else
+    fail "ac2.20: something was vacated without a SHA-1 tool"
+  fi
+  assert_no_network
+}
+
+# AC2.21: pack meta rule: sync_policy upstream and the generator's line shapes are provable, forked and free text are not.
+case_ac221() {
+  CURRENT_CASE="ac2.21"
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  local rc meta
+  meta() { # $1 policy $2 extra line
+    printf '# Auto-generated by tad.sh \xe2\x80\x94 do not edit manually\ninstalled_version: "2.44.6"\ninstalled_date: "2026-09-15"\nsync_policy: %s\nbaseline_source: fresh_install\nfiles:\n  - path: "SKILL.md"\n    sha256: "0000000000000000000000000000000000000000000000000000000000000000"\n%s' "$1" "$2"
+  }
+  meta upstream '' > "$TARGET/.claude/skills/alex/.tad-pack-meta.yaml"
+  meta forked '' > "$TARGET/.claude/skills/gate/.tad-pack-meta.yaml"
+  meta upstream 'this is free text, not a generator line
+' > "$TARGET/.claude/skills/blake/.tad-pack-meta.yaml"
+  claude_sig "$TARGET" .claude/skills/gate > "$SNAP/gate.sig"; claude_sig "$TARGET" .claude/skills/blake > "$SNAP/blake.sig"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  [ "$rc" = "0" ] && pass "ac2.21: install rc=0" || fail "ac2.21: install rc=$rc"
+  [ -L "$TARGET/.claude/skills/alex" ] && pass "ac2.21: positive control: alex with an upstream meta was adopted" || fail "ac2.21: alex with an upstream meta was not adopted"
+  claude_sig "$TARGET" .claude/skills/gate > "$SNAP/gate.sig2"; claude_sig "$TARGET" .claude/skills/blake > "$SNAP/blake.sig2"
+  if cmp -s "$SNAP/gate.sig" "$SNAP/gate.sig2" && [ ! -L "$TARGET/.claude/skills/gate" ] && grep -qF 'CLAUDE-ADOPT-LEFT .claude/skills/gate' "$SANDBOX/install.log"; then
+    pass "ac2.21: sync_policy forked: the skill stays byte-identical and is reported as left"
+  else
+    fail "ac2.21: sync_policy forked skill was changed or not reported"
+  fi
+  if cmp -s "$SNAP/blake.sig" "$SNAP/blake.sig2" && [ ! -L "$TARGET/.claude/skills/blake" ] && grep -qF 'CLAUDE-ADOPT-LEFT .claude/skills/blake' "$SANDBOX/install.log"; then
+    pass "ac2.21: free text in the pack meta: the skill stays byte-identical and is reported as left"
+  else
+    fail "ac2.21: skill with a free-text pack meta was changed or not reported"
+  fi
+  assert_no_network
+}
+
+# harness_run <script> — run a generated harness with bash; stdout echoed.
+harness_run() { bash "$1" 2>&1; }
+
+# AC2.22: moving an original back out of its tombstone never nests into an
+# occupied slot and never goes through a link.
+case_ac222() {
+  CURRENT_CASE="ac2.22"
+  new_sandbox
+  extract_fn claude_adopt_move_back "$SANDBOX/mb.fn.sh" "CLAUDE-ADOPT-MANUAL"
+  extract_fn claude_adopt_path_ok "$SANDBOX/po.fn.sh" "_type"
+  local P="$SANDBOX/proj" out
+  cat > "$SANDBOX/h.sh" <<HEOF
+set -uo pipefail
+log_error() { printf 'ERR: %s\n' "\$1"; }
+. "$SANDBOX/po.fn.sh"
+. "$SANDBOX/mb.fn.sh"
+cd "$P"
+HEOF
+  mk() { rm -rf "$P"; mkdir -p "$P/.claude/skills/.tad-adopt-tomb.1/alex" "$SANDBOX/outside"; printf 'ORIGINAL\n' > "$P/.claude/skills/.tad-adopt-tomb.1/alex/SKILL.md"; }
+  # (a) occupied by a real directory: no nesting, nothing overwritten
+  mk; mkdir -p "$P/.claude/skills/alex"; printf 'NEW\n' > "$P/.claude/skills/alex/SKILL.md"
+  out="$(cat "$SANDBOX/h.sh"; printf 'claude_adopt_move_back .claude/skills/alex .claude/skills/.tad-adopt-tomb.1/alex; echo "rc=$?"\n')"
+  printf '%s\n' "$out" > "$SANDBOX/ha.sh"; out="$(harness_run "$SANDBOX/ha.sh")"
+  if printf '%s' "$out" | grep -qF 'rc=1' && printf '%s' "$out" | grep -qF 'CLAUDE-ADOPT-MANUAL' \
+     && [ ! -e "$P/.claude/skills/alex/alex" ] && [ "$(cat "$P/.claude/skills/alex/SKILL.md")" = "NEW" ] \
+     && [ "$(cat "$P/.claude/skills/.tad-adopt-tomb.1/alex/SKILL.md")" = "ORIGINAL" ]; then
+    pass "ac2.22: occupied slot (directory): rc=1, both paths reported, no nesting, original stays in the tombstone"
+  else
+    fail "ac2.22: occupied directory slot mishandled: $out"
+  fi
+  # (b) occupied by a link to a directory: nothing created behind the link
+  mk; ln -s "$SANDBOX/outside" "$P/.claude/skills/alex"
+  printf '%s\n' "$(cat "$SANDBOX/h.sh"; printf 'claude_adopt_move_back .claude/skills/alex .claude/skills/.tad-adopt-tomb.1/alex; echo "rc=$?"\n')" > "$SANDBOX/hb.sh"; out="$(harness_run "$SANDBOX/hb.sh")"
+  if printf '%s' "$out" | grep -qF 'rc=1' && [ -z "$(ls -A "$SANDBOX/outside")" ] && [ -L "$P/.claude/skills/alex" ] \
+     && [ "$(cat "$P/.claude/skills/.tad-adopt-tomb.1/alex/SKILL.md")" = "ORIGINAL" ]; then
+    pass "ac2.22: slot holds a link: rc=1, nothing written through the link, original stays in the tombstone"
+  else
+    fail "ac2.22: link slot mishandled: $out"
+  fi
+  # (c) free slot: moved back, tombstone slot empty
+  mk
+  printf '%s\n' "$(cat "$SANDBOX/h.sh"; printf 'claude_adopt_move_back .claude/skills/alex .claude/skills/.tad-adopt-tomb.1/alex; echo "rc=$?"\n')" > "$SANDBOX/hc.sh"; out="$(harness_run "$SANDBOX/hc.sh")"
+  if printf '%s' "$out" | grep -qF 'rc=0' && [ "$(cat "$P/.claude/skills/alex/SKILL.md")" = "ORIGINAL" ] && [ ! -e "$P/.claude/skills/.tad-adopt-tomb.1/alex" ]; then
+    pass "ac2.22: positive control: a free slot gets the original back"
+  else
+    fail "ac2.22: free slot move-back failed: $out"
+  fi
+  # (d) nothing in the tombstone: rc=2
+  mk; rm -rf "$P/.claude/skills/.tad-adopt-tomb.1/alex"
+  printf '%s\n' "$(cat "$SANDBOX/h.sh"; printf 'claude_adopt_move_back .claude/skills/alex .claude/skills/.tad-adopt-tomb.1/alex; echo "rc=$?"\n')" > "$SANDBOX/hd.sh"; out="$(harness_run "$SANDBOX/hd.sh")"
+  if printf '%s' "$out" | grep -qF 'rc=2'; then pass "ac2.22: empty tombstone slot: rc=2, nothing moved"; else fail "ac2.22: empty tombstone slot: $out"; fi
+  # (e) the tombstone directory itself is a link: path guard refuses
+  mk; mv "$P/.claude/skills/.tad-adopt-tomb.1" "$SANDBOX/real-tomb"; ln -s "$SANDBOX/real-tomb" "$P/.claude/skills/.tad-adopt-tomb.1"
+  printf '%s\n' "$(cat "$SANDBOX/h.sh"; printf 'claude_adopt_move_back .claude/skills/alex .claude/skills/.tad-adopt-tomb.1/alex; echo "rc=$?"\n')" > "$SANDBOX/he.sh"; out="$(harness_run "$SANDBOX/he.sh")"
+  if printf '%s' "$out" | grep -qF 'rc=1' && [ ! -e "$P/.claude/skills/alex" ] && [ "$(cat "$SANDBOX/real-tomb/alex/SKILL.md")" = "ORIGINAL" ]; then
+    pass "ac2.22: tombstone parent is a link: guard refuses, nothing moved"
+  else
+    fail "ac2.22: symlinked tombstone parent mishandled: $out"
+  fi
+}
+
+# AC2.23: at commit time a tombstone whose content no longer equals the archive copy is kept.
+case_ac223() {
+  CURRENT_CASE="ac2.23"
+  new_sandbox
+  extract_fn claude_adopt_commit "$SANDBOX/c.fn.sh" "CLAUDE_ADOPT_KEPT_TOMBS"
+  extract_fn claude_adopt_path_ok "$SANDBOX/po.fn.sh" "_type"
+  extract_fn claude_adopt_same "$SANDBOX/same.fn.sh" "cmp -s"
+  extract_fn assert_under_root "$SANDBOX/aur.fn.sh" "TARGET_ROOT"
+  extract_fn _literal_has_prefix "$SANDBOX/lhp.fn.sh" "lhp_esc"
+  local P A out T
+  P="$(cd "$SANDBOX" && pwd -P)/proj"; A="$SANDBOX/arch"
+  T=".claude/skills/.tad-adopt-tomb.9"
+  mkdir -p "$P/$T/alex" "$P/$T/gate" "$A/tree/.claude/skills/alex" "$A/tree/.claude/skills/gate"
+  printf 'ARCHIVED\n' > "$A/tree/.claude/skills/alex/SKILL.md"; printf 'GATE\n' > "$A/tree/.claude/skills/gate/SKILL.md"
+  printf 'CHANGED AFTER THE ARCHIVE\n' > "$P/$T/alex/SKILL.md"; printf 'GATE\n' > "$P/$T/gate/SKILL.md"
+  printf '%s\t%s\n%s\t%s\n' ".claude/skills/alex" "$T/alex" ".claude/skills/gate" "$T/gate" > "$A/done.tsv"
+  printf '.claude/skills/alex\n.claude/skills/gate\n' > "$A/manifest.txt"
+  cat > "$SANDBOX/h.sh" <<HEOF
+set -euo pipefail
+log_info() { :; }
+log_warn() { :; }
+claude_adopt_write_report() { return 0; }
+. "$SANDBOX/lhp.fn.sh"; . "$SANDBOX/aur.fn.sh"; . "$SANDBOX/po.fn.sh"; . "$SANDBOX/same.fn.sh"; . "$SANDBOX/c.fn.sh"
+CLAUDE_PROJECTION=1; CLAUDE_ADOPT_DIR="$A"; CLAUDE_TOMB_SK="$T"; CLAUDE_TOMB_WF=""; CLAUDE_ADOPT_WF_DONE=0
+CLAUDE_ADOPT_KEPT_TOMBS=""; TARGET_ROOT="$P"
+cd "$P"
+claude_adopt_commit
+echo "rc=\$?"
+printf 'KEPT:%s' "\$CLAUDE_ADOPT_KEPT_TOMBS"
+HEOF
+  out="$(harness_run "$SANDBOX/h.sh")"
+  if printf '%s' "$out" | grep -qF 'rc=0' && [ "$(cat "$P/$T/alex/SKILL.md")" = "CHANGED AFTER THE ARCHIVE" ] && printf '%s' "$out" | grep -qF "$T/alex" \
+     && [ ! -e "$P/$T/gate" ] && [ -d "$P/$T" ]; then
+    pass "ac2.23: a tombstone that differs from the archive copy is kept and named; an identical one is deleted; commit returns 0"
+  else
+    fail "ac2.23: commit step mishandled a differing tombstone: $out"
+  fi
+}
+
+# AC2.24: claude-adopt archives live next to the backups but are never pruned by the retention policy.
+case_ac224() {
+  CURRENT_CASE="ac2.24"
+  new_sandbox
+  extract_fn prune_backups "$SANDBOX/pb.fn.sh" "retention"
+  local G="$SANDBOX/grp" ts out
+  mkdir -p "$G/claude-adopt/20260101_000000/tree"
+  printf 'keep me\n' > "$G/claude-adopt/20260101_000000/manifest.txt"
+  for ts in 20260102_000000 20260103_000000 20260104_000000 20260105_000000; do
+    mkdir -p "$G/$ts"; : > "$G/$ts/manifest.txt"
+  done
+  cat > "$SANDBOX/h.sh" <<HEOF
+set -uo pipefail
+log_info() { :; }
+log_warn() { printf 'WARN: %s\n' "\$1"; }
+. "$SANDBOX/pb.fn.sh"
+prune_backups "$G" "$G/20260105_000000"
+HEOF
+  out="$(harness_run "$SANDBOX/h.sh")"
+  if [ -f "$G/claude-adopt/20260101_000000/manifest.txt" ] && [ -d "$G/20260105_000000" ] && [ -d "$G/20260104_000000" ] \
+     && [ ! -d "$G/20260102_000000" ] && [ ! -d "$G/20260103_000000" ]; then
+    pass "ac2.24: retention trimmed the timestamped backups to 2 and left claude-adopt/ alone"
+  else
+    fail "ac2.24: retention touched claude-adopt/ or kept the wrong backups: $out"
+  fi
+}
+
+# AC2.25 (R7): a legacy directory without a SKILL.md twin in the source (_archived) is retired when
+# every file is proven by the ledger; one extra user file keeps it exactly as it is.
+case_ac225() {
+  CURRENT_CASE="ac2.25"
+  local rc a
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  ( cd "$REPO" && git archive v2.44.6 .claude/skills/_archived ) | tar -x -C "$TARGET"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  a="$(adopt_archive_dir)"
+  if [ "$rc" = "0" ] && [ ! -e "$TARGET/.claude/skills/_archived" ] && grep -qF 'CLAUDE-ADOPTED .claude/skills/_archived' "$SANDBOX/install.log" \
+     && [ -n "$a" ] && [ -d "$a/tree/.claude/skills/_archived" ]; then
+    pass "ac2.25: pristine _archived (no SKILL.md twin) archived and removed"
+  else
+    fail "ac2.25: pristine _archived not retired (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  ( cd "$REPO" && git archive v2.44.6 .claude/skills/_archived ) | tar -x -C "$TARGET"
+  printf 'mine\n' > "$TARGET/.claude/skills/_archived/my-notes.txt"
+  claude_sig "$TARGET" .claude/skills/_archived > "$SNAP/arch.sig"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  claude_sig "$TARGET" .claude/skills/_archived > "$SNAP/arch.sig2"
+  if [ "$rc" = "0" ] && cmp -s "$SNAP/arch.sig" "$SNAP/arch.sig2" && [ -f "$TARGET/.claude/skills/_archived/my-notes.txt" ] \
+     && grep -qF 'CLAUDE-ADOPT-LEFT .claude/skills/_archived' "$SANDBOX/install.log"; then
+    pass "ac2.25: _archived with one extra user file stays byte-identical and is reported as left"
+  else
+    fail "ac2.25: _archived with a user file was changed or not reported (rc=$rc)"
+  fi
+  assert_no_network
+}
+
+# AC2.26 (R8): a failed install removes the empty directories it created, not the ones the user had.
+case_ac226() {
+  CURRENT_CASE="ac2.26"
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  mkdir -p "$TARGET/.tad/active/designs" "$TARGET/.tad/evidence/mine-empty"
+  chmod 555 "$TARGET/.claude"
+  local rc
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  chmod 755 "$TARGET/.claude"
+  if [ "$rc" != "0" ] && grep -qF 'CLAUDE-ADOPT-FAILED' "$SANDBOX/install.log"; then pass "ac2.26: install failed as forced"; else fail "ac2.26: install did not fail (rc=$rc)"; fi
+  if [ -d "$TARGET/.tad/active/designs" ] && [ -d "$TARGET/.tad/evidence/mine-empty" ]; then
+    pass "ac2.26: (i) empty directories the user had before the run survive"
+  else
+    fail "ac2.26: (i) a user's empty directory was removed"
+  fi
+  if [ ! -e "$TARGET/.tad/archive" ] && [ ! -e "$TARGET/.tad/active/epics" ] && [ ! -e "$TARGET/.tad/active/playground" ]; then
+    pass "ac2.26: (ii) directories created by the failed run are gone"
+  else
+    fail "ac2.26: (ii) the failed run left its own empty directories"
+  fi
+  assert_no_network
+}
+
+# AC2.27 (R1, R2): without a ledger nothing is called "modified"; the FR9 hint carries --force.
+case_ac227() {
+  CURRENT_CASE="ac2.27"
+  new_sandbox; stage_pruned_source; stage_provenance
+  rm -f "$SOURCE/.tad/provenance/claude-legacy.tsv"
+  legacy_claude_target || return 0
+  local rc
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log" --claude-adopt=plan)"
+  if [ "$rc" = "0" ] && grep -qF 'CLAUDE-ADOPT-DEGRADED' "$SANDBOX/install.log" && grep -qF 'not checked' "$SANDBOX/install.log" \
+     && ! grep -qF 'modified' "$SANDBOX/install.log" && ! grep -qF 'differs from every' "$SANDBOX/install.log"; then
+    pass "ac2.27: missing ledger: plan says 'not checked', never 'modified'"
+  else
+    fail "ac2.27: missing ledger plan wording wrong (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  rc="$(run_install_cc codex "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && grep -qF 'CLAUDE-LEGACY-DETECTED' "$SANDBOX/install.log" && grep -qF -e '--platform claude-code --force' "$SANDBOX/install.log"; then
+    pass "ac2.27: CLAUDE-LEGACY-DETECTED suggests --force"
+  else
+    fail "ac2.27: CLAUDE-LEGACY-DETECTED text wrong (rc=$rc)"
+  fi
+  assert_no_network
+}
+
+# AC2.28 (R5, R6): the notice fires for a settings-only legacy install; leftover tombstones are all listed.
+case_ac228() {
+  CURRENT_CASE="ac2.28"
+  new_sandbox; stage_pruned_source; stage_provenance
+  mkdir -p "$TARGET/.tad/active/handoffs"; printf '3.1.0\n' > "$TARGET/.tad/version.txt"
+  ( cd "$REPO" && git archive v2.44.6 .claude/settings.json ) | tar -x -C "$TARGET"
+  local rc
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && grep -qF 'Legacy Claude Code install detected' "$SANDBOX/install.log" && grep -qF 'hooks only the old file registered' "$SANDBOX/install.log"; then
+    pass "ac2.28: notice appears for a settings.json-only legacy install and names the hook replacement"
+  else
+    fail "ac2.28: notice missing for a settings-only install (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  new_sandbox; stage_pruned_source; stage_provenance
+  legacy_claude_target || return 0
+  mkdir -p "$TARGET/.claude/skills/.tad-adopt-tomb.11/alex" "$TARGET/.claude/workflows/.tad-adopt-tomb.12"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && grep -qF '.tad-adopt-tomb.11' "$SANDBOX/install.log" && grep -qF '.tad-adopt-tomb.12' "$SANDBOX/install.log" \
+     && grep -qF 'BEFORE moving anything back' "$SANDBOX/install.log"; then
+    pass "ac2.28: every leftover tombstone is listed with the compare-first guidance"
+  else
+    fail "ac2.28: leftover tombstone listing incomplete (rc=$rc)"
+  fi
+  assert_no_network
+}
+
 # ── runner ───────────────────────────────────────────────────────────
 run_case() {
   case "$1" in
@@ -1257,6 +1634,17 @@ run_case() {
     ac2.15) case_ac215 ;;
     ac2.16) case_ac216 ;;
     ac2.17) case_ac217 ;;
+    ac2.18) case_ac218 ;;
+    ac2.19) case_ac219 ;;
+    ac2.20) case_ac220 ;;
+    ac2.21) case_ac221 ;;
+    ac2.22) case_ac222 ;;
+    ac2.23) case_ac223 ;;
+    ac2.24) case_ac224 ;;
+    ac2.25) case_ac225 ;;
+    ac2.26) case_ac226 ;;
+    ac2.27) case_ac227 ;;
+    ac2.28) case_ac228 ;;
     r1) case_r1 ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
@@ -1273,6 +1661,9 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.9; run_case ac2.10; run_case ac2.11; run_case ac2.12
   run_case ac2.13
   run_case ac2.14; run_case ac2.15; run_case ac2.16; run_case ac2.17
+  run_case ac2.18; run_case ac2.19; run_case ac2.20; run_case ac2.21
+  run_case ac2.22; run_case ac2.23; run_case ac2.24
+  run_case ac2.25; run_case ac2.26; run_case ac2.27; run_case ac2.28
   run_case r1
 else
   run_case "$CASE"

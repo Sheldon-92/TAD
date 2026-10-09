@@ -159,6 +159,7 @@ cleanup_installer_temp() {
     # Claude projection temp files that an interrupt (SIGINT/SIGTERM) could leave
     # behind between mktemp and mv. Paths are recorded in globals by the writers;
     # only a regular, non-symlink file with the expected temp name is removed.
+    claude_adopt_cleanup_work
     local _ct
     for _ct in "${CLAUDE_MD_TMP:-}" "${CLAUDE_PTR_TMP:-}"; do
         [ -n "$_ct" ] || continue
@@ -357,6 +358,39 @@ CLAUDE_MD_REASON=""
 CLAUDE_MD_SNAP_MODE=""         # octal permission bits of CLAUDE.md captured at snapshot time
 CLAUDE_MD_TMP=""                # path of the in-flight CLAUDE.md temp file (removed by the EXIT-trap cleanup if interrupted)
 CLAUDE_PTR_TMP=""               # path of the in-flight pointer temp file (same purpose)
+# Legacy Claude Code install adoption (Phase 4a). Top level for the same reason:
+# the EXIT trap can reach rollback_claude_adoption on any platform under set -u.
+CLAUDE_ADOPT_ARG=""            # --claude-adopt value as given on the command line
+CLAUDE_ADOPT_MODE="apply"      # apply | plan | off | report (report = degraded: classify and report only)
+CLAUDE_ADOPT_REASON=""         # why a run was degraded to report-only
+CLAUDE_ADOPT_SRC=""            # the source tree (for hook template / source skills)
+CLAUDE_ADOPT_WORK=""           # private work directory (plan, listings, result); removed by the EXIT trap
+CLAUDE_ADOPT_PLAN=""           # plan.tsv inside the work directory
+CLAUDE_ADOPT_DIR=""            # archive directory outside the project (set once the archive is open)
+CLAUDE_ADOPT_SET=" "           # skills the install projects (space-delimited)
+CLAUDE_ADOPT_SRCNAMES=" "      # directory names under the source .agents/skills (space-delimited)
+CLAUDE_ADOPT_KEPT_TOMBS=""     # tombstones the commit step kept, newline-separated
+CLAUDE_ADOPT_WF_DONE=0         # a workflow file was vacated by this run
+CLAUDE_ADOPT_SETTINGS_DONE=0   # .claude/settings.json was vacated by this run
+CLAUDE_ADOPT_MD_DONE=0         # the TAD part of CLAUDE.md was removed by this run
+CLAUDE_TOMB_SK=""              # tombstone directory under .claude/skills created by this run
+CLAUDE_TOMB_WF=""              # tombstone directory under .claude/workflows created by this run
+CLAUDE_TOMB_OUT=""             # result slot of claude_adopt_tomb_dir
+CLAUDE_VAC_OK=0                # result slot of claude_adopt_vacate (1 = the entry now sits in its tombstone)
+CLAUDE_V_VERDICT=""            # result slots of the claude_adopt_classify_* functions
+CLAUDE_V_DETAIL=""
+CLAUDE_V_FAILS=""
+CLAUDE_V_NFAIL=0
+CLAUDE_V_N=""
+CLAUDE_ADOPT_LEDGER_ONLY=0     # 1 = the skill proof may not use cmp against the source (ledger only)
+CLAUDE_SHA1_TOOL=""            # shasum | sha1sum | openssl; empty = none usable
+CLAUDE_SHA1_PROBED=0
+CLAUDE_LEDGER=""               # path of the validated provenance ledger; empty = unusable
+CLAUDE_LEDGER_CHECKED=0
+CLAUDE_LEDGER_WHY=""
+CLAUDE_KEPT_MOD=0              # kept directories that are modified legacy copies
+CLAUDE_KEPT_NOTSEL=0           # kept directories that are pristine copies of skills this install did not select
+CLAUDE_LEGACY_NOTE=""          # CLAUDE-LEGACY-DETECTED line for non-claude platforms, printed with the summary
 PACKS=""
 RESOLVE_STRATEGY=""
 FORK_PACK=""
@@ -379,6 +413,10 @@ while [ $# -gt 0 ]; do
     --packs)
       [ -z "${2:-}" ] && echo "tad.sh: --packs requires a value" >&2 && exit 1
       PACKS="$2"; shift 2 ;;
+    --claude-adopt=*) CLAUDE_ADOPT_ARG="${1#--claude-adopt=}"; shift ;;
+    --claude-adopt)
+      [ -z "${2:-}" ] && echo "tad.sh: --claude-adopt requires a value (apply|plan|off)" >&2 && exit 1
+      CLAUDE_ADOPT_ARG="$2"; shift 2 ;;
     --resolve=*) RESOLVE_STRATEGY="${1#--resolve=}"; shift ;;
     --fork-pack)
       [ -z "${2:-}" ] && echo "tad.sh: --fork-pack requires a pack name" >&2 && exit 1
@@ -400,7 +438,7 @@ while [ $# -gt 0 ]; do
       [ -z "${2:-}" ] && echo "tad.sh: --expected-version requires a value" >&2 && exit 1
       EXPECTED_VERSION="$2"; shift 2 ;;
     --help|-h)
-      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--verify-denylist] [--doctor] [--quarantine-pk]"
+      echo "Usage: tad.sh [--yes|-y] [--force] [--platform <name>] [--packs <list>] [--resolve=MODE] [--claude-adopt=MODE] [--verify-denylist] [--doctor] [--quarantine-pk]"
       echo "       tad.sh --fork-pack <name> | --unfork-pack <name> | --list-packs"
       echo "       tad.sh --release-ref vX.Y.Z --expected-version X.Y.Z [--yes]  (pinned update)"
       echo "       tad.sh --source <dir> [--platform <name>] --yes  (offline install from local tree)"
@@ -408,6 +446,9 @@ while [ $# -gt 0 ]; do
       echo "  --force            reinstall even if already on the same version"
       echo "  --platform <name>  target platform (codex|opencode|cursor|claude-code). Default: codex"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
+      echo "  --claude-adopt=MODE  with --platform claude-code: archive and replace a legacy Claude Code install"
+      echo "                     (apply = default, plan = print the plan and change nothing, off = Phase 2 behaviour)."
+      echo "                     TAD_CLAUDE_ADOPT env is equivalent; the flag wins"
       echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
       echo "                     default: ask, or local with --yes"
       echo "  --fork-pack <name> mark a pack as forked (skipped on future installs)"
@@ -425,6 +466,16 @@ while [ $# -gt 0 ]; do
     *) echo "tad.sh: unknown option '$1' (use --help)" >&2; exit 1 ;;
   esac
 done
+
+# --claude-adopt / TAD_CLAUDE_ADOPT: validated here, before any mutation. The
+# flag wins over the environment. Accepted but inert unless --platform claude-code.
+if [ -z "$CLAUDE_ADOPT_ARG" ] && [ -n "${TAD_CLAUDE_ADOPT:-}" ]; then CLAUDE_ADOPT_ARG="$TAD_CLAUDE_ADOPT"; fi
+case "$CLAUDE_ADOPT_ARG" in
+    ""|apply) CLAUDE_ADOPT_MODE="apply" ;;
+    plan) CLAUDE_ADOPT_MODE="plan" ;;
+    off) CLAUDE_ADOPT_MODE="off" ;;
+    *) echo "tad.sh: --claude-adopt must be apply, plan or off (got: $CLAUDE_ADOPT_ARG)" >&2; exit 1 ;;
+esac
 
 # ============================================
 # Pinned release contract validation (FR-2)
@@ -870,7 +921,12 @@ resolve_platform() {
     fi
     # The Claude projection gate: every Claude function returns at its first
     # line unless this is 1.
-    if [ "$PLATFORM" = "claude-code" ]; then CLAUDE_PROJECTION=1; fi
+    if [ "$PLATFORM" = "claude-code" ]; then
+        CLAUDE_PROJECTION=1
+    elif [ -n "$CLAUDE_ADOPT_ARG" ]; then
+        # Accepted but inert: say so, because a "plan" that goes on to install would surprise.
+        log_warn "--claude-adopt=$CLAUDE_ADOPT_ARG only applies with --platform claude-code; it is ignored for platform '$PLATFORM' and this run installs normally"
+    fi
 }
 
 # ============================================
@@ -905,7 +961,8 @@ TAD_TRANSIENT="working
 spike-v3
 reports
 checklists
-domains"
+domains
+provenance"
 # DENY_LIST = A ∪ C (the full set excluded from SYNC).
 TAD_DENY_LIST="$TAD_ZERO_TOUCH
 $TAD_TRANSIENT"
@@ -1743,6 +1800,7 @@ HOOKS_EOF
     # --- Claude Code projection (gated: no-ops unless --platform claude-code).
     # Order is deliberate: CLAUDE.md before hooks, so a failure in the last
     # stage leaves the first two stages' output on disk for rollback to undo.
+    claude_adopt_apply "$src"
     project_claude_skills
     project_claude_md_ref
     project_claude_hooks "$src"
@@ -1926,6 +1984,47 @@ EOF
                     missing=$((missing + 1))
                 fi ;;
         esac
+        # (2b) adoption: every adopted skill is now a link to the canonical copy (or a TAD
+        #      pointer), an adopted settings.json is the template, an adopted CLAUDE.md
+        #      carries the reference. Entries already moved back (REVERTED) do not count.
+        if [ -n "$CLAUDE_ADOPT_DIR" ] && [ -f "$CLAUDE_ADOPT_DIR/done.tsv" ]; then
+            local _cv_rel _cv_tomb _cv_name _cv_set
+            _cv_set=" $(claude_skill_set | tr '\n' ' ') "
+            while IFS=$'\t' read -r _cv_rel _cv_tomb; do
+                [ -n "$_cv_rel" ] || continue
+                if [ "$_cv_rel" = "REVERTED" ]; then continue; fi
+                if grep -F -x -q -e "$(printf 'REVERTED\t%s' "$_cv_rel")" -- "$CLAUDE_ADOPT_DIR/done.tsv" 2>/dev/null; then continue; fi
+                case "$_cv_rel" in
+                    .claude/skills/*)
+                        _cv_name="${_cv_rel##*/}"
+                        case "$_cv_set" in *" $_cv_name "*) ;; *) continue ;; esac
+                        checked=$((checked + 1))
+                        if [ -L "$_cv_rel" ]; then
+                            if [ "$(readlink "$_cv_rel" 2>/dev/null || true)" != "../../.agents/skills/$_cv_name" ]; then
+                                log_warn "    ✗ ADOPTED skill $_cv_name does not point at .agents/skills/$_cv_name"
+                                missing=$((missing + 1))
+                            fi
+                        elif [ -d "$_cv_rel" ] && claude_is_tad_pointer "$_cv_rel" "$_cv_name"; then :
+                        else
+                            log_warn "    ✗ ADOPTED skill $_cv_name was not replaced by a link or a TAD pointer"
+                            missing=$((missing + 1))
+                        fi ;;
+                    .claude/settings.json)
+                        checked=$((checked + 1))
+                        if [ -L "$_cv_rel" ] || [ ! -f "$_cv_rel" ] || ! cmp -s "$src/.tad/templates/claude/settings.json" "$_cv_rel"; then
+                            log_warn "    ✗ ADOPTED .claude/settings.json is not the current template"
+                            missing=$((missing + 1))
+                        fi ;;
+                esac
+            done < "$CLAUDE_ADOPT_DIR/done.tsv"
+        fi
+        if [ "$CLAUDE_ADOPT_MD_DONE" = "1" ]; then
+            checked=$((checked + 1))
+            if [ -L "CLAUDE.md" ] || [ ! -f "CLAUDE.md" ] || [ "$(grep -Ec '^@AGENTS\.md[[:space:]]*$' CLAUDE.md || true)" -lt 1 ]; then
+                log_warn "    ✗ ADOPTED CLAUDE.md carries no @AGENTS.md reference"
+                missing=$((missing + 1))
+            fi
+        fi
         # (3) CLAUDE.md reference: only when not skipped, CLAUDE.md and AGENTS.md are regular files
         if [ "$CLAUDE_MD_STATE" != "skipped" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ] \
            && [ ! -L "AGENTS.md" ] && [ -f "AGENTS.md" ]; then
@@ -2129,6 +2228,21 @@ apply_deprecations() {
                             continue ;;
                     esac
                 fi
+                # Other platforms: a deprecated .claude/commands/<file> is deleted only
+                # when the provenance ledger proves TAD shipped exactly these bytes.
+                # A file the user put there under the same name stays.
+                case "$target" in
+                    .claude/commands/*)
+                        if [ -e "$target" ] || [ -L "$target" ]; then
+                            local _cmd_why
+                            claude_provenance_ready "$src"
+                            _cmd_why="$(claude_cmd_keep_reason "$src" "$target")"
+                            if [ -n "$_cmd_why" ]; then
+                                log_warn "CLAUDE-CMD-KEPT $target ($_cmd_why)"
+                                continue
+                            fi
+                        fi ;;
+                esac
                 if [ -e "$target" ]; then
                     local rc=0
                     # Traversal / self-reference pre-check BEFORE do_backup.
@@ -2577,6 +2691,14 @@ rollback_on_failure() {
                     [ -n "$_rb_cur" ] || continue
                     _rb_top="${_rb_cur%%/*}"
                     if printf '%s\n%s\n' "$TAD_DENY_LIST" "$TAD_TOP_DENY" | grep -Fxq -e "$_rb_top"; then
+                        # User-data territory: no file or non-empty directory is ever
+                        # touched. Only an EMPTY directory that is absent from the
+                        # backup-time tree (this run's own mkdir -p of the data skeleton)
+                        # goes, so a failed run leaves the tree as it found it.
+                        if [ -d "$TARGET_ROOT/.tad/$_rb_cur" ] && [ ! -L "$TARGET_ROOT/.tad/$_rb_cur" ] \
+                           && ! grep -Fxq -e "$_rb_cur" "$_rb_keep" && assert_under_root "$TARGET_ROOT/.tad/$_rb_cur"; then
+                            rmdir "$TARGET_ROOT/.tad/$_rb_cur" 2>/dev/null || true # RM-OK:rollback-sweep-created-empty-userdir
+                        fi
                         continue
                     fi
                     grep -Fxq -e "$_rb_cur" "$_rb_keep" && continue
@@ -2666,6 +2788,7 @@ rollback_on_failure() {
     if [ "${CLAUDE_PROJECTION:-0}" = "1" ]; then
         rollback_claude_projection
         _removed_list="${_removed_list}.claude(projection) "
+        rollback_claude_adoption
     fi
 
     # 4. Remove exactly the files THIS run created (merge backup, fresh
@@ -3268,6 +3391,10 @@ claude_note_kept() {
     CLAUDE_KEPT_LIST="${CLAUDE_KEPT_LIST}$1 ($2); "
     CLAUDE_KEPT_NAMES="${CLAUDE_KEPT_NAMES}$1 "
     CLAUDE_KEPT_COUNT=$((CLAUDE_KEPT_COUNT + 1))
+    case "$2" in
+        "legacy copy, modified") CLAUDE_KEPT_MOD=$((CLAUDE_KEPT_MOD + 1)) ;;
+        "not selected") CLAUDE_KEPT_NOTSEL=$((CLAUDE_KEPT_NOTSEL + 1)) ;;
+    esac
 }
 
 # claude_pointer_body <name> — the exact text the installer writes after the
@@ -3416,7 +3543,7 @@ project_claude_skills() {
                 CLAUDE_PTR_TMP=""
                 continue
             fi
-            claude_note_kept "$_n" "user-owned"; _kept=$((_kept + 1)); continue
+            claude_note_kept "$_n" "$(claude_adopt_kept_label "$_n")"; _kept=$((_kept + 1)); continue
         fi
         if [ -e "$_e" ]; then
             claude_note_kept "$_n" "user-owned"; _kept=$((_kept + 1)); continue
@@ -3506,10 +3633,13 @@ project_claude_md_ref() {
             fi
         fi
     fi
-    if ! printf '\n%s\n%s\n%s\n' \
+    # A zero-byte CLAUDE.md (for example after the legacy TAD body was adopted
+    # away) gets exactly the three-line block, no leading blank line.
+    if [ -s "CLAUDE.md" ]; then _last="blank"; else _last="bare"; fi
+    if ! { if [ "$_last" = "blank" ]; then printf '\n'; fi; printf '%s\n%s\n%s\n' \
             '<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->' \
             '@AGENTS.md' \
-            '<!-- TAD:AGENTS-REF:END -->' >> "$_tmp"; then
+            '<!-- TAD:AGENTS-REF:END -->'; } >> "$_tmp"; then
         rm -f -- "$_tmp" # RM-OK:claude-md-tmp-append-fail
         log_error "CLAUDE.md: write to temp file failed"; return 1
     fi
@@ -3593,23 +3723,39 @@ claude_print_summary() {
     if [ "$CLAUDE_SKILLS_SKIPPED" = "1" ]; then
         echo "  skills: projection SKIPPED as a whole (${CLAUDE_SKILLS_SKIP_REASON})"
     else
-        echo "  skills: ${CLAUDE_NEW_COUNT} new entries in .claude/skills, ${CLAUDE_KEPT_COUNT} kept as user-owned"
+        if [ "$CLAUDE_KEPT_MOD" -gt 0 ] || [ "$CLAUDE_KEPT_NOTSEL" -gt 0 ]; then
+            echo "  skills: ${CLAUDE_NEW_COUNT} new entries in .claude/skills, ${CLAUDE_KEPT_COUNT} kept (${CLAUDE_KEPT_MOD} legacy copies modified, ${CLAUDE_KEPT_NOTSEL} not selected, $((CLAUDE_KEPT_COUNT - CLAUDE_KEPT_MOD - CLAUDE_KEPT_NOTSEL)) user-owned)"
+        else
+            echo "  skills: ${CLAUDE_NEW_COUNT} new entries in .claude/skills, ${CLAUDE_KEPT_COUNT} kept as user-owned"
+        fi
         if [ -n "$CLAUDE_KEPT_LIST" ]; then echo "  kept: ${CLAUDE_KEPT_LIST}"; fi
     fi
     case "$CLAUDE_HOOKS_STATE" in
-        registered) echo "  hooks: registered (.claude/settings.json created from the template)" ;;
+        registered)
+            if [ "$CLAUDE_ADOPT_SETTINGS_DONE" = "1" ]; then
+                echo "  hooks: legacy TAD settings.json replaced by the current template (previous file archived)."
+                echo "         Hooks that only the old file registered are no longer active; where present, that includes the PreToolUse checks pre-accept-check.sh and pre-gate-check.sh. The scripts stay in .tad/hooks/."
+            else
+                echo "  hooks: registered (.claude/settings.json created from the template)"
+            fi ;;
         current)    echo "  hooks: registered (.claude/settings.json already up to date)" ;;
         kept)       echo "  hooks: NOT registered by this run (${CLAUDE_HOOKS_REASON})" ;;
         skipped)    echo "  hooks: NOT registered by this run (${CLAUDE_HOOKS_REASON})" ;;
         *)          echo "  hooks: not processed" ;;
     esac
     case "$CLAUDE_MD_STATE" in
-        appended) echo "  CLAUDE.md: @AGENTS.md reference block appended" ;;
+        appended)
+            if [ "$CLAUDE_ADOPT_MD_DONE" = "1" ]; then
+                echo "  CLAUDE.md: legacy TAD part replaced by the @AGENTS.md reference block (previous file archived; text below the marker kept)"
+            else
+                echo "  CLAUDE.md: @AGENTS.md reference block appended"
+            fi ;;
         present)  echo "  CLAUDE.md: already references @AGENTS.md (unchanged)" ;;
         skipped)  echo "  CLAUDE.md: left unchanged (${CLAUDE_MD_REASON}); Claude Code may not read AGENTS.md until it references @AGENTS.md" ;;
         none)     echo "  CLAUDE.md: none in this project (not created)" ;;
         *)        echo "  CLAUDE.md: not processed" ;;
     esac
+    claude_adopt_summary
     case "$CLAUDE_HOOKS_STATE" in
         kept|skipped)
             echo "  TAD hooks are NOT registered. Template: .tad/templates/claude/settings.json — you can merge it by hand; automatic merging will come in a later release (可手工并入；自动合并随后续版本提供)." ;;
@@ -3729,6 +3875,1242 @@ EOF
     fi
     return 0
 }
+
+# ============================================
+# Legacy Claude Code install adoption (Epic multi-harness-restore, Phase 4a)
+# ============================================
+# Old installers copied skills, settings.json and workflows into .claude/ and
+# merged a TAD head into CLAUDE.md, with no marker of any kind. With
+# --platform claude-code this block archives (outside the project) and vacates
+# exactly the entries whose bytes are provably files TAD shipped, so that the
+# unchanged Phase 2 projection (project_claude_skills / project_claude_md_ref /
+# project_claude_hooks) can fill the slots. Everything else stays byte-identical.
+#
+# Conventions (handoff section 4.0):
+#   - every claude_adopt_* worker returns at its first line unless
+#     CLAUDE_PROJECTION=1; off/plan semantics live in CLAUDE_ADOPT_MODE.
+#   - proof is two-valued: any read failure, missing tool or odd file type is
+#     "not provable". A vacate is always preceded by a fresh proof in the same
+#     function; the preflight verdict only builds the plan and the archive.
+#   - claude_adopt_path_ok walks every parent component from the project root
+#     (assert_under_root compares strings only and is NOT a symlink defence).
+#   - names with control characters are never adopted and never printed raw;
+#     directory contents are enumerated with find -print0 into a file.
+#   - vacating is a rename into a same-directory tombstone; the tombstone is
+#     deleted only by claude_adopt_commit, after the install self-check passed.
+#   - failures that are only warnings are written errexit-safe (if/||), because
+#     the script runs under set -e and the EXIT trap rolls back on NEED_ROLLBACK.
+
+# claude_adopt_ctrl <string> — 0 when the string holds a control character
+# (newline and tab included). C locale: bytes >= 0x80 are not control characters.
+claude_adopt_ctrl() {
+    local LC_ALL=C
+    case "$1" in
+        *[[:cntrl:]]*) return 0 ;;
+    esac
+    return 1
+}
+
+# claude_adopt_clean <string> — printable copy (control characters become "?").
+claude_adopt_clean() {
+    printf '%s' "$1" | LC_ALL=C tr '[:cntrl:]' '?'
+}
+
+# claude_sha1_probe — pick the first working SHA-1 tool (shasum, sha1sum,
+# openssl). A tool counts only when it hashes "abc" correctly, so a broken
+# shim on PATH is treated as absent.
+claude_sha1_probe() {
+    CLAUDE_SHA1_PROBED=1
+    CLAUDE_SHA1_TOOL=""
+    local _abc="a9993e364706816aba3e25717850c26c9cd0d89d" _o=""
+    if command -v shasum >/dev/null 2>&1; then
+        _o=$(printf abc | shasum -a 1 2>/dev/null) || _o=""
+        if [ "${_o%% *}" = "$_abc" ]; then CLAUDE_SHA1_TOOL="shasum"; return 0; fi
+    fi
+    if command -v sha1sum >/dev/null 2>&1; then
+        _o=$(printf abc | sha1sum 2>/dev/null) || _o=""
+        if [ "${_o%% *}" = "$_abc" ]; then CLAUDE_SHA1_TOOL="sha1sum"; return 0; fi
+    fi
+    if command -v openssl >/dev/null 2>&1; then
+        _o=$(printf abc | openssl sha1 2>/dev/null) || _o=""
+        if [ "${_o##* }" = "$_abc" ]; then CLAUDE_SHA1_TOOL="openssl"; return 0; fi
+    fi
+    return 1
+}
+
+# claude_sha1 — SHA-1 of stdin, hex only. Fails when no tool is available.
+claude_sha1() {
+    local _o
+    case "$CLAUDE_SHA1_TOOL" in
+        shasum)  _o=$(shasum -a 1) || return 1; printf '%s' "${_o%% *}" ;;
+        sha1sum) _o=$(sha1sum) || return 1; printf '%s' "${_o%% *}" ;;
+        openssl) _o=$(openssl sha1) || return 1; printf '%s' "${_o##* }" ;;
+        *) return 1 ;;
+    esac
+}
+
+# claude_blob_id <file> — git blob id: sha1("blob <size>\0" + content), no git needed.
+claude_blob_id() {
+    local _f="$1" _sz
+    if [ ! -f "$_f" ]; then return 1; fi
+    _sz=$(LC_ALL=C wc -c < "$_f") || return 1
+    { printf 'blob %s\0' "$((_sz))"; cat -- "$_f"; } | claude_sha1
+}
+
+# claude_adopt_md_head_n <file> — print the line number of the first line that is
+# exactly the TAD marker line. Same command as the ledger generator. A
+# non-numeric answer (no marker, or a binary-looking file) means "no marker".
+claude_adopt_md_head_n() {
+    local _n
+    _n=$(LC_ALL=C grep -n -x -F -e '<!-- TAD:PROJECT-CONTENT-BELOW -->' -- "$1" 2>/dev/null | sed -n '1s/:.*//p') || _n=""
+    case "$_n" in ''|*[!0-9]*) return 1 ;; esac
+    printf '%s' "$_n"
+}
+
+# claude_provenance_ready <src> — validate the ledger once per run. On success
+# CLAUDE_LEDGER holds its path; otherwise it stays empty and CLAUDE_LEDGER_WHY
+# says why. Never fails: the callers degrade to report-only.
+claude_provenance_ready() {
+    local _src="$1" _l _m _want _have _hdr _rows
+    if [ "$CLAUDE_LEDGER_CHECKED" = "1" ]; then return 0; fi
+    CLAUDE_LEDGER_CHECKED=1
+    CLAUDE_LEDGER=""
+    if [ "$CLAUDE_SHA1_PROBED" != "1" ]; then claude_sha1_probe || true; fi
+    if [ -z "$CLAUDE_SHA1_TOOL" ]; then CLAUDE_LEDGER_WHY="no SHA-1 tool available"; return 0; fi
+    _l="$_src/.tad/provenance/claude-legacy.tsv"
+    _m="$_src/.tad/provenance/MANIFEST.sha1"
+    if [ -L "$_l" ] || [ ! -f "$_l" ] || [ -L "$_m" ] || [ ! -f "$_m" ]; then
+        CLAUDE_LEDGER_WHY="provenance ledger missing"; return 0
+    fi
+    _want=$(LC_ALL=C tr -d ' \t\r\n' < "$_m" 2>/dev/null) || _want=""
+    _have=$(claude_blob_id "$_l") || _have=""
+    if [ -z "$_have" ] || [ "$_have" != "$_want" ]; then
+        CLAUDE_LEDGER_WHY="provenance ledger does not match MANIFEST.sha1"; return 0
+    fi
+    _hdr=$(sed -n '1s/^# schema=1 rows=\([0-9][0-9]*\)$/\1/p' "$_l" 2>/dev/null) || _hdr=""
+    _rows=$(grep -vc '^#' "$_l" 2>/dev/null || true)
+    _rows=$(printf '%s' "$_rows" | tr -d ' ')
+    if [ -z "$_hdr" ] || [ "$_hdr" != "$_rows" ]; then
+        CLAUDE_LEDGER_WHY="provenance ledger row count mismatch"; return 0
+    fi
+    CLAUDE_LEDGER="$_l"
+    return 0
+}
+
+# claude_adopt_in_ledger <kind> <id> <key> — whole-line exact match (no regex).
+claude_adopt_in_ledger() {
+    if [ -z "$CLAUDE_LEDGER" ]; then return 1; fi
+    grep -F -x -q -e "$(printf '%s\t%s\t%s' "$1" "$2" "$3")" -- "$CLAUDE_LEDGER" 2>/dev/null
+}
+
+# claude_adopt_path_ok <relpath> <d|f|p> — the path guard. Every parent
+# component, starting at the project root (the cwd), must be a real directory
+# (no symlink); the last component is checked by the declared type, symlink
+# test first: d = directory, f = regular file, p = parents only. Called at
+# preflight and again immediately before every rename.
+claude_adopt_path_ok() {
+    local _rel="$1" _type="$2" _acc="" _part _rest="$1"
+    case "$_rel" in
+        ""|/*|.|..|../*|*/..|*/../*|./*|*//*|*/) return 1 ;;
+    esac
+    while [ -n "$_rest" ]; do
+        case "$_rest" in
+            */*) _part="${_rest%%/*}"; _rest="${_rest#*/}" ;;
+            *)   _part="$_rest"; _rest="" ;;
+        esac
+        if [ -n "$_acc" ]; then _acc="$_acc/$_part"; else _acc="$_part"; fi
+        if [ -n "$_rest" ]; then
+            if [ -L "$_acc" ] || [ ! -d "$_acc" ]; then return 1; fi
+        fi
+    done
+    case "$_type" in
+        d) if [ ! -L "$_rel" ] && [ -d "$_rel" ]; then return 0; fi; return 1 ;;
+        f) if [ ! -L "$_rel" ] && [ -f "$_rel" ]; then return 0; fi; return 1 ;;
+        p) return 0 ;;
+    esac
+    return 1
+}
+
+# claude_adopt_unchecked — print the "nothing was compared" reason (R1): used by the
+# classifiers when there is no usable ledger, so no entry is ever called
+# "modified" on the strength of a lookup that could not succeed.
+claude_adopt_unchecked() {
+    printf 'not checked: %s' "${CLAUDE_ADOPT_REASON:-${CLAUDE_LEDGER_WHY:-provenance unavailable}}"
+}
+
+# claude_adopt_note_fail <path> — remember one path that failed the proof (the
+# first five are reported, sanitised).
+claude_adopt_note_fail() {
+    CLAUDE_V_NFAIL=$((CLAUDE_V_NFAIL + 1))
+    if [ "$CLAUDE_V_NFAIL" -le 5 ]; then
+        if [ -n "$CLAUDE_V_FAILS" ]; then CLAUDE_V_FAILS="${CLAUDE_V_FAILS}|"; fi
+        CLAUDE_V_FAILS="${CLAUDE_V_FAILS}$(claude_adopt_clean "$1")"
+    fi
+}
+
+# claude_adopt_pack_meta_ok <file> — an installer-made .tad-pack-meta.yaml:
+# header line, sync_policy upstream (never forked), only the generator's line
+# shapes, at most 64 KiB. Anything else is not provable.
+claude_adopt_pack_meta_ok() {
+    local _f="$1" _sz _bad
+    _sz=$(LC_ALL=C wc -c < "$_f") || return 1
+    if [ "$((_sz))" -gt 65536 ]; then return 1; fi
+    case "$(head -n 1 -- "$_f")" in
+        "# Auto-generated by tad.sh"*) ;;
+        *) return 1 ;;
+    esac
+    if [ "$(grep -c '^sync_policy: upstream$' "$_f" || true)" != "1" ]; then return 1; fi
+    if [ "$(grep -c 'sync_policy: forked' "$_f" || true)" != "0" ]; then return 1; fi
+    _bad=$(LC_ALL=C grep -c -v -E '^(#.*|[a-z_]+:( .*)?|  - path: .*|    sha256: .*)$' "$_f" || true)
+    if [ "${_bad:-1}" != "0" ]; then return 1; fi
+    return 0
+}
+
+# claude_adopt_prove_skill_dir <name> <dir> — handoff section 4.3 per-file proof.
+# Returns 0 when every entry passes and at least one regular file was proven by
+# the ledger (id AND path) or by cmp against the source skill. Sets
+# CLAUDE_V_DETAIL (ledger|equal|mixed), CLAUDE_V_FAILS, CLAUDE_V_NFAIL.
+claude_adopt_prove_skill_dir() {
+    local _n="$1" _e="$2" _list _p _rel _r2 _base _id _srcf
+    local _nledger=0 _nequal=0
+    CLAUDE_V_FAILS=""; CLAUDE_V_NFAIL=0; CLAUDE_V_DETAIL=""
+    _list="$CLAUDE_ADOPT_WORK/list.$$"
+    if ! find "$_e" -mindepth 1 -print0 > "$_list" 2>/dev/null; then
+        CLAUDE_V_FAILS="(cannot list the directory)"; CLAUDE_V_NFAIL=1
+        return 1
+    fi
+    while IFS= read -r -d '' _p; do
+        _rel="${_p#"$_e"/}"
+        if claude_adopt_ctrl "$_rel"; then claude_adopt_note_fail "$_rel"; continue; fi
+        if [ -L "$_p" ]; then claude_adopt_note_fail "$_rel"; continue; fi
+        if [ -d "$_p" ]; then
+            # A "local" directory directly inside the skill is project-owned content.
+            if [ "$_rel" = "local" ]; then claude_adopt_note_fail "$_rel"; fi
+            continue
+        fi
+        if [ ! -f "$_p" ]; then claude_adopt_note_fail "$_rel"; continue; fi
+        _base="${_rel##*/}"
+        if [ "$_base" = ".DS_Store" ]; then continue; fi
+        # Self-nested duplicate (old cp -r onto an existing directory): drop the
+        # repeated "<name>/" prefix before the lookup.
+        _r2="$_rel"
+        while :; do
+            case "$_r2" in
+                "$_n"/*) _r2="${_r2#"$_n"/}" ;;
+                *) break ;;
+            esac
+        done
+        if [ "$_r2" = ".tad-pack-meta.yaml" ]; then
+            if claude_adopt_pack_meta_ok "$_p"; then continue; fi
+            claude_adopt_note_fail "$_rel"; continue
+        fi
+        _srcf="$CLAUDE_ADOPT_SRC/.agents/skills/$_n/$_r2"
+        if [ "$CLAUDE_ADOPT_LEDGER_ONLY" != "1" ] && [ -f "$_srcf" ] && [ ! -L "$_srcf" ] && cmp -s -- "$_p" "$_srcf"; then
+            _nequal=$((_nequal + 1)); continue
+        fi
+        if _id=$(claude_blob_id "$_p") && claude_adopt_in_ledger skill "$_id" "$_n/$_r2"; then
+            _nledger=$((_nledger + 1)); continue
+        fi
+        claude_adopt_note_fail "$_rel"
+    done < "$_list"
+    if [ "$CLAUDE_V_NFAIL" -ne 0 ]; then return 1; fi
+    if [ $((_nledger + _nequal)) -lt 1 ]; then CLAUDE_V_FAILS="(no file could be proven)"; CLAUDE_V_NFAIL=1; return 1; fi
+    if [ "$_nledger" -eq 0 ]; then CLAUDE_V_DETAIL="equal"
+    elif [ "$_nequal" -eq 0 ]; then CLAUDE_V_DETAIL="ledger"
+    else CLAUDE_V_DETAIL="mixed"; fi
+    return 0
+}
+
+# Classifiers. Each sets CLAUDE_V_VERDICT (ADOPT, RETIRED, LEFT, USER, CURRENT,
+# SKIP), CLAUDE_V_DETAIL and CLAUDE_V_FAILS, and always returns 0. They read the
+# current state of the project, so the same function serves the preflight and
+# the fresh proof right before a rename. CLAUDE_ADOPT_SET / CLAUDE_ADOPT_SRCNAMES
+# (space-delimited) say which skills will be projected and which the source has.
+
+# claude_adopt_classify_skill <name> — one entry under .claude/skills.
+claude_adopt_classify_skill() {
+    local _n="$1" _e=".claude/skills/$1" _id
+    CLAUDE_V_VERDICT="SKIP"; CLAUDE_V_DETAIL=""; CLAUDE_V_FAILS=""; CLAUDE_V_NFAIL=0
+    if [ -L "$_e" ]; then return 0; fi
+    if claude_adopt_ctrl "$_n"; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="control character in the name"; return 0
+    fi
+    if ! claude_adopt_path_ok "$_e" p; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="path guard: not a plain path"; return 0
+    fi
+    if [ -d "$_e" ]; then
+        if claude_is_tad_pointer "$_e" "$_n"; then return 0; fi
+        if ! grep -F -x -q -e "$_n" -- "$CLAUDE_ADOPT_WORK/skillnames" 2>/dev/null \
+           && ! { case "$CLAUDE_ADOPT_SRCNAMES" in *" $_n "*) true ;; *) false ;; esac; }; then
+            CLAUDE_V_VERDICT="USER"; return 0
+        fi
+        if [ -z "$CLAUDE_LEDGER" ]; then
+            CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="$(claude_adopt_unchecked)"; return 0
+        fi
+        if ! claude_adopt_prove_skill_dir "$_n" "$_e"; then
+            CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="legacy copy, modified"; return 0
+        fi
+        case "$CLAUDE_ADOPT_SET" in
+            *" $_n "*) CLAUDE_V_VERDICT="ADOPT" ;;
+            *)
+                case "$CLAUDE_ADOPT_SRCNAMES" in
+                    *" $_n "*)
+                        # The source twin exists. Without a regular SKILL.md it is not a
+                        # skill (for example _archived): a copy whose every file is proven
+                        # by the ledger itself is retired. Otherwise: not selected.
+                        if [ -f "$CLAUDE_ADOPT_SRC/.agents/skills/$_n/SKILL.md" ] && [ ! -L "$CLAUDE_ADOPT_SRC/.agents/skills/$_n/SKILL.md" ]; then
+                            CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="not selected for this install"; CLAUDE_V_FAILS=""
+                        else
+                            CLAUDE_ADOPT_LEDGER_ONLY=1
+                            if claude_adopt_prove_skill_dir "$_n" "$_e"; then
+                                CLAUDE_V_VERDICT="RETIRED"
+                            else
+                                CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="not selected for this install"; CLAUDE_V_FAILS=""
+                            fi
+                            CLAUDE_ADOPT_LEDGER_ONLY=0
+                        fi ;;
+                    *) CLAUDE_V_VERDICT="RETIRED" ;;
+                esac ;;
+        esac
+        return 0
+    fi
+    if [ -f "$_e" ]; then
+        if [ -z "$CLAUDE_LEDGER" ]; then
+            CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="$(claude_adopt_unchecked)"; return 0
+        fi
+        if _id=$(claude_blob_id "$_e") && claude_adopt_in_ledger flat "$_id" "$_n"; then
+            CLAUDE_V_VERDICT="RETIRED"; CLAUDE_V_DETAIL="ledger"
+        else
+            CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="unrecognised file"
+        fi
+        return 0
+    fi
+    CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="unrecognised entry type"
+    return 0
+}
+
+# claude_adopt_classify_workflow <file name> — one file directly under .claude/workflows.
+claude_adopt_classify_workflow() {
+    local _f="$1" _p=".claude/workflows/$1" _id
+    CLAUDE_V_VERDICT="SKIP"; CLAUDE_V_DETAIL=""; CLAUDE_V_FAILS=""; CLAUDE_V_NFAIL=0
+    if claude_adopt_ctrl "$_f"; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="control character in the name"; return 0
+    fi
+    if [ -L "$_p" ] || [ ! -f "$_p" ]; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="not a regular file"; return 0
+    fi
+    if ! claude_adopt_path_ok "$_p" f; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="path guard: not a plain path"; return 0
+    fi
+    if [ -z "$CLAUDE_LEDGER" ]; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="$(claude_adopt_unchecked)"; return 0
+    fi
+    if _id=$(claude_blob_id "$_p") && claude_adopt_in_ledger workflow "$_id" "$_f"; then
+        CLAUDE_V_VERDICT="ADOPT"; CLAUDE_V_DETAIL="ledger"
+    else
+        CLAUDE_V_VERDICT="LEFT"
+        CLAUDE_V_DETAIL="modified; calling this workflow by its saved name may load this copy instead of .tad/workflows/claude/$_f"
+    fi
+    return 0
+}
+
+# claude_adopt_classify_settings — .claude/settings.json (section 4.4).
+claude_adopt_classify_settings() {
+    local _s=".claude/settings.json" _tpl="$CLAUDE_ADOPT_SRC/.tad/templates/claude/settings.json" _id _ws
+    CLAUDE_V_VERDICT="SKIP"; CLAUDE_V_DETAIL=""; CLAUDE_V_FAILS=""; CLAUDE_V_NFAIL=0
+    if [ -L "$_s" ] || [ ! -f "$_s" ]; then return 0; fi
+    if [ -f "$_tpl" ] && [ ! -L "$_tpl" ] && cmp -s -- "$_tpl" "$_s"; then CLAUDE_V_VERDICT="CURRENT"; return 0; fi
+    if [ ! -f "$_tpl" ] || [ -L "$_tpl" ]; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="no hook template in the source"; return 0
+    fi
+    if [ ! -s "$_s" ] || [ "$(( $(LC_ALL=C tr -d ' \t\r\n' < "$_s" 2>/dev/null | wc -c) ))" -eq 0 ]; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="empty file"; return 0
+    fi
+    if ! claude_adopt_path_ok "$_s" f; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="path guard: not a plain path"; return 0
+    fi
+    if [ -z "$CLAUDE_LEDGER" ]; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="$(claude_adopt_unchecked)"; return 0
+    fi
+    if _id=$(claude_blob_id "$_s") && claude_adopt_in_ledger settings "$_id" "-"; then
+        CLAUDE_V_VERDICT="ADOPT"; CLAUDE_V_DETAIL="ledger"; return 0
+    fi
+    if _ws=$(LC_ALL=C tr -d ' \t\r\n' < "$_s" | claude_sha1) && claude_adopt_in_ledger settings-ws "$_ws" "-"; then
+        CLAUDE_V_VERDICT="ADOPT"; CLAUDE_V_DETAIL="ledger, whitespace differs"; return 0
+    fi
+    CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="differs from every shipped settings.json"
+    return 0
+}
+
+# claude_adopt_classify_md <pred|actual> — CLAUDE.md (section 4.5). Sets
+# CLAUDE_V_N (marker line number) for a head adoption. In preflight a source
+# AGENTS.md counts as the future target AGENTS.md; at apply time the real one
+# must already be there, because project_claude_md_ref needs it.
+claude_adopt_classify_md() {
+    local _mode="$1" _id _n _h
+    CLAUDE_V_VERDICT="SKIP"; CLAUDE_V_DETAIL=""; CLAUDE_V_FAILS=""; CLAUDE_V_NFAIL=0; CLAUDE_V_N=""
+    if [ -L "CLAUDE.md" ] || [ ! -f "CLAUDE.md" ]; then return 0; fi
+    if grep -Eq '^@AGENTS\.md[[:space:]]*$' CLAUDE.md 2>/dev/null; then return 0; fi
+    if [ ! -w "CLAUDE.md" ]; then CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="read-only"; return 0; fi
+    if [ -f "AGENTS.md" ] && [ ! -L "AGENTS.md" ]; then :
+    elif [ "$_mode" = "pred" ] && [ -f "$CLAUDE_ADOPT_SRC/AGENTS.md" ] && [ ! -L "$CLAUDE_ADOPT_SRC/AGENTS.md" ]; then :
+    else
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="no regular AGENTS.md"; return 0
+    fi
+    if ! claude_adopt_path_ok "CLAUDE.md" f; then
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="path guard: not a plain path"; return 0
+    fi
+    if [ -z "$CLAUDE_LEDGER" ]; then
+        # Nothing can be compared. A file with the TAD marker is worth a line; any other is the user's.
+        if claude_adopt_md_head_n "CLAUDE.md" >/dev/null; then
+            CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="$(claude_adopt_unchecked)"
+        else
+            CLAUDE_V_VERDICT="USER"
+        fi
+        return 0
+    fi
+    if _id=$(claude_blob_id "CLAUDE.md") && claude_adopt_in_ledger md-whole "$_id" "-"; then
+        CLAUDE_V_VERDICT="ADOPT"; CLAUDE_V_DETAIL="whole file"; return 0
+    fi
+    if _n=$(claude_adopt_md_head_n "CLAUDE.md"); then
+        if _h=$(head -n "$_n" -- CLAUDE.md | claude_sha1) && claude_adopt_in_ledger md-head "$_h" "-"; then
+            CLAUDE_V_VERDICT="ADOPT"; CLAUDE_V_DETAIL="TAD head"; CLAUDE_V_N="$_n"; return 0
+        fi
+        CLAUDE_V_VERDICT="LEFT"; CLAUDE_V_DETAIL="TAD head differs from every shipped version"; return 0
+    fi
+    CLAUDE_V_VERDICT="USER"
+    return 0
+}
+
+# claude_adopt_pred_set <src> — skills the coming install will project, predicted
+# from the source (same filters as the copy loop and claude_skill_set).
+claude_adopt_pred_set() {
+    local _src="$1" _d _n _deny=""
+    if [ -f "$_src/.tad/platform-codes.yaml" ]; then
+        _deny="$(parse_platform_extra_deny "$_src/.tad/platform-codes.yaml" "$PLATFORM")"
+    fi
+    for _d in "$_src"/.agents/skills/*/; do
+        _d="${_d%/}"; _n="${_d##*/}"
+        if [ -L "$_d" ] || [ ! -d "$_d" ]; then continue; fi
+        if is_denied ".agents/skills/$_n" "$_deny"; then continue; fi
+        if [ -n "$PACKS" ] && is_pack_skill "$_n" "$_src"; then
+            if ! is_selected_pack "$_n"; then continue; fi
+        fi
+        case "$_n" in .*|*[[:space:]]*) continue ;; esac
+        if [ -L "$_d/SKILL.md" ] || [ ! -f "$_d/SKILL.md" ]; then continue; fi
+        printf '%s\n' "$_n"
+    done
+}
+
+# claude_adopt_src_names <src> — every directory name under the source .agents/skills.
+claude_adopt_src_names() {
+    local _src="$1" _d
+    for _d in "$_src"/.agents/skills/*/; do
+        _d="${_d%/}"
+        if [ -L "$_d" ] || [ ! -d "$_d" ]; then continue; fi
+        printf '%s\n' "${_d##*/}"
+    done
+}
+
+# claude_adopt_tomb_leftover — print every leftover tombstone of an earlier
+# interrupted run, one per line (looked for in .claude, .claude/skills and
+# .claude/workflows). Returns 1 when there is none.
+claude_adopt_tomb_leftover() {
+    local _d _found=1
+    for _d in .claude/.tad-adopt-tomb.* .claude/skills/.tad-adopt-tomb.* .claude/workflows/.tad-adopt-tomb.*; do
+        if [ -e "$_d" ] || [ -L "$_d" ]; then printf '%s\n' "$_d"; _found=0; fi
+    done
+    return $_found
+}
+
+# claude_adopt_latest_archive — read-only: the newest claude-adopt archive under the
+# backup root that was made for this project (origin.txt equals the project path).
+# Creates nothing; prints nothing when there is none.
+claude_adopt_latest_archive() {
+    local _root="${TAD_BACKUP_ROOT:-$HOME/.tad-backups}" _here _a _best=""
+    _here="$(pwd -P)" || return 0
+    for _a in "$_root"/*/claude-adopt/*/; do
+        _a="${_a%/}"
+        [ -f "$_a/origin.txt" ] || continue
+        if [ "$(cat "$_a/origin.txt" 2>/dev/null || true)" != "$_here" ]; then continue; fi
+        _best="$_a"
+    done
+    printf '%s' "$_best"
+}
+
+# claude_adopt_plan_add <face> <rel> <verdict> <detail> <fails>
+claude_adopt_plan_add() {
+    printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5" >> "$CLAUDE_ADOPT_PLAN"
+}
+
+# claude_adopt_notice — fixed two-line heads-up before the "Continue?" prompt.
+# The source is not downloaded yet, so this looks at the project only: a real
+# (non-pointer) skill directory under .claude/skills.
+claude_adopt_notice() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    [ "$CLAUDE_ADOPT_MODE" = "apply" ] || return 0
+    if [ -L ".claude" ] || [ ! -d ".claude" ]; then
+        # No .claude: only a legacy CLAUDE.md head can be adopted.
+        if claude_adopt_notice_md; then claude_adopt_notice_print 0; fi
+        return 0
+    fi
+    local _e _hit=0 _settings=0
+    if [ ! -L ".claude/skills" ] && [ -d ".claude/skills" ]; then
+        for _e in .claude/skills/*/; do
+            _e="${_e%/}"
+            if [ -L "$_e" ] || [ ! -d "$_e" ]; then continue; fi
+            if [ -L "$_e/SKILL.md" ] || [ ! -f "$_e/SKILL.md" ]; then continue; fi
+            if claude_is_tad_pointer "$_e" "${_e##*/}"; then continue; fi
+            _hit=1; break
+        done
+    fi
+    # An old settings.json is recognisable by its blocking PreToolUse hooks (or the v1
+    # schema); the current template has neither, so a re-run stays quiet.
+    if [ ! -L ".claude/settings.json" ] && [ -f ".claude/settings.json" ] \
+       && grep -q -e '"PreToolUse"' -e '"autoload"' ".claude/settings.json" 2>/dev/null; then
+        _hit=1; _settings=1
+    fi
+    if [ "$_hit" = "0" ] && [ ! -L ".claude/workflows" ] && [ -d ".claude/workflows" ]; then
+        for _e in .claude/workflows/*; do
+            if [ -f "$_e" ] && [ ! -L "$_e" ]; then _hit=1; break; fi
+        done
+    fi
+    if [ "$_hit" = "0" ] && claude_adopt_notice_md; then _hit=1; fi
+    if [ "$_hit" = "1" ]; then claude_adopt_notice_print "$_settings"; fi
+    return 0
+}
+
+# claude_adopt_notice_md — 0 when CLAUDE.md still carries the legacy TAD marker line and no @AGENTS.md reference.
+claude_adopt_notice_md() {
+    if [ -L "CLAUDE.md" ] || [ ! -f "CLAUDE.md" ]; then return 1; fi
+    if grep -Eq '^@AGENTS\.md[[:space:]]*$' CLAUDE.md 2>/dev/null; then return 1; fi
+    claude_adopt_md_head_n "CLAUDE.md" >/dev/null
+}
+
+# claude_adopt_notice_print <settings 0|1>
+claude_adopt_notice_print() {
+    echo "Legacy Claude Code install detected. Entries under .claude/ and the TAD part of CLAUDE.md that are byte-identical to files TAD shipped will be archived outside the project and replaced by the current version; entries that differ are left as they are."
+    if [ "$1" = "1" ]; then
+        echo "An old .claude/settings.json that matches a shipped version is replaced by the current template, so the hooks only the old file registered stop running."
+    fi
+    echo "Preview without changing anything: add --claude-adopt=plan"
+    echo ""
+}
+
+# claude_adopt_preflight <src> — read-only classification (handoff section 4.2).
+# Builds the plan in a private work directory. In plan mode it prints the plan
+# and exits 0 with the project and the backup root untouched.
+claude_adopt_preflight() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    [ "$CLAUDE_ADOPT_MODE" != "off" ] || return 0
+    local _src="$1" _e _n _f _structural="" _left_tomb _lt _cand _a _r _l _u
+    CLAUDE_ADOPT_SRC="$_src"
+    CLAUDE_ADOPT_REASON=""
+    if ! CLAUDE_ADOPT_WORK=$(mktemp -d "$(resolve_tmpdir)/tad-claude-adopt.XXXXXX"); then
+        CLAUDE_ADOPT_WORK=""
+        log_warn "CLAUDE-ADOPT-DEGRADED cannot create a work directory"
+        CLAUDE_ADOPT_MODE="report"
+        return 0
+    fi
+    chmod 700 "$CLAUDE_ADOPT_WORK" 2>/dev/null || true
+    CLAUDE_ADOPT_PLAN="$CLAUDE_ADOPT_WORK/plan.tsv"
+    : > "$CLAUDE_ADOPT_PLAN"
+    : > "$CLAUDE_ADOPT_WORK/skillnames"
+
+    claude_provenance_ready "$_src"
+    if [ -n "$CLAUDE_LEDGER" ]; then
+        awk -F'\t' '$1 == "skill" { i = index($3, "/"); if (i > 1) print substr($3, 1, i - 1) }' "$CLAUDE_LEDGER" \
+            | LC_ALL=C sort -u > "$CLAUDE_ADOPT_WORK/skillnames" || true
+    else
+        CLAUDE_ADOPT_REASON="$CLAUDE_LEDGER_WHY"
+    fi
+    CLAUDE_ADOPT_SET=" $(claude_adopt_pred_set "$_src" | tr '\n' ' ') "
+    CLAUDE_ADOPT_SRCNAMES=" $(claude_adopt_src_names "$_src" | tr '\n' ' ') "
+
+    if [ -L ".claude" ] || { [ -e ".claude" ] && [ ! -d ".claude" ]; }; then
+        # No surface is adopted behind a symlinked or non-directory .claude, CLAUDE.md included.
+        _structural=".claude is not a plain directory"
+        log_warn "CLAUDE-ADOPT-DEGRADED $_structural"
+        CLAUDE_ADOPT_REASON="$_structural"
+    else
+        if _left_tomb=$(claude_adopt_tomb_leftover); then
+            _structural="leftover $(claude_adopt_clean "$(printf '%s' "$_left_tomb" | sed -n 1p)")"
+            log_warn "CLAUDE-ADOPT-DEGRADED $_structural"
+            echo "  A previous adoption run was interrupted. Tombstones found:"
+            printf '%s\n' "$_left_tomb" | while IFS= read -r _lt; do echo "    $(claude_adopt_clean "$_lt")"; done
+            _lt="$(claude_adopt_latest_archive)"
+            if [ -n "$_lt" ]; then echo "  Most recent archive for this project: $(claude_adopt_clean "$_lt")"; fi
+            echo "  Compare each tombstone with the archive copy (tree/<path> in that archive) BEFORE moving anything back: after an interrupted commit a tombstone can be partial, the archive copy is the complete one. Then either move the entry back (if a link sits there now, remove the link first) or delete the tombstone, and re-run."
+            CLAUDE_ADOPT_REASON="$_structural"
+        fi
+        if [ -d ".claude" ]; then
+            # skills face
+            if [ -L ".claude/skills" ] || { [ -e ".claude/skills" ] && [ ! -d ".claude/skills" ]; }; then
+                if [ -e ".claude/skills" ] || [ -L ".claude/skills" ]; then
+                    claude_adopt_plan_add skill ".claude/skills" LEFT "is a symlink or not a directory" ""
+                fi
+            elif [ -d ".claude/skills" ]; then
+                for _e in .claude/skills/*; do
+                    if [ ! -e "$_e" ] && [ ! -L "$_e" ]; then continue; fi
+                    _n="${_e##*/}"
+                    claude_adopt_classify_skill "$_n"
+                    case "$CLAUDE_V_VERDICT" in
+                        SKIP|CURRENT) ;;
+                        *)
+                            if [ "$CLAUDE_V_VERDICT" = "LEFT" ] && claude_adopt_ctrl "$_n"; then
+                                claude_adopt_plan_add skill ".claude/skills/$(claude_adopt_clean "$_n")" LEFT "$CLAUDE_V_DETAIL" "$CLAUDE_V_FAILS"
+                            else
+                                claude_adopt_plan_add skill "$_e" "$CLAUDE_V_VERDICT" "$CLAUDE_V_DETAIL" "$CLAUDE_V_FAILS"
+                            fi ;;
+                    esac
+                done
+            fi
+            # workflows face
+            if [ -L ".claude/workflows" ] || { [ -e ".claude/workflows" ] && [ ! -d ".claude/workflows" ]; }; then
+                claude_adopt_plan_add workflow ".claude/workflows" LEFT "is a symlink or not a directory" ""
+            elif [ -d ".claude/workflows" ]; then
+                for _e in .claude/workflows/*; do
+                    if [ ! -e "$_e" ] && [ ! -L "$_e" ]; then continue; fi
+                    _f="${_e##*/}"
+                    claude_adopt_classify_workflow "$_f"
+                    if claude_adopt_ctrl "$_f"; then
+                        claude_adopt_plan_add workflow ".claude/workflows/$(claude_adopt_clean "$_f")" "$CLAUDE_V_VERDICT" "$CLAUDE_V_DETAIL" ""
+                    else
+                        claude_adopt_plan_add workflow "$_e" "$CLAUDE_V_VERDICT" "$CLAUDE_V_DETAIL" ""
+                    fi
+                done
+            fi
+            # settings face
+            claude_adopt_classify_settings
+            case "$CLAUDE_V_VERDICT" in
+                ADOPT|LEFT) claude_adopt_plan_add settings ".claude/settings.json" "$CLAUDE_V_VERDICT" "$CLAUDE_V_DETAIL" "" ;;
+            esac
+        fi
+        # CLAUDE.md face (also when .claude does not exist yet)
+        claude_adopt_classify_md pred
+        case "$CLAUDE_V_VERDICT" in
+            ADOPT|LEFT|USER) claude_adopt_plan_add md "CLAUDE.md" "$CLAUDE_V_VERDICT" "$CLAUDE_V_DETAIL" "$CLAUDE_V_N" ;;
+        esac
+    fi
+
+    _cand=$(awk -F'\t' '$3 == "ADOPT" || $3 == "RETIRED" || $3 == "LEFT" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_PLAN")
+    # Tool/ledger problems are only worth a line when something legacy is there to talk about.
+    if [ -n "$CLAUDE_ADOPT_REASON" ] && [ -z "$_structural" ] && [ "$_cand" -gt 0 ]; then
+        log_warn "CLAUDE-ADOPT-DEGRADED $CLAUDE_ADOPT_REASON"
+    fi
+    if [ -n "$CLAUDE_ADOPT_REASON" ] && [ "$CLAUDE_ADOPT_MODE" = "apply" ]; then CLAUDE_ADOPT_MODE="report"; fi
+
+    if [ "$CLAUDE_ADOPT_MODE" = "plan" ]; then
+        _a=$(awk -F'\t' '$3 == "ADOPT" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_PLAN")
+        _r=$(awk -F'\t' '$3 == "RETIRED" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_PLAN")
+        _l=$(awk -F'\t' '$3 == "LEFT" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_PLAN")
+        _u=$(awk -F'\t' '$3 == "USER" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_PLAN")
+        echo "CLAUDE-ADOPT-PLAN adopt=$_a retire=$_r left=$_l user=$_u"
+        awk -F'\t' '$3 == "ADOPT" || $3 == "RETIRED" || $3 == "LEFT" { printf "CLAUDE-ADOPT-PLAN-ENTRY %s %s (%s)\n", $3, $2, $4 }' "$CLAUDE_ADOPT_PLAN"
+        echo "Plan only (--claude-adopt=plan): nothing was changed."
+        exit 0
+    fi
+    return 0
+}
+
+# claude_adopt_result <status> <rel> <detail> <fails> — remember the outcome of one
+# entry for the report and the summary (ADOPTED, RETIRED, LEFT, USER).
+claude_adopt_result() {
+    printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" >> "$CLAUDE_ADOPT_WORK/result.tsv"
+}
+
+# claude_adopt_archive_open — create the archive directory (section 4.7):
+# <backup root>/<group>/claude-adopt/<YYYYMMDD_HHMMSS>[.n]/, mkdir without -p so
+# two concurrent installers never share one. The backup root/group are resolved
+# here when backup_existing did not (target without .tad/). Returns 1 when no
+# archive can be made; nothing in the project has been touched at that point.
+claude_adopt_archive_open() {
+    local _base _ts _d _k=1
+    if [ -z "${TAD_BACKUP_ROOT_ABS:-}" ] || [ -z "${BACKUP_GROUP:-}" ]; then
+        resolve_backup_root || return 1
+        repo_group_key "$(pwd -P)" || return 1
+    fi
+    if [ -z "${TAD_BACKUP_ROOT_ABS:-}" ] || [ -z "${BACKUP_GROUP:-}" ]; then return 1; fi
+    _base="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP/claude-adopt"
+    if [ -L "$_base" ]; then return 1; fi
+    mkdir -p "$_base" 2>/dev/null || return 1
+    if [ -L "$_base" ] || [ ! -d "$_base" ]; then return 1; fi
+    chmod 700 "$_base" 2>/dev/null || true
+    _ts=$(date +%Y%m%d_%H%M%S)
+    _d="$_base/$_ts"
+    until mkdir "$_d" 2>/dev/null; do
+        if [ ! -e "$_d" ] && [ ! -L "$_d" ]; then return 1; fi
+        _d="$_base/$_ts.$_k"; _k=$((_k + 1))
+        if [ "$_k" -gt 1000 ]; then return 1; fi
+    done
+    chmod 700 "$_d" 2>/dev/null || true
+    mkdir "$_d/tree" || return 1
+    : > "$_d/done.tsv" || return 1
+    pwd -P > "$_d/origin.txt" || return 1
+    CLAUDE_ADOPT_DIR="$_d"
+    if command -v git >/dev/null 2>&1 && [ "$(git -C "$_d" rev-parse --is-inside-work-tree 2>/dev/null || true)" = "true" ]; then
+        log_warn "CLAUDE-ADOPT-NOTE the backup root is inside a git work tree; the archive (it holds your complete CLAUDE.md) could be committed or synced from there"
+    fi
+    return 0
+}
+
+# claude_adopt_archive_drop — remove the archive directory THIS run created and
+# could not complete (never one that has a manifest.txt).
+claude_adopt_archive_drop() {
+    local _d="$CLAUDE_ADOPT_DIR"
+    CLAUDE_ADOPT_DIR=""
+    if [ -z "$_d" ] || [ -L "$_d" ] || [ ! -d "$_d" ] || [ -e "$_d/manifest.txt" ]; then return 0; fi
+    case "$_d" in
+        "$TAD_BACKUP_ROOT_ABS"/*/claude-adopt/*)
+            find "$_d" -type d -exec chmod u+w {} + 2>/dev/null || true
+            rm -rf -- "$_d" || log_warn "could not remove the incomplete archive $_d" # RM-OK:claude-adopt-archive-residue
+            ;;
+    esac
+    return 0
+}
+
+# claude_adopt_same <path> <archive copy> — 0 when the (directory or file) copy equals the original.
+claude_adopt_same() {
+    if [ -d "$2" ] && [ ! -L "$2" ]; then
+        if [ -d "$1" ] && [ ! -L "$1" ]; then diff -r -- "$1" "$2" >/dev/null 2>&1; return $?; fi
+        return 1
+    fi
+    if [ -f "$2" ] && [ ! -L "$2" ] && [ -f "$1" ] && [ ! -L "$1" ]; then cmp -s -- "$1" "$2"; return $?; fi
+    return 1
+}
+
+# claude_adopt_move_back <rel> <tomb> — the one move-back rule (also used by the
+# rollback). Moves only when the original slot is free (neither entry nor
+# link) and the parent chain is plain directories; afterwards the original must
+# be the same kind of entry and the tombstone slot empty. An occupied slot is
+# never overwritten (mv onto a directory nests, onto a link goes through it):
+# both paths are reported and the entry stays in the tombstone.
+# Returns 0 moved, 1 left in the tombstone, 2 nothing to move back.
+claude_adopt_move_back() {
+    local _rel="$1" _tomb="$2" _was_dir=0
+    if [ ! -e "$_tomb" ] && [ ! -L "$_tomb" ]; then return 2; fi
+    if [ -d "$_tomb" ] && [ ! -L "$_tomb" ]; then _was_dir=1; fi
+    if [ -e "$_rel" ] || [ -L "$_rel" ] || ! claude_adopt_path_ok "$_rel" p || ! claude_adopt_path_ok "$_tomb" p; then
+        log_error "CLAUDE-ADOPT-MANUAL cannot move back: the original slot $_rel is occupied or not a plain path; the original stays at $_tomb"
+        return 1
+    fi
+    if ! mv -- "$_tomb" "$_rel" 2>/dev/null; then
+        log_error "CLAUDE-ADOPT-MANUAL cannot move back $_tomb to $_rel; the original stays at $_tomb"
+        return 1
+    fi
+    if [ -e "$_tomb" ] || [ -L "$_tomb" ]; then
+        log_error "CLAUDE-ADOPT-MANUAL unexpected content left at $_tomb after moving back to $_rel"
+        return 1
+    fi
+    if [ "$_was_dir" = "1" ]; then
+        if [ -L "$_rel" ] || [ ! -d "$_rel" ]; then log_error "CLAUDE-ADOPT-MANUAL $_rel is not the directory that was moved back"; return 1; fi
+    elif [ -L "$_rel" ] || [ ! -f "$_rel" ]; then
+        log_error "CLAUDE-ADOPT-MANUAL $_rel is not the file that was moved back"; return 1
+    fi
+    return 0
+}
+
+# claude_adopt_tomb_dir <skills|workflows> — create (once) the tombstone
+# directory of a surface and leave its path in CLAUDE_TOMB_OUT (a global: this
+# must not run in a command substitution). mkdir without -p: an existing
+# directory of that name is a leftover and the surface is not vacated.
+claude_adopt_tomb_dir() {
+    local _parent=".claude/$1" _t
+    _t="$_parent/.tad-adopt-tomb.$$"
+    CLAUDE_TOMB_OUT=""
+    case "$1" in
+        skills) if [ -n "$CLAUDE_TOMB_SK" ]; then CLAUDE_TOMB_OUT="$CLAUDE_TOMB_SK"; return 0; fi ;;
+        workflows) if [ -n "$CLAUDE_TOMB_WF" ]; then CLAUDE_TOMB_OUT="$CLAUDE_TOMB_WF"; return 0; fi ;;
+        *) return 1 ;;
+    esac
+    if ! claude_adopt_path_ok "$_parent" d; then return 1; fi
+    if ! mkdir "$_t" 2>/dev/null; then return 1; fi
+    case "$1" in
+        skills) CLAUDE_TOMB_SK="$_t" ;;
+        workflows) CLAUDE_TOMB_WF="$_t" ;;
+    esac
+    CLAUDE_TOMB_OUT="$_t"
+    return 0
+}
+
+# claude_adopt_vacate <face> <rel> <kind d|f> <tomb> <detail> <fatal 0|1> — the
+# per-entry sequence of section 4.8 after the caller's fresh proof: guard,
+# journal line, rename into the tombstone, compare tombstone with the archive
+# copy. Returns 0 (adopted, or downgraded to LEFT with a line saying why) or 1
+# (fatal: the install must fail and roll back).
+claude_adopt_vacate() {
+    local _face="$1" _rel="$2" _kind="$3" _tomb="$4" _detail="$5" _fatal="$6" _copy
+    _copy="$CLAUDE_ADOPT_DIR/tree/$_rel"
+    CLAUDE_VAC_OK=0
+    if ! claude_adopt_path_ok "$_rel" "$_kind" || ! claude_adopt_path_ok "$_tomb" p; then
+        log_warn "CLAUDE-ADOPT-LEFT $_rel (path guard: not a plain path)"
+        claude_adopt_result LEFT "$_rel" "path guard: not a plain path" ""
+        return 0
+    fi
+    if [ -e "$_tomb" ] || [ -L "$_tomb" ]; then
+        log_warn "CLAUDE-ADOPT-LEFT $_rel (tombstone slot already taken)"
+        claude_adopt_result LEFT "$_rel" "tombstone slot already taken" ""
+        return 0
+    fi
+    if ! printf '%s\t%s\n' "$_rel" "$_tomb" >> "$CLAUDE_ADOPT_DIR/done.tsv"; then
+        log_error "CLAUDE-ADOPT-FAILED $_rel (cannot write the journal)"
+        return 1
+    fi
+    if ! mv -- "$_rel" "$_tomb" 2>/dev/null; then
+        printf 'REVERTED\t%s\n' "$_rel" >> "$CLAUDE_ADOPT_DIR/done.tsv" || true
+        if [ "$_fatal" = "1" ]; then
+            log_error "CLAUDE-ADOPT-FAILED $_rel"
+            return 1
+        fi
+        log_warn "CLAUDE-ADOPT-LEFT $_rel (cannot be moved)"
+        claude_adopt_result LEFT "$_rel" "cannot be moved" ""
+        return 0
+    fi
+    if ! claude_adopt_same "$_tomb" "$_copy"; then
+        # Something changed between the archive copy and the rename: put it back.
+        claude_adopt_move_back "$_rel" "$_tomb" || true
+        printf 'REVERTED\t%s\n' "$_rel" >> "$CLAUDE_ADOPT_DIR/done.tsv" || true
+        log_warn "CLAUDE-ADOPT-LEFT $_rel (changed during adoption)"
+        claude_adopt_result LEFT "$_rel" "changed during adoption" ""
+        return 0
+    fi
+    CLAUDE_VAC_OK=1
+    return 0
+}
+
+# claude_adopt_apply <src> — archive then vacate (handoff section 4.8). Runs
+# inside copy_framework_files, right before project_claude_skills. A non-zero
+# return fails the install (the EXIT trap then rolls everything back).
+claude_adopt_apply() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    case "$CLAUDE_ADOPT_MODE" in apply|report) ;; *) return 0 ;; esac
+    if [ -z "$CLAUDE_ADOPT_PLAN" ] || [ ! -f "$CLAUDE_ADOPT_PLAN" ]; then return 0; fi
+    local _src="$1" _face _rel _verdict _detail _fails _n _f _k _td _cand=0 _lines _r
+    CLAUDE_ADOPT_SRC="$_src"
+    : > "$CLAUDE_ADOPT_WORK/result.tsv"
+
+    # Report-only run (degraded): everything is classified, nothing is vacated.
+    if [ "$CLAUDE_ADOPT_MODE" = "report" ]; then
+        while IFS=$'\t' read -r _face _rel _verdict _detail _fails; do
+            case "$_verdict" in
+                ADOPT|RETIRED)
+                    log_warn "CLAUDE-ADOPT-LEFT $_rel (adoption is report-only: $CLAUDE_ADOPT_REASON)"
+                    claude_adopt_result LEFT "$_rel" "adoption is report-only: $CLAUDE_ADOPT_REASON" "" ;;
+                LEFT)
+                    log_warn "CLAUDE-ADOPT-LEFT $_rel ($_detail)"
+                    claude_adopt_result LEFT "$_rel" "$_detail" "$_fails" ;;
+                USER) claude_adopt_result USER "$_rel" "" "" ;;
+            esac
+        done < "$CLAUDE_ADOPT_PLAN"
+        return 0
+    fi
+
+    # Entries that stay as they are: report them now.
+    while IFS=$'\t' read -r _face _rel _verdict _detail _fails; do
+        case "$_verdict" in
+            LEFT) log_warn "CLAUDE-ADOPT-LEFT $_rel ($_detail)"; claude_adopt_result LEFT "$_rel" "$_detail" "$_fails" ;;
+            USER) claude_adopt_result USER "$_rel" "" "" ;;
+            ADOPT|RETIRED) _cand=$((_cand + 1)) ;;
+        esac
+    done < "$CLAUDE_ADOPT_PLAN"
+    if [ "$_cand" -eq 0 ]; then return 0; fi
+
+    # The target now has its final .agents/skills: recompute the projected set from it.
+    CLAUDE_ADOPT_SET=" $(claude_skill_set | tr '\n' ' ') "
+
+    # Archive first. The archive needs a backup root; without one adoption degrades.
+    if ! claude_adopt_archive_open; then
+        CLAUDE_ADOPT_DIR=""
+        log_warn "CLAUDE-ADOPT-DEGRADED backup root unavailable (nothing was vacated)"
+        while IFS=$'\t' read -r _face _rel _verdict _detail _fails; do
+            case "$_verdict" in
+                ADOPT|RETIRED)
+                    log_warn "CLAUDE-ADOPT-LEFT $_rel (adoption is report-only: backup root unavailable)"
+                    claude_adopt_result LEFT "$_rel" "adoption is report-only: backup root unavailable" "" ;;
+            esac
+        done < "$CLAUDE_ADOPT_PLAN"
+        return 0
+    fi
+    while IFS=$'\t' read -r _face _rel _verdict _detail _fails; do
+        case "$_verdict" in ADOPT|RETIRED) ;; *) continue ;; esac
+        if ! claude_adopt_path_ok "$_rel" p; then continue; fi
+        if { [ -L "$_rel" ] || [ ! -e "$_rel" ]; }; then continue; fi
+        if ! mkdir -p "$CLAUDE_ADOPT_DIR/tree/$(dirname "$_rel")" \
+           || ! cp -R -p "$_rel" "$CLAUDE_ADOPT_DIR/tree/$_rel" 2>/dev/null \
+           || ! claude_adopt_same "$_rel" "$CLAUDE_ADOPT_DIR/tree/$_rel"; then
+            log_error "CLAUDE-ADOPT-FAILED archive"
+            claude_adopt_archive_drop
+            return 1
+        fi
+        printf '%s\n' "$_rel" >> "$CLAUDE_ADOPT_DIR/manifest.tmp" || { log_error "CLAUDE-ADOPT-FAILED archive"; claude_adopt_archive_drop; return 1; }
+    done < "$CLAUDE_ADOPT_PLAN"
+    # plan.tsv in the archive: paths and verdicts only; the names of the user's own
+    # entries (USER rows) are not written outside the project.
+    if ! awk -F'\t' '$3 != "USER"' "$CLAUDE_ADOPT_PLAN" > "$CLAUDE_ADOPT_DIR/plan.tsv" 2>/dev/null \
+       || ! { if [ -f "$CLAUDE_ADOPT_DIR/manifest.tmp" ]; then mv -- "$CLAUDE_ADOPT_DIR/manifest.tmp" "$CLAUDE_ADOPT_DIR/manifest.txt"; else : > "$CLAUDE_ADOPT_DIR/manifest.txt"; fi; }; then
+        log_error "CLAUDE-ADOPT-FAILED archive"
+        claude_adopt_archive_drop
+        return 1
+    fi
+
+    # Vacate: skills, workflows, CLAUDE.md, settings.json (in that order).
+    _lines="$CLAUDE_ADOPT_WORK/cand.tsv"
+    awk -F'\t' '$3 == "ADOPT" || $3 == "RETIRED"' "$CLAUDE_ADOPT_PLAN" > "$_lines"
+    while IFS=$'\t' read -r _face _rel _verdict _detail _fails; do
+        if [ "$_face" != "skill" ]; then continue; fi
+        _n="${_rel##*/}"
+        if [ -L "$_rel" ] || { [ ! -d "$_rel" ] && [ ! -f "$_rel" ]; }; then continue; fi
+        claude_adopt_classify_skill "$_n"
+        case "$CLAUDE_V_VERDICT" in
+            ADOPT|RETIRED) ;;
+            *)
+                log_warn "CLAUDE-ADOPT-LEFT $_rel (changed since preflight)"
+                claude_adopt_result LEFT "$_rel" "changed since preflight" ""
+                continue ;;
+        esac
+        _k="d"; if [ -f "$_rel" ] && [ ! -d "$_rel" ]; then _k="f"; fi
+        if ! claude_adopt_tomb_dir skills; then
+            log_warn "CLAUDE-ADOPT-LEFT $_rel (tombstone directory unavailable)"
+            claude_adopt_result LEFT "$_rel" "tombstone directory unavailable" ""
+            continue
+        fi
+        _td="$CLAUDE_TOMB_OUT"
+        _r="$CLAUDE_V_VERDICT"; _detail="$CLAUDE_V_DETAIL"
+        claude_adopt_vacate skill "$_rel" "$_k" "$_td/$_n" "$_detail" 0 || return 1
+        if [ "$CLAUDE_VAC_OK" = "1" ]; then
+            log_success "CLAUDE-ADOPTED $_rel ($_detail)"
+            claude_adopt_result "$(if [ "$_r" = "RETIRED" ]; then echo RETIRED; else echo ADOPTED; fi)" "$_rel" "$_detail" ""
+        fi
+    done < "$_lines"
+    while IFS=$'\t' read -r _face _rel _verdict _detail _fails; do
+        if [ "$_face" != "workflow" ]; then continue; fi
+        _f="${_rel##*/}"
+        if [ -L "$_rel" ] || [ ! -f "$_rel" ]; then continue; fi
+        claude_adopt_classify_workflow "$_f"
+        if [ "$CLAUDE_V_VERDICT" != "ADOPT" ]; then
+            log_warn "CLAUDE-ADOPT-LEFT $_rel (changed since preflight)"
+            claude_adopt_result LEFT "$_rel" "changed since preflight" ""
+            continue
+        fi
+        if ! claude_adopt_tomb_dir workflows; then
+            log_warn "CLAUDE-ADOPT-LEFT $_rel (tombstone directory unavailable)"
+            claude_adopt_result LEFT "$_rel" "tombstone directory unavailable" ""
+            continue
+        fi
+        _td="$CLAUDE_TOMB_OUT"
+        _detail="$CLAUDE_V_DETAIL"
+        claude_adopt_vacate workflow "$_rel" f "$_td/$_f" "$_detail" 0 || return 1
+        if [ "$CLAUDE_VAC_OK" = "1" ]; then
+            CLAUDE_ADOPT_WF_DONE=1
+            log_success "CLAUDE-ADOPTED $_rel ($_detail)"
+            claude_adopt_result ADOPTED "$_rel" "$_detail" ""
+        fi
+    done < "$_lines"
+    if awk -F'\t' '$1 == "md" { f = 1 } END { exit !f }' "$_lines"; then
+        claude_adopt_vacate_md || return 1
+    fi
+    if awk -F'\t' '$1 == "settings" { f = 1 } END { exit !f }' "$_lines"; then
+        claude_adopt_classify_settings
+        if [ "$CLAUDE_V_VERDICT" != "ADOPT" ]; then
+            log_warn "CLAUDE-ADOPT-LEFT .claude/settings.json (changed since preflight)"
+            claude_adopt_result LEFT ".claude/settings.json" "changed since preflight" ""
+        else
+            _detail="$CLAUDE_V_DETAIL"
+            claude_adopt_vacate settings ".claude/settings.json" f ".claude/.tad-adopt-tomb.$$.settings.json" "$_detail" 1 || return 1
+            if [ "$CLAUDE_VAC_OK" = "1" ]; then
+                CLAUDE_ADOPT_SETTINGS_DONE=1
+                log_success "CLAUDE-ADOPTED .claude/settings.json ($_detail)"
+                claude_adopt_result ADOPTED ".claude/settings.json" "$_detail" ""
+            fi
+        fi
+    fi
+    return 0
+}
+
+# claude_adopt_vacate_md — CLAUDE.md: remove the proven TAD body, keep every
+# later byte. Same-directory temp file, permission bits kept, mv. The original
+# is in the archive (the whole file) and in the rollback snapshot.
+claude_adopt_vacate_md() {
+    local _mode _tmp _n _copy="$CLAUDE_ADOPT_DIR/tree/CLAUDE.md" _detail
+    claude_adopt_classify_md actual
+    if [ "$CLAUDE_V_VERDICT" != "ADOPT" ]; then
+        log_warn "CLAUDE-ADOPT-LEFT CLAUDE.md (changed since preflight)"
+        claude_adopt_result LEFT "CLAUDE.md" "changed since preflight" ""
+        return 0
+    fi
+    _detail="$CLAUDE_V_DETAIL"; _n="$CLAUDE_V_N"
+    if ! claude_adopt_path_ok "CLAUDE.md" f || ! claude_adopt_same "CLAUDE.md" "$_copy"; then
+        log_warn "CLAUDE-ADOPT-LEFT CLAUDE.md (changed since it was archived)"
+        claude_adopt_result LEFT "CLAUDE.md" "changed since it was archived" ""
+        return 0
+    fi
+    if ! _mode=$(claude_file_mode CLAUDE.md); then
+        log_warn "CLAUDE-ADOPT-LEFT CLAUDE.md (cannot read permission bits)"
+        claude_adopt_result LEFT "CLAUDE.md" "cannot read permission bits" ""
+        return 0
+    fi
+    if ! _tmp=$(mktemp "./.tad-claude-md.XXXXXX"); then
+        log_error "CLAUDE-ADOPT-FAILED CLAUDE.md (cannot create a temp file in the project root)"
+        return 1
+    fi
+    CLAUDE_MD_TMP="$_tmp"
+    if [ "$_detail" = "whole file" ]; then
+        : > "$_tmp" || { log_error "CLAUDE-ADOPT-FAILED CLAUDE.md"; return 1; }
+    else
+        if ! tail -n "+$((_n + 1))" -- CLAUDE.md > "$_tmp"; then log_error "CLAUDE-ADOPT-FAILED CLAUDE.md"; return 1; fi
+    fi
+    if ! chmod "$_mode" "$_tmp" || ! mv -f -- "$_tmp" CLAUDE.md; then
+        log_error "CLAUDE-ADOPT-FAILED CLAUDE.md (could not replace the file)"
+        return 1
+    fi
+    CLAUDE_MD_TMP=""
+    CLAUDE_ADOPT_MD_DONE=1
+    log_success "CLAUDE-ADOPTED CLAUDE.md ($_detail)"
+    claude_adopt_result ADOPTED "CLAUDE.md" "$_detail" ""
+    return 0
+}
+
+# rollback_claude_adoption — move every tombstoned original back (reverse order
+# of the journal, entries already REVERTED or never moved are skipped), then
+# remove the empty tombstone directories. The archive stays. CLAUDE.md comes
+# back from the rollback snapshot. Called after rollback_claude_projection.
+rollback_claude_adoption() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    local _j="${CLAUDE_ADOPT_DIR:-}/done.tsv" _t="${TARGET_ROOT:-}" _rev _rel _tomb _rc _d
+    if [ -z "${CLAUDE_ADOPT_DIR:-}" ] || [ ! -f "$_j" ] || [ -z "$_t" ] || [ "$_t" = "/" ]; then return 0; fi
+    cd "$_t" 2>/dev/null || return 0
+    _rev="$(mktemp "$(resolve_tmpdir)/tad-claude-rev.XXXXXX")" || return 0
+    sed '1!G;h;$!d' "$_j" > "$_rev" 2>/dev/null || true
+    while IFS=$'\t' read -r _rel _tomb; do
+        [ -n "$_rel" ] || continue
+        if [ "$_rel" = "REVERTED" ]; then continue; fi
+        if grep -F -x -q -e "$(printf 'REVERTED\t%s' "$_rel")" -- "$_j" 2>/dev/null; then continue; fi
+        _rc=0
+        claude_adopt_move_back "$_rel" "$_tomb" || _rc=$?
+        if [ "$_rc" -eq 0 ]; then log_info "Restored $_rel from its tombstone"; fi
+    done < "$_rev"
+    rm -f -- "$_rev" # RM-OK:rollback-claude-adopt-rev-tmp
+    for _d in "${CLAUDE_TOMB_SK:-}" "${CLAUDE_TOMB_WF:-}"; do
+        [ -n "$_d" ] || continue
+        if [ -d "$_d" ] && [ ! -L "$_d" ]; then
+            rmdir -- "$_d" 2>/dev/null || log_warn "tombstone directory $_d is not empty; left in place" # RM-OK:rollback-claude-adopt-tomb-dir
+        fi
+    done
+    return 0
+}
+
+# claude_adopt_commit — success path only, after NEED_ROLLBACK=0 (handoff 4.8):
+# compare each tombstone with its archive copy once more and delete it only when
+# identical; keep (and report) any that differ. This is the one irreversible
+# step of the whole flow. Nothing here may fail the install.
+claude_adopt_commit() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    if [ -z "${CLAUDE_ADOPT_DIR:-}" ] || [ ! -f "$CLAUDE_ADOPT_DIR/done.tsv" ] || [ ! -f "$CLAUDE_ADOPT_DIR/manifest.txt" ]; then
+        claude_adopt_write_report || true
+        return 0
+    fi
+    local _j="$CLAUDE_ADOPT_DIR/done.tsv" _rel _tomb _copy _d
+    local _t="${TARGET_ROOT:-}"
+    if [ -z "$_t" ] || [ "$_t" = "/" ]; then claude_adopt_write_report || true; return 0; fi
+    while IFS=$'\t' read -r _rel _tomb; do
+        [ -n "$_rel" ] || continue
+        if [ "$_rel" = "REVERTED" ]; then continue; fi
+        if grep -F -x -q -e "$(printf 'REVERTED\t%s' "$_rel")" -- "$_j" 2>/dev/null; then continue; fi
+        if [ ! -e "$_tomb" ] && [ ! -L "$_tomb" ]; then continue; fi
+        _copy="$CLAUDE_ADOPT_DIR/tree/$_rel"
+        if ! claude_adopt_path_ok "$_tomb" p || ! assert_under_root "$_t/$_tomb" \
+           || ! claude_adopt_same "$_tomb" "$_copy"; then
+            CLAUDE_ADOPT_KEPT_TOMBS="${CLAUDE_ADOPT_KEPT_TOMBS}${_tomb} (differs from the archive copy or not a plain path)
+"
+            log_warn "CLAUDE-ADOPT-TOMBSTONE-KEPT $_tomb (differs from the archive copy or not a plain path)"
+            continue
+        fi
+        case "$_tomb" in
+            .claude/skills/.tad-adopt-tomb.*/*)
+                # Directories only: a recursive chmod would also change the mode of files
+                # that are hardlinked to something outside the project.
+                find "$_tomb" -type d -exec chmod u+w {} + 2>/dev/null || true
+                if ! rm -rf -- "$_tomb" 2>/dev/null; then # RM-OK:claude-adopt-skill
+                    CLAUDE_ADOPT_KEPT_TOMBS="${CLAUDE_ADOPT_KEPT_TOMBS}${_tomb} (could not be deleted)
+"
+                fi ;;
+            .claude/workflows/.tad-adopt-tomb.*/*)
+                if ! rm -f -- "$_tomb" 2>/dev/null; then # RM-OK:claude-adopt-workflow
+                    CLAUDE_ADOPT_KEPT_TOMBS="${CLAUDE_ADOPT_KEPT_TOMBS}${_tomb} (could not be deleted)
+"
+                fi ;;
+            .claude/.tad-adopt-tomb.*.settings.json)
+                if ! rm -f -- "$_tomb" 2>/dev/null; then # RM-OK:claude-adopt-settings
+                    CLAUDE_ADOPT_KEPT_TOMBS="${CLAUDE_ADOPT_KEPT_TOMBS}${_tomb} (could not be deleted)
+"
+                fi ;;
+            *)
+                CLAUDE_ADOPT_KEPT_TOMBS="${CLAUDE_ADOPT_KEPT_TOMBS}${_tomb} (unexpected tombstone name)
+" ;;
+        esac
+    done < "$_j"
+    for _d in "${CLAUDE_TOMB_SK:-}" "${CLAUDE_TOMB_WF:-}"; do
+        [ -n "$_d" ] || continue
+        if [ -d "$_d" ] && [ ! -L "$_d" ] && claude_adopt_path_ok "$_d" d && assert_under_root "$_t/$_d"; then
+            if ! rmdir -- "$_d" 2>/dev/null; then # RM-OK:claude-adopt-tomb-dir
+                CLAUDE_ADOPT_KEPT_TOMBS="${CLAUDE_ADOPT_KEPT_TOMBS}${_d} (not empty)
+"
+            fi
+        fi
+    done
+    # The workflows directory goes only when this run emptied it.
+    if [ "${CLAUDE_ADOPT_WF_DONE:-0}" = "1" ] && [ -d ".claude/workflows" ] && [ ! -L ".claude/workflows" ] \
+       && claude_adopt_path_ok ".claude/workflows" d && assert_under_root "$_t/.claude/workflows"; then
+        if ! rmdir -- ".claude/workflows" 2>/dev/null; then # RM-OK:claude-adopt-workflows-dir
+            log_info "  → .claude/workflows still holds files of yours; the directory stays"
+        fi
+    fi
+    claude_adopt_write_report || true
+    return 0
+}
+
+# claude_adopt_write_report — report.md in the archive (section 4.9). Plain
+# text; lists paths and verdicts only, never file contents.
+claude_adopt_write_report() {
+    local _r="${CLAUDE_ADOPT_DIR:-}/report.md" _s _rel _detail _fails _u _n
+    if [ -z "${CLAUDE_ADOPT_DIR:-}" ] || [ ! -d "$CLAUDE_ADOPT_DIR" ] || [ ! -f "$CLAUDE_ADOPT_WORK/result.tsv" ]; then return 0; fi
+    {
+        echo "# TAD legacy Claude Code adoption report"
+        echo ""
+        echo "Project: $(pwd -P)"
+        echo "Archive: $CLAUDE_ADOPT_DIR"
+        echo ""
+        echo "## Adopted"
+        echo ""
+        awk -F'\t' '$1 == "ADOPTED" || $1 == "RETIRED" { printf "- %s (%s%s)\n", $2, $3, ($1 == "RETIRED" ? "; no longer shipped, removed without a replacement" : "") }' "$CLAUDE_ADOPT_WORK/result.tsv"
+        echo ""
+        echo "## Left for you"
+        echo ""
+        while IFS=$'\t' read -r _s _rel _detail _fails; do
+            [ "$_s" = "LEFT" ] || continue
+            echo "- $_rel: $_detail"
+            if [ -n "$_fails" ]; then echo "  first files that did not match: $(printf '%s' "$_fails" | sed 's/|/, /g')"; fi
+            case "$_rel" in
+                .claude/skills/*)
+                    _n="${_rel##*/}"
+                    if ! claude_adopt_ctrl "$_n" && [ -d ".agents/skills/$_n" ]; then
+                        echo "  compare: diff -r .claude/skills/$_n .agents/skills/$_n"
+                    fi ;;
+            esac
+        done < "$CLAUDE_ADOPT_WORK/result.tsv"
+        echo ""
+        echo "## Yours"
+        echo ""
+        _u=$(awk -F'\t' '$1 == "USER" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_WORK/result.tsv")
+        echo "$_u entries are not files TAD shipped (your own skills or files). They were not touched and are not copied into the archive."
+        echo ""
+        echo "## Not examined"
+        echo ""
+        for _s in commands agents rules; do
+            if [ -d ".claude/$_s" ] && [ ! -L ".claude/$_s" ]; then
+                _n=$(find ".claude/$_s" -type f 2>/dev/null | wc -l | tr -d ' ')
+                echo "- .claude/$_s: $_n file(s), left as they are"
+            fi
+        done
+        echo ""
+        echo "## Notes"
+        echo ""
+        echo "1. Restoring one entry by hand: copy it from tree/<path> in this archive back to <path> in the project. If the original place now holds a link (skills are links to .agents/skills now), delete the link first and do not move over it."
+        echo "2. If you keep .claude/ in git, the adoption shows as deletions plus new links; commit them yourself."
+        echo "3. This archive is never cleaned up automatically. It holds your complete CLAUDE.md as it was before the run; delete the archive once you have checked the result."
+        echo "4a. Empty subdirectories, file modes and hardlink relationships are not part of the proof; they are preserved only in the archive copy."
+        echo "4. The judgement is bytes only. If you stayed on an old version of a skill on purpose and it equals a released version, it was replaced by the current one."
+        echo "5. The old CLAUDE.md head contained @.tad/project-knowledge/... import lines; they left with the head and AGENTS.md takes over."
+        if [ -n "${CLAUDE_ADOPT_KEPT_TOMBS:-}" ]; then
+            echo ""
+            echo "## Tombstones that were kept"
+            echo ""
+            printf '%s' "$CLAUDE_ADOPT_KEPT_TOMBS" | sed 's/^/- /'
+        fi
+    } > "$_r" 2>/dev/null || log_warn "could not write the adoption report"
+    return 0
+}
+
+# claude_adopt_kept_label <name> — wording for a directory project_claude_skills
+# keeps: the adoption verdict says whether it is a modified legacy copy, a
+# pristine copy of a skill this install did not select, or the user's own.
+claude_adopt_kept_label() {
+    local _d=""
+    if [ -n "${CLAUDE_ADOPT_PLAN:-}" ] && [ -f "$CLAUDE_ADOPT_PLAN" ]; then
+        _d=$(awk -F'\t' -v r=".claude/skills/$1" '$2 == r && $3 == "LEFT" { print $4; exit }' "$CLAUDE_ADOPT_PLAN" 2>/dev/null) || _d=""
+    fi
+    case "$_d" in
+        "legacy copy, modified") printf '%s' "legacy copy, modified" ;;
+        "not selected for this install") printf '%s' "not selected" ;;
+        "not checked: "*) printf '%s' "legacy copy, not checked" ;;
+        *) printf '%s' "user-owned" ;;
+    esac
+}
+
+# claude_adopt_cleanup_work — EXIT-trap removal of the private work directory.
+claude_adopt_cleanup_work() {
+    local _w="${CLAUDE_ADOPT_WORK:-}"
+    if [ -n "$_w" ] && [ -d "$_w" ] && [ ! -L "$_w" ]; then
+        case "${_w##*/}" in
+            tad-claude-adopt.*) rm -rf -- "$_w" || true ;; # RM-OK:claude-adopt-work-dir
+        esac
+    fi
+    return 0
+}
+
+# claude_adopt_summary — adoption lines for the closing summary.
+claude_adopt_summary() {
+    local _a _r _l _u
+    if [ -z "${CLAUDE_ADOPT_WORK:-}" ] || [ ! -f "$CLAUDE_ADOPT_WORK/result.tsv" ]; then return 0; fi
+    _a=$(awk -F'\t' '$1 == "ADOPTED" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_WORK/result.tsv")
+    _r=$(awk -F'\t' '$1 == "RETIRED" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_WORK/result.tsv")
+    _l=$(awk -F'\t' '$1 == "LEFT" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_WORK/result.tsv")
+    _u=$(awk -F'\t' '$1 == "USER" { n++ } END { print n + 0 }' "$CLAUDE_ADOPT_WORK/result.tsv")
+    if [ $((_a + _r + _l + _u)) -eq 0 ]; then return 0; fi
+    echo "  CLAUDE-ADOPT-DONE adopted=$_a retired=$_r left=$_l user=$_u"
+    if [ -n "${CLAUDE_ADOPT_DIR:-}" ] && [ -f "$CLAUDE_ADOPT_DIR/manifest.txt" ]; then
+        echo "  CLAUDE-ADOPT-ARCHIVE $CLAUDE_ADOPT_DIR"
+    fi
+    if [ -n "${CLAUDE_ADOPT_KEPT_TOMBS:-}" ]; then
+        echo "  Tombstones kept (not deleted, see the archive report):"
+        printf '%s' "$CLAUDE_ADOPT_KEPT_TOMBS" | sed 's/^/    /'
+    fi
+    return 0
+}
+
+# claude_cmd_keep_reason <src> <target> — FR10: for a deprecated
+# .claude/commands/<file> on a NON-claude platform. Prints why the file must be
+# kept; prints nothing (and returns 0) when the ledger proves TAD shipped it.
+claude_cmd_keep_reason() {
+    local _src="$1" _t="$2" _f _id
+    _f="${_t#.claude/commands/}"
+    if [ -L "$_t" ] || [ ! -f "$_t" ]; then printf '%s' "not a regular file"; return 0; fi
+    case "$_f" in ""|*/*) printf '%s' "not a file TAD shipped"; return 0 ;; esac
+    if claude_adopt_ctrl "$_f"; then printf '%s' "not a file TAD shipped"; return 0; fi
+    claude_provenance_ready "$_src"
+    if [ -z "$CLAUDE_LEDGER" ]; then printf '%s' "provenance unavailable"; return 0; fi
+    if _id=$(claude_blob_id "$_t") && claude_adopt_in_ledger cmd "$_id" "$_f"; then return 0; fi
+    printf '%s' "not a file TAD shipped"
+    return 0
+}
+
+# claude_legacy_detected_note <src> — non-claude platforms: one line when the
+# project has a legacy Claude Code install. Read-only; no hashing.
+claude_legacy_detected_note() {
+    [ "$CLAUDE_PROJECTION" != "1" ] || return 0
+    local _src="$1" _e
+    if [ -L ".claude" ] || [ ! -d ".claude" ] || [ -L ".claude/skills" ] || [ ! -d ".claude/skills" ]; then return 0; fi
+    for _e in .claude/skills/*/; do
+        _e="${_e%/}"
+        if [ -L "$_e" ] || [ ! -d "$_e" ]; then continue; fi
+        if [ -d "$_src/.agents/skills/${_e##*/}" ] && [ ! -L "$_src/.agents/skills/${_e##*/}" ]; then
+            echo "CLAUDE-LEGACY-DETECTED: this project has a legacy Claude Code install; run with --platform claude-code --force to adopt it (dry run: add --claude-adopt=plan)."
+            return 0
+        fi
+    done
+    return 0
+}
+
 
 main() {
     echo ""
@@ -3894,6 +5276,7 @@ main() {
             ;;
     esac
 
+    claude_adopt_notice
     echo ""
     if [ "$AUTO_YES" = "1" ]; then
         REPLY="y"
@@ -3950,6 +5333,8 @@ main() {
     opencode_preflight "$TAD_SRC"
     opencode_hooks_preflight "$TAD_SRC"
     cursor_hooks_preflight "$TAD_SRC"
+    # Legacy Claude Code adoption: read-only classification (plan mode prints and exits here).
+    claude_adopt_preflight "$TAD_SRC"
 
     # FR-1: the normal project backup occurs immediately before the first
     # project mutation — AFTER download, immutable-version validation, platform
@@ -4265,6 +5650,10 @@ NEXTEOF
     # disarm rollback so the EXIT trap leaves the tree in place.
     discard_rollback_snap
     NEED_ROLLBACK=0
+    # The one irreversible adoption step (tombstones are deleted), only now that
+    # the install is verified and rollback is disarmed. It cannot fail the install.
+    claude_adopt_commit
+    CLAUDE_LEGACY_NOTE="$(claude_legacy_detected_note "$TAD_SRC")"
 
     # Cleanup
     # FR-1b: 只清理本次下载产生的临时目录。--source <dir> 传入的用户路径绝不能删
@@ -4274,6 +5663,7 @@ NEXTEOF
 
     # Claude projection summary (after the self-check passed, before the banner).
     claude_print_summary
+    if [ -n "${CLAUDE_LEGACY_NOTE:-}" ]; then echo "$CLAUDE_LEGACY_NOTE"; fi
 
     echo ""
     echo -e "${GREEN}=====================================${NC}"

@@ -42,6 +42,7 @@
     ".tad/guides/",
     ".tad/hooks/",
     ".tad/migrations/",
+    ".tad/provenance/",
     ".tad/ralph-config/",
     ".tad/references/",
     ".tad/runtime-compat/",

@@ -25,7 +25,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 > 只含 `@AGENTS.md` 的受管块，并在目标没有 `.claude/settings.json` 时放入 TAD 的 hook 注册（已有且不同的原样保留，
 > 结尾汇总会写明「TAD hooks are NOT registered」）。其他平台不会向 `.claude/`、`CLAUDE.md` 投放或追加内容（既有的弃用清理行为不变）。
 > 给**已装同版本 TAD** 的项目加装 Claude Code，请用 `--platform claude-code --force`（不带 `--force` 时安装器照旧什么都不做，但会打印这条提示）。
-> v2.x 时代留下的 `.claude/skills/<名>` **镜像目录**会被当作你自己的文件保留，并挡住新入口；请自行移走后重跑（自动识别属后续版本）。
+> v2.x 时代留下的 `.claude/skills/<名>` **镜像目录**：只要逐字节证明是 TAD 发过的文件，`--platform claude-code` 会先存档再替换成新链接；证明不了的原样保留（详见下方「从旧版 Claude Code 安装升级」）。
 > 从 2.43 之前的版本升级到 `claude-code` 时，旧迁移清单里按路径删除 `.claude/skills/...` 的条目会因路径经过 TAD 刚建的符号链接而被迁移引擎整体拒绝（退出码 2，仅告警）：该版本步骤里的其余删除一并跳过，旧版本遗留的陈旧文件会留在原处，需要时请手工清理。
 > 详见下方「升级到 v3.0.0」。
 
@@ -87,6 +87,20 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 - **OpenCode**：`/tad-update`（**updater-only**：仅提供更新入口，不包含 Alex/Blake/Gate 角色、hooks 或 gate 能力）
 
 流程：先运行 `--check` 查看当前/远程版本与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 apply。helper 会在每次项目变更前自动备份，且仅在你确认后调用官方安装器。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
+
+### 从旧版 Claude Code 安装升级
+
+旧安装器（≤2.44.6）把 skill 整目录复制到 `.claude/skills/<名>`、整文件覆盖 `.claude/settings.json`、把 TAD 正文并进 `CLAUDE.md` 顶部、把 workflow 复制到 `.claude/workflows/`，没有留下任何标记。
+`--platform claude-code` 现在会按**内容**识别其中确为 TAD 发过的文件，其余一律不动。
+
+1. **先看计划**：`--claude-adopt=plan`（或环境变量 `TAD_CLAUDE_ADOPT=plan`）只打印 `CLAUDE-ADOPT-PLAN adopt=… retire=… left=… user=…` 和逐条目行，项目与备份目录都不改。已是同版本时需配 `--force` 才会走到这一步。经 `npx` 或 `tad-update.sh` 安装时用环境变量传这个选项。
+2. **被替换的**：与某个已发版本逐字节相同的 skill 目录（含旧 `cp -r` 留下的 `<名>/<名>/` 自嵌套副本）、整文件等于某个已发版本（或只差空白）的 `settings.json`、`CLAUDE.md` 里等于某个已发版本的 TAD 头部（标记线 `<!-- TAD:PROJECT-CONTENT-BELOW -->` 以下你写的内容逐字节保留）、与已发版本相同的 `.claude/workflows/*` 文件。替换后由原有投影建符号链接、放入 hook 模板、追加 `@AGENTS.md` 引用块。
+3. **原样保留的**：改过一个字节的 skill、多出文件的目录、含 `local/` 的目录、目录里有符号链接的、你自己建的 skill、带你自己键的 `settings.json`、头部被改过的 `CLAUDE.md`、改过的 workflow。每个都有一行 `CLAUDE-ADOPT-LEFT <路径> (<原因>)`。
+4. **存档位置**：`<备份根>/<项目名>/claude-adopt/<时间戳>/`（备份根默认 `~/.tad-backups`，可用 `TAD_BACKUP_ROOT` 指定），在项目之外；含 `tree/`（被替换条目的原样副本，含接管前完整的 `CLAUDE.md`）、`done.tsv`、`plan.tsv`、`report.md`。保留策略不会清理它，确认无误后自行删除。只存档被替换的条目，没被动的不会被复制出去。
+5. **阻断型 hook 不再注册**：旧 `settings.json` 注册的 `PreToolUse` 检查（`pre-accept-check.sh`、`pre-gate-check.sh`）随旧文件一起不再生效，脚本仍在 `.tad/hooks/`。
+6. **手工还原一个条目**：从存档的 `tree/<路径>` 拷回 `<路径>`；原位置若已是链接，先删链接，不要直接 `mv` 覆盖。若项目把 `.claude/` 纳入 git，替换会显示为删除加新增链接，需自行提交。
+7. **降级为只报告**：没有 SHA-1 工具、台账缺失或损坏、备份根无法解析、`.claude` 是符号链接、或存在上次中断留下的 `.tad-adopt-tomb.*` 时，安装照常成功，但只打印 `CLAUDE-ADOPT-DEGRADED <原因>` 与分类，不替换任何东西。`--claude-adopt=off` 完全回到不接管的行为。
+8. 同步工具（如 Syncthing）对符号链接的处理未测。
 
 ### 升级到 v3.0.0（平台支持整合）
 
