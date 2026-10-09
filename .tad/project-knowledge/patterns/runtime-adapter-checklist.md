@@ -3,7 +3,7 @@
 > 用途：任何新运行时接入 TAD 之前，先按本清单逐维声明其适配面，产出实例
 > 声明并经 PM 确认。**新运行时接入 TAD 前，须先按本清单产出一份实例声明
 > 并经 PM 确认，实例未立不许接线。**
-> 实例：`runtime-adapter-instance-codex.md` / `-opencode.md` / `-cursor.md`。
+> 实例：`runtime-adapter-instance-codex.md` / `-opencode.md` / `-cursor.md` / `runtime-adapter-instance-claude-code.md`。
 > 维度口径来源：Epic EPIC-20261006 Phase 3 件 3.4（C5 判断正本）。
 
 ## 六维声明表（每维：声明项／合格判据／证据出口／与现行机制的映射）
@@ -58,3 +58,8 @@
 | R-OC-2 | OpenCode 无头运行面无 question 类工具，提问捕获分支不注册 | 已成立（OC-1 实测名册） | 件 3.1 边界 |
 | R-CU-1 | Cursor 无提问工具事件，提问捕获无落点 | 已成立（文档确证） | 件 3.2 边界 |
 | R-CU-2 | Cursor CLI 无头面不触发项目 hooks.json（分支 B） | **未成立**——OC-2 实测 CLI 触发项目 hooks（分支 A），本项仅在未来版本行为变化时重估 | 件 3.2 探活结论 |
+| R-CC-1 | Claude Code 无头面工具名册不含 AskUserQuestion，提问捕获无落点（交互面未测） | 已成立（D4 实测名册，2026-10-08） | Epic EPIC-20261008 Phase 1 |
+| R-CC-2 | InstructionsLoaded 事件不报告内建模块加载的 AGENTS.md，仅 debug 日志可见 | 已成立（A1 实测） | Epic EPIC-20261008 Phase 1 |
+| R-CC-3 | post-write-sync.sh 仅对 TAD 受管路径有副作用；非受管路径输出空 JSON | 已成立（D2 实测，partial） | Epic EPIC-20261008 Phase 1 |
+| R-CC-4 | 登录态失效信号、超时形态、沙箱形态未测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 1 |
+| R-CC-5 | 交互面、同步副本跨机符号链接存活、上级目录链指令文件影响未测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 1 |

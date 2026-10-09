@@ -13,6 +13,14 @@
 
 ## 🔴 优先队列
 
+### 🔄 ACTIVE 2026-10-08. EPIC-20261008 multi-harness restore & cleanup (target v3.3.0)
+
+- Epic: `.tad/active/epics/EPIC-20261008-multi-harness-restore-and-cleanup.md` (6 phases; branch `epic/multi-harness-restore`, local commits only)
+- Decision record: `.tad/decisions/DR-20261008-claude-code-runtime-restore.md`
+- Phase 1 (Claude Code instance spike) DONE 2026-10-08: D1 = per-skill symlinks; AGENTS.md load/suppress/@include conditions measured; shared hooks callable without shims. Gate report (local evidence): `.tad/evidence/yolo/multi-harness-restore-and-cleanup/phase1-gate-report.md`
+- Next: Phase 2 installer + projection. Open carry C1: interactive-surface AGENTS.md loading not yet verified (needs a human `/memory` look).
+- Stop point: push and tag in Phase 6 require human confirmation.
+
 ### 🟡 OPEN 2026-09-16. Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
 
 - Task ID: `TASK-20260916-CODEX-LEDGER-REVERIFY` (owner Blake)
