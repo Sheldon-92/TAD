@@ -19,3 +19,8 @@ platforms:
     extra_deny: []
     extra_root_files:
       - "AGENTS.md"
+  claude-code:
+    label: "Claude Code"
+    extra_deny: []
+    extra_root_files:
+      - "AGENTS.md"

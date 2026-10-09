@@ -38,13 +38,13 @@ PLATFORM_ARG=""
 
 usage() {
     cat <<'EOF'
-Usage: tad-update.sh [--check] [--yes] [--platform <codex>] [--help]
+Usage: tad-update.sh [--check] [--yes] [--platform <codex|claude-code>] [--help]
 
   --check                read-only check: print current/remote versions and
                          whether an update is available. Never mutates.
   --yes                  apply the update. ONLY after explicit human approval;
                          the helper itself never infers consent.
-  --platform <name>      explicit platform (codex — the only target since v3.0.0).
+  --platform <name>      explicit platform (codex or claude-code).
   --help                 this help.
 
 Default (no flag): with a controlling TTY, check then prompt once for
@@ -75,10 +75,10 @@ fi
 
 if [ -n "$PLATFORM_ARG" ]; then
     case "$PLATFORM_ARG" in
-        codex) ;;
+        codex|claude-code) ;;
         both|*claude*)
             echo "tad-update: --platform '$PLATFORM_ARG' was removed in TAD v3.0.0. Re-run with --platform codex." >&2; exit 2 ;;
-        *) echo "tad-update: --platform must be codex (got: $PLATFORM_ARG)" >&2; exit 2 ;;
+        *) echo "tad-update: --platform must be codex or claude-code (got: $PLATFORM_ARG)" >&2; exit 2 ;;
     esac
 fi
 
@@ -117,6 +117,9 @@ ver_cmp() {
 # A leftover downstream .claude tree is NEVER auto-deleted and never
 # re-detected as an install target (see tad.sh tombstone).
 # else → ambiguous/absent (check may report; apply REQUIRES --platform)
+# NOTE: a project installed with --platform claude-code is currently detected as
+# codex here (it has .agents/skills/alex too). When upgrading such a project,
+# pass --platform claude-code explicitly; automatic detection is a later release.
 detect_platform() {
     if [ -d "$PROJECT_ROOT/.agents/skills/alex" ]; then
         echo "codex"

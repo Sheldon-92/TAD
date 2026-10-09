@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 3.2.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor are supported runtimes**
+**Version 3.2.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
 
 ## 安装方式
 
@@ -15,14 +15,18 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 平台参数（显式覆盖默认值）：
 
 ```bash
-# codex（默认；或 opencode / cursor）
+# codex（默认；或 opencode / cursor / claude-code）
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform codex --packs web-frontend,web-backend
 ```
 
-> `--platform claude-code` / `--platform both` 自 v3.0.0 起不再提供：
-> 安装器会在改动任何文件前停下并打印说明。Claude Code 无需安装目标——
-> Claude Code ≥2.1.277 原生读取 `AGENTS.md`，角色与门禁可直接加载。
-> `opencode` / `cursor` 现为合法目标。
+> `--platform both` 自 v3.0.0 起不再提供：安装器会在改动任何文件前停下并打印说明。
+> `--platform claude-code` 自 v3.3.0 起再次可用：除 `.agents/skills/` 外，安装器还会为 Claude Code 投放
+> `.claude/skills/<名>` 符号链接（指向 `.agents/skills/<名>`，不是副本）、在**已存在**的 `CLAUDE.md` 末尾追加一个
+> 只含 `@AGENTS.md` 的受管块，并在目标没有 `.claude/settings.json` 时放入 TAD 的 hook 注册（已有且不同的原样保留，
+> 结尾汇总会写明「TAD hooks are NOT registered」）。其他平台不会向 `.claude/`、`CLAUDE.md` 投放或追加内容（既有的弃用清理行为不变）。
+> 给**已装同版本 TAD** 的项目加装 Claude Code，请用 `--platform claude-code --force`（不带 `--force` 时安装器照旧什么都不做，但会打印这条提示）。
+> v2.x 时代留下的 `.claude/skills/<名>` **镜像目录**会被当作你自己的文件保留，并挡住新入口；请自行移走后重跑（自动识别属后续版本）。
+> 从 2.43 之前的版本升级到 `claude-code` 时，旧迁移清单里按路径删除 `.claude/skills/...` 的条目会因路径经过 TAD 刚建的符号链接而被迁移引擎整体拒绝（退出码 2，仅告警）：该版本步骤里的其余删除一并跳过，旧版本遗留的陈旧文件会留在原处，需要时请手工清理。
 > 详见下方「升级到 v3.0.0」。
 
 CI / 脚本化（跳过确认提示）：
@@ -37,7 +41,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 npx github:Sheldon-92/TAD
 ```
 
-交互式选择 capability packs，每个 pack 附一句话说明（安装目标：codex / opencode / cursor）。
+交互式选择 capability packs，每个 pack 附一句话说明（安装目标：codex / opencode / cursor / claude-code）。
 
 > 需要 Node.js 14+。不想装 Node.js 就用上面的 curl。
 
@@ -93,8 +97,8 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
    不会改写**你现有的 `.claude/`（含 skills、settings.json、hooks、MCP、权限配置），
    旧文件可自行保留或清理。
   （**TAD 不会代删**）。
-3. **脚本里传 `--platform claude-code` 或 `--platform both` 的用户**：该参数自 v3 起不再
-   提供，安装器会**在改动任何文件前**停下并打印说明。请改传 `--platform codex`，或直接重跑：
+3. **脚本里传 `--platform both` 的用户**：该参数自 v3 起不再
+   提供（`--platform claude-code` 自 v3.3.0 起已恢复，见上），安装器会**在改动任何文件前**停下并打印说明。请改传 `--platform codex`（或 `claude-code`），或直接重跑：
    - 本地 updater：`bash .tad/scripts/tad-update.sh --platform codex --yes`
    - npm：`npx tad-framework@latest --platform codex`
    - curl：`curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes`

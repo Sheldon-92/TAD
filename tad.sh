@@ -156,6 +156,20 @@ cleanup_installer_temp() {
             tad-update.*) rm -rf "$_t" ;; # RM-OK:installer-tmp-root
         esac
     fi
+    # Claude projection temp files that an interrupt (SIGINT/SIGTERM) could leave
+    # behind between mktemp and mv. Paths are recorded in globals by the writers;
+    # only a regular, non-symlink file with the expected temp name is removed.
+    local _ct
+    for _ct in "${CLAUDE_MD_TMP:-}" "${CLAUDE_PTR_TMP:-}"; do
+        [ -n "$_ct" ] || continue
+        case "${_ct##*/}" in
+            .tad-claude-md.*|.tad-pointer.*)
+                if [ -f "$_ct" ] && [ ! -L "$_ct" ]; then
+                    rm -f -- "$_ct" || true # RM-OK:claude-interrupt-temp
+                fi ;;
+        esac
+    done
+    return 0
 }
 
 # validate_tar_members <archive> — tar-slip gate for BOTH extract paths.
@@ -319,6 +333,30 @@ VERIFY_DENYLIST=0
 DOCTOR=0
 FORCE=0
 PLATFORM=""
+# Claude Code projection state (Epic multi-harness-restore, Phase 2). ALL of
+# these live at top level: the EXIT trap can reach rollback_claude_projection on
+# any platform and the script runs under `set -u`. CLAUDE_PROJECTION is the
+# gate: 1 only after resolve_platform picked `claude-code`. Lists are
+# space-separated; skill names with whitespace are skipped before they get here.
+CLAUDE_PROJECTION=0
+CLAUDE_DIR_CREATED=0           # this run created .claude (checked BEFORE mkdir)
+CLAUDE_SKILLS_DIR_CREATED=0    # this run created .claude/skills (checked BEFORE mkdir)
+CLAUDE_SETTINGS_CREATED=0      # set BEFORE cp of settings.json, so a half-written file is rolled back
+CLAUDE_CREATED_LINKS=""        # skill names whose .claude/skills/<name> symlink this run created
+CLAUDE_CREATED_PTRS=""         # skill names whose pointer directory this run created
+CLAUDE_NEW_COUNT=0             # entries created this run (links + pointer dirs)
+CLAUDE_KEPT_LIST=""            # "<name> (<reason>)" items, ";"-separated, entries kept as user-owned
+CLAUDE_KEPT_NAMES=" "          # space-delimited bare names of kept entries (for the self-check)
+CLAUDE_KEPT_COUNT=0
+CLAUDE_SKILLS_SKIPPED=0        # 1 = whole skill projection skipped (parent is a symlink / not a dir)
+CLAUDE_SKILLS_SKIP_REASON=""
+CLAUDE_HOOKS_STATE=""          # registered | current | kept | skipped
+CLAUDE_HOOKS_REASON=""
+CLAUDE_MD_STATE=""             # appended | present | skipped | none
+CLAUDE_MD_REASON=""
+CLAUDE_MD_SNAP_MODE=""         # octal permission bits of CLAUDE.md captured at snapshot time
+CLAUDE_MD_TMP=""                # path of the in-flight CLAUDE.md temp file (removed by the EXIT-trap cleanup if interrupted)
+CLAUDE_PTR_TMP=""               # path of the in-flight pointer temp file (same purpose)
 PACKS=""
 RESOLVE_STRATEGY=""
 FORK_PACK=""
@@ -368,7 +406,7 @@ while [ $# -gt 0 ]; do
       echo "       tad.sh --source <dir> [--platform <name>] --yes  (offline install from local tree)"
       echo "  --yes              skip the interactive confirmation prompt"
       echo "  --force            reinstall even if already on the same version"
-      echo "  --platform <name>  target platform (codex|opencode|cursor). Default: codex"
+      echo "  --platform <name>  target platform (codex|opencode|cursor|claude-code). Default: codex"
       echo "  --packs <list>     comma-separated pack names to install (default: all)"
       echo "  --resolve=MODE     conflict strategy: local (keep yours), upstream (take new), ask (interactive)"
       echo "                     default: ask, or local with --yes"
@@ -785,26 +823,33 @@ backup_existing() {
 # ⚠️ DRIFT: must match platforms: keys in .tad/platform-codes.yaml. Adding a new
 # platform requires updating BOTH this list AND platform-codes.yaml.
 # Future: release-verify.sh could add a --verify-platforms check.
-KNOWN_PLATFORMS="codex opencode cursor"
+KNOWN_PLATFORMS="codex opencode cursor claude-code"
 
 # v3.1: `opencode` / `cursor` are accepted targets — the installer body is
 # platform-agnostic (same .agents/skills tree, same packs, same .tad/ core),
 # so these values only relax the fail-before-mutation gate.
+# v3.2 (Epic multi-harness-restore, Phase 2): `claude-code` is accepted again,
+# EXACT match only. It is the one platform that gets a gated projection into
+# .claude/ and CLAUDE.md (see CLAUDE_PROJECTION below).
 # v3.2 (Epic P3): lifecycle hooks now land for both — the OpenCode hooks
 # plugin (.opencode/plugins/tad-hooks.ts) and the Cursor hooks wiring
 # (.cursor/hooks.json) are projected byte-identically above; residual
 # per-runtime boundaries are named in AGENTS.md Known Gaps (P2/P4 rows).
-# `both` / `*claude*` stay rejected before any mutation.
+# `both` and every other value containing `claude` (claude, claudecode,
+# claude-code,codex, "claude-code " with trailing space, ...) stay rejected
+# before any mutation: only the exact string `claude-code` is accepted, in the
+# first arm, which sits ahead of the tombstone arm.
 validate_platform() {
     local p="$1"
     case "$p" in
-        codex|opencode|cursor) return 0 ;;
+        codex|opencode|cursor|claude-code) return 0 ;;
         both|*claude*)
-            log_error "Platform '$p' was removed in TAD v3.0.0 (Claude Code runtime path deleted)."
-            echo "  Recovery — re-run with the Codex target:" >&2
-            echo "    bash .tad/scripts/tad-update.sh --platform codex --yes" >&2
-            echo "    npx tad-framework@latest --platform codex" >&2
-            echo "    curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes" >&2
+            log_error "Platform '$p' is not a valid target (the combined 'both' target and ambiguous claude* spellings were removed in TAD v3.0.0)."
+            echo "  Recovery — re-run with an explicit single target (--platform claude-code, or --platform codex):" >&2
+            echo "    bash .tad/scripts/tad-update.sh --platform claude-code --yes" >&2
+            echo "    npx tad-framework@latest --platform claude-code" >&2
+            echo "    curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform claude-code --yes" >&2
+            echo "    (Codex users: the same commands with --platform codex.)" >&2
             echo "  No files were changed by this run." >&2
             exit 1
             ;;
@@ -823,6 +868,9 @@ resolve_platform() {
         PLATFORM="codex"
         log_info "No platform specified. Using default platform: codex"
     fi
+    # The Claude projection gate: every Claude function returns at its first
+    # line unless this is 1.
+    if [ "$PLATFORM" = "claude-code" ]; then CLAUDE_PROJECTION=1; fi
 }
 
 # ============================================
@@ -1692,6 +1740,13 @@ HOOKS_EOF
     project_opencode_hooks_plugin "$src"
     project_cursor_hooks "$src"
 
+    # --- Claude Code projection (gated: no-ops unless --platform claude-code).
+    # Order is deliberate: CLAUDE.md before hooks, so a failure in the last
+    # stage leaves the first two stages' output on disk for rollback to undo.
+    project_claude_skills
+    project_claude_md_ref
+    project_claude_hooks "$src"
+
     # --- AC3: post-install completeness self-check ---
     verify_install_complete "$src"
 }
@@ -1836,6 +1891,50 @@ verify_install_complete() {
         elif ! cmp -s "$src_cu_hooks_f" ".cursor/hooks.json"; then
             log_warn "    ✗ MISMATCH Cursor hooks: .cursor/hooks.json differs from source"
             missing=$((missing + 1))
+        fi
+    fi
+
+    # Claude Code projection (gated). Checks ONLY what this run claims to have
+    # done: entries kept as user-owned, a skipped stage, a kept settings.json and
+    # a skipped CLAUDE.md are not "missing".
+    if [ "$CLAUDE_PROJECTION" = "1" ]; then
+        local _cv_n _cv_names _cv_c
+        # (1) skills: every skill in the shared set that was not kept has a SKILL.md behind its entry
+        if [ "$CLAUDE_SKILLS_SKIPPED" != "1" ]; then
+            _cv_names=$(claude_skill_set) || _cv_names=""
+            while IFS= read -r _cv_n; do
+                [ -n "$_cv_n" ] || continue
+                case "$CLAUDE_KEPT_NAMES" in *" $_cv_n "*) continue ;; esac
+                checked=$((checked + 1))
+                if [ ! -f ".claude/skills/$_cv_n/SKILL.md" ]; then
+                    log_warn "    ✗ MISSING Claude skill entry: .claude/skills/$_cv_n/SKILL.md"
+                    missing=$((missing + 1))
+                fi
+            done <<EOF
+$_cv_names
+EOF
+        fi
+        # (2) hooks: when this run neither kept nor skipped, the file is the template
+        case "$CLAUDE_HOOKS_STATE" in
+            registered|current)
+                checked=$((checked + 1))
+                if [ -L ".claude/settings.json" ] || [ ! -f ".claude/settings.json" ]; then
+                    log_warn "    ✗ MISSING Claude hooks: .claude/settings.json"
+                    missing=$((missing + 1))
+                elif ! cmp -s "$src/.tad/templates/claude/settings.json" ".claude/settings.json"; then
+                    log_warn "    ✗ MISMATCH Claude hooks: .claude/settings.json differs from the template"
+                    missing=$((missing + 1))
+                fi ;;
+        esac
+        # (3) CLAUDE.md reference: only when not skipped, CLAUDE.md and AGENTS.md are regular files
+        if [ "$CLAUDE_MD_STATE" != "skipped" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ] \
+           && [ ! -L "AGENTS.md" ] && [ -f "AGENTS.md" ]; then
+            checked=$((checked + 1))
+            _cv_c=$(grep -Ec '^@AGENTS\.md[[:space:]]*$' CLAUDE.md || true)
+            if [ "${_cv_c:-0}" -lt 1 ]; then
+                log_warn "    ✗ MISSING CLAUDE.md reference: no @AGENTS.md line"
+                missing=$((missing + 1))
+            fi
         fi
     fi
 
@@ -2015,6 +2114,21 @@ apply_deprecations() {
             if version_le "$current_dep_version" "$current_version"; then
                 local target
                 target=$(printf '%s' "$line" | sed -E 's/^[[:space:]]+-[[:space:]]+//' | tr -d '"')
+                # claude-code platform only: entries under .claude/ and the
+                # .codex/hooks.json entry are skipped. They match by FILE NAME
+                # (e.g. .claude/commands/research.md) and would remove user files
+                # in the directory where Claude Code users keep their own commands;
+                # the .codex entry would drop Codex hook wiring that this platform
+                # does not regenerate. Other platforms keep the existing behaviour.
+                if [ "${CLAUDE_PROJECTION:-0}" = "1" ]; then
+                    case "$target" in
+                        .claude|.claude/*|.codex/hooks.json)
+                            if [ -e "$target" ] || [ -L "$target" ]; then
+                                log_info "CLAUDE-DEPRECATION-SKIPPED $target"
+                            fi
+                            continue ;;
+                    esac
+                fi
                 if [ -e "$target" ]; then
                     local rc=0
                     # Traversal / self-reference pre-check BEFORE do_backup.
@@ -2186,6 +2300,15 @@ take_rollback_snapshot() {
     snap_one "GEMINI.md"
     snap_one ".codex/hooks.json"
     snap_one ".agents/skills"
+    # Claude projection edits a user file in place (CLAUDE.md), so it needs a
+    # snapshot. snap_one copies without -p, so the permission bits are recorded
+    # separately and put back by rollback_claude_projection. Nothing under
+    # .claude/ is snapshotted: the projection never modifies an existing entry
+    # there. A symlinked or non-regular CLAUDE.md is never touched, so not snapped.
+    if [ "$CLAUDE_PROJECTION" = "1" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ]; then
+        CLAUDE_MD_SNAP_MODE=$(claude_file_mode "CLAUDE.md") || CLAUDE_MD_SNAP_MODE=""
+        snap_one "CLAUDE.md"
+    fi
     # NOTE (R2 P0-2): NO snap of anything under .tad/ — .tad/ is owned SOLELY
     # by step-1 (BACKUP_PATH_ABS whole-dir restore / fresh-install removal).
     # A snap entry under .tad/ would make step-2 restore $SNAP/.tad wholesale
@@ -2460,16 +2583,16 @@ rollback_on_failure() {
                     if assert_under_root "$TARGET_ROOT/.tad/$_rb_cur"; then
                         if [ -d "$TARGET_ROOT/.tad/$_rb_cur" ] && [ ! -L "$TARGET_ROOT/.tad/$_rb_cur" ]; then
                             # Children were enumerated first (find -depth):
-                            # rmdir removes the dir only once it is empty,
+                            # A directory goes away only once it is empty,
                             # so a dir still holding kept entries survives.
-                            rmdir "$TARGET_ROOT/.tad/$_rb_cur" 2>/dev/null || continue
+                            rmdir "$TARGET_ROOT/.tad/$_rb_cur" 2>/dev/null || continue # RM-OK:rollback-sweep-created-dir
                         else
-                            rm -f "$TARGET_ROOT/.tad/$_rb_cur"
+                            rm -f "$TARGET_ROOT/.tad/$_rb_cur" # RM-OK:rollback-sweep-created-file
                         fi
                         _removed_list="${_removed_list}.tad/$_rb_cur "
                     fi
                 done <<< "$(cd "$TARGET_ROOT/.tad" && find . -mindepth 1 -depth | sed 's|^\./||')"
-                rm -f "$_rb_keep"
+                rm -f "$_rb_keep" # RM-OK:rollback-sweep-keeplist-tmp
             else
                 log_warn "Rollback: $BACKUP_PATH_ABS/pre-tree.txt missing (pre-R2 backup) — created-entry sweep skipped; NOTHING is deleted without the backup-time full-tree enumeration."
             fi
@@ -2537,6 +2660,12 @@ rollback_on_failure() {
     if [ "${CURSOR_HOOKS_CREATED_FILE:-0}" = "1" ]; then
         rollback_cursor_hooks_projection
         _removed_list="${_removed_list}.cursor/hooks.json "
+    fi
+    # Claude Code projection: only what this run created (links, pointer dirs,
+    # settings.json, empty .claude dirs) plus CLAUDE.md permission bits.
+    if [ "${CLAUDE_PROJECTION:-0}" = "1" ]; then
+        rollback_claude_projection
+        _removed_list="${_removed_list}.claude(projection) "
     fi
 
     # 4. Remove exactly the files THIS run created (merge backup, fresh
@@ -3024,6 +3153,583 @@ rollback_cursor_hooks_projection() {
         rmdir "$_t/.cursor" 2>/dev/null || true # RM-OK:rollback-cursor-rmdir-root
     fi
 }
+
+# ============================================
+# Claude Code projection (Epic multi-harness-restore, Phase 2)
+# ============================================
+# Only for `--platform claude-code` (CLAUDE_PROJECTION=1). Three writes into the
+# user's project, in this order, each one a small bounded allow-list:
+#   1. .claude/skills/<name>   one relative symlink per skill (pointer file as
+#                              fallback), pointing at .agents/skills/<name>
+#   2. CLAUDE.md               a marked "@AGENTS.md" block, appended ONLY to a
+#                              CLAUDE.md that already exists
+#   3. .claude/settings.json   copied from .tad/templates/claude/settings.json
+#                              ONLY when the target has none
+# Rules every function below follows:
+#   - first line of every worker is the gate; nothing under .claude or CLAUDE.md is
+#     read before it. The small helpers (claude_file_mode, claude_skill_set,
+#     claude_note_kept, claude_pointer_body, claude_is_tad_pointer,
+#     claude_write_pointer) are only ever called from gated workers.
+#   - every existence test is symlink-first (-L, then -d/-f, then -e); a symlink,
+#     live or dangling, at .claude, .claude/skills, .claude/skills/<name>,
+#     .claude/settings.json, CLAUDE.md or AGENTS.md is never written through,
+#     replaced or removed (the one exception: claude_prune_stale, which removes
+#     a provably stale TAD-made link). assert_under_root is a literal prefix
+#     comparison and is NOT a symlink defence; these tests are.
+#   - failures that are only warnings are written errexit-safe (if/||), because
+#     the script runs under set -e and the EXIT trap rolls back on NEED_ROLLBACK.
+
+# claude_file_mode <file> — print the octal permission bits (BSD stat, then GNU).
+claude_file_mode() {
+    local _m
+    _m=$(stat -f '%Lp' "$1" 2>/dev/null) || _m=""
+    case "$_m" in
+        [0-7][0-7][0-7]|[0-7][0-7][0-7][0-7]) printf '%s' "$_m"; return 0 ;;
+    esac
+    _m=$(stat -c '%a' "$1" 2>/dev/null) || _m=""
+    case "$_m" in
+        [0-7][0-7][0-7]|[0-7][0-7][0-7][0-7]) printf '%s' "$_m"; return 0 ;;
+    esac
+    return 1
+}
+
+# claude_skill_set [warn] — print, one per line, the skills that get an entry:
+# directories under the TARGET's .agents/skills that are not symlinks and carry
+# a regular (non-symlink) SKILL.md. Target-based on purpose: project-owned and
+# `local` skills get entries too; `_archived*` (no SKILL.md) fall out by
+# themselves; packs left out by --packs are simply not in the target. Names
+# that start with "." or contain whitespace are skipped (warned when asked).
+# The projection, the self-check, the stale prune and the same-version hint all
+# call THIS function so that they agree on the set.
+claude_skill_set() {
+    local _d _n
+    # Warnings go to stderr: this function runs inside $(...) and anything on
+    # stdout would become a bogus skill name. Dot-directories are not matched by
+    # the main glob, so they get their own warn-only loop.
+    if [ "${1:-}" = "warn" ]; then
+        for _d in .agents/skills/.[!.]*/; do
+            [ -d "${_d%/}" ] || continue
+            log_warn "CLAUDE-SKILL-NAME-SKIPPED name not projected (starts with a dot): ${_d%/}" >&2
+        done
+    fi
+    for _d in .agents/skills/*/; do
+        _d="${_d%/}"
+        _n="${_d##*/}"
+        if [ -L "$_d" ]; then continue; fi
+        if [ ! -d "$_d" ]; then continue; fi
+        case "$_n" in
+            .*|*[[:space:]]*)
+                if [ "${1:-}" = "warn" ] && [ -f "$_d/SKILL.md" ]; then
+                    log_warn "CLAUDE-SKILL-NAME-SKIPPED name not projected (contains whitespace): $_n" >&2
+                fi
+                continue ;;
+        esac
+        if [ -L "$_d/SKILL.md" ]; then continue; fi
+        if [ ! -f "$_d/SKILL.md" ]; then continue; fi
+        printf '%s\n' "$_n"
+    done
+}
+
+# claude_projection_incomplete — read-only. True when this is a claude-code run,
+# the .claude layout is one we could project into, and either settings.json or
+# some skill entry is absent (and not a symlink). Used only to print the
+# CLAUDE-HINT line on the unchanged same-version gate.
+claude_projection_incomplete() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 1
+    local _n _names
+    if [ -L ".claude" ]; then return 1; fi
+    if [ -e ".claude" ] && [ ! -d ".claude" ]; then return 1; fi
+    if [ -L ".claude/skills" ]; then return 1; fi
+    if [ -e ".claude/skills" ] && [ ! -d ".claude/skills" ]; then return 1; fi
+    if [ ! -L ".claude/settings.json" ] && [ ! -e ".claude/settings.json" ]; then return 0; fi
+    _names=$(claude_skill_set) || _names=""
+    while IFS= read -r _n; do
+        [ -n "$_n" ] || continue
+        if [ ! -L ".claude/skills/$_n" ] && [ ! -e ".claude/skills/$_n" ]; then return 0; fi
+    done <<EOF
+$_names
+EOF
+    return 1
+}
+
+# claude_hint_if_incomplete — one extra line before the unchanged "Nothing to do"
+# exit of the same-version gates. Never changes the exit code or flow.
+claude_hint_if_incomplete() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    if claude_projection_incomplete; then
+        echo "CLAUDE-HINT: this project has TAD v${CURRENT_VERSION:-?} but no Claude Code projection yet — re-run with --platform claude-code --force to add it."
+    fi
+    return 0
+}
+
+# claude_note_kept <name> <reason> — record an entry kept as user-owned.
+claude_note_kept() {
+    log_warn "CLAUDE-SKILL-KEPT $1 ($2)"
+    CLAUDE_KEPT_LIST="${CLAUDE_KEPT_LIST}$1 ($2); "
+    CLAUDE_KEPT_NAMES="${CLAUDE_KEPT_NAMES}$1 "
+    CLAUDE_KEPT_COUNT=$((CLAUDE_KEPT_COUNT + 1))
+}
+
+# claude_pointer_body <name> — the exact text the installer writes after the
+# closing "---" of a pointer SKILL.md (a blank line and two sentences). Used by
+# the generator AND by the ownership test, so they cannot drift apart.
+claude_pointer_body() {
+    printf '%s\n' ''
+    printf '%s\n' 'This entry is generated by the TAD installer. The skill body is not here.'
+    printf '%s\n' "Read \`.agents/skills/$1/SKILL.md\` now and follow it exactly as if it were this file."
+}
+
+# claude_is_tad_pointer <dir> <name> — the "TAD pointer" judgement. All must
+# hold, otherwise the directory is user-owned: SKILL.md is a regular non-symlink
+# file of at most 40 lines; a line exactly "tad_pointer: true" sits inside the
+# frontmatter (between the first "---" line and the next); and everything AFTER
+# the closing "---" is byte-identical to claude_pointer_body for <name>. A user
+# who edits a generated pointer, even by one line, thereby owns it.
+claude_is_tad_pointer() {
+    local _f="$1/SKILL.md"
+    if [ -L "$_f" ]; then return 1; fi
+    if [ ! -f "$_f" ]; then return 1; fi
+    if ! awk 'END { exit (NR > 40) }' "$_f"; then return 1; fi
+    if ! awk 'NR == 1 { if ($0 != "---") exit 1; fm = 1; next }
+              fm && $0 == "---" { closed = 1; exit (marker ? 0 : 1) }
+              fm && $0 == "tad_pointer: true" { marker = 1 }
+              END { if (!closed) exit 1 }' "$_f"; then return 1; fi
+    if [ "$(awk 'f { print } $0 == "---" && ++c == 2 { f = 1 }' "$_f"; printf x)" != "$(claude_pointer_body "$2"; printf x)" ]; then return 1; fi
+    return 0
+}
+
+# claude_write_pointer <name> <outfile> — generate the pointer SKILL.md. The
+# canonical frontmatter lines (line 2 up to the closing "---", at most 30 lines,
+# closing line within the first 40) are copied; otherwise name/description are
+# synthesized. The skill name never goes into a sed replacement string and is
+# only ever a printf argument. The skill body is never copied.
+claude_write_pointer() {
+    local _n="$1" _o="$2" _fm="" _um
+    if ! _fm=$(awk 'NR == 1 { if ($0 != "---") exit 1; next }
+                    NR > 40 { exit 1 }
+                    $0 == "---" { found = 1; exit 0 }
+                    { if (k < 30) { print; k++ } }
+                    END { if (!found) exit 1 }' ".agents/skills/$_n/SKILL.md" 2>/dev/null); then
+        _fm=""
+    fi
+    {
+        printf '%s\n' '---'
+        if [ -n "$_fm" ]; then
+            printf '%s\n' "$_fm"
+        else
+            printf '%s\n' "name: $_n" "description: TAD skill $_n (pointer)"
+        fi
+        printf '%s\n' 'tad_pointer: true' '---'
+        claude_pointer_body "$_n"
+    } > "$_o" || return 1
+    # mktemp creates 0600; a pointer is an ordinary file, so give it the mode a
+    # normal file gets under the caller's umask (644 under 022).
+    _um=$(umask) || return 1
+    chmod "$(printf '%o' $((0666 & ~_um)))" "$_o" || return 1
+}
+
+# project_claude_skills — skill entry projection (handoff section 4.2).
+# State table per .claude/skills/<name>, first match wins:
+#   symlink == ../../.agents/skills/<name>          leave
+#   other symlink (foreign or dangling)             KEPT (foreign symlink)
+#   directory passing claude_is_tad_pointer         regenerate; write only if bytes differ
+#   any other directory                             KEPT (user-owned)
+#   file or other type                              KEPT (user-owned)
+#   absent                                          create (link, or pointer dir)
+# TAD_CLAUDE_SKILL_MODE=pointer forces pointer dirs for NEW entries only.
+project_claude_skills() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    local _n _names _e _t _mode _created _tmp _link_ok
+    local _new=0 _kept=0
+    CLAUDE_SKILLS_SKIPPED=0
+
+    # Parent preconditions: a symlink, or a non-directory, skips the whole stage.
+    if [ -L ".claude" ]; then
+        CLAUDE_SKILLS_SKIPPED=1; CLAUDE_SKILLS_SKIP_REASON=".claude is a symlink"
+        log_warn "CLAUDE-SKILLS-SKIPPED .claude is a symlink (left untouched)"; return 0
+    fi
+    if [ -e ".claude" ] && [ ! -d ".claude" ]; then
+        CLAUDE_SKILLS_SKIPPED=1; CLAUDE_SKILLS_SKIP_REASON=".claude is not a directory"
+        log_warn "CLAUDE-SKILLS-SKIPPED .claude exists but is not a directory (left untouched)"; return 0
+    fi
+    if [ -e ".claude" ] && [ -L ".claude/skills" ]; then
+        CLAUDE_SKILLS_SKIPPED=1; CLAUDE_SKILLS_SKIP_REASON=".claude/skills is a symlink"
+        log_warn "CLAUDE-SKILLS-SKIPPED .claude/skills is a symlink (left untouched)"; return 0
+    fi
+    if [ -e ".claude/skills" ] && [ ! -d ".claude/skills" ]; then
+        CLAUDE_SKILLS_SKIPPED=1; CLAUDE_SKILLS_SKIP_REASON=".claude/skills is not a directory"
+        log_warn "CLAUDE-SKILLS-SKIPPED .claude/skills exists but is not a directory (left untouched)"; return 0
+    fi
+    # "newly created by this run" is decided BEFORE mkdir (neither a symlink nor
+    # present), never from mkdir's return value.
+    if [ ! -L ".claude" ] && [ ! -e ".claude" ]; then
+        CLAUDE_DIR_CREATED=1
+        if ! mkdir ".claude"; then
+            log_error "CLAUDE-SKILLS-FAILED could not create .claude (is the project root writable?)"
+            return 1
+        fi
+    fi
+    if [ ! -L ".claude/skills" ] && [ ! -e ".claude/skills" ]; then
+        CLAUDE_SKILLS_DIR_CREATED=1
+        if ! mkdir ".claude/skills"; then
+            log_error "CLAUDE-SKILLS-FAILED could not create .claude/skills (is .claude writable?)"
+            return 1
+        fi
+    fi
+
+    _mode="link"
+    case "${TAD_CLAUDE_SKILL_MODE:-}" in
+        ""|link) ;;
+        pointer) _mode="pointer" ;;
+        *) log_warn "TAD_CLAUDE_SKILL_MODE has an unknown value; using link mode" ;;
+    esac
+
+    _names=$(claude_skill_set warn) || _names=""
+    while IFS= read -r _n; do
+        [ -n "$_n" ] || continue
+        _e=".claude/skills/$_n"
+        _t="../../.agents/skills/$_n"
+
+        if [ -L "$_e" ]; then
+            if [ "$(readlink "$_e" 2>/dev/null || true)" = "$_t" ]; then continue; fi
+            claude_note_kept "$_n" "foreign symlink"; _kept=$((_kept + 1)); continue
+        fi
+        if [ -d "$_e" ]; then
+            if claude_is_tad_pointer "$_e" "$_n"; then
+                # Regenerate in the same directory, replace only when the bytes differ.
+                if ! _tmp=$(mktemp "$_e/.tad-pointer.XXXXXX"); then
+                    log_error "CLAUDE-SKILLS-FAILED $_n (cannot refresh pointer)"; return 1
+                fi
+                CLAUDE_PTR_TMP="$_tmp"   # removed by the EXIT-trap cleanup if interrupted before mv/cleanup below
+                if ! claude_write_pointer "$_n" "$_tmp"; then
+                    rm -f -- "$_tmp" # RM-OK:claude-pointer-refresh-tmp-write-fail
+                    log_error "CLAUDE-SKILLS-FAILED $_n (cannot refresh pointer)"; return 1
+                fi
+                if cmp -s "$_tmp" "$_e/SKILL.md"; then
+                    rm -f -- "$_tmp" # RM-OK:claude-pointer-refresh-tmp-same
+                else
+                    if ! mv -f -- "$_tmp" "$_e/SKILL.md"; then
+                        rm -f -- "$_tmp" # RM-OK:claude-pointer-refresh-tmp-mv-fail
+                        log_error "CLAUDE-SKILLS-FAILED $_n (cannot refresh pointer)"; return 1
+                    fi
+                fi
+                CLAUDE_PTR_TMP=""
+                continue
+            fi
+            claude_note_kept "$_n" "user-owned"; _kept=$((_kept + 1)); continue
+        fi
+        if [ -e "$_e" ]; then
+            claude_note_kept "$_n" "user-owned"; _kept=$((_kept + 1)); continue
+        fi
+
+        # Absent (and not a symlink): create.
+        _created=0; _link_ok=0
+        if [ "$_mode" != "pointer" ]; then
+            if ln -s -- "$_t" "$_e" 2>/dev/null; then _created=1; fi
+            if [ "$_created" = "1" ] && [ -L "$_e" ] && [ -f "$_e/SKILL.md" ]; then _link_ok=1; fi
+        fi
+        if [ "$_link_ok" = "1" ]; then
+            CLAUDE_CREATED_LINKS="${CLAUDE_CREATED_LINKS}${_n}"$'\n'
+            _new=$((_new + 1)); CLAUDE_NEW_COUNT=$((CLAUDE_NEW_COUNT + 1))
+            continue
+        fi
+        # Fallback: undo ONLY a link this very call just created and that points
+        # exactly where we pointed it; never anything else.
+        if [ "$_created" = "1" ] && [ -L "$_e" ] && [ "$(readlink "$_e" 2>/dev/null || true)" = "$_t" ]; then
+            rm -f -- "$_e" # RM-OK:claude-undo-unreadable-link
+        fi
+        if ! mkdir "$_e"; then
+            log_error "CLAUDE-SKILLS-FAILED $_n (cannot create entry in .claude/skills; is it writable?)"; return 1
+        fi
+        # Record BEFORE writing the file, so a half-written pointer is rolled back.
+        CLAUDE_CREATED_PTRS="${CLAUDE_CREATED_PTRS}${_n}"$'\n'
+        if ! claude_write_pointer "$_n" "$_e/SKILL.md"; then
+            log_error "CLAUDE-SKILLS-FAILED $_n (cannot write pointer SKILL.md)"; return 1
+        fi
+        _new=$((_new + 1)); CLAUDE_NEW_COUNT=$((CLAUDE_NEW_COUNT + 1))
+    done <<EOF
+$_names
+EOF
+    log_success "CLAUDE-SKILLS-DONE new=$_new kept=$_kept (.claude/skills, mode: $_mode)"
+    return 0
+}
+
+# project_claude_md_ref — CLAUDE.md reference block (handoff section 4.3).
+# Appends ONLY to a CLAUDE.md that already exists; never creates one. Result =
+# original bytes (+ a newline if the file did not end with one) + a blank line +
+# the three managed lines. Built in a same-directory temp file and moved over
+# the original; permission bits are copied from the original. NOTE: mv swaps the
+# inode, so hard links and extended attributes of CLAUDE.md are not preserved.
+# A user who deletes the block gets it back on the next installer run that
+# actually executes (the test is "is there an @AGENTS.md line").
+project_claude_md_ref() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    local _tmp _mode _last
+    CLAUDE_MD_STATE=""
+    if [ -L "CLAUDE.md" ]; then
+        CLAUDE_MD_STATE="skipped"; CLAUDE_MD_REASON="symlink"
+        log_warn "CLAUDE-MD-SKIPPED (symlink)"; return 0
+    fi
+    if [ ! -e "CLAUDE.md" ]; then CLAUDE_MD_STATE="none"; return 0; fi
+    if [ ! -f "CLAUDE.md" ]; then
+        CLAUDE_MD_STATE="skipped"; CLAUDE_MD_REASON="not a regular file"
+        log_warn "CLAUDE-MD-SKIPPED (not a regular file)"; return 0
+    fi
+    if [ -L "AGENTS.md" ] || [ ! -f "AGENTS.md" ]; then
+        CLAUDE_MD_STATE="skipped"; CLAUDE_MD_REASON="no regular AGENTS.md"
+        log_warn "CLAUDE-MD-SKIPPED (no regular AGENTS.md)"; return 0
+    fi
+    if grep -Eq '^@AGENTS\.md[[:space:]]*$' CLAUDE.md 2>/dev/null; then
+        CLAUDE_MD_STATE="present"; return 0
+    fi
+    if [ ! -w "CLAUDE.md" ]; then
+        CLAUDE_MD_STATE="skipped"; CLAUDE_MD_REASON="read-only"
+        log_warn "CLAUDE-MD-SKIPPED (read-only)"; return 0
+    fi
+    if ! _mode=$(claude_file_mode CLAUDE.md); then
+        log_error "CLAUDE.md: cannot read permission bits; refusing to rewrite it"; return 1
+    fi
+    if ! _tmp=$(mktemp "./.tad-claude-md.XXXXXX"); then
+        log_error "CLAUDE.md: cannot create a temp file in the project root"; return 1
+    fi
+    CLAUDE_MD_TMP="$_tmp"   # removed by the EXIT-trap cleanup if interrupted before the mv
+    if ! cat -- CLAUDE.md > "$_tmp"; then
+        rm -f -- "$_tmp" # RM-OK:claude-md-tmp-copy-fail
+        log_error "CLAUDE.md: copy to temp file failed"; return 1
+    fi
+    if [ -s "CLAUDE.md" ]; then
+        _last=$(tail -c 1 CLAUDE.md | od -An -tx1 | tr -d ' \n') || _last=""
+        if [ "$_last" != "0a" ]; then
+            if ! printf '\n' >> "$_tmp"; then
+                rm -f -- "$_tmp" # RM-OK:claude-md-tmp-nl-fail
+                log_error "CLAUDE.md: write to temp file failed"; return 1
+            fi
+        fi
+    fi
+    if ! printf '\n%s\n%s\n%s\n' \
+            '<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->' \
+            '@AGENTS.md' \
+            '<!-- TAD:AGENTS-REF:END -->' >> "$_tmp"; then
+        rm -f -- "$_tmp" # RM-OK:claude-md-tmp-append-fail
+        log_error "CLAUDE.md: write to temp file failed"; return 1
+    fi
+    if ! chmod "$_mode" "$_tmp"; then
+        rm -f -- "$_tmp" # RM-OK:claude-md-tmp-chmod-fail
+        log_error "CLAUDE.md: chmod of temp file failed"; return 1
+    fi
+    if ! mv -f -- "$_tmp" CLAUDE.md; then
+        rm -f -- "$_tmp" # RM-OK:claude-md-tmp-mv-fail
+        log_error "CLAUDE.md: could not replace the file"; return 1
+    fi
+    CLAUDE_MD_TMP=""
+    CLAUDE_MD_STATE="appended"
+    log_success "CLAUDE-MD-APPENDED (@AGENTS.md reference block added to CLAUDE.md)"
+    return 0
+}
+
+# project_claude_hooks <src> — hooks settings (handoff section 4.4). Copies the
+# template to .claude/settings.json ONLY when the target has no such path at
+# all. An existing different file is kept as is (merging is a later phase).
+# The creation flag is set BEFORE cp so that a half-written file is rolled back.
+project_claude_hooks() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    local src="$1" _tpl="$1/.tad/templates/claude/settings.json" _s=".claude/settings.json"
+    CLAUDE_HOOKS_STATE=""
+    if [ -L ".claude" ]; then
+        CLAUDE_HOOKS_STATE="skipped"; CLAUDE_HOOKS_REASON=".claude is a symlink"
+        log_warn "CLAUDE-HOOKS-SKIPPED .claude is a symlink (left untouched)"; return 0
+    fi
+    if [ -e ".claude" ] && [ ! -d ".claude" ]; then
+        CLAUDE_HOOKS_STATE="skipped"; CLAUDE_HOOKS_REASON=".claude is not a directory"
+        log_warn "CLAUDE-HOOKS-SKIPPED .claude exists but is not a directory (left untouched)"; return 0
+    fi
+    if [ -L "$_s" ]; then
+        CLAUDE_HOOKS_STATE="skipped"; CLAUDE_HOOKS_REASON="settings.json is a symlink"
+        log_warn "CLAUDE-HOOKS-SKIPPED (settings.json is a symlink)"; return 0
+    fi
+    if [ -e "$_s" ] && [ ! -f "$_s" ]; then
+        CLAUDE_HOOKS_STATE="skipped"; CLAUDE_HOOKS_REASON="settings.json is not a regular file"
+        log_warn "CLAUDE-HOOKS-SKIPPED (.claude/settings.json is not a regular file)"; return 0
+    fi
+    if [ ! -f "$_tpl" ] || [ -L "$_tpl" ]; then
+        log_error "CLAUDE-HOOKS-FAILED template missing in source: .tad/templates/claude/settings.json"
+        return 1
+    fi
+    if [ -f "$_s" ]; then
+        if cmp -s "$_tpl" "$_s"; then
+            CLAUDE_HOOKS_STATE="current"
+            log_info "  → .claude/settings.json already matches the TAD hooks template"
+        else
+            CLAUDE_HOOKS_STATE="kept"; CLAUDE_HOOKS_REASON="existing settings.json differs from the template"
+            log_warn "CLAUDE-HOOKS-KEPT .claude/settings.json already exists and differs from the TAD template; left unchanged"
+        fi
+        return 0
+    fi
+    # Absent (and not a symlink): create.
+    if [ ! -L ".claude" ] && [ ! -e ".claude" ]; then
+        CLAUDE_DIR_CREATED=1
+        if ! mkdir ".claude"; then
+            log_error "CLAUDE-HOOKS-FAILED could not create .claude (is the project root writable?)"; return 1
+        fi
+    fi
+    CLAUDE_SETTINGS_CREATED=1
+    if ! cp -- "$_tpl" "$_s"; then
+        log_error "CLAUDE-HOOKS-FAILED could not write .claude/settings.json (is the .claude directory writable?)"; return 1
+    fi
+    if ! cmp -s "$_tpl" "$_s"; then
+        log_error "CLAUDE-HOOKS-FAILED .claude/settings.json differs from the template after copy"; return 1
+    fi
+    CLAUDE_HOOKS_STATE="registered"
+    log_success "  → Projected .claude/settings.json (4 non-blocking lifecycle hooks)"
+    return 0
+}
+
+# claude_print_summary — closing summary (handoff section 4.5). Printed after
+# the self-check passed and before the success banner. Must not fail.
+claude_print_summary() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    echo ""
+    echo "CLAUDE-SUMMARY (Claude Code projection)"
+    if [ "$CLAUDE_SKILLS_SKIPPED" = "1" ]; then
+        echo "  skills: projection SKIPPED as a whole (${CLAUDE_SKILLS_SKIP_REASON})"
+    else
+        echo "  skills: ${CLAUDE_NEW_COUNT} new entries in .claude/skills, ${CLAUDE_KEPT_COUNT} kept as user-owned"
+        if [ -n "$CLAUDE_KEPT_LIST" ]; then echo "  kept: ${CLAUDE_KEPT_LIST}"; fi
+    fi
+    case "$CLAUDE_HOOKS_STATE" in
+        registered) echo "  hooks: registered (.claude/settings.json created from the template)" ;;
+        current)    echo "  hooks: registered (.claude/settings.json already up to date)" ;;
+        kept)       echo "  hooks: NOT registered by this run (${CLAUDE_HOOKS_REASON})" ;;
+        skipped)    echo "  hooks: NOT registered by this run (${CLAUDE_HOOKS_REASON})" ;;
+        *)          echo "  hooks: not processed" ;;
+    esac
+    case "$CLAUDE_MD_STATE" in
+        appended) echo "  CLAUDE.md: @AGENTS.md reference block appended" ;;
+        present)  echo "  CLAUDE.md: already references @AGENTS.md (unchanged)" ;;
+        skipped)  echo "  CLAUDE.md: left unchanged (${CLAUDE_MD_REASON}); Claude Code may not read AGENTS.md until it references @AGENTS.md" ;;
+        none)     echo "  CLAUDE.md: none in this project (not created)" ;;
+        *)        echo "  CLAUDE.md: not processed" ;;
+    esac
+    case "$CLAUDE_HOOKS_STATE" in
+        kept|skipped)
+            echo "  TAD hooks are NOT registered. Template: .tad/templates/claude/settings.json — you can merge it by hand; automatic merging will come in a later release (可手工并入；自动合并随后续版本提供)." ;;
+    esac
+    case "$CLAUDE_HOOKS_STATE" in
+        registered|current)
+            echo "  .claude/settings.json 通常会被提交；它注册了 4 条在会话开始、写文件后、压缩前、提问后运行的 .tad/hooks/ 脚本。" ;;
+    esac
+    echo ""
+    return 0
+}
+
+# claude_prune_stale — stale-entry cleanup (handoff section 4.7). Runs ONLY on
+# the success path, after validate_generated_configs and before the rollback
+# snapshot is discarded, so nothing removed here ever needs a rollback. Removes
+# exactly two kinds of entry, each provably TAD-made:
+#   a symlink whose target text is ../../.agents/skills/<x>, whose own name is
+#     <x>, and whose canonical .agents/skills/<x> no longer exists at all
+#   a pointer directory (claude_is_tad_pointer) holding only SKILL.md whose name
+#     is not in the current skill set
+# Everything else stays. Any failure here is only a warning.
+claude_prune_stale() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    if [ "$CLAUDE_SKILLS_SKIPPED" = "1" ]; then return 0; fi
+    if [ -L ".claude" ] || [ ! -d ".claude" ]; then return 0; fi
+    if [ -L ".claude/skills" ] || [ ! -d ".claude/skills" ]; then return 0; fi
+    local _e _name _tgt _x _set _cnt
+    _set=$(claude_skill_set) || _set=""
+    _set=" $(printf '%s' "$_set" | tr '\n' ' ') "
+    for _e in .claude/skills/*; do
+        _name="${_e##*/}"
+        if [ -L "$_e" ]; then
+            _tgt=$(readlink "$_e" 2>/dev/null) || continue
+            case "$_tgt" in
+                ../../.agents/skills/*) _x="${_tgt#../../.agents/skills/}" ;;
+                *) continue ;;
+            esac
+            case "$_x" in ""|*/*) continue ;; esac
+            if [ "$_x" != "$_name" ]; then continue; fi
+            if [ -e ".agents/skills/$_x" ] || [ -L ".agents/skills/$_x" ]; then continue; fi
+            if ! assert_under_root "${TARGET_ROOT:-}/.claude/skills/$_name"; then continue; fi
+            if rm -f -- "$_e" 2>/dev/null; then # RM-OK:claude-stale-link
+                log_info "CLAUDE-STALE-REMOVED $_name"
+            else
+                log_warn "could not remove stale entry .claude/skills/$_name"
+            fi
+        elif [ -d "$_e" ]; then
+            if ! claude_is_tad_pointer "$_e" "$_name"; then continue; fi
+            _cnt=$(ls -A "$_e" 2>/dev/null | wc -l | tr -d ' ') || _cnt=""
+            if [ "$_cnt" != "1" ]; then continue; fi
+            case "$_set" in *" $_name "*) continue ;; esac
+            if ! assert_under_root "${TARGET_ROOT:-}/.claude/skills/$_name"; then continue; fi
+            if rm -f -- "$_e/SKILL.md" 2>/dev/null; then # RM-OK:claude-stale-pointer-file
+                if rmdir -- "$_e" 2>/dev/null; then # RM-OK:claude-stale-pointer-dir
+                    log_info "CLAUDE-STALE-REMOVED $_name"
+                else
+                    log_warn "could not remove stale pointer directory .claude/skills/$_name"
+                fi
+            else
+                log_warn "could not remove stale pointer file in .claude/skills/$_name"
+            fi
+        fi
+    done
+    return 0
+}
+
+# rollback_claude_projection — undo exactly what THIS run created (handoff
+# section 4.8): created skill links (only if still the link we made), created
+# pointer directories (their SKILL.md, then the directory), a created
+# .claude/settings.json (only if still a regular file), then an empty
+# .claude/skills and an empty .claude that this run created. Pre-existing
+# content is never removed; .claude is deliberately NOT in ROLLBACK_PRE_TOP or
+# the step-4b sweep (those clear whole directories). CLAUDE.md itself is
+# restored from the snapshot by step 2; here only its permission bits are put
+# back (the snapshot copy is made without -p). An existing TAD pointer file
+# that this run rewrote is not restored: its content is equivalent.
+rollback_claude_projection() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    local _t="${TARGET_ROOT:-}" _n _e
+    if [ -z "$_t" ] || [ "$_t" = "/" ]; then return 0; fi
+    while IFS= read -r _n; do
+        [ -n "$_n" ] || continue
+        _e="$_t/.claude/skills/$_n"
+        assert_under_root "$_e" || continue
+        if [ -L "$_e" ] && [ "$(readlink "$_e" 2>/dev/null || true)" = "../../.agents/skills/$_n" ]; then
+            rm -f -- "$_e" || log_warn "could not remove created Claude link $_n" # RM-OK:rollback-claude-created-link
+        fi
+    done <<EOF
+$CLAUDE_CREATED_LINKS
+EOF
+    while IFS= read -r _n; do
+        [ -n "$_n" ] || continue
+        _e="$_t/.claude/skills/$_n"
+        assert_under_root "$_e" || continue
+        if [ -L "$_e" ] || [ ! -d "$_e" ]; then continue; fi
+        if [ -f "$_e/SKILL.md" ] && [ ! -L "$_e/SKILL.md" ]; then
+            rm -f -- "$_e/SKILL.md" || true # RM-OK:rollback-claude-created-pointer-file
+        fi
+        rmdir -- "$_e" 2>/dev/null || true # RM-OK:rollback-claude-created-pointer-dir
+    done <<EOF
+$CLAUDE_CREATED_PTRS
+EOF
+    if [ "$CLAUDE_SETTINGS_CREATED" = "1" ]; then
+        _e="$_t/.claude/settings.json"
+        if assert_under_root "$_e" && [ ! -L "$_e" ] && [ -f "$_e" ]; then
+            rm -f -- "$_e" || log_warn "could not remove created .claude/settings.json" # RM-OK:rollback-claude-created-settings
+        fi
+    fi
+    if [ "$CLAUDE_SKILLS_DIR_CREATED" = "1" ] && [ ! -L "$_t/.claude/skills" ]; then
+        rmdir -- "$_t/.claude/skills" 2>/dev/null || true # RM-OK:rollback-claude-created-skills-dir
+    fi
+    if [ "$CLAUDE_DIR_CREATED" = "1" ] && [ ! -L "$_t/.claude" ]; then
+        rmdir -- "$_t/.claude" 2>/dev/null || true # RM-OK:rollback-claude-created-claude-dir
+    fi
+    if [ -n "$CLAUDE_MD_SNAP_MODE" ] && [ ! -L "$_t/CLAUDE.md" ] && [ -f "$_t/CLAUDE.md" ]; then
+        chmod "$CLAUDE_MD_SNAP_MODE" "$_t/CLAUDE.md" 2>/dev/null || log_warn "could not restore CLAUDE.md permission bits"
+    fi
+    return 0
+}
+
 main() {
     echo ""
     echo -e "${CYAN}=====================================${NC}"
@@ -3128,6 +3834,8 @@ main() {
         if [ "$PINNED_MODE" = "1" ]; then
             # Pinned mode target is exact by construction (tag archive verified
             # against expected version); current == expected is a true no-op.
+            # Same-version gate is unchanged; only a hint for claude-code is added before the exit.
+            claude_hint_if_incomplete
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
             exit 0
@@ -3147,6 +3855,8 @@ main() {
             # 而不是一次静默的不升级。
             ACTION="upgrade"
         else
+            # Same-version gate is unchanged; only a hint for claude-code is added before the exit.
+            claude_hint_if_incomplete
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
             echo "Available commands:"
@@ -3227,6 +3937,8 @@ main() {
         # 收口（AC 断言：没有别的 rm 引用 TAD_SRC）。
         cleanup_source_tree
         echo ""
+        # Same-version gate is unchanged; only a hint for claude-code is added before the exit.
+        claude_hint_if_incomplete
         echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
         exit 0
     fi
@@ -3545,6 +4257,10 @@ NEXTEOF
 
     # Validate everything
     validate_generated_configs
+    # Claude projection: stale-entry cleanup runs only here, once the install is
+    # known good, so a removal never has to be undone by a rollback. It cannot
+    # fail the install (every failure inside is a warning).
+    claude_prune_stale
     # Success path: snapshot consumed (recovery copy no longer needed), then
     # disarm rollback so the EXIT trap leaves the tree in place.
     discard_rollback_snap
@@ -3555,6 +4271,9 @@ NEXTEOF
     # —— 经由单一 cleanup_source_tree 收口（AC 断言：没有别的 rm 引用 TAD_SRC）。
     # 下载产生的 temp root 由 EXIT trap 经 cleanup_installer_temp 清理。
     cleanup_source_tree
+
+    # Claude projection summary (after the self-check passed, before the banner).
+    claude_print_summary
 
     echo ""
     echo -e "${GREEN}=====================================${NC}"

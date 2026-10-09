@@ -16,7 +16,7 @@
 - [ ] SC2 Claude Code 真机：`/alex` `/blake` `/gate` 能进角色；SessionStart / PreCompact / PostToolUse 三个 hook 实际触发，有会话记录为证
 - [ ] SC3 skill 正文只有一份来源：有一条检查命令证明仓库与安装产物里没有重复的 skill 正文
 - [ ] SC4 自带 `.claude/settings.json` 的现有项目升级后，用户自己的 hook 与权限配置逐字节保留，只多出 TAD 管辖块
-- [ ] SC5 10 个 workflow 与 2 个子代理在 Claude Code 下可用，各至少一次真实运行记录；其余 harness 上明确降级而非报错
+- [ ] SC5 10 个 workflow 在 Claude Code 主会话下可经 `scriptPath` 调用；其中 8 个有真实运行记录（`yolo-epic` 仅 design 步），`pack-upgrade`、`surplus-execute` 有零代理装载与缺参校验记录并如实标为未真跑；`spec-compliance-reviewer` 在 Claude Code 目标项目中是已注册子代理（Phase 4）；其余 harness 上协议明确降级而非报错 —— *2026-10-09 修订，见 Notes*
 - [ ] SC6 四个 harness 各有一份真机全链回归 transcript，结论 PASS（含承接项：Codex PASS 基线，原排 2026-10-10 补跑）
 - [ ] SC7 全部发版检查 exit 0；历史归档面之外零悬空路径引用；NEXT.md ≤ 500 行；各文档版本与状态说法一致
 
@@ -27,8 +27,8 @@
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Claude Code 实例声明与探活 spike | ✅ Done | HANDOFF-2026-10-08-claude-code-instance-spike.md（已归档） | 四个未知项的真机实测结论＋`runtime-adapter-instance-claude-code.md` |
-| 2 | 安装器与投影落地 | ⬚ Planned | — | `--platform claude-code` 可装：skill 投影、hook 注册、CLAUDE.md 引用块、平台探测 |
-| 3 | 编排能力恢复 | ⬚ Planned | — | 10 workflow＋2 子代理恢复并翻新，各有真实运行记录 |
+| 2 | 安装器与投影落地 | ✅ Done | HANDOFF-2026-10-08-claude-code-installer-projection.md（已归档） | `--platform claude-code` 可装：skill 投影、hook 注册、CLAUDE.md 引用块、平台探测 |
+| 3 | 编排能力恢复 | 🔄 Active | HANDOFF-2026-10-09-workflow-restore.md | 10 workflow＋2 子代理恢复并翻新，各有真实运行记录 |
 | 4 | 下游升级路径与四家真机回归 | ⬚ Planned | — | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
 | 5 | 残余清理 | ⬚ Planned | — | 悬空引用清零、红门转绿、口径一致、状态面瘦身 |
 | 6 | v3.3.0 发版 | ⬚ Planned | — | 发版清单全绿、CHANGELOG、tag |
@@ -48,7 +48,7 @@ Status and progress are computed from the Phase Map:
 | # | 决定 | 选择 |
 |---|---|---|
 | D1 | Claude Code 如何取得 skill | 安装时逐 skill 符号链接为主（A）；链接在同步盘/目标环境实测不可用时退到生成指路文件（B）。禁止恢复完整镜像 |
-| D2 | workflow/子代理恢复方式 | 自 `20223774^` 历史恢复后逐个翻新，每个至少真跑一次 |
+| D2 | workflow/子代理恢复方式 | 自 `20223774^` 历史恢复后逐个翻新，每个至少真跑一次 —— *执行注（2026-10-09，Conductor 在人授权范围内裁定）：10 个全部恢复并翻新；真跑 8 个，`pack-upgrade` 与 `surplus-execute` 不真跑（一跑即改正本 pack 或自动执行积压任务并派数十代理），改做零代理装载与缺参校验；`security-auditor` 定义恢复但不投影给目标项目* |
 | D3 | AGENTS.md 兜底 | 安装器在**已存在**的 `CLAUDE.md` 内维护带标记的引用块；项目无 `CLAUDE.md` 时不创建 |
 | D4 | 版本号 | 3.3.0 |
 | 顺序 | 两条线先后 | 先恢复多 harness，再清残余 |
@@ -99,8 +99,8 @@ None
 
 ### Phase 2: 安装器与投影落地
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done（2026-10-09；Gate 2/3/4 PASS，见 phase2-gate-report.md）
+**Execution:** YOLO（Conductor 手动派发）
 
 #### Scope
 让 `tad.sh --platform claude-code` 重新成为合法目标，并沿用既有「单文件投影」模式落四样东西：skill 入口投影（按 Phase 1 定案走链接或指路文件）、`.claude/settings.json` 的 TAD hook 块、已有 `CLAUDE.md` 内的引用块、平台探测对 claude-code 的识别。全新项目与空 `.claude/` 目录是本 Phase 的目标面。**不在范围**：存量 `.claude/settings.json` 的合并安全与迁移清单（Phase 4）；workflow/子代理（Phase 3）；文档口径改写（Phase 5）。
@@ -142,8 +142,8 @@ Phase 1
 
 ### Phase 3: 编排能力恢复
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** 🔄 Active
+**Execution:** YOLO（Conductor 手动派发）
 
 #### Scope
 自 `20223774^` 取回 10 个 `.claude/workflows/*.workflow.js` 与 2 个 `.claude/agents/*.md`，定一个不落在 `.claude/` 下的仓内正本位置，由安装器在 claude-code 目标上投影；逐个翻新 9 月 16 日之后失效的引用（NotebookLM 退役、`claude_websearch`→`websearch` 改名、模型绑定、skill 路径）。在 Alex/Blake 协议中把这些 workflow 的调用点写成「Claude Code 有则用、其余 harness 明确降级到既有顺序路径」。**不在范围**：新增 workflow；把 workflow 移植到其他 harness 的原生编排面；YOLO2 默认开启。
@@ -157,10 +157,11 @@ Phase 2 的投影机制；历史文件 `git ls-tree -r 20223774^ -- .claude/work
 - 协议调用点的跨 harness 降级条文
 
 #### Acceptance Criteria
-- [ ] 正本目录下 workflow 文件数为 10、子代理文件数为 2；claude-code 目标安装后 `ls <target>/.claude/workflows/*.workflow.js | wc -l` 输出 10
-- [ ] 翻新后的 workflow 与子代理中 `grep -ciE 'notebooklm|claude_websearch|claude_code_reviewer'` 合计为 0
-- [ ] 每个 workflow 在 `.tad/evidence/workflow-runs/2026-10-restore/` 下有一份运行记录，含 run id、agent 数与退出状态
-- [ ] 非 claude harness 降级条文存在：alex 与 blake SKILL 中每个 workflow 调用点同段含降级路径句（Gate 2 评审逐点核对并留指针）
+*2026-10-09 修订（Conductor 在人授权范围内裁定；依据：Phase 3 摸底与五次零代理探针，见 `HANDOFF-2026-10-09-workflow-restore.md` §5、§11）。原 AC1「claude-code 目标安装后 `.claude/workflows/` 下 10 个文件」与原 AC3「每个 workflow 一份运行记录」被下列条目取代：workflow 不投影进 `.claude/workflows/`，改留在随框架同步的 `.tad/workflows/claude/` 并以 `scriptPath` 调用（实测可用，免改安装器，且避开「按名调用加载过期缓存」）。*
+- [ ] `.tad/workflows/claude/` 下恰 10 个 `*.workflow.js`，逐个通过包裹式语法检查；codex 与 claude-code 全新安装后目标项目里这 10 个文件与源逐字节相同（handoff §9.1 脚本 C1、C7）
+- [ ] 翻新后的 workflow 中已退役标识、旧树路径、固定模型绑定计数为 0；相对历史原件的改动量在封闭清单的上限内（脚本 C2、C3）
+- [ ] 真实运行记录落 `.tad/evidence/yolo/multi-harness-restore-and-cleanup/phase3-gate-report.md`：8 个 workflow 各含 run id、agent 数与结果；`pack-upgrade`、`surplus-execute` 为零代理装载与缺参校验记录，并明示未真跑
+- [ ] 三处协议调用点以 `scriptPath` 调用并各带 `WORKFLOW-FALLBACK` 降级行；判据为「自己的工具列表里有无 Workflow 工具」；YOLO 的降级目标是随框架分发的文件（脚本 C5）
 - [ ] `bash .tad/hooks/lib/skill-body-verify.sh` RESULT 为 ALL CHECKS PASSED
 
 #### Files Likely Affected
@@ -215,6 +216,9 @@ Phase 2, Phase 3
 - 本 Epic 唯一可能造成用户数据丢失的面在这里：高风险派发，handoff 须附风险卡，关键假设写成可证伪句
 - Codex 回归受账号限额约束（上次因限额 FAIL）；限额阻塞按 BLOCKED 上报，不得改判 PASS
 - 吸收 NEXT 在册单 `TASK-20260916-CODEX-LEDGER-REVERIFY`
+- 承接自 Phase 3 Gate 2（2026-10-09）：(9) **子代理定义投影——本 Phase 的件目**：把 `.tad/agents/claude/*.md`（目前只有 `spec-compliance-reviewer.md`）投影进 claude-code 目标的 `.claude/agents/`，沿用 hook 模板的「不存在才落、已存在且不同则保留并提示、符号链接不写穿、回滚只撤本次创建」体例，并纳入自检、汇总与 `CLAUDE-HINT` 判断；在此之前 Claude Code 上 Blake Layer 2 Group 0 以通用子代理＋该定义文件正文作等价替代；`.tad/agents/claude-local/security-auditor.md` 不投影给目标项目，仅用于本仓自举；(10) **本仓自举**：TAD 仓自身原是受版本管理的 Claude Code 项目，现在仓内进不了 `/alex`——用自己的安装器给自己装一遍并决定哪些入库；(11) 现有安装器 fixture 在基线上有 5 项失败（`ac2.6a`、`ac2.6b`、`ac2.8`×2、`r1`），待查是测试过期还是真缺陷
+- 承接自 Phase 2 Gate 2（2026-10-08，人裁定缩小范围）：(4) **自动加装**——给已装同版本 TAD 的项目加一个平台，目前要 `--force` 整套重装；应提供不重装框架、不跑弃用清理的独立投影路径（注意不得在目标版本比源新时降级）；(5) **多平台共存缺陷（既有）**：弃用清理里 2.3.0 时代的规则会在每次升级型运行删 `.codex/hooks.json`，而它只在 `PLATFORM=codex` 时重生成——Codex 项目上 `--force` 装 cursor/opencode 即丢 Codex hook 接线（Phase 2 只对 claude-code 平台做了跳过）；(6) **既有按名删除**：其余平台的弃用清理仍会按文件名删用户的 `.claude/commands/research.md` 等（Alex 基线实测），与安装指南「不动你的 `.claude/`」不符；(7) v2.x 遗留的 `.claude/skills/<名>` 镜像目录会被当作用户自有保留并挡住新入口，需识别规则；(8) 会话在项目子目录启动时项目 `.claude/settings.json` 不加载（R-CC-6）
+- 承接自 Phase 2 设计（2026-10-08）：(1) 已存在且不同的 `.claude/settings.json` 在 Phase 2 是「保留＋提示」，本 Phase 做合并；(2) `tad-update.sh detect_platform` 只会返回 `codex|ambiguous`，装过 claude-code 的项目升级时会被当成 codex 转发、Claude 投影不被刷新——本 Phase 须解决「已装平台的识别与粘性刷新」（一个项目可同时用多家 harness）；(3) 现有 fixture 不设 `TAD_BACKUP_ROOT`，升级类用例会写 `$HOME/.tad-backups`
 
 ### Phase 5: 残余清理
 
@@ -300,6 +304,7 @@ Phase 1–5
 ## Context for Next Phase
 
 ### Completed Work Summary
+- Phase 2（Gate 2/3/4 PASS，2026-10-09）：`tad.sh --platform claude-code` 可用——逐 skill 相对符号链接（指路文件退路）、已有 `CLAUDE.md` 追加 `@AGENTS.md` 受管块、无 `settings.json` 时落四条非阻断 hook；符号链接一律不写穿；失败完整回滚；其余三平台产物逐字节不变。同版本项目加装需 `--force`。判定见 phase2-gate-report.md
 - Phase 1（Gate 2/3/4 PASS，2026-10-08）：16 探针 13 成立／1 部分／2 不成立／0 未测成；**D1 定案 A（逐 skill 符号链接）**；AGENTS.md 加载／压制／引用三条件实测成立；三个 hook 可直调共享脚本原件、无需垫片。判定与遗留见 `.tad/evidence/yolo/multi-harness-restore-and-cleanup/phase1-gate-report.md`
 
 ### Decisions Made So Far
@@ -310,10 +315,12 @@ Phase 1–5
 - 2026-10-08 本仓 Claude Code 2.1.295 会话中未观察到 `AGENTS.md` 自动进入上下文，上级目录无阻断性 `CLAUDE.md`，原因未明——Phase 1 未知项 (a)
 
 ### Next Phase Scope
-Phase 2：安装器与投影落地。开工前先关 C1（交互面验证）；实例声明的措辞订正（C4）与 ③ 分发路径随 Phase 2 更新。承接项 C1–C6 见 phase1-gate-report.md「遗留与承接」。
+Phase 3：编排能力恢复（workflow 留在 `.tad/workflows/claude/` 经 `scriptPath` 调用；不改安装器）。Phase 1 遗留 C1（交互面 `AGENTS.md` 加载）仍未验证，须人在交互会话里查看。
 
 ---
 
 ## Notes
+- 2026-10-09 Phase 3 设计偏离了立项时的两处文字（D2「各至少真跑一次」、Phase 3 原 AC1「装进 `.claude/workflows/`」）。Conductor 依人 2026-10-08/09 的全权授权裁定并在 D2 执行注、SC5、Phase 3 AC 三处就地修订，原文保留在 git 历史（提交 `5ac69cc7`）。理由与实测见 Phase 3 handoff §5、§11。人可随时推翻：要全部真跑，或要投影进 `.claude/workflows/`，告知即可。
+- 2026-10-08（Phase 2 Gate 2 期间）人两次明示：「后面整个 Epic 的执行我全都授权你自己做决策，你自己把它跑完」「整个 epic 我都授权你」。此前同场已书面预授权：两轮设计审查后仍有遗留 P0 时，Conductor 可自行选「缩小范围」并记录。Conductor 据此就全 Epic 的执行自行决策，每次决策落盘（handoff §9.2/§11 或各 Phase gate-report）。
 - 2026-10-08 人授权 Conductor 自行裁定各 Phase 验收并把 Epic 跑完。Conductor 自定边界：每 Phase 在分支 `epic/multi-harness-restore` 本地提交一次；**推送与打 tag 不在自裁范围，Phase 6 到该步停下等人确认**；工作区原有的 3 个非本链改动不提交。
 - 2026-10-08 立项。人在 *analyze 中裁定 Full 流程、建 Epic、先归档自优化 Epic、先恢复后清理。

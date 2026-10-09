@@ -471,6 +471,13 @@ case_states() {
     printf '%s\n' "$out" | grep -q "platform: codex" && ok "explicit --platform overrides detection" \
         || bad "explicit --platform not honored"
 
+    # Phase 2: claude-code is an accepted explicit platform again and is
+    # forwarded to the installer as-is (automatic detection is a later release).
+    out="$(run_updater_platform "$proj" "$fast_installer" --yes --platform claude-code)"
+    printf '%s\n' "$out" | grep -q "platform: claude-code" \
+        && ok "explicit --platform claude-code → forwarded to the installer" \
+        || bad "explicit --platform claude-code → not forwarded"
+
     out="$(run_updater_platform "$proj" "$fast_installer" --yes --platform both)"
     printf '%s\n' "$out" | grep -q "was removed in TAD v3.0.0" \
         && ok "explicit --platform both → removed-error" \

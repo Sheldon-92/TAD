@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.13|r1|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.17|r1|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.13|r1|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.17|r1|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -146,6 +146,9 @@ stage_pruned_source() {
     if [ ! -e "$SOURCE/$s" ]; then echo "fixture: staged source missing sentinel $s" >&2; exit 2; fi
   done
   if [ ! -f "$SOURCE/.tad/version.txt" ]; then echo "fixture: staged source missing version.txt" >&2; exit 2; fi
+  # Phase 2: the Claude hooks template rides in the derived framework dir
+  # .tad/templates; the claude-code projection fails without it.
+  if [ ! -f "$SOURCE/.tad/templates/claude/settings.json" ]; then echo "fixture: staged source missing .tad/templates/claude/settings.json" >&2; exit 2; fi
 }
 
 source_version() { head -1 "$SOURCE/.tad/version.txt" | tr -d '[:space:]'; }
@@ -156,6 +159,17 @@ run_install() {
   local plat="$1" log="$2"
   local rc=0
   ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform "$plat" --yes >"$log" 2>&1 ) || rc=$?
+  printf '%s' "$rc"
+}
+
+# run_install_cc <platform> <logfile> [extra installer flags...] — like
+# run_install, but pins TAD_BACKUP_ROOT inside the sandbox (outside TARGET) so a
+# --force re-run can never write backups under $HOME, and passes extra flags
+# (e.g. --force). Optional env: TAD_CLAUDE_SKILL_MODE is inherited as-is.
+run_install_cc() {
+  local plat="$1" log="$2"; shift 2
+  local rc=0
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TAD_BACKUP_ROOT="$SANDBOX/cc-backups" bash "$TADSH" --source "$SOURCE" --platform "$plat" --yes "$@" >"$log" 2>&1 ) || rc=$?
   printf '%s' "$rc"
 }
 
@@ -309,7 +323,37 @@ case_ac23() {
   CURRENT_CASE="ac2.3"
   matrix_assert "codex" || true
   guarded_cleanup "$SANDBOX"; SANDBOX=""
-  for plat in claude-code both; do
+  # Phase 2 (Epic multi-harness-restore): `claude-code` is an accepted target
+  # again and installs the Claude projection; `both` stays a tombstone.
+  new_sandbox
+  stage_pruned_source
+  plant_user_matrix
+  snapshot_target "$SNAP/pre"
+  rc="$(run_install_cc claude-code "$SANDBOX/install-claude-code.log")"
+  if [ "$rc" = "0" ]; then pass "ac2.3[claude-code]: accepted (rc=0)"; else fail "ac2.3[claude-code]: rejected or failed (rc=$rc)"; fi
+  assert_version_proof "$want"
+  if [ -L "$TARGET/.claude/skills/alex" ] && [ "$(readlink "$TARGET/.claude/skills/alex")" = "../../.agents/skills/alex" ]; then
+    pass "ac2.3[claude-code]: .claude/skills/alex is the relative link to the canonical skill"
+  else
+    fail "ac2.3[claude-code]: .claude/skills/alex link missing or wrong"
+  fi
+  if cmp -s "$SOURCE/.tad/templates/claude/settings.json" "$TARGET/.claude/settings.json"; then
+    pass "ac2.3[claude-code]: .claude/settings.json is the hooks template"
+  else
+    fail "ac2.3[claude-code]: .claude/settings.json missing or differs from the template"
+  fi
+  local f
+  for f in .codex/config.toml .codex/prompts/mine.md .gemini/settings.json GEMINI.md; do
+    if cmp -s "$SNAP/pre/$f" "$TARGET/$f"; then pass "ac2.3[claude-code]: $f byte-identical"; else fail "ac2.3[claude-code]: $f MODIFIED"; fi
+  done
+  if [ "$(head -c "$(wc -c < "$SNAP/pre/CLAUDE.md" | tr -d ' ')" "$TARGET/CLAUDE.md")" = "$(cat "$SNAP/pre/CLAUDE.md")" ] \
+     && grep -qxF '@AGENTS.md' "$TARGET/CLAUDE.md"; then
+    pass "ac2.3[claude-code]: user CLAUDE.md bytes kept as prefix and @AGENTS.md block appended"
+  else
+    fail "ac2.3[claude-code]: CLAUDE.md prefix/block wrong"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  for plat in both; do
     CURRENT_CASE="ac2.3"
     new_sandbox
     stage_pruned_source
@@ -955,6 +999,226 @@ case_ac213() {
   fi
 }
 
+# ════════════════════════ Phase 2: Claude Code projection (AC2.14 to AC2.17) ════════════════════════
+# claude_sig <dir> <relpath> — stable listing of a path (symlink targets, cksum, no .git).
+claude_sig() {
+  ( cd "$1" 2>/dev/null || exit 0
+    [ -e "$2" ] || [ -L "$2" ] || exit 0
+    find "$2" -print 2>/dev/null | LC_ALL=C sort | while IFS= read -r p; do
+      if [ -L "$p" ]; then printf 'L %s -> %s\n' "$p" "$(readlink "$p")"
+      elif [ -d "$p" ]; then printf 'D %s\n' "$p"
+      else printf 'F %s %s\n' "$p" "$(cksum < "$p")"; fi
+    done ) || true
+}
+
+# AC2.14: fresh claude-code install projects links + hooks template, creates no
+# CLAUDE.md, is a no-op on plain re-run and idempotent on --force; the other
+# platforms leave a bare target without .claude/ and CLAUDE.md.
+case_ac214() {
+  CURRENT_CASE="ac2.14"
+  new_sandbox
+  stage_pruned_source
+  local rc n links bad s p
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ]; then pass "ac2.14: fresh claude-code install rc=0"; else fail "ac2.14: fresh claude-code install rc=$rc"; fi
+  assert_version_proof "$(source_version)"
+  n=0; links=0; bad=0
+  for s in "$TARGET"/.agents/skills/*/; do
+    s="${s%/}"; p="${s##*/}"
+    [ -f "$s/SKILL.md" ] || continue
+    n=$((n + 1))
+    if [ -L "$TARGET/.claude/skills/$p" ] && [ "$(readlink "$TARGET/.claude/skills/$p")" = "../../.agents/skills/$p" ]; then links=$((links + 1)); fi
+    cmp -s "$s/SKILL.md" "$TARGET/.claude/skills/$p/SKILL.md" || bad=$((bad + 1))
+  done
+  if [ "$n" -gt 0 ] && [ "$links" = "$n" ] && [ "$bad" = "0" ]; then
+    pass "ac2.14: all $n skills have a relative link that resolves to the canonical SKILL.md"
+  else
+    fail "ac2.14: links=$links of $n, unresolved=$bad"
+  fi
+  if cmp -s "$SOURCE/.tad/templates/claude/settings.json" "$TARGET/.claude/settings.json"; then
+    pass "ac2.14: settings.json is the template, byte for byte"
+  else
+    fail "ac2.14: settings.json missing or differs from the template"
+  fi
+  if [ ! -e "$TARGET/CLAUDE.md" ] && [ ! -L "$TARGET/CLAUDE.md" ]; then pass "ac2.14: CLAUDE.md not created"; else fail "ac2.14: CLAUDE.md was created"; fi
+  if grep -qF 'CLAUDE-SUMMARY' "$SANDBOX/install.log" && ! grep -qF 'TAD hooks are NOT registered' "$SANDBOX/install.log"; then
+    pass "ac2.14: summary present and does not claim hooks are missing"
+  else
+    fail "ac2.14: summary missing, or it claims hooks are missing"
+  fi
+  claude_sig "$TARGET" .claude > "$SNAP/sig1"
+  rc="$(run_install_cc claude-code "$SANDBOX/rerun.log")"
+  if [ "$rc" = "0" ] && grep -qF 'Nothing to do' "$SANDBOX/rerun.log" && ! grep -qF 'CLAUDE-HINT' "$SANDBOX/rerun.log"; then
+    pass "ac2.14: plain re-run is the ordinary no-op without a hint"
+  else
+    fail "ac2.14: plain re-run not a clean no-op (rc=$rc)"
+  fi
+  rc="$(run_install_cc claude-code "$SANDBOX/force.log" --force)"
+  claude_sig "$TARGET" .claude > "$SNAP/sig2"
+  if [ "$rc" = "0" ] && grep -qF 'framework files' "$SANDBOX/force.log" && cmp -s "$SNAP/sig1" "$SNAP/sig2"; then
+    pass "ac2.14: --force re-run executes and leaves .claude/ identical"
+  else
+    fail "ac2.14: --force re-run rc=$rc or .claude/ changed"
+  fi
+  assert_no_network
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  # Other platforms: a bare target gets neither .claude/ nor CLAUDE.md.
+  local plat
+  for plat in codex cursor opencode; do
+    new_sandbox
+    stage_pruned_source
+    rc="$(run_install_cc "$plat" "$SANDBOX/install.log")"
+    if [ "$rc" = "0" ] && [ ! -e "$TARGET/.claude" ] && [ ! -L "$TARGET/.claude" ] && [ ! -e "$TARGET/CLAUDE.md" ]; then
+      pass "ac2.14[$plat]: no .claude/ and no CLAUDE.md created"
+    else
+      fail "ac2.14[$plat]: rc=$rc or .claude/CLAUDE.md appeared"
+    fi
+    guarded_cleanup "$SANDBOX"; SANDBOX=""
+  done
+}
+
+# AC2.15: everything the user already had is kept; CLAUDE.md gets exactly one
+# managed block; a differing settings.json is kept and the summary says so.
+case_ac215() {
+  CURRENT_CASE="ac2.15"
+  new_sandbox
+  stage_pruned_source
+  mkdir -p "$TARGET/.claude/skills/alex" "$TARGET/.claude/skills/blake" "$TARGET/.claude/commands"
+  printf 'USER-ALEX\n' > "$TARGET/.claude/skills/alex/SKILL.md"
+  printf 'notes\n' > "$TARGET/.claude/skills/blake/notes.txt"
+  ln -s /nonexistent/elsewhere "$TARGET/.claude/skills/gate"
+  printf '{"permissions":{"allow":["Bash(ls:*)"]}}\n' > "$TARGET/.claude/settings.json"
+  printf 'MY RESEARCH\n' > "$TARGET/.claude/commands/research.md"
+  printf '# Mine\n\nrules\n' > "$TARGET/CLAUDE.md"; chmod 600 "$TARGET/CLAUDE.md"
+  cp -p "$TARGET/CLAUDE.md" "$SNAP/claude.before"
+  claude_sig "$TARGET" .claude > "$SNAP/pre.sig"
+  local rc osz
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ]; then pass "ac2.15: install rc=0"; else fail "ac2.15: install rc=$rc"; fi
+  if [ "$(cat "$TARGET/.claude/settings.json")" = '{"permissions":{"allow":["Bash(ls:*)"]}}' ] \
+     && [ "$(cat "$TARGET/.claude/commands/research.md")" = 'MY RESEARCH' ] \
+     && [ "$(cat "$TARGET/.claude/skills/alex/SKILL.md")" = 'USER-ALEX' ] \
+     && [ -f "$TARGET/.claude/skills/blake/notes.txt" ] && [ -L "$TARGET/.claude/skills/gate" ] \
+     && [ "$(readlink "$TARGET/.claude/skills/gate")" = "/nonexistent/elsewhere" ]; then
+    pass "ac2.15: user settings, command, skill dir, notes and foreign link all kept"
+  else
+    fail "ac2.15: a pre-existing .claude entry was changed"
+  fi
+  if grep -qF 'CLAUDE-HOOKS-KEPT' "$SANDBOX/install.log" && grep -qF 'TAD hooks are NOT registered' "$SANDBOX/install.log" \
+     && grep -qF 'CLAUDE-SKILL-KEPT' "$SANDBOX/install.log"; then
+    pass "ac2.15: log reports kept hooks/skills and the summary says hooks are not registered"
+  else
+    fail "ac2.15: kept tokens or the NOT-registered line missing"
+  fi
+  osz="$(wc -c < "$SNAP/claude.before" | tr -d ' ')"
+  if cmp -s <(head -c "$osz" "$TARGET/CLAUDE.md") "$SNAP/claude.before" \
+     && [ "$(grep -c '^@AGENTS.md$' "$TARGET/CLAUDE.md")" = "1" ] \
+     && [ "$(stat -f '%Lp' "$TARGET/CLAUDE.md" 2>/dev/null || stat -c '%a' "$TARGET/CLAUDE.md")" = "600" ]; then
+    pass "ac2.15: CLAUDE.md kept as prefix, one block appended, mode 600 preserved"
+  else
+    fail "ac2.15: CLAUDE.md prefix/block/mode wrong"
+  fi
+  cp -p "$TARGET/CLAUDE.md" "$SNAP/claude.after1"
+  claude_sig "$TARGET" .claude > "$SNAP/sig1"
+  rc="$(run_install_cc claude-code "$SANDBOX/force.log" --force)"
+  claude_sig "$TARGET" .claude > "$SNAP/sig2"
+  if [ "$rc" = "0" ] && cmp -s "$TARGET/CLAUDE.md" "$SNAP/claude.after1" && cmp -s "$SNAP/sig1" "$SNAP/sig2"; then
+    pass "ac2.15: --force re-run adds no second block and changes nothing under .claude/ (research.md kept)"
+  else
+    fail "ac2.15: --force re-run changed CLAUDE.md or .claude/ (rc=$rc)"
+  fi
+  assert_no_network
+}
+
+# AC2.16: a failure in the last stage (hooks) rolls everything back, including
+# the CLAUDE.md append (bytes and permission bits) and the created links.
+case_ac216() {
+  CURRENT_CASE="ac2.16"
+  new_sandbox
+  stage_pruned_source
+  mkdir -p "$TARGET/.claude/skills"
+  printf 'keep\n' > "$TARGET/.claude/keep.txt"
+  printf '# My rules\nline two\n' > "$TARGET/CLAUDE.md"; chmod 664 "$TARGET/CLAUDE.md"
+  chmod 555 "$TARGET/.claude"
+  snapshot_target "$SNAP/pre"
+  claude_sig "$TARGET" . > "$SNAP/pre.sig"
+  local rc
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" != "0" ]; then pass "ac2.16: install failed as expected (rc=$rc)"; else fail "ac2.16: install succeeded although .claude is read-only"; fi
+  if grep -qF 'CLAUDE-SKILLS-DONE' "$SANDBOX/install.log" && grep -qF 'CLAUDE-MD-APPENDED' "$SANDBOX/install.log" \
+     && grep -qF 'CLAUDE-HOOKS-FAILED' "$SANDBOX/install.log"; then
+    pass "ac2.16: failure came from the hooks stage, after links and the append"
+  else
+    fail "ac2.16: expected stage tokens missing (failure came from another stage)"
+  fi
+  claude_sig "$TARGET" . > "$SNAP/post.sig"
+  if cmp -s "$SNAP/pre.sig" "$SNAP/post.sig"; then pass "ac2.16: target tree identical to pre-install state"; else fail "ac2.16: rollback left a different tree"; fi
+  if [ "$(stat -f '%Lp' "$TARGET/CLAUDE.md" 2>/dev/null || stat -c '%a' "$TARGET/CLAUDE.md")" = "664" ]; then
+    pass "ac2.16: CLAUDE.md permission bits restored (664)"
+  else
+    fail "ac2.16: CLAUDE.md permission bits not restored"
+  fi
+  chmod 755 "$TARGET/.claude"
+}
+
+# AC2.17: symlinks at .claude/skills, .claude/settings.json and CLAUDE.md are
+# never written through, replaced or removed.
+case_ac217() {
+  CURRENT_CASE="ac2.17"
+  local rc
+  # (a) .claude/skills is a user symlink
+  new_sandbox; stage_pruned_source
+  mkdir -p "$SANDBOX/elsewhere" "$TARGET/.claude"; ln -s "$SANDBOX/elsewhere" "$TARGET/.claude/skills"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && [ -L "$TARGET/.claude/skills" ] && [ -z "$(ls -A "$SANDBOX/elsewhere")" ] && grep -qF 'CLAUDE-SKILLS-SKIPPED' "$SANDBOX/install.log"; then
+    pass "ac2.17: .claude/skills symlink skipped, nothing written through"
+  else
+    fail "ac2.17: .claude/skills symlink mishandled (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  # (b) .claude is a dangling symlink
+  new_sandbox; stage_pruned_source
+  mkdir -p "$SANDBOX/outside"; ln -s "$SANDBOX/outside/not-there" "$TARGET/.claude"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && [ -L "$TARGET/.claude" ] && [ -z "$(ls -A "$SANDBOX/outside")" ] \
+     && grep -qF 'CLAUDE-SKILLS-SKIPPED' "$SANDBOX/install.log" && grep -qF 'CLAUDE-HOOKS-SKIPPED' "$SANDBOX/install.log"; then
+    pass "ac2.17: dangling .claude symlink skipped for skills and hooks, nothing created behind it"
+  else
+    fail "ac2.17: dangling .claude symlink mishandled (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  # (c) .claude/settings.json is a dangling symlink
+  new_sandbox; stage_pruned_source
+  mkdir -p "$SANDBOX/outside" "$TARGET/.claude"; ln -s "$SANDBOX/outside/project-settings.json" "$TARGET/.claude/settings.json"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && [ -L "$TARGET/.claude/settings.json" ] && [ -z "$(ls -A "$SANDBOX/outside")" ] && grep -qF 'CLAUDE-HOOKS-SKIPPED' "$SANDBOX/install.log"; then
+    pass "ac2.17: dangling settings.json symlink not written through"
+  else
+    fail "ac2.17: dangling settings.json symlink mishandled (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  # (d) CLAUDE.md is a dangling symlink
+  new_sandbox; stage_pruned_source
+  mkdir -p "$SANDBOX/outside"; ln -s "$SANDBOX/outside/shared.md" "$TARGET/CLAUDE.md"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && [ -L "$TARGET/CLAUDE.md" ] && [ -z "$(ls -A "$SANDBOX/outside")" ] && grep -qF 'CLAUDE-MD-SKIPPED (symlink)' "$SANDBOX/install.log"; then
+    pass "ac2.17: dangling CLAUDE.md symlink skipped"
+  else
+    fail "ac2.17: dangling CLAUDE.md symlink mishandled (rc=$rc)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  # (e) AGENTS.md is a symlink: CLAUDE.md is left alone
+  new_sandbox; stage_pruned_source
+  mkdir -p "$SANDBOX/outside"; printf 'x\n' > "$SANDBOX/outside/agents.md"; ln -s "$SANDBOX/outside/agents.md" "$TARGET/AGENTS.md"
+  printf '# Mine\n' > "$TARGET/CLAUDE.md"; cp "$TARGET/CLAUDE.md" "$SNAP/claude.before"
+  rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
+  if [ "$rc" = "0" ] && cmp -s "$TARGET/CLAUDE.md" "$SNAP/claude.before" && grep -qF 'CLAUDE-MD-SKIPPED (no regular AGENTS.md)' "$SANDBOX/install.log"; then
+    pass "ac2.17: symlinked AGENTS.md -> CLAUDE.md untouched"
+  else
+    fail "ac2.17: symlinked AGENTS.md mishandled (rc=$rc)"
+  fi
+}
+
 # ════════════════════════ R1 (scope fence) ════════════════════════
 case_r1() {
   CURRENT_CASE="r1"
@@ -989,6 +1253,10 @@ run_case() {
     ac2.11) case_ac211 ;;
     ac2.12) case_ac212 ;;
     ac2.13) case_ac213 ;;
+    ac2.14) case_ac214 ;;
+    ac2.15) case_ac215 ;;
+    ac2.16) case_ac216 ;;
+    ac2.17) case_ac217 ;;
     r1) case_r1 ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
@@ -1004,6 +1272,7 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.5; run_case ac2.6; run_case ac2.7; run_case ac2.8
   run_case ac2.9; run_case ac2.10; run_case ac2.11; run_case ac2.12
   run_case ac2.13
+  run_case ac2.14; run_case ac2.15; run_case ac2.16; run_case ac2.17
   run_case r1
 else
   run_case "$CASE"

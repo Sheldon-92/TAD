@@ -60,6 +60,7 @@
 | R-CU-2 | Cursor CLI 无头面不触发项目 hooks.json（分支 B） | **未成立**——OC-2 实测 CLI 触发项目 hooks（分支 A），本项仅在未来版本行为变化时重估 | 件 3.2 探活结论 |
 | R-CC-1 | Claude Code 无头面工具名册不含 AskUserQuestion，提问捕获无落点（交互面未测） | 已成立（D4 实测名册，2026-10-08） | Epic EPIC-20261008 Phase 1 |
 | R-CC-2 | InstructionsLoaded 事件不报告内建模块加载的 AGENTS.md，仅 debug 日志可见 | 已成立（A1 实测） | Epic EPIC-20261008 Phase 1 |
-| R-CC-3 | post-write-sync.sh 仅对 TAD 受管路径有副作用；非受管路径输出空 JSON | 已成立（D2 实测，partial） | Epic EPIC-20261008 Phase 1 |
+| R-CC-3 | post-write-sync.sh 对 TAD 受管路径有副作用；非受管路径输出空 JSON（只测了 Write 工具与两条路径，Edit 与其余受管路径未测） | 已成立（D2 实测，partial） | Epic EPIC-20261008 Phase 1 |
 | R-CC-4 | 登录态失效信号、超时形态、沙箱形态未测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 1 |
 | R-CC-5 | 交互面、同步副本跨机符号链接存活、上级目录链指令文件影响未测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 1 |
+| R-CC-6 | 会话在项目的子目录启动时，上级目录的 `.claude/settings.json` 根本不被加载（项目 hook 一个都不触发），hook 命令的相对路径写法因此在子目录下无从谈起；会话在项目根启动时，项目 hook 以项目根为工作目录，相对写法与 `$CLAUDE_PROJECT_DIR` 锚定写法都能解析 | 已成立（Alex 2026-10-08 实测，`claude` 2.1.295 无头面，各 1 次；Phase 2 冒烟子目录一次复核） | Epic EPIC-20261008 Phase 2 |

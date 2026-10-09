@@ -1,14 +1,9 @@
 # Runtime Compatibility Ledger: Claude Code
 
-> **RETIRED in TAD v3.0.0** — the Claude Code runtime path was removed
-> (installer target, hooks, workflows, model bindings). This ledger is retained
-> as a historical record only and is NOT gated by `runtime-freshness-verify.sh`.
-> Status: RETIRED. Do not update entries.
-
 **Platform:** claude_code
-**Ledger Version:** 1
-**Last Updated:** 2026-06-09
-**Source:** Local runtime observation + TAD project knowledge
+**Ledger Version:** 2
+**Last Updated:** 2026-10-08
+**Source:** 2026-10-08 Phase 1 instance probes (.tad/evidence/spikes/2026-10-claude-code-instance/, results.tsv) + Phase 2 installer-projection evidence (.tad/evidence/yolo/multi-harness-restore-and-cleanup/phase2-completion.md, .tad/evidence/spikes/2026-10-claude-code-install-smoke/) + instance declaration (.tad/project-knowledge/patterns/runtime-adapter-instance-claude-code.md)
 
 ## Drift Response Policy
 
@@ -18,18 +13,20 @@ When a Claude Code capability changes:
 2. **Evaluated** — Classify: protocol impact (Epic), adapter impact (handoff), docs-only (quick fix), accepted limitation (record)
 3. **Adopted/Deferred** — Update this ledger. If adopted: handoff. If deferred: record reason, set next_review.
 
-Claude Code is lower-volatility than Codex but NOT freshness-exempt. Compact behavior, Skill tool, Agent tool, and hook contracts all change and need tracking.
+**Fail-closed rule**: Unknown behavior affecting safety/quality/evidence gates → BLOCK adoption until verified.
+
+**Recheck triggers**: Before TAD release, after Claude Code CLI version bump, after official doc or hook API changes, monthly cadence; after any change to this runtime's projection artifacts (the `claude-code` branch of tad.sh, .tad/templates/claude/settings.json, the `@AGENTS.md` block in CLAUDE.md, or the shared .tad/hooks/*.sh behavior source) — a same-round recheck of this ledger is mandatory
 
 ## Ledger Entries
 
 | surface | owner | current_behavior | source | runtime_version | last_verified | volatility | next_review | regression_required | fallback_behavior | status |
 |---------|-------|------------------|--------|-----------------|---------------|------------|-------------|---------------------|-------------------|--------|
-| skill_loading | claude_code_adapter | .claude/skills/ via Skill tool; full SKILL.md loaded on invocation; no context budget cap | Local runtime observation | Claude Opus 4.6 | 2026-06-09 | low | 2026-12-09 | no | Manual Read of SKILL.md file | verified |
-| hooks_settings | claude_code_adapter | .claude/settings.json hooks; PreToolUse/PostToolUse/SessionStart/UserPromptSubmit | Local settings.json | Claude Opus 4.6 | 2026-06-09 | low | 2026-12-09 | no | Manual script execution | verified |
-| workflows | claude_code_adapter | .claude/workflows/*.workflow.js; agent/parallel/pipeline/phase/log/budget APIs; background execution | Local runtime observation | Claude Opus 4.6 | 2026-06-09 | medium | 2026-09-09 | no | Sequential Agent tool calls | verified |
-| agent_tool_subagents | claude_code_adapter | Agent tool with 16+ subagent_type options; isolation: worktree; foreground/background; model override | Local runtime observation | Claude Opus 4.6 | 2026-06-09 | medium | 2026-09-09 | no | Direct tool calls without subagent delegation | verified |
-| mcp | claude_code_adapter | .claude/settings.json MCP config; project-scoped; built-in + user-configured; ToolSearch for deferred tools | Local settings.json | Claude Opus 4.6 | 2026-06-09 | low | 2026-12-09 | no | Direct API/tool calls | verified |
-| permissions | claude_code_adapter | .claude/settings.json allow/deny lists; user approval prompts; permission modes | Local settings.json | Claude Opus 4.6 | 2026-06-09 | low | 2026-12-09 | no | User approves each tool call | verified |
-| context_compaction | claude_code_adapter | Auto-compact with summary; session-state.md for TAD recovery; post-compact recovery protocol in CLAUDE.md | Local runtime observation | Claude Opus 4.6 | 2026-06-09 | medium | 2026-09-09 | yes | Re-read session-state.md + re-invoke /blake or /alex | verified |
-| trace_evidence_capture | claude_code_adapter | Hook-driven: post-write-sync.sh emits trace events on file writes; .tad/evidence/traces/*.jsonl | Local hooks + trace files | Claude Opus 4.6 | 2026-06-09 | low | 2026-12-09 | no | Manual evidence file creation | verified |
-| release_sync_source | claude_code_adapter | Alex runs *publish/*sync; tad.sh installer; deny-list derivation; release-verify.sh; structural diff | Local tad.sh + release-verify.sh | Claude Opus 4.6 | 2026-06-09 | low | 2026-12-09 | no | Manual file copy + diff verification | verified |
+| entry_headless | claude_code_adapter | Headless surface is `claude -p "<prompt>"`; exits 0 in a fresh directory with no trust prompt on an already-logged-in machine; stream-json output with hook events is usable | runtime-adapter-instance-claude-code.md dim 1 (E1) | claude 2.1.295 | 2026-10-08 | high | 2026-11-05 | no | Interactive session | verified |
+| skill_loading | claude_code_adapter | Claude Code does not read `.agents/skills/`; it reads `.claude/skills/`. The installer projects one relative symlink per skill (`.claude/skills/<name> -> ../../.agents/skills/<name>`), with a generated pointer SKILL.md as fallback. Headless only; interactive surface and symlink survival across machine-sync copies unmeasured (R-CC-5) | runtime-adapter-instance-claude-code.md dim 3 (B1, B2, B4) + phase2-completion.md | claude 2.1.295 | 2026-10-08 | high | 2026-11-05 | yes | Pointer file, then direct file read | verified_partial |
+| agents_guidance_AGENTS_md | claude_code_adapter | `AGENTS.md` loads natively only while the directory chain has no `CLAUDE.md`; a `CLAUDE.md` without a reference suppresses it, so the installer appends a managed `@AGENTS.md` block to an already-existing `CLAUDE.md`. Headless only; interactive load unmeasured (R-CC-5) | runtime-adapter-instance-claude-code.md dim 3 (A1 to A4) + phase2-completion.md | claude 2.1.295 | 2026-10-08 | medium | 2026-12-05 | no | Direct file read | verified_partial |
+| hooks | claude_code_adapter | Project `.claude/settings.json` registers SessionStart, PostToolUse (matchers for Write or Edit, and for AskUserQuestion) and PreCompact command hooks pointing at the shared `.tad/hooks` scripts; no blocking hook and no failClosed. Installed only when the target has no settings.json; merging into an existing file is a later phase. Projects hooks run with the project root as working directory; a session started in a subdirectory loads no project hooks (R-CC-6) | runtime-adapter-instance-claude-code.md dim 3 (D0 to D3) + phase2-completion.md | claude 2.1.295 | 2026-10-08 | high | 2026-11-05 | yes | Manual gate pre-checks | verified_partial |
+| ask_user_question_hook | claude_code_adapter | R-CC-1: the headless tool roster has no `AskUserQuestion`, so ask-user capture has no landing point there; the matcher is registered for the interactive surface, which is unmeasured | runtime-adapter-instance-claude-code.md dim 6 (D4) | claude 2.1.295 | 2026-10-08 | high | 2026-11-05 | yes | Numbered-options plain-text fallback | accepted_limitation |
+| sandbox_approval_permissions | claude_code_adapter | Headless default permissionMode is `default`; `--permission-mode acceptEdits` with `--tools "Write"` writes without confirmation; the declaration surface is `permissions` in settings(.local).json. Sandbox form and out-of-bounds behavior unmeasured (R-CC-4) | runtime-adapter-instance-claude-code.md dim 4 (D2, A5) | claude 2.1.295 | 2026-10-08 | medium | 2026-12-05 | no | Runtime default permissions | verified_partial |
+| context_compaction | claude_code_adapter | PreCompact is registered and the shared precompact-session-snapshot script was run directly (exit 0, snapshot written); the stream carries no hook_response for PreCompact, so exit status is visible only in the debug log | runtime-adapter-instance-claude-code.md dim 5 (D3) | claude 2.1.295 | 2026-10-08 | high | 2026-11-05 | yes | session-state.md file-based recovery | verified_partial |
+| trace_evidence_capture | claude_code_adapter | Shared scripts write traces and snapshots to relative paths under the project root (.tad/evidence/traces/, .tad/active/precompact/); post-write-sync only has side effects on TAD-managed paths (R-CC-3, measured with Write on two paths only) | runtime-adapter-instance-claude-code.md dim 6 (D2, D3) | claude 2.1.295 | 2026-10-08 | medium | 2026-12-05 | no | Manual evidence collection | verified_partial |
+| release_sync_install | claude_code_adapter | `tad.sh --platform claude-code` projects skill links, an optional CLAUDE.md block and a hooks template with self-check, rollback and a closing summary; an already-installed same-version project needs `--force` to gain the projection; the updater does not yet auto-detect this platform | phase2-completion.md + .tad/hooks/lib/release-verify.sh checks | claude 2.1.295 | 2026-10-08 | low | 2027-04-06 | no | Manual copy | verified_partial |
