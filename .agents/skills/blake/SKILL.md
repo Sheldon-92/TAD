@@ -1878,7 +1878,7 @@ completion_protocol:
                  from the SCAND's Proposed Skill Outline
                  (project-local; NOT TAD-master unless working in TAD repo)
                - type orchestration → harness-native orchestration skeleton
-                 (the `.claude/workflows/*.workflow.js` runtime was removed in v3.0.0)
+                 (workflow scripts live in `.tad/workflows/claude/`, Claude Code only)
               - Update SCAND frontmatter: status: accepted, tier: T1, materialized_at: {path}
               - Completion report MUST add row: "Skill materialized: {path}" with
                 verification `test -f {path}` — acceptance = action with artifact AC

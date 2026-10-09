@@ -20,6 +20,12 @@ unused weekly Claude usage on the highest-value work.
 It does **not** pick anything up and run it. Choosing what to execute (and actually
 executing it) is **Phase 2** — see below.
 
+## Workflow availability
+
+仅当你自己的可用工具里有 Workflow 工具时才走 workflow（若它是延迟加载的，先用 ToolSearch 取 `select:Workflow`）；没有——Codex、Cursor、OpenCode、以及任何子代理都属于这种情况——就走下面的 WORKFLOW-FALLBACK。不要用 `detect-platform.sh` 的输出来判断：它在 Claude Code 的子代理里同样返回 `claude-code`。
+会话工作目录不是项目根时，用绝对路径 `$(git rev-parse --show-toplevel)/.tad/workflows/claude/<名>.workflow.js`。
+WORKFLOW-FALLBACK: 没有 Workflow 工具 → 明说「*surplus 在本 harness 不可用」并停止；不做静默降级。
+
 ## Commands
 
 ### `*surplus --plan`  (and bare `*surplus`)
@@ -30,7 +36,7 @@ executing it) is **Phase 2** — see below.
 2. **Invoke the scan workflow:**
    ```
    Workflow({
-     name: 'surplus-scan',
+     scriptPath: '.tad/workflows/claude/surplus-scan.workflow.js',
      args: {
        date: '<stamp>',
        output_path: '.tad/active/SURPLUS-PLAN-<stamp>.md'
@@ -60,7 +66,7 @@ executing it) is **Phase 2** — see below.
 4. **Invoke the execution workflow:**
    ```
    Workflow({
-     scriptPath: '.claude/workflows/surplus-execute.workflow.js',
+     scriptPath: '.tad/workflows/claude/surplus-execute.workflow.js',
      args: {
        sidecar_rows: <parsed JSON .rows array>,
        date: '<stamp>'

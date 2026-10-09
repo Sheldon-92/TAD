@@ -133,7 +133,12 @@ design_protocol:
       trigger: "After pack loading (step1_5b), for Full or Standard TAD depth"
       action: |
         If user chose Full TAD or Standard TAD depth:
-        Use AskUserQuestion to offer tournament exploration:
+        FIRST decide whether a tournament is possible at all, BEFORE asking the user anything:
+          仅当你自己的可用工具里有 Workflow 工具时才走 workflow（若它是延迟加载的，先用 ToolSearch 取 `select:Workflow`）；没有——Codex、Cursor、OpenCode、以及任何子代理都属于这种情况——就走下面的 WORKFLOW-FALLBACK。不要用 `detect-platform.sh` 的输出来判断：它在 Claude Code 的子代理里同样返回 `claude-code`。
+          会话工作目录不是项目根时，用绝对路径 `$(git rev-parse --show-toplevel)/.tad/workflows/claude/tournament-design.workflow.js`。
+          WORKFLOW-FALLBACK: 没有 Workflow 工具 → 不做锦标赛，按单代理 *design 继续（step2 起）。
+        If there is no Workflow tool: do NOT offer the tournament option; continue with normal *design (step2 onwards).
+        If there is a Workflow tool, use AskUserQuestion to offer tournament exploration:
           "This design has multiple valid approaches. Want to explore them via tournament?"
           Options:
             - "Tournament — 2 competing designs + judge + merge (~200-220K tokens) (Recommended for ambiguous decisions)"
@@ -145,15 +150,8 @@ design_protocol:
              prior_art is REQUIRED — each competitor gets one source to base their design on.
              This forces divergent starting points (mitigates single-model convergence).
           2. Optionally collect custom rubric dimensions (or use defaults: feasibility, elegance, extensibility, principle_alignment)
-          3. Detect platform and route:
-             platform=$(bash .tad/hooks/lib/detect-platform.sh)
-             If "workflow" → Invoke: Workflow({name: 'tournament-design', args: {task: <design_task>, prior_art: <sources>, mode: 'standard'|'deep'}})
-                             (Workflow is invocable only from a Claude harness; sub-agents and Codex use the explicit Codex/none path.)
-             If "codex"    → Write task + prior_art to temp files, invoke: bash .tad/codex/tournament-codex.sh --task <file> --prior-art <f1> <f2> --output <result.json>
-                             (Codex: standard mode only, deep not supported. Warn user if they chose deep.)
-             If "none"     → Announce: "No multi-agent backend available. Running single-agent design (no tournament)."
-                             Continue with normal *design flow (step2 onwards) using single-agent.
-          4. Use the merged_design from the result as input for the rest of *design
+          3. Invoke: Workflow({ scriptPath: '.tad/workflows/claude/tournament-design.workflow.js', args: {task: <design_task>, prior_art: <sources>, mode: 'standard'|'deep'} })
+          4. Only when a tournament was run: use the merged_design from the result as input for the rest of *design
              Present merged_design to the human for acceptance: when it is a textual
              artifact, use a preview-enabled single-select AskUserQuestion
              (options: "Accept merged design" / "Adjust before continuing", each

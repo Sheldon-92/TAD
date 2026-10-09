@@ -5,7 +5,7 @@ status: draft  # draft | accepted | rejected
 # CONSTRAINT: discoverer MUST NOT set status beyond draft. accepted is set ONLY during the in-session human confirmation (T1 ceremony, Phase 2) — see triple_question_draft_rule.
 type: judgment  # judgment | orchestration — Step 5 routing result
 # judgment → generates .agents/skills/{slug}/SKILL.md
-# orchestration → harness-native orchestration skeleton (the .claude/workflows runtime was removed in v3.0.0)
+# orchestration → harness-native orchestration skeleton (workflow scripts live in `.tad/workflows/claude/`, Claude Code only)
 tier: ~  # T1 | T2 | T3 — set ONLY during the T1 ceremony or harvest routing, NEVER by the discoverer
 materialized_at: ~  # T1 only: project-local skill path (set during ceremony)
 reference_at: ~  # T2 only: .tad/skill-library/ path (set during harvest routing)

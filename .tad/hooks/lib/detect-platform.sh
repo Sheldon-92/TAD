@@ -1,8 +1,10 @@
 #!/bin/bash
 # detect-platform.sh — Runtime detection of available orchestration backend
 # Returns: "claude-code" | "codex" | "none"
-# v3.0.0: the Claude workflow backend (.claude/workflows) was removed;
-# only the Codex CLI signal remained.
+# v3.0.0: the old Claude workflow backend was removed; only the Codex CLI signal remained.
+# Workflow scripts now live in .tad/workflows/claude/ and are called through scriptPath.
+# This script's output must NOT be used to decide whether the Workflow tool is available.
+# As of Epic multi-harness-restore Phase 3 it has no callers.
 # Epic multi-harness-restore (Phase 2): "claude-code" is detected again from the
 # CLAUDECODE environment variable. Basis (2026-10-08, measured): the variable is
 # present in the environment of Claude Code's Bash-tool processes (Phase 1

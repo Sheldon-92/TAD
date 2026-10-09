@@ -78,7 +78,7 @@ workflow_completion_trigger:
       "See also SCAND-{date}-{slug}-{other-type}.md from same workflow run."
   threshold_rationale: |
     agent_count >= 3 filters out trivial 2-agent workflows (e.g., simple parallel search).
-    All 5 current production workflows use >= 3 agents — threshold validated against existing corpus.
+    The threshold was validated against the original 5 workflows; ten now live in .tad/workflows/claude/ and not all of them are known to use >= 3 agents.
   agent_count_source: |
     agent_count comes from the Workflow tool's TASK-NOTIFICATION envelope
     (<usage><agent_count>N</agent_count></usage>), NOT from the workflow
