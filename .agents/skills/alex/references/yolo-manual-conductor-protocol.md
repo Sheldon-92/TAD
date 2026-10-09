@@ -1,6 +1,6 @@
 # Source: .tad/archive/protocols/yolo-execution-v1-prose.md (not distributed with the framework)
 # Copied: 2026-10-09 (EPIC-20261008 multi-harness restore, Phase 3)
-# 内容为 v1 文字版协议原文，其中的路径与命令名未在本单核对
+# 内容为 v1 文字版协议原文；已订正 5 处（技能路径与域包兜底、audit-yolo.sh 路径、completion_path、审查者类型名注记），其余路径与命令名未核对
 # ═══════════════════════════════════════════════════════════
 # YOLO Execution Protocol
 # Alex 自动驱动 Epic 全部 Phase 执行，所有过程文件持久化
@@ -36,7 +36,7 @@ yolo_execution_protocol:
       action: |
         0. Define template variables for this Phase:
            handoff_path: .tad/active/handoffs/HANDOFF-{YYYY-MM-DD}-{epic-slug}-phase{N}.md
-           completion_path: .tad/active/handoffs/COMPLETION-{YYYY-MM-DD}-{epic-slug}-phase{N}.md
+           completion_path: .tad/evidence/yolo/{epic-slug}/phase{N}-completion.md
            epic_path: .tad/active/epics/EPIC-{date}-{epic-slug}.md
         1. Bash("mkdir -p .tad/evidence/yolo/{epic-slug}")
         2. Read Epic Phase Detail Block for this Phase
@@ -95,7 +95,7 @@ yolo_execution_protocol:
         Conductor reads the handoff produced by Y3 and runs validation checks
         that sub-agents cannot run (they lack the right tool access or context):
         1. Frontmatter validation: verify task_type, e2e_required, research_required are filled
-        2. Pack injection: check .claude/skills/*/SKILL.md (preferred) or .tad/domains/*.yaml (fallback)
+        2. Pack injection: check .agents/skills/*/SKILL.md
            for matching packs, inject quality criteria into handoff ACs (same as step1a in manual mode)
         3. Grounding verification: for each file in handoff Files to Modify section,
            Read head 50 lines and verify file exists + path is correct.
@@ -111,6 +111,7 @@ yolo_execution_protocol:
     step_Y4:
       name: "Design Review (Conductor spawns ≥2 distinct reviewers)"
       action: |
+        Note: reviewer type names and subagent_type/isolation parameters in this file are Claude Code examples; map them to your harness's own spawn facility.
         ⚠️ Must spawn ≥2 distinct reviewer types (matching production TAD hard_requirement_distinct_reviewers).
         1. Read HANDOFF.md from disk
         2. Spawn code-reviewer sub-agent (MANDATORY):
@@ -255,7 +256,7 @@ yolo_execution_protocol:
     action: |
       1. Write final report: .tad/evidence/yolo/{epic-slug}/EPIC-COMPLETION.md
          Include: per-Phase summary, total files changed, total commits, all review references
-      2. Run audit-yolo.sh {epic-slug} (Phase 3 of this Epic — skip if script not yet available)
+      2. Run .tad/hooks/lib/audit-yolo.sh {epic-slug} (Phase 3 of this Epic — skip if script not yet available)
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
       4. Archive Epic: .tad/active/epics/ → .tad/archive/epics/
          (two-phase safety: copy first, verify, then delete source)

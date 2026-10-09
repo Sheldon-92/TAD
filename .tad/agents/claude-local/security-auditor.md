@@ -4,7 +4,7 @@ description: Use this agent when you need to analyze code, configurations, or sy
 skills:
   - code-security
 ---
-<!-- shadowed-from: ~/.claude/agents/security-auditor.md md5=99b98017ac28c4e68ef7afb8cc1a51ca date=2026-07-13 (frozen project copy; source may drift, this copy is authoritative for TAD Gate 3) -->
+<!-- shadowed-from: ~/.claude/agents/security-auditor.md md5=99b98017ac28c4e68ef7afb8cc1a51ca date=2026-07-13 (frozen project copy; source may drift, this copy is authoritative for TAD Gate 3 when projected; not projected in v3.3.0 Phase 3) -->
 <!-- claude-local: this definition is synced with the framework files but is NOT projected into any project's .claude/agents/ (a project-level definition would replace a user-level agent of the same name). It is kept for the TAD repository's own use. -->
 
 You are an expert security auditor specializing in application security, infrastructure security, and secure coding practices. You have deep knowledge of OWASP Top 10, CWE classifications, and industry-standard security frameworks.

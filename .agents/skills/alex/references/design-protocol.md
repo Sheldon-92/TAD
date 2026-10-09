@@ -134,9 +134,9 @@ design_protocol:
       action: |
         If user chose Full TAD or Standard TAD depth:
         FIRST decide whether a tournament is possible at all, BEFORE asking the user anything:
-          仅当你自己的可用工具里有 Workflow 工具时才走 workflow（若它是延迟加载的，先用 ToolSearch 取 `select:Workflow`）；没有——Codex、Cursor、OpenCode、以及任何子代理都属于这种情况——就走下面的 WORKFLOW-FALLBACK。不要用 `detect-platform.sh` 的输出来判断：它在 Claude Code 的子代理里同样返回 `claude-code`。
-          会话工作目录不是项目根时，用绝对路径 `$(git rev-parse --show-toplevel)/.tad/workflows/claude/tournament-design.workflow.js`。
-          WORKFLOW-FALLBACK: 没有 Workflow 工具 → 不做锦标赛，按单代理 *design 继续（step2 起）。
+          仅当你自己的可用工具里有 Workflow 工具时才走 workflow（在 Claude Code 里，工具列表中看不到 Workflow 时，先用 ToolSearch 查 `select:Workflow`，查不到再判定没有）；没有——Codex、Cursor、OpenCode、以及任何子代理都属于这种情况——就走下面的 WORKFLOW-FALLBACK。不要用 `detect-platform.sh` 的输出来判断：它在 Claude Code 的子代理里同样返回 `claude-code`。
+          会话工作目录不是项目根时，不要启动本 workflow：先切换到 `git rev-parse --show-toplevel` 的输出（或请用户在项目根重开会话），再按相对路径调用——workflow 脚本内部的证据、模板与 args 路径都以项目根为基准。
+          WORKFLOW-FALLBACK: 没有 Workflow 工具 → 不做锦标赛，按单代理 *design 继续（step2 起）。如果用户显式调用了 `*tournament`，告知锦标赛在本 harness 不可用，改为单代理设计。
         If there is no Workflow tool: do NOT offer the tournament option; continue with normal *design (step2 onwards).
         If there is a Workflow tool, use AskUserQuestion to offer tournament exploration:
           "This design has multiple valid approaches. Want to explore them via tournament?"

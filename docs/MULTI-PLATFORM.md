@@ -186,7 +186,7 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 | Blake activation | `$blake` (AGENTS.md → `.agents/skills/blake/SKILL.md`) | Loads full SKILL.md |
 | Layer 2 review | Subagent spawning or sequential sessions | Codex custom agents not yet activated |
 | Gate pre-checks | `pre-accept-check.sh` / `pre-gate-check.sh` run manually | Codex hooks require trust review |
-| Workflows | Claude Code: `.tad/workflows/claude/` called via `scriptPath` from the main session only. Other harnesses (including Codex): none; use prompt-driven subagent orchestration (sequential path) | Workflow scripts are Claude Code only; see `.tad/workflows/README-claude.md` |
+| Workflows | Claude Code: `.tad/workflows/claude/` called via `scriptPath` from the main session only (sub-agents cannot call the Workflow tool: from earlier project observation, not re-measured in Phase 3). Other harnesses (including Codex): none; use prompt-driven subagent orchestration (sequential path) | Workflow scripts are Claude Code only; see `.tad/workflows/README-claude.md` |
 | Release/sync | `*publish` / `*sync` run from the repo with the Codex harness | Install targets `codex\|opencode\|cursor` (default `codex`) |
 | Evidence capture | Hook-driven (same scripts via `.codex/hooks.json`) | `ask_user_question`: accepted limitation — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
 

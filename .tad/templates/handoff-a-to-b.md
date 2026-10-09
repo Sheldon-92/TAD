@@ -489,6 +489,7 @@ path/to/existing.ts  # Changes
 | *Example: dependency install required* | *Install package/tool* | *Request install via user/sandbox approval* | *DEGRADED_WITH_APPROVAL with approval source, date/context, accepted risk, rationale* | *Unresolved BLOCKED prevents Gate 3 PASS* |
 | *Example: auth/approval required* | *Obtain auth token or approval* | *Request auth renewal or approval from user/admin* | *DEGRADED_WITH_APPROVAL if user accepts risk* | *Unresolved BLOCKED prevents Gate 3 PASS* |
 | *Example: platform sandbox/network restriction* | *Network access for external API* | *Request sandbox approval (Codex) or permission (Claude Code)* | *Offline fallback if equivalent and documented* | *Unresolved BLOCKED prevents Gate 3 PASS* |
+| *Example: `spec-compliance-reviewer` agent type not registered in the harness* | *Spec compliance review (Layer 2 Group 0)* | *Spawn a general sub-agent and give it the body of `.tad/agents/claude/spec-compliance-reviewer.md` as its task text* | *EQUIVALENT_SUBSTITUTE with the definition path as evidence* | *Missing Group 0 review prevents Gate 3 PASS* |
 
 **Status Enum** (use exactly these values in Friction Status table at completion):
 `READY` / `BLOCKED` / `DEGRADED_WITH_APPROVAL` / `EQUIVALENT_SUBSTITUTE` / `NOT_APPLICABLE_WITH_REASON`

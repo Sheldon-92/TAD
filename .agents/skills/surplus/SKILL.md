@@ -22,8 +22,8 @@ executing it) is **Phase 2** — see below.
 
 ## Workflow availability
 
-仅当你自己的可用工具里有 Workflow 工具时才走 workflow（若它是延迟加载的，先用 ToolSearch 取 `select:Workflow`）；没有——Codex、Cursor、OpenCode、以及任何子代理都属于这种情况——就走下面的 WORKFLOW-FALLBACK。不要用 `detect-platform.sh` 的输出来判断：它在 Claude Code 的子代理里同样返回 `claude-code`。
-会话工作目录不是项目根时，用绝对路径 `$(git rev-parse --show-toplevel)/.tad/workflows/claude/<名>.workflow.js`。
+仅当你自己的可用工具里有 Workflow 工具时才走 workflow（在 Claude Code 里，工具列表中看不到 Workflow 时，先用 ToolSearch 查 `select:Workflow`，查不到再判定没有）；没有——Codex、Cursor、OpenCode、以及任何子代理都属于这种情况——就走下面的 WORKFLOW-FALLBACK。不要用 `detect-platform.sh` 的输出来判断：它在 Claude Code 的子代理里同样返回 `claude-code`。
+会话工作目录不是项目根时，不要启动本 workflow：先切换到 `git rev-parse --show-toplevel` 的输出（或请用户在项目根重开会话），再按相对路径调用——workflow 脚本内部的证据、模板与 args 路径都以项目根为基准。
 WORKFLOW-FALLBACK: 没有 Workflow 工具 → 明说「*surplus 在本 harness 不可用」并停止；不做静默降级。
 
 ## Commands
@@ -103,4 +103,4 @@ Key safety properties:
 - **Sidecar validation**: fail-closed (throw on malformed rows, not silent skip)
 - **Circuit breaker**: 3 consecutive failures → stop loop
 - **Budget guard**: stops when `budget.remaining() < 250K` reserve
-- **yolo-epic contract**: 7 explicit keys, result.error/stop_reason for failures (no try/catch)
+- **yolo-epic contract**: 7 required keys (epic_path, epic_slug, phase_number, phase_name, handoff_path, completion_path, steps), result.error/stop_reason for failures (no try/catch); see yolo-execution-protocol.md, result.error/stop_reason for failures (no try/catch)
