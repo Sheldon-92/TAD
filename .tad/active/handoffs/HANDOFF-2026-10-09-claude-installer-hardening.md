@@ -306,7 +306,7 @@ completion 里单列「本单哪条规定在实现时发现不成立或有歧义
 
 验收依据是下面的脚本。提取方式与 Phase 4a 相同（私有临时路径）。在仓根运行 `P4_BASE=<Phase 4a 的提交> bash <脚本> ALL`，末行 `== TOTAL FAILS: 0` 才算通过。脚本默认用 `/bin/bash` 跑安装器（`P4_BASH` 可改）。脚本若有错，报告给 Alex，不要改实现迁就它。
 
-基线（2026-10-09，Phase 4a 实现后的工作树，第 2 版脚本）：见 §9.2。
+基线（2026-10-09，Conductor 在 Phase 4a 提交 `89074250` 上用 `/bin/bash` 试跑第 3 版脚本）：70 项 FAIL、146 项 ok。失败项都是尚未实现的行为；已通过项是回归守卫与反向用例。B4(a)「pristine legacy command file left byte-identical under sticky」在基线上为 FAIL（非粘性的 codex 运行会删掉它），说明该行有判别力。
 
 ### §9.1-RAW — 可运行正本
 
