@@ -129,7 +129,6 @@ expert_criteria:
         - "summary"
         - "issues_by_severity"
         - "pass_status"
-      evidence_template: ".tad/templates/output-formats/code-review-format.md"
 
   # ==================== test-runner ====================
   test-runner:

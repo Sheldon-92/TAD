@@ -20,7 +20,7 @@ The detector is deliberately split so it keeps **determinism** (grep) AND
 registry would itself be validation theater (see §6).
 
 ```
-pack files (.claude/skills/) + pack-registry.yaml
+pack files (.agents/skills/) + pack-registry.yaml
         │
         ▼  STAGE 1 — deterministic, scan-collisions.sh (grep-seed)
   For each pack PAIR sharing ≥1 keyword (pre-filter),
@@ -56,9 +56,9 @@ no-fail-closed-hook rule does **not** apply because it is **not a hook**.
 
 ## 2. Canonical-Tree Invariant (P0-2)
 
-Every collision `ref` (file:line) is recorded against **`.claude/skills/`** — the
+Every collision `ref` (file:line) is recorded against **`.agents/skills/`** — the
 **runtime-loaded tree** that the P2 surfacing consumers actually load. `scan-collisions.sh`
-scans `.claude/skills/` too, so **scanner output, schema refs in `pack-collisions.yaml`,
+scans `.agents/skills/` too, so **scanner output, schema refs in `pack-collisions.yaml`,
 and acceptance hand-re-derivation all anchor to the SAME physical files**.
 
 `.tad/capability-packs/` is a **`*sync`-maintained source copy** — it is NOT the ref
@@ -136,9 +136,9 @@ Suppose STAGE 1 emitted this candidate (illustrative):
 - pack_a: web-ui-design
   pack_b: web-frontend
   topic: inter-font
-  a_ref: ".claude/skills/web-ui-design/examples/anti-slop-landing-design.md:47"
+  a_ref: ".agents/skills/web-ui-design/examples/anti-slop-landing-design.md:47"
   a_quote: "✅ \"APCA LC ≥60 / 25-40% automation boundary\" — the pack's specific numbers"
-  b_ref: ".claude/skills/web-frontend/references/performance.md:215"
+  b_ref: ".agents/skills/web-frontend/references/performance.md:215"
   b_quote: "import { Inter } from 'next/font/google'"
 ```
 
@@ -178,7 +178,7 @@ positives (architecture.md "Ad-hoc Dead Code Audit Tools Are Themselves Validati
 Theater", 2026-05-30).
 
 Acceptance **MUST hand-re-derive every flagged collision's two `file:line`** against the
-live `.claude/skills/` pack files: open each ref, confirm the quoted contradiction text
+live `.agents/skills/` pack files: open each ref, confirm the quoted contradiction text
 is really there at that line. A count is **never** sufficient signal. Also check
 `git status` for in-flight work before interpreting a scan (a scan run during active
 implementation will flag in-progress files).

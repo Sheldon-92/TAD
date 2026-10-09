@@ -241,8 +241,8 @@ handoff_creation_protocol:
            **Loaded Packs:**
            | Pack | File | Matched Capabilities |
            |------|------|---------------------|
-           | {pack1} | .claude/skills/{pack1}/SKILL.md | {cap1, cap2} |
-           | {pack2} | .claude/skills/{pack2}/SKILL.md | {cap3, cap4} |
+           | {pack1} | .agents/skills/{pack1}/SKILL.md | {cap1, cap2} |
+           | {pack2} | .agents/skills/{pack2}/SKILL.md | {cap3, cap4} |
 
            **⚠️ Blake 必须在开始实现前 Read 上述 pack 文件。**
 

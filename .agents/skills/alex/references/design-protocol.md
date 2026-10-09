@@ -46,7 +46,7 @@ design_protocol:
              → Mark available; do NOT open the file yet
 
            Tier 2 — pack installed as skill (downstream project or manual install):
-             Check: .claude/skills/{pack_name}/SKILL.md exists
+             Check: .agents/skills/{pack_name}/SKILL.md exists
              → Mark available; do NOT open the file yet
 
            Tier 3 — pack matched but not installed:

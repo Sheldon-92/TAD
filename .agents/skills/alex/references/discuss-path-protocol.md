@@ -34,7 +34,7 @@ discuss_path_protocol:
            等于 `frozen` 的 pack 直接跳过（不参与匹配、不进指针列表）；
            行缺 `status` 或取其他值视为 active（missing status = active）。
         2. 如果有 active pack 匹配（最多 2 个）：
-           a. 只做文件存在检查（.claude/skills/{pack-name}/SKILL.md 是否在盘上），不打开正文
+           a. 只做文件存在检查（.agents/skills/{pack-name}/SKILL.md 是否在盘上），不打开正文
            b. 输出指针：`Pack pointer: {pack-name} — {one-line when}. Path: {SKILL.md path}. Do not load unless escalated.`
            c. 用指针继续讨论；pack 的质量标准只在 escalate 之后才引用
         3. Escalate 到整份 SKILL 正文仅当：human-named（人点名该 pack / 说加载）

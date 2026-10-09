@@ -5,28 +5,6 @@
 
 > Research fallback chain: local_wiki → websearch (SSOT: .tad/config-workflow.yaml fallback_chains.research); NotebookLM layer retired 2.44.6.
 
-> ⚠️ **DEPRECATED (TAD 2.44.6, 2026-09-15)** — NotebookLM 整层退役（不是升级）。
-> 本文件保留仅作历史存档，不参与任何 routing / fallback，不再维护。
-> 研究 fallback 链现为 `local_wiki → websearch`
-> （SSOT: `.tad/config-workflow.yaml` → `fallback_chains.research`）。
-> 请勿再运行 `*research-notebook` / `~/.tad-notebooklm-venv/bin/notebooklm` / `bash .tad/cross-model/setup-notebooklm.sh`。
-> 作废依据: `.tad/evidence/research/2026-09-15-gemini-notebook-fallback/VERDICT.md`（0.8.2 升级建议作废）。
-### NotebookLM (Fallback Research CLI — DEPRECATED 2.44.6; use WebSearch, Local Wiki primary)
-- **Path:** `~/.tad-notebooklm-venv/bin/notebooklm`
-- **Preflight:** `test -x ~/.tad-notebooklm-venv/bin/notebooklm`
-- **Setup:** `bash .tad/cross-model/setup-notebooklm.sh`
-- **Key commands:**
-  - Create notebook: `~/.tad-notebooklm-venv/bin/notebooklm create "<topic>"`
-  - Auto-research (fast): `~/.tad-notebooklm-venv/bin/notebooklm source add-research "<topic>" --mode fast --import-all -n <id>`
-  - Auto-research (deep): `~/.tad-notebooklm-venv/bin/notebooklm source add-research "<topic>" --mode deep --no-wait -n <id>` then `~/.tad-notebooklm-venv/bin/notebooklm research wait -n <id> --timeout 600 --import-all`
-  - Ask (cross-source): `~/.tad-notebooklm-venv/bin/notebooklm ask "<question>" -n <id>`
-  - Add source: `~/.tad-notebooklm-venv/bin/notebooklm source add <url> -n <id>`
-  - Summary: `~/.tad-notebooklm-venv/bin/notebooklm summary --topics -n <id>`
-  - Generate report: `~/.tad-notebooklm-venv/bin/notebooklm generate report "<description>" -n <id>`
-  - Ingest local file: `~/.tad-notebooklm-venv/bin/notebooklm source add <local_path> -n <id>`
-- **Registry:** `.tad/research-notebooks/REGISTRY.yaml` (update after every create/add/research)
-- **Full workflow:** `.claude/skills/research-notebook/SKILL.md`
-
 ### TAD Brain (knowledge search)
 - **Index:** `.tad/brain-index.md` (auto-generated)
 - **Rebuild:** `bash .tad/hooks/lib/brain-index-gen.sh`
@@ -64,7 +42,7 @@
   - Search repos: `gh search repos "query" --json fullName,stargazersCount` (camelCase)
   - Full tree: `gh api repos/{owner}/{repo}/git/trees/{branch}?recursive=1`
   - Repo contents: `gh api repos/{owner}/{repo}/contents/` (root only — use git/trees for full)
-- **Full workflow:** `.claude/skills/research-github/SKILL.md`
+- **Full workflow:** `.agents/skills/research-github/SKILL.md`
 
 ### Codebase-Memory-MCP (Code Knowledge Graph)
 - **Path:** `codebase-memory-mcp` (user local bin)
@@ -90,7 +68,7 @@
   - Search and blame: `bash .tad/hooks/lib/knowledge-blame.sh .tad/project-knowledge/code-quality.md --search "tsc missing type"`
   - File summary: `bash .tad/hooks/lib/knowledge-blame.sh .tad/project-knowledge/architecture.md`
 - **Output:** Structured RULE/COMMIT/DATE/AUTHOR/MESSAGE fields
-- **Scope:** `.tad/project-knowledge/*.md`, `.claude/skills/*/SKILL.md`, and `.tad/hooks/lib/*.sh`
+- **Scope:** `.tad/project-knowledge/*.md`, `.agents/skills/*/SKILL.md`, and `.tad/hooks/lib/*.sh`
 - **Relationship:** Complements stale-knowledge-check.sh (Alex scans breadth, Blake queries depth)
 
 ## Claude Code Native Tools
@@ -164,30 +142,13 @@ rating=$(head -5 challenge-file.md | grep -oE 'INSUFFICIENT|ADEQUATE|STRONG' | h
 | `*research --standard "<topic>"` | 启动标准 Local Wiki 调研 | 常规方案调研 |
 | `*research --deep "<topic>"` | 启动深度 Local Wiki 调研（含对抗） | 架构与全景调研 |
 
-### *research-notebook (Fallback Research CLI) (19 commands — top 7 for daily use)
-| Command | What it does | When to use |
-|---------|-------------|-------------|
-| `*research-notebook create "<topic>"` | Create notebook + add sources | New research topic |
-| `*research-notebook research "<topic>" --mode deep` | Auto-discover 50+ sources | Deep dive |
-| `*research-notebook curate` (upgraded) | Auto-clean errors + dedup + quality tier | After every deep research |
-| `*research-notebook ask "<question>"` | Cross-source Q&A with citations | During *discuss or *design |
-| `*research-notebook report "<desc>"` | Generate structured report | Before handoff creation |
-| `*research-notebook ingest <file_path>` | Feed local findings back into notebook | After writing research notes |
-| `*research-notebook list` | Show all notebooks with status | Portfolio check |
-
-Execution: Read `.claude/skills/research-notebook/SKILL.md` for the sub-command, then run CLI via Bash tool. SEQUENTIAL, not parallel Agent tools.
-
-**`*research-plan` now uses 5-Phase Pipeline** (v2.10.2):
-Phase 1 Deep Research → Phase 2 Auto-Curate → Phase 3 Baseline Report → Phase 4 Question Tree (OBJECTIVES.md KRs) → Phase 5 Research→AC Bridge
-
-### *research-github (6 commands — top 3)
+### *research-github (top 2)
 | Command | What it does | When to use |
 |---------|-------------|-------------|
 | `*research-github explore <domain>` | Browse awesome-lists in a domain | Tech discovery |
-| DEPRECATED — `*research-github notebook <domain>` | Create NotebookLM fallback notebook from registry entries | Retired 2.44.6 (cloud fallback) |
 | `*research-github scan` | Weekly scan for new awesome-lists | Automated via /schedule |
 
-Execution: Read `.claude/skills/research-github/SKILL.md` for the sub-command.
+Execution: Read `.agents/skills/research-github/SKILL.md` for the sub-command.
 
 ## TAD Hook Scripts (Alex invokes directly)
 
@@ -195,10 +156,3 @@ Execution: Read `.claude/skills/research-github/SKILL.md` for the sub-command.
 |--------|---------|------------|
 | `layer2-audit.sh` | Verify Blake's expert review artifacts | `bash .tad/hooks/lib/layer2-audit.sh <slug>` |
 | `stale-knowledge-check.sh` | Advisory: flag possibly-stale knowledge entries | `bash .tad/hooks/lib/stale-knowledge-check.sh --json` |
-| `trace-digest.sh` | Advisory: detect skipped Domain Pack steps | `bash .tad/hooks/lib/trace-digest.sh <slug>` |
-
-## Domain Packs (20 packs)
-- **Location:** `.tad/domains/{pack-name}.yaml`
-- **How to load:** Read the YAML file during *design step1_5 or *discuss domain_pack_awareness
-- **Matching:** SessionStart hook provides pack list via additionalContext; LLM matches task keywords
-- **Registry:** `.tad/domains/tools-registry.yaml` for cross-pack tool index

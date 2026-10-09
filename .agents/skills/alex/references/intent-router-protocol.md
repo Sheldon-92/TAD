@@ -124,7 +124,7 @@ intent_router_protocol:
         
         3. For each pack, determine availability (same 3-tier as step1_5b):
            Tier 1: .tad/capability-packs/{name}/CAPABILITY.md exists → available
-           Tier 2: .claude/skills/{name}/SKILL.md exists → available
+           Tier 2: .agents/skills/{name}/SKILL.md exists → available
            Tier 3: neither → not installed, skip (don't offer install here — not the right moment)
         
         4. Drop every pack whose registry `status` equals `frozen` (exact match).

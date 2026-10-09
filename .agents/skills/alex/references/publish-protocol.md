@@ -35,7 +35,7 @@ publish_protocol:
       blocking: true
 
     # Guard 2: Mandatory runbook read (prevents recurring release bugs)
-    mandatory_read: ".claude/skills/release-runbook/SKILL.md"
+    mandatory_read: ".agents/skills/release-runbook/SKILL.md"
     action: |
       ⚠️ BEFORE executing any *publish step, Read the release runbook.
       It contains the exhaustive version-bump file list (14 strings across 6 files),
@@ -52,7 +52,7 @@ publish_protocol:
         2. .tad/config.yaml → version field (uses MAJOR.MINOR.PATCH, e.g., "2.3.0")
         3. tad.sh → TARGET_VERSION (uses MAJOR.MINOR format, e.g., "2.3")
         4. INSTALLATION_GUIDE.md → version references
-        5. .claude/skills/tad-help/SKILL.md → version references
+        5. .agents/skills/tad-help/SKILL.md → version references
 
         Consistency rule: extract MAJOR.MINOR from all sources; they must match.
         (config.yaml's ".0" patch suffix is expected and not a mismatch)

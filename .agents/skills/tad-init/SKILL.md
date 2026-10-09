@@ -41,32 +41,22 @@ Use this checklist format to track progress:
    mkdir -p .tad/gates
    mkdir -p .tad/project-knowledge
    mkdir -p .tad/templates/output-formats
-   mkdir -p .claude/commands
-   mkdir -p .claude/skills
    ```
 
-3. **Copy core files from TAD repository**
+   Per-harness skill directories and instruction files are created by the installer (step 3), not by hand.
 
-   ⚠️ **IMPORTANT**: Only copy TAD-specific files, NOT entire directories!
+3. **Install core files with the installer**
 
-   **TAD config:**
-   - Copy `.tad/config.yaml`
-   - Copy `.tad/version.txt`
-   - Copy `.tad/templates/` (recursive)
-   - Copy `.tad/skills/` (recursive)
-   - Copy `.tad/schemas/` (recursive)
+   **TAD core, skills and per-harness files:** do not copy any of these by hand (`.tad/config.yaml`, `.tad/version.txt`, `.tad/templates/`, `.tad/skills/`, `.tad/schemas/`, `.agents/skills/`, harness projections). The installer owns them. Run, from the project root:
 
-   **TAD skills** (DO NOT copy non-TAD files like BMad):
-   - Copy `.claude/skills/` (recursive — each skill is a directory with SKILL.md)
-   - ❌ DO NOT copy files that don't belong to TAD
+   curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform <claude-code|codex|opencode|cursor>
 
-   **TAD skills:**
-   - Copy `.claude/skills/code-review/` (recursive)
+   (or `bash tad.sh --platform <p>` from a TAD checkout, or the interactive `npx github:Sheldon-92/TAD`). Skills install under `.agents/skills/`; Claude Code additionally gets the `.claude/skills/<name>` links.
 
 4. **Create initial project files**
    - Create `PROJECT_CONTEXT.md` in project root
    - Create `NEXT.md` for task tracking
-   - Create `CLAUDE.md` with TAD rules
+   - Instruction files (`AGENTS.md`, and for Claude Code the managed `@AGENTS.md` block in `CLAUDE.md`) are written by the installer; do not hand-write them
 
 5. **Bootstrap Project Knowledge** ⚠️ NEW
    - Read `.tad/templates/knowledge-bootstrap.md` for guidance

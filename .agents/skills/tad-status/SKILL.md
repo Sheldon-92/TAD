@@ -17,11 +17,11 @@ TAD Framework Status Report
 Generated: [timestamp]
 
 🔍 INSTALLATION CHECK
-[✅/❌] Core directory structure (.tad/, .claude/skills/)
-[✅/❌] Agent definition files (tad-alex.md, tad-blake.md)
+[✅/❌] Core directory structure (.tad/, .agents/skills/)
+[✅/❌] Agent skills (.agents/skills/alex, .agents/skills/blake)
 [✅/❌] Configuration files (config.yaml + module files)
 [✅/❌] Template files (.tad/templates/)
-[✅/❌] Project context files (PROJECT_CONTEXT.md, CLAUDE.md)
+[✅/❌] Project context files (PROJECT_CONTEXT.md, AGENTS.md)
 
 🧩 v2.5.0 MODULES
 [✅/❌] Modular Config (config-agents, config-quality, config-execution, config-platform)
@@ -60,10 +60,10 @@ Checking TAD Framework status...
 
 1. Core Files:
    - Check if .tad/config.yaml exists
-   - Check if .tad/version.txt exists (should read 2.4)
-   - Check if .claude/skills/alex/SKILL.md exists
-   - Check if .claude/skills/blake/SKILL.md exists
-   - Check if CLAUDE.md exists (TAD rules)
+   - Check if .tad/version.txt exists (contents are the installed version; do not compare to a pinned number)
+   - Check if .agents/skills/alex/SKILL.md exists
+   - Check if .agents/skills/blake/SKILL.md exists
+   - Check if AGENTS.md exists (TAD rules)
    - Check if PROJECT_CONTEXT.md exists
 
 2. Modular Configuration:

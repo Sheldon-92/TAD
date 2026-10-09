@@ -39,7 +39,7 @@ git diff HEAD~1..HEAD > /tmp/tad-review-diff.txt
 
 **SKILL 注入 + 任务：**
 ```bash
-cat .claude/skills/blake/SKILL.md \
+cat .agents/skills/blake/SKILL.md \
   | codex exec --full-auto "You are Blake. Analyze the handoff at .tad/active/handoffs/HANDOFF-*.md and list implementation steps"
 ```
 

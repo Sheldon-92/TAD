@@ -25,8 +25,8 @@ dependencies:
         - "Natural language Q&A over ingested sources"
         - "Audio overview generation"
       files_depending:
-        - ".claude/skills/alex/references/research-plan-protocol.md"
-        - ".claude/skills/blake/references/notebooklm-access.md"
+        - ".agents/skills/alex/references/research-plan-protocol.md"
+        - ".agents/skills/blake/references/notebooklm-access.md"
         - ".tad/research-notebooks/REGISTRY.yaml"
         - ".tad/hooks/lib/notebook-lifecycle.sh"
       integration_context: "Backend for TAD's *research system — Standard/Deep research routes through NotebookLM for persistent, multi-source knowledge accumulation."
@@ -63,7 +63,7 @@ dependencies:
         - "PR creation and review"
         - "Repository metadata queries"
       files_depending:
-        - ".claude/skills/alex/references/publish-protocol.md"
+        - ".agents/skills/alex/references/publish-protocol.md"
         - ".tad/hooks/lib/layer2-audit.sh"
         - ".tad/hooks/lib/verify-ac-commands.sh"
         - ".tad/github-registry/REGISTRY.yaml"
@@ -127,7 +127,7 @@ dependencies:
         - "Structured data extraction from tool output"
       files_depending:
         - ".tad/hooks/lib/common.sh"
-        - ".tad/hooks/lib/post-write-sync.sh"
+        - ".tad/hooks/post-write-sync.sh"
         - ".tad/hooks/lib/drift-check.sh"
         - ".tad/hooks/lib/release-verify.sh"
       integration_context: "JSON processing for TAD's trace/evidence system — constructs JSONL events, parses hook output, extracts structured data."

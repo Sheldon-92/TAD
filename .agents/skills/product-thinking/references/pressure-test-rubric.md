@@ -10,7 +10,7 @@
 > RIGOR, never the content conclusion. **A rigorously-argued KILL is `rigorous` (PASS).**
 > A hand-wavy, sycophantic BUILD is `superficial` (FAIL).
 >
-> **Decoupling firewall** (Phase-1 Gate-3 categorical branch, `.claude/skills/gate/SKILL.md`
+> **Decoupling firewall** (Phase-1 Gate-3 categorical branch, `.agents/skills/gate/SKILL.md`
 > `judge_prompt_by_shape.categorical.decoupling_firewall`): band criteria are conclusion-neutral;
 > the judge emits `band:` (with per-dimension justification) BEFORE `content_verdict:`; and a
 > swap test guards against conclusion-anchoring (see §C).
@@ -49,7 +49,7 @@ this is a discrimination instrument, not a participation award.
 
 ### D1 — Adversarial Rigor  *(load-bearing — see §B)*
 
-**Source:** `.claude/skills/product-thinking/skills/pressure-test.md`
+**Source:** `.agents/skills/product-thinking/skills/pressure-test.md`
 - *"Default stance: this probably won't work. You must prove otherwise."* (L8)
 - Step 0 → Step 6 = **6 forcing rounds** (Demand Reality, Status Quo, Desperate Specificity,
   Narrowest Wedge, Observation, Future-Fit).
@@ -67,7 +67,7 @@ this is a discrimination instrument, not a participation award.
 
 ### D2 — Evidence Grounding
 
-**Source:** `.claude/skills/product-thinking/skills/pressure-test.md`
+**Source:** `.agents/skills/product-thinking/skills/pressure-test.md`
 - Every round has a `**Then search:**` block (Steps 1–6, e.g. L59–63, L96–101) — *"Every
   round searches real data. No round accepts 'I think' or 'people have said.'"* (L10–11).
 - *"Record: FACT or ASSUMPTION based on evidence quality."* (L86, L117, L147, L180, L212, L242).
@@ -85,7 +85,7 @@ this is a discrimination instrument, not a participation award.
 
 ### D3 — Fatal-Flaw Analysis
 
-**Source:** `.claude/skills/product-thinking/checklists/fatal-flaws.md`
+**Source:** `.agents/skills/product-thinking/checklists/fatal-flaws.md`
 - 15+ universal startup killers (F1–F16).
 - Usage (L9–14): *"Scan this list against the product idea; mark each that applies; include
   ≤3 most relevant in the verdict output."*
@@ -104,7 +104,7 @@ this is a discrimination instrument, not a participation award.
 
 ### D4 — Verdict Justification
 
-**Source:** `.claude/skills/product-thinking/skills/pressure-test.md` Step 7 (L246–303)
+**Source:** `.agents/skills/product-thinking/skills/pressure-test.md` Step 7 (L246–303)
 - A named verdict **BUILD / PIVOT / KILL** (not a vague "could work").
 - A **Confidence** score 1–10 derived from the FACT/ASSUMPTION count (L256–261).
 - A **2-Week Validation Plan** that is type-specific and concrete, with an explicit
@@ -124,8 +124,8 @@ this is a discrimination instrument, not a participation award.
 
 ### D5 — Product-Type Adapter Use
 
-**Source:** `.claude/skills/product-thinking/skills/pressure-test.md` Step 0 (L31–50) +
-`.claude/skills/product-thinking/adapters/*.md` (software, hardware, ecommerce, service,
+**Source:** `.agents/skills/product-thinking/skills/pressure-test.md` Step 0 (L31–50) +
+`.agents/skills/product-thinking/adapters/*.md` (software, hardware, ecommerce, service,
 content, marketplace).
 - Step 0 detects the product type, then *"load the adapter for that type"* (L43). The adapter
   supplies: which **data sources** to use per search step, the exact **Q4 (Narrowest Wedge)**
@@ -135,7 +135,7 @@ content, marketplace).
 opening `adapters/*.md`). To confirm the adapter was actually applied, look in the artifact
 for the distinguishing signals below for the detected type — the right data sources AND the
 right-shaped narrowest-wedge / 2-week validation. Signals condensed from
-`.claude/skills/product-thinking/adapters/{type}.md` (Data Sources §, Q4 row, 2-week section):
+`.agents/skills/product-thinking/adapters/{type}.md` (Data Sources §, Q4 row, 2-week section):
 
 | Type | Distinguishing data sources (in the searches) | Wedge / 2-week shape (in Q4 + validation plan) |
 |------|-----------------------------------------------|------------------------------------------------|
@@ -208,7 +208,7 @@ not `rigorous` — eloquence is not evidence.
 ## §D. Judge Output Contract
 
 Emit EXACTLY in this order. `band:` (with its per-dimension justification) MUST appear ABOVE
-`content_verdict:` — this is the **order firewall** (`.claude/skills/gate/SKILL.md`
+`content_verdict:` — this is the **order firewall** (`.agents/skills/gate/SKILL.md`
 `judge_prompt_by_shape.categorical.extra_output` L479: *"`band:` (with justification) MUST
 appear ABOVE `content_verdict:` in the file"*). The conclusion is committed AFTER the band so
 it cannot anchor it.
@@ -234,7 +234,7 @@ content_verdict: BUILD|PIVOT|KILL   # the artifact's own conclusion; RECORDED on
 verdict: PASS|PARTIAL|FAIL          # derived from band (rigorous→PASS · partial→PARTIAL · superficial→FAIL); the shape-agnostic Gate 4 token
 ```
 
-Mapping (must match `.claude/skills/gate/SKILL.md` categorical branch L457):
+Mapping (must match `.agents/skills/gate/SKILL.md` categorical branch L457):
 `rigorous → PASS` · `partial → PARTIAL` · `superficial → FAIL`.
 
 ---
@@ -243,11 +243,11 @@ Mapping (must match `.claude/skills/gate/SKILL.md` categorical branch L457):
 
 | Claim used in this rubric | Source file | Anchor |
 |---------------------------|-------------|--------|
-| 6 forcing rounds (Demand→Future-Fit); "this probably won't work, prove otherwise"; anti-sycophancy / refuse category answers / challenge strongest claim | `.claude/skills/product-thinking/skills/pressure-test.md` | L8, Steps 0–6, L14–28, L139 |
-| Every round searches real data; "No round accepts 'I think'"; behavior over opinion | `.claude/skills/product-thinking/skills/pressure-test.md` | L10–11, L56, per-round `**Then search:**` blocks |
-| "Record: FACT or ASSUMPTION based on evidence quality" | `.claude/skills/product-thinking/skills/pressure-test.md` | L86, L117, L147, L180, L212, L242 |
-| 15 universal killers; scan + name ≤3 most relevant | `.claude/skills/product-thinking/checklists/fatal-flaws.md` | L9–14, F1–F16 |
-| **"Two or more fatal flaws = KILL verdict regardless of other evidence."** | `.claude/skills/product-thinking/checklists/fatal-flaws.md` | L5 (Severity Guide L150–157; F12 exception L159) |
-| BUILD/PIVOT/KILL + Confidence 1–10 + 2-week validation plan with success signal | `.claude/skills/product-thinking/skills/pressure-test.md` | Step 7, L246–303 |
-| Step-0 product-type detection → load adapter (data sources, Q4 wedge wording, 2-week meaning) | `.claude/skills/product-thinking/skills/pressure-test.md` + `.claude/skills/product-thinking/adapters/*.md` | L31–50 |
-| Categorical band→verdict mapping; rigor independence; order firewall (band above content_verdict); swap test | `.claude/skills/gate/SKILL.md` | `judge_prompt_by_shape.categorical` L453–479 |
+| 6 forcing rounds (Demand→Future-Fit); "this probably won't work, prove otherwise"; anti-sycophancy / refuse category answers / challenge strongest claim | `.agents/skills/product-thinking/skills/pressure-test.md` | L8, Steps 0–6, L14–28, L139 |
+| Every round searches real data; "No round accepts 'I think'"; behavior over opinion | `.agents/skills/product-thinking/skills/pressure-test.md` | L10–11, L56, per-round `**Then search:**` blocks |
+| "Record: FACT or ASSUMPTION based on evidence quality" | `.agents/skills/product-thinking/skills/pressure-test.md` | L86, L117, L147, L180, L212, L242 |
+| 15 universal killers; scan + name ≤3 most relevant | `.agents/skills/product-thinking/checklists/fatal-flaws.md` | L9–14, F1–F16 |
+| **"Two or more fatal flaws = KILL verdict regardless of other evidence."** | `.agents/skills/product-thinking/checklists/fatal-flaws.md` | L5 (Severity Guide L150–157; F12 exception L159) |
+| BUILD/PIVOT/KILL + Confidence 1–10 + 2-week validation plan with success signal | `.agents/skills/product-thinking/skills/pressure-test.md` | Step 7, L246–303 |
+| Step-0 product-type detection → load adapter (data sources, Q4 wedge wording, 2-week meaning) | `.agents/skills/product-thinking/skills/pressure-test.md` + `.agents/skills/product-thinking/adapters/*.md` | L31–50 |
+| Categorical band→verdict mapping; rigor independence; order firewall (band above content_verdict); swap test | `.agents/skills/gate/SKILL.md` | `judge_prompt_by_shape.categorical` L453–479 |

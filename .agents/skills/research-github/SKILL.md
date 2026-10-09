@@ -491,7 +491,7 @@ and destroying user accept/reject decisions). Single source of truth: the scan p
 ```
 Non-interactive mode. You are a scheduled weekly GitHub registry scan session.
 
-1. Read .claude/skills/research-github/SKILL.md.
+1. Read .agents/skills/research-github/SKILL.md.
 2. Execute the `*research-github scan` protocol in full (Step 1 through Step 5,
    including the Step 4 merge-write), in non-interactive mode:
    - Today-guard (Step 1b): if last_scan == today, print the one-line log and exit.

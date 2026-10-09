@@ -87,7 +87,7 @@ A mismatch means the section parser is broken — gate ERRORs, do not trust the 
 
 **Format:** `<!-- PIN:source_id|category|total_must_cover_count -->`
 
-**Alex source (`.claude/skills/alex/SKILL.md`):**
+**Alex source (`.agents/skills/alex/SKILL.md`):**
 - forbidden_implementations: 7 owners (cross_model_awareness:1, express_path_protocol:1, experiment_path_protocol:1, handoff_creation_protocol:4, acceptance_protocol:3, skillify_command_protocol:1, cancel_protocol:3) = 14 (+2 vs prior 12 = the P3.3 symmetric-block doc-comment lines at source 4057/4235/4337; the 11 `forbidden_implementations:` blocks at 685,1770,1914,3051,3085,3186,3262,4059,4105,4223,4341 + those 3 doc-comment mentions)
 - anti_rationalization_registry: 4 owners (anti_rationalization_registry:1, handoff_creation_protocol:1, intent_router_protocol:1, on_start:2) = 5 (P3: header self-count removed)
 - NOT_via_alex_auto: 4 owners (anti_rationalization_registry:1, cross_model_awareness:1, research_plan_protocol:3, constraints_frontmatter:1) = 6
@@ -99,7 +99,7 @@ A mismatch means the section parser is broken — gate ERRORs, do not trust the 
 <!-- PIN:alex|NOT_via_alex_auto|6 -->
 <!-- PIN:alex|honest_partial|0 -->
 
-**Blake source (`.claude/skills/blake/SKILL.md`):**
+**Blake source (`.agents/skills/blake/SKILL.md`):**
 - forbidden_implementations: 5 owners (cross_model_invocation:1, ralph_loop_execution:1, execution_checklist:3, completion_protocol:2, completion_knowledge_override:1) = 8 (+2 vs prior 6 = the completion_protocol blocks at source 1840/1873; execution_checklist:3 = block 1460 + its doc-comment 1461 + block 1503; source lines 347,753,1460,1503,1840,1873,1935 = 7 `forbidden_implementations:` blocks + 1 doc-comment at 1461)
 - anti_rationalization_registry: 0 (Alex-only)
 - NOT_via_alex_auto: 0 (Alex-only)

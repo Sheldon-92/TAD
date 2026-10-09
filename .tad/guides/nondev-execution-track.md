@@ -107,7 +107,7 @@ categorical gate judges **ANALYSIS RIGOR, not the BUILD/PIVOT/KILL conclusion**.
 swap test confirmed the band was rigor-driven, not conclusion-driven.
 
 Evidence: `.tad/evidence/reviews/2026-06-06-rubric-eval-palatebox-rigorous.md` and
-`…-palatebox-thin.md`; rubric `.claude/skills/product-thinking/references/pressure-test-rubric.md`.
+`…-palatebox-thin.md`; rubric `.agents/skills/product-thinking/references/pressure-test-rubric.md`.
 
 ### Worked example — checklist (export-spec)
 

@@ -8,7 +8,7 @@
 - **Preflight:** `command -v codex >/dev/null 2>&1`
 - **Key commands:**
   - Code review from diff: `{ echo "Review:"; git diff HEAD~1..HEAD; } | codex exec --full-auto "P0/P1/P2 findings"`
-  - SKILL-aware review: `cat .claude/skills/blake/SKILL.md | codex exec --full-auto "Review handoff implementation"`
+  - SKILL-aware review: `cat .agents/skills/blake/SKILL.md | codex exec --full-auto "Review handoff implementation"`
   - Non-git dir: add `--skip-git-repo-check`
 - **Constraints:** Sandbox workspace-write; stderr noise benign; exit code = truth
 - **NOT a substitute for** Layer 2 code-reviewer sub-agent (independent second opinion only)

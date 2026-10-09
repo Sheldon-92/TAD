@@ -407,7 +407,7 @@ backward_compatibility:
 
   rollback_support:
     enabled: true
-    method: "Restore .tad/config-full-backup.yaml as .tad/config.yaml"
+    method: "git checkout <previous-ref> -- .tad/config.yaml"
 
 # ==================== Optional Features ====================
 optional_features:

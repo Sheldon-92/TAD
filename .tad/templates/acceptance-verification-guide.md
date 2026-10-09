@@ -100,7 +100,7 @@ AC-{NN}-{brief-slug}.{sh|test.ts|test.py}
 ### Task ID Mapping
 
 `task_id` is derived from the Handoff filename:
-- Handoff: `.tad/active/handoffs/HANDOFF-20260204-acceptance-testing.md`
+- Handoff: `.tad/active/handoffs/HANDOFF-{date}-acceptance-testing.md`
 - Task ID: `acceptance-testing` (strip `HANDOFF-{date}-` prefix and `.md` suffix)
 - Output directory: `.tad/evidence/acceptance-tests/acceptance-testing/`
 

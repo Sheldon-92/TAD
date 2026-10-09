@@ -105,13 +105,12 @@ The separate "compressed" Codex SKILL editions (`codex-alex-skill.md`, `codex-bl
 - `regen-codex-editions.sh` (regeneration script)
 - `tournament-codex.sh` / `schemas/` (tournament adapter)
 - `expert-review-sequential.md` / `sequential-review.md` / `manual-gates.md` / `socratic-fallback.md` (adapter guides)
-- `.tad/hooks/lib/codex-parity-check.sh` (parity enforcement)
 
 ---
 
 ## Lite Skills 调用方式 (2026-07-30)
 
-alex-lite 和 blake-lite SKILL.md 已安装到 `.agents/skills/{alex-lite,blake-lite}/SKILL.md`（byte-identical 镜像自 `.claude/skills/`）。
+alex-lite 和 blake-lite SKILL.md 已安装到 `.agents/skills/{alex-lite,blake-lite}/SKILL.md`（这是唯一的真源；Claude Code 安装时 `.claude/skills/` 是指向它的链接）。
 
 ### Smoke Test (codex-cli 0.145.0, gpt-5.6-sol)
 

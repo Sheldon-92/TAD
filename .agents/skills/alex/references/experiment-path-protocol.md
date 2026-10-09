@@ -28,7 +28,7 @@ experiment_path_protocol:
       Alex MUST NOT bypass *analyze and route directly to *experiment without user explicit input.
 
   capability_pack_auto_load:
-    rule: "experiment_path_protocol step1 MUST Read .claude/skills/ai-evaluation/SKILL.md at start of drafting"
+    rule: "experiment_path_protocol step1 MUST Read .agents/skills/ai-evaluation/SKILL.md at start of drafting"
     rationale: |
       *experiment is a router mode — the Capability Pack must be explicitly loaded.
       Without this explicit Read, *experiment users get workflow without quality rules.
@@ -48,7 +48,7 @@ experiment_path_protocol:
     - "Socratic Inquiry Protocol (3-5 rounds) — DO follow"
     - "step0_5 Risk Translation (cognitive firewall) — DO follow"
     - "step1 draft creation (handoff scaffold + frontmatter)"
-    - "step1 explicit Read of .claude/skills/ai-evaluation/SKILL.md (per capability_pack_auto_load)"
+    - "step1 explicit Read of .agents/skills/ai-evaluation/SKILL.md (per capability_pack_auto_load)"
     - "step1 §6 may be 'Experiment Setup' (rubric / fixture / generator-judge config) instead of 'Files to Modify'"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
@@ -100,7 +100,7 @@ experiment_path_protocol:
 
   domain_pack_integration:
     pack: "ai-evaluation"
-    pack_path: ".claude/skills/ai-evaluation/SKILL.md"
+    pack_path: ".agents/skills/ai-evaluation/SKILL.md"
     relationship: |
       Pack is tool/framework recommendations (promptfoo / DSPy / trulens).
       experiment_path_protocol is the workflow + Gate semantics.
