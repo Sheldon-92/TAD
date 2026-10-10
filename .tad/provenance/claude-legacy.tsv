@@ -1,4 +1,4 @@
-# schema=1 rows=1811
+# schema=1 rows=1812
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -525,6 +525,7 @@ skill	21dce0e849e0400522595c94a3a05e26f10ee3bf	web-frontend/scripts/bundle-check
 skill	2275fcb4fd3440ca63e3b5c4c2f57d6741771d1c	alex/references/design-protocol.md
 skill	22941b8ec475c0876a381284af7c9ca79475d547	knowledge-graph/examples/knowledge-graph-fixture.md
 skill	22c408f0859ce30ef09d0a6b6e787507ca11f1fa	tad-help/SKILL.md
+skill	22c7c90f0347ab15ba88cd8a36ced45dc6d66f89	alex/references/publish-protocol.md
 skill	233d1375acdabfbac4ba1c4a51a2ea758b5f729a	tad-help/SKILL.md
 skill	23545f69a0269ee9e5e664bb3b14b6605e16a4cb	blake/references/cross-model-invocation.md
 skill	239aea976988abfc15e104c7e505e95abdaa8292	agent-memory/examples/agent-memory-fixture.md
