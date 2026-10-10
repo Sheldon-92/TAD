@@ -29,9 +29,9 @@
 | 1 | Claude Code 实例声明与探活 spike | ✅ Done | HANDOFF-2026-10-08-claude-code-instance-spike.md（已归档） | 四个未知项的真机实测结论＋`runtime-adapter-instance-claude-code.md` |
 | 2 | 安装器与投影落地 | ✅ Done | HANDOFF-2026-10-08-claude-code-installer-projection.md（已归档） | `--platform claude-code` 可装：skill 投影、hook 注册、CLAUDE.md 引用块、平台探测 |
 | 3 | 编排能力恢复 | ✅ Done | HANDOFF-2026-10-09-workflow-restore.md（已归档） | 10 workflow＋2 子代理恢复并翻新；8 个有真实运行记录，2 个仅装载校验 |
-| 4 | 下游升级路径与四家真机回归 | ✅ Done（2026-10-10） | 4a、4a-2（已归档）；4b 测量协议 `HANDOFF-2026-10-09-four-harness-live-regression.md`，结果落账在 6a 工作包 D | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
-| 5 | 残余清理 | ✅ Done（2026-10-10） | 5a `HANDOFF-2026-10-09-residue-cleanup-docs-and-skills.md`、5b `HANDOFF-2026-10-09-residue-cleanup-code-and-tests.md` | 悬空引用清零、红门转绿、口径一致、状态面瘦身 |
-| 6 | v3.3.0 发版 | 🔄 Active | 6a `HANDOFF-2026-10-09-release-evidence-and-gates.md`（✅ 2026-10-10）、6b `HANDOFF-2026-10-09-release-3.3.0-commit.md`（进行中）；推送与打标签须人确认 | 发版清单全绿、CHANGELOG、tag |
+| 4 | 下游升级路径与四家真机回归 | ✅ Done（2026-10-10） | 4a、4a-2（已归档）；4b 测量协议（已归档），结果落账在 6a 工作包 D | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
+| 5 | 残余清理 | ✅ Done（2026-10-10） | 5a、5b 两张 handoff（已归档） | 悬空引用清零、红门转绿、口径一致、状态面瘦身 |
+| 6 | v3.3.0 发版 | 🔄 发版提交已在本地备好（2026-10-10），待人确认后推送并打标签 | 6a、6b（均已归档到 `.tad/archive/handoffs/`）；发版提交 `bac0947b`，其后的台账提交与收尾提交之后的最后一个提交是应打标签的提交 | 发版清单全绿、CHANGELOG、tag |
 
 ### Phase Dependencies
 顺序执行。Phase 2 依赖 Phase 1 的实测结论（链接可用性决定走 A 还是 B 路径）；Phase 3 依赖 Phase 2（workflow/子代理的装载点由安装器投影）；Phase 4 依赖 Phase 2+3（回归对象齐备）；Phase 5 必须排在 1–4 之后（人裁定「先恢复再清理」，避免把恢复所需的引用当残余删掉）；Phase 6 依赖全部。
@@ -342,3 +342,9 @@ Phase 4a：存量 Claude Code 安装的接管（旧 skill 实体目录、旧 set
 - **Phase 6「`version . 3.3.0 3.2.0` exit 0」**：按字面无法满足——`docs/pm/**` 的历史记录、`AGENTS.md` 里一句关于 3.2.0 的历史事实、CHANGELOG 正文都会命中。沿用 3.2.0 的先例：以覆盖 100% 命中的分诊记录放行。
 - **Phase 6「tag」与推送**：发版规程要求人确认。Conductor 把发版提交在本地准备到位并跑完全部发版门，不推送、不打标签。
 - **下游版本扫描（规程 step3e 第 3 项）**：未运行（它会读本机其他项目），须人确认豁免或自行运行。
+
+### 2026-10-10 收尾状态（Conductor）
+
+- Phase 1–5 完成。Phase 6：发版提交与台账提交已在本地分支 `epic/multi-harness-restore`，全部发版门在其上为绿（`structural`、`version-sweep . 3.3.0`、`migration . 3.3.0`、`installer-destructive-guard`、`provenance`、`state-surface`、`freshness`、`npm test`、28 个 capability 校验、`--verify-denylist`、driftcheck）；`version . 3.3.0 3.2.0` 剩 9 处命中，均在分诊记录内。数据安全夹具 178/178，更新夹具除 `release-gates` 的门 2（即上述 `version` 门）外全过，迁移夹具 24/24；从最终树对四个平台各装一次，均退出 0、版本 3.3.0。
+- **未做、须人执行**：推送到 `main`、打带注释的标签 `v3.3.0`、推送标签（三条命令，须紧挨着执行）；推送前 `git fetch` 确认远端 `main` 未前移。发版记录在 `.tad/evidence/releases/3.3.0-*.md`。
+- **须人裁定或确认**：下游版本扫描的豁免；交互式 Claude Code 会话与 Codex 真实 hook 信任审查两条未测路径；三个未提交文件（两份 `secret-detection-rules.md`、`docs/pm/status.md`）的去留——若提交前两份，须重新生成台账；仓库根下未跟踪的 `.claude/` 目录；`~/.tad-backups` 里 35 个测试残留；`capability-builder-v1` 搁置 Epic；`save-skill`／`save-workflow` 的本地目录设计；TAD 覆盖根 `AGENTS.md`（先备份）是否为认可的长期契约。
