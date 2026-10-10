@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-10 00:44
+Generated: 2026-10-10 09:51
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -66,17 +66,11 @@ Generated: 2026-10-10 00:44
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-09-four-harness-live-regression.md | unknown |  |
-| HANDOFF-2026-10-09-release-3.3.0-commit.md | unknown | \| 事项 \| 裁定 \| |
-| HANDOFF-2026-10-09-release-evidence-and-gates.md | unknown | \| 事项 \| 裁定 \| |
-| HANDOFF-2026-10-09-residue-cleanup-code-and-tests.md | unknown | \| 事项 \| 裁定 \| 理由 \| |
-| HANDOFF-2026-10-09-residue-cleanup-docs-and-skills.md | docs | Claude Code 支持恢复之后，把仓里还在说「Claude Code 已移除／只有三家／hooks 仍是缺口」的文 |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261008-multi-harness-restore-and-cleanup.md | **Epic ID**: EPIC-20261008-multi-harness-restore-and-cleanup |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -174,7 +168,7 @@ Generated: 2026-10-10 00:44
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 155 | pm |
+| evidence/pm/ | 156 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
 | evidence/ralph-loops/ | 16 | ralph-loops |
